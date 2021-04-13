@@ -289,7 +289,7 @@ void ParticlesMaterial::_update_shader() {
 	code += "}\n";
 	code += "\n";
 
-	code += "void compute() {\n";
+	code += "void process() {\n";
 	code += "	uint base_number = NUMBER;\n";
 	code += "	uint alt_seed = hash(base_number + uint(1) + RANDOM_SEED);\n";
 	code += "	float angle_rand = rand_from_seed(alt_seed);\n";

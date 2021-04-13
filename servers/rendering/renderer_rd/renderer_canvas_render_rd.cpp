@@ -2012,6 +2012,9 @@ void RendererCanvasRenderRD::ShaderData::set_code(const String &p_code) {
 	uses_screen_texture = false;
 
 	ShaderCompilerRD::IdentifierActions actions;
+	actions.entry_point_stages["vertex"] = ShaderCompilerRD::STAGE_VERTEX;
+	actions.entry_point_stages["fragment"] = ShaderCompilerRD::STAGE_FRAGMENT;
+	actions.entry_point_stages["light"] = ShaderCompilerRD::STAGE_FRAGMENT;
 
 	actions.render_mode_values["blend_add"] = Pair<int *, int>(&blend_mode, BLEND_MODE_ADD);
 	actions.render_mode_values["blend_mix"] = Pair<int *, int>(&blend_mode, BLEND_MODE_MIX);
@@ -2048,7 +2051,7 @@ void RendererCanvasRenderRD::ShaderData::set_code(const String &p_code) {
 	print_line("\n**fragment_code:\n" + gen_code.fragment);
 	print_line("\n**light_code:\n" + gen_code.light);
 #endif
-	canvas_singleton->shader.canvas_shader.version_set_code(version, gen_code.uniforms, gen_code.vertex_global, gen_code.vertex, gen_code.fragment_global, gen_code.light, gen_code.fragment, gen_code.defines);
+	canvas_singleton->shader.canvas_shader.version_set_code(version, gen_code.code, gen_code.uniforms, gen_code.stage_globals[ShaderCompilerRD::STAGE_VERTEX], gen_code.stage_globals[ShaderCompilerRD::STAGE_FRAGMENT], gen_code.defines);
 	ERR_FAIL_COND(!canvas_singleton->shader.canvas_shader.version_is_valid(version));
 
 	ubo_size = gen_code.uniform_total_size;

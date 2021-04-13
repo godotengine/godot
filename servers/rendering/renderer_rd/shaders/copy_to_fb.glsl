@@ -2,7 +2,7 @@
 
 #version 450
 
-VERSION_DEFINES
+#VERSION_DEFINES
 
 layout(location = 0) out vec2 uv_interp;
 
@@ -37,7 +37,7 @@ void main() {
 
 #version 450
 
-VERSION_DEFINES
+#VERSION_DEFINES
 
 layout(push_constant, binding = 1, std430) uniform Params {
 	vec4 section;

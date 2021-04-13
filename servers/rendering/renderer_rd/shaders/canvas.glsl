@@ -2,7 +2,7 @@
 
 #version 450
 
-VERSION_DEFINES
+#VERSION_DEFINES
 
 #ifdef USE_ATTRIBUTES
 layout(location = 0) in vec2 vertex_attrib;
@@ -26,17 +26,15 @@ layout(location = 3) out vec2 pixel_size_interp;
 
 #endif
 
-#ifdef USE_MATERIAL_UNIFORMS
+#ifdef MATERIAL_UNIFORMS_USED
 layout(set = 1, binding = 0, std140) uniform MaterialUniforms{
-	/* clang-format off */
-MATERIAL_UNIFORMS
-	/* clang-format on */
+
+#MATERIAL_UNIFORMS
+
 } material;
 #endif
 
-/* clang-format off */
-VERTEX_SHADER_GLOBALS
-/* clang-format on */
+#GLOBALS
 
 void main() {
 	vec4 instance_custom = vec4(0.0);
@@ -132,9 +130,7 @@ void main() {
 	float point_size = 1.0;
 #endif
 	{
-		/* clang-format off */
-VERTEX_SHADER_CODE
-		/* clang-format on */
+#CODE : VERTEX
 	}
 
 #ifdef USE_NINEPATCH
@@ -212,7 +208,7 @@ VERTEX_SHADER_CODE
 
 #version 450
 
-VERSION_DEFINES
+#VERSION_DEFINES
 
 #include "canvas_uniforms_inc.glsl"
 
@@ -228,11 +224,11 @@ layout(location = 3) in vec2 pixel_size_interp;
 
 layout(location = 0) out vec4 frag_color;
 
-#ifdef USE_MATERIAL_UNIFORMS
+#ifdef MATERIAL_UNIFORMS_USED
 layout(set = 1, binding = 0, std140) uniform MaterialUniforms{
-	/* clang-format off */
-MATERIAL_UNIFORMS
-	/* clang-format on */
+
+#MATERIAL_UNIFORMS
+
 } material;
 #endif
 
@@ -260,11 +256,9 @@ vec2 sdf_to_screen_uv(vec2 p_sdf) {
 	return p_sdf * canvas_data.sdf_to_screen;
 }
 
-/* clang-format off */
-FRAGMENT_SHADER_GLOBALS
-/* clang-format on */
+#GLOBALS
 
-#ifdef LIGHT_SHADER_CODE_USED
+#ifdef LIGHT_CODE_USED
 
 vec4 light_compute(
 		vec3 light_vertex,
@@ -278,9 +272,9 @@ vec4 light_compute(
 		vec2 uv,
 		vec4 color, bool is_directional) {
 	vec4 light = vec4(0.0);
-	/* clang-format off */
-LIGHT_SHADER_CODE
-	/* clang-format on */
+
+#CODE : LIGHT
+
 	return light;
 }
 
@@ -356,7 +350,7 @@ vec3 light_normal_compute(vec3 light_vec, vec3 normal, vec3 base_color, vec3 lig
 
 //float distance = length(shadow_pos);
 vec4 light_shadow_compute(uint light_base, vec4 light_color, vec4 shadow_uv
-#ifdef LIGHT_SHADER_CODE_USED
+#ifdef LIGHT_CODE_USED
 		,
 		vec3 shadow_modulate
 #endif
@@ -395,7 +389,7 @@ vec4 light_shadow_compute(uint light_base, vec4 light_color, vec4 shadow_uv
 	}
 
 	vec4 shadow_color = unpackUnorm4x8(light_array.data[light_base].shadow_color);
-#ifdef LIGHT_SHADER_CODE_USED
+#ifdef LIGHT_CODE_USED
 	shadow_color.rgb *= shadow_modulate;
 #endif
 
@@ -504,11 +498,7 @@ void main() {
 		normal_used = true;
 #endif
 
-		/* clang-format off */
-
-FRAGMENT_SHADER_CODE
-
-		/* clang-format on */
+#CODE : FRAGMENT
 
 #if defined(NORMAL_MAP_USED)
 		normal = mix(vec3(0.0, 0.0, 1.0), normal_map * vec3(2.0, -2.0, 1.0) - vec3(1.0, -1.0, 0.0), normal_map_depth);
@@ -543,7 +533,7 @@ FRAGMENT_SHADER_CODE
 		vec2 direction = light_array.data[light_base].position;
 		vec4 light_color = light_array.data[light_base].color;
 
-#ifdef LIGHT_SHADER_CODE_USED
+#ifdef LIGHT_CODE_USED
 
 		vec4 shadow_modulate = vec4(1.0);
 		light_color = light_compute(light_vertex, vec3(direction, light_array.data[light_base].height), normal, light_color, light_color.a, specular_shininess, shadow_modulate, screen_uv, uv, color, true);
@@ -561,7 +551,7 @@ FRAGMENT_SHADER_CODE
 			vec4 shadow_uv = vec4(shadow_pos.x, light_array.data[light_base].shadow_y_ofs, shadow_pos.y * light_array.data[light_base].shadow_zfar_inv, 1.0);
 
 			light_color = light_shadow_compute(light_base, light_color, shadow_uv
-#ifdef LIGHT_SHADER_CODE_USED
+#ifdef LIGHT_CODE_USED
 					,
 					shadow_modulate.rgb
 #endif
@@ -599,7 +589,7 @@ FRAGMENT_SHADER_CODE
 		vec4 light_color = textureLod(sampler2D(atlas_texture, texture_sampler), tex_uv_atlas, 0.0);
 		vec4 light_base_color = light_array.data[light_base].color;
 
-#ifdef LIGHT_SHADER_CODE_USED
+#ifdef LIGHT_CODE_USED
 
 		vec4 shadow_modulate = vec4(1.0);
 		vec3 light_position = vec3(light_array.data[light_base].position, light_array.data[light_base].height);
@@ -657,7 +647,7 @@ FRAGMENT_SHADER_CODE
 			vec4 shadow_uv = vec4(tex_ofs, light_array.data[light_base].shadow_y_ofs, distance, 1.0);
 
 			light_color = light_shadow_compute(light_base, light_color, shadow_uv
-#ifdef LIGHT_SHADER_CODE_USED
+#ifdef LIGHT_CODE_USED
 					,
 					shadow_modulate.rgb
 #endif

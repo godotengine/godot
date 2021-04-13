@@ -2,7 +2,7 @@
 
 #version 450
 
-VERSION_DEFINES
+#VERSION_DEFINES
 
 layout(location = 0) in highp vec3 vertex;
 
@@ -32,7 +32,7 @@ void main() {
 
 #version 450
 
-VERSION_DEFINES
+#VERSION_DEFINES
 
 layout(push_constant, binding = 0, std430) uniform Constants {
 	mat4 projection;

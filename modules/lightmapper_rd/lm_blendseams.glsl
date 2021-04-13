@@ -7,7 +7,7 @@ triangles = "#define MODE_TRIANGLES";
 
 #version 450
 
-VERSION_DEFINES
+#VERSION_DEFINES
 
 #include "lm_common_inc.glsl"
 
@@ -74,7 +74,7 @@ void main() {
 
 #version 450
 
-VERSION_DEFINES
+#VERSION_DEFINES
 
 #include "lm_common_inc.glsl"
 

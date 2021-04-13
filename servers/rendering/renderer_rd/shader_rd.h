@@ -32,7 +32,9 @@
 #define SHADER_RD_H
 
 #include "core/os/mutex.h"
+#include "core/string/string_builder.h"
 #include "core/templates/hash_map.h"
+#include "core/templates/local_vector.h"
 #include "core/templates/map.h"
 #include "core/templates/rid_owner.h"
 #include "core/variant/variant.h"
@@ -52,12 +54,9 @@ class ShaderRD {
 	struct Version {
 		CharString uniforms;
 		CharString vertex_globals;
-		CharString vertex_code;
 		CharString compute_globals;
-		CharString compute_code;
-		CharString fragment_light;
 		CharString fragment_globals;
-		CharString fragment_code;
+		Map<StringName, CharString> code_sections;
 		Vector<CharString> custom_defines;
 
 		RID *variants; //same size as version defines
@@ -76,30 +75,43 @@ class ShaderRD {
 
 	RID_Owner<Version> version_owner;
 
-	CharString fragment_codev; //for version and extensions
-	CharString fragment_code0;
-	CharString fragment_code1;
-	CharString fragment_code2;
-	CharString fragment_code3;
-	CharString fragment_code4;
+	struct StageTemplate {
+		struct Chunk {
+			enum Type {
+				TYPE_VERSION_DEFINES,
+				TYPE_MATERIAL_UNIFORMS,
+				TYPE_VERTEX_GLOBALS,
+				TYPE_FRAGMENT_GLOBALS,
+				TYPE_COMPUTE_GLOBALS,
+				TYPE_CODE,
+				TYPE_TEXT
+			};
 
-	CharString vertex_codev; //for version and extensions
-	CharString vertex_code0;
-	CharString vertex_code1;
-	CharString vertex_code2;
-	CharString vertex_code3;
+			Type type;
+			StringName code;
+			CharString text;
+		};
+		LocalVector<Chunk> chunks;
+	};
 
 	bool is_compute = false;
-
-	CharString compute_codev; //for version and extensions
-	CharString compute_code0;
-	CharString compute_code1;
-	CharString compute_code2;
-	CharString compute_code3;
 
 	const char *name;
 
 	CharString base_compute_defines;
+
+	enum StageType {
+		STAGE_TYPE_VERTEX,
+		STAGE_TYPE_FRAGMENT,
+		STAGE_TYPE_COMPUTE,
+		STAGE_TYPE_MAX,
+	};
+
+	StageTemplate stage_templates[STAGE_TYPE_MAX];
+
+	void _build_variant_code(StringBuilder &p_builder, uint32_t p_variant, const Version *p_version, const StageTemplate &p_template);
+
+	void _add_stage(const char *p_code, StageType p_stage_type);
 
 protected:
 	ShaderRD();
@@ -108,8 +120,8 @@ protected:
 public:
 	RID version_create();
 
-	void version_set_code(RID p_version, const String &p_uniforms, const String &p_vertex_globals, const String &p_vertex_code, const String &p_fragment_globals, const String &p_fragment_light, const String &p_fragment_code, const Vector<String> &p_custom_defines);
-	void version_set_compute_code(RID p_version, const String &p_uniforms, const String &p_compute_globals, const String &p_compute_code, const Vector<String> &p_custom_defines);
+	void version_set_code(RID p_version, const Map<String, String> &p_code, const String &p_uniforms, const String &p_vertex_globals, const String &p_fragment_globals, const Vector<String> &p_custom_defines);
+	void version_set_compute_code(RID p_version, const Map<String, String> &p_code, const String &p_uniforms, const String &p_compute_globals, const Vector<String> &p_custom_defines);
 
 	_FORCE_INLINE_ RID version_get_shader(RID p_version, int p_variant) {
 		ERR_FAIL_INDEX_V(p_variant, variant_defines.size(), RID());

@@ -4781,6 +4781,7 @@ void RendererStorageRD::ParticlesShaderData::set_code(const String &p_code) {
 
 	ShaderCompilerRD::GeneratedCode gen_code;
 	ShaderCompilerRD::IdentifierActions actions;
+	actions.entry_point_stages["process"] = ShaderCompilerRD::STAGE_COMPUTE;
 
 	/*
 	uses_time = false;
@@ -4801,7 +4802,7 @@ void RendererStorageRD::ParticlesShaderData::set_code(const String &p_code) {
 		version = base_singleton->particles_shader.shader.version_create();
 	}
 
-	base_singleton->particles_shader.shader.version_set_compute_code(version, gen_code.uniforms, gen_code.compute_global, gen_code.compute, gen_code.defines);
+	base_singleton->particles_shader.shader.version_set_compute_code(version, gen_code.code, gen_code.uniforms, gen_code.stage_globals[ShaderCompilerRD::STAGE_COMPUTE], gen_code.defines);
 	ERR_FAIL_COND(!base_singleton->particles_shader.shader.version_is_valid(version));
 
 	ubo_size = gen_code.uniform_total_size;
@@ -8824,7 +8825,6 @@ RendererStorageRD::RendererStorageRD() {
 		sdf_versions.push_back(""); //one only
 		giprobe_sdf_shader.initialize(sdf_versions);
 		giprobe_sdf_shader_version = giprobe_sdf_shader.version_create();
-		giprobe_sdf_shader.version_set_compute_code(giprobe_sdf_shader_version, "", "", "", Vector<String>());
 		giprobe_sdf_shader_version_shader = giprobe_sdf_shader.version_get_shader(giprobe_sdf_shader_version, 0);
 		giprobe_sdf_shader_pipeline = RD::get_singleton()->compute_pipeline_create(giprobe_sdf_shader_version_shader);
 	}
@@ -8913,7 +8913,7 @@ RendererStorageRD::RendererStorageRD() {
 		// default material and shader for particles shader
 		particles_shader.default_shader = shader_allocate();
 		shader_initialize(particles_shader.default_shader);
-		shader_set_code(particles_shader.default_shader, "shader_type particles; void compute() { COLOR = vec4(1.0); } \n");
+		shader_set_code(particles_shader.default_shader, "shader_type particles; void process() { COLOR = vec4(1.0); } \n");
 		particles_shader.default_material = material_allocate();
 		material_initialize(particles_shader.default_material);
 		material_set_shader(particles_shader.default_material, particles_shader.default_shader);
