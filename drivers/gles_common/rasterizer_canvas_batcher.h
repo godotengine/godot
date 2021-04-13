@@ -1007,6 +1007,33 @@ PREAMBLE(void)::batch_initialize() {
 	bdata.settings_use_software_skinning = GLOBAL_GET("rendering/2d/options/use_software_skinning");
 	bdata.settings_ninepatch_mode = GLOBAL_GET("rendering/2d/options/ninepatch_mode");
 
+	// allow user to override the api usage techniques using project settings
+	int send_null_mode = GLOBAL_GET("rendering/2d/opengl/batching_send_null");
+	switch (send_null_mode) {
+		default: {
+			bdata.buffer_mode_batch_upload_send_null = true;
+		} break;
+		case 1: {
+			bdata.buffer_mode_batch_upload_send_null = false;
+		} break;
+		case 2: {
+			bdata.buffer_mode_batch_upload_send_null = true;
+		} break;
+	}
+
+	int stream_mode = GLOBAL_GET("rendering/2d/opengl/batching_stream");
+	switch (stream_mode) {
+		default: {
+			bdata.buffer_mode_batch_upload_flag_stream = false;
+		} break;
+		case 1: {
+			bdata.buffer_mode_batch_upload_flag_stream = false;
+		} break;
+		case 2: {
+			bdata.buffer_mode_batch_upload_flag_stream = true;
+		} break;
+	}
+
 	// alternatively only enable uv contract if pixel snap in use,
 	// but with this enable bool, it should not be necessary
 	bdata.settings_uv_contract = GLOBAL_GET("rendering/batching/precision/uv_contract");

@@ -6420,6 +6420,19 @@ void RasterizerStorageGLES2::initialize() {
 	GLOBAL_DEF_RST("rendering/quality/lightmapping/use_bicubic_sampling", true);
 	GLOBAL_DEF_RST("rendering/quality/lightmapping/use_bicubic_sampling.mobile", false);
 	config.use_lightmap_filter_bicubic = GLOBAL_GET("rendering/quality/lightmapping/use_bicubic_sampling");
+
+	int orphan_mode = GLOBAL_GET("rendering/2d/opengl/legacy_orphan_buffers");
+	switch (orphan_mode) {
+		default: {
+			config.should_orphan = true;
+		} break;
+		case 1: {
+			config.should_orphan = false;
+		} break;
+		case 2: {
+			config.should_orphan = true;
+		} break;
+	}
 }
 
 void RasterizerStorageGLES2::finalize() {
