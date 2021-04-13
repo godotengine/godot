@@ -1,0 +1,50 @@
+name: "CodeQL"
+
+on:
+  push:
+    branches: [ master, 3.x ]
+
+env:
+  GODOT_BASE_BRANCH: master
+  SCONS_CACHE_LIMIT: 4096
+
+jobs:
+  analyze:
+    name: Analyze
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [ 'cpp', 'python' ]
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Initialize CodeQL
+      uses: github/codeql-action/init@v1
+      with:
+        languages: ${{ matrix.language }}
+
+    - name: Fetch dependencies
+      run: sudo apt-get install build-essential scons pkg-config libx11-dev libxcursor-dev libxinerama-dev libgl1-mesa-dev libglu-dev libasound2-dev libpulse-dev libxi-dev libxrandr-dev yasm
+
+    - name: Load .scons_cache directory
+      id: codeql-cache
+      uses: actions/cache@v2
+      with:
+        path: ${{github.workspace}}/.scons_cache/
+        key: ${{github.job}}-${{env.GODOT_BASE_BRANCH}}-${{github.ref}}-${{github.sha}}
+        restore-keys: |
+          ${{github.job}}-${{env.GODOT_BASE_BRANCH}}-${{github.ref}}-${{github.sha}}
+          ${{github.job}}-${{env.GODOT_BASE_BRANCH}}-${{github.ref}}
+          ${{github.job}}-${{env.GODOT_BASE_BRANCH}}
+
+    - name: Build Godot
+      env:
+          SCONS_CACHE: ${{github.workspace}}/.scons_cache/
+      run: scons platform=x11 target=release_debug udev=no -j 2
+
+    - name: Perform CodeQL Analysis
+      uses: github/codeql-action/analyze@v1
