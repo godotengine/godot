@@ -3293,6 +3293,7 @@ Error GLTFDocument::_serialize_materials(Ref<GLTFState> state) {
 				}
 				img->decompress();
 				img->convert(Image::FORMAT_RGBA8);
+				img->convert_ra_rgba8_to_rg();
 				for (int32_t y = 0; y < img->get_height(); y++) {
 					for (int32_t x = 0; x < img->get_width(); x++) {
 						Color c = img->get_pixel(x, y);
