@@ -645,7 +645,7 @@ bool BodySoftBodyPair3DSW::setup(real_t p_step) {
 		c.depth = depth;
 
 		Vector3 j_vec = c.normal * c.acc_normal_impulse + c.acc_tangent_impulse;
-		body->apply_impulse(c.rA + body->get_center_of_mass(), -j_vec);
+		body->apply_impulse(-j_vec, c.rA + body->get_center_of_mass());
 		soft_body->apply_node_impulse(c.index_B, j_vec);
 		c.acc_bias_impulse = 0;
 		c.acc_bias_impulse_center_of_mass = 0;
@@ -691,7 +691,7 @@ void BodySoftBodyPair3DSW::solve(real_t p_step) {
 
 			Vector3 jb = c.normal * (c.acc_bias_impulse - jbnOld);
 
-			body->apply_bias_impulse(c.rA + body->get_center_of_mass(), -jb, MAX_BIAS_ROTATION / p_step);
+			body->apply_bias_impulse(-jb, c.rA + body->get_center_of_mass(), MAX_BIAS_ROTATION / p_step);
 			soft_body->apply_node_bias_impulse(c.index_B, jb);
 
 			crbA = body->get_biased_angular_velocity().cross(c.rA);
@@ -706,8 +706,8 @@ void BodySoftBodyPair3DSW::solve(real_t p_step) {
 
 				Vector3 jb_com = c.normal * (c.acc_bias_impulse_center_of_mass - jbnOld_com);
 
-				body->apply_bias_impulse(body->get_center_of_mass(), -jb_com, 0.0f);
-				soft_body->apply_node_bias_impulse(c.index_B, -jb_com);
+				body->apply_bias_impulse(-jb_com, body->get_center_of_mass(), 0.0f);
+				soft_body->apply_node_bias_impulse(c.index_B, jb_com);
 			}
 
 			c.active = true;
@@ -726,7 +726,7 @@ void BodySoftBodyPair3DSW::solve(real_t p_step) {
 
 			Vector3 j = c.normal * (c.acc_normal_impulse - jnOld);
 
-			body->apply_impulse(c.rA + body->get_center_of_mass(), -j);
+			body->apply_impulse(-j, c.rA + body->get_center_of_mass());
 			soft_body->apply_node_impulse(c.index_B, j);
 
 			c.active = true;
@@ -767,7 +767,7 @@ void BodySoftBodyPair3DSW::solve(real_t p_step) {
 
 			jt = c.acc_tangent_impulse - jtOld;
 
-			body->apply_impulse(c.rA + body->get_center_of_mass(), -jt);
+			body->apply_impulse(-jt, c.rA + body->get_center_of_mass());
 			soft_body->apply_node_impulse(c.index_B, jt);
 
 			c.active = true;
