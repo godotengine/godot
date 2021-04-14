@@ -89,15 +89,16 @@ will limit its functionality to IPv4 only.
 ## etcpak
 
 - Upstream: https://github.com/wolfpld/etcpak
-- Version: git (403d38b3f1cb347c196d845d0a05e44a00d17169, 2021)
+- Version: git (f27daea656ff77671580f838a889e33049430ebd, 2021)
 - License: BSD-3-Clause
-
-Important: Some Godot-made changes, see `patches` folders.
 
 Files extracted from upstream source:
 
-- All `.cpp` and `.hpp` files in the root folder except `Application.cpp`.
-- `lz4` folder.
+- Only the files relevant for compression (i.e. `Process*.cpp` and their deps):
+  ```
+  Dither.{cpp,hpp} ForceInline.hpp Math.hpp ProcessCommon.hpp ProcessRGB.{cpp,hpp}
+  ProcessDxtc.{cpp,hpp} Tables.{cpp,hpp} Vector.hpp
+  ```
 - `AUTHORS.txt` and `LICENSE.txt`
 
 ## fonts
