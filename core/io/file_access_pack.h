@@ -36,6 +36,7 @@
 #include "core/os/dir_access.h"
 #include "core/os/file_access.h"
 #include "core/print_string.h"
+#include "core/set.h"
 
 // Godot's packed file magic header ("GDPC" in ASCII).
 #define PACK_HEADER_MAGIC 0x43504447
