@@ -35,6 +35,10 @@
 #include "rendering_server_default.h"
 #include "rendering_server_globals.h"
 
+#if defined(ANDROID_ENABLED)
+#include "platform/android/vulkan/android_pre_rotation.h"
+#endif
+
 #include <new>
 
 /* CAMERA API */
@@ -2196,6 +2200,13 @@ void RendererSceneCull::render_camera(RID p_render_buffers, RID p_camera, RID p_
 	/* STEP 1 - SETUP CAMERA */
 	CameraMatrix camera_matrix;
 	bool ortho = false;
+	bool vaspect = camera->vaspect;
+
+#if defined(ANDROID_ENABLED)
+	if (AndroidPreRotation::get_instance().is_size_swap_required()) {
+		vaspect = !vaspect;
+	}
+#endif
 
 	switch (camera->type) {
 		case Camera::ORTHOGONAL: {
@@ -2204,7 +2215,7 @@ void RendererSceneCull::render_camera(RID p_render_buffers, RID p_camera, RID p_
 					p_viewport_size.width / (float)p_viewport_size.height,
 					camera->znear,
 					camera->zfar,
-					camera->vaspect);
+					vaspect);
 			ortho = true;
 		} break;
 		case Camera::PERSPECTIVE: {
@@ -2213,7 +2224,7 @@ void RendererSceneCull::render_camera(RID p_render_buffers, RID p_camera, RID p_
 					p_viewport_size.width / (float)p_viewport_size.height,
 					camera->znear,
 					camera->zfar,
-					camera->vaspect);
+					vaspect);
 			ortho = false;
 
 		} break;
@@ -2224,17 +2235,24 @@ void RendererSceneCull::render_camera(RID p_render_buffers, RID p_camera, RID p_
 					camera->offset,
 					camera->znear,
 					camera->zfar,
-					camera->vaspect);
+					vaspect);
 			ortho = false;
 		} break;
 	}
+
+#if defined(ANDROID_ENABLED)
+	if (AndroidPreRotation::get_instance().is_pre_rotation_required()) {
+		camera_matrix = camera_matrix * AndroidPreRotation::get_instance().get_pre_rotation_transform();
+	}
+#endif
 
 	RID environment = _render_get_environment(p_camera, p_scenario);
 
 	RENDER_TIMESTAMP("Update occlusion buffer")
 	RendererSceneOcclusionCull::get_singleton()->buffer_update(p_viewport, camera->transform, camera_matrix, ortho, RendererThreadPool::singleton->thread_work_pool);
 
-	_render_scene(camera->transform, camera_matrix, ortho, camera->vaspect, p_render_buffers, environment, camera->effects, camera->visible_layers, p_scenario, p_viewport, p_shadow_atlas, RID(), -1, p_screen_lod_threshold);
+	_render_scene(camera->transform, camera_matrix, ortho, vaspect, p_render_buffers, environment, camera->effects, camera->visible_layers, p_scenario, p_viewport, p_shadow_atlas, RID(), -1, p_screen_lod_threshold);
+
 #endif
 }
 

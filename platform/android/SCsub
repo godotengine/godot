@@ -19,6 +19,7 @@ android_files = [
     "android_keys_utils.cpp",
     "display_server_android.cpp",
     "vulkan/vulkan_context_android.cpp",
+    "vulkan/android_pre_rotation.cpp",
 ]
 
 env_android = env.Clone()

@@ -46,6 +46,11 @@ public:
 
 protected:
 	bool _use_validation_layers() override;
+
+	void _choose_window_and_swap_chain_extent_(
+			const VkExtent2D &currentWindowExtent, const VkSurfaceCapabilitiesKHR &surfCapabilities, VkExtent2D *windowExtent, VkExtent2D *swapChainExtent) override;
+
+	VkSurfaceTransformFlagBitsKHR _choose_pre_transform_(const VkSurfaceCapabilitiesKHR &surfCapabilities) override;
 };
 
 #endif // VULKAN_CONTEXT_ANDROID_H

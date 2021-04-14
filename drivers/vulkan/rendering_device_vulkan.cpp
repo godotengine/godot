@@ -5870,6 +5870,11 @@ RenderingDevice::DrawListID RenderingDeviceVulkan::draw_list_begin_for_screen(Di
 	clear_value.color.float32[2] = p_clear_color.b;
 	clear_value.color.float32[3] = p_clear_color.a;
 
+	clear_value.color.float32[0] = 1;
+	clear_value.color.float32[1] = 0;
+	clear_value.color.float32[2] = 0;
+	clear_value.color.float32[3] = 1;
+
 	render_pass_begin.pClearValues = &clear_value;
 
 	vkCmdBeginRenderPass(command_buffer, &render_pass_begin, VK_SUBPASS_CONTENTS_INLINE);
