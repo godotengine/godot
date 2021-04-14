@@ -1345,7 +1345,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_color("folder_icon_modulate", "FileDialog", (dark_theme ? Color(1, 1, 1) : Color(4.25, 4.25, 4.25)).lerp(accent_color, 0.7));
 	theme->set_color("files_disabled", "FileDialog", font_disabled_color);
 
-	// color picker
+	// ColorPicker
 	theme->set_constant("margin", "ColorPicker", popup_margin_size);
 	theme->set_constant("sv_width", "ColorPicker", 256 * EDSCALE);
 	theme->set_constant("sv_height", "ColorPicker", 256 * EDSCALE);
@@ -1358,6 +1358,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_icon("bar_arrow", "ColorPicker", theme->get_icon("ColorPickerBarArrow", "EditorIcons"));
 	theme->set_icon("picker_cursor", "ColorPicker", theme->get_icon("PickerCursor", "EditorIcons"));
 
+	// ColorPickerButton
 	theme->set_icon("bg", "ColorPickerButton", theme->get_icon("GuiMiniCheckerboard", "EditorIcons"));
 
 	// Information on 3D viewport

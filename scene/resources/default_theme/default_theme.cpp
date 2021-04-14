@@ -863,6 +863,8 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_icon("bar_arrow", "ColorPicker", make_icon(bar_arrow_png));
 	theme->set_icon("picker_cursor", "ColorPicker", make_icon(picker_cursor_png));
 
+	// ColorPickerButton
+
 	theme->set_icon("bg", "ColorPickerButton", make_icon(mini_checkerboard_png));
 
 	// TooltipPanel
