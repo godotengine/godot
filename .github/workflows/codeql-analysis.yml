@@ -6,7 +6,7 @@ on:
 
 env:
   GODOT_BASE_BRANCH: master
-  SCONS_CACHE_LIMIT: 4096
+  SCONS_CACHE_LIMIT: 8192
 
 jobs:
   analyze:
