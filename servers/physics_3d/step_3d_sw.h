@@ -33,13 +33,18 @@
 
 #include "space_3d_sw.h"
 
+#include "core/templates/local_vector.h"
+
 class Step3DSW {
 	uint64_t _step;
 
-	void _populate_island(Body3DSW *p_body, Body3DSW **p_island, Constraint3DSW **p_constraint_island);
-	void _setup_island(Constraint3DSW *p_island, real_t p_delta);
-	void _solve_island(Constraint3DSW *p_island, int p_iterations, real_t p_delta);
-	void _check_suspend(Body3DSW *p_island, real_t p_delta);
+	LocalVector<LocalVector<Body3DSW *>> body_islands;
+	LocalVector<LocalVector<Constraint3DSW *>> constraint_islands;
+
+	void _populate_island(Body3DSW *p_body, LocalVector<Body3DSW *> &p_body_island, LocalVector<Constraint3DSW *> &p_constraint_island);
+	void _setup_island(LocalVector<Constraint3DSW *> &p_constraint_island, real_t p_delta);
+	void _solve_island(LocalVector<Constraint3DSW *> &p_constraint_island, int p_iterations, real_t p_delta);
+	void _check_suspend(const LocalVector<Body3DSW *> &p_body_island, real_t p_delta);
 
 public:
 	void step(Space3DSW *p_space, real_t p_delta, int p_iterations);
