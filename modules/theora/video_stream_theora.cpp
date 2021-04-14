@@ -617,10 +617,9 @@ float VideoStreamPlaybackTheora::get_playback_position() const {
 	return get_time();
 };
 
-void VideoStreamPlaybackTheora::seek(float p_time){
-
-	// no
-};
+void VideoStreamPlaybackTheora::seek(float p_time) {
+	WARN_PRINT_ONCE("Seeking in Theora and WebM videos is not implemented yet (it's only supported for GDNative-provided video streams).");
+}
 
 void VideoStreamPlaybackTheora::set_mix_callback(AudioMixCallback p_callback, void *p_userdata) {
 
