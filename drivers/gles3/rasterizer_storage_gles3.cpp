@@ -5105,11 +5105,13 @@ void RasterizerStorageGLES3::update_dirty_multimeshes() {
 
 			glBindBuffer(GL_ARRAY_BUFFER, multimesh->buffer);
 			uint32_t buffer_size = multimesh->data.size() * sizeof(float);
-			if (config.should_orphan) {
-				glBufferData(GL_ARRAY_BUFFER, buffer_size, multimesh->data.ptr(), GL_DYNAMIC_DRAW);
-			} else {
-				glBufferSubData(GL_ARRAY_BUFFER, 0, buffer_size, multimesh->data.ptr());
-			}
+
+			// this could potentially have a project setting for API options as with 2d
+			// if (config.should_orphan) {
+			glBufferData(GL_ARRAY_BUFFER, buffer_size, multimesh->data.ptr(), GL_DYNAMIC_DRAW);
+			//	} else {
+			//	glBufferSubData(GL_ARRAY_BUFFER, 0, buffer_size, multimesh->data.ptr());
+			//	}
 			glBindBuffer(GL_ARRAY_BUFFER, 0);
 		}
 
@@ -8651,6 +8653,19 @@ void RasterizerStorageGLES3::initialize() {
 				config.use_depth_prepass = false;
 			}
 		}
+	}
+
+	int orphan_mode = GLOBAL_GET("rendering/2d/opengl/legacy_orphan_buffers");
+	switch (orphan_mode) {
+		default: {
+			config.should_orphan = true;
+		} break;
+		case 1: {
+			config.should_orphan = false;
+		} break;
+		case 2: {
+			config.should_orphan = true;
+		} break;
 	}
 }
 

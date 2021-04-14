@@ -1137,11 +1137,17 @@ void RasterizerCanvasBaseGLES3::draw_window_margins(int *black_margin, RID *blac
 
 void RasterizerCanvasBaseGLES3::initialize() {
 
-	bool flag_stream = false;
-	if (flag_stream) {
-		_buffer_upload_usage_flag = GL_STREAM_DRAW;
-	} else {
-		_buffer_upload_usage_flag = GL_DYNAMIC_DRAW;
+	int flag_stream_mode = GLOBAL_GET("rendering/2d/opengl/legacy_stream");
+	switch (flag_stream_mode) {
+		default: {
+			_buffer_upload_usage_flag = GL_STREAM_DRAW;
+		} break;
+		case 1: {
+			_buffer_upload_usage_flag = GL_DYNAMIC_DRAW;
+		} break;
+		case 2: {
+			_buffer_upload_usage_flag = GL_STREAM_DRAW;
+		} break;
 	}
 
 	{

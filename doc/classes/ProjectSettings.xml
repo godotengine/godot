@@ -1034,6 +1034,22 @@
 			Fix to improve physics jitter, specially on monitors where refresh rate is different than the physics FPS.
 			[b]Note:[/b] This property is only read when the project starts. To change the physics FPS at runtime, set [member Engine.physics_jitter_fix] instead.
 		</member>
+		<member name="rendering/2d/opengl/batching_send_null" type="int" setter="" getter="" default="0">
+			[b]Experimental[/b] Calls [code]glBufferData[/code] with NULL data prior to uploading batching data. This may not be necessary but can be used for safety.
+			[b]Note:[/b] Use with care. You are advised to leave this as default for exports. A non-default setting that works better on your machine may adversely affect performance for end users.
+		</member>
+		<member name="rendering/2d/opengl/batching_stream" type="int" setter="" getter="" default="0">
+			[b]Experimental[/b] If set to on, uses the [code]GL_STREAM_DRAW[/code] flag for batching buffer uploads. If off, uses the [code]GL_DYNAMIC_DRAW[/code] flag.
+			[b]Note:[/b] Use with care. You are advised to leave this as default for exports. A non-default setting that works better on your machine may adversely affect performance for end users.
+		</member>
+		<member name="rendering/2d/opengl/legacy_orphan_buffers" type="int" setter="" getter="" default="0">
+			[b]Experimental[/b] If set to on, this applies buffer orphaning - [code]glBufferData[/code] is called with NULL data and the full buffer size prior to uploading new data. This can be important to avoid stalling on some hardware.
+			[b]Note:[/b] Use with care. You are advised to leave this as default for exports. A non-default setting that works better on your machine may adversely affect performance for end users.
+		</member>
+		<member name="rendering/2d/opengl/legacy_stream" type="int" setter="" getter="" default="0">
+			[b]Experimental[/b] If set to on, uses the [code]GL_STREAM_DRAW[/code] flag for legacy buffer uploads. If off, uses the [code]GL_DYNAMIC_DRAW[/code] flag.
+			[b]Note:[/b] Use with care. You are advised to leave this as default for exports. A non-default setting that works better on your machine may adversely affect performance for end users.
+		</member>
 		<member name="rendering/2d/options/ninepatch_mode" type="int" setter="" getter="" default="1">
 			Choose between fixed mode where corner scalings are preserved matching the artwork, and scaling mode.
 			Not available in GLES3 when [member rendering/batching/options/use_batching] is off.

@@ -2454,6 +2454,15 @@ VisualServer::VisualServer() {
 	GLOBAL_DEF_RST("rendering/2d/options/ninepatch_mode", 1);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/2d/options/ninepatch_mode", PropertyInfo(Variant::INT, "rendering/2d/options/ninepatch_mode", PROPERTY_HINT_ENUM, "Fixed,Scaling"));
 
+	GLOBAL_DEF_RST("rendering/2d/opengl/batching_send_null", 0);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/2d/opengl/batching_send_null", PropertyInfo(Variant::INT, "rendering/2d/opengl/batching_send_null", PROPERTY_HINT_ENUM, "Default (On),Off,On"));
+	GLOBAL_DEF_RST("rendering/2d/opengl/batching_stream", 0);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/2d/opengl/batching_stream", PropertyInfo(Variant::INT, "rendering/2d/opengl/batching_stream", PROPERTY_HINT_ENUM, "Default (Off),Off,On"));
+	GLOBAL_DEF_RST("rendering/2d/opengl/legacy_orphan_buffers", 0);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/2d/opengl/legacy_orphan_buffers", PropertyInfo(Variant::INT, "rendering/2d/opengl/legacy_orphan_buffers", PROPERTY_HINT_ENUM, "Default (On),Off,On"));
+	GLOBAL_DEF_RST("rendering/2d/opengl/legacy_stream", 0);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/2d/opengl/legacy_stream", PropertyInfo(Variant::INT, "rendering/2d/opengl/legacy_stream", PROPERTY_HINT_ENUM, "Default (On),Off,On"));
+
 	GLOBAL_DEF("rendering/batching/options/use_batching", true);
 	GLOBAL_DEF_RST("rendering/batching/options/use_batching_in_editor", true);
 	GLOBAL_DEF("rendering/batching/options/single_rect_fallback", false);
