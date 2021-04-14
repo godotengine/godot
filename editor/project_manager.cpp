@@ -1915,9 +1915,6 @@ void ProjectManager::_unhandled_key_input(const Ref<InputEvent> &p_ev) {
 			case KEY_ENTER: {
 				_open_selected_projects_ask();
 			} break;
-			case KEY_DELETE: {
-				_erase_project();
-			} break;
 			case KEY_HOME: {
 				if (_project_list->get_project_count() > 0) {
 					_project_list->select_project(0);
@@ -2543,16 +2540,19 @@ ProjectManager::ProjectManager() {
 
 		Button *create = memnew(Button);
 		create->set_text(TTR("New Project"));
+		create->set_shortcut(ED_SHORTCUT("project_manager/new_project", TTR("New Project"), KEY_MASK_CMD | KEY_N));
 		create->connect("pressed", callable_mp(this, &ProjectManager::_new_project));
 		tree_vb->add_child(create);
 
 		Button *import = memnew(Button);
 		import->set_text(TTR("Import"));
+		import->set_shortcut(ED_SHORTCUT("project_manager/import_project", TTR("Import Project"), KEY_MASK_CMD | KEY_I));
 		import->connect("pressed", callable_mp(this, &ProjectManager::_import_project));
 		tree_vb->add_child(import);
 
 		Button *scan = memnew(Button);
 		scan->set_text(TTR("Scan"));
+		scan->set_shortcut(ED_SHORTCUT("project_manager/scan_projects", TTR("Scan Projects"), KEY_MASK_CMD | KEY_S));
 		scan->connect("pressed", callable_mp(this, &ProjectManager::_scan_projects));
 		tree_vb->add_child(scan);
 
@@ -2560,21 +2560,25 @@ ProjectManager::ProjectManager() {
 
 		open_btn = memnew(Button);
 		open_btn->set_text(TTR("Edit"));
+		open_btn->set_shortcut(ED_SHORTCUT("project_manager/edit_project", TTR("Edit Project"), KEY_MASK_CMD | KEY_E));
 		open_btn->connect("pressed", callable_mp(this, &ProjectManager::_open_selected_projects_ask));
 		tree_vb->add_child(open_btn);
 
 		run_btn = memnew(Button);
 		run_btn->set_text(TTR("Run"));
+		run_btn->set_shortcut(ED_SHORTCUT("project_manager/run_project", TTR("Run Project"), KEY_MASK_CMD | KEY_R));
 		run_btn->connect("pressed", callable_mp(this, &ProjectManager::_run_project));
 		tree_vb->add_child(run_btn);
 
 		rename_btn = memnew(Button);
 		rename_btn->set_text(TTR("Rename"));
+		rename_btn->set_shortcut(ED_SHORTCUT("project_manager/rename_project", TTR("Rename Project"), KEY_F2));
 		rename_btn->connect("pressed", callable_mp(this, &ProjectManager::_rename_project));
 		tree_vb->add_child(rename_btn);
 
 		erase_btn = memnew(Button);
 		erase_btn->set_text(TTR("Remove"));
+		erase_btn->set_shortcut(ED_SHORTCUT("project_manager/remove_project", TTR("Remove Project"), KEY_DELETE));
 		erase_btn->connect("pressed", callable_mp(this, &ProjectManager::_erase_project));
 		tree_vb->add_child(erase_btn);
 
