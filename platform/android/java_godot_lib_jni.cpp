@@ -46,6 +46,7 @@
 #include "main/main.h"
 #include "net_socket_android.h"
 #include "os_android.h"
+#include "platform/android/vulkan/android_pre_rotation.h"
 #include "string_android.h"
 #include "thread_jandroid.h"
 
@@ -53,6 +54,8 @@
 #include <unistd.h>
 
 #include <android/native_window_jni.h>
+#include <algorithm>
+#include <mutex>
 
 static JavaClassWrapper *java_class_wrapper = nullptr;
 static OS_Android *os_android = nullptr;
@@ -171,7 +174,14 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_resize(JNIEnv *env, j
 				os_android->set_native_window(native_window);
 
 				DisplayServerAndroid::get_singleton()->reset_window();
-				DisplayServerAndroid::get_singleton()->notify_surface_changed(p_width, p_height);
+
+				int width = p_width;
+				int height = p_height;
+				if (AndroidPreRotation::get_instance().is_size_swap_required()) {
+					std::swap(width, height);
+				}
+
+				DisplayServerAndroid::get_singleton()->notify_surface_changed(width, height);
 			}
 		}
 	}

@@ -35,6 +35,10 @@
 #include "rendering_server_default.h"
 #include "rendering_server_globals.h"
 
+#if defined(ANDROID_ENABLED)
+#include "platform/android/vulkan/android_pre_rotation.h"
+#endif
+
 #include <new>
 
 /* CAMERA API */
@@ -2436,6 +2440,12 @@ void RendererSceneCull::render_camera(RID p_render_buffers, RID p_camera, RID p_
 		bool vaspect = camera->vaspect;
 		bool is_ortogonal = false;
 
+#if defined(ANDROID_ENABLED)
+		if (AndroidPreRotation::get_instance().is_size_swap_required()) {
+			vaspect = !vaspect;
+		}
+#endif
+
 		switch (camera->type) {
 			case Camera::ORTHOGONAL: {
 				projection.set_orthogonal(
@@ -2465,6 +2475,12 @@ void RendererSceneCull::render_camera(RID p_render_buffers, RID p_camera, RID p_
 						camera->vaspect);
 			} break;
 		}
+
+#if defined(ANDROID_ENABLED)
+		if (AndroidPreRotation::get_instance().is_pre_rotation_required()) {
+			projection = projection * AndroidPreRotation::get_instance().get_pre_rotation_transform();
+		}
+#endif
 
 		camera_data.set_camera(transform, projection, is_ortogonal, vaspect);
 	} else {

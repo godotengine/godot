@@ -225,6 +225,14 @@ protected:
 
 	virtual Error _window_create(DisplayServer::WindowID p_window_id, DisplayServer::VSyncMode p_vsync_mode, VkSurfaceKHR p_surface, int p_width, int p_height);
 
+	/**
+	 * TODO: doc
+	 */
+	virtual void _choose_window_and_swap_chain_extent_(
+			const VkExtent2D &currentWindowExtent, const VkSurfaceCapabilitiesKHR &surfCapabilities, VkExtent2D *windowExtent, VkExtent2D *swapChainExtent);
+
+	virtual VkSurfaceTransformFlagBitsKHR _choose_pre_transform_(const VkSurfaceCapabilitiesKHR &surfCapabilities);
+
 	virtual bool _use_validation_layers();
 
 	Error _get_preferred_validation_layers(uint32_t *count, const char *const **names);

@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  vulkan_context_android.h                                             */
+/*  android_pre_rotation.h                                               */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,29 +28,39 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef VULKAN_CONTEXT_ANDROID_H
-#define VULKAN_CONTEXT_ANDROID_H
+#ifndef ANDROID_PRE_ROTATION_H
+#define ANDROID_PRE_ROTATION_H
 
-#include "drivers/vulkan/vulkan_context.h"
+#include "core/math/transform_3d.h"
 
-struct ANativeWindow;
+#include <vulkan/vulkan.h>
 
-class VulkanContextAndroid : public VulkanContext {
-	virtual const char *_get_platform_surface_extension() const override;
-
+class AndroidPreRotation {
 public:
-	int window_create(ANativeWindow *p_window, DisplayServer::VSyncMode p_vsync_mode, int p_width, int p_height);
+	static AndroidPreRotation &get_instance();
 
-	VulkanContextAndroid() = default;
-	~VulkanContextAndroid() override = default;
+	AndroidPreRotation(AndroidPreRotation const &) = delete;
+	void operator=(AndroidPreRotation const &) = delete;
 
-protected:
-	bool _use_validation_layers() override;
+	void set_current_transform(VkSurfaceTransformFlagBitsKHR currentTransform);
 
-	void _choose_window_and_swap_chain_extent_(
-			const VkExtent2D &currentWindowExtent, const VkSurfaceCapabilitiesKHR &surfCapabilities, VkExtent2D *windowExtent, VkExtent2D *swapChainExtent) override;
+	bool is_pre_rotation_required() const;
 
-	VkSurfaceTransformFlagBitsKHR _choose_pre_transform_(const VkSurfaceCapabilitiesKHR &surfCapabilities) override;
+	bool is_size_swap_required() const;
+
+	const Transform3D &get_pre_rotation_transform() const;
+
+private:
+	AndroidPreRotation();
+	~AndroidPreRotation() = default;
+
+	bool isPreRotationRequired{};
+	bool isSizeSwapRequired{};
+
+	Transform3D rotation90;
+	Transform3D rotation180;
+	Transform3D rotation270;
+	Transform3D currentRotation;
 };
 
-#endif // VULKAN_CONTEXT_ANDROID_H
+#endif // ANDROID_PRE_ROTATION_H

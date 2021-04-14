@@ -41,6 +41,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <algorithm>
 #include <vector>
 
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof(a[0]))
@@ -1301,6 +1302,32 @@ Error VulkanContext::_clean_up_swap_chain(Window *window) {
 	return OK;
 }
 
+void VulkanContext::_choose_window_and_swap_chain_extent_(
+		const VkExtent2D &currentWindowExtent, const VkSurfaceCapabilitiesKHR &surfCapabilities, VkExtent2D *windowExtent, VkExtent2D *swapChainExtent) {
+	// width and height are either both 0xFFFFFFFF, or both not 0xFFFFFFFF.
+	if (surfCapabilities.currentExtent.width == 0xFFFFFFFF) {
+		// If the surface size is undefined, the size is set to the size
+		// of the images requested, which must fit within the minimum and
+		// maximum values.
+		swapChainExtent->width = std::clamp(currentWindowExtent.width, surfCapabilities.minImageExtent.width, surfCapabilities.maxImageExtent.width);
+		swapChainExtent->height = std::clamp(currentWindowExtent.height, surfCapabilities.minImageExtent.height, surfCapabilities.maxImageExtent.height);
+
+		*windowExtent = currentWindowExtent;
+	} else {
+		// If the surface size is defined, the swap chain size must match
+		*swapChainExtent = surfCapabilities.currentExtent;
+		*windowExtent = surfCapabilities.currentExtent;
+	}
+}
+
+VkSurfaceTransformFlagBitsKHR VulkanContext::_choose_pre_transform_(const VkSurfaceCapabilitiesKHR &surfCapabilities) {
+	if (surfCapabilities.supportedTransforms & VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR) {
+		return VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR;
+	} else {
+		return surfCapabilities.currentTransform;
+	}
+}
+
 Error VulkanContext::_update_swap_chain(Window *window) {
 	VkResult err;
 
@@ -1325,37 +1352,19 @@ Error VulkanContext::_update_swap_chain(Window *window) {
 	}
 
 	VkExtent2D swapchainExtent;
-	// width and height are either both 0xFFFFFFFF, or both not 0xFFFFFFFF.
-	if (surfCapabilities.currentExtent.width == 0xFFFFFFFF) {
-		// If the surface size is undefined, the size is set to the size
-		// of the images requested, which must fit within the minimum and
-		// maximum values.
-		swapchainExtent.width = window->width;
-		swapchainExtent.height = window->height;
-
-		if (swapchainExtent.width < surfCapabilities.minImageExtent.width) {
-			swapchainExtent.width = surfCapabilities.minImageExtent.width;
-		} else if (swapchainExtent.width > surfCapabilities.maxImageExtent.width) {
-			swapchainExtent.width = surfCapabilities.maxImageExtent.width;
-		}
-
-		if (swapchainExtent.height < surfCapabilities.minImageExtent.height) {
-			swapchainExtent.height = surfCapabilities.minImageExtent.height;
-		} else if (swapchainExtent.height > surfCapabilities.maxImageExtent.height) {
-			swapchainExtent.height = surfCapabilities.maxImageExtent.height;
-		}
-	} else {
-		// If the surface size is defined, the swap chain size must match
-		swapchainExtent = surfCapabilities.currentExtent;
-		window->width = surfCapabilities.currentExtent.width;
-		window->height = surfCapabilities.currentExtent.height;
-	}
+	VkExtent2D windowExtent;
+	_choose_window_and_swap_chain_extent_(
+			{ static_cast<uint32_t>(window->width), static_cast<uint32_t>(window->height) },
+			surfCapabilities, &windowExtent, &swapchainExtent);
+	window->width = windowExtent.width;
+	window->height = windowExtent.height;
 
 	if (window->width == 0 || window->height == 0) {
 		free(presentModes);
 		//likely window minimized, no swapchain created
 		return OK;
 	}
+
 	// The FIFO present mode is guaranteed by the spec to be supported
 	// and to have no tearing.  It's a great default present mode to use.
 
@@ -1436,12 +1445,7 @@ Error VulkanContext::_update_swap_chain(Window *window) {
 		desiredNumOfSwapchainImages = surfCapabilities.maxImageCount;
 	}
 
-	VkSurfaceTransformFlagsKHR preTransform;
-	if (surfCapabilities.supportedTransforms & VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR) {
-		preTransform = VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR;
-	} else {
-		preTransform = surfCapabilities.currentTransform;
-	}
+	VkSurfaceTransformFlagBitsKHR preTransform = _choose_pre_transform_(surfCapabilities);
 
 	// Find a supported composite alpha mode - one of these is guaranteed to be set
 	VkCompositeAlphaFlagBitsKHR compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
@@ -1475,7 +1479,7 @@ Error VulkanContext::_update_swap_chain(Window *window) {
 		/*imageSharingMode*/ VK_SHARING_MODE_EXCLUSIVE,
 		/*queueFamilyIndexCount*/ 0,
 		/*pQueueFamilyIndices*/ nullptr,
-		/*preTransform*/ (VkSurfaceTransformFlagBitsKHR)preTransform,
+		/*preTransform*/ preTransform,
 		/*compositeAlpha*/ compositeAlpha,
 		/*presentMode*/ window->presentMode,
 		/*clipped*/ true,

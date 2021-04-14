@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  vulkan_context_android.h                                             */
+/*  android_pre_rotation.cpp                                             */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,29 +28,54 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef VULKAN_CONTEXT_ANDROID_H
-#define VULKAN_CONTEXT_ANDROID_H
+#include "android_pre_rotation.h"
 
-#include "drivers/vulkan/vulkan_context.h"
+AndroidPreRotation::AndroidPreRotation() {
+	const Vector3 axis(0, 0, -1);
 
-struct ANativeWindow;
+	rotation90.rotate(axis, Math_PI / 2.0f);
+	rotation180.rotate(axis, Math_PI);
+	rotation270.rotate(axis, Math_PI + Math_PI / 2.0f);
+}
 
-class VulkanContextAndroid : public VulkanContext {
-	virtual const char *_get_platform_surface_extension() const override;
+AndroidPreRotation &AndroidPreRotation::get_instance() {
+	static AndroidPreRotation instance;
 
-public:
-	int window_create(ANativeWindow *p_window, DisplayServer::VSyncMode p_vsync_mode, int p_width, int p_height);
+	return instance;
+}
 
-	VulkanContextAndroid() = default;
-	~VulkanContextAndroid() override = default;
+void AndroidPreRotation::set_current_transform(VkSurfaceTransformFlagBitsKHR currentTransform) {
+	isPreRotationRequired = true;
+	isSizeSwapRequired = false;
 
-protected:
-	bool _use_validation_layers() override;
+	switch (currentTransform) {
+		case VK_SURFACE_TRANSFORM_ROTATE_90_BIT_KHR:
+			currentRotation = rotation90;
+			isSizeSwapRequired = true;
+			break;
 
-	void _choose_window_and_swap_chain_extent_(
-			const VkExtent2D &currentWindowExtent, const VkSurfaceCapabilitiesKHR &surfCapabilities, VkExtent2D *windowExtent, VkExtent2D *swapChainExtent) override;
+		case VK_SURFACE_TRANSFORM_ROTATE_180_BIT_KHR:
+			currentRotation = rotation180;
+			break;
 
-	VkSurfaceTransformFlagBitsKHR _choose_pre_transform_(const VkSurfaceCapabilitiesKHR &surfCapabilities) override;
-};
+		case VK_SURFACE_TRANSFORM_ROTATE_270_BIT_KHR:
+			currentRotation = rotation270;
+			isSizeSwapRequired = true;
+			break;
 
-#endif // VULKAN_CONTEXT_ANDROID_H
+		default:
+			isPreRotationRequired = false;
+	}
+}
+
+bool AndroidPreRotation::is_pre_rotation_required() const {
+	return isPreRotationRequired;
+}
+
+bool AndroidPreRotation::is_size_swap_required() const {
+	return isSizeSwapRequired;
+}
+
+const Transform3D &AndroidPreRotation::get_pre_rotation_transform() const {
+	return currentRotation;
+}

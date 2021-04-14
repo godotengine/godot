@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "vulkan_context_android.h"
+#include "platform/android/vulkan/android_pre_rotation.h"
 
 #include <vulkan/vulkan_android.h>
 
@@ -58,4 +59,22 @@ bool VulkanContextAndroid::_use_validation_layers() {
 
 	// On Android, we use validation layers automatically if they were explicitly linked with the app.
 	return count > 0;
+}
+
+void VulkanContextAndroid::_choose_window_and_swap_chain_extent_(
+		const VkExtent2D &currentWindowExtent, const VkSurfaceCapabilitiesKHR &surfCapabilities, VkExtent2D *windowExtent, VkExtent2D *swapChainExtent) {
+	VulkanContext::_choose_window_and_swap_chain_extent_(currentWindowExtent, surfCapabilities, windowExtent, swapChainExtent);
+
+	if (surfCapabilities.currentTransform & VK_SURFACE_TRANSFORM_ROTATE_90_BIT_KHR ||
+			surfCapabilities.currentTransform & VK_SURFACE_TRANSFORM_ROTATE_270_BIT_KHR) {
+		// Swap to get identity width and height
+		std::swap(swapChainExtent->width, swapChainExtent->height);
+		std::swap(windowExtent->width, windowExtent->height);
+	}
+
+	AndroidPreRotation::get_instance().set_current_transform(surfCapabilities.currentTransform);
+}
+
+VkSurfaceTransformFlagBitsKHR VulkanContextAndroid::_choose_pre_transform_(const VkSurfaceCapabilitiesKHR &surfCapabilities) {
+	return surfCapabilities.currentTransform;
 }
