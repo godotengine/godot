@@ -12,7 +12,8 @@
 	</methods>
 	<members>
 		<member name="mid_height" type="float" setter="set_mid_height" getter="get_mid_height" default="1.0">
-			Height of the capsule mesh from the center point.
+			Height of the middle cylindrical part of the capsule (without the hemispherical ends).
+			[b]Note:[/b] The capsule's total height is equal to [member mid_height] + 2 * [member radius].
 		</member>
 		<member name="radial_segments" type="int" setter="set_radial_segments" getter="get_radial_segments" default="64">
 			Number of radial segments on the capsule mesh.
