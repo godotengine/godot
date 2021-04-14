@@ -93,7 +93,7 @@ void MeshLibraryEditor::_import_scene(Node *p_scene, Ref<MeshLibrary> p_library,
 
 		mesh = mesh->duplicate();
 		for (int j = 0; j < mesh->get_surface_count(); ++j) {
-			Ref<Material> mat = mi->get_surface_material(j);
+			Ref<Material> mat = mi->get_surface_override_material(j);
 
 			if (mat.is_valid()) {
 				mesh->surface_set_material(j, mat);

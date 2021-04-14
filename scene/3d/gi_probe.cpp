@@ -343,7 +343,7 @@ void GIProbe::_find_meshes(Node *p_at_node, List<PlotMesh> &plot_meshes) {
 				pm.local_xform = xf;
 				pm.mesh = mesh;
 				for (int i = 0; i < mesh->get_surface_count(); i++) {
-					pm.instance_materials.push_back(mi->get_surface_material(i));
+					pm.instance_materials.push_back(mi->get_surface_override_material(i));
 				}
 				pm.override_material = mi->get_material_override();
 				plot_meshes.push_back(pm);

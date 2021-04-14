@@ -1317,7 +1317,7 @@
 				Sets the scenario that the instance is in. The scenario is the 3D world that the objects will be displayed in.
 			</description>
 		</method>
-		<method name="instance_set_surface_material">
+		<method name="instance_set_surface_override_material">
 			<return type="void">
 			</return>
 			<argument index="0" name="instance" type="RID">
@@ -1327,7 +1327,7 @@
 			<argument index="2" name="material" type="RID">
 			</argument>
 			<description>
-				Sets the material of a specific surface. Equivalent to [method MeshInstance3D.set_surface_material].
+				Sets the override material of a specific surface. Equivalent to [method MeshInstance3D.set_surface_override_material].
 			</description>
 		</method>
 		<method name="instance_set_transform">
