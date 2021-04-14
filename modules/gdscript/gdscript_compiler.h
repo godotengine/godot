@@ -66,7 +66,7 @@ class GDScriptCompiler {
 		}
 
 		GDScriptCodeGenerator::Address add_temporary(const GDScriptDataType &p_type = GDScriptDataType()) {
-			uint32_t addr = generator->add_temporary();
+			uint32_t addr = generator->add_temporary(p_type);
 			return GDScriptCodeGenerator::Address(GDScriptCodeGenerator::Address::TEMPORARY, addr, p_type);
 		}
 
