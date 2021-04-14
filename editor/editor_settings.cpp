@@ -48,6 +48,7 @@
 #include "editor/doc_translations.gen.h"
 #include "editor/editor_node.h"
 #include "editor/editor_translations.gen.h"
+#include "main/main.h"
 #include "scene/main/node.h"
 #include "scene/main/scene_tree.h"
 #include "scene/main/window.h"
@@ -1016,13 +1017,13 @@ void EditorSettings::create() {
 
 		_create_script_templates(dir->get_current_dir().plus_file("script_templates"));
 
-		{
+		if (!Main::is_project_manager()) {
 			// Validate/create project-specific editor settings dir.
 			DirAccessRef da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 			if (da->change_dir(EditorSettings::PROJECT_EDITOR_SETTINGS_PATH) != OK) {
 				Error err = da->make_dir_recursive(EditorSettings::PROJECT_EDITOR_SETTINGS_PATH);
 				if (err || da->change_dir(EditorSettings::PROJECT_EDITOR_SETTINGS_PATH) != OK) {
-					ERR_FAIL_MSG("Failed to create '" + EditorSettings::PROJECT_EDITOR_SETTINGS_PATH + "' folder.");
+					ERR_PRINT("Failed to create '" + EditorSettings::PROJECT_EDITOR_SETTINGS_PATH + "' folder.");
 				}
 			}
 		}
