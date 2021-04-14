@@ -452,7 +452,7 @@ void SoftBody3D::become_mesh_owner() {
 		mesh_owner = true;
 
 		Vector<Ref<Material>> copy_materials;
-		copy_materials.append_array(materials);
+		copy_materials.append_array(surface_override_materials);
 
 		ERR_FAIL_COND(!mesh->get_surface_count());
 
@@ -472,7 +472,7 @@ void SoftBody3D::become_mesh_owner() {
 		set_mesh(soft_mesh);
 
 		for (int i = copy_materials.size() - 1; 0 <= i; --i) {
-			set_surface_material(i, copy_materials[i]);
+			set_surface_override_material(i, copy_materials[i]);
 		}
 	}
 }

@@ -4959,8 +4959,8 @@ GLTFMeshIndex GLTFDocument::_convert_mesh_instance(Ref<GLTFState> state, MeshIns
 		if (godot_array_mesh.is_valid()) {
 			surface_name = godot_array_mesh->surface_get_name(surface_i);
 		}
-		if (p_mesh_instance->get_surface_material(surface_i).is_valid()) {
-			mat = p_mesh_instance->get_surface_material(surface_i);
+		if (p_mesh_instance->get_surface_override_material(surface_i).is_valid()) {
+			mat = p_mesh_instance->get_surface_override_material(surface_i);
 		}
 		if (p_mesh_instance->get_material_override().is_valid()) {
 			mat = p_mesh_instance->get_material_override();

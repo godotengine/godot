@@ -69,7 +69,7 @@ public:
 	virtual void instance_set_transform(RID p_instance, const Transform &p_transform) = 0;
 	virtual void instance_attach_object_instance_id(RID p_instance, ObjectID p_id) = 0;
 	virtual void instance_set_blend_shape_weight(RID p_instance, int p_shape, float p_weight) = 0;
-	virtual void instance_set_surface_material(RID p_instance, int p_surface, RID p_material) = 0;
+	virtual void instance_set_surface_override_material(RID p_instance, int p_surface, RID p_material) = 0;
 	virtual void instance_set_visible(RID p_instance, bool p_visible) = 0;
 
 	virtual void instance_set_custom_aabb(RID p_instance, AABB p_aabb) = 0;
