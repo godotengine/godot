@@ -3261,7 +3261,7 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 				accept_event();
 				return;
 			}
-			if (k->is_action("ui_accept", true) || k->is_action("ui_text_completion_accept", true)) {
+			if (k->is_action("ui_text_completion_accept", true)) {
 				_confirm_completion();
 				accept_event();
 				return;
