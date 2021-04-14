@@ -1186,6 +1186,7 @@ public:
 	}
 
 	virtual Error export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags = 0) {
+		ExportNotifier notifier(*this, p_preset, p_debug, p_path, p_flags);
 
 		String src_appx;
 
