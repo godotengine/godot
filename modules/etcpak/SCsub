@@ -11,30 +11,14 @@ thirdparty_obj = []
 
 thirdparty_dir = "#thirdparty/etcpak/"
 thirdparty_sources = [
-    "Bitmap.cpp",
-    "BitmapDownsampled.cpp",
-    "BlockData.cpp",
-    "ColorSpace.cpp",
-    "DataProvider.cpp",
-    "Debug.cpp",
     "Dither.cpp",
-    "Error.cpp",
-    "mmap.cpp",
     "ProcessDxtc.cpp",
     "ProcessRGB.cpp",
-    "System.cpp",
     "Tables.cpp",
-    "TaskDispatch.cpp",
-    "Timing.cpp",
-    "lz4/lz4.c",
 ]
 thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
 
 env_etcpak.Prepend(CPPPATH=[thirdparty_dir])
-
-# Also requires libpng headers
-if env["builtin_libpng"]:
-    env_etcpak.Prepend(CPPPATH=["#thirdparty/libpng"])
 
 env_thirdparty = env_etcpak.Clone()
 env_thirdparty.disable_warnings()
