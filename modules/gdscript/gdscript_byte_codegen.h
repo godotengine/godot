@@ -37,6 +37,17 @@
 #include "gdscript_utility_functions.h"
 
 class GDScriptByteCodeGenerator : public GDScriptCodeGenerator {
+	struct StackSlot {
+		Variant::Type type = Variant::NIL;
+		Vector<int> bytecode_indices;
+
+		StackSlot() = default;
+		StackSlot(Variant::Type p_type) :
+				type(p_type) {}
+	};
+
+	const static int RESERVED_STACK = 3; // For self, class, and nil.
+
 	bool ended = false;
 	GDScriptFunction *function = nullptr;
 	bool debug_stack = false;
@@ -47,15 +58,17 @@ class GDScriptByteCodeGenerator : public GDScriptCodeGenerator {
 	List<int> stack_identifiers_counts;
 	Map<StringName, int> local_constants;
 
+	Vector<StackSlot> locals;
+	Vector<StackSlot> temporaries;
+	List<int> used_temporaries;
+	Map<Variant::Type, List<int>> temporaries_pool;
+
 	List<GDScriptFunction::StackDebug> stack_debug;
 	List<Map<StringName, int>> block_identifier_stack;
 	Map<StringName, int> block_identifiers;
 
-	int current_stack_size = 3; // First 3 spots are reserved for self, class, and nil.
-	int current_temporaries = 0;
-	int current_locals = 0;
+	int max_locals = 0;
 	int current_line = 0;
-	int stack_max = 3;
 	int instr_args_max = 0;
 	int ptrcall_max = 0;
 
@@ -102,7 +115,9 @@ class GDScriptByteCodeGenerator : public GDScriptCodeGenerator {
 	List<List<int>> match_continues_to_patch;
 
 	void add_stack_identifier(const StringName &p_id, int p_stackpos) {
-		current_locals++;
+		if (locals.size() > max_locals) {
+			max_locals = locals.size();
+		}
 		stack_identifiers[p_id] = p_stackpos;
 		if (debug_stack) {
 			block_identifiers[p_id] = p_stackpos;
@@ -116,7 +131,7 @@ class GDScriptByteCodeGenerator : public GDScriptCodeGenerator {
 	}
 
 	void push_stack_identifiers() {
-		stack_identifiers_counts.push_back(current_locals);
+		stack_identifiers_counts.push_back(locals.size());
 		stack_id_stack.push_back(stack_identifiers);
 		if (debug_stack) {
 			Map<StringName, int> block_ids(block_identifiers);
@@ -126,17 +141,16 @@ class GDScriptByteCodeGenerator : public GDScriptCodeGenerator {
 	}
 
 	void pop_stack_identifiers() {
-		current_locals = stack_identifiers_counts.back()->get();
+		int current_locals = stack_identifiers_counts.back()->get();
 		stack_identifiers_counts.pop_back();
 		stack_identifiers = stack_id_stack.back()->get();
 		stack_id_stack.pop_back();
 #ifdef DEBUG_ENABLED
-		if (current_temporaries != 0) {
-			ERR_PRINT("Leaving block with non-zero temporary variables: " + itos(current_temporaries));
+		if (!used_temporaries.is_empty()) {
+			ERR_PRINT("Leaving block with non-zero temporary variables: " + itos(used_temporaries.size()));
 		}
 #endif
-		current_stack_size = current_locals + 3; // Keep the 3 reserved slots for self, class, and nil.
-
+		locals.resize(current_locals);
 		if (debug_stack) {
 			for (Map<StringName, int>::Element *E = block_identifiers.front(); E; E = E->next()) {
 				GDScriptFunction::StackDebug sd;
@@ -279,18 +293,6 @@ class GDScriptByteCodeGenerator : public GDScriptCodeGenerator {
 		return pos;
 	}
 
-	void alloc_stack(int p_level) {
-		if (p_level >= stack_max) {
-			stack_max = p_level + 1;
-		}
-	}
-
-	int increase_stack() {
-		int top = current_stack_size++;
-		alloc_stack(current_stack_size);
-		return top;
-	}
-
 	void alloc_ptrcall(int p_params) {
 		if (p_params >= ptrcall_max) {
 			ptrcall_max = p_params;
@@ -308,9 +310,11 @@ class GDScriptByteCodeGenerator : public GDScriptCodeGenerator {
 			case Address::CONSTANT:
 				return p_address.address | (GDScriptFunction::ADDR_TYPE_CONSTANT << GDScriptFunction::ADDR_BITS);
 			case Address::LOCAL_VARIABLE:
-			case Address::TEMPORARY:
 			case Address::FUNCTION_PARAMETER:
 				return p_address.address | (GDScriptFunction::ADDR_TYPE_STACK << GDScriptFunction::ADDR_BITS);
+			case Address::TEMPORARY:
+				temporaries.write[p_address.address].bytecode_indices.push_back(opcodes.size());
+				return -1;
 			case Address::NIL:
 				return GDScriptFunction::ADDR_NIL;
 		}
@@ -392,7 +396,7 @@ public:
 	virtual uint32_t add_local_constant(const StringName &p_name, const Variant &p_constant) override;
 	virtual uint32_t add_or_get_constant(const Variant &p_constant) override;
 	virtual uint32_t add_or_get_name(const StringName &p_name) override;
-	virtual uint32_t add_temporary() override;
+	virtual uint32_t add_temporary(const GDScriptDataType &p_type) override;
 	virtual void pop_temporary() override;
 
 	virtual void start_parameters() override;

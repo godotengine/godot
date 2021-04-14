@@ -71,7 +71,7 @@ public:
 	virtual uint32_t add_local_constant(const StringName &p_name, const Variant &p_constant) = 0;
 	virtual uint32_t add_or_get_constant(const Variant &p_constant) = 0;
 	virtual uint32_t add_or_get_name(const StringName &p_name) = 0;
-	virtual uint32_t add_temporary() = 0;
+	virtual uint32_t add_temporary(const GDScriptDataType &p_type) = 0;
 	virtual void pop_temporary() = 0;
 
 	virtual void start_parameters() = 0;
