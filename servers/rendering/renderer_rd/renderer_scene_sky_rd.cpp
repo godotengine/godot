@@ -50,6 +50,7 @@ void RendererSceneSkyRD::SkyShaderData::set_code(const String &p_code) {
 
 	ShaderCompilerRD::GeneratedCode gen_code;
 	ShaderCompilerRD::IdentifierActions actions;
+	actions.entry_point_stages["sky"] = ShaderCompilerRD::STAGE_FRAGMENT;
 
 	uses_time = false;
 	uses_half_res = false;
@@ -110,7 +111,7 @@ void RendererSceneSkyRD::SkyShaderData::set_code(const String &p_code) {
 	print_line("\n**light_code:\n" + gen_code.light);
 #endif
 
-	scene_singleton->sky.sky_shader.shader.version_set_code(version, gen_code.uniforms, gen_code.vertex_global, gen_code.vertex, gen_code.fragment_global, gen_code.light, gen_code.fragment, gen_code.defines);
+	scene_singleton->sky.sky_shader.shader.version_set_code(version, gen_code.code, gen_code.uniforms, gen_code.stage_globals[ShaderCompilerRD::STAGE_VERTEX], gen_code.stage_globals[ShaderCompilerRD::STAGE_FRAGMENT], gen_code.defines);
 	ERR_FAIL_COND(!scene_singleton->sky.sky_shader.shader.version_is_valid(version));
 
 	ubo_size = gen_code.uniform_total_size;
@@ -759,7 +760,7 @@ void RendererSceneSkyRD::init(RendererStorageRD *p_storage) {
 		sky_shader.default_shader = storage->shader_allocate();
 		storage->shader_initialize(sky_shader.default_shader);
 
-		storage->shader_set_code(sky_shader.default_shader, "shader_type sky; void fragment() { COLOR = vec3(0.0); } \n");
+		storage->shader_set_code(sky_shader.default_shader, "shader_type sky; void sky() { COLOR = vec3(0.0); } \n");
 
 		sky_shader.default_material = storage->material_allocate();
 		storage->material_initialize(sky_shader.default_material);
@@ -840,7 +841,7 @@ void RendererSceneSkyRD::init(RendererStorageRD *p_storage) {
 		sky_scene_state.fog_shader = storage->shader_allocate();
 		storage->shader_initialize(sky_scene_state.fog_shader);
 
-		storage->shader_set_code(sky_scene_state.fog_shader, "shader_type sky; uniform vec4 clear_color; void fragment() { COLOR = clear_color.rgb; } \n");
+		storage->shader_set_code(sky_scene_state.fog_shader, "shader_type sky; uniform vec4 clear_color; void sky() { COLOR = clear_color.rgb; } \n");
 		sky_scene_state.fog_material = storage->material_allocate();
 		storage->material_initialize(sky_scene_state.fog_material);
 

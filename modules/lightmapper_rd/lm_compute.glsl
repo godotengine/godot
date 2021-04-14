@@ -10,7 +10,7 @@ light_probes = "#define MODE_LIGHT_PROBES";
 
 #version 450
 
-VERSION_DEFINES
+#VERSION_DEFINES
 
 // One 2D local group focusing in one layer at a time, though all
 // in parallel (no barriers) makes more sense than a 3D local group

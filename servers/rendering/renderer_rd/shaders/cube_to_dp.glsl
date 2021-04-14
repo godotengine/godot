@@ -2,7 +2,7 @@
 
 #version 450
 
-VERSION_DEFINES
+#VERSION_DEFINES
 
 layout(push_constant, binding = 1, std430) uniform Params {
 	float z_far;
@@ -26,7 +26,7 @@ void main() {
 
 #version 450
 
-VERSION_DEFINES
+#VERSION_DEFINES
 
 layout(location = 0) in vec2 uv_interp;
 
