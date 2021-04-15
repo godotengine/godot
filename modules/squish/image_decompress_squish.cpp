@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  image_etcpak.h                                                       */
+/*  image_decompress_squish.cpp                                          */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,24 +28,51 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef IMAGE_ETCPAK_H
-#define IMAGE_ETCPAK_H
+#include "image_decompress_squish.h"
 
-#include "core/io/image.h"
+#include <squish.h>
 
-enum class EtcpakType {
-	ETCPAK_TYPE_ETC1,
-	ETCPAK_TYPE_ETC2,
-	ETCPAK_TYPE_ETC2_ALPHA,
-	ETCPAK_TYPE_ETC2_RA_AS_RG,
-	ETCPAK_TYPE_DXT1,
-	ETCPAK_TYPE_DXT5,
-	ETCPAK_TYPE_DXT5_RA_AS_RG,
-};
+void image_decompress_squish(Image *p_image) {
+	int w = p_image->get_width();
+	int h = p_image->get_height();
 
-void _compress_etcpak(EtcpakType p_compresstype, Image *p_img, float p_lossy_quality, bool force_etc1_format, Image::UsedChannels p_channels);
-void _compress_etc1(Image *p_img, float p_lossy_quality);
-void _compress_etc2(Image *p_img, float p_lossy_quality, Image::UsedChannels p_source);
-void _compress_bc(Image *p_img, float p_lossy_quality, Image::UsedChannels p_source);
+	Image::Format target_format = Image::FORMAT_RGBA8;
+	Vector<uint8_t> data;
+	int target_size = Image::get_image_data_size(w, h, target_format, p_image->has_mipmaps());
+	int mm_count = p_image->get_mipmap_count();
+	data.resize(target_size);
 
-#endif // IMAGE_ETCPAK_H
+	const uint8_t *rb = p_image->get_data().ptr();
+	uint8_t *wb = data.ptrw();
+
+	int squish_flags = Image::FORMAT_MAX;
+	if (p_image->get_format() == Image::FORMAT_DXT1) {
+		squish_flags = squish::kDxt1;
+	} else if (p_image->get_format() == Image::FORMAT_DXT3) {
+		squish_flags = squish::kDxt3;
+	} else if (p_image->get_format() == Image::FORMAT_DXT5 || p_image->get_format() == Image::FORMAT_DXT5_RA_AS_RG) {
+		squish_flags = squish::kDxt5;
+	} else if (p_image->get_format() == Image::FORMAT_RGTC_R) {
+		squish_flags = squish::kBc4;
+	} else if (p_image->get_format() == Image::FORMAT_RGTC_RG) {
+		squish_flags = squish::kBc5;
+	} else {
+		ERR_FAIL_MSG("Squish: Can't decompress unknown format: " + itos(p_image->get_format()) + ".");
+		return;
+	}
+
+	for (int i = 0; i <= mm_count; i++) {
+		int src_ofs = 0, mipmap_size = 0, mipmap_w = 0, mipmap_h = 0;
+		p_image->get_mipmap_offset_size_and_dimensions(i, src_ofs, mipmap_size, mipmap_w, mipmap_h);
+		int dst_ofs = Image::get_image_mipmap_offset(p_image->get_width(), p_image->get_height(), target_format, i);
+		squish::DecompressImage(&wb[dst_ofs], w, h, &rb[src_ofs], squish_flags);
+		w >>= 1;
+		h >>= 1;
+	}
+
+	p_image->create(p_image->get_width(), p_image->get_height(), p_image->has_mipmaps(), target_format, data);
+
+	if (p_image->get_format() == Image::FORMAT_DXT5_RA_AS_RG) {
+		p_image->convert_ra_rgba8_to_rg();
+	}
+}

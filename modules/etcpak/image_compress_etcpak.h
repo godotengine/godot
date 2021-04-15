@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  image_compress_squish.h                                              */
+/*  image_compress_etcpak.h                                              */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,11 +28,25 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef IMAGE_COMPRESS_SQUISH_H
-#define IMAGE_COMPRESS_SQUISH_H
+#ifndef IMAGE_COMPRESS_ETCPAK_H
+#define IMAGE_COMPRESS_ETCPAK_H
 
 #include "core/io/image.h"
 
-void image_decompress_squish(Image *p_image);
+enum class EtcpakType {
+	ETCPAK_TYPE_ETC1,
+	ETCPAK_TYPE_ETC2,
+	ETCPAK_TYPE_ETC2_ALPHA,
+	ETCPAK_TYPE_ETC2_RA_AS_RG,
+	ETCPAK_TYPE_DXT1,
+	ETCPAK_TYPE_DXT5,
+	ETCPAK_TYPE_DXT5_RA_AS_RG,
+};
 
-#endif // IMAGE_COMPRESS_SQUISH_H
+void _compress_etc1(Image *r_img, float p_lossy_quality);
+void _compress_etc2(Image *r_img, float p_lossy_quality, Image::UsedChannels p_channels);
+void _compress_bc(Image *r_img, float p_lossy_quality, Image::UsedChannels p_channels);
+
+void _compress_etcpak(EtcpakType p_compresstype, Image *r_img, float p_lossy_quality);
+
+#endif // IMAGE_COMPRESS_ETCPAK_H

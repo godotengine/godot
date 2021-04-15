@@ -101,6 +101,7 @@ Files extracted from upstream source:
   ```
 - `AUTHORS.txt` and `LICENSE.txt`
 
+
 ## fonts
 
 - `NotoSans*.ttf`, `NotoNaskhArabicUI_Regular.ttf`:
