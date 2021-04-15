@@ -368,7 +368,7 @@ Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, Map<Ref<E
 					fixed_name = _fixstr(name, "convcolonly");
 				}
 
-				ERR_FAIL_COND_V(fixed_name == String(), nullptr);
+				ERR_FAIL_COND_V(fixed_name.is_empty(), nullptr);
 
 				if (shapes.size()) {
 					StaticBody3D *col = memnew(StaticBody3D);
@@ -464,7 +464,7 @@ Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, Map<Ref<E
 				fixed_name = _fixstr(name, "convcol");
 			}
 
-			if (fixed_name != String()) {
+			if (!fixed_name.is_empty()) {
 				if (mi->get_parent() && !mi->get_parent()->has_node(fixed_name)) {
 					mi->set_name(fixed_name);
 				}
@@ -577,7 +577,7 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, Map<Ref<
 							mat_id = mat->get_name();
 						}
 
-						if (mat_id != String() && p_material_data.has(mat_id)) {
+						if (!mat_id.is_empty() && p_material_data.has(mat_id)) {
 							Dictionary matdata = p_material_data[mat_id];
 							if (matdata.has("use_external/enabled") && bool(matdata["use_external/enabled"]) && matdata.has("use_external/path")) {
 								String path = matdata["use_external/path"];
@@ -1047,7 +1047,7 @@ void ResourceImporterScene::get_import_options(List<ImportOption> *r_options, in
 	String script_ext_hint;
 
 	for (List<String>::Element *E = script_extentions.front(); E; E = E->next()) {
-		if (script_ext_hint != "") {
+		if (!script_ext_hint.is_empty()) {
 			script_ext_hint += ",";
 		}
 		script_ext_hint += "*." + E->get();
@@ -1163,7 +1163,7 @@ void ResourceImporterScene::_generate_meshes(Node *p_node, const Dictionary &p_m
 					mesh_id = src_mesh_node->get_mesh()->get_name();
 				}
 
-				if (mesh_id != String() && p_mesh_data.has(mesh_id)) {
+				if (!mesh_id.is_empty() && p_mesh_data.has(mesh_id)) {
 					Dictionary mesh_settings = p_mesh_data[mesh_id];
 
 					if (mesh_settings.has("generate/shadow_meshes")) {
@@ -1219,7 +1219,7 @@ void ResourceImporterScene::_generate_meshes(Node *p_node, const Dictionary &p_m
 					//use xf as transform for mesh, and bake it
 				}
 
-				if (save_to_file != String()) {
+				if (!save_to_file.is_empty()) {
 					Ref<Mesh> existing = Ref<Resource>(ResourceCache::get(save_to_file));
 					if (existing.is_valid()) {
 						//if somehow an existing one is useful, create
@@ -1488,7 +1488,7 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 		for (Map<Ref<ArrayMesh>, Transform>::Element *E = meshes.front(); E; E = E->next()) {
 			Ref<ArrayMesh> mesh = E->key();
 			String name = mesh->get_name();
-			if (name == "") { //should not happen but..
+			if (name.is_empty()) { //should not happen but..
 				name = "Mesh " + itos(step);
 			}
 
@@ -1570,7 +1570,7 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 	String post_import_script_path = p_options["import_script/path"];
 	Ref<EditorScenePostImport> post_import_script;
 
-	if (post_import_script_path != "") {
+	if (!post_import_script_path.is_empty()) {
 		Ref<Script> scr = ResourceLoader::load(post_import_script_path);
 		if (!scr.is_valid()) {
 			EditorNode::add_io_error(TTR("Couldn't load post-import script:") + " " + post_import_script_path);

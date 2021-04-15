@@ -483,7 +483,7 @@ Ref<Texture2D> EditorScriptPreviewPlugin::generate(const RES &p_from, const Size
 	}
 
 	String code = scr->get_source_code().strip_edges();
-	if (code == "") {
+	if (code.is_empty()) {
 		return Ref<Texture2D>();
 	}
 
@@ -864,7 +864,7 @@ Ref<Texture2D> EditorFontPreviewPlugin::generate_from_path(const String &p_path,
 
 	String sample;
 	for (int j = 0; j < sampled_font->get_data_count(); j++) {
-		for (int i = 0; _samples[i].script != String(); i++) {
+		for (int i = 0; !_samples[i].script.is_empty(); i++) {
 			if (sampled_font->get_data(j)->is_script_supported(_samples[i].script)) {
 				if (sampled_font->get_data(j)->has_char(_samples[i].sample[0])) {
 					sample += _samples[i].sample;

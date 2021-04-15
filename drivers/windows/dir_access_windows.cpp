@@ -132,7 +132,7 @@ Error DirAccessWindows::change_dir(String p_dir) {
 	bool worked = (SetCurrentDirectoryW((LPCWSTR)(p_dir.utf16().get_data())) != 0);
 
 	String base = _get_root_path();
-	if (base != "") {
+	if (!base.is_empty()) {
 		GetCurrentDirectoryW(2048, real_current_dir_name);
 		String new_dir = String::utf16((const char16_t *)real_current_dir_name).replace("\\", "/");
 		if (!new_dir.begins_with(base)) {
@@ -183,7 +183,7 @@ Error DirAccessWindows::make_dir(String p_dir) {
 
 String DirAccessWindows::get_current_dir(bool p_include_drive) {
 	String base = _get_root_path();
-	if (base != "") {
+	if (!base.is_empty()) {
 		String bd = current_dir.replace("\\", "/").replace_first(base, "");
 		if (bd.begins_with("/")) {
 			return _get_root_string() + bd.substr(1, bd.length());
@@ -195,7 +195,7 @@ String DirAccessWindows::get_current_dir(bool p_include_drive) {
 	if (p_include_drive) {
 		return current_dir;
 	} else {
-		if (_get_root_string() == "") {
+		if (_get_root_string().is_empty()) {
 			int p = current_dir.find(":");
 			if (p != -1) {
 				return current_dir.right(p + 1);

@@ -116,7 +116,7 @@ static Vector<uint8_t> _compile_shader_glsl(RenderingDevice::ShaderStage p_stage
 		}
 	}
 
-	if (preamble != "") {
+	if (!preamble.empty()) {
 		shader.setPreamble(preamble.c_str());
 	}
 

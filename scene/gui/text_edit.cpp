@@ -809,7 +809,7 @@ void TextEdit::_notification(int p_what) {
 			String highlighted_text = get_selection_text();
 
 			// Check if highlighted words contain only whitespaces (tabs or spaces).
-			bool only_whitespaces_highlighted = highlighted_text.strip_edges() == String();
+			bool only_whitespaces_highlighted = highlighted_text.strip_edges().is_empty();
 
 			int cursor_wrap_index = get_cursor_wrap_index();
 
@@ -1100,7 +1100,7 @@ void TextEdit::_notification(int p_what) {
 							switch (gutter.type) {
 								case GUTTER_TYPE_STRING: {
 									const String &text = get_line_gutter_text(line, g);
-									if (text == "") {
+									if (text.is_empty()) {
 										break;
 									}
 
@@ -1630,7 +1630,7 @@ void TextEdit::_notification(int p_what) {
 
 			// Check to see if the hint should be drawn.
 			bool show_hint = false;
-			if (is_cursor_line_visible && completion_hint != "") {
+			if (is_cursor_line_visible && !completion_hint.is_empty()) {
 				if (completion_active) {
 					if (completion_below && !callhint_below) {
 						show_hint = true;
@@ -2698,7 +2698,7 @@ void TextEdit::_handle_unicode_character(uint32_t unicode, bool p_had_selection,
 	const char32_t chr[2] = { (char32_t)unicode, 0 };
 
 	// Clear completion hint when function closed
-	if (completion_hint != "" && unicode == ')') {
+	if (!completion_hint.is_empty() && unicode == ')') {
 		completion_hint = "";
 	}
 
@@ -3065,7 +3065,7 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 			}
 		} else {
 			if (mb->get_button_index() == MOUSE_BUTTON_LEFT) {
-				if (mb->get_command() && highlighted_word != String()) {
+				if (mb->get_command() && !highlighted_word.is_empty()) {
 					int row, col;
 					_get_mouse_pos(Point2i(mpos.x, mpos.y), row, col);
 
@@ -3114,7 +3114,7 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 					emit_signal("symbol_validate", new_word);
 				}
 			} else {
-				if (highlighted_word != String()) {
+				if (!highlighted_word.is_empty()) {
 					set_highlighted_word(String());
 				}
 			}
@@ -3412,7 +3412,7 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 			return;
 		}
 		if (k->is_action("ui_cancel", true)) {
-			if (completion_hint != "") {
+			if (!completion_hint.is_empty()) {
 				completion_hint = "";
 				update();
 			}
@@ -4438,7 +4438,7 @@ void TextEdit::insert_text_at_cursor(const String &p_text) {
 }
 
 Control::CursorShape TextEdit::get_cursor_shape(const Point2 &p_pos) const {
-	if (highlighted_word != String()) {
+	if (!highlighted_word.is_empty()) {
 		return CURSOR_POINTING_HAND;
 	}
 
@@ -4560,7 +4560,7 @@ void TextEdit::set_text_direction(Control::TextDirection p_text_direction) {
 		} else {
 			dir = (TextServer::Direction)text_direction;
 		}
-		text.set_direction_and_language(dir, (language != "") ? language : TranslationServer::get_singleton()->get_tool_locale());
+		text.set_direction_and_language(dir, (!language.is_empty()) ? language : TranslationServer::get_singleton()->get_tool_locale());
 		text.invalidate_all();
 
 		menu_dir->set_item_checked(menu_dir->get_item_index(MENU_DIR_INHERITED), text_direction == TEXT_DIRECTION_INHERITED);
@@ -4609,7 +4609,7 @@ void TextEdit::set_language(const String &p_language) {
 		} else {
 			dir = (TextServer::Direction)text_direction;
 		}
-		text.set_direction_and_language(dir, (language != "") ? language : TranslationServer::get_singleton()->get_tool_locale());
+		text.set_direction_and_language(dir, (!language.is_empty()) ? language : TranslationServer::get_singleton()->get_tool_locale());
 		text.invalidate_all();
 		update();
 	}
@@ -4797,7 +4797,7 @@ void TextEdit::_update_caches() {
 	} else {
 		dir = (TextServer::Direction)text_direction;
 	}
-	text.set_direction_and_language(dir, (language != "") ? language : TranslationServer::get_singleton()->get_tool_locale());
+	text.set_direction_and_language(dir, (!language.is_empty()) ? language : TranslationServer::get_singleton()->get_tool_locale());
 	text.set_font_features(opentype_features);
 	text.set_draw_control_chars(draw_control_chars);
 	text.set_font(cache.font);
@@ -6238,7 +6238,7 @@ void TextEdit::_update_completion_candidates() {
 		prev_is_prefix = true;
 	}
 
-	if (cancel || (!pre_keyword && s == "" && (cofs == 0 || !prev_is_prefix))) {
+	if (cancel || (!pre_keyword && s.is_empty() && (cofs == 0 || !prev_is_prefix))) {
 		// None to complete, cancel.
 		_cancel_completion();
 		return;

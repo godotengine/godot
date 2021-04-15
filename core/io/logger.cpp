@@ -131,7 +131,7 @@ void RotatedFileLogger::clear_old_backups() {
 	da->list_dir_begin();
 	String f = da->get_next();
 	Set<String> backups;
-	while (f != String()) {
+	while (!f.is_empty()) {
 		if (!da->current_is_dir() && f.begins_with(basename) && f.get_extension() == extension && f != base_path.get_file()) {
 			backups.insert(f);
 		}
@@ -162,7 +162,7 @@ void RotatedFileLogger::rotate_file() {
 			sprintf(timestamp, "_%04d-%02d-%02d_%02d.%02d.%02d", date.year, date.month, date.day, time.hour, time.min, time.sec);
 
 			String backup_name = base_path.get_basename() + timestamp;
-			if (base_path.get_extension() != String()) {
+			if (!base_path.get_extension().is_empty()) {
 				backup_name += "." + base_path.get_extension();
 			}
 

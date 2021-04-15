@@ -50,7 +50,7 @@ Size2 Button::get_minimum_size() const {
 		if (!_icon.is_null()) {
 			minsize.height = MAX(minsize.height, _icon->get_height());
 			minsize.width += _icon->get_width();
-			if (xl_text != "") {
+			if (!xl_text.is_empty()) {
 				minsize.width += get_theme_constant("hseparation");
 			}
 		}
@@ -333,7 +333,7 @@ void Button::_shape() {
 	} else {
 		text_buf->set_direction((TextServer::Direction)text_direction);
 	}
-	text_buf->add_string(xl_text, font, font_size, opentype_features, (language != "") ? language : TranslationServer::get_singleton()->get_tool_locale());
+	text_buf->add_string(xl_text, font, font_size, opentype_features, (!language.is_empty()) ? language : TranslationServer::get_singleton()->get_tool_locale());
 }
 
 void Button::set_text(const String &p_text) {

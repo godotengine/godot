@@ -481,7 +481,7 @@ void TileMapEditor::_update_palette() {
 	for (List<int>::Element *E = tiles.front(); E; E = E->next()) {
 		String name = tileset->tile_get_name(E->get());
 
-		if (name != "") {
+		if (!name.is_empty()) {
 			if (show_tile_ids) {
 				if (sort_by_name) {
 					name = name + " - " + itos(E->get());
@@ -493,7 +493,7 @@ void TileMapEditor::_update_palette() {
 			name = "#" + itos(E->get());
 		}
 
-		if (filter != "" && !filter.is_subsequence_ofi(name)) {
+		if (!filter.is_empty() && !filter.is_subsequence_ofi(name)) {
 			continue;
 		}
 
@@ -621,7 +621,7 @@ void TileMapEditor::_pick_tile(const Point2 &p_pos) {
 		return;
 	}
 
-	if (search_box->get_text() != "") {
+	if (!search_box->get_text().is_empty()) {
 		search_box->set_text("");
 		_update_palette();
 	}

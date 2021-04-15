@@ -44,9 +44,9 @@
 static List<PluginScriptLanguage *> pluginscript_languages;
 
 static Error _check_language_desc(const godot_pluginscript_language_desc *desc) {
-	ERR_FAIL_COND_V(!desc->name || desc->name == String(), ERR_BUG);
-	ERR_FAIL_COND_V(!desc->type || desc->type == String(), ERR_BUG);
-	ERR_FAIL_COND_V(!desc->extension || desc->extension == String(), ERR_BUG);
+	ERR_FAIL_COND_V(!desc->name || String(desc->name).is_empty(), ERR_BUG);
+	ERR_FAIL_COND_V(!desc->type || String(desc->type).is_empty(), ERR_BUG);
+	ERR_FAIL_COND_V(!desc->extension || String(desc->extension).is_empty(), ERR_BUG);
 	ERR_FAIL_COND_V(!desc->recognized_extensions || !desc->recognized_extensions[0], ERR_BUG);
 	ERR_FAIL_COND_V(!desc->init, ERR_BUG);
 	ERR_FAIL_COND_V(!desc->finish, ERR_BUG);

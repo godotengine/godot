@@ -1658,7 +1658,7 @@ bool CanvasItemEditor::_gui_input_open_scene_on_double_click(const Ref<InputEven
 		List<CanvasItem *> selection = _get_edited_canvas_items();
 		if (selection.size() == 1) {
 			CanvasItem *canvas_item = selection[0];
-			if (canvas_item->get_filename() != "" && canvas_item != editor->get_edited_scene()) {
+			if (!canvas_item->get_filename().is_empty() && canvas_item != editor->get_edited_scene()) {
 				editor->open_request(canvas_item->get_filename());
 				return true;
 			}
@@ -6389,7 +6389,7 @@ bool CanvasItemEditorViewport::_create_instance(Node *parent, String &path, cons
 		return false;
 	}
 
-	if (editor->get_edited_scene()->get_filename() != "") { // cyclical instancing
+	if (!editor->get_edited_scene()->get_filename().is_empty()) { // cyclical instancing
 		if (_cyclical_dependency_exists(editor->get_edited_scene()->get_filename(), instanced_scene)) {
 			memdelete(instanced_scene);
 			return false;

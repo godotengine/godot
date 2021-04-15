@@ -390,7 +390,7 @@ void ShaderEditor::_check_for_external_edit() {
 	}
 
 	// internal shader.
-	if (shader->get_path() == "" || shader->get_path().find("local://") != -1 || shader->get_path().find("::") != -1) {
+	if (shader->get_path().is_empty() || shader->get_path().find("local://") != -1 || shader->get_path().find("::") != -1) {
 		return;
 	}
 
@@ -437,7 +437,7 @@ void ShaderEditor::save_external_data(const String &p_str) {
 	}
 
 	apply_shaders();
-	if (shader->get_path() != "" && shader->get_path().find("local://") == -1 && shader->get_path().find("::") == -1) {
+	if (!shader->get_path().is_empty() && shader->get_path().find("local://") == -1 && shader->get_path().find("::") == -1) {
 		//external shader, save it
 		ResourceSaver::save(shader->get_path(), shader);
 	}

@@ -89,7 +89,7 @@ void Label::_shape() {
 		} else {
 			TS->shaped_text_set_direction(text_rid, (TextServer::Direction)text_direction);
 		}
-		TS->shaped_text_add_string(text_rid, (uppercase) ? xl_text.to_upper() : xl_text, get_theme_font("font")->get_rids(), get_theme_font_size("font_size"), opentype_features, (language != "") ? language : TranslationServer::get_singleton()->get_tool_locale());
+		TS->shaped_text_add_string(text_rid, (uppercase) ? xl_text.to_upper() : xl_text, get_theme_font("font")->get_rids(), get_theme_font_size("font_size"), opentype_features, (!language.is_empty()) ? language : TranslationServer::get_singleton()->get_tool_locale());
 		TS->shaped_text_set_bidi_override(text_rid, structured_text_parser(st_parser, st_args, xl_text));
 		dirty = false;
 		lines_dirty = true;

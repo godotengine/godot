@@ -93,7 +93,7 @@ Variant PluginScript::_new(const Variant **p_args, int p_argcount, Callable::Cal
 	REF ref;
 	Object *owner = nullptr;
 
-	if (get_instance_base_type() == "") {
+	if (get_instance_base_type().is_empty()) {
 		owner = memnew(Reference);
 	} else {
 		owner = ClassDB::instance(get_instance_base_type());
@@ -219,7 +219,7 @@ bool PluginScript::instance_has(const Object *p_this) const {
 }
 
 bool PluginScript::has_source_code() const {
-	bool has = _source != "";
+	bool has = !_source.is_empty();
 	return has;
 }
 
@@ -244,11 +244,11 @@ Error PluginScript::reload(bool p_keep_state) {
 	_valid = false;
 	String basedir = _path;
 
-	if (basedir == "") {
+	if (basedir.is_empty()) {
 		basedir = get_path();
 	}
 
-	if (basedir != "") {
+	if (!basedir.is_empty()) {
 		basedir = basedir.get_base_dir();
 	}
 

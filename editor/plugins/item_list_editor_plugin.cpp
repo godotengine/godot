@@ -265,7 +265,7 @@ void ItemListEditor::_delete_pressed() {
 
 	String current_selected = (String)property_editor->get_selected_path();
 
-	if (current_selected == "") {
+	if (current_selected.is_empty()) {
 		return;
 	}
 

@@ -669,7 +669,7 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 			prefix = segment + prefix;
 		}
 	}
-	if (prefix != "") {
+	if (!prefix.is_empty()) {
 		Ref<Font> font = _find_font(l.from);
 		if (font.is_null()) {
 			font = get_theme_font("normal_font");
@@ -1366,7 +1366,7 @@ void RichTextLabel::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_THEME_CHANGED:
 		case NOTIFICATION_ENTER_TREE: {
-			if (bbcode != "") {
+			if (!bbcode.is_empty()) {
 				set_bbcode(bbcode);
 			}
 
@@ -3604,7 +3604,7 @@ String RichTextLabel::get_selected_text() const {
 void RichTextLabel::selection_copy() {
 	String text = get_selected_text();
 
-	if (text != "") {
+	if (!text.is_empty()) {
 		DisplayServer::get_singleton()->clipboard_set(text);
 	}
 }
@@ -3758,7 +3758,7 @@ void RichTextLabel::set_effects(const Vector<Variant> &effects) {
 		custom_effects.push_back(effect);
 	}
 
-	if ((bbcode != "") && use_bbcode) {
+	if ((!bbcode.is_empty()) && use_bbcode) {
 		parse_bbcode(bbcode);
 	}
 }
@@ -3777,7 +3777,7 @@ void RichTextLabel::install_effect(const Variant effect) {
 
 	if (rteffect.is_valid()) {
 		custom_effects.push_back(effect);
-		if ((bbcode != "") && use_bbcode) {
+		if ((!bbcode.is_empty()) && use_bbcode) {
 			parse_bbcode(bbcode);
 		}
 	}

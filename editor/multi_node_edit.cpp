@@ -68,7 +68,7 @@ bool MultiNodeEdit::_set_impl(const StringName &p_name, const Variant &p_value, 
 			ur->add_do_property(n, name, p_path);
 		} else {
 			Variant new_value;
-			if (p_field == "") {
+			if (p_field.is_empty()) {
 				// whole value
 				new_value = p_value;
 			} else {

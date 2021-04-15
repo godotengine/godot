@@ -106,7 +106,7 @@ void FontDataPreview::set_data(const Ref<FontData> &p_data) {
 	line->clear();
 
 	String sample;
-	for (int i = 0; _samples[i].script != String(); i++) {
+	for (int i = 0; !_samples[i].script.is_empty(); i++) {
 		if (p_data->is_script_supported(_samples[i].script)) {
 			if (p_data->has_char(_samples[i].sample[0])) {
 				sample += _samples[i].sample;

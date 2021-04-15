@@ -619,11 +619,11 @@ void BakedLightmap::_gen_new_positions_from_octree(const GenProbesOctree *p_cell
 }
 
 BakedLightmap::BakeError BakedLightmap::bake(Node *p_from_node, String p_image_data_path, Lightmapper::BakeStepFunc p_bake_step, void *p_bake_userdata) {
-	if (p_image_data_path == "" && (get_light_data().is_null() || !get_light_data()->get_path().is_resource_file())) {
+	if (p_image_data_path.is_empty() && (get_light_data().is_null() || !get_light_data()->get_path().is_resource_file())) {
 		return BAKE_ERROR_NO_SAVE_PATH;
 	}
 
-	if (p_image_data_path == "") {
+	if (p_image_data_path.is_empty()) {
 		if (get_light_data().is_null()) {
 			return BAKE_ERROR_NO_SAVE_PATH;
 		}

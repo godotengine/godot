@@ -56,7 +56,7 @@ DynamicFontDataAdvanced::DataAtSize *DynamicFontDataAdvanced::get_data_for_size(
 	if (E != nullptr) {
 		fds = E->get();
 	} else {
-		if (font_mem == nullptr && font_path != String()) {
+		if (font_mem == nullptr && !font_path.is_empty()) {
 			if (!font_mem_cache.is_empty()) {
 				font_mem = font_mem_cache.ptr();
 				font_mem_size = font_mem_cache.size();

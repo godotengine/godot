@@ -1537,7 +1537,7 @@ void EditorInspector::_parse_added_editors(VBoxContainer *current_vbox, Ref<Edit
 					ep->property_usage = 0;
 				}
 
-				if (F->get().label != String()) {
+				if (!F->get().label.is_empty()) {
 					ep->set_label(F->get().label);
 				}
 
@@ -1731,7 +1731,7 @@ void EditorInspector::update_tree() {
 				}
 			}
 			if (category->icon.is_null()) {
-				if (type != String()) { // Can happen for built-in scripts.
+				if (!type.is_empty()) { // Can happen for built-in scripts.
 					category->icon = EditorNode::get_singleton()->get_class_icon(type, "Object");
 				}
 			}
@@ -1750,7 +1750,7 @@ void EditorInspector::update_tree() {
 					class_descr_cache[type2] = descr;
 				}
 
-				category->set_tooltip(p.name + "::" + (class_descr_cache[type2] == "" ? "" : class_descr_cache[type2]));
+				category->set_tooltip(p.name + "::" + (class_descr_cache[type2].is_empty() ? "" : class_descr_cache[type2]));
 			}
 
 			for (List<Ref<EditorInspectorPlugin>>::Element *E = valid_plugins.front(); E; E = E->next()) {
@@ -1779,8 +1779,8 @@ void EditorInspector::update_tree() {
 
 		String basename = p.name;
 
-		if (subgroup != "") {
-			if (subgroup_base != "") {
+		if (!subgroup.is_empty()) {
+			if (!subgroup_base.is_empty()) {
 				if (basename.begins_with(subgroup_base)) {
 					basename = basename.replace_first(subgroup_base, "");
 				} else if (subgroup_base.begins_with(basename)) {
@@ -1790,8 +1790,8 @@ void EditorInspector::update_tree() {
 				}
 			}
 		}
-		if (group != "") {
-			if (group_base != "" && subgroup == "") {
+		if (!group.is_empty()) {
+			if (!group_base.is_empty() && subgroup.is_empty()) {
 				if (basename.begins_with(group_base)) {
 					basename = basename.replace_first(group_base, "");
 				} else if (group_base.begins_with(basename)) {
@@ -1802,10 +1802,10 @@ void EditorInspector::update_tree() {
 				}
 			}
 		}
-		if (subgroup != "") {
+		if (!subgroup.is_empty()) {
 			basename = subgroup + "/" + basename;
 		}
-		if (group != "") {
+		if (!group.is_empty()) {
 			basename = group + "/" + basename;
 		}
 
@@ -1826,7 +1826,7 @@ void EditorInspector::update_tree() {
 
 		String path = basename.left(basename.rfind("/"));
 
-		if (use_filter && filter != "") {
+		if (use_filter && !filter.is_empty()) {
 			String cat = path;
 
 			if (capitalize_paths) {
@@ -1899,7 +1899,7 @@ void EditorInspector::update_tree() {
 
 		if (use_doc_hints) {
 			StringName classname = object->get_class_name();
-			if (object_class != String()) {
+			if (!object_class.is_empty()) {
 				classname = object_class;
 			}
 			StringName propname = property_prefix + p.name;
@@ -1918,7 +1918,7 @@ void EditorInspector::update_tree() {
 			if (!found) {
 				DocTools *dd = EditorHelp::get_doc_data();
 				Map<String, DocData::ClassDoc>::Element *F = dd->class_list.find(classname);
-				while (F && descr == String()) {
+				while (F && descr.is_empty()) {
 					for (int i = 0; i < F->get().properties.size(); i++) {
 						if (F->get().properties[i].name == propname.operator String()) {
 							descr = DTR(F->get().properties[i].description);
@@ -1971,7 +1971,7 @@ void EditorInspector::update_tree() {
 							//and set label?
 						}
 
-						if (F->get().label != String()) {
+						if (!F->get().label.is_empty()) {
 							ep->set_label(F->get().label);
 						} else {
 							//use existin one
@@ -2011,7 +2011,7 @@ void EditorInspector::update_tree() {
 					ep->connect("multiple_properties_changed", callable_mp(this, &EditorInspector::_multiple_properties_changed));
 					ep->connect("resource_selected", callable_mp(this, &EditorInspector::_resource_selected), varray(), CONNECT_DEFERRED);
 					ep->connect("object_id_selected", callable_mp(this, &EditorInspector::_object_id_selected), varray(), CONNECT_DEFERRED);
-					if (doc_hint != String()) {
+					if (!doc_hint.is_empty()) {
 						ep->set_tooltip(property_prefix + p.name + "::" + doc_hint);
 					} else {
 						ep->set_tooltip(property_prefix + p.name);
@@ -2231,7 +2231,7 @@ void EditorInspector::_edit_request_change(Object *p_object, const String &p_pro
 		return;
 	}
 
-	if (p_property == String()) {
+	if (p_property.is_empty()) {
 		update_tree_pending = true;
 	} else {
 		pending.insert(p_property);

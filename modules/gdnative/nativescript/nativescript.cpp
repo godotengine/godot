@@ -734,7 +734,7 @@ Variant NativeScript::_new(const Variant **p_args, int p_argcount, Callable::Cal
 	REF ref;
 	Object *owner = nullptr;
 
-	if (!(script_data->base_native_type == "")) {
+	if (!(script_data->base_native_type.is_empty())) {
 		owner = ClassDB::instance(script_data->base_native_type);
 	} else {
 		owner = memnew(Reference);
@@ -898,7 +898,7 @@ void NativeScriptInstance::get_property_list(List<PropertyInfo> *p_properties) c
 				ERR_CONTINUE(info.type < 0 || info.type >= Variant::VARIANT_MAX);
 
 				info.name = d["name"];
-				ERR_CONTINUE(info.name == "");
+				ERR_CONTINUE(info.name.is_empty());
 
 				if (d.has("hint")) {
 					info.hint = PropertyHint(d["hint"].operator int64_t());

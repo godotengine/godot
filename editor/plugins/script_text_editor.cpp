@@ -432,7 +432,7 @@ String ScriptTextEditor::get_name() {
 			}
 			name += "(*)";
 		}
-	} else if (script->get_name() != "") {
+	} else if (!script->get_name().is_empty()) {
 		name = script->get_name();
 	} else {
 		name = script->get_class() + "(" + itos(script->get_instance_id()) + ")";
@@ -679,7 +679,7 @@ void ScriptEditor::_update_modified_scripts_for_external_editor(Ref<Script> p_fo
 			continue;
 		}
 
-		if (script->get_path() == "" || script->get_path().find("local://") != -1 || script->get_path().find("::") != -1) {
+		if (script->get_path().is_empty() || script->get_path().find("local://") != -1 || script->get_path().find("::") != -1) {
 			continue; //internal script, who cares, though weird
 		}
 
@@ -1012,7 +1012,7 @@ void ScriptTextEditor::_gutter_clicked(int p_line, int p_gutter) {
 	}
 
 	String method = code_editor->get_text_editor()->get_line_gutter_metadata(p_line, p_gutter);
-	if (method == "") {
+	if (method.is_empty()) {
 		return;
 	}
 
@@ -1159,7 +1159,7 @@ void ScriptTextEditor::_edit_option(int p_op) {
 
 				if (expression.parse(line) == OK) {
 					Variant result = expression.execute(Array(), Variant(), false);
-					if (expression.get_error_text() == "") {
+					if (expression.get_error_text().is_empty()) {
 						results.push_back(whitespace + result.get_construct_string());
 					} else {
 						results.push_back(line);
@@ -1285,19 +1285,19 @@ void ScriptTextEditor::_edit_option(int p_op) {
 		} break;
 		case HELP_CONTEXTUAL: {
 			String text = tx->get_selection_text();
-			if (text == "") {
+			if (text.is_empty()) {
 				text = tx->get_word_under_cursor();
 			}
-			if (text != "") {
+			if (!text.is_empty()) {
 				emit_signal("request_help", text);
 			}
 		} break;
 		case LOOKUP_SYMBOL: {
 			String text = tx->get_word_under_cursor();
-			if (text == "") {
+			if (text.is_empty()) {
 				text = tx->get_selection_text();
 			}
-			if (text != "") {
+			if (!text.is_empty()) {
 				_lookup_symbol(text, tx->cursor_get_line(), tx->cursor_get_column());
 			}
 		} break;
@@ -1548,10 +1548,10 @@ void ScriptTextEditor::_text_edit_gui_input(const Ref<InputEvent> &ev) {
 		}
 
 		String word_at_pos = tx->get_word_at_pos(local_pos);
-		if (word_at_pos == "") {
+		if (word_at_pos.is_empty()) {
 			word_at_pos = tx->get_word_under_cursor();
 		}
-		if (word_at_pos == "") {
+		if (word_at_pos.is_empty()) {
 			word_at_pos = tx->get_selection_text();
 		}
 

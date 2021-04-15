@@ -160,7 +160,7 @@ void FileAccessUnix::close() {
 		close_notification_func(path, flags);
 	}
 
-	if (save_path != "") {
+	if (!save_path.is_empty()) {
 		int rename_error = rename((save_path + ".tmp").utf8().get_data(), save_path.utf8().get_data());
 
 		if (rename_error && close_fail_notify) {

@@ -2002,7 +2002,7 @@ void RendererCanvasRenderRD::ShaderData::set_code(const String &p_code) {
 	uses_screen_texture = false;
 	uses_sdf = false;
 
-	if (code == String()) {
+	if (code.is_empty()) {
 		return; //just invalid, but no error
 	}
 

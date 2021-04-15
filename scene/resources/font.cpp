@@ -1063,7 +1063,7 @@ void ResourceFormatLoaderFont::get_recognized_extensions_for_type(const String &
 		return;
 	}
 #endif /* DISABLE_DEPRECATED */
-	if (p_type == "" || handles_type(p_type)) {
+	if (p_type.is_empty() || handles_type(p_type)) {
 		get_recognized_extensions(p_extensions);
 	}
 }

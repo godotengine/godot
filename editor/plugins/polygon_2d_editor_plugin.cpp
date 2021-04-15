@@ -170,7 +170,7 @@ void Polygon2DEditor::_update_bone_list() {
 		if (np.get_name_count()) {
 			name = np.get_name(np.get_name_count() - 1);
 		}
-		if (name == String()) {
+		if (name.is_empty()) {
 			name = "Bone " + itos(i);
 		}
 		cb->set_text(name);

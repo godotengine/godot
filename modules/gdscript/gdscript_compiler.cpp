@@ -63,7 +63,7 @@ bool GDScriptCompiler::_is_class_member_property(GDScript *owner, const StringNa
 }
 
 void GDScriptCompiler::_set_error(const String &p_error, const GDScriptParser::Node *p_node) {
-	if (error != "") {
+	if (!error.is_empty()) {
 		return;
 	}
 
@@ -669,7 +669,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 					}
 #endif
 
-					if (MI && MI->get().getter == "") {
+					if (MI && MI->get().getter.is_empty()) {
 						// Remove result temp as we don't need it.
 						gen->pop_temporary();
 						// Faster than indexing self (as if no self. had been used).
@@ -1939,7 +1939,7 @@ Error GDScriptCompiler::_parse_function(GDScript *p_script, const GDScriptParser
 	if (EngineDebugger::is_active()) {
 		String signature;
 		// Path.
-		if (p_script->get_path() != String()) {
+		if (!p_script->get_path().is_empty()) {
 			signature += p_script->get_path();
 		}
 		// Location.
@@ -2049,7 +2049,7 @@ Error GDScriptCompiler::_parse_setter_getter(GDScript *p_script, const GDScriptP
 	if (EngineDebugger::is_active()) {
 		String signature;
 		//path
-		if (p_script->get_path() != String()) {
+		if (!p_script->get_path().is_empty()) {
 			signature += p_script->get_path();
 		}
 		//loc
@@ -2250,7 +2250,7 @@ Error GDScriptCompiler::_parse_class_level(GDScript *p_script, const GDScriptPar
 				p_script->constants.insert(name, constant->initializer->reduced_value);
 #ifdef TOOLS_ENABLED
 				p_script->member_lines[name] = constant->start_line;
-				if (constant->doc_description != String()) {
+				if (!constant->doc_description.is_empty()) {
 					p_script->doc_constants[name] = constant->doc_description;
 				}
 #endif

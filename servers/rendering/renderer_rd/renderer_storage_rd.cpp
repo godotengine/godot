@@ -2345,7 +2345,7 @@ void RendererStorageRD::MaterialData::update_textures(const Map<StringName, Vari
 		p_textures[i] = rd_texture;
 	}
 #ifdef TOOLS_ENABLED
-	if (roughness_detect_texture && normal_detect_texture && normal_detect_texture->path != String()) {
+	if (roughness_detect_texture && normal_detect_texture && !normal_detect_texture->path.is_empty()) {
 		roughness_detect_texture->detect_roughness_callback(roughness_detect_texture->detect_roughness_callback_ud, normal_detect_texture->path, roughness_channel);
 	}
 #endif
@@ -4775,7 +4775,7 @@ void RendererStorageRD::ParticlesShaderData::set_code(const String &p_code) {
 	ubo_size = 0;
 	uniforms.clear();
 
-	if (code == String()) {
+	if (code.is_empty()) {
 		return; //just invalid, but no error
 	}
 

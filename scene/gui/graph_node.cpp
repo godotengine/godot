@@ -455,7 +455,7 @@ void GraphNode::_shape() {
 	} else {
 		title_buf->set_direction((TextServer::Direction)text_direction);
 	}
-	title_buf->add_string(title, font, font_size, opentype_features, (language != "") ? language : TranslationServer::get_singleton()->get_tool_locale());
+	title_buf->add_string(title, font, font_size, opentype_features, (!language.is_empty()) ? language : TranslationServer::get_singleton()->get_tool_locale());
 }
 
 void GraphNode::set_slot(int p_idx, bool p_enable_left, int p_type_left, const Color &p_color_left, bool p_enable_right, int p_type_right, const Color &p_color_right, const Ref<Texture2D> &p_custom_left, const Ref<Texture2D> &p_custom_right) {

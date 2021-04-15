@@ -260,7 +260,7 @@ Ref<ArrayMesh> EditorSceneImporterMesh::get_mesh(const Ref<Mesh> &p_base) {
 			if (surfaces[i].material.is_valid()) {
 				mesh->surface_set_material(mesh->get_surface_count() - 1, surfaces[i].material);
 			}
-			if (surfaces[i].name != String()) {
+			if (!surfaces[i].name.is_empty()) {
 				mesh->surface_set_name(mesh->get_surface_count() - 1, surfaces[i].name);
 			}
 		}
@@ -442,7 +442,7 @@ Dictionary EditorSceneImporterMesh::_get_data() const {
 			d["material"] = surfaces[i].material;
 		}
 
-		if (surfaces[i].name != String()) {
+		if (!surfaces[i].name.is_empty()) {
 			d["name"] = surfaces[i].name;
 		}
 

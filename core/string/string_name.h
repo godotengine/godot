@@ -54,7 +54,12 @@ class StringName {
 		const char *cname = nullptr;
 		String name;
 
-		String get_name() const { return cname ? String(cname) : name; }
+		String get_name() const {
+			if (cname) {
+				return String(cname);
+			}
+			return name;
+		}
 		int idx = 0;
 		uint32_t hash = 0;
 		_Data *prev = nullptr;
@@ -83,7 +88,12 @@ class StringName {
 	StringName(_Data *p_data) { _data = p_data; }
 
 public:
-	operator const void *() const { return (_data && (_data->cname || !_data->name.is_empty())) ? (void *)1 : nullptr; }
+	operator const void *() const {
+		if (_data && (_data->cname || !_data->name.is_empty())) {
+			return (void *)1;
+		}
+		return nullptr;
+	}
 
 	bool operator==(const String &p_name) const;
 	bool operator==(const char *p_name) const;
@@ -99,9 +109,8 @@ public:
 	_FORCE_INLINE_ uint32_t hash() const {
 		if (_data) {
 			return _data->hash;
-		} else {
-			return 0;
 		}
+		return 0;
 	}
 	_FORCE_INLINE_ const void *data_unique_pointer() const {
 		return (void *)_data;
@@ -110,19 +119,36 @@ public:
 
 	_FORCE_INLINE_ operator String() const {
 		if (_data) {
-			if (_data->cname) {
-				return String(_data->cname);
-			} else {
-				return _data->name;
-			}
+			return _data->get_name();
 		}
-
 		return String();
 	}
 
 	static StringName search(const char *p_name);
 	static StringName search(const char32_t *p_name);
 	static StringName search(const String &p_name);
+
+	_FORCE_INLINE_ int length() const {
+		if (_data) {
+			if (_data->cname) {
+				// Get length of c-string (char pointer).
+				int len = 1;
+				const char *ptr = _data->cname;
+				// Prefix increment. First character is not null since prior condition is true.
+				while (*(++ptr) != 0) {
+					len++;
+				}
+				return len;
+			}
+			return _data->name.length();
+		}
+		// No string data available.
+		return 0;
+	}
+
+	_FORCE_INLINE_ bool is_empty() const {
+		return _data == nullptr;
+	}
 
 	struct AlphCompare {
 		_FORCE_INLINE_ bool operator()(const StringName &l, const StringName &r) const {

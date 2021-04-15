@@ -75,7 +75,7 @@ void ShaderRD::_add_stage(const char *p_code, StageType p_stage_type) {
 		}
 
 		if (push_chunk) {
-			if (text != String()) {
+			if (!text.is_empty()) {
 				StageTemplate::Chunk text_chunk;
 				text_chunk.type = StageTemplate::Chunk::TYPE_TEXT;
 				text_chunk.text = text.utf8();
@@ -86,7 +86,7 @@ void ShaderRD::_add_stage(const char *p_code, StageType p_stage_type) {
 		}
 	}
 
-	if (text != String()) {
+	if (!text.is_empty()) {
 		StageTemplate::Chunk text_chunk;
 		text_chunk.type = StageTemplate::Chunk::TYPE_TEXT;
 		text_chunk.text = text.utf8();

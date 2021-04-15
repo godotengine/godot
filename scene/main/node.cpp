@@ -1024,7 +1024,7 @@ void Node::_set_name_nocheck(const StringName &p_name) {
 void Node::set_name(const String &p_name) {
 	String name = p_name.validate_node_name();
 
-	ERR_FAIL_COND(name == "");
+	ERR_FAIL_COND(name.is_empty());
 	data.name = name;
 
 	if (data.parent) {
@@ -2013,7 +2013,7 @@ Node *Node::_duplicate(int p_flags, Map<const Node *, Node *> *r_duplimap) const
 		nip->set_instance_path(ip->get_instance_path());
 		node = nip;
 
-	} else if ((p_flags & DUPLICATE_USE_INSTANCING) && get_filename() != String()) {
+	} else if ((p_flags & DUPLICATE_USE_INSTANCING) && !get_filename().is_empty()) {
 		Ref<PackedScene> res = ResourceLoader::load(get_filename());
 		ERR_FAIL_COND_V(res.is_null(), nullptr);
 		PackedScene::GenEditState ges = PackedScene::GEN_EDIT_STATE_DISABLED;
@@ -2037,7 +2037,7 @@ Node *Node::_duplicate(int p_flags, Map<const Node *, Node *> *r_duplimap) const
 		ERR_FAIL_COND_V(!node, nullptr);
 	}
 
-	if (get_filename() != "") { //an instance
+	if (!get_filename().is_empty()) { //an instance
 		node->set_filename(get_filename());
 		node->data.editable_instance = data.editable_instance;
 	}
@@ -2069,7 +2069,7 @@ Node *Node::_duplicate(int p_flags, Map<const Node *, Node *> *r_duplimap) const
 
 				node_tree.push_back(descendant);
 
-				if (descendant->get_filename() != "" && instance_roots.has(descendant->get_owner())) {
+				if (!descendant->get_filename().is_empty() && instance_roots.has(descendant->get_owner())) {
 					instance_roots.push_back(descendant);
 				}
 			}
@@ -2114,7 +2114,7 @@ Node *Node::_duplicate(int p_flags, Map<const Node *, Node *> *r_duplimap) const
 		}
 	}
 
-	if (get_name() != String()) {
+	if (!get_name().is_empty()) {
 		node->set_name(get_name());
 	}
 
