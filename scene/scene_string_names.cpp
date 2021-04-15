@@ -195,11 +195,6 @@ SceneStringNames::SceneStringNames() {
 
 	_default = StaticCString::create("default");
 
-	for (int i = 0; i < MAX_MATERIALS; i++) {
-
-		mesh_materials[i] = "material/" + itos(i);
-	}
-
 	_mesh_changed = StaticCString::create("_mesh_changed");
 
 	parameters_base_path = "parameters/";
