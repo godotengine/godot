@@ -241,5 +241,21 @@ $GODOT_HEAD_INCLUDE
 			}
 		})();
 	//]]></script>
+	<script type='text/javascript'>
+		if (
+			localStorage.getItem('firefoxLinuxWarningDismissed') === null
+			&& window.navigator.platform.match(/Linux/)
+			&& window.navigator.userAgent.match(/Firefox/)
+		) {
+			alert(`Warning: Possible low performance
+
+Firefox has notoriously poor WebGL performance on Linux compared to other platforms,
+unless you are using EGL (which is only possible on Wayland).
+
+Consider using a Chromium-based browser for better rendering performance.
+This dialog will only appear once.`);
+			localStorage.setItem('firefoxLinuxWarningDismissed', true);
+		}
+	</script>
 </body>
 </html>
