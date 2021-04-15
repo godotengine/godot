@@ -270,7 +270,6 @@ void FabrikInverseKinematic::solve(Task *p_task, real_t blending_delta, bool ove
 		return; // Skip solving
 	}
 
-	// This line below is part of the problem - removing it fixes the issue with BoneAttachment nodes...
 	p_task->skeleton->set_bone_global_pose_override(p_task->chain.chain_root.bone, Transform(), 0.0, true);
 
 	if (p_task->chain.middle_chain_item) {
@@ -567,6 +566,9 @@ void SkeletonIK3D::start(bool p_one_time) {
 
 void SkeletonIK3D::stop() {
 	set_process_internal(false);
+	if (skeleton) {
+		skeleton->clear_bones_global_pose_override();
+	}
 }
 
 Transform SkeletonIK3D::_get_target_transform() {
