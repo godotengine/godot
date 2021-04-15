@@ -76,9 +76,9 @@ jobs:
           path: bin/*
           retention-days: 14
 
-  linux-editor-sanitizers-mono:
+  linux-editor-sanitizers:
     runs-on: "ubuntu-20.04"
-    name: Editor w/ Mono and sanitizers (target=debug, tools=yes, tests=yes, use_asan=yes, use_ubsan=yes)
+    name: Editor and sanitizers (target=debug, tools=yes, tests=yes, use_asan=yes, use_ubsan=yes)
 
     steps:
       - uses: actions/checkout@v2
@@ -94,7 +94,8 @@ jobs:
       - name: Configure dependencies
         run: |
           sudo apt-get install build-essential pkg-config libx11-dev libxcursor-dev \
-            libxinerama-dev libgl1-mesa-dev libglu-dev libasound2-dev libpulse-dev libudev-dev libxi-dev libxrandr-dev yasm
+            libxinerama-dev libgl1-mesa-dev libglu-dev libasound2-dev libpulse-dev libudev-dev libxi-dev libxrandr-dev yasm \
+            xvfb wget unzip
 
       # Upload cache on completion and check it out now
       - name: Load .scons_cache directory
@@ -126,17 +127,47 @@ jobs:
           scons --version
 
       # We should always be explicit with our flags usage here since it's gonna be sure to always set those flags
+      # [Workaround] SwiftShader doesn't support tesselation, so we skip Godot check about it
       - name: Compilation
         env:
           SCONS_CACHE: ${{github.workspace}}/.scons_cache/
         run: |
-          scons tools=yes tests=yes target=debug module_mono_enabled=yes mono_glue=no use_asan=yes use_ubsan=yes
+          sed -i "s|ERR_FAIL_COND_V(p_rasterization_state.patch_control_points|//ERR_FAIL_COND_V(p_rasterization_state.patch_control_points|" drivers/vulkan/rendering_device_vulkan.cpp
+          scons tools=yes tests=yes target=debug debug_symbols=no use_asan=yes use_ubsan=yes
           ls -l bin/
 
       # Execute unit tests for the editor
       - name: Unit Tests
         run: |
-          ./bin/godot.linuxbsd.tools.64s.mono --test
+          ./bin/godot.linuxbsd.tools.64s --test
+
+      # Download, unzip and setup SwiftShader library [d4550ab8d3f]
+      - name: Download SwiftShader
+        run: |
+          wget https://github.com/qarmin/gtk_library_store/releases/download/3.24.0/swiftshader.zip
+          unzip swiftshader.zip
+          rm swiftshader.zip
+          curr="$(pwd)/libvk_swiftshader.so"
+          sed -i "s|PATH_TO_CHANGE|$curr|" vk_swiftshader_icd.json
+
+      # Download and extract zip archive with project, folder is renamed to be able to easy change used project
+      - name: Download test project
+        run: |
+          wget https://github.com/qarmin/RegressionTestProject/archive/4.0.zip
+          unzip 4.0.zip
+          mv "RegressionTestProject-4.0" "test_project"
+
+      # Editor is quite complicated piece of software, so it is easy to introduce bug here
+      - name: Open and close editor
+        run: |
+          VK_ICD_FILENAMES=$(pwd)/vk_swiftshader_icd.json DRI_PRIME=0 xvfb-run bin/godot.linuxbsd.tools.64s --audio-driver Dummy -e -q --path test_project 2>&1 | tee sanitizers_log.txt || true
+          misc/scripts/check_ci_log.py sanitizers_log.txt
+
+      # Run test project
+      - name: Run project
+        run: |
+          VK_ICD_FILENAMES=$(pwd)/vk_swiftshader_icd.json DRI_PRIME=0 xvfb-run bin/godot.linuxbsd.tools.64s 40 --audio-driver Dummy --path test_project 2>&1 | tee sanitizers_log.txt || true
+          misc/scripts/check_ci_log.py sanitizers_log.txt
 
   linux-template-mono:
     runs-on: "ubuntu-20.04"
