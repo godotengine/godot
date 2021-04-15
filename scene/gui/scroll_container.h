@@ -54,13 +54,11 @@ private:
 
 	void update_scrollbars();
 
-	Vector2 drag_speed;
-	Vector2 drag_accum;
-	Vector2 drag_from;
-	Vector2 last_drag_accum;
-	float time_since_motion = 0.0f;
+	Vector2 drag_speed = Vector2();
+	Vector2 drag_accum = Vector2();
+	Vector2 drag_from = Vector2();
 	bool drag_touching = false;
-	bool drag_touching_deaccel = false;
+	bool animating = false;
 	bool beyond_deadzone = false;
 
 	ScrollMode horizontal_scroll_mode = SCROLL_MODE_AUTO;
@@ -69,11 +67,28 @@ private:
 	int deadzone = 0;
 	bool follow_focus = false;
 
+	bool always_smoothed;
+	float scroll_step;
+
+	float smooth_scroll_duration_button;
+	float inertial_scroll_duration_touch;
+	float inertial_scroll_duration_current;
+
+	float inertial_time_left;
+	Vector2 expected_scroll_value;
+	Vector2 inertial_start;
+	Vector2 inertial_target;
+
 	struct ThemeCache {
 		Ref<StyleBox> panel_style;
 	} theme_cache;
 
 	void _cancel_drag();
+	void _button_scroll(bool horizontal, float amount);
+	void _start_inertial_scroll();
+
+	void _check_expected_scroll();
+	void _update_expected_scroll();
 
 protected:
 	virtual void _update_theme_item_cache() override;
@@ -107,8 +122,14 @@ public:
 	int get_deadzone() const;
 	void set_deadzone(int p_deadzone);
 
+	float get_scroll_step() const;
+	void set_scroll_step(float p_step);
+
 	bool is_following_focus() const;
 	void set_follow_focus(bool p_follow);
+
+	bool is_always_smoothed() const;
+	void set_always_smoothed(bool p_smoothed);
 
 	HScrollBar *get_h_scroll_bar();
 	VScrollBar *get_v_scroll_bar();

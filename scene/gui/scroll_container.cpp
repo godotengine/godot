@@ -88,11 +88,10 @@ void ScrollContainer::_update_theme_item_cache() {
 
 void ScrollContainer::_cancel_drag() {
 	set_physics_process_internal(false);
-	drag_touching_deaccel = false;
+	animating = false;
 	drag_touching = false;
 	drag_speed = Vector2();
 	drag_accum = Vector2();
-	last_drag_accum = Vector2();
 	drag_from = Vector2();
 
 	if (beyond_deadzone) {
@@ -102,8 +101,60 @@ void ScrollContainer::_cancel_drag() {
 	}
 }
 
+void ScrollContainer::_start_inertial_scroll() {
+	inertial_scroll_duration_current = inertial_time_left;
+	inertial_start = Vector2(h_scroll->get_value(), v_scroll->get_value());
+	animating = true;
+	set_physics_process_internal(true);
+}
+
+void ScrollContainer::_button_scroll(bool p_horizontal, float p_amount) {
+	// Cap the inertial target
+	if (inertial_target.x < 0) {
+		inertial_target.x = 0;
+	}
+	if (inertial_target.x > (h_scroll->get_max() - h_scroll->get_page())) {
+		inertial_target.x = h_scroll->get_max() - h_scroll->get_page();
+	}
+	if (inertial_target.y < 0) {
+		inertial_target.y = 0;
+	}
+	if (inertial_target.y > (v_scroll->get_max() - v_scroll->get_page())) {
+		inertial_target.y = v_scroll->get_max() - v_scroll->get_page();
+	}
+	_cancel_drag();
+
+	// Multiply the amount by the step (1/8th of a page)
+	if (p_horizontal) {
+		p_amount *= h_scroll->get_page() * scroll_step;
+	} else {
+		p_amount *= v_scroll->get_page() * scroll_step;
+	}
+
+	// Do scroll
+	if (always_smoothed) {
+		// Vector2 inertial_target = Vector2(h_scroll->get_value(), v_scroll->get_value());
+		if (p_horizontal) {
+			inertial_target.x += p_amount;
+		} else {
+			inertial_target.y += p_amount;
+		}
+		inertial_time_left = smooth_scroll_duration_button;
+		_start_inertial_scroll();
+		emit_signal("scroll_started");
+		propagate_notification(NOTIFICATION_SCROLL_BEGIN);
+	} else {
+		if (p_horizontal) {
+			h_scroll->set_value(h_scroll->get_value() + p_amount);
+		} else {
+			v_scroll->set_value(v_scroll->get_value() + p_amount);
+		}
+	}
+}
+
 void ScrollContainer::gui_input(const Ref<InputEvent> &p_gui_input) {
 	ERR_FAIL_COND(p_gui_input.is_null());
+	_check_expected_scroll();
 
 	double prev_v_scroll = v_scroll->get_value();
 	double prev_h_scroll = h_scroll->get_value();
@@ -120,19 +171,19 @@ void ScrollContainer::gui_input(const Ref<InputEvent> &p_gui_input) {
 			if (mb->get_button_index() == MouseButton::WHEEL_UP) {
 				// By default, the vertical orientation takes precedence. This is an exception.
 				if ((h_scroll_enabled && mb->is_shift_pressed()) || v_scroll_hidden) {
-					h_scroll->set_value(prev_h_scroll - h_scroll->get_page() / 8 * mb->get_factor());
+					_button_scroll(true, -mb->get_factor());
 					scroll_value_modified = true;
 				} else if (v_scroll_enabled) {
-					v_scroll->set_value(prev_v_scroll - v_scroll->get_page() / 8 * mb->get_factor());
+					_button_scroll(false, -mb->get_factor());
 					scroll_value_modified = true;
 				}
 			}
 			if (mb->get_button_index() == MouseButton::WHEEL_DOWN) {
 				if ((h_scroll_enabled && mb->is_shift_pressed()) || v_scroll_hidden) {
-					h_scroll->set_value(prev_h_scroll + h_scroll->get_page() / 8 * mb->get_factor());
+					_button_scroll(true, mb->get_factor());
 					scroll_value_modified = true;
 				} else if (v_scroll_enabled) {
-					v_scroll->set_value(prev_v_scroll + v_scroll->get_page() / 8 * mb->get_factor());
+					_button_scroll(false, mb->get_factor());
 					scroll_value_modified = true;
 				}
 			}
@@ -141,19 +192,19 @@ void ScrollContainer::gui_input(const Ref<InputEvent> &p_gui_input) {
 			if (mb->get_button_index() == MouseButton::WHEEL_LEFT) {
 				// By default, the horizontal orientation takes precedence. This is an exception.
 				if ((v_scroll_enabled && mb->is_shift_pressed()) || h_scroll_hidden) {
-					v_scroll->set_value(prev_v_scroll - v_scroll->get_page() / 8 * mb->get_factor());
+					_button_scroll(false, -mb->get_factor());
 					scroll_value_modified = true;
 				} else if (h_scroll_enabled) {
-					h_scroll->set_value(prev_h_scroll - h_scroll->get_page() / 8 * mb->get_factor());
+					_button_scroll(true, -mb->get_factor());
 					scroll_value_modified = true;
 				}
 			}
 			if (mb->get_button_index() == MouseButton::WHEEL_RIGHT) {
 				if ((v_scroll_enabled && mb->is_shift_pressed()) || h_scroll_hidden) {
-					v_scroll->set_value(prev_v_scroll + v_scroll->get_page() / 8 * mb->get_factor());
+					_button_scroll(false, mb->get_factor());
 					scroll_value_modified = true;
 				} else if (h_scroll_enabled) {
-					h_scroll->set_value(prev_h_scroll + h_scroll->get_page() / 8 * mb->get_factor());
+					_button_scroll(true, mb->get_factor());
 					scroll_value_modified = true;
 				}
 			}
@@ -163,6 +214,8 @@ void ScrollContainer::gui_input(const Ref<InputEvent> &p_gui_input) {
 				return;
 			}
 		}
+
+		_update_expected_scroll();
 
 		bool is_touchscreen_available = DisplayServer::get_singleton()->is_touchscreen_available();
 		if (!is_touchscreen_available) {
@@ -180,22 +233,17 @@ void ScrollContainer::gui_input(const Ref<InputEvent> &p_gui_input) {
 
 			drag_speed = Vector2();
 			drag_accum = Vector2();
-			last_drag_accum = Vector2();
 			drag_from = Vector2(prev_h_scroll, prev_v_scroll);
 			drag_touching = true;
-			drag_touching_deaccel = false;
+			animating = false;
 			beyond_deadzone = false;
-			time_since_motion = 0;
 			set_physics_process_internal(true);
-			time_since_motion = 0;
 
 		} else {
 			if (drag_touching) {
-				if (drag_speed == Vector2()) {
-					_cancel_drag();
-				} else {
-					drag_touching_deaccel = true;
-				}
+				drag_touching = false;
+				inertial_time_left = inertial_scroll_duration_touch;
+				_start_inertial_scroll();
 			}
 		}
 		return;
@@ -204,7 +252,7 @@ void ScrollContainer::gui_input(const Ref<InputEvent> &p_gui_input) {
 	Ref<InputEventMouseMotion> mm = p_gui_input;
 
 	if (mm.is_valid()) {
-		if (drag_touching && !drag_touching_deaccel) {
+		if (drag_touching && !animating) {
 			Vector2 motion = mm->get_relative();
 			drag_accum -= motion;
 
@@ -228,7 +276,20 @@ void ScrollContainer::gui_input(const Ref<InputEvent> &p_gui_input) {
 				} else {
 					drag_accum.y = 0;
 				}
-				time_since_motion = 0;
+				drag_speed -= -motion;
+			}
+		}
+	}
+
+	// If a touch event is already being processed, ignore pan events (which can also be valid when using touch)
+	if (!drag_touching) {
+		Ref<InputEventPanGesture> pan_gesture = p_gui_input;
+		if (pan_gesture.is_valid()) {
+			if (h_scroll->is_visible_in_tree()) {
+				h_scroll->set_value(prev_h_scroll + h_scroll->get_page() * pan_gesture->get_delta().x / 8);
+			}
+			if (v_scroll->is_visible_in_tree()) {
+				v_scroll->set_value(prev_v_scroll + v_scroll->get_page() * pan_gesture->get_delta().y / 8);
 			}
 		}
 
@@ -238,20 +299,27 @@ void ScrollContainer::gui_input(const Ref<InputEvent> &p_gui_input) {
 		return;
 	}
 
-	Ref<InputEventPanGesture> pan_gesture = p_gui_input;
-	if (pan_gesture.is_valid()) {
-		if (h_scroll_enabled) {
-			h_scroll->set_value(prev_h_scroll + h_scroll->get_page() * pan_gesture->get_delta().x / 8);
+	// If the event is not a mouse event, try processing it as page up or page down (this requires focus!)
+	if (!mm.is_valid() && !mb.is_valid()) {
+		if (p_gui_input->is_action_pressed("ui_page_up", true)) {
+			if (v_scroll->is_visible_in_tree()) {
+				_button_scroll(false, -1 / scroll_step);
+				accept_event();
+			}
 		}
-		if (v_scroll_enabled) {
-			v_scroll->set_value(prev_v_scroll + v_scroll->get_page() * pan_gesture->get_delta().y / 8);
+		if (p_gui_input->is_action_pressed("ui_page_down", true)) {
+			if (v_scroll->is_visible_in_tree()) {
+				_button_scroll(false, 1 / scroll_step);
+				accept_event();
+			}
 		}
 
 		if (v_scroll->get_value() != prev_v_scroll || h_scroll->get_value() != prev_h_scroll) {
 			accept_event(); // Accept event if scroll changed.
 		}
-		return;
 	}
+
+	_update_expected_scroll();
 }
 
 void ScrollContainer::_update_scrollbar_position() {
@@ -284,16 +352,31 @@ void ScrollContainer::_gui_focus_changed(Control *p_control) {
 void ScrollContainer::ensure_control_visible(Control *p_control) {
 	ERR_FAIL_COND_MSG(!is_ancestor_of(p_control), "Must be an ancestor of the control.");
 
+	_check_expected_scroll();
+
 	Rect2 global_rect = get_global_rect();
 	Rect2 other_rect = p_control->get_global_rect();
 	float right_margin = v_scroll->is_visible() ? v_scroll->get_size().x : 0.0f;
 	float bottom_margin = h_scroll->is_visible() ? h_scroll->get_size().y : 0.0f;
 
-	Vector2 diff = Vector2(MAX(MIN(other_rect.position.x, global_rect.position.x), other_rect.position.x + other_rect.size.x - global_rect.size.x + (!is_layout_rtl() ? right_margin : 0.0f)),
-			MAX(MIN(other_rect.position.y, global_rect.position.y), other_rect.position.y + other_rect.size.y - global_rect.size.y + bottom_margin));
+	float h_diff = MAX(MIN(other_rect.position.x, global_rect.position.x), other_rect.position.x + other_rect.size.x - global_rect.size.x + (is_layout_rtl() ? right_margin : 0.0)) - global_rect.position.x;
+	float v_diff = MAX(MIN(other_rect.position.y, global_rect.position.y), other_rect.position.y + other_rect.size.y - global_rect.size.y + bottom_margin) - global_rect.position.y;
 
-	set_h_scroll(get_h_scroll() + (diff.x - global_rect.position.x));
-	set_v_scroll(get_v_scroll() + (diff.y - global_rect.position.y));
+	if (always_smoothed) {
+		if (h_diff != 0 || v_diff != 0) {
+			_cancel_drag();
+			inertial_target = Vector2(h_scroll->get_value() + h_diff, v_scroll->get_value() + v_diff);
+			inertial_time_left = smooth_scroll_duration_button;
+			_start_inertial_scroll();
+			emit_signal("scroll_started");
+			propagate_notification(NOTIFICATION_SCROLL_BEGIN);
+		}
+	} else {
+		h_scroll->set_value(h_scroll->get_value() + h_diff);
+		v_scroll->set_value(v_scroll->get_value() + v_diff);
+	}
+
+	_update_expected_scroll();
 }
 
 void ScrollContainer::_reposition_children() {
@@ -370,73 +453,71 @@ void ScrollContainer::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
-			if (drag_touching) {
-				if (drag_touching_deaccel) {
-					Vector2 pos = Vector2(h_scroll->get_value(), v_scroll->get_value());
-					pos += drag_speed * get_physics_process_delta_time();
+			if (animating) {
+				_check_expected_scroll();
 
-					bool turnoff_h = false;
-					bool turnoff_v = false;
-
-					if (pos.x < 0) {
-						pos.x = 0;
-						turnoff_h = true;
-					}
-					if (pos.x > (h_scroll->get_max() - h_scroll->get_page())) {
-						pos.x = h_scroll->get_max() - h_scroll->get_page();
-						turnoff_h = true;
-					}
-
-					if (pos.y < 0) {
-						pos.y = 0;
-						turnoff_v = true;
-					}
-					if (pos.y > (v_scroll->get_max() - v_scroll->get_page())) {
-						pos.y = v_scroll->get_max() - v_scroll->get_page();
-						turnoff_v = true;
-					}
-
-					if (horizontal_scroll_mode != SCROLL_MODE_DISABLED) {
-						h_scroll->set_value(pos.x);
-					}
-					if (vertical_scroll_mode != SCROLL_MODE_DISABLED) {
-						v_scroll->set_value(pos.y);
-					}
-
-					float sgn_x = drag_speed.x < 0 ? -1 : 1;
-					float val_x = Math::abs(drag_speed.x);
-					val_x -= 1000 * get_physics_process_delta_time();
-
-					if (val_x < 0) {
-						turnoff_h = true;
-					}
-
-					float sgn_y = drag_speed.y < 0 ? -1 : 1;
-					float val_y = Math::abs(drag_speed.y);
-					val_y -= 1000 * get_physics_process_delta_time();
-
-					if (val_y < 0) {
-						turnoff_v = true;
-					}
-
-					drag_speed = Vector2(sgn_x * val_x, sgn_y * val_y);
-
-					if (turnoff_h && turnoff_v) {
-						_cancel_drag();
-					}
-
-				} else {
-					if (time_since_motion == 0 || time_since_motion > 0.1) {
-						Vector2 diff = drag_accum - last_drag_accum;
-						last_drag_accum = drag_accum;
-						drag_speed = diff / get_physics_process_delta_time();
-					}
-
-					time_since_motion += get_physics_process_delta_time();
+				inertial_time_left -= get_physics_process_delta_time();
+				if (inertial_time_left <= 0) {
+					inertial_time_left = 0;
 				}
+
+				float normalized_time = inertial_time_left / inertial_scroll_duration_current;
+				Vector2 pos = inertial_target.lerp(inertial_start, normalized_time * normalized_time);
+
+				bool turnoff_h = horizontal_scroll_mode == SCROLL_MODE_DISABLED;
+				bool turnoff_v = vertical_scroll_mode == SCROLL_MODE_DISABLED;
+
+				// Stop and cap scroll value if reaching the end or beginning
+				if (pos.x < 0) {
+					pos.x = 0;
+					turnoff_h = true;
+				}
+				if (pos.x > (h_scroll->get_max() - h_scroll->get_page())) {
+					pos.x = h_scroll->get_max() - h_scroll->get_page();
+					turnoff_h = true;
+				}
+				if (pos.y < 0) {
+					pos.y = 0;
+					turnoff_v = true;
+				}
+				if (pos.y > (v_scroll->get_max() - v_scroll->get_page())) {
+					pos.y = v_scroll->get_max() - v_scroll->get_page();
+					turnoff_v = true;
+				}
+
+				if (horizontal_scroll_mode != SCROLL_MODE_DISABLED) {
+					h_scroll->set_value(pos.x);
+				}
+				if (vertical_scroll_mode != SCROLL_MODE_DISABLED) {
+					v_scroll->set_value(pos.y);
+				}
+
+				// If the animation is over, or if scrolling has stopped due to reaching the end or beginning, stop animating
+				if ((turnoff_h && turnoff_v) || inertial_time_left <= 0) {
+					_cancel_drag();
+				}
+				_update_expected_scroll();
+			}
+			if (drag_touching) {
+				// Set the target to where the scroll will be if it continues for inertial_scroll_duration_touch seconds.
+				Vector2 pos = Vector2(h_scroll->get_value(), v_scroll->get_value());
+				inertial_target = pos + drag_speed * inertial_scroll_duration_touch * 2000 * get_physics_process_delta_time();
+				// Reset drag_speed
+				drag_speed = Vector2();
 			}
 		} break;
 	}
+}
+
+void ScrollContainer::_check_expected_scroll() {
+	Vector2 pos = Vector2(h_scroll->get_value(), v_scroll->get_value());
+	if (expected_scroll_value != pos) {
+		_cancel_drag();
+		inertial_target = pos;
+	}
+}
+void ScrollContainer::_update_expected_scroll() {
+	expected_scroll_value = Vector2(h_scroll->get_value(), v_scroll->get_value());
 }
 
 void ScrollContainer::update_scrollbars() {
@@ -526,6 +607,22 @@ void ScrollContainer::set_follow_focus(bool p_follow) {
 	follow_focus = p_follow;
 }
 
+bool ScrollContainer::is_always_smoothed() const {
+	return always_smoothed;
+}
+
+void ScrollContainer::set_always_smoothed(bool p_enabled) {
+	always_smoothed = p_enabled;
+}
+
+float ScrollContainer::get_scroll_step() const {
+	return scroll_step;
+}
+
+void ScrollContainer::set_scroll_step(float p_value) {
+	scroll_step = p_value;
+}
+
 PackedStringArray ScrollContainer::get_configuration_warnings() const {
 	PackedStringArray warnings = Container::get_configuration_warnings();
 
@@ -581,6 +678,10 @@ void ScrollContainer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_follow_focus", "enabled"), &ScrollContainer::set_follow_focus);
 	ClassDB::bind_method(D_METHOD("is_following_focus"), &ScrollContainer::is_following_focus);
+	ClassDB::bind_method(D_METHOD("set_always_smoothed", "enabled"), &ScrollContainer::set_always_smoothed);
+	ClassDB::bind_method(D_METHOD("is_always_smoothed"), &ScrollContainer::is_always_smoothed);
+	ClassDB::bind_method(D_METHOD("set_scroll_step", "value"), &ScrollContainer::set_scroll_step);
+	ClassDB::bind_method(D_METHOD("get_scroll_step"), &ScrollContainer::get_scroll_step);
 
 	ClassDB::bind_method(D_METHOD("get_h_scroll_bar"), &ScrollContainer::get_h_scroll_bar);
 	ClassDB::bind_method(D_METHOD("get_v_scroll_bar"), &ScrollContainer::get_v_scroll_bar);
@@ -597,13 +698,19 @@ void ScrollContainer::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "horizontal_scroll_mode", PROPERTY_HINT_ENUM, "Disabled,Auto,Always Show,Never Show"), "set_horizontal_scroll_mode", "get_horizontal_scroll_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "vertical_scroll_mode", PROPERTY_HINT_ENUM, "Disabled,Auto,Always Show,Never Show"), "set_vertical_scroll_mode", "get_vertical_scroll_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "scroll_deadzone"), "set_deadzone", "get_deadzone");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "scroll_smoothed"), "set_always_smoothed", "is_always_smoothed");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "scroll_step"), "set_scroll_step", "get_scroll_step");
 
 	BIND_ENUM_CONSTANT(SCROLL_MODE_DISABLED);
 	BIND_ENUM_CONSTANT(SCROLL_MODE_AUTO);
 	BIND_ENUM_CONSTANT(SCROLL_MODE_SHOW_ALWAYS);
 	BIND_ENUM_CONSTANT(SCROLL_MODE_SHOW_NEVER);
 
-	GLOBAL_DEF("gui/common/default_scroll_deadzone", 0);
+	GLOBAL_DEF("gui/scroll/default_scroll_step", 0.125);
+	GLOBAL_DEF("gui/scroll/default_scroll_deadzone", 0);
+	GLOBAL_DEF("gui/scroll/default_scroll_smoothed", false);
+	GLOBAL_DEF("gui/scroll/smooth_scroll_duration_button", 0.15);
+	GLOBAL_DEF("gui/scroll/inertial_scroll_duration_touch", 1.5);
 };
 
 ScrollContainer::ScrollContainer() {
@@ -617,7 +724,12 @@ ScrollContainer::ScrollContainer() {
 	add_child(v_scroll, false, INTERNAL_MODE_BACK);
 	v_scroll->connect("value_changed", callable_mp(this, &ScrollContainer::_scroll_moved));
 
-	deadzone = GLOBAL_GET("gui/common/default_scroll_deadzone");
+	scroll_step = GLOBAL_GET("gui/scroll/default_scroll_step");
+	deadzone = GLOBAL_GET("gui/scroll/default_scroll_deadzone");
+	always_smoothed = GLOBAL_GET("gui/scroll/default_scroll_smoothed");
+	inertial_scroll_duration_touch = GLOBAL_GET("gui/scroll/inertial_scroll_duration_touch");
+	smooth_scroll_duration_button = GLOBAL_GET("gui/scroll/smooth_scroll_duration_button");
 
+	set_focus_mode(FOCUS_CLICK);
 	set_clip_contents(true);
 };

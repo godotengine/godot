@@ -42,6 +42,7 @@
 	</methods>
 	<members>
 		<member name="clip_contents" type="bool" setter="set_clip_contents" getter="is_clipping_contents" overrides="Control" default="true" />
+		<member name="focus_mode" type="int" setter="set_focus_mode" getter="get_focus_mode" overrides="Control" enum="Control.FocusMode" default="1" />
 		<member name="follow_focus" type="bool" setter="set_follow_focus" getter="is_following_focus" default="false">
 			If [code]true[/code], the ScrollContainer will automatically scroll to focused children (including indirect children) to make sure they are fully visible.
 		</member>
@@ -53,6 +54,10 @@
 		</member>
 		<member name="scroll_horizontal" type="int" setter="set_h_scroll" getter="get_h_scroll" default="0">
 			The current horizontal scroll value.
+		</member>
+		<member name="scroll_smoothed" type="bool" setter="set_always_smoothed" getter="is_always_smoothed" default="false">
+		</member>
+		<member name="scroll_step" type="float" setter="set_scroll_step" getter="get_scroll_step" default="0.125">
 		</member>
 		<member name="scroll_vertical" type="int" setter="set_v_scroll" getter="get_v_scroll" default="0">
 			The current vertical scroll value.

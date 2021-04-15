@@ -744,15 +744,23 @@
 		<member name="filesystem/import/fbx/enabled.web" type="bool" setter="" getter="" default="false">
 			Override for [member filesystem/import/fbx/enabled] on the Web where FBX2glTF can't easily be accessed from Godot.
 		</member>
-		<member name="gui/common/default_scroll_deadzone" type="int" setter="" getter="" default="0">
-			Default value for [member ScrollContainer.scroll_deadzone], which will be used for all [ScrollContainer]s unless overridden.
-		</member>
 		<member name="gui/common/swap_cancel_ok" type="bool" setter="" getter="">
 			If [code]true[/code], swaps [b]Cancel[/b] and [b]OK[/b] buttons in dialogs on Windows and UWP to follow interface conventions. [method DisplayServer.get_swap_cancel_ok] can be used to query whether buttons are swapped at run-time.
 			[b]Note:[/b] This doesn't affect native dialogs such as the ones spawned by [method DisplayServer.dialog_show].
 		</member>
 		<member name="gui/common/text_edit_undo_stack_max_size" type="int" setter="" getter="" default="1024">
 			Maximum undo/redo history size for [TextEdit] fields.
+		</member>
+		<member name="gui/scroll/default_scroll_deadzone" type="int" setter="" getter="" default="0">
+			Default value for [member ScrollContainer.scroll_deadzone], which will be used for all [ScrollContainer]s unless overridden.
+		</member>
+		<member name="gui/scroll/default_scroll_smoothed" type="bool" setter="" getter="" default="false">
+		</member>
+		<member name="gui/scroll/default_scroll_step" type="float" setter="" getter="" default="0.125">
+		</member>
+		<member name="gui/scroll/inertial_scroll_duration_touch" type="float" setter="" getter="" default="1.5">
+		</member>
+		<member name="gui/scroll/smooth_scroll_duration_button" type="float" setter="" getter="" default="0.15">
 		</member>
 		<member name="gui/theme/custom" type="String" setter="" getter="" default="&quot;&quot;">
 			Path to a custom [Theme] resource file to use for the project ([code].theme[/code] or generic [code].tres[/code]/[code].res[/code] extension).
