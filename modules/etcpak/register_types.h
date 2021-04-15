@@ -28,5 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
+#ifndef ETCPAK_REGISTER_TYPES_H
+#define ETCPAK_REGISTER_TYPES_H
+
 void register_etcpak_types();
 void unregister_etcpak_types();
+
+#endif // ETCPAK_REGISTER_TYPES_H
