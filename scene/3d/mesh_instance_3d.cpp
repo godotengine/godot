@@ -51,7 +51,7 @@ bool MeshInstance3D::_set(const StringName &p_name, const Variant &p_value) {
 		return true;
 	}
 
-	if (p_name.operator String().begins_with("material/")) {
+	if (p_name.operator String().begins_with("surface_material_override/")) {
 		int idx = p_name.operator String().get_slicec('/', 1).to_int();
 		if (idx >= surface_override_materials.size() || idx < 0) {
 			return false;
@@ -75,7 +75,7 @@ bool MeshInstance3D::_get(const StringName &p_name, Variant &r_ret) const {
 		return true;
 	}
 
-	if (p_name.operator String().begins_with("material/")) {
+	if (p_name.operator String().begins_with("surface_material_override/")) {
 		int idx = p_name.operator String().get_slicec('/', 1).to_int();
 		if (idx >= surface_override_materials.size() || idx < 0) {
 			return false;
