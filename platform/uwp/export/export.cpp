@@ -812,21 +812,21 @@ class EditorExportPlatformUWP : public EditorExportPlatform {
 		String capabilities_elements = "";
 		const char **basic = uwp_capabilities;
 		while (*basic) {
-			if ((bool)p_preset->get("capabilities/" + String(*basic))) {
+			if ((bool)p_preset->get("capabilities/" + String(*basic).camelcase_to_underscore(false))) {
 				capabilities_elements += "    <Capability Name=\"" + String(*basic) + "\" />\n";
 			}
 			basic++;
 		}
 		const char **uap = uwp_uap_capabilities;
 		while (*uap) {
-			if ((bool)p_preset->get("capabilities/" + String(*uap))) {
+			if ((bool)p_preset->get("capabilities/" + String(*uap).camelcase_to_underscore(false))) {
 				capabilities_elements += "    <uap:Capability Name=\"" + String(*uap) + "\" />\n";
 			}
 			uap++;
 		}
 		const char **device = uwp_device_capabilities;
 		while (*device) {
-			if ((bool)p_preset->get("capabilities/" + String(*device))) {
+			if ((bool)p_preset->get("capabilities/" + String(*device).camelcase_to_underscore(false))) {
 				capabilities_elements += "    <DeviceCapability Name=\"" + String(*device) + "\" />\n";
 			}
 			device++;
