@@ -82,7 +82,8 @@
 			<argument index="0" name="plugin" type="EditorExportPlugin">
 			</argument>
 			<description>
-				Registers a new export plugin. Export plugins are used when the project is being exported. See [EditorExportPlugin] for more information.
+				Registers a new [EditorExportPlugin]. Export plugins are used to perform tasks when the project is being exported.
+				See [method add_inspector_plugin] for an example of how to register a plugin.
 			</description>
 		</method>
 		<method name="add_import_plugin">
@@ -91,6 +92,9 @@
 			<argument index="0" name="importer" type="EditorImportPlugin">
 			</argument>
 			<description>
+				Registers a new [EditorImportPlugin]. Import plugins are used to import custom and unsupported assets as a custom [Resource] type.
+				[b]Note:[/b] If you want to import custom 3D asset formats use [method add_scene_import_plugin] instead.
+				See [method add_inspector_plugin] for an example of how to register a plugin.
 			</description>
 		</method>
 		<method name="add_inspector_plugin">
@@ -99,6 +103,18 @@
 			<argument index="0" name="plugin" type="EditorInspectorPlugin">
 			</argument>
 			<description>
+				Registers a new [EditorInspectorPlugin]. Inspector plugins are used to extend [EditorInspector] and provide custom configuration tools for your object's properties.
+				[b]Note:[/b] Always use [method remove_inspector_plugin] to remove the registered [EditorInspectorPlugin] when your [EditorPlugin] is disabled to prevent leaks and an unexpected behavior.
+				[codeblock]
+				const MyInspectorPlugin = preload("res://addons/your_addon/path/to/your/script.gd")
+				var inspector_plugin = MyInspectorPlugin.new()
+
+				func _enter_tree():
+				    add_inspector_plugin(inspector_plugin)
+
+				func _exit_tree():
+				    remove_inspector_plugin(inspector_plugin)
+				[/codeblock]
 			</description>
 		</method>
 		<method name="add_scene_import_plugin">
@@ -107,6 +123,7 @@
 			<argument index="0" name="scene_importer" type="EditorSceneImporter">
 			</argument>
 			<description>
+				Registers a new [EditorSceneImporter]. Scene importers are used to import custom 3D asset formats as scenes.
 			</description>
 		</method>
 		<method name="add_spatial_gizmo_plugin">
@@ -115,6 +132,8 @@
 			<argument index="0" name="plugin" type="EditorSpatialGizmoPlugin">
 			</argument>
 			<description>
+				Registers a new [EditorSpatialGizmoPlugin]. Gizmo plugins are used to add custom gizmos to the 3D preview viewport for a [Spatial].
+				See [method add_inspector_plugin] for an example of how to register a plugin.
 			</description>
 		</method>
 		<method name="add_tool_menu_item">
@@ -470,6 +489,7 @@
 			<argument index="0" name="plugin" type="EditorExportPlugin">
 			</argument>
 			<description>
+				Removes an export plugin registered by [method add_export_plugin].
 			</description>
 		</method>
 		<method name="remove_import_plugin">
@@ -478,6 +498,7 @@
 			<argument index="0" name="importer" type="EditorImportPlugin">
 			</argument>
 			<description>
+				Removes an import plugin registered by [method add_import_plugin].
 			</description>
 		</method>
 		<method name="remove_inspector_plugin">
@@ -486,6 +507,7 @@
 			<argument index="0" name="plugin" type="EditorInspectorPlugin">
 			</argument>
 			<description>
+				Removes an inspector plugin registered by [method add_import_plugin]
 			</description>
 		</method>
 		<method name="remove_scene_import_plugin">
@@ -494,6 +516,7 @@
 			<argument index="0" name="scene_importer" type="EditorSceneImporter">
 			</argument>
 			<description>
+				Removes a scene importer registered by [method add_scene_import_plugin].
 			</description>
 		</method>
 		<method name="remove_spatial_gizmo_plugin">
@@ -502,6 +525,7 @@
 			<argument index="0" name="plugin" type="EditorSpatialGizmoPlugin">
 			</argument>
 			<description>
+				Removes a gizmo plugin registered by [method add_spatial_gizmo_plugin].
 			</description>
 		</method>
 		<method name="remove_tool_menu_item">
