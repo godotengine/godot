@@ -597,5 +597,35 @@
 			});
 		}
 	//]]></script>
+	<script type='text/javascript'>
+		// Detect old browser versions and display warning messages.
+
+		const chromeMatch = window.navigator.userAgent.match(/Chrome\/([0-9]+).*$/);
+		if (chromeMatch && chromeMatch.length >= 2) {
+			if (Number(chromeMatch[1]) < 83) {
+				alert(`Warning: Web browser compatibility
+
+You are using an old Chrome version (${chromeMatch[1]}).
+This Chrome version does not support the features required to run Godot projects
+exported to HTML5.
+
+Please update to a newer Chrome version or use a different, up-to-date browser.`);
+			};
+		}
+
+		const firefoxMatch = window.navigator.userAgent.match(/Firefox\/([0-9]+).*$/);
+		if (firefoxMatch && firefoxMatch.length >= 2) {
+			// Allow Firefox 79 ESR (latest package in Debian stable as of April 2021).
+			if (Number(firefoxMatch[1]) < 79) {
+				alert(`Warning: Web browser compatibility
+
+You are using an old Firefox version (${firefoxMatch[1]}).
+This Firefox version does not support the features required to run Godot projects
+exported to HTML5.
+
+Please update to a newer Firefox version or use a different, up-to-date browser.`);
+			};
+		}
+	</script>
 </body>
 </html>
