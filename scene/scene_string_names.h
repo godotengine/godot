@@ -216,10 +216,6 @@ public:
 	StringName use_in_baked_light;
 	StringName use_dynamic_gi;
 #endif
-	enum {
-		MAX_MATERIALS = 32
-	};
-	StringName mesh_materials[MAX_MATERIALS];
 };
 
 #endif // SCENE_STRING_NAMES_H
