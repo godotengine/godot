@@ -409,6 +409,12 @@ void EditorNode::_unhandled_input(const Ref<InputEvent> &p_event) {
 		if (ED_IS_SHORTCUT("editor/filter_files", p_event)) {
 			filesystem_dock->focus_on_filter();
 		}
+		if (k->get_command() && k->get_keycode() == KEY_Y) {
+			// Alternative shortcut for redo.
+			// Since `ED_SHORTCUT()` can only specify one key per shortcut action,
+			// we have to hardcode the alternative shortcut.
+			_menu_option_confirm(EDIT_REDO, true);
+		}
 
 		if (ED_IS_SHORTCUT("editor/editor_2d", p_event)) {
 			_editor_select(EDITOR_2D);
@@ -6246,6 +6252,7 @@ EditorNode::EditorNode() {
 
 	p->add_separator();
 	p->add_shortcut(ED_GET_SHORTCUT("ui_undo"), EDIT_UNDO, true);
+	// Note: Ctrl + Y can also be used to redo actions (see this class' `_unhandled_input()`).
 	p->add_shortcut(ED_GET_SHORTCUT("ui_redo"), EDIT_REDO, true);
 
 	p->add_separator();
