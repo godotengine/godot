@@ -589,6 +589,9 @@ void SkeletonIK::start(bool p_one_time) {
 
 void SkeletonIK::stop() {
 	set_process_internal(false);
+	if (skeleton) {
+		skeleton->clear_bones_global_pose_override();
+	}
 }
 
 Transform SkeletonIK::_get_target_transform() {
