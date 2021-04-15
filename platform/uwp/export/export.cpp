@@ -1049,19 +1049,19 @@ public:
 		// Capabilities
 		const char **basic = uwp_capabilities;
 		while (*basic) {
-			r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "capabilities/" + String(*basic).camelcase_to_underscore(false)), false));
+			r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "capabilities/" + String(*basic)), false));
 			basic++;
 		}
 
 		const char **uap = uwp_uap_capabilities;
 		while (*uap) {
-			r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "capabilities/" + String(*uap).camelcase_to_underscore(false)), false));
+			r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "capabilities/" + String(*uap)), false));
 			uap++;
 		}
 
 		const char **device = uwp_device_capabilities;
 		while (*device) {
-			r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "capabilities/" + String(*device).camelcase_to_underscore(false)), false));
+			r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "capabilities/" + String(*device)), false));
 			device++;
 		}
 	}
