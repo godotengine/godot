@@ -832,7 +832,7 @@ class EditorExportPlatformUWP : public EditorExportPlatform {
 			device++;
 		}
 
-		if (!((bool)p_preset->get("capabilities/internetClient")) && p_give_internet) {
+		if (!((bool)p_preset->get("capabilities/internet_Client")) && p_give_internet) {
 			capabilities_elements += "    <Capability Name=\"internetClient\" />\n";
 		}
 
