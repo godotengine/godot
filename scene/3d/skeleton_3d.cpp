@@ -387,6 +387,7 @@ void Skeleton3D::_notification(int p_what) {
 void Skeleton3D::clear_bones_global_pose_override() {
 	for (int i = 0; i < bones.size(); i += 1) {
 		bones.write[i].global_pose_override_amount = 0;
+		bones.write[i].global_pose_override_reset = true;
 	}
 	_make_dirty();
 }
