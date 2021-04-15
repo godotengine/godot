@@ -1109,6 +1109,15 @@ void ArrayMesh::_get_property_list(List<PropertyInfo> *p_list) const {
 		return;
 	}
 
+	if (blend_shapes.size()) {
+		String available_blendshapes("");
+		for (int blendshape_inx = 0; blendshape_inx < get_blend_shape_count(); blendshape_inx++) {
+			if (blendshape_inx > 0)
+				available_blendshapes += ",";
+			available_blendshapes += get_blend_shape_name(blendshape_inx);
+		}
+		p_list->push_back(PropertyInfo(Variant::INT, "available_blendshapes", PROPERTY_HINT_ENUM, available_blendshapes, PROPERTY_USAGE_EDITOR));
+	}
 	for (int i = 0; i < surfaces.size(); i++) {
 		p_list->push_back(PropertyInfo(Variant::STRING, "surface_" + itos(i + 1) + "/name", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR));
 		if (surfaces[i].is_2d) {
