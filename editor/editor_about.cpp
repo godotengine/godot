@@ -38,16 +38,15 @@
 #include "core/version_hash.gen.h"
 
 void EditorAbout::_theme_changed() {
-	Control *base = EditorNode::get_singleton()->get_gui_base();
-	Ref<Font> font = base->get_theme_font("source", "EditorFonts");
-	int font_size = base->get_theme_font_size("source_size", "EditorFonts");
+	const Ref<Font> font = get_theme_font("source", "EditorFonts");
+	const int font_size = get_theme_font_size("source_size", "EditorFonts");
 	_tpl_text->add_theme_font_override("normal_font", font);
 	_tpl_text->add_theme_font_size_override("normal_font_size", font_size);
 	_tpl_text->add_theme_constant_override("line_separation", 6 * EDSCALE);
 	_license_text->add_theme_font_override("normal_font", font);
 	_license_text->add_theme_font_size_override("normal_font_size", font_size);
 	_license_text->add_theme_constant_override("line_separation", 6 * EDSCALE);
-	_logo->set_texture(base->get_theme_icon("Logo", "EditorIcons"));
+	_logo->set_texture(get_theme_icon("Logo", "EditorIcons"));
 }
 
 void EditorAbout::_notification(int p_what) {
