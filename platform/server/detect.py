@@ -113,7 +113,7 @@ def configure(env):
             if env["use_llvm"]:
                 env.Append(
                     CCFLAGS=[
-                        "-fsanitize=nullability-return,nullability-arg,function,nullability-assign,implicit-integer-sign-change,implicit-signed-integer-truncation,implicit-unsigned-integer-truncation"
+                        "-fsanitize=nullability-return,nullability-arg,function,nullability-assign,implicit-integer-sign-change"
                     ]
                 )
             else:
