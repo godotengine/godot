@@ -1234,6 +1234,7 @@ void LineEdit::delete_text(int p_from_column, int p_to_column) {
 void LineEdit::set_text(String p_text) {
 	clear_internal();
 	append_at_cursor(p_text);
+	_create_undo_state();
 
 	update();
 	cursor_pos = 0;
