@@ -368,7 +368,7 @@ MeshGeometry::MappingData<T> MeshGeometry::resolve_vertex_data_array(
 	// UVIndex, MaterialIndex, NormalIndex, etc..
 	std::string indexDataElementName;
 
-	if (indexOverride != "") {
+	if (!indexOverride.empty()) {
 		// Colors should become ColorIndex
 		indexDataElementName = indexOverride;
 	} else {

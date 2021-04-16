@@ -164,10 +164,10 @@ TEST_CASE("[String] Invalid UTF8") {
 	String s;
 	bool err = s.parse_utf8((const char *)u8str);
 	CHECK(err);
-	CHECK(s == String());
+	CHECK(s.is_empty());
 
 	CharString cs = (const char *)u8str;
-	CHECK(String::utf8(cs) == String());
+	CHECK(String::utf8(cs).is_empty());
 	ERR_PRINT_ON
 }
 
@@ -177,10 +177,10 @@ TEST_CASE("[String] Invalid UTF16") {
 	String s;
 	bool err = s.parse_utf16(u16str);
 	CHECK(err);
-	CHECK(s == String());
+	CHECK(s.is_empty());
 
 	Char16String cs = u16str;
-	CHECK(String::utf16(cs) == String());
+	CHECK(String::utf16(cs).is_empty());
 	ERR_PRINT_ON
 }
 
@@ -1332,6 +1332,25 @@ TEST_CASE("[String] validate_node_name") {
 	String name_with_invalid_chars = "Name with invalid characters :.@removed!";
 	CHECK(name_with_invalid_chars.validate_node_name() == "Name with invalid characters removed!");
 }
+
+TEST_CASE("[Stress][String] Empty via ' == String()'") {
+	for (int i = 0; i < 100000; ++i) {
+		String str = "Hello World!";
+		if (str == String()) {
+			continue;
+		}
+	}
+}
+
+TEST_CASE("[Stress][String] Empty via `is_empty()`") {
+	for (int i = 0; i < 100000; ++i) {
+		String str = "Hello World!";
+		if (str.is_empty()) {
+			continue;
+		}
+	}
+}
+
 } // namespace TestString
 
 #endif // TEST_STRING_H

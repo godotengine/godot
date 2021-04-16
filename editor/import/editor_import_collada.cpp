@@ -293,7 +293,7 @@ Error ColladaImport::_create_scene(Collada::Node *p_node, Node3D *p_parent) {
 		} break;
 	}
 
-	if (p_node->name != "") {
+	if (!p_node->name.is_empty()) {
 		node->set_name(p_node->name);
 	}
 	NodeMap nm;
@@ -307,7 +307,7 @@ Error ColladaImport::_create_scene(Collada::Node *p_node, Node3D *p_parent) {
 	p_parent->add_child(node);
 	node->set_owner(scene);
 
-	if (p_node->empty_draw_type != "") {
+	if (!p_node->empty_draw_type.is_empty()) {
 		node->set_meta("empty_draw_type", Variant(p_node->empty_draw_type));
 	}
 
@@ -330,9 +330,9 @@ Error ColladaImport::_create_material(const String &p_target) {
 	Ref<StandardMaterial3D> material = memnew(StandardMaterial3D);
 
 	String base_name;
-	if (src_mat.name != "") {
+	if (!src_mat.name.is_empty()) {
 		base_name = src_mat.name;
-	} else if (effect.name != "") {
+	} else if (!effect.name.is_empty()) {
 		base_name = effect.name;
 	} else {
 		base_name = "Material";
@@ -350,9 +350,9 @@ Error ColladaImport::_create_material(const String &p_target) {
 
 	// DIFFUSE
 
-	if (effect.diffuse.texture != "") {
+	if (!effect.diffuse.texture.is_empty()) {
 		String texfile = effect.get_texture_path(effect.diffuse.texture, collada);
-		if (texfile != "") {
+		if (!texfile.is_empty()) {
 			if (texfile.begins_with("/")) {
 				texfile = texfile.replace_first("/", "res://");
 			}
@@ -371,9 +371,9 @@ Error ColladaImport::_create_material(const String &p_target) {
 
 	// SPECULAR
 
-	if (effect.specular.texture != "") {
+	if (!effect.specular.texture.is_empty()) {
 		String texfile = effect.get_texture_path(effect.specular.texture, collada);
-		if (texfile != "") {
+		if (!texfile.is_empty()) {
 			if (texfile.begins_with("/")) {
 				texfile = texfile.replace_first("/", "res://");
 			}
@@ -396,9 +396,9 @@ Error ColladaImport::_create_material(const String &p_target) {
 
 	// EMISSION
 
-	if (effect.emission.texture != "") {
+	if (!effect.emission.texture.is_empty()) {
 		String texfile = effect.get_texture_path(effect.emission.texture, collada);
-		if (texfile != "") {
+		if (!texfile.is_empty()) {
 			if (texfile.begins_with("/")) {
 				texfile = texfile.replace_first("/", "res://");
 			}
@@ -423,9 +423,9 @@ Error ColladaImport::_create_material(const String &p_target) {
 
 	// NORMAL
 
-	if (effect.bump.texture != "") {
+	if (!effect.bump.texture.is_empty()) {
 		String texfile = effect.get_texture_path(effect.bump.texture, collada);
-		if (texfile != "") {
+		if (!texfile.is_empty()) {
 			if (texfile.begins_with("/")) {
 				texfile = texfile.replace_first("/", "res://");
 			}
@@ -844,7 +844,7 @@ Error ColladaImport::_create_mesh_surfaces(bool p_optimize, Ref<EditorSceneImpor
 						material = material_cache[target];
 					}
 
-				} else if (p.material != "") {
+				} else if (!p.material.is_empty()) {
 					WARN_PRINT("Collada: Unreferenced material in geometry instance: " + p.material);
 				}
 			}
@@ -1128,7 +1128,7 @@ Error ColladaImport::_create_resources(Collada::Node *p_node, bool p_use_compres
 					}
 				}
 
-				ERR_FAIL_COND_V_MSG(ngsource != "", ERR_INVALID_DATA, "Controller instance source '" + ngsource + "' is neither skin or morph!");
+				ERR_FAIL_COND_V_MSG(!ngsource.is_empty(), ERR_INVALID_DATA, "Controller instance source '" + ngsource + "' is neither skin or morph!");
 
 			} else {
 				meshid = ng2->source;
@@ -1145,13 +1145,13 @@ Error ColladaImport::_create_resources(Collada::Node *p_node, bool p_use_compres
 					mesh = Ref<EditorSceneImporterMesh>(memnew(EditorSceneImporterMesh));
 					const Collada::MeshData &meshdata = collada.state.mesh_data_map[meshid];
 					String name = meshdata.name;
-					if (name == "") {
+					if (name.is_empty()) {
 						name = "Mesh";
 					}
 					int counter = 2;
 					while (mesh_unique_names.has(name)) {
 						name = meshdata.name;
-						if (name == "") {
+						if (name.is_empty()) {
 							name = "Mesh";
 						}
 						name += itos(counter++);
@@ -1191,7 +1191,7 @@ Error ColladaImport::_create_resources(Collada::Node *p_node, bool p_use_compres
 							}
 
 							mi->set_surface_material(i, material);
-						} else if (matname != "") {
+						} else if (!matname.is_empty()) {
 							WARN_PRINT("Collada: Unreferenced material in geometry instance: " + matname);
 						}
 					}
@@ -1273,7 +1273,7 @@ void ColladaImport::_fix_param_animation_tracks() {
 				// test source(s)
 				String source = ng->source;
 
-				while (source != "") {
+				while (!source.is_empty()) {
 					if (collada.state.skin_controller_data_map.has(source)) {
 						const Collada::SkinControllerData &skin = collada.state.skin_controller_data_map[source];
 
@@ -1716,7 +1716,7 @@ Node *EditorSceneImporterCollada::import_scene(const String &p_path, uint32_t p_
 		AnimationPlayer *ap = memnew(AnimationPlayer);
 		for (int i = 0; i < state.animations.size(); i++) {
 			String name;
-			if (state.animations[i]->get_name() == "") {
+			if (state.animations[i]->get_name().is_empty()) {
 				name = "default";
 			} else {
 				name = state.animations[i]->get_name();

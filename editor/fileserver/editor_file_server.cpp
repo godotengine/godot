@@ -88,7 +88,7 @@ void EditorFileServer::_subthread_start(void *s) {
 			ERR_FAIL();
 		}
 	} else {
-		if (cd->efs->password != "") {
+		if (!cd->efs->password.is_empty()) {
 			encode_uint32(ERR_INVALID_DATA, buf4);
 			cd->connection->put_data(buf4, 4);
 			OS::get_singleton()->delay_usec(1000000);

@@ -102,7 +102,7 @@ bool Skeleton3D::_set(const StringName &p_path, const Variant &p_value) {
 
 			for (int i = 0; i < children.size(); i++) {
 				NodePath npath = children[i];
-				ERR_CONTINUE(npath.operator String() == "");
+				ERR_CONTINUE(npath.operator String().is_empty());
 				Node *node = get_node(npath);
 				ERR_CONTINUE(!node);
 				bind_child_node_to_bone(which, node);
@@ -409,7 +409,7 @@ Transform Skeleton3D::get_bone_global_pose(int p_bone) const {
 
 // skeleton creation api
 void Skeleton3D::add_bone(const String &p_name) {
-	ERR_FAIL_COND(p_name == "" || p_name.find(":") != -1 || p_name.find("/") != -1);
+	ERR_FAIL_COND(p_name.is_empty() || p_name.find(":") != -1 || p_name.find("/") != -1);
 
 	for (int i = 0; i < bones.size(); i++) {
 		ERR_FAIL_COND(bones[i].name == p_name);

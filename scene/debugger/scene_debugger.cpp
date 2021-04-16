@@ -226,7 +226,7 @@ void SceneDebugger::add_to_cache(const String &p_filename, Node *p_node) {
 		return;
 	}
 
-	if (EngineDebugger::get_script_debugger() && p_filename != String()) {
+	if (EngineDebugger::get_script_debugger() && !p_filename.is_empty()) {
 		debugger->live_scene_edit_cache[p_filename].insert(p_node);
 	}
 }

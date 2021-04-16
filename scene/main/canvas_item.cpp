@@ -591,7 +591,7 @@ void CanvasItem::_notification(int p_what) {
 				break;
 			}
 
-			if (group != "") {
+			if (!group.is_empty()) {
 				get_tree()->call_group_flags(SceneTree::GROUP_CALL_UNIQUE, group, "_top_level_raise_self");
 			} else {
 				CanvasItem *p = get_parent_item();

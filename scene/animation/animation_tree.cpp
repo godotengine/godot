@@ -134,7 +134,7 @@ float AnimationNode::_pre_process(const StringName &p_base_path, AnimationNode *
 void AnimationNode::make_invalid(const String &p_reason) {
 	ERR_FAIL_COND(!state);
 	state->valid = false;
-	if (state->invalid_reasons != String()) {
+	if (!state->invalid_reasons.is_empty()) {
 		state->invalid_reasons += "\n";
 	}
 	state->invalid_reasons += "- " + p_reason;

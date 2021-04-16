@@ -1387,7 +1387,7 @@ Ref<Theme> create_custom_theme(const Ref<Theme> p_theme) {
 	Ref<Theme> theme;
 
 	const String custom_theme = EditorSettings::get_singleton()->get("interface/theme/custom_theme");
-	if (custom_theme != "") {
+	if (!custom_theme.is_empty()) {
 		theme = ResourceLoader::load(custom_theme);
 	}
 

@@ -2046,7 +2046,7 @@ void TextServerAdvanced::_shape_run(ShapedTextDataAdvanced *p_sd, int32_t p_star
 	}
 	hb_buffer_set_script(p_sd->hb_buffer, p_script);
 
-	if (p_sd->spans[p_span].language != String()) {
+	if (!p_sd->spans[p_span].language.is_empty()) {
 		hb_language_t lang = hb_language_from_string(p_sd->spans[p_span].language.ascii().get_data(), -1);
 		hb_buffer_set_language(p_sd->hb_buffer, lang);
 	}
@@ -2561,13 +2561,13 @@ static num_system_data num_systems[]{
 
 String TextServerAdvanced::format_number(const String &p_string, const String &p_language) const {
 	_THREAD_SAFE_METHOD_
-	String lang = (p_language == "") ? TranslationServer::get_singleton()->get_tool_locale() : p_language;
+	String lang = (p_language.is_empty()) ? TranslationServer::get_singleton()->get_tool_locale() : p_language;
 
 	String res = p_string;
-	for (int i = 0; num_systems[i].lang != String(); i++) {
+	for (int i = 0; !num_systems[i].lang.is_empty(); i++) {
 		Vector<String> langs = num_systems[i].lang.split(",");
 		if (langs.has(lang)) {
-			if (num_systems[i].digits == String()) {
+			if (num_systems[i].digits.is_empty()) {
 				return p_string;
 			}
 			res.replace("e", num_systems[i].exp);
@@ -2588,13 +2588,13 @@ String TextServerAdvanced::format_number(const String &p_string, const String &p
 
 String TextServerAdvanced::parse_number(const String &p_string, const String &p_language) const {
 	_THREAD_SAFE_METHOD_
-	String lang = (p_language == "") ? TranslationServer::get_singleton()->get_tool_locale() : p_language;
+	String lang = (p_language.is_empty()) ? TranslationServer::get_singleton()->get_tool_locale() : p_language;
 
 	String res = p_string;
-	for (int i = 0; num_systems[i].lang != String(); i++) {
+	for (int i = 0; !num_systems[i].lang.is_empty(); i++) {
 		Vector<String> langs = num_systems[i].lang.split(",");
 		if (langs.has(lang)) {
-			if (num_systems[i].digits == String()) {
+			if (num_systems[i].digits.is_empty()) {
 				return p_string;
 			}
 			res.replace(num_systems[i].exp, "e");
@@ -2618,12 +2618,12 @@ String TextServerAdvanced::parse_number(const String &p_string, const String &p_
 
 String TextServerAdvanced::percent_sign(const String &p_language) const {
 	_THREAD_SAFE_METHOD_
-	String lang = (p_language == "") ? TranslationServer::get_singleton()->get_tool_locale() : p_language;
+	String lang = (p_language.is_empty()) ? TranslationServer::get_singleton()->get_tool_locale() : p_language;
 
-	for (int i = 0; num_systems[i].lang != String(); i++) {
+	for (int i = 0; !num_systems[i].lang.is_empty(); i++) {
 		Vector<String> langs = num_systems[i].lang.split(",");
 		if (langs.has(lang)) {
-			if (num_systems[i].percent_sign == String()) {
+			if (num_systems[i].percent_sign.is_empty()) {
 				return "%";
 			}
 			return num_systems[i].percent_sign;

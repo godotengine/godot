@@ -124,7 +124,7 @@ String TextEditor::get_name() {
 			}
 			name += "(*)";
 		}
-	} else if (text_file->get_name() != "") {
+	} else if (!text_file->get_name().is_empty()) {
 		name = text_file->get_name();
 	} else {
 		name = text_file->get_class() + "(" + itos(text_file->get_instance_id()) + ")";

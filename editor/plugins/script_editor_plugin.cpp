@@ -178,7 +178,7 @@ void EditorStandardSyntaxHighlighter::_update_cache() {
 			String comment = E->get();
 			String beg = comment.get_slice(" ", 0);
 			String end = comment.get_slice_count(" ") > 1 ? comment.get_slice(" ", 1) : String();
-			highlighter->add_color_region(beg, end, comment_color, end == "");
+			highlighter->add_color_region(beg, end, comment_color, end.is_empty());
 		}
 
 		/* Strings */
@@ -189,7 +189,7 @@ void EditorStandardSyntaxHighlighter::_update_cache() {
 			String string = E->get();
 			String beg = string.get_slice(" ", 0);
 			String end = string.get_slice_count(" ") > 1 ? string.get_slice(" ", 1) : String();
-			highlighter->add_color_region(beg, end, string_color, end == "");
+			highlighter->add_color_region(beg, end, string_color, end.is_empty());
 		}
 	}
 }
@@ -329,7 +329,7 @@ void ScriptEditorQuickOpen::_update_search() {
 
 	for (int i = 0; i < functions.size(); i++) {
 		String file = functions[i];
-		if ((search_box->get_text() == "" || file.findn(search_box->get_text()) != -1)) {
+		if ((search_box->get_text().is_empty() || file.findn(search_box->get_text()) != -1)) {
 			TreeItem *ti = search_options->create_item(root);
 			ti->set_text(0, file);
 			if (root->get_children() == ti) {
@@ -400,7 +400,7 @@ ScriptEditor *ScriptEditor::script_editor = nullptr;
 
 String ScriptEditor::_get_debug_tooltip(const String &p_text, Node *_se) {
 	String val = EditorDebuggerNode::get_singleton()->get_var_value(p_text);
-	if (val != String()) {
+	if (!val.is_empty()) {
 		return p_text + ": " + val;
 	} else {
 		return String();
@@ -840,7 +840,7 @@ void ScriptEditor::_resave_scripts(const String &p_str) {
 
 		RES script = se->get_edited_resource();
 
-		if (script->get_path() == "" || script->get_path().find("local://") != -1 || script->get_path().find("::") != -1) {
+		if (script->get_path().is_empty() || script->get_path().find("local://") != -1 || script->get_path().find("::") != -1) {
 			continue; //internal script, who cares
 		}
 
@@ -881,7 +881,7 @@ void ScriptEditor::_reload_scripts() {
 
 		RES edited_res = se->get_edited_resource();
 
-		if (edited_res->get_path() == "" || edited_res->get_path().find("local://") != -1 || edited_res->get_path().find("::") != -1) {
+		if (edited_res->get_path().is_empty() || edited_res->get_path().find("local://") != -1 || edited_res->get_path().find("::") != -1) {
 			continue; //internal script, who cares
 		}
 
@@ -925,7 +925,7 @@ void ScriptEditor::_res_saved_callback(const Ref<Resource> &p_res) {
 
 		RES script = se->get_edited_resource();
 
-		if (script->get_path() == "" || script->get_path().find("local://") != -1 || script->get_path().find("::") != -1) {
+		if (script->get_path().is_empty() || script->get_path().find("local://") != -1 || script->get_path().find("::") != -1) {
 			continue; //internal script, who cares
 		}
 
@@ -964,7 +964,7 @@ bool ScriptEditor::_test_script_times_on_disk(RES p_for_script) {
 				continue;
 			}
 
-			if (edited_res->get_path() == "" || edited_res->get_path().find("local://") != -1 || edited_res->get_path().find("::") != -1) {
+			if (edited_res->get_path().is_empty() || edited_res->get_path().find("local://") != -1 || edited_res->get_path().find("::") != -1) {
 				continue; //internal script, who cares
 			}
 
@@ -1630,7 +1630,7 @@ void ScriptEditor::get_breakpoints(List<String> *p_breakpoints) {
 		}
 
 		String base = script->get_path();
-		if (base.begins_with("local://") || base == "") {
+		if (base.begins_with("local://") || base.is_empty()) {
 			continue;
 		}
 
@@ -1767,7 +1767,7 @@ void ScriptEditor::_update_members_overview() {
 	for (int i = 0; i < functions.size(); i++) {
 		String filter = filter_methods->get_text();
 		String name = functions[i].get_slice(":", 0);
-		if (filter == "" || filter.is_subsequence_ofi(name)) {
+		if (filter.is_empty() || filter.is_subsequence_ofi(name)) {
 			members_overview->add_item(name);
 			members_overview->set_item_metadata(members_overview->get_item_count() - 1, functions[i].get_slice(":", 1).to_int() - 1);
 		}
@@ -1899,7 +1899,7 @@ void ScriptEditor::_update_script_names() {
 			if (built_in) {
 				name = path.get_file();
 				const String &resource_name = se->get_edited_resource()->get_name();
-				if (resource_name != "") {
+				if (!resource_name.is_empty()) {
 					// If the built-in script has a custom resource name defined,
 					// display the built-in script name as follows: `ResourceName (scene_file.tscn)`
 					name = vformat("%s (%s)", resource_name, name.substr(0, name.find("::", 0)));
@@ -2030,7 +2030,7 @@ void ScriptEditor::_update_script_names() {
 	Vector<_ScriptEditorItemData> sedata_filtered;
 	for (int i = 0; i < sedata.size(); i++) {
 		String filter = filter_scripts->get_text();
-		if (filter == "" || filter.is_subsequence_ofi(sedata[i].name)) {
+		if (filter.is_empty() || filter.is_subsequence_ofi(sedata[i].name)) {
 			sedata_filtered.push_back(sedata[i]);
 		}
 	}
@@ -2355,7 +2355,7 @@ void ScriptEditor::save_all_scripts() {
 			se->apply_code();
 		}
 
-		if (edited_res->get_path() != "" && edited_res->get_path().find("local://") == -1 && edited_res->get_path().find("::") == -1) {
+		if (!edited_res->get_path().is_empty() && edited_res->get_path().find("local://") == -1 && edited_res->get_path().find("::") == -1) {
 			Ref<TextFile> text_file = edited_res;
 			Ref<Script> script = edited_res;
 
@@ -2463,7 +2463,7 @@ void ScriptEditor::_editor_settings_changed() {
 
 	_update_autosave_timer();
 
-	if (current_theme == "") {
+	if (current_theme.is_empty()) {
 		current_theme = EditorSettings::get_singleton()->get("text_editor/theme/color_theme");
 	} else if (current_theme != String(EditorSettings::get_singleton()->get("text_editor/theme/color_theme"))) {
 		current_theme = EditorSettings::get_singleton()->get("text_editor/theme/color_theme");
@@ -2616,7 +2616,7 @@ bool ScriptEditor::can_drop_data_fw(const Point2 &p_point, const Variant &p_data
 
 		for (int i = 0; i < files.size(); i++) {
 			String file = files[i];
-			if (file == "" || !FileAccess::exists(file)) {
+			if (file.is_empty() || !FileAccess::exists(file)) {
 				continue;
 			}
 			Ref<Script> scr = ResourceLoader::load(file);
@@ -2686,7 +2686,7 @@ void ScriptEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data, Co
 		int num_tabs_before = tab_container->get_child_count();
 		for (int i = 0; i < files.size(); i++) {
 			String file = files[i];
-			if (file == "" || !FileAccess::exists(file)) {
+			if (file.is_empty() || !FileAccess::exists(file)) {
 				continue;
 			}
 			Ref<Script> scr = ResourceLoader::load(file);
@@ -2858,7 +2858,7 @@ void ScriptEditor::set_window_layout(Ref<ConfigFile> p_layout) {
 
 	for (int i = 0; i < helps.size(); i++) {
 		String path = helps[i];
-		if (path == "") { // invalid, skip
+		if (path.is_empty()) { // invalid, skip
 			continue;
 		}
 		_help_class_open(path);
@@ -2909,7 +2909,7 @@ void ScriptEditor::get_window_layout(Ref<ConfigFile> p_layout) {
 }
 
 void ScriptEditor::_help_class_open(const String &p_class) {
-	if (p_class == "") {
+	if (p_class.is_empty()) {
 		return;
 	}
 

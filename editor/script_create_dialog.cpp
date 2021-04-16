@@ -104,7 +104,7 @@ void ScriptCreateDialog::config(const String &p_base_name, const String &p_base_
 	parent_name->set_text(p_base_name);
 	parent_name->deselect();
 
-	if (p_base_path != "") {
+	if (!p_base_path.is_empty()) {
 		initial_bp = p_base_path.get_basename();
 		file_path->set_text(initial_bp + "." + ScriptServer::get_language(language_menu->get_selected())->get_extension());
 		current_language = language_menu->get_selected();
@@ -166,10 +166,10 @@ bool ScriptCreateDialog::_validate_class(const String &p_string) {
 String ScriptCreateDialog::_validate_path(const String &p_path, bool p_file_must_exist) {
 	String p = p_path.strip_edges();
 
-	if (p == "") {
+	if (p.is_empty()) {
 		return TTR("Path is empty.");
 	}
-	if (p.get_file().get_basename() == "") {
+	if (p.get_file().get_basename().is_empty()) {
 		return TTR("Filename is empty.");
 	}
 
@@ -230,7 +230,7 @@ String ScriptCreateDialog::_validate_path(const String &p_path, bool p_file_must
 
 	/* Let ScriptLanguage do custom validation */
 	String path_error = ScriptServer::get_language(language_menu->get_selected())->validate_path(p);
-	if (path_error != "") {
+	if (!path_error.is_empty()) {
 		return path_error;
 	}
 
@@ -296,7 +296,7 @@ void ScriptCreateDialog::_create_new() {
 	}
 
 	Ref<Script> scr;
-	if (script_template != "") {
+	if (!script_template.is_empty()) {
 		scr = ResourceLoader::load(script_template);
 		if (scr.is_null()) {
 			alert->set_text(vformat(TTR("Error loading template '%s'"), script_template));
@@ -357,7 +357,7 @@ void ScriptCreateDialog::_lang_changed(int l) {
 	String selected_ext = "." + language->get_extension();
 	String path = file_path->get_text();
 	String extension = "";
-	if (path != "") {
+	if (!path.is_empty()) {
 		if (path.find(".") != -1) {
 			extension = path.get_extension();
 		}
@@ -581,7 +581,7 @@ void ScriptCreateDialog::_path_changed(const String &p_path) {
 	is_new_script_created = true;
 
 	String path_error = _validate_path(p_path, false);
-	if (path_error != "") {
+	if (!path_error.is_empty()) {
 		_msg_path_valid(false, path_error);
 		_update_dialog();
 		return;

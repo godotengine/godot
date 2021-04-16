@@ -54,7 +54,7 @@ void MeshLibraryEditor::_menu_confirm() {
 		} break;
 		case MENU_OPTION_UPDATE_FROM_SCENE: {
 			String existing = mesh_library->get_meta("_editor_source_scene");
-			ERR_FAIL_COND(existing == "");
+			ERR_FAIL_COND(existing.is_empty());
 			_import_scene_cbk(existing);
 
 		} break;

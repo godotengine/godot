@@ -152,7 +152,7 @@ RID RenderingDevice::shader_create_from_bytecode(const Ref<RDShaderBytecode> &p_
 		ShaderStageData sd;
 		sd.shader_stage = stage;
 		String error = p_bytecode->get_stage_compile_error(stage);
-		ERR_FAIL_COND_V_MSG(error != String(), RID(), "Can't create a shader from an errored bytecode. Check errors in source bytecode.");
+		ERR_FAIL_COND_V_MSG(!error.is_empty(), RID(), "Can't create a shader from an errored bytecode. Check errors in source bytecode.");
 		sd.spir_v = p_bytecode->get_stage_bytecode(stage);
 		if (sd.spir_v.is_empty()) {
 			continue;

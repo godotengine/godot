@@ -113,7 +113,7 @@ void EditorFolding::_fill_folds(const Node *p_root, const Node *p_node, Array &p
 		if (E->get().usage & PROPERTY_USAGE_EDITOR) {
 			if (E->get().type == Variant::OBJECT) {
 				RES res = p_node->get(E->get().name);
-				if (res.is_valid() && !resources.has(res) && res->get_path() != String() && !res->get_path().is_resource_file()) {
+				if (res.is_valid() && !resources.has(res) && !res->get_path().is_empty() && !res->get_path().is_resource_file()) {
 					Vector<String> res_unfolds = _get_unfolds(res.ptr());
 					resource_folds.push_back(res->get_path());
 					resource_folds.push_back(res_unfolds);
@@ -243,8 +243,8 @@ void EditorFolding::_do_object_unfolds(Object *p_object, Set<RES> &resources) {
 
 		//can unfold
 		if (E->get().usage & PROPERTY_USAGE_EDITOR) {
-			if (group != "") { //group
-				if (group_base == String() || E->get().name.begins_with(group_base)) {
+			if (!group.is_empty()) { //group
+				if (group_base.is_empty() || E->get().name.begins_with(group_base)) {
 					bool can_revert = EditorPropertyRevert::can_property_revert(p_object, E->get().name);
 					if (can_revert) {
 						unfold_group.insert(group);
@@ -266,7 +266,7 @@ void EditorFolding::_do_object_unfolds(Object *p_object, Set<RES> &resources) {
 				if (res.is_valid()) {
 					print_line("path " + res->get_path());
 				}
-				if (res.is_valid() && !resources.has(res) && res->get_path() != String() && !res->get_path().is_resource_file()) {
+				if (res.is_valid() && !resources.has(res) && !res->get_path().is_empty() && !res->get_path().is_resource_file()) {
 					resources.insert(res);
 					_do_object_unfolds(res.ptr(), resources);
 				}

@@ -379,7 +379,7 @@ Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Map
 
 	// save the child instanced scenes that are chosen as editable, so they can be restored
 	// upon load back
-	if (p_node != p_owner && p_node->get_filename() != String() && p_owner->is_editable_instance(p_node)) {
+	if (p_node != p_owner && !p_node->get_filename().is_empty() && p_owner->is_editable_instance(p_node)) {
 		editable_instances.push_back(p_owner->get_path_to(p_node));
 	}
 
@@ -427,7 +427,7 @@ Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Map
 					}
 				}
 
-				if (p_node->get_filename() != String() && p_node->get_owner() == p_owner && instanced_by_owner) {
+				if (!p_node->get_filename().is_empty() && p_node->get_owner() == p_owner && instanced_by_owner) {
 					if (p_node->get_scene_instance_load_placeholder()) {
 						//it's a placeholder, use the placeholder path
 						nd.instance = _vm_get_variant(p_node->get_filename(), variant_map);
@@ -444,7 +444,7 @@ Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Map
 				}
 				n = nullptr;
 			} else {
-				if (n->get_filename() != String()) {
+				if (!n->get_filename().is_empty()) {
 					//is an instance
 					Ref<SceneState> state = n->get_scene_instance_state();
 					if (state.is_valid()) {
@@ -704,7 +704,7 @@ Error SceneState::_parse_connections(Node *p_owner, Node *p_node, Map<StringName
 
 			ERR_CONTINUE(!common_parent);
 
-			if (common_parent != p_owner && common_parent->get_filename() == String()) {
+			if (common_parent != p_owner && common_parent->get_filename().is_empty()) {
 				common_parent = common_parent->get_owner();
 			}
 
@@ -764,7 +764,7 @@ Error SceneState::_parse_connections(Node *p_owner, Node *p_node, Map<StringName
 
 						nl = nullptr;
 					} else {
-						if (nl->get_filename() != String()) {
+						if (!nl->get_filename().is_empty()) {
 							//is an instance
 							Ref<SceneState> state = nl->get_scene_instance_state();
 							if (state.is_valid()) {
@@ -1632,7 +1632,7 @@ Node *PackedScene::instance(GenEditState p_edit_state) const {
 		s->set_scene_instance_state(state);
 	}
 
-	if (get_path() != "" && get_path().find("::") == -1) {
+	if (!get_path().is_empty() && get_path().find("::") == -1) {
 		s->set_filename(get_path());
 	}
 

@@ -34,7 +34,7 @@ void GIProbeEditorPlugin::_bake() {
 	if (gi_probe) {
 		if (gi_probe->get_probe_data().is_null()) {
 			String path = get_tree()->get_edited_scene_root()->get_filename();
-			if (path == String()) {
+			if (path.is_empty()) {
 				path = "res://" + gi_probe->get_name() + "_data.res";
 			} else {
 				String ext = path.get_extension();

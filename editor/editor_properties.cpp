@@ -252,7 +252,7 @@ void EditorPropertyPath::_path_pressed() {
 		dialog->set_file_mode(save_mode ? EditorFileDialog::FILE_MODE_SAVE_FILE : EditorFileDialog::FILE_MODE_OPEN_FILE);
 		for (int i = 0; i < extensions.size(); i++) {
 			String e = extensions[i].strip_edges();
-			if (e != String()) {
+			if (!e.is_empty()) {
 				dialog->add_filter(extensions[i].strip_edges());
 			}
 		}
@@ -554,7 +554,7 @@ void EditorPropertyFlags::setup(const Vector<String> &p_options) {
 	bool first = true;
 	for (int i = 0; i < p_options.size(); i++) {
 		String option = p_options[i].strip_edges();
-		if (option != "") {
+		if (!option.is_empty()) {
 			CheckBox *cb = memnew(CheckBox);
 			cb->set_text(option);
 			cb->set_clip_text(true);
@@ -741,7 +741,7 @@ void EditorPropertyLayers::setup(LayerType p_layer_type) {
 			name = ProjectSettings::get_singleton()->get(basename + vformat("/layer_%d", i));
 		}
 
-		if (name == "") {
+		if (name.is_empty()) {
 			name = vformat(TTR("Layer %d"), i);
 		}
 
@@ -855,7 +855,7 @@ void EditorPropertyObjectID::_edit_pressed() {
 
 void EditorPropertyObjectID::update_property() {
 	String type = base_type;
-	if (type == "") {
+	if (type.is_empty()) {
 		type = "Object";
 	}
 
@@ -2607,7 +2607,7 @@ void EditorPropertyResource::_menu_option(int p_which) {
 
 			Resource *resp = Object::cast_to<Resource>(obj);
 			ERR_BREAK(!resp);
-			if (get_edited_object() && base_type != String() && base_type == "Script") {
+			if (get_edited_object() && !base_type.is_empty() && base_type == "Script") {
 				//make visual script the right type
 				resp->call("set_instance_base_type", get_edited_object()->get_class());
 			}
@@ -2657,7 +2657,7 @@ void EditorPropertyResource::_update_menu_items() {
 		menu->add_icon_item(get_theme_icon("ScriptCreate", "EditorIcons"), TTR("New Script"), OBJ_MENU_NEW_SCRIPT);
 		menu->add_icon_item(get_theme_icon("ScriptExtend", "EditorIcons"), TTR("Extend Script"), OBJ_MENU_EXTEND_SCRIPT);
 		menu->add_separator();
-	} else if (base_type != "") {
+	} else if (!base_type.is_empty()) {
 		int idx = 0;
 
 		Vector<EditorData::CustomType> custom_resources;
@@ -2750,7 +2750,7 @@ void EditorPropertyResource::_update_menu_items() {
 	RES cb = EditorSettings::get_singleton()->get_resource_clipboard();
 	bool paste_valid = false;
 	if (cb.is_valid()) {
-		if (base_type == "") {
+		if (base_type.is_empty()) {
 			paste_valid = true;
 		} else {
 			for (int i = 0; i < base_type.get_slice_count(","); i++) {
@@ -2984,7 +2984,7 @@ void EditorPropertyResource::update_property() {
 	} else {
 		assign->set_icon(EditorNode::get_singleton()->get_object_icon(res.operator->(), "Object"));
 
-		if (res->get_name() != String()) {
+		if (!res->get_name().is_empty()) {
 			assign->set_text(res->get_name());
 		} else if (res->get_path().is_resource_file()) {
 			assign->set_text(res->get_path().get_file());
@@ -3133,7 +3133,7 @@ bool EditorPropertyResource::_is_drop_valid(const Dictionary &p_drag_data) const
 			String file = files[0];
 			String ftype = EditorFileSystem::get_singleton()->get_file_type(file);
 
-			if (ftype != "") {
+			if (!ftype.is_empty()) {
 				for (int i = 0; i < allowed_types.size(); i++) {
 					String at = allowed_types[i].strip_edges();
 					if (ClassDB::is_parent_class(ftype, at)) {
@@ -3732,10 +3732,10 @@ bool EditorInspectorDefaultPlugin::parse_property(Object *p_object, Variant::Typ
 		} break;
 		case Variant::NODE_PATH: {
 			EditorPropertyNodePath *editor = memnew(EditorPropertyNodePath);
-			if (p_hint == PROPERTY_HINT_NODE_PATH_TO_EDITED_NODE && p_hint_text != String()) {
+			if (p_hint == PROPERTY_HINT_NODE_PATH_TO_EDITED_NODE && !p_hint_text.is_empty()) {
 				editor->setup(p_hint_text, Vector<StringName>(), (p_usage & PROPERTY_USAGE_NODE_PATH_FROM_SCENE_ROOT));
 			}
-			if (p_hint == PROPERTY_HINT_NODE_PATH_VALID_TYPES && p_hint_text != String()) {
+			if (p_hint == PROPERTY_HINT_NODE_PATH_VALID_TYPES && !p_hint_text.is_empty()) {
 				Vector<String> types = p_hint_text.split(",", false);
 				Vector<StringName> sn = Variant(types); //convert via variant
 				editor->setup(NodePath(), sn, (p_usage & PROPERTY_USAGE_NODE_PATH_FROM_SCENE_ROOT));

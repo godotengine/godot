@@ -1310,7 +1310,7 @@ void VisualScriptEditor::_create_function_dialog() {
 }
 
 void VisualScriptEditor::_create_function() {
-	String name = _validate_name((func_name_box->get_text() == "") ? "new_func" : func_name_box->get_text());
+	String name = _validate_name((func_name_box->get_text().is_empty()) ? "new_func" : func_name_box->get_text());
 	selected = name;
 	Vector2 ofs = _get_available_pos();
 
@@ -1952,7 +1952,7 @@ Variant VisualScriptEditor::get_drag_data_fw(const Point2 &p_point, Control *p_f
 
 		String type = it->get_metadata(0);
 
-		if (type == String()) {
+		if (type.is_empty()) {
 			return Variant();
 		}
 
@@ -2530,7 +2530,7 @@ String VisualScriptEditor::get_name() {
 			}
 			name += "(*)";
 		}
-	} else if (script->get_name() != "") {
+	} else if (!script->get_name().is_empty()) {
 		name = script->get_name();
 	} else {
 		name = script->get_class() + "(" + itos(script->get_instance_id()) + ")";
@@ -2746,7 +2746,7 @@ void VisualScriptEditor::clear_edit_menu() {
 void VisualScriptEditor::_change_base_type_callback() {
 	String bt = select_base_type->get_selected_type();
 
-	ERR_FAIL_COND(bt == String());
+	ERR_FAIL_COND(bt.is_empty());
 	undo_redo->create_action(TTR("Change Base Type"));
 	undo_redo->add_do_method(script.ptr(), "set_instance_base_type", bt);
 	undo_redo->add_undo_method(script.ptr(), "set_instance_base_type", script->get_instance_base_type());
@@ -3111,7 +3111,7 @@ void VisualScriptEditor::_port_action_menu(int p_option) {
 			if (tg.type == Variant::OBJECT) {
 				if (tg.script.is_valid()) {
 					new_connect_node_select->select_from_script(tg.script, "");
-				} else if (type_string != String()) {
+				} else if (!type_string.is_empty()) {
 					new_connect_node_select->select_from_base_type(type_string);
 				} else {
 					new_connect_node_select->select_from_base_type(n->get_base_type());
@@ -3135,7 +3135,7 @@ void VisualScriptEditor::_port_action_menu(int p_option) {
 				property_info = script->get_node(port_action_node)->get_output_value_port_info(port_action_output);
 			}
 			if (tg.type == Variant::OBJECT) {
-				if (property_info.type == Variant::OBJECT && property_info.hint_string != String()) {
+				if (property_info.type == Variant::OBJECT && !property_info.hint_string.is_empty()) {
 					new_connect_node_select->select_from_action(property_info.hint_string);
 				} else {
 					new_connect_node_select->select_from_action("");
@@ -3317,7 +3317,7 @@ void VisualScriptEditor::_selected_connect_node(const String &p_text, const Stri
 					PropertyHint hint = script->get_node(port_action_node)->get_output_value_port_info(port_action_output).hint;
 					String base_type = script->get_node(port_action_node)->get_output_value_port_info(port_action_output).hint_string;
 
-					if (base_type != String() && hint == PROPERTY_HINT_TYPE_STRING) {
+					if (!base_type.is_empty() && hint == PROPERTY_HINT_TYPE_STRING) {
 						vsfc->set_base_type(base_type);
 					}
 					if (p_text == "call" || p_text == "call_deferred") {
@@ -3352,7 +3352,7 @@ void VisualScriptEditor::_selected_connect_node(const String &p_text, const Stri
 					PropertyHint hint = script->get_node(port_action_node)->get_output_value_port_info(port_action_output).hint;
 					String base_type = script->get_node(port_action_node)->get_output_value_port_info(port_action_output).hint_string;
 
-					if (base_type != String() && hint == PROPERTY_HINT_TYPE_STRING) {
+					if (!base_type.is_empty() && hint == PROPERTY_HINT_TYPE_STRING) {
 						vsp->set_base_type(base_type);
 					}
 				}
@@ -3381,7 +3381,7 @@ void VisualScriptEditor::_selected_connect_node(const String &p_text, const Stri
 				} else if (script->get_node(port_action_node).is_valid()) {
 					PropertyHint hint = script->get_node(port_action_node)->get_output_value_port_info(port_action_output).hint;
 					String base_type = script->get_node(port_action_node)->get_output_value_port_info(port_action_output).hint_string;
-					if (base_type != String() && hint == PROPERTY_HINT_TYPE_STRING) {
+					if (!base_type.is_empty() && hint == PROPERTY_HINT_TYPE_STRING) {
 						vsp->set_base_type(base_type);
 					}
 				}

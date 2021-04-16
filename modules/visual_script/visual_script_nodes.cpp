@@ -1242,7 +1242,7 @@ void VisualScriptVariableGet::_validate_property(PropertyInfo &property) const {
 
 		String vhint;
 		for (List<StringName>::Element *E = vars.front(); E; E = E->next()) {
-			if (vhint != String()) {
+			if (!vhint.is_empty()) {
 				vhint += ",";
 			}
 
@@ -1352,7 +1352,7 @@ void VisualScriptVariableSet::_validate_property(PropertyInfo &property) const {
 
 		String vhint;
 		for (List<StringName>::Element *E = vars.front(); E; E = E->next()) {
-			if (vhint != String()) {
+			if (!vhint.is_empty()) {
 				vhint += ",";
 			}
 
@@ -1550,7 +1550,7 @@ PropertyInfo VisualScriptPreload::get_output_value_port_info(int p_idx) const {
 		pinfo.hint_string = preload->get_class();
 		if (preload->get_path().is_resource_file()) {
 			pinfo.name = preload->get_path();
-		} else if (preload->get_name() != String()) {
+		} else if (!preload->get_name().is_empty()) {
 			pinfo.name = preload->get_name();
 		} else {
 			pinfo.name = preload->get_class();
@@ -1852,7 +1852,7 @@ PropertyInfo VisualScriptClassConstant::get_input_value_port_info(int p_idx) con
 }
 
 PropertyInfo VisualScriptClassConstant::get_output_value_port_info(int p_idx) const {
-	if (name == "") {
+	if (name.is_empty()) {
 		return PropertyInfo(Variant::INT, String(base_type));
 	} else {
 		return PropertyInfo(Variant::INT, String(base_type) + "." + String(name));
@@ -1929,7 +1929,7 @@ void VisualScriptClassConstant::_validate_property(PropertyInfo &property) const
 
 		property.hint_string = "";
 		for (List<String>::Element *E = constants.front(); E; E = E->next()) {
-			if (property.hint_string != String()) {
+			if (!property.hint_string.is_empty()) {
 				property.hint_string += ",";
 			}
 			property.hint_string += E->get();
@@ -1989,7 +1989,7 @@ String VisualScriptBasicTypeConstant::get_caption() const {
 }
 
 String VisualScriptBasicTypeConstant::get_text() const {
-	if (name == "") {
+	if (name.is_empty()) {
 		return Variant::get_type_name(type);
 	} else {
 		return Variant::get_type_name(type) + "." + String(name);
@@ -2067,7 +2067,7 @@ void VisualScriptBasicTypeConstant::_validate_property(PropertyInfo &property) c
 		}
 		property.hint_string = "";
 		for (List<StringName>::Element *E = constants.front(); E; E = E->next()) {
-			if (property.hint_string != String()) {
+			if (!property.hint_string.is_empty()) {
 				property.hint_string += ",";
 			}
 			property.hint_string += String(E->get());
@@ -2298,7 +2298,7 @@ void VisualScriptEngineSingleton::_validate_property(PropertyInfo &property) con
 			continue; //skip these, too simple named
 		}
 
-		if (cc != String()) {
+		if (!cc.is_empty()) {
 			cc += ",";
 		}
 		cc += E->get().name;
@@ -3024,7 +3024,7 @@ String VisualScriptSubCall::get_caption() const {
 String VisualScriptSubCall::get_text() const {
 	Ref<Script> script = get_script();
 	if (script.is_valid()) {
-		if (script->get_name() != String()) {
+		if (!script->get_name().is_empty()) {
 			return script->get_name();
 		}
 		if (script->get_path().is_resource_file()) {
@@ -3667,7 +3667,7 @@ void VisualScriptInputAction::_validate_property(PropertyInfo &property) const {
 		al.sort();
 
 		for (int i = 0; i < al.size(); i++) {
-			if (actions != String()) {
+			if (!actions.is_empty()) {
 				actions += ",";
 			}
 			actions += al[i];

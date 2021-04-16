@@ -113,7 +113,7 @@ Error ResourceImporterCSVTranslation::import(const String &p_source_file, const 
 
 	while (line.size() == locales.size() + 1) {
 		String key = line[0];
-		if (key != "") {
+		if (!key.is_empty()) {
 			for (int i = 1; i < line.size(); i++) {
 				translations.write[i - 1]->add_message(key, line[i].c_unescape());
 			}

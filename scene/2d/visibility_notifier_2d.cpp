@@ -211,7 +211,7 @@ void VisibilityEnabler2D::_find_nodes(Node *p_node) {
 
 	for (int i = 0; i < p_node->get_child_count(); i++) {
 		Node *c = p_node->get_child(i);
-		if (c->get_filename() != String()) {
+		if (!c->get_filename().is_empty()) {
 			continue; //skip, instance
 		}
 
@@ -227,7 +227,7 @@ void VisibilityEnabler2D::_notification(int p_what) {
 
 		Node *from = this;
 		//find where current scene starts
-		while (from->get_parent() && from->get_filename() == String()) {
+		while (from->get_parent() && from->get_filename().is_empty()) {
 			from = from->get_parent();
 		}
 
@@ -314,7 +314,7 @@ TypedArray<String> VisibilityEnabler2D::get_configuration_warnings() const {
 	TypedArray<String> warnings = Node::get_configuration_warnings();
 
 #ifdef TOOLS_ENABLED
-	if (is_inside_tree() && get_parent() && (get_parent()->get_filename() == String() && get_parent() != get_tree()->get_edited_scene_root())) {
+	if (is_inside_tree() && get_parent() && (get_parent()->get_filename().is_empty() && get_parent() != get_tree()->get_edited_scene_root())) {
 		warnings.push_back(TTR("VisibilityEnabler2D works best when used with the edited scene root directly as parent."));
 	}
 #endif

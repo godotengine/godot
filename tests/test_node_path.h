@@ -104,7 +104,7 @@ TEST_CASE("[NodePath] Absolute path") {
 			node_path_aboslute.get_as_property_path() == NodePath(":root/Sprite2D"),
 			"The returned property path should match the expected value.");
 	CHECK_MESSAGE(
-			node_path_aboslute.get_concatenated_subnames() == "",
+			node_path_aboslute.get_concatenated_subnames().is_empty(),
 			"The returned concatenated subnames should match the expected value.");
 
 	CHECK_MESSAGE(
@@ -147,7 +147,7 @@ TEST_CASE("[NodePath] Empty path") {
 			"The returned property path should match the expected value.");
 	ERR_PRINT_OFF;
 	CHECK_MESSAGE(
-			node_path_empty.get_concatenated_subnames() == "",
+			node_path_empty.get_concatenated_subnames().is_empty(),
 			"The returned concatenated subnames should match the expected value.");
 	ERR_PRINT_ON;
 
