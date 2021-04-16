@@ -143,36 +143,6 @@ static _FORCE_INLINE_ void vc_ptrcall(void (T::*method)(P...) const, void *p_bas
 }
 
 template <class R, class T, class... P>
-static _FORCE_INLINE_ void vc_change_return_type(R (T::*method)(P...), Variant *v) {
-	VariantTypeAdjust<R>::adjust(v);
-}
-
-template <class R, class T, class... P>
-static _FORCE_INLINE_ void vc_change_return_type(R (T::*method)(P...) const, Variant *v) {
-	VariantTypeAdjust<R>::adjust(v);
-}
-
-template <class T, class... P>
-static _FORCE_INLINE_ void vc_change_return_type(void (T::*method)(P...), Variant *v) {
-	VariantInternal::clear(v);
-}
-
-template <class T, class... P>
-static _FORCE_INLINE_ void vc_change_return_type(void (T::*method)(P...) const, Variant *v) {
-	VariantInternal::clear(v);
-}
-
-template <class R, class... P>
-static _FORCE_INLINE_ void vc_change_return_type(R (*method)(P...), Variant *v) {
-	VariantTypeAdjust<R>::adjust(v);
-}
-
-template <class... P>
-static _FORCE_INLINE_ void vc_change_return_type(void (*method)(P...), Variant *v) {
-	VariantInternal::clear(v);
-}
-
-template <class R, class T, class... P>
 static _FORCE_INLINE_ int vc_get_argument_count(R (T::*method)(P...)) {
 	return sizeof...(P);
 }
@@ -333,7 +303,6 @@ static _FORCE_INLINE_ Variant::Type vc_get_base_type(void (T::*method)(P...) con
 			vc_method_call(m_method_ptr, base, p_args, p_argcount, r_ret, p_defvals, r_error);                                                                    \
 		}                                                                                                                                                         \
 		static void validated_call(Variant *base, const Variant **p_args, int p_argcount, Variant *r_ret) {                                                       \
-			vc_change_return_type(m_method_ptr, r_ret);                                                                                                           \
 			vc_validated_call(m_method_ptr, base, p_args, r_ret);                                                                                                 \
 		}                                                                                                                                                         \
 		static void ptrcall(void *p_base, const void **p_args, void *r_ret, int p_argcount) {                                                                     \
@@ -384,7 +353,6 @@ static _FORCE_INLINE_ void vc_static_ptrcall(void (*method)(P...), const void **
 			vc_static_method_call(m_method_ptr, p_args, p_argcount, r_ret, p_defvals, r_error);                                                                   \
 		}                                                                                                                                                         \
 		static void validated_call(Variant *base, const Variant **p_args, int p_argcount, Variant *r_ret) {                                                       \
-			vc_change_return_type(m_method_ptr, r_ret);                                                                                                           \
 			vc_validated_static_call(m_method_ptr, p_args, r_ret);                                                                                                \
 		}                                                                                                                                                         \
 		static void ptrcall(void *p_base, const void **p_args, void *r_ret, int p_argcount) {                                                                     \
@@ -435,7 +403,6 @@ static _FORCE_INLINE_ void vc_ptrcall(void (*method)(T *, P...), void *p_base, c
 			vc_method_call_static(m_method_ptr, base, p_args, p_argcount, r_ret, p_defvals, r_error);                                                             \
 		}                                                                                                                                                         \
 		static void validated_call(Variant *base, const Variant **p_args, int p_argcount, Variant *r_ret) {                                                       \
-			vc_change_return_type(m_method_ptr, r_ret);                                                                                                           \
 			vc_validated_call_static(m_method_ptr, base, p_args, r_ret);                                                                                          \
 		}                                                                                                                                                         \
 		static void ptrcall(void *p_base, const void **p_args, void *r_ret, int p_argcount) {                                                                     \
