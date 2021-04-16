@@ -158,6 +158,9 @@ HingeJointSW::HingeJointSW(BodySW *rbA, BodySW *rbB, const Vector3 &pivotInA, co
 }
 
 bool HingeJointSW::setup(real_t p_step) {
+	if ((A->get_mode() <= PhysicsServer::BODY_MODE_KINEMATIC) && (B->get_mode() <= PhysicsServer::BODY_MODE_KINEMATIC)) {
+		return false;
+	}
 
 	m_appliedImpulse = real_t(0.);
 

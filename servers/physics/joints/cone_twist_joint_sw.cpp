@@ -111,6 +111,10 @@ ConeTwistJointSW::ConeTwistJointSW(BodySW *rbA, BodySW *rbB, const Transform &rb
 }
 
 bool ConeTwistJointSW::setup(real_t p_timestep) {
+	if ((A->get_mode() <= PhysicsServer::BODY_MODE_KINEMATIC) && (B->get_mode() <= PhysicsServer::BODY_MODE_KINEMATIC)) {
+		return false;
+	}
+
 	m_appliedImpulse = real_t(0.);
 
 	//set bias, sign, clear accumulator

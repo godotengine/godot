@@ -129,6 +129,9 @@ SliderJointSW::SliderJointSW(BodySW *rbA, BodySW *rbB, const Transform &frameInA
 //-----------------------------------------------------------------------------
 
 bool SliderJointSW::setup(real_t p_step) {
+	if ((A->get_mode() <= PhysicsServer::BODY_MODE_KINEMATIC) && (B->get_mode() <= PhysicsServer::BODY_MODE_KINEMATIC)) {
+		return false;
+	}
 
 	//calculate transforms
 	m_calculatedTransformA = A->get_transform() * m_frameInA;

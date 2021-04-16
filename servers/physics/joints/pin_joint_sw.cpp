@@ -50,6 +50,9 @@ subject to the following restrictions:
 #include "pin_joint_sw.h"
 
 bool PinJointSW::setup(real_t p_step) {
+	if ((A->get_mode() <= PhysicsServer::BODY_MODE_KINEMATIC) && (B->get_mode() <= PhysicsServer::BODY_MODE_KINEMATIC)) {
+		return false;
+	}
 
 	m_appliedImpulse = real_t(0.);
 
