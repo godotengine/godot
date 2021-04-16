@@ -3560,10 +3560,6 @@ void Node3DEditorViewport::reset() {
 }
 
 void Node3DEditorViewport::focus_selection() {
-	if (!get_selected_count()) {
-		return;
-	}
-
 	Vector3 center;
 	int count = 0;
 
