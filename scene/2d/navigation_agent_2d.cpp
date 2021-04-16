@@ -301,6 +301,12 @@ void NavigationAgent2D::update_navigation() {
 		while (o.distance_to(navigation_path[nav_path_index]) < target_desired_distance) {
 			nav_path_index += 1;
 			if (nav_path_index == navigation_path.size()) {
+				if (!target_reached) {
+					if (distance_to_target() < target_desired_distance) {
+						emit_signal("target_reached");
+						target_reached = true;
+					}
+				}
 				nav_path_index -= 1;
 				navigation_finished = true;
 				emit_signal("navigation_finished");
