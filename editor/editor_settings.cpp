@@ -73,14 +73,44 @@ bool EditorSettings::_set_only(const StringName &p_name, const Variant &p_value)
 
 	if (p_name == "shortcuts") {
 		Array arr = p_value;
-		ERR_FAIL_COND_V(arr.size() && arr.size() & 1, true);
-		for (int i = 0; i < arr.size(); i += 2) {
-			String name = arr[i];
-			Ref<InputEvent> shortcut = arr[i + 1];
+		// For backwards compatibility.
+		// Previously, shortcuts were saved in an array of pattern: "name(string), event(object), name, event, name, event, etc..."
+		// Now they are saved as a dictionary with support for primary and secondary shortcuts, but we want old settings files to remain valid.
+		if (arr.size() > 0 && arr.front().get_type() == Variant::STRING) {
+			ERR_FAIL_COND_V(arr.size() && arr.size() & 1, true); // Ensure even number of entries.
+			for (int i = 0; i < arr.size(); i += 2) {
+				String name = arr[i];
+				Ref<InputEvent> shortcut = arr[i + 1];
+
+				Ref<Shortcut> sc;
+				sc.instance();
+				sc->set_shortcut(shortcut);
+				add_shortcut(name, sc);
+			}
+
+			return false;
+		}
+
+		for (int i = 0; i < arr.size(); i++) {
+			Dictionary dict = arr[i];
+
+			String name = dict["name"];
+			Ref<InputEvent> primary_shortcut = dict.get("primary", Ref<InputEvent>());
+			Ref<InputEvent> secondary_shortcut = dict.get("secondary", Ref<InputEvent>());
 
 			Ref<Shortcut> sc;
 			sc.instance();
-			sc->set_shortcut(shortcut);
+			sc->set_shortcut(primary_shortcut);
+			sc->set_shortcut(secondary_shortcut, false);
+
+			// Later, shortcuts will be set via ED_SHORTCUT. This meta value will allow us
+			// to know whether the shortcut was intentionally made null, or if it was just
+			// not customised, and so the null should be replaced with the default value.
+			// If both primary and secondary are customised in the settings, it cannot be merged.
+			if (!(dict.has("primary") && dict.has("secondary"))) {
+				sc->set_meta("mergeable", !dict.has("primary") ? "primary" : "secondary");
+			}
+
 			add_shortcut(name, sc);
 		}
 
@@ -141,25 +171,45 @@ bool EditorSettings::_get(const StringName &p_name, Variant &r_ret) const {
 		Array arr;
 		for (const Map<String, Ref<Shortcut>>::Element *E = shortcuts.front(); E; E = E->next()) {
 			Ref<Shortcut> sc = E->get();
+			Ref<InputEvent> sc_primary = sc->get_shortcut();
+			Ref<InputEvent> sc_secondary = sc->get_shortcut(false);
 
 			if (builtin_action_overrides.has(E->key())) {
 				// This shortcut was auto-generated from built in actions: don't save.
 				continue;
 			}
 
+			bool save_primary = true;
+			bool save_secondary = true;
+
 			if (optimize_save) {
-				if (!sc->has_meta("original")) {
+				if (!sc->has_meta("original_primary") && !sc->has_meta("original_secondary")) {
 					continue; //this came from settings but is not any longer used
 				}
 
-				Ref<InputEvent> original = sc->get_meta("original");
-				if (sc->is_shortcut(original) || (original.is_null() && sc->get_shortcut().is_null())) {
+				Ref<InputEvent> original_primary = sc->get_meta("original_primary");
+				Ref<InputEvent> original_secondary = sc->get_meta("original_secondary");
+
+				// Save only if the shortcut does not match the original
+				save_primary = !(sc->is_shortcut(original_primary, false) || (original_primary.is_null() && sc_primary.is_null()));
+				save_secondary = !(sc->is_shortcut(original_secondary, false, false) || (original_secondary.is_null() && sc_secondary.is_null()));
+
+				if (!save_primary && !save_secondary) {
 					continue; //not changed from default, don't save
 				}
 			}
 
-			arr.push_back(E->key());
-			arr.push_back(sc->get_shortcut());
+			Dictionary dict;
+			dict["name"] = E->key();
+
+			if (save_primary) {
+				dict["primary"] = sc_primary;
+			}
+			if (save_secondary) {
+				dict["secondary"] = sc_secondary;
+			}
+
+			arr.push_back(dict);
 		}
 		r_ret = arr;
 		return true;
@@ -1601,6 +1651,12 @@ Ref<Shortcut> EditorSettings::get_shortcut(const String &p_name) const {
 	if (builtin_override) {
 		sc.instance();
 		sc->set_shortcut(builtin_override->get().front()->get());
+
+		if (builtin_override->get().size() > 1) {
+			// Set secondary shortcut if there is a second input event.
+			sc->set_shortcut(builtin_override->get().front()->next()->get(), false);
+		}
+
 		sc->set_name(InputMap::get_singleton()->get_builtin_display_name(p_name));
 	}
 
@@ -1610,6 +1666,12 @@ Ref<Shortcut> EditorSettings::get_shortcut(const String &p_name) const {
 		if (builtin_default) {
 			sc.instance();
 			sc->set_shortcut(builtin_default.get().front()->get());
+
+			if (builtin_default.get().size() > 1) {
+				// Set secondary shortcut if there is a second input event.
+				sc->set_shortcut(builtin_default.get().front()->next()->get(), false);
+			}
+
 			sc->set_name(InputMap::get_singleton()->get_builtin_display_name(p_name));
 		}
 	}
@@ -1641,7 +1703,7 @@ Ref<Shortcut> ED_GET_SHORTCUT(const String &p_path) {
 	return sc;
 }
 
-Ref<Shortcut> ED_SHORTCUT(const String &p_path, const String &p_name, uint32_t p_keycode) {
+Ref<Shortcut> ED_SHORTCUT(const String &p_path, const String &p_name, uint32_t p_keycode, uint32_t p_secondary_keycode) {
 #ifdef OSX_ENABLED
 	// Use Cmd+Backspace as a general replacement for Delete shortcuts on macOS
 	if (p_keycode == KEY_DELETE) {
@@ -1649,38 +1711,65 @@ Ref<Shortcut> ED_SHORTCUT(const String &p_path, const String &p_name, uint32_t p
 	}
 #endif
 
-	Ref<InputEventKey> ie;
+	Ref<InputEventKey> ie_primary;
 	if (p_keycode) {
-		ie.instance();
+		ie_primary.instance();
 
-		ie->set_unicode(p_keycode & KEY_CODE_MASK);
-		ie->set_keycode(p_keycode & KEY_CODE_MASK);
-		ie->set_shift(bool(p_keycode & KEY_MASK_SHIFT));
-		ie->set_alt(bool(p_keycode & KEY_MASK_ALT));
-		ie->set_control(bool(p_keycode & KEY_MASK_CTRL));
-		ie->set_metakey(bool(p_keycode & KEY_MASK_META));
+		ie_primary->set_unicode(p_keycode & KEY_CODE_MASK);
+		ie_primary->set_keycode(p_keycode & KEY_CODE_MASK);
+		ie_primary->set_shift(bool(p_keycode & KEY_MASK_SHIFT));
+		ie_primary->set_alt(bool(p_keycode & KEY_MASK_ALT));
+		ie_primary->set_control(bool(p_keycode & KEY_MASK_CTRL));
+		ie_primary->set_metakey(bool(p_keycode & KEY_MASK_META));
+	}
+
+	Ref<InputEventKey> ie_secondary;
+	if (p_secondary_keycode) {
+		ie_secondary.instance();
+
+		ie_secondary->set_unicode(p_keycode & KEY_CODE_MASK);
+		ie_secondary->set_keycode(p_keycode & KEY_CODE_MASK);
+		ie_secondary->set_shift(bool(p_keycode & KEY_MASK_SHIFT));
+		ie_secondary->set_alt(bool(p_keycode & KEY_MASK_ALT));
+		ie_secondary->set_control(bool(p_keycode & KEY_MASK_CTRL));
+		ie_secondary->set_metakey(bool(p_keycode & KEY_MASK_META));
 	}
 
 	if (!EditorSettings::get_singleton()) {
 		Ref<Shortcut> sc;
 		sc.instance();
 		sc->set_name(p_name);
-		sc->set_shortcut(ie);
-		sc->set_meta("original", ie);
+		sc->set_shortcut(ie_primary);
+		sc->set_shortcut(ie_secondary, false);
+		sc->set_meta("original_primary", ie_primary);
+		sc->set_meta("original_secondary", ie_secondary);
 		return sc;
 	}
 
 	Ref<Shortcut> sc = EditorSettings::get_singleton()->get_shortcut(p_path);
 	if (sc.is_valid()) {
 		sc->set_name(p_name); //keep name (the ones that come from disk have no name)
-		sc->set_meta("original", ie); //to compare against changes
+
+		if (sc->has_meta("mergeable")) {
+			String merge_type = sc->get_meta("mergeable");
+			if (merge_type == "primary") {
+				sc->set_shortcut(ie_primary);
+			} else if (merge_type == "secondary") {
+				sc->set_shortcut(ie_secondary, false);
+			}
+		}
+
+		sc->set_meta("original_primary", ie_primary);
+		sc->set_meta("original_secondary", ie_secondary);
 		return sc;
 	}
 
 	sc.instance();
 	sc->set_name(p_name);
-	sc->set_shortcut(ie);
-	sc->set_meta("original", ie); //to compare against changes
+	sc->set_shortcut(ie_primary);
+	sc->set_shortcut(ie_secondary, false);
+	sc->set_meta("original_primary", ie_primary); //to compare against changes
+	sc->set_meta("original_secondary", ie_secondary);
 	EditorSettings::get_singleton()->add_shortcut(p_path, sc);
 
 	return sc;
@@ -1728,6 +1817,11 @@ void EditorSettings::set_builtin_action_override(const String &p_name, const Arr
 	// Update the shortcut (if it is used somewhere in the editor) to be the first event of the new list.
 	if (shortcuts.has(p_name)) {
 		shortcuts[p_name]->set_shortcut(event_list.front()->get());
+
+		if (event_list.size() >= 2) {
+			// Set the secondary shortcut to the second event in the list.
+			shortcuts[p_name]->set_shortcut(event_list.front()->next()->get(), false);
+		}
 	}
 }
 

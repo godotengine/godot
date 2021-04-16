@@ -37,18 +37,24 @@
 class Shortcut : public Resource {
 	GDCLASS(Shortcut, Resource);
 
-	Ref<InputEvent> shortcut;
+	Ref<InputEvent> primary_shortcut, secondary_shortcut;
+
+	Ref<InputEvent> _get_primary_shortcut();
+	void _set_primary_shortcut(const Ref<InputEvent> &p_shortcut);
+
+	Ref<InputEvent> _get_secondary_shortcut();
+	void _set_secondary_shortcut(const Ref<InputEvent> &p_shortcut);
 
 protected:
 	static void _bind_methods();
 
 public:
-	void set_shortcut(const Ref<InputEvent> &p_shortcut);
-	Ref<InputEvent> get_shortcut() const;
-	bool is_shortcut(const Ref<InputEvent> &p_event) const;
+	void set_shortcut(const Ref<InputEvent> &p_shortcut, bool p_primary = true);
+	Ref<InputEvent> get_shortcut(bool p_primary = true) const;
+	bool is_shortcut(const Ref<InputEvent> &p_event, bool p_match_either = true, bool p_primary = true) const;
 	bool is_valid() const;
 
-	String get_as_text() const;
+	String get_as_text(bool p_primary = true) const;
 
 	Shortcut();
 };

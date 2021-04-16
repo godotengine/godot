@@ -54,12 +54,14 @@ class EditorSettingsDialog : public AcceptDialog {
 	SectionedInspector *inspector;
 
 	enum ShortcutButton {
-		SHORTCUT_EDIT,
-		SHORTCUT_ERASE,
-		SHORTCUT_REVERT
+		SHORTCUT_EDIT = 1 << 0,
+		SHORTCUT_ERASE = 1 << 1,
+		SHORTCUT_REVERT = 1 << 2,
+		SHORTCUT_SECONDARY_MASK = 1 << 3,
+		SHORTCUT_ACTION_MASK = ((1 << 3) - 1)
 	};
 
-	int button_idx;
+	int button_id;
 	int current_action_event_index = -1;
 	bool editing_action = false;
 	String current_action;
@@ -75,6 +77,7 @@ class EditorSettingsDialog : public AcceptDialog {
 	Tree *shortcuts;
 	InputEventConfigurationDialog *shortcut_editor;
 	String shortcut_being_edited;
+	bool editing_primary_shortcut;
 
 	virtual void cancel_pressed() override;
 	virtual void ok_pressed() override;
