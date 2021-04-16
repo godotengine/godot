@@ -50,6 +50,10 @@ subject to the following restrictions:
 #include "pin_joint_3d_sw.h"
 
 bool PinJoint3DSW::setup(real_t p_step) {
+	if ((A->get_mode() <= PhysicsServer3D::BODY_MODE_KINEMATIC) && (B->get_mode() <= PhysicsServer3D::BODY_MODE_KINEMATIC)) {
+		return false;
+	}
+
 	m_appliedImpulse = real_t(0.);
 
 	Vector3 normal(0, 0, 0);

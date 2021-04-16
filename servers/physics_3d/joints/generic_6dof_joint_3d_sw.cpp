@@ -303,6 +303,10 @@ bool Generic6DOFJoint3DSW::testAngularLimitMotor(int axis_index) {
 }
 
 bool Generic6DOFJoint3DSW::setup(real_t p_timestep) {
+	if ((A->get_mode() <= PhysicsServer3D::BODY_MODE_KINEMATIC) && (B->get_mode() <= PhysicsServer3D::BODY_MODE_KINEMATIC)) {
+		return false;
+	}
+
 	// Clear accumulated impulses for the next simulation step
 	m_linearLimits.m_accumulatedImpulse = Vector3(real_t(0.), real_t(0.), real_t(0.));
 	int i;
