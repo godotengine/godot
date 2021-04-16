@@ -296,7 +296,7 @@ private:
 		String sp = _test_path();
 		if (sp != "") {
 			// If the project name is empty or default, infer the project name from the selected folder name
-			if (project_name->get_text() == "" || project_name->get_text() == TTR("New Game Project")) {
+			if (project_name->get_text().strip_edges() == "" || project_name->get_text().strip_edges() == TTR("New Game Project")) {
 				sp = sp.replace("\\", "/");
 				int lidx = sp.rfind("/");
 
@@ -380,16 +380,17 @@ private:
 	}
 
 	void _create_folder() {
-		if (project_name->get_text() == "" || created_folder_path != "" || project_name->get_text().ends_with(".") || project_name->get_text().ends_with(" ")) {
-			set_message(TTR("Invalid Project Name."), MESSAGE_WARNING);
+		const String project_name_no_edges = project_name->get_text().strip_edges();
+		if (project_name_no_edges == "" || created_folder_path != "" || project_name_no_edges.ends_with(".")) {
+			set_message(TTR("Invalid project name."), MESSAGE_WARNING);
 			return;
 		}
 
 		DirAccess *d = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 		if (d->change_dir(project_path->get_text()) == OK) {
-			if (!d->dir_exists(project_name->get_text())) {
-				if (d->make_dir(project_name->get_text()) == OK) {
-					d->change_dir(project_name->get_text());
+			if (!d->dir_exists(project_name_no_edges)) {
+				if (d->make_dir(project_name_no_edges) == OK) {
+					d->change_dir(project_name_no_edges);
 					String dir_str = d->get_current_dir();
 					project_path->set_text(dir_str);
 					_path_text_changed(dir_str);
@@ -415,7 +416,7 @@ private:
 
 		_test_path();
 
-		if (p_text == "") {
+		if (p_text.strip_edges() == "") {
 			set_message(TTR("It would be a good idea to name your project."), MESSAGE_ERROR);
 		}
 	}
@@ -442,7 +443,7 @@ private:
 				set_message(vformat(TTR("Couldn't load project.godot in project path (error %d). It may be missing or corrupted."), err), MESSAGE_ERROR);
 			} else {
 				ProjectSettings::CustomMap edited_settings;
-				edited_settings["application/config/name"] = project_name->get_text();
+				edited_settings["application/config/name"] = project_name->get_text().strip_edges();
 
 				if (current->save_custom(dir2.plus_file("project.godot"), edited_settings, Vector<String>(), true) != OK) {
 					set_message(TTR("Couldn't edit project.godot in project path."), MESSAGE_ERROR);
@@ -483,7 +484,7 @@ private:
 						initial_settings["rendering/textures/vram_compression/import_etc2"] = false;
 						initial_settings["rendering/textures/vram_compression/import_etc"] = true;
 					}
-					initial_settings["application/config/name"] = project_name->get_text();
+					initial_settings["application/config/name"] = project_name->get_text().strip_edges();
 					initial_settings["application/config/icon"] = "res://icon.png";
 					initial_settings["rendering/environment/defaults/default_environment"] = "res://default_env.tres";
 
