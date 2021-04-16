@@ -228,7 +228,7 @@ ObjectPtr LazyObject::LoadObject() {
 
 // ------------------------------------------------------------------------------------------------
 Object::Object(uint64_t id, const ElementPtr element, const std::string &name) :
-		element(element), name(name), id(id) {
+		PropertyTable(element), element(element), name(name), id(id) {
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -237,17 +237,13 @@ Object::~Object() {
 }
 
 // ------------------------------------------------------------------------------------------------
-FileGlobalSettings::FileGlobalSettings(const Document &doc, const PropertyTable *props) :
-		props(props), doc(doc) {
+FileGlobalSettings::FileGlobalSettings(const Document &doc) :
+		PropertyTable(), doc(doc) {
 	// empty
 }
 
 // ------------------------------------------------------------------------------------------------
 FileGlobalSettings::~FileGlobalSettings() {
-	if (props != nullptr) {
-		delete props;
-		props = nullptr;
-	}
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -287,15 +283,12 @@ Document::~Document() {
 		delete v.second;
 	}
 
-	if (metadata_properties != nullptr) {
-		delete metadata_properties;
-	}
 	// clear globals import pointer
 	globals.reset();
 }
 
 // ------------------------------------------------------------------------------------------------
-static const unsigned int LowerSupportedVersion = 7300;
+static const unsigned int LowerSupportedVersion = 7100;
 static const unsigned int UpperSupportedVersion = 7700;
 
 bool Document::ReadHeader() {
@@ -304,6 +297,11 @@ bool Document::ReadHeader() {
 	ElementPtr ehead = sc->GetElement("FBXHeaderExtension");
 	if (!ehead || !ehead->Compound()) {
 		DOMError("no FBXHeaderExtension dictionary found");
+	}
+
+	if (parser.IsCorrupt()) {
+		DOMError("File is corrupt");
+		return false;
 	}
 
 	const ScopePtr shead = ehead->Compound();
@@ -325,18 +323,11 @@ bool Document::ReadHeader() {
 		creator = ParseTokenAsString(GetRequiredToken(ecreator, 0));
 	}
 
-	//
 	// Scene Info
-	//
-
 	const ElementPtr scene_info = shead->GetElement("SceneInfo");
 
 	if (scene_info) {
-		PropertyTable *fileExportProps = const_cast<PropertyTable *>(GetPropertyTable(*this, "", scene_info, scene_info->Compound(), true));
-
-		if (fileExportProps) {
-			metadata_properties = fileExportProps;
-		}
+		metadata_properties.Setup(scene_info);
 	}
 
 	const ElementPtr etimestamp = shead->GetElement("CreationTimeStamp");
@@ -358,23 +349,7 @@ bool Document::ReadHeader() {
 void Document::ReadGlobalSettings() {
 	ERR_FAIL_COND_MSG(globals != nullptr, "Global settings is already setup this is a serious error and should be reported");
 
-	const ScopePtr sc = parser.GetRootScope();
-	const ElementPtr ehead = sc->GetElement("GlobalSettings");
-	if (nullptr == ehead || !ehead->Compound()) {
-		DOMWarning("no GlobalSettings dictionary found");
-		globals = std::make_shared<FileGlobalSettings>(*this, new PropertyTable());
-		return;
-	}
-
-	const PropertyTable *props = GetPropertyTable(*this, "", ehead, ehead->Compound(), true);
-
-	//double v = PropertyGet<float>( *props, std::string("UnitScaleFactor"), 1.0 );
-
-	if (!props) {
-		DOMError("GlobalSettings dictionary contains no property table");
-	}
-
-	globals = std::make_shared<FileGlobalSettings>(*this, props);
+	globals = std::make_shared<FileGlobalSettings>(*this);
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -445,58 +420,6 @@ void Document::ReadObjects() {
 
 // ------------------------------------------------------------------------------------------------
 void Document::ReadPropertyTemplates() {
-	const ScopePtr sc = parser.GetRootScope();
-	// read property templates from "Definitions" section
-	const ElementPtr edefs = sc->GetElement("Definitions");
-	if (!edefs || !edefs->Compound()) {
-		DOMWarning("no Definitions dictionary found");
-		return;
-	}
-
-	const ScopePtr sdefs = edefs->Compound();
-	const ElementCollection otypes = sdefs->GetCollection("ObjectType");
-	for (ElementMap::const_iterator it = otypes.first; it != otypes.second; ++it) {
-		const ElementPtr el = (*it).second;
-		const ScopePtr sc_2 = el->Compound();
-		if (!sc_2) {
-			DOMWarning("expected nested scope in ObjectType, ignoring", el);
-			continue;
-		}
-
-		const TokenList &tok = el->Tokens();
-		if (tok.empty()) {
-			DOMWarning("expected name for ObjectType element, ignoring", el);
-			continue;
-		}
-
-		const std::string &oname = ParseTokenAsString(tok[0]);
-
-		const ElementCollection templs = sc_2->GetCollection("PropertyTemplate");
-		for (ElementMap::const_iterator iter = templs.first; iter != templs.second; ++iter) {
-			const ElementPtr el_2 = (*iter).second;
-			const ScopePtr sc_3 = el_2->Compound();
-			if (!sc_3) {
-				DOMWarning("expected nested scope in PropertyTemplate, ignoring", el);
-				continue;
-			}
-
-			const TokenList &tok_2 = el_2->Tokens();
-			if (tok_2.empty()) {
-				DOMWarning("expected name for PropertyTemplate element, ignoring", el);
-				continue;
-			}
-
-			const std::string &pname = ParseTokenAsString(tok_2[0]);
-
-			const ElementPtr Properties70 = sc_3->GetElement("Properties70");
-			if (Properties70) {
-				// PropertyTable(const ElementPtr element, const PropertyTable* templateProps);
-				const PropertyTable *props = new PropertyTable(Properties70, nullptr);
-
-				templates[oname + "." + pname] = props;
-			}
-		}
-	}
 }
 
 // ------------------------------------------------------------------------------------------------

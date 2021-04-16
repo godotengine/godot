@@ -130,6 +130,7 @@ Token::Token(const char *sbegin, const char *send, TokenType type, size_t offset
 		line(offset),
 		column(BINARY_MARKER) {
 #ifdef DEBUG_ENABLED
+	// contents is bad.. :/
 	contents = std::string(sbegin, static_cast<size_t>(send - sbegin));
 #endif
 	// calc length
@@ -232,9 +233,11 @@ unsigned int ReadString(const char *&sbegin_out, const char *&send_out, const ch
 }
 
 // ------------------------------------------------------------------------------------------------
-void ReadData(const char *&sbegin_out, const char *&send_out, const char *input, const char *&cursor, const char *end) {
+void ReadData(const char *&sbegin_out, const char *&send_out, const char *input, const char *&cursor, const char *end, bool &corrupt) {
 	if (Offset(cursor, end) < 1) {
 		TokenizeError("cannot ReadData, out of bounds reading length", input, cursor);
+		corrupt = true;
+		return;
 	}
 
 	const char type = *cursor;
@@ -328,9 +331,7 @@ void ReadData(const char *&sbegin_out, const char *&send_out, const char *input,
 			}
 			cursor += comp_len;
 			break;
-		}
-
-			// string
+		} // string
 		case 'S': {
 			const char *sb, *se;
 			// 0 characters can legally happen in such strings
@@ -338,11 +339,15 @@ void ReadData(const char *&sbegin_out, const char *&send_out, const char *input,
 			break;
 		}
 		default:
+			corrupt = true; // must exit
 			TokenizeError("cannot ReadData, unexpected type code: " + std::string(&type, 1), input, cursor);
+			return;
 	}
 
 	if (cursor > end) {
+		corrupt = true; // must exit
 		TokenizeError("cannot ReadData, the remaining size is too small for the data type: " + std::string(&type, 1), input, cursor);
+		return;
 	}
 
 	// the type code is contained in the returned range
@@ -350,7 +355,7 @@ void ReadData(const char *&sbegin_out, const char *&send_out, const char *input,
 }
 
 // ------------------------------------------------------------------------------------------------
-bool ReadScope(TokenList &output_tokens, const char *input, const char *&cursor, const char *end, bool const is64bits) {
+bool ReadScope(TokenList &output_tokens, const char *input, const char *&cursor, const char *end, bool const is64bits, bool &corrupt) {
 	// the first word contains the offset at which this block ends
 	const uint64_t end_offset = is64bits ? ReadDoubleWord(input, cursor, end) : ReadWord(input, cursor, end);
 
@@ -364,8 +369,12 @@ bool ReadScope(TokenList &output_tokens, const char *input, const char *&cursor,
 
 	if (end_offset > Offset(input, end)) {
 		TokenizeError("block offset is out of range", input, cursor);
+		corrupt = true;
+		return false;
 	} else if (end_offset < Offset(input, cursor)) {
 		TokenizeError("block offset is negative out of range", input, cursor);
+		corrupt = true;
+		return false;
 	}
 
 	// the second data word contains the number of properties in the scope
@@ -375,7 +384,7 @@ bool ReadScope(TokenList &output_tokens, const char *input, const char *&cursor,
 	const uint64_t prop_length = is64bits ? ReadDoubleWord(input, cursor, end) : ReadWord(input, cursor, end);
 
 	// now comes the name of the scope/key
-	const char *sbeg, *send;
+	const char *sbeg = nullptr, *send = nullptr;
 	ReadString(sbeg, send, input, cursor, end);
 
 	output_tokens.push_back(new_Token(sbeg, send, TokenType_KEY, Offset(input, cursor)));
@@ -383,7 +392,10 @@ bool ReadScope(TokenList &output_tokens, const char *input, const char *&cursor,
 	// now come the individual properties
 	const char *begin_cursor = cursor;
 	for (unsigned int i = 0; i < prop_count; ++i) {
-		ReadData(sbeg, send, input, cursor, begin_cursor + prop_length);
+		ReadData(sbeg, send, input, cursor, begin_cursor + prop_length, corrupt);
+		if (corrupt) {
+			return false;
+		}
 
 		output_tokens.push_back(new_Token(sbeg, send, TokenType_DATA, Offset(input, cursor)));
 
@@ -394,6 +406,8 @@ bool ReadScope(TokenList &output_tokens, const char *input, const char *&cursor,
 
 	if (Offset(begin_cursor, cursor) != prop_length) {
 		TokenizeError("property length not reached, something is wrong", input, cursor);
+		corrupt = true;
+		return false;
 	}
 
 	// at the end of each nested block, there is a NUL record to indicate
@@ -410,13 +424,18 @@ bool ReadScope(TokenList &output_tokens, const char *input, const char *&cursor,
 
 		// XXX this is vulnerable to stack overflowing ..
 		while (Offset(input, cursor) < end_offset - sentinel_block_length) {
-			ReadScope(output_tokens, input, cursor, input + end_offset - sentinel_block_length, is64bits);
+			ReadScope(output_tokens, input, cursor, input + end_offset - sentinel_block_length, is64bits, corrupt);
+			if (corrupt) {
+				return false;
+			}
 		}
 		output_tokens.push_back(new_Token(cursor, cursor + 1, TokenType_CLOSE_BRACKET, Offset(input, cursor)));
 
 		for (unsigned int i = 0; i < sentinel_block_length; ++i) {
 			if (cursor[i] != '\0') {
 				TokenizeError("failed to read nested block sentinel, expected all bytes to be 0", input, cursor);
+				corrupt = true;
+				return false;
 			}
 		}
 		cursor += sentinel_block_length;
@@ -424,6 +443,8 @@ bool ReadScope(TokenList &output_tokens, const char *input, const char *&cursor,
 
 	if (Offset(input, cursor) != end_offset) {
 		TokenizeError("scope length not reached, something is wrong", input, cursor);
+		corrupt = true;
+		return false;
 	}
 
 	return true;
@@ -432,7 +453,7 @@ bool ReadScope(TokenList &output_tokens, const char *input, const char *&cursor,
 
 // ------------------------------------------------------------------------------------------------
 // TODO: Test FBX Binary files newer than the 7500 version to check if the 64 bits address behaviour is consistent
-void TokenizeBinary(TokenList &output_tokens, const char *input, size_t length) {
+void TokenizeBinary(TokenList &output_tokens, const char *input, size_t length, bool &corrupt) {
 	if (length < 0x1b) {
 		//TokenizeError("file is too short",0);
 	}
@@ -459,7 +480,7 @@ void TokenizeBinary(TokenList &output_tokens, const char *input, size_t length) 
 	const bool is64bits = version >= 7500;
 	const char *end = input + length;
 	while (cursor < end) {
-		if (!ReadScope(output_tokens, input, cursor, input + length, is64bits)) {
+		if (!ReadScope(output_tokens, input, cursor, input + length, is64bits, corrupt)) {
 			break;
 		}
 	}
