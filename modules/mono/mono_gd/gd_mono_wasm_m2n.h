@@ -176,7 +176,7 @@ T m2n_arg_cast(Mono_InterpMethodArguments *p_margs, size_t p_idx) {
 	} else if constexpr (cookie == 'F') {
 		return *reinterpret_cast<float *>(&p_margs->fargs[fidx(p_idx)]);
 	} else if constexpr (cookie == 'D') {
-		return (T)(size_t)p_margs->fargs[p_idx];
+		return (T)p_margs->fargs[p_idx];
 	}
 }
 
