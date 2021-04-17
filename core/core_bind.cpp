@@ -1508,7 +1508,7 @@ Variant _File::get_var(bool p_allow_objects) const {
 	ERR_FAIL_COND_V_MSG(!f, Variant(), "File must be opened before use.");
 	uint32_t len = get_32();
 	Vector<uint8_t> buff = get_buffer(len);
-	ERR_FAIL_COND_V((uint32_t)buff.size() != len, Variant());
+	ERR_FAIL_COND_V((uint32_t)buff.size() != len - 1, Variant());
 
 	const uint8_t *r = buff.ptr();
 
