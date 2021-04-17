@@ -141,6 +141,7 @@ class VisualShaderEditor : public VBoxContainer {
 	OptionButton *edit_type = nullptr;
 	OptionButton *edit_type_standart;
 	OptionButton *edit_type_particles;
+	OptionButton *edit_type_sky;
 
 	PanelContainer *error_panel;
 	Label *error_label;
@@ -169,7 +170,14 @@ class VisualShaderEditor : public VBoxContainer {
 
 	bool preview_first = true;
 	bool preview_showed = false;
-	bool particles_mode;
+
+	enum ShaderModeFlags {
+		MODE_FLAGS_SPATIAL_CANVASITEM = 1,
+		MODE_FLAGS_SKY = 2,
+		MODE_FLAGS_PARTICLES = 4
+	};
+
+	int mode = MODE_FLAGS_SPATIAL_CANVASITEM;
 
 	enum TypeFlags {
 		TYPE_FLAGS_VERTEX = 1,
@@ -181,6 +189,10 @@ class VisualShaderEditor : public VBoxContainer {
 		TYPE_FLAGS_EMIT = 1,
 		TYPE_FLAGS_PROCESS = 2,
 		TYPE_FLAGS_END = 4
+	};
+
+	enum SkyTypeFlags {
+		TYPE_FLAGS_SKY = 1,
 	};
 
 	enum ToolsMenuOptions {
