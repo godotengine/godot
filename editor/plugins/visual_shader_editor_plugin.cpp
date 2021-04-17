@@ -1133,16 +1133,24 @@ void VisualShaderEditor::_update_options_menu() {
 }
 
 void VisualShaderEditor::_set_mode(int p_which) {
-	if (p_which == VisualShader::MODE_PARTICLES) {
+	if (p_which == VisualShader::MODE_SKY) {
+		edit_type_standart->set_visible(false);
+		edit_type_particles->set_visible(false);
+		edit_type_sky->set_visible(true);
+		edit_type = edit_type_sky;
+		mode = MODE_FLAGS_SKY;
+	} else if (p_which == VisualShader::MODE_PARTICLES) {
 		edit_type_standart->set_visible(false);
 		edit_type_particles->set_visible(true);
+		edit_type_sky->set_visible(false);
 		edit_type = edit_type_particles;
-		particles_mode = true;
+		mode = MODE_FLAGS_PARTICLES;
 	} else {
 		edit_type_particles->set_visible(false);
 		edit_type_standart->set_visible(true);
+		edit_type_sky->set_visible(false);
 		edit_type = edit_type_standart;
-		particles_mode = false;
+		mode = MODE_FLAGS_SPATIAL_CANVASITEM;
 	}
 	visual_shader->set_shader_type(get_current_shader_type());
 }
@@ -1303,8 +1311,10 @@ void VisualShaderEditor::_update_graph() {
 
 VisualShader::Type VisualShaderEditor::get_current_shader_type() const {
 	VisualShader::Type type;
-	if (particles_mode) {
+	if (mode & MODE_FLAGS_PARTICLES) {
 		type = VisualShader::Type(edit_type->get_selected() + 3);
+	} else if (mode & MODE_FLAGS_SKY) {
+		type = VisualShader::Type(edit_type->get_selected() + 6);
 	} else {
 		type = VisualShader::Type(edit_type->get_selected());
 	}
@@ -3025,7 +3035,14 @@ void VisualShaderEditor::_paste_nodes(bool p_use_custom_position, const Vector2 
 }
 
 void VisualShaderEditor::_mode_selected(int p_id) {
-	visual_shader->set_shader_type(particles_mode ? VisualShader::Type(p_id + 3) : VisualShader::Type(p_id));
+	int offset = 0;
+	if (mode & MODE_FLAGS_PARTICLES) {
+		offset = 3;
+	} else if (mode & MODE_FLAGS_SKY) {
+		offset = 6;
+	}
+
+	visual_shader->set_shader_type(VisualShader::Type(p_id + offset));
 	_update_options_menu();
 	_update_graph();
 }
@@ -3531,10 +3548,17 @@ VisualShaderEditor::VisualShaderEditor() {
 	edit_type_particles->select(0);
 	edit_type_particles->connect("item_selected", callable_mp(this, &VisualShaderEditor::_mode_selected));
 
+	edit_type_sky = memnew(OptionButton);
+	edit_type_sky->add_item(TTR("Sky"));
+	edit_type_sky->select(0);
+	edit_type_sky->connect("item_selected", callable_mp(this, &VisualShaderEditor::_mode_selected));
+
 	edit_type = edit_type_standart;
 
 	graph->get_zoom_hbox()->add_child(edit_type_particles);
 	graph->get_zoom_hbox()->move_child(edit_type_particles, 0);
+	graph->get_zoom_hbox()->add_child(edit_type_sky);
+	graph->get_zoom_hbox()->move_child(edit_type_sky, 0);
 	graph->get_zoom_hbox()->add_child(edit_type_standart);
 	graph->get_zoom_hbox()->move_child(edit_type_standart, 0);
 
@@ -3782,6 +3806,7 @@ VisualShaderEditor::VisualShaderEditor() {
 	const String input_param_for_vertex_and_fragment_shader_modes = TTR("'%s' input parameter for vertex and fragment shader modes.");
 	const String input_param_for_fragment_and_light_shader_modes = TTR("'%s' input parameter for fragment and light shader modes.");
 	const String input_param_for_fragment_shader_mode = TTR("'%s' input parameter for fragment shader mode.");
+	const String input_param_for_sky_shader_mode = TTR("'%s' input parameter for sky shader mode.");
 	const String input_param_for_light_shader_mode = TTR("'%s' input parameter for light shader mode.");
 	const String input_param_for_vertex_shader_mode = TTR("'%s' input parameter for vertex shader mode.");
 	const String input_param_for_emit_shader_mode = TTR("'%s' input parameter for emit shader mode.");
@@ -3911,35 +3936,35 @@ VisualShaderEditor::VisualShaderEditor() {
 
 	// SKY INPUTS
 
-	add_options.push_back(AddOption("AtCubeMapPass", "Input", "Fragment", "VisualShaderNodeInput", vformat(input_param_for_fragment_shader_mode, "at_cubemap_pass"), "at_cubemap_pass", VisualShaderNode::PORT_TYPE_BOOLEAN, TYPE_FLAGS_FRAGMENT, Shader::MODE_SKY));
-	add_options.push_back(AddOption("AtHalfResPass", "Input", "Fragment", "VisualShaderNodeInput", vformat(input_param_for_fragment_shader_mode, "at_half_res_pass"), "at_half_res_pass", VisualShaderNode::PORT_TYPE_BOOLEAN, TYPE_FLAGS_FRAGMENT, Shader::MODE_SKY));
-	add_options.push_back(AddOption("AtQuarterResPass", "Input", "Fragment", "VisualShaderNodeInput", vformat(input_param_for_fragment_shader_mode, "at_quarter_res_pass"), "at_quarter_res_pass", VisualShaderNode::PORT_TYPE_BOOLEAN, TYPE_FLAGS_FRAGMENT, Shader::MODE_SKY));
-	add_options.push_back(AddOption("EyeDir", "Input", "Fragment", "VisualShaderNodeInput", vformat(input_param_for_fragment_shader_mode, "eyedir"), "eyedir", VisualShaderNode::PORT_TYPE_VECTOR, TYPE_FLAGS_FRAGMENT, Shader::MODE_SKY));
-	add_options.push_back(AddOption("HalfResColor", "Input", "Fragment", "VisualShaderNodeInput", vformat(input_param_for_fragment_shader_mode, "half_res_color"), "half_res_color", VisualShaderNode::PORT_TYPE_VECTOR, TYPE_FLAGS_FRAGMENT, Shader::MODE_SKY));
-	add_options.push_back(AddOption("HalfResAlpha", "Input", "Fragment", "VisualShaderNodeInput", vformat(input_param_for_fragment_shader_mode, "half_res_alpha"), "half_res_alpha", VisualShaderNode::PORT_TYPE_SCALAR, TYPE_FLAGS_FRAGMENT, Shader::MODE_SKY));
-	add_options.push_back(AddOption("Light0Color", "Input", "Fragment", "VisualShaderNodeInput", vformat(input_param_for_fragment_shader_mode, "light0_color"), "light0_color", VisualShaderNode::PORT_TYPE_VECTOR, TYPE_FLAGS_FRAGMENT, Shader::MODE_SKY));
-	add_options.push_back(AddOption("Light0Direction", "Input", "Fragment", "VisualShaderNodeInput", vformat(input_param_for_fragment_shader_mode, "light0_direction"), "light0_direction", VisualShaderNode::PORT_TYPE_VECTOR, TYPE_FLAGS_FRAGMENT, Shader::MODE_SKY));
-	add_options.push_back(AddOption("Light0Enabled", "Input", "Fragment", "VisualShaderNodeInput", vformat(input_param_for_fragment_shader_mode, "light0_enabled"), "light0_enabled", VisualShaderNode::PORT_TYPE_BOOLEAN, TYPE_FLAGS_FRAGMENT, Shader::MODE_SKY));
-	add_options.push_back(AddOption("Light0Energy", "Input", "Fragment", "VisualShaderNodeInput", vformat(input_param_for_fragment_shader_mode, "light0_energy"), "light0_energy", VisualShaderNode::PORT_TYPE_SCALAR, TYPE_FLAGS_FRAGMENT, Shader::MODE_SKY));
-	add_options.push_back(AddOption("Light1Color", "Input", "Fragment", "VisualShaderNodeInput", vformat(input_param_for_fragment_shader_mode, "light1_color"), "light1_color", VisualShaderNode::PORT_TYPE_VECTOR, TYPE_FLAGS_FRAGMENT, Shader::MODE_SKY));
-	add_options.push_back(AddOption("Light1Direction", "Input", "Fragment", "VisualShaderNodeInput", vformat(input_param_for_fragment_shader_mode, "light1_direction"), "light1_direction", VisualShaderNode::PORT_TYPE_VECTOR, TYPE_FLAGS_FRAGMENT, Shader::MODE_SKY));
-	add_options.push_back(AddOption("Light1Enabled", "Input", "Fragment", "VisualShaderNodeInput", vformat(input_param_for_fragment_shader_mode, "light1_enabled"), "light1_enabled", VisualShaderNode::PORT_TYPE_BOOLEAN, TYPE_FLAGS_FRAGMENT, Shader::MODE_SKY));
-	add_options.push_back(AddOption("Light1Energy", "Input", "Fragment", "VisualShaderNodeInput", vformat(input_param_for_fragment_shader_mode, "light1_energy"), "light1_energy", VisualShaderNode::PORT_TYPE_SCALAR, TYPE_FLAGS_FRAGMENT, Shader::MODE_SKY));
-	add_options.push_back(AddOption("Light2Color", "Input", "Fragment", "VisualShaderNodeInput", vformat(input_param_for_fragment_shader_mode, "light2_color"), "light2_color", VisualShaderNode::PORT_TYPE_VECTOR, TYPE_FLAGS_FRAGMENT, Shader::MODE_SKY));
-	add_options.push_back(AddOption("Light2Direction", "Input", "Fragment", "VisualShaderNodeInput", vformat(input_param_for_fragment_shader_mode, "light2_direction"), "light2_direction", VisualShaderNode::PORT_TYPE_VECTOR, TYPE_FLAGS_FRAGMENT, Shader::MODE_SKY));
-	add_options.push_back(AddOption("Light2Enabled", "Input", "Fragment", "VisualShaderNodeInput", vformat(input_param_for_fragment_shader_mode, "light2_enabled"), "light2_enabled", VisualShaderNode::PORT_TYPE_BOOLEAN, TYPE_FLAGS_FRAGMENT, Shader::MODE_SKY));
-	add_options.push_back(AddOption("Light2Energy", "Input", "Fragment", "VisualShaderNodeInput", vformat(input_param_for_fragment_shader_mode, "light2_energy"), "light2_energy", VisualShaderNode::PORT_TYPE_SCALAR, TYPE_FLAGS_FRAGMENT, Shader::MODE_SKY));
-	add_options.push_back(AddOption("Light3Color", "Input", "Fragment", "VisualShaderNodeInput", vformat(input_param_for_fragment_shader_mode, "light3_color"), "light3_color", VisualShaderNode::PORT_TYPE_VECTOR, TYPE_FLAGS_FRAGMENT, Shader::MODE_SKY));
-	add_options.push_back(AddOption("Light3Direction", "Input", "Fragment", "VisualShaderNodeInput", vformat(input_param_for_fragment_shader_mode, "light3_direction"), "light3_direction", VisualShaderNode::PORT_TYPE_VECTOR, TYPE_FLAGS_FRAGMENT, Shader::MODE_SKY));
-	add_options.push_back(AddOption("Light3Enabled", "Input", "Fragment", "VisualShaderNodeInput", vformat(input_param_for_fragment_shader_mode, "light3_enabled"), "light3_enabled", VisualShaderNode::PORT_TYPE_BOOLEAN, TYPE_FLAGS_FRAGMENT, Shader::MODE_SKY));
-	add_options.push_back(AddOption("Light3Energy", "Input", "Fragment", "VisualShaderNodeInput", vformat(input_param_for_fragment_shader_mode, "light3_energy"), "light3_energy", VisualShaderNode::PORT_TYPE_SCALAR, TYPE_FLAGS_FRAGMENT, Shader::MODE_SKY));
-	add_options.push_back(AddOption("Position", "Input", "Fragment", "VisualShaderNodeInput", vformat(input_param_for_fragment_shader_mode, "position"), "position", VisualShaderNode::PORT_TYPE_VECTOR, TYPE_FLAGS_FRAGMENT, Shader::MODE_SKY));
-	add_options.push_back(AddOption("QuarterResColor", "Input", "Fragment", "VisualShaderNodeInput", vformat(input_param_for_fragment_shader_mode, "quarter_res_color"), "quarter_res_color", VisualShaderNode::PORT_TYPE_VECTOR, TYPE_FLAGS_FRAGMENT, Shader::MODE_SKY));
-	add_options.push_back(AddOption("QuarterResAlpha", "Input", "Fragment", "VisualShaderNodeInput", vformat(input_param_for_fragment_shader_mode, "quarter_res_alpha"), "quarter_res_alpha", VisualShaderNode::PORT_TYPE_SCALAR, TYPE_FLAGS_FRAGMENT, Shader::MODE_SKY));
-	add_options.push_back(AddOption("Radiance", "Input", "Fragment", "VisualShaderNodeInput", vformat(input_param_for_fragment_shader_mode, "radiance"), "radiance", VisualShaderNode::PORT_TYPE_SAMPLER, TYPE_FLAGS_FRAGMENT, Shader::MODE_SKY));
-	add_options.push_back(AddOption("ScreenUV", "Input", "Fragment", "VisualShaderNodeInput", vformat(input_param_for_fragment_shader_mode, "screen_uv"), "screen_uv", VisualShaderNode::PORT_TYPE_VECTOR, TYPE_FLAGS_FRAGMENT, Shader::MODE_SKY));
-	add_options.push_back(AddOption("SkyCoords", "Input", "Fragment", "VisualShaderNodeInput", vformat(input_param_for_fragment_shader_mode, "sky_coords"), "sky_coords", VisualShaderNode::PORT_TYPE_VECTOR, TYPE_FLAGS_FRAGMENT, Shader::MODE_SKY));
-	add_options.push_back(AddOption("Time", "Input", "Fragment", "VisualShaderNodeInput", vformat(input_param_for_fragment_shader_mode, "time"), "time", VisualShaderNode::PORT_TYPE_SCALAR, TYPE_FLAGS_FRAGMENT, Shader::MODE_SKY));
+	add_options.push_back(AddOption("AtCubeMapPass", "Input", "Sky", "VisualShaderNodeInput", vformat(input_param_for_sky_shader_mode, "at_cubemap_pass"), "at_cubemap_pass", VisualShaderNode::PORT_TYPE_BOOLEAN, TYPE_FLAGS_SKY, Shader::MODE_SKY));
+	add_options.push_back(AddOption("AtHalfResPass", "Input", "Sky", "VisualShaderNodeInput", vformat(input_param_for_sky_shader_mode, "at_half_res_pass"), "at_half_res_pass", VisualShaderNode::PORT_TYPE_BOOLEAN, TYPE_FLAGS_SKY, Shader::MODE_SKY));
+	add_options.push_back(AddOption("AtQuarterResPass", "Input", "Sky", "VisualShaderNodeInput", vformat(input_param_for_sky_shader_mode, "at_quarter_res_pass"), "at_quarter_res_pass", VisualShaderNode::PORT_TYPE_BOOLEAN, TYPE_FLAGS_SKY, Shader::MODE_SKY));
+	add_options.push_back(AddOption("EyeDir", "Input", "Sky", "VisualShaderNodeInput", vformat(input_param_for_sky_shader_mode, "eyedir"), "eyedir", VisualShaderNode::PORT_TYPE_VECTOR, TYPE_FLAGS_SKY, Shader::MODE_SKY));
+	add_options.push_back(AddOption("HalfResColor", "Input", "Sky", "VisualShaderNodeInput", vformat(input_param_for_sky_shader_mode, "half_res_color"), "half_res_color", VisualShaderNode::PORT_TYPE_VECTOR, TYPE_FLAGS_SKY, Shader::MODE_SKY));
+	add_options.push_back(AddOption("HalfResAlpha", "Input", "Sky", "VisualShaderNodeInput", vformat(input_param_for_sky_shader_mode, "half_res_alpha"), "half_res_alpha", VisualShaderNode::PORT_TYPE_SCALAR, TYPE_FLAGS_SKY, Shader::MODE_SKY));
+	add_options.push_back(AddOption("Light0Color", "Input", "Sky", "VisualShaderNodeInput", vformat(input_param_for_sky_shader_mode, "light0_color"), "light0_color", VisualShaderNode::PORT_TYPE_VECTOR, TYPE_FLAGS_SKY, Shader::MODE_SKY));
+	add_options.push_back(AddOption("Light0Direction", "Input", "Sky", "VisualShaderNodeInput", vformat(input_param_for_sky_shader_mode, "light0_direction"), "light0_direction", VisualShaderNode::PORT_TYPE_VECTOR, TYPE_FLAGS_SKY, Shader::MODE_SKY));
+	add_options.push_back(AddOption("Light0Enabled", "Input", "Sky", "VisualShaderNodeInput", vformat(input_param_for_sky_shader_mode, "light0_enabled"), "light0_enabled", VisualShaderNode::PORT_TYPE_BOOLEAN, TYPE_FLAGS_SKY, Shader::MODE_SKY));
+	add_options.push_back(AddOption("Light0Energy", "Input", "Sky", "VisualShaderNodeInput", vformat(input_param_for_sky_shader_mode, "light0_energy"), "light0_energy", VisualShaderNode::PORT_TYPE_SCALAR, TYPE_FLAGS_SKY, Shader::MODE_SKY));
+	add_options.push_back(AddOption("Light1Color", "Input", "Sky", "VisualShaderNodeInput", vformat(input_param_for_sky_shader_mode, "light1_color"), "light1_color", VisualShaderNode::PORT_TYPE_VECTOR, TYPE_FLAGS_SKY, Shader::MODE_SKY));
+	add_options.push_back(AddOption("Light1Direction", "Input", "Sky", "VisualShaderNodeInput", vformat(input_param_for_sky_shader_mode, "light1_direction"), "light1_direction", VisualShaderNode::PORT_TYPE_VECTOR, TYPE_FLAGS_SKY, Shader::MODE_SKY));
+	add_options.push_back(AddOption("Light1Enabled", "Input", "Sky", "VisualShaderNodeInput", vformat(input_param_for_sky_shader_mode, "light1_enabled"), "light1_enabled", VisualShaderNode::PORT_TYPE_BOOLEAN, TYPE_FLAGS_SKY, Shader::MODE_SKY));
+	add_options.push_back(AddOption("Light1Energy", "Input", "Sky", "VisualShaderNodeInput", vformat(input_param_for_sky_shader_mode, "light1_energy"), "light1_energy", VisualShaderNode::PORT_TYPE_SCALAR, TYPE_FLAGS_SKY, Shader::MODE_SKY));
+	add_options.push_back(AddOption("Light2Color", "Input", "Sky", "VisualShaderNodeInput", vformat(input_param_for_sky_shader_mode, "light2_color"), "light2_color", VisualShaderNode::PORT_TYPE_VECTOR, TYPE_FLAGS_SKY, Shader::MODE_SKY));
+	add_options.push_back(AddOption("Light2Direction", "Input", "Sky", "VisualShaderNodeInput", vformat(input_param_for_sky_shader_mode, "light2_direction"), "light2_direction", VisualShaderNode::PORT_TYPE_VECTOR, TYPE_FLAGS_SKY, Shader::MODE_SKY));
+	add_options.push_back(AddOption("Light2Enabled", "Input", "Sky", "VisualShaderNodeInput", vformat(input_param_for_sky_shader_mode, "light2_enabled"), "light2_enabled", VisualShaderNode::PORT_TYPE_BOOLEAN, TYPE_FLAGS_SKY, Shader::MODE_SKY));
+	add_options.push_back(AddOption("Light2Energy", "Input", "Sky", "VisualShaderNodeInput", vformat(input_param_for_sky_shader_mode, "light2_energy"), "light2_energy", VisualShaderNode::PORT_TYPE_SCALAR, TYPE_FLAGS_SKY, Shader::MODE_SKY));
+	add_options.push_back(AddOption("Light3Color", "Input", "Sky", "VisualShaderNodeInput", vformat(input_param_for_sky_shader_mode, "light3_color"), "light3_color", VisualShaderNode::PORT_TYPE_VECTOR, TYPE_FLAGS_SKY, Shader::MODE_SKY));
+	add_options.push_back(AddOption("Light3Direction", "Input", "Sky", "VisualShaderNodeInput", vformat(input_param_for_sky_shader_mode, "light3_direction"), "light3_direction", VisualShaderNode::PORT_TYPE_VECTOR, TYPE_FLAGS_SKY, Shader::MODE_SKY));
+	add_options.push_back(AddOption("Light3Enabled", "Input", "Sky", "VisualShaderNodeInput", vformat(input_param_for_sky_shader_mode, "light3_enabled"), "light3_enabled", VisualShaderNode::PORT_TYPE_BOOLEAN, TYPE_FLAGS_SKY, Shader::MODE_SKY));
+	add_options.push_back(AddOption("Light3Energy", "Input", "Sky", "VisualShaderNodeInput", vformat(input_param_for_sky_shader_mode, "light3_energy"), "light3_energy", VisualShaderNode::PORT_TYPE_SCALAR, TYPE_FLAGS_SKY, Shader::MODE_SKY));
+	add_options.push_back(AddOption("Position", "Input", "Sky", "VisualShaderNodeInput", vformat(input_param_for_sky_shader_mode, "position"), "position", VisualShaderNode::PORT_TYPE_VECTOR, TYPE_FLAGS_SKY, Shader::MODE_SKY));
+	add_options.push_back(AddOption("QuarterResColor", "Input", "Sky", "VisualShaderNodeInput", vformat(input_param_for_sky_shader_mode, "quarter_res_color"), "quarter_res_color", VisualShaderNode::PORT_TYPE_VECTOR, TYPE_FLAGS_SKY, Shader::MODE_SKY));
+	add_options.push_back(AddOption("QuarterResAlpha", "Input", "Sky", "VisualShaderNodeInput", vformat(input_param_for_sky_shader_mode, "quarter_res_alpha"), "quarter_res_alpha", VisualShaderNode::PORT_TYPE_SCALAR, TYPE_FLAGS_SKY, Shader::MODE_SKY));
+	add_options.push_back(AddOption("Radiance", "Input", "Sky", "VisualShaderNodeInput", vformat(input_param_for_sky_shader_mode, "radiance"), "radiance", VisualShaderNode::PORT_TYPE_SAMPLER, TYPE_FLAGS_SKY, Shader::MODE_SKY));
+	add_options.push_back(AddOption("ScreenUV", "Input", "Sky", "VisualShaderNodeInput", vformat(input_param_for_sky_shader_mode, "screen_uv"), "screen_uv", VisualShaderNode::PORT_TYPE_VECTOR, TYPE_FLAGS_SKY, Shader::MODE_SKY));
+	add_options.push_back(AddOption("SkyCoords", "Input", "Sky", "VisualShaderNodeInput", vformat(input_param_for_sky_shader_mode, "sky_coords"), "sky_coords", VisualShaderNode::PORT_TYPE_VECTOR, TYPE_FLAGS_SKY, Shader::MODE_SKY));
+	add_options.push_back(AddOption("Time", "Input", "Sky", "VisualShaderNodeInput", vformat(input_param_for_sky_shader_mode, "time"), "time", VisualShaderNode::PORT_TYPE_SCALAR, TYPE_FLAGS_SKY, Shader::MODE_SKY));
 
 	// SCALAR
 
