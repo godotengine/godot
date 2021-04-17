@@ -89,7 +89,7 @@ public:
 	}
 };
 
-void ImportDock::set_edit_path(const String &p_path) {
+void ImportDock::_set_single_edit_path(const String &p_path) {
 	Ref<ConfigFile> config;
 	config.instantiate();
 	Error err = config->load(p_path + ".import");
@@ -174,8 +174,19 @@ void ImportDock::_update_options(const Ref<ConfigFile> &p_config) {
 	}
 }
 
-void ImportDock::set_edit_multiple_paths(const Vector<String> &p_paths) {
+void ImportDock::set_edited_paths(const Vector<String> &p_paths) {
+	current_paths = p_paths;
+	emit_signal("edited_paths_changed");
+	if (p_paths.size() == 1) {
+		_set_single_edit_path(p_paths[0]);
+		return;
+	}
+
 	clear();
+
+	if (p_paths.is_empty()) {
+		return;
+	}
 
 	// Use the value that is repeated the most.
 	Map<String, Dictionary> value_frequency;
@@ -401,6 +412,7 @@ void ImportDock::clear() {
 	import_as->clear();
 	import_as->set_disabled(true);
 	preset->set_disabled(true);
+	current_paths.clear();
 	params->values.clear();
 	params->properties.clear();
 	params->update();
@@ -552,12 +564,32 @@ void ImportDock::_property_toggled(const StringName &p_prop, bool p_checked) {
 
 void ImportDock::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_reimport"), &ImportDock::_reimport);
+
+	ClassDB::bind_method(D_METHOD("get_editor_inspector"), &ImportDock::get_editor_inspector);
+	ClassDB::bind_method(D_METHOD("get_edited_paths"), &ImportDock::get_edited_paths);
+
+	ClassDB::bind_method(D_METHOD("set_edited_paths", "paths"), &ImportDock::set_edited_paths);
+
+	ADD_SIGNAL(MethodInfo("edited_paths_changed"));
 }
 
 void ImportDock::initialize_import_options() const {
 	ERR_FAIL_COND(!import_opts || !params);
 
 	import_opts->edit(params);
+}
+
+EditorInspector *ImportDock::get_editor_inspector() {
+	return import_opts;
+}
+
+Array ImportDock::get_edited_paths() {
+	Array arr;
+	arr.resize(current_paths.size());
+	for (int i = 0; i < current_paths.size(); i++) {
+		arr[i] = current_paths[i];
+	}
+	return arr;
 }
 
 ImportDock::ImportDock() {

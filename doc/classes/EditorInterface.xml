@@ -78,6 +78,12 @@
 				Returns the editor's [FileSystemDock] instance.
 			</description>
 		</method>
+		<method name="get_import_dock">
+			<return type="ImportDock" />
+			<description>
+				Returns the editor's [ImportDock] instance.
+			</description>
+		</method>
 		<method name="get_inspector" qualifiers="const">
 			<return type="EditorInspector" />
 			<description>

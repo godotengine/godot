@@ -57,6 +57,7 @@ class EditorFileSystem;
 class EditorToolAddons;
 class EditorPaths;
 class FileSystemDock;
+class ImportDock;
 class ScriptEditor;
 
 class EditorInterface : public Node {
@@ -104,6 +105,7 @@ public:
 	EditorFileSystem *get_resource_file_system();
 
 	FileSystemDock *get_file_system_dock();
+	ImportDock *get_import_dock();
 
 	Control *get_base_control();
 	float get_editor_scale() const;

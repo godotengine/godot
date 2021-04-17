@@ -35,6 +35,7 @@
 #include "editor/editor_paths.h"
 #include "editor/editor_settings.h"
 #include "editor/filesystem_dock.h"
+#include "editor/import_dock.h"
 #include "editor/project_settings_editor.h"
 #include "editor_resource_preview.h"
 #include "main/main.h"
@@ -251,6 +252,10 @@ FileSystemDock *EditorInterface::get_file_system_dock() {
 	return EditorNode::get_singleton()->get_filesystem_dock();
 }
 
+ImportDock *EditorInterface::get_import_dock() {
+	return EditorNode::get_singleton()->get_import_dock();
+}
+
 EditorSelection *EditorInterface::get_selection() {
 	return EditorNode::get_singleton()->get_editor_selection();
 }
@@ -343,6 +348,7 @@ void EditorInterface::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_selected_path"), &EditorInterface::get_selected_path);
 	ClassDB::bind_method(D_METHOD("get_current_path"), &EditorInterface::get_current_path);
 	ClassDB::bind_method(D_METHOD("get_file_system_dock"), &EditorInterface::get_file_system_dock);
+	ClassDB::bind_method(D_METHOD("get_import_dock"), &EditorInterface::get_import_dock);
 	ClassDB::bind_method(D_METHOD("get_editor_paths"), &EditorInterface::get_editor_paths);
 	ClassDB::bind_method(D_METHOD("get_command_palette"), &EditorInterface::get_command_palette);
 
