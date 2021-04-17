@@ -1329,9 +1329,10 @@ void Input::add_joy_mapping(String p_mapping, bool p_update_existing) {
 	if (p_update_existing) {
 		Vector<String> entry = p_mapping.split(",");
 		String uid = entry[0];
-		for (int i = 0; i < joy_names.size(); i++) {
-			if (uid == joy_names[i].uid) {
-				joy_names[i].mapping = map_db.size() - 1;
+		for (Map<int, Joypad>::Element *E = joy_names.front(); E; E = E->next()) {
+			Joypad &joy = E->get();
+			if (joy.uid == uid) {
+				joy.mapping = map_db.size() - 1;
 			}
 		}
 	}
@@ -1343,9 +1344,10 @@ void Input::remove_joy_mapping(String p_guid) {
 			map_db.remove(i);
 		}
 	}
-	for (int i = 0; i < joy_names.size(); i++) {
-		if (joy_names[i].uid == p_guid) {
-			joy_names[i].mapping = -1;
+	for (Map<int, Joypad>::Element *E = joy_names.front(); E; E = E->next()) {
+		Joypad &joy = E->get();
+		if (joy.uid == p_guid) {
+			joy.mapping = -1;
 		}
 	}
 }
@@ -1361,8 +1363,13 @@ void Input::set_fallback_mapping(String p_guid) {
 
 //platforms that use the remapping system can override and call to these ones
 bool Input::is_joy_known(int p_device) {
-	int mapping = joy_names[p_device].mapping;
-	return mapping != -1 ? (mapping != fallback_mapping) : false;
+	if (joy_names.has(p_device)) {
+		int mapping = joy_names[p_device].mapping;
+		if (mapping != -1 && mapping != fallback_mapping) {
+			return true;
+		}
+	}
+	return false;
 }
 
 String Input::get_joy_guid(int p_device) const {
