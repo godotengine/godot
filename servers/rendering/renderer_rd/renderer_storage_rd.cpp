@@ -4781,6 +4781,7 @@ void RendererStorageRD::ParticlesShaderData::set_code(const String &p_code) {
 
 	ShaderCompilerRD::GeneratedCode gen_code;
 	ShaderCompilerRD::IdentifierActions actions;
+	actions.entry_point_stages["start"] = ShaderCompilerRD::STAGE_COMPUTE;
 	actions.entry_point_stages["process"] = ShaderCompilerRD::STAGE_COMPUTE;
 
 	/*

@@ -233,6 +233,7 @@ void ShaderRD::_compile_variant(uint32_t p_variant, Version *p_version) {
 		_build_variant_code(builder, p_variant, p_version, stage_templates[STAGE_TYPE_COMPUTE]);
 
 		current_source = builder.as_string();
+
 		RD::ShaderStageData stage;
 		stage.spir_v = RD::get_singleton()->shader_compile_from_source(RD::SHADER_STAGE_COMPUTE, current_source, RD::SHADER_LANGUAGE_GLSL, &error);
 		if (stage.spir_v.size() == 0) {
