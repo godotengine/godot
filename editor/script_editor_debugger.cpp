@@ -33,6 +33,8 @@
 #include "core/io/marshalls.h"
 #include "core/project_settings.h"
 #include "core/ustring.h"
+#include "core/version.h"
+#include "core/version_hash.gen.h"
 #include "editor/editor_log.h"
 #include "editor/plugins/canvas_item_editor_plugin.h"
 #include "editor/plugins/spatial_editor_plugin.h"
@@ -2251,6 +2253,7 @@ void ScriptEditorDebugger::_error_tree_item_rmb_selected(const Vector2 &p_pos) {
 
 	if (error_tree->is_anything_selected()) {
 		item_menu->add_icon_item(get_icon("ActionCopy", "EditorIcons"), TTR("Copy Error"), ITEM_MENU_COPY_ERROR);
+		item_menu->add_icon_item(get_icon("Instance", "EditorIcons"), TTR("Open C++ Source on GitHub"), ITEM_MENU_OPEN_SOURCE);
 	}
 
 	if (item_menu->get_item_count() > 0) {
@@ -2322,6 +2325,35 @@ void ScriptEditorDebugger::_item_menu_id_pressed(int p_option) {
 			}
 
 			OS::get_singleton()->set_clipboard(text);
+		} break;
+		case ITEM_MENU_OPEN_SOURCE: {
+			TreeItem *ti = error_tree->get_selected();
+			while (ti->get_parent() != error_tree->get_root()) {
+				ti = ti->get_parent();
+			}
+
+			// We only need the first child here (C++ source stack trace).
+			TreeItem *ci = ti->get_children();
+			// Parse back the `file:line @ method()` string.
+			const Vector<String> file_line_number = ci->get_text(1).split("@")[0].strip_edges().split(":");
+			ERR_FAIL_COND_MSG(file_line_number.size() < 2, "Incorrect C++ source stack trace file:line format (please report).");
+			const String file = file_line_number[0];
+			const int line_number = file_line_number[1].to_int();
+
+			// Construct a GitHub repository URL and open it in the user's default web browser.
+			if (String(VERSION_HASH).length() >= 1) {
+				// Git commit hash information available; use it for greater accuracy, including for development versions.
+				OS::get_singleton()->shell_open(vformat("https://github.com/godotengine/godot/blob/%s/%s#L%d",
+						VERSION_HASH,
+						file,
+						line_number));
+			} else {
+				// Git commit hash information unavailable; fall back to tagged releases.
+				OS::get_singleton()->shell_open(vformat("https://github.com/godotengine/godot/blob/%s-stable/%s#L%d",
+						VERSION_NUMBER,
+						file,
+						line_number));
+			}
 		} break;
 	}
 }
