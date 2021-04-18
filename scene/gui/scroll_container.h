@@ -42,7 +42,6 @@ class ScrollContainer : public Container {
 	VScrollBar *v_scroll;
 
 	Size2 child_max_size;
-	Size2 scroll;
 
 	void update_scrollbars();
 
@@ -50,15 +49,16 @@ class ScrollContainer : public Container {
 	Vector2 drag_accum;
 	Vector2 drag_from;
 	Vector2 last_drag_accum;
-	float last_drag_time = 0.0;
-	float time_since_motion = 0.0;
+	float time_since_motion = 0.0f;
 	bool drag_touching = false;
 	bool drag_touching_deaccel = false;
-	bool click_handled = false;
 	bool beyond_deadzone = false;
 
 	bool scroll_h = true;
 	bool scroll_v = true;
+
+	bool h_scroll_visible = true;
+	bool v_scroll_visible = true;
 
 	int deadzone = 0;
 	bool follow_focus = false;
@@ -80,17 +80,23 @@ protected:
 	void _ensure_focused_visible(Control *p_node);
 
 public:
-	int get_v_scroll() const;
-	void set_v_scroll(int p_pos);
-
-	int get_h_scroll() const;
 	void set_h_scroll(int p_pos);
+	int get_h_scroll() const;
+
+	void set_v_scroll(int p_pos);
+	int get_v_scroll() const;
 
 	void set_enable_h_scroll(bool p_enable);
 	bool is_h_scroll_enabled() const;
 
 	void set_enable_v_scroll(bool p_enable);
 	bool is_v_scroll_enabled() const;
+
+	void set_h_scroll_visible(bool p_visible);
+	bool is_h_scroll_visible() const;
+
+	void set_v_scroll_visible(bool p_visible);
+	bool is_v_scroll_visible() const;
 
 	int get_deadzone() const;
 	void set_deadzone(int p_deadzone);
