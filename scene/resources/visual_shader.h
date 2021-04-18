@@ -54,6 +54,7 @@ public:
 		TYPE_EMIT,
 		TYPE_PROCESS,
 		TYPE_END,
+		TYPE_SKY,
 		TYPE_MAX
 	};
 
