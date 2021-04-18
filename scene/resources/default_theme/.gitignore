@@ -1,2 +1,0 @@
-# Don't ignore some graphics. Overrides Godot's global gitignore (specifically the part that filters out code coverage.)
-!*.png
