@@ -330,7 +330,7 @@ constexpr KeyModifierMask operator|(KeyModifierMask a, KeyModifierMask b) {
 
 String keycode_get_string(Key p_code);
 bool keycode_has_unicode(Key p_keycode);
-Key find_keycode(const String &p_code);
+Key find_keycode(const String &p_codestr);
 const char *find_keycode_name(Key p_keycode);
 int keycode_get_count();
 int keycode_get_value_by_index(int p_index);
