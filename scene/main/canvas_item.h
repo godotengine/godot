@@ -46,6 +46,8 @@ class World2D;
 class CanvasItem : public Node {
 	GDCLASS(CanvasItem, Node);
 
+	friend class CanvasLayer;
+
 public:
 	enum TextureFilter {
 		TEXTURE_FILTER_PARENT_NODE,
