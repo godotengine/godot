@@ -32,6 +32,7 @@
 #define SELF_LIST_H
 
 #include "core/error_macros.h"
+#include "core/os/mutex.h"
 #include "core/typedefs.h"
 
 template <class T>
@@ -41,10 +42,12 @@ public:
 
 		SelfList<T> *_first;
 		SelfList<T> *_last;
+		Mutex mutex;
 
 	public:
 		void add(SelfList<T> *p_elem) {
 
+			MutexLock lock(mutex);
 			ERR_FAIL_COND(p_elem->_root);
 
 			p_elem->_root = this;
@@ -63,6 +66,7 @@ public:
 
 		void add_last(SelfList<T> *p_elem) {
 
+			MutexLock lock(mutex);
 			ERR_FAIL_COND(p_elem->_root);
 
 			p_elem->_root = this;
@@ -81,6 +85,7 @@ public:
 
 		void remove(SelfList<T> *p_elem) {
 
+			MutexLock lock(mutex);
 			ERR_FAIL_COND(p_elem->_root != this);
 			if (p_elem->_next) {
 				p_elem->_next->_prev = p_elem->_prev;

@@ -189,10 +189,10 @@ void Area2DSW::call_queries() {
 			return;
 		}
 
-		for (Map<BodyKey, BodyState>::Element *E = monitored_bodies.front(); E;) {
+		for (MapMT<BodyKey, BodyState>::Element *E = monitored_bodies.front(); E;) {
 
 			if (E->get().state == 0) { // Nothing happened
-				Map<BodyKey, BodyState>::Element *next = E->next();
+				MapMT<BodyKey, BodyState>::Element *next = E->next();
 				monitored_bodies.erase(E);
 				E = next;
 				continue;
@@ -204,7 +204,7 @@ void Area2DSW::call_queries() {
 			res[3] = E->key().body_shape;
 			res[4] = E->key().area_shape;
 
-			Map<BodyKey, BodyState>::Element *next = E->next();
+			MapMT<BodyKey, BodyState>::Element *next = E->next();
 			monitored_bodies.erase(E);
 			E = next;
 
@@ -227,10 +227,10 @@ void Area2DSW::call_queries() {
 			return;
 		}
 
-		for (Map<BodyKey, BodyState>::Element *E = monitored_areas.front(); E;) {
+		for (MapMT<BodyKey, BodyState>::Element *E = monitored_areas.front(); E;) {
 
 			if (E->get().state == 0) { // Nothing happened
-				Map<BodyKey, BodyState>::Element *next = E->next();
+				MapMT<BodyKey, BodyState>::Element *next = E->next();
 				monitored_areas.erase(E);
 				E = next;
 				continue;
@@ -242,7 +242,7 @@ void Area2DSW::call_queries() {
 			res[3] = E->key().body_shape;
 			res[4] = E->key().area_shape;
 
-			Map<BodyKey, BodyState>::Element *next = E->next();
+			MapMT<BodyKey, BodyState>::Element *next = E->next();
 			monitored_areas.erase(E);
 			E = next;
 
