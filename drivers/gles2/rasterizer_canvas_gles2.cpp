@@ -1356,6 +1356,12 @@ bool RasterizerCanvasGLES2::try_join_item(Item *p_ci, RenderItemState &r_ris, bo
 		if (material_ptr) {
 			shader_ptr = material_ptr->shader;
 
+			// special case, if the user has made an error in the shader code
+			if (shader_ptr && !shader_ptr->valid) {
+				join = false;
+				r_batch_break = true;
+			}
+
 			if (shader_ptr && shader_ptr->mode != VS::SHADER_CANVAS_ITEM) {
 				shader_ptr = NULL; // not a canvas item shader, don't use.
 			}
