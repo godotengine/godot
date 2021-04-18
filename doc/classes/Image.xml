@@ -186,7 +186,8 @@
 			<return type="int" enum="Error">
 			</return>
 			<description>
-				Decompresses the image if it is compressed. Returns an error if decompress function is not available.
+				Decompresses the image if it is VRAM compressed in a supported format. Returns [constant OK] if the format is supported, otherwise [constant ERR_UNAVAILABLE].
+				[b]Note:[/b] The following formats can be decompressed: DXT, RGTC, BPTC, PVRTC1. The formats ETC1 and ETC2 are not supported.
 			</description>
 		</method>
 		<method name="detect_alpha" qualifiers="const">
