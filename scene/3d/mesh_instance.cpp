@@ -149,6 +149,12 @@ void MeshInstance::set_mesh(const Ref<Mesh> &p_mesh) {
 		set_base(RID());
 	}
 
+	if (blend_shape_tracks.size() > 0) {
+		for (const Map<StringName, BlendShapeTrack>::Element *E = blend_shape_tracks.front(); E; E = E->next()) {
+			VisualServer::get_singleton()->instance_set_blend_shape_weight(get_instance(), E->get().idx, E->get().value);
+		}
+	}
+
 	update_gizmo();
 
 	_change_notify();
