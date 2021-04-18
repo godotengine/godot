@@ -527,6 +527,7 @@ void main() {
 
 		if (restart) {
 			PARTICLE.is_active = FRAME.emitting;
+			PARTICLE.xform = mat4(1.0);
 			restart_position = true;
 			restart_rotation_scale = true;
 			restart_velocity = true;
