@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="Area2D" inherits="CollisionObject2D" version="4.0">
 	<brief_description>
-		2D area for detection and 2D physics influence.
+		2D area for detection and physics and audio influence.
 	</brief_description>
 	<description>
-		2D area that detects [CollisionObject2D] nodes overlapping, entering, or exiting. Can also alter or override local physics parameters (gravity, damping).
+		2D area that detects [CollisionObject2D] nodes overlapping, entering, or exiting. Can also alter or override local physics parameters (gravity, damping) and route audio to a custom audio bus.
 	</description>
 	<tutorials>
 		<link title="Using Area2D">https://docs.godotengine.org/en/latest/tutorials/physics/using_area_2d.html</link>
