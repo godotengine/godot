@@ -140,7 +140,11 @@ void SceneTreeDock::instance_scenes(const Vector<String> &p_files, Node *p_paren
 		parent = scene_tree->get_selected();
 	}
 
-	if (!parent || !edited_scene) {
+	if (!parent) {
+		parent = edited_scene;
+	}
+
+	if (!parent) {
 		if (p_files.size() == 1) {
 			accept->set_text(TTR("No parent to instance a child at."));
 		} else {
