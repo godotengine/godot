@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -85,15 +85,18 @@ void VisibilityNotifier::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_WORLD: {
 
-			get_world()->_register_notifier(this, get_global_transform().xform(aabb));
+			world = get_world();
+			ERR_FAIL_COND(!world.is_valid());
+			world->_register_notifier(this, get_global_transform().xform(aabb));
 		} break;
 		case NOTIFICATION_TRANSFORM_CHANGED: {
 
-			get_world()->_update_notifier(this, get_global_transform().xform(aabb));
+			world->_update_notifier(this, get_global_transform().xform(aabb));
 		} break;
 		case NOTIFICATION_EXIT_WORLD: {
 
-			get_world()->_remove_notifier(this);
+			ERR_FAIL_COND(!world.is_valid());
+			world->_remove_notifier(this);
 		} break;
 	}
 }

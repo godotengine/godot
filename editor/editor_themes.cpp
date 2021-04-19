@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -40,16 +40,16 @@
 #include "modules/svg/image_loader_svg.h"
 #endif
 
-static Ref<StyleBoxTexture> make_stylebox(Ref<Texture> p_texture, float p_left, float p_top, float p_right, float p_botton, float p_margin_left = -1, float p_margin_top = -1, float p_margin_right = -1, float p_margin_botton = -1, bool p_draw_center = true) {
+static Ref<StyleBoxTexture> make_stylebox(Ref<Texture> p_texture, float p_left, float p_top, float p_right, float p_bottom, float p_margin_left = -1, float p_margin_top = -1, float p_margin_right = -1, float p_margin_bottom = -1, bool p_draw_center = true) {
 	Ref<StyleBoxTexture> style(memnew(StyleBoxTexture));
 	style->set_texture(p_texture);
 	style->set_margin_size(MARGIN_LEFT, p_left * EDSCALE);
 	style->set_margin_size(MARGIN_RIGHT, p_right * EDSCALE);
-	style->set_margin_size(MARGIN_BOTTOM, p_botton * EDSCALE);
+	style->set_margin_size(MARGIN_BOTTOM, p_bottom * EDSCALE);
 	style->set_margin_size(MARGIN_TOP, p_top * EDSCALE);
 	style->set_default_margin(MARGIN_LEFT, p_margin_left * EDSCALE);
 	style->set_default_margin(MARGIN_RIGHT, p_margin_right * EDSCALE);
-	style->set_default_margin(MARGIN_BOTTOM, p_margin_botton * EDSCALE);
+	style->set_default_margin(MARGIN_BOTTOM, p_margin_bottom * EDSCALE);
 	style->set_default_margin(MARGIN_TOP, p_margin_top * EDSCALE);
 	style->set_draw_center(p_draw_center);
 	return style;
@@ -82,6 +82,26 @@ static Ref<StyleBoxLine> make_line_stylebox(Color p_color, int p_thickness = 1, 
 	style->set_thickness(p_thickness);
 	style->set_vertical(p_vertical);
 	return style;
+}
+
+static Ref<Texture> flip_icon(Ref<Texture> p_texture, bool p_flip_y = false, bool p_flip_x = false) {
+	if (!p_flip_y && !p_flip_x) {
+		return p_texture;
+	}
+
+	Ref<ImageTexture> texture(memnew(ImageTexture));
+	Ref<Image> img = p_texture->get_data();
+	img = img->duplicate();
+
+	if (p_flip_y) {
+		img->flip_y();
+	}
+	if (p_flip_x) {
+		img->flip_x();
+	}
+
+	texture->create_from_image(img);
+	return texture;
 }
 
 #ifdef SVG_ENABLED
@@ -226,8 +246,15 @@ void editor_register_and_generate_icons(Ref<Theme> p_theme, bool p_dark_theme = 
 	// Generate icons.
 	if (!p_only_thumbs) {
 		for (int i = 0; i < editor_icons_count; i++) {
+			float icon_scale = EDSCALE;
+
+			// Always keep the DefaultProjectIcon at the default size
+			if (strcmp(editor_icons_names[i], "DefaultProjectIcon") == 0) {
+				icon_scale = 1.0f;
+			}
+
 			const int is_exception = exceptions.has(editor_icons_names[i]);
-			const Ref<ImageTexture> icon = editor_generate_icon(i, !is_exception);
+			const Ref<ImageTexture> icon = editor_generate_icon(i, !is_exception, icon_scale);
 
 			p_theme->set_icon(editor_icons_names[i], "EditorIcons", icon);
 		}
@@ -438,7 +465,8 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 
 	// Highlighted tabs and border width
 	Color tab_color = highlight_tabs ? base_color.linear_interpolate(font_color, contrast) : base_color;
-	const int border_width = CLAMP(border_size, 0, 3) * EDSCALE;
+	// Ensure borders are visible when using an editor scale below 100%.
+	const int border_width = CLAMP(border_size, 0, 3) * MAX(1, EDSCALE);
 
 	const int default_margin_size = 4;
 	const int margin_size_extra = default_margin_size + CLAMP(border_size, 0, 3);
@@ -679,6 +707,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_color("font_color_hover", "PopupMenu", font_color_hl);
 	theme->set_color("font_color_accel", "PopupMenu", font_color_disabled);
 	theme->set_color("font_color_disabled", "PopupMenu", font_color_disabled);
+	theme->set_color("font_color_separator", "PopupMenu", font_color_disabled);
 	theme->set_icon("checked", "PopupMenu", theme->get_icon("GuiChecked", "EditorIcons"));
 	theme->set_icon("unchecked", "PopupMenu", theme->get_icon("GuiUnchecked", "EditorIcons"));
 	theme->set_icon("radio_checked", "PopupMenu", theme->get_icon("GuiRadioChecked", "EditorIcons"));
@@ -689,14 +718,58 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_icon("visibility_xray", "PopupMenu", theme->get_icon("GuiVisibilityXray", "EditorIcons"));
 	theme->set_constant("vseparation", "PopupMenu", (extra_spacing + default_margin_size + 1) * EDSCALE);
 
-	Ref<StyleBoxFlat> sub_inspector_bg = make_flat_stylebox(dark_color_1.linear_interpolate(accent_color, 0.08), 2, 0, 2, 2);
-	sub_inspector_bg->set_border_width(MARGIN_LEFT, 2);
-	sub_inspector_bg->set_border_width(MARGIN_RIGHT, 2);
-	sub_inspector_bg->set_border_width(MARGIN_BOTTOM, 2);
-	sub_inspector_bg->set_border_color(accent_color * Color(1, 1, 1, 0.3));
-	sub_inspector_bg->set_draw_center(true);
+	for (int i = 0; i < 16; i++) {
+		Color si_base_color = accent_color;
 
-	theme->set_stylebox("sub_inspector_bg", "Editor", sub_inspector_bg);
+		float hue_rotate = (i * 2 % 16) / 16.0;
+		si_base_color.set_hsv(Math::fmod(float(si_base_color.get_h() + hue_rotate), float(1.0)), si_base_color.get_s(), si_base_color.get_v());
+		si_base_color = accent_color.linear_interpolate(si_base_color, float(EDITOR_GET("docks/property_editor/subresource_hue_tint")));
+
+		Ref<StyleBoxFlat> sub_inspector_bg;
+
+		sub_inspector_bg = make_flat_stylebox(dark_color_1.linear_interpolate(si_base_color, 0.08), 2, 0, 2, 2);
+
+		sub_inspector_bg->set_border_width(MARGIN_LEFT, 2);
+		sub_inspector_bg->set_border_width(MARGIN_RIGHT, 2);
+		sub_inspector_bg->set_border_width(MARGIN_BOTTOM, 2);
+		sub_inspector_bg->set_border_width(MARGIN_TOP, 2);
+		sub_inspector_bg->set_default_margin(MARGIN_LEFT, 3);
+		sub_inspector_bg->set_default_margin(MARGIN_RIGHT, 3);
+		sub_inspector_bg->set_default_margin(MARGIN_BOTTOM, 10);
+		sub_inspector_bg->set_default_margin(MARGIN_TOP, 5);
+		sub_inspector_bg->set_border_color(si_base_color * Color(0.7, 0.7, 0.7, 0.8));
+		sub_inspector_bg->set_draw_center(true);
+
+		theme->set_stylebox("sub_inspector_bg" + itos(i), "Editor", sub_inspector_bg);
+
+		Ref<StyleBoxFlat> bg_color;
+		bg_color.instance();
+		bg_color->set_bg_color(si_base_color * Color(0.7, 0.7, 0.7, 0.8));
+		bg_color->set_border_width_all(0);
+
+		Ref<StyleBoxFlat> bg_color_selected;
+		bg_color_selected.instance();
+		bg_color_selected->set_border_width_all(0);
+		bg_color_selected->set_bg_color(si_base_color * Color(0.8, 0.8, 0.8, 0.8));
+
+		theme->set_stylebox("sub_inspector_property_bg" + itos(i), "Editor", bg_color);
+		theme->set_stylebox("sub_inspector_property_bg_selected" + itos(i), "Editor", bg_color_selected);
+	}
+
+	theme->set_color("sub_inspector_property_color", "Editor", dark_theme ? Color(1, 1, 1, 1) : Color(0, 0, 0, 1));
+	theme->set_constant("sub_inspector_font_offset", "Editor", 4 * EDSCALE);
+
+	Ref<StyleBoxFlat> style_property_bg = style_default->duplicate();
+	style_property_bg->set_bg_color(highlight_color);
+	style_property_bg->set_border_width_all(0);
+
+	theme->set_constant("font_offset", "EditorProperty", 1 * EDSCALE);
+	theme->set_stylebox("bg_selected", "EditorProperty", style_property_bg);
+	theme->set_stylebox("bg", "EditorProperty", Ref<StyleBoxEmpty>(memnew(StyleBoxEmpty)));
+	theme->set_constant("vseparation", "EditorProperty", (extra_spacing + default_margin_size) * EDSCALE);
+	theme->set_color("error_color", "EditorProperty", error_color);
+	theme->set_color("property_color", "EditorProperty", property_color);
+
 	theme->set_constant("inspector_margin", "Editor", 8 * EDSCALE);
 
 	// Tree & ItemList background
@@ -754,7 +827,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 
 	Ref<StyleBoxFlat> style_tree_cursor = style_default->duplicate();
 	style_tree_cursor->set_draw_center(false);
-	style_tree_cursor->set_border_width_all(border_width);
+	style_tree_cursor->set_border_width_all(MAX(1, border_width));
 	style_tree_cursor->set_border_color(contrast_color_1);
 
 	Ref<StyleBoxFlat> style_tree_title = style_default->duplicate();
@@ -1043,11 +1116,43 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_icon("more", "GraphEdit", theme->get_icon("ZoomMore", "EditorIcons"));
 	theme->set_icon("reset", "GraphEdit", theme->get_icon("ZoomReset", "EditorIcons"));
 	theme->set_icon("snap", "GraphEdit", theme->get_icon("SnapGrid", "EditorIcons"));
+	theme->set_icon("minimap", "GraphEdit", theme->get_icon("GridMinimap", "EditorIcons"));
 	theme->set_constant("bezier_len_pos", "GraphEdit", 80 * EDSCALE);
 	theme->set_constant("bezier_len_neg", "GraphEdit", 160 * EDSCALE);
 
-	// GraphNode
+	// GraphEditMinimap
+	Ref<StyleBoxFlat> style_minimap_bg = make_flat_stylebox(dark_color_1, 0, 0, 0, 0);
+	style_minimap_bg->set_border_color(dark_color_3);
+	style_minimap_bg->set_border_width_all(1);
+	theme->set_stylebox("bg", "GraphEditMinimap", style_minimap_bg);
 
+	Ref<StyleBoxFlat> style_minimap_camera;
+	Ref<StyleBoxFlat> style_minimap_node;
+	if (dark_theme) {
+		style_minimap_camera = make_flat_stylebox(Color(0.65, 0.65, 0.65, 0.2), 0, 0, 0, 0);
+		style_minimap_camera->set_border_color(Color(0.65, 0.65, 0.65, 0.45));
+		style_minimap_node = make_flat_stylebox(Color(1, 1, 1), 0, 0, 0, 0);
+	} else {
+		style_minimap_camera = make_flat_stylebox(Color(0.38, 0.38, 0.38, 0.2), 0, 0, 0, 0);
+		style_minimap_camera->set_border_color(Color(0.38, 0.38, 0.38, 0.45));
+		style_minimap_node = make_flat_stylebox(Color(0, 0, 0), 0, 0, 0, 0);
+	}
+	style_minimap_camera->set_border_width_all(1);
+	style_minimap_node->set_corner_radius_all(1);
+	theme->set_stylebox("camera", "GraphEditMinimap", style_minimap_camera);
+	theme->set_stylebox("node", "GraphEditMinimap", style_minimap_node);
+
+	Ref<Texture> minimap_resizer_icon = theme->get_icon("GuiResizer", "EditorIcons");
+	Color minimap_resizer_color;
+	if (dark_theme) {
+		minimap_resizer_color = Color(1, 1, 1, 0.65);
+	} else {
+		minimap_resizer_color = Color(0, 0, 0, 0.65);
+	}
+	theme->set_icon("resizer", "GraphEditMinimap", flip_icon(minimap_resizer_icon, true, true));
+	theme->set_color("resizer_color", "GraphEditMinimap", minimap_resizer_color);
+
+	// GraphNode
 	const float mv = dark_theme ? 0.0 : 1.0;
 	const float mv2 = 1.0 - mv;
 	const int gn_margin_side = 28;

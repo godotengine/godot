@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -128,10 +128,8 @@ private:
 	int bake_texture_size;
 	float cell_size;
 	float propagation;
-	float energy;
 
 	BakeQuality bake_quality;
-	BakeMode bake_mode;
 
 	int max_original_cells;
 
@@ -147,25 +145,10 @@ private:
 
 	uint32_t _find_cell_at_pos(const Cell *cells, int x, int y, int z);
 
-	struct LightMap {
-		Vector3 light;
-		Vector3 pos;
-		Vector3 normal;
-	};
-
-	void _plot_triangle(Vector2 *vertices, Vector3 *positions, Vector3 *normals, LightMap *pixels, int width, int height);
-
-	_FORCE_INLINE_ void _sample_baked_octree_filtered_and_anisotropic(const Vector3 &p_posf, const Vector3 &p_direction, float p_level, Vector3 &r_color, float &r_alpha);
-	_FORCE_INLINE_ Vector3 _voxel_cone_trace(const Vector3 &p_pos, const Vector3 &p_normal, float p_aperture);
-	_FORCE_INLINE_ Vector3 _compute_pixel_light_at_pos(const Vector3 &p_pos, const Vector3 &p_normal);
-	_FORCE_INLINE_ Vector3 _compute_ray_trace_at_pos(const Vector3 &p_pos, const Vector3 &p_normal);
-
-	void _lightmap_bake_point(uint32_t p_x, LightMap *p_line);
-
 public:
 	void begin_bake(int p_subdiv, const AABB &p_bounds);
 	void plot_mesh(const Transform &p_xform, Ref<Mesh> &p_mesh, const Vector<Ref<Material> > &p_materials, const Ref<Material> &p_override_material);
-	void begin_bake_light(BakeQuality p_quality = BAKE_QUALITY_MEDIUM, BakeMode p_bake_mode = BAKE_MODE_CONE_TRACE, float p_propagation = 0.85, float p_energy = 1);
+	void begin_bake_light(BakeQuality p_quality = BAKE_QUALITY_MEDIUM, float p_propagation = 0.85);
 	void plot_light_directional(const Vector3 &p_direction, const Color &p_color, float p_energy, float p_indirect_energy, bool p_direct);
 	void plot_light_omni(const Vector3 &p_pos, const Color &p_color, float p_energy, float p_indirect_energy, float p_radius, float p_attenutation, bool p_direct);
 	void plot_light_spot(const Vector3 &p_pos, const Vector3 &p_axis, const Color &p_color, float p_energy, float p_indirect_energy, float p_radius, float p_attenutation, float p_spot_angle, float p_spot_attenuation, bool p_direct);
@@ -176,8 +159,6 @@ public:
 		int height;
 		PoolVector<float> light;
 	};
-
-	Error make_lightmap(const Transform &p_xform, Ref<Mesh> &p_mesh, float default_texels_per_unit, LightMapData &r_lightmap, bool (*p_bake_time_func)(void *, float, float) = NULL, void *p_bake_time_ud = NULL);
 
 	PoolVector<int> create_gi_probe_data();
 	Ref<MultiMesh> create_debug_multimesh(DebugMode p_mode = DEBUG_ALBEDO);

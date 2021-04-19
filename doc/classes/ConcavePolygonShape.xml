@@ -8,6 +8,7 @@
 		Note: when used for collision, [ConcavePolygonShape] is intended to work with static [PhysicsBody] nodes like [StaticBody] and will not work with [KinematicBody] or [RigidBody] with a mode other than Static.
 	</description>
 	<tutorials>
+		<link title="3D Physics Tests Demo">https://godotengine.org/asset-library/asset/675</link>
 	</tutorials>
 	<methods>
 		<method name="get_faces" qualifiers="const">

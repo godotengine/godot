@@ -2,8 +2,34 @@
 [vertex]
 
 layout(location = 0) in highp vec2 vertex;
+
+#ifdef USE_ATTRIB_LIGHT_ANGLE
+layout(location = 2) in highp float light_angle;
+#endif
+
 /* clang-format on */
 layout(location = 3) in vec4 color_attrib;
+
+#ifdef USE_ATTRIB_MODULATE
+layout(location = 5) in vec4 modulate_attrib; // attrib:5
+#endif
+
+// Usually, final_modulate is passed as a uniform. However during batching
+// If larger fvfs are used, final_modulate is passed as an attribute.
+// we need to read from the attribute in custom vertex shader
+// rather than the uniform. We do this by specifying final_modulate_alias
+// in shaders rather than final_modulate directly.
+#ifdef USE_ATTRIB_MODULATE
+#define final_modulate_alias modulate_attrib
+#else
+#define final_modulate_alias final_modulate
+#endif
+
+#ifdef USE_ATTRIB_LARGE_VERTEX
+// shared with skeleton attributes, not used in batched shader
+layout(location = 6) in vec2 translate_attrib; // attrib:6
+layout(location = 7) in vec4 basis_attrib; // attrib:7
+#endif
 
 #ifdef USE_SKELETON
 layout(location = 6) in uvec4 bone_indices; // attrib:6
@@ -48,6 +74,12 @@ uniform highp mat4 extra_matrix;
 
 out highp vec2 uv_interp;
 out mediump vec4 color_interp;
+
+#ifdef USE_ATTRIB_MODULATE
+// modulate doesn't need interpolating but we need to send it to the fragment shader
+flat out mediump vec4 modulate_interp;
+#endif
+
 #ifdef MODULATE_USED
 uniform mediump vec4 final_modulate;
 #endif
@@ -172,10 +204,31 @@ VERTEX_SHADER_CODE
 	pixel_size_interp = abs(dst_rect.zw) * vertex;
 #endif
 
+#ifdef USE_ATTRIB_MODULATE
+	// modulate doesn't need interpolating but we need to send it to the fragment shader
+	modulate_interp = modulate_attrib;
+#endif
+
+#ifdef USE_ATTRIB_LARGE_VERTEX
+	// transform is in attributes
+	vec2 temp;
+
+	temp = outvec.xy;
+	temp.x = (outvec.x * basis_attrib.x) + (outvec.y * basis_attrib.z);
+	temp.y = (outvec.x * basis_attrib.y) + (outvec.y * basis_attrib.w);
+
+	temp += translate_attrib;
+	outvec.xy = temp;
+
+#else
+
+	// transform is in uniforms
 #if !defined(SKIP_TRANSFORM_USED)
 	outvec = extra_matrix * outvec;
 	outvec = modelview_matrix * outvec;
 #endif
+
+#endif // not large integer
 
 #undef extra_matrix
 
@@ -248,12 +301,32 @@ VERTEX_SHADER_CODE
 	pos = outvec.xy;
 #endif
 
+#ifdef USE_ATTRIB_LIGHT_ANGLE
+	// we add a fixed offset because we are using the sign later,
+	// and don't want floating point error around 0.0
+	float la = abs(light_angle) - 1.0;
+
+	// vector light angle
+	vec4 vla;
+	vla.xy = vec2(cos(la), sin(la));
+	vla.zw = vec2(-vla.y, vla.x);
+	vla.zw *= sign(light_angle);
+
+	// apply the transform matrix.
+	// The rotate will be encoded in the transform matrix for single rects,
+	// and just the flips in the light angle.
+	// For batching we will encode the rotation and the flips
+	// in the light angle, and can use the same shader.
+	local_rot.xy = normalize((modelview_matrix * (extra_matrix_instance * vec4(vla.xy, 0.0, 0.0))).xy);
+	local_rot.zw = normalize((modelview_matrix * (extra_matrix_instance * vec4(vla.zw, 0.0, 0.0))).xy);
+#else
 	local_rot.xy = normalize((modelview_matrix * (extra_matrix_instance * vec4(1.0, 0.0, 0.0, 0.0))).xy);
 	local_rot.zw = normalize((modelview_matrix * (extra_matrix_instance * vec4(0.0, 1.0, 0.0, 0.0))).xy);
 #ifdef USE_TEXTURE_RECT
 	local_rot.xy *= sign(src_rect.z);
 	local_rot.zw *= sign(src_rect.w);
 #endif
+#endif // not using light angle
 
 #endif
 }
@@ -268,6 +341,10 @@ uniform mediump sampler2D normal_texture; // texunit:1
 
 in highp vec2 uv_interp;
 in mediump vec4 color_interp;
+
+#ifdef USE_ATTRIB_MODULATE
+flat in mediump vec4 modulate_interp;
+#endif
 
 #if defined(SCREEN_TEXTURE_USED)
 
@@ -385,6 +462,8 @@ uniform bool np_draw_center;
 // left top right bottom in pixel coordinates
 uniform vec4 np_margins;
 
+// there are two ninepatch modes, and we don't want to waste a conditional
+#if defined USE_NINEPATCH_SCALING
 float map_ninepatch_axis(float pixel, float draw_size, float tex_pixel_size, float margin_begin, float margin_end, float s_ratio, int np_repeat, inout int draw_center) {
 
 	float tex_size = 1.0 / tex_pixel_size;
@@ -400,24 +479,61 @@ float map_ninepatch_axis(float pixel, float draw_size, float tex_pixel_size, flo
 			draw_center--;
 		}
 
+		if (np_repeat == 0) { //stretch
+			//convert to ratio
+			float ratio = (pixel - screen_margin_begin) / (draw_size - screen_margin_begin - screen_margin_end);
+			//scale to source texture
+			return (margin_begin + ratio * (tex_size - margin_begin - margin_end)) * tex_pixel_size;
+		} else if (np_repeat == 1) { //tile
+			//convert to ratio
+			float ofs = mod((pixel - screen_margin_begin), tex_size - margin_begin - margin_end);
+			//scale to source texture
+			return (margin_begin + ofs) * tex_pixel_size;
+		} else if (np_repeat == 2) { //tile fit
+			//convert to ratio
+			float src_area = draw_size - screen_margin_begin - screen_margin_end;
+			float dst_area = tex_size - margin_begin - margin_end;
+			float scale = max(1.0, floor(src_area / max(dst_area, 0.0000001) + 0.5));
+
+			//convert to ratio
+			float ratio = (pixel - screen_margin_begin) / src_area;
+			ratio = mod(ratio * scale, 1.0);
+			return (margin_begin + ratio * dst_area) * tex_pixel_size;
+		}
+	}
+}
+#else
+float map_ninepatch_axis(float pixel, float draw_size, float tex_pixel_size, float margin_begin, float margin_end, int np_repeat, inout int draw_center) {
+
+	float tex_size = 1.0 / tex_pixel_size;
+
+	if (pixel < margin_begin) {
+		return pixel * tex_pixel_size;
+	} else if (pixel >= draw_size - margin_end) {
+		return (tex_size - (draw_size - pixel)) * tex_pixel_size;
+	} else {
+		if (!np_draw_center) {
+			draw_center--;
+		}
+
 		// np_repeat is passed as uniform using NinePatchRect::AxisStretchMode enum.
 		if (np_repeat == 0) { // Stretch.
 			// Convert to ratio.
-			float ratio = (pixel - screen_margin_begin) / (draw_size - screen_margin_begin - screen_margin_end);
+			float ratio = (pixel - margin_begin) / (draw_size - margin_begin - margin_end);
 			// Scale to source texture.
 			return (margin_begin + ratio * (tex_size - margin_begin - margin_end)) * tex_pixel_size;
 		} else if (np_repeat == 1) { // Tile.
 			// Convert to offset.
-			float ofs = mod((pixel - screen_margin_begin), tex_size - margin_begin - margin_end);
+			float ofs = mod((pixel - margin_begin), tex_size - margin_begin - margin_end);
 			// Scale to source texture.
 			return (margin_begin + ofs) * tex_pixel_size;
 		} else if (np_repeat == 2) { // Tile Fit.
 			// Calculate scale.
-			float src_area = draw_size - screen_margin_begin - screen_margin_end;
+			float src_area = draw_size - margin_begin - margin_end;
 			float dst_area = tex_size - margin_begin - margin_end;
 			float scale = max(1.0, floor(src_area / max(dst_area, 0.0000001) + 0.5));
 			// Convert to ratio.
-			float ratio = (pixel - screen_margin_begin) / src_area;
+			float ratio = (pixel - margin_begin) / src_area;
 			ratio = mod(ratio * scale, 1.0);
 			// Scale to source texture.
 			return (margin_begin + ratio * dst_area) * tex_pixel_size;
@@ -426,6 +542,7 @@ float map_ninepatch_axis(float pixel, float draw_size, float tex_pixel_size, flo
 		}
 	}
 }
+#endif
 
 #endif
 #endif
@@ -442,6 +559,7 @@ void main() {
 #ifdef USE_NINEPATCH
 
 	int draw_center = 2;
+#if defined USE_NINEPATCH_SCALING
 	float s_ratio = max((1.0 / color_texpixel_size.x) / abs(dst_rect.z), (1.0 / color_texpixel_size.y) / abs(dst_rect.w));
 	s_ratio = max(1.0, s_ratio);
 	uv = vec2(
@@ -451,7 +569,15 @@ void main() {
 	if (draw_center == 0) {
 		color.a = 0.0;
 	}
+#else
+	uv = vec2(
+			map_ninepatch_axis(pixel_size_interp.x, abs(dst_rect.z), color_texpixel_size.x, np_margins.x, np_margins.z, np_repeat_h, draw_center),
+			map_ninepatch_axis(pixel_size_interp.y, abs(dst_rect.w), color_texpixel_size.y, np_margins.y, np_margins.w, np_repeat_v, draw_center));
 
+	if (draw_center == 0) {
+		color.a = 0.0;
+	}
+#endif
 	uv = uv * src_rect.zw + src_rect.xy; //apply region if needed
 #endif
 
@@ -487,7 +613,7 @@ void main() {
 
 	if (use_default_normal) {
 		normal.xy = textureLod(normal_texture, uv, 0.0).xy * 2.0 - 1.0;
-		normal.z = sqrt(1.0 - dot(normal.xy, normal.xy));
+		normal.z = sqrt(max(0.0, 1.0 - dot(normal.xy, normal.xy)));
 		normal_used = true;
 	} else {
 		normal = vec3(0.0, 0.0, 1.0);
@@ -503,6 +629,18 @@ void main() {
 #if defined(NORMALMAP_USED)
 		vec3 normal_map = vec3(0.0, 0.0, 1.0);
 		normal_used = true;
+#endif
+
+		// If larger fvfs are used, final_modulate is passed as an attribute.
+		// we need to read from this in custom fragment shaders or applying in the post step,
+		// rather than using final_modulate directly.
+#if defined(final_modulate_alias)
+#undef final_modulate_alias
+#endif
+#ifdef USE_ATTRIB_MODULATE
+#define final_modulate_alias modulate_interp
+#else
+#define final_modulate_alias final_modulate
 #endif
 
 		/* clang-format off */
@@ -521,7 +659,7 @@ FRAGMENT_SHADER_CODE
 #endif
 
 #if !defined(MODULATE_USED)
-	color *= final_modulate;
+	color *= final_modulate_alias;
 #endif
 
 #ifdef USE_LIGHTING

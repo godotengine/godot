@@ -4,10 +4,14 @@
 		2D axis-aligned bounding box.
 	</brief_description>
 	<description>
-		Rect2 consists of a position, a size, and several utility functions. It is typically used for fast overlap tests.
+		[Rect2] consists of a position, a size, and several utility functions. It is typically used for fast overlap tests.
+		It uses floating-point coordinates.
+		The 3D counterpart to [Rect2] is [AABB].
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/latest/tutorials/math/index.html</link>
+		<link title="Math tutorial index">https://docs.godotengine.org/en/3.2/tutorials/math/index.html</link>
+		<link title="Vector math">https://docs.godotengine.org/en/3.2/tutorials/math/vector_math.html</link>
+		<link title="Advanced vector math">https://docs.godotengine.org/en/3.2/tutorials/math/vectors_advanced.html</link>
 	</tutorials>
 	<methods>
 		<method name="Rect2">

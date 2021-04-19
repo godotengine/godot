@@ -12,7 +12,7 @@
 		[/codeblock]
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/latest/tutorials/animation/animation_tree.html</link>
+		<link>https://docs.godotengine.org/en/3.2/tutorials/animation/animation_tree.html</link>
 	</tutorials>
 	<methods>
 		<method name="add_node">

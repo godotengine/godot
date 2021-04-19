@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -517,6 +517,12 @@ void CSGShape::_notification(int p_what) {
 		_make_dirty();
 	}
 
+	if (p_what == NOTIFICATION_TRANSFORM_CHANGED) {
+		if (use_collision && is_root_shape() && root_collision_instance.is_valid()) {
+			PhysicsServer::get_singleton()->body_set_state(root_collision_instance, PhysicsServer::BODY_STATE_TRANSFORM, get_global_transform());
+		}
+	}
+
 	if (p_what == NOTIFICATION_LOCAL_TRANSFORM_CHANGED) {
 
 		if (parent) {
@@ -655,8 +661,7 @@ CSGShape::~CSGShape() {
 //////////////////////////////////
 
 CSGBrush *CSGCombiner::_build_brush() {
-
-	return NULL; //does not build anything
+	return memnew(CSGBrush); //does not build anything
 }
 
 CSGCombiner::CSGCombiner() {
@@ -710,9 +715,9 @@ CSGPrimitive::CSGPrimitive() {
 /////////////////////
 
 CSGBrush *CSGMesh::_build_brush() {
-
-	if (!mesh.is_valid())
-		return NULL;
+	if (!mesh.is_valid()) {
+		return memnew(CSGBrush);
+	}
 
 	PoolVector<Vector3> vertices;
 	PoolVector<bool> smooth;
@@ -730,7 +735,7 @@ CSGBrush *CSGMesh::_build_brush() {
 
 		if (arrays.size() == 0) {
 			_make_dirty();
-			ERR_FAIL_COND_V(arrays.size() == 0, NULL);
+			ERR_FAIL_COND_V(arrays.size() == 0, memnew(CSGBrush));
 		}
 
 		PoolVector<Vector3> avertices = arrays[Mesh::ARRAY_VERTEX];
@@ -855,8 +860,9 @@ CSGBrush *CSGMesh::_build_brush() {
 		}
 	}
 
-	if (vertices.size() == 0)
-		return NULL;
+	if (vertices.size() == 0) {
+		return memnew(CSGBrush);
+	}
 
 	return _create_brush_from_arrays(vertices, uvs, smooth, materials);
 }
@@ -1539,8 +1545,9 @@ CSGBrush *CSGTorus::_build_brush() {
 	float min_radius = inner_radius;
 	float max_radius = outer_radius;
 
-	if (min_radius == max_radius)
-		return NULL; //sorry, can't
+	if (min_radius == max_radius) {
+		return memnew(CSGBrush); //sorry, can't
+	}
 
 	if (min_radius > max_radius) {
 		SWAP(min_radius, max_radius);
@@ -1764,8 +1771,9 @@ CSGBrush *CSGPolygon::_build_brush() {
 
 	// set our bounding box
 
-	if (polygon.size() < 3)
-		return NULL;
+	if (polygon.size() < 3) {
+		return memnew(CSGBrush);
+	}
 
 	Vector<Point2> final_polygon = polygon;
 
@@ -1775,8 +1783,9 @@ CSGBrush *CSGPolygon::_build_brush() {
 
 	Vector<int> triangles = Geometry::triangulate_polygon(final_polygon);
 
-	if (triangles.size() < 3)
-		return NULL;
+	if (triangles.size() < 3) {
+		return memnew(CSGBrush);
+	}
 
 	Path *path = NULL;
 	Ref<Curve3D> curve;
@@ -1800,14 +1809,17 @@ CSGBrush *CSGPolygon::_build_brush() {
 	Vector2 final_polygon_size = final_polygon_max - final_polygon_min;
 
 	if (mode == MODE_PATH) {
-		if (!has_node(path_node))
-			return NULL;
+		if (!has_node(path_node)) {
+			return memnew(CSGBrush);
+		}
 		Node *n = get_node(path_node);
-		if (!n)
-			return NULL;
+		if (!n) {
+			return memnew(CSGBrush);
+		}
 		path = Object::cast_to<Path>(n);
-		if (!path)
-			return NULL;
+		if (!path) {
+			return memnew(CSGBrush);
+		}
 
 		if (path != path_cache) {
 			if (path_cache) {
@@ -1823,10 +1835,12 @@ CSGBrush *CSGPolygon::_build_brush() {
 			path_cache = NULL;
 		}
 		curve = path->get_curve();
-		if (curve.is_null())
-			return NULL;
-		if (curve->get_baked_length() <= 0)
-			return NULL;
+		if (curve.is_null()) {
+			return memnew(CSGBrush);
+		}
+		if (curve->get_baked_length() <= 0) {
+			return memnew(CSGBrush);
+		}
 	}
 	CSGBrush *brush = memnew(CSGBrush);
 

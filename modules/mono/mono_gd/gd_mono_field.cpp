@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -574,7 +574,7 @@ IMonoClassMember::Visibility GDMonoField::get_visibility() {
 GDMonoField::GDMonoField(MonoClassField *p_mono_field, GDMonoClass *p_owner) {
 	owner = p_owner;
 	mono_field = p_mono_field;
-	name = mono_field_get_name(mono_field);
+	name = String::utf8(mono_field_get_name(mono_field));
 	MonoType *field_type = mono_field_get_type(mono_field);
 	type.type_encoding = mono_type_get_type(field_type);
 	MonoClass *field_type_class = mono_class_from_mono_type(field_type);

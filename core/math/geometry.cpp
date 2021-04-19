@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,8 +31,11 @@
 #include "geometry.h"
 
 #include "core/print_string.h"
+
 #include "thirdparty/misc/clipper.hpp"
 #include "thirdparty/misc/triangulator.h"
+#define STB_RECT_PACK_IMPLEMENTATION
+#include "thirdparty/stb_rect_pack/stb_rect_pack.h"
 
 #define SCALE_FACTOR 100000.0 // Based on CMP_EPSILON.
 
@@ -874,6 +877,7 @@ PoolVector<Plane> Geometry::build_box_planes(const Vector3 &p_extents) {
 }
 
 PoolVector<Plane> Geometry::build_cylinder_planes(real_t p_radius, real_t p_height, int p_sides, Vector3::Axis p_axis) {
+	ERR_FAIL_INDEX_V(p_axis, 3, PoolVector<Plane>());
 
 	PoolVector<Plane> planes;
 
@@ -896,6 +900,7 @@ PoolVector<Plane> Geometry::build_cylinder_planes(real_t p_radius, real_t p_heig
 }
 
 PoolVector<Plane> Geometry::build_sphere_planes(real_t p_radius, int p_lats, int p_lons, Vector3::Axis p_axis) {
+	ERR_FAIL_INDEX_V(p_axis, 3, PoolVector<Plane>());
 
 	PoolVector<Plane> planes;
 
@@ -929,6 +934,7 @@ PoolVector<Plane> Geometry::build_sphere_planes(real_t p_radius, int p_lats, int
 }
 
 PoolVector<Plane> Geometry::build_capsule_planes(real_t p_radius, real_t p_height, int p_sides, int p_lats, Vector3::Axis p_axis) {
+	ERR_FAIL_INDEX_V(p_axis, 3, PoolVector<Plane>());
 
 	PoolVector<Plane> planes;
 
@@ -986,6 +992,10 @@ void Geometry::make_atlas(const Vector<Size2i> &p_rects, Vector<Point2i> &r_resu
 	// 256x8192 atlas (won't work anywhere).
 
 	ERR_FAIL_COND(p_rects.size() == 0);
+	for (int i = 0; i < p_rects.size(); i++) {
+		ERR_FAIL_COND(p_rects[i].width <= 0);
+		ERR_FAIL_COND(p_rects[i].height <= 0);
+	}
 
 	Vector<_AtlasWorkRect> wrects;
 	wrects.resize(p_rects.size());
@@ -1223,4 +1233,37 @@ Vector<Vector3> Geometry::compute_convex_mesh_points(const Plane *p_planes, int 
 	}
 
 	return points;
+}
+
+Vector<Geometry::PackRectsResult> Geometry::partial_pack_rects(const Vector<Vector2i> &p_sizes, const Size2i &p_atlas_size) {
+
+	Vector<stbrp_node> nodes;
+	nodes.resize(p_atlas_size.width);
+	zeromem(nodes.ptrw(), sizeof(stbrp_node) * nodes.size());
+
+	stbrp_context context;
+	stbrp_init_target(&context, p_atlas_size.width, p_atlas_size.height, nodes.ptrw(), p_atlas_size.width);
+
+	Vector<stbrp_rect> rects;
+	rects.resize(p_sizes.size());
+
+	for (int i = 0; i < p_sizes.size(); i++) {
+		rects.write[i].id = i;
+		rects.write[i].w = p_sizes[i].width;
+		rects.write[i].h = p_sizes[i].height;
+		rects.write[i].x = 0;
+		rects.write[i].y = 0;
+		rects.write[i].was_packed = 0;
+	}
+
+	stbrp_pack_rects(&context, rects.ptrw(), rects.size());
+
+	Vector<PackRectsResult> ret;
+	ret.resize(p_sizes.size());
+
+	for (int i = 0; i < p_sizes.size(); i++) {
+		ret.write[rects[i].id] = { rects[i].x, rects[i].y, static_cast<bool>(rects[i].was_packed) };
+	}
+
+	return ret;
 }

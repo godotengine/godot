@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -927,23 +927,9 @@ void Node::_set_name_nocheck(const StringName &p_name) {
 	data.name = p_name;
 }
 
-String Node::invalid_character = ". : @ / \"";
-
-bool Node::_validate_node_name(String &p_name) {
-	String name = p_name;
-	Vector<String> chars = Node::invalid_character.split(" ");
-	for (int i = 0; i < chars.size(); i++) {
-		name = name.replace(chars[i], "");
-	}
-	bool is_valid = name == p_name;
-	p_name = name;
-	return is_valid;
-}
-
 void Node::set_name(const String &p_name) {
 
-	String name = p_name;
-	_validate_node_name(name);
+	String name = p_name.validate_node_name();
 
 	ERR_FAIL_COND(name == "");
 	data.name = name;
@@ -1378,7 +1364,14 @@ Node *Node::get_node_or_null(const NodePath &p_path) const {
 Node *Node::get_node(const NodePath &p_path) const {
 
 	Node *node = get_node_or_null(p_path);
-	ERR_FAIL_COND_V_MSG(!node, NULL, "Node not found: " + p_path + ".");
+	if (p_path.is_absolute()) {
+		ERR_FAIL_COND_V_MSG(!node, NULL,
+				vformat("(Node not found: \"%s\" (absolute path attempted from \"%s\").)", p_path, get_path()));
+	} else {
+		ERR_FAIL_COND_V_MSG(!node, NULL,
+				vformat("(Node not found: \"%s\" (relative to \"%s\").)", p_path, get_path()));
+	}
+
 	return node;
 }
 
@@ -1901,37 +1894,40 @@ String Node::get_editor_description() const {
 }
 
 void Node::set_editable_instance(Node *p_node, bool p_editable) {
-
 	ERR_FAIL_NULL(p_node);
 	ERR_FAIL_COND(!is_a_parent_of(p_node));
-	NodePath p = get_path_to(p_node);
 	if (!p_editable) {
-		data.editable_instances.erase(p);
+		p_node->data.editable_instance = false;
 		// Avoid this flag being needlessly saved;
 		// also give more visual feedback if editable children is re-enabled
 		set_display_folded(false);
 	} else {
-		data.editable_instances[p] = true;
+		p_node->data.editable_instance = true;
 	}
 }
 
 bool Node::is_editable_instance(const Node *p_node) const {
-
 	if (!p_node)
 		return false; //easier, null is never editable :)
 	ERR_FAIL_COND_V(!is_a_parent_of(p_node), false);
-	NodePath p = get_path_to(p_node);
-	return data.editable_instances.has(p);
+	return p_node->data.editable_instance;
 }
 
-void Node::set_editable_instances(const HashMap<NodePath, int> &p_editable_instances) {
+Node *Node::get_deepest_editable_node(Node *p_start_node) const {
+	ERR_FAIL_NULL_V(p_start_node, nullptr);
+	ERR_FAIL_COND_V(!is_a_parent_of(p_start_node), p_start_node);
 
-	data.editable_instances = p_editable_instances;
-}
+	Node const *iterated_item = p_start_node;
+	Node *node = p_start_node;
 
-HashMap<NodePath, int> Node::get_editable_instances() const {
+	while (iterated_item->get_owner() && iterated_item->get_owner() != this) {
+		if (!is_editable_instance(iterated_item->get_owner()))
+			node = iterated_item->get_owner();
 
-	return data.editable_instances;
+		iterated_item = iterated_item->get_owner();
+	}
+
+	return node;
 }
 
 void Node::set_scene_instance_state(const Ref<SceneState> &p_state) {
@@ -2161,8 +2157,16 @@ Node *Node::duplicate(int p_flags) const {
 
 #ifdef TOOLS_ENABLED
 Node *Node::duplicate_from_editor(Map<const Node *, Node *> &r_duplimap) const {
+	return duplicate_from_editor(r_duplimap, Map<RES, RES>());
+}
 
+Node *Node::duplicate_from_editor(Map<const Node *, Node *> &r_duplimap, const Map<RES, RES> &p_resource_remap) const {
 	Node *dupe = _duplicate(DUPLICATE_SIGNALS | DUPLICATE_GROUPS | DUPLICATE_SCRIPTS | DUPLICATE_USE_INSTANCING | DUPLICATE_FROM_EDITOR, &r_duplimap);
+
+	// This is used by SceneTreeDock's paste functionality. When pasting to foreign scene, resources are duplicated.
+	if (!p_resource_remap.empty()) {
+		remap_node_resources(dupe, p_resource_remap);
+	}
 
 	// Duplication of signals must happen after all the node descendants have been copied,
 	// because re-targeting of connections from some descendant to another is not possible
@@ -2170,6 +2174,54 @@ Node *Node::duplicate_from_editor(Map<const Node *, Node *> &r_duplimap) const {
 	_duplicate_signals(this, dupe);
 
 	return dupe;
+}
+
+void Node::remap_node_resources(Node *p_node, const Map<RES, RES> &p_resource_remap) const {
+	List<PropertyInfo> props;
+	p_node->get_property_list(&props);
+
+	for (List<PropertyInfo>::Element *E = props.front(); E; E = E->next()) {
+		if (!(E->get().usage & PROPERTY_USAGE_STORAGE)) {
+			continue;
+		}
+
+		Variant v = p_node->get(E->get().name);
+		if (v.is_ref()) {
+			RES res = v;
+			if (res.is_valid()) {
+				if (p_resource_remap.has(res)) {
+					p_node->set(E->get().name, p_resource_remap[res]);
+					remap_nested_resources(res, p_resource_remap);
+				}
+			}
+		}
+	}
+
+	for (int i = 0; i < p_node->get_child_count(); i++) {
+		remap_node_resources(p_node->get_child(i), p_resource_remap);
+	}
+}
+
+void Node::remap_nested_resources(RES p_resource, const Map<RES, RES> &p_resource_remap) const {
+	List<PropertyInfo> props;
+	p_resource->get_property_list(&props);
+
+	for (List<PropertyInfo>::Element *E = props.front(); E; E = E->next()) {
+		if (!(E->get().usage & PROPERTY_USAGE_STORAGE)) {
+			continue;
+		}
+
+		Variant v = p_resource->get(E->get().name);
+		if (v.is_ref()) {
+			RES res = v;
+			if (res.is_valid()) {
+				if (p_resource_remap.has(res)) {
+					p_resource->set(E->get().name, p_resource_remap[res]);
+					remap_nested_resources(res, p_resource_remap);
+				}
+			}
+		}
+	}
 }
 #endif
 
@@ -2905,7 +2957,6 @@ void Node::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("tree_exiting"));
 	ADD_SIGNAL(MethodInfo("tree_exited"));
 
-	ADD_GROUP("Pause", "pause_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "pause_mode", PROPERTY_HINT_ENUM, "Inherit,Stop,Process"), "set_pause_mode", "get_pause_mode");
 
 #ifdef ENABLE_DEPRECATED
@@ -2971,6 +3022,7 @@ Node::Node() {
 	data.use_placeholder = false;
 	data.display_folded = false;
 	data.ready_first = true;
+	data.editable_instance = false;
 
 	orphan_node_count++;
 }

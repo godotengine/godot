@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,24 +30,21 @@
 
 // HTTPClient's additional private members in the javascript platform
 
-Error prepare_request(Method p_method, const String &p_url, const Vector<String> &p_headers);
+Error make_request(Method p_method, const String &p_url, const Vector<String> &p_headers, const uint8_t *p_body, int p_body_len);
+static void _parse_headers(int p_len, const char **p_headers, void *p_ref);
 
-int xhr_id;
-int read_limit;
-int response_read_offset;
-Status status;
+int js_id = 0;
+int read_limit = 4096;
+Status status = STATUS_DISCONNECTED;
 
 String host;
-int port;
-bool use_tls;
-String username;
-String password;
+int port = -1;
+bool use_tls = false;
 
-int polled_response_code;
-String polled_response_header;
-PoolByteArray polled_response;
+int polled_response_code = 0;
+Vector<String> response_headers;
+Vector<uint8_t> response_buffer;
 
 #ifdef DEBUG_ENABLED
-bool has_polled;
-uint64_t last_polling_frame;
+uint64_t last_polling_frame = 0;
 #endif

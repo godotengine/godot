@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -44,7 +44,6 @@
 
 #include "../csharp_script.h"
 #include "../utils/macros.h"
-#include "../utils/mutex_utils.h"
 #include "gd_mono.h"
 #include "gd_mono_cache.h"
 #include "gd_mono_class.h"
@@ -75,7 +74,7 @@ MonoObject *unmanaged_get_managed(Object *unmanaged) {
 	CSharpScriptBinding &script_binding = ((Map<Object *, CSharpScriptBinding>::Element *)data)->value();
 
 	if (!script_binding.inited) {
-		SCOPED_MUTEX_LOCK(CSharpLanguage::get_singleton()->get_language_bind_mutex());
+		MutexLock lock(CSharpLanguage::get_singleton()->get_language_bind_mutex());
 
 		if (!script_binding.inited) { // Other thread may have set it up
 			// Already had a binding that needs to be setup
@@ -442,6 +441,7 @@ void set_pending_exception(MonoException *p_exc) {
 #else
 	if (get_runtime_invoke_count() == 0) {
 		debug_unhandled_exception(p_exc);
+		return;
 	}
 
 	if (!mono_runtime_set_pending_exception(p_exc, false)) {

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -41,11 +41,26 @@ AABB VisualInstance::get_transformed_aabb() const {
 
 void VisualInstance::_update_visibility() {
 
-	if (!is_inside_tree())
+	if (!is_inside_tree()) {
 		return;
+	}
+
+	bool visible = is_visible_in_tree();
+
+	// keep a quick flag available in each node.
+	// no need to call is_visible_in_tree all over the place,
+	// providing it is propagated with a notification.
+	bool already_visible = (_get_spatial_flags() & SPATIAL_FLAG_VI_VISIBLE) != 0;
+	_set_spatial_flag(SPATIAL_FLAG_VI_VISIBLE, visible);
+
+	// if making visible, make sure the visual server is up to date with the transform
+	if (visible && (!already_visible)) {
+		Transform gt = get_global_transform();
+		VisualServer::get_singleton()->instance_set_transform(instance, gt);
+	}
 
 	_change_notify("visible");
-	VS::get_singleton()->instance_set_visible(get_instance(), is_visible_in_tree());
+	VS::get_singleton()->instance_set_visible(get_instance(), visible);
 }
 
 void VisualInstance::_notification(int p_what) {
@@ -67,8 +82,10 @@ void VisualInstance::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_TRANSFORM_CHANGED: {
 
-			Transform gt = get_global_transform();
-			VisualServer::get_singleton()->instance_set_transform(instance, gt);
+			if (_get_spatial_flags() & SPATIAL_FLAG_VI_VISIBLE) {
+				Transform gt = get_global_transform();
+				VisualServer::get_singleton()->instance_set_transform(instance, gt);
+			}
 		} break;
 		case NOTIFICATION_EXIT_WORLD: {
 
@@ -76,6 +93,10 @@ void VisualInstance::_notification(int p_what) {
 			VisualServer::get_singleton()->instance_attach_skeleton(instance, RID());
 			//VS::get_singleton()->instance_geometry_set_baked_light_sampler(instance, RID() );
 
+			// the vi visible flag is always set to invisible when outside the tree,
+			// so it can detect re-entering the tree and becoming visible, and send
+			// the transform to the visual server
+			_set_spatial_flag(SPATIAL_FLAG_VI_VISIBLE, false);
 		} break;
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 
@@ -168,6 +189,23 @@ void GeometryInstance::set_material_override(const Ref<Material> &p_material) {
 Ref<Material> GeometryInstance::get_material_override() const {
 
 	return material_override;
+}
+
+void GeometryInstance::set_generate_lightmap(bool p_enabled) {
+	generate_lightmap = p_enabled;
+}
+
+bool GeometryInstance::get_generate_lightmap() {
+	return generate_lightmap;
+}
+
+void GeometryInstance::set_lightmap_scale(LightmapScale p_scale) {
+	ERR_FAIL_INDEX(p_scale, LIGHTMAP_SCALE_MAX);
+	lightmap_scale = p_scale;
+}
+
+GeometryInstance::LightmapScale GeometryInstance::get_lightmap_scale() const {
+	return lightmap_scale;
 }
 
 void GeometryInstance::set_lod_min_distance(float p_dist) {
@@ -274,6 +312,12 @@ void GeometryInstance::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_cast_shadows_setting", "shadow_casting_setting"), &GeometryInstance::set_cast_shadows_setting);
 	ClassDB::bind_method(D_METHOD("get_cast_shadows_setting"), &GeometryInstance::get_cast_shadows_setting);
 
+	ClassDB::bind_method(D_METHOD("set_generate_lightmap", "enabled"), &GeometryInstance::set_generate_lightmap);
+	ClassDB::bind_method(D_METHOD("get_generate_lightmap"), &GeometryInstance::get_generate_lightmap);
+
+	ClassDB::bind_method(D_METHOD("set_lightmap_scale", "scale"), &GeometryInstance::set_lightmap_scale);
+	ClassDB::bind_method(D_METHOD("get_lightmap_scale"), &GeometryInstance::get_lightmap_scale);
+
 	ClassDB::bind_method(D_METHOD("set_lod_max_hysteresis", "mode"), &GeometryInstance::set_lod_max_hysteresis);
 	ClassDB::bind_method(D_METHOD("get_lod_max_hysteresis"), &GeometryInstance::get_lod_max_hysteresis);
 
@@ -297,7 +341,11 @@ void GeometryInstance::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "material_override", PROPERTY_HINT_RESOURCE_TYPE, "ShaderMaterial,SpatialMaterial"), "set_material_override", "get_material_override");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "cast_shadow", PROPERTY_HINT_ENUM, "Off,On,Double-Sided,Shadows Only"), "set_cast_shadows_setting", "get_cast_shadows_setting");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "extra_cull_margin", PROPERTY_HINT_RANGE, "0,16384,0.01"), "set_extra_cull_margin", "get_extra_cull_margin");
+
+	ADD_GROUP("Baked Light", "");
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "use_in_baked_light"), "set_flag", "get_flag", FLAG_USE_BAKED_LIGHT);
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "generate_lightmap"), "set_generate_lightmap", "get_generate_lightmap");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "lightmap_scale", PROPERTY_HINT_ENUM, "1x,2x,4x,8x"), "set_lightmap_scale", "get_lightmap_scale");
 
 	ADD_GROUP("LOD", "lod_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "lod_min_distance", PROPERTY_HINT_RANGE, "0,32768,0.01"), "set_lod_min_distance", "get_lod_min_distance");
@@ -306,6 +354,12 @@ void GeometryInstance::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "lod_max_hysteresis", PROPERTY_HINT_RANGE, "0,32768,0.01"), "set_lod_max_hysteresis", "get_lod_max_hysteresis");
 
 	//ADD_SIGNAL( MethodInfo("visibility_changed"));
+
+	BIND_ENUM_CONSTANT(LIGHTMAP_SCALE_1X);
+	BIND_ENUM_CONSTANT(LIGHTMAP_SCALE_2X);
+	BIND_ENUM_CONSTANT(LIGHTMAP_SCALE_4X);
+	BIND_ENUM_CONSTANT(LIGHTMAP_SCALE_8X);
+	BIND_ENUM_CONSTANT(LIGHTMAP_SCALE_MAX);
 
 	BIND_ENUM_CONSTANT(SHADOW_CASTING_SETTING_OFF);
 	BIND_ENUM_CONSTANT(SHADOW_CASTING_SETTING_ON);
@@ -329,5 +383,7 @@ GeometryInstance::GeometryInstance() {
 
 	shadow_casting_setting = SHADOW_CASTING_SETTING_ON;
 	extra_cull_margin = 0;
+	generate_lightmap = true;
+	lightmap_scale = LightmapScale::LIGHTMAP_SCALE_1X;
 	//VS::get_singleton()->instance_geometry_set_baked_light_texture_index(get_instance(),0);
 }

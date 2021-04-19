@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -191,7 +191,7 @@ void Label::_notification(int p_what) {
 			while (to && to->char_pos >= 0) {
 
 				taken += to->pixel_width;
-				if (to != from && to->space_count) {
+				if (to->space_count) {
 					spaces += to->space_count;
 				}
 				to = to->next;
@@ -438,6 +438,22 @@ void Label::regenerate_word_cache() {
 				wc->space_count = space_count;
 				current_word_size = 0;
 				space_count = 0;
+			} else if ((i == xl_text.length() || current == '\n') && last != nullptr && space_count != 0) {
+				//in case there are trailing white spaces we add a placeholder word cache with just the spaces
+				WordCache *wc = memnew(WordCache);
+				if (word_cache) {
+					last->next = wc;
+				} else {
+					word_cache = wc;
+				}
+				last = wc;
+
+				wc->pixel_width = 0;
+				wc->char_pos = 0;
+				wc->word_len = 0;
+				wc->space_count = space_count;
+				current_word_size = 0;
+				space_count = 0;
 			}
 
 			if (current == '\n') {
@@ -614,7 +630,7 @@ float Label::get_percent_visible() const {
 }
 
 void Label::set_lines_skipped(int p_lines) {
-
+	ERR_FAIL_COND(p_lines < 0);
 	lines_skipped = p_lines;
 	update();
 }

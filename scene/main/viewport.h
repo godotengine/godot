@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -282,6 +282,8 @@ private:
 	ShadowAtlasQuadrantSubdiv shadow_atlas_quadrant_subdiv[4];
 
 	MSAA msaa;
+	bool use_fxaa;
+	bool use_debanding;
 	bool hdr;
 
 	Ref<ViewportTexture> default_texture;
@@ -297,7 +299,7 @@ private:
 		int mouse_focus_mask;
 		Control *key_focus;
 		Control *mouse_over;
-		Control *tooltip;
+		Control *tooltip_control;
 		Control *tooltip_popup;
 		Label *tooltip_label;
 		Point2 tooltip_pos;
@@ -305,7 +307,7 @@ private:
 		Point2 drag_accum;
 		bool drag_attempted;
 		Variant drag_data;
-		Control *drag_preview;
+		ObjectID drag_preview_id;
 		float tooltip_timer;
 		float tooltip_delay;
 		List<Control *> modal_stack;
@@ -358,7 +360,7 @@ private:
 	void _gui_remove_root_control(List<Control *>::Element *RI);
 	void _gui_remove_subwindow_control(List<Control *>::Element *SI);
 
-	String _gui_get_tooltip(Control *p_control, const Vector2 &p_pos, Control **r_which = NULL);
+	String _gui_get_tooltip(Control *p_control, const Vector2 &p_pos, Control **r_tooltip_owner = NULL);
 	void _gui_cancel_tooltip();
 	void _gui_show_tooltip();
 
@@ -367,6 +369,7 @@ private:
 
 	void _gui_force_drag(Control *p_base, const Variant &p_data, Control *p_control);
 	void _gui_set_drag_preview(Control *p_base, Control *p_control);
+	Control *_gui_get_drag_preview();
 
 	bool _gui_is_modal_on_top(const Control *p_control);
 	List<Control *>::Element *_gui_show_modal(Control *p_control);
@@ -404,7 +407,7 @@ private:
 	void _canvas_layer_remove(CanvasLayer *p_canvas_layer);
 
 	void _drop_mouse_focus();
-	void _drop_physics_mouseover();
+	void _drop_physics_mouseover(bool p_paused_only = false);
 
 	void _update_canvas_items(Node *p_node);
 
@@ -412,6 +415,7 @@ private:
 
 protected:
 	void _notification(int p_what);
+	void _process_picking(bool p_ignore_paused);
 	static void _bind_methods();
 	virtual void _validate_property(PropertyInfo &property) const;
 
@@ -494,6 +498,12 @@ public:
 
 	void set_msaa(MSAA p_msaa);
 	MSAA get_msaa() const;
+
+	void set_use_fxaa(bool p_fxaa);
+	bool get_use_fxaa() const;
+
+	void set_use_debanding(bool p_debanding);
+	bool get_use_debanding() const;
 
 	void set_hdr(bool p_hdr);
 	bool get_hdr() const;

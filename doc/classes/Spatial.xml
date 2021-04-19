@@ -9,7 +9,8 @@
 		[b]Note:[/b] Unless otherwise specified, all methods that have angle parameters must have angles specified as [i]radians[/i]. To convert degrees to radians, use [method @GDScript.deg2rad].
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/latest/tutorials/3d/introduction_to_3d.html</link>
+		<link title="Introduction to 3D">https://docs.godotengine.org/en/3.2/tutorials/3d/introduction_to_3d.html</link>
+		<link title="All 3D Demos">https://github.com/godotengine/godot-demo-projects/tree/master/3d</link>
 	</tutorials>
 	<methods>
 		<method name="force_update_transform">
@@ -244,7 +245,7 @@
 			<argument index="0" name="enable" type="bool">
 			</argument>
 			<description>
-				Sets whether the node notifies about its global and local transformation changes. [Spatial] will not propagate this by default.
+				Sets whether the node notifies about its global and local transformation changes. [Spatial] will not propagate this by default, unless it is in the editor context and it has a valid gizmo.
 			</description>
 		</method>
 		<method name="show">
@@ -336,7 +337,7 @@
 	<constants>
 		<constant name="NOTIFICATION_TRANSFORM_CHANGED" value="2000">
 			Spatial nodes receives this notification when their global transform changes. This means that either the current or a parent node changed its transform.
-			In order for [constant NOTIFICATION_TRANSFORM_CHANGED] to work, users first need to ask for it, with [method set_notify_transform].
+			In order for [constant NOTIFICATION_TRANSFORM_CHANGED] to work, users first need to ask for it, with [method set_notify_transform]. The notification is also sent if the node is in the editor context and it has a valid gizmo.
 		</constant>
 		<constant name="NOTIFICATION_ENTER_WORLD" value="41">
 			Spatial nodes receives this notification when they are registered to new [World] resource.

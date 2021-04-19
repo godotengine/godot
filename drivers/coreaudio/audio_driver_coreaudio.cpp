@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -69,8 +69,6 @@ OSStatus AudioDriverCoreAudio::output_device_address_cb(AudioObjectID inObjectID
 #endif
 
 Error AudioDriverCoreAudio::init() {
-	mutex = Mutex::create();
-
 	AudioComponentDescription desc;
 	zeromem(&desc, sizeof(desc));
 	desc.componentType = kAudioUnitType_Output;
@@ -280,19 +278,15 @@ AudioDriver::SpeakerMode AudioDriverCoreAudio::get_speaker_mode() const {
 };
 
 void AudioDriverCoreAudio::lock() {
-	if (mutex)
-		mutex->lock();
+	mutex.lock();
 };
 
 void AudioDriverCoreAudio::unlock() {
-	if (mutex)
-		mutex->unlock();
+	mutex.unlock();
 };
 
 bool AudioDriverCoreAudio::try_lock() {
-	if (mutex)
-		return mutex->try_lock() == OK;
-	return true;
+	return mutex.try_lock() == OK;
 }
 
 void AudioDriverCoreAudio::finish() {
@@ -343,11 +337,6 @@ void AudioDriverCoreAudio::finish() {
 
 		audio_unit = NULL;
 		unlock();
-	}
-
-	if (mutex) {
-		memdelete(mutex);
-		mutex = NULL;
 	}
 }
 
@@ -525,7 +514,8 @@ Array AudioDriverCoreAudio::_get_device_list(bool capture) {
 
 	UInt32 size = 0;
 	AudioObjectGetPropertyDataSize(kAudioObjectSystemObject, &prop, 0, NULL, &size);
-	AudioDeviceID *audioDevices = (AudioDeviceID *)malloc(size);
+	AudioDeviceID *audioDevices = (AudioDeviceID *)memalloc(size);
+	ERR_FAIL_NULL_V_MSG(audioDevices, list, "Out of memory.");
 	AudioObjectGetPropertyData(kAudioObjectSystemObject, &prop, 0, NULL, &size, audioDevices);
 
 	UInt32 deviceCount = size / sizeof(AudioDeviceID);
@@ -534,14 +524,15 @@ Array AudioDriverCoreAudio::_get_device_list(bool capture) {
 		prop.mSelector = kAudioDevicePropertyStreamConfiguration;
 
 		AudioObjectGetPropertyDataSize(audioDevices[i], &prop, 0, NULL, &size);
-		AudioBufferList *bufferList = (AudioBufferList *)malloc(size);
+		AudioBufferList *bufferList = (AudioBufferList *)memalloc(size);
+		ERR_FAIL_NULL_V_MSG(bufferList, list, "Out of memory.");
 		AudioObjectGetPropertyData(audioDevices[i], &prop, 0, NULL, &size, bufferList);
 
 		UInt32 channelCount = 0;
 		for (UInt32 j = 0; j < bufferList->mNumberBuffers; j++)
 			channelCount += bufferList->mBuffers[j].mNumberChannels;
 
-		free(bufferList);
+		memfree(bufferList);
 
 		if (channelCount >= 1) {
 			CFStringRef cfname;
@@ -553,17 +544,18 @@ Array AudioDriverCoreAudio::_get_device_list(bool capture) {
 
 			CFIndex length = CFStringGetLength(cfname);
 			CFIndex maxSize = CFStringGetMaximumSizeForEncoding(length, kCFStringEncodingUTF8) + 1;
-			char *buffer = (char *)malloc(maxSize);
+			char *buffer = (char *)memalloc(maxSize);
+			ERR_FAIL_NULL_V_MSG(buffer, list, "Out of memory.");
 			if (CFStringGetCString(cfname, buffer, maxSize, kCFStringEncodingUTF8)) {
 				// Append the ID to the name in case we have devices with duplicate name
 				list.push_back(String(buffer) + " (" + itos(audioDevices[i]) + ")");
 			}
 
-			free(buffer);
+			memfree(buffer);
 		}
 	}
 
-	free(audioDevices);
+	memfree(audioDevices);
 
 	return list;
 }
@@ -581,7 +573,8 @@ void AudioDriverCoreAudio::_set_device(const String &device, bool capture) {
 
 		UInt32 size = 0;
 		AudioObjectGetPropertyDataSize(kAudioObjectSystemObject, &prop, 0, NULL, &size);
-		AudioDeviceID *audioDevices = (AudioDeviceID *)malloc(size);
+		AudioDeviceID *audioDevices = (AudioDeviceID *)memalloc(size);
+		ERR_FAIL_NULL_MSG(audioDevices, "Out of memory.");
 		AudioObjectGetPropertyData(kAudioObjectSystemObject, &prop, 0, NULL, &size, audioDevices);
 
 		UInt32 deviceCount = size / sizeof(AudioDeviceID);
@@ -590,14 +583,15 @@ void AudioDriverCoreAudio::_set_device(const String &device, bool capture) {
 			prop.mSelector = kAudioDevicePropertyStreamConfiguration;
 
 			AudioObjectGetPropertyDataSize(audioDevices[i], &prop, 0, NULL, &size);
-			AudioBufferList *bufferList = (AudioBufferList *)malloc(size);
+			AudioBufferList *bufferList = (AudioBufferList *)memalloc(size);
+			ERR_FAIL_NULL_MSG(bufferList, "Out of memory.");
 			AudioObjectGetPropertyData(audioDevices[i], &prop, 0, NULL, &size, bufferList);
 
 			UInt32 channelCount = 0;
 			for (UInt32 j = 0; j < bufferList->mNumberBuffers; j++)
 				channelCount += bufferList->mBuffers[j].mNumberChannels;
 
-			free(bufferList);
+			memfree(bufferList);
 
 			if (channelCount >= 1) {
 				CFStringRef cfname;
@@ -609,7 +603,8 @@ void AudioDriverCoreAudio::_set_device(const String &device, bool capture) {
 
 				CFIndex length = CFStringGetLength(cfname);
 				CFIndex maxSize = CFStringGetMaximumSizeForEncoding(length, kCFStringEncodingUTF8) + 1;
-				char *buffer = (char *)malloc(maxSize);
+				char *buffer = (char *)memalloc(maxSize);
+				ERR_FAIL_NULL_MSG(buffer, "Out of memory.");
 				if (CFStringGetCString(cfname, buffer, maxSize, kCFStringEncodingUTF8)) {
 					String name = String(buffer) + " (" + itos(audioDevices[i]) + ")";
 					if (name == device) {
@@ -618,11 +613,11 @@ void AudioDriverCoreAudio::_set_device(const String &device, bool capture) {
 					}
 				}
 
-				free(buffer);
+				memfree(buffer);
 			}
 		}
 
-		free(audioDevices);
+		memfree(audioDevices);
 	}
 
 	if (!found) {
@@ -691,7 +686,6 @@ AudioDriverCoreAudio::AudioDriverCoreAudio() :
 		audio_unit(NULL),
 		input_unit(NULL),
 		active(false),
-		mutex(NULL),
 		device_name("Default"),
 		capture_device_name("Default"),
 		mix_rate(0),

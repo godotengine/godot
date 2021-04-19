@@ -22,6 +22,7 @@ SConscript("pluginscript/SCsub")
 SConscript("videodecoder/SCsub")
 
 
+from methods import get_cmdline_bool
 from platform_methods import run_in_subprocess
 import gdnative_builders
 
@@ -35,7 +36,7 @@ env_gdnative.add_source_files(env.modules_sources, [gensource])
 env.use_ptrcall = True
 
 
-if ARGUMENTS.get("gdnative_wrapper", False):
+if get_cmdline_bool("gdnative_wrapper", False):
     (gensource,) = env_gdnative.CommandNoCache(
         "gdnative_wrapper_code.gen.cpp",
         "gdnative_api.json",

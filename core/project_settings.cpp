@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -268,12 +268,12 @@ void ProjectSettings::_get_property_list(List<PropertyInfo> *p_list) const {
 	}
 }
 
-bool ProjectSettings::_load_resource_pack(const String &p_pack, bool p_replace_files) {
+bool ProjectSettings::_load_resource_pack(const String &p_pack, bool p_replace_files, int p_offset) {
 
 	if (PackedData::get_singleton()->is_disabled())
 		return false;
 
-	bool ok = PackedData::get_singleton()->add_pack(p_pack, p_replace_files) == OK;
+	bool ok = PackedData::get_singleton()->add_pack(p_pack, p_replace_files, p_offset) == OK;
 
 	if (!ok)
 		return false;
@@ -380,7 +380,7 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 #ifdef OSX_ENABLED
 		if (!found) {
 			// Attempt to load PCK from macOS .app bundle resources.
-			found = _load_resource_pack(OS::get_singleton()->get_bundle_resource_dir().plus_file(exec_basename + ".pck"));
+			found = _load_resource_pack(OS::get_singleton()->get_bundle_resource_dir().plus_file(exec_basename + ".pck")) || _load_resource_pack(OS::get_singleton()->get_bundle_resource_dir().plus_file(exec_filename + ".pck"));
 		}
 #endif
 
@@ -584,6 +584,7 @@ Error ProjectSettings::_load_settings_text(const String &p_path) {
 			// If we're loading a project.godot from source code, we can operate some
 			// ProjectSettings conversions if need be.
 			_convert_to_last_version(config_version);
+			last_save_time = FileAccess::get_modified_time(get_resource_path().plus_file("project.godot"));
 			return OK;
 		} else if (err != OK) {
 			ERR_PRINTS("Error parsing " + p_path + " at line " + itos(lines) + ": " + error_text + " File might be corrupted.");
@@ -612,20 +613,26 @@ Error ProjectSettings::_load_settings_text(const String &p_path) {
 }
 
 Error ProjectSettings::_load_settings_text_or_binary(const String &p_text_path, const String &p_bin_path) {
-
-	// Attempt first to load the text-based project.godot file
-	Error err_text = _load_settings_text(p_text_path);
-	if (err_text == OK) {
+	// Attempt first to load the binary project.godot file.
+	Error err = _load_settings_binary(p_bin_path);
+	if (err == OK) {
 		return OK;
-	} else if (err_text != ERR_FILE_NOT_FOUND) {
-		// If the text-based file exists but can't be loaded, we want to know it
-		ERR_PRINTS("Couldn't load file '" + p_text_path + "', error code " + itos(err_text) + ".");
-		return err_text;
+	} else if (err != ERR_FILE_NOT_FOUND) {
+		// If the file exists but can't be loaded, we want to know it.
+		ERR_PRINT("Couldn't load file '" + p_bin_path + "', error code " + itos(err) + ".");
+		return err;
 	}
 
-	// Fallback to binary project.binary file if text-based was not found
-	Error err_bin = _load_settings_binary(p_bin_path);
-	return err_bin;
+	// Fallback to text-based project.godot file if binary was not found.
+	err = _load_settings_text(p_text_path);
+	if (err == OK) {
+		return OK;
+	} else if (err != ERR_FILE_NOT_FOUND) {
+		ERR_PRINT("Couldn't load file '" + p_text_path + "', error code " + itos(err) + ".");
+		return err;
+	}
+
+	return err;
 }
 
 int ProjectSettings::get_order(const String &p_name) const {
@@ -655,8 +662,11 @@ void ProjectSettings::clear(const String &p_name) {
 }
 
 Error ProjectSettings::save() {
-
-	return save_custom(get_resource_path().plus_file("project.godot"));
+	Error error = save_custom(get_resource_path().plus_file("project.godot"));
+	if (error == OK) {
+		last_save_time = FileAccess::get_modified_time(get_resource_path().plus_file("project.godot"));
+	}
+	return error;
 }
 
 Error ProjectSettings::_save_settings_binary(const String &p_file, const Map<String, List<String> > &props, const CustomMap &p_custom, const String &p_custom_features) {
@@ -874,14 +884,29 @@ Error ProjectSettings::save_custom(const String &p_path, const CustomMap &p_cust
 		custom_features += f;
 	}
 
-	if (p_path.ends_with(".godot"))
+	if (p_path.ends_with(".godot") || p_path.ends_with("override.cfg")) {
 		return _save_settings_text(p_path, props, p_custom, custom_features);
-	else if (p_path.ends_with(".binary"))
+	} else if (p_path.ends_with(".binary")) {
 		return _save_settings_binary(p_path, props, p_custom, custom_features);
-	else {
+	} else {
 
 		ERR_FAIL_V_MSG(ERR_FILE_UNRECOGNIZED, "Unknown config file format: " + p_path + ".");
 	}
+}
+
+Variant _GLOBAL_DEF_ALIAS(const String &p_var, const String &p_old_name, const Variant &p_default, bool p_restart_if_changed) {
+	// if the new name setting isn't present, try the old one
+	if (!ProjectSettings::get_singleton()->has_setting(p_var)) {
+
+		if (ProjectSettings::get_singleton()->has_setting(p_old_name)) {
+
+			// if the old setting is present, get the value and set it in the new setting
+			Variant value = ProjectSettings::get_singleton()->get(p_old_name);
+			ProjectSettings::get_singleton()->set(p_var, value);
+		}
+	}
+
+	return _GLOBAL_DEF(p_var, p_default, p_restart_if_changed);
 }
 
 Variant _GLOBAL_DEF(const String &p_var, const Variant &p_default, bool p_restart_if_changed) {
@@ -997,7 +1022,7 @@ void ProjectSettings::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("localize_path", "path"), &ProjectSettings::localize_path);
 	ClassDB::bind_method(D_METHOD("globalize_path", "path"), &ProjectSettings::globalize_path);
 	ClassDB::bind_method(D_METHOD("save"), &ProjectSettings::save);
-	ClassDB::bind_method(D_METHOD("load_resource_pack", "pack", "replace_files"), &ProjectSettings::_load_resource_pack, DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("load_resource_pack", "pack", "replace_files", "offset"), &ProjectSettings::_load_resource_pack, DEFVAL(true), DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("property_can_revert", "name"), &ProjectSettings::property_can_revert);
 	ClassDB::bind_method(D_METHOD("property_get_revert", "name"), &ProjectSettings::property_get_revert);
 

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -1772,6 +1772,7 @@ void VisualServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("light_set_cull_mask", "light", "mask"), &VisualServer::light_set_cull_mask);
 	ClassDB::bind_method(D_METHOD("light_set_reverse_cull_face_mode", "light", "enabled"), &VisualServer::light_set_reverse_cull_face_mode);
 	ClassDB::bind_method(D_METHOD("light_set_use_gi", "light", "enabled"), &VisualServer::light_set_use_gi);
+	ClassDB::bind_method(D_METHOD("light_set_bake_mode", "light", "bake_mode"), &VisualServer::light_set_bake_mode);
 
 	ClassDB::bind_method(D_METHOD("light_omni_set_shadow_mode", "light", "mode"), &VisualServer::light_omni_set_shadow_mode);
 	ClassDB::bind_method(D_METHOD("light_omni_set_shadow_detail", "light", "detail"), &VisualServer::light_omni_set_shadow_detail);
@@ -1829,6 +1830,8 @@ void VisualServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("lightmap_capture_get_octree", "capture"), &VisualServer::lightmap_capture_get_octree);
 	ClassDB::bind_method(D_METHOD("lightmap_capture_set_energy", "capture", "energy"), &VisualServer::lightmap_capture_set_energy);
 	ClassDB::bind_method(D_METHOD("lightmap_capture_get_energy", "capture"), &VisualServer::lightmap_capture_get_energy);
+	ClassDB::bind_method(D_METHOD("lightmap_capture_set_interior", "capture", "interior"), &VisualServer::lightmap_capture_set_interior);
+	ClassDB::bind_method(D_METHOD("lightmap_capture_is_interior", "capture"), &VisualServer::lightmap_capture_is_interior);
 #endif
 	ClassDB::bind_method(D_METHOD("particles_create"), &VisualServer::particles_create);
 	ClassDB::bind_method(D_METHOD("particles_set_emitting", "particles", "emitting"), &VisualServer::particles_set_emitting);
@@ -1890,6 +1893,8 @@ void VisualServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("viewport_set_shadow_atlas_size", "viewport", "size"), &VisualServer::viewport_set_shadow_atlas_size);
 	ClassDB::bind_method(D_METHOD("viewport_set_shadow_atlas_quadrant_subdivision", "viewport", "quadrant", "subdivision"), &VisualServer::viewport_set_shadow_atlas_quadrant_subdivision);
 	ClassDB::bind_method(D_METHOD("viewport_set_msaa", "viewport", "msaa"), &VisualServer::viewport_set_msaa);
+	ClassDB::bind_method(D_METHOD("viewport_set_use_fxaa", "viewport", "fxaa"), &VisualServer::viewport_set_use_fxaa);
+	ClassDB::bind_method(D_METHOD("viewport_set_use_debanding", "viewport", "debanding"), &VisualServer::viewport_set_use_debanding);
 	ClassDB::bind_method(D_METHOD("viewport_set_hdr", "viewport", "enabled"), &VisualServer::viewport_set_hdr);
 	ClassDB::bind_method(D_METHOD("viewport_set_usage", "viewport", "usage"), &VisualServer::viewport_set_usage);
 	ClassDB::bind_method(D_METHOD("viewport_get_render_info", "viewport", "info"), &VisualServer::viewport_get_render_info);
@@ -1935,7 +1940,7 @@ void VisualServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("instance_set_blend_shape_weight", "instance", "shape", "weight"), &VisualServer::instance_set_blend_shape_weight);
 	ClassDB::bind_method(D_METHOD("instance_set_surface_material", "instance", "surface", "material"), &VisualServer::instance_set_surface_material);
 	ClassDB::bind_method(D_METHOD("instance_set_visible", "instance", "visible"), &VisualServer::instance_set_visible);
-	ClassDB::bind_method(D_METHOD("instance_set_use_lightmap", "instance", "lightmap_instance", "lightmap"), &VisualServer::instance_set_use_lightmap);
+	ClassDB::bind_method(D_METHOD("instance_set_use_lightmap", "instance", "lightmap_instance", "lightmap", "lightmap_slice", "lightmap_uv_rect"), &VisualServer::instance_set_use_lightmap, DEFVAL(-1), DEFVAL(Rect2(0, 0, 1, 1)));
 	ClassDB::bind_method(D_METHOD("instance_set_custom_aabb", "instance", "aabb"), &VisualServer::instance_set_custom_aabb);
 	ClassDB::bind_method(D_METHOD("instance_attach_skeleton", "instance", "skeleton"), &VisualServer::instance_attach_skeleton);
 	ClassDB::bind_method(D_METHOD("instance_set_exterior", "instance", "enabled"), &VisualServer::instance_set_exterior);
@@ -2153,6 +2158,10 @@ void VisualServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(LIGHT_PARAM_SHADOW_BIAS);
 	BIND_ENUM_CONSTANT(LIGHT_PARAM_SHADOW_BIAS_SPLIT_SCALE);
 	BIND_ENUM_CONSTANT(LIGHT_PARAM_MAX);
+
+	BIND_ENUM_CONSTANT(LIGHT_BAKE_DISABLED);
+	BIND_ENUM_CONSTANT(LIGHT_BAKE_INDIRECT);
+	BIND_ENUM_CONSTANT(LIGHT_BAKE_ALL);
 
 	BIND_ENUM_CONSTANT(LIGHT_OMNI_SHADOW_DUAL_PARABOLOID);
 	BIND_ENUM_CONSTANT(LIGHT_OMNI_SHADOW_CUBE);
@@ -2430,7 +2439,20 @@ VisualServer::VisualServer() {
 	GLOBAL_DEF("rendering/quality/depth_prepass/enable", true);
 	GLOBAL_DEF("rendering/quality/depth_prepass/disable_for_vendors", "PowerVR,Mali,Adreno,Apple");
 
+	GLOBAL_DEF("rendering/quality/filters/anisotropic_filter_level", 4);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/filters/anisotropic_filter_level", PropertyInfo(Variant::INT, "rendering/quality/filters/anisotropic_filter_level", PROPERTY_HINT_RANGE, "1,16,1"));
 	GLOBAL_DEF("rendering/quality/filters/use_nearest_mipmap_filter", false);
+
+	GLOBAL_DEF("rendering/quality/skinning/software_skinning_fallback", true);
+	GLOBAL_DEF("rendering/quality/skinning/force_software_skinning", false);
+
+	const char *sz_balance_render_tree = "rendering/quality/spatial_partitioning/render_tree_balance";
+	GLOBAL_DEF(sz_balance_render_tree, 0.0f);
+	ProjectSettings::get_singleton()->set_custom_property_info(sz_balance_render_tree, PropertyInfo(Variant::REAL, sz_balance_render_tree, PROPERTY_HINT_RANGE, "0.0,1.0,0.01"));
+
+	GLOBAL_DEF_RST("rendering/2d/options/use_software_skinning", true);
+	GLOBAL_DEF_RST("rendering/2d/options/ninepatch_mode", 1);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/2d/options/ninepatch_mode", PropertyInfo(Variant::INT, "rendering/2d/options/ninepatch_mode", PROPERTY_HINT_ENUM, "Fixed,Scaling"));
 
 	GLOBAL_DEF("rendering/batching/options/use_batching", true);
 	GLOBAL_DEF_RST("rendering/batching/options/use_batching_in_editor", true);

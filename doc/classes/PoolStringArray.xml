@@ -8,6 +8,7 @@
 		[b]Note:[/b] This type is passed by value and not by reference.
 	</description>
 	<tutorials>
+		<link title="OS Test Demo">https://godotengine.org/asset-library/asset/677</link>
 	</tutorials>
 	<methods>
 		<method name="PoolStringArray">

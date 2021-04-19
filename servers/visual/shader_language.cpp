@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -546,12 +546,12 @@ ShaderLanguage::Token ShaderLanguage::_get_token() {
 							if (hexa_found || str.length() != 1 || str[0] != '0')
 								return _make_token(TK_ERROR, "Invalid numeric constant");
 							hexa_found = true;
-						} else if (GETCHAR(i) == 'e') {
-							if (hexa_found || exponent_found || float_suffix_found)
+						} else if (GETCHAR(i) == 'e' && !hexa_found) {
+							if (exponent_found || float_suffix_found)
 								return _make_token(TK_ERROR, "Invalid numeric constant");
 							exponent_found = true;
-						} else if (GETCHAR(i) == 'f') {
-							if (hexa_found || exponent_found)
+						} else if (GETCHAR(i) == 'f' && !hexa_found) {
+							if (exponent_found)
 								return _make_token(TK_ERROR, "Invalid numeric constant");
 							float_suffix_found = true;
 						} else if (_is_number(GETCHAR(i))) {
@@ -2230,7 +2230,7 @@ bool ShaderLanguage::_validate_function_call(BlockNode *p_block, OperatorNode *p
 			arglist += get_datatype_name(builtin_func_defs[builtin_idx].args[i]);
 		}
 
-		String err = "Built-in function \"" + String(name) + "(" + arglist + ")\" is supported only on high-end platform!";
+		String err = "Built-in function \"" + String(name) + "(" + arglist + ")\" is only supported on the GLES3 backend, but your project is using GLES2.";
 		_set_error(err);
 		return false;
 	}
@@ -3650,7 +3650,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 				}
 			}
 
-			//consecutively do unary opeators
+			//consecutively do unary operators
 			for (int i = expr_pos - 1; i >= next_op; i--) {
 
 				OperatorNode *op = alloc_node<OperatorNode>();
@@ -3988,7 +3988,7 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const Map<StringName, Bui
 					bool unknown_size = false;
 
 					if (VisualServer::get_singleton()->is_low_end() && is_const) {
-						_set_error("Local const arrays are supported only on high-end platform!");
+						_set_error("Local const arrays are only supported on the GLES3 backend, but your project is using GLES2.");
 						return ERR_PARSE_ERROR;
 					}
 
@@ -4029,7 +4029,7 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const Map<StringName, Bui
 					if (tk.type == TK_OP_ASSIGN) {
 
 						if (VisualServer::get_singleton()->is_low_end()) {
-							_set_error("Array initialization is supported only on high-end platform!");
+							_set_error("Array initialization is only supported on the GLES3 backend, but your project is using GLES2.");
 							return ERR_PARSE_ERROR;
 						}
 
@@ -4314,7 +4314,7 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const Map<StringName, Bui
 		} else if (tk.type == TK_CF_SWITCH) {
 
 			if (VisualServer::get_singleton()->is_low_end()) {
-				_set_error("\"switch\" operator is supported only on high-end platform!");
+				_set_error("\"switch\" operator is only supported on the GLES3 backend, but your project is using GLES2.");
 				return ERR_PARSE_ERROR;
 			}
 
@@ -4698,16 +4698,16 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const Map<StringName, Bui
 			pos = _get_tkpos();
 			tk = _get_token();
 			if (tk.type != TK_SEMICOLON) {
-				//all is good
 				_set_error("Expected ';' after discard");
+				return ERR_PARSE_ERROR;
 			}
 
 			p_block->statements.push_back(flow);
 		} else if (tk.type == TK_CF_BREAK) {
 
 			if (!p_can_break) {
-				//all is good
-				_set_error("Breaking is not allowed here");
+				_set_error("'break' is not allowed outside of a loop or 'switch' statement");
+				return ERR_PARSE_ERROR;
 			}
 
 			ControlFlowNode *flow = alloc_node<ControlFlowNode>();
@@ -4716,8 +4716,8 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const Map<StringName, Bui
 			pos = _get_tkpos();
 			tk = _get_token();
 			if (tk.type != TK_SEMICOLON) {
-				//all is good
 				_set_error("Expected ';' after break");
+				return ERR_PARSE_ERROR;
 			}
 
 			p_block->statements.push_back(flow);
@@ -4733,8 +4733,8 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const Map<StringName, Bui
 		} else if (tk.type == TK_CF_CONTINUE) {
 
 			if (!p_can_continue) {
-				//all is good
-				_set_error("Continuing is not allowed here");
+				_set_error("'continue' is not allowed outside of a loop");
+				return ERR_PARSE_ERROR;
 			}
 
 			ControlFlowNode *flow = alloc_node<ControlFlowNode>();
@@ -4745,6 +4745,7 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const Map<StringName, Bui
 			if (tk.type != TK_SEMICOLON) {
 				//all is good
 				_set_error("Expected ';' after continue");
+				return ERR_PARSE_ERROR;
 			}
 
 			p_block->statements.push_back(flow);
@@ -4823,7 +4824,7 @@ Error ShaderLanguage::_validate_datatype(DataType p_type) {
 		}
 
 		if (invalid_type) {
-			_set_error(vformat("\"%s\" type is supported only on high-end platform!", get_datatype_name(p_type)));
+			_set_error(vformat("\"%s\" type is only supported on the GLES3 backend, but your project is using GLES2.", get_datatype_name(p_type)));
 			return ERR_UNAVAILABLE;
 		}
 	}

@@ -8,6 +8,7 @@
 		[b]Note:[/b] You should enable [member flip_v] when using a TextureRect to display a [ViewportTexture]. Alternatively, you can enable [member Viewport.render_target_v_flip] on the Viewport. Otherwise, the image will appear upside down.
 	</description>
 	<tutorials>
+		<link title="3D Voxel Demo">https://godotengine.org/asset-library/asset/676</link>
 	</tutorials>
 	<methods>
 	</methods>

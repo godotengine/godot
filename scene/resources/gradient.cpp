@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -54,7 +54,7 @@ Gradient::~Gradient() {
 void Gradient::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("add_point", "offset", "color"), &Gradient::add_point);
-	ClassDB::bind_method(D_METHOD("remove_point", "offset"), &Gradient::remove_point);
+	ClassDB::bind_method(D_METHOD("remove_point", "point"), &Gradient::remove_point);
 
 	ClassDB::bind_method(D_METHOD("set_offset", "point", "offset"), &Gradient::set_offset);
 	ClassDB::bind_method(D_METHOD("get_offset", "point"), &Gradient::get_offset);
@@ -131,7 +131,7 @@ void Gradient::add_point(float p_offset, const Color &p_color) {
 void Gradient::remove_point(int p_index) {
 
 	ERR_FAIL_INDEX(p_index, points.size());
-	ERR_FAIL_COND(points.size() <= 2);
+	ERR_FAIL_COND(points.size() <= 1);
 	points.remove(p_index);
 	emit_signal(CoreStringNames::get_singleton()->changed);
 }
@@ -143,32 +143,29 @@ void Gradient::set_points(Vector<Gradient::Point> &p_points) {
 }
 
 void Gradient::set_offset(int pos, const float offset) {
-
-	ERR_FAIL_COND(pos < 0);
-	if (points.size() <= pos)
-		points.resize(pos + 1);
+	ERR_FAIL_INDEX(pos, points.size());
+	_update_sorting();
 	points.write[pos].offset = offset;
 	is_sorted = false;
 	emit_signal(CoreStringNames::get_singleton()->changed);
 }
 
-float Gradient::get_offset(int pos) const {
+float Gradient::get_offset(int pos) {
 	ERR_FAIL_INDEX_V(pos, points.size(), 0.0);
+	_update_sorting();
 	return points[pos].offset;
 }
 
 void Gradient::set_color(int pos, const Color &color) {
-	ERR_FAIL_COND(pos < 0);
-	if (points.size() <= pos) {
-		points.resize(pos + 1);
-		is_sorted = false;
-	}
+	ERR_FAIL_INDEX(pos, points.size());
+	_update_sorting();
 	points.write[pos].color = color;
 	emit_signal(CoreStringNames::get_singleton()->changed);
 }
 
-Color Gradient::get_color(int pos) const {
+Color Gradient::get_color(int pos) {
 	ERR_FAIL_INDEX_V(pos, points.size(), Color());
+	_update_sorting();
 	return points[pos].color;
 }
 

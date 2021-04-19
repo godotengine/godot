@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -50,6 +50,12 @@ public:
 private:
 	Vector<Point> points;
 	bool is_sorted;
+	_FORCE_INLINE_ void _update_sorting() {
+		if (!is_sorted) {
+			points.sort();
+			is_sorted = true;
+		}
+	}
 
 protected:
 	static void _bind_methods();
@@ -65,10 +71,10 @@ public:
 	Vector<Point> &get_points();
 
 	void set_offset(int pos, const float offset);
-	float get_offset(int pos) const;
+	float get_offset(int pos);
 
 	void set_color(int pos, const Color &color);
-	Color get_color(int pos) const;
+	Color get_color(int pos);
 
 	void set_offsets(const Vector<float> &p_offsets);
 	Vector<float> get_offsets() const;
@@ -81,10 +87,7 @@ public:
 		if (points.empty())
 			return Color(0, 0, 0, 1);
 
-		if (!is_sorted) {
-			points.sort();
-			is_sorted = true;
-		}
+		_update_sorting();
 
 		//binary search
 		int low = 0;

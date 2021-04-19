@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -852,6 +852,7 @@ void AnimationTree::_process_graph(float p_delta) {
 			Ref<Animation> a = as.animation;
 			float time = as.time;
 			float delta = as.delta;
+			float weight = as.blend;
 			bool seeked = as.seeked;
 
 			for (int i = 0; i < a->get_track_count(); i++) {
@@ -872,7 +873,7 @@ void AnimationTree::_process_graph(float p_delta) {
 
 				ERR_CONTINUE(blend_idx < 0 || blend_idx >= state.track_count);
 
-				float blend = (*as.track_blends)[blend_idx];
+				float blend = (*as.track_blends)[blend_idx] * weight;
 
 				if (blend < CMP_EPSILON)
 					continue; //nothing to blend

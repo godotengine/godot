@@ -16,11 +16,10 @@
  */
 
 
-#include <ft2build.h>
-#include FT_INTERNAL_DEBUG_H
-#include FT_INTERNAL_STREAM_H
-#include FT_SERVICE_PFR_H
-#include FT_SERVICE_FONT_FORMAT_H
+#include <freetype/internal/ftdebug.h>
+#include <freetype/internal/ftstream.h>
+#include <freetype/internal/services/svpfr.h>
+#include <freetype/internal/services/svfntfmt.h>
 #include "pfrdrivr.h"
 #include "pfrobjs.h"
 

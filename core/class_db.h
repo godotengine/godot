@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -143,7 +143,7 @@ public:
 		return memnew(T);
 	}
 
-	static RWLock *lock;
+	static RWLock lock;
 	static HashMap<StringName, ClassInfo> classes;
 	static HashMap<StringName, StringName> resource_base_extensions;
 	static HashMap<StringName, StringName> compat_classes;
@@ -160,6 +160,11 @@ public:
 
 	static HashMap<StringName, HashMap<StringName, Variant> > default_values;
 	static Set<StringName> default_values_cached;
+
+private:
+	// Non-locking variants of get_parent_class and is_parent_class.
+	static StringName _get_parent_class(const StringName &p_class);
+	static bool _is_parent_class(const StringName &p_class, const StringName &p_inherits);
 
 public:
 	// DO NOT USE THIS!!!!!! NEEDS TO BE PUBLIC BUT DO NOT USE NO MATTER WHAT!!!
@@ -388,7 +393,6 @@ public:
 	static void get_extensions_for_type(const StringName &p_class, List<String> *p_extensions);
 
 	static void add_compatibility_class(const StringName &p_class, const StringName &p_fallback);
-	static void init();
 
 	static void set_current_api(APIType p_api);
 	static APIType get_current_api();

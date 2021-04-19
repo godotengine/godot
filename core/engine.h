@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -42,10 +42,7 @@ public:
 	struct Singleton {
 		StringName name;
 		Object *ptr;
-		Singleton(const StringName &p_name = StringName(), Object *p_ptr = NULL) :
-				name(p_name),
-				ptr(p_ptr) {
-		}
+		Singleton(const StringName &p_name = StringName(), Object *p_ptr = NULL);
 	};
 
 private:
@@ -61,7 +58,7 @@ private:
 	float _fps;
 	int _target_fps;
 	float _time_scale;
-	bool _pixel_snap;
+	bool _gpu_pixel_snap;
 	uint64_t _physics_frames;
 	float _physics_interpolation_fraction;
 
@@ -109,7 +106,7 @@ public:
 	bool has_singleton(const String &p_name) const;
 	Object *get_singleton_object(const String &p_name) const;
 
-	_FORCE_INLINE_ bool get_use_pixel_snap() const { return _pixel_snap; }
+	_FORCE_INLINE_ bool get_use_gpu_pixel_snap() const { return _gpu_pixel_snap; }
 
 #ifdef TOOLS_ENABLED
 	_FORCE_INLINE_ void set_editor_hint(bool p_enabled) { editor_hint = p_enabled; }

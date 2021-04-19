@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -1471,22 +1471,6 @@ bool BulletPhysicsServer::generic_6dof_joint_get_flag(RID p_joint, Vector3::Axis
 	return generic_6dof_joint->get_flag(p_axis, p_flag);
 }
 
-void BulletPhysicsServer::generic_6dof_joint_set_precision(RID p_joint, int p_precision) {
-	JointBullet *joint = joint_owner.get(p_joint);
-	ERR_FAIL_COND(!joint);
-	ERR_FAIL_COND(joint->get_type() != JOINT_6DOF);
-	Generic6DOFJointBullet *generic_6dof_joint = static_cast<Generic6DOFJointBullet *>(joint);
-	generic_6dof_joint->set_precision(p_precision);
-}
-
-int BulletPhysicsServer::generic_6dof_joint_get_precision(RID p_joint) {
-	JointBullet *joint = joint_owner.get(p_joint);
-	ERR_FAIL_COND_V(!joint, 0);
-	ERR_FAIL_COND_V(joint->get_type() != JOINT_6DOF, 0);
-	Generic6DOFJointBullet *generic_6dof_joint = static_cast<Generic6DOFJointBullet *>(joint);
-	return generic_6dof_joint->get_precision();
-}
-
 void BulletPhysicsServer::free(RID p_rid) {
 	if (shape_owner.owns(p_rid)) {
 
@@ -1566,9 +1550,6 @@ void BulletPhysicsServer::step(float p_deltaTime) {
 
 		active_spaces[i]->step(p_deltaTime);
 	}
-}
-
-void BulletPhysicsServer::sync() {
 }
 
 void BulletPhysicsServer::flush_queries() {

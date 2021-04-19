@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,6 +29,10 @@
 /*************************************************************************/
 
 #include "collision_shape.h"
+
+#include "core/math/quick_hull.h"
+#include "mesh_instance.h"
+#include "physics_body.h"
 #include "scene/resources/box_shape.h"
 #include "scene/resources/capsule_shape.h"
 #include "scene/resources/concave_polygon_shape.h"
@@ -37,10 +41,6 @@
 #include "scene/resources/ray_shape.h"
 #include "scene/resources/sphere_shape.h"
 #include "servers/visual_server.h"
-//TODO: Implement CylinderShape and HeightMapShape?
-#include "core/math/quick_hull.h"
-#include "mesh_instance.h"
-#include "physics_body.h"
 
 void CollisionShape::make_convex_from_brothers() {
 
@@ -89,9 +89,6 @@ void CollisionShape::_notification(int p_what) {
 			if (parent) {
 				_update_in_shape_owner();
 			}
-			if (get_tree()->is_debugging_collisions_hint()) {
-				_update_debug_shape();
-			}
 		} break;
 		case NOTIFICATION_LOCAL_TRANSFORM_CHANGED: {
 			if (parent) {
@@ -115,27 +112,39 @@ void CollisionShape::resource_changed(RES res) {
 
 String CollisionShape::get_configuration_warning() const {
 
+	String warning = Spatial::get_configuration_warning();
+
 	if (!Object::cast_to<CollisionObject>(get_parent())) {
-		return TTR("CollisionShape only serves to provide a collision shape to a CollisionObject derived node. Please only use it as a child of Area, StaticBody, RigidBody, KinematicBody, etc. to give them a shape.");
+		if (warning != String()) {
+			warning += "\n\n";
+		}
+		warning += TTR("CollisionShape only serves to provide a collision shape to a CollisionObject derived node. Please only use it as a child of Area, StaticBody, RigidBody, KinematicBody, etc. to give them a shape.");
 	}
 
 	if (!shape.is_valid()) {
-		return TTR("A shape must be provided for CollisionShape to function. Please create a shape resource for it.");
-	}
-
-	if (shape->is_class("PlaneShape")) {
-		return TTR("Plane shapes don't work well and will be removed in future versions. Please don't use them.");
-	}
-
-	if (Object::cast_to<RigidBody>(get_parent())) {
-		if (Object::cast_to<ConcavePolygonShape>(*shape)) {
-			if (Object::cast_to<RigidBody>(get_parent())->get_mode() != RigidBody::MODE_STATIC) {
-				return TTR("ConcavePolygonShape doesn't support RigidBody in another mode than static.");
+		if (warning != String()) {
+			warning += "\n\n";
+		}
+		warning += TTR("A shape must be provided for CollisionShape to function. Please create a shape resource for it.");
+	} else {
+		if (shape->is_class("PlaneShape")) {
+			if (warning != String()) {
+				warning += "\n\n";
 			}
+			warning += TTR("Plane shapes don't work well and will be removed in future versions. Please don't use them.");
+		}
+
+		if (Object::cast_to<RigidBody>(get_parent()) &&
+				Object::cast_to<ConcavePolygonShape>(*shape) &&
+				Object::cast_to<RigidBody>(get_parent())->get_mode() != RigidBody::MODE_STATIC) {
+			if (warning != String()) {
+				warning += "\n\n";
+			}
+			warning += TTR("ConcavePolygonShape doesn't support RigidBody in another mode than static.");
 		}
 	}
 
-	return String();
+	return warning;
 }
 
 void CollisionShape::_bind_methods() {
@@ -150,14 +159,15 @@ void CollisionShape::_bind_methods() {
 	ClassDB::set_method_flags("CollisionShape", "make_convex_from_brothers", METHOD_FLAGS_DEFAULT | METHOD_FLAG_EDITOR);
 
 	ClassDB::bind_method(D_METHOD("_shape_changed"), &CollisionShape::_shape_changed);
-	ClassDB::bind_method(D_METHOD("_update_debug_shape"), &CollisionShape::_update_debug_shape);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "shape", PROPERTY_HINT_RESOURCE_TYPE, "Shape"), "set_shape", "get_shape");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "disabled"), "set_disabled", "is_disabled");
 }
 
 void CollisionShape::set_shape(const Ref<Shape> &p_shape) {
-
+	if (p_shape == shape) {
+		return;
+	}
 	if (!shape.is_null()) {
 		shape->unregister_owner(this);
 		shape->disconnect("changed", this, "_shape_changed");
@@ -203,7 +213,6 @@ CollisionShape::CollisionShape() {
 
 	//indicator = VisualServer::get_singleton()->mesh_create();
 	disabled = false;
-	debug_shape = NULL;
 	parent = NULL;
 	owner_id = 0;
 	set_notify_local_transform(true);
@@ -215,33 +224,9 @@ CollisionShape::~CollisionShape() {
 	//VisualServer::get_singleton()->free(indicator);
 }
 
-void CollisionShape::_update_debug_shape() {
-	debug_shape_dirty = false;
-
-	if (debug_shape) {
-		debug_shape->queue_delete();
-		debug_shape = NULL;
-	}
-
-	Ref<Shape> s = get_shape();
-	if (s.is_null())
-		return;
-
-	Ref<Mesh> mesh = s->get_debug_mesh();
-	MeshInstance *mi = memnew(MeshInstance);
-	mi->set_mesh(mesh);
-	add_child(mi);
-	debug_shape = mi;
-}
-
 void CollisionShape::_shape_changed() {
 	// If this is a heightfield shape our center may have changed
 	if (parent) {
 		_update_in_shape_owner(true);
-	}
-
-	if (is_inside_tree() && get_tree()->is_debugging_collisions_hint() && !debug_shape_dirty) {
-		debug_shape_dirty = true;
-		call_deferred("_update_debug_shape");
 	}
 }

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -70,7 +70,9 @@ void EditorPropertyText::_text_changed(const String &p_string) {
 void EditorPropertyText::update_property() {
 	String s = get_edited_object()->get(get_edited_property());
 	updating = true;
-	text->set_text(s);
+	if (text->get_text() != s) {
+		text->set_text(s);
+	}
 	text->set_editable(!is_read_only());
 	updating = false;
 }
@@ -125,9 +127,11 @@ void EditorPropertyMultilineText::_open_big_text() {
 
 void EditorPropertyMultilineText::update_property() {
 	String t = get_edited_object()->get(get_edited_property());
-	text->set_text(t);
-	if (big_text && big_text->is_visible_in_tree()) {
-		big_text->set_text(t);
+	if (text->get_text() != t) {
+		text->set_text(t);
+		if (big_text && big_text->is_visible_in_tree()) {
+			big_text->set_text(t);
+		}
 	}
 }
 
@@ -641,7 +645,7 @@ public:
 
 		const Ref<InputEventMouseButton> mb = p_ev;
 
-		if (mb.is_valid() && mb->get_button_index() == BUTTON_LEFT && mb->is_pressed()) {
+		if (mb.is_valid() && mb->get_button_index() == BUTTON_LEFT && mb->is_pressed() && hovered_index >= 0) {
 			// Toggle the flag.
 			// We base our choice on the hovered flag, so that it always matches the hovered flag.
 			if (value & (1 << hovered_index)) {
@@ -987,18 +991,26 @@ void EditorPropertyEasing::_drag_easing(const Ref<InputEvent> &p_ev) {
 			rel = -rel;
 
 		float val = get_edited_object()->get(get_edited_property());
-		if (val == 0)
-			return;
 		bool sg = val < 0;
 		val = Math::absf(val);
 
 		val = Math::log(val) / Math::log((float)2.0);
-		//logspace
+		// Logarithmic space.
 		val += rel * 0.05;
 
 		val = Math::pow(2.0f, val);
 		if (sg)
 			val = -val;
+
+		// 0 is a singularity, but both positive and negative values
+		// are otherwise allowed. Enforce 0+ as workaround.
+		if (Math::is_zero_approx(val)) {
+			val = 0.00001;
+		}
+
+		// Limit to a reasonable value to prevent the curve going into infinity,
+		// which can cause crashes and other issues.
+		val = CLAMP(val, -1000000, 1000000);
 
 		emit_changed(get_edited_property(), val);
 		easing_draw->update();
@@ -1044,7 +1056,18 @@ void EditorPropertyEasing::_draw_easing() {
 	}
 
 	easing_draw->draw_multiline(lines, line_color, 1.0, true);
-	f->draw(ci, Point2(10, 10 + f->get_ascent()), String::num(exp, 2), font_color);
+	// Draw more decimals for small numbers since higher precision is usually required for fine adjustments.
+	int decimals;
+	if (Math::abs(exp) < 0.1 - CMP_EPSILON) {
+		decimals = 4;
+	} else if (Math::abs(exp) < 1 - CMP_EPSILON) {
+		decimals = 3;
+	} else if (Math::abs(exp) < 10 - CMP_EPSILON) {
+		decimals = 2;
+	} else {
+		decimals = 1;
+	}
+	f->draw(ci, Point2(10, 10 + f->get_ascent()), rtos(exp).pad_decimals(decimals), font_color);
 }
 
 void EditorPropertyEasing::update_property() {
@@ -1075,6 +1098,11 @@ void EditorPropertyEasing::_spin_value_changed(double p_value) {
 	if (Math::is_zero_approx(p_value)) {
 		p_value = 0.00001;
 	}
+
+	// Limit to a reasonable value to prevent the curve going into infinity,
+	// which can cause crashes and other issues.
+	p_value = CLAMP(p_value, -1000000, 1000000);
+
 	emit_changed(get_edited_property(), p_value);
 	_spin_focus_exited();
 }
@@ -1894,8 +1922,9 @@ void EditorPropertyColor::_color_changed(const Color &p_color) {
 }
 
 void EditorPropertyColor::_popup_closed() {
-
-	emit_changed(get_edited_property(), picker->get_pick_color(), "", false);
+	if (picker->get_pick_color() != last_color) {
+		emit_changed(get_edited_property(), picker->get_pick_color(), "", false);
+	}
 }
 
 void EditorPropertyColor::_picker_created() {
@@ -1907,11 +1936,16 @@ void EditorPropertyColor::_picker_created() {
 		picker->get_picker()->set_raw_mode(true);
 }
 
+void EditorPropertyColor::_picker_opening() {
+	last_color = picker->get_pick_color();
+}
+
 void EditorPropertyColor::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_color_changed"), &EditorPropertyColor::_color_changed);
 	ClassDB::bind_method(D_METHOD("_popup_closed"), &EditorPropertyColor::_popup_closed);
 	ClassDB::bind_method(D_METHOD("_picker_created"), &EditorPropertyColor::_picker_created);
+	ClassDB::bind_method(D_METHOD("_picker_opening"), &EditorPropertyColor::_picker_opening);
 }
 
 void EditorPropertyColor::update_property() {
@@ -1948,6 +1982,7 @@ EditorPropertyColor::EditorPropertyColor() {
 	picker->connect("color_changed", this, "_color_changed");
 	picker->connect("popup_closed", this, "_popup_closed");
 	picker->connect("picker_created", this, "_picker_created");
+	picker->get_popup()->connect("about_to_show", this, "_picker_opening");
 }
 
 ////////////// NODE PATH //////////////////////
@@ -2325,14 +2360,14 @@ void EditorPropertyResource::_menu_option(int p_which) {
 				return;
 			}
 
-			Object *obj = NULL;
+			Variant obj;
 
 			if (ScriptServer::is_global_class(intype)) {
 				obj = ClassDB::instance(ScriptServer::get_global_class_native_base(intype));
 				if (obj) {
 					Ref<Script> script = ResourceLoader::load(ScriptServer::get_global_class_path(intype));
 					if (script.is_valid()) {
-						obj->set_script(Variant(script));
+						((Object *)obj)->set_script(script.get_ref_ptr());
 					}
 				}
 			} else {
@@ -2343,7 +2378,6 @@ void EditorPropertyResource::_menu_option(int p_which) {
 				obj = EditorNode::get_editor_data().instance_custom_type(intype, "Resource");
 			}
 
-			ERR_BREAK(!obj);
 			Resource *resp = Object::cast_to<Resource>(obj);
 			ERR_BREAK(!resp);
 			if (get_edited_object() && base_type != String() && base_type == "Script") {
@@ -2351,7 +2385,7 @@ void EditorPropertyResource::_menu_option(int p_which) {
 				resp->call("set_instance_base_type", get_edited_object()->get_class());
 			}
 
-			res = Ref<Resource>(resp);
+			res = RES(resp);
 			emit_changed(get_edited_property(), res);
 			update_property();
 
@@ -2615,6 +2649,41 @@ void EditorPropertyResource::_fold_other_editors(Object *p_self) {
 	}
 }
 
+void EditorPropertyResource::_update_property_bg() {
+	if (!is_inside_tree()) {
+		return;
+	}
+
+	updating_theme = true;
+	if (sub_inspector != nullptr) {
+		int count_subinspectors = 0;
+		Node *n = get_parent();
+		while (n) {
+			EditorInspector *ei = Object::cast_to<EditorInspector>(n);
+			if (ei && ei->is_sub_inspector()) {
+				count_subinspectors++;
+			}
+			n = n->get_parent();
+		}
+		count_subinspectors = MIN(15, count_subinspectors);
+
+		add_color_override("property_color", get_color("sub_inspector_property_color", "Editor"));
+		add_style_override("bg_selected", get_stylebox("sub_inspector_property_bg_selected" + itos(count_subinspectors), "Editor"));
+		add_style_override("bg", get_stylebox("sub_inspector_property_bg" + itos(count_subinspectors), "Editor"));
+
+		add_constant_override("font_offset", get_constant("sub_inspector_font_offset", "Editor"));
+		add_constant_override("vseparation", 0);
+	} else {
+		add_color_override("property_color", get_color("property_color", "EditorProperty"));
+		add_style_override("bg_selected", get_stylebox("bg_selected", "EditorProperty"));
+		add_style_override("bg", get_stylebox("bg", "EditorProperty"));
+		add_constant_override("vseparation", get_constant("vseparation", "EditorProperty"));
+		add_constant_override("font_offset", get_constant("font_offset", "EditorProperty"));
+	}
+
+	updating_theme = false;
+	update();
+}
 void EditorPropertyResource::update_property() {
 
 	RES res = get_edited_object()->get(get_edited_property());
@@ -2633,7 +2702,7 @@ void EditorPropertyResource::update_property() {
 				sub_inspector->set_use_doc_hints(true);
 
 				sub_inspector->set_sub_inspector(true);
-				sub_inspector->set_enable_capitalize_paths(true);
+				sub_inspector->set_enable_capitalize_paths(bool(EDITOR_GET("interface/inspector/capitalize_properties")));
 
 				sub_inspector->connect("property_keyed", this, "_sub_inspector_property_keyed");
 				sub_inspector->connect("resource_selected", this, "_sub_inspector_resource_selected");
@@ -2666,6 +2735,8 @@ void EditorPropertyResource::update_property() {
 					}
 					opened_editor = true;
 				}
+
+				_update_property_bg();
 			}
 
 			if (res.ptr() != sub_inspector->get_edited_object()) {
@@ -2683,6 +2754,7 @@ void EditorPropertyResource::update_property() {
 					EditorNode::get_singleton()->hide_top_editors();
 					opened_editor = false;
 				}
+				_update_property_bg();
 			}
 		}
 	}
@@ -2740,8 +2812,12 @@ void EditorPropertyResource::setup(const String &p_base_type) {
 void EditorPropertyResource::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
+		if (updating_theme) {
+			return;
+		}
 		Ref<Texture> t = get_icon("select_arrow", "Tree");
 		edit->set_icon(t);
+		_update_property_bg();
 	}
 
 	if (p_what == NOTIFICATION_DRAG_BEGIN) {

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -39,6 +39,7 @@
 #include "core/os/file_access.h"
 #include "core/os/os.h"
 #include "core/ucaps.h"
+#include "main/main.h"
 
 #include "../glue/cs_glue_version.gen.h"
 #include "../godotsharp_defs.h"
@@ -95,7 +96,7 @@
 #define C_METHOD_MONOARRAY_TO(m_type) C_NS_MONOMARSHAL "::mono_array_to_" #m_type
 #define C_METHOD_MONOARRAY_FROM(m_type) C_NS_MONOMARSHAL "::" #m_type "_to_mono_array"
 
-#define BINDINGS_GENERATOR_VERSION UINT32_C(11)
+#define BINDINGS_GENERATOR_VERSION UINT32_C(13)
 
 const char *BindingsGenerator::TypeInterface::DEFAULT_VARARG_C_IN("\t%0 %1_in = %1;\n");
 
@@ -358,7 +359,7 @@ String BindingsGenerator::bbcode_to_xml(const String &p_bbcode, const TypeInterf
 				xml_output.append("</c>");
 			} else if (link_tag == "enum") {
 				StringName search_cname = !target_itype ? target_cname :
-														  StringName(target_itype->name + "." + (String)target_cname);
+															StringName(target_itype->name + "." + (String)target_cname);
 
 				const Map<StringName, TypeInterface>::Element *enum_match = enum_types.find(search_cname);
 
@@ -1819,12 +1820,12 @@ Error BindingsGenerator::generate_glue(const String &p_output_dir) {
 
 #define ADD_INTERNAL_CALL_REGISTRATION(m_icall)                                                              \
 	{                                                                                                        \
-		output.append("\tmono_add_internal_call(");                                                          \
+		output.append("\tGDMonoUtils::add_internal_call(");                                                  \
 		output.append("\"" BINDINGS_NAMESPACE ".");                                                          \
 		output.append(m_icall.editor_only ? BINDINGS_CLASS_NATIVECALLS_EDITOR : BINDINGS_CLASS_NATIVECALLS); \
 		output.append("::");                                                                                 \
 		output.append(m_icall.name);                                                                         \
-		output.append("\", (void*)");                                                                        \
+		output.append("\", ");                                                                               \
 		output.append(m_icall.name);                                                                         \
 		output.append(");\n");                                                                               \
 	}
@@ -2728,44 +2729,11 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 		INSERT_INT_TYPE("sbyte", int8_t, int64_t);
 		INSERT_INT_TYPE("short", int16_t, int64_t);
 		INSERT_INT_TYPE("int", int32_t, int64_t);
+		INSERT_INT_TYPE("long", int64_t, int64_t);
 		INSERT_INT_TYPE("byte", uint8_t, int64_t);
 		INSERT_INT_TYPE("ushort", uint16_t, int64_t);
 		INSERT_INT_TYPE("uint", uint32_t, int64_t);
-
-		itype = TypeInterface::create_value_type(String("long"));
-		{
-			itype.c_out = "\treturn (%0)%1;\n";
-			itype.c_in = "\t%0 %1_in = (%0)*%1;\n";
-			itype.c_out = "\t*%3 = (%0)%1;\n";
-			itype.c_type = "int64_t";
-			itype.c_arg_in = "&%s_in";
-		}
-		itype.c_type_in = "int64_t*";
-		itype.c_type_out = "int64_t";
-		itype.im_type_in = "ref " + itype.name;
-		itype.im_type_out = "out " + itype.name;
-		itype.cs_in = "ref %0";
-		/* in cs_out, im_type_out (%3) includes the 'out ' part */
-		itype.cs_out = "%0(%1, %3 argRet); return (%2)argRet;";
-		itype.ret_as_byref_arg = true;
-		builtin_types.insert(itype.cname, itype);
-
-		itype = TypeInterface::create_value_type(String("ulong"));
-		{
-			itype.c_in = "\t%0 %1_in = (%0)*%1;\n";
-			itype.c_out = "\t*%3 = (%0)%1;\n";
-			itype.c_type = "int64_t";
-			itype.c_arg_in = "&%s_in";
-		}
-		itype.c_type_in = "uint64_t*";
-		itype.c_type_out = "uint64_t";
-		itype.im_type_in = "ref " + itype.name;
-		itype.im_type_out = "out " + itype.name;
-		itype.cs_in = "ref %0";
-		/* in cs_out, im_type_out (%3) includes the 'out ' part */
-		itype.cs_out = "%0(%1, %3 argRet); return (%2)argRet;";
-		itype.ret_as_byref_arg = true;
-		builtin_types.insert(itype.cname, itype);
+		INSERT_INT_TYPE("ulong", uint64_t, int64_t);
 	}
 
 	// Floating point types
@@ -2777,20 +2745,16 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 		itype.proxy_name = "float";
 		{
 			// The expected type for 'float' in ptrcall is 'double'
-			itype.c_in = "\t%0 %1_in = (%0)*%1;\n";
-			itype.c_out = "\t*%3 = (%0)%1;\n";
+			itype.c_in = "\t%0 %1_in = (%0)%1;\n";
+			itype.c_out = "\treturn (%0)%1;\n";
 			itype.c_type = "double";
-			itype.c_type_in = "float*";
+			itype.c_type_in = "float";
 			itype.c_type_out = "float";
 			itype.c_arg_in = "&%s_in";
 		}
 		itype.cs_type = itype.proxy_name;
-		itype.im_type_in = "ref " + itype.proxy_name;
-		itype.im_type_out = "out " + itype.proxy_name;
-		itype.cs_in = "ref %0";
-		/* in cs_out, im_type_out (%3) includes the 'out ' part */
-		itype.cs_out = "%0(%1, %3 argRet); return (%2)argRet;";
-		itype.ret_as_byref_arg = true;
+		itype.im_type_in = itype.proxy_name;
+		itype.im_type_out = itype.proxy_name;
 		builtin_types.insert(itype.cname, itype);
 
 		// double
@@ -2799,20 +2763,14 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 		itype.cname = itype.name;
 		itype.proxy_name = "double";
 		{
-			itype.c_in = "\t%0 %1_in = (%0)*%1;\n";
-			itype.c_out = "\t*%3 = (%0)%1;\n";
 			itype.c_type = "double";
-			itype.c_type_in = "double*";
+			itype.c_type_in = "double";
 			itype.c_type_out = "double";
-			itype.c_arg_in = "&%s_in";
+			itype.c_arg_in = "&%s";
 		}
 		itype.cs_type = itype.proxy_name;
-		itype.im_type_in = "ref " + itype.proxy_name;
-		itype.im_type_out = "out " + itype.proxy_name;
-		itype.cs_in = "ref %0";
-		/* in cs_out, im_type_out (%3) includes the 'out ' part */
-		itype.cs_out = "%0(%1, %3 argRet); return (%2)argRet;";
-		itype.ret_as_byref_arg = true;
+		itype.im_type_in = itype.proxy_name;
+		itype.im_type_out = itype.proxy_name;
 		builtin_types.insert(itype.cname, itype);
 	}
 
@@ -3109,18 +3067,53 @@ void BindingsGenerator::_initialize() {
 	initialized = true;
 }
 
+static String generate_all_glue_option = "--generate-mono-glue";
+static String generate_cs_glue_option = "--generate-mono-cs-glue";
+static String generate_cpp_glue_option = "--generate-mono-cpp-glue";
+
+static void handle_cmdline_options(String glue_dir_path, String cs_dir_path, String cpp_dir_path) {
+	BindingsGenerator bindings_generator;
+	bindings_generator.set_log_print_enabled(true);
+
+	if (!bindings_generator.is_initialized()) {
+		ERR_PRINT("Failed to initialize the bindings generator");
+		return;
+	}
+
+	if (glue_dir_path.length()) {
+		if (bindings_generator.generate_glue(glue_dir_path) != OK) {
+			ERR_PRINT(generate_all_glue_option + ": Failed to generate the C++ glue.");
+		}
+
+		if (bindings_generator.generate_cs_api(glue_dir_path.plus_file(API_SOLUTION_NAME)) != OK) {
+			ERR_PRINT(generate_all_glue_option + ": Failed to generate the C# API.");
+		}
+	}
+
+	if (cs_dir_path.length()) {
+		if (bindings_generator.generate_cs_api(cs_dir_path) != OK) {
+			ERR_PRINT(generate_cs_glue_option + ": Failed to generate the C# API.");
+		}
+	}
+
+	if (cpp_dir_path.length()) {
+		if (bindings_generator.generate_glue(cpp_dir_path) != OK) {
+			ERR_PRINT(generate_cpp_glue_option + ": Failed to generate the C++ glue.");
+		}
+	}
+}
+
 void BindingsGenerator::handle_cmdline_args(const List<String> &p_cmdline_args) {
 
 	const int NUM_OPTIONS = 2;
-	String generate_all_glue_option = "--generate-mono-glue";
-	String generate_cs_glue_option = "--generate-mono-cs-glue";
-	String generate_cpp_glue_option = "--generate-mono-cpp-glue";
 
 	String glue_dir_path;
 	String cs_dir_path;
 	String cpp_dir_path;
 
 	int options_left = NUM_OPTIONS;
+
+	bool exit_godot = false;
 
 	const List<String>::Element *elem = p_cmdline_args.front();
 
@@ -3132,7 +3125,8 @@ void BindingsGenerator::handle_cmdline_args(const List<String> &p_cmdline_args) 
 				glue_dir_path = path_elem->get();
 				elem = elem->next();
 			} else {
-				ERR_PRINTS(generate_all_glue_option + ": No output directory specified (expected path to '{GODOT_ROOT}/modules/mono/glue').");
+				ERR_PRINT(generate_all_glue_option + ": No output directory specified (expected path to '{GODOT_ROOT}/modules/mono/glue').");
+				exit_godot = true;
 			}
 
 			--options_left;
@@ -3143,7 +3137,8 @@ void BindingsGenerator::handle_cmdline_args(const List<String> &p_cmdline_args) 
 				cs_dir_path = path_elem->get();
 				elem = elem->next();
 			} else {
-				ERR_PRINTS(generate_cs_glue_option + ": No output directory specified.");
+				ERR_PRINT(generate_cs_glue_option + ": No output directory specified.");
+				exit_godot = true;
 			}
 
 			--options_left;
@@ -3154,7 +3149,8 @@ void BindingsGenerator::handle_cmdline_args(const List<String> &p_cmdline_args) 
 				cpp_dir_path = path_elem->get();
 				elem = elem->next();
 			} else {
-				ERR_PRINTS(generate_cpp_glue_option + ": No output directory specified.");
+				ERR_PRINT(generate_cpp_glue_option + ": No output directory specified.");
+				exit_godot = true;
 			}
 
 			--options_left;
@@ -3164,33 +3160,13 @@ void BindingsGenerator::handle_cmdline_args(const List<String> &p_cmdline_args) 
 	}
 
 	if (glue_dir_path.length() || cs_dir_path.length() || cpp_dir_path.length()) {
-		BindingsGenerator bindings_generator;
-		bindings_generator.set_log_print_enabled(true);
+		handle_cmdline_options(glue_dir_path, cs_dir_path, cpp_dir_path);
+		exit_godot = true;
+	}
 
-		if (!bindings_generator.initialized) {
-			ERR_PRINTS("Failed to initialize the bindings generator");
-			::exit(0);
-		}
-
-		if (glue_dir_path.length()) {
-			if (bindings_generator.generate_glue(glue_dir_path) != OK)
-				ERR_PRINTS(generate_all_glue_option + ": Failed to generate the C++ glue.");
-
-			if (bindings_generator.generate_cs_api(glue_dir_path.plus_file(API_SOLUTION_NAME)) != OK)
-				ERR_PRINTS(generate_all_glue_option + ": Failed to generate the C# API.");
-		}
-
-		if (cs_dir_path.length()) {
-			if (bindings_generator.generate_cs_api(cs_dir_path) != OK)
-				ERR_PRINTS(generate_cs_glue_option + ": Failed to generate the C# API.");
-		}
-
-		if (cpp_dir_path.length()) {
-			if (bindings_generator.generate_glue(cpp_dir_path) != OK)
-				ERR_PRINTS(generate_cpp_glue_option + ": Failed to generate the C++ glue.");
-		}
-
+	if (exit_godot) {
 		// Exit once done
+		Main::cleanup(true);
 		::exit(0);
 	}
 }

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -146,7 +146,7 @@ void AnimationNodeBlendTreeEditor::_update_graph() {
 			name->set_expand_to_text_length(true);
 			node->add_child(name);
 			node->set_slot(0, false, 0, Color(), true, 0, get_color("font_color", "Label"));
-			name->connect("text_entered", this, "_node_renamed", varray(agnode));
+			name->connect("text_entered", this, "_node_renamed", varray(agnode), CONNECT_DEFERRED);
 			name->connect("focus_exited", this, "_node_renamed_focus_out", varray(name, agnode), CONNECT_DEFERRED);
 			base = 1;
 			node->set_show_close_button(true);
@@ -266,6 +266,9 @@ void AnimationNodeBlendTreeEditor::_update_graph() {
 
 		graph->connect_node(from, 0, to, to_idx);
 	}
+
+	float graph_minimap_opacity = EditorSettings::get_singleton()->get("editors/visual_editors/minimap_opacity");
+	graph->set_minimap_opacity(graph_minimap_opacity);
 }
 
 void AnimationNodeBlendTreeEditor::_file_opened(const String &p_file) {
@@ -942,6 +945,8 @@ AnimationNodeBlendTreeEditor::AnimationNodeBlendTreeEditor() {
 	graph->connect("scroll_offset_changed", this, "_scroll_changed");
 	graph->connect("delete_nodes_request", this, "_delete_nodes_request");
 	graph->connect("popup_request", this, "_popup_request");
+	float graph_minimap_opacity = EditorSettings::get_singleton()->get("editors/visual_editors/minimap_opacity");
+	graph->set_minimap_opacity(graph_minimap_opacity);
 
 	VSeparator *vs = memnew(VSeparator);
 	graph->get_zoom_hbox()->add_child(vs);

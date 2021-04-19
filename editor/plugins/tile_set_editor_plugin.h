@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -114,7 +114,7 @@ class TileSetEditor : public HSplitContainer {
 	int option;
 	ToolButton *tileset_toolbar_buttons[TOOL_TILESET_MAX];
 	MenuButton *tileset_toolbar_tools;
-	Map<RID, Ref<Texture> > texture_map;
+	Map<String, Ref<Texture> > texture_map;
 
 	bool creating_shape;
 	int dragging_point;

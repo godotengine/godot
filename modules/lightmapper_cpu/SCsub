@@ -1,0 +1,9 @@
+#!/usr/bin/env python
+
+Import("env")
+Import("env_modules")
+
+env_lightmapper_rd = env_modules.Clone()
+# Godot source files
+env_lightmapper_rd.Prepend(CPPPATH=["#thirdparty/embree/include"])
+env_lightmapper_rd.add_source_files(env.modules_sources, "*.cpp")

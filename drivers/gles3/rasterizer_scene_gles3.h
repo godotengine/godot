@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -549,6 +549,7 @@ public:
 
 	virtual void environment_set_dof_blur_near(RID p_env, bool p_enable, float p_distance, float p_transition, float p_amount, VS::EnvironmentDOFBlurQuality p_quality);
 	virtual void environment_set_dof_blur_far(RID p_env, bool p_enable, float p_distance, float p_transition, float p_amount, VS::EnvironmentDOFBlurQuality p_quality);
+
 	virtual void environment_set_glow(RID p_env, bool p_enable, int p_level_flags, float p_intensity, float p_strength, float p_bloom_threshold, VS::EnvironmentGlowBlendMode p_blend_mode, float p_hdr_bleed_threshold, float p_hdr_bleed_scale, float p_hdr_luminance_cap, bool p_bicubic_upscale);
 	virtual void environment_set_fog(RID p_env, bool p_enable, float p_begin, float p_end, RID p_gradient_texture);
 
@@ -671,6 +672,7 @@ public:
 			MAX_DIRECTIONAL_LIGHTS = 16,
 			DEFAULT_MAX_LIGHTS = 4096,
 			DEFAULT_MAX_REFLECTIONS = 1024,
+			DEFAULT_MAX_LIGHTS_PER_OBJECT = 32,
 
 			SORT_KEY_PRIORITY_SHIFT = 56,
 			SORT_KEY_PRIORITY_MASK = 0xFF,
@@ -678,14 +680,15 @@ public:
 			SORT_KEY_OPAQUE_DEPTH_LAYER_SHIFT = 52,
 			SORT_KEY_OPAQUE_DEPTH_LAYER_MASK = 0xF,
 //64 bits unsupported in MSVC
-#define SORT_KEY_UNSHADED_FLAG (uint64_t(1) << 49)
-#define SORT_KEY_NO_DIRECTIONAL_FLAG (uint64_t(1) << 48)
-#define SORT_KEY_LIGHTMAP_CAPTURE_FLAG (uint64_t(1) << 47)
+#define SORT_KEY_UNSHADED_FLAG (uint64_t(1) << 50)
+#define SORT_KEY_NO_DIRECTIONAL_FLAG (uint64_t(1) << 49)
+#define SORT_KEY_LIGHTMAP_CAPTURE_FLAG (uint64_t(1) << 48)
+#define SORT_KEY_LIGHTMAP_LAYERED_FLAG (uint64_t(1) << 47)
 #define SORT_KEY_LIGHTMAP_FLAG (uint64_t(1) << 46)
 #define SORT_KEY_GI_PROBES_FLAG (uint64_t(1) << 45)
 #define SORT_KEY_VERTEX_LIT_FLAG (uint64_t(1) << 44)
 			SORT_KEY_SHADING_SHIFT = 44,
-			SORT_KEY_SHADING_MASK = 63,
+			SORT_KEY_SHADING_MASK = 127,
 			//44-28 material index
 			SORT_KEY_MATERIAL_INDEX_SHIFT = 28,
 			//28-8 geometry index
@@ -703,6 +706,7 @@ public:
 		int max_elements;
 		int max_lights;
 		int max_reflections;
+		int max_lights_per_object;
 
 		struct Element {
 
@@ -827,6 +831,7 @@ public:
 
 	LightInstance *directional_light;
 	LightInstance *directional_lights[RenderList::MAX_DIRECTIONAL_LIGHTS];
+	RID first_directional_light;
 
 	RenderList render_list;
 
@@ -835,7 +840,7 @@ public:
 	_FORCE_INLINE_ bool _setup_material(RasterizerStorageGLES3::Material *p_material, bool p_depth_pass, bool p_alpha_pass);
 	_FORCE_INLINE_ void _setup_geometry(RenderList::Element *e, const Transform &p_view_transform);
 	_FORCE_INLINE_ void _render_geometry(RenderList::Element *e);
-	_FORCE_INLINE_ void _setup_light(RenderList::Element *e, const Transform &p_view_transform);
+	void _setup_light(RenderList::Element *e, const Transform &p_view_transform);
 
 	void _render_list(RenderList::Element **p_elements, int p_element_count, const Transform &p_view_transform, const CameraMatrix &p_projection, RasterizerStorageGLES3::Sky *p_sky, bool p_reverse_cull, bool p_alpha_pass, bool p_shadow, bool p_directional_add, bool p_directional_shadows);
 

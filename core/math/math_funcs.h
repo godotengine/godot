@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -47,7 +47,8 @@ class Math {
 public:
 	Math() {} // useless to instance
 
-	static const uint64_t RANDOM_MAX = 0xFFFFFFFF;
+	// Not using 'RANDOM_MAX' to avoid conflict with system headers on some OSes (at least NetBSD).
+	static const uint64_t RANDOM_32BIT_MAX = 0xFFFFFFFF;
 
 	static _ALWAYS_INLINE_ double sin(double p_x) { return ::sin(p_x); }
 	static _ALWAYS_INLINE_ float sin(float p_x) { return ::sinf(p_x); }
@@ -232,15 +233,19 @@ public:
 	static _ALWAYS_INLINE_ double range_lerp(double p_value, double p_istart, double p_istop, double p_ostart, double p_ostop) { return Math::lerp(p_ostart, p_ostop, Math::inverse_lerp(p_istart, p_istop, p_value)); }
 	static _ALWAYS_INLINE_ float range_lerp(float p_value, float p_istart, float p_istop, float p_ostart, float p_ostop) { return Math::lerp(p_ostart, p_ostop, Math::inverse_lerp(p_istart, p_istop, p_value)); }
 
-	static _ALWAYS_INLINE_ double smoothstep(double p_from, double p_to, double p_weight) {
-		if (is_equal_approx(p_from, p_to)) return p_from;
-		double x = CLAMP((p_weight - p_from) / (p_to - p_from), 0.0, 1.0);
-		return x * x * (3.0 - 2.0 * x);
+	static _ALWAYS_INLINE_ double smoothstep(double p_from, double p_to, double p_s) {
+		if (is_equal_approx(p_from, p_to)) {
+			return p_from;
+		}
+		double s = CLAMP((p_s - p_from) / (p_to - p_from), 0.0, 1.0);
+		return s * s * (3.0 - 2.0 * s);
 	}
-	static _ALWAYS_INLINE_ float smoothstep(float p_from, float p_to, float p_weight) {
-		if (is_equal_approx(p_from, p_to)) return p_from;
-		float x = CLAMP((p_weight - p_from) / (p_to - p_from), 0.0f, 1.0f);
-		return x * x * (3.0f - 2.0f * x);
+	static _ALWAYS_INLINE_ float smoothstep(float p_from, float p_to, float p_s) {
+		if (is_equal_approx(p_from, p_to)) {
+			return p_from;
+		}
+		float s = CLAMP((p_s - p_from) / (p_to - p_from), 0.0f, 1.0f);
+		return s * s * (3.0f - 2.0f * s);
 	}
 	static _ALWAYS_INLINE_ double move_toward(double p_from, double p_to, double p_delta) { return abs(p_to - p_from) <= p_delta ? p_to : p_from + SGN(p_to - p_from) * p_delta; }
 	static _ALWAYS_INLINE_ float move_toward(float p_from, float p_to, float p_delta) { return abs(p_to - p_from) <= p_delta ? p_to : p_from + SGN(p_to - p_from) * p_delta; }
@@ -280,8 +285,8 @@ public:
 	static void randomize();
 	static uint32_t rand_from_seed(uint64_t *seed);
 	static uint32_t rand();
-	static _ALWAYS_INLINE_ double randd() { return (double)rand() / (double)Math::RANDOM_MAX; }
-	static _ALWAYS_INLINE_ float randf() { return (float)rand() / (float)Math::RANDOM_MAX; }
+	static _ALWAYS_INLINE_ double randd() { return (double)rand() / (double)Math::RANDOM_32BIT_MAX; }
+	static _ALWAYS_INLINE_ float randf() { return (float)rand() / (float)Math::RANDOM_32BIT_MAX; }
 
 	static double random(double from, double to);
 	static float random(float from, float to);

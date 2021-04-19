@@ -7,7 +7,7 @@
 		Contains keys events information with modifiers support like [code]Shift[/code] or [code]Alt[/code]. See [method Node._input].
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/latest/tutorials/inputs/inputevent.html</link>
+		<link>https://docs.godotengine.org/en/3.2/tutorials/inputs/inputevent.html</link>
 	</tutorials>
 	<methods>
 	</methods>

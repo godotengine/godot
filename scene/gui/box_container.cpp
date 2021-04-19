@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -95,7 +95,7 @@ void BoxContainer::_resort() {
 	}
 
 	stretch_avail += stretch_diff; //available stretch space.
-	/** Second, pass sucessively to discard elements that can't be stretched, this will run while stretchable
+	/** Second, pass successively to discard elements that can't be stretched, this will run while stretchable
 		elements exist */
 
 	bool has_stretched = false;

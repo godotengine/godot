@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -926,13 +926,9 @@ ScriptInstance *VisualScript::instance_create(Object *p_this) {
 	VisualScriptInstance *instance = memnew(VisualScriptInstance);
 	instance->create(Ref<VisualScript>(this), p_this);
 
-	if (VisualScriptLanguage::singleton->lock)
-		VisualScriptLanguage::singleton->lock->lock();
-
+	VisualScriptLanguage::singleton->lock.lock();
 	instances[p_this] = instance;
-
-	if (VisualScriptLanguage::singleton->lock)
-		VisualScriptLanguage::singleton->lock->unlock();
+	VisualScriptLanguage::singleton->lock.unlock();
 
 	return instance;
 }
@@ -2298,13 +2294,9 @@ VisualScriptInstance::VisualScriptInstance() {
 
 VisualScriptInstance::~VisualScriptInstance() {
 
-	if (VisualScriptLanguage::singleton->lock)
-		VisualScriptLanguage::singleton->lock->lock();
-
+	VisualScriptLanguage::singleton->lock.lock();
 	script->instances.erase(owner);
-
-	if (VisualScriptLanguage::singleton->lock)
-		VisualScriptLanguage::singleton->lock->unlock();
+	VisualScriptLanguage::singleton->lock.unlock();
 
 	for (Map<int, VisualScriptNodeInstance *>::Element *E = instances.front(); E; E = E->next()) {
 		memdelete(E->get());
@@ -2743,9 +2735,6 @@ VisualScriptLanguage::VisualScriptLanguage() {
 	_step = "_step";
 	_subcall = "_subcall";
 	singleton = this;
-#ifndef NO_THREADS
-	lock = Mutex::create();
-#endif
 
 	_debug_parse_err_node = -1;
 	_debug_parse_err_file = "";
@@ -2765,9 +2754,6 @@ VisualScriptLanguage::VisualScriptLanguage() {
 }
 
 VisualScriptLanguage::~VisualScriptLanguage() {
-
-	if (lock)
-		memdelete(lock);
 
 	if (_call_stack) {
 		memdelete_arr(_call_stack);

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -293,7 +293,7 @@ void CustomPropertyEditor::_menu_option(int p_which) {
 						return;
 					}
 
-					Object *obj = ClassDB::instance(intype);
+					Variant obj = ClassDB::instance(intype);
 
 					if (!obj) {
 						if (ScriptServer::is_global_class(intype)) {
@@ -311,7 +311,7 @@ void CustomPropertyEditor::_menu_option(int p_which) {
 						res->call("set_instance_base_type", owner->get_class());
 					}
 
-					v = Ref<Resource>(res).get_ref_ptr();
+					v = obj;
 					emit_signal("variant_changed");
 
 				} break;
@@ -1153,7 +1153,7 @@ void CustomPropertyEditor::_type_create_selected(int p_idx) {
 
 		String intype = inheritors_array[p_idx];
 
-		Object *obj = ClassDB::instance(intype);
+		Variant obj = ClassDB::instance(intype);
 
 		if (!obj) {
 			if (ScriptServer::is_global_class(intype)) {
@@ -1164,11 +1164,9 @@ void CustomPropertyEditor::_type_create_selected(int p_idx) {
 		}
 
 		ERR_FAIL_COND(!obj);
+		ERR_FAIL_COND(!Object::cast_to<Resource>(obj));
 
-		Resource *res = Object::cast_to<Resource>(obj);
-		ERR_FAIL_COND(!res);
-
-		v = Ref<Resource>(res).get_ref_ptr();
+		v = obj;
 		emit_signal("variant_changed");
 		hide();
 	}
@@ -1359,7 +1357,7 @@ void CustomPropertyEditor::_action_pressed(int p_which) {
 
 				if (hint == PROPERTY_HINT_RESOURCE_TYPE) {
 
-					Object *obj = ClassDB::instance(intype);
+					Variant obj = ClassDB::instance(intype);
 
 					if (!obj) {
 						if (ScriptServer::is_global_class(intype)) {
@@ -1370,10 +1368,9 @@ void CustomPropertyEditor::_action_pressed(int p_which) {
 					}
 
 					ERR_BREAK(!obj);
-					Resource *res = Object::cast_to<Resource>(obj);
-					ERR_BREAK(!res);
+					ERR_BREAK(!Object::cast_to<Resource>(obj));
 
-					v = Ref<Resource>(res).get_ref_ptr();
+					v = obj;
 					emit_signal("variant_changed");
 					hide();
 				}

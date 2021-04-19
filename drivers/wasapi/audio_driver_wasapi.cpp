@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -406,8 +406,7 @@ Error AudioDriverWASAPI::init() {
 	exit_thread = false;
 	thread_exited = false;
 
-	mutex = Mutex::create(true);
-	thread = Thread::create(thread_func, this);
+	thread.start(thread_func, this);
 
 	return OK;
 }
@@ -782,33 +781,21 @@ void AudioDriverWASAPI::start() {
 
 void AudioDriverWASAPI::lock() {
 
-	if (mutex)
-		mutex->lock();
+	mutex.lock();
 }
 
 void AudioDriverWASAPI::unlock() {
 
-	if (mutex)
-		mutex->unlock();
+	mutex.unlock();
 }
 
 void AudioDriverWASAPI::finish() {
 
-	if (thread) {
-		exit_thread = true;
-		Thread::wait_to_finish(thread);
-
-		memdelete(thread);
-		thread = NULL;
-	}
+	exit_thread = true;
+	thread.wait_to_finish();
 
 	finish_capture_device();
 	finish_render_device();
-
-	if (mutex) {
-		memdelete(mutex);
-		mutex = NULL;
-	}
 }
 
 Error AudioDriverWASAPI::capture_start() {
@@ -862,9 +849,6 @@ String AudioDriverWASAPI::capture_get_device() {
 }
 
 AudioDriverWASAPI::AudioDriverWASAPI() {
-
-	mutex = NULL;
-	thread = NULL;
 
 	samples_in.clear();
 

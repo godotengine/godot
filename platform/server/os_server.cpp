@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -68,10 +68,6 @@ void OS_Server::initialize_core() {
 	crash_handler.initialize();
 
 	OS_Unix::initialize_core();
-
-#ifdef __APPLE__
-	SemaphoreOSX::make_default();
-#endif
 }
 
 Error OS_Server::initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver) {
@@ -96,8 +92,6 @@ Error OS_Server::initialize(const VideoMode &p_desired, int p_video_driver, int 
 #else
 	power_manager = memnew(PowerX11);
 #endif
-
-	_ensure_user_data_dir();
 
 	resource_loader_dummy.instance();
 	ResourceLoader::add_resource_format_loader(resource_loader_dummy);

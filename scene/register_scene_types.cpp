@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -75,6 +75,7 @@
 #include "scene/animation/root_motion_view.h"
 #include "scene/animation/tween.h"
 #include "scene/audio/audio_stream_player.h"
+#include "scene/gui/aspect_ratio_container.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/center_container.h"
@@ -303,6 +304,7 @@ void register_scene_types() {
 	ClassDB::register_class<ColorRect>();
 	ClassDB::register_class<NinePatchRect>();
 	ClassDB::register_class<ReferenceRect>();
+	ClassDB::register_class<AspectRatioContainer>();
 	ClassDB::register_class<TabContainer>();
 	ClassDB::register_class<Tabs>();
 	ClassDB::register_virtual_class<Separator>();
@@ -521,6 +523,7 @@ void register_scene_types() {
 	ClassDB::register_class<VisualShaderNodeTexture>();
 	ClassDB::register_class<VisualShaderNodeCubeMap>();
 	ClassDB::register_virtual_class<VisualShaderNodeUniform>();
+	ClassDB::register_class<VisualShaderNodeUniformRef>();
 	ClassDB::register_class<VisualShaderNodeScalarUniform>();
 	ClassDB::register_class<VisualShaderNodeBooleanUniform>();
 	ClassDB::register_class<VisualShaderNodeColorUniform>();

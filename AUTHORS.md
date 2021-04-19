@@ -57,7 +57,9 @@ name is available.
     Daniel J. Ramirez (djrm)
     Daniel Rakos (aqnuep)
     dankan1890
+    Danil Alexeev (dalexeev)
     David Sichma (DavidSichma)
+    David Snopek (dsnopek)
     Dharkael (lupoDharkael)
     Dmitry Koteroff (Krakean)
     Dominik Jasiński (dreamsComeTrue)
@@ -99,6 +101,7 @@ name is available.
     Jérôme Gully (Nutriz)
     Jia Jun Chai (SkyLucilfer)
     Joan Fons Sanchez (JFonS)
+    Johannes Witt (HaSa1002)
     Johan Manuel (29jm)
     Joshua Grams (JoshuaGrams)
     Juan Linietsky (reduz)
@@ -111,6 +114,7 @@ name is available.
     Leon Krause (leonkrause)
     Liz Haas (27thLiz)
     Lucien Menassol (Kanabenki)
+    Lyuma
     m4nu3lf
     Maganty Rushyendra (mrushyendra)
     Marcel Admiraal (madmiraal)
@@ -127,6 +131,7 @@ name is available.
     marynate
     Masoud BH (masoudbh3)
     Mateo Kuruk Miccino (kuruk-mm)
+    Matthew (skyace65)
     Matthias Hölzl (hoelzl)
     Max Hilbrunner (mhilbrunner)
     merumelu
@@ -134,6 +139,8 @@ name is available.
     MichiRecRoom (LikeLakers2)
     mrezai
     muiroc
+    Nathan Franke (nathanfranke)
+    Nathan Lovato (NathanLovato)
     Nathan Warden (NathanWarden)
     Nils André-Chang (NilsIrl)
     Noah Beard (TwistedTwigleg)
@@ -156,6 +163,7 @@ name is available.
     Ray Koopa (RayKoopa)
     Rémi Verschelde (akien-mga)
     Rhody Lugo (rraallvv)
+    Ricardo Subtil (Ev1lbl0w)
     Roberto F. Arroyo (robfram)
     Robin Hübner (profan)
     romulox-x
@@ -186,6 +194,7 @@ name is available.
     Xavier Cho (mysticfall)
     yg2f (SuperUserNameMan)
     Yuri Roubinsky (Chaosus)
+    Yuri Sizov (pycbouh)
     Zak Stam (zaksnet)
     Zher Huei Lee (leezh)
     ZuBsPaCe

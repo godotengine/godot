@@ -7,6 +7,7 @@
 		Operating System functions. OS wraps the most common functionality to communicate with the host operating system, such as the clipboard, video driver, date and time, timers, environment variables, execution of binaries, command line, etc.
 	</description>
 	<tutorials>
+		<link title="OS Test Demo">https://godotengine.org/asset-library/asset/677</link>
 	</tutorials>
 	<methods>
 		<method name="alert">
@@ -55,7 +56,7 @@
 			<argument index="0" name="msec" type="int">
 			</argument>
 			<description>
-				Delay execution of the current thread by [code]msec[/code] milliseconds.
+				Delay execution of the current thread by [code]msec[/code] milliseconds. [code]usec[/code] must be greater than or equal to [code]0[/code]. Otherwise, [method delay_msec] will do nothing and will print an error message.
 			</description>
 		</method>
 		<method name="delay_usec" qualifiers="const">
@@ -64,7 +65,7 @@
 			<argument index="0" name="usec" type="int">
 			</argument>
 			<description>
-				Delay execution of the current thread by [code]usec[/code] microseconds.
+				Delay execution of the current thread by [code]usec[/code] microseconds. [code]usec[/code] must be greater than or equal to [code]0[/code]. Otherwise, [method delay_usec] will do nothing and will print an error message.
 			</description>
 		</method>
 		<method name="dump_memory_to_file">
@@ -221,10 +222,11 @@
 		<method name="get_environment" qualifiers="const">
 			<return type="String">
 			</return>
-			<argument index="0" name="environment" type="String">
+			<argument index="0" name="variable" type="String">
 			</argument>
 			<description>
-				Returns an environment variable.
+				Returns the value of an environment variable. Returns an empty string if the environment variable doesn't exist.
+				[b]Note:[/b] Double-check the casing of [code]variable[/code]. Environment variable names are case-sensitive on all platforms except Windows.
 			</description>
 		</method>
 		<method name="get_executable_path" qualifiers="const">
@@ -289,6 +291,16 @@
 			</return>
 			<description>
 				Returns the name of the host OS. Possible values are: [code]"Android"[/code], [code]"iOS"[/code], [code]"HTML5"[/code], [code]"OSX"[/code], [code]"Server"[/code], [code]"Windows"[/code], [code]"UWP"[/code], [code]"X11"[/code].
+			</description>
+		</method>
+		<method name="get_native_handle">
+			<return type="int">
+			</return>
+			<argument index="0" name="handle_type" type="int" enum="OS.HandleType">
+			</argument>
+			<description>
+				Returns internal structure pointers for use in GDNative plugins.
+				[b]Note:[/b] This method is implemented on Linux and Windows (other OSs will soon be supported).
 			</description>
 		</method>
 		<method name="get_power_percent_left">
@@ -361,7 +373,8 @@
 			</argument>
 			<description>
 				Returns the dots per inch density of the specified screen. If [code]screen[/code] is [/code]-1[/code] (the default value), the current screen will be used.
-				On Android devices, the actual screen densities are grouped into six generalized densities:
+				[b]Note:[/b] On macOS, returned value is inaccurate if fractional display scaling mode is used.
+				[b]Note:[/b] On Android devices, the actual screen densities are grouped into six generalized densities:
 				[codeblock]
 				   ldpi - 120 dpi
 				   mdpi - 160 dpi
@@ -474,6 +487,14 @@
 				[b]Note:[/b] This method is implemented on Windows.
 			</description>
 		</method>
+		<method name="get_thread_caller_id" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Returns the ID of the current thread. This can be used in logs to ease debugging of multi-threaded applications.
+				[b]Note:[/b] Thread IDs are not deterministic and may be reused across application restarts.
+			</description>
+		</method>
 		<method name="get_ticks_msec" qualifiers="const">
 			<return type="int">
 			</return>
@@ -517,6 +538,7 @@
 			</return>
 			<description>
 				Returns the current UNIX epoch timestamp.
+				[b]Important:[/b] This is the system clock that the user can manully set. [b]Never use[/b] this method for precise time calculation since its results are also subject to automatic adjustments by the operating system. [b]Always use[/b] [method get_ticks_usec] or [method get_ticks_msec] for precise time calculation instead, since they are guaranteed to be monotonic (i.e. never decrease).
 			</description>
 		</method>
 		<method name="get_unix_time_from_datetime" qualifiers="const">
@@ -527,6 +549,7 @@
 			<description>
 				Gets an epoch time value from a dictionary of time values.
 				[code]datetime[/code] must be populated with the following keys: [code]year[/code], [code]month[/code], [code]day[/code], [code]hour[/code], [code]minute[/code], [code]second[/code].
+				If the dictionary is empty [code]0[/code] is returned.
 				You can pass the output from [method get_datetime_from_unix_time] directly into this function. Daylight Savings Time ([code]dst[/code]), if present, is ignored.
 			</description>
 		</method>
@@ -622,10 +645,11 @@
 		<method name="has_environment" qualifiers="const">
 			<return type="bool">
 			</return>
-			<argument index="0" name="environment" type="String">
+			<argument index="0" name="variable" type="String">
 			</argument>
 			<description>
-				Returns [code]true[/code] if an environment variable exists.
+				Returns [code]true[/code] if the environment variable with the name [code]variable[/code] exists.
+				[b]Note:[/b] Double-check the casing of [code]variable[/code]. Environment variable names are case-sensitive on all platforms except Windows.
 			</description>
 		</method>
 		<method name="has_feature" qualifiers="const">
@@ -634,7 +658,7 @@
 			<argument index="0" name="tag_name" type="String">
 			</argument>
 			<description>
-				Returns [code]true[/code] if the feature for the given feature tag is supported in the currently running instance, depending on platform, build etc. Can be used to check whether you're currently running a debug build, on a certain platform or arch, etc. Refer to the [url=https://docs.godotengine.org/en/latest/getting_started/workflow/export/feature_tags.html]Feature Tags[/url] documentation for more details.
+				Returns [code]true[/code] if the feature for the given feature tag is supported in the currently running instance, depending on platform, build etc. Can be used to check whether you're currently running a debug build, on a certain platform or arch, etc. Refer to the [url=https://docs.godotengine.org/en/3.2/getting_started/workflow/export/feature_tags.html]Feature Tags[/url] documentation for more details.
 				[b]Note:[/b] Tag names are case-sensitive.
 			</description>
 		</method>
@@ -893,6 +917,18 @@
 				[b]Note:[/b] This method is implemented on Android.
 			</description>
 		</method>
+		<method name="set_environment" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="variable" type="String">
+			</argument>
+			<argument index="1" name="value" type="String">
+			</argument>
+			<description>
+				Sets the value of the environment variable [code]variable[/code] to [code]value[/code]. The environment variable will be set for the Godot process and any process executed with [method execute] after running [method set_environment]. The environment variable will [i]not[/i] persist to processes run after the Godot process was terminated.
+				[b]Note:[/b] Double-check the casing of [code]variable[/code]. Environment variable names are case-sensitive on all platforms except Windows.
+			</description>
+		</method>
 		<method name="set_icon">
 			<return type="void">
 			</return>
@@ -966,6 +1002,28 @@
 				[b]Note:[/b] This method is implemented on Linux, macOS and Windows.
 			</description>
 		</method>
+		<method name="set_window_mouse_passthrough">
+			<return type="void">
+			</return>
+			<argument index="0" name="region" type="PoolVector2Array">
+			</argument>
+			<description>
+				Sets a polygonal region of the window which accepts mouse events. Mouse events outside the region will be passed through.
+				Passing an empty array will disable passthrough support (all mouse events will be intercepted by the window, which is the default behavior).
+				[codeblock]
+				# Set region, using Path2D node.
+				OS.set_window_mouse_passthrough($Path2D.curve.get_baked_points())
+
+				# Set region, using Polygon2D node.
+				OS.set_window_mouse_passthrough($Polygon2D.polygon)
+
+				# Reset region to default.
+				OS.set_window_mouse_passthrough([])
+				[/codeblock]
+				[b]Note:[/b] On Windows, the portion of a window that lies outside the region is not drawn, while on Linux and macOS it is.
+				[b]Note:[/b] This method is implemented on Linux, macOS and Windows.
+			</description>
+		</method>
 		<method name="set_window_title">
 			<return type="void">
 			</return>
@@ -1036,7 +1094,7 @@
 			The current screen orientation.
 		</member>
 		<member name="tablet_driver" type="String" setter="set_current_tablet_driver" getter="get_current_tablet_driver" default="&quot;&quot;">
-			The current tablet drvier in use.
+			The current tablet driver in use.
 		</member>
 		<member name="vsync_enabled" type="bool" setter="set_use_vsync" getter="is_vsync_enabled" default="true">
 			If [code]true[/code], vertical synchronization (Vsync) is enabled.
@@ -1138,6 +1196,34 @@
 		</constant>
 		<constant name="MONTH_DECEMBER" value="12" enum="Month">
 			December.
+		</constant>
+		<constant name="APPLICATION_HANDLE" value="0" enum="HandleType">
+			Application handle:
+			- Windows: [code]HINSTANCE[/code] of the application
+			- MacOS: [code]NSApplication*[/code] of the application (not yet implemented)
+			- Android: [code]JNIEnv*[/code] of the application (not yet implemented)
+		</constant>
+		<constant name="DISPLAY_HANDLE" value="1" enum="HandleType">
+			Display handle:
+			- Linux: [code]X11::Display*[/code] for the display
+		</constant>
+		<constant name="WINDOW_HANDLE" value="2" enum="HandleType">
+			Window handle:
+			- Windows: [code]HWND[/code] of the main window
+			- Linux: [code]X11::Window*[/code] of the main window
+			- MacOS: [code]NSWindow*[/code] of the main window (not yet implemented)
+			- Android: [code]jObject[/code] the main android activity (not yet implemented)
+		</constant>
+		<constant name="WINDOW_VIEW" value="3" enum="HandleType">
+			Window view:
+			- Windows: [code]HDC[/code] of the main window drawing context
+			- MacOS: [code]NSView*[/code] of the main windows view (not yet implemented)
+		</constant>
+		<constant name="OPENGL_CONTEXT" value="4" enum="HandleType">
+			OpenGL Context:
+			- Windows: [code]HGLRC[/code]
+			- Linux: [code]X11::GLXContext[/code]
+			- MacOS: [code]NSOpenGLContext*[/code] (not yet implemented)
 		</constant>
 		<constant name="SCREEN_ORIENTATION_LANDSCAPE" value="0" enum="ScreenOrientation">
 			Landscape screen orientation.

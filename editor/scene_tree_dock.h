@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -61,6 +61,9 @@ class SceneTreeDock : public VBoxContainer {
 		TOOL_NEW,
 		TOOL_INSTANCE,
 		TOOL_EXPAND_COLLAPSE,
+		TOOL_CUT,
+		TOOL_COPY,
+		TOOL_PASTE,
 		TOOL_RENAME,
 		TOOL_BATCH_RENAME,
 		TOOL_REPLACE,
@@ -112,7 +115,10 @@ class SceneTreeDock : public VBoxContainer {
 	ToolButton *button_create_script;
 	ToolButton *button_detach_script;
 
+	Button *button_2d;
 	Button *button_3d;
+	Button *button_ui;
+	Button *button_custom;
 
 	HBoxContainer *button_hb;
 	ToolButton *edit_local, *edit_remote;
@@ -125,6 +131,10 @@ class SceneTreeDock : public VBoxContainer {
 
 	EditorData *editor_data;
 	EditorSelection *editor_selection;
+
+	List<Node *> node_clipboard;
+	String clipboard_source_scene;
+	HashMap<String, Map<RES, RES> > clipboard_resource_remap;
 
 	ScriptCreateDialog *script_create_dialog;
 	AcceptDialog *accept;
@@ -183,7 +193,7 @@ class SceneTreeDock : public VBoxContainer {
 	void _script_created(Ref<Script> p_script);
 	void _script_creation_closed();
 
-	void _delete_confirm();
+	void _delete_confirm(bool p_cut = false);
 
 	void _toggle_editable_children_from_selection();
 	void _toggle_editable_children(Node *p_node);
@@ -201,6 +211,7 @@ class SceneTreeDock : public VBoxContainer {
 	void _new_scene_from(String p_file);
 
 	bool _validate_no_foreign();
+	bool _validate_no_instance();
 	void _selection_changed();
 	void _update_script_button();
 	Node *_get_selection_group_tail(Node *p_node, List<Node *> p_list);
@@ -230,6 +241,10 @@ class SceneTreeDock : public VBoxContainer {
 	void _favorite_root_selected(const String &p_class);
 
 	void _feature_profile_changed();
+
+	void _clear_clipboard();
+	void _create_remap_for_node(Node *p_node, Map<RES, RES> &r_remap);
+	void _create_remap_for_resource(RES p_resource, Map<RES, RES> &r_remap);
 
 	bool profile_allow_editing;
 	bool profile_allow_script_editing;
@@ -268,6 +283,7 @@ public:
 	ScriptCreateDialog *get_script_create_dialog() { return script_create_dialog; }
 
 	SceneTreeDock(EditorNode *p_editor, Node *p_scene_root, EditorSelection *p_editor_selection, EditorData &p_editor_data);
+	~SceneTreeDock();
 };
 
 #endif // SCENE_TREE_DOCK_H

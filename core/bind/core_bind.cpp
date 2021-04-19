@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -213,6 +213,11 @@ Point2 _OS::get_mouse_position() const {
 void _OS::set_window_title(const String &p_title) {
 
 	OS::get_singleton()->set_window_title(p_title);
+}
+
+void _OS::set_window_mouse_passthrough(const PoolVector2Array &p_region) {
+
+	OS::get_singleton()->set_window_mouse_passthrough(p_region);
 }
 
 int _OS::get_mouse_button_state() const {
@@ -543,6 +548,11 @@ String _OS::get_environment(const String &p_var) const {
 	return OS::get_singleton()->get_environment(p_var);
 }
 
+bool _OS::set_environment(const String &p_var, const String &p_value) const {
+
+	return OS::get_singleton()->set_environment(p_var, p_value);
+}
+
 String _OS::get_name() const {
 
 	return OS::get_singleton()->get_name();
@@ -641,6 +651,10 @@ int _OS::get_power_seconds_left() {
 int _OS::get_power_percent_left() {
 	return OS::get_singleton()->get_power_percent_left();
 }
+
+Thread::ID _OS::get_thread_caller_id() const {
+	return Thread::get_caller_id();
+};
 
 bool _OS::has_feature(const String &p_feature) const {
 
@@ -784,6 +798,8 @@ Dictionary _OS::get_time(bool utc) const {
  * @return epoch calculated
  */
 int64_t _OS::get_unix_time_from_datetime(Dictionary datetime) const {
+	// if datetime is an empty Dictionary throws an error
+	ERR_FAIL_COND_V_MSG(datetime.empty(), 0, "Invalid datetime Dictionary: Dictionary is empty");
 
 	// Bunch of conversion constants
 	static const unsigned int SECONDS_PER_MINUTE = 60;
@@ -933,13 +949,19 @@ uint64_t _OS::get_system_time_msecs() const {
 	return OS::get_singleton()->get_system_time_msecs();
 }
 
-void _OS::delay_usec(uint32_t p_usec) const {
-
+/** This method uses a signed argument for better error reporting as it's used from the scripting API. */
+void _OS::delay_usec(int p_usec) const {
+	ERR_FAIL_COND_MSG(
+			p_usec < 0,
+			vformat("Can't sleep for %d microseconds. The delay provided must be greater than or equal to 0 microseconds.", p_usec));
 	OS::get_singleton()->delay_usec(p_usec);
 }
 
-void _OS::delay_msec(uint32_t p_msec) const {
-
+/** This method uses a signed argument for better error reporting as it's used from the scripting API. */
+void _OS::delay_msec(int p_msec) const {
+	ERR_FAIL_COND_MSG(
+			p_msec < 0,
+			vformat("Can't sleep for %d milliseconds. The delay provided must be greater than or equal to 0 milliseconds.", p_msec));
 	OS::get_singleton()->delay_usec(int64_t(p_msec) * 1000);
 }
 
@@ -1001,7 +1023,7 @@ struct _OSCoreBindImg {
 void _OS::print_all_textures_by_size() {
 
 	List<_OSCoreBindImg> imgs;
-	int total = 0;
+	uint64_t total = 0;
 	{
 		List<Ref<Resource> > rsrc;
 		ResourceCache::get_cached_resources(&rsrc);
@@ -1040,10 +1062,7 @@ void _OS::print_resources_by_type(const Vector<String> &p_types) {
 	List<Ref<Resource> > resources;
 	ResourceCache::get_cached_resources(&resources);
 
-	List<Ref<Resource> > rsrc;
-	ResourceCache::get_cached_resources(&rsrc);
-
-	for (List<Ref<Resource> >::Element *E = rsrc.front(); E; E = E->next()) {
+	for (List<Ref<Resource> >::Element *E = resources.front(); E; E = E->next()) {
 
 		Ref<Resource> r = E->get();
 
@@ -1137,6 +1156,11 @@ void _OS::center_window() {
 void _OS::move_window_to_foreground() {
 
 	OS::get_singleton()->move_window_to_foreground();
+}
+
+int64_t _OS::get_native_handle(HandleType p_handle_type) {
+
+	return (int64_t)OS::get_singleton()->get_native_handle(p_handle_type);
 }
 
 bool _OS::is_debug_build() const {
@@ -1287,6 +1311,8 @@ void _OS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("center_window"), &_OS::center_window);
 	ClassDB::bind_method(D_METHOD("move_window_to_foreground"), &_OS::move_window_to_foreground);
 
+	ClassDB::bind_method(D_METHOD("get_native_handle", "handle_type"), &_OS::get_native_handle);
+
 	ClassDB::bind_method(D_METHOD("set_borderless_window", "borderless"), &_OS::set_borderless_window);
 	ClassDB::bind_method(D_METHOD("get_borderless_window"), &_OS::get_borderless_window);
 
@@ -1307,6 +1333,7 @@ void _OS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("has_touchscreen_ui_hint"), &_OS::has_touchscreen_ui_hint);
 
 	ClassDB::bind_method(D_METHOD("set_window_title", "title"), &_OS::set_window_title);
+	ClassDB::bind_method(D_METHOD("set_window_mouse_passthrough", "region"), &_OS::set_window_mouse_passthrough);
 
 	ClassDB::bind_method(D_METHOD("set_low_processor_usage_mode", "enable"), &_OS::set_low_processor_usage_mode);
 	ClassDB::bind_method(D_METHOD("is_in_low_processor_usage_mode"), &_OS::is_in_low_processor_usage_mode);
@@ -1322,8 +1349,9 @@ void _OS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("shell_open", "uri"), &_OS::shell_open);
 	ClassDB::bind_method(D_METHOD("get_process_id"), &_OS::get_process_id);
 
-	ClassDB::bind_method(D_METHOD("get_environment", "environment"), &_OS::get_environment);
-	ClassDB::bind_method(D_METHOD("has_environment", "environment"), &_OS::has_environment);
+	ClassDB::bind_method(D_METHOD("get_environment", "variable"), &_OS::get_environment);
+	ClassDB::bind_method(D_METHOD("set_environment", "variable", "value"), &_OS::set_environment);
+	ClassDB::bind_method(D_METHOD("has_environment", "variable"), &_OS::has_environment);
 
 	ClassDB::bind_method(D_METHOD("get_name"), &_OS::get_name);
 	ClassDB::bind_method(D_METHOD("get_cmdline_args"), &_OS::get_cmdline_args);
@@ -1406,6 +1434,7 @@ void _OS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("alert", "text", "title"), &_OS::alert, DEFVAL("Alert!"));
 
 	ClassDB::bind_method(D_METHOD("set_thread_name", "name"), &_OS::set_thread_name);
+	ClassDB::bind_method(D_METHOD("get_thread_caller_id"), &_OS::get_thread_caller_id);
 
 	ClassDB::bind_method(D_METHOD("set_use_vsync", "enable"), &_OS::set_use_vsync);
 	ClassDB::bind_method(D_METHOD("is_vsync_enabled"), &_OS::is_vsync_enabled);
@@ -1496,6 +1525,12 @@ void _OS::_bind_methods() {
 	BIND_ENUM_CONSTANT(MONTH_OCTOBER);
 	BIND_ENUM_CONSTANT(MONTH_NOVEMBER);
 	BIND_ENUM_CONSTANT(MONTH_DECEMBER);
+
+	BIND_ENUM_CONSTANT(APPLICATION_HANDLE);
+	BIND_ENUM_CONSTANT(DISPLAY_HANDLE);
+	BIND_ENUM_CONSTANT(WINDOW_HANDLE);
+	BIND_ENUM_CONSTANT(WINDOW_VIEW);
+	BIND_ENUM_CONSTANT(OPENGL_CONTEXT);
 
 	BIND_ENUM_CONSTANT(SCREEN_ORIENTATION_LANDSCAPE);
 	BIND_ENUM_CONSTANT(SCREEN_ORIENTATION_PORTRAIT);
@@ -1971,6 +2006,11 @@ Error _File::open(const String &p_path, ModeFlags p_mode_flags) {
 	return err;
 }
 
+void _File::flush() {
+	ERR_FAIL_COND_MSG(!f, "File must be opened before flushing.");
+	f->flush();
+}
+
 void _File::close() {
 
 	if (f)
@@ -2287,6 +2327,7 @@ void _File::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("open_compressed", "path", "mode_flags", "compression_mode"), &_File::open_compressed, DEFVAL(0));
 
 	ClassDB::bind_method(D_METHOD("open", "path", "flags"), &_File::open);
+	ClassDB::bind_method(D_METHOD("flush"), &_File::flush);
 	ClassDB::bind_method(D_METHOD("close"), &_File::close);
 	ClassDB::bind_method(D_METHOD("get_path"), &_File::get_path);
 	ClassDB::bind_method(D_METHOD("get_path_absolute"), &_File::get_path_absolute);
@@ -2495,11 +2536,13 @@ Error _Directory::rename(String p_from, String p_to) {
 	ERR_FAIL_COND_V_MSG(!d, ERR_UNCONFIGURED, "Directory must be opened before use.");
 	if (!p_from.is_rel_path()) {
 		DirAccess *d = DirAccess::create_for_path(p_from);
+		ERR_FAIL_COND_V_MSG(!d->file_exists(p_from), ERR_DOES_NOT_EXIST, "File does not exist.");
 		Error err = d->rename(p_from, p_to);
 		memdelete(d);
 		return err;
 	}
 
+	ERR_FAIL_COND_V_MSG(!d->file_exists(p_from), ERR_DOES_NOT_EXIST, "File does not exist.");
 	return d->rename(p_from, p_to);
 }
 Error _Directory::remove(String p_name) {
@@ -2660,12 +2703,14 @@ void _Marshalls::_bind_methods() {
 
 Error _Semaphore::wait() {
 
-	return semaphore->wait();
+	semaphore.wait();
+	return OK; // Can't fail anymore; keep compat
 }
 
 Error _Semaphore::post() {
 
-	return semaphore->post();
+	semaphore.post();
+	return OK; // Can't fail anymore; keep compat
 }
 
 void _Semaphore::_bind_methods() {
@@ -2674,31 +2719,21 @@ void _Semaphore::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("post"), &_Semaphore::post);
 }
 
-_Semaphore::_Semaphore() {
-
-	semaphore = Semaphore::create();
-}
-
-_Semaphore::~_Semaphore() {
-
-	memdelete(semaphore);
-}
-
 ///////////////
 
 void _Mutex::lock() {
 
-	mutex->lock();
+	mutex.lock();
 }
 
 Error _Mutex::try_lock() {
 
-	return mutex->try_lock();
+	return mutex.try_lock();
 }
 
 void _Mutex::unlock() {
 
-	mutex->unlock();
+	mutex.unlock();
 }
 
 void _Mutex::_bind_methods() {
@@ -2706,16 +2741,6 @@ void _Mutex::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("lock"), &_Mutex::lock);
 	ClassDB::bind_method(D_METHOD("try_lock"), &_Mutex::try_lock);
 	ClassDB::bind_method(D_METHOD("unlock"), &_Mutex::unlock);
-}
-
-_Mutex::_Mutex() {
-
-	mutex = Mutex::create();
-}
-
-_Mutex::~_Mutex() {
-
-	memdelete(mutex);
 }
 
 ///////////////
@@ -2761,7 +2786,7 @@ void _Thread::_start_func(void *ud) {
 
 Error _Thread::start(Object *p_instance, const StringName &p_method, const Variant &p_userdata, Priority p_priority) {
 
-	ERR_FAIL_COND_V_MSG(active, ERR_ALREADY_IN_USE, "Thread already started.");
+	ERR_FAIL_COND_V_MSG(active.is_set(), ERR_ALREADY_IN_USE, "Thread already started.");
 	ERR_FAIL_COND_V(!p_instance, ERR_INVALID_PARAMETER);
 	ERR_FAIL_COND_V(p_method == StringName(), ERR_INVALID_PARAMETER);
 	ERR_FAIL_INDEX_V(p_priority, PRIORITY_MAX, ERR_INVALID_PARAMETER);
@@ -2770,49 +2795,35 @@ Error _Thread::start(Object *p_instance, const StringName &p_method, const Varia
 	target_method = p_method;
 	target_instance = p_instance;
 	userdata = p_userdata;
-	active = true;
+	active.set();
 
 	Ref<_Thread> *ud = memnew(Ref<_Thread>(this));
 
 	Thread::Settings s;
 	s.priority = (Thread::Priority)p_priority;
-	thread = Thread::create(_start_func, ud, s);
-	if (!thread) {
-		active = false;
-		target_method = StringName();
-		target_instance = NULL;
-		userdata = Variant();
-		return ERR_CANT_CREATE;
-	}
+	thread.start(_start_func, ud, s);
 
 	return OK;
 }
 
 String _Thread::get_id() const {
 
-	if (!thread)
-		return String();
-
-	return itos(thread->get_id());
+	return itos(thread.get_id());
 }
 
 bool _Thread::is_active() const {
 
-	return active;
+	return active.is_set();
 }
 Variant _Thread::wait_to_finish() {
 
-	ERR_FAIL_COND_V_MSG(!thread, Variant(), "Thread must exist to wait for its completion.");
-	ERR_FAIL_COND_V_MSG(!active, Variant(), "Thread must be active to wait for its completion.");
-	Thread::wait_to_finish(thread);
+	ERR_FAIL_COND_V_MSG(!active.is_set(), Variant(), "Thread must be active to wait for its completion.");
+	thread.wait_to_finish();
 	Variant r = ret;
-	active = false;
 	target_method = StringName();
 	target_instance = NULL;
 	userdata = Variant();
-	if (thread)
-		memdelete(thread);
-	thread = NULL;
+	active.clear();
 
 	return r;
 }
@@ -2830,14 +2841,12 @@ void _Thread::_bind_methods() {
 }
 _Thread::_Thread() {
 
-	active = false;
-	thread = NULL;
 	target_instance = NULL;
 }
 
 _Thread::~_Thread() {
 
-	ERR_FAIL_COND_MSG(active, "Reference to a Thread object was lost while the thread is still running...");
+	ERR_FAIL_COND_MSG(active.is_set(), "Reference to a Thread object was lost while the thread is still running...");
 }
 
 /////////////////////////////////////

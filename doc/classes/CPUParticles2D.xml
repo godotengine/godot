@@ -6,9 +6,10 @@
 	<description>
 		CPU-based 2D particle node used to create a variety of particle systems and effects.
 		See also [Particles2D], which provides the same functionality with hardware acceleration, but may not run on older devices.
+		[b]Note:[/b] Unlike [Particles2D], the visibility rect is generated on-the-fly and doesn't need to be configured by the user.
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/latest/tutorials/2d/particle_systems_2d.html</link>
+		<link>https://docs.godotengine.org/en/3.2/tutorials/2d/particle_systems_2d.html</link>
 	</tutorials>
 	<methods>
 		<method name="convert_from_particles">
@@ -110,7 +111,8 @@
 	</methods>
 	<members>
 		<member name="amount" type="int" setter="set_amount" getter="get_amount" default="8">
-			Number of particles emitted in one emission cycle.
+			The number of particles emitted in one emission cycle (corresponding to the [member lifetime]).
+			[b]Note:[/b] Changing [member amount] will reset the particle emission, therefore removing all particles that were already emitted before changing [member amount].
 		</member>
 		<member name="angle" type="float" setter="set_param" getter="get_param" default="0.0">
 			Initial rotation applied to each particle, in degrees.
@@ -221,7 +223,7 @@
 			Initial velocity randomness ratio.
 		</member>
 		<member name="lifetime" type="float" setter="set_lifetime" getter="get_lifetime" default="1.0">
-			Amount of time each particle will exist.
+			The amount of time each particle will exist (in seconds).
 		</member>
 		<member name="lifetime_randomness" type="float" setter="set_lifetime_randomness" getter="get_lifetime_randomness" default="0.0">
 			Particle lifetime randomness ratio.

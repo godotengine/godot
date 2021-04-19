@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -472,6 +472,7 @@ int ScriptEditorDebugger::_update_scene_tree(TreeItem *parent, const Array &node
 	}
 	item->set_metadata(0, id);
 
+	bool scroll = false;
 	if (id == inspected_object_id) {
 		TreeItem *cti = item->get_parent();
 		while (cti) {
@@ -479,6 +480,7 @@ int ScriptEditorDebugger::_update_scene_tree(TreeItem *parent, const Array &node
 			cti = cti->get_parent();
 		}
 		item->select(0);
+		scroll = filter != last_filter;
 	}
 
 	// Set current item as collapsed if necessary
@@ -509,6 +511,12 @@ int ScriptEditorDebugger::_update_scene_tree(TreeItem *parent, const Array &node
 	if (!keep && !item->get_children() && parent) {
 		parent->remove_child(item);
 		memdelete(item);
+	} else if (scroll) {
+		inspect_scene_tree->call_deferred("scroll_to_item", item);
+	}
+
+	if (!parent) {
+		last_filter = filter;
 	}
 
 	return items_count;
@@ -709,7 +717,7 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 		vmem_tree->clear();
 		TreeItem *root = vmem_tree->create_item();
 
-		int total = 0;
+		uint64_t total = 0;
 
 		for (int i = 0; i < p_data.size(); i += 4) {
 
@@ -2320,7 +2328,7 @@ void ScriptEditorDebugger::_item_menu_id_pressed(int p_option) {
 
 void ScriptEditorDebugger::_tab_changed(int p_tab) {
 	if (tabs->get_tab_title(p_tab) == TTR("Video RAM")) {
-		// "Video RAM" tab was clicked, refresh the data it's dislaying when entering the tab.
+		// "Video RAM" tab was clicked, refresh the data it's displaying when entering the tab.
 		_video_mem_request();
 	}
 }

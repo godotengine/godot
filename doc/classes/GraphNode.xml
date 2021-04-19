@@ -238,6 +238,13 @@
 				Emitted when the GraphNode is requested to be resized. Happens on dragging the resizer handle (see [member resizable]).
 			</description>
 		</signal>
+		<signal name="slot_updated">
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+				Emitted when any GraphNode's slot is updated.
+			</description>
+		</signal>
 	</signals>
 	<constants>
 		<constant name="OVERLAY_DISABLED" value="0" enum="Overlay">

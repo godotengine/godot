@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -77,6 +77,7 @@ protected:
 	bool registering_order;
 	int last_order;
 	int last_builtin_order;
+	uint64_t last_save_time = 0;
 	Map<StringName, VariantContainer> props;
 	String resource_path;
 	Map<StringName, PropertyInfo> custom_prop_info;
@@ -104,13 +105,12 @@ protected:
 
 	void _convert_to_last_version(int p_from_version);
 
-	bool _load_resource_pack(const String &p_pack, bool p_replace_files = true);
+	bool _load_resource_pack(const String &p_pack, bool p_replace_files = true, int p_offset = 0);
 
 	void _add_property_info_bind(const Dictionary &p_info);
 
 	Error _setup(const String &p_path, const String &p_main_pack, bool p_upwards = false);
 
-protected:
 	static void _bind_methods();
 
 public:
@@ -143,6 +143,7 @@ public:
 	Error save();
 	void set_custom_property_info(const String &p_prop, const PropertyInfo &p_info);
 	const Map<StringName, PropertyInfo> &get_custom_property_info() const;
+	uint64_t get_last_saved_time() { return last_save_time; }
 
 	Vector<String> get_optimizer_presets() const;
 
@@ -162,8 +163,11 @@ public:
 
 //not a macro any longer
 Variant _GLOBAL_DEF(const String &p_var, const Variant &p_default, bool p_restart_if_changed = false);
+Variant _GLOBAL_DEF_ALIAS(const String &p_var, const String &p_old_name, const Variant &p_default, bool p_restart_if_changed = false);
 #define GLOBAL_DEF(m_var, m_value) _GLOBAL_DEF(m_var, m_value)
 #define GLOBAL_DEF_RST(m_var, m_value) _GLOBAL_DEF(m_var, m_value, true)
+#define GLOBAL_DEF_ALIAS(m_var, m_old_name, m_value) _GLOBAL_DEF_ALIAS(m_var, m_old_name, m_value)
+#define GLOBAL_DEF_ALIAS_RST(m_var, m_old_name, m_value) _GLOBAL_DEF(m_var, m_old_name, m_value, true)
 #define GLOBAL_GET(m_var) ProjectSettings::get_singleton()->get(m_var)
 
 #endif

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -427,12 +427,12 @@ public:
 	void add_color_override(const StringName &p_name, const Color &p_color);
 	void add_constant_override(const StringName &p_name, int p_constant);
 
-	Ref<Texture> get_icon(const StringName &p_name, const StringName &p_type = StringName()) const;
-	Ref<Shader> get_shader(const StringName &p_name, const StringName &p_type = StringName()) const;
-	Ref<StyleBox> get_stylebox(const StringName &p_name, const StringName &p_type = StringName()) const;
-	Ref<Font> get_font(const StringName &p_name, const StringName &p_type = StringName()) const;
-	Color get_color(const StringName &p_name, const StringName &p_type = StringName()) const;
-	int get_constant(const StringName &p_name, const StringName &p_type = StringName()) const;
+	Ref<Texture> get_icon(const StringName &p_name, const StringName &p_node_type = StringName()) const;
+	Ref<Shader> get_shader(const StringName &p_name, const StringName &p_node_type = StringName()) const;
+	Ref<StyleBox> get_stylebox(const StringName &p_name, const StringName &p_node_type = StringName()) const;
+	Ref<Font> get_font(const StringName &p_name, const StringName &p_node_type = StringName()) const;
+	Color get_color(const StringName &p_name, const StringName &p_node_type = StringName()) const;
+	int get_constant(const StringName &p_name, const StringName &p_node_type = StringName()) const;
 
 	bool has_icon_override(const StringName &p_name) const;
 	bool has_shader_override(const StringName &p_name) const;
@@ -441,12 +441,12 @@ public:
 	bool has_color_override(const StringName &p_name) const;
 	bool has_constant_override(const StringName &p_name) const;
 
-	bool has_icon(const StringName &p_name, const StringName &p_type = StringName()) const;
-	bool has_shader(const StringName &p_name, const StringName &p_type = StringName()) const;
-	bool has_stylebox(const StringName &p_name, const StringName &p_type = StringName()) const;
-	bool has_font(const StringName &p_name, const StringName &p_type = StringName()) const;
-	bool has_color(const StringName &p_name, const StringName &p_type = StringName()) const;
-	bool has_constant(const StringName &p_name, const StringName &p_type = StringName()) const;
+	bool has_icon(const StringName &p_name, const StringName &p_node_type = StringName()) const;
+	bool has_shader(const StringName &p_name, const StringName &p_node_type = StringName()) const;
+	bool has_stylebox(const StringName &p_name, const StringName &p_node_type = StringName()) const;
+	bool has_font(const StringName &p_name, const StringName &p_node_type = StringName()) const;
+	bool has_color(const StringName &p_name, const StringName &p_node_type = StringName()) const;
+	bool has_constant(const StringName &p_name, const StringName &p_node_type = StringName()) const;
 
 	/* TOOLTIP */
 

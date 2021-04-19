@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -317,7 +317,30 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 
 	// Editor
 	_initial_set("interface/editor/display_scale", 0);
-	hints["interface/editor/display_scale"] = PropertyInfo(Variant::INT, "interface/editor/display_scale", PROPERTY_HINT_ENUM, "Auto,75%,100%,125%,150%,175%,200%,Custom", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED);
+	// Display what the Auto display scale setting effectively corresponds to.
+	// The code below is adapted in `editor/editor_node.cpp` and `editor/project_manager.cpp`.
+	// Make sure to update those when modifying the code below.
+#ifdef OSX_ENABLED
+	float scale = OS::get_singleton()->get_screen_max_scale();
+#else
+	const int screen = OS::get_singleton()->get_current_screen();
+	float scale;
+	if (OS::get_singleton()->get_screen_dpi(screen) >= 192 && OS::get_singleton()->get_screen_size(screen).y >= 1400) {
+		// hiDPI display.
+		scale = 2.0;
+	} else if (OS::get_singleton()->get_screen_size(screen).y >= 1700) {
+		// Likely a hiDPI display, but we aren't certain due to the returned DPI.
+		// Use an intermediate scale to handle this situation.
+		scale = 1.5;
+	} else if (OS::get_singleton()->get_screen_size(screen).y <= 800) {
+		// Small loDPI display. Use a smaller display scale so that editor elements fit more easily.
+		// Icons won't look great, but this is better than having editor elements overflow from its window.
+		scale = 0.75;
+	} else {
+		scale = 1.0;
+	}
+#endif
+	hints["interface/editor/display_scale"] = PropertyInfo(Variant::INT, "interface/editor/display_scale", PROPERTY_HINT_ENUM, vformat("Auto (%d%%),75%%,100%%,125%%,150%%,175%%,200%%,Custom", Math::round(scale * 100)), PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED);
 	_initial_set("interface/editor/custom_display_scale", 1.0f);
 	hints["interface/editor/custom_display_scale"] = PropertyInfo(Variant::REAL, "interface/editor/custom_display_scale", PROPERTY_HINT_RANGE, "0.5,3,0.01", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED);
 	_initial_set("interface/editor/main_font_size", 14);
@@ -326,7 +349,11 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	hints["interface/editor/code_font_size"] = PropertyInfo(Variant::INT, "interface/editor/code_font_size", PROPERTY_HINT_RANGE, "8,48,1", PROPERTY_USAGE_DEFAULT);
 	_initial_set("interface/editor/font_antialiased", true);
 	_initial_set("interface/editor/font_hinting", 0);
-	hints["interface/editor/font_hinting"] = PropertyInfo(Variant::INT, "interface/editor/font_hinting", PROPERTY_HINT_ENUM, "Auto,None,Light,Normal", PROPERTY_USAGE_DEFAULT);
+#ifdef OSX_ENABLED
+	hints["interface/editor/font_hinting"] = PropertyInfo(Variant::INT, "interface/editor/font_hinting", PROPERTY_HINT_ENUM, "Auto (None),None,Light,Normal", PROPERTY_USAGE_DEFAULT);
+#else
+	hints["interface/editor/font_hinting"] = PropertyInfo(Variant::INT, "interface/editor/font_hinting", PROPERTY_HINT_ENUM, "Auto (Light),None,Light,Normal", PROPERTY_USAGE_DEFAULT);
+#endif
 	_initial_set("interface/editor/main_font", "");
 	hints["interface/editor/main_font"] = PropertyInfo(Variant::STRING, "interface/editor/main_font", PROPERTY_HINT_GLOBAL_FILE, "*.ttf,*.otf", PROPERTY_USAGE_DEFAULT);
 	_initial_set("interface/editor/main_font_bold", "");
@@ -343,6 +370,10 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("interface/editor/hide_console_window", false);
 	_initial_set("interface/editor/save_each_scene_on_quit", true); // Regression
 	_initial_set("interface/editor/quit_confirmation", true);
+
+	// Inspector
+	_initial_set("interface/inspector/max_array_dictionary_items_per_page", 20);
+	hints["interface/inspector/max_array_dictionary_items_per_page"] = PropertyInfo(Variant::INT, "interface/inspector/max_array_dictionary_items_per_page", PROPERTY_HINT_RANGE, "10,100,1", PROPERTY_USAGE_DEFAULT);
 
 	// Theme
 	_initial_set("interface/theme/preset", "Default");
@@ -393,15 +424,6 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("filesystem/file_dialog/thumbnail_size", 64);
 	hints["filesystem/file_dialog/thumbnail_size"] = PropertyInfo(Variant::INT, "filesystem/file_dialog/thumbnail_size", PROPERTY_HINT_RANGE, "32,128,16");
 
-	// Import
-	_initial_set("filesystem/import/pvrtc_texture_tool", "");
-#ifdef WINDOWS_ENABLED
-	hints["filesystem/import/pvrtc_texture_tool"] = PropertyInfo(Variant::STRING, "filesystem/import/pvrtc_texture_tool", PROPERTY_HINT_GLOBAL_FILE, "*.exe");
-#else
-	hints["filesystem/import/pvrtc_texture_tool"] = PropertyInfo(Variant::STRING, "filesystem/import/pvrtc_texture_tool", PROPERTY_HINT_GLOBAL_FILE, "");
-#endif
-	_initial_set("filesystem/import/pvrtc_fast_conversion", false);
-
 	/* Docks */
 
 	// SceneTree
@@ -414,6 +436,8 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 
 	// Property editor
 	_initial_set("docks/property_editor/auto_refresh_interval", 0.3);
+	_initial_set("docks/property_editor/subresource_hue_tint", 0.75);
+	hints["docks/property_editor/subresource_hue_tint"] = PropertyInfo(Variant::REAL, "docks/property_editor/subresource_hue_tint", PROPERTY_HINT_RANGE, "0,1,0.01", PROPERTY_USAGE_DEFAULT);
 
 	/* Text editor */
 
@@ -507,17 +531,40 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("editors/grid_map/pick_distance", 5000.0);
 
 	// 3D
-	_initial_set("editors/3d/primary_grid_color", Color(0.56, 0.56, 0.56));
-	hints["editors/3d/primary_grid_color"] = PropertyInfo(Variant::COLOR, "editors/3d/primary_grid_color", PROPERTY_HINT_COLOR_NO_ALPHA, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED);
+	_initial_set("editors/3d/primary_grid_color", Color(0.56, 0.56, 0.56, 0.5));
+	_initial_set("editors/3d/secondary_grid_color", Color(0.38, 0.38, 0.38, 0.5));
 
-	_initial_set("editors/3d/secondary_grid_color", Color(0.38, 0.38, 0.38));
-	hints["editors/3d/secondary_grid_color"] = PropertyInfo(Variant::COLOR, "editors/3d/secondary_grid_color", PROPERTY_HINT_COLOR_NO_ALPHA, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED);
+	// Use a similar color to the 2D editor selection.
+	_initial_set("editors/3d/selection_box_color", Color(1.0, 0.5, 0));
+	hints["editors/3d/selection_box_color"] = PropertyInfo(Variant::COLOR, "editors/3d/selection_box_color", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED);
 
-	_initial_set("editors/3d/grid_size", 50);
-	hints["editors/3d/grid_size"] = PropertyInfo(Variant::INT, "editors/3d/grid_size", PROPERTY_HINT_RANGE, "1,500,1", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED);
+	// If a line is a multiple of this, it uses the primary grid color.
+	// Use a power of 2 value by default as it's more common to use powers of 2 in level design.
+	_initial_set("editors/3d/primary_grid_steps", 8);
+	hints["editors/3d/primary_grid_steps"] = PropertyInfo(Variant::INT, "editors/3d/primary_grid_steps", PROPERTY_HINT_RANGE, "1,100,1", PROPERTY_USAGE_DEFAULT);
 
-	_initial_set("editors/3d/primary_grid_steps", 10);
-	hints["editors/3d/primary_grid_steps"] = PropertyInfo(Variant::INT, "editors/3d/primary_grid_steps", PROPERTY_HINT_RANGE, "1,100,1", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED);
+	// At 1000, the grid mostly looks like it has no edge.
+	_initial_set("editors/3d/grid_size", 200);
+	hints["editors/3d/grid_size"] = PropertyInfo(Variant::INT, "editors/3d/grid_size", PROPERTY_HINT_RANGE, "1,2000,1", PROPERTY_USAGE_DEFAULT);
+
+	// Default largest grid size is 100m, 10^2 (primary grid lines are 1km apart when primary_grid_steps is 10).
+	_initial_set("editors/3d/grid_division_level_max", 2);
+	// Higher values produce graphical artifacts when far away unless View Z-Far
+	// is increased significantly more than it really should need to be.
+	hints["editors/3d/grid_division_level_max"] = PropertyInfo(Variant::INT, "editors/3d/grid_division_level_max", PROPERTY_HINT_RANGE, "-1,3,1", PROPERTY_USAGE_DEFAULT);
+
+	// Default smallest grid size is 1cm, 10^-2.
+	_initial_set("editors/3d/grid_division_level_min", -2);
+	// Lower values produce graphical artifacts regardless of view clipping planes, so limit to -2 as a lower bound.
+	hints["editors/3d/grid_division_level_min"] = PropertyInfo(Variant::INT, "editors/3d/grid_division_level_min", PROPERTY_HINT_RANGE, "-2,2,1", PROPERTY_USAGE_DEFAULT);
+
+	// -0.2 seems like a sensible default. -1.0 gives Blender-like behavior, 0.5 gives huge grids.
+	_initial_set("editors/3d/grid_division_level_bias", -0.2);
+	hints["editors/3d/grid_division_level_bias"] = PropertyInfo(Variant::REAL, "editors/3d/grid_division_level_bias", PROPERTY_HINT_RANGE, "-1.0,0.5,0.1", PROPERTY_USAGE_DEFAULT);
+
+	_initial_set("editors/3d/grid_xz_plane", true);
+	_initial_set("editors/3d/grid_xy_plane", false);
+	_initial_set("editors/3d/grid_yz_plane", false);
 
 	_initial_set("editors/3d/default_fov", 70.0);
 	_initial_set("editors/3d/default_z_near", 0.05);
@@ -592,6 +639,10 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("editors/animation/confirm_insert_track", true);
 	_initial_set("editors/animation/onion_layers_past_color", Color(1, 0, 0));
 	_initial_set("editors/animation/onion_layers_future_color", Color(0, 1, 0));
+
+	// Visual editors
+	_initial_set("editors/visual_editors/minimap_opacity", 0.85);
+	hints["editors/visual_editors/minimap_opacity"] = PropertyInfo(Variant::REAL, "editors/visual_editors/minimap_opacity", PROPERTY_HINT_RANGE, "0.0,1.0,0.01", PROPERTY_USAGE_DEFAULT);
 
 	/* Run */
 

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,15 +37,19 @@
 class RandomNumberGenerator : public Reference {
 	GDCLASS(RandomNumberGenerator, Reference);
 
+protected:
 	RandomPCG randbase;
 
-protected:
 	static void _bind_methods();
 
 public:
 	_FORCE_INLINE_ void set_seed(uint64_t seed) { randbase.seed(seed); }
 
 	_FORCE_INLINE_ uint64_t get_seed() { return randbase.get_seed(); }
+
+	_FORCE_INLINE_ void set_state(uint64_t p_state) { randbase.set_state(p_state); }
+
+	_FORCE_INLINE_ uint64_t get_state() const { return randbase.get_state(); }
 
 	_FORCE_INLINE_ void randomize() { randbase.randomize(); }
 

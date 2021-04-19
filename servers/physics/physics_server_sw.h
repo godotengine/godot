@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -44,7 +44,6 @@ class PhysicsServerSW : public PhysicsServer {
 	friend class PhysicsDirectSpaceStateSW;
 	bool active;
 	int iterations;
-	bool doing_sync;
 	real_t last_step;
 
 	int island_count;
@@ -348,9 +347,6 @@ public:
 	virtual void generic_6dof_joint_set_flag(RID p_joint, Vector3::Axis, G6DOFJointAxisFlag p_flag, bool p_enable);
 	virtual bool generic_6dof_joint_get_flag(RID p_joint, Vector3::Axis, G6DOFJointAxisFlag p_flag);
 
-	virtual void generic_6dof_joint_set_precision(RID p_joint, int precision) {}
-	virtual int generic_6dof_joint_get_precision(RID p_joint) { return 0; }
-
 	virtual JointType joint_get_type(RID p_joint) const;
 
 	virtual void joint_set_solver_priority(RID p_joint, int p_priority);
@@ -366,7 +362,6 @@ public:
 	virtual void set_active(bool p_active);
 	virtual void init();
 	virtual void step(real_t p_step);
-	virtual void sync();
 	virtual void flush_queries();
 	virtual void finish();
 

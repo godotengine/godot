@@ -6,8 +6,8 @@
     <Authors>Godot Engine contributors</Authors>
 
     <PackageId>Godot.NET.Sdk</PackageId>
-    <Version>3.2.3</Version>
-    <PackageVersion>3.2.3</PackageVersion>
+    <Version>3.2.4</Version>
+    <PackageVersion>3.2.4</PackageVersion>
     <PackageProjectUrl>https://github.com/godotengine/godot/tree/master/modules/mono/editor/Godot.NET.Sdk</PackageProjectUrl>
     <PackageType>MSBuildSdk</PackageType>
     <PackageTags>MSBuildSdk</PackageTags>

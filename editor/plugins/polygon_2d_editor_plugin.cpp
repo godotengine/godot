@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -86,8 +86,8 @@ void Polygon2DEditor::_notification(int p_what) {
 			uv_button[UV_MODE_SCALE]->set_icon(get_icon("ToolScale", "EditorIcons"));
 			uv_button[UV_MODE_ADD_POLYGON]->set_icon(get_icon("Edit", "EditorIcons"));
 			uv_button[UV_MODE_REMOVE_POLYGON]->set_icon(get_icon("Close", "EditorIcons"));
-			uv_button[UV_MODE_PAINT_WEIGHT]->set_icon(get_icon("PaintVertex", "EditorIcons"));
-			uv_button[UV_MODE_CLEAR_WEIGHT]->set_icon(get_icon("UnpaintVertex", "EditorIcons"));
+			uv_button[UV_MODE_PAINT_WEIGHT]->set_icon(get_icon("Bucket", "EditorIcons"));
+			uv_button[UV_MODE_CLEAR_WEIGHT]->set_icon(get_icon("Clear", "EditorIcons"));
 
 			b_snap_grid->set_icon(get_icon("Grid", "EditorIcons"));
 			b_snap_enable->set_icon(get_icon("SnapGrid", "EditorIcons"));
@@ -209,7 +209,7 @@ void Polygon2DEditor::_uv_edit_mode_select(int p_mode) {
 		uv_button[UV_MODE_CREATE]->hide();
 		uv_button[UV_MODE_CREATE_INTERNAL]->hide();
 		uv_button[UV_MODE_REMOVE_INTERNAL]->hide();
-		for (int i = UV_MODE_MOVE; i <= UV_MODE_SCALE; i++) {
+		for (int i = UV_MODE_EDIT_POINT; i <= UV_MODE_SCALE; i++) {
 			uv_button[i]->show();
 		}
 		uv_button[UV_MODE_ADD_POLYGON]->hide();
@@ -1333,7 +1333,11 @@ Polygon2DEditor::Polygon2DEditor(EditorNode *p_editor) :
 	uv_button[UV_MODE_CREATE]->set_tooltip(TTR("Create Polygon"));
 	uv_button[UV_MODE_CREATE_INTERNAL]->set_tooltip(TTR("Create Internal Vertex"));
 	uv_button[UV_MODE_REMOVE_INTERNAL]->set_tooltip(TTR("Remove Internal Vertex"));
+#ifdef OSX_ENABLED
+	uv_button[UV_MODE_EDIT_POINT]->set_tooltip(TTR("Move Points") + "\n" + TTR("Command: Rotate") + "\n" + TTR("Shift: Move All") + "\n" + TTR("Shift+Command: Scale"));
+#else
 	uv_button[UV_MODE_EDIT_POINT]->set_tooltip(TTR("Move Points") + "\n" + TTR("Ctrl: Rotate") + "\n" + TTR("Shift: Move All") + "\n" + TTR("Shift+Ctrl: Scale"));
+#endif
 	uv_button[UV_MODE_MOVE]->set_tooltip(TTR("Move Polygon"));
 	uv_button[UV_MODE_ROTATE]->set_tooltip(TTR("Rotate Polygon"));
 	uv_button[UV_MODE_SCALE]->set_tooltip(TTR("Scale Polygon"));
@@ -1380,11 +1384,16 @@ Polygon2DEditor::Polygon2DEditor(EditorNode *p_editor) :
 	uv_main_hsc->add_child(uv_edit_draw);
 	uv_edit_draw->set_h_size_flags(SIZE_EXPAND_FILL);
 	uv_edit_draw->set_custom_minimum_size(Size2(200, 200) * EDSCALE);
+
+	Control *space = memnew(Control);
+	uv_mode_hb->add_child(space);
+	space->set_h_size_flags(SIZE_EXPAND_FILL);
+
 	uv_menu = memnew(MenuButton);
 	uv_mode_hb->add_child(uv_menu);
 	uv_menu->set_text(TTR("Edit"));
-	uv_menu->get_popup()->add_item(TTR("Polygon->UV"), UVEDIT_POLYGON_TO_UV);
-	uv_menu->get_popup()->add_item(TTR("UV->Polygon"), UVEDIT_UV_TO_POLYGON);
+	uv_menu->get_popup()->add_item(TTR("Copy Polygon to UV"), UVEDIT_POLYGON_TO_UV);
+	uv_menu->get_popup()->add_item(TTR("Copy UV to Polygon"), UVEDIT_UV_TO_POLYGON);
 	uv_menu->get_popup()->add_separator();
 	uv_menu->get_popup()->add_item(TTR("Clear UV"), UVEDIT_UV_CLEAR);
 	uv_menu->get_popup()->add_separator();

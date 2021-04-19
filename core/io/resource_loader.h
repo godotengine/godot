@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -120,7 +120,7 @@ class ResourceLoader {
 	static ResourceLoadedCallback _loaded_callback;
 
 	static Ref<ResourceFormatLoader> _find_custom_resource_format_loader(String path);
-	static Mutex *loading_map_mutex;
+	static Mutex loading_map_mutex;
 
 	//used to track paths being loaded in a thread, avoids cyclic recursion
 	struct LoadingMapKey {
@@ -197,7 +197,6 @@ public:
 	static void add_custom_loaders();
 	static void remove_custom_loaders();
 
-	static void initialize();
 	static void finalize();
 };
 

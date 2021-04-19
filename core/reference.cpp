@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -67,7 +67,7 @@ bool Reference::reference() {
 		if (get_script_instance()) {
 			get_script_instance()->refcount_incremented();
 		}
-		if (instance_binding_count > 0 && !ScriptServer::are_languages_finished()) {
+		if (instance_binding_count.get() > 0 && !ScriptServer::are_languages_finished()) {
 			for (int i = 0; i < MAX_SCRIPT_INSTANCE_BINDINGS; i++) {
 				if (_script_instance_bindings[i]) {
 					ScriptServer::get_language(i)->refcount_incremented_instance_binding(this);
@@ -89,7 +89,7 @@ bool Reference::unreference() {
 			bool script_ret = get_script_instance()->refcount_decremented();
 			die = die && script_ret;
 		}
-		if (instance_binding_count > 0 && !ScriptServer::are_languages_finished()) {
+		if (instance_binding_count.get() > 0 && !ScriptServer::are_languages_finished()) {
 			for (int i = 0; i < MAX_SCRIPT_INSTANCE_BINDINGS; i++) {
 				if (_script_instance_bindings[i]) {
 					bool script_ret = ScriptServer::get_language(i)->refcount_decremented_instance_binding(this);

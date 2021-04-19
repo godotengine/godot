@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,13 +34,14 @@
 #include "core/os/os.h"
 #include "core/project_settings.h"
 
-// ISO 639-1 language codes, with the addition of glibc locales with their
-// regional identifiers. This list must match the language names (in English)
-// of locale_names.
+// ISO 639-1 language codes (and a couple of three-letter ISO 639-2 codes),
+// with the addition of glibc locales with their regional identifiers.
+// This list must match the language names (in English) of locale_names.
 //
 // References:
 // - https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes
 // - https://lh.2xlibre.net/locales/
+// - https://iso639-3.sil.org/
 
 static const char *locale_list[] = {
 	"aa", //  Afar
@@ -95,6 +96,7 @@ static const char *locale_list[] = {
 	"bo", //  Tibetan
 	"bo_CN", //  Tibetan (China)
 	"bo_IN", //  Tibetan (India)
+	"br", //  Breton
 	"br_FR", //  Breton (France)
 	"brx_IN", //  Bodo (India)
 	"bs_BA", //  Bosnian (Bosnia and Herzegovina)
@@ -196,6 +198,7 @@ static const char *locale_list[] = {
 	"gd_GB", //  Scottish Gaelic (United Kingdom)
 	"gez_ER", //  Geez (Eritrea)
 	"gez_ET", //  Geez (Ethiopia)
+	"gl", //  Galician
 	"gl_ES", //  Galician (Spain)
 	"gu_IN", //  Gujarati (India)
 	"gv_GB", //  Manx (United Kingdom)
@@ -268,6 +271,7 @@ static const char *locale_list[] = {
 	"ml_IN", //  Malayalam (India)
 	"mni_IN", //  Manipuri (India)
 	"mn_MN", //  Mongolian (Mongolia)
+	"mr", //  Marathi
 	"mr_IN", //  Marathi (India)
 	"ms", //  Malay
 	"ms_MY", //  Malay (Malaysia)
@@ -297,6 +301,7 @@ static const char *locale_list[] = {
 	"om", //  Oromo
 	"om_ET", //  Oromo (Ethiopia)
 	"om_KE", //  Oromo (Kenya)
+	"or", //  Oriya
 	"or_IN", //  Oriya (India)
 	"os_RU", //  Ossetian (Russia)
 	"pa_IN", //  Panjabi (India)
@@ -381,6 +386,8 @@ static const char *locale_list[] = {
 	"tr_TR", //  Turkish (Turkey)
 	"ts_ZA", //  Tsonga (South Africa)
 	"tt_RU", //  Tatar (Russia)
+	"tzm", // Central Atlas Tamazight
+	"tzm_MA", // Central Atlas Tamazight (Marrocos)
 	"ug_CN", //  Uighur (China)
 	"uk", //  Ukrainian
 	"uk_UA", //  Ukrainian (Ukraine)
@@ -463,6 +470,7 @@ static const char *locale_names[] = {
 	"Tibetan",
 	"Tibetan (China)",
 	"Tibetan (India)",
+	"Breton",
 	"Breton (France)",
 	"Bodo (India)",
 	"Bosnian (Bosnia and Herzegovina)",
@@ -564,6 +572,7 @@ static const char *locale_names[] = {
 	"Scottish Gaelic (United Kingdom)",
 	"Geez (Eritrea)",
 	"Geez (Ethiopia)",
+	"Galician",
 	"Galician (Spain)",
 	"Gujarati (India)",
 	"Manx (United Kingdom)",
@@ -636,6 +645,7 @@ static const char *locale_names[] = {
 	"Malayalam (India)",
 	"Manipuri (India)",
 	"Mongolian (Mongolia)",
+	"Marathi",
 	"Marathi (India)",
 	"Malay",
 	"Malay (Malaysia)",
@@ -665,6 +675,7 @@ static const char *locale_names[] = {
 	"Oromo",
 	"Oromo (Ethiopia)",
 	"Oromo (Kenya)",
+	"Oriya",
 	"Oriya (India)",
 	"Ossetian (Russia)",
 	"Panjabi (India)",
@@ -749,6 +760,8 @@ static const char *locale_names[] = {
 	"Turkish (Turkey)",
 	"Tsonga (South Africa)",
 	"Tatar (Russia)",
+	"Central Atlas Tamazight",
+	"Central Atlas Tamazight (Marrocos)",
 	"Uighur (China)",
 	"Ukrainian",
 	"Ukrainian (Ukraine)",

@@ -18,9 +18,9 @@
 
 #include "t42parse.h"
 #include "t42error.h"
-#include FT_INTERNAL_DEBUG_H
-#include FT_INTERNAL_STREAM_H
-#include FT_INTERNAL_POSTSCRIPT_AUX_H
+#include <freetype/internal/ftdebug.h>
+#include <freetype/internal/ftstream.h>
+#include <freetype/internal/psaux.h>
 
 
   /**************************************************************************
@@ -826,7 +826,7 @@
       if ( loader->num_glyphs > ( limit - parser->root.cursor ) >> 2 )
       {
         FT_TRACE0(( "t42_parse_charstrings: adjusting number of glyphs"
-                    " (from %d to %d)\n",
+                    " (from %d to %ld)\n",
                     loader->num_glyphs,
                     ( limit - parser->root.cursor ) >> 2 ));
         loader->num_glyphs = ( limit - parser->root.cursor ) >> 2;

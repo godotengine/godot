@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -160,9 +160,12 @@ unzFile ZipArchive::get_file_handle(String p_file) const {
 	return pkg;
 }
 
-bool ZipArchive::try_open_pack(const String &p_path, bool p_replace_files) {
+bool ZipArchive::try_open_pack(const String &p_path, bool p_replace_files, size_t p_offset = 0) {
 
 	//printf("opening zip pack %ls, %i, %i\n", p_name.c_str(), p_name.extension().nocasecmp_to("zip"), p_name.extension().nocasecmp_to("pcz"));
+	// load with offset feature only supported for PCK files
+	ERR_FAIL_COND_V_MSG(p_offset != 0, false, "Invalid PCK data. Note that loading files with a non-zero offset isn't supported with ZIP archives.");
+
 	if (p_path.get_extension().nocasecmp_to("zip") != 0 && p_path.get_extension().nocasecmp_to("pcz") != 0)
 		return false;
 
@@ -329,7 +332,8 @@ uint8_t FileAccessZip::get_8() const {
 }
 
 int FileAccessZip::get_buffer(uint8_t *p_dst, int p_length) const {
-
+	ERR_FAIL_COND_V(!p_dst, -1);
+	ERR_FAIL_COND_V(p_length < 0, -1);
 	ERR_FAIL_COND_V(!zfile, -1);
 	at_eof = unzeof(zfile);
 	if (at_eof)

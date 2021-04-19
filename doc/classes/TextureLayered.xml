@@ -4,7 +4,7 @@
 		Base class for 3D texture types.
 	</brief_description>
 	<description>
-		Base class for [Texture3D] and [TextureArray]. Cannot be used directly, but contains all the functions necessary for accessing and using [Texture3D] and [TextureArray]. Data is set on a per-layer basis. For [Texture3D]s, the layer sepcifies the depth or Z-index, they can be treated as a bunch of 2D slices. Similarly, for [TextureArray]s, the layer specifies the array layer.
+		Base class for [Texture3D] and [TextureArray]. Cannot be used directly, but contains all the functions necessary for accessing and using [Texture3D] and [TextureArray]. Data is set on a per-layer basis. For [Texture3D]s, the layer specifies the depth or Z-index, they can be treated as a bunch of 2D slices. Similarly, for [TextureArray]s, the layer specifies the array layer.
 	</description>
 	<tutorials>
 	</tutorials>

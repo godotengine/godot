@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -426,6 +426,7 @@ EditorSettingsDialog::EditorSettingsDialog() {
 	tab_general->add_child(hbc);
 
 	search_box = memnew(LineEdit);
+	search_box->set_placeholder(TTR("Search"));
 	search_box->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	hbc->add_child(search_box);
 
@@ -469,6 +470,7 @@ EditorSettingsDialog::EditorSettingsDialog() {
 	tab_shortcuts->add_child(hbc);
 
 	shortcut_search_box = memnew(LineEdit);
+	shortcut_search_box->set_placeholder(TTR("Search"));
 	shortcut_search_box->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	hbc->add_child(shortcut_search_box);
 	shortcut_search_box->connect("text_changed", this, "_filter_shortcuts");

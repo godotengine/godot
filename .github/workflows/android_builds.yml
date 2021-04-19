@@ -1,10 +1,12 @@
 name: 🤖 Android Builds
 on: [push, pull_request]
 
-# Global Cache Settings
+# Global Settings
 env:
   GODOT_BASE_BRANCH: 3.2
+  SCONSFLAGS: platform=android verbose=yes warnings=all werror=yes debug_symbols=no --jobs=2
   SCONS_CACHE_LIMIT: 4096
+  ANDROID_NDK_VERSION: 21.1.6352462
 
 jobs:
   android-template:
@@ -18,23 +20,18 @@ jobs:
       # Azure repositories are not reliable, we need to prevent azure giving us packages.
       - name: Make apt sources.list use the default Ubuntu repositories
         run: |
+          sudo rm -f /etc/apt/sources.list.d/*
           sudo cp -f misc/ci/sources.list /etc/apt/sources.list
           sudo apt-get update
 
-      # Install all packages (except scons)
-      - name: Configure dependencies
-        run: |
-         sudo apt-get install openjdk-8-jdk
-         echo "::set-env name=JAVA_HOME::usr/lib/jvm/java-8-openjdk-amd64"
+      - name: Set up Java 8
+        uses: actions/setup-java@v1
+        with:
+          java-version: 8
 
-      - name: Install Android SDK and NDK
+      - name: Install Android NDK r21
         run: |
-          echo "::set-env name=PATH::/usr/lib/jvm/java-8-openjdk-amd64/jre/bin:${PATH}"
-          java -version
-          echo "::set-env name=ANDROID_HOME::$(pwd)/godot-dev/build-tools/android-sdk"
-          echo "::set-env name=ANDROID_NDK_ROOT::$(pwd)/godot-dev/build-tools/android-ndk"
-          misc/ci/android-tools-linux.sh
-          source ~/.bashrc
+          sudo ${ANDROID_HOME}/tools/bin/sdkmanager --install 'ndk;${{env.ANDROID_NDK_VERSION}}'
 
       # Upload cache on completion and check it out now
       - name: Load .scons_cache directory
@@ -57,7 +54,6 @@ jobs:
           # Optional - x64 or x86 architecture, defaults to x64
           architecture: 'x64'
 
-      # You can test your matrix by printing the current Python version
       - name: Configuring Python packages
         run: |
           python -c "import sys; print(sys.version)"
@@ -68,5 +64,17 @@ jobs:
       - name: Compilation
         env:
           SCONS_CACHE: ${{github.workspace}}/.scons_cache/
+          ANDROID_NDK_ROOT: /usr/local/lib/android/sdk/ndk/${{env.ANDROID_NDK_VERSION}}/
         run: |
-          scons -j2 verbose=yes warnings=all werror=yes platform=android target=release tools=no
+          scons target=release tools=no android_arch=armv7
+          scons target=release tools=no android_arch=arm64v8
+          cd platform/android/java
+          ./gradlew generateGodotTemplates
+          cd ../../..
+          ls -l bin/
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: ${{ github.job }}
+          path: bin/*
+          retention-days: 14

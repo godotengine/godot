@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -330,12 +330,16 @@ void VisibilityEnabler2D::_node_removed(Node *p_node) {
 }
 
 String VisibilityEnabler2D::get_configuration_warning() const {
+	String warning = VisibilityNotifier2D::get_configuration_warning();
 #ifdef TOOLS_ENABLED
 	if (is_inside_tree() && get_parent() && (get_parent()->get_filename() == String() && get_parent() != get_tree()->get_edited_scene_root())) {
-		return TTR("VisibilityEnabler2D works best when used with the edited scene root directly as parent.");
+		if (warning != String()) {
+			warning += "\n\n";
+		}
+		warning += TTR("VisibilityEnabler2D works best when used with the edited scene root directly as parent.");
 	}
 #endif
-	return String();
+	return warning;
 }
 
 void VisibilityEnabler2D::_bind_methods() {

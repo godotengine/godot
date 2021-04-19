@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -827,27 +827,49 @@ void ShaderGLES2::use_material(void *p_material) {
 
 				case ShaderLanguage::TYPE_MAT4: {
 
-					Transform2D tr = V->get();
-					GLfloat matrix[16] = { /* build a 16x16 matrix */
-						tr.elements[0][0],
-						tr.elements[0][1],
-						0,
-						0,
-						tr.elements[1][0],
-						tr.elements[1][1],
-						0,
-						0,
-						0,
-						0,
-						1,
-						0,
-						tr.elements[2][0],
-						tr.elements[2][1],
-						0,
-						1
-					};
-
-					glUniformMatrix4fv(location, 1, GL_FALSE, matrix);
+					if (V->get().get_type() == Variant::TRANSFORM) {
+						Transform tr = V->get();
+						GLfloat matrix[16] = { /* build a 16x16 matrix */
+							tr.basis.elements[0][0],
+							tr.basis.elements[1][0],
+							tr.basis.elements[2][0],
+							0,
+							tr.basis.elements[0][1],
+							tr.basis.elements[1][1],
+							tr.basis.elements[2][1],
+							0,
+							tr.basis.elements[0][2],
+							tr.basis.elements[1][2],
+							tr.basis.elements[2][2],
+							0,
+							tr.origin.x,
+							tr.origin.y,
+							tr.origin.z,
+							1
+						};
+						glUniformMatrix4fv(location, 1, GL_FALSE, matrix);
+					} else {
+						Transform2D tr = V->get();
+						GLfloat matrix[16] = { /* build a 16x16 matrix */
+							tr.elements[0][0],
+							tr.elements[0][1],
+							0,
+							0,
+							tr.elements[1][0],
+							tr.elements[1][1],
+							0,
+							0,
+							0,
+							0,
+							1,
+							0,
+							tr.elements[2][0],
+							tr.elements[2][1],
+							0,
+							1
+						};
+						glUniformMatrix4fv(location, 1, GL_FALSE, matrix);
+					}
 
 				} break;
 

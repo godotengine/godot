@@ -54,8 +54,7 @@
 			<description>
 				Returns the absolute value of parameter [code]s[/code] (i.e. positive value).
 				[codeblock]
-				# a is 1
-				a = abs(-1)
+				a = abs(-1) # a is 1
 				[/codeblock]
 			</description>
 		</method>
@@ -65,7 +64,7 @@
 			<argument index="0" name="s" type="float">
 			</argument>
 			<description>
-				Returns the arc cosine of [code]s[/code] in radians. Use to get the angle of cosine [code]s[/code].
+				Returns the arc cosine of [code]s[/code] in radians. Use to get the angle of cosine [code]s[/code]. [code]s[/code] must be between [code]-1.0[/code] and [code]1.0[/code] (inclusive), otherwise, [method acos] will return [constant NAN].
 				[codeblock]
 				# c is 0.523599 or 30 degrees if converted with rad2deg(s)
 				c = acos(0.866025)
@@ -78,7 +77,7 @@
 			<argument index="0" name="s" type="float">
 			</argument>
 			<description>
-				Returns the arc sine of [code]s[/code] in radians. Use to get the angle of sine [code]s[/code].
+				Returns the arc sine of [code]s[/code] in radians. Use to get the angle of sine [code]s[/code]. [code]s[/code] must be between [code]-1.0[/code] and [code]1.0[/code] (inclusive), otherwise, [method asin] will return [constant NAN].
 				[codeblock]
 				# s is 0.523599 or 30 degrees if converted with rad2deg(s)
 				s = asin(0.5)
@@ -93,14 +92,15 @@
 			<argument index="1" name="message" type="String" default="&quot;&quot;">
 			</argument>
 			<description>
-				Asserts that the [code]condition[/code] is [code]true[/code]. If the [code]condition[/code] is [code]false[/code], an error is generated and the program is halted until you resume it. Only executes in debug builds, or when running the game from the editor. Use it for debugging purposes, to make sure a statement is [code]true[/code] during development.
+				Asserts that the [code]condition[/code] is [code]true[/code]. If the [code]condition[/code] is [code]false[/code], an error is generated. When running from the editor, the running project will also be paused until you resume it. This can be used as a stronger form of [method push_error] for reporting errors to project developers or add-on users.
+				[b]Note:[/b] For performance reasons, the code inside [method assert] is only executed in debug builds or when running the project from the editor. Don't include code that has side effects in an [method assert] call. Otherwise, the project will behave differently when exported in release mode.
 				The optional [code]message[/code] argument, if given, is shown in addition to the generic "Assertion failed" message. You can use this to provide additional details about why the assertion failed.
 				[codeblock]
-				# Imagine we always want speed to be between 0 and 20
-				speed = -10
+				# Imagine we always want speed to be between 0 and 20.
+				var speed = -10
 				assert(speed &lt; 20) # True, the program will continue
 				assert(speed &gt;= 0) # False, the program will stop
-				assert(speed &gt;= 0 &amp;&amp; speed &lt; 20) # You can also combine the two conditional statements in one check
+				assert(speed &gt;= 0 and speed &lt; 20) # You can also combine the two conditional statements in one check
 				assert(speed &lt; 20, "speed = %f, but the speed limit is 20" % speed) # Show a message with clarifying details
 				[/codeblock]
 			</description>
@@ -164,10 +164,10 @@
 			<description>
 				Rounds [code]s[/code] upward (towards positive infinity), returning the smallest whole number that is not less than [code]s[/code].
 				[codeblock]
-				i = ceil(1.45)  # i is 2
-				i = ceil(1.001) # i is 2
+				a = ceil(1.45)  # a is 2.0
+				a = ceil(1.001) # a is 2.0
 				[/codeblock]
-				See also [method floor], [method round], and [method stepify].
+				See also [method floor], [method round], [method stepify], and [int].
 			</description>
 		</method>
 		<method name="char">
@@ -197,13 +197,9 @@
 			<description>
 				Clamps [code]value[/code] and returns a value not less than [code]min[/code] and not more than [code]max[/code].
 				[codeblock]
-				speed = 1000
-				# a is 20
-				a = clamp(speed, 1, 20)
-
-				speed = -10
-				# a is 1
-				a = clamp(speed, 1, 20)
+				a = clamp(1000, 1, 20) # a is 20
+				a = clamp(-10, 1, 20)  # a is 1
+				a = clamp(15, 1, 20)   # a is 15
 				[/codeblock]
 			</description>
 		</method>
@@ -234,9 +230,8 @@
 			<description>
 				Returns the cosine of angle [code]s[/code] in radians.
 				[codeblock]
-				# Prints 1 then -1
-				print(cos(PI * 2))
-				print(cos(PI))
+				a = cos(TAU) # a is 1.0
+				a = cos(PI)  # a is -1.0
 				[/codeblock]
 			</description>
 		</method>
@@ -248,8 +243,7 @@
 			<description>
 				Returns the hyperbolic cosine of [code]s[/code] in radians.
 				[codeblock]
-				# Prints 1.543081
-				print(cosh(1))
+				print(cosh(1)) # Prints 1.543081
 				[/codeblock]
 			</description>
 		</method>
@@ -283,8 +277,7 @@
 			<description>
 				Returns the result of [code]value[/code] decreased by [code]step[/code] * [code]amount[/code].
 				[codeblock]
-				# a = 59
-				a = dectime(60, 10, 0.1))
+				a = dectime(60, 10, 0.1)) # a is 59.0
 				[/codeblock]
 			</description>
 		</method>
@@ -296,8 +289,7 @@
 			<description>
 				Converts an angle expressed in degrees to radians.
 				[codeblock]
-				# r is 3.141593
-				r = deg2rad(180)
+				r = deg2rad(180) # r is 3.141593
 				[/codeblock]
 			</description>
 		</method>
@@ -307,7 +299,7 @@
 			<argument index="0" name="dict" type="Dictionary">
 			</argument>
 			<description>
-				Converts a previously converted instance to a dictionary, back into an instance. Useful for deserializing.
+				Converts a dictionary (previously created with [method inst2dict]) back to an instance. Useful for deserializing.
 			</description>
 		</method>
 		<method name="ease">
@@ -328,7 +320,7 @@
 			</argument>
 			<description>
 				The natural exponential function. It raises the mathematical constant [b]e[/b] to the power of [code]s[/code] and returns it.
-				[b]e[/b] has an approximate value of 2.71828.
+				[b]e[/b] has an approximate value of 2.71828, and can be obtained with [code]exp(1)[/code].
 				For exponents to other bases use the method [method pow].
 				[codeblock]
 				a = exp(2) # Approximately 7.39
@@ -343,13 +335,12 @@
 			<description>
 				Rounds [code]s[/code] downward (towards negative infinity), returning the largest whole number that is not more than [code]s[/code].
 				[codeblock]
-				# a is 2.0
-				a = floor(2.99)
-				# a is -3.0
-				a = floor(-2.99)
+				a = floor(2.45)  # a is 2.0
+				a = floor(2.99)  # a is 2.0
+				a = floor(-2.99) # a is -3.0
 				[/codeblock]
-				See also [method ceil], [method round], and [method stepify].
-				[b]Note:[/b] This method returns a float. If you need an integer, you can use [code]int(s)[/code] directly.
+				See also [method ceil], [method round], [method stepify], and [int].
+				[b]Note:[/b] This method returns a float. If you need an integer and [code]s[/code] is a non-negative number, you can use [code]int(s)[/code] directly.
 			</description>
 		</method>
 		<method name="fmod">
@@ -362,8 +353,7 @@
 			<description>
 				Returns the floating-point remainder of [code]a/b[/code], keeping the sign of [code]a[/code].
 				[codeblock]
-				# Remainder is 1.5
-				var remainder = fmod(7, 5.5)
+				r = fmod(7, 5.5) # r is 1.5
 				[/codeblock]
 				For the integer remainder operation, use the % operator.
 			</description>
@@ -511,6 +501,8 @@
 			</argument>
 			<description>
 				Returns [code]true[/code] if [code]a[/code] and [code]b[/code] are approximately equal to each other.
+				Here, approximately equal means that [code]a[/code] and [code]b[/code] are within a small internal epsilon of each other, which scales with the magnitude of the numbers.
+				Infinity values of the same sign are considered equal.
 			</description>
 		</method>
 		<method name="is_inf">
@@ -634,6 +626,7 @@
 				var main = load("res://main.tscn") # main will contain a PackedScene resource.
 				[/codeblock]
 				[b]Important:[/b] The path must be absolute, a local path will just return [code]null[/code].
+				This method is a simplified version of [method ResourceLoader.load], which can be used for more advanced scenarios.
 			</description>
 		</method>
 		<method name="log">
@@ -647,6 +640,7 @@
 				[codeblock]
 				log(10) # Returns 2.302585
 				[/codeblock]
+				[b]Note:[/b] The logarithm of [code]0[/code] returns [code]-inf[/code], while negative values return [code]-nan[/code].
 			</description>
 		</method>
 		<method name="max">
@@ -692,7 +686,9 @@
 				Moves [code]from[/code] toward [code]to[/code] by the [code]delta[/code] value.
 				Use a negative [code]delta[/code] value to move away.
 				[codeblock]
+				move_toward(5, 10, 4) # Returns 9
 				move_toward(10, 5, 4) # Returns 6
+				move_toward(10, 5, -1.5) # Returns 11.5
 				[/codeblock]
 			</description>
 		</method>
@@ -702,12 +698,17 @@
 			<argument index="0" name="value" type="int">
 			</argument>
 			<description>
-				Returns the nearest larger power of 2 for integer [code]value[/code].
+				Returns the nearest equal or larger power of 2 for integer [code]value[/code].
+				In other words, returns the smallest value [code]a[/code] where [code]a = pow(2, n)[/code] such that [code]value &lt;= a[/code] for some non-negative integer [code]n[/code].
 				[codeblock]
 				nearest_po2(3) # Returns 4
 				nearest_po2(4) # Returns 4
 				nearest_po2(5) # Returns 8
+
+				nearest_po2(0) # Returns 0 (this may not be what you expect)
+				nearest_po2(-1) # Returns 0 (this may not be what you expect)
 				[/codeblock]
+				[b]WARNING:[/b] Due to the way it is implemented, this function returns [code]0[/code] rather than [code]1[/code] for non-positive values of [code]value[/code] (in reality, 1 is the smallest integer power of 2).
 			</description>
 		</method>
 		<method name="ord">
@@ -766,7 +767,7 @@
 				Returns the integer modulus of [code]a/b[/code] that wraps equally in positive and negative.
 				[codeblock]
 				for i in range(-3, 4):
-				    print("%2.0f %2.0f %2.0f" % [i, i % 3, posmod(i, 3)])
+				    print("%2d %2d %2d" % [i, i % 3, posmod(i, 3)])
 				[/codeblock]
 				Produces:
 				[codeblock]
@@ -788,9 +789,9 @@
 			<argument index="1" name="exp" type="float">
 			</argument>
 			<description>
-				Returns the result of [code]x[/code] raised to the power of [code]y[/code].
+				Returns the result of [code]base[/code] raised to the power of [code]exp[/code].
 				[codeblock]
-				pow(2, 5) # Returns 32
+				pow(2, 5) # Returns 32.0
 				[/codeblock]
 			</description>
 		</method>
@@ -812,11 +813,12 @@
 			<return type="void">
 			</return>
 			<description>
-				Converts one or more arguments to strings in the best way possible and prints them to the console.
+				Converts one or more arguments of any type to string in the best way possible and prints them to the console.
 				[codeblock]
 				a = [1, 2, 3]
-				print("a", "b", a) # Prints ab[1, 2, 3]
+				print("a", "=", a) # Prints a=[1, 2, 3]
 				[/codeblock]
+				[b]Note:[/b] Consider using [method push_error] and [method push_warning] to print error and warning messages instead of [method print]. This distinguishes them from print messages used for debugging purposes, while also displaying a stack trace when an error or warning is printed.
 			</description>
 		</method>
 		<method name="print_debug" qualifiers="vararg">
@@ -890,6 +892,7 @@
 				[codeblock]
 				push_error("test error") # Prints "test error" to debugger and terminal as error call
 				[/codeblock]
+				[b]Note:[/b] Errors printed this way will not pause project execution. To print an error message and pause project execution in debug builds, use [code]assert(false, "test error")[/code] instead.
 			</description>
 		</method>
 		<method name="push_warning">
@@ -912,7 +915,7 @@
 			<description>
 				Converts an angle expressed in radians to degrees.
 				[codeblock]
-				rad2deg(0.523599) # Returns 30
+				rad2deg(0.523599) # Returns 30.0
 				[/codeblock]
 			</description>
 		</method>
@@ -1019,9 +1022,11 @@
 			<description>
 				Rounds [code]s[/code] to the nearest whole number, with halfway cases rounded away from zero.
 				[codeblock]
-				round(2.6) # Returns 3
+				a = round(2.49) # a is 2.0
+				a = round(2.5)  # a is 3.0
+				a = round(2.51) # a is 3.0
 				[/codeblock]
-				See also [method floor], [method ceil], and [method stepify].
+				See also [method floor], [method ceil], [method stepify], and [int].
 			</description>
 		</method>
 		<method name="seed">
@@ -1083,12 +1088,15 @@
 			</argument>
 			<argument index="1" name="to" type="float">
 			</argument>
-			<argument index="2" name="weight" type="float">
+			<argument index="2" name="s" type="float">
 			</argument>
 			<description>
-				Returns a number smoothly interpolated between the [code]from[/code] and [code]to[/code], based on the [code]weight[/code]. Similar to [method lerp], but interpolates faster at the beginning and slower at the end.
+				Returns the result of smoothly interpolating the value of [code]s[/code] between [code]0[/code] and [code]1[/code], based on the where [code]s[/code] lies with respect to the edges [code]from[/code] and [code]to[/code].
+				The return value is [code]0[/code] if [code]s &lt;= from[/code], and [code]1[/code] if [code]s &gt;= to[/code]. If [code]s[/code] lies between [code]from[/code] and [code]to[/code], the returned value follows an S-shaped curve that maps [code]s[/code] between [code]0[/code] and [code]1[/code].
+				This S-shaped curve is the cubic Hermite interpolator, given by [code]f(y) = 3*y^2 - 2*y^3[/code] where [code]y = (x-from) / (to-from)[/code].
 				[codeblock]
-				smoothstep(0, 2, 0.5) # Returns 0.15
+				smoothstep(0, 2, -5.0) # Returns 0.0
+				smoothstep(0, 2, 0.5) # Returns 0.15625
 				smoothstep(0, 2, 1.0) # Returns 0.5
 				smoothstep(0, 2, 2.0) # Returns 1.0
 				[/codeblock]
@@ -1104,7 +1112,7 @@
 				[codeblock]
 				sqrt(9) # Returns 3
 				[/codeblock]
-				If you need negative inputs, use [code]System.Numerics.Complex[/code] in C#.
+				[b]Note:[/b]Negative values of [code]s[/code] return NaN. If you need negative inputs, use [code]System.Numerics.Complex[/code] in C#.
 			</description>
 		</method>
 		<method name="step_decimals">
@@ -1115,12 +1123,9 @@
 			<description>
 				Returns the position of the first non-zero digit, after the decimal point. Note that the maximum return value is 10, which is a design decision in the implementation.
 				[codeblock]
-				# n is 0
-				n = step_decimals(5)
-				# n is 4
-				n = step_decimals(1.0005)
-				# n is 9
-				n = step_decimals(0.000000005)
+				n = step_decimals(5)           # n is 0
+				n = step_decimals(1.0005)      # n is 4
+				n = step_decimals(0.000000005) # n is 9
 				[/codeblock]
 			</description>
 		</method>
@@ -1134,17 +1139,17 @@
 			<description>
 				Snaps float value [code]s[/code] to a given [code]step[/code]. This can also be used to round a floating point number to an arbitrary number of decimals.
 				[codeblock]
-				stepify(100, 32) # Returns 96
+				stepify(100, 32) # Returns 96.0
 				stepify(3.14159, 0.01) # Returns 3.14
 				[/codeblock]
-				See also [method ceil], [method floor], and [method round].
+				See also [method ceil], [method floor], [method round], and [int].
 			</description>
 		</method>
 		<method name="str" qualifiers="vararg">
 			<return type="String">
 			</return>
 			<description>
-				Converts one or more arguments to string in the best way possible.
+				Converts one or more arguments of any type to string in the best way possible.
 				[codeblock]
 				var a = [10, 20, 30]
 				var b = str(a);
@@ -1187,8 +1192,8 @@
 			<description>
 				Returns the hyperbolic tangent of [code]s[/code].
 				[codeblock]
-				a = log(2.0) # Returns 0.693147
-				tanh(a)      # Returns 0.6
+				a = log(2.0) # a is 0.693147
+				b = tanh(a)  # b is 0.6
 				[/codeblock]
 			</description>
 		</method>

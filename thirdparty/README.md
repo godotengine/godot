@@ -1,28 +1,14 @@
 # Third party libraries
 
-
-## assimp
-
-- Upstream: http://github.com/assimp/assimp
-- Version: git (308db73d0b3c2d1870cd3e465eaa283692a4cf23, 2019)
-- License: BSD-3-Clause
-
-Files extracted from upstream source:
-
-- Run `cmake .` in root folder to generate files
-- `code/{CApi,Common,FBX,Material,PostProcessing}/`
-- `contrib/utf8cpp/source/`
-- `include/`
-- `revision.h`
-- `CREDITS` and `LICENSE` files
-- `rm -f code/Common/ZipArchiveIOSystem.cpp include/assimp/ZipArchiveIOSystem.h
-   include/assimp/irrXMLWrapper.h`
+Please keep categories (`##` level) listed alphabetically and matching their
+respective folder names. Use two empty lines to separate categories for
+readability.
 
 
 ## bullet
 
 - Upstream: https://github.com/bulletphysics/bullet3
-- Version: 2.89 (2019)
+- Version: 2.89 (830f0a9565b1829a07e21e2f16be2aa9966bd28c, 2019)
 - License: zlib
 
 Files extracted from upstream source:
@@ -46,18 +32,37 @@ as it's generated on the user's system.)
 ## cvtt
 
 - Upstream: https://github.com/elasota/cvtt
-- Version: 1.0.0-beta4 (2018)
+- Version: 1.0.0-beta4 (cc8472a04ba110fe999c686d07af40f7839051fd, 2018)
 - License: MIT
 
 Files extracted from upstream source:
 
 - all .cpp, .h, and .txt files in ConvectionKernels/
 
+## embree
+
+- Upstream: https://github.com/embree/embree
+- Version: 3.12.1 (69bd4c272f1ed608494f233ecfff3feec516880b, 2020)
+- License: Apache 2.0
+
+Files extracted from upstream:
+
+- All cpp files listed in `modules/raytrace/godot_update_embree.py`
+- All header files in the directories listed in `modules/raytrace/godot_update_embree.py`
+
+The `modules/raytrace/godot_update_embree.py`script can be used to pull the 
+relevant files from the latest Embree release and apply some automatic changes.
+
+Some minor changes have been made in order to fix build errors.
+They are marked with `// -- GODOT start --` and `// -- GODOT end --`
+comments. Apply the patches in the `patches/` folder when syncing on newer upstream
+commits.
+
 
 ## enet
 
 - Upstream: http://enet.bespin.org
-- Version: 1.3.15 (224f31101fc60939c02f6bbe8e8fc810a7db306b, 2020)
+- Version: 1.3.17 (e0e7045b7e056b454b5093cb34df49dc4cee0bee, 2020)
 - License: MIT
 
 Files extracted from upstream source:
@@ -67,11 +72,11 @@ Files extracted from upstream source:
 - LICENSE file
 
 Important: enet.h, host.c, protocol.c have been slightly modified
-to be usable by godot socket implementation and allow IPv6 and DTLS.
+to be usable by Godot's socket implementation and allow IPv6 and DTLS.
 Apply the patches in the `patches/` folder when syncing on newer upstream
 commits.
 
-Two files (godot.cpp and enet/godot.h) have been added to provide
+Three files (godot.cpp, enet/godot.h, enet/godot_ext.h) have been added to provide
 enet socket implementation using Godot classes.
 
 It is still possible to build against a system wide ENet but doing so
@@ -96,31 +101,26 @@ comments.
 
 ## fonts
 
-### Noto Sans
-
-- Upstream: https://github.com/googlei18n/noto-fonts
-- Version: 1.06 (2017)
-- License: OFL-1.1
-
-Use UI font variant if available, because it has tight vertical metrics and good for UI.
-
-### Hack Regular
-
-- Upstream: https://github.com/source-foundry/Hack
-- Version: 3.003 (2018)
-- License: MIT + Bitstream Vera License
-
-### DroidSans*.ttf
-
-- Upstream: https://android.googlesource.com/platform/frameworks/base/+/master/data/fonts/
-- Version: ? (pre-2014 commit when DroidSansJapanese.ttf was obsoleted)
-- License: Apache 2.0
+- `NotoSans*.ttf`, `NotoNaskhArabicUI_Regular.ttf`:
+  * Upstream: https://github.com/googlei18n/noto-fonts
+  * Version: 1.06 (2017)
+  * License: OFL-1.1
+  * Comment: Use UI font variant if available, because it has tight vertical metrics and
+    good for UI.
+- `Hack_Regular.ttf`:
+  * Upstream: https://github.com/source-foundry/Hack
+  * Version: 3.003 (2018)
+  * License: MIT + Bitstream Vera License
+- `DroidSans*.ttf`:
+  * Upstream: https://android.googlesource.com/platform/frameworks/base/+/master/data/fonts/
+  * Version: ? (pre-2014 commit when DroidSansJapanese.ttf was obsoleted)
+  * License: Apache 2.0
 
 
 ## freetype
 
 - Upstream: https://www.freetype.org
-- Version: 2.10.1 (2019)
+- Version: 2.10.4 (6a2b3e4007e794bfc6c91030d0ed987f925164a8, 2020)
 - License: FreeType License (BSD-like)
 
 Files extracted from upstream source:
@@ -133,7 +133,7 @@ Files extracted from upstream source:
 ## glad
 
 - Upstream: https://github.com/Dav1dde/glad
-- Version: 0.1.33 (2019)
+- Version: 0.1.34 (a5ca31c88a4cc5847ea012629aff3690f261c7c4, 2020)
 - License: MIT
 
 The files we package are automatically generated.
@@ -145,7 +145,7 @@ the GLES version Godot targets.
 
 - Upstream: https://github.com/richgel999/jpeg-compressor
 - Version: 2.00 (aeb7d3b463aa8228b87a28013c15ee50a7e6fcf3, 2020)
-- License: Public domain
+- License: Public domain or MIT
 
 Files extracted from upstream source:
 
@@ -168,7 +168,7 @@ Files extracted from upstream source:
 ## libpng
 
 - Upstream: http://libpng.org/pub/png/libpng.html
-- Version: 1.6.37 (2019)
+- Version: 1.6.37 (a40189cf881e9f0db80511c382292a5604c3c3d1, 2019)
 - License: libpng/zlib
 
 Files extracted from upstream source:
@@ -248,7 +248,7 @@ from the Android NDK r18.
 ## libwebp
 
 - Upstream: https://chromium.googlesource.com/webm/libwebp/
-- Version: 1.1.0 (2020)
+- Version: 1.1.0 (d7844e9762b61c9638c263657bd49e1690184832, 2020)
 - License: BSD-3-Clause
 
 Files extracted from upstream source:
@@ -264,7 +264,7 @@ changes are marked with `// -- GODOT --` comments.
 ## mbedtls
 
 - Upstream: https://tls.mbed.org/
-- Version: 2.16.8 (2020)
+- Version: 2.16.10 (d61fa61bef06b64132e3490543c81b8ee40fbee3, 2021)
 - License: Apache 2.0
 
 File extracted from upstream release tarball:
@@ -292,7 +292,6 @@ Files extracted from upstream source:
 - All `*.c` and `*.h` files from `miniupnpc` to `thirdparty/miniupnpc/miniupnpc`
 - Remove `test*`, `minihttptestserver.c` and `wingenminiupnpcstrings.c`
 
-The patch `windows_fix.diff` is applied to `minissdpc.c` to fix an upstream issue.
 The only modified file is miniupnpcstrings.h, which was created for Godot
 (it is usually autogenerated by cmake).
 
@@ -316,12 +315,14 @@ comments and a patch is provided in the minizip/ folder.
 
 Collection of single-file libraries used in Godot components.
 
-### core
-
 - `clipper.{cpp,hpp}`
   * Upstream: https://sourceforge.net/projects/polyclipping
   * Version: 6.4.2 (2017) + Godot changes (added optional exceptions handling)
   * License: BSL-1.0
+- `easing_equations.cpp`
+  * Upstream: http://robertpenner.com/easing/ via https://github.com/jesusgollonet/ofpennereasing (modified to fit Godot types)
+  * Version: git (af72c147c3a74e7e872aa28c7e2abfcced04fdce, 2008) + Godot types and style changes
+  * License: BSD-3-Clause
 - `fastlz.{c,h}`
   * Upstream: https://github.com/ariya/FastLZ
   * Version: 0.5.0 (4f20f54d46f5a6dd4fae4def134933369b7602d2, 2020)
@@ -330,64 +331,86 @@ Collection of single-file libraries used in Godot components.
   * Upstream: https://github.com/brunexgeek/hqx
   * Version: TBD, file structure differs
   * License: Apache 2.0
+- `ifaddrs-android.{cc,h}`
+  * Upstream: https://chromium.googlesource.com/external/webrtc/stable/talk/+/master/base/ifaddrs-android.h
+  * Version: git (5976650443d68ccfadf1dea24999ee459dd2819d, 2013)
+  * License: BSD-3-Clause
+- `mikktspace.{c,h}`
+  * Upstream: https://archive.blender.org/wiki/index.php/Dev:Shading/Tangent_Space_Normal_Maps/
+  * Version: 1.0 (2011)
+  * License: zlib
 - `open-simplex-noise.{c,h}`
   * Upstream: https://github.com/smcameron/open-simplex-noise-in-c
-  * Version: git (0d555e7f40527d0870906fe9469a3b1bb4020b7f, 2015) + custom changes
-  * License: Unlicense
+  * Version: git (826f1dd1724e6fb3ff45f58e48c0fbae864c3403, 2020) + custom changes
+  * License: Public Domain or Unlicense
 - `pcg.{cpp,h}`
   * Upstream: http://www.pcg-random.org
   * Version: minimal C implementation, http://www.pcg-random.org/download.html
   * License: Apache 2.0
 - `smaz.{c,h}`
   * Upstream: https://github.com/antirez/smaz
-  * Version: git (150e125cbae2e8fd20dd332432776ce13395d4d4, 2009)
+  * Version: git (2f625846a775501fb69456567409a8b12f10ea25, 2012)
   * License: BSD-3-Clause
   * Modifications: use `const char*` instead of `char*` for input string
+- `stb_rect_pack.h`
+  * Upstream: https://github.com/nothings/stb
+  * Version: 1.00
+  * License: Public Domain (Unlicense) or MIT
+- `stb_vorbis.c`
+  * Upstream: https://github.com/nothings/stb
+  * Version: 1.20 (314d0a6f9af5af27e585336eecea333e95c5a2d8, 2020)
+  * License: Public Domain or Unlicense or MIT
 - `triangulator.{cpp,h}`
   * Upstream: https://github.com/ivanfratric/polypartition (`src/polypartition.cpp`)
   * Version: TBD, class was renamed
   * License: MIT
-
-### modules
-
 - `yuv2rgb.h`
   * Upstream: http://wss.co.uk/pinknoise/yuv2rgb/ (to check)
   * Version: ?
   * License: BSD
 
-### platform
-
-- `ifaddrs-android.{cc,h}`
-  * Upstream: https://chromium.googlesource.com/external/webrtc/stable/talk/+/master/base/ifaddrs-android.h
-  * Version: git (5976650443d68ccfadf1dea24999ee459dd2819d, 2013)
-  * License: BSD-3-Clause
-
-### scene
-
-- `easing_equations.cpp`
-  * Upstream: http://robertpenner.com/easing/ via https://github.com/jesusgollonet/ofpennereasing (modified to fit Godot types)
-  * Version: git (af72c147c3a74e7e872aa28c7e2abfcced04fdce, 2008) + Godot types and style changes
-  * License: BSD-3-Clause
-- `mikktspace.{c,h}`
-  * Upstream: https://archive.blender.org/wiki/index.php/Dev:Shading/Tangent_Space_Normal_Maps/
-  * Version: 1.0 (2011)
-  * License: zlib
-- `stb_vorbis.c`
-  * Upstream: https://github.com/nothings/stb
-  * Version: 1.20
-  * License: Public Domain (Unlicense) or MIT
-
 
 ## nanosvg
 
 - Upstream: https://github.com/memononen/nanosvg
-- Version: git (25241c5a8f8451d41ab1b02ab2d865b01600d949, 2019)
+- Version: git (3e403ec72a9145cbbcc6c63d94a4caf079aafec2, 2020)
 - License: zlib
 
 Files extracted from the upstream source:
 
 - All .h files in `src/`
 - LICENSE.txt
+
+
+## oidn
+
+- Upstream: https://github.com/OpenImageDenoise/oidn
+- Version: 1.1.0 (c58c5216db05ceef4cde5a096862f2eeffd14c06, 2019)
+- License: Apache 2.0
+
+Files extracted from upstream source:
+
+common/* (except tasking.* and CMakeLists.txt)
+core/*
+include/OpenImageDenoise/* (except version.h.in)
+LICENSE.txt
+mkl-dnn/include/*
+mkl-dnn/src/* (except CMakeLists.txt)
+weights/rtlightmap_hdr.tza
+scripts/resource_to_cpp.py
+
+Modified files:
+Modifications are marked with `// -- GODOT start --` and `// -- GODOT end --`.
+Patch files are provided in `oidn/patches/`.
+
+core/autoencoder.cpp
+core/autoencoder.h
+core/common.h
+core/device.cpp
+core/device.h
+core/transfer_function.cpp
+
+scripts/resource_to_cpp.py (used in modules/denoise/resource_to_cpp.py)
 
 
 ## opus
@@ -410,7 +433,7 @@ Files extracted from upstream source:
 ## pcre2
 
 - Upstream: http://www.pcre.org
-- Version: 10.34 (2019)
+- Version: 10.36 (r1288, 2020)
 - License: BSD-3-Clause
 
 Files extracted from upstream source:
@@ -419,13 +442,14 @@ Files extracted from upstream source:
 - All .h files in src/ apart from pcre2posix.h
 - src/pcre2_jit_match.c
 - src/pcre2_jit_misc.c
-- src/sljit/*
+- src/sljit/
 - AUTHORS and LICENCE
 
 
 ## pvrtccompressor
 
-- Upstream: https://bitbucket.org/jthlim/pvrtccompressor
+- Upstream: https://bitbucket.org/jthlim/pvrtccompressor (dead link)
+  Unofficial backup fork: https://github.com/LibreGamesArchive/PVRTCCompressor
 - Version: hg (cf7177748ee0dcdccfe89716dc11a47d2dc81af5, 2015)
 - License: BSD-3-Clause
 
@@ -450,7 +474,7 @@ Files extracted from upstream source:
 ## squish
 
 - Upstream: https://sourceforge.net/projects/libsquish
-- Version: 1.15 (2017)
+- Version: 1.15 (r104, 2017)
 - License: MIT
 
 Files extracted from upstream source:
@@ -465,7 +489,7 @@ comments and a patch is provided in the squish/ folder.
 ## tinyexr
 
 - Upstream: https://github.com/syoyo/tinyexr
-- Version: git (4dbd05a22f51a2d7462311569b8b0cba0bbe2ac5, 2020)
+- Version: 1.0.0 (e4b7840d9448b7d57a88384ce26143004f3c0c71, 2020)
 - License: BSD-3-Clause
 
 Files extracted from upstream source:
@@ -493,7 +517,7 @@ folder.
 ## wslay
 
 - Upstream: https://github.com/tatsuhiro-t/wslay
-- Version: 1.1.1 (2020)
+- Version: 1.1.1 (c9a84aa6df8512584c77c8cd15be9536b89c35aa, 2020)
 - License: MIT
 
 File extracted from upstream release tarball:
@@ -506,7 +530,7 @@ File extracted from upstream release tarball:
 ## xatlas
 
 - Upstream: https://github.com/jpcy/xatlas
-- Version: git (470576d3516f7e6d8b4554e7c941194a935969fd, 2020)
+- Version: git (5571fc7ef0d06832947c0a935ccdcf083f7a9264, 2020)
 - License: MIT
 
 Files extracted from upstream source:
@@ -529,7 +553,7 @@ Files extracted from upstream source:
 ## zstd
 
 - Upstream: https://github.com/facebook/zstd
-- Version: 1.4.4 (2019)
+- Version: 1.4.8 (97a3da1df009d4dc67251de0c4b1c9d7fe286fc1, 2020)
 - License: BSD-3-Clause
 
 Files extracted from upstream source:

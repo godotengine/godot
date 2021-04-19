@@ -39,9 +39,8 @@
    */
 
 
-#include <ft2build.h>
-#include FT_INTERNAL_HASH_H
-#include FT_INTERNAL_MEMORY_H
+#include <freetype/internal/fthash.h>
+#include <freetype/internal/ftmemory.h>
 
 
 #define INITIAL_HT_SIZE  241

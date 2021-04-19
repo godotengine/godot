@@ -31,7 +31,7 @@ namespace GodotTools.Build
                         string dotnetCliPath = OS.PathWhich("dotnet");
                         if (!string.IsNullOrEmpty(dotnetCliPath))
                             return (dotnetCliPath, BuildTool.DotnetCli);
-                        GD.PushError("Cannot find dotnet CLI executable. Fallback to MSBuild from Visual Studio.");
+                        GD.PushError($"Cannot find executable for '{BuildManager.PropNameDotnetCli}'. Fallback to MSBuild from Visual Studio.");
                         goto case BuildTool.MsBuildVs;
                     }
                     case BuildTool.MsBuildVs:
@@ -86,10 +86,10 @@ namespace GodotTools.Build
                 {
                     case BuildTool.DotnetCli:
                     {
-                        string dotnetCliPath = OS.PathWhich("dotnet");
+                        string dotnetCliPath = FindBuildEngineOnUnix("dotnet");
                         if (!string.IsNullOrEmpty(dotnetCliPath))
                             return (dotnetCliPath, BuildTool.DotnetCli);
-                        GD.PushError("Cannot find dotnet CLI executable. Fallback to MSBuild from Mono.");
+                        GD.PushError($"Cannot find executable for '{BuildManager.PropNameDotnetCli}'. Fallback to MSBuild from Mono.");
                         goto case BuildTool.MsBuildMono;
                     }
                     case BuildTool.MsBuildMono:
@@ -122,7 +122,11 @@ namespace GodotTools.Build
                 if (OS.IsOSX)
                 {
                     result.Add("/Library/Frameworks/Mono.framework/Versions/Current/bin/");
+                    result.Add("/opt/local/bin/");
                     result.Add("/usr/local/var/homebrew/linked/mono/bin/");
+                    result.Add("/usr/local/bin/");
+                    result.Add("/usr/local/bin/dotnet/");
+                    result.Add("/usr/local/share/dotnet/");
                 }
 
                 result.Add("/opt/novell/mono/bin/");
@@ -161,7 +165,7 @@ namespace GodotTools.Build
 
             // Try to find 15.0 with vswhere
 
-            var envNames = Internal.GodotIs32Bits() ? new[] { "ProgramFiles", "ProgramW6432" } : new[] { "ProgramFiles(x86)", "ProgramFiles" };
+            var envNames = Internal.GodotIs32Bits() ? new[] {"ProgramFiles", "ProgramW6432"} : new[] {"ProgramFiles(x86)", "ProgramFiles"};
 
             string vsWherePath = null;
             foreach (var envName in envNames)
@@ -177,7 +181,7 @@ namespace GodotTools.Build
                 vsWherePath = null;
             }
 
-            var vsWhereArgs = new[] { "-latest", "-products", "*", "-requires", "Microsoft.Component.MSBuild" };
+            var vsWhereArgs = new[] {"-latest", "-products", "*", "-requires", "Microsoft.Component.MSBuild"};
 
             var outputArray = new Godot.Collections.Array<string>();
             int exitCode = Godot.OS.Execute(vsWherePath, vsWhereArgs,

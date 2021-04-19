@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,6 +34,7 @@
 #include "core/io/http_client.h"
 #include "core/os/file_access.h"
 #include "core/os/thread.h"
+#include "core/safe_refcount.h"
 #include "node.h"
 #include "scene/main/timer.h"
 
@@ -74,7 +75,7 @@ private:
 	bool request_sent;
 	Ref<HTTPClient> client;
 	PoolByteArray body;
-	volatile bool use_threads;
+	SafeFlag use_threads;
 
 	bool got_response;
 	int response_code;
@@ -85,7 +86,7 @@ private:
 	FileAccess *file;
 
 	int body_len;
-	volatile int downloaded;
+	SafeNumeric<int> downloaded;
 	int body_size_limit;
 
 	int redirections;
@@ -103,10 +104,10 @@ private:
 	Error _parse_url(const String &p_url);
 	Error _request();
 
-	volatile bool thread_done;
-	volatile bool thread_request_quit;
+	SafeFlag thread_done;
+	SafeFlag thread_request_quit;
 
-	Thread *thread;
+	Thread thread;
 
 	void _request_done(int p_status, int p_code, const PoolStringArray &headers, const PoolByteArray &p_data);
 	static void _thread_func(void *p_userdata);

@@ -1,0 +1,215 @@
+diff --git a/common/math/math.h b/common/math/math.h
+index 5af0691a2..1982c27c1 100644
+--- a/common/math/math.h
++++ b/common/math/math.h
+@@ -13,7 +13,7 @@
+ #include <immintrin.h>
+ 
+ #if defined(__WIN32__)
+-#if (__MSV_VER <= 1700)
++#if defined(_MSC_VER) && (_MSC_VER <= 1700)
+ namespace std
+ {
+   __forceinline bool isinf ( const float x ) { return _finite(x) == 0; }
+@@ -86,7 +86,7 @@
+     return _mm_cvtss_f32(c);
+   }
+ 
+-#if defined(__WIN32__) && (__MSC_VER <= 1700)
++#if defined(__WIN32__) && defined(_MSC_VER) && (_MSC_VER <= 1700)
+   __forceinline float nextafter(float x, float y) { if ((x<y) == (x>0)) return x*(1.1f+float(ulp)); else return x*(0.9f-float(ulp)); }
+   __forceinline double nextafter(double x, double y) { return _nextafter(x, y); }
+   __forceinline int roundf(float f) { return (int)(f + 0.5f); }
+diff --git a/common/sys/intrinsics.h b/common/sys/intrinsics.h
+index 3f0619cac..58f5c3bb4 100644
+--- a/common/sys/intrinsics.h
++++ b/common/sys/intrinsics.h
+@@ -11,6 +11,12 @@
+ 
+ #include <immintrin.h>
+ 
++// -- GODOT start --
++#if defined(__WIN32__) && defined(__MINGW32__)
++#include <unistd.h>
++#endif
++// -- GODOT end --
++
+ #if defined(__BMI__) && defined(__GNUC__) && !defined(__INTEL_COMPILER)
+   #if !defined(_tzcnt_u32)
+     #define _tzcnt_u32 __tzcnt_u32
+@@ -30,8 +36,14 @@
+ #endif
+ 
+ #if defined(__WIN32__)
+-#  define NOMINMAX
+-#  include <windows.h>
++// -- GODOT start --
++#if !defined(NOMINMAX)
++// -- GODOT end --
++#define NOMINMAX
++// -- GODOT start --
++#endif
++#include "windows.h"
++// -- GODOT end --
+ #endif
+ 
+ /* normally defined in pmmintrin.h, but we always need this */
+@@ -413,8 +425,16 @@ namespace embree
+   
+   __forceinline void pause_cpu(const size_t N = 8)
+   {
++// -- GODOT start --
+     for (size_t i=0; i<N; i++)
++#if !(defined(__WIN32__) && defined(__MINGW32__))
++// -- GODOT end --
+       _mm_pause();    
++// -- GODOT start --
++#else
++      usleep(1);
++#endif
++// -- GODOT end --
+   }
+   
+   /* prefetches */
+diff --git a/common/sys/library.cpp b/common/sys/library.cpp
+index e448b195d..8ec918660 100644
+--- a/common/sys/library.cpp
++++ b/common/sys/library.cpp
+@@ -27,7 +27,9 @@ namespace embree
+ 
+   /* returns address of a symbol from the library */
+   void* getSymbol(lib_t lib, const std::string& sym) {
+-    return GetProcAddress(HMODULE(lib),sym.c_str());
++    // -- GODOT start --
++    return (void*) GetProcAddress(HMODULE(lib),sym.c_str());
++    // -- GODOT end --
+   }
+ 
+   /* closes the shared library */
+diff --git a/common/sys/mutex.h b/common/sys/mutex.h
+index 1164210f2..f0f55340a 100644
+--- a/common/sys/mutex.h
++++ b/common/sys/mutex.h
+@@ -47,8 +47,17 @@ namespace embree
+       {
+         while (flag.load()) 
+         {
++// -- GODOT start --
++#if !(defined (__WIN32__) && defined (__MINGW32__))
++// -- GODOT end --
+           _mm_pause(); 
+           _mm_pause();
++// -- GODOT start --
++#else
++          __builtin_ia32_pause();
++          __builtin_ia32_pause();
++#endif
++// -- GODOT end --
+         }
+         
+         bool expected = false;
+@@ -74,8 +82,17 @@ namespace embree
+     {
+       while(flag.load())
+       {
++// -- GODOT start --
++#if !(defined (__WIN32__) && defined(__MINGW32__))
++// -- GODOT end --
+         _mm_pause(); 
+         _mm_pause();
++// -- GODOT start --
++#else
++        __builtin_ia32_pause();
++        __builtin_ia32_pause();
++#endif
++// -- GODOT end --
+       }
+     }
+ 
+diff --git a/common/sys/platform.h b/common/sys/platform.h
+index 96f9aab01..08617452f 100644
+--- a/common/sys/platform.h
++++ b/common/sys/platform.h
+@@ -141,6 +141,9 @@
+   #define DELETED  = delete
+ #endif
+ 
++// -- GODOT start --
++#if !defined(likely)
++// -- GODOT end --
+ #if defined(_MSC_VER) && !defined(__INTEL_COMPILER)
+ #define   likely(expr) (expr)
+ #define unlikely(expr) (expr)
+@@ -148,6 +151,9 @@
+ #define   likely(expr) __builtin_expect((bool)(expr),true )
+ #define unlikely(expr) __builtin_expect((bool)(expr),false)
+ #endif
++// -- GODOT start --
++#endif
++// -- GODOT end --
+ 
+ ////////////////////////////////////////////////////////////////////////////////
+ /// Error handling and debugging
+diff --git a/common/sys/sysinfo.cpp b/common/sys/sysinfo.cpp
+index eb0a10eaf..74438260d 100644
+--- a/common/sys/sysinfo.cpp
++++ b/common/sys/sysinfo.cpp
+@@ -233,7 +233,7 @@ namespace embree
+ 
+   __noinline int64_t get_xcr0() 
+   {
+-#if defined (__WIN32__)
++#if defined (__WIN32__) /* -- GODOT start -- */ && !defined (__MINGW32__) /* -- GODOT end -- */
+     int64_t xcr0 = 0; // int64_t is workaround for compiler bug under VS2013, Win32
+     xcr0 = _xgetbv(0);
+     return xcr0;
+diff --git a/common/tasking/taskschedulerinternal.cpp b/common/tasking/taskschedulerinternal.cpp
+index 2152e92f4..923d62f83 100644
+--- a/common/tasking/taskschedulerinternal.cpp
++++ b/common/tasking/taskschedulerinternal.cpp
+@@ -361,7 +361,15 @@ namespace embree
+           if ((loopIndex % LOOP_YIELD_THRESHOLD) == 0)
+             yield();
+           else
++// -- GODOT start --
++#if !defined(__MINGW32__)
++// -- GODOT end --
+             _mm_pause();
++// -- GODOT start --
++#else
++            usleep(1);
++#endif
++// -- GODOT end --
+ 	  loopIndex++;
+ #else
+           yield();
+diff --git a/common/tasking/taskschedulertbb.h b/common/tasking/taskschedulertbb.h
+index 98dba2687..369e5edf0 100644
+--- a/common/tasking/taskschedulertbb.h
++++ b/common/tasking/taskschedulertbb.h
+@@ -12,7 +12,13 @@
+ #include "../sys/ref.h"
+ 
+ #if defined(__WIN32__)
++// -- GODOT start --
++#if !defined(NOMINMAX)
++// -- GODOT end --
+ #  define NOMINMAX
++// -- GODOT start --
++#endif
++// -- GODOT end --
+ #endif
+ 
+ // We need to define these to avoid implicit linkage against
+diff a/include/embree3/rtcore_common.h b/include/embree3/rtcore_common.h
+--- a/include/embree3/rtcore_common.h
++++ b/include/embree3/rtcore_common.h
+@@ -19,7 +19,7 @@
+ #endif
+ #endif
+ 
+-#ifdef _WIN32
++#if defined(_WIN32) && defined(_MSC_VER)
+ #  define RTC_ALIGN(...) __declspec(align(__VA_ARGS__))
+ #else
+ #  define RTC_ALIGN(...) __attribute__((aligned(__VA_ARGS__)))

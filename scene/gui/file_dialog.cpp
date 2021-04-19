@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -761,9 +761,9 @@ FileDialog::Access FileDialog::get_access() const {
 
 void FileDialog::_make_dir_confirm() {
 
-	Error err = dir_access->make_dir(makedirname->get_text());
+	Error err = dir_access->make_dir(makedirname->get_text().strip_edges());
 	if (err == OK) {
-		dir_access->change_dir(makedirname->get_text());
+		dir_access->change_dir(makedirname->get_text().strip_edges());
 		invalidate();
 		update_filters();
 		update_dir();

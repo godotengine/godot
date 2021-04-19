@@ -16,9 +16,8 @@
  */
 
 
-#include <ft2build.h>
-#include FT_TRUETYPE_TAGS_H
-
+#include <freetype/tttags.h>
+#include "woff2tags.h"
 
   /*
    * Return tag from index in the order given in WOFF2 specification.

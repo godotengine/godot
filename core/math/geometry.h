@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -295,27 +295,34 @@ public:
 		return true;
 	}
 
-	static inline bool segment_intersects_cylinder(const Vector3 &p_from, const Vector3 &p_to, real_t p_height, real_t p_radius, Vector3 *r_res = 0, Vector3 *r_norm = 0) {
+	static inline bool segment_intersects_cylinder(const Vector3 &p_from, const Vector3 &p_to, real_t p_height, real_t p_radius, Vector3 *r_res = 0, Vector3 *r_norm = 0, int p_cylinder_axis = 2) {
 
 		Vector3 rel = (p_to - p_from);
 		real_t rel_l = rel.length();
 		if (rel_l < CMP_EPSILON)
 			return false; // Both points are the same.
 
+		ERR_FAIL_COND_V(p_cylinder_axis < 0, false);
+		ERR_FAIL_COND_V(p_cylinder_axis > 2, false);
+		Vector3 cylinder_axis;
+		cylinder_axis[p_cylinder_axis] = 1.0;
+
 		// First check if they are parallel.
 		Vector3 normal = (rel / rel_l);
-		Vector3 crs = normal.cross(Vector3(0, 0, 1));
+		Vector3 crs = normal.cross(cylinder_axis);
 		real_t crs_l = crs.length();
 
-		Vector3 z_dir;
+		Vector3 axis_dir;
 
 		if (crs_l < CMP_EPSILON) {
-			z_dir = Vector3(1, 0, 0); // Any x/y vector OK.
+			Vector3 side_axis;
+			side_axis[(p_cylinder_axis + 1) % 3] = 1.0; // Any side axis OK.
+			axis_dir = side_axis;
 		} else {
-			z_dir = crs / crs_l;
+			axis_dir = crs / crs_l;
 		}
 
-		real_t dist = z_dir.dot(p_from);
+		real_t dist = axis_dir.dot(p_from);
 
 		if (dist >= p_radius)
 			return false; // Too far away.
@@ -326,10 +333,10 @@ public:
 			return false; // Avoid numerical error.
 		Size2 size(Math::sqrt(w2), p_height * 0.5);
 
-		Vector3 x_dir = z_dir.cross(Vector3(0, 0, 1)).normalized();
+		Vector3 side_dir = axis_dir.cross(cylinder_axis).normalized();
 
-		Vector2 from2D(x_dir.dot(p_from), p_from.z);
-		Vector2 to2D(x_dir.dot(p_to), p_to.z);
+		Vector2 from2D(side_dir.dot(p_from), p_from[p_cylinder_axis]);
+		Vector2 to2D(side_dir.dot(p_to), p_to[p_cylinder_axis]);
 
 		real_t min = 0, max = 1;
 
@@ -375,10 +382,12 @@ public:
 		Vector3 res_normal = result;
 
 		if (axis == 0) {
-			res_normal.z = 0;
+			res_normal[p_cylinder_axis] = 0;
 		} else {
-			res_normal.x = 0;
-			res_normal.y = 0;
+			int axis_side = (p_cylinder_axis + 1) % 3;
+			res_normal[axis_side] = 0;
+			axis_side = (axis_side + 1) % 3;
+			res_normal[axis_side] = 0;
 		}
 
 		res_normal.normalize();
@@ -500,6 +509,27 @@ public:
 		if ((bn.cross(cn) > 0) != orientation) return false;
 
 		return (cn.cross(an) > 0) == orientation;
+	}
+
+	static Vector3 barycentric_coordinates_2d(const Vector2 &s, const Vector2 &a, const Vector2 &b, const Vector2 &c) {
+		// http://www.blackpawn.com/texts/pointinpoly/
+		Vector2 v0 = c - a;
+		Vector2 v1 = b - a;
+		Vector2 v2 = s - a;
+
+		// Compute dot products
+		double dot00 = v0.dot(v0);
+		double dot01 = v0.dot(v1);
+		double dot02 = v0.dot(v2);
+		double dot11 = v1.dot(v1);
+		double dot12 = v1.dot(v2);
+
+		// Compute barycentric coordinates
+		double invDenom = 1.0f / (dot00 * dot11 - dot01 * dot01);
+		double b2 = (dot11 * dot02 - dot01 * dot12) * invDenom;
+		double b1 = (dot00 * dot12 - dot01 * dot02) * invDenom;
+		double b0 = 1.0f - b2 - b1;
+		return Vector3(b0, b1, b2);
 	}
 
 	static Vector2 get_closest_point_to_segment_uncapped_2d(const Vector2 &p_point, const Vector2 *p_segment) {
@@ -1013,6 +1043,13 @@ public:
 	static PoolVector<Plane> build_capsule_planes(real_t p_radius, real_t p_height, int p_sides, int p_lats, Vector3::Axis p_axis = Vector3::AXIS_Z);
 
 	static void make_atlas(const Vector<Size2i> &p_rects, Vector<Point2i> &r_result, Size2i &r_size);
+
+	struct PackRectsResult {
+		int x;
+		int y;
+		bool packed;
+	};
+	static Vector<PackRectsResult> partial_pack_rects(const Vector<Vector2i> &p_sizes, const Size2i &p_atlas_size);
 
 	static Vector<Vector3> compute_convex_mesh_points(const Plane *p_planes, int p_plane_count);
 

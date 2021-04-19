@@ -16,11 +16,10 @@
  */
 
 
-#include <ft2build.h>
-#include FT_INTERNAL_DEBUG_H
-#include FT_INTERNAL_MEMORY_H
-#include FT_INTERNAL_OBJECTS_H
-#include FT_LIST_H
+#include <freetype/internal/ftdebug.h>
+#include <freetype/internal/ftmemory.h>
+#include <freetype/internal/ftobjs.h>
+#include <freetype/ftlist.h>
 
 
   /**************************************************************************

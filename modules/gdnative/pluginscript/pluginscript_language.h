@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -53,7 +53,7 @@ class PluginScriptLanguage : public ScriptLanguage {
 	const godot_pluginscript_language_desc _desc;
 	godot_pluginscript_language_data *_data;
 
-	Mutex *_lock;
+	Mutex _lock;
 	SelfList<PluginScript>::List _script_list;
 
 public:
@@ -126,7 +126,7 @@ public:
 	void unlock();
 
 	PluginScriptLanguage(const godot_pluginscript_language_desc *desc);
-	virtual ~PluginScriptLanguage();
+	virtual ~PluginScriptLanguage() {}
 };
 
 #endif // PLUGINSCRIPT_LANGUAGE_H

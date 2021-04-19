@@ -28,8 +28,8 @@
 #include "gxvalid.h"
 #include "gxvcommn.h"
 
-#include FT_SFNT_NAMES_H
-#include FT_SERVICE_GX_VALIDATE_H
+#include <freetype/ftsnames.h>
+#include <freetype/internal/services/svgxval.h>
 
 
   /**************************************************************************

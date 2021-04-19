@@ -5,9 +5,11 @@
 	</brief_description>
 	<description>
 		A PacketPeer implementation that should be passed to [member SceneTree.network_peer] after being initialized as either a client or server. Events can then be handled by connecting to [SceneTree] signals.
+		ENet's purpose is to provide a relatively thin, simple and robust network communication layer on top of UDP (User Datagram Protocol).
+		[b]Note:[/b] ENet only uses UDP, not TCP. When forwarding the server port to make your server accessible on the public Internet, you only need to forward the server port in UDP. You can use the [UPNP] class to try to forward the server port automatically when starting the server.
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/latest/tutorials/networking/high_level_multiplayer.html</link>
+		<link>https://docs.godotengine.org/en/3.2/tutorials/networking/high_level_multiplayer.html</link>
 		<link>http://enet.bespin.org/usergroup0.html</link>
 	</tutorials>
 	<methods>
@@ -122,6 +124,22 @@
 				Configure the [CryptoKey] to use when [member use_dtls] is [code]true[/code]. Remember to also call [method set_dtls_certificate] to setup your [X509Certificate].
 			</description>
 		</method>
+		<method name="set_peer_timeout">
+			<return type="void">
+			</return>
+			<argument index="0" name="id" type="int">
+			</argument>
+			<argument index="1" name="timeout_limit" type="int">
+			</argument>
+			<argument index="2" name="timeout_min" type="int">
+			</argument>
+			<argument index="3" name="timeout_max" type="int">
+			</argument>
+			<description>
+				Sets the timeout parameters for a peer.	The timeout parameters control how and when a peer will timeout from a failure to acknowledge reliable traffic. Timeout values are expressed in milliseconds.
+				The [code]timeout_limit[/code] is a factor that, multiplied by a value based on the avarage round trip time, will determine the timeout limit for a reliable packet. When that limit is reached, the timeout will be doubled, and the peer will be disconnected if that limit has reached [code]timeout_min[/code]. The [code]timeout_max[/code] parameter, on the other hand, defines a fixed timeout for which any packet must be acknowledged or the peer will be dropped.
+			</description>
+		</method>
 	</methods>
 	<members>
 		<member name="always_ordered" type="bool" setter="set_always_ordered" getter="is_always_ordered" default="false">
@@ -134,7 +152,7 @@
 			The compression method used for network packets. These have different tradeoffs of compression speed versus bandwidth, you may need to test which one works best for your use case if you use compression at all.
 		</member>
 		<member name="dtls_verify" type="bool" setter="set_dtls_verify_enabled" getter="is_dtls_verify_enabled" default="true">
-			Enable or disable certiticate verification when [member use_dtls] [code]true[/code].
+			Enable or disable certificate verification when [member use_dtls] [code]true[/code].
 		</member>
 		<member name="refuse_new_connections" type="bool" setter="set_refuse_new_connections" getter="is_refusing_new_connections" override="true" default="false" />
 		<member name="server_relay" type="bool" setter="set_server_relay_enabled" getter="is_server_relay_enabled" default="true">

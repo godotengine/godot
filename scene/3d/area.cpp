@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -192,25 +192,19 @@ void Area::_body_inout(int p_status, const RID &p_body, int p_instance, int p_bo
 		if (node)
 			E->get().shapes.erase(ShapePair(p_body_shape, p_area_shape));
 
-		bool eraseit = false;
-
+		bool in_tree = E->get().in_tree;
 		if (E->get().rc == 0) {
-
+			body_map.erase(E);
 			if (node) {
 				node->disconnect(SceneStringNames::get_singleton()->tree_entered, this, SceneStringNames::get_singleton()->_body_enter_tree);
 				node->disconnect(SceneStringNames::get_singleton()->tree_exiting, this, SceneStringNames::get_singleton()->_body_exit_tree);
-				if (E->get().in_tree)
+				if (in_tree)
 					emit_signal(SceneStringNames::get_singleton()->body_exited, obj);
 			}
-
-			eraseit = true;
 		}
-		if (node && E->get().in_tree) {
+		if (node && in_tree) {
 			emit_signal(SceneStringNames::get_singleton()->body_shape_exited, objid, obj, p_body_shape, p_area_shape);
 		}
-
-		if (eraseit)
-			body_map.erase(E);
 	}
 
 	locked = false;
@@ -385,26 +379,20 @@ void Area::_area_inout(int p_status, const RID &p_area, int p_instance, int p_ar
 		if (node)
 			E->get().shapes.erase(AreaShapePair(p_area_shape, p_self_shape));
 
-		bool eraseit = false;
-
+		bool in_tree = E->get().in_tree;
 		if (E->get().rc == 0) {
-
+			area_map.erase(E);
 			if (node) {
 				node->disconnect(SceneStringNames::get_singleton()->tree_entered, this, SceneStringNames::get_singleton()->_area_enter_tree);
 				node->disconnect(SceneStringNames::get_singleton()->tree_exiting, this, SceneStringNames::get_singleton()->_area_exit_tree);
-				if (E->get().in_tree) {
+				if (in_tree) {
 					emit_signal(SceneStringNames::get_singleton()->area_exited, obj);
 				}
 			}
-
-			eraseit = true;
 		}
-		if (!node || E->get().in_tree) {
+		if (!node || in_tree) {
 			emit_signal(SceneStringNames::get_singleton()->area_shape_exited, objid, obj, p_area_shape, p_self_shape);
 		}
-
-		if (eraseit)
-			area_map.erase(E);
 	}
 
 	locked = false;
@@ -694,13 +682,13 @@ void Area::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_reverb_uniformity", "amount"), &Area::set_reverb_uniformity);
 	ClassDB::bind_method(D_METHOD("get_reverb_uniformity"), &Area::get_reverb_uniformity);
 
-	ADD_SIGNAL(MethodInfo("body_shape_entered", PropertyInfo(Variant::INT, "body_id"), PropertyInfo(Variant::OBJECT, "body", PROPERTY_HINT_RESOURCE_TYPE, "Node"), PropertyInfo(Variant::INT, "body_shape"), PropertyInfo(Variant::INT, "area_shape")));
-	ADD_SIGNAL(MethodInfo("body_shape_exited", PropertyInfo(Variant::INT, "body_id"), PropertyInfo(Variant::OBJECT, "body", PROPERTY_HINT_RESOURCE_TYPE, "Node"), PropertyInfo(Variant::INT, "body_shape"), PropertyInfo(Variant::INT, "area_shape")));
+	ADD_SIGNAL(MethodInfo("body_shape_entered", PropertyInfo(Variant::INT, "body_id"), PropertyInfo(Variant::OBJECT, "body", PROPERTY_HINT_RESOURCE_TYPE, "Node"), PropertyInfo(Variant::INT, "body_shape"), PropertyInfo(Variant::INT, "local_shape")));
+	ADD_SIGNAL(MethodInfo("body_shape_exited", PropertyInfo(Variant::INT, "body_id"), PropertyInfo(Variant::OBJECT, "body", PROPERTY_HINT_RESOURCE_TYPE, "Node"), PropertyInfo(Variant::INT, "body_shape"), PropertyInfo(Variant::INT, "local_shape")));
 	ADD_SIGNAL(MethodInfo("body_entered", PropertyInfo(Variant::OBJECT, "body", PROPERTY_HINT_RESOURCE_TYPE, "Node")));
 	ADD_SIGNAL(MethodInfo("body_exited", PropertyInfo(Variant::OBJECT, "body", PROPERTY_HINT_RESOURCE_TYPE, "Node")));
 
-	ADD_SIGNAL(MethodInfo("area_shape_entered", PropertyInfo(Variant::INT, "area_id"), PropertyInfo(Variant::OBJECT, "area", PROPERTY_HINT_RESOURCE_TYPE, "Area"), PropertyInfo(Variant::INT, "area_shape"), PropertyInfo(Variant::INT, "self_shape")));
-	ADD_SIGNAL(MethodInfo("area_shape_exited", PropertyInfo(Variant::INT, "area_id"), PropertyInfo(Variant::OBJECT, "area", PROPERTY_HINT_RESOURCE_TYPE, "Area"), PropertyInfo(Variant::INT, "area_shape"), PropertyInfo(Variant::INT, "self_shape")));
+	ADD_SIGNAL(MethodInfo("area_shape_entered", PropertyInfo(Variant::INT, "area_id"), PropertyInfo(Variant::OBJECT, "area", PROPERTY_HINT_RESOURCE_TYPE, "Area"), PropertyInfo(Variant::INT, "area_shape"), PropertyInfo(Variant::INT, "local_shape")));
+	ADD_SIGNAL(MethodInfo("area_shape_exited", PropertyInfo(Variant::INT, "area_id"), PropertyInfo(Variant::OBJECT, "area", PROPERTY_HINT_RESOURCE_TYPE, "Area"), PropertyInfo(Variant::INT, "area_shape"), PropertyInfo(Variant::INT, "local_shape")));
 	ADD_SIGNAL(MethodInfo("area_entered", PropertyInfo(Variant::OBJECT, "area", PROPERTY_HINT_RESOURCE_TYPE, "Area")));
 	ADD_SIGNAL(MethodInfo("area_exited", PropertyInfo(Variant::OBJECT, "area", PROPERTY_HINT_RESOURCE_TYPE, "Area")));
 

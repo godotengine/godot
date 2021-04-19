@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -394,6 +394,7 @@ SpriteBase3D::SpriteBase3D() {
 	VS::get_singleton()->material_set_param(material, "uv1_scale", Vector3(1, 1, 1));
 	VS::get_singleton()->material_set_param(material, "uv2_offset", Vector3(0, 0, 0));
 	VS::get_singleton()->material_set_param(material, "uv2_scale", Vector3(1, 1, 1));
+	VS::get_singleton()->material_set_param(material, "alpha_scissor_threshold", 0.98);
 
 	mesh = VisualServer::get_singleton()->mesh_create();
 
@@ -429,7 +430,7 @@ SpriteBase3D::SpriteBase3D() {
 	mesh_array[VS::ARRAY_COLOR] = mesh_colors;
 	mesh_array[VS::ARRAY_TEX_UV] = mesh_uvs;
 
-	VS::get_singleton()->mesh_add_surface_from_arrays(mesh, VS::PRIMITIVE_TRIANGLE_FAN, mesh_array);
+	VS::get_singleton()->mesh_add_surface_from_arrays(mesh, VS::PRIMITIVE_TRIANGLE_FAN, mesh_array, Array(), VS::ARRAY_COMPRESS_DEFAULT & ~VS::ARRAY_COMPRESS_TEX_UV);
 	const int surface_vertex_len = VS::get_singleton()->mesh_surface_get_array_len(mesh, 0);
 	const int surface_index_len = VS::get_singleton()->mesh_surface_get_array_index_len(mesh, 0);
 
@@ -550,7 +551,7 @@ void Sprite3D::_draw() {
 
 	AABB aabb;
 
-	// Buffer is using default compression, so everything except position is compressed
+	// Everything except position and UV is compressed
 	PoolVector<uint8_t>::Write write_buffer = mesh_buffer.write();
 
 	int8_t v_normal[4] = {
@@ -584,16 +585,11 @@ void Sprite3D::_draw() {
 		} else {
 			aabb.expand_to(vtx);
 		}
-		if (mesh_surface_format & VS::ARRAY_COMPRESS_TEX_UV) {
-			uint16_t v_uv[2] = { Math::make_half_float(uvs[i].x), Math::make_half_float(uvs[i].y) };
-			copymem(&write_buffer[i * mesh_stride + mesh_surface_offsets[VS::ARRAY_TEX_UV]], v_uv, 4);
-		} else {
-			float v_uv[2] = { uvs[i].x, uvs[i].y };
-			copymem(&write_buffer[i * mesh_stride + mesh_surface_offsets[VS::ARRAY_TEX_UV]], v_uv, 8);
-		}
+
+		float v_uv[2] = { uvs[i].x, uvs[i].y };
+		copymem(&write_buffer[i * mesh_stride + mesh_surface_offsets[VS::ARRAY_TEX_UV]], v_uv, 8);
 
 		float v_vertex[3] = { vtx.x, vtx.y, vtx.z };
-
 		copymem(&write_buffer[i * mesh_stride + mesh_surface_offsets[VS::ARRAY_VERTEX]], &v_vertex, sizeof(float) * 3);
 		copymem(&write_buffer[i * mesh_stride + mesh_surface_offsets[VS::ARRAY_NORMAL]], v_normal, 4);
 		copymem(&write_buffer[i * mesh_stride + mesh_surface_offsets[VS::ARRAY_TANGENT]], v_tangent, 4);
@@ -784,8 +780,8 @@ void Sprite3D::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_texture", "get_texture");
 	ADD_GROUP("Animation", "");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "vframes", PROPERTY_HINT_RANGE, "1,16384,1"), "set_vframes", "get_vframes");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "hframes", PROPERTY_HINT_RANGE, "1,16384,1"), "set_hframes", "get_hframes");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "vframes", PROPERTY_HINT_RANGE, "1,16384,1"), "set_vframes", "get_vframes");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "frame"), "set_frame", "get_frame");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "frame_coords", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "set_frame_coords", "get_frame_coords");
 	ADD_GROUP("Region", "region_");
@@ -917,7 +913,7 @@ void AnimatedSprite3D::_draw() {
 
 	AABB aabb;
 
-	// Buffer is using default compression, so everything except position is compressed
+	// Everything except position and UV is compressed
 	PoolVector<uint8_t>::Write write_buffer = mesh_buffer.write();
 
 	int8_t v_normal[4] = {
@@ -952,15 +948,10 @@ void AnimatedSprite3D::_draw() {
 			aabb.expand_to(vtx);
 		}
 
-		if (mesh_surface_format & VS::ARRAY_COMPRESS_TEX_UV) {
-			uint16_t v_uv[2] = { Math::make_half_float(uvs[i].x), Math::make_half_float(uvs[i].y) };
-			copymem(&write_buffer[i * mesh_stride + mesh_surface_offsets[VS::ARRAY_TEX_UV]], v_uv, 4);
-		} else {
-			float v_uv[2] = { uvs[i].x, uvs[i].y };
-			copymem(&write_buffer[i * mesh_stride + mesh_surface_offsets[VS::ARRAY_TEX_UV]], v_uv, 8);
-		}
-		float v_vertex[3] = { vtx.x, vtx.y, vtx.z };
+		float v_uv[2] = { uvs[i].x, uvs[i].y };
+		copymem(&write_buffer[i * mesh_stride + mesh_surface_offsets[VS::ARRAY_TEX_UV]], v_uv, 8);
 
+		float v_vertex[3] = { vtx.x, vtx.y, vtx.z };
 		copymem(&write_buffer[i * mesh_stride + mesh_surface_offsets[VS::ARRAY_VERTEX]], &v_vertex, sizeof(float) * 3);
 		copymem(&write_buffer[i * mesh_stride + mesh_surface_offsets[VS::ARRAY_NORMAL]], v_normal, 4);
 		copymem(&write_buffer[i * mesh_stride + mesh_surface_offsets[VS::ARRAY_TANGENT]], v_tangent, 4);
@@ -1056,12 +1047,14 @@ void AnimatedSprite3D::_notification(int p_what) {
 						} else {
 							frame = fc - 1;
 						}
+						emit_signal(SceneStringNames::get_singleton()->animation_finished);
 					} else {
 						frame++;
 					}
 
 					_queue_update();
 					_change_notify("frame");
+					emit_signal(SceneStringNames::get_singleton()->frame_changed);
 				}
 
 				float to_process = MIN(timeout, remaining);
@@ -1223,11 +1216,15 @@ StringName AnimatedSprite3D::get_animation() const {
 
 String AnimatedSprite3D::get_configuration_warning() const {
 
+	String warning = SpriteBase3D::get_configuration_warning();
 	if (frames.is_null()) {
-		return TTR("A SpriteFrames resource must be created or set in the \"Frames\" property in order for AnimatedSprite3D to display frames.");
+		if (warning != String()) {
+			warning += "\n\n";
+		}
+		warning += TTR("A SpriteFrames resource must be created or set in the \"Frames\" property in order for AnimatedSprite3D to display frames.");
 	}
 
-	return String();
+	return warning;
 }
 
 void AnimatedSprite3D::_bind_methods() {
@@ -1251,6 +1248,7 @@ void AnimatedSprite3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_res_changed"), &AnimatedSprite3D::_res_changed);
 
 	ADD_SIGNAL(MethodInfo("frame_changed"));
+	ADD_SIGNAL(MethodInfo("animation_finished"));
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "frames", PROPERTY_HINT_RESOURCE_TYPE, "SpriteFrames"), "set_sprite_frames", "get_sprite_frames");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "animation"), "set_animation", "get_animation");

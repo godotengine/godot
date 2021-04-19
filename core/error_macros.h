@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,7 +31,9 @@
 #ifndef ERROR_MACROS_H
 #define ERROR_MACROS_H
 
+#include "core/safe_refcount.h"
 #include "core/typedefs.h"
+
 /**
  * Error macros. Unlike exceptions and asserts, these macros try to maintain consistency and stability
  * inside the code. It is recommended to always return processable data, so in case of an error,
@@ -177,6 +179,19 @@ void _err_print_index_error(const char *p_function, const char *p_file, int p_li
  * prints a generic error message and returns the value specified in `m_retval`.
  * This macro should be preferred to `ERR_FAIL_COND_V` for unsigned bounds checking.
  */
+#define ERR_FAIL_UNSIGNED_INDEX(m_index, m_size)                                                                    \
+	do {                                                                                                            \
+		if (unlikely((m_index) >= (m_size))) {                                                                      \
+			_err_print_index_error(FUNCTION_STR, __FILE__, __LINE__, m_index, m_size, _STR(m_index), _STR(m_size)); \
+			return;                                                                                                 \
+		}                                                                                                           \
+	} while (0); // (*)
+
+/**
+ * If `m_index` is greater than or equal to `m_size`,
+ * prints a generic error message and returns the value specified in `m_retval`.
+ * This macro should be preferred to `ERR_FAIL_COND_V` for unsigned bounds checking.
+ */
 #define ERR_FAIL_UNSIGNED_INDEX_V(m_index, m_size, m_retval)                                                        \
 	do {                                                                                                            \
 		if (unlikely((m_index) >= (m_size))) {                                                                      \
@@ -224,6 +239,20 @@ void _err_print_index_error(const char *p_function, const char *p_file, int p_li
 			_err_print_index_error(FUNCTION_STR, __FILE__, __LINE__, m_index, m_size, _STR(m_index), _STR(m_size), m_msg, true); \
 			GENERATE_TRAP                                                                                                        \
 		}                                                                                                                        \
+	} while (0); // (*)
+
+/**
+ * If `m_index` is greater than or equal to `m_size`,
+ * crashes the engine immediately with a generic error message.
+ * Only use this if there's no sensible fallback (i.e. the error is unrecoverable).
+ * This macro should be preferred to `CRASH_COND` for bounds checking.
+ */
+#define CRASH_BAD_UNSIGNED_INDEX(m_index, m_size)                                                                             \
+	do {                                                                                                                      \
+		if (unlikely((m_index) >= (m_size))) {                                                                                \
+			_err_print_index_error(FUNCTION_STR, __FILE__, __LINE__, m_index, m_size, _STR(m_index), _STR(m_size), "", true); \
+			GENERATE_TRAP                                                                                                     \
+		}                                                                                                                     \
 	} while (0); // (*)
 
 /**
@@ -505,10 +534,10 @@ void _err_print_index_error(const char *p_function, const char *p_file, int p_li
  */
 #define WARN_DEPRECATED                                                                                                                                    \
 	{                                                                                                                                                      \
-		static volatile bool warning_shown = false;                                                                                                        \
-		if (!warning_shown) {                                                                                                                              \
+		static SafeFlag warning_shown;                                                                                                                     \
+		if (!warning_shown.is_set()) {                                                                                                                     \
 			_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "This method has been deprecated and will be removed in the future.", ERR_HANDLER_WARNING); \
-			warning_shown = true;                                                                                                                          \
+			warning_shown.set();                                                                                                                           \
 		}                                                                                                                                                  \
 	}
 
@@ -518,10 +547,10 @@ void _err_print_index_error(const char *p_function, const char *p_file, int p_li
  */
 #define WARN_DEPRECATED_MSG(m_msg)                                                                                                                                \
 	{                                                                                                                                                             \
-		static volatile bool warning_shown = false;                                                                                                               \
-		if (!warning_shown) {                                                                                                                                     \
+		static SafeFlag warning_shown;                                                                                                                            \
+		if (!warning_shown.is_set()) {                                                                                                                            \
 			_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "This method has been deprecated and will be removed in the future.", m_msg, ERR_HANDLER_WARNING); \
-			warning_shown = true;                                                                                                                                 \
+			warning_shown.set();                                                                                                                                  \
 		}                                                                                                                                                         \
 	}
 

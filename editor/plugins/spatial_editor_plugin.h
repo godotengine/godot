@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -217,7 +217,8 @@ public:
 	enum {
 		GIZMO_BASE_LAYER = 27,
 		GIZMO_EDIT_LAYER = 26,
-		GIZMO_GRID_LAYER = 25
+		GIZMO_GRID_LAYER = 25,
+		MISC_TOOL_LAYER = 24
 	};
 
 	enum NavigationScheme {
@@ -394,7 +395,7 @@ private:
 
 	real_t zoom_indicator_delay;
 
-	RID move_gizmo_instance[3], move_plane_gizmo_instance[3], rotate_gizmo_instance[3], scale_gizmo_instance[3], scale_plane_gizmo_instance[3];
+	RID move_gizmo_instance[3], move_plane_gizmo_instance[3], rotate_gizmo_instance[4], scale_gizmo_instance[3], scale_plane_gizmo_instance[3];
 
 	String last_message;
 	String message;
@@ -481,6 +482,7 @@ public:
 	bool last_xform_dirty;
 	Spatial *sp;
 	RID sbox_instance;
+	RID sbox_instance_xray;
 
 	SpatialEditorSelectedItem() {
 		sp = NULL;
@@ -572,7 +574,6 @@ private:
 	/////
 
 	ToolMode tool_mode;
-	bool orthogonal;
 
 	VisualServer::ScenarioDebugMode scenario_debug;
 
@@ -585,23 +586,27 @@ private:
 	bool grid_enable[3]; //should be always visible if true
 	bool grid_enabled;
 
-	Ref<ArrayMesh> move_gizmo[3], move_plane_gizmo[3], rotate_gizmo[3], scale_gizmo[3], scale_plane_gizmo[3];
+	Ref<ArrayMesh> move_gizmo[3], move_plane_gizmo[3], rotate_gizmo[4], scale_gizmo[3], scale_plane_gizmo[3];
 	Ref<SpatialMaterial> gizmo_color[3];
 	Ref<SpatialMaterial> plane_gizmo_color[3];
+	Ref<ShaderMaterial> rotate_gizmo_color[3];
 	Ref<SpatialMaterial> gizmo_color_hl[3];
 	Ref<SpatialMaterial> plane_gizmo_color_hl[3];
+	Ref<ShaderMaterial> rotate_gizmo_color_hl[3];
 
 	int over_gizmo_handle;
 	float snap_translate_value;
 	float snap_rotate_value;
 	float snap_scale_value;
 
+	Ref<ArrayMesh> selection_box_xray;
 	Ref<ArrayMesh> selection_box;
 	RID indicators;
 	RID indicators_instance;
 	RID cursor_mesh;
 	RID cursor_instance;
 	Ref<SpatialMaterial> indicator_mat;
+	Ref<ShaderMaterial> grid_mat[3];
 	Ref<SpatialMaterial> cursor_material;
 
 	// Scene drag and drop support
@@ -685,7 +690,7 @@ private:
 
 	HBoxContainer *hbc_menu;
 
-	void _generate_selection_box();
+	void _generate_selection_boxes();
 	UndoRedo *undo_redo;
 
 	int camera_override_viewport_id;
@@ -756,6 +761,7 @@ public:
 	Ref<ArrayMesh> get_scale_gizmo(int idx) const { return scale_gizmo[idx]; }
 	Ref<ArrayMesh> get_scale_plane_gizmo(int idx) const { return scale_plane_gizmo[idx]; }
 
+	void update_grid();
 	void update_transform_gizmo();
 	void update_all_gizmos(Node *p_node = NULL);
 	void snap_selected_nodes_to_floor();

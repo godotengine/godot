@@ -6,10 +6,13 @@
 	<description>
 		Rich text can contain custom text, fonts, images and some basic formatting. The label manages these as an internal tag stack. It also adapts itself to given width/heights.
 		[b]Note:[/b] Assignments to [member bbcode_text] clear the tag stack and reconstruct it from the property's contents. Any edits made to [member bbcode_text] will erase previous edits made from other manual sources such as [method append_bbcode] and the [code]push_*[/code] / [method pop] methods.
+		[b]Note:[/b] RichTextLabel doesn't support entangled BBCode tags. For example, instead of using [code][b]bold[i]bold italic[/b]italic[/i][/code], use [code][b]bold[i]bold italic[/i][/b][i]italic[/i][/code].
 		[b]Note:[/b] Unlike [Label], RichTextLabel doesn't have a [i]property[/i] to horizontally align text to the center. Instead, enable [member bbcode_enabled] and surround the text in a [code][center][/code] tag as follows: [code][center]Example[/center][/code]. There is currently no built-in way to vertically align text either, but this can be emulated by relying on anchors/containers and the [member fit_content_height] property.
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/latest/tutorials/gui/bbcode_in_richtextlabel.html</link>
+		<link title="BBCode in RichTextLabel">https://docs.godotengine.org/en/3.2/tutorials/gui/bbcode_in_richtextlabel.html</link>
+		<link title="GUI Rich Text/BBcode Demo">https://godotengine.org/asset-library/asset/132</link>
+		<link title="OS Test Demo">https://godotengine.org/asset-library/asset/677</link>
 	</tutorials>
 	<methods>
 		<method name="add_image">
@@ -42,6 +45,7 @@
 			</argument>
 			<description>
 				Parses [code]bbcode[/code] and adds tags to the tag stack as needed. Returns the result of the parsing, [constant OK] if successful.
+				[b]Note:[/b] Using this method, you can't close a tag that was opened in a previous [method append_bbcode] call. This is done to improve performance, especially when updating large RichTextLabels since rebuilding the whole BBCode every time would be slower. If you absolutely need to close a tag in a future method call, append the [member bbcode_text] instead of using [method append_bbcode].
 			</description>
 		</method>
 		<method name="clear">
@@ -284,10 +288,11 @@
 	<members>
 		<member name="bbcode_enabled" type="bool" setter="set_use_bbcode" getter="is_using_bbcode" default="false">
 			If [code]true[/code], the label uses BBCode formatting.
+			[b]Note:[/b] Trying to alter the [RichTextLabel]'s text with [method add_text] will reset this to [code]false[/code]. Use instead [method append_bbcode] to preserve BBCode formatting.
 		</member>
 		<member name="bbcode_text" type="String" setter="set_bbcode" getter="get_bbcode" default="&quot;&quot;">
 			The label's text in BBCode format. Is not representative of manual modifications to the internal tag stack. Erases changes made by other methods when edited.
-			[b]Note:[/b] It is unadvised to use [code]+=[/code] operator with [code]bbcode_text[/code] (e.g. [code]bbcode_text += "some string"[/code]) as it replaces the whole text and can cause slowdowns. Use [method append_bbcode] for adding text instead.
+			[b]Note:[/b] It is unadvised to use the [code]+=[/code] operator with [code]bbcode_text[/code] (e.g. [code]bbcode_text += "some string"[/code]) as it replaces the whole text and can cause slowdowns. Use [method append_bbcode] for adding text instead, unless you absolutely need to close a tag that was opened in an earlier method call.
 		</member>
 		<member name="custom_effects" type="Array" setter="set_effects" getter="get_effects" default="[  ]">
 			The currently installed custom effects. This is an array of [RichTextEffect]s.
@@ -326,6 +331,7 @@
 		</member>
 		<member name="visible_characters" type="int" setter="set_visible_characters" getter="get_visible_characters" default="-1">
 			The restricted number of characters to display in the label. If [code]-1[/code], all characters will be displayed.
+			[b]Note:[/b] Setting this property updates [member percent_visible] based on current [method get_total_character_count].
 		</member>
 	</members>
 	<signals>

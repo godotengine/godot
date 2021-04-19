@@ -15,7 +15,7 @@
 		In 2D, all visible objects are some form of canvas item. In order to be visible, a canvas item needs to be the child of a canvas attached to a viewport, or it needs to be the child of another canvas item that is eventually attached to the canvas.
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/latest/tutorials/optimization/using_servers.html</link>
+		<link>https://docs.godotengine.org/en/3.2/tutorials/optimization/using_servers.html</link>
 	</tutorials>
 	<methods>
 		<method name="black_bars_set_images">
@@ -1679,7 +1679,8 @@
 			<argument index="0" name="feature" type="String">
 			</argument>
 			<description>
-				Returns [code]true[/code] if the OS supports a certain feature. Features might be [code]s3tc[/code], [code]etc[/code], [code]etc2[/code] and [code]pvrtc[/code].
+				Returns [code]true[/code] if the OS supports a certain feature. Features might be [code]s3tc[/code], [code]etc[/code], [code]etc2[/code], [code]pvrtc[/code] and [code]skinning_fallback[/code].
+				When rendering with GLES2, returns [code]true[/code] with [code]skinning_fallback[/code] in case the hardware doesn't support the default GPU skinning process.
 			</description>
 		</method>
 		<method name="immediate_begin">
@@ -2044,6 +2045,10 @@
 			</argument>
 			<argument index="2" name="lightmap" type="RID">
 			</argument>
+			<argument index="3" name="lightmap_slice" type="int" default="-1">
+			</argument>
+			<argument index="4" name="lightmap_uv_rect" type="Rect2" default="Rect2( 0, 0, 1, 1 )">
+			</argument>
 			<description>
 				Sets the lightmap to use with this instance.
 			</description>
@@ -2152,6 +2157,17 @@
 				Sets whether to use a dual paraboloid or a cubemap for the shadow map. Dual paraboloid is faster but may suffer from artifacts. Equivalent to [member OmniLight.omni_shadow_mode].
 			</description>
 		</method>
+		<method name="light_set_bake_mode">
+			<return type="void">
+			</return>
+			<argument index="0" name="light" type="RID">
+			</argument>
+			<argument index="1" name="bake_mode" type="int" enum="VisualServer.LightBakeMode">
+			</argument>
+			<description>
+				Sets the bake mode for this light, see [enum LightBakeMode] for options. The bake mode affects how the light will be baked in [BakedLightmap]s and [GIProbe]s.
+			</description>
+		</method>
 		<method name="light_set_color">
 			<return type="void">
 			</return>
@@ -2250,7 +2266,7 @@
 			<argument index="1" name="enabled" type="bool">
 			</argument>
 			<description>
-				Sets whether GI probes capture light information from this light.
+				Sets whether GI probes capture light information from this light. [i]Deprecated method.[/i] Use [method light_set_bake_mode] instead. This method is only kept for compatibility reasons and calls [method light_set_bake_mode] internally, setting the bake mode to [constant LIGHT_BAKE_DISABLED] or [constant LIGHT_BAKE_INDIRECT] depending on the given parameter.
 			</description>
 		</method>
 		<method name="lightmap_capture_create">
@@ -2307,6 +2323,15 @@
 				Returns the cell transform for this lightmap capture's octree.
 			</description>
 		</method>
+		<method name="lightmap_capture_is_interior" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="capture" type="RID">
+			</argument>
+			<description>
+				Returns [code]true[/code] if capture is in "interior" mode.
+			</description>
+		</method>
 		<method name="lightmap_capture_set_bounds">
 			<return type="void">
 			</return>
@@ -2327,6 +2352,17 @@
 			</argument>
 			<description>
 				Sets the energy multiplier for this lightmap capture. Equivalent to [member BakedLightmapData.energy].
+			</description>
+		</method>
+		<method name="lightmap_capture_set_interior">
+			<return type="void">
+			</return>
+			<argument index="0" name="capture" type="RID">
+			</argument>
+			<argument index="1" name="interior" type="bool">
+			</argument>
+			<description>
+				Sets the "interior" mode for this lightmap capture. Equivalent to [member BakedLightmapData.interior].
 			</description>
 		</method>
 		<method name="lightmap_capture_set_octree">
@@ -4219,6 +4255,29 @@
 				If [code]true[/code], the viewport uses augmented or virtual reality technologies. See [ARVRInterface].
 			</description>
 		</method>
+		<method name="viewport_set_use_debanding">
+			<return type="void">
+			</return>
+			<argument index="0" name="viewport" type="RID">
+			</argument>
+			<argument index="1" name="debanding" type="bool">
+			</argument>
+			<description>
+				If [code]true[/code], uses a fast post-processing filter to make banding significantly less visible. In some cases, debanding may introduce a slightly noticeable dithering pattern. It's recommended to enable debanding only when actually needed since the dithering pattern will make lossless-compressed screenshots larger.
+				[b]Note:[/b] Only available on the GLES3 backend. [member Viewport.hdr] must also be [code]true[/code] for debanding to be effective.
+			</description>
+		</method>
+		<method name="viewport_set_use_fxaa">
+			<return type="void">
+			</return>
+			<argument index="0" name="viewport" type="RID">
+			</argument>
+			<argument index="1" name="fxaa" type="bool">
+			</argument>
+			<description>
+				Enables fast approximate antialiasing for this viewport. FXAA is a popular screen-space antialiasing method, which is fast but will make the image look blurry, especially at lower resolutions. It can still work relatively well at large resolutions such as 1440p and 4K.
+			</description>
+		</method>
 		<method name="viewport_set_vflip">
 			<return type="void">
 			</return>
@@ -4516,6 +4575,12 @@
 		</constant>
 		<constant name="LIGHT_PARAM_MAX" value="15" enum="LightParam">
 			Represents the size of the [enum LightParam] enum.
+		</constant>
+		<constant name="LIGHT_BAKE_DISABLED" value="0" enum="LightBakeMode">
+		</constant>
+		<constant name="LIGHT_BAKE_INDIRECT" value="1" enum="LightBakeMode">
+		</constant>
+		<constant name="LIGHT_BAKE_ALL" value="2" enum="LightBakeMode">
 		</constant>
 		<constant name="LIGHT_OMNI_SHADOW_DUAL_PARABOLOID" value="0" enum="LightOmniShadowMode">
 			Use a dual paraboloid shadow map for omni lights.

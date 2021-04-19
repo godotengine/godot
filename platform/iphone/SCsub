@@ -3,18 +3,21 @@
 Import("env")
 
 iphone_lib = [
-    "godot_iphone.cpp",
-    "os_iphone.cpp",
-    "semaphore_iphone.cpp",
-    "gl_view.mm",
+    "godot_iphone.mm",
+    "os_iphone.mm",
     "main.m",
     "app_delegate.mm",
     "view_controller.mm",
-    "game_center.mm",
-    "in_app_store.mm",
-    "icloud.mm",
     "ios.mm",
-    "gl_view_gesture_recognizer.m",
+    "joypad_iphone.mm",
+    "godot_view.mm",
+    "display_layer.mm",
+    "godot_app_delegate.m",
+    "godot_view_renderer.mm",
+    "godot_view_gesture_recognizer.mm",
+    "device_metrics.m",
+    "keyboard_input_view.mm",
+    "native_video_view.m",
 ]
 
 env_ios = env.Clone()

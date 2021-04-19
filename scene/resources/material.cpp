@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -290,16 +290,12 @@ ShaderMaterial::~ShaderMaterial() {
 
 /////////////////////////////////
 
-Mutex *SpatialMaterial::material_mutex = NULL;
+Mutex SpatialMaterial::material_mutex;
 SelfList<SpatialMaterial>::List *SpatialMaterial::dirty_materials = NULL;
 Map<SpatialMaterial::MaterialKey, SpatialMaterial::ShaderData> SpatialMaterial::shader_map;
 SpatialMaterial::ShaderNames *SpatialMaterial::shader_names = NULL;
 
 void SpatialMaterial::init_shaders() {
-
-#ifndef NO_THREADS
-	material_mutex = Mutex::create();
-#endif
 
 	dirty_materials = memnew(SelfList<SpatialMaterial>::List);
 
@@ -378,10 +374,6 @@ void SpatialMaterial::finish_shaders() {
 	for (int i = 0; i < MAX_MATERIALS_FOR_2D; i++) {
 		materials_for_2d[i].unref();
 	}
-
-#ifndef NO_THREADS
-	memdelete(material_mutex);
-#endif
 
 	memdelete(dirty_materials);
 	dirty_materials = NULL;
@@ -610,7 +602,7 @@ void SpatialMaterial::_update_shader() {
 	if (flags[FLAG_SRGB_VERTEX_COLOR]) {
 
 		code += "\tif (!OUTPUT_IS_SRGB) {\n";
-		code += "\t\tCOLOR.rgb = mix( pow((COLOR.rgb + vec3(0.055)) * (1.0 / (1.0 + 0.055)), vec3(2.4)), COLOR.rgb* (1.0 / 12.92), lessThan(COLOR.rgb,vec3(0.04045)) );\n";
+		code += "\t\tCOLOR.rgb = mix(pow((COLOR.rgb + vec3(0.055)) * (1.0 / (1.0 + 0.055)), vec3(2.4)), COLOR.rgb * (1.0 / 12.92), lessThan(COLOR.rgb, vec3(0.04045)));\n";
 		code += "\t}\n";
 	}
 	if (flags[FLAG_USE_POINT_SIZE]) {
@@ -1062,42 +1054,36 @@ void SpatialMaterial::_update_shader() {
 
 void SpatialMaterial::flush_changes() {
 
-	if (material_mutex)
-		material_mutex->lock();
+	material_mutex.lock();
 
 	while (dirty_materials->first()) {
 
 		dirty_materials->first()->self()->_update_shader();
 	}
 
-	if (material_mutex)
-		material_mutex->unlock();
+	material_mutex.unlock();
 }
 
 void SpatialMaterial::_queue_shader_change() {
 
-	if (material_mutex)
-		material_mutex->lock();
+	material_mutex.lock();
 
 	if (!element.in_list()) {
 		dirty_materials->add(&element);
 	}
 
-	if (material_mutex)
-		material_mutex->unlock();
+	material_mutex.unlock();
 }
 
 bool SpatialMaterial::_is_shader_dirty() const {
 
 	bool dirty = false;
 
-	if (material_mutex)
-		material_mutex->lock();
+	material_mutex.lock();
 
 	dirty = element.in_list();
 
-	if (material_mutex)
-		material_mutex->unlock();
+	material_mutex.unlock();
 
 	return dirty;
 }
@@ -2191,10 +2177,10 @@ void SpatialMaterial::_bind_methods() {
 
 	ADD_GROUP("Depth", "depth_");
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "depth_enabled"), "set_feature", "get_feature", FEATURE_DEPTH_MAPPING);
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "depth_scale", PROPERTY_HINT_RANGE, "-16,16,0.01"), "set_depth_scale", "get_depth_scale");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "depth_scale", PROPERTY_HINT_RANGE, "-16,16,0.001"), "set_depth_scale", "get_depth_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "depth_deep_parallax"), "set_depth_deep_parallax", "is_depth_deep_parallax_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "depth_min_layers", PROPERTY_HINT_RANGE, "1,32,1"), "set_depth_deep_parallax_min_layers", "get_depth_deep_parallax_min_layers");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "depth_max_layers", PROPERTY_HINT_RANGE, "1,32,1"), "set_depth_deep_parallax_max_layers", "get_depth_deep_parallax_max_layers");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "depth_min_layers", PROPERTY_HINT_RANGE, "1,64,1"), "set_depth_deep_parallax_min_layers", "get_depth_deep_parallax_min_layers");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "depth_max_layers", PROPERTY_HINT_RANGE, "1,64,1"), "set_depth_deep_parallax_max_layers", "get_depth_deep_parallax_max_layers");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "depth_flip_tangent"), "set_depth_deep_parallax_flip_tangent", "get_depth_deep_parallax_flip_tangent");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "depth_flip_binormal"), "set_depth_deep_parallax_flip_binormal", "get_depth_deep_parallax_flip_binormal");
 	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "depth_texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_texture", "get_texture", TEXTURE_DEPTH);
@@ -2425,8 +2411,7 @@ SpatialMaterial::SpatialMaterial() :
 
 SpatialMaterial::~SpatialMaterial() {
 
-	if (material_mutex)
-		material_mutex->lock();
+	material_mutex.lock();
 
 	if (shader_map.has(current_key)) {
 		shader_map[current_key].users--;
@@ -2439,6 +2424,5 @@ SpatialMaterial::~SpatialMaterial() {
 		VS::get_singleton()->material_set_shader(_get_material(), RID());
 	}
 
-	if (material_mutex)
-		material_mutex->unlock();
+	material_mutex.unlock();
 }

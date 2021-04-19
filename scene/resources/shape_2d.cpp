@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,7 +29,11 @@
 /*************************************************************************/
 
 #include "shape_2d.h"
+
+#include "core/engine.h"
+#include "core/project_settings.h"
 #include "servers/physics_2d_server.h"
+
 RID Shape2D::get_rid() const {
 
 	return shape;
@@ -107,6 +111,15 @@ void Shape2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("draw", "canvas_item", "color"), &Shape2D::draw);
 
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "custom_solver_bias", PROPERTY_HINT_RANGE, "0,1,0.001"), "set_custom_solver_bias", "get_custom_solver_bias");
+}
+
+bool Shape2D::is_collision_outline_enabled() {
+#ifdef TOOLS_ENABLED
+	if (Engine::get_singleton()->is_editor_hint()) {
+		return true;
+	}
+#endif
+	return GLOBAL_DEF("debug/shapes/collision/draw_2d_outlines", true);
 }
 
 Shape2D::Shape2D(const RID &p_rid) {

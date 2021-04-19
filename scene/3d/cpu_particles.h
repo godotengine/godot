@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,6 +32,7 @@
 #define CPU_PARTICLES_H
 
 #include "core/rid.h"
+#include "core/safe_refcount.h"
 #include "scene/3d/visual_instance.h"
 
 class CPUParticles : public GeometryInstance {
@@ -43,6 +44,7 @@ public:
 		DRAW_ORDER_INDEX,
 		DRAW_ORDER_LIFETIME,
 		DRAW_ORDER_VIEW_DEPTH,
+		DRAW_ORDER_MAX
 	};
 
 	enum Parameter {
@@ -143,7 +145,7 @@ private:
 
 	Transform inv_emission_transform;
 
-	volatile bool can_update;
+	SafeFlag can_update;
 
 	DrawOrder draw_order;
 
@@ -178,7 +180,7 @@ private:
 	void _particles_process(float p_delta);
 	void _update_particle_data_buffer();
 
-	Mutex *update_mutex;
+	Mutex update_mutex;
 
 	void _update_render_thread();
 

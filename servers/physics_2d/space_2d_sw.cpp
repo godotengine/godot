@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -269,10 +269,10 @@ bool Physics2DDirectSpaceStateSW::cast_motion(const RID &p_shape, const Transfor
 			continue;
 		}
 
-		//test initial overlap
+		//test initial overlap, ignore objects it's inside of.
 		if (CollisionSolver2DSW::solve(shape, p_xform, Vector2(), col_obj->get_shape(shape_idx), col_obj_xform, Vector2(), NULL, NULL, NULL, p_margin)) {
 
-			return false;
+			continue;
 		}
 
 		//just do kinematic solving
@@ -378,25 +378,32 @@ static void _rest_cbk_result(const Vector2 &p_point_A, const Vector2 &p_point_B,
 
 	_RestCallbackData2D *rd = (_RestCallbackData2D *)p_userdata;
 
-	if (rd->valid_dir != Vector2()) {
-		if (p_point_A.distance_squared_to(p_point_B) > rd->valid_depth * rd->valid_depth)
-			return;
-		if (rd->valid_dir.dot((p_point_A - p_point_B).normalized()) < Math_PI * 0.25)
-			return;
-	}
-
 	Vector2 contact_rel = p_point_B - p_point_A;
 	real_t len = contact_rel.length();
 
-	if (len < rd->min_allowed_depth)
+	if (len < rd->min_allowed_depth) {
 		return;
+	}
 
-	if (len <= rd->best_len)
+	if (len <= rd->best_len) {
 		return;
+	}
+
+	Vector2 normal = contact_rel / len;
+
+	if (rd->valid_dir != Vector2()) {
+		if (len > rd->valid_depth) {
+			return;
+		}
+
+		if (rd->valid_dir.dot(normal) > -CMP_EPSILON) {
+			return;
+		}
+	}
 
 	rd->best_len = len;
 	rd->best_contact = p_point_B;
-	rd->best_normal = contact_rel / len;
+	rd->best_normal = normal;
 	rd->best_object = rd->object;
 	rd->best_shape = rd->shape;
 	rd->best_local_shape = rd->local_shape;
@@ -431,7 +438,6 @@ bool Physics2DDirectSpaceStateSW::rest_info(RID p_shape, const Transform2D &p_sh
 			continue;
 
 		rcd.valid_dir = Vector2();
-		rcd.valid_depth = 0;
 		rcd.object = col_obj;
 		rcd.shape = shape_idx;
 		rcd.local_shape = 0;
@@ -638,7 +644,7 @@ int Space2DSW::test_body_ray_separation(Body2DSW *p_body, const Transform2D &p_t
 								Vector2 a = sr[k * 2 + 0];
 								Vector2 b = sr[k * 2 + 1];
 
-								recover_motion += (b - a) * 0.4;
+								recover_motion += (b - a) / cbk.amount;
 
 								float depth = a.distance_to(b);
 								if (depth > result.collision_depth) {
@@ -736,9 +742,12 @@ bool Space2DSW::test_body_motion(Body2DSW *p_body, const Transform2D &p_from, co
 	ExcludedShapeSW excluded_shape_pairs[max_excluded_shape_pairs];
 	int excluded_shape_pair_count = 0;
 
-	float separation_margin = MIN(p_margin, MAX(0.0, p_motion.length() - CMP_EPSILON)); //don't separate by more than the intended motion
+	float motion_length = p_motion.length();
+	Vector2 motion_normal = p_motion / motion_length;
 
 	Transform2D body_transform = p_from;
+
+	bool recovered = false;
 
 	{
 		//STEP 1, FREE BODY IF STUCK
@@ -818,7 +827,7 @@ bool Space2DSW::test_body_motion(Body2DSW *p_body, const Transform2D &p_from, co
 					bool did_collide = false;
 
 					Shape2DSW *against_shape = col_obj->get_shape(shape_idx);
-					if (CollisionSolver2DSW::solve(body_shape, body_shape_xform, Vector2(), against_shape, col_obj_shape_xform, Vector2(), cbkres, cbkptr, NULL, separation_margin)) {
+					if (CollisionSolver2DSW::solve(body_shape, body_shape_xform, Vector2(), against_shape, col_obj_shape_xform, Vector2(), cbkres, cbkptr, NULL, p_margin)) {
 						did_collide = cbk.passed > current_passed; //more passed, so collision actually existed
 					}
 
@@ -844,18 +853,28 @@ bool Space2DSW::test_body_motion(Body2DSW *p_body, const Transform2D &p_from, co
 			}
 
 			Vector2 recover_motion;
-
 			for (int i = 0; i < cbk.amount; i++) {
-
 				Vector2 a = sr[i * 2 + 0];
 				Vector2 b = sr[i * 2 + 1];
-				recover_motion += (b - a) * 0.4;
+
+				// Compute plane on b towards a.
+				Vector2 n = (a - b).normalized();
+				float d = n.dot(b);
+
+				// Compute depth on recovered motion.
+				float depth = n.dot(a + recover_motion) - d;
+				if (depth > 0.0) {
+					// Only recover if there is penetration.
+					recover_motion -= n * depth * 0.4;
+				}
 			}
 
 			if (recover_motion == Vector2()) {
 				collided = false;
 				break;
 			}
+
+			recovered = true;
 
 			body_transform.elements[2] += recover_motion;
 			body_aabb.position += recover_motion;
@@ -933,7 +952,10 @@ bool Space2DSW::test_body_motion(Body2DSW *p_body, const Transform2D &p_from, co
 				if (CollisionSolver2DSW::solve(body_shape, body_shape_xform, Vector2(), against_shape, col_obj_shape_xform, Vector2(), NULL, NULL, NULL, 0)) {
 
 					if (col_obj->is_shape_set_as_one_way_collision(col_shape_idx)) {
-						continue;
+						Vector2 direction = col_obj_shape_xform.get_axis(1).normalized();
+						if (motion_normal.dot(direction) < 0) {
+							continue;
+						}
 					}
 
 					stuck = true;
@@ -943,13 +965,12 @@ bool Space2DSW::test_body_motion(Body2DSW *p_body, const Transform2D &p_from, co
 				//just do kinematic solving
 				real_t low = 0;
 				real_t hi = 1;
-				Vector2 mnormal = p_motion.normalized();
 
 				for (int k = 0; k < 8; k++) { //steps should be customizable..
 
 					real_t ofs = (low + hi) * 0.5;
 
-					Vector2 sep = mnormal; //important optimization for this to work fast enough
+					Vector2 sep = motion_normal; //important optimization for this to work fast enough
 					bool collided = CollisionSolver2DSW::solve(body_shape, body_shape_xform, p_motion * ofs, against_shape, col_obj_shape_xform, Vector2(), NULL, NULL, &sep, 0);
 
 					if (collided) {
@@ -973,7 +994,7 @@ bool Space2DSW::test_body_motion(Body2DSW *p_body, const Transform2D &p_from, co
 
 					cbk.valid_depth = 10e20;
 
-					Vector2 sep = mnormal; //important optimization for this to work fast enough
+					Vector2 sep = motion_normal; //important optimization for this to work fast enough
 					bool collided = CollisionSolver2DSW::solve(body_shape, body_shape_xform, p_motion * (hi + contact_max_allowed_penetration), col_obj->get_shape(col_shape_idx), col_obj_shape_xform, Vector2(), Physics2DServerSW::_shape_col_cbk, &cbk, &sep, 0);
 					if (!collided || cbk.amount == 0) {
 						continue;
@@ -1006,11 +1027,11 @@ bool Space2DSW::test_body_motion(Body2DSW *p_body, const Transform2D &p_from, co
 	}
 
 	bool collided = false;
-	if (safe >= 1) {
-		best_shape = -1; //no best shape with cast, reset to -1
-	}
 
-	{
+	if (recovered || (safe < 1)) {
+		if (safe >= 1) {
+			best_shape = -1; //no best shape with cast, reset to -1
+		}
 
 		//it collided, let's get the rest info in unsafe advance
 		Transform2D ugt = body_transform;
@@ -1020,9 +1041,10 @@ bool Space2DSW::test_body_motion(Body2DSW *p_body, const Transform2D &p_from, co
 		rcd.best_len = 0;
 		rcd.best_object = NULL;
 		rcd.best_shape = 0;
-		rcd.min_allowed_depth = test_motion_min_contact_depth;
 
-		//optimization
+		// Allowed depth can't be lower than motion length, in order to handle contacts at low speed.
+		rcd.min_allowed_depth = MIN(motion_length, test_motion_min_contact_depth);
+
 		int from_shape = best_shape != -1 ? best_shape : 0;
 		int to_shape = best_shape != -1 ? best_shape + 1 : p_body->get_shape_count();
 
@@ -1070,9 +1092,23 @@ bool Space2DSW::test_body_motion(Body2DSW *p_body, const Transform2D &p_from, co
 				Transform2D col_obj_shape_xform = col_obj->get_transform() * col_obj->get_shape_transform(shape_idx);
 
 				if (col_obj->is_shape_set_as_one_way_collision(shape_idx)) {
-
 					rcd.valid_dir = col_obj_shape_xform.get_axis(1).normalized();
-					rcd.valid_depth = 10e20;
+
+					float owc_margin = col_obj->get_shape_one_way_collision_margin(shape_idx);
+					rcd.valid_depth = MAX(owc_margin, p_margin); //user specified, but never less than actual margin or it won't work
+
+					if (col_obj->get_type() == CollisionObject2DSW::TYPE_BODY) {
+						const Body2DSW *b = static_cast<const Body2DSW *>(col_obj);
+						if (b->get_mode() == Physics2DServer::BODY_MODE_KINEMATIC || b->get_mode() == Physics2DServer::BODY_MODE_RIGID) {
+							//fix for moving platforms (kinematic and dynamic), margin is increased by how much it moved in the given direction
+							Vector2 lv = b->get_linear_velocity();
+							//compute displacement from linear velocity
+							Vector2 motion = lv * Physics2DDirectBodyStateSW::singleton->step;
+							float motion_len = motion.length();
+							motion.normalize();
+							rcd.valid_depth += motion_len * MAX(motion.dot(-rcd.valid_dir), 0.0);
+						}
+					}
 				} else {
 					rcd.valid_dir = Vector2();
 					rcd.valid_depth = 0;

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,6 +31,8 @@
 #include "sprite_frames_editor_plugin.h"
 
 #include "core/io/resource_loader.h"
+#include "core/os/input.h"
+#include "core/os/keyboard.h"
 #include "core/project_settings.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
@@ -861,7 +863,11 @@ void SpriteFramesEditor::drop_data_fw(const Point2 &p_point, const Variant &p_da
 
 		PoolVector<String> files = d["files"];
 
-		_file_load_request(files, at_pos);
+		if (Input::get_singleton()->is_key_pressed(KEY_CONTROL)) {
+			_prepare_sprite_sheet(files[0]);
+		} else {
+			_file_load_request(files, at_pos);
+		}
 	}
 }
 
@@ -927,11 +933,16 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	animations->connect("item_edited", this, "_animation_name_edited");
 	animations->set_allow_reselect(true);
 
+	HBoxContainer *hbc_anim_speed = memnew(HBoxContainer);
+	hbc_anim_speed->add_child(memnew(Label(TTR("Speed:"))));
+	vbc_animlist->add_child(hbc_anim_speed);
 	anim_speed = memnew(SpinBox);
-	vbc_animlist->add_margin_child(TTR("Speed (FPS):"), anim_speed);
+	anim_speed->set_suffix(TTR("FPS"));
 	anim_speed->set_min(0);
 	anim_speed->set_max(100);
 	anim_speed->set_step(0.01);
+	anim_speed->set_h_size_flags(SIZE_EXPAND_FILL);
+	hbc_anim_speed->add_child(anim_speed);
 	anim_speed->connect("value_changed", this, "_animation_fps_changed");
 
 	anim_loop = memnew(CheckButton);

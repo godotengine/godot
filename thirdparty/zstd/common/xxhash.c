@@ -1,35 +1,15 @@
 /*
-*  xxHash - Fast Hash algorithm
-*  Copyright (C) 2012-2016, Yann Collet
-*
-*  BSD 2-Clause License (http://www.opensource.org/licenses/bsd-license.php)
-*
-*  Redistribution and use in source and binary forms, with or without
-*  modification, are permitted provided that the following conditions are
-*  met:
-*
-*  * Redistributions of source code must retain the above copyright
-*  notice, this list of conditions and the following disclaimer.
-*  * Redistributions in binary form must reproduce the above
-*  copyright notice, this list of conditions and the following disclaimer
-*  in the documentation and/or other materials provided with the
-*  distribution.
-*
-*  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-*  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-*  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-*  A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-*  OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-*  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-*  LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-*  DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-*  THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-*  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-*  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*
-*  You can contact the author at :
-*  - xxHash homepage: http://www.xxhash.com
-*  - xxHash source repository : https://github.com/Cyan4973/xxHash
+ *  xxHash - Fast Hash algorithm
+ *  Copyright (c) 2012-2020, Yann Collet, Facebook, Inc.
+ *
+ *  You can contact the author at :
+ *  - xxHash homepage: http://www.xxhash.com
+ *  - xxHash source repository : https://github.com/Cyan4973/xxHash
+ * 
+ * This source code is licensed under both the BSD-style license (found in the
+ * LICENSE file in the root directory of this source tree) and the GPLv2 (found
+ * in the COPYING file in the root directory of this source tree).
+ * You may select, at your option, one of the above-listed licenses.
 */
 
 
@@ -97,14 +77,12 @@
 *  Includes & Memory related functions
 ***************************************/
 /* Modify the local functions below should you wish to use some other memory routines */
-/* for malloc(), free() */
-#include <stdlib.h>
-#include <stddef.h>     /* size_t */
-static void* XXH_malloc(size_t s) { return malloc(s); }
-static void  XXH_free  (void* p)  { free(p); }
-/* for memcpy() */
-#include <string.h>
-static void* XXH_memcpy(void* dest, const void* src, size_t size) { return memcpy(dest,src,size); }
+/* for ZSTD_malloc(), ZSTD_free() */
+#define ZSTD_DEPS_NEED_MALLOC
+#include "zstd_deps.h"  /* size_t, ZSTD_malloc, ZSTD_free, ZSTD_memcpy */
+static void* XXH_malloc(size_t s) { return ZSTD_malloc(s); }
+static void  XXH_free  (void* p)  { ZSTD_free(p); }
+static void* XXH_memcpy(void* dest, const void* src, size_t size) { return ZSTD_memcpy(dest,src,size); }
 
 #ifndef XXH_STATIC_LINKING_ONLY
 #  define XXH_STATIC_LINKING_ONLY
@@ -115,49 +93,13 @@ static void* XXH_memcpy(void* dest, const void* src, size_t size) { return memcp
 /* *************************************
 *  Compiler Specific Options
 ***************************************/
-#if defined (__GNUC__) || defined(__cplusplus) || defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L   /* C99 */
-#  define INLINE_KEYWORD inline
-#else
-#  define INLINE_KEYWORD
-#endif
-
-#if defined(__GNUC__) || defined(__ICCARM__)
-#  define FORCE_INLINE_ATTR __attribute__((always_inline))
-#elif defined(_MSC_VER)
-#  define FORCE_INLINE_ATTR __forceinline
-#else
-#  define FORCE_INLINE_ATTR
-#endif
-
-#define FORCE_INLINE_TEMPLATE static INLINE_KEYWORD FORCE_INLINE_ATTR
-
-
-#ifdef _MSC_VER
-#  pragma warning(disable : 4127)      /* disable: C4127: conditional expression is constant */
-#endif
+#include "compiler.h"
 
 
 /* *************************************
 *  Basic Types
 ***************************************/
-#ifndef MEM_MODULE
-# define MEM_MODULE
-# if !defined (__VMS) && (defined (__cplusplus) || (defined (__STDC_VERSION__) && (__STDC_VERSION__ >= 199901L) /* C99 */) )
-#   include <stdint.h>
-    typedef uint8_t  BYTE;
-    typedef uint16_t U16;
-    typedef uint32_t U32;
-    typedef  int32_t S32;
-    typedef uint64_t U64;
-#  else
-    typedef unsigned char      BYTE;
-    typedef unsigned short     U16;
-    typedef unsigned int       U32;
-    typedef   signed int       S32;
-    typedef unsigned long long U64;   /* if your compiler doesn't support unsigned long long, replace by another 64-bit type here. Note that xxhash.h will also need to be updated. */
-#  endif
-#endif
-
+#include "mem.h"  /* BYTE, U32, U64, size_t */
 
 #if (defined(XXH_FORCE_MEMORY_ACCESS) && (XXH_FORCE_MEMORY_ACCESS==2))
 
@@ -183,14 +125,14 @@ static U64 XXH_read64(const void* ptr) { return ((const unalign*)ptr)->u64; }
 static U32 XXH_read32(const void* memPtr)
 {
     U32 val;
-    memcpy(&val, memPtr, sizeof(val));
+    ZSTD_memcpy(&val, memPtr, sizeof(val));
     return val;
 }
 
 static U64 XXH_read64(const void* memPtr)
 {
     U64 val;
-    memcpy(&val, memPtr, sizeof(val));
+    ZSTD_memcpy(&val, memPtr, sizeof(val));
     return val;
 }
 
@@ -327,12 +269,12 @@ XXH_PUBLIC_API unsigned XXH_versionNumber (void) { return XXH_VERSION_NUMBER; }
 ****************************/
 XXH_PUBLIC_API void XXH32_copyState(XXH32_state_t* restrict dstState, const XXH32_state_t* restrict srcState)
 {
-    memcpy(dstState, srcState, sizeof(*dstState));
+    ZSTD_memcpy(dstState, srcState, sizeof(*dstState));
 }
 
 XXH_PUBLIC_API void XXH64_copyState(XXH64_state_t* restrict dstState, const XXH64_state_t* restrict srcState)
 {
-    memcpy(dstState, srcState, sizeof(*dstState));
+    ZSTD_memcpy(dstState, srcState, sizeof(*dstState));
 }
 
 
@@ -574,12 +516,12 @@ XXH_PUBLIC_API XXH_errorcode XXH64_freeState(XXH64_state_t* statePtr)
 XXH_PUBLIC_API XXH_errorcode XXH32_reset(XXH32_state_t* statePtr, unsigned int seed)
 {
     XXH32_state_t state;   /* using a local state to memcpy() in order to avoid strict-aliasing warnings */
-    memset(&state, 0, sizeof(state)-4);   /* do not write into reserved, for future removal */
+    ZSTD_memset(&state, 0, sizeof(state)-4);   /* do not write into reserved, for future removal */
     state.v1 = seed + PRIME32_1 + PRIME32_2;
     state.v2 = seed + PRIME32_2;
     state.v3 = seed + 0;
     state.v4 = seed - PRIME32_1;
-    memcpy(statePtr, &state, sizeof(state));
+    ZSTD_memcpy(statePtr, &state, sizeof(state));
     return XXH_OK;
 }
 
@@ -587,12 +529,12 @@ XXH_PUBLIC_API XXH_errorcode XXH32_reset(XXH32_state_t* statePtr, unsigned int s
 XXH_PUBLIC_API XXH_errorcode XXH64_reset(XXH64_state_t* statePtr, unsigned long long seed)
 {
     XXH64_state_t state;   /* using a local state to memcpy() in order to avoid strict-aliasing warnings */
-    memset(&state, 0, sizeof(state)-8);   /* do not write into reserved, for future removal */
+    ZSTD_memset(&state, 0, sizeof(state)-8);   /* do not write into reserved, for future removal */
     state.v1 = seed + PRIME64_1 + PRIME64_2;
     state.v2 = seed + PRIME64_2;
     state.v3 = seed + 0;
     state.v4 = seed - PRIME64_1;
-    memcpy(statePtr, &state, sizeof(state));
+    ZSTD_memcpy(statePtr, &state, sizeof(state));
     return XXH_OK;
 }
 
@@ -729,7 +671,9 @@ FORCE_INLINE_TEMPLATE XXH_errorcode XXH64_update_endian (XXH64_state_t* state, c
     state->total_len += len;
 
     if (state->memsize + len < 32) {  /* fill in tmp buffer */
-        XXH_memcpy(((BYTE*)state->mem64) + state->memsize, input, len);
+        if (input != NULL) {
+            XXH_memcpy(((BYTE*)state->mem64) + state->memsize, input, len);
+        }
         state->memsize += (U32)len;
         return XXH_OK;
     }
@@ -861,14 +805,14 @@ XXH_PUBLIC_API void XXH32_canonicalFromHash(XXH32_canonical_t* dst, XXH32_hash_t
 {
     XXH_STATIC_ASSERT(sizeof(XXH32_canonical_t) == sizeof(XXH32_hash_t));
     if (XXH_CPU_LITTLE_ENDIAN) hash = XXH_swap32(hash);
-    memcpy(dst, &hash, sizeof(*dst));
+    ZSTD_memcpy(dst, &hash, sizeof(*dst));
 }
 
 XXH_PUBLIC_API void XXH64_canonicalFromHash(XXH64_canonical_t* dst, XXH64_hash_t hash)
 {
     XXH_STATIC_ASSERT(sizeof(XXH64_canonical_t) == sizeof(XXH64_hash_t));
     if (XXH_CPU_LITTLE_ENDIAN) hash = XXH_swap64(hash);
-    memcpy(dst, &hash, sizeof(*dst));
+    ZSTD_memcpy(dst, &hash, sizeof(*dst));
 }
 
 XXH_PUBLIC_API XXH32_hash_t XXH32_hashFromCanonical(const XXH32_canonical_t* src)

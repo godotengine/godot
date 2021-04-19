@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -68,6 +68,10 @@ void FuncRef::set_function(const StringName &p_func) {
 	function = p_func;
 }
 
+StringName FuncRef::get_function() {
+	return function;
+}
+
 bool FuncRef::is_valid() const {
 	if (id == 0)
 		return false;
@@ -91,8 +95,12 @@ void FuncRef::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("call_funcv", "arg_array"), &FuncRef::call_funcv);
 
 	ClassDB::bind_method(D_METHOD("set_instance", "instance"), &FuncRef::set_instance);
-	ClassDB::bind_method(D_METHOD("set_function", "name"), &FuncRef::set_function);
 	ClassDB::bind_method(D_METHOD("is_valid"), &FuncRef::is_valid);
+
+	ClassDB::bind_method(D_METHOD("set_function", "name"), &FuncRef::set_function);
+	ClassDB::bind_method(D_METHOD("get_function"), &FuncRef::get_function);
+
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "function"), "set_function", "get_function");
 }
 
 FuncRef::FuncRef() :

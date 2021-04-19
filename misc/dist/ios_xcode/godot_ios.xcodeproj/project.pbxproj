@@ -146,81 +146,6 @@
 						DevelopmentTeam = $team_id;
 						ProvisioningStyle = Automatic;
 						SystemCapabilities = {
-							com.apple.AccessWiFi = {
-								enabled = $access_wifi;
-							};
-							com.apple.ApplePay = {
-								enabled = 0;
-							};
-							com.apple.ApplicationGroups.iOS = {
-								enabled = 0;
-							};
-							com.apple.AutoFillCredentialProvider = {
-								enabled = 0;
-							};
-							com.apple.BackgroundModes = {
-								enabled = 0;
-							};
-							com.apple.ClassKit = {
-								enabled = 0;
-							};
-							com.apple.DataProtection = {
-								enabled = 0;
-							};
-							com.apple.GameCenter.iOS = {
-								enabled = $game_center;
-							};
-							com.apple.HealthKit = {
-								enabled = 0;
-							};
-							com.apple.HomeKit = {
-								enabled = 0;
-							};
-							com.apple.HotspotConfiguration = {
-								enabled = 0;
-							};
-							com.apple.InAppPurchase = {
-								enabled = $in_app_purchases;
-							};
-							com.apple.InterAppAudio = {
-								enabled = 0;
-							};
-							com.apple.Keychain = {
-								enabled = 0;
-							};
-							com.apple.Maps.iOS = {
-								enabled = 0;
-							};
-							com.apple.Multipath = {
-								enabled = 0;
-							};
-							com.apple.NearFieldCommunicationTagReading = {
-								enabled = 0;
-							};
-							com.apple.NetworkExtensions.iOS = {
-								enabled = 0;
-							};
-							com.apple.Push = {
-								enabled = $push_notifications;
-							};
-							com.apple.SafariKeychain = {
-								enabled = 0;
-							};
-							com.apple.Siri = {
-								enabled = 0;
-							};
-							com.apple.VPNLite = {
-								enabled = 0;
-							};
-							com.apple.WAC = {
-								enabled = 0;
-							};
-							com.apple.Wallet = {
-								enabled = 0;
-							};
-							com.apple.iCloud = {
-								enabled = 0;
-							};
 						};
 					};
 				};
@@ -319,7 +244,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				OTHER_LDFLAGS = "$linker_flags";
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -358,7 +283,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				OTHER_LDFLAGS = "$linker_flags";
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -378,14 +303,14 @@
 				CONFIGURATION_BUILD_DIR = "$(BUILD_DIR)/$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)";
 				DEVELOPMENT_TEAM = $team_id;
 				INFOPLIST_FILE = "$binary/$binary-Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
-					"$(PROJECT_DIR)",
+					"$(PROJECT_DIR)/**",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = $identifier;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -408,14 +333,14 @@
 				CONFIGURATION_BUILD_DIR = "$(BUILD_DIR)/$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)";
 				DEVELOPMENT_TEAM = $team_id;
 				INFOPLIST_FILE = "$binary/$binary-Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
-					"$(PROJECT_DIR)",
+					"$(PROJECT_DIR)/**",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = $identifier;
 				PRODUCT_NAME = "$(TARGET_NAME)";

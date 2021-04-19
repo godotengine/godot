@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -515,7 +515,7 @@ String CreateDialog::get_selected_type() {
 		return String();
 }
 
-Object *CreateDialog::instance_selected() {
+Variant CreateDialog::instance_selected() {
 
 	TreeItem *selected = search_options->get_selected();
 
@@ -529,7 +529,7 @@ Object *CreateDialog::instance_selected() {
 
 		if (custom != String()) {
 			if (ScriptServer::is_global_class(custom)) {
-				Object *obj = EditorNode::get_editor_data().script_class_instance(custom);
+				Variant obj = EditorNode::get_editor_data().script_class_instance(custom);
 				Node *n = Object::cast_to<Node>(obj);
 				if (n)
 					n->set_name(custom);
@@ -541,7 +541,7 @@ Object *CreateDialog::instance_selected() {
 		}
 	}
 
-	return NULL;
+	return Variant();
 }
 
 void CreateDialog::_item_selected() {

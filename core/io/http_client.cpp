@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -100,6 +100,15 @@ void HTTPClient::set_connection(const Ref<StreamPeer> &p_connection) {
 
 	ERR_FAIL_COND_MSG(p_connection.is_null(), "Connection is not a reference to a valid StreamPeer object.");
 
+	if (ssl) {
+		ERR_FAIL_NULL_MSG(Object::cast_to<StreamPeerSSL>(p_connection.ptr()),
+				"Connection is not a reference to a valid StreamPeerSSL object.");
+	}
+
+	if (connection == p_connection) {
+		return;
+	}
+
 	close();
 	connection = p_connection;
 	status = STATUS_CONNECTED;
@@ -110,25 +119,41 @@ Ref<StreamPeer> HTTPClient::get_connection() const {
 	return connection;
 }
 
-Error HTTPClient::request_raw(Method p_method, const String &p_url, const Vector<String> &p_headers, const PoolVector<uint8_t> &p_body) {
+static bool _check_request_url(HTTPClient::Method p_method, const String &p_url) {
+	switch (p_method) {
+		case HTTPClient::METHOD_CONNECT: {
+			// Authority in host:port format, as in RFC7231
+			int pos = p_url.find_char(':');
+			return 0 < pos && pos < p_url.length() - 1;
+		}
+		case HTTPClient::METHOD_OPTIONS: {
+			if (p_url == "*") {
+				return true;
+			}
+			FALLTHROUGH;
+		}
+		default:
+			// Absolute path or absolute URL
+			return p_url.begins_with("/") || p_url.begins_with("http://") || p_url.begins_with("https://");
+	}
+}
 
+Error HTTPClient::request_raw(Method p_method, const String &p_url, const Vector<String> &p_headers, const PoolVector<uint8_t> &p_body) {
 	ERR_FAIL_INDEX_V(p_method, METHOD_MAX, ERR_INVALID_PARAMETER);
-	ERR_FAIL_COND_V(!p_url.begins_with("/"), ERR_INVALID_PARAMETER);
+	ERR_FAIL_COND_V(!_check_request_url(p_method, p_url), ERR_INVALID_PARAMETER);
 	ERR_FAIL_COND_V(status != STATUS_CONNECTED, ERR_INVALID_PARAMETER);
 	ERR_FAIL_COND_V(connection.is_null(), ERR_INVALID_DATA);
 
 	String request = String(_methods[p_method]) + " " + p_url + " HTTP/1.1\r\n";
-	if ((ssl && conn_port == PORT_HTTPS) || (!ssl && conn_port == PORT_HTTP)) {
-		// Don't append the standard ports
-		request += "Host: " + conn_host + "\r\n";
-	} else {
-		request += "Host: " + conn_host + ":" + itos(conn_port) + "\r\n";
-	}
+	bool add_host = true;
 	bool add_clen = p_body.size() > 0;
 	bool add_uagent = true;
 	bool add_accept = true;
 	for (int i = 0; i < p_headers.size(); i++) {
 		request += p_headers[i] + "\r\n";
+		if (add_host && p_headers[i].findn("Host:") == 0) {
+			add_host = false;
+		}
 		if (add_clen && p_headers[i].findn("Content-Length:") == 0) {
 			add_clen = false;
 		}
@@ -137,6 +162,14 @@ Error HTTPClient::request_raw(Method p_method, const String &p_url, const Vector
 		}
 		if (add_accept && p_headers[i].findn("Accept:") == 0) {
 			add_accept = false;
+		}
+	}
+	if (add_host) {
+		if ((ssl && conn_port == PORT_HTTPS) || (!ssl && conn_port == PORT_HTTP)) {
+			// Don't append the standard ports
+			request += "Host: " + conn_host + "\r\n";
+		} else {
+			request += "Host: " + conn_host + ":" + itos(conn_port) + "\r\n";
 		}
 	}
 	if (add_clen) {
@@ -181,22 +214,20 @@ Error HTTPClient::request_raw(Method p_method, const String &p_url, const Vector
 Error HTTPClient::request(Method p_method, const String &p_url, const Vector<String> &p_headers, const String &p_body) {
 
 	ERR_FAIL_INDEX_V(p_method, METHOD_MAX, ERR_INVALID_PARAMETER);
-	ERR_FAIL_COND_V(!p_url.begins_with("/"), ERR_INVALID_PARAMETER);
+	ERR_FAIL_COND_V(!_check_request_url(p_method, p_url), ERR_INVALID_PARAMETER);
 	ERR_FAIL_COND_V(status != STATUS_CONNECTED, ERR_INVALID_PARAMETER);
 	ERR_FAIL_COND_V(connection.is_null(), ERR_INVALID_DATA);
 
 	String request = String(_methods[p_method]) + " " + p_url + " HTTP/1.1\r\n";
-	if ((ssl && conn_port == PORT_HTTPS) || (!ssl && conn_port == PORT_HTTP)) {
-		// Don't append the standard ports
-		request += "Host: " + conn_host + "\r\n";
-	} else {
-		request += "Host: " + conn_host + ":" + itos(conn_port) + "\r\n";
-	}
+	bool add_host = true;
 	bool add_uagent = true;
 	bool add_accept = true;
 	bool add_clen = p_body.length() > 0;
 	for (int i = 0; i < p_headers.size(); i++) {
 		request += p_headers[i] + "\r\n";
+		if (add_host && p_headers[i].findn("Host:") == 0) {
+			add_host = false;
+		}
 		if (add_clen && p_headers[i].findn("Content-Length:") == 0) {
 			add_clen = false;
 		}
@@ -205,6 +236,14 @@ Error HTTPClient::request(Method p_method, const String &p_url, const Vector<Str
 		}
 		if (add_accept && p_headers[i].findn("Accept:") == 0) {
 			add_accept = false;
+		}
+	}
+	if (add_host) {
+		if ((ssl && conn_port == PORT_HTTPS) || (!ssl && conn_port == PORT_HTTP)) {
+			// Don't append the standard ports
+			request += "Host: " + conn_host + "\r\n";
+		} else {
+			request += "Host: " + conn_host + ":" + itos(conn_port) + "\r\n";
 		}
 	}
 	if (add_clen) {
@@ -473,7 +512,7 @@ Error HTTPClient::poll() {
 						}
 					}
 
-					// This is a HEAD request, we wont receive anything.
+					// This is a HEAD request, we won't receive anything.
 					if (head_request) {
 						body_size = 0;
 						body_left = 0;
@@ -745,7 +784,8 @@ HTTPClient::HTTPClient() {
 	ssl = false;
 	blocking = false;
 	handshaking = false;
-	read_chunk_size = 4096;
+	// 64 KiB by default (favors fast download speeds at the cost of memory usage).
+	read_chunk_size = 65536;
 }
 
 HTTPClient::~HTTPClient() {

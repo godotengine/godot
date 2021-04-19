@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,30 +31,28 @@
 #include "api.h"
 #include "core/engine.h"
 #include "javascript_eval.h"
+#include "javascript_tools_editor_plugin.h"
 
 static JavaScript *javascript_eval;
 
 void register_javascript_api() {
-
+	JavaScriptToolsEditorPlugin::initialize();
 	ClassDB::register_virtual_class<JavaScript>();
 	javascript_eval = memnew(JavaScript);
 	Engine::get_singleton()->add_singleton(Engine::Singleton("JavaScript", javascript_eval));
 }
 
 void unregister_javascript_api() {
-
 	memdelete(javascript_eval);
 }
 
 JavaScript *JavaScript::singleton = NULL;
 
 JavaScript *JavaScript::get_singleton() {
-
 	return singleton;
 }
 
 JavaScript::JavaScript() {
-
 	ERR_FAIL_COND_MSG(singleton != NULL, "JavaScript singleton already exist.");
 	singleton = this;
 }
@@ -62,13 +60,11 @@ JavaScript::JavaScript() {
 JavaScript::~JavaScript() {}
 
 void JavaScript::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("eval", "code", "use_global_execution_context"), &JavaScript::eval, DEFVAL(false));
 }
 
 #if !defined(JAVASCRIPT_ENABLED) || !defined(JAVASCRIPT_EVAL_ENABLED)
 Variant JavaScript::eval(const String &p_code, bool p_use_global_exec_context) {
-
 	return Variant();
 }
 #endif

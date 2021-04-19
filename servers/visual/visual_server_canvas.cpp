@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -62,6 +62,7 @@ void _collect_ysort_children(VisualServerCanvas::Item *p_canvas_item, Transform2
 				child_items[i]->ysort_xform = p_transform;
 				child_items[i]->ysort_pos = p_transform.xform(child_items[i]->xform.elements[2]);
 				child_items[i]->material_owner = child_items[i]->use_parent_material ? p_material_owner : NULL;
+				child_items[i]->ysort_index = r_index;
 			}
 
 			r_index++;
@@ -97,7 +98,9 @@ void VisualServerCanvas::_render_canvas_item(Item *p_canvas_item, const Transfor
 	}
 
 	Rect2 rect = ci->get_rect();
-	Transform2D xform = p_transform * ci->xform;
+	Transform2D xform = ci->xform;
+	xform = p_transform * xform;
+
 	Rect2 global_rect = xform.xform(rect);
 	global_rect.position += p_clip_rect.position;
 
@@ -122,6 +125,8 @@ void VisualServerCanvas::_render_canvas_item(Item *p_canvas_item, const Transfor
 		} else {
 			ci->final_clip_rect = global_rect;
 		}
+		ci->final_clip_rect.position = ci->final_clip_rect.position.round();
+		ci->final_clip_rect.size = ci->final_clip_rect.size.round();
 		ci->final_clip_owner = ci;
 
 	} else {

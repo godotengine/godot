@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -1678,6 +1678,8 @@ void RichTextLabel::add_image(const Ref<Texture> &p_image, const int p_width, co
 		return;
 
 	ERR_FAIL_COND(p_image.is_null());
+	ERR_FAIL_COND(p_image->get_width() == 0);
+	ERR_FAIL_COND(p_image->get_height() == 0);
 	ItemImage *item = memnew(ItemImage);
 
 	item->image = p_image;
@@ -2578,10 +2580,10 @@ bool RichTextLabel::search(const String &p_string, bool p_from_selection, bool p
 	return false;
 }
 
-void RichTextLabel::selection_copy() {
-
-	if (!selection.active || !selection.enabled)
-		return;
+String RichTextLabel::get_selected_text() {
+	if (!selection.active || !selection.enabled) {
+		return "";
+	}
 
 	String text;
 
@@ -2610,6 +2612,12 @@ void RichTextLabel::selection_copy() {
 
 		item = _get_next_item(item, true);
 	}
+
+	return text;
+}
+
+void RichTextLabel::selection_copy() {
+	String text = get_selected_text();
 
 	if (text != "") {
 		OS::get_singleton()->set_clipboard(text);
@@ -2682,6 +2690,7 @@ void RichTextLabel::set_percent_visible(float p_percent) {
 		visible_characters = get_total_character_count() * p_percent;
 		percent_visible = p_percent;
 	}
+	_change_notify("visible_characters");
 	update();
 }
 
@@ -2864,6 +2873,15 @@ void RichTextLabel::_bind_methods() {
 
 void RichTextLabel::set_visible_characters(int p_visible) {
 	visible_characters = p_visible;
+	if (p_visible == -1) {
+		percent_visible = 1;
+	} else {
+		int total_char_count = get_total_character_count();
+		if (total_char_count > 0) {
+			percent_visible = (float)p_visible / (float)total_char_count;
+		}
+	}
+	_change_notify("percent_visible");
 	update();
 }
 

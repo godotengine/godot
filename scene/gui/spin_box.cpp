@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -62,8 +62,8 @@ void SpinBox::_text_entered(const String &p_string) {
 	Variant value = expr->execute(Array(), NULL, false);
 	if (value.get_type() != Variant::NIL) {
 		set_value(value);
-		_value_changed(0);
 	}
+	_value_changed(0);
 }
 
 LineEdit *SpinBox::get_line_edit() {
@@ -89,6 +89,14 @@ void SpinBox::_range_click_timeout() {
 
 	} else {
 		range_click_timer->stop();
+	}
+}
+
+void SpinBox::_release_mouse() {
+	if (drag.enabled) {
+		drag.enabled = false;
+		Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_VISIBLE);
+		warp_mouse(drag.capture_pos);
 	}
 }
 
@@ -145,12 +153,7 @@ void SpinBox::_gui_input(const Ref<InputEvent> &p_event) {
 
 		//set_default_cursor_shape(CURSOR_ARROW);
 		range_click_timer->stop();
-
-		if (drag.enabled) {
-			drag.enabled = false;
-			Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_VISIBLE);
-			warp_mouse(drag.capture_pos);
-		}
+		_release_mouse();
 		drag.allowed = false;
 	}
 
@@ -211,6 +214,8 @@ void SpinBox::_notification(int p_what) {
 
 		_adjust_width_for_icon(get_icon("updown"));
 		_value_changed(0);
+	} else if (p_what == NOTIFICATION_EXIT_TREE) {
+		_release_mouse();
 	} else if (p_what == NOTIFICATION_THEME_CHANGED) {
 
 		call_deferred("minimum_size_changed");
@@ -300,7 +305,6 @@ SpinBox::SpinBox() {
 	line_edit->connect("text_entered", this, "_text_entered", Vector<Variant>(), CONNECT_DEFERRED);
 	line_edit->connect("focus_exited", this, "_line_edit_focus_exit", Vector<Variant>(), CONNECT_DEFERRED);
 	line_edit->connect("gui_input", this, "_line_edit_input");
-	drag.enabled = false;
 
 	range_click_timer = memnew(Timer);
 	range_click_timer->connect("timeout", this, "_range_click_timeout");

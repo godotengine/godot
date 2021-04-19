@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -82,8 +82,15 @@ void EditorLog::_clear_request() {
 }
 
 void EditorLog::_copy_request() {
+	String text = log->get_selected_text();
 
-	log->selection_copy();
+	if (text == "") {
+		text = log->get_text();
+	}
+
+	if (text != "") {
+		OS::get_singleton()->set_clipboard(text);
+	}
 }
 
 void EditorLog::clear() {
@@ -95,9 +102,6 @@ void EditorLog::copy() {
 }
 
 void EditorLog::add_message(const String &p_msg, MessageType p_type) {
-
-	log->add_newline();
-
 	bool restore = p_type != MSG_TYPE_STD;
 	switch (p_type) {
 		case MSG_TYPE_STD: {
@@ -123,6 +127,7 @@ void EditorLog::add_message(const String &p_msg, MessageType p_type) {
 	}
 
 	log->add_text(p_msg);
+	log->add_newline();
 
 	if (restore)
 		log->pop();
@@ -177,7 +182,7 @@ EditorLog::EditorLog() {
 	log->set_v_size_flags(SIZE_EXPAND_FILL);
 	log->set_h_size_flags(SIZE_EXPAND_FILL);
 	vb->add_child(log);
-	add_message(VERSION_FULL_NAME " (c) 2007-2020 Juan Linietsky, Ariel Manzur & Godot Contributors.");
+	add_message(VERSION_FULL_NAME " (c) 2007-2021 Juan Linietsky, Ariel Manzur & Godot Contributors.");
 
 	eh.errfunc = _error_handler;
 	eh.userdata = this;

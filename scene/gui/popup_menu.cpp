@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -221,6 +221,7 @@ void PopupMenu::_gui_input(const Ref<InputEvent> &p_event) {
 		if (search_from >= items.size())
 			search_from = 0;
 
+		bool match_found = false;
 		for (int i = search_from; i < items.size(); i++) {
 
 			if (i < 0 || i >= items.size())
@@ -232,7 +233,21 @@ void PopupMenu::_gui_input(const Ref<InputEvent> &p_event) {
 				emit_signal("id_focused", i);
 				update();
 				accept_event();
+				match_found = true;
 				break;
+			}
+		}
+
+		if (!match_found) {
+			// If the last item is not selectable, try re-searching from the start.
+			for (int i = 0; i < search_from; i++) {
+				if (!items[i].separator && !items[i].disabled) {
+					mouse_over = i;
+					emit_signal("id_focused", i);
+					update();
+					accept_event();
+					break;
+				}
 			}
 		}
 	} else if (p_event->is_action("ui_up") && p_event->is_pressed()) {
@@ -241,6 +256,7 @@ void PopupMenu::_gui_input(const Ref<InputEvent> &p_event) {
 		if (search_from < 0)
 			search_from = items.size() - 1;
 
+		bool match_found = false;
 		for (int i = search_from; i >= 0; i--) {
 
 			if (i >= items.size())
@@ -252,7 +268,21 @@ void PopupMenu::_gui_input(const Ref<InputEvent> &p_event) {
 				emit_signal("id_focused", i);
 				update();
 				accept_event();
+				match_found = true;
 				break;
+			}
+		}
+
+		if (!match_found) {
+			// If the first item is not selectable, try re-searching from the end.
+			for (int i = items.size() - 1; i >= search_from; i--) {
+				if (!items[i].separator && !items[i].disabled) {
+					mouse_over = i;
+					emit_signal("id_focused", i);
+					update();
+					accept_event();
+					break;
+				}
 			}
 		}
 	} else if (p_event->is_action("ui_left") && p_event->is_pressed()) {
@@ -482,6 +512,7 @@ void PopupMenu::_notification(int p_what) {
 			Color font_color_disabled = get_color("font_color_disabled");
 			Color font_color_accel = get_color("font_color_accel");
 			Color font_color_hover = get_color("font_color_hover");
+			Color font_color_separator = get_color("font_color_separator");
 			float font_h = font->get_height();
 
 			// Add the check and the wider icon to the offset of all items.
@@ -566,7 +597,7 @@ void PopupMenu::_notification(int p_what) {
 
 					if (text != String()) {
 						int center = (get_size().width - font->get_string_size(text).width) / 2;
-						font->draw(ci, Point2(center, item_ofs.y + Math::floor((h - font_h) / 2.0)), text, font_color_disabled);
+						font->draw(ci, Point2(center, item_ofs.y + Math::floor((h - font_h) / 2.0)), text, font_color_separator);
 					}
 				} else {
 
@@ -1185,11 +1216,11 @@ void PopupMenu::remove_item(int p_idx) {
 	minimum_size_changed();
 }
 
-void PopupMenu::add_separator(const String &p_text) {
+void PopupMenu::add_separator(const String &p_text, int p_id) {
 
 	Item sep;
 	sep.separator = true;
-	sep.id = -1;
+	sep.id = p_id;
 	if (p_text != String()) {
 		sep.text = p_text;
 		sep.xl_text = tr(p_text);
@@ -1453,7 +1484,7 @@ void PopupMenu::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("remove_item", "idx"), &PopupMenu::remove_item);
 
-	ClassDB::bind_method(D_METHOD("add_separator", "label"), &PopupMenu::add_separator, DEFVAL(String()));
+	ClassDB::bind_method(D_METHOD("add_separator", "label", "id"), &PopupMenu::add_separator, DEFVAL(String()), DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("clear"), &PopupMenu::clear);
 
 	ClassDB::bind_method(D_METHOD("_set_items"), &PopupMenu::_set_items);

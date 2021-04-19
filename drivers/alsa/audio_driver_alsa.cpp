@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -36,6 +36,12 @@
 #include "core/project_settings.h"
 
 #include <errno.h>
+
+#ifdef PULSEAUDIO_ENABLED
+extern "C" {
+extern int initialize_pulse(int verbose);
+}
+#endif
 
 Error AudioDriverALSA::init_device() {
 	mix_rate = GLOBAL_GET("audio/mix_rate");
@@ -147,6 +153,20 @@ Error AudioDriverALSA::init_device() {
 }
 
 Error AudioDriverALSA::init() {
+#ifdef DEBUG_ENABLED
+	int dylibloader_verbose = 1;
+#else
+	int dylibloader_verbose = 0;
+#endif
+#ifdef PULSEAUDIO_ENABLED
+	// On pulse enabled systems Alsa will silently use pulse.
+	// It doesn't matter if this fails as that likely means there is no pulse
+	initialize_pulse(dylibloader_verbose);
+#endif
+
+	if (initialize_asound(dylibloader_verbose)) {
+		return ERR_CANT_OPEN;
+	}
 
 	active = false;
 	thread_exited = false;
@@ -154,8 +174,7 @@ Error AudioDriverALSA::init() {
 
 	Error err = init_device();
 	if (err == OK) {
-		mutex = Mutex::create();
-		thread = Thread::create(AudioDriverALSA::thread_func, this);
+		thread.start(AudioDriverALSA::thread_func, this);
 	}
 
 	return err;
@@ -187,7 +206,7 @@ void AudioDriverALSA::thread_func(void *p_udata) {
 		int total = 0;
 
 		while (todo && !ad->exit_thread) {
-			uint8_t *src = (uint8_t *)ad->samples_out.ptr();
+			int16_t *src = (int16_t *)ad->samples_out.ptr();
 			int wrote = snd_pcm_writei(ad->pcm_handle, (void *)(src + (total * ad->channels)), todo);
 
 			if (wrote > 0) {
@@ -299,16 +318,12 @@ void AudioDriverALSA::set_device(String device) {
 
 void AudioDriverALSA::lock() {
 
-	if (!thread || !mutex)
-		return;
-	mutex->lock();
+	mutex.lock();
 }
 
 void AudioDriverALSA::unlock() {
 
-	if (!thread || !mutex)
-		return;
-	mutex->unlock();
+	mutex.unlock();
 }
 
 void AudioDriverALSA::finish_device() {
@@ -321,25 +336,13 @@ void AudioDriverALSA::finish_device() {
 
 void AudioDriverALSA::finish() {
 
-	if (thread) {
-		exit_thread = true;
-		Thread::wait_to_finish(thread);
-
-		memdelete(thread);
-		thread = NULL;
-
-		if (mutex) {
-			memdelete(mutex);
-			mutex = NULL;
-		}
-	}
+	exit_thread = true;
+	thread.wait_to_finish();
 
 	finish_device();
 }
 
 AudioDriverALSA::AudioDriverALSA() :
-		thread(NULL),
-		mutex(NULL),
 		pcm_handle(NULL),
 		device_name("Default"),
 		new_device("Default") {

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -36,6 +36,7 @@
 #include "editor/editor_data.h"
 #include "editor/editor_plugin_settings.h"
 #include "editor/editor_sectioned_inspector.h"
+#include "editor/import_defaults_editor.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/tab_container.h"
 
@@ -72,7 +73,6 @@ class ProjectSettingsEditor : public AcceptDialog {
 
 	HBoxContainer *add_prop_bar;
 	AcceptDialog *message;
-	LineEdit *category;
 	LineEdit *property;
 	OptionButton *type;
 	PopupMenu *popup_add;
@@ -172,6 +172,8 @@ class ProjectSettingsEditor : public AcceptDialog {
 	TextureRect *restart_icon;
 	PanelContainer *restart_container;
 	ToolButton *restart_close_button;
+
+	ImportDefaultsEditor *import_defaults_editor;
 
 	void _editor_restart_request();
 	void _editor_restart();

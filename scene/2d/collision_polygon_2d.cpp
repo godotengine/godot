@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -41,12 +41,12 @@ void CollisionPolygon2D::_build_polygon() {
 
 	parent->shape_owner_clear_shapes(owner_id);
 
-	if (polygon.size() == 0)
-		return;
-
 	bool solids = build_mode == BUILD_SOLIDS;
 
 	if (solids) {
+		if (polygon.size() < 3) {
+			return;
+		}
 
 		//here comes the sun, lalalala
 		//decompose concave into multiple convex polygons and add them
@@ -58,6 +58,9 @@ void CollisionPolygon2D::_build_polygon() {
 		}
 
 	} else {
+		if (polygon.size() < 2) {
+			return;
+		}
 
 		Ref<ConcavePolygonShape2D> concave = memnew(ConcavePolygonShape2D);
 
@@ -142,26 +145,26 @@ void CollisionPolygon2D::_notification(int p_what) {
 
 			int polygon_count = polygon.size();
 			for (int i = 0; i < polygon_count; i++) {
-
 				Vector2 p = polygon[i];
 				Vector2 n = polygon[(i + 1) % polygon_count];
 				// draw line with width <= 1, so it does not scale with zoom and break pixel exact editing
 				draw_line(p, n, Color(0.9, 0.2, 0.0, 0.8), 1);
 			}
+
+			if (polygon_count > 2) {
 #define DEBUG_DECOMPOSE
 #if defined(TOOLS_ENABLED) && defined(DEBUG_DECOMPOSE)
+				Vector<Vector<Vector2> > decomp = _decompose_in_convex();
 
-			Vector<Vector<Vector2> > decomp = _decompose_in_convex();
-
-			Color c(0.4, 0.9, 0.1);
-			for (int i = 0; i < decomp.size(); i++) {
-
-				c.set_hsv(Math::fmod(c.get_h() + 0.738, 1), c.get_s(), c.get_v(), 0.5);
-				draw_colored_polygon(decomp[i], c);
-			}
+				Color c(0.4, 0.9, 0.1);
+				for (int i = 0; i < decomp.size(); i++) {
+					c.set_hsv(Math::fmod(c.get_h() + 0.738, 1), c.get_s(), c.get_v(), 0.5);
+					draw_colored_polygon(decomp[i], c);
+				}
 #else
-			draw_colored_polygon(polygon, get_tree()->get_debug_collisions_color());
+				draw_colored_polygon(polygon, get_tree()->get_debug_collisions_color());
 #endif
+			}
 
 			if (one_way_collision) {
 				Color dcol = get_tree()->get_debug_collisions_color(); //0.9,0.2,0.2,0.4);
@@ -205,6 +208,7 @@ void CollisionPolygon2D::set_polygon(const Vector<Point2> &p_polygon) {
 
 	if (parent) {
 		_build_polygon();
+		_update_in_shape_owner();
 	}
 	update();
 	update_configuration_warning();
@@ -221,7 +225,10 @@ void CollisionPolygon2D::set_build_mode(BuildMode p_mode) {
 	build_mode = p_mode;
 	if (parent) {
 		_build_polygon();
+		_update_in_shape_owner();
 	}
+	update();
+	update_configuration_warning();
 }
 
 CollisionPolygon2D::BuildMode CollisionPolygon2D::get_build_mode() const {
@@ -247,15 +254,38 @@ bool CollisionPolygon2D::_edit_is_selected_on_click(const Point2 &p_point, doubl
 
 String CollisionPolygon2D::get_configuration_warning() const {
 
+	String warning = Node2D::get_configuration_warning();
 	if (!Object::cast_to<CollisionObject2D>(get_parent())) {
-		return TTR("CollisionPolygon2D only serves to provide a collision shape to a CollisionObject2D derived node. Please only use it as a child of Area2D, StaticBody2D, RigidBody2D, KinematicBody2D, etc. to give them a shape.");
+		if (warning != String()) {
+			warning += "\n\n";
+		}
+		warning += TTR("CollisionPolygon2D only serves to provide a collision shape to a CollisionObject2D derived node. Please only use it as a child of Area2D, StaticBody2D, RigidBody2D, KinematicBody2D, etc. to give them a shape.");
 	}
 
-	if (polygon.empty()) {
-		return TTR("An empty CollisionPolygon2D has no effect on collision.");
+	int polygon_count = polygon.size();
+	if (polygon_count == 0) {
+		if (!warning.empty()) {
+			warning += "\n\n";
+		}
+		warning += TTR("An empty CollisionPolygon2D has no effect on collision.");
+	} else {
+		bool solids = build_mode == BUILD_SOLIDS;
+		if (solids) {
+			if (polygon_count < 3) {
+				if (!warning.empty()) {
+					warning += "\n\n";
+				}
+				warning += TTR("Invalid polygon. At least 3 points are needed in 'Solids' build mode.");
+			}
+		} else if (polygon_count < 2) {
+			if (!warning.empty()) {
+				warning += "\n\n";
+			}
+			warning += TTR("Invalid polygon. At least 2 points are needed in 'Segments' build mode.");
+		}
 	}
 
-	return String();
+	return warning;
 }
 
 void CollisionPolygon2D::set_disabled(bool p_disabled) {

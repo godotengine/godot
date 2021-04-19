@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -132,6 +132,7 @@ public:
 	static ImageMemLoadFunc _jpg_mem_loader_func;
 	static ImageMemLoadFunc _webp_mem_loader_func;
 	static ImageMemLoadFunc _tga_mem_loader_func;
+	static ImageMemLoadFunc _bmp_mem_loader_func;
 
 	static void (*_image_compress_bc_func)(Image *, float, CompressSource p_source);
 	static void (*_image_compress_bptc_func)(Image *, float p_lossy_quality, CompressSource p_source);
@@ -224,7 +225,7 @@ public:
 	/**
 	 * Resize the image, using the preferred interpolation method.
 	 */
-	void resize_to_po2(bool p_square = false);
+	void resize_to_po2(bool p_square = false, Interpolation p_interpolation = INTERPOLATE_BILINEAR);
 	void resize(int p_width, int p_height, Interpolation p_interpolation = INTERPOLATE_BILINEAR);
 	void shrink_x2();
 	void expand_x2_hq2x();
@@ -333,6 +334,7 @@ public:
 	Error load_jpg_from_buffer(const PoolVector<uint8_t> &p_array);
 	Error load_webp_from_buffer(const PoolVector<uint8_t> &p_array);
 	Error load_tga_from_buffer(const PoolVector<uint8_t> &p_array);
+	Error load_bmp_from_buffer(const PoolVector<uint8_t> &p_array);
 
 	Image(const uint8_t *p_mem_png_jpg, int p_len = -1);
 	Image(const char **p_xpm);

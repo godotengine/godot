@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -220,15 +220,9 @@ ScriptInstance *NativeScript::instance_create(Object *p_this) {
 	nsi->userdata = script_data->create_func.create_func((godot_object *)p_this, script_data->create_func.method_data);
 #endif
 
-#ifndef NO_THREADS
-	owners_lock->lock();
-#endif
-
+	owners_lock.lock();
 	instance_owners.insert(p_this);
-
-#ifndef NO_THREADS
-	owners_lock->unlock();
-#endif
+	owners_lock.unlock();
 
 	return nsi;
 }
@@ -524,17 +518,10 @@ NativeScript::NativeScript() {
 	library = Ref<GDNative>();
 	lib_path = "";
 	class_name = "";
-#ifndef NO_THREADS
-	owners_lock = Mutex::create();
-#endif
 }
 
 NativeScript::~NativeScript() {
 	NSL->unregister_script(this);
-
-#ifndef NO_THREADS
-	memdelete(owners_lock);
-#endif
 }
 
 #define GET_SCRIPT_DESC() script->get_script_desc()
@@ -911,15 +898,9 @@ NativeScriptInstance::~NativeScriptInstance() {
 
 	if (owner) {
 
-#ifndef NO_THREADS
-		script->owners_lock->lock();
-#endif
-
+		script->owners_lock.lock();
 		script->instance_owners.erase(owner);
-
-#ifndef NO_THREADS
-		script->owners_lock->unlock();
-#endif
+		script->owners_lock.unlock();
 	}
 }
 
@@ -1014,10 +995,6 @@ void NativeScriptLanguage::_unload_stuff(bool p_reload) {
 
 NativeScriptLanguage::NativeScriptLanguage() {
 	NativeScriptLanguage::singleton = this;
-#ifndef NO_THREADS
-	has_objects_to_register = false;
-	mutex = Mutex::create();
-#endif
 
 #ifdef DEBUG_ENABLED
 	profiling = false;
@@ -1053,10 +1030,6 @@ NativeScriptLanguage::~NativeScriptLanguage() {
 	NSL->library_classes.clear();
 	NSL->library_gdnatives.clear();
 	NSL->library_script_users.clear();
-
-#ifndef NO_THREADS
-	memdelete(mutex);
-#endif
 }
 
 String NativeScriptLanguage::get_name() const {
@@ -1470,7 +1443,7 @@ void NativeScriptLanguage::defer_init_library(Ref<GDNativeLibrary> lib, NativeSc
 	MutexLock lock(mutex);
 	libs_to_init.insert(lib);
 	scripts_to_register.insert(script);
-	has_objects_to_register = true;
+	has_objects_to_register.set();
 }
 #endif
 
@@ -1528,6 +1501,12 @@ void NativeScriptLanguage::unregister_script(NativeScript *script) {
 		S->get().erase(script);
 		if (S->get().size() == 0) {
 			library_script_users.erase(S);
+
+			Map<String, Ref<GDNative> >::Element *G = library_gdnatives.find(script->lib_path);
+			if (G && G->get()->get_library()->is_reloadable()) {
+				G->get()->terminate();
+				library_gdnatives.erase(G);
+			}
 		}
 	}
 #ifndef NO_THREADS
@@ -1557,7 +1536,7 @@ void NativeScriptLanguage::call_libraries_cb(const StringName &name) {
 
 void NativeScriptLanguage::frame() {
 #ifndef NO_THREADS
-	if (has_objects_to_register) {
+	if (has_objects_to_register.is_set()) {
 		MutexLock lock(mutex);
 		for (Set<Ref<GDNativeLibrary> >::Element *L = libs_to_init.front(); L; L = L->next()) {
 			init_library(L->get());
@@ -1567,7 +1546,7 @@ void NativeScriptLanguage::frame() {
 			register_script(S->get());
 		}
 		scripts_to_register.clear();
-		has_objects_to_register = false;
+		has_objects_to_register.clear();
 	}
 #endif
 

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -54,12 +54,12 @@ private:
 	int queue_count;
 	uint8_t packet_buffer[PACKET_BUFFER_SIZE];
 
-public:
-	void _on_open();
-	void _on_close();
-	void _on_error();
-	void _on_message(uint8_t *p_data, uint32_t p_size, bool p_is_string);
+	static void _on_open(void *p_obj);
+	static void _on_close(void *p_obj);
+	static void _on_error(void *p_obj);
+	static void _on_message(void *p_obj, const uint8_t *p_data, int p_size, int p_is_string);
 
+public:
 	virtual void set_write_mode(WriteMode mode);
 	virtual WriteMode get_write_mode() const;
 	virtual bool was_string_packet() const;

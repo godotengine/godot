@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -527,6 +527,10 @@ protected:
 
 	Rect2 _get_item_rect(Object *p_item, int p_column) const {
 		return get_item_rect(Object::cast_to<TreeItem>(p_item), p_column);
+	}
+
+	void _scroll_to_item(Object *p_item) {
+		scroll_to_item(Object::cast_to<TreeItem>(p_item));
 	}
 
 public:

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -174,7 +174,7 @@ void GDNativeExportPlugin::_export_file(const String &p_path, const String &p_ty
 			String entry_lib_path = config->get_value("entry", key);
 			if (entry_lib_path.begins_with("res://") && entry_lib_path.ends_with(".a")) {
 				// If we find static library that was used for export
-				// we should add a fake loopup table.
+				// we should add a fake lookup table.
 				// In case of dynamic library being used,
 				// this symbols will not cause any issues with library loading.
 				should_fake_dynamic = true;

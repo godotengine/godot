@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -159,7 +159,7 @@ float CPUParticles::get_speed_scale() const {
 }
 
 void CPUParticles::set_draw_order(DrawOrder p_order) {
-
+	ERR_FAIL_INDEX(p_order, DRAW_ORDER_MAX);
 	draw_order = p_order;
 }
 
@@ -201,7 +201,7 @@ bool CPUParticles::get_fractional_delta() const {
 
 String CPUParticles::get_configuration_warning() const {
 
-	String warnings;
+	String warnings = GeometryInstance::get_configuration_warning();
 
 	bool mesh_found = false;
 	bool anim_material_found = false;
@@ -680,6 +680,8 @@ void CPUParticles::_particles_process(float p_delta) {
 			restart = true;
 		}
 
+		float tv = 0.0;
+
 		if (restart) {
 
 			if (!emitting) {
@@ -695,12 +697,12 @@ void CPUParticles::_particles_process(float p_delta) {
 
 			float tex_angle = 0.0;
 			if (curve_parameters[PARAM_ANGLE].is_valid()) {
-				tex_angle = curve_parameters[PARAM_ANGLE]->interpolate(0);
+				tex_angle = curve_parameters[PARAM_ANGLE]->interpolate(tv);
 			}
 
 			float tex_anim_offset = 0.0;
 			if (curve_parameters[PARAM_ANGLE].is_valid()) {
-				tex_anim_offset = curve_parameters[PARAM_ANGLE]->interpolate(0);
+				tex_anim_offset = curve_parameters[PARAM_ANGLE]->interpolate(tv);
 			}
 
 			p.seed = Math::rand();
@@ -806,62 +808,64 @@ void CPUParticles::_particles_process(float p_delta) {
 			continue;
 		} else if (p.time > p.lifetime) {
 			p.active = false;
+			tv = 1.0;
 		} else {
 
 			uint32_t alt_seed = p.seed;
 
 			p.time += local_delta;
 			p.custom[1] = p.time / lifetime;
+			tv = p.time / p.lifetime;
 
 			float tex_linear_velocity = 0.0;
 			if (curve_parameters[PARAM_INITIAL_LINEAR_VELOCITY].is_valid()) {
-				tex_linear_velocity = curve_parameters[PARAM_INITIAL_LINEAR_VELOCITY]->interpolate(p.custom[1]);
+				tex_linear_velocity = curve_parameters[PARAM_INITIAL_LINEAR_VELOCITY]->interpolate(tv);
 			}
 
 			float tex_orbit_velocity = 0.0;
 			if (flags[FLAG_DISABLE_Z]) {
 				if (curve_parameters[PARAM_ORBIT_VELOCITY].is_valid()) {
-					tex_orbit_velocity = curve_parameters[PARAM_ORBIT_VELOCITY]->interpolate(p.custom[1]);
+					tex_orbit_velocity = curve_parameters[PARAM_ORBIT_VELOCITY]->interpolate(tv);
 				}
 			}
 
 			float tex_angular_velocity = 0.0;
 			if (curve_parameters[PARAM_ANGULAR_VELOCITY].is_valid()) {
-				tex_angular_velocity = curve_parameters[PARAM_ANGULAR_VELOCITY]->interpolate(p.custom[1]);
+				tex_angular_velocity = curve_parameters[PARAM_ANGULAR_VELOCITY]->interpolate(tv);
 			}
 
 			float tex_linear_accel = 0.0;
 			if (curve_parameters[PARAM_LINEAR_ACCEL].is_valid()) {
-				tex_linear_accel = curve_parameters[PARAM_LINEAR_ACCEL]->interpolate(p.custom[1]);
+				tex_linear_accel = curve_parameters[PARAM_LINEAR_ACCEL]->interpolate(tv);
 			}
 
 			float tex_tangential_accel = 0.0;
 			if (curve_parameters[PARAM_TANGENTIAL_ACCEL].is_valid()) {
-				tex_tangential_accel = curve_parameters[PARAM_TANGENTIAL_ACCEL]->interpolate(p.custom[1]);
+				tex_tangential_accel = curve_parameters[PARAM_TANGENTIAL_ACCEL]->interpolate(tv);
 			}
 
 			float tex_radial_accel = 0.0;
 			if (curve_parameters[PARAM_RADIAL_ACCEL].is_valid()) {
-				tex_radial_accel = curve_parameters[PARAM_RADIAL_ACCEL]->interpolate(p.custom[1]);
+				tex_radial_accel = curve_parameters[PARAM_RADIAL_ACCEL]->interpolate(tv);
 			}
 
 			float tex_damping = 0.0;
 			if (curve_parameters[PARAM_DAMPING].is_valid()) {
-				tex_damping = curve_parameters[PARAM_DAMPING]->interpolate(p.custom[1]);
+				tex_damping = curve_parameters[PARAM_DAMPING]->interpolate(tv);
 			}
 
 			float tex_angle = 0.0;
 			if (curve_parameters[PARAM_ANGLE].is_valid()) {
-				tex_angle = curve_parameters[PARAM_ANGLE]->interpolate(p.custom[1]);
+				tex_angle = curve_parameters[PARAM_ANGLE]->interpolate(tv);
 			}
 			float tex_anim_speed = 0.0;
 			if (curve_parameters[PARAM_ANIM_SPEED].is_valid()) {
-				tex_anim_speed = curve_parameters[PARAM_ANIM_SPEED]->interpolate(p.custom[1]);
+				tex_anim_speed = curve_parameters[PARAM_ANIM_SPEED]->interpolate(tv);
 			}
 
 			float tex_anim_offset = 0.0;
 			if (curve_parameters[PARAM_ANIM_OFFSET].is_valid()) {
-				tex_anim_offset = curve_parameters[PARAM_ANIM_OFFSET]->interpolate(p.custom[1]);
+				tex_anim_offset = curve_parameters[PARAM_ANIM_OFFSET]->interpolate(tv);
 			}
 
 			Vector3 force = gravity;
@@ -925,12 +929,12 @@ void CPUParticles::_particles_process(float p_delta) {
 
 		float tex_scale = 1.0;
 		if (curve_parameters[PARAM_SCALE].is_valid()) {
-			tex_scale = curve_parameters[PARAM_SCALE]->interpolate(p.custom[1]);
+			tex_scale = curve_parameters[PARAM_SCALE]->interpolate(tv);
 		}
 
 		float tex_hue_variation = 0.0;
 		if (curve_parameters[PARAM_HUE_VARIATION].is_valid()) {
-			tex_hue_variation = curve_parameters[PARAM_HUE_VARIATION]->interpolate(p.custom[1]);
+			tex_hue_variation = curve_parameters[PARAM_HUE_VARIATION]->interpolate(tv);
 		}
 
 		float hue_rot_angle = (parameters[PARAM_HUE_VARIATION] + tex_hue_variation) * Math_PI * 2.0 * Math::lerp(1.0f, p.hue_rot_rand * 2.0f - 1.0f, randomness[PARAM_HUE_VARIATION]);
@@ -949,7 +953,7 @@ void CPUParticles::_particles_process(float p_delta) {
 		}
 
 		if (color_ramp.is_valid()) {
-			p.color = color_ramp->get_color_at_offset(p.custom[1]) * color;
+			p.color = color_ramp->get_color_at_offset(tv) * color;
 		} else {
 			p.color = color;
 		}
@@ -1020,9 +1024,7 @@ void CPUParticles::_particles_process(float p_delta) {
 }
 
 void CPUParticles::_update_particle_data_buffer() {
-#ifndef NO_THREADS
-	update_mutex->lock();
-#endif
+	update_mutex.lock();
 
 	{
 
@@ -1047,6 +1049,7 @@ void CPUParticles::_update_particle_data_buffer() {
 				sorter.compare.particles = r.ptr();
 				sorter.sort(order, pc);
 			} else if (draw_order == DRAW_ORDER_VIEW_DEPTH) {
+				ERR_FAIL_NULL(get_viewport());
 				Camera *c = get_viewport()->get_camera();
 				if (c) {
 					Vector3 dir = c->get_global_transform().basis.get_axis(2); //far away to close
@@ -1110,21 +1113,17 @@ void CPUParticles::_update_particle_data_buffer() {
 			ptr += 17;
 		}
 
-		can_update = true;
+		can_update.set();
 	}
 
-#ifndef NO_THREADS
-	update_mutex->unlock();
-#endif
+	update_mutex.unlock();
 }
 
 void CPUParticles::_set_redraw(bool p_redraw) {
 	if (redraw == p_redraw)
 		return;
 	redraw = p_redraw;
-#ifndef NO_THREADS
-	update_mutex->lock();
-#endif
+	update_mutex.lock();
 	if (redraw) {
 		VS::get_singleton()->connect("frame_pre_draw", this, "_update_render_thread");
 		VS::get_singleton()->instance_geometry_set_flag(get_instance(), VS::INSTANCE_FLAG_DRAW_NEXT_FRAME_IF_VISIBLE, true);
@@ -1136,24 +1135,19 @@ void CPUParticles::_set_redraw(bool p_redraw) {
 		VS::get_singleton()->instance_geometry_set_flag(get_instance(), VS::INSTANCE_FLAG_DRAW_NEXT_FRAME_IF_VISIBLE, false);
 		VS::get_singleton()->multimesh_set_visible_instances(multimesh, 0);
 	}
-#ifndef NO_THREADS
-	update_mutex->unlock();
-#endif
+	update_mutex.unlock();
 }
 
 void CPUParticles::_update_render_thread() {
 
-#ifndef NO_THREADS
-	update_mutex->lock();
-#endif
-	if (can_update) {
+	update_mutex.lock();
+
+	if (can_update.is_set()) {
 		VS::get_singleton()->multimesh_set_as_bulk_array(multimesh, particle_data);
-		can_update = false; //wait for next time
+		can_update.clear(); //wait for next time
 	}
 
-#ifndef NO_THREADS
-	update_mutex->unlock();
-#endif
+	update_mutex.unlock();
 }
 
 void CPUParticles::_notification(int p_what) {
@@ -1216,7 +1210,7 @@ void CPUParticles::_notification(int p_what) {
 				ptr += 17;
 			}
 
-			can_update = true;
+			can_update.set();
 		}
 	}
 }
@@ -1403,7 +1397,7 @@ void CPUParticles::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_update_render_thread"), &CPUParticles::_update_render_thread);
 
 	ADD_GROUP("Emission Shape", "emission_");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "emission_shape", PROPERTY_HINT_ENUM, "Point,Sphere,Box,Points,Directed Points"), "set_emission_shape", "get_emission_shape");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "emission_shape", PROPERTY_HINT_ENUM, "Point,Sphere,Box,Points,Directed Points", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), "set_emission_shape", "get_emission_shape");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "emission_sphere_radius", PROPERTY_HINT_RANGE, "0.01,128,0.01"), "set_emission_sphere_radius", "get_emission_sphere_radius");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "emission_box_extents"), "set_emission_box_extents", "get_emission_box_extents");
 	ADD_PROPERTY(PropertyInfo(Variant::POOL_VECTOR3_ARRAY, "emission_points"), "set_emission_points", "get_emission_points");
@@ -1556,19 +1550,9 @@ CPUParticles::CPUParticles() {
 		flags[i] = false;
 	}
 
-	can_update = false;
-
 	set_color(Color(1, 1, 1, 1));
-
-#ifndef NO_THREADS
-	update_mutex = Mutex::create();
-#endif
 }
 
 CPUParticles::~CPUParticles() {
 	VS::get_singleton()->free(multimesh);
-
-#ifndef NO_THREADS
-	memdelete(update_mutex);
-#endif
 }

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -180,6 +180,7 @@ void ProgressDialog::add_task(const String &p_task, const String &p_label, int p
 	t.progress = memnew(ProgressBar);
 	t.progress->set_max(p_steps);
 	t.progress->set_value(p_steps);
+	t.last_progress_tick = 0;
 	vb2->add_child(t.progress);
 	t.state = memnew(Label);
 	t.state->set_clip_text(true);
@@ -204,20 +205,20 @@ bool ProgressDialog::task_step(const String &p_task, const String &p_state, int 
 
 	ERR_FAIL_COND_V(!tasks.has(p_task), cancelled);
 
+	Task &t = tasks[p_task];
 	if (!p_force_redraw) {
 		uint64_t tus = OS::get_singleton()->get_ticks_usec();
-		if (tus - last_progress_tick < 200000) //200ms
+		if (tus - t.last_progress_tick < 200000) //200ms
 			return cancelled;
 	}
 
-	Task &t = tasks[p_task];
 	if (p_step < 0)
 		t.progress->set_value(t.progress->get_value() + 1);
 	else
 		t.progress->set_value(p_step);
 
 	t.state->set_text(p_state);
-	last_progress_tick = OS::get_singleton()->get_ticks_usec();
+	t.last_progress_tick = OS::get_singleton()->get_ticks_usec();
 	if (cancel_hb->is_visible()) {
 		OS::get_singleton()->force_process_input();
 	}
@@ -254,7 +255,6 @@ ProgressDialog::ProgressDialog() {
 	add_child(main);
 	main->set_anchors_and_margins_preset(Control::PRESET_WIDE);
 	set_exclusive(true);
-	last_progress_tick = 0;
 	singleton = this;
 	cancel_hb = memnew(HBoxContainer);
 	main->add_child(cancel_hb);

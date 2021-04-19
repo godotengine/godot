@@ -7,6 +7,7 @@
 		Used with [DynamicFont] to describe the location of a vector font file for dynamic rendering at runtime.
 	</description>
 	<tutorials>
+		<link title="3D Voxel Demo">https://godotengine.org/asset-library/asset/676</link>
 	</tutorials>
 	<methods>
 	</methods>

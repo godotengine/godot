@@ -21,12 +21,11 @@
 #define T1TYPES_H_
 
 
-#include <ft2build.h>
-#include FT_TYPE1_TABLES_H
-#include FT_INTERNAL_POSTSCRIPT_HINTS_H
-#include FT_INTERNAL_SERVICE_H
-#include FT_INTERNAL_HASH_H
-#include FT_SERVICE_POSTSCRIPT_CMAPS_H
+#include <freetype/t1tables.h>
+#include <freetype/internal/pshints.h>
+#include <freetype/internal/ftserv.h>
+#include <freetype/internal/fthash.h>
+#include <freetype/internal/services/svpscmap.h>
 
 
 FT_BEGIN_HEADER

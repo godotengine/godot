@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -47,8 +47,11 @@ class Joint : public Spatial {
 
 	int solver_priority;
 	bool exclude_from_collision;
+	String warning;
 
 protected:
+	void _disconnect_signals();
+	void _body_exit_tree();
 	void _update_joint(bool p_only_free = false);
 
 	void _notification(int p_what);
@@ -58,6 +61,8 @@ protected:
 	static void _bind_methods();
 
 public:
+	virtual String get_configuration_warning() const;
+
 	void set_node_a(const NodePath &p_node_a);
 	NodePath get_node_a() const;
 
@@ -305,8 +310,6 @@ protected:
 	float params_z[PARAM_MAX];
 	bool flags_z[FLAG_MAX];
 
-	int precision;
-
 	virtual RID _configure_joint(PhysicsBody *body_a, PhysicsBody *body_b);
 	static void _bind_methods();
 
@@ -328,11 +331,6 @@ public:
 
 	void set_flag_z(Flag p_flag, bool p_enabled);
 	bool get_flag_z(Flag p_flag) const;
-
-	void set_precision(int p_precision);
-	int get_precision() const {
-		return precision;
-	}
 
 	Generic6DOFJoint();
 };

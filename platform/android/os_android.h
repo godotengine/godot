@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -97,6 +97,21 @@ private:
 
 	int video_driver_index;
 
+	bool alt_mem = false;
+	bool shift_mem = false;
+	bool control_mem = false;
+	bool meta_mem = false;
+
+	int buttons_state;
+
+	void _set_key_modifier_state(Ref<InputEventWithModifiers> ev) const;
+
+	static int _button_index_from_mask(int button_mask);
+
+	static int _android_button_mask_to_godot_button_mask(int android_button_mask);
+
+	void _wheel_button_click(int event_buttons_mask, const Ref<InputEventMouseButton> &ev, int wheel_button, float factor);
+
 public:
 	// functions used by main to initialize/deinitialize the OS
 	virtual int get_video_driver_count() const;
@@ -142,6 +157,7 @@ public:
 	virtual void set_keep_screen_on(bool p_enabled);
 
 	virtual Size2 get_window_size() const;
+	virtual Rect2 get_window_safe_area() const;
 
 	virtual String get_name() const;
 	virtual MainLoop *get_main_loop() const;
@@ -168,6 +184,7 @@ public:
 	void set_context_is_16_bits(bool p_is_16);
 
 	virtual void set_screen_orientation(ScreenOrientation p_orientation);
+	virtual ScreenOrientation get_screen_orientation() const;
 
 	virtual Error shell_open(String p_uri);
 	virtual String get_user_data_dir() const;
@@ -186,11 +203,13 @@ public:
 	void process_gravity(const Vector3 &p_gravity);
 	void process_magnetometer(const Vector3 &p_magnetometer);
 	void process_gyroscope(const Vector3 &p_gyroscope);
-	void process_touch(int p_what, int p_pointer, const Vector<TouchPos> &p_points);
+	void process_touch(int p_event, int p_pointer, const Vector<TouchPos> &p_points);
 	void process_hover(int p_type, Point2 p_pos);
-	void process_double_tap(Point2 p_pos);
+	void process_mouse_event(int event_action, int event_android_buttons_mask, Point2 event_pos, float event_vertical_factor = 0, float event_horizontal_factor = 0);
+	void process_double_tap(int event_android_button_mask, Point2 p_pos);
 	void process_scroll(Point2 p_pos);
 	void process_joy_event(JoypadEvent p_event);
+	void process_key_event(int p_scancode, int p_unicode_char, bool p_pressed);
 	void process_event(Ref<InputEvent> p_event);
 	void init_video_mode(int p_video_width, int p_video_height);
 

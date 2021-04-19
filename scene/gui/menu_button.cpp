@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -129,7 +129,7 @@ MenuButton::MenuButton() {
 	set_flat(true);
 	set_toggle_mode(true);
 	set_disable_shortcuts(false);
-	set_enabled_focus_mode(FOCUS_NONE);
+	set_focus_mode(FOCUS_NONE);
 	set_process_unhandled_key_input(true);
 	set_action_mode(ACTION_MODE_BUTTON_PRESS);
 

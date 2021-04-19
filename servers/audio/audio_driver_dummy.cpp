@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -49,8 +49,7 @@ Error AudioDriverDummy::init() {
 
 	samples_in = memnew_arr(int32_t, buffer_frames * channels);
 
-	mutex = Mutex::create();
-	thread = Thread::create(AudioDriverDummy::thread_func, this);
+	thread.start(AudioDriverDummy::thread_func, this);
 
 	return OK;
 };
@@ -95,40 +94,26 @@ AudioDriver::SpeakerMode AudioDriverDummy::get_speaker_mode() const {
 
 void AudioDriverDummy::lock() {
 
-	if (!thread || !mutex)
-		return;
-	mutex->lock();
+	mutex.lock();
 };
 
 void AudioDriverDummy::unlock() {
 
-	if (!thread || !mutex)
-		return;
-	mutex->unlock();
+	mutex.unlock();
 };
 
 void AudioDriverDummy::finish() {
 
-	if (!thread)
-		return;
-
 	exit_thread = true;
-	Thread::wait_to_finish(thread);
+	thread.wait_to_finish();
 
 	if (samples_in) {
 		memdelete_arr(samples_in);
 	};
-
-	memdelete(thread);
-	if (mutex)
-		memdelete(mutex);
-	thread = NULL;
 };
 
-AudioDriverDummy::AudioDriverDummy() {
+AudioDriverDummy::AudioDriverDummy(){
 
-	mutex = NULL;
-	thread = NULL;
 };
 
 AudioDriverDummy::~AudioDriverDummy(){

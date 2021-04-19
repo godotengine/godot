@@ -159,8 +159,8 @@ void main() {
 
 		if (depth > z_to) {
 			// if depth was surpassed
-			if (depth <= max(z_to, z_from) + depth_tolerance) {
-				// check the depth tolerance
+			if ((depth <= max(z_to, z_from) + depth_tolerance) && (-depth < camera_z_far)) {
+				// check the depth tolerance and far clip
 				found = true;
 			}
 			break;
@@ -175,16 +175,17 @@ void main() {
 		float margin_blend = 1.0;
 
 		vec2 margin = vec2((viewport_size.x + viewport_size.y) * 0.5 * 0.05); // make a uniform margin
-		if (any(bvec4(lessThan(pos, -margin), greaterThan(pos, viewport_size + margin)))) {
-			// clip outside screen + margin
+		if (any(bvec4(lessThan(pos, vec2(0.0, 0.0)), greaterThan(pos, viewport_size * 0.5)))) {
+			// clip at the screen edges
 			frag_color = vec4(0.0);
 			return;
 		}
 
 		{
-			//blend fading out towards external margin
-			vec2 margin_grad = mix(pos - viewport_size, -pos, lessThan(pos, vec2(0.0)));
-			margin_blend = 1.0 - smoothstep(0.0, margin.x, max(margin_grad.x, margin_grad.y));
+			//blend fading out towards inner margin
+			// 0.25 = midpoint of half-resolution reflection
+			vec2 margin_grad = mix(viewport_size * 0.5 - pos, pos, lessThan(pos, viewport_size * 0.25));
+			margin_blend = smoothstep(0.0, margin.x * margin.y, margin_grad.x * margin_grad.y);
 			//margin_blend = 1.0;
 		}
 

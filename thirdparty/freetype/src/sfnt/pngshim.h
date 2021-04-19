@@ -21,7 +21,6 @@
 #define PNGSHIM_H_
 
 
-#include <ft2build.h>
 #include "ttload.h"
 
 

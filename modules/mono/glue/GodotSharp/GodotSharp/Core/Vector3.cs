@@ -734,49 +734,53 @@ namespace Godot
 
         public static bool operator <(Vector3 left, Vector3 right)
         {
-            if (Mathf.IsEqualApprox(left.x, right.x))
+            if (left.x == right.x)
             {
-                if (Mathf.IsEqualApprox(left.y, right.y))
+                if (left.y == right.y)
+                {
                     return left.z < right.z;
+                }
                 return left.y < right.y;
             }
-
             return left.x < right.x;
         }
 
         public static bool operator >(Vector3 left, Vector3 right)
         {
-            if (Mathf.IsEqualApprox(left.x, right.x))
+            if (left.x == right.x)
             {
-                if (Mathf.IsEqualApprox(left.y, right.y))
+                if (left.y == right.y)
+                {
                     return left.z > right.z;
+                }
                 return left.y > right.y;
             }
-
             return left.x > right.x;
         }
 
         public static bool operator <=(Vector3 left, Vector3 right)
         {
-            if (Mathf.IsEqualApprox(left.x, right.x))
+            if (left.x == right.x)
             {
-                if (Mathf.IsEqualApprox(left.y, right.y))
+                if (left.y == right.y)
+                {
                     return left.z <= right.z;
+                }
                 return left.y < right.y;
             }
-
             return left.x < right.x;
         }
 
         public static bool operator >=(Vector3 left, Vector3 right)
         {
-            if (Mathf.IsEqualApprox(left.x, right.x))
+            if (left.x == right.x)
             {
-                if (Mathf.IsEqualApprox(left.y, right.y))
+                if (left.y == right.y)
+                {
                     return left.z >= right.z;
+                }
                 return left.y > right.y;
             }
-
             return left.x > right.x;
         }
 

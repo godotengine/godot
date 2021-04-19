@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -170,6 +170,10 @@ static String get_full_version_string() {
 // FIXME: Could maybe be moved to PhysicsServerManager and Physics2DServerManager directly
 // to have less code in main.cpp.
 void initialize_physics() {
+
+	// This must be defined BEFORE the 3d physics server is created
+	GLOBAL_DEF("physics/3d/godot_physics/use_bvh", true);
+
 	/// 3D Physics Server
 	physics_server = PhysicsServerManager::new_server(ProjectSettings::get_singleton()->get(PhysicsServerManager::setting_property_name));
 	if (!physics_server) {
@@ -208,8 +212,8 @@ void Main::print_help(const char *p_binary) {
 
 	print_line(String(VERSION_NAME) + " v" + get_full_version_string() + " - " + String(VERSION_WEBSITE));
 	OS::get_singleton()->print("Free and open source software under the terms of the MIT license.\n");
-	OS::get_singleton()->print("(c) 2007-2020 Juan Linietsky, Ariel Manzur.\n");
-	OS::get_singleton()->print("(c) 2014-2020 Godot Engine contributors.\n");
+	OS::get_singleton()->print("(c) 2007-2021 Juan Linietsky, Ariel Manzur.\n");
+	OS::get_singleton()->print("(c) 2014-2021 Godot Engine contributors.\n");
 	OS::get_singleton()->print("\n");
 	OS::get_singleton()->print("Usage: %s [options] [path to scene or 'project.godot' file]\n", p_binary);
 	OS::get_singleton()->print("\n");
@@ -259,7 +263,7 @@ void Main::print_help(const char *p_binary) {
 	OS::get_singleton()->print("  --resolution <W>x<H>             Request window resolution.\n");
 	OS::get_singleton()->print("  --position <X>,<Y>               Request window position.\n");
 	OS::get_singleton()->print("  --low-dpi                        Force low-DPI mode (macOS and Windows only).\n");
-	OS::get_singleton()->print("  --no-window                      Disable window creation (Windows only). Useful together with --script.\n");
+	OS::get_singleton()->print("  --no-window                      Run with invisible window. Useful together with --script.\n");
 	OS::get_singleton()->print("  --enable-vsync-via-compositor    When vsync is enabled, vsync via the OS' window compositor (Windows only).\n");
 	OS::get_singleton()->print("  --disable-vsync-via-compositor   Disable vsync via the OS' window compositor (Windows only).\n");
 	OS::get_singleton()->print("  --tablet-driver                  Tablet input driver (");
@@ -342,13 +346,15 @@ void Main::print_help(const char *p_binary) {
  */
 
 Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_phase) {
+#if defined(DEBUG_ENABLED) && !defined(NO_THREADS)
+	check_lockless_atomics();
+#endif
+
 	RID_OwnerBase::init_rid();
 
 	OS::get_singleton()->initialize_core();
 
 	engine = memnew(Engine);
-
-	ClassDB::init();
 
 	MAIN_PRINT("Main: Initialize CORE");
 
@@ -356,8 +362,6 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	register_core_driver_types();
 
 	MAIN_PRINT("Main: Initialize Globals");
-
-	Thread::_main_thread_id = Thread::get_caller_id();
 
 	globals = memnew(ProjectSettings);
 	input_map = memnew(InputMap);
@@ -609,7 +613,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		} else if (I->get() == "--low-dpi") { // force low DPI (macOS only)
 
 			force_lowdpi = true;
-		} else if (I->get() == "--no-window") { // disable window creation (Windows only)
+		} else if (I->get() == "--no-window") { // run with an invisible window
 
 			OS::get_singleton()->set_no_window_mode(true);
 		} else if (I->get() == "--tablet-driver") {
@@ -899,6 +903,9 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 #endif
 	}
 
+	// Initialize user data dir.
+	OS::get_singleton()->ensure_user_data_dir();
+
 	GLOBAL_DEF("memory/limits/multithreaded_server/rid_pool_prealloc", 60);
 	ProjectSettings::get_singleton()->set_custom_property_info("memory/limits/multithreaded_server/rid_pool_prealloc", PropertyInfo(Variant::INT, "memory/limits/multithreaded_server/rid_pool_prealloc", PROPERTY_HINT_RANGE, "0,500,1")); // No negative and limit to 500 due to crashes
 	GLOBAL_DEF("network/limits/debugger_stdout/max_chars_per_second", 2048);
@@ -927,6 +934,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			memdelete(sdr);
 		} else {
 			script_debugger = sdr;
+			sdr->set_allow_focus_steal_pid(allow_focus_steal_pid);
 		}
 	} else if (debug_mode == "local") {
 
@@ -969,6 +977,11 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		project_manager = main_args.size() == 0 && !found_project;
 	}
 #endif
+
+	// Only flush stdout in debug builds by default, as spamming `print()` will
+	// decrease performance if this is enabled.
+	GLOBAL_DEF_RST("application/run/flush_stdout_on_print", false);
+	GLOBAL_DEF_RST("application/run/flush_stdout_on_print.debug", true);
 
 	GLOBAL_DEF("logging/file_logging/enable_file_logging", false);
 	// Only file logging by default on desktop platforms as logs can't be
@@ -1016,6 +1029,8 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	if (quiet_stdout)
 		_print_line_enabled = false;
 
+	Logger::set_flush_stdout_on_print(ProjectSettings::get_singleton()->get("application/run/flush_stdout_on_print"));
+
 	OS::get_singleton()->set_cmdline(execpath, main_args);
 
 	GLOBAL_DEF("rendering/quality/driver/driver_name", "GLES3");
@@ -1027,7 +1042,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	GLOBAL_DEF("rendering/quality/driver/fallback_to_gles2", false);
 
 	// Assigning here, to be sure that it appears in docs
-	GLOBAL_DEF("rendering/quality/2d/use_nvidia_rect_flicker_workaround", false);
+	GLOBAL_DEF("rendering/2d/options/use_nvidia_rect_flicker_workaround", false);
 
 	GLOBAL_DEF("display/window/size/width", 1024);
 	ProjectSettings::get_singleton()->set_custom_property_info("display/window/size/width", PropertyInfo(Variant::INT, "display/window/size/width", PROPERTY_HINT_RANGE, "0,7680,or_greater")); // 8K resolution
@@ -1111,16 +1126,21 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		OS::get_singleton()->_allow_layered = false;
 	}
 
-	Engine::get_singleton()->_pixel_snap = GLOBAL_DEF("rendering/quality/2d/use_pixel_snap", false);
+	Engine::get_singleton()->_gpu_pixel_snap = GLOBAL_DEF_ALIAS("rendering/2d/snapping/use_gpu_pixel_snap", "rendering/quality/2d/use_pixel_snap", false);
+
 	OS::get_singleton()->_keep_screen_on = GLOBAL_DEF("display/window/energy_saving/keep_screen_on", true);
 	if (rtm == -1) {
 		rtm = GLOBAL_DEF("rendering/threads/thread_model", OS::RENDER_THREAD_SAFE);
 	}
 
 	if (rtm >= 0 && rtm < 3) {
+#ifdef NO_THREADS
+		rtm = OS::RENDER_THREAD_UNSAFE; // No threads available on this platform.
+#else
 		if (editor) {
 			rtm = OS::RENDER_THREAD_SAFE;
 		}
+#endif
 		OS::get_singleton()->_render_thread_mode = OS::RenderThreadMode(rtm);
 	}
 
@@ -1180,6 +1200,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	Engine::get_singleton()->set_physics_jitter_fix(GLOBAL_DEF("physics/common/physics_jitter_fix", 0.5));
 	Engine::get_singleton()->set_target_fps(GLOBAL_DEF("debug/settings/fps/force_fps", 0));
 	ProjectSettings::get_singleton()->set_custom_property_info("debug/settings/fps/force_fps", PropertyInfo(Variant::INT, "debug/settings/fps/force_fps", PROPERTY_HINT_RANGE, "0,120,1,or_greater"));
+	GLOBAL_DEF("physics/common/enable_pause_aware_picking", false);
 
 	GLOBAL_DEF("debug/settings/stdout/print_fps", false);
 	GLOBAL_DEF("debug/settings/stdout/verbose_stdout", false);
@@ -1198,6 +1219,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	ProjectSettings::get_singleton()->set_custom_property_info("application/run/low_processor_mode_sleep_usec", PropertyInfo(Variant::INT, "application/run/low_processor_mode_sleep_usec", PROPERTY_HINT_RANGE, "0,33200,1,or_greater")); // No negative numbers
 
 	GLOBAL_DEF("display/window/ios/hide_home_indicator", true);
+	GLOBAL_DEF("input_devices/pointing/ios/touch_delay", 0.150);
 
 	Engine::get_singleton()->set_frame_delay(frame_delay);
 
@@ -1256,9 +1278,11 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 	// Print engine name and version
 	print_line(String(VERSION_NAME) + " v" + get_full_version_string() + " - " + String(VERSION_WEBSITE));
 
+#if !defined(NO_THREADS)
 	if (p_main_tid_override) {
-		Thread::_main_thread_id = p_main_tid_override;
+		Thread::main_thread_id = p_main_tid_override;
 	}
+#endif
 
 	Error err = OS::get_singleton()->initialize(video_mode, video_driver_idx, audio_driver_idx);
 	if (err != OK) {
@@ -1286,7 +1310,7 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 
 	MAIN_PRINT("Main: Setup Logo");
 
-#ifdef JAVASCRIPT_ENABLED
+#if defined(JAVASCRIPT_ENABLED) || defined(ANDROID_ENABLED)
 	bool show_logo = false;
 #else
 	bool show_logo = true;
@@ -1306,13 +1330,9 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 		OS::get_singleton()->set_window_always_on_top(true);
 	}
 
-	if (allow_focus_steal_pid) {
-		OS::get_singleton()->enable_for_stealing_focus(allow_focus_steal_pid);
-	}
-
 	register_server_types();
 
-	MAIN_PRINT("Main: Load Remaps");
+	MAIN_PRINT("Main: Load Boot Image");
 
 	Color clear = GLOBAL_DEF("rendering/environment/default_clear_color", Color(0.3, 0.3, 0.3));
 	VisualServer::get_singleton()->set_default_clear_color(clear);
@@ -1363,10 +1383,11 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 
 	MAIN_PRINT("Main: DCC");
 	VisualServer::get_singleton()->set_default_clear_color(GLOBAL_DEF("rendering/environment/default_clear_color", Color(0.3, 0.3, 0.3)));
-	MAIN_PRINT("Main: END");
 
 	GLOBAL_DEF("application/config/icon", String());
-	ProjectSettings::get_singleton()->set_custom_property_info("application/config/icon", PropertyInfo(Variant::STRING, "application/config/icon", PROPERTY_HINT_FILE, "*.png,*.webp"));
+	ProjectSettings::get_singleton()->set_custom_property_info("application/config/icon",
+			PropertyInfo(Variant::STRING, "application/config/icon",
+					PROPERTY_HINT_FILE, "*.png,*.webp,*.svg,*.svgz"));
 
 	GLOBAL_DEF("application/config/macos_native_icon", String());
 	ProjectSettings::get_singleton()->set_custom_property_info("application/config/macos_native_icon", PropertyInfo(Variant::STRING, "application/config/macos_native_icon", PROPERTY_HINT_FILE, "*.icns"));
@@ -1386,11 +1407,33 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 		id->set_emulate_mouse_from_touch(bool(GLOBAL_DEF("input_devices/pointing/emulate_mouse_from_touch", true)));
 	}
 
-	MAIN_PRINT("Main: Load Remaps");
+	MAIN_PRINT("Main: Load Translations and Remaps");
+
+	translation_server->setup(); //register translations, load them, etc.
+	if (locale != "") {
+		translation_server->set_locale(locale);
+	}
+	translation_server->load_translations();
+	ResourceLoader::load_translation_remaps(); //load remaps for resources
+
+	ResourceLoader::load_path_remaps();
 
 	MAIN_PRINT("Main: Load Scene Types");
 
 	register_scene_types();
+
+#ifdef TOOLS_ENABLED
+	ClassDB::set_current_api(ClassDB::API_EDITOR);
+	EditorNode::register_editor_types();
+
+	ClassDB::set_current_api(ClassDB::API_CORE);
+
+#endif
+
+	MAIN_PRINT("Main: Load Modules, Physics, Drivers, Scripts");
+
+	register_platform_apis();
+	register_module_types();
 
 	GLOBAL_DEF("display/mouse_cursor/custom_image", String());
 	GLOBAL_DEF("display/mouse_cursor/custom_image_hotspot", Vector2());
@@ -1405,18 +1448,6 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 			Input::get_singleton()->set_custom_mouse_cursor(cursor, Input::CURSOR_ARROW, hotspot);
 		}
 	}
-#ifdef TOOLS_ENABLED
-	ClassDB::set_current_api(ClassDB::API_EDITOR);
-	EditorNode::register_editor_types();
-
-	ClassDB::set_current_api(ClassDB::API_CORE);
-
-#endif
-
-	MAIN_PRINT("Main: Load Modules, Physics, Drivers, Scripts");
-
-	register_platform_apis();
-	register_module_types();
 
 	camera_server = CameraServer::create();
 
@@ -1427,18 +1458,6 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 
 	// This loads global classes, so it must happen before custom loaders and savers are registered
 	ScriptServer::init_languages();
-
-	MAIN_PRINT("Main: Load Translations");
-
-	translation_server->setup(); //register translations, load them, etc.
-	if (locale != "") {
-
-		translation_server->set_locale(locale);
-	}
-	translation_server->load_translations();
-	ResourceLoader::load_translation_remaps(); //load remaps for resources
-
-	ResourceLoader::load_path_remaps();
 
 	audio_server->load_default_bus_layout();
 
@@ -1554,7 +1573,7 @@ bool Main::start() {
 
 		{
 			DirAccessRef da = DirAccess::open(doc_tool);
-			ERR_FAIL_COND_V_MSG(!da, false, "Argument supplied to --doctool must be a base Godot build directory.");
+			ERR_FAIL_COND_V_MSG(!da, false, "Argument supplied to --doctool must be a valid directory path.");
 		}
 		DocData doc;
 		doc.generate(doc_base);
@@ -1608,14 +1627,6 @@ bool Main::start() {
 		return false;
 	}
 
-	if (_export_preset != "") {
-		if (positional_arg == "") {
-			String err = "Command line includes export parameter option, but no destination path was given.\n";
-			err += "Please specify the binary's file path to export to. Aborting export.";
-			ERR_PRINT(err);
-			return false;
-		}
-	}
 #endif
 
 	if (script == "" && game_path == "" && String(GLOBAL_DEF("application/run/main_scene", "")) != "") {
@@ -2075,7 +2086,6 @@ bool Main::iteration() {
 
 		uint64_t physics_begin = OS::get_singleton()->get_ticks_usec();
 
-		PhysicsServer::get_singleton()->sync();
 		PhysicsServer::get_singleton()->flush_queries();
 
 		Physics2DServer::get_singleton()->sync();
@@ -2198,9 +2208,10 @@ void Main::force_redraw() {
  * so that the engine closes cleanly without leaking memory or crashing.
  * The order matters as some of those steps are linked with each other.
  */
-void Main::cleanup() {
-
-	ERR_FAIL_COND(!_start_success);
+void Main::cleanup(bool p_force) {
+	if (!p_force) {
+		ERR_FAIL_COND(!_start_success);
+	}
 
 	if (script_debugger) {
 		// Flush any remaining messages

@@ -309,11 +309,15 @@ highp mat2 inverse(highp mat2 m) {
 }
 
 highp mat3 inverse(highp mat3 m) {
-	highp float d = 1.0 / (m[0].x * (m[1].y * m[2].z - m[2].y * m[1].z) - m[1].x * (m[0].y * m[2].z - m[2].y * m[0].z) + m[2].x * (m[0].y * m[1].z - m[1].y * m[0].z));
-	return mat3(
-			vec3((m[1].y * m[2].z - m[2].y * m[1].z), -(m[1].x * m[2].z - m[2].x * m[1].z), (m[1].x * m[2].y - m[2].x * m[1].y)) * d,
-			vec3(-(m[0].y * m[2].z - m[2].y * m[0].z), (m[0].x * m[2].z - m[2].x * m[0].z), -(m[0].x * m[2].y - m[2].x * m[0].y)) * d,
-			vec3((m[0].y * m[1].z - m[1].y * m[0].z), -(m[0].x * m[1].z - m[1].x * m[0].z), (m[0].x * m[1].y - m[1].x * m[0].y)) * d);
+	highp float c01 = m[2].z * m[1].y - m[1].z * m[2].y;
+	highp float c11 = -m[2].z * m[1].x + m[1].z * m[2].x;
+	highp float c21 = m[2].y * m[1].x - m[1].y * m[2].x;
+	highp float d = 1.0 / (m[0].x * c01 + m[0].y * c11 + m[0].z * c21);
+
+	return mat3(c01, (-m[2].z * m[0].y + m[0].z * m[2].y), (m[1].z * m[0].y - m[0].z * m[1].y),
+				   c11, (m[2].z * m[0].x - m[0].z * m[2].x), (-m[1].z * m[0].x + m[0].z * m[1].x),
+				   c21, (-m[2].y * m[0].x + m[0].y * m[2].x), (m[1].y * m[0].x - m[0].y * m[1].x)) *
+		   d;
 }
 
 highp mat4 inverse(highp mat4 m) {

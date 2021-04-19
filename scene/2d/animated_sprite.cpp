@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -452,7 +452,7 @@ void AnimatedSprite::_notification(int p_what) {
 			if (centered)
 				ofs -= s / 2;
 
-			if (Engine::get_singleton()->get_use_pixel_snap()) {
+			if (Engine::get_singleton()->get_use_gpu_pixel_snap()) {
 				ofs = ofs.floor();
 			}
 			Rect2 dst_rect(ofs, s);
@@ -667,11 +667,15 @@ StringName AnimatedSprite::get_animation() const {
 
 String AnimatedSprite::get_configuration_warning() const {
 
+	String warning = Node2D::get_configuration_warning();
 	if (frames.is_null()) {
-		return TTR("A SpriteFrames resource must be created or set in the \"Frames\" property in order for AnimatedSprite to display frames.");
+		if (warning != String()) {
+			warning += "\n\n";
+		}
+		warning += TTR("A SpriteFrames resource must be created or set in the \"Frames\" property in order for AnimatedSprite to display frames.");
 	}
 
-	return String();
+	return warning;
 }
 
 void AnimatedSprite::_bind_methods() {

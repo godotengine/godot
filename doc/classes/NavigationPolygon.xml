@@ -24,6 +24,7 @@
 		[/codeblock]
 	</description>
 	<tutorials>
+		<link title="2D Navigation Demo">https://godotengine.org/asset-library/asset/117</link>
 	</tutorials>
 	<methods>
 		<method name="add_outline">

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -166,7 +166,16 @@ class VisualShaderEditor : public VBoxContainer {
 
 	static VisualShaderEditor *singleton;
 
+	struct DragOp {
+		VisualShader::Type type;
+		int node;
+		Vector2 from;
+		Vector2 to;
+	};
+	List<DragOp> drag_buffer;
+	bool drag_dirty = false;
 	void _node_dragged(const Vector2 &p_from, const Vector2 &p_to, int p_node);
+	void _nodes_dragged();
 	bool updating;
 
 	void _connection_request(const String &p_from, int p_from_index, const String &p_to, int p_to_index);
@@ -219,6 +228,7 @@ class VisualShaderEditor : public VBoxContainer {
 	void _rebuild();
 
 	void _input_select_item(Ref<VisualShaderNodeInput> input, String name);
+	void _uniform_select_item(Ref<VisualShaderNodeUniformRef> p_uniform, String p_name);
 
 	void _add_input_port(int p_node, int p_port, int p_port_type, const String &p_name);
 	void _remove_input_port(int p_node, int p_port);

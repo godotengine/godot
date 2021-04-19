@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -407,7 +407,7 @@ void RasterizerGLES2::blit_render_target_to_screen(RID p_render_target, const Re
 	RasterizerStorageGLES2::RenderTarget *rt = storage->render_target_owner.getornull(p_render_target);
 	ERR_FAIL_COND(!rt);
 
-	canvas->state.canvas_shader.set_conditional(CanvasShaderGLES2::USE_TEXTURE_RECT, true);
+	canvas->_set_texture_rect_mode(true);
 
 	canvas->state.canvas_shader.set_custom_shader(0);
 	canvas->state.canvas_shader.bind();
@@ -481,6 +481,42 @@ void RasterizerGLES2::make_current() {
 }
 
 void RasterizerGLES2::register_config() {
+}
+
+// returns NULL if no error, or an error string
+const char *RasterizerGLES2::gl_check_for_error(bool p_print_error) {
+	GLenum err = glGetError();
+
+	const char *err_string = nullptr;
+
+	switch (err) {
+		default: {
+			// not recognised
+		} break;
+		case GL_NO_ERROR: {
+		} break;
+		case GL_INVALID_ENUM: {
+			err_string = "GL_INVALID_ENUM";
+		} break;
+		case GL_INVALID_VALUE: {
+			err_string = "GL_INVALID_VALUE";
+		} break;
+		case GL_INVALID_OPERATION: {
+			err_string = "GL_INVALID_OPERATION";
+		} break;
+		case GL_INVALID_FRAMEBUFFER_OPERATION: {
+			err_string = "GL_INVALID_FRAMEBUFFER_OPERATION";
+		} break;
+		case GL_OUT_OF_MEMORY: {
+			err_string = "GL_OUT_OF_MEMORY";
+		} break;
+	}
+
+	if (p_print_error && err_string) {
+		print_line(err_string);
+	}
+
+	return err_string;
 }
 
 RasterizerGLES2::RasterizerGLES2() {

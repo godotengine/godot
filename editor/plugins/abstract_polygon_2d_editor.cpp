@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -686,12 +686,12 @@ void AbstractPolygon2DEditor::edit(Node *p_polygon) {
 		edited_point = PosVertex();
 		hover_point = Vertex();
 		selected_point = Vertex();
-
-		canvas_item_editor->update_viewport();
 	} else {
 
 		_set_node(NULL);
 	}
+
+	canvas_item_editor->update_viewport();
 }
 
 void AbstractPolygon2DEditor::_bind_methods() {

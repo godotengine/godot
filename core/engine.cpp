@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -227,11 +227,22 @@ Engine::Engine() {
 	_fps = 1;
 	_target_fps = 0;
 	_time_scale = 1.0;
-	_pixel_snap = false;
+	_gpu_pixel_snap = false;
 	_physics_frames = 0;
 	_idle_frames = 0;
 	_in_physics = false;
 	_frame_ticks = 0;
 	_frame_step = 0;
 	editor_hint = false;
+}
+
+Engine::Singleton::Singleton(const StringName &p_name, Object *p_ptr) :
+		name(p_name),
+		ptr(p_ptr) {
+#ifdef DEBUG_ENABLED
+	Reference *ref = Object::cast_to<Reference>(p_ptr);
+	if (ref && !ref->is_referenced()) {
+		WARN_PRINT("You must use Ref<> to ensure the lifetime of a Reference object intended to be used as a singleton.");
+	}
+#endif
 }

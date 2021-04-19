@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -237,6 +237,7 @@ struct _VariantCall {
 
 	VCALL_LOCALMEM1R(String, casecmp_to);
 	VCALL_LOCALMEM1R(String, nocasecmp_to);
+	VCALL_LOCALMEM1R(String, naturalnocasecmp_to);
 	VCALL_LOCALMEM0R(String, length);
 	VCALL_LOCALMEM3R(String, count);
 	VCALL_LOCALMEM3R(String, countn);
@@ -299,6 +300,7 @@ struct _VariantCall {
 	VCALL_LOCALMEM0R(String, json_escape);
 	VCALL_LOCALMEM0R(String, percent_encode);
 	VCALL_LOCALMEM0R(String, percent_decode);
+	VCALL_LOCALMEM0R(String, validate_node_name);
 	VCALL_LOCALMEM0R(String, is_valid_identifier);
 	VCALL_LOCALMEM0R(String, is_valid_integer);
 	VCALL_LOCALMEM0R(String, is_valid_float);
@@ -347,6 +349,24 @@ struct _VariantCall {
 		retval.resize(len);
 		PoolByteArray::Write w = retval.write();
 		copymem(w.ptr(), charstr.ptr(), len);
+		w.release();
+
+		r_ret = retval;
+	}
+
+	static void _call_String_to_wchar(Variant &r_ret, Variant &p_self, const Variant **p_args) {
+
+		String *s = reinterpret_cast<String *>(p_self._data._mem);
+		if (s->empty()) {
+			r_ret = PoolByteArray();
+			return;
+		}
+
+		PoolByteArray retval;
+		size_t len = s->length() * sizeof(wchar_t);
+		retval.resize(len);
+		PoolByteArray::Write w = retval.write();
+		copymem(w.ptr(), s->ptr(), len);
 		w.release();
 
 		r_ret = retval;
@@ -534,6 +554,7 @@ struct _VariantCall {
 	VCALL_LOCALMEM0R(Array, pop_back);
 	VCALL_LOCALMEM0R(Array, pop_front);
 	VCALL_LOCALMEM1(Array, append);
+	VCALL_LOCALMEM1(Array, append_array);
 	VCALL_LOCALMEM1(Array, resize);
 	VCALL_LOCALMEM2(Array, insert);
 	VCALL_LOCALMEM1(Array, remove);
@@ -845,7 +866,7 @@ struct _VariantCall {
 	VCALL_PTR0R(Basis, get_orthogonal_index);
 	VCALL_PTR0R(Basis, orthonormalized);
 	VCALL_PTR2R(Basis, slerp);
-	VCALL_PTR2R(Basis, is_equal_approx); // TODO: Break compatibility in 4.0 to change this to an instance method (a.is_equal_approx(b) as VCALL_PTR1R) for consistency.
+	VCALL_PTR2R(Basis, is_equal_approx);
 	VCALL_PTR0R(Basis, get_rotation_quat);
 
 	VCALL_PTR0R(Transform, inverse);
@@ -1220,7 +1241,7 @@ Variant Variant::construct(const Variant::Type p_type, const Variant **p_args, i
 				return (int64_t(*p_args[0]));
 			}
 			case REAL: {
-				return real_t(*p_args[0]);
+				return double(*p_args[0]);
 			}
 			case STRING: {
 				return String(*p_args[0]);
@@ -1557,6 +1578,7 @@ void register_variant_methods() {
 	/* STRING */
 	ADDFUNC1R(STRING, INT, String, casecmp_to, STRING, "to", varray());
 	ADDFUNC1R(STRING, INT, String, nocasecmp_to, STRING, "to", varray());
+	ADDFUNC1R(STRING, INT, String, naturalnocasecmp_to, STRING, "to", varray());
 	ADDFUNC0R(STRING, INT, String, length, varray());
 	ADDFUNC2R(STRING, STRING, String, substr, INT, "from", INT, "len", varray(-1));
 
@@ -1625,6 +1647,7 @@ void register_variant_methods() {
 	ADDFUNC0R(STRING, STRING, String, json_escape, varray());
 	ADDFUNC0R(STRING, STRING, String, percent_encode, varray());
 	ADDFUNC0R(STRING, STRING, String, percent_decode, varray());
+	ADDFUNC0R(STRING, STRING, String, validate_node_name, varray());
 	ADDFUNC0R(STRING, BOOL, String, is_valid_identifier, varray());
 	ADDFUNC0R(STRING, BOOL, String, is_valid_integer, varray());
 	ADDFUNC0R(STRING, BOOL, String, is_valid_float, varray());
@@ -1642,6 +1665,7 @@ void register_variant_methods() {
 
 	ADDFUNC0R(STRING, POOL_BYTE_ARRAY, String, to_ascii, varray());
 	ADDFUNC0R(STRING, POOL_BYTE_ARRAY, String, to_utf8, varray());
+	ADDFUNC0R(STRING, POOL_BYTE_ARRAY, String, to_wchar, varray());
 
 	ADDFUNC0R(VECTOR2, REAL, Vector2, angle, varray());
 	ADDFUNC1R(VECTOR2, REAL, Vector2, angle_to, VECTOR2, "to", varray());
@@ -1799,6 +1823,7 @@ void register_variant_methods() {
 	ADDFUNC1NC(ARRAY, NIL, Array, push_back, NIL, "value", varray());
 	ADDFUNC1NC(ARRAY, NIL, Array, push_front, NIL, "value", varray());
 	ADDFUNC1NC(ARRAY, NIL, Array, append, NIL, "value", varray());
+	ADDFUNC1NC(ARRAY, NIL, Array, append_array, ARRAY, "array", varray());
 	ADDFUNC1NC(ARRAY, NIL, Array, resize, INT, "size", varray());
 	ADDFUNC2NC(ARRAY, NIL, Array, insert, INT, "position", NIL, "value", varray());
 	ADDFUNC1NC(ARRAY, NIL, Array, remove, INT, "position", varray());
@@ -1964,7 +1989,8 @@ void register_variant_methods() {
 	ADDFUNC1R(BASIS, VECTOR3, Basis, xform_inv, VECTOR3, "v", varray());
 	ADDFUNC0R(BASIS, INT, Basis, get_orthogonal_index, varray());
 	ADDFUNC2R(BASIS, BASIS, Basis, slerp, BASIS, "b", REAL, "t", varray());
-	ADDFUNC2R(BASIS, BOOL, Basis, is_equal_approx, BASIS, "b", REAL, "epsilon", varray(CMP_EPSILON)); // TODO: Replace in 4.0, see other TODO.
+	// For complicated reasons, the epsilon argument is always discarded. See #45062.
+	ADDFUNC2R(BASIS, BOOL, Basis, is_equal_approx, BASIS, "b", REAL, "epsilon", varray(CMP_EPSILON));
 	ADDFUNC0R(BASIS, QUAT, Basis, get_rotation_quat, varray());
 
 	ADDFUNC0R(TRANSFORM, TRANSFORM, Transform, inverse, varray());

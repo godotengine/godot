@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,7 +34,6 @@
 
 NoiseTexture::NoiseTexture() {
 	update_queued = false;
-	noise_thread = NULL;
 	regen_queued = false;
 	first_time = true;
 
@@ -53,10 +52,7 @@ NoiseTexture::NoiseTexture() {
 
 NoiseTexture::~NoiseTexture() {
 	VS::get_singleton()->free(texture);
-	if (noise_thread) {
-		Thread::wait_to_finish(noise_thread);
-		memdelete(noise_thread);
-	}
+	noise_thread.wait_to_finish();
 }
 
 void NoiseTexture::_bind_methods() {
@@ -101,7 +97,7 @@ void NoiseTexture::_validate_property(PropertyInfo &property) const {
 void NoiseTexture::_set_texture_data(const Ref<Image> &p_image) {
 	data = p_image;
 	if (data.is_valid()) {
-		VS::get_singleton()->texture_allocate(texture, size.x, size.y, 0, Image::FORMAT_RGBA8, VS::TEXTURE_TYPE_2D, flags);
+		VS::get_singleton()->texture_allocate(texture, size.x, size.y, 0, p_image->get_format(), VS::TEXTURE_TYPE_2D, flags);
 		VS::get_singleton()->texture_set_data(texture, p_image);
 	}
 	emit_changed();
@@ -110,11 +106,9 @@ void NoiseTexture::_set_texture_data(const Ref<Image> &p_image) {
 void NoiseTexture::_thread_done(const Ref<Image> &p_image) {
 
 	_set_texture_data(p_image);
-	Thread::wait_to_finish(noise_thread);
-	memdelete(noise_thread);
-	noise_thread = NULL;
+	noise_thread.wait_to_finish();
 	if (regen_queued) {
-		noise_thread = Thread::create(_thread_function, this);
+		noise_thread.start(_thread_function, this);
 		regen_queued = false;
 	}
 }
@@ -168,8 +162,8 @@ void NoiseTexture::_update_texture() {
 #endif
 	if (use_thread) {
 
-		if (!noise_thread) {
-			noise_thread = Thread::create(_thread_function, this);
+		if (!noise_thread.is_started()) {
+			noise_thread.start(_thread_function, this);
 			regen_queued = false;
 		} else {
 			regen_queued = true;

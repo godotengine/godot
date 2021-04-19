@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -51,6 +51,10 @@ void SkinReference::_bind_methods() {
 
 RID SkinReference::get_skeleton() const {
 	return skeleton;
+}
+
+Skeleton *SkinReference::get_skeleton_node() const {
+	return skeleton_node;
 }
 
 Ref<Skin> SkinReference::get_skin() const {
@@ -371,6 +375,7 @@ void Skeleton::_notification(int p_what) {
 			}
 
 			dirty = false;
+			emit_signal("skeleton_updated");
 		} break;
 	}
 }
@@ -891,6 +896,8 @@ void Skeleton::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("physical_bones_remove_collision_exception", "exception"), &Skeleton::physical_bones_remove_collision_exception);
 
 #endif // _3D_DISABLED
+
+	ADD_SIGNAL(MethodInfo("skeleton_updated"));
 
 	BIND_CONSTANT(NOTIFICATION_UPDATE_SKELETON);
 }

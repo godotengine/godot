@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -1084,11 +1084,15 @@ void GridMapEditor::_notification(int p_what) {
 
 				grid[i] = VS::get_singleton()->mesh_create();
 				grid_instance[i] = VS::get_singleton()->instance_create2(grid[i], get_tree()->get_root()->get_world()->get_scenario());
+				VS::get_singleton()->instance_set_layer_mask(grid_instance[i], 1 << SpatialEditorViewport::MISC_TOOL_LAYER);
 				selection_level_instance[i] = VisualServer::get_singleton()->instance_create2(selection_level_mesh[i], get_tree()->get_root()->get_world()->get_scenario());
+				VS::get_singleton()->instance_set_layer_mask(selection_level_instance[i], 1 << SpatialEditorViewport::MISC_TOOL_LAYER);
 			}
 
 			selection_instance = VisualServer::get_singleton()->instance_create2(selection_mesh, get_tree()->get_root()->get_world()->get_scenario());
+			VS::get_singleton()->instance_set_layer_mask(selection_instance, 1 << SpatialEditorViewport::MISC_TOOL_LAYER);
 			paste_instance = VisualServer::get_singleton()->instance_create2(paste_mesh, get_tree()->get_root()->get_world()->get_scenario());
+			VS::get_singleton()->instance_set_layer_mask(paste_instance, 1 << SpatialEditorViewport::MISC_TOOL_LAYER);
 
 			_update_selection_transform();
 			_update_paste_indicator();
@@ -1218,6 +1222,7 @@ void GridMapEditor::_bind_methods() {
 GridMapEditor::GridMapEditor(EditorNode *p_editor) {
 
 	input_action = INPUT_NONE;
+	node = NULL;
 	editor = p_editor;
 	undo_redo = p_editor->get_undo_redo();
 

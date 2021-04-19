@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,16 +30,12 @@
 
 #include "particles_material.h"
 
-Mutex *ParticlesMaterial::material_mutex = NULL;
+Mutex ParticlesMaterial::material_mutex;
 SelfList<ParticlesMaterial>::List *ParticlesMaterial::dirty_materials = NULL;
 Map<ParticlesMaterial::MaterialKey, ParticlesMaterial::ShaderData> ParticlesMaterial::shader_map;
 ParticlesMaterial::ShaderNames *ParticlesMaterial::shader_names = NULL;
 
 void ParticlesMaterial::init_shaders() {
-
-#ifndef NO_THREADS
-	material_mutex = Mutex::create();
-#endif
 
 	dirty_materials = memnew(SelfList<ParticlesMaterial>::List);
 
@@ -106,10 +102,6 @@ void ParticlesMaterial::init_shaders() {
 }
 
 void ParticlesMaterial::finish_shaders() {
-
-#ifndef NO_THREADS
-	memdelete(material_mutex);
-#endif
 
 	memdelete(dirty_materials);
 	dirty_materials = NULL;
@@ -292,8 +284,10 @@ void ParticlesMaterial::_update_shader() {
 		code += "	ivec2 emission_tex_ofs = ivec2(point % emission_tex_size.x, point / emission_tex_size.x);\n";
 	}
 	code += "	bool restart = false;\n";
+	code += "	float tv = 0.0;\n";
 	code += "	if (CUSTOM.y > CUSTOM.w) {\n";
 	code += "		restart = true;\n";
+	code += "		tv = 1.0;\n";
 	code += "	}\n\n";
 	code += "	if (RESTART || restart) {\n";
 
@@ -388,56 +382,57 @@ void ParticlesMaterial::_update_shader() {
 	code += "	} else {\n";
 
 	code += "		CUSTOM.y += DELTA / LIFETIME;\n";
+	code += "		tv = CUSTOM.y / CUSTOM.w;\n";
 	if (tex_parameters[PARAM_INITIAL_LINEAR_VELOCITY].is_valid())
-		code += "		float tex_linear_velocity = textureLod(linear_velocity_texture, vec2(CUSTOM.y, 0.0), 0.0).r;\n";
+		code += "		float tex_linear_velocity = textureLod(linear_velocity_texture, vec2(tv, 0.0), 0.0).r;\n";
 	else
 		code += "		float tex_linear_velocity = 0.0;\n";
 
 	if (flags[FLAG_DISABLE_Z]) {
 
 		if (tex_parameters[PARAM_ORBIT_VELOCITY].is_valid())
-			code += "		float tex_orbit_velocity = textureLod(orbit_velocity_texture, vec2(CUSTOM.y, 0.0), 0.0).r;\n";
+			code += "		float tex_orbit_velocity = textureLod(orbit_velocity_texture, vec2(tv, 0.0), 0.0).r;\n";
 		else
 			code += "		float tex_orbit_velocity = 0.0;\n";
 	}
 
 	if (tex_parameters[PARAM_ANGULAR_VELOCITY].is_valid())
-		code += "		float tex_angular_velocity = textureLod(angular_velocity_texture, vec2(CUSTOM.y, 0.0), 0.0).r;\n";
+		code += "		float tex_angular_velocity = textureLod(angular_velocity_texture, vec2(tv, 0.0), 0.0).r;\n";
 	else
 		code += "		float tex_angular_velocity = 0.0;\n";
 
 	if (tex_parameters[PARAM_LINEAR_ACCEL].is_valid())
-		code += "		float tex_linear_accel = textureLod(linear_accel_texture, vec2(CUSTOM.y, 0.0), 0.0).r;\n";
+		code += "		float tex_linear_accel = textureLod(linear_accel_texture, vec2(tv, 0.0), 0.0).r;\n";
 	else
 		code += "		float tex_linear_accel = 0.0;\n";
 
 	if (tex_parameters[PARAM_RADIAL_ACCEL].is_valid())
-		code += "		float tex_radial_accel = textureLod(radial_accel_texture, vec2(CUSTOM.y, 0.0), 0.0).r;\n";
+		code += "		float tex_radial_accel = textureLod(radial_accel_texture, vec2(tv, 0.0), 0.0).r;\n";
 	else
 		code += "		float tex_radial_accel = 0.0;\n";
 
 	if (tex_parameters[PARAM_TANGENTIAL_ACCEL].is_valid())
-		code += "		float tex_tangent_accel = textureLod(tangent_accel_texture, vec2(CUSTOM.y, 0.0), 0.0).r;\n";
+		code += "		float tex_tangent_accel = textureLod(tangent_accel_texture, vec2(tv, 0.0), 0.0).r;\n";
 	else
 		code += "		float tex_tangent_accel = 0.0;\n";
 
 	if (tex_parameters[PARAM_DAMPING].is_valid())
-		code += "		float tex_damping = textureLod(damping_texture, vec2(CUSTOM.y, 0.0), 0.0).r;\n";
+		code += "		float tex_damping = textureLod(damping_texture, vec2(tv, 0.0), 0.0).r;\n";
 	else
 		code += "		float tex_damping = 0.0;\n";
 
 	if (tex_parameters[PARAM_ANGLE].is_valid())
-		code += "		float tex_angle = textureLod(angle_texture, vec2(CUSTOM.y, 0.0), 0.0).r;\n";
+		code += "		float tex_angle = textureLod(angle_texture, vec2(tv, 0.0), 0.0).r;\n";
 	else
 		code += "		float tex_angle = 0.0;\n";
 
 	if (tex_parameters[PARAM_ANIM_SPEED].is_valid())
-		code += "		float tex_anim_speed = textureLod(anim_speed_texture, vec2(CUSTOM.y, 0.0), 0.0).r;\n";
+		code += "		float tex_anim_speed = textureLod(anim_speed_texture, vec2(tv, 0.0), 0.0).r;\n";
 	else
 		code += "		float tex_anim_speed = 0.0;\n";
 
 	if (tex_parameters[PARAM_ANIM_OFFSET].is_valid())
-		code += "		float tex_anim_offset = textureLod(anim_offset_texture, vec2(CUSTOM.y, 0.0), 0.0).r;\n";
+		code += "		float tex_anim_offset = textureLod(anim_offset_texture, vec2(tv, 0.0), 0.0).r;\n";
 	else
 		code += "		float tex_anim_offset = 0.0;\n";
 
@@ -495,12 +490,12 @@ void ParticlesMaterial::_update_shader() {
 	// apply color
 	// apply hue rotation
 	if (tex_parameters[PARAM_SCALE].is_valid())
-		code += "	float tex_scale = textureLod(scale_texture, vec2(CUSTOM.y, 0.0), 0.0).r;\n";
+		code += "	float tex_scale = textureLod(scale_texture, vec2(tv, 0.0), 0.0).r;\n";
 	else
 		code += "	float tex_scale = 1.0;\n";
 
 	if (tex_parameters[PARAM_HUE_VARIATION].is_valid())
-		code += "	float tex_hue_variation = textureLod(hue_variation_texture, vec2(CUSTOM.y, 0.0), 0.0).r;\n";
+		code += "	float tex_hue_variation = textureLod(hue_variation_texture, vec2(tv, 0.0), 0.0).r;\n";
 	else
 		code += "	float tex_hue_variation = 0.0;\n";
 
@@ -520,7 +515,7 @@ void ParticlesMaterial::_update_shader() {
 	code += "			vec4(1.250, -1.050, -0.203, 0.0),\n";
 	code += "			vec4(0.000, 0.000, 0.000, 0.0)) * hue_rot_s;\n";
 	if (color_ramp.is_valid()) {
-		code += "	COLOR = hue_rot_mat * textureLod(color_ramp, vec2(CUSTOM.y, 0.0), 0.0);\n";
+		code += "	COLOR = hue_rot_mat * textureLod(color_ramp, vec2(tv, 0.0), 0.0);\n";
 	} else {
 		code += "	COLOR = hue_rot_mat * color_value;\n";
 	}
@@ -612,42 +607,36 @@ void ParticlesMaterial::_update_shader() {
 
 void ParticlesMaterial::flush_changes() {
 
-	if (material_mutex)
-		material_mutex->lock();
+	material_mutex.lock();
 
 	while (dirty_materials->first()) {
 
 		dirty_materials->first()->self()->_update_shader();
 	}
 
-	if (material_mutex)
-		material_mutex->unlock();
+	material_mutex.unlock();
 }
 
 void ParticlesMaterial::_queue_shader_change() {
 
-	if (material_mutex)
-		material_mutex->lock();
+	material_mutex.lock();
 
 	if (!element.in_list()) {
 		dirty_materials->add(&element);
 	}
 
-	if (material_mutex)
-		material_mutex->unlock();
+	material_mutex.unlock();
 }
 
 bool ParticlesMaterial::_is_shader_dirty() const {
 
 	bool dirty = false;
 
-	if (material_mutex)
-		material_mutex->lock();
+	material_mutex.lock();
 
 	dirty = element.in_list();
 
-	if (material_mutex)
-		material_mutex->unlock();
+	material_mutex.unlock();
 
 	return dirty;
 }
@@ -1298,8 +1287,7 @@ ParticlesMaterial::ParticlesMaterial() :
 
 ParticlesMaterial::~ParticlesMaterial() {
 
-	if (material_mutex)
-		material_mutex->lock();
+	material_mutex.lock();
 
 	if (shader_map.has(current_key)) {
 		shader_map[current_key].users--;
@@ -1312,6 +1300,5 @@ ParticlesMaterial::~ParticlesMaterial() {
 		VS::get_singleton()->material_set_shader(_get_material(), RID());
 	}
 
-	if (material_mutex)
-		material_mutex->unlock();
+	material_mutex.unlock();
 }

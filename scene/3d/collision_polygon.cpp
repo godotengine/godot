@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -68,6 +68,7 @@ void CollisionPolygon::_build_polygon() {
 		}
 
 		convex->set_points(cp);
+		convex->set_margin(margin);
 		parent->shape_owner_add_shape(owner_id, convex);
 		parent->shape_owner_set_disabled(owner_id, disabled);
 	}
@@ -162,17 +163,35 @@ bool CollisionPolygon::is_disabled() const {
 	return disabled;
 }
 
+real_t CollisionPolygon::get_margin() const {
+	return margin;
+}
+
+void CollisionPolygon::set_margin(real_t p_margin) {
+	margin = p_margin;
+	if (parent) {
+		_build_polygon();
+	}
+}
+
 String CollisionPolygon::get_configuration_warning() const {
 
+	String warning = Spatial::get_configuration_warning();
 	if (!Object::cast_to<CollisionObject>(get_parent())) {
-		return TTR("CollisionPolygon only serves to provide a collision shape to a CollisionObject derived node. Please only use it as a child of Area, StaticBody, RigidBody, KinematicBody, etc. to give them a shape.");
+		if (warning != String()) {
+			warning += "\n\n";
+		}
+		warning += TTR("CollisionPolygon only serves to provide a collision shape to a CollisionObject derived node. Please only use it as a child of Area, StaticBody, RigidBody, KinematicBody, etc. to give them a shape.");
 	}
 
 	if (polygon.empty()) {
-		return TTR("An empty CollisionPolygon has no effect on collision.");
+		if (warning != String()) {
+			warning += "\n\n";
+		}
+		warning += TTR("An empty CollisionPolygon has no effect on collision.");
 	}
 
-	return String();
+	return warning;
 }
 
 bool CollisionPolygon::_is_editable_3d_polygon() const {
@@ -189,11 +208,15 @@ void CollisionPolygon::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_disabled", "disabled"), &CollisionPolygon::set_disabled);
 	ClassDB::bind_method(D_METHOD("is_disabled"), &CollisionPolygon::is_disabled);
 
+	ClassDB::bind_method(D_METHOD("set_margin", "margin"), &CollisionPolygon::set_margin);
+	ClassDB::bind_method(D_METHOD("get_margin"), &CollisionPolygon::get_margin);
+
 	ClassDB::bind_method(D_METHOD("_is_editable_3d_polygon"), &CollisionPolygon::_is_editable_3d_polygon);
 
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "depth"), "set_depth", "get_depth");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "disabled"), "set_disabled", "is_disabled");
 	ADD_PROPERTY(PropertyInfo(Variant::POOL_VECTOR2_ARRAY, "polygon"), "set_polygon", "get_polygon");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "margin", PROPERTY_HINT_RANGE, "0.001,10,0.001"), "set_margin", "get_margin");
 }
 
 CollisionPolygon::CollisionPolygon() {

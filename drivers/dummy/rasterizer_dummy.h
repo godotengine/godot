@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -491,6 +491,7 @@ public:
 	void light_set_cull_mask(RID p_light, uint32_t p_mask) {}
 	void light_set_reverse_cull_face_mode(RID p_light, bool p_enabled) {}
 	void light_set_use_gi(RID p_light, bool p_enabled) {}
+	void light_set_bake_mode(RID p_light, VS::LightBakeMode p_bake_mode) {}
 
 	void light_omni_set_shadow_mode(RID p_light, VS::LightOmniShadowMode p_mode) {}
 	void light_omni_set_shadow_detail(RID p_light, VS::LightOmniShadowDetail p_detail) {}
@@ -511,6 +512,7 @@ public:
 	float light_get_param(RID p_light, VS::LightParam p_param) { return 0.0; }
 	Color light_get_color(RID p_light) { return Color(); }
 	bool light_get_use_gi(RID p_light) { return false; }
+	VS::LightBakeMode light_get_bake_mode(RID p_light) { return VS::LightBakeMode::LIGHT_BAKE_DISABLED; }
 	uint64_t light_get_version(RID p_light) const { return 0; }
 
 	/* PROBE API */
@@ -653,6 +655,8 @@ public:
 	int lightmap_capture_get_octree_cell_subdiv(RID p_capture) const { return 0; }
 	void lightmap_capture_set_energy(RID p_capture, float p_energy) {}
 	float lightmap_capture_get_energy(RID p_capture) const { return 0.0; }
+	void lightmap_capture_set_interior(RID p_capture, bool p_interior) {}
+	bool lightmap_capture_is_interior(RID p_capture) const { return false; }
 	const PoolVector<LightmapCaptureOctree> *lightmap_capture_get_octree_ptr(RID p_capture) const {
 		const LightmapCapture *capture = lightmap_capture_data_owner.getornull(p_capture);
 		ERR_FAIL_COND_V(!capture, NULL);
@@ -706,6 +710,8 @@ public:
 	bool render_target_was_used(RID p_render_target) { return false; }
 	void render_target_clear_used(RID p_render_target) {}
 	void render_target_set_msaa(RID p_render_target, VS::ViewportMSAA p_msaa) {}
+	void render_target_set_use_fxaa(RID p_render_target, bool p_fxaa) {}
+	void render_target_set_use_debanding(RID p_render_target, bool p_debanding) {}
 
 	/* CANVAS SHADOW */
 
@@ -759,7 +765,7 @@ public:
 	void render_info_end_capture() {}
 	int get_captured_render_info(VS::RenderInfo p_info) { return 0; }
 
-	int get_render_info(VS::RenderInfo p_info) { return 0; }
+	uint64_t get_render_info(VS::RenderInfo p_info) { return 0; }
 	String get_video_adapter_name() const { return String(); }
 	String get_video_adapter_vendor() const { return String(); }
 
@@ -828,6 +834,8 @@ public:
 	}
 
 	virtual bool is_low_end() const { return true; }
+
+	virtual const char *gl_check_for_error(bool p_print_error = true) { return nullptr; }
 
 	RasterizerDummy() {}
 	~RasterizerDummy() {}

@@ -1,14 +1,17 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="Particles" inherits="GeometryInstance" version="3.2">
 	<brief_description>
-		3D particle emitter.
+		GPU-based 3D particle emitter.
 	</brief_description>
 	<description>
 		3D particle node used to create a variety of particle systems and effects. [Particles] features an emitter that generates some number of particles at a given rate.
 		Use the [code]process_material[/code] property to add a [ParticlesMaterial] to configure particle appearance and behavior. Alternatively, you can add a [ShaderMaterial] which will be applied to all particles.
+		[b]Note:[/b] [Particles] only work when using the GLES3 renderer. If using the GLES2 renderer, use [CPUParticles] instead. You can convert [Particles] to [CPUParticles] by selecting the node, clicking the [b]Particles[/b] menu at the top of the 3D editor viewport then choosing [b]Convert to CPUParticles[/b].
+		[b]Note:[/b] After working on a Particles node, remember to update its [member visibility_aabb] by selecting it, clicking the [b]Particles[/b] menu at the top of the 3D editor viewport then choose [b]Generate Visibility AABB[/b]. Otherwise, particles may suddenly disappear depending on the camera position and angle.
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/latest/tutorials/3d/vertex_animation/controlling_thousands_of_fish.html</link>
+		<link title="Controlling thousands of fish with Particles">https://docs.godotengine.org/en/3.2/tutorials/3d/vertex_animation/controlling_thousands_of_fish.html</link>
+		<link title="Third Person Shooter Demo">https://godotengine.org/asset-library/asset/678</link>
 	</tutorials>
 	<methods>
 		<method name="capture_aabb" qualifiers="const">
@@ -48,7 +51,8 @@
 	</methods>
 	<members>
 		<member name="amount" type="int" setter="set_amount" getter="get_amount" default="8">
-			Number of particles to emit.
+			The number of particles emitted in one emission cycle (corresponding to the [member lifetime]).
+			[b]Note:[/b] Changing [member amount] will reset the particle emission, therefore removing all particles that were already emitted before changing [member amount].
 		</member>
 		<member name="draw_order" type="int" setter="set_draw_order" getter="get_draw_order" enum="Particles.DrawOrder" default="0">
 			Particle draw order. Uses [enum DrawOrder] values.
@@ -81,7 +85,7 @@
 			If [code]true[/code], results in fractional delta calculation which has a smoother particles display effect.
 		</member>
 		<member name="lifetime" type="float" setter="set_lifetime" getter="get_lifetime" default="1.0">
-			Amount of time each particle will exist.
+			The amount of time each particle will exist (in seconds).
 		</member>
 		<member name="local_coords" type="bool" setter="set_use_local_coordinates" getter="get_use_local_coordinates" default="true">
 			If [code]true[/code], particles use the parent node's coordinate space. If [code]false[/code], they use global coordinates.
@@ -102,7 +106,8 @@
 			Speed scaling ratio. A value of [code]0[/code] can be used to pause the particles.
 		</member>
 		<member name="visibility_aabb" type="AABB" setter="set_visibility_aabb" getter="get_visibility_aabb" default="AABB( -4, -4, -4, 8, 8, 8 )">
-			The [AABB] that determines the area of the world part of which needs to be visible on screen for the particle system to be active.
+			The [AABB] that determines the node's region which needs to be visible on screen for the particle system to be active.
+			Grow the box if particles suddenly appear/disappear when the node enters/exits the screen. The [AABB] can be grown via code or with the [b]Particles → Generate AABB[/b] editor tool.
 			[b]Note:[/b] If the [ParticlesMaterial] in use is configured to cast shadows, you may want to enlarge this AABB to ensure the shadow is updated when particles are off-screen.
 		</member>
 	</members>

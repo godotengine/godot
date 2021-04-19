@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -88,7 +88,7 @@ static inline bool ray_intersects_triangle(const Vector3 &p_from, const Vector3 
 	Vector3 edge2 = p_vertices[2] - p_vertices[0];
 	Vector3 h = p_dir.cross(edge2);
 	real_t a = edge1.dot(h);
-	// Check if ray is parrallel to triangle.
+	// Check if ray is parallel to triangle.
 	if (Math::is_zero_approx(a))
 		return false;
 	real_t f = 1.0 / a;
@@ -144,6 +144,14 @@ inline bool is_point_in_triangle(const Vector3 &p_point, const Vector3 p_vertice
 	if (lambda[0] < 0 || lambda[1] < 0 || lambda[2] < 0) return false;
 
 	return true;
+}
+
+inline static bool is_triangle_degenerate(const Vector2 p_vertices[3], real_t p_vertex_snap2) {
+	real_t det = p_vertices[0].x * p_vertices[1].y - p_vertices[0].x * p_vertices[2].y +
+				 p_vertices[0].y * p_vertices[2].x - p_vertices[0].y * p_vertices[1].x +
+				 p_vertices[1].x * p_vertices[2].y - p_vertices[1].y * p_vertices[2].x;
+
+	return det < p_vertex_snap2;
 }
 
 inline static bool are_segements_parallel(const Vector2 p_segment1_points[2], const Vector2 p_segment2_points[2], float p_vertex_snap2) {
@@ -588,8 +596,8 @@ bool CSGBrushOperation::MeshMerge::_bvh_inside(FaceBVH *facebvhptr, int p_max_de
 							// Check if faces are co-planar.
 							if ((current_normal - face_normal).length_squared() < CMP_EPSILON2 &&
 									is_point_in_triangle(face_center, current_points)) {
-								// Only add an intersection if checking a B face.
-								if (face.from_b)
+								// Only add an intersection if not a B face.
+								if (!face.from_b)
 									_add_distance(intersectionsA, intersectionsB, current_face.from_b, 0);
 							} else if (ray_intersects_triangle(face_center, face_normal, current_points, CMP_EPSILON, intersection_point)) {
 								real_t distance = (intersection_point - face_center).length();
@@ -818,7 +826,7 @@ void CSGBrushOperation::Build2DFaces::_add_vertex_idx_sorted(Vector<int> &r_vert
 			int axis = 0;
 			if (Math::abs(new_point.x - first_point.x) < Math::abs(new_point.y - first_point.y)) axis = 1;
 
-			// Add it to the beginnig or the end appropriately.
+			// Add it to the beginning or the end appropriately.
 			if (new_point[axis] < first_point[axis])
 				r_vertex_indices.insert(0, p_new_vertex_index);
 			else
@@ -868,7 +876,7 @@ void CSGBrushOperation::Build2DFaces::_merge_faces(const Vector<int> &p_segment_
 			inner_idx = p_segment_indices[segments + segments / 2 - sorted_idx];
 		}
 
-		// Find the mergable faces.
+		// Find the mergeable faces.
 		Vector<int> merge_faces_idx;
 		Vector<Face2D> merge_faces;
 		Vector<int> merge_faces_inner_vertex_idx;
@@ -1116,6 +1124,11 @@ int CSGBrushOperation::Build2DFaces::_insert_point(const Vector2 &p_point) {
 			face_vertices[2].uv
 		};
 
+		// Skip degenerate triangles.
+		if (is_triangle_degenerate(points, vertex_snap2)) {
+			continue;
+		}
+
 		// Check if point is existing face vertex.
 		for (int i = 0; i < 3; ++i) {
 			if ((p_point - face_vertices[i].point).length_squared() < vertex_snap2)
@@ -1199,11 +1212,8 @@ int CSGBrushOperation::Build2DFaces::_insert_point(const Vector2 &p_point) {
 			for (int i = 0; i < 3; ++i) {
 
 				// Don't create degenerate triangles.
-				Vector2 edge[2] = { points[i], points[(i + 1) % 3] };
-				Vector2 new_edge1[2] = { vertices[new_vertex_idx].point, points[i] };
-				Vector2 new_edge2[2] = { vertices[new_vertex_idx].point, points[(i + 1) % 3] };
-				if (are_segements_parallel(edge, new_edge1, vertex_snap2) &&
-						are_segements_parallel(edge, new_edge2, vertex_snap2)) {
+				Vector2 new_points[3] = { points[i], points[(i + 1) % 3], vertices[new_vertex_idx].point };
+				if (is_triangle_degenerate(new_points, vertex_snap2)) {
 					continue;
 				}
 

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -147,7 +147,7 @@ void Popup::popup_centered(const Size2 &p_size) {
 	Rect2 rect;
 	Size2 window_size = get_viewport_rect().size;
 	rect.size = p_size == Size2() ? get_size() : p_size;
-	rect.position = ((window_size - rect.size) / 2.0).floor();
+	rect.position = ((window_size - rect.size * get_scale()) / 2.0).floor();
 
 	_popup(rect, true);
 }
@@ -157,7 +157,7 @@ void Popup::popup_centered_ratio(float p_screen_ratio) {
 	Rect2 rect;
 	Size2 window_size = get_viewport_rect().size;
 	rect.size = (window_size * p_screen_ratio).floor();
-	rect.position = ((window_size - rect.size) / 2.0).floor();
+	rect.position = ((window_size - rect.size * get_scale()) / 2.0).floor();
 
 	_popup(rect, true);
 }
@@ -234,11 +234,15 @@ Popup::Popup() {
 
 String Popup::get_configuration_warning() const {
 
+	String warning = Control::get_configuration_warning();
 	if (is_visible_in_tree()) {
-		return TTR("Popups will hide by default unless you call popup() or any of the popup*() functions. Making them visible for editing is fine, but they will hide upon running.");
+		if (warning != String()) {
+			warning += "\n\n";
+		}
+		warning += TTR("Popups will hide by default unless you call popup() or any of the popup*() functions. Making them visible for editing is fine, but they will hide upon running.");
 	}
 
-	return String();
+	return warning;
 }
 
 Popup::~Popup() {

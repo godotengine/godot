@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -71,8 +71,8 @@ protected:
 #endif
 
 public:
-	double get_time_since_last_mix() const; //useful for video -> audio sync
-	double get_time_to_next_mix() const;
+	double get_time_since_last_mix(); //useful for video -> audio sync
+	double get_time_to_next_mix();
 
 	enum SpeakerMode {
 		SPEAKER_MODE_STEREO,
@@ -204,7 +204,7 @@ private:
 				last_mix_with_audio = 0;
 				used = false;
 				active = false;
-				peak_volume = AudioFrame(0, 0);
+				peak_volume = AudioFrame(AUDIO_MIN_PEAK_DB, AUDIO_MIN_PEAK_DB);
 			}
 		};
 
@@ -238,7 +238,7 @@ private:
 	size_t audio_data_total_mem;
 	size_t audio_data_max_mem;
 
-	Mutex *audio_data_lock;
+	Mutex audio_data_lock;
 
 	void init_channels_and_buffers();
 

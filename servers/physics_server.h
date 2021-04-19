@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -740,9 +740,6 @@ public:
 	virtual void generic_6dof_joint_set_flag(RID p_joint, Vector3::Axis, G6DOFJointAxisFlag p_flag, bool p_enable) = 0;
 	virtual bool generic_6dof_joint_get_flag(RID p_joint, Vector3::Axis, G6DOFJointAxisFlag p_flag) = 0;
 
-	virtual void generic_6dof_joint_set_precision(RID p_joint, int precision) = 0;
-	virtual int generic_6dof_joint_get_precision(RID p_joint) = 0;
-
 	/* QUERY API */
 
 	enum AreaBodyStatus {
@@ -757,7 +754,6 @@ public:
 	virtual void set_active(bool p_active) = 0;
 	virtual void init() = 0;
 	virtual void step(float p_step) = 0;
-	virtual void sync() = 0;
 	virtual void flush_queries() = 0;
 	virtual void finish() = 0;
 

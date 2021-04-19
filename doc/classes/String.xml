@@ -7,7 +7,7 @@
 		This is the built-in string class (and the one used by GDScript). It supports Unicode and provides all necessary means for string handling. Strings are reference-counted and use a copy-on-write approach, so passing them around is cheap in resources.
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/latest/getting_started/scripting/gdscript/gdscript_format_string.html</link>
+		<link>https://docs.godotengine.org/en/3.2/getting_started/scripting/gdscript/gdscript_format_string.html</link>
 	</tutorials>
 	<methods>
 		<method name="String">
@@ -270,7 +270,10 @@
 			<argument index="0" name="to" type="String">
 			</argument>
 			<description>
-				Performs a case-sensitive comparison to another string. Returns [code]-1[/code] if less than, [code]+1[/code] if greater than, or [code]0[/code] if equal.
+				Performs a case-sensitive comparison to another string. Returns [code]-1[/code] if less than, [code]1[/code] if greater than, or [code]0[/code] if equal. "less than" or "greater than" are determined by the [url=https://en.wikipedia.org/wiki/List_of_Unicode_characters]Unicode code points[/code] of each string, which roughly matches the alphabetical order.
+				[b]Behavior with different string lengths:[/b] Returns [code]1[/code] if the "base" string is longer than the [code]to[/code] string or [code]-1[/code] if the "base" string is shorter than the [code]to[/code] string. Keep in mind this length is determined by the number of Unicode codepoints, [i]not[/i] the actual visible characters.
+				[b]Behavior with empty strings:[/b] Returns [code]-1[/code] if the "base" string is empty, [code]1[/code] if the [code]to[/code] string is empty or [code]0[/code] if both strings are empty.
+				To get a boolean result from a string comparison, use the [code]==[/code] operator instead. See also [method nocasecmp_to].
 			</description>
 		</method>
 		<method name="count">
@@ -550,7 +553,7 @@
 			<return type="bool">
 			</return>
 			<description>
-				Returns [code]true[/code] if this string contains a valid IP address.
+				Returns [code]true[/code] if this string contains only a well-formatted IPv4 or IPv6 address. This method considers [url=https://en.wikipedia.org/wiki/Reserved_IP_addresses]reserved IP addresses[/url] such as [code]0.0.0.0[/code] as valid.
 			</description>
 		</method>
 		<method name="json_escape">
@@ -582,7 +585,8 @@
 			<argument index="0" name="chars" type="String">
 			</argument>
 			<description>
-				Returns a copy of the string with characters removed from the left.
+				Returns a copy of the string with characters removed from the left. The [code]chars[/code] argument is a string specifying the set of characters to be removed.
+				[b]Note:[/b] The [code]chars[/code] is not a prefix. See [method trim_prefix] method that will remove a single prefix string rather than a set of characters.
 			</description>
 		</method>
 		<method name="match">
@@ -617,13 +621,29 @@
 				Returns the MD5 hash of the string as a string.
 			</description>
 		</method>
+		<method name="naturalnocasecmp_to">
+			<return type="int">
+			</return>
+			<argument index="0" name="to" type="String">
+			</argument>
+			<description>
+				Performs a case-insensitive [i]natural order[/i] comparison to another string. Returns [code]-1[/code] if less than, [code]1[/code] if greater than, or [code]0[/code] if equal. "less than" or "greater than" are determined by the [url=https://en.wikipedia.org/wiki/List_of_Unicode_characters]Unicode code points[/code] of each string, which roughly matches the alphabetical order. Internally, lowercase characters will be converted to uppercase during the comparison.
+				When used for sorting, natural order comparison will order suites of numbers as expected by most people. If you sort the numbers from 1 to 10 using natural order, you will get [code][1, 2, 3, ...][/code] instead of [code][1, 10, 2, 3, ...][/code].
+				[b]Behavior with different string lengths:[/b] Returns [code]1[/code] if the "base" string is longer than the [code]to[/code] string or [code]-1[/code] if the "base" string is shorter than the [code]to[/code] string. Keep in mind this length is determined by the number of Unicode codepoints, [i]not[/i] the actual visible characters.
+				[b]Behavior with empty strings:[/b] Returns [code]-1[/code] if the "base" string is empty, [code]1[/code] if the [code]to[/code] string is empty or [code]0[/code] if both strings are empty.
+				To get a boolean result from a string comparison, use the [code]==[/code] operator instead. See also [method nocasecmp_to] and [method casecmp_to].
+			</description>
+		</method>
 		<method name="nocasecmp_to">
 			<return type="int">
 			</return>
 			<argument index="0" name="to" type="String">
 			</argument>
 			<description>
-				Performs a case-insensitive comparison to another string. Returns [code]-1[/code] if less than, [code]+1[/code] if greater than, or [code]0[/code] if equal.
+				Performs a case-insensitive comparison to another string. Returns [code]-1[/code] if less than, [code]1[/code] if greater than, or [code]0[/code] if equal. "less than" or "greater than" are determined by the [url=https://en.wikipedia.org/wiki/List_of_Unicode_characters]Unicode code points[/code] of each string, which roughly matches the alphabetical order. Internally, lowercase characters will be converted to uppercase during the comparison.
+				[b]Behavior with different string lengths:[/b] Returns [code]1[/code] if the "base" string is longer than the [code]to[/code] string or [code]-1[/code] if the "base" string is shorter than the [code]to[/code] string. Keep in mind this length is determined by the number of Unicode codepoints, [i]not[/i] the actual visible characters.
+				[b]Behavior with empty strings:[/b] Returns [code]-1[/code] if the "base" string is empty, [code]1[/code] if the [code]to[/code] string is empty or [code]0[/code] if both strings are empty.
+				To get a boolean result from a string comparison, use the [code]==[/code] operator instead. See also [method casecmp_to].
 			</description>
 		</method>
 		<method name="ord_at">
@@ -767,7 +787,8 @@
 			<argument index="0" name="chars" type="String">
 			</argument>
 			<description>
-				Returns a copy of the string with characters removed from the right.
+				Returns a copy of the string with characters removed from the right. The [code]chars[/code] argument is a string specifying the set of characters to be removed.
+				[b]Note:[/b] The [code]chars[/code] is not a suffix. See [method trim_suffix] method that will remove a single suffix string rather than a set of characters.
 			</description>
 		</method>
 		<method name="sha1_buffer">
@@ -913,6 +934,13 @@
 				Converts the String (which is an array of characters) to [PoolByteArray] (which is an array of bytes). The conversion is a bit slower than [method to_ascii], but supports all UTF-8 characters. Therefore, you should prefer this function over [method to_ascii].
 			</description>
 		</method>
+		<method name="to_wchar">
+			<return type="PoolByteArray">
+			</return>
+			<description>
+				Converts the String (which is an array of characters) to [PoolByteArray] (which is an array of bytes).
+			</description>
+		</method>
 		<method name="trim_prefix">
 			<return type="String">
 			</return>
@@ -929,6 +957,13 @@
 			</argument>
 			<description>
 				Removes a given string from the end if it ends with it or leaves the string unchanged.
+			</description>
+		</method>
+		<method name="validate_node_name">
+			<return type="String">
+			</return>
+			<description>
+				Removes any characters from the string that are prohibited in [Node] names ([code].[/code] [code]:[/code] [code]@[/code] [code]/[/code] [code]"[/code]).
 			</description>
 		</method>
 		<method name="xml_escape">

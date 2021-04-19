@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -44,7 +44,7 @@ static TexCacheMap *tex_cache;
 static float scale = 1;
 
 template <class T>
-static Ref<StyleBoxTexture> make_stylebox(T p_src, float p_left, float p_top, float p_right, float p_botton, float p_margin_left = -1, float p_margin_top = -1, float p_margin_right = -1, float p_margin_botton = -1, bool p_draw_center = true) {
+static Ref<StyleBoxTexture> make_stylebox(T p_src, float p_left, float p_top, float p_right, float p_bottom, float p_margin_left = -1, float p_margin_top = -1, float p_margin_right = -1, float p_margin_bottom = -1, bool p_draw_center = true) {
 
 	Ref<ImageTexture> texture;
 
@@ -77,23 +77,34 @@ static Ref<StyleBoxTexture> make_stylebox(T p_src, float p_left, float p_top, fl
 	style->set_texture(texture);
 	style->set_margin_size(MARGIN_LEFT, p_left * scale);
 	style->set_margin_size(MARGIN_RIGHT, p_right * scale);
-	style->set_margin_size(MARGIN_BOTTOM, p_botton * scale);
+	style->set_margin_size(MARGIN_BOTTOM, p_bottom * scale);
 	style->set_margin_size(MARGIN_TOP, p_top * scale);
 	style->set_default_margin(MARGIN_LEFT, p_margin_left * scale);
 	style->set_default_margin(MARGIN_RIGHT, p_margin_right * scale);
-	style->set_default_margin(MARGIN_BOTTOM, p_margin_botton * scale);
+	style->set_default_margin(MARGIN_BOTTOM, p_margin_bottom * scale);
 	style->set_default_margin(MARGIN_TOP, p_margin_top * scale);
 	style->set_draw_center(p_draw_center);
 
 	return style;
 }
 
-static Ref<StyleBoxTexture> sb_expand(Ref<StyleBoxTexture> p_sbox, float p_left, float p_top, float p_right, float p_botton) {
+static Ref<StyleBoxFlat> make_flat_stylebox(Color p_color, float p_margin_left = -1, float p_margin_top = -1, float p_margin_right = -1, float p_margin_bottom = -1) {
+	Ref<StyleBoxFlat> style(memnew(StyleBoxFlat));
+	style->set_bg_color(p_color);
+	style->set_default_margin(MARGIN_LEFT, p_margin_left * scale);
+	style->set_default_margin(MARGIN_RIGHT, p_margin_right * scale);
+	style->set_default_margin(MARGIN_BOTTOM, p_margin_bottom * scale);
+	style->set_default_margin(MARGIN_TOP, p_margin_top * scale);
+
+	return style;
+}
+
+static Ref<StyleBoxTexture> sb_expand(Ref<StyleBoxTexture> p_sbox, float p_left, float p_top, float p_right, float p_bottom) {
 
 	p_sbox->set_expand_margin_size(MARGIN_LEFT, p_left * scale);
 	p_sbox->set_expand_margin_size(MARGIN_TOP, p_top * scale);
 	p_sbox->set_expand_margin_size(MARGIN_RIGHT, p_right * scale);
-	p_sbox->set_expand_margin_size(MARGIN_BOTTOM, p_botton * scale);
+	p_sbox->set_expand_margin_size(MARGIN_BOTTOM, p_bottom * scale);
 	return p_sbox;
 }
 
@@ -117,6 +128,26 @@ static Ref<Texture> make_icon(T p_src) {
 	}
 	texture->create_from_image(img, ImageTexture::FLAG_FILTER);
 
+	return texture;
+}
+
+static Ref<Texture> flip_icon(Ref<Texture> p_texture, bool p_flip_y = false, bool p_flip_x = false) {
+	if (!p_flip_y && !p_flip_x) {
+		return p_texture;
+	}
+
+	Ref<ImageTexture> texture(memnew(ImageTexture));
+	Ref<Image> img = p_texture->get_data();
+	img = img->duplicate();
+
+	if (p_flip_y) {
+		img->flip_y();
+	}
+	if (p_flip_x) {
+		img->flip_x();
+	}
+
+	texture->create_from_image(img);
 	return texture;
 }
 
@@ -157,13 +188,13 @@ static Ref<BitmapFont> make_font(int p_height, int p_ascent, int p_charcount, co
 	return font;
 }
 
-static Ref<StyleBox> make_empty_stylebox(float p_margin_left = -1, float p_margin_top = -1, float p_margin_right = -1, float p_margin_botton = -1) {
+static Ref<StyleBox> make_empty_stylebox(float p_margin_left = -1, float p_margin_top = -1, float p_margin_right = -1, float p_margin_bottom = -1) {
 
 	Ref<StyleBox> style(memnew(StyleBoxEmpty));
 
 	style->set_default_margin(MARGIN_LEFT, p_margin_left * scale);
 	style->set_default_margin(MARGIN_RIGHT, p_margin_right * scale);
-	style->set_default_margin(MARGIN_BOTTOM, p_margin_botton * scale);
+	style->set_default_margin(MARGIN_BOTTOM, p_margin_bottom * scale);
 	style->set_default_margin(MARGIN_TOP, p_margin_top * scale);
 
 	return style;
@@ -580,6 +611,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_color("font_color_accel", "PopupMenu", Color(0.7, 0.7, 0.7, 0.8));
 	theme->set_color("font_color_disabled", "PopupMenu", Color(0.4, 0.4, 0.4, 0.8));
 	theme->set_color("font_color_hover", "PopupMenu", control_font_color);
+	theme->set_color("font_color_separator", "PopupMenu", control_font_color);
 
 	theme->set_constant("hseparation", "PopupMenu", 4 * scale);
 	theme->set_constant("vseparation", "PopupMenu", 4 * scale);
@@ -850,6 +882,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_icon("reset", "GraphEdit", make_icon(icon_zoom_reset_png));
 	theme->set_icon("more", "GraphEdit", make_icon(icon_zoom_more_png));
 	theme->set_icon("snap", "GraphEdit", make_icon(icon_snap_grid_png));
+	theme->set_icon("minimap", "GraphEdit", make_icon(icon_grid_minimap_png));
 	theme->set_stylebox("bg", "GraphEdit", make_stylebox(tree_bg_png, 4, 4, 4, 5));
 	theme->set_color("grid_minor", "GraphEdit", Color(1, 1, 1, 0.05));
 	theme->set_color("grid_major", "GraphEdit", Color(1, 1, 1, 0.2));
@@ -862,6 +895,19 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	// Visual Node Ports
 	theme->set_constant("port_grab_distance_horizontal", "GraphEdit", 48 * scale);
 	theme->set_constant("port_grab_distance_vertical", "GraphEdit", 6 * scale);
+
+	theme->set_stylebox("bg", "GraphEditMinimap", make_flat_stylebox(Color(0.24, 0.24, 0.24), 0, 0, 0, 0));
+	Ref<StyleBoxFlat> style_minimap_camera = make_flat_stylebox(Color(0.65, 0.65, 0.65, 0.2), 0, 0, 0, 0);
+	style_minimap_camera->set_border_color(Color(0.65, 0.65, 0.65, 0.45));
+	style_minimap_camera->set_border_width_all(1);
+	theme->set_stylebox("camera", "GraphEditMinimap", style_minimap_camera);
+	Ref<StyleBoxFlat> style_minimap_node = make_flat_stylebox(Color(1, 1, 1), 0, 0, 0, 0);
+	style_minimap_node->set_corner_radius_all(2);
+	theme->set_stylebox("node", "GraphEditMinimap", style_minimap_node);
+
+	Ref<Texture> resizer_icon = make_icon(window_resizer_png);
+	theme->set_icon("resizer", "GraphEditMinimap", flip_icon(resizer_icon, true, true));
+	theme->set_color("resizer_color", "GraphEditMinimap", Color(1, 1, 1, 0.85));
 
 	// Theme
 

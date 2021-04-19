@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -1151,6 +1151,7 @@ void CodeTextEditor::move_lines_up() {
 		int from_col = text_editor->get_selection_from_column();
 		int to_line = text_editor->get_selection_to_line();
 		int to_column = text_editor->get_selection_to_column();
+		int cursor_line = text_editor->cursor_get_line();
 
 		for (int i = from_line; i <= to_line; i++) {
 			int line_id = i;
@@ -1167,7 +1168,9 @@ void CodeTextEditor::move_lines_up() {
 		}
 		int from_line_up = from_line > 0 ? from_line - 1 : from_line;
 		int to_line_up = to_line > 0 ? to_line - 1 : to_line;
+		int cursor_line_up = cursor_line > 0 ? cursor_line - 1 : cursor_line;
 		text_editor->select(from_line_up, from_col, to_line_up, to_column);
+		text_editor->cursor_set_line(cursor_line_up);
 	} else {
 		int line_id = text_editor->cursor_get_line();
 		int next_id = line_id - 1;
@@ -1192,6 +1195,7 @@ void CodeTextEditor::move_lines_down() {
 		int from_col = text_editor->get_selection_from_column();
 		int to_line = text_editor->get_selection_to_line();
 		int to_column = text_editor->get_selection_to_column();
+		int cursor_line = text_editor->cursor_get_line();
 
 		for (int i = to_line; i >= from_line; i--) {
 			int line_id = i;
@@ -1208,7 +1212,9 @@ void CodeTextEditor::move_lines_down() {
 		}
 		int from_line_down = from_line < text_editor->get_line_count() ? from_line + 1 : from_line;
 		int to_line_down = to_line < text_editor->get_line_count() ? to_line + 1 : to_line;
+		int cursor_line_down = cursor_line < text_editor->get_line_count() ? cursor_line + 1 : cursor_line;
 		text_editor->select(from_line_down, from_col, to_line_down, to_column);
+		text_editor->cursor_set_line(cursor_line_down);
 	} else {
 		int line_id = text_editor->cursor_get_line();
 		int next_id = line_id + 1;
@@ -1462,8 +1468,6 @@ void CodeTextEditor::set_edit_state(const Variant &p_state) {
 			text_editor->set_line_as_bookmark(bookmarks[i], true);
 		}
 	}
-
-	text_editor->grab_focus();
 }
 
 void CodeTextEditor::set_error(const String &p_error) {

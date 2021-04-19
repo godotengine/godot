@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -101,15 +101,9 @@ GDScriptInstance *GDScript::_create_instance(const Variant **p_args, int p_argco
 
 	/* STEP 2, INITIALIZE AND CONSTRUCT */
 
-#ifndef NO_THREADS
-	GDScriptLanguage::singleton->lock->lock();
-#endif
-
+	GDScriptLanguage::singleton->lock.lock();
 	instances.insert(instance->owner);
-
-#ifndef NO_THREADS
-	GDScriptLanguage::singleton->lock->unlock();
-#endif
+	GDScriptLanguage::singleton->lock.unlock();
 
 	initializer->call(instance, p_args, p_argcount, r_error);
 
@@ -117,11 +111,11 @@ GDScriptInstance *GDScript::_create_instance(const Variant **p_args, int p_argco
 		instance->script = Ref<GDScript>();
 		instance->owner->set_script_instance(NULL);
 #ifndef NO_THREADS
-		GDScriptLanguage::singleton->lock->lock();
+		GDScriptLanguage::singleton->lock.lock();
 #endif
 		instances.erase(p_owner);
 #ifndef NO_THREADS
-		GDScriptLanguage::singleton->lock->unlock();
+		GDScriptLanguage::singleton->lock.unlock();
 #endif
 
 		ERR_FAIL_COND_V(r_error.error != Variant::CallError::CALL_OK, NULL); //error constructing
@@ -343,14 +337,9 @@ PlaceHolderScriptInstance *GDScript::placeholder_instance_create(Object *p_this)
 
 bool GDScript::instance_has(const Object *p_this) const {
 
-#ifndef NO_THREADS
-	GDScriptLanguage::singleton->lock->lock();
-#endif
+	GDScriptLanguage::singleton->lock.lock();
 	bool hasit = instances.has((Object *)p_this);
-
-#ifndef NO_THREADS
-	GDScriptLanguage::singleton->lock->unlock();
-#endif
+	GDScriptLanguage::singleton->lock.unlock();
 
 	return hasit;
 }
@@ -564,14 +553,9 @@ void GDScript::_set_subclass_path(Ref<GDScript> &p_sc, const String &p_path) {
 
 Error GDScript::reload(bool p_keep_state) {
 
-#ifndef NO_THREADS
-	GDScriptLanguage::singleton->lock->lock();
-#endif
+	GDScriptLanguage::singleton->lock.lock();
 	bool has_instances = instances.size();
-
-#ifndef NO_THREADS
-	GDScriptLanguage::singleton->lock->unlock();
-#endif
+	GDScriptLanguage::singleton->lock.unlock();
 
 	ERR_FAIL_COND_V(!p_keep_state && has_instances, ERR_ALREADY_IN_USE);
 
@@ -914,7 +898,6 @@ void GDScript::get_script_signal_list(List<MethodInfo> *r_signals) const {
 GDScript::GDScript() :
 		script_list(this) {
 
-	_static_ref = this;
 	valid = false;
 	subclass_count = 0;
 	initializer = NULL;
@@ -927,14 +910,9 @@ GDScript::GDScript() :
 #endif
 
 #ifdef DEBUG_ENABLED
-	if (GDScriptLanguage::get_singleton()->lock) {
-		GDScriptLanguage::get_singleton()->lock->lock();
-	}
+	GDScriptLanguage::get_singleton()->lock.lock();
 	GDScriptLanguage::get_singleton()->script_list.add(&script_list);
-
-	if (GDScriptLanguage::get_singleton()->lock) {
-		GDScriptLanguage::get_singleton()->lock->unlock();
-	}
+	GDScriptLanguage::get_singleton()->lock.unlock();
 #endif
 }
 
@@ -971,16 +949,14 @@ void GDScript::_save_orphaned_subclasses() {
 
 GDScript::~GDScript() {
 
-	if (GDScriptLanguage::get_singleton()->lock) {
-		GDScriptLanguage::get_singleton()->lock->lock();
-	}
+	GDScriptLanguage::get_singleton()->lock.lock();
 	while (SelfList<GDScriptFunctionState> *E = pending_func_states.first()) {
-		E->self()->_clear_stack();
+		// Order matters since clearing the stack may already cause
+		// the GDSCriptFunctionState to be destroyed and thus removed from the list.
 		pending_func_states.remove(E);
+		E->self()->_clear_stack();
 	}
-	if (GDScriptLanguage::get_singleton()->lock) {
-		GDScriptLanguage::get_singleton()->lock->unlock();
-	}
+	GDScriptLanguage::get_singleton()->lock.unlock();
 
 	for (Map<StringName, GDScriptFunction *>::Element *E = member_functions.front(); E; E = E->next()) {
 		memdelete(E->get());
@@ -989,14 +965,9 @@ GDScript::~GDScript() {
 	_save_orphaned_subclasses();
 
 #ifdef DEBUG_ENABLED
-	if (GDScriptLanguage::get_singleton()->lock) {
-		GDScriptLanguage::get_singleton()->lock->lock();
-	}
+	GDScriptLanguage::get_singleton()->lock.lock();
 	GDScriptLanguage::get_singleton()->script_list.remove(&script_list);
-
-	if (GDScriptLanguage::get_singleton()->lock) {
-		GDScriptLanguage::get_singleton()->lock->unlock();
-	}
+	GDScriptLanguage::get_singleton()->lock.unlock();
 #endif
 }
 
@@ -1399,22 +1370,20 @@ GDScriptInstance::GDScriptInstance() {
 }
 
 GDScriptInstance::~GDScriptInstance() {
-#ifndef NO_THREADS
-	GDScriptLanguage::singleton->lock->lock();
-#endif
+	GDScriptLanguage::singleton->lock.lock();
 
 	while (SelfList<GDScriptFunctionState> *E = pending_func_states.first()) {
-		E->self()->_clear_stack();
+		// Order matters since clearing the stack may already cause
+		// the GDSCriptFunctionState to be destroyed and thus removed from the list.
 		pending_func_states.remove(E);
+		E->self()->_clear_stack();
 	}
 
 	if (script.is_valid() && owner) {
 		script->instances.erase(owner);
 	}
 
-#ifndef NO_THREADS
-	GDScriptLanguage::singleton->lock->unlock();
-#endif
+	GDScriptLanguage::singleton->lock.unlock();
 }
 
 /************* SCRIPT LANGUAGE **************/
@@ -1514,9 +1483,7 @@ void GDScriptLanguage::finish() {
 void GDScriptLanguage::profiling_start() {
 
 #ifdef DEBUG_ENABLED
-	if (lock) {
-		lock->lock();
-	}
+	lock.lock();
 
 	SelfList<GDScriptFunction> *elem = function_list.first();
 	while (elem) {
@@ -1533,25 +1500,16 @@ void GDScriptLanguage::profiling_start() {
 	}
 
 	profiling = true;
-	if (lock) {
-		lock->unlock();
-	}
-
+	lock.unlock();
 #endif
 }
 
 void GDScriptLanguage::profiling_stop() {
 
 #ifdef DEBUG_ENABLED
-	if (lock) {
-		lock->lock();
-	}
-
+	lock.lock();
 	profiling = false;
-	if (lock) {
-		lock->unlock();
-	}
-
+	lock.unlock();
 #endif
 }
 
@@ -1559,9 +1517,7 @@ int GDScriptLanguage::profiling_get_accumulated_data(ProfilingInfo *p_info_arr, 
 
 	int current = 0;
 #ifdef DEBUG_ENABLED
-	if (lock) {
-		lock->lock();
-	}
+	lock.lock();
 
 	SelfList<GDScriptFunction> *elem = function_list.first();
 	while (elem) {
@@ -1575,10 +1531,7 @@ int GDScriptLanguage::profiling_get_accumulated_data(ProfilingInfo *p_info_arr, 
 		current++;
 	}
 
-	if (lock) {
-		lock->unlock();
-	}
-
+	lock.unlock();
 #endif
 
 	return current;
@@ -1589,9 +1542,7 @@ int GDScriptLanguage::profiling_get_frame_data(ProfilingInfo *p_info_arr, int p_
 	int current = 0;
 
 #ifdef DEBUG_ENABLED
-	if (lock) {
-		lock->lock();
-	}
+	lock.lock();
 
 	SelfList<GDScriptFunction> *elem = function_list.first();
 	while (elem) {
@@ -1607,10 +1558,7 @@ int GDScriptLanguage::profiling_get_frame_data(ProfilingInfo *p_info_arr, int p_
 		elem = elem->next();
 	}
 
-	if (lock) {
-		lock->unlock();
-	}
-
+	lock.unlock();
 #endif
 
 	return current;
@@ -1641,9 +1589,7 @@ void GDScriptLanguage::reload_all_scripts() {
 
 #ifdef DEBUG_ENABLED
 	print_verbose("GDScript: Reloading all scripts");
-	if (lock) {
-		lock->lock();
-	}
+	lock.lock();
 
 	List<Ref<GDScript> > scripts;
 
@@ -1656,9 +1602,7 @@ void GDScriptLanguage::reload_all_scripts() {
 		elem = elem->next();
 	}
 
-	if (lock) {
-		lock->unlock();
-	}
+	lock.unlock();
 
 	//as scripts are going to be reloaded, must proceed without locking here
 
@@ -1677,9 +1621,7 @@ void GDScriptLanguage::reload_tool_script(const Ref<Script> &p_script, bool p_so
 
 #ifdef DEBUG_ENABLED
 
-	if (lock) {
-		lock->lock();
-	}
+	lock.lock();
 
 	List<Ref<GDScript> > scripts;
 
@@ -1692,9 +1634,7 @@ void GDScriptLanguage::reload_tool_script(const Ref<Script> &p_script, bool p_so
 		elem = elem->next();
 	}
 
-	if (lock) {
-		lock->unlock();
-	}
+	lock.unlock();
 
 	//when someone asks you why dynamically typed languages are easier to write....
 
@@ -1813,9 +1753,7 @@ void GDScriptLanguage::frame() {
 
 #ifdef DEBUG_ENABLED
 	if (profiling) {
-		if (lock) {
-			lock->lock();
-		}
+		lock.lock();
 
 		SelfList<GDScriptFunction> *elem = function_list.first();
 		while (elem) {
@@ -1828,9 +1766,7 @@ void GDScriptLanguage::frame() {
 			elem = elem->next();
 		}
 
-		if (lock) {
-			lock->unlock();
-		}
+		lock.unlock();
 	}
 
 #endif
@@ -2199,11 +2135,6 @@ GDScriptLanguage::GDScriptLanguage() {
 	_debug_parse_err_line = -1;
 	_debug_parse_err_file = "";
 
-#ifdef NO_THREADS
-	lock = NULL;
-#else
-	lock = Mutex::create();
-#endif
 	profiling = false;
 	script_frame_time = 0;
 
@@ -2237,13 +2168,35 @@ GDScriptLanguage::GDScriptLanguage() {
 
 GDScriptLanguage::~GDScriptLanguage() {
 
-	if (lock) {
-		memdelete(lock);
-		lock = NULL;
-	}
 	if (_call_stack) {
 		memdelete_arr(_call_stack);
 	}
+
+	// Clear dependencies between scripts, to ensure cyclic references are broken (to avoid leaks at exit).
+	SelfList<GDScript> *s = script_list.first();
+	while (s) {
+		GDScript *script = s->self();
+		// This ensures the current script is not released before we can check what's the next one
+		// in the list (we can't get the next upfront because we don't know if the reference breaking
+		// will cause it -or any other after it, for that matter- to be released so the next one
+		// is not the same as before).
+		script->reference();
+
+		for (Map<StringName, GDScriptFunction *>::Element *E = script->member_functions.front(); E; E = E->next()) {
+			GDScriptFunction *func = E->get();
+			for (int i = 0; i < func->argument_types.size(); i++) {
+				func->argument_types.write[i].script_type_ref = Ref<Script>();
+			}
+			func->return_type.script_type_ref = Ref<Script>();
+		}
+		for (Map<StringName, GDScript::MemberInfo>::Element *E = script->member_indices.front(); E; E = E->next()) {
+			E->get().data_type.script_type_ref = Ref<Script>();
+		}
+
+		s = s->next();
+		script->unreference();
+	}
+
 	singleton = NULL;
 }
 

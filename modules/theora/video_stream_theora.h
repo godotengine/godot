@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -36,6 +36,7 @@
 #include "core/os/semaphore.h"
 #include "core/os/thread.h"
 #include "core/ring_buffer.h"
+#include "core/safe_refcount.h"
 #include "scene/resources/video_stream.h"
 #include "servers/audio_server.h"
 
@@ -112,9 +113,9 @@ class VideoStreamPlaybackTheora : public VideoStreamPlayback {
 	RingBuffer<uint8_t> ring_buffer;
 	Vector<uint8_t> read_buffer;
 	bool thread_eof;
-	Semaphore *thread_sem;
-	Thread *thread;
-	volatile bool thread_exit;
+	Semaphore thread_sem;
+	Thread thread;
+	SafeFlag thread_exit;
 
 	static void _streaming_thread(void *ud);
 

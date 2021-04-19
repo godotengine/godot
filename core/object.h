@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -36,6 +36,7 @@
 #include "core/map.h"
 #include "core/object_id.h"
 #include "core/os/rw_lock.h"
+#include "core/safe_refcount.h"
 #include "core/set.h"
 #include "core/variant.h"
 #include "core/vmap.h"
@@ -511,10 +512,8 @@ private:
 	void _set_indexed_bind(const NodePath &p_name, const Variant &p_value);
 	Variant _get_indexed_bind(const NodePath &p_name) const;
 
-	void property_list_changed_notify();
-
 	friend class Reference;
-	uint32_t instance_binding_count;
+	SafeNumeric<uint32_t> instance_binding_count;
 	void *_script_instance_bindings[MAX_SCRIPT_INSTANCE_BINDINGS];
 
 protected:
@@ -551,6 +550,7 @@ protected:
 
 	void cancel_delete();
 
+	void property_list_changed_notify();
 	virtual void _changed_callback(Object *p_changed, const char *p_prop);
 
 	//Variant _call_bind(const StringName& p_name, const Variant& p_arg1 = Variant(), const Variant& p_arg2 = Variant(), const Variant& p_arg3 = Variant(), const Variant& p_arg4 = Variant());
@@ -683,7 +683,7 @@ public:
 	void call_multilevel(const StringName &p_name, VARIANT_ARG_LIST); // C++ helper
 
 	void notification(int p_notification, bool p_reversed = false);
-	String to_string();
+	virtual String to_string();
 
 	//used mainly by script, get and set all INCLUDING string
 	virtual Variant getvar(const Variant &p_key, bool *r_valid = NULL) const;
@@ -792,12 +792,11 @@ class ObjectDB {
 	friend class Object;
 	friend void unregister_core_types();
 
-	static RWLock *rw_lock;
+	static RWLock rw_lock;
 	static void cleanup();
 	static ObjectID add_instance(Object *p_object);
 	static void remove_instance(Object *p_object);
 	friend void register_core_types();
-	static void setup();
 
 public:
 	typedef void (*DebugFunc)(Object *p_obj);
@@ -807,11 +806,11 @@ public:
 	static int get_object_count();
 
 	_FORCE_INLINE_ static bool instance_validate(Object *p_ptr) {
-		rw_lock->read_lock();
+		rw_lock.read_lock();
 
 		bool exists = instance_checks.has(p_ptr);
 
-		rw_lock->read_unlock();
+		rw_lock.read_unlock();
 
 		return exists;
 	}

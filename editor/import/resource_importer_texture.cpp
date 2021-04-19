@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -38,7 +38,7 @@
 
 void ResourceImporterTexture::_texture_reimport_srgb(const Ref<StreamTexture> &p_tex) {
 
-	singleton->mutex->lock();
+	singleton->mutex.lock();
 	StringName path = p_tex->get_path();
 
 	if (!singleton->make_flags.has(path)) {
@@ -47,12 +47,12 @@ void ResourceImporterTexture::_texture_reimport_srgb(const Ref<StreamTexture> &p
 
 	singleton->make_flags[path] |= MAKE_SRGB_FLAG;
 
-	singleton->mutex->unlock();
+	singleton->mutex.unlock();
 }
 
 void ResourceImporterTexture::_texture_reimport_3d(const Ref<StreamTexture> &p_tex) {
 
-	singleton->mutex->lock();
+	singleton->mutex.lock();
 	StringName path = p_tex->get_path();
 
 	if (!singleton->make_flags.has(path)) {
@@ -61,12 +61,12 @@ void ResourceImporterTexture::_texture_reimport_3d(const Ref<StreamTexture> &p_t
 
 	singleton->make_flags[path] |= MAKE_3D_FLAG;
 
-	singleton->mutex->unlock();
+	singleton->mutex.unlock();
 }
 
 void ResourceImporterTexture::_texture_reimport_normal(const Ref<StreamTexture> &p_tex) {
 
-	singleton->mutex->lock();
+	singleton->mutex.lock();
 	StringName path = p_tex->get_path();
 
 	if (!singleton->make_flags.has(path)) {
@@ -75,7 +75,7 @@ void ResourceImporterTexture::_texture_reimport_normal(const Ref<StreamTexture> 
 
 	singleton->make_flags[path] |= MAKE_NORMAL_FLAG;
 
-	singleton->mutex->unlock();
+	singleton->mutex.unlock();
 }
 
 void ResourceImporterTexture::update_imports() {
@@ -83,10 +83,10 @@ void ResourceImporterTexture::update_imports() {
 	if (EditorFileSystem::get_singleton()->is_scanning() || EditorFileSystem::get_singleton()->is_importing()) {
 		return; // do nothing for now
 	}
-	mutex->lock();
+	mutex.lock();
 
 	if (make_flags.empty()) {
-		mutex->unlock();
+		mutex.unlock();
 		return;
 	}
 
@@ -128,7 +128,7 @@ void ResourceImporterTexture::update_imports() {
 
 	make_flags.clear();
 
-	mutex->unlock();
+	mutex.unlock();
 
 	if (to_reimport.size()) {
 		EditorFileSystem::get_singleton()->reimport_files(to_reimport);
@@ -611,10 +611,4 @@ ResourceImporterTexture::ResourceImporterTexture() {
 	StreamTexture::request_3d_callback = _texture_reimport_3d;
 	StreamTexture::request_srgb_callback = _texture_reimport_srgb;
 	StreamTexture::request_normal_callback = _texture_reimport_normal;
-	mutex = Mutex::create();
-}
-
-ResourceImporterTexture::~ResourceImporterTexture() {
-
-	memdelete(mutex);
 }

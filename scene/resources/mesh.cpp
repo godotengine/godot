@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,6 +30,8 @@
 
 #include "mesh.h"
 
+#include "core/crypto/crypto_core.h"
+#include "core/local_vector.h"
 #include "core/pair.h"
 #include "scene/resources/concave_polygon_shape.h"
 #include "scene/resources/convex_polygon_shape.h"
@@ -1108,18 +1110,35 @@ struct ArrayMeshLightmapSurface {
 };
 
 Error ArrayMesh::lightmap_unwrap(const Transform &p_base_transform, float p_texel_size) {
+	int *cache_data = nullptr;
+	unsigned int cache_size = 0;
+	bool use_cache = false; // Don't use cache
+	return lightmap_unwrap_cached(cache_data, cache_size, use_cache, p_base_transform, p_texel_size);
+}
+
+Error ArrayMesh::lightmap_unwrap_cached(int *&r_cache_data, unsigned int &r_cache_size, bool &r_used_cache, const Transform &p_base_transform, float p_texel_size) {
 
 	ERR_FAIL_COND_V(!array_mesh_lightmap_unwrap_callback, ERR_UNCONFIGURED);
 	ERR_FAIL_COND_V_MSG(blend_shapes.size() != 0, ERR_UNAVAILABLE, "Can't unwrap mesh with blend shapes.");
 
-	Vector<float> vertices;
-	Vector<float> normals;
-	Vector<int> indices;
-	Vector<int> face_materials;
-	Vector<float> uv;
-	Vector<Pair<int, int> > uv_index;
+	LocalVector<float> vertices;
+	LocalVector<float> normals;
+	LocalVector<int> indices;
+	LocalVector<int> face_materials;
+	LocalVector<float> uv;
+	LocalVector<Pair<int, int> > uv_indices;
 
-	Vector<ArrayMeshLightmapSurface> surfaces;
+	Vector<ArrayMeshLightmapSurface> lightmap_surfaces;
+
+	// Keep only the scale
+	Basis basis = p_base_transform.get_basis();
+	Vector3 scale = Vector3(basis.get_axis(0).length(), basis.get_axis(1).length(), basis.get_axis(2).length());
+
+	Transform transform;
+	transform.scale(scale);
+
+	Basis normal_basis = transform.basis.inverse().transposed();
+
 	for (int i = 0; i < get_surface_count(); i++) {
 		ArrayMeshLightmapSurface s;
 		s.primitive = surface_get_primitive_type(i);
@@ -1143,30 +1162,36 @@ Error ArrayMesh::lightmap_unwrap(const Transform &p_base_transform, float p_texe
 
 		vertices.resize((vertex_ofs + vc) * 3);
 		normals.resize((vertex_ofs + vc) * 3);
-		uv_index.resize(vertex_ofs + vc);
+		uv_indices.resize(vertex_ofs + vc);
 
 		for (int j = 0; j < vc; j++) {
 
-			Vector3 v = p_base_transform.xform(r[j]);
-			Vector3 n = p_base_transform.basis.xform(rn[j]).normalized();
+			Vector3 v = transform.xform(r[j]);
+			Vector3 n = normal_basis.xform(rn[j]).normalized();
 
-			vertices.write[(j + vertex_ofs) * 3 + 0] = v.x;
-			vertices.write[(j + vertex_ofs) * 3 + 1] = v.y;
-			vertices.write[(j + vertex_ofs) * 3 + 2] = v.z;
-			normals.write[(j + vertex_ofs) * 3 + 0] = n.x;
-			normals.write[(j + vertex_ofs) * 3 + 1] = n.y;
-			normals.write[(j + vertex_ofs) * 3 + 2] = n.z;
-			uv_index.write[j + vertex_ofs] = Pair<int, int>(i, j);
+			vertices[(j + vertex_ofs) * 3 + 0] = v.x;
+			vertices[(j + vertex_ofs) * 3 + 1] = v.y;
+			vertices[(j + vertex_ofs) * 3 + 2] = v.z;
+			normals[(j + vertex_ofs) * 3 + 0] = n.x;
+			normals[(j + vertex_ofs) * 3 + 1] = n.y;
+			normals[(j + vertex_ofs) * 3 + 2] = n.z;
+			uv_indices[j + vertex_ofs] = Pair<int, int>(i, j);
 		}
 
 		PoolVector<int> rindices = arrays[Mesh::ARRAY_INDEX];
 		int ic = rindices.size();
 
+		float eps = 1.19209290e-7F; // Taken from xatlas.h
 		if (ic == 0) {
 
 			for (int j = 0; j < vc / 3; j++) {
-				if (Face3(r[j * 3 + 0], r[j * 3 + 1], r[j * 3 + 2]).is_degenerate())
+				Vector3 p0 = transform.xform(r[j * 3 + 0]);
+				Vector3 p1 = transform.xform(r[j * 3 + 1]);
+				Vector3 p2 = transform.xform(r[j * 3 + 2]);
+
+				if ((p0 - p1).length_squared() < eps || (p1 - p2).length_squared() < eps || (p2 - p0).length_squared() < eps) {
 					continue;
+				}
 
 				indices.push_back(vertex_ofs + j * 3 + 0);
 				indices.push_back(vertex_ofs + j * 3 + 1);
@@ -1178,8 +1203,14 @@ Error ArrayMesh::lightmap_unwrap(const Transform &p_base_transform, float p_texe
 			PoolVector<int>::Read ri = rindices.read();
 
 			for (int j = 0; j < ic / 3; j++) {
-				if (Face3(r[ri[j * 3 + 0]], r[ri[j * 3 + 1]], r[ri[j * 3 + 2]]).is_degenerate())
+				Vector3 p0 = transform.xform(r[ri[j * 3 + 0]]);
+				Vector3 p1 = transform.xform(r[ri[j * 3 + 1]]);
+				Vector3 p2 = transform.xform(r[ri[j * 3 + 2]]);
+
+				if ((p0 - p1).length_squared() < eps || (p1 - p2).length_squared() < eps || (p2 - p0).length_squared() < eps) {
 					continue;
+				}
+
 				indices.push_back(vertex_ofs + ri[j * 3 + 0]);
 				indices.push_back(vertex_ofs + ri[j * 3 + 1]);
 				indices.push_back(vertex_ofs + ri[j * 3 + 2]);
@@ -1187,7 +1218,49 @@ Error ArrayMesh::lightmap_unwrap(const Transform &p_base_transform, float p_texe
 			}
 		}
 
-		surfaces.push_back(s);
+		lightmap_surfaces.push_back(s);
+	}
+
+	CryptoCore::MD5Context ctx;
+	ctx.start();
+
+	ctx.update((unsigned char *)&p_texel_size, sizeof(float));
+	ctx.update((unsigned char *)indices.ptr(), sizeof(int) * indices.size());
+	ctx.update((unsigned char *)face_materials.ptr(), sizeof(int) * face_materials.size());
+	ctx.update((unsigned char *)vertices.ptr(), sizeof(float) * vertices.size());
+	ctx.update((unsigned char *)normals.ptr(), sizeof(float) * normals.size());
+
+	unsigned char hash[16];
+	ctx.finish(hash);
+
+	bool cached = false;
+	unsigned int cache_idx = 0;
+
+	if (r_used_cache && r_cache_data) {
+		//Check if hash is in cache data
+
+		int *cache_data = r_cache_data;
+		int n_entries = cache_data[0];
+		unsigned int r_idx = 1;
+		for (int i = 0; i < n_entries; ++i) {
+			if (memcmp(&cache_data[r_idx], hash, 16) == 0) {
+				cached = true;
+				cache_idx = r_idx;
+				break;
+			}
+
+			r_idx += 4; // hash
+			r_idx += 2; // size hint
+
+			int vertex_count = cache_data[r_idx];
+			r_idx += 1; // vertex count
+			r_idx += vertex_count; // vertex
+			r_idx += vertex_count * 2; // uvs
+
+			int index_count = cache_data[r_idx];
+			r_idx += 1; // index count
+			r_idx += index_count; // indices
+		}
 	}
 
 	//unwrap
@@ -1200,10 +1273,86 @@ Error ArrayMesh::lightmap_unwrap(const Transform &p_base_transform, float p_texe
 	int size_x;
 	int size_y;
 
-	bool ok = array_mesh_lightmap_unwrap_callback(p_texel_size, vertices.ptr(), normals.ptr(), vertices.size() / 3, indices.ptr(), face_materials.ptr(), indices.size(), &gen_uvs, &gen_vertices, &gen_vertex_count, &gen_indices, &gen_index_count, &size_x, &size_y);
+	if (r_used_cache && cached) {
+		int *cache_data = r_cache_data;
 
-	if (!ok) {
-		return ERR_CANT_CREATE;
+		// Return cache data pointer to the caller
+		r_cache_data = &cache_data[cache_idx];
+
+		cache_idx += 4;
+
+		// Load size
+		size_x = ((int *)cache_data)[cache_idx];
+		size_y = ((int *)cache_data)[cache_idx + 1];
+		cache_idx += 2;
+
+		// Load vertices
+		gen_vertex_count = cache_data[cache_idx];
+		cache_idx++;
+		gen_vertices = &cache_data[cache_idx];
+		cache_idx += gen_vertex_count;
+
+		// Load UVs
+		gen_uvs = (float *)&cache_data[cache_idx];
+		cache_idx += gen_vertex_count * 2;
+
+		// Load indices
+		gen_index_count = cache_data[cache_idx];
+		cache_idx++;
+		gen_indices = &cache_data[cache_idx];
+
+		// Return cache data size to the caller
+		r_cache_size = sizeof(int) * (4 + 2 + 1 + gen_vertex_count + (gen_vertex_count * 2) + 1 + gen_index_count); // hash + size hint + vertex_count + vertices + uvs + index_count + indices
+		r_used_cache = true;
+	}
+
+	if (!cached) {
+		bool ok = array_mesh_lightmap_unwrap_callback(p_texel_size, vertices.ptr(), normals.ptr(), vertices.size() / 3, indices.ptr(), face_materials.ptr(), indices.size(), &gen_uvs, &gen_vertices, &gen_vertex_count, &gen_indices, &gen_index_count, &size_x, &size_y);
+
+		if (!ok) {
+			return ERR_CANT_CREATE;
+		}
+
+		if (r_used_cache) {
+			unsigned int new_cache_size = 4 + 2 + 1 + gen_vertex_count + (gen_vertex_count * 2) + 1 + gen_index_count; // hash + size hint + vertex_count + vertices + uvs + index_count + indices
+			new_cache_size *= sizeof(int);
+			int *new_cache_data = (int *)memalloc(new_cache_size);
+			unsigned int new_cache_idx = 0;
+
+			// hash
+			memcpy(&new_cache_data[new_cache_idx], hash, 16);
+			new_cache_idx += 4;
+
+			// size hint
+			new_cache_data[new_cache_idx] = size_x;
+			new_cache_data[new_cache_idx + 1] = size_y;
+			new_cache_idx += 2;
+
+			// vertex count
+			new_cache_data[new_cache_idx] = gen_vertex_count;
+			new_cache_idx++;
+
+			// vertices
+			memcpy(&new_cache_data[new_cache_idx], gen_vertices, sizeof(int) * gen_vertex_count);
+			new_cache_idx += gen_vertex_count;
+
+			// uvs
+			memcpy(&new_cache_data[new_cache_idx], gen_uvs, sizeof(float) * gen_vertex_count * 2);
+			new_cache_idx += gen_vertex_count * 2;
+
+			// index count
+			new_cache_data[new_cache_idx] = gen_index_count;
+			new_cache_idx++;
+
+			// indices
+			memcpy(&new_cache_data[new_cache_idx], gen_indices, sizeof(int) * gen_index_count);
+			new_cache_idx += gen_index_count;
+
+			// Return cache data to the caller
+			r_cache_data = new_cache_data;
+			r_cache_size = new_cache_size;
+			r_used_cache = false;
+		}
 	}
 
 	//remove surfaces
@@ -1212,13 +1361,13 @@ Error ArrayMesh::lightmap_unwrap(const Transform &p_base_transform, float p_texe
 	}
 
 	//create surfacetools for each surface..
-	Vector<Ref<SurfaceTool> > surfaces_tools;
+	LocalVector<Ref<SurfaceTool> > surfaces_tools;
 
-	for (int i = 0; i < surfaces.size(); i++) {
+	for (int i = 0; i < lightmap_surfaces.size(); i++) {
 		Ref<SurfaceTool> st;
 		st.instance();
 		st->begin(Mesh::PRIMITIVE_TRIANGLES);
-		st->set_material(surfaces[i].material);
+		st->set_material(lightmap_surfaces[i].material);
 		surfaces_tools.push_back(st); //stay there
 	}
 
@@ -1226,60 +1375,61 @@ Error ArrayMesh::lightmap_unwrap(const Transform &p_base_transform, float p_texe
 	//go through all indices
 	for (int i = 0; i < gen_index_count; i += 3) {
 
-		ERR_FAIL_INDEX_V(gen_vertices[gen_indices[i + 0]], uv_index.size(), ERR_BUG);
-		ERR_FAIL_INDEX_V(gen_vertices[gen_indices[i + 1]], uv_index.size(), ERR_BUG);
-		ERR_FAIL_INDEX_V(gen_vertices[gen_indices[i + 2]], uv_index.size(), ERR_BUG);
+		ERR_FAIL_INDEX_V(gen_vertices[gen_indices[i + 0]], (int)uv_indices.size(), ERR_BUG);
+		ERR_FAIL_INDEX_V(gen_vertices[gen_indices[i + 1]], (int)uv_indices.size(), ERR_BUG);
+		ERR_FAIL_INDEX_V(gen_vertices[gen_indices[i + 2]], (int)uv_indices.size(), ERR_BUG);
 
-		ERR_FAIL_COND_V(uv_index[gen_vertices[gen_indices[i + 0]]].first != uv_index[gen_vertices[gen_indices[i + 1]]].first || uv_index[gen_vertices[gen_indices[i + 0]]].first != uv_index[gen_vertices[gen_indices[i + 2]]].first, ERR_BUG);
+		ERR_FAIL_COND_V(uv_indices[gen_vertices[gen_indices[i + 0]]].first != uv_indices[gen_vertices[gen_indices[i + 1]]].first || uv_indices[gen_vertices[gen_indices[i + 0]]].first != uv_indices[gen_vertices[gen_indices[i + 2]]].first, ERR_BUG);
 
-		int surface = uv_index[gen_vertices[gen_indices[i + 0]]].first;
+		int surface = uv_indices[gen_vertices[gen_indices[i + 0]]].first;
 
 		for (int j = 0; j < 3; j++) {
 
-			SurfaceTool::Vertex v = surfaces[surface].vertices[uv_index[gen_vertices[gen_indices[i + j]]].second];
+			SurfaceTool::Vertex v = lightmap_surfaces[surface].vertices[uv_indices[gen_vertices[gen_indices[i + j]]].second];
 
-			if (surfaces[surface].format & ARRAY_FORMAT_COLOR) {
-				surfaces_tools.write[surface]->add_color(v.color);
+			if (lightmap_surfaces[surface].format & ARRAY_FORMAT_COLOR) {
+				surfaces_tools[surface]->add_color(v.color);
 			}
-			if (surfaces[surface].format & ARRAY_FORMAT_TEX_UV) {
-				surfaces_tools.write[surface]->add_uv(v.uv);
+			if (lightmap_surfaces[surface].format & ARRAY_FORMAT_TEX_UV) {
+				surfaces_tools[surface]->add_uv(v.uv);
 			}
-			if (surfaces[surface].format & ARRAY_FORMAT_NORMAL) {
-				surfaces_tools.write[surface]->add_normal(v.normal);
+			if (lightmap_surfaces[surface].format & ARRAY_FORMAT_NORMAL) {
+				surfaces_tools[surface]->add_normal(v.normal);
 			}
-			if (surfaces[surface].format & ARRAY_FORMAT_TANGENT) {
+			if (lightmap_surfaces[surface].format & ARRAY_FORMAT_TANGENT) {
 				Plane t;
 				t.normal = v.tangent;
 				t.d = v.binormal.dot(v.normal.cross(v.tangent)) < 0 ? -1 : 1;
-				surfaces_tools.write[surface]->add_tangent(t);
+				surfaces_tools[surface]->add_tangent(t);
 			}
-			if (surfaces[surface].format & ARRAY_FORMAT_BONES) {
-				surfaces_tools.write[surface]->add_bones(v.bones);
+			if (lightmap_surfaces[surface].format & ARRAY_FORMAT_BONES) {
+				surfaces_tools[surface]->add_bones(v.bones);
 			}
-			if (surfaces[surface].format & ARRAY_FORMAT_WEIGHTS) {
-				surfaces_tools.write[surface]->add_weights(v.weights);
+			if (lightmap_surfaces[surface].format & ARRAY_FORMAT_WEIGHTS) {
+				surfaces_tools[surface]->add_weights(v.weights);
 			}
 
 			Vector2 uv2(gen_uvs[gen_indices[i + j] * 2 + 0], gen_uvs[gen_indices[i + j] * 2 + 1]);
-			surfaces_tools.write[surface]->add_uv2(uv2);
+			surfaces_tools[surface]->add_uv2(uv2);
 
-			surfaces_tools.write[surface]->add_vertex(v.vertex);
+			surfaces_tools[surface]->add_vertex(v.vertex);
 		}
 	}
 
-	//free stuff
-	::free(gen_vertices);
-	::free(gen_indices);
-	::free(gen_uvs);
-
 	//generate surfaces
-
-	for (int i = 0; i < surfaces_tools.size(); i++) {
-		surfaces_tools.write[i]->index();
-		surfaces_tools.write[i]->commit(Ref<ArrayMesh>((ArrayMesh *)this), surfaces[i].format);
+	for (unsigned int i = 0; i < surfaces_tools.size(); i++) {
+		surfaces_tools[i]->index();
+		surfaces_tools[i]->commit(Ref<ArrayMesh>((ArrayMesh *)this), lightmap_surfaces[i].format);
 	}
 
 	set_lightmap_size_hint(Size2(size_x, size_y));
+
+	if (!cached) {
+		//free stuff
+		::free(gen_vertices);
+		::free(gen_indices);
+		::free(gen_uvs);
+	}
 
 	return OK;
 }

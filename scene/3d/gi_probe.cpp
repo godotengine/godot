@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -399,13 +399,16 @@ void GIProbe::bake(Node *p_from_node, bool p_create_visual_debug) {
 
 	static const int subdiv_value[SUBDIV_MAX] = { 7, 8, 9, 10 };
 
+	p_from_node = p_from_node ? p_from_node : get_parent();
+	ERR_FAIL_NULL(p_from_node);
+
 	VoxelLightBaker baker;
 
 	baker.begin_bake(subdiv_value[subdiv], AABB(-extents, extents * 2.0));
 
 	List<PlotMesh> mesh_list;
 
-	_find_meshes(p_from_node ? p_from_node : get_parent(), mesh_list);
+	_find_meshes(p_from_node, mesh_list);
 
 	if (bake_begin_function) {
 		bake_begin_function(mesh_list.size() + 1);
@@ -490,11 +493,14 @@ PoolVector<Face3> GIProbe::get_faces(uint32_t p_usage_flags) const {
 }
 
 String GIProbe::get_configuration_warning() const {
-
+	String warning = VisualInstance::get_configuration_warning();
 	if (OS::get_singleton()->get_current_video_driver() == OS::VIDEO_DRIVER_GLES2) {
-		return TTR("GIProbes are not supported by the GLES2 video driver.\nUse a BakedLightmap instead.");
+		if (warning != String()) {
+			warning += "\n\n";
+		}
+		warning += TTR("GIProbes are not supported by the GLES2 video driver.\nUse a BakedLightmap instead.");
 	}
-	return String();
+	return warning;
 }
 
 void GIProbe::_bind_methods() {

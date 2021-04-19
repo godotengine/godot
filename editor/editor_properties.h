@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -495,6 +495,9 @@ class EditorPropertyColor : public EditorProperty {
 	void _color_changed(const Color &p_color);
 	void _popup_closed();
 	void _picker_created();
+	void _picker_opening();
+
+	Color last_color;
 
 protected:
 	static void _bind_methods();
@@ -597,6 +600,9 @@ class EditorPropertyResource : public EditorProperty {
 	void _fold_other_editors(Object *p_self);
 
 	bool opened_editor;
+
+	bool updating_theme = false;
+	void _update_property_bg();
 
 protected:
 	static void _bind_methods();

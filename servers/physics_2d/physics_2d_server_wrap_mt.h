@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,6 +34,7 @@
 #include "core/command_queue_mt.h"
 #include "core/os/thread.h"
 #include "core/project_settings.h"
+#include "core/safe_refcount.h"
 #include "servers/physics_2d_server.h"
 
 #ifdef DEBUG_SYNC
@@ -53,12 +54,12 @@ class Physics2DServerWrapMT : public Physics2DServer {
 
 	Thread::ID server_thread;
 	Thread::ID main_thread;
-	volatile bool exit;
-	Thread *thread;
-	volatile bool step_thread_up;
+	SafeFlag exit;
+	Thread thread;
+	SafeFlag step_thread_up;
 	bool create_thread;
 
-	Semaphore *step_sem;
+	Semaphore step_sem;
 	int step_pending;
 	void thread_step(real_t p_delta);
 	void thread_flush();
@@ -67,7 +68,7 @@ class Physics2DServerWrapMT : public Physics2DServer {
 
 	bool first_frame;
 
-	Mutex *alloc_mutex;
+	Mutex alloc_mutex;
 	int pool_max_size;
 
 public:
@@ -326,6 +327,9 @@ public:
 	template <class T>
 	static Physics2DServer *init_server() {
 
+#ifdef NO_THREADS
+		return memnew(T); // Always single unsafe when no threads are available.
+#else
 		int tm = GLOBAL_DEF("physics/2d/thread_model", 1);
 		if (tm == 0) // single unsafe
 			return memnew(T);
@@ -333,6 +337,7 @@ public:
 			return memnew(Physics2DServerWrapMT(memnew(T), false));
 		else // multi threaded
 			return memnew(Physics2DServerWrapMT(memnew(T), true));
+#endif
 	}
 
 #undef ServerNameWrapMT

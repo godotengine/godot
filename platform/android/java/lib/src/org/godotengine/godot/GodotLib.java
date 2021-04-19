@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -50,13 +50,13 @@ public class GodotLib {
 	/**
 	 * Invoked on the main thread to initialize Godot native layer.
 	 */
-	public static native void initialize(Godot p_instance, Object p_asset_manager, boolean use_apk_expansion);
+	public static native void initialize(Activity activity, Godot p_instance, Object p_asset_manager, boolean use_apk_expansion);
 
 	/**
 	 * Invoked on the main thread to clean up Godot native layer.
-	 * @see Activity#onDestroy()
+	 * @see androidx.fragment.app.Fragment#onDestroy()
 	 */
-	public static native void ondestroy(Godot p_instance);
+	public static native void ondestroy();
 
 	/**
 	 * Invoked on the GL thread to complete setup for the Godot native layer logic.
@@ -93,17 +93,19 @@ public class GodotLib {
 	/**
 	 * Forward touch events from the main thread to the GL thread.
 	 */
-	public static native void touch(int what, int pointer, int howmany, int[] arr);
+	public static native void touch(int inputDevice, int event, int pointer, int pointerCount, float[] positions);
+	public static native void touch(int inputDevice, int event, int pointer, int pointerCount, float[] positions, int buttonsMask);
+	public static native void touch(int inputDevice, int event, int pointer, int pointerCount, float[] positions, int buttonsMask, float verticalFactor, float horizontalFactor);
 
 	/**
 	 * Forward hover events from the main thread to the GL thread.
 	 */
-	public static native void hover(int type, int x, int y);
+	public static native void hover(int type, float x, float y);
 
 	/**
 	 * Forward double_tap events from the main thread to the GL thread.
 	 */
-	public static native void doubletap(int x, int y);
+	public static native void doubleTap(int buttonMask, int x, int y);
 
 	/**
 	 * Forward scroll events from the main thread to the GL thread.
@@ -160,14 +162,14 @@ public class GodotLib {
 	public static native void joyconnectionchanged(int p_device, boolean p_connected, String p_name);
 
 	/**
-	 * Invoked when the Android activity resumes.
-	 * @see Activity#onResume()
+	 * Invoked when the Android app resumes.
+	 * @see androidx.fragment.app.Fragment#onResume()
 	 */
 	public static native void focusin();
 
 	/**
-	 * Invoked when the Android activity pauses.
-	 * @see Activity#onPause()
+	 * Invoked when the Android app pauses.
+	 * @see androidx.fragment.app.Fragment#onPause()
 	 */
 	public static native void focusout();
 

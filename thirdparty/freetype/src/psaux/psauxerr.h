@@ -26,7 +26,7 @@
 #ifndef PSAUXERR_H_
 #define PSAUXERR_H_
 
-#include FT_MODULE_ERRORS_H
+#include <freetype/ftmoderr.h>
 
 #undef FTERRORS_H_
 
@@ -34,7 +34,7 @@
 #define FT_ERR_PREFIX  PSaux_Err_
 #define FT_ERR_BASE    FT_Mod_Err_PSaux
 
-#include FT_ERRORS_H
+#include <freetype/fterrors.h>
 
 #endif /* PSAUXERR_H_ */
 

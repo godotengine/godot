@@ -18,8 +18,8 @@
 #ifndef SVTTGLYF_H_
 #define SVTTGLYF_H_
 
-#include FT_INTERNAL_SERVICE_H
-#include FT_TRUETYPE_TABLES_H
+#include <freetype/internal/ftserv.h>
+#include <freetype/tttables.h>
 
 
 FT_BEGIN_HEADER

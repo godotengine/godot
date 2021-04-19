@@ -21,7 +21,6 @@ def get_program_suffix():
 
 
 def can_build():
-
     if os.name != "posix":
         return False
 
@@ -33,19 +32,19 @@ def get_opts():
 
     return [
         BoolVariable("use_llvm", "Use the LLVM compiler", False),
-        BoolVariable("use_static_cpp", "Link libgcc and libstdc++ statically for better portability", False),
+        BoolVariable("use_static_cpp", "Link libgcc and libstdc++ statically for better portability", True),
         BoolVariable("use_ubsan", "Use LLVM/GCC compiler undefined behavior sanitizer (UBSAN)", False),
         BoolVariable("use_asan", "Use LLVM/GCC compiler address sanitizer (ASAN))", False),
         BoolVariable("use_lsan", "Use LLVM/GCC compiler leak sanitizer (LSAN))", False),
         BoolVariable("use_tsan", "Use LLVM/GCC compiler thread sanitizer (TSAN))", False),
-        EnumVariable("debug_symbols", "Add debugging symbols to release builds", "yes", ("yes", "no", "full")),
+        BoolVariable("debug_symbols", "Add debugging symbols to release/release_debug builds", True),
+        BoolVariable("use_msan", "Use LLVM/GCC compiler memory sanitizer (MSAN))", False),
         BoolVariable("separate_debug_symbols", "Create a separate file containing debugging symbols", False),
         BoolVariable("execinfo", "Use libexecinfo on systems where glibc is not available", False),
     ]
 
 
 def get_flags():
-
     return []
 
 
@@ -59,9 +58,7 @@ def configure(env):
         else:  # optimize for size
             env.Prepend(CCFLAGS=["-Os"])
 
-        if env["debug_symbols"] == "yes":
-            env.Prepend(CCFLAGS=["-g1"])
-        if env["debug_symbols"] == "full":
+        if env["debug_symbols"]:
             env.Prepend(CCFLAGS=["-g2"])
 
     elif env["target"] == "release_debug":
@@ -71,9 +68,7 @@ def configure(env):
             env.Prepend(CCFLAGS=["-Os"])
         env.Prepend(CPPDEFINES=["DEBUG_ENABLED"])
 
-        if env["debug_symbols"] == "yes":
-            env.Prepend(CCFLAGS=["-g1"])
-        if env["debug_symbols"] == "full":
+        if env["debug_symbols"]:
             env.Prepend(CCFLAGS=["-g2"])
 
     elif env["target"] == "debug":
@@ -97,11 +92,10 @@ def configure(env):
         if "clang++" not in os.path.basename(env["CXX"]):
             env["CC"] = "clang"
             env["CXX"] = "clang++"
-            env["LINK"] = "clang++"
-        env.Append(CPPDEFINES=["TYPED_METHOD_BIND"])
         env.extra_suffix = ".llvm" + env.extra_suffix
+        env.Append(LIBS=["atomic"])
 
-    if env["use_ubsan"] or env["use_asan"] or env["use_lsan"] or env["use_tsan"]:
+    if env["use_ubsan"] or env["use_asan"] or env["use_lsan"] or env["use_tsan"] or env["use_msan"]:
         env.extra_suffix += "s"
 
         if env["use_ubsan"]:
@@ -119,6 +113,10 @@ def configure(env):
         if env["use_tsan"]:
             env.Append(CCFLAGS=["-fsanitize=thread"])
             env.Append(LINKFLAGS=["-fsanitize=thread"])
+
+        if env["use_msan"]:
+            env.Append(CCFLAGS=["-fsanitize=memory"])
+            env.Append(LINKFLAGS=["-fsanitize=memory"])
 
     if env["use_lto"]:
         env.Append(CCFLAGS=["-flto"])

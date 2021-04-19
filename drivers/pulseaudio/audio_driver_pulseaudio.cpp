@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -236,6 +236,14 @@ Error AudioDriverPulseAudio::init_device() {
 }
 
 Error AudioDriverPulseAudio::init() {
+#ifdef DEBUG_ENABLED
+	int dylibloader_verbose = 1;
+#else
+	int dylibloader_verbose = 0;
+#endif
+	if (initialize_pulse(dylibloader_verbose)) {
+		return ERR_CANT_OPEN;
+	}
 
 	active = false;
 	thread_exited = false;
@@ -291,8 +299,7 @@ Error AudioDriverPulseAudio::init() {
 
 	Error err = init_device();
 	if (err == OK) {
-		mutex = Mutex::create();
-		thread = Thread::create(AudioDriverPulseAudio::thread_func, this);
+		thread.start(AudioDriverPulseAudio::thread_func, this);
 	}
 
 	return OK;
@@ -597,16 +604,12 @@ void AudioDriverPulseAudio::set_device(String device) {
 
 void AudioDriverPulseAudio::lock() {
 
-	if (!thread || !mutex)
-		return;
-	mutex->lock();
+	mutex.lock();
 }
 
 void AudioDriverPulseAudio::unlock() {
 
-	if (!thread || !mutex)
-		return;
-	mutex->unlock();
+	mutex.unlock();
 }
 
 void AudioDriverPulseAudio::finish_device() {
@@ -620,11 +623,11 @@ void AudioDriverPulseAudio::finish_device() {
 
 void AudioDriverPulseAudio::finish() {
 
-	if (!thread)
+	if (!thread.is_started())
 		return;
 
 	exit_thread = true;
-	Thread::wait_to_finish(thread);
+	thread.wait_to_finish();
 
 	finish_device();
 
@@ -638,14 +641,6 @@ void AudioDriverPulseAudio::finish() {
 		pa_mainloop_free(pa_ml);
 		pa_ml = NULL;
 	}
-
-	memdelete(thread);
-	if (mutex) {
-		memdelete(mutex);
-		mutex = NULL;
-	}
-
-	thread = NULL;
 }
 
 Error AudioDriverPulseAudio::capture_init_device() {
@@ -799,8 +794,6 @@ String AudioDriverPulseAudio::capture_get_device() {
 }
 
 AudioDriverPulseAudio::AudioDriverPulseAudio() :
-		thread(NULL),
-		mutex(NULL),
 		pa_ml(NULL),
 		pa_ctx(NULL),
 		pa_str(NULL),

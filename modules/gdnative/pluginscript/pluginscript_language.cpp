@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -400,39 +400,15 @@ void PluginScriptLanguage::reload_tool_script(const Ref<Script> &p_script, bool 
 }
 
 void PluginScriptLanguage::lock() {
-#ifndef NO_THREADS
-	if (_lock) {
-		_lock->lock();
-	}
-#endif
+	_lock.lock();
 }
 
 void PluginScriptLanguage::unlock() {
-#ifndef NO_THREADS
-	if (_lock) {
-		_lock->unlock();
-	}
-#endif
+	_lock.unlock();
 }
 
 PluginScriptLanguage::PluginScriptLanguage(const godot_pluginscript_language_desc *desc) :
 		_desc(*desc) {
 	_resource_loader = Ref<ResourceFormatLoaderPluginScript>(memnew(ResourceFormatLoaderPluginScript(this)));
 	_resource_saver = Ref<ResourceFormatSaverPluginScript>(memnew(ResourceFormatSaverPluginScript(this)));
-
-// TODO: totally remove _lock attribute if NO_THREADS is set
-#ifdef NO_THREADS
-	_lock = NULL;
-#else
-	_lock = Mutex::create();
-#endif
-}
-
-PluginScriptLanguage::~PluginScriptLanguage() {
-#ifndef NO_THREADS
-	if (_lock) {
-		memdelete(_lock);
-		_lock = NULL;
-	}
-#endif
 }

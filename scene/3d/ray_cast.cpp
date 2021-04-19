@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -153,11 +153,13 @@ void RayCast::_notification(int p_what) {
 
 			if (enabled && !Engine::get_singleton()->is_editor_hint()) {
 				set_physics_process_internal(true);
-
-				if (get_tree()->is_debugging_collisions_hint())
-					_update_debug_shape();
-			} else
+			} else {
 				set_physics_process_internal(false);
+			}
+
+			if (get_tree()->is_debugging_collisions_hint()) {
+				_update_debug_shape();
+			}
 
 			if (Object::cast_to<CollisionObject>(get_parent())) {
 				if (exclude_parent_body)
@@ -359,23 +361,32 @@ void RayCast::_update_debug_shape() {
 		_create_debug_shape();
 
 	MeshInstance *mi = static_cast<MeshInstance *>(debug_shape);
-	if (!mi->get_mesh().is_valid())
-		return;
-
 	Ref<ArrayMesh> mesh = mi->get_mesh();
-	if (mesh->get_surface_count() > 0)
-		mesh->surface_remove(0);
-
-	Array a;
-	a.resize(Mesh::ARRAY_MAX);
+	if (!mesh.is_valid())
+		return;
 
 	Vector<Vector3> verts;
 	verts.push_back(Vector3());
 	verts.push_back(cast_to);
-	a[Mesh::ARRAY_VERTEX] = verts;
 
-	mesh->add_surface_from_arrays(Mesh::PRIMITIVE_LINES, a);
-	mesh->surface_set_material(0, debug_material);
+	if (mesh->get_surface_count() == 0) {
+		Array a;
+		a.resize(Mesh::ARRAY_MAX);
+		a[Mesh::ARRAY_VERTEX] = verts;
+
+		uint32_t flags = Mesh::ARRAY_FLAG_USE_DYNAMIC_UPDATE;
+
+		mesh->add_surface_from_arrays(Mesh::PRIMITIVE_LINES, a, Array(), flags);
+		mesh->surface_set_material(0, debug_material);
+	} else {
+		PoolByteArray byte_array;
+		int array_size = sizeof(Vector3) * verts.size();
+		byte_array.resize(array_size);
+		PoolByteArray::Write w = byte_array.write();
+		copymem(w.ptr(), verts.ptr(), array_size);
+
+		VS::get_singleton()->mesh_surface_update_region(mesh->get_rid(), 0, 0, byte_array);
+	}
 }
 
 void RayCast::_clear_debug_shape() {

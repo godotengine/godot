@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,14 +32,10 @@
 
 #ifdef UNIX_ENABLED
 
-#include "core/os/thread_dummy.h"
 #include "core/project_settings.h"
 #include "drivers/unix/dir_access_unix.h"
 #include "drivers/unix/file_access_unix.h"
-#include "drivers/unix/mutex_posix.h"
 #include "drivers/unix/net_socket_posix.h"
-#include "drivers/unix/rw_lock_posix.h"
-#include "drivers/unix/semaphore_posix.h"
 #include "drivers/unix/thread_posix.h"
 #include "servers/visual_server.h"
 
@@ -48,7 +44,7 @@
 #include <mach/mach_time.h>
 #endif
 
-#if defined(__FreeBSD__) || defined(__OpenBSD__)
+#if defined(__FreeBSD__) || defined(__OpenBSD__) || defined(__NetBSD__)
 #include <sys/param.h>
 #include <sys/sysctl.h>
 #endif
@@ -64,6 +60,7 @@
 #include <string.h>
 #include <sys/time.h>
 #include <sys/wait.h>
+#include <time.h>
 #include <unistd.h>
 
 /// Clock Setup function (used by get_ticks_usec)
@@ -120,23 +117,13 @@ int OS_Unix::unix_initialize_audio(int p_audio_driver) {
 
 void OS_Unix::initialize_core() {
 
-#ifdef NO_THREADS
-	ThreadDummy::make_default();
-	SemaphoreDummy::make_default();
-	MutexDummy::make_default();
-	RWLockDummy::make_default();
-#else
-	ThreadPosix::make_default();
-#if !defined(OSX_ENABLED) && !defined(IPHONE_ENABLED)
-	SemaphorePosix::make_default();
+#if !defined(NO_THREADS)
+	init_thread_posix();
 #endif
-	MutexPosix::make_default();
-	RWLockPosix::make_default();
-#endif
+
 	FileAccess::make_default<FileAccessUnix>(FileAccess::ACCESS_RESOURCES);
 	FileAccess::make_default<FileAccessUnix>(FileAccess::ACCESS_USERDATA);
 	FileAccess::make_default<FileAccessUnix>(FileAccess::ACCESS_FILESYSTEM);
-	//FileAccessBufferedFA<FileAccessUnix>::make_default();
 	DirAccess::make_default<DirAccessUnix>(DirAccess::ACCESS_RESOURCES);
 	DirAccess::make_default<DirAccessUnix>(DirAccess::ACCESS_USERDATA);
 	DirAccess::make_default<DirAccessUnix>(DirAccess::ACCESS_FILESYSTEM);
@@ -156,7 +143,7 @@ void OS_Unix::finalize_core() {
 
 void OS_Unix::alert(const String &p_alert, const String &p_title) {
 
-	fprintf(stderr, "ERROR: %s\n", p_alert.utf8().get_data());
+	fprintf(stderr, "ALERT: %s: %s\n", p_title.utf8().get_data(), p_alert.utf8().get_data());
 }
 
 String OS_Unix::get_stdin_string(bool p_block) {
@@ -258,9 +245,11 @@ OS::TimeZoneInfo OS_Unix::get_time_zone_info() const {
 }
 
 void OS_Unix::delay_usec(uint32_t p_usec) const {
-
-	struct timespec rem = { static_cast<time_t>(p_usec / 1000000), (static_cast<long>(p_usec) % 1000000) * 1000 };
-	while (nanosleep(&rem, &rem) == EINTR) {
+	struct timespec requested = { static_cast<time_t>(p_usec / 1000000), (static_cast<long>(p_usec) % 1000000) * 1000 };
+	struct timespec remaining;
+	while (nanosleep(&requested, &remaining) == -1 && errno == EINTR) {
+		requested.tv_sec = remaining.tv_sec;
+		requested.tv_nsec = remaining.tv_nsec;
 	}
 }
 uint64_t OS_Unix::get_ticks_usec() const {
@@ -357,7 +346,7 @@ Error OS_Unix::execute(const String &p_path, const List<String> &p_arguments, bo
 		int status;
 		waitpid(pid, &status, 0);
 		if (r_exitcode)
-			*r_exitcode = WEXITSTATUS(status);
+			*r_exitcode = WIFEXITED(status) ? WEXITSTATUS(status) : status;
 
 	} else {
 
@@ -509,7 +498,7 @@ String OS_Unix::get_executable_path() const {
 		return OS::get_executable_path();
 	}
 	return b;
-#elif defined(__OpenBSD__)
+#elif defined(__OpenBSD__) || defined(__NetBSD__)
 	char resolved_path[MAXPATHLEN];
 
 	realpath(OS::get_executable_path().utf8().get_data(), resolved_path);

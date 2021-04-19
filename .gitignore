@@ -21,6 +21,7 @@ project.properties
 platform/android/java/app/libs/*
 platform/android/java/libs/*
 platform/android/java/lib/.cxx/
+platform/android/java/nativeSrcsConfigs/.cxx/
 
 # General c++ generated files
 *.lib
@@ -264,8 +265,11 @@ __pycache__/
 # KDE
 .directory
 
-#Kdevelop project files
+# Kdevelop project files
 *.kdev4
+
+# Kate swap files
+*.kate-swp
 
 # Xcode
 xcuserdata/
@@ -363,3 +367,4 @@ compile_commands.json
 
 # https://clangd.llvm.org/ cache folder
 .clangd/
+.cache/

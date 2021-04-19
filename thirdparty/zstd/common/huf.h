@@ -1,35 +1,15 @@
 /* ******************************************************************
-   huff0 huffman codec,
-   part of Finite State Entropy library
-   Copyright (C) 2013-present, Yann Collet.
-
-   BSD 2-Clause License (http://www.opensource.org/licenses/bsd-license.php)
-
-   Redistribution and use in source and binary forms, with or without
-   modification, are permitted provided that the following conditions are
-   met:
-
-       * Redistributions of source code must retain the above copyright
-   notice, this list of conditions and the following disclaimer.
-       * Redistributions in binary form must reproduce the above
-   copyright notice, this list of conditions and the following disclaimer
-   in the documentation and/or other materials provided with the
-   distribution.
-
-   THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-   "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-   LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-   A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-   OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-   SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-   LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-   DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-   THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-   (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-   OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-   You can contact the author at :
-   - Source repository : https://github.com/Cyan4973/FiniteStateEntropy
+ * huff0 huffman codec,
+ * part of Finite State Entropy library
+ * Copyright (c) 2013-2020, Yann Collet, Facebook, Inc.
+ *
+ * You can contact the author at :
+ * - Source repository : https://github.com/Cyan4973/FiniteStateEntropy
+ *
+ * This source code is licensed under both the BSD-style license (found in the
+ * LICENSE file in the root directory of this source tree) and the GPLv2 (found
+ * in the COPYING file in the root directory of this source tree).
+ * You may select, at your option, one of the above-listed licenses.
 ****************************************************************** */
 
 #if defined (__cplusplus)
@@ -40,7 +20,7 @@ extern "C" {
 #define HUF_H_298734234
 
 /* *** Dependencies *** */
-#include <stddef.h>    /* size_t */
+#include "zstd_deps.h"    /* size_t */
 
 
 /* *** library symbols visibility *** */
@@ -110,7 +90,7 @@ HUF_PUBLIC_API size_t HUF_compress2 (void* dst, size_t dstCapacity,
 /** HUF_compress4X_wksp() :
  *  Same as HUF_compress2(), but uses externally allocated `workSpace`.
  * `workspace` must have minimum alignment of 4, and be at least as large as HUF_WORKSPACE_SIZE */
-#define HUF_WORKSPACE_SIZE (6 << 10)
+#define HUF_WORKSPACE_SIZE ((6 << 10) + 256)
 #define HUF_WORKSPACE_SIZE_U32 (HUF_WORKSPACE_SIZE / sizeof(U32))
 HUF_PUBLIC_API size_t HUF_compress4X_wksp (void* dst, size_t dstCapacity,
                                      const void* src, size_t srcSize,
@@ -131,6 +111,8 @@ HUF_PUBLIC_API size_t HUF_compress4X_wksp (void* dst, size_t dstCapacity,
 
 /* *** Dependencies *** */
 #include "mem.h"   /* U32 */
+#define FSE_STATIC_LINKING_ONLY
+#include "fse.h"
 
 
 /* *** Constants *** */
@@ -153,12 +135,16 @@ HUF_PUBLIC_API size_t HUF_compress4X_wksp (void* dst, size_t dstCapacity,
 #define HUF_COMPRESSBOUND(size) (HUF_CTABLEBOUND + HUF_BLOCKBOUND(size))   /* Macro version, useful for static allocation */
 
 /* static allocation of HUF's Compression Table */
+/* this is a private definition, just exposed for allocation and strict aliasing purpose. never EVER access its members directly */
+struct HUF_CElt_s {
+  U16  val;
+  BYTE nbBits;
+};   /* typedef'd to HUF_CElt */
+typedef struct HUF_CElt_s HUF_CElt;   /* consider it an incomplete type */
 #define HUF_CTABLE_SIZE_U32(maxSymbolValue)   ((maxSymbolValue)+1)   /* Use tables of U32, for proper alignment */
 #define HUF_CTABLE_SIZE(maxSymbolValue)       (HUF_CTABLE_SIZE_U32(maxSymbolValue) * sizeof(U32))
 #define HUF_CREATE_STATIC_CTABLE(name, maxSymbolValue) \
-    U32 name##hb[HUF_CTABLE_SIZE_U32(maxSymbolValue)]; \
-    void* name##hv = &(name##hb); \
-    HUF_CElt* name = (HUF_CElt*)(name##hv)   /* no final ; */
+    HUF_CElt name[HUF_CTABLE_SIZE_U32(maxSymbolValue)] /* no final ; */
 
 /* static allocation of HUF's DTable */
 typedef U32 HUF_DTable;
@@ -204,10 +190,11 @@ size_t HUF_decompress4X2_DCtx_wksp(HUF_DTable* dctx, void* dst, size_t dstSize, 
  *  or to save and regenerate 'CTable' using external methods.
  */
 unsigned HUF_optimalTableLog(unsigned maxTableLog, size_t srcSize, unsigned maxSymbolValue);
-typedef struct HUF_CElt_s HUF_CElt;   /* incomplete type */
 size_t HUF_buildCTable (HUF_CElt* CTable, const unsigned* count, unsigned maxSymbolValue, unsigned maxNbBits);   /* @return : maxNbBits; CTable and count can overlap. In which case, CTable will overwrite count content */
 size_t HUF_writeCTable (void* dst, size_t maxDstSize, const HUF_CElt* CTable, unsigned maxSymbolValue, unsigned huffLog);
 size_t HUF_compress4X_usingCTable(void* dst, size_t dstSize, const void* src, size_t srcSize, const HUF_CElt* CTable);
+size_t HUF_estimateCompressedSize(const HUF_CElt* CTable, const unsigned* count, unsigned maxSymbolValue);
+int HUF_validateCTable(const HUF_CElt* CTable, const unsigned* count, unsigned maxSymbolValue);
 
 typedef enum {
    HUF_repeat_none,  /**< Cannot use the previous table */
@@ -244,9 +231,22 @@ size_t HUF_readStats(BYTE* huffWeight, size_t hwSize,
                      U32* rankStats, U32* nbSymbolsPtr, U32* tableLogPtr,
                      const void* src, size_t srcSize);
 
+/*! HUF_readStats_wksp() :
+ * Same as HUF_readStats() but takes an external workspace which must be
+ * 4-byte aligned and its size must be >= HUF_READ_STATS_WORKSPACE_SIZE.
+ * If the CPU has BMI2 support, pass bmi2=1, otherwise pass bmi2=0.
+ */
+#define HUF_READ_STATS_WORKSPACE_SIZE_U32 FSE_DECOMPRESS_WKSP_SIZE_U32(6, HUF_TABLELOG_MAX-1)
+#define HUF_READ_STATS_WORKSPACE_SIZE (HUF_READ_STATS_WORKSPACE_SIZE_U32 * sizeof(unsigned))
+size_t HUF_readStats_wksp(BYTE* huffWeight, size_t hwSize,
+                          U32* rankStats, U32* nbSymbolsPtr, U32* tableLogPtr,
+                          const void* src, size_t srcSize,
+                          void* workspace, size_t wkspSize,
+                          int bmi2);
+
 /** HUF_readCTable() :
  *  Loading a CTable saved with HUF_writeCTable() */
-size_t HUF_readCTable (HUF_CElt* CTable, unsigned* maxSymbolValuePtr, const void* src, size_t srcSize);
+size_t HUF_readCTable (HUF_CElt* CTable, unsigned* maxSymbolValuePtr, const void* src, size_t srcSize, unsigned *hasZeroWeights);
 
 /** HUF_getNbBits() :
  *  Read nbBits from CTable symbolTable, for symbol `symbolValue` presumed <= HUF_SYMBOLVALUE_MAX
@@ -350,6 +350,9 @@ size_t HUF_decompress1X1_DCtx_wksp_bmi2(HUF_DTable* dctx, void* dst, size_t dstS
 #endif
 size_t HUF_decompress4X_usingDTable_bmi2(void* dst, size_t maxDstSize, const void* cSrc, size_t cSrcSize, const HUF_DTable* DTable, int bmi2);
 size_t HUF_decompress4X_hufOnly_wksp_bmi2(HUF_DTable* dctx, void* dst, size_t dstSize, const void* cSrc, size_t cSrcSize, void* workSpace, size_t wkspSize, int bmi2);
+#ifndef HUF_FORCE_DECOMPRESS_X2
+size_t HUF_readDTableX1_wksp_bmi2(HUF_DTable* DTable, const void* src, size_t srcSize, void* workSpace, size_t wkspSize, int bmi2);
+#endif
 
 #endif /* HUF_STATIC_LINKING_ONLY */
 

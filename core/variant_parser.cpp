@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -712,6 +712,8 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 				return ERR_PARSE_ERROR;
 			}
 
+			REF ref = REF(Object::cast_to<Reference>(obj));
+
 			get_token(p_stream, token, line, r_err_str);
 			if (token.type != TK_COMMA) {
 				r_err_str = "Expected ',' after object type";
@@ -737,12 +739,7 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 						return err;
 
 					if (token2.type == TK_PARENTHESIS_CLOSE) {
-						Reference *reference = Object::cast_to<Reference>(obj);
-						if (reference) {
-							value = REF(reference);
-						} else {
-							value = obj;
-						}
+						value = ref.is_valid() ? Variant(ref) : Variant(obj);
 						return OK;
 					}
 
@@ -1750,11 +1747,14 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 				write(E->get(), p_store_string_func, p_store_string_ud, p_encode_res_func, p_encode_res_ud);
 				p_store_string_func(p_store_string_ud, ": ");
 				write(dict[E->get()], p_store_string_func, p_store_string_ud, p_encode_res_func, p_encode_res_ud);
-				if (E->next())
+				if (E->next()) {
 					p_store_string_func(p_store_string_ud, ",\n");
+				} else {
+					p_store_string_func(p_store_string_ud, "\n");
+				}
 			}
 
-			p_store_string_func(p_store_string_ud, "\n}");
+			p_store_string_func(p_store_string_ud, "}");
 
 		} break;
 		case Variant::ARRAY: {

@@ -12,8 +12,9 @@
 		[b]Note:[/b] Unless otherwise specified, all methods that have angle parameters must have angles specified as [i]radians[/i]. To convert degrees to radians, use [method @GDScript.deg2rad].
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/latest/tutorials/2d/2d_transforms.html</link>
-		<link>https://docs.godotengine.org/en/latest/tutorials/2d/custom_drawing_in_2d.html</link>
+		<link title="Viewport and canvas transforms">https://docs.godotengine.org/en/3.2/tutorials/2d/2d_transforms.html</link>
+		<link title="Custom drawing in 2D">https://docs.godotengine.org/en/3.2/tutorials/2d/custom_drawing_in_2d.html</link>
+		<link title="Audio Spectrum Demo">https://godotengine.org/asset-library/asset/528</link>
 	</tutorials>
 	<methods>
 		<method name="_draw" qualifiers="virtual">
@@ -593,7 +594,7 @@
 		</signal>
 		<signal name="item_rect_changed">
 			<description>
-				Emitted when the item rect has changed.
+				Emitted when the item's [Rect2] boundaries (position or size) have changed, or when an action is taking place that may have impacted these boundaries (e.g. changing [member Sprite.texture]).
 			</description>
 		</signal>
 		<signal name="visibility_changed">

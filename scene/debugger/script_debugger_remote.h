@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -75,7 +75,7 @@ class ScriptDebuggerRemote : public ScriptDebugger {
 	uint64_t last_net_bandwidth_time;
 	Object *performance;
 	bool requested_quit;
-	Mutex *mutex;
+	Mutex mutex;
 
 	struct OutputError {
 
@@ -113,6 +113,8 @@ class ScriptDebuggerRemote : public ScriptDebugger {
 	int warn_count;
 	uint64_t last_msec;
 	uint64_t msec_count;
+
+	OS::ProcessID allow_focus_steal_pid;
 
 	bool locking; //hack to avoid a deadloop
 	static void _print_handler(void *p_this, const String &p_string, bool p_error);
@@ -198,6 +200,7 @@ public:
 	virtual void set_skip_breakpoints(bool p_skip_breakpoints);
 
 	void set_scene_tree(SceneTree *p_scene_tree) { scene_tree = p_scene_tree; };
+	void set_allow_focus_steal_pid(OS::ProcessID p_pid);
 
 	ScriptDebuggerRemote();
 	~ScriptDebuggerRemote();

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -71,7 +71,7 @@ Size2 EditorProperty::get_minimum_size() const {
 	}
 
 	if (bottom_editor != NULL && bottom_editor->is_visible()) {
-		ms.height += get_constant("vseparation", "Tree");
+		ms.height += get_constant("vseparation");
 		Size2 bems = bottom_editor->get_combined_minimum_size();
 		//bems.width += get_constant("item_margin", "Tree");
 		ms.height += bems.height;
@@ -135,7 +135,7 @@ void EditorProperty::_notification(int p_what) {
 
 				int m = 0; //get_constant("item_margin", "Tree");
 
-				bottom_rect = Rect2(m, rect.size.height + get_constant("vseparation", "Tree"), size.width - m, bottom_editor->get_combined_minimum_size().height);
+				bottom_rect = Rect2(m, rect.size.height + get_constant("vseparation"), size.width - m, bottom_editor->get_combined_minimum_size().height);
 			}
 
 			if (keying) {
@@ -189,10 +189,14 @@ void EditorProperty::_notification(int p_what) {
 			size.height = label_reference->get_size().height;
 		}
 
+		Ref<StyleBox> sb;
 		if (selected) {
-			Ref<StyleBox> sb = get_stylebox("selected", "Tree");
-			draw_style_box(sb, Rect2(Vector2(), size));
+			sb = get_stylebox("bg_selected");
+		} else {
+			sb = get_stylebox("bg");
 		}
+
+		draw_style_box(sb, Rect2(Vector2(), size));
 
 		if (draw_top_bg && right_child_rect != Rect2()) {
 			draw_rect(right_child_rect, dark_color);
@@ -203,15 +207,15 @@ void EditorProperty::_notification(int p_what) {
 
 		Color color;
 		if (draw_red) {
-			color = get_color("error_color", "Editor");
+			color = get_color("error_color");
 		} else {
-			color = get_color("property_color", "Editor");
+			color = get_color("property_color");
 		}
 		if (label.find(".") != -1) {
 			color.a = 0.5; //this should be un-hacked honestly, as it's used for editor overrides
 		}
 
-		int ofs = 0;
+		int ofs = get_constant("font_offset");
 		int text_limit = text_size;
 
 		if (checkable) {
@@ -318,17 +322,16 @@ bool EditorPropertyRevert::may_node_be_in_instance(Node *p_node) {
 	Node *node = p_node;
 
 	while (node) {
-
-		if (node->get_scene_instance_state().is_valid()) {
-			might_be = true;
-			break;
-		}
 		if (node == edited_scene) {
 			if (node->get_scene_inherited_state().is_valid()) {
 				might_be = true;
 				break;
 			}
 			might_be = false;
+			break;
+		}
+		if (node->get_scene_instance_state().is_valid()) {
+			might_be = true;
 			break;
 		}
 		node = node->get_owner();
@@ -379,9 +382,9 @@ bool EditorPropertyRevert::get_instanced_node_original_property(Node *p_node, co
 		node = node->get_owner();
 	}
 
-	if (!found && node) {
+	if (!found && p_node) {
 		//if not found, try default class value
-		Variant attempt = ClassDB::class_get_default_property_value(node->get_class_name(), p_prop);
+		Variant attempt = ClassDB::class_get_default_property_value(p_node->get_class_name(), p_prop);
 		if (attempt.get_type() != Variant::NIL) {
 			found = true;
 			value = attempt;
@@ -1973,17 +1976,30 @@ int EditorInspector::get_scroll_offset() const {
 	return get_v_scroll();
 }
 
+void EditorInspector::_update_inspector_bg() {
+	if (sub_inspector) {
+		int count_subinspectors = 0;
+		Node *n = get_parent();
+		while (n) {
+			EditorInspector *ei = Object::cast_to<EditorInspector>(n);
+			if (ei && ei->sub_inspector) {
+				count_subinspectors++;
+			}
+			n = n->get_parent();
+		}
+		count_subinspectors = MIN(15, count_subinspectors);
+		add_style_override("bg", get_stylebox("sub_inspector_bg" + itos(count_subinspectors), "Editor"));
+	} else {
+		add_style_override("bg", get_stylebox("bg", "Tree"));
+	}
+}
 void EditorInspector::set_sub_inspector(bool p_enable) {
 
 	sub_inspector = p_enable;
 	if (!is_inside_tree())
 		return;
 
-	if (sub_inspector) {
-		add_style_override("bg", get_stylebox("sub_inspector_bg", "Editor"));
-	} else {
-		add_style_override("bg", get_stylebox("bg", "Tree"));
-	}
+	_update_inspector_bg();
 }
 
 void EditorInspector::_edit_request_change(Object *p_object, const String &p_property) {
@@ -2204,10 +2220,8 @@ void EditorInspector::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_ENTER_TREE) {
 
-		if (sub_inspector) {
-			add_style_override("bg", get_stylebox("sub_inspector_bg", "Editor"));
-		} else {
-			add_style_override("bg", get_stylebox("bg", "Tree"));
+		_update_inspector_bg();
+		if (!sub_inspector) {
 			get_tree()->connect("node_removed", this, "_node_removed");
 		}
 	}
@@ -2267,11 +2281,7 @@ void EditorInspector::_notification(int p_what) {
 
 	if (p_what == EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED) {
 
-		if (sub_inspector) {
-			add_style_override("bg", get_stylebox("sub_inspector_bg", "Editor"));
-		} else if (is_inside_tree()) {
-			add_style_override("bg", get_stylebox("bg", "Tree"));
-		}
+		_update_inspector_bg();
 
 		update_tree();
 	}

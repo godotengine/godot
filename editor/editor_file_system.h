@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,8 +34,10 @@
 #include "core/os/dir_access.h"
 #include "core/os/thread.h"
 #include "core/os/thread_safe.h"
+#include "core/safe_refcount.h"
 #include "core/set.h"
 #include "scene/main/node.h"
+
 class FileAccess;
 
 struct EditorProgressBG;
@@ -136,7 +138,7 @@ class EditorFileSystem : public Node {
 	};
 
 	bool use_threads;
-	Thread *thread;
+	Thread thread;
 	static void _thread_func(void *_userdata);
 
 	EditorFileSystemDirectory *new_filesystem;
@@ -200,7 +202,7 @@ class EditorFileSystem : public Node {
 
 	void _scan_new_dir(EditorFileSystemDirectory *p_dir, DirAccess *da, const ScanProgress &p_progress);
 
-	Thread *thread_sources;
+	Thread thread_sources;
 	bool scanning_changes;
 	bool scanning_changes_done;
 
@@ -231,7 +233,7 @@ class EditorFileSystem : public Node {
 	};
 
 	void _scan_script_classes(EditorFileSystemDirectory *p_dir);
-	volatile bool update_script_classes_queued;
+	SafeFlag update_script_classes_queued;
 	void _queue_update_script_classes();
 
 	String _get_global_script_class(const String &p_type, const String &p_path, String *r_extends, String *r_icon_path) const;
@@ -272,6 +274,8 @@ public:
 
 	bool is_group_file(const String &p_path) const;
 	void move_group_file(const String &p_path, const String &p_new_path);
+
+	static bool _should_skip_directory(const String &p_path);
 
 	EditorFileSystem();
 	~EditorFileSystem();

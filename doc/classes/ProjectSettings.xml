@@ -9,6 +9,9 @@
 		[b]Overriding:[/b] Any project setting can be overridden by creating a file named [code]override.cfg[/code] in the project's root directory. This can also be used in exported projects by placing this file in the same directory as the project binary.
 	</description>
 	<tutorials>
+		<link title="3D Physics Tests Demo">https://godotengine.org/asset-library/asset/675</link>
+		<link title="3D Platformer Demo">https://godotengine.org/asset-library/asset/125</link>
+		<link title="OS Test Demo">https://godotengine.org/asset-library/asset/677</link>
 	</tutorials>
 	<methods>
 		<method name="add_property_info">
@@ -73,7 +76,21 @@
 			<argument index="0" name="path" type="String">
 			</argument>
 			<description>
-				Converts a localized path ([code]res://[/code]) to a full native OS path.
+				Returns the absolute, native OS path corresponding to the localized [code]path[/code] (starting with [code]res://[/code] or [code]user://[/code]). The returned path will vary depending on the operating system and user preferences. See [url=https://docs.godotengine.org/en/latest/tutorials/io/data_paths.html]File paths in Godot projects[/url] to see what those paths convert to. See also [method localize_path].
+				[b]Note:[/b] [method globalize_path] with [code]res://[/code] will not work in an exported project. Instead, prepend the executable's base directory to the path when running from an exported project:
+				[codeblock]
+				var path = ""
+				if OS.has_feature("editor"):
+				    # Running from an editor binary.
+				    # `path` will contain the absolute path to `hello.txt` located in the project root.
+				    path = ProjectSettings.globalize_path("res://hello.txt")
+				else:
+				    # Running from an exported project.
+				    # `path` will contain the absolute path to `hello.txt` next to the executable.
+				    # This is *not* identical to using `ProjectSettings.globalize_path()` with a `res://` path,
+				    # but is close enough in spirit.
+				    path = OS.get_executable_path().get_base_dir().plus_file("hello.txt")
+				[/codeblock]
 			</description>
 		</method>
 		<method name="has_setting" qualifiers="const">
@@ -92,9 +109,12 @@
 			</argument>
 			<argument index="1" name="replace_files" type="bool" default="true">
 			</argument>
+			<argument index="2" name="offset" type="int" default="0">
+			</argument>
 			<description>
 				Loads the contents of the .pck or .zip file specified by [code]pack[/code] into the resource filesystem ([code]res://[/code]). Returns [code]true[/code] on success.
 				[b]Note:[/b] If a file from [code]pack[/code] shares the same path as a file already in the resource filesystem, any attempts to load that file will use the file from [code]pack[/code] unless [code]replace_files[/code] is set to [code]false[/code].
+				[b]Note:[/b] The optional [code]offset[/code] parameter can be used to specify the offset in bytes to the start of the resource pack. This is only supported for .pck files.
 			</description>
 		</method>
 		<method name="localize_path" qualifiers="const">
@@ -103,7 +123,7 @@
 			<argument index="0" name="path" type="String">
 			</argument>
 			<description>
-				Convert a path to a localized path ([code]res://[/code] path).
+				Returns the localized path (starting with [code]res://[/code]) corresponding to the absolute, native OS [code]path[/code]. See also [method globalize_path].
 			</description>
 		</method>
 		<method name="property_can_revert">
@@ -129,6 +149,7 @@
 			</return>
 			<description>
 				Saves the configuration to the [code]project.godot[/code] file.
+				[b]Note:[/b] This method is intended to be used by editor plugins, as modified [ProjectSettings] can't be loaded back in the running app. If you want to change project settings in exported projects, use [method save_custom] to save [code]override.cfg[/code] file.
 			</description>
 		</method>
 		<method name="save_custom">
@@ -137,7 +158,7 @@
 			<argument index="0" name="file" type="String">
 			</argument>
 			<description>
-				Saves the configuration to a custom file. The file extension must be [code].godot[/code] (to save in text-based [ConfigFile] format) or [code].binary[/code] (to save in binary format).
+				Saves the configuration to a custom file. The file extension must be [code].godot[/code] (to save in text-based [ConfigFile] format) or [code].binary[/code] (to save in binary format). You can also save [code]override.cfg[/code] file, which is also text, but can be used in exported projects unlike other formats.
 			</description>
 		</method>
 		<method name="set_initial_value">
@@ -210,7 +231,7 @@
 		</member>
 		<member name="application/config/name" type="String" setter="" getter="" default="&quot;&quot;">
 			The project's name. It is used both by the Project Manager and by exporters. The project name can be translated by translating its value in localization files. The window title will be set to match the project name automatically on startup.
-			[b]Note:[/b] Changing this value will also change the user data folder's path if [member application/config/use_custom_user_dir] is [code]false[/code]. After renaming the project, you will no longer be able to access existing data in [code]user://[/code] unless you rename the old folder to match the new project name. See [url=https://docs.godotengine.org/en/latest/tutorials/io/data_paths.html]Data paths[/url] in the documentation for more information.
+			[b]Note:[/b] Changing this value will also change the user data folder's path if [member application/config/use_custom_user_dir] is [code]false[/code]. After renaming the project, you will no longer be able to access existing data in [code]user://[/code] unless you rename the old folder to match the new project name. See [url=https://docs.godotengine.org/en/3.2/tutorials/io/data_paths.html]Data paths[/url] in the documentation for more information.
 		</member>
 		<member name="application/config/project_settings_override" type="String" setter="" getter="" default="&quot;&quot;">
 			Specifies a file to override project settings. For example: [code]user://custom_settings.cfg[/code].
@@ -227,6 +248,16 @@
 		</member>
 		<member name="application/run/disable_stdout" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], disables printing to standard output in an exported build.
+		</member>
+		<member name="application/run/flush_stdout_on_print" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], flushes the standard output stream every time a line is printed. This affects both terminal logging and file logging.
+			When running a project, this setting must be enabled if you want logs to be collected by service managers such as systemd/journalctl. This setting is disabled by default on release builds, since flushing on every printed line will negatively affect performance if lots of lines are printed in a rapid succession. Also, if this setting is enabled, logged files will still be written successfully if the application crashes or is otherwise killed by the user (without being closed "normally").
+			[b]Note:[/b] Regardless of this setting, the standard error stream ([code]stderr[/code]) is always flushed when a line is printed to it.
+			Changes to this setting will only be applied upon restarting the application.
+		</member>
+		<member name="application/run/flush_stdout_on_print.debug" type="bool" setter="" getter="" default="true">
+			Debug build override for [member application/run/flush_stdout_on_print], as performance is less important during debugging.
+			Changes to this setting will only be applied upon restarting the application.
 		</member>
 		<member name="application/run/frame_delay_msec" type="int" setter="" getter="" default="0">
 			Forces a delay between frames in the main loop (in milliseconds). This may be useful if you plan to disable vertical synchronization.
@@ -401,10 +432,13 @@
 		<member name="debug/shapes/collision/contact_color" type="Color" setter="" getter="" default="Color( 1, 0.2, 0.1, 0.8 )">
 			Color of the contact points between collision shapes, visible when "Visible Collision Shapes" is enabled in the Debug menu.
 		</member>
+		<member name="debug/shapes/collision/draw_2d_outlines" type="bool" setter="" getter="" default="true">
+			Sets whether 2D physics will display collision outlines in game when "Visible Collision Shapes" is enabled in the Debug menu.
+		</member>
 		<member name="debug/shapes/collision/max_contacts_displayed" type="int" setter="" getter="" default="10000">
 			Maximum number of contact points between collision shapes to display when "Visible Collision Shapes" is enabled in the Debug menu.
 		</member>
-		<member name="debug/shapes/collision/shape_color" type="Color" setter="" getter="" default="Color( 0, 0.6, 0.7, 0.5 )">
+		<member name="debug/shapes/collision/shape_color" type="Color" setter="" getter="" default="Color( 0, 0.6, 0.7, 0.42 )">
 			Color of the collision shapes, visible when "Visible Collision Shapes" is enabled in the Debug menu.
 		</member>
 		<member name="debug/shapes/navigation/disabled_geometry_color" type="Color" setter="" getter="" default="Color( 1, 0.7, 0.1, 0.4 )">
@@ -423,7 +457,7 @@
 			Position offset for tooltips, relative to the mouse cursor's hotspot.
 		</member>
 		<member name="display/window/dpi/allow_hidpi" type="bool" setter="" getter="" default="false">
-			If [code]true[/code], allows HiDPI display on Windows and macOS. This setting has no effect on desktop Linux, as DPI-awareness fallbacks are not supported there.
+			If [code]true[/code], allows HiDPI display on Windows, macOS, and the HTML5 platform. This setting has no effect on desktop Linux, as DPI-awareness fallbacks are not supported there.
 		</member>
 		<member name="display/window/energy_saving/keep_screen_on" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], keeps the screen on (even in case of inactivity), so the screensaver does not take over. Works on desktop and mobile platforms.
@@ -441,19 +475,24 @@
 			Sets the window background to transparent when it starts.
 		</member>
 		<member name="display/window/size/always_on_top" type="bool" setter="" getter="" default="false">
-			Force the window to be always on top.
+			Forces the main window to be always on top.
+			[b]Note:[/b] This setting is ignored on iOS, Android, and HTML5.
 		</member>
 		<member name="display/window/size/borderless" type="bool" setter="" getter="" default="false">
-			Force the window to be borderless.
+			Forces the main window to be borderless.
+			[b]Note:[/b] This setting is ignored on iOS, Android, and HTML5.
 		</member>
 		<member name="display/window/size/fullscreen" type="bool" setter="" getter="" default="false">
-			Sets the window to full screen when it starts.
+			Sets the main window to full screen when the project starts. Note that this is not [i]exclusive[/i] fullscreen. On Windows and Linux, a borderless window is used to emulate fullscreen. On macOS, a new desktop is used to display the running project.
+			Regardless of the platform, enabling fullscreen will change the window size to match the monitor's size. Therefore, make sure your project supports [url=https://docs.godotengine.org/en/latest/tutorials/rendering/multiple_resolutions.html]multiple resolutions[/url] when enabling fullscreen mode.
+			[b]Note:[/b] This setting is ignored on iOS, Android, and HTML5.
 		</member>
 		<member name="display/window/size/height" type="int" setter="" getter="" default="600">
 			Sets the game's main viewport height. On desktop platforms, this is the default window size. Stretch mode settings also use this as a reference when enabled.
 		</member>
 		<member name="display/window/size/resizable" type="bool" setter="" getter="" default="true">
 			Allows the window to be resizable by default.
+			[b]Note:[/b] This setting is ignored on iOS and Android.
 		</member>
 		<member name="display/window/size/test_height" type="int" setter="" getter="" default="0">
 			If greater than zero, overrides the window height when running the game. Useful for testing stretch modes.
@@ -475,7 +514,7 @@
 			[b]Note:[/b] This option is experimental and meant to alleviate stutter experienced by some users. However, some users have experienced a Vsync framerate halving (e.g. from 60 FPS to 30 FPS) when using it.
 		</member>
 		<member name="editor/script_templates_search_path" type="String" setter="" getter="" default="&quot;res://script_templates&quot;">
-			Search path for project-specific script templates. Script templates will be search both in the editor-specific path and in this project-specific path.
+			Search path for project-specific script templates. Godot will search for script templates both in the editor-specific path and in this project-specific path.
 		</member>
 		<member name="editor/search_in_file_extensions" type="PoolStringArray" setter="" getter="" default="PoolStringArray( &quot;gd&quot;, &quot;shader&quot; )">
 			Text-based file extensions to include in the script editor's "Find in Files" feature. You can add e.g. [code]tscn[/code] if you wish to also parse your scene files, especially if you use built-in scripts which are serialized in the scene files.
@@ -563,6 +602,9 @@
 		</member>
 		<member name="input_devices/pointing/emulate_touch_from_mouse" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], sends touch input events when clicking or dragging the mouse.
+		</member>
+		<member name="input_devices/pointing/ios/touch_delay" type="float" setter="" getter="" default="0.15">
+			Default delay for touch events. This only affects iOS devices.
 		</member>
 		<member name="layer_names/2d_physics/layer_1" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 2D physics layer 1.
@@ -814,6 +856,7 @@
 			If [code]true[/code], logs all output to files.
 		</member>
 		<member name="logging/file_logging/enable_file_logging.pc" type="bool" setter="" getter="" default="true">
+			Desktop override for [member logging/file_logging/enable_file_logging], as log files are not readily accessible on mobile/Web platforms.
 		</member>
 		<member name="logging/file_logging/log_path" type="String" setter="" getter="" default="&quot;user://logs/godot.log&quot;">
 			Path to logs within the project. Using an [code]user://[/code] path is recommended.
@@ -821,7 +864,9 @@
 		<member name="logging/file_logging/max_log_files" type="int" setter="" getter="" default="5">
 			Specifies the maximum amount of log files allowed (used for rotation).
 		</member>
-		<member name="memory/limits/message_queue/max_size_kb" type="int" setter="" getter="" default="1024">
+		<member name="memory/limits/command_queue/multithreading_queue_size_kb" type="int" setter="" getter="" default="256">
+		</member>
+		<member name="memory/limits/message_queue/max_size_kb" type="int" setter="" getter="" default="4096">
 			Godot uses a message queue to defer some function calls. If you run out of space on it (you will see an error), you can increase the size here.
 		</member>
 		<member name="memory/limits/multithreaded_server/rid_pool_prealloc" type="int" setter="" getter="" default="60">
@@ -840,7 +885,7 @@
 			Maximum number of warnings allowed to be sent as output from the debugger. Over this value, content is dropped. This helps not to stall the debugger connection.
 		</member>
 		<member name="network/limits/packet_peer_stream/max_buffer_po2" type="int" setter="" getter="" default="16">
-			Default size of packet peer stream for deserializing Godot data. Over this size, data is dropped.
+			Default size of packet peer stream for deserializing Godot data (in bytes, specified as a power of two). The default value [code]16[/code] is equal to 65,536 bytes. Over this size, data is dropped.
 		</member>
 		<member name="network/limits/tcp/connect_timeout_seconds" type="int" setter="" getter="" default="30">
 			Timeout (in seconds) for connection attempts using TCP.
@@ -896,6 +941,7 @@
 		</member>
 		<member name="physics/2d/default_angular_damp" type="float" setter="" getter="" default="1.0">
 			The default angular damp in 2D.
+			[b]Note:[/b] Good values are in the range [code]0[/code] to [code]1[/code]. At value [code]0[/code] objects will keep moving with the same velocity. Values greater than [code]1[/code] will aim to reduce the velocity to [code]0[/code] in less than a second e.g. a value of [code]2[/code] will aim to reduce the velocity to [code]0[/code] in half a second. A value equal to or greater than the physics frame rate ([member ProjectSettings.physics/common/physics_fps], [code]60[/code] by default) will bring the object to a stop in one iteration.
 		</member>
 		<member name="physics/2d/default_gravity" type="int" setter="" getter="" default="98">
 			The default gravity strength in 2D.
@@ -915,6 +961,7 @@
 		</member>
 		<member name="physics/2d/default_linear_damp" type="float" setter="" getter="" default="0.1">
 			The default linear damp in 2D.
+			[b]Note:[/b] Good values are in the range [code]0[/code] to [code]1[/code]. At value [code]0[/code] objects will keep moving with the same velocity. Values greater than [code]1[/code] will aim to reduce the velocity to [code]0[/code] in less than a second e.g. a value of [code]2[/code] will aim to reduce the velocity to [code]0[/code] in half a second. A value equal to or greater than the physics frame rate ([member ProjectSettings.physics/common/physics_fps], [code]60[/code] by default) will bring the object to a stop in one iteration.
 		</member>
 		<member name="physics/2d/large_object_surface_threshold_in_cells" type="int" setter="" getter="" default="512">
 			Threshold defining the surface size that constitutes a large object with regard to cells in the broad-phase 2D hash grid algorithm.
@@ -941,6 +988,7 @@
 		</member>
 		<member name="physics/3d/default_angular_damp" type="float" setter="" getter="" default="0.1">
 			The default angular damp in 3D.
+			[b]Note:[/b] Good values are in the range [code]0[/code] to [code]1[/code]. At value [code]0[/code] objects will keep moving with the same velocity. Values greater than [code]1[/code] will aim to reduce the velocity to [code]0[/code] in less than a second e.g. a value of [code]2[/code] will aim to reduce the velocity to [code]0[/code] in half a second. A value equal to or greater than the physics frame rate ([member ProjectSettings.physics/common/physics_fps], [code]60[/code] by default) will bring the object to a stop in one iteration.
 		</member>
 		<member name="physics/3d/default_gravity" type="float" setter="" getter="" default="9.8">
 			The default gravity strength in 3D.
@@ -960,6 +1008,10 @@
 		</member>
 		<member name="physics/3d/default_linear_damp" type="float" setter="" getter="" default="0.1">
 			The default linear damp in 3D.
+			[b]Note:[/b] Good values are in the range [code]0[/code] to [code]1[/code]. At value [code]0[/code] objects will keep moving with the same velocity. Values greater than [code]1[/code] will aim to reduce the velocity to [code]0[/code] in less than a second e.g. a value of [code]2[/code] will aim to reduce the velocity to [code]0[/code] in half a second. A value equal to or greater than the physics frame rate ([member ProjectSettings.physics/common/physics_fps], [code]60[/code] by default) will bring the object to a stop in one iteration.
+		</member>
+		<member name="physics/3d/godot_physics/use_bvh" type="bool" setter="" getter="" default="true">
+			Enables the use of bounding volume hierarchy instead of octree for physics spatial partitioning. This may give better performance.
 		</member>
 		<member name="physics/3d/physics_engine" type="String" setter="" getter="" default="&quot;DEFAULT&quot;">
 			Sets which physics engine to use for 3D physics.
@@ -968,6 +1020,12 @@
 		<member name="physics/common/enable_object_picking" type="bool" setter="" getter="" default="true">
 			Enables [member Viewport.physics_object_picking] on the root viewport.
 		</member>
+		<member name="physics/common/enable_pause_aware_picking" type="bool" setter="" getter="" default="false">
+			If enabled, 2D and 3D physics picking behaves this way in relation to pause:
+			- When pause is started, every collision object that is hovered or captured (3D only) is released from that condition, getting the relevant mouse-exit callback, unless its pause mode makes it immune to pause.
+			- During pause, picking only considers collision objects immune to pause, sending input events and enter/exit callbacks to them as expected.
+			If disabled, the legacy behavior is used, which consists in queuing the picking input events during pause (so nodes won't get them) and flushing that queue on resume, against the state of the 2D/3D world at that point.
+		</member>
 		<member name="physics/common/physics_fps" type="int" setter="" getter="" default="60">
 			The number of fixed iterations per second. This controls how often physics simulation and [method Node._physics_process] methods are run.
 			[b]Note:[/b] This property is only read when the project starts. To change the physics FPS at runtime, set [member Engine.iterations_per_second] instead.
@@ -975,6 +1033,24 @@
 		<member name="physics/common/physics_jitter_fix" type="float" setter="" getter="" default="0.5">
 			Fix to improve physics jitter, specially on monitors where refresh rate is different than the physics FPS.
 			[b]Note:[/b] This property is only read when the project starts. To change the physics FPS at runtime, set [member Engine.physics_jitter_fix] instead.
+		</member>
+		<member name="rendering/2d/options/ninepatch_mode" type="int" setter="" getter="" default="1">
+			Choose between fixed mode where corner scalings are preserved matching the artwork, and scaling mode.
+			Not available in GLES3 when [member rendering/batching/options/use_batching] is off.
+		</member>
+		<member name="rendering/2d/options/use_nvidia_rect_flicker_workaround" type="bool" setter="" getter="" default="false">
+			Some NVIDIA GPU drivers have a bug which produces flickering issues for the [code]draw_rect[/code] method, especially as used in [TileMap]. Refer to [url=https://github.com/godotengine/godot/issues/9913]GitHub issue 9913[/url] for details.
+			If [code]true[/code], this option enables a "safe" code path for such NVIDIA GPUs at the cost of performance. This option affects GLES2 and GLES3 rendering, but only on desktop platforms.
+		</member>
+		<member name="rendering/2d/options/use_software_skinning" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], performs 2D skinning on the CPU rather than the GPU. This provides greater compatibility with a wide range of hardware, and also may be faster in some circumstances.
+			Currently only available when [member rendering/batching/options/use_batching] is active.
+			[b]Note:[/b] Antialiased software skinned polys are not supported, and will be rendered without antialiasing.
+		</member>
+		<member name="rendering/2d/snapping/use_gpu_pixel_snap" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], forces snapping of vertices to pixels in 2D rendering. May help in some pixel art styles.
+			This snapping is performed on the GPU in the vertex shader.
+			Consider using the project setting [member rendering/batching/precision/uv_contract] to prevent artifacts.
 		</member>
 		<member name="rendering/batching/debug/diagnose_frame" type="bool" setter="" getter="" default="false">
 			When batching is on, this regularly prints a frame diagnosis log. Note that this will degrade performance.
@@ -992,12 +1068,10 @@
 			Enabling this setting uses the legacy method to draw batches containing only one rect. The legacy method is faster (approx twice as fast), but can cause flicker on some systems. In order to directly compare performance with the non-batching renderer you can set this to true, but it is recommended to turn this off unless you can guarantee your target hardware will work with this method.
 		</member>
 		<member name="rendering/batching/options/use_batching" type="bool" setter="" getter="" default="true">
-			Turns batching on and off. Batching increases performance by reducing the amount of graphics API drawcalls.
-			[b]Note:[/b] Currently only effective when using the GLES2 renderer.
+			Turns 2D batching on and off. Batching increases performance by reducing the amount of graphics API drawcalls.
 		</member>
 		<member name="rendering/batching/options/use_batching_in_editor" type="bool" setter="" getter="" default="true">
-			Switches on batching within the editor.
-			[b]Note:[/b] Currently only effective when using the GLES2 renderer.
+			Switches on 2D batching within the editor.
 		</member>
 		<member name="rendering/batching/parameters/batch_buffer_size" type="int" setter="" getter="" default="16384">
 			Size of buffer reserved for batched vertices. Larger size enables larger batches, but there are diminishing returns for the memory used. This should only have a minor effect on performance.
@@ -1018,6 +1092,18 @@
 		<member name="rendering/batching/precision/uv_contract_amount" type="int" setter="" getter="" default="100">
 			The amount of UV contraction. This figure is divided by 1000000, and is a proportion of the total texture dimensions, where the width and height are both ranged from 0.0 to 1.0.
 			Use the default unless correcting for a problem on particular hardware.
+		</member>
+		<member name="rendering/cpu_lightmapper/quality/high_quality_ray_count" type="int" setter="" getter="" default="512">
+			Amount of light samples taken when using [constant BakedLightmap.BAKE_QUALITY_HIGH].
+		</member>
+		<member name="rendering/cpu_lightmapper/quality/low_quality_ray_count" type="int" setter="" getter="" default="64">
+			Amount of light samples taken when using [constant BakedLightmap.BAKE_QUALITY_LOW].
+		</member>
+		<member name="rendering/cpu_lightmapper/quality/medium_quality_ray_count" type="int" setter="" getter="" default="256">
+			Amount of light samples taken when using [constant BakedLightmap.BAKE_QUALITY_MEDIUM].
+		</member>
+		<member name="rendering/cpu_lightmapper/quality/ultra_quality_ray_count" type="int" setter="" getter="" default="1024">
+			Amount of light samples taken when using [constant BakedLightmap.BAKE_QUALITY_ULTRA].
 		</member>
 		<member name="rendering/environment/default_clear_color" type="Color" setter="" getter="" default="Color( 0.3, 0.3, 0.3, 1 )">
 			Default background clear color. Overridable per [Viewport] using its [Environment]. See [member Environment.background_mode] and [member Environment.background_color] in particular. To change this default color programmatically, use [method VisualServer.set_default_clear_color].
@@ -1044,25 +1130,20 @@
 		<member name="rendering/limits/buffers/immediate_buffer_size_kb" type="int" setter="" getter="" default="2048">
 			Max buffer size for drawing immediate objects (ImmediateGeometry nodes). Nodes using more than this size will not work.
 		</member>
+		<member name="rendering/limits/rendering/max_lights_per_object" type="int" setter="" getter="" default="32">
+			Max number of lights renderable per object. This is further limited by hardware support. Most devices only support 409 lights, while many devices (especially mobile) only support 102. Setting this low will slightly reduce memory usage and may decrease shader compile times.
+		</member>
 		<member name="rendering/limits/rendering/max_renderable_elements" type="int" setter="" getter="" default="65536">
-			Max amount of elements renderable in a frame. If more than this are visible per frame, they will be dropped. Keep in mind elements refer to mesh surfaces and not meshes themselves.
+			Max amount of elements renderable in a frame. If more elements than this are visible per frame, they will not be drawn. Keep in mind elements refer to mesh surfaces and not meshes themselves. Setting this low will slightly reduce memory usage and may decrease shader compile times, particularly on web. For most uses, the default value is suitable, but consider lowering as much as possible on web export.
 		</member>
 		<member name="rendering/limits/rendering/max_renderable_lights" type="int" setter="" getter="" default="4096">
-			Max number of lights renderable in a frame. If more than this number are used, they will be ignored. On some systems (particularly web) setting this number as low as possible can increase the speed of shader compilation.
+			Max number of lights renderable in a frame. If more lights than this number are used, they will be ignored. Setting this low will slightly reduce memory usage and may decrease shader compile times, particularly on web. For most uses, the default value is suitable, but consider lowering as much as possible on web export.
 		</member>
 		<member name="rendering/limits/rendering/max_renderable_reflections" type="int" setter="" getter="" default="1024">
-			Max number of reflection probes renderable in a frame. If more than this number are used, they will be ignored. On some systems (particularly web) setting this number as low as possible can increase the speed of shader compilation.
+			Max number of reflection probes renderable in a frame. If more reflection probes than this number are used, they will be ignored. Setting this low will slightly reduce memory usage and may decrease shader compile times, particularly on web. For most uses, the default value is suitable, but consider lowering as much as possible on web export.
 		</member>
 		<member name="rendering/limits/time/time_rollover_secs" type="float" setter="" getter="" default="3600">
 			Shaders have a time variable that constantly increases. At some point, it needs to be rolled back to zero to avoid precision errors on shader animations. This setting specifies when (in seconds).
-		</member>
-		<member name="rendering/quality/2d/use_nvidia_rect_flicker_workaround" type="bool" setter="" getter="" default="false">
-			Some NVIDIA GPU drivers have a bug which produces flickering issues for the [code]draw_rect[/code] method, especially as used in [TileMap]. Refer to [url=https://github.com/godotengine/godot/issues/9913]GitHub issue 9913[/url] for details.
-			If [code]true[/code], this option enables a "safe" code path for such NVIDIA GPUs at the cost of performance. This option affects GLES2 and GLES3 rendering, but only on desktop platforms.
-		</member>
-		<member name="rendering/quality/2d/use_pixel_snap" type="bool" setter="" getter="" default="false">
-			If [code]true[/code], forces snapping of polygons to pixels in 2D rendering. May help in some pixel art styles.
-			Consider using the project setting [member rendering/batching/precision/uv_contract] to prevent artifacts.
 		</member>
 		<member name="rendering/quality/depth/hdr" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], allocates the main framebuffer with high dynamic range. High dynamic range allows the use of [Color] values greater than 1.
@@ -1098,6 +1179,13 @@
 			Sets the number of MSAA samples to use. MSAA is used to reduce aliasing around the edges of polygons. A higher MSAA value results in smoother edges but can be significantly slower on some hardware.
 			[b]Note:[/b] MSAA is not available on HTML5 export using the GLES2 backend.
 		</member>
+		<member name="rendering/quality/filters/use_debanding" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], uses a fast post-processing filter to make banding significantly less visible. In some cases, debanding may introduce a slightly noticeable dithering pattern. It's recommended to enable debanding only when actually needed since the dithering pattern will make lossless-compressed screenshots larger.
+			[b]Note:[/b] Only available on the GLES3 backend. [member rendering/quality/depth/hdr] must also be [code]true[/code] for debanding to be effective.
+		</member>
+		<member name="rendering/quality/filters/use_fxaa" type="bool" setter="" getter="" default="false">
+			Enables FXAA in the root Viewport. FXAA is a popular screen-space antialiasing method, which is fast but will make the image look blurry, especially at lower resolutions. It can still work relatively well at large resolutions such as 1440p and 4K.
+		</member>
 		<member name="rendering/quality/filters/use_nearest_mipmap_filter" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], uses nearest-neighbor mipmap filtering when using mipmaps (also called "bilinear filtering"), which will result in visible seams appearing between mipmap stages. This may increase performance in mobile as less memory bandwidth is used. If [code]false[/code], linear mipmap filtering (also called "trilinear filtering") is used.
 		</member>
@@ -1106,6 +1194,12 @@
 		</member>
 		<member name="rendering/quality/intended_usage/framebuffer_allocation.mobile" type="int" setter="" getter="" default="3">
 			Lower-end override for [member rendering/quality/intended_usage/framebuffer_allocation] on mobile devices, due to performance concerns or driver support.
+		</member>
+		<member name="rendering/quality/lightmapping/use_bicubic_sampling" type="bool" setter="" getter="" default="true">
+			Enable usage of bicubic sampling in baked lightmaps. This results in smoother looking lighting at the expense of more bandwidth usage. On GLES2, changes to this setting will only be applied upon restarting the application.
+		</member>
+		<member name="rendering/quality/lightmapping/use_bicubic_sampling.mobile" type="bool" setter="" getter="" default="false">
+			Lower-end override for [member rendering/quality/lightmapping/use_bicubic_sampling] on mobile devices, in order to reduce bandwidth usage.
 		</member>
 		<member name="rendering/quality/reflections/atlas_size" type="int" setter="" getter="" default="2048">
 			Size of the atlas used by reflection probes. A larger size can result in higher visual quality, while a smaller size will be faster and take up less memory.
@@ -1167,9 +1261,27 @@
 		</member>
 		<member name="rendering/quality/shadows/filter_mode" type="int" setter="" getter="" default="1">
 			Shadow filter mode. Higher-quality settings result in smoother shadows that flicker less when moving. "Disabled" is the fastest option, but also has the lowest quality. "PCF5" is smoother but is also slower. "PCF13" is the smoothest option, but is also the slowest.
+			[b]Note:[/b] When using the GLES2 backend, the "PCF13" option actually uses 16 samples to emulate linear filtering in the shader. This results in a shadow appearance similar to the one produced by the GLES3 backend.
 		</member>
 		<member name="rendering/quality/shadows/filter_mode.mobile" type="int" setter="" getter="" default="0">
 			Lower-end override for [member rendering/quality/shadows/filter_mode] on mobile devices, due to performance concerns or driver support.
+		</member>
+		<member name="rendering/quality/skinning/force_software_skinning" type="bool" setter="" getter="" default="false">
+			Forces [MeshInstance] to always perform skinning on the CPU (applies to both GLES2 and GLES3).
+			See also [member rendering/quality/skinning/software_skinning_fallback].
+		</member>
+		<member name="rendering/quality/skinning/software_skinning_fallback" type="bool" setter="" getter="" default="true">
+			Allows [MeshInstance] to perform skinning on the CPU when the hardware doesn't support the default GPU skinning process with GLES2.
+			If [code]false[/code], an alternative skinning process on the GPU is used in this case (slower in most cases).
+			See also [member rendering/quality/skinning/force_software_skinning].
+			[b]Note:[/b] When the software skinning fallback is triggered, custom vertex shaders will behave in a different way, because the bone transform will be already applied to the modelview matrix.
+		</member>
+		<member name="rendering/quality/spatial_partitioning/render_tree_balance" type="float" setter="" getter="" default="0.0">
+			The rendering octree balance can be changed to favor smaller ([code]0[/code]), or larger ([code]1[/code]) branches.
+			Larger branches can increase performance significantly in some projects.
+		</member>
+		<member name="rendering/quality/spatial_partitioning/use_bvh" type="bool" setter="" getter="" default="true">
+			Enables the use of bounding volume hierarchy instead of octree for rendering spatial partitioning. This may give better performance.
 		</member>
 		<member name="rendering/quality/subsurface_scattering/follow_surface" type="bool" setter="" getter="" default="false">
 			Improves quality of subsurface scattering, but cost significantly increases.

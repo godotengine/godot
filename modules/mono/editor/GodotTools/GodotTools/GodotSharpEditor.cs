@@ -4,9 +4,9 @@ using GodotTools.Export;
 using GodotTools.Utils;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
+using GodotTools.Build;
 using GodotTools.Ides;
 using GodotTools.Ides.Rider;
 using GodotTools.Internals;
@@ -19,7 +19,6 @@ using Path = System.IO.Path;
 
 namespace GodotTools
 {
-    [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
     public class GodotSharpEditor : EditorPlugin, ISerializationListener
     {
         private EditorSettings editorSettings;
@@ -37,7 +36,7 @@ namespace GodotTools
 
         private WeakRef exportPluginWeak; // TODO Use WeakReference once we have proper serialization
 
-        public BottomPanel BottomPanel { get; private set; }
+        public MSBuildPanel MSBuildPanel { get; private set; }
 
         public bool SkipBuildBeforePlaying { get; set; } = false;
 
@@ -160,7 +159,7 @@ namespace GodotTools
             }
         }
 
-        private void _BuildSolutionPressed()
+        private void BuildSolutionPressed()
         {
             if (!File.Exists(GodotSharpDirs.ProjectSlnPath))
             {
@@ -168,7 +167,7 @@ namespace GodotTools
                     return; // Failed to create solution
             }
 
-            Instance.BottomPanel.BuildProjectPressed();
+            Instance.MSBuildPanel.BuildSolution();
         }
 
         private void _FileSystemDockFileMoved(string file, string newFile)
@@ -199,28 +198,28 @@ namespace GodotTools
                 ProjectSettings.GlobalizePath(oldFolder));
         }
 
-        public override void _Notification(int what)
+        public override void _Ready()
         {
-            base._Notification(what);
+            base._Ready();
 
-            if (what == NotificationReady)
+            MSBuildPanel.BuildOutputView.Connect(
+                nameof(BuildOutputView.BuildStateChanged), this, nameof(BuildStateChanged));
+
+            bool showInfoDialog = (bool)editorSettings.GetSetting("mono/editor/show_info_on_start");
+            if (showInfoDialog)
             {
-                bool showInfoDialog = (bool)editorSettings.GetSetting("mono/editor/show_info_on_start");
-                if (showInfoDialog)
-                {
-                    aboutDialog.PopupExclusive = true;
-                    _ShowAboutDialog();
-                    // Once shown a first time, it can be seen again via the Mono menu - it doesn't have to be exclusive from that time on.
-                    aboutDialog.PopupExclusive = false;
-                }
-
-                var fileSystemDock = GetEditorInterface().GetFileSystemDock();
-
-                fileSystemDock.Connect("files_moved", this, nameof(_FileSystemDockFileMoved));
-                fileSystemDock.Connect("file_removed", this, nameof(_FileSystemDockFileRemoved));
-                fileSystemDock.Connect("folder_moved", this, nameof(_FileSystemDockFolderMoved));
-                fileSystemDock.Connect("folder_removed", this, nameof(_FileSystemDockFolderRemoved));
+                aboutDialog.PopupExclusive = true;
+                _ShowAboutDialog();
+                // Once shown a first time, it can be seen again via the Mono menu - it doesn't have to be exclusive from that time on.
+                aboutDialog.PopupExclusive = false;
             }
+
+            var fileSystemDock = GetEditorInterface().GetFileSystemDock();
+
+            fileSystemDock.Connect("files_moved", this, nameof(_FileSystemDockFileMoved));
+            fileSystemDock.Connect("file_removed", this, nameof(_FileSystemDockFileRemoved));
+            fileSystemDock.Connect("folder_moved", this, nameof(_FileSystemDockFolderMoved));
+            fileSystemDock.Connect("folder_removed", this, nameof(_FileSystemDockFolderRemoved));
         }
 
         private enum MenuOptions
@@ -437,6 +436,12 @@ namespace GodotTools
             }
         }
 
+        private void BuildStateChanged()
+        {
+            if (bottomPanelBtn != null)
+                bottomPanelBtn.Icon = MSBuildPanel.BuildOutputView.BuildStateIcon;
+        }
+
         public override void EnablePlugin()
         {
             base.EnablePlugin();
@@ -453,9 +458,8 @@ namespace GodotTools
             errorDialog = new AcceptDialog();
             editorBaseControl.AddChild(errorDialog);
 
-            BottomPanel = new BottomPanel();
-
-            bottomPanelBtn = AddControlToBottomPanel(BottomPanel, "Mono".TTR());
+            MSBuildPanel = new MSBuildPanel();
+            bottomPanelBtn = AddControlToBottomPanel(MSBuildPanel, "MSBuild".TTR());
 
             AddChild(new HotReloadAssemblyWatcher {Name = "HotReloadAssemblyWatcher"});
 
@@ -463,7 +467,7 @@ namespace GodotTools
             menuPopup.Hide();
             menuPopup.SetAsToplevel(true);
 
-            AddToolSubmenuItem("Mono", menuPopup);
+            AddToolSubmenuItem("C#", menuPopup);
 
             // TODO: Remove or edit this info dialog once Mono support is no longer in alpha
             {
@@ -516,7 +520,7 @@ namespace GodotTools
                 HintTooltip = "Build solution",
                 FocusMode = Control.FocusModeEnum.None
             };
-            toolBarButton.Connect("pressed", this, nameof(_BuildSolutionPressed));
+            toolBarButton.Connect("pressed", this, nameof(BuildSolutionPressed));
             AddControlToContainer(CustomControlContainer.Toolbar, toolBarButton);
 
             if (File.Exists(GodotSharpDirs.ProjectSlnPath) && File.Exists(GodotSharpDirs.ProjectCsProjPath))
@@ -610,6 +614,7 @@ namespace GodotTools
 
         public static GodotSharpEditor Instance { get; private set; }
 
+        [UsedImplicitly]
         private GodotSharpEditor()
         {
         }

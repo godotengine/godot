@@ -7,6 +7,7 @@
   <ItemGroup>
     <Reference Include="Microsoft.Build" />
     <PackageReference Include="Microsoft.Build" Version="16.5.0" />
+    <PackageReference Include="semver" Version="2.0.6" />
     <PackageReference Include="JetBrains.Annotations" Version="2019.1.3.0" ExcludeAssets="runtime" PrivateAssets="all" />
     <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.0" PrivateAssets="All" />
   </ItemGroup>

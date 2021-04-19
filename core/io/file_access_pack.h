@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -113,10 +113,13 @@ public:
 	_FORCE_INLINE_ bool is_disabled() const { return disabled; }
 
 	static PackedData *get_singleton() { return singleton; }
-	Error add_pack(const String &p_path, bool p_replace_files);
+	Error add_pack(const String &p_path, bool p_replace_files, size_t p_offset);
 
 	_FORCE_INLINE_ FileAccess *try_open_path(const String &p_path);
 	_FORCE_INLINE_ bool has_path(const String &p_path);
+
+	_FORCE_INLINE_ DirAccess *try_open_directory(const String &p_path);
+	_FORCE_INLINE_ bool has_directory(const String &p_path);
 
 	PackedData();
 	~PackedData();
@@ -125,7 +128,7 @@ public:
 class PackSource {
 
 public:
-	virtual bool try_open_pack(const String &p_path, bool p_replace_files) = 0;
+	virtual bool try_open_pack(const String &p_path, bool p_replace_files, size_t p_offset) = 0;
 	virtual FileAccess *get_file(const String &p_path, PackedData::PackedFile *p_file) = 0;
 	virtual ~PackSource() {}
 };
@@ -133,7 +136,7 @@ public:
 class PackedSourcePCK : public PackSource {
 
 public:
-	virtual bool try_open_pack(const String &p_path, bool p_replace_files);
+	virtual bool try_open_pack(const String &p_path, bool p_replace_files, size_t p_offset);
 	virtual FileAccess *get_file(const String &p_path, PackedData::PackedFile *p_file);
 };
 
@@ -197,6 +200,17 @@ bool PackedData::has_path(const String &p_path) {
 	return files.has(PathMD5(p_path.md5_buffer()));
 }
 
+bool PackedData::has_directory(const String &p_path) {
+
+	DirAccess *da = try_open_directory(p_path);
+	if (da) {
+		memdelete(da);
+		return true;
+	} else {
+		return false;
+	}
+}
+
 class DirAccessPack : public DirAccess {
 
 	PackedData::PackedDir *current;
@@ -204,6 +218,8 @@ class DirAccessPack : public DirAccess {
 	List<String> list_dirs;
 	List<String> list_files;
 	bool cdir;
+
+	PackedData::PackedDir *_find_dir(String p_dir);
 
 public:
 	virtual Error list_dir_begin();
@@ -233,5 +249,15 @@ public:
 	DirAccessPack();
 	~DirAccessPack();
 };
+
+DirAccess *PackedData::try_open_directory(const String &p_path) {
+
+	DirAccess *da = memnew(DirAccessPack());
+	if (da->change_dir(p_path) != OK) {
+		memdelete(da);
+		da = NULL;
+	}
+	return da;
+}
 
 #endif // FILE_ACCESS_PACK_H

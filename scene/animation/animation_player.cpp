@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -782,13 +782,10 @@ void AnimationPlayer::_animation_process_data(PlaybackData &cd, float p_delta, f
 		else if (next_pos > len)
 			next_pos = len;
 
-		// fix delta
-		delta = next_pos - cd.pos;
+		bool backwards = signbit(delta); // Negative zero means playing backwards too
+		delta = next_pos - cd.pos; // Fix delta (after determination of backwards because negative zero is lost here)
 
 		if (&cd == &playback.current) {
-
-			bool backwards = delta < 0;
-
 			if (!backwards && cd.pos <= len && next_pos == len /*&& playback.blend.empty()*/) {
 				//playback finished
 				end_reached = true;
@@ -1362,13 +1359,13 @@ bool AnimationPlayer::is_valid() const {
 
 float AnimationPlayer::get_current_animation_position() const {
 
-	ERR_FAIL_COND_V(!playback.current.from, 0);
+	ERR_FAIL_COND_V_MSG(!playback.current.from, 0, "AnimationPlayer has no current animation");
 	return playback.current.pos;
 }
 
 float AnimationPlayer::get_current_animation_length() const {
 
-	ERR_FAIL_COND_V(!playback.current.from, 0);
+	ERR_FAIL_COND_V_MSG(!playback.current.from, 0, "AnimationPlayer has no current animation");
 	return playback.current.from->animation->get_length();
 }
 

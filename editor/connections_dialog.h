@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -140,8 +140,11 @@ class ConnectionsDock : public VBoxContainer {
 	PopupMenu *signal_menu;
 	PopupMenu *slot_menu;
 	UndoRedo *undo_redo;
+	LineEdit *search_box;
 
 	Map<StringName, Map<StringName, String> > descr_cache;
+
+	void _filter_changed(const String &p_text);
 
 	void _make_or_edit_connection();
 	void _connect(Connection cToMake);

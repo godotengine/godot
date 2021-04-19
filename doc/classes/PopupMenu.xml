@@ -203,8 +203,11 @@
 			</return>
 			<argument index="0" name="label" type="String" default="&quot;&quot;">
 			</argument>
+			<argument index="1" name="id" type="int" default="-1">
+			</argument>
 			<description>
-				Adds a separator between items. Separators also occupy an index.
+				Adds a separator between items. Separators also occupy an index, which you can set by using the [code]id[/code] parameter.
+				A [code]label[/code] can optionally be provided, which will appear at the center of the separator.
 			</description>
 		</method>
 		<method name="add_shortcut">
@@ -667,6 +670,9 @@
 		</theme_item>
 		<theme_item name="font_color_hover" type="Color" default="Color( 0.88, 0.88, 0.88, 1 )">
 			[Color] used for the hovered text.
+		</theme_item>
+		<theme_item name="font_color_separator" type="Color" default="Color( 0.88, 0.88, 0.88, 1 )">
+			[Color] used for labeled separators' text. See [method add_separator].
 		</theme_item>
 		<theme_item name="hover" type="StyleBox">
 			[StyleBox] displayed when the [PopupMenu] item is hovered.

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -120,6 +120,8 @@ public:
 		InstanceBase *lightmap_capture;
 		RID lightmap;
 		Vector<Color> lightmap_capture_data; //in a array (12 values) to avoid wasting space if unused. Alpha is unused, but needed to send to shader
+		int lightmap_slice;
+		Rect2 lightmap_uv_rect;
 
 		virtual void base_removed() = 0;
 		virtual void base_changed(bool p_aabb, bool p_materials) = 0;
@@ -135,6 +137,8 @@ public:
 			baked_light = false;
 			redraw_if_visible = false;
 			lightmap_capture = NULL;
+			lightmap_slice = -1;
+			lightmap_uv_rect = Rect2(0, 0, 1, 1);
 		}
 	};
 
@@ -264,6 +268,8 @@ public:
 
 	virtual bool material_is_animated(RID p_material) = 0;
 	virtual bool material_casts_shadows(RID p_material) = 0;
+	virtual bool material_uses_tangents(RID p_material);
+	virtual bool material_uses_ensure_correct_normals(RID p_material);
 
 	virtual void material_add_instance_owner(RID p_material, RasterizerScene::InstanceBase *p_instance) = 0;
 	virtual void material_remove_instance_owner(RID p_material, RasterizerScene::InstanceBase *p_instance) = 0;
@@ -379,6 +385,7 @@ public:
 	virtual void light_set_cull_mask(RID p_light, uint32_t p_mask) = 0;
 	virtual void light_set_reverse_cull_face_mode(RID p_light, bool p_enabled) = 0;
 	virtual void light_set_use_gi(RID p_light, bool p_enable) = 0;
+	virtual void light_set_bake_mode(RID p_light, VS::LightBakeMode p_bake_mode) = 0;
 
 	virtual void light_omni_set_shadow_mode(RID p_light, VS::LightOmniShadowMode p_mode) = 0;
 	virtual void light_omni_set_shadow_detail(RID p_light, VS::LightOmniShadowDetail p_detail) = 0;
@@ -399,6 +406,7 @@ public:
 	virtual float light_get_param(RID p_light, VS::LightParam p_param) = 0;
 	virtual Color light_get_color(RID p_light) = 0;
 	virtual bool light_get_use_gi(RID p_light) = 0;
+	virtual VS::LightBakeMode light_get_bake_mode(RID p_light) = 0;
 	virtual uint64_t light_get_version(RID p_light) const = 0;
 
 	/* PROBE API */
@@ -506,6 +514,8 @@ public:
 	virtual int lightmap_capture_get_octree_cell_subdiv(RID p_capture) const = 0;
 	virtual void lightmap_capture_set_energy(RID p_capture, float p_energy) = 0;
 	virtual float lightmap_capture_get_energy(RID p_capture) const = 0;
+	virtual void lightmap_capture_set_interior(RID p_capture, bool p_interior) = 0;
+	virtual bool lightmap_capture_is_interior(RID p_capture) const = 0;
 	virtual const PoolVector<LightmapCaptureOctree> *lightmap_capture_get_octree_ptr(RID p_capture) const = 0;
 
 	/* PARTICLES */
@@ -568,6 +578,8 @@ public:
 	virtual bool render_target_was_used(RID p_render_target) = 0;
 	virtual void render_target_clear_used(RID p_render_target) = 0;
 	virtual void render_target_set_msaa(RID p_render_target, VS::ViewportMSAA p_msaa) = 0;
+	virtual void render_target_set_use_fxaa(RID p_render_target, bool p_fxaa) = 0;
+	virtual void render_target_set_use_debanding(RID p_render_target, bool p_debanding) = 0;
 
 	/* CANVAS SHADOW */
 
@@ -591,7 +603,7 @@ public:
 	virtual void render_info_end_capture() = 0;
 	virtual int get_captured_render_info(VS::RenderInfo p_info) = 0;
 
-	virtual int get_render_info(VS::RenderInfo p_info) = 0;
+	virtual uint64_t get_render_info(VS::RenderInfo p_info) = 0;
 	virtual String get_video_adapter_name() const = 0;
 	virtual String get_video_adapter_vendor() const = 0;
 
@@ -1177,6 +1189,8 @@ public:
 	virtual void finalize() = 0;
 
 	virtual bool is_low_end() const = 0;
+
+	virtual const char *gl_check_for_error(bool p_print_error = true) = 0;
 
 	virtual ~Rasterizer() {}
 };

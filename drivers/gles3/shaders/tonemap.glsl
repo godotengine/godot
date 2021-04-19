@@ -48,6 +48,10 @@ uniform highp float glow_intensity;
 uniform vec3 bcs;
 #endif
 
+#ifdef USE_FXAA
+uniform vec2 pixel_size;
+#endif
+
 #ifdef USE_COLOR_CORRECTION
 uniform sampler2D color_correction; //texunit:3
 #endif
@@ -95,7 +99,7 @@ uniform ivec2 glow_texture_size;
 vec4 texture2D_bicubic(sampler2D tex, vec2 uv, int p_lod) {
 	float lod = float(p_lod);
 	vec2 tex_size = vec2(glow_texture_size >> p_lod);
-	vec2 pixel_size = vec2(1.0f) / tex_size;
+	vec2 texel_size = vec2(1.0f) / tex_size;
 
 	uv = uv * tex_size + vec2(0.5f);
 
@@ -109,10 +113,10 @@ vec4 texture2D_bicubic(sampler2D tex, vec2 uv, int p_lod) {
 	float h0y = h0(fuv.y);
 	float h1y = h1(fuv.y);
 
-	vec2 p0 = (vec2(iuv.x + h0x, iuv.y + h0y) - vec2(0.5f)) * pixel_size;
-	vec2 p1 = (vec2(iuv.x + h1x, iuv.y + h0y) - vec2(0.5f)) * pixel_size;
-	vec2 p2 = (vec2(iuv.x + h0x, iuv.y + h1y) - vec2(0.5f)) * pixel_size;
-	vec2 p3 = (vec2(iuv.x + h1x, iuv.y + h1y) - vec2(0.5f)) * pixel_size;
+	vec2 p0 = (vec2(iuv.x + h0x, iuv.y + h0y) - vec2(0.5f)) * texel_size;
+	vec2 p1 = (vec2(iuv.x + h1x, iuv.y + h0y) - vec2(0.5f)) * texel_size;
+	vec2 p2 = (vec2(iuv.x + h0x, iuv.y + h1y) - vec2(0.5f)) * texel_size;
+	vec2 p3 = (vec2(iuv.x + h1x, iuv.y + h1y) - vec2(0.5f)) * texel_size;
 
 	return (g0(fuv.y) * (g0x * textureLod(tex, p0, lod) + g1x * textureLod(tex, p1, lod))) +
 		   (g1(fuv.y) * (g0x * textureLod(tex, p2, lod) + g1x * textureLod(tex, p3, lod)));
@@ -156,6 +160,10 @@ vec3 tonemap_aces(vec3 color, float white) {
 }
 
 vec3 tonemap_reinhard(vec3 color, float white) {
+	// Ensure color values are positive.
+	// They can be negative in the case of negative lights, which leads to undesired behavior.
+	color = max(vec3(0.0), color);
+
 	return clamp((white * color + color) / (color * white + white), vec3(0.0f), vec3(1.0f));
 }
 
@@ -259,16 +267,84 @@ vec3 apply_color_correction(vec3 color, sampler2D correction_tex) {
 	return color;
 }
 
+vec3 apply_fxaa(vec3 color, float exposure, vec2 uv_interp, vec2 pixel_size) {
+	const float FXAA_REDUCE_MIN = (1.0 / 128.0);
+	const float FXAA_REDUCE_MUL = (1.0 / 8.0);
+	const float FXAA_SPAN_MAX = 8.0;
+
+	vec3 rgbNW = textureLod(source, uv_interp + vec2(-1.0, -1.0) * pixel_size, 0.0).xyz * exposure;
+	vec3 rgbNE = textureLod(source, uv_interp + vec2(1.0, -1.0) * pixel_size, 0.0).xyz * exposure;
+	vec3 rgbSW = textureLod(source, uv_interp + vec2(-1.0, 1.0) * pixel_size, 0.0).xyz * exposure;
+	vec3 rgbSE = textureLod(source, uv_interp + vec2(1.0, 1.0) * pixel_size, 0.0).xyz * exposure;
+	vec3 rgbM = color;
+	vec3 luma = vec3(0.299, 0.587, 0.114);
+	float lumaNW = dot(rgbNW, luma);
+	float lumaNE = dot(rgbNE, luma);
+	float lumaSW = dot(rgbSW, luma);
+	float lumaSE = dot(rgbSE, luma);
+	float lumaM = dot(rgbM, luma);
+	float lumaMin = min(lumaM, min(min(lumaNW, lumaNE), min(lumaSW, lumaSE)));
+	float lumaMax = max(lumaM, max(max(lumaNW, lumaNE), max(lumaSW, lumaSE)));
+
+	vec2 dir;
+	dir.x = -((lumaNW + lumaNE) - (lumaSW + lumaSE));
+	dir.y = ((lumaNW + lumaSW) - (lumaNE + lumaSE));
+
+	float dirReduce = max((lumaNW + lumaNE + lumaSW + lumaSE) *
+								  (0.25 * FXAA_REDUCE_MUL),
+			FXAA_REDUCE_MIN);
+
+	float rcpDirMin = 1.0 / (min(abs(dir.x), abs(dir.y)) + dirReduce);
+	dir = min(vec2(FXAA_SPAN_MAX, FXAA_SPAN_MAX),
+				  max(vec2(-FXAA_SPAN_MAX, -FXAA_SPAN_MAX),
+						  dir * rcpDirMin)) *
+		  pixel_size;
+
+	vec3 rgbA = 0.5 * exposure * (textureLod(source, uv_interp + dir * (1.0 / 3.0 - 0.5), 0.0).xyz + textureLod(source, uv_interp + dir * (2.0 / 3.0 - 0.5), 0.0).xyz);
+	vec3 rgbB = rgbA * 0.5 + 0.25 * exposure * (textureLod(source, uv_interp + dir * -0.5, 0.0).xyz + textureLod(source, uv_interp + dir * 0.5, 0.0).xyz);
+
+	float lumaB = dot(rgbB, luma);
+	if ((lumaB < lumaMin) || (lumaB > lumaMax)) {
+		return rgbA;
+	} else {
+		return rgbB;
+	}
+}
+
+// From http://alex.vlachos.com/graphics/Alex_Vlachos_Advanced_VR_Rendering_GDC2015.pdf
+// and https://www.shadertoy.com/view/MslGR8 (5th one starting from the bottom)
+// NOTE: `frag_coord` is in pixels (i.e. not normalized UV).
+vec3 screen_space_dither(vec2 frag_coord) {
+	// Iestyn's RGB dither (7 asm instructions) from Portal 2 X360, slightly modified for VR.
+	vec3 dither = vec3(dot(vec2(171.0, 231.0), frag_coord));
+	dither.rgb = fract(dither.rgb / vec3(103.0, 71.0, 97.0));
+
+	// Subtract 0.5 to avoid slightly brightening the whole viewport.
+	return (dither.rgb - 0.5) / 255.0;
+}
+
 void main() {
 	vec3 color = textureLod(source, uv_interp, 0.0f).rgb;
 
 	// Exposure
+	float full_exposure = exposure;
 
 #ifdef USE_AUTO_EXPOSURE
-	color /= texelFetch(source_auto_exposure, ivec2(0, 0), 0).r / auto_exposure_grey;
+	full_exposure /= texelFetch(source_auto_exposure, ivec2(0, 0), 0).r / auto_exposure_grey;
 #endif
 
-	color *= exposure;
+	color *= full_exposure;
+
+#ifdef USE_FXAA
+	// FXAA must be applied before tonemapping.
+	color = apply_fxaa(color, full_exposure, uv_interp, pixel_size);
+#endif
+
+#ifdef USE_DEBANDING
+	// For best results, debanding should be done before tonemapping.
+	// Otherwise, we're adding noise to an already-quantized image.
+	color += screen_space_dither(gl_FragCoord.xy);
+#endif
 
 	// Early Tonemap & SRGB Conversion; note that Linear tonemapping does not clamp to [0, 1]; some operations below expect a [0, 1] range and will clamp
 

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -497,7 +497,7 @@ void EditorData::add_custom_type(const String &p_type, const String &p_inherits,
 	custom_types[p_inherits].push_back(ct);
 }
 
-Object *EditorData::instance_custom_type(const String &p_type, const String &p_inherits) {
+Variant EditorData::instance_custom_type(const String &p_type, const String &p_inherits) {
 
 	if (get_custom_types().has(p_inherits)) {
 
@@ -505,18 +505,19 @@ Object *EditorData::instance_custom_type(const String &p_type, const String &p_i
 			if (get_custom_types()[p_inherits][i].name == p_type) {
 				Ref<Script> script = get_custom_types()[p_inherits][i].script;
 
-				Object *ob = ClassDB::instance(p_inherits);
-				ERR_FAIL_COND_V(!ob, NULL);
-				if (ob->is_class("Node")) {
-					ob->call("set_name", p_type);
+				Variant ob = ClassDB::instance(p_inherits);
+				ERR_FAIL_COND_V(!ob, Variant());
+				Node *n = Object::cast_to<Node>(ob);
+				if (n) {
+					n->set_name(p_type);
 				}
-				ob->set_script(script.get_ref_ptr());
+				((Object *)ob)->set_script(script.get_ref_ptr());
 				return ob;
 			}
 		}
 	}
 
-	return NULL;
+	return Variant();
 }
 
 void EditorData::remove_custom_type(const String &p_type) {
@@ -542,6 +543,7 @@ int EditorData::add_edited_scene(int p_at_pos) {
 	EditedScene es;
 	es.root = NULL;
 	es.path = String();
+	es.file_modified_time = 0;
 	es.history_current = -1;
 	es.version = 0;
 	es.live_edit_root = NodePath(String("/root"));
@@ -697,6 +699,10 @@ void EditorData::set_edited_scene_root(Node *p_root) {
 		else
 			p_root->set_filename(edited_scene[current_edited_scene].path);
 	}
+
+	if (edited_scene[current_edited_scene].path != "") {
+		edited_scene.write[current_edited_scene].file_modified_time = FileAccess::get_modified_time(edited_scene[current_edited_scene].path);
+	}
 }
 
 int EditorData::get_edited_scene_count() const {
@@ -733,6 +739,21 @@ uint64_t EditorData::get_edited_scene_version() const {
 uint64_t EditorData::get_scene_version(int p_idx) const {
 	ERR_FAIL_INDEX_V(p_idx, edited_scene.size(), 0);
 	return edited_scene[p_idx].version;
+}
+
+void EditorData::set_scene_modified_time(int p_idx, uint64_t p_time) {
+	if (p_idx == -1) {
+		p_idx = current_edited_scene;
+	}
+
+	ERR_FAIL_INDEX(p_idx, edited_scene.size());
+
+	edited_scene.write[p_idx].file_modified_time = p_time;
+}
+
+uint64_t EditorData::get_scene_modified_time(int p_idx) const {
+	ERR_FAIL_INDEX_V(p_idx, edited_scene.size(), 0);
+	return edited_scene[p_idx].file_modified_time;
 }
 
 String EditorData::get_scene_type(int p_idx) const {
@@ -905,17 +926,17 @@ StringName EditorData::script_class_get_base(const String &p_class) const {
 	return script->get_language()->get_global_class_name(base_script->get_path());
 }
 
-Object *EditorData::script_class_instance(const String &p_class) {
+Variant EditorData::script_class_instance(const String &p_class) {
 	if (ScriptServer::is_global_class(p_class)) {
-		Object *obj = ClassDB::instance(ScriptServer::get_global_class_native_base(p_class));
+		Variant obj = ClassDB::instance(ScriptServer::get_global_class_native_base(p_class));
 		if (obj) {
 			Ref<Script> script = script_class_load_script(p_class);
 			if (script.is_valid())
-				obj->set_script(script.get_ref_ptr());
+				((Object *)obj)->set_script(script.get_ref_ptr());
 			return obj;
 		}
 	}
-	return NULL;
+	return Variant();
 }
 
 Ref<Script> EditorData::script_class_load_script(const String &p_class) const {
@@ -965,7 +986,21 @@ void EditorData::script_class_save_icon_paths() {
 			d[E->get()] = _script_class_icon_paths[E->get()];
 	}
 
-	ProjectSettings::get_singleton()->set("_global_script_class_icons", d);
+	Dictionary old;
+	if (ProjectSettings::get_singleton()->has_setting("_global_script_class_icons")) {
+		old = ProjectSettings::get_singleton()->get("_global_script_class_icons");
+	}
+	if ((!old.empty() || d.empty()) && d.hash() == old.hash()) {
+		return;
+	}
+
+	if (d.empty()) {
+		if (ProjectSettings::get_singleton()->has_setting("_global_script_class_icons")) {
+			ProjectSettings::get_singleton()->clear("_global_script_class_icons");
+		}
+	} else {
+		ProjectSettings::get_singleton()->set("_global_script_class_icons", d);
+	}
 	ProjectSettings::get_singleton()->save();
 }
 

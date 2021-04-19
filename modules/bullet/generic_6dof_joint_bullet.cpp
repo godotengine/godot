@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -261,12 +261,4 @@ void Generic6DOFJointBullet::set_flag(Vector3::Axis p_axis, PhysicsServer::G6DOF
 bool Generic6DOFJointBullet::get_flag(Vector3::Axis p_axis, PhysicsServer::G6DOFJointAxisFlag p_flag) const {
 	ERR_FAIL_INDEX_V(p_axis, 3, false);
 	return flags[p_axis][p_flag];
-}
-
-void Generic6DOFJointBullet::set_precision(int p_precision) {
-	sixDOFConstraint->setOverrideNumSolverIterations(MAX(1, p_precision));
-}
-
-int Generic6DOFJointBullet::get_precision() const {
-	return sixDOFConstraint->getOverrideNumSolverIterations();
 }

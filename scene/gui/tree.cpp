@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -1242,6 +1242,9 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 
 				if (p_item->cells[i].text.size() > 0) {
 					float icon_width = p_item->cells[i].get_icon_size().width;
+					if (p_item->get_icon_max_width(i) > 0) {
+						icon_width = p_item->get_icon_max_width(i);
+					}
 					r.position.x += icon_width;
 					r.size.x -= icon_width;
 				}
@@ -1279,8 +1282,9 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 			if (drop_mode_flags && drop_mode_over == p_item) {
 
 				Rect2 r = cell_rect;
+				bool has_parent = p_item->get_children() != nullptr;
 
-				if (drop_mode_section == -1 || drop_mode_section == 0) {
+				if (drop_mode_section == -1 || has_parent || drop_mode_section == 0) {
 					VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(r.position.x, r.position.y, r.size.x, 1), cache.drop_position_color);
 				}
 
@@ -1289,7 +1293,7 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 					VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(r.position.x + r.size.x - 1, r.position.y, 1, r.size.y), cache.drop_position_color);
 				}
 
-				if (drop_mode_section == 1 || drop_mode_section == 0) {
+				if ((drop_mode_section == 1 && !has_parent) || drop_mode_section == 0) {
 					VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(r.position.x, r.position.y + r.size.y, r.size.x, 1), cache.drop_position_color);
 				}
 			}
@@ -3187,6 +3191,9 @@ void Tree::item_selected(int p_column, TreeItem *p_item) {
 		//emit_signal("multi_selected",p_item,p_column,true); - NO this is for TreeItem::select
 
 		selected_col = p_column;
+		if (!selected_item) {
+			selected_item = p_item;
+		}
 	} else {
 
 		select_single_item(p_item, root, p_column);
@@ -3195,6 +3202,13 @@ void Tree::item_selected(int p_column, TreeItem *p_item) {
 }
 
 void Tree::item_deselected(int p_column, TreeItem *p_item) {
+	if (selected_item == p_item) {
+		selected_item = nullptr;
+
+		if (selected_col == p_column) {
+			selected_col = -1;
+		}
+	}
 
 	if (select_mode == SELECT_MULTI || select_mode == SELECT_SINGLE) {
 		p_item->cells.write[p_column].selected = false;
@@ -3999,6 +4013,7 @@ void Tree::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_edited"), &Tree::get_edited);
 	ClassDB::bind_method(D_METHOD("get_edited_column"), &Tree::get_edited_column);
+	ClassDB::bind_method(D_METHOD("edit_selected"), &Tree::edit_selected);
 	ClassDB::bind_method(D_METHOD("get_custom_popup_rect"), &Tree::get_custom_popup_rect);
 	ClassDB::bind_method(D_METHOD("get_item_area_rect", "item", "column"), &Tree::_get_item_rect, DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("get_item_at_position", "position"), &Tree::get_item_at_position);
@@ -4013,6 +4028,7 @@ void Tree::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_column_title", "column", "title"), &Tree::set_column_title);
 	ClassDB::bind_method(D_METHOD("get_column_title", "column"), &Tree::get_column_title);
 	ClassDB::bind_method(D_METHOD("get_scroll"), &Tree::get_scroll);
+	ClassDB::bind_method(D_METHOD("scroll_to_item", "item"), &Tree::_scroll_to_item);
 
 	ClassDB::bind_method(D_METHOD("set_hide_folding", "hide"), &Tree::set_hide_folding);
 	ClassDB::bind_method(D_METHOD("is_folding_hidden"), &Tree::is_folding_hidden);

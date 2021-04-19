@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -346,7 +346,8 @@ void TileMap::update_dirty_quadrants() {
 	Color debug_collision_color;
 	Color debug_navigation_color;
 
-	bool debug_shapes = st && st->is_debugging_collisions_hint();
+	bool debug_shapes = show_collision && (Engine::get_singleton()->is_editor_hint() || (st && st->is_debugging_collisions_hint()));
+
 	if (debug_shapes) {
 		debug_collision_color = st->get_debug_collisions_color();
 	}
@@ -1049,8 +1050,9 @@ void TileMap::update_dirty_bitmask() {
 void TileMap::fix_invalid_tiles() {
 
 	ERR_FAIL_COND_MSG(tile_set.is_null(), "Cannot fix invalid tiles if Tileset is not open.");
-	for (Map<PosKey, Cell>::Element *E = tile_map.front(); E; E = E->next()) {
 
+	Map<PosKey, Cell> temp_tile_map = tile_map;
+	for (Map<PosKey, Cell>::Element *E = temp_tile_map.front(); E; E = E->next()) {
 		if (!tile_set->has_tile(get_cell(E->key().x, E->key().y))) {
 			set_cell(E->key().x, E->key().y, INVALID_CELL);
 		}
@@ -1791,6 +1793,15 @@ String TileMap::get_configuration_warning() const {
 	return warning;
 }
 
+void TileMap::set_show_collision(bool p_value) {
+	show_collision = p_value;
+	_recreate_quadrants();
+}
+
+bool TileMap::is_show_collision_enabled() const {
+	return show_collision;
+}
+
 void TileMap::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_tileset", "tileset"), &TileMap::set_tileset);
@@ -1825,6 +1836,9 @@ void TileMap::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_compatibility_mode", "enable"), &TileMap::set_compatibility_mode);
 	ClassDB::bind_method(D_METHOD("is_compatibility_mode_enabled"), &TileMap::is_compatibility_mode_enabled);
+
+	ClassDB::bind_method(D_METHOD("set_show_collision", "enable"), &TileMap::set_show_collision);
+	ClassDB::bind_method(D_METHOD("is_show_collision_enabled"), &TileMap::is_show_collision_enabled);
 
 	ClassDB::bind_method(D_METHOD("set_centered_textures", "enable"), &TileMap::set_centered_textures);
 	ClassDB::bind_method(D_METHOD("is_centered_textures_enabled"), &TileMap::is_centered_textures_enabled);
@@ -1897,6 +1911,7 @@ void TileMap::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "cell_half_offset", PROPERTY_HINT_ENUM, "Offset X,Offset Y,Disabled,Offset Negative X,Offset Negative Y"), "set_half_offset", "get_half_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "cell_tile_origin", PROPERTY_HINT_ENUM, "Top Left,Center,Bottom Left"), "set_tile_origin", "get_tile_origin");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "cell_y_sort"), "set_y_sort_mode", "is_y_sort_mode_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "show_collision"), "set_show_collision", "is_show_collision_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "compatibility_mode"), "set_compatibility_mode", "is_compatibility_mode_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "centered_textures"), "set_centered_textures", "is_centered_textures_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "cell_clip_uv"), "set_clip_uv", "get_clip_uv");

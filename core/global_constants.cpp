@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -409,6 +409,12 @@ void register_global_constants() {
 	BIND_GLOBAL_ENUM_CONSTANT(JOY_BUTTON_13);
 	BIND_GLOBAL_ENUM_CONSTANT(JOY_BUTTON_14);
 	BIND_GLOBAL_ENUM_CONSTANT(JOY_BUTTON_15);
+	BIND_GLOBAL_ENUM_CONSTANT(JOY_BUTTON_16);
+	BIND_GLOBAL_ENUM_CONSTANT(JOY_BUTTON_17);
+	BIND_GLOBAL_ENUM_CONSTANT(JOY_BUTTON_18);
+	BIND_GLOBAL_ENUM_CONSTANT(JOY_BUTTON_19);
+	BIND_GLOBAL_ENUM_CONSTANT(JOY_BUTTON_20);
+	BIND_GLOBAL_ENUM_CONSTANT(JOY_BUTTON_21);
 	BIND_GLOBAL_ENUM_CONSTANT(JOY_BUTTON_MAX);
 
 	BIND_GLOBAL_ENUM_CONSTANT(JOY_SONY_CIRCLE);
@@ -442,6 +448,12 @@ void register_global_constants() {
 	BIND_GLOBAL_ENUM_CONSTANT(JOY_DPAD_DOWN);
 	BIND_GLOBAL_ENUM_CONSTANT(JOY_DPAD_LEFT);
 	BIND_GLOBAL_ENUM_CONSTANT(JOY_DPAD_RIGHT);
+	BIND_GLOBAL_ENUM_CONSTANT(JOY_MISC1);
+	BIND_GLOBAL_ENUM_CONSTANT(JOY_PADDLE1);
+	BIND_GLOBAL_ENUM_CONSTANT(JOY_PADDLE2);
+	BIND_GLOBAL_ENUM_CONSTANT(JOY_PADDLE3);
+	BIND_GLOBAL_ENUM_CONSTANT(JOY_PADDLE4);
+	BIND_GLOBAL_ENUM_CONSTANT(JOY_TOUCHPAD);
 	BIND_GLOBAL_ENUM_CONSTANT(JOY_L);
 	BIND_GLOBAL_ENUM_CONSTANT(JOY_L2);
 	BIND_GLOBAL_ENUM_CONSTANT(JOY_L3);

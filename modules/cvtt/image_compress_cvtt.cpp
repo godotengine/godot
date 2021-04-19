@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,6 +33,7 @@
 #include "core/os/os.h"
 #include "core/os/thread.h"
 #include "core/print_string.h"
+#include "core/safe_refcount.h"
 
 #include <ConvectionKernels.h>
 
@@ -56,7 +57,7 @@ struct CVTTCompressionJobQueue {
 	CVTTCompressionJobParams job_params;
 	const CVTTCompressionRowTask *job_tasks;
 	uint32_t num_tasks;
-	uint32_t current_task;
+	SafeNumeric<uint32_t> current_task;
 };
 
 static void _digest_row_task(const CVTTCompressionJobParams &p_job_params, const CVTTCompressionRowTask &p_row_task) {
@@ -131,7 +132,7 @@ static void _digest_row_task(const CVTTCompressionJobParams &p_job_params, const
 static void _digest_job_queue(void *p_job_queue) {
 	CVTTCompressionJobQueue *job_queue = static_cast<CVTTCompressionJobQueue *>(p_job_queue);
 
-	for (uint32_t next_task = atomic_increment(&job_queue->current_task); next_task <= job_queue->num_tasks; next_task = atomic_increment(&job_queue->current_task)) {
+	for (uint32_t next_task = job_queue->current_task.increment(); next_task <= job_queue->num_tasks; next_task = job_queue->current_task.increment()) {
 		_digest_row_task(job_queue->job_params, job_queue->job_tasks[next_task - 1]);
 	}
 }
@@ -170,6 +171,7 @@ void image_compress_cvtt(Image *p_image, float p_lossy_quality, Image::CompressS
 	if (p_source == Image::COMPRESS_SOURCE_NORMAL) {
 		flags |= cvtt::Flags::Uniform;
 	}
+	options.flags = flags;
 
 	Image::Format target_format = Image::FORMAT_BPTC_RGBA;
 
@@ -262,16 +264,17 @@ void image_compress_cvtt(Image *p_image, float p_lossy_quality, Image::CompressS
 		PoolVector<CVTTCompressionRowTask>::Read tasks_rb = tasks.read();
 
 		job_queue.job_tasks = &tasks_rb[0];
-		job_queue.current_task = 0;
+		job_queue.current_task.set(0);
 		job_queue.num_tasks = static_cast<uint32_t>(tasks.size());
 
 		for (int i = 0; i < num_job_threads; i++) {
-			threads_wb[i] = Thread::create(_digest_job_queue, &job_queue);
+			threads_wb[i] = memnew(Thread);
+			threads_wb[i]->start(_digest_job_queue, &job_queue);
 		}
 		_digest_job_queue(&job_queue);
 
 		for (int i = 0; i < num_job_threads; i++) {
-			Thread::wait_to_finish(threads_wb[i]);
+			threads_wb[i]->wait_to_finish();
 			memdelete(threads_wb[i]);
 		}
 	}

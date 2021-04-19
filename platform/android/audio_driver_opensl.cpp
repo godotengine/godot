@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -44,8 +44,8 @@ void AudioDriverOpenSL::_buffer_callback(
 
 	if (pause) {
 		mix = false;
-	} else if (mutex) {
-		mix = mutex->try_lock() == OK;
+	} else {
+		mix = mutex.try_lock() == OK;
 	}
 
 	if (mix) {
@@ -58,8 +58,8 @@ void AudioDriverOpenSL::_buffer_callback(
 		}
 	}
 
-	if (mutex && mix)
-		mutex->unlock();
+	if (mix)
+		mutex.unlock();
 
 	const int32_t *src_buff = mixdown_buffer;
 
@@ -107,7 +107,6 @@ Error AudioDriverOpenSL::init() {
 
 void AudioDriverOpenSL::start() {
 
-	mutex = Mutex::create();
 	active = false;
 
 	SLresult res;
@@ -329,14 +328,14 @@ AudioDriver::SpeakerMode AudioDriverOpenSL::get_speaker_mode() const {
 
 void AudioDriverOpenSL::lock() {
 
-	if (active && mutex)
-		mutex->lock();
+	if (active)
+		mutex.lock();
 }
 
 void AudioDriverOpenSL::unlock() {
 
-	if (active && mutex)
-		mutex->unlock();
+	if (active)
+		mutex.unlock();
 }
 
 void AudioDriverOpenSL::finish() {
@@ -359,7 +358,6 @@ void AudioDriverOpenSL::set_pause(bool p_pause) {
 
 AudioDriverOpenSL::AudioDriverOpenSL() {
 	s_ad = this;
-	mutex = Mutex::create(); //NULL;
 	pause = false;
 	active = false;
 }

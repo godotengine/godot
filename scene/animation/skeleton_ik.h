@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -54,7 +54,6 @@ class FabrikInverseKinematic {
 
 		// Bone info
 		BoneId bone;
-		PhysicalBone *pb;
 
 		real_t length;
 		/// Positions relative to root bone
@@ -66,7 +65,6 @@ class FabrikInverseKinematic {
 		ChainItem() :
 				parent_item(NULL),
 				bone(-1),
-				pb(NULL),
 				length(0) {}
 
 		ChainItem *find_child(const BoneId p_bone_id);
@@ -84,10 +82,6 @@ class FabrikInverseKinematic {
 		ChainTip(ChainItem *p_chain_item, const EndEffector *p_end_effector) :
 				chain_item(p_chain_item),
 				end_effector(p_end_effector) {}
-
-		ChainTip(const ChainTip &p_other_ct) :
-				chain_item(p_other_ct.chain_item),
-				end_effector(p_other_ct.end_effector) {}
 	};
 
 	struct Chain {
@@ -124,8 +118,6 @@ public:
 private:
 	/// Init a chain that starts from the root to tip
 	static bool build_chain(Task *p_task, bool p_force_simple_chain = true);
-
-	static void update_chain(const Skeleton *p_sk, ChainItem *p_chain_item);
 
 	static void solve_simple(Task *p_task, bool p_solve_magnet);
 	/// Special solvers that solve only chains with one end effector

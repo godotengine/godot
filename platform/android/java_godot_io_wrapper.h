@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -50,10 +50,12 @@ private:
 	jmethodID _get_locale = 0;
 	jmethodID _get_model = 0;
 	jmethodID _get_screen_DPI = 0;
+	jmethodID _get_window_safe_area = 0;
 	jmethodID _get_unique_id = 0;
 	jmethodID _show_keyboard = 0;
 	jmethodID _hide_keyboard = 0;
 	jmethodID _set_screen_orientation = 0;
+	jmethodID _get_screen_orientation = 0;
 	jmethodID _get_system_dir = 0;
 	jmethodID _play_video = 0;
 	jmethodID _is_video_playing = 0;
@@ -71,6 +73,7 @@ public:
 	String get_locale();
 	String get_model();
 	int get_screen_dpi();
+	void get_window_safe_area(int (&p_rect_xywh)[4]);
 	String get_unique_id();
 	bool has_vk();
 	void show_vk(const String &p_existing, bool p_multiline, int p_max_input_length, int p_cursor_start, int p_cursor_end);
@@ -78,6 +81,7 @@ public:
 	int get_vk_height();
 	void set_vk_height(int p_height);
 	void set_screen_orientation(int p_orient);
+	int get_screen_orientation() const;
 	String get_system_dir(int p_dir);
 	void play_video(const String &p_path);
 	bool is_video_playing();

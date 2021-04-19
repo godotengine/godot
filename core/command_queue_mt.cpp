@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,17 +31,16 @@
 #include "command_queue_mt.h"
 
 #include "core/os/os.h"
+#include "core/project_settings.h"
 
 void CommandQueueMT::lock() {
 
-	if (mutex)
-		mutex->lock();
+	mutex.lock();
 }
 
 void CommandQueueMT::unlock() {
 
-	if (mutex)
-		mutex->unlock();
+	mutex.unlock();
 }
 
 void CommandQueueMT::wait_for_flush() {
@@ -79,7 +78,7 @@ CommandQueueMT::SyncSemaphore *CommandQueueMT::_alloc_sync_sem() {
 
 bool CommandQueueMT::dealloc_one() {
 tryagain:
-	if (dealloc_ptr == write_ptr) {
+	if (dealloc_ptr == (write_ptr_and_epoch >> 1)) {
 		// The queue is empty
 		return false;
 	}
@@ -103,31 +102,29 @@ tryagain:
 
 CommandQueueMT::CommandQueueMT(bool p_sync) {
 
-	read_ptr = 0;
-	write_ptr = 0;
+	read_ptr_and_epoch = 0;
+	write_ptr_and_epoch = 0;
 	dealloc_ptr = 0;
-	mutex = Mutex::create();
-	command_mem = (uint8_t *)memalloc(COMMAND_MEM_SIZE);
+
+	command_mem_size = GLOBAL_DEF_RST("memory/limits/command_queue/multithreading_queue_size_kb", DEFAULT_COMMAND_MEM_SIZE_KB);
+	ProjectSettings::get_singleton()->set_custom_property_info("memory/limits/command_queue/multithreading_queue_size_kb", PropertyInfo(Variant::INT, "memory/limits/command_queue/multithreading_queue_size_kb", PROPERTY_HINT_RANGE, "1,4096,1,or_greater"));
+	command_mem_size *= 1024;
+	command_mem = (uint8_t *)memalloc(command_mem_size);
 
 	for (int i = 0; i < SYNC_SEMAPHORES; i++) {
 
-		sync_sems[i].sem = Semaphore::create();
 		sync_sems[i].in_use = false;
 	}
-	if (p_sync)
-		sync = Semaphore::create();
-	else
+	if (p_sync) {
+		sync = memnew(Semaphore);
+	} else {
 		sync = NULL;
+	}
 }
 
 CommandQueueMT::~CommandQueueMT() {
 
 	if (sync)
 		memdelete(sync);
-	memdelete(mutex);
-	for (int i = 0; i < SYNC_SEMAPHORES; i++) {
-
-		memdelete(sync_sems[i].sem);
-	}
 	memfree(command_mem);
 }

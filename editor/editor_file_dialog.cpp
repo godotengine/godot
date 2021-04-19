@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -56,8 +56,7 @@ VBoxContainer *EditorFileDialog::get_vbox() {
 void EditorFileDialog::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_ENTER_TREE) {
-
-		// update icons
+		// Update icons.
 		mode_thumbnails->set_icon(get_icon("FileThumbnail", "EditorIcons"));
 		mode_list->set_icon(get_icon("FileList", "EditorIcons"));
 		dir_prev->set_icon(get_icon("Back", "EditorIcons"));
@@ -94,7 +93,7 @@ void EditorFileDialog::_notification(int p_what) {
 			set_show_hidden_files(is_showing_hidden);
 		set_display_mode((DisplayMode)EditorSettings::get_singleton()->get("filesystem/file_dialog/display_mode").operator int());
 
-		// update icons
+		// Update icons.
 		mode_thumbnails->set_icon(get_icon("FileThumbnail", "EditorIcons"));
 		mode_list->set_icon(get_icon("FileList", "EditorIcons"));
 		dir_prev->set_icon(get_icon("Back", "EditorIcons"));
@@ -137,9 +136,7 @@ void EditorFileDialog::_unhandled_input(const Ref<InputEvent> &p_event) {
 				handled = true;
 			}
 			if (ED_IS_SHORTCUT("file_dialog/toggle_hidden_files", p_event)) {
-				bool show = !show_hidden_files;
-				set_show_hidden_files(show);
-				EditorSettings::get_singleton()->set("filesystem/file_dialog/show_hidden_files", show);
+				set_show_hidden_files(!show_hidden_files);
 				handled = true;
 			}
 			if (ED_IS_SHORTCUT("file_dialog/toggle_favorite", p_event)) {
@@ -225,7 +222,6 @@ void EditorFileDialog::update_dir() {
 void EditorFileDialog::_dir_entered(String p_dir) {
 
 	dir_access->change_dir(p_dir);
-	file->set_text("");
 	invalidate();
 	update_dir();
 	_push_history();
@@ -247,6 +243,14 @@ void EditorFileDialog::_save_confirm_pressed() {
 void EditorFileDialog::_post_popup() {
 
 	ConfirmationDialog::_post_popup();
+
+	// Check if the current path doesn't exist and correct it.
+	String current = dir_access->get_current_dir();
+	while (!dir_access->dir_exists(current)) {
+		current = current.get_base_dir();
+	}
+	set_current_dir(current);
+
 	if (invalidated) {
 		update_file_list();
 		invalidated = false;
@@ -282,11 +286,17 @@ void EditorFileDialog::_post_popup() {
 			} else {
 				name = name.get_file() + "/";
 			}
-
-			recent->add_item(name, folder);
-			recent->set_item_metadata(recent->get_item_count() - 1, recentd[i]);
-			recent->set_item_icon_modulate(recent->get_item_count() - 1, folder_color);
+			bool exists = dir_access->dir_exists(recentd[i]);
+			if (!exists) {
+				// Remove invalid directory from the list of Recent directories.
+				recentd.remove(i--);
+			} else {
+				recent->add_item(name, folder);
+				recent->set_item_metadata(recent->get_item_count() - 1, recentd[i]);
+				recent->set_item_icon_modulate(recent->get_item_count() - 1, folder_color);
+			}
 		}
+		EditorSettings::get_singleton()->set_recent_dirs(recentd);
 
 		local_history.clear();
 		local_history_pos = -1;
@@ -444,10 +454,12 @@ void EditorFileDialog::_action_pressed() {
 			}
 		}
 
+		// Add first extension of filter if no valid extension is found.
 		if (!valid) {
-
-			exterr->popup_centered_minsize(Size2(250, 80) * EDSCALE);
-			return;
+			int idx = filter->get_selected();
+			String flt = filters[idx].get_slice(";", 0);
+			String ext = flt.get_slice(",", 0).strip_edges().get_extension();
+			f += "." + ext;
 		}
 
 		if (dir_access->file_exists(f) && !disable_overwrite_warning) {
@@ -1093,9 +1105,9 @@ EditorFileDialog::Access EditorFileDialog::get_access() const {
 
 void EditorFileDialog::_make_dir_confirm() {
 
-	Error err = dir_access->make_dir(makedirname->get_text());
+	Error err = dir_access->make_dir(makedirname->get_text().strip_edges());
 	if (err == OK) {
-		dir_access->change_dir(makedirname->get_text());
+		dir_access->change_dir(makedirname->get_text().strip_edges());
 		invalidate();
 		update_filters();
 		update_dir();
@@ -1172,7 +1184,6 @@ void EditorFileDialog::_update_drives() {
 void EditorFileDialog::_favorite_selected(int p_idx) {
 
 	dir_access->change_dir(favorites->get_item_metadata(p_idx));
-	file->set_text("");
 	update_dir();
 	invalidate();
 	_push_history();
@@ -1455,6 +1466,11 @@ void EditorFileDialog::_bind_methods() {
 }
 
 void EditorFileDialog::set_show_hidden_files(bool p_show) {
+	if (p_show == show_hidden_files) {
+		return;
+	}
+
+	EditorSettings::get_singleton()->set("filesystem/file_dialog/show_hidden_files", p_show);
 	show_hidden_files = p_show;
 	show_hidden->set_pressed(p_show);
 	invalidate();
@@ -1732,10 +1748,6 @@ EditorFileDialog::EditorFileDialog() {
 	mkdirerr = memnew(AcceptDialog);
 	mkdirerr->set_text(TTR("Could not create folder."));
 	add_child(mkdirerr);
-
-	exterr = memnew(AcceptDialog);
-	exterr->set_text(TTR("Must use a valid extension."));
-	add_child(exterr);
 
 	update_filters();
 	update_dir();

@@ -1,13 +1,14 @@
 name: 🐧 Linux Builds
 on: [push, pull_request]
 
-# Global Cache Settings
+# Global Settings
 env:
   GODOT_BASE_BRANCH: 3.2
+  SCONSFLAGS: platform=linuxbsd verbose=yes warnings=all werror=yes debug_symbols=no --jobs=2
   SCONS_CACHE_LIMIT: 4096
 
 jobs:
-  linux-editor:
+  linux-editor-mono:
     runs-on: "ubuntu-20.04"
     name: Editor w/ Mono (target=release_debug, tools=yes)
 
@@ -17,13 +18,14 @@ jobs:
       # Azure repositories are not reliable, we need to prevent azure giving us packages.
       - name: Make apt sources.list use the default Ubuntu repositories
         run: |
+          sudo rm -f /etc/apt/sources.list.d/*
           sudo cp -f misc/ci/sources.list /etc/apt/sources.list
           sudo apt-get update
 
       # Install all packages (except scons)
       - name: Configure dependencies
         run: |
-          sudo apt-get install build-essential pkg-config libx11-dev libxcursor-dev \
+          sudo apt-get install build-essential pkg-config libx11-dev libxcursor-dev xvfb \
             libxinerama-dev libgl1-mesa-dev libglu-dev libasound2-dev libpulse-dev libudev-dev libxi-dev libxrandr-dev yasm
 
       # Upload cache on completion and check it out now
@@ -60,9 +62,18 @@ jobs:
         env:
           SCONS_CACHE: ${{github.workspace}}/.scons_cache/
         run: |
-          scons -j2 verbose=yes warnings=all werror=yes platform=x11 tools=yes target=release_debug module_mono_enabled=yes mono_glue=no
+          scons tools=yes target=release_debug module_mono_enabled=yes mono_glue=no
+          xvfb-run ./bin/godot.x11.opt.tools.64.mono --generate-mono-glue modules/mono/glue || true
+          scons tools=yes target=release_debug module_mono_enabled=yes mono_glue=yes
+          ls -l bin/
 
-  linux-template:
+      - uses: actions/upload-artifact@v2
+        with:
+          name: ${{ github.job }}
+          path: bin/*
+          retention-days: 14
+
+  linux-template-mono:
     runs-on: "ubuntu-20.04"
     name: Template w/ Mono (target=release, tools=no)
 
@@ -72,6 +83,7 @@ jobs:
       # Azure repositories are not reliable, we need to prevent azure giving us packages.
       - name: Make apt sources.list use the default Ubuntu repositories
         run: |
+          sudo rm -f /etc/apt/sources.list.d/*
           sudo cp -f misc/ci/sources.list /etc/apt/sources.list
           sudo apt-get update
 
@@ -114,4 +126,85 @@ jobs:
         env:
           SCONS_CACHE: ${{github.workspace}}/.scons_cache/
         run: |
-          scons -j2 verbose=yes warnings=all werror=yes platform=x11 target=release tools=no module_mono_enabled=yes mono_glue=no
+          scons target=release tools=no module_mono_enabled=yes mono_glue=no
+          ls -l bin/
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: ${{ github.job }}
+          path: bin/*
+          retention-days: 14
+
+  linux-editor-sanitizers:
+    runs-on: "ubuntu-20.04"
+    name: Editor and exported project with sanitizers (target=debug/release, tools=yes/no, use_ubsan=yes, use_asan=yes)
+
+    steps:
+      - uses: actions/checkout@v2
+
+      # Azure repositories are not reliable, we need to prevent azure giving us packages.
+      - name: Make apt sources.list use the default Ubuntu repositories
+        run: |
+          sudo rm -f /etc/apt/sources.list.d/*
+          sudo cp -f misc/ci/sources.list /etc/apt/sources.list
+          sudo apt-get update
+
+      # Install all packages (except scons)
+      - name: Configure dependencies
+        run: |
+          sudo apt-get install build-essential pkg-config libx11-dev libxcursor-dev \
+            libxinerama-dev libgl1-mesa-dev libglu-dev libasound2-dev libpulse-dev libudev-dev libxi-dev libxrandr-dev yasm \
+            xvfb wget2 unzip
+
+      # Upload cache on completion and check it out now
+      - name: Load .scons_cache directory
+        id: linux-sanitizer-cache
+        uses: actions/cache@v2
+        with:
+          path: ${{github.workspace}}/.scons_cache/
+          key: ${{github.job}}-${{env.GODOT_BASE_BRANCH}}-${{github.ref}}-${{github.sha}}
+          restore-keys: |
+            ${{github.job}}-${{env.GODOT_BASE_BRANCH}}-${{github.ref}}-${{github.sha}}
+            ${{github.job}}-${{env.GODOT_BASE_BRANCH}}-${{github.ref}}
+            ${{github.job}}-${{env.GODOT_BASE_BRANCH}}
+
+      # Use python 3.x release (works cross platform; best to keep self contained in it's own step)
+      - name: Set up Python 3.x
+        uses: actions/setup-python@v2
+        with:
+          # Semantic version range syntax or exact version of a Python version
+          python-version: '3.x'
+          # Optional - x64 or x86 architecture, defaults to x64
+          architecture: 'x64'
+
+      # Setup scons, print python version and scons version info, so if anything is broken it won't run the build.
+      - name: Configuring Python packages
+        run: |
+          python -c "import sys; print(sys.version)"
+          python -m pip install scons
+          python --version
+          scons --version
+
+      # We should always be explicit with our flags usage here since it's gonna be sure to always set those flags
+      - name: Compilation
+        env:
+          SCONS_CACHE: ${{github.workspace}}/.scons_cache/
+        run: |
+          scons tools=yes target=debug use_asan=yes use_ubsan=yes
+          ls -l bin/
+
+      # Download and test project to check leaks and invalid memory usage.
+      # CI has no audio device, so use the Dummy audio driver to avoid spurious error messages.
+      - name: Importing and running project project
+        run: |
+          wget2 https://github.com/qarmin/RegressionTestProject/archive/3.2.zip
+          unzip 3.2.zip
+          mv "RegressionTestProject-3.2" "test_project"
+
+          echo "----- Open editor to check for memory leaks -----"
+          DRI_PRIME=0 xvfb-run bin/godot.x11.tools.64s --audio-driver Dummy -e -q --path test_project 2>&1 | tee sanitizers_log.txt || true
+          misc/scripts/check_ci_log.py sanitizers_log.txt
+
+          echo "----- Run and test project -----"
+          DRI_PRIME=0 xvfb-run bin/godot.x11.tools.64s 30 --video-driver GLES3 --audio-driver Dummy --path test_project 2>&1 | tee sanitizers_log.txt || true
+          misc/scripts/check_ci_log.py sanitizers_log.txt

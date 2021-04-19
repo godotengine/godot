@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -48,8 +48,9 @@ void Timer::_notification(int p_what) {
 			}
 		} break;
 		case NOTIFICATION_INTERNAL_PROCESS: {
-			if (timer_process_mode == TIMER_PROCESS_PHYSICS || !is_processing_internal())
+			if (!processing || timer_process_mode == TIMER_PROCESS_PHYSICS || !is_processing_internal()) {
 				return;
+			}
 			time_left -= get_process_delta_time();
 
 			if (time_left < 0) {
@@ -63,8 +64,9 @@ void Timer::_notification(int p_what) {
 
 		} break;
 		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
-			if (timer_process_mode == TIMER_PROCESS_IDLE || !is_physics_processing_internal())
+			if (!processing || timer_process_mode == TIMER_PROCESS_IDLE || !is_physics_processing_internal()) {
 				return;
+			}
 			time_left -= get_physics_process_delta_time();
 
 			if (time_left < 0) {

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -65,19 +65,40 @@ void Camera2D::_update_scroll() {
 
 void Camera2D::_update_process_mode() {
 
-	if (Engine::get_singleton()->is_editor_hint()) {
-		set_process_internal(false);
-		set_physics_process_internal(false);
-	} else if (process_mode == CAMERA2D_PROCESS_IDLE) {
-		set_process_internal(true);
+	// smoothing can be enabled in the editor but will never be active
+	if (process_mode == CAMERA2D_PROCESS_IDLE) {
+		set_process_internal(smoothing_active);
 		set_physics_process_internal(false);
 	} else {
 		set_process_internal(false);
-		set_physics_process_internal(true);
+		set_physics_process_internal(smoothing_active);
 	}
 }
 
+void Camera2D::_setup_viewport() {
+	// Disconnect signal on previous viewport if there's one.
+	if (viewport && viewport->is_connected("size_changed", this, "_update_scroll")) {
+		viewport->disconnect("size_changed", this, "_update_scroll");
+	}
+
+	if (custom_viewport && ObjectDB::get_instance(custom_viewport_id)) {
+		viewport = custom_viewport;
+	} else {
+		viewport = get_viewport();
+	}
+
+	RID vp = viewport->get_viewport_rid();
+	group_name = "__cameras_" + itos(vp.get_id());
+	canvas_group_name = "__cameras_c" + itos(canvas.get_id());
+	add_to_group(group_name);
+	add_to_group(canvas_group_name);
+
+	viewport->connect("size_changed", this, "_update_scroll");
+}
+
 void Camera2D::set_zoom(const Vector2 &p_zoom) {
+	// Setting zoom to zero causes 'affine_invert' issues
+	ERR_FAIL_COND_MSG(Math::is_zero_approx(p_zoom.x) || Math::is_zero_approx(p_zoom.y), "Zoom level must be different from 0 (can be negative).");
 
 	zoom = p_zoom;
 	Point2 old_smoothed_camera_pos = smoothed_camera_pos;
@@ -92,7 +113,7 @@ Vector2 Camera2D::get_zoom() const {
 
 Transform2D Camera2D::get_camera_transform() {
 
-	if (!get_tree())
+	if (!get_tree() || !viewport)
 		return Transform2D();
 
 	ERR_FAIL_COND_V(custom_viewport && !ObjectDB::get_instance(custom_viewport_id), Transform2D());
@@ -158,12 +179,11 @@ Transform2D Camera2D::get_camera_transform() {
 				camera_pos.y -= screen_rect.position.y - limit[MARGIN_TOP];
 		}
 
-		if (smoothing_enabled && !Engine::get_singleton()->is_editor_hint()) {
+		if (smoothing_active) {
 
 			float c = smoothing * (process_mode == CAMERA2D_PROCESS_PHYSICS ? get_physics_process_delta_time() : get_process_delta_time());
 			smoothed_camera_pos = ((camera_pos - smoothed_camera_pos) * c) + smoothed_camera_pos;
 			ret_camera_pos = smoothed_camera_pos;
-			//camera_pos=camera_pos*(1.0-smoothing)+new_camera_pos*smoothing;
 		} else {
 
 			ret_camera_pos = smoothed_camera_pos = camera_pos;
@@ -200,19 +220,11 @@ Transform2D Camera2D::get_camera_transform() {
 	camera_screen_center = screen_rect.position + screen_rect.size * 0.5;
 
 	Transform2D xform;
+	xform.scale_basis(zoom);
 	if (rotating) {
 		xform.set_rotation(angle);
 	}
-	xform.scale_basis(zoom);
-	xform.set_origin(screen_rect.position /*.floor()*/);
-
-	/*
-	if (0) {
-		xform = get_global_transform() * xform;
-	} else {
-		xform.elements[2]+=get_global_transform().get_origin();
-	}
-*/
+	xform.set_origin(screen_rect.position);
 
 	return (xform).affine_inverse();
 }
@@ -229,26 +241,16 @@ void Camera2D::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_TRANSFORM_CHANGED: {
 
-			if (!is_processing_internal() && !is_physics_processing_internal())
+			if (!smoothing_active) {
 				_update_scroll();
+			}
 
 		} break;
 		case NOTIFICATION_ENTER_TREE: {
 
-			if (custom_viewport && ObjectDB::get_instance(custom_viewport_id)) {
-				viewport = custom_viewport;
-			} else {
-				viewport = get_viewport();
-			}
-
 			canvas = get_canvas();
 
-			RID vp = viewport->get_viewport_rid();
-
-			group_name = "__cameras_" + itos(vp.get_id());
-			canvas_group_name = "__cameras_c" + itos(canvas.get_id());
-			add_to_group(group_name);
-			add_to_group(canvas_group_name);
+			_setup_viewport();
 
 			_update_process_mode();
 			_update_scroll();
@@ -262,11 +264,15 @@ void Camera2D::_notification(int p_what) {
 					viewport->set_canvas_transform(Transform2D());
 				}
 			}
+			if (viewport) {
+				viewport->disconnect("size_changed", this, "_update_scroll");
+			}
 			remove_from_group(group_name);
 			remove_from_group(canvas_group_name);
 			viewport = NULL;
 
 		} break;
+#ifdef TOOLS_ENABLED
 		case NOTIFICATION_DRAW: {
 
 			if (!is_inside_tree() || !Engine::get_singleton()->is_editor_hint())
@@ -343,8 +349,8 @@ void Camera2D::_notification(int p_what) {
 					draw_line(inv_transform.xform(margin_endpoints[i]), inv_transform.xform(margin_endpoints[(i + 1) % 4]), margin_drawing_color, margin_drawing_width);
 				}
 			}
-
 		} break;
+#endif
 	}
 }
 
@@ -496,6 +502,7 @@ void Camera2D::reset_smoothing() {
 
 void Camera2D::align() {
 
+	ERR_FAIL_COND(!is_inside_tree() || !viewport);
 	ERR_FAIL_COND(custom_viewport && !ObjectDB::get_instance(custom_viewport_id));
 
 	Size2 screen_size = viewport->get_visible_rect().size;
@@ -523,10 +530,6 @@ void Camera2D::align() {
 void Camera2D::set_follow_smoothing(float p_speed) {
 
 	smoothing = p_speed;
-	if (smoothing > 0 && !(is_inside_tree() && Engine::get_singleton()->is_editor_hint()))
-		set_process_internal(true);
-	else
-		set_process_internal(false);
 }
 
 float Camera2D::get_follow_smoothing() const {
@@ -586,17 +589,23 @@ float Camera2D::get_h_offset() const {
 	return h_ofs;
 }
 
-void Camera2D::_set_old_smoothing(float p_enable) {
-	//compatibility
-	if (p_enable > 0) {
-		smoothing_enabled = true;
-		set_follow_smoothing(p_enable);
-	}
-}
-
 void Camera2D::set_enable_follow_smoothing(bool p_enabled) {
 
+	// watch for situation where an pre-enabled camera is added to the tree
+	// processing must be resumed and bypass this noop check
+	// (this currently works but is a possible future bug)
+	if (smoothing_enabled == p_enabled) {
+		return;
+	}
+
+	// Separate the logic between enabled and active, because the smoothing
+	// cannot be active in the editor. This can be done without a separate flag
+	// but is bug prone so this approach is easier to follow.
 	smoothing_enabled = p_enabled;
+	smoothing_active = smoothing_enabled && !Engine::get_singleton()->is_editor_hint();
+
+	// keep the processing up to date after each change
+	_update_process_mode();
 }
 
 bool Camera2D::is_follow_smoothing_enabled() const {
@@ -620,17 +629,7 @@ void Camera2D::set_custom_viewport(Node *p_viewport) {
 	}
 
 	if (is_inside_tree()) {
-
-		if (custom_viewport)
-			viewport = custom_viewport;
-		else
-			viewport = get_viewport();
-
-		RID vp = viewport->get_viewport_rid();
-		group_name = "__cameras_" + itos(vp.get_id());
-		canvas_group_name = "__cameras_c" + itos(canvas.get_id());
-		add_to_group(group_name);
-		add_to_group(canvas_group_name);
+		_setup_viewport();
 	}
 }
 
@@ -641,7 +640,9 @@ Node *Camera2D::get_custom_viewport() const {
 
 void Camera2D::set_screen_drawing_enabled(bool enable) {
 	screen_drawing_enabled = enable;
+#ifdef TOOLS_ENABLED
 	update();
+#endif
 }
 
 bool Camera2D::is_screen_drawing_enabled() const {
@@ -650,7 +651,9 @@ bool Camera2D::is_screen_drawing_enabled() const {
 
 void Camera2D::set_limit_drawing_enabled(bool enable) {
 	limit_drawing_enabled = enable;
+#ifdef TOOLS_ENABLED
 	update();
+#endif
 }
 
 bool Camera2D::is_limit_drawing_enabled() const {
@@ -659,7 +662,9 @@ bool Camera2D::is_limit_drawing_enabled() const {
 
 void Camera2D::set_margin_drawing_enabled(bool enable) {
 	margin_drawing_enabled = enable;
+#ifdef TOOLS_ENABLED
 	update();
+#endif
 }
 
 bool Camera2D::is_margin_drawing_enabled() const {
@@ -728,8 +733,6 @@ void Camera2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("force_update_scroll"), &Camera2D::force_update_scroll);
 	ClassDB::bind_method(D_METHOD("reset_smoothing"), &Camera2D::reset_smoothing);
 	ClassDB::bind_method(D_METHOD("align"), &Camera2D::align);
-
-	ClassDB::bind_method(D_METHOD("_set_old_smoothing", "follow_smoothing"), &Camera2D::_set_old_smoothing);
 
 	ClassDB::bind_method(D_METHOD("set_screen_drawing_enabled", "screen_drawing_enabled"), &Camera2D::set_screen_drawing_enabled);
 	ClassDB::bind_method(D_METHOD("is_screen_drawing_enabled"), &Camera2D::is_screen_drawing_enabled);
@@ -801,7 +804,10 @@ Camera2D::Camera2D() {
 	camera_pos = Vector2();
 	first = true;
 	smoothing_enabled = false;
+	smoothing_active = false;
 	limit_smoothing_enabled = false;
+
+	viewport = NULL;
 	custom_viewport = NULL;
 	custom_viewport_id = 0;
 	process_mode = CAMERA2D_PROCESS_IDLE;

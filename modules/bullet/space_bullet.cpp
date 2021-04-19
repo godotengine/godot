@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -179,8 +179,10 @@ bool BulletPhysicsDirectSpaceState::cast_motion(const RID &p_shape, const Transf
 	bt_xform_to.getOrigin() += bt_motion;
 
 	if ((bt_xform_to.getOrigin() - bt_xform_from.getOrigin()).fuzzyZero()) {
+		r_closest_safe = 1.0f;
+		r_closest_unsafe = 1.0f;
 		bulletdelete(btShape);
-		return false;
+		return true;
 	}
 
 	GodotClosestConvexResultCallback btResult(bt_xform_from.getOrigin(), bt_xform_to.getOrigin(), &p_exclude, p_collide_with_bodies, p_collide_with_areas);
@@ -497,11 +499,25 @@ void SpaceBullet::add_rigid_body(RigidBodyBullet *p_body) {
 	}
 }
 
+void SpaceBullet::remove_rigid_body_constraints(RigidBodyBullet *p_body) {
+	btRigidBody *btBody = p_body->get_bt_rigid_body();
+
+	int constraints = btBody->getNumConstraintRefs();
+	if (constraints > 0) {
+		ERR_PRINT("A body connected to joints was removed.");
+		for (int i = 0; i < constraints; i++) {
+			dynamicsWorld->removeConstraint(btBody->getConstraintRef(i));
+		}
+	}
+}
+
 void SpaceBullet::remove_rigid_body(RigidBodyBullet *p_body) {
+	btRigidBody *btBody = p_body->get_bt_rigid_body();
+
 	if (p_body->is_static()) {
-		dynamicsWorld->removeCollisionObject(p_body->get_bt_rigid_body());
+		dynamicsWorld->removeCollisionObject(btBody);
 	} else {
-		dynamicsWorld->removeRigidBody(p_body->get_bt_rigid_body());
+		dynamicsWorld->removeRigidBody(btBody);
 	}
 }
 
@@ -858,17 +874,29 @@ void SpaceBullet::check_body_collision() {
 					float appliedImpulse = pt.m_appliedImpulse;
 					B_TO_G(pt.m_normalWorldOnB, normalOnB);
 
+					// The pt.m_index only contains the shape index when more than one collision shape is used
+					// and only if the collision shape is not a concave collision shape.
+					// A value of -1 in pt.m_partId indicates the pt.m_index is a shape index.
+					int shape_index_a = 0;
+					if (bodyA->get_shape_count() > 1 && pt.m_partId0 == -1) {
+						shape_index_a = pt.m_index0;
+					}
+					int shape_index_b = 0;
+					if (bodyB->get_shape_count() > 1 && pt.m_partId1 == -1) {
+						shape_index_b = pt.m_index1;
+					}
+
 					if (bodyA->can_add_collision()) {
 						B_TO_G(pt.getPositionWorldOnB(), collisionWorldPosition);
 						/// pt.m_localPointB Doesn't report the exact point in local space
 						B_TO_G(pt.getPositionWorldOnB() - contactManifold->getBody1()->getWorldTransform().getOrigin(), collisionLocalPosition);
-						bodyA->add_collision_object(bodyB, collisionWorldPosition, collisionLocalPosition, normalOnB, appliedImpulse, pt.m_index1, pt.m_index0);
+						bodyA->add_collision_object(bodyB, collisionWorldPosition, collisionLocalPosition, normalOnB, appliedImpulse, shape_index_b, shape_index_a);
 					}
 					if (bodyB->can_add_collision()) {
 						B_TO_G(pt.getPositionWorldOnA(), collisionWorldPosition);
 						/// pt.m_localPointA Doesn't report the exact point in local space
 						B_TO_G(pt.getPositionWorldOnA() - contactManifold->getBody0()->getWorldTransform().getOrigin(), collisionLocalPosition);
-						bodyB->add_collision_object(bodyA, collisionWorldPosition, collisionLocalPosition, normalOnB * -1, appliedImpulse * -1, pt.m_index0, pt.m_index1);
+						bodyB->add_collision_object(bodyA, collisionWorldPosition, collisionLocalPosition, normalOnB * -1, appliedImpulse * -1, shape_index_a, shape_index_b);
 					}
 
 #ifdef DEBUG_ENABLED

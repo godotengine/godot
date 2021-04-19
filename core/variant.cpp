@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -791,7 +791,7 @@ bool Variant::is_zero() const {
 		} break;
 		case OBJECT: {
 
-			return _OBJ_PTR(*this) == NULL;
+			return _UNSAFE_OBJ_PROXY_PTR(*this) == NULL;
 		} break;
 		case NODE_PATH: {
 
@@ -2338,12 +2338,20 @@ Variant::Variant(const RID &p_rid) {
 Variant::Variant(const Object *p_object) {
 
 	type = OBJECT;
+	Object *obj = const_cast<Object *>(p_object);
 
 	memnew_placement(_data._mem, ObjData);
+	Reference *ref = Object::cast_to<Reference>(obj);
+	if (unlikely(ref)) {
+		*reinterpret_cast<Ref<Reference> *>(_get_obj().ref.get_data()) = Ref<Reference>(ref);
 #ifdef DEBUG_ENABLED
-	_get_obj().rc = p_object ? const_cast<Object *>(p_object)->_use_rc() : NULL;
-#else
-	_get_obj().obj = const_cast<Object *>(p_object);
+		_get_obj().rc = NULL;
+	} else {
+		_get_obj().rc = likely(obj) ? obj->_use_rc() : NULL;
+#endif
+	}
+#if !defined(DEBUG_ENABLED)
+	_get_obj().obj = obj;
 #endif
 }
 
@@ -2865,7 +2873,7 @@ uint32_t Variant::hash() const {
 		} break;
 		case OBJECT: {
 
-			return hash_djb2_one_64(make_uint64_t(_OBJ_PTR(*this)));
+			return hash_djb2_one_64(make_uint64_t(_UNSAFE_OBJ_PROXY_PTR(*this)));
 		} break;
 		case NODE_PATH: {
 

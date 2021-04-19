@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -38,6 +38,7 @@
 #include "audio/audio_effect.h"
 #include "audio/audio_stream.h"
 #include "audio/effects/audio_effect_amplify.h"
+#include "audio/effects/audio_effect_capture.h"
 #include "audio/effects/audio_effect_chorus.h"
 #include "audio/effects/audio_effect_compressor.h"
 #include "audio/effects/audio_effect_delay.h"
@@ -170,6 +171,8 @@ void register_server_types() {
 		ClassDB::register_class<AudioEffectRecord>();
 		ClassDB::register_class<AudioEffectSpectrumAnalyzer>();
 		ClassDB::register_virtual_class<AudioEffectSpectrumAnalyzerInstance>();
+
+		ClassDB::register_class<AudioEffectCapture>();
 	}
 
 	ClassDB::register_class<CameraFeed>();

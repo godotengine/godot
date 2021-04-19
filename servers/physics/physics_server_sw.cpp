@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,8 +31,10 @@
 #include "physics_server_sw.h"
 
 #include "broad_phase_basic.h"
+#include "broad_phase_bvh.h"
 #include "broad_phase_octree.h"
 #include "core/os/os.h"
+#include "core/project_settings.h"
 #include "core/script_language.h"
 #include "joints/cone_twist_joint_sw.h"
 #include "joints/generic_6dof_joint_sw.h"
@@ -70,7 +72,7 @@ RID PhysicsServerSW::shape_create(ShapeType p_shape) {
 		} break;
 		case SHAPE_CYLINDER: {
 
-			ERR_FAIL_V_MSG(RID(), "CylinderShape is not supported in GodotPhysics. Please switch to Bullet in the Project Settings.");
+			shape = memnew(CylinderShapeSW);
 		} break;
 		case SHAPE_CONVEX_POLYGON: {
 
@@ -196,7 +198,7 @@ PhysicsDirectSpaceState *PhysicsServerSW::space_get_direct_state(RID p_space) {
 
 	SpaceSW *space = space_owner.get(p_space);
 	ERR_FAIL_COND_V(!space, NULL);
-	ERR_FAIL_COND_V_MSG(!doing_sync || space->is_locked(), NULL, "Space state is inaccessible right now, wait for iteration or physics process notification.");
+	ERR_FAIL_COND_V_MSG(space->is_locked(), NULL, "Space state is inaccessible right now, wait for iteration or physics process notification.");
 
 	return space->get_direct_state();
 }
@@ -979,7 +981,7 @@ PhysicsDirectBodyState *PhysicsServerSW::body_get_direct_state(RID p_body) {
 
 	BodySW *body = body_owner.get(p_body);
 	ERR_FAIL_COND_V(!body, NULL);
-	ERR_FAIL_COND_V_MSG(!doing_sync || body->get_space()->is_locked(), NULL, "Body state is inaccessible right now, wait for iteration or physics process notification.");
+	ERR_FAIL_COND_V_MSG(body->get_space()->is_locked(), NULL, "Body state is inaccessible right now, wait for iteration or physics process notification.");
 
 	direct_state->body = body;
 	return direct_state;
@@ -1408,7 +1410,6 @@ void PhysicsServerSW::set_active(bool p_active) {
 
 void PhysicsServerSW::init() {
 
-	doing_sync = true;
 	last_step = 0.001;
 	iterations = 8; // 8?
 	stepper = memnew(StepSW);
@@ -1423,8 +1424,6 @@ void PhysicsServerSW::step(real_t p_step) {
 		return;
 
 	_update_shapes();
-
-	doing_sync = false;
 
 	last_step = p_step;
 	PhysicsDirectBodyStateSW::singleton->step = p_step;
@@ -1442,18 +1441,12 @@ void PhysicsServerSW::step(real_t p_step) {
 #endif
 }
 
-void PhysicsServerSW::sync(){
-
-};
-
 void PhysicsServerSW::flush_queries() {
 
 #ifndef _3D_DISABLED
 
 	if (!active)
 		return;
-
-	doing_sync = true;
 
 	flushing_queries = true;
 
@@ -1574,7 +1567,15 @@ void PhysicsServerSW::_shape_col_cbk(const Vector3 &p_point_A, const Vector3 &p_
 PhysicsServerSW *PhysicsServerSW::singleton = NULL;
 PhysicsServerSW::PhysicsServerSW() {
 	singleton = this;
-	BroadPhaseSW::create_func = BroadPhaseOctree::_create;
+
+	bool use_bvh_or_octree = GLOBAL_GET("physics/3d/godot_physics/use_bvh");
+
+	if (use_bvh_or_octree) {
+		BroadPhaseSW::create_func = BroadPhaseBVH::_create;
+	} else {
+		BroadPhaseSW::create_func = BroadPhaseOctree::_create;
+	}
+
 	island_count = 0;
 	active_objects = 0;
 	collision_pairs = 0;

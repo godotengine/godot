@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -185,7 +185,9 @@ void EditorSpinSlider::_grabber_gui_input(const Ref<InputEvent> &p_event) {
 		if (mousewheel_over_grabber)
 			return;
 
-		float grabbing_ofs = (grabber->get_transform().xform(mm->get_position()).x - grabbing_from) / float(grabber_range);
+		float scale_x = get_global_transform_with_canvas().get_scale().x;
+		ERR_FAIL_COND(Math::is_zero_approx(scale_x));
+		float grabbing_ofs = (grabber->get_transform().xform(mm->get_position()).x - grabbing_from) / float(grabber_range) / scale_x;
 		set_as_ratio(grabbing_ratio + grabbing_ofs);
 		update();
 	}
@@ -311,8 +313,10 @@ void EditorSpinSlider::_notification(int p_what) {
 					grabber->set_texture(grabber_tex);
 				}
 
+				Vector2 scale = get_global_transform_with_canvas().get_scale();
+				grabber->set_scale(scale);
 				grabber->set_size(Size2(0, 0));
-				grabber->set_position(get_global_position() + grabber_rect.position + grabber_rect.size * 0.5 - grabber->get_size() * 0.5);
+				grabber->set_position(get_global_position() + (grabber_rect.position + grabber_rect.size * 0.5 - grabber->get_size() * 0.5) * scale);
 
 				if (mousewheel_over_grabber) {
 					Input::get_singleton()->warp_mouse_position(grabber->get_position() + grabber_rect.size);
@@ -376,7 +380,12 @@ String EditorSpinSlider::get_label() const {
 }
 
 void EditorSpinSlider::_evaluate_input_text() {
-	String text = value_input->get_text();
+	// Replace comma with dot to support it as decimal separator (GH-6028).
+	// This prevents using functions like `pow()`, but using functions
+	// in EditorSpinSlider is a barely known (and barely used) feature.
+	// Instead, we'd rather support German/French keyboard layouts out of the box.
+	const String text = value_input->get_text().replace(",", ".");
+
 	Ref<Expression> expr;
 	expr.instance();
 	Error err = expr->parse(text);

@@ -12,8 +12,14 @@
 		Finally, viewports can also behave as render targets, in which case they will not be visible unless the associated texture is used to draw.
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/latest/tutorials/2d/2d_transforms.html</link>
-		<link>https://docs.godotengine.org/en/latest/tutorials/viewports/index.html</link>
+		<link title="Viewport and canvas transforms">https://docs.godotengine.org/en/3.2/tutorials/2d/2d_transforms.html</link>
+		<link title="Viewports tutorial index">https://docs.godotengine.org/en/3.2/tutorials/viewports/index.html</link>
+		<link title="GUI in 3D Demo">https://godotengine.org/asset-library/asset/127</link>
+		<link title="3D in 2D Demo">https://godotengine.org/asset-library/asset/128</link>
+		<link title="2D in 3D Demo">https://godotengine.org/asset-library/asset/129</link>
+		<link title="Screen Capture Demo">https://godotengine.org/asset-library/asset/130</link>
+		<link title="Dynamic Split Screen Demo">https://godotengine.org/asset-library/asset/541</link>
+		<link title="3D Viewport Scaling Demo">https://godotengine.org/asset-library/asset/586</link>
 	</tutorials>
 	<methods>
 		<method name="find_world" qualifiers="const">
@@ -229,17 +235,24 @@
 		<member name="canvas_transform" type="Transform2D" setter="set_canvas_transform" getter="get_canvas_transform">
 			The canvas transform of the viewport, useful for changing the on-screen positions of all child [CanvasItem]s. This is relative to the global canvas transform of the viewport.
 		</member>
+		<member name="debanding" type="bool" setter="set_use_debanding" getter="get_use_debanding" default="false">
+			If [code]true[/code], uses a fast post-processing filter to make banding significantly less visible. In some cases, debanding may introduce a slightly noticeable dithering pattern. It's recommended to enable debanding only when actually needed since the dithering pattern will make lossless-compressed screenshots larger.
+			[b]Note:[/b] Only available on the GLES3 backend. [member hdr] must also be [code]true[/code] for debanding to be effective.
+		</member>
 		<member name="debug_draw" type="int" setter="set_debug_draw" getter="get_debug_draw" enum="Viewport.DebugDraw" default="0">
 			The overlay mode for test rendered geometry in debug purposes.
 		</member>
 		<member name="disable_3d" type="bool" setter="set_disable_3d" getter="is_3d_disabled" default="false">
 			If [code]true[/code], the viewport will disable 3D rendering. For actual disabling use [code]usage[/code].
 		</member>
+		<member name="fxaa" type="bool" setter="set_use_fxaa" getter="get_use_fxaa" default="false">
+			Enables fast approximate antialiasing. FXAA is a popular screen-space antialiasing method, which is fast but will make the image look blurry, especially at lower resolutions. It can still work relatively well at large resolutions such as 1440p and 4K.
+		</member>
 		<member name="global_canvas_transform" type="Transform2D" setter="set_global_canvas_transform" getter="get_global_canvas_transform">
 			The global canvas transform of the viewport. The canvas transform is relative to this.
 		</member>
 		<member name="gui_disable_input" type="bool" setter="set_disable_input" getter="is_input_disabled" default="false">
-			If [code]true[/code], the viewport will not receive input event.
+			If [code]true[/code], the viewport will not receive input events.
 		</member>
 		<member name="gui_snap_controls_to_pixels" type="bool" setter="set_snap_controls_to_pixels" getter="is_snap_controls_to_pixels_enabled" default="true">
 			If [code]true[/code], the GUI controls on the viewport will lay pixel perfectly.

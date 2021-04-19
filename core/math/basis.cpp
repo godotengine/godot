@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -805,8 +805,8 @@ Quat Basis::get_quat() const {
 		temp[2] = ((m.elements[1][0] - m.elements[0][1]) * s);
 	} else {
 		int i = m.elements[0][0] < m.elements[1][1] ?
-						(m.elements[1][1] < m.elements[2][2] ? 2 : 1) :
-						(m.elements[0][0] < m.elements[2][2] ? 2 : 0);
+						  (m.elements[1][1] < m.elements[2][2] ? 2 : 1) :
+						  (m.elements[0][0] < m.elements[2][2] ? 2 : 0);
 		int j = (i + 1) % 3;
 		int k = (i + 2) % 3;
 

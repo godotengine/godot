@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,6 +33,7 @@
 #include "navigation.h"
 
 void NavigationMesh::create_from_mesh(const Ref<Mesh> &p_mesh) {
+	ERR_FAIL_COND(p_mesh.is_null());
 
 	vertices = PoolVector<Vector3>();
 	clear_polygons();
@@ -697,19 +698,28 @@ String NavigationMeshInstance::get_configuration_warning() const {
 	if (!is_visible_in_tree() || !is_inside_tree())
 		return String();
 
+	String warning = Spatial::get_configuration_warning();
 	if (!navmesh.is_valid()) {
-		return TTR("A NavigationMesh resource must be set or created for this node to work.");
+		if (warning != String()) {
+			warning += "\n\n";
+		}
+		warning += TTR("A NavigationMesh resource must be set or created for this node to work.");
+		return warning;
 	}
 	const Spatial *c = this;
 	while (c) {
 
 		if (Object::cast_to<Navigation>(c))
-			return String();
+			return warning;
 
 		c = Object::cast_to<Spatial>(c->get_parent());
 	}
 
-	return TTR("NavigationMeshInstance must be a child or grandchild to a Navigation node. It only provides navigation data.");
+	if (warning != String()) {
+		warning += "\n\n";
+	}
+	warning += TTR("NavigationMeshInstance must be a child or grandchild to a Navigation node. It only provides navigation data.");
+	return warning;
 }
 
 void NavigationMeshInstance::_bind_methods() {

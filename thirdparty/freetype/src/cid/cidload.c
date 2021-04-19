@@ -17,11 +17,11 @@
 
 
 #include <ft2build.h>
-#include FT_INTERNAL_DEBUG_H
+#include <freetype/internal/ftdebug.h>
 #include FT_CONFIG_CONFIG_H
-#include FT_MULTIPLE_MASTERS_H
-#include FT_INTERNAL_TYPE1_TYPES_H
-#include FT_INTERNAL_POSTSCRIPT_AUX_H
+#include <freetype/ftmm.h>
+#include <freetype/internal/t1types.h>
+#include <freetype/internal/psaux.h>
 
 #include "cidload.h"
 
@@ -254,7 +254,7 @@
       goto Exit;
     }
 
-    FT_TRACE4(( " %d\n", num_dicts ));
+    FT_TRACE4(( " %ld\n", num_dicts ));
 
     /*
      * A single entry in the FDArray must (at least) contain the following
@@ -275,7 +275,7 @@
     if ( (FT_ULong)num_dicts > stream->size / 100 )
     {
       FT_TRACE0(( "parse_fd_array: adjusting FDArray size"
-                  " (from %d to %d)\n",
+                  " (from %ld to %ld)\n",
                   num_dicts,
                   stream->size / 100 ));
       num_dicts = (FT_Long)( stream->size / 100 );
@@ -329,7 +329,7 @@
       dict->expansion_factor              = cid_parser_to_fixed( parser, 0 );
       dict->private_dict.expansion_factor = dict->expansion_factor;
 
-      FT_TRACE4(( "%d\n", dict->expansion_factor ));
+      FT_TRACE4(( "%ld\n", dict->expansion_factor ));
     }
 
     return;
@@ -804,7 +804,7 @@
              face->root.stream->size - parser->data_offset )
       {
         FT_TRACE0(( "cid_face_open: adjusting length of binary data\n"
-                    "               (from %d to %d bytes)\n",
+                    "               (from %ld to %ld bytes)\n",
                     parser->binary_length,
                     face->root.stream->size - parser->data_offset ));
         parser->binary_length = face->root.stream->size -

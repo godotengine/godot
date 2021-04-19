@@ -21,8 +21,7 @@
 #define FTOUTLN_H_
 
 
-#include <ft2build.h>
-#include FT_FREETYPE_H
+#include <freetype/freetype.h>
 
 #ifdef FREETYPE_H
 #error "freetype.h of FreeType 1 has been loaded!"
@@ -483,19 +482,13 @@ FT_BEGIN_HEADER
    *   FreeType error code.  0~means success.
    *
    * @note:
-   *   This advanced function uses @FT_Raster_Params as an argument,
-   *   allowing FreeType rasterizer to be used for direct composition,
-   *   translucency, etc.  You should know how to set up @FT_Raster_Params
-   *   for this function to work.
-   *
+   *   This advanced function uses @FT_Raster_Params as an argument.
    *   The field `params.source` will be set to `outline` before the scan
    *   converter is called, which means that the value you give to it is
-   *   actually ignored.
-   *
-   *   The gray-level rasterizer always uses 256 gray levels.  If you want
-   *   less gray levels, you have to provide your own span callback.  See the
-   *   @FT_RASTER_FLAG_DIRECT value of the `flags` field in the
-   *   @FT_Raster_Params structure for more details.
+   *   actually ignored.  Either `params.target` must point to preallocated
+   *   bitmap, or @FT_RASTER_FLAG_DIRECT must be set in `params.flags`
+   *   allowing FreeType rasterizer to be used for direct composition,
+   *   translucency, etc.  See @FT_Raster_Params for more details.
    */
   FT_EXPORT( FT_Error )
   FT_Outline_Render( FT_Library         library,

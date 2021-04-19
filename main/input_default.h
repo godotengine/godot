@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -83,9 +83,8 @@ class InputDefault : public Input {
 		StringName name;
 		StringName uid;
 		bool connected;
-		bool last_buttons[JOY_BUTTON_MAX + 19]; //apparently SDL specifies 35 possible buttons on android
+		bool last_buttons[JOY_BUTTON_MAX + 13]; //apparently SDL specifies 35 possible buttons on android
 		float last_axis[JOY_AXIS_MAX];
-		float filter;
 		int last_hat;
 		int mapping;
 		int hat_current;
@@ -95,13 +94,12 @@ class InputDefault : public Input {
 
 				last_axis[i] = 0.0f;
 			}
-			for (int i = 0; i < JOY_BUTTON_MAX + 19; i++) {
+			for (int i = 0; i < JOY_BUTTON_MAX + 13; i++) {
 
 				last_buttons[i] = false;
 			}
 			connected = false;
 			last_hat = HAT_MASK_CENTER;
-			filter = 0.01f;
 			mapping = -1;
 			hat_current = 0;
 		}
@@ -199,7 +197,7 @@ private:
 	Vector<JoyDeviceMapping> map_db;
 
 	JoyEvent _get_mapped_button_event(const JoyDeviceMapping &mapping, int p_button);
-	JoyEvent _get_mapped_axis_event(const JoyDeviceMapping &mapping, int p_axis, const JoyAxis &p_value);
+	JoyEvent _get_mapped_axis_event(const JoyDeviceMapping &mapping, int p_axis, float p_value);
 	void _get_mapped_hat_events(const JoyDeviceMapping &mapping, int p_hat, JoyEvent r_events[HAT_MAX]);
 	JoystickList _get_output_button(String output);
 	JoystickList _get_output_axis(String output);

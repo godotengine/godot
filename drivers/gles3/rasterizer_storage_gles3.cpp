@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -2071,6 +2071,9 @@ void RasterizerStorageGLES3::sky_set_texture(RID p_sky, RID p_panorama, int p_ra
 		glTexParameterf(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 		glTexParameterf(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
+		//reset flags on Sky Texture that may have changed
+		texture_set_flags(sky->panorama, texture->flags);
+
 		glBindFramebuffer(GL_FRAMEBUFFER, RasterizerStorageGLES3::system_fbo);
 		glDeleteFramebuffers(1, &tmp_fb);
 		glDeleteFramebuffers(1, &tmp_fb2);
@@ -2305,6 +2308,15 @@ void RasterizerStorageGLES3::_update_shader(Shader *p_shader) const {
 			p_shader->canvas_item.uses_screen_texture = false;
 			p_shader->canvas_item.uses_screen_uv = false;
 			p_shader->canvas_item.uses_time = false;
+			p_shader->canvas_item.uses_modulate = false;
+			p_shader->canvas_item.uses_color = false;
+			p_shader->canvas_item.uses_vertex = false;
+			p_shader->canvas_item.batch_flags = 0;
+
+			p_shader->canvas_item.uses_world_matrix = false;
+			p_shader->canvas_item.uses_extra_matrix = false;
+			p_shader->canvas_item.uses_projection_matrix = false;
+			p_shader->canvas_item.uses_instance_custom = false;
 
 			shaders.actions_canvas.render_mode_values["blend_add"] = Pair<int *, int>(&p_shader->canvas_item.blend_mode, Shader::CanvasItem::BLEND_MODE_ADD);
 			shaders.actions_canvas.render_mode_values["blend_mix"] = Pair<int *, int>(&p_shader->canvas_item.blend_mode, Shader::CanvasItem::BLEND_MODE_MIX);
@@ -2320,6 +2332,15 @@ void RasterizerStorageGLES3::_update_shader(Shader *p_shader) const {
 			shaders.actions_canvas.usage_flag_pointers["SCREEN_PIXEL_SIZE"] = &p_shader->canvas_item.uses_screen_uv;
 			shaders.actions_canvas.usage_flag_pointers["SCREEN_TEXTURE"] = &p_shader->canvas_item.uses_screen_texture;
 			shaders.actions_canvas.usage_flag_pointers["TIME"] = &p_shader->canvas_item.uses_time;
+
+			shaders.actions_canvas.usage_flag_pointers["MODULATE"] = &p_shader->canvas_item.uses_modulate;
+			shaders.actions_canvas.usage_flag_pointers["COLOR"] = &p_shader->canvas_item.uses_color;
+			shaders.actions_canvas.usage_flag_pointers["VERTEX"] = &p_shader->canvas_item.uses_vertex;
+
+			shaders.actions_canvas.usage_flag_pointers["WORLD_MATRIX"] = &p_shader->canvas_item.uses_world_matrix;
+			shaders.actions_canvas.usage_flag_pointers["EXTRA_MATRIX"] = &p_shader->canvas_item.uses_extra_matrix;
+			shaders.actions_canvas.usage_flag_pointers["PROJECTION_MATRIX"] = &p_shader->canvas_item.uses_projection_matrix;
+			shaders.actions_canvas.usage_flag_pointers["INSTANCE_CUSTOM"] = &p_shader->canvas_item.uses_instance_custom;
 
 			actions = &shaders.actions_canvas;
 			actions->uniforms = &p_shader->uniforms;
@@ -2342,6 +2363,8 @@ void RasterizerStorageGLES3::_update_shader(Shader *p_shader) const {
 			p_shader->spatial.uses_screen_texture = false;
 			p_shader->spatial.uses_depth_texture = false;
 			p_shader->spatial.uses_vertex = false;
+			p_shader->spatial.uses_tangent = false;
+			p_shader->spatial.uses_ensure_correct_normals = false;
 			p_shader->spatial.writes_modelview_or_projection = false;
 			p_shader->spatial.uses_world_coordinates = false;
 
@@ -2366,6 +2389,8 @@ void RasterizerStorageGLES3::_update_shader(Shader *p_shader) const {
 
 			shaders.actions_scene.render_mode_flags["world_vertex_coords"] = &p_shader->spatial.uses_world_coordinates;
 
+			shaders.actions_scene.render_mode_flags["ensure_correct_normals"] = &p_shader->spatial.uses_ensure_correct_normals;
+
 			shaders.actions_scene.usage_flag_pointers["ALPHA"] = &p_shader->spatial.uses_alpha;
 			shaders.actions_scene.usage_flag_pointers["ALPHA_SCISSOR"] = &p_shader->spatial.uses_alpha_scissor;
 
@@ -2374,6 +2399,11 @@ void RasterizerStorageGLES3::_update_shader(Shader *p_shader) const {
 			shaders.actions_scene.usage_flag_pointers["SCREEN_TEXTURE"] = &p_shader->spatial.uses_screen_texture;
 			shaders.actions_scene.usage_flag_pointers["DEPTH_TEXTURE"] = &p_shader->spatial.uses_depth_texture;
 			shaders.actions_scene.usage_flag_pointers["TIME"] = &p_shader->spatial.uses_time;
+
+			// Use of any of these BUILTINS indicate the need for transformed tangents.
+			// This is needed to know when to transform tangents in software skinning.
+			shaders.actions_scene.usage_flag_pointers["TANGENT"] = &p_shader->spatial.uses_tangent;
+			shaders.actions_scene.usage_flag_pointers["NORMALMAP"] = &p_shader->spatial.uses_tangent;
 
 			shaders.actions_scene.write_flag_pointers["MODELVIEW_MATRIX"] = &p_shader->spatial.writes_modelview_or_projection;
 			shaders.actions_scene.write_flag_pointers["PROJECTION_MATRIX"] = &p_shader->spatial.writes_modelview_or_projection;
@@ -2407,6 +2437,19 @@ void RasterizerStorageGLES3::_update_shader(Shader *p_shader) const {
 
 	p_shader->uses_vertex_time = gen_code.uses_vertex_time;
 	p_shader->uses_fragment_time = gen_code.uses_fragment_time;
+
+	// some logic for batching
+	if (p_shader->mode == VS::SHADER_CANVAS_ITEM) {
+		if (p_shader->canvas_item.uses_modulate | p_shader->canvas_item.uses_color) {
+			p_shader->canvas_item.batch_flags |= RasterizerStorageCommon::PREVENT_COLOR_BAKING;
+		}
+		if (p_shader->canvas_item.uses_vertex) {
+			p_shader->canvas_item.batch_flags |= RasterizerStorageCommon::PREVENT_VERTEX_BAKING;
+		}
+		if (p_shader->canvas_item.uses_world_matrix | p_shader->canvas_item.uses_extra_matrix | p_shader->canvas_item.uses_projection_matrix | p_shader->canvas_item.uses_instance_custom) {
+			p_shader->canvas_item.batch_flags |= RasterizerStorageCommon::PREVENT_ITEM_JOINING;
+		}
+	}
 
 	//all materials using this shader will have to be invalidated, unfortunately
 
@@ -2724,6 +2767,36 @@ bool RasterizerStorageGLES3::material_casts_shadows(RID p_material) {
 	}
 
 	return casts_shadows;
+}
+
+bool RasterizerStorageGLES3::material_uses_tangents(RID p_material) {
+	Material *material = material_owner.get(p_material);
+	ERR_FAIL_COND_V(!material, false);
+
+	if (!material->shader) {
+		return false;
+	}
+
+	if (material->shader->dirty_list.in_list()) {
+		_update_shader(material->shader);
+	}
+
+	return material->shader->spatial.uses_tangent;
+}
+
+bool RasterizerStorageGLES3::material_uses_ensure_correct_normals(RID p_material) {
+	Material *material = material_owner.get(p_material);
+	ERR_FAIL_COND_V(!material, false);
+
+	if (!material->shader) {
+		return false;
+	}
+
+	if (material->shader->dirty_list.in_list()) {
+		_update_shader(material->shader);
+	}
+
+	return material->shader->spatial.uses_ensure_correct_normals;
 }
 
 void RasterizerStorageGLES3::material_add_instance_owner(RID p_material, RasterizerScene::InstanceBase *p_instance) {
@@ -4403,8 +4476,10 @@ void RasterizerStorageGLES3::mesh_render_blend_shapes(Surface *s, const float *p
 	for (int ti = 0; ti < mtc; ti++) {
 		float weight = p_weights[ti];
 
-		if (weight < 0.00001) //not bother with this one
+		if (Math::is_zero_approx(weight)) {
+			//not bother with this one
 			continue;
+		}
 
 		glBindVertexArray(s->blend_shapes[ti].array_id);
 		glBindBuffer(GL_ARRAY_BUFFER, resources.transform_feedback_buffers[0]);
@@ -5028,7 +5103,12 @@ void RasterizerStorageGLES3::update_dirty_multimeshes() {
 		if (multimesh->size && multimesh->dirty_data) {
 
 			glBindBuffer(GL_ARRAY_BUFFER, multimesh->buffer);
-			glBufferSubData(GL_ARRAY_BUFFER, 0, multimesh->data.size() * sizeof(float), multimesh->data.ptr());
+			uint32_t buffer_size = multimesh->data.size() * sizeof(float);
+			if (config.should_orphan) {
+				glBufferData(GL_ARRAY_BUFFER, buffer_size, multimesh->data.ptr(), GL_DYNAMIC_DRAW);
+			} else {
+				glBufferSubData(GL_ARRAY_BUFFER, 0, buffer_size, multimesh->data.ptr());
+			}
 			glBindBuffer(GL_ARRAY_BUFFER, 0);
 		}
 
@@ -5479,7 +5559,7 @@ RID RasterizerStorageGLES3::light_create(VS::LightType p_type) {
 	light->directional_blend_splits = false;
 	light->directional_range_mode = VS::LIGHT_DIRECTIONAL_SHADOW_DEPTH_RANGE_STABLE;
 	light->reverse_cull = false;
-	light->use_gi = true;
+	light->bake_mode = VS::LIGHT_BAKE_INDIRECT;
 	light->version = 0;
 
 	return light_owner.make_rid(light);
@@ -5572,14 +5652,20 @@ void RasterizerStorageGLES3::light_set_reverse_cull_face_mode(RID p_light, bool 
 }
 
 void RasterizerStorageGLES3::light_set_use_gi(RID p_light, bool p_enabled) {
+	WARN_DEPRECATED_MSG("'VisualServer.light_set_use_gi' is deprecated and will be removed in a future version. Use 'VisualServer.light_set_bake_mode' instead.");
+	light_set_bake_mode(p_light, p_enabled ? VS::LightBakeMode::LIGHT_BAKE_INDIRECT : VS::LightBakeMode::LIGHT_BAKE_DISABLED);
+}
+
+void RasterizerStorageGLES3::light_set_bake_mode(RID p_light, VS::LightBakeMode p_bake_mode) {
 	Light *light = light_owner.getornull(p_light);
 	ERR_FAIL_COND(!light);
 
-	light->use_gi = p_enabled;
+	light->bake_mode = p_bake_mode;
 
 	light->version++;
 	light->instance_change_notify(true, false);
 }
+
 void RasterizerStorageGLES3::light_omni_set_shadow_mode(RID p_light, VS::LightOmniShadowMode p_mode) {
 
 	Light *light = light_owner.getornull(p_light);
@@ -5686,10 +5772,14 @@ Color RasterizerStorageGLES3::light_get_color(RID p_light) {
 }
 
 bool RasterizerStorageGLES3::light_get_use_gi(RID p_light) {
-	Light *light = light_owner.getornull(p_light);
-	ERR_FAIL_COND_V(!light, false);
+	return light_get_bake_mode(p_light) != VS::LightBakeMode::LIGHT_BAKE_DISABLED;
+}
 
-	return light->use_gi;
+VS::LightBakeMode RasterizerStorageGLES3::light_get_bake_mode(RID p_light) {
+	Light *light = light_owner.getornull(p_light);
+	ERR_FAIL_COND_V(!light, VS::LightBakeMode::LIGHT_BAKE_DISABLED);
+
+	return light->bake_mode;
 }
 
 bool RasterizerStorageGLES3::light_has_shadow(RID p_light) const {
@@ -6295,6 +6385,10 @@ void RasterizerStorageGLES3::lightmap_capture_set_energy(RID p_capture, float p_
 	LightmapCapture *capture = lightmap_capture_data_owner.getornull(p_capture);
 	ERR_FAIL_COND(!capture);
 	capture->energy = p_energy;
+
+	if (!capture->update_list.in_list()) {
+		capture_update_list.add(&capture->update_list);
+	}
 }
 
 float RasterizerStorageGLES3::lightmap_capture_get_energy(RID p_capture) const {
@@ -6304,10 +6398,33 @@ float RasterizerStorageGLES3::lightmap_capture_get_energy(RID p_capture) const {
 	return capture->energy;
 }
 
+void RasterizerStorageGLES3::lightmap_capture_set_interior(RID p_capture, bool p_interior) {
+	LightmapCapture *capture = lightmap_capture_data_owner.getornull(p_capture);
+	ERR_FAIL_COND(!capture);
+	capture->interior = p_interior;
+	if (!capture->update_list.in_list()) {
+		capture_update_list.add(&capture->update_list);
+	}
+}
+
+bool RasterizerStorageGLES3::lightmap_capture_is_interior(RID p_capture) const {
+	const LightmapCapture *capture = lightmap_capture_data_owner.getornull(p_capture);
+	ERR_FAIL_COND_V(!capture, false);
+	return capture->interior;
+}
+
 const PoolVector<RasterizerStorage::LightmapCaptureOctree> *RasterizerStorageGLES3::lightmap_capture_get_octree_ptr(RID p_capture) const {
 	const LightmapCapture *capture = lightmap_capture_data_owner.getornull(p_capture);
 	ERR_FAIL_COND_V(!capture, NULL);
 	return &capture->octree;
+}
+
+void RasterizerStorageGLES3::update_dirty_captures() {
+	while (capture_update_list.first()) {
+		LightmapCapture *capture = capture_update_list.first()->self();
+		capture->instance_change_notify(false, true);
+		capture_update_list.remove(capture_update_list.first());
+	}
 }
 
 ///////
@@ -7685,6 +7802,22 @@ void RasterizerStorageGLES3::render_target_set_msaa(RID p_render_target, VS::Vie
 	_render_target_allocate(rt);
 }
 
+void RasterizerStorageGLES3::render_target_set_use_fxaa(RID p_render_target, bool p_fxaa) {
+
+	RenderTarget *rt = render_target_owner.getornull(p_render_target);
+	ERR_FAIL_COND(!rt);
+
+	rt->use_fxaa = p_fxaa;
+}
+
+void RasterizerStorageGLES3::render_target_set_use_debanding(RID p_render_target, bool p_debanding) {
+
+	RenderTarget *rt = render_target_owner.getornull(p_render_target);
+	ERR_FAIL_COND(!rt);
+
+	rt->use_debanding = p_debanding;
+}
+
 /* CANVAS SHADOW */
 
 RID RasterizerStorageGLES3::canvas_light_shadow_buffer_create(int p_width) {
@@ -8188,7 +8321,7 @@ int RasterizerStorageGLES3::get_captured_render_info(VS::RenderInfo p_info) {
 	}
 }
 
-int RasterizerStorageGLES3::get_render_info(VS::RenderInfo p_info) {
+uint64_t RasterizerStorageGLES3::get_render_info(VS::RenderInfo p_info) {
 
 	switch (p_info) {
 		case VS::INFO_OBJECTS_IN_FRAME:
@@ -8251,7 +8384,6 @@ void RasterizerStorageGLES3::initialize() {
 
 	config.shrink_textures_x2 = false;
 	config.use_fast_texture_filter = int(ProjectSettings::get_singleton()->get("rendering/quality/filters/use_nearest_mipmap_filter"));
-	config.use_anisotropic_filter = config.extensions.has("rendering/quality/filters/anisotropic_filter_level");
 
 	config.etc_supported = config.extensions.has("GL_OES_compressed_ETC1_RGB8_texture");
 	config.latc_supported = config.extensions.has("GL_EXT_texture_compression_latc");
@@ -8273,6 +8405,9 @@ void RasterizerStorageGLES3::initialize() {
 	config.framebuffer_half_float_supported = config.extensions.has("GL_EXT_color_buffer_half_float") || config.framebuffer_float_supported;
 
 #endif
+
+	// not yet detected on GLES3 (is this mandated?)
+	config.support_npot_repeat_mipmap = true;
 
 	config.pvrtc_supported = config.extensions.has("GL_IMG_texture_compression_pvrtc");
 	config.srgb_decode_supported = config.extensions.has("GL_EXT_texture_sRGB_decode");
@@ -8448,6 +8583,10 @@ void RasterizerStorageGLES3::initialize() {
 
 	String renderer = (const char *)glGetString(GL_RENDERER);
 
+	GLOBAL_DEF("rendering/quality/lightmapping/use_bicubic_sampling", true);
+	GLOBAL_DEF("rendering/quality/lightmapping/use_bicubic_sampling.mobile", false);
+	config.use_lightmap_filter_bicubic = GLOBAL_GET("rendering/quality/lightmapping/use_bicubic_sampling");
+
 	config.use_depth_prepass = bool(GLOBAL_GET("rendering/quality/depth_prepass/enable"));
 	if (config.use_depth_prepass) {
 
@@ -8479,7 +8618,9 @@ void RasterizerStorageGLES3::update_dirty_resources() {
 	update_dirty_shaders();
 	update_dirty_materials();
 	update_particles();
+	update_dirty_captures();
 }
 
 RasterizerStorageGLES3::RasterizerStorageGLES3() {
+	config.should_orphan = true;
 }

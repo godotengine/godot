@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -104,11 +104,15 @@ void VehicleWheel::_notification(int p_what) {
 }
 
 String VehicleWheel::get_configuration_warning() const {
+	String warning = Spatial::get_configuration_warning();
 	if (!Object::cast_to<VehicleBody>(get_parent())) {
-		return TTR("VehicleWheel serves to provide a wheel system to a VehicleBody. Please use it as a child of a VehicleBody.");
+		if (warning != String()) {
+			warning += "\n\n";
+		}
+		warning += TTR("VehicleWheel serves to provide a wheel system to a VehicleBody. Please use it as a child of a VehicleBody.");
 	}
 
-	return String();
+	return warning;
 }
 
 void VehicleWheel::_update(PhysicsDirectBodyState *s) {
@@ -385,6 +389,7 @@ VehicleWheel::VehicleWheel() {
 	m_suspensionRelativeVelocity = 0;
 	m_clippedInvContactDotSuspension = 1.0;
 	m_raycastInfo.m_isInContact = false;
+	m_raycastInfo.m_suspensionLength = 0.0;
 
 	body = NULL;
 }
@@ -453,7 +458,7 @@ real_t VehicleBody::_ray_cast(int p_idx, PhysicsDirectBodyState *s) {
 
 	PhysicsDirectSpaceState *ss = s->get_space_state();
 
-	bool col = ss->intersect_ray(source, target, rr, exclude);
+	bool col = ss->intersect_ray(source, target, rr, exclude, get_collision_mask());
 
 	wheel.m_raycastInfo.m_groundObject = 0;
 

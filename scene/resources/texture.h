@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -477,7 +477,14 @@ public:
 		FLAGS_DEFAULT = FLAG_FILTER,
 	};
 
+	enum CompressMode {
+		COMPRESS_LOSSLESS,
+		COMPRESS_VIDEO_RAM,
+		COMPRESS_UNCOMPRESSED
+	};
+
 private:
+	String path_to_file;
 	bool is_3d;
 	RID texture;
 	Image::Format format;
@@ -486,6 +493,8 @@ private:
 	int width;
 	int height;
 	int depth;
+
+	virtual void reload_from_file();
 
 	void _set_data(const Dictionary &p_data);
 	Dictionary _get_data() const;
@@ -498,6 +507,9 @@ public:
 	uint32_t get_flags() const;
 
 	Image::Format get_format() const;
+	Error load(const String &p_path);
+	String get_load_path() const;
+
 	uint32_t get_width() const;
 	uint32_t get_height() const;
 	uint32_t get_depth() const;
@@ -536,12 +548,6 @@ public:
 
 class ResourceFormatLoaderTextureLayered : public ResourceFormatLoader {
 public:
-	enum Compression {
-		COMPRESSION_LOSSLESS,
-		COMPRESSION_VRAM,
-		COMPRESSION_UNCOMPRESSED
-	};
-
 	virtual RES load(const String &p_path, const String &p_original_path = "", Error *r_error = NULL);
 	virtual void get_recognized_extensions(List<String> *p_extensions) const;
 	virtual bool handles_type(const String &p_type) const;
@@ -673,7 +679,7 @@ class AnimatedTexture : public Texture {
 	GDCLASS(AnimatedTexture, Texture);
 
 	//use readers writers lock for this, since its far more times read than written to
-	RWLock *rw_lock;
+	RWLock rw_lock;
 
 public:
 	enum {

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -681,6 +681,10 @@ Vector<StringName> VisualShaderNodeTexture::get_editable_properties() const {
 
 String VisualShaderNodeTexture::get_warning(Shader::Mode p_mode, VisualShader::Type p_type) const {
 
+	if (is_input_port_connected(2) && source != SOURCE_PORT) {
+		return TTR("The sampler port is connected but not used. Consider changing the source to 'SamplerPort'.");
+	}
+
 	if (source == SOURCE_TEXTURE) {
 		return String(); // all good
 	}
@@ -905,6 +909,13 @@ Vector<StringName> VisualShaderNodeCubeMap::get_editable_properties() const {
 		props.push_back("texture_type");
 	}
 	return props;
+}
+
+String VisualShaderNodeCubeMap::get_warning(Shader::Mode p_mode, VisualShader::Type p_type) const {
+	if (is_input_port_connected(2) && source != SOURCE_PORT) {
+		return TTR("The sampler port is connected but not used. Consider changing the source to 'SamplerPort'.");
+	}
+	return String();
 }
 
 void VisualShaderNodeCubeMap::_bind_methods() {
@@ -3266,6 +3277,10 @@ String VisualShaderNodeTextureUniform::get_output_port_name(int p_port) const {
 	}
 }
 
+bool VisualShaderNodeTextureUniform::is_code_generated() const {
+	return is_output_port_connected(0) || is_output_port_connected(1); // rgb or alpha
+}
+
 String VisualShaderNodeTextureUniform::generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const {
 	String code = "uniform sampler2D " + get_uniform_name();
 
@@ -3749,6 +3764,13 @@ String VisualShaderNodeFresnel::get_output_port_name(int p_port) const {
 	return "result";
 }
 
+bool VisualShaderNodeFresnel::is_generate_input_var(int p_port) const {
+	if (p_port == 2) {
+		return false;
+	}
+	return true;
+}
+
 String VisualShaderNodeFresnel::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview) const {
 
 	String normal;
@@ -3764,7 +3786,15 @@ String VisualShaderNodeFresnel::generate_code(Shader::Mode p_mode, VisualShader:
 		view = p_input_vars[1];
 	}
 
-	return "\t" + p_output_vars[0] + " = " + p_input_vars[2] + " ? (pow(clamp(dot(" + normal + ", " + view + "), 0.0, 1.0), " + p_input_vars[3] + ")) : (pow(1.0 - clamp(dot(" + normal + ", " + view + "), 0.0, 1.0), " + p_input_vars[3] + "));\n";
+	if (is_input_port_connected(2)) {
+		return "\t" + p_output_vars[0] + " = " + p_input_vars[2] + " ? (pow(clamp(dot(" + normal + ", " + view + "), 0.0, 1.0), " + p_input_vars[3] + ")) : (pow(1.0 - clamp(dot(" + normal + ", " + view + "), 0.0, 1.0), " + p_input_vars[3] + "));\n";
+	} else {
+		if (get_input_port_default_value(2)) {
+			return "\t" + p_output_vars[0] + " = pow(clamp(dot(" + normal + ", " + view + "), 0.0, 1.0), " + p_input_vars[3] + ");\n";
+		} else {
+			return "\t" + p_output_vars[0] + " = pow(1.0 - clamp(dot(" + normal + ", " + view + "), 0.0, 1.0), " + p_input_vars[3] + ");\n";
+		}
+	}
 }
 
 String VisualShaderNodeFresnel::get_input_port_default_hint(int p_port) const {

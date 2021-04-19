@@ -7,8 +7,8 @@
 		Note: When linked with an [AnimationPlayer], several properties and methods of the corresponding [AnimationPlayer] will not function as expected. Playback and transitions should be handled using only the [AnimationTree] and its constituent [AnimationNode](s). The [AnimationPlayer] node should be used solely for adding, deleting, and editing animations.
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/latest/tutorials/animation/animation_tree.html</link>
-		<link>https://github.com/godotengine/tps-demo</link>
+		<link title="AnimationTree">https://docs.godotengine.org/en/3.2/tutorials/animation/animation_tree.html</link>
+		<link title="Third Person Shooter Demo">https://godotengine.org/asset-library/asset/678</link>
 	</tutorials>
 	<methods>
 		<method name="advance">

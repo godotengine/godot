@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -91,8 +91,6 @@ private:
 		Ref<SceneState> instance_state;
 		Ref<SceneState> inherited_state;
 
-		HashMap<NodePath, int> editable_instances;
-
 		Node *parent;
 		Node *owner;
 		Vector<Node *> children; // list of children
@@ -139,6 +137,7 @@ private:
 		bool use_placeholder;
 
 		bool display_folded;
+		bool editable_instance;
 
 		mutable NodePath *path_cache;
 
@@ -188,12 +187,6 @@ private:
 	friend class SceneTree;
 
 	void _set_tree(SceneTree *p_tree);
-
-#ifdef TOOLS_ENABLED
-	friend class SceneTreeEditor;
-#endif
-	static String invalid_character;
-	static bool _validate_node_name(String &p_name);
 
 protected:
 	void _block() { data.blocked++; }
@@ -325,8 +318,7 @@ public:
 
 	void set_editable_instance(Node *p_node, bool p_editable);
 	bool is_editable_instance(const Node *p_node) const;
-	void set_editable_instances(const HashMap<NodePath, int> &p_editable_instances);
-	HashMap<NodePath, int> get_editable_instances() const;
+	Node *get_deepest_editable_node(Node *start_node) const;
 
 	/* NOTIFICATIONS */
 
@@ -367,6 +359,9 @@ public:
 	Node *duplicate_and_reown(const Map<Node *, Node *> &p_reown_map) const;
 #ifdef TOOLS_ENABLED
 	Node *duplicate_from_editor(Map<const Node *, Node *> &r_duplimap) const;
+	Node *duplicate_from_editor(Map<const Node *, Node *> &r_duplimap, const Map<RES, RES> &p_resource_remap) const;
+	void remap_node_resources(Node *p_node, const Map<RES, RES> &p_resource_remap) const;
+	void remap_nested_resources(RES p_resource, const Map<RES, RES> &p_resource_remap) const;
 #endif
 
 	// used by editors, to save what has changed only

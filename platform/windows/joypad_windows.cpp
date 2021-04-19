@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -115,11 +115,11 @@ bool JoypadWindows::is_xinput_device(const GUID *p_guid) {
 	if (GetRawInputDeviceList(NULL, &dev_list_count, sizeof(RAWINPUTDEVICELIST)) == (UINT)-1) {
 		return false;
 	}
-	dev_list = (PRAWINPUTDEVICELIST)malloc(sizeof(RAWINPUTDEVICELIST) * dev_list_count);
-	if (!dev_list) return false;
+	dev_list = (PRAWINPUTDEVICELIST)memalloc(sizeof(RAWINPUTDEVICELIST) * dev_list_count);
+	ERR_FAIL_NULL_V_MSG(dev_list, false, "Out of memory.");
 
 	if (GetRawInputDeviceList(dev_list, &dev_list_count, sizeof(RAWINPUTDEVICELIST)) == (UINT)-1) {
-		free(dev_list);
+		memfree(dev_list);
 		return false;
 	}
 	for (unsigned int i = 0; i < dev_list_count; i++) {
@@ -136,11 +136,11 @@ bool JoypadWindows::is_xinput_device(const GUID *p_guid) {
 				(GetRawInputDeviceInfoA(dev_list[i].hDevice, RIDI_DEVICENAME, &dev_name, &nameSize) != (UINT)-1) &&
 				(strstr(dev_name, "IG_") != NULL)) {
 
-			free(dev_list);
+			memfree(dev_list);
 			return true;
 		}
 	}
-	free(dev_list);
+	memfree(dev_list);
 	return false;
 }
 
@@ -158,7 +158,7 @@ bool JoypadWindows::setup_dinput_joypad(const DIDEVICEINSTANCE *instance) {
 
 	const DWORD devtype = (instance->dwDevType & 0xFF);
 
-	if ((devtype != DI8DEVTYPE_JOYSTICK) && (devtype != DI8DEVTYPE_GAMEPAD) && (devtype != DI8DEVTYPE_1STPERSON)) {
+	if ((devtype != DI8DEVTYPE_JOYSTICK) && (devtype != DI8DEVTYPE_GAMEPAD) && (devtype != DI8DEVTYPE_1STPERSON) && (devtype != DI8DEVTYPE_DRIVING)) {
 		return false;
 	}
 
@@ -203,7 +203,7 @@ void JoypadWindows::setup_joypad_object(const DIDEVICEOBJECTINSTANCE *ob, int p_
 		HRESULT res;
 		DIPROPRANGE prop_range;
 		DIPROPDWORD dilong;
-		DWORD ofs;
+		LONG ofs;
 		if (ob->guidType == GUID_XAxis)
 			ofs = DIJOFS_X;
 		else if (ob->guidType == GUID_YAxis)
@@ -426,7 +426,7 @@ void JoypadWindows::process_joypads() {
 
 		// on mingw, these constants are not constants
 		int count = 8;
-		unsigned int axes[] = { DIJOFS_X, DIJOFS_Y, DIJOFS_Z, DIJOFS_RX, DIJOFS_RY, DIJOFS_RZ, DIJOFS_SLIDER(0), DIJOFS_SLIDER(1) };
+		LONG axes[] = { DIJOFS_X, DIJOFS_Y, DIJOFS_Z, DIJOFS_RX, DIJOFS_RY, DIJOFS_RZ, (LONG)DIJOFS_SLIDER(0), (LONG)DIJOFS_SLIDER(1) };
 		int values[] = { js.lX, js.lY, js.lZ, js.lRx, js.lRy, js.lRz, js.rglSlider[0], js.rglSlider[1] };
 
 		for (int j = 0; j < joy->joy_axis.size(); j++) {

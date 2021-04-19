@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,11 +30,34 @@
 
 #include "physics_joint.h"
 
+#include "scene/scene_string_names.h"
+
+void Joint::_disconnect_signals() {
+
+	Node *node_a = get_node_or_null(a);
+	PhysicsBody *body_a = Object::cast_to<PhysicsBody>(node_a);
+	if (body_a)
+		body_a->disconnect(SceneStringNames::get_singleton()->tree_exiting, this, SceneStringNames::get_singleton()->_body_exit_tree);
+
+	Node *node_b = get_node_or_null(b);
+	PhysicsBody *body_b = Object::cast_to<PhysicsBody>(node_b);
+	if (body_b)
+		body_b->disconnect(SceneStringNames::get_singleton()->tree_exiting, this, SceneStringNames::get_singleton()->_body_exit_tree);
+}
+
+void Joint::_body_exit_tree() {
+
+	_disconnect_signals();
+	_update_joint(true);
+}
+
 void Joint::_update_joint(bool p_only_free) {
 
 	if (joint.is_valid()) {
-		if (ba.is_valid() && bb.is_valid())
+		if (ba.is_valid() && bb.is_valid()) {
 			PhysicsServer::get_singleton()->body_remove_collision_exception(ba, bb);
+			PhysicsServer::get_singleton()->body_remove_collision_exception(bb, ba);
+		}
 
 		PhysicsServer::get_singleton()->free(joint);
 		joint = RID();
@@ -42,31 +65,68 @@ void Joint::_update_joint(bool p_only_free) {
 		bb = RID();
 	}
 
-	if (p_only_free || !is_inside_tree())
+	if (p_only_free || !is_inside_tree()) {
+		warning = String();
 		return;
+	}
 
-	Node *node_a = has_node(get_node_a()) ? get_node(get_node_a()) : (Node *)NULL;
-	Node *node_b = has_node(get_node_b()) ? get_node(get_node_b()) : (Node *)NULL;
+	Node *node_a = get_node_or_null(a);
+	Node *node_b = get_node_or_null(b);
 
 	PhysicsBody *body_a = Object::cast_to<PhysicsBody>(node_a);
 	PhysicsBody *body_b = Object::cast_to<PhysicsBody>(node_b);
 
-	if (!body_a && body_b)
-		SWAP(body_a, body_b);
-
-	if (!body_a)
+	if (node_a && !body_a && node_b && !body_b) {
+		warning = TTR("Node A and Node B must be PhysicsBodies");
+		update_configuration_warning();
 		return;
+	}
 
-	joint = _configure_joint(body_a, body_b);
-
-	if (!joint.is_valid())
+	if (node_a && !body_a) {
+		warning = TTR("Node A must be a PhysicsBody");
+		update_configuration_warning();
 		return;
+	}
+
+	if (node_b && !body_b) {
+		warning = TTR("Node B must be a PhysicsBody");
+		update_configuration_warning();
+		return;
+	}
+
+	if (!body_a && !body_b) {
+		warning = TTR("Joint is not connected to any PhysicsBodies");
+		update_configuration_warning();
+		return;
+	}
+
+	if (body_a == body_b) {
+		warning = TTR("Node A and Node B must be different PhysicsBodies");
+		update_configuration_warning();
+		return;
+	}
+
+	warning = String();
+	update_configuration_warning();
+
+	if (body_a)
+		joint = _configure_joint(body_a, body_b);
+	else if (body_b)
+		joint = _configure_joint(body_b, nullptr);
+
+	ERR_FAIL_COND_MSG(!joint.is_valid(), "Failed to configure the joint.");
 
 	PhysicsServer::get_singleton()->joint_set_solver_priority(joint, solver_priority);
 
-	ba = body_a->get_rid();
-	if (body_b)
+	if (body_a) {
+		ba = body_a->get_rid();
+		body_a->connect(SceneStringNames::get_singleton()->tree_exiting, this, SceneStringNames::get_singleton()->_body_exit_tree);
+	}
+
+	if (body_b) {
 		bb = body_b->get_rid();
+		body_b->connect(SceneStringNames::get_singleton()->tree_exiting, this, SceneStringNames::get_singleton()->_body_exit_tree);
+	}
 
 	PhysicsServer::get_singleton()->joint_disable_collisions_between_bodies(joint, exclude_from_collision);
 }
@@ -75,6 +135,9 @@ void Joint::set_node_a(const NodePath &p_node_a) {
 
 	if (a == p_node_a)
 		return;
+
+	if (joint.is_valid())
+		_disconnect_signals();
 
 	a = p_node_a;
 	_update_joint();
@@ -89,9 +152,14 @@ void Joint::set_node_b(const NodePath &p_node_b) {
 
 	if (b == p_node_b)
 		return;
+
+	if (joint.is_valid())
+		_disconnect_signals();
+
 	b = p_node_b;
 	_update_joint();
 }
+
 NodePath Joint::get_node_b() const {
 
 	return b;
@@ -118,6 +186,7 @@ void Joint::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
 			if (joint.is_valid()) {
+				_disconnect_signals();
 				_update_joint(true);
 			}
 		} break;
@@ -137,7 +206,23 @@ bool Joint::get_exclude_nodes_from_collision() const {
 	return exclude_from_collision;
 }
 
+String Joint::get_configuration_warning() const {
+
+	String node_warning = Node::get_configuration_warning();
+
+	if (!warning.empty()) {
+		if (!node_warning.empty()) {
+			node_warning += "\n\n";
+		}
+		node_warning += warning;
+	}
+
+	return node_warning;
+}
+
 void Joint::_bind_methods() {
+
+	ClassDB::bind_method(D_METHOD("_body_exit_tree"), &Joint::_body_exit_tree);
 
 	ClassDB::bind_method(D_METHOD("set_node_a", "node"), &Joint::set_node_a);
 	ClassDB::bind_method(D_METHOD("get_node_a"), &Joint::get_node_a);
@@ -151,8 +236,8 @@ void Joint::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_exclude_nodes_from_collision", "enable"), &Joint::set_exclude_nodes_from_collision);
 	ClassDB::bind_method(D_METHOD("get_exclude_nodes_from_collision"), &Joint::get_exclude_nodes_from_collision);
 
-	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "nodes/node_a", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "CollisionObject"), "set_node_a", "get_node_a");
-	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "nodes/node_b", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "CollisionObject"), "set_node_b", "get_node_b");
+	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "nodes/node_a", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "PhysicsBody"), "set_node_a", "get_node_a");
+	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "nodes/node_b", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "PhysicsBody"), "set_node_b", "get_node_b");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "solver/priority", PROPERTY_HINT_RANGE, "1,8,1"), "set_solver_priority", "get_solver_priority");
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "collision/exclude_nodes"), "set_exclude_nodes_from_collision", "get_exclude_nodes_from_collision");
@@ -707,9 +792,6 @@ void Generic6DOFJoint::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_flag_z", "flag", "value"), &Generic6DOFJoint::set_flag_z);
 	ClassDB::bind_method(D_METHOD("get_flag_z", "flag"), &Generic6DOFJoint::get_flag_z);
 
-	ClassDB::bind_method(D_METHOD("set_precision", "precision"), &Generic6DOFJoint::set_precision);
-	ClassDB::bind_method(D_METHOD("get_precision"), &Generic6DOFJoint::get_precision);
-
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "linear_limit_x/enabled"), "set_flag_x", "get_flag_x", FLAG_ENABLE_LINEAR_LIMIT);
 	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "linear_limit_x/upper_distance"), "set_param_x", "get_param_x", PARAM_LINEAR_UPPER_LIMIT);
 	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "linear_limit_x/lower_distance"), "set_param_x", "get_param_x", PARAM_LINEAR_LOWER_LIMIT);
@@ -797,8 +879,6 @@ void Generic6DOFJoint::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "angular_spring_z/stiffness"), "set_param_z", "get_param_z", PARAM_ANGULAR_SPRING_STIFFNESS);
 	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "angular_spring_z/damping"), "set_param_z", "get_param_z", PARAM_ANGULAR_SPRING_DAMPING);
 	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "angular_spring_z/equilibrium_point"), "set_param_z", "get_param_z", PARAM_ANGULAR_SPRING_EQUILIBRIUM_POINT);
-
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "precision", PROPERTY_HINT_RANGE, "1,99999,1"), "set_precision", "get_precision");
 
 	BIND_ENUM_CONSTANT(PARAM_LINEAR_LOWER_LIMIT);
 	BIND_ENUM_CONSTANT(PARAM_LINEAR_UPPER_LIMIT);
@@ -918,14 +998,6 @@ bool Generic6DOFJoint::get_flag_z(Flag p_flag) const {
 	return flags_z[p_flag];
 }
 
-void Generic6DOFJoint::set_precision(int p_precision) {
-	precision = p_precision;
-
-	PhysicsServer::get_singleton()->generic_6dof_joint_set_precision(
-			get_joint(),
-			precision);
-}
-
 RID Generic6DOFJoint::_configure_joint(PhysicsBody *body_a, PhysicsBody *body_b) {
 
 	Transform gt = get_global_transform();
@@ -960,8 +1032,7 @@ RID Generic6DOFJoint::_configure_joint(PhysicsBody *body_a, PhysicsBody *body_b)
 	return j;
 }
 
-Generic6DOFJoint::Generic6DOFJoint() :
-		precision(1) {
+Generic6DOFJoint::Generic6DOFJoint() {
 
 	set_param_x(PARAM_LINEAR_LOWER_LIMIT, 0);
 	set_param_x(PARAM_LINEAR_UPPER_LIMIT, 0);

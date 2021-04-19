@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -167,24 +167,19 @@ void Physics2DServerSW::_shape_col_cbk(const Vector2 &p_point_A, const Vector2 &
 	if (cbk->max == 0)
 		return;
 
+	Vector2 rel_dir = (p_point_A - p_point_B);
+	real_t rel_length2 = rel_dir.length_squared();
 	if (cbk->valid_dir != Vector2()) {
-		if (p_point_A.distance_squared_to(p_point_B) > cbk->valid_depth * cbk->valid_depth) {
-			cbk->invalid_by_dir++;
-			return;
-		}
-		Vector2 rel_dir = (p_point_A - p_point_B).normalized();
-
-		if (cbk->valid_dir.dot(rel_dir) < Math_SQRT12) { //sqrt(2)/2.0 - 45 degrees
-			cbk->invalid_by_dir++;
-
-			/*
-			print_line("A: "+p_point_A);
-			print_line("B: "+p_point_B);
-			print_line("discard too angled "+rtos(cbk->valid_dir.dot((p_point_A-p_point_B))));
-			print_line("resnorm: "+(p_point_A-p_point_B).normalized());
-			print_line("distance: "+rtos(p_point_A.distance_to(p_point_B)));
-			*/
-			return;
+		if (cbk->valid_depth < 10e20) {
+			if (rel_length2 > cbk->valid_depth * cbk->valid_depth ||
+					(rel_length2 > CMP_EPSILON && cbk->valid_dir.dot(rel_dir.normalized()) < CMP_EPSILON)) {
+				cbk->invalid_by_dir++;
+				return;
+			}
+		} else {
+			if (rel_length2 > 0 && cbk->valid_dir.dot(rel_dir.normalized()) < CMP_EPSILON) {
+				return;
+			}
 		}
 	}
 
@@ -201,8 +196,7 @@ void Physics2DServerSW::_shape_col_cbk(const Vector2 &p_point_A, const Vector2 &
 			}
 		}
 
-		real_t d = p_point_A.distance_squared_to(p_point_B);
-		if (d < min_depth)
+		if (rel_length2 < min_depth)
 			return;
 		cbk->ptr[min_depth_idx * 2 + 0] = p_point_A;
 		cbk->ptr[min_depth_idx * 2 + 1] = p_point_B;
@@ -898,6 +892,7 @@ void Physics2DServerSW::body_apply_torque_impulse(RID p_body, real_t p_torque) {
 	_update_shapes();
 
 	body->apply_torque_impulse(p_torque);
+	body->wakeup();
 }
 
 void Physics2DServerSW::body_apply_impulse(RID p_body, const Vector2 &p_pos, const Vector2 &p_impulse) {
@@ -1331,8 +1326,6 @@ void Physics2DServerSW::step(real_t p_step) {
 
 	_update_shapes();
 
-	doing_sync = false;
-
 	last_step = p_step;
 	Physics2DDirectBodyStateSW::singleton->step = p_step;
 	island_count = 0;
@@ -1454,7 +1447,11 @@ Physics2DServerSW::Physics2DServerSW() {
 	island_count = 0;
 	active_objects = 0;
 	collision_pairs = 0;
+#ifdef NO_THREADS
+	using_threads = false;
+#else
 	using_threads = int(ProjectSettings::get_singleton()->get("physics/2d/thread_model")) == 2;
+#endif
 	flushing_queries = false;
 };
 

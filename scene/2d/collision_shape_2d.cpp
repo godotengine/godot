@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -117,6 +117,7 @@ void CollisionShape2D::_notification(int p_what) {
 				draw_col.r = g;
 				draw_col.g = g;
 				draw_col.b = g;
+				draw_col.a *= 0.5;
 			}
 			shape->draw(get_canvas_item(), draw_col);
 
@@ -147,7 +148,9 @@ void CollisionShape2D::_notification(int p_what) {
 }
 
 void CollisionShape2D::set_shape(const Ref<Shape2D> &p_shape) {
-
+	if (p_shape == shape) {
+		return;
+	}
 	if (shape.is_valid())
 		shape->disconnect("changed", this, "_shape_changed");
 	shape = p_shape;
@@ -157,6 +160,7 @@ void CollisionShape2D::set_shape(const Ref<Shape2D> &p_shape) {
 		if (shape.is_valid()) {
 			parent->shape_owner_add_shape(owner_id, shape);
 		}
+		_update_in_shape_owner();
 	}
 
 	if (shape.is_valid())
@@ -180,18 +184,32 @@ bool CollisionShape2D::_edit_is_selected_on_click(const Point2 &p_point, double 
 
 String CollisionShape2D::get_configuration_warning() const {
 
+	String warning = Node2D::get_configuration_warning();
+
 	if (!Object::cast_to<CollisionObject2D>(get_parent())) {
-		return TTR("CollisionShape2D only serves to provide a collision shape to a CollisionObject2D derived node. Please only use it as a child of Area2D, StaticBody2D, RigidBody2D, KinematicBody2D, etc. to give them a shape.");
+		if (warning != String()) {
+			warning += "\n\n";
+		}
+		warning += TTR("CollisionShape2D only serves to provide a collision shape to a CollisionObject2D derived node. Please only use it as a child of Area2D, StaticBody2D, RigidBody2D, KinematicBody2D, etc. to give them a shape.");
 	}
+
 	if (!shape.is_valid()) {
-		return TTR("A shape must be provided for CollisionShape2D to function. Please create a shape resource for it!");
+		if (warning != String()) {
+			warning += "\n\n";
+		}
+		warning += TTR("A shape must be provided for CollisionShape2D to function. Please create a shape resource for it!");
+	} else {
+		Ref<ConvexPolygonShape2D> convex = shape;
+		Ref<ConcavePolygonShape2D> concave = shape;
+		if (convex.is_valid() || concave.is_valid()) {
+			if (warning != String()) {
+				warning += "\n\n";
+			}
+			warning += TTR("Polygon-based shapes are not meant be used nor edited directly through the CollisionShape2D node. Please use the CollisionPolygon2D node instead.");
+		}
 	}
-	Ref<ConvexPolygonShape2D> convex = shape;
-	Ref<ConcavePolygonShape2D> concave = shape;
-	if (convex.is_valid() || concave.is_valid()) {
-		return TTR("Polygon-based shapes are not meant be used nor edited directly through the CollisionShape2D node. Please use the CollisionPolygon2D node instead.");
-	}
-	return String();
+
+	return warning;
 }
 
 void CollisionShape2D::set_disabled(bool p_disabled) {

@@ -39,8 +39,8 @@
 		var regex = RegEx.new()
 		regex.compile("\\S+") # Negated whitespace character class.
 		var results = []
-		for match in regex.search_all("One  Two \n\tThree"):
-		    results.push_back(match.get_string())
+		for result in regex.search_all("One  Two \n\tThree"):
+		    results.push_back(result.get_string())
 		# The `results` array now contains "One", "Two", "Three".
 		[/codeblock]
 		[b]Note:[/b] Godot's regex implementation is based on the [url=https://www.pcre.org/]PCRE2[/url] library. You can view the full pattern reference [url=https://www.pcre.org/current/doc/html/pcre2pattern.html]here[/url].

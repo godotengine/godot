@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -112,6 +112,10 @@ PhysicalBone *SkeletonEditor::create_physical_bone(int bone_id, int bone_child_i
 
 	CollisionShape *bone_shape = memnew(CollisionShape);
 	bone_shape->set_shape(bone_shape_capsule);
+
+	Transform capsule_transform;
+	capsule_transform.basis = Basis(Vector3(1, 0, 0), Vector3(0, 0, 1), Vector3(0, -1, 0));
+	bone_shape->set_transform(capsule_transform);
 
 	Transform body_transform;
 	body_transform.origin = Vector3(0, 0, -half_height);

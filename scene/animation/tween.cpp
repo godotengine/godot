@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -1342,6 +1342,9 @@ bool Tween::interpolate_property(Object *p_object, NodePath p_property, Variant 
 		return true;
 	}
 
+	// Check that the target object is valid
+	ERR_FAIL_COND_V_MSG(p_object == nullptr, false, vformat("The Tween \"%s\"'s target node is `null`. Is the node reference correct?", get_name()));
+
 	// Get the property from the node path
 	p_property = p_property.get_as_property_path();
 
@@ -1364,6 +1367,9 @@ bool Tween::interpolate_method(Object *p_object, StringName p_method, Variant p_
 		_add_pending_command("interpolate_method", p_object, p_method, p_initial_val, p_final_val, p_duration, p_trans_type, p_ease_type, p_delay);
 		return true;
 	}
+
+	// Check that the target object is valid
+	ERR_FAIL_COND_V_MSG(p_object == nullptr, false, vformat("The Tween \"%s\"'s target node is `null`. Is the node reference correct?", get_name()));
 
 	// Convert any integers into REALs as they are better for interpolation
 	if (p_initial_val.get_type() == Variant::INT) p_initial_val = p_initial_val.operator real_t();
