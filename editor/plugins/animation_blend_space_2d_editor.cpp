@@ -942,7 +942,7 @@ AnimationNodeBlendSpace2DEditor::AnimationNodeBlendSpace2DEditor() {
 		left_vbox->add_spacer();
 		label_y = memnew(LineEdit);
 		left_vbox->add_child(label_y);
-		label_y->set_expand_to_text_length(true);
+		label_y->set_expand_to_text_length_enabled(true);
 		left_vbox->add_spacer();
 		min_y_value = memnew(SpinBox);
 		left_vbox->add_child(min_y_value);
@@ -978,7 +978,7 @@ AnimationNodeBlendSpace2DEditor::AnimationNodeBlendSpace2DEditor() {
 		bottom_vbox->add_spacer();
 		label_x = memnew(LineEdit);
 		bottom_vbox->add_child(label_x);
-		label_x->set_expand_to_text_length(true);
+		label_x->set_expand_to_text_length_enabled(true);
 		bottom_vbox->add_spacer();
 		max_x_value = memnew(SpinBox);
 		bottom_vbox->add_child(max_x_value);

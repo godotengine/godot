@@ -632,7 +632,7 @@ void RenameDialog::_insert_text(String text) {
 
 	if (_is_main_field(focus_owner)) {
 		focus_owner->selection_delete();
-		focus_owner->append_at_cursor(text);
+		focus_owner->insert_text_at_caret(text);
 		_update_preview();
 	}
 }

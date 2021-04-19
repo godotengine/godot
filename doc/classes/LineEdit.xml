@@ -12,34 +12,25 @@
 		- [kbd]Ctrl + Z[/kbd]: Undo
 		- [kbd]Ctrl + ~[/kbd]: Swap input direction.
 		- [kbd]Ctrl + Shift + Z[/kbd]: Redo
-		- [kbd]Ctrl + U[/kbd]: Delete text from the cursor position to the beginning of the line
-		- [kbd]Ctrl + K[/kbd]: Delete text from the cursor position to the end of the line
+		- [kbd]Ctrl + U[/kbd]: Delete text from the caret position to the beginning of the line
+		- [kbd]Ctrl + K[/kbd]: Delete text from the caret position to the end of the line
 		- [kbd]Ctrl + A[/kbd]: Select all text
-		- [kbd]Up Arrow[/kbd]/[kbd]Down Arrow[/kbd]: Move the cursor to the beginning/end of the line
+		- [kbd]Up Arrow[/kbd]/[kbd]Down Arrow[/kbd]: Move the caret to the beginning/end of the line
 		On macOS, some extra keyboard shortcuts are available:
-		- [kbd]Ctrl + F[/kbd]: Same as [kbd]Right Arrow[/kbd], move the cursor one character right
-		- [kbd]Ctrl + B[/kbd]: Same as [kbd]Left Arrow[/kbd], move the cursor one character left
-		- [kbd]Ctrl + P[/kbd]: Same as [kbd]Up Arrow[/kbd], move the cursor to the previous line
-		- [kbd]Ctrl + N[/kbd]: Same as [kbd]Down Arrow[/kbd], move the cursor to the next line
-		- [kbd]Ctrl + D[/kbd]: Same as [kbd]Delete[/kbd], delete the character on the right side of cursor
-		- [kbd]Ctrl + H[/kbd]: Same as [kbd]Backspace[/kbd], delete the character on the left side of the cursor
-		- [kbd]Ctrl + A[/kbd]: Same as [kbd]Home[/kbd], move the cursor to the beginning of the line
-		- [kbd]Ctrl + E[/kbd]: Same as [kbd]End[/kbd], move the cursor to the end of the line
-		- [kbd]Cmd + Left Arrow[/kbd]: Same as [kbd]Home[/kbd], move the cursor to the beginning of the line
-		- [kbd]Cmd + Right Arrow[/kbd]: Same as [kbd]End[/kbd], move the cursor to the end of the line
+		- [kbd]Ctrl + F[/kbd]: Same as [kbd]Right Arrow[/kbd], move the caret one character right
+		- [kbd]Ctrl + B[/kbd]: Same as [kbd]Left Arrow[/kbd], move the caret one character left
+		- [kbd]Ctrl + P[/kbd]: Same as [kbd]Up Arrow[/kbd], move the caret to the previous line
+		- [kbd]Ctrl + N[/kbd]: Same as [kbd]Down Arrow[/kbd], move the caret to the next line
+		- [kbd]Ctrl + D[/kbd]: Same as [kbd]Delete[/kbd], delete the character on the right side of caret
+		- [kbd]Ctrl + H[/kbd]: Same as [kbd]Backspace[/kbd], delete the character on the left side of the caret
+		- [kbd]Ctrl + A[/kbd]: Same as [kbd]Home[/kbd], move the caret to the beginning of the line
+		- [kbd]Ctrl + E[/kbd]: Same as [kbd]End[/kbd], move the caret to the end of the line
+		- [kbd]Cmd + Left Arrow[/kbd]: Same as [kbd]Home[/kbd], move the caret to the beginning of the line
+		- [kbd]Cmd + Right Arrow[/kbd]: Same as [kbd]End[/kbd], move the caret to the end of the line
 	</description>
 	<tutorials>
 	</tutorials>
 	<methods>
-		<method name="append_at_cursor">
-			<return type="void">
-			</return>
-			<argument index="0" name="text" type="String">
-			</argument>
-			<description>
-				Adds [code]text[/code] after the cursor. If the resulting value is longer than [member max_length], nothing happens.
-			</description>
-		</method>
 		<method name="clear">
 			<return type="void">
 			</return>
@@ -54,11 +45,11 @@
 				Removes all OpenType features.
 			</description>
 		</method>
-		<method name="delete_char_at_cursor">
+		<method name="delete_char_at_caret">
 			<return type="void">
 			</return>
 			<description>
-				Deletes one character at the cursor's current position (equivalent to pressing [kbd]Delete[/kbd]).
+				Deletes one character at the caret's current position (equivalent to pressing [kbd]Delete[/kbd]).
 			</description>
 		</method>
 		<method name="delete_text">
@@ -99,7 +90,16 @@
 			<return type="int">
 			</return>
 			<description>
-				Returns the scroll offset due to [member caret_position], as a number of characters.
+				Returns the scroll offset due to [member caret_column], as a number of characters.
+			</description>
+		</method>
+		<method name="insert_text_at_caret">
+			<return type="void">
+			</return>
+			<argument index="0" name="text" type="String">
+			</argument>
+			<description>
+				Inserts [code]text[/code] at the caret. If the resulting value is longer than [member max_length], nothing happens.
 			</description>
 		</method>
 		<method name="menu_option">
@@ -159,20 +159,20 @@
 		<member name="align" type="int" setter="set_align" getter="get_align" enum="LineEdit.Align" default="0">
 			Text alignment as defined in the [enum Align] enum.
 		</member>
-		<member name="caret_blink" type="bool" setter="cursor_set_blink_enabled" getter="cursor_get_blink_enabled" default="false">
-			If [code]true[/code], the caret (visual cursor) blinks.
+		<member name="caret_blink" type="bool" setter="set_caret_blink_enabled" getter="is_caret_blink_enabled" default="false">
+			If [code]true[/code], the caret (text cursor) blinks.
 		</member>
-		<member name="caret_blink_speed" type="float" setter="cursor_set_blink_speed" getter="cursor_get_blink_speed" default="0.65">
+		<member name="caret_blink_speed" type="float" setter="set_caret_blink_speed" getter="get_caret_blink_speed" default="0.65">
 			Duration (in seconds) of a caret's blinking cycle.
 		</member>
-		<member name="caret_force_displayed" type="bool" setter="cursor_set_force_displayed" getter="cursor_get_force_displayed" default="false">
+		<member name="caret_column" type="int" setter="set_caret_column" getter="get_caret_column" default="0">
+			The caret's column position inside the [LineEdit]. When set, the text may scroll to accommodate it.
 		</member>
-		<member name="caret_mid_grapheme" type="bool" setter="set_mid_grapheme_caret_enabled" getter="get_mid_grapheme_caret_enabled" default="false">
+		<member name="caret_force_displayed" type="bool" setter="set_caret_force_displayed" getter="is_caret_force_displayed" default="false">
+		</member>
+		<member name="caret_mid_grapheme" type="bool" setter="set_caret_mid_grapheme_enabled" getter="is_caret_mid_grapheme_enabled" default="false">
 			Allow moving caret, selecting and removing the individual composite character components.
 			Note: [kbd]Backspace[/kbd] is always removing individual composite character components.
-		</member>
-		<member name="caret_position" type="int" setter="set_cursor_position" getter="get_cursor_position" default="0">
-			The cursor's position inside the [LineEdit]. When set, the text may scroll to accommodate it.
 		</member>
 		<member name="clear_button_enabled" type="bool" setter="set_clear_button_enabled" getter="is_clear_button_enabled" default="false">
 			If [code]true[/code], the [LineEdit] will show a clear button if [code]text[/code] is not empty, which can be used to clear the text quickly.
@@ -186,7 +186,7 @@
 		<member name="editable" type="bool" setter="set_editable" getter="is_editable" default="true">
 			If [code]false[/code], existing text cannot be modified and new text cannot be added.
 		</member>
-		<member name="expand_to_text_length" type="bool" setter="set_expand_to_text_length" getter="get_expand_to_text_length" default="false">
+		<member name="expand_to_text_length" type="bool" setter="set_expand_to_text_length_enabled" getter="is_expand_to_text_length_enabled" default="false">
 			If [code]true[/code], the [LineEdit] width will increase to stay longer than the [member text]. It will [b]not[/b] compress if the [member text] is shortened.
 		</member>
 		<member name="focus_mode" type="int" setter="set_focus_mode" getter="get_focus_mode" override="true" enum="Control.FocusMode" default="2" />
@@ -276,7 +276,7 @@
 			Copies the selected text.
 		</constant>
 		<constant name="MENU_PASTE" value="2" enum="MenuItems">
-			Pastes the clipboard text over the selected text (or at the cursor's position).
+			Pastes the clipboard text over the selected text (or at the caret's position).
 			Non-printable escape characters are automatically stripped from the OS clipboard via [method String.strip_escapes].
 		</constant>
 		<constant name="MENU_CLEAR" value="3" enum="MenuItems">
@@ -359,6 +359,9 @@
 		</constant>
 	</constants>
 	<theme_items>
+		<theme_item name="caret_color" type="Color" default="Color( 0.94, 0.94, 0.94, 1 )">
+			Color of the [LineEdit]'s caret (text cursor).
+		</theme_item>
 		<theme_item name="clear" type="Texture2D">
 			Texture for the clear button. See [member clear_button_enabled].
 		</theme_item>
@@ -367,9 +370,6 @@
 		</theme_item>
 		<theme_item name="clear_button_color_pressed" type="Color" default="Color( 1, 1, 1, 1 )">
 			Color used for the clear button when it's pressed.
-		</theme_item>
-		<theme_item name="cursor_color" type="Color" default="Color( 0.94, 0.94, 0.94, 1 )">
-			Color of the [LineEdit]'s visual cursor (caret).
 		</theme_item>
 		<theme_item name="focus" type="StyleBox">
 			Background used when [LineEdit] has GUI focus.

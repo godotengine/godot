@@ -710,7 +710,7 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 			has_gnode_text = true;
 			LineEdit *line_edit = memnew(LineEdit);
 			line_edit->set_text(node->get_text());
-			line_edit->set_expand_to_text_length(true);
+			line_edit->set_expand_to_text_length_enabled(true);
 			line_edit->add_theme_font_override("font", get_theme_font("source", "EditorFonts"));
 			gnode->add_child(line_edit);
 			line_edit->connect("text_changed", callable_mp(this, &VisualScriptEditor::_expression_text_changed), varray(E->get()));
@@ -843,7 +843,7 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 						hbc->add_child(name_box);
 						name_box->set_custom_minimum_size(Size2(60 * EDSCALE, 0));
 						name_box->set_text(left_name);
-						name_box->set_expand_to_text_length(true);
+						name_box->set_expand_to_text_length_enabled(true);
 						name_box->connect("resized", callable_mp(this, &VisualScriptEditor::_update_node_size), varray(E->get()));
 						name_box->connect("focus_exited", callable_mp(this, &VisualScriptEditor::_port_name_focus_out), varray(name_box, E->get(), i, true));
 					} else {
@@ -938,7 +938,7 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 						hbc->add_child(name_box);
 						name_box->set_custom_minimum_size(Size2(60 * EDSCALE, 0));
 						name_box->set_text(right_name);
-						name_box->set_expand_to_text_length(true);
+						name_box->set_expand_to_text_length_enabled(true);
 						name_box->connect("resized", callable_mp(this, &VisualScriptEditor::_update_node_size), varray(E->get()));
 						name_box->connect("focus_exited", callable_mp(this, &VisualScriptEditor::_port_name_focus_out), varray(name_box, E->get(), i, false));
 					} else {
@@ -4322,7 +4322,7 @@ VisualScriptEditor::VisualScriptEditor() {
 	function_name_box = memnew(LineEdit);
 	function_name_edit->add_child(function_name_box);
 	function_name_box->connect("gui_input", callable_mp(this, &VisualScriptEditor::_fn_name_box_input));
-	function_name_box->set_expand_to_text_length(true);
+	function_name_box->set_expand_to_text_length_enabled(true);
 	add_child(function_name_edit);
 
 	///       Actual Graph          ///
