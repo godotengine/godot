@@ -3,6 +3,7 @@ var m2 = 22 # Init.
 var m3: String # No init, typed.
 var m4: String = "44" # Init, typed.
 
+
 func test():
 	var loc5 # No init, local.
 	var loc6 = 66 # Init, local.

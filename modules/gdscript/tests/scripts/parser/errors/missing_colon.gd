@@ -1,3 +1,3 @@
 func test():
-    if true # Missing colon here.
-        print("true")
+	if true # Missing colon here.
+		print("true")
