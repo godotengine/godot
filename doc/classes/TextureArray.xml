@@ -4,7 +4,19 @@
 		Array of textures stored in a single primitive.
 	</brief_description>
 	<description>
-		[TextureArray]s store an array of images in a single [Texture] primitive. Each layer of the texture array has its own mipmap chain. This makes it is a good alternative to texture atlases.
+		[TextureArray]s store an array of [Image]s in a single [Texture] primitive. Each layer of the texture array has its own mipmap chain. This makes it is a good alternative to texture atlases.
+		[TextureArray]s must be displayed using shaders. After importing your file as a [TextureArray] and setting the appropriate Horizontal and Vertical Slices, display it by setting it as a uniform to a shader, for example:
+		[codeblock]
+		shader_type canvas_item;
+
+		uniform sampler2DArray tex;
+		uniform int index;
+
+		void fragment() {
+		    COLOR = texture(tex, vec3(UV.x, UV.y, float(index)));
+		}
+		[/codeblock]
+		Set the integer uniform "index" to show a particular part of the texture as defined by the Horizontal and Vertical Slices in the importer.
 	</description>
 	<tutorials>
 	</tutorials>
