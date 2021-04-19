@@ -228,7 +228,9 @@
 		</constant>
 		<constant name="TYPE_END" value="5" enum="Type">
 		</constant>
-		<constant name="TYPE_MAX" value="6" enum="Type">
+		<constant name="TYPE_SKY" value="6" enum="Type">
+		</constant>
+		<constant name="TYPE_MAX" value="7" enum="Type">
 			Represents the size of the [enum Type] enum.
 		</constant>
 		<constant name="NODE_ID_INVALID" value="-1">

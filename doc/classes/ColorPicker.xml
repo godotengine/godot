@@ -51,7 +51,7 @@
 			If [code]true[/code], allows editing the color with Hue/Saturation/Value sliders.
 			[b]Note:[/b] Cannot be enabled if raw mode is on.
 		</member>
-		<member name="picker_shape" type="int" setter="set_picker_shape" getter="get_picker_shape" default="0">
+		<member name="picker_shape" type="int" setter="set_picker_shape" getter="get_picker_shape" enum="ColorPicker.PickerShapeType" default="0">
 			The shape of the color space view. See [enum PickerShapeType].
 		</member>
 		<member name="presets_enabled" type="bool" setter="set_presets_enabled" getter="are_presets_enabled" default="true">
@@ -121,6 +121,8 @@
 		</theme_item>
 		<theme_item name="overbright_indicator" type="Texture2D">
 			The indicator used to signalize that the color value is outside the 0-1 range.
+		</theme_item>
+		<theme_item name="picker_cursor" type="Texture2D">
 		</theme_item>
 		<theme_item name="preset_bg" type="Texture2D">
 		</theme_item>

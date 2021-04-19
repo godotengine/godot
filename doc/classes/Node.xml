@@ -38,7 +38,7 @@
 			</description>
 		</method>
 		<method name="_get_configuration_warnings" qualifiers="virtual">
-			<return type="Array">
+			<return type="String[]">
 			</return>
 			<description>
 				The elements in the array returned from this method are displayed as warnings in the Scene Dock if the script that overrides it is a [code]tool[/code] script.

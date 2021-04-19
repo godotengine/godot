@@ -111,6 +111,14 @@
 			<description>
 			</description>
 		</method>
+		<method name="operator []" qualifiers="operator">
+			<return type="float">
+			</return>
+			<argument index="0" name="index" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="push_back">
 			<return type="bool">
 			</return>

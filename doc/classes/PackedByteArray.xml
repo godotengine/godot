@@ -61,6 +61,114 @@
 				Returns a new [PackedByteArray] with the data compressed. Set the compression mode using one of [enum File.CompressionMode]'s constants.
 			</description>
 		</method>
+		<method name="decode_double" qualifiers="const">
+			<return type="float">
+			</return>
+			<argument index="0" name="byte_offset" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="decode_float" qualifiers="const">
+			<return type="float">
+			</return>
+			<argument index="0" name="byte_offset" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="decode_half" qualifiers="const">
+			<return type="float">
+			</return>
+			<argument index="0" name="byte_offset" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="decode_s16" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="byte_offset" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="decode_s32" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="byte_offset" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="decode_s64" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="byte_offset" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="decode_s8" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="byte_offset" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="decode_u16" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="byte_offset" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="decode_u32" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="byte_offset" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="decode_u64" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="byte_offset" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="decode_u8" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="byte_offset" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="decode_var" qualifiers="const">
+			<return type="Variant">
+			</return>
+			<argument index="0" name="byte_offset" type="int">
+			</argument>
+			<argument index="1" name="allow_objects" type="bool" default="false">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="decode_var_size" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="byte_offset" type="int">
+			</argument>
+			<argument index="1" name="allow_objects" type="bool" default="false">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="decompress" qualifiers="const">
 			<return type="PackedByteArray">
 			</return>
@@ -90,6 +198,128 @@
 			</return>
 			<description>
 				Creates a copy of the array, and returns it.
+			</description>
+		</method>
+		<method name="encode_double">
+			<return type="void">
+			</return>
+			<argument index="0" name="byte_offset" type="int">
+			</argument>
+			<argument index="1" name="value" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="encode_float">
+			<return type="void">
+			</return>
+			<argument index="0" name="byte_offset" type="int">
+			</argument>
+			<argument index="1" name="value" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="encode_half">
+			<return type="void">
+			</return>
+			<argument index="0" name="byte_offset" type="int">
+			</argument>
+			<argument index="1" name="value" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="encode_s16">
+			<return type="void">
+			</return>
+			<argument index="0" name="byte_offset" type="int">
+			</argument>
+			<argument index="1" name="value" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="encode_s32">
+			<return type="void">
+			</return>
+			<argument index="0" name="byte_offset" type="int">
+			</argument>
+			<argument index="1" name="value" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="encode_s64">
+			<return type="void">
+			</return>
+			<argument index="0" name="byte_offset" type="int">
+			</argument>
+			<argument index="1" name="value" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="encode_s8">
+			<return type="void">
+			</return>
+			<argument index="0" name="byte_offset" type="int">
+			</argument>
+			<argument index="1" name="value" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="encode_u16">
+			<return type="void">
+			</return>
+			<argument index="0" name="byte_offset" type="int">
+			</argument>
+			<argument index="1" name="value" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="encode_u32">
+			<return type="void">
+			</return>
+			<argument index="0" name="byte_offset" type="int">
+			</argument>
+			<argument index="1" name="value" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="encode_u64">
+			<return type="void">
+			</return>
+			<argument index="0" name="byte_offset" type="int">
+			</argument>
+			<argument index="1" name="value" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="encode_u8">
+			<return type="void">
+			</return>
+			<argument index="0" name="byte_offset" type="int">
+			</argument>
+			<argument index="1" name="value" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="encode_var">
+			<return type="int">
+			</return>
+			<argument index="0" name="byte_offset" type="int">
+			</argument>
+			<argument index="1" name="value" type="Variant">
+			</argument>
+			<argument index="2" name="allow_objects" type="bool" default="false">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="get_string_from_ascii" qualifiers="const">
@@ -127,6 +357,16 @@
 			</argument>
 			<description>
 				Returns [code]true[/code] if the array contains [code]value[/code].
+			</description>
+		</method>
+		<method name="has_encoded_var" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="byte_offset" type="int">
+			</argument>
+			<argument index="1" name="allow_objects" type="bool" default="false">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="hex_encode" qualifiers="const">
