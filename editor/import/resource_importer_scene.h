@@ -173,6 +173,8 @@ public:
 	virtual bool has_advanced_options() const override;
 	virtual void show_advanced_options(const String &p_path) override;
 
+	virtual bool can_import_threaded() const override { return false; }
+
 	ResourceImporterScene();
 };
 
