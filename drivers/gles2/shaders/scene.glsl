@@ -22,7 +22,6 @@ precision highp int;
 
 #define M_PI 3.14159265359
 
-
 //
 // attributes
 //
@@ -97,6 +96,8 @@ uniform highp vec2 viewport_size;
 uniform float light_bias;
 uniform float light_normal_bias;
 #endif
+
+uniform int view_index;
 
 //
 // varyings
@@ -729,6 +730,7 @@ uniform highp mat4 projection_inverse_matrix;
 uniform highp mat4 world_transform;
 
 uniform highp float time;
+uniform int view_index;
 
 uniform highp vec2 viewport_size;
 

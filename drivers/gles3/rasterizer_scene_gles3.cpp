@@ -2436,7 +2436,7 @@ void RasterizerSceneGLES3::_draw_sky(RasterizerStorageGLES3::Sky *p_sky, const C
 	storage->shaders.copy.set_conditional(CopyShaderGLES3::USE_PANORAMA, false);
 }
 
-void RasterizerSceneGLES3::_setup_environment(Environment *env, const CameraMatrix &p_cam_projection, const Transform &p_cam_transform, bool p_no_fog) {
+void RasterizerSceneGLES3::_setup_environment(Environment *env, const CameraMatrix &p_cam_projection, const Transform &p_cam_transform, const int p_eye, bool p_no_fog) {
 	Transform sky_orientation;
 
 	//store camera into ubo
@@ -2447,6 +2447,9 @@ void RasterizerSceneGLES3::_setup_environment(Environment *env, const CameraMatr
 
 	//time global variables
 	state.ubo_data.time = storage->frame.time[0];
+
+	// eye we are rendering
+	state.ubo_data.view_index = p_eye == 2 ? 1 : 0;
 
 	state.ubo_data.z_far = p_cam_projection.get_z_far();
 	//bg and ambient
@@ -3960,7 +3963,7 @@ bool RasterizerSceneGLES3::_element_needs_directional_add(RenderList::Element *e
 	return false; // no visible unbaked light
 }
 
-void RasterizerSceneGLES3::render_scene(const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, InstanceBase **p_cull_result, int p_cull_count, RID *p_light_cull_result, int p_light_cull_count, RID *p_reflection_probe_cull_result, int p_reflection_probe_cull_count, RID p_environment, RID p_shadow_atlas, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass) {
+void RasterizerSceneGLES3::render_scene(const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, const int p_eye, bool p_cam_ortogonal, InstanceBase **p_cull_result, int p_cull_count, RID *p_light_cull_result, int p_light_cull_count, RID *p_reflection_probe_cull_result, int p_reflection_probe_cull_count, RID p_environment, RID p_shadow_atlas, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass) {
 	//first of all, make a new render pass
 	render_pass++;
 
@@ -4015,7 +4018,7 @@ void RasterizerSceneGLES3::render_scene(const Transform &p_cam_transform, const 
 		state.ubo_data.screen_pixel_size[1] = 1.0 / viewport_height_pixels;
 	}
 
-	_setup_environment(env, p_cam_projection, p_cam_transform, p_reflection_probe.is_valid());
+	_setup_environment(env, p_cam_projection, p_cam_transform, p_eye, p_reflection_probe.is_valid());
 
 	bool fb_cleared = false;
 
