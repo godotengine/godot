@@ -1,3 +1,20 @@
+**Important:** The `3.2` branch is no longer maintained, as what was planned to be
+released as Godot 3.2.4 has been renamed to Godot 3.3:
+https://godotengine.org/article/versioning-change-godot-3x
+
+This branch was therefore reset to the `3.2.3-stable` state, and will not receive further
+updates, unless we decide that a hotfix 3.2.3.1 release is needed.
+
+We recommend that all Godot 3.2 users upgrade to Godot 3.3, which has been developed to be
+a safe and compatible upgrade for Godot 3.2 users.
+
+If you had a custom branch based on `3.2`, you should rebase on the stable `3.3` branch
+which is its continuation, or the `3.x` branch which is the new development branch for
+future 3.x releases. All commits which were in the `3.2` branch prior to the rename are
+in the `3.3` and `3.x` branches.
+
+-----
+
 # Godot Engine
 
 <p align="center">
