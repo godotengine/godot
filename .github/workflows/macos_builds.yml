@@ -1,10 +1,9 @@
 name: 🍎 macOS Builds
 on: [push, pull_request]
 
-# Global Cache Settings
+# Global Settings
 env:
-  GODOT_BASE_BRANCH: 3.2
-  SCONS_CACHE_LIMIT: 4096
+  SCONSFLAGS: platform=osx verbose=yes warnings=all werror=yes debug_symbols=no --jobs=2
 
 jobs:
   macos-editor:
@@ -14,18 +13,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-
-      # Upload cache on completion and check it out now
-      - name: Load .scons_cache directory
-        id: macos-editor-cache
-        uses: actions/cache@v2
-        with:
-          path: ${{github.workspace}}/.scons_cache/
-          key: ${{github.job}}-${{env.GODOT_BASE_BRANCH}}-${{github.ref}}-${{github.sha}}
-          restore-keys: |
-            ${{github.job}}-${{env.GODOT_BASE_BRANCH}}-${{github.ref}}-${{github.sha}}
-            ${{github.job}}-${{env.GODOT_BASE_BRANCH}}-${{github.ref}}
-            ${{github.job}}-${{env.GODOT_BASE_BRANCH}}
 
       # Use python 3.x release (works cross platform; best to keep self contained in it's own step)
       - name: Set up Python 3.x
@@ -46,10 +33,9 @@ jobs:
 
       # We should always be explicit with our flags usage here since it's gonna be sure to always set those flags
       - name: Compilation
-        env:
-          SCONS_CACHE: ${{github.workspace}}/.scons_cache/
         run: |
-          scons -j2 verbose=yes warnings=all werror=yes platform=osx tools=yes target=release_debug
+          scons tools=yes target=release_debug
+          ls -l bin/
 
   macos-template:
     runs-on: "macos-latest"
@@ -57,18 +43,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-
-      # Upload cache on completion and check it out now
-      - name: Load .scons_cache directory
-        id: macos-template-cache
-        uses: actions/cache@v2
-        with:
-          path: ${{github.workspace}}/.scons_cache/
-          key: ${{github.job}}-${{env.GODOT_BASE_BRANCH}}-${{github.ref}}-${{github.sha}}
-          restore-keys: |
-            ${{github.job}}-${{env.GODOT_BASE_BRANCH}}-${{github.ref}}-${{github.sha}}
-            ${{github.job}}-${{env.GODOT_BASE_BRANCH}}-${{github.ref}}
-            ${{github.job}}-${{env.GODOT_BASE_BRANCH}}
 
       # Use python 3.x release (works cross platform)
       - name: Set up Python 3.x
@@ -88,7 +62,6 @@ jobs:
           scons --version
 
       - name: Compilation
-        env:
-          SCONS_CACHE: ${{github.workspace}}/.scons_cache/
         run: |
-          scons -j2 verbose=yes warnings=all werror=yes platform=osx target=release tools=no
+          scons target=release tools=no
+          ls -l bin/

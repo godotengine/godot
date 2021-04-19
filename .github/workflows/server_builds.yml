@@ -1,14 +1,14 @@
-name: 🐧 Linux Builds
+name: ☁ Server Builds
 on: [push, pull_request]
 
 # Global Settings
 env:
-  SCONSFLAGS: platform=linuxbsd verbose=yes warnings=all werror=yes debug_symbols=no --jobs=2
+  SCONSFLAGS: platform=server verbose=yes warnings=all werror=yes debug_symbols=no --jobs=2
 
 jobs:
-  linux-editor-mono:
+  linux-editor:
     runs-on: "ubuntu-20.04"
-    name: Editor w/ Mono (target=release_debug, tools=yes)
+    name: Linux Headless w/ Mono (target=release_debug, tools=yes)
 
     steps:
       - uses: actions/checkout@v2
@@ -16,14 +16,13 @@ jobs:
       # Azure repositories are not reliable, we need to prevent azure giving us packages.
       - name: Make apt sources.list use the default Ubuntu repositories
         run: |
-          sudo rm -f /etc/apt/sources.list.d/*
           sudo cp -f misc/ci/sources.list /etc/apt/sources.list
           sudo apt-get update
 
       # Install all packages (except scons)
       - name: Configure dependencies
         run: |
-          sudo apt-get install build-essential pkg-config libx11-dev libxcursor-dev xvfb \
+          sudo apt-get install build-essential pkg-config libx11-dev libxcursor-dev \
             libxinerama-dev libgl1-mesa-dev libglu-dev libasound2-dev libpulse-dev libudev-dev libxi-dev libxrandr-dev yasm
 
       # Use python 3.x release (works cross platform; best to keep self contained in it's own step)
@@ -46,14 +45,11 @@ jobs:
       # We should always be explicit with our flags usage here since it's gonna be sure to always set those flags
       - name: Compilation
         run: |
-          scons tools=yes target=release_debug module_mono_enabled=yes mono_glue=no
-          xvfb-run ./bin/godot.x11.opt.tools.64.mono --generate-mono-glue modules/mono/glue || true
-          scons tools=yes target=release_debug module_mono_enabled=yes mono_glue=yes
-          ls -l bin/
+          scons -j2 verbose=yes warnings=all werror=yes platform=server tools=yes target=release_debug module_mono_enabled=yes mono_glue=no
 
-  linux-template-mono:
+  linux-server:
     runs-on: "ubuntu-20.04"
-    name: Template w/ Mono (target=release, tools=no)
+    name: Linux Server w/ Mono (target=release, tools=no)
 
     steps:
       - uses: actions/checkout@v2
@@ -61,7 +57,6 @@ jobs:
       # Azure repositories are not reliable, we need to prevent azure giving us packages.
       - name: Make apt sources.list use the default Ubuntu repositories
         run: |
-          sudo rm -f /etc/apt/sources.list.d/*
           sudo cp -f misc/ci/sources.list /etc/apt/sources.list
           sudo apt-get update
 
@@ -90,5 +85,4 @@ jobs:
 
       - name: Compilation
         run: |
-          scons target=release tools=no module_mono_enabled=yes mono_glue=no
-          ls -l bin/
+          scons -j2 target=release tools=no module_mono_enabled=yes mono_glue=no

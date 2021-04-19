@@ -1,12 +1,9 @@
 name: 🏁 Windows Builds
 on: [push, pull_request]
 
-# Global Cache Settings
-# SCONS_CACHE for windows must be set in the build environment
+# Global Settings
 env:
-  GODOT_BASE_BRANCH: 3.2
-  SCONS_CACHE_MSVC_CONFIG: true
-  SCONS_CACHE_LIMIT: 4096
+  SCONSFLAGS: platform=windows verbose=yes warnings=all werror=yes debug_symbols=no --jobs=2
 
 jobs:
   windows-editor:
@@ -18,19 +15,6 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-
-      # Upload cache on completion and check it out now
-      # Editing this is pretty dangerous for Windows since it can break and needs to be properly tested with a fresh cache.
-    - name: Load .scons_cache directory
-      id: windows-editor-cache
-      uses: RevoluPowered/cache@v2.1
-      with:
-        path: /.scons_cache/
-        key: ${{github.job}}-${{env.GODOT_BASE_BRANCH}}-${{github.ref}}-${{github.sha}}
-        restore-keys: |
-          ${{github.job}}-${{env.GODOT_BASE_BRANCH}}-${{github.ref}}-${{github.sha}}
-          ${{github.job}}-${{env.GODOT_BASE_BRANCH}}-${{github.ref}}
-          ${{github.job}}-${{env.GODOT_BASE_BRANCH}}
 
     # Use python 3.x release (works cross platform; best to keep self contained in it's own step)
     - name: Set up Python 3.x
@@ -51,19 +35,9 @@ jobs:
 
     # We should always be explicit with our flags usage here since it's gonna be sure to always set those flags
     - name: Compilation
-      env:
-        SCONS_CACHE: /.scons_cache/
       run: |
-        scons -j2 verbose=yes warnings=all werror=yes platform=windows tools=yes target=release_debug
-
-# Build Product Upload (tested and working)
-# sorry this is disabled until github can give us some more space as we would hit our limit very quickly
-# tested this code and it works fine so just enable it to get them back
-#    - name: publishing godot windows-editor
-#      uses: actions/upload-artifact@v1
-#      with:
-#        name: windows-editor (x64)
-#        path: bin/godot.windows.opt.tools.64.exe
+        scons tools=yes target=release_debug
+        ls -l bin/
 
   windows-template:
     runs-on: "windows-latest"
@@ -71,19 +45,6 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-
-    # Upload cache on completion and check it out now
-    # Editing this is pretty dangerous for Windows since it can break and needs to be properly tested with a fresh cache.
-    - name: Load .scons_cache directory
-      id: windows-template-cache
-      uses: RevoluPowered/cache@v2.1
-      with:
-        path: /.scons_cache/
-        key: ${{github.job}}-${{env.GODOT_BASE_BRANCH}}-${{github.ref}}-${{github.sha}}
-        restore-keys: |
-          ${{github.job}}-${{env.GODOT_BASE_BRANCH}}-${{github.ref}}-${{github.sha}}
-          ${{github.job}}-${{env.GODOT_BASE_BRANCH}}-${{github.ref}}
-          ${{github.job}}-${{env.GODOT_BASE_BRANCH}}
 
     # Use python 3.x release (works cross platform)
     - name: Set up Python 3.x
@@ -103,16 +64,6 @@ jobs:
         scons --version
 
     - name: Compilation
-      env:
-        SCONS_CACHE: /.scons_cache/
       run: |
-        scons -j2 verbose=yes warnings=all werror=yes platform=windows target=release tools=no
-
-# Build Product Upload (tested and working)
-# sorry this is disabled until github can give us some more space as we would hit our limit very quickly
-# tested this code and it works fine so just enable it to get them back
-#    - name: publishing godot windows-template
-#      uses: actions/upload-artifact@v1
-#      with:
-#        name: windows-template (x64)
-#        path: bin/godot.windows.opt.64.exe
+        scons target=release tools=no
+        ls -l bin/

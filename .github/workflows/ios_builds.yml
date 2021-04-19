@@ -1,10 +1,9 @@
 name: 🍏 iOS Builds
 on: [push, pull_request]
 
-# Global Cache Settings
+# Global Settings
 env:
-  GODOT_BASE_BRANCH: 3.2
-  SCONS_CACHE_LIMIT: 4096
+  SCONSFLAGS: platform=iphone verbose=yes warnings=all werror=no debug_symbols=no --jobs=2
 
 jobs:
   ios-template:
@@ -13,18 +12,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-
-      # Upload cache on completion and check it out now
-      - name: Load .scons_cache directory
-        id: ios-template-cache
-        uses: actions/cache@v2
-        with:
-          path: ${{github.workspace}}/.scons_cache/
-          key: ${{github.job}}-${{env.GODOT_BASE_BRANCH}}-${{github.ref}}-${{github.sha}}
-          restore-keys: |
-            ${{github.job}}-${{env.GODOT_BASE_BRANCH}}-${{github.ref}}-${{github.sha}}
-            ${{github.job}}-${{env.GODOT_BASE_BRANCH}}-${{github.ref}}
-            ${{github.job}}-${{env.GODOT_BASE_BRANCH}}
 
       # Use python 3.x release (works cross platform)
       - name: Set up Python 3.x
@@ -44,7 +31,6 @@ jobs:
           scons --version
 
       - name: Compilation
-        env:
-          SCONS_CACHE: ${{github.workspace}}/.scons_cache/
         run: |
-          scons -j2 verbose=yes warnings=all werror=no platform=iphone target=release tools=no
+          scons target=release tools=no
+          ls -l bin/

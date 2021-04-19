@@ -1,10 +1,9 @@
 name: 🌐 JavaScript Builds
 on: [push, pull_request]
 
-# Global Cache Settings
+# Global Settings
 env:
-  GODOT_BASE_BRANCH: 3.2
-  SCONS_CACHE_LIMIT: 4096
+  SCONSFLAGS: platform=javascript verbose=yes warnings=all werror=yes debug_symbols=no --jobs=2
   EM_VERSION: 1.39.20
   EM_CACHE_FOLDER: 'emsdk-cache'
 
@@ -19,20 +18,9 @@ jobs:
       # Azure repositories are not reliable, we need to prevent azure giving us packages.
       - name: Make apt sources.list use the default Ubuntu repositories
         run: |
+          sudo rm -f /etc/apt/sources.list.d/*
           sudo cp -f misc/ci/sources.list /etc/apt/sources.list
           sudo apt-get update
-
-      # Upload cache on completion and check it out now
-      - name: Load .scons_cache directory
-        id: javascript-template-cache
-        uses: actions/cache@v2
-        with:
-          path: ${{github.workspace}}/.scons_cache/
-          key: ${{github.job}}-${{env.GODOT_BASE_BRANCH}}-${{github.ref}}-${{github.sha}}
-          restore-keys: |
-            ${{github.job}}-${{env.GODOT_BASE_BRANCH}}-${{github.ref}}-${{github.sha}}
-            ${{github.job}}-${{env.GODOT_BASE_BRANCH}}-${{github.ref}}
-            ${{github.job}}-${{env.GODOT_BASE_BRANCH}}
 
       # Additional cache for Emscripten generated system libraries
       - name: Load Emscripten cache
@@ -60,7 +48,7 @@ jobs:
           scons --version
 
       - name: Set up Emscripten latest
-        uses: mymindstorm/setup-emsdk@v6
+        uses: mymindstorm/setup-emsdk@v7
         with:
           version: ${{env.EM_VERSION}}
           actions-cache-folder: ${{env.EM_CACHE_FOLDER}}
@@ -70,7 +58,6 @@ jobs:
           emcc -v
 
       - name: Compilation
-        env:
-          SCONS_CACHE: ${{github.workspace}}/.scons_cache/
         run: |
-          scons -j2 verbose=yes warnings=all werror=yes platform=javascript target=release tools=no use_closure_compiler=yes
+          scons target=release tools=no use_closure_compiler=yes
+          ls -l bin/
