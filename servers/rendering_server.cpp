@@ -521,7 +521,7 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint
 						ERR_FAIL_COND_V(p_arrays[ai].get_type() != Variant::PACKED_FLOAT32_ARRAY, ERR_INVALID_PARAMETER);
 
 						Vector<float> array = p_arrays[ai];
-						int32_t s = ARRAY_CUSTOM_R_FLOAT - ai + 1;
+						int32_t s = type - ARRAY_CUSTOM_R_FLOAT + 1;
 
 						ERR_FAIL_COND_V(array.size() != p_vertex_array_len * s, ERR_INVALID_PARAMETER);
 
