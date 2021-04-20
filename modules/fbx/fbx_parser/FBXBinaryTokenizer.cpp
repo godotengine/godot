@@ -74,8 +74,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *    we emit tokens so the parser needs almost no special handling
  *    for binary files.
  */
-
 #include "ByteSwapper.h"
+#include "FBXError.h"
 #include "FBXTokenizer.h"
 #include "core/string/print_string.h"
 
@@ -162,6 +162,9 @@ uint32_t ReadWord(const char *input, const char *&cursor, const char *end) {
 	const size_t k_to_read = sizeof(uint32_t);
 	if (Offset(cursor, end) < k_to_read) {
 		TokenizeError("cannot ReadWord, out of bounds", input, cursor);
+
+		FBX_CORRUPT;
+		return 0;
 	}
 
 	uint32_t word;
@@ -178,6 +181,8 @@ uint64_t ReadDoubleWord(const char *input, const char *&cursor, const char *end)
 	const size_t k_to_read = sizeof(uint64_t);
 	if (Offset(cursor, end) < k_to_read) {
 		TokenizeError("cannot ReadDoubleWord, out of bounds", input, cursor);
+		FBX_CORRUPT;
+		return 0;
 	}
 
 	uint64_t dword /*= *reinterpret_cast<const uint64_t*>(cursor)*/;
@@ -193,6 +198,8 @@ uint64_t ReadDoubleWord(const char *input, const char *&cursor, const char *end)
 uint8_t ReadByte(const char *input, const char *&cursor, const char *end) {
 	if (Offset(cursor, end) < sizeof(uint8_t)) {
 		TokenizeError("cannot ReadByte, out of bounds", input, cursor);
+		FBX_CORRUPT;
+		return 0;
 	}
 
 	uint8_t word; /* = *reinterpret_cast< const uint8_t* >( cursor )*/
@@ -208,12 +215,16 @@ unsigned int ReadString(const char *&sbegin_out, const char *&send_out, const ch
 	const uint32_t len_len = long_length ? 4 : 1;
 	if (Offset(cursor, end) < len_len) {
 		TokenizeError("cannot ReadString, out of bounds reading length", input, cursor);
+		FBX_CORRUPT;
+		return 0;
 	}
 
 	const uint32_t length = long_length ? ReadWord(input, cursor, end) : ReadByte(input, cursor, end);
 
 	if (Offset(cursor, end) < length) {
 		TokenizeError("cannot ReadString, length is out of bounds", input, cursor);
+		FBX_CORRUPT;
+		return 0;
 	}
 
 	sbegin_out = cursor;
@@ -236,6 +247,7 @@ unsigned int ReadString(const char *&sbegin_out, const char *&send_out, const ch
 void ReadData(const char *&sbegin_out, const char *&send_out, const char *input, const char *&cursor, const char *end, bool &corrupt) {
 	if (Offset(cursor, end) < 1) {
 		TokenizeError("cannot ReadData, out of bounds reading length", input, cursor);
+		FBX_CORRUPT;
 		corrupt = true;
 		return;
 	}
@@ -323,11 +335,14 @@ void ReadData(const char *&sbegin_out, const char *&send_out, const char *input,
 				//ai_assert(stride > 0);
 				if (length * stride != comp_len) {
 					TokenizeError("cannot ReadData, calculated data stride differs from what the file claims", input, cursor);
+					FBX_CORRUPT;
+					return;
 				}
 			}
 			// zip/deflate algorithm (encoding==1)? take given length. anything else? die
 			else if (encoding != 1) {
 				TokenizeError("cannot ReadData, unknown encoding", input, cursor);
+				FBX_CORRUPT;
 			}
 			cursor += comp_len;
 			break;
@@ -339,12 +354,13 @@ void ReadData(const char *&sbegin_out, const char *&send_out, const char *input,
 			break;
 		}
 		default:
-			corrupt = true; // must exit
+			FBX_CORRUPT;
 			TokenizeError("cannot ReadData, unexpected type code: " + std::string(&type, 1), input, cursor);
 			return;
 	}
 
 	if (cursor > end) {
+		FBX_CORRUPT;
 		corrupt = true; // must exit
 		TokenizeError("cannot ReadData, the remaining size is too small for the data type: " + std::string(&type, 1), input, cursor);
 		return;
@@ -368,10 +384,12 @@ bool ReadScope(TokenList &output_tokens, const char *input, const char *&cursor,
 	}
 
 	if (end_offset > Offset(input, end)) {
+		FBX_CORRUPT;
 		TokenizeError("block offset is out of range", input, cursor);
 		corrupt = true;
 		return false;
 	} else if (end_offset < Offset(input, cursor)) {
+		FBX_CORRUPT;
 		TokenizeError("block offset is negative out of range", input, cursor);
 		corrupt = true;
 		return false;
@@ -393,10 +411,11 @@ bool ReadScope(TokenList &output_tokens, const char *input, const char *&cursor,
 	const char *begin_cursor = cursor;
 	for (unsigned int i = 0; i < prop_count; ++i) {
 		ReadData(sbeg, send, input, cursor, begin_cursor + prop_length, corrupt);
-		if (corrupt) {
+		if (IS_FBX_CORRUPT) {
+			FBX_CORRUPT;
 			return false;
 		}
-
+		FBX_CORRUPT_ERROR_BOOL;
 		output_tokens.push_back(new_Token(sbeg, send, TokenType_DATA, Offset(input, cursor)));
 
 		if (i != prop_count - 1) {
@@ -406,6 +425,7 @@ bool ReadScope(TokenList &output_tokens, const char *input, const char *&cursor,
 
 	if (Offset(begin_cursor, cursor) != prop_length) {
 		TokenizeError("property length not reached, something is wrong", input, cursor);
+		FBX_CORRUPT;
 		corrupt = true;
 		return false;
 	}
@@ -418,6 +438,8 @@ bool ReadScope(TokenList &output_tokens, const char *input, const char *&cursor,
 	if (Offset(input, cursor) < end_offset) {
 		if (end_offset - Offset(input, cursor) < sentinel_block_length) {
 			TokenizeError("insufficient padding bytes at block end", input, cursor);
+			FBX_CORRUPT;
+			return false;
 		}
 
 		output_tokens.push_back(new_Token(cursor, cursor + 1, TokenType_OPEN_BRACKET, Offset(input, cursor)));
@@ -425,7 +447,12 @@ bool ReadScope(TokenList &output_tokens, const char *input, const char *&cursor,
 		// XXX this is vulnerable to stack overflowing ..
 		while (Offset(input, cursor) < end_offset - sentinel_block_length) {
 			ReadScope(output_tokens, input, cursor, input + end_offset - sentinel_block_length, is64bits, corrupt);
+
+			// return if the corruption happens during ReadScope.
+			FBX_CORRUPT_ERROR_BOOL
+
 			if (corrupt) {
+				FBX_CORRUPT;
 				return false;
 			}
 		}
@@ -435,6 +462,7 @@ bool ReadScope(TokenList &output_tokens, const char *input, const char *&cursor,
 			if (cursor[i] != '\0') {
 				TokenizeError("failed to read nested block sentinel, expected all bytes to be 0", input, cursor);
 				corrupt = true;
+				FBX_CORRUPT;
 				return false;
 			}
 		}
@@ -443,6 +471,7 @@ bool ReadScope(TokenList &output_tokens, const char *input, const char *&cursor,
 
 	if (Offset(input, cursor) != end_offset) {
 		TokenizeError("scope length not reached, something is wrong", input, cursor);
+		FBX_CORRUPT;
 		corrupt = true;
 		return false;
 	}
@@ -455,7 +484,8 @@ bool ReadScope(TokenList &output_tokens, const char *input, const char *&cursor,
 // TODO: Test FBX Binary files newer than the 7500 version to check if the 64 bits address behaviour is consistent
 void TokenizeBinary(TokenList &output_tokens, const char *input, size_t length, bool &corrupt) {
 	if (length < 0x1b) {
-		//TokenizeError("file is too short",0);
+		FBX_CORRUPT;
+		return;
 	}
 
 	//uint32_t offset = 0x15;
@@ -466,8 +496,11 @@ void TokenizeBinary(TokenList &output_tokens, const char *input, size_t length, 
 
 	if (strncmp(input, "Kaydara FBX Binary", 18)) {
 		TokenizeError("magic bytes not found", 0);
+		FBX_CORRUPT;
+		return;
 	}
 
+	IF_FBX_IS_CORRUPT_RETURN
 	const char *cursor = input + 18;
 	/*Result ignored*/ ReadByte(input, cursor, input + length);
 	/*Result ignored*/ ReadByte(input, cursor, input + length);
@@ -475,12 +508,17 @@ void TokenizeBinary(TokenList &output_tokens, const char *input, size_t length, 
 	/*Result ignored*/ ReadByte(input, cursor, input + length);
 	/*Result ignored*/ ReadByte(input, cursor, input + length);
 	const uint32_t version = ReadWord(input, cursor, input + length);
+
+	IF_FBX_IS_CORRUPT_RETURN
+
 	print_verbose("FBX Version: " + itos(version));
 	//ASSIMP_LOG_DEBUG_F("FBX version: ", version);
 	const bool is64bits = version >= 7500;
 	const char *end = input + length;
 	while (cursor < end) {
 		if (!ReadScope(output_tokens, input, cursor, input + length, is64bits, corrupt)) {
+			// return if the corruption happens during ReadScope.
+			IF_FBX_IS_CORRUPT_RETURN;
 			break;
 		}
 	}

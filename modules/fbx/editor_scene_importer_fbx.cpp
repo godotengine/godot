@@ -96,6 +96,8 @@ Node3D *EditorSceneImporterFBX::import_scene(const String &p_path, uint32_t p_fl
 	ERR_FAIL_COND_V(!f, nullptr);
 
 	{
+		FBXError::ClearCorrupt(); // must be cleared each execution
+
 		PackedByteArray data;
 		// broadphase tokenizing pass in which we identify the core
 		// syntax elements of FBX (brackets, commas, key:value mappings)
@@ -104,7 +106,12 @@ Node3D *EditorSceneImporterFBX::import_scene(const String &p_path, uint32_t p_fl
 		bool is_binary = false;
 		data.resize(f->get_len());
 
-		ERR_FAIL_COND_V(data.size() < 64, NULL);
+		print_verbose("[doc] opening fbx file: " + p_path);
+
+		if (data.size() < 64) {
+			print_error("file is too small to be imported");
+			return memnew(Node3D);
+		}
 
 		f->get_buffer(data.ptrw(), data.size());
 		PackedByteArray fbx_header;
@@ -118,7 +125,6 @@ Node3D *EditorSceneImporterFBX::import_scene(const String &p_path, uint32_t p_fl
 			fbx_header_string.parse_utf8((const char *)fbx_header.ptr(), fbx_header.size());
 		}
 
-		print_verbose("[doc] opening fbx file: " + p_path);
 		print_verbose("[doc] fbx header: " + fbx_header_string);
 		bool corrupt = false;
 
@@ -172,7 +178,7 @@ Node3D *EditorSceneImporterFBX::import_scene(const String &p_path, uint32_t p_fl
 		f->close();
 
 		// safety for version handling
-		if (doc.IsSafeToImport()) {
+		if (doc.IsSafeToImport() && !FBXError::IsCorrupt()) {
 			bool is_blender_fbx = false;
 			const FBXDocParser::PropertyTable &import_props = doc.GetMetadataProperties();
 			const FBXDocParser::PropertyPtr app_name = import_props.Get("Original|ApplicationName");
@@ -404,9 +410,17 @@ Node3D *EditorSceneImporterFBX::_generate_scene(
 
 	// cache basic node information from FBX document
 	// grabs all FBX bones
+	if (FBX_ERROR_DETECTED) {
+		return memnew(Node3D);
+	}
 	BuildDocumentBones(Ref<FBXBone>(), state, p_document, 0L);
+	if (FBX_ERROR_DETECTED) {
+		return memnew(Node3D);
+	}
 	BuildDocumentNodes(Ref<PivotTransform>(), state, p_document, 0L, nullptr);
-
+	if (FBX_ERROR_DETECTED) {
+		return memnew(Node3D);
+	}
 	// Build document skinning information
 
 	// Algorithm is this:
@@ -420,10 +434,17 @@ Node3D *EditorSceneImporterFBX::_generate_scene(
 		FBXDocParser::LazyObject *lazy_skin = p_document->GetObject(skin_id);
 		ERR_CONTINUE_MSG(lazy_skin == nullptr, "invalid lazy object [serious parser bug]");
 
+		if (FBX_ERROR_DETECTED) {
+			return memnew(Node3D);
+		}
+
 		// Validate the parser
 		const FBXDocParser::Skin *skin = lazy_skin->Get<FBXDocParser::Skin>();
 		ERR_CONTINUE_MSG(skin == nullptr, "invalid skin added to skin list [parser bug]");
 
+		if (FBX_ERROR_DETECTED) {
+			return memnew(Node3D);
+		}
 		const std::vector<const FBXDocParser::Connection *> source_to_destination = p_document->GetConnectionsBySourceSequenced(skin_id);
 		FBXDocParser::MeshGeometry *mesh = nullptr;
 		uint64_t mesh_id = 0;
@@ -532,6 +553,10 @@ Node3D *EditorSceneImporterFBX::_generate_scene(
 		for (uint64_t material_id : materials) {
 			FBXDocParser::LazyObject *lazy_material = p_document->GetObject(material_id);
 			FBXDocParser::Material *mat = (FBXDocParser::Material *)lazy_material->Get<FBXDocParser::Material>();
+
+			if (FBX_ERROR_DETECTED) {
+				return memnew(Node3D);
+			}
 			ERR_CONTINUE_MSG(!mat, "Could not convert fbx material by id: " + itos(material_id));
 
 			Ref<FBXMaterial> material;
@@ -1302,7 +1327,12 @@ void EditorSceneImporterFBX::BuildDocumentBones(Ref<FBXBone> p_parent_bone,
 		// convert connection source object into Object base class
 		const FBXDocParser::Object *const object = con->SourceObject();
 
+		if (FBX_ERROR_DETECTED) {
+			return;
+		}
+
 		if (nullptr == object) {
+			return;
 			print_verbose("failed to convert source object for Model link");
 			continue;
 		}
@@ -1391,6 +1421,10 @@ void EditorSceneImporterFBX::BuildDocumentNodes(
 		// convert connection source object into Object base class
 		// Source objects can exist with 'null connections' this means that we only for sure know the source exists.
 		const FBXDocParser::Object *const source_object = con->SourceObject();
+
+		if (FBX_ERROR_DETECTED) {
+			return;
+		}
 
 		if (nullptr == source_object) {
 			print_verbose("failed to convert source object for Model link");

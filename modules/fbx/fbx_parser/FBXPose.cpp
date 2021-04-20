@@ -88,6 +88,7 @@ FbxPose::FbxPose(uint64_t id, const ElementPtr element, const Document &doc, con
 	//const std::string &classname = ParseTokenAsString(GetRequiredToken(element, 2));
 
 	const ElementCollection &PoseNodes = sc->GetCollection("PoseNode");
+	IF_FBX_IS_CORRUPT_RETURN;
 	for (ElementMap::const_iterator it = PoseNodes.first; it != PoseNodes.second; ++it) {
 		std::string entry_name = (*it).first;
 		ElementPtr some_element = (*it).second;
@@ -98,6 +99,9 @@ FbxPose::FbxPose(uint64_t id, const ElementPtr element, const Document &doc, con
 
 // ------------------------------------------------------------------------------------------------
 FbxPose::~FbxPose() {
+	for (FbxPoseNode *x : pose_nodes) {
+		delete x;
+	}
 	pose_nodes.clear();
 	// empty
 }

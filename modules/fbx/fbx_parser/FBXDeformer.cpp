@@ -106,6 +106,7 @@ Constraint::~Constraint() {
 Cluster::Cluster(uint64_t id, const ElementPtr element, const Document &doc, const std::string &name) :
 		Deformer(id, element, doc, name), valid_transformAssociateModel(false) {
 	const ScopePtr sc = GetRequiredScope(element);
+	IF_FBX_IS_CORRUPT_RETURN;
 	//    for( auto element : sc.Elements())
 	//    {
 	//        std::cout << "cluster element: " << element.first << std::endl;
@@ -120,8 +121,9 @@ Cluster::Cluster(uint64_t id, const ElementPtr element, const Document &doc, con
 	//    element: Weights
 
 	const ElementPtr Indexes = sc->GetElement("Indexes");
+	IF_FBX_IS_CORRUPT_RETURN;
 	const ElementPtr Weights = sc->GetElement("Weights");
-
+	IF_FBX_IS_CORRUPT_RETURN;
 	const ElementPtr TransformAssociateModel = sc->GetElement("TransformAssociateModel");
 	if (TransformAssociateModel != nullptr) {
 		//Transform t = ReadMatrix(*TransformAssociateModel);
@@ -133,14 +135,15 @@ Cluster::Cluster(uint64_t id, const ElementPtr element, const Document &doc, con
 	}
 
 	const ElementPtr Transform = GetRequiredElement(sc, "Transform", element);
+	IF_FBX_IS_CORRUPT_RETURN;
 	const ElementPtr TransformLink = GetRequiredElement(sc, "TransformLink", element);
+	IF_FBX_IS_CORRUPT_RETURN;
 
-	// todo: check if we need this
 	//const Element& TransformAssociateModel = GetRequiredElement(sc, "TransformAssociateModel", &element);
 
 	transform = ReadMatrix(Transform);
 	transformLink = ReadMatrix(TransformLink);
-
+	IF_FBX_IS_CORRUPT_RETURN;
 	// it is actually possible that there be Deformer's with no weights
 	if (!!Indexes != !!Weights) {
 		DOMError("either Indexes or Weights are missing from Cluster", element);
@@ -148,11 +151,15 @@ Cluster::Cluster(uint64_t id, const ElementPtr element, const Document &doc, con
 
 	if (Indexes) {
 		ParseVectorDataArray(indices, Indexes);
+		IF_FBX_IS_CORRUPT_RETURN;
 		ParseVectorDataArray(weights, Weights);
+		IF_FBX_IS_CORRUPT_RETURN;
 	}
 
 	if (indices.size() != weights.size()) {
 		DOMError("sizes of index and weight array don't match up", element);
+		FBX_CORRUPT;
+		return;
 	}
 
 	// read assigned node
@@ -168,6 +175,8 @@ Cluster::Cluster(uint64_t id, const ElementPtr element, const Document &doc, con
 	if (!node) {
 		DOMError("failed to read target Node for Cluster", element);
 		node = nullptr;
+		FBX_CORRUPT;
+		return;
 	}
 }
 
@@ -186,11 +195,15 @@ Skin::Skin(uint64_t id, const ElementPtr element, const Document &doc, const std
 	// }
 
 	const ElementPtr Link_DeformAcuracy = sc->GetElement("Link_DeformAcuracy");
+	IF_FBX_IS_CORRUPT_RETURN;
+
 	if (Link_DeformAcuracy) {
 		accuracy = ParseTokenAsFloat(GetRequiredToken(Link_DeformAcuracy, 0));
+		IF_FBX_IS_CORRUPT_RETURN;
 	}
 
 	const ElementPtr SkinType = sc->GetElement("SkinningType");
+	IF_FBX_IS_CORRUPT_RETURN;
 
 	if (SkinType) {
 		std::string skin_type = ParseTokenAsString(GetRequiredToken(SkinType, 0));
@@ -205,6 +218,7 @@ Skin::Skin(uint64_t id, const ElementPtr element, const Document &doc, const std
 			skinType = Skin_Blend;
 		} else {
 			print_error("[doc:skin] could not find valid skin type: " + String(skin_type.c_str()));
+			IF_FBX_IS_CORRUPT_RETURN
 		}
 	}
 
@@ -216,6 +230,7 @@ Skin::Skin(uint64_t id, const ElementPtr element, const Document &doc, const std
 	clusters.reserve(conns.size());
 	for (const Connection *con : conns) {
 		const Cluster *cluster = ProcessSimpleConnection<Cluster>(*con, false, "Cluster -> Skin", element);
+		IF_FBX_IS_CORRUPT_RETURN
 		if (cluster) {
 			clusters.push_back(cluster);
 			continue;
@@ -231,8 +246,10 @@ BlendShape::BlendShape(uint64_t id, const ElementPtr element, const Document &do
 		Deformer(id, element, doc, name) {
 	const std::vector<const Connection *> &conns = doc.GetConnectionsByDestinationSequenced(ID(), "Deformer");
 	blendShapeChannels.reserve(conns.size());
+	IF_FBX_IS_CORRUPT_RETURN;
 	for (const Connection *con : conns) {
 		const BlendShapeChannel *bspc = ProcessSimpleConnection<BlendShapeChannel>(*con, false, "BlendShapeChannel -> BlendShape", element);
+		IF_FBX_IS_CORRUPT_RETURN;
 		if (bspc) {
 			blendShapeChannels.push_back(bspc);
 			continue;
@@ -247,17 +264,21 @@ BlendShapeChannel::BlendShapeChannel(uint64_t id, const ElementPtr element, cons
 		Deformer(id, element, doc, name) {
 	const ScopePtr sc = GetRequiredScope(element);
 	const ElementPtr DeformPercent = sc->GetElement("DeformPercent");
+	IF_FBX_IS_CORRUPT_RETURN
 	if (DeformPercent) {
 		percent = ParseTokenAsFloat(GetRequiredToken(DeformPercent, 0));
 	}
 	const ElementPtr FullWeights = sc->GetElement("FullWeights");
+	IF_FBX_IS_CORRUPT_RETURN
 	if (FullWeights) {
 		ParseVectorDataArray(fullWeights, FullWeights);
 	}
+	IF_FBX_IS_CORRUPT_RETURN
 	const std::vector<const Connection *> &conns = doc.GetConnectionsByDestinationSequenced(ID(), "Geometry");
 	shapeGeometries.reserve(conns.size());
 	for (const Connection *con : conns) {
 		const ShapeGeometry *const sg = ProcessSimpleConnection<ShapeGeometry>(*con, false, "Shape -> BlendShapeChannel", element);
+		IF_FBX_IS_CORRUPT_RETURN
 		if (sg) {
 			shapeGeometries.push_back(sg);
 			continue;

@@ -124,24 +124,33 @@ MeshGeometry::MeshGeometry(uint64_t id, const ElementPtr element, const std::str
 	print_verbose("mesh name: " + String(name.c_str()));
 
 	ScopePtr sc = element->Compound();
-	ERR_FAIL_COND_MSG(sc == nullptr, "failed to read geometry, prevented crash");
-	ERR_FAIL_COND_MSG(!HasElement(sc, "Vertices"), "Detected mesh with no vertexes, didn't populate the mesh");
+	if (!sc || !HasElement(sc, "Vertices")) {
+		FBX_CORRUPT;
+		return;
+	}
 
 	// must have Mesh elements:
 	const ElementPtr Vertices = GetRequiredElement(sc, "Vertices", element);
 	const ElementPtr PolygonVertexIndex = GetRequiredElement(sc, "PolygonVertexIndex", element);
+	IF_FBX_IS_CORRUPT_RETURN
 
 	if (HasElement(sc, "Edges")) {
 		const ElementPtr element_edges = GetRequiredElement(sc, "Edges", element);
+		IF_FBX_IS_CORRUPT_RETURN
 		ParseVectorDataArray(m_edges, element_edges);
 	}
+
+	IF_FBX_IS_CORRUPT_RETURN
 
 	// read mesh data into arrays
 	ParseVectorDataArray(m_vertices, Vertices);
 	ParseVectorDataArray(m_face_indices, PolygonVertexIndex);
 
-	ERR_FAIL_COND_MSG(m_vertices.empty(), "mesh with no vertexes in FBX file, did you mean to delete it?");
-	ERR_FAIL_COND_MSG(m_face_indices.empty(), "mesh has no faces, was this intended?");
+	IF_FBX_IS_CORRUPT_RETURN
+	if (m_vertices.empty() || m_face_indices.empty()) {
+		FBX_CORRUPT;
+		return;
+	}
 
 	// Retrieve layer elements, for all of the mesh
 	const ElementCollection &Layer = sc->GetCollection("Layer");
@@ -163,7 +172,7 @@ MeshGeometry::MeshGeometry(uint64_t id, const ElementPtr element, const std::str
 			const ElementPtr TypedIndex = GetRequiredElement(layer_element, "TypedIndex");
 			const std::string &type = ParseTokenAsString(GetRequiredToken(Type, 0));
 			const int typedIndex = ParseTokenAsInt(GetRequiredToken(TypedIndex, 0));
-
+			IF_FBX_IS_CORRUPT_RETURN
 			// we only need the layer name and the typed index.
 			valid_layers.push_back(std::tuple<int, std::string>(typedIndex, type));
 		}
@@ -171,7 +180,7 @@ MeshGeometry::MeshGeometry(uint64_t id, const ElementPtr element, const std::str
 
 	// get object / mesh directly from the FBX by the element ID.
 	const ScopePtr top = GetRequiredScope(element);
-
+	IF_FBX_IS_CORRUPT_RETURN
 	// iterate over all layers for the mesh (uvs, normals, smoothing groups, colors, etc)
 	for (size_t x = 0; x < valid_layers.size(); x++) {
 		const int layer_id = std::get<0>(valid_layers[x]);
@@ -191,14 +200,18 @@ MeshGeometry::MeshGeometry(uint64_t id, const ElementPtr element, const std::str
 			TokenPtr layer_token = GetRequiredToken(iter->second, 0);
 			const int index = ParseTokenAsInt(layer_token);
 
-			ERR_FAIL_COND_MSG(layer_scope == nullptr, "prevented crash, layer scope is invalid");
+			if (layer_scope == nullptr) {
+				FBX_CORRUPT;
+				return;
+			}
 
 			if (index == layer_id) {
 				const std::string &MappingInformationType = ParseTokenAsString(GetRequiredToken(
 						GetRequiredElement(layer_scope, "MappingInformationType"), 0));
-
+				IF_FBX_IS_CORRUPT_RETURN
 				const std::string &ReferenceInformationType = ParseTokenAsString(GetRequiredToken(
 						GetRequiredElement(layer_scope, "ReferenceInformationType"), 0));
+				IF_FBX_IS_CORRUPT_RETURN
 
 				if (layer_type_name == "LayerElementUV") {
 					if (index == 0) {
@@ -240,6 +253,7 @@ MeshGeometry::MeshGeometry(uint64_t id, const ElementPtr element, const std::str
 					//					}
 				}
 			}
+			IF_FBX_IS_CORRUPT_RETURN
 		}
 	}
 
@@ -417,11 +431,16 @@ MeshGeometry::MappingData<T> MeshGeometry::resolve_vertex_data_array(
 
 	// parse data into array
 	ParseVectorDataArray(tempData.data, GetRequiredElement(source, dataElementName));
-
+	if (IS_FBX_CORRUPT) {
+		return MeshGeometry::MappingData<T>();
+	};
 	// index array wont always exist
 	const ElementPtr element = GetOptionalElement(source, indexDataElementName);
 	if (element) {
 		ParseVectorDataArray(tempData.index, element);
+		if (IS_FBX_CORRUPT) {
+			return MeshGeometry::MappingData<T>();
+		};
 	}
 
 	return tempData;
@@ -431,13 +450,20 @@ ShapeGeometry::ShapeGeometry(uint64_t id, const ElementPtr element, const std::s
 		Geometry(id, element, name, doc) {
 	const ScopePtr sc = element->Compound();
 	if (nullptr == sc) {
+		FBX_CORRUPT;
 		DOMError("failed to read Geometry object (class: Shape), no data scope found");
+		return;
 	}
 	const ElementPtr Indexes = GetRequiredElement(sc, "Indexes", element);
+	IF_FBX_IS_CORRUPT_RETURN;
 	const ElementPtr Normals = GetRequiredElement(sc, "Normals", element);
+	IF_FBX_IS_CORRUPT_RETURN;
 	const ElementPtr Vertices = GetRequiredElement(sc, "Vertices", element);
+	IF_FBX_IS_CORRUPT_RETURN;
 	ParseVectorDataArray(m_indices, Indexes);
+	IF_FBX_IS_CORRUPT_RETURN;
 	ParseVectorDataArray(m_vertices, Vertices);
+	IF_FBX_IS_CORRUPT_RETURN;
 	ParseVectorDataArray(m_normals, Normals);
 }
 
@@ -463,10 +489,15 @@ LineGeometry::LineGeometry(uint64_t id, const ElementPtr element, const std::str
 	const ScopePtr sc = element->Compound();
 	if (!sc) {
 		DOMError("failed to read Geometry object (class: Line), no data scope found");
+		FBX_CORRUPT;
+		return;
 	}
 	const ElementPtr Points = GetRequiredElement(sc, "Points", element);
+	IF_FBX_IS_CORRUPT_RETURN;
 	const ElementPtr PointsIndex = GetRequiredElement(sc, "PointsIndex", element);
+	IF_FBX_IS_CORRUPT_RETURN;
 	ParseVectorDataArray(m_vertices, Points);
+	IF_FBX_IS_CORRUPT_RETURN;
 	ParseVectorDataArray(m_indices, PointsIndex);
 }
 

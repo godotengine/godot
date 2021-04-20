@@ -87,18 +87,25 @@ using namespace Util;
 // ------------------------------------------------------------------------------------------------
 AnimationCurve::AnimationCurve(uint64_t id, const ElementPtr element, const std::string &name, const Document & /*doc*/) :
 		Object(id, element, name) {
+	IF_FBX_IS_CORRUPT_RETURN
 	const ScopePtr sc = GetRequiredScope(element);
+	IF_FBX_IS_CORRUPT_RETURN
 	const ElementPtr KeyTime = GetRequiredElement(sc, "KeyTime");
+	IF_FBX_IS_CORRUPT_RETURN
 	const ElementPtr KeyValueFloat = GetRequiredElement(sc, "KeyValueFloat");
-
+	IF_FBX_IS_CORRUPT_RETURN
 	// note preserved keys and values for legacy FBXConverter.cpp
 	// we can remove this once the animation system is written
 	// and clean up this code so we do not have copies everywhere.
 	ParseVectorDataArray(keys, KeyTime);
+	IF_FBX_IS_CORRUPT_RETURN
 	ParseVectorDataArray(values, KeyValueFloat);
+	IF_FBX_IS_CORRUPT_RETURN
 
 	if (keys.size() != values.size()) {
 		DOMError("the number of key times does not match the number of keyframe values", KeyTime);
+		FBX_CORRUPT;
+		return;
 	}
 
 	// put the two lists into the map, underlying container is really just a dictionary
@@ -111,13 +118,17 @@ AnimationCurve::AnimationCurve(uint64_t id, const ElementPtr element, const std:
 	}
 
 	const ElementPtr KeyAttrDataFloat = sc->GetElement("KeyAttrDataFloat");
+	IF_FBX_IS_CORRUPT_RETURN
 	if (KeyAttrDataFloat) {
 		ParseVectorDataArray(attributes, KeyAttrDataFloat);
+		IF_FBX_IS_CORRUPT_RETURN;
 	}
 
 	const ElementPtr KeyAttrFlags = sc->GetElement("KeyAttrFlags");
+	IF_FBX_IS_CORRUPT_RETURN
 	if (KeyAttrFlags) {
 		ParseVectorDataArray(flags, KeyAttrFlags);
+		IF_FBX_IS_CORRUPT_RETURN
 	}
 }
 
@@ -142,7 +153,7 @@ AnimationCurveNode::AnimationCurveNode(uint64_t id, const ElementPtr element, co
 		}
 
 		Object *object = con->DestinationObject();
-
+		IF_FBX_IS_CORRUPT_RETURN
 		if (!object) {
 			DOMWarning("failed to read destination object for AnimationCurveNode->Model link, ignoring", element);
 			continue;
@@ -171,7 +182,12 @@ const AnimationMap &AnimationCurveNode::Curves() const {
 			// The other advantage is casting is guaranteed to be safe and nullptr will be returned in the last step if it fails.
 			Object *ob = con->SourceObject();
 			AnimationCurve *anim_curve = dynamic_cast<AnimationCurve *>(ob);
-			ERR_CONTINUE_MSG(!anim_curve, "Failed to convert animation curve from object");
+
+			if (!anim_curve) {
+				FBX_CORRUPT;
+				curves.clear();
+				return curves;
+			}
 
 			curves.insert(std::make_pair(con->PropertyName(), anim_curve));
 		}
