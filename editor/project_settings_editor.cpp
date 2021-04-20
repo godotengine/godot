@@ -840,9 +840,8 @@ void ProjectSettingsEditor::_item_adds(String) {
 void ProjectSettingsEditor::_item_add() {
 
 	// Initialize the property with the default value for the given type.
-	// The type list starts at 1 (as we exclude Nil), so add 1 to the selected value.
 	Variant::CallError ce;
-	const Variant value = Variant::construct(Variant::Type(type->get_selected() + 1), NULL, 0, ce);
+	const Variant value = Variant::construct(Variant::Type(type->get_selected_id()), NULL, 0, ce);
 
 	String name = property->get_text().strip_edges();
 
@@ -1826,7 +1825,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 		// There's no point in adding Nil types, and Object types
 		// can't be serialized correctly in the project settings.
 		if (i != Variant::NIL && i != Variant::OBJECT) {
-			type->add_item(Variant::get_type_name(Variant::Type(i)));
+			type->add_item(Variant::get_type_name(Variant::Type(i)), i);
 		}
 	}
 
