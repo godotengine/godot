@@ -34,21 +34,30 @@
 #include "space_2d_sw.h"
 
 #include "core/templates/local_vector.h"
+#include "core/templates/thread_work_pool.h"
 
 class Step2DSW {
 	uint64_t _step;
 
+	int iterations = 0;
+	real_t delta = 0.0;
+
+	ThreadWorkPool work_pool;
+
 	LocalVector<LocalVector<Body2DSW *>> body_islands;
 	LocalVector<LocalVector<Constraint2DSW *>> constraint_islands;
+	LocalVector<Constraint2DSW *> all_constraints;
 
 	void _populate_island(Body2DSW *p_body, LocalVector<Body2DSW *> &p_body_island, LocalVector<Constraint2DSW *> &p_constraint_island);
-	void _setup_island(LocalVector<Constraint2DSW *> &p_constraint_island, real_t p_delta);
-	void _solve_island(LocalVector<Constraint2DSW *> &p_constraint_island, int p_iterations, real_t p_delta);
-	void _check_suspend(const LocalVector<Body2DSW *> &p_body_island, real_t p_delta);
+	void _setup_contraint(uint32_t p_constraint_index, void *p_userdata = nullptr);
+	void _pre_solve_island(LocalVector<Constraint2DSW *> &p_constraint_island) const;
+	void _solve_island(uint32_t p_island_index, void *p_userdata = nullptr) const;
+	void _check_suspend(LocalVector<Body2DSW *> &p_body_island) const;
 
 public:
 	void step(Space2DSW *p_space, real_t p_delta, int p_iterations);
 	Step2DSW();
+	~Step2DSW();
 };
 
 #endif // STEP_2D_SW_H

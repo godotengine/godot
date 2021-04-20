@@ -39,6 +39,10 @@ class Joint2DSW : public Constraint2DSW {
 	real_t bias;
 	real_t max_bias;
 
+protected:
+	bool dynamic_A = false;
+	bool dynamic_B = false;
+
 public:
 	_FORCE_INLINE_ void set_max_force(real_t p_force) { max_force = p_force; }
 	_FORCE_INLINE_ real_t get_max_force() const { return max_force; }
@@ -49,8 +53,9 @@ public:
 	_FORCE_INLINE_ void set_max_bias(real_t p_bias) { max_bias = p_bias; }
 	_FORCE_INLINE_ real_t get_max_bias() const { return max_bias; }
 
-	virtual bool setup(real_t p_step) { return false; }
-	virtual void solve(real_t p_step) {}
+	virtual bool setup(real_t p_step) override { return false; }
+	virtual bool pre_solve(real_t p_step) override { return false; }
+	virtual void solve(real_t p_step) override {}
 
 	void copy_settings_from(Joint2DSW *p_joint);
 
@@ -90,10 +95,11 @@ class PinJoint2DSW : public Joint2DSW {
 	real_t softness;
 
 public:
-	virtual PhysicsServer2D::JointType get_type() const { return PhysicsServer2D::JOINT_TYPE_PIN; }
+	virtual PhysicsServer2D::JointType get_type() const override { return PhysicsServer2D::JOINT_TYPE_PIN; }
 
-	virtual bool setup(real_t p_step);
-	virtual void solve(real_t p_step);
+	virtual bool setup(real_t p_step) override;
+	virtual bool pre_solve(real_t p_step) override;
+	virtual void solve(real_t p_step) override;
 
 	void set_param(PhysicsServer2D::PinJointParam p_param, real_t p_value);
 	real_t get_param(PhysicsServer2D::PinJointParam p_param) const;
@@ -126,10 +132,11 @@ class GrooveJoint2DSW : public Joint2DSW {
 	bool correct;
 
 public:
-	virtual PhysicsServer2D::JointType get_type() const { return PhysicsServer2D::JOINT_TYPE_GROOVE; }
+	virtual PhysicsServer2D::JointType get_type() const override { return PhysicsServer2D::JOINT_TYPE_GROOVE; }
 
-	virtual bool setup(real_t p_step);
-	virtual void solve(real_t p_step);
+	virtual bool setup(real_t p_step) override;
+	virtual bool pre_solve(real_t p_step) override;
+	virtual void solve(real_t p_step) override;
 
 	GrooveJoint2DSW(const Vector2 &p_a_groove1, const Vector2 &p_a_groove2, const Vector2 &p_b_anchor, Body2DSW *p_body_a, Body2DSW *p_body_b);
 };
@@ -153,15 +160,17 @@ class DampedSpringJoint2DSW : public Joint2DSW {
 
 	Vector2 rA, rB;
 	Vector2 n;
+	Vector2 j;
 	real_t n_mass;
 	real_t target_vrn;
 	real_t v_coef;
 
 public:
-	virtual PhysicsServer2D::JointType get_type() const { return PhysicsServer2D::JOINT_TYPE_DAMPED_SPRING; }
+	virtual PhysicsServer2D::JointType get_type() const override { return PhysicsServer2D::JOINT_TYPE_DAMPED_SPRING; }
 
-	virtual bool setup(real_t p_step);
-	virtual void solve(real_t p_step);
+	virtual bool setup(real_t p_step) override;
+	virtual bool pre_solve(real_t p_step) override;
+	virtual void solve(real_t p_step) override;
 
 	void set_param(PhysicsServer2D::DampedSpringParam p_param, real_t p_value);
 	real_t get_param(PhysicsServer2D::DampedSpringParam p_param) const;

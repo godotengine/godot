@@ -31,7 +31,8 @@
 #ifndef CONSTRAINT_SW_H
 #define CONSTRAINT_SW_H
 
-#include "body_3d_sw.h"
+class Body3DSW;
+class SoftBody3DSW;
 
 class Constraint3DSW {
 	Body3DSW **_body_ptr;
@@ -61,6 +62,9 @@ public:
 	_FORCE_INLINE_ Body3DSW **get_body_ptr() const { return _body_ptr; }
 	_FORCE_INLINE_ int get_body_count() const { return _body_count; }
 
+	virtual SoftBody3DSW *get_soft_body_ptr(int p_index) const { return nullptr; }
+	virtual int get_soft_body_count() const { return 0; }
+
 	_FORCE_INLINE_ void set_priority(int p_priority) { priority = p_priority; }
 	_FORCE_INLINE_ int get_priority() const { return priority; }
 
@@ -68,6 +72,7 @@ public:
 	_FORCE_INLINE_ bool is_disabled_collisions_between_bodies() const { return disabled_collisions_between_bodies; }
 
 	virtual bool setup(real_t p_step) = 0;
+	virtual bool pre_solve(real_t p_step) = 0;
 	virtual void solve(real_t p_step) = 0;
 
 	virtual ~Constraint3DSW() {}
