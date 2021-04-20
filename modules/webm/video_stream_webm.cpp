@@ -194,7 +194,7 @@ float VideoStreamPlaybackWebm::get_playback_position() const {
 }
 
 void VideoStreamPlaybackWebm::seek(float p_time) {
-	//Not implemented
+	WARN_PRINT_ONCE("Seeking in Theora and WebM videos is not implemented yet (it's only supported for GDNative-provided video streams).");
 }
 
 void VideoStreamPlaybackWebm::set_audio_track(int p_idx) {
