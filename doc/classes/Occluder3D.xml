@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Occluder3D" inherits="Resource" version="4.0">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+	</methods>
+	<members>
+		<member name="indices" type="PackedInt32Array" setter="set_indices" getter="get_indices" default="PackedInt32Array(  )">
+		</member>
+		<member name="vertices" type="PackedVector3Array" setter="set_vertices" getter="get_vertices" default="PackedVector3Array(  )">
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

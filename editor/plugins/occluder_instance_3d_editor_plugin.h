@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  lightmapper.cpp                                                      */
+/*  occluder_instance_3d_editor_plugin.h                                 */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,49 +28,39 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "lightmapper.h"
+#ifndef OCCLUDER_INSTANCE_3D_EDITOR_PLUGIN_H
+#define OCCLUDER_INSTANCE_3D_EDITOR_PLUGIN_H
 
-LightmapDenoiser *(*LightmapDenoiser::create_function)() = nullptr;
+#include "editor/editor_node.h"
+#include "editor/editor_plugin.h"
+#include "scene/3d/occluder_instance_3d.h"
+#include "scene/resources/material.h"
 
-Ref<LightmapDenoiser> LightmapDenoiser::create() {
-	if (create_function) {
-		return Ref<LightmapDenoiser>(create_function());
-	}
-	return Ref<LightmapDenoiser>();
-}
+class OccluderInstance3DEditorPlugin : public EditorPlugin {
+	GDCLASS(OccluderInstance3DEditorPlugin, EditorPlugin);
 
-LightmapRaycaster *(*LightmapRaycaster::create_function)() = nullptr;
+	OccluderInstance3D *occluder_instance;
 
-Ref<LightmapRaycaster> LightmapRaycaster::create() {
-	if (create_function) {
-		return Ref<LightmapRaycaster>(create_function());
-	}
-	return Ref<LightmapRaycaster>();
-}
+	Button *bake;
+	EditorNode *editor;
 
-Lightmapper::CreateFunc Lightmapper::create_custom = nullptr;
-Lightmapper::CreateFunc Lightmapper::create_gpu = nullptr;
-Lightmapper::CreateFunc Lightmapper::create_cpu = nullptr;
+	EditorFileDialog *file_dialog;
 
-Ref<Lightmapper> Lightmapper::create() {
-	Lightmapper *lm = nullptr;
-	if (create_custom) {
-		lm = create_custom();
-	}
+	void _bake_select_file(const String &p_file);
+	void _bake();
 
-	if (!lm && create_gpu) {
-		lm = create_gpu();
-	}
+protected:
+	static void _bind_methods();
 
-	if (!lm && create_cpu) {
-		lm = create_cpu();
-	}
-	if (!lm) {
-		return Ref<Lightmapper>();
-	} else {
-		return Ref<Lightmapper>(lm);
-	}
-}
+public:
+	virtual String get_name() const override { return "OccluderInstance3D"; }
+	bool has_main_screen() const override { return false; }
+	virtual void edit(Object *p_object) override;
+	virtual bool handles(Object *p_object) const override;
+	virtual void make_visible(bool p_visible) override;
 
-Lightmapper::Lightmapper() {
-}
+	OccluderInstance3DEditorPlugin(EditorNode *p_node);
+	~OccluderInstance3DEditorPlugin();
+};
+
+#endif

@@ -79,11 +79,26 @@ void RendererViewport::_draw_3d(Viewport *p_viewport, XRInterface::Eyes p_eye) {
 		xr_interface = XRServer::get_singleton()->get_primary_interface();
 	}
 
+	if (p_viewport->use_occlusion_culling) {
+		if (p_viewport->occlusion_buffer_dirty) {
+			float aspect = p_viewport->size.aspect();
+			int max_size = occlusion_rays_per_thread * RendererThreadPool::singleton->thread_work_pool.get_thread_count();
+
+			int viewport_size = p_viewport->size.width * p_viewport->size.height;
+			max_size = CLAMP(max_size, viewport_size / (32 * 32), viewport_size / (2 * 2)); // At least one depth pixel for every 16x16 region. At most one depth pixel for every 2x2 region.
+
+			float height = Math::sqrt(max_size / aspect);
+			Size2i new_size = Size2i(height * aspect, height);
+			RendererSceneOcclusionCull::get_singleton()->buffer_set_size(p_viewport->self, new_size);
+			p_viewport->occlusion_buffer_dirty = false;
+		}
+	}
+
 	float screen_lod_threshold = p_viewport->lod_threshold / float(p_viewport->size.width);
 	if (p_viewport->use_xr && xr_interface.is_valid()) {
-		RSG::scene->render_camera(p_viewport->render_buffers, xr_interface, p_eye, p_viewport->camera, p_viewport->scenario, p_viewport->size, screen_lod_threshold, p_viewport->shadow_atlas);
+		RSG::scene->render_camera(p_viewport->render_buffers, xr_interface, p_eye, p_viewport->camera, p_viewport->scenario, p_viewport->self, p_viewport->size, screen_lod_threshold, p_viewport->shadow_atlas);
 	} else {
-		RSG::scene->render_camera(p_viewport->render_buffers, p_viewport->camera, p_viewport->scenario, p_viewport->size, screen_lod_threshold, p_viewport->shadow_atlas);
+		RSG::scene->render_camera(p_viewport->render_buffers, p_viewport->camera, p_viewport->scenario, p_viewport->self, p_viewport->size, screen_lod_threshold, p_viewport->shadow_atlas);
 	}
 	RENDER_TIMESTAMP("<End Rendering 3D Scene");
 }
@@ -647,6 +662,8 @@ void RendererViewport::viewport_set_size(RID p_viewport, int p_width, int p_heig
 			RSG::scene->render_buffers_configure(viewport->render_buffers, viewport->render_target, viewport->size.width, viewport->size.height, viewport->msaa, viewport->screen_space_aa, viewport->use_debanding);
 		}
 	}
+
+	viewport->occlusion_buffer_dirty = true;
 }
 
 void RendererViewport::viewport_set_active(RID p_viewport, bool p_active) {
@@ -655,6 +672,7 @@ void RendererViewport::viewport_set_active(RID p_viewport, bool p_active) {
 
 	if (p_active) {
 		ERR_FAIL_COND(active_viewports.find(viewport) != -1); //already active
+		viewport->occlusion_buffer_dirty = true;
 		active_viewports.push_back(viewport);
 	} else {
 		active_viewports.erase(viewport);
@@ -739,6 +757,16 @@ RID RendererViewport::viewport_get_texture(RID p_viewport) const {
 	return RSG::storage->render_target_get_texture(viewport->render_target);
 }
 
+RID RendererViewport::viewport_get_occluder_debug_texture(RID p_viewport) const {
+	const Viewport *viewport = viewport_owner.getornull(p_viewport);
+	ERR_FAIL_COND_V(!viewport, RID());
+
+	if (viewport->use_occlusion_culling && viewport->debug_draw == RenderingServer::VIEWPORT_DEBUG_DRAW_OCCLUDERS) {
+		return RendererSceneOcclusionCull::get_singleton()->buffer_get_debug_texture(p_viewport);
+	}
+	return RID();
+}
+
 void RendererViewport::viewport_set_hide_scenario(RID p_viewport, bool p_hide) {
 	Viewport *viewport = viewport_owner.getornull(p_viewport);
 	ERR_FAIL_COND(!viewport);
@@ -772,6 +800,9 @@ void RendererViewport::viewport_set_scenario(RID p_viewport, RID p_scenario) {
 	ERR_FAIL_COND(!viewport);
 
 	viewport->scenario = p_scenario;
+	if (viewport->use_occlusion_culling) {
+		RendererSceneOcclusionCull::get_singleton()->buffer_set_scenario(p_viewport, p_scenario);
+	}
 }
 
 void RendererViewport::viewport_attach_canvas(RID p_viewport, RID p_canvas) {
@@ -888,6 +919,41 @@ void RendererViewport::viewport_set_use_debanding(RID p_viewport, bool p_use_deb
 	}
 }
 
+void RendererViewport::viewport_set_use_occlusion_culling(RID p_viewport, bool p_use_occlusion_culling) {
+	Viewport *viewport = viewport_owner.getornull(p_viewport);
+	ERR_FAIL_COND(!viewport);
+
+	if (viewport->use_occlusion_culling == p_use_occlusion_culling) {
+		return;
+	}
+	viewport->use_occlusion_culling = p_use_occlusion_culling;
+
+	if (viewport->use_occlusion_culling) {
+		RendererSceneOcclusionCull::get_singleton()->add_buffer(p_viewport);
+		RendererSceneOcclusionCull::get_singleton()->buffer_set_scenario(p_viewport, viewport->scenario);
+	} else {
+		RendererSceneOcclusionCull::get_singleton()->remove_buffer(p_viewport);
+	}
+
+	viewport->occlusion_buffer_dirty = true;
+}
+
+void RendererViewport::viewport_set_occlusion_rays_per_thread(int p_rays_per_thread) {
+	if (occlusion_rays_per_thread == p_rays_per_thread) {
+		return;
+	}
+
+	occlusion_rays_per_thread = p_rays_per_thread;
+
+	for (int i = 0; i < active_viewports.size(); i++) {
+		active_viewports[i]->occlusion_buffer_dirty = true;
+	}
+}
+
+void RendererViewport::viewport_set_occlusion_culling_build_quality(RS::ViewportOcclusionCullingBuildQuality p_quality) {
+	RendererSceneOcclusionCull::get_singleton()->set_build_quality(p_quality);
+}
+
 void RendererViewport::viewport_set_lod_threshold(RID p_viewport, float p_pixels) {
 	Viewport *viewport = viewport_owner.getornull(p_viewport);
 	ERR_FAIL_COND(!viewport);
@@ -985,6 +1051,10 @@ bool RendererViewport::free(RID p_rid) {
 		viewport_set_scenario(p_rid, RID());
 		active_viewports.erase(viewport);
 
+		if (viewport->use_occlusion_culling) {
+			RendererSceneOcclusionCull::get_singleton()->remove_buffer(p_rid);
+		}
+
 		viewport_owner.free(p_rid);
 		memdelete(viewport);
 
@@ -1026,4 +1096,5 @@ void RendererViewport::call_set_use_vsync(bool p_enable) {
 }
 
 RendererViewport::RendererViewport() {
+	occlusion_rays_per_thread = GLOBAL_GET("rendering/occlusion_culling/occlusion_rays_per_thread");
 }

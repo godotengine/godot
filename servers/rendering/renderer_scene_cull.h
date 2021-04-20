@@ -45,8 +45,10 @@
 #include "core/templates/rid_owner.h"
 #include "core/templates/self_list.h"
 #include "servers/rendering/renderer_scene.h"
+#include "servers/rendering/renderer_scene_occlusion_cull.h"
 #include "servers/rendering/renderer_scene_render.h"
 #include "servers/xr/xr_interface.h"
+
 class RendererSceneCull : public RendererScene {
 public:
 	RendererSceneRender *scene_render;
@@ -108,6 +110,14 @@ public:
 	virtual void camera_set_camera_effects(RID p_camera, RID p_fx);
 	virtual void camera_set_use_vertical_aspect(RID p_camera, bool p_enable);
 	virtual bool is_camera(RID p_camera) const;
+
+	/* OCCLUDER API */
+
+	virtual RID occluder_allocate();
+	virtual void occluder_initialize(RID p_occluder);
+	virtual void occluder_set_mesh(RID p_occluder, const PackedVector3Array &p_vertices, const PackedInt32Array &p_indices);
+
+	RendererSceneOcclusionCull *dummy_occlusion_culling;
 
 	/* SCENARIO API */
 
@@ -248,6 +258,7 @@ public:
 			FLAG_USES_BAKED_LIGHT = (1 << 16),
 			FLAG_USES_MESH_INSTANCE = (1 << 17),
 			FLAG_REFLECTION_PROBE_DIRTY = (1 << 18),
+			FLAG_IGNORE_OCCLUSION_CULLING = (1 << 19),
 		};
 
 		uint32_t flags = 0;
@@ -345,6 +356,8 @@ public:
 		Transform transform;
 
 		float lod_bias;
+
+		bool ignore_occlusion_culling;
 
 		Vector<RID> materials;
 
@@ -470,6 +483,7 @@ public:
 			lightmap = nullptr;
 			lightmap_cull_index = 0;
 			lod_bias = 1.0;
+			ignore_occlusion_culling = false;
 
 			scenario = nullptr;
 
@@ -921,24 +935,26 @@ public:
 		Frustum frustum;
 	} cull;
 
-	struct FrustumCullData {
+	struct CullData {
 		Cull *cull;
 		Scenario *scenario;
 		RID shadow_atlas;
 		Transform cam_transform;
 		uint32_t visible_layers;
 		Instance *render_reflection_probe;
+		const RendererSceneOcclusionCull::HZBuffer *occlusion_buffer;
+		const CameraMatrix *camera_matrix;
 	};
 
-	void _frustum_cull_threaded(uint32_t p_thread, FrustumCullData *cull_data);
-	void _frustum_cull(FrustumCullData &cull_data, FrustumCullResult &cull_result, uint64_t p_from, uint64_t p_to);
+	void _frustum_cull_threaded(uint32_t p_thread, CullData *cull_data);
+	void _frustum_cull(CullData &cull_data, FrustumCullResult &cull_result, uint64_t p_from, uint64_t p_to);
 
 	bool _render_reflection_probe_step(Instance *p_instance, int p_step);
-	void _render_scene(const Transform p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_orthogonal, bool p_cam_vaspect, RID p_render_buffers, RID p_environment, RID p_force_camera_effects, uint32_t p_visible_layers, RID p_scenario, RID p_shadow_atlas, RID p_reflection_probe, int p_reflection_probe_pass, float p_screen_lod_threshold, bool p_using_shadows = true);
+	void _render_scene(const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_orthogonal, bool p_cam_vaspect, RID p_render_buffers, RID p_environment, RID p_force_camera_effects, uint32_t p_visible_layers, RID p_scenario, RID p_viewport, RID p_shadow_atlas, RID p_reflection_probe, int p_reflection_probe_pass, float p_screen_lod_threshold, bool p_using_shadows = true);
 	void render_empty_scene(RID p_render_buffers, RID p_scenario, RID p_shadow_atlas);
 
-	void render_camera(RID p_render_buffers, RID p_camera, RID p_scenario, Size2 p_viewport_size, float p_screen_lod_threshold, RID p_shadow_atlas);
-	void render_camera(RID p_render_buffers, Ref<XRInterface> &p_interface, XRInterface::Eyes p_eye, RID p_camera, RID p_scenario, Size2 p_viewport_size, float p_screen_lod_threshold, RID p_shadow_atlas);
+	void render_camera(RID p_render_buffers, RID p_camera, RID p_scenario, RID p_viewport, Size2 p_viewport_size, float p_screen_lod_threshold, RID p_shadow_atlas);
+	void render_camera(RID p_render_buffers, Ref<XRInterface> &p_interface, XRInterface::Eyes p_eye, RID p_camera, RID p_scenario, RID p_viewport, Size2 p_viewport_size, float p_screen_lod_threshold, RID p_shadow_atlas);
 	void update_dirty_instances();
 
 	void render_particle_colliders();

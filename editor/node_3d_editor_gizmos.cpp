@@ -47,6 +47,7 @@
 #include "scene/3d/listener_3d.h"
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/3d/navigation_region_3d.h"
+#include "scene/3d/occluder_instance_3d.h"
 #include "scene/3d/physics_joint_3d.h"
 #include "scene/3d/position_3d.h"
 #include "scene/3d/ray_cast_3d.h"
@@ -176,6 +177,7 @@ void EditorNode3DGizmo::Instance::create_instance(Node3D *p_base, bool p_hidden)
 	RS::get_singleton()->instance_geometry_set_cast_shadows_setting(instance, RS::SHADOW_CASTING_SETTING_OFF);
 	int layer = p_hidden ? 0 : 1 << Node3DEditorViewport::GIZMO_EDIT_LAYER;
 	RS::get_singleton()->instance_set_layer_mask(instance, layer); //gizmos are 26
+	RS::get_singleton()->instance_geometry_set_flag(instance, RS::INSTANCE_FLAG_IGNORE_OCCLUSION_CULLING, true);
 }
 
 void EditorNode3DGizmo::add_mesh(const Ref<ArrayMesh> &p_mesh, bool p_billboard, const Ref<SkinReference> &p_skin_reference, const Ref<Material> &p_material) {
@@ -1464,6 +1466,44 @@ void MeshInstance3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 }
 
 /////
+
+OccluderInstance3DGizmoPlugin::OccluderInstance3DGizmoPlugin() {
+	create_material("line_material", EDITOR_DEF("editors/3d_gizmos/gizmo_colors/occluder", Color(0.8, 0.5, 1)));
+}
+
+bool OccluderInstance3DGizmoPlugin::has_gizmo(Node3D *p_spatial) {
+	return Object::cast_to<OccluderInstance3D>(p_spatial) != nullptr;
+}
+
+String OccluderInstance3DGizmoPlugin::get_gizmo_name() const {
+	return "OccluderInstance3D";
+}
+
+int OccluderInstance3DGizmoPlugin::get_priority() const {
+	return -1;
+}
+
+void OccluderInstance3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
+	OccluderInstance3D *occluder_instance = Object::cast_to<OccluderInstance3D>(p_gizmo->get_spatial_node());
+
+	p_gizmo->clear();
+
+	Ref<Occluder3D> o = occluder_instance->get_occluder();
+
+	if (!o.is_valid()) {
+		return;
+	}
+
+	Vector<Vector3> lines = o->get_debug_lines();
+	if (!lines.is_empty()) {
+		Ref<Material> material = get_material("line_material", p_gizmo);
+		p_gizmo->add_lines(lines, material);
+		p_gizmo->add_collision_segments(lines);
+	}
+}
+
+/////
+
 Sprite3DGizmoPlugin::Sprite3DGizmoPlugin() {
 }
 

@@ -208,6 +208,7 @@
 #include "scene/3d/navigation_agent_3d.h"
 #include "scene/3d/navigation_obstacle_3d.h"
 #include "scene/3d/navigation_region_3d.h"
+#include "scene/3d/occluder_instance_3d.h"
 #include "scene/3d/path_3d.h"
 #include "scene/3d/physics_body_3d.h"
 #include "scene/3d/physics_joint_3d.h"
@@ -442,6 +443,8 @@ void register_scene_types() {
 	ClassDB::register_class<XRAnchor3D>();
 	ClassDB::register_class<XROrigin3D>();
 	ClassDB::register_class<MeshInstance3D>();
+	ClassDB::register_class<OccluderInstance3D>();
+	ClassDB::register_class<Occluder3D>();
 	ClassDB::register_class<ImmediateGeometry3D>();
 	ClassDB::register_virtual_class<SpriteBase3D>();
 	ClassDB::register_class<Sprite3D>();

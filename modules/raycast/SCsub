@@ -1,0 +1,86 @@
+#!/usr/bin/env python
+
+Import("env")
+Import("env_modules")
+
+embree_src = [
+    "common/sys/sysinfo.cpp",
+    "common/sys/alloc.cpp",
+    "common/sys/filename.cpp",
+    "common/sys/library.cpp",
+    "common/sys/thread.cpp",
+    "common/sys/string.cpp",
+    "common/sys/regression.cpp",
+    "common/sys/mutex.cpp",
+    "common/sys/condition.cpp",
+    "common/sys/barrier.cpp",
+    "common/math/constants.cpp",
+    "common/simd/sse.cpp",
+    "common/lexers/stringstream.cpp",
+    "common/lexers/tokenstream.cpp",
+    "common/tasking/taskschedulerinternal.cpp",
+    "common/algorithms/parallel_for.cpp",
+    "common/algorithms/parallel_reduce.cpp",
+    "common/algorithms/parallel_prefix_sum.cpp",
+    "common/algorithms/parallel_for_for.cpp",
+    "common/algorithms/parallel_for_for_prefix_sum.cpp",
+    "common/algorithms/parallel_partition.cpp",
+    "common/algorithms/parallel_sort.cpp",
+    "common/algorithms/parallel_set.cpp",
+    "common/algorithms/parallel_map.cpp",
+    "common/algorithms/parallel_filter.cpp",
+    "kernels/common/device.cpp",
+    "kernels/common/stat.cpp",
+    "kernels/common/acceln.cpp",
+    "kernels/common/accelset.cpp",
+    "kernels/common/state.cpp",
+    "kernels/common/rtcore.cpp",
+    "kernels/common/rtcore_builder.cpp",
+    "kernels/common/scene.cpp",
+    "kernels/common/alloc.cpp",
+    "kernels/common/geometry.cpp",
+    "kernels/common/scene_triangle_mesh.cpp",
+    "kernels/geometry/primitive4.cpp",
+    "kernels/builders/primrefgen.cpp",
+    "kernels/bvh/bvh.cpp",
+    "kernels/bvh/bvh_statistics.cpp",
+    "kernels/bvh/bvh4_factory.cpp",
+    "kernels/bvh/bvh8_factory.cpp",
+    "kernels/bvh/bvh_collider.cpp",
+    "kernels/bvh/bvh_rotate.cpp",
+    "kernels/bvh/bvh_refit.cpp",
+    "kernels/bvh/bvh_builder.cpp",
+    "kernels/bvh/bvh_builder_morton.cpp",
+    "kernels/bvh/bvh_builder_sah.cpp",
+    "kernels/bvh/bvh_builder_sah_spatial.cpp",
+    "kernels/bvh/bvh_builder_sah_mb.cpp",
+    "kernels/bvh/bvh_builder_twolevel.cpp",
+    "kernels/bvh/bvh_intersector1_bvh4.cpp",
+]
+
+embree_dir = "#thirdparty/embree-aarch64/"
+
+env_embree = env_modules.Clone()
+embree_sources = [embree_dir + file for file in embree_src]
+env_embree.Prepend(CPPPATH=[embree_dir, embree_dir + "include"])
+env_embree.Append(CPPFLAGS=["-DEMBREE_TARGET_SSE2", "-DEMBREE_LOWEST_ISA", "-DTASKING_INTERNAL", "-DNDEBUG"])
+
+if not env_embree.msvc:
+    env_embree.Append(CPPFLAGS=["-msse2", "-mxsave"])
+    if env["platform"] == "windows":
+        env_embree.Append(CPPFLAGS=["-mstackrealign"])
+
+if env["platform"] == "windows":
+    if env.msvc:
+        env.Append(LINKFLAGS=["psapi.lib"])
+        env_embree.Append(CPPFLAGS=["-D__SSE2__", "-D__SSE__"])
+    else:
+        env.Append(LIBS=["psapi"])
+
+env_embree.disable_warnings()
+env_embree.add_source_files(env.modules_sources, embree_sources)
+
+env_raycast = env_modules.Clone()
+env_raycast.Prepend(CPPPATH=[embree_dir, embree_dir + "include", embree_dir + "common"])
+
+env_raycast.add_source_files(env.modules_sources, "*.cpp")
