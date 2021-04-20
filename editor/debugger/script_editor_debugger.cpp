@@ -35,6 +35,8 @@
 #include "core/debugger/remote_debugger.h"
 #include "core/io/marshalls.h"
 #include "core/string/ustring.h"
+#include "core/version.h"
+#include "core/version_hash.gen.h"
 #include "editor/debugger/editor_network_profiler.h"
 #include "editor/debugger/editor_performance_profiler.h"
 #include "editor/debugger/editor_profiler.h"
@@ -1371,7 +1373,8 @@ void ScriptEditorDebugger::_error_tree_item_rmb_selected(const Vector2 &p_pos) {
 	item_menu->set_size(Size2(1, 1));
 
 	if (error_tree->is_anything_selected()) {
-		item_menu->add_icon_item(get_theme_icon("ActionCopy", "EditorIcons"), TTR("Copy Error"), 0);
+		item_menu->add_icon_item(get_theme_icon("ActionCopy", "EditorIcons"), TTR("Copy Error"), ACTION_COPY_ERROR);
+		item_menu->add_icon_item(get_theme_icon("Instance", "EditorIcons"), TTR("Open C++ Source on GitHub"), ACTION_OPEN_SOURCE);
 	}
 
 	if (item_menu->get_item_count() > 0) {
@@ -1381,30 +1384,64 @@ void ScriptEditorDebugger::_error_tree_item_rmb_selected(const Vector2 &p_pos) {
 }
 
 void ScriptEditorDebugger::_item_menu_id_pressed(int p_option) {
-	TreeItem *ti = error_tree->get_selected();
-	while (ti->get_parent() != error_tree->get_root()) {
-		ti = ti->get_parent();
+	switch (p_option) {
+		case ACTION_COPY_ERROR: {
+			TreeItem *ti = error_tree->get_selected();
+			while (ti->get_parent() != error_tree->get_root()) {
+				ti = ti->get_parent();
+			}
+
+			String type;
+
+			if (ti->get_icon(0) == get_theme_icon("Warning", "EditorIcons")) {
+				type = "W ";
+			} else if (ti->get_icon(0) == get_theme_icon("Error", "EditorIcons")) {
+				type = "E ";
+			}
+
+			String text = ti->get_text(0) + "   ";
+			int rpad_len = text.length();
+
+			text = type + text + ti->get_text(1) + "\n";
+			TreeItem *ci = ti->get_children();
+			while (ci) {
+				text += "  " + ci->get_text(0).rpad(rpad_len) + ci->get_text(1) + "\n";
+				ci = ci->get_next();
+			}
+
+			DisplayServer::get_singleton()->clipboard_set(text);
+		} break;
+
+		case ACTION_OPEN_SOURCE: {
+			TreeItem *ti = error_tree->get_selected();
+			while (ti->get_parent() != error_tree->get_root()) {
+				ti = ti->get_parent();
+			}
+
+			// We only need the first child here (C++ source stack trace).
+			TreeItem *ci = ti->get_children();
+			// Parse back the `file:line @ method()` string.
+			const Vector<String> file_line_number = ci->get_text(1).split("@")[0].strip_edges().split(":");
+			ERR_FAIL_COND_MSG(file_line_number.size() < 2, "Incorrect C++ source stack trace file:line format (please report).");
+			const String file = file_line_number[0];
+			const int line_number = file_line_number[1].to_int();
+
+			// Construct a GitHub repository URL and open it in the user's default web browser.
+			if (String(VERSION_HASH).length() >= 1) {
+				// Git commit hash information available; use it for greater accuracy, including for development versions.
+				OS::get_singleton()->shell_open(vformat("https://github.com/godotengine/godot/blob/%s/%s#L%d",
+						VERSION_HASH,
+						file,
+						line_number));
+			} else {
+				// Git commit hash information unavailable; fall back to tagged releases.
+				OS::get_singleton()->shell_open(vformat("https://github.com/godotengine/godot/blob/%s-stable/%s#L%d",
+						VERSION_NUMBER,
+						file,
+						line_number));
+			}
+		} break;
 	}
-
-	String type;
-
-	if (ti->get_icon(0) == get_theme_icon("Warning", "EditorIcons")) {
-		type = "W ";
-	} else if (ti->get_icon(0) == get_theme_icon("Error", "EditorIcons")) {
-		type = "E ";
-	}
-
-	String text = ti->get_text(0) + "   ";
-	int rpad_len = text.length();
-
-	text = type + text + ti->get_text(1) + "\n";
-	TreeItem *ci = ti->get_children();
-	while (ci) {
-		text += "  " + ci->get_text(0).rpad(rpad_len) + ci->get_text(1) + "\n";
-		ci = ci->get_next();
-	}
-
-	DisplayServer::get_singleton()->clipboard_set(text);
 }
 
 void ScriptEditorDebugger::_tab_changed(int p_tab) {

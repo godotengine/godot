@@ -74,6 +74,11 @@ private:
 		PROFILER_SCRIPTS_SERVERS
 	};
 
+	enum Actions {
+		ACTION_COPY_ERROR,
+		ACTION_OPEN_SOURCE,
+	};
+
 	AcceptDialog *msgdialog;
 
 	LineEdit *clicked_ctrl;
