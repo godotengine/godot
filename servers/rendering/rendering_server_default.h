@@ -540,6 +540,10 @@ public:
 	FUNC2(camera_set_camera_effects, RID, RID)
 	FUNC2(camera_set_use_vertical_aspect, RID, bool)
 
+	/* OCCLUDER */
+	FUNCRIDSPLIT(occluder)
+	FUNC3(occluder_set_mesh, RID, const PackedVector3Array &, const PackedInt32Array &);
+
 #undef server_name
 #undef ServerName
 //from now on, calls forwarded to this singleton
@@ -590,6 +594,9 @@ public:
 	FUNC2(viewport_set_msaa, RID, ViewportMSAA)
 	FUNC2(viewport_set_screen_space_aa, RID, ViewportScreenSpaceAA)
 	FUNC2(viewport_set_use_debanding, RID, bool)
+	FUNC2(viewport_set_use_occlusion_culling, RID, bool)
+	FUNC1(viewport_set_occlusion_rays_per_thread, int)
+	FUNC1(viewport_set_occlusion_culling_build_quality, ViewportOcclusionCullingBuildQuality)
 	FUNC2(viewport_set_lod_threshold, RID, float)
 
 	FUNC2R(int, viewport_get_render_info, RID, ViewportRenderInfo)

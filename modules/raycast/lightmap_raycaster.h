@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  lightmapper.cpp                                                      */
+/*  lightmap_raycaster.h                                                 */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,49 +28,50 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "lightmapper.h"
+#ifdef TOOLS_ENABLED
 
-LightmapDenoiser *(*LightmapDenoiser::create_function)() = nullptr;
+#include "core/object/object.h"
+#include "scene/3d/lightmapper.h"
+#include "scene/resources/mesh.h"
 
-Ref<LightmapDenoiser> LightmapDenoiser::create() {
-	if (create_function) {
-		return Ref<LightmapDenoiser>(create_function());
-	}
-	return Ref<LightmapDenoiser>();
-}
+#include <embree3/rtcore.h>
 
-LightmapRaycaster *(*LightmapRaycaster::create_function)() = nullptr;
+class LightmapRaycasterEmbree : public LightmapRaycaster {
+	GDCLASS(LightmapRaycasterEmbree, LightmapRaycaster);
 
-Ref<LightmapRaycaster> LightmapRaycaster::create() {
-	if (create_function) {
-		return Ref<LightmapRaycaster>(create_function());
-	}
-	return Ref<LightmapRaycaster>();
-}
+private:
+	struct AlphaTextureData {
+		Vector<uint8_t> data;
+		Vector2i size;
 
-Lightmapper::CreateFunc Lightmapper::create_custom = nullptr;
-Lightmapper::CreateFunc Lightmapper::create_gpu = nullptr;
-Lightmapper::CreateFunc Lightmapper::create_cpu = nullptr;
+		uint8_t sample(float u, float v) const;
+	};
 
-Ref<Lightmapper> Lightmapper::create() {
-	Lightmapper *lm = nullptr;
-	if (create_custom) {
-		lm = create_custom();
-	}
+	RTCDevice embree_device;
+	RTCScene embree_scene;
 
-	if (!lm && create_gpu) {
-		lm = create_gpu();
-	}
+	static void filter_function(const struct RTCFilterFunctionNArguments *p_args);
 
-	if (!lm && create_cpu) {
-		lm = create_cpu();
-	}
-	if (!lm) {
-		return Ref<Lightmapper>();
-	} else {
-		return Ref<Lightmapper>(lm);
-	}
-}
+	Map<unsigned int, AlphaTextureData> alpha_textures;
+	Set<int> filter_meshes;
 
-Lightmapper::Lightmapper() {
-}
+public:
+	virtual bool intersect(Ray &p_ray) override;
+
+	virtual void intersect(Vector<Ray> &r_rays) override;
+
+	virtual void add_mesh(const Vector<Vector3> &p_vertices, const Vector<Vector3> &p_normals, const Vector<Vector2> &p_uv2s, unsigned int p_id) override;
+	virtual void set_mesh_alpha_texture(Ref<Image> p_alpha_texture, unsigned int p_id) override;
+	virtual void commit() override;
+
+	virtual void set_mesh_filter(const Set<int> &p_mesh_ids) override;
+	virtual void clear_mesh_filter() override;
+
+	static LightmapRaycaster *create_embree_raycaster();
+	static void make_default_raycaster();
+
+	LightmapRaycasterEmbree();
+	~LightmapRaycasterEmbree();
+};
+
+#endif

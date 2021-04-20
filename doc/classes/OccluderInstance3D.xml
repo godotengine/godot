@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="OccluderInstance3D" inherits="Node3D" version="4.0">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_bake_mask_bit" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="layer" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_bake_mask_bit">
+			<return type="void">
+			</return>
+			<argument index="0" name="layer" type="int">
+			</argument>
+			<argument index="1" name="enabled" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="bake_mask" type="int" setter="set_bake_mask" getter="get_bake_mask" default="4294967295">
+		</member>
+		<member name="occluder" type="Occluder3D" setter="set_occluder" getter="get_occluder">
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

@@ -1999,6 +1999,24 @@
 				Sets the number of instances visible at a given time. If -1, all instances that have been allocated are drawn. Equivalent to [member MultiMesh.visible_instance_count].
 			</description>
 		</method>
+		<method name="occluder_create">
+			<return type="RID">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="occluder_set_mesh">
+			<return type="void">
+			</return>
+			<argument index="0" name="arg0" type="RID">
+			</argument>
+			<argument index="1" name="arg1" type="PackedVector3Array">
+			</argument>
+			<argument index="2" name="arg2" type="PackedInt32Array">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="omni_light_create">
 			<return type="RID">
 			</return>
@@ -2410,6 +2428,16 @@
 				Creates a scenario and adds it to the RenderingServer. It can be accessed with the RID that is returned. This RID will be used in all [code]scenario_*[/code] RenderingServer functions.
 				Once finished with your RID, you will want to free the RID using the RenderingServer's [method free_rid] static method.
 				The scenario is the 3D world that all the visual instances exist in.
+			</description>
+		</method>
+		<method name="scenario_set_camera_effects">
+			<return type="void">
+			</return>
+			<argument index="0" name="scenario" type="RID">
+			</argument>
+			<argument index="1" name="effects" type="RID">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="scenario_set_debug">
@@ -2897,6 +2925,22 @@
 				Sets the anti-aliasing mode. See [enum ViewportMSAA] for options.
 			</description>
 		</method>
+		<method name="viewport_set_occlusion_culling_build_quality">
+			<return type="void">
+			</return>
+			<argument index="0" name="quality" type="int" enum="RenderingServer.ViewportOcclusionCullingBuildQuality">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="viewport_set_occlusion_rays_per_thread">
+			<return type="void">
+			</return>
+			<argument index="0" name="rays_per_thread" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="viewport_set_parent_viewport">
 			<return type="void">
 			</return>
@@ -2993,6 +3037,16 @@
 			</description>
 		</method>
 		<method name="viewport_set_use_debanding">
+			<return type="void">
+			</return>
+			<argument index="0" name="viewport" type="RID">
+			</argument>
+			<argument index="1" name="enable" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="viewport_set_use_occlusion_culling">
 			<return type="void">
 			</return>
 			<argument index="0" name="viewport" type="RID">
@@ -3454,6 +3508,8 @@
 		</constant>
 		<constant name="VIEWPORT_DEBUG_DRAW_GI_BUFFER" value="17" enum="ViewportDebugDraw">
 		</constant>
+		<constant name="VIEWPORT_DEBUG_DRAW_OCCLUDERS" value="23" enum="ViewportDebugDraw">
+		</constant>
 		<constant name="SKY_MODE_QUALITY" value="1" enum="SkyMode">
 			Uses high quality importance sampling to process the radiance map. In general, this results in much higher quality than [constant Sky.PROCESS_MODE_REALTIME] but takes much longer to generate. This should not be used if you plan on changing the sky at runtime. If you are finding that the reflection is not blurry enough and is showing sparkles or fireflies, try increasing [member ProjectSettings.rendering/reflections/sky_reflections/ggx_samples].
 		</constant>
@@ -3606,6 +3662,12 @@
 		<constant name="SCENARIO_DEBUG_SHADELESS" value="3" enum="ScenarioDebugMode">
 			Draw all objects without shading. Equivalent to setting all objects shaders to [code]unshaded[/code].
 		</constant>
+		<constant name="VIEWPORT_OCCLUSION_BUILD_QUALITY_LOW" value="0" enum="ViewportOcclusionCullingBuildQuality">
+		</constant>
+		<constant name="VIEWPORT_OCCLUSION_BUILD_QUALITY_MEDIUM" value="1" enum="ViewportOcclusionCullingBuildQuality">
+		</constant>
+		<constant name="VIEWPORT_OCCLUSION_BUILD_QUALITY_HIGH" value="2" enum="ViewportOcclusionCullingBuildQuality">
+		</constant>
 		<constant name="INSTANCE_NONE" value="0" enum="InstanceType">
 			The instance does not have a type.
 		</constant>
@@ -3638,7 +3700,9 @@
 		<constant name="INSTANCE_LIGHTMAP" value="10" enum="InstanceType">
 			The instance is a lightmap.
 		</constant>
-		<constant name="INSTANCE_MAX" value="11" enum="InstanceType">
+		<constant name="INSTANCE_OCCLUDER" value="11" enum="InstanceType">
+		</constant>
+		<constant name="INSTANCE_MAX" value="12" enum="InstanceType">
 			Represents the size of the [enum InstanceType] enum.
 		</constant>
 		<constant name="INSTANCE_GEOMETRY_MASK" value="30" enum="InstanceType">
@@ -3653,7 +3717,9 @@
 		<constant name="INSTANCE_FLAG_DRAW_NEXT_FRAME_IF_VISIBLE" value="2" enum="InstanceFlags">
 			When set, manually requests to draw geometry on next frame.
 		</constant>
-		<constant name="INSTANCE_FLAG_MAX" value="3" enum="InstanceFlags">
+		<constant name="INSTANCE_FLAG_IGNORE_OCCLUSION_CULLING" value="3" enum="InstanceFlags">
+		</constant>
+		<constant name="INSTANCE_FLAG_MAX" value="4" enum="InstanceFlags">
 			Represents the size of the [enum InstanceFlags] enum.
 		</constant>
 		<constant name="SHADOW_CASTING_SETTING_OFF" value="0" enum="ShadowCastingSetting">

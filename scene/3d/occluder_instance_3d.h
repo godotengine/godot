@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  lightmapper.cpp                                                      */
+/*  occluder_instance_3d.h                                               */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,49 +28,81 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "lightmapper.h"
+#ifndef OCCLUDER_INSTANCE_3D_H
+#define OCCLUDER_INSTANCE_3D_H
 
-LightmapDenoiser *(*LightmapDenoiser::create_function)() = nullptr;
+#include "scene/3d/visual_instance_3d.h"
 
-Ref<LightmapDenoiser> LightmapDenoiser::create() {
-	if (create_function) {
-		return Ref<LightmapDenoiser>(create_function());
-	}
-	return Ref<LightmapDenoiser>();
-}
+class Occluder3D : public Resource {
+	GDCLASS(Occluder3D, Resource);
+	RES_BASE_EXTENSION("occ");
 
-LightmapRaycaster *(*LightmapRaycaster::create_function)() = nullptr;
+	mutable RID occluder;
+	mutable Ref<ArrayMesh> debug_mesh;
+	mutable Vector<Vector3> debug_lines;
+	AABB aabb;
 
-Ref<LightmapRaycaster> LightmapRaycaster::create() {
-	if (create_function) {
-		return Ref<LightmapRaycaster>(create_function());
-	}
-	return Ref<LightmapRaycaster>();
-}
+	PackedVector3Array vertices;
+	PackedInt32Array indices;
 
-Lightmapper::CreateFunc Lightmapper::create_custom = nullptr;
-Lightmapper::CreateFunc Lightmapper::create_gpu = nullptr;
-Lightmapper::CreateFunc Lightmapper::create_cpu = nullptr;
+	void _update_changes();
 
-Ref<Lightmapper> Lightmapper::create() {
-	Lightmapper *lm = nullptr;
-	if (create_custom) {
-		lm = create_custom();
-	}
+protected:
+	static void _bind_methods();
 
-	if (!lm && create_gpu) {
-		lm = create_gpu();
-	}
+public:
+	void set_vertices(PackedVector3Array p_vertices);
+	PackedVector3Array get_vertices() const;
 
-	if (!lm && create_cpu) {
-		lm = create_cpu();
-	}
-	if (!lm) {
-		return Ref<Lightmapper>();
-	} else {
-		return Ref<Lightmapper>(lm);
-	}
-}
+	void set_indices(PackedInt32Array p_indices);
+	PackedInt32Array get_indices() const;
 
-Lightmapper::Lightmapper() {
-}
+	Vector<Vector3> get_debug_lines() const;
+	Ref<ArrayMesh> get_debug_mesh() const;
+	AABB get_aabb() const;
+
+	virtual RID get_rid() const override;
+	Occluder3D();
+	~Occluder3D();
+};
+
+class OccluderInstance3D : public VisualInstance3D {
+	GDCLASS(OccluderInstance3D, Node3D);
+
+private:
+	Ref<Occluder3D> occluder;
+	uint32_t bake_mask = 0xFFFFFFFF;
+
+	void _occluder_changed();
+
+	bool _bake_material_check(Ref<Material> p_material);
+	void _bake_node(Node *p_node, PackedVector3Array &r_vertices, PackedInt32Array &r_indices);
+
+protected:
+	static void _bind_methods();
+
+public:
+	enum BakeError {
+		BAKE_ERROR_OK,
+		BAKE_ERROR_NO_SAVE_PATH,
+		BAKE_ERROR_NO_MESHES,
+	};
+
+	void set_occluder(const Ref<Occluder3D> &p_occluder);
+	Ref<Occluder3D> get_occluder() const;
+
+	virtual AABB get_aabb() const override;
+	virtual Vector<Face3> get_faces(uint32_t p_usage_flags) const override;
+
+	void set_bake_mask(uint32_t p_mask);
+	uint32_t get_bake_mask() const;
+
+	void set_bake_mask_bit(int p_layer, bool p_enable);
+	bool get_bake_mask_bit(int p_layer) const;
+	BakeError bake(Node *p_from_node, String p_occluder_path = "");
+
+	OccluderInstance3D();
+	~OccluderInstance3D();
+};
+
+#endif

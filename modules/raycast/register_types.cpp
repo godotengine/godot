@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  lightmapper.cpp                                                      */
+/*  register_types.cpp                                                   */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,49 +28,22 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "lightmapper.h"
+#include "register_types.h"
 
-LightmapDenoiser *(*LightmapDenoiser::create_function)() = nullptr;
+#include "lightmap_raycaster.h"
+#include "raycast_occlusion_cull.h"
 
-Ref<LightmapDenoiser> LightmapDenoiser::create() {
-	if (create_function) {
-		return Ref<LightmapDenoiser>(create_function());
-	}
-	return Ref<LightmapDenoiser>();
+RaycastOcclusionCull *raycast_occlusion_cull = nullptr;
+
+void register_raycast_types() {
+#ifdef TOOLS_ENABLED
+	LightmapRaycasterEmbree::make_default_raycaster();
+#endif
+	raycast_occlusion_cull = memnew(RaycastOcclusionCull);
 }
 
-LightmapRaycaster *(*LightmapRaycaster::create_function)() = nullptr;
-
-Ref<LightmapRaycaster> LightmapRaycaster::create() {
-	if (create_function) {
-		return Ref<LightmapRaycaster>(create_function());
+void unregister_raycast_types() {
+	if (raycast_occlusion_cull) {
+		memdelete(raycast_occlusion_cull);
 	}
-	return Ref<LightmapRaycaster>();
-}
-
-Lightmapper::CreateFunc Lightmapper::create_custom = nullptr;
-Lightmapper::CreateFunc Lightmapper::create_gpu = nullptr;
-Lightmapper::CreateFunc Lightmapper::create_cpu = nullptr;
-
-Ref<Lightmapper> Lightmapper::create() {
-	Lightmapper *lm = nullptr;
-	if (create_custom) {
-		lm = create_custom();
-	}
-
-	if (!lm && create_gpu) {
-		lm = create_gpu();
-	}
-
-	if (!lm && create_cpu) {
-		lm = create_cpu();
-	}
-	if (!lm) {
-		return Ref<Lightmapper>();
-	} else {
-		return Ref<Lightmapper>(lm);
-	}
-}
-
-Lightmapper::Lightmapper() {
 }
