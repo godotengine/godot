@@ -240,10 +240,10 @@ public:
 	void set_param(PhysicsServer3D::SliderJointParam p_param, real_t p_value);
 	real_t get_param(PhysicsServer3D::SliderJointParam p_param) const;
 
-	bool setup(real_t p_step);
-	void solve(real_t p_step);
+	virtual bool setup(real_t p_step) override;
+	virtual void solve(real_t p_step) override;
 
-	virtual PhysicsServer3D::JointType get_type() const { return PhysicsServer3D::JOINT_TYPE_SLIDER; }
+	virtual PhysicsServer3D::JointType get_type() const override { return PhysicsServer3D::JOINT_TYPE_SLIDER; }
 };
 
 #endif // SLIDER_JOINT_SW_H

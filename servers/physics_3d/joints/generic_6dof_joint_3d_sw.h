@@ -120,7 +120,7 @@ public:
 	int testLimitValue(real_t test_value);
 
 	//! apply the correction impulses for two bodies
-	real_t solveAngularLimits(real_t timeStep, Vector3 &axis, real_t jacDiagABInv, Body3DSW *body0, Body3DSW *body1);
+	real_t solveAngularLimits(real_t timeStep, Vector3 &axis, real_t jacDiagABInv, Body3DSW *body0, Body3DSW *body1, bool p_body0_dynamic, bool p_body1_dynamic);
 };
 
 class G6DOFTranslationalLimitMotor3DSW {
@@ -166,6 +166,7 @@ public:
 			real_t jacDiagABInv,
 			Body3DSW *body1, const Vector3 &pointInA,
 			Body3DSW *body2, const Vector3 &pointInB,
+			bool p_body1_dynamic, bool p_body2_dynamic,
 			int limit_index,
 			const Vector3 &axis_normal_on_a,
 			const Vector3 &anchorPos);
@@ -234,10 +235,10 @@ protected:
 public:
 	Generic6DOFJoint3DSW(Body3DSW *rbA, Body3DSW *rbB, const Transform &frameInA, const Transform &frameInB, bool useLinearReferenceFrameA);
 
-	virtual PhysicsServer3D::JointType get_type() const { return PhysicsServer3D::JOINT_TYPE_6DOF; }
+	virtual PhysicsServer3D::JointType get_type() const override { return PhysicsServer3D::JOINT_TYPE_6DOF; }
 
-	virtual bool setup(real_t p_timestep);
-	virtual void solve(real_t p_timestep);
+	virtual bool setup(real_t p_step) override;
+	virtual void solve(real_t p_step) override;
 
 	//! Calcs global transform of the offsets
 	/*!
