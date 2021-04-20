@@ -62,6 +62,26 @@ Files extracted from upstream source:
 Extracted from .zip provided. Extracted license and header only.
 
 
+## embree-aarch64
+
+- Upstream: https://github.com/lighttransport/embree-aarch64
+- Version: 3.12.1 (6ef362f99af80c9dfe8dd2bfc582d9067897edc6, 2020)
+- License: Apache 2.0
+
+Files extracted from upstream:
+
+- All cpp files listed in `modules/raycast/godot_update_embree.py`
+- All header files in the directories listed in `modules/raycast/godot_update_embree.py`
+
+The `modules/raycast/godot_update_embree.py`script can be used to pull the 
+relevant files from the latest Embree-aarch64 release and apply some automatic changes.
+
+Some changes have been made in order to remove exceptions and fix minor build errors.
+They are marked with `// -- GODOT start --` and `// -- GODOT end --`
+comments. Apply the patches in the `patches/` folder when syncing on newer upstream
+commits.
+
+
 ## enet
 
 - Upstream: http://enet.bespin.org
