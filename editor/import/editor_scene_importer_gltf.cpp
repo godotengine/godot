@@ -165,7 +165,7 @@ String EditorSceneImporterGLTF::_gen_unique_name(GLTFState &state, const String 
 		name = s_name;
 
 		if (index > 1) {
-			name += itos(index);
+			name += " " + itos(index);
 		}
 		if (!state.unique_names.has(name)) {
 			break;
