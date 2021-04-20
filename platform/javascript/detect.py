@@ -95,8 +95,9 @@ def configure(env):
         if env["initial_memory"] < 64:
             print("Editor build requires at least 64MiB of initial memory. Forcing it.")
             env["initial_memory"] = 64
-    elif env["builtin_icu"]:
         env.Append(CCFLAGS=["-frtti"])
+    elif env["builtin_icu"]:
+        env.Append(CCFLAGS=["-fno-exceptions", "-frtti"])
     else:
         # Disable exceptions and rtti on non-tools (template) builds
         # These flags help keep the file size down.
