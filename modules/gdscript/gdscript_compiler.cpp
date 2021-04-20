@@ -711,7 +711,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 		case GDScriptParser::Node::UNARY_OPERATOR: {
 			const GDScriptParser::UnaryOpNode *unary = static_cast<const GDScriptParser::UnaryOpNode *>(p_expression);
 
-			GDScriptCodeGenerator::Address result = codegen.add_temporary();
+			GDScriptCodeGenerator::Address result = codegen.add_temporary(_gdtype_from_datatype(unary->get_datatype()));
 
 			GDScriptCodeGenerator::Address operand = _parse_expression(codegen, r_error, unary->operand);
 			if (r_error) {
@@ -729,7 +729,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 		case GDScriptParser::Node::BINARY_OPERATOR: {
 			const GDScriptParser::BinaryOpNode *binary = static_cast<const GDScriptParser::BinaryOpNode *>(p_expression);
 
-			GDScriptCodeGenerator::Address result = codegen.add_temporary();
+			GDScriptCodeGenerator::Address result = codegen.add_temporary(_gdtype_from_datatype(binary->get_datatype()));
 
 			switch (binary->operation) {
 				case GDScriptParser::BinaryOpNode::OP_LOGIC_AND: {

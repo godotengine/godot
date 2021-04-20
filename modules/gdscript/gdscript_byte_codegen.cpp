@@ -47,7 +47,8 @@ uint32_t GDScriptByteCodeGenerator::add_parameter(const StringName &p_name, bool
 }
 
 uint32_t GDScriptByteCodeGenerator::add_local(const StringName &p_name, const GDScriptDataType &p_type) {
-	int stack_pos = increase_stack();
+	int stack_pos = locals.size() + RESERVED_STACK;
+	locals.push_back(StackSlot(p_type.builtin_type));
 	add_stack_identifier(p_name, stack_pos);
 	return stack_pos;
 }
@@ -66,25 +67,87 @@ uint32_t GDScriptByteCodeGenerator::add_or_get_name(const StringName &p_name) {
 	return get_name_map_pos(p_name);
 }
 
-uint32_t GDScriptByteCodeGenerator::add_temporary() {
-	current_temporaries++;
-	int idx = increase_stack();
-#ifdef DEBUG_ENABLED
-	temp_stack.push_back(idx);
-#endif
-	return idx;
+uint32_t GDScriptByteCodeGenerator::add_temporary(const GDScriptDataType &p_type) {
+	Variant::Type temp_type = Variant::NIL;
+	if (p_type.has_type) {
+		if (p_type.kind == GDScriptDataType::BUILTIN) {
+			switch (p_type.builtin_type) {
+				case Variant::NIL:
+				case Variant::BOOL:
+				case Variant::INT:
+				case Variant::FLOAT:
+				case Variant::STRING:
+				case Variant::VECTOR2:
+				case Variant::VECTOR2I:
+				case Variant::RECT2:
+				case Variant::RECT2I:
+				case Variant::VECTOR3:
+				case Variant::VECTOR3I:
+				case Variant::TRANSFORM2D:
+				case Variant::PLANE:
+				case Variant::QUAT:
+				case Variant::AABB:
+				case Variant::BASIS:
+				case Variant::TRANSFORM:
+				case Variant::COLOR:
+				case Variant::STRING_NAME:
+				case Variant::NODE_PATH:
+				case Variant::RID:
+				case Variant::OBJECT:
+				case Variant::CALLABLE:
+				case Variant::SIGNAL:
+				case Variant::DICTIONARY:
+				case Variant::ARRAY:
+					temp_type = p_type.builtin_type;
+					break;
+				case Variant::PACKED_BYTE_ARRAY:
+				case Variant::PACKED_INT32_ARRAY:
+				case Variant::PACKED_INT64_ARRAY:
+				case Variant::PACKED_FLOAT32_ARRAY:
+				case Variant::PACKED_FLOAT64_ARRAY:
+				case Variant::PACKED_STRING_ARRAY:
+				case Variant::PACKED_VECTOR2_ARRAY:
+				case Variant::PACKED_VECTOR3_ARRAY:
+				case Variant::PACKED_COLOR_ARRAY:
+				case Variant::VARIANT_MAX:
+					// Packed arrays are reference counted, so we don't use the pool for them.
+					temp_type = Variant::NIL;
+					break;
+			}
+		} else {
+			temp_type = Variant::OBJECT;
+		}
+	}
+
+	if (!temporaries_pool.has(temp_type)) {
+		temporaries_pool[temp_type] = List<int>();
+	}
+
+	List<int> &pool = temporaries_pool[temp_type];
+	if (pool.is_empty()) {
+		StackSlot new_temp(temp_type);
+		int idx = temporaries.size();
+		pool.push_back(idx);
+		temporaries.push_back(new_temp);
+
+		// First time using this, so adjust to the proper type.
+		if (temp_type != Variant::NIL) {
+			Address addr(Address::TEMPORARY, idx, p_type);
+			write_type_adjust(addr, temp_type);
+		}
+	}
+	int slot = pool.front()->get();
+	pool.pop_front();
+	used_temporaries.push_back(slot);
+	return slot;
 }
 
 void GDScriptByteCodeGenerator::pop_temporary() {
-	ERR_FAIL_COND(current_temporaries == 0);
-	current_stack_size--;
-#ifdef DEBUG_ENABLED
-	if (temp_stack.back()->get() != current_stack_size) {
-		ERR_PRINT("Mismatched popping of temporary value");
-	}
-	temp_stack.pop_back();
-#endif
-	current_temporaries--;
+	ERR_FAIL_COND(used_temporaries.is_empty());
+	int slot_idx = used_temporaries.back()->get();
+	const StackSlot &slot = temporaries[slot_idx];
+	temporaries_pool[slot.type].push_back(slot_idx);
+	used_temporaries.pop_back();
 }
 
 void GDScriptByteCodeGenerator::start_parameters() {
@@ -119,11 +182,17 @@ void GDScriptByteCodeGenerator::write_start(GDScript *p_script, const StringName
 
 GDScriptFunction *GDScriptByteCodeGenerator::write_end() {
 #ifdef DEBUG_ENABLED
-	if (current_temporaries != 0) {
-		ERR_PRINT("Non-zero temporary variables at end of function: " + itos(current_temporaries));
+	if (!used_temporaries.is_empty()) {
+		ERR_PRINT("Non-zero temporary variables at end of function: " + itos(used_temporaries.size()));
 	}
 #endif
 	append(GDScriptFunction::OPCODE_END, 0);
+
+	for (int i = 0; i < temporaries.size(); i++) {
+		for (int j = 0; j < temporaries[i].bytecode_indices.size(); j++) {
+			opcodes.write[temporaries[i].bytecode_indices[j]] = (i + max_locals + RESERVED_STACK) | (GDScriptFunction::ADDR_TYPE_STACK << GDScriptFunction::ADDR_BITS);
+		}
+	}
 
 	if (constant_map.size()) {
 		function->_constant_count = constant_map.size();
@@ -317,7 +386,7 @@ GDScriptFunction *GDScriptByteCodeGenerator::write_end() {
 	if (debug_stack) {
 		function->stack_debug = stack_debug;
 	}
-	function->_stack_size = stack_max;
+	function->_stack_size = RESERVED_STACK + max_locals + temporaries.size();
 	function->_instruction_args_size = instr_args_max;
 	function->_ptrcall_args_size = ptrcall_max;
 
@@ -340,6 +409,117 @@ void GDScriptByteCodeGenerator::set_initial_line(int p_line) {
 
 #define IS_BUILTIN_TYPE(m_var, m_type) \
 	(m_var.type.has_type && m_var.type.kind == GDScriptDataType::BUILTIN && m_var.type.builtin_type == m_type)
+
+void GDScriptByteCodeGenerator::write_type_adjust(const Address &p_target, Variant::Type p_new_type) {
+	switch (p_new_type) {
+		case Variant::BOOL:
+			append(GDScriptFunction::OPCODE_TYPE_ADJUST_BOOL, 1);
+			break;
+		case Variant::INT:
+			append(GDScriptFunction::OPCODE_TYPE_ADJUST_INT, 1);
+			break;
+		case Variant::FLOAT:
+			append(GDScriptFunction::OPCODE_TYPE_ADJUST_FLOAT, 1);
+			break;
+		case Variant::STRING:
+			append(GDScriptFunction::OPCODE_TYPE_ADJUST_STRING, 1);
+			break;
+		case Variant::VECTOR2:
+			append(GDScriptFunction::OPCODE_TYPE_ADJUST_VECTOR2, 1);
+			break;
+		case Variant::VECTOR2I:
+			append(GDScriptFunction::OPCODE_TYPE_ADJUST_VECTOR2I, 1);
+			break;
+		case Variant::RECT2:
+			append(GDScriptFunction::OPCODE_TYPE_ADJUST_RECT2, 1);
+			break;
+		case Variant::RECT2I:
+			append(GDScriptFunction::OPCODE_TYPE_ADJUST_RECT2I, 1);
+			break;
+		case Variant::VECTOR3:
+			append(GDScriptFunction::OPCODE_TYPE_ADJUST_VECTOR3, 1);
+			break;
+		case Variant::VECTOR3I:
+			append(GDScriptFunction::OPCODE_TYPE_ADJUST_VECTOR3I, 1);
+			break;
+		case Variant::TRANSFORM2D:
+			append(GDScriptFunction::OPCODE_TYPE_ADJUST_TRANSFORM2D, 1);
+			break;
+		case Variant::PLANE:
+			append(GDScriptFunction::OPCODE_TYPE_ADJUST_PLANE, 1);
+			break;
+		case Variant::QUAT:
+			append(GDScriptFunction::OPCODE_TYPE_ADJUST_QUAT, 1);
+			break;
+		case Variant::AABB:
+			append(GDScriptFunction::OPCODE_TYPE_ADJUST_AABB, 1);
+			break;
+		case Variant::BASIS:
+			append(GDScriptFunction::OPCODE_TYPE_ADJUST_BASIS, 1);
+			break;
+		case Variant::TRANSFORM:
+			append(GDScriptFunction::OPCODE_TYPE_ADJUST_TRANSFORM, 1);
+			break;
+		case Variant::COLOR:
+			append(GDScriptFunction::OPCODE_TYPE_ADJUST_COLOR, 1);
+			break;
+		case Variant::STRING_NAME:
+			append(GDScriptFunction::OPCODE_TYPE_ADJUST_STRING_NAME, 1);
+			break;
+		case Variant::NODE_PATH:
+			append(GDScriptFunction::OPCODE_TYPE_ADJUST_NODE_PATH, 1);
+			break;
+		case Variant::RID:
+			append(GDScriptFunction::OPCODE_TYPE_ADJUST_RID, 1);
+			break;
+		case Variant::OBJECT:
+			append(GDScriptFunction::OPCODE_TYPE_ADJUST_OBJECT, 1);
+			break;
+		case Variant::CALLABLE:
+			append(GDScriptFunction::OPCODE_TYPE_ADJUST_CALLABLE, 1);
+			break;
+		case Variant::SIGNAL:
+			append(GDScriptFunction::OPCODE_TYPE_ADJUST_SIGNAL, 1);
+			break;
+		case Variant::DICTIONARY:
+			append(GDScriptFunction::OPCODE_TYPE_ADJUST_DICTIONARY, 1);
+			break;
+		case Variant::ARRAY:
+			append(GDScriptFunction::OPCODE_TYPE_ADJUST_ARRAY, 1);
+			break;
+		case Variant::PACKED_BYTE_ARRAY:
+			append(GDScriptFunction::OPCODE_TYPE_ADJUST_PACKED_BYTE_ARRAY, 1);
+			break;
+		case Variant::PACKED_INT32_ARRAY:
+			append(GDScriptFunction::OPCODE_TYPE_ADJUST_PACKED_INT32_ARRAY, 1);
+			break;
+		case Variant::PACKED_INT64_ARRAY:
+			append(GDScriptFunction::OPCODE_TYPE_ADJUST_PACKED_INT64_ARRAY, 1);
+			break;
+		case Variant::PACKED_FLOAT32_ARRAY:
+			append(GDScriptFunction::OPCODE_TYPE_ADJUST_PACKED_FLOAT32_ARRAY, 1);
+			break;
+		case Variant::PACKED_FLOAT64_ARRAY:
+			append(GDScriptFunction::OPCODE_TYPE_ADJUST_PACKED_FLOAT64_ARRAY, 1);
+			break;
+		case Variant::PACKED_STRING_ARRAY:
+			append(GDScriptFunction::OPCODE_TYPE_ADJUST_PACKED_STRING_ARRAY, 1);
+			break;
+		case Variant::PACKED_VECTOR2_ARRAY:
+			append(GDScriptFunction::OPCODE_TYPE_ADJUST_PACKED_VECTOR2_ARRAY, 1);
+			break;
+		case Variant::PACKED_VECTOR3_ARRAY:
+			append(GDScriptFunction::OPCODE_TYPE_ADJUST_PACKED_VECTOR3_ARRAY, 1);
+			break;
+		case Variant::PACKED_COLOR_ARRAY:
+			append(GDScriptFunction::OPCODE_TYPE_ADJUST_PACKED_COLOR_ARRAY, 1);
+			break;
+		case Variant::NIL:
+		case Variant::VARIANT_MAX:
+			return;
+	}
+	append(p_target);
+}
 
 void GDScriptByteCodeGenerator::write_unary_operator(const Address &p_target, Variant::Operator p_operator, const Address &p_left_operand) {
 	if (HAS_BUILTIN_TYPE(p_left_operand)) {
@@ -804,6 +984,14 @@ void GDScriptByteCodeGenerator::write_call_builtin_type(const Address &p_target,
 		// Perform regular call.
 		write_call(p_target, p_base, p_method, p_arguments);
 		return;
+	}
+
+	if (p_target.mode == Address::TEMPORARY) {
+		Variant::Type result_type = Variant::get_builtin_method_return_type(p_type, p_method);
+		Variant::Type temp_type = temporaries[p_target.address].type;
+		if (result_type != temp_type) {
+			write_type_adjust(p_target, result_type);
+		}
 	}
 
 	append(GDScriptFunction::OPCODE_CALL_BUILTIN_TYPE_VALIDATED, 2 + p_arguments.size());
