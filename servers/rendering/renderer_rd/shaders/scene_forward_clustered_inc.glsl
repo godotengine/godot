@@ -78,7 +78,7 @@ layout(set = 0, binding = 4, std430) restrict readonly buffer SpotLights {
 }
 spot_lights;
 
-layout(set = 0, binding = 5) buffer restrict readonly ReflectionProbeData {
+layout(set = 0, binding = 5, std430) restrict readonly buffer ReflectionProbeData {
 	ReflectionData data[];
 }
 reflections;
