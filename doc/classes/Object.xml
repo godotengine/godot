@@ -201,7 +201,8 @@
 			<return type="void">
 			</return>
 			<description>
-				Deletes the object from memory. Any pre-existing reference to the freed object will become invalid, e.g. [code]is_instance_valid(object)[/code] will return [code]false[/code].
+				Deletes the object from memory immediately. For [Node]s, you may want to use [method Node.queue_free] to queue the node for safe deletion at the end of the current frame.
+				[b]Important:[/b] If you have a variable pointing to an object, it will [i]not[/i] be assigned to [code]null[/code] once the object is freed. Instead, it will point to a [i]previously freed instance[/i] and you should validate it with [method @GDScript.is_instance_valid] before attempting to call its methods or access its properties.
 			</description>
 		</method>
 		<method name="get" qualifiers="const">
