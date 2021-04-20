@@ -13,24 +13,6 @@
 		<link title="2D Platformer Demo">https://godotengine.org/asset-library/asset/120</link>
 	</tutorials>
 	<methods>
-		<method name="get_collision_layer_bit" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="bit" type="int">
-			</argument>
-			<description>
-				Returns an individual bit on the layer mask. Describes whether other areas will collide with this one on the given layer.
-			</description>
-		</method>
-		<method name="get_collision_mask_bit" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="bit" type="int">
-			</argument>
-			<description>
-				Returns an individual bit on the collision mask. Describes whether this area will collide with others on the given layer.
-			</description>
-		</method>
 		<method name="get_overlapping_areas" qualifiers="const">
 			<return type="Area2D[]">
 			</return>
@@ -66,28 +48,6 @@
 				The [code]body[/code] argument can either be a [PhysicsBody2D] or a [TileMap] instance (while TileMaps are not physics body themselves, they register their tiles with collision shapes as a virtual physics body).
 			</description>
 		</method>
-		<method name="set_collision_layer_bit">
-			<return type="void">
-			</return>
-			<argument index="0" name="bit" type="int">
-			</argument>
-			<argument index="1" name="value" type="bool">
-			</argument>
-			<description>
-				Set/clear individual bits on the layer mask. This makes getting an area in/out of only one layer easier.
-			</description>
-		</method>
-		<method name="set_collision_mask_bit">
-			<return type="void">
-			</return>
-			<argument index="0" name="bit" type="int">
-			</argument>
-			<argument index="1" name="value" type="bool">
-			</argument>
-			<description>
-				Set/clear individual bits on the collision mask. This makes selecting the areas scanned easier.
-			</description>
-		</method>
 	</methods>
 	<members>
 		<member name="angular_damp" type="float" setter="set_angular_damp" getter="get_angular_damp" default="1.0">
@@ -99,12 +59,6 @@
 		</member>
 		<member name="audio_bus_override" type="bool" setter="set_audio_bus_override" getter="is_overriding_audio_bus" default="false">
 			If [code]true[/code], the area's audio bus overrides the default audio bus.
-		</member>
-		<member name="collision_layer" type="int" setter="set_collision_layer" getter="get_collision_layer" default="1">
-			The area's physics layer(s). Collidable objects can exist in any of 32 different layers. A contact is detected if object A is in any of the layers that object B scans, or object B is in any layers that object A scans. See also [member collision_mask]. See [url=https://docs.godotengine.org/en/latest/tutorials/physics/physics_introduction.html#collision-layers-and-masks]Collision layers and masks[/url] in the documentation for more information.
-		</member>
-		<member name="collision_mask" type="int" setter="set_collision_mask" getter="get_collision_mask" default="1">
-			The physics layers this area scans to determine collision detection. See [url=https://docs.godotengine.org/en/latest/tutorials/physics/physics_introduction.html#collision-layers-and-masks]Collision layers and masks[/url] in the documentation for more information.
 		</member>
 		<member name="gravity" type="float" setter="set_gravity" getter="get_gravity" default="98.0">
 			The area's gravity intensity (ranges from -1024 to 1024). This value multiplies the gravity vector. This is useful to alter the force of gravity without altering its direction.
