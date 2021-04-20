@@ -462,8 +462,8 @@ private:
 			uint32_t mask;
 			float ambient[3]; // ambient color,
 			float intensity;
-			bool exterior;
-			bool box_project;
+			uint32_t exterior;
+			uint32_t box_project;
 			uint32_t ambient_mode;
 			uint32_t pad;
 			float local_matrix[16]; // up to here for spot and omni, rest is for directional
