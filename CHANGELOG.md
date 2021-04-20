@@ -4,6 +4,282 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [3.3] - TBD
+
+See the [release announcement](TBD) for details.
+
+### Added
+
+#### Audio
+
+- [MP3 loading and playback support](https://github.com/godotengine/godot/pull/43007).
+- [Add AudioEffectCapture to access the microphone in real-time](https://github.com/godotengine/godot/pull/45593).
+
+#### Build system
+
+- [Add `production=yes` option to set optimal options for production builds](https://github.com/godotengine/godot/pull/45593).
+  - Users making custom builds should use this option which is equivalent to `use_lto=yes debug_symbols=no use_static_cpp=yes`.
+  - **Note for Linux builds:** `use_static_cpp=yes` and `udev=yes` are now the default values, so you need `libudev` and `libstdc++-static` development packages to build in optimal conditions.
+
+#### Core
+
+- [New dynamic BVH](https://github.com/godotengine/godot/pull/44901) for rendering and the GodotPhysics backends.
+  - If you experience a regression in either physics or rendering, you can try [these Project Settings](https://github.com/godotengine/godot/pull/44901#issuecomment-758618531) to revert back to the previous Octree-based approach and possibly fix the issue. In either case, be sure to report the problem on GitHub.
+- [Ability to restore RandomNumberGenerator state](https://github.com/godotengine/godot/pull/45019).
+- [TileMap `show_collision` property to show/hide collision shapes in the editor and at run-time](https://github.com/godotengine/godot/pull/46623).
+- [`Array.append_array()` method to append an array at the end of another array](https://github.com/godotengine/godot/pull/43398).
+- [`OS.get_thread_caller_id()` method to print the ID of the thread the code is currently running on](https://github.com/godotengine/godot/pull/44732).
+- [`application/run/flush_stdout_on_print` project setting](https://github.com/godotengine/godot/pull/44393) to enable per-line flushing of the standard output stream in release builds.
+- [`Image.load_bmp_from_buffer()` method to load BMP images at run-time](https://github.com/godotengine/godot/pull/42947).
+
+#### Editor
+
+- [Infinite 3D editor grid](https://github.com/godotengine/godot/pull/43206) ([further improvements](https://github.com/godotengine/godot/pull/45594)).
+- [New 3D rotation gizmo](https://github.com/godotengine/godot/pull/43016).
+- [Support for copy-pasting nodes](https://github.com/godotengine/godot/pull/34892).
+- [Detect external modification of scenes and prompt for reloading](https://github.com/godotengine/godot/pull/31747).
+- [New editor to configure default import presets](https://github.com/godotengine/godot/pull/46354).
+- [The 3D viewport's View Information pane now displays the viewport resolution](https://github.com/godotengine/godot/pull/45596).
+- **HTML5:** [New web editor](https://godotengine.org/article/godot-web-progress-report-3), available as a [Progressive Web App](https://github.com/godotengine/godot/pull/46796).
+
+#### GUI
+
+- [Minimap support in GraphEdit](https://github.com/godotengine/godot/pull/43416).
+- [New AspectRatioContainer Control node](https://github.com/godotengine/godot/pull/45129).
+
+#### Import
+
+- [Rewritten and greatly improved FBX importer](https://godotengine.org/article/fbx-importer-rewritten-for-godot-3-2-4).
+- ["Keep" mode to keep files as-is and export them](https://github.com/godotengine/godot/pull/47268).
+
+#### Input
+
+- [Support for buttons and D-pads mapped to half axes](https://github.com/godotengine/godot/pull/42800).
+- [Support for new SDL game controller keywords (used by PS5 controller support)](https://github.com/godotengine/godot/pull/45798).
+- [Add driving joystick type to Windows joystick handling](https://github.com/godotengine/godot/pull/44082).
+- [Mouse event pass-through support for the window](https://github.com/godotengine/godot/pull/40205).
+
+#### Mono (C#)
+
+- [Reworked solution build output panel](https://github.com/godotengine/godot/pull/42547).
+
+#### Physics
+
+- [Support for pause-aware picking](https://github.com/godotengine/godot/pull/39421).
+  - This breaks compatibility, but is not enabled by default for existing projects. See the project setting `physics/common/enable_pause_aware_picking`. It will be enabled by default for new projects created with 3.3.
+- [Cylinder collision shape support in GodotPhysics](https://github.com/godotengine/godot/pull/45854).
+- [CollisionObject can now display collision shape meshes](https://github.com/godotengine/godot/pull/45783).
+- [CollisionPolygon `margin` property for Bullet](https://github.com/godotengine/godot/pull/45855).
+
+#### Porting
+
+- **Android:** [Support for exporting as Android App Bundle](https://github.com/godotengine/godot-proposals/issues/342).
+- **Android:** [Support for subview embedding](https://github.com/godotengine/godot-proposals/issues/1064).
+- **Android:** [Support for notch cutouts on Android 9.0 and later](https://github.com/godotengine/godot/pull/43104).
+- **Android:** [Support for mouse events](https://github.com/godotengine/godot/pull/42360).
+- **Android:** [Support for keyboard modifiers and arrow keys](https://github.com/godotengine/godot/pull/40398).
+- **Android:** [Implement `OS.get_screen_orientation()`](https://github.com/godotengine/godot/pull/43022).
+- **HTML5:** [AudioWorklet support for multithreaded HTML5 builds](https://github.com/godotengine/godot/pull/43454).
+- **HTML5:** [Optional GDNative support](https://github.com/godotengine/godot/pull/44076).
+- **HTML5:** [WebXR support](https://github.com/godotengine/godot/pull/42397) for VR games.
+- **HTML5:** [Resizable canvas option to disable viewport resizing](https://github.com/godotengine/godot/pull/42266).
+- **HTML5:** [loDPI fallback support for improved performance on hiDPI displays (at the cost of visuals)](https://github.com/godotengine/godot/pull/46802).
+  - To keep the previous behavior, **Allow Hidpi** must be enabled in the Project Settings before exporting the project.
+- **iOS:** [Plugin support](https://github.com/godotengine/godot/pull/41340), with a similar interface to Android plugins.
+- **iOS:** [Add a touch delay project setting](https://github.com/godotengine/godot/pull/42457).
+- **iOS:** [Implemented native loading screen](https://github.com/godotengine/godot/pull/45693).
+- **Linux:** [PulseAudio and ALSA libraries are now dynamically loaded](https://github.com/godotengine/godot/pull/46107).
+  - This allows running official Godot binaries on systems that don't have PulseAudio installed.
+- **Linux/macOS:** [Implement the `--no-window` command line argument for parity with Windows](https://github.com/godotengine/godot/pull/42276).
+- **macOS:** [macOS ARM64 support](https://github.com/godotengine/godot/pull/39788) in official binaries for Apple M1 chip (only standard build for now).
+
+#### Rendering
+
+- [2D batching for GLES3](https://github.com/godotengine/godot/pull/42119) (it was implemented for GLES2 in 3.2.2), and improvements to GLES2's batching.
+- [New software skinning for MeshInstance](https://github.com/godotengine/godot/pull/40313) to replace the slow GPU skinning on devices that don't support the fast GPU skinning (especially mobile).
+- [Configurable amount of lights per object](https://github.com/godotengine/godot/pull/43606), now defaulting to 32 instead of 8.
+- [New CPU lightmapper](https://github.com/godotengine/godot/pull/44628).
+  - Uses a raytracing approach with optional denoising.
+  - Environment lighting is now supported.
+  - Lightmaps are now stored in an atlas when baking if GLES3 is the current backend at the time of baking.
+  - Bicubic lightmap sampling is now used to improve the final appearance, both in GLES3 and GLES2. It's enabled by default on desktop platforms.
+- [Anisotropic filtering now works when using the GLES2 backend](https://github.com/godotengine/godot/pull/45654).
+- [FXAA property in Viewport and associated project setting for GLES3 and GLES2](https://github.com/godotengine/godot/pull/42006).
+  - Upsides: Faster than MSAA, smooths out alpha-tested materials and specular aliasing.
+  - Downsides: Lower quality than MSAA and makes the 3D viewport blurrier.
+- [Debanding property in Viewport and associated project setting for GLES3](https://github.com/godotengine/godot/pull/42942).
+  - Significantly reduces visible banding in 3D. The effect is mainly visible on smooth gradients, solid surfaces and in heavy fog.
+  - Only effective when HDR is enabled in the Project Settings (which is the default).
+- [New `METALLIC` built-in for the `light()` function in the shader language](https://github.com/godotengine/godot/pull/42548).
+
+### Changed
+
+#### Core
+
+- [Optimized transform propagation for hidden 3D nodes](https://github.com/godotengine/godot/pull/45583).
+- [Modernized multi-threading APIs](https://github.com/godotengine/godot/pull/45618).
+- [Suggestions are now printed when attempting to use a nonexistent input action name](https://github.com/godotengine/godot/pull/45902).
+- [SVG images can now be used as a project icon](https://github.com/godotengine/godot/pull/43369).
+- [Tweaked log file names for consistency between Mono and non-Mono builds](https://github.com/godotengine/godot/pull/44148).
+
+#### Editor
+
+- [Improved inspector subresource editing visibility](https://github.com/godotengine/godot/pull/45907).
+- [Improved the 3D selection box appearance for better visibility](https://github.com/godotengine/godot/pull/43424).
+  - The 3D selection box color can be changed in the Editor Settings.
+- [Increased default opacity for 3D manipulator gizmos for better visibility](https://github.com/godotengine/godot/pull/44384).
+- [Improved visibility for the dashed line in the TextureRegion editor](https://github.com/godotengine/godot/pull/45164).
+- [Pressed CheckButtons are now colored in blue for easier recognition](https://github.com/godotengine/godot/pull/44556).
+- [The autokeying icon in the animation editor is now red when pressed to emphasize its "recording" status](https://github.com/godotengine/godot/pull/42417).
+- [Scroll bars are now thicker and have a subtle background to better hint where they start and stop](https://github.com/godotengine/godot/pull/47633).
+- [Undo/redo log messages now give more context when performing actions in the 2D editor](https://github.com/godotengine/godot/pull/42229).
+- [The editor now uses 75% scaling by default on small displays (such as 1366×768)](https://github.com/godotengine/godot/pull/43611).
+  - This can be reverted by setting the editor scale to 100% in the Editor Settings.
+- [The editor now uses 150% scaling by default on 4K monitors, regardless of their DPI](https://github.com/godotengine/godot/pull/45910).
+  - This can be adjusted by setting the editor scale to the desired value in the Editor Settings.
+- [Rename Node is now bound to <kbd>F2</kbd>](https://github.com/godotengine/godot/pull/38201).
+  - To account for this change, switching between editors using keyboard shortcuts now requires holding down <kbd>Ctrl</kbd>.
+  - Editor shortcuts can be changed back to the previous values in the Editor Settings' Shortcuts tab.
+- [Changed the Search Help shortcut from <kbd>Shift + F1</kbd> to <kbd>F1</kbd>](https://github.com/godotengine/godot/pull/43773).
+- [Changed the FileSystem dock Copy Path shortcut from <kbd>Ctrl + C</kbd> to <kbd>Ctrl + Shift + C</kbd>](https://github.com/godotengine/godot/pull/43397).
+- [Changed 3D editor's Primary Grid Steps setting from 10 to 8](https://github.com/godotengine/godot/pull/43754).
+  - This uses a power-of-two value by default.
+- [Increased the default `profiler_frame_max_functions` to 512](https://github.com/godotengine/godot/pull/43697).
+  - This fixes many instances where functions didn't appear in the script profiler.
+- [The inspector now allows using a comma as a decimal separator](https://github.com/godotengine/godot/pull/42376).
+- [Editor plugins are now searched for recursively](https://github.com/godotengine/godot/pull/43734).
+- [Increased the page size for array/dictionary editors in the inspector from 10 to 20](https://github.com/godotengine/godot/pull/44864).
+  - The value can now be increased further in the Editor Settings at the cost of slower node switching times in the inspector.
+- [The "Auto" editor setting hints for editor scale and font hinting now display the value they apply](https://github.com/godotengine/godot/pull/45270).
+- [Tweaked property hints for SpatialMaterial depth properties to allow greater control and quality](https://github.com/godotengine/godot/pull/44130).
+- [Pause Mode and Script are no longer collapsed in categories in the inspector](https://github.com/godotengine/godot/pull/43566).
+- **Asset library:** [The Retry button now only appears if the download has failed](https://github.com/godotengine/godot/pull/46105).
+- **Asset library:** [Search now starts automatically after entering text](https://github.com/godotengine/godot/pull/42402).
+- **Project manager:** [Display loading text while the project is opening](https://github.com/godotengine/godot/pull/46026).
+- **Project manager:** [The Open Project Folder button is now more visible](https://github.com/godotengine/godot/pull/45642).
+
+#### GUI
+
+- [Range now returns a ratio of 1.0 if the minimum and maximum value are equal](https://github.com/godotengine/godot/pull/45220).
+- [The Control virtual method `_make_custom_tooltip()` should now return a `Control` instead of an `Object`.](https://github.com/godotengine/godot/pull/43280)
+  - Scripts overriding this method will have to be updated.
+
+#### Import
+
+- [glTF import now uses vertex colors by default](https://github.com/godotengine/godot/pull/41007).
+- [Fix ETC compressor `lossy_quality` handling](https://github.com/godotengine/godot/pull/44682).
+  - High `lossy_quality` values will now incur significantly longer compression times, but will also improve the resulting texture quality.
+
+#### Mono (C#)
+
+- [The `copy_mono_root` SCons build option now defaults to `yes`](https://github.com/godotengine/godot/pull/42332).
+- Official builds now use Mono 6.12.0.114.
+
+#### Networking
+
+- [Increase the default HTTPClient download chunk size to 64 KiB](https://github.com/godotengine/godot/pull/42896).
+  - This improves download speeds significantly, including for the in-editor export template downloader.
+  - This change also affects HTTPRequest.
+
+#### Rendering
+
+- [Shadows now have a proper soft appearance in GLES2 when using the PCF13 shadow filter](https://github.com/godotengine/godot/pull/46301).
+- [Real-time lights no longer affect objects that receive baked lighting if Bake Mode is set to All](https://github.com/godotengine/godot/pull/41629).
+- [YSort rendering order is now more deterministic](https://github.com/godotengine/godot/pull/42375).
+
+#### Physics
+
+- [2D collision shapes are now displayed with outlines when **Debug > Visible Collision Shapes** is enabled](https://github.com/godotengine/godot/pull/46291).
+
+#### Porting
+
+- **Android:** [Update logic to sign prebuilt APKs with `apksigner` instead of `jarsigner`, as required for Android API 30](https://github.com/godotengine/godot/pull/44645).
+- **HTML5:** [Improved gamepad support by using an internal implementation of the Gamepad API](https://github.com/godotengine/godot/pull/45078).
+- **Linux:** Binaries are now stripped of string and symbol tables, reducing their size significantly.
+  - Editor: 9 MB less (standard) and 35 MB less (Mono).
+  - Templates: 5-6 MB less (standard) and 30 MB less (Mono).
+- **macOS:** [Add entitlements configuration and export template `.dylib` signing to the export](https://github.com/godotengine/godot/pull/46618).
+- **macOS:** [Improve Mono distribution in .app bundle to allow codesigning exported projects](https://github.com/godotengine/godot/pull/43768).
+- **macOS:** Binaries are now stripped of string and symbol tables, which reduces their size significantly:
+  - Editor: 14 MB less (standard) and 9 MB less (Mono).
+  - Templates: 9-10 MB less (standard) and 6 MB less (Mono).
+- **macOS:** Official editor binaries are now signed and notarized.
+
+### Fixed
+
+#### Audio
+
+- [Fix pops when using `play()` in AudioStreamPlayer2D and AudioStreamPlayer3D](https://github.com/godotengine/godot/pull/46151).
+
+#### Core
+
+- [Fix Editable Children issues with node renaming, moving, duplicating and instancing](https://github.com/godotengine/godot/pull/39533).
+- [Freed Objects no longer delay to `null` in debug builds](https://github.com/godotengine/godot/pull/41866).
+- [Various fixes to Variant and Reference pointers](https://github.com/godotengine/godot/pull/43049).
+- [Optimized octree and fixed a leak](https://github.com/godotengine/godot/pull/41123).
+- [Fix crash when opening a ZIP data pack](https://github.com/godotengine/godot/pull/42196).
+- Various fixes to CSG mesh generation. There should be less instances of holes being created in CSG meshes.
+
+#### Editor
+
+- [Fix exporting if the temporary export directory doesn't exist yet](https://github.com/godotengine/godot/pull/45561).
+- [Objects can no longer be added to the Project Settings since they can't be serialized correctly](https://github.com/godotengine/godot/pull/42616).
+
+#### GDScript
+
+- [Fix leaks due to cyclic references](https://github.com/godotengine/godot/pull/41931).
+
+#### GUI
+
+- [Fix artifacts in DynamicFont when scaling with filtering enabled](https://github.com/godotengine/godot/pull/43171).
+- [DynamicFonts are now loaded to memory on all platforms to avoid locking files](https://github.com/godotengine/godot/pull/44117).
+- [Fix fallback emoji font color](https://github.com/godotengine/godot/pull/44212).
+
+#### Import
+
+- [Relax node naming constraints in glTF](https://github.com/godotengine/godot/pull/45545).
+- [Relax bone naming constraints in glTF](https://github.com/godotengine/godot/pull/47074).
+- [Fix parsing Base64-encoded buffer and image data in glTF](https://github.com/godotengine/godot/pull/42501).
+- [Fix handling of normalized accessor property in glTF](https://github.com/godotengine/godot/pull/44746).
+
+#### Mono (C#)
+
+- [Fix targeting .NETFramework with .NET 5](https://github.com/godotengine/godot/pull/44135).
+- [Fix System.Collections.Generic.List marshalling](https://github.com/godotengine/godot/pull/45029).
+- [Fix support for Unicode identifiers](https://github.com/godotengine/godot/pull/45310).
+- [Fixes to Mono on WebAssembly](https://github.com/godotengine/godot/pull/44374).
+
+#### Physics
+
+- [Multiple fixes to one-way collisions](https://github.com/godotengine/godot/pull/42574).
+
+#### Porting
+
+- **Android:** [Fix splash screen loading](https://github.com/godotengine/godot/pull/42389).
+- **iOS:** [Fix multiple issues with PVRTC import, disable ETC1](https://github.com/godotengine/godot/pull/38076).
+- **iOS:** [Fixes to keyboard input, including better IME support](https://github.com/godotengine/godot/pull/43560).
+- **Linux:** [Fix keyboard input lag and clipboard delay issues](https://github.com/godotengine/godot/pull/42341).
+- **Linux:** [Fix audio corruption when using the ALSA driver](https://github.com/godotengine/godot/pull/43928).
+- **Linux:** [Fix PRIME hybrid graphics detection on Steam](https://github.com/godotengine/godot/pull/46792).
+- **macOS:** [Fix mouse position in captured mode](https://github.com/godotengine/godot/pull/42328).
+- **macOS:** [Improve `get_screen_dpi()` reliability for non-integer scaling factors](https://github.com/godotengine/godot/pull/42478).
+- **Windows:** [Fix debugger not getting focused on break](https://github.com/godotengine/godot/pull/40555).
+
+#### Rendering
+
+- [Various fixes to 3D light culling](https://github.com/godotengine/godot/pull/46694).
+  - DirectionalLight's Cull Mask property is now effective.
+- [Fix large Sprite3D UV wobbling with low-resolution textures](https://github.com/godotengine/godot/pull/42537).
+- [Fix impact of `lifetime_randomness` on properties using a curve](https://github.com/godotengine/godot/pull/45496).
+- [Fix 2D normal maps when using batching + NVIDIA workaround](https://github.com/godotengine/godot/pull/41323).
+- [Fix PanoramaSky artifacts on Android in GLES2](https://github.com/godotengine/godot/pull/44489).
+- [Fix glow on devices with only 8 texture slots in GLES2](https://github.com/godotengine/godot/pull/42446).
+- [Use a separate texture unit for `light_texture` in GLES2](https://github.com/godotengine/godot/pull/42538).
+- [Fix reflection probes in WebGL 1.0 (GLES2 on HTML5)](https://github.com/godotengine/godot/pull/45465).
+- [Fix screen-space reflections tracing the environment in GLES3](https://github.com/godotengine/godot/pull/38954).
+- [Fade screen-space reflections towards the inner margin in GLES3](https://github.com/godotengine/godot/pull/41892).
+- [Ensure Reinhard tonemapping values are positive in GLES3](https://github.com/godotengine/godot/pull/42056).
+
 ## [3.2.3] - 2020-09-17
 
 See the [release announcement](https://godotengine.org/article/maintenance-release-godot-3-2-3) for details.
@@ -13,7 +289,7 @@ See the [release announcement](https://godotengine.org/article/maintenance-relea
 - Android: Add option to enable high precision float in GLES2
 - C#: Add Visual Studio support
 - HTML5: Improvements and bugfixes backported from the `master` branch
-  * Note: This PR adds threads support, but as this support is still [disabled in many browsers](https://caniuse.com/#feat=sharedarraybuffer) due to security concerns, the option is not enabled by default. Build HTML5 templates with `threads_enabled=yes` to test it.
+  - Note: This PR adds threads support, but as this support is still [disabled in many browsers](https://caniuse.com/#feat=sharedarraybuffer) due to security concerns, the option is not enabled by default. Build HTML5 templates with `threads_enabled=yes` to test it.
 - Input: Support SDL2 half axes and inverted axes mappings
 - iOS: Add support of iOS's dynamic libraries to GDNative
 - iOS: Add methods to embed a framework
@@ -372,7 +648,7 @@ See the [release announcement](https://godotengine.org/article/maintenance-relea
 - `posmod()` built-in GDScript function that behaves like `fposmod()`, but returns an integer value.
 - `smoothstep()` built-in GDScript function for smooth easing of values.
 - `lerp_angle()` built-in GDScript function to interpolate between two angles.
-- `ord()` built-in GDScript function to return the Unicode code point of an 1-character string.
+- `ord()` built-in GDScript function to return the Unicode code point of a 1-character string.
 - `PoolByteArray.hex_encode()` method to get a string of hexadecimal numbers.
 - `Font.get_wordwrap_string_size()` method to return the rectangle size needed to draw a word-wrapped text.
 - `Camera.get_camera_rid()` method to retrieve a Camera's RID.
@@ -1307,7 +1583,11 @@ See the [release announcement](https://godotengine.org/article/maintenance-relea
 - HTML5 export using asm.js.
   - Only WebAssembly is supported now, since all browsers supporting WebGL 2.0 also support WebAssembly.
 
-[Unreleased]: https://github.com/godotengine/godot/compare/3.2-stable...HEAD
-[3.2]: https://github.com/godotengine/godot/compare/3.1-stable...3.2-stable
-[3.1]: https://github.com/godotengine/godot/compare/3.0-stable...3.1-stable
-[3.0]: https://github.com/godotengine/godot/compare/2.1-stable...3.0-stable
+[Unreleased]: https://github.com/godotengine/godot/compare/3.3-stable...HEAD
+[3.3]: https://downloads.tuxfamily.org/godotengine/3.3/Godot_v3.3-stable_changelog_chrono.txt
+[3.2.3]: https://downloads.tuxfamily.org/godotengine/3.2.3/Godot_v3.2.3-stable_changelog_chrono.txt
+[3.2.2]: https://downloads.tuxfamily.org/godotengine/3.2.2/Godot_v3.2.2-stable_changelog_chrono.txt
+[3.2.1]: https://downloads.tuxfamily.org/godotengine/3.2.1/Godot_v3.2.1-stable_changelog_chrono.txt
+[3.2]: https://downloads.tuxfamily.org/godotengine/3.2/Godot_v3.2-stable_changelog_chrono.txt
+[3.1]: https://downloads.tuxfamily.org/godotengine/3.1/Godot_v3.1-stable_changelog_chrono.txt
+[3.0]: https://downloads.tuxfamily.org/godotengine/3.0/Godot_v3.0-stable_changelog_chrono.txt
