@@ -26,8 +26,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-04-05 14:28+0000\n"
-"Last-Translator: Henry LeRoux <henry.leroux@ocsbstudent.ca>\n"
+"PO-Revision-Date: 2021-04-11 22:02+0000\n"
+"Last-Translator: Myeongjin Lee <aranet100@gmail.com>\n"
 "Language-Team: Korean <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ko/>\n"
 "Language: ko\n"
@@ -4071,7 +4071,7 @@ msgstr "기본값으로 재설정"
 
 #: editor/import_dock.cpp
 msgid "Keep File (No Import)"
-msgstr ""
+msgstr "파일 유지 (가져오기 없음)"
 
 #: editor/import_dock.cpp
 msgid "%d Files"
@@ -6555,7 +6555,7 @@ msgstr "폴리곤 변형"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Paint Bone Weights"
-msgstr "본 가중치 칠"
+msgstr "본 가중치 칠하기"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Open Polygon 2D UV editor."
@@ -6963,7 +6963,7 @@ msgstr "프로시저 단위 실행"
 
 #: editor/plugins/script_editor_plugin.cpp editor/script_editor_debugger.cpp
 msgid "Step Over"
-msgstr "한 단계식 코드 실행"
+msgstr "한 단계씩 코드 실행"
 
 #: editor/plugins/script_editor_plugin.cpp editor/script_editor_debugger.cpp
 msgid "Break"
@@ -6984,11 +6984,11 @@ msgstr "외부 편집기로 디버깅"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Open Godot online documentation."
-msgstr "Godot 온라인 문서를 열."
+msgstr "Godot 온라인 문서를 엽니다."
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Search the reference documentation."
-msgstr "참조 문서 검색."
+msgstr "참조 문서를 검색합니다."
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Go to previous edited document."
@@ -7077,11 +7077,11 @@ msgstr "대소문자 변환"
 
 #: editor/plugins/script_text_editor.cpp editor/plugins/text_editor.cpp
 msgid "Uppercase"
-msgstr "대문자로 바꾸기"
+msgstr "대문자로"
 
 #: editor/plugins/script_text_editor.cpp editor/plugins/text_editor.cpp
 msgid "Lowercase"
-msgstr "소문자로 바꾸기"
+msgstr "소문자로"
 
 #: editor/plugins/script_text_editor.cpp editor/plugins/text_editor.cpp
 msgid "Capitalize"
@@ -7149,7 +7149,7 @@ msgstr "아래로 복제"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Complete Symbol"
-msgstr "자동 완성"
+msgstr "상징 자동 완성"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Evaluate Selection"
@@ -7157,7 +7157,7 @@ msgstr "선택 항목 평가"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Trim Trailing Whitespace"
-msgstr "후행 공백 문자 삭제"
+msgstr "후행 공백 문자 제거"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Convert Indent to Spaces"
@@ -7478,27 +7478,27 @@ msgstr "GLES2 렌더러에서 사용할 수 없습니다."
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Freelook Left"
-msgstr "자유 시점 왼쪽으로 가기"
+msgstr "자유 시점 왼쪽으로"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Freelook Right"
-msgstr "자유 시점 오른쪽으로 가기"
+msgstr "자유 시점 오른쪽으로"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Freelook Forward"
-msgstr "자유 시점 앞으로 가기"
+msgstr "자유 시점 앞으로"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Freelook Backwards"
-msgstr "자유 시점 뒤로 가기"
+msgstr "자유 시점 뒤로"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Freelook Up"
-msgstr "자유 시점 위로 가기"
+msgstr "자유 시점 위로"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Freelook Down"
-msgstr "자유 시점 아래로 가기"
+msgstr "자유 시점 아래로"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Freelook Speed Modifier"
@@ -7511,6 +7511,11 @@ msgstr "자유 시점 느린 수정자"
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "View Rotation Locked"
 msgstr "뷰 회전 잠김"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid ""
+"To zoom further, change the camera's clipping planes (View -> Settings...)"
+msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid ""
@@ -7623,27 +7628,27 @@ msgstr "변형 대화 상자..."
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "1 Viewport"
-msgstr "1개 뷰포트"
+msgstr "뷰포트 1개"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "2 Viewports"
-msgstr "2개 뷰포트"
+msgstr "뷰포트 2개"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "2 Viewports (Alt)"
-msgstr "2개 뷰포트 (다른 방식)"
+msgstr "뷰포트 2개 (다른 방식)"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "3 Viewports"
-msgstr "3개 뷰포트"
+msgstr "뷰포트 3개"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "3 Viewports (Alt)"
-msgstr "3개 뷰포트 (다른 방식)"
+msgstr "뷰포트 3개 (다른 방식)"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "4 Viewports"
-msgstr "4개 뷰포트"
+msgstr "뷰포트 4개"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Gizmos"
@@ -8147,7 +8152,7 @@ msgstr "선택 항목 잘라내기"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Paint TileMap"
-msgstr "타일맵 칠"
+msgstr "타일맵 칠하기"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Line Draw"
@@ -8159,7 +8164,7 @@ msgstr "사각 영역 칠하기"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Bucket Fill"
-msgstr "채우기"
+msgstr "버킷 채우기"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Erase TileMap"
@@ -8171,7 +8176,7 @@ msgstr "타일 찾기"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Transpose"
-msgstr "바꾸기"
+msgstr "행렬 맞바꾸기"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Disable Autotile"
@@ -8199,15 +8204,15 @@ msgid ""
 "Shift+Command+LMB: Rectangle Paint"
 msgstr ""
 "Shift+좌클릭: 선 그리기\n"
-"Shift+Command+좌클릭: 사각 영역 페인트"
+"Shift+Command+좌클릭: 사각 영역 칠하기"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid ""
 "Shift+LMB: Line Draw\n"
 "Shift+Ctrl+LMB: Rectangle Paint"
 msgstr ""
-"Shift+우클릭: 선 그리기\n"
-"Shift+Ctrl+우클릭: 사각 영역 페인트"
+"Shift+좌클릭: 선 그리기\n"
+"Shift+Ctrl+좌클릭: 사각 영역 칠하기"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Pick Tile"
@@ -8279,7 +8284,7 @@ msgstr "이전 모양, 하위 타일, 혹은 타일을 선택하세요."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Region"
-msgstr "지역"
+msgstr "영역"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Collision"
@@ -8307,7 +8312,7 @@ msgstr "Z 인덱스"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Region Mode"
-msgstr "지역 모드"
+msgstr "영역 모드"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Collision Mode"
@@ -8339,19 +8344,19 @@ msgstr "Z 인덱스 모드"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Copy bitmask."
-msgstr "비트 마스크 복사."
+msgstr "비트 마스크를 복사합니다."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Paste bitmask."
-msgstr "비트 마스크 붙여넣기."
+msgstr "비트 마스크를 붙여넣습니다."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Erase bitmask."
-msgstr "비트 마스크 지우기."
+msgstr "비트 마스크를 지웁니다."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Create a new rectangle."
-msgstr "새로운 사각형을 만듭니다."
+msgstr "새로운 사각 영역을 만듭니다."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "New Rectangle"
@@ -8371,7 +8376,7 @@ msgstr "선택된 모양 삭제"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Keep polygon inside region Rect."
-msgstr "사각형 내부에 폴리곤을 유지."
+msgstr "사각형 영역 내에 폴리곤을 유지합니다."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Enable snap and show grid (configurable via the Inspector)."
@@ -9164,7 +9169,7 @@ msgstr "매개변수의 쌍곡탄젠트 값을 반환합니다."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Finds the truncated value of the parameter."
-msgstr "매개변수의 절사된 값을 찾아요."
+msgstr "매개변수의 절사된 값을 찾습니다."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Adds scalar to scalar."
@@ -10851,6 +10856,13 @@ msgstr "선택한 노드에서 스크립트를 뗍니다."
 #: editor/scene_tree_dock.cpp
 msgid "Remote"
 msgstr "원격"
+
+#: editor/scene_tree_dock.cpp
+msgid ""
+"If selected, the Remote scene tree dock will cause the project to stutter "
+"every time it updates.\n"
+"Switch back to the Local scene tree dock to improve performance."
+msgstr ""
 
 #: editor/scene_tree_dock.cpp
 msgid "Local"

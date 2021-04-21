@@ -114,12 +114,13 @@
 # Diego dos Reis Macedo <diego_dragon97@hotmail.com>, 2021.
 # Lucas E. <lukas.ed45@gmail.com>, 2021.
 # Gabriel Silveira <gabomfim99@gmail.com>, 2021.
+# Arthur Phillip D. Silva <artphil.dev@gmail.com>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: 2016-05-30\n"
-"PO-Revision-Date: 2021-04-05 14:28+0000\n"
-"Last-Translator: Gabriel Silveira <gabomfim99@gmail.com>\n"
+"PO-Revision-Date: 2021-04-11 22:02+0000\n"
+"Last-Translator: Arthur Phillip D. Silva <artphil.dev@gmail.com>\n"
 "Language-Team: Portuguese (Brazil) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/pt_BR/>\n"
 "Language: pt_BR\n"
@@ -7664,6 +7665,11 @@ msgstr "Ver Rotação Bloqueada"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid ""
+"To zoom further, change the camera's clipping planes (View -> Settings...)"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid ""
 "Note: The FPS value displayed is the editor's framerate.\n"
 "It cannot be used as a reliable indication of in-game performance."
 msgstr ""
@@ -11043,6 +11049,13 @@ msgstr "Remove o script do nó selecionado."
 #: editor/scene_tree_dock.cpp
 msgid "Remote"
 msgstr "Remoto"
+
+#: editor/scene_tree_dock.cpp
+msgid ""
+"If selected, the Remote scene tree dock will cause the project to stutter "
+"every time it updates.\n"
+"Switch back to the Local scene tree dock to improve performance."
+msgstr ""
 
 #: editor/scene_tree_dock.cpp
 msgid "Local"
