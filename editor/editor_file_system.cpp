@@ -1754,6 +1754,7 @@ void EditorFileSystem::_reimport_file(const String &p_file) {
 
 	} else {
 		late_added_files.insert(p_file); //imported files do not call update_file(), but just in case..
+		params["nodes/use_legacy_names"] = false;
 	}
 
 	if (importer_name == "keep") {

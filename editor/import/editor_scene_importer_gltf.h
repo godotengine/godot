@@ -322,6 +322,7 @@ class EditorSceneImporterGLTF : public EditorSceneImporter {
 		Vector<uint8_t> glb_data;
 
 		bool use_named_skin_binds;
+		bool use_legacy_names;
 
 		Vector<GLTFNode *> nodes;
 		Vector<Vector<uint8_t> > buffers;
@@ -359,12 +360,14 @@ class EditorSceneImporterGLTF : public EditorSceneImporter {
 		}
 	};
 
+	String _sanitize_scene_name(GLTFState &state, const String &p_name);
+	String _legacy_validate_node_name(const String &p_name);
 	String _gen_unique_name(GLTFState &state, const String &p_name);
 
 	String _sanitize_animation_name(const String &p_name);
 	String _gen_unique_animation_name(GLTFState &state, const String &p_name);
 
-	String _sanitize_bone_name(const String &p_name);
+	String _sanitize_bone_name(GLTFState &state, const String &p_name);
 	String _gen_unique_bone_name(GLTFState &state, const GLTFSkeletonIndex skel_i, const String &p_name);
 
 	Ref<Texture> _get_texture(GLTFState &state, const GLTFTextureIndex p_texture);
