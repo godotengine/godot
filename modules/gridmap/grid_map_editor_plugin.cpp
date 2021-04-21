@@ -1098,6 +1098,16 @@ void GridMapEditor::_notification(int p_what) {
 			options->set_icon(get_icon("GridMap", "EditorIcons"));
 			search_box->set_right_icon(get_icon("Search", "EditorIcons"));
 		} break;
+
+		case NOTIFICATION_WM_FOCUS_OUT: {
+			if (input_action == INPUT_PAINT) {
+				// Simulate mouse released event to stop drawing when editor focus exists.
+				Ref<InputEventMouseButton> release;
+				release.instance();
+				release->set_button_index(BUTTON_LEFT);
+				forward_spatial_input_event(nullptr, release);
+			}
+		} break;
 	}
 }
 
