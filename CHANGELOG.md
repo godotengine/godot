@@ -4,9 +4,9 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
-## [3.3] - TBD
+## [3.3] - 2021-04-21
 
-See the [release announcement](TBD) for details.
+See the [release announcement](https://godotengine.org/article/godot-3-3-has-arrived) for details.
 
 ### Added
 
