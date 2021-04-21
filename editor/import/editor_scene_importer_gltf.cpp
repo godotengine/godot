@@ -35,6 +35,7 @@
 #include "core/math/math_defs.h"
 #include "core/os/file_access.h"
 #include "core/os/os.h"
+#include "modules/regex/regex.h"
 #include "scene/3d/bone_attachment.h"
 #include "scene/3d/camera.h"
 #include "scene/3d/mesh_instance.h"
@@ -155,9 +156,29 @@ static Transform _arr_to_xform(const Array &p_array) {
 	return xform;
 }
 
+String EditorSceneImporterGLTF::_sanitize_scene_name(GLTFState &state, const String &p_name) {
+	if (state.use_legacy_names) {
+		RegEx regex("([^a-zA-Z0-9_ -]+)");
+		String s_name = regex.sub(p_name, "", true);
+		return s_name;
+	} else {
+		return p_name.validate_node_name();
+	}
+}
+
+String EditorSceneImporterGLTF::_legacy_validate_node_name(const String &p_name) {
+	String invalid_character = ". : @ / \"";
+	String name = p_name;
+	Vector<String> chars = invalid_character.split(" ");
+	for (int i = 0; i < chars.size(); i++) {
+		name = name.replace(chars[i], "");
+	}
+	return name;
+}
+
 String EditorSceneImporterGLTF::_gen_unique_name(GLTFState &state, const String &p_name) {
 
-	const String s_name = p_name.validate_node_name();
+	const String s_name = _sanitize_scene_name(state, p_name);
 
 	String name;
 	int index = 1;
@@ -165,7 +186,10 @@ String EditorSceneImporterGLTF::_gen_unique_name(GLTFState &state, const String 
 		name = s_name;
 
 		if (index > 1) {
-			name += " " + itos(index);
+			if (state.use_legacy_names) {
+				name += " ";
+			}
+			name += itos(index);
 		}
 		if (!state.unique_names.has(name)) {
 			break;
@@ -212,19 +236,37 @@ String EditorSceneImporterGLTF::_gen_unique_animation_name(GLTFState &state, con
 	return name;
 }
 
-String EditorSceneImporterGLTF::_sanitize_bone_name(const String &p_name) {
-	String name = p_name;
-	name = name.replace(":", "_");
-	name = name.replace("/", "_");
-	return name;
+String EditorSceneImporterGLTF::_sanitize_bone_name(GLTFState &state, const String &p_name) {
+	if (state.use_legacy_names) {
+		String name = p_name.camelcase_to_underscore(true);
+		RegEx pattern_del("([^a-zA-Z0-9_ ])+");
+
+		name = pattern_del.sub(name, "", true);
+
+		RegEx pattern_nospace(" +");
+		name = pattern_nospace.sub(name, "_", true);
+
+		RegEx pattern_multiple("_+");
+		name = pattern_multiple.sub(name, "_", true);
+
+		RegEx pattern_padded("0+(\\d+)");
+		name = pattern_padded.sub(name, "$1", true);
+
+		return name;
+	} else {
+		String name = p_name;
+		name = name.replace(":", "_");
+		name = name.replace("/", "_");
+		if (name.empty()) {
+			name = "bone";
+		}
+		return name;
+	}
 }
 
 String EditorSceneImporterGLTF::_gen_unique_bone_name(GLTFState &state, const GLTFSkeletonIndex skel_i, const String &p_name) {
 
-	String s_name = _sanitize_bone_name(p_name);
-	if (s_name.empty()) {
-		s_name = "bone";
-	}
+	String s_name = _sanitize_bone_name(state, p_name);
 	String name;
 	int index = 1;
 	while (true) {
@@ -2487,7 +2529,11 @@ Error EditorSceneImporterGLTF::_parse_animations(GLTFState &state) {
 			if (name.begins_with("loop") || name.ends_with("loop") || name.begins_with("cycle") || name.ends_with("cycle")) {
 				animation.loop = true;
 			}
-			animation.name = _gen_unique_animation_name(state, name);
+			if (state.use_legacy_names) {
+				animation.name = _sanitize_scene_name(state, name);
+			} else {
+				animation.name = _gen_unique_animation_name(state, name);
+			}
 		}
 
 		for (int j = 0; j < channels.size(); j++) {
@@ -2795,7 +2841,11 @@ void EditorSceneImporterGLTF::_generate_scene_node(GLTFState &state, Node *scene
 		scene_parent->add_child(current_node);
 		current_node->set_owner(scene_root);
 		current_node->set_transform(gltf_node->xform);
-		current_node->set_name(gltf_node->name);
+		if (state.use_legacy_names) {
+			current_node->set_name(_legacy_validate_node_name(gltf_node->name));
+		} else {
+			current_node->set_name(gltf_node->name);
+		}
 	}
 
 	state.scene_nodes.insert(node_index, current_node);
@@ -3147,7 +3197,11 @@ Spatial *EditorSceneImporterGLTF::_generate_scene(GLTFState &state, const int p_
 	Spatial *root = memnew(Spatial);
 
 	// scene_name is already unique
-	root->set_name(state.scene_name);
+	if (state.use_legacy_names) {
+		root->set_name(_legacy_validate_node_name(state.scene_name));
+	} else {
+		root->set_name(state.scene_name);
+	}
 
 	for (int i = 0; i < state.root_nodes.size(); ++i) {
 		_generate_scene_node(state, root, root, state.root_nodes[i]);
@@ -3201,6 +3255,7 @@ Node *EditorSceneImporterGLTF::import_scene(const String &p_path, uint32_t p_fla
 	state.major_version = version.get_slice(".", 0).to_int();
 	state.minor_version = version.get_slice(".", 1).to_int();
 	state.use_named_skin_binds = p_flags & IMPORT_USE_NAMED_SKIN_BINDS;
+	state.use_legacy_names = p_flags & IMPORT_USE_LEGACY_NAMES;
 
 	/* STEP 0 PARSE SCENE */
 	Error err = _parse_scenes(state);
