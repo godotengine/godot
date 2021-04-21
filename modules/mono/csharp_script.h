@@ -129,6 +129,7 @@ private:
 
 	String source;
 	StringName name;
+	String _icon_path;
 
 	SelfList<CSharpScript> script_list = this;
 
@@ -201,6 +202,14 @@ public:
 	bool has_source_code() const override;
 	String get_source_code() const override;
 	void set_source_code(const String &p_code) override;
+
+	String get_script_class_name() const {
+		return name;
+	}
+
+	String get_script_class_icon_path() const {
+		return _icon_path;
+	}
 
 #ifdef TOOLS_ENABLED
 	virtual const Vector<DocData::ClassDoc> &get_documentation() const override {
@@ -533,6 +542,8 @@ public:
 	void free_instance_binding_data(void *p_data) override;
 	void refcount_incremented_instance_binding(Object *p_object) override;
 	bool refcount_decremented_instance_binding(Object *p_object) override;
+	virtual bool handles_global_class_type(const String &p_type) const;
+	virtual String get_global_class_name(const String &p_path, String *r_base_type, String *r_icon_path) const;
 
 	Map<Object *, CSharpScriptBinding>::Element *insert_script_binding(Object *p_object, const CSharpScriptBinding &p_script_binding);
 	bool setup_csharp_script_binding(CSharpScriptBinding &r_script_binding, Object *p_object);

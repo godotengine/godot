@@ -1454,6 +1454,41 @@ Map<Object *, CSharpScriptBinding>::Element *CSharpLanguage::insert_script_bindi
 	return script_bindings.insert(p_object, p_script_binding);
 }
 
+bool CSharpLanguage::handles_global_class_type(const String &p_type) const {
+	return p_type == "CSharpScript";
+}
+
+String CSharpLanguage::get_global_class_name(const String &p_path, String *r_base_type, String *r_icon_path) const {
+	if (!p_path.is_empty()) {
+		Ref<CSharpScript> script = ResourceLoader::load(p_path, "CSharpScript");
+
+		if (script.is_valid()) {
+			GDMonoClass *top = script->script_class;
+
+			if (top && top != script->native) {
+				MonoClass *parent_mono_class = mono_class_get_parent(top->get_mono_ptr());
+
+				if (r_base_type && parent_mono_class) {
+					*r_base_type = String::utf8(mono_class_get_name(parent_mono_class));
+				}
+
+				if (r_icon_path) {
+					*r_icon_path = script->get_script_class_icon_path();
+				}
+
+				return String(top->get_name());
+			}
+		}
+		if (r_base_type) {
+			*r_base_type = String();
+		}
+		if (r_icon_path) {
+			*r_icon_path = String();
+		}
+	}
+	return String();
+}
+
 void CSharpLanguage::free_instance_binding_data(void *p_data) {
 	if (GDMono::get_singleton() == nullptr) {
 #ifdef DEBUG_ENABLED
