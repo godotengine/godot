@@ -1258,6 +1258,9 @@
 		<member name="rendering/quality/shading/force_vertex_shading.mobile" type="bool" setter="" getter="" default="true">
 			Lower-end override for [member rendering/quality/shading/force_vertex_shading] on mobile devices, due to performance concerns or driver support.
 		</member>
+		<member name="rendering/quality/shadow_atlas/cubemap_size" type="int" setter="" getter="" default="512">
+			Size for cubemap into which the shadow is rendered before being copied into the shadow atlas. A higher number can result in higher resolution shadows when used with a higher [member rendering/quality/shadow_atlas/size]. Setting higher than a quarter of the [member rendering/quality/shadow_atlas/size] will not result in a perceptible increase in visual quality.
+		</member>
 		<member name="rendering/quality/shadow_atlas/quadrant_0_subdiv" type="int" setter="" getter="" default="1">
 			Subdivision quadrant size for shadow mapping. See shadow mapping documentation.
 		</member>
