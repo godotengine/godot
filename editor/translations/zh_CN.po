@@ -77,11 +77,12 @@
 # Magian <magian1127@gmail.com>, 2021.
 # Weiduo Xie <xwditfr@gmail.com>, 2021.
 # suplife <2634557184@qq.com>, 2021.
+# luoji <564144019@qq.com>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: Chinese (Simplified) (Godot Engine)\n"
 "POT-Creation-Date: 2018-01-20 12:15+0200\n"
-"PO-Revision-Date: 2021-04-05 14:28+0000\n"
+"PO-Revision-Date: 2021-04-19 22:33+0000\n"
 "Last-Translator: Haoyu Qiu <timothyqiu32@gmail.com>\n"
 "Language-Team: Chinese (Simplified) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/zh_Hans/>\n"
@@ -90,7 +91,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.6-dev\n"
+"X-Generator: Weblate 4.7-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -1376,7 +1377,7 @@ msgstr "总线选项"
 #: editor/editor_audio_buses.cpp editor/filesystem_dock.cpp
 #: editor/plugins/animation_player_editor_plugin.cpp editor/scene_tree_dock.cpp
 msgid "Duplicate"
-msgstr "复制"
+msgstr "制作副本"
 
 #: editor/editor_audio_buses.cpp
 msgid "Reset Volume"
@@ -5208,7 +5209,7 @@ msgstr "网格偏移："
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Grid Step:"
-msgstr "网格大小:"
+msgstr "网格步长："
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Primary Line Every:"
@@ -5224,7 +5225,7 @@ msgstr "旋转偏移："
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Rotation Step:"
-msgstr "旋转步长:"
+msgstr "旋转步长："
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Scale Step:"
@@ -7480,6 +7481,11 @@ msgstr "锁定视角旋转"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid ""
+"To zoom further, change the camera's clipping planes (View -> Settings...)"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid ""
 "Note: The FPS value displayed is the editor's framerate.\n"
 "It cannot be used as a reliable indication of in-game performance."
 msgstr ""
@@ -7666,7 +7672,7 @@ msgstr "修改变换"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Translate:"
-msgstr "移动:"
+msgstr "移动："
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Rotate (deg.):"
@@ -8628,7 +8634,7 @@ msgstr "标量"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Vector"
-msgstr "矢量"
+msgstr "向量"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Boolean"
@@ -9188,11 +9194,11 @@ msgid ""
 "whose number of rows is the number of components in 'c' and whose number of "
 "columns is the number of components in 'r'."
 msgstr ""
-"计算一对矢量的外积。\n"
+"计算一对向量的外积。\n"
 "\n"
-"OuterProduct 将第一个参数 “c” 视为列矢量（包含一列的矩阵），将第二个参数 “r” "
-"视为行矢量（具有一行的矩阵），并执行线性代数矩阵乘以 “c * r”，生成行数为 “c” "
-"中的组件，其列数是 “r” 中的组件数。"
+"OuterProduct 将第一个参数 “c” 视为列向量（只有一列的矩阵），将第二个参数 “r” "
+"视为行向量（只有一行的矩阵），并执行线性代数矩阵乘法 “c * r”。所生成的矩阵"
+"中，行数为 “c” 中元素的数量，列数为 “r” 中元素的数量。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Composes transform from four vectors."
@@ -9232,7 +9238,7 @@ msgstr "变换统一。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Vector function."
-msgstr "向量功能。"
+msgstr "向量函数。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Vector operator."
@@ -9248,7 +9254,7 @@ msgstr "将向量分解为三个标量。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Calculates the cross product of two vectors."
-msgstr "计算两个向量的叉乘。"
+msgstr "计算两个向量的叉积。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Returns the distance between two points."
@@ -9256,7 +9262,7 @@ msgstr "返回两点之间的距离。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Calculates the dot product of two vectors."
-msgstr "计算两个向量的点乘。"
+msgstr "计算两个向量的点积。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
@@ -9266,7 +9272,7 @@ msgid ""
 "Nref is smaller than zero the return value is N. Otherwise -N is returned."
 msgstr ""
 "返回指向与参考向量相同方向的向量。该函数有三个向量参数：N，方向向量；I，入射"
-"向量；Nref，参考向量。如果 I 和 Nref 的点乘小于零，返回值为 N，否则返回 -N。"
+"向量；Nref，参考向量。如果 I 和 Nref 的点积小于零，返回值为 N，否则返回 -N。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Calculates the length of a vector."
@@ -9278,7 +9284,7 @@ msgstr "两个向量之间的线性插值。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Linear interpolation between two vectors using scalar."
-msgstr "使用标量的两个矢量之间的线性插值。"
+msgstr "使用标量在两个向量之间进行线性插值。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Calculates the normalize product of vector."
@@ -9300,7 +9306,7 @@ msgstr "返回指向反射方向的向量（a：入射向量，b：法向量）�
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Returns the vector that points in the direction of refraction."
-msgstr "返回指向折射方向的矢量。"
+msgstr "返回指向折射方向的向量。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
@@ -9411,13 +9417,13 @@ msgstr "（仅限片段/光照模式）标量导数函数。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "(Fragment/Light mode only) Vector derivative function."
-msgstr "（仅限片段/灯光模式）矢量导数功能。"
+msgstr "（仅限片段/光照模式）向量导数函数。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
 "(Fragment/Light mode only) (Vector) Derivative in 'x' using local "
 "differencing."
-msgstr "（仅限片段/光照模式）（矢量）使用局部差分的 “x” 中的导数。"
+msgstr "（仅限片段/光照模式）（向量）使用局部差分的 “x” 中的导数。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
@@ -9429,7 +9435,7 @@ msgstr "（仅限片段/光照模式）（标量）使用本地差分的“ x”
 msgid ""
 "(Fragment/Light mode only) (Vector) Derivative in 'y' using local "
 "differencing."
-msgstr "（仅适用于片段/光照模式）（矢量）使用局部差分的'y'导数。"
+msgstr "（仅适用于片段/光照模式）（向量）使用局部差分的'y'导数。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
@@ -10785,6 +10791,13 @@ msgstr "从选中节点分离脚本。"
 #: editor/scene_tree_dock.cpp
 msgid "Remote"
 msgstr "远程"
+
+#: editor/scene_tree_dock.cpp
+msgid ""
+"If selected, the Remote scene tree dock will cause the project to stutter "
+"every time it updates.\n"
+"Switch back to the Local scene tree dock to improve performance."
+msgstr ""
 
 #: editor/scene_tree_dock.cpp
 msgid "Local"

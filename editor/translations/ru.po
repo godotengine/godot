@@ -92,12 +92,13 @@
 # Igor Grachev <igorecha.9999@gmail.com>, 2020.
 # Dmytro Meleshko <dmytro.meleshko@gmail.com>, 2021.
 # narrnika <narr13niki@gmail.com>, 2021.
+# nec-trou <darya.bilyalova@gmail.com>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-04-05 14:28+0000\n"
-"Last-Translator: narrnika <narr13niki@gmail.com>\n"
+"PO-Revision-Date: 2021-04-19 22:33+0000\n"
+"Last-Translator: Danil Alexeev <danil@alexeev.xyz>\n"
 "Language-Team: Russian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ru/>\n"
 "Language: ru\n"
@@ -106,7 +107,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
 "%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 4.6-dev\n"
+"X-Generator: Weblate 4.7-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -2078,7 +2079,7 @@ msgstr "Свойства"
 
 #: editor/editor_help.cpp
 msgid "override:"
-msgstr "Переопределить:"
+msgstr "переопределено:"
 
 #: editor/editor_help.cpp
 msgid "default:"
@@ -7624,6 +7625,11 @@ msgstr "Блокировать вращение камеры"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid ""
+"To zoom further, change the camera's clipping planes (View -> Settings...)"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid ""
 "Note: The FPS value displayed is the editor's framerate.\n"
 "It cannot be used as a reliable indication of in-game performance."
 msgstr ""
@@ -11005,6 +11011,13 @@ msgstr "Убрать скрипт у выбранного узла."
 #: editor/scene_tree_dock.cpp
 msgid "Remote"
 msgstr "Удаленный"
+
+#: editor/scene_tree_dock.cpp
+msgid ""
+"If selected, the Remote scene tree dock will cause the project to stutter "
+"every time it updates.\n"
+"Switch back to the Local scene tree dock to improve performance."
+msgstr ""
 
 #: editor/scene_tree_dock.cpp
 msgid "Local"

@@ -7691,6 +7691,11 @@ msgid "View Rotation Locked"
 msgstr "Rotació de la Vista Bloquejada"
 
 #: editor/plugins/spatial_editor_plugin.cpp
+msgid ""
+"To zoom further, change the camera's clipping planes (View -> Settings...)"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
 #, fuzzy
 msgid ""
 "Note: The FPS value displayed is the editor's framerate.\n"
@@ -11239,6 +11244,13 @@ msgstr "Reestableix un Script per al node Seleccionat."
 #: editor/scene_tree_dock.cpp
 msgid "Remote"
 msgstr "Remot"
+
+#: editor/scene_tree_dock.cpp
+msgid ""
+"If selected, the Remote scene tree dock will cause the project to stutter "
+"every time it updates.\n"
+"Switch back to the Local scene tree dock to improve performance."
+msgstr ""
 
 #: editor/scene_tree_dock.cpp
 msgid "Local"

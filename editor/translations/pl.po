@@ -5,7 +5,7 @@
 # 8-bit Pixel <dawdejw@gmail.com>, 2016.
 # Adam Wolanski <adam.wolanski94@gmail.com>, 2017.
 # Adrian Węcławski <weclawskiadrian@gmail.com>, 2016.
-# aelspire <aelspire@gmail.com>, 2017, 2019, 2020.
+# aelspire <aelspire@gmail.com>, 2017, 2019, 2020, 2021.
 # Daniel Lewan <vision360.daniel@gmail.com>, 2016-2018, 2020.
 # Dariusz Król <rexioweb@gmail.com>, 2018.
 # heya10 <igor.gielzak@gmail.com>, 2017.
@@ -26,7 +26,7 @@
 # Zatherz <zatherz@linux.pl>, 2017, 2020.
 # Tomek <kobewi4e@gmail.com>, 2018, 2019, 2020, 2021.
 # Wojcieh Er Zet <wojcieh.rzepecki@gmail.com>, 2018.
-# Dariusz Siek <dariuszynski@gmail.com>, 2018, 2019, 2020.
+# Dariusz Siek <dariuszynski@gmail.com>, 2018, 2019, 2020, 2021.
 # Szymon Nowakowski <smnbdg13@gmail.com>, 2019.
 # Nie Powiem <blazek10@tlen.pl>, 2019.
 # Sebastian Hojka <sibibibi1@gmail.com>, 2019.
@@ -43,15 +43,16 @@
 # Filip Glura <mcmr.slendy@gmail.com>, 2020.
 # Roman Skiba <romanskiba0@gmail.com>, 2020.
 # Piotr Grodzki <ziemniakglados@gmail.com>, 2020.
-# Dzejkop <jakubtrad@gmail.com>, 2020.
+# Dzejkop <jakubtrad@gmail.com>, 2020, 2021.
 # Mateusz Grzonka <alpinus4@gmail.com>, 2020.
 # gnu-ewm <gnu.ewm@protonmail.com>, 2021.
 # vrid <patryksoon@live.com>, 2021.
+# Suchy  Talerz <kacperkubis06@gmail.com>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-04-01 02:04+0000\n"
+"PO-Revision-Date: 2021-04-19 22:33+0000\n"
 "Last-Translator: Tomek <kobewi4e@gmail.com>\n"
 "Language-Team: Polish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/pl/>\n"
@@ -61,7 +62,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 "
 "|| n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 4.6-dev\n"
+"X-Generator: Weblate 4.7-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -283,7 +284,7 @@ msgstr "Klipy dźwiękowe:"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Clips:"
-msgstr "Klipy animacji:"
+msgstr "Animacje:"
 
 #: editor/animation_track_editor.cpp
 msgid "Change Track Path"
@@ -291,7 +292,7 @@ msgstr "Zmień adres ścieżki"
 
 #: editor/animation_track_editor.cpp
 msgid "Toggle this track on/off."
-msgstr "Włącz/wyłącz tę ścieżkę."
+msgstr "Włącz/wyłącz ścieżkę."
 
 #: editor/animation_track_editor.cpp
 msgid "Update Mode (How this property is set)"
@@ -1497,7 +1498,7 @@ msgstr "Zmień nazwę Autoload"
 
 #: editor/editor_autoload_settings.cpp
 msgid "Toggle AutoLoad Globals"
-msgstr "Przełącz automatycznie ładowane zmienne globalne"
+msgstr "Globalnie przełącz Autoload"
 
 #: editor/editor_autoload_settings.cpp
 msgid "Move Autoload"
@@ -1794,7 +1795,7 @@ msgstr "Nowy"
 #: editor/editor_feature_profile.cpp editor/editor_node.cpp
 #: editor/project_manager.cpp
 msgid "Import"
-msgstr "Importuj"
+msgstr "Zaimportuj"
 
 #: editor/editor_feature_profile.cpp editor/project_export.cpp
 msgid "Export"
@@ -3008,7 +3009,7 @@ msgstr "Zgłoś błąd"
 
 #: editor/editor_node.cpp
 msgid "Send Docs Feedback"
-msgstr "Wyślij opinię o dokumentacji"
+msgstr "Oceń dokumentację"
 
 #: editor/editor_node.cpp editor/plugins/asset_library_editor_plugin.cpp
 msgid "Community"
@@ -7577,6 +7578,11 @@ msgstr "Obroty widoku zablokowane"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid ""
+"To zoom further, change the camera's clipping planes (View -> Settings...)"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid ""
 "Note: The FPS value displayed is the editor's framerate.\n"
 "It cannot be used as a reliable indication of in-game performance."
 msgstr ""
@@ -7865,7 +7871,7 @@ msgstr "Utwórz równorzędny węzeł LightOccluder2D"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Sprite"
-msgstr "Sprite"
+msgstr "Postać"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Simplification: "
@@ -8074,7 +8080,7 @@ msgstr "Dodaj klasę elementów"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Remove Class Items"
-msgstr "Usuń klasę elementów"
+msgstr "Usuń elementy klasy"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Create Empty Template"
@@ -10960,6 +10966,13 @@ msgid "Remote"
 msgstr "Zdalny"
 
 #: editor/scene_tree_dock.cpp
+msgid ""
+"If selected, the Remote scene tree dock will cause the project to stutter "
+"every time it updates.\n"
+"Switch back to the Local scene tree dock to improve performance."
+msgstr ""
+
+#: editor/scene_tree_dock.cpp
 msgid "Local"
 msgstr "Lokalny"
 
@@ -11566,7 +11579,7 @@ msgstr "Malowanie GridMap"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Grid Map"
-msgstr "Grid Map"
+msgstr "Siatka"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Snap View"
