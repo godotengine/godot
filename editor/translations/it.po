@@ -61,8 +61,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-03-24 23:44+0000\n"
-"Last-Translator: Alessandro Mandelli <mandelli.alessandro@ngi.it>\n"
+"PO-Revision-Date: 2021-04-16 07:52+0000\n"
+"Last-Translator: Marco Galli <mrcgll98@gmail.com>\n"
 "Language-Team: Italian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/it/>\n"
 "Language: it\n"
@@ -70,7 +70,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.5.2-dev\n"
+"X-Generator: Weblate 4.6-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -2064,7 +2064,7 @@ msgstr "Metodi"
 
 #: editor/editor_help.cpp
 msgid "Theme Properties"
-msgstr "Proprietà Tema"
+msgstr "Proprietà del tema"
 
 #: editor/editor_help.cpp
 msgid "Enumerations"
@@ -2076,7 +2076,7 @@ msgstr "Costanti"
 
 #: editor/editor_help.cpp
 msgid "Property Descriptions"
-msgstr "Descrizioni Proprietà"
+msgstr "Descrizioni delle proprietà"
 
 #: editor/editor_help.cpp
 msgid "(value)"
@@ -2092,7 +2092,7 @@ msgstr ""
 
 #: editor/editor_help.cpp
 msgid "Method Descriptions"
-msgstr "Descrizioni Metodo"
+msgstr "Descrizioni del metodo"
 
 #: editor/editor_help.cpp
 msgid ""
@@ -7635,6 +7635,11 @@ msgstr "Rotazione Vista Bloccata"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid ""
+"To zoom further, change the camera's clipping planes (View -> Settings...)"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid ""
 "Note: The FPS value displayed is the editor's framerate.\n"
 "It cannot be used as a reliable indication of in-game performance."
 msgstr ""
@@ -11032,6 +11037,13 @@ msgstr "Rimuovi lo script per il nodo selezionato."
 #: editor/scene_tree_dock.cpp
 msgid "Remote"
 msgstr "Remoto"
+
+#: editor/scene_tree_dock.cpp
+msgid ""
+"If selected, the Remote scene tree dock will cause the project to stutter "
+"every time it updates.\n"
+"Switch back to the Local scene tree dock to improve performance."
+msgstr ""
 
 #: editor/scene_tree_dock.cpp
 msgid "Local"
