@@ -41,6 +41,11 @@
 
 class ShaderLanguage {
 public:
+	struct TkPos {
+		int char_idx;
+		int tk_line;
+	};
+
 	enum TokenType {
 		TK_EMPTY,
 		TK_IDENTIFIER,
@@ -580,12 +585,24 @@ public:
 		};
 
 		struct Varying {
+			enum Stage {
+				STAGE_UNKNOWN,
+				STAGE_VERTEX, // transition stage to STAGE_VERTEX_TO_FRAGMENT or STAGE_VERTEX_TO_LIGHT, emits error if they are not used
+				STAGE_FRAGMENT, // transition stage to STAGE_FRAGMENT_TO_LIGHT, emits error if it's not used
+				STAGE_VERTEX_TO_FRAGMENT,
+				STAGE_VERTEX_TO_LIGHT,
+				STAGE_FRAGMENT_TO_LIGHT,
+			};
+
+			Stage stage;
 			DataType type;
 			DataInterpolation interpolation;
 			DataPrecision precision;
 			int array_size;
+			TkPos tkpos;
 
 			Varying() :
+					stage(STAGE_UNKNOWN),
 					type(TYPE_VOID),
 					interpolation(INTERPOLATION_FLAT),
 					precision(PRECISION_DEFAULT),
@@ -734,11 +751,6 @@ private:
 	StringName current_function;
 	bool last_const = false;
 
-	struct TkPos {
-		int char_idx;
-		int tk_line;
-	};
-
 	TkPos _get_tkpos() {
 		TkPos tkp;
 		tkp.char_idx = char_idx;
@@ -815,6 +827,8 @@ private:
 
 	bool _validate_function_call(BlockNode *p_block, OperatorNode *p_func, DataType *r_ret_type, StringName *r_ret_type_str);
 	bool _parse_function_arguments(BlockNode *p_block, const Map<StringName, BuiltInInfo> &p_builtin_types, OperatorNode *p_func, int *r_complete_arg = nullptr);
+	bool _validate_varying_assign(ShaderNode::Varying &p_varying, String *r_message);
+	bool _validate_varying_using(ShaderNode::Varying &p_varying, String *r_message);
 
 	Node *_parse_expression(BlockNode *p_block, const Map<StringName, BuiltInInfo> &p_builtin_types);
 	Node *_parse_array_constructor(BlockNode *p_block, const Map<StringName, BuiltInInfo> &p_builtin_types, DataType p_type, const StringName &p_struct_name, int p_array_size);

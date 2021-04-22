@@ -210,7 +210,7 @@ static String get_constant_text(SL::DataType p_type, const Vector<SL::ConstantNo
 	}
 }
 
-void ShaderCompilerGLES2::_dump_function_deps(SL::ShaderNode *p_node, const StringName &p_for_func, const Map<StringName, String> &p_func_code, StringBuilder &r_to_add, Set<StringName> &r_added) {
+void ShaderCompilerGLES2::_dump_function_deps(const SL::ShaderNode *p_node, const StringName &p_for_func, const Map<StringName, String> &p_func_code, StringBuilder &r_to_add, Set<StringName> &r_added) {
 	int fidx = -1;
 
 	for (int i = 0; i < p_node->functions.size(); i++) {
@@ -269,7 +269,7 @@ void ShaderCompilerGLES2::_dump_function_deps(SL::ShaderNode *p_node, const Stri
 	}
 }
 
-String ShaderCompilerGLES2::_dump_node_code(SL::Node *p_node, int p_level, GeneratedCode &r_gen_code, IdentifierActions &p_actions, const DefaultIdentifierActions &p_default_actions, bool p_assigning, bool p_use_scope) {
+String ShaderCompilerGLES2::_dump_node_code(const SL::Node *p_node, int p_level, GeneratedCode &r_gen_code, IdentifierActions &p_actions, const DefaultIdentifierActions &p_default_actions, bool p_assigning, bool p_use_scope) {
 	StringBuilder code;
 
 	switch (p_node->type) {
@@ -378,7 +378,14 @@ String ShaderCompilerGLES2::_dump_node_code(SL::Node *p_node, int p_level, Gener
 
 			// varyings
 
+			List<Pair<StringName, SL::ShaderNode::Varying>> var_frag_to_light;
+
 			for (Map<StringName, SL::ShaderNode::Varying>::Element *E = snode->varyings.front(); E; E = E->next()) {
+				if (E->get().stage == SL::ShaderNode::Varying::STAGE_FRAGMENT_TO_LIGHT || E->get().stage == SL::ShaderNode::Varying::STAGE_FRAGMENT) {
+					var_frag_to_light.push_back(Pair<StringName, SL::ShaderNode::Varying>(E->key(), E->get()));
+					fragment_varyings.insert(E->key());
+					continue;
+				}
 				StringBuffer<> varying_code;
 
 				varying_code += "varying ";
@@ -397,6 +404,21 @@ String ShaderCompilerGLES2::_dump_node_code(SL::Node *p_node, int p_level, Gener
 
 				vertex_global += final_code;
 				fragment_global += final_code;
+			}
+
+			if (var_frag_to_light.size() > 0) {
+				String gcode = "\n\nstruct {\n";
+				for (List<Pair<StringName, SL::ShaderNode::Varying>>::Element *E = var_frag_to_light.front(); E; E = E->next()) {
+					gcode += "\t" + _prestr(E->get().second.precision) + _typestr(E->get().second.type) + " " + _mkid(E->get().first);
+					if (E->get().second.array_size > 0) {
+						gcode += "[";
+						gcode += itos(E->get().second.array_size);
+						gcode += "]";
+					}
+					gcode += ";\n";
+				}
+				gcode += "} frag_to_light;\n";
+				r_gen_code.fragment_global += gcode;
 			}
 
 			// constants
@@ -424,8 +446,10 @@ String ShaderCompilerGLES2::_dump_node_code(SL::Node *p_node, int p_level, Gener
 
 			for (int i = 0; i < snode->functions.size(); i++) {
 				SL::FunctionNode *fnode = snode->functions[i].function;
+				function = fnode;
 				current_func_name = fnode->name;
 				function_code[fnode->name] = _dump_node_code(fnode->body, 1, r_gen_code, p_actions, p_default_actions, p_assigning);
+				function = nullptr;
 			}
 
 			Set<StringName> added_vertex;
@@ -433,6 +457,8 @@ String ShaderCompilerGLES2::_dump_node_code(SL::Node *p_node, int p_level, Gener
 
 			for (int i = 0; i < snode->functions.size(); i++) {
 				SL::FunctionNode *fnode = snode->functions[i].function;
+
+				function = fnode;
 
 				current_func_name = fnode->name;
 
@@ -448,6 +474,8 @@ String ShaderCompilerGLES2::_dump_node_code(SL::Node *p_node, int p_level, Gener
 					_dump_function_deps(snode, fnode->name, function_code, fragment_global, added_fragment);
 					r_gen_code.light = function_code[light_name];
 				}
+
+				function = nullptr;
 			}
 
 			r_gen_code.vertex_global = vertex_global.as_string();
@@ -519,6 +547,19 @@ String ShaderCompilerGLES2::_dump_node_code(SL::Node *p_node, int p_level, Gener
 
 		case SL::Node::TYPE_VARIABLE: {
 			SL::VariableNode *var_node = (SL::VariableNode *)p_node;
+			bool use_fragment_varying = false;
+
+			if (current_func_name != vertex_name) {
+				if (p_assigning) {
+					if (shader->varyings.has(var_node->name)) {
+						use_fragment_varying = true;
+					}
+				} else {
+					if (fragment_varyings.has(var_node->name)) {
+						use_fragment_varying = true;
+					}
+				}
+			}
 
 			if (p_assigning && p_actions.write_flag_pointers.has(var_node->name)) {
 				*p_actions.write_flag_pointers[var_node->name] = true;
@@ -545,6 +586,8 @@ String ShaderCompilerGLES2::_dump_node_code(SL::Node *p_node, int p_level, Gener
 
 			if (p_default_actions.renames.has(var_node->name)) {
 				code += p_default_actions.renames[var_node->name];
+			} else if (use_fragment_varying) {
+				code += "frag_to_light." + _mkid(var_node->name);
 			} else {
 				code += _mkid(var_node->name);
 			}
@@ -605,6 +648,23 @@ String ShaderCompilerGLES2::_dump_node_code(SL::Node *p_node, int p_level, Gener
 		} break;
 		case SL::Node::TYPE_ARRAY: {
 			SL::ArrayNode *arr_node = (SL::ArrayNode *)p_node;
+			bool use_fragment_varying = false;
+
+			if (current_func_name != vertex_name) {
+				if (arr_node->assign_expression != nullptr) {
+					use_fragment_varying = true;
+				} else {
+					if (p_assigning) {
+						if (shader->varyings.has(arr_node->name)) {
+							use_fragment_varying = true;
+						}
+					} else {
+						if (fragment_varyings.has(arr_node->name)) {
+							use_fragment_varying = true;
+						}
+					}
+				}
+			}
 
 			if (p_assigning && p_actions.write_flag_pointers.has(arr_node->name)) {
 				*p_actions.write_flag_pointers[arr_node->name] = true;
@@ -631,6 +691,8 @@ String ShaderCompilerGLES2::_dump_node_code(SL::Node *p_node, int p_level, Gener
 
 			if (p_default_actions.renames.has(arr_node->name)) {
 				code += p_default_actions.renames[arr_node->name];
+			} else if (use_fragment_varying) {
+				code += "frag_to_light." + _mkid(arr_node->name);
 			} else {
 				code += _mkid(arr_node->name);
 			}
@@ -908,7 +970,7 @@ String ShaderCompilerGLES2::_dump_node_code(SL::Node *p_node, int p_level, Gener
 			code += _dump_node_code(member_node->owner, p_level, r_gen_code, p_actions, p_default_actions, p_assigning);
 			code += ".";
 			code += member_node->name;
-			if (member_node->index_expression != NULL) {
+			if (member_node->index_expression != nullptr) {
 				code += "[";
 				code += _dump_node_code(member_node->index_expression, p_level, r_gen_code, p_actions, p_default_actions, p_assigning);
 				code += "]";
@@ -947,8 +1009,11 @@ Error ShaderCompilerGLES2::compile(VS::ShaderMode p_mode, const String &p_code, 
 	used_name_defines.clear();
 	used_rmode_defines.clear();
 	used_flag_pointers.clear();
+	fragment_varyings.clear();
 
-	_dump_node_code(parser.get_shader(), 1, r_gen_code, *p_actions, actions[p_mode], false);
+	shader = parser.get_shader();
+	function = nullptr;
+	_dump_node_code(shader, 1, r_gen_code, *p_actions, actions[p_mode], false);
 
 	return OK;
 }
