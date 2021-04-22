@@ -40,6 +40,10 @@
 #include "core/script_language.h"
 #include "core/translation.h"
 
+#ifdef TOOLS_ENABLED
+#include "editor/editor_settings.h"
+#endif
+
 #ifdef DEBUG_ENABLED
 
 struct _ObjectDebugLock {
@@ -2111,6 +2115,23 @@ void ObjectDB::debug_objects(DebugFunc p_func) {
 }
 
 void Object::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {
+#ifdef TOOLS_ENABLED
+	const String quote_style = EDITOR_DEF("text_editor/completion/use_single_quotes", 0) ? "'" : "\"";
+#else
+	const String quote_style = "\"";
+#endif
+
+	String function = p_function;
+	if (((function == "call" || function == "callv" || function == "call_deferred" || function == "has_method") && p_idx == 0) ||
+			((function == "connect" || function == "disconnect" || function == "is_connected") && p_idx == 2)) {
+		List<MethodInfo> methods;
+		get_method_list(&methods);
+
+		for (int i = 0; i < methods.size(); i++) {
+			const MethodInfo &method_info = methods[i];
+			r_options->push_back(quote_style + method_info.name + quote_style);
+		}
+	}
 }
 
 int ObjectDB::get_object_count() {
