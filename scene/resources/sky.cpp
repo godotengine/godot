@@ -390,8 +390,8 @@ ProceduralSky::TextureSize ProceduralSky::get_texture_size() const {
 	return texture_size;
 }
 
-Ref<Image> ProceduralSky::get_panorama() const {
-	return panorama;
+Ref<Image> ProceduralSky::get_data() const {
+	return panorama->duplicate();
 }
 
 RID ProceduralSky::get_rid() const {
