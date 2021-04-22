@@ -187,7 +187,7 @@ private:
 	void _clear_lightmaps();
 
 	void _get_material_images(const MeshesFound &p_found_mesh, Lightmapper::MeshData &r_mesh_data, Vector<Ref<Texture> > &r_albedo_textures, Vector<Ref<Texture> > &r_emission_textures);
-	Ref<Image> _get_irradiance_from_sky(Ref<Sky> p_sky, Vector2i p_size);
+	Ref<Image> _get_irradiance_from_sky(Ref<Sky> p_sky, float p_energy, Vector2i p_size);
 	Ref<Image> _get_irradiance_map(Ref<Environment> p_env, Vector2i p_size);
 	void _find_meshes_and_lights(Node *p_at_node, Vector<MeshesFound> &meshes, Vector<LightsFound> &lights);
 	Vector2i _compute_lightmap_size(const MeshesFound &p_mesh);
