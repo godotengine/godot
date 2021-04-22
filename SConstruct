@@ -213,7 +213,7 @@ else:
 if selected_platform in ["linux", "bsd", "linuxbsd"]:
     if selected_platform == "linuxbsd":
         # Alias for forward compatibility.
-        print('Platform "linuxbsd" is still called "x11" in Godot 3.2.x. Building for platform "x11".')
+        print('Platform "linuxbsd" is still called "x11" in Godot 3.x. Building for platform "x11".')
     # Alias for convenience.
     selected_platform = "x11"
 
