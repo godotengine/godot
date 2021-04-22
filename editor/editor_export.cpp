@@ -1051,14 +1051,28 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 		}
 	}
 
-	// Store text server data if exists.
+	// Store text server data if it is supported.
 	if (TS->has_feature(TextServer::FEATURE_USE_SUPPORT_DATA)) {
-		String ts_data = "res://" + TS->get_support_data_filename();
-		if (FileAccess::exists(ts_data)) {
-			Vector<uint8_t> array = FileAccess::get_file_as_array(ts_data);
-			err = p_func(p_udata, ts_data, array, idx, total, enc_in_filters, enc_ex_filters, key);
-			if (err != OK) {
-				return err;
+		bool use_data = ProjectSettings::get_singleton()->get("internationalization/locale/include_text_server_data");
+		if (use_data) {
+			// Try using user provided data file.
+			String ts_data = "res://" + TS->get_support_data_filename();
+			if (FileAccess::exists(ts_data)) {
+				Vector<uint8_t> array = FileAccess::get_file_as_array(ts_data);
+				err = p_func(p_udata, ts_data, array, idx, total, enc_in_filters, enc_ex_filters, key);
+				if (err != OK) {
+					return err;
+				}
+			} else {
+				// Use default text server data.
+				String icu_data_file = EditorSettings::get_singleton()->get_cache_dir().plus_file("tmp_icu_data");
+				TS->save_support_data(icu_data_file);
+				Vector<uint8_t> array = FileAccess::get_file_as_array(icu_data_file);
+				err = p_func(p_udata, ts_data, array, idx, total, enc_in_filters, enc_ex_filters, key);
+				DirAccess::remove_file_or_error(icu_data_file);
+				if (err != OK) {
+					return err;
+				}
 			}
 		}
 	}

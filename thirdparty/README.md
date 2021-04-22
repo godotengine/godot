@@ -186,17 +186,17 @@ Files extracted from upstream source:
 ## icu4c
 
 - Upstream: https://github.com/unicode-org/icu
-- Version: 68.2 (84e1f26ea77152936e70d53178a816dbfbf69989, 2020)
+- Version: 69.1 (0e7b4428866f3133b4abba2d932ee3faa708db1d, 2021)
 - License: Unicode
 
 Files extracted from upstream source:
 
 - the `common` folder
-- `APIChangeReport.md`, `LICENSE`
+- `LICENSE`
 
 Files generated from upstream source:
 
-- the `icudt68l.dat` built with the provided `godot_data.json` config file (see
+- the `icudt69l.dat` built with the provided `godot_data.json` config file (see
   https://github.com/unicode-org/icu/blob/master/docs/userguide/icu_data/buildtool.md
   for instructions)
 
