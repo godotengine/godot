@@ -172,7 +172,7 @@ public:
 	bool is_diagonal() const;
 	bool is_rotation() const;
 
-	Basis slerp(const Basis &target, const real_t &t) const;
+	Basis slerp(const Basis &p_to, const real_t &p_weight) const;
 
 	operator String() const;
 
