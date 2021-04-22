@@ -36,6 +36,7 @@
 #if !defined(NO_THREADS)
 
 #include <atomic>
+#include <type_traits>
 
 // Design goals for these classes:
 // - No automatic conversions or arithmetic operators,
