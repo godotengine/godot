@@ -1253,6 +1253,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	}
 
 	GLOBAL_DEF("internationalization/rendering/force_right_to_left_layout_direction", false);
+	GLOBAL_DEF("internationalization/locale/include_text_server_data", false);
 
 	if (!force_lowdpi) {
 		OS::get_singleton()->_allow_hidpi = GLOBAL_DEF("display/window/dpi/allow_hidpi", false);

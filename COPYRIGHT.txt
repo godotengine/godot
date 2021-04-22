@@ -198,7 +198,7 @@ License: HarfBuzz
 
 Files: ./thirdparty/icu4c/
 Comment: International Components for Unicode
-Copyright: 1991-2020, Unicode
+Copyright: 1991-2021, Unicode
 License: Unicode
 
 Files: ./thirdparty/jpeg-compressor/

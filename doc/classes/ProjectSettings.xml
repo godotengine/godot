@@ -746,6 +746,11 @@
 		<member name="input_devices/pointing/ios/touch_delay" type="float" setter="" getter="" default="0.15">
 			Default delay for touch events. This only affects iOS devices.
 		</member>
+		<member name="internationalization/locale/include_text_server_data" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], text server break iteration rule sets, dictionaries and other optional data are included in the exported project.
+			[b]Note:[/b] "ICU / HarfBuzz / Graphite" text server data includes dictionaries for Burmese, Chinese, Japanese, Khmer, Lao and Thai as well as Unicode Standard Annex #29 and Unicode Standard Annex #14 word and line breaking rules. Data is about 4 MB large.
+			[b]Note:[/b] "Fallback" text server does not use additional data.
+		</member>
 		<member name="internationalization/locale/fallback" type="String" setter="" getter="" default="&quot;en&quot;">
 			The locale to fall back to if a translation isn't available in a given language. If left empty, [code]en[/code] (English) will be used.
 		</member>
