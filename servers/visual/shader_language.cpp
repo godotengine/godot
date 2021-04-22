@@ -2973,17 +2973,158 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 					func->arguments.push_back(funcname);
 
 					for (int i = 0; i < pstruct->members.size(); i++) {
-						Node *nexpr = _parse_and_reduce_expression(p_block, p_builtin_types);
-						if (!nexpr) {
-							return nullptr;
-						}
-						Node *node = pstruct->members[i];
+						Node *nexpr;
 
-						if (!_compare_datatypes_in_nodes(pstruct->members[i], nexpr)) {
-							String type_name = nexpr->get_datatype() == TYPE_STRUCT ? nexpr->get_datatype_name() : get_datatype_name(nexpr->get_datatype());
-							String type_name2 = node->get_datatype() == TYPE_STRUCT ? node->get_datatype_name() : get_datatype_name(node->get_datatype());
-							_set_error("Invalid assignment of '" + type_name + "' to '" + type_name2 + "'");
-							return nullptr;
+						if (pstruct->members[i]->array_size != 0) {
+
+							DataType type = pstruct->members[i]->get_datatype();
+							String struct_name = pstruct->members[i]->struct_name;
+							int array_size = pstruct->members[i]->array_size;
+
+							DataType type2;
+							String struct_name2 = "";
+							int array_size2 = 0;
+
+							bool auto_size = false;
+
+							tk = _get_token();
+
+							if (tk.type == TK_CURLY_BRACKET_OPEN) {
+								auto_size = true;
+							} else {
+								if (shader->structs.has(tk.text)) {
+									type2 = TYPE_STRUCT;
+									struct_name2 = tk.text;
+								} else {
+									if (!is_token_variable_datatype(tk.type)) {
+										_set_error("Invalid data type for array");
+										return nullptr;
+									}
+									type2 = get_token_datatype(tk.type);
+								}
+
+								tk = _get_token();
+								if (tk.type == TK_BRACKET_OPEN) {
+									TkPos pos2 = _get_tkpos();
+									tk = _get_token();
+									if (tk.type == TK_BRACKET_CLOSE) {
+										array_size2 = array_size;
+										tk = _get_token();
+									} else {
+										_set_tkpos(pos2);
+
+										Node *n = _parse_and_reduce_expression(p_block, p_builtin_types);
+										if (!n || n->type != Node::TYPE_CONSTANT || n->get_datatype() != TYPE_INT) {
+											_set_error("Expected single integer constant > 0");
+											return nullptr;
+										}
+
+										ConstantNode *cnode = (ConstantNode *)n;
+										if (cnode->values.size() == 1) {
+											array_size2 = cnode->values[0].sint;
+											if (array_size2 <= 0) {
+												_set_error("Expected single integer constant > 0");
+												return nullptr;
+											}
+										} else {
+											_set_error("Expected single integer constant > 0");
+											return nullptr;
+										}
+
+										tk = _get_token();
+										if (tk.type != TK_BRACKET_CLOSE) {
+											_set_error("Expected ']'");
+											return nullptr;
+										} else {
+											tk = _get_token();
+										}
+									}
+								} else {
+									_set_error("Expected '['");
+									return nullptr;
+								}
+
+								if (type != type2 || struct_name != struct_name2 || array_size != array_size2) {
+									String error_str = "Cannot convert from '";
+									if (type2 == TYPE_STRUCT) {
+										error_str += struct_name2;
+									} else {
+										error_str += get_datatype_name(type2);
+									}
+									error_str += "[";
+									error_str += itos(array_size2);
+									error_str += "]'";
+									error_str += " to '";
+									if (type == TYPE_STRUCT) {
+										error_str += struct_name;
+									} else {
+										error_str += get_datatype_name(type);
+									}
+									error_str += "[";
+									error_str += itos(array_size);
+									error_str += "]'";
+									_set_error(error_str);
+									return nullptr;
+								}
+							}
+
+							ArrayConstructNode *an = alloc_node<ArrayConstructNode>();
+							an->datatype = type;
+							an->struct_name = struct_name;
+
+							if (tk.type == TK_PARENTHESIS_OPEN || auto_size) { // initialization
+								while (true) {
+									Node *n = _parse_and_reduce_expression(p_block, p_builtin_types);
+									if (!n) {
+										return nullptr;
+									}
+
+									if (type != n->get_datatype() || struct_name != n->get_datatype_name()) {
+										_set_error("Invalid assignment of '" + (n->get_datatype() == TYPE_STRUCT ? n->get_datatype_name() : get_datatype_name(n->get_datatype())) + "' to '" + (type == TYPE_STRUCT ? struct_name : get_datatype_name(type)) + "'");
+										return nullptr;
+									}
+
+									tk = _get_token();
+									if (tk.type == TK_COMMA) {
+										an->initializer.push_back(n);
+										continue;
+									} else if (!auto_size && tk.type == TK_PARENTHESIS_CLOSE) {
+										an->initializer.push_back(n);
+										break;
+									} else if (auto_size && tk.type == TK_CURLY_BRACKET_CLOSE) {
+										an->initializer.push_back(n);
+										break;
+									} else {
+										if (auto_size) {
+											_set_error("Expected '}' or ','");
+										} else {
+											_set_error("Expected ')' or ','");
+										}
+										return nullptr;
+									}
+								}
+								if (an->initializer.size() != array_size) {
+									_set_error("Array size mismatch");
+									return nullptr;
+								}
+							} else {
+								_set_error("Expected array initialization!");
+								return nullptr;
+							}
+
+							nexpr = an;
+						} else {
+							nexpr = _parse_and_reduce_expression(p_block, p_builtin_types);
+							if (!nexpr) {
+								return nullptr;
+							}
+							Node *node = pstruct->members[i];
+							if (!_compare_datatypes_in_nodes(pstruct->members[i], nexpr)) {
+								String type_name = nexpr->get_datatype() == TYPE_STRUCT ? nexpr->get_datatype_name() : get_datatype_name(nexpr->get_datatype());
+								String type_name2 = node->get_datatype() == TYPE_STRUCT ? node->get_datatype_name() : get_datatype_name(node->get_datatype());
+								_set_error("Invalid assignment of '" + type_name + "' to '" + type_name2 + "'");
+								return nullptr;
+							}
 						}
 
 						if (i + 1 < pstruct->members.size()) {
@@ -3219,7 +3360,6 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 					expr = varname;
 				}
 			}
-
 		} else if (tk.type == TK_OP_ADD) {
 			continue; //this one does nothing
 		} else if (tk.type == TK_OP_SUB || tk.type == TK_OP_NOT || tk.type == TK_OP_BIT_INVERT || tk.type == TK_OP_INCREMENT || tk.type == TK_OP_DECREMENT) {
@@ -3248,7 +3388,6 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 
 			expression.push_back(e);
 			continue;
-
 		} else {
 			_set_error("Expected expression, found: " + get_token_text(tk));
 			return nullptr;
@@ -3289,6 +3428,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 				bool ok = true;
 				DataType member_type = TYPE_VOID;
 				StringName member_struct_name = "";
+				int array_size = 0;
 				switch (dt) {
 					case TYPE_STRUCT: {
 						ok = false;
@@ -3298,6 +3438,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 							for (List<MemberNode *>::Element *E = n->members.front(); E; E = E->next()) {
 								if (String(E->get()->name) == member_name) {
 									member_type = E->get()->datatype;
+									array_size = E->get()->array_size;
 									if (member_type == TYPE_STRUCT) {
 										member_struct_name = E->get()->struct_name;
 									}
@@ -3429,8 +3570,50 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 				mn->datatype = member_type;
 				mn->base_struct_name = st;
 				mn->struct_name = member_struct_name;
+				mn->array_size = array_size;
 				mn->name = ident;
 				mn->owner = expr;
+				if (array_size > 0) {
+					tk = _get_token();
+					if (tk.type == TK_PERIOD) {
+						_set_error("Nested array length() is not yet implemented");
+						return nullptr;
+					} else if (tk.type == TK_BRACKET_OPEN) {
+						Node *index_expression = _parse_and_reduce_expression(p_block, p_builtin_types);
+						if (!index_expression) {
+							return nullptr;
+						}
+						if (index_expression->get_datatype() != TYPE_INT && index_expression->get_datatype() != TYPE_UINT) {
+							_set_error("Only integer expressions are allowed for indexing");
+							return nullptr;
+						}
+
+						if (index_expression->type == Node::TYPE_CONSTANT) {
+							ConstantNode *cnode = (ConstantNode *)index_expression;
+							if (cnode) {
+								if (!cnode->values.empty()) {
+									int value = cnode->values[0].sint;
+									if (value < 0 || value >= array_size) {
+										_set_error(vformat("Index [%s] out of range [%s..%s]", value, 0, array_size - 1));
+										return nullptr;
+									}
+								}
+							}
+						}
+
+						tk = _get_token();
+						if (tk.type != TK_BRACKET_CLOSE) {
+							_set_error("Expected ']'");
+							return nullptr;
+						}
+						mn->index_expression = index_expression;
+
+					} else {
+						_set_error("Expected '[' or '.'");
+						return nullptr;
+					}
+				}
+
 				expr = mn;
 
 				//todo
@@ -3567,7 +3750,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 						}
 						break;
 					default: {
-						_set_error("Object of type '" + get_datatype_name(expr->get_datatype()) + "' can't be indexed");
+						_set_error("Object of type '" + (expr->get_datatype() == TYPE_STRUCT ? expr->get_datatype_name() : get_datatype_name(expr->get_datatype())) + "' can't be indexed");
 						return nullptr;
 					}
 				}
@@ -5262,11 +5445,33 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 						member->datatype = type;
 						member->struct_name = struct_name;
 						member->name = tk.text;
-						st_node->members.push_back(member);
 
 						tk = _get_token();
+						if (tk.type == TK_BRACKET_OPEN) {
+							tk = _get_token();
+							if (tk.type == TK_INT_CONSTANT && tk.constant > 0) {
+								member->array_size = (int)tk.constant;
+
+								tk = _get_token();
+								if (tk.type == TK_BRACKET_CLOSE) {
+									tk = _get_token();
+									if (tk.type != TK_SEMICOLON) {
+										_set_error("Expected ';'");
+										return ERR_PARSE_ERROR;
+									}
+								} else {
+									_set_error("Expected ']'");
+									return ERR_PARSE_ERROR;
+								}
+							} else {
+								_set_error("Expected single integer constant > 0");
+								return ERR_PARSE_ERROR;
+							}
+						}
+						st_node->members.push_back(member);
+
 						if (tk.type != TK_SEMICOLON) {
-							_set_error("Expected ';'");
+							_set_error("Expected ']' or ';'");
 							return ERR_PARSE_ERROR;
 						}
 						member_count++;
