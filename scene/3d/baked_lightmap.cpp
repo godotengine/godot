@@ -810,7 +810,7 @@ BakedLightmap::BakeError BakedLightmap::bake(Node *p_from_node, String p_data_sa
 			} break;
 			case ENVIRONMENT_MODE_CUSTOM_SKY: {
 				if (environment_custom_sky.is_valid()) {
-					environment_image = _get_irradiance_from_sky(environment_custom_sky, Vector2i(128, 64));
+					environment_image = _get_irradiance_from_sky(environment_custom_sky, environment_custom_energy, Vector2i(128, 64));
 					environment_xform.set_euler(environment_custom_sky_rotation_degrees * Math_PI / 180.0);
 				}
 
@@ -1233,7 +1233,7 @@ void BakedLightmap::_clear_lightmaps() {
 	}
 }
 
-Ref<Image> BakedLightmap::_get_irradiance_from_sky(Ref<Sky> p_sky, Vector2i p_size) {
+Ref<Image> BakedLightmap::_get_irradiance_from_sky(Ref<Sky> p_sky, float p_energy, Vector2i p_size) {
 	if (p_sky.is_null()) {
 		return Ref<Image>();
 	}
@@ -1245,7 +1245,7 @@ Ref<Image> BakedLightmap::_get_irradiance_from_sky(Ref<Sky> p_sky, Vector2i p_si
 	}
 	Ref<ProceduralSky> procedural = p_sky;
 	if (procedural.is_valid()) {
-		sky_image = procedural->get_panorama();
+		sky_image = procedural->get_data();
 	}
 
 	if (sky_image.is_null()) {
@@ -1254,6 +1254,17 @@ Ref<Image> BakedLightmap::_get_irradiance_from_sky(Ref<Sky> p_sky, Vector2i p_si
 
 	sky_image->convert(Image::FORMAT_RGBF);
 	sky_image->resize(p_size.x, p_size.y, Image::INTERPOLATE_CUBIC);
+
+	if (p_energy != 1.0) {
+		sky_image->lock();
+		for (int i = 0; i < p_size.y; i++) {
+			for (int j = 0; j < p_size.x; j++) {
+				sky_image->set_pixel(j, i, sky_image->get_pixel(j, i) * p_energy);
+			}
+		}
+		sky_image->unlock();
+	}
+
 	return sky_image;
 }
 
@@ -1261,7 +1272,7 @@ Ref<Image> BakedLightmap::_get_irradiance_map(Ref<Environment> p_env, Vector2i p
 	Environment::BGMode bg_mode = p_env->get_background();
 	switch (bg_mode) {
 		case Environment::BG_SKY: {
-			return _get_irradiance_from_sky(p_env->get_sky(), Vector2i(128, 64));
+			return _get_irradiance_from_sky(p_env->get_sky(), p_env->get_bg_energy(), Vector2i(128, 64));
 		}
 		case Environment::BG_CLEAR_COLOR:
 		case Environment::BG_COLOR: {
