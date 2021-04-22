@@ -386,6 +386,7 @@ public:
 		StringName name;
 		Node *index_expression;
 		Node *call_expression;
+		Node *assign_expression;
 		bool is_const;
 
 		virtual DataType get_datatype() const { return datatype_cache; }
@@ -396,6 +397,7 @@ public:
 				datatype_cache(TYPE_VOID),
 				index_expression(nullptr),
 				call_expression(nullptr),
+				assign_expression(nullptr),
 				is_const(false) {}
 	};
 
@@ -508,6 +510,8 @@ public:
 		StringName name;
 		Node *owner;
 		Node *index_expression;
+		Node *assign_expression;
+		bool has_swizzling_duplicates;
 
 		virtual DataType get_datatype() const { return datatype; }
 		virtual String get_datatype_name() const { return String(struct_name); }
@@ -518,7 +522,9 @@ public:
 				datatype(TYPE_VOID),
 				array_size(0),
 				owner(nullptr),
-				index_expression(nullptr) {}
+				index_expression(nullptr),
+				assign_expression(nullptr),
+				has_swizzling_duplicates(false) {}
 	};
 
 	struct StructNode : public Node {
@@ -726,6 +732,7 @@ private:
 	int tk_line;
 
 	StringName current_function;
+	bool last_const = false;
 
 	struct TkPos {
 		int char_idx;
@@ -810,6 +817,7 @@ private:
 	bool _parse_function_arguments(BlockNode *p_block, const Map<StringName, BuiltInInfo> &p_builtin_types, OperatorNode *p_func, int *r_complete_arg = nullptr);
 
 	Node *_parse_expression(BlockNode *p_block, const Map<StringName, BuiltInInfo> &p_builtin_types);
+	Node *_parse_array_constructor(BlockNode *p_block, const Map<StringName, BuiltInInfo> &p_builtin_types, DataType p_type, const StringName &p_struct_name, int p_array_size);
 	ShaderLanguage::Node *_reduce_expression(BlockNode *p_block, ShaderLanguage::Node *p_node);
 
 	Node *_parse_and_reduce_expression(BlockNode *p_block, const Map<StringName, BuiltInInfo> &p_builtin_types);
