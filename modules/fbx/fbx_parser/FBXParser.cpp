@@ -74,8 +74,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *  @brief Implementation of the FBX parser and the rudimentary DOM that we use
  */
 
-#include "thirdparty/zlib/zlib.h"
 #include <stdlib.h> /* strtol */
+#include <zlib.h>
 
 #include "ByteSwapper.h"
 #include "FBXParseTools.h"
