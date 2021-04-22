@@ -39,6 +39,8 @@
 #include "core/os/os.h"
 #include "core/project_settings.h"
 
+#include "main/main.h"
+
 #include "scene/main/scene_tree.h"
 #include "scene/resources/resource_format_text.h"
 
@@ -1055,6 +1057,7 @@ void NativeScriptLanguage::init() {
 		if (generate_c_api(E->next()->get()) != OK) {
 			ERR_PRINT("Failed to generate C API\n");
 		}
+		Main::cleanup(true);
 		exit(0);
 	}
 #endif
