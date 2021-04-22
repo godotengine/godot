@@ -209,7 +209,7 @@ void EditorDebuggerNode::stop() {
 	// Also close all debugging sessions.
 	_for_all(tabs, [&](ScriptEditorDebugger *dbg) {
 		if (dbg->is_session_active()) {
-			dbg->stop();
+			dbg->_stop_and_notify();
 		}
 	});
 	_break_state_changed();
