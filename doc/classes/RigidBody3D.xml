@@ -161,10 +161,10 @@
 			If [code]true[/code], the body can enter sleep mode when there is no movement. See [member sleeping].
 			[b]Note:[/b] A RigidBody3D will never enter sleep mode automatically if its [member mode] is [constant MODE_CHARACTER]. It can still be put to sleep manually by setting its [member sleeping] property to [code]true[/code].
 		</member>
-		<member name="contact_monitor" type="bool" setter="set_contact_monitor" getter="is_contact_monitor_enabled" default="false">
-			If [code]true[/code], the RigidBody3D will emit signals when it collides with another RigidBody3D. See also [member contacts_reported].
+		<member name="contact_monitor" type="bool" setter="set_contact_monitor" getter="is_contact_monitor_enabled" default="true">
+			If [code]true[/code], the RigidBody3D will emit signals when it collides with another RigidBody3D. If you don't need information about contacts, set this to [code]false[/code] to improve performance when using a large amount of RigidBodies. See also [member contacts_reported].
 		</member>
-		<member name="contacts_reported" type="int" setter="set_max_contacts_reported" getter="get_max_contacts_reported" default="0">
+		<member name="contacts_reported" type="int" setter="set_max_contacts_reported" getter="get_max_contacts_reported" default="1">
 			The maximum number of contacts that will be recorded. Requires [member contact_monitor] to be set to [code]true[/code].
 			[b]Note:[/b] The number of contacts is different from the number of collisions. Collisions between parallel edges will result in two contacts (one at each end), and collisions between parallel faces will result in four contacts (one at each corner).
 		</member>
