@@ -269,7 +269,7 @@
 			<argument index="1" name="weight" type="float">
 			</argument>
 			<description>
-				Returns the linear interpolation with another color. The interpolation factor [code]t[/code] is between 0 and 1.
+				Returns the linear interpolation with another color. The interpolation factor [code]weight[/code] is between 0 and 1.
 				[codeblocks]
 				[gdscript]
 				var c1 = Color(1.0, 0.0, 0.0)
