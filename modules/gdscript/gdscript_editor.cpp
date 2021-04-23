@@ -3342,15 +3342,6 @@ Error GDScriptLanguage::lookup_code(const String &p_code, const String &p_symbol
 		}
 	}
 
-	for (int i = 0; i < GDScriptFunctions::FUNC_MAX; i++) {
-		if (GDScriptFunctions::get_func_name(GDScriptFunctions::Function(i)) == p_symbol) {
-			r_result.type = ScriptLanguage::LookupResult::RESULT_CLASS_METHOD;
-			r_result.class_name = "@GDScript";
-			r_result.class_member = p_symbol;
-			return OK;
-		}
-	}
-
 	if ("PI" == p_symbol || "TAU" == p_symbol || "INF" == p_symbol || "NAN" == p_symbol) {
 		r_result.type = ScriptLanguage::LookupResult::RESULT_CLASS_CONSTANT;
 		r_result.class_name = "@GDScript";
@@ -3563,6 +3554,16 @@ Error GDScriptLanguage::lookup_code(const String &p_code, const String &p_symbol
 			}
 		} break;
 		default: {
+		}
+	}
+
+	for (int i = 0; i < GDScriptFunctions::FUNC_MAX; i++) {
+		// this has to get run after parsing because otherwise functions like Array.max() will trigger it
+		if (GDScriptFunctions::get_func_name(GDScriptFunctions::Function(i)) == p_symbol) {
+			r_result.type = ScriptLanguage::LookupResult::RESULT_CLASS_METHOD;
+			r_result.class_name = "@GDScript";
+			r_result.class_member = p_symbol;
+			return OK;
 		}
 	}
 
