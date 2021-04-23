@@ -552,6 +552,11 @@ void VisualShaderEditor::_update_graph() {
 		bool is_group = !group_node.is_null();
 		Size2 size = Size2(0, 0);
 
+		VisualShaderNodeCustom *custom = Object::cast_to<VisualShaderNodeCustom>(vsnode.ptr());
+		if (custom) {
+			custom->_set_initialized(true);
+		}
+
 		Ref<VisualShaderNodeExpression> expression_node = Object::cast_to<VisualShaderNodeExpression>(group_node.ptr());
 		bool is_expression = !expression_node.is_null();
 		String expression = "";
@@ -1293,10 +1298,15 @@ void VisualShaderEditor::_port_edited() {
 	Variant value = property_editor->get_variant();
 	Ref<VisualShaderNode> vsn = visual_shader->get_node(type, editing_node);
 	ERR_FAIL_COND(!vsn.is_valid());
-
 	undo_redo->create_action(TTR("Set Input Default Port"));
-	undo_redo->add_do_method(vsn.ptr(), "set_input_port_default_value", editing_port, value);
-	undo_redo->add_undo_method(vsn.ptr(), "set_input_port_default_value", editing_port, vsn->get_input_port_default_value(editing_port));
+	Ref<VisualShaderNodeCustom> custom = Object::cast_to<VisualShaderNodeCustom>(vsn.ptr());
+	if (custom.is_valid()) {
+		undo_redo->add_do_method(custom.ptr(), "_set_input_port_default_value", editing_port, value);
+		undo_redo->add_undo_method(custom.ptr(), "_set_input_port_default_value", editing_port, vsn->get_input_port_default_value(editing_port));
+	} else {
+		undo_redo->add_do_method(vsn.ptr(), "set_input_port_default_value", editing_port, value);
+		undo_redo->add_undo_method(vsn.ptr(), "set_input_port_default_value", editing_port, vsn->get_input_port_default_value(editing_port));
+	}
 	undo_redo->add_do_method(this, "_update_graph");
 	undo_redo->add_undo_method(this, "_update_graph");
 	undo_redo->commit_action();
