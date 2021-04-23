@@ -857,10 +857,10 @@ int PhysicsServer3DSW::body_get_max_contacts_reported(RID p_body) const {
 	return body->get_max_contacts_reported();
 }
 
-void PhysicsServer3DSW::body_set_force_integration_callback(RID p_body, Object *p_receiver, const StringName &p_method, const Variant &p_udata) {
+void PhysicsServer3DSW::body_set_force_integration_callback(RID p_body, const Callable &p_callable, const Variant &p_udata) {
 	Body3DSW *body = body_owner.getornull(p_body);
 	ERR_FAIL_COND(!body);
-	body->set_force_integration_callback(p_receiver ? p_receiver->get_instance_id() : ObjectID(), p_method, p_udata);
+	body->set_force_integration_callback(p_callable, p_udata);
 }
 
 void PhysicsServer3DSW::body_set_ray_pickable(RID p_body, bool p_enable) {

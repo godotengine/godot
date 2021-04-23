@@ -154,8 +154,7 @@ public:
 	};
 
 	struct ForceIntegrationCallback {
-		ObjectID id;
-		StringName method;
+		Callable callable;
 		Variant udata;
 	};
 
@@ -240,7 +239,7 @@ public:
 	virtual void set_space(SpaceBullet *p_space);
 
 	virtual void dispatch_callbacks();
-	void set_force_integration_callback(ObjectID p_id, const StringName &p_method, const Variant &p_udata = Variant());
+	void set_force_integration_callback(const Callable &p_callable, const Variant &p_udata = Variant());
 	void scratch_space_override_modificator();
 
 	virtual void on_collision_filters_change();

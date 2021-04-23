@@ -550,7 +550,7 @@ void PhysicsServer3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("body_set_omit_force_integration", "body", "enable"), &PhysicsServer3D::body_set_omit_force_integration);
 	ClassDB::bind_method(D_METHOD("body_is_omitting_force_integration", "body"), &PhysicsServer3D::body_is_omitting_force_integration);
 
-	ClassDB::bind_method(D_METHOD("body_set_force_integration_callback", "body", "receiver", "method", "userdata"), &PhysicsServer3D::body_set_force_integration_callback, DEFVAL(Variant()));
+	ClassDB::bind_method(D_METHOD("body_set_force_integration_callback", "body", "callable", "userdata"), &PhysicsServer3D::body_set_force_integration_callback, DEFVAL(Variant()));
 
 	ClassDB::bind_method(D_METHOD("body_set_ray_pickable", "body", "enable"), &PhysicsServer3D::body_set_ray_pickable);
 

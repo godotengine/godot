@@ -803,6 +803,7 @@ void VehicleBody3D::_direct_state_changed(Object *p_state) {
 	RigidBody3D::_direct_state_changed(p_state);
 
 	state = Object::cast_to<PhysicsDirectBodyState3D>(p_state);
+	ERR_FAIL_NULL_MSG(state, "Method '_direct_state_changed' must receive a valid PhysicsDirectBodyState3D object as argument");
 
 	real_t step = state->get_step();
 
@@ -922,7 +923,7 @@ void VehicleBody3D::_bind_methods() {
 
 VehicleBody3D::VehicleBody3D() {
 	exclude.insert(get_rid());
-	//PhysicsServer3D::get_singleton()->body_set_force_integration_callback(get_rid(), this, "_direct_state_changed");
+	//PhysicsServer3D::get_singleton()->body_set_force_integration_callback(get_rid(), callable_mp(this, &VehicleBody3D::_direct_state_changed));
 
 	set_mass(40);
 }

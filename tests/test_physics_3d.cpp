@@ -77,10 +77,6 @@ class TestPhysics3DMainLoop : public MainLoop {
 	bool quit;
 
 protected:
-	static void _bind_methods() {
-		ClassDB::bind_method("body_changed_transform", &TestPhysics3DMainLoop::body_changed_transform);
-	}
-
 	RID create_body(PhysicsServer3D::ShapeType p_shape, PhysicsServer3D::BodyMode p_body, const Transform p_location, bool p_active_default = true, const Transform &p_shape_xform = Transform()) {
 		RenderingServer *vs = RenderingServer::get_singleton();
 		PhysicsServer3D *ps = PhysicsServer3D::get_singleton();
@@ -93,7 +89,7 @@ protected:
 		ps->body_set_param(body, PhysicsServer3D::BODY_PARAM_BOUNCE, 0.0);
 		//todo set space
 		ps->body_add_shape(body, type_shape_map[p_shape]);
-		ps->body_set_force_integration_callback(body, this, "body_changed_transform", mesh_instance);
+		ps->body_set_force_integration_callback(body, callable_mp(this, &TestPhysics3DMainLoop::body_changed_transform), mesh_instance);
 
 		ps->body_set_state(body, PhysicsServer3D::BODY_STATE_TRANSFORM, p_location);
 		bodies.push_back(body);
@@ -370,8 +366,7 @@ public:
 		ps->body_set_space(character, space);
 		//todo add space
 		ps->body_add_shape(character, capsule_shape);
-
-		ps->body_set_force_integration_callback(character, this, "body_changed_transform", mesh_instance);
+		ps->body_set_force_integration_callback(character, callable_mp(this, &TestPhysics3DMainLoop::body_changed_transform), mesh_instance);
 
 		ps->body_set_state(character, PhysicsServer3D::BODY_STATE_TRANSFORM, Transform(Basis(), Vector3(-2, 5, -2)));
 		bodies.push_back(character);

@@ -927,10 +927,10 @@ int PhysicsServer2DSW::body_get_max_contacts_reported(RID p_body) const {
 	return body->get_max_contacts_reported();
 }
 
-void PhysicsServer2DSW::body_set_force_integration_callback(RID p_body, Object *p_receiver, const StringName &p_method, const Variant &p_udata) {
+void PhysicsServer2DSW::body_set_force_integration_callback(RID p_body, const Callable &p_callable, const Variant &p_udata) {
 	Body2DSW *body = body_owner.getornull(p_body);
 	ERR_FAIL_COND(!body);
-	body->set_force_integration_callback(p_receiver ? p_receiver->get_instance_id() : ObjectID(), p_method, p_udata);
+	body->set_force_integration_callback(p_callable, p_udata);
 }
 
 bool PhysicsServer2DSW::body_collide_shape(RID p_body, int p_body_shape, RID p_shape, const Transform2D &p_shape_xform, const Vector2 &p_motion, Vector2 *r_results, int p_result_max, int &r_result_count) {

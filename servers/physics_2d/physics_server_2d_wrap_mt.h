@@ -245,7 +245,7 @@ public:
 	FUNC2(body_set_omit_force_integration, RID, bool);
 	FUNC1RC(bool, body_is_omitting_force_integration, RID);
 
-	FUNC4(body_set_force_integration_callback, RID, Object *, const StringName &, const Variant &);
+	FUNC3(body_set_force_integration_callback, RID, const Callable &, const Variant &);
 
 	bool body_collide_shape(RID p_body, int p_body_shape, RID p_shape, const Transform2D &p_shape_xform, const Vector2 &p_motion, Vector2 *r_results, int p_result_max, int &r_result_count) override {
 		return physics_2d_server->body_collide_shape(p_body, p_body_shape, p_shape, p_shape_xform, p_motion, r_results, p_result_max, r_result_count);

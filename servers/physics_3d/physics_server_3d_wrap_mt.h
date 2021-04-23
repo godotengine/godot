@@ -249,7 +249,7 @@ public:
 	FUNC2(body_set_omit_force_integration, RID, bool);
 	FUNC1RC(bool, body_is_omitting_force_integration, RID);
 
-	FUNC4(body_set_force_integration_callback, RID, Object *, const StringName &, const Variant &);
+	FUNC3(body_set_force_integration_callback, RID, const Callable &, const Variant &);
 
 	FUNC2(body_set_ray_pickable, RID, bool);
 

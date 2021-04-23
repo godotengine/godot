@@ -653,11 +653,9 @@
 			</return>
 			<argument index="0" name="body" type="RID">
 			</argument>
-			<argument index="1" name="receiver" type="Object">
+			<argument index="1" name="callable" type="Callable">
 			</argument>
-			<argument index="2" name="method" type="StringName">
-			</argument>
-			<argument index="3" name="userdata" type="Variant" default="null">
+			<argument index="2" name="userdata" type="Variant" default="null">
 			</argument>
 			<description>
 				Sets the function used to calculate physics for an object, if that object allows it (see [method body_set_omit_force_integration]).
