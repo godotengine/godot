@@ -1148,6 +1148,48 @@ Vector2i TileMap::world_to_map(const Vector2 &p_pos) const {
 	return ret;
 }
 
+bool TileMap::is_existing_neighbor(TileSet::CellNeighbor p_cell_neighbor) const {
+	ERR_FAIL_COND_V(!tile_set.is_valid(), false);
+
+	TileSet::TileShape shape = tile_set->get_tile_shape();
+	if (shape == TileSet::TILE_SHAPE_SQUARE) {
+		return p_cell_neighbor == TileSet::CELL_NEIGHBOR_RIGHT_SIDE ||
+			   p_cell_neighbor == TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_CORNER ||
+			   p_cell_neighbor == TileSet::CELL_NEIGHBOR_BOTTOM_SIDE ||
+			   p_cell_neighbor == TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_CORNER ||
+			   p_cell_neighbor == TileSet::CELL_NEIGHBOR_LEFT_SIDE ||
+			   p_cell_neighbor == TileSet::CELL_NEIGHBOR_TOP_LEFT_CORNER ||
+			   p_cell_neighbor == TileSet::CELL_NEIGHBOR_TOP_SIDE ||
+			   p_cell_neighbor == TileSet::CELL_NEIGHBOR_TOP_RIGHT_CORNER;
+
+	} else if (shape == TileSet::TILE_SHAPE_ISOMETRIC) {
+		return p_cell_neighbor == TileSet::CELL_NEIGHBOR_RIGHT_CORNER ||
+			   p_cell_neighbor == TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE ||
+			   p_cell_neighbor == TileSet::CELL_NEIGHBOR_BOTTOM_CORNER ||
+			   p_cell_neighbor == TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE ||
+			   p_cell_neighbor == TileSet::CELL_NEIGHBOR_LEFT_CORNER ||
+			   p_cell_neighbor == TileSet::CELL_NEIGHBOR_TOP_LEFT_SIDE ||
+			   p_cell_neighbor == TileSet::CELL_NEIGHBOR_TOP_CORNER ||
+			   p_cell_neighbor == TileSet::CELL_NEIGHBOR_TOP_RIGHT_SIDE;
+	} else {
+		if (tile_set->get_tile_offset_axis() == TileSet::TILE_OFFSET_AXIS_HORIZONTAL) {
+			return p_cell_neighbor == TileSet::CELL_NEIGHBOR_RIGHT_SIDE ||
+				   p_cell_neighbor == TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE ||
+				   p_cell_neighbor == TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE ||
+				   p_cell_neighbor == TileSet::CELL_NEIGHBOR_LEFT_SIDE ||
+				   p_cell_neighbor == TileSet::CELL_NEIGHBOR_TOP_LEFT_SIDE ||
+				   p_cell_neighbor == TileSet::CELL_NEIGHBOR_TOP_RIGHT_SIDE;
+		} else {
+			return p_cell_neighbor == TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE ||
+				   p_cell_neighbor == TileSet::CELL_NEIGHBOR_BOTTOM_SIDE ||
+				   p_cell_neighbor == TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE ||
+				   p_cell_neighbor == TileSet::CELL_NEIGHBOR_TOP_LEFT_SIDE ||
+				   p_cell_neighbor == TileSet::CELL_NEIGHBOR_TOP_SIDE ||
+				   p_cell_neighbor == TileSet::CELL_NEIGHBOR_TOP_RIGHT_SIDE;
+		}
+	}
+}
+
 Vector2i TileMap::get_neighbor_cell(const Vector2i &p_coords, TileSet::CellNeighbor p_cell_neighbor) const {
 	ERR_FAIL_COND_V(!tile_set.is_valid(), p_coords);
 

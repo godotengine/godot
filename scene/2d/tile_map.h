@@ -79,6 +79,10 @@ union TileMapCell {
 			return source_id < p_other.source_id;
 		}
 	}
+
+	bool operator!=(const TileMapCell &p_other) const {
+		return !(source_id == p_other.source_id && coord_x == p_other.coord_x && coord_y == p_other.coord_y && alternative_tile == p_other.alternative_tile);
+	}
 };
 
 struct TileMapQuadrant {
@@ -264,6 +268,7 @@ public:
 	Vector2 map_to_world(const Vector2 &p_pos) const;
 	Vector2i world_to_map(const Vector2 &p_pos) const;
 
+	bool is_existing_neighbor(TileSet::CellNeighbor p_cell_neighbor) const;
 	Vector2i get_neighbor_cell(const Vector2i &p_coords, TileSet::CellNeighbor p_cell_neighbor) const;
 
 	TypedArray<Vector2i> get_used_cells() const;

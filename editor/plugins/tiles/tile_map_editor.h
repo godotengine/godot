@@ -39,6 +39,8 @@
 
 #include "editor/editor_node.h"
 
+#include "core/typedefs.h"
+
 class TileMapEditorPlugin : public VBoxContainer {
 public:
 	virtual Control *get_toolbar() const {
@@ -170,7 +172,7 @@ class TileMapEditorTerrainsPlugin : public TileMapEditorPlugin {
 	GDCLASS(TileMapEditorTerrainsPlugin, TileMapEditorPlugin);
 
 private:
-	// UndoRedo *undo_redo = EditorNode::get_undo_redo();
+	UndoRedo *undo_redo = EditorNode::get_undo_redo();
 	ObjectID tile_map_id;
 	virtual void edit(ObjectID p_tile_map_id) override;
 
@@ -187,10 +189,82 @@ private:
 
 	void _update_toolbar();
 
+	// TileMap editing.
+	enum DragType {
+		DRAG_TYPE_NONE = 0,
+		DRAG_TYPE_PAINT,
+		DRAG_TYPE_PICK,
+	};
+	DragType drag_type = DRAG_TYPE_NONE;
+	Vector2 drag_start_mouse_pos;
+	Vector2 drag_last_mouse_pos;
+	Map<Vector2i, TileMapCell> drag_modified;
+
+	// Painting
+	class Constraint {
+	private:
+		const TileMap *tile_map;
+		Vector2i base_cell_coords = Vector2i();
+		int bit = -1;
+		int terrain = -1;
+
+	public:
+		// TODO implement difference operator.
+		bool operator<(const Constraint &p_other) const {
+			if (base_cell_coords == p_other.base_cell_coords) {
+				return bit < p_other.bit;
+			}
+			return base_cell_coords < p_other.base_cell_coords;
+		}
+
+		String to_string() const {
+			return vformat("Constraint {pos:%s, bit:%d, terrain:%d}", base_cell_coords, bit, terrain);
+		}
+
+		Vector2i get_base_cell_coords() const {
+			return base_cell_coords;
+		}
+
+		Map<Vector2i, TileSet::CellNeighbor> get_overlapping_coords_and_peering_bits() const;
+
+		void set_terrain(int p_terrain) {
+			terrain = p_terrain;
+		}
+
+		int get_terrain() const {
+			return terrain;
+		}
+
+		Constraint(const TileMap *p_tile_map, const Vector2i &p_position, const TileSet::CellNeighbor &p_bit, int p_terrain);
+		Constraint() {}
+	};
+
+	typedef Array TerrainsTilePattern;
+
+	Set<TerrainsTilePattern> _get_valid_terrains_tile_patterns_for_constraints(int p_terrain_set, const Vector2i &p_position, Set<TileMapEditorTerrainsPlugin::Constraint> p_constraints) const;
+	Set<TileMapEditorTerrainsPlugin::Constraint> _get_constraints_from_removed_cells_list(const Set<Vector2i> &p_to_replace, int p_terrain_set) const;
+	Set<TileMapEditorTerrainsPlugin::Constraint> _get_constraints_from_added_tile(Vector2i p_position, int p_terrain_set, TerrainsTilePattern p_terrains_tile_pattern) const;
+	Map<Vector2i, TerrainsTilePattern> _wave_function_collapse(const Set<Vector2i> &p_to_replace, int p_terrain_set, const Set<TileMapEditorTerrainsPlugin::Constraint> p_constraints) const;
+	TileMapCell _get_random_tile_from_pattern(int p_terrain_set, TerrainsTilePattern p_terrain_tile_pattern) const;
+	Map<Vector2i, TileMapCell> _draw_terrains(const Map<Vector2i, TerrainsTilePattern> &p_to_paint, int p_terrain_set) const;
+
+	// Cached data.
+
+	TerrainsTilePattern _build_terrains_tile_pattern(TileData *p_tile_data);
+	LocalVector<Map<TerrainsTilePattern, Set<TileMapCell>>> per_terrain_terrains_tile_patterns_tiles;
+	LocalVector<LocalVector<Set<TerrainsTilePattern>>> per_terrain_terrains_tile_patterns;
+
+	Map<TileMapCell, TileData *> terrain_tiles;
+	LocalVector<TileSet::CellNeighbor> tile_sides;
+
 	// Bottom panel.
-	Vector<Set<TileMapCell>> per_terrain_tiles;
-	ItemList *tilemap_tab_terrains_list;
-	void _update_terrains();
+	Tree *terrains_tree;
+	ItemList *terrains_tile_list;
+
+	// Update functions.
+	void _update_terrains_cache();
+	void _update_terrains_tree();
+	void _update_tiles_list();
 
 	// Update callback
 	virtual void tile_set_changed() override;
@@ -201,8 +275,8 @@ protected:
 
 public:
 	virtual Control *get_toolbar() const override;
-	//	virtual bool forward_canvas_gui_input(const Ref<InputEvent> &p_event) override;
-	//	virtual void forward_canvas_draw_over_viewport(Control *p_overlay) override;
+	virtual bool forward_canvas_gui_input(const Ref<InputEvent> &p_event) override;
+	//virtual void forward_canvas_draw_over_viewport(Control *p_overlay) override;
 
 	TileMapEditorTerrainsPlugin();
 	~TileMapEditorTerrainsPlugin();

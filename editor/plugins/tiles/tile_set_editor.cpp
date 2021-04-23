@@ -284,7 +284,7 @@ TileDataEditor *TileSetEditor::get_tile_data_editor(String p_property) {
 		return tile_data_occlusion_shape_editor;
 	} else if (components.size() >= 1 && components[0].begins_with("physics_layer_")) {
 		return tile_data_collision_shape_editor;
-	} else if (p_property == "terrain_mode" || p_property == "terrain" || (components.size() >= 1 && components[0] == "terrains_peering_bit")) {
+	} else if (p_property == "mode" || p_property == "terrain" || (components.size() >= 1 && components[0] == "terrains_peering_bit")) {
 		return tile_data_terrains_editor;
 	} else if (components.size() >= 1 && components[0].begins_with("navigation_layer_")) {
 		return tile_data_navigation_polygon_editor;

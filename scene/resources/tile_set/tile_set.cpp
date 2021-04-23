@@ -48,9 +48,9 @@ void TileData::set_tile_set(const TileSet *p_tile_set) {
 void TileData::notify_tile_data_properties_should_change() {
 	occluders.resize(tile_set->get_occlusion_layers_count());
 	physics.resize(tile_set->get_physics_layers_count());
-	for (int i = 0; i < 16; i++) {
-		if (terrain_peering_bits[i] >= tile_set->get_terrains_count()) {
-			terrain_peering_bits[i] = -1;
+	for (int bit_index = 0; bit_index < 16; bit_index++) {
+		if (terrain_set < 0 || terrain_peering_bits[bit_index] >= tile_set->get_terrains_count(terrain_set)) {
+			terrain_peering_bits[bit_index] = -1;
 		}
 	}
 	navigation.resize(tile_set->get_navigation_layers_count());
@@ -238,32 +238,25 @@ float TileData::get_collision_shape_one_way_margin(int p_layer_id, int p_shape_i
 }
 
 // Terrain
-void TileData::set_terrain_mode(TerrainMode p_terrain_mode) {
-	terrain_mode = p_terrain_mode;
-	emit_signal("changed");
-}
-
-TileData::TerrainMode TileData::get_terrain_mode() const {
-	return terrain_mode;
-}
-
-void TileData::set_terrain(int p_terrain_index) {
-	ERR_FAIL_COND(p_terrain_index < -1);
+void TileData::set_terrain_set(int p_terrain_set) {
+	ERR_FAIL_COND(p_terrain_set < -1);
 	if (tile_set) {
-		ERR_FAIL_COND(p_terrain_index >= tile_set->get_terrains_count());
+		ERR_FAIL_COND(p_terrain_set >= tile_set->get_terrain_sets_count());
 	}
-	terrain = p_terrain_index;
+	terrain_set = p_terrain_set;
+	notify_property_list_changed();
 	emit_signal("changed");
 }
 
-int TileData::get_terrain() const {
-	return terrain;
+int TileData::get_terrain_set() const {
+	return terrain_set;
 }
 
 void TileData::set_peering_bit_terrain(TileSet::CellNeighbor p_peering_bit, int p_terrain_index) {
 	ERR_FAIL_COND(p_terrain_index < -1);
 	if (tile_set) {
-		ERR_FAIL_COND(p_terrain_index >= tile_set->get_terrains_count());
+		ERR_FAIL_COND(p_terrain_index >= tile_set->get_terrains_count(terrain_set));
+		ERR_FAIL_COND(!is_valid_peering_bit_terrain(p_peering_bit));
 	}
 	terrain_peering_bits[p_peering_bit] = p_terrain_index;
 	emit_signal("changed");
@@ -271,6 +264,12 @@ void TileData::set_peering_bit_terrain(TileSet::CellNeighbor p_peering_bit, int 
 
 int TileData::get_peering_bit_terrain(TileSet::CellNeighbor p_peering_bit) const {
 	return terrain_peering_bits[p_peering_bit];
+}
+
+bool TileData::is_valid_peering_bit_terrain(TileSet::CellNeighbor p_peering_bit) const {
+	ERR_FAIL_COND_V(!tile_set, false);
+
+	return tile_set->is_valid_peering_bit_terrain(terrain_set, p_peering_bit);
 }
 
 // Navigation
@@ -415,34 +414,34 @@ bool TileData::_set(const StringName &p_name, const Variant &p_value) {
 		// Terrains.
 		if (components[1] == "right_side") {
 			set_peering_bit_terrain(TileSet::CELL_NEIGHBOR_RIGHT_SIDE, p_value);
-		} else if (components[1] == "bottom_right_side") {
-			set_peering_bit_terrain(TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE, p_value);
-		} else if (components[1] == "bottom_side") {
-			set_peering_bit_terrain(TileSet::CELL_NEIGHBOR_BOTTOM_SIDE, p_value);
-		} else if (components[1] == "bottom_left_side") {
-			set_peering_bit_terrain(TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE, p_value);
-		} else if (components[1] == "left_side") {
-			set_peering_bit_terrain(TileSet::CELL_NEIGHBOR_LEFT_SIDE, p_value);
-		} else if (components[1] == "top_left_side") {
-			set_peering_bit_terrain(TileSet::CELL_NEIGHBOR_TOP_LEFT_SIDE, p_value);
-		} else if (components[1] == "top_side") {
-			set_peering_bit_terrain(TileSet::CELL_NEIGHBOR_TOP_SIDE, p_value);
-		} else if (components[1] == "top_right_side") {
-			set_peering_bit_terrain(TileSet::CELL_NEIGHBOR_TOP_RIGHT_SIDE, p_value);
 		} else if (components[1] == "right_corner") {
 			set_peering_bit_terrain(TileSet::CELL_NEIGHBOR_RIGHT_CORNER, p_value);
+		} else if (components[1] == "bottom_right_side") {
+			set_peering_bit_terrain(TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE, p_value);
 		} else if (components[1] == "bottom_right_corner") {
 			set_peering_bit_terrain(TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_CORNER, p_value);
+		} else if (components[1] == "bottom_side") {
+			set_peering_bit_terrain(TileSet::CELL_NEIGHBOR_BOTTOM_SIDE, p_value);
 		} else if (components[1] == "bottom_corner") {
 			set_peering_bit_terrain(TileSet::CELL_NEIGHBOR_BOTTOM_CORNER, p_value);
+		} else if (components[1] == "bottom_left_side") {
+			set_peering_bit_terrain(TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE, p_value);
 		} else if (components[1] == "bottom_left_corner") {
 			set_peering_bit_terrain(TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_CORNER, p_value);
+		} else if (components[1] == "left_side") {
+			set_peering_bit_terrain(TileSet::CELL_NEIGHBOR_LEFT_SIDE, p_value);
 		} else if (components[1] == "left_corner") {
 			set_peering_bit_terrain(TileSet::CELL_NEIGHBOR_LEFT_CORNER, p_value);
+		} else if (components[1] == "top_left_side") {
+			set_peering_bit_terrain(TileSet::CELL_NEIGHBOR_TOP_LEFT_SIDE, p_value);
 		} else if (components[1] == "top_left_corner") {
 			set_peering_bit_terrain(TileSet::CELL_NEIGHBOR_TOP_LEFT_CORNER, p_value);
+		} else if (components[1] == "top_side") {
+			set_peering_bit_terrain(TileSet::CELL_NEIGHBOR_TOP_SIDE, p_value);
 		} else if (components[1] == "top_corner") {
 			set_peering_bit_terrain(TileSet::CELL_NEIGHBOR_TOP_CORNER, p_value);
+		} else if (components[1] == "top_right_side") {
+			set_peering_bit_terrain(TileSet::CELL_NEIGHBOR_TOP_RIGHT_SIDE, p_value);
 		} else if (components[1] == "top_right_corner") {
 			set_peering_bit_terrain(TileSet::CELL_NEIGHBOR_TOP_RIGHT_CORNER, p_value);
 		} else {
@@ -451,7 +450,7 @@ bool TileData::_set(const StringName &p_name, const Variant &p_value) {
 		return true;
 	} else if (components.size() == 1 && components[0].begins_with("custom_data_") && components[0].trim_prefix("custom_data_").is_valid_integer()) {
 		// Custom data layers.
-		int layer_index = components[0].trim_prefix("custom_data_layer_").to_int();
+		int layer_index = components[0].trim_prefix("custom_data_").to_int();
 		ERR_FAIL_COND_V(layer_index < 0, false);
 
 		if (layer_index >= custom_data.size()) {
@@ -515,34 +514,34 @@ bool TileData::_get(const StringName &p_name, Variant &r_ret) const {
 			// Terrains.
 			if (components[1] == "right_side") {
 				r_ret = terrain_peering_bits[TileSet::CELL_NEIGHBOR_RIGHT_SIDE];
-			} else if (components[1] == "bottom_right_side") {
-				r_ret = terrain_peering_bits[TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE];
-			} else if (components[1] == "bottom_side") {
-				r_ret = terrain_peering_bits[TileSet::CELL_NEIGHBOR_BOTTOM_SIDE];
-			} else if (components[1] == "bottom_left_side") {
-				r_ret = terrain_peering_bits[TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE];
-			} else if (components[1] == "left_side") {
-				r_ret = terrain_peering_bits[TileSet::CELL_NEIGHBOR_LEFT_SIDE];
-			} else if (components[1] == "top_left_side") {
-				r_ret = terrain_peering_bits[TileSet::CELL_NEIGHBOR_TOP_LEFT_SIDE];
-			} else if (components[1] == "top_side") {
-				r_ret = terrain_peering_bits[TileSet::CELL_NEIGHBOR_TOP_SIDE];
-			} else if (components[1] == "top_right_side") {
-				r_ret = terrain_peering_bits[TileSet::CELL_NEIGHBOR_TOP_RIGHT_SIDE];
 			} else if (components[1] == "right_corner") {
 				r_ret = terrain_peering_bits[TileSet::CELL_NEIGHBOR_RIGHT_CORNER];
+			} else if (components[1] == "bottom_right_side") {
+				r_ret = terrain_peering_bits[TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE];
 			} else if (components[1] == "bottom_right_corner") {
 				r_ret = terrain_peering_bits[TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_CORNER];
+			} else if (components[1] == "bottom_side") {
+				r_ret = terrain_peering_bits[TileSet::CELL_NEIGHBOR_BOTTOM_SIDE];
 			} else if (components[1] == "bottom_corner") {
 				r_ret = terrain_peering_bits[TileSet::CELL_NEIGHBOR_BOTTOM_CORNER];
+			} else if (components[1] == "bottom_left_side") {
+				r_ret = terrain_peering_bits[TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE];
 			} else if (components[1] == "bottom_left_corner") {
 				r_ret = terrain_peering_bits[TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_CORNER];
+			} else if (components[1] == "left_side") {
+				r_ret = terrain_peering_bits[TileSet::CELL_NEIGHBOR_LEFT_SIDE];
 			} else if (components[1] == "left_corner") {
 				r_ret = terrain_peering_bits[TileSet::CELL_NEIGHBOR_LEFT_CORNER];
+			} else if (components[1] == "top_left_side") {
+				r_ret = terrain_peering_bits[TileSet::CELL_NEIGHBOR_TOP_LEFT_SIDE];
 			} else if (components[1] == "top_left_corner") {
 				r_ret = terrain_peering_bits[TileSet::CELL_NEIGHBOR_TOP_LEFT_CORNER];
+			} else if (components[1] == "top_side") {
+				r_ret = terrain_peering_bits[TileSet::CELL_NEIGHBOR_TOP_SIDE];
 			} else if (components[1] == "top_corner") {
 				r_ret = terrain_peering_bits[TileSet::CELL_NEIGHBOR_TOP_CORNER];
+			} else if (components[1] == "top_right_side") {
+				r_ret = terrain_peering_bits[TileSet::CELL_NEIGHBOR_TOP_RIGHT_SIDE];
 			} else if (components[1] == "top_right_corner") {
 				r_ret = terrain_peering_bits[TileSet::CELL_NEIGHBOR_TOP_RIGHT_CORNER];
 			} else {
@@ -596,135 +595,55 @@ void TileData::_get_property_list(List<PropertyInfo> *p_list) const {
 		}
 
 		// Terrain data
-		p_list->push_back(PropertyInfo(Variant::NIL, "Terrains", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_GROUP));
-		TileSet::TileShape shape = tile_set->get_tile_shape();
-		bool sides = get_terrain_mode() == TERRAIN_MODE_MATCH_CORNERS_AND_SIDES || get_terrain_mode() == TERRAIN_MODE_MATCH_SIDES;
-		bool corners = get_terrain_mode() == TERRAIN_MODE_MATCH_CORNERS_AND_SIDES || get_terrain_mode() == TERRAIN_MODE_MATCH_CORNERS;
-		if (shape == TileSet::TILE_SHAPE_SQUARE) {
-			if (sides) {
+		if (terrain_set >= 0) {
+			p_list->push_back(PropertyInfo(Variant::NIL, "Terrains", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_GROUP));
+			if (is_valid_peering_bit_terrain(TileSet::CELL_NEIGHBOR_RIGHT_SIDE)) {
 				p_list->push_back(PropertyInfo(Variant::INT, "terrains_peering_bit/right_side"));
 			}
-			if (corners) {
-				p_list->push_back(PropertyInfo(Variant::INT, "terrains_peering_bit/bottom_right_corner"));
-			}
-			if (sides) {
-				p_list->push_back(PropertyInfo(Variant::INT, "terrains_peering_bit/bottom_side"));
-			}
-			if (corners) {
-				p_list->push_back(PropertyInfo(Variant::INT, "terrains_peering_bit/bottom_left_corner"));
-			}
-			if (sides) {
-				p_list->push_back(PropertyInfo(Variant::INT, "terrains_peering_bit/left_side"));
-			}
-			if (corners) {
-				p_list->push_back(PropertyInfo(Variant::INT, "terrains_peering_bit/top_left_corner"));
-			}
-			if (sides) {
-				p_list->push_back(PropertyInfo(Variant::INT, "terrains_peering_bit/top_side"));
-			}
-			if (corners) {
-				p_list->push_back(PropertyInfo(Variant::INT, "terrains_peering_bit/top_right_corner"));
-			}
-		} else if (shape == TileSet::TILE_SHAPE_ISOMETRIC) {
-			if (corners) {
+			if (is_valid_peering_bit_terrain(TileSet::CELL_NEIGHBOR_RIGHT_CORNER)) {
 				p_list->push_back(PropertyInfo(Variant::INT, "terrains_peering_bit/right_corner"));
 			}
-			if (sides) {
+			if (is_valid_peering_bit_terrain(TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE)) {
 				p_list->push_back(PropertyInfo(Variant::INT, "terrains_peering_bit/bottom_right_side"));
 			}
-			if (corners) {
+			if (is_valid_peering_bit_terrain(TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_CORNER)) {
+				p_list->push_back(PropertyInfo(Variant::INT, "terrains_peering_bit/bottom_right_corner"));
+			}
+			if (is_valid_peering_bit_terrain(TileSet::CELL_NEIGHBOR_BOTTOM_SIDE)) {
+				p_list->push_back(PropertyInfo(Variant::INT, "terrains_peering_bit/bottom_side"));
+			}
+			if (is_valid_peering_bit_terrain(TileSet::CELL_NEIGHBOR_BOTTOM_CORNER)) {
 				p_list->push_back(PropertyInfo(Variant::INT, "terrains_peering_bit/bottom_corner"));
 			}
-			if (sides) {
+			if (is_valid_peering_bit_terrain(TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE)) {
 				p_list->push_back(PropertyInfo(Variant::INT, "terrains_peering_bit/bottom_left_side"));
 			}
-			if (corners) {
+			if (is_valid_peering_bit_terrain(TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_CORNER)) {
+				p_list->push_back(PropertyInfo(Variant::INT, "terrains_peering_bit/bottom_left_corner"));
+			}
+			if (is_valid_peering_bit_terrain(TileSet::CELL_NEIGHBOR_LEFT_SIDE)) {
+				p_list->push_back(PropertyInfo(Variant::INT, "terrains_peering_bit/left_side"));
+			}
+			if (is_valid_peering_bit_terrain(TileSet::CELL_NEIGHBOR_LEFT_CORNER)) {
 				p_list->push_back(PropertyInfo(Variant::INT, "terrains_peering_bit/left_corner"));
 			}
-			if (sides) {
+			if (is_valid_peering_bit_terrain(TileSet::CELL_NEIGHBOR_TOP_LEFT_SIDE)) {
 				p_list->push_back(PropertyInfo(Variant::INT, "terrains_peering_bit/top_left_side"));
 			}
-			if (corners) {
+			if (is_valid_peering_bit_terrain(TileSet::CELL_NEIGHBOR_TOP_LEFT_CORNER)) {
+				p_list->push_back(PropertyInfo(Variant::INT, "terrains_peering_bit/top_left_corner"));
+			}
+			if (is_valid_peering_bit_terrain(TileSet::CELL_NEIGHBOR_TOP_SIDE)) {
+				p_list->push_back(PropertyInfo(Variant::INT, "terrains_peering_bit/top_side"));
+			}
+			if (is_valid_peering_bit_terrain(TileSet::CELL_NEIGHBOR_TOP_CORNER)) {
 				p_list->push_back(PropertyInfo(Variant::INT, "terrains_peering_bit/top_corner"));
 			}
-			if (sides) {
+			if (is_valid_peering_bit_terrain(TileSet::CELL_NEIGHBOR_TOP_RIGHT_SIDE)) {
 				p_list->push_back(PropertyInfo(Variant::INT, "terrains_peering_bit/top_right_side"));
 			}
-		} else {
-			if (tile_set->get_tile_offset_axis() == TileSet::TILE_OFFSET_AXIS_HORIZONTAL) {
-				if (sides) {
-					p_list->push_back(PropertyInfo(Variant::INT, "terrains_peering_bit/right_side"));
-				}
-				if (corners) {
-					p_list->push_back(PropertyInfo(Variant::INT, "terrains_peering_bit/bottom_right_corner"));
-				}
-				if (sides) {
-					p_list->push_back(PropertyInfo(Variant::INT, "terrains_peering_bit/bottom_right_side"));
-				}
-				if (corners) {
-					p_list->push_back(PropertyInfo(Variant::INT, "terrains_peering_bit/bottom_corner"));
-				}
-				if (sides) {
-					p_list->push_back(PropertyInfo(Variant::INT, "terrains_peering_bit/bottom_left_side"));
-				}
-				if (corners) {
-					p_list->push_back(PropertyInfo(Variant::INT, "terrains_peering_bit/bottom_left_corner"));
-				}
-				if (sides) {
-					p_list->push_back(PropertyInfo(Variant::INT, "terrains_peering_bit/left_side"));
-				}
-				if (corners) {
-					p_list->push_back(PropertyInfo(Variant::INT, "terrains_peering_bit/top_left_corner"));
-				}
-				if (sides) {
-					p_list->push_back(PropertyInfo(Variant::INT, "terrains_peering_bit/top_left_side"));
-				}
-				if (corners) {
-					p_list->push_back(PropertyInfo(Variant::INT, "terrains_peering_bit/top_corner"));
-				}
-				if (sides) {
-					p_list->push_back(PropertyInfo(Variant::INT, "terrains_peering_bit/top_right_side"));
-				}
-				if (corners) {
-					p_list->push_back(PropertyInfo(Variant::INT, "terrains_peering_bit/top_right_corner"));
-				}
-			} else {
-				if (corners) {
-					p_list->push_back(PropertyInfo(Variant::INT, "terrains_peering_bit/right_corner"));
-				}
-				if (sides) {
-					p_list->push_back(PropertyInfo(Variant::INT, "terrains_peering_bit/bottom_right_side"));
-				}
-				if (corners) {
-					p_list->push_back(PropertyInfo(Variant::INT, "terrains_peering_bit/bottom_right_corner"));
-				}
-				if (sides) {
-					p_list->push_back(PropertyInfo(Variant::INT, "terrains_peering_bit/bottom_side"));
-				}
-				if (corners) {
-					p_list->push_back(PropertyInfo(Variant::INT, "terrains_peering_bit/bottom_left_corner"));
-				}
-				if (sides) {
-					p_list->push_back(PropertyInfo(Variant::INT, "terrains_peering_bit/bottom_left_side"));
-				}
-				if (corners) {
-					p_list->push_back(PropertyInfo(Variant::INT, "terrains_peering_bit/left_corner"));
-				}
-				if (sides) {
-					p_list->push_back(PropertyInfo(Variant::INT, "terrains_peering_bit/top_left_side"));
-				}
-				if (corners) {
-					p_list->push_back(PropertyInfo(Variant::INT, "terrains_peering_bit/top_left_corner"));
-				}
-				if (sides) {
-					p_list->push_back(PropertyInfo(Variant::INT, "terrains_peering_bit/top_side"));
-				}
-				if (corners) {
-					p_list->push_back(PropertyInfo(Variant::INT, "terrains_peering_bit/top_right_corner"));
-				}
-				if (sides) {
-					p_list->push_back(PropertyInfo(Variant::INT, "terrains_peering_bit/top_right_side"));
-				}
+			if (is_valid_peering_bit_terrain(TileSet::CELL_NEIGHBOR_TOP_RIGHT_CORNER)) {
+				p_list->push_back(PropertyInfo(Variant::INT, "terrains_peering_bit/top_right_corner"));
 			}
 		}
 
@@ -777,10 +696,8 @@ void TileData::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_collision_shape_one_way_margin", "layer_id", "shape_index"), &TileData::get_collision_shape_one_way_margin);
 
 	// Terrain
-	ClassDB::bind_method(D_METHOD("set_terrain_mode", "terrain_mode"), &TileData::set_terrain_mode);
-	ClassDB::bind_method(D_METHOD("get_terrain_mode"), &TileData::get_terrain_mode);
-	ClassDB::bind_method(D_METHOD("set_terrain", "terrain"), &TileData::set_terrain);
-	ClassDB::bind_method(D_METHOD("get_terrain"), &TileData::get_terrain);
+	ClassDB::bind_method(D_METHOD("set_terrain_set", "terrain_set"), &TileData::set_terrain_set);
+	ClassDB::bind_method(D_METHOD("get_terrain_set"), &TileData::get_terrain_set);
 	ClassDB::bind_method(D_METHOD("set_peering_bit_terrain", "peering_bit", "terrain"), &TileData::set_peering_bit_terrain);
 	ClassDB::bind_method(D_METHOD("get_peering_bit_terrain", "peering_bit"), &TileData::get_peering_bit_terrain);
 
@@ -808,18 +725,12 @@ void TileData::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "y_sort_origin"), "set_y_sort_origin", "get_y_sort_origin");
 
 	ADD_GROUP("Terrains", "");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "terrain_mode", PROPERTY_HINT_ENUM, "Match corners and sides,Match corners,Match sides"), "set_terrain_mode", "get_terrain_mode");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "terrain"), "set_terrain", "get_terrain");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "terrain_set"), "set_terrain_set", "get_terrain_set");
 
 	ADD_GROUP("Miscellaneous", "");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "probability"), "set_probability", "get_probability");
 
 	ADD_SIGNAL(MethodInfo("changed"));
-
-	// Bind enums
-	BIND_ENUM_CONSTANT(TERRAIN_MODE_MATCH_CORNERS_AND_SIDES);
-	BIND_ENUM_CONSTANT(TERRAIN_MODE_MATCH_CORNERS);
-	BIND_ENUM_CONSTANT(TERRAIN_MODE_MATCH_SIDES);
 }
 
 void TileSetSource::set_tile_set(const TileSet *p_tile_set) {
@@ -1749,7 +1660,6 @@ uint32_t TileSet::get_physics_layer_collision_mask(int p_layer_index) const {
 void TileSet::set_physics_layer_physics_material(int p_layer_index, Ref<PhysicsMaterial> p_physics_material) {
 	ERR_FAIL_INDEX(p_layer_index, physics_layers.size());
 	physics_layers.write[p_layer_index].physics_material = p_physics_material;
-	emit_changed();
 }
 
 Ref<PhysicsMaterial> TileSet::get_physics_layer_physics_material(int p_layer_index) const {
@@ -1758,22 +1668,52 @@ Ref<PhysicsMaterial> TileSet::get_physics_layer_physics_material(int p_layer_ind
 }
 
 // Terrains
-void TileSet::set_terrains_count(int p_terrains_layers_count) {
+void TileSet::set_terrain_sets_count(int p_terrains_sets_count) {
+	ERR_FAIL_COND(p_terrains_sets_count < 0);
+
+	terrain_sets.resize(p_terrains_sets_count);
+
+	notify_property_list_changed();
+	emit_changed();
+}
+
+int TileSet::get_terrain_sets_count() const {
+	return terrain_sets.size();
+}
+
+void TileSet::set_terrain_set_mode(int p_terrain_set, TerrainMode p_terrain_mode) {
+	ERR_FAIL_INDEX(p_terrain_set, terrain_sets.size());
+	terrain_sets.write[p_terrain_set].mode = p_terrain_mode;
+	for (Map<int, Ref<TileSetSource>>::Element *E_source = sources.front(); E_source; E_source = E_source->next()) {
+		E_source->get()->notify_tile_data_properties_should_change();
+	}
+
+	notify_property_list_changed();
+	emit_changed();
+}
+
+TileSet::TerrainMode TileSet::get_terrain_set_mode(int p_terrain_set) const {
+	ERR_FAIL_INDEX_V(p_terrain_set, terrain_sets.size(), TileSet::TERRAIN_MODE_MATCH_CORNERS_AND_SIDES);
+	return terrain_sets[p_terrain_set].mode;
+}
+
+void TileSet::set_terrains_count(int p_terrain_set, int p_terrains_layers_count) {
+	ERR_FAIL_INDEX(p_terrain_set, terrain_sets.size());
 	ERR_FAIL_COND(p_terrains_layers_count < 0);
-	if (terrains.size() == p_terrains_layers_count) {
+	if (terrain_sets[p_terrain_set].terrains.size() == p_terrains_layers_count) {
 		return;
 	}
 
-	int old_size = terrains.size();
-	terrains.resize(p_terrains_layers_count);
+	int old_size = terrain_sets[p_terrain_set].terrains.size();
+	terrain_sets.write[p_terrain_set].terrains.resize(p_terrains_layers_count);
 
 	// Default name and color
-	for (int i = old_size; i < terrains.size(); i++) {
+	for (int i = old_size; i < terrain_sets.write[p_terrain_set].terrains.size(); i++) {
 		float hue_rotate = (i * 2 % 16) / 16.0;
 		Color c;
 		c.set_hsv(Math::fmod(float(hue_rotate), float(1.0)), 0.5, 0.5);
-		terrains.write[i].color = c;
-		terrains.write[i].name = String(vformat("Terrain %d", i));
+		terrain_sets.write[p_terrain_set].terrains.write[i].color = c;
+		terrain_sets.write[p_terrain_set].terrains.write[i].name = String(vformat("Terrain %d", i));
 	}
 
 	for (Map<int, Ref<TileSetSource>>::Element *E_source = sources.front(); E_source; E_source = E_source->next()) {
@@ -1784,34 +1724,126 @@ void TileSet::set_terrains_count(int p_terrains_layers_count) {
 	emit_changed();
 }
 
-int TileSet::get_terrains_count() const {
-	return terrains.size();
+int TileSet::get_terrains_count(int p_terrain_set) const {
+	ERR_FAIL_INDEX_V(p_terrain_set, terrain_sets.size(), -1);
+	return terrain_sets[p_terrain_set].terrains.size();
 }
 
-void TileSet::set_terrain_name(int p_terrain_index, String p_name) {
-	ERR_FAIL_INDEX(p_terrain_index, terrains.size());
-	terrains.write[p_terrain_index].name = p_name;
+void TileSet::set_terrain_name(int p_terrain_set, int p_terrain_index, String p_name) {
+	ERR_FAIL_INDEX(p_terrain_set, terrain_sets.size());
+	ERR_FAIL_INDEX(p_terrain_index, terrain_sets[p_terrain_set].terrains.size());
+	terrain_sets.write[p_terrain_set].terrains.write[p_terrain_index].name = p_name;
 	emit_changed();
 }
 
-String TileSet::get_terrain_name(int p_terrain_index) const {
-	ERR_FAIL_INDEX_V(p_terrain_index, terrains.size(), String());
-	return terrains[p_terrain_index].name;
+String TileSet::get_terrain_name(int p_terrain_set, int p_terrain_index) const {
+	ERR_FAIL_INDEX_V(p_terrain_set, terrain_sets.size(), String());
+	ERR_FAIL_INDEX_V(p_terrain_index, terrain_sets[p_terrain_set].terrains.size(), String());
+	return terrain_sets[p_terrain_set].terrains[p_terrain_index].name;
 }
 
-void TileSet::set_terrain_color(int p_terrain_index, Color p_color) {
-	ERR_FAIL_INDEX(p_terrain_index, terrains.size());
+void TileSet::set_terrain_color(int p_terrain_set, int p_terrain_index, Color p_color) {
+	ERR_FAIL_INDEX(p_terrain_set, terrain_sets.size());
+	ERR_FAIL_INDEX(p_terrain_index, terrain_sets[p_terrain_set].terrains.size());
 	if (p_color.a != 1.0) {
 		WARN_PRINT("Terrain color should have alpha == 1.0");
 		p_color.a = 1.0;
 	}
-	terrains.write[p_terrain_index].color = p_color;
+	terrain_sets.write[p_terrain_set].terrains.write[p_terrain_index].color = p_color;
 	emit_changed();
 }
 
-Color TileSet::get_terrain_color(int p_terrain_index) const {
-	ERR_FAIL_INDEX_V(p_terrain_index, terrains.size(), Color());
-	return terrains[p_terrain_index].color;
+Color TileSet::get_terrain_color(int p_terrain_set, int p_terrain_index) const {
+	ERR_FAIL_INDEX_V(p_terrain_index, terrain_sets[p_terrain_set].terrains.size(), Color());
+	return terrain_sets[p_terrain_set].terrains[p_terrain_index].color;
+}
+
+bool TileSet::is_valid_peering_bit_terrain(int p_terrain_set, TileSet::CellNeighbor p_peering_bit) const {
+	if (p_terrain_set < 0 || p_terrain_set >= get_terrain_sets_count()) {
+		return false;
+	}
+
+	TileSet::TerrainMode terrain_mode = get_terrain_set_mode(p_terrain_set);
+	if (tile_shape == TileSet::TILE_SHAPE_SQUARE) {
+		if (terrain_mode == TileSet::TERRAIN_MODE_MATCH_CORNERS_AND_SIDES || terrain_mode == TileSet::TERRAIN_MODE_MATCH_SIDES) {
+			if (p_peering_bit == TileSet::CELL_NEIGHBOR_RIGHT_SIDE ||
+					p_peering_bit == TileSet::CELL_NEIGHBOR_BOTTOM_SIDE ||
+					p_peering_bit == TileSet::CELL_NEIGHBOR_LEFT_SIDE ||
+					p_peering_bit == TileSet::CELL_NEIGHBOR_TOP_SIDE) {
+				return true;
+			}
+		}
+		if (terrain_mode == TileSet::TERRAIN_MODE_MATCH_CORNERS_AND_SIDES || terrain_mode == TileSet::TERRAIN_MODE_MATCH_CORNERS) {
+			if (p_peering_bit == TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_CORNER ||
+					p_peering_bit == TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_CORNER ||
+					p_peering_bit == TileSet::CELL_NEIGHBOR_TOP_LEFT_CORNER ||
+					p_peering_bit == TileSet::CELL_NEIGHBOR_TOP_RIGHT_CORNER) {
+				return true;
+			}
+		}
+	} else if (tile_shape == TileSet::TILE_SHAPE_ISOMETRIC) {
+		if (terrain_mode == TileSet::TERRAIN_MODE_MATCH_CORNERS_AND_SIDES || terrain_mode == TileSet::TERRAIN_MODE_MATCH_SIDES) {
+			if (p_peering_bit == TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE ||
+					p_peering_bit == TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE ||
+					p_peering_bit == TileSet::CELL_NEIGHBOR_TOP_LEFT_SIDE ||
+					p_peering_bit == TileSet::CELL_NEIGHBOR_TOP_RIGHT_SIDE) {
+				return true;
+			}
+		}
+		if (terrain_mode == TileSet::TERRAIN_MODE_MATCH_CORNERS_AND_SIDES || terrain_mode == TileSet::TERRAIN_MODE_MATCH_CORNERS) {
+			if (p_peering_bit == TileSet::CELL_NEIGHBOR_RIGHT_CORNER ||
+					p_peering_bit == TileSet::CELL_NEIGHBOR_BOTTOM_CORNER ||
+					p_peering_bit == TileSet::CELL_NEIGHBOR_LEFT_CORNER ||
+					p_peering_bit == TileSet::CELL_NEIGHBOR_TOP_CORNER) {
+				return true;
+			}
+		}
+	} else {
+		if (get_tile_offset_axis() == TileSet::TILE_OFFSET_AXIS_HORIZONTAL) {
+			if (terrain_mode == TileSet::TERRAIN_MODE_MATCH_CORNERS_AND_SIDES || terrain_mode == TileSet::TERRAIN_MODE_MATCH_SIDES) {
+				if (p_peering_bit == TileSet::CELL_NEIGHBOR_RIGHT_SIDE ||
+						p_peering_bit == TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE ||
+						p_peering_bit == TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE ||
+						p_peering_bit == TileSet::CELL_NEIGHBOR_LEFT_SIDE ||
+						p_peering_bit == TileSet::CELL_NEIGHBOR_TOP_LEFT_SIDE ||
+						p_peering_bit == TileSet::CELL_NEIGHBOR_TOP_RIGHT_SIDE) {
+					return true;
+				}
+			}
+			if (terrain_mode == TileSet::TERRAIN_MODE_MATCH_CORNERS_AND_SIDES || terrain_mode == TileSet::TERRAIN_MODE_MATCH_CORNERS) {
+				if (p_peering_bit == TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_CORNER ||
+						p_peering_bit == TileSet::CELL_NEIGHBOR_BOTTOM_CORNER ||
+						p_peering_bit == TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_CORNER ||
+						p_peering_bit == TileSet::CELL_NEIGHBOR_TOP_LEFT_CORNER ||
+						p_peering_bit == TileSet::CELL_NEIGHBOR_TOP_CORNER ||
+						p_peering_bit == TileSet::CELL_NEIGHBOR_TOP_RIGHT_CORNER) {
+					return true;
+				}
+			}
+		} else {
+			if (terrain_mode == TileSet::TERRAIN_MODE_MATCH_CORNERS_AND_SIDES || terrain_mode == TileSet::TERRAIN_MODE_MATCH_SIDES) {
+				if (p_peering_bit == TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE ||
+						p_peering_bit == TileSet::CELL_NEIGHBOR_BOTTOM_SIDE ||
+						p_peering_bit == TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE ||
+						p_peering_bit == TileSet::CELL_NEIGHBOR_TOP_LEFT_SIDE ||
+						p_peering_bit == TileSet::CELL_NEIGHBOR_TOP_SIDE ||
+						p_peering_bit == TileSet::CELL_NEIGHBOR_TOP_RIGHT_SIDE) {
+					return true;
+				}
+			}
+			if (terrain_mode == TileSet::TERRAIN_MODE_MATCH_CORNERS_AND_SIDES || terrain_mode == TileSet::TERRAIN_MODE_MATCH_CORNERS) {
+				if (p_peering_bit == TileSet::CELL_NEIGHBOR_RIGHT_CORNER ||
+						p_peering_bit == TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_CORNER ||
+						p_peering_bit == TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_CORNER ||
+						p_peering_bit == TileSet::CELL_NEIGHBOR_LEFT_CORNER ||
+						p_peering_bit == TileSet::CELL_NEIGHBOR_TOP_LEFT_CORNER ||
+						p_peering_bit == TileSet::CELL_NEIGHBOR_TOP_RIGHT_CORNER) {
+					return true;
+				}
+			}
+		}
+	}
+	return false;
 }
 
 // Navigation
@@ -2213,24 +2245,47 @@ bool TileSet::_set(const StringName &p_name, const Variant &p_value) {
 				set_physics_layer_physics_material(index, physics_material);
 				return true;
 			}
-		} else if (components.size() == 2 && components[0].begins_with("terrain_") && components[0].trim_prefix("terrain_").is_valid_integer()) {
+		} else if (components.size() >= 2 && components[0].begins_with("terrain_set_") && components[0].trim_prefix("terrain_set_").is_valid_integer()) {
 			// Terrains.
-			int index = components[0].trim_prefix("terrain_").to_int();
-			ERR_FAIL_COND_V(index < 0, false);
-			if (components[1] == "name") {
-				ERR_FAIL_COND_V(p_value.get_type() != Variant::STRING, false);
-				if (index >= terrains.size()) {
-					set_terrains_count(index + 1);
+			int terrain_set_index = components[0].trim_prefix("terrain_set_").to_int();
+			ERR_FAIL_COND_V(terrain_set_index < 0, false);
+			if (components[1] == "mode") {
+				ERR_FAIL_COND_V(p_value.get_type() != Variant::INT, false);
+				if (terrain_set_index >= terrain_sets.size()) {
+					set_terrain_sets_count(terrain_set_index + 1);
 				}
-				set_terrain_name(index, p_value);
-				return true;
-			} else if (components[1] == "color") {
-				ERR_FAIL_COND_V(p_value.get_type() != Variant::COLOR, false);
-				if (index >= terrains.size()) {
-					set_terrains_count(index + 1);
+				set_terrain_set_mode(terrain_set_index, TerrainMode(int(p_value)));
+			} else if (components[1] == "terrains_count") {
+				ERR_FAIL_COND_V(p_value.get_type() != Variant::INT, false);
+				if (terrain_set_index >= terrain_sets.size()) {
+					set_terrain_sets_count(terrain_set_index + 1);
 				}
-				set_terrain_color(index, p_value);
+				set_terrains_count(terrain_set_index, p_value);
 				return true;
+			} else if (components.size() >= 3 && components[1].begins_with("terrain_") && components[1].trim_prefix("terrain_").is_valid_integer()) {
+				int terrain_index = components[1].trim_prefix("terrain_").to_int();
+				ERR_FAIL_COND_V(terrain_index < 0, false);
+				if (components[2] == "name") {
+					ERR_FAIL_COND_V(p_value.get_type() != Variant::STRING, false);
+					if (terrain_set_index >= terrain_sets.size()) {
+						set_terrain_sets_count(terrain_set_index + 1);
+					}
+					if (terrain_index >= terrain_sets[terrain_set_index].terrains.size()) {
+						set_terrains_count(terrain_set_index, terrain_index + 1);
+					}
+					set_terrain_name(terrain_set_index, terrain_index, p_value);
+					return true;
+				} else if (components[2] == "color") {
+					ERR_FAIL_COND_V(p_value.get_type() != Variant::COLOR, false);
+					if (terrain_set_index >= terrain_sets.size()) {
+						set_terrain_sets_count(terrain_set_index + 1);
+					}
+					if (terrain_index >= terrain_sets[terrain_set_index].terrains.size()) {
+						set_terrains_count(terrain_set_index, terrain_index + 1);
+					}
+					set_terrain_color(terrain_set_index, terrain_index, p_value);
+					return true;
+				}
 			}
 		} else if (components.size() == 2 && components[0].begins_with("navigation_layer_") && components[0].trim_prefix("navigation_layer_").is_valid_integer()) {
 			// Navigation layers.
@@ -2312,18 +2367,30 @@ bool TileSet::_get(const StringName &p_name, Variant &r_ret) const {
 			r_ret = get_physics_layer_physics_material(index);
 			return true;
 		}
-	} else if (components.size() == 2 && components[0].begins_with("terrain_") && components[0].trim_prefix("terrain_").is_valid_integer()) {
+	} else if (components.size() >= 2 && components[0].begins_with("terrain_set_") && components[0].trim_prefix("terrain_set_").is_valid_integer()) {
 		// Terrains.
-		int index = components[0].trim_prefix("terrain_").to_int();
-		if (index < 0 || index >= terrains.size()) {
+		int terrain_set_index = components[0].trim_prefix("terrain_set_").to_int();
+		if (terrain_set_index < 0 || terrain_set_index >= terrain_sets.size()) {
 			return false;
 		}
-		if (components[1] == "name") {
-			r_ret = get_terrain_name(index);
+		if (components[1] == "mode") {
+			r_ret = get_terrain_set_mode(terrain_set_index);
 			return true;
-		} else if (components[1] == "color") {
-			r_ret = get_terrain_color(index);
+		} else if (components[1] == "terrains_count") {
+			r_ret = get_terrains_count(terrain_set_index);
 			return true;
+		} else if (components.size() >= 3 && components[1].begins_with("terrain_") && components[1].trim_prefix("terrain_").is_valid_integer()) {
+			int terrain_index = components[1].trim_prefix("terrain_").to_int();
+			if (terrain_index < 0 || terrain_index >= terrain_sets[terrain_set_index].terrains.size()) {
+				return false;
+			}
+			if (components[2] == "name") {
+				r_ret = get_terrain_name(terrain_set_index, terrain_index);
+				return true;
+			} else if (components[2] == "color") {
+				r_ret = get_terrain_color(terrain_set_index, terrain_index);
+				return true;
+			}
 		}
 	} else if (components.size() == 2 && components[0].begins_with("navigation_layer_") && components[0].trim_prefix("navigation_layer_").is_valid_integer()) {
 		// navigation layers.
@@ -2388,9 +2455,13 @@ void TileSet::_get_property_list(List<PropertyInfo> *p_list) const {
 
 	// Terrains.
 	p_list->push_back(PropertyInfo(Variant::NIL, "Terrains", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_GROUP));
-	for (int i = 0; i < terrains.size(); i++) {
-		p_list->push_back(PropertyInfo(Variant::STRING, vformat("terrain_%d/name", i)));
-		p_list->push_back(PropertyInfo(Variant::COLOR, vformat("terrain_%d/color", i)));
+	for (int terrain_set_index = 0; terrain_set_index < terrain_sets.size(); terrain_set_index++) {
+		p_list->push_back(PropertyInfo(Variant::INT, vformat("terrain_set_%d/mode", terrain_set_index), PROPERTY_HINT_ENUM, "Match corners and sides,Match corners,Match sides"));
+		p_list->push_back(PropertyInfo(Variant::INT, vformat("terrain_set_%d/terrains_count", terrain_set_index), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR));
+		for (int terrain_index = 0; terrain_index < terrain_sets[terrain_set_index].terrains.size(); terrain_index++) {
+			p_list->push_back(PropertyInfo(Variant::STRING, vformat("terrain_set_%d/terrain_%d/name", terrain_set_index, terrain_index)));
+			p_list->push_back(PropertyInfo(Variant::COLOR, vformat("terrain_set_%d/terrain_%d/color", terrain_set_index, terrain_index)));
+		}
 	}
 
 	// Navigation.
@@ -2471,12 +2542,17 @@ void TileSet::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_physics_layer_physics_material", "layer_index"), &TileSet::get_physics_layer_physics_material);
 
 	// Terrains
-	ClassDB::bind_method(D_METHOD("set_terrains_count", "terrains_layers_count"), &TileSet::set_terrains_count);
-	ClassDB::bind_method(D_METHOD("get_terrains_count"), &TileSet::get_terrains_count);
-	ClassDB::bind_method(D_METHOD("set_terrain_name", "terrain_index", "name"), &TileSet::set_terrain_name);
-	ClassDB::bind_method(D_METHOD("get_terrain_name", "terrain_index"), &TileSet::get_terrain_name);
-	ClassDB::bind_method(D_METHOD("set_terrain_color", "terrain_index", "color"), &TileSet::set_terrain_color);
-	ClassDB::bind_method(D_METHOD("get_terrain_color", "terrain_index"), &TileSet::get_terrain_color);
+	ClassDB::bind_method(D_METHOD("set_terrain_sets_count", "terrain_sets_count"), &TileSet::set_terrain_sets_count);
+	ClassDB::bind_method(D_METHOD("get_terrain_sets_count"), &TileSet::get_terrain_sets_count);
+	ClassDB::bind_method(D_METHOD("set_terrain_set_mode", "terrain_set", "mode"), &TileSet::set_terrain_set_mode);
+	ClassDB::bind_method(D_METHOD("get_terrain_set_mode", "terrain_set"), &TileSet::get_terrain_set_mode);
+
+	ClassDB::bind_method(D_METHOD("set_terrains_count", "terrain_set", "terrains_count"), &TileSet::set_terrains_count);
+	ClassDB::bind_method(D_METHOD("get_terrains_count", "terrain_set"), &TileSet::get_terrains_count);
+	ClassDB::bind_method(D_METHOD("set_terrain_name", "terrain_set", "terrain_index", "name"), &TileSet::set_terrain_name);
+	ClassDB::bind_method(D_METHOD("get_terrain_name", "terrain_set", "terrain_index"), &TileSet::get_terrain_name);
+	ClassDB::bind_method(D_METHOD("set_terrain_color", "terrain_set", "terrain_index", "color"), &TileSet::set_terrain_color);
+	ClassDB::bind_method(D_METHOD("get_terrain_color", "terrain_set", "terrain_index"), &TileSet::get_terrain_color);
 
 	// Navigation
 	ClassDB::bind_method(D_METHOD("set_navigation_layers_count", "navigation_layers_count"), &TileSet::set_navigation_layers_count);
@@ -2497,7 +2573,7 @@ void TileSet::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "physics_layers_count", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "set_physics_layers_count", "get_physics_layers_count");
 
 	ADD_GROUP("Terrains", "");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "terrains_layers_count", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "set_terrains_count", "get_terrains_count");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "terrains_sets_count", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "set_terrain_sets_count", "get_terrain_sets_count");
 
 	ADD_GROUP("Navigation", "");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "navigation_layers_count", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "set_navigation_layers_count", "get_navigation_layers_count");
@@ -2522,21 +2598,25 @@ void TileSet::_bind_methods() {
 	BIND_ENUM_CONSTANT(TILE_OFFSET_AXIS_VERTICAL);
 
 	BIND_ENUM_CONSTANT(TileSet::CELL_NEIGHBOR_RIGHT_SIDE);
-	BIND_ENUM_CONSTANT(TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE);
-	BIND_ENUM_CONSTANT(TileSet::CELL_NEIGHBOR_BOTTOM_SIDE);
-	BIND_ENUM_CONSTANT(TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE);
-	BIND_ENUM_CONSTANT(TileSet::CELL_NEIGHBOR_LEFT_SIDE);
-	BIND_ENUM_CONSTANT(TileSet::CELL_NEIGHBOR_TOP_LEFT_SIDE);
-	BIND_ENUM_CONSTANT(TileSet::CELL_NEIGHBOR_TOP_SIDE);
-	BIND_ENUM_CONSTANT(TileSet::CELL_NEIGHBOR_TOP_RIGHT_SIDE);
 	BIND_ENUM_CONSTANT(TileSet::CELL_NEIGHBOR_RIGHT_CORNER);
+	BIND_ENUM_CONSTANT(TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE);
 	BIND_ENUM_CONSTANT(TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_CORNER);
+	BIND_ENUM_CONSTANT(TileSet::CELL_NEIGHBOR_BOTTOM_SIDE);
 	BIND_ENUM_CONSTANT(TileSet::CELL_NEIGHBOR_BOTTOM_CORNER);
+	BIND_ENUM_CONSTANT(TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE);
 	BIND_ENUM_CONSTANT(TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_CORNER);
+	BIND_ENUM_CONSTANT(TileSet::CELL_NEIGHBOR_LEFT_SIDE);
 	BIND_ENUM_CONSTANT(TileSet::CELL_NEIGHBOR_LEFT_CORNER);
+	BIND_ENUM_CONSTANT(TileSet::CELL_NEIGHBOR_TOP_LEFT_SIDE);
 	BIND_ENUM_CONSTANT(TileSet::CELL_NEIGHBOR_TOP_LEFT_CORNER);
+	BIND_ENUM_CONSTANT(TileSet::CELL_NEIGHBOR_TOP_SIDE);
 	BIND_ENUM_CONSTANT(TileSet::CELL_NEIGHBOR_TOP_CORNER);
+	BIND_ENUM_CONSTANT(TileSet::CELL_NEIGHBOR_TOP_RIGHT_SIDE);
 	BIND_ENUM_CONSTANT(TileSet::CELL_NEIGHBOR_TOP_RIGHT_CORNER);
+
+	BIND_ENUM_CONSTANT(TERRAIN_MODE_MATCH_CORNERS_AND_SIDES);
+	BIND_ENUM_CONSTANT(TERRAIN_MODE_MATCH_CORNERS);
+	BIND_ENUM_CONSTANT(TERRAIN_MODE_MATCH_SIDES);
 }
 
 TileSet::TileSet() {

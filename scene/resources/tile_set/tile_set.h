@@ -117,22 +117,28 @@ public:
 public:
 	enum CellNeighbor {
 		CELL_NEIGHBOR_RIGHT_SIDE = 0,
-		CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE,
-		CELL_NEIGHBOR_BOTTOM_SIDE,
-		CELL_NEIGHBOR_BOTTOM_LEFT_SIDE,
-		CELL_NEIGHBOR_LEFT_SIDE,
-		CELL_NEIGHBOR_TOP_LEFT_SIDE,
-		CELL_NEIGHBOR_TOP_SIDE,
-		CELL_NEIGHBOR_TOP_RIGHT_SIDE,
 		CELL_NEIGHBOR_RIGHT_CORNER,
+		CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE,
 		CELL_NEIGHBOR_BOTTOM_RIGHT_CORNER,
+		CELL_NEIGHBOR_BOTTOM_SIDE,
 		CELL_NEIGHBOR_BOTTOM_CORNER,
+		CELL_NEIGHBOR_BOTTOM_LEFT_SIDE,
 		CELL_NEIGHBOR_BOTTOM_LEFT_CORNER,
+		CELL_NEIGHBOR_LEFT_SIDE,
 		CELL_NEIGHBOR_LEFT_CORNER,
+		CELL_NEIGHBOR_TOP_LEFT_SIDE,
 		CELL_NEIGHBOR_TOP_LEFT_CORNER,
+		CELL_NEIGHBOR_TOP_SIDE,
 		CELL_NEIGHBOR_TOP_CORNER,
+		CELL_NEIGHBOR_TOP_RIGHT_SIDE,
 		CELL_NEIGHBOR_TOP_RIGHT_CORNER,
 		CELL_NEIGHBOR_MAX,
+	};
+
+	enum TerrainMode {
+		TERRAIN_MODE_MATCH_CORNERS_AND_SIDES = 0,
+		TERRAIN_MODE_MATCH_CORNERS,
+		TERRAIN_MODE_MATCH_SIDES,
 	};
 
 	enum TileShape {
@@ -198,7 +204,11 @@ private:
 		String name;
 		Color color;
 	};
-	Vector<Terrain> terrains;
+	struct TerrainSet {
+		TerrainMode mode = TERRAIN_MODE_MATCH_CORNERS_AND_SIDES;
+		Vector<Terrain> terrains;
+	};
+	Vector<TerrainSet> terrain_sets;
 
 	// Navigation
 	struct Navigationlayer {
@@ -282,12 +292,17 @@ public:
 	Ref<PhysicsMaterial> get_physics_layer_physics_material(int p_layer_index) const;
 
 	// Terrains
-	void set_terrains_count(int p_terrains_layers_count);
-	int get_terrains_count() const;
-	void set_terrain_name(int p_terrain_index, String p_name);
-	String get_terrain_name(int p_terrain_index) const;
-	void set_terrain_color(int p_terrain_index, Color p_color);
-	Color get_terrain_color(int p_terrain_index) const;
+	void set_terrain_sets_count(int p_terrains_sets_count);
+	int get_terrain_sets_count() const;
+	void set_terrain_set_mode(int p_terrain_set, TerrainMode p_terrain_mode);
+	TerrainMode get_terrain_set_mode(int p_terrain_set) const;
+	void set_terrains_count(int p_terrain_set, int p_terrains_count);
+	int get_terrains_count(int p_terrain_set) const;
+	void set_terrain_name(int p_terrain_set, int p_terrain_index, String p_name);
+	String get_terrain_name(int p_terrain_set, int p_terrain_index) const;
+	void set_terrain_color(int p_terrain_set, int p_terrain_index, Color p_color);
+	Color get_terrain_color(int p_terrain_set, int p_terrain_index) const;
+	bool is_valid_peering_bit_terrain(int p_terrain_set, TileSet::CellNeighbor p_peering_bit) const;
 
 	// Navigation
 	void set_navigation_layers_count(int p_navigation_layers_count);
@@ -436,13 +451,6 @@ public:
 class TileData : public Object {
 	GDCLASS(TileData, Object);
 
-public:
-	enum TerrainMode {
-		TERRAIN_MODE_MATCH_CORNERS_AND_SIDES = 0,
-		TERRAIN_MODE_MATCH_CORNERS,
-		TERRAIN_MODE_MATCH_SIDES,
-	};
-
 private:
 	const TileSet *tile_set = nullptr;
 	bool allow_transform = true;
@@ -472,8 +480,7 @@ private:
 	// TODO add support for areas.
 
 	// Terrain
-	TerrainMode terrain_mode = TERRAIN_MODE_MATCH_CORNERS_AND_SIDES;
-	int terrain = -1;
+	int terrain_set = -1;
 	int terrain_peering_bits[16] = { -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 };
 
 	// Navigation
@@ -534,12 +541,11 @@ public:
 	float get_collision_shape_one_way_margin(int p_layer_id, int p_shape_index) const;
 
 	// Terrain
-	void set_terrain_mode(TerrainMode p_terrain_mode);
-	TerrainMode get_terrain_mode() const;
-	void set_terrain(int p_terrain_id);
-	int get_terrain() const;
+	void set_terrain_set(int p_terrain_id);
+	int get_terrain_set() const;
 	void set_peering_bit_terrain(TileSet::CellNeighbor p_peering_bit, int p_terrain_id);
 	int get_peering_bit_terrain(TileSet::CellNeighbor p_peering_bit) const;
+	bool is_valid_peering_bit_terrain(TileSet::CellNeighbor p_peering_bit) const;
 
 	// Navigation
 	void set_navigation_polygon(int p_layer_id, Ref<NavigationPolygon> p_navigation_polygon);
@@ -563,8 +569,8 @@ public:
 #include "tile_set_atlas_plugin_rendering.h"
 #include "tile_set_atlas_plugin_terrain.h"
 
-VARIANT_ENUM_CAST(TileData::TerrainMode);
 VARIANT_ENUM_CAST(TileSet::CellNeighbor);
+VARIANT_ENUM_CAST(TileSet::TerrainMode);
 VARIANT_ENUM_CAST(TileSet::TileShape);
 VARIANT_ENUM_CAST(TileSet::TileLayout);
 VARIANT_ENUM_CAST(TileSet::TileOffsetAxis);
