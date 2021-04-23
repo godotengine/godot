@@ -427,8 +427,8 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 						}
 						break;
 					case GDScriptParser::DictionaryNode::LUA_TABLE:
-						// Lua-style: key is an identifier interpreted as string.
-						String key = static_cast<const GDScriptParser::IdentifierNode *>(dn->elements[i].key)->name;
+						// Lua-style: key is an identifier interpreted as StringName.
+						StringName key = static_cast<const GDScriptParser::IdentifierNode *>(dn->elements[i].key)->name;
 						element = codegen.add_constant(key);
 						break;
 				}
