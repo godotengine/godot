@@ -34,1292 +34,6 @@
 
 #include "core/math/geometry_2d.h"
 
-void TileData::set_tile_set(const TileSet *p_tile_set) {
-	tile_set = p_tile_set;
-	if (tile_set) {
-		occluders.resize(tile_set->get_occlusion_layers_count());
-		physics.resize(tile_set->get_physics_layers_count());
-		navigation.resize(tile_set->get_navigation_layers_count());
-		custom_data.resize(tile_set->get_custom_data_layers_count());
-	}
-	notify_property_list_changed();
-}
-
-void TileData::notify_tile_data_properties_should_change() {
-	occluders.resize(tile_set->get_occlusion_layers_count());
-	physics.resize(tile_set->get_physics_layers_count());
-	for (int bit_index = 0; bit_index < 16; bit_index++) {
-		if (terrain_set < 0 || terrain_peering_bits[bit_index] >= tile_set->get_terrains_count(terrain_set)) {
-			terrain_peering_bits[bit_index] = -1;
-		}
-	}
-	navigation.resize(tile_set->get_navigation_layers_count());
-
-	// Convert custom data to the new type.
-	custom_data.resize(tile_set->get_custom_data_layers_count());
-	for (int i = 0; i < custom_data.size(); i++) {
-		if (custom_data[i].get_type() != tile_set->get_custom_data_type(i)) {
-			Variant new_val;
-			Callable::CallError error;
-			if (Variant::can_convert(custom_data[i].get_type(), tile_set->get_custom_data_type(i))) {
-				const Variant *args[] = { &custom_data[i] };
-				Variant::construct(tile_set->get_custom_data_type(i), new_val, args, 1, error);
-			} else {
-				Variant::construct(tile_set->get_custom_data_type(i), new_val, nullptr, 0, error);
-			}
-			custom_data.write[i] = new_val;
-		}
-	}
-
-	notify_property_list_changed();
-	emit_signal("changed");
-}
-
-void TileData::reset_state() {
-	occluders.clear();
-	physics.clear();
-	navigation.clear();
-	custom_data.clear();
-}
-
-void TileData::set_allow_transform(bool p_allow_transform) {
-	allow_transform = p_allow_transform;
-}
-
-bool TileData::is_allowing_transform() const {
-	return allow_transform;
-}
-
-// Rendering
-void TileData::set_flip_h(bool p_flip_h) {
-	ERR_FAIL_COND_MSG(!allow_transform && p_flip_h, "Transform is only allowed for alternative tiles (with its alternative_id != 0)");
-	flip_h = p_flip_h;
-	emit_signal("changed");
-}
-bool TileData::get_flip_h() const {
-	return flip_h;
-}
-
-void TileData::set_flip_v(bool p_flip_v) {
-	ERR_FAIL_COND_MSG(!allow_transform && p_flip_v, "Transform is only allowed for alternative tiles (with its alternative_id != 0)");
-	flip_v = p_flip_v;
-	emit_signal("changed");
-}
-
-bool TileData::get_flip_v() const {
-	return flip_v;
-}
-
-void TileData::set_transpose(bool p_transpose) {
-	ERR_FAIL_COND_MSG(!allow_transform && p_transpose, "Transform is only allowed for alternative tiles (with its alternative_id != 0)");
-	transpose = p_transpose;
-	emit_signal("changed");
-}
-bool TileData::get_transpose() const {
-	return transpose;
-}
-
-void TileData::set_texture_offset(Vector2i p_texture_offset) {
-	tex_offset = p_texture_offset;
-	emit_signal("changed");
-}
-
-Vector2i TileData::get_texture_offset() const {
-	return tex_offset;
-}
-
-void TileData::tile_set_material(Ref<ShaderMaterial> p_material) {
-	material = p_material;
-	emit_signal("changed");
-}
-Ref<ShaderMaterial> TileData::tile_get_material() const {
-	return material;
-}
-
-void TileData::set_modulate(Color p_modulate) {
-	modulate = p_modulate;
-	emit_signal("changed");
-}
-Color TileData::get_modulate() const {
-	return modulate;
-}
-
-void TileData::set_z_index(int p_z_index) {
-	z_index = p_z_index;
-	emit_signal("changed");
-}
-int TileData::get_z_index() const {
-	return z_index;
-}
-
-void TileData::set_y_sort_origin(Vector2i p_y_sort_origin) {
-	y_sort_origin = p_y_sort_origin;
-	emit_signal("changed");
-}
-Vector2i TileData::get_y_sort_origin() const {
-	return y_sort_origin;
-}
-
-void TileData::set_occluder(int p_layer_id, Ref<OccluderPolygon2D> p_occluder_polygon) {
-	ERR_FAIL_INDEX(p_layer_id, occluders.size());
-	occluders.write[p_layer_id] = p_occluder_polygon;
-	emit_signal("changed");
-}
-
-Ref<OccluderPolygon2D> TileData::get_occluder(int p_layer_id) const {
-	ERR_FAIL_INDEX_V(p_layer_id, occluders.size(), Ref<OccluderPolygon2D>());
-	return occluders[p_layer_id];
-}
-
-// Physics
-int TileData::get_collision_shapes_count(int p_layer_id) const {
-	ERR_FAIL_INDEX_V(p_layer_id, physics.size(), 0);
-	return physics[p_layer_id].shapes.size();
-}
-
-void TileData::set_collision_shapes_count(int p_layer_id, int p_shapes_count) {
-	ERR_FAIL_INDEX(p_layer_id, physics.size());
-	ERR_FAIL_COND(p_shapes_count < 0);
-	physics.write[p_layer_id].shapes.resize(p_shapes_count);
-	notify_property_list_changed();
-	emit_signal("changed");
-}
-
-void TileData::add_collision_shape(int p_layer_id) {
-	ERR_FAIL_INDEX(p_layer_id, physics.size());
-	physics.write[p_layer_id].shapes.push_back(PhysicsLayerTileData::ShapeTileData());
-	emit_signal("changed");
-}
-
-void TileData::remove_collision_shape(int p_layer_id, int p_shape_index) {
-	ERR_FAIL_INDEX(p_layer_id, physics.size());
-	ERR_FAIL_INDEX(p_shape_index, physics[p_layer_id].shapes.size());
-	physics.write[p_layer_id].shapes.remove(p_shape_index);
-	emit_signal("changed");
-}
-
-void TileData::set_collision_shape_shape(int p_layer_id, int p_shape_index, Ref<Shape2D> p_shape) {
-	ERR_FAIL_INDEX(p_layer_id, physics.size());
-	ERR_FAIL_INDEX(p_shape_index, physics[p_layer_id].shapes.size());
-	physics.write[p_layer_id].shapes.write[p_shape_index].shape = p_shape;
-	emit_signal("changed");
-}
-
-Ref<Shape2D> TileData::get_collision_shape_shape(int p_layer_id, int p_shape_index) const {
-	ERR_FAIL_INDEX_V(p_layer_id, physics.size(), Ref<Shape2D>());
-	ERR_FAIL_INDEX_V(p_shape_index, physics[p_layer_id].shapes.size(), Ref<Shape2D>());
-	return physics[p_layer_id].shapes[p_shape_index].shape;
-}
-
-void TileData::set_collision_shape_one_way(int p_layer_id, int p_shape_index, bool p_one_way) {
-	ERR_FAIL_INDEX(p_layer_id, physics.size());
-	ERR_FAIL_INDEX(p_shape_index, physics[p_layer_id].shapes.size());
-	physics.write[p_layer_id].shapes.write[p_shape_index].one_way = p_one_way;
-	emit_signal("changed");
-}
-
-bool TileData::is_collision_shape_one_way(int p_layer_id, int p_shape_index) const {
-	ERR_FAIL_INDEX_V(p_layer_id, physics.size(), false);
-	ERR_FAIL_INDEX_V(p_shape_index, physics[p_layer_id].shapes.size(), false);
-	return physics[p_layer_id].shapes[p_shape_index].one_way;
-}
-
-void TileData::set_collision_shape_one_way_margin(int p_layer_id, int p_shape_index, float p_one_way_margin) {
-	ERR_FAIL_INDEX(p_layer_id, physics.size());
-	ERR_FAIL_INDEX(p_shape_index, physics[p_layer_id].shapes.size());
-	physics.write[p_layer_id].shapes.write[p_shape_index].one_way_margin = p_one_way_margin;
-	emit_signal("changed");
-}
-
-float TileData::get_collision_shape_one_way_margin(int p_layer_id, int p_shape_index) const {
-	ERR_FAIL_INDEX_V(p_layer_id, physics.size(), 0.0);
-	ERR_FAIL_INDEX_V(p_shape_index, physics[p_layer_id].shapes.size(), 0.0);
-	return physics[p_layer_id].shapes[p_shape_index].one_way_margin;
-}
-
-// Terrain
-void TileData::set_terrain_set(int p_terrain_set) {
-	ERR_FAIL_COND(p_terrain_set < -1);
-	if (tile_set) {
-		ERR_FAIL_COND(p_terrain_set >= tile_set->get_terrain_sets_count());
-	}
-	terrain_set = p_terrain_set;
-	notify_property_list_changed();
-	emit_signal("changed");
-}
-
-int TileData::get_terrain_set() const {
-	return terrain_set;
-}
-
-void TileData::set_peering_bit_terrain(TileSet::CellNeighbor p_peering_bit, int p_terrain_index) {
-	ERR_FAIL_COND(p_terrain_index < -1);
-	if (tile_set) {
-		ERR_FAIL_COND(p_terrain_index >= tile_set->get_terrains_count(terrain_set));
-		ERR_FAIL_COND(!is_valid_peering_bit_terrain(p_peering_bit));
-	}
-	terrain_peering_bits[p_peering_bit] = p_terrain_index;
-	emit_signal("changed");
-}
-
-int TileData::get_peering_bit_terrain(TileSet::CellNeighbor p_peering_bit) const {
-	return terrain_peering_bits[p_peering_bit];
-}
-
-bool TileData::is_valid_peering_bit_terrain(TileSet::CellNeighbor p_peering_bit) const {
-	ERR_FAIL_COND_V(!tile_set, false);
-
-	return tile_set->is_valid_peering_bit_terrain(terrain_set, p_peering_bit);
-}
-
-// Navigation
-void TileData::set_navigation_polygon(int p_layer_id, Ref<NavigationPolygon> p_navigation_polygon) {
-	ERR_FAIL_INDEX(p_layer_id, navigation.size());
-	navigation.write[p_layer_id] = p_navigation_polygon;
-	emit_signal("changed");
-}
-
-Ref<NavigationPolygon> TileData::get_navigation_polygon(int p_layer_id) const {
-	ERR_FAIL_INDEX_V(p_layer_id, navigation.size(), Ref<NavigationPolygon>());
-	return navigation[p_layer_id];
-}
-
-// Misc
-void TileData::set_probability(float p_probability) {
-	ERR_FAIL_COND(p_probability <= 0.0);
-	probability = p_probability;
-	emit_signal("changed");
-}
-float TileData::get_probability() const {
-	return probability;
-}
-
-// Custom data
-void TileData::set_custom_data(String p_layer_name, Variant p_value) {
-	ERR_FAIL_COND(!tile_set);
-	int p_layer_id = tile_set->get_custom_data_layer_by_name(p_layer_name);
-	ERR_FAIL_COND_MSG(p_layer_id < 0, vformat("TileSet has no layer with name: %s", p_layer_name));
-	set_custom_data_by_layer_id(p_layer_id, p_value);
-}
-
-Variant TileData::get_custom_data(String p_layer_name) const {
-	ERR_FAIL_COND_V(!tile_set, Variant());
-	int p_layer_id = tile_set->get_custom_data_layer_by_name(p_layer_name);
-	ERR_FAIL_COND_V_MSG(p_layer_id < 0, Variant(), vformat("TileSet has no layer with name: %s", p_layer_name));
-	return get_custom_data_by_layer_id(p_layer_id);
-}
-
-void TileData::set_custom_data_by_layer_id(int p_layer_id, Variant p_value) {
-	ERR_FAIL_INDEX(p_layer_id, custom_data.size());
-	custom_data.write[p_layer_id] = p_value;
-	emit_signal("changed");
-}
-
-Variant TileData::get_custom_data_by_layer_id(int p_layer_id) const {
-	ERR_FAIL_INDEX_V(p_layer_id, custom_data.size(), Variant());
-	return custom_data[p_layer_id];
-}
-
-bool TileData::_set(const StringName &p_name, const Variant &p_value) {
-	Vector<String> components = String(p_name).split("/", true, 2);
-
-	if (components.size() == 2 && components[0].begins_with("occlusion_layer_") && components[0].trim_prefix("occlusion_layer_").is_valid_integer()) {
-		// Occlusion layers.
-		int layer_index = components[0].trim_prefix("occlusion_layer_").to_int();
-		ERR_FAIL_COND_V(layer_index < 0, false);
-		if (components[1] == "polygon") {
-			Ref<OccluderPolygon2D> polygon = p_value;
-			if (!polygon.is_valid()) {
-				return false;
-			}
-
-			if (layer_index >= occluders.size()) {
-				if (tile_set) {
-					return false;
-				} else {
-					occluders.resize(layer_index + 1);
-				}
-			}
-			set_occluder(layer_index, polygon);
-			return true;
-		}
-	} else if (components.size() >= 2 && components[0].begins_with("physics_layer_") && components[0].trim_prefix("physics_layer_").is_valid_integer()) {
-		// Physics layers.
-		int layer_index = components[0].trim_prefix("physics_layer_").to_int();
-		ERR_FAIL_COND_V(layer_index < 0, false);
-		if (components.size() == 2 && components[1] == "shapes_count") {
-			if (p_value.get_type() != Variant::INT) {
-				return false;
-			}
-
-			if (layer_index >= physics.size()) {
-				if (tile_set) {
-					return false;
-				} else {
-					physics.resize(layer_index + 1);
-				}
-			}
-			set_collision_shapes_count(layer_index, p_value);
-			return true;
-		} else if (components.size() == 3 && components[1].begins_with("shape_") && components[1].trim_prefix("shape_").is_valid_integer()) {
-			int shape_index = components[1].trim_prefix("shape_").to_int();
-			ERR_FAIL_COND_V(shape_index < 0, false);
-
-			if (components[2] == "shape" || components[2] == "one_way" || components[2] == "one_way_margin") {
-				if (layer_index >= physics.size()) {
-					if (tile_set) {
-						return false;
-					} else {
-						physics.resize(layer_index + 1);
-					}
-				}
-
-				if (shape_index >= physics[layer_index].shapes.size()) {
-					physics.write[layer_index].shapes.resize(shape_index + 1);
-				}
-			}
-			if (components[2] == "shape") {
-				Ref<Shape2D> shape = p_value;
-				set_collision_shape_shape(layer_index, shape_index, shape);
-				return true;
-			} else if (components[2] == "one_way") {
-				set_collision_shape_one_way(layer_index, shape_index, p_value);
-				return true;
-			} else if (components[2] == "one_way_margin") {
-				set_collision_shape_one_way_margin(layer_index, shape_index, p_value);
-				return true;
-			}
-		}
-	} else if (components.size() == 2 && components[0].begins_with("navigation_layer_") && components[0].trim_prefix("navigation_layer_").is_valid_integer()) {
-		// Navigation layers.
-		int layer_index = components[0].trim_prefix("navigation_layer_").to_int();
-		ERR_FAIL_COND_V(layer_index < 0, false);
-		if (components[1] == "polygon") {
-			Ref<NavigationPolygon> polygon = p_value;
-			if (!polygon.is_valid()) {
-				return false;
-			}
-
-			if (layer_index >= navigation.size()) {
-				if (tile_set) {
-					return false;
-				} else {
-					navigation.resize(layer_index + 1);
-				}
-			}
-			set_navigation_polygon(layer_index, polygon);
-			return true;
-		}
-	} else if (components.size() == 2 && components[0] == "terrains_peering_bit") {
-		// Terrains.
-		if (components[1] == "right_side") {
-			set_peering_bit_terrain(TileSet::CELL_NEIGHBOR_RIGHT_SIDE, p_value);
-		} else if (components[1] == "right_corner") {
-			set_peering_bit_terrain(TileSet::CELL_NEIGHBOR_RIGHT_CORNER, p_value);
-		} else if (components[1] == "bottom_right_side") {
-			set_peering_bit_terrain(TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE, p_value);
-		} else if (components[1] == "bottom_right_corner") {
-			set_peering_bit_terrain(TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_CORNER, p_value);
-		} else if (components[1] == "bottom_side") {
-			set_peering_bit_terrain(TileSet::CELL_NEIGHBOR_BOTTOM_SIDE, p_value);
-		} else if (components[1] == "bottom_corner") {
-			set_peering_bit_terrain(TileSet::CELL_NEIGHBOR_BOTTOM_CORNER, p_value);
-		} else if (components[1] == "bottom_left_side") {
-			set_peering_bit_terrain(TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE, p_value);
-		} else if (components[1] == "bottom_left_corner") {
-			set_peering_bit_terrain(TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_CORNER, p_value);
-		} else if (components[1] == "left_side") {
-			set_peering_bit_terrain(TileSet::CELL_NEIGHBOR_LEFT_SIDE, p_value);
-		} else if (components[1] == "left_corner") {
-			set_peering_bit_terrain(TileSet::CELL_NEIGHBOR_LEFT_CORNER, p_value);
-		} else if (components[1] == "top_left_side") {
-			set_peering_bit_terrain(TileSet::CELL_NEIGHBOR_TOP_LEFT_SIDE, p_value);
-		} else if (components[1] == "top_left_corner") {
-			set_peering_bit_terrain(TileSet::CELL_NEIGHBOR_TOP_LEFT_CORNER, p_value);
-		} else if (components[1] == "top_side") {
-			set_peering_bit_terrain(TileSet::CELL_NEIGHBOR_TOP_SIDE, p_value);
-		} else if (components[1] == "top_corner") {
-			set_peering_bit_terrain(TileSet::CELL_NEIGHBOR_TOP_CORNER, p_value);
-		} else if (components[1] == "top_right_side") {
-			set_peering_bit_terrain(TileSet::CELL_NEIGHBOR_TOP_RIGHT_SIDE, p_value);
-		} else if (components[1] == "top_right_corner") {
-			set_peering_bit_terrain(TileSet::CELL_NEIGHBOR_TOP_RIGHT_CORNER, p_value);
-		} else {
-			return false;
-		}
-		return true;
-	} else if (components.size() == 1 && components[0].begins_with("custom_data_") && components[0].trim_prefix("custom_data_").is_valid_integer()) {
-		// Custom data layers.
-		int layer_index = components[0].trim_prefix("custom_data_").to_int();
-		ERR_FAIL_COND_V(layer_index < 0, false);
-
-		if (layer_index >= custom_data.size()) {
-			if (tile_set) {
-				return false;
-			} else {
-				custom_data.resize(layer_index + 1);
-			}
-		}
-		set_custom_data_by_layer_id(layer_index, p_value);
-
-		return true;
-	}
-
-	return false;
-}
-
-bool TileData::_get(const StringName &p_name, Variant &r_ret) const {
-	Vector<String> components = String(p_name).split("/", true, 2);
-
-	if (tile_set) {
-		if (components.size() == 2 && components[0].begins_with("occlusion_layer") && components[0].trim_prefix("occlusion_layer_").is_valid_integer()) {
-			// Occlusion layers.
-			int layer_index = components[0].trim_prefix("occlusion_layer_").to_int();
-			ERR_FAIL_COND_V(layer_index < 0, false);
-			if (layer_index >= occluders.size()) {
-				return false;
-			}
-			if (components[1] == "polygon") {
-				r_ret = get_occluder(layer_index);
-				return true;
-			}
-		} else if (components.size() >= 2 && components[0].begins_with("physics_layer_") && components[0].trim_prefix("physics_layer_").is_valid_integer()) {
-			// Physics layers.
-			int layer_index = components[0].trim_prefix("physics_layer_").to_int();
-			ERR_FAIL_COND_V(layer_index < 0, false);
-			if (layer_index >= physics.size()) {
-				return false;
-			}
-			if (components.size() == 2 && components[1] == "shapes_count") {
-				r_ret = get_collision_shapes_count(layer_index);
-				return true;
-			} else if (components.size() == 3 && components[1].begins_with("shape_") && components[1].trim_prefix("shape_").is_valid_integer()) {
-				int shape_index = components[1].trim_prefix("shape_").to_int();
-				ERR_FAIL_COND_V(shape_index < 0, false);
-				if (shape_index >= physics[layer_index].shapes.size()) {
-					return false;
-				}
-				if (components[2] == "shape") {
-					r_ret = get_collision_shape_shape(layer_index, shape_index);
-					return true;
-				} else if (components[2] == "one_way") {
-					r_ret = is_collision_shape_one_way(layer_index, shape_index);
-					return true;
-				} else if (components[2] == "one_way_margin") {
-					r_ret = get_collision_shape_one_way_margin(layer_index, shape_index);
-					return true;
-				}
-			}
-		} else if (components.size() == 2 && components[0] == "terrains_peering_bit") {
-			// Terrains.
-			if (components[1] == "right_side") {
-				r_ret = terrain_peering_bits[TileSet::CELL_NEIGHBOR_RIGHT_SIDE];
-			} else if (components[1] == "right_corner") {
-				r_ret = terrain_peering_bits[TileSet::CELL_NEIGHBOR_RIGHT_CORNER];
-			} else if (components[1] == "bottom_right_side") {
-				r_ret = terrain_peering_bits[TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE];
-			} else if (components[1] == "bottom_right_corner") {
-				r_ret = terrain_peering_bits[TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_CORNER];
-			} else if (components[1] == "bottom_side") {
-				r_ret = terrain_peering_bits[TileSet::CELL_NEIGHBOR_BOTTOM_SIDE];
-			} else if (components[1] == "bottom_corner") {
-				r_ret = terrain_peering_bits[TileSet::CELL_NEIGHBOR_BOTTOM_CORNER];
-			} else if (components[1] == "bottom_left_side") {
-				r_ret = terrain_peering_bits[TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE];
-			} else if (components[1] == "bottom_left_corner") {
-				r_ret = terrain_peering_bits[TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_CORNER];
-			} else if (components[1] == "left_side") {
-				r_ret = terrain_peering_bits[TileSet::CELL_NEIGHBOR_LEFT_SIDE];
-			} else if (components[1] == "left_corner") {
-				r_ret = terrain_peering_bits[TileSet::CELL_NEIGHBOR_LEFT_CORNER];
-			} else if (components[1] == "top_left_side") {
-				r_ret = terrain_peering_bits[TileSet::CELL_NEIGHBOR_TOP_LEFT_SIDE];
-			} else if (components[1] == "top_left_corner") {
-				r_ret = terrain_peering_bits[TileSet::CELL_NEIGHBOR_TOP_LEFT_CORNER];
-			} else if (components[1] == "top_side") {
-				r_ret = terrain_peering_bits[TileSet::CELL_NEIGHBOR_TOP_SIDE];
-			} else if (components[1] == "top_corner") {
-				r_ret = terrain_peering_bits[TileSet::CELL_NEIGHBOR_TOP_CORNER];
-			} else if (components[1] == "top_right_side") {
-				r_ret = terrain_peering_bits[TileSet::CELL_NEIGHBOR_TOP_RIGHT_SIDE];
-			} else if (components[1] == "top_right_corner") {
-				r_ret = terrain_peering_bits[TileSet::CELL_NEIGHBOR_TOP_RIGHT_CORNER];
-			} else {
-				return false;
-			}
-			return true;
-		} else if (components.size() == 2 && components[0].begins_with("navigation_layer_") && components[0].trim_prefix("navigation_layer_").is_valid_integer()) {
-			// Occlusion layers.
-			int layer_index = components[0].trim_prefix("navigation_layer_").to_int();
-			ERR_FAIL_COND_V(layer_index < 0, false);
-			if (layer_index >= navigation.size()) {
-				return false;
-			}
-			if (components[1] == "polygon") {
-				r_ret = get_navigation_polygon(layer_index);
-				return true;
-			}
-		} else if (components.size() == 1 && components[0].begins_with("custom_data_") && components[0].trim_prefix("custom_data_").is_valid_integer()) {
-			// Custom data layers.
-			int layer_index = components[0].trim_prefix("custom_data_").to_int();
-			ERR_FAIL_COND_V(layer_index < 0, false);
-			if (layer_index >= custom_data.size()) {
-				return false;
-			}
-			r_ret = get_custom_data_by_layer_id(layer_index);
-			return true;
-		}
-	}
-
-	return false;
-}
-
-void TileData::_get_property_list(List<PropertyInfo> *p_list) const {
-	// Add the groups manually.
-	if (tile_set) {
-		// Occlusion layers.
-		p_list->push_back(PropertyInfo(Variant::NIL, "Rendering", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_GROUP));
-		for (int i = 0; i < occluders.size(); i++) {
-			p_list->push_back(PropertyInfo(Variant::OBJECT, vformat("occlusion_layer_%d/polygon", i), PROPERTY_HINT_RESOURCE_TYPE, "OccluderPolygon2D", PROPERTY_USAGE_DEFAULT));
-		}
-
-		// Physics layers.
-		p_list->push_back(PropertyInfo(Variant::NIL, "Physics", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_GROUP));
-		for (int i = 0; i < physics.size(); i++) {
-			p_list->push_back(PropertyInfo(Variant::INT, vformat("physics_layer_%d/shapes_count", i), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR));
-			for (int j = 0; j < physics[i].shapes.size(); j++) {
-				p_list->push_back(PropertyInfo(Variant::OBJECT, vformat("physics_layer_%d/shape_%d/shape", i, j), PROPERTY_HINT_RESOURCE_TYPE, "Shape2D", PROPERTY_USAGE_DEFAULT));
-				p_list->push_back(PropertyInfo(Variant::BOOL, vformat("physics_layer_%d/shape_%d/one_way", i, j)));
-				p_list->push_back(PropertyInfo(Variant::FLOAT, vformat("physics_layer_%d/shape_%d/one_way_margin", i, j)));
-			}
-		}
-
-		// Terrain data
-		if (terrain_set >= 0) {
-			p_list->push_back(PropertyInfo(Variant::NIL, "Terrains", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_GROUP));
-			if (is_valid_peering_bit_terrain(TileSet::CELL_NEIGHBOR_RIGHT_SIDE)) {
-				p_list->push_back(PropertyInfo(Variant::INT, "terrains_peering_bit/right_side"));
-			}
-			if (is_valid_peering_bit_terrain(TileSet::CELL_NEIGHBOR_RIGHT_CORNER)) {
-				p_list->push_back(PropertyInfo(Variant::INT, "terrains_peering_bit/right_corner"));
-			}
-			if (is_valid_peering_bit_terrain(TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE)) {
-				p_list->push_back(PropertyInfo(Variant::INT, "terrains_peering_bit/bottom_right_side"));
-			}
-			if (is_valid_peering_bit_terrain(TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_CORNER)) {
-				p_list->push_back(PropertyInfo(Variant::INT, "terrains_peering_bit/bottom_right_corner"));
-			}
-			if (is_valid_peering_bit_terrain(TileSet::CELL_NEIGHBOR_BOTTOM_SIDE)) {
-				p_list->push_back(PropertyInfo(Variant::INT, "terrains_peering_bit/bottom_side"));
-			}
-			if (is_valid_peering_bit_terrain(TileSet::CELL_NEIGHBOR_BOTTOM_CORNER)) {
-				p_list->push_back(PropertyInfo(Variant::INT, "terrains_peering_bit/bottom_corner"));
-			}
-			if (is_valid_peering_bit_terrain(TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE)) {
-				p_list->push_back(PropertyInfo(Variant::INT, "terrains_peering_bit/bottom_left_side"));
-			}
-			if (is_valid_peering_bit_terrain(TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_CORNER)) {
-				p_list->push_back(PropertyInfo(Variant::INT, "terrains_peering_bit/bottom_left_corner"));
-			}
-			if (is_valid_peering_bit_terrain(TileSet::CELL_NEIGHBOR_LEFT_SIDE)) {
-				p_list->push_back(PropertyInfo(Variant::INT, "terrains_peering_bit/left_side"));
-			}
-			if (is_valid_peering_bit_terrain(TileSet::CELL_NEIGHBOR_LEFT_CORNER)) {
-				p_list->push_back(PropertyInfo(Variant::INT, "terrains_peering_bit/left_corner"));
-			}
-			if (is_valid_peering_bit_terrain(TileSet::CELL_NEIGHBOR_TOP_LEFT_SIDE)) {
-				p_list->push_back(PropertyInfo(Variant::INT, "terrains_peering_bit/top_left_side"));
-			}
-			if (is_valid_peering_bit_terrain(TileSet::CELL_NEIGHBOR_TOP_LEFT_CORNER)) {
-				p_list->push_back(PropertyInfo(Variant::INT, "terrains_peering_bit/top_left_corner"));
-			}
-			if (is_valid_peering_bit_terrain(TileSet::CELL_NEIGHBOR_TOP_SIDE)) {
-				p_list->push_back(PropertyInfo(Variant::INT, "terrains_peering_bit/top_side"));
-			}
-			if (is_valid_peering_bit_terrain(TileSet::CELL_NEIGHBOR_TOP_CORNER)) {
-				p_list->push_back(PropertyInfo(Variant::INT, "terrains_peering_bit/top_corner"));
-			}
-			if (is_valid_peering_bit_terrain(TileSet::CELL_NEIGHBOR_TOP_RIGHT_SIDE)) {
-				p_list->push_back(PropertyInfo(Variant::INT, "terrains_peering_bit/top_right_side"));
-			}
-			if (is_valid_peering_bit_terrain(TileSet::CELL_NEIGHBOR_TOP_RIGHT_CORNER)) {
-				p_list->push_back(PropertyInfo(Variant::INT, "terrains_peering_bit/top_right_corner"));
-			}
-		}
-
-		// Navigation layers.
-		p_list->push_back(PropertyInfo(Variant::NIL, "Navigation", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_GROUP));
-		for (int i = 0; i < navigation.size(); i++) {
-			p_list->push_back(PropertyInfo(Variant::OBJECT, vformat("navigation_layer_%d/polygon", i), PROPERTY_HINT_RESOURCE_TYPE, "NavigationPolygon", PROPERTY_USAGE_DEFAULT));
-		}
-
-		// Custom data layers.
-		p_list->push_back(PropertyInfo(Variant::NIL, "Custom data", PROPERTY_HINT_NONE, "custom_data_", PROPERTY_USAGE_GROUP));
-		for (int i = 0; i < custom_data.size(); i++) {
-			p_list->push_back(PropertyInfo(tile_set->get_custom_data_type(i), vformat("custom_data_%d", i), PROPERTY_HINT_NONE, String(), PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_NIL_IS_VARIANT));
-		}
-	}
-}
-
-void TileData::_bind_methods() {
-	// Rendering.
-	ClassDB::bind_method(D_METHOD("set_flip_h", "flip_h"), &TileData::set_flip_h);
-	ClassDB::bind_method(D_METHOD("get_flip_h"), &TileData::get_flip_h);
-	ClassDB::bind_method(D_METHOD("set_flip_v", "flip_v"), &TileData::set_flip_v);
-	ClassDB::bind_method(D_METHOD("get_flip_v"), &TileData::get_flip_v);
-	ClassDB::bind_method(D_METHOD("set_transpose", "transpose"), &TileData::set_transpose);
-	ClassDB::bind_method(D_METHOD("get_transpose"), &TileData::get_transpose);
-	ClassDB::bind_method(D_METHOD("tile_set_material", "material"), &TileData::tile_set_material);
-	ClassDB::bind_method(D_METHOD("tile_get_material"), &TileData::tile_get_material);
-	ClassDB::bind_method(D_METHOD("set_texture_offset", "texture_offset"), &TileData::set_texture_offset);
-	ClassDB::bind_method(D_METHOD("get_texture_offset"), &TileData::get_texture_offset);
-	ClassDB::bind_method(D_METHOD("set_modulate", "modulate"), &TileData::set_modulate);
-	ClassDB::bind_method(D_METHOD("get_modulate"), &TileData::get_modulate);
-	ClassDB::bind_method(D_METHOD("set_z_index", "z_index"), &TileData::set_z_index);
-	ClassDB::bind_method(D_METHOD("get_z_index"), &TileData::get_z_index);
-	ClassDB::bind_method(D_METHOD("set_y_sort_origin", "y_sort_origin"), &TileData::set_y_sort_origin);
-	ClassDB::bind_method(D_METHOD("get_y_sort_origin"), &TileData::get_y_sort_origin);
-
-	ClassDB::bind_method(D_METHOD("set_occluder", "layer_id", "occluder_polygon"), &TileData::set_occluder);
-	ClassDB::bind_method(D_METHOD("get_occluder", "layer_id"), &TileData::get_occluder);
-
-	// Physics.
-	ClassDB::bind_method(D_METHOD("get_collision_shapes_count", "layer_id"), &TileData::get_collision_shapes_count);
-	ClassDB::bind_method(D_METHOD("set_collision_shapes_count", "layer_id", "shapes_count"), &TileData::set_collision_shapes_count);
-	ClassDB::bind_method(D_METHOD("add_collision_shape", "layer_id"), &TileData::add_collision_shape);
-	ClassDB::bind_method(D_METHOD("remove_collision_shape", "layer_id", "shape_index"), &TileData::remove_collision_shape);
-	ClassDB::bind_method(D_METHOD("set_collision_shape_shape", "layer_id", "shape_index", "shape"), &TileData::set_collision_shape_shape);
-	ClassDB::bind_method(D_METHOD("get_collision_shape_shape", "layer_id", "shape_index"), &TileData::get_collision_shape_shape);
-	ClassDB::bind_method(D_METHOD("set_collision_shape_one_way", "layer_id", "shape_index", "one_way"), &TileData::set_collision_shape_one_way);
-	ClassDB::bind_method(D_METHOD("is_collision_shape_one_way", "layer_id", "shape_index"), &TileData::is_collision_shape_one_way);
-	ClassDB::bind_method(D_METHOD("set_collision_shape_one_way_margin", "layer_id", "shape_index", "one_way_margin"), &TileData::set_collision_shape_one_way_margin);
-	ClassDB::bind_method(D_METHOD("get_collision_shape_one_way_margin", "layer_id", "shape_index"), &TileData::get_collision_shape_one_way_margin);
-
-	// Terrain
-	ClassDB::bind_method(D_METHOD("set_terrain_set", "terrain_set"), &TileData::set_terrain_set);
-	ClassDB::bind_method(D_METHOD("get_terrain_set"), &TileData::get_terrain_set);
-	ClassDB::bind_method(D_METHOD("set_peering_bit_terrain", "peering_bit", "terrain"), &TileData::set_peering_bit_terrain);
-	ClassDB::bind_method(D_METHOD("get_peering_bit_terrain", "peering_bit"), &TileData::get_peering_bit_terrain);
-
-	// Navigation
-	ClassDB::bind_method(D_METHOD("set_navigation_polygon", "layer_id", "navigation_polygon"), &TileData::set_navigation_polygon);
-	ClassDB::bind_method(D_METHOD("get_navigation_polygon", "layer_id"), &TileData::get_navigation_polygon);
-
-	// Misc.
-	ClassDB::bind_method(D_METHOD("set_probability", "probability"), &TileData::set_probability);
-	ClassDB::bind_method(D_METHOD("get_probability"), &TileData::get_probability);
-
-	// Custom data.
-	ClassDB::bind_method(D_METHOD("set_custom_data", "layer_name", "value"), &TileData::set_custom_data);
-	ClassDB::bind_method(D_METHOD("get_custom_data", "layer_name"), &TileData::get_custom_data);
-	ClassDB::bind_method(D_METHOD("set_custom_data_by_layer_id", "layer_id", "value"), &TileData::set_custom_data_by_layer_id);
-	ClassDB::bind_method(D_METHOD("get_custom_data_by_layer_id", "layer_id"), &TileData::get_custom_data_by_layer_id);
-
-	ADD_GROUP("Rendering", "");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flip_h"), "set_flip_h", "get_flip_h");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flip_v"), "set_flip_v", "get_flip_v");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "transpose"), "set_transpose", "get_transpose");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "texture_offset"), "set_texture_offset", "get_texture_offset");
-	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "modulate"), "set_modulate", "get_modulate");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "z_index"), "set_z_index", "get_z_index");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "y_sort_origin"), "set_y_sort_origin", "get_y_sort_origin");
-
-	ADD_GROUP("Terrains", "");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "terrain_set"), "set_terrain_set", "get_terrain_set");
-
-	ADD_GROUP("Miscellaneous", "");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "probability"), "set_probability", "get_probability");
-
-	ADD_SIGNAL(MethodInfo("changed"));
-}
-
-void TileSetSource::set_tile_set(const TileSet *p_tile_set) {
-	tile_set = p_tile_set;
-}
-
-void TileSetAtlasSource::set_tile_set(const TileSet *p_tile_set) {
-	tile_set = p_tile_set;
-
-	// Set the TileSet on all TileData.
-	for (Map<Vector2i, TileAlternativesData>::Element *E_tile = tiles.front(); E_tile; E_tile = E_tile->next()) {
-		for (Map<int, TileData *>::Element *E_alternative = E_tile->get().alternatives.front(); E_alternative; E_alternative = E_alternative->next()) {
-			E_alternative->get()->set_tile_set(tile_set);
-		}
-	}
-}
-
-void TileSetAtlasSource::notify_tile_data_properties_should_change() {
-	// Set the TileSet on all TileData.
-	for (Map<Vector2i, TileAlternativesData>::Element *E_tile = tiles.front(); E_tile; E_tile = E_tile->next()) {
-		for (Map<int, TileData *>::Element *E_alternative = E_tile->get().alternatives.front(); E_alternative; E_alternative = E_alternative->next()) {
-			E_alternative->get()->notify_tile_data_properties_should_change();
-		}
-	}
-}
-
-void TileSetAtlasSource::reset_state() {
-	// Reset all TileData.
-	for (Map<Vector2i, TileAlternativesData>::Element *E_tile = tiles.front(); E_tile; E_tile = E_tile->next()) {
-		for (Map<int, TileData *>::Element *E_alternative = E_tile->get().alternatives.front(); E_alternative; E_alternative = E_alternative->next()) {
-			E_alternative->get()->reset_state();
-		}
-	}
-}
-
-void TileSetAtlasSource::set_texture(Ref<Texture2D> p_texture) {
-	texture = p_texture;
-
-	emit_changed();
-}
-
-Ref<Texture2D> TileSetAtlasSource::get_texture() const {
-	return texture;
-}
-
-void TileSetAtlasSource::set_margins(Vector2i p_margins) {
-	if (p_margins.x < 0 || p_margins.y < 0) {
-		WARN_PRINT("Atlas source margins should be positive.");
-		margins = Vector2i(MAX(0, p_margins.x), MAX(0, p_margins.y));
-	} else {
-		margins = p_margins;
-	}
-
-	emit_changed();
-}
-Vector2i TileSetAtlasSource::get_margins() const {
-	return margins;
-}
-
-void TileSetAtlasSource::set_separation(Vector2i p_separation) {
-	if (p_separation.x < 0 || p_separation.y < 0) {
-		WARN_PRINT("Atlas source separation should be positive.");
-		separation = Vector2i(MAX(0, p_separation.x), MAX(0, p_separation.y));
-	} else {
-		separation = p_separation;
-	}
-
-	emit_changed();
-}
-Vector2i TileSetAtlasSource::get_separation() const {
-	return separation;
-}
-
-void TileSetAtlasSource::set_texture_region_size(Vector2i p_tile_size) {
-	if (p_tile_size.x <= 0 || p_tile_size.y <= 0) {
-		WARN_PRINT("Atlas source tile_size should be strictly positive.");
-		texture_region_size = Vector2i(MAX(1, p_tile_size.x), MAX(1, p_tile_size.y));
-	} else {
-		texture_region_size = p_tile_size;
-	}
-
-	emit_changed();
-}
-Vector2i TileSetAtlasSource::get_texture_region_size() const {
-	return texture_region_size;
-}
-
-void TileSetAtlasSource::set_base_texture_offset(Vector2i p_base_texture_offset) {
-	base_texture_offset = p_base_texture_offset;
-
-	emit_changed();
-}
-Vector2i TileSetAtlasSource::get_base_texture_offset() const {
-	return base_texture_offset;
-}
-
-Vector2i TileSetAtlasSource::get_atlas_grid_size() const {
-	Ref<Texture2D> texture = get_texture();
-	if (!texture.is_valid()) {
-		return Vector2i();
-	}
-
-	ERR_FAIL_COND_V(texture_region_size.x <= 0 || texture_region_size.y <= 0, Vector2i());
-
-	Size2i valid_area = texture->get_size() - margins;
-
-	// Compute the number of valid tiles in the tiles atlas
-	Size2i grid_size = Size2i();
-	if (valid_area.x >= texture_region_size.x && valid_area.y >= texture_region_size.y) {
-		valid_area -= texture_region_size;
-		grid_size = Size2i(1, 1) + valid_area / (texture_region_size + separation);
-	}
-	return grid_size;
-}
-
-bool TileSetAtlasSource::_set(const StringName &p_name, const Variant &p_value) {
-	Vector<String> components = String(p_name).split("/", true, 2);
-
-	// Compute the vector2i if we have coordinates.
-	Vector<String> coords_split = components[0].split(":");
-	Vector2i coords = TileSetAtlasSource::INVALID_ATLAS_COORDS;
-	if (coords_split.size() == 2 && coords_split[0].is_valid_integer() && coords_split[1].is_valid_integer()) {
-		coords = Vector2i(coords_split[0].to_int(), coords_split[1].to_int());
-	}
-
-	// Properties.
-	if (coords != TileSetAtlasSource::INVALID_ATLAS_COORDS) {
-		// Create the tile if needed.
-		if (!has_tile(coords)) {
-			create_tile(coords);
-		}
-		if (components.size() >= 2) {
-			// Properties.
-			if (components[1] == "size_in_atlas") {
-				move_tile_in_atlas(coords, coords, p_value);
-			} else if (components[1] == "next_alternative_id") {
-				tiles[coords].next_alternative_id = p_value;
-			} else if (components[1].is_valid_integer()) {
-				int alternative_id = components[1].to_int();
-				if (alternative_id != TileSetAtlasSource::INVALID_TILE_ALTERNATIVE) {
-					// Create the alternative if needed ?
-					if (!has_alternative_tile(coords, alternative_id)) {
-						create_alternative_tile(coords, alternative_id);
-					}
-					if (!tiles[coords].alternatives.has(alternative_id)) {
-						tiles[coords].alternatives[alternative_id] = memnew(TileData);
-						tiles[coords].alternatives[alternative_id]->set_tile_set(tile_set);
-						tiles[coords].alternatives[alternative_id]->set_allow_transform(alternative_id > 0);
-						tiles[coords].alternatives_ids.append(alternative_id);
-					}
-					if (components.size() >= 3) {
-						bool valid;
-						tiles[coords].alternatives[alternative_id]->set(components[2], p_value, &valid);
-						return valid;
-					} else {
-						// Only create the alternative if it did not exist yet.
-						return true;
-					}
-				}
-			}
-		}
-	}
-
-	return false;
-}
-
-bool TileSetAtlasSource::_get(const StringName &p_name, Variant &r_ret) const {
-	Vector<String> components = String(p_name).split("/", true, 2);
-
-	// Properties.
-	Vector<String> coords_split = components[0].split(":");
-	if (coords_split.size() == 2 && coords_split[0].is_valid_integer() && coords_split[1].is_valid_integer()) {
-		Vector2i coords = Vector2i(coords_split[0].to_int(), coords_split[1].to_int());
-		if (tiles.has(coords)) {
-			if (components.size() >= 2) {
-				// Properties.
-				if (components[1] == "size_in_atlas") {
-					r_ret = tiles[coords].size_in_atlas;
-					return true;
-				} else if (components[1] == "next_alternative_id") {
-					r_ret = tiles[coords].next_alternative_id;
-					return true;
-				} else if (components[1].is_valid_integer()) {
-					int alternative_id = components[1].to_int();
-					if (alternative_id != TileSetAtlasSource::INVALID_TILE_ALTERNATIVE && tiles[coords].alternatives.has(alternative_id)) {
-						if (components.size() >= 3) {
-							bool valid;
-							r_ret = tiles[coords].alternatives[alternative_id]->get(components[2], &valid);
-							return valid;
-						} else {
-							// Only to notify the tile alternative exists.
-							r_ret = alternative_id;
-							return true;
-						}
-					}
-				}
-			}
-		}
-	}
-
-	return false;
-}
-
-void TileSetAtlasSource::_get_property_list(List<PropertyInfo> *p_list) const {
-	// Atlases data.
-	for (Map<Vector2i, TileAlternativesData>::Element *E_tile = tiles.front(); E_tile; E_tile = E_tile->next()) {
-		List<PropertyInfo> tile_property_list;
-		if (E_tile->get().size_in_atlas != Vector2i(1, 1)) {
-			tile_property_list.push_back(PropertyInfo(Variant::VECTOR2I, "size_in_atlas", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR));
-		}
-		if (E_tile->get().next_alternative_id != 1) {
-			tile_property_list.push_back(PropertyInfo(Variant::INT, "next_alternative_id", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR));
-		}
-
-		// Atlases data.
-		for (Map<int, TileData *>::Element *E_alternative = E_tile->get().alternatives.front(); E_alternative; E_alternative = E_alternative->next()) {
-			// Add a dummy property to show the tile exists.
-			tile_property_list.push_back(PropertyInfo(Variant::INT, vformat("%d", E_alternative->key()), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR));
-
-			List<PropertyInfo> alternative_property_list;
-			E_alternative->get()->get_property_list(&alternative_property_list);
-			TileSet::_append_property_list_with_prefix(vformat("%d", E_alternative->key()), &alternative_property_list, &tile_property_list);
-		}
-
-		TileSet::_append_property_list_with_prefix(vformat("%d:%d", E_tile->key().x, E_tile->key().y), &tile_property_list, p_list);
-	}
-}
-
-// --- TileSetAtlasSource ---
-void TileSetAtlasSource::create_tile(const Vector2i p_atlas_coords, const Vector2i p_size) {
-	// Create a tile if it does not exists.
-	ERR_FAIL_COND(p_atlas_coords.x < 0 || p_atlas_coords.y < 0);
-	ERR_FAIL_COND(p_size.x <= 0 || p_size.y <= 0);
-	for (int x = 0; x < p_size.x; x++) {
-		for (int y = 0; y < p_size.y; y++) {
-			Vector2i coords = p_atlas_coords + Vector2i(x, y);
-			ERR_FAIL_COND_MSG(tiles.has(coords), vformat("Cannot create tile at position %s with size %s. Already a tile present at %s.", p_atlas_coords, p_size, coords));
-		}
-	}
-
-	// Create and resize the tile.
-	tiles.insert(p_atlas_coords, TileSetAtlasSource::TileAlternativesData());
-	tiles_ids.append(p_atlas_coords);
-	tiles_ids.sort();
-
-	tiles[p_atlas_coords].size_in_atlas = p_size;
-	tiles[p_atlas_coords].alternatives[0] = memnew(TileData);
-	tiles[p_atlas_coords].alternatives[0]->set_tile_set(tile_set);
-	tiles[p_atlas_coords].alternatives[0]->set_allow_transform(false);
-	tiles[p_atlas_coords].alternatives[0]->connect("changed", callable_mp((Resource *)this, &TileSetAtlasSource::emit_changed));
-	tiles[p_atlas_coords].alternatives[0]->notify_property_list_changed();
-	tiles[p_atlas_coords].alternatives_ids.append(0);
-
-	// Add all covered positions to the mapping cache
-	for (int x = 0; x < p_size.x; x++) {
-		for (int y = 0; y < p_size.y; y++) {
-			Vector2i coords = p_atlas_coords + Vector2i(x, y);
-			_coords_mapping_cache[coords] = p_atlas_coords;
-		}
-	}
-
-	emit_signal("changed");
-}
-
-void TileSetAtlasSource::remove_tile(Vector2i p_atlas_coords) {
-	ERR_FAIL_COND_MSG(!tiles.has(p_atlas_coords), vformat("TileSetAtlasSource has no tile at %s.", String(p_atlas_coords)));
-
-	// Remove all covered positions from the mapping cache
-	Size2i size = tiles[p_atlas_coords].size_in_atlas;
-
-	for (int x = 0; x < size.x; x++) {
-		for (int y = 0; y < size.y; y++) {
-			Vector2i coords = p_atlas_coords + Vector2i(x, y);
-			_coords_mapping_cache.erase(coords);
-		}
-	}
-
-	// Free tile data.
-	for (Map<int, TileData *>::Element *E_tile_data = tiles[p_atlas_coords].alternatives.front(); E_tile_data; E_tile_data = E_tile_data->next()) {
-		memdelete(E_tile_data->get());
-	}
-
-	// Delete the tile
-	tiles.erase(p_atlas_coords);
-	tiles_ids.erase(p_atlas_coords);
-	tiles_ids.sort();
-
-	emit_signal("changed");
-}
-
-bool TileSetAtlasSource::has_tile(Vector2i p_atlas_coords) const {
-	return tiles.has(p_atlas_coords);
-}
-
-Vector2i TileSetAtlasSource::get_tile_at_coords(Vector2i p_atlas_coords) const {
-	if (!_coords_mapping_cache.has(p_atlas_coords)) {
-		return INVALID_ATLAS_COORDS;
-	}
-
-	return _coords_mapping_cache[p_atlas_coords];
-}
-
-Vector2i TileSetAtlasSource::get_tile_size_in_atlas(Vector2i p_atlas_coords) const {
-	ERR_FAIL_COND_V_MSG(!tiles.has(p_atlas_coords), Vector2i(-1, -1), vformat("TileSetAtlasSource has no tile at %s.", String(p_atlas_coords)));
-
-	return tiles[p_atlas_coords].size_in_atlas;
-}
-
-int TileSetAtlasSource::get_tiles_count() const {
-	return tiles_ids.size();
-}
-
-Vector2i TileSetAtlasSource::get_tile_id(int p_index) const {
-	ERR_FAIL_INDEX_V(p_index, tiles_ids.size(), TileSetAtlasSource::INVALID_ATLAS_COORDS);
-	return tiles_ids[p_index];
-}
-
-Rect2i TileSetAtlasSource::get_tile_texture_region(Vector2i p_atlas_coords) const {
-	ERR_FAIL_COND_V_MSG(!tiles.has(p_atlas_coords), Rect2i(), vformat("TileSetAtlasSource has no tile at %s.", String(p_atlas_coords)));
-
-	Vector2i size_in_atlas = tiles[p_atlas_coords].size_in_atlas;
-	Vector2 region_size = texture_region_size * size_in_atlas + separation * (size_in_atlas - Vector2i(1, 1));
-
-	Vector2 origin = margins + (p_atlas_coords * (texture_region_size + separation));
-
-	return Rect2(origin, region_size);
-	;
-}
-
-bool TileSetAtlasSource::can_move_tile_in_atlas(Vector2i p_atlas_coords, Vector2i p_new_atlas_coords, Vector2i p_new_size) const {
-	ERR_FAIL_COND_V_MSG(!tiles.has(p_atlas_coords), false, vformat("TileSetAtlasSource has no tile at %s.", String(p_atlas_coords)));
-
-	Vector2i new_atlas_coords = (p_new_atlas_coords != INVALID_ATLAS_COORDS) ? p_new_atlas_coords : p_atlas_coords;
-	if (new_atlas_coords.x < 0 || new_atlas_coords.y < 0) {
-		return false;
-	}
-
-	Vector2i size = (p_new_size != Vector2i(-1, -1)) ? p_new_size : tiles[p_atlas_coords].size_in_atlas;
-	ERR_FAIL_COND_V(size.x <= 0 || size.y <= 0, false);
-
-	Size2i grid_size = get_atlas_grid_size();
-	if (new_atlas_coords.x + size.x > grid_size.x || new_atlas_coords.y + size.y > grid_size.y) {
-		return false;
-	}
-
-	Rect2i new_rect = Rect2i(new_atlas_coords, size);
-	// Check if the new tile can fit in the new rect.
-	for (int x = new_rect.position.x; x < new_rect.get_end().x; x++) {
-		for (int y = new_rect.position.y; y < new_rect.get_end().y; y++) {
-			Vector2i coords = get_tile_at_coords(Vector2i(x, y));
-			if (coords != p_atlas_coords && coords != TileSetAtlasSource::INVALID_ATLAS_COORDS) {
-				return false;
-			}
-		}
-	}
-
-	return true;
-}
-
-void TileSetAtlasSource::move_tile_in_atlas(Vector2i p_atlas_coords, Vector2i p_new_atlas_coords, Vector2i p_new_size) {
-	bool can_move = can_move_tile_in_atlas(p_atlas_coords, p_new_atlas_coords, p_new_size);
-	ERR_FAIL_COND_MSG(!can_move, vformat("Cannot move tile at position %s with size %s. Tile already present.", p_new_atlas_coords, p_new_size));
-
-	// Compute the actual new rect from arguments.
-	Vector2i new_atlas_coords = (p_new_atlas_coords != INVALID_ATLAS_COORDS) ? p_new_atlas_coords : p_atlas_coords;
-	Vector2i size = (p_new_size != Vector2i(-1, -1)) ? p_new_size : tiles[p_atlas_coords].size_in_atlas;
-
-	if (new_atlas_coords == p_atlas_coords && size == tiles[p_atlas_coords].size_in_atlas) {
-		return;
-	}
-
-	// Remove all covered positions from the mapping cache.
-	Size2i old_size = tiles[p_atlas_coords].size_in_atlas;
-	for (int x = 0; x < old_size.x; x++) {
-		for (int y = 0; y < old_size.y; y++) {
-			Vector2i coords = p_atlas_coords + Vector2i(x, y);
-			_coords_mapping_cache.erase(coords);
-		}
-	}
-
-	// Move the tile and update its size.
-	if (new_atlas_coords != p_atlas_coords) {
-		tiles[new_atlas_coords] = tiles[p_atlas_coords];
-		tiles.erase(p_atlas_coords);
-
-		tiles_ids.erase(p_atlas_coords);
-		tiles_ids.append(new_atlas_coords);
-		tiles_ids.sort();
-	}
-	tiles[new_atlas_coords].size_in_atlas = size;
-
-	// Add all covered positions to the mapping cache again.
-	for (int x = 0; x < size.x; x++) {
-		for (int y = 0; y < size.y; y++) {
-			Vector2i coords = new_atlas_coords + Vector2i(x, y);
-			_coords_mapping_cache[coords] = new_atlas_coords;
-		}
-	}
-
-	emit_signal("changed");
-}
-
-bool TileSetAtlasSource::has_tiles_outside_texture() {
-	Vector2i grid_size = get_atlas_grid_size();
-	Vector<Vector2i> to_remove;
-
-	for (Map<Vector2i, TileSetAtlasSource::TileAlternativesData>::Element *E = tiles.front(); E; E = E->next()) {
-		if (E->key().x >= grid_size.x || E->key().y >= grid_size.y) {
-			return true;
-		}
-	}
-
-	return false;
-}
-
-void TileSetAtlasSource::clear_tiles_outside_texture() {
-	Vector2i grid_size = get_atlas_grid_size();
-	Vector<Vector2i> to_remove;
-
-	for (Map<Vector2i, TileSetAtlasSource::TileAlternativesData>::Element *E = tiles.front(); E; E = E->next()) {
-		if (E->key().x >= grid_size.x || E->key().y >= grid_size.y) {
-			to_remove.append(E->key());
-		}
-	}
-
-	for (int i = 0; i < to_remove.size(); i++) {
-		remove_tile(to_remove[i]);
-	}
-}
-
-int TileSetAtlasSource::create_alternative_tile(const Vector2i p_atlas_coords, int p_alternative_id_override) {
-	ERR_FAIL_COND_V_MSG(!tiles.has(p_atlas_coords), -1, vformat("TileSetAtlasSource has no tile at %s.", String(p_atlas_coords)));
-	ERR_FAIL_COND_V_MSG(p_alternative_id_override >= 0 && (tiles[p_atlas_coords].alternatives.has(p_alternative_id_override) || tiles[p_atlas_coords].alternatives.has(p_alternative_id_override)), -1, vformat("Cannot create alternative tile. Another alternative exists with id %d.", p_alternative_id_override));
-
-	int new_alternative_id = p_alternative_id_override >= 0 ? p_alternative_id_override : tiles[p_atlas_coords].next_alternative_id;
-
-	tiles[p_atlas_coords].alternatives[new_alternative_id] = memnew(TileData);
-	tiles[p_atlas_coords].alternatives[new_alternative_id]->set_tile_set(tile_set);
-	tiles[p_atlas_coords].alternatives[new_alternative_id]->set_allow_transform(true);
-	tiles[p_atlas_coords].alternatives[new_alternative_id]->notify_property_list_changed();
-	tiles[p_atlas_coords].alternatives_ids.append(new_alternative_id);
-	tiles[p_atlas_coords].alternatives_ids.sort();
-	_compute_next_alternative_id(p_atlas_coords);
-
-	emit_signal("changed");
-
-	return new_alternative_id;
-}
-
-void TileSetAtlasSource::remove_alternative_tile(const Vector2i p_atlas_coords, int p_alternative_tile) {
-	ERR_FAIL_COND_MSG(!tiles.has(p_atlas_coords), vformat("TileSetAtlasSource has no tile at %s.", String(p_atlas_coords)));
-	ERR_FAIL_COND_MSG(!tiles[p_atlas_coords].alternatives.has(p_alternative_tile), vformat("TileSetAtlasSource has no alternative with id %d for tile coords %s.", p_alternative_tile, String(p_atlas_coords)));
-	ERR_FAIL_COND_MSG(p_alternative_tile == 0, "Cannot remove the alternative with id 0, the base tile alternative cannot be removed.");
-
-	memdelete(tiles[p_atlas_coords].alternatives[p_alternative_tile]);
-	tiles[p_atlas_coords].alternatives.erase(p_alternative_tile);
-	tiles[p_atlas_coords].alternatives_ids.erase(p_alternative_tile);
-	tiles[p_atlas_coords].alternatives_ids.sort();
-
-	emit_signal("changed");
-}
-
-void TileSetAtlasSource::set_alternative_tile_id(const Vector2i p_atlas_coords, int p_alternative_tile, int p_new_id) {
-	ERR_FAIL_COND_MSG(!tiles.has(p_atlas_coords), vformat("TileSetAtlasSource has no tile at %s.", String(p_atlas_coords)));
-	ERR_FAIL_COND_MSG(!tiles[p_atlas_coords].alternatives.has(p_alternative_tile), vformat("TileSetAtlasSource has no alternative with id %d for tile coords %s.", p_alternative_tile, String(p_atlas_coords)));
-	ERR_FAIL_COND_MSG(p_alternative_tile == 0, "Cannot change the alternative with id 0, the base tile alternative cannot be modified.");
-
-	ERR_FAIL_COND_MSG(tiles[p_atlas_coords].alternatives.has(p_new_id), vformat("TileSetAtlasSource has already an alternative with id %d at %s.", p_new_id, String(p_atlas_coords)));
-
-	tiles[p_atlas_coords].alternatives[p_new_id] = tiles[p_atlas_coords].alternatives[p_alternative_tile];
-	tiles[p_atlas_coords].alternatives_ids.append(p_new_id);
-
-	tiles[p_atlas_coords].alternatives.erase(p_alternative_tile);
-	tiles[p_atlas_coords].alternatives_ids.erase(p_alternative_tile);
-	tiles[p_atlas_coords].alternatives_ids.sort();
-
-	emit_signal("changed");
-}
-
-bool TileSetAtlasSource::has_alternative_tile(const Vector2i p_atlas_coords, int p_alternative_tile) const {
-	ERR_FAIL_COND_V_MSG(!tiles.has(p_atlas_coords), false, vformat("The TileSetAtlasSource atlas has no tile at %s.", String(p_atlas_coords)));
-	return tiles[p_atlas_coords].alternatives.has(p_alternative_tile);
-}
-
-int TileSetAtlasSource::get_next_alternative_tile_id(const Vector2i p_atlas_coords) const {
-	ERR_FAIL_COND_V_MSG(!tiles.has(p_atlas_coords), -1, vformat("The TileSetAtlasSource atlas has no tile at %s.", String(p_atlas_coords)));
-	return tiles[p_atlas_coords].next_alternative_id;
-}
-
-int TileSetAtlasSource::get_alternative_tiles_count(const Vector2i p_atlas_coords) const {
-	ERR_FAIL_COND_V_MSG(!tiles.has(p_atlas_coords), -1, vformat("The TileSetAtlasSource atlas has no tile at %s.", String(p_atlas_coords)));
-	return tiles[p_atlas_coords].alternatives_ids.size();
-}
-
-int TileSetAtlasSource::get_alternative_tile_id(const Vector2i p_atlas_coords, int p_index) const {
-	ERR_FAIL_COND_V_MSG(!tiles.has(p_atlas_coords), -1, vformat("The TileSetAtlasSource atlas has no tile at %s.", String(p_atlas_coords)));
-	ERR_FAIL_INDEX_V(p_index, tiles[p_atlas_coords].alternatives_ids.size(), -1);
-
-	return tiles[p_atlas_coords].alternatives_ids[p_index];
-}
-
-Object *TileSetAtlasSource::get_tile_data(const Vector2i p_atlas_coords, int p_alternative_tile) const {
-	ERR_FAIL_COND_V_MSG(!tiles.has(p_atlas_coords), nullptr, vformat("The TileSetAtlasSource atlas has no tile at %s.", String(p_atlas_coords)));
-	ERR_FAIL_COND_V_MSG(!tiles[p_atlas_coords].alternatives.has(p_alternative_tile), nullptr, vformat("TileSetAtlasSource has no alternative with id %d for tile coords %s.", p_alternative_tile, String(p_atlas_coords)));
-
-	return tiles[p_atlas_coords].alternatives[p_alternative_tile];
-}
-
-void TileSetAtlasSource::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("set_texture", "texture"), &TileSetAtlasSource::set_texture);
-	ClassDB::bind_method(D_METHOD("get_texture"), &TileSetAtlasSource::get_texture);
-	ClassDB::bind_method(D_METHOD("set_margins", "margins"), &TileSetAtlasSource::set_margins);
-	ClassDB::bind_method(D_METHOD("get_margins"), &TileSetAtlasSource::get_margins);
-	ClassDB::bind_method(D_METHOD("set_separation", "separation"), &TileSetAtlasSource::set_separation);
-	ClassDB::bind_method(D_METHOD("get_separation"), &TileSetAtlasSource::get_separation);
-	ClassDB::bind_method(D_METHOD("set_texture_region_size", "texture_region_size"), &TileSetAtlasSource::set_texture_region_size);
-	ClassDB::bind_method(D_METHOD("get_texture_region_size"), &TileSetAtlasSource::get_texture_region_size);
-	ClassDB::bind_method(D_METHOD("set_base_texture_offset", "base_texture_offset"), &TileSetAtlasSource::set_base_texture_offset);
-	ClassDB::bind_method(D_METHOD("get_base_texture_offset"), &TileSetAtlasSource::get_base_texture_offset);
-
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D", PROPERTY_USAGE_NOEDITOR), "set_texture", "get_texture");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "margins", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "set_margins", "get_margins");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "separation", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "set_separation", "get_separation");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "tile_size", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "set_texture_region_size", "get_texture_region_size");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "base_texture_offset", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "set_base_texture_offset", "get_base_texture_offset");
-
-	// Base tiles
-	ClassDB::bind_method(D_METHOD("create_tile", "atlas_coords", "size"), &TileSetAtlasSource::create_tile, DEFVAL(Vector2i(1, 1)));
-	ClassDB::bind_method(D_METHOD("remove_tile", "atlas_coords"), &TileSetAtlasSource::remove_tile); // Remove a tile. If p_tile_key.alternative_tile if different from 0, remove the alternative
-	ClassDB::bind_method(D_METHOD("has_tile", "atlas_coords"), &TileSetAtlasSource::has_tile);
-	ClassDB::bind_method(D_METHOD("can_move_tile_in_atlas", "atlas_coords", "new_atlas_coords", "new_size"), &TileSetAtlasSource::can_move_tile_in_atlas, DEFVAL(INVALID_ATLAS_COORDS), DEFVAL(Vector2i(-1, -1)));
-	ClassDB::bind_method(D_METHOD("move_tile_in_atlas", "atlas_coords", "new_atlas_coords", "new_size"), &TileSetAtlasSource::move_tile_in_atlas, DEFVAL(INVALID_ATLAS_COORDS), DEFVAL(Vector2i(-1, -1)));
-	ClassDB::bind_method(D_METHOD("get_tile_size_in_atlas", "atlas_coords"), &TileSetAtlasSource::get_tile_size_in_atlas);
-
-	ClassDB::bind_method(D_METHOD("get_tiles_count"), &TileSetAtlasSource::get_tiles_count);
-	ClassDB::bind_method(D_METHOD("get_tile_id", "index"), &TileSetAtlasSource::get_tile_id);
-
-	ClassDB::bind_method(D_METHOD("get_tile_at_coords", "atlas_coords"), &TileSetAtlasSource::get_tile_at_coords);
-
-	// Alternative tiles
-	ClassDB::bind_method(D_METHOD("create_alternative_tile", "atlas_coords", "alternative_id_override"), &TileSetAtlasSource::create_alternative_tile, DEFVAL(-1));
-	ClassDB::bind_method(D_METHOD("remove_alternative_tile", "atlas_coords", "alternative_tile"), &TileSetAtlasSource::remove_alternative_tile);
-	ClassDB::bind_method(D_METHOD("set_alternative_tile_id", "atlas_coords", "alternative_tile", "new_id"), &TileSetAtlasSource::set_alternative_tile_id);
-	ClassDB::bind_method(D_METHOD("has_alternative_tile", "atlas_coords", "alternative_tile"), &TileSetAtlasSource::has_alternative_tile);
-	ClassDB::bind_method(D_METHOD("get_next_alternative_tile_id", "atlas_coords"), &TileSetAtlasSource::get_next_alternative_tile_id);
-
-	ClassDB::bind_method(D_METHOD("get_alternative_tiles_count", "atlas_coords"), &TileSetAtlasSource::get_alternative_tiles_count);
-	ClassDB::bind_method(D_METHOD("get_alternative_tile_id", "atlas_coords", "index"), &TileSetAtlasSource::get_alternative_tile_id);
-
-	ClassDB::bind_method(D_METHOD("get_tile_data", "atlas_coords", "index"), &TileSetAtlasSource::get_tile_data);
-
-	// Helpers.
-	ClassDB::bind_method(D_METHOD("get_atlas_grid_size"), &TileSetAtlasSource::get_atlas_grid_size);
-	ClassDB::bind_method(D_METHOD("has_tiles_outside_texture"), &TileSetAtlasSource::has_tiles_outside_texture);
-	ClassDB::bind_method(D_METHOD("clear_tiles_outside_texture"), &TileSetAtlasSource::clear_tiles_outside_texture);
-	ClassDB::bind_method(D_METHOD("get_tile_texture_region", "atlas_coords"), &TileSetAtlasSource::get_tile_texture_region);
-}
-
-TileSetAtlasSource::~TileSetAtlasSource() {
-	// Free everything needed.
-	for (Map<Vector2i, TileAlternativesData>::Element *E_alternatives = tiles.front(); E_alternatives; E_alternatives = E_alternatives->next()) {
-		for (Map<int, TileData *>::Element *E_tile_data = E_alternatives->get().alternatives.front(); E_tile_data; E_tile_data = E_tile_data->next()) {
-			memdelete(E_tile_data->get());
-		}
-	}
-}
-
-TileData *TileSetAtlasSource::_get_atlas_tile_data(Vector2i p_atlas_coords, int p_alternative_tile) {
-	ERR_FAIL_COND_V_MSG(!tiles.has(p_atlas_coords), nullptr, vformat("TileSetAtlasSource has no tile at %s.", String(p_atlas_coords)));
-	ERR_FAIL_COND_V_MSG(!tiles[p_atlas_coords].alternatives.has(p_alternative_tile), nullptr, vformat("TileSetAtlasSource has no alternative with id %d for tile coords %s.", p_alternative_tile, String(p_atlas_coords)));
-
-	return tiles[p_atlas_coords].alternatives[p_alternative_tile];
-}
-
-const TileData *TileSetAtlasSource::_get_atlas_tile_data(Vector2i p_atlas_coords, int p_alternative_tile) const {
-	ERR_FAIL_COND_V_MSG(!tiles.has(p_atlas_coords), nullptr, vformat("TileSetAtlasSource has no tile at %s.", String(p_atlas_coords)));
-	ERR_FAIL_COND_V_MSG(!tiles[p_atlas_coords].alternatives.has(p_alternative_tile), nullptr, vformat("TileSetAtlasSource has no alternative with id %d for tile coords %s.", p_alternative_tile, String(p_atlas_coords)));
-
-	return tiles[p_atlas_coords].alternatives[p_alternative_tile];
-}
-
-void TileSetAtlasSource::_compute_next_alternative_id(const Vector2i p_atlas_coords) {
-	ERR_FAIL_COND_MSG(!tiles.has(p_atlas_coords), vformat("TileSetAtlasSource has no tile at %s.", String(p_atlas_coords)));
-
-	while (tiles[p_atlas_coords].alternatives.has(tiles[p_atlas_coords].next_alternative_id)) {
-		tiles[p_atlas_coords].next_alternative_id = (tiles[p_atlas_coords].next_alternative_id % 1073741823) + 1; // 2 ** 30
-	};
-}
-
 // --- Plugins ---
 Vector<TileSetPlugin *> TileSet::get_tile_set_atlas_plugins() const {
 	return tile_set_plugins_vector;
@@ -2637,4 +1351,1290 @@ TileSet::~TileSet() {
 	for (int i = 0; i < tile_set_plugins_vector.size(); i++) {
 		memdelete(tile_set_plugins_vector[i]);
 	}
+}
+
+void TileSetSource::set_tile_set(const TileSet *p_tile_set) {
+	tile_set = p_tile_set;
+}
+
+void TileSetAtlasSource::set_tile_set(const TileSet *p_tile_set) {
+	tile_set = p_tile_set;
+
+	// Set the TileSet on all TileData.
+	for (Map<Vector2i, TileAlternativesData>::Element *E_tile = tiles.front(); E_tile; E_tile = E_tile->next()) {
+		for (Map<int, TileData *>::Element *E_alternative = E_tile->get().alternatives.front(); E_alternative; E_alternative = E_alternative->next()) {
+			E_alternative->get()->set_tile_set(tile_set);
+		}
+	}
+}
+
+void TileSetAtlasSource::notify_tile_data_properties_should_change() {
+	// Set the TileSet on all TileData.
+	for (Map<Vector2i, TileAlternativesData>::Element *E_tile = tiles.front(); E_tile; E_tile = E_tile->next()) {
+		for (Map<int, TileData *>::Element *E_alternative = E_tile->get().alternatives.front(); E_alternative; E_alternative = E_alternative->next()) {
+			E_alternative->get()->notify_tile_data_properties_should_change();
+		}
+	}
+}
+
+void TileSetAtlasSource::reset_state() {
+	// Reset all TileData.
+	for (Map<Vector2i, TileAlternativesData>::Element *E_tile = tiles.front(); E_tile; E_tile = E_tile->next()) {
+		for (Map<int, TileData *>::Element *E_alternative = E_tile->get().alternatives.front(); E_alternative; E_alternative = E_alternative->next()) {
+			E_alternative->get()->reset_state();
+		}
+	}
+}
+
+void TileSetAtlasSource::set_texture(Ref<Texture2D> p_texture) {
+	texture = p_texture;
+
+	emit_changed();
+}
+
+Ref<Texture2D> TileSetAtlasSource::get_texture() const {
+	return texture;
+}
+
+void TileSetAtlasSource::set_margins(Vector2i p_margins) {
+	if (p_margins.x < 0 || p_margins.y < 0) {
+		WARN_PRINT("Atlas source margins should be positive.");
+		margins = Vector2i(MAX(0, p_margins.x), MAX(0, p_margins.y));
+	} else {
+		margins = p_margins;
+	}
+
+	emit_changed();
+}
+Vector2i TileSetAtlasSource::get_margins() const {
+	return margins;
+}
+
+void TileSetAtlasSource::set_separation(Vector2i p_separation) {
+	if (p_separation.x < 0 || p_separation.y < 0) {
+		WARN_PRINT("Atlas source separation should be positive.");
+		separation = Vector2i(MAX(0, p_separation.x), MAX(0, p_separation.y));
+	} else {
+		separation = p_separation;
+	}
+
+	emit_changed();
+}
+Vector2i TileSetAtlasSource::get_separation() const {
+	return separation;
+}
+
+void TileSetAtlasSource::set_texture_region_size(Vector2i p_tile_size) {
+	if (p_tile_size.x <= 0 || p_tile_size.y <= 0) {
+		WARN_PRINT("Atlas source tile_size should be strictly positive.");
+		texture_region_size = Vector2i(MAX(1, p_tile_size.x), MAX(1, p_tile_size.y));
+	} else {
+		texture_region_size = p_tile_size;
+	}
+
+	emit_changed();
+}
+Vector2i TileSetAtlasSource::get_texture_region_size() const {
+	return texture_region_size;
+}
+
+void TileSetAtlasSource::set_base_texture_offset(Vector2i p_base_texture_offset) {
+	base_texture_offset = p_base_texture_offset;
+
+	emit_changed();
+}
+Vector2i TileSetAtlasSource::get_base_texture_offset() const {
+	return base_texture_offset;
+}
+
+Vector2i TileSetAtlasSource::get_atlas_grid_size() const {
+	Ref<Texture2D> texture = get_texture();
+	if (!texture.is_valid()) {
+		return Vector2i();
+	}
+
+	ERR_FAIL_COND_V(texture_region_size.x <= 0 || texture_region_size.y <= 0, Vector2i());
+
+	Size2i valid_area = texture->get_size() - margins;
+
+	// Compute the number of valid tiles in the tiles atlas
+	Size2i grid_size = Size2i();
+	if (valid_area.x >= texture_region_size.x && valid_area.y >= texture_region_size.y) {
+		valid_area -= texture_region_size;
+		grid_size = Size2i(1, 1) + valid_area / (texture_region_size + separation);
+	}
+	return grid_size;
+}
+
+bool TileSetAtlasSource::_set(const StringName &p_name, const Variant &p_value) {
+	Vector<String> components = String(p_name).split("/", true, 2);
+
+	// Compute the vector2i if we have coordinates.
+	Vector<String> coords_split = components[0].split(":");
+	Vector2i coords = TileSetAtlasSource::INVALID_ATLAS_COORDS;
+	if (coords_split.size() == 2 && coords_split[0].is_valid_integer() && coords_split[1].is_valid_integer()) {
+		coords = Vector2i(coords_split[0].to_int(), coords_split[1].to_int());
+	}
+
+	// Properties.
+	if (coords != TileSetAtlasSource::INVALID_ATLAS_COORDS) {
+		// Create the tile if needed.
+		if (!has_tile(coords)) {
+			create_tile(coords);
+		}
+		if (components.size() >= 2) {
+			// Properties.
+			if (components[1] == "size_in_atlas") {
+				move_tile_in_atlas(coords, coords, p_value);
+			} else if (components[1] == "next_alternative_id") {
+				tiles[coords].next_alternative_id = p_value;
+			} else if (components[1].is_valid_integer()) {
+				int alternative_id = components[1].to_int();
+				if (alternative_id != TileSetAtlasSource::INVALID_TILE_ALTERNATIVE) {
+					// Create the alternative if needed ?
+					if (!has_alternative_tile(coords, alternative_id)) {
+						create_alternative_tile(coords, alternative_id);
+					}
+					if (!tiles[coords].alternatives.has(alternative_id)) {
+						tiles[coords].alternatives[alternative_id] = memnew(TileData);
+						tiles[coords].alternatives[alternative_id]->set_tile_set(tile_set);
+						tiles[coords].alternatives[alternative_id]->set_allow_transform(alternative_id > 0);
+						tiles[coords].alternatives_ids.append(alternative_id);
+					}
+					if (components.size() >= 3) {
+						bool valid;
+						tiles[coords].alternatives[alternative_id]->set(components[2], p_value, &valid);
+						return valid;
+					} else {
+						// Only create the alternative if it did not exist yet.
+						return true;
+					}
+				}
+			}
+		}
+	}
+
+	return false;
+}
+
+bool TileSetAtlasSource::_get(const StringName &p_name, Variant &r_ret) const {
+	Vector<String> components = String(p_name).split("/", true, 2);
+
+	// Properties.
+	Vector<String> coords_split = components[0].split(":");
+	if (coords_split.size() == 2 && coords_split[0].is_valid_integer() && coords_split[1].is_valid_integer()) {
+		Vector2i coords = Vector2i(coords_split[0].to_int(), coords_split[1].to_int());
+		if (tiles.has(coords)) {
+			if (components.size() >= 2) {
+				// Properties.
+				if (components[1] == "size_in_atlas") {
+					r_ret = tiles[coords].size_in_atlas;
+					return true;
+				} else if (components[1] == "next_alternative_id") {
+					r_ret = tiles[coords].next_alternative_id;
+					return true;
+				} else if (components[1].is_valid_integer()) {
+					int alternative_id = components[1].to_int();
+					if (alternative_id != TileSetAtlasSource::INVALID_TILE_ALTERNATIVE && tiles[coords].alternatives.has(alternative_id)) {
+						if (components.size() >= 3) {
+							bool valid;
+							r_ret = tiles[coords].alternatives[alternative_id]->get(components[2], &valid);
+							return valid;
+						} else {
+							// Only to notify the tile alternative exists.
+							r_ret = alternative_id;
+							return true;
+						}
+					}
+				}
+			}
+		}
+	}
+
+	return false;
+}
+
+void TileSetAtlasSource::_get_property_list(List<PropertyInfo> *p_list) const {
+	// Atlases data.
+	for (Map<Vector2i, TileAlternativesData>::Element *E_tile = tiles.front(); E_tile; E_tile = E_tile->next()) {
+		List<PropertyInfo> tile_property_list;
+		if (E_tile->get().size_in_atlas != Vector2i(1, 1)) {
+			tile_property_list.push_back(PropertyInfo(Variant::VECTOR2I, "size_in_atlas", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR));
+		}
+		if (E_tile->get().next_alternative_id != 1) {
+			tile_property_list.push_back(PropertyInfo(Variant::INT, "next_alternative_id", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR));
+		}
+
+		// Atlases data.
+		for (Map<int, TileData *>::Element *E_alternative = E_tile->get().alternatives.front(); E_alternative; E_alternative = E_alternative->next()) {
+			// Add a dummy property to show the tile exists.
+			tile_property_list.push_back(PropertyInfo(Variant::INT, vformat("%d", E_alternative->key()), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR));
+
+			List<PropertyInfo> alternative_property_list;
+			E_alternative->get()->get_property_list(&alternative_property_list);
+			TileSet::_append_property_list_with_prefix(vformat("%d", E_alternative->key()), &alternative_property_list, &tile_property_list);
+		}
+
+		TileSet::_append_property_list_with_prefix(vformat("%d:%d", E_tile->key().x, E_tile->key().y), &tile_property_list, p_list);
+	}
+}
+
+// --- TileSetAtlasSource ---
+void TileSetAtlasSource::create_tile(const Vector2i p_atlas_coords, const Vector2i p_size) {
+	// Create a tile if it does not exists.
+	ERR_FAIL_COND(p_atlas_coords.x < 0 || p_atlas_coords.y < 0);
+	ERR_FAIL_COND(p_size.x <= 0 || p_size.y <= 0);
+	for (int x = 0; x < p_size.x; x++) {
+		for (int y = 0; y < p_size.y; y++) {
+			Vector2i coords = p_atlas_coords + Vector2i(x, y);
+			ERR_FAIL_COND_MSG(tiles.has(coords), vformat("Cannot create tile at position %s with size %s. Already a tile present at %s.", p_atlas_coords, p_size, coords));
+		}
+	}
+
+	// Create and resize the tile.
+	tiles.insert(p_atlas_coords, TileSetAtlasSource::TileAlternativesData());
+	tiles_ids.append(p_atlas_coords);
+	tiles_ids.sort();
+
+	tiles[p_atlas_coords].size_in_atlas = p_size;
+	tiles[p_atlas_coords].alternatives[0] = memnew(TileData);
+	tiles[p_atlas_coords].alternatives[0]->set_tile_set(tile_set);
+	tiles[p_atlas_coords].alternatives[0]->set_allow_transform(false);
+	tiles[p_atlas_coords].alternatives[0]->connect("changed", callable_mp((Resource *)this, &TileSetAtlasSource::emit_changed));
+	tiles[p_atlas_coords].alternatives[0]->notify_property_list_changed();
+	tiles[p_atlas_coords].alternatives_ids.append(0);
+
+	// Add all covered positions to the mapping cache
+	for (int x = 0; x < p_size.x; x++) {
+		for (int y = 0; y < p_size.y; y++) {
+			Vector2i coords = p_atlas_coords + Vector2i(x, y);
+			_coords_mapping_cache[coords] = p_atlas_coords;
+		}
+	}
+
+	emit_signal("changed");
+}
+
+void TileSetAtlasSource::remove_tile(Vector2i p_atlas_coords) {
+	ERR_FAIL_COND_MSG(!tiles.has(p_atlas_coords), vformat("TileSetAtlasSource has no tile at %s.", String(p_atlas_coords)));
+
+	// Remove all covered positions from the mapping cache
+	Size2i size = tiles[p_atlas_coords].size_in_atlas;
+
+	for (int x = 0; x < size.x; x++) {
+		for (int y = 0; y < size.y; y++) {
+			Vector2i coords = p_atlas_coords + Vector2i(x, y);
+			_coords_mapping_cache.erase(coords);
+		}
+	}
+
+	// Free tile data.
+	for (Map<int, TileData *>::Element *E_tile_data = tiles[p_atlas_coords].alternatives.front(); E_tile_data; E_tile_data = E_tile_data->next()) {
+		memdelete(E_tile_data->get());
+	}
+
+	// Delete the tile
+	tiles.erase(p_atlas_coords);
+	tiles_ids.erase(p_atlas_coords);
+	tiles_ids.sort();
+
+	emit_signal("changed");
+}
+
+bool TileSetAtlasSource::has_tile(Vector2i p_atlas_coords) const {
+	return tiles.has(p_atlas_coords);
+}
+
+Vector2i TileSetAtlasSource::get_tile_at_coords(Vector2i p_atlas_coords) const {
+	if (!_coords_mapping_cache.has(p_atlas_coords)) {
+		return INVALID_ATLAS_COORDS;
+	}
+
+	return _coords_mapping_cache[p_atlas_coords];
+}
+
+Vector2i TileSetAtlasSource::get_tile_size_in_atlas(Vector2i p_atlas_coords) const {
+	ERR_FAIL_COND_V_MSG(!tiles.has(p_atlas_coords), Vector2i(-1, -1), vformat("TileSetAtlasSource has no tile at %s.", String(p_atlas_coords)));
+
+	return tiles[p_atlas_coords].size_in_atlas;
+}
+
+int TileSetAtlasSource::get_tiles_count() const {
+	return tiles_ids.size();
+}
+
+Vector2i TileSetAtlasSource::get_tile_id(int p_index) const {
+	ERR_FAIL_INDEX_V(p_index, tiles_ids.size(), TileSetAtlasSource::INVALID_ATLAS_COORDS);
+	return tiles_ids[p_index];
+}
+
+Rect2i TileSetAtlasSource::get_tile_texture_region(Vector2i p_atlas_coords) const {
+	ERR_FAIL_COND_V_MSG(!tiles.has(p_atlas_coords), Rect2i(), vformat("TileSetAtlasSource has no tile at %s.", String(p_atlas_coords)));
+
+	Vector2i size_in_atlas = tiles[p_atlas_coords].size_in_atlas;
+	Vector2 region_size = texture_region_size * size_in_atlas + separation * (size_in_atlas - Vector2i(1, 1));
+
+	Vector2 origin = margins + (p_atlas_coords * (texture_region_size + separation));
+
+	return Rect2(origin, region_size);
+	;
+}
+
+bool TileSetAtlasSource::can_move_tile_in_atlas(Vector2i p_atlas_coords, Vector2i p_new_atlas_coords, Vector2i p_new_size) const {
+	ERR_FAIL_COND_V_MSG(!tiles.has(p_atlas_coords), false, vformat("TileSetAtlasSource has no tile at %s.", String(p_atlas_coords)));
+
+	Vector2i new_atlas_coords = (p_new_atlas_coords != INVALID_ATLAS_COORDS) ? p_new_atlas_coords : p_atlas_coords;
+	if (new_atlas_coords.x < 0 || new_atlas_coords.y < 0) {
+		return false;
+	}
+
+	Vector2i size = (p_new_size != Vector2i(-1, -1)) ? p_new_size : tiles[p_atlas_coords].size_in_atlas;
+	ERR_FAIL_COND_V(size.x <= 0 || size.y <= 0, false);
+
+	Size2i grid_size = get_atlas_grid_size();
+	if (new_atlas_coords.x + size.x > grid_size.x || new_atlas_coords.y + size.y > grid_size.y) {
+		return false;
+	}
+
+	Rect2i new_rect = Rect2i(new_atlas_coords, size);
+	// Check if the new tile can fit in the new rect.
+	for (int x = new_rect.position.x; x < new_rect.get_end().x; x++) {
+		for (int y = new_rect.position.y; y < new_rect.get_end().y; y++) {
+			Vector2i coords = get_tile_at_coords(Vector2i(x, y));
+			if (coords != p_atlas_coords && coords != TileSetAtlasSource::INVALID_ATLAS_COORDS) {
+				return false;
+			}
+		}
+	}
+
+	return true;
+}
+
+void TileSetAtlasSource::move_tile_in_atlas(Vector2i p_atlas_coords, Vector2i p_new_atlas_coords, Vector2i p_new_size) {
+	bool can_move = can_move_tile_in_atlas(p_atlas_coords, p_new_atlas_coords, p_new_size);
+	ERR_FAIL_COND_MSG(!can_move, vformat("Cannot move tile at position %s with size %s. Tile already present.", p_new_atlas_coords, p_new_size));
+
+	// Compute the actual new rect from arguments.
+	Vector2i new_atlas_coords = (p_new_atlas_coords != INVALID_ATLAS_COORDS) ? p_new_atlas_coords : p_atlas_coords;
+	Vector2i size = (p_new_size != Vector2i(-1, -1)) ? p_new_size : tiles[p_atlas_coords].size_in_atlas;
+
+	if (new_atlas_coords == p_atlas_coords && size == tiles[p_atlas_coords].size_in_atlas) {
+		return;
+	}
+
+	// Remove all covered positions from the mapping cache.
+	Size2i old_size = tiles[p_atlas_coords].size_in_atlas;
+	for (int x = 0; x < old_size.x; x++) {
+		for (int y = 0; y < old_size.y; y++) {
+			Vector2i coords = p_atlas_coords + Vector2i(x, y);
+			_coords_mapping_cache.erase(coords);
+		}
+	}
+
+	// Move the tile and update its size.
+	if (new_atlas_coords != p_atlas_coords) {
+		tiles[new_atlas_coords] = tiles[p_atlas_coords];
+		tiles.erase(p_atlas_coords);
+
+		tiles_ids.erase(p_atlas_coords);
+		tiles_ids.append(new_atlas_coords);
+		tiles_ids.sort();
+	}
+	tiles[new_atlas_coords].size_in_atlas = size;
+
+	// Add all covered positions to the mapping cache again.
+	for (int x = 0; x < size.x; x++) {
+		for (int y = 0; y < size.y; y++) {
+			Vector2i coords = new_atlas_coords + Vector2i(x, y);
+			_coords_mapping_cache[coords] = new_atlas_coords;
+		}
+	}
+
+	emit_signal("changed");
+}
+
+bool TileSetAtlasSource::has_tiles_outside_texture() {
+	Vector2i grid_size = get_atlas_grid_size();
+	Vector<Vector2i> to_remove;
+
+	for (Map<Vector2i, TileSetAtlasSource::TileAlternativesData>::Element *E = tiles.front(); E; E = E->next()) {
+		if (E->key().x >= grid_size.x || E->key().y >= grid_size.y) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
+void TileSetAtlasSource::clear_tiles_outside_texture() {
+	Vector2i grid_size = get_atlas_grid_size();
+	Vector<Vector2i> to_remove;
+
+	for (Map<Vector2i, TileSetAtlasSource::TileAlternativesData>::Element *E = tiles.front(); E; E = E->next()) {
+		if (E->key().x >= grid_size.x || E->key().y >= grid_size.y) {
+			to_remove.append(E->key());
+		}
+	}
+
+	for (int i = 0; i < to_remove.size(); i++) {
+		remove_tile(to_remove[i]);
+	}
+}
+
+int TileSetAtlasSource::create_alternative_tile(const Vector2i p_atlas_coords, int p_alternative_id_override) {
+	ERR_FAIL_COND_V_MSG(!tiles.has(p_atlas_coords), -1, vformat("TileSetAtlasSource has no tile at %s.", String(p_atlas_coords)));
+	ERR_FAIL_COND_V_MSG(p_alternative_id_override >= 0 && (tiles[p_atlas_coords].alternatives.has(p_alternative_id_override) || tiles[p_atlas_coords].alternatives.has(p_alternative_id_override)), -1, vformat("Cannot create alternative tile. Another alternative exists with id %d.", p_alternative_id_override));
+
+	int new_alternative_id = p_alternative_id_override >= 0 ? p_alternative_id_override : tiles[p_atlas_coords].next_alternative_id;
+
+	tiles[p_atlas_coords].alternatives[new_alternative_id] = memnew(TileData);
+	tiles[p_atlas_coords].alternatives[new_alternative_id]->set_tile_set(tile_set);
+	tiles[p_atlas_coords].alternatives[new_alternative_id]->set_allow_transform(true);
+	tiles[p_atlas_coords].alternatives[new_alternative_id]->notify_property_list_changed();
+	tiles[p_atlas_coords].alternatives_ids.append(new_alternative_id);
+	tiles[p_atlas_coords].alternatives_ids.sort();
+	_compute_next_alternative_id(p_atlas_coords);
+
+	emit_signal("changed");
+
+	return new_alternative_id;
+}
+
+void TileSetAtlasSource::remove_alternative_tile(const Vector2i p_atlas_coords, int p_alternative_tile) {
+	ERR_FAIL_COND_MSG(!tiles.has(p_atlas_coords), vformat("TileSetAtlasSource has no tile at %s.", String(p_atlas_coords)));
+	ERR_FAIL_COND_MSG(!tiles[p_atlas_coords].alternatives.has(p_alternative_tile), vformat("TileSetAtlasSource has no alternative with id %d for tile coords %s.", p_alternative_tile, String(p_atlas_coords)));
+	ERR_FAIL_COND_MSG(p_alternative_tile == 0, "Cannot remove the alternative with id 0, the base tile alternative cannot be removed.");
+
+	memdelete(tiles[p_atlas_coords].alternatives[p_alternative_tile]);
+	tiles[p_atlas_coords].alternatives.erase(p_alternative_tile);
+	tiles[p_atlas_coords].alternatives_ids.erase(p_alternative_tile);
+	tiles[p_atlas_coords].alternatives_ids.sort();
+
+	emit_signal("changed");
+}
+
+void TileSetAtlasSource::set_alternative_tile_id(const Vector2i p_atlas_coords, int p_alternative_tile, int p_new_id) {
+	ERR_FAIL_COND_MSG(!tiles.has(p_atlas_coords), vformat("TileSetAtlasSource has no tile at %s.", String(p_atlas_coords)));
+	ERR_FAIL_COND_MSG(!tiles[p_atlas_coords].alternatives.has(p_alternative_tile), vformat("TileSetAtlasSource has no alternative with id %d for tile coords %s.", p_alternative_tile, String(p_atlas_coords)));
+	ERR_FAIL_COND_MSG(p_alternative_tile == 0, "Cannot change the alternative with id 0, the base tile alternative cannot be modified.");
+
+	ERR_FAIL_COND_MSG(tiles[p_atlas_coords].alternatives.has(p_new_id), vformat("TileSetAtlasSource has already an alternative with id %d at %s.", p_new_id, String(p_atlas_coords)));
+
+	tiles[p_atlas_coords].alternatives[p_new_id] = tiles[p_atlas_coords].alternatives[p_alternative_tile];
+	tiles[p_atlas_coords].alternatives_ids.append(p_new_id);
+
+	tiles[p_atlas_coords].alternatives.erase(p_alternative_tile);
+	tiles[p_atlas_coords].alternatives_ids.erase(p_alternative_tile);
+	tiles[p_atlas_coords].alternatives_ids.sort();
+
+	emit_signal("changed");
+}
+
+bool TileSetAtlasSource::has_alternative_tile(const Vector2i p_atlas_coords, int p_alternative_tile) const {
+	ERR_FAIL_COND_V_MSG(!tiles.has(p_atlas_coords), false, vformat("The TileSetAtlasSource atlas has no tile at %s.", String(p_atlas_coords)));
+	return tiles[p_atlas_coords].alternatives.has(p_alternative_tile);
+}
+
+int TileSetAtlasSource::get_next_alternative_tile_id(const Vector2i p_atlas_coords) const {
+	ERR_FAIL_COND_V_MSG(!tiles.has(p_atlas_coords), -1, vformat("The TileSetAtlasSource atlas has no tile at %s.", String(p_atlas_coords)));
+	return tiles[p_atlas_coords].next_alternative_id;
+}
+
+int TileSetAtlasSource::get_alternative_tiles_count(const Vector2i p_atlas_coords) const {
+	ERR_FAIL_COND_V_MSG(!tiles.has(p_atlas_coords), -1, vformat("The TileSetAtlasSource atlas has no tile at %s.", String(p_atlas_coords)));
+	return tiles[p_atlas_coords].alternatives_ids.size();
+}
+
+int TileSetAtlasSource::get_alternative_tile_id(const Vector2i p_atlas_coords, int p_index) const {
+	ERR_FAIL_COND_V_MSG(!tiles.has(p_atlas_coords), -1, vformat("The TileSetAtlasSource atlas has no tile at %s.", String(p_atlas_coords)));
+	ERR_FAIL_INDEX_V(p_index, tiles[p_atlas_coords].alternatives_ids.size(), -1);
+
+	return tiles[p_atlas_coords].alternatives_ids[p_index];
+}
+
+Object *TileSetAtlasSource::get_tile_data(const Vector2i p_atlas_coords, int p_alternative_tile) const {
+	ERR_FAIL_COND_V_MSG(!tiles.has(p_atlas_coords), nullptr, vformat("The TileSetAtlasSource atlas has no tile at %s.", String(p_atlas_coords)));
+	ERR_FAIL_COND_V_MSG(!tiles[p_atlas_coords].alternatives.has(p_alternative_tile), nullptr, vformat("TileSetAtlasSource has no alternative with id %d for tile coords %s.", p_alternative_tile, String(p_atlas_coords)));
+
+	return tiles[p_atlas_coords].alternatives[p_alternative_tile];
+}
+
+void TileSetAtlasSource::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_texture", "texture"), &TileSetAtlasSource::set_texture);
+	ClassDB::bind_method(D_METHOD("get_texture"), &TileSetAtlasSource::get_texture);
+	ClassDB::bind_method(D_METHOD("set_margins", "margins"), &TileSetAtlasSource::set_margins);
+	ClassDB::bind_method(D_METHOD("get_margins"), &TileSetAtlasSource::get_margins);
+	ClassDB::bind_method(D_METHOD("set_separation", "separation"), &TileSetAtlasSource::set_separation);
+	ClassDB::bind_method(D_METHOD("get_separation"), &TileSetAtlasSource::get_separation);
+	ClassDB::bind_method(D_METHOD("set_texture_region_size", "texture_region_size"), &TileSetAtlasSource::set_texture_region_size);
+	ClassDB::bind_method(D_METHOD("get_texture_region_size"), &TileSetAtlasSource::get_texture_region_size);
+	ClassDB::bind_method(D_METHOD("set_base_texture_offset", "base_texture_offset"), &TileSetAtlasSource::set_base_texture_offset);
+	ClassDB::bind_method(D_METHOD("get_base_texture_offset"), &TileSetAtlasSource::get_base_texture_offset);
+
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D", PROPERTY_USAGE_NOEDITOR), "set_texture", "get_texture");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "margins", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "set_margins", "get_margins");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "separation", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "set_separation", "get_separation");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "tile_size", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "set_texture_region_size", "get_texture_region_size");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "base_texture_offset", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "set_base_texture_offset", "get_base_texture_offset");
+
+	// Base tiles
+	ClassDB::bind_method(D_METHOD("create_tile", "atlas_coords", "size"), &TileSetAtlasSource::create_tile, DEFVAL(Vector2i(1, 1)));
+	ClassDB::bind_method(D_METHOD("remove_tile", "atlas_coords"), &TileSetAtlasSource::remove_tile); // Remove a tile. If p_tile_key.alternative_tile if different from 0, remove the alternative
+	ClassDB::bind_method(D_METHOD("has_tile", "atlas_coords"), &TileSetAtlasSource::has_tile);
+	ClassDB::bind_method(D_METHOD("can_move_tile_in_atlas", "atlas_coords", "new_atlas_coords", "new_size"), &TileSetAtlasSource::can_move_tile_in_atlas, DEFVAL(INVALID_ATLAS_COORDS), DEFVAL(Vector2i(-1, -1)));
+	ClassDB::bind_method(D_METHOD("move_tile_in_atlas", "atlas_coords", "new_atlas_coords", "new_size"), &TileSetAtlasSource::move_tile_in_atlas, DEFVAL(INVALID_ATLAS_COORDS), DEFVAL(Vector2i(-1, -1)));
+	ClassDB::bind_method(D_METHOD("get_tile_size_in_atlas", "atlas_coords"), &TileSetAtlasSource::get_tile_size_in_atlas);
+
+	ClassDB::bind_method(D_METHOD("get_tiles_count"), &TileSetAtlasSource::get_tiles_count);
+	ClassDB::bind_method(D_METHOD("get_tile_id", "index"), &TileSetAtlasSource::get_tile_id);
+
+	ClassDB::bind_method(D_METHOD("get_tile_at_coords", "atlas_coords"), &TileSetAtlasSource::get_tile_at_coords);
+
+	// Alternative tiles
+	ClassDB::bind_method(D_METHOD("create_alternative_tile", "atlas_coords", "alternative_id_override"), &TileSetAtlasSource::create_alternative_tile, DEFVAL(-1));
+	ClassDB::bind_method(D_METHOD("remove_alternative_tile", "atlas_coords", "alternative_tile"), &TileSetAtlasSource::remove_alternative_tile);
+	ClassDB::bind_method(D_METHOD("set_alternative_tile_id", "atlas_coords", "alternative_tile", "new_id"), &TileSetAtlasSource::set_alternative_tile_id);
+	ClassDB::bind_method(D_METHOD("has_alternative_tile", "atlas_coords", "alternative_tile"), &TileSetAtlasSource::has_alternative_tile);
+	ClassDB::bind_method(D_METHOD("get_next_alternative_tile_id", "atlas_coords"), &TileSetAtlasSource::get_next_alternative_tile_id);
+
+	ClassDB::bind_method(D_METHOD("get_alternative_tiles_count", "atlas_coords"), &TileSetAtlasSource::get_alternative_tiles_count);
+	ClassDB::bind_method(D_METHOD("get_alternative_tile_id", "atlas_coords", "index"), &TileSetAtlasSource::get_alternative_tile_id);
+
+	ClassDB::bind_method(D_METHOD("get_tile_data", "atlas_coords", "index"), &TileSetAtlasSource::get_tile_data);
+
+	// Helpers.
+	ClassDB::bind_method(D_METHOD("get_atlas_grid_size"), &TileSetAtlasSource::get_atlas_grid_size);
+	ClassDB::bind_method(D_METHOD("has_tiles_outside_texture"), &TileSetAtlasSource::has_tiles_outside_texture);
+	ClassDB::bind_method(D_METHOD("clear_tiles_outside_texture"), &TileSetAtlasSource::clear_tiles_outside_texture);
+	ClassDB::bind_method(D_METHOD("get_tile_texture_region", "atlas_coords"), &TileSetAtlasSource::get_tile_texture_region);
+}
+
+TileSetAtlasSource::~TileSetAtlasSource() {
+	// Free everything needed.
+	for (Map<Vector2i, TileAlternativesData>::Element *E_alternatives = tiles.front(); E_alternatives; E_alternatives = E_alternatives->next()) {
+		for (Map<int, TileData *>::Element *E_tile_data = E_alternatives->get().alternatives.front(); E_tile_data; E_tile_data = E_tile_data->next()) {
+			memdelete(E_tile_data->get());
+		}
+	}
+}
+
+TileData *TileSetAtlasSource::_get_atlas_tile_data(Vector2i p_atlas_coords, int p_alternative_tile) {
+	ERR_FAIL_COND_V_MSG(!tiles.has(p_atlas_coords), nullptr, vformat("TileSetAtlasSource has no tile at %s.", String(p_atlas_coords)));
+	ERR_FAIL_COND_V_MSG(!tiles[p_atlas_coords].alternatives.has(p_alternative_tile), nullptr, vformat("TileSetAtlasSource has no alternative with id %d for tile coords %s.", p_alternative_tile, String(p_atlas_coords)));
+
+	return tiles[p_atlas_coords].alternatives[p_alternative_tile];
+}
+
+const TileData *TileSetAtlasSource::_get_atlas_tile_data(Vector2i p_atlas_coords, int p_alternative_tile) const {
+	ERR_FAIL_COND_V_MSG(!tiles.has(p_atlas_coords), nullptr, vformat("TileSetAtlasSource has no tile at %s.", String(p_atlas_coords)));
+	ERR_FAIL_COND_V_MSG(!tiles[p_atlas_coords].alternatives.has(p_alternative_tile), nullptr, vformat("TileSetAtlasSource has no alternative with id %d for tile coords %s.", p_alternative_tile, String(p_atlas_coords)));
+
+	return tiles[p_atlas_coords].alternatives[p_alternative_tile];
+}
+
+void TileSetAtlasSource::_compute_next_alternative_id(const Vector2i p_atlas_coords) {
+	ERR_FAIL_COND_MSG(!tiles.has(p_atlas_coords), vformat("TileSetAtlasSource has no tile at %s.", String(p_atlas_coords)));
+
+	while (tiles[p_atlas_coords].alternatives.has(tiles[p_atlas_coords].next_alternative_id)) {
+		tiles[p_atlas_coords].next_alternative_id = (tiles[p_atlas_coords].next_alternative_id % 1073741823) + 1; // 2 ** 30
+	};
+}
+
+void TileData::set_tile_set(const TileSet *p_tile_set) {
+	tile_set = p_tile_set;
+	if (tile_set) {
+		occluders.resize(tile_set->get_occlusion_layers_count());
+		physics.resize(tile_set->get_physics_layers_count());
+		navigation.resize(tile_set->get_navigation_layers_count());
+		custom_data.resize(tile_set->get_custom_data_layers_count());
+	}
+	notify_property_list_changed();
+}
+
+void TileData::notify_tile_data_properties_should_change() {
+	occluders.resize(tile_set->get_occlusion_layers_count());
+	physics.resize(tile_set->get_physics_layers_count());
+	for (int bit_index = 0; bit_index < 16; bit_index++) {
+		if (terrain_set < 0 || terrain_peering_bits[bit_index] >= tile_set->get_terrains_count(terrain_set)) {
+			terrain_peering_bits[bit_index] = -1;
+		}
+	}
+	navigation.resize(tile_set->get_navigation_layers_count());
+
+	// Convert custom data to the new type.
+	custom_data.resize(tile_set->get_custom_data_layers_count());
+	for (int i = 0; i < custom_data.size(); i++) {
+		if (custom_data[i].get_type() != tile_set->get_custom_data_type(i)) {
+			Variant new_val;
+			Callable::CallError error;
+			if (Variant::can_convert(custom_data[i].get_type(), tile_set->get_custom_data_type(i))) {
+				const Variant *args[] = { &custom_data[i] };
+				Variant::construct(tile_set->get_custom_data_type(i), new_val, args, 1, error);
+			} else {
+				Variant::construct(tile_set->get_custom_data_type(i), new_val, nullptr, 0, error);
+			}
+			custom_data.write[i] = new_val;
+		}
+	}
+
+	notify_property_list_changed();
+	emit_signal("changed");
+}
+
+void TileData::reset_state() {
+	occluders.clear();
+	physics.clear();
+	navigation.clear();
+	custom_data.clear();
+}
+
+void TileData::set_allow_transform(bool p_allow_transform) {
+	allow_transform = p_allow_transform;
+}
+
+bool TileData::is_allowing_transform() const {
+	return allow_transform;
+}
+
+// Rendering
+void TileData::set_flip_h(bool p_flip_h) {
+	ERR_FAIL_COND_MSG(!allow_transform && p_flip_h, "Transform is only allowed for alternative tiles (with its alternative_id != 0)");
+	flip_h = p_flip_h;
+	emit_signal("changed");
+}
+bool TileData::get_flip_h() const {
+	return flip_h;
+}
+
+void TileData::set_flip_v(bool p_flip_v) {
+	ERR_FAIL_COND_MSG(!allow_transform && p_flip_v, "Transform is only allowed for alternative tiles (with its alternative_id != 0)");
+	flip_v = p_flip_v;
+	emit_signal("changed");
+}
+
+bool TileData::get_flip_v() const {
+	return flip_v;
+}
+
+void TileData::set_transpose(bool p_transpose) {
+	ERR_FAIL_COND_MSG(!allow_transform && p_transpose, "Transform is only allowed for alternative tiles (with its alternative_id != 0)");
+	transpose = p_transpose;
+	emit_signal("changed");
+}
+bool TileData::get_transpose() const {
+	return transpose;
+}
+
+void TileData::set_texture_offset(Vector2i p_texture_offset) {
+	tex_offset = p_texture_offset;
+	emit_signal("changed");
+}
+
+Vector2i TileData::get_texture_offset() const {
+	return tex_offset;
+}
+
+void TileData::tile_set_material(Ref<ShaderMaterial> p_material) {
+	material = p_material;
+	emit_signal("changed");
+}
+Ref<ShaderMaterial> TileData::tile_get_material() const {
+	return material;
+}
+
+void TileData::set_modulate(Color p_modulate) {
+	modulate = p_modulate;
+	emit_signal("changed");
+}
+Color TileData::get_modulate() const {
+	return modulate;
+}
+
+void TileData::set_z_index(int p_z_index) {
+	z_index = p_z_index;
+	emit_signal("changed");
+}
+int TileData::get_z_index() const {
+	return z_index;
+}
+
+void TileData::set_y_sort_origin(Vector2i p_y_sort_origin) {
+	y_sort_origin = p_y_sort_origin;
+	emit_signal("changed");
+}
+Vector2i TileData::get_y_sort_origin() const {
+	return y_sort_origin;
+}
+
+void TileData::set_occluder(int p_layer_id, Ref<OccluderPolygon2D> p_occluder_polygon) {
+	ERR_FAIL_INDEX(p_layer_id, occluders.size());
+	occluders.write[p_layer_id] = p_occluder_polygon;
+	emit_signal("changed");
+}
+
+Ref<OccluderPolygon2D> TileData::get_occluder(int p_layer_id) const {
+	ERR_FAIL_INDEX_V(p_layer_id, occluders.size(), Ref<OccluderPolygon2D>());
+	return occluders[p_layer_id];
+}
+
+// Physics
+int TileData::get_collision_shapes_count(int p_layer_id) const {
+	ERR_FAIL_INDEX_V(p_layer_id, physics.size(), 0);
+	return physics[p_layer_id].shapes.size();
+}
+
+void TileData::set_collision_shapes_count(int p_layer_id, int p_shapes_count) {
+	ERR_FAIL_INDEX(p_layer_id, physics.size());
+	ERR_FAIL_COND(p_shapes_count < 0);
+	physics.write[p_layer_id].shapes.resize(p_shapes_count);
+	notify_property_list_changed();
+	emit_signal("changed");
+}
+
+void TileData::add_collision_shape(int p_layer_id) {
+	ERR_FAIL_INDEX(p_layer_id, physics.size());
+	physics.write[p_layer_id].shapes.push_back(PhysicsLayerTileData::ShapeTileData());
+	emit_signal("changed");
+}
+
+void TileData::remove_collision_shape(int p_layer_id, int p_shape_index) {
+	ERR_FAIL_INDEX(p_layer_id, physics.size());
+	ERR_FAIL_INDEX(p_shape_index, physics[p_layer_id].shapes.size());
+	physics.write[p_layer_id].shapes.remove(p_shape_index);
+	emit_signal("changed");
+}
+
+void TileData::set_collision_shape_shape(int p_layer_id, int p_shape_index, Ref<Shape2D> p_shape) {
+	ERR_FAIL_INDEX(p_layer_id, physics.size());
+	ERR_FAIL_INDEX(p_shape_index, physics[p_layer_id].shapes.size());
+	physics.write[p_layer_id].shapes.write[p_shape_index].shape = p_shape;
+	emit_signal("changed");
+}
+
+Ref<Shape2D> TileData::get_collision_shape_shape(int p_layer_id, int p_shape_index) const {
+	ERR_FAIL_INDEX_V(p_layer_id, physics.size(), Ref<Shape2D>());
+	ERR_FAIL_INDEX_V(p_shape_index, physics[p_layer_id].shapes.size(), Ref<Shape2D>());
+	return physics[p_layer_id].shapes[p_shape_index].shape;
+}
+
+void TileData::set_collision_shape_one_way(int p_layer_id, int p_shape_index, bool p_one_way) {
+	ERR_FAIL_INDEX(p_layer_id, physics.size());
+	ERR_FAIL_INDEX(p_shape_index, physics[p_layer_id].shapes.size());
+	physics.write[p_layer_id].shapes.write[p_shape_index].one_way = p_one_way;
+	emit_signal("changed");
+}
+
+bool TileData::is_collision_shape_one_way(int p_layer_id, int p_shape_index) const {
+	ERR_FAIL_INDEX_V(p_layer_id, physics.size(), false);
+	ERR_FAIL_INDEX_V(p_shape_index, physics[p_layer_id].shapes.size(), false);
+	return physics[p_layer_id].shapes[p_shape_index].one_way;
+}
+
+void TileData::set_collision_shape_one_way_margin(int p_layer_id, int p_shape_index, float p_one_way_margin) {
+	ERR_FAIL_INDEX(p_layer_id, physics.size());
+	ERR_FAIL_INDEX(p_shape_index, physics[p_layer_id].shapes.size());
+	physics.write[p_layer_id].shapes.write[p_shape_index].one_way_margin = p_one_way_margin;
+	emit_signal("changed");
+}
+
+float TileData::get_collision_shape_one_way_margin(int p_layer_id, int p_shape_index) const {
+	ERR_FAIL_INDEX_V(p_layer_id, physics.size(), 0.0);
+	ERR_FAIL_INDEX_V(p_shape_index, physics[p_layer_id].shapes.size(), 0.0);
+	return physics[p_layer_id].shapes[p_shape_index].one_way_margin;
+}
+
+// Terrain
+void TileData::set_terrain_set(int p_terrain_set) {
+	ERR_FAIL_COND(p_terrain_set < -1);
+	if (tile_set) {
+		ERR_FAIL_COND(p_terrain_set >= tile_set->get_terrain_sets_count());
+	}
+	terrain_set = p_terrain_set;
+	notify_property_list_changed();
+	emit_signal("changed");
+}
+
+int TileData::get_terrain_set() const {
+	return terrain_set;
+}
+
+void TileData::set_peering_bit_terrain(TileSet::CellNeighbor p_peering_bit, int p_terrain_index) {
+	ERR_FAIL_COND(p_terrain_index < -1);
+	if (tile_set) {
+		ERR_FAIL_COND(p_terrain_index >= tile_set->get_terrains_count(terrain_set));
+		ERR_FAIL_COND(!is_valid_peering_bit_terrain(p_peering_bit));
+	}
+	terrain_peering_bits[p_peering_bit] = p_terrain_index;
+	emit_signal("changed");
+}
+
+int TileData::get_peering_bit_terrain(TileSet::CellNeighbor p_peering_bit) const {
+	return terrain_peering_bits[p_peering_bit];
+}
+
+bool TileData::is_valid_peering_bit_terrain(TileSet::CellNeighbor p_peering_bit) const {
+	ERR_FAIL_COND_V(!tile_set, false);
+
+	return tile_set->is_valid_peering_bit_terrain(terrain_set, p_peering_bit);
+}
+
+// Navigation
+void TileData::set_navigation_polygon(int p_layer_id, Ref<NavigationPolygon> p_navigation_polygon) {
+	ERR_FAIL_INDEX(p_layer_id, navigation.size());
+	navigation.write[p_layer_id] = p_navigation_polygon;
+	emit_signal("changed");
+}
+
+Ref<NavigationPolygon> TileData::get_navigation_polygon(int p_layer_id) const {
+	ERR_FAIL_INDEX_V(p_layer_id, navigation.size(), Ref<NavigationPolygon>());
+	return navigation[p_layer_id];
+}
+
+// Misc
+void TileData::set_probability(float p_probability) {
+	ERR_FAIL_COND(p_probability <= 0.0);
+	probability = p_probability;
+	emit_signal("changed");
+}
+float TileData::get_probability() const {
+	return probability;
+}
+
+// Custom data
+void TileData::set_custom_data(String p_layer_name, Variant p_value) {
+	ERR_FAIL_COND(!tile_set);
+	int p_layer_id = tile_set->get_custom_data_layer_by_name(p_layer_name);
+	ERR_FAIL_COND_MSG(p_layer_id < 0, vformat("TileSet has no layer with name: %s", p_layer_name));
+	set_custom_data_by_layer_id(p_layer_id, p_value);
+}
+
+Variant TileData::get_custom_data(String p_layer_name) const {
+	ERR_FAIL_COND_V(!tile_set, Variant());
+	int p_layer_id = tile_set->get_custom_data_layer_by_name(p_layer_name);
+	ERR_FAIL_COND_V_MSG(p_layer_id < 0, Variant(), vformat("TileSet has no layer with name: %s", p_layer_name));
+	return get_custom_data_by_layer_id(p_layer_id);
+}
+
+void TileData::set_custom_data_by_layer_id(int p_layer_id, Variant p_value) {
+	ERR_FAIL_INDEX(p_layer_id, custom_data.size());
+	custom_data.write[p_layer_id] = p_value;
+	emit_signal("changed");
+}
+
+Variant TileData::get_custom_data_by_layer_id(int p_layer_id) const {
+	ERR_FAIL_INDEX_V(p_layer_id, custom_data.size(), Variant());
+	return custom_data[p_layer_id];
+}
+
+bool TileData::_set(const StringName &p_name, const Variant &p_value) {
+	Vector<String> components = String(p_name).split("/", true, 2);
+
+	if (components.size() == 2 && components[0].begins_with("occlusion_layer_") && components[0].trim_prefix("occlusion_layer_").is_valid_integer()) {
+		// Occlusion layers.
+		int layer_index = components[0].trim_prefix("occlusion_layer_").to_int();
+		ERR_FAIL_COND_V(layer_index < 0, false);
+		if (components[1] == "polygon") {
+			Ref<OccluderPolygon2D> polygon = p_value;
+			if (!polygon.is_valid()) {
+				return false;
+			}
+
+			if (layer_index >= occluders.size()) {
+				if (tile_set) {
+					return false;
+				} else {
+					occluders.resize(layer_index + 1);
+				}
+			}
+			set_occluder(layer_index, polygon);
+			return true;
+		}
+	} else if (components.size() >= 2 && components[0].begins_with("physics_layer_") && components[0].trim_prefix("physics_layer_").is_valid_integer()) {
+		// Physics layers.
+		int layer_index = components[0].trim_prefix("physics_layer_").to_int();
+		ERR_FAIL_COND_V(layer_index < 0, false);
+		if (components.size() == 2 && components[1] == "shapes_count") {
+			if (p_value.get_type() != Variant::INT) {
+				return false;
+			}
+
+			if (layer_index >= physics.size()) {
+				if (tile_set) {
+					return false;
+				} else {
+					physics.resize(layer_index + 1);
+				}
+			}
+			set_collision_shapes_count(layer_index, p_value);
+			return true;
+		} else if (components.size() == 3 && components[1].begins_with("shape_") && components[1].trim_prefix("shape_").is_valid_integer()) {
+			int shape_index = components[1].trim_prefix("shape_").to_int();
+			ERR_FAIL_COND_V(shape_index < 0, false);
+
+			if (components[2] == "shape" || components[2] == "one_way" || components[2] == "one_way_margin") {
+				if (layer_index >= physics.size()) {
+					if (tile_set) {
+						return false;
+					} else {
+						physics.resize(layer_index + 1);
+					}
+				}
+
+				if (shape_index >= physics[layer_index].shapes.size()) {
+					physics.write[layer_index].shapes.resize(shape_index + 1);
+				}
+			}
+			if (components[2] == "shape") {
+				Ref<Shape2D> shape = p_value;
+				set_collision_shape_shape(layer_index, shape_index, shape);
+				return true;
+			} else if (components[2] == "one_way") {
+				set_collision_shape_one_way(layer_index, shape_index, p_value);
+				return true;
+			} else if (components[2] == "one_way_margin") {
+				set_collision_shape_one_way_margin(layer_index, shape_index, p_value);
+				return true;
+			}
+		}
+	} else if (components.size() == 2 && components[0].begins_with("navigation_layer_") && components[0].trim_prefix("navigation_layer_").is_valid_integer()) {
+		// Navigation layers.
+		int layer_index = components[0].trim_prefix("navigation_layer_").to_int();
+		ERR_FAIL_COND_V(layer_index < 0, false);
+		if (components[1] == "polygon") {
+			Ref<NavigationPolygon> polygon = p_value;
+			if (!polygon.is_valid()) {
+				return false;
+			}
+
+			if (layer_index >= navigation.size()) {
+				if (tile_set) {
+					return false;
+				} else {
+					navigation.resize(layer_index + 1);
+				}
+			}
+			set_navigation_polygon(layer_index, polygon);
+			return true;
+		}
+	} else if (components.size() == 2 && components[0] == "terrains_peering_bit") {
+		// Terrains.
+		if (components[1] == "right_side") {
+			set_peering_bit_terrain(TileSet::CELL_NEIGHBOR_RIGHT_SIDE, p_value);
+		} else if (components[1] == "right_corner") {
+			set_peering_bit_terrain(TileSet::CELL_NEIGHBOR_RIGHT_CORNER, p_value);
+		} else if (components[1] == "bottom_right_side") {
+			set_peering_bit_terrain(TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE, p_value);
+		} else if (components[1] == "bottom_right_corner") {
+			set_peering_bit_terrain(TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_CORNER, p_value);
+		} else if (components[1] == "bottom_side") {
+			set_peering_bit_terrain(TileSet::CELL_NEIGHBOR_BOTTOM_SIDE, p_value);
+		} else if (components[1] == "bottom_corner") {
+			set_peering_bit_terrain(TileSet::CELL_NEIGHBOR_BOTTOM_CORNER, p_value);
+		} else if (components[1] == "bottom_left_side") {
+			set_peering_bit_terrain(TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE, p_value);
+		} else if (components[1] == "bottom_left_corner") {
+			set_peering_bit_terrain(TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_CORNER, p_value);
+		} else if (components[1] == "left_side") {
+			set_peering_bit_terrain(TileSet::CELL_NEIGHBOR_LEFT_SIDE, p_value);
+		} else if (components[1] == "left_corner") {
+			set_peering_bit_terrain(TileSet::CELL_NEIGHBOR_LEFT_CORNER, p_value);
+		} else if (components[1] == "top_left_side") {
+			set_peering_bit_terrain(TileSet::CELL_NEIGHBOR_TOP_LEFT_SIDE, p_value);
+		} else if (components[1] == "top_left_corner") {
+			set_peering_bit_terrain(TileSet::CELL_NEIGHBOR_TOP_LEFT_CORNER, p_value);
+		} else if (components[1] == "top_side") {
+			set_peering_bit_terrain(TileSet::CELL_NEIGHBOR_TOP_SIDE, p_value);
+		} else if (components[1] == "top_corner") {
+			set_peering_bit_terrain(TileSet::CELL_NEIGHBOR_TOP_CORNER, p_value);
+		} else if (components[1] == "top_right_side") {
+			set_peering_bit_terrain(TileSet::CELL_NEIGHBOR_TOP_RIGHT_SIDE, p_value);
+		} else if (components[1] == "top_right_corner") {
+			set_peering_bit_terrain(TileSet::CELL_NEIGHBOR_TOP_RIGHT_CORNER, p_value);
+		} else {
+			return false;
+		}
+		return true;
+	} else if (components.size() == 1 && components[0].begins_with("custom_data_") && components[0].trim_prefix("custom_data_").is_valid_integer()) {
+		// Custom data layers.
+		int layer_index = components[0].trim_prefix("custom_data_").to_int();
+		ERR_FAIL_COND_V(layer_index < 0, false);
+
+		if (layer_index >= custom_data.size()) {
+			if (tile_set) {
+				return false;
+			} else {
+				custom_data.resize(layer_index + 1);
+			}
+		}
+		set_custom_data_by_layer_id(layer_index, p_value);
+
+		return true;
+	}
+
+	return false;
+}
+
+bool TileData::_get(const StringName &p_name, Variant &r_ret) const {
+	Vector<String> components = String(p_name).split("/", true, 2);
+
+	if (tile_set) {
+		if (components.size() == 2 && components[0].begins_with("occlusion_layer") && components[0].trim_prefix("occlusion_layer_").is_valid_integer()) {
+			// Occlusion layers.
+			int layer_index = components[0].trim_prefix("occlusion_layer_").to_int();
+			ERR_FAIL_COND_V(layer_index < 0, false);
+			if (layer_index >= occluders.size()) {
+				return false;
+			}
+			if (components[1] == "polygon") {
+				r_ret = get_occluder(layer_index);
+				return true;
+			}
+		} else if (components.size() >= 2 && components[0].begins_with("physics_layer_") && components[0].trim_prefix("physics_layer_").is_valid_integer()) {
+			// Physics layers.
+			int layer_index = components[0].trim_prefix("physics_layer_").to_int();
+			ERR_FAIL_COND_V(layer_index < 0, false);
+			if (layer_index >= physics.size()) {
+				return false;
+			}
+			if (components.size() == 2 && components[1] == "shapes_count") {
+				r_ret = get_collision_shapes_count(layer_index);
+				return true;
+			} else if (components.size() == 3 && components[1].begins_with("shape_") && components[1].trim_prefix("shape_").is_valid_integer()) {
+				int shape_index = components[1].trim_prefix("shape_").to_int();
+				ERR_FAIL_COND_V(shape_index < 0, false);
+				if (shape_index >= physics[layer_index].shapes.size()) {
+					return false;
+				}
+				if (components[2] == "shape") {
+					r_ret = get_collision_shape_shape(layer_index, shape_index);
+					return true;
+				} else if (components[2] == "one_way") {
+					r_ret = is_collision_shape_one_way(layer_index, shape_index);
+					return true;
+				} else if (components[2] == "one_way_margin") {
+					r_ret = get_collision_shape_one_way_margin(layer_index, shape_index);
+					return true;
+				}
+			}
+		} else if (components.size() == 2 && components[0] == "terrains_peering_bit") {
+			// Terrains.
+			if (components[1] == "right_side") {
+				r_ret = terrain_peering_bits[TileSet::CELL_NEIGHBOR_RIGHT_SIDE];
+			} else if (components[1] == "right_corner") {
+				r_ret = terrain_peering_bits[TileSet::CELL_NEIGHBOR_RIGHT_CORNER];
+			} else if (components[1] == "bottom_right_side") {
+				r_ret = terrain_peering_bits[TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE];
+			} else if (components[1] == "bottom_right_corner") {
+				r_ret = terrain_peering_bits[TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_CORNER];
+			} else if (components[1] == "bottom_side") {
+				r_ret = terrain_peering_bits[TileSet::CELL_NEIGHBOR_BOTTOM_SIDE];
+			} else if (components[1] == "bottom_corner") {
+				r_ret = terrain_peering_bits[TileSet::CELL_NEIGHBOR_BOTTOM_CORNER];
+			} else if (components[1] == "bottom_left_side") {
+				r_ret = terrain_peering_bits[TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE];
+			} else if (components[1] == "bottom_left_corner") {
+				r_ret = terrain_peering_bits[TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_CORNER];
+			} else if (components[1] == "left_side") {
+				r_ret = terrain_peering_bits[TileSet::CELL_NEIGHBOR_LEFT_SIDE];
+			} else if (components[1] == "left_corner") {
+				r_ret = terrain_peering_bits[TileSet::CELL_NEIGHBOR_LEFT_CORNER];
+			} else if (components[1] == "top_left_side") {
+				r_ret = terrain_peering_bits[TileSet::CELL_NEIGHBOR_TOP_LEFT_SIDE];
+			} else if (components[1] == "top_left_corner") {
+				r_ret = terrain_peering_bits[TileSet::CELL_NEIGHBOR_TOP_LEFT_CORNER];
+			} else if (components[1] == "top_side") {
+				r_ret = terrain_peering_bits[TileSet::CELL_NEIGHBOR_TOP_SIDE];
+			} else if (components[1] == "top_corner") {
+				r_ret = terrain_peering_bits[TileSet::CELL_NEIGHBOR_TOP_CORNER];
+			} else if (components[1] == "top_right_side") {
+				r_ret = terrain_peering_bits[TileSet::CELL_NEIGHBOR_TOP_RIGHT_SIDE];
+			} else if (components[1] == "top_right_corner") {
+				r_ret = terrain_peering_bits[TileSet::CELL_NEIGHBOR_TOP_RIGHT_CORNER];
+			} else {
+				return false;
+			}
+			return true;
+		} else if (components.size() == 2 && components[0].begins_with("navigation_layer_") && components[0].trim_prefix("navigation_layer_").is_valid_integer()) {
+			// Occlusion layers.
+			int layer_index = components[0].trim_prefix("navigation_layer_").to_int();
+			ERR_FAIL_COND_V(layer_index < 0, false);
+			if (layer_index >= navigation.size()) {
+				return false;
+			}
+			if (components[1] == "polygon") {
+				r_ret = get_navigation_polygon(layer_index);
+				return true;
+			}
+		} else if (components.size() == 1 && components[0].begins_with("custom_data_") && components[0].trim_prefix("custom_data_").is_valid_integer()) {
+			// Custom data layers.
+			int layer_index = components[0].trim_prefix("custom_data_").to_int();
+			ERR_FAIL_COND_V(layer_index < 0, false);
+			if (layer_index >= custom_data.size()) {
+				return false;
+			}
+			r_ret = get_custom_data_by_layer_id(layer_index);
+			return true;
+		}
+	}
+
+	return false;
+}
+
+void TileData::_get_property_list(List<PropertyInfo> *p_list) const {
+	// Add the groups manually.
+	if (tile_set) {
+		// Occlusion layers.
+		p_list->push_back(PropertyInfo(Variant::NIL, "Rendering", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_GROUP));
+		for (int i = 0; i < occluders.size(); i++) {
+			p_list->push_back(PropertyInfo(Variant::OBJECT, vformat("occlusion_layer_%d/polygon", i), PROPERTY_HINT_RESOURCE_TYPE, "OccluderPolygon2D", PROPERTY_USAGE_DEFAULT));
+		}
+
+		// Physics layers.
+		p_list->push_back(PropertyInfo(Variant::NIL, "Physics", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_GROUP));
+		for (int i = 0; i < physics.size(); i++) {
+			p_list->push_back(PropertyInfo(Variant::INT, vformat("physics_layer_%d/shapes_count", i), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR));
+			for (int j = 0; j < physics[i].shapes.size(); j++) {
+				p_list->push_back(PropertyInfo(Variant::OBJECT, vformat("physics_layer_%d/shape_%d/shape", i, j), PROPERTY_HINT_RESOURCE_TYPE, "Shape2D", PROPERTY_USAGE_DEFAULT));
+				p_list->push_back(PropertyInfo(Variant::BOOL, vformat("physics_layer_%d/shape_%d/one_way", i, j)));
+				p_list->push_back(PropertyInfo(Variant::FLOAT, vformat("physics_layer_%d/shape_%d/one_way_margin", i, j)));
+			}
+		}
+
+		// Terrain data
+		if (terrain_set >= 0) {
+			p_list->push_back(PropertyInfo(Variant::NIL, "Terrains", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_GROUP));
+			if (is_valid_peering_bit_terrain(TileSet::CELL_NEIGHBOR_RIGHT_SIDE)) {
+				p_list->push_back(PropertyInfo(Variant::INT, "terrains_peering_bit/right_side"));
+			}
+			if (is_valid_peering_bit_terrain(TileSet::CELL_NEIGHBOR_RIGHT_CORNER)) {
+				p_list->push_back(PropertyInfo(Variant::INT, "terrains_peering_bit/right_corner"));
+			}
+			if (is_valid_peering_bit_terrain(TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE)) {
+				p_list->push_back(PropertyInfo(Variant::INT, "terrains_peering_bit/bottom_right_side"));
+			}
+			if (is_valid_peering_bit_terrain(TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_CORNER)) {
+				p_list->push_back(PropertyInfo(Variant::INT, "terrains_peering_bit/bottom_right_corner"));
+			}
+			if (is_valid_peering_bit_terrain(TileSet::CELL_NEIGHBOR_BOTTOM_SIDE)) {
+				p_list->push_back(PropertyInfo(Variant::INT, "terrains_peering_bit/bottom_side"));
+			}
+			if (is_valid_peering_bit_terrain(TileSet::CELL_NEIGHBOR_BOTTOM_CORNER)) {
+				p_list->push_back(PropertyInfo(Variant::INT, "terrains_peering_bit/bottom_corner"));
+			}
+			if (is_valid_peering_bit_terrain(TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE)) {
+				p_list->push_back(PropertyInfo(Variant::INT, "terrains_peering_bit/bottom_left_side"));
+			}
+			if (is_valid_peering_bit_terrain(TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_CORNER)) {
+				p_list->push_back(PropertyInfo(Variant::INT, "terrains_peering_bit/bottom_left_corner"));
+			}
+			if (is_valid_peering_bit_terrain(TileSet::CELL_NEIGHBOR_LEFT_SIDE)) {
+				p_list->push_back(PropertyInfo(Variant::INT, "terrains_peering_bit/left_side"));
+			}
+			if (is_valid_peering_bit_terrain(TileSet::CELL_NEIGHBOR_LEFT_CORNER)) {
+				p_list->push_back(PropertyInfo(Variant::INT, "terrains_peering_bit/left_corner"));
+			}
+			if (is_valid_peering_bit_terrain(TileSet::CELL_NEIGHBOR_TOP_LEFT_SIDE)) {
+				p_list->push_back(PropertyInfo(Variant::INT, "terrains_peering_bit/top_left_side"));
+			}
+			if (is_valid_peering_bit_terrain(TileSet::CELL_NEIGHBOR_TOP_LEFT_CORNER)) {
+				p_list->push_back(PropertyInfo(Variant::INT, "terrains_peering_bit/top_left_corner"));
+			}
+			if (is_valid_peering_bit_terrain(TileSet::CELL_NEIGHBOR_TOP_SIDE)) {
+				p_list->push_back(PropertyInfo(Variant::INT, "terrains_peering_bit/top_side"));
+			}
+			if (is_valid_peering_bit_terrain(TileSet::CELL_NEIGHBOR_TOP_CORNER)) {
+				p_list->push_back(PropertyInfo(Variant::INT, "terrains_peering_bit/top_corner"));
+			}
+			if (is_valid_peering_bit_terrain(TileSet::CELL_NEIGHBOR_TOP_RIGHT_SIDE)) {
+				p_list->push_back(PropertyInfo(Variant::INT, "terrains_peering_bit/top_right_side"));
+			}
+			if (is_valid_peering_bit_terrain(TileSet::CELL_NEIGHBOR_TOP_RIGHT_CORNER)) {
+				p_list->push_back(PropertyInfo(Variant::INT, "terrains_peering_bit/top_right_corner"));
+			}
+		}
+
+		// Navigation layers.
+		p_list->push_back(PropertyInfo(Variant::NIL, "Navigation", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_GROUP));
+		for (int i = 0; i < navigation.size(); i++) {
+			p_list->push_back(PropertyInfo(Variant::OBJECT, vformat("navigation_layer_%d/polygon", i), PROPERTY_HINT_RESOURCE_TYPE, "NavigationPolygon", PROPERTY_USAGE_DEFAULT));
+		}
+
+		// Custom data layers.
+		p_list->push_back(PropertyInfo(Variant::NIL, "Custom data", PROPERTY_HINT_NONE, "custom_data_", PROPERTY_USAGE_GROUP));
+		for (int i = 0; i < custom_data.size(); i++) {
+			p_list->push_back(PropertyInfo(tile_set->get_custom_data_type(i), vformat("custom_data_%d", i), PROPERTY_HINT_NONE, String(), PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_NIL_IS_VARIANT));
+		}
+	}
+}
+
+void TileData::_bind_methods() {
+	// Rendering.
+	ClassDB::bind_method(D_METHOD("set_flip_h", "flip_h"), &TileData::set_flip_h);
+	ClassDB::bind_method(D_METHOD("get_flip_h"), &TileData::get_flip_h);
+	ClassDB::bind_method(D_METHOD("set_flip_v", "flip_v"), &TileData::set_flip_v);
+	ClassDB::bind_method(D_METHOD("get_flip_v"), &TileData::get_flip_v);
+	ClassDB::bind_method(D_METHOD("set_transpose", "transpose"), &TileData::set_transpose);
+	ClassDB::bind_method(D_METHOD("get_transpose"), &TileData::get_transpose);
+	ClassDB::bind_method(D_METHOD("tile_set_material", "material"), &TileData::tile_set_material);
+	ClassDB::bind_method(D_METHOD("tile_get_material"), &TileData::tile_get_material);
+	ClassDB::bind_method(D_METHOD("set_texture_offset", "texture_offset"), &TileData::set_texture_offset);
+	ClassDB::bind_method(D_METHOD("get_texture_offset"), &TileData::get_texture_offset);
+	ClassDB::bind_method(D_METHOD("set_modulate", "modulate"), &TileData::set_modulate);
+	ClassDB::bind_method(D_METHOD("get_modulate"), &TileData::get_modulate);
+	ClassDB::bind_method(D_METHOD("set_z_index", "z_index"), &TileData::set_z_index);
+	ClassDB::bind_method(D_METHOD("get_z_index"), &TileData::get_z_index);
+	ClassDB::bind_method(D_METHOD("set_y_sort_origin", "y_sort_origin"), &TileData::set_y_sort_origin);
+	ClassDB::bind_method(D_METHOD("get_y_sort_origin"), &TileData::get_y_sort_origin);
+
+	ClassDB::bind_method(D_METHOD("set_occluder", "layer_id", "occluder_polygon"), &TileData::set_occluder);
+	ClassDB::bind_method(D_METHOD("get_occluder", "layer_id"), &TileData::get_occluder);
+
+	// Physics.
+	ClassDB::bind_method(D_METHOD("get_collision_shapes_count", "layer_id"), &TileData::get_collision_shapes_count);
+	ClassDB::bind_method(D_METHOD("set_collision_shapes_count", "layer_id", "shapes_count"), &TileData::set_collision_shapes_count);
+	ClassDB::bind_method(D_METHOD("add_collision_shape", "layer_id"), &TileData::add_collision_shape);
+	ClassDB::bind_method(D_METHOD("remove_collision_shape", "layer_id", "shape_index"), &TileData::remove_collision_shape);
+	ClassDB::bind_method(D_METHOD("set_collision_shape_shape", "layer_id", "shape_index", "shape"), &TileData::set_collision_shape_shape);
+	ClassDB::bind_method(D_METHOD("get_collision_shape_shape", "layer_id", "shape_index"), &TileData::get_collision_shape_shape);
+	ClassDB::bind_method(D_METHOD("set_collision_shape_one_way", "layer_id", "shape_index", "one_way"), &TileData::set_collision_shape_one_way);
+	ClassDB::bind_method(D_METHOD("is_collision_shape_one_way", "layer_id", "shape_index"), &TileData::is_collision_shape_one_way);
+	ClassDB::bind_method(D_METHOD("set_collision_shape_one_way_margin", "layer_id", "shape_index", "one_way_margin"), &TileData::set_collision_shape_one_way_margin);
+	ClassDB::bind_method(D_METHOD("get_collision_shape_one_way_margin", "layer_id", "shape_index"), &TileData::get_collision_shape_one_way_margin);
+
+	// Terrain
+	ClassDB::bind_method(D_METHOD("set_terrain_set", "terrain_set"), &TileData::set_terrain_set);
+	ClassDB::bind_method(D_METHOD("get_terrain_set"), &TileData::get_terrain_set);
+	ClassDB::bind_method(D_METHOD("set_peering_bit_terrain", "peering_bit", "terrain"), &TileData::set_peering_bit_terrain);
+	ClassDB::bind_method(D_METHOD("get_peering_bit_terrain", "peering_bit"), &TileData::get_peering_bit_terrain);
+
+	// Navigation
+	ClassDB::bind_method(D_METHOD("set_navigation_polygon", "layer_id", "navigation_polygon"), &TileData::set_navigation_polygon);
+	ClassDB::bind_method(D_METHOD("get_navigation_polygon", "layer_id"), &TileData::get_navigation_polygon);
+
+	// Misc.
+	ClassDB::bind_method(D_METHOD("set_probability", "probability"), &TileData::set_probability);
+	ClassDB::bind_method(D_METHOD("get_probability"), &TileData::get_probability);
+
+	// Custom data.
+	ClassDB::bind_method(D_METHOD("set_custom_data", "layer_name", "value"), &TileData::set_custom_data);
+	ClassDB::bind_method(D_METHOD("get_custom_data", "layer_name"), &TileData::get_custom_data);
+	ClassDB::bind_method(D_METHOD("set_custom_data_by_layer_id", "layer_id", "value"), &TileData::set_custom_data_by_layer_id);
+	ClassDB::bind_method(D_METHOD("get_custom_data_by_layer_id", "layer_id"), &TileData::get_custom_data_by_layer_id);
+
+	ADD_GROUP("Rendering", "");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flip_h"), "set_flip_h", "get_flip_h");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flip_v"), "set_flip_v", "get_flip_v");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "transpose"), "set_transpose", "get_transpose");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "texture_offset"), "set_texture_offset", "get_texture_offset");
+	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "modulate"), "set_modulate", "get_modulate");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "z_index"), "set_z_index", "get_z_index");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "y_sort_origin"), "set_y_sort_origin", "get_y_sort_origin");
+
+	ADD_GROUP("Terrains", "");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "terrain_set"), "set_terrain_set", "get_terrain_set");
+
+	ADD_GROUP("Miscellaneous", "");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "probability"), "set_probability", "get_probability");
+
+	ADD_SIGNAL(MethodInfo("changed"));
 }
