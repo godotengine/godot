@@ -1614,8 +1614,8 @@ void CSharpInstance::get_properties_state_for_reloading(List<Pair<StringName, Va
 
 void CSharpInstance::get_property_list(List<PropertyInfo> *p_properties) const {
 
-	for (Map<StringName, PropertyInfo>::Element *E = script->member_info.front(); E; E = E->next()) {
-		p_properties->push_back(E->value());
+	for (const List<StringName>::Element *E = script->member_order.front(); E; E = E->next()) {
+		p_properties->push_back(script->member_info[E->get()]);
 	}
 
 	// Call _get_property_list
@@ -2234,6 +2234,7 @@ void CSharpScript::_update_member_info_no_exports() {
 		exports_invalidated = false;
 
 		member_info.clear();
+		member_order.clear();
 
 		GDMonoClass *top = script_class;
 
@@ -2250,6 +2251,7 @@ void CSharpScript::_update_member_info_no_exports() {
 					StringName member_name = field->get_name();
 
 					member_info[member_name] = prop_info;
+					member_order.push_front(member_name);
 					exported_members_cache.push_front(prop_info);
 					exported_members_defval_cache[member_name] = Variant();
 				}
@@ -2264,6 +2266,7 @@ void CSharpScript::_update_member_info_no_exports() {
 					StringName member_name = property->get_name();
 
 					member_info[member_name] = prop_info;
+					member_order.push_front(member_name);
 					exported_members_cache.push_front(prop_info);
 					exported_members_defval_cache[member_name] = Variant();
 				}
@@ -2297,6 +2300,7 @@ bool CSharpScript::_update_exports() {
 		changed = true;
 
 		member_info.clear();
+		member_order.clear();
 
 #ifdef TOOLS_ENABLED
 		MonoObject *tmp_object = nullptr;
@@ -2357,6 +2361,7 @@ bool CSharpScript::_update_exports() {
 					StringName member_name = field->get_name();
 
 					member_info[member_name] = prop_info;
+					member_order.push_front(member_name);
 
 					if (exported) {
 #ifdef TOOLS_ENABLED
@@ -2385,6 +2390,7 @@ bool CSharpScript::_update_exports() {
 					StringName member_name = property->get_name();
 
 					member_info[member_name] = prop_info;
+					member_order.push_front(member_name);
 
 					if (exported) {
 #ifdef TOOLS_ENABLED
@@ -3302,8 +3308,8 @@ Ref<Script> CSharpScript::get_base_script() const {
 
 void CSharpScript::get_script_property_list(List<PropertyInfo> *p_list) const {
 
-	for (Map<StringName, PropertyInfo>::Element *E = member_info.front(); E; E = E->next()) {
-		p_list->push_back(E->value());
+	for (const List<StringName>::Element *E = member_order.front(); E; E = E->next()) {
+		p_list->push_back(member_info[E->get()]);
 	}
 }
 
