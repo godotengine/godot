@@ -222,6 +222,13 @@ def configure(env):
     if not env["builtin_pcre2"]:
         env.ParseConfig("pkg-config libpcre2-32 --cflags --libs")
 
+    # Embree is only compatible with x86_64. Yet another unreliable hack that will break
+    # cross-compilation, this will really need to be handle better. Thankfully only affects
+    # people who disable builtin_embree (likely distro packagers).
+    if env["tools"] and not env["builtin_embree"] and (is64 and platform.machine() == "x86_64"):
+        # No pkgconfig file so far, hardcode expected lib name.
+        env.Append(LIBS=["embree3"])
+
     ## Flags
 
     # Linkflags below this line should typically stay the last ones
