@@ -81,10 +81,9 @@
 void BulletPhysicsServer3D::_bind_methods() {
 	//ClassDB::bind_method(D_METHOD("DoTest"), &BulletPhysicsServer3D::DoTest);
 }
-BulletPhysicsServer3D *BulletPhysicsServer3D::singletonbullet = nullptr;
+
 BulletPhysicsServer3D::BulletPhysicsServer3D(bool p_using_threads) {
 	using_threads = p_using_threads;
-	singletonbullet = this;
 	active = true;
 	doing_sync = false;
 };
@@ -1525,8 +1524,6 @@ void BulletPhysicsServer3D::init() {
 }
 
 void BulletPhysicsServer3D::step(real_t p_deltaTime) {
-#ifndef _3D_DISABLED
-
 	if (!active) {
 		return;
 	}
@@ -1537,8 +1534,6 @@ void BulletPhysicsServer3D::step(real_t p_deltaTime) {
 		SpaceBullet *space = (SpaceBullet *)E->get();
 		space->step(p_deltaTime);
 	}
-
-#endif
 }
 
 void BulletPhysicsServer3D::flush_queries() {
