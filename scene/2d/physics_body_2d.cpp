@@ -440,12 +440,8 @@ bool RigidBody2D::_test_motion(const Vector2 &p_motion, bool p_infinite_inertia,
 }
 
 void RigidBody2D::_direct_state_changed(Object *p_state) {
-
-#ifdef DEBUG_ENABLED
 	state = Object::cast_to<Physics2DDirectBodyState>(p_state);
-#else
-	state = (Physics2DDirectBodyState *)p_state; //trust it
-#endif
+	ERR_FAIL_COND_MSG(!state, "Method '_direct_state_changed' must receive a valid Physics2DDirectBodyState object as argument");
 
 	set_block_transform_notify(true); // don't want notify (would feedback loop)
 	if (mode != MODE_KINEMATIC)
@@ -1437,11 +1433,11 @@ bool KinematicBody2D::is_sync_to_physics_enabled() const {
 }
 
 void KinematicBody2D::_direct_state_changed(Object *p_state) {
-
 	if (!sync_to_physics)
 		return;
 
 	Physics2DDirectBodyState *state = Object::cast_to<Physics2DDirectBodyState>(p_state);
+	ERR_FAIL_COND_MSG(!state, "Method '_direct_state_changed' must receive a valid Physics2DDirectBodyState object as argument");
 
 	last_valid_transform = state->get_transform();
 	set_notify_local_transform(false);

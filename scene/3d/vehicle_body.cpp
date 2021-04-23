@@ -857,10 +857,10 @@ void VehicleBody::_update_friction(PhysicsDirectBodyState *s) {
 }
 
 void VehicleBody::_direct_state_changed(Object *p_state) {
-
 	RigidBody::_direct_state_changed(p_state);
 
 	state = Object::cast_to<PhysicsDirectBodyState>(p_state);
+	ERR_FAIL_COND_MSG(!state, "Method '_direct_state_changed' must receive a valid PhysicsDirectBodyState object as argument");
 
 	float step = state->get_step();
 
