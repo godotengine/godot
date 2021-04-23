@@ -85,9 +85,6 @@ public:
 };
 
 class SpaceBullet : public RIDBullet {
-	RID static_global_body;
-	AreaBullet *area = nullptr;
-
 	friend class AreaBullet;
 	friend void onBulletTickCallback(btDynamicsWorld *world, btScalar timeStep);
 	friend class BulletPhysicsDirectSpaceState;
@@ -136,12 +133,6 @@ public:
 	_FORCE_INLINE_ btDiscreteDynamicsWorld *get_dynamic_world() const { return dynamicsWorld; }
 	_FORCE_INLINE_ btSoftBodyWorldInfo *get_soft_body_world_info() const { return soft_body_world_info; }
 	_FORCE_INLINE_ bool is_using_soft_world() { return soft_body_world_info; }
-
-	void set_default_area(AreaBullet *p_area) { area = p_area; }
-	AreaBullet *get_default_area() const { return area; }
-
-	void set_static_global_body(RID p_body) { static_global_body = p_body; }
-	RID get_static_global_body() { return static_global_body; }
 
 	/// Used to set some parameters to Bullet world
 	/// @param p_param:
