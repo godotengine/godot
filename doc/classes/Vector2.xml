@@ -229,7 +229,7 @@
 			<argument index="1" name="weight" type="float">
 			</argument>
 			<description>
-				Returns the result of the linear interpolation between this vector and [code]b[/code] by amount [code]t[/code]. [code]t[/code] is on the range of 0.0 to 1.0, representing the amount of interpolation.
+				Returns the result of the linear interpolation between this vector and [code]to[/code] by amount [code]weight[/code]. [code]weight[/code] is on the range of 0.0 to 1.0, representing the amount of interpolation.
 			</description>
 		</method>
 		<method name="move_toward" qualifiers="const">
@@ -464,7 +464,7 @@
 			<argument index="1" name="weight" type="float">
 			</argument>
 			<description>
-				Returns the result of spherical linear interpolation between this vector and [code]b[/code], by amount [code]t[/code]. [code]t[/code] is on the range of 0.0 to 1.0, representing the amount of interpolation.
+				Returns the result of spherical linear interpolation between this vector and [code]to[/code], by amount [code]weight[/code]. [code]weight[/code] is on the range of 0.0 to 1.0, representing the amount of interpolation.
 				[b]Note:[/b] Both vectors must be normalized.
 			</description>
 		</method>
