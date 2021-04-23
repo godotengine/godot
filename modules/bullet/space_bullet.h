@@ -109,7 +109,6 @@ class SpaceBullet : public RIDBullet {
 	real_t angular_damp = 0.0;
 
 	Vector<AreaBullet *> areas;
-	bool locked = false;
 	Vector<Vector3> contactDebug;
 	int contactDebugCount = 0;
 	real_t delta_time = 0.;
@@ -121,10 +120,6 @@ public:
 	void flush_queries();
 	real_t get_delta_time() { return delta_time; }
 	void step(real_t p_delta_time);
-
-	bool is_locked() const;
-	void lock();
-	void unlock();
 
 	_FORCE_INLINE_ btBroadphaseInterface *get_broadphase() const { return broadphase; }
 	_FORCE_INLINE_ btDefaultCollisionConfiguration *get_collision_configuration() const { return collisionConfiguration; }

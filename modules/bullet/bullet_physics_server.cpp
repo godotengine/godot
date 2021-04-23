@@ -216,7 +216,7 @@ real_t BulletPhysicsServer3D::space_get_param(RID p_space, SpaceParameter p_para
 PhysicsDirectSpaceState3D *BulletPhysicsServer3D::space_get_direct_state(RID p_space) {
 	SpaceBullet *space = space_owner.getornull(p_space);
 	ERR_FAIL_COND_V(!space, nullptr);
-	ERR_FAIL_COND_V_MSG((using_threads && !doing_sync) || space->is_locked(), nullptr, "Space state is inaccessible right now, wait for iteration or physics process notification.");
+	ERR_FAIL_COND_V_MSG(using_threads && !doing_sync, nullptr, "Space state is inaccessible right now, wait for iteration or physics process notification.");
 
 	return space->get_direct_state();
 }
@@ -848,7 +848,6 @@ PhysicsDirectBodyState3D *BulletPhysicsServer3D::body_get_direct_state(RID p_bod
 
 	RigidBodyBullet *body = rigid_body_owner.getornull(p_body);
 	ERR_FAIL_COND_V(!body, nullptr);
-	ERR_FAIL_COND_V_MSG(body->get_space()->is_locked(), nullptr, "Body state is inaccessible right now, wait for iteration or physics process notification.");
 
 	return BulletPhysicsDirectBodyState3D::get_singleton(body);
 }

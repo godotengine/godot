@@ -64,8 +64,6 @@ BulletPhysicsDirectSpaceState::BulletPhysicsDirectSpaceState(SpaceBullet *p_spac
 }
 
 int BulletPhysicsDirectSpaceState::intersect_point(const Vector3 &p_point, ShapeResult *r_results, int p_result_max, const Set<RID> &p_exclude, uint32_t p_collision_mask, bool p_collide_with_bodies, bool p_collide_with_areas) {
-	ERR_FAIL_COND_V(space->locked, false);
-
 	if (p_result_max <= 0) {
 		return 0;
 	}
@@ -89,8 +87,6 @@ int BulletPhysicsDirectSpaceState::intersect_point(const Vector3 &p_point, Shape
 }
 
 bool BulletPhysicsDirectSpaceState::intersect_ray(const Vector3 &p_from, const Vector3 &p_to, RayResult &r_result, const Set<RID> &p_exclude, uint32_t p_collision_mask, bool p_collide_with_bodies, bool p_collide_with_areas, bool p_pick_ray) {
-	ERR_FAIL_COND_V(space->locked, false);
-
 	btVector3 btVec_from;
 	btVector3 btVec_to;
 
@@ -353,17 +349,6 @@ SpaceBullet::SpaceBullet() {
 	direct_access->space = this;
 }
 
-void SpaceBullet::lock() {
-	locked = true;
-}
-
-void SpaceBullet::unlock() {
-	locked = false;
-}
-
-bool SpaceBullet::is_locked() const {
-	return locked;
-}
 SpaceBullet::~SpaceBullet() {
 	memdelete(direct_access);
 	destroy_world();
