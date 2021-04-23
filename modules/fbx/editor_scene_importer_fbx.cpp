@@ -839,14 +839,6 @@ Node3D *EditorSceneImporterFBX::_generate_scene(
 				print_verbose("start_time" + rtos(start_time) + " end_time " + rtos(end_time));
 				print_verbose("anim duration : " + rtos(duration));
 
-				// we can safely create the animation player
-				if (state.animation_player == nullptr) {
-					print_verbose("Creating animation player");
-					state.animation_player = memnew(AnimationPlayer);
-					state.root->add_child(state.animation_player);
-					state.animation_player->set_owner(state.root_owner);
-				}
-
 				Ref<Animation> animation;
 				animation.instance();
 				animation->set_name(animation_name);
@@ -864,6 +856,7 @@ Node3D *EditorSceneImporterFBX::_generate_scene(
 
 				const std::vector<const FBXDocParser::AnimationLayer *> &layers = stack->Layers();
 				print_verbose("FBX Animation layers: " + itos(layers.size()));
+				bool has_keys = false;
 				for (const FBXDocParser::AnimationLayer *layer : layers) {
 					std::vector<const FBXDocParser::AnimationCurveNode *> node_list = layer->Nodes();
 					print_verbose("Layer: " + ImportUtils::FBXNodeToName(layer->Name()) + ", " + " AnimCurveNode count " + itos(node_list.size()));
@@ -1004,6 +997,8 @@ Node3D *EditorSceneImporterFBX::_generate_scene(
 
 					// target id, [ track name, [time index, vector] ]
 					//std::map<uint64_t, std::map<StringName, FBXTrack > > AnimCurveNodes;
+
+					// NOTE: context here is animation track lines in Godot.
 					for (Map<uint64_t, Map<StringName, FBXTrack>>::Element *track = AnimCurveNodes.front(); track; track = track->next()) {
 						// 5 tracks
 						// current track index
@@ -1011,7 +1006,6 @@ Node3D *EditorSceneImporterFBX::_generate_scene(
 						// track count is 5.
 						// next track id is 5.
 						const uint64_t target_id = track->key();
-						int track_idx = animation->add_track(Animation::TYPE_TRANSFORM);
 
 						// animation->track_set_path(track_idx, node_path);
 						// animation->track_set_path(track_idx, node_path);
@@ -1029,39 +1023,11 @@ Node3D *EditorSceneImporterFBX::_generate_scene(
 						if (state.fbx_target_map.has(target_id)) {
 							Ref<FBXNode> node_ref = state.fbx_target_map[target_id];
 							target_transform = node_ref->pivot_transform->GlobalTransform;
-							//print_verbose("[doc] allocated animation node transform");
 						}
 
 						//int size_targets = state.fbx_target_map.size();
 						//print_verbose("Target ID map: " + itos(size_targets));
 						//print_verbose("[doc] debug bone map size: " + itos(state.fbx_bone_map.size()));
-
-						// if this is a skeleton mapped track we can just set the path for the track.
-						// todo: implement node paths here at some
-						if (state.fbx_bone_map.size() > 0 && state.fbx_bone_map.has(target_id)) {
-							if (bone->fbx_skeleton.is_valid() && bone.is_valid()) {
-								Ref<FBXSkeleton> fbx_skeleton = bone->fbx_skeleton;
-								String bone_path = state.root->get_path_to(fbx_skeleton->skeleton);
-								bone_path += ":" + fbx_skeleton->skeleton->get_bone_name(bone->godot_bone_id);
-								print_verbose("[doc] track bone path: " + bone_path);
-								NodePath path = bone_path;
-								animation->track_set_path(track_idx, path);
-							}
-						} else if (state.fbx_target_map.has(target_id)) {
-							//print_verbose("[doc] we have a valid target for a node animation");
-							Ref<FBXNode> target_node = state.fbx_target_map[target_id];
-							if (target_node.is_valid() && target_node->godot_node != nullptr) {
-								String node_path = state.root->get_path_to(target_node->godot_node);
-								NodePath path = node_path;
-								animation->track_set_path(track_idx, path);
-								//print_verbose("[doc] node animation path: " + node_path);
-							}
-						} else {
-							// note: this could actually be unsafe this means we should be careful about continuing here, if we see bizzare effects later we should disable this.
-							// I am not sure if this is unsafe or not, testing will tell us this.
-							print_error("[doc] invalid fbx target detected for this track");
-							continue;
-						}
 
 						// everything in FBX and Maya is a node therefore if this happens something is seriously broken.
 						if (!state.fbx_target_map.has(target_id)) {
@@ -1187,6 +1153,15 @@ Node3D *EditorSceneImporterFBX::_generate_scene(
 						const Vector3 def_scale = scale_keys.has_default ? scale_keys.default_value : bone_rest.basis.get_scale();
 						print_verbose("track defaults: p(" + def_pos + ") s(" + def_scale + ") r(" + def_rot + ")");
 
+						bool all_same = true;
+						bool init_all_same = false;
+						Vector3 lastPos, lastScale;
+						Quat lastRot;
+
+						Vector<Vector3> posV, scaleV;
+						Vector<Quat> rotV;
+						Vector<double> timeV;
+
 						while (true) {
 							Vector3 pos = def_pos;
 							Quat rot = def_rot;
@@ -1207,6 +1182,19 @@ Node3D *EditorSceneImporterFBX::_generate_scene(
 										AssetImportAnimation::INTERP_LINEAR);
 							}
 
+							// check for an entire track of duplicate garbage.
+							if (all_same) {
+								if (!init_all_same) {
+									lastPos = pos;
+									lastRot = rot;
+									lastScale = scale;
+									init_all_same = true;
+								} else {
+									if (!lastPos.is_equal_approx(pos) || !lastRot.is_equal_approx(rot) || !lastScale.is_equal_approx(scale)) {
+										all_same = false;
+									}
+								}
+							}
 							// node animations must also include pivots
 							if (skeleton_bone >= 0) {
 								Transform xform = Transform();
@@ -1221,7 +1209,14 @@ Node3D *EditorSceneImporterFBX::_generate_scene(
 								pos = t.origin;
 							}
 
-							animation->transform_track_insert_key(track_idx, time, pos, rot, scale);
+							if (!has_keys) {
+								has_keys = true;
+							}
+
+							posV.push_back(pos);
+							scaleV.push_back(scale);
+							rotV.push_back(rot);
+							timeV.push_back(time);
 
 							if (last) {
 								break;
@@ -1234,9 +1229,61 @@ Node3D *EditorSceneImporterFBX::_generate_scene(
 								break;
 							}
 						}
+
+						// if the track is not all the same its valid.
+						// TODO: rest info comparison for bones.
+						// NOTE: nodes are safe to do this for because net delta zero is still zero.
+
+						if (!all_same) {
+							// all track items are not the same lets add it :)
+							int track_idx = animation->add_track(Animation::TYPE_TRANSFORM);
+
+							// if this is a skeleton mapped track we can just set the path for the track.
+							if (state.fbx_bone_map.size() > 0 && state.fbx_bone_map.has(target_id)) {
+								if (bone->fbx_skeleton.is_valid() && bone.is_valid()) {
+									Ref<FBXSkeleton> fbx_skeleton = bone->fbx_skeleton;
+									String bone_path = state.root->get_path_to(fbx_skeleton->skeleton);
+									bone_path += ":" + fbx_skeleton->skeleton->get_bone_name(bone->godot_bone_id);
+									print_verbose("[doc] track bone path: " + bone_path);
+									NodePath path = bone_path;
+									animation->track_set_path(track_idx, path);
+								}
+							} else if (state.fbx_target_map.has(target_id)) {
+								//print_verbose("[doc] we have a valid target for a node animation");
+								Ref<FBXNode> target_node = state.fbx_target_map[target_id];
+								if (target_node.is_valid() && target_node->godot_node != nullptr) {
+									String node_path = state.root->get_path_to(target_node->godot_node);
+									NodePath path = node_path;
+									animation->track_set_path(track_idx, path);
+									//print_verbose("[doc] node animation path: " + node_path);
+								}
+							} else {
+								// note: this could actually be unsafe this means we should be careful about continuing here, if we see bizzare effects later we should disable this.
+								// I am not sure if this is unsafe or not, testing will tell us this.
+								print_error("[doc] invalid fbx target detected for this track");
+								continue;
+							}
+							for (int x = 0; x < posV.size(); x++) {
+								print_verbose("pos:" + posV[x] + "," + rotV[x] + "," + scaleV[x]);
+								animation->transform_track_insert_key(track_idx, timeV[x], posV[x], rotV[x], scaleV[x]);
+							}
+						} else {
+							print_verbose("Removed a track it was all the same.");
+						}
 					}
 				}
-				state.animation_player->add_animation(animation_name, animation);
+
+				if (has_keys) {
+					// we can safely create the animation player
+					if (state.animation_player == nullptr) {
+						print_verbose("Creating animation player");
+						state.animation_player = memnew(AnimationPlayer);
+						state.root->add_child(state.animation_player);
+						state.animation_player->set_owner(state.root_owner);
+					}
+
+					state.animation_player->add_animation(animation_name, animation);
+				}
 			}
 		}
 
