@@ -179,6 +179,7 @@ public:
 		// in the case of DEFAULT, this is num commands.
 		// with rects, is number of command and rects.
 		// with lines, is number of lines
+		// with polys, is number of indices (actual rendered verts)
 		uint32_t num_commands;
 
 		// first vertex of this batch in the vertex lists
@@ -193,6 +194,29 @@ public:
 			// for default batches we will store the parent item
 			const RasterizerCanvas::Item *item;
 		};
+
+		uint32_t get_num_verts() const {
+			switch (type) {
+				default: {
+				} break;
+				case RasterizerStorageCommon::BT_RECT: {
+					return num_commands * 4;
+				} break;
+				case RasterizerStorageCommon::BT_LINE: {
+					return num_commands * 2;
+				} break;
+				case RasterizerStorageCommon::BT_LINE_AA: {
+					return num_commands * 2;
+				} break;
+				case RasterizerStorageCommon::BT_POLY: {
+					return num_commands;
+				} break;
+			}
+
+			// error condition
+			WARN_PRINT_ONCE("reading num_verts from incorrect batch type");
+			return 0;
+		}
 	};
 
 	struct BatchTex {
@@ -1596,7 +1620,15 @@ bool C_PREAMBLE::_prefill_polygon(RasterizerCanvas::Item::CommandPolygon *p_poly
 	// could be done with a temporary vertex buffer
 	BatchVertex *bvs = bdata.vertices.request(num_inds);
 	if (!bvs) {
-		// run out of space in the vertex buffer .. finish this function and draw what we have so far
+		// run out of space in the vertex buffer
+		// check for special case where the batching buffer is simply not big enough to fit this primitive.
+		if (!bdata.vertices.size()) {
+			// can't draw, ignore the primitive, otherwise we would enter an infinite loop
+			WARN_PRINT_ONCE("poly has too many indices to draw, increase batch buffer size");
+			return false;
+		}
+
+		// .. finish this function and draw what we have so far
 		// return where we got to
 		r_command_start = command_num;
 		return true;
@@ -2952,10 +2984,9 @@ void C_PREAMBLE::_translate_batches_to_larger_FVF(uint32_t p_sequence_batch_type
 						needs_new_batch = false;
 
 						// create the colored verts (only if not default)
-						//int first_vert = source_batch.first_quad * 4;
-						//int end_vert = 4 * (source_batch.first_quad + source_batch.num_commands);
 						int first_vert = source_batch.first_vert;
-						int end_vert = first_vert + (4 * source_batch.num_commands);
+						int num_verts = source_batch.get_num_verts();
+						int end_vert = first_vert + num_verts;
 
 						for (int v = first_vert; v < end_vert; v++) {
 							RAST_DEV_DEBUG_ASSERT(bdata.vertices.size());
@@ -3012,10 +3043,10 @@ void C_PREAMBLE::_translate_batches_to_larger_FVF(uint32_t p_sequence_batch_type
 
 			// create the colored verts (only if not default)
 			if (source_batch.type != RasterizerStorageCommon::BT_DEFAULT) {
-				//					int first_vert = source_batch.first_quad * 4;
-				//					int end_vert = 4 * (source_batch.first_quad + source_batch.num_commands);
+
 				int first_vert = source_batch.first_vert;
-				int end_vert = first_vert + (4 * source_batch.num_commands);
+				int num_verts = source_batch.get_num_verts();
+				int end_vert = first_vert + num_verts;
 
 				for (int v = first_vert; v < end_vert; v++) {
 					RAST_DEV_DEBUG_ASSERT(bdata.vertices.size());
