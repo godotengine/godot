@@ -159,7 +159,7 @@ class AnimationTrackEdit : public Control {
 
 	Rect2 update_mode_rect;
 	Rect2 interp_mode_rect;
-	Rect2 loop_mode_rect;
+	Rect2 loop_wrap_rect;
 	Rect2 remove_rect;
 	Rect2 bezier_edit_rect;
 
@@ -466,6 +466,7 @@ class AnimationTrackEditor : public VBoxContainer {
 		Animation::TrackType track_type = Animation::TrackType::TYPE_ANIMATION;
 		Animation::InterpolationType interp_type = Animation::InterpolationType::INTERPOLATION_CUBIC;
 		Animation::UpdateMode update_mode = Animation::UpdateMode::UPDATE_CAPTURE;
+		Animation::LoopMode loop_mode = Animation::LoopMode::LOOP_LINEAR;
 		bool loop_wrap = false;
 		bool enabled = false;
 
