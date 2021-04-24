@@ -293,6 +293,7 @@ private:
 		// info used when this is a window
 
 		bool key_event_accepted;
+		bool mouse_in_window;
 		Control *mouse_focus;
 		Control *last_mouse_focus;
 		Control *mouse_click_grabber;
@@ -406,6 +407,7 @@ private:
 	void _canvas_layer_add(CanvasLayer *p_canvas_layer);
 	void _canvas_layer_remove(CanvasLayer *p_canvas_layer);
 
+	void _drop_mouse_over();
 	void _drop_mouse_focus();
 	void _drop_physics_mouseover(bool p_paused_only = false);
 
