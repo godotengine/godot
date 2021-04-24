@@ -128,6 +128,8 @@ public:
 	void set_button_group(const Ref<ButtonGroup> &p_group);
 	Ref<ButtonGroup> get_button_group() const;
 
+	virtual String get_configuration_warning() const;
+
 	BaseButton();
 	~BaseButton();
 };

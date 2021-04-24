@@ -326,7 +326,8 @@ void BaseButton::set_enabled_focus_mode(FocusMode p_mode) {
 	if (!status.disabled) {
 		set_focus_mode(p_mode);
 	}
-	WARN_DEPRECATED_MSG("BaseButton's Enabled Focus Mode property has been deprecated due to redundancy and will be removed in Godot 4.0. Please use Control.set_focus_mode instead.");
+	WARN_DEPRECATED_MSG("The `BaseButton.enabled_focus_mode` property has been deprecated due to redundancy and will be removed in Godot 4.0. Please use the `Control.focus_mode` property instead.");
+	update_configuration_warning();
 }
 
 Control::FocusMode BaseButton::get_enabled_focus_mode() const {
@@ -396,6 +397,20 @@ void BaseButton::set_button_group(const Ref<ButtonGroup> &p_group) {
 Ref<ButtonGroup> BaseButton::get_button_group() const {
 
 	return button_group;
+}
+
+String BaseButton::get_configuration_warning() const {
+
+	String warning = Control::get_configuration_warning();
+	if (enabled_focus_mode != FOCUS_ALL) {
+		// Only emit a node configuration warning if the focus mode isn't the default.
+		if (warning != String()) {
+			warning += "\n\n";
+		}
+		warning += TTR("The `BaseButton.enabled_focus_mode` property has been deprecated due to redundancy and will be removed in Godot 4.0. Please use the `Control.focus_mode` property instead.");
+	}
+
+	return warning;
 }
 
 void BaseButton::_bind_methods() {
