@@ -68,6 +68,7 @@
 #include "core/math/random_number_generator.h"
 #include "core/math/triangle_mesh.h"
 #include "core/object/class_db.h"
+#include "core/object/script_language.h"
 #include "core/object/undo_redo.h"
 #include "core/os/main_loop.h"
 #include "core/os/time.h"
@@ -88,6 +89,7 @@ static _OS *_os = nullptr;
 static _Engine *_engine = nullptr;
 static _ClassDB *_classdb = nullptr;
 static _Marshalls *_marshalls = nullptr;
+static _ScriptServer *_script_server = nullptr;
 static _EngineDebugger *_engine_debugger = nullptr;
 
 static IP *ip = nullptr;
@@ -238,6 +240,7 @@ void register_core_types() {
 	_engine = memnew(_Engine);
 	_classdb = memnew(_ClassDB);
 	_marshalls = memnew(_Marshalls);
+	_script_server = memnew(_ScriptServer);
 	_engine_debugger = memnew(_EngineDebugger);
 }
 
@@ -267,6 +270,7 @@ void register_core_singletons() {
 	ClassDB::register_virtual_class<Input>();
 	ClassDB::register_class<InputMap>();
 	ClassDB::register_class<Expression>();
+	ClassDB::register_class<_ScriptServer>();
 	ClassDB::register_class<_EngineDebugger>();
 	ClassDB::register_class<Time>();
 
@@ -283,6 +287,7 @@ void register_core_singletons() {
 	Engine::get_singleton()->add_singleton(Engine::Singleton("TranslationServer", TranslationServer::get_singleton()));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("Input", Input::get_singleton()));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("InputMap", InputMap::get_singleton()));
+	Engine::get_singleton()->add_singleton(Engine::Singleton("ScriptServer", _ScriptServer::get_singleton()));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("EngineDebugger", _EngineDebugger::get_singleton()));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("Time", Time::get_singleton()));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("NativeExtensionManager", NativeExtensionManager::get_singleton()));
@@ -310,6 +315,7 @@ void unregister_core_types() {
 	memdelete(_engine);
 	memdelete(_classdb);
 	memdelete(_marshalls);
+	memdelete(_script_server);
 	memdelete(_engine_debugger);
 
 	memdelete(_geometry_2d);

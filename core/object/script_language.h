@@ -55,7 +55,7 @@ class ScriptServer {
 	struct GlobalScriptClass {
 		StringName language;
 		String path;
-		String base;
+		StringName base;
 	};
 
 	static HashMap<StringName, GlobalScriptClass> global_classes;
@@ -81,9 +81,10 @@ public:
 	static void remove_global_class(const StringName &p_class);
 	static bool is_global_class(const StringName &p_class);
 	static StringName get_global_class_language(const StringName &p_class);
-	static String get_global_class_path(const String &p_class);
-	static StringName get_global_class_base(const String &p_class);
-	static StringName get_global_class_native_base(const String &p_class);
+	static String get_global_class_path(const StringName &p_class);
+	static StringName get_global_class_base(const StringName &p_class);
+	static StringName get_global_class_native_base(const StringName &p_class);
+	static Variant instantiate_global_class(const StringName &p_class);
 	static void get_global_class_list(List<StringName> *r_global_classes);
 	static void save_global_classes();
 

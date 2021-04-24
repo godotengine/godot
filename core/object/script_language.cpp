@@ -34,6 +34,7 @@
 #include "core/core_string_names.h"
 #include "core/debugger/engine_debugger.h"
 #include "core/debugger/script_debugger.h"
+#include "core/io/resource_loader.h"
 
 #include <stdint.h>
 
@@ -231,23 +232,45 @@ StringName ScriptServer::get_global_class_language(const StringName &p_class) {
 	return global_classes[p_class].language;
 }
 
-String ScriptServer::get_global_class_path(const String &p_class) {
-	ERR_FAIL_COND_V(!global_classes.has(p_class), String());
+String ScriptServer::get_global_class_path(const StringName &p_class) {
+	ERR_FAIL_COND_V(!global_classes.has(p_class), StringName());
 	return global_classes[p_class].path;
 }
 
-StringName ScriptServer::get_global_class_base(const String &p_class) {
-	ERR_FAIL_COND_V(!global_classes.has(p_class), String());
+StringName ScriptServer::get_global_class_base(const StringName &p_class) {
+	ERR_FAIL_COND_V(!global_classes.has(p_class), StringName());
 	return global_classes[p_class].base;
 }
 
-StringName ScriptServer::get_global_class_native_base(const String &p_class) {
-	ERR_FAIL_COND_V(!global_classes.has(p_class), String());
+StringName ScriptServer::get_global_class_native_base(const StringName &p_class) {
+	ERR_FAIL_COND_V(!global_classes.has(p_class), StringName());
 	String base = global_classes[p_class].base;
 	while (global_classes.has(base)) {
 		base = global_classes[base].base;
 	}
 	return base;
+}
+
+Variant ScriptServer::instantiate_global_class(const StringName &p_class) {
+	ERR_FAIL_COND_V_MSG(!global_classes.has(p_class), Variant(), "Class to instantiate '" + String(p_class) + "' is not a script class.");
+	String native = get_global_class_native_base(p_class);
+	Object *o = ClassDB::instantiate(native);
+	ERR_FAIL_COND_V_MSG(!o, Variant(), "Class type: '" + String(native) + "' is not instantiable.");
+
+	REF ref;
+	RefCounted *r = Object::cast_to<RefCounted>(o);
+	if (r) {
+		ref = REF(r);
+	}
+
+	Ref<Script> s = ResourceLoader::load(get_global_class_path(p_class), "Script");
+	o->set_script(s);
+
+	if (ref.is_valid()) {
+		return ref;
+	} else {
+		return o;
+	}
 }
 
 void ScriptServer::get_global_class_list(List<StringName> *r_global_classes) {
