@@ -91,6 +91,15 @@
 				Returns the overall transform of the specified bone, with respect to the skeleton. Being relative to the skeleton frame, this is not the actual "global" transform of the bone.
 			</description>
 		</method>
+		<method name="get_bone_global_pose_no_override" qualifiers="const">
+			<return type="Transform">
+			</return>
+			<argument index="0" name="bone_idx" type="int">
+			</argument>
+			<description>
+				Returns the overall transform of the specified bone, with respect to the skeleton, but without any global pose overrides. Being relative to the skeleton frame, this is not the actual "global" transform of the bone.
+			</description>
+		</method>
 		<method name="get_bone_name" qualifiers="const">
 			<return type="String">
 			</return>
