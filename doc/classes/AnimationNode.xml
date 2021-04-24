@@ -33,6 +33,8 @@
 			</argument>
 			<argument index="4" name="blend" type="float">
 			</argument>
+			<argument index="5" name="pingponged" type="int" default="0">
+			</argument>
 			<description>
 				Blend an animation by [code]blend[/code] amount (name must be valid in the linked [AnimationPlayer]). A [code]time[/code] and [code]delta[/code] may be passed, as well as whether [code]seek[/code] happened.
 			</description>

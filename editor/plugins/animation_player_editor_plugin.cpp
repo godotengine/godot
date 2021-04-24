@@ -41,6 +41,7 @@
 #include "editor/plugins/canvas_item_editor_plugin.h" // For onion skinning.
 #include "editor/plugins/node_3d_editor_plugin.h" // For onion skinning.
 #include "scene/main/window.h"
+#include "scene/resources/animation.h"
 #include "servers/rendering_server.h"
 
 void AnimationPlayerEditor::_node_removed(Node *p_node) {
@@ -1418,7 +1419,7 @@ void AnimationPlayerEditor::_prepare_onion_layers_2() {
 
 		float pos = cpos + step_off * anim->get_step();
 
-		bool valid = anim->has_loop() || (pos >= 0 && pos <= anim->get_length());
+		bool valid = anim->get_loop_mode() != Animation::LoopMode::LOOP_NONE || (pos >= 0 && pos <= anim->get_length());
 		onion.captures_valid.write[cidx] = valid;
 		if (valid) {
 			player->seek(pos, true);
