@@ -427,8 +427,8 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 						}
 						break;
 					case GDScriptParser::DictionaryNode::LUA_TABLE:
-						// Lua-style: key is an identifier interpreted as string.
-						String key = static_cast<const GDScriptParser::IdentifierNode *>(dn->elements[i].key)->name;
+						// Lua-style: key is an identifier interpreted as StringName.
+						StringName key = static_cast<const GDScriptParser::IdentifierNode *>(dn->elements[i].key)->name;
 						element = codegen.add_constant(key);
 						break;
 				}
@@ -680,9 +680,9 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 				name = subscript->attribute->name;
 				named = true;
 			} else {
-				if (subscript->index->type == GDScriptParser::Node::LITERAL && static_cast<const GDScriptParser::LiteralNode *>(subscript->index)->value.get_type() == Variant::STRING) {
+				if (subscript->index->is_constant && subscript->index->reduced_value.get_type() == Variant::STRING_NAME) {
 					// Also, somehow, named (speed up anyway).
-					name = static_cast<const GDScriptParser::LiteralNode *>(subscript->index)->value;
+					name = subscript->index->reduced_value;
 					named = true;
 				} else {
 					// Regular indexing.

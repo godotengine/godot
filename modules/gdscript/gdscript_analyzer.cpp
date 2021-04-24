@@ -2621,25 +2621,6 @@ void GDScriptAnalyzer::reduce_subscript(GDScriptParser::SubscriptNode *p_subscri
 
 	GDScriptParser::DataType result_type;
 
-	// Reduce index first. If it's a constant StringName, use attribute instead.
-	if (!p_subscript->is_attribute) {
-		if (p_subscript->index == nullptr) {
-			return;
-		}
-		reduce_expression(p_subscript->index);
-
-		if (p_subscript->index->is_constant && p_subscript->index->reduced_value.get_type() == Variant::STRING_NAME) {
-			GDScriptParser::IdentifierNode *attribute = parser->alloc_node<GDScriptParser::IdentifierNode>();
-			// Copy location for better error message.
-			attribute->start_line = p_subscript->index->start_line;
-			attribute->end_line = p_subscript->index->end_line;
-			attribute->leftmost_column = p_subscript->index->leftmost_column;
-			attribute->rightmost_column = p_subscript->index->rightmost_column;
-			p_subscript->is_attribute = true;
-			p_subscript->attribute = attribute;
-		}
-	}
-
 	if (p_subscript->is_attribute) {
 		if (p_subscript->attribute == nullptr) {
 			return;
@@ -2682,7 +2663,10 @@ void GDScriptAnalyzer::reduce_subscript(GDScriptParser::SubscriptNode *p_subscri
 			}
 		}
 	} else {
-		// Index was already reduced before.
+		if (p_subscript->index == nullptr) {
+			return;
+		}
+		reduce_expression(p_subscript->index);
 
 		if (p_subscript->base->is_constant && p_subscript->index->is_constant) {
 			// Just try to get it.

@@ -2440,6 +2440,8 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_dictionary(ExpressionNode 
 							push_error(R"(Expected "=" after dictionary key.)");
 						}
 					}
+					key->is_constant = true;
+					key->reduced_value = static_cast<IdentifierNode *>(key)->name;
 					break;
 				case DictionaryNode::PYTHON_DICT:
 					if (!match(GDScriptTokenizer::Token::COLON)) {
