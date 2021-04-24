@@ -726,7 +726,7 @@ void CodeTextEditor::_text_editor_gui_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseButton> mb = p_event;
 
 	if (mb.is_valid()) {
-		if (mb->is_pressed() && mb->get_command()) {
+		if (mb->is_pressed() && mb->is_command_pressed()) {
 			if (mb->get_button_index() == MOUSE_BUTTON_WHEEL_UP) {
 				_zoom_in();
 			} else if (mb->get_button_index() == MOUSE_BUTTON_WHEEL_DOWN) {

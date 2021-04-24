@@ -1282,16 +1282,16 @@ bool PopupMenu::activate_item_by_event(const Ref<InputEvent> &p_event, bool p_fo
 		if (code == 0) {
 			code = k->get_unicode();
 		}
-		if (k->get_control()) {
+		if (k->is_ctrl_pressed()) {
 			code |= KEY_MASK_CTRL;
 		}
-		if (k->get_alt()) {
+		if (k->is_alt_pressed()) {
 			code |= KEY_MASK_ALT;
 		}
-		if (k->get_metakey()) {
+		if (k->is_meta_pressed()) {
 			code |= KEY_MASK_META;
 		}
-		if (k->get_shift()) {
+		if (k->is_shift_pressed()) {
 			code |= KEY_MASK_SHIFT;
 		}
 	}

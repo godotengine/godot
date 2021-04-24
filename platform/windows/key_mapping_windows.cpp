@@ -47,7 +47,7 @@ static _WinTranslatePair _vk_to_keycode[] = {
 
 	{ KEY_SHIFT, VK_SHIFT }, //(0x10)
 
-	{ KEY_CONTROL, VK_CONTROL }, //(0x11)
+	{ KEY_CTRL, VK_CONTROL }, //(0x11)
 
 	{ KEY_ALT, VK_MENU }, //(0x12)
 
@@ -166,8 +166,8 @@ static _WinTranslatePair _vk_to_keycode[] = {
 	{ KEY_SCROLLLOCK, VK_SCROLL }, // (0x91)
 	{ KEY_SHIFT, VK_LSHIFT }, // (0xA0)
 	{ KEY_SHIFT, VK_RSHIFT }, // (0xA1)
-	{ KEY_CONTROL, VK_LCONTROL }, // (0xA2)
-	{ KEY_CONTROL, VK_RCONTROL }, // (0xA3)
+	{ KEY_CTRL, VK_LCONTROL }, // (0xA2)
+	{ KEY_CTRL, VK_RCONTROL }, // (0xA3)
 	{ KEY_MENU, VK_LMENU }, // (0xA4)
 	{ KEY_MENU, VK_RMENU }, // (0xA5)
 
@@ -265,7 +265,7 @@ static _WinTranslatePair _scancode_to_keycode[] = {
 	{ KEY_BRACELEFT, 0x1A },
 	{ KEY_BRACERIGHT, 0x1B },
 	{ KEY_ENTER, 0x1C },
-	{ KEY_CONTROL, 0x1D },
+	{ KEY_CTRL, 0x1D },
 	{ KEY_A, 0x1E },
 	{ KEY_S, 0x1F },
 	{ KEY_D, 0x20 },

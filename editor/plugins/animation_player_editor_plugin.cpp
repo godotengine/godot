@@ -1222,10 +1222,10 @@ void AnimationPlayerEditor::_unhandled_key_input(const Ref<InputEvent> &p_ev) {
 	ERR_FAIL_COND(p_ev.is_null());
 
 	Ref<InputEventKey> k = p_ev;
-	if (is_visible_in_tree() && k.is_valid() && k->is_pressed() && !k->is_echo() && !k->get_alt() && !k->get_control() && !k->get_metakey()) {
+	if (is_visible_in_tree() && k.is_valid() && k->is_pressed() && !k->is_echo() && !k->is_alt_pressed() && !k->is_ctrl_pressed() && !k->is_meta_pressed()) {
 		switch (k->get_keycode()) {
 			case KEY_A: {
-				if (!k->get_shift()) {
+				if (!k->is_shift_pressed()) {
 					_play_bw_from_pressed();
 				} else {
 					_play_bw_pressed();
@@ -1237,7 +1237,7 @@ void AnimationPlayerEditor::_unhandled_key_input(const Ref<InputEvent> &p_ev) {
 				accept_event();
 			} break;
 			case KEY_D: {
-				if (!k->get_shift()) {
+				if (!k->is_shift_pressed()) {
 					_play_from_pressed();
 				} else {
 					_play_pressed();

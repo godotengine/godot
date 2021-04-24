@@ -729,7 +729,7 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id) {
 		CodeEdit *expression_box = memnew(CodeEdit);
 		Ref<CodeHighlighter> expression_syntax_highlighter;
 		expression_syntax_highlighter.instance();
-		expression_node->set_control(expression_box, 0);
+		expression_node->set_ctrl_pressed(expression_box, 0);
 		node->add_child(expression_box);
 		register_expression_edit(p_id, expression_box);
 
@@ -1584,7 +1584,7 @@ void VisualShaderEditor::_set_node_size(int p_type, int p_node, const Vector2 &p
 		Ref<VisualShaderNodeExpression> expression_node = Object::cast_to<VisualShaderNodeExpression>(node.ptr());
 		Control *text_box = nullptr;
 		if (!expression_node.is_null()) {
-			text_box = expression_node->get_control(0);
+			text_box = expression_node->is_ctrl_pressed(0);
 			if (text_box) {
 				text_box->set_custom_minimum_size(Size2(0, 0));
 			}

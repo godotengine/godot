@@ -1656,10 +1656,10 @@ Ref<Shortcut> ED_SHORTCUT(const String &p_path, const String &p_name, uint32_t p
 
 		ie->set_unicode(p_keycode & KEY_CODE_MASK);
 		ie->set_keycode(p_keycode & KEY_CODE_MASK);
-		ie->set_shift(bool(p_keycode & KEY_MASK_SHIFT));
-		ie->set_alt(bool(p_keycode & KEY_MASK_ALT));
-		ie->set_control(bool(p_keycode & KEY_MASK_CTRL));
-		ie->set_metakey(bool(p_keycode & KEY_MASK_META));
+		ie->set_shift_pressed(bool(p_keycode & KEY_MASK_SHIFT));
+		ie->set_alt_pressed(bool(p_keycode & KEY_MASK_ALT));
+		ie->set_ctrl_pressed(bool(p_keycode & KEY_MASK_CTRL));
+		ie->set_meta_pressed(bool(p_keycode & KEY_MASK_META));
 	}
 
 	if (!EditorSettings::get_singleton()) {

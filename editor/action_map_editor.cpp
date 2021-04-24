@@ -97,11 +97,11 @@ void InputEventConfigurationDialog::_set_event(const Ref<InputEvent> &p_event) {
 
 		if (mod.is_valid()) {
 			show_mods = true;
-			mod_checkboxes[MOD_ALT]->set_pressed(mod->get_alt());
-			mod_checkboxes[MOD_SHIFT]->set_pressed(mod->get_shift());
-			mod_checkboxes[MOD_COMMAND]->set_pressed(mod->get_command());
-			mod_checkboxes[MOD_CONTROL]->set_pressed(mod->get_control());
-			mod_checkboxes[MOD_META]->set_pressed(mod->get_metakey());
+			mod_checkboxes[MOD_ALT]->set_pressed(mod->is_alt_pressed());
+			mod_checkboxes[MOD_SHIFT]->set_pressed(mod->is_shift_pressed());
+			mod_checkboxes[MOD_COMMAND]->set_pressed(mod->is_command_pressed());
+			mod_checkboxes[MOD_CTRL]->set_pressed(mod->is_ctrl_pressed());
+			mod_checkboxes[MOD_META]->set_pressed(mod->is_meta_pressed());
 
 			store_command_checkbox->set_pressed(mod->is_storing_command());
 		}
@@ -384,15 +384,15 @@ void InputEventConfigurationDialog::_mod_toggled(bool p_checked, int p_index) {
 	}
 
 	if (p_index == 0) {
-		ie->set_alt(p_checked);
+		ie->set_alt_pressed(p_checked);
 	} else if (p_index == 1) {
-		ie->set_shift(p_checked);
+		ie->set_shift_pressed(p_checked);
 	} else if (p_index == 2) {
-		ie->set_command(p_checked);
+		ie->set_command_pressed(p_checked);
 	} else if (p_index == 3) {
-		ie->set_control(p_checked);
+		ie->set_ctrl_pressed(p_checked);
 	} else if (p_index == 4) {
-		ie->set_metakey(p_checked);
+		ie->set_meta_pressed(p_checked);
 	}
 
 	_set_event(ie);
@@ -413,7 +413,7 @@ void InputEventConfigurationDialog::_store_command_toggled(bool p_checked) {
 		mod_checkboxes[MOD_COMMAND]->show();
 		mod_checkboxes[MOD_COMMAND]->set_text("Meta (Command)");
 #else
-		mod_checkboxes[MOD_CONTROL]->hide();
+		mod_checkboxes[MOD_CTRL]->hide();
 
 		mod_checkboxes[MOD_COMMAND]->show();
 		mod_checkboxes[MOD_COMMAND]->set_text("Control (Command)");
@@ -421,7 +421,7 @@ void InputEventConfigurationDialog::_store_command_toggled(bool p_checked) {
 	} else {
 		// If not, hide Command, show Control and Meta.
 		mod_checkboxes[MOD_COMMAND]->hide();
-		mod_checkboxes[MOD_CONTROL]->show();
+		mod_checkboxes[MOD_CTRL]->show();
 		mod_checkboxes[MOD_META]->show();
 	}
 }
@@ -469,11 +469,11 @@ void InputEventConfigurationDialog::_input_list_item_selected() {
 			}
 
 			// Maintain modifier state from checkboxes
-			k->set_alt(mod_checkboxes[MOD_ALT]->is_pressed());
-			k->set_shift(mod_checkboxes[MOD_SHIFT]->is_pressed());
-			k->set_command(mod_checkboxes[MOD_COMMAND]->is_pressed());
-			k->set_control(mod_checkboxes[MOD_CONTROL]->is_pressed());
-			k->set_metakey(mod_checkboxes[MOD_META]->is_pressed());
+			k->set_alt_pressed(mod_checkboxes[MOD_ALT]->is_pressed());
+			k->set_shift_pressed(mod_checkboxes[MOD_SHIFT]->is_pressed());
+			k->set_command_pressed(mod_checkboxes[MOD_COMMAND]->is_pressed());
+			k->set_ctrl_pressed(mod_checkboxes[MOD_CTRL]->is_pressed());
+			k->set_meta_pressed(mod_checkboxes[MOD_META]->is_pressed());
 			k->set_store_command(store_command_checkbox->is_pressed());
 
 			_set_event(k);
@@ -484,11 +484,11 @@ void InputEventConfigurationDialog::_input_list_item_selected() {
 			mb.instance();
 			mb->set_button_index(idx);
 			// Maintain modifier state from checkboxes
-			mb->set_alt(mod_checkboxes[MOD_ALT]->is_pressed());
-			mb->set_shift(mod_checkboxes[MOD_SHIFT]->is_pressed());
-			mb->set_command(mod_checkboxes[MOD_COMMAND]->is_pressed());
-			mb->set_control(mod_checkboxes[MOD_CONTROL]->is_pressed());
-			mb->set_metakey(mod_checkboxes[MOD_META]->is_pressed());
+			mb->set_alt_pressed(mod_checkboxes[MOD_ALT]->is_pressed());
+			mb->set_shift_pressed(mod_checkboxes[MOD_SHIFT]->is_pressed());
+			mb->set_command_pressed(mod_checkboxes[MOD_COMMAND]->is_pressed());
+			mb->set_ctrl_pressed(mod_checkboxes[MOD_CTRL]->is_pressed());
+			mb->set_meta_pressed(mod_checkboxes[MOD_META]->is_pressed());
 			mb->set_store_command(store_command_checkbox->is_pressed());
 
 			_set_event(mb);

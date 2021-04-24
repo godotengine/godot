@@ -1971,7 +1971,7 @@ int Tree::propagate_mouse_event(const Point2i &p_pos, int x_ofs, int y_ofs, bool
 				return -1;
 			}
 
-			if (select_mode == SELECT_MULTI && p_mod->get_command() && c.selectable) {
+			if (select_mode == SELECT_MULTI && p_mod->is_command_pressed() && c.selectable) {
 				if (!c.selected || p_button == MOUSE_BUTTON_RIGHT) {
 					p_item->select(col);
 					emit_signal("multi_selected", p_item, col, true);
@@ -1988,7 +1988,7 @@ int Tree::propagate_mouse_event(const Point2i &p_pos, int x_ofs, int y_ofs, bool
 
 			} else {
 				if (c.selectable) {
-					if (select_mode == SELECT_MULTI && p_mod->get_shift() && selected_item && selected_item != p_item) {
+					if (select_mode == SELECT_MULTI && p_mod->is_shift_pressed() && selected_item && selected_item != p_item) {
 						bool inrange = false;
 
 						select_single_item(p_item, root, col, selected_item, &inrange);
@@ -2406,7 +2406,7 @@ void Tree::_gui_input(Ref<InputEvent> p_event) {
 
 	Ref<InputEventKey> k = p_event;
 
-	bool is_command = k.is_valid() && k->get_command();
+	bool is_command = k.is_valid() && k->is_command_pressed();
 	if (p_event->is_action("ui_right") && p_event->is_pressed()) {
 		if (!cursor_can_exit_tree) {
 			accept_event();
@@ -2415,7 +2415,7 @@ void Tree::_gui_input(Ref<InputEvent> p_event) {
 		if (!selected_item || select_mode == SELECT_ROW || selected_col > (columns.size() - 1)) {
 			return;
 		}
-		if (k.is_valid() && k->get_alt()) {
+		if (k.is_valid() && k->is_alt_pressed()) {
 			selected_item->set_collapsed(false);
 			TreeItem *next = selected_item->get_children();
 			while (next && next != selected_item->next) {
@@ -2434,7 +2434,7 @@ void Tree::_gui_input(Ref<InputEvent> p_event) {
 			return;
 		}
 
-		if (k.is_valid() && k->get_alt()) {
+		if (k.is_valid() && k->is_alt_pressed()) {
 			selected_item->set_collapsed(true);
 			TreeItem *next = selected_item->get_children();
 			while (next && next != selected_item->next) {
@@ -2564,7 +2564,7 @@ void Tree::_gui_input(Ref<InputEvent> p_event) {
 		if (!k->is_pressed()) {
 			return;
 		}
-		if (k->get_command() || (k->get_shift() && k->get_unicode() == 0) || k->get_metakey()) {
+		if (k->is_command_pressed() || (k->is_shift_pressed() && k->get_unicode() == 0) || k->is_meta_pressed()) {
 			return;
 		}
 		if (!root) {
@@ -2880,7 +2880,7 @@ void Tree::_gui_input(Ref<InputEvent> p_event) {
 					}
 
 					if (b->get_button_index() == MOUSE_BUTTON_LEFT) {
-						if (get_item_at_position(b->get_position()) == nullptr && !b->get_shift() && !b->get_control() && !b->get_command()) {
+						if (get_item_at_position(b->get_position()) == nullptr && !b->is_shift_pressed() && !b->is_ctrl_pressed() && !b->is_command_pressed()) {
 							emit_signal("nothing_selected");
 						}
 					}

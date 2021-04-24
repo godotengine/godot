@@ -619,7 +619,7 @@ void AnimationBezierTrackEdit::_gui_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseButton> mb = p_event;
 	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MOUSE_BUTTON_WHEEL_DOWN) {
 		float v_zoom_orig = v_zoom;
-		if (mb->get_command()) {
+		if (mb->is_command_pressed()) {
 			timeline->get_zoom()->set_value(timeline->get_zoom()->get_value() * 1.05);
 		} else {
 			if (v_zoom < 100000) {
@@ -632,7 +632,7 @@ void AnimationBezierTrackEdit::_gui_input(const Ref<InputEvent> &p_event) {
 
 	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MOUSE_BUTTON_WHEEL_UP) {
 		float v_zoom_orig = v_zoom;
-		if (mb->get_command()) {
+		if (mb->is_command_pressed()) {
 			timeline->get_zoom()->set_value(timeline->get_zoom()->get_value() / 1.05);
 		} else {
 			if (v_zoom > 0.000001) {
@@ -691,9 +691,9 @@ void AnimationBezierTrackEdit::_gui_input(const Ref<InputEvent> &p_event) {
 			//first check point
 			//command makes it ignore the main point, so control point editors can be force-edited
 			//path 2D editing in the 3D and 2D editors works the same way
-			if (!mb->get_command()) {
+			if (!mb->is_command_pressed()) {
 				if (edit_points[i].point_rect.has_point(mb->get_position())) {
-					if (mb->get_shift()) {
+					if (mb->is_shift_pressed()) {
 						//add to selection
 						if (selection.has(i)) {
 							selection.erase(i);
@@ -743,7 +743,7 @@ void AnimationBezierTrackEdit::_gui_input(const Ref<InputEvent> &p_event) {
 		}
 
 		//insert new point
-		if (mb->get_command() && mb->get_position().x >= timeline->get_name_limit() && mb->get_position().x < get_size().width - timeline->get_buttons_width()) {
+		if (mb->is_command_pressed() && mb->get_position().x >= timeline->get_name_limit() && mb->get_position().x < get_size().width - timeline->get_buttons_width()) {
 			Array new_point;
 			new_point.resize(5);
 
@@ -961,7 +961,7 @@ void AnimationBezierTrackEdit::_gui_input(const Ref<InputEvent> &p_event) {
 	if (box_selecting_attempt && mm.is_valid()) {
 		if (!box_selecting) {
 			box_selecting = true;
-			box_selecting_add = mm->get_shift();
+			box_selecting_add = mm->is_shift_pressed();
 		}
 
 		box_selection_to = mm->get_position();
