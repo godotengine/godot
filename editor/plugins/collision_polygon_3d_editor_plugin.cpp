@@ -175,7 +175,7 @@ bool CollisionPolygon3DEditor::forward_spatial_gui_input(Camera3D *p_camera, con
 			case MODE_EDIT: {
 				if (mb->get_button_index() == MOUSE_BUTTON_LEFT) {
 					if (mb->is_pressed()) {
-						if (mb->get_control()) {
+						if (mb->is_ctrl_pressed()) {
 							if (poly.size() < 3) {
 								undo_redo->create_action(TTR("Edit Poly"));
 								undo_redo->add_undo_method(node, "set_polygon", poly);
@@ -317,7 +317,7 @@ bool CollisionPolygon3DEditor::forward_spatial_gui_input(Camera3D *p_camera, con
 
 			Vector2 cpoint(spoint.x, spoint.y);
 
-			if (snap_ignore && !Input::get_singleton()->is_key_pressed(KEY_CONTROL)) {
+			if (snap_ignore && !Input::get_singleton()->is_key_pressed(KEY_CTRL)) {
 				snap_ignore = false;
 			}
 

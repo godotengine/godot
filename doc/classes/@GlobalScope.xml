@@ -1393,7 +1393,7 @@
 		<constant name="KEY_SHIFT" value="16777237" enum="Key">
 			Shift key.
 		</constant>
-		<constant name="KEY_CONTROL" value="16777238" enum="Key">
+		<constant name="KEY_CTRL" value="16777238" enum="Key">
 			Control key.
 		</constant>
 		<constant name="KEY_META" value="16777239" enum="Key">

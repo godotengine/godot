@@ -41,7 +41,7 @@
 #include "editor/editor_scale.h"
 
 void TileAtlasView::_gui_input(const Ref<InputEvent> &p_event) {
-	bool ctrl = Input::get_singleton()->is_key_pressed(KEY_CONTROL);
+	bool ctrl = Input::get_singleton()->is_key_pressed(KEY_CTRL);
 
 	Ref<InputEventMouseButton> b = p_event;
 	if (b.is_valid()) {

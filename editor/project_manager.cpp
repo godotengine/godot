@@ -1740,7 +1740,7 @@ void ProjectList::_panel_input(const Ref<InputEvent> &p_ev, Node *p_hb) {
 	const Item &clicked_project = _projects[clicked_index];
 
 	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MOUSE_BUTTON_LEFT) {
-		if (mb->get_shift() && _selected_project_keys.size() > 0 && _last_clicked != "" && clicked_project.project_key != _last_clicked) {
+		if (mb->is_shift_pressed() && _selected_project_keys.size() > 0 && _last_clicked != "" && clicked_project.project_key != _last_clicked) {
 			int anchor_index = -1;
 			for (int i = 0; i < _projects.size(); ++i) {
 				const Item &p = _projects[i];
@@ -1752,7 +1752,7 @@ void ProjectList::_panel_input(const Ref<InputEvent> &p_ev, Node *p_hb) {
 			CRASH_COND(anchor_index == -1);
 			select_range(anchor_index, clicked_index);
 
-		} else if (mb->get_control()) {
+		} else if (mb->is_ctrl_pressed()) {
 			toggle_select(clicked_index);
 
 		} else {
@@ -1762,7 +1762,7 @@ void ProjectList::_panel_input(const Ref<InputEvent> &p_ev, Node *p_hb) {
 
 		emit_signal(SIGNAL_SELECTION_CHANGED);
 
-		if (!mb->get_control() && mb->is_double_click()) {
+		if (!mb->is_ctrl_pressed() && mb->is_double_click()) {
 			emit_signal(SIGNAL_PROJECT_ASK_OPEN);
 		}
 	}
@@ -1937,7 +1937,7 @@ void ProjectManager::_unhandled_key_input(const Ref<InputEvent> &p_ev) {
 
 			} break;
 			case KEY_UP: {
-				if (k->get_shift()) {
+				if (k->is_shift_pressed()) {
 					break;
 				}
 
@@ -1951,7 +1951,7 @@ void ProjectManager::_unhandled_key_input(const Ref<InputEvent> &p_ev) {
 				break;
 			}
 			case KEY_DOWN: {
-				if (k->get_shift()) {
+				if (k->is_shift_pressed()) {
 					break;
 				}
 
@@ -1964,7 +1964,7 @@ void ProjectManager::_unhandled_key_input(const Ref<InputEvent> &p_ev) {
 
 			} break;
 			case KEY_F: {
-				if (k->get_command()) {
+				if (k->is_command_pressed()) {
 					this->search_box->grab_focus();
 				} else {
 					keycode_handled = false;

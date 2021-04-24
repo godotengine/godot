@@ -490,10 +490,10 @@ void DisplayServerAndroid::process_joy_event(DisplayServerAndroid::JoypadEvent p
 }
 
 void DisplayServerAndroid::_set_key_modifier_state(Ref<InputEventWithModifiers> ev) {
-	ev->set_shift(shift_mem);
-	ev->set_alt(alt_mem);
-	ev->set_metakey(meta_mem);
-	ev->set_control(control_mem);
+	ev->set_shift_pressed(shift_mem);
+	ev->set_alt_pressed(alt_mem);
+	ev->set_meta_pressed(meta_mem);
+	ev->set_ctrl_pressed(control_mem);
 }
 
 void DisplayServerAndroid::process_key_event(int p_keycode, int p_scancode, int p_unicode_char, bool p_pressed) {
@@ -528,7 +528,7 @@ void DisplayServerAndroid::process_key_event(int p_keycode, int p_scancode, int 
 	if (keycode == KEY_ALT) {
 		alt_mem = p_pressed;
 	}
-	if (keycode == KEY_CONTROL) {
+	if (keycode == KEY_CTRL) {
 		control_mem = p_pressed;
 	}
 	if (keycode == KEY_META) {

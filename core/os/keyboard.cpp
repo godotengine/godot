@@ -60,7 +60,7 @@ static const _KeyCodeText _keycodes[] = {
 		{KEY_PAGEUP                        ,"PageUp"},
 		{KEY_PAGEDOWN                      ,"PageDown"},
 		{KEY_SHIFT                         ,"Shift"},
-		{KEY_CONTROL                       ,"Control"},
+		{KEY_CTRL                          ,"Ctrl"},
 #ifdef OSX_ENABLED
 		{KEY_META                          ,"Command"},
 #else
@@ -314,7 +314,7 @@ bool keycode_has_unicode(uint32_t p_keycode) {
 		case KEY_PAGEUP:
 		case KEY_PAGEDOWN:
 		case KEY_SHIFT:
-		case KEY_CONTROL:
+		case KEY_CTRL:
 		case KEY_META:
 		case KEY_ALT:
 		case KEY_CAPSLOCK:
@@ -401,7 +401,7 @@ String keycode_get_string(uint32_t p_code) {
 		codestr += "+";
 	}
 	if (p_code & KEY_MASK_CTRL) {
-		codestr += find_keycode_name(KEY_CONTROL);
+		codestr += find_keycode_name(KEY_CTRL);
 		codestr += "+";
 	}
 	if (p_code & KEY_MASK_META) {

@@ -89,7 +89,7 @@ bool Path2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 
 				// Check for point movement start (for point + in/out controls).
 				if (mb->get_button_index() == MOUSE_BUTTON_LEFT) {
-					if (mode == MODE_EDIT && !mb->get_shift() && dist_to_p < grab_threshold) {
+					if (mode == MODE_EDIT && !mb->is_shift_pressed() && dist_to_p < grab_threshold) {
 						// Points can only be moved in edit mode.
 
 						action = ACTION_MOVING_POINT;
@@ -149,7 +149,7 @@ bool Path2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 		}
 
 		// Check for point creation.
-		if (mb->is_pressed() && mb->get_button_index() == MOUSE_BUTTON_LEFT && ((mb->get_command() && mode == MODE_EDIT) || mode == MODE_CREATE)) {
+		if (mb->is_pressed() && mb->get_button_index() == MOUSE_BUTTON_LEFT && ((mb->is_command_pressed() && mode == MODE_EDIT) || mode == MODE_CREATE)) {
 			Ref<Curve2D> curve = node->get_curve();
 
 			undo_redo->create_action(TTR("Add Point to Curve"));

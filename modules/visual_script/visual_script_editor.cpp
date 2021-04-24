@@ -1172,7 +1172,7 @@ void VisualScriptEditor::_member_selected() {
 #ifdef OSX_ENABLED
 		bool held_ctrl = Input::get_singleton()->is_key_pressed(KEY_META);
 #else
-		bool held_ctrl = Input::get_singleton()->is_key_pressed(KEY_CONTROL);
+		bool held_ctrl = Input::get_singleton()->is_key_pressed(KEY_CTRL);
 #endif
 		if (held_ctrl) {
 			ERR_FAIL_COND(!script->has_function(selected));
@@ -2070,7 +2070,7 @@ void VisualScriptEditor::drop_data_fw(const Point2 &p_point, const Variant &p_da
 #ifdef OSX_ENABLED
 		bool use_set = Input::get_singleton()->is_key_pressed(KEY_META);
 #else
-		bool use_set = Input::get_singleton()->is_key_pressed(KEY_CONTROL);
+		bool use_set = Input::get_singleton()->is_key_pressed(KEY_CTRL);
 #endif
 		Vector2 ofs = graph->get_scroll_ofs() + p_point;
 		if (graph->is_using_snap()) {
@@ -2258,7 +2258,7 @@ void VisualScriptEditor::drop_data_fw(const Point2 &p_point, const Variant &p_da
 #ifdef OSX_ENABLED
 		bool use_node = Input::get_singleton()->is_key_pressed(KEY_META);
 #else
-		bool use_node = Input::get_singleton()->is_key_pressed(KEY_CONTROL);
+		bool use_node = Input::get_singleton()->is_key_pressed(KEY_CTRL);
 #endif
 
 		Array nodes = d["nodes"];
@@ -2341,7 +2341,7 @@ void VisualScriptEditor::drop_data_fw(const Point2 &p_point, const Variant &p_da
 #ifdef OSX_ENABLED
 		bool use_get = Input::get_singleton()->is_key_pressed(KEY_META);
 #else
-		bool use_get = Input::get_singleton()->is_key_pressed(KEY_CONTROL);
+		bool use_get = Input::get_singleton()->is_key_pressed(KEY_CTRL);
 #endif
 
 		if (!node || Input::get_singleton()->is_key_pressed(KEY_SHIFT)) {

@@ -147,66 +147,66 @@ bool InputEventWithModifiers::is_storing_command() const {
 	return store_command;
 }
 
-void InputEventWithModifiers::set_shift(bool p_enabled) {
-	shift = p_enabled;
+void InputEventWithModifiers::set_shift_pressed(bool p_enabled) {
+	shift_pressed = p_enabled;
 }
 
-bool InputEventWithModifiers::get_shift() const {
-	return shift;
+bool InputEventWithModifiers::is_shift_pressed() const {
+	return shift_pressed;
 }
 
-void InputEventWithModifiers::set_alt(bool p_enabled) {
-	alt = p_enabled;
+void InputEventWithModifiers::set_alt_pressed(bool p_enabled) {
+	alt_pressed = p_enabled;
 }
 
-bool InputEventWithModifiers::get_alt() const {
-	return alt;
+bool InputEventWithModifiers::is_alt_pressed() const {
+	return alt_pressed;
 }
 
-void InputEventWithModifiers::set_control(bool p_enabled) {
-	control = p_enabled;
+void InputEventWithModifiers::set_ctrl_pressed(bool p_enabled) {
+	ctrl_pressed = p_enabled;
 }
 
-bool InputEventWithModifiers::get_control() const {
-	return control;
+bool InputEventWithModifiers::is_ctrl_pressed() const {
+	return ctrl_pressed;
 }
 
-void InputEventWithModifiers::set_metakey(bool p_enabled) {
-	meta = p_enabled;
+void InputEventWithModifiers::set_meta_pressed(bool p_enabled) {
+	meta_pressed = p_enabled;
 }
 
-bool InputEventWithModifiers::get_metakey() const {
-	return meta;
+bool InputEventWithModifiers::is_meta_pressed() const {
+	return meta_pressed;
 }
 
-void InputEventWithModifiers::set_command(bool p_enabled) {
-	command = p_enabled;
+void InputEventWithModifiers::set_command_pressed(bool p_enabled) {
+	command_pressed = p_enabled;
 }
 
-bool InputEventWithModifiers::get_command() const {
-	return command;
+bool InputEventWithModifiers::is_command_pressed() const {
+	return command_pressed;
 }
 
 void InputEventWithModifiers::set_modifiers_from_event(const InputEventWithModifiers *event) {
-	set_alt(event->get_alt());
-	set_shift(event->get_shift());
-	set_control(event->get_control());
-	set_metakey(event->get_metakey());
+	set_alt_pressed(event->is_alt_pressed());
+	set_shift_pressed(event->is_shift_pressed());
+	set_ctrl_pressed(event->is_ctrl_pressed());
+	set_meta_pressed(event->is_meta_pressed());
 }
 
 String InputEventWithModifiers::as_text() const {
 	Vector<String> mod_names;
 
-	if (get_control()) {
-		mod_names.push_back(find_keycode_name(KEY_CONTROL));
+	if (is_ctrl_pressed()) {
+		mod_names.push_back(find_keycode_name(KEY_CTRL));
 	}
-	if (get_shift()) {
+	if (is_shift_pressed()) {
 		mod_names.push_back(find_keycode_name(KEY_SHIFT));
 	}
-	if (get_alt()) {
+	if (is_alt_pressed()) {
 		mod_names.push_back(find_keycode_name(KEY_ALT));
 	}
-	if (get_metakey()) {
+	if (is_meta_pressed()) {
 		mod_names.push_back(find_keycode_name(KEY_META));
 	}
 
@@ -225,27 +225,27 @@ void InputEventWithModifiers::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_store_command", "enable"), &InputEventWithModifiers::set_store_command);
 	ClassDB::bind_method(D_METHOD("is_storing_command"), &InputEventWithModifiers::is_storing_command);
 
-	ClassDB::bind_method(D_METHOD("set_alt", "enable"), &InputEventWithModifiers::set_alt);
-	ClassDB::bind_method(D_METHOD("get_alt"), &InputEventWithModifiers::get_alt);
+	ClassDB::bind_method(D_METHOD("set_alt_pressed", "pressed"), &InputEventWithModifiers::set_alt_pressed);
+	ClassDB::bind_method(D_METHOD("is_alt_pressed"), &InputEventWithModifiers::is_alt_pressed);
 
-	ClassDB::bind_method(D_METHOD("set_shift", "enable"), &InputEventWithModifiers::set_shift);
-	ClassDB::bind_method(D_METHOD("get_shift"), &InputEventWithModifiers::get_shift);
+	ClassDB::bind_method(D_METHOD("set_shift_pressed", "pressed"), &InputEventWithModifiers::set_shift_pressed);
+	ClassDB::bind_method(D_METHOD("is_shift_pressed"), &InputEventWithModifiers::is_shift_pressed);
 
-	ClassDB::bind_method(D_METHOD("set_control", "enable"), &InputEventWithModifiers::set_control);
-	ClassDB::bind_method(D_METHOD("get_control"), &InputEventWithModifiers::get_control);
+	ClassDB::bind_method(D_METHOD("set_ctrl_pressed", "pressed"), &InputEventWithModifiers::set_ctrl_pressed);
+	ClassDB::bind_method(D_METHOD("is_ctrl_pressed"), &InputEventWithModifiers::is_ctrl_pressed);
 
-	ClassDB::bind_method(D_METHOD("set_metakey", "enable"), &InputEventWithModifiers::set_metakey);
-	ClassDB::bind_method(D_METHOD("get_metakey"), &InputEventWithModifiers::get_metakey);
+	ClassDB::bind_method(D_METHOD("set_meta_pressed", "pressed"), &InputEventWithModifiers::set_meta_pressed);
+	ClassDB::bind_method(D_METHOD("is_meta_pressed"), &InputEventWithModifiers::is_meta_pressed);
 
-	ClassDB::bind_method(D_METHOD("set_command", "enable"), &InputEventWithModifiers::set_command);
-	ClassDB::bind_method(D_METHOD("get_command"), &InputEventWithModifiers::get_command);
+	ClassDB::bind_method(D_METHOD("set_command_pressed", "pressed"), &InputEventWithModifiers::set_command_pressed);
+	ClassDB::bind_method(D_METHOD("is_command_pressed"), &InputEventWithModifiers::is_command_pressed);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "store_command"), "set_store_command", "is_storing_command");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "alt"), "set_alt", "get_alt");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "shift"), "set_shift", "get_shift");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "control"), "set_control", "get_control");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "meta"), "set_metakey", "get_metakey");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "command"), "set_command", "get_command");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "alt_pressed"), "set_alt_pressed", "is_alt_pressed");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "shift_pressed"), "set_shift_pressed", "is_shift_pressed");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "ctrl_pressed"), "set_ctrl_pressed", "is_ctrl_pressed");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "meta_pressed"), "set_meta_pressed", "is_meta_pressed");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "command_pressed"), "set_command_pressed", "is_command_pressed");
 }
 
 void InputEventWithModifiers::_validate_property(PropertyInfo &property) const {
@@ -253,18 +253,18 @@ void InputEventWithModifiers::_validate_property(PropertyInfo &property) const {
 		// If we only want to Store "Command".
 #ifdef APPLE_STYLE_KEYS
 		// Don't store "Meta" on Mac.
-		if (property.name == "meta") {
+		if (property.name == "meta_pressed") {
 			property.usage ^= PROPERTY_USAGE_STORAGE;
 		}
 #else
-		// Don't store "Control".
-		if (property.name == "control") {
+		// Don't store "Ctrl".
+		if (property.name == "ctrl_pressed") {
 			property.usage ^= PROPERTY_USAGE_STORAGE;
 		}
 #endif
 	} else {
-		// We don't want to store command, only control or meta (on mac).
-		if (property.name == "command") {
+		// We don't want to store command, only ctrl or meta (on mac).
+		if (property.name == "command_pressed") {
 			property.usage ^= PROPERTY_USAGE_STORAGE;
 		}
 	}
@@ -314,16 +314,16 @@ bool InputEventKey::is_echo() const {
 
 uint32_t InputEventKey::get_keycode_with_modifiers() const {
 	uint32_t sc = keycode;
-	if (get_control()) {
+	if (is_ctrl_pressed()) {
 		sc |= KEY_MASK_CTRL;
 	}
-	if (get_alt()) {
+	if (is_alt_pressed()) {
 		sc |= KEY_MASK_ALT;
 	}
-	if (get_shift()) {
+	if (is_shift_pressed()) {
 		sc |= KEY_MASK_SHIFT;
 	}
-	if (get_metakey()) {
+	if (is_meta_pressed()) {
 		sc |= KEY_MASK_META;
 	}
 
@@ -332,16 +332,16 @@ uint32_t InputEventKey::get_keycode_with_modifiers() const {
 
 uint32_t InputEventKey::get_physical_keycode_with_modifiers() const {
 	uint32_t sc = physical_keycode;
-	if (get_control()) {
+	if (is_ctrl_pressed()) {
 		sc |= KEY_MASK_CTRL;
 	}
-	if (get_alt()) {
+	if (is_alt_pressed()) {
 		sc |= KEY_MASK_ALT;
 	}
-	if (get_shift()) {
+	if (is_shift_pressed()) {
 		sc |= KEY_MASK_SHIFT;
 	}
-	if (get_metakey()) {
+	if (is_meta_pressed()) {
 		sc |= KEY_MASK_META;
 	}
 
@@ -391,19 +391,19 @@ Ref<InputEventKey> InputEventKey::create_reference(uint32_t p_keycode) {
 	ie->set_unicode(p_keycode & KEY_CODE_MASK);
 
 	if (p_keycode & KEY_MASK_SHIFT) {
-		ie->set_shift(true);
+		ie->set_shift_pressed(true);
 	}
 	if (p_keycode & KEY_MASK_ALT) {
-		ie->set_alt(true);
+		ie->set_alt_pressed(true);
 	}
 	if (p_keycode & KEY_MASK_CTRL) {
-		ie->set_control(true);
+		ie->set_ctrl_pressed(true);
 	}
 	if (p_keycode & KEY_MASK_CMD) {
-		ie->set_command(true);
+		ie->set_command_pressed(true);
 	}
 	if (p_keycode & KEY_MASK_META) {
-		ie->set_metakey(true);
+		ie->set_meta_pressed(true);
 	}
 
 	return ie;
@@ -803,19 +803,19 @@ bool InputEventMouseMotion::accumulate(const Ref<InputEvent> &p_event) {
 		return false;
 	}
 
-	if (get_shift() != motion->get_shift()) {
+	if (is_shift_pressed() != motion->is_shift_pressed()) {
 		return false;
 	}
 
-	if (get_control() != motion->get_control()) {
+	if (is_ctrl_pressed() != motion->is_ctrl_pressed()) {
 		return false;
 	}
 
-	if (get_alt() != motion->get_alt()) {
+	if (is_alt_pressed() != motion->is_alt_pressed()) {
 		return false;
 	}
 
-	if (get_metakey() != motion->get_metakey()) {
+	if (is_meta_pressed() != motion->is_meta_pressed()) {
 		return false;
 	}
 

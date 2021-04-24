@@ -615,13 +615,13 @@ bool GridMapEditor::forward_spatial_input_event(Camera3D *p_camera, const Ref<In
 	Ref<InputEventMouseButton> mb = p_event;
 
 	if (mb.is_valid()) {
-		if (mb->get_button_index() == MOUSE_BUTTON_WHEEL_UP && (mb->get_command() || mb->get_shift())) {
+		if (mb->get_button_index() == MOUSE_BUTTON_WHEEL_UP && (mb->is_command_pressed() || mb->is_shift_pressed())) {
 			if (mb->is_pressed()) {
 				floor->set_value(floor->get_value() + mb->get_factor());
 			}
 
 			return true; // Eaten.
-		} else if (mb->get_button_index() == MOUSE_BUTTON_WHEEL_DOWN && (mb->get_command() || mb->get_shift())) {
+		} else if (mb->get_button_index() == MOUSE_BUTTON_WHEEL_DOWN && (mb->is_command_pressed() || mb->is_shift_pressed())) {
 			if (mb->is_pressed()) {
 				floor->set_value(floor->get_value() - mb->get_factor());
 			}
@@ -630,7 +630,7 @@ bool GridMapEditor::forward_spatial_input_event(Camera3D *p_camera, const Ref<In
 
 		if (mb->is_pressed()) {
 			Node3DEditorViewport::NavigationScheme nav_scheme = (Node3DEditorViewport::NavigationScheme)EditorSettings::get_singleton()->get("editors/3d/navigation/navigation_scheme").operator int();
-			if ((nav_scheme == Node3DEditorViewport::NAVIGATION_MAYA || nav_scheme == Node3DEditorViewport::NAVIGATION_MODO) && mb->get_alt()) {
+			if ((nav_scheme == Node3DEditorViewport::NAVIGATION_MAYA || nav_scheme == Node3DEditorViewport::NAVIGATION_MODO) && mb->is_alt_pressed()) {
 				input_action = INPUT_NONE;
 			} else if (mb->get_button_index() == MOUSE_BUTTON_LEFT) {
 				bool can_edit = (node && node->get_mesh_library().is_valid());
@@ -638,10 +638,10 @@ bool GridMapEditor::forward_spatial_input_event(Camera3D *p_camera, const Ref<In
 					_do_paste();
 					input_action = INPUT_NONE;
 					_update_paste_indicator();
-				} else if (mb->get_shift() && can_edit) {
+				} else if (mb->is_shift_pressed() && can_edit) {
 					input_action = INPUT_SELECT;
 					last_selection = selection;
-				} else if (mb->get_command() && can_edit) {
+				} else if (mb->is_command_pressed() && can_edit) {
 					input_action = INPUT_PICK;
 				} else {
 					input_action = INPUT_PAINT;
@@ -732,7 +732,7 @@ bool GridMapEditor::forward_spatial_input_event(Camera3D *p_camera, const Ref<In
 				}
 			}
 
-			if (k->get_shift() && selection.active && input_action != INPUT_PASTE) {
+			if (k->is_shift_pressed() && selection.active && input_action != INPUT_PASTE) {
 				if (k->get_keycode() == options->get_popup()->get_item_accelerator(options->get_popup()->get_item_index(MENU_OPTION_PREV_LEVEL))) {
 					selection.click[edit_axis]--;
 					_validate_selection();
@@ -749,7 +749,7 @@ bool GridMapEditor::forward_spatial_input_event(Camera3D *p_camera, const Ref<In
 
 	Ref<InputEventPanGesture> pan_gesture = p_event;
 	if (pan_gesture.is_valid()) {
-		if (pan_gesture->get_alt() && (pan_gesture->get_command() || pan_gesture->get_shift())) {
+		if (pan_gesture->is_alt_pressed() && (pan_gesture->is_command_pressed() || pan_gesture->is_shift_pressed())) {
 			const real_t delta = pan_gesture->get_delta().y * 0.5;
 			accumulated_floor_delta += delta;
 			int step = 0;
@@ -810,7 +810,7 @@ void GridMapEditor::_mesh_library_palette_input(const Ref<InputEvent> &p_ie) {
 	const Ref<InputEventMouseButton> mb = p_ie;
 
 	// Zoom in/out using Ctrl + mouse wheel
-	if (mb.is_valid() && mb->is_pressed() && mb->get_command()) {
+	if (mb.is_valid() && mb->is_pressed() && mb->is_command_pressed()) {
 		if (mb->is_pressed() && mb->get_button_index() == MOUSE_BUTTON_WHEEL_UP) {
 			size_slider->set_value(size_slider->get_value() + 0.2);
 		}

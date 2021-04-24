@@ -617,10 +617,10 @@ void Viewport::_process_picking() {
 			mm->set_device(InputEvent::DEVICE_ID_INTERNAL);
 			mm->set_global_position(physics_last_mousepos);
 			mm->set_position(physics_last_mousepos);
-			mm->set_alt(physics_last_mouse_state.alt);
-			mm->set_shift(physics_last_mouse_state.shift);
-			mm->set_control(physics_last_mouse_state.control);
-			mm->set_metakey(physics_last_mouse_state.meta);
+			mm->set_alt_pressed(physics_last_mouse_state.alt);
+			mm->set_shift_pressed(physics_last_mouse_state.shift);
+			mm->set_ctrl_pressed(physics_last_mouse_state.control);
+			mm->set_meta_pressed(physics_last_mouse_state.meta);
 			mm->set_button_mask(physics_last_mouse_state.mouse_mask);
 			physics_picking_events.push_back(mm);
 		}
@@ -641,10 +641,10 @@ void Viewport::_process_picking() {
 
 			physics_has_last_mousepos = true;
 			physics_last_mousepos = pos;
-			physics_last_mouse_state.alt = mm->get_alt();
-			physics_last_mouse_state.shift = mm->get_shift();
-			physics_last_mouse_state.control = mm->get_control();
-			physics_last_mouse_state.meta = mm->get_metakey();
+			physics_last_mouse_state.alt = mm->is_alt_pressed();
+			physics_last_mouse_state.shift = mm->is_shift_pressed();
+			physics_last_mouse_state.control = mm->is_ctrl_pressed();
+			physics_last_mouse_state.meta = mm->is_meta_pressed();
 			physics_last_mouse_state.mouse_mask = mm->get_button_mask();
 		}
 
@@ -656,10 +656,10 @@ void Viewport::_process_picking() {
 
 			physics_has_last_mousepos = true;
 			physics_last_mousepos = pos;
-			physics_last_mouse_state.alt = mb->get_alt();
-			physics_last_mouse_state.shift = mb->get_shift();
-			physics_last_mouse_state.control = mb->get_control();
-			physics_last_mouse_state.meta = mb->get_metakey();
+			physics_last_mouse_state.alt = mb->is_alt_pressed();
+			physics_last_mouse_state.shift = mb->is_shift_pressed();
+			physics_last_mouse_state.control = mb->is_ctrl_pressed();
+			physics_last_mouse_state.meta = mb->is_meta_pressed();
 
 			if (mb->is_pressed()) {
 				physics_last_mouse_state.mouse_mask |= (1 << (mb->get_button_index() - 1));
@@ -676,10 +676,10 @@ void Viewport::_process_picking() {
 		Ref<InputEventKey> k = ev;
 		if (k.is_valid()) {
 			//only for mask
-			physics_last_mouse_state.alt = k->get_alt();
-			physics_last_mouse_state.shift = k->get_shift();
-			physics_last_mouse_state.control = k->get_control();
-			physics_last_mouse_state.meta = k->get_metakey();
+			physics_last_mouse_state.alt = k->is_alt_pressed();
+			physics_last_mouse_state.shift = k->is_shift_pressed();
+			physics_last_mouse_state.control = k->is_ctrl_pressed();
+			physics_last_mouse_state.meta = k->is_meta_pressed();
 			continue;
 		}
 
@@ -2402,10 +2402,10 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 		Control *from = gui.key_focus ? gui.key_focus : nullptr; //hmm
 
 		//keyboard focus
-		//if (from && p_event->is_pressed() && !p_event->get_alt() && !p_event->get_metakey() && !p_event->key->get_command()) {
+		//if (from && p_event->is_pressed() && !p_event->is_alt_pressed() && !p_event->is_meta_pressed() && !p_event->key->is_command_pressed()) {
 		Ref<InputEventKey> k = p_event;
 		//need to check for mods, otherwise any combination of alt/ctrl/shift+<up/down/left/right/etc> is handled here when it shouldn't be.
-		bool mods = k.is_valid() && (k->get_control() || k->get_alt() || k->get_shift() || k->get_metakey());
+		bool mods = k.is_valid() && (k->is_ctrl_pressed() || k->is_alt_pressed() || k->is_shift_pressed() || k->is_meta_pressed());
 
 		if (from && p_event->is_pressed()) {
 			Control *next = nullptr;

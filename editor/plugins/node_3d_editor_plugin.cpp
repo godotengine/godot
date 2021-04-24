@@ -309,7 +309,7 @@ void Node3DEditorViewport::_update_camera(float p_interp_delta) {
 			bool manipulated = Input::get_singleton()->get_mouse_button_mask() & (2 | 4);
 			manipulated |= Input::get_singleton()->is_key_pressed(KEY_SHIFT);
 			manipulated |= Input::get_singleton()->is_key_pressed(KEY_ALT);
-			manipulated |= Input::get_singleton()->is_key_pressed(KEY_CONTROL);
+			manipulated |= Input::get_singleton()->is_key_pressed(KEY_CTRL);
 
 			float orbit_inertia = MAX(0.00001, manipulated ? manip_orbit_inertia : free_orbit_inertia);
 			float translation_inertia = MAX(0.0001, manipulated ? manip_translation_inertia : free_translation_inertia);
@@ -794,22 +794,22 @@ static int _get_key_modifier_setting(const String &p_property) {
 		case 3:
 			return KEY_META;
 		case 4:
-			return KEY_CONTROL;
+			return KEY_CTRL;
 	}
 	return 0;
 }
 
 static int _get_key_modifier(Ref<InputEventWithModifiers> e) {
-	if (e->get_shift()) {
+	if (e->is_shift_pressed()) {
 		return KEY_SHIFT;
 	}
-	if (e->get_alt()) {
+	if (e->is_alt_pressed()) {
 		return KEY_ALT;
 	}
-	if (e->get_control()) {
-		return KEY_CONTROL;
+	if (e->is_ctrl_pressed()) {
+		return KEY_CTRL;
 	}
-	if (e->get_metakey()) {
+	if (e->is_meta_pressed()) {
 		return KEY_META;
 	}
 	return 0;
@@ -1024,7 +1024,7 @@ bool Node3DEditorViewport ::_is_node_locked(const Node *p_node) {
 }
 
 void Node3DEditorViewport::_list_select(Ref<InputEventMouseButton> b) {
-	_find_items_at_pos(b->get_position(), clicked_includes_current, selection_results, b->get_shift());
+	_find_items_at_pos(b->get_position(), clicked_includes_current, selection_results, b->is_shift_pressed());
 
 	Node *scene = editor->get_edited_scene();
 
@@ -1037,7 +1037,7 @@ void Node3DEditorViewport::_list_select(Ref<InputEventMouseButton> b) {
 		}
 	}
 
-	clicked_wants_append = b->get_shift();
+	clicked_wants_append = b->is_shift_pressed();
 
 	if (selection_results.size() == 1) {
 		clicked = selection_results[0].item->get_instance_id();
@@ -1149,7 +1149,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 				}
 
 				if (_edit.mode == TRANSFORM_NONE && b->is_pressed()) {
-					if (b->get_alt()) {
+					if (b->is_alt_pressed()) {
 						if (nav_scheme == NAVIGATION_MAYA) {
 							break;
 						}
@@ -1234,7 +1234,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 			case MOUSE_BUTTON_LEFT: {
 				if (b->is_pressed()) {
 					NavigationScheme nav_scheme = (NavigationScheme)EditorSettings::get_singleton()->get("editors/3d/navigation/navigation_scheme").operator int();
-					if ((nav_scheme == NAVIGATION_MAYA || nav_scheme == NAVIGATION_MODO) && b->get_alt()) {
+					if ((nav_scheme == NAVIGATION_MAYA || nav_scheme == NAVIGATION_MODO) && b->is_alt_pressed()) {
 						break;
 					}
 
@@ -1262,7 +1262,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 							int handle = -1;
 							Vector3 point;
 							Vector3 normal;
-							bool inters = seg->intersect_ray(camera, _edit.mouse_pos, point, normal, &handle, b->get_shift());
+							bool inters = seg->intersect_ray(camera, _edit.mouse_pos, point, normal, &handle, b->is_shift_pressed());
 							if (inters && handle != -1) {
 								_edit.gizmo = seg;
 								_edit.gizmo_handle = handle;
@@ -1279,7 +1279,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 					clicked = ObjectID();
 					clicked_includes_current = false;
 
-					if ((spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_SELECT && b->get_command()) || spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_ROTATE) {
+					if ((spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_SELECT && b->is_command_pressed()) || spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_ROTATE) {
 						/* HANDLE ROTATION */
 						if (get_selected_count() == 0) {
 							break; //bye
@@ -1314,11 +1314,11 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 
 					int gizmo_handle = -1;
 
-					clicked = _select_ray(b->get_position(), b->get_shift(), clicked_includes_current, &gizmo_handle, b->get_shift());
+					clicked = _select_ray(b->get_position(), b->is_shift_pressed(), clicked_includes_current, &gizmo_handle, b->is_shift_pressed());
 
 					//clicking is always deferred to either move or release
 
-					clicked_wants_append = b->get_shift();
+					clicked_wants_append = b->is_shift_pressed();
 
 					if (clicked.is_null()) {
 						if (!clicked_wants_append) {
@@ -1441,13 +1441,13 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 			set_message(n + ": " + String(v));
 
 		} else if (m->get_button_mask() & MOUSE_BUTTON_MASK_LEFT) {
-			if (nav_scheme == NAVIGATION_MAYA && m->get_alt()) {
+			if (nav_scheme == NAVIGATION_MAYA && m->is_alt_pressed()) {
 				nav_mode = NAVIGATION_ORBIT;
-			} else if (nav_scheme == NAVIGATION_MODO && m->get_alt() && m->get_shift()) {
+			} else if (nav_scheme == NAVIGATION_MODO && m->is_alt_pressed() && m->is_shift_pressed()) {
 				nav_mode = NAVIGATION_PAN;
-			} else if (nav_scheme == NAVIGATION_MODO && m->get_alt() && m->get_control()) {
+			} else if (nav_scheme == NAVIGATION_MODO && m->is_alt_pressed() && m->is_ctrl_pressed()) {
 				nav_mode = NAVIGATION_ZOOM;
-			} else if (nav_scheme == NAVIGATION_MODO && m->get_alt()) {
+			} else if (nav_scheme == NAVIGATION_MODO && m->is_alt_pressed()) {
 				nav_mode = NAVIGATION_ORBIT;
 			} else {
 				if (clicked.is_valid()) {
@@ -1831,7 +1831,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 				}
 			}
 		} else if ((m->get_button_mask() & MOUSE_BUTTON_MASK_RIGHT) || freelook_active) {
-			if (nav_scheme == NAVIGATION_MAYA && m->get_alt()) {
+			if (nav_scheme == NAVIGATION_MAYA && m->is_alt_pressed()) {
 				nav_mode = NAVIGATION_ZOOM;
 			} else if (freelook_active) {
 				nav_mode = NAVIGATION_LOOK;
@@ -1924,7 +1924,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 			}
 
 		} else if (nav_scheme == NAVIGATION_MAYA) {
-			if (pan_gesture->get_alt()) {
+			if (pan_gesture->is_alt_pressed()) {
 				nav_mode = NAVIGATION_PAN;
 			}
 		}
@@ -2053,7 +2053,7 @@ void Node3DEditorViewport::_nav_pan(Ref<InputEventWithModifiers> p_event, const 
 
 	real_t pan_speed = 1 / 150.0;
 	int pan_speed_modifier = 10;
-	if (nav_scheme == NAVIGATION_MAYA && p_event->get_shift()) {
+	if (nav_scheme == NAVIGATION_MAYA && p_event->is_shift_pressed()) {
 		pan_speed *= pan_speed_modifier;
 	}
 
@@ -2078,7 +2078,7 @@ void Node3DEditorViewport::_nav_zoom(Ref<InputEventWithModifiers> p_event, const
 
 	real_t zoom_speed = 1 / 80.0;
 	int zoom_speed_modifier = 10;
-	if (nav_scheme == NAVIGATION_MAYA && p_event->get_shift()) {
+	if (nav_scheme == NAVIGATION_MAYA && p_event->is_shift_pressed()) {
 		zoom_speed *= zoom_speed_modifier;
 	}
 
@@ -6204,7 +6204,7 @@ void Node3DEditor::_unhandled_key_input(Ref<InputEvent> p_event) {
 		return;
 	}
 
-	snap_key_enabled = Input::get_singleton()->is_key_pressed(KEY_CONTROL);
+	snap_key_enabled = Input::get_singleton()->is_key_pressed(KEY_CTRL);
 }
 
 void Node3DEditor::_sun_environ_settings_pressed() {

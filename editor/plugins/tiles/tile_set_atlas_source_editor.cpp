@@ -669,7 +669,7 @@ void TileSetAtlasSourceEditor::_tile_atlas_control_gui_input(const Ref<InputEven
 							drag_modified_tiles.insert(coords);
 						}
 					} else {
-						if (mb->get_shift()) {
+						if (mb->is_shift_pressed()) {
 							// Create a big tile.
 							Vector2i coords = tile_atlas_view->get_atlas_tile_coords_at_pos(mouse_local_pos);
 							if (coords != TileSetAtlasSource::INVALID_ATLAS_COORDS && tile_set_atlas_source->get_tile_at_coords(coords) == TileSetAtlasSource::INVALID_ATLAS_COORDS) {
@@ -707,7 +707,7 @@ void TileSetAtlasSourceEditor::_tile_atlas_control_gui_input(const Ref<InputEven
 						drag_start_mouse_pos = mouse_local_pos;
 						drag_last_mouse_pos = drag_start_mouse_pos;
 					} else {
-						if (mb->get_shift()) {
+						if (mb->is_shift_pressed()) {
 							// Create a big tile.
 							Vector2i coords = tile_atlas_view->get_atlas_tile_coords_at_pos(mouse_local_pos);
 							if (coords != TileSetAtlasSource::INVALID_ATLAS_COORDS && tile_set_atlas_source->get_tile_at_coords(coords) == TileSetAtlasSource::INVALID_ATLAS_COORDS) {
@@ -780,7 +780,7 @@ void TileSetAtlasSourceEditor::_tile_atlas_control_gui_input(const Ref<InputEven
 							}
 						}
 
-						bool shift = mb->get_shift();
+						bool shift = mb->is_shift_pressed();
 						if (!shift && selection.size() == 1 && selected.tile != TileSetAtlasSource::INVALID_ATLAS_COORDS && selection.has(selected)) {
 							// Start move dragging.
 							drag_type = DRAG_TYPE_MOVE_TILE;

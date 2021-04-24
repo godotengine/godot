@@ -2166,10 +2166,10 @@ static Atom pick_target_from_atoms(Display *p_disp, Atom p_t1, Atom p_t2, Atom p
 }
 
 void DisplayServerX11::_get_key_modifier_state(unsigned int p_x11_state, Ref<InputEventWithModifiers> state) {
-	state->set_shift((p_x11_state & ShiftMask));
-	state->set_control((p_x11_state & ControlMask));
-	state->set_alt((p_x11_state & Mod1Mask /*|| p_x11_state&Mod5Mask*/)); //altgr should not count as alt
-	state->set_metakey((p_x11_state & Mod4Mask));
+	state->set_shift_pressed((p_x11_state & ShiftMask));
+	state->set_ctrl_pressed((p_x11_state & ControlMask));
+	state->set_alt_pressed((p_x11_state & Mod1Mask /*|| p_x11_state&Mod5Mask*/)); //altgr should not count as alt
+	state->set_meta_pressed((p_x11_state & Mod4Mask));
 }
 
 unsigned int DisplayServerX11::_get_mouse_button_state(unsigned int p_x11_button, int p_x11_type) {
@@ -2281,7 +2281,7 @@ void DisplayServerX11::_handle_key_event(WindowID p_window, XKeyEvent *p_event, 
 					//make it consistent across platforms.
 					k->set_keycode(KEY_TAB);
 					k->set_physical_keycode(KEY_TAB);
-					k->set_shift(true);
+					k->set_shift_pressed(true);
 				}
 
 				Input::get_singleton()->accumulate_input_event(k);
@@ -2409,20 +2409,20 @@ void DisplayServerX11::_handle_key_event(WindowID p_window, XKeyEvent *p_event, 
 		//make it consistent across platforms.
 		k->set_keycode(KEY_TAB);
 		k->set_physical_keycode(KEY_TAB);
-		k->set_shift(true);
+		k->set_shift_pressed(true);
 	}
 
 	//don't set mod state if modifier keys are released by themselves
 	//else event.is_action() will not work correctly here
 	if (!k->is_pressed()) {
 		if (k->get_keycode() == KEY_SHIFT) {
-			k->set_shift(false);
-		} else if (k->get_keycode() == KEY_CONTROL) {
-			k->set_control(false);
+			k->set_shift_pressed(false);
+		} else if (k->get_keycode() == KEY_CTRL) {
+			k->set_ctrl_pressed(false);
 		} else if (k->get_keycode() == KEY_ALT) {
-			k->set_alt(false);
+			k->set_alt_pressed(false);
 		} else if (k->get_keycode() == KEY_META) {
-			k->set_metakey(false);
+			k->set_meta_pressed(false);
 		}
 	}
 

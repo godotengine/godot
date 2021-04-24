@@ -581,11 +581,11 @@ void ItemList::_gui_input(const Ref<InputEvent> &p_event) {
 		if (closest != -1) {
 			int i = closest;
 
-			if (select_mode == SELECT_MULTI && items[i].selected && mb->get_command()) {
+			if (select_mode == SELECT_MULTI && items[i].selected && mb->is_command_pressed()) {
 				deselect(i);
 				emit_signal("multi_selected", i, false);
 
-			} else if (select_mode == SELECT_MULTI && mb->get_shift() && current >= 0 && current < items.size() && current != i) {
+			} else if (select_mode == SELECT_MULTI && mb->is_shift_pressed() && current >= 0 && current < items.size() && current != i) {
 				int from = current;
 				int to = i;
 				if (i < current) {
@@ -603,7 +603,7 @@ void ItemList::_gui_input(const Ref<InputEvent> &p_event) {
 					emit_signal("item_rmb_selected", i, get_local_mouse_position());
 				}
 			} else {
-				if (!mb->is_double_click() && !mb->get_command() && select_mode == SELECT_MULTI && items[i].selectable && !items[i].disabled && items[i].selected && mb->get_button_index() == MOUSE_BUTTON_LEFT) {
+				if (!mb->is_double_click() && !mb->is_command_pressed() && select_mode == SELECT_MULTI && items[i].selectable && !items[i].disabled && items[i].selected && mb->get_button_index() == MOUSE_BUTTON_LEFT) {
 					defer_select_single = i;
 					return;
 				}
@@ -613,7 +613,7 @@ void ItemList::_gui_input(const Ref<InputEvent> &p_event) {
 				} else {
 					bool selected = items[i].selected;
 
-					select(i, select_mode == SELECT_SINGLE || !mb->get_command());
+					select(i, select_mode == SELECT_SINGLE || !mb->is_command_pressed());
 
 					if (!selected || allow_reselect) {
 						if (select_mode == SELECT_SINGLE) {

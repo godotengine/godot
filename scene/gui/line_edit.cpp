@@ -250,11 +250,11 @@ void LineEdit::_gui_input(Ref<InputEvent> p_event) {
 				return;
 			}
 
-			shift_selection_check_pre(b->get_shift());
+			shift_selection_check_pre(b->is_shift_pressed());
 
 			set_caret_at_pixel_pos(b->get_position().x);
 
-			if (b->get_shift()) {
+			if (b->is_shift_pressed()) {
 				selection_fill_at_caret();
 				selection.creating = true;
 
@@ -442,9 +442,9 @@ void LineEdit::_gui_input(Ref<InputEvent> p_event) {
 		// Cursor Movement
 
 		k = k->duplicate();
-		bool shift_pressed = k->get_shift();
+		bool shift_pressed = k->is_shift_pressed();
 		// Remove shift or else actions will not match. Use above variable for selection.
-		k->set_shift(false);
+		k->set_shift_pressed(false);
 
 		if (k->is_action("ui_text_caret_word_left", true)) {
 			_move_caret_left(shift_pressed, true);
@@ -490,7 +490,7 @@ void LineEdit::_gui_input(Ref<InputEvent> p_event) {
 
 		// Allow unicode handling if:
 		// * No Modifiers are pressed (except shift)
-		bool allow_unicode_handling = !(k->get_command() || k->get_control() || k->get_alt() || k->get_metakey());
+		bool allow_unicode_handling = !(k->is_command_pressed() || k->is_ctrl_pressed() || k->is_alt_pressed() || k->is_meta_pressed());
 
 		if (allow_unicode_handling && editable && k->get_unicode() >= 32) {
 			// Handle Unicode (if no modifiers active)
