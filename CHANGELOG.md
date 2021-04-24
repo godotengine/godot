@@ -148,6 +148,8 @@ See the [release announcement](https://godotengine.org/article/godot-3-3-has-arr
 - [SVG images can now be used as a project icon](https://github.com/godotengine/godot/pull/43369).
 - [Tweaked log file names for consistency between Mono and non-Mono builds](https://github.com/godotengine/godot/pull/44148).
 - [Tweaked command line `--print-fps` display to display milliseconds per frame timings in addition to FPS](https://github.com/godotengine/godot/pull/47735).
+- [OpenSimplexNoise is now guaranteed to give consistent results across platforms](https://github.com/godotengine/godot/issues/47211).
+  - This change breaks compatibility: you get different results even for the same seed.
 
 #### Editor
 
