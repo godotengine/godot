@@ -246,6 +246,7 @@ void AudioServer::_driver_process(int p_frames, int32_t *p_buffer) {
 		init_channels_and_buffers();
 	}
 
+	ERR_FAIL_COND_MSG(buses.is_empty() && todo, "AudioServer bus count is less than 1.");
 	while (todo) {
 		if (to_mix == 0) {
 			_mix_step();
