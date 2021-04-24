@@ -118,6 +118,40 @@ class ResourceImporterScene : public ResourceImporter {
 		MESH_OVERRIDE_DISABLE,
 	};
 
+	enum NodeHint {
+		NODE_HINT_NONE,
+		NODE_HINT_NO_IMPORT,
+		NODE_HINT_COLLISION,
+		NODE_HINT_CONVEX_COLLISION,
+		NODE_HINT_COLLISION_ONLY,
+		NODE_HINT_CONVEX_COLLISION_ONLY,
+		NODE_HINT_RIGID,
+		NODE_HINT_NAVMESH,
+		NODE_HINT_MAX,
+	};
+
+	enum MaterialHint {
+		MATERIAL_HINT_NONE,
+		MATERIAL_HINT_ALPHA,
+		MATERIAL_HINT_VERTEX_COLOR,
+		MATERIAL_HINT_MAX,
+	};
+
+	enum AnimationHint {
+		ANIMATION_HINT_NONE,
+		ANIMATION_HINT_LOOPS,
+		ANIMATION_HINT_LOOP,
+		ANIMATION_HINT_CYCLE,
+		ANIMATION_HINT_MAX,
+	};
+
+	static String _import_hint_string(NodeHint p_hint);
+	static String _import_hint_string(MaterialHint p_hint);
+	static String _import_hint_string(AnimationHint p_hint);
+
+	template <class T>
+	static T _parse_import_hint(String &p_name, T p_max);
+
 	void _replace_owner(Node *p_node, Node *p_scene, Node *p_new_owner);
 	void _generate_meshes(Node *p_node, const Dictionary &p_mesh_data, bool p_generate_lods, bool p_create_shadow_meshes, LightBakeMode p_light_bake_mode, float p_lightmap_texel_size, const Vector<uint8_t> &p_src_lightmap_cache, Vector<uint8_t> &r_dst_lightmap_cache);
 	void _add_shapes(Node *p_node, const List<Ref<Shape3D>> &p_shapes);
