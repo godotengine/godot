@@ -7268,6 +7268,7 @@ RS::InstanceType RendererStorageRD::get_base_type(RID p_rid) const {
 
 void RendererStorageRD::texture_add_to_decal_atlas(RID p_texture, bool p_panorama_to_dp) {
 	if (!decal_atlas.textures.has(p_texture)) {
+		ERR_FAIL_COND(texture_owner.getornull(p_texture) == nullptr);
 		DecalAtlas::Texture t;
 		t.users = 1;
 		t.panorama_to_dp_users = p_panorama_to_dp ? 1 : 0;
