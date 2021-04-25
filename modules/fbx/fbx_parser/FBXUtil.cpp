@@ -121,7 +121,7 @@ static const uint8_t base64DecodeTable[128] = {
 };
 
 uint8_t DecodeBase64(char ch) {
-	const auto idx = static_cast<uint8_t>(ch);
+	const uint8_t idx = static_cast<uint8_t>(ch);
 	if (idx > 127) {
 		return 255;
 	}

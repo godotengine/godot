@@ -2016,7 +2016,7 @@ void CSharpInstance::connect_event_signals() {
 		StringName signal_name = event_signal.field->get_name();
 
 		// TODO: Use pooling for ManagedCallable instances.
-		auto event_signal_callable = memnew(EventSignalCallable(owner, &event_signal));
+		EventSignalCallable *event_signal_callable = memnew(EventSignalCallable(owner, &event_signal));
 
 		Callable callable(event_signal_callable);
 		connected_event_signals.push_back(callable);
@@ -2027,7 +2027,7 @@ void CSharpInstance::connect_event_signals() {
 void CSharpInstance::disconnect_event_signals() {
 	for (const List<Callable>::Element *E = connected_event_signals.front(); E; E = E->next()) {
 		const Callable &callable = E->get();
-		auto event_signal_callable = static_cast<const EventSignalCallable *>(callable.get_custom());
+		const EventSignalCallable *event_signal_callable = static_cast<const EventSignalCallable *>(callable.get_custom());
 		owner->disconnect(event_signal_callable->get_signal(), callable);
 	}
 

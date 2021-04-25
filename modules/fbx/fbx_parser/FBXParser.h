@@ -160,7 +160,7 @@ public:
 	}
 
 	ElementPtr FindElementCaseInsensitive(const std::string &elementName) const {
-		for (auto element = elements.begin(); element != elements.end(); ++element) {
+		for (FBXDocParser::ElementMap::const_iterator element = elements.begin(); element != elements.end(); ++element) {
 			if (element->first.compare(elementName)) {
 				return element->second;
 			}
