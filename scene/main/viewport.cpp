@@ -1563,6 +1563,9 @@ void Viewport::_gui_show_tooltip() {
 		return;
 	}
 
+	// Popup window which houses the tooltip content.
+	TooltipPanel *panel = memnew(TooltipPanel);
+
 	// Controls can implement `make_custom_tooltip` to provide their own tooltip.
 	// This should be a Control node which will be added as child to a TooltipPanel.
 	Control *base_tooltip = tooltip_owner->make_custom_tooltip(tooltip_text);
@@ -1572,11 +1575,11 @@ void Viewport::_gui_show_tooltip() {
 		gui.tooltip_label = memnew(TooltipLabel);
 		gui.tooltip_label->set_text(tooltip_text);
 		base_tooltip = gui.tooltip_label;
+		panel->connect("mouse_entered", callable_mp(this, &Viewport::_gui_cancel_tooltip));
 	}
 
 	base_tooltip->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
 
-	TooltipPanel *panel = memnew(TooltipPanel);
 	panel->set_transient(false);
 	panel->set_flag(Window::FLAG_NO_FOCUS, true);
 	panel->set_wrap_controls(true);
