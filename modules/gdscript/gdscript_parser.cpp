@@ -2077,6 +2077,18 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_builtin_constant(Expressio
 		case GDScriptTokenizer::Token::CONST_NAN:
 			constant->value = Math_NAN;
 			break;
+		case GDScriptTokenizer::Token::CONST_INT32_MIN:
+			constant->value = INT32_MIN;
+			break;
+		case GDScriptTokenizer::Token::CONST_INT32_MAX:
+			constant->value = INT32_MAX;
+			break;
+		case GDScriptTokenizer::Token::CONST_INT64_MIN:
+			constant->value = INT64_MIN;
+			break;
+		case GDScriptTokenizer::Token::CONST_INT64_MAX:
+			constant->value = INT64_MAX;
+			break;
 		default:
 			return nullptr; // Unreachable.
 	}
@@ -3056,6 +3068,10 @@ GDScriptParser::ParseRule *GDScriptParser::get_rule(GDScriptTokenizer::Token::Ty
 		{ &GDScriptParser::parse_builtin_constant,			nullptr,                                        PREC_NONE }, // CONST_TAU,
 		{ &GDScriptParser::parse_builtin_constant,			nullptr,                                        PREC_NONE }, // CONST_INF,
 		{ &GDScriptParser::parse_builtin_constant,			nullptr,                                        PREC_NONE }, // CONST_NAN,
+		{ &GDScriptParser::parse_builtin_constant,			nullptr,                                        PREC_NONE }, // CONST_INT32_MIN,
+		{ &GDScriptParser::parse_builtin_constant,			nullptr,                                        PREC_NONE }, // CONST_INT32_MAX,
+		{ &GDScriptParser::parse_builtin_constant,			nullptr,                                        PREC_NONE }, // CONST_INT64_MIN,
+		{ &GDScriptParser::parse_builtin_constant,			nullptr,                                        PREC_NONE }, // CONST_INT64_MAX,
 		// Error message improvement
 		{ nullptr,                                          nullptr,                                        PREC_NONE }, // VCS_CONFLICT_MARKER,
 		{ nullptr,                                          nullptr,                                        PREC_NONE }, // BACKTICK,

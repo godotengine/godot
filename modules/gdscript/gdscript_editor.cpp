@@ -458,6 +458,26 @@ void GDScriptLanguage::get_public_constants(List<Pair<String, Variant>> *p_const
 	nan.first = "NAN";
 	nan.second = Math_NAN;
 	p_constants->push_back(nan);
+
+	Pair<String, Variant> int32_min;
+	int32_min.first = "INT32_MIN";
+	int32_min.second = INT32_MIN;
+	p_constants->push_back(int32_min);
+
+	Pair<String, Variant> int32_max;
+	int32_max.first = "INT32_MAX";
+	int32_max.second = INT32_MAX;
+	p_constants->push_back(int32_max);
+
+	Pair<String, Variant> int64_min;
+	int64_min.first = "INT64_MIN";
+	int64_min.second = INT64_MIN;
+	p_constants->push_back(int64_min);
+
+	Pair<String, Variant> int64_max;
+	int64_max.first = "INT64_MAX";
+	int64_max.second = INT64_MAX;
+	p_constants->push_back(int64_max);
 }
 
 String GDScriptLanguage::make_function(const String &p_class, const String &p_name, const PackedStringArray &p_args) const {
@@ -1035,7 +1055,8 @@ static void _find_identifiers(GDScriptParser::CompletionContext &p_context, bool
 	}
 
 	static const char *_keywords[] = {
-		"false", "PI", "TAU", "INF", "NAN", "self", "true", "breakpoint", "tool", "super",
+		"false", "PI", "TAU", "INF", "NAN", "INT32_MIN", "INT32_MAX", "INT64_MIN", "INT64_MAX",
+		"self", "true", "breakpoint", "tool", "super",
 		"break", "continue", "pass", "return",
 		nullptr
 	};
@@ -2954,7 +2975,7 @@ Error GDScriptLanguage::lookup_code(const String &p_code, const String &p_symbol
 		return OK;
 	}
 
-	if ("PI" == p_symbol || "TAU" == p_symbol || "INF" == p_symbol || "NAN" == p_symbol) {
+	if ("PI" == p_symbol || "TAU" == p_symbol || "INF" == p_symbol || "NAN" == p_symbol || "INT32_MIN" == p_symbol || "INT32_MAX" == p_symbol || "INT64_MIN" == p_symbol || "INT64_MAX" == p_symbol) {
 		r_result.type = ScriptLanguage::LookupResult::RESULT_CLASS_CONSTANT;
 		r_result.class_name = "@GDScript";
 		r_result.class_member = p_symbol;

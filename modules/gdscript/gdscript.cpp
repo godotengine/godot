@@ -1744,6 +1744,10 @@ void GDScriptLanguage::init() {
 	_add_global(StaticCString::create("TAU"), Math_TAU);
 	_add_global(StaticCString::create("INF"), Math_INF);
 	_add_global(StaticCString::create("NAN"), Math_NAN);
+	_add_global(StaticCString::create("INT32_MIN"), INT32_MIN);
+	_add_global(StaticCString::create("INT32_MAX"), INT32_MAX);
+	_add_global(StaticCString::create("INT64_MIN"), INT64_MIN);
+	_add_global(StaticCString::create("INT64_MAX"), INT64_MAX);
 
 	//populate native classes
 
@@ -2083,6 +2087,10 @@ void GDScriptLanguage::get_reserved_words(List<String> *p_words) const {
 		"TAU",
 		"INF",
 		"NAN",
+		"INT32_MIN",
+		"INT32_MAX",
+		"INT64_MIN",
+		"INT64_MAX",
 		"self",
 		"true",
 		"void",

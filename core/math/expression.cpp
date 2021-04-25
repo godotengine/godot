@@ -401,6 +401,18 @@ Error Expression::_get_token(Token &r_token) {
 					} else if (id == "NAN") {
 						r_token.type = TK_CONSTANT;
 						r_token.value = Math_NAN;
+					} else if (id == "INT32_MIN") {
+						r_token.type = TK_CONSTANT;
+						r_token.value = INT32_MIN;
+					} else if (id == "INT32_MAX") {
+						r_token.type = TK_CONSTANT;
+						r_token.value = INT32_MAX;
+					} else if (id == "INT64_MIN") {
+						r_token.type = TK_CONSTANT;
+						r_token.value = INT64_MIN;
+					} else if (id == "INT64_MAX") {
+						r_token.type = TK_CONSTANT;
+						r_token.value = INT64_MAX;
 					} else if (id == "not") {
 						r_token.type = TK_OP_NOT;
 					} else if (id == "or") {

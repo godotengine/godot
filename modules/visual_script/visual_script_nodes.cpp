@@ -2099,6 +2099,9 @@ VisualScriptBasicTypeConstant::VisualScriptBasicTypeConstant() {
 ////////////////MATHCONSTANT///////////
 //////////////////////////////////////////
 
+// `INT32_MIN`, `INT32_MAX`, `INT64_MIN`, `INT64_MAX` are missing because they
+// require integer types (only `double`s can currently be returned).
+// Use a VisualScriptExpression if you need those integer constants.
 const char *VisualScriptMathConstant::const_name[MATH_CONSTANT_MAX] = {
 	"One",
 	"PI",
