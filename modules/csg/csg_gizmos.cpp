@@ -292,26 +292,15 @@ bool CSGShape3DGizmoPlugin::is_selectable_when_hidden() const {
 }
 
 void CSGShape3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
-	CSGShape3D *cs = Object::cast_to<CSGShape3D>(p_gizmo->get_spatial_node());
-
 	p_gizmo->clear();
 
-	Ref<Material> material;
-	switch (cs->get_operation()) {
-		case CSGShape3D::OPERATION_UNION:
-			material = get_material("shape_union_material", p_gizmo);
-			break;
-		case CSGShape3D::OPERATION_INTERSECTION:
-			material = get_material("shape_intersection_material", p_gizmo);
-			break;
-		case CSGShape3D::OPERATION_SUBTRACTION:
-			material = get_material("shape_subtraction_material", p_gizmo);
-			break;
-	}
-
-	Ref<Material> handles_material = get_material("handles");
+	CSGShape3D *cs = Object::cast_to<CSGShape3D>(p_gizmo->get_spatial_node());
 
 	Vector<Vector3> faces = cs->get_brush_faces();
+
+	if (faces.size() == 0) {
+		return;
+	}
 
 	Vector<Vector3> lines;
 	lines.resize(faces.size() * 2);
@@ -327,6 +316,21 @@ void CSGShape3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 			}
 		}
 	}
+
+	Ref<Material> material;
+	switch (cs->get_operation()) {
+		case CSGShape3D::OPERATION_UNION:
+			material = get_material("shape_union_material", p_gizmo);
+			break;
+		case CSGShape3D::OPERATION_INTERSECTION:
+			material = get_material("shape_intersection_material", p_gizmo);
+			break;
+		case CSGShape3D::OPERATION_SUBTRACTION:
+			material = get_material("shape_subtraction_material", p_gizmo);
+			break;
+	}
+
+	Ref<Material> handles_material = get_material("handles");
 
 	p_gizmo->add_lines(lines, material);
 	p_gizmo->add_collision_segments(lines);
