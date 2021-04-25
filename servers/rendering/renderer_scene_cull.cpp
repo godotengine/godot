@@ -2394,7 +2394,7 @@ void RendererSceneCull::_frustum_cull(CullData &cull_data, FrustumCullResult &cu
 				cull_result.gi_probes.push_back(RID::from_uint64(idata.instance_data_rid));
 
 			} else if (base_type == RS::INSTANCE_LIGHTMAP) {
-				cull_result.gi_probes.push_back(RID::from_uint64(idata.instance_data_rid));
+				cull_result.lightmaps.push_back(RID::from_uint64(idata.instance_data_rid));
 			} else if (((1 << base_type) & RS::INSTANCE_GEOMETRY_MASK) && !(idata.flags & InstanceData::FLAG_CAST_SHADOWS_ONLY)) {
 				bool keep = true;
 

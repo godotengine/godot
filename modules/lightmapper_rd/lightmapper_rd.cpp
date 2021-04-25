@@ -162,8 +162,8 @@ Lightmapper::BakeError LightmapperRD::_blit_meshes_into_atlas(int p_max_texture_
 		MeshInstance &mi = mesh_instances.write[m_i];
 		Size2i s = Size2i(mi.data.albedo_on_uv2->get_width(), mi.data.albedo_on_uv2->get_height());
 		sizes.push_back(s);
-		atlas_size.width = MAX(atlas_size.width, s.width);
-		atlas_size.height = MAX(atlas_size.height, s.height);
+		atlas_size.width = MAX(atlas_size.width, s.width + 2);
+		atlas_size.height = MAX(atlas_size.height, s.height + 2);
 	}
 
 	int max = nearest_power_of_2_templated(atlas_size.width);
@@ -186,10 +186,12 @@ Lightmapper::BakeError LightmapperRD::_blit_meshes_into_atlas(int p_max_texture_
 
 	//determine best texture array atlas size by bruteforce fitting
 	while (atlas_size.x <= p_max_texture_size && atlas_size.y <= p_max_texture_size) {
-		Vector<Vector2i> source_sizes = sizes;
+		Vector<Vector2i> source_sizes;
 		Vector<int> source_indices;
-		source_indices.resize(source_sizes.size());
+		source_sizes.resize(sizes.size());
+		source_indices.resize(sizes.size());
 		for (int i = 0; i < source_indices.size(); i++) {
+			source_sizes.write[i] = sizes[i] + Vector2i(2, 2); // Add padding between lightmaps
 			source_indices.write[i] = i;
 		}
 		Vector<Vector3i> atlas_offsets;
@@ -207,7 +209,7 @@ Lightmapper::BakeError LightmapperRD::_blit_meshes_into_atlas(int p_max_texture_
 				if (ofs.z > 0) {
 					//valid
 					ofs.z = slices;
-					atlas_offsets.write[sidx] = ofs;
+					atlas_offsets.write[sidx] = ofs + Vector3i(1, 1, 0); // Center lightmap in the reserved oversized region
 				} else {
 					new_indices.push_back(sidx);
 					new_sources.push_back(source_sizes[i]);
@@ -272,7 +274,7 @@ Lightmapper::BakeError LightmapperRD::_blit_meshes_into_atlas(int p_max_texture_
 	return BAKE_OK;
 }
 
-void LightmapperRD::_create_acceleration_structures(RenderingDevice *rd, Size2i atlas_size, int atlas_slices, AABB &bounds, int grid_size, Vector<Probe> &probe_positions, GenerateProbes p_generate_probes, Vector<int> &slice_triangle_count, Vector<int> &slice_seam_count, RID &vertex_buffer, RID &triangle_buffer, RID &box_buffer, RID &lights_buffer, RID &triangle_cell_indices_buffer, RID &probe_positions_buffer, RID &grid_texture, RID &grid_texture_sdf, RID &seams_buffer, BakeStepFunc p_step_function, void *p_bake_userdata) {
+void LightmapperRD::_create_acceleration_structures(RenderingDevice *rd, Size2i atlas_size, int atlas_slices, AABB &bounds, int grid_size, Vector<Probe> &probe_positions, GenerateProbes p_generate_probes, Vector<int> &slice_triangle_count, Vector<int> &slice_seam_count, RID &vertex_buffer, RID &triangle_buffer, RID &box_buffer, RID &lights_buffer, RID &triangle_cell_indices_buffer, RID &probe_positions_buffer, RID &grid_texture, RID &seams_buffer, BakeStepFunc p_step_function, void *p_bake_userdata) {
 	HashMap<Vertex, uint32_t, VertexHash> vertex_map;
 
 	//fill triangles array and vertex array
@@ -482,14 +484,6 @@ void LightmapperRD::_create_acceleration_structures(RenderingDevice *rd, Size2i 
 		img->save_png("res://grid_layer_" + itos(1000 + i).substr(1, 3) + ".png");
 	}
 #endif
-	if (p_step_function) {
-		p_step_function(0.45, TTR("Generating Signed Distance Field"), p_bake_userdata, true);
-	}
-
-	//generate SDF for raytracing
-	Vector<uint32_t> euclidean_pos = Geometry3D::generate_edf(solid, Vector3i(grid_size, grid_size, grid_size), false);
-	Vector<uint32_t> euclidean_neg = Geometry3D::generate_edf(solid, Vector3i(grid_size, grid_size, grid_size), true);
-	Vector<int8_t> sdf8 = Geometry3D::generate_sdf8(euclidean_pos, euclidean_neg);
 
 	/*****************************/
 	/*** CREATE GPU STRUCTURES ***/
@@ -551,10 +545,6 @@ void LightmapperRD::_create_acceleration_structures(RenderingDevice *rd, Size2i 
 		tf.format = RD::DATA_FORMAT_R32G32_UINT;
 		texdata.write[0] = grid_indices.to_byte_array();
 		grid_texture = rd->texture_create(tf, RD::TextureView(), texdata);
-		//sdf
-		tf.format = RD::DATA_FORMAT_R8_SNORM;
-		texdata.write[0] = sdf8.to_byte_array();
-		grid_texture_sdf = rd->texture_create(tf, RD::TextureView(), texdata);
 	}
 }
 
@@ -755,8 +745,7 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 			light_environment_tex = rd->texture_create(tfp, RD::TextureView(), tdata);
 
 #ifdef DEBUG_TEXTURES
-			panorama_tex->convert(Image::FORMAT_RGB8);
-			panorama_tex->save_png("res://0_panorama.png");
+			panorama_tex->save_exr("res://0_panorama.exr", false);
 #endif
 		}
 	}
@@ -770,7 +759,6 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 	RID lights_buffer;
 	RID triangle_cell_indices_buffer;
 	RID grid_texture;
-	RID grid_texture_sdf;
 	RID seams_buffer;
 	RID probe_positions_buffer;
 
@@ -783,11 +771,10 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 	rd->free(lights_buffer);                \
 	rd->free(triangle_cell_indices_buffer); \
 	rd->free(grid_texture);                 \
-	rd->free(grid_texture_sdf);             \
 	rd->free(seams_buffer);                 \
 	rd->free(probe_positions_buffer);
 
-	_create_acceleration_structures(rd, atlas_size, atlas_slices, bounds, grid_size, probe_positions, p_generate_probes, slice_triangle_count, slice_seam_count, vertex_buffer, triangle_buffer, box_buffer, lights_buffer, triangle_cell_indices_buffer, probe_positions_buffer, grid_texture, grid_texture_sdf, seams_buffer, p_step_function, p_bake_userdata);
+	_create_acceleration_structures(rd, atlas_size, atlas_slices, bounds, grid_size, probe_positions, p_generate_probes, slice_triangle_count, slice_seam_count, vertex_buffer, triangle_buffer, box_buffer, lights_buffer, triangle_cell_indices_buffer, probe_positions_buffer, grid_texture, seams_buffer, p_step_function, p_bake_userdata);
 
 	if (p_step_function) {
 		p_step_function(0.47, TTR("Preparing shaders"), p_bake_userdata, true);
@@ -883,27 +870,20 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 			RD::Uniform u;
 			u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 			u.binding = 9;
-			u.ids.push_back(grid_texture_sdf);
-			base_uniforms.push_back(u);
-		}
-		{
-			RD::Uniform u;
-			u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
-			u.binding = 10;
 			u.ids.push_back(albedo_array_tex);
 			base_uniforms.push_back(u);
 		}
 		{
 			RD::Uniform u;
 			u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
-			u.binding = 11;
+			u.binding = 10;
 			u.ids.push_back(emission_array_tex);
 			base_uniforms.push_back(u);
 		}
 		{
 			RD::Uniform u;
 			u.uniform_type = RD::UNIFORM_TYPE_SAMPLER;
-			u.binding = 12;
+			u.binding = 11;
 			u.ids.push_back(sampler);
 			base_uniforms.push_back(u);
 		}
@@ -937,13 +917,11 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 		Ref<Image> img;
 		img.instance();
 		img->create(atlas_size.width, atlas_size.height, false, Image::FORMAT_RGBAF, s);
-		img->convert(Image::FORMAT_RGBA8);
-		img->save_png("res://1_position_" + itos(i) + ".png");
+		img->save_exr("res://1_position_" + itos(i) + ".exr", false);
 
 		s = rd->texture_get_data(normal_tex, i);
 		img->create(atlas_size.width, atlas_size.height, false, Image::FORMAT_RGBAH, s);
-		img->convert(Image::FORMAT_RGBA8);
-		img->save_png("res://1_normal_" + itos(i) + ".png");
+		img->save_exr("res://1_normal_" + itos(i) + ".exr", false);
 	}
 #endif
 
@@ -966,27 +944,27 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 	}
 	ERR_FAIL_COND_V(err != OK, BAKE_ERROR_LIGHTMAP_CANT_PRE_BAKE_MESHES);
 
-	//unoccluder
+	// Unoccluder
 	RID compute_shader_unocclude = rd->shader_create_from_bytecode(compute_shader->get_bytecode("unocclude"));
 	ERR_FAIL_COND_V(compute_shader_unocclude.is_null(), BAKE_ERROR_LIGHTMAP_CANT_PRE_BAKE_MESHES); // internal check, should not happen
 	RID compute_shader_unocclude_pipeline = rd->compute_pipeline_create(compute_shader_unocclude);
 
-	//direct light
+	// Direct light
 	RID compute_shader_primary = rd->shader_create_from_bytecode(compute_shader->get_bytecode("primary"));
 	ERR_FAIL_COND_V(compute_shader_primary.is_null(), BAKE_ERROR_LIGHTMAP_CANT_PRE_BAKE_MESHES); // internal check, should not happen
 	RID compute_shader_primary_pipeline = rd->compute_pipeline_create(compute_shader_primary);
 
-	//indirect light
+	// Indirect light
 	RID compute_shader_secondary = rd->shader_create_from_bytecode(compute_shader->get_bytecode("secondary"));
 	ERR_FAIL_COND_V(compute_shader_secondary.is_null(), BAKE_ERROR_LIGHTMAP_CANT_PRE_BAKE_MESHES); //internal check, should not happen
 	RID compute_shader_secondary_pipeline = rd->compute_pipeline_create(compute_shader_secondary);
 
-	//dilate
+	// Dilate
 	RID compute_shader_dilate = rd->shader_create_from_bytecode(compute_shader->get_bytecode("dilate"));
 	ERR_FAIL_COND_V(compute_shader_dilate.is_null(), BAKE_ERROR_LIGHTMAP_CANT_PRE_BAKE_MESHES); //internal check, should not happen
 	RID compute_shader_dilate_pipeline = rd->compute_pipeline_create(compute_shader_dilate);
 
-	//dilate
+	// Light probes
 	RID compute_shader_light_probes = rd->shader_create_from_bytecode(compute_shader->get_bytecode("light_probes"));
 	ERR_FAIL_COND_V(compute_shader_light_probes.is_null(), BAKE_ERROR_LIGHTMAP_CANT_PRE_BAKE_MESHES); //internal check, should not happen
 	RID compute_shader_light_probes_pipeline = rd->compute_pipeline_create(compute_shader_light_probes);
@@ -1153,8 +1131,7 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 		Ref<Image> img;
 		img.instance();
 		img->create(atlas_size.width, atlas_size.height, false, Image::FORMAT_RGBAH, s);
-		img->convert(Image::FORMAT_RGBA8);
-		img->save_png("res://2_light_primary_" + itos(i) + ".png");
+		img->save_exr("res://2_light_primary_" + itos(i) + ".exr", false);
 	}
 #endif
 
@@ -1212,7 +1189,7 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 				RD::Uniform u;
 				u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 				u.binding = 6;
-				u.ids.push_back(light_environment_tex); //reuse unocclude tex
+				u.ids.push_back(light_environment_tex);
 				uniforms.push_back(u);
 			}
 		}
@@ -1298,7 +1275,15 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 					}
 				}
 			}
+
+			if (b == 0) {
+				// This disables the environment for subsequent bounces
+				push_constant.environment_xform[3] = -99.0f;
+			}
 		}
+
+		// Restore the correct environment transform
+		push_constant.environment_xform[3] = 0.0f;
 	}
 
 	/* LIGHPROBES */
@@ -1449,8 +1434,7 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 		Ref<Image> img;
 		img.instance();
 		img->create(atlas_size.width, atlas_size.height, false, Image::FORMAT_RGBAH, s);
-		img->convert(Image::FORMAT_RGBA8);
-		img->save_png("res://4_light_secondary_" + itos(i) + ".png");
+		img->save_exr("res://4_light_secondary_" + itos(i) + ".exr", false);
 	}
 #endif
 
@@ -1582,6 +1566,11 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 		clear_colors.push_back(Color(0, 0, 0, 1));
 		for (int i = 0; i < atlas_slices; i++) {
 			int subslices = (p_bake_sh ? 4 : 1);
+
+			if (slice_seam_count[i] == 0) {
+				continue;
+			}
+
 			for (int k = 0; k < subslices; k++) {
 				RasterSeamsPushConstant seams_push_constant;
 				seams_push_constant.slice = uint32_t(i * subslices + k);
@@ -1654,8 +1643,7 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 		Ref<Image> img;
 		img.instance();
 		img->create(atlas_size.width, atlas_size.height, false, Image::FORMAT_RGBAH, s);
-		img->convert(Image::FORMAT_RGBA8);
-		img->save_png("res://5_blendseams" + itos(i) + ".png");
+		img->save_exr("res://5_blendseams" + itos(i) + ".exr", false);
 	}
 #endif
 	if (p_step_function) {
@@ -1682,7 +1670,7 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 			Ref<Image> img2;
 			img2.instance();
 			img2->create(probe_values.size(), 1, false, Image::FORMAT_RGBAF, probe_data);
-			img2->save_png("res://6_lightprobes.png");
+			img2->save_exr("res://6_lightprobes.exr", false);
 		}
 #endif
 	}

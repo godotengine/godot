@@ -497,7 +497,7 @@ private:
 			float soft_shadow_scale;
 			uint32_t mask;
 			float shadow_volumetric_fog_fade;
-			uint32_t pad;
+			uint32_t bake_mode;
 			float projector_rect[4];
 		};
 
@@ -514,7 +514,8 @@ private:
 			uint32_t shadow_enabled;
 			float fade_from;
 			float fade_to;
-			uint32_t pad[3];
+			uint32_t pad[2];
+			uint32_t bake_mode;
 			float shadow_volumetric_fog_fade;
 			float shadow_bias[4];
 			float shadow_normal_bias[4];
