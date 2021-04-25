@@ -253,13 +253,16 @@
 		<theme_item name="font_color" type="Color" default="Color( 0.88, 0.88, 0.88, 1 )">
 			Default text [Color] of the [OptionButton].
 		</theme_item>
-		<theme_item name="font_color_disabled" type="Color" default="Color( 0.9, 0.9, 0.9, 0.2 )">
+		<theme_item name="font_disabled_color" type="Color" default="Color( 0.9, 0.9, 0.9, 0.2 )">
 			Text [Color] used when the [OptionButton] is disabled.
 		</theme_item>
-		<theme_item name="font_color_hover" type="Color" default="Color( 0.94, 0.94, 0.94, 1 )">
+		<theme_item name="font_hover_color" type="Color" default="Color( 0.94, 0.94, 0.94, 1 )">
 			Text [Color] used when the [OptionButton] is being hovered.
 		</theme_item>
-		<theme_item name="font_color_pressed" type="Color" default="Color( 1, 1, 1, 1 )">
+		<theme_item name="font_outline_color" type="Color" default="Color( 1, 1, 1, 1 )">
+			The tint of text outline of the [OptionButton].
+		</theme_item>
+		<theme_item name="font_pressed_color" type="Color" default="Color( 1, 1, 1, 1 )">
 			Text [Color] used when the [OptionButton] is being pressed.
 		</theme_item>
 		<theme_item name="font_size" type="int">
@@ -279,6 +282,9 @@
 		</theme_item>
 		<theme_item name="normal_mirrored" type="StyleBox">
 			Default [StyleBox] for the [OptionButton] (for right-to-left layouts).
+		</theme_item>
+		<theme_item name="outline_size" type="int" default="0">
+			The size of the text outline.
 		</theme_item>
 		<theme_item name="pressed" type="StyleBox">
 			[StyleBox] used when the [OptionButton] is being pressed (for left-to-right layouts).

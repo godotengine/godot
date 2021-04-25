@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -77,14 +77,14 @@ int GDScriptFunction::get_max_stack_size() const {
 }
 
 struct _GDFKC {
-	int order;
+	int order = 0;
 	List<int> pos;
 };
 
 struct _GDFKCS {
-	int order;
+	int order = 0;
 	StringName id;
-	int pos;
+	int pos = 0;
 
 	bool operator<(const _GDFKCS &p_r) const {
 		return order < p_r.order;
@@ -114,7 +114,7 @@ void GDScriptFunction::debug_get_stack_member_state(int p_line, List<Pair<String
 			ERR_CONTINUE(!sdmap.has(sd.identifier));
 
 			sdmap[sd.identifier].pos.pop_back();
-			if (sdmap[sd.identifier].pos.empty()) {
+			if (sdmap[sd.identifier].pos.is_empty()) {
 				sdmap.erase(sd.identifier);
 			}
 		}
@@ -244,7 +244,7 @@ Variant GDScriptFunctionState::resume(const Variant &p_arg) {
 	bool completed = true;
 
 	// If the return value is a GDScriptFunctionState reference,
-	// then the function did awaited again after resuming.
+	// then the function did await again after resuming.
 	if (ret.is_ref()) {
 		GDScriptFunctionState *gdfs = Object::cast_to<GDScriptFunctionState>(ret);
 		if (gdfs && gdfs->function == function) {
@@ -294,7 +294,6 @@ void GDScriptFunctionState::_bind_methods() {
 GDScriptFunctionState::GDScriptFunctionState() :
 		scripts_list(this),
 		instances_list(this) {
-	function = nullptr;
 }
 
 GDScriptFunctionState::~GDScriptFunctionState() {

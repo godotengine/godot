@@ -16,8 +16,9 @@
 			<argument index="0" name="shape" type="PhysicsShapeQueryParameters2D">
 			</argument>
 			<description>
-				Checks how far the shape can travel toward a point. If the shape can not move, the array will be empty.
-				[b]Note:[/b] Both the shape and the motion are supplied through a [PhysicsShapeQueryParameters2D] object. The method will return an array with two floats between 0 and 1, both representing a fraction of [code]motion[/code]. The first is how far the shape can move without triggering a collision, and the second is the point at which a collision will occur. If no collision is detected, the returned array will be [code][1, 1][/code].
+				Checks how far a [Shape2D] can move without colliding. All the parameters for the query, including the shape and the motion, are supplied through a [PhysicsShapeQueryParameters2D] object.
+				Returns an array with the safe and unsafe proportions (between 0 and 1) of the motion. The safe proportion is the maximum fraction of the motion that can be made without a collision. The unsafe proportion is the minimum fraction of the distance that must be moved for a collision. If no collision is detected a result of [code][1.0, 1.0][/code] will be returned.
+				[b]Note:[/b] Any [Shape2D]s that the shape is already colliding with e.g. inside of, will be ignored. Use [method collide_shape] to determine the [Shape2D]s that the shape is already colliding with.
 			</description>
 		</method>
 		<method name="collide_shape">

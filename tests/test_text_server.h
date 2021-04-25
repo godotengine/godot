@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -28,6 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
+#ifdef TOOLS_ENABLED
+
 #ifndef TEST_TEXT_SERVER_H
 #define TEST_TEXT_SERVER_H
 
@@ -45,7 +47,7 @@ TEST_SUITE("[[TextServer]") {
 		SUBCASE("[TextServer] Init") {
 			for (int i = 0; i < TextServerManager::get_interface_count(); i++) {
 				TextServer *ts = TextServerManager::initialize(i, err);
-				TEST_FAIL_COND((err != OK || ts == nullptr), "Text server " + TextServerManager::get_interface_name(i) + " init failed.");
+				TEST_FAIL_COND((err != OK || ts == nullptr), "Text server ", TextServerManager::get_interface_name(i), " init failed.");
 			}
 		}
 
@@ -247,3 +249,4 @@ TEST_SUITE("[[TextServer]") {
 }; // namespace TestTextServer
 
 #endif // TEST_TEXT_SERVER_H
+#endif // TOOLS_ENABLED

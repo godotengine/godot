@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -61,12 +61,12 @@ class GDScriptCompiler {
 
 		GDScriptCodeGenerator::Address add_local_constant(const StringName &p_name, const Variant &p_value) {
 			uint32_t addr = generator->add_local_constant(p_name, p_value);
-			locals[p_name] = GDScriptCodeGenerator::Address(GDScriptCodeGenerator::Address::LOCAL_CONSTANT, addr);
+			locals[p_name] = GDScriptCodeGenerator::Address(GDScriptCodeGenerator::Address::CONSTANT, addr);
 			return locals[p_name];
 		}
 
 		GDScriptCodeGenerator::Address add_temporary(const GDScriptDataType &p_type = GDScriptDataType()) {
-			uint32_t addr = generator->add_temporary();
+			uint32_t addr = generator->add_temporary(p_type);
 			return GDScriptCodeGenerator::Address(GDScriptCodeGenerator::Address::TEMPORARY, addr, p_type);
 		}
 
@@ -133,8 +133,8 @@ class GDScriptCompiler {
 	Error _parse_class_level(GDScript *p_script, const GDScriptParser::ClassNode *p_class, bool p_keep_state);
 	Error _parse_class_blocks(GDScript *p_script, const GDScriptParser::ClassNode *p_class, bool p_keep_state);
 	void _make_scripts(GDScript *p_script, const GDScriptParser::ClassNode *p_class, bool p_keep_state);
-	int err_line;
-	int err_column;
+	int err_line = 0;
+	int err_column = 0;
 	StringName source;
 	String error;
 	bool within_await = false;

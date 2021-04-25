@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -52,16 +52,13 @@ class FabrikInverseKinematic {
 
 		// Bone info
 		BoneId bone = -1;
-		PhysicalBone3D *pb = nullptr;
 
-		real_t length = 0;
+		real_t length = 0.0;
 		/// Positions relative to root bone
 		Transform initial_transform;
 		Vector3 current_pos;
 		// Direction from this bone to child
 		Vector3 current_ori;
-
-		ChainItem() {}
 
 		ChainItem *find_child(const BoneId p_bone_id);
 		ChainItem *add_child(const BoneId p_bone_id);
@@ -80,7 +77,7 @@ class FabrikInverseKinematic {
 
 	struct Chain {
 		ChainItem chain_root;
-		ChainItem *middle_chain_item;
+		ChainItem *middle_chain_item = nullptr;
 		Vector<ChainTip> tips;
 		Vector3 magnet_position;
 	};
@@ -109,8 +106,6 @@ private:
 	/// Init a chain that starts from the root to tip
 	static bool build_chain(Task *p_task, bool p_force_simple_chain = true);
 
-	static void update_chain(const Skeleton3D *p_sk, ChainItem *p_chain_item);
-
 	static void solve_simple(Task *p_task, bool p_solve_magnet);
 	/// Special solvers that solve only chains with one end effector
 	static void solve_simple_backwards(Chain &r_chain, bool p_solve_magnet);
@@ -123,6 +118,8 @@ public:
 	static void set_goal(Task *p_task, const Transform &p_goal);
 	static void make_goal(Task *p_task, const Transform &p_inverse_transf, real_t blending_delta);
 	static void solve(Task *p_task, real_t blending_delta, bool override_tip_basis, bool p_use_magnet, const Vector3 &p_magnet_position);
+
+	static void _update_chain(const Skeleton3D *p_skeleton, ChainItem *p_chain_item);
 };
 
 class SkeletonIK3D : public Node {
@@ -130,7 +127,7 @@ class SkeletonIK3D : public Node {
 
 	StringName root_bone;
 	StringName tip_bone;
-	real_t interpolation = 1;
+	real_t interpolation = 1.0;
 	Transform target;
 	NodePath target_node_path_override;
 	bool override_tip_basis = true;

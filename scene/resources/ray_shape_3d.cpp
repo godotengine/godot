@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -56,7 +56,6 @@ void RayShape3D::set_length(float p_length) {
 	length = p_length;
 	_update_shape();
 	notify_change_to_owners();
-	_change_notify("length");
 }
 
 float RayShape3D::get_length() const {
@@ -67,7 +66,6 @@ void RayShape3D::set_slips_on_slope(bool p_active) {
 	slips_on_slope = p_active;
 	_update_shape();
 	notify_change_to_owners();
-	_change_notify("slips_on_slope");
 }
 
 bool RayShape3D::get_slips_on_slope() const {
@@ -87,12 +85,7 @@ void RayShape3D::_bind_methods() {
 
 RayShape3D::RayShape3D() :
 		Shape3D(PhysicsServer3D::get_singleton()->shape_create(PhysicsServer3D::SHAPE_RAY)) {
-	length = 1.0;
-	slips_on_slope = false;
-
 	/* Code copied from setters to prevent the use of uninitialized variables */
 	_update_shape();
 	notify_change_to_owners();
-	_change_notify("length");
-	_change_notify("slips_on_slope");
 }

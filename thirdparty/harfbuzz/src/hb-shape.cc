@@ -111,10 +111,10 @@ hb_shape_list_shapers ()
  * hb_shape_full:
  * @font: an #hb_font_t to use for shaping
  * @buffer: an #hb_buffer_t to shape
- * @features: (array length=num_features) (allow-none): an array of user
+ * @features: (array length=num_features) (nullable): an array of user
  *    specified #hb_feature_t or %NULL
  * @num_features: the length of @features array
- * @shaper_list: (array zero-terminated=1) (allow-none): a %NULL-terminated
+ * @shaper_list: (array zero-terminated=1) (nullable): a %NULL-terminated
  *    array of shapers to use or %NULL
  *
  * See hb_shape() for details. If @shaper_list is not %NULL, the specified
@@ -132,8 +132,6 @@ hb_shape_full (hb_font_t          *font,
 	       unsigned int        num_features,
 	       const char * const *shaper_list)
 {
-  if (unlikely (hb_object_is_immutable (buffer))) return false;
-
   hb_shape_plan_t *shape_plan = hb_shape_plan_create_cached2 (font->face, &buffer->props,
 							      features, num_features,
 							      font->coords, font->num_coords,
@@ -141,8 +139,6 @@ hb_shape_full (hb_font_t          *font,
   hb_bool_t res = hb_shape_plan_execute (shape_plan, font, buffer, features, num_features);
   hb_shape_plan_destroy (shape_plan);
 
-  if (res)
-    buffer->content_type = HB_BUFFER_CONTENT_TYPE_GLYPHS;
   return res;
 }
 
@@ -150,7 +146,7 @@ hb_shape_full (hb_font_t          *font,
  * hb_shape:
  * @font: an #hb_font_t to use for shaping
  * @buffer: an #hb_buffer_t to shape
- * @features: (array length=num_features) (allow-none): an array of user
+ * @features: (array length=num_features) (nullable): an array of user
  *    specified #hb_feature_t or %NULL
  * @num_features: the length of @features array
  *

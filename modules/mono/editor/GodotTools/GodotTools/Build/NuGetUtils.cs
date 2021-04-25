@@ -290,7 +290,8 @@ namespace GodotTools.Build
 
         private static readonly (string packageId, string packageVersion)[] PackagesToAdd =
         {
-            ("Godot.NET.Sdk", GeneratedGodotNupkgsVersions.GodotNETSdk)
+            ("Godot.NET.Sdk", GeneratedGodotNupkgsVersions.GodotNETSdk),
+            ("Godot.SourceGenerators", GeneratedGodotNupkgsVersions.GodotSourceGenerators),
         };
     }
 }

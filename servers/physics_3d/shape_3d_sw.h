@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -67,8 +67,11 @@ protected:
 	void configure(const AABB &p_aabb);
 
 public:
-	enum {
-		MAX_SUPPORTS = 8
+	enum FeatureType {
+		FEATURE_POINT,
+		FEATURE_EDGE,
+		FEATURE_FACE,
+		FEATURE_CIRCLE,
 	};
 
 	virtual real_t get_area() const { return aabb.get_area(); }
@@ -78,14 +81,14 @@ public:
 
 	virtual PhysicsServer3D::ShapeType get_type() const = 0;
 
-	_FORCE_INLINE_ AABB get_aabb() const { return aabb; }
+	_FORCE_INLINE_ const AABB &get_aabb() const { return aabb; }
 	_FORCE_INLINE_ bool is_configured() const { return configured; }
 
 	virtual bool is_concave() const { return false; }
 
 	virtual void project_range(const Vector3 &p_normal, const Transform &p_transform, real_t &r_min, real_t &r_max) const = 0;
 	virtual Vector3 get_support(const Vector3 &p_normal) const;
-	virtual void get_supports(const Vector3 &p_normal, int p_max, Vector3 *r_supports, int &r_amount) const = 0;
+	virtual void get_supports(const Vector3 &p_normal, int p_max, Vector3 *r_supports, int &r_amount, FeatureType &r_type) const = 0;
 	virtual Vector3 get_closest_point_to(const Vector3 &p_point) const = 0;
 	virtual bool intersect_segment(const Vector3 &p_begin, const Vector3 &p_end, Vector3 &r_point, Vector3 &r_normal) const = 0;
 	virtual bool intersect_point(const Vector3 &p_point) const = 0;
@@ -110,7 +113,7 @@ class ConcaveShape3DSW : public Shape3DSW {
 public:
 	virtual bool is_concave() const { return true; }
 	typedef void (*Callback)(void *p_userdata, Shape3DSW *p_convex);
-	virtual void get_supports(const Vector3 &p_normal, int p_max, Vector3 *r_supports, int &r_amount) const { r_amount = 0; }
+	virtual void get_supports(const Vector3 &p_normal, int p_max, Vector3 *r_supports, int &r_amount, FeatureType &r_type) const { r_amount = 0; }
 
 	virtual void cull(const AABB &p_local_aabb, Callback p_callback, void *p_userdata) const = 0;
 
@@ -129,7 +132,7 @@ public:
 	virtual PhysicsServer3D::ShapeType get_type() const { return PhysicsServer3D::SHAPE_PLANE; }
 	virtual void project_range(const Vector3 &p_normal, const Transform &p_transform, real_t &r_min, real_t &r_max) const;
 	virtual Vector3 get_support(const Vector3 &p_normal) const;
-	virtual void get_supports(const Vector3 &p_normal, int p_max, Vector3 *r_supports, int &r_amount) const { r_amount = 0; }
+	virtual void get_supports(const Vector3 &p_normal, int p_max, Vector3 *r_supports, int &r_amount, FeatureType &r_type) const { r_amount = 0; }
 
 	virtual bool intersect_segment(const Vector3 &p_begin, const Vector3 &p_end, Vector3 &r_result, Vector3 &r_normal) const;
 	virtual bool intersect_point(const Vector3 &p_point) const;
@@ -156,7 +159,7 @@ public:
 	virtual PhysicsServer3D::ShapeType get_type() const { return PhysicsServer3D::SHAPE_RAY; }
 	virtual void project_range(const Vector3 &p_normal, const Transform &p_transform, real_t &r_min, real_t &r_max) const;
 	virtual Vector3 get_support(const Vector3 &p_normal) const;
-	virtual void get_supports(const Vector3 &p_normal, int p_max, Vector3 *r_supports, int &r_amount) const;
+	virtual void get_supports(const Vector3 &p_normal, int p_max, Vector3 *r_supports, int &r_amount, FeatureType &r_type) const;
 
 	virtual bool intersect_segment(const Vector3 &p_begin, const Vector3 &p_end, Vector3 &r_result, Vector3 &r_normal) const;
 	virtual bool intersect_point(const Vector3 &p_point) const;
@@ -184,7 +187,7 @@ public:
 
 	virtual void project_range(const Vector3 &p_normal, const Transform &p_transform, real_t &r_min, real_t &r_max) const;
 	virtual Vector3 get_support(const Vector3 &p_normal) const;
-	virtual void get_supports(const Vector3 &p_normal, int p_max, Vector3 *r_supports, int &r_amount) const;
+	virtual void get_supports(const Vector3 &p_normal, int p_max, Vector3 *r_supports, int &r_amount, FeatureType &r_type) const;
 	virtual bool intersect_segment(const Vector3 &p_begin, const Vector3 &p_end, Vector3 &r_result, Vector3 &r_normal) const;
 	virtual bool intersect_point(const Vector3 &p_point) const;
 	virtual Vector3 get_closest_point_to(const Vector3 &p_point) const;
@@ -209,7 +212,7 @@ public:
 
 	virtual void project_range(const Vector3 &p_normal, const Transform &p_transform, real_t &r_min, real_t &r_max) const;
 	virtual Vector3 get_support(const Vector3 &p_normal) const;
-	virtual void get_supports(const Vector3 &p_normal, int p_max, Vector3 *r_supports, int &r_amount) const;
+	virtual void get_supports(const Vector3 &p_normal, int p_max, Vector3 *r_supports, int &r_amount, FeatureType &r_type) const;
 	virtual bool intersect_segment(const Vector3 &p_begin, const Vector3 &p_end, Vector3 &r_result, Vector3 &r_normal) const;
 	virtual bool intersect_point(const Vector3 &p_point) const;
 	virtual Vector3 get_closest_point_to(const Vector3 &p_point) const;
@@ -238,7 +241,7 @@ public:
 
 	virtual void project_range(const Vector3 &p_normal, const Transform &p_transform, real_t &r_min, real_t &r_max) const;
 	virtual Vector3 get_support(const Vector3 &p_normal) const;
-	virtual void get_supports(const Vector3 &p_normal, int p_max, Vector3 *r_supports, int &r_amount) const;
+	virtual void get_supports(const Vector3 &p_normal, int p_max, Vector3 *r_supports, int &r_amount, FeatureType &r_type) const;
 	virtual bool intersect_segment(const Vector3 &p_begin, const Vector3 &p_end, Vector3 &r_result, Vector3 &r_normal) const;
 	virtual bool intersect_point(const Vector3 &p_point) const;
 	virtual Vector3 get_closest_point_to(const Vector3 &p_point) const;
@@ -249,6 +252,35 @@ public:
 	virtual Variant get_data() const;
 
 	CapsuleShape3DSW();
+};
+
+class CylinderShape3DSW : public Shape3DSW {
+	real_t height;
+	real_t radius;
+
+	void _setup(real_t p_height, real_t p_radius);
+
+public:
+	_FORCE_INLINE_ real_t get_height() const { return height; }
+	_FORCE_INLINE_ real_t get_radius() const { return radius; }
+
+	virtual real_t get_area() const { return 4.0 / 3.0 * Math_PI * radius * radius * radius + height * Math_PI * radius * radius; }
+
+	virtual PhysicsServer3D::ShapeType get_type() const { return PhysicsServer3D::SHAPE_CYLINDER; }
+
+	virtual void project_range(const Vector3 &p_normal, const Transform &p_transform, real_t &r_min, real_t &r_max) const;
+	virtual Vector3 get_support(const Vector3 &p_normal) const;
+	virtual void get_supports(const Vector3 &p_normal, int p_max, Vector3 *r_supports, int &r_amount, FeatureType &r_type) const;
+	virtual bool intersect_segment(const Vector3 &p_begin, const Vector3 &p_end, Vector3 &r_result, Vector3 &r_normal) const;
+	virtual bool intersect_point(const Vector3 &p_point) const;
+	virtual Vector3 get_closest_point_to(const Vector3 &p_point) const;
+
+	virtual Vector3 get_moment_of_inertia(real_t p_mass) const;
+
+	virtual void set_data(const Variant &p_data);
+	virtual Variant get_data() const;
+
+	CylinderShape3DSW();
 };
 
 struct ConvexPolygonShape3DSW : public Shape3DSW {
@@ -263,7 +295,7 @@ public:
 
 	virtual void project_range(const Vector3 &p_normal, const Transform &p_transform, real_t &r_min, real_t &r_max) const;
 	virtual Vector3 get_support(const Vector3 &p_normal) const;
-	virtual void get_supports(const Vector3 &p_normal, int p_max, Vector3 *r_supports, int &r_amount) const;
+	virtual void get_supports(const Vector3 &p_normal, int p_max, Vector3 *r_supports, int &r_amount, FeatureType &r_type) const;
 	virtual bool intersect_segment(const Vector3 &p_begin, const Vector3 &p_end, Vector3 &r_result, Vector3 &r_normal) const;
 	virtual bool intersect_point(const Vector3 &p_point) const;
 	virtual Vector3 get_closest_point_to(const Vector3 &p_point) const;
@@ -302,34 +334,37 @@ struct ConcavePolygonShape3DSW : public ConcaveShape3DSW {
 
 	struct _CullParams {
 		AABB aabb;
-		Callback callback;
-		void *userdata;
-		const Face *faces;
-		const Vector3 *vertices;
-		const BVH *bvh;
-		FaceShape3DSW *face;
+		Callback callback = nullptr;
+		void *userdata = nullptr;
+		const Face *faces = nullptr;
+		const Vector3 *vertices = nullptr;
+		const BVH *bvh = nullptr;
+		FaceShape3DSW *face = nullptr;
 	};
 
 	struct _SegmentCullParams {
 		Vector3 from;
 		Vector3 to;
-		const Face *faces;
-		const Vector3 *vertices;
-		const BVH *bvh;
 		Vector3 dir;
+		const Face *faces = nullptr;
+		const Vector3 *vertices = nullptr;
+		const BVH *bvh = nullptr;
+		FaceShape3DSW *face = nullptr;
 
 		Vector3 result;
 		Vector3 normal;
-		real_t min_d;
-		int collisions;
+		real_t min_d = 1e20;
+		int collisions = 0;
 	};
+
+	bool backface_collision = false;
 
 	void _cull_segment(int p_idx, _SegmentCullParams *p_params) const;
 	void _cull(int p_idx, _CullParams *p_params) const;
 
 	void _fill_bvh(_VolumeSW_BVH *p_bvh_tree, BVH *p_bvh_array, int &p_idx);
 
-	void _setup(Vector<Vector3> p_faces);
+	void _setup(const Vector<Vector3> &p_faces, bool p_backface_collision);
 
 public:
 	Vector<Vector3> get_faces() const;
@@ -354,21 +389,29 @@ public:
 };
 
 struct HeightMapShape3DSW : public ConcaveShape3DSW {
-	Vector<real_t> heights;
-	int width;
-	int depth;
-	real_t cell_size;
+	Vector<float> heights;
+	int width = 0;
+	int depth = 0;
+	Vector3 local_origin;
 
-	//void _cull_segment(int p_idx,_SegmentCullParams *p_params) const;
-	//void _cull(int p_idx,_CullParams *p_params) const;
+	_FORCE_INLINE_ float _get_height(int p_x, int p_z) const {
+		return heights[(p_z * width) + p_x];
+	}
 
-	void _setup(Vector<real_t> p_heights, int p_width, int p_depth, real_t p_cell_size);
+	_FORCE_INLINE_ void _get_point(int p_x, int p_z, Vector3 &r_point) const {
+		r_point.x = p_x - 0.5 * (width - 1.0);
+		r_point.y = _get_height(p_x, p_z);
+		r_point.z = p_z - 0.5 * (depth - 1.0);
+	}
+
+	void _get_cell(const Vector3 &p_point, int &r_x, int &r_y, int &r_z) const;
+
+	void _setup(const Vector<float> &p_heights, int p_width, int p_depth, real_t p_min_height, real_t p_max_height);
 
 public:
-	Vector<real_t> get_heights() const;
+	Vector<float> get_heights() const;
 	int get_width() const;
 	int get_depth() const;
-	real_t get_cell_size() const;
 
 	virtual PhysicsServer3D::ShapeType get_type() const { return PhysicsServer3D::SHAPE_HEIGHTMAP; }
 
@@ -392,6 +435,7 @@ public:
 struct FaceShape3DSW : public Shape3DSW {
 	Vector3 normal; //cache
 	Vector3 vertex[3];
+	bool backface_collision = false;
 
 	virtual PhysicsServer3D::ShapeType get_type() const { return PhysicsServer3D::SHAPE_CONCAVE_POLYGON; }
 
@@ -399,7 +443,7 @@ struct FaceShape3DSW : public Shape3DSW {
 
 	void project_range(const Vector3 &p_normal, const Transform &p_transform, real_t &r_min, real_t &r_max) const;
 	Vector3 get_support(const Vector3 &p_normal) const;
-	virtual void get_supports(const Vector3 &p_normal, int p_max, Vector3 *r_supports, int &r_amount) const;
+	virtual void get_supports(const Vector3 &p_normal, int p_max, Vector3 *r_supports, int &r_amount, FeatureType &r_type) const;
 	bool intersect_segment(const Vector3 &p_begin, const Vector3 &p_end, Vector3 &r_result, Vector3 &r_normal) const;
 	virtual bool intersect_point(const Vector3 &p_point) const;
 	virtual Vector3 get_closest_point_to(const Vector3 &p_point) const;
@@ -437,7 +481,7 @@ struct MotionShape3DSW : public Shape3DSW {
 		}
 		return support;
 	}
-	virtual void get_supports(const Vector3 &p_normal, int p_max, Vector3 *r_supports, int &r_amount) const { r_amount = 0; }
+	virtual void get_supports(const Vector3 &p_normal, int p_max, Vector3 *r_supports, int &r_amount, FeatureType &r_type) const { r_amount = 0; }
 	bool intersect_segment(const Vector3 &p_begin, const Vector3 &p_end, Vector3 &r_result, Vector3 &r_normal) const { return false; }
 	virtual bool intersect_point(const Vector3 &p_point) const { return false; }
 	virtual Vector3 get_closest_point_to(const Vector3 &p_point) const { return p_point; }

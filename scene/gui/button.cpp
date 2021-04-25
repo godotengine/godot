@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -56,11 +56,16 @@ Size2 Button::get_minimum_size() const {
 		}
 	}
 
+	Ref<Font> font = get_theme_font("font");
+	float font_height = font->get_height(get_theme_font_size("font_size"));
+
+	minsize.height = MAX(font_height, minsize.height);
+
 	return get_theme_stylebox("normal")->get_minimum_size() + minsize;
 }
 
-void Button::_set_internal_margin(Margin p_margin, float p_value) {
-	_internal_margin[p_margin] = p_value;
+void Button::_set_internal_margin(Side p_side, float p_value) {
+	_internal_margin[p_side] = p_value;
 }
 
 void Button::_notification(int p_what) {
@@ -102,8 +107,8 @@ void Button::_notification(int p_what) {
 						style->draw(ci, Rect2(Point2(0, 0), size));
 					}
 					color = get_theme_color("font_color");
-					if (has_theme_color("icon_color_normal")) {
-						color_icon = get_theme_color("icon_color_normal");
+					if (has_theme_color("icon_normal_color")) {
+						color_icon = get_theme_color("icon_normal_color");
 					}
 				} break;
 				case DRAW_HOVER_PRESSED: {
@@ -117,13 +122,13 @@ void Button::_notification(int p_what) {
 						if (!flat) {
 							style->draw(ci, Rect2(Point2(0, 0), size));
 						}
-						if (has_theme_color("font_color_hover_pressed")) {
-							color = get_theme_color("font_color_hover_pressed");
+						if (has_theme_color("font_hover_pressed_color")) {
+							color = get_theme_color("font_hover_pressed_color");
 						} else {
 							color = get_theme_color("font_color");
 						}
-						if (has_theme_color("icon_color_hover_pressed")) {
-							color_icon = get_theme_color("icon_color_hover_pressed");
+						if (has_theme_color("icon_hover_pressed_color")) {
+							color_icon = get_theme_color("icon_hover_pressed_color");
 						}
 
 						break;
@@ -140,13 +145,13 @@ void Button::_notification(int p_what) {
 					if (!flat) {
 						style->draw(ci, Rect2(Point2(0, 0), size));
 					}
-					if (has_theme_color("font_color_pressed")) {
-						color = get_theme_color("font_color_pressed");
+					if (has_theme_color("font_pressed_color")) {
+						color = get_theme_color("font_pressed_color");
 					} else {
 						color = get_theme_color("font_color");
 					}
-					if (has_theme_color("icon_color_pressed")) {
-						color_icon = get_theme_color("icon_color_pressed");
+					if (has_theme_color("icon_pressed_color")) {
+						color_icon = get_theme_color("icon_pressed_color");
 					}
 
 				} break;
@@ -160,9 +165,9 @@ void Button::_notification(int p_what) {
 					if (!flat) {
 						style->draw(ci, Rect2(Point2(0, 0), size));
 					}
-					color = get_theme_color("font_color_hover");
-					if (has_theme_color("icon_color_hover")) {
-						color_icon = get_theme_color("icon_color_hover");
+					color = get_theme_color("font_hover_color");
+					if (has_theme_color("icon_hover_color")) {
+						color_icon = get_theme_color("icon_hover_color");
 					}
 
 				} break;
@@ -176,9 +181,9 @@ void Button::_notification(int p_what) {
 					if (!flat) {
 						style->draw(ci, Rect2(Point2(0, 0), size));
 					}
-					color = get_theme_color("font_color_disabled");
-					if (has_theme_color("icon_color_disabled")) {
-						color_icon = get_theme_color("icon_color_disabled");
+					color = get_theme_color("font_disabled_color");
+					if (has_theme_color("icon_disabled_color")) {
+						color_icon = get_theme_color("icon_disabled_color");
 					}
 
 				} break;
@@ -203,14 +208,14 @@ void Button::_notification(int p_what) {
 					color_icon.a = 0.4;
 				}
 
-				float icon_ofs_region = 0;
+				float icon_ofs_region = 0.0;
 				if (rtl) {
-					if (_internal_margin[MARGIN_RIGHT] > 0) {
-						icon_ofs_region = _internal_margin[MARGIN_RIGHT] + get_theme_constant("hseparation");
+					if (_internal_margin[SIDE_RIGHT] > 0) {
+						icon_ofs_region = _internal_margin[SIDE_RIGHT] + get_theme_constant("hseparation");
 					}
 				} else {
-					if (_internal_margin[MARGIN_LEFT] > 0) {
-						icon_ofs_region = _internal_margin[MARGIN_LEFT] + get_theme_constant("hseparation");
+					if (_internal_margin[SIDE_LEFT] > 0) {
+						icon_ofs_region = _internal_margin[SIDE_LEFT] + get_theme_constant("hseparation");
 					}
 				}
 
@@ -229,13 +234,13 @@ void Button::_notification(int p_what) {
 					}
 
 					if (rtl) {
-						icon_region = Rect2(Point2(size.width - (icon_ofs_region + icon_width + style->get_margin(MARGIN_RIGHT)), style->get_margin(MARGIN_TOP) + (_size.height - icon_height) / 2), Size2(icon_width, icon_height));
+						icon_region = Rect2(Point2(size.width - (icon_ofs_region + icon_width + style->get_margin(SIDE_RIGHT)), style->get_margin(SIDE_TOP) + (_size.height - icon_height) / 2), Size2(icon_width, icon_height));
 					} else {
 						icon_region = Rect2(style->get_offset() + Point2(icon_ofs_region, (_size.height - icon_height) / 2), Size2(icon_width, icon_height));
 					}
 				} else {
 					if (rtl) {
-						icon_region = Rect2(Point2(size.width - (icon_ofs_region + _icon->get_size().width + style->get_margin(MARGIN_RIGHT)), style->get_margin(MARGIN_TOP) + Math::floor((valign - _icon->get_height()) / 2.0)), _icon->get_size());
+						icon_region = Rect2(Point2(size.width - (icon_ofs_region + _icon->get_size().width + style->get_margin(SIDE_RIGHT)), style->get_margin(SIDE_TOP) + Math::floor((valign - _icon->get_height()) / 2.0)), _icon->get_size());
 					} else {
 						icon_region = Rect2(style->get_offset() + Point2(icon_ofs_region, Math::floor((valign - _icon->get_height()) / 2.0)), _icon->get_size());
 					}
@@ -248,28 +253,28 @@ void Button::_notification(int p_what) {
 
 			int text_width = clip_text ? MIN(text_clip, text_buf->get_size().x) : text_buf->get_size().x;
 
-			if (_internal_margin[MARGIN_LEFT] > 0) {
-				text_clip -= _internal_margin[MARGIN_LEFT] + get_theme_constant("hseparation");
+			if (_internal_margin[SIDE_LEFT] > 0) {
+				text_clip -= _internal_margin[SIDE_LEFT] + get_theme_constant("hseparation");
 			}
-			if (_internal_margin[MARGIN_RIGHT] > 0) {
-				text_clip -= _internal_margin[MARGIN_RIGHT] + get_theme_constant("hseparation");
+			if (_internal_margin[SIDE_RIGHT] > 0) {
+				text_clip -= _internal_margin[SIDE_RIGHT] + get_theme_constant("hseparation");
 			}
 
-			Point2 text_ofs = (size - style->get_minimum_size() - icon_ofs - text_buf->get_size() - Point2(_internal_margin[MARGIN_RIGHT] - _internal_margin[MARGIN_LEFT], 0)) / 2.0;
+			Point2 text_ofs = (size - style->get_minimum_size() - icon_ofs - text_buf->get_size() - Point2(_internal_margin[SIDE_RIGHT] - _internal_margin[SIDE_LEFT], 0)) / 2.0;
 
 			switch (align) {
 				case ALIGN_LEFT: {
 					if (rtl) {
-						if (_internal_margin[MARGIN_RIGHT] > 0) {
-							text_ofs.x = size.x - style->get_margin(MARGIN_RIGHT) - text_width - _internal_margin[MARGIN_RIGHT] - get_theme_constant("hseparation");
+						if (_internal_margin[SIDE_RIGHT] > 0) {
+							text_ofs.x = size.x - style->get_margin(SIDE_RIGHT) - text_width - _internal_margin[SIDE_RIGHT] - get_theme_constant("hseparation");
 						} else {
-							text_ofs.x = size.x - style->get_margin(MARGIN_RIGHT) - text_width;
+							text_ofs.x = size.x - style->get_margin(SIDE_RIGHT) - text_width;
 						}
 					} else {
-						if (_internal_margin[MARGIN_LEFT] > 0) {
-							text_ofs.x = style->get_margin(MARGIN_LEFT) + icon_ofs.x + _internal_margin[MARGIN_LEFT] + get_theme_constant("hseparation");
+						if (_internal_margin[SIDE_LEFT] > 0) {
+							text_ofs.x = style->get_margin(SIDE_LEFT) + icon_ofs.x + _internal_margin[SIDE_LEFT] + get_theme_constant("hseparation");
 						} else {
-							text_ofs.x = style->get_margin(MARGIN_LEFT) + icon_ofs.x;
+							text_ofs.x = style->get_margin(SIDE_LEFT) + icon_ofs.x;
 						}
 					}
 					text_ofs.y += style->get_offset().y;
@@ -283,16 +288,16 @@ void Button::_notification(int p_what) {
 				} break;
 				case ALIGN_RIGHT: {
 					if (rtl) {
-						if (_internal_margin[MARGIN_LEFT] > 0) {
-							text_ofs.x = style->get_margin(MARGIN_LEFT) + icon_ofs.x + _internal_margin[MARGIN_LEFT] + get_theme_constant("hseparation");
+						if (_internal_margin[SIDE_LEFT] > 0) {
+							text_ofs.x = style->get_margin(SIDE_LEFT) + icon_ofs.x + _internal_margin[SIDE_LEFT] + get_theme_constant("hseparation");
 						} else {
-							text_ofs.x = style->get_margin(MARGIN_LEFT) + icon_ofs.x;
+							text_ofs.x = style->get_margin(SIDE_LEFT) + icon_ofs.x;
 						}
 					} else {
-						if (_internal_margin[MARGIN_RIGHT] > 0) {
-							text_ofs.x = size.x - style->get_margin(MARGIN_RIGHT) - text_width - _internal_margin[MARGIN_RIGHT] - get_theme_constant("hseparation");
+						if (_internal_margin[SIDE_RIGHT] > 0) {
+							text_ofs.x = size.x - style->get_margin(SIDE_RIGHT) - text_width - _internal_margin[SIDE_RIGHT] - get_theme_constant("hseparation");
 						} else {
-							text_ofs.x = size.x - style->get_margin(MARGIN_RIGHT) - text_width;
+							text_ofs.x = size.x - style->get_margin(SIDE_RIGHT) - text_width;
 						}
 					}
 					text_ofs.y += style->get_offset().y;
@@ -303,13 +308,13 @@ void Button::_notification(int p_what) {
 				text_ofs.x -= icon_ofs.x;
 			}
 
-			Color font_outline_modulate = get_theme_color("font_outline_modulate");
+			Color font_outline_color = get_theme_color("font_outline_color");
 			int outline_size = get_theme_constant("outline_size");
-			if (outline_size > 0 && font_outline_modulate.a > 0) {
-				text_buf->draw_outline(ci, text_ofs.floor(), outline_size, font_outline_modulate);
+			if (outline_size > 0 && font_outline_color.a > 0) {
+				text_buf->draw_outline(ci, text_ofs, outline_size, font_outline_color);
 			}
 
-			text_buf->draw(ci, text_ofs.floor(), color);
+			text_buf->draw(ci, text_ofs, color);
 
 			if (!_icon.is_null() && icon_region.size.width > 0) {
 				draw_texture_rect_region(_icon, icon_region, Rect2(Point2(), _icon->get_size()), color_icon);
@@ -338,7 +343,6 @@ void Button::set_text(const String &p_text) {
 		_shape();
 
 		update();
-		_change_notify("text");
 		minimum_size_changed();
 	}
 }
@@ -399,7 +403,6 @@ void Button::set_icon(const Ref<Texture2D> &p_icon) {
 	if (icon != p_icon) {
 		icon = p_icon;
 		update();
-		_change_notify("icon");
 		minimum_size_changed();
 	}
 }
@@ -424,7 +427,6 @@ void Button::set_flat(bool p_flat) {
 	if (flat != p_flat) {
 		flat = p_flat;
 		update();
-		_change_notify("flat");
 	}
 }
 
@@ -474,7 +476,7 @@ bool Button::_set(const StringName &p_name, const Variant &p_value) {
 				update();
 			}
 		}
-		_change_notify();
+		notify_property_list_changed();
 		return true;
 	}
 
@@ -544,16 +546,8 @@ Button::Button(const String &p_text) {
 	text_buf.instance();
 	text_buf->set_flags(TextServer::BREAK_MANDATORY);
 
-	flat = false;
-	clip_text = false;
-	expand_icon = false;
 	set_mouse_filter(MOUSE_FILTER_STOP);
 	set_text(p_text);
-	align = ALIGN_CENTER;
-
-	for (int i = 0; i < 4; i++) {
-		_internal_margin[i] = 0;
-	}
 }
 
 Button::~Button() {

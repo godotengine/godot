@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -316,7 +316,7 @@ bool Path3DEditorPlugin::forward_spatial_gui_input(Camera3D *p_camera, const Ref
 			set_handle_clicked(false);
 		}
 
-		if (mb->is_pressed() && mb->get_button_index() == BUTTON_LEFT && (curve_create->is_pressed() || (curve_edit->is_pressed() && mb->get_control()))) {
+		if (mb->is_pressed() && mb->get_button_index() == MOUSE_BUTTON_LEFT && (curve_create->is_pressed() || (curve_edit->is_pressed() && mb->get_control()))) {
 			//click into curve, break it down
 			Vector<Vector3> v3a = c->tessellate();
 			int idx = 0;
@@ -411,7 +411,7 @@ bool Path3DEditorPlugin::forward_spatial_gui_input(Camera3D *p_camera, const Ref
 				//add new at pos
 			}
 
-		} else if (mb->is_pressed() && ((mb->get_button_index() == BUTTON_LEFT && curve_del->is_pressed()) || (mb->get_button_index() == BUTTON_RIGHT && curve_edit->is_pressed()))) {
+		} else if (mb->is_pressed() && ((mb->get_button_index() == MOUSE_BUTTON_LEFT && curve_del->is_pressed()) || (mb->get_button_index() == MOUSE_BUTTON_RIGHT && curve_edit->is_pressed()))) {
 			for (int i = 0; i < c->get_point_count(); i++) {
 				real_t dist_to_p = p_camera->unproject_position(gt.xform(c->get_point_position(i))).distance_to(mbpos);
 				real_t dist_to_p_out = p_camera->unproject_position(gt.xform(c->get_point_position(i) + c->get_point_out(i))).distance_to(mbpos);
@@ -609,7 +609,7 @@ Path3DEditorPlugin::Path3DEditorPlugin(EditorNode *p_node) {
 	curve_edit->set_pressed(true);
 	/*
     collision_polygon_editor = memnew( PathEditor(p_node) );
-    editor->get_viewport()->add_child(collision_polygon_editor);
+    editor->get_main_control()->add_child(collision_polygon_editor);
     collision_polygon_editor->set_margin(MARGIN_LEFT,200);
     collision_polygon_editor->set_margin(MARGIN_RIGHT,230);
     collision_polygon_editor->set_margin(MARGIN_TOP,0);

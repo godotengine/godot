@@ -28,6 +28,16 @@
 
 #include "hb-gdi.h"
 
+
+/**
+ * SECTION:hb-gdi
+ * @title: hb-gdi
+ * @short_description: GDI integration
+ * @include: hb-gdi.h
+ *
+ * Functions for using HarfBuzz with GDI fonts.
+ **/
+
 static hb_blob_t *
 _hb_gdi_reference_table (hb_face_t *face HB_UNUSED, hb_tag_t tag, void *user_data)
 {
@@ -59,6 +69,8 @@ fail:
 /**
  * hb_gdi_face_create:
  * @hfont: a HFONT object.
+ *
+ * Constructs a new face object from the specified GDI HFONT.
  *
  * Return value: #hb_face_t object corresponding to the given input
  *

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -136,7 +136,7 @@ void PoolAllocator::compact_up(int p_from) {
 	for (int i = entry_count - 1; i >= p_from; i--) {
 		Entry &entry = entry_array[entry_indices[i]];
 
-		/* determine hole size to nextious entry */
+		/* determine hole size for next entry */
 
 		int hole_size = next_entry_end_pos - (entry.pos + aligned(entry.len));
 

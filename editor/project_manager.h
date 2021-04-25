@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,6 +31,7 @@
 #ifndef PROJECT_MANAGER_H
 #define PROJECT_MANAGER_H
 
+#include "editor/editor_about.h"
 #include "editor/plugins/asset_library_editor_plugin.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/file_dialog.h"
@@ -54,6 +55,7 @@ class ProjectManager : public Control {
 	ProjectList *_project_list;
 
 	LineEdit *search_box;
+	Label *loading_label;
 	OptionButton *filter_option;
 
 	Button *run_btn;
@@ -61,18 +63,24 @@ class ProjectManager : public Control {
 	Button *rename_btn;
 	Button *erase_btn;
 	Button *erase_missing_btn;
+	Button *about_btn;
 
 	EditorAssetLibrary *asset_library;
 
 	FileDialog *scan_dir;
 	ConfirmationDialog *language_restart_ask;
+
 	ConfirmationDialog *erase_ask;
+	Label *erase_ask_label;
+	CheckBox *delete_project_contents;
+
 	ConfirmationDialog *erase_missing_ask;
 	ConfirmationDialog *multi_open_ask;
 	ConfirmationDialog *multi_run_ask;
 	ConfirmationDialog *multi_scan_ask;
 	ConfirmationDialog *ask_update_settings;
 	ConfirmationDialog *open_templates;
+	EditorAbout *about;
 
 	HBoxContainer *settings_hb;
 
@@ -95,10 +103,10 @@ class ProjectManager : public Control {
 	void _erase_missing_projects();
 	void _erase_project_confirm();
 	void _erase_missing_projects_confirm();
+	void _show_about();
 	void _update_project_buttons();
 	void _language_selected(int p_id);
 	void _restart_confirm();
-	void _exit_dialog();
 	void _confirm_update_settings();
 	void _nonempty_confirmation_ok_pressed();
 
@@ -116,6 +124,7 @@ class ProjectManager : public Control {
 	void _files_dropped(PackedStringArray p_files, int p_screen);
 
 	void _on_order_option_changed(int p_idx);
+	void _on_tab_changed(int p_tab);
 	void _on_search_term_changed(const String &p_term);
 
 protected:

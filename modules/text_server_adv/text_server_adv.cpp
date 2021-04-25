@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -132,7 +132,7 @@ _FORCE_INLINE_ bool is_linebreak(char32_t p_char) {
 /*************************************************************************/
 
 String TextServerAdvanced::interface_name = "ICU / HarfBuzz / Graphite";
-uint32_t TextServerAdvanced::interface_features = FEATURE_BIDI_LAYOUT | FEATURE_VERTICAL_LAYOUT | FEATURE_SHAPING | FEATURE_KASHIDA_JUSTIFICATION | FEATURE_BREAK_ITERATORS | FEATURE_USE_SUPPORT_DATA;
+uint32_t TextServerAdvanced::interface_features = FEATURE_BIDI_LAYOUT | FEATURE_VERTICAL_LAYOUT | FEATURE_SHAPING | FEATURE_KASHIDA_JUSTIFICATION | FEATURE_BREAK_ITERATORS | FEATURE_USE_SUPPORT_DATA | FEATURE_FONT_VARIABLE;
 
 bool TextServerAdvanced::has_feature(Feature p_feature) {
 	return (interface_features & p_feature) == p_feature;
@@ -166,12 +166,12 @@ bool TextServerAdvanced::load_support_data(const String &p_filename) {
 #ifdef ICU_STATIC_DATA
 	if (icu_data == nullptr) {
 		UErrorCode err = U_ZERO_ERROR;
-		u_init(&err); // Do not check for errors, since we only load part the of data.
+		u_init(&err); // Do not check for errors, since we only load part of the data.
 		icu_data = (uint8_t *)&U_ICUDATA_ENTRY_POINT;
 	}
 #else
 	if (icu_data == nullptr) {
-		String filename = (p_filename.empty()) ? String("res://") + _MKSTR(ICU_DATA_NAME) : p_filename;
+		String filename = (p_filename.is_empty()) ? String("res://") + _MKSTR(ICU_DATA_NAME) : p_filename;
 
 		FileAccess *f = FileAccess::open(filename, FileAccess::READ);
 		if (!f) {
@@ -244,7 +244,7 @@ struct FeatureInfo {
 };
 
 static FeatureInfo feature_set[] = {
-	// Registred OpenType feature tags.
+	// Registered OpenType feature tags.
 	{ HB_TAG('a', 'a', 'l', 't'), "access_all_alternates" },
 	{ HB_TAG('a', 'b', 'v', 'f'), "above_base_forms" },
 	{ HB_TAG('a', 'b', 'v', 'm'), "above_base_mark_positioning" },
@@ -484,7 +484,7 @@ static FeatureInfo feature_set[] = {
 	{ HB_TAG('v', 'r', 't', '2'), "vertical_alternates_and_rotation" },
 	{ HB_TAG('v', 'r', 't', 'r'), "vertical_alternates_for_rotation" },
 	{ HB_TAG('z', 'e', 'r', 'o'), "slashed_zero" },
-	// Registred OpenType variation tags.
+	// Registered OpenType variation tags.
 	{ HB_TAG('i', 't', 'a', 'l'), "italic" },
 	{ HB_TAG('o', 'p', 's', 'z'), "optical_size" },
 	{ HB_TAG('s', 'l', 'n', 't'), "slant" },
@@ -529,10 +529,12 @@ RID TextServerAdvanced::create_font_system(const String &p_name, int p_base_size
 RID TextServerAdvanced::create_font_resource(const String &p_filename, int p_base_size) {
 	_THREAD_SAFE_METHOD_
 	FontDataAdvanced *fd = nullptr;
-	if (p_filename.get_extension() == "ttf" || p_filename.get_extension() == "otf" || p_filename.get_extension() == "woff") {
-		fd = memnew(DynamicFontDataAdvanced);
-	} else if (p_filename.get_extension() == "fnt" || p_filename.get_extension() == "font") {
+	if (p_filename.get_extension() == "fnt" || p_filename.get_extension() == "font") {
 		fd = memnew(BitmapFontDataAdvanced);
+#ifdef MODULE_FREETYPE_ENABLED
+	} else if (p_filename.get_extension() == "ttf" || p_filename.get_extension() == "otf" || p_filename.get_extension() == "woff") {
+		fd = memnew(DynamicFontDataAdvanced);
+#endif
 	} else {
 		return RID();
 	}
@@ -549,10 +551,12 @@ RID TextServerAdvanced::create_font_resource(const String &p_filename, int p_bas
 RID TextServerAdvanced::create_font_memory(const uint8_t *p_data, size_t p_size, const String &p_type, int p_base_size) {
 	_THREAD_SAFE_METHOD_
 	FontDataAdvanced *fd = nullptr;
-	if (p_type == "ttf" || p_type == "otf" || p_type == "woff") {
-		fd = memnew(DynamicFontDataAdvanced);
-	} else if (p_type == "fnt" || p_type == "font") {
+	if (p_type == "fnt" || p_type == "font") {
 		fd = memnew(BitmapFontDataAdvanced);
+#ifdef MODULE_FREETYPE_ENABLED
+	} else if (p_type == "ttf" || p_type == "otf" || p_type == "woff") {
+		fd = memnew(DynamicFontDataAdvanced);
+#endif
 	} else {
 		return RID();
 	}
@@ -564,6 +568,39 @@ RID TextServerAdvanced::create_font_memory(const uint8_t *p_data, size_t p_size,
 	}
 
 	return font_owner.make_rid(fd);
+}
+
+RID TextServerAdvanced::create_font_bitmap(float p_height, float p_ascent, int p_base_size) {
+	_THREAD_SAFE_METHOD_
+	FontDataAdvanced *fd = memnew(BitmapFontDataAdvanced);
+	Error err = fd->bitmap_new(p_height, p_ascent, p_base_size);
+	if (err != OK) {
+		memdelete(fd);
+		return RID();
+	}
+
+	return font_owner.make_rid(fd);
+}
+
+void TextServerAdvanced::font_bitmap_add_texture(RID p_font, const Ref<Texture> &p_texture) {
+	_THREAD_SAFE_METHOD_
+	FontDataAdvanced *fd = font_owner.getornull(p_font);
+	ERR_FAIL_COND(!fd);
+	fd->bitmap_add_texture(p_texture);
+}
+
+void TextServerAdvanced::font_bitmap_add_char(RID p_font, char32_t p_char, int p_texture_idx, const Rect2 &p_rect, const Size2 &p_align, float p_advance) {
+	_THREAD_SAFE_METHOD_
+	FontDataAdvanced *fd = font_owner.getornull(p_font);
+	ERR_FAIL_COND(!fd);
+	fd->bitmap_add_char(p_char, p_texture_idx, p_rect, p_align, p_advance);
+}
+
+void TextServerAdvanced::font_bitmap_add_kerning_pair(RID p_font, char32_t p_A, char32_t p_B, int p_kerning) {
+	_THREAD_SAFE_METHOD_
+	FontDataAdvanced *fd = font_owner.getornull(p_font);
+	ERR_FAIL_COND(!fd);
+	fd->bitmap_add_kerning_pair(p_A, p_B, p_kerning);
 }
 
 float TextServerAdvanced::font_get_height(RID p_font, int p_size) const {
@@ -601,6 +638,34 @@ float TextServerAdvanced::font_get_underline_thickness(RID p_font, int p_size) c
 	return fd->get_underline_thickness(p_size);
 }
 
+int TextServerAdvanced::font_get_spacing_space(RID p_font) const {
+	_THREAD_SAFE_METHOD_
+	const FontDataAdvanced *fd = font_owner.getornull(p_font);
+	ERR_FAIL_COND_V(!fd, 0);
+	return fd->get_spacing_space();
+}
+
+void TextServerAdvanced::font_set_spacing_space(RID p_font, int p_value) {
+	_THREAD_SAFE_METHOD_
+	FontDataAdvanced *fd = font_owner.getornull(p_font);
+	ERR_FAIL_COND(!fd);
+	fd->set_spacing_space(p_value);
+}
+
+int TextServerAdvanced::font_get_spacing_glyph(RID p_font) const {
+	_THREAD_SAFE_METHOD_
+	const FontDataAdvanced *fd = font_owner.getornull(p_font);
+	ERR_FAIL_COND_V(!fd, 0);
+	return fd->get_spacing_glyph();
+}
+
+void TextServerAdvanced::font_set_spacing_glyph(RID p_font, int p_value) {
+	_THREAD_SAFE_METHOD_
+	FontDataAdvanced *fd = font_owner.getornull(p_font);
+	ERR_FAIL_COND(!fd);
+	fd->set_spacing_glyph(p_value);
+}
+
 void TextServerAdvanced::font_set_antialiased(RID p_font, bool p_antialiased) {
 	_THREAD_SAFE_METHOD_
 	FontDataAdvanced *fd = font_owner.getornull(p_font);
@@ -620,6 +685,27 @@ bool TextServerAdvanced::font_get_antialiased(RID p_font) const {
 	const FontDataAdvanced *fd = font_owner.getornull(p_font);
 	ERR_FAIL_COND_V(!fd, false);
 	return fd->get_antialiased();
+}
+
+Dictionary TextServerAdvanced::font_get_variation_list(RID p_font) const {
+	_THREAD_SAFE_METHOD_
+	const FontDataAdvanced *fd = font_owner.getornull(p_font);
+	ERR_FAIL_COND_V(!fd, Dictionary());
+	return fd->get_variation_list();
+}
+
+void TextServerAdvanced::font_set_variation(RID p_font, const String &p_name, double p_value) {
+	_THREAD_SAFE_METHOD_
+	FontDataAdvanced *fd = font_owner.getornull(p_font);
+	ERR_FAIL_COND(!fd);
+	fd->set_variation(p_name, p_value);
+}
+
+double TextServerAdvanced::font_get_variation(RID p_font, const String &p_name) const {
+	_THREAD_SAFE_METHOD_
+	const FontDataAdvanced *fd = font_owner.getornull(p_font);
+	ERR_FAIL_COND_V(!fd, 0);
+	return fd->get_variation(p_name);
 }
 
 void TextServerAdvanced::font_set_distance_field_hint(RID p_font, bool p_distance_field) {
@@ -818,6 +904,13 @@ Vector2 TextServerAdvanced::font_draw_glyph_outline(RID p_font, RID p_canvas, in
 	const FontDataAdvanced *fd = font_owner.getornull(p_font);
 	ERR_FAIL_COND_V(!fd, Vector2());
 	return fd->draw_glyph_outline(p_canvas, p_size, p_outline_size, p_pos, p_index, p_color);
+}
+
+bool TextServerAdvanced::font_get_glyph_contours(RID p_font, int p_size, uint32_t p_index, Vector<Vector3> &r_points, Vector<int32_t> &r_contours, bool &r_orientation) const {
+	_THREAD_SAFE_METHOD_
+	const FontDataAdvanced *fd = font_owner.getornull(p_font);
+	ERR_FAIL_COND_V(!fd, false);
+	return fd->get_glyph_contours(p_size, p_index, r_points, r_contours, r_orientation);
 }
 
 float TextServerAdvanced::font_get_oversampling() const {
@@ -1040,7 +1133,7 @@ bool TextServerAdvanced::shaped_text_add_string(RID p_shaped, const String &p_te
 	ERR_FAIL_COND_V(!sd, false);
 	ERR_FAIL_COND_V(p_size <= 0, false);
 
-	if (p_text.empty()) {
+	if (p_text.is_empty()) {
 		return true;
 	}
 
@@ -1574,18 +1667,25 @@ bool TextServerAdvanced::shaped_text_update_breaks(RID p_shaped) {
 	}
 
 	if (sd->line_breaks_valid) {
-		return true; // Noting to do.
+		return true; // Nothing to do.
 	}
 
 	const UChar *data = sd->utf16.ptr();
 
 	HashMap<int, bool> breaks;
 	UErrorCode err = U_ZERO_ERROR;
-	for (int i = 0; i < sd->spans.size(); i++) {
-		UBreakIterator *bi = ubrk_open(UBRK_LINE, sd->spans[i].language.ascii().get_data(), data + _convert_pos_inv(sd, sd->spans[i].start), _convert_pos_inv(sd, sd->spans[i].end - sd->spans[i].start), &err);
+	int i = 0;
+	while (i < sd->spans.size()) {
+		String language = sd->spans[i].language;
+		int r_start = sd->spans[i].start;
+		while (i + 1 < sd->spans.size() && language == sd->spans[i + 1].language) {
+			i++;
+		}
+		int r_end = sd->spans[i].end;
+		UBreakIterator *bi = ubrk_open(UBRK_LINE, language.ascii().get_data(), data + _convert_pos_inv(sd, r_start), _convert_pos_inv(sd, r_end - r_start), &err);
 		if (U_FAILURE(err)) {
 			//No data loaded - use fallback.
-			for (int j = sd->spans[i].start; j < sd->spans[i].end; j++) {
+			for (int j = r_start; j < r_end; j++) {
 				char32_t c = sd->text[j - sd->start];
 				if (is_whitespace(c)) {
 					breaks[j] = false;
@@ -1596,8 +1696,8 @@ bool TextServerAdvanced::shaped_text_update_breaks(RID p_shaped) {
 			}
 		} else {
 			while (ubrk_next(bi) != UBRK_DONE) {
-				int pos = _convert_pos(sd, ubrk_current(bi)) + sd->spans[i].start - 1;
-				if (pos != sd->spans[i].end) {
+				int pos = _convert_pos(sd, ubrk_current(bi)) + r_start - 1;
+				if (pos != r_end) {
 					if ((ubrk_getRuleStatus(bi) >= UBRK_LINE_HARD) && (ubrk_getRuleStatus(bi) < UBRK_LINE_HARD_LIMIT)) {
 						breaks[pos] = true;
 					} else if ((ubrk_getRuleStatus(bi) >= UBRK_LINE_SOFT) && (ubrk_getRuleStatus(bi) < UBRK_LINE_SOFT_LIMIT)) {
@@ -1607,6 +1707,7 @@ bool TextServerAdvanced::shaped_text_update_breaks(RID p_shaped) {
 			}
 		}
 		ubrk_close(bi);
+		i++;
 	}
 
 	sd->sort_valid = false;
@@ -1615,7 +1716,7 @@ bool TextServerAdvanced::shaped_text_update_breaks(RID p_shaped) {
 	const char32_t *ch = sd->text.ptr();
 	Glyph *sd_glyphs = sd->glyphs.ptrw();
 
-	for (int i = 0; i < sd_size; i++) {
+	for (i = 0; i < sd_size; i++) {
 		if (sd_glyphs[i].count > 0) {
 			char32_t c = ch[sd_glyphs[i].start - sd->start];
 			if (c == 0xfffc) {
@@ -1624,13 +1725,18 @@ bool TextServerAdvanced::shaped_text_update_breaks(RID p_shaped) {
 			if (c == 0x0009 || c == 0x000b) {
 				sd_glyphs[i].flags |= GRAPHEME_IS_TAB;
 			}
+			if (is_whitespace(c)) {
+				sd_glyphs[i].flags |= GRAPHEME_IS_SPACE;
+			}
+			if (u_ispunct(c)) {
+				sd_glyphs[i].flags |= GRAPHEME_IS_PUNCTUATION;
+			}
 			if (breaks.has(sd->glyphs[i].start)) {
 				if (breaks[sd->glyphs[i].start]) {
 					sd_glyphs[i].flags |= GRAPHEME_IS_BREAK_HARD;
 				} else {
 					if (is_whitespace(c)) {
 						sd_glyphs[i].flags |= GRAPHEME_IS_BREAK_SOFT;
-						sd_glyphs[i].flags |= GRAPHEME_IS_SPACE;
 					} else {
 						TextServer::Glyph gl;
 						gl.start = sd_glyphs[i].start;
@@ -1726,8 +1832,9 @@ _FORCE_INLINE_ int _generate_kashida_justification_opportunies(const String &p_d
 				}
 			}
 		}
-		if (!is_transparent(c))
+		if (!is_transparent(c)) {
 			pc = c;
+		}
 		i++;
 	}
 
@@ -1743,6 +1850,10 @@ bool TextServerAdvanced::shaped_text_update_justification_ops(RID p_shaped) {
 	}
 	if (!sd->line_breaks_valid) {
 		shaped_text_update_breaks(p_shaped);
+	}
+
+	if (sd->justification_ops_valid) {
+		return true; // Nothing to do.
 	}
 
 	const UChar *data = sd->utf16.ptr();
@@ -1775,9 +1886,9 @@ bool TextServerAdvanced::shaped_text_update_justification_ops(RID p_shaped) {
 			if (ubrk_getRuleStatus(bi) != UBRK_WORD_NONE) {
 				int i = _convert_pos(sd, ubrk_current(bi));
 				jstops[i + sd->start] = false;
-				int ks = _generate_kashida_justification_opportunies(sd->text, limit, i) + sd->start;
+				int ks = _generate_kashida_justification_opportunies(sd->text, limit, i);
 				if (ks != -1) {
-					jstops[ks] = true;
+					jstops[ks + sd->start] = true;
 				}
 				limit = i;
 			}
@@ -1954,7 +2065,7 @@ void TextServerAdvanced::_shape_run(ShapedTextDataAdvanced *p_sd, int32_t p_star
 			ftrs.push_back(feature);
 		}
 	}
-	hb_shape(hb_font, p_sd->hb_buffer, ftrs.empty() ? nullptr : &ftrs[0], ftrs.size());
+	hb_shape(hb_font, p_sd->hb_buffer, ftrs.is_empty() ? nullptr : &ftrs[0], ftrs.size());
 
 	unsigned int glyph_count = 0;
 	hb_glyph_info_t *glyph_info = hb_buffer_get_glyph_infos(p_sd->hb_buffer, &glyph_count);
@@ -2010,6 +2121,11 @@ void TextServerAdvanced::_shape_run(ShapedTextDataAdvanced *p_sd, int32_t p_star
 				}
 				gl.x_off = Math::round(glyph_pos[i].x_offset / (64.0 / fd->get_font_scale(fs)));
 				gl.y_off = -Math::round(glyph_pos[i].y_offset / (64.0 / fd->get_font_scale(fs)));
+			}
+			if (fd->get_spacing_space() && is_whitespace(p_sd->text[glyph_info[i].cluster])) {
+				gl.advance += fd->get_spacing_space();
+			} else {
+				gl.advance += fd->get_spacing_glyph();
 			}
 
 			if (p_sd->preserve_control) {
@@ -2101,7 +2217,7 @@ bool TextServerAdvanced::shaped_text_shape(RID p_shaped) {
 		sd->script_iter = memnew(ScriptIterator(sd->text, 0, sd->text.length()));
 	}
 
-	if (sd->bidi_override.empty()) {
+	if (sd->bidi_override.is_empty()) {
 		sd->bidi_override.push_back(Vector2i(0, sd->end));
 	}
 

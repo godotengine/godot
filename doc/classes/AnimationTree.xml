@@ -45,8 +45,8 @@
 		<member name="anim_player" type="NodePath" setter="set_animation_player" getter="get_animation_player" default="NodePath(&quot;&quot;)">
 			The path to the [AnimationPlayer] used for animating.
 		</member>
-		<member name="process_mode" type="int" setter="set_process_mode" getter="get_process_mode" enum="AnimationTree.AnimationProcessMode" default="1">
-			The process mode of this [AnimationTree]. See [enum AnimationProcessMode] for available modes.
+		<member name="process_callback" type="int" setter="set_process_callback" getter="get_process_callback" enum="AnimationTree.AnimationProcessCallback" default="1">
+			The process mode of this [AnimationTree]. See [enum AnimationProcessCallback] for available modes.
 		</member>
 		<member name="root_motion_track" type="NodePath" setter="set_root_motion_track" getter="get_root_motion_track" default="NodePath(&quot;&quot;)">
 			The path to the Animation track used for root motion. Paths must be valid scene-tree paths to a node, and must be specified starting from the parent node of the node that will reproduce the animation. To specify a track that controls properties or bones, append its name after the path, separated by [code]":"[/code]. For example, [code]"character/skeleton:ankle"[/code] or [code]"character/mesh:transform/local"[/code].
@@ -57,13 +57,13 @@
 		</member>
 	</members>
 	<constants>
-		<constant name="ANIMATION_PROCESS_PHYSICS" value="0" enum="AnimationProcessMode">
+		<constant name="ANIMATION_PROCESS_PHYSICS" value="0" enum="AnimationProcessCallback">
 			The animations will progress during the physics frame (i.e. [method Node._physics_process]).
 		</constant>
-		<constant name="ANIMATION_PROCESS_IDLE" value="1" enum="AnimationProcessMode">
+		<constant name="ANIMATION_PROCESS_IDLE" value="1" enum="AnimationProcessCallback">
 			The animations will progress during the idle frame (i.e. [method Node._process]).
 		</constant>
-		<constant name="ANIMATION_PROCESS_MANUAL" value="2" enum="AnimationProcessMode">
+		<constant name="ANIMATION_PROCESS_MANUAL" value="2" enum="AnimationProcessCallback">
 			The animations will only progress manually (see [method advance]).
 		</constant>
 	</constants>

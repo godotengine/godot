@@ -9,4 +9,5 @@ env_text_server_fb.Append(
         "#thirdparty/freetype/include",
     ]
 )
+
 env_text_server_fb.add_source_files(env.modules_sources, "*.cpp")

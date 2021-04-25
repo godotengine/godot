@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -110,6 +110,7 @@ void CollisionShape2D::_notification(int p_what) {
 				draw_col.r = g;
 				draw_col.g = g;
 				draw_col.b = g;
+				draw_col.a *= 0.5;
 			}
 			shape->draw(get_canvas_item(), draw_col);
 
@@ -125,7 +126,7 @@ void CollisionShape2D::_notification(int p_what) {
 				Vector2 line_to(0, 20);
 				draw_line(Vector2(), line_to, draw_col, 2);
 				Vector<Vector2> pts;
-				float tsize = 8;
+				real_t tsize = 8;
 				pts.push_back(line_to + (Vector2(0, tsize)));
 				pts.push_back(line_to + (Vector2(Math_SQRT12 * tsize, 0)));
 				pts.push_back(line_to + (Vector2(-Math_SQRT12 * tsize, 0)));
@@ -141,6 +142,9 @@ void CollisionShape2D::_notification(int p_what) {
 }
 
 void CollisionShape2D::set_shape(const Ref<Shape2D> &p_shape) {
+	if (p_shape == shape) {
+		return;
+	}
 	if (shape.is_valid()) {
 		shape->disconnect("changed", callable_mp(this, &CollisionShape2D::_shape_changed));
 	}
@@ -151,13 +155,14 @@ void CollisionShape2D::set_shape(const Ref<Shape2D> &p_shape) {
 		if (shape.is_valid()) {
 			parent->shape_owner_add_shape(owner_id, shape);
 		}
+		_update_in_shape_owner();
 	}
 
 	if (shape.is_valid()) {
 		shape->connect("changed", callable_mp(this, &CollisionShape2D::_shape_changed));
 	}
 
-	update_configuration_warning();
+	update_configuration_warnings();
 }
 
 Ref<Shape2D> CollisionShape2D::get_shape() const {
@@ -172,19 +177,23 @@ bool CollisionShape2D::_edit_is_selected_on_click(const Point2 &p_point, double 
 	return shape->_edit_is_selected_on_click(p_point, p_tolerance);
 }
 
-String CollisionShape2D::get_configuration_warning() const {
+TypedArray<String> CollisionShape2D::get_configuration_warnings() const {
+	TypedArray<String> warnings = Node::get_configuration_warnings();
+
 	if (!Object::cast_to<CollisionObject2D>(get_parent())) {
-		return TTR("CollisionShape2D only serves to provide a collision shape to a CollisionObject2D derived node. Please only use it as a child of Area2D, StaticBody2D, RigidBody2D, KinematicBody2D, etc. to give them a shape.");
+		warnings.push_back(TTR("CollisionShape2D only serves to provide a collision shape to a CollisionObject2D derived node. Please only use it as a child of Area2D, StaticBody2D, RigidBody2D, KinematicBody2D, etc. to give them a shape."));
 	}
 	if (!shape.is_valid()) {
-		return TTR("A shape must be provided for CollisionShape2D to function. Please create a shape resource for it!");
+		warnings.push_back(TTR("A shape must be provided for CollisionShape2D to function. Please create a shape resource for it!"));
 	}
+
 	Ref<ConvexPolygonShape2D> convex = shape;
 	Ref<ConcavePolygonShape2D> concave = shape;
 	if (convex.is_valid() || concave.is_valid()) {
-		return TTR("Polygon-based shapes are not meant be used nor edited directly through the CollisionShape2D node. Please use the CollisionPolygon2D node instead.");
+		warnings.push_back(TTR("Polygon-based shapes are not meant be used nor edited directly through the CollisionShape2D node. Please use the CollisionPolygon2D node instead."));
 	}
-	return String();
+
+	return warnings;
 }
 
 void CollisionShape2D::set_disabled(bool p_disabled) {
@@ -211,14 +220,14 @@ bool CollisionShape2D::is_one_way_collision_enabled() const {
 	return one_way_collision;
 }
 
-void CollisionShape2D::set_one_way_collision_margin(float p_margin) {
+void CollisionShape2D::set_one_way_collision_margin(real_t p_margin) {
 	one_way_collision_margin = p_margin;
 	if (parent) {
 		parent->shape_owner_set_one_way_collision_margin(owner_id, one_way_collision_margin);
 	}
 }
 
-float CollisionShape2D::get_one_way_collision_margin() const {
+real_t CollisionShape2D::get_one_way_collision_margin() const {
 	return one_way_collision_margin;
 }
 
@@ -239,11 +248,5 @@ void CollisionShape2D::_bind_methods() {
 }
 
 CollisionShape2D::CollisionShape2D() {
-	rect = Rect2(-Point2(10, 10), Point2(20, 20));
 	set_notify_local_transform(true);
-	owner_id = 0;
-	parent = nullptr;
-	disabled = false;
-	one_way_collision = false;
-	one_way_collision_margin = 1.0;
 }

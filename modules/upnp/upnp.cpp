@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -36,7 +36,7 @@
 #include <stdlib.h>
 
 bool UPNP::is_common_device(const String &dev) const {
-	return dev.empty() ||
+	return dev.is_empty() ||
 		   dev.find("InternetGatewayDevice") >= 0 ||
 		   dev.find("WANIPConnection") >= 0 ||
 		   dev.find("WANPPPConnection") >= 0 ||
@@ -52,10 +52,12 @@ int UPNP::discover(int timeout, int ttl, const String &device_filter) {
 	int error = 0;
 	struct UPNPDev *devlist;
 
+	CharString cs = discover_multicast_if.utf8();
+	const char *m_if = cs.length() ? cs.get_data() : nullptr;
 	if (is_common_device(device_filter)) {
-		devlist = upnpDiscover(timeout, discover_multicast_if.utf8().get_data(), nullptr, discover_local_port, discover_ipv6, ttl, &error);
+		devlist = upnpDiscover(timeout, m_if, nullptr, discover_local_port, discover_ipv6, ttl, &error);
 	} else {
-		devlist = upnpDiscoverAll(timeout, discover_multicast_if.utf8().get_data(), nullptr, discover_local_port, discover_ipv6, ttl, &error);
+		devlist = upnpDiscoverAll(timeout, m_if, nullptr, discover_local_port, discover_ipv6, ttl, &error);
 	}
 
 	if (error != UPNPDISCOVER_SUCCESS) {
@@ -76,7 +78,7 @@ int UPNP::discover(int timeout, int ttl, const String &device_filter) {
 	struct UPNPDev *dev = devlist;
 
 	while (dev) {
-		if (device_filter.empty() || strstr(dev->st, device_filter.utf8().get_data())) {
+		if (device_filter.is_empty() || strstr(dev->st, device_filter.utf8().get_data())) {
 			add_device_to_list(dev, devlist);
 		}
 
@@ -393,9 +395,6 @@ void UPNP::_bind_methods() {
 }
 
 UPNP::UPNP() {
-	discover_multicast_if = "";
-	discover_local_port = 0;
-	discover_ipv6 = false;
 }
 
 UPNP::~UPNP() {

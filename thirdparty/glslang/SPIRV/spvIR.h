@@ -263,6 +263,7 @@ public:
         case OpBranchConditional:
         case OpSwitch:
         case OpKill:
+        case OpTerminateInvocation:
         case OpReturn:
         case OpReturnValue:
         case OpUnreachable:

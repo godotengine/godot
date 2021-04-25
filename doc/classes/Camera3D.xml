@@ -189,12 +189,12 @@
 		<member name="environment" type="Environment" setter="set_environment" getter="get_environment">
 			The [Environment] to use for this camera.
 		</member>
-		<member name="far" type="float" setter="set_zfar" getter="get_zfar" default="100.0">
+		<member name="far" type="float" setter="set_far" getter="get_far" default="4000.0">
 			The distance to the far culling boundary for this camera relative to its local Z axis.
 		</member>
 		<member name="fov" type="float" setter="set_fov" getter="get_fov" default="75.0">
 			The camera's field of view angle (in degrees). Only applicable in perspective mode. Since [member keep_aspect] locks one axis, [code]fov[/code] sets the other axis' field of view angle.
-			For reference, the default vertical field of view value ([code]75.0[/code]) is equivalent to an horizontal FOV of:
+			For reference, the default vertical field of view value ([code]75.0[/code]) is equivalent to a horizontal FOV of:
 			- ~91.31 degrees in a 4:3 viewport
 			- ~101.67 degrees in a 16:10 viewport
 			- ~107.51 degrees in a 16:9 viewport
@@ -209,7 +209,7 @@
 		<member name="keep_aspect" type="int" setter="set_keep_aspect_mode" getter="get_keep_aspect_mode" enum="Camera3D.KeepAspect" default="1">
 			The axis to lock during [member fov]/[member size] adjustments. Can be either [constant KEEP_WIDTH] or [constant KEEP_HEIGHT].
 		</member>
-		<member name="near" type="float" setter="set_znear" getter="get_znear" default="0.05">
+		<member name="near" type="float" setter="set_near" getter="get_near" default="0.05">
 			The distance to the near culling boundary for this camera relative to its local Z axis.
 		</member>
 		<member name="projection" type="int" setter="set_projection" getter="get_projection" enum="Camera3D.Projection" default="0">

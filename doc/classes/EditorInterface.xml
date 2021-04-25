@@ -10,6 +10,15 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="edit_node">
+			<return type="void">
+			</return>
+			<argument index="0" name="node" type="Node">
+			</argument>
+			<description>
+				Edits the given [Node]. The node will be also selected if it's inside the scene tree.
+			</description>
+		</method>
 		<method name="edit_resource">
 			<return type="void">
 			</return>
@@ -40,19 +49,27 @@
 				Returns the edited (current) scene's root [Node].
 			</description>
 		</method>
-		<method name="get_editor_settings">
-			<return type="EditorSettings">
-			</return>
-			<description>
-				Returns the editor's [EditorSettings] instance.
-			</description>
-		</method>
-		<method name="get_editor_viewport">
+		<method name="get_editor_main_control">
 			<return type="Control">
 			</return>
 			<description>
 				Returns the main editor control. Use this as a parent for main screens.
 				[b]Note:[/b] This returns the main editor control containing the whole editor, not the 2D or 3D viewports specifically.
+			</description>
+		</method>
+		<method name="get_editor_scale" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+				Returns the actual scale of the editor UI ([code]1.0[/code] being 100% scale). This can be used to adjust position and dimensions of the UI added by plugins.
+				[b]Note:[/b] This value is set via the [code]interface/editor/display_scale[/code] and [code]interface/editor/custom_display_scale[/code] editor settings. Editor must be restarted for changes to be properly applied.
+			</description>
+		</method>
+		<method name="get_editor_settings">
+			<return type="EditorSettings">
+			</return>
+			<description>
+				Returns the editor's [EditorSettings] instance.
 			</description>
 		</method>
 		<method name="get_file_system_dock">

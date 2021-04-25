@@ -17,7 +17,6 @@
 #if defined (__cplusplus)
 extern "C" {
 #endif
-
 /*
 *  This API consists of small unitary functions, which must be inlined for best performance.
 *  Since link-time-optimization is not available for all compilers,
@@ -36,10 +35,12 @@ extern "C" {
 /*=========================================
 *  Target specific
 =========================================*/
-#if defined(__BMI__) && defined(__GNUC__)
-#  include <immintrin.h>   /* support for bextr (experimental) */
-#elif defined(__ICCARM__)
-#  include <intrinsics.h>
+#ifndef ZSTD_NO_INTRINSICS
+#  if defined(__BMI__) && defined(__GNUC__)
+#    include <immintrin.h>   /* support for bextr (experimental) */
+#  elif defined(__ICCARM__)
+#    include <intrinsics.h>
+#  endif
 #endif
 
 #define STREAM_ACCUMULATOR_MIN_32  25
@@ -141,8 +142,12 @@ MEM_STATIC unsigned BIT_highbit32 (U32 val)
     assert(val != 0);
     {
 #   if defined(_MSC_VER)   /* Visual */
-        unsigned long r=0;
-        return _BitScanReverse ( &r, val ) ? (unsigned)r : 0;
+#       if STATIC_BMI2 == 1
+		return _lzcnt_u32(val) ^ 31;
+#       else
+		unsigned long r = 0;
+		return _BitScanReverse(&r, val) ? (unsigned)r : 0;
+#       endif
 #   elif defined(__GNUC__) && (__GNUC__ >= 3)   /* Use GCC Intrinsic */
         return __builtin_clz (val) ^ 31;
 #   elif defined(__ICCARM__)    /* IAR Intrinsic */
@@ -198,7 +203,7 @@ MEM_STATIC size_t BIT_initCStream(BIT_CStream_t* bitC,
 MEM_STATIC void BIT_addBits(BIT_CStream_t* bitC,
                             size_t value, unsigned nbBits)
 {
-    MEM_STATIC_ASSERT(BIT_MASK_SIZE == 32);
+    DEBUG_STATIC_ASSERT(BIT_MASK_SIZE == 32);
     assert(nbBits < BIT_MASK_SIZE);
     assert(nbBits + bitC->bitPos < sizeof(bitC->bitContainer) * 8);
     bitC->bitContainer |= (value & BIT_mask[nbBits]) << bitC->bitPos;
@@ -271,7 +276,7 @@ MEM_STATIC size_t BIT_closeCStream(BIT_CStream_t* bitC)
  */
 MEM_STATIC size_t BIT_initDStream(BIT_DStream_t* bitD, const void* srcBuffer, size_t srcSize)
 {
-    if (srcSize < 1) { memset(bitD, 0, sizeof(*bitD)); return ERROR(srcSize_wrong); }
+    if (srcSize < 1) { ZSTD_memset(bitD, 0, sizeof(*bitD)); return ERROR(srcSize_wrong); }
 
     bitD->start = (const char*)srcBuffer;
     bitD->limitPtr = bitD->start + sizeof(bitD->bitContainer);
@@ -317,12 +322,12 @@ MEM_STATIC size_t BIT_initDStream(BIT_DStream_t* bitD, const void* srcBuffer, si
     return srcSize;
 }
 
-MEM_STATIC size_t BIT_getUpperBits(size_t bitContainer, U32 const start)
+MEM_STATIC FORCE_INLINE_ATTR size_t BIT_getUpperBits(size_t bitContainer, U32 const start)
 {
     return bitContainer >> start;
 }
 
-MEM_STATIC size_t BIT_getMiddleBits(size_t bitContainer, U32 const start, U32 const nbBits)
+MEM_STATIC FORCE_INLINE_ATTR size_t BIT_getMiddleBits(size_t bitContainer, U32 const start, U32 const nbBits)
 {
     U32 const regMask = sizeof(bitContainer)*8 - 1;
     /* if start > regMask, bitstream is corrupted, and result is undefined */
@@ -330,10 +335,14 @@ MEM_STATIC size_t BIT_getMiddleBits(size_t bitContainer, U32 const start, U32 co
     return (bitContainer >> (start & regMask)) & BIT_mask[nbBits];
 }
 
-MEM_STATIC size_t BIT_getLowerBits(size_t bitContainer, U32 const nbBits)
+MEM_STATIC FORCE_INLINE_ATTR size_t BIT_getLowerBits(size_t bitContainer, U32 const nbBits)
 {
+#if defined(STATIC_BMI2) && STATIC_BMI2 == 1
+	return  _bzhi_u64(bitContainer, nbBits);
+#else
     assert(nbBits < BIT_MASK_SIZE);
     return bitContainer & BIT_mask[nbBits];
+#endif
 }
 
 /*! BIT_lookBits() :
@@ -342,7 +351,7 @@ MEM_STATIC size_t BIT_getLowerBits(size_t bitContainer, U32 const nbBits)
  *  On 32-bits, maxNbBits==24.
  *  On 64-bits, maxNbBits==56.
  * @return : value extracted */
-MEM_STATIC size_t BIT_lookBits(const BIT_DStream_t* bitD, U32 nbBits)
+MEM_STATIC  FORCE_INLINE_ATTR size_t BIT_lookBits(const BIT_DStream_t*  bitD, U32 nbBits)
 {
     /* arbitrate between double-shift and shift+mask */
 #if 1
@@ -365,7 +374,7 @@ MEM_STATIC size_t BIT_lookBitsFast(const BIT_DStream_t* bitD, U32 nbBits)
     return (bitD->bitContainer << (bitD->bitsConsumed & regMask)) >> (((regMask+1)-nbBits) & regMask);
 }
 
-MEM_STATIC void BIT_skipBits(BIT_DStream_t* bitD, U32 nbBits)
+MEM_STATIC FORCE_INLINE_ATTR void BIT_skipBits(BIT_DStream_t* bitD, U32 nbBits)
 {
     bitD->bitsConsumed += nbBits;
 }
@@ -374,7 +383,7 @@ MEM_STATIC void BIT_skipBits(BIT_DStream_t* bitD, U32 nbBits)
  *  Read (consume) next n bits from local register and update.
  *  Pay attention to not read more than nbBits contained into local register.
  * @return : extracted value. */
-MEM_STATIC size_t BIT_readBits(BIT_DStream_t* bitD, unsigned nbBits)
+MEM_STATIC FORCE_INLINE_ATTR size_t BIT_readBits(BIT_DStream_t* bitD, unsigned nbBits)
 {
     size_t const value = BIT_lookBits(bitD, nbBits);
     BIT_skipBits(bitD, nbBits);

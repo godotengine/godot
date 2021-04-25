@@ -1,6 +1,6 @@
 # Czech translation of the Godot Engine editor
-# Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.
-# Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).
+# Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.
+# Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).
 # This file is distributed under the same license as the Godot source code.
 # Fadex <vitekpaulik@gmail.com>, 2017.
 # Jan 'spl!te' Kondelík <j.kondelik@centrum.cz>, 2016, 2018.
@@ -9,27 +9,28 @@
 # Luděk Novotný <gladosicek@gmail.com>, 2016, 2018.
 # Martin Novák <maidx@seznam.cz>, 2017, 2019.
 # zxey <r.hozak@seznam.cz>, 2018.
-# Vojtěch Šamla <auzkok@seznam.cz>, 2018, 2019, 2020.
+# Vojtěch Šamla <auzkok@seznam.cz>, 2018, 2019, 2020, 2021.
 # Peeter Angelo <contact@peeterangelo.com>, 2019.
-# VojtechBrezina <vojta.brezina@gmail.com>, 2019.
+# VojtechBrezina <vojta.brezina@gmail.com>, 2019, 2021.
 # Garrom Orc Shaman <garromorcshaman@gmail.com>, 2019.
 # David Husička <davidek251@seznam.cz>, 2019.
 # Luboš Nečas <lubosnecas506@seznam.cz>, 2019.
 # David Kubeš <kubesdavid@email.cz>, 2019.
-# Emil Jiří Tywoniak <emil.tywoniak@gmail.com>, 2020.
+# Emil Jiří Tywoniak <emil.tywoniak@gmail.com>, 2020, 2021.
 # Filip Vincůrek <vincurek.f@gmail.com>, 2020.
 # Ondrej Pavelka <ondrej.pavelka@outlook.com>, 2020.
-# Zbyněk <zbynek.fiala@gmail.com>, 2020.
+# Zbyněk <zbynek.fiala@gmail.com>, 2020, 2021.
 # Daniel Kříž <Daniel.kriz@protonmail.com>, 2020.
 # VladimirBlazek <vblazek042@gmail.com>, 2020.
 # kubajz22 <til.jakubesko@seznam.cz>, 2020.
-# Václav Blažej <vaclavblazej@seznam.cz>, 2020.
+# Václav Blažej <vaclavblazej@seznam.cz>, 2020, 2021.
+# ProfJack <profjackcz@gmail.com>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-11-29 08:28+0000\n"
-"Last-Translator: Václav Blažej <vaclavblazej@seznam.cz>\n"
+"PO-Revision-Date: 2021-04-21 07:35+0000\n"
+"Last-Translator: Zbyněk <zbynek.fiala@gmail.com>\n"
 "Language-Team: Czech <https://hosted.weblate.org/projects/godot-engine/godot/"
 "cs/>\n"
 "Language: cs\n"
@@ -37,7 +38,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2;\n"
-"X-Generator: Weblate 4.4-dev\n"
+"X-Generator: Weblate 4.7-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -186,11 +187,11 @@ msgstr "Animace: Změna času klíčových snímků"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Multi Change Transition"
-msgstr "Animace: změna přechodů"
+msgstr "Animace: Změna přechodů"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Multi Change Transform"
-msgstr "Animace: změna transformací"
+msgstr "Animace: Změna transformací"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Multi Change Keyframe Value"
@@ -198,7 +199,7 @@ msgstr "Animace: Změnit hodnotu klíčových snímků"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Multi Change Call"
-msgstr "Animace: změna volání"
+msgstr "Animace: Změna více volání"
 
 #: editor/animation_track_editor.cpp
 msgid "Change Animation Length"
@@ -292,7 +293,7 @@ msgstr "Čas (s): "
 
 #: editor/animation_track_editor.cpp
 msgid "Toggle Track Enabled"
-msgstr "Přepínací stopa povolena"
+msgstr "Povolit stopu"
 
 #: editor/animation_track_editor.cpp
 msgid "Continuous"
@@ -354,7 +355,7 @@ msgstr "Změnit režim interpolace animace"
 
 #: editor/animation_track_editor.cpp
 msgid "Change Animation Loop Mode"
-msgstr "Změnit režim smyčky animace"
+msgstr "Změnit mód smyčky animace"
 
 #: editor/animation_track_editor.cpp
 msgid "Remove Anim Track"
@@ -666,7 +667,7 @@ msgstr "Vybrat stopy ke kopírování"
 #: editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp editor/property_editor.cpp
-#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
+#: editor/scene_tree_dock.cpp scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Copy"
 msgstr "Kopírovat"
 
@@ -676,7 +677,7 @@ msgstr "Vybrat vše/nic"
 
 #: editor/animation_track_editor_plugins.cpp
 msgid "Add Audio Track Clip"
-msgstr "Přidat klip audio stopy"
+msgstr "Přidat audio klip"
 
 #: editor/animation_track_editor_plugins.cpp
 msgid "Change Audio Track Clip Start Offset"
@@ -1299,7 +1300,7 @@ msgstr "Přepnout bypass efektů na zvukové sběrnice"
 
 #: editor/editor_audio_buses.cpp
 msgid "Select Audio Bus Send"
-msgstr "Vybrat přenos zvukové sběrnice"
+msgstr "Vybrat cíl zvukové sběrnice"
 
 #: editor/editor_audio_buses.cpp
 msgid "Add Audio Bus Effect"
@@ -1867,8 +1868,8 @@ msgid "Open a File or Directory"
 msgstr "Otevřít soubor nebo složku"
 
 #: editor/editor_file_dialog.cpp editor/editor_node.cpp
-#: editor/editor_properties.cpp editor/inspector_dock.cpp
-#: editor/plugins/animation_player_editor_plugin.cpp
+#: editor/editor_properties.cpp editor/import_defaults_editor.cpp
+#: editor/inspector_dock.cpp editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/script_editor_plugin.cpp scene/gui/file_dialog.cpp
 msgid "Save"
 msgstr "Uložit"
@@ -1958,10 +1959,6 @@ msgstr "Náhled:"
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "File:"
 msgstr "Soubor:"
-
-#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
-msgid "Must use a valid extension."
-msgstr "Je nutné použít platnou příponu."
 
 #: editor/editor_file_system.cpp
 msgid "ScanSources"
@@ -2397,6 +2394,10 @@ msgid "There is no defined scene to run."
 msgstr "Neexistuje žádná scéna pro spuštění."
 
 #: editor/editor_node.cpp
+msgid "Save scene before running..."
+msgstr "Uložit scénu před spuštěním..."
+
+#: editor/editor_node.cpp
 msgid "Could not start subprocess!"
 msgstr "Nelze spustit podproces!"
 
@@ -2440,18 +2441,6 @@ msgstr "Pro uložení scény je vyžadován kořenový uzel."
 msgid "Save Scene As..."
 msgstr "Uložit scénu jako..."
 
-#: editor/editor_node.cpp
-msgid "No"
-msgstr "Ne"
-
-#: editor/editor_node.cpp
-msgid "Yes"
-msgstr "Ano"
-
-#: editor/editor_node.cpp
-msgid "This scene has never been saved. Save before running?"
-msgstr "Tato scéna nebyla nikdy uložena. Uložit před spuštěním?"
-
 #: editor/editor_node.cpp editor/scene_tree_dock.cpp
 msgid "This operation can't be done without a scene."
 msgstr "Tato operace nemůže být provedena bez scény."
@@ -2489,7 +2478,7 @@ msgid ""
 "The current scene has unsaved changes.\n"
 "Reload the saved scene anyway? This action cannot be undone."
 msgstr ""
-"Tato scéna obsahuje neuložené změny.\n"
+"Aktuální scéna obsahuje neuložené změny.\n"
 "Přesto znovu načíst? Tuto akci nelze vrátit zpět."
 
 #: editor/editor_node.cpp
@@ -2499,6 +2488,10 @@ msgstr "Rychle spustit scénu..."
 #: editor/editor_node.cpp
 msgid "Quit"
 msgstr "Ukončit"
+
+#: editor/editor_node.cpp
+msgid "Yes"
+msgstr "Ano"
 
 #: editor/editor_node.cpp
 msgid "Exit the editor?"
@@ -2546,9 +2539,8 @@ msgstr ""
 "Nelze povolit rozšiřující plugin: '%s' parsování konfigurace se nezdařilo."
 
 #: editor/editor_node.cpp
-msgid "Unable to find script field for addon plugin at: 'res://addons/%s'."
-msgstr ""
-"Nelze najít záznam skriptu pro rozšiřující plugin v: 'res://addons/%s'."
+msgid "Unable to find script field for addon plugin at: '%s'."
+msgstr "Nelze najít záznam skriptu pro rozšiřující plugin v: '%s'."
 
 #: editor/editor_node.cpp
 msgid "Unable to load addon script from path: '%s'."
@@ -2975,14 +2967,6 @@ msgid "Help"
 msgstr "Nápověda"
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/script_text_editor.cpp
-#: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
-#: editor/plugins/visual_shader_editor_plugin.cpp editor/project_manager.cpp
-#: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
-msgid "Search"
-msgstr "Hledat"
-
-#: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/shader_editor_plugin.cpp
 msgid "Online Docs"
 msgstr "Online dokumentace"
@@ -3145,6 +3129,24 @@ msgstr "Sloučit s existující"
 #: editor/editor_node.cpp
 msgid "Open & Run a Script"
 msgstr "Otevřít a spustit skript"
+
+#: editor/editor_node.cpp
+msgid ""
+"The following files are newer on disk.\n"
+"What action should be taken?"
+msgstr ""
+"Následující soubory mají novější verzi na disku.\n"
+"Jaká akce se má vykonat?"
+
+#: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/shader_editor_plugin.cpp
+msgid "Reload"
+msgstr "Znovu načíst"
+
+#: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/shader_editor_plugin.cpp
+msgid "Resave"
+msgstr "Znovu uložit"
 
 #: editor/editor_node.cpp
 msgid "New Inherited"
@@ -3357,7 +3359,7 @@ msgstr "Vytvořit unikátní"
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 #: editor/plugins/tile_map_editor_plugin.cpp editor/property_editor.cpp
-#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
+#: editor/scene_tree_dock.cpp scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Paste"
 msgstr "Vložit"
 
@@ -3673,6 +3675,12 @@ msgstr ""
 "znovu ručně."
 
 #: editor/filesystem_dock.cpp
+msgid ""
+"Importing has been disabled for this file, so it can't be opened for editing."
+msgstr ""
+"Importování tohoto souboru bylo zakázáno, takže jej nelze otevřít pro úpravy."
+
+#: editor/filesystem_dock.cpp
 msgid "Cannot move/rename resources root."
 msgstr "Nelze přesunout/přejmenovat kořen zdrojů."
 
@@ -3717,6 +3725,12 @@ msgid ""
 "\n"
 "Do you wish to overwrite them?"
 msgstr ""
+"Následující soubory nebo složky jsou v konfliktu s položkami v cílovém "
+"umístění '%s':\n"
+"\n"
+"%s\n"
+"\n"
+"Přejete si je přepsat?"
 
 #: editor/filesystem_dock.cpp
 msgid "Renaming file:"
@@ -3909,8 +3923,16 @@ msgid "Searching..."
 msgstr "Hledám..."
 
 #: editor/find_in_files.cpp
-msgid "Search complete"
-msgstr "Vyhledávání dokončeno"
+msgid "%d match in %d file."
+msgstr "%d shoda v %d souboru."
+
+#: editor/find_in_files.cpp
+msgid "%d matches in %d file."
+msgstr "%d shod v %d souboru."
+
+#: editor/find_in_files.cpp
+msgid "%d matches in %d files."
+msgstr "%d shod v %d souborech."
 
 #: editor/groups_editor.cpp
 msgid "Add to Group"
@@ -4045,6 +4067,22 @@ msgstr "Vrátili jste objekt, který dědí z Node metodou `post_import()`?"
 #: editor/import/resource_importer_scene.cpp
 msgid "Saving..."
 msgstr "Ukládání..."
+
+#: editor/import_defaults_editor.cpp
+msgid "Select Importer"
+msgstr "Vybrat Importér"
+
+#: editor/import_defaults_editor.cpp
+msgid "Importer:"
+msgstr "Importér:"
+
+#: editor/import_defaults_editor.cpp
+msgid "Reset to Defaults"
+msgstr "Obnovit výchozí"
+
+#: editor/import_dock.cpp
+msgid "Keep File (No Import)"
+msgstr "Zachovat soubor (bez importu)"
 
 #: editor/import_dock.cpp
 msgid "%d Files"
@@ -5008,8 +5046,8 @@ msgid "Got:"
 msgstr "Staženo:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-msgid "Failed sha256 hash check"
-msgstr "Neúspěšná kontrola sha256 hashe"
+msgid "Failed SHA-256 hash check"
+msgstr "Neúspěšná kontrola SHA-256 hashe"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Asset Download Error:"
@@ -5053,11 +5091,11 @@ msgstr "Stahování tohoto assetu právě probíhá!"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Recently Updated"
-msgstr "Naposledy upravené"
+msgstr "Nedávno aktualizované"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Least Recently Updated"
-msgstr "Naposledy neupravené"
+msgstr "Dlouho neaktualizované"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Name (A-Z)"
@@ -5112,7 +5150,6 @@ msgid "Sort:"
 msgstr "Řadit podle:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#: editor/project_settings_editor.cpp
 msgid "Category:"
 msgstr "Kategorie:"
 
@@ -5141,12 +5178,12 @@ msgid "Assets ZIP File"
 msgstr "ZIP soubor asetů"
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
+#, fuzzy
 msgid ""
 "Can't determine a save path for lightmap images.\n"
-"Save your scene (for images to be saved in the same dir), or pick a save "
-"path from the BakedLightmap properties."
+"Save your scene and try again."
 msgstr ""
-"Nelze určit cestu uložení pro světelnou mapu obrázku.\n"
+"Nelze určit cestu pro uložení obrázků světelné mapy.\n"
 "Uložte scénu (obrázky se uloží do stejného adresáře) nebo vyberte cestu pro "
 "uložení z vlastnosti BakedLightmap."
 
@@ -5165,8 +5202,31 @@ msgstr ""
 "čtení."
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
+msgid "Failed determining lightmap size. Maximum lightmap size too small?"
+msgstr ""
+"Nebylo možné určit velikost světelné mapy. Maximální velikost je příliš malá?"
+
+#: editor/plugins/baked_lightmap_editor_plugin.cpp
+msgid ""
+"Some mesh is invalid. Make sure the UV2 channel values are contained within "
+"the [0.0,1.0] square region."
+msgstr ""
+"Některé sítě jsou neplatné. Ujistěte se, že hodnoty kanálu UV2 jsou ve "
+"čtvercové oblasti [0.0, 1.0]."
+
+#: editor/plugins/baked_lightmap_editor_plugin.cpp
+msgid ""
+"Godot editor was built without ray tracing support, lightmaps can't be baked."
+msgstr ""
+"Godot byl sestaven bez podpory ray tracingu, světelné mapy nelze zapéct."
+
+#: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid "Bake Lightmaps"
 msgstr "Zapéct lightmapy"
+
+#: editor/plugins/baked_lightmap_editor_plugin.cpp
+msgid "Select lightmap bake file:"
+msgstr "Vybrat soubor pro zapečení světelných map:"
 
 #: editor/plugins/camera_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -6260,6 +6320,10 @@ msgid "Can only set point into a ParticlesMaterial process material"
 msgstr "Bod lze vložit pouze do process materiálu ParticlesMaterial"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
+msgid "Convert to CPUParticles2D"
+msgstr "Převést na CPUParticles2D"
+
+#: editor/plugins/particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Generation Time (sec):"
 msgstr "Čas generování (sec):"
@@ -6319,10 +6383,6 @@ msgstr "Generování AABB"
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Generate Visibility AABB"
 msgstr "Generovat viditelnostní AABB"
-
-#: editor/plugins/particles_editor_plugin.cpp
-msgid "Generate AABB"
-msgstr "Vygenerovat AABB"
 
 #: editor/plugins/path_2d_editor_plugin.cpp
 msgid "Remove Point from Curve"
@@ -6911,6 +6971,14 @@ msgstr "Zavřít dokumentaci"
 msgid "Run"
 msgstr "Spustit"
 
+#: editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/script_text_editor.cpp
+#: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
+#: editor/plugins/visual_shader_editor_plugin.cpp editor/project_manager.cpp
+#: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
+msgid "Search"
+msgstr "Hledat"
+
 #: editor/plugins/script_editor_plugin.cpp editor/script_editor_debugger.cpp
 msgid "Step Into"
 msgstr "Vstoupit do"
@@ -6963,16 +7031,6 @@ msgid ""
 msgstr ""
 "Následující soubory mají novější verzi na disku.\n"
 "Jaká akce se má vykonat?:"
-
-#: editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/shader_editor_plugin.cpp
-msgid "Reload"
-msgstr "Znovu načíst"
-
-#: editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/shader_editor_plugin.cpp
-msgid "Resave"
-msgstr "Znovu uložit"
 
 #: editor/plugins/script_editor_plugin.cpp editor/script_editor_debugger.cpp
 msgid "Debugger"
@@ -7046,7 +7104,7 @@ msgstr "Malá písmena"
 
 #: editor/plugins/script_text_editor.cpp editor/plugins/text_editor.cpp
 msgid "Capitalize"
-msgstr "Velká písmena"
+msgstr "Velká Písmena"
 
 #: editor/plugins/script_text_editor.cpp editor/plugins/text_editor.cpp
 msgid "Syntax Highlighter"
@@ -7066,8 +7124,8 @@ msgstr "Breakpointy"
 msgid "Go To"
 msgstr "Přejít na"
 
-#: editor/plugins/script_text_editor.cpp scene/gui/line_edit.cpp
-#: scene/gui/text_edit.cpp
+#: editor/plugins/script_text_editor.cpp editor/scene_tree_dock.cpp
+#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Cut"
 msgstr "Vyjmout"
 
@@ -7110,7 +7168,7 @@ msgstr "Duplikovat dolů"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Complete Symbol"
-msgstr "Kompletní symbol"
+msgstr "Doplnit symbol"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Evaluate Selection"
@@ -7288,6 +7346,10 @@ msgstr "Stoupání"
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Yaw"
 msgstr "Náklon"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Size"
+msgstr "Velikost"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Objects Drawn"
@@ -7468,6 +7530,11 @@ msgstr "Zpomalení volného pohledu"
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "View Rotation Locked"
 msgstr "Rotace pohledu uzamknuta"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid ""
+"To zoom further, change the camera's clipping planes (View -> Settings...)"
+msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid ""
@@ -8534,10 +8601,6 @@ msgid "Error"
 msgstr "Chyba"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-msgid "No commit message was provided"
-msgstr "Nebyla poskytnuta commit message"
-
-#: editor/plugins/version_control_editor_plugin.cpp
 msgid "No files added to stage"
 msgstr "Zádné soubory nebyly přidány k zápisu"
 
@@ -8592,10 +8655,6 @@ msgstr "Připravit vybrané k zapsání"
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Stage All"
 msgstr "Připravit k zapsání vše"
-
-#: editor/plugins/version_control_editor_plugin.cpp
-msgid "Add a commit message"
-msgstr "Přidat zprávu commitu"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Commit Changes"
@@ -9794,7 +9853,7 @@ msgstr "OpenGL ES 3.0"
 
 #: editor/project_manager.cpp
 msgid "Not supported by your GPU drivers."
-msgstr ""
+msgstr "Nepodporováno vašimi ovladači GPU."
 
 #: editor/project_manager.cpp
 msgid ""
@@ -9966,6 +10025,10 @@ msgstr "Správce projektů"
 #: editor/project_manager.cpp
 msgid "Projects"
 msgstr "Projekty"
+
+#: editor/project_manager.cpp
+msgid "Loading, please wait..."
+msgstr "Načítání, prosím čekejte..."
 
 #: editor/project_manager.cpp
 msgid "Last Modified"
@@ -10338,6 +10401,10 @@ msgstr "Autoload"
 msgid "Plugins"
 msgstr "Pluginy"
 
+#: editor/project_settings_editor.cpp
+msgid "Import Defaults"
+msgstr "Načíst výchozí"
+
 #: editor/property_editor.cpp
 msgid "Preset..."
 msgstr "Předvolba..."
@@ -10586,6 +10653,14 @@ msgid "Instance Child Scene"
 msgstr "Přidat instanci scény"
 
 #: editor/scene_tree_dock.cpp
+msgid "Can't paste root node into the same scene."
+msgstr "Nelze vložit kořenový uzel do stejné scény."
+
+#: editor/scene_tree_dock.cpp
+msgid "Paste Node(s)"
+msgstr "Vložit uzly"
+
+#: editor/scene_tree_dock.cpp
 msgid "Detach Script"
 msgstr "Odpojit skript"
 
@@ -10712,6 +10787,10 @@ msgid "Attach Script"
 msgstr "Připojit skript"
 
 #: editor/scene_tree_dock.cpp
+msgid "Cut Node(s)"
+msgstr "Vyjmout uzly"
+
+#: editor/scene_tree_dock.cpp
 msgid "Remove Node(s)"
 msgstr "Odstranit uzel/uzly"
 
@@ -10823,6 +10902,13 @@ msgstr "Odpojit skript od vybraného uzlu."
 #: editor/scene_tree_dock.cpp
 msgid "Remote"
 msgstr "Vzdálený"
+
+#: editor/scene_tree_dock.cpp
+msgid ""
+"If selected, the Remote scene tree dock will cause the project to stutter "
+"every time it updates.\n"
+"Switch back to the Local scene tree dock to improve performance."
+msgstr ""
 
 #: editor/scene_tree_dock.cpp
 msgid "Local"
@@ -11516,6 +11602,35 @@ msgstr "Filtrovat meshe"
 msgid "Give a MeshLibrary resource to this GridMap to use its meshes."
 msgstr "Přiřaďte uzlu GridMap zdroj MeshLibrary k použití jeho sítě."
 
+#: modules/lightmapper_cpu/lightmapper_cpu.cpp
+msgid "Begin Bake"
+msgstr "Začít zapečení"
+
+#: modules/lightmapper_cpu/lightmapper_cpu.cpp
+msgid "Preparing data structures"
+msgstr "Připravování datových struktur"
+
+#: modules/lightmapper_cpu/lightmapper_cpu.cpp
+msgid "Generate buffers"
+msgstr "Vygenerovat buffery"
+
+#: modules/lightmapper_cpu/lightmapper_cpu.cpp
+msgid "Direct lighting"
+msgstr "Přímé osvětlení"
+
+#: modules/lightmapper_cpu/lightmapper_cpu.cpp
+msgid "Indirect lighting"
+msgstr "Nepřímé osvětlení"
+
+#: modules/lightmapper_cpu/lightmapper_cpu.cpp
+msgid "Post processing"
+msgstr "Následné zpracování"
+
+#: modules/lightmapper_cpu/lightmapper_cpu.cpp
+#, fuzzy
+msgid "Plotting lightmaps"
+msgstr "Vykreslování světelných map"
+
 #: modules/mono/csharp_script.cpp
 msgid "Class name can't be a reserved keyword"
 msgstr "Název třídy nemůže být rezervované klíčové slovo"
@@ -12021,12 +12136,16 @@ msgid "Select device from the list"
 msgstr "Vyberte zařízení ze seznamu"
 
 #: platform/android/export/export.cpp
-msgid "ADB executable not configured in the Editor Settings."
-msgstr "Spustitelný ADB není nakonfigurovaný v Nastavení Editoru."
+msgid "Unable to find the 'apksigner' tool."
+msgstr "Nelze najít nástroj 'apksigner'."
 
 #: platform/android/export/export.cpp
-msgid "OpenJDK jarsigner not configured in the Editor Settings."
-msgstr "OpenJDK jarsigner není nakonfigurovaný v Nastavení Editoru."
+msgid ""
+"Android build template not installed in the project. Install it from the "
+"Project menu."
+msgstr ""
+"Šablona sestavení Androidu není pro projekt nainstalována. Nainstalujte jej "
+"z nabídky Projekt."
 
 #: platform/android/export/export.cpp
 msgid "Debug keystore not configured in the Editor Settings nor in the preset."
@@ -12040,26 +12159,32 @@ msgstr ""
 "Úložiště klíčů pro vydání je nakonfigurováno nesprávně v profilu exportu."
 
 #: platform/android/export/export.cpp
-msgid "Custom build requires a valid Android SDK path in Editor Settings."
-msgstr ""
-"Vlastní sestavení vyžaduje správnou cestu k sadě Android SDK v nastavení "
-"editoru."
+msgid "A valid Android SDK path is required in Editor Settings."
+msgstr "Je vyžadována platná cesta Android SDK v Nastavení editoru."
 
 #: platform/android/export/export.cpp
-msgid "Invalid Android SDK path for custom build in Editor Settings."
-msgstr "Nesprávná cesta Android SDK pro vlastní sestavení v Nastavení editoru."
+msgid "Invalid Android SDK path in Editor Settings."
+msgstr "Neplatná cesta k Android SDK v Nastavení editoru."
 
 #: platform/android/export/export.cpp
 msgid "Missing 'platform-tools' directory!"
 msgstr "Chybí složka \"platform-tools\"!"
 
 #: platform/android/export/export.cpp
-msgid ""
-"Android build template not installed in the project. Install it from the "
-"Project menu."
-msgstr ""
-"Šablona sestavení Androidu není pro projekt nainstalována. Nainstalujte jej "
-"z nabídky Projekt."
+msgid "Unable to find Android SDK platform-tools' adb command."
+msgstr "Nelze najít příkaz adb z nástrojů platformy Android SDK."
+
+#: platform/android/export/export.cpp
+msgid "Please check in the Android SDK directory specified in Editor Settings."
+msgstr "Zkontrolujte ve složce Android SDK uvedené v Nastavení editoru."
+
+#: platform/android/export/export.cpp
+msgid "Missing 'build-tools' directory!"
+msgstr "Chybí složka \"build-tools\"!"
+
+#: platform/android/export/export.cpp
+msgid "Unable to find Android SDK build-tools' apksigner command."
+msgstr "Nelze najít apksigner, nástrojů Android SDK."
 
 #: platform/android/export/export.cpp
 msgid "Invalid public key for APK expansion."
@@ -12317,6 +12442,14 @@ msgstr ""
 msgid "An empty CollisionPolygon2D has no effect on collision."
 msgstr "Prázdný CollisionPolygon2D nemá při kolizi žádný efekt."
 
+#: scene/2d/collision_polygon_2d.cpp
+msgid "Invalid polygon. At least 3 points are needed in 'Solids' build mode."
+msgstr "Chybný polygon. Alespoň 3 body jsou potřeba v 'Solids' build módu."
+
+#: scene/2d/collision_polygon_2d.cpp
+msgid "Invalid polygon. At least 2 points are needed in 'Segments' build mode."
+msgstr "Chybný polygon. Alespoň 2 body jsou potřeba v 'Segments' build módu."
+
 #: scene/2d/collision_shape_2d.cpp
 msgid ""
 "CollisionShape2D only serves to provide a collision shape to a "
@@ -12353,23 +12486,23 @@ msgstr ""
 
 #: scene/2d/joints_2d.cpp
 msgid "Node A and Node B must be PhysicsBody2Ds"
-msgstr ""
+msgstr "Uzel A a uzel B musí být PhysicsBody2D"
 
 #: scene/2d/joints_2d.cpp
 msgid "Node A must be a PhysicsBody2D"
-msgstr ""
+msgstr "Uzel A musí být PhysicsBody2D"
 
 #: scene/2d/joints_2d.cpp
 msgid "Node B must be a PhysicsBody2D"
-msgstr ""
+msgstr "Uzel B musí být PhysicsBody2D"
 
 #: scene/2d/joints_2d.cpp
 msgid "Joint is not connected to two PhysicsBody2Ds"
-msgstr ""
+msgstr "Kloub není připojen ke dvěma PhysicsBody2D"
 
 #: scene/2d/joints_2d.cpp
 msgid "Node A and Node B must be different PhysicsBody2Ds"
-msgstr ""
+msgstr "Uzel A a uzel B musí být různé PhysicsBody2D"
 
 #: scene/2d/light_2d.cpp
 msgid ""
@@ -12519,28 +12652,28 @@ msgid "ARVROrigin requires an ARVRCamera child node."
 msgstr "ARVROrigin musí mít uzel ARVRCamera jako potomka."
 
 #: scene/3d/baked_lightmap.cpp
-msgid "%d%%"
-msgstr "%d%%"
+msgid "Finding meshes and lights"
+msgstr "Hledat mřížky a světla"
 
 #: scene/3d/baked_lightmap.cpp
-msgid "(Time Left: %d:%02d s)"
-msgstr "(Zbývající čas: %d:%02d s)"
+msgid "Preparing geometry (%d/%d)"
+msgstr "Připravuji geometrii (%d/%d)"
 
 #: scene/3d/baked_lightmap.cpp
-msgid "Plotting Meshes: "
-msgstr "Vykreslení mřížek: "
+msgid "Preparing environment"
+msgstr "Připravuji prostředí"
 
 #: scene/3d/baked_lightmap.cpp
-msgid "Plotting Lights:"
-msgstr "Vykreslení světel:"
-
-#: scene/3d/baked_lightmap.cpp scene/3d/gi_probe.cpp
-msgid "Finishing Plot"
-msgstr "Dokončování vykreslení"
+msgid "Generating capture"
+msgstr "Generování snímání"
 
 #: scene/3d/baked_lightmap.cpp
-msgid "Lighting Meshes: "
-msgstr "Osvětlení sítí: "
+msgid "Saving lightmaps"
+msgstr "Ukládám světelné mapy"
+
+#: scene/3d/baked_lightmap.cpp
+msgid "Done"
+msgstr "Hotovo"
 
 #: scene/3d/collision_object.cpp
 msgid ""
@@ -12615,17 +12748,16 @@ msgid "Plotting Meshes"
 msgstr "Vykreslení sítí"
 
 #: scene/3d/gi_probe.cpp
+msgid "Finishing Plot"
+msgstr "Dokončování vykreslení"
+
+#: scene/3d/gi_probe.cpp
 msgid ""
 "GIProbes are not supported by the GLES2 video driver.\n"
 "Use a BakedLightmap instead."
 msgstr ""
 "Video driver GLES2 nepodporuje GIProby.\n"
 "Místo toho použijte BakedLightmap."
-
-#: scene/3d/interpolated_camera.cpp
-msgid ""
-"InterpolatedCamera has been deprecated and will be removed in Godot 4.0."
-msgstr "Uzel InterpolatedCamera je zastaralý a bude odstraněn v Godot 4.0."
 
 #: scene/3d/light.cpp
 msgid "A SpotLight with an angle wider than 90 degrees cannot cast shadows."
@@ -12693,23 +12825,23 @@ msgstr ""
 
 #: scene/3d/physics_joint.cpp
 msgid "Node A and Node B must be PhysicsBodies"
-msgstr ""
+msgstr "Uzel A a uzel B musí být PhysicsBody"
 
 #: scene/3d/physics_joint.cpp
 msgid "Node A must be a PhysicsBody"
-msgstr ""
+msgstr "Uzel A musí být PhysicsBody"
 
 #: scene/3d/physics_joint.cpp
 msgid "Node B must be a PhysicsBody"
-msgstr ""
+msgstr "Uzel B musí být PhysicsBody"
 
 #: scene/3d/physics_joint.cpp
 msgid "Joint is not connected to any PhysicsBodies"
-msgstr ""
+msgstr "Kloub není připojen k PhysicsBody"
 
 #: scene/3d/physics_joint.cpp
 msgid "Node A and Node B must be different PhysicsBodies"
-msgstr ""
+msgstr "Uzel A a uzel B musí být odlišné PhysicsBody"
 
 #: scene/3d/remote_transform.cpp
 msgid ""
@@ -12868,6 +13000,14 @@ msgstr "Pozor!"
 msgid "Please Confirm..."
 msgstr "Potvrďte prosím..."
 
+#: scene/gui/file_dialog.cpp
+msgid "Must use a valid extension."
+msgstr "Je nutné použít platnou příponu."
+
+#: scene/gui/graph_edit.cpp
+msgid "Enable grid minimap."
+msgstr "Povolit minimapu mřížky."
+
 #: scene/gui/popup.cpp
 msgid ""
 "Popups will hide by default unless you call popup() or any of the popup*() "
@@ -12923,6 +13063,14 @@ msgstr ""
 "Velikost pohledu musí být větší než 0, aby bylo možné cokoliv renderovat."
 
 #: scene/resources/visual_shader_nodes.cpp
+msgid ""
+"The sampler port is connected but not used. Consider changing the source to "
+"'SamplerPort'."
+msgstr ""
+"Sampler port je připojen, ale není použitý. Zvažte změnu zdroje na "
+"'SamplerPort'."
+
+#: scene/resources/visual_shader_nodes.cpp
 msgid "Invalid source for preview."
 msgstr "Neplatný zdroj pro náhled."
 
@@ -12950,14 +13098,50 @@ msgstr "Odlišnosti mohou být přiřazeny pouze ve vertex funkci."
 msgid "Constants cannot be modified."
 msgstr "Konstanty není možné upravovat."
 
+#~ msgid ""
+#~ "InterpolatedCamera has been deprecated and will be removed in Godot 4.0."
+#~ msgstr "Uzel InterpolatedCamera je zastaralý a bude odstraněn v Godot 4.0."
+
+#~ msgid "No"
+#~ msgstr "Ne"
+
+#~ msgid "This scene has never been saved. Save before running?"
+#~ msgstr "Tato scéna nebyla nikdy uložena. Uložit před spuštěním?"
+
+#~ msgid "ADB executable not configured in the Editor Settings."
+#~ msgstr "Spustitelný ADB není nakonfigurovaný v Nastavení Editoru."
+
+#~ msgid "OpenJDK jarsigner not configured in the Editor Settings."
+#~ msgstr "OpenJDK jarsigner není nakonfigurovaný v Nastavení Editoru."
+
+#~ msgid "Custom build requires a valid Android SDK path in Editor Settings."
+#~ msgstr ""
+#~ "Vlastní sestavení vyžaduje správnou cestu k sadě Android SDK v nastavení "
+#~ "editoru."
+
+#~ msgid "%d%%"
+#~ msgstr "%d%%"
+
+#~ msgid "(Time Left: %d:%02d s)"
+#~ msgstr "(Zbývající čas: %d:%02d s)"
+
+#~ msgid "Plotting Meshes: "
+#~ msgstr "Vykreslení mřížek: "
+
+#~ msgid "Lighting Meshes: "
+#~ msgstr "Osvětlení sítí: "
+
+#~ msgid "Search complete"
+#~ msgstr "Vyhledávání dokončeno"
+
+#~ msgid "No commit message was provided"
+#~ msgstr "Nebyla poskytnuta commit message"
+
+#~ msgid "Add a commit message"
+#~ msgstr "Přidat zprávu commitu"
+
 #~ msgid "There is already file or folder with the same name in this location."
 #~ msgstr "Soubor nebo složka se stejným názvem již na tomto místě existuje."
-
-#~ msgid "Missing 'build-tools' directory!"
-#~ msgstr "Chybí složka \"build-tools\"!"
-
-#~ msgid "Unable to find the zipalign tool."
-#~ msgstr "Nelze najít nástroj zipalign."
 
 #~ msgid "Aligning APK..."
 #~ msgstr "Zarovnávání APK..."
@@ -13242,9 +13426,6 @@ msgstr "Konstanty není možné upravovat."
 
 #~ msgid "Failed to save solution."
 #~ msgstr "Nepodařilo se uložit řešení."
-
-#~ msgid "Done"
-#~ msgstr "Hotovo"
 
 #~ msgid "Failed to create C# project."
 #~ msgstr "Vytvoření C# projektu selhalo."

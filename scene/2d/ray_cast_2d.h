@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -36,20 +36,22 @@
 class RayCast2D : public Node2D {
 	GDCLASS(RayCast2D, Node2D);
 
-	bool enabled;
-	bool collided;
+	bool enabled = true;
+	bool collided = false;
 	ObjectID against;
-	int against_shape;
+	int against_shape = 0;
 	Vector2 collision_point;
 	Vector2 collision_normal;
 	Set<RID> exclude;
-	uint32_t collision_mask;
-	bool exclude_parent_body;
+	uint32_t collision_mask = 1;
+	bool exclude_parent_body = true;
 
-	Vector2 target_position;
+	Vector2 target_position = Vector2(0, 50);
 
-	bool collide_with_areas;
-	bool collide_with_bodies;
+	bool collide_with_areas = false;
+	bool collide_with_bodies = true;
+
+	void _draw_debug_shape();
 
 protected:
 	void _notification(int p_what);

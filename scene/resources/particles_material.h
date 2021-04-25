@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -100,7 +100,7 @@ private:
 			uint32_t collision_scale : 1;
 		};
 
-		uint32_t key;
+		uint32_t key = 0;
 
 		bool operator<(const MaterialKey &p_key) const {
 			return key < p_key.key;
@@ -109,7 +109,7 @@ private:
 
 	struct ShaderData {
 		RID shader;
-		int users;
+		int users = 0;
 	};
 
 	static Map<MaterialKey, ShaderData> shader_map;
@@ -235,7 +235,7 @@ private:
 	Ref<Texture2D> emission_point_texture;
 	Ref<Texture2D> emission_normal_texture;
 	Ref<Texture2D> emission_color_texture;
-	int emission_point_count;
+	int emission_point_count = 1;
 
 	bool anim_loop;
 
@@ -340,7 +340,7 @@ public:
 	void set_sub_emitter_keep_velocity(bool p_enable);
 	bool get_sub_emitter_keep_velocity() const;
 
-	RID get_shader_rid() const;
+	virtual RID get_shader_rid() const override;
 
 	virtual Shader::Mode get_shader_mode() const override;
 

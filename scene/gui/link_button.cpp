@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -163,8 +163,8 @@ void LinkButton::_notification(int p_what) {
 				} break;
 				case DRAW_HOVER_PRESSED:
 				case DRAW_PRESSED: {
-					if (has_theme_color("font_color_pressed")) {
-						color = get_theme_color("font_color_pressed");
+					if (has_theme_color("font_pressed_color")) {
+						color = get_theme_color("font_pressed_color");
 					} else {
 						color = get_theme_color("font_color");
 					}
@@ -173,12 +173,12 @@ void LinkButton::_notification(int p_what) {
 
 				} break;
 				case DRAW_HOVER: {
-					color = get_theme_color("font_color_hover");
+					color = get_theme_color("font_hover_color");
 					do_underline = underline_mode != UNDERLINE_MODE_NEVER;
 
 				} break;
 				case DRAW_DISABLED: {
-					color = get_theme_color("font_color_disabled");
+					color = get_theme_color("font_disabled_color");
 					do_underline = underline_mode == UNDERLINE_MODE_ALWAYS;
 
 				} break;
@@ -191,9 +191,17 @@ void LinkButton::_notification(int p_what) {
 
 			int width = text_buf->get_line_width();
 
+			Color font_outline_color = get_theme_color("font_outline_color");
+			int outline_size = get_theme_constant("outline_size");
 			if (is_layout_rtl()) {
+				if (outline_size > 0 && font_outline_color.a > 0) {
+					text_buf->draw_outline(get_canvas_item(), Vector2(size.width - width, 0), outline_size, font_outline_color);
+				}
 				text_buf->draw(get_canvas_item(), Vector2(size.width - width, 0), color);
 			} else {
+				if (outline_size > 0 && font_outline_color.a > 0) {
+					text_buf->draw_outline(get_canvas_item(), Vector2(0, 0), outline_size, font_outline_color);
+				}
 				text_buf->draw(get_canvas_item(), Vector2(0, 0), color);
 			}
 
@@ -231,7 +239,7 @@ bool LinkButton::_set(const StringName &p_name, const Variant &p_value) {
 				update();
 			}
 		}
-		_change_notify();
+		notify_property_list_changed();
 		return true;
 	}
 
@@ -294,7 +302,6 @@ void LinkButton::_bind_methods() {
 
 LinkButton::LinkButton() {
 	text_buf.instance();
-	underline_mode = UNDERLINE_MODE_ALWAYS;
 	set_focus_mode(FOCUS_NONE);
 	set_default_cursor_shape(CURSOR_POINTING_HAND);
 }

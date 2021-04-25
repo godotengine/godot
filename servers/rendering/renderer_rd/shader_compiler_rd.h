@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -38,7 +38,16 @@
 
 class ShaderCompilerRD {
 public:
+	enum Stage {
+		STAGE_VERTEX,
+		STAGE_FRAGMENT,
+		STAGE_COMPUTE,
+		STAGE_MAX
+	};
+
 	struct IdentifierActions {
+		Map<StringName, Stage> entry_point_stages;
+
 		Map<StringName, Pair<int *, int>> render_mode_values;
 		Map<StringName, bool *> render_mode_flags;
 		Map<StringName, bool *> usage_flag_pointers;
@@ -63,13 +72,9 @@ public:
 		Vector<uint32_t> uniform_offsets;
 		uint32_t uniform_total_size;
 		String uniforms;
-		String vertex_global;
-		String vertex;
-		String fragment_global;
-		String fragment;
-		String light;
-		String compute_global;
-		String compute;
+		String stage_globals[STAGE_MAX];
+
+		Map<String, String> code;
 
 		bool uses_global_textures;
 		bool uses_fragment_time;
@@ -103,10 +108,6 @@ private:
 	const ShaderLanguage::ShaderNode *shader;
 	const ShaderLanguage::FunctionNode *function;
 	StringName current_func_name;
-	StringName vertex_name;
-	StringName fragment_name;
-	StringName light_name;
-	StringName compute_name;
 	StringName time_name;
 	Set<StringName> texture_functions;
 
@@ -114,6 +115,7 @@ private:
 	Set<StringName> used_flag_pointers;
 	Set<StringName> used_rmode_defines;
 	Set<StringName> internal_functions;
+	Set<StringName> fragment_varyings;
 
 	DefaultIdentifierActions actions;
 

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -96,8 +96,8 @@ public:
 		};
 
 		float aspect = 1;
-		float z_near = 0.1;
-		float z_far = 100;
+		float z_near = 0.05;
+		float z_far = 4000;
 
 		CameraData() {}
 	};
@@ -274,7 +274,7 @@ public:
 					if (normal == p_vert.normal) {
 						if (uv == p_vert.uv) {
 							if (uv2 == p_vert.uv2) {
-								if (!weights.empty() || !p_vert.weights.empty()) {
+								if (!weights.is_empty() || !p_vert.weights.is_empty()) {
 									if (weights.size() == p_vert.weights.size()) {
 										for (int i = 0; i < weights.size(); i++) {
 											if (weights[i].bone_idx != p_vert.weights[i].bone_idx) {

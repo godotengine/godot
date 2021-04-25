@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -63,7 +63,7 @@ const char *VisualScriptBuiltinFunc::func_name[VisualScriptBuiltinFunc::FUNC_MAX
 	"is_inf",
 	"ease",
 	"step_decimals",
-	"stepify",
+	"snapped",
 	"lerp",
 	"inverse_lerp",
 	"range_lerp",
@@ -101,7 +101,6 @@ const char *VisualScriptBuiltinFunc::func_name[VisualScriptBuiltinFunc::FUNC_MAX
 	"str2var",
 	"var2bytes",
 	"bytes2var",
-	"color_named",
 	"smoothstep",
 	"posmod",
 	"lerp_angle",
@@ -192,7 +191,7 @@ int VisualScriptBuiltinFunc::get_func_argument_count(BuiltinFunc p_func) {
 		case MATH_POSMOD:
 		case MATH_POW:
 		case MATH_EASE:
-		case MATH_STEPIFY:
+		case MATH_SNAPPED:
 		case MATH_RANDF_RANGE:
 		case MATH_RANDI_RANGE:
 		case MATH_POLAR2CARTESIAN:
@@ -200,7 +199,6 @@ int VisualScriptBuiltinFunc::get_func_argument_count(BuiltinFunc p_func) {
 		case LOGIC_MAX:
 		case LOGIC_MIN:
 		case TYPE_CONVERT:
-		case COLORN:
 			return 2;
 		case MATH_LERP:
 		case MATH_LERP_ANGLE:
@@ -309,7 +307,7 @@ PropertyInfo VisualScriptBuiltinFunc::get_input_value_port_info(int p_idx) const
 		case MATH_STEP_DECIMALS: {
 			return PropertyInfo(Variant::FLOAT, "step");
 		} break;
-		case MATH_STEPIFY: {
+		case MATH_SNAPPED: {
 			if (p_idx == 0) {
 				return PropertyInfo(Variant::FLOAT, "s");
 			} else {
@@ -476,13 +474,6 @@ PropertyInfo VisualScriptBuiltinFunc::get_input_value_port_info(int p_idx) const
 				return PropertyInfo(Variant::BOOL, "allow_objects");
 			}
 		} break;
-		case COLORN: {
-			if (p_idx == 0) {
-				return PropertyInfo(Variant::STRING, "name");
-			} else {
-				return PropertyInfo(Variant::FLOAT, "alpha");
-			}
-		} break;
 		case FUNC_MAX: {
 		}
 	}
@@ -537,7 +528,7 @@ PropertyInfo VisualScriptBuiltinFunc::get_output_value_port_info(int p_idx) cons
 		case MATH_STEP_DECIMALS: {
 			t = Variant::INT;
 		} break;
-		case MATH_STEPIFY:
+		case MATH_SNAPPED:
 		case MATH_LERP:
 		case MATH_LERP_ANGLE:
 		case MATH_INVERSE_LERP:
@@ -635,9 +626,6 @@ PropertyInfo VisualScriptBuiltinFunc::get_output_value_port_info(int p_idx) cons
 				t = Variant::BOOL;
 			}
 		} break;
-		case COLORN: {
-			t = Variant::COLOR;
-		} break;
 		case FUNC_MAX: {
 		}
 	}
@@ -659,7 +647,7 @@ String VisualScriptBuiltinFunc::get_caption() const {
 void VisualScriptBuiltinFunc::set_func(BuiltinFunc p_which) {
 	ERR_FAIL_INDEX(p_which, FUNC_MAX);
 	func = p_which;
-	_change_notify();
+	notify_property_list_changed();
 	ports_changed_notify();
 }
 
@@ -805,10 +793,10 @@ void VisualScriptBuiltinFunc::exec_func(BuiltinFunc p_func, const Variant **p_in
 			VALIDATE_ARG_NUM(0);
 			*r_return = Math::step_decimals((double)*p_inputs[0]);
 		} break;
-		case VisualScriptBuiltinFunc::MATH_STEPIFY: {
+		case VisualScriptBuiltinFunc::MATH_SNAPPED: {
 			VALIDATE_ARG_NUM(0);
 			VALIDATE_ARG_NUM(1);
-			*r_return = Math::stepify((double)*p_inputs[0], (double)*p_inputs[1]);
+			*r_return = Math::snapped((double)*p_inputs[0], (double)*p_inputs[1]);
 		} break;
 		case VisualScriptBuiltinFunc::MATH_LERP: {
 			VALIDATE_ARG_NUM(0);
@@ -1176,15 +1164,6 @@ void VisualScriptBuiltinFunc::exec_func(BuiltinFunc p_func, const Variant **p_in
 			*r_return = ret;
 
 		} break;
-		case VisualScriptBuiltinFunc::COLORN: {
-			VALIDATE_ARG_NUM(1);
-
-			Color color = Color::named(*p_inputs[0]);
-			color.a = *p_inputs[1];
-
-			*r_return = String(color);
-
-		} break;
 		default: {
 		}
 	}
@@ -1254,7 +1233,7 @@ void VisualScriptBuiltinFunc::_bind_methods() {
 	BIND_ENUM_CONSTANT(MATH_ISINF);
 	BIND_ENUM_CONSTANT(MATH_EASE);
 	BIND_ENUM_CONSTANT(MATH_STEP_DECIMALS);
-	BIND_ENUM_CONSTANT(MATH_STEPIFY);
+	BIND_ENUM_CONSTANT(MATH_SNAPPED);
 	BIND_ENUM_CONSTANT(MATH_LERP);
 	BIND_ENUM_CONSTANT(MATH_INVERSE_LERP);
 	BIND_ENUM_CONSTANT(MATH_RANGE_LERP);
@@ -1292,7 +1271,6 @@ void VisualScriptBuiltinFunc::_bind_methods() {
 	BIND_ENUM_CONSTANT(STR_TO_VAR);
 	BIND_ENUM_CONSTANT(VAR_TO_BYTES);
 	BIND_ENUM_CONSTANT(BYTES_TO_VAR);
-	BIND_ENUM_CONSTANT(COLORN);
 	BIND_ENUM_CONSTANT(MATH_SMOOTHSTEP);
 	BIND_ENUM_CONSTANT(MATH_POSMOD);
 	BIND_ENUM_CONSTANT(MATH_LERP_ANGLE);
@@ -1344,7 +1322,7 @@ void register_visual_script_builtin_func_node() {
 
 	VisualScriptLanguage::singleton->add_register_func("functions/built_in/ease", create_builtin_func_node<VisualScriptBuiltinFunc::MATH_EASE>);
 	VisualScriptLanguage::singleton->add_register_func("functions/built_in/step_decimals", create_builtin_func_node<VisualScriptBuiltinFunc::MATH_STEP_DECIMALS>);
-	VisualScriptLanguage::singleton->add_register_func("functions/built_in/stepify", create_builtin_func_node<VisualScriptBuiltinFunc::MATH_STEPIFY>);
+	VisualScriptLanguage::singleton->add_register_func("functions/built_in/snapped", create_builtin_func_node<VisualScriptBuiltinFunc::MATH_SNAPPED>);
 	VisualScriptLanguage::singleton->add_register_func("functions/built_in/lerp", create_builtin_func_node<VisualScriptBuiltinFunc::MATH_LERP>);
 	VisualScriptLanguage::singleton->add_register_func("functions/built_in/lerp_angle", create_builtin_func_node<VisualScriptBuiltinFunc::MATH_LERP_ANGLE>);
 	VisualScriptLanguage::singleton->add_register_func("functions/built_in/inverse_lerp", create_builtin_func_node<VisualScriptBuiltinFunc::MATH_INVERSE_LERP>);
@@ -1388,5 +1366,4 @@ void register_visual_script_builtin_func_node() {
 	VisualScriptLanguage::singleton->add_register_func("functions/built_in/str2var", create_builtin_func_node<VisualScriptBuiltinFunc::STR_TO_VAR>);
 	VisualScriptLanguage::singleton->add_register_func("functions/built_in/var2bytes", create_builtin_func_node<VisualScriptBuiltinFunc::VAR_TO_BYTES>);
 	VisualScriptLanguage::singleton->add_register_func("functions/built_in/bytes2var", create_builtin_func_node<VisualScriptBuiltinFunc::BYTES_TO_VAR>);
-	VisualScriptLanguage::singleton->add_register_func("functions/built_in/color_named", create_builtin_func_node<VisualScriptBuiltinFunc::COLORN>);
 }

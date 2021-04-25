@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -217,8 +217,8 @@ struct VariantUtilityFunctions {
 		return Math::range_step_decimals(step);
 	}
 
-	static inline double stepify(double value, double step) {
-		return Math::stepify(value, step);
+	static inline double snapped(double value, double step) {
+		return Math::snapped(value, step);
 	}
 
 	static inline double lerp(double from, double to, double weight) {
@@ -291,7 +291,7 @@ struct VariantUtilityFunctions {
 		Variant ret;
 		for (int i = 1; i < p_argcount; i++) {
 			bool valid;
-			Variant::evaluate(Variant::OP_GREATER, base, *p_args[i], ret, valid);
+			Variant::evaluate(Variant::OP_LESS, base, *p_args[i], ret, valid);
 			if (!valid) {
 				r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 				r_error.expected = base.get_type();
@@ -324,7 +324,7 @@ struct VariantUtilityFunctions {
 		Variant ret;
 		for (int i = 1; i < p_argcount; i++) {
 			bool valid;
-			Variant::evaluate(Variant::OP_LESS, base, *p_args[i], ret, valid);
+			Variant::evaluate(Variant::OP_GREATER, base, *p_args[i], ret, valid);
 			if (!valid) {
 				r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 				r_error.expected = base.get_type();
@@ -1181,7 +1181,7 @@ void Variant::_register_variant_utility_functions() {
 	FUNCBINDR(ease, sarray("x", "curve"), Variant::UTILITY_FUNC_TYPE_MATH);
 	FUNCBINDR(step_decimals, sarray("x"), Variant::UTILITY_FUNC_TYPE_MATH);
 	FUNCBINDR(range_step_decimals, sarray("x"), Variant::UTILITY_FUNC_TYPE_MATH);
-	FUNCBINDR(stepify, sarray("x", "step"), Variant::UTILITY_FUNC_TYPE_MATH);
+	FUNCBINDR(snapped, sarray("x", "step"), Variant::UTILITY_FUNC_TYPE_MATH);
 
 	FUNCBINDR(lerp, sarray("from", "to", "weight"), Variant::UTILITY_FUNC_TYPE_MATH);
 	FUNCBINDR(lerp_angle, sarray("from", "to", "weight"), Variant::UTILITY_FUNC_TYPE_MATH);
@@ -1378,4 +1378,8 @@ void Variant::get_utility_function_list(List<StringName> *r_functions) {
 	for (List<StringName>::Element *E = utility_function_name_table.front(); E; E = E->next()) {
 		r_functions->push_back(E->get());
 	}
+}
+
+int Variant::get_utility_function_count() {
+	return utility_function_name_table.size();
 }

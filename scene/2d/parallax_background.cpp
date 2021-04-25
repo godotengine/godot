@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -51,11 +51,11 @@ void ParallaxBackground::_camera_moved(const Transform2D &p_transform, const Poi
 	set_scroll_offset(p_transform.get_origin());
 }
 
-void ParallaxBackground::set_scroll_scale(float p_scale) {
+void ParallaxBackground::set_scroll_scale(real_t p_scale) {
 	scale = p_scale;
 }
 
-float ParallaxBackground::get_scroll_scale() const {
+real_t ParallaxBackground::get_scroll_scale() const {
 	return scale;
 }
 
@@ -185,9 +185,5 @@ void ParallaxBackground::_bind_methods() {
 }
 
 ParallaxBackground::ParallaxBackground() {
-	scale = 1.0;
 	set_layer(-100); //behind all by default
-
-	base_scale = Vector2(1, 1);
-	ignore_camera_zoom = false;
 }

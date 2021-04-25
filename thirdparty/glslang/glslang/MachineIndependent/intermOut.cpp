@@ -438,6 +438,9 @@ bool TOutputTraverser::visitUnary(TVisit /* visit */, TIntermUnary* node)
     case EOpConvUint64ToPtr:  out.debug << "Convert uint64_t to pointer";   break;
     case EOpConvPtrToUint64:  out.debug << "Convert pointer to uint64_t";   break;
 
+    case EOpConvUint64ToAccStruct: out.debug << "Convert uint64_t to acceleration structure"; break;
+    case EOpConvUvec2ToAccStruct:  out.debug << "Convert uvec2 to acceleration strucuture "; break;
+
     case EOpRadians:        out.debug << "radians";              break;
     case EOpDegrees:        out.debug << "degrees";              break;
     case EOpSin:            out.debug << "sine";                 break;
@@ -829,6 +832,7 @@ bool TOutputTraverser::visitAggregate(TVisit /* visit */, TIntermAggregate* node
     case EOpConstructTextureSampler: out.debug << "Construct combined texture-sampler"; break;
     case EOpConstructReference:  out.debug << "Construct reference";  break;
     case EOpConstructCooperativeMatrix:  out.debug << "Construct cooperative matrix";  break;
+    case EOpConstructAccStruct: out.debug << "Construct acceleration structure"; break;
 
     case EOpLessThan:         out.debug << "Compare Less Than";             break;
     case EOpGreaterThan:      out.debug << "Compare Greater Than";          break;
@@ -1079,11 +1083,15 @@ bool TOutputTraverser::visitAggregate(TVisit /* visit */, TIntermAggregate* node
     case EOpSubpassLoad:   out.debug << "subpassLoad";   break;
     case EOpSubpassLoadMS: out.debug << "subpassLoadMS"; break;
 
-    case EOpTrace:                            out.debug << "traceNV"; break;
+    case EOpTraceNV:                          out.debug << "traceNV"; break;
+    case EOpTraceKHR:                         out.debug << "traceRayKHR"; break;
     case EOpReportIntersection:               out.debug << "reportIntersectionNV"; break;
-    case EOpIgnoreIntersection:               out.debug << "ignoreIntersectionNV"; break;
-    case EOpTerminateRay:                     out.debug << "terminateRayNV"; break;
-    case EOpExecuteCallable:                  out.debug << "executeCallableNV"; break;
+    case EOpIgnoreIntersectionNV:             out.debug << "ignoreIntersectionNV"; break;
+    case EOpIgnoreIntersectionKHR:            out.debug << "ignoreIntersectionKHR"; break;
+    case EOpTerminateRayNV:                   out.debug << "terminateRayNV"; break;
+    case EOpTerminateRayKHR:                  out.debug << "terminateRayKHR"; break;
+    case EOpExecuteCallableNV:                out.debug << "executeCallableNV"; break;
+    case EOpExecuteCallableKHR:               out.debug << "executeCallableKHR"; break;
     case EOpWritePackedPrimitiveIndices4x8NV: out.debug << "writePackedPrimitiveIndices4x8NV"; break;
 
     case EOpRayQueryInitialize:                                            out.debug << "rayQueryInitializeEXT"; break;
@@ -1321,6 +1329,9 @@ static void OutputConstantUnion(TInfoSink& out, const TIntermTyped* node, const 
                 out.debug << buf << "\n";
             }
             break;
+        case EbtString:
+            out.debug << "\"" << constUnion[i].getSConst()->c_str() << "\"\n";
+            break;
         default:
             out.info.message(EPrefixInternalError, "Unknown constant", node->getLoc());
             break;
@@ -1406,14 +1417,17 @@ bool TOutputTraverser::visitBranch(TVisit /* visit*/, TIntermBranch* node)
     OutputTreeText(out, node, depth);
 
     switch (node->getFlowOp()) {
-    case EOpKill:      out.debug << "Branch: Kill";           break;
-    case EOpBreak:     out.debug << "Branch: Break";          break;
-    case EOpContinue:  out.debug << "Branch: Continue";       break;
-    case EOpReturn:    out.debug << "Branch: Return";         break;
-    case EOpCase:      out.debug << "case: ";                 break;
-    case EOpDemote:    out.debug << "Demote";                 break;
-    case EOpDefault:   out.debug << "default: ";              break;
-    default:               out.debug << "Branch: Unknown Branch"; break;
+    case EOpKill:                   out.debug << "Branch: Kill";                  break;
+    case EOpTerminateInvocation:    out.debug << "Branch: TerminateInvocation";   break;
+    case EOpIgnoreIntersectionKHR:  out.debug << "Branch: IgnoreIntersectionKHR"; break;
+    case EOpTerminateRayKHR:        out.debug << "Branch: TerminateRayKHR";       break;
+    case EOpBreak:                  out.debug << "Branch: Break";                 break;
+    case EOpContinue:               out.debug << "Branch: Continue";              break;
+    case EOpReturn:                 out.debug << "Branch: Return";                break;
+    case EOpCase:                   out.debug << "case: ";                        break;
+    case EOpDemote:                 out.debug << "Demote";                        break;
+    case EOpDefault:                out.debug << "default: ";                     break;
+    default:                        out.debug << "Branch: Unknown Branch";        break;
     }
 
     if (node->getExpression()) {

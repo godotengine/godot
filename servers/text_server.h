@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -74,11 +74,12 @@ public:
 		GRAPHEME_IS_VALID = 1 << 0, // Glyph is valid.
 		GRAPHEME_IS_RTL = 1 << 1, // Glyph is right-to-left.
 		GRAPHEME_IS_VIRTUAL = 1 << 2, // Glyph is not part of source string (added by fit_to_width function, do not affect caret movement).
-		GRAPHEME_IS_SPACE = 1 << 3, // Is whitespace (for justification).
-		GRAPHEME_IS_BREAK_HARD = 1 << 4, // Is line break (mandatory break, e.g "\n")
-		GRAPHEME_IS_BREAK_SOFT = 1 << 5, // Is line break (optional break, e.g space)
-		GRAPHEME_IS_TAB = 1 << 6, // Is tab or vertical tab
-		GRAPHEME_IS_ELONGATION = 1 << 7 // Elongation (e.g kashida), glyph can be duplicated or truncated to fit line to width.
+		GRAPHEME_IS_SPACE = 1 << 3, // Is whitespace (for justification and word breaks).
+		GRAPHEME_IS_BREAK_HARD = 1 << 4, // Is line break (mandatory break, e.g. "\n").
+		GRAPHEME_IS_BREAK_SOFT = 1 << 5, // Is line break (optional break, e.g. space).
+		GRAPHEME_IS_TAB = 1 << 6, // Is tab or vertical tab.
+		GRAPHEME_IS_ELONGATION = 1 << 7, // Elongation (e.g. kashida), glyph can be duplicated or truncated to fit line to width.
+		GRAPHEME_IS_PUNCTUATION = 1 << 8 // Punctuation (can be used as word break, but not line break or justifiction).
 	};
 
 	enum Hinting {
@@ -94,7 +95,14 @@ public:
 		FEATURE_KASHIDA_JUSTIFICATION = 1 << 3,
 		FEATURE_BREAK_ITERATORS = 1 << 4,
 		FEATURE_FONT_SYSTEM = 1 << 5,
-		FEATURE_USE_SUPPORT_DATA = 1 << 6
+		FEATURE_FONT_VARIABLE = 1 << 6,
+		FEATURE_USE_SUPPORT_DATA = 1 << 7
+	};
+
+	enum ContourPointTag {
+		CONTOUR_CURVE_TAG_ON = 0x01,
+		CONTOUR_CURVE_TAG_OFF_CONIC = 0x00,
+		CONTOUR_CURVE_TAG_OFF_CUBIC = 0x02
 	};
 
 	struct Glyph {
@@ -103,7 +111,7 @@ public:
 
 		uint8_t count = 0; // Number of glyphs in the grapheme, set in the first glyph only.
 		uint8_t repeat = 1; // Draw multiple times in the row.
-		uint8_t flags = 0; // Grapheme flags (valid, rtl, virtual), set in the first glyph only.
+		uint16_t flags = 0; // Grapheme flags (valid, rtl, virtual), set in the first glyph only.
 
 		float x_off = 0.f; // Offset from the origin of the glyph on baseline.
 		float y_off = 0.f;
@@ -190,18 +198,6 @@ public:
 		Vector<TextServer::Glyph> glyphs_logical;
 	};
 
-	struct BitmapFontData {
-		int height = 0;
-		int ascent = 0;
-		int charcount = 0;
-		const int *char_rects = nullptr;
-		int kerning_count = 0;
-		const int *kernings = nullptr;
-		int w = 0;
-		int h = 0;
-		const unsigned char *img = nullptr;
-	};
-
 protected:
 	static void _bind_methods();
 
@@ -234,10 +230,21 @@ public:
 	virtual RID create_font_system(const String &p_name, int p_base_size = 16) = 0;
 	virtual RID create_font_resource(const String &p_filename, int p_base_size = 16) = 0;
 	virtual RID create_font_memory(const uint8_t *p_data, size_t p_size, const String &p_type, int p_base_size = 16) = 0;
+	virtual RID create_font_bitmap(float p_height, float p_ascent, int p_base_size = 16) = 0;
+
+	virtual void font_bitmap_add_texture(RID p_font, const Ref<Texture> &p_texture) = 0;
+	virtual void font_bitmap_add_char(RID p_font, char32_t p_char, int p_texture_idx, const Rect2 &p_rect, const Size2 &p_align, float p_advance) = 0;
+	virtual void font_bitmap_add_kerning_pair(RID p_font, char32_t p_A, char32_t p_B, int p_kerning) = 0;
 
 	virtual float font_get_height(RID p_font, int p_size) const = 0;
 	virtual float font_get_ascent(RID p_font, int p_size) const = 0;
 	virtual float font_get_descent(RID p_font, int p_size) const = 0;
+
+	virtual int font_get_spacing_space(RID p_font) const = 0;
+	virtual void font_set_spacing_space(RID p_font, int p_value) = 0;
+
+	virtual int font_get_spacing_glyph(RID p_font) const = 0;
+	virtual void font_set_spacing_glyph(RID p_font, int p_value) = 0;
 
 	virtual float font_get_underline_position(RID p_font, int p_size) const = 0;
 	virtual float font_get_underline_thickness(RID p_font, int p_size) const = 0;
@@ -246,6 +253,10 @@ public:
 	virtual bool font_get_antialiased(RID p_font) const = 0;
 
 	virtual Dictionary font_get_feature_list(RID p_font) const { return Dictionary(); };
+	virtual Dictionary font_get_variation_list(RID p_font) const { return Dictionary(); };
+
+	virtual void font_set_variation(RID p_font, const String &p_name, double p_value){};
+	virtual double font_get_variation(RID p_font, const String &p_name) const { return 0; };
 
 	virtual void font_set_distance_field_hint(RID p_font, bool p_distance_field) = 0;
 	virtual bool font_get_distance_field_hint(RID p_font) const = 0;
@@ -280,6 +291,8 @@ public:
 
 	virtual Vector2 font_draw_glyph(RID p_font, RID p_canvas, int p_size, const Vector2 &p_pos, uint32_t p_index, const Color &p_color = Color(1, 1, 1)) const = 0;
 	virtual Vector2 font_draw_glyph_outline(RID p_font, RID p_canvas, int p_size, int p_outline_size, const Vector2 &p_pos, uint32_t p_index, const Color &p_color = Color(1, 1, 1)) const = 0;
+
+	virtual bool font_get_glyph_contours(RID p_font, int p_size, uint32_t p_index, Vector<Vector3> &r_points, Vector<int32_t> &r_contours, bool &r_orientation) const = 0;
 
 	virtual float font_get_oversampling() const = 0;
 	virtual void font_set_oversampling(float p_oversampling) = 0;
@@ -367,6 +380,8 @@ public:
 	/* GDScript wrappers */
 	RID _create_font_memory(const PackedByteArray &p_data, const String &p_type, int p_base_size = 16);
 
+	Dictionary _font_get_glyph_contours(RID p_font, int p_size, uint32_t p_index) const;
+
 	Array _shaped_text_get_glyphs(RID p_shaped) const;
 	Dictionary _shaped_text_get_carets(RID p_shaped, int p_position) const;
 
@@ -449,5 +464,6 @@ VARIANT_ENUM_CAST(TextServer::LineBreakFlag);
 VARIANT_ENUM_CAST(TextServer::GraphemeFlag);
 VARIANT_ENUM_CAST(TextServer::Hinting);
 VARIANT_ENUM_CAST(TextServer::Feature);
+VARIANT_ENUM_CAST(TextServer::ContourPointTag);
 
 #endif // TEXT_SERVER_H

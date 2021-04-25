@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -97,7 +97,7 @@ void TextLine::_bind_methods() {
 
 void TextLine::_shape() {
 	if (dirty) {
-		if (!tab_stops.empty()) {
+		if (!tab_stops.is_empty()) {
 			TS->shaped_text_tab_align(rid, tab_stops);
 		}
 		if (align == HALIGN_FILL) {
@@ -167,6 +167,7 @@ void TextLine::set_bidi_override(const Vector<Vector2i> &p_override) {
 }
 
 bool TextLine::add_string(const String &p_text, const Ref<Font> &p_fonts, int p_size, const Dictionary &p_opentype_features, const String &p_language) {
+	ERR_FAIL_COND_V(p_fonts.is_null(), false);
 	bool res = TS->shaped_text_add_string(rid, p_text, p_fonts->get_rids(), p_size, p_opentype_features, p_language);
 	spacing_top = p_fonts->get_spacing(Font::SPACING_TOP);
 	spacing_bottom = p_fonts->get_spacing(Font::SPACING_BOTTOM);

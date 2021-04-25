@@ -91,6 +91,7 @@
 			<argument index="0" name="plugin" type="EditorExportPlugin">
 			</argument>
 			<description>
+				Registers a new export plugin. Export plugins are used when the project is being exported. See [EditorExportPlugin] for more information.
 			</description>
 		</method>
 		<method name="add_import_plugin">
@@ -130,14 +131,10 @@
 			</return>
 			<argument index="0" name="name" type="String">
 			</argument>
-			<argument index="1" name="handler" type="Object">
-			</argument>
-			<argument index="2" name="callback" type="String">
-			</argument>
-			<argument index="3" name="ud" type="Variant" default="null">
+			<argument index="1" name="callable" type="Callable">
 			</argument>
 			<description>
-				Adds a custom menu item to [b]Project &gt; Tools[/b] as [code]name[/code] that calls [code]callback[/code] on an instance of [code]handler[/code] with a parameter [code]ud[/code] when user activates it.
+				Adds a custom menu item to [b]Project &gt; Tools[/b] named [code]name[/code]. When clicked, the provided [code]callable[/code] will be called.
 			</description>
 		</method>
 		<method name="add_tool_submenu_item">
@@ -148,7 +145,7 @@
 			<argument index="1" name="submenu" type="Object">
 			</argument>
 			<description>
-				Adds a custom submenu under [b]Project &gt; Tools &gt;[/b] [code]name[/code]. [code]submenu[/code] should be an object of class [PopupMenu]. This submenu should be cleaned up using [code]remove_tool_menu_item(name)[/code].
+				Adds a custom submenu under [b]Project &gt; Tools &gt;[/b] [code]name[/code]. [code]submenu[/code] should be an object of class [PopupMenu]. Use [code]remove_tool_menu_item(name)[/code] on plugin clean up to remove the menu.
 			</description>
 		</method>
 		<method name="add_translation_parser_plugin">
@@ -172,6 +169,8 @@
 			<return type="bool">
 			</return>
 			<description>
+				This method is called when the editor is about to run the project. The plugin can then perform required operations before the project runs.
+				This method must return a boolean. If this method returns [code]false[/code], the project will not run. The run is aborted immediately, so this also prevents all other plugins' [method build] methods from running.
 			</description>
 		</method>
 		<method name="clear" qualifiers="virtual">
@@ -215,7 +214,7 @@
 				[gdscript]
 				func forward_canvas_draw_over_viewport(overlay):
 				    # Draw a circle at cursor position.
-				    overlay.draw_circle(overlay.get_local_mouse_position(), 64)
+				    overlay.draw_circle(overlay.get_local_mouse_position(), 64, Color.white)
 
 				func forward_canvas_gui_input(event):
 				    if event is InputEventMouseMotion:
@@ -562,7 +561,7 @@
 			<argument index="0" name="script" type="Script">
 			</argument>
 			<description>
-				Removes the debugger plugin with given script fromm the Debugger.
+				Removes the debugger plugin with given script from the Debugger.
 			</description>
 		</method>
 		<method name="remove_export_plugin">
@@ -676,6 +675,10 @@
 			</argument>
 			<description>
 				Emitted when user changes the workspace ([b]2D[/b], [b]3D[/b], [b]Script[/b], [b]AssetLib[/b]). Also works with custom screens defined by plugins.
+			</description>
+		</signal>
+		<signal name="project_settings_changed">
+			<description>
 			</description>
 		</signal>
 		<signal name="resource_saved">

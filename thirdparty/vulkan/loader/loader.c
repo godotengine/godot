@@ -253,7 +253,7 @@ void *loader_device_heap_realloc(const struct loader_device *device, void *pMemo
 }
 
 // Environment variables
-#if defined(__linux__) || defined(__APPLE__)
+#if defined(__linux__) || defined(__APPLE__) || defined(__Fuchsia__)
 
 static inline bool IsHighIntegrity() {
     return geteuid() != getuid() || getegid() != getgid();
@@ -277,6 +277,8 @@ static inline char *loader_secure_getenv(const char *name, const struct loader_i
     // This algorithm is derived from glibc code that sets an internal
     // variable (__libc_enable_secure) if the process is running under setuid or setgid.
     return IsHighIntegrity() ? NULL : loader_getenv(name, inst);
+#elif defined(__Fuchsia__)
+    return loader_getenv(name, inst);
 #else
 // Linux
 #if defined(HAVE_SECURE_GETENV) && !defined(USE_UNSAFE_FILE_SEARCH)
@@ -287,13 +289,12 @@ static inline char *loader_secure_getenv(const char *name, const struct loader_i
     out = __secure_getenv(name);
 #else
     out = loader_getenv(name, inst);
+#if !defined(USE_UNSAFE_FILE_SEARCH)
+    loader_log(inst, LOADER_INFO_BIT, 0, "Loader is using non-secure environment variable lookup for %s", name);
 #endif
 #endif
-    if (out == NULL) {
-        loader_log(inst, LOADER_INFO_BIT, 0,
-                   "Loader is running with elevated permissions. Environment variable %s will be ignored.", name);
-    }
     return out;
+#endif
 }
 
 static inline void loader_free_getenv(char *val, const struct loader_instance *inst) {
@@ -355,8 +356,8 @@ static inline char *loader_getenv(const char *name, const struct loader_instance
 static inline char *loader_secure_getenv(const char *name, const struct loader_instance *inst) {
 #if !defined(USE_UNSAFE_FILE_SEARCH)
     if (IsHighIntegrity()) {
-        loader_log(inst, LOADER_INFO_BIT, 0,
-                   "Loader is running with elevated permissions. Environment variable %s will be ignored.", name);
+        loader_log(inst, LOADER_INFO_BIT, 0, "Loader is running with elevated permissions. Environment variable %s will be ignored",
+                   name);
         return NULL;
     }
 #endif
@@ -2317,7 +2318,11 @@ static VkResult loader_scanned_icd_add(const struct loader_instance *inst, struc
 
     // TODO implement smarter opening/closing of libraries. For now this
     // function leaves libraries open and the scanned_icd_clear closes them
+#if defined(__Fuchsia__)
+    handle = loader_platform_open_driver(filename);
+#else
     handle = loader_platform_open_library(filename);
+#endif
     if (NULL == handle) {
         loader_log(inst, VK_DEBUG_REPORT_ERROR_BIT_EXT, 0, loader_platform_open_library_error(filename));
         goto out;
@@ -2647,7 +2652,12 @@ static VkResult loader_get_json(const struct loader_instance *inst, const char *
         res = VK_ERROR_INITIALIZATION_FAILED;
         goto out;
     }
-    fseek(file, 0, SEEK_END);
+    // NOTE: We can't just use fseek(file, 0, SEEK_END) because that isn't guaranteed to be supported on all systems
+    do {
+        // We're just seeking the end of the file, so this buffer is never used
+        char buffer[256];
+        fread(buffer, 1, sizeof(buffer), file);
+    } while (!feof(file));
     len = ftell(file);
     fseek(file, 0, SEEK_SET);
     json_buf = (char *)loader_stack_alloc(len + 1);
@@ -3189,30 +3199,31 @@ static VkResult loaderReadLayerJson(const struct loader_instance *inst, struct l
                        name);
         } else {
             props->num_blacklist_layers = cJSON_GetArraySize(blacklisted_layers);
-
-            // Allocate the blacklist array
-            props->blacklist_layer_names = loader_instance_heap_alloc(
-                inst, sizeof(char[MAX_STRING_SIZE]) * props->num_blacklist_layers, VK_SYSTEM_ALLOCATION_SCOPE_INSTANCE);
-            if (props->blacklist_layer_names == NULL) {
-                result = VK_ERROR_OUT_OF_HOST_MEMORY;
-                goto out;
-            }
-
-            // Copy the blacklisted layers into the array
-            for (i = 0; i < (int)props->num_blacklist_layers; ++i) {
-                cJSON *black_layer = cJSON_GetArrayItem(blacklisted_layers, i);
-                if (black_layer == NULL) {
-                    continue;
-                }
-                temp = cJSON_Print(black_layer);
-                if (temp == NULL) {
+            if (props->num_blacklist_layers > 0) {
+                // Allocate the blacklist array
+                props->blacklist_layer_names = loader_instance_heap_alloc(
+                    inst, sizeof(char[MAX_STRING_SIZE]) * props->num_blacklist_layers, VK_SYSTEM_ALLOCATION_SCOPE_INSTANCE);
+                if (props->blacklist_layer_names == NULL) {
                     result = VK_ERROR_OUT_OF_HOST_MEMORY;
                     goto out;
                 }
-                temp[strlen(temp) - 1] = '\0';
-                strncpy(props->blacklist_layer_names[i], temp + 1, MAX_STRING_SIZE - 1);
-                props->blacklist_layer_names[i][MAX_STRING_SIZE - 1] = '\0';
-                cJSON_Free(temp);
+
+                // Copy the blacklisted layers into the array
+                for (i = 0; i < (int)props->num_blacklist_layers; ++i) {
+                    cJSON *black_layer = cJSON_GetArrayItem(blacklisted_layers, i);
+                    if (black_layer == NULL) {
+                        continue;
+                    }
+                    temp = cJSON_Print(black_layer);
+                    if (temp == NULL) {
+                        result = VK_ERROR_OUT_OF_HOST_MEMORY;
+                        goto out;
+                    }
+                    temp[strlen(temp) - 1] = '\0';
+                    strncpy(props->blacklist_layer_names[i], temp + 1, MAX_STRING_SIZE - 1);
+                    props->blacklist_layer_names[i][MAX_STRING_SIZE - 1] = '\0';
+                    cJSON_Free(temp);
+                }
             }
         }
     }
@@ -3226,28 +3237,29 @@ static VkResult loaderReadLayerJson(const struct loader_instance *inst, struct l
         }
         int count = cJSON_GetArraySize(override_paths);
         props->num_override_paths = count;
+        if (count > 0) {
+            // Allocate buffer for override paths
+            props->override_paths =
+                loader_instance_heap_alloc(inst, sizeof(char[MAX_STRING_SIZE]) * count, VK_SYSTEM_ALLOCATION_SCOPE_INSTANCE);
+            if (NULL == props->override_paths) {
+                result = VK_ERROR_OUT_OF_HOST_MEMORY;
+                goto out;
+            }
 
-        // Allocate buffer for override paths
-        props->override_paths =
-            loader_instance_heap_alloc(inst, sizeof(char[MAX_STRING_SIZE]) * count, VK_SYSTEM_ALLOCATION_SCOPE_INSTANCE);
-        if (NULL == props->override_paths) {
-            result = VK_ERROR_OUT_OF_HOST_MEMORY;
-            goto out;
-        }
-
-        // Copy the override paths into the array
-        for (i = 0; i < count; i++) {
-            cJSON *override_path = cJSON_GetArrayItem(override_paths, i);
-            if (NULL != override_path) {
-                temp = cJSON_Print(override_path);
-                if (NULL == temp) {
-                    result = VK_ERROR_OUT_OF_HOST_MEMORY;
-                    goto out;
+            // Copy the override paths into the array
+            for (i = 0; i < count; i++) {
+                cJSON *override_path = cJSON_GetArrayItem(override_paths, i);
+                if (NULL != override_path) {
+                    temp = cJSON_Print(override_path);
+                    if (NULL == temp) {
+                        result = VK_ERROR_OUT_OF_HOST_MEMORY;
+                        goto out;
+                    }
+                    temp[strlen(temp) - 1] = '\0';
+                    strncpy(props->override_paths[i], temp + 1, MAX_STRING_SIZE - 1);
+                    props->override_paths[i][MAX_STRING_SIZE - 1] = '\0';
+                    cJSON_Free(temp);
                 }
-                temp[strlen(temp) - 1] = '\0';
-                strncpy(props->override_paths[i], temp + 1, MAX_STRING_SIZE - 1);
-                props->override_paths[i][MAX_STRING_SIZE - 1] = '\0';
-                cJSON_Free(temp);
             }
         }
     }
@@ -3953,12 +3965,14 @@ static VkResult ReadDataFilesInSearchPaths(const struct loader_instance *inst, e
     if (xdgdatadirs == NULL) {
         xdgdata_alloc = false;
     }
+#if !defined(__Fuchsia__)
     if (xdgconfdirs == NULL || xdgconfdirs[0] == '\0') {
         xdgconfdirs = FALLBACK_CONFIG_DIRS;
     }
     if (xdgdatadirs == NULL || xdgdatadirs[0] == '\0') {
         xdgdatadirs = FALLBACK_DATA_DIRS;
     }
+#endif
 
     // Only use HOME if XDG_DATA_HOME is not present on the system
     if (NULL == xdgdatahome) {
@@ -4306,7 +4320,6 @@ out:
 static VkResult ReadDataFilesInRegistry(const struct loader_instance *inst, enum loader_data_files_type data_file_type,
                                         bool warn_if_not_present, char *registry_location, struct loader_data_files *out_files) {
     VkResult vk_result = VK_SUCCESS;
-    bool is_icd = (data_file_type == LOADER_DATA_FILE_MANIFEST_ICD);
     char *search_path = NULL;
 
     // These calls look at the PNP/Device section of the registry.
@@ -6044,7 +6057,7 @@ VkResult loader_create_instance_chain(const VkInstanceCreateInfo *pCreateInfo, c
     VkLoaderFeatureFlags feature_flags = 0;
 #if defined(_WIN32)
     IDXGIFactory6* dxgi_factory = NULL;
-    HRESULT hres = fpCreateDXGIFactory1(&IID_IDXGIFactory6, &dxgi_factory);
+    HRESULT hres = fpCreateDXGIFactory1(&IID_IDXGIFactory6, (void **)&dxgi_factory);
     if (hres == S_OK) {
         feature_flags |= VK_LOADER_FEATURE_PHYSICAL_DEVICE_SORTING;
         dxgi_factory->lpVtbl->Release(dxgi_factory);
@@ -7073,7 +7086,7 @@ VkResult ReadSortedPhysicalDevices(struct loader_instance *inst, struct LoaderSo
     uint32_t sorted_alloc = 0;
     struct loader_icd_term *icd_term = NULL;
     IDXGIFactory6* dxgi_factory = NULL;
-    HRESULT hres = fpCreateDXGIFactory1(&IID_IDXGIFactory6, &dxgi_factory);
+    HRESULT hres = fpCreateDXGIFactory1(&IID_IDXGIFactory6, (void **)&dxgi_factory);
     if (hres != S_OK) {
         loader_log(inst, VK_DEBUG_REPORT_INFORMATION_BIT_EXT, 0, "Failed to create DXGI factory 6. Physical devices will not be sorted");
     }
@@ -7090,7 +7103,7 @@ VkResult ReadSortedPhysicalDevices(struct loader_instance *inst, struct LoaderSo
         *sorted_count = 0;
         for (uint32_t i = 0; ; ++i) {
             IDXGIAdapter1* adapter;
-            hres = dxgi_factory->lpVtbl->EnumAdapterByGpuPreference(dxgi_factory, i, DXGI_GPU_PREFERENCE_UNSPECIFIED, &IID_IDXGIAdapter1, &adapter);
+            hres = dxgi_factory->lpVtbl->EnumAdapterByGpuPreference(dxgi_factory, i, DXGI_GPU_PREFERENCE_UNSPECIFIED, &IID_IDXGIAdapter1, (void **)&adapter);
             if (hres == DXGI_ERROR_NOT_FOUND) {
                 break; // No more adapters
             }

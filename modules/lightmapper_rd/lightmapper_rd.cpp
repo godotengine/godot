@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -40,8 +40,8 @@
 //#define DEBUG_TEXTURES
 
 void LightmapperRD::add_mesh(const MeshData &p_mesh) {
-	ERR_FAIL_COND(p_mesh.albedo_on_uv2.is_null() || p_mesh.albedo_on_uv2->empty());
-	ERR_FAIL_COND(p_mesh.emission_on_uv2.is_null() || p_mesh.emission_on_uv2->empty());
+	ERR_FAIL_COND(p_mesh.albedo_on_uv2.is_null() || p_mesh.albedo_on_uv2->is_empty());
+	ERR_FAIL_COND(p_mesh.emission_on_uv2.is_null() || p_mesh.emission_on_uv2->is_empty());
 	ERR_FAIL_COND(p_mesh.albedo_on_uv2->get_width() != p_mesh.emission_on_uv2->get_width());
 	ERR_FAIL_COND(p_mesh.albedo_on_uv2->get_height() != p_mesh.emission_on_uv2->get_height());
 	ERR_FAIL_COND(p_mesh.points.size() == 0);
@@ -93,8 +93,8 @@ void LightmapperRD::add_spot_light(bool p_static, const Vector3 &p_position, con
 	l.direction[2] = p_direction.z;
 	l.range = p_range;
 	l.attenuation = p_attenuation;
-	l.spot_angle = Math::deg2rad(p_spot_angle);
-	l.spot_attenuation = p_spot_attenuation;
+	l.cos_spot_angle = Math::cos(Math::deg2rad(p_spot_angle));
+	l.inv_spot_attenuation = 1.0f / p_spot_attenuation;
 	l.color[0] = p_color.r;
 	l.color[1] = p_color.g;
 	l.color[2] = p_color.b;
@@ -1225,23 +1225,23 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 
 		switch (p_quality) {
 			case BAKE_QUALITY_LOW: {
-				push_constant.ray_count = GLOBAL_GET("rendering/gpu_lightmapper/quality/low_quality_ray_count");
+				push_constant.ray_count = GLOBAL_GET("rendering/lightmapping/bake_quality/low_quality_ray_count");
 			} break;
 			case BAKE_QUALITY_MEDIUM: {
-				push_constant.ray_count = GLOBAL_GET("rendering/gpu_lightmapper/quality/medium_quality_ray_count");
+				push_constant.ray_count = GLOBAL_GET("rendering/lightmapping/bake_quality/medium_quality_ray_count");
 			} break;
 			case BAKE_QUALITY_HIGH: {
-				push_constant.ray_count = GLOBAL_GET("rendering/gpu_lightmapper/quality/high_quality_ray_count");
+				push_constant.ray_count = GLOBAL_GET("rendering/lightmapping/bake_quality/high_quality_ray_count");
 			} break;
 			case BAKE_QUALITY_ULTRA: {
-				push_constant.ray_count = GLOBAL_GET("rendering/gpu_lightmapper/quality/ultra_quality_ray_count");
+				push_constant.ray_count = GLOBAL_GET("rendering/lightmapping/bake_quality/ultra_quality_ray_count");
 			} break;
 		}
 
 		push_constant.ray_count = CLAMP(push_constant.ray_count, 16, 8192);
 
-		int max_region_size = nearest_power_of_2_templated(int(GLOBAL_GET("rendering/gpu_lightmapper/performance/region_size")));
-		int max_rays = GLOBAL_GET("rendering/gpu_lightmapper/performance/max_rays_per_pass");
+		int max_region_size = nearest_power_of_2_templated(int(GLOBAL_GET("rendering/lightmapping/bake_performance/region_size")));
+		int max_rays = GLOBAL_GET("rendering/lightmapping/bake_performance/max_rays_per_pass");
 
 		int x_regions = (atlas_size.width - 1) / max_region_size + 1;
 		int y_regions = (atlas_size.height - 1) / max_region_size + 1;
@@ -1347,23 +1347,23 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 
 		switch (p_quality) {
 			case BAKE_QUALITY_LOW: {
-				push_constant.ray_count = GLOBAL_GET("rendering/gpu_lightmapper/quality/low_quality_probe_ray_count");
+				push_constant.ray_count = GLOBAL_GET("rendering/lightmapping/bake_quality/low_quality_probe_ray_count");
 			} break;
 			case BAKE_QUALITY_MEDIUM: {
-				push_constant.ray_count = GLOBAL_GET("rendering/gpu_lightmapper/quality/medium_quality_probe_ray_count");
+				push_constant.ray_count = GLOBAL_GET("rendering/lightmapping/bake_quality/medium_quality_probe_ray_count");
 			} break;
 			case BAKE_QUALITY_HIGH: {
-				push_constant.ray_count = GLOBAL_GET("rendering/gpu_lightmapper/quality/high_quality_probe_ray_count");
+				push_constant.ray_count = GLOBAL_GET("rendering/lightmapping/bake_quality/high_quality_probe_ray_count");
 			} break;
 			case BAKE_QUALITY_ULTRA: {
-				push_constant.ray_count = GLOBAL_GET("rendering/gpu_lightmapper/quality/ultra_quality_probe_ray_count");
+				push_constant.ray_count = GLOBAL_GET("rendering/lightmapping/bake_quality/ultra_quality_probe_ray_count");
 			} break;
 		}
 
 		push_constant.atlas_size[0] = probe_positions.size();
 		push_constant.ray_count = CLAMP(push_constant.ray_count, 16, 8192);
 
-		int max_rays = GLOBAL_GET("rendering/gpu_lightmapper/performance/max_rays_per_probe_pass");
+		int max_rays = GLOBAL_GET("rendering/lightmapping/bake_performance/max_rays_per_probe_pass");
 		int ray_iterations = (push_constant.ray_count - 1) / max_rays + 1;
 
 		for (int i = 0; i < ray_iterations; i++) {
@@ -1436,7 +1436,7 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 							dst[j + 3] = src[j + 3];
 						}
 					}
-					rd->texture_update(light_accum_tex, i, ds, true);
+					rd->texture_update(light_accum_tex, i, ds);
 				}
 			}
 		}
@@ -1537,7 +1537,7 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 	{
 		//pre copy
 		for (int i = 0; i < atlas_slices * (p_bake_sh ? 4 : 1); i++) {
-			rd->texture_copy(light_accum_tex, light_accum_tex2, Vector3(), Vector3(), Vector3(atlas_size.width, atlas_size.height, 1), 0, 0, i, i, true);
+			rd->texture_copy(light_accum_tex, light_accum_tex2, Vector3(), Vector3(), Vector3(atlas_size.width, atlas_size.height, 1), 0, 0, i, i);
 		}
 
 		Vector<RID> framebuffers;

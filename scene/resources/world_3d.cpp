@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,6 +35,7 @@
 #include "scene/3d/camera_3d.h"
 #include "scene/3d/visibility_notifier_3d.h"
 #include "scene/scene_string_names.h"
+#include "servers/navigation_server_3d.h"
 
 struct SpatialIndexer {
 	Octree<VisibilityNotifier3D> octree;
@@ -97,7 +98,7 @@ struct SpatialIndexer {
 			}
 		}
 
-		while (!removed.empty()) {
+		while (!removed.is_empty()) {
 			p_notifier->_exit_camera(removed.front()->get());
 			removed.pop_front();
 		}
@@ -125,7 +126,7 @@ struct SpatialIndexer {
 			removed.push_back(E->key());
 		}
 
-		while (!removed.empty()) {
+		while (!removed.is_empty()) {
 			removed.front()->get()->_exit_camera(p_camera);
 			removed.pop_front();
 		}
@@ -175,12 +176,12 @@ struct SpatialIndexer {
 				}
 			}
 
-			while (!added.empty()) {
+			while (!added.is_empty()) {
 				added.front()->get()->_enter_camera(E->key());
 				added.pop_front();
 			}
 
-			while (!removed.empty()) {
+			while (!removed.is_empty()) {
 				E->get().notifiers.erase(removed.front()->get());
 				removed.front()->get()->_exit_camera(E->key());
 				removed.pop_front();
@@ -241,6 +242,10 @@ void World3D::_update(uint64_t p_frame) {
 
 RID World3D::get_space() const {
 	return space;
+}
+
+RID World3D::get_navigation_map() const {
+	return navigation_map;
 }
 
 RID World3D::get_scenario() const {
@@ -310,6 +315,7 @@ void World3D::get_camera_list(List<Camera3D *> *r_cameras) {
 
 void World3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_space"), &World3D::get_space);
+	ClassDB::bind_method(D_METHOD("get_navigation_map"), &World3D::get_navigation_map);
 	ClassDB::bind_method(D_METHOD("get_scenario"), &World3D::get_scenario);
 	ClassDB::bind_method(D_METHOD("set_environment", "env"), &World3D::set_environment);
 	ClassDB::bind_method(D_METHOD("get_environment"), &World3D::get_environment);
@@ -322,6 +328,7 @@ void World3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "fallback_environment", PROPERTY_HINT_RESOURCE_TYPE, "Environment"), "set_fallback_environment", "get_fallback_environment");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "camera_effects", PROPERTY_HINT_RESOURCE_TYPE, "CameraEffects"), "set_camera_effects", "get_camera_effects");
 	ADD_PROPERTY(PropertyInfo(Variant::RID, "space", PROPERTY_HINT_NONE, "", 0), "", "get_space");
+	ADD_PROPERTY(PropertyInfo(Variant::RID, "navigation_map", PROPERTY_HINT_NONE, "", 0), "", "get_navigation_map");
 	ADD_PROPERTY(PropertyInfo(Variant::RID, "scenario", PROPERTY_HINT_NONE, "", 0), "", "get_scenario");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "direct_space_state", PROPERTY_HINT_RESOURCE_TYPE, "PhysicsDirectSpaceState3D", 0), "", "get_direct_space_state");
 }
@@ -338,6 +345,11 @@ World3D::World3D() {
 	PhysicsServer3D::get_singleton()->area_set_param(space, PhysicsServer3D::AREA_PARAM_ANGULAR_DAMP, GLOBAL_DEF("physics/3d/default_angular_damp", 0.1));
 	ProjectSettings::get_singleton()->set_custom_property_info("physics/3d/default_angular_damp", PropertyInfo(Variant::FLOAT, "physics/3d/default_angular_damp", PROPERTY_HINT_RANGE, "-1,100,0.001,or_greater"));
 
+	navigation_map = NavigationServer3D::get_singleton()->map_create();
+	NavigationServer3D::get_singleton()->map_set_active(navigation_map, true);
+	NavigationServer3D::get_singleton()->map_set_cell_size(navigation_map, GLOBAL_DEF("navigation/3d/default_cell_size", 0.3));
+	NavigationServer3D::get_singleton()->map_set_edge_connection_margin(navigation_map, GLOBAL_DEF("navigation/3d/default_edge_connection_margin", 0.3));
+
 #ifdef _3D_DISABLED
 	indexer = nullptr;
 #else
@@ -348,6 +360,7 @@ World3D::World3D() {
 World3D::~World3D() {
 	PhysicsServer3D::get_singleton()->free(space);
 	RenderingServer::get_singleton()->free(scenario);
+	NavigationServer3D::get_singleton()->free(navigation_map);
 
 #ifndef _3D_DISABLED
 	memdelete(indexer);

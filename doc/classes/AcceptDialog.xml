@@ -23,7 +23,7 @@
 				If [code]true[/code], [code]right[/code] will place the button to the right of any sibling buttons.
 			</description>
 		</method>
-		<method name="add_cancel">
+		<method name="add_cancel_button">
 			<return type="Button">
 			</return>
 			<argument index="0" name="name" type="String">
@@ -39,7 +39,7 @@
 				Returns the label used for built-in text.
 			</description>
 		</method>
-		<method name="get_ok">
+		<method name="get_ok_button">
 			<return type="Button">
 			</return>
 			<description>
@@ -76,7 +76,7 @@
 	<signals>
 		<signal name="cancelled">
 			<description>
-				Emitted when the dialog is closed or the button created with [method add_cancel] is pressed.
+				Emitted when the dialog is closed or the button created with [method add_cancel_button] is pressed.
 			</description>
 		</signal>
 		<signal name="confirmed">

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -46,10 +46,12 @@ class Node : public Object {
 	OBJ_CATEGORY("Nodes");
 
 public:
-	enum PauseMode {
-		PAUSE_MODE_INHERIT,
-		PAUSE_MODE_STOP,
-		PAUSE_MODE_PROCESS
+	enum ProcessMode {
+		PROCESS_MODE_INHERIT, // same as parent node
+		PROCESS_MODE_PAUSABLE, // process only if not paused
+		PROCESS_MODE_WHEN_PAUSED, // process only if paused
+		PROCESS_MODE_ALWAYS, // process always
+		PROCESS_MODE_DISABLED, // never process
 	};
 
 	enum DuplicateFlags {
@@ -80,7 +82,7 @@ private:
 
 	struct NetData {
 		StringName name;
-		MultiplayerAPI::RPCMode mode;
+		MultiplayerAPI::RPCMode mode = MultiplayerAPI::RPCMode::RPC_MODE_DISABLED;
 	};
 
 	struct Data {
@@ -88,56 +90,56 @@ private:
 		Ref<SceneState> instance_state;
 		Ref<SceneState> inherited_state;
 
-		HashMap<NodePath, int> editable_instances;
-
-		Node *parent;
-		Node *owner;
-		Vector<Node *> children; // list of children
-		int pos;
-		int depth;
-		int blocked; // safeguard that throws an error when attempting to modify the tree in a harmful way while being traversed.
+		Node *parent = nullptr;
+		Node *owner = nullptr;
+		Vector<Node *> children;
+		int pos = -1;
+		int depth = -1;
+		int blocked = 0; // Safeguard that throws an error when attempting to modify the tree in a harmful way while being traversed.
 		StringName name;
-		SceneTree *tree;
-		bool inside_tree;
-		bool ready_notified; //this is a small hack, so if a node is added during _ready() to the tree, it correctly gets the _ready() notification
-		bool ready_first;
+		SceneTree *tree = nullptr;
+		bool inside_tree = false;
+		bool ready_notified = false; // This is a small hack, so if a node is added during _ready() to the tree, it correctly gets the _ready() notification.
+		bool ready_first = true;
 #ifdef TOOLS_ENABLED
-		NodePath import_path; //path used when imported, used by scene editors to keep tracking
+		NodePath import_path; // Path used when imported, used by scene editors to keep tracking.
 #endif
+		String editor_description;
 
-		Viewport *viewport;
+		Viewport *viewport = nullptr;
 
 		Map<StringName, GroupData> grouped;
-		List<Node *>::Element *OW; // owned element
+		List<Node *>::Element *OW = nullptr; // Owned element.
 		List<Node *> owned;
 
-		PauseMode pause_mode;
-		Node *pause_owner;
+		ProcessMode process_mode = PROCESS_MODE_INHERIT;
+		Node *process_owner = nullptr;
 
-		int network_master;
+		int network_master = 1; // Server by default.
 		Vector<NetData> rpc_methods;
 		Vector<NetData> rpc_properties;
 
-		// variables used to properly sort the node when processing, ignored otherwise
-		//should move all the stuff below to bits
-		bool physics_process;
-		bool idle_process;
-		int process_priority;
+		// Variables used to properly sort the node when processing, ignored otherwise.
+		// TODO: Should move all the stuff below to bits.
+		bool physics_process = false;
+		bool process = false;
+		int process_priority = 0;
 
-		bool physics_process_internal;
-		bool idle_process_internal;
+		bool physics_process_internal = false;
+		bool process_internal = false;
 
-		bool input;
-		bool unhandled_input;
-		bool unhandled_key_input;
+		bool input = false;
+		bool unhandled_input = false;
+		bool unhandled_key_input = false;
 
-		bool parent_owned;
-		bool in_constructor;
-		bool use_placeholder;
+		bool parent_owned = false;
+		bool in_constructor = true;
+		bool use_placeholder = false;
 
-		bool display_folded;
+		bool display_folded = false;
+		bool editable_instance = false;
 
-		mutable NodePath *path_cache;
+		mutable NodePath *path_cache = nullptr;
 
 	} data;
 
@@ -167,11 +169,10 @@ private:
 	void _propagate_after_exit_tree();
 	void _propagate_validate_owner();
 	void _print_stray_nodes();
-	void _propagate_pause_owner(Node *p_owner);
+	void _propagate_process_owner(Node *p_owner, int p_notification);
 	Array _get_node_and_resource(const NodePath &p_path);
 
 	void _duplicate_signals(const Node *p_original, Node *p_copy) const;
-	void _duplicate_and_reown(Node *p_new_parent, const Map<Node *, Node *> &p_reown_map) const;
 	Node *_duplicate(int p_flags, Map<const Node *, Node *> *r_duplimap = nullptr) const;
 
 	TypedArray<Node> _get_children() const;
@@ -185,12 +186,9 @@ private:
 	friend class SceneTree;
 
 	void _set_tree(SceneTree *p_tree);
+	void _propagate_pause_notification(bool p_enable);
 
-#ifdef TOOLS_ENABLED
-	friend class SceneTreeEditor;
-#endif
-	static String invalid_character;
-	static bool _validate_node_name(String &p_name);
+	_FORCE_INLINE_ bool _can_process(bool p_paused) const;
 
 protected:
 	void _block() { data.blocked++; }
@@ -298,7 +296,7 @@ public:
 
 	struct GroupInfo {
 		StringName name;
-		bool persistent;
+		bool persistent = false;
 	};
 
 	void get_groups(List<GroupInfo> *p_groups) const;
@@ -325,8 +323,7 @@ public:
 
 	void set_editable_instance(Node *p_node, bool p_editable);
 	bool is_editable_instance(const Node *p_node) const;
-	void set_editable_instances(const HashMap<NodePath, int> &p_editable_instances);
-	HashMap<NodePath, int> get_editable_instances() const;
+	Node *get_deepest_editable_node(Node *p_start_node) const;
 
 	/* NOTIFICATIONS */
 
@@ -339,14 +336,14 @@ public:
 	float get_physics_process_delta_time() const;
 	bool is_physics_processing() const;
 
-	void set_process(bool p_idle_process);
+	void set_process(bool p_process);
 	float get_process_delta_time() const;
 	bool is_processing() const;
 
 	void set_physics_process_internal(bool p_process_internal);
 	bool is_physics_processing_internal() const;
 
-	void set_process_internal(bool p_idle_process_internal);
+	void set_process_internal(bool p_process_internal);
 	bool is_processing_internal() const;
 
 	void set_process_priority(int p_priority);
@@ -362,9 +359,11 @@ public:
 	bool is_processing_unhandled_key_input() const;
 
 	Node *duplicate(int p_flags = DUPLICATE_GROUPS | DUPLICATE_SIGNALS | DUPLICATE_SCRIPTS) const;
-	Node *duplicate_and_reown(const Map<Node *, Node *> &p_reown_map) const;
 #ifdef TOOLS_ENABLED
 	Node *duplicate_from_editor(Map<const Node *, Node *> &r_duplimap) const;
+	Node *duplicate_from_editor(Map<const Node *, Node *> &r_duplimap, const Map<RES, RES> &p_resource_remap) const;
+	void remap_node_resources(Node *p_node, const Map<RES, RES> &p_resource_remap) const;
+	void remap_nested_resources(RES p_resource, const Map<RES, RES> &p_resource_remap) const;
 #endif
 
 	// used by editors, to save what has changed only
@@ -381,8 +380,8 @@ public:
 
 	void replace_by(Node *p_node, bool p_keep_data = false);
 
-	void set_pause_mode(PauseMode p_mode);
-	PauseMode get_pause_mode() const;
+	void set_process_mode(ProcessMode p_mode);
+	ProcessMode get_process_mode() const;
 	bool can_process() const;
 	bool can_process_notification(int p_what) const;
 
@@ -413,9 +412,10 @@ public:
 
 	_FORCE_INLINE_ Viewport *get_viewport() const { return data.viewport; }
 
-	virtual String get_configuration_warning() const;
+	virtual TypedArray<String> get_configuration_warnings() const;
+	String get_configuration_warnings_as_string() const;
 
-	void update_configuration_warning();
+	void update_configuration_warnings();
 
 	void set_display_folded(bool p_folded);
 	bool is_displayed_folded() const;

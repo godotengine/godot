@@ -534,9 +534,7 @@ hb_insert_dotted_circle (hb_buffer_t *buffer, hb_font_t *font)
   hb_glyph_info_t info = dottedcircle;
   info.cluster = buffer->cur().cluster;
   info.mask = buffer->cur().mask;
-  buffer->output_info (info);
-  while (buffer->idx < buffer->len && buffer->successful)
-    buffer->next_glyph ();
+  (void) buffer->output_info (info);
   buffer->swap_buffers ();
 }
 
@@ -896,8 +894,11 @@ hb_ot_substitute_post (const hb_ot_shape_context_t *c)
     hb_aat_layout_remove_deleted_glyphs (c->buffer);
 #endif
 
-  if (c->plan->shaper->postprocess_glyphs)
+  if (c->plan->shaper->postprocess_glyphs &&
+    c->buffer->message(c->font, "start postprocess-glyphs")) {
     c->plan->shaper->postprocess_glyphs (c->plan, c->buffer, c->font);
+    (void) c->buffer->message(c->font, "end postprocess-glyphs");
+  }
 }
 
 
@@ -1120,8 +1121,11 @@ hb_ot_shape_internal (hb_ot_shape_context_t *c)
 
   hb_ensure_native_direction (c->buffer);
 
-  if (c->plan->shaper->preprocess_text)
+  if (c->plan->shaper->preprocess_text &&
+    c->buffer->message(c->font, "start preprocess-text")) {
     c->plan->shaper->preprocess_text (c->plan, c->buffer, c->font);
+    (void) c->buffer->message(c->font, "end preprocess-text");
+  }
 
   hb_ot_substitute_pre (c);
   hb_ot_position (c);
@@ -1155,6 +1159,12 @@ _hb_ot_shape (hb_shape_plan_t    *shape_plan,
 
 /**
  * hb_ot_shape_plan_collect_lookups:
+ * @shape_plan: #hb_shape_plan_t to query
+ * @table_tag: GSUB or GPOS
+ * @lookup_indexes: (out): The #hb_set_t set of lookups returned
+ *
+ * Computes the complete set of GSUB or GPOS lookups that are applicable
+ * under a given @shape_plan. 
  *
  * Since: 0.9.7
  **/
@@ -1189,6 +1199,15 @@ add_char (hb_font_t          *font,
 
 /**
  * hb_ot_shape_glyphs_closure:
+ * @font: #hb_font_t to work upon
+ * @buffer: The input buffer to compute from
+ * @features: (array length=num_features): The features enabled on the buffer
+ * @num_features: The number of features enabled on the buffer
+ * @glyphs: (out): The #hb_set_t set of glyphs comprising the transitive closure of the query
+ *
+ * Computes the transitive closure of glyphs needed for a specified
+ * input buffer under the given font and feature list. The closure is
+ * computed as a set, not as a list.
  *
  * Since: 0.9.2
  **/

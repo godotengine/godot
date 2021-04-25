@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -978,7 +978,7 @@ Expression::ENode *Expression::_parse_expression() {
 		}
 	}
 
-	/* Reduce the set set of expressions and place them in an operator tree, respecting precedence */
+	/* Reduce the set of expressions and place them in an operator tree, respecting precedence */
 
 	while (expression.size() > 1) {
 		int next_op = -1;

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -110,16 +110,13 @@ TextEdit *SyntaxHighlighter::get_text_edit() {
 }
 
 void SyntaxHighlighter::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("get_line_syntax_highlighting", "p_line"), &SyntaxHighlighter::get_line_syntax_highlighting);
+	ClassDB::bind_method(D_METHOD("get_line_syntax_highlighting", "line"), &SyntaxHighlighter::get_line_syntax_highlighting);
 	ClassDB::bind_method(D_METHOD("update_cache"), &SyntaxHighlighter::update_cache);
 	ClassDB::bind_method(D_METHOD("clear_highlighting_cache"), &SyntaxHighlighter::clear_highlighting_cache);
 	ClassDB::bind_method(D_METHOD("get_text_edit"), &SyntaxHighlighter::get_text_edit);
 
-	ClassDB::bind_method(D_METHOD("_get_line_syntax_highlighting", "p_line"), &SyntaxHighlighter::_get_line_syntax_highlighting);
-	ClassDB::bind_method(D_METHOD("_update_cache"), &SyntaxHighlighter::_update_cache);
-	ClassDB::bind_method(D_METHOD("_clear_highlighting_cache"), &SyntaxHighlighter::_clear_highlighting_cache);
-
-	BIND_VMETHOD(MethodInfo(Variant::DICTIONARY, "_get_line_syntax_highlighting", PropertyInfo(Variant::INT, "p_line")));
+	BIND_VMETHOD(MethodInfo(Variant::DICTIONARY, "_get_line_syntax_highlighting", PropertyInfo(Variant::INT, "line")));
+	BIND_VMETHOD(MethodInfo("_clear_highlighting_cache"));
 	BIND_VMETHOD(MethodInfo("_update_cache"));
 }
 
@@ -552,7 +549,7 @@ Dictionary CodeHighlighter::get_color_regions() const {
 	Dictionary r_color_regions;
 	for (int i = 0; i < color_regions.size(); i++) {
 		ColorRegion region = color_regions[i];
-		r_color_regions[region.start_key + (region.end_key.empty() ? "" : " " + region.end_key)] = region.color;
+		r_color_regions[region.start_key + (region.end_key.is_empty() ? "" : " " + region.end_key)] = region.color;
 	}
 	return r_color_regions;
 }
@@ -576,11 +573,11 @@ void CodeHighlighter::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("clear_member_keyword_colors"), &CodeHighlighter::clear_member_keyword_colors);
 	ClassDB::bind_method(D_METHOD("get_member_keyword_colors"), &CodeHighlighter::get_member_keyword_colors);
 
-	ClassDB::bind_method(D_METHOD("add_color_region", "p_start_key", "p_end_key", "p_color", "p_line_only"), &CodeHighlighter::add_color_region, DEFVAL(false));
-	ClassDB::bind_method(D_METHOD("remove_color_region", "p_start_key"), &CodeHighlighter::remove_color_region);
-	ClassDB::bind_method(D_METHOD("has_color_region", "p_start_key"), &CodeHighlighter::has_color_region);
+	ClassDB::bind_method(D_METHOD("add_color_region", "start_key", "end_key", "color", "line_only"), &CodeHighlighter::add_color_region, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("remove_color_region", "start_key"), &CodeHighlighter::remove_color_region);
+	ClassDB::bind_method(D_METHOD("has_color_region", "start_key"), &CodeHighlighter::has_color_region);
 
-	ClassDB::bind_method(D_METHOD("set_color_regions", "p_color_regions"), &CodeHighlighter::set_color_regions);
+	ClassDB::bind_method(D_METHOD("set_color_regions", "color_regions"), &CodeHighlighter::set_color_regions);
 	ClassDB::bind_method(D_METHOD("clear_color_regions"), &CodeHighlighter::clear_color_regions);
 	ClassDB::bind_method(D_METHOD("get_color_regions"), &CodeHighlighter::get_color_regions);
 

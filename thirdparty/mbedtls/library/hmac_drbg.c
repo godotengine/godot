@@ -83,9 +83,7 @@ void mbedtls_hmac_drbg_init( mbedtls_hmac_drbg_context *ctx )
 {
     memset( ctx, 0, sizeof( mbedtls_hmac_drbg_context ) );
 
-#if defined(MBEDTLS_THREADING_C)
-    mbedtls_mutex_init( &ctx->mutex );
-#endif
+    ctx->reseed_interval = MBEDTLS_HMAC_DRBG_RESEED_INTERVAL;
 }
 
 /*
@@ -156,6 +154,10 @@ int mbedtls_hmac_drbg_seed_buf( mbedtls_hmac_drbg_context *ctx,
 
     if( ( ret = mbedtls_md_setup( &ctx->md_ctx, md_info, 1 ) ) != 0 )
         return( ret );
+
+#if defined(MBEDTLS_THREADING_C)
+    mbedtls_mutex_init( &ctx->mutex );
+#endif
 
     /*
      * Set initial working state.
@@ -282,6 +284,11 @@ int mbedtls_hmac_drbg_seed( mbedtls_hmac_drbg_context *ctx,
     if( ( ret = mbedtls_md_setup( &ctx->md_ctx, md_info, 1 ) ) != 0 )
         return( ret );
 
+    /* The mutex is initialized iff the md context is set up. */
+#if defined(MBEDTLS_THREADING_C)
+    mbedtls_mutex_init( &ctx->mutex );
+#endif
+
     md_size = mbedtls_md_get_size( md_info );
 
     /*
@@ -295,8 +302,6 @@ int mbedtls_hmac_drbg_seed( mbedtls_hmac_drbg_context *ctx,
 
     ctx->f_entropy = f_entropy;
     ctx->p_entropy = p_entropy;
-
-    ctx->reseed_interval = MBEDTLS_HMAC_DRBG_RESEED_INTERVAL;
 
     if( ctx->entropy_len == 0 )
     {
@@ -442,7 +447,8 @@ int mbedtls_hmac_drbg_random( void *p_rng, unsigned char *output, size_t out_len
 }
 
 /*
- * Free an HMAC_DRBG context
+ *  This function resets HMAC_DRBG context to the state immediately
+ *  after initial call of mbedtls_hmac_drbg_init().
  */
 void mbedtls_hmac_drbg_free( mbedtls_hmac_drbg_context *ctx )
 {
@@ -450,10 +456,13 @@ void mbedtls_hmac_drbg_free( mbedtls_hmac_drbg_context *ctx )
         return;
 
 #if defined(MBEDTLS_THREADING_C)
-    mbedtls_mutex_free( &ctx->mutex );
+    /* The mutex is initialized iff the md context is set up. */
+    if( ctx->md_ctx.md_info != NULL )
+        mbedtls_mutex_free( &ctx->mutex );
 #endif
     mbedtls_md_free( &ctx->md_ctx );
     mbedtls_platform_zeroize( ctx, sizeof( mbedtls_hmac_drbg_context ) );
+    ctx->reseed_interval = MBEDTLS_HMAC_DRBG_RESEED_INTERVAL;
 }
 
 #if defined(MBEDTLS_FS_IO)

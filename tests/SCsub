@@ -17,6 +17,11 @@ if env["module_gdnative_enabled"]:
 if env_tests["platform"] == "windows":
     env_tests.Append(CPPDEFINES=[("DOCTEST_THREAD_LOCAL", "")])
 
+# Increase number of addressable sections in object files
+# due to doctest's heavy use of templates and macros.
+if env_tests.msvc:
+    env_tests.Append(CCFLAGS=["/bigobj"])
+
 env_tests.add_source_files(env.tests_sources, "*.cpp")
 
 lib = env_tests.add_library("tests", env.tests_sources)

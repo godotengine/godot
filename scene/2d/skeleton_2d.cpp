@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -100,7 +100,7 @@ void Bone2D::set_rest(const Transform2D &p_rest) {
 		skeleton->_make_bone_setup_dirty();
 	}
 
-	update_configuration_warning();
+	update_configuration_warnings();
 }
 
 Transform2D Bone2D::get_rest() const {
@@ -119,11 +119,11 @@ void Bone2D::apply_rest() {
 	set_transform(rest);
 }
 
-void Bone2D::set_default_length(float p_length) {
+void Bone2D::set_default_length(real_t p_length) {
 	default_length = p_length;
 }
 
-float Bone2D::get_default_length() const {
+real_t Bone2D::get_default_length() const {
 	return default_length;
 }
 
@@ -133,34 +133,24 @@ int Bone2D::get_index_in_skeleton() const {
 	return skeleton_index;
 }
 
-String Bone2D::get_configuration_warning() const {
-	String warning = Node2D::get_configuration_warning();
+TypedArray<String> Bone2D::get_configuration_warnings() const {
+	TypedArray<String> warnings = Node::get_configuration_warnings();
 	if (!skeleton) {
-		if (!warning.empty()) {
-			warning += "\n\n";
-		}
 		if (parent_bone) {
-			warning += TTR("This Bone2D chain should end at a Skeleton2D node.");
+			warnings.push_back(TTR("This Bone2D chain should end at a Skeleton2D node."));
 		} else {
-			warning += TTR("A Bone2D only works with a Skeleton2D or another Bone2D as parent node.");
+			warnings.push_back(TTR("A Bone2D only works with a Skeleton2D or another Bone2D as parent node."));
 		}
 	}
 
 	if (rest == Transform2D(0, 0, 0, 0, 0, 0)) {
-		if (!warning.empty()) {
-			warning += "\n\n";
-		}
-		warning += TTR("This bone lacks a proper REST pose. Go to the Skeleton2D node and set one.");
+		warnings.push_back(TTR("This bone lacks a proper REST pose. Go to the Skeleton2D node and set one."));
 	}
 
-	return warning;
+	return warnings;
 }
 
 Bone2D::Bone2D() {
-	skeleton = nullptr;
-	parent_bone = nullptr;
-	skeleton_index = -1;
-	default_length = 16;
 	set_notify_local_transform(true);
 	//this is a clever hack so the bone knows no rest has been set yet, allowing to show an error.
 	for (int i = 0; i < 3; i++) {
@@ -186,9 +176,9 @@ void Skeleton2D::_update_bone_setup() {
 	}
 
 	bone_setup_dirty = false;
-	RS::get_singleton()->skeleton_allocate(skeleton, bones.size(), true);
+	RS::get_singleton()->skeleton_allocate_data(skeleton, bones.size(), true);
 
-	bones.sort(); //sorty so they are always in the same order/index
+	bones.sort(); //sorting so that they are always in the same order/index
 
 	for (int i = 0; i < bones.size(); i++) {
 		bones.write[i].rest_inverse = bones[i].bone->get_skeleton_rest().affine_inverse(); //bind pose
@@ -293,9 +283,6 @@ void Skeleton2D::_bind_methods() {
 }
 
 Skeleton2D::Skeleton2D() {
-	bone_setup_dirty = true;
-	transform_dirty = true;
-
 	skeleton = RS::get_singleton()->skeleton_create();
 	set_notify_transform(true);
 }

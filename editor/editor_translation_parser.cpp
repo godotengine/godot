@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -38,8 +38,9 @@
 EditorTranslationParser *EditorTranslationParser::singleton = nullptr;
 
 Error EditorTranslationParserPlugin::parse_file(const String &p_path, Vector<String> *r_ids, Vector<Vector<String>> *r_ids_ctx_plural) {
-	if (!get_script_instance())
+	if (!get_script_instance()) {
 		return ERR_UNAVAILABLE;
+	}
 
 	if (get_script_instance()->has_method("parse_file")) {
 		Array ids;
@@ -70,8 +71,9 @@ Error EditorTranslationParserPlugin::parse_file(const String &p_path, Vector<Str
 }
 
 void EditorTranslationParserPlugin::get_recognized_extensions(List<String> *r_extensions) const {
-	if (!get_script_instance())
+	if (!get_script_instance()) {
 		return;
+	}
 
 	if (get_script_instance()->has_method("get_recognized_extensions")) {
 		Array extensions = get_script_instance()->call("get_recognized_extensions");

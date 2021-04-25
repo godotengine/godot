@@ -511,7 +511,7 @@ namespace Godot
         /// <returns>The snapped vector.</returns>
         public Vector2 Snapped(Vector2 step)
         {
-            return new Vector2(Mathf.Stepify(x, step.x), Mathf.Stepify(y, step.y));
+            return new Vector2(Mathf.Snapped(x, step.x), Mathf.Snapped(y, step.y));
         }
 
         /// <summary>

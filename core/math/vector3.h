@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -110,6 +110,7 @@ struct Vector3 {
 	_FORCE_INLINE_ Vector3 project(const Vector3 &p_to) const;
 
 	_FORCE_INLINE_ real_t angle_to(const Vector3 &p_to) const;
+	_FORCE_INLINE_ real_t signed_angle_to(const Vector3 &p_to, const Vector3 &p_axis) const;
 	_FORCE_INLINE_ Vector3 direction_to(const Vector3 &p_to) const;
 
 	_FORCE_INLINE_ Vector3 slide(const Vector3 &p_normal) const;
@@ -230,6 +231,13 @@ real_t Vector3::angle_to(const Vector3 &p_to) const {
 	return Math::atan2(cross(p_to).length(), dot(p_to));
 }
 
+real_t Vector3::signed_angle_to(const Vector3 &p_to, const Vector3 &p_axis) const {
+	Vector3 cross_to = cross(p_to);
+	real_t unsigned_angle = Math::atan2(cross_to.length(), dot(p_to));
+	real_t sign = cross_to.dot(p_axis);
+	return (sign < 0) ? -unsigned_angle : unsigned_angle;
+}
+
 Vector3 Vector3::direction_to(const Vector3 &p_to) const {
 	Vector3 ret(p_to.x - x, p_to.y - y, p_to.z - z);
 	ret.normalize();
@@ -324,48 +332,40 @@ bool Vector3::operator<(const Vector3 &p_v) const {
 	if (x == p_v.x) {
 		if (y == p_v.y) {
 			return z < p_v.z;
-		} else {
-			return y < p_v.y;
 		}
-	} else {
-		return x < p_v.x;
+		return y < p_v.y;
 	}
+	return x < p_v.x;
 }
 
 bool Vector3::operator>(const Vector3 &p_v) const {
 	if (x == p_v.x) {
 		if (y == p_v.y) {
 			return z > p_v.z;
-		} else {
-			return y > p_v.y;
 		}
-	} else {
-		return x > p_v.x;
+		return y > p_v.y;
 	}
+	return x > p_v.x;
 }
 
 bool Vector3::operator<=(const Vector3 &p_v) const {
 	if (x == p_v.x) {
 		if (y == p_v.y) {
 			return z <= p_v.z;
-		} else {
-			return y < p_v.y;
 		}
-	} else {
-		return x < p_v.x;
+		return y < p_v.y;
 	}
+	return x < p_v.x;
 }
 
 bool Vector3::operator>=(const Vector3 &p_v) const {
 	if (x == p_v.x) {
 		if (y == p_v.y) {
 			return z >= p_v.z;
-		} else {
-			return y > p_v.y;
 		}
-	} else {
-		return x > p_v.x;
+		return y > p_v.y;
 	}
+	return x > p_v.x;
 }
 
 _FORCE_INLINE_ Vector3 vec3_cross(const Vector3 &p_a, const Vector3 &p_b) {

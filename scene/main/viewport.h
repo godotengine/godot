@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -56,7 +56,7 @@ class ViewportTexture : public Texture2D {
 	NodePath path;
 
 	friend class Viewport;
-	Viewport *vp;
+	Viewport *vp = nullptr;
 
 	mutable RID proxy_ph;
 	mutable RID proxy;
@@ -77,7 +77,7 @@ public:
 
 	virtual bool has_alpha() const override;
 
-	virtual Ref<Image> get_data() const override;
+	virtual Ref<Image> get_image() const override;
 
 	ViewportTexture();
 	~ViewportTexture();
@@ -142,6 +142,11 @@ public:
 		DEBUG_DRAW_SDFGI,
 		DEBUG_DRAW_SDFGI_PROBES,
 		DEBUG_DRAW_GI_BUFFER,
+		DEBUG_DRAW_DISABLE_LOD,
+		DEBUG_DRAW_CLUSTER_OMNI_LIGHTS,
+		DEBUG_DRAW_CLUSTER_SPOT_LIGHTS,
+		DEBUG_DRAW_CLUSTER_DECALS,
+		DEBUG_DRAW_CLUSTER_REFLECTION_PROBES,
 	};
 
 	enum DefaultCanvasItemTextureFilter {
@@ -181,9 +186,9 @@ public:
 private:
 	friend class ViewportTexture;
 
-	Viewport *parent;
+	Viewport *parent = nullptr;
 
-	Listener3D *listener;
+	Listener3D *listener = nullptr;
 	Set<Listener3D *> listeners;
 
 	struct CameraOverrideData {
@@ -192,11 +197,11 @@ private:
 			PROJECTION_PERSPECTIVE,
 			PROJECTION_ORTHOGONAL
 		};
-		Projection projection;
-		float fov;
-		float size;
-		float z_near;
-		float z_far;
+		Projection projection = Projection::PROJECTION_PERSPECTIVE;
+		float fov = 0.0;
+		float size = 0.0;
+		float z_near = 0.0;
+		float z_far = 0.0;
 		RID rid;
 
 		operator bool() const {
@@ -204,7 +209,7 @@ private:
 		}
 	} camera_override;
 
-	Camera3D *camera;
+	Camera3D *camera = nullptr;
 	Set<Camera3D *> cameras;
 	Set<CanvasLayer *> canvas_layers;
 
@@ -212,13 +217,13 @@ private:
 	RID current_canvas;
 	RID subwindow_canvas;
 
-	bool audio_listener;
+	bool audio_listener = false;
 	RID internal_listener;
 
-	bool audio_listener_2d;
+	bool audio_listener_2d = false;
 	RID internal_listener_2d;
 
-	bool override_canvas_transform;
+	bool override_canvas_transform = false;
 
 	Transform2D canvas_transform_override;
 	Transform2D canvas_transform;
@@ -227,7 +232,7 @@ private:
 
 	Size2i size;
 	Size2i size_2d_override;
-	bool size_allocated;
+	bool size_allocated = false;
 
 	RID contact_2d_debug;
 	RID contact_3d_debug_multimesh;
@@ -235,36 +240,36 @@ private:
 
 	Rect2 last_vp_rect;
 
-	bool transparent_bg;
+	bool transparent_bg = false;
 	bool filter;
-	bool gen_mipmaps;
+	bool gen_mipmaps = false;
 
-	bool snap_controls_to_pixels;
-	bool snap_2d_transforms_to_pixel;
-	bool snap_2d_vertices_to_pixel;
+	bool snap_controls_to_pixels = true;
+	bool snap_2d_transforms_to_pixel = false;
+	bool snap_2d_vertices_to_pixel = false;
 
-	bool physics_object_picking;
+	bool physics_object_picking = false;
 	List<Ref<InputEvent>> physics_picking_events;
 	ObjectID physics_object_capture;
 	ObjectID physics_object_over;
 	Transform physics_last_object_transform;
 	Transform physics_last_camera_transform;
 	ObjectID physics_last_id;
-	bool physics_has_last_mousepos;
-	Vector2 physics_last_mousepos;
+	bool physics_has_last_mousepos = false;
+	Vector2 physics_last_mousepos = Vector2(Math_INF, Math_INF);
 	struct {
-		bool alt;
-		bool control;
-		bool shift;
-		bool meta;
-		int mouse_mask;
+		bool alt = false;
+		bool control = false;
+		bool shift = false;
+		bool meta = false;
+		int mouse_mask = 0;
 
 	} physics_last_mouse_state;
 
 	void _collision_object_input_event(CollisionObject3D *p_object, Camera3D *p_camera, const Ref<InputEvent> &p_input_event, const Vector3 &p_pos, const Vector3 &p_normal, int p_shape);
 
-	bool handle_input_locally;
-	bool local_input_handled;
+	bool handle_input_locally = true;
+	bool local_input_handled = false;
 
 	Map<ObjectID, uint64_t> physics_2d_mouseover;
 
@@ -289,19 +294,22 @@ private:
 
 	RID texture_rid;
 
-	DebugDraw debug_draw;
+	DebugDraw debug_draw = DEBUG_DRAW_DISABLED;
 
-	int shadow_atlas_size;
+	int shadow_atlas_size = 2048;
+	bool shadow_atlas_16_bits = true;
 	ShadowAtlasQuadrantSubdiv shadow_atlas_quadrant_subdiv[4];
 
-	MSAA msaa;
-	ScreenSpaceAA screen_space_aa;
+	MSAA msaa = MSAA_DISABLED;
+	ScreenSpaceAA screen_space_aa = SCREEN_SPACE_AA_DISABLED;
 	bool use_debanding = false;
+	float lod_threshold = 1.0;
+
 	Ref<ViewportTexture> default_texture;
 	Set<ViewportTexture *> viewport_textures;
 
-	SDFOversize sdf_oversize;
-	SDFScale sdf_scale;
+	SDFOversize sdf_oversize = SDF_OVERSIZE_120_PERCENT;
+	SDFScale sdf_scale = SDF_SCALE_50_PERCENT;
 
 	enum SubWindowDrag {
 		SUB_WINDOW_DRAG_DISABLED,
@@ -324,60 +332,58 @@ private:
 	};
 
 	struct SubWindow {
-		Window *window;
+		Window *window = nullptr;
 		RID canvas_item;
 	};
 
 	struct GUI {
 		// info used when this is a window
 
-		bool forced_mouse_focus; //used for menu buttons
-		bool key_event_accepted;
-		Control *mouse_focus;
-		Control *last_mouse_focus;
-		Control *mouse_click_grabber;
-		int mouse_focus_mask;
-		Control *key_focus;
-		Control *mouse_over;
-		Control *drag_mouse_over;
+		bool forced_mouse_focus = false; //used for menu buttons
+		bool key_event_accepted = false;
+		Control *mouse_focus = nullptr;
+		Control *last_mouse_focus = nullptr;
+		Control *mouse_click_grabber = nullptr;
+		int mouse_focus_mask = 0;
+		Control *key_focus = nullptr;
+		Control *mouse_over = nullptr;
+		Control *drag_mouse_over = nullptr;
 		Vector2 drag_mouse_over_pos;
-		Control *tooltip_control;
-		Window *tooltip_popup;
-		Label *tooltip_label;
+		Control *tooltip_control = nullptr;
+		Window *tooltip_popup = nullptr;
+		Label *tooltip_label = nullptr;
 		Point2 tooltip_pos;
 		Point2 last_mouse_pos;
 		Point2 drag_accum;
-		bool drag_attempted;
+		bool drag_attempted = false;
 		Variant drag_data;
-		Control *drag_preview;
-		float tooltip_timer;
-		float tooltip_delay;
+		ObjectID drag_preview_id;
+		float tooltip_timer = -1.0;
+		float tooltip_delay = 0.0;
 		Transform2D focus_inv_xform;
-		bool roots_order_dirty;
+		bool roots_order_dirty = false;
 		List<Control *> roots;
-		int canvas_sort_index; //for sorting items with canvas as root
-		bool dragging;
-		bool embed_subwindows_hint;
-		bool embedding_subwindows;
+		int canvas_sort_index = 0; //for sorting items with canvas as root
+		bool dragging = false;
+		bool embed_subwindows_hint = false;
+		bool embedding_subwindows = false;
 
-		Window *subwindow_focused;
-		SubWindowDrag subwindow_drag;
+		Window *subwindow_focused = nullptr;
+		SubWindowDrag subwindow_drag = SUB_WINDOW_DRAG_DISABLED;
 		Vector2 subwindow_drag_from;
 		Vector2 subwindow_drag_pos;
 		Rect2i subwindow_drag_close_rect;
-		bool subwindow_drag_close_inside;
+		bool subwindow_drag_close_inside = false;
 		SubWindowResize subwindow_resize_mode;
 		Rect2i subwindow_resize_from_rect;
 
 		Vector<SubWindow> sub_windows;
-
-		GUI();
 	} gui;
 
-	DefaultCanvasItemTextureFilter default_canvas_item_texture_filter;
-	DefaultCanvasItemTextureRepeat default_canvas_item_texture_repeat;
+	DefaultCanvasItemTextureFilter default_canvas_item_texture_filter = DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_LINEAR;
+	DefaultCanvasItemTextureRepeat default_canvas_item_texture_repeat = DEFAULT_CANVAS_ITEM_TEXTURE_REPEAT_DISABLED;
 
-	bool disable_input;
+	bool disable_input = false;
 
 	void _gui_call_input(Control *p_control, const Ref<InputEvent> &p_input);
 	void _gui_call_notification(Control *p_control, int p_what);
@@ -409,6 +415,7 @@ private:
 
 	void _gui_force_drag(Control *p_base, const Variant &p_data, Control *p_control);
 	void _gui_set_drag_preview(Control *p_base, Control *p_control);
+	Control *_gui_get_drag_preview();
 
 	void _gui_remove_focus_for_window(Node *p_window);
 	void _gui_remove_focus();
@@ -442,7 +449,7 @@ private:
 	void _canvas_layer_remove(CanvasLayer *p_canvas_layer);
 
 	void _drop_mouse_focus();
-	void _drop_physics_mouseover();
+	void _drop_physics_mouseover(bool p_paused_only = false);
 
 	void _update_canvas_items(Node *p_node);
 
@@ -471,6 +478,7 @@ protected:
 	bool _is_size_allocated() const;
 
 	void _notification(int p_what);
+	void _process_picking();
 	static void _bind_methods();
 	virtual void _validate_property(PropertyInfo &property) const override;
 
@@ -530,6 +538,9 @@ public:
 	void set_shadow_atlas_size(int p_size);
 	int get_shadow_atlas_size() const;
 
+	void set_shadow_atlas_16_bits(bool p_16_bits);
+	bool get_shadow_atlas_16_bits() const;
+
 	void set_shadow_atlas_quadrant_subdiv(int p_quadrant, ShadowAtlasQuadrantSubdiv p_subdiv);
 	ShadowAtlasQuadrantSubdiv get_shadow_atlas_quadrant_subdiv(int p_quadrant) const;
 
@@ -541,6 +552,9 @@ public:
 
 	void set_use_debanding(bool p_use_debanding);
 	bool is_using_debanding() const;
+
+	void set_lod_threshold(float p_pixels);
+	float get_lod_threshold() const;
 
 	Vector2 get_camera_coords(const Vector2 &p_viewport_coords) const;
 	Vector2 get_camera_rect_size() const;
@@ -566,7 +580,7 @@ public:
 	void gui_reset_canvas_sort_index();
 	int gui_get_canvas_sort_index();
 
-	virtual String get_configuration_warning() const override;
+	TypedArray<String> get_configuration_warnings() const override;
 
 	void set_debug_draw(DebugDraw p_debug_draw);
 	DebugDraw get_debug_draw() const;
@@ -636,10 +650,10 @@ public:
 	};
 
 private:
-	UpdateMode update_mode;
-	ClearMode clear_mode;
-	bool xr;
-	bool size_2d_override_stretch;
+	UpdateMode update_mode = UPDATE_WHEN_VISIBLE;
+	ClearMode clear_mode = CLEAR_MODE_ALWAYS;
+	bool xr = false;
+	bool size_2d_override_stretch = false;
 
 protected:
 	static void _bind_methods();

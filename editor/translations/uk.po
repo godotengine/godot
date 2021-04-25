@@ -1,9 +1,9 @@
 # Ukrainian translation of the Godot Engine editor
-# Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.
-# Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).
+# Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.
+# Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).
 # This file is distributed under the same license as the Godot source code.
 # Aleksandr <XpycT.TOP@gmail.com>, 2017.
-# Yuri Chornoivan <yurchor@ukr.net>, 2018, 2019, 2020.
+# Yuri Chornoivan <yurchor@ukr.net>, 2018, 2019, 2020, 2021.
 # Андрій Бандура <andriykopanytsia@gmail.com>, 2018.
 # Гидеон Теон <t.kudely94@gmail.com>, 2017.
 # Максим Якимчук <xpinovo@gmail.com>, 2018, 2019.
@@ -12,7 +12,7 @@
 # Kirill Omelchenko <kirill.omelchenko@gmail.com>, 2018.
 # Александр <ol-vin@mail.ru>, 2018.
 # Богдан Матвіїв <bomtvv@gmail.com>, 2019.
-# Tymofij Lytvynenko <till.svit@gmail.com>, 2020.
+# Tymofij Lytvynenko <till.svit@gmail.com>, 2020, 2021.
 # Vladislav Glinsky <cl0ne@mithril.org.ua>, 2020.
 # Микола Тимошенко <9081@ukr.net>, 2020.
 # Miroslav <zinmirx@gmail.com>, 2020.
@@ -20,7 +20,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Ukrainian (Godot Engine)\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-11-29 08:29+0000\n"
+"PO-Revision-Date: 2021-03-31 03:53+0000\n"
 "Last-Translator: Yuri Chornoivan <yurchor@ukr.net>\n"
 "Language-Team: Ukrainian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/uk/>\n"
@@ -30,7 +30,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
 "%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 4.4-dev\n"
+"X-Generator: Weblate 4.6-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -666,7 +666,7 @@ msgstr "Виберіть доріжки для копіювання"
 #: editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp editor/property_editor.cpp
-#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
+#: editor/scene_tree_dock.cpp scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Copy"
 msgstr "Копіювати"
 
@@ -1152,7 +1152,7 @@ msgstr "Ведучий розробник"
 #. you do not have to keep it in your translation.
 #: editor/editor_about.cpp
 msgid "Project Manager "
-msgstr "Керівник проектів "
+msgstr "Керівник проєктів "
 
 #: editor/editor_about.cpp
 msgid "Developers"
@@ -1873,8 +1873,8 @@ msgid "Open a File or Directory"
 msgstr "Відкрити файл або каталог"
 
 #: editor/editor_file_dialog.cpp editor/editor_node.cpp
-#: editor/editor_properties.cpp editor/inspector_dock.cpp
-#: editor/plugins/animation_player_editor_plugin.cpp
+#: editor/editor_properties.cpp editor/import_defaults_editor.cpp
+#: editor/inspector_dock.cpp editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/script_editor_plugin.cpp scene/gui/file_dialog.cpp
 msgid "Save"
 msgstr "Зберегти"
@@ -1964,10 +1964,6 @@ msgstr "Попередній перегляд:"
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "File:"
 msgstr "Файл:"
-
-#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
-msgid "Must use a valid extension."
-msgstr "Необхідно використовувати допустиме розширення."
 
 #: editor/editor_file_system.cpp
 msgid "ScanSources"
@@ -2404,6 +2400,10 @@ msgid "There is no defined scene to run."
 msgstr "Немає визначеної сцени для виконання."
 
 #: editor/editor_node.cpp
+msgid "Save scene before running..."
+msgstr "Зберегти сцену перед запуском…"
+
+#: editor/editor_node.cpp
 msgid "Could not start subprocess!"
 msgstr "Не вдалося запустити підпроцес!"
 
@@ -2446,18 +2446,6 @@ msgstr "Для того, щоб можна було зберегти сцену,
 #: editor/editor_node.cpp
 msgid "Save Scene As..."
 msgstr "Зберегти сцену як..."
-
-#: editor/editor_node.cpp
-msgid "No"
-msgstr "Ні"
-
-#: editor/editor_node.cpp
-msgid "Yes"
-msgstr "Так"
-
-#: editor/editor_node.cpp
-msgid "This scene has never been saved. Save before running?"
-msgstr "Ця сцена ніколи не була збережена. Зберегти перед запуском?"
 
 #: editor/editor_node.cpp editor/scene_tree_dock.cpp
 msgid "This operation can't be done without a scene."
@@ -2509,6 +2497,10 @@ msgid "Quit"
 msgstr "Вийти"
 
 #: editor/editor_node.cpp
+msgid "Yes"
+msgstr "Так"
+
+#: editor/editor_node.cpp
 msgid "Exit the editor?"
 msgstr "Вийти з редактора?"
 
@@ -2556,9 +2548,8 @@ msgstr ""
 "налаштування."
 
 #: editor/editor_node.cpp
-msgid "Unable to find script field for addon plugin at: 'res://addons/%s'."
-msgstr ""
-"Не вдалося знайти поле скрипт для доповнення плагіну в: 'res://addons/%s'."
+msgid "Unable to find script field for addon plugin at: '%s'."
+msgstr "Не вдалося знайти поле скрипту для додатка тут: «%s»."
 
 #: editor/editor_node.cpp
 msgid "Unable to load addon script from path: '%s'."
@@ -2992,14 +2983,6 @@ msgid "Help"
 msgstr "Довідка"
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/script_text_editor.cpp
-#: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
-#: editor/plugins/visual_shader_editor_plugin.cpp editor/project_manager.cpp
-#: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
-msgid "Search"
-msgstr "Пошук"
-
-#: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/shader_editor_plugin.cpp
 msgid "Online Docs"
 msgstr "Онлайн документація"
@@ -3163,6 +3146,24 @@ msgstr "Об'єднати з існуючим"
 #: editor/editor_node.cpp
 msgid "Open & Run a Script"
 msgstr "Відкрити і запустити скрипт"
+
+#: editor/editor_node.cpp
+msgid ""
+"The following files are newer on disk.\n"
+"What action should be taken?"
+msgstr ""
+"На диску зберігаються новіші версії вказаних нижче файлів.\n"
+"Що слід зробити?"
+
+#: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/shader_editor_plugin.cpp
+msgid "Reload"
+msgstr "Перезавантажити"
+
+#: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/shader_editor_plugin.cpp
+msgid "Resave"
+msgstr "Перезаписати"
 
 #: editor/editor_node.cpp
 msgid "New Inherited"
@@ -3376,7 +3377,7 @@ msgstr "Зробити унікальним"
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 #: editor/plugins/tile_map_editor_plugin.cpp editor/property_editor.cpp
-#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
+#: editor/scene_tree_dock.cpp scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Paste"
 msgstr "Вставити"
 
@@ -3694,6 +3695,13 @@ msgstr ""
 "імпортуйте вручну."
 
 #: editor/filesystem_dock.cpp
+msgid ""
+"Importing has been disabled for this file, so it can't be opened for editing."
+msgstr ""
+"Імпортування для цього файла вимкнено, тому його не можна відкрити для "
+"редагування."
+
+#: editor/filesystem_dock.cpp
 msgid "Cannot move/rename resources root."
 msgstr "Неможливо перемістити/перейменувати корінь ресурсів."
 
@@ -3738,6 +3746,12 @@ msgid ""
 "\n"
 "Do you wish to overwrite them?"
 msgstr ""
+"Вказані нижче файли або теки мають такі самі назви, що і записи у місці "
+"призначення «%s»:\n"
+"\n"
+"%s\n"
+"\n"
+"Хочете виконати перезапис поточних даних?"
 
 #: editor/filesystem_dock.cpp
 msgid "Renaming file:"
@@ -3930,8 +3944,16 @@ msgid "Searching..."
 msgstr "Шукаємо…"
 
 #: editor/find_in_files.cpp
-msgid "Search complete"
-msgstr "Пошук завершено"
+msgid "%d match in %d file."
+msgstr "%d відповдіник у %d файлі."
+
+#: editor/find_in_files.cpp
+msgid "%d matches in %d file."
+msgstr "%d відповідників у %d файлі."
+
+#: editor/find_in_files.cpp
+msgid "%d matches in %d files."
+msgstr "%d відповідників у %d файлах."
 
 #: editor/groups_editor.cpp
 msgid "Add to Group"
@@ -4066,6 +4088,22 @@ msgstr "Повернули об'єкт, що походить від Node, у м
 #: editor/import/resource_importer_scene.cpp
 msgid "Saving..."
 msgstr "Збереження..."
+
+#: editor/import_defaults_editor.cpp
+msgid "Select Importer"
+msgstr "Виберіть засіб імпортування"
+
+#: editor/import_defaults_editor.cpp
+msgid "Importer:"
+msgstr "Засіб імпортування:"
+
+#: editor/import_defaults_editor.cpp
+msgid "Reset to Defaults"
+msgstr "Відновити типові параметри"
+
+#: editor/import_dock.cpp
+msgid "Keep File (No Import)"
+msgstr "Зберегти файл (не імпортувати)"
 
 #: editor/import_dock.cpp
 msgid "%d Files"
@@ -5039,8 +5077,8 @@ msgid "Got:"
 msgstr "Отримав:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-msgid "Failed sha256 hash check"
-msgstr "Помилка перевірки хешування sha256"
+msgid "Failed SHA-256 hash check"
+msgstr "Не вдалося пройти перевірку хешу SHA-256"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Asset Download Error:"
@@ -5143,7 +5181,6 @@ msgid "Sort:"
 msgstr "Сортувати:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#: editor/project_settings_editor.cpp
 msgid "Category:"
 msgstr "Категорія:"
 
@@ -5174,12 +5211,10 @@ msgstr "ZIP файл ресурсів"
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid ""
 "Can't determine a save path for lightmap images.\n"
-"Save your scene (for images to be saved in the same dir), or pick a save "
-"path from the BakedLightmap properties."
+"Save your scene and try again."
 msgstr ""
 "Не вдається визначити шлях для збереження карт освітлення.\n"
-"Збережіть вашу сцену (щоб зображення були збережені в одній теці), або "
-"виберіть шлях зберігання у властивостях BakedLightmap."
+"Збережіть вашу сцену і повторіть спробу."
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid ""
@@ -5196,8 +5231,33 @@ msgstr ""
 "запису."
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
+msgid "Failed determining lightmap size. Maximum lightmap size too small?"
+msgstr ""
+"Не вдалося визначити розмір карти освітлення. Максимальний розмір карти "
+"освітлення є надто малим?"
+
+#: editor/plugins/baked_lightmap_editor_plugin.cpp
+msgid ""
+"Some mesh is invalid. Make sure the UV2 channel values are contained within "
+"the [0.0,1.0] square region."
+msgstr ""
+"Частина сітки є некоректною. Переконайтеся, що значення каналів UV2 "
+"потрапляють до квадратної області [0.0,1.0]."
+
+#: editor/plugins/baked_lightmap_editor_plugin.cpp
+msgid ""
+"Godot editor was built without ray tracing support, lightmaps can't be baked."
+msgstr ""
+"Редактор Godot було зібрано без підтримки трасування променів. Карти "
+"освітлення не вдасться побудувати."
+
+#: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid "Bake Lightmaps"
 msgstr "Запікати карти освітлення"
+
+#: editor/plugins/baked_lightmap_editor_plugin.cpp
+msgid "Select lightmap bake file:"
+msgstr "Виберіть файл приготування карти освітлення:"
 
 #: editor/plugins/camera_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -6292,6 +6352,10 @@ msgstr ""
 "Поставити точку можна тільки в процедурному матеріалі ParticlesMaterial"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
+msgid "Convert to CPUParticles2D"
+msgstr "Перетворити на CPUParticles2D"
+
+#: editor/plugins/particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Generation Time (sec):"
 msgstr "Час генерації (сек):"
@@ -6350,10 +6414,6 @@ msgstr "Створення AABB"
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Generate Visibility AABB"
-msgstr "Генерувати AABB"
-
-#: editor/plugins/particles_editor_plugin.cpp
-msgid "Generate AABB"
 msgstr "Генерувати AABB"
 
 #: editor/plugins/path_2d_editor_plugin.cpp
@@ -6948,6 +7008,14 @@ msgstr "Закрити документацію"
 msgid "Run"
 msgstr "Запустити"
 
+#: editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/script_text_editor.cpp
+#: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
+#: editor/plugins/visual_shader_editor_plugin.cpp editor/project_manager.cpp
+#: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
+msgid "Search"
+msgstr "Пошук"
+
 #: editor/plugins/script_editor_plugin.cpp editor/script_editor_debugger.cpp
 msgid "Step Into"
 msgstr "Крок в"
@@ -7000,16 +7068,6 @@ msgid ""
 msgstr ""
 "Такі файли на диску новіші.\n"
 "Що робити?:"
-
-#: editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/shader_editor_plugin.cpp
-msgid "Reload"
-msgstr "Перезавантажити"
-
-#: editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/shader_editor_plugin.cpp
-msgid "Resave"
-msgstr "Перезаписати"
 
 #: editor/plugins/script_editor_plugin.cpp editor/script_editor_debugger.cpp
 msgid "Debugger"
@@ -7107,8 +7165,8 @@ msgstr "Точки зупину"
 msgid "Go To"
 msgstr "Перейти"
 
-#: editor/plugins/script_text_editor.cpp scene/gui/line_edit.cpp
-#: scene/gui/text_edit.cpp
+#: editor/plugins/script_text_editor.cpp editor/scene_tree_dock.cpp
+#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Cut"
 msgstr "Вирізати"
 
@@ -7331,6 +7389,10 @@ msgid "Yaw"
 msgstr "Відхилення"
 
 #: editor/plugins/spatial_editor_plugin.cpp
+msgid "Size"
+msgstr "Розмір"
+
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Objects Drawn"
 msgstr "Намальовано об'єктів"
 
@@ -7509,6 +7571,11 @@ msgstr "Модифікатор швидкості довільного огля�
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "View Rotation Locked"
 msgstr "Обертання перегляду заблоковано"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid ""
+"To zoom further, change the camera's clipping planes (View -> Settings...)"
+msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid ""
@@ -8581,10 +8648,6 @@ msgid "Error"
 msgstr "Помилка"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-msgid "No commit message was provided"
-msgstr "Не було вказано повідомлення щодо внеску"
-
-#: editor/plugins/version_control_editor_plugin.cpp
 msgid "No files added to stage"
 msgstr "Не додано жодних файлів для внеску"
 
@@ -8639,10 +8702,6 @@ msgstr "Вибрано для внеску"
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Stage All"
 msgstr "Внести все"
-
-#: editor/plugins/version_control_editor_plugin.cpp
-msgid "Add a commit message"
-msgstr "Додати повідомлення щодо внеску"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Commit Changes"
@@ -9850,7 +9909,7 @@ msgstr "OpenGL ES 3.0"
 
 #: editor/project_manager.cpp
 msgid "Not supported by your GPU drivers."
-msgstr ""
+msgstr "У ваших драйверах підтримки не передбачено."
 
 #: editor/project_manager.cpp
 msgid ""
@@ -10023,11 +10082,15 @@ msgstr ""
 #. TRANSLATORS: This refers to the application where users manage their Godot projects.
 #: editor/project_manager.cpp
 msgid "Project Manager"
-msgstr "Керівник проекту"
+msgstr "Керівник проєкту"
 
 #: editor/project_manager.cpp
 msgid "Projects"
 msgstr "Проєкти"
+
+#: editor/project_manager.cpp
+msgid "Loading, please wait..."
+msgstr "Завантаження. Будь ласка, зачекайте..."
 
 #: editor/project_manager.cpp
 msgid "Last Modified"
@@ -10399,6 +10462,10 @@ msgstr "Автозавантаження"
 msgid "Plugins"
 msgstr "Плаґіни (додатки)"
 
+#: editor/project_settings_editor.cpp
+msgid "Import Defaults"
+msgstr "Типові параметри імпортування"
+
 #: editor/property_editor.cpp
 msgid "Preset..."
 msgstr "Заздалегідь установлений..."
@@ -10650,6 +10717,14 @@ msgid "Instance Child Scene"
 msgstr "Створити екземпляр дочірньої сцени"
 
 #: editor/scene_tree_dock.cpp
+msgid "Can't paste root node into the same scene."
+msgstr "Не можна вставляти кореневий вузол до сцени цього кореневого вузла."
+
+#: editor/scene_tree_dock.cpp
+msgid "Paste Node(s)"
+msgstr "Вставити вузли"
+
+#: editor/scene_tree_dock.cpp
 msgid "Detach Script"
 msgstr "Від'єднати скрипт"
 
@@ -10776,6 +10851,10 @@ msgid "Attach Script"
 msgstr "Долучити скрипт"
 
 #: editor/scene_tree_dock.cpp
+msgid "Cut Node(s)"
+msgstr "Вирізати вузли"
+
+#: editor/scene_tree_dock.cpp
 msgid "Remove Node(s)"
 msgstr "Вилучити вузли"
 
@@ -10888,6 +10967,13 @@ msgstr "Від'єднати скрипт від позначеного вузл�
 #: editor/scene_tree_dock.cpp
 msgid "Remote"
 msgstr "Віддалений"
+
+#: editor/scene_tree_dock.cpp
+msgid ""
+"If selected, the Remote scene tree dock will cause the project to stutter "
+"every time it updates.\n"
+"Switch back to the Local scene tree dock to improve performance."
+msgstr ""
 
 #: editor/scene_tree_dock.cpp
 msgid "Local"
@@ -11584,6 +11670,34 @@ msgid "Give a MeshLibrary resource to this GridMap to use its meshes."
 msgstr ""
 "Додайте ресурс MeshLibrary до цього GridMap, щоб скористатися його сітками."
 
+#: modules/lightmapper_cpu/lightmapper_cpu.cpp
+msgid "Begin Bake"
+msgstr "Почати обробку"
+
+#: modules/lightmapper_cpu/lightmapper_cpu.cpp
+msgid "Preparing data structures"
+msgstr "Готуємо структури даних"
+
+#: modules/lightmapper_cpu/lightmapper_cpu.cpp
+msgid "Generate buffers"
+msgstr "Створити буфери"
+
+#: modules/lightmapper_cpu/lightmapper_cpu.cpp
+msgid "Direct lighting"
+msgstr "Безпосереднє освітлення"
+
+#: modules/lightmapper_cpu/lightmapper_cpu.cpp
+msgid "Indirect lighting"
+msgstr "Опосередковане освітлення"
+
+#: modules/lightmapper_cpu/lightmapper_cpu.cpp
+msgid "Post processing"
+msgstr "Пост-обробка"
+
+#: modules/lightmapper_cpu/lightmapper_cpu.cpp
+msgid "Plotting lightmaps"
+msgstr "Креслення карт освітлення"
+
 #: modules/mono/csharp_script.cpp
 msgid "Class name can't be a reserved keyword"
 msgstr "Назвою класу не може бути зарезервоване ключове слово"
@@ -12098,12 +12212,16 @@ msgid "Select device from the list"
 msgstr "Вибрати пристрій зі списку"
 
 #: platform/android/export/export.cpp
-msgid "ADB executable not configured in the Editor Settings."
-msgstr "У параметрах редактора не налаштовано виконуваного файла ADB."
+msgid "Unable to find the 'apksigner' tool."
+msgstr "Не вдалося знайти програму apksigner."
 
 #: platform/android/export/export.cpp
-msgid "OpenJDK jarsigner not configured in the Editor Settings."
-msgstr "У параметрах редактора не налаштовано jarsigner з OpenJDK."
+msgid ""
+"Android build template not installed in the project. Install it from the "
+"Project menu."
+msgstr ""
+"У проєкті не встановлено шаблон збирання Android. Встановіть його за "
+"допомогою меню «Проєкт»."
 
 #: platform/android/export/export.cpp
 msgid "Debug keystore not configured in the Editor Settings nor in the preset."
@@ -12117,28 +12235,37 @@ msgstr ""
 "У шаблоні експортування неправильно налаштовано сховище ключів випуску."
 
 #: platform/android/export/export.cpp
-msgid "Custom build requires a valid Android SDK path in Editor Settings."
+msgid "A valid Android SDK path is required in Editor Settings."
 msgstr ""
-"Нетипове збирання потребує коректного шляху до SDK для Android у параметрах "
-"редактора."
+"У параметрах редактора має бути вказано коректний шлях до SDK для Android."
 
 #: platform/android/export/export.cpp
-msgid "Invalid Android SDK path for custom build in Editor Settings."
-msgstr ""
-"Некоректний шлях до SDK для Android для нетипового збирання у параметрах "
-"редактора."
+msgid "Invalid Android SDK path in Editor Settings."
+msgstr "Некоректний шлях до SDK для Android у параметрах редактора."
 
 #: platform/android/export/export.cpp
 msgid "Missing 'platform-tools' directory!"
 msgstr "Не знайдено каталогу «platform-tools»!"
 
 #: platform/android/export/export.cpp
-msgid ""
-"Android build template not installed in the project. Install it from the "
-"Project menu."
+msgid "Unable to find Android SDK platform-tools' adb command."
 msgstr ""
-"У проєкті не встановлено шаблон збирання Android. Встановіть його за "
-"допомогою меню «Проєкт»."
+"Не вдалося знайти програми adb із інструментів платформи SDK для Android."
+
+#: platform/android/export/export.cpp
+msgid "Please check in the Android SDK directory specified in Editor Settings."
+msgstr ""
+"Будь ласка, перевірте, чи правильно вказано каталог SDK для Android у "
+"параметрах редактора."
+
+#: platform/android/export/export.cpp
+msgid "Missing 'build-tools' directory!"
+msgstr "Не знайдено каталогу «build-tools»!"
+
+#: platform/android/export/export.cpp
+msgid "Unable to find Android SDK build-tools' apksigner command."
+msgstr ""
+"Не вдалося знайти програми apksigner з інструментів збирання SDK для Android."
 
 #: platform/android/export/export.cpp
 msgid "Invalid public key for APK expansion."
@@ -12413,6 +12540,16 @@ msgstr ""
 msgid "An empty CollisionPolygon2D has no effect on collision."
 msgstr "Порожній CollisionPolygon2D ніяк не вплине на зіткнення."
 
+#: scene/2d/collision_polygon_2d.cpp
+msgid "Invalid polygon. At least 3 points are needed in 'Solids' build mode."
+msgstr ""
+"Некоректний полігон. У режимі збирання «Solids» потрібно принаймні 3 точки."
+
+#: scene/2d/collision_polygon_2d.cpp
+msgid "Invalid polygon. At least 2 points are needed in 'Segments' build mode."
+msgstr ""
+"Некоректний полігон. У режимі збирання «Segments» потрібні принаймні 2 точки."
+
 #: scene/2d/collision_shape_2d.cpp
 msgid ""
 "CollisionShape2D only serves to provide a collision shape to a "
@@ -12450,23 +12587,23 @@ msgstr ""
 
 #: scene/2d/joints_2d.cpp
 msgid "Node A and Node B must be PhysicsBody2Ds"
-msgstr ""
+msgstr "Вузол A і вузол B мають бути PhysicsBody2D"
 
 #: scene/2d/joints_2d.cpp
 msgid "Node A must be a PhysicsBody2D"
-msgstr ""
+msgstr "Вузол A має бути PhysicsBody2D"
 
 #: scene/2d/joints_2d.cpp
 msgid "Node B must be a PhysicsBody2D"
-msgstr ""
+msgstr "Вузол B має бути PhysicsBody2D"
 
 #: scene/2d/joints_2d.cpp
 msgid "Joint is not connected to two PhysicsBody2Ds"
-msgstr ""
+msgstr "З'єднання не з'єднано із двома PhysicsBody2D"
 
 #: scene/2d/joints_2d.cpp
 msgid "Node A and Node B must be different PhysicsBody2Ds"
-msgstr ""
+msgstr "Вузол A і вузол B мають бути різними PhysicsBody2D"
 
 #: scene/2d/light_2d.cpp
 msgid ""
@@ -12625,28 +12762,28 @@ msgid "ARVROrigin requires an ARVRCamera child node."
 msgstr "ARVROrigin повинен мати дочірній вузол ARVRCamera."
 
 #: scene/3d/baked_lightmap.cpp
-msgid "%d%%"
-msgstr "%d%%"
+msgid "Finding meshes and lights"
+msgstr "Пошук сіток та джерел світла"
 
 #: scene/3d/baked_lightmap.cpp
-msgid "(Time Left: %d:%02d s)"
-msgstr "(Лишилося часу: %d:%02d с)"
+msgid "Preparing geometry (%d/%d)"
+msgstr "Приготування геометрії (%d з %d)"
 
 #: scene/3d/baked_lightmap.cpp
-msgid "Plotting Meshes: "
-msgstr "Побудова сітки: "
+msgid "Preparing environment"
+msgstr "Приготування середовища"
 
 #: scene/3d/baked_lightmap.cpp
-msgid "Plotting Lights:"
-msgstr "Побудова світла:"
-
-#: scene/3d/baked_lightmap.cpp scene/3d/gi_probe.cpp
-msgid "Finishing Plot"
-msgstr "Завершальна ділянка"
+msgid "Generating capture"
+msgstr "Створення захоплення"
 
 #: scene/3d/baked_lightmap.cpp
-msgid "Lighting Meshes: "
-msgstr "Освітлення сітки: "
+msgid "Saving lightmaps"
+msgstr "Збереження карт освітлення"
+
+#: scene/3d/baked_lightmap.cpp
+msgid "Done"
+msgstr "Зроблено"
 
 #: scene/3d/collision_object.cpp
 msgid ""
@@ -12723,18 +12860,16 @@ msgid "Plotting Meshes"
 msgstr "Побудова сітки"
 
 #: scene/3d/gi_probe.cpp
+msgid "Finishing Plot"
+msgstr "Завершальна ділянка"
+
+#: scene/3d/gi_probe.cpp
 msgid ""
 "GIProbes are not supported by the GLES2 video driver.\n"
 "Use a BakedLightmap instead."
 msgstr ""
 "У драйвері GLES2 не передбачено підтримки GIProbes.\n"
 "Скористайтеся замість них BakedLightmap."
-
-#: scene/3d/interpolated_camera.cpp
-msgid ""
-"InterpolatedCamera has been deprecated and will be removed in Godot 4.0."
-msgstr ""
-"InterpolatedCamera вважається застарілою, її буде вилучено у Godot 4.0."
 
 #: scene/3d/light.cpp
 msgid "A SpotLight with an angle wider than 90 degrees cannot cast shadows."
@@ -12803,23 +12938,23 @@ msgstr ""
 
 #: scene/3d/physics_joint.cpp
 msgid "Node A and Node B must be PhysicsBodies"
-msgstr ""
+msgstr "Вузол A і вузол B мають належати до типу PhysicsBody"
 
 #: scene/3d/physics_joint.cpp
 msgid "Node A must be a PhysicsBody"
-msgstr ""
+msgstr "Вузол A має належати до типу PhysicsBody"
 
 #: scene/3d/physics_joint.cpp
 msgid "Node B must be a PhysicsBody"
-msgstr ""
+msgstr "Вузол B має належати до типу PhysicsBody"
 
 #: scene/3d/physics_joint.cpp
 msgid "Joint is not connected to any PhysicsBodies"
-msgstr ""
+msgstr "З'єднання не з'єднано із жодним PhysicsBody"
 
 #: scene/3d/physics_joint.cpp
 msgid "Node A and Node B must be different PhysicsBodies"
-msgstr ""
+msgstr "Вузол A і вузол B має бути різними PhysicsBody"
 
 #: scene/3d/remote_transform.cpp
 msgid ""
@@ -12982,6 +13117,14 @@ msgstr "Увага!"
 msgid "Please Confirm..."
 msgstr "Будь ласка, підтвердьте..."
 
+#: scene/gui/file_dialog.cpp
+msgid "Must use a valid extension."
+msgstr "Необхідно використовувати допустиме розширення."
+
+#: scene/gui/graph_edit.cpp
+msgid "Enable grid minimap."
+msgstr "Увімкнути мінікарту ґратки."
+
 #: scene/gui/popup.cpp
 msgid ""
 "Popups will hide by default unless you call popup() or any of the popup*() "
@@ -13038,6 +13181,14 @@ msgstr ""
 "за 0."
 
 #: scene/resources/visual_shader_nodes.cpp
+msgid ""
+"The sampler port is connected but not used. Consider changing the source to "
+"'SamplerPort'."
+msgstr ""
+"Порт засобу семплювання з'єднано, але не використано. Вам варто змінити "
+"джерело на «SamplerPort»."
+
+#: scene/resources/visual_shader_nodes.cpp
 msgid "Invalid source for preview."
 msgstr "Некоректне джерело для попереднього перегляду."
 
@@ -13065,14 +13216,51 @@ msgstr "Змінні величини можна пов'язувати лише 
 msgid "Constants cannot be modified."
 msgstr "Сталі не можна змінювати."
 
+#~ msgid ""
+#~ "InterpolatedCamera has been deprecated and will be removed in Godot 4.0."
+#~ msgstr ""
+#~ "InterpolatedCamera вважається застарілою, її буде вилучено у Godot 4.0."
+
+#~ msgid "No"
+#~ msgstr "Ні"
+
+#~ msgid "This scene has never been saved. Save before running?"
+#~ msgstr "Ця сцена ніколи не була збережена. Зберегти перед запуском?"
+
+#~ msgid "ADB executable not configured in the Editor Settings."
+#~ msgstr "У параметрах редактора не налаштовано виконуваного файла ADB."
+
+#~ msgid "OpenJDK jarsigner not configured in the Editor Settings."
+#~ msgstr "У параметрах редактора не налаштовано jarsigner з OpenJDK."
+
+#~ msgid "Custom build requires a valid Android SDK path in Editor Settings."
+#~ msgstr ""
+#~ "Нетипове збирання потребує коректного шляху до SDK для Android у "
+#~ "параметрах редактора."
+
+#~ msgid "%d%%"
+#~ msgstr "%d%%"
+
+#~ msgid "(Time Left: %d:%02d s)"
+#~ msgstr "(Лишилося часу: %d:%02d с)"
+
+#~ msgid "Plotting Meshes: "
+#~ msgstr "Побудова сітки: "
+
+#~ msgid "Lighting Meshes: "
+#~ msgstr "Освітлення сітки: "
+
+#~ msgid "Search complete"
+#~ msgstr "Пошук завершено"
+
+#~ msgid "No commit message was provided"
+#~ msgstr "Не було вказано повідомлення щодо внеску"
+
+#~ msgid "Add a commit message"
+#~ msgstr "Додати повідомлення щодо внеску"
+
 #~ msgid "There is already file or folder with the same name in this location."
 #~ msgstr "У вказаному каталозі вже міститься тека або файл із вказано назвою."
-
-#~ msgid "Missing 'build-tools' directory!"
-#~ msgstr "Не знайдено каталогу «build-tools»!"
-
-#~ msgid "Unable to find the zipalign tool."
-#~ msgstr "Не вдалося знайти програму zipalign."
 
 #~ msgid "Aligning APK..."
 #~ msgstr "Вирівнюємо APK..."
@@ -13420,9 +13608,6 @@ msgstr "Сталі не можна змінювати."
 
 #~ msgid "Failed to save solution."
 #~ msgstr "Не вдалося зберегти розв'язок."
-
-#~ msgid "Done"
-#~ msgstr "Зроблено"
 
 #~ msgid "Failed to create C# project."
 #~ msgstr "Не вдалося створити проєкт C#."

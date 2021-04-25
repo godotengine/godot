@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,16 +37,17 @@
 class CollisionObject3D;
 class CollisionPolygon3D : public Node3D {
 	GDCLASS(CollisionPolygon3D, Node3D);
+	real_t margin = 0.04;
 
 protected:
-	float depth;
-	AABB aabb;
+	real_t depth = 1.0;
+	AABB aabb = AABB(Vector3(-1, -1, -1), Vector3(2, 2, 2));
 	Vector<Point2> polygon;
 
-	uint32_t owner_id;
-	CollisionObject3D *parent;
+	uint32_t owner_id = 0;
+	CollisionObject3D *parent = nullptr;
 
-	bool disabled;
+	bool disabled = false;
 
 	void _build_polygon();
 
@@ -59,8 +60,8 @@ protected:
 	static void _bind_methods();
 
 public:
-	void set_depth(float p_depth);
-	float get_depth() const;
+	void set_depth(real_t p_depth);
+	real_t get_depth() const;
 
 	void set_polygon(const Vector<Point2> &p_polygon);
 	Vector<Point2> get_polygon() const;
@@ -70,7 +71,10 @@ public:
 
 	virtual AABB get_item_rect() const;
 
-	String get_configuration_warning() const override;
+	real_t get_margin() const;
+	void set_margin(real_t p_margin);
+
+	TypedArray<String> get_configuration_warnings() const override;
 
 	CollisionPolygon3D();
 };

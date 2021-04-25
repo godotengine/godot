@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -270,14 +270,13 @@ void InspectorDock::_select_history(int p_idx) {
 }
 
 void InspectorDock::_resource_created() {
-	Object *c = new_resource_dialog->instance_selected();
+	Variant c = new_resource_dialog->instance_selected();
 
 	ERR_FAIL_COND(!c);
 	Resource *r = Object::cast_to<Resource>(c);
 	ERR_FAIL_COND(!r);
 
-	REF res(r);
-	editor->push_item(c);
+	editor->push_item(r);
 }
 
 void InspectorDock::_resource_selected(const RES &p_res, const String &p_property) {
@@ -452,7 +451,7 @@ void InspectorDock::update(Object *p_object) {
 	List<MethodInfo> methods;
 	p_object->get_method_list(&methods);
 
-	if (!methods.empty()) {
+	if (!methods.is_empty()) {
 		bool found = false;
 		List<MethodInfo>::Element *I = methods.front();
 		int i = 0;

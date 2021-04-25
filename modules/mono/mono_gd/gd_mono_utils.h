@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -36,6 +36,9 @@
 #include "../mono_gc_handle.h"
 #include "../utils/macros.h"
 #include "gd_mono_header.h"
+#ifdef JAVASCRIPT_ENABLED
+#include "gd_mono_wasm_m2n.h"
+#endif
 
 #include "core/object/class_db.h"
 #include "core/object/reference.h"
@@ -154,6 +157,22 @@ private:
 };
 
 StringName get_native_godot_class_name(GDMonoClass *p_class);
+
+template <typename... P>
+void add_internal_call(const char *p_name, void (*p_func)(P...)) {
+#ifdef JAVASCRIPT_ENABLED
+	GDMonoWasmM2n::ICallTrampolines<P...>::add();
+#endif
+	mono_add_internal_call(p_name, (void *)p_func);
+}
+
+template <typename R, typename... P>
+void add_internal_call(const char *p_name, R (*p_func)(P...)) {
+#ifdef JAVASCRIPT_ENABLED
+	GDMonoWasmM2n::ICallTrampolinesR<R, P...>::add();
+#endif
+	mono_add_internal_call(p_name, (void *)p_func);
+}
 } // namespace GDMonoUtils
 
 #define NATIVE_GDMONOCLASS_NAME(m_class) (GDMonoUtils::get_native_godot_class_name(m_class))

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -57,11 +57,11 @@ public:
 
 class GDScript : public Script {
 	GDCLASS(GDScript, Script);
-	bool tool;
-	bool valid;
+	bool tool = false;
+	bool valid = false;
 
 	struct MemberInfo {
-		int index;
+		int index = 0;
 		StringName setter;
 		StringName getter;
 		MultiplayerAPI::RPCMode rpc_mode;
@@ -72,13 +72,13 @@ class GDScript : public Script {
 	friend class GDScriptFunction;
 	friend class GDScriptAnalyzer;
 	friend class GDScriptCompiler;
-	friend class GDScriptFunctions;
 	friend class GDScriptLanguage;
+	friend struct GDScriptUtilityFunctionsDefinitions;
 
 	Ref<GDScriptNativeClass> native;
 	Ref<GDScript> base;
-	GDScript *_base; //fast pointer access
-	GDScript *_owner; //for subclasses
+	GDScript *_base = nullptr; //fast pointer access
+	GDScript *_owner = nullptr; //for subclasses
 
 	Set<StringName> members; //members are just indices to the instanced script.
 	Map<StringName, Variant> constants;
@@ -97,8 +97,8 @@ class GDScript : public Script {
 	Map<StringName, Variant> member_default_values_cache;
 	Ref<GDScript> base_cache;
 	Set<ObjectID> inheriters_cache;
-	bool source_changed_cache;
-	bool placeholder_fallback_enabled;
+	bool source_changed_cache = false;
+	bool placeholder_fallback_enabled = false;
 	void _update_exports_values(Map<StringName, Variant> &values, List<PropertyInfo> &propnames);
 
 	DocData::ClassDoc doc;
@@ -121,7 +121,7 @@ class GDScript : public Script {
 	GDScriptFunction *implicit_initializer = nullptr;
 	GDScriptFunction *initializer = nullptr; //direct pointer to new , faster to locate
 
-	int subclass_count;
+	int subclass_count = 0;
 	Set<Object *> instances;
 	//exported members
 	String source;
@@ -270,8 +270,8 @@ public:
 class GDScriptInstance : public ScriptInstance {
 	friend class GDScript;
 	friend class GDScriptFunction;
-	friend class GDScriptFunctions;
 	friend class GDScriptCompiler;
+	friend struct GDScriptUtilityFunctionsDefinitions;
 
 	ObjectID owner_id;
 	Object *owner;
@@ -529,7 +529,7 @@ public:
 
 class ResourceFormatLoaderGDScript : public ResourceFormatLoader {
 public:
-	virtual RES load(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr, bool p_use_sub_threads = false, float *r_progress = nullptr, bool p_no_cache = false);
+	virtual RES load(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr, bool p_use_sub_threads = false, float *r_progress = nullptr, CacheMode p_cache_mode = CACHE_MODE_REUSE);
 	virtual void get_recognized_extensions(List<String> *p_extensions) const;
 	virtual bool handles_type(const String &p_type) const;
 	virtual String get_resource_type(const String &p_path) const;

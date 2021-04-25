@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -52,24 +52,24 @@ public:
 
 private:
 	RID canvas_light;
-	bool enabled;
-	bool editor_only;
-	bool shadow;
-	Color color;
-	Color shadow_color;
-	float height;
-	float energy;
-	int z_min;
-	int z_max;
-	int layer_min;
-	int layer_max;
-	int item_mask;
-	int item_shadow_mask;
-	float shadow_smooth;
+	bool enabled = true;
+	bool editor_only = false;
+	bool shadow = false;
+	Color color = Color(1, 1, 1);
+	Color shadow_color = Color(0, 0, 0, 0);
+	real_t height = 0.0;
+	real_t energy = 1.0;
+	int z_min = -1024;
+	int z_max = 1024;
+	int layer_min = 0;
+	int layer_max = 0;
+	int item_mask = 1;
+	int item_shadow_mask = 1;
+	real_t shadow_smooth = 0.0;
 	Ref<Texture2D> texture;
 	Vector2 texture_offset;
-	ShadowFilter shadow_filter;
-	BlendMode blend_mode;
+	ShadowFilter shadow_filter = SHADOW_FILTER_NONE;
+	BlendMode blend_mode = BLEND_MODE_ADD;
 
 	void _update_light_visibility();
 
@@ -77,6 +77,7 @@ protected:
 	_FORCE_INLINE_ RID _get_light() const { return canvas_light; }
 	void _notification(int p_what);
 	static void _bind_methods();
+	void _validate_property(PropertyInfo &property) const override;
 
 public:
 	void set_enabled(bool p_enabled);
@@ -88,11 +89,11 @@ public:
 	void set_color(const Color &p_color);
 	Color get_color() const;
 
-	void set_height(float p_height);
-	float get_height() const;
+	void set_height(real_t p_height);
+	real_t get_height() const;
 
-	void set_energy(float p_energy);
-	float get_energy() const;
+	void set_energy(real_t p_energy);
+	real_t get_energy() const;
 
 	void set_z_range_min(int p_min_z);
 	int get_z_range_min() const;
@@ -121,8 +122,8 @@ public:
 	void set_shadow_color(const Color &p_shadow_color);
 	Color get_shadow_color() const;
 
-	void set_shadow_smooth(float p_amount);
-	float get_shadow_smooth() const;
+	void set_shadow_smooth(real_t p_amount);
+	real_t get_shadow_smooth() const;
 
 	void set_blend_mode(BlendMode p_mode);
 	BlendMode get_blend_mode() const;
@@ -138,7 +139,7 @@ class PointLight2D : public Light2D {
 	GDCLASS(PointLight2D, Light2D);
 
 private:
-	float _scale = 1.0;
+	real_t _scale = 1.0;
 	Ref<Texture2D> texture;
 	Vector2 texture_offset;
 
@@ -165,10 +166,10 @@ public:
 	void set_texture_offset(const Vector2 &p_offset);
 	Vector2 get_texture_offset() const;
 
-	void set_texture_scale(float p_scale);
-	float get_texture_scale() const;
+	void set_texture_scale(real_t p_scale);
+	real_t get_texture_scale() const;
 
-	String get_configuration_warning() const override;
+	TypedArray<String> get_configuration_warnings() const override;
 
 	PointLight2D();
 };
@@ -176,14 +177,14 @@ public:
 class DirectionalLight2D : public Light2D {
 	GDCLASS(DirectionalLight2D, Light2D);
 
-	float max_distance = 10000.0;
+	real_t max_distance = 10000.0;
 
 protected:
 	static void _bind_methods();
 
 public:
-	void set_max_distance(float p_distance);
-	float get_max_distance() const;
+	void set_max_distance(real_t p_distance);
+	real_t get_max_distance() const;
 
 	DirectionalLight2D();
 };

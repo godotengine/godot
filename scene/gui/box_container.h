@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -44,8 +44,8 @@ public:
 	};
 
 private:
-	bool vertical;
-	AlignMode align;
+	bool vertical = false;
+	AlignMode align = ALIGN_BEGIN;
 
 	void _resort();
 
@@ -55,7 +55,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	void add_spacer(bool p_begin = false);
+	Control *add_spacer(bool p_begin = false);
 
 	void set_alignment(AlignMode p_align);
 	AlignMode get_alignment() const;

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -373,7 +373,7 @@ public:
 	/**
 	 * return whether the list is empty
 	 */
-	_FORCE_INLINE_ bool empty() const {
+	_FORCE_INLINE_ bool is_empty() const {
 		return (!_data || !_data->size_cache);
 	}
 
@@ -492,7 +492,7 @@ public:
 		_data->last = p_I;
 	}
 
-	void invert() {
+	void reverse() {
 		int s = size() / 2;
 		Element *F = front();
 		Element *B = back();

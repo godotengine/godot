@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -43,10 +43,10 @@ void EditorRunNative::_notification(int p_what) {
 			}
 			Ref<ImageTexture> icon = eep->get_run_icon();
 			if (!icon.is_null()) {
-				Ref<Image> im = icon->get_data();
+				Ref<Image> im = icon->get_image();
 				im = im->duplicate();
 				im->clear_mipmaps();
-				if (!im->empty()) {
+				if (!im->is_empty()) {
 					im->resize(16 * EDSCALE, 16 * EDSCALE);
 					Ref<ImageTexture> small_icon;
 					small_icon.instance();

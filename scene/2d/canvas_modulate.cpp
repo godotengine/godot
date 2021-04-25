@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -51,7 +51,7 @@ void CanvasModulate::_notification(int p_what) {
 			remove_from_group("_canvas_modulate_" + itos(get_canvas().get_id()));
 		}
 
-		update_configuration_warning();
+		update_configuration_warnings();
 	}
 }
 
@@ -73,28 +73,22 @@ Color CanvasModulate::get_color() const {
 	return color;
 }
 
-String CanvasModulate::get_configuration_warning() const {
-	if (!is_visible_in_tree() || !is_inside_tree()) {
-		return String();
-	}
+TypedArray<String> CanvasModulate::get_configuration_warnings() const {
+	TypedArray<String> warnings = Node::get_configuration_warnings();
 
-	String warning = Node2D::get_configuration_warning();
+	if (is_visible_in_tree() && is_inside_tree()) {
+		List<Node *> nodes;
+		get_tree()->get_nodes_in_group("_canvas_modulate_" + itos(get_canvas().get_id()), &nodes);
 
-	List<Node *> nodes;
-	get_tree()->get_nodes_in_group("_canvas_modulate_" + itos(get_canvas().get_id()), &nodes);
-
-	if (nodes.size() > 1) {
-		if (!warning.empty()) {
-			warning += "\n\n";
+		if (nodes.size() > 1) {
+			warnings.push_back(TTR("Only one visible CanvasModulate is allowed per scene (or set of instanced scenes). The first created one will work, while the rest will be ignored."));
 		}
-		warning += TTR("Only one visible CanvasModulate is allowed per scene (or set of instanced scenes). The first created one will work, while the rest will be ignored.");
 	}
 
-	return warning;
+	return warnings;
 }
 
 CanvasModulate::CanvasModulate() {
-	color = Color(1, 1, 1, 1);
 }
 
 CanvasModulate::~CanvasModulate() {

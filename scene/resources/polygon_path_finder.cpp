@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -77,7 +77,7 @@ void PolygonPathFinder::setup(const Vector<Vector2> &p_points, const Vector<int>
 	outside_point.x += 20.451 + Math::randf() * 10.2039;
 	outside_point.y += 21.193 + Math::randf() * 12.5412;
 
-	//insert edges (which are also connetions)
+	//insert edges (which are also connections)
 
 	for (int i = 0; i < p_connections.size(); i += 2) {
 		Edge e(p_connections[i], p_connections[i + 1]);
@@ -335,7 +335,7 @@ Vector<Vector2> PolygonPathFinder::find_path(const Vector2 &p_from, const Vector
 				//oh this was visited already, can we win the cost?
 
 				if (p.distance > distance) {
-					p.prev = least_cost_point; //reasign previous
+					p.prev = least_cost_point; //reassign previous
 					p.distance = distance;
 				}
 			} else {
@@ -368,7 +368,7 @@ Vector<Vector2> PolygonPathFinder::find_path(const Vector2 &p_from, const Vector
 			path.push_back(points[at].pos);
 		} while (at != aidx);
 
-		path.invert();
+		path.reverse();
 	}
 
 	for (int i = 0; i < points.size() - 2; i++) {

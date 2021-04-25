@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -318,8 +318,8 @@ public:
 	bool is_numeric() const;
 
 	double to_float() const;
-	int64_t hex_to_int(bool p_with_prefix = true) const;
-	int64_t bin_to_int(bool p_with_prefix = true) const;
+	int64_t hex_to_int() const;
+	int64_t bin_to_int() const;
 	int64_t to_int() const;
 
 	static int64_t to_int(const char *p_str, int p_len = -1);
@@ -366,7 +366,7 @@ public:
 	String get_extension() const;
 	String get_basename() const;
 	String plus_file(const String &p_file) const;
-	char32_t ord_at(int p_idx) const;
+	char32_t unicode_at(int p_idx) const;
 
 	void erase(int p_pos, int p_chars);
 
@@ -394,7 +394,7 @@ public:
 	Vector<uint8_t> sha1_buffer() const;
 	Vector<uint8_t> sha256_buffer() const;
 
-	_FORCE_INLINE_ bool empty() const { return length() == 0; }
+	_FORCE_INLINE_ bool is_empty() const { return length() == 0; }
 
 	// path functions
 	bool is_abs_path() const;
@@ -409,18 +409,19 @@ public:
 
 	String xml_escape(bool p_escape_quotes = false) const;
 	String xml_unescape() const;
-	String http_escape() const;
-	String http_unescape() const;
+	String uri_encode() const;
+	String uri_decode() const;
 	String c_escape() const;
 	String c_escape_multiline() const;
 	String c_unescape() const;
 	String json_escape() const;
 	String word_wrap(int p_chars_per_line) const;
 
-	String percent_encode() const;
-	String percent_decode() const;
-
 	String property_name_encode() const;
+
+	// node functions
+	static const String invalid_node_name_characters;
+	String validate_node_name() const;
 
 	bool is_valid_identifier() const;
 	bool is_valid_integer() const;

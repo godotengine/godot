@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -259,13 +259,17 @@ void EditorFolding::_do_object_unfolds(Object *p_object, Set<RES> &resources) {
 					}
 				}
 			}
-		}
 
-		if (E->get().type == Variant::OBJECT) {
-			RES res = p_object->get(E->get().name);
-			if (res.is_valid() && !resources.has(res) && res->get_path() != String() && !res->get_path().is_resource_file()) {
-				resources.insert(res);
-				_do_object_unfolds(res.ptr(), resources);
+			if (E->get().type == Variant::OBJECT) {
+				RES res = p_object->get(E->get().name);
+				print_line("res: " + String(E->get().name) + " valid " + itos(res.is_valid()));
+				if (res.is_valid()) {
+					print_line("path " + res->get_path());
+				}
+				if (res.is_valid() && !resources.has(res) && res->get_path() != String() && !res->get_path().is_resource_file()) {
+					resources.insert(res);
+					_do_object_unfolds(res.ptr(), resources);
+				}
 			}
 		}
 	}

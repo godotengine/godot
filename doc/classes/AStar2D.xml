@@ -43,7 +43,8 @@
 			<argument index="2" name="weight_scale" type="float" default="1.0">
 			</argument>
 			<description>
-				Adds a new point at the given position with the given identifier. The algorithm prefers points with lower [code]weight_scale[/code] to form a path. The [code]id[/code] must be 0 or larger, and the [code]weight_scale[/code] must be 1 or larger.
+				Adds a new point at the given position with the given identifier. The [code]id[/code] must be 0 or larger, and the [code]weight_scale[/code] must be 1 or larger.
+				The [code]weight_scale[/code] is multiplied by the result of [method _compute_cost] when determining the overall cost of traveling across a segment from a neighboring point to this point. Thus, all else being equal, the algorithm prefers points with lower [code]weight_scale[/code]s to form a path.
 				[codeblocks]
 				[gdscript]
 				var astar = AStar2D.new()
@@ -257,6 +258,7 @@
 			</argument>
 			<description>
 				Returns an array with the points that are in the path found by AStar2D between the given points. The array is ordered from the starting point to the ending point of the path.
+				[b]Note:[/b] This method is not thread-safe. If called from a [Thread], it will return an empty [PackedVector2Array] and will print an error message.
 			</description>
 		</method>
 		<method name="get_point_position" qualifiers="const">
@@ -350,7 +352,7 @@
 			<argument index="1" name="weight_scale" type="float">
 			</argument>
 			<description>
-				Sets the [code]weight_scale[/code] for the point with the given [code]id[/code].
+				Sets the [code]weight_scale[/code] for the point with the given [code]id[/code]. The [code]weight_scale[/code] is multiplied by the result of [method _compute_cost] when determining the overall cost of traveling across a segment from a neighboring point to this point.
 			</description>
 		</method>
 	</methods>

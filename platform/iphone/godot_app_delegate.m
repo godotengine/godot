@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -302,37 +302,7 @@ static NSMutableArray<ApplicationDelegateService *> *services = nil;
 
 // MARK: Remote Notification
 
-- (void)application:(UIApplication *)application didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceToken {
-	for (ApplicationDelegateService *service in services) {
-		if (![service respondsToSelector:_cmd]) {
-			continue;
-		}
-
-		[service application:application didRegisterForRemoteNotificationsWithDeviceToken:deviceToken];
-	}
-}
-
-- (void)application:(UIApplication *)application didFailToRegisterForRemoteNotificationsWithError:(NSError *)error {
-	for (ApplicationDelegateService *service in services) {
-		if (![service respondsToSelector:_cmd]) {
-			continue;
-		}
-
-		[service application:application didFailToRegisterForRemoteNotificationsWithError:error];
-	}
-}
-
-- (void)application:(UIApplication *)application didReceiveRemoteNotification:(NSDictionary *)userInfo fetchCompletionHandler:(void (^)(UIBackgroundFetchResult result))completionHandler {
-	for (ApplicationDelegateService *service in services) {
-		if (![service respondsToSelector:_cmd]) {
-			continue;
-		}
-
-		[service application:application didReceiveRemoteNotification:userInfo fetchCompletionHandler:completionHandler];
-	}
-
-	completionHandler(UIBackgroundFetchResultNoData);
-}
+// Moved to the iOS Plugin
 
 // MARK: User Activity and Handling Quick Actions
 

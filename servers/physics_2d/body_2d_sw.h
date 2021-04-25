@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,6 +33,8 @@
 
 #include "area_2d_sw.h"
 #include "collision_object_2d_sw.h"
+#include "core/templates/list.h"
+#include "core/templates/pair.h"
 #include "core/templates/vset.h"
 
 class Constraint2DSW;
@@ -83,7 +85,7 @@ class Body2DSW : public CollisionObject2DSW {
 	virtual void _shapes_changed();
 	Transform2D new_transform;
 
-	Map<Constraint2DSW *, int> constraint_map;
+	List<Pair<Constraint2DSW *, int>> constraint_list;
 
 	struct AreaCMP {
 		Area2DSW *area;
@@ -115,23 +117,20 @@ class Body2DSW : public CollisionObject2DSW {
 	int contact_count;
 
 	struct ForceIntegrationCallback {
-		ObjectID id;
-		StringName method;
+		Callable callable;
 		Variant callback_udata;
 	};
 
 	ForceIntegrationCallback *fi_callback;
 
 	uint64_t island_step;
-	Body2DSW *island_next;
-	Body2DSW *island_list_next;
 
 	_FORCE_INLINE_ void _compute_area_gravity_and_dampenings(const Area2DSW *p_area);
 
 	friend class PhysicsDirectBodyState2DSW; // i give up, too many functions to expose
 
 public:
-	void set_force_integration_callback(ObjectID p_id, const StringName &p_method, const Variant &p_udata = Variant());
+	void set_force_integration_callback(const Callable &p_callable, const Variant &p_udata = Variant());
 
 	_FORCE_INLINE_ void add_area(Area2DSW *p_area) {
 		int index = areas.find(AreaCMP(p_area));
@@ -162,7 +161,7 @@ public:
 
 	_FORCE_INLINE_ int get_max_contacts_reported() const { return contacts.size(); }
 
-	_FORCE_INLINE_ bool can_report_contacts() const { return !contacts.empty(); }
+	_FORCE_INLINE_ bool can_report_contacts() const { return !contacts.is_empty(); }
 	_FORCE_INLINE_ void add_contact(const Vector2 &p_local_pos, const Vector2 &p_local_normal, real_t p_depth, int p_local_shape, const Vector2 &p_collider_pos, int p_collider_shape, ObjectID p_collider_instance_id, const RID &p_collider, const Vector2 &p_collider_velocity_at_pos);
 
 	_FORCE_INLINE_ void add_exception(const RID &p_exception) { exceptions.insert(p_exception); }
@@ -173,16 +172,10 @@ public:
 	_FORCE_INLINE_ uint64_t get_island_step() const { return island_step; }
 	_FORCE_INLINE_ void set_island_step(uint64_t p_step) { island_step = p_step; }
 
-	_FORCE_INLINE_ Body2DSW *get_island_next() const { return island_next; }
-	_FORCE_INLINE_ void set_island_next(Body2DSW *p_next) { island_next = p_next; }
-
-	_FORCE_INLINE_ Body2DSW *get_island_list_next() const { return island_list_next; }
-	_FORCE_INLINE_ void set_island_list_next(Body2DSW *p_next) { island_list_next = p_next; }
-
-	_FORCE_INLINE_ void add_constraint(Constraint2DSW *p_constraint, int p_pos) { constraint_map[p_constraint] = p_pos; }
-	_FORCE_INLINE_ void remove_constraint(Constraint2DSW *p_constraint) { constraint_map.erase(p_constraint); }
-	const Map<Constraint2DSW *, int> &get_constraint_map() const { return constraint_map; }
-	_FORCE_INLINE_ void clear_constraint_map() { constraint_map.clear(); }
+	_FORCE_INLINE_ void add_constraint(Constraint2DSW *p_constraint, int p_pos) { constraint_list.push_back({ p_constraint, p_pos }); }
+	_FORCE_INLINE_ void remove_constraint(Constraint2DSW *p_constraint, int p_pos) { constraint_list.erase({ p_constraint, p_pos }); }
+	const List<Pair<Constraint2DSW *, int>> &get_constraint_list() const { return constraint_list; }
+	_FORCE_INLINE_ void clear_constraint_list() { constraint_list.clear(); }
 
 	_FORCE_INLINE_ void set_omit_force_integration(bool p_omit_force_integration) { omit_force_integration = p_omit_force_integration; }
 	_FORCE_INLINE_ bool get_omit_force_integration() const { return omit_force_integration; }

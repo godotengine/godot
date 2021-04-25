@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -58,7 +58,7 @@ void AudioFilterSW::prepare_coefficients(Coeffs *p_coeffs) {
 		final_cutoff = 1; //don't allow less than this
 	}
 
-	double omega = 2.0 * Math_PI * final_cutoff / sampling_rate;
+	double omega = Math_TAU * final_cutoff / sampling_rate;
 
 	double sin_v = Math::sin(omega);
 	double cos_v = Math::cos(omega);
@@ -132,7 +132,7 @@ void AudioFilterSW::prepare_coefficients(Coeffs *p_coeffs) {
 			double hicutoff = resonance;
 			double centercutoff = (cutoff + resonance) / 2.0;
 			double bandwidth = (Math::log(centercutoff) - Math::log(hicutoff)) / Math::log((double)2);
-			omega = 2.0 * Math_PI * centercutoff / sampling_rate;
+			omega = Math_TAU * centercutoff / sampling_rate;
 			alpha = Math::sin(omega) * Math::sinh(Math::log((double)2) / 2 * bandwidth * omega / Math::sin(omega));
 			a0 = 1 + alpha;
 
@@ -197,7 +197,7 @@ void AudioFilterSW::set_stages(int p_stages) { //adjust for multiple stages
 /* Fouriertransform kernel to obtain response */
 
 float AudioFilterSW::get_response(float p_freq, Coeffs *p_coeffs) {
-	float freq = p_freq / sampling_rate * Math_PI * 2.0f;
+	float freq = p_freq / sampling_rate * Math_TAU;
 
 	float cx = p_coeffs->b0, cy = 0.0;
 

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -88,7 +88,7 @@ Ref<Texture2D> EditorTexturePreviewPlugin::generate(const RES &p_from, const Siz
 			return Ref<Texture2D>();
 		}
 
-		Ref<Image> atlas = tex->get_data();
+		Ref<Image> atlas = tex->get_image();
 		if (!atlas.is_valid()) {
 			return Ref<Texture2D>();
 		}
@@ -99,14 +99,14 @@ Ref<Texture2D> EditorTexturePreviewPlugin::generate(const RES &p_from, const Siz
 	} else {
 		Ref<Texture2D> tex = p_from;
 		if (tex.is_valid()) {
-			img = tex->get_data();
+			img = tex->get_image();
 			if (img.is_valid()) {
 				img = img->duplicate();
 			}
 		}
 	}
 
-	if (img.is_null() || img->empty()) {
+	if (img.is_null() || img->is_empty()) {
 		return Ref<Texture2D>();
 	}
 
@@ -150,7 +150,7 @@ bool EditorImagePreviewPlugin::handles(const String &p_type) const {
 Ref<Texture2D> EditorImagePreviewPlugin::generate(const RES &p_from, const Size2 &p_size) const {
 	Ref<Image> img = p_from;
 
-	if (img.is_null() || img->empty()) {
+	if (img.is_null() || img->is_empty()) {
 		return Ref<Image>();
 	}
 
@@ -301,7 +301,7 @@ EditorPackedScenePreviewPlugin::EditorPackedScenePreviewPlugin() {
 //////////////////////////////////////////////////////////////////
 
 void EditorMaterialPreviewPlugin::_preview_done(const Variant &p_udata) {
-	preview_done = true;
+	preview_done.set();
 }
 
 void EditorMaterialPreviewPlugin::_bind_methods() {
@@ -325,10 +325,10 @@ Ref<Texture2D> EditorMaterialPreviewPlugin::generate(const RES &p_from, const Si
 
 		RS::get_singleton()->viewport_set_update_mode(viewport, RS::VIEWPORT_UPDATE_ONCE); //once used for capture
 
-		preview_done = false;
+		preview_done.clear();
 		RS::get_singleton()->request_frame_drawn_callback(const_cast<EditorMaterialPreviewPlugin *>(this), "_preview_done", Variant());
 
-		while (!preview_done) {
+		while (!preview_done.is_set()) {
 			OS::get_singleton()->delay_usec(10);
 		}
 
@@ -382,7 +382,9 @@ EditorMaterialPreviewPlugin::EditorMaterialPreviewPlugin() {
 
 	int lats = 32;
 	int lons = 32;
-	float radius = 1.0;
+	const double lat_step = Math_TAU / lats;
+	const double lon_step = Math_TAU / lons;
+	real_t radius = 1.0;
 
 	Vector<Vector3> vertices;
 	Vector<Vector3> normals;
@@ -391,20 +393,20 @@ EditorMaterialPreviewPlugin::EditorMaterialPreviewPlugin() {
 	Basis tt = Basis(Vector3(0, 1, 0), Math_PI * 0.5);
 
 	for (int i = 1; i <= lats; i++) {
-		double lat0 = Math_PI * (-0.5 + (double)(i - 1) / lats);
+		double lat0 = lat_step * (i - 1) - Math_TAU / 4;
 		double z0 = Math::sin(lat0);
 		double zr0 = Math::cos(lat0);
 
-		double lat1 = Math_PI * (-0.5 + (double)i / lats);
+		double lat1 = lat_step * i - Math_TAU / 4;
 		double z1 = Math::sin(lat1);
 		double zr1 = Math::cos(lat1);
 
 		for (int j = lons; j >= 1; j--) {
-			double lng0 = 2 * Math_PI * (double)(j - 1) / lons;
+			double lng0 = lon_step * (j - 1);
 			double x0 = Math::cos(lng0);
 			double y0 = Math::sin(lng0);
 
-			double lng1 = 2 * Math_PI * (double)(j) / lons;
+			double lng1 = lon_step * j;
 			double x1 = Math::cos(lng1);
 			double y1 = Math::sin(lng1);
 
@@ -675,7 +677,7 @@ EditorAudioStreamPreviewPlugin::EditorAudioStreamPreviewPlugin() {
 ///////////////////////////////////////////////////////////////////////////
 
 void EditorMeshPreviewPlugin::_preview_done(const Variant &p_udata) {
-	preview_done = true;
+	preview_done.set();
 }
 
 void EditorMeshPreviewPlugin::_bind_methods() {
@@ -712,10 +714,10 @@ Ref<Texture2D> EditorMeshPreviewPlugin::generate(const RES &p_from, const Size2 
 
 	RS::get_singleton()->viewport_set_update_mode(viewport, RS::VIEWPORT_UPDATE_ONCE); //once used for capture
 
-	preview_done = false;
+	preview_done.clear();
 	RS::get_singleton()->request_frame_drawn_callback(const_cast<EditorMeshPreviewPlugin *>(this), "_preview_done", Variant());
 
-	while (!preview_done) {
+	while (!preview_done.is_set()) {
 		OS::get_singleton()->delay_usec(10);
 	}
 
@@ -790,7 +792,7 @@ EditorMeshPreviewPlugin::~EditorMeshPreviewPlugin() {
 ///////////////////////////////////////////////////////////////////////////
 
 void EditorFontPreviewPlugin::_preview_done(const Variant &p_udata) {
-	preview_done = true;
+	preview_done.set();
 }
 
 void EditorFontPreviewPlugin::_bind_methods() {
@@ -881,11 +883,11 @@ Ref<Texture2D> EditorFontPreviewPlugin::generate_from_path(const String &p_path,
 
 	font->draw_string(canvas_item, pos, sample, HALIGN_LEFT, -1.f, 50, Color(1, 1, 1));
 
-	preview_done = false;
+	preview_done.clear();
 	RS::get_singleton()->viewport_set_update_mode(viewport, RS::VIEWPORT_UPDATE_ONCE); //once used for capture
 	RS::get_singleton()->request_frame_drawn_callback(const_cast<EditorFontPreviewPlugin *>(this), "_preview_done", Variant());
 
-	while (!preview_done) {
+	while (!preview_done.is_set()) {
 		OS::get_singleton()->delay_usec(10);
 	}
 

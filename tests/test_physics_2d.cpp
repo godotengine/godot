@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -216,10 +216,10 @@ protected:
 		if (mm.is_valid()) {
 			Point2 p = mm->get_position();
 
-			if (mm->get_button_mask() & BUTTON_MASK_LEFT) {
+			if (mm->get_button_mask() & MOUSE_BUTTON_MASK_LEFT) {
 				ray_to = p;
 				_do_ray_query();
-			} else if (mm->get_button_mask() & BUTTON_MASK_RIGHT) {
+			} else if (mm->get_button_mask() & MOUSE_BUTTON_MASK_RIGHT) {
 				ray_from = p;
 				_do_ray_query();
 			}
@@ -243,9 +243,7 @@ protected:
 		Size2 imgsize(5, 5); //vs->texture_get_width(body_shape_data[p_shape].image), vs->texture_get_height(body_shape_data[p_shape].image));
 		vs->canvas_item_add_texture_rect(sprite, Rect2(-imgsize / 2.0, imgsize), body_shape_data[p_shape].image);
 
-		ps->body_set_force_integration_callback(body, this, "_body_moved", sprite);
-		//RID q = ps->query_create(this,"_body_moved",sprite);
-		//ps->query_body_state(q,body);
+		ps->body_set_force_integration_callback(body, callable_mp(this, &TestPhysics2DMainLoop::_body_moved), sprite);
 
 		return body;
 	}
@@ -310,12 +308,11 @@ protected:
 	}
 
 	static void _bind_methods() {
-		ClassDB::bind_method(D_METHOD("_body_moved"), &TestPhysics2DMainLoop::_body_moved);
 		ClassDB::bind_method(D_METHOD("_ray_query_callback"), &TestPhysics2DMainLoop::_ray_query_callback);
 	}
 
 public:
-	virtual void init() override {
+	virtual void initialize() override {
 		RenderingServer *vs = RenderingServer::get_singleton();
 		PhysicsServer2D *ps = PhysicsServer2D::get_singleton();
 
@@ -389,10 +386,10 @@ public:
 		//_add_plane(Vector2(-1,0).normalized(),-600);
 	}
 
-	virtual bool idle(float p_time) override {
+	virtual bool process(float p_time) override {
 		return false;
 	}
-	virtual void finish() override {
+	virtual void finalize() override {
 	}
 
 	TestPhysics2DMainLoop() {}

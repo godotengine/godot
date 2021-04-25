@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -39,20 +39,18 @@ class VisualScriptExpression : public VisualScriptNode {
 	friend class VisualScriptNodeInstanceExpression;
 
 	struct Input {
-		Variant::Type type;
+		Variant::Type type = Variant::NIL;
 		String name;
-
-		Input() { type = Variant::NIL; }
 	};
 
 	Vector<Input> inputs;
-	Variant::Type output_type;
+	Variant::Type output_type = Variant::NIL;
 
 	String expression;
 
-	bool sequenced;
-	int str_ofs;
-	bool expression_dirty;
+	bool sequenced = false;
+	int str_ofs = 0;
+	bool expression_dirty = true;
 
 	bool _compile_expression();
 
@@ -114,7 +112,7 @@ class VisualScriptExpression : public VisualScriptNode {
 	Error _get_token(Token &r_token);
 
 	String error_str;
-	bool error_set;
+	bool error_set = true;
 
 	struct ENode {
 		enum Type {
@@ -131,11 +129,10 @@ class VisualScriptExpression : public VisualScriptNode {
 			TYPE_CALL
 		};
 
-		ENode *next;
+		ENode *next = nullptr;
 
-		Type type;
+		Type type = Type::TYPE_SELF;
 
-		ENode() { next = nullptr; }
 		virtual ~ENode() {
 			if (next) {
 				memdelete(next);
@@ -144,17 +141,17 @@ class VisualScriptExpression : public VisualScriptNode {
 	};
 
 	struct Expression {
-		bool is_op;
+		bool is_op = false;
 		union {
 			Variant::Operator op;
-			ENode *node;
+			ENode *node = nullptr;
 		};
 	};
 
 	ENode *_parse_expression();
 
 	struct InputNode : public ENode {
-		int index;
+		int index = 0;
 		InputNode() {
 			type = TYPE_INPUT;
 		}
@@ -168,9 +165,9 @@ class VisualScriptExpression : public VisualScriptNode {
 	};
 
 	struct OperatorNode : public ENode {
-		Variant::Operator op;
+		Variant::Operator op = Variant::Operator::OP_ADD;
 
-		ENode *nodes[2];
+		ENode *nodes[2] = { nullptr, nullptr };
 
 		OperatorNode() {
 			type = TYPE_OPERATOR;
@@ -184,8 +181,8 @@ class VisualScriptExpression : public VisualScriptNode {
 	};
 
 	struct IndexNode : public ENode {
-		ENode *base;
-		ENode *index;
+		ENode *base = nullptr;
+		ENode *index = nullptr;
 
 		IndexNode() {
 			type = TYPE_INDEX;
@@ -193,7 +190,7 @@ class VisualScriptExpression : public VisualScriptNode {
 	};
 
 	struct NamedIndexNode : public ENode {
-		ENode *base;
+		ENode *base = nullptr;
 		StringName name;
 
 		NamedIndexNode() {
@@ -202,7 +199,7 @@ class VisualScriptExpression : public VisualScriptNode {
 	};
 
 	struct ConstructorNode : public ENode {
-		Variant::Type data_type;
+		Variant::Type data_type = Variant::Type::NIL;
 		Vector<ENode *> arguments;
 
 		ConstructorNode() {
@@ -211,7 +208,7 @@ class VisualScriptExpression : public VisualScriptNode {
 	};
 
 	struct CallNode : public ENode {
-		ENode *base;
+		ENode *base = nullptr;
 		StringName method;
 		Vector<ENode *> arguments;
 
@@ -235,7 +232,7 @@ class VisualScriptExpression : public VisualScriptNode {
 	};
 
 	struct BuiltinFuncNode : public ENode {
-		VisualScriptBuiltinFunc::BuiltinFunc func;
+		VisualScriptBuiltinFunc::BuiltinFunc func = VisualScriptBuiltinFunc::BuiltinFunc::BYTES_TO_VAR;
 		Vector<ENode *> arguments;
 		BuiltinFuncNode() {
 			type = TYPE_BUILTIN_FUNC;
@@ -250,8 +247,8 @@ class VisualScriptExpression : public VisualScriptNode {
 		return node;
 	}
 
-	ENode *root;
-	ENode *nodes;
+	ENode *root = nullptr;
+	ENode *nodes = nullptr;
 
 protected:
 	bool _set(const StringName &p_name, const Variant &p_value);
@@ -259,6 +256,8 @@ protected:
 	void _get_property_list(List<PropertyInfo> *p_list) const;
 
 public:
+	virtual void reset_state() override;
+
 	virtual int get_output_sequence_port_count() const override;
 	virtual bool has_input_sequence_port() const override;
 

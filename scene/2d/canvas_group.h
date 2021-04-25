@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,19 +35,19 @@
 
 class CanvasGroup : public Node2D {
 	GDCLASS(CanvasGroup, Node2D)
-	float fit_margin = 10.0;
-	float clear_margin = 10.0;
+	real_t fit_margin = 10.0;
+	real_t clear_margin = 10.0;
 	bool use_mipmaps = false;
 
 protected:
 	static void _bind_methods();
 
 public:
-	void set_fit_margin(float p_fit_margin);
-	float get_fit_margin() const;
+	void set_fit_margin(real_t p_fit_margin);
+	real_t get_fit_margin() const;
 
-	void set_clear_margin(float p_clear_margin);
-	float get_clear_margin() const;
+	void set_clear_margin(real_t p_clear_margin);
+	real_t get_clear_margin() const;
 
 	void set_use_mipmaps(bool p_use_mipmaps);
 	bool is_using_mipmaps() const;

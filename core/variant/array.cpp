@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,6 +35,7 @@
 #include "core/object/script_language.h"
 #include "core/templates/hashfuncs.h"
 #include "core/templates/vector.h"
+#include "core/variant/callable.h"
 #include "core/variant/variant.h"
 
 class ArrayPrivate {
@@ -86,8 +87,8 @@ int Array::size() const {
 	return _p->array.size();
 }
 
-bool Array::empty() const {
-	return _p->array.empty();
+bool Array::is_empty() const {
+	return _p->array.is_empty();
 }
 
 void Array::clear() {
@@ -138,9 +139,9 @@ uint32_t Array::hash() const {
 	return h;
 }
 
-void Array::_assign(const Array &p_array) {
+bool Array::_assign(const Array &p_array) {
 	if (_p->typed.type != Variant::OBJECT && _p->typed.type == p_array._p->typed.type) {
-		//same type or untyped, just reference, shuold be fine
+		//same type or untyped, just reference, should be fine
 		_ref(p_array);
 	} else if (_p->typed.type == Variant::NIL) { //from typed to untyped, must copy, but this is cheap anyway
 		_p->array = p_array._p->array;
@@ -149,7 +150,7 @@ void Array::_assign(const Array &p_array) {
 			//for objects, it needs full validation, either can be converted or fail
 			for (int i = 0; i < p_array._p->array.size(); i++) {
 				if (!_p->typed.validate(p_array._p->array[i], "assign")) {
-					return;
+					return false;
 				}
 			}
 			_p->array = p_array._p->array; //then just copy, which is cheap anyway
@@ -167,10 +168,10 @@ void Array::_assign(const Array &p_array) {
 					Callable::CallError ce;
 					Variant::construct(_p->typed.type, new_array.write[i], (const Variant **)&ptr, 1, ce);
 					if (ce.error != Callable::CallError::CALL_OK) {
-						ERR_FAIL_MSG("Unable to convert array index " + itos(i) + " from '" + Variant::get_type_name(src_val.get_type()) + "' to '" + Variant::get_type_name(_p->typed.type) + "'.");
+						ERR_FAIL_V_MSG(false, "Unable to convert array index " + itos(i) + " from '" + Variant::get_type_name(src_val.get_type()) + "' to '" + Variant::get_type_name(_p->typed.type) + "'.");
 					}
 				} else {
-					ERR_FAIL_MSG("Unable to convert array index " + itos(i) + " from '" + Variant::get_type_name(src_val.get_type()) + "' to '" + Variant::get_type_name(_p->typed.type) + "'.");
+					ERR_FAIL_V_MSG(false, "Unable to convert array index " + itos(i) + " from '" + Variant::get_type_name(src_val.get_type()) + "' to '" + Variant::get_type_name(_p->typed.type) + "'.");
 				}
 			}
 
@@ -179,12 +180,13 @@ void Array::_assign(const Array &p_array) {
 	} else if (_p->typed.can_reference(p_array._p->typed)) { //same type or compatible
 		_ref(p_array);
 	} else {
-		ERR_FAIL_MSG("Assignment of arrays of incompatible types.");
+		ERR_FAIL_V_MSG(false, "Assignment of arrays of incompatible types.");
 	}
+	return true;
 }
 
 void Array::operator=(const Array &p_array) {
-	_assign(p_array);
+	_ref(p_array);
 }
 
 void Array::push_back(const Variant &p_value) {
@@ -318,7 +320,7 @@ Array Array::slice(int p_begin, int p_end, int p_step, bool p_deep) const { // l
 
 	ERR_FAIL_COND_V_MSG(p_step == 0, new_arr, "Array slice step size cannot be zero.");
 
-	if (empty()) { // Don't try to slice empty arrays.
+	if (is_empty()) { // Don't try to slice empty arrays.
 		return new_arr;
 	}
 	if (p_step > 0) {
@@ -371,25 +373,22 @@ void Array::sort() {
 }
 
 struct _ArrayVariantSortCustom {
-	Object *obj = nullptr;
-	StringName func;
+	Callable func;
 
 	_FORCE_INLINE_ bool operator()(const Variant &p_l, const Variant &p_r) const {
 		const Variant *args[2] = { &p_l, &p_r };
 		Callable::CallError err;
-		bool res = obj->call(func, args, 2, err);
-		if (err.error != Callable::CallError::CALL_OK) {
-			res = false;
-		}
+		Variant res;
+		func.call(args, 2, res, err);
+		ERR_FAIL_COND_V_MSG(err.error != Callable::CallError::CALL_OK, false,
+				"Error calling sorting method: " + Variant::get_callable_error_text(func, args, 1, err));
 		return res;
 	}
 };
-void Array::sort_custom(Object *p_obj, const StringName &p_function) {
-	ERR_FAIL_NULL(p_obj);
 
+void Array::sort_custom(Callable p_callable) {
 	SortArray<Variant, _ArrayVariantSortCustom, true> avs;
-	avs.compare.obj = p_obj;
-	avs.compare.func = p_function;
+	avs.compare.func = p_callable;
 	avs.sort(_p->array.ptrw(), _p->array.size());
 }
 
@@ -438,19 +437,17 @@ int Array::bsearch(const Variant &p_value, bool p_before) {
 	return bisect(_p->array, p_value, p_before, _ArrayVariantSort());
 }
 
-int Array::bsearch_custom(const Variant &p_value, Object *p_obj, const StringName &p_function, bool p_before) {
+int Array::bsearch_custom(const Variant &p_value, Callable p_callable, bool p_before) {
 	ERR_FAIL_COND_V(!_p->typed.validate(p_value, "custom binary search"), -1);
-	ERR_FAIL_NULL_V(p_obj, 0);
 
 	_ArrayVariantSortCustom less;
-	less.obj = p_obj;
-	less.func = p_function;
+	less.func = p_callable;
 
 	return bisect(_p->array, p_value, p_before, less);
 }
 
-void Array::invert() {
-	_p->array.invert();
+void Array::reverse() {
+	_p->array.reverse();
 }
 
 void Array::push_front(const Variant &p_value) {
@@ -459,7 +456,7 @@ void Array::push_front(const Variant &p_value) {
 }
 
 Variant Array::pop_back() {
-	if (!_p->array.empty()) {
+	if (!_p->array.is_empty()) {
 		int n = _p->array.size() - 1;
 		Variant ret = _p->array.get(n);
 		_p->array.resize(n);
@@ -469,7 +466,7 @@ Variant Array::pop_back() {
 }
 
 Variant Array::pop_front() {
-	if (!_p->array.empty()) {
+	if (!_p->array.is_empty()) {
 		Variant ret = _p->array.get(0);
 		_p->array.remove(0);
 		return ret;
@@ -532,6 +529,10 @@ Array::Array(const Array &p_from, uint32_t p_type, const StringName &p_class_nam
 	_assign(p_from);
 }
 
+bool Array::typed_assign(const Array &p_other) {
+	return _assign(p_other);
+}
+
 void Array::set_typed(uint32_t p_type, const StringName &p_class_name, const Variant &p_script) {
 	ERR_FAIL_COND_MSG(_p->array.size() > 0, "Type can only be set when array is empty.");
 	ERR_FAIL_COND_MSG(_p->refcount.get() > 1, "Type can only be set when array has no more than one user.");
@@ -544,6 +545,22 @@ void Array::set_typed(uint32_t p_type, const StringName &p_class_name, const Var
 	_p->typed.class_name = p_class_name;
 	_p->typed.script = script;
 	_p->typed.where = "TypedArray";
+}
+
+bool Array::is_typed() const {
+	return _p->typed.type != Variant::NIL;
+}
+
+uint32_t Array::get_typed_builtin() const {
+	return _p->typed.type;
+}
+
+StringName Array::get_typed_class_name() const {
+	return _p->typed.class_name;
+}
+
+Variant Array::get_typed_script() const {
+	return _p->typed.script;
 }
 
 Array::Array(const Array &p_from) {

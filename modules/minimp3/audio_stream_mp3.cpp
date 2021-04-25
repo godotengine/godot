@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -99,8 +99,9 @@ float AudioStreamPlaybackMP3::get_playback_position() const {
 }
 
 void AudioStreamPlaybackMP3::seek(float p_time) {
-	if (!active)
+	if (!active) {
 		return;
+	}
 
 	if (p_time >= mp3_stream->get_length()) {
 		p_time = 0;
@@ -120,7 +121,10 @@ AudioStreamPlaybackMP3::~AudioStreamPlaybackMP3() {
 Ref<AudioStreamPlayback> AudioStreamMP3::instance_playback() {
 	Ref<AudioStreamPlaybackMP3> mp3s;
 
-	ERR_FAIL_COND_V(data == nullptr, mp3s);
+	ERR_FAIL_COND_V_MSG(data == nullptr, mp3s,
+			"This AudioStreamMP3 does not have an audio file assigned "
+			"to it. AudioStreamMP3 should not be created from the "
+			"inspector or with `.new()`. Instead, load an audio file.");
 
 	mp3s.instance();
 	mp3s->mp3_stream = Ref<AudioStreamMP3>(this);
@@ -156,7 +160,8 @@ void AudioStreamMP3::set_data(const Vector<uint8_t> &p_data) {
 	const uint8_t *src_datar = p_data.ptr();
 
 	mp3dec_ex_t mp3d;
-	mp3dec_ex_open_buf(&mp3d, src_datar, src_data_len, MP3D_SEEK_TO_SAMPLE);
+	int err = mp3dec_ex_open_buf(&mp3d, src_datar, src_data_len, MP3D_SEEK_TO_SAMPLE);
+	ERR_FAIL_COND(err != 0);
 
 	channels = mp3d.info.channels;
 	sample_rate = mp3d.info.hz;

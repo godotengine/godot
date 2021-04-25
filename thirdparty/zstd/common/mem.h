@@ -18,8 +18,10 @@ extern "C" {
 /*-****************************************
 *  Dependencies
 ******************************************/
-#include <stddef.h>     /* size_t, ptrdiff_t */
-#include <string.h>     /* memcpy */
+#include <stddef.h>  /* size_t, ptrdiff_t */
+#include "compiler.h"  /* __has_builtin */
+#include "debug.h"  /* DEBUG_STATIC_ASSERT */
+#include "zstd_deps.h"  /* ZSTD_memcpy */
 
 
 /*-****************************************
@@ -39,93 +41,15 @@ extern "C" {
 #  define MEM_STATIC static  /* this version may generate warnings for unused static functions; disable the relevant warning */
 #endif
 
-#ifndef __has_builtin
-#  define __has_builtin(x) 0  /* compat. with non-clang compilers */
-#endif
-
-/* code only tested on 32 and 64 bits systems */
-#define MEM_STATIC_ASSERT(c)   { enum { MEM_static_assert = 1/(int)(!!(c)) }; }
-MEM_STATIC void MEM_check(void) { MEM_STATIC_ASSERT((sizeof(size_t)==4) || (sizeof(size_t)==8)); }
-
-/* detects whether we are being compiled under msan */
-#if defined (__has_feature)
-#  if __has_feature(memory_sanitizer)
-#    define MEMORY_SANITIZER 1
-#  endif
-#endif
-
-#if defined (MEMORY_SANITIZER)
-/* Not all platforms that support msan provide sanitizers/msan_interface.h.
- * We therefore declare the functions we need ourselves, rather than trying to
- * include the header file... */
-
-#include <stdint.h> /* intptr_t */
-
-/* Make memory region fully initialized (without changing its contents). */
-void __msan_unpoison(const volatile void *a, size_t size);
-
-/* Make memory region fully uninitialized (without changing its contents).
-   This is a legacy interface that does not update origin information. Use
-   __msan_allocated_memory() instead. */
-void __msan_poison(const volatile void *a, size_t size);
-
-/* Returns the offset of the first (at least partially) poisoned byte in the
-   memory range, or -1 if the whole range is good. */
-intptr_t __msan_test_shadow(const volatile void *x, size_t size);
-#endif
-
-/* detects whether we are being compiled under asan */
-#if defined (__has_feature)
-#  if __has_feature(address_sanitizer)
-#    define ADDRESS_SANITIZER 1
-#  endif
-#elif defined(__SANITIZE_ADDRESS__)
-#  define ADDRESS_SANITIZER 1
-#endif
-
-#if defined (ADDRESS_SANITIZER)
-/* Not all platforms that support asan provide sanitizers/asan_interface.h.
- * We therefore declare the functions we need ourselves, rather than trying to
- * include the header file... */
-
-/**
- * Marks a memory region (<c>[addr, addr+size)</c>) as unaddressable.
- *
- * This memory must be previously allocated by your program. Instrumented
- * code is forbidden from accessing addresses in this region until it is
- * unpoisoned. This function is not guaranteed to poison the entire region -
- * it could poison only a subregion of <c>[addr, addr+size)</c> due to ASan
- * alignment restrictions.
- *
- * \note This function is not thread-safe because no two threads can poison or
- * unpoison memory in the same memory region simultaneously.
- *
- * \param addr Start of memory region.
- * \param size Size of memory region. */
-void __asan_poison_memory_region(void const volatile *addr, size_t size);
-
-/**
- * Marks a memory region (<c>[addr, addr+size)</c>) as addressable.
- *
- * This memory must be previously allocated by your program. Accessing
- * addresses in this region is allowed until this region is poisoned again.
- * This function could unpoison a super-region of <c>[addr, addr+size)</c> due
- * to ASan alignment restrictions.
- *
- * \note This function is not thread-safe because no two threads can
- * poison or unpoison memory in the same memory region simultaneously.
- *
- * \param addr Start of memory region.
- * \param size Size of memory region. */
-void __asan_unpoison_memory_region(void const volatile *addr, size_t size);
-#endif
-
-
 /*-**************************************************************
 *  Basic Types
 *****************************************************************/
 #if  !defined (__VMS) && (defined (__cplusplus) || (defined (__STDC_VERSION__) && (__STDC_VERSION__ >= 199901L) /* C99 */) )
-# include <stdint.h>
+#  if defined(_AIX)
+#    include <inttypes.h>
+#  else
+#    include <stdint.h> /* intptr_t */
+#  endif
   typedef   uint8_t BYTE;
   typedef  uint16_t U16;
   typedef   int16_t S16;
@@ -157,7 +81,53 @@ void __asan_unpoison_memory_region(void const volatile *addr, size_t size);
 
 
 /*-**************************************************************
-*  Memory I/O
+*  Memory I/O API
+*****************************************************************/
+/*=== Static platform detection ===*/
+MEM_STATIC unsigned MEM_32bits(void);
+MEM_STATIC unsigned MEM_64bits(void);
+MEM_STATIC unsigned MEM_isLittleEndian(void);
+
+/*=== Native unaligned read/write ===*/
+MEM_STATIC U16 MEM_read16(const void* memPtr);
+MEM_STATIC U32 MEM_read32(const void* memPtr);
+MEM_STATIC U64 MEM_read64(const void* memPtr);
+MEM_STATIC size_t MEM_readST(const void* memPtr);
+
+MEM_STATIC void MEM_write16(void* memPtr, U16 value);
+MEM_STATIC void MEM_write32(void* memPtr, U32 value);
+MEM_STATIC void MEM_write64(void* memPtr, U64 value);
+
+/*=== Little endian unaligned read/write ===*/
+MEM_STATIC U16 MEM_readLE16(const void* memPtr);
+MEM_STATIC U32 MEM_readLE24(const void* memPtr);
+MEM_STATIC U32 MEM_readLE32(const void* memPtr);
+MEM_STATIC U64 MEM_readLE64(const void* memPtr);
+MEM_STATIC size_t MEM_readLEST(const void* memPtr);
+
+MEM_STATIC void MEM_writeLE16(void* memPtr, U16 val);
+MEM_STATIC void MEM_writeLE24(void* memPtr, U32 val);
+MEM_STATIC void MEM_writeLE32(void* memPtr, U32 val32);
+MEM_STATIC void MEM_writeLE64(void* memPtr, U64 val64);
+MEM_STATIC void MEM_writeLEST(void* memPtr, size_t val);
+
+/*=== Big endian unaligned read/write ===*/
+MEM_STATIC U32 MEM_readBE32(const void* memPtr);
+MEM_STATIC U64 MEM_readBE64(const void* memPtr);
+MEM_STATIC size_t MEM_readBEST(const void* memPtr);
+
+MEM_STATIC void MEM_writeBE32(void* memPtr, U32 val32);
+MEM_STATIC void MEM_writeBE64(void* memPtr, U64 val64);
+MEM_STATIC void MEM_writeBEST(void* memPtr, size_t val);
+
+/*=== Byteswap ===*/
+MEM_STATIC U32 MEM_swap32(U32 in);
+MEM_STATIC U64 MEM_swap64(U64 in);
+MEM_STATIC size_t MEM_swapST(size_t in);
+
+
+/*-**************************************************************
+*  Memory I/O Implementation
 *****************************************************************/
 /* MEM_FORCE_MEMORY_ACCESS :
  * By default, access to unaligned memory is controlled by `memcpy()`, which is safe and portable.
@@ -236,37 +206,37 @@ MEM_STATIC void MEM_write64(void* memPtr, U64 value) { ((unalign64*)memPtr)->v =
 
 MEM_STATIC U16 MEM_read16(const void* memPtr)
 {
-    U16 val; memcpy(&val, memPtr, sizeof(val)); return val;
+    U16 val; ZSTD_memcpy(&val, memPtr, sizeof(val)); return val;
 }
 
 MEM_STATIC U32 MEM_read32(const void* memPtr)
 {
-    U32 val; memcpy(&val, memPtr, sizeof(val)); return val;
+    U32 val; ZSTD_memcpy(&val, memPtr, sizeof(val)); return val;
 }
 
 MEM_STATIC U64 MEM_read64(const void* memPtr)
 {
-    U64 val; memcpy(&val, memPtr, sizeof(val)); return val;
+    U64 val; ZSTD_memcpy(&val, memPtr, sizeof(val)); return val;
 }
 
 MEM_STATIC size_t MEM_readST(const void* memPtr)
 {
-    size_t val; memcpy(&val, memPtr, sizeof(val)); return val;
+    size_t val; ZSTD_memcpy(&val, memPtr, sizeof(val)); return val;
 }
 
 MEM_STATIC void MEM_write16(void* memPtr, U16 value)
 {
-    memcpy(memPtr, &value, sizeof(value));
+    ZSTD_memcpy(memPtr, &value, sizeof(value));
 }
 
 MEM_STATIC void MEM_write32(void* memPtr, U32 value)
 {
-    memcpy(memPtr, &value, sizeof(value));
+    ZSTD_memcpy(memPtr, &value, sizeof(value));
 }
 
 MEM_STATIC void MEM_write64(void* memPtr, U64 value)
 {
-    memcpy(memPtr, &value, sizeof(value));
+    ZSTD_memcpy(memPtr, &value, sizeof(value));
 }
 
 #endif /* MEM_FORCE_MEMORY_ACCESS */
@@ -444,6 +414,9 @@ MEM_STATIC void MEM_writeBEST(void* memPtr, size_t val)
     else
         MEM_writeBE64(memPtr, (U64)val);
 }
+
+/* code only tested on 32 and 64 bits systems */
+MEM_STATIC void MEM_check(void) { DEBUG_STATIC_ASSERT((sizeof(size_t)==4) || (sizeof(size_t)==8)); }
 
 
 #if defined (__cplusplus)

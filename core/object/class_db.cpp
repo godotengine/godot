@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -377,7 +377,7 @@ uint64_t ClassDB::get_api_hash(APIType p_api) {
 			while ((k = t->method_map.next(k))) {
 				String name = k->operator String();
 
-				ERR_CONTINUE(name.empty());
+				ERR_CONTINUE(name.is_empty());
 
 				if (name[0] == '_') {
 					continue; // Ignore non-virtual methods that start with an underscore
@@ -983,9 +983,9 @@ void ClassDB::add_property_subgroup(StringName p_class, const String &p_name, co
 
 // NOTE: For implementation simplicity reasons, this method doesn't allow setters to have optional arguments at the end.
 void ClassDB::add_property(StringName p_class, const PropertyInfo &p_pinfo, const StringName &p_setter, const StringName &p_getter, int p_index) {
-	lock->read_lock();
+	lock.read_lock();
 	ClassInfo *type = classes.getptr(p_class);
-	lock->read_unlock();
+	lock.read_unlock();
 
 	ERR_FAIL_COND(!type);
 
@@ -1095,6 +1095,8 @@ bool ClassDB::get_property_info(StringName p_class, StringName p_property, Prope
 }
 
 bool ClassDB::set_property(Object *p_object, const StringName &p_property, const Variant &p_value, bool *r_valid) {
+	ERR_FAIL_NULL_V(p_object, false);
+
 	ClassInfo *type = classes.getptr(p_object->get_class_name());
 	ClassInfo *check = type;
 	while (check) {
@@ -1142,6 +1144,8 @@ bool ClassDB::set_property(Object *p_object, const StringName &p_property, const
 }
 
 bool ClassDB::get_property(Object *p_object, const StringName &p_property, Variant &r_value) {
+	ERR_FAIL_NULL_V(p_object, false);
+
 	ClassInfo *type = classes.getptr(p_object->get_class_name());
 	ClassInfo *check = type;
 	while (check) {
@@ -1541,11 +1545,7 @@ Variant ClassDB::class_get_default_property_value(const StringName &p_class, con
 	return var;
 }
 
-RWLock *ClassDB::lock = nullptr;
-
-void ClassDB::init() {
-	lock = RWLock::create();
-}
+RWLock ClassDB::lock;
 
 void ClassDB::cleanup_defaults() {
 	default_values.clear();
@@ -1568,8 +1568,6 @@ void ClassDB::cleanup() {
 	classes.clear();
 	resource_base_extensions.clear();
 	compat_classes.clear();
-
-	memdelete(lock);
 }
 
 //

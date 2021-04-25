@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -39,7 +39,6 @@ Gradient::Gradient() {
 	points.write[0].offset = 0;
 	points.write[1].color = Color(1, 1, 1, 1);
 	points.write[1].offset = 1;
-	is_sorted = true;
 }
 
 Gradient::~Gradient() {
@@ -47,7 +46,7 @@ Gradient::~Gradient() {
 
 void Gradient::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_point", "offset", "color"), &Gradient::add_point);
-	ClassDB::bind_method(D_METHOD("remove_point", "offset"), &Gradient::remove_point);
+	ClassDB::bind_method(D_METHOD("remove_point", "point"), &Gradient::remove_point);
 
 	ClassDB::bind_method(D_METHOD("set_offset", "point", "offset"), &Gradient::set_offset);
 	ClassDB::bind_method(D_METHOD("get_offset", "point"), &Gradient::get_offset);

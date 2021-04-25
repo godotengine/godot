@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -42,6 +42,7 @@ enum MethodFlags {
 	METHOD_FLAG_VIRTUAL = 32,
 	METHOD_FLAG_FROM_SCRIPT = 64,
 	METHOD_FLAG_VARARG = 128,
+	METHOD_FLAG_STATIC = 256,
 	METHOD_FLAGS_DEFAULT = METHOD_FLAG_NORMAL,
 };
 

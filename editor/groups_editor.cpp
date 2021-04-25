@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -198,7 +198,7 @@ void GroupDialog::_add_group(String p_name) {
 	}
 
 	String name = p_name.strip_edges();
-	if (name.empty() || groups->get_item_with_text(name)) {
+	if (name.is_empty() || groups->get_item_with_text(name)) {
 		return;
 	}
 
@@ -413,7 +413,7 @@ GroupDialog::GroupDialog() {
 
 	VBoxContainer *vbc = memnew(VBoxContainer);
 	add_child(vbc);
-	vbc->set_anchors_and_margins_preset(Control::PRESET_WIDE, Control::PRESET_MODE_KEEP_SIZE, 8 * EDSCALE);
+	vbc->set_anchors_and_offsets_preset(Control::PRESET_WIDE, Control::PRESET_MODE_KEEP_SIZE, 8 * EDSCALE);
 
 	HBoxContainer *hbc = memnew(HBoxContainer);
 	vbc->add_child(hbc);
@@ -534,13 +534,13 @@ GroupDialog::GroupDialog() {
 	group_empty->set_autowrap(true);
 	group_empty->set_custom_minimum_size(Size2(100 * EDSCALE, 0));
 	nodes_to_remove->add_child(group_empty);
-	group_empty->set_anchors_and_margins_preset(Control::PRESET_WIDE, Control::PRESET_MODE_KEEP_SIZE, 8 * EDSCALE);
+	group_empty->set_anchors_and_offsets_preset(Control::PRESET_WIDE, Control::PRESET_MODE_KEEP_SIZE, 8 * EDSCALE);
 
 	set_title(TTR("Group Editor"));
 
 	error = memnew(ConfirmationDialog);
 	add_child(error);
-	error->get_ok()->set_text(TTR("Close"));
+	error->get_ok_button()->set_text(TTR("Close"));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -551,7 +551,7 @@ void GroupsEditor::_add_group(const String &p_group) {
 	}
 
 	const String name = group_name->get_text().strip_edges();
-	if (name.empty()) {
+	if (name.is_empty()) {
 		return;
 	}
 

@@ -323,20 +323,19 @@ preprocess_text_thai (const hb_ot_shape_plan_t *plan,
 
   buffer->clear_output ();
   unsigned int count = buffer->len;
-  for (buffer->idx = 0; buffer->idx < count && buffer->successful;)
+  for (buffer->idx = 0; buffer->idx < count /* No need for: && buffer->successful */;)
   {
     hb_codepoint_t u = buffer->cur().codepoint;
-    if (likely (!IS_SARA_AM (u))) {
-      buffer->next_glyph ();
+    if (likely (!IS_SARA_AM (u)))
+    {
+      if (unlikely (!buffer->next_glyph ())) break;
       continue;
     }
 
     /* Is SARA AM. Decompose and reorder. */
-    hb_glyph_info_t &nikhahit = buffer->output_glyph (NIKHAHIT_FROM_SARA_AM (u));
-    _hb_glyph_info_set_continuation (&nikhahit);
-    buffer->replace_glyph (SARA_AA_FROM_SARA_AM (u));
-    if (unlikely (!buffer->successful))
-      return;
+    (void) buffer->output_glyph (NIKHAHIT_FROM_SARA_AM (u));
+    _hb_glyph_info_set_continuation (&buffer->prev());
+    if (unlikely (!buffer->replace_glyph (SARA_AA_FROM_SARA_AM (u)))) break;
 
     /* Make Nikhahit be recognized as a ccc=0 mark when zeroing widths. */
     unsigned int end = buffer->out_len;

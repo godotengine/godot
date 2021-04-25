@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,35 +37,32 @@
 class CollisionObject2D : public Node2D {
 	GDCLASS(CollisionObject2D, Node2D);
 
-	bool area;
+	uint32_t collision_layer = 1;
+	uint32_t collision_mask = 1;
+
+	bool area = false;
 	RID rid;
-	bool pickable;
+	bool pickable = false;
 
 	struct ShapeData {
-		Object *owner;
+		Object *owner = nullptr;
 		Transform2D xform;
 		struct Shape {
 			Ref<Shape2D> shape;
-			int index;
+			int index = 0;
 		};
 
 		Vector<Shape> shapes;
-		bool disabled;
-		bool one_way_collision;
-		float one_way_collision_margin;
 
-		ShapeData() {
-			disabled = false;
-			one_way_collision = false;
-			one_way_collision_margin = 0;
-			owner = nullptr;
-		}
+		bool disabled = false;
+		bool one_way_collision = false;
+		real_t one_way_collision_margin = 0.0;
 	};
 
-	int total_subshapes;
+	int total_subshapes = 0;
 
 	Map<uint32_t, ShapeData> shapes;
-	bool only_update_transform_changes; //this is used for sync physics in KinematicBody
+	bool only_update_transform_changes = false; //this is used for sync physics in KinematicBody
 
 protected:
 	CollisionObject2D(RID p_rid, bool p_area);
@@ -82,6 +79,18 @@ protected:
 	void set_only_update_transform_changes(bool p_enable);
 
 public:
+	void set_collision_layer(uint32_t p_layer);
+	uint32_t get_collision_layer() const;
+
+	void set_collision_mask(uint32_t p_mask);
+	uint32_t get_collision_mask() const;
+
+	void set_collision_layer_bit(int p_bit, bool p_value);
+	bool get_collision_layer_bit(int p_bit) const;
+
+	void set_collision_mask_bit(int p_bit, bool p_value);
+	bool get_collision_mask_bit(int p_bit) const;
+
 	uint32_t create_shape_owner(Object *p_owner);
 	void remove_shape_owner(uint32_t owner);
 	void get_shape_owners(List<uint32_t> *r_owners);
@@ -97,8 +106,8 @@ public:
 	void shape_owner_set_one_way_collision(uint32_t p_owner, bool p_enable);
 	bool is_shape_owner_one_way_collision_enabled(uint32_t p_owner) const;
 
-	void shape_owner_set_one_way_collision_margin(uint32_t p_owner, float p_margin);
-	float get_shape_owner_one_way_collision_margin(uint32_t p_owner) const;
+	void shape_owner_set_one_way_collision_margin(uint32_t p_owner, real_t p_margin);
+	real_t get_shape_owner_one_way_collision_margin(uint32_t p_owner) const;
 
 	void shape_owner_add_shape(uint32_t p_owner, const Ref<Shape2D> &p_shape);
 	int shape_owner_get_shape_count(uint32_t p_owner) const;
@@ -113,7 +122,7 @@ public:
 	void set_pickable(bool p_enabled);
 	bool is_pickable() const;
 
-	String get_configuration_warning() const override;
+	TypedArray<String> get_configuration_warnings() const override;
 
 	_FORCE_INLINE_ RID get_rid() const { return rid; }
 

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,7 +37,10 @@
 #include "scene/3d/immediate_geometry_3d.h"
 #include "scene/3d/light_3d.h"
 #include "scene/3d/visual_instance_3d.h"
+#include "scene/3d/world_environment.h"
 #include "scene/gui/panel_container.h"
+#include "scene/resources/environment.h"
+#include "scene/resources/sky_material.h"
 
 class Camera3D;
 class Node3DEditor;
@@ -96,6 +99,7 @@ protected:
 
 public:
 	void add_lines(const Vector<Vector3> &p_lines, const Ref<Material> &p_material, bool p_billboard = false, const Color &p_modulate = Color(1, 1, 1));
+	void add_vertices(const Vector<Vector3> &p_vertices, const Ref<Material> &p_material, Mesh::PrimitiveType p_primitive_type, bool p_billboard = false, const Color &p_modulate = Color(1, 1, 1));
 	void add_mesh(const Ref<ArrayMesh> &p_mesh, bool p_billboard = false, const Ref<SkinReference> &p_skin_reference = Ref<SkinReference>(), const Ref<Material> &p_material = Ref<Material>());
 	void add_collision_segments(const Vector<Vector3> &p_lines);
 	void add_collision_triangles(const Ref<TriangleMesh> &p_tmesh);
@@ -212,6 +216,12 @@ class Node3DEditorViewport : public Control {
 		VIEW_DISPLAY_DEBUG_SDFGI,
 		VIEW_DISPLAY_DEBUG_SDFGI_PROBES,
 		VIEW_DISPLAY_DEBUG_GI_BUFFER,
+		VIEW_DISPLAY_DEBUG_DISABLE_LOD,
+		VIEW_DISPLAY_DEBUG_CLUSTER_OMNI_LIGHTS,
+		VIEW_DISPLAY_DEBUG_CLUSTER_SPOT_LIGHTS,
+		VIEW_DISPLAY_DEBUG_CLUSTER_DECALS,
+		VIEW_DISPLAY_DEBUG_CLUSTER_REFLECTION_PROBES,
+
 		VIEW_LOCK_ROTATION,
 		VIEW_CINEMATIC_PREVIEW,
 		VIEW_AUTO_ORTHOGONAL,
@@ -285,9 +295,13 @@ private:
 	Label *info_label;
 	Label *cinema_label;
 	Label *locked_label;
+	Label *zoom_limit_label;
 
 	VBoxContainer *top_right_vbox;
 	ViewportRotationControl *rotation_control;
+	Gradient *frame_time_gradient;
+	Label *cpu_time_label;
+	Label *gpu_time_label;
 	Label *fps_label;
 
 	struct _RayResult {
@@ -405,6 +419,7 @@ private:
 	void scale_freelook_speed(real_t scale);
 
 	real_t zoom_indicator_delay;
+	int zoom_failed_attempts_count = 0;
 
 	RID move_gizmo_instance[3], move_plane_gizmo_instance[3], rotate_gizmo_instance[4], scale_gizmo_instance[3], scale_plane_gizmo_instance[3];
 
@@ -454,6 +469,8 @@ private:
 	bool can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const;
 	void drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);
 
+	void _project_settings_changed();
+
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
@@ -479,6 +496,7 @@ public:
 	Camera3D *get_camera() { return camera; } // return the default camera object.
 
 	Node3DEditorViewport(Node3DEditor *p_spatial_editor, EditorNode *p_editor, int p_index);
+	~Node3DEditorViewport();
 };
 
 class Node3DEditorSelectedItem : public Object {
@@ -580,7 +598,6 @@ private:
 	/////
 
 	ToolMode tool_mode;
-	bool orthogonal;
 
 	RenderingServer::ScenarioDebugMode scenario_debug;
 
@@ -613,6 +630,7 @@ private:
 	RID cursor_mesh;
 	RID cursor_instance;
 	Ref<StandardMaterial3D> indicator_mat;
+	Ref<ShaderMaterial> grid_mat[3];
 	Ref<StandardMaterial3D> cursor_material;
 
 	// Scene drag and drop support
@@ -720,6 +738,7 @@ private:
 
 	static Node3DEditor *singleton;
 
+	void _node_added(Node *p_node);
 	void _node_removed(Node *p_node);
 	Vector<Ref<EditorNode3DGizmoPlugin>> gizmo_plugins_by_priority;
 	Vector<Ref<EditorNode3DGizmoPlugin>> gizmo_plugins_by_name;
@@ -731,6 +750,61 @@ private:
 	bool is_any_freelook_active() const;
 
 	void _refresh_menu_icons();
+
+	// Preview Sun and Environment
+
+	uint32_t world_env_count = 0;
+	uint32_t directional_light_count = 0;
+
+	Button *sun_button;
+	Label *sun_state;
+	Label *sun_title;
+	VBoxContainer *sun_vb;
+	Popup *sun_environ_popup;
+	Control *sun_direction;
+	ColorPickerButton *sun_color;
+	EditorSpinSlider *sun_energy;
+	EditorSpinSlider *sun_max_distance;
+	Button *sun_add_to_scene;
+
+	void _sun_direction_draw();
+	void _sun_direction_input(const Ref<InputEvent> &p_event);
+
+	Basis sun_rotation;
+
+	Ref<Shader> sun_direction_shader;
+	Ref<ShaderMaterial> sun_direction_material;
+
+	Button *environ_button;
+	Label *environ_state;
+	Label *environ_title;
+	VBoxContainer *environ_vb;
+	ColorPickerButton *environ_sky_color;
+	ColorPickerButton *environ_ground_color;
+	EditorSpinSlider *environ_energy;
+	Button *environ_ao_button;
+	Button *environ_glow_button;
+	Button *environ_tonemap_button;
+	Button *environ_gi_button;
+	Button *environ_add_to_scene;
+
+	Button *sun_environ_settings;
+
+	DirectionalLight3D *preview_sun;
+	WorldEnvironment *preview_environment;
+	Ref<Environment> environment;
+	Ref<ProceduralSkyMaterial> sky_material;
+
+	bool sun_environ_updating = false;
+
+	void _load_default_preview_settings();
+	void _update_preview_environment();
+
+	void _preview_settings_changed();
+	void _sun_environ_settings_pressed();
+
+	void _add_sun_to_scene();
+	void _add_environment_to_scene();
 
 protected:
 	void _notification(int p_what);

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -48,11 +48,7 @@ void Light3D::set_param(Param p_param, float p_value) {
 		update_gizmo();
 
 		if (p_param == PARAM_SPOT_ANGLE) {
-			_change_notify("spot_angle");
-			update_configuration_warning();
-		} else if (p_param == PARAM_RANGE) {
-			_change_notify("omni_range");
-			_change_notify("spot_range");
+			update_configuration_warnings();
 		}
 	}
 }
@@ -67,8 +63,10 @@ void Light3D::set_shadow(bool p_enable) {
 	RS::get_singleton()->light_set_shadow(light, p_enable);
 
 	if (type == RenderingServer::LIGHT_SPOT || type == RenderingServer::LIGHT_OMNI) {
-		update_configuration_warning();
+		update_configuration_warnings();
 	}
+
+	notify_property_list_changed();
 }
 
 bool Light3D::has_shadow() const {
@@ -155,7 +153,7 @@ void Light3D::set_projector(const Ref<Texture2D> &p_texture) {
 	projector = p_texture;
 	RID tex_id = projector.is_valid() ? projector->get_rid() : RID();
 	RS::get_singleton()->light_set_projector(light, tex_id);
-	update_configuration_warning();
+	update_configuration_warnings();
 }
 
 Ref<Texture2D> Light3D::get_projector() const {
@@ -184,8 +182,6 @@ void Light3D::_update_visibility() {
 #endif
 
 	RS::get_singleton()->instance_set_visible(get_instance(), is_visible_in_tree() && editor_ok);
-
-	_change_notify("geometry/visible");
 }
 
 void Light3D::_notification(int p_what) {
@@ -208,7 +204,15 @@ bool Light3D::is_editor_only() const {
 }
 
 void Light3D::_validate_property(PropertyInfo &property) const {
+	if (!shadow && (property.name == "shadow_color" || property.name == "shadow_bias" || property.name == "shadow_normal_bias" || property.name == "shadow_reverse_cull_face" || property.name == "shadow_transmittance_bias" || property.name == "shadow_fog_fade" || property.name == "shadow_blur")) {
+		property.usage = PROPERTY_USAGE_NOEDITOR;
+	}
+
 	if (get_light_type() == RS::LIGHT_DIRECTIONAL && property.name == "light_size") {
+		property.usage = 0;
+	}
+
+	if (get_light_type() == RS::LIGHT_DIRECTIONAL && property.name == "light_specular") {
 		property.usage = 0;
 	}
 
@@ -257,7 +261,7 @@ void Light3D::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "light_energy", PROPERTY_HINT_RANGE, "0,16,0.01,or_greater"), "set_param", "get_param", PARAM_ENERGY);
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "light_indirect_energy", PROPERTY_HINT_RANGE, "0,16,0.01,or_greater"), "set_param", "get_param", PARAM_INDIRECT_ENERGY);
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "light_projector", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_projector", "get_projector");
-	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "light_size", PROPERTY_HINT_RANGE, "0,64,0.01,or_greater"), "set_param", "get_param", PARAM_SIZE);
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "light_size", PROPERTY_HINT_RANGE, "0,1,0.01,or_greater"), "set_param", "get_param", PARAM_SIZE);
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "light_angular_distance", PROPERTY_HINT_RANGE, "0,90,0.01"), "set_param", "get_param", PARAM_SIZE);
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "light_negative"), "set_negative", "is_negative");
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "light_specular", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_param", "get_param", PARAM_SPECULAR);
@@ -320,10 +324,6 @@ Light3D::Light3D(RenderingServer::LightType p_type) {
 
 	RS::get_singleton()->instance_set_base(get_instance(), light);
 
-	reverse_cull = false;
-	bake_mode = BAKE_DYNAMIC;
-
-	editor_only = false;
 	set_color(Color(1, 1, 1, 1));
 	set_shadow(false);
 	set_negative(false);
@@ -347,13 +347,12 @@ Light3D::Light3D(RenderingServer::LightType p_type) {
 	set_param(PARAM_SHADOW_BIAS, 0.02);
 	set_param(PARAM_SHADOW_NORMAL_BIAS, 1.0);
 	set_param(PARAM_TRANSMITTANCE_BIAS, 0.05);
-	set_param(PARAM_SHADOW_VOLUMETRIC_FOG_FADE, 1.0);
+	set_param(PARAM_SHADOW_VOLUMETRIC_FOG_FADE, 0.1);
 	set_param(PARAM_SHADOW_FADE_START, 1);
 	set_disable_scale(true);
 }
 
 Light3D::Light3D() {
-	type = RenderingServer::LIGHT_DIRECTIONAL;
 	ERR_PRINT("Light3D should not be instanced directly; use the DirectionalLight3D, OmniLight3D or SpotLight3D subtypes instead.");
 }
 
@@ -458,17 +457,14 @@ OmniLight3D::ShadowMode OmniLight3D::get_shadow_mode() const {
 	return shadow_mode;
 }
 
-String OmniLight3D::get_configuration_warning() const {
-	String warning = Light3D::get_configuration_warning();
+TypedArray<String> OmniLight3D::get_configuration_warnings() const {
+	TypedArray<String> warnings = Node::get_configuration_warnings();
 
 	if (!has_shadow() && get_projector().is_valid()) {
-		if (!warning.empty()) {
-			warning += "\n\n";
-		}
-		warning += TTR("Projector texture only works with shadows active.");
+		warnings.push_back(TTR("Projector texture only works with shadows active."));
 	}
 
-	return warning;
+	return warnings;
 }
 
 void OmniLight3D::_bind_methods() {
@@ -492,24 +488,18 @@ OmniLight3D::OmniLight3D() :
 	set_param(PARAM_SHADOW_NORMAL_BIAS, 2.0);
 }
 
-String SpotLight3D::get_configuration_warning() const {
-	String warning = Light3D::get_configuration_warning();
+TypedArray<String> SpotLight3D::get_configuration_warnings() const {
+	TypedArray<String> warnings = Node::get_configuration_warnings();
 
 	if (has_shadow() && get_param(PARAM_SPOT_ANGLE) >= 90.0) {
-		if (!warning.empty()) {
-			warning += "\n\n";
-		}
-		warning += TTR("A SpotLight3D with an angle wider than 90 degrees cannot cast shadows.");
+		warnings.push_back(TTR("A SpotLight3D with an angle wider than 90 degrees cannot cast shadows."));
 	}
 
 	if (!has_shadow() && get_projector().is_valid()) {
-		if (!warning.empty()) {
-			warning += "\n\n";
-		}
-		warning += TTR("Projector texture only works with shadows active.");
+		warnings.push_back(TTR("Projector texture only works with shadows active."));
 	}
 
-	return warning;
+	return warnings;
 }
 
 void SpotLight3D::_bind_methods() {

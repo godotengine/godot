@@ -17,7 +17,7 @@
 		- VisualScript tracks properties inside Variants as well, but it also uses static typing. The GUI interface enforces that properties have a particular type that doesn't change over time.
 		- C# is statically typed, but uses the Mono [code]object[/code] type in place of Godot's Variant class when it needs to represent a dynamic value. [code]object[/code] is the Mono runtime's equivalent of the same concept.
 		- The statically-typed language NativeScript C++ does not define a built-in Variant-like class. Godot's GDNative bindings provide their own godot::Variant class for users; Any point at which the C++ code starts interacting with the Godot runtime is a place where you might have to start wrapping data inside Variant objects.
-		The global [method @GDScript.typeof] function returns the enumerated value of the Variant type stored in the current variable (see [enum Variant.Type]).
+		The global [method @GlobalScope.typeof] function returns the enumerated value of the Variant type stored in the current variable (see [enum Variant.Type]).
 		[codeblock]
 		var foo = 2
 		match typeof(foo):

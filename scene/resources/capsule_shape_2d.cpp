@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -36,12 +36,13 @@
 
 Vector<Vector2> CapsuleShape2D::_get_points() const {
 	Vector<Vector2> points;
+	const real_t turn_step = Math_TAU / 24.0;
 	for (int i = 0; i < 24; i++) {
 		Vector2 ofs = Vector2(0, (i > 6 && i <= 18) ? -get_height() * 0.5 : get_height() * 0.5);
 
-		points.push_back(Vector2(Math::sin(i * Math_PI * 2 / 24.0), Math::cos(i * Math_PI * 2 / 24.0)) * get_radius() + ofs);
+		points.push_back(Vector2(Math::sin(i * turn_step), Math::cos(i * turn_step)) * get_radius() + ofs);
 		if (i == 6 || i == 18) {
-			points.push_back(Vector2(Math::sin(i * Math_PI * 2 / 24.0), Math::cos(i * Math_PI * 2 / 24.0)) * get_radius() - ofs);
+			points.push_back(Vector2(Math::sin(i * turn_step), Math::cos(i * turn_step)) * get_radius() - ofs);
 		}
 	}
 
@@ -84,6 +85,11 @@ void CapsuleShape2D::draw(const RID &p_to_rid, const Color &p_color) {
 	Vector<Color> col;
 	col.push_back(p_color);
 	RenderingServer::get_singleton()->canvas_item_add_polygon(p_to_rid, points, col);
+	if (is_collision_outline_enabled()) {
+		RenderingServer::get_singleton()->canvas_item_add_polyline(p_to_rid, points, col);
+		// Draw the last segment as it's not drawn by `canvas_item_add_polyline()`.
+		RenderingServer::get_singleton()->canvas_item_add_line(p_to_rid, points[points.size() - 1], points[0], p_color);
+	}
 }
 
 Rect2 CapsuleShape2D::get_rect() const {
@@ -111,7 +117,5 @@ void CapsuleShape2D::_bind_methods() {
 
 CapsuleShape2D::CapsuleShape2D() :
 		Shape2D(PhysicsServer2D::get_singleton()->capsule_shape_create()) {
-	radius = 10;
-	height = 20;
 	_update_shape();
 }

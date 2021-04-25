@@ -168,7 +168,7 @@
 			<argument index="2" name="stream" type="Resource">
 			</argument>
 			<description>
-				Sets the stream of the key identified by [code]key_idx[/code] to value [code]offset[/code]. The [code]track_idx[/code] must be the index of an Audio Track.
+				Sets the stream of the key identified by [code]key_idx[/code] to value [code]stream[/code]. The [code]track_idx[/code] must be the index of an Audio Track.
 			</description>
 		</method>
 		<method name="bezier_track_get_key_in_handle" qualifiers="const">
@@ -409,7 +409,7 @@
 			<argument index="1" name="key_idx" type="int">
 			</argument>
 			<description>
-				Returns the transition curve (easing) for a specific key (see the built-in math function [method @GDScript.ease]).
+				Returns the transition curve (easing) for a specific key (see the built-in math function [method @GlobalScope.ease]).
 			</description>
 		</method>
 		<method name="track_get_key_value" qualifiers="const">
@@ -514,15 +514,15 @@
 				Removes a key by index in a given track.
 			</description>
 		</method>
-		<method name="track_remove_key_at_position">
+		<method name="track_remove_key_at_time">
 			<return type="void">
 			</return>
 			<argument index="0" name="track_idx" type="int">
 			</argument>
-			<argument index="1" name="position" type="float">
+			<argument index="1" name="time" type="float">
 			</argument>
 			<description>
-				Removes a key by position (seconds) in a given track.
+				Removes a key at [code]time[/code] in a given track.
 			</description>
 		</method>
 		<method name="track_set_enabled">
@@ -592,7 +592,7 @@
 			<argument index="2" name="transition" type="float">
 			</argument>
 			<description>
-				Sets the transition curve (easing) for a specific key (see the built-in math function [method @GDScript.ease]).
+				Sets the transition curve (easing) for a specific key (see the built-in math function [method @GlobalScope.ease]).
 			</description>
 		</method>
 		<method name="track_set_key_value">
@@ -710,7 +710,7 @@
 			[b]Note:[/b] Length is not delimited by the last key, as this one may be before or after the end to ensure correct interpolation and looping.
 		</member>
 		<member name="loop" type="bool" setter="set_loop" getter="has_loop" default="false">
-			A flag indicating that the animation must loop. This is uses for correct interpolation of animation cycles, and for hinting the player that it must restart the animation.
+			A flag indicating that the animation must loop. This is used for correct interpolation of animation cycles, and for hinting the player that it must restart the animation.
 		</member>
 		<member name="step" type="float" setter="set_step" getter="get_step" default="0.1">
 			The animation step value.

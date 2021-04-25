@@ -4,12 +4,12 @@
 		Customizable [StyleBox] with a given set of parameters (no texture required).
 	</brief_description>
 	<description>
-		This [StyleBox] can be used to achieve all kinds of looks without the need of a texture. Those properties are customizable:
+		This [StyleBox] can be used to achieve all kinds of looks without the need of a texture. The following properties are customizable:
 		- Color
 		- Border width (individual width for each border)
 		- Rounded corners (individual radius for each corner)
 		- Shadow (with blur and offset)
-		Setting corner radius to high values is allowed. As soon as corners would overlap, the stylebox will switch to a relative system. Example:
+		Setting corner radius to high values is allowed. As soon as corners overlap, the stylebox will switch to a relative system. Example:
 		[codeblock]
 		height = 30
 		corner_radius_top_left = 50
@@ -27,10 +27,10 @@
 		<method name="get_border_width" qualifiers="const">
 			<return type="int">
 			</return>
-			<argument index="0" name="margin" type="int" enum="Margin">
+			<argument index="0" name="margin" type="int" enum="Side">
 			</argument>
 			<description>
-				Returns the given [code]margin[/code]'s border width. See [enum Margin] for possible values.
+				Returns the specified [enum Side]'s border width.
 			</description>
 		</method>
 		<method name="get_border_width_min" qualifiers="const">
@@ -52,21 +52,21 @@
 		<method name="get_expand_margin" qualifiers="const">
 			<return type="float">
 			</return>
-			<argument index="0" name="margin" type="int" enum="Margin">
+			<argument index="0" name="margin" type="int" enum="Side">
 			</argument>
 			<description>
-				Returns the size of the given [code]margin[/code]'s expand margin. See [enum Margin] for possible values.
+				Returns the size of the specified [enum Side]'s expand margin.
 			</description>
 		</method>
 		<method name="set_border_width">
 			<return type="void">
 			</return>
-			<argument index="0" name="margin" type="int" enum="Margin">
+			<argument index="0" name="margin" type="int" enum="Side">
 			</argument>
 			<argument index="1" name="width" type="int">
 			</argument>
 			<description>
-				Sets the border width to [code]width[/code] pixels for the given [code]margin[/code]. See [enum Margin] for possible values.
+				Sets the specified [enum Side]'s border width to [code]width[/code] pixels.
 			</description>
 		</method>
 		<method name="set_border_width_all">
@@ -75,7 +75,7 @@
 			<argument index="0" name="width" type="int">
 			</argument>
 			<description>
-				Sets the border width to [code]width[/code] pixels for all margins.
+				Sets the border width to [code]width[/code] pixels for all sides.
 			</description>
 		</method>
 		<method name="set_corner_radius">
@@ -116,12 +116,12 @@
 		<method name="set_expand_margin">
 			<return type="void">
 			</return>
-			<argument index="0" name="margin" type="int" enum="Margin">
+			<argument index="0" name="margin" type="int" enum="Side">
 			</argument>
 			<argument index="1" name="size" type="float">
 			</argument>
 			<description>
-				Sets the expand margin to [code]size[/code] pixels for the given [code]margin[/code]. See [enum Margin] for possible values.
+				Sets the expand margin to [code]size[/code] pixels for the specified [enum Side].
 			</description>
 		</method>
 		<method name="set_expand_margin_all">
@@ -178,8 +178,8 @@
 			Border width for the top border.
 		</member>
 		<member name="corner_detail" type="int" setter="set_corner_detail" getter="get_corner_detail" default="8">
-			This sets the amount of vertices used for each corner. Higher values result in rounder corners but take more processing power to compute. When choosing a value, you should take the corner radius ([method set_corner_radius_all]) into account.
-			For corner radii smaller than 10, [code]4[/code] or [code]5[/code] should be enough. For corner radii smaller than 30, values between [code]8[/code] and [code]12[/code] should be enough.
+			This sets the number of vertices used for each corner. Higher values result in rounder corners but take more processing power to compute. When choosing a value, you should take the corner radius ([method set_corner_radius_all]) into account.
+			For corner radii less than 10, [code]4[/code] or [code]5[/code] should be enough. For corner radii less than 30, values between [code]8[/code] and [code]12[/code] should be enough.
 			A corner detail of [code]1[/code] will result in chamfered corners instead of rounded corners, which is useful for some artistic effects.
 		</member>
 		<member name="corner_radius_bottom_left" type="int" setter="set_corner_radius" getter="get_corner_radius" default="0">

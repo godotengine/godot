@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -294,10 +294,10 @@ FindInFilesDialog::FindInFilesDialog() {
 	set_title(TTR("Find in Files"));
 
 	VBoxContainer *vbc = memnew(VBoxContainer);
-	vbc->set_anchor_and_margin(MARGIN_LEFT, Control::ANCHOR_BEGIN, 8 * EDSCALE);
-	vbc->set_anchor_and_margin(MARGIN_TOP, Control::ANCHOR_BEGIN, 8 * EDSCALE);
-	vbc->set_anchor_and_margin(MARGIN_RIGHT, Control::ANCHOR_END, -8 * EDSCALE);
-	vbc->set_anchor_and_margin(MARGIN_BOTTOM, Control::ANCHOR_END, -8 * EDSCALE);
+	vbc->set_anchor_and_offset(SIDE_LEFT, Control::ANCHOR_BEGIN, 8 * EDSCALE);
+	vbc->set_anchor_and_offset(SIDE_TOP, Control::ANCHOR_BEGIN, 8 * EDSCALE);
+	vbc->set_anchor_and_offset(SIDE_RIGHT, Control::ANCHOR_END, -8 * EDSCALE);
+	vbc->set_anchor_and_offset(SIDE_BOTTOM, Control::ANCHOR_END, -8 * EDSCALE);
 	add_child(vbc);
 
 	GridContainer *gc = memnew(GridContainer);
@@ -383,7 +383,7 @@ FindInFilesDialog::FindInFilesDialog() {
 	_replace_button = add_button(TTR("Replace..."), false, "replace");
 	_replace_button->set_disabled(true);
 
-	Button *cancel_button = get_ok();
+	Button *cancel_button = get_ok_button();
 	cancel_button->set_text(TTR("Cancel"));
 
 	_mode = SEARCH_MODE;
@@ -463,7 +463,7 @@ void FindInFilesDialog::_notification(int p_what) {
 			for (int i = 0; i < _filters_container->get_child_count(); i++) {
 				_filters_container->get_child(i)->queue_delete();
 			}
-			Array exts = ProjectSettings::get_singleton()->get("editor/search_in_file_extensions");
+			Array exts = ProjectSettings::get_singleton()->get("editor/script/search_in_file_extensions");
 			for (int i = 0; i < exts.size(); ++i) {
 				CheckBox *cb = memnew(CheckBox);
 				cb->set_text(exts[i]);
@@ -499,8 +499,8 @@ void FindInFilesDialog::_on_search_text_modified(String text) {
 	ERR_FAIL_COND(!_find_button);
 	ERR_FAIL_COND(!_replace_button);
 
-	_find_button->set_disabled(get_search_text().empty());
-	_replace_button->set_disabled(get_search_text().empty());
+	_find_button->set_disabled(get_search_text().is_empty());
+	_replace_button->set_disabled(get_search_text().is_empty());
 }
 
 void FindInFilesDialog::_on_search_text_entered(String text) {
@@ -551,10 +551,10 @@ FindInFilesPanel::FindInFilesPanel() {
 	add_child(_finder);
 
 	VBoxContainer *vbc = memnew(VBoxContainer);
-	vbc->set_anchor_and_margin(MARGIN_LEFT, ANCHOR_BEGIN, 0);
-	vbc->set_anchor_and_margin(MARGIN_TOP, ANCHOR_BEGIN, 0);
-	vbc->set_anchor_and_margin(MARGIN_RIGHT, ANCHOR_END, 0);
-	vbc->set_anchor_and_margin(MARGIN_BOTTOM, ANCHOR_END, 0);
+	vbc->set_anchor_and_offset(SIDE_LEFT, ANCHOR_BEGIN, 0);
+	vbc->set_anchor_and_offset(SIDE_TOP, ANCHOR_BEGIN, 0);
+	vbc->set_anchor_and_offset(SIDE_RIGHT, ANCHOR_END, 0);
+	vbc->set_anchor_and_offset(SIDE_BOTTOM, ANCHOR_END, 0);
 	add_child(vbc);
 
 	{
@@ -687,6 +687,9 @@ void FindInFilesPanel::stop_search() {
 void FindInFilesPanel::_notification(int p_what) {
 	if (p_what == NOTIFICATION_PROCESS) {
 		_progress_bar->set_as_ratio(_finder->get_progress());
+	} else if (p_what == NOTIFICATION_THEME_CHANGED) {
+		_search_text_label->add_theme_font_override("font", get_theme_font("source", "EditorFonts"));
+		_results_display->add_theme_font_override("font", get_theme_font("source", "EditorFonts"));
 	}
 }
 
@@ -779,7 +782,19 @@ void FindInFilesPanel::_on_item_edited() {
 }
 
 void FindInFilesPanel::_on_finished() {
-	_status_label->set_text(TTR("Search complete"));
+	String results_text;
+	int result_count = _result_items.size();
+	int file_count = _file_items.size();
+
+	if (result_count == 1 && file_count == 1) {
+		results_text = vformat(TTR("%d match in %d file."), result_count, file_count);
+	} else if (result_count != 1 && file_count == 1) {
+		results_text = vformat(TTR("%d matches in %d file."), result_count, file_count);
+	} else {
+		results_text = vformat(TTR("%d matches in %d files."), result_count, file_count);
+	}
+
+	_status_label->set_text(results_text);
 	update_replace_buttons();
 	set_progress_visible(false);
 	_refresh_button->show();

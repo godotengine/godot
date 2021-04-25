@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -50,7 +50,7 @@ protected:
 	void _notification(int p_what);
 
 public:
-	String get_configuration_warning() const override;
+	TypedArray<String> get_configuration_warnings() const override;
 
 	virtual Vector3 project_local_ray_normal(const Point2 &p_pos) const override;
 	virtual Point2 unproject_position(const Vector3 &p_pos) const override;
@@ -93,11 +93,11 @@ public:
 	void set_rumble(real_t p_rumble);
 
 	bool get_is_active() const;
-	XRPositionalTracker::TrackerHand get_hand() const;
+	XRPositionalTracker::TrackerHand get_tracker_hand() const;
 
 	Ref<Mesh> get_mesh() const;
 
-	String get_configuration_warning() const override;
+	TypedArray<String> get_configuration_warnings() const override;
 
 	XRController3D() {}
 	~XRController3D() {}
@@ -133,7 +133,7 @@ public:
 
 	Ref<Mesh> get_mesh() const;
 
-	String get_configuration_warning() const override;
+	TypedArray<String> get_configuration_warnings() const override;
 
 	XRAnchor3D() {}
 	~XRAnchor3D() {}
@@ -158,7 +158,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	String get_configuration_warning() const override;
+	TypedArray<String> get_configuration_warnings() const override;
 
 	void set_tracked_camera(XRCamera3D *p_tracked_camera);
 	void clear_tracked_camera_if(XRCamera3D *p_tracked_camera);

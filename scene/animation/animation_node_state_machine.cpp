@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -130,11 +130,6 @@ void AnimationNodeStateMachineTransition::_bind_methods() {
 }
 
 AnimationNodeStateMachineTransition::AnimationNodeStateMachineTransition() {
-	switch_mode = SWITCH_MODE_IMMEDIATE;
-	auto_advance = false;
-	xfade = 0;
-	disabled = false;
-	priority = 1;
 }
 
 ////////////////////////////////////////////////////////
@@ -286,7 +281,7 @@ bool AnimationNodeStateMachinePlayback::_travel(AnimationNodeStateMachine *p_sta
 		at = cost_map[at].prev;
 	}
 
-	path.invert();
+	path.reverse();
 
 	return true;
 }
@@ -322,7 +317,7 @@ float AnimationNodeStateMachinePlayback::process(AnimationNodeStateMachine *p_st
 					// stopped, invalid state
 					String node_name = start_request;
 					start_request = StringName(); //clear start request
-					ERR_FAIL_V_MSG(0, "Can't travel to '" + node_name + "' if state machine is not playing.");
+					ERR_FAIL_V_MSG(0, "Can't travel to '" + node_name + "' if state machine is not playing. Maybe you need to enable Autoplay on Load for one of the nodes in your state machine or call .start() first?");
 				}
 			} else {
 				if (!_travel(p_state_machine, start_request)) {
@@ -398,7 +393,7 @@ float AnimationNodeStateMachinePlayback::process(AnimationNodeStateMachine *p_st
 
 	//find next
 	StringName next;
-	float next_xfade = 0;
+	float next_xfade = 0.0;
 	AnimationNodeStateMachineTransition::SwitchMode switch_mode = AnimationNodeStateMachineTransition::SWITCH_MODE_IMMEDIATE;
 
 	if (path.size()) {
@@ -495,21 +490,13 @@ void AnimationNodeStateMachinePlayback::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("stop"), &AnimationNodeStateMachinePlayback::stop);
 	ClassDB::bind_method(D_METHOD("is_playing"), &AnimationNodeStateMachinePlayback::is_playing);
 	ClassDB::bind_method(D_METHOD("get_current_node"), &AnimationNodeStateMachinePlayback::get_current_node);
+	ClassDB::bind_method(D_METHOD("get_current_play_position"), &AnimationNodeStateMachinePlayback::get_current_play_pos);
+	ClassDB::bind_method(D_METHOD("get_current_length"), &AnimationNodeStateMachinePlayback::get_current_length);
 	ClassDB::bind_method(D_METHOD("get_travel_path"), &AnimationNodeStateMachinePlayback::get_travel_path);
 }
 
 AnimationNodeStateMachinePlayback::AnimationNodeStateMachinePlayback() {
 	set_local_to_scene(true); //only one per instanced scene
-
-	playing = false;
-	len_current = 0;
-	fading_time = 0;
-	stop_request = false;
-	len_total = 0.0;
-	pos_current = 0.0;
-	loops_current = 0;
-	fading_pos = 0.0;
-	start_request_travel = false;
 }
 
 ///////////////////////////////////////////////////////
@@ -927,6 +914,18 @@ void AnimationNodeStateMachine::_get_property_list(List<PropertyInfo> *p_list) c
 	p_list->push_back(PropertyInfo(Variant::VECTOR2, "graph_offset", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR));
 }
 
+void AnimationNodeStateMachine::reset_state() {
+	states.clear();
+	transitions.clear();
+	playback = "playback";
+	start_node = StringName();
+	end_node = StringName();
+	graph_offset = Vector2();
+
+	emit_changed();
+	emit_signal("tree_changed");
+}
+
 void AnimationNodeStateMachine::set_node_position(const StringName &p_name, const Vector2 &p_position) {
 	ERR_FAIL_COND(!states.has(p_name));
 	states[p_name].position = p_position;
@@ -973,5 +972,4 @@ void AnimationNodeStateMachine::_bind_methods() {
 }
 
 AnimationNodeStateMachine::AnimationNodeStateMachine() {
-	playback = "playback";
 }

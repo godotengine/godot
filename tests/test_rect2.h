@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -144,29 +144,29 @@ TEST_CASE("[Rect2] Absolute coordinates") {
 			"abs() should return the expected Rect2.");
 }
 
-TEST_CASE("[Rect2] Clipping") {
+TEST_CASE("[Rect2] Intersecton") {
 	CHECK_MESSAGE(
-			Rect2(0, 100, 1280, 720).clip(Rect2(0, 300, 100, 100)).is_equal_approx(Rect2(0, 300, 100, 100)),
-			"clip() with fully enclosed Rect2 should return the expected result.");
+			Rect2(0, 100, 1280, 720).intersection(Rect2(0, 300, 100, 100)).is_equal_approx(Rect2(0, 300, 100, 100)),
+			"intersection() with fully enclosed Rect2 should return the expected result.");
 	// The resulting Rect2 is 100 pixels high because the first Rect2 is vertically offset by 100 pixels.
 	CHECK_MESSAGE(
-			Rect2(0, 100, 1280, 720).clip(Rect2(1200, 700, 100, 100)).is_equal_approx(Rect2(1200, 700, 80, 100)),
-			"clip() with partially enclosed Rect2 should return the expected result.");
+			Rect2(0, 100, 1280, 720).intersection(Rect2(1200, 700, 100, 100)).is_equal_approx(Rect2(1200, 700, 80, 100)),
+			"intersection() with partially enclosed Rect2 should return the expected result.");
 	CHECK_MESSAGE(
-			Rect2(0, 100, 1280, 720).clip(Rect2(-4000, -4000, 100, 100)).is_equal_approx(Rect2()),
-			"clip() with non-enclosed Rect2 should return the expected result.");
+			Rect2(0, 100, 1280, 720).intersection(Rect2(-4000, -4000, 100, 100)).is_equal_approx(Rect2()),
+			"intersection() with non-enclosed Rect2 should return the expected result.");
 }
 
 TEST_CASE("[Rect2] Enclosing") {
 	CHECK_MESSAGE(
 			Rect2(0, 100, 1280, 720).encloses(Rect2(0, 300, 100, 100)),
-			"clip() with fully contained Rect2 should return the expected result.");
+			"encloses() with fully contained Rect2 should return the expected result.");
 	CHECK_MESSAGE(
 			!Rect2(0, 100, 1280, 720).encloses(Rect2(1200, 700, 100, 100)),
-			"clip() with partially contained Rect2 should return the expected result.");
+			"encloses() with partially contained Rect2 should return the expected result.");
 	CHECK_MESSAGE(
 			!Rect2(0, 100, 1280, 720).encloses(Rect2(-4000, -4000, 100, 100)),
-			"clip() with non-contained Rect2 should return the expected result.");
+			"encloses() with non-contained Rect2 should return the expected result.");
 }
 
 TEST_CASE("[Rect2] Expanding") {
@@ -197,11 +197,11 @@ TEST_CASE("[Rect2] Growing") {
 			"grow_individual() with positive and negative values should return the expected Rect2.");
 
 	CHECK_MESSAGE(
-			Rect2(0, 100, 1280, 720).grow_margin(MARGIN_TOP, 500).is_equal_approx(Rect2(0, -400, 1280, 1220)),
-			"grow_margin() with positive value should return the expected Rect2.");
+			Rect2(0, 100, 1280, 720).grow_side(SIDE_TOP, 500).is_equal_approx(Rect2(0, -400, 1280, 1220)),
+			"grow_side() with positive value should return the expected Rect2.");
 	CHECK_MESSAGE(
-			Rect2(0, 100, 1280, 720).grow_margin(MARGIN_TOP, -500).is_equal_approx(Rect2(0, 600, 1280, 220)),
-			"grow_margin() with negative value should return the expected Rect2.");
+			Rect2(0, 100, 1280, 720).grow_side(SIDE_TOP, -500).is_equal_approx(Rect2(0, 600, 1280, 220)),
+			"grow_side() with negative value should return the expected Rect2.");
 }
 
 TEST_CASE("[Rect2] Has point") {
@@ -356,29 +356,29 @@ TEST_CASE("[Rect2i] Absolute coordinates") {
 			"abs() should return the expected Rect2i.");
 }
 
-TEST_CASE("[Rect2i] Clipping") {
+TEST_CASE("[Rect2i] Intersection") {
 	CHECK_MESSAGE(
-			Rect2i(0, 100, 1280, 720).clip(Rect2i(0, 300, 100, 100)) == Rect2i(0, 300, 100, 100),
-			"clip() with fully enclosed Rect2i should return the expected result.");
+			Rect2i(0, 100, 1280, 720).intersection(Rect2i(0, 300, 100, 100)) == Rect2i(0, 300, 100, 100),
+			"intersection() with fully enclosed Rect2i should return the expected result.");
 	// The resulting Rect2i is 100 pixels high because the first Rect2i is vertically offset by 100 pixels.
 	CHECK_MESSAGE(
-			Rect2i(0, 100, 1280, 720).clip(Rect2i(1200, 700, 100, 100)) == Rect2i(1200, 700, 80, 100),
-			"clip() with partially enclosed Rect2i should return the expected result.");
+			Rect2i(0, 100, 1280, 720).intersection(Rect2i(1200, 700, 100, 100)) == Rect2i(1200, 700, 80, 100),
+			"intersection() with partially enclosed Rect2i should return the expected result.");
 	CHECK_MESSAGE(
-			Rect2i(0, 100, 1280, 720).clip(Rect2i(-4000, -4000, 100, 100)) == Rect2i(),
-			"clip() with non-enclosed Rect2i should return the expected result.");
+			Rect2i(0, 100, 1280, 720).intersection(Rect2i(-4000, -4000, 100, 100)) == Rect2i(),
+			"intersection() with non-enclosed Rect2i should return the expected result.");
 }
 
 TEST_CASE("[Rect2i] Enclosing") {
 	CHECK_MESSAGE(
 			Rect2i(0, 100, 1280, 720).encloses(Rect2i(0, 300, 100, 100)),
-			"clip() with fully contained Rect2i should return the expected result.");
+			"encloses() with fully contained Rect2i should return the expected result.");
 	CHECK_MESSAGE(
 			!Rect2i(0, 100, 1280, 720).encloses(Rect2i(1200, 700, 100, 100)),
-			"clip() with partially contained Rect2i should return the expected result.");
+			"encloses() with partially contained Rect2i should return the expected result.");
 	CHECK_MESSAGE(
 			!Rect2i(0, 100, 1280, 720).encloses(Rect2i(-4000, -4000, 100, 100)),
-			"clip() with non-contained Rect2i should return the expected result.");
+			"encloses() with non-contained Rect2i should return the expected result.");
 }
 
 TEST_CASE("[Rect2i] Expanding") {
@@ -409,11 +409,11 @@ TEST_CASE("[Rect2i] Growing") {
 			"grow_individual() with positive and negative values should return the expected Rect2i.");
 
 	CHECK_MESSAGE(
-			Rect2i(0, 100, 1280, 720).grow_margin(MARGIN_TOP, 500) == Rect2i(0, -400, 1280, 1220),
-			"grow_margin() with positive value should return the expected Rect2i.");
+			Rect2i(0, 100, 1280, 720).grow_side(SIDE_TOP, 500) == Rect2i(0, -400, 1280, 1220),
+			"grow_side() with positive value should return the expected Rect2i.");
 	CHECK_MESSAGE(
-			Rect2i(0, 100, 1280, 720).grow_margin(MARGIN_TOP, -500) == Rect2i(0, 600, 1280, 220),
-			"grow_margin() with negative value should return the expected Rect2i.");
+			Rect2i(0, 100, 1280, 720).grow_side(SIDE_TOP, -500) == Rect2i(0, 600, 1280, 220),
+			"grow_side() with negative value should return the expected Rect2i.");
 }
 
 TEST_CASE("[Rect2i] Has point") {

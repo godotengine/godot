@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -60,15 +60,6 @@
 #include <X11/extensions/XInput2.h>
 #include <X11/extensions/Xrandr.h>
 #include <X11/keysym.h>
-
-// Hints for X11 fullscreen
-typedef struct {
-	unsigned long flags = 0;
-	unsigned long functions = 0;
-	unsigned long decorations = 0;
-	long inputMode = 0;
-	unsigned long status = 0;
-} Hints;
 
 typedef struct _xrr_monitor_info {
 	Atom name;
@@ -261,8 +252,8 @@ class DisplayServerX11 : public DisplayServer {
 	void _dispatch_input_event(const Ref<InputEvent> &p_event);
 
 	mutable Mutex events_mutex;
-	Thread *events_thread = nullptr;
-	bool events_thread_done = false;
+	Thread events_thread;
+	SafeFlag events_thread_done;
 	LocalVector<XEvent> polled_events;
 	static void _poll_events_thread(void *ud);
 	bool _wait_for_events() const;

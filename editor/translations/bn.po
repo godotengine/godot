@@ -1,6 +1,6 @@
 # Bengali translation of the Godot Engine editor
-# Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.
-# Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).
+# Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.
+# Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).
 # This file is distributed under the same license as the Godot source code.
 # Abu Md. Maruf Sarker <maruf.webdev@gmail.com>, 2016-2017.
 # Abdullah Zubair <abdullahzubair109@gmail.com>, 2017.
@@ -8,13 +8,14 @@
 # Tawhid H. <Tawhidk757@yahoo.com>, 2019.
 # Hasibul Hasan <hasibeng78@gmail.com>, 2019.
 # Oymate <dhruboadittya96@gmail.com>, 2020.
-# Mokarrom Hossain <mhb2016.bzs@gmail.com>, 2020.
+# Mokarrom Hossain <mhb2016.bzs@gmail.com>, 2020, 2021.
 # Sagen Soren <sagensoren03@gmail.com>, 2020.
+# Hasibul Hasan <d1hasib@yahoo.com>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-11-26 08:43+0000\n"
+"PO-Revision-Date: 2021-02-15 10:51+0000\n"
 "Last-Translator: Mokarrom Hossain <mhb2016.bzs@gmail.com>\n"
 "Language-Team: Bengali <https://hosted.weblate.org/projects/godot-engine/"
 "godot/bn/>\n"
@@ -23,13 +24,12 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Generator: Weblate 4.4-dev\n"
+"X-Generator: Weblate 4.5-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
-#, fuzzy
 msgid "Invalid type argument to convert(), use TYPE_* constants."
-msgstr "অবৈধ প্রকার রূপান্তর করার যুক্তি(),use TYPE_* constants."
+msgstr "অবৈধ প্রকার রূপান্তর করার যুক্তি , TYPE_* constants ব্যবহার করুন"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 msgid "Expected a string of length 1 (a character)."
@@ -265,10 +265,9 @@ msgstr "ইন্টারপোলেশন মোড"
 
 #: editor/animation_track_editor.cpp
 msgid "Loop Wrap Mode (Interpolate end with beginning on loop)"
-msgstr ""
+msgstr "লুপ Wrap মোড (লুপ দিয়ে শুরু দিয়ে ইন্টারপোলেট শেষ)"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Remove this track."
 msgstr "নির্বাচিত ট্র্যাক/পথ অপসারণ করুন।"
 
@@ -277,9 +276,8 @@ msgid "Time (s): "
 msgstr "সময় (সেঃ): "
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Toggle Track Enabled"
-msgstr "সক্রিয় করুন"
+msgstr "ট্র্যাক সক্রিয় করুন"
 
 #: editor/animation_track_editor.cpp
 msgid "Continuous"
@@ -397,7 +395,7 @@ msgstr "ট্র্যাকগুলি পুনর্বিন্যস্�
 
 #: editor/animation_track_editor.cpp
 msgid "Transform tracks only apply to Spatial-based nodes."
-msgstr ""
+msgstr "রূপান্তর ট্র্যাকগুলি কেবল Spatial-based নোডগুলিতে প্রযোজ্য।"
 
 #: editor/animation_track_editor.cpp
 msgid ""
@@ -406,10 +404,15 @@ msgid ""
 "-AudioStreamPlayer2D\n"
 "-AudioStreamPlayer3D"
 msgstr ""
+"রূপান্তর ট্র্যাকগুলি কেবল স্থানিক ভিত্তিক নোডগুলিতে প্রযোজ্য। অডিও ট্র্যাকগুলি কেবল "
+"প্রকারের নোডগুলিতে নির্দেশ করতে পারে:\n"
+"-অডিও স্ট্রিমপ্লেয়ার\n"
+"-অডিও স্ট্রিমপ্লেয়ার 2 ডি\n"
+"-অডিওস্ট্রিপপ্লেয়ার 3 ডি"
 
 #: editor/animation_track_editor.cpp
 msgid "Animation tracks can only point to AnimationPlayer nodes."
-msgstr ""
+msgstr "অ্যানিমেশন ট্র্যাকগুলি কেবল অ্যানিমেশনপ্লেয়ার নোডগুলিতে নির্দেশ করতে পারে।"
 
 #: editor/animation_track_editor.cpp
 msgid "An animation player can't animate itself, only other players."
@@ -417,48 +420,43 @@ msgstr "একটি অ্যানিমেশন প্লেয়ার ন
 
 #: editor/animation_track_editor.cpp
 msgid "Not possible to add a new track without a root"
-msgstr ""
+msgstr "মূল ছাড়া নতুন ট্র্যাক যুক্ত করা সম্ভব নয়"
 
 #: editor/animation_track_editor.cpp
 msgid "Invalid track for Bezier (no suitable sub-properties)"
-msgstr ""
+msgstr "বেজিয়ারের জন্য অবৈধ ট্র্যাক (উপযুক্ত উপ-বৈশিষ্ট্য নেই)"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Add Bezier Track"
-msgstr "অ্যানিমেশন (Anim) ট্র্যাক যোগ করুন"
+msgstr "বেজিয়ার ট্র্যাক যুক্ত করুন"
 
 #: editor/animation_track_editor.cpp
 msgid "Track path is invalid, so can't add a key."
-msgstr ""
+msgstr "ট্র্যাক পাথটি অবৈধ, সুতরাং কোনও কী যুক্ত করতে পারছে না।"
 
 #: editor/animation_track_editor.cpp
 msgid "Track is not of type Spatial, can't insert key"
-msgstr ""
+msgstr "ট্র্যাক Spatial টাইপের নয়, কী সন্নিবেশ করতে পারে না"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Add Transform Track Key"
-msgstr "রুপান্তরের ধরণ"
+msgstr "ট্রান্সফর্ম ট্র্যাক কী যুক্ত করুন"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Add Track Key"
-msgstr "অ্যানিমেশন (Anim) ট্র্যাক যোগ করুন"
+msgstr "ট্র্যাক কী যুক্ত করুন"
 
 #: editor/animation_track_editor.cpp
 msgid "Track path is invalid, so can't add a method key."
-msgstr ""
+msgstr "ট্র্যাক পাথটি অবৈধ, সুতরাং কোনও পদ্ধতি key যুক্ত করতে পারে না।"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Add Method Track Key"
-msgstr "অ্যানিমেশনে (Anim) ট্র্যাক/পথ এবং চাবি যোগ করুন"
+msgstr "Method Track Key যুক্ত করুন"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Method not found in object: "
-msgstr "স্ক্রিপ্টে চলক-প্রাপক (VariableGet) পাওয়া যায়নি: "
+msgstr "Object এ Method পাওয়া যায় নি: "
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Move Keys"
@@ -469,7 +467,6 @@ msgid "Clipboard is empty"
 msgstr "ক্লীপবোর্ড খালি"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Paste Tracks"
 msgstr "মানসমূহ প্রতিলেপন/পেস্ট করুন"
 
@@ -481,6 +478,7 @@ msgstr "অ্যানিমেশনের (Anim) চাবিসমূহে�
 msgid ""
 "This option does not work for Bezier editing, as it's only a single track."
 msgstr ""
+"এই বিকল্পটি বেজিয়ার সম্পাদনার জন্য কাজ করে না, কারণ এটি কেবলমাত্র Single ট্র্যাক।"
 
 #: editor/animation_track_editor.cpp
 msgid ""
@@ -494,34 +492,39 @@ msgid ""
 "Alternatively, use an import preset that imports animations to separate "
 "files."
 msgstr ""
+"এই অ্যানিমেশনটি আমদানি করা দৃশ্যের সাথে সম্পর্কিত, তাই আমদানি করা ট্র্যাকগুলিতে "
+"পরিবর্তনগুলি সংরক্ষণ করা হবে না।\n"
+"\n"
+"কাস্টম ট্র্যাক যুক্ত করার ক্ষমতা সক্ষম করতে, দৃশ্যের আমদানি সেটিংসে নেভিগেট করুন এবং "
+"সেট করুন\n"
+"\"ফাইলগুলি\" এ \"অ্যানিমেশন> সঞ্চয়স্থান\", \"অ্যানিমেশন> কাস্টম ট্র্যাক রাখুন\" সক্ষম "
+"করুন, তারপরে পুনরায় আমদানি করুন।\n"
+"বিকল্পভাবে, একটি আমদানি প্রিসেট ব্যবহার করুন যা পৃথক ফাইলগুলিতে অ্যানিমেশনগুলি "
+"আমদানি করে।"
 
 #: editor/animation_track_editor.cpp
 msgid "Warning: Editing imported animation"
-msgstr ""
+msgstr "সতর্কতা: Imported অ্যানিমেশন সম্পাদনা করা হচ্ছে"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Select an AnimationPlayer node to create and edit animations."
-msgstr ""
-"অ্যানিমেশনসমূহ সম্পাদন করতে দৃশ্যের তালিকা থেকে একটি AnimationPlayer নির্বাচন করুন।"
+msgstr "অ্যানিমেশন তৈরি এবং সম্পাদনা করতে একটি অ্যানিমেশনপ্লেয়ার নোড নির্বাচন করুন।"
 
 #: editor/animation_track_editor.cpp
 msgid "Only show tracks from nodes selected in tree."
-msgstr ""
+msgstr "Tree মধ্যে নির্বাচিত নোডগুলি থেকে কেবল ট্র্যাকগুলি দেখান।"
 
 #: editor/animation_track_editor.cpp
 msgid "Group tracks by node or display them as plain list."
-msgstr ""
+msgstr "নোড দ্বারা গ্রুপ ট্র্যাক করুন বা তাদের সরল তালিকা হিসাবে প্রদর্শন করুন।"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Snap:"
-msgstr "স্ন্যাপ"
+msgstr "স্ন্যাপ :"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Animation step value."
-msgstr "অ্যানিমেশনের তালিকাটি কার্যকর।"
+msgstr "অ্যানিমেশন পদক্ষেপের মান।"
 
 #: editor/animation_track_editor.cpp
 msgid "Seconds"
@@ -544,12 +547,11 @@ msgstr "সম্পাদন করুন (Edit)"
 
 #: editor/animation_track_editor.cpp
 msgid "Animation properties."
-msgstr "অ্যানিমেশন বৈশিষ্ট্য"
+msgstr "অ্যানিমেশন বৈশিষ্ট্য।"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Copy Tracks"
-msgstr "মানসমূহ প্রতিলিপি/কপি করুন"
+msgstr "ট্র্যাকগুলি অনুলিপি করুন"
 
 #: editor/animation_track_editor.cpp
 msgid "Scale Selection"
@@ -568,9 +570,8 @@ msgid "Duplicate Transposed"
 msgstr "পক্ষান্তরিত (Transposed) সমূহ অনুলিপি করুন"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Delete Selection"
-msgstr "নির্বাচিত সমূহ অপসারণ করুন"
+msgstr "নির্বাচিত সমূহ Delete করুন"
 
 #: editor/animation_track_editor.cpp
 msgid "Go to Next Step"
@@ -594,7 +595,7 @@ msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Use Bezier Curves"
-msgstr ""
+msgstr "বেজিয়ার কার্ভ ব্যবহার করুন"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim. Optimizer"
@@ -641,16 +642,15 @@ msgid "Scale Ratio:"
 msgstr "স্কেল/মাপের অনুপাত:"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Select Tracks to Copy"
-msgstr "গুণাগুণ/বৈশিষ্ট্য বাছাই করুন"
+msgstr "গুণাগুণ/বৈশিষ্ট্য copy করুন"
 
 #: editor/animation_track_editor.cpp editor/editor_log.cpp
 #: editor/editor_properties.cpp
 #: editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp editor/property_editor.cpp
-#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
+#: editor/scene_tree_dock.cpp scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Copy"
 msgstr "প্রতিলিপি/কপি করুন"
 
@@ -1486,14 +1486,12 @@ msgstr ""
 "পারবে না।"
 
 #: editor/editor_autoload_settings.cpp
-#, fuzzy
 msgid "Must not collide with an existing built-in type name."
 msgstr ""
 "অগ্রহনযোগ্য নাম। নামটি অবশ্যই বিদ্যমান পূর্বনির্মিত ধরণের নামের সাথে পরম্পরবিরোধী "
 "হতে পারবে না।"
 
 #: editor/editor_autoload_settings.cpp
-#, fuzzy
 msgid "Must not collide with an existing global constant name."
 msgstr ""
 "অগ্রহনযোগ্য নাম। নামটি অবশ্যই বিদ্যমান সার্বজনীন ধ্রুবকের নামের সাথে পরম্পরবিরোধী "
@@ -1773,14 +1771,12 @@ msgid "Enabled Properties:"
 msgstr "প্রোপার্টি-সমূহ:"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Enabled Features:"
-msgstr "গঠনবিন্যাস"
+msgstr "গঠনবিন্যাস :"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Enabled Classes:"
-msgstr "ক্লাসের অনুসন্ধান করুন"
+msgstr "Enabled ক্লাস:"
 
 #: editor/editor_feature_profile.cpp
 msgid "File '%s' format is invalid, import aborted."
@@ -1930,8 +1926,8 @@ msgid "Open a File or Directory"
 msgstr "ফাইল বা পথ/ডিরেক্টরি খুলুন"
 
 #: editor/editor_file_dialog.cpp editor/editor_node.cpp
-#: editor/editor_properties.cpp editor/inspector_dock.cpp
-#: editor/plugins/animation_player_editor_plugin.cpp
+#: editor/editor_properties.cpp editor/import_defaults_editor.cpp
+#: editor/inspector_dock.cpp editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/script_editor_plugin.cpp scene/gui/file_dialog.cpp
 msgid "Save"
 msgstr "সংরক্ষন করুন"
@@ -2029,10 +2025,6 @@ msgstr "প্রিভিউ:"
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "File:"
 msgstr "ফাইল:"
-
-#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
-msgid "Must use a valid extension."
-msgstr "একটি কার্যকর এক্সটেনশন ব্যবহার করা আবশ্যক।"
 
 #: editor/editor_file_system.cpp
 msgid "ScanSources"
@@ -2497,6 +2489,10 @@ msgid "There is no defined scene to run."
 msgstr "চালানোর জন্য কোনো দৃশ্য নির্দিষ্ট করা নেই।"
 
 #: editor/editor_node.cpp
+msgid "Save scene before running..."
+msgstr ""
+
+#: editor/editor_node.cpp
 msgid "Could not start subprocess!"
 msgstr "উপ-প্রক্রিয়াকে শুরু করা সম্ভব হয়নি!"
 
@@ -2543,19 +2539,6 @@ msgstr "বৃহৎ গঠনবিন্যাসের জন্য শুধ
 #: editor/editor_node.cpp
 msgid "Save Scene As..."
 msgstr "দৃশ্য এইরূপে সংরক্ষণ করুন..."
-
-#: editor/editor_node.cpp
-#, fuzzy
-msgid "No"
-msgstr "নোড"
-
-#: editor/editor_node.cpp
-msgid "Yes"
-msgstr "হ্যাঁ"
-
-#: editor/editor_node.cpp
-msgid "This scene has never been saved. Save before running?"
-msgstr "এই দৃশ্যটি কখনোই সংরক্ষণ করা হয় নি। চালানোর পূর্বে সংরক্ষণ করবেন?"
 
 #: editor/editor_node.cpp editor/scene_tree_dock.cpp
 msgid "This operation can't be done without a scene."
@@ -2607,6 +2590,10 @@ msgid "Quit"
 msgstr "প্রস্থান করুন"
 
 #: editor/editor_node.cpp
+msgid "Yes"
+msgstr "হ্যাঁ"
+
+#: editor/editor_node.cpp
 msgid "Exit the editor?"
 msgstr "এডিটর হতে প্রস্থান করবেন?"
 
@@ -2654,7 +2641,8 @@ msgid "Unable to enable addon plugin at: '%s' parsing of config failed."
 msgstr "অ্যাড-অন প্লাগইন এনাবল করা সম্ভব হয় নি। কনফিগার পার্সিং ('%s') ব্যর্থ হয়েছে।"
 
 #: editor/editor_node.cpp
-msgid "Unable to find script field for addon plugin at: 'res://addons/%s'."
+#, fuzzy
+msgid "Unable to find script field for addon plugin at: '%s'."
 msgstr ""
 "'res://addons/%s' লোকেশনে অ্যাড-অন প্লাগইনের স্ক্রিপ্ট ফাইল খুঁজে পাওয়া যায়নি।"
 
@@ -3118,14 +3106,6 @@ msgid "Help"
 msgstr "হেল্প"
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/script_text_editor.cpp
-#: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
-#: editor/plugins/visual_shader_editor_plugin.cpp editor/project_manager.cpp
-#: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
-msgid "Search"
-msgstr "অনুসন্ধান করুন"
-
-#: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/shader_editor_plugin.cpp
 #, fuzzy
 msgid "Online Docs"
@@ -3145,12 +3125,14 @@ msgid "Send Docs Feedback"
 msgstr ""
 
 #: editor/editor_node.cpp editor/plugins/asset_library_editor_plugin.cpp
+#, fuzzy
 msgid "Community"
-msgstr "কমিউনিটি/যৌথ-সামাজিক উৎস"
+msgstr "সম্প্রদায়"
 
 #: editor/editor_node.cpp
+#, fuzzy
 msgid "About"
-msgstr "সম্বন্ধে/সম্পর্কে"
+msgstr "সম্বন্ধে"
 
 #: editor/editor_node.cpp
 msgid "Play the project."
@@ -3287,6 +3269,25 @@ msgstr "বিদ্যমানের সাথে একত্রিত কর
 #: editor/editor_node.cpp
 msgid "Open & Run a Script"
 msgstr "একটি স্ক্রিপ্ট খুলুন এবং চালান"
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid ""
+"The following files are newer on disk.\n"
+"What action should be taken?"
+msgstr ""
+"নিম্নোক্ত ফাইলসমূহ ডিস্কে নতুনতর।\n"
+"কোন সিধান্তটি নেয়া উচিত হবে?:"
+
+#: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/shader_editor_plugin.cpp
+msgid "Reload"
+msgstr "রিলোড"
+
+#: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/shader_editor_plugin.cpp
+msgid "Resave"
+msgstr "পুনঃসংরক্ষণ"
 
 #: editor/editor_node.cpp
 #, fuzzy
@@ -3515,7 +3516,7 @@ msgstr "বোন্‌/হাড় তৈরি করুন"
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 #: editor/plugins/tile_map_editor_plugin.cpp editor/property_editor.cpp
-#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
+#: editor/scene_tree_dock.cpp scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Paste"
 msgstr "প্রতিলেপন/পেস্ট করুন"
 
@@ -3871,6 +3872,11 @@ msgstr ""
 "ইম্পোর্ট করুন।"
 
 #: editor/filesystem_dock.cpp
+msgid ""
+"Importing has been disabled for this file, so it can't be opened for editing."
+msgstr ""
+
+#: editor/filesystem_dock.cpp
 #, fuzzy
 msgid "Cannot move/rename resources root."
 msgstr "ফন্টের উৎস লোড/প্রসেস করা সম্ভব হচ্ছে না।"
@@ -4145,8 +4151,18 @@ msgstr "সংরক্ষিত হচ্ছে..."
 
 #: editor/find_in_files.cpp
 #, fuzzy
-msgid "Search complete"
-msgstr "টেক্সট অনুসন্ধান করুন"
+msgid "%d match in %d file."
+msgstr "কোনো মিল নেই"
+
+#: editor/find_in_files.cpp
+#, fuzzy
+msgid "%d matches in %d file."
+msgstr "কোনো মিল নেই"
+
+#: editor/find_in_files.cpp
+#, fuzzy
+msgid "%d matches in %d files."
+msgstr "কোনো মিল নেই"
 
 #: editor/groups_editor.cpp
 msgid "Add to Group"
@@ -4295,6 +4311,25 @@ msgstr ""
 #: editor/import/resource_importer_scene.cpp
 msgid "Saving..."
 msgstr "সংরক্ষিত হচ্ছে..."
+
+#: editor/import_defaults_editor.cpp
+#, fuzzy
+msgid "Select Importer"
+msgstr "মোড (Mode) বাছাই করুন"
+
+#: editor/import_defaults_editor.cpp
+#, fuzzy
+msgid "Importer:"
+msgstr "ইম্পোর্ট"
+
+#: editor/import_defaults_editor.cpp
+#, fuzzy
+msgid "Reset to Defaults"
+msgstr "প্রাথমিক sRGB ব্যবহার করুন"
+
+#: editor/import_dock.cpp
+msgid "Keep File (No Import)"
+msgstr ""
 
 #: editor/import_dock.cpp
 #, fuzzy
@@ -5340,7 +5375,8 @@ msgid "Got:"
 msgstr "প্রাপ্ত:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-msgid "Failed sha256 hash check"
+#, fuzzy
+msgid "Failed SHA-256 hash check"
 msgstr "sha256 হ্যাশ চেক ব্যর্থ হয়েছে"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
@@ -5456,7 +5492,6 @@ msgid "Sort:"
 msgstr "সাজান:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#: editor/project_settings_editor.cpp
 msgid "Category:"
 msgstr "বিভাগ:"
 
@@ -5489,8 +5524,7 @@ msgstr "প্রয়োজনীয় উপকরণসমূহের Z
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid ""
 "Can't determine a save path for lightmap images.\n"
-"Save your scene (for images to be saved in the same dir), or pick a save "
-"path from the BakedLightmap properties."
+"Save your scene and try again."
 msgstr ""
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
@@ -5504,9 +5538,29 @@ msgid "Failed creating lightmap images, make sure path is writable."
 msgstr ""
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
+msgid "Failed determining lightmap size. Maximum lightmap size too small?"
+msgstr ""
+
+#: editor/plugins/baked_lightmap_editor_plugin.cpp
+msgid ""
+"Some mesh is invalid. Make sure the UV2 channel values are contained within "
+"the [0.0,1.0] square region."
+msgstr ""
+
+#: editor/plugins/baked_lightmap_editor_plugin.cpp
+msgid ""
+"Godot editor was built without ray tracing support, lightmaps can't be baked."
+msgstr ""
+
+#: editor/plugins/baked_lightmap_editor_plugin.cpp
 #, fuzzy
 msgid "Bake Lightmaps"
 msgstr "লাইট্ম্যাপে হস্তান্তর করুন:"
+
+#: editor/plugins/baked_lightmap_editor_plugin.cpp
+#, fuzzy
+msgid "Select lightmap bake file:"
+msgstr "নির্বাচিত ফাইলসমূহ অপসারণ করবেন?"
 
 #: editor/plugins/camera_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -6672,6 +6726,11 @@ msgid "Can only set point into a ParticlesMaterial process material"
 msgstr "শুধুমাত্র ParticlesMaterial প্রসেস ম্যাটেরিয়ালে বিন্দু স্থাপন সম্ভব"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Convert to CPUParticles2D"
+msgstr "এতে রূপান্তর করুন..."
+
+#: editor/plugins/particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_editor_plugin.cpp
 #, fuzzy
 msgid "Generation Time (sec):"
@@ -6739,10 +6798,6 @@ msgstr "AABB উৎপন্ন করুন"
 #: editor/plugins/particles_editor_plugin.cpp
 #, fuzzy
 msgid "Generate Visibility AABB"
-msgstr "AABB উৎপন্ন করুন"
-
-#: editor/plugins/particles_editor_plugin.cpp
-msgid "Generate AABB"
 msgstr "AABB উৎপন্ন করুন"
 
 #: editor/plugins/path_2d_editor_plugin.cpp
@@ -7384,6 +7439,14 @@ msgstr "ডকুমেন্টসমূহ বন্ধ করুন"
 msgid "Run"
 msgstr "চালান"
 
+#: editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/script_text_editor.cpp
+#: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
+#: editor/plugins/visual_shader_editor_plugin.cpp editor/project_manager.cpp
+#: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
+msgid "Search"
+msgstr "অনুসন্ধান করুন"
+
 #: editor/plugins/script_editor_plugin.cpp editor/script_editor_debugger.cpp
 msgid "Step Into"
 msgstr "পদার্পণ করুন"
@@ -7439,16 +7502,6 @@ msgid ""
 msgstr ""
 "নিম্নোক্ত ফাইলসমূহ ডিস্কে নতুনতর।\n"
 "কোন সিধান্তটি নেয়া উচিত হবে?:"
-
-#: editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/shader_editor_plugin.cpp
-msgid "Reload"
-msgstr "রিলোড"
-
-#: editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/shader_editor_plugin.cpp
-msgid "Resave"
-msgstr "পুনঃসংরক্ষণ"
 
 #: editor/plugins/script_editor_plugin.cpp editor/script_editor_debugger.cpp
 msgid "Debugger"
@@ -7552,8 +7605,8 @@ msgstr "বিন্দু অপসারণ করুন"
 msgid "Go To"
 msgstr ""
 
-#: editor/plugins/script_text_editor.cpp scene/gui/line_edit.cpp
-#: scene/gui/text_edit.cpp
+#: editor/plugins/script_text_editor.cpp editor/scene_tree_dock.cpp
+#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Cut"
 msgstr "কর্তন/কাট করুন"
 
@@ -7799,6 +7852,11 @@ msgid "Yaw"
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Size"
+msgstr "সেল (Cell)-এর আকার:"
+
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Objects Drawn"
 msgstr "অবজেক্ট আঁকা হয়েছে"
 
@@ -7997,6 +8055,11 @@ msgstr "ফ্রি লুক স্পিড মডিফায়ার"
 #, fuzzy
 msgid "View Rotation Locked"
 msgstr "তথ্য দেখুন"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid ""
+"To zoom further, change the camera's clipping planes (View -> Settings...)"
+msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid ""
@@ -9158,11 +9221,6 @@ msgid "Error"
 msgstr "সমস্যা/ভুল"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
-msgid "No commit message was provided"
-msgstr "কোন নাম ব্যাবহার করা হয়নি"
-
-#: editor/plugins/version_control_editor_plugin.cpp
 msgid "No files added to stage"
 msgstr ""
 
@@ -9226,10 +9284,6 @@ msgstr "নির্বাচিত সমূহ অপসারণ করুন
 #, fuzzy
 msgid "Stage All"
 msgstr "সকল্গুলি সংরক্ষণ করুন"
-
-#: editor/plugins/version_control_editor_plugin.cpp
-msgid "Add a commit message"
-msgstr ""
 
 #: editor/plugins/version_control_editor_plugin.cpp
 #, fuzzy
@@ -10596,6 +10650,11 @@ msgid "Projects"
 msgstr "নতুন প্রকল্প"
 
 #: editor/project_manager.cpp
+#, fuzzy
+msgid "Loading, please wait..."
+msgstr "মিরর রিট্রাইভ করা হচ্ছে, দযা করে অপেক্ষা করুন..."
+
+#: editor/project_manager.cpp
 msgid "Last Modified"
 msgstr ""
 
@@ -10887,7 +10946,7 @@ msgstr "প্রকল্পের সেটিংস (engine.cfg)"
 
 #: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
 msgid "General"
-msgstr "জেনেরাল"
+msgstr "সাধারণ"
 
 #: editor/project_settings_editor.cpp
 msgid "Override For..."
@@ -10981,6 +11040,11 @@ msgstr "স্বয়ংক্রিয়-লোড"
 #: editor/project_settings_editor.cpp
 msgid "Plugins"
 msgstr "প্লাগইন-সমূহ"
+
+#: editor/project_settings_editor.cpp
+#, fuzzy
+msgid "Import Defaults"
+msgstr "লোড ডিফল্ট"
 
 #: editor/property_editor.cpp
 msgid "Preset..."
@@ -11247,6 +11311,16 @@ msgstr "শীষ্য নোড ইন্সট্যান্স করুন
 
 #: editor/scene_tree_dock.cpp
 #, fuzzy
+msgid "Can't paste root node into the same scene."
+msgstr "বাহিরের দৃশ্যের নোডে এটি করা সম্ভব হবে না!"
+
+#: editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Paste Node(s)"
+msgstr "নোড-সমূহ প্রতিলেপন/পেস্ট করুন"
+
+#: editor/scene_tree_dock.cpp
+#, fuzzy
 msgid "Detach Script"
 msgstr "স্ক্রিপ্ট সংযুক্ত করুন"
 
@@ -11378,6 +11452,11 @@ msgid "Attach Script"
 msgstr "স্ক্রিপ্ট সংযুক্ত করুন"
 
 #: editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Cut Node(s)"
+msgstr "নোড-সমূহ কর্তন/কাট করুন"
+
+#: editor/scene_tree_dock.cpp
 msgid "Remove Node(s)"
 msgstr "নোড(সমূহ) অপসারণ করুন"
 
@@ -11498,6 +11577,13 @@ msgstr "নির্বাচিত নোড হতে একটি স্ক�
 #, fuzzy
 msgid "Remote"
 msgstr "অপসারণ করুন"
+
+#: editor/scene_tree_dock.cpp
+msgid ""
+"If selected, the Remote scene tree dock will cause the project to stutter "
+"every time it updates.\n"
+"Switch back to the Local scene tree dock to improve performance."
+msgstr ""
 
 #: editor/scene_tree_dock.cpp
 #, fuzzy
@@ -12274,6 +12360,39 @@ msgstr "ফিল্টারসমূহ"
 msgid "Give a MeshLibrary resource to this GridMap to use its meshes."
 msgstr ""
 
+#: modules/lightmapper_cpu/lightmapper_cpu.cpp
+msgid "Begin Bake"
+msgstr ""
+
+#: modules/lightmapper_cpu/lightmapper_cpu.cpp
+msgid "Preparing data structures"
+msgstr ""
+
+#: modules/lightmapper_cpu/lightmapper_cpu.cpp
+#, fuzzy
+msgid "Generate buffers"
+msgstr "AABB উৎপন্ন করুন"
+
+#: modules/lightmapper_cpu/lightmapper_cpu.cpp
+#, fuzzy
+msgid "Direct lighting"
+msgstr "অংশাদি:"
+
+#: modules/lightmapper_cpu/lightmapper_cpu.cpp
+#, fuzzy
+msgid "Indirect lighting"
+msgstr "ডানে মাত্রা দিন"
+
+#: modules/lightmapper_cpu/lightmapper_cpu.cpp
+#, fuzzy
+msgid "Post processing"
+msgstr "প্রক্রিয়া-পরবর্তী স্ক্রিপ্ট:"
+
+#: modules/lightmapper_cpu/lightmapper_cpu.cpp
+#, fuzzy
+msgid "Plotting lightmaps"
+msgstr "ছবিসমূহ ব্লিটিং (Blitting) করা হচ্ছে"
+
 #: modules/mono/csharp_script.cpp
 msgid "Class name can't be a reserved keyword"
 msgstr ""
@@ -12837,11 +12956,13 @@ msgid "Select device from the list"
 msgstr "লিস্ট থেকে ডিভাইস সিলেক্ট করুন"
 
 #: platform/android/export/export.cpp
-msgid "ADB executable not configured in the Editor Settings."
+msgid "Unable to find the 'apksigner' tool."
 msgstr ""
 
 #: platform/android/export/export.cpp
-msgid "OpenJDK jarsigner not configured in the Editor Settings."
+msgid ""
+"Android build template not installed in the project. Install it from the "
+"Project menu."
 msgstr ""
 
 #: platform/android/export/export.cpp
@@ -12853,11 +12974,11 @@ msgid "Release keystore incorrectly configured in the export preset."
 msgstr ""
 
 #: platform/android/export/export.cpp
-msgid "Custom build requires a valid Android SDK path in Editor Settings."
+msgid "A valid Android SDK path is required in Editor Settings."
 msgstr ""
 
 #: platform/android/export/export.cpp
-msgid "Invalid Android SDK path for custom build in Editor Settings."
+msgid "Invalid Android SDK path in Editor Settings."
 msgstr ""
 
 #: platform/android/export/export.cpp
@@ -12865,9 +12986,19 @@ msgid "Missing 'platform-tools' directory!"
 msgstr ""
 
 #: platform/android/export/export.cpp
-msgid ""
-"Android build template not installed in the project. Install it from the "
-"Project menu."
+msgid "Unable to find Android SDK platform-tools' adb command."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "Please check in the Android SDK directory specified in Editor Settings."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "Missing 'build-tools' directory!"
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "Unable to find Android SDK build-tools' apksigner command."
 msgstr ""
 
 #: platform/android/export/export.cpp
@@ -13113,6 +13244,14 @@ msgstr ""
 msgid "An empty CollisionPolygon2D has no effect on collision."
 msgstr "সংঘর্ষে ফাঁকা/শুন্য CollisionPolygon2D-এর কোনো প্রভাব নেই।"
 
+#: scene/2d/collision_polygon_2d.cpp
+msgid "Invalid polygon. At least 3 points are needed in 'Solids' build mode."
+msgstr ""
+
+#: scene/2d/collision_polygon_2d.cpp
+msgid "Invalid polygon. At least 2 points are needed in 'Segments' build mode."
+msgstr ""
+
 #: scene/2d/collision_shape_2d.cpp
 msgid ""
 "CollisionShape2D only serves to provide a collision shape to a "
@@ -13300,31 +13439,33 @@ msgid "ARVROrigin requires an ARVRCamera child node."
 msgstr ""
 
 #: scene/3d/baked_lightmap.cpp
-msgid "%d%%"
-msgstr ""
-
-#: scene/3d/baked_lightmap.cpp
-msgid "(Time Left: %d:%02d s)"
+msgid "Finding meshes and lights"
 msgstr ""
 
 #: scene/3d/baked_lightmap.cpp
 #, fuzzy
-msgid "Plotting Meshes: "
-msgstr "ছবিসমূহ ব্লিটিং (Blitting) করা হচ্ছে"
+msgid "Preparing geometry (%d/%d)"
+msgstr "জ্যামিতিক-আকার বিশ্লেষণ করা হচ্ছে"
 
 #: scene/3d/baked_lightmap.cpp
 #, fuzzy
-msgid "Plotting Lights:"
-msgstr "ছবিসমূহ ব্লিটিং (Blitting) করা হচ্ছে"
-
-#: scene/3d/baked_lightmap.cpp scene/3d/gi_probe.cpp
-msgid "Finishing Plot"
-msgstr ""
+msgid "Preparing environment"
+msgstr "পরিবেশ (Environment)"
 
 #: scene/3d/baked_lightmap.cpp
 #, fuzzy
-msgid "Lighting Meshes: "
-msgstr "ছবিসমূহ ব্লিটিং (Blitting) করা হচ্ছে"
+msgid "Generating capture"
+msgstr "লাইট্ম্যাপে হস্তান্তর করুন:"
+
+#: scene/3d/baked_lightmap.cpp
+#, fuzzy
+msgid "Saving lightmaps"
+msgstr "লাইট্ম্যাপে হস্তান্তর করুন:"
+
+#: scene/3d/baked_lightmap.cpp
+#, fuzzy
+msgid "Done"
+msgstr "সম্পন্ন হয়েছে!"
 
 #: scene/3d/collision_object.cpp
 msgid ""
@@ -13393,14 +13534,13 @@ msgid "Plotting Meshes"
 msgstr "ছবিসমূহ ব্লিটিং (Blitting) করা হচ্ছে"
 
 #: scene/3d/gi_probe.cpp
+msgid "Finishing Plot"
+msgstr ""
+
+#: scene/3d/gi_probe.cpp
 msgid ""
 "GIProbes are not supported by the GLES2 video driver.\n"
 "Use a BakedLightmap instead."
-msgstr ""
-
-#: scene/3d/interpolated_camera.cpp
-msgid ""
-"InterpolatedCamera has been deprecated and will be removed in Godot 4.0."
 msgstr ""
 
 #: scene/3d/light.cpp
@@ -13623,6 +13763,15 @@ msgstr "সতর্কতা!"
 msgid "Please Confirm..."
 msgstr "অনুগ্রহ করে নিশ্চিত করুন..."
 
+#: scene/gui/file_dialog.cpp
+msgid "Must use a valid extension."
+msgstr "একটি কার্যকর এক্সটেনশন ব্যবহার করা আবশ্যক।"
+
+#: scene/gui/graph_edit.cpp
+#, fuzzy
+msgid "Enable grid minimap."
+msgstr "স্ন্যাপ সক্রিয় করুন"
+
 #: scene/gui/popup.cpp
 #, fuzzy
 msgid ""
@@ -13672,6 +13821,12 @@ msgid "Viewport size must be greater than 0 to render anything."
 msgstr ""
 
 #: scene/resources/visual_shader_nodes.cpp
+msgid ""
+"The sampler port is connected but not used. Consider changing the source to "
+"'SamplerPort'."
+msgstr ""
+
+#: scene/resources/visual_shader_nodes.cpp
 #, fuzzy
 msgid "Invalid source for preview."
 msgstr "অকার্যকর উৎস!"
@@ -13701,6 +13856,29 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr ""
+
+#, fuzzy
+#~ msgid "No"
+#~ msgstr "নোড"
+
+#~ msgid "This scene has never been saved. Save before running?"
+#~ msgstr "এই দৃশ্যটি কখনোই সংরক্ষণ করা হয় নি। চালানোর পূর্বে সংরক্ষণ করবেন?"
+
+#, fuzzy
+#~ msgid "Plotting Meshes: "
+#~ msgstr "ছবিসমূহ ব্লিটিং (Blitting) করা হচ্ছে"
+
+#, fuzzy
+#~ msgid "Lighting Meshes: "
+#~ msgstr "ছবিসমূহ ব্লিটিং (Blitting) করা হচ্ছে"
+
+#, fuzzy
+#~ msgid "Search complete"
+#~ msgstr "টেক্সট অনুসন্ধান করুন"
+
+#, fuzzy
+#~ msgid "No commit message was provided"
+#~ msgstr "কোন নাম ব্যাবহার করা হয়নি"
 
 #, fuzzy
 #~ msgid "There is already file or folder with the same name in this location."
@@ -14026,10 +14204,6 @@ msgstr ""
 #, fuzzy
 #~ msgid "Failed to save solution."
 #~ msgstr "রিসোর্স লোড ব্যর্থ হয়েছে।"
-
-#, fuzzy
-#~ msgid "Done"
-#~ msgstr "সম্পন্ন হয়েছে!"
 
 #, fuzzy
 #~ msgid "Failed to create C# project."
@@ -15308,9 +15482,6 @@ msgstr ""
 
 #~ msgid "Use Default Light"
 #~ msgstr "প্রাথমিক লাইট ব্যবহার করুন"
-
-#~ msgid "Use Default sRGB"
-#~ msgstr "প্রাথমিক sRGB ব্যবহার করুন"
 
 #~ msgid "Default Light Normal:"
 #~ msgstr "লাইটের প্রাথমিক নরমাল:"

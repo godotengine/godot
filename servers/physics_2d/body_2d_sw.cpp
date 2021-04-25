@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -562,13 +562,13 @@ void Body2DSW::integrate_velocities(real_t p_step) {
 }
 
 void Body2DSW::wakeup_neighbours() {
-	for (Map<Constraint2DSW *, int>::Element *E = constraint_map.front(); E; E = E->next()) {
-		const Constraint2DSW *c = E->key();
+	for (List<Pair<Constraint2DSW *, int>>::Element *E = constraint_list.front(); E; E = E->next()) {
+		const Constraint2DSW *c = E->get().first;
 		Body2DSW **n = c->get_body_ptr();
 		int bc = c->get_body_count();
 
 		for (int i = 0; i < bc; i++) {
-			if (i == E->get()) {
+			if (i == E->get().second) {
 				continue;
 			}
 			Body2DSW *b = n[i];
@@ -591,16 +591,17 @@ void Body2DSW::call_queries() {
 		Variant v = dbs;
 		const Variant *vp[2] = { &v, &fi_callback->callback_udata };
 
-		Object *obj = ObjectDB::get_instance(fi_callback->id);
+		Object *obj = fi_callback->callable.get_object();
 		if (!obj) {
-			set_force_integration_callback(ObjectID(), StringName());
+			set_force_integration_callback(Callable());
 		} else {
 			Callable::CallError ce;
+			Variant rv;
 			if (fi_callback->callback_udata.get_type() != Variant::NIL) {
-				obj->call(fi_callback->method, vp, 2, ce);
+				fi_callback->callable.call(vp, 2, rv, ce);
 
 			} else {
-				obj->call(fi_callback->method, vp, 1, ce);
+				fi_callback->callable.call(vp, 1, rv, ce);
 			}
 		}
 	}
@@ -625,16 +626,15 @@ bool Body2DSW::sleep_test(real_t p_step) {
 	}
 }
 
-void Body2DSW::set_force_integration_callback(ObjectID p_id, const StringName &p_method, const Variant &p_udata) {
+void Body2DSW::set_force_integration_callback(const Callable &p_callable, const Variant &p_udata) {
 	if (fi_callback) {
 		memdelete(fi_callback);
 		fi_callback = nullptr;
 	}
 
-	if (p_id.is_valid()) {
+	if (p_callable.get_object()) {
 		fi_callback = memnew(ForceIntegrationCallback);
-		fi_callback->id = p_id;
-		fi_callback->method = p_method;
+		fi_callback->callable = p_callable;
 		fi_callback->callback_udata = p_udata;
 	}
 }
@@ -658,8 +658,6 @@ Body2DSW::Body2DSW() :
 	omit_force_integration = false;
 	applied_torque = 0;
 	island_step = 0;
-	island_next = nullptr;
-	island_list_next = nullptr;
 	_set_static(false);
 	first_time_kinematic = false;
 	linear_damp = -1;

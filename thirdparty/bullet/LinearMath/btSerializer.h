@@ -479,9 +479,9 @@ public:
 			buffer[8] = 'V';
 		}
 
-		buffer[9] = '2';
-		buffer[10] = '8';
-		buffer[11] = '9';
+		buffer[9] = '3';
+		buffer[10] = '0';
+		buffer[11] = '8';
 	}
 
 	virtual void startSerialization()

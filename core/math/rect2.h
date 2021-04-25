@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -123,8 +123,9 @@ struct Rect2 {
 	_FORCE_INLINE_ bool has_no_area() const {
 		return (size.x <= 0 || size.y <= 0);
 	}
-	inline Rect2 clip(const Rect2 &p_rect) const { /// return a clipped rect
 
+	// Returns the instersection between two Rect2s or an empty Rect2 if there is no intersection
+	inline Rect2 intersection(const Rect2 &p_rect) const {
 		Rect2 new_rect = p_rect;
 
 		if (!intersects(new_rect)) {
@@ -179,26 +180,26 @@ struct Rect2 {
 	bool operator==(const Rect2 &p_rect) const { return position == p_rect.position && size == p_rect.size; }
 	bool operator!=(const Rect2 &p_rect) const { return position != p_rect.position || size != p_rect.size; }
 
-	inline Rect2 grow(real_t p_by) const {
+	inline Rect2 grow(real_t p_amount) const {
 		Rect2 g = *this;
-		g.position.x -= p_by;
-		g.position.y -= p_by;
-		g.size.width += p_by * 2;
-		g.size.height += p_by * 2;
+		g.position.x -= p_amount;
+		g.position.y -= p_amount;
+		g.size.width += p_amount * 2;
+		g.size.height += p_amount * 2;
 		return g;
 	}
 
-	inline Rect2 grow_margin(Margin p_margin, real_t p_amount) const {
+	inline Rect2 grow_side(Side p_side, real_t p_amount) const {
 		Rect2 g = *this;
-		g = g.grow_individual((MARGIN_LEFT == p_margin) ? p_amount : 0,
-				(MARGIN_TOP == p_margin) ? p_amount : 0,
-				(MARGIN_RIGHT == p_margin) ? p_amount : 0,
-				(MARGIN_BOTTOM == p_margin) ? p_amount : 0);
+		g = g.grow_individual((SIDE_LEFT == p_side) ? p_amount : 0,
+				(SIDE_TOP == p_side) ? p_amount : 0,
+				(SIDE_RIGHT == p_side) ? p_amount : 0,
+				(SIDE_BOTTOM == p_side) ? p_amount : 0);
 		return g;
 	}
 
-	inline Rect2 grow_margin_bind(uint32_t p_margin, real_t p_amount) const {
-		return grow_margin(Margin(p_margin), p_amount);
+	inline Rect2 grow_side_bind(uint32_t p_side, real_t p_amount) const {
+		return grow_side(Side(p_side), p_amount);
 	}
 
 	inline Rect2 grow_individual(real_t p_left, real_t p_top, real_t p_right, real_t p_bottom) const {
@@ -272,7 +273,7 @@ struct Rect2 {
 			}
 
 			//check inside
-			Vector2 tg = r.tangent();
+			Vector2 tg = r.orthogonal();
 			float s = tg.dot(center) - tg.dot(a);
 			if (s < 0.0) {
 				side_plus++;
@@ -365,8 +366,9 @@ struct Rect2i {
 	_FORCE_INLINE_ bool has_no_area() const {
 		return (size.x <= 0 || size.y <= 0);
 	}
-	inline Rect2i clip(const Rect2i &p_rect) const { /// return a clipped rect
 
+	// Returns the instersection between two Rect2is or an empty Rect2i if there is no intersection
+	inline Rect2i intersection(const Rect2i &p_rect) const {
 		Rect2i new_rect = p_rect;
 
 		if (!intersects(new_rect)) {
@@ -420,26 +422,26 @@ struct Rect2i {
 	bool operator==(const Rect2i &p_rect) const { return position == p_rect.position && size == p_rect.size; }
 	bool operator!=(const Rect2i &p_rect) const { return position != p_rect.position || size != p_rect.size; }
 
-	Rect2i grow(int p_by) const {
+	Rect2i grow(int p_amount) const {
 		Rect2i g = *this;
-		g.position.x -= p_by;
-		g.position.y -= p_by;
-		g.size.width += p_by * 2;
-		g.size.height += p_by * 2;
+		g.position.x -= p_amount;
+		g.position.y -= p_amount;
+		g.size.width += p_amount * 2;
+		g.size.height += p_amount * 2;
 		return g;
 	}
 
-	inline Rect2i grow_margin(Margin p_margin, int p_amount) const {
+	inline Rect2i grow_side(Side p_side, int p_amount) const {
 		Rect2i g = *this;
-		g = g.grow_individual((MARGIN_LEFT == p_margin) ? p_amount : 0,
-				(MARGIN_TOP == p_margin) ? p_amount : 0,
-				(MARGIN_RIGHT == p_margin) ? p_amount : 0,
-				(MARGIN_BOTTOM == p_margin) ? p_amount : 0);
+		g = g.grow_individual((SIDE_LEFT == p_side) ? p_amount : 0,
+				(SIDE_TOP == p_side) ? p_amount : 0,
+				(SIDE_RIGHT == p_side) ? p_amount : 0,
+				(SIDE_BOTTOM == p_side) ? p_amount : 0);
 		return g;
 	}
 
-	inline Rect2i grow_margin_bind(uint32_t p_margin, int p_amount) const {
-		return grow_margin(Margin(p_margin), p_amount);
+	inline Rect2i grow_side_bind(uint32_t p_side, int p_amount) const {
+		return grow_side(Side(p_side), p_amount);
 	}
 
 	inline Rect2i grow_individual(int p_left, int p_top, int p_right, int p_bottom) const {

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -70,7 +70,11 @@ public:
 	virtual void clear_cache() override{};
 
 	virtual Error load_from_file(const String &p_filename, int p_base_size) override;
-	virtual Error load_from_memory(const uint8_t *p_data, size_t p_size, int p_base_size) override;
+	virtual Error bitmap_new(float p_height, float p_ascent, int p_base_size) override;
+
+	virtual void bitmap_add_texture(const Ref<Texture> &p_texture) override;
+	virtual void bitmap_add_char(char32_t p_char, int p_texture_idx, const Rect2 &p_rect, const Size2 &p_align, float p_advance) override;
+	virtual void bitmap_add_kerning_pair(char32_t p_A, char32_t p_B, int p_kerning) override;
 
 	virtual float get_height(int p_size) const override;
 	virtual float get_ascent(int p_size) const override;

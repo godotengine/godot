@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -57,7 +57,7 @@ class ResourceFormatImporter : public ResourceFormatLoader {
 
 public:
 	static ResourceFormatImporter *get_singleton() { return singleton; }
-	virtual RES load(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr, bool p_use_sub_threads = false, float *r_progress = nullptr, bool p_no_cache = false);
+	virtual RES load(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr, bool p_use_sub_threads = false, float *r_progress = nullptr, CacheMode p_cache_mode = CACHE_MODE_REUSE);
 	virtual void get_recognized_extensions(List<String> *p_extensions) const;
 	virtual void get_recognized_extensions_for_type(const String &p_type, List<String> *p_extensions) const;
 	virtual bool recognize_path(const String &p_path, const String &p_for_type = String()) const;
@@ -72,6 +72,8 @@ public:
 
 	virtual int get_import_order(const String &p_path) const;
 
+	Error get_import_order_threads_and_importer(const String &p_path, int &r_order, bool &r_can_threads, String &r_importer) const;
+
 	String get_internal_resource_path(const String &p_path) const;
 	void get_internal_resource_path_list(const String &p_path, List<String> *r_paths);
 
@@ -82,6 +84,7 @@ public:
 	Ref<ResourceImporter> get_importer_by_name(const String &p_name) const;
 	Ref<ResourceImporter> get_importer_by_extension(const String &p_extension) const;
 	void get_importers_for_extension(const String &p_extension, List<Ref<ResourceImporter>> *r_importers);
+	void get_importers(List<Ref<ResourceImporter>> *r_importers);
 
 	bool are_import_settings_valid(const String &p_path) const;
 	String get_import_settings_hash() const;
@@ -114,6 +117,9 @@ public:
 		ImportOption() {}
 	};
 
+	virtual bool has_advanced_options() const { return false; }
+	virtual void show_advanced_options(const String &p_path) {}
+
 	virtual int get_preset_count() const { return 0; }
 	virtual String get_preset_name(int p_idx) const { return String(); }
 
@@ -122,6 +128,9 @@ public:
 	virtual String get_option_group_file() const { return String(); }
 
 	virtual Error import(const String &p_source_file, const String &p_save_path, const Map<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files = nullptr, Variant *r_metadata = nullptr) = 0;
+	virtual bool can_import_threaded() const { return true; }
+	virtual void import_threaded_begin() {}
+	virtual void import_threaded_end() {}
 
 	virtual Error import_group_file(const String &p_group_file, const Map<String, Map<StringName, Variant>> &p_source_file_options, const Map<String, String> &p_base_paths) { return ERR_UNAVAILABLE; }
 	virtual bool are_import_settings_valid(const String &p_path) const { return true; }

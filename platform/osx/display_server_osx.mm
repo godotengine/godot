@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -256,9 +256,7 @@ static NSCursor *_cursorFromSelector(SEL selector, SEL fallback = nil) {
 		List<String> args;
 		args.push_back(((OS_OSX *)(OS_OSX::get_singleton()))->open_with_filename);
 		String exec = OS::get_singleton()->get_executable_path();
-
-		OS::ProcessID pid = 0;
-		OS::get_singleton()->execute(exec, args, false, &pid);
+		OS::get_singleton()->create_process(exec, args);
 	}
 #endif
 	return YES;
@@ -751,28 +749,32 @@ static const NSRange kEmptyRange = { NSNotFound, 0 };
 	ERR_FAIL_COND_V(!DS_OSX->windows.has(window_id), NO);
 	DisplayServerOSX::WindowData &wd = DS_OSX->windows[window_id];
 
-	NSPasteboard *pboard = [sender draggingPasteboard];
-#if MAC_OS_X_VERSION_MIN_REQUIRED >= 101400
-	NSArray<NSURL *> *filenames = [pboard propertyListForType:NSPasteboardTypeFileURL];
-#else
-	NSArray *filenames = [pboard propertyListForType:NSFilenamesPboardType];
-#endif
-
-	Vector<String> files;
-	for (NSUInteger i = 0; i < filenames.count; i++) {
-#if MAC_OS_X_VERSION_MIN_REQUIRED >= 101400
-		NSString *ns = [[filenames objectAtIndex:i] path];
-#else
-		NSString *ns = [filenames objectAtIndex:i];
-#endif
-		char *utfs = strdup([ns UTF8String]);
-		String ret;
-		ret.parse_utf8(utfs);
-		free(utfs);
-		files.push_back(ret);
-	}
-
 	if (!wd.drop_files_callback.is_null()) {
+		Vector<String> files;
+		NSPasteboard *pboard = [sender draggingPasteboard];
+
+#if MAC_OS_X_VERSION_MIN_REQUIRED >= 101400
+		NSArray *items = pboard.pasteboardItems;
+		for (NSPasteboardItem *item in items) {
+			NSString *path = [item stringForType:NSPasteboardTypeFileURL];
+			NSString *ns = [NSURL URLWithString:path].path;
+			char *utfs = strdup([ns UTF8String]);
+			String ret;
+			ret.parse_utf8(utfs);
+			free(utfs);
+			files.push_back(ret);
+		}
+#else
+		NSArray *filenames = [pboard propertyListForType:NSFilenamesPboardType];
+		for (NSString *ns in filenames) {
+			char *utfs = strdup([ns UTF8String]);
+			String ret;
+			ret.parse_utf8(utfs);
+			free(utfs);
+			files.push_back(ret);
+		}
+#endif
+
 		Variant v = files;
 		Variant *vp = &v;
 		Variant ret;
@@ -827,7 +829,7 @@ static void _mouseDownEvent(DisplayServer::WindowID window_id, NSEvent *event, i
 	mb->set_position(pos);
 	mb->set_global_position(pos);
 	mb->set_button_mask(DS_OSX->last_button_state);
-	if (index == BUTTON_LEFT && pressed) {
+	if (index == MOUSE_BUTTON_LEFT && pressed) {
 		mb->set_doubleclick([event clickCount] == 2);
 	}
 
@@ -840,10 +842,10 @@ static void _mouseDownEvent(DisplayServer::WindowID window_id, NSEvent *event, i
 
 	if (([event modifierFlags] & NSEventModifierFlagControl)) {
 		wd.mouse_down_control = true;
-		_mouseDownEvent(window_id, event, BUTTON_RIGHT, BUTTON_MASK_RIGHT, true);
+		_mouseDownEvent(window_id, event, MOUSE_BUTTON_RIGHT, MOUSE_BUTTON_MASK_RIGHT, true);
 	} else {
 		wd.mouse_down_control = false;
-		_mouseDownEvent(window_id, event, BUTTON_LEFT, BUTTON_MASK_LEFT, true);
+		_mouseDownEvent(window_id, event, MOUSE_BUTTON_LEFT, MOUSE_BUTTON_MASK_LEFT, true);
 	}
 }
 
@@ -856,9 +858,9 @@ static void _mouseDownEvent(DisplayServer::WindowID window_id, NSEvent *event, i
 	DisplayServerOSX::WindowData &wd = DS_OSX->windows[window_id];
 
 	if (wd.mouse_down_control) {
-		_mouseDownEvent(window_id, event, BUTTON_RIGHT, BUTTON_MASK_RIGHT, false);
+		_mouseDownEvent(window_id, event, MOUSE_BUTTON_RIGHT, MOUSE_BUTTON_MASK_RIGHT, false);
 	} else {
-		_mouseDownEvent(window_id, event, BUTTON_LEFT, BUTTON_MASK_LEFT, false);
+		_mouseDownEvent(window_id, event, MOUSE_BUTTON_LEFT, MOUSE_BUTTON_MASK_LEFT, false);
 	}
 }
 
@@ -868,6 +870,15 @@ static void _mouseDownEvent(DisplayServer::WindowID window_id, NSEvent *event, i
 
 	NSPoint delta = NSMakePoint([event deltaX], [event deltaY]);
 	NSPoint mpos = [event locationInWindow];
+
+	if (DS_OSX->ignore_warp) {
+		// Discard late events, before warp
+		if (([event timestamp]) < DS_OSX->last_warp) {
+			return;
+		}
+		DS_OSX->ignore_warp = false;
+		return;
+	}
 
 	if (DS_OSX->mouse_mode == DisplayServer::MOUSE_MODE_CONFINED) {
 		// Discard late events
@@ -935,7 +946,7 @@ static void _mouseDownEvent(DisplayServer::WindowID window_id, NSEvent *event, i
 }
 
 - (void)rightMouseDown:(NSEvent *)event {
-	_mouseDownEvent(window_id, event, BUTTON_RIGHT, BUTTON_MASK_RIGHT, true);
+	_mouseDownEvent(window_id, event, MOUSE_BUTTON_RIGHT, MOUSE_BUTTON_MASK_RIGHT, true);
 }
 
 - (void)rightMouseDragged:(NSEvent *)event {
@@ -943,16 +954,16 @@ static void _mouseDownEvent(DisplayServer::WindowID window_id, NSEvent *event, i
 }
 
 - (void)rightMouseUp:(NSEvent *)event {
-	_mouseDownEvent(window_id, event, BUTTON_RIGHT, BUTTON_MASK_RIGHT, false);
+	_mouseDownEvent(window_id, event, MOUSE_BUTTON_RIGHT, MOUSE_BUTTON_MASK_RIGHT, false);
 }
 
 - (void)otherMouseDown:(NSEvent *)event {
 	if ((int)[event buttonNumber] == 2) {
-		_mouseDownEvent(window_id, event, BUTTON_MIDDLE, BUTTON_MASK_MIDDLE, true);
+		_mouseDownEvent(window_id, event, MOUSE_BUTTON_MIDDLE, MOUSE_BUTTON_MASK_MIDDLE, true);
 	} else if ((int)[event buttonNumber] == 3) {
-		_mouseDownEvent(window_id, event, BUTTON_XBUTTON1, BUTTON_MASK_XBUTTON1, true);
+		_mouseDownEvent(window_id, event, MOUSE_BUTTON_XBUTTON1, MOUSE_BUTTON_MASK_XBUTTON1, true);
 	} else if ((int)[event buttonNumber] == 4) {
-		_mouseDownEvent(window_id, event, BUTTON_XBUTTON2, BUTTON_MASK_XBUTTON2, true);
+		_mouseDownEvent(window_id, event, MOUSE_BUTTON_XBUTTON2, MOUSE_BUTTON_MASK_XBUTTON2, true);
 	} else {
 		return;
 	}
@@ -964,11 +975,11 @@ static void _mouseDownEvent(DisplayServer::WindowID window_id, NSEvent *event, i
 
 - (void)otherMouseUp:(NSEvent *)event {
 	if ((int)[event buttonNumber] == 2) {
-		_mouseDownEvent(window_id, event, BUTTON_MIDDLE, BUTTON_MASK_MIDDLE, false);
+		_mouseDownEvent(window_id, event, MOUSE_BUTTON_MIDDLE, MOUSE_BUTTON_MASK_MIDDLE, false);
 	} else if ((int)[event buttonNumber] == 3) {
-		_mouseDownEvent(window_id, event, BUTTON_XBUTTON1, BUTTON_MASK_XBUTTON1, false);
+		_mouseDownEvent(window_id, event, MOUSE_BUTTON_XBUTTON1, MOUSE_BUTTON_MASK_XBUTTON1, false);
 	} else if ((int)[event buttonNumber] == 4) {
-		_mouseDownEvent(window_id, event, BUTTON_XBUTTON2, BUTTON_MASK_XBUTTON2, false);
+		_mouseDownEvent(window_id, event, MOUSE_BUTTON_XBUTTON2, MOUSE_BUTTON_MASK_XBUTTON2, false);
 	} else {
 		return;
 	}
@@ -1547,10 +1558,10 @@ inline void sendPanEvent(DisplayServer::WindowID window_id, double dx, double dy
 		sendPanEvent(window_id, deltaX, deltaY, [event modifierFlags]);
 	} else {
 		if (fabs(deltaX)) {
-			sendScrollEvent(window_id, 0 > deltaX ? BUTTON_WHEEL_RIGHT : BUTTON_WHEEL_LEFT, fabs(deltaX * 0.3), [event modifierFlags]);
+			sendScrollEvent(window_id, 0 > deltaX ? MOUSE_BUTTON_WHEEL_RIGHT : MOUSE_BUTTON_WHEEL_LEFT, fabs(deltaX * 0.3), [event modifierFlags]);
 		}
 		if (fabs(deltaY)) {
-			sendScrollEvent(window_id, 0 < deltaY ? BUTTON_WHEEL_UP : BUTTON_WHEEL_DOWN, fabs(deltaY * 0.3), [event modifierFlags]);
+			sendScrollEvent(window_id, 0 < deltaY ? MOUSE_BUTTON_WHEEL_UP : MOUSE_BUTTON_WHEEL_DOWN, fabs(deltaY * 0.3), [event modifierFlags]);
 		}
 	}
 }
@@ -2096,6 +2107,8 @@ void DisplayServerOSX::mouse_set_mode(MouseMode p_mode) {
 		CGAssociateMouseAndMouseCursorPosition(true);
 	}
 
+	last_warp = [[NSProcessInfo processInfo] systemUptime];
+	ignore_warp = true;
 	warp_events.clear();
 	mouse_mode = p_mode;
 }
@@ -3104,7 +3117,7 @@ void DisplayServerOSX::cursor_set_custom_image(const RES &p_cursor, CursorShape 
 		Rect2 atlas_rect;
 
 		if (texture.is_valid()) {
-			image = texture->get_data();
+			image = texture->get_image();
 		}
 
 		if (!image.is_valid() && atlas_texture.is_valid()) {
@@ -3127,7 +3140,7 @@ void DisplayServerOSX::cursor_set_custom_image(const RES &p_cursor, CursorShape 
 		ERR_FAIL_COND(texture_size.width > 256 || texture_size.height > 256);
 		ERR_FAIL_COND(p_hotspot.x > texture_size.width || p_hotspot.y > texture_size.height);
 
-		image = texture->get_data();
+		image = texture->get_image();
 
 		ERR_FAIL_COND(!image.is_valid());
 

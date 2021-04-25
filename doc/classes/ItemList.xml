@@ -12,18 +12,18 @@
 	</tutorials>
 	<methods>
 		<method name="add_icon_item">
-			<return type="void">
+			<return type="int">
 			</return>
 			<argument index="0" name="icon" type="Texture2D">
 			</argument>
 			<argument index="1" name="selectable" type="bool" default="true">
 			</argument>
 			<description>
-				Adds an item to the item list with no text, only an icon.
+				Adds an item to the item list with no text, only an icon. Returns the index of an added item.
 			</description>
 		</method>
 		<method name="add_item">
-			<return type="void">
+			<return type="int">
 			</return>
 			<argument index="0" name="text" type="String">
 			</argument>
@@ -32,7 +32,8 @@
 			<argument index="2" name="selectable" type="bool" default="true">
 			</argument>
 			<description>
-				Adds an item to the item list with specified text. Specify an [code]icon[/code], or use [code]null[/code] as the [code]icon[/code] for a list item with no icon.
+				Adds an item to the item list with specified text. Returns the index of an added item.
+				Specify an [code]icon[/code], or use [code]null[/code] as the [code]icon[/code] for a list item with no icon.
 				If selectable is [code]true[/code], the list item will be selectable.
 			</description>
 		</method>
@@ -50,6 +51,22 @@
 			</argument>
 			<description>
 				Removes all OpenType features from the item's text.
+			</description>
+		</method>
+		<method name="deselect">
+			<return type="void">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+				Ensures the item associated with the specified index is not selected.
+			</description>
+		</method>
+		<method name="deselect_all">
+			<return type="void">
+			</return>
+			<description>
+				Ensures there are no items selected.
 			</description>
 		</method>
 		<method name="ensure_current_is_visible">
@@ -285,16 +302,7 @@
 			<argument index="1" name="custom_bg_color" type="Color">
 			</argument>
 			<description>
-				[codeblocks]
-				[gdscript]
-				var itemList = ItemList.new()
-				some_string.set_item_custom_bg_color(0, Color.red) # This will set the background color of the first item of the control to red.
-				[/gdscript]
-				[csharp]
-				var itemList = new ItemList();
-				itemList.SetItemCustomBgColor(0, Colors.Red); // This will set the background color of the first item of the control to red.
-				[/csharp]
-				[/codeblocks]
+				Sets the background color of the item specified by [code]idx[/code] index to the specified [Color].
 			</description>
 		</method>
 		<method name="set_item_custom_fg_color">
@@ -306,16 +314,6 @@
 			</argument>
 			<description>
 				Sets the foreground color of the item specified by [code]idx[/code] index to the specified [Color].
-				[codeblocks]
-				[gdscript]
-				var item_list = ItemList.new()
-				item_list.set_item_custom_fg_color(0, Color.red) # This will set the foreground color of the first item of the control to red.
-				[/gdscript]
-				[csharp]
-				var itemList = new ItemList();
-				itemList.SetItemCustomFgColor(0, Colors.Red); // This will set the foreground color of the first item of the control to red.
-				[/csharp]
-				[/codeblocks]
 			</description>
 		</method>
 		<method name="set_item_disabled">
@@ -471,22 +469,6 @@
 				Sorts items in the list by their text.
 			</description>
 		</method>
-		<method name="unselect">
-			<return type="void">
-			</return>
-			<argument index="0" name="idx" type="int">
-			</argument>
-			<description>
-				Ensures the item associated with the specified index is not selected.
-			</description>
-		</method>
-		<method name="unselect_all">
-			<return type="void">
-			</return>
-			<description>
-				Ensures there are no items selected.
-			</description>
-		</method>
 	</methods>
 	<members>
 		<member name="allow_reselect" type="bool" setter="set_allow_reselect" getter="get_allow_reselect" default="false">
@@ -614,7 +596,10 @@
 		<theme_item name="font_color" type="Color" default="Color( 0.63, 0.63, 0.63, 1 )">
 			Default text [Color] of the item.
 		</theme_item>
-		<theme_item name="font_color_selected" type="Color" default="Color( 1, 1, 1, 1 )">
+		<theme_item name="font_outline_color" type="Color" default="Color( 1, 1, 1, 1 )">
+			The tint of text outline of the item.
+		</theme_item>
+		<theme_item name="font_selected_color" type="Color" default="Color( 1, 1, 1, 1 )">
 			Text [Color] used when the item is selected.
 		</theme_item>
 		<theme_item name="font_size" type="int">
@@ -631,6 +616,9 @@
 		</theme_item>
 		<theme_item name="line_separation" type="int" default="2">
 			The vertical spacing between each line of text.
+		</theme_item>
+		<theme_item name="outline_size" type="int" default="0">
+			The size of the item text outline.
 		</theme_item>
 		<theme_item name="selected" type="StyleBox">
 			[StyleBox] for the selected items, used when the [ItemList] is not being focused.

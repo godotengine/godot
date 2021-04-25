@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -46,6 +46,8 @@ Size2 Slider::get_minimum_size() const {
 }
 
 void Slider::_gui_input(Ref<InputEvent> p_event) {
+	ERR_FAIL_COND(p_event.is_null());
+
 	if (!editable) {
 		return;
 	}
@@ -53,7 +55,7 @@ void Slider::_gui_input(Ref<InputEvent> p_event) {
 	Ref<InputEventMouseButton> mb = p_event;
 
 	if (mb.is_valid()) {
-		if (mb->get_button_index() == BUTTON_LEFT) {
+		if (mb->get_button_index() == MOUSE_BUTTON_LEFT) {
 			if (mb->is_pressed()) {
 				Ref<Texture2D> grabber = get_theme_icon(mouse_inside || has_focus() ? "grabber_highlight" : "grabber");
 				grab.pos = orientation == VERTICAL ? mb->get_position().y : mb->get_position().x;
@@ -72,9 +74,11 @@ void Slider::_gui_input(Ref<InputEvent> p_event) {
 				grab.active = false;
 			}
 		} else if (scrollable) {
-			if (mb->is_pressed() && mb->get_button_index() == BUTTON_WHEEL_UP) {
+			if (mb->is_pressed() && mb->get_button_index() == MOUSE_BUTTON_WHEEL_UP) {
+				grab_focus();
 				set_value(get_value() + get_step());
-			} else if (mb->is_pressed() && mb->get_button_index() == BUTTON_WHEEL_DOWN) {
+			} else if (mb->is_pressed() && mb->get_button_index() == MOUSE_BUTTON_WHEEL_DOWN) {
+				grab_focus();
 				set_value(get_value() - get_step());
 			}
 		}
@@ -269,12 +273,5 @@ void Slider::_bind_methods() {
 
 Slider::Slider(Orientation p_orientation) {
 	orientation = p_orientation;
-	mouse_inside = false;
-	grab.active = false;
-	ticks = 0;
-	ticks_on_borders = false;
-	custom_step = -1;
-	editable = true;
-	scrollable = true;
 	set_focus_mode(FOCUS_ALL);
 }

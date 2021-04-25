@@ -1,33 +1,48 @@
-#[compute]
+#[vertex]
 
 #version 450
 
-VERSION_DEFINES
+#VERSION_DEFINES
 
-layout(local_size_x = 8, local_size_y = 8, local_size_z = 1) in;
+layout(push_constant, binding = 1, std430) uniform Params {
+	float z_far;
+	float z_near;
+	bool z_flip;
+	uint pad;
+	vec4 screen_rect;
+}
+params;
+
+layout(location = 0) out vec2 uv_interp;
+
+void main() {
+	vec2 base_arr[4] = vec2[](vec2(0.0, 0.0), vec2(0.0, 1.0), vec2(1.0, 1.0), vec2(1.0, 0.0));
+	uv_interp = base_arr[gl_VertexIndex];
+	vec2 screen_pos = uv_interp * params.screen_rect.zw + params.screen_rect.xy;
+	gl_Position = vec4(screen_pos * 2.0 - 1.0, 0.0, 1.0);
+}
+
+#[fragment]
+
+#version 450
+
+#VERSION_DEFINES
+
+layout(location = 0) in vec2 uv_interp;
 
 layout(set = 0, binding = 0) uniform samplerCube source_cube;
 
 layout(push_constant, binding = 1, std430) uniform Params {
-	ivec2 screen_size;
-	ivec2 offset;
-	float bias;
 	float z_far;
 	float z_near;
 	bool z_flip;
+	uint pad;
+	vec4 screen_rect;
 }
 params;
 
-layout(r32f, set = 1, binding = 0) uniform restrict writeonly image2D depth_buffer;
-
 void main() {
-	ivec2 pos = ivec2(gl_GlobalInvocationID.xy);
-	if (any(greaterThan(pos, params.screen_size))) { //too large, do nothing
-		return;
-	}
-
-	vec2 pixel_size = 1.0 / vec2(params.screen_size);
-	vec2 uv = (vec2(pos) + 0.5) * pixel_size;
+	vec2 uv = uv_interp;
 
 	vec3 normal = vec3(uv * 2.0 - 1.0, 0.0);
 
@@ -65,5 +80,5 @@ void main() {
 	float linear_depth = 2.0 * params.z_near * params.z_far / (params.z_far + params.z_near - depth * (params.z_far - params.z_near));
 	depth = (linear_depth * depth_fix) / params.z_far;
 
-	imageStore(depth_buffer, pos + params.offset, vec4(depth));
+	gl_FragDepth = depth;
 }

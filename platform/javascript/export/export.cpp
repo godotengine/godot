@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -119,7 +119,7 @@ public:
 			filepath = cache_path.plus_file(req[1].get_file()); // TODO dangerous?
 			ctype = "application/wasm";
 		}
-		if (filepath.empty() || !FileAccess::exists(filepath)) {
+		if (filepath.is_empty() || !FileAccess::exists(filepath)) {
 			String s = "HTTP/1.1 404 Not Found\r\n";
 			s += "Connection: Close\r\n";
 			s += "\r\n";
@@ -135,6 +135,7 @@ public:
 		s += "Access-Control-Allow-Origin: *\r\n";
 		s += "Cross-Origin-Opener-Policy: same-origin\r\n";
 		s += "Cross-Origin-Embedder-Policy: require-corp\r\n";
+		s += "Cache-Control: no-store, max-age=0\r\n";
 		s += "\r\n";
 		CharString cs = s.utf8();
 		Error err = connection->put_data((const uint8_t *)cs.get_data(), cs.size() - 1);
@@ -213,7 +214,7 @@ class EditorExportPlatformJavaScript : public EditorExportPlatform {
 	Ref<EditorHTTPServer> server;
 	bool server_quit = false;
 	Mutex server_lock;
-	Thread *server_thread = nullptr;
+	Thread server_thread;
 
 	enum ExportMode {
 		EXPORT_MODE_NORMAL = 0,
@@ -241,7 +242,7 @@ class EditorExportPlatformJavaScript : public EditorExportPlatform {
 		return name;
 	}
 
-	void _fix_html(Vector<uint8_t> &p_html, const Ref<EditorExportPreset> &p_preset, const String &p_name, bool p_debug, int p_flags, const Vector<SharedObject> p_shared_objects);
+	void _fix_html(Vector<uint8_t> &p_html, const Ref<EditorExportPreset> &p_preset, const String &p_name, bool p_debug, int p_flags, const Vector<SharedObject> p_shared_objects, const Dictionary &p_file_sizes);
 
 	static void _server_thread_poll(void *data);
 
@@ -280,28 +281,35 @@ public:
 	~EditorExportPlatformJavaScript();
 };
 
-void EditorExportPlatformJavaScript::_fix_html(Vector<uint8_t> &p_html, const Ref<EditorExportPreset> &p_preset, const String &p_name, bool p_debug, int p_flags, const Vector<SharedObject> p_shared_objects) {
+void EditorExportPlatformJavaScript::_fix_html(Vector<uint8_t> &p_html, const Ref<EditorExportPreset> &p_preset, const String &p_name, bool p_debug, int p_flags, const Vector<SharedObject> p_shared_objects, const Dictionary &p_file_sizes) {
 	String str_template = String::utf8(reinterpret_cast<const char *>(p_html.ptr()), p_html.size());
 	String str_export;
 	Vector<String> lines = str_template.split("\n");
-	Vector<String> flags;
-	String flags_json;
-	gen_export_flags(flags, p_flags);
-	flags_json = JSON::print(flags);
-	String libs;
+	Array libs;
 	for (int i = 0; i < p_shared_objects.size(); i++) {
-		libs += "\"" + p_shared_objects[i].path.get_file() + "\",";
+		libs.push_back(p_shared_objects[i].path.get_file());
 	}
+	Vector<String> flags;
+	gen_export_flags(flags, p_flags & (~DEBUG_FLAG_DUMB_CLIENT));
+	Array args;
+	for (int i = 0; i < flags.size(); i++) {
+		args.push_back(flags[i]);
+	}
+	Dictionary config;
+	config["canvasResizePolicy"] = p_preset->get("html/canvas_resize_policy");
+	config["experimentalVK"] = p_preset->get("html/experimental_virtual_keyboard");
+	config["gdnativeLibs"] = libs;
+	config["executable"] = p_name;
+	config["args"] = args;
+	config["fileSizes"] = p_file_sizes;
+	const String str_config = JSON::print(config);
 
 	for (int i = 0; i < lines.size(); i++) {
 		String current_line = lines[i];
-		current_line = current_line.replace("$GODOT_BASENAME", p_name);
+		current_line = current_line.replace("$GODOT_URL", p_name + ".js");
 		current_line = current_line.replace("$GODOT_PROJECT_NAME", ProjectSettings::get_singleton()->get_setting("application/config/name"));
 		current_line = current_line.replace("$GODOT_HEAD_INCLUDE", p_preset->get("html/head_include"));
-		current_line = current_line.replace("$GODOT_FULL_WINDOW", p_preset->get("html/full_window_size") ? "true" : "false");
-		current_line = current_line.replace("$GODOT_GDNATIVE_LIBS", libs);
-		current_line = current_line.replace("$GODOT_DEBUG_ENABLED", p_debug ? "true" : "false");
-		current_line = current_line.replace("$GODOT_ARGS", flags_json);
+		current_line = current_line.replace("$GODOT_CONFIG", str_config);
 		str_export += current_line + "\n";
 	}
 
@@ -318,7 +326,7 @@ void EditorExportPlatformJavaScript::get_preset_features(const Ref<EditorExportP
 	}
 
 	if (p_preset->get("vram_texture_compression/for_mobile")) {
-		String driver = ProjectSettings::get_singleton()->get("rendering/quality/driver/driver_name");
+		String driver = ProjectSettings::get_singleton()->get("rendering/driver/driver_name");
 		if (driver == "GLES2") {
 			r_features->push_back("etc");
 		} else if (driver == "Vulkan") {
@@ -344,7 +352,8 @@ void EditorExportPlatformJavaScript::get_export_options(List<ExportOption> *r_op
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "html/custom_html_shell", PROPERTY_HINT_FILE, "*.html"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "html/head_include", PROPERTY_HINT_MULTILINE_TEXT), ""));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "html/full_window_size"), true));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "html/canvas_resize_policy", PROPERTY_HINT_ENUM, "None,Project,Adaptive"), 2));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "html/experimental_virtual_keyboard"), false));
 }
 
 String EditorExportPlatformJavaScript::get_name() const {
@@ -394,7 +403,7 @@ bool EditorExportPlatformJavaScript::can_export(const Ref<EditorExportPreset> &p
 		}
 	}
 
-	if (!err.empty()) {
+	if (!err.is_empty()) {
 		r_error = err;
 	}
 
@@ -466,6 +475,8 @@ Error EditorExportPlatformJavaScript::export_project(const Ref<EditorExportPrese
 		return ERR_FILE_CORRUPT;
 	}
 
+	Vector<uint8_t> html;
+	Dictionary file_sizes;
 	do {
 		//get filename
 		unz_file_info info;
@@ -474,6 +485,16 @@ Error EditorExportPlatformJavaScript::export_project(const Ref<EditorExportPrese
 
 		String file = fname;
 
+		// HTML is handled later
+		if (file == "godot.html") {
+			if (custom_html.is_empty()) {
+				html.resize(info.uncompressed_size);
+				unzOpenCurrentFile(pkg);
+				unzReadCurrentFile(pkg, html.ptrw(), html.size());
+				unzCloseCurrentFile(pkg);
+			}
+			continue;
+		}
 		Vector<uint8_t> data;
 		data.resize(info.uncompressed_size);
 
@@ -484,14 +505,7 @@ Error EditorExportPlatformJavaScript::export_project(const Ref<EditorExportPrese
 
 		//write
 
-		if (file == "godot.html") {
-			if (!custom_html.empty()) {
-				continue;
-			}
-			_fix_html(data, p_preset, p_path.get_file().get_basename(), p_debug, p_flags, shared_objects);
-			file = p_path.get_file();
-
-		} else if (file == "godot.js") {
+		if (file == "godot.js") {
 			file = p_path.get_file().get_basename() + ".js";
 
 		} else if (file == "godot.worker.js") {
@@ -505,6 +519,7 @@ Error EditorExportPlatformJavaScript::export_project(const Ref<EditorExportPrese
 
 		} else if (file == "godot.wasm") {
 			file = p_path.get_file().get_basename() + ".wasm";
+			file_sizes[file.get_file()] = (uint64_t)info.uncompressed_size;
 		}
 
 		String dst = p_path.get_base_dir().plus_file(file);
@@ -520,30 +535,37 @@ Error EditorExportPlatformJavaScript::export_project(const Ref<EditorExportPrese
 	} while (unzGoToNextFile(pkg) == UNZ_OK);
 	unzClose(pkg);
 
-	if (!custom_html.empty()) {
+	if (!custom_html.is_empty()) {
 		FileAccess *f = FileAccess::open(custom_html, FileAccess::READ);
 		if (!f) {
 			EditorNode::get_singleton()->show_warning(TTR("Could not read custom HTML shell:") + "\n" + custom_html);
 			return ERR_FILE_CANT_READ;
 		}
-		Vector<uint8_t> buf;
-		buf.resize(f->get_len());
-		f->get_buffer(buf.ptrw(), buf.size());
+		html.resize(f->get_len());
+		f->get_buffer(html.ptrw(), html.size());
 		memdelete(f);
-		_fix_html(buf, p_preset, p_path.get_file().get_basename(), p_debug, p_flags, shared_objects);
-
+	}
+	{
+		FileAccess *f = FileAccess::open(pck_path, FileAccess::READ);
+		if (f) {
+			file_sizes[pck_path.get_file()] = (uint64_t)f->get_len();
+			memdelete(f);
+			f = nullptr;
+		}
+		_fix_html(html, p_preset, p_path.get_file().get_basename(), p_debug, p_flags, shared_objects, file_sizes);
 		f = FileAccess::open(p_path, FileAccess::WRITE);
 		if (!f) {
 			EditorNode::get_singleton()->show_warning(TTR("Could not write file:") + "\n" + p_path);
 			return ERR_FILE_CANT_WRITE;
 		}
-		f->store_buffer(buf.ptr(), buf.size());
+		f->store_buffer(html.ptr(), html.size());
 		memdelete(f);
+		html.resize(0);
 	}
 
 	Ref<Image> splash;
 	const String splash_path = String(GLOBAL_GET("application/boot_splash/image")).strip_edges();
-	if (!splash_path.empty()) {
+	if (!splash_path.is_empty()) {
 		splash.instance();
 		const Error err = splash->load(splash_path);
 		if (err) {
@@ -564,7 +586,7 @@ Error EditorExportPlatformJavaScript::export_project(const Ref<EditorExportPrese
 	// This way, the favicon can be displayed immediately when loading the page.
 	Ref<Image> favicon;
 	const String favicon_path = String(GLOBAL_GET("application/config/icon")).strip_edges();
-	if (!favicon_path.empty()) {
+	if (!favicon_path.is_empty()) {
 		favicon.instance();
 		const Error err = favicon->load(favicon_path);
 		if (err) {
@@ -681,7 +703,7 @@ void EditorExportPlatformJavaScript::_server_thread_poll(void *data) {
 
 EditorExportPlatformJavaScript::EditorExportPlatformJavaScript() {
 	server.instance();
-	server_thread = Thread::create(_server_thread_poll, this);
+	server_thread.start(_server_thread_poll, this);
 
 	Ref<Image> img = memnew(Image(_javascript_logo));
 	logo.instance();
@@ -702,8 +724,7 @@ EditorExportPlatformJavaScript::EditorExportPlatformJavaScript() {
 EditorExportPlatformJavaScript::~EditorExportPlatformJavaScript() {
 	server->stop();
 	server_quit = true;
-	Thread::wait_to_finish(server_thread);
-	memdelete(server_thread);
+	server_thread.wait_to_finish();
 }
 
 void register_javascript_exporter() {

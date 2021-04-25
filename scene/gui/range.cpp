@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,24 +30,20 @@
 
 #include "range.h"
 
-String Range::get_configuration_warning() const {
-	String warning = Control::get_configuration_warning();
+TypedArray<String> Range::get_configuration_warnings() const {
+	TypedArray<String> warnings = Node::get_configuration_warnings();
 
 	if (shared->exp_ratio && shared->min <= 0) {
-		if (!warning.empty()) {
-			warning += "\n\n";
-		}
-		warning += TTR("If \"Exp Edit\" is enabled, \"Min Value\" must be greater than 0.");
+		warnings.push_back(TTR("If \"Exp Edit\" is enabled, \"Min Value\" must be greater than 0."));
 	}
 
-	return warning;
+	return warnings;
 }
 
 void Range::_value_changed_notify() {
 	_value_changed(shared->val);
 	emit_signal("value_changed", shared->val);
 	update();
-	_change_notify("value");
 }
 
 void Range::Shared::emit_value_changed() {
@@ -63,7 +59,6 @@ void Range::Shared::emit_value_changed() {
 void Range::_changed_notify(const char *p_what) {
 	emit_signal("changed");
 	update();
-	_change_notify(p_what);
 }
 
 void Range::Shared::emit_changed(const char *p_what) {
@@ -108,7 +103,7 @@ void Range::set_min(double p_min) {
 
 	shared->emit_changed("min");
 
-	update_configuration_warning();
+	update_configuration_warnings();
 }
 
 void Range::set_max(double p_max) {
@@ -171,7 +166,10 @@ void Range::set_as_ratio(double p_value) {
 }
 
 double Range::get_as_ratio() const {
-	ERR_FAIL_COND_V_MSG(Math::is_equal_approx(get_max(), get_min()), 0.0, "Cannot get ratio when minimum and maximum value are equal.");
+	if (Math::is_equal_approx(get_max(), get_min())) {
+		// Avoid division by zero.
+		return 1.0;
+	}
 
 	if (shared->exp_ratio && get_min() >= 0) {
 		double exp_min = get_min() == 0 ? 0.0 : Math::log(get_min()) / Math::log((double)2);
@@ -180,7 +178,6 @@ double Range::get_as_ratio() const {
 		double v = Math::log(value) / Math::log((double)2);
 
 		return CLAMP((v - exp_min) / (exp_max - exp_min), 0, 1);
-
 	} else {
 		float value = CLAMP(get_value(), shared->min, shared->max);
 		return CLAMP((value - get_min()) / (get_max() - get_min()), 0, 1);
@@ -286,7 +283,7 @@ bool Range::is_using_rounded_values() const {
 void Range::set_exp_ratio(bool p_enable) {
 	shared->exp_ratio = p_enable;
 
-	update_configuration_warning();
+	update_configuration_warnings();
 }
 
 bool Range::is_ratio_exp() const {
@@ -311,17 +308,7 @@ bool Range::is_lesser_allowed() const {
 
 Range::Range() {
 	shared = memnew(Shared);
-	shared->min = 0;
-	shared->max = 100;
-	shared->val = 0;
-	shared->step = 1;
-	shared->page = 0;
 	shared->owners.insert(this);
-	shared->exp_ratio = false;
-	shared->allow_greater = false;
-	shared->allow_lesser = false;
-
-	_rounded_values = false;
 }
 
 Range::~Range() {

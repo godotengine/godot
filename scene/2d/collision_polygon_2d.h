@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -46,14 +46,14 @@ public:
 	};
 
 protected:
-	Rect2 aabb;
-	BuildMode build_mode;
+	Rect2 aabb = Rect2(-10, -10, 20, 20);
+	BuildMode build_mode = BUILD_SOLIDS;
 	Vector<Point2> polygon;
-	uint32_t owner_id;
-	CollisionObject2D *parent;
-	bool disabled;
-	bool one_way_collision;
-	float one_way_collision_margin;
+	uint32_t owner_id = 0;
+	CollisionObject2D *parent = nullptr;
+	bool disabled = false;
+	bool one_way_collision = false;
+	real_t one_way_collision_margin = 1.0;
 
 	Vector<Vector<Vector2>> _decompose_in_convex();
 
@@ -78,7 +78,7 @@ public:
 	void set_polygon(const Vector<Point2> &p_polygon);
 	Vector<Point2> get_polygon() const;
 
-	virtual String get_configuration_warning() const override;
+	TypedArray<String> get_configuration_warnings() const override;
 
 	void set_disabled(bool p_disabled);
 	bool is_disabled() const;
@@ -86,8 +86,8 @@ public:
 	void set_one_way_collision(bool p_enable);
 	bool is_one_way_collision_enabled() const;
 
-	void set_one_way_collision_margin(float p_margin);
-	float get_one_way_collision_margin() const;
+	void set_one_way_collision_margin(real_t p_margin);
+	real_t get_one_way_collision_margin() const;
 
 	CollisionPolygon2D();
 };

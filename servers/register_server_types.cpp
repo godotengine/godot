@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -36,6 +36,7 @@
 #include "audio/audio_effect.h"
 #include "audio/audio_stream.h"
 #include "audio/effects/audio_effect_amplify.h"
+#include "audio/effects/audio_effect_capture.h"
 #include "audio/effects/audio_effect_chorus.h"
 #include "audio/effects/audio_effect_compressor.h"
 #include "audio/effects/audio_effect_delay.h"
@@ -60,6 +61,7 @@
 #include "physics_2d/physics_server_2d_sw.h"
 #include "physics_2d/physics_server_2d_wrap_mt.h"
 #include "physics_3d/physics_server_3d_sw.h"
+#include "physics_3d/physics_server_3d_wrap_mt.h"
 #include "physics_server_2d.h"
 #include "physics_server_3d.h"
 #include "rendering/renderer_compositor.h"
@@ -75,11 +77,19 @@
 ShaderTypes *shader_types = nullptr;
 
 PhysicsServer3D *_createGodotPhysics3DCallback() {
-	return memnew(PhysicsServer3DSW);
+	bool using_threads = GLOBAL_GET("physics/3d/run_on_thread");
+
+	PhysicsServer3D *physics_server = memnew(PhysicsServer3DSW(using_threads));
+
+	return memnew(PhysicsServer3DWrapMT(physics_server, using_threads));
 }
 
 PhysicsServer2D *_createGodotPhysics2DCallback() {
-	return PhysicsServer2DWrapMT::init_server<PhysicsServer2DSW>();
+	bool using_threads = GLOBAL_GET("physics/2d/run_on_thread");
+
+	PhysicsServer2D *physics_server = memnew(PhysicsServer2DSW(using_threads));
+
+	return memnew(PhysicsServer2DWrapMT(physics_server, using_threads));
 }
 
 static bool has_server_feature_callback(const String &p_feature) {
@@ -94,6 +104,16 @@ static bool has_server_feature_callback(const String &p_feature) {
 
 void preregister_server_types() {
 	shader_types = memnew(ShaderTypes);
+
+	GLOBAL_DEF("internationalization/rendering/text_driver", "");
+	String text_driver_options;
+	for (int i = 0; i < TextServerManager::get_interface_count(); i++) {
+		if (i > 0) {
+			text_driver_options += ",";
+		}
+		text_driver_options += TextServerManager::get_interface_name(i);
+	}
+	ProjectSettings::get_singleton()->set_custom_property_info("internationalization/rendering/text_driver", PropertyInfo(Variant::STRING, "internationalization/rendering/text_driver", PROPERTY_HINT_ENUM, text_driver_options));
 }
 
 void register_server_types() {
@@ -166,6 +186,8 @@ void register_server_types() {
 		ClassDB::register_class<AudioEffectRecord>();
 		ClassDB::register_class<AudioEffectSpectrumAnalyzer>();
 		ClassDB::register_virtual_class<AudioEffectSpectrumAnalyzerInstance>();
+
+		ClassDB::register_class<AudioEffectCapture>();
 	}
 
 	ClassDB::register_virtual_class<RenderingDevice>();

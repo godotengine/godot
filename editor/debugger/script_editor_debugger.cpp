@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,6 +35,8 @@
 #include "core/debugger/remote_debugger.h"
 #include "core/io/marshalls.h"
 #include "core/string/ustring.h"
+#include "core/version.h"
+#include "core/version_hash.gen.h"
 #include "editor/debugger/editor_network_profiler.h"
 #include "editor/debugger/editor_performance_profiler.h"
 #include "editor/debugger/editor_profiler.h"
@@ -343,7 +345,7 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 		DebuggerMarshalls::ResourceUsage usage;
 		usage.deserialize(p_data);
 
-		int total = 0;
+		uint64_t total = 0;
 
 		for (List<DebuggerMarshalls::ResourceInfo>::Element *E = usage.infos.front(); E; E = E->next()) {
 			TreeItem *it = vmem_tree->create_item(root);
@@ -490,17 +492,17 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 		if (oe.callstack.size() > 0) {
 			// If available, use the script's stack in the error title.
 			error_title = oe.callstack[oe.callstack.size() - 1].func + ": ";
-		} else if (!oe.source_func.empty()) {
+		} else if (!oe.source_func.is_empty()) {
 			// Otherwise try to use the C++ source function.
 			error_title += oe.source_func + ": ";
 		}
 		// If we have a (custom) error message, use it as title, and add a C++ Error
 		// item with the original error condition.
-		error_title += oe.error_descr.empty() ? oe.error : oe.error_descr;
+		error_title += oe.error_descr.is_empty() ? oe.error : oe.error_descr;
 		error->set_text(1, error_title);
 		tooltip += " " + error_title + "\n";
 
-		if (!oe.error_descr.empty()) {
+		if (!oe.error_descr.is_empty()) {
 			// Add item for C++ error condition.
 			TreeItem *cpp_cond = error_tree->create_item(error);
 			cpp_cond->set_text(0, "<" + TTR("C++ Error") + ">");
@@ -516,7 +518,7 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 
 		// Source of the error.
 		String source_txt = (source_is_project_file ? oe.source_file.get_file() : oe.source_file) + ":" + itos(oe.source_line);
-		if (!oe.source_func.empty()) {
+		if (!oe.source_func.is_empty()) {
 			source_txt += " @ " + oe.source_func + "()";
 		}
 
@@ -802,8 +804,8 @@ void ScriptEditorDebugger::_notification(int p_what) {
 						msg.push_back(true);
 						msg.push_back(cam->get_fov());
 					}
-					msg.push_back(cam->get_znear());
-					msg.push_back(cam->get_zfar());
+					msg.push_back(cam->get_near());
+					msg.push_back(cam->get_far());
 					_put_msg("scene:override_camera_3D:transform", msg);
 				}
 			}
@@ -1371,7 +1373,8 @@ void ScriptEditorDebugger::_error_tree_item_rmb_selected(const Vector2 &p_pos) {
 	item_menu->set_size(Size2(1, 1));
 
 	if (error_tree->is_anything_selected()) {
-		item_menu->add_icon_item(get_theme_icon("ActionCopy", "EditorIcons"), TTR("Copy Error"), 0);
+		item_menu->add_icon_item(get_theme_icon("ActionCopy", "EditorIcons"), TTR("Copy Error"), ACTION_COPY_ERROR);
+		item_menu->add_icon_item(get_theme_icon("Instance", "EditorIcons"), TTR("Open C++ Source on GitHub"), ACTION_OPEN_SOURCE);
 	}
 
 	if (item_menu->get_item_count() > 0) {
@@ -1381,30 +1384,64 @@ void ScriptEditorDebugger::_error_tree_item_rmb_selected(const Vector2 &p_pos) {
 }
 
 void ScriptEditorDebugger::_item_menu_id_pressed(int p_option) {
-	TreeItem *ti = error_tree->get_selected();
-	while (ti->get_parent() != error_tree->get_root()) {
-		ti = ti->get_parent();
+	switch (p_option) {
+		case ACTION_COPY_ERROR: {
+			TreeItem *ti = error_tree->get_selected();
+			while (ti->get_parent() != error_tree->get_root()) {
+				ti = ti->get_parent();
+			}
+
+			String type;
+
+			if (ti->get_icon(0) == get_theme_icon("Warning", "EditorIcons")) {
+				type = "W ";
+			} else if (ti->get_icon(0) == get_theme_icon("Error", "EditorIcons")) {
+				type = "E ";
+			}
+
+			String text = ti->get_text(0) + "   ";
+			int rpad_len = text.length();
+
+			text = type + text + ti->get_text(1) + "\n";
+			TreeItem *ci = ti->get_children();
+			while (ci) {
+				text += "  " + ci->get_text(0).rpad(rpad_len) + ci->get_text(1) + "\n";
+				ci = ci->get_next();
+			}
+
+			DisplayServer::get_singleton()->clipboard_set(text);
+		} break;
+
+		case ACTION_OPEN_SOURCE: {
+			TreeItem *ti = error_tree->get_selected();
+			while (ti->get_parent() != error_tree->get_root()) {
+				ti = ti->get_parent();
+			}
+
+			// We only need the first child here (C++ source stack trace).
+			TreeItem *ci = ti->get_children();
+			// Parse back the `file:line @ method()` string.
+			const Vector<String> file_line_number = ci->get_text(1).split("@")[0].strip_edges().split(":");
+			ERR_FAIL_COND_MSG(file_line_number.size() < 2, "Incorrect C++ source stack trace file:line format (please report).");
+			const String file = file_line_number[0];
+			const int line_number = file_line_number[1].to_int();
+
+			// Construct a GitHub repository URL and open it in the user's default web browser.
+			if (String(VERSION_HASH).length() >= 1) {
+				// Git commit hash information available; use it for greater accuracy, including for development versions.
+				OS::get_singleton()->shell_open(vformat("https://github.com/godotengine/godot/blob/%s/%s#L%d",
+						VERSION_HASH,
+						file,
+						line_number));
+			} else {
+				// Git commit hash information unavailable; fall back to tagged releases.
+				OS::get_singleton()->shell_open(vformat("https://github.com/godotengine/godot/blob/%s-stable/%s#L%d",
+						VERSION_NUMBER,
+						file,
+						line_number));
+			}
+		} break;
 	}
-
-	String type;
-
-	if (ti->get_icon(0) == get_theme_icon("Warning", "EditorIcons")) {
-		type = "W ";
-	} else if (ti->get_icon(0) == get_theme_icon("Error", "EditorIcons")) {
-		type = "E ";
-	}
-
-	String text = ti->get_text(0) + "   ";
-	int rpad_len = text.length();
-
-	text = type + text + ti->get_text(1) + "\n";
-	TreeItem *ci = ti->get_children();
-	while (ci) {
-		text += "  " + ci->get_text(0).rpad(rpad_len) + ci->get_text(1) + "\n";
-		ci = ci->get_next();
-	}
-
-	DisplayServer::get_singleton()->clipboard_set(text);
 }
 
 void ScriptEditorDebugger::_tab_changed(int p_tab) {

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,8 +35,6 @@
 #include "scene/resources/mesh.h"
 #include "scene/resources/navigation_mesh.h"
 
-class Navigation3D;
-
 class NavigationRegion3D : public Node3D {
 	GDCLASS(NavigationRegion3D, Node3D);
 
@@ -44,18 +42,21 @@ class NavigationRegion3D : public Node3D {
 	RID region;
 	Ref<NavigationMesh> navmesh;
 
-	Navigation3D *navigation = nullptr;
 	Node *debug_view = nullptr;
-	Thread *bake_thread = nullptr;
+	Thread bake_thread;
+
+	void _navigation_changed();
 
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
-	void _changed_callback(Object *p_changed, const char *p_prop) override;
 
 public:
 	void set_enabled(bool p_enabled);
 	bool is_enabled() const;
+
+	void set_layers(uint32_t p_layers);
+	uint32_t get_layers() const;
 
 	void set_navigation_mesh(const Ref<NavigationMesh> &p_navmesh);
 	Ref<NavigationMesh> get_navigation_mesh() const;
@@ -65,7 +66,7 @@ public:
 	void bake_navigation_mesh();
 	void _bake_finished(Ref<NavigationMesh> p_nav_mesh);
 
-	String get_configuration_warning() const override;
+	TypedArray<String> get_configuration_warnings() const override;
 
 	NavigationRegion3D();
 	~NavigationRegion3D();

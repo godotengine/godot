@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,9 +33,9 @@
 
 #include "core/os/memory.h"
 #include "core/os/semaphore.h"
+#include "core/os/thread.h"
 
 #include <atomic>
-#include <thread>
 
 class ThreadWorkPool {
 	std::atomic<uint32_t> index;
@@ -64,7 +64,7 @@ class ThreadWorkPool {
 	};
 
 	struct ThreadData {
-		std::thread *thread;
+		Thread thread;
 		Semaphore start;
 		Semaphore completed;
 		std::atomic<bool> exit;
@@ -75,7 +75,7 @@ class ThreadWorkPool {
 	uint32_t thread_count = 0;
 	BaseWork *current_work = nullptr;
 
-	static void _thread_function(ThreadData *p_thread);
+	static void _thread_function(void *p_user);
 
 public:
 	template <class C, class M, class U>
@@ -83,7 +83,7 @@ public:
 		ERR_FAIL_COND(!threads); //never initialized
 		ERR_FAIL_COND(current_work != nullptr);
 
-		index.store(0);
+		index.store(0, std::memory_order_release);
 
 		Work<C, M, U> *w = memnew((Work<C, M, U>));
 		w->instance = p_instance;
@@ -104,8 +104,15 @@ public:
 		return current_work != nullptr;
 	}
 
+	bool is_done_dispatching() const {
+		ERR_FAIL_COND_V(current_work == nullptr, false);
+		return index.load(std::memory_order_acquire) >= current_work->max_elements;
+	}
+
 	uint32_t get_work_index() const {
-		return index;
+		ERR_FAIL_COND_V(current_work == nullptr, 0);
+		uint32_t idx = index.load(std::memory_order_acquire);
+		return MIN(idx, current_work->max_elements);
 	}
 
 	void end_work() {
@@ -125,6 +132,7 @@ public:
 		end_work();
 	}
 
+	_FORCE_INLINE_ int get_thread_count() const { return thread_count; }
 	void init(int p_thread_count = -1);
 	void finish();
 	~ThreadWorkPool();

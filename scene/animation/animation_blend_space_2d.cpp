@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -437,7 +437,7 @@ float AnimationNodeBlendSpace2D::process(float p_time, bool p_seek) {
 	Vector2 blend_pos = get_parameter(blend_position);
 	int closest = get_parameter(this->closest);
 	float length_internal = get_parameter(this->length_internal);
-	float mind = 0; //time of min distance point
+	float mind = 0.0; //time of min distance point
 
 	if (blend_mode == BLEND_MODE_INTERPOLATED) {
 		if (triangles.size() == 0) {
@@ -529,7 +529,7 @@ float AnimationNodeBlendSpace2D::process(float p_time, bool p_seek) {
 		}
 
 		if (new_closest != closest && new_closest != -1) {
-			float from = 0;
+			float from = 0.0;
 			if (blend_mode == BLEND_MODE_DISCRETE_CARRY && closest != -1) {
 				//see how much animation remains
 				from = blend_node(blend_points[closest].name, blend_points[closest].node, p_time, true, 0.0, FILTER_IGNORE, false) - length_internal;
@@ -665,18 +665,6 @@ AnimationNodeBlendSpace2D::AnimationNodeBlendSpace2D() {
 	for (int i = 0; i < MAX_BLEND_POINTS; i++) {
 		blend_points[i].name = itos(i);
 	}
-	auto_triangles = true;
-	blend_points_used = 0;
-	max_space = Vector2(1, 1);
-	min_space = Vector2(-1, -1);
-	snap = Vector2(0.1, 0.1);
-	x_label = "x";
-	y_label = "y";
-	trianges_dirty = false;
-	blend_position = "blend_position";
-	closest = "closest";
-	length_internal = "length_internal";
-	blend_mode = BLEND_MODE_INTERPOLATED;
 }
 
 AnimationNodeBlendSpace2D::~AnimationNodeBlendSpace2D() {

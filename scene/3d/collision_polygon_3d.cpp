@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -70,6 +70,7 @@ void CollisionPolygon3D::_build_polygon() {
 		}
 
 		convex->set_points(cp);
+		convex->set_margin(margin);
 		parent->shape_owner_add_shape(owner_id, convex);
 		parent->shape_owner_set_disabled(owner_id, disabled);
 	}
@@ -120,7 +121,7 @@ void CollisionPolygon3D::set_polygon(const Vector<Point2> &p_polygon) {
 	if (parent) {
 		_build_polygon();
 	}
-	update_configuration_warning();
+	update_configuration_warnings();
 	update_gizmo();
 }
 
@@ -132,13 +133,13 @@ AABB CollisionPolygon3D::get_item_rect() const {
 	return aabb;
 }
 
-void CollisionPolygon3D::set_depth(float p_depth) {
+void CollisionPolygon3D::set_depth(real_t p_depth) {
 	depth = p_depth;
 	_build_polygon();
 	update_gizmo();
 }
 
-float CollisionPolygon3D::get_depth() const {
+real_t CollisionPolygon3D::get_depth() const {
 	return depth;
 }
 
@@ -155,24 +156,29 @@ bool CollisionPolygon3D::is_disabled() const {
 	return disabled;
 }
 
-String CollisionPolygon3D::get_configuration_warning() const {
-	String warning = Node3D::get_configuration_warning();
+real_t CollisionPolygon3D::get_margin() const {
+	return margin;
+}
+
+void CollisionPolygon3D::set_margin(real_t p_margin) {
+	margin = p_margin;
+	if (parent) {
+		_build_polygon();
+	}
+}
+
+TypedArray<String> CollisionPolygon3D::get_configuration_warnings() const {
+	TypedArray<String> warnings = Node::get_configuration_warnings();
 
 	if (!Object::cast_to<CollisionObject3D>(get_parent())) {
-		if (!warning.empty()) {
-			warning += "\n\n";
-		}
-		warning += TTR("CollisionPolygon3D only serves to provide a collision shape to a CollisionObject3D derived node. Please only use it as a child of Area3D, StaticBody3D, RigidBody3D, KinematicBody3D, etc. to give them a shape.");
+		warnings.push_back(TTR("CollisionPolygon3D only serves to provide a collision shape to a CollisionObject3D derived node. Please only use it as a child of Area3D, StaticBody3D, RigidBody3D, KinematicBody3D, etc. to give them a shape."));
 	}
 
-	if (polygon.empty()) {
-		if (!warning.empty()) {
-			warning += "\n\n";
-		}
-		warning += TTR("An empty CollisionPolygon3D has no effect on collision.");
+	if (polygon.is_empty()) {
+		warnings.push_back(TTR("An empty CollisionPolygon3D has no effect on collision."));
 	}
 
-	return warning;
+	return warnings;
 }
 
 bool CollisionPolygon3D::_is_editable_3d_polygon() const {
@@ -189,18 +195,17 @@ void CollisionPolygon3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_disabled", "disabled"), &CollisionPolygon3D::set_disabled);
 	ClassDB::bind_method(D_METHOD("is_disabled"), &CollisionPolygon3D::is_disabled);
 
+	ClassDB::bind_method(D_METHOD("set_margin", "margin"), &CollisionPolygon3D::set_margin);
+	ClassDB::bind_method(D_METHOD("get_margin"), &CollisionPolygon3D::get_margin);
+
 	ClassDB::bind_method(D_METHOD("_is_editable_3d_polygon"), &CollisionPolygon3D::_is_editable_3d_polygon);
 
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "depth"), "set_depth", "get_depth");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "disabled"), "set_disabled", "is_disabled");
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_VECTOR2_ARRAY, "polygon"), "set_polygon", "get_polygon");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "margin", PROPERTY_HINT_RANGE, "0.001,10,0.001"), "set_margin", "get_margin");
 }
 
 CollisionPolygon3D::CollisionPolygon3D() {
-	aabb = AABB(Vector3(-1, -1, -1), Vector3(2, 2, 2));
-	depth = 1.0;
 	set_notify_local_transform(true);
-	parent = nullptr;
-	owner_id = 0;
-	disabled = false;
 }

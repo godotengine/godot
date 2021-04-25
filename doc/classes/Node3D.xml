@@ -6,7 +6,7 @@
 	<description>
 		Most basic 3D game object, with a 3D [Transform] and visibility settings. All other 3D game objects inherit from Node3D. Use [Node3D] as a parent node to move, scale, rotate and show/hide children in a 3D project.
 		Affine operations (rotate, scale, translate) happen in parent's local coordinate system, unless the [Node3D] object is set as top-level. Affine operations in this coordinate system correspond to direct affine operations on the [Node3D]'s transform. The word local below refers to this coordinate system. The coordinate system that is attached to the [Node3D] object itself is referred to as object-local coordinate system.
-		[b]Note:[/b] Unless otherwise specified, all methods that have angle parameters must have angles specified as [i]radians[/i]. To convert degrees to radians, use [method @GDScript.deg2rad].
+		[b]Note:[/b] Unless otherwise specified, all methods that have angle parameters must have angles specified as [i]radians[/i]. To convert degrees to radians, use [method @GlobalScope.deg2rad].
 	</description>
 	<tutorials>
 		<link title="Introduction to 3D">https://docs.godotengine.org/en/latest/tutorials/3d/introduction_to_3d.html</link>
@@ -103,7 +103,7 @@
 			</return>
 			<argument index="0" name="target" type="Vector3">
 			</argument>
-			<argument index="1" name="up" type="Vector3">
+			<argument index="1" name="up" type="Vector3" default="Vector3( 0, 1, 0 )">
 			</argument>
 			<description>
 				Rotates itself so that the local -Z axis points towards the [code]target[/code] position.
@@ -118,7 +118,7 @@
 			</argument>
 			<argument index="1" name="target" type="Vector3">
 			</argument>
-			<argument index="2" name="up" type="Vector3">
+			<argument index="2" name="up" type="Vector3" default="Vector3( 0, 1, 0 )">
 			</argument>
 			<description>
 				Moves the node to the specified [code]position[/code], and then rotates itself to point toward the [code]target[/code] as per [method look_at]. Operations take place in global space.
@@ -229,7 +229,7 @@
 			<argument index="0" name="enable" type="bool">
 			</argument>
 			<description>
-				Sets whether the node notifies about its global and local transformation changes. [Node3D] will not propagate this by default.
+				Sets whether the node notifies about its global and local transformation changes. [Node3D] will not propagate this by default, unless it is in the editor context and it has a valid gizmo.
 			</description>
 		</method>
 		<method name="show">
@@ -324,7 +324,7 @@
 	<constants>
 		<constant name="NOTIFICATION_TRANSFORM_CHANGED" value="2000">
 			Node3D nodes receives this notification when their global transform changes. This means that either the current or a parent node changed its transform.
-			In order for [constant NOTIFICATION_TRANSFORM_CHANGED] to work, users first need to ask for it, with [method set_notify_transform].
+			In order for [constant NOTIFICATION_TRANSFORM_CHANGED] to work, users first need to ask for it, with [method set_notify_transform]. The notification is also sent if the node is in the editor context and it has a valid gizmo.
 		</constant>
 		<constant name="NOTIFICATION_ENTER_WORLD" value="41">
 			Node3D nodes receives this notification when they are registered to new [World3D] resource.

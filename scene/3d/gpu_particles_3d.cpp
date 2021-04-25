@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -100,7 +100,6 @@ void GPUParticles3D::set_visibility_aabb(const AABB &p_aabb) {
 	visibility_aabb = p_aabb;
 	RS::get_singleton()->particles_set_custom_aabb(particles, visibility_aabb);
 	update_gizmo();
-	_change_notify("visibility_aabb");
 }
 
 void GPUParticles3D::set_use_local_coordinates(bool p_enable) {
@@ -116,7 +115,7 @@ void GPUParticles3D::set_process_material(const Ref<Material> &p_material) {
 	}
 	RS::get_singleton()->particles_set_process_material(particles, material_rid);
 
-	update_configuration_warning();
+	update_configuration_warnings();
 }
 
 void GPUParticles3D::set_speed_scale(float p_scale) {
@@ -190,7 +189,7 @@ void GPUParticles3D::set_draw_passes(int p_count) {
 	ERR_FAIL_COND(p_count < 1);
 	draw_passes.resize(p_count);
 	RS::get_singleton()->particles_set_draw_passes(particles, p_count);
-	_change_notify();
+	notify_property_list_changed();
 }
 
 int GPUParticles3D::get_draw_passes() const {
@@ -209,7 +208,7 @@ void GPUParticles3D::set_draw_pass_mesh(int p_pass, const Ref<Mesh> &p_mesh) {
 
 	RS::get_singleton()->particles_set_draw_pass_mesh(particles, p_pass, mesh_rid);
 
-	update_configuration_warning();
+	update_configuration_warnings();
 }
 
 Ref<Mesh> GPUParticles3D::get_draw_pass_mesh(int p_pass) const {
@@ -236,12 +235,12 @@ bool GPUParticles3D::get_fractional_delta() const {
 	return fractional_delta;
 }
 
-String GPUParticles3D::get_configuration_warning() const {
-	if (RenderingServer::get_singleton()->is_low_end()) {
-		return TTR("GPU-based particles are not supported by the GLES2 video driver.\nUse the CPUParticles3D node instead. You can use the \"Convert to CPUParticles3D\" option for this purpose.");
-	}
+TypedArray<String> GPUParticles3D::get_configuration_warnings() const {
+	TypedArray<String> warnings = Node::get_configuration_warnings();
 
-	String warnings = GeometryInstance3D::get_configuration_warning();
+	if (RenderingServer::get_singleton()->is_low_end()) {
+		warnings.push_back(TTR("GPU-based particles are not supported by the GLES2 video driver.\nUse the CPUParticles3D node instead. You can use the \"Convert to CPUParticles3D\" option for this purpose."));
+	}
 
 	bool meshes_found = false;
 	bool anim_material_found = false;
@@ -265,26 +264,17 @@ String GPUParticles3D::get_configuration_warning() const {
 	anim_material_found = anim_material_found || (spat && spat->get_billboard_mode() == StandardMaterial3D::BILLBOARD_PARTICLES);
 
 	if (!meshes_found) {
-		if (warnings != String()) {
-			warnings += "\n";
-		}
-		warnings += "- " + TTR("Nothing is visible because meshes have not been assigned to draw passes.");
+		warnings.push_back(TTR("Nothing is visible because meshes have not been assigned to draw passes."));
 	}
 
 	if (process_material.is_null()) {
-		if (warnings != String()) {
-			warnings += "\n";
-		}
-		warnings += "- " + TTR("A material to process the particles is not assigned, so no behavior is imprinted.");
+		warnings.push_back(TTR("A material to process the particles is not assigned, so no behavior is imprinted."));
 	} else {
 		const ParticlesMaterial *process = Object::cast_to<ParticlesMaterial>(process_material.ptr());
 		if (!anim_material_found && process &&
 				(process->get_param(ParticlesMaterial::PARAM_ANIM_SPEED) != 0.0 || process->get_param(ParticlesMaterial::PARAM_ANIM_OFFSET) != 0.0 ||
 						process->get_param_texture(ParticlesMaterial::PARAM_ANIM_SPEED).is_valid() || process->get_param_texture(ParticlesMaterial::PARAM_ANIM_OFFSET).is_valid())) {
-			if (warnings != String()) {
-				warnings += "\n";
-			}
-			warnings += "- " + TTR("Particles animation requires the usage of a StandardMaterial3D whose Billboard Mode is set to \"Particle Billboard\".");
+			warnings.push_back(TTR("Particles animation requires the usage of a StandardMaterial3D whose Billboard Mode is set to \"Particle Billboard\"."));
 		}
 	}
 
@@ -349,11 +339,11 @@ void GPUParticles3D::_notification(int p_what) {
 		}
 	}
 
-	// Use internal process when emitting and one_shot are on so that when
+	// Use internal process when emitting and one_shot is on so that when
 	// the shot ends the editor can properly update
 	if (p_what == NOTIFICATION_INTERNAL_PROCESS) {
 		if (one_shot && !is_emitting()) {
-			_change_notify();
+			notify_property_list_changed();
 			set_process_internal(false);
 		}
 	}

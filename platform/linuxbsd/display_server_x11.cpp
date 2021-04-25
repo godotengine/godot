@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -95,6 +95,15 @@
 static const double abs_resolution_mult = 10000.0;
 static const double abs_resolution_range_mult = 10.0;
 
+// Hints for X11 fullscreen
+struct Hints {
+	unsigned long flags = 0;
+	unsigned long functions = 0;
+	unsigned long decorations = 0;
+	long inputMode = 0;
+	unsigned long status = 0;
+};
+
 bool DisplayServerX11::has_feature(Feature p_feature) const {
 	switch (p_feature) {
 		case FEATURE_SUBWINDOWS:
@@ -182,7 +191,7 @@ void DisplayServerX11::alert(const String &p_alert, const String &p_title) {
 	}
 
 	if (program.length()) {
-		OS::get_singleton()->execute(program, args, true);
+		OS::get_singleton()->execute(program, args);
 	} else {
 		print_line(p_alert);
 	}
@@ -613,7 +622,7 @@ String DisplayServerX11::_clipboard_get(Atom p_source, Window x11_window) const 
 	if (utf8_atom != None) {
 		ret = _clipboard_get_impl(p_source, x11_window, utf8_atom);
 	}
-	if (ret.empty()) {
+	if (ret.is_empty()) {
 		ret = _clipboard_get_impl(p_source, x11_window, XA_STRING);
 	}
 	return ret;
@@ -625,7 +634,7 @@ String DisplayServerX11::clipboard_get() const {
 	String ret;
 	ret = _clipboard_get(XInternAtom(x11_display, "CLIPBOARD", 0), windows[MAIN_WINDOW_ID].x11_window);
 
-	if (ret.empty()) {
+	if (ret.is_empty()) {
 		ret = _clipboard_get(XA_PRIMARY, windows[MAIN_WINDOW_ID].x11_window);
 	}
 
@@ -718,9 +727,9 @@ Point2i DisplayServerX11::screen_get_position(int p_screen) const {
 
 	int count;
 	XineramaScreenInfo *xsi = XineramaQueryScreens(x11_display, &count);
-	if (p_screen >= count) {
-		return Point2i(0, 0);
-	}
+
+	// Check if screen is valid
+	ERR_FAIL_INDEX_V(p_screen, count, Point2i(0, 0));
 
 	Point2i position = Point2i(xsi[p_screen].x_org, xsi[p_screen].y_org);
 
@@ -749,9 +758,9 @@ Rect2i DisplayServerX11::screen_get_usable_rect(int p_screen) const {
 
 	int count;
 	XineramaScreenInfo *xsi = XineramaQueryScreens(x11_display, &count);
-	if (p_screen >= count) {
-		return Rect2i(0, 0, 0, 0);
-	}
+
+	// Check if screen is valid
+	ERR_FAIL_INDEX_V(p_screen, count, Rect2i(0, 0, 0, 0));
 
 	Rect2i rect = Rect2i(xsi[p_screen].x_org, xsi[p_screen].y_org, xsi[p_screen].width, xsi[p_screen].height);
 	XFree(xsi);
@@ -1032,10 +1041,12 @@ void DisplayServerX11::window_set_current_screen(int p_screen, WindowID p_window
 	ERR_FAIL_COND(!windows.has(p_window));
 	WindowData &wd = windows[p_window];
 
-	int count = get_screen_count();
-	if (p_screen >= count) {
-		return;
+	if (p_screen == SCREEN_OF_MAIN_WINDOW) {
+		p_screen = window_get_current_screen();
 	}
+
+	// Check if screen is valid
+	ERR_FAIL_INDEX(p_screen, get_screen_count());
 
 	if (window_get_mode(p_window) == WINDOW_MODE_FULLSCREEN) {
 		Point2i position = screen_get_position(p_screen);
@@ -1906,7 +1917,7 @@ void DisplayServerX11::cursor_set_custom_image(const RES &p_cursor, CursorShape 
 		Rect2i atlas_rect;
 
 		if (texture.is_valid()) {
-			image = texture->get_data();
+			image = texture->get_image();
 		}
 
 		if (!image.is_valid() && atlas_texture.is_valid()) {
@@ -1929,7 +1940,7 @@ void DisplayServerX11::cursor_set_custom_image(const RES &p_cursor, CursorShape 
 		ERR_FAIL_COND(texture_size.width > 256 || texture_size.height > 256);
 		ERR_FAIL_COND(p_hotspot.x > texture_size.width || p_hotspot.y > texture_size.height);
 
-		image = texture->get_data();
+		image = texture->get_image();
 
 		ERR_FAIL_COND(!image.is_valid());
 
@@ -2001,7 +2012,7 @@ int DisplayServerX11::keyboard_get_layout_count() const {
 		XkbGetNames(x11_display, XkbSymbolsNameMask, kbd);
 
 		const Atom *groups = kbd->names->groups;
-		if (kbd->ctrls != NULL) {
+		if (kbd->ctrls != nullptr) {
 			_group_count = kbd->ctrls->num_groups;
 		} else {
 			while (_group_count < XkbNumKbdGroups && groups[_group_count] != None) {
@@ -2035,7 +2046,7 @@ String DisplayServerX11::keyboard_get_layout_language(int p_index) const {
 
 		int _group_count = 0;
 		const Atom *groups = kbd->names->groups;
-		if (kbd->ctrls != NULL) {
+		if (kbd->ctrls != nullptr) {
 			_group_count = kbd->ctrls->num_groups;
 		} else {
 			while (_group_count < XkbNumKbdGroups && groups[_group_count] != None) {
@@ -2074,7 +2085,7 @@ String DisplayServerX11::keyboard_get_layout_name(int p_index) const {
 
 		int _group_count = 0;
 		const Atom *groups = kbd->names->groups;
-		if (kbd->ctrls != NULL) {
+		if (kbd->ctrls != nullptr) {
 			_group_count = kbd->ctrls->num_groups;
 		} else {
 			while (_group_count < XkbNumKbdGroups && groups[_group_count] != None) {
@@ -2673,7 +2684,7 @@ bool DisplayServerX11::_wait_for_events() const {
 	tv.tv_sec = 1;
 
 	// Wait for next event or timeout.
-	int num_ready_fds = select(x11_fd + 1, &in_fds, NULL, NULL, &tv);
+	int num_ready_fds = select(x11_fd + 1, &in_fds, nullptr, nullptr, &tv);
 
 	if (num_ready_fds > 0) {
 		// Event received.
@@ -2688,7 +2699,7 @@ bool DisplayServerX11::_wait_for_events() const {
 }
 
 void DisplayServerX11::_poll_events() {
-	while (!events_thread_done) {
+	while (!events_thread_done.is_set()) {
 		_wait_for_events();
 
 		// Process events from the queue.
@@ -3287,7 +3298,7 @@ void DisplayServerX11::process_events() {
 				if (xi.pressure_supported) {
 					mm->set_pressure(xi.pressure);
 				} else {
-					mm->set_pressure((mouse_get_button_state() & (1 << (BUTTON_LEFT - 1))) ? 1.0f : 0.0f);
+					mm->set_pressure((mouse_get_button_state() & (1 << (MOUSE_BUTTON_LEFT - 1))) ? 1.0f : 0.0f);
 				}
 				mm->set_tilt(xi.tilt);
 
@@ -3351,7 +3362,7 @@ void DisplayServerX11::process_events() {
 
 					Vector<String> files = String((char *)p.data).split("\n", false);
 					for (int i = 0; i < files.size(); i++) {
-						files.write[i] = files[i].replace("file://", "").http_unescape().strip_edges();
+						files.write[i] = files[i].replace("file://", "").uri_decode().strip_edges();
 					}
 
 					if (!windows[window_id].drop_files_callback.is_null()) {
@@ -4019,7 +4030,10 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 				use_prime = 0;
 			}
 
-			if (getenv("LD_LIBRARY_PATH")) {
+			// Some tools use fake libGL libraries and have them override the real one using
+			// LD_LIBRARY_PATH, so we skip them. *But* Steam also sets LD_LIBRARY_PATH for its
+			// runtime and includes system `/lib` and `/lib64`... so ignore Steam.
+			if (use_prime == -1 && getenv("LD_LIBRARY_PATH") && !getenv("STEAM_RUNTIME_LIBRARY_PATH")) {
 				String ld_library_path(getenv("LD_LIBRARY_PATH"));
 				Vector<String> libraries = ld_library_path.split(":");
 
@@ -4257,7 +4271,7 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 		}
 	}
 
-	events_thread = Thread::create(_poll_events_thread, this);
+	events_thread.start(_poll_events_thread, this);
 
 	_update_real_mouse_position(windows[MAIN_WINDOW_ID]);
 
@@ -4270,10 +4284,8 @@ DisplayServerX11::~DisplayServerX11() {
 	_clipboard_transfer_ownership(XA_PRIMARY, x11_main_window);
 	_clipboard_transfer_ownership(XInternAtom(x11_display, "CLIPBOARD", 0), x11_main_window);
 
-	events_thread_done = true;
-	Thread::wait_to_finish(events_thread);
-	memdelete(events_thread);
-	events_thread = nullptr;
+	events_thread_done.set();
+	events_thread.wait_to_finish();
 
 	//destroy all windows
 	for (Map<WindowID, WindowData>::Element *E = windows.front(); E; E = E->next()) {

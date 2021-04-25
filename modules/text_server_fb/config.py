@@ -1,5 +1,5 @@
 def can_build(env, platform):
-    return env.module_check_dependencies("text_server_fb", ["freetype"])
+    return True
 
 
 def configure(env):

@@ -24,7 +24,7 @@
  * Red Hat Author(s): Behdad Esfahbod
  */
 
-#ifndef HB_H_IN
+#if !defined(HB_H_IN) && !defined(HB_NO_SINGLE_HEADER_ERROR)
 #error "Include <hb.h> instead."
 #endif
 
@@ -36,25 +36,36 @@
 HB_BEGIN_DECLS
 
 
-/*
- * Note re various memory-modes:
+/**
+ * hb_memory_mode_t:
+ * @HB_MEMORY_MODE_DUPLICATE: HarfBuzz immediately makes a copy of the data.
+ * @HB_MEMORY_MODE_READONLY: HarfBuzz client will never modify the data,
+ *     and HarfBuzz will never modify the data.
+ * @HB_MEMORY_MODE_WRITABLE: HarfBuzz client made a copy of the data solely
+ *     for HarfBuzz, so HarfBuzz may modify the data.
+ * @HB_MEMORY_MODE_READONLY_MAY_MAKE_WRITABLE: See above
+ *
+ * Data type holding the memory modes available to
+ * client programs.
+ *
+ * Regarding these various memory-modes:
  *
  * - In no case shall the HarfBuzz client modify memory
  *   that is passed to HarfBuzz in a blob.  If there is
- *   any such possibility, MODE_DUPLICATE should be used
+ *   any such possibility, @HB_MEMORY_MODE_DUPLICATE should be used
  *   such that HarfBuzz makes a copy immediately,
  *
- * - Use MODE_READONLY otherwise, unless you really really
+ * - Use @HB_MEMORY_MODE_READONLY otherwise, unless you really really
  *   really know what you are doing,
  *
- * - MODE_WRITABLE is appropriate if you really made a
+ * - @HB_MEMORY_MODE_WRITABLE is appropriate if you really made a
  *   copy of data solely for the purpose of passing to
  *   HarfBuzz and doing that just once (no reuse!),
  *
- * - If the font is mmap()ed, it's ok to use
- *   READONLY_MAY_MAKE_WRITABLE, however, using that mode
- *   correctly is very tricky.  Use MODE_READONLY instead.
- */
+ * - If the font is mmap()ed, it's okay to use
+ *   @HB_MEMORY_READONLY_MAY_MAKE_WRITABLE, however, using that mode
+ *   correctly is very tricky.  Use @HB_MEMORY_MODE_READONLY instead.
+ **/
 typedef enum {
   HB_MEMORY_MODE_DUPLICATE,
   HB_MEMORY_MODE_READONLY,
@@ -62,6 +73,14 @@ typedef enum {
   HB_MEMORY_MODE_READONLY_MAY_MAKE_WRITABLE
 } hb_memory_mode_t;
 
+/**
+ * hb_blob_t:
+ *
+ * Data type for blobs. A blob wraps a chunk of binary
+ * data and facilitates its lifecycle management between
+ * a client program and HarfBuzz.
+ *
+ **/
 typedef struct hb_blob_t hb_blob_t;
 
 HB_EXTERN hb_blob_t *

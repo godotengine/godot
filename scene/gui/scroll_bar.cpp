@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -42,6 +42,8 @@ void ScrollBar::set_can_focus_by_default(bool p_can_focus) {
 }
 
 void ScrollBar::_gui_input(Ref<InputEvent> p_event) {
+	ERR_FAIL_COND(p_event.is_null());
+
 	Ref<InputEventMouseMotion> m = p_event;
 	if (!m.is_valid() || drag.active) {
 		emit_signal("scrolling");
@@ -52,17 +54,17 @@ void ScrollBar::_gui_input(Ref<InputEvent> p_event) {
 	if (b.is_valid()) {
 		accept_event();
 
-		if (b->get_button_index() == BUTTON_WHEEL_DOWN && b->is_pressed()) {
+		if (b->get_button_index() == MOUSE_BUTTON_WHEEL_DOWN && b->is_pressed()) {
 			set_value(get_value() + get_page() / 4.0);
 			accept_event();
 		}
 
-		if (b->get_button_index() == BUTTON_WHEEL_UP && b->is_pressed()) {
+		if (b->get_button_index() == MOUSE_BUTTON_WHEEL_UP && b->is_pressed()) {
 			set_value(get_value() - get_page() / 4.0);
 			accept_event();
 		}
 
-		if (b->get_button_index() != BUTTON_LEFT) {
+		if (b->get_button_index() != MOUSE_BUTTON_LEFT) {
 			return;
 		}
 
@@ -259,11 +261,11 @@ void ScrollBar::_notification(int p_what) {
 			grabber_rect.size.width = get_grabber_size();
 			grabber_rect.size.height = get_size().height;
 			grabber_rect.position.y = 0;
-			grabber_rect.position.x = get_grabber_offset() + decr->get_width() + bg->get_margin(MARGIN_LEFT);
+			grabber_rect.position.x = get_grabber_offset() + decr->get_width() + bg->get_margin(SIDE_LEFT);
 		} else {
 			grabber_rect.size.width = get_size().width;
 			grabber_rect.size.height = get_grabber_size();
-			grabber_rect.position.y = get_grabber_offset() + decr->get_height() + bg->get_margin(MARGIN_TOP);
+			grabber_rect.position.y = get_grabber_offset() + decr->get_height() + bg->get_margin(SIDE_TOP);
 			grabber_rect.position.x = 0;
 		}
 
@@ -434,15 +436,15 @@ double ScrollBar::get_area_size() const {
 }
 
 double ScrollBar::get_area_offset() const {
-	double ofs = 0;
+	double ofs = 0.0;
 
 	if (orientation == VERTICAL) {
-		ofs += get_theme_stylebox("hscroll")->get_margin(MARGIN_TOP);
+		ofs += get_theme_stylebox("hscroll")->get_margin(SIDE_TOP);
 		ofs += get_theme_icon("decrement")->get_height();
 	}
 
 	if (orientation == HORIZONTAL) {
-		ofs += get_theme_stylebox("hscroll")->get_margin(MARGIN_LEFT);
+		ofs += get_theme_stylebox("hscroll")->get_margin(SIDE_LEFT);
 		ofs += get_theme_icon("decrement")->get_width();
 	}
 

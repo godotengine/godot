@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,8 +31,8 @@
 #ifndef SPRITE_3D_H
 #define SPRITE_3D_H
 
-#include "scene/2d/animated_sprite_2d.h"
 #include "scene/3d/visual_instance_3d.h"
+#include "scene/resources/sprite_frames.h"
 
 class SpriteBase3D : public GeometryInstance3D {
 	GDCLASS(SpriteBase3D, GeometryInstance3D);
@@ -55,32 +55,32 @@ public:
 	};
 
 private:
-	bool color_dirty;
+	bool color_dirty = true;
 	Color color_accum;
 
-	SpriteBase3D *parent_sprite;
+	SpriteBase3D *parent_sprite = nullptr;
 	List<SpriteBase3D *> children;
-	List<SpriteBase3D *>::Element *pI;
+	List<SpriteBase3D *>::Element *pI = nullptr;
 
-	bool centered;
+	bool centered = true;
 	Point2 offset;
 
-	bool hflip;
-	bool vflip;
+	bool hflip = false;
+	bool vflip = false;
 
-	Color modulate;
-	float opacity;
+	Color modulate = Color(1, 1, 1, 1);
+	float opacity = 1.0;
 
-	Vector3::Axis axis;
-	float pixel_size;
+	Vector3::Axis axis = Vector3::AXIS_Z;
+	float pixel_size = 0.01;
 	AABB aabb;
 
 	RID immediate;
 
 	bool flags[FLAG_MAX];
-	AlphaCutMode alpha_cut;
-	StandardMaterial3D::BillboardMode billboard_mode;
-	bool pending_update;
+	AlphaCutMode alpha_cut = ALPHA_CUT_DISABLED;
+	StandardMaterial3D::BillboardMode billboard_mode = StandardMaterial3D::BILLBOARD_DISABLED;
+	bool pending_update = false;
 	void _im_update();
 
 	void _propagate_color_changed();
@@ -107,8 +107,8 @@ public:
 	void set_flip_v(bool p_flip);
 	bool is_flipped_v() const;
 
-	void set_region(bool p_region);
-	bool is_region() const;
+	void set_region_enabled(bool p_region_enabled);
+	bool is_region_enabled() const;
 
 	void set_region_rect(const Rect2 &p_region_rect);
 	Rect2 get_region_rect() const;
@@ -147,7 +147,7 @@ class Sprite3D : public SpriteBase3D {
 	GDCLASS(Sprite3D, SpriteBase3D);
 	Ref<Texture2D> texture;
 
-	bool region;
+	bool region_enabled;
 	Rect2 region_rect;
 
 	int frame;
@@ -167,8 +167,8 @@ public:
 	void set_texture(const Ref<Texture2D> &p_texture);
 	Ref<Texture2D> get_texture() const;
 
-	void set_region(bool p_region);
-	bool is_region() const;
+	void set_region_enabled(bool p_region_enabled);
+	bool is_region_enabled() const;
 
 	void set_region_rect(const Rect2 &p_region_rect);
 	Rect2 get_region_rect() const;
@@ -195,16 +195,16 @@ class AnimatedSprite3D : public SpriteBase3D {
 	GDCLASS(AnimatedSprite3D, SpriteBase3D);
 
 	Ref<SpriteFrames> frames;
-	bool playing;
-	StringName animation;
-	int frame;
+	bool playing = false;
+	StringName animation = "default";
+	int frame = 0;
 
-	bool centered;
+	bool centered = true;
 
-	float timeout;
+	float timeout = 0.0;
 
-	bool hflip;
-	bool vflip;
+	bool hflip = true;
+	bool vflip = true;
 
 	Color modulate;
 
@@ -236,7 +236,7 @@ public:
 
 	virtual Rect2 get_item_rect() const override;
 
-	virtual String get_configuration_warning() const override;
+	TypedArray<String> get_configuration_warnings() const override;
 	AnimatedSprite3D();
 };
 

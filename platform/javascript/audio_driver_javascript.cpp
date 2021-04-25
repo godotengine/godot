@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -105,8 +105,8 @@ void AudioDriverJavaScript::_audio_driver_capture(int p_from, int p_samples) {
 }
 
 Error AudioDriverJavaScript::init() {
-	mix_rate = GLOBAL_GET("audio/mix_rate");
-	int latency = GLOBAL_GET("audio/output_latency");
+	mix_rate = GLOBAL_GET("audio/driver/mix_rate");
+	int latency = GLOBAL_GET("audio/driver/output_latency");
 
 	channel_count = godot_audio_init(mix_rate, latency, &_state_change_callback, &_latency_update_callback);
 	buffer_length = closest_power_of_2((latency * mix_rate / 1000));
@@ -267,7 +267,7 @@ int AudioDriverJavaScript::WorkletNode::create(int p_buffer_size, int p_channels
 
 void AudioDriverJavaScript::WorkletNode::start(float *p_out_buf, int p_out_buf_size, float *p_in_buf, int p_in_buf_size) {
 	godot_audio_worklet_start(p_in_buf, p_in_buf_size, p_out_buf, p_out_buf_size, state);
-	thread = Thread::create(_audio_thread_func, this);
+	thread.start(_audio_thread_func, this);
 }
 
 void AudioDriverJavaScript::WorkletNode::lock() {
@@ -280,8 +280,6 @@ void AudioDriverJavaScript::WorkletNode::unlock() {
 
 void AudioDriverJavaScript::WorkletNode::finish() {
 	quit = true; // Ask thread to quit.
-	Thread::wait_to_finish(thread);
-	memdelete(thread);
-	thread = nullptr;
+	thread.wait_to_finish();
 }
 #endif

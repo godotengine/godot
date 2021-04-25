@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -51,7 +51,7 @@ union PointKey {
 		int64_t z : 21;
 	};
 
-	uint64_t key;
+	uint64_t key = 0;
 	bool operator<(const PointKey &p_key) const { return key < p_key.key; }
 };
 
@@ -81,13 +81,14 @@ struct Edge {
 	/// This edge ID
 	int this_edge = -1;
 
-	/// Other Polygon
-	Polygon *other_polygon = nullptr;
-
-	/// The other `Polygon` at this edge id has this `Polygon`.
-	int other_edge = -1;
-
-	Edge() {}
+	/// The gateway in the edge, as, in some case, the whole edge might not be navigable.
+	struct Connection {
+		Polygon *polygon = nullptr;
+		int edge = -1;
+		Vector3 pathway_start;
+		Vector3 pathway_end;
+	};
+	Vector<Connection> connections;
 };
 
 struct Polygon {
@@ -106,23 +107,17 @@ struct Polygon {
 	Vector3 center;
 };
 
-struct Connection {
-	Polygon *A = nullptr;
-	int A_edge = -1;
-	Polygon *B = nullptr;
-	int B_edge = -1;
-
-	Connection() {}
-};
-
 struct NavigationPoly {
 	uint32_t self_id = 0;
 	/// This poly.
 	const Polygon *poly;
-	/// The previous navigation poly (id in the `navigation_poly` array).
-	int prev_navigation_poly_id = -1;
-	/// The edge id in this `Poly` to reach the `prev_navigation_poly_id`.
-	uint32_t back_navigation_edge = 0;
+
+	/// Those 4 variables are used to travel the path backwards.
+	int back_navigation_poly_id = -1;
+	uint32_t back_navigation_edge = UINT32_MAX;
+	Vector3 back_navigation_edge_pathway_start;
+	Vector3 back_navigation_edge_pathway_end;
+
 	/// The entry location of this poly.
 	Vector3 entry;
 	/// The distance to the destination.
@@ -140,14 +135,6 @@ struct NavigationPoly {
 	}
 };
 
-struct FreeEdge {
-	bool is_free;
-	Polygon *poly;
-	uint32_t edge_id;
-	Vector3 edge_center;
-	Vector3 edge_dir;
-	float edge_len_squared;
-};
 } // namespace gd
 
 #endif // NAV_UTILS_H

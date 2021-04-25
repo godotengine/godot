@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -145,9 +145,6 @@ void OccluderPolygon2D::_bind_methods() {
 
 OccluderPolygon2D::OccluderPolygon2D() {
 	occ_polygon = RS::get_singleton()->canvas_occluder_polygon_create();
-	closed = true;
-	cull = CULL_DISABLED;
-	rect_cache_dirty = true;
 }
 
 OccluderPolygon2D::~OccluderPolygon2D() {
@@ -245,24 +242,18 @@ int LightOccluder2D::get_occluder_light_mask() const {
 	return mask;
 }
 
-String LightOccluder2D::get_configuration_warning() const {
-	String warning = Node2D::get_configuration_warning();
+TypedArray<String> LightOccluder2D::get_configuration_warnings() const {
+	TypedArray<String> warnings = Node::get_configuration_warnings();
 
 	if (!occluder_polygon.is_valid()) {
-		if (!warning.empty()) {
-			warning += "\n\n";
-		}
-		warning += TTR("An occluder polygon must be set (or drawn) for this occluder to take effect.");
+		warnings.push_back(TTR("An occluder polygon must be set (or drawn) for this occluder to take effect."));
 	}
 
 	if (occluder_polygon.is_valid() && occluder_polygon->get_polygon().size() == 0) {
-		if (!warning.empty()) {
-			warning += "\n\n";
-		}
-		warning += TTR("The occluder polygon for this occluder is empty. Please draw a polygon.");
+		warnings.push_back(TTR("The occluder polygon for this occluder is empty. Please draw a polygon."));
 	}
 
-	return warning;
+	return warnings;
 }
 
 void LightOccluder2D::set_as_sdf_collision(bool p_enable) {

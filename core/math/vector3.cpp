@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -60,15 +60,15 @@ int Vector3::max_axis() const {
 	return x < y ? (y < z ? 2 : 1) : (x < z ? 2 : 0);
 }
 
-void Vector3::snap(Vector3 p_val) {
-	x = Math::stepify(x, p_val.x);
-	y = Math::stepify(y, p_val.y);
-	z = Math::stepify(z, p_val.z);
+void Vector3::snap(Vector3 p_step) {
+	x = Math::snapped(x, p_step.x);
+	y = Math::snapped(y, p_step.y);
+	z = Math::snapped(z, p_step.z);
 }
 
-Vector3 Vector3::snapped(Vector3 p_val) const {
+Vector3 Vector3::snapped(Vector3 p_step) const {
 	Vector3 v = *this;
-	v.snap(p_val);
+	v.snap(p_step);
 	return v;
 }
 

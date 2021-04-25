@@ -33,6 +33,15 @@
 #include "hb-directwrite.h"
 
 
+/**
+ * SECTION:hb-directwrite
+ * @title: hb-directwrite
+ * @short_description: DirectWrite integration
+ * @include: hb-directwrite.h
+ *
+ * Functions for using HarfBuzz with DirectWrite fonts.
+ **/
+
 /* Declare object creator for dynamic support of DWRITE */
 typedef HRESULT (* WINAPI t_DWriteCreateFactory)(
   DWRITE_FACTORY_TYPE factoryType,
@@ -948,6 +957,8 @@ _hb_directwrite_font_release (void *data)
  * hb_directwrite_face_create:
  * @font_face: a DirectWrite IDWriteFontFace object.
  *
+ * Constructs a new face object from the specified DirectWrite IDWriteFontFace.
+ *
  * Return value: #hb_face_t object corresponding to the given input
  *
  * Since: 2.4.0
@@ -964,6 +975,8 @@ hb_directwrite_face_create (IDWriteFontFace *font_face)
 /**
 * hb_directwrite_face_get_font_face:
 * @face: a #hb_face_t object
+*
+* Gets the DirectWrite IDWriteFontFace associated with @face.
 *
 * Return value: DirectWrite IDWriteFontFace object corresponding to the given input
 *

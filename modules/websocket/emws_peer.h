@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -56,12 +56,12 @@ class EMWSPeer : public WebSocketPeer {
 	GDCIIMPL(EMWSPeer, WebSocketPeer);
 
 private:
-	int peer_sock;
-	WriteMode write_mode;
+	int peer_sock = -1;
+	WriteMode write_mode = WRITE_MODE_BINARY;
 
 	Vector<uint8_t> _packet_buffer;
 	PacketBuffer<uint8_t> _in_buffer;
-	uint8_t _is_string;
+	uint8_t _is_string = 0;
 
 public:
 	Error read_msg(const uint8_t *p_data, uint32_t p_size, bool p_is_string);

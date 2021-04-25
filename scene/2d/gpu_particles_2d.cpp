@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -101,7 +101,6 @@ void GPUParticles2D::set_visibility_rect(const Rect2 &p_visibility_rect) {
 
 	RS::get_singleton()->particles_set_custom_aabb(particles, aabb);
 
-	_change_notify("visibility_rect");
 	update();
 }
 
@@ -138,7 +137,7 @@ void GPUParticles2D::set_process_material(const Ref<Material> &p_material) {
 	}
 	RS::get_singleton()->particles_set_process_material(particles, material_rid);
 
-	update_configuration_warning();
+	update_configuration_warnings();
 }
 
 void GPUParticles2D::set_speed_scale(float p_scale) {
@@ -217,18 +216,15 @@ bool GPUParticles2D::get_fractional_delta() const {
 	return fractional_delta;
 }
 
-String GPUParticles2D::get_configuration_warning() const {
+TypedArray<String> GPUParticles2D::get_configuration_warnings() const {
+	TypedArray<String> warnings = Node::get_configuration_warnings();
+
 	if (RenderingServer::get_singleton()->is_low_end()) {
-		return TTR("GPU-based particles are not supported by the GLES2 video driver.\nUse the CPUParticles2D node instead. You can use the \"Convert to CPUParticles2D\" option for this purpose.");
+		warnings.push_back(TTR("GPU-based particles are not supported by the GLES2 video driver.\nUse the CPUParticles2D node instead. You can use the \"Convert to CPUParticles2D\" option for this purpose."));
 	}
 
-	String warnings = Node2D::get_configuration_warning();
-
 	if (process_material.is_null()) {
-		if (warnings != String()) {
-			warnings += "\n";
-		}
-		warnings += "- " + TTR("A material to process the particles is not assigned, so no behavior is imprinted.");
+		warnings.push_back(TTR("A material to process the particles is not assigned, so no behavior is imprinted."));
 	} else {
 		CanvasItemMaterial *mat = Object::cast_to<CanvasItemMaterial>(get_material().ptr());
 
@@ -237,10 +233,7 @@ String GPUParticles2D::get_configuration_warning() const {
 			if (process &&
 					(process->get_param(ParticlesMaterial::PARAM_ANIM_SPEED) != 0.0 || process->get_param(ParticlesMaterial::PARAM_ANIM_OFFSET) != 0.0 ||
 							process->get_param_texture(ParticlesMaterial::PARAM_ANIM_SPEED).is_valid() || process->get_param_texture(ParticlesMaterial::PARAM_ANIM_OFFSET).is_valid())) {
-				if (warnings != String()) {
-					warnings += "\n";
-				}
-				warnings += "- " + TTR("Particles2D animation requires the usage of a CanvasItemMaterial with \"Particles Animation\" enabled.");
+				warnings.push_back(TTR("Particles2D animation requires the usage of a CanvasItemMaterial with \"Particles Animation\" enabled."));
 			}
 		}
 	}
@@ -305,7 +298,7 @@ void GPUParticles2D::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_INTERNAL_PROCESS) {
 		if (one_shot && !is_emitting()) {
-			_change_notify();
+			notify_property_list_changed();
 			set_process_internal(false);
 		}
 	}

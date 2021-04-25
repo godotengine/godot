@@ -33,6 +33,15 @@
 #include "hb-ot-face.hh"
 
 
+/**
+ * SECTION:hb-ot-metrics
+ * @title: hb-ot-metrics
+ * @short_description: OpenType Metrics
+ * @include: hb-ot.h
+ *
+ * Functions for fetching metrics from fonts.
+ **/
+
 static float
 _fix_ascender_descender (float value, hb_ot_metrics_tag_t metrics_tag)
 {
@@ -110,11 +119,11 @@ _get_gasp (hb_face_t *face, float *result, hb_ot_metrics_tag_t metrics_tag)
 
 /**
  * hb_ot_metrics_get_position:
- * @font: a #hb_font_t object.
+ * @font: an #hb_font_t object.
  * @metrics_tag: tag of metrics value you like to fetch.
  * @position: (out) (optional): result of metrics value from the font.
  *
- * It fetches metrics value corresponding to a given tag from a font.
+ * Fetches metrics value corresponding to @metrics_tag from @font.
  *
  * Returns: Whether found the requested metrics in the font.
  * Since: 2.6.0
@@ -184,10 +193,13 @@ hb_ot_metrics_get_position (hb_font_t           *font,
 #ifndef HB_NO_VAR
 /**
  * hb_ot_metrics_get_variation:
- * @font:
- * @metrics_tag:
+ * @font: an #hb_font_t object.
+ * @metrics_tag: tag of metrics value you like to fetch.
  *
- * Returns:
+ * Fetches metrics value corresponding to @metrics_tag from @font with the
+ * current font variation settings applied.
+ *
+ * Returns: The requested metric value.
  *
  * Since: 2.6.0
  **/
@@ -199,10 +211,13 @@ hb_ot_metrics_get_variation (hb_font_t *font, hb_ot_metrics_tag_t metrics_tag)
 
 /**
  * hb_ot_metrics_get_x_variation:
- * @font:
- * @metrics_tag:
+ * @font: an #hb_font_t object.
+ * @metrics_tag: tag of metrics value you like to fetch.
  *
- * Returns:
+ * Fetches horizontal metrics value corresponding to @metrics_tag from @font
+ * with the current font variation settings applied.
+ *
+ * Returns: The requested metric value.
  *
  * Since: 2.6.0
  **/
@@ -214,10 +229,13 @@ hb_ot_metrics_get_x_variation (hb_font_t *font, hb_ot_metrics_tag_t metrics_tag)
 
 /**
  * hb_ot_metrics_get_y_variation:
- * @font:
- * @metrics_tag:
+ * @font: an #hb_font_t object.
+ * @metrics_tag: tag of metrics value you like to fetch.
  *
- * Returns:
+ * Fetches vertical metrics value corresponding to @metrics_tag from @font with
+ * the current font variation settings applied.
+ *
+ * Returns: The requested metric value.
  *
  * Since: 2.6.0
  **/

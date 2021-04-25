@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -152,7 +152,7 @@ void VisualScriptYield::set_yield_mode(YieldMode p_mode) {
 	}
 	yield_mode = p_mode;
 	ports_changed_notify();
-	_change_notify();
+	notify_property_list_changed();
 }
 
 VisualScriptYield::YieldMode VisualScriptYield::get_yield_mode() {
@@ -359,7 +359,7 @@ void VisualScriptYieldSignal::set_base_type(const StringName &p_type) {
 
 	base_type = p_type;
 
-	_change_notify();
+	notify_property_list_changed();
 	ports_changed_notify();
 }
 
@@ -374,7 +374,7 @@ void VisualScriptYieldSignal::set_signal(const StringName &p_type) {
 
 	signal = p_type;
 
-	_change_notify();
+	notify_property_list_changed();
 	ports_changed_notify();
 }
 
@@ -389,7 +389,7 @@ void VisualScriptYieldSignal::set_base_path(const NodePath &p_type) {
 
 	base_path = p_type;
 
-	_change_notify();
+	notify_property_list_changed();
 	ports_changed_notify();
 }
 
@@ -404,7 +404,7 @@ void VisualScriptYieldSignal::set_call_mode(CallMode p_mode) {
 
 	call_mode = p_mode;
 
-	_change_notify();
+	notify_property_list_changed();
 	ports_changed_notify();
 }
 
@@ -425,7 +425,7 @@ void VisualScriptYieldSignal::_validate_property(PropertyInfo &property) const {
 		} else {
 			Node *bnode = _get_base_node();
 			if (bnode) {
-				property.hint_string = bnode->get_path(); //convert to loong string
+				property.hint_string = bnode->get_path(); //convert to long string
 			}
 		}
 	}

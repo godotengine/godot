@@ -14,9 +14,12 @@
   <ItemGroup>
     <Compile Include="Core\AABB.cs" />
     <Compile Include="Core\Array.cs" />
+    <Compile Include="Core\Attributes\AssemblyHasScriptsAttribute.cs" />
+    <Compile Include="Core\Attributes\DisableGodotGeneratorsAttribute.cs" />
     <Compile Include="Core\Attributes\ExportAttribute.cs" />
     <Compile Include="Core\Attributes\GodotMethodAttribute.cs" />
     <Compile Include="Core\Attributes\RPCAttributes.cs" />
+    <Compile Include="Core\Attributes\ScriptPathAttribute.cs" />
     <Compile Include="Core\Attributes\SignalAttribute.cs" />
     <Compile Include="Core\Attributes\ToolAttribute.cs" />
     <Compile Include="Core\Basis.cs" />
@@ -30,12 +33,14 @@
     <Compile Include="Core\DynamicObject.cs" />
     <Compile Include="Core\Extensions\NodeExtensions.cs" />
     <Compile Include="Core\Extensions\ObjectExtensions.cs" />
+    <Compile Include="Core\Extensions\PackedSceneExtensions.cs" />
     <Compile Include="Core\Extensions\ResourceLoaderExtensions.cs" />
     <Compile Include="Core\Extensions\SceneTreeExtensions.cs" />
     <Compile Include="Core\GD.cs" />
     <Compile Include="Core\GodotSynchronizationContext.cs" />
     <Compile Include="Core\GodotTaskScheduler.cs" />
     <Compile Include="Core\GodotTraceListener.cs" />
+    <Compile Include="Core\GodotUnhandledExceptionEvent.cs" />
     <Compile Include="Core\Interfaces\IAwaitable.cs" />
     <Compile Include="Core\Interfaces\IAwaiter.cs" />
     <Compile Include="Core\Interfaces\ISerializationListener.cs" />
@@ -55,6 +60,7 @@
     <Compile Include="Core\StringName.cs" />
     <Compile Include="Core\Transform.cs" />
     <Compile Include="Core\Transform2D.cs" />
+    <Compile Include="Core\UnhandledExceptionArgs.cs" />
     <Compile Include="Core\Vector2.cs" />
     <Compile Include="Core\Vector2i.cs" />
     <Compile Include="Core\Vector3.cs" />

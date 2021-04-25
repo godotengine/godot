@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,23 +37,23 @@ class Slider : public Range {
 	GDCLASS(Slider, Range);
 
 	struct Grab {
-		int pos;
-		float uvalue;
-		bool active;
+		int pos = 0;
+		float uvalue = 0.0;
+		bool active = false;
 	} grab;
 
-	int ticks;
-	bool mouse_inside;
+	int ticks = 0;
+	bool mouse_inside = false;
 	Orientation orientation;
-	float custom_step;
-	bool editable;
-	bool scrollable;
+	float custom_step = -1.0;
+	bool editable = true;
+	bool scrollable = true;
 
 protected:
 	void _gui_input(Ref<InputEvent> p_event);
 	void _notification(int p_what);
 	static void _bind_methods();
-	bool ticks_on_borders;
+	bool ticks_on_borders = false;
 
 public:
 	virtual Size2 get_minimum_size() const override;

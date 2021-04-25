@@ -850,6 +850,8 @@ static const unsigned char ecjpake_test_password[] = {
     0x65, 0x73, 0x74
 };
 
+#if !defined(MBEDTLS_ECJPAKE_ALT)
+
 static const unsigned char ecjpake_test_x1[] = {
     0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c,
     0x0d, 0x0e, 0x0f, 0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18,
@@ -994,6 +996,8 @@ cleanup:
     return( ret );
 }
 
+#endif /* ! MBEDTLS_ECJPAKE_ALT */
+
 /* For tests we don't need a secure RNG;
  * use the LGC from Numerical Recipes for simplicity */
 static int ecjpake_lgc( void *p, unsigned char *out, size_t len )
@@ -1089,6 +1093,12 @@ int mbedtls_ecjpake_self_test( int verbose )
     if( verbose != 0 )
         mbedtls_printf( "passed\n" );
 
+#if !defined(MBEDTLS_ECJPAKE_ALT)
+    /* 'reference handshake' tests can only be run against implementations
+     * for which we have 100% control over how the random ephemeral keys
+     * are generated. This is only the case for the internal mbed TLS
+     * implementation, so these tests are skipped in case the internal
+     * implementation is swapped out for an alternative one. */
     if( verbose != 0 )
         mbedtls_printf( "  ECJPAKE test #2 (reference handshake): " );
 
@@ -1137,6 +1147,7 @@ int mbedtls_ecjpake_self_test( int verbose )
 
     if( verbose != 0 )
         mbedtls_printf( "passed\n" );
+#endif /* ! MBEDTLS_ECJPAKE_ALT */
 
 cleanup:
     mbedtls_ecjpake_free( &cli );

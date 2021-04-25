@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -57,23 +57,23 @@ class ImageLoaderTGA : public ImageFormatLoader {
 	};
 
 	struct tga_header_s {
-		uint8_t id_length;
-		uint8_t color_map_type;
+		uint8_t id_length = 0;
+		uint8_t color_map_type = 0;
 		tga_type_e image_type;
 
-		uint16_t first_color_entry;
-		uint16_t color_map_length;
-		uint8_t color_map_depth;
+		uint16_t first_color_entry = 0;
+		uint16_t color_map_length = 0;
+		uint8_t color_map_depth = 0;
 
-		uint16_t x_origin;
-		uint16_t y_origin;
-		uint16_t image_width;
-		uint16_t image_height;
-		uint8_t pixel_depth;
-		uint8_t image_descriptor;
+		uint16_t x_origin = 0;
+		uint16_t y_origin = 0;
+		uint16_t image_width = 0;
+		uint16_t image_height = 0;
+		uint8_t pixel_depth = 0;
+		uint8_t image_descriptor = 0;
 	};
 	static Error decode_tga_rle(const uint8_t *p_compressed_buffer, size_t p_pixel_size, uint8_t *p_uncompressed_buffer, size_t p_output_size);
-	static Error convert_to_image(Ref<Image> p_image, const uint8_t *p_buffer, const tga_header_s &p_header, const uint8_t *p_palette, const bool p_is_monochrome);
+	static Error convert_to_image(Ref<Image> p_image, const uint8_t *p_buffer, const tga_header_s &p_header, const uint8_t *p_palette, const bool p_is_monochrome, size_t p_output_size);
 
 public:
 	virtual Error load_image(Ref<Image> p_image, FileAccess *f, bool p_force_linear, float p_scale);

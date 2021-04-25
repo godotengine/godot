@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -75,10 +75,12 @@ ScriptIterator::ScriptIterator(const String &p_string, int p_start, int p_length
 					while (paren_sp >= 0 && paren_stack[paren_sp].pair_index != paired_ch) {
 						paren_sp -= 1;
 					}
-					if (paren_sp < start_sp)
+					if (paren_sp < start_sp) {
 						start_sp = paren_sp;
-					if (paren_sp >= 0)
+					}
+					if (paren_sp >= 0) {
 						sc = paren_stack[paren_sp].script_code;
+					}
 				}
 			}
 

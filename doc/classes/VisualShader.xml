@@ -169,6 +169,19 @@
 				Removes the specified node from the shader.
 			</description>
 		</method>
+		<method name="replace_node">
+			<return type="void">
+			</return>
+			<argument index="0" name="type" type="int" enum="VisualShader.Type">
+			</argument>
+			<argument index="1" name="id" type="int">
+			</argument>
+			<argument index="2" name="new_class" type="StringName">
+			</argument>
+			<description>
+				Replaces the specified node with a node of new class type.
+			</description>
+		</method>
 		<method name="set_mode">
 			<return type="void">
 			</return>
@@ -215,7 +228,9 @@
 		</constant>
 		<constant name="TYPE_END" value="5" enum="Type">
 		</constant>
-		<constant name="TYPE_MAX" value="6" enum="Type">
+		<constant name="TYPE_SKY" value="6" enum="Type">
+		</constant>
+		<constant name="TYPE_MAX" value="7" enum="Type">
 			Represents the size of the [enum Type] enum.
 		</constant>
 		<constant name="NODE_ID_INVALID" value="-1">

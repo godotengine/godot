@@ -177,6 +177,7 @@ struct hb_nonnull_ptr_t
   T * get () const { return v ? v : const_cast<T *> (&Null (T)); }
   T * get_raw () const { return v; }
 
+  private:
   T *v;
 };
 

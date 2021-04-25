@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -91,6 +91,13 @@ Variant PluginScriptInstance::call(const StringName &p_method, const Variant **p
 
 void PluginScriptInstance::notification(int p_notification) {
 	_desc->notification(_data, p_notification);
+}
+
+String PluginScriptInstance::to_string(bool *r_valid) {
+	godot_string ret = _desc->to_string(_data, r_valid);
+	String str_ret = *(String *)&ret;
+	godot_string_destroy(&ret);
+	return str_ret;
 }
 
 Vector<ScriptNetData> PluginScriptInstance::get_rpc_methods() const {

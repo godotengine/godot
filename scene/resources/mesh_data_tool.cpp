@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -43,12 +43,34 @@ Error MeshDataTool::create_from_surface(const Ref<ArrayMesh> &p_mesh, int p_surf
 	ERR_FAIL_COND_V(p_mesh->surface_get_primitive_type(p_surface) != Mesh::PRIMITIVE_TRIANGLES, ERR_INVALID_PARAMETER);
 
 	Array arrays = p_mesh->surface_get_arrays(p_surface);
-	ERR_FAIL_COND_V(arrays.empty(), ERR_INVALID_PARAMETER);
+	ERR_FAIL_COND_V(arrays.is_empty(), ERR_INVALID_PARAMETER);
 
 	Vector<Vector3> varray = arrays[Mesh::ARRAY_VERTEX];
 
 	int vcount = varray.size();
 	ERR_FAIL_COND_V(vcount == 0, ERR_INVALID_PARAMETER);
+
+	Vector<int> indices;
+
+	if (arrays[Mesh::ARRAY_INDEX].get_type() != Variant::NIL) {
+		indices = arrays[Mesh::ARRAY_INDEX];
+	} else {
+		//make code simpler
+		indices.resize(vcount);
+		int *iw = indices.ptrw();
+		for (int i = 0; i < vcount; i++) {
+			iw[i] = i;
+		}
+	}
+
+	int icount = indices.size();
+	const int *r = indices.ptr();
+
+	ERR_FAIL_COND_V(icount == 0, ERR_INVALID_PARAMETER);
+	ERR_FAIL_COND_V(icount % 3, ERR_INVALID_PARAMETER);
+	for (int i = 0; i < icount; i++) {
+		ERR_FAIL_INDEX_V(r[i], vcount, ERR_INVALID_PARAMETER);
+	}
 
 	clear();
 	format = p_mesh->surface_get_format(p_surface);
@@ -127,22 +149,6 @@ Error MeshDataTool::create_from_surface(const Ref<ArrayMesh> &p_mesh, int p_surf
 
 		vertices.write[i] = v;
 	}
-
-	Vector<int> indices;
-
-	if (arrays[Mesh::ARRAY_INDEX].get_type() != Variant::NIL) {
-		indices = arrays[Mesh::ARRAY_INDEX];
-	} else {
-		//make code simpler
-		indices.resize(vcount);
-		int *iw = indices.ptrw();
-		for (int i = 0; i < vcount; i++) {
-			iw[i] = i;
-		}
-	}
-
-	int icount = indices.size();
-	const int *r = indices.ptr();
 
 	Map<Point2i, int> edge_indices;
 

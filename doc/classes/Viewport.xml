@@ -80,9 +80,9 @@
 			</return>
 			<description>
 				Returns the viewport's texture.
-				[b]Note:[/b] Due to the way OpenGL works, the resulting [ViewportTexture] is flipped vertically. You can use [method Image.flip_y] on the result of [method Texture2D.get_data] to flip it back, for example:
+				[b]Note:[/b] Due to the way OpenGL works, the resulting [ViewportTexture] is flipped vertically. You can use [method Image.flip_y] on the result of [method Texture2D.get_image] to flip it back, for example:
 				[codeblock]
-				var img = get_viewport().get_texture().get_data()
+				var img = get_viewport().get_texture().get_image()
 				img.flip_y()
 				[/codeblock]
 			</description>
@@ -213,7 +213,7 @@
 			The global canvas transform of the viewport. The canvas transform is relative to this.
 		</member>
 		<member name="gui_disable_input" type="bool" setter="set_disable_input" getter="is_input_disabled" default="false">
-			If [code]true[/code], the viewport will not receive input event.
+			If [code]true[/code], the viewport will not receive input events.
 		</member>
 		<member name="gui_embed_subwindows" type="bool" setter="set_embed_subwindows_hint" getter="get_embed_subwindows_hint" default="false">
 		</member>
@@ -221,6 +221,8 @@
 			If [code]true[/code], the GUI controls on the viewport will lay pixel perfectly.
 		</member>
 		<member name="handle_input_locally" type="bool" setter="set_handle_input_locally" getter="is_handling_input_locally" default="true">
+		</member>
+		<member name="lod_threshold" type="float" setter="set_lod_threshold" getter="get_lod_threshold" default="1.0">
 		</member>
 		<member name="msaa" type="int" setter="set_msaa" getter="get_msaa" enum="Viewport.MSAA" default="0">
 			The multisample anti-aliasing mode. A higher number results in smoother edges at the cost of significantly worse performance. A value of 4 is best unless targeting very high-end systems.
@@ -238,6 +240,8 @@
 		</member>
 		<member name="sdf_scale" type="int" setter="set_sdf_scale" getter="get_sdf_scale" enum="Viewport.SDFScale" default="1">
 		</member>
+		<member name="shadow_atlas_16_bits" type="bool" setter="set_shadow_atlas_16_bits" getter="get_shadow_atlas_16_bits" default="true">
+		</member>
 		<member name="shadow_atlas_quad_0" type="int" setter="set_shadow_atlas_quadrant_subdiv" getter="get_shadow_atlas_quadrant_subdiv" enum="Viewport.ShadowAtlasQuadrantSubdiv" default="2">
 			The subdivision amount of the first quadrant on the shadow atlas.
 		</member>
@@ -250,9 +254,9 @@
 		<member name="shadow_atlas_quad_3" type="int" setter="set_shadow_atlas_quadrant_subdiv" getter="get_shadow_atlas_quadrant_subdiv" enum="Viewport.ShadowAtlasQuadrantSubdiv" default="4">
 			The subdivision amount of the fourth quadrant on the shadow atlas.
 		</member>
-		<member name="shadow_atlas_size" type="int" setter="set_shadow_atlas_size" getter="get_shadow_atlas_size" default="0">
+		<member name="shadow_atlas_size" type="int" setter="set_shadow_atlas_size" getter="get_shadow_atlas_size" default="2048">
 			The shadow atlas' resolution (used for omni and spot lights). The value will be rounded up to the nearest power of 2.
-			[b]Note:[/b] If this is set to 0, shadows won't be visible. Since user-created viewports default to a value of 0, this value must be set above 0 manually.
+			[b]Note:[/b] If this is set to 0, shadows won't be visible.
 		</member>
 		<member name="snap_2d_transforms_to_pixel" type="bool" setter="set_snap_2d_transforms_to_pixel" getter="is_snap_2d_transforms_to_pixel_enabled" default="false">
 		</member>
@@ -404,6 +408,16 @@
 		<constant name="DEBUG_DRAW_SDFGI_PROBES" value="16" enum="DebugDraw">
 		</constant>
 		<constant name="DEBUG_DRAW_GI_BUFFER" value="17" enum="DebugDraw">
+		</constant>
+		<constant name="DEBUG_DRAW_DISABLE_LOD" value="18" enum="DebugDraw">
+		</constant>
+		<constant name="DEBUG_DRAW_CLUSTER_OMNI_LIGHTS" value="19" enum="DebugDraw">
+		</constant>
+		<constant name="DEBUG_DRAW_CLUSTER_SPOT_LIGHTS" value="20" enum="DebugDraw">
+		</constant>
+		<constant name="DEBUG_DRAW_CLUSTER_DECALS" value="21" enum="DebugDraw">
+		</constant>
+		<constant name="DEBUG_DRAW_CLUSTER_REFLECTION_PROBES" value="22" enum="DebugDraw">
 		</constant>
 		<constant name="DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_NEAREST" value="0" enum="DefaultCanvasItemTextureFilter">
 			The texture filter reads from the nearest pixel only. The simplest and fastest method of filtering, but the texture will look pixelized.

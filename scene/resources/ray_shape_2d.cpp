@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -42,17 +42,33 @@ void RayShape2D::_update_shape() {
 }
 
 void RayShape2D::draw(const RID &p_to_rid, const Color &p_color) {
-	Vector2 tip = Vector2(0, get_length());
-	RS::get_singleton()->canvas_item_add_line(p_to_rid, Vector2(), tip, p_color, 3);
+	const Vector2 target_position = Vector2(0, get_length());
+
+	const float max_arrow_size = 6;
+	const float line_width = 1.4;
+	bool no_line = target_position.length() < line_width;
+	float arrow_size = CLAMP(target_position.length() * 2 / 3, line_width, max_arrow_size);
+
+	if (no_line) {
+		arrow_size = target_position.length();
+	} else {
+		RS::get_singleton()->canvas_item_add_line(p_to_rid, Vector2(), target_position - target_position.normalized() * arrow_size, p_color, line_width);
+	}
+
+	Transform2D xf;
+	xf.rotate(target_position.angle());
+	xf.translate(Vector2(no_line ? 0 : target_position.length() - arrow_size, 0));
+
 	Vector<Vector2> pts;
-	float tsize = 4;
-	pts.push_back(tip + Vector2(0, tsize));
-	pts.push_back(tip + Vector2(Math_SQRT12 * tsize, 0));
-	pts.push_back(tip + Vector2(-Math_SQRT12 * tsize, 0));
+	pts.push_back(xf.xform(Vector2(arrow_size, 0)));
+	pts.push_back(xf.xform(Vector2(0, 0.5 * arrow_size)));
+	pts.push_back(xf.xform(Vector2(0, -0.5 * arrow_size)));
+
 	Vector<Color> cols;
 	for (int i = 0; i < 3; i++) {
 		cols.push_back(p_color);
 	}
+
 	RS::get_singleton()->canvas_item_add_primitive(p_to_rid, pts, cols, Vector<Point2>(), RID());
 }
 
@@ -99,7 +115,5 @@ bool RayShape2D::get_slips_on_slope() const {
 
 RayShape2D::RayShape2D() :
 		Shape2D(PhysicsServer2D::get_singleton()->ray_shape_create()) {
-	length = 20;
-	slips_on_slope = false;
 	_update_shape();
 }

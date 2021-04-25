@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -36,11 +36,11 @@
 class HeightMapShape3D : public Shape3D {
 	GDCLASS(HeightMapShape3D, Shape3D);
 
-	int map_width;
-	int map_depth;
+	int map_width = 2;
+	int map_depth = 2;
 	PackedFloat32Array map_data;
-	float min_height;
-	float max_height;
+	real_t min_height = 0.0;
+	real_t max_height = 0.0;
 
 protected:
 	static void _bind_methods();

@@ -7,7 +7,8 @@
 		Helper to manage undo/redo operations in the editor or custom tools. It works by registering methods and property changes inside "actions".
 		Common behavior is to create an action, then add do/undo calls to functions or property changes, then committing the action.
 		Here's an example on how to add an action to the Godot editor's own [UndoRedo], from a plugin:
-		[codeblock]
+		[codeblocks]
+		[gdscript]
 		var undo_redo = get_undo_redo() # Method of EditorPlugin.
 
 		func do_something():
@@ -24,7 +25,37 @@
 		    undo_redo.add_do_property(node, "position", Vector2(100,100))
 		    undo_redo.add_undo_property(node, "position", node.position)
 		    undo_redo.commit_action()
-		[/codeblock]
+		[/gdscript]
+		[csharp]
+		public UndoRedo UndoRedo;
+
+		public override void _Ready()
+		{
+		    UndoRedo = GetUndoRedo(); // Method of EditorPlugin.
+		}
+
+		public void DoSomething()
+		{
+		    // Put your code here.
+		}
+
+		public void UndoSomething()
+		{
+		    // Put here the code that reverts what's done by "DoSomething()".
+		}
+
+		private void OnMyButtonPressed()
+		{
+		    var node = GetNode&lt;Node2D&gt;("MyNode2D");
+		    UndoRedo.CreateAction("Move the node");
+		    UndoRedo.AddDoMethod(this, nameof(DoSomething));
+		    UndoRedo.AddUndoMethod(this, nameof(UndoSomething));
+		    UndoRedo.AddDoProperty(node, "position", new Vector2(100, 100));
+		    UndoRedo.AddUndoProperty(node, "position", node.Position);
+		    UndoRedo.CommitAction();
+		}
+		[/csharp]
+		[/codeblocks]
 		[method create_action], [method add_do_method], [method add_undo_method], [method add_do_property], [method add_undo_property], and [method commit_action] should be called one after the other, like in the example. Not doing so could lead to crashes.
 		If you don't need to register a method, you can leave [method add_do_method] and [method add_undo_method] out; the same goes for properties. You can also register more than one method/property.
 	</description>
@@ -110,8 +141,10 @@
 		<method name="commit_action">
 			<return type="void">
 			</return>
+			<argument index="0" name="execute" type="bool" default="true">
+			</argument>
 			<description>
-				Commit the action. All "do" methods/properties are called/set when this function is called.
+				Commit the action. If [code]execute[/code] is true (default), all "do" methods/properties are called/set when this function is called.
 			</description>
 		</method>
 		<method name="create_action">
@@ -126,11 +159,34 @@
 				The way actions are merged is dictated by the [code]merge_mode[/code] argument. See [enum MergeMode] for details.
 			</description>
 		</method>
+		<method name="get_action_name">
+			<return type="String">
+			</return>
+			<argument index="0" name="id" type="int">
+			</argument>
+			<description>
+				Gets the action name from its index.
+			</description>
+		</method>
+		<method name="get_current_action">
+			<return type="int">
+			</return>
+			<description>
+				Gets the index of the current action.
+			</description>
+		</method>
 		<method name="get_current_action_name" qualifiers="const">
 			<return type="String">
 			</return>
 			<description>
-				Gets the name of the current action.
+				Gets the name of the current action, equivalent to [code]get_action_name(get_current_action())[/code].
+			</description>
+		</method>
+		<method name="get_history_count">
+			<return type="int">
+			</return>
+			<description>
+				Return how many elements are in the history.
 			</description>
 		</method>
 		<method name="get_version" qualifiers="const">

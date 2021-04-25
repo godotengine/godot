@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -63,14 +63,14 @@ class PathFollow2D : public Node2D {
 
 public:
 private:
-	Path2D *path;
-	real_t offset;
-	real_t h_offset;
-	real_t v_offset;
-	real_t lookahead;
-	bool cubic;
-	bool loop;
-	bool rotates;
+	Path2D *path = nullptr;
+	real_t offset = 0.0;
+	real_t h_offset = 0.0;
+	real_t v_offset = 0.0;
+	real_t lookahead = 4.0;
+	bool cubic = true;
+	bool loop = true;
+	bool rotates = true;
 
 	void _update_transform();
 
@@ -81,20 +81,20 @@ protected:
 	static void _bind_methods();
 
 public:
-	void set_offset(float p_offset);
-	float get_offset() const;
+	void set_offset(real_t p_offset);
+	real_t get_offset() const;
 
-	void set_h_offset(float p_h_offset);
-	float get_h_offset() const;
+	void set_h_offset(real_t p_h_offset);
+	real_t get_h_offset() const;
 
-	void set_v_offset(float p_v_offset);
-	float get_v_offset() const;
+	void set_v_offset(real_t p_v_offset);
+	real_t get_v_offset() const;
 
-	void set_unit_offset(float p_unit_offset);
-	float get_unit_offset() const;
+	void set_unit_offset(real_t p_unit_offset);
+	real_t get_unit_offset() const;
 
-	void set_lookahead(float p_lookahead);
-	float get_lookahead() const;
+	void set_lookahead(real_t p_lookahead);
+	real_t get_lookahead() const;
 
 	void set_loop(bool p_loop);
 	bool has_loop() const;
@@ -105,9 +105,9 @@ public:
 	void set_cubic_interpolation(bool p_enable);
 	bool get_cubic_interpolation() const;
 
-	String get_configuration_warning() const override;
+	TypedArray<String> get_configuration_warnings() const override;
 
-	PathFollow2D();
+	PathFollow2D() {}
 };
 
 #endif // PATH_2D_H

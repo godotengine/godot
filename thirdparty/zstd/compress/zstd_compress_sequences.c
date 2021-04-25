@@ -51,6 +51,19 @@ static unsigned ZSTD_getFSEMaxSymbolValue(FSE_CTable const* ctable) {
 }
 
 /**
+ * Returns true if we should use ncount=-1 else we should
+ * use ncount=1 for low probability symbols instead.
+ */
+static unsigned ZSTD_useLowProbCount(size_t const nbSeq)
+{
+    /* Heuristic: This should cover most blocks <= 16K and
+     * start to fade out after 16K to about 32K depending on
+     * comprssibility.
+     */
+    return nbSeq >= 2048;
+}
+
+/**
  * Returns the cost in bytes of encoding the normalized count header.
  * Returns an error if any of the helper functions return an error.
  */
@@ -60,7 +73,7 @@ static size_t ZSTD_NCountCost(unsigned const* count, unsigned const max,
     BYTE wksp[FSE_NCOUNTBOUND];
     S16 norm[MaxSeq + 1];
     const U32 tableLog = FSE_optimalTableLog(FSELog, nbSeq, max);
-    FORWARD_IF_ERROR(FSE_normalizeCount(norm, tableLog, count, nbSeq, max), "");
+    FORWARD_IF_ERROR(FSE_normalizeCount(norm, tableLog, count, nbSeq, max, ZSTD_useLowProbCount(nbSeq)), "");
     return FSE_writeNCount(wksp, sizeof(wksp), norm, max, tableLog);
 }
 
@@ -239,7 +252,7 @@ ZSTD_buildCTable(void* dst, size_t dstCapacity,
         *op = codeTable[0];
         return 1;
     case set_repeat:
-        memcpy(nextCTable, prevCTable, prevCTableSize);
+        ZSTD_memcpy(nextCTable, prevCTable, prevCTableSize);
         return 0;
     case set_basic:
         FORWARD_IF_ERROR(FSE_buildCTable_wksp(nextCTable, defaultNorm, defaultMax, defaultNormLog, entropyWorkspace, entropyWorkspaceSize), "");  /* note : could be pre-calculated */
@@ -253,7 +266,8 @@ ZSTD_buildCTable(void* dst, size_t dstCapacity,
             nbSeq_1--;
         }
         assert(nbSeq_1 > 1);
-        FORWARD_IF_ERROR(FSE_normalizeCount(norm, tableLog, count, nbSeq_1, max), "");
+        assert(entropyWorkspaceSize >= FSE_BUILD_CTABLE_WORKSPACE_SIZE(MaxSeq, MaxFSELog));
+        FORWARD_IF_ERROR(FSE_normalizeCount(norm, tableLog, count, nbSeq_1, max, ZSTD_useLowProbCount(nbSeq_1)), "");
         {   size_t const NCountSize = FSE_writeNCount(op, oend - op, norm, max, tableLog);   /* overflow protected */
             FORWARD_IF_ERROR(NCountSize, "FSE_writeNCount failed");
             FORWARD_IF_ERROR(FSE_buildCTable_wksp(nextCTable, norm, max, tableLog, entropyWorkspace, entropyWorkspaceSize), "");

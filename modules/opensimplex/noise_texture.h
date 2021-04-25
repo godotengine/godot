@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -43,22 +43,22 @@ class NoiseTexture : public Texture2D {
 	GDCLASS(NoiseTexture, Texture2D);
 
 private:
-	Ref<Image> data;
+	Ref<Image> image;
 
-	Thread *noise_thread;
+	Thread noise_thread;
 
-	bool first_time;
-	bool update_queued;
-	bool regen_queued;
+	bool first_time = true;
+	bool update_queued = false;
+	bool regen_queued = false;
 
 	mutable RID texture;
-	uint32_t flags;
+	uint32_t flags = 0;
 
 	Ref<OpenSimplexNoise> noise;
-	Vector2i size;
-	bool seamless;
-	bool as_normalmap;
-	float bump_strength;
+	Vector2i size = Vector2i(512, 512);
+	bool seamless = false;
+	bool as_normal_map = false;
+	float bump_strength = 8.0;
 
 	void _thread_done(const Ref<Image> &p_image);
 	static void _thread_function(void *p_ud);
@@ -66,7 +66,7 @@ private:
 	void _queue_update();
 	Ref<Image> _generate_texture();
 	void _update_texture();
-	void _set_texture_data(const Ref<Image> &p_image);
+	void _set_texture_image(const Ref<Image> &p_image);
 
 protected:
 	static void _bind_methods();
@@ -82,8 +82,8 @@ public:
 	void set_seamless(bool p_seamless);
 	bool get_seamless();
 
-	void set_as_normalmap(bool p_as_normalmap);
-	bool is_normalmap();
+	void set_as_normal_map(bool p_as_normal_map);
+	bool is_normal_map();
 
 	void set_bump_strength(float p_bump_strength);
 	float get_bump_strength();
@@ -94,7 +94,7 @@ public:
 	virtual RID get_rid() const override;
 	virtual bool has_alpha() const override { return false; }
 
-	virtual Ref<Image> get_data() const override;
+	virtual Ref<Image> get_image() const override;
 
 	NoiseTexture();
 	virtual ~NoiseTexture();

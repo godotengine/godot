@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -308,7 +308,7 @@ static Error recreate_code(void *p_str, SL::ShaderNode *p_program) {
 MainLoop *test() {
 	List<String> cmdlargs = OS::get_singleton()->get_cmdline_args();
 
-	if (cmdlargs.empty()) {
+	if (cmdlargs.is_empty()) {
 		//try editor!
 		print_line("usage: godot -test shader_lang <shader>");
 		return nullptr;
@@ -344,7 +344,7 @@ MainLoop *test() {
 	Set<String> types;
 	types.insert("spatial");
 
-	Error err = sl.compile(code, dt, rm, types, nullptr);
+	Error err = sl.compile(code, dt, rm, ShaderLanguage::VaryingFunctionNames(), types, nullptr);
 
 	if (err) {
 		print_line("Error at line: " + rtos(sl.get_error_line()) + ": " + sl.get_error_text());

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -375,7 +375,7 @@ Image::Image3DValidateError Image::validate_3d_image(Image::Format p_format, int
 			if (idx >= p_images.size()) {
 				return VALIDATE_3D_ERR_MISSING_IMAGES;
 			}
-			if (p_images[idx].is_null() || p_images[idx]->empty()) {
+			if (p_images[idx].is_null() || p_images[idx]->is_empty()) {
 				return VALIDATE_3D_ERR_IMAGE_EMPTY;
 			}
 			if (p_images[idx]->get_format() != p_format) {
@@ -993,7 +993,7 @@ bool Image::is_size_po2() const {
 	return uint32_t(width) == next_power_of_2(width) && uint32_t(height) == next_power_of_2(height);
 }
 
-void Image::resize_to_po2(bool p_square) {
+void Image::resize_to_po2(bool p_square, Interpolation p_interpolation) {
 	ERR_FAIL_COND_MSG(!_can_modify(format), "Cannot resize in compressed or custom image formats.");
 
 	int w = next_power_of_2(width);
@@ -1008,7 +1008,7 @@ void Image::resize_to_po2(bool p_square) {
 		}
 	}
 
-	resize(w, h);
+	resize(w, h, p_interpolation);
 }
 
 void Image::resize(int p_width, int p_height, Interpolation p_interpolation) {
@@ -1753,10 +1753,10 @@ Error Image::generate_mipmaps(bool p_renormalize) {
 
 Error Image::generate_mipmap_roughness(RoughnessChannel p_roughness_channel, const Ref<Image> &p_normal_map) {
 	Vector<double> normal_sat_vec; //summed area table
-	double *normal_sat = nullptr; //summed area table for normalmap
+	double *normal_sat = nullptr; //summed area table for normal map
 	int normal_w = 0, normal_h = 0;
 
-	ERR_FAIL_COND_V_MSG(p_normal_map.is_null() || p_normal_map->empty(), ERR_INVALID_PARAMETER, "Must provide a valid normalmap for roughness mipmaps");
+	ERR_FAIL_COND_V_MSG(p_normal_map.is_null() || p_normal_map->is_empty(), ERR_INVALID_PARAMETER, "Must provide a valid normal map for roughness mipmaps");
 
 	Ref<Image> nm = p_normal_map->duplicate();
 	if (nm->is_compressed()) {
@@ -1950,7 +1950,7 @@ void Image::clear_mipmaps() {
 		return;
 	}
 
-	if (empty()) {
+	if (is_empty()) {
 		return;
 	}
 
@@ -1961,7 +1961,7 @@ void Image::clear_mipmaps() {
 	mipmaps = false;
 }
 
-bool Image::empty() const {
+bool Image::is_empty() const {
 	return (data.size() == 0);
 }
 
@@ -2480,7 +2480,7 @@ void Image::blit_rect(const Ref<Image> &p_src, const Rect2 &p_src_rect, const Po
 	ERR_FAIL_COND(format != p_src->format);
 	ERR_FAIL_COND_MSG(!_can_modify(format), "Cannot blit_rect in compressed or custom image formats.");
 
-	Rect2i clipped_src_rect = Rect2i(0, 0, p_src->width, p_src->height).clip(p_src_rect);
+	Rect2i clipped_src_rect = Rect2i(0, 0, p_src->width, p_src->height).intersection(p_src_rect);
 
 	if (p_dest.x < 0) {
 		clipped_src_rect.position.x = ABS(p_dest.x);
@@ -2494,7 +2494,7 @@ void Image::blit_rect(const Ref<Image> &p_src, const Rect2 &p_src_rect, const Po
 	}
 
 	Point2 src_underscan = Point2(MIN(0, p_src_rect.position.x), MIN(0, p_src_rect.position.y));
-	Rect2i dest_rect = Rect2i(0, 0, width, height).clip(Rect2i(p_dest - src_underscan, clipped_src_rect.size));
+	Rect2i dest_rect = Rect2i(0, 0, width, height).intersection(Rect2i(p_dest - src_underscan, clipped_src_rect.size));
 
 	uint8_t *wp = data.ptrw();
 	uint8_t *dst_data_ptr = wp;
@@ -2535,7 +2535,7 @@ void Image::blit_rect_mask(const Ref<Image> &p_src, const Ref<Image> &p_mask, co
 	ERR_FAIL_COND_MSG(p_src->height != p_mask->height, "Source image height is different from mask height.");
 	ERR_FAIL_COND(format != p_src->format);
 
-	Rect2i clipped_src_rect = Rect2i(0, 0, p_src->width, p_src->height).clip(p_src_rect);
+	Rect2i clipped_src_rect = Rect2i(0, 0, p_src->width, p_src->height).intersection(p_src_rect);
 
 	if (p_dest.x < 0) {
 		clipped_src_rect.position.x = ABS(p_dest.x);
@@ -2549,7 +2549,7 @@ void Image::blit_rect_mask(const Ref<Image> &p_src, const Ref<Image> &p_mask, co
 	}
 
 	Point2 src_underscan = Point2(MIN(0, p_src_rect.position.x), MIN(0, p_src_rect.position.y));
-	Rect2i dest_rect = Rect2i(0, 0, width, height).clip(Rect2i(p_dest - src_underscan, clipped_src_rect.size));
+	Rect2i dest_rect = Rect2i(0, 0, width, height).intersection(Rect2i(p_dest - src_underscan, clipped_src_rect.size));
 
 	uint8_t *wp = data.ptrw();
 	uint8_t *dst_data_ptr = wp;
@@ -2589,7 +2589,7 @@ void Image::blend_rect(const Ref<Image> &p_src, const Rect2 &p_src_rect, const P
 	ERR_FAIL_COND(srcdsize == 0);
 	ERR_FAIL_COND(format != p_src->format);
 
-	Rect2i clipped_src_rect = Rect2i(0, 0, p_src->width, p_src->height).clip(p_src_rect);
+	Rect2i clipped_src_rect = Rect2i(0, 0, p_src->width, p_src->height).intersection(p_src_rect);
 
 	if (p_dest.x < 0) {
 		clipped_src_rect.position.x = ABS(p_dest.x);
@@ -2603,7 +2603,7 @@ void Image::blend_rect(const Ref<Image> &p_src, const Rect2 &p_src_rect, const P
 	}
 
 	Point2 src_underscan = Point2(MIN(0, p_src_rect.position.x), MIN(0, p_src_rect.position.y));
-	Rect2i dest_rect = Rect2i(0, 0, width, height).clip(Rect2i(p_dest - src_underscan, clipped_src_rect.size));
+	Rect2i dest_rect = Rect2i(0, 0, width, height).intersection(Rect2i(p_dest - src_underscan, clipped_src_rect.size));
 
 	Ref<Image> img = p_src;
 
@@ -2638,7 +2638,7 @@ void Image::blend_rect_mask(const Ref<Image> &p_src, const Ref<Image> &p_mask, c
 	ERR_FAIL_COND_MSG(p_src->height != p_mask->height, "Source image height is different from mask height.");
 	ERR_FAIL_COND(format != p_src->format);
 
-	Rect2i clipped_src_rect = Rect2i(0, 0, p_src->width, p_src->height).clip(p_src_rect);
+	Rect2i clipped_src_rect = Rect2i(0, 0, p_src->width, p_src->height).intersection(p_src_rect);
 
 	if (p_dest.x < 0) {
 		clipped_src_rect.position.x = ABS(p_dest.x);
@@ -2652,7 +2652,7 @@ void Image::blend_rect_mask(const Ref<Image> &p_src, const Ref<Image> &p_mask, c
 	}
 
 	Point2 src_underscan = Point2(MIN(0, p_src_rect.position.x), MIN(0, p_src_rect.position.y));
-	Rect2i dest_rect = Rect2i(0, 0, width, height).clip(Rect2i(p_dest - src_underscan, clipped_src_rect.size));
+	Rect2i dest_rect = Rect2i(0, 0, width, height).intersection(Rect2i(p_dest - src_underscan, clipped_src_rect.size));
 
 	Ref<Image> img = p_src;
 	Ref<Image> msk = p_mask;
@@ -2985,31 +2985,53 @@ void Image::set_pixel(int p_x, int p_y, const Color &p_color) {
 	_set_color_at_ofs(data.ptrw(), ofs, p_color);
 }
 
+void Image::adjust_bcs(float p_brightness, float p_contrast, float p_saturation) {
+	uint8_t *w = data.ptrw();
+	uint32_t pixel_size = get_format_pixel_size(format);
+	uint32_t pixel_count = data.size() / pixel_size;
+
+	for (uint32_t i = 0; i < pixel_count; i++) {
+		Color c = _get_color_at_ofs(w, i);
+		Vector3 rgb(c.r, c.g, c.b);
+
+		rgb *= p_brightness;
+		rgb = Vector3(0.5, 0.5, 0.5).lerp(rgb, p_contrast);
+		float center = (rgb.x + rgb.y + rgb.z) / 3.0;
+		rgb = Vector3(center, center, center).lerp(rgb, p_saturation);
+		c.r = rgb.x;
+		c.g = rgb.y;
+		c.b = rgb.z;
+		_set_color_at_ofs(w, i, c);
+	}
+}
+
 Image::UsedChannels Image::detect_used_channels(CompressSource p_source) {
 	ERR_FAIL_COND_V(data.size() == 0, USED_CHANNELS_RGBA);
 	ERR_FAIL_COND_V(is_compressed(), USED_CHANNELS_RGBA);
 	bool r = false, g = false, b = false, a = false, c = false;
 
-	for (int i = 0; i < width; i++) {
-		for (int j = 0; j < height; j++) {
-			Color col = get_pixel(i, j);
+	const uint8_t *data_ptr = data.ptr();
 
-			if (col.r > 0.001) {
-				r = true;
-			}
-			if (col.g > 0.001) {
-				g = true;
-			}
-			if (col.b > 0.001) {
-				b = true;
-			}
-			if (col.a < 0.999) {
-				a = true;
-			}
+	uint32_t data_total = width * height;
 
-			if (col.r != col.b || col.r != col.g || col.b != col.g) {
-				c = true;
-			}
+	for (uint32_t i = 0; i < data_total; i++) {
+		Color col = _get_color_at_ofs(data_ptr, i);
+
+		if (col.r > 0.001) {
+			r = true;
+		}
+		if (col.g > 0.001) {
+			g = true;
+		}
+		if (col.b > 0.001) {
+			b = true;
+		}
+		if (col.a < 0.999) {
+			a = true;
+		}
+
+		if (col.r != col.b || col.r != col.g || col.b != col.g) {
+			c = true;
 		}
 	}
 
@@ -3077,7 +3099,7 @@ void Image::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_mipmap_offset", "mipmap"), &Image::get_mipmap_offset);
 
-	ClassDB::bind_method(D_METHOD("resize_to_po2", "square"), &Image::resize_to_po2, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("resize_to_po2", "square", "interpolation"), &Image::resize_to_po2, DEFVAL(false), DEFVAL(INTERPOLATE_BILINEAR));
 	ClassDB::bind_method(D_METHOD("resize", "width", "height", "interpolation"), &Image::resize, DEFVAL(INTERPOLATE_BILINEAR));
 	ClassDB::bind_method(D_METHOD("shrink_x2"), &Image::shrink_x2);
 
@@ -3090,7 +3112,7 @@ void Image::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("create", "width", "height", "use_mipmaps", "format"), &Image::_create_empty);
 	ClassDB::bind_method(D_METHOD("create_from_data", "width", "height", "use_mipmaps", "format", "data"), &Image::_create_from_data);
 
-	ClassDB::bind_method(D_METHOD("is_empty"), &Image::empty);
+	ClassDB::bind_method(D_METHOD("is_empty"), &Image::is_empty);
 
 	ClassDB::bind_method(D_METHOD("load", "path"), &Image::load);
 	ClassDB::bind_method(D_METHOD("save_png", "path"), &Image::save_png);
@@ -3109,9 +3131,9 @@ void Image::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("fix_alpha_edges"), &Image::fix_alpha_edges);
 	ClassDB::bind_method(D_METHOD("premultiply_alpha"), &Image::premultiply_alpha);
 	ClassDB::bind_method(D_METHOD("srgb_to_linear"), &Image::srgb_to_linear);
-	ClassDB::bind_method(D_METHOD("normalmap_to_xy"), &Image::normalmap_to_xy);
+	ClassDB::bind_method(D_METHOD("normal_map_to_xy"), &Image::normal_map_to_xy);
 	ClassDB::bind_method(D_METHOD("rgbe_to_srgb"), &Image::rgbe_to_srgb);
-	ClassDB::bind_method(D_METHOD("bumpmap_to_normalmap", "bump_scale"), &Image::bumpmap_to_normalmap, DEFVAL(1.0));
+	ClassDB::bind_method(D_METHOD("bump_map_to_normal_map", "bump_scale"), &Image::bump_map_to_normal_map, DEFVAL(1.0));
 
 	ClassDB::bind_method(D_METHOD("blit_rect", "src", "src_rect", "dst"), &Image::blit_rect);
 	ClassDB::bind_method(D_METHOD("blit_rect_mask", "src", "mask", "src_rect", "dst"), &Image::blit_rect_mask);
@@ -3131,6 +3153,8 @@ void Image::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_pixel", "x", "y"), &Image::get_pixel);
 	ClassDB::bind_method(D_METHOD("set_pixelv", "point", "color"), &Image::set_pixelv);
 	ClassDB::bind_method(D_METHOD("set_pixel", "x", "y", "color"), &Image::set_pixel);
+
+	ClassDB::bind_method(D_METHOD("adjust_bcs", "brightness", "contrast", "saturation"), &Image::adjust_bcs);
 
 	ClassDB::bind_method(D_METHOD("load_png_from_buffer", "buffer"), &Image::load_png_from_buffer);
 	ClassDB::bind_method(D_METHOD("load_jpg_from_buffer", "buffer"), &Image::load_jpg_from_buffer);
@@ -3220,7 +3244,7 @@ void Image::set_compress_bptc_func(void (*p_compress_func)(Image *, float, UsedC
 	_image_compress_bptc_func = p_compress_func;
 }
 
-void Image::normalmap_to_xy() {
+void Image::normal_map_to_xy() {
 	convert(Image::FORMAT_RGBA8);
 
 	{
@@ -3285,7 +3309,7 @@ Ref<Image> Image::get_image_from_mipmap(int p_mipamp) const {
 	return image;
 }
 
-void Image::bumpmap_to_normalmap(float bump_scale) {
+void Image::bump_map_to_normal_map(float bump_scale) {
 	ERR_FAIL_COND(!_can_modify(format));
 	convert(Image::FORMAT_RF);
 
@@ -3585,7 +3609,7 @@ Image::Image(const uint8_t *p_mem_png_jpg, int p_len) {
 		copy_internals_from(_png_mem_loader_func(p_mem_png_jpg, p_len));
 	}
 
-	if (empty() && _jpg_mem_loader_func) {
+	if (is_empty() && _jpg_mem_loader_func) {
 		copy_internals_from(_jpg_mem_loader_func(p_mem_png_jpg, p_len));
 	}
 }

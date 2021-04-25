@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -100,6 +100,60 @@ void CollisionObject2D::_notification(int p_what) {
 	}
 }
 
+void CollisionObject2D::set_collision_layer(uint32_t p_layer) {
+	collision_layer = p_layer;
+	if (area) {
+		PhysicsServer2D::get_singleton()->area_set_collision_layer(get_rid(), p_layer);
+	} else {
+		PhysicsServer2D::get_singleton()->body_set_collision_layer(get_rid(), p_layer);
+	}
+}
+
+uint32_t CollisionObject2D::get_collision_layer() const {
+	return collision_layer;
+}
+
+void CollisionObject2D::set_collision_mask(uint32_t p_mask) {
+	collision_mask = p_mask;
+	if (area) {
+		PhysicsServer2D::get_singleton()->area_set_collision_mask(get_rid(), p_mask);
+	} else {
+		PhysicsServer2D::get_singleton()->body_set_collision_mask(get_rid(), p_mask);
+	}
+}
+
+uint32_t CollisionObject2D::get_collision_mask() const {
+	return collision_mask;
+}
+
+void CollisionObject2D::set_collision_layer_bit(int p_bit, bool p_value) {
+	uint32_t collision_layer = get_collision_layer();
+	if (p_value) {
+		collision_layer |= 1 << p_bit;
+	} else {
+		collision_layer &= ~(1 << p_bit);
+	}
+	set_collision_layer(collision_layer);
+}
+
+bool CollisionObject2D::get_collision_layer_bit(int p_bit) const {
+	return get_collision_layer() & (1 << p_bit);
+}
+
+void CollisionObject2D::set_collision_mask_bit(int p_bit, bool p_value) {
+	uint32_t mask = get_collision_mask();
+	if (p_value) {
+		mask |= 1 << p_bit;
+	} else {
+		mask &= ~(1 << p_bit);
+	}
+	set_collision_mask(mask);
+}
+
+bool CollisionObject2D::get_collision_mask_bit(int p_bit) const {
+	return get_collision_mask() & (1 << p_bit);
+}
+
 uint32_t CollisionObject2D::create_shape_owner(Object *p_owner) {
 	ShapeData sd;
 	uint32_t id;
@@ -165,7 +219,7 @@ bool CollisionObject2D::is_shape_owner_one_way_collision_enabled(uint32_t p_owne
 	return shapes[p_owner].one_way_collision;
 }
 
-void CollisionObject2D::shape_owner_set_one_way_collision_margin(uint32_t p_owner, float p_margin) {
+void CollisionObject2D::shape_owner_set_one_way_collision_margin(uint32_t p_owner, real_t p_margin) {
 	if (area) {
 		return; //not for areas
 	}
@@ -179,7 +233,7 @@ void CollisionObject2D::shape_owner_set_one_way_collision_margin(uint32_t p_owne
 	}
 }
 
-float CollisionObject2D::get_shape_owner_one_way_collision_margin(uint32_t p_owner) const {
+real_t CollisionObject2D::get_shape_owner_one_way_collision_margin(uint32_t p_owner) const {
 	ERR_FAIL_COND_V(!shapes.has(p_owner), 0);
 
 	return shapes[p_owner].one_way_collision_margin;
@@ -363,22 +417,26 @@ void CollisionObject2D::_update_pickable() {
 	}
 }
 
-String CollisionObject2D::get_configuration_warning() const {
-	String warning = Node2D::get_configuration_warning();
+TypedArray<String> CollisionObject2D::get_configuration_warnings() const {
+	TypedArray<String> warnings = Node::get_configuration_warnings();
 
-	if (shapes.empty()) {
-		if (!warning.empty()) {
-			warning += "\n\n";
-		}
-		warning += TTR("This node has no shape, so it can't collide or interact with other objects.\nConsider adding a CollisionShape2D or CollisionPolygon2D as a child to define its shape.");
+	if (shapes.is_empty()) {
+		warnings.push_back(TTR("This node has no shape, so it can't collide or interact with other objects.\nConsider adding a CollisionShape2D or CollisionPolygon2D as a child to define its shape."));
 	}
 
-	return warning;
+	return warnings;
 }
 
 void CollisionObject2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_rid"), &CollisionObject2D::get_rid);
-
+	ClassDB::bind_method(D_METHOD("set_collision_layer", "layer"), &CollisionObject2D::set_collision_layer);
+	ClassDB::bind_method(D_METHOD("get_collision_layer"), &CollisionObject2D::get_collision_layer);
+	ClassDB::bind_method(D_METHOD("set_collision_mask", "mask"), &CollisionObject2D::set_collision_mask);
+	ClassDB::bind_method(D_METHOD("get_collision_mask"), &CollisionObject2D::get_collision_mask);
+	ClassDB::bind_method(D_METHOD("set_collision_layer_bit", "bit", "value"), &CollisionObject2D::set_collision_layer_bit);
+	ClassDB::bind_method(D_METHOD("get_collision_layer_bit", "bit"), &CollisionObject2D::get_collision_layer_bit);
+	ClassDB::bind_method(D_METHOD("set_collision_mask_bit", "bit", "value"), &CollisionObject2D::set_collision_mask_bit);
+	ClassDB::bind_method(D_METHOD("get_collision_mask_bit", "bit"), &CollisionObject2D::get_collision_mask_bit);
 	ClassDB::bind_method(D_METHOD("set_pickable", "enabled"), &CollisionObject2D::set_pickable);
 	ClassDB::bind_method(D_METHOD("is_pickable"), &CollisionObject2D::is_pickable);
 	ClassDB::bind_method(D_METHOD("create_shape_owner", "owner"), &CollisionObject2D::create_shape_owner);
@@ -407,9 +465,12 @@ void CollisionObject2D::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("mouse_entered"));
 	ADD_SIGNAL(MethodInfo("mouse_exited"));
 
-	ADD_GROUP("Pickable", "input_");
+	ADD_GROUP("Collision", "collision_");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_layer", PROPERTY_HINT_LAYERS_2D_PHYSICS), "set_collision_layer", "get_collision_layer");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_mask", PROPERTY_HINT_LAYERS_2D_PHYSICS), "set_collision_mask", "get_collision_mask");
+
+	ADD_GROUP("Input", "input_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "input_pickable"), "set_pickable", "is_pickable");
-	ADD_GROUP("", "");
 }
 
 CollisionObject2D::CollisionObject2D(RID p_rid, bool p_area) {

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,6 +31,7 @@
 #ifndef COLOR_PICKER_H
 #define COLOR_PICKER_H
 
+#include "scene/gui/aspect_ratio_container.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/check_button.h"
@@ -45,39 +46,57 @@
 class ColorPicker : public BoxContainer {
 	GDCLASS(ColorPicker, BoxContainer);
 
+public:
+	enum PickerShapeType {
+		SHAPE_HSV_RECTANGLE,
+		SHAPE_HSV_WHEEL,
+		SHAPE_VHS_CIRCLE,
+
+		SHAPE_MAX
+	};
+
 private:
-	Control *screen;
-	Control *uv_edit;
-	Control *w_edit;
-	TextureRect *sample;
-	TextureRect *preset;
-	HBoxContainer *preset_container;
-	HBoxContainer *preset_container2;
-	HSeparator *preset_separator;
-	Button *bt_add_preset;
+	Control *screen = nullptr;
+	Control *uv_edit = memnew(Control);
+	Control *w_edit = memnew(Control);
+	AspectRatioContainer *wheel_edit = memnew(AspectRatioContainer);
+	Ref<ShaderMaterial> wheel_mat;
+	Ref<ShaderMaterial> circle_mat;
+	Control *wheel = memnew(Control);
+	Control *wheel_uv = memnew(Control);
+	TextureRect *sample = memnew(TextureRect);
+	TextureRect *preset = memnew(TextureRect);
+	HBoxContainer *preset_container = memnew(HBoxContainer);
+	HBoxContainer *preset_container2 = memnew(HBoxContainer);
+	HSeparator *preset_separator = memnew(HSeparator);
+	Button *bt_add_preset = memnew(Button);
 	List<Color> presets;
-	Button *btn_pick;
-	CheckButton *btn_hsv;
-	CheckButton *btn_raw;
+	Button *btn_pick = memnew(Button);
+	CheckButton *btn_hsv = memnew(CheckButton);
+	CheckButton *btn_raw = memnew(CheckButton);
 	HSlider *scroll[4];
 	SpinBox *values[4];
 	Label *labels[4];
-	Button *text_type;
-	LineEdit *c_text;
-	bool edit_alpha;
+	Button *text_type = memnew(Button);
+	LineEdit *c_text = memnew(LineEdit);
+	bool edit_alpha = true;
 	Size2i ms;
-	bool text_is_constructor;
-	int presets_per_row;
+	bool text_is_constructor = false;
+	int presets_per_row = 0;
+	PickerShapeType picker_type = SHAPE_HSV_WHEEL;
 
 	Color color;
-	bool raw_mode_enabled;
-	bool hsv_mode_enabled;
-	bool deferred_mode_enabled;
-	bool updating;
-	bool changing_color;
-	bool presets_enabled;
-	bool presets_visible;
-	float h, s, v;
+	bool raw_mode_enabled = false;
+	bool hsv_mode_enabled = false;
+	bool deferred_mode_enabled = false;
+	bool updating = true;
+	bool changing_color = false;
+	bool spinning = false;
+	bool presets_enabled = true;
+	bool presets_visible = true;
+	float h = 0.0;
+	float s = 0.0;
+	float v = 0.0;
 	Color last_hsv;
 
 	void _html_entered(const String &p_html);
@@ -89,8 +108,9 @@ private:
 	void _text_type_toggled();
 	void _sample_draw();
 	void _hsv_draw(int p_which, Control *c);
+	void _slider_draw(int p_which);
 
-	void _uv_input(const Ref<InputEvent> &p_event);
+	void _uv_input(const Ref<InputEvent> &p_event, Control *c);
 	void _w_input(const Ref<InputEvent> &p_event);
 	void _preset_input(const Ref<InputEvent> &p_event);
 	void _screen_input(const Ref<InputEvent> &p_event);
@@ -111,6 +131,9 @@ public:
 	void _set_pick_color(const Color &p_color, bool p_update_sliders);
 	void set_pick_color(const Color &p_color);
 	Color get_pick_color() const;
+
+	void set_picker_shape(PickerShapeType p_picker_type);
+	PickerShapeType get_picker_shape() const;
 
 	void add_preset(const Color &p_color);
 	void erase_preset(const Color &p_color);
@@ -139,10 +162,14 @@ public:
 class ColorPickerButton : public Button {
 	GDCLASS(ColorPickerButton, Button);
 
-	PopupPanel *popup;
-	ColorPicker *picker;
+	// Initialization is now done deferred,
+	// this improves performance in the inspector as the color picker
+	// can be expensive to initialize.
+
+	PopupPanel *popup = nullptr;
+	ColorPicker *picker = nullptr;
 	Color color;
-	bool edit_alpha;
+	bool edit_alpha = true;
 
 	void _color_changed(const Color &p_color);
 	void _modal_closed();
@@ -168,4 +195,5 @@ public:
 	ColorPickerButton();
 };
 
+VARIANT_ENUM_CAST(ColorPicker::PickerShapeType);
 #endif // COLOR_PICKER_H

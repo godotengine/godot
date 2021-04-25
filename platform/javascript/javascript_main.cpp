@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -87,7 +87,14 @@ extern EMSCRIPTEN_KEEPALIVE int godot_js_main(int argc, char *argv[]) {
 	ResourceLoader::set_abort_on_missing_resources(false);
 
 	Main::start();
-	os->get_main_loop()->init();
+	os->get_main_loop()->initialize();
+#ifdef TOOLS_ENABLED
+	if (Main::is_project_manager() && FileAccess::exists("/tmp/preload.zip")) {
+		PackedStringArray ps;
+		ps.push_back("/tmp/preload.zip");
+		os->get_main_loop()->emit_signal("files_dropped", ps, -1);
+	}
+#endif
 	emscripten_set_main_loop(main_loop_callback, -1, false);
 	// Immediately run the first iteration.
 	// We are inside an animation frame, we want to immediately draw on the newly setup canvas.

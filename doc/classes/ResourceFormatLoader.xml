@@ -6,7 +6,7 @@
 	<description>
 		Godot loads resources in the editor or in exported games using ResourceFormatLoaders. They are queried automatically via the [ResourceLoader] singleton, or when a resource with internal dependencies is loaded. Each file type may load as a different resource type, so multiple ResourceFormatLoaders are registered in the engine.
 		Extending this class allows you to define your own loader. Be sure to respect the documented return types and values. You should give it a global class name with [code]class_name[/code] for it to be registered. Like built-in ResourceFormatLoaders, it will be called automatically when loading resources of its handled type(s). You may also implement a [ResourceFormatSaver].
-		[b]Note:[/b] You can also extend [EditorImportPlugin] if the resource type you need exists but Godot is unable to load its format. Choosing one way over another depends if the format is suitable or not for the final exported game. For example, it's better to import [code].png[/code] textures as [code].stex[/code] ([StreamTexture2D]) first, so they can be loaded with better efficiency on the graphics card.
+		[b]Note:[/b] You can also extend [EditorImportPlugin] if the resource type you need exists but Godot is unable to load its format. Choosing one way over another depends on if the format is suitable or not for the final exported game. For example, it's better to import [code].png[/code] textures as [code].stex[/code] ([StreamTexture2D]) first, so they can be loaded with better efficiency on the graphics card.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -57,8 +57,13 @@
 			</argument>
 			<argument index="1" name="original_path" type="String">
 			</argument>
+			<argument index="2" name="use_sub_threads" type="bool">
+			</argument>
+			<argument index="3" name="cache_mode" type="int">
+			</argument>
 			<description>
 				Loads a resource when the engine finds this loader to be compatible. If the loaded resource is the result of an import, [code]original_path[/code] will target the source file. Returns a [Resource] object on success, or an [enum Error] constant in case of failure.
+				The [code]cache_mode[/code] property defines whether and how the cache should be used or updated when loading the resource. See [enum CacheMode] for details.
 			</description>
 		</method>
 		<method name="rename_dependencies" qualifiers="virtual">
@@ -75,5 +80,11 @@
 		</method>
 	</methods>
 	<constants>
+		<constant name="CACHE_MODE_IGNORE" value="0" enum="CacheMode">
+		</constant>
+		<constant name="CACHE_MODE_REUSE" value="1" enum="CacheMode">
+		</constant>
+		<constant name="CACHE_MODE_REPLACE" value="2" enum="CacheMode">
+		</constant>
 	</constants>
 </class>

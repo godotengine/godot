@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -46,7 +46,7 @@ enum PVRFLags {
 	PVR_VFLIP = 0x00010000
 };
 
-RES ResourceFormatPVR::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, bool p_no_cache) {
+RES ResourceFormatPVR::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, CacheMode p_cache_mode) {
 	if (r_error) {
 		*r_error = ERR_CANT_OPEN;
 	}
@@ -153,7 +153,7 @@ RES ResourceFormatPVR::load(const String &p_path, const String &p_original_path,
 	}
 
 	Ref<Image> image = memnew(Image(width, height, mipmaps, format, data));
-	ERR_FAIL_COND_V(image->empty(), RES());
+	ERR_FAIL_COND_V(image->is_empty(), RES());
 
 	Ref<ImageTexture> texture = memnew(ImageTexture);
 	texture->create_from_image(image);
@@ -207,7 +207,7 @@ ResourceFormatPVR::ResourceFormatPVR() {
 
 struct PVRTCBlock {
 	//blocks are 64 bits
-	uint32_t data[2];
+	uint32_t data[2] = {};
 };
 
 _FORCE_INLINE_ bool is_po2(uint32_t p_input) {

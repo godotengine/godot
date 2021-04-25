@@ -4,7 +4,12 @@
 		Server interface for low-level 3D navigation access
 	</brief_description>
 	<description>
-		NavigationServer3D is the server responsible for all 3D navigation. It creates the agents, maps, and regions for navigation to work as expected. This keeps tracks of any call and executes them during the sync phase. This means that you can request any change to the map, using any thread, without worrying.
+		NavigationServer3D is the server responsible for all 3D navigation. It handles several objects, namely maps, regions and agents.
+		Maps are made up of regions, which are made of navigation meshes. Together, they define the navigable areas in the 3D world. For two regions to be connected to each other, they must share a similar edge. An edge is considered connected to another if both of its two vertices are at a distance less than [code]edge_connection_margin[/code] to the respective other edge's vertex.
+		You may assign navigation layers to regions with [method NavigationServer3D.region_set_layers], which then can be checked upon when requesting a path with [method NavigationServer3D.map_get_path]. This allows allowing or forbidding some areas to 3D objects.
+		To use the collision avoidance system, you may use agents. You can set an agent's target velocity, then the servers will emit a callback with a modified velocity.
+		[b]Note:[/b] the collision avoidance system ignores regions. Using the modified velocity as-is might lead to pushing and agent outside of a navigable area. This is a limitation of the collision avoidance system, any more complex situation may require the use of the physics engine.
+		This server keeps tracks of any call and executes them during the sync phase. This means that you can request any change to the map, using any thread, without worrying.
 	</description>
 	<tutorials>
 		<link title="3D Navmesh Demo">https://godotengine.org/asset-library/asset/124</link>
@@ -219,7 +224,7 @@
 			<argument index="0" name="map" type="RID">
 			</argument>
 			<description>
-				Returns the edge connection margin of the map.
+				Returns the edge connection margin of the map. This distance is the minimum vertex distance needed to connect two edges from different regions.
 			</description>
 		</method>
 		<method name="map_get_path" qualifiers="const">
@@ -233,8 +238,10 @@
 			</argument>
 			<argument index="3" name="optimize" type="bool">
 			</argument>
+			<argument index="4" name="layers" type="int" default="1">
+			</argument>
 			<description>
-				Returns the navigation path to reach the destination from the origin.
+				Returns the navigation path to reach the destination from the origin. [code]layers[/code] is a bitmask of all region layers that are allowed to be in the path.
 			</description>
 		</method>
 		<method name="map_get_up" qualifiers="const">
@@ -285,7 +292,7 @@
 			<argument index="1" name="margin" type="float">
 			</argument>
 			<description>
-				Set the map edge connection margein used to weld the compatible region edges.
+				Set the map edge connection margin used to weld the compatible region edges.
 			</description>
 		</method>
 		<method name="map_set_up" qualifiers="const">
@@ -326,6 +333,57 @@
 			</return>
 			<description>
 				Creates a new region.
+			</description>
+		</method>
+		<method name="region_get_connection_pathway_end" qualifiers="const">
+			<return type="Vector3">
+			</return>
+			<argument index="0" name="region" type="RID">
+			</argument>
+			<argument index="1" name="connection" type="int">
+			</argument>
+			<description>
+				Returns the ending point of a connection door. [code]connection[/code] is an index between 0 and the return value of [method region_get_connections_count].
+			</description>
+		</method>
+		<method name="region_get_connection_pathway_start" qualifiers="const">
+			<return type="Vector3">
+			</return>
+			<argument index="0" name="region" type="RID">
+			</argument>
+			<argument index="1" name="connection" type="int">
+			</argument>
+			<description>
+				Returns the starting point of a connection door. [code]connection[/code] is an index between 0 and the return value of [method region_get_connections_count].
+			</description>
+		</method>
+		<method name="region_get_connections_count" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="region" type="RID">
+			</argument>
+			<description>
+				Returns how many connections this [code]region[/code] has with other regions in the map.
+			</description>
+		</method>
+		<method name="region_get_layers" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="region" type="RID">
+			</argument>
+			<description>
+				Returns the region's layers.
+			</description>
+		</method>
+		<method name="region_set_layers" qualifiers="const">
+			<return type="void">
+			</return>
+			<argument index="0" name="region" type="RID">
+			</argument>
+			<argument index="1" name="layers" type="int">
+			</argument>
+			<description>
+				Set the region's layers. This allows selecting regions from a path request (when using [method NavigationServer3D.map_get_path]).
 			</description>
 		</method>
 		<method name="region_set_map" qualifiers="const">
@@ -371,6 +429,15 @@
 			</description>
 		</method>
 	</methods>
+	<signals>
+		<signal name="map_changed">
+			<argument index="0" name="map" type="RID">
+			</argument>
+			<description>
+				Emitted when a navigation map is updated, when a region moves or is modified.
+			</description>
+		</signal>
+	</signals>
 	<constants>
 	</constants>
 </class>

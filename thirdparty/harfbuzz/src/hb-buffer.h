@@ -27,7 +27,7 @@
  * Google Author(s): Behdad Esfahbod
  */
 
-#ifndef HB_H_IN
+#if !defined(HB_H_IN) && !defined(HB_NO_SINGLE_HEADER_ERROR)
 #error "Include <hb.h> instead."
 #endif
 
@@ -59,8 +59,7 @@ HB_BEGIN_DECLS
  * The #hb_glyph_info_t is the structure that holds information about the
  * glyphs and their relation to input text.
  */
-typedef struct hb_glyph_info_t
-{
+typedef struct hb_glyph_info_t {
   hb_codepoint_t codepoint;
   /*< private >*/
   hb_mask_t      mask;
@@ -90,6 +89,8 @@ typedef struct hb_glyph_info_t
  * 				   the reshaping to a small piece around the
  * 				   breaking point only.
  * @HB_GLYPH_FLAG_DEFINED: All the currently defined flags.
+ *
+ * Flags for #hb_glyph_info_t.
  *
  * Since: 1.5.0
  */
@@ -151,6 +152,11 @@ typedef struct hb_segment_properties_t {
   void           *reserved2;
 } hb_segment_properties_t;
 
+/**
+ * HB_SEGMENT_PROPERTIES_DEFAULT:
+ *
+ * The default #hb_segment_properties_t of of freshly created #hb_buffer_t.
+ */
 #define HB_SEGMENT_PROPERTIES_DEFAULT {HB_DIRECTION_INVALID, \
 				       HB_SCRIPT_INVALID, \
 				       HB_LANGUAGE_INVALID, \
@@ -204,6 +210,8 @@ hb_buffer_get_user_data (hb_buffer_t        *buffer,
  * @HB_BUFFER_CONTENT_TYPE_INVALID: Initial value for new buffer.
  * @HB_BUFFER_CONTENT_TYPE_UNICODE: The buffer contains input characters (before shaping).
  * @HB_BUFFER_CONTENT_TYPE_GLYPHS: The buffer contains output glyphs (after shaping).
+ *
+ * The type of #hb_buffer_t contents.
  */
 typedef enum {
   HB_BUFFER_CONTENT_TYPE_INVALID = 0,
@@ -289,6 +297,8 @@ hb_buffer_guess_segment_properties (hb_buffer_t *buffer);
  *                      not be inserted in the rendering of incorrect
  *                      character sequences (such at <0905 093E>). Since: 2.4
  *
+ * Flags for #hb_buffer_t.
+ *
  * Since: 0.9.20
  */
 typedef enum { /*< flags >*/
@@ -315,6 +325,23 @@ hb_buffer_get_flags (hb_buffer_t *buffer);
  * @HB_BUFFER_CLUSTER_LEVEL_CHARACTERS: Don't group cluster values.
  * @HB_BUFFER_CLUSTER_LEVEL_DEFAULT: Default cluster level,
  *   equal to @HB_BUFFER_CLUSTER_LEVEL_MONOTONE_GRAPHEMES.
+ * 
+ * Data type for holding HarfBuzz's clustering behavior options. The cluster level
+ * dictates one aspect of how HarfBuzz will treat non-base characters 
+ * during shaping.
+ *
+ * In @HB_BUFFER_CLUSTER_LEVEL_MONOTONE_GRAPHEMES, non-base
+ * characters are merged into the cluster of the base character that precedes them.
+ *
+ * In @HB_BUFFER_CLUSTER_LEVEL_MONOTONE_CHARACTERS, non-base characters are initially
+ * assigned their own cluster values, which are not merged into preceding base
+ * clusters. This allows HarfBuzz to perform additional operations like reorder
+ * sequences of adjacent marks.
+ *
+ * @HB_BUFFER_CLUSTER_LEVEL_MONOTONE_GRAPHEMES is the default, because it maintains
+ * backward compatibility with older versions of HarfBuzz. New client programs that
+ * do not need to maintain such backward compatibility are recommended to use
+ * @HB_BUFFER_CLUSTER_LEVEL_MONOTONE_CHARACTERS instead of the default.
  *
  * Since: 0.9.42
  */
@@ -447,6 +474,9 @@ HB_EXTERN hb_glyph_position_t *
 hb_buffer_get_glyph_positions (hb_buffer_t  *buffer,
 			       unsigned int *length);
 
+HB_EXTERN hb_bool_t
+hb_buffer_has_positions (hb_buffer_t  *buffer);
+
 
 HB_EXTERN void
 hb_buffer_normalize_glyphs (hb_buffer_t *buffer);
@@ -518,6 +548,27 @@ hb_buffer_serialize_glyphs (hb_buffer_t *buffer,
 			    hb_buffer_serialize_format_t format,
 			    hb_buffer_serialize_flags_t flags);
 
+HB_EXTERN unsigned int
+hb_buffer_serialize_unicode (hb_buffer_t *buffer,
+					unsigned int start,
+					unsigned int end,
+					char *buf,
+					unsigned int buf_size,
+					unsigned int *buf_consumed,
+					hb_buffer_serialize_format_t format,
+					hb_buffer_serialize_flags_t flags);
+
+HB_EXTERN unsigned int
+hb_buffer_serialize (hb_buffer_t *buffer,
+					unsigned int start,
+					unsigned int end,
+					char *buf,
+					unsigned int buf_size,
+					unsigned int *buf_consumed,
+					hb_font_t *font,
+					hb_buffer_serialize_format_t format,
+					hb_buffer_serialize_flags_t flags);
+
 HB_EXTERN hb_bool_t
 hb_buffer_deserialize_glyphs (hb_buffer_t *buffer,
 			      const char *buf,
@@ -526,11 +577,48 @@ hb_buffer_deserialize_glyphs (hb_buffer_t *buffer,
 			      hb_font_t *font,
 			      hb_buffer_serialize_format_t format);
 
+HB_EXTERN hb_bool_t
+hb_buffer_deserialize_unicode (hb_buffer_t *buffer,
+            const char *buf,
+            int buf_len,
+            const char **end_ptr,
+            hb_buffer_serialize_format_t format);
+
+
 
 /*
  * Compare buffers
  */
 
+/**
+ * hb_buffer_diff_flags_t:
+ * @HB_BUFFER_DIFF_FLAG_EQUAL: equal buffers.
+ * @HB_BUFFER_DIFF_FLAG_CONTENT_TYPE_MISMATCH: buffers with different
+ *     #hb_buffer_content_type_t.
+ * @HB_BUFFER_DIFF_FLAG_LENGTH_MISMATCH: buffers with differing length.
+ * @HB_BUFFER_DIFF_FLAG_NOTDEF_PRESENT: `.notdef` glyph is present in the
+ *     reference buffer.
+ * @HB_BUFFER_DIFF_FLAG_DOTTED_CIRCLE_PRESENT: dotted circle glyph is present
+ *     in the reference buffer.
+ * @HB_BUFFER_DIFF_FLAG_CODEPOINT_MISMATCH: difference in #hb_glyph_info_t.codepoint
+ * @HB_BUFFER_DIFF_FLAG_CLUSTER_MISMATCH: difference in #hb_glyph_info_t.cluster
+ * @HB_BUFFER_DIFF_FLAG_GLYPH_FLAGS_MISMATCH: difference in #hb_glyph_flags_t.
+ * @HB_BUFFER_DIFF_FLAG_POSITION_MISMATCH: difference in #hb_glyph_position_t.
+ *
+ * Flags from comparing two #hb_buffer_t's.
+ *
+ * Buffer with different #hb_buffer_content_type_t cannot be meaningfully
+ * compared in any further detail.
+ *
+ * For buffers with differing length, the per-glyph comparison is not
+ * attempted, though we do still scan reference buffer for dotted circle and
+ * `.notdef` glyphs.
+ *
+ * If the buffers have the same length, we compare them glyph-by-glyph and
+ * report which aspect(s) of the glyph info/position are different.
+ *
+ * Since: 1.5.0
+ */
 typedef enum { /*< flags >*/
   HB_BUFFER_DIFF_FLAG_EQUAL			= 0x0000,
 
@@ -570,6 +658,23 @@ hb_buffer_diff (hb_buffer_t *buffer,
  * Debugging.
  */
 
+/**
+ * hb_buffer_message_func_t:
+ * @buffer: An #hb_buffer_t to work upon
+ * @font: The #hb_font_t the @buffer is shaped with
+ * @message: %NULL-terminated message passed to the function
+ * @user_data: User data pointer passed by the caller
+ *
+ * A callback method for #hb_buffer_t. The method gets called with the
+ * #hb_buffer_t it was set on, the #hb_font_t the buffer is shaped with and a
+ * message describing what step of the shaping process will be performed.
+ * Returning %false from this method will skip this shaping step and move to
+ * the next one.
+ *
+ * Return value: %true to perform the shaping step, %false to skip it.
+ *
+ * Since: 1.1.3
+ */
 typedef hb_bool_t	(*hb_buffer_message_func_t)	(hb_buffer_t *buffer,
 							 hb_font_t   *font,
 							 const char  *message,

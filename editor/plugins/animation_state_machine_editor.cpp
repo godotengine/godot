@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -76,7 +76,7 @@ void AnimationNodeStateMachineEditor::_state_machine_gui_input(const Ref<InputEv
 	Ref<InputEventMouseButton> mb = p_event;
 
 	//Add new node
-	if (mb.is_valid() && mb->is_pressed() && ((tool_select->is_pressed() && mb->get_button_index() == BUTTON_RIGHT) || (tool_create->is_pressed() && mb->get_button_index() == BUTTON_LEFT))) {
+	if (mb.is_valid() && mb->is_pressed() && ((tool_select->is_pressed() && mb->get_button_index() == MOUSE_BUTTON_RIGHT) || (tool_create->is_pressed() && mb->get_button_index() == MOUSE_BUTTON_LEFT))) {
 		menu->clear();
 		animations_menu->clear();
 		animations_to_add.clear();
@@ -124,7 +124,7 @@ void AnimationNodeStateMachineEditor::_state_machine_gui_input(const Ref<InputEv
 	}
 
 	// select node or push a field inside
-	if (mb.is_valid() && !mb->get_shift() && mb->is_pressed() && tool_select->is_pressed() && mb->get_button_index() == BUTTON_LEFT) {
+	if (mb.is_valid() && !mb->get_shift() && mb->is_pressed() && tool_select->is_pressed() && mb->get_button_index() == MOUSE_BUTTON_LEFT) {
 		selected_transition_from = StringName();
 		selected_transition_to = StringName();
 		selected_node = StringName();
@@ -216,7 +216,7 @@ void AnimationNodeStateMachineEditor::_state_machine_gui_input(const Ref<InputEv
 	}
 
 	//end moving node
-	if (mb.is_valid() && dragging_selected_attempt && mb->get_button_index() == BUTTON_LEFT && !mb->is_pressed()) {
+	if (mb.is_valid() && dragging_selected_attempt && mb->get_button_index() == MOUSE_BUTTON_LEFT && !mb->is_pressed()) {
 		if (dragging_selected) {
 			Ref<AnimationNode> an = state_machine->get_node(selected_node);
 			updating = true;
@@ -237,7 +237,7 @@ void AnimationNodeStateMachineEditor::_state_machine_gui_input(const Ref<InputEv
 	}
 
 	//connect nodes
-	if (mb.is_valid() && ((tool_select->is_pressed() && mb->get_shift()) || tool_connect->is_pressed()) && mb->get_button_index() == BUTTON_LEFT && mb->is_pressed()) {
+	if (mb.is_valid() && ((tool_select->is_pressed() && mb->get_shift()) || tool_connect->is_pressed()) && mb->get_button_index() == MOUSE_BUTTON_LEFT && mb->is_pressed()) {
 		for (int i = node_rects.size() - 1; i >= 0; i--) { //inverse to draw order
 			if (node_rects[i].node.has_point(mb->get_position())) { //select node since nothing else was selected
 				connecting = true;
@@ -250,7 +250,7 @@ void AnimationNodeStateMachineEditor::_state_machine_gui_input(const Ref<InputEv
 	}
 
 	//end connecting nodes
-	if (mb.is_valid() && connecting && mb->get_button_index() == BUTTON_LEFT && !mb->is_pressed()) {
+	if (mb.is_valid() && connecting && mb->get_button_index() == MOUSE_BUTTON_LEFT && !mb->is_pressed()) {
 		if (connecting_to_node != StringName()) {
 			if (state_machine->has_transition(connecting_from, connecting_to_node)) {
 				EditorNode::get_singleton()->show_warning(TTR("Transition exists!"));
@@ -284,7 +284,7 @@ void AnimationNodeStateMachineEditor::_state_machine_gui_input(const Ref<InputEv
 	Ref<InputEventMouseMotion> mm = p_event;
 
 	//pan window
-	if (mm.is_valid() && mm->get_button_mask() & BUTTON_MASK_MIDDLE) {
+	if (mm.is_valid() && mm->get_button_mask() & MOUSE_BUTTON_MASK_MIDDLE) {
 		h_scroll->set_value(h_scroll->get_value() - mm->get_relative().x);
 		v_scroll->set_value(v_scroll->get_value() - mm->get_relative().y);
 	}
@@ -520,7 +520,7 @@ void AnimationNodeStateMachineEditor::_connection_draw(const Vector2 &p_from, co
 
 	Transform2D xf;
 	xf.elements[0] = (p_to - p_from).normalized();
-	xf.elements[1] = xf.elements[0].tangent();
+	xf.elements[1] = xf.elements[0].orthogonal();
 	xf.elements[2] = (p_from + p_to) * 0.5 - xf.elements[1] * icon->get_height() * 0.5 - xf.elements[0] * icon->get_height() * 0.5;
 
 	state_machine_draw->draw_set_transform_matrix(xf);
@@ -690,7 +690,7 @@ void AnimationNodeStateMachineEditor::_state_machine_draw() {
 		tl.width = tr_bidi_offset;
 
 		if (state_machine->has_transition(tl.to_node, tl.from_node)) { //offset if same exists
-			Vector2 offset = -(tl.from - tl.to).normalized().tangent() * tr_bidi_offset;
+			Vector2 offset = -(tl.from - tl.to).normalized().orthogonal() * tr_bidi_offset;
 			tl.from += offset;
 			tl.to += offset;
 		}
@@ -1291,18 +1291,18 @@ AnimationNodeStateMachineEditor::AnimationNodeStateMachineEditor() {
 	state_machine_play_pos = memnew(Control);
 	state_machine_draw->add_child(state_machine_play_pos);
 	state_machine_play_pos->set_mouse_filter(MOUSE_FILTER_PASS); //pass all to parent
-	state_machine_play_pos->set_anchors_and_margins_preset(PRESET_WIDE);
+	state_machine_play_pos->set_anchors_and_offsets_preset(PRESET_WIDE);
 	state_machine_play_pos->connect("draw", callable_mp(this, &AnimationNodeStateMachineEditor::_state_machine_pos_draw));
 
 	v_scroll = memnew(VScrollBar);
 	state_machine_draw->add_child(v_scroll);
-	v_scroll->set_anchors_and_margins_preset(PRESET_RIGHT_WIDE);
+	v_scroll->set_anchors_and_offsets_preset(PRESET_RIGHT_WIDE);
 	v_scroll->connect("value_changed", callable_mp(this, &AnimationNodeStateMachineEditor::_scroll_changed));
 
 	h_scroll = memnew(HScrollBar);
 	state_machine_draw->add_child(h_scroll);
-	h_scroll->set_anchors_and_margins_preset(PRESET_BOTTOM_WIDE);
-	h_scroll->set_margin(MARGIN_RIGHT, -v_scroll->get_size().x * EDSCALE);
+	h_scroll->set_anchors_and_offsets_preset(PRESET_BOTTOM_WIDE);
+	h_scroll->set_offset(SIDE_RIGHT, -v_scroll->get_size().x * EDSCALE);
 	h_scroll->connect("value_changed", callable_mp(this, &AnimationNodeStateMachineEditor::_scroll_changed));
 
 	error_panel = memnew(PanelContainer);
@@ -1328,7 +1328,7 @@ AnimationNodeStateMachineEditor::AnimationNodeStateMachineEditor() {
 	add_child(name_edit_popup);
 	name_edit = memnew(LineEdit);
 	name_edit_popup->add_child(name_edit);
-	name_edit->set_anchors_and_margins_preset(PRESET_WIDE);
+	name_edit->set_anchors_and_offsets_preset(PRESET_WIDE);
 	name_edit->connect("text_entered", callable_mp(this, &AnimationNodeStateMachineEditor::_name_edited));
 	name_edit->connect("focus_exited", callable_mp(this, &AnimationNodeStateMachineEditor::_name_edited_focus_out));
 

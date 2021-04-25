@@ -256,10 +256,11 @@ struct hb_serialize_context_t
 
     packed.push (obj);
 
-    if (unlikely (packed.in_error ())) {
-      // obj wasn't successfully added to packed, so clean it up otherwise it's
-      // links will be leaked.
-      propagate_error (packed);
+    if (unlikely (!propagate_error (packed)))
+    {
+      /* Obj wasn't successfully added to packed, so clean it up otherwise its
+       * links will be leaked. When we use constructor/destructors properly, we
+       * can remove these. */
       obj->fini ();
       return 0;
     }
@@ -523,7 +524,7 @@ struct hb_serialize_context_t
   template <typename T>
   void assign_offset (const object_t* parent, const object_t::link_t &link, unsigned offset)
   {
-    auto &off = * ((BEInt<T, sizeof (T)> *) (parent->head + link.position));
+    auto &off = * ((BEInt<T> *) (parent->head + link.position));
     assert (0 == off);
     check_assign (off, offset);
   }

@@ -6,16 +6,30 @@
 	<description>
 		This shows a tree of items that can be selected, expanded and collapsed. The tree can have multiple columns with custom controls like text editing, buttons and popups. It can be useful for structured displays and interactions.
 		Trees are built via code, using [TreeItem] objects to create the structure. They have a single root but multiple roots can be simulated if a dummy hidden root is added.
-		[codeblock]
+		[codeblocks]
+		[gdscript]
 		func _ready():
 		    var tree = Tree.new()
 		    var root = tree.create_item()
-		    tree.set_hide_root(true)
+		    tree.hide_root = true
 		    var child1 = tree.create_item(root)
 		    var child2 = tree.create_item(root)
 		    var subchild1 = tree.create_item(child1)
 		    subchild1.set_text(0, "Subchild1")
-		[/codeblock]
+		[/gdscript]
+		[csharp]
+		public override void _Ready()
+		{
+		    var tree = new Tree();
+		    TreeItem root = tree.CreateItem();
+		    tree.HideRoot = true;
+		    TreeItem child1 = tree.CreateItem(root);
+		    TreeItem child2 = tree.CreateItem(root);
+		    TreeItem subchild1 = tree.CreateItem(child1);
+		    subchild1.SetText(0, "Subchild1");
+		}
+		[/csharp]
+		[/codeblocks]
 		To iterate over all the [TreeItem] objects in a [Tree] object, use [method TreeItem.get_next] and [method TreeItem.get_children] after getting the root through [method get_root]. You can use [method Object.free] on a [TreeItem] to remove it from the [Tree].
 	</description>
 	<tutorials>
@@ -55,6 +69,13 @@
 				Creates an item in the tree and adds it as a child of [code]parent[/code].
 				If [code]parent[/code] is [code]null[/code], the root item will be the parent, or the new item will be the root itself if the tree is empty.
 				The new item will be the [code]idx[/code]th child of parent, or it will be the last child if there are not enough siblings.
+			</description>
+		</method>
+		<method name="edit_selected">
+			<return type="bool">
+			</return>
+			<description>
+				Edits the selected tree item as if it was clicked. The item must be set editable with [method TreeItem.set_editable]. Returns [code]true[/code] if the item could be edited. Fails if no item is selected.
 			</description>
 		</method>
 		<method name="ensure_cursor_is_visible">
@@ -145,13 +166,26 @@
 			</return>
 			<description>
 				Returns the currently edited item. Can be used with [signal item_edited] to get the item that was modified.
-				[codeblock]
+				[codeblocks]
+				[gdscript]
 				func _ready():
 				    $Tree.item_edited.connect(on_Tree_item_edited)
 
 				func on_Tree_item_edited():
 				    print($Tree.get_edited()) # This item just got edited (e.g. checked).
-				[/codeblock]
+				[/gdscript]
+				[csharp]
+				public override void _Ready()
+				{
+				    GetNode&lt;Tree&gt;("Tree").ItemEdited += OnTreeItemEdited;
+				}
+
+				public void OnTreeItemEdited()
+				{
+				    GD.Print(GetNode&lt;Tree&gt;("Tree").GetEdited()); // This item just got edited (e.g. checked).
+				}
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="get_edited_column" qualifiers="const">
@@ -228,6 +262,14 @@
 				Returns the currently focused column, or -1 if no column is focused.
 				In [constant SELECT_SINGLE] mode, the focused column is the selected column. In [constant SELECT_ROW] mode, the focused column is always 0 if any item is selected. In [constant SELECT_MULTI] mode, the focused column is the column under the focus cursor, and there are not necessarily any column selected.
 				To tell whether a column of an item is selected, use [method TreeItem.is_selected].
+			</description>
+		</method>
+		<method name="scroll_to_item">
+			<return type="void">
+			</return>
+			<argument index="0" name="item" type="Object">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="set_column_expand">
@@ -524,7 +566,10 @@
 		<theme_item name="font_color" type="Color" default="Color( 0.69, 0.69, 0.69, 1 )">
 			Default text [Color] of the item.
 		</theme_item>
-		<theme_item name="font_color_selected" type="Color" default="Color( 1, 1, 1, 1 )">
+		<theme_item name="font_outline_color" type="Color" default="Color( 1, 1, 1, 1 )">
+			The tint of text outline of the item.
+		</theme_item>
+		<theme_item name="font_selected_color" type="Color" default="Color( 1, 1, 1, 1 )">
 			Text [Color] used when the item is selected.
 		</theme_item>
 		<theme_item name="font_size" type="int">
@@ -538,6 +583,9 @@
 		</theme_item>
 		<theme_item name="item_margin" type="int" default="12">
 			The horizontal margin at the start of an item. This is used when folding is enabled for the item.
+		</theme_item>
+		<theme_item name="outline_size" type="int" default="0">
+			The size of the text outline.
 		</theme_item>
 		<theme_item name="relationship_line_color" type="Color" default="Color( 0.27, 0.27, 0.27, 1 )">
 			[Color] of the relationship lines.

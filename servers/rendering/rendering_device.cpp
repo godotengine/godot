@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -59,7 +59,7 @@ Vector<uint8_t> RenderingDevice::shader_compile_from_source(ShaderStage p_stage,
 
 	ERR_FAIL_COND_V(!compile_function, Vector<uint8_t>());
 
-	return compile_function(p_stage, p_source_code, p_language, r_error);
+	return compile_function(p_stage, p_source_code, p_language, r_error, &device_capabilities);
 }
 
 RID RenderingDevice::_texture_create(const Ref<RDTextureFormat> &p_format, const Ref<RDTextureView> &p_view, const TypedArray<PackedByteArray> &p_data) {
@@ -68,7 +68,7 @@ RID RenderingDevice::_texture_create(const Ref<RDTextureFormat> &p_format, const
 	Vector<Vector<uint8_t>> data;
 	for (int i = 0; i < p_data.size(); i++) {
 		Vector<uint8_t> byte_slice = p_data[i];
-		ERR_FAIL_COND_V(byte_slice.empty(), RID());
+		ERR_FAIL_COND_V(byte_slice.is_empty(), RID());
 		data.push_back(byte_slice);
 	}
 	return texture_create(p_format->base, p_view->base, data);
@@ -154,7 +154,7 @@ RID RenderingDevice::shader_create_from_bytecode(const Ref<RDShaderBytecode> &p_
 		String error = p_bytecode->get_stage_compile_error(stage);
 		ERR_FAIL_COND_V_MSG(error != String(), RID(), "Can't create a shader from an errored bytecode. Check errors in source bytecode.");
 		sd.spir_v = p_bytecode->get_stage_bytecode(stage);
-		if (sd.spir_v.empty()) {
+		if (sd.spir_v.is_empty()) {
 			continue;
 		}
 		stage_data.push_back(sd);
@@ -174,8 +174,8 @@ RID RenderingDevice::_uniform_set_create(const Array &p_uniforms, RID p_shader, 
 	return uniform_set_create(uniforms, p_shader, p_shader_set);
 }
 
-Error RenderingDevice::_buffer_update(RID p_buffer, uint32_t p_offset, uint32_t p_size, const Vector<uint8_t> &p_data, bool p_sync_with_draw) {
-	return buffer_update(p_buffer, p_offset, p_size, p_data.ptr(), p_sync_with_draw);
+Error RenderingDevice::_buffer_update(RID p_buffer, uint32_t p_offset, uint32_t p_size, const Vector<uint8_t> &p_data, uint32_t p_post_barrier) {
+	return buffer_update(p_buffer, p_offset, p_size, p_data.ptr(), p_post_barrier);
 }
 
 RID RenderingDevice::_render_pipeline_create(RID p_shader, FramebufferFormatID p_framebuffer_format, VertexFormatID p_vertex_format, RenderPrimitive p_render_primitive, const Ref<RDPipelineRasterizationState> &p_rasterization_state, const Ref<RDPipelineMultisampleState> &p_multisample_state, const Ref<RDPipelineDepthStencilState> &p_depth_stencil_state, const Ref<RDPipelineColorBlendState> &p_blend_state, int p_dynamic_state_flags) {
@@ -240,16 +240,12 @@ void RenderingDevice::_compute_list_set_push_constant(ComputeListID p_list, cons
 	compute_list_set_push_constant(p_list, p_data.ptr(), p_data_size);
 }
 
-void RenderingDevice::compute_list_dispatch_threads(ComputeListID p_list, uint32_t p_x_threads, uint32_t p_y_threads, uint32_t p_z_threads, uint32_t p_x_local_group, uint32_t p_y_local_group, uint32_t p_z_local_group) {
-	compute_list_dispatch(p_list, (p_x_threads - 1) / p_x_local_group + 1, (p_y_threads - 1) / p_y_local_group + 1, (p_z_threads - 1) / p_z_local_group + 1);
-}
-
 void RenderingDevice::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("texture_create", "format", "view", "data"), &RenderingDevice::_texture_create, DEFVAL(Array()));
 	ClassDB::bind_method(D_METHOD("texture_create_shared", "view", "with_texture"), &RenderingDevice::_texture_create_shared);
 	ClassDB::bind_method(D_METHOD("texture_create_shared_from_slice", "view", "with_texture", "layer", "mipmap", "slice_type"), &RenderingDevice::_texture_create_shared_from_slice, DEFVAL(TEXTURE_SLICE_2D));
 
-	ClassDB::bind_method(D_METHOD("texture_update", "texture", "layer", "data", "sync_with_draw"), &RenderingDevice::texture_update, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("texture_update", "texture", "layer", "data", "post_barrier"), &RenderingDevice::texture_update, DEFVAL(BARRIER_MASK_ALL));
 	ClassDB::bind_method(D_METHOD("texture_get_data", "texture", "layer"), &RenderingDevice::texture_get_data);
 
 	ClassDB::bind_method(D_METHOD("texture_is_format_supported_for_usage", "format", "usage_flags"), &RenderingDevice::texture_is_format_supported_for_usage);
@@ -257,23 +253,23 @@ void RenderingDevice::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("texture_is_shared", "texture"), &RenderingDevice::texture_is_shared);
 	ClassDB::bind_method(D_METHOD("texture_is_valid", "texture"), &RenderingDevice::texture_is_valid);
 
-	ClassDB::bind_method(D_METHOD("texture_copy", "from_texture", "to_texture", "from_pos", "to_pos", "size", "src_mipmap", "dst_mipmap", "src_layer", "dst_layer", "sync_with_draw"), &RenderingDevice::texture_copy, DEFVAL(false));
-	ClassDB::bind_method(D_METHOD("texture_clear", "texture", "color", "base_mipmap", "mipmap_count", "base_layer", "layer_count", "sync_with_draw"), &RenderingDevice::texture_clear, DEFVAL(false));
-	ClassDB::bind_method(D_METHOD("texture_resolve_multisample", "from_texture", "to_texture", "sync_with_draw"), &RenderingDevice::texture_resolve_multisample, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("texture_copy", "from_texture", "to_texture", "from_pos", "to_pos", "size", "src_mipmap", "dst_mipmap", "src_layer", "dst_layer", "post_barrier"), &RenderingDevice::texture_copy, DEFVAL(BARRIER_MASK_ALL));
+	ClassDB::bind_method(D_METHOD("texture_clear", "texture", "color", "base_mipmap", "mipmap_count", "base_layer", "layer_count", "post_barrier"), &RenderingDevice::texture_clear, DEFVAL(BARRIER_MASK_ALL));
+	ClassDB::bind_method(D_METHOD("texture_resolve_multisample", "from_texture", "to_texture", "post_barrier"), &RenderingDevice::texture_resolve_multisample, DEFVAL(BARRIER_MASK_ALL));
 
 	ClassDB::bind_method(D_METHOD("framebuffer_format_create", "attachments"), &RenderingDevice::_framebuffer_format_create);
-	ClassDB::bind_method(D_METHOD("framebuffer_format_create_empty", "size"), &RenderingDevice::framebuffer_format_create_empty);
+	ClassDB::bind_method(D_METHOD("framebuffer_format_create_empty", "samples"), &RenderingDevice::framebuffer_format_create_empty, DEFVAL(TEXTURE_SAMPLES_1));
 	ClassDB::bind_method(D_METHOD("framebuffer_format_get_texture_samples", "format"), &RenderingDevice::framebuffer_format_get_texture_samples);
 	ClassDB::bind_method(D_METHOD("framebuffer_create", "textures", "validate_with_format"), &RenderingDevice::_framebuffer_create, DEFVAL(INVALID_FORMAT_ID));
-	ClassDB::bind_method(D_METHOD("framebuffer_create_empty", "size", "validate_with_format"), &RenderingDevice::framebuffer_create_empty, DEFVAL(INVALID_FORMAT_ID));
+	ClassDB::bind_method(D_METHOD("framebuffer_create_empty", "size", "samples", "validate_with_format"), &RenderingDevice::framebuffer_create_empty, DEFVAL(TEXTURE_SAMPLES_1), DEFVAL(INVALID_FORMAT_ID));
 	ClassDB::bind_method(D_METHOD("framebuffer_get_format", "framebuffer"), &RenderingDevice::framebuffer_get_format);
 
 	ClassDB::bind_method(D_METHOD("sampler_create", "state"), &RenderingDevice::_sampler_create);
 
-	ClassDB::bind_method(D_METHOD("vertex_buffer_create", "size_bytes", "data"), &RenderingDevice::vertex_buffer_create, DEFVAL(Vector<uint8_t>()));
+	ClassDB::bind_method(D_METHOD("vertex_buffer_create", "size_bytes", "data", "use_as_storage"), &RenderingDevice::vertex_buffer_create, DEFVAL(Vector<uint8_t>()), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("vertex_format_create", "vertex_descriptions"), &RenderingDevice::_vertex_format_create);
 
-	ClassDB::bind_method(D_METHOD("index_buffer_create", "size_indices", "format", "data"), &RenderingDevice::index_buffer_create, DEFVAL(Vector<uint8_t>()), DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("index_buffer_create", "size_indices", "format", "data", "use_restart_indices"), &RenderingDevice::index_buffer_create, DEFVAL(Vector<uint8_t>()), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("index_array_create", "index_buffer", "index_offset", "index_count"), &RenderingDevice::index_array_create);
 
 	ClassDB::bind_method(D_METHOD("shader_compile_from_source", "shader_source", "allow_cache"), &RenderingDevice::_shader_compile_from_source, DEFVAL(true));
@@ -287,7 +283,8 @@ void RenderingDevice::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("uniform_set_create", "uniforms", "shader", "shader_set"), &RenderingDevice::_uniform_set_create);
 	ClassDB::bind_method(D_METHOD("uniform_set_is_valid", "uniform_set"), &RenderingDevice::uniform_set_is_valid);
 
-	ClassDB::bind_method(D_METHOD("buffer_update", "buffer", "offset", "size_bytes", "data", "sync_with_draw"), &RenderingDevice::_buffer_update, DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("buffer_update", "buffer", "offset", "size_bytes", "data", "post_barrier"), &RenderingDevice::_buffer_update, DEFVAL(BARRIER_MASK_ALL));
+	ClassDB::bind_method(D_METHOD("buffer_clear", "buffer", "offset", "size_bytes", "post_barrier"), &RenderingDevice::buffer_clear, DEFVAL(BARRIER_MASK_ALL));
 	ClassDB::bind_method(D_METHOD("buffer_get_data", "buffer"), &RenderingDevice::buffer_get_data);
 
 	ClassDB::bind_method(D_METHOD("render_pipeline_create", "shader", "framebuffer_format", "vertex_format", "primitive", "rasterization_state", "multisample_state", "stencil_state", "color_blend_state", "dynamic_state_flags"), &RenderingDevice::_render_pipeline_create, DEFVAL(0));
@@ -316,19 +313,19 @@ void RenderingDevice::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("draw_list_enable_scissor", "draw_list", "rect"), &RenderingDevice::draw_list_enable_scissor, DEFVAL(Rect2i()));
 	ClassDB::bind_method(D_METHOD("draw_list_disable_scissor", "draw_list"), &RenderingDevice::draw_list_disable_scissor);
 
-	ClassDB::bind_method(D_METHOD("draw_list_end"), &RenderingDevice::draw_list_end);
+	ClassDB::bind_method(D_METHOD("draw_list_end", "post_barrier"), &RenderingDevice::draw_list_end, DEFVAL(BARRIER_MASK_ALL));
 
-	ClassDB::bind_method(D_METHOD("compute_list_begin"), &RenderingDevice::compute_list_begin);
+	ClassDB::bind_method(D_METHOD("compute_list_begin", "allow_draw_overlap"), &RenderingDevice::compute_list_begin, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("compute_list_bind_compute_pipeline", "compute_list", "compute_pipeline"), &RenderingDevice::compute_list_bind_compute_pipeline);
 	ClassDB::bind_method(D_METHOD("compute_list_set_push_constant", "compute_list", "buffer", "size_bytes"), &RenderingDevice::_compute_list_set_push_constant);
 	ClassDB::bind_method(D_METHOD("compute_list_bind_uniform_set", "compute_list", "uniform_set", "set_index"), &RenderingDevice::compute_list_bind_uniform_set);
 	ClassDB::bind_method(D_METHOD("compute_list_dispatch", "compute_list", "x_groups", "y_groups", "z_groups"), &RenderingDevice::compute_list_dispatch);
 	ClassDB::bind_method(D_METHOD("compute_list_add_barrier", "compute_list"), &RenderingDevice::compute_list_add_barrier);
-	ClassDB::bind_method(D_METHOD("compute_list_end"), &RenderingDevice::compute_list_end);
+	ClassDB::bind_method(D_METHOD("compute_list_end", "post_barrier"), &RenderingDevice::compute_list_end, DEFVAL(BARRIER_MASK_ALL));
 
 	ClassDB::bind_method(D_METHOD("free", "rid"), &RenderingDevice::free);
 
-	ClassDB::bind_method(D_METHOD("capture_timestamp", "name", "sync_to_draw"), &RenderingDevice::capture_timestamp);
+	ClassDB::bind_method(D_METHOD("capture_timestamp", "name"), &RenderingDevice::capture_timestamp);
 	ClassDB::bind_method(D_METHOD("get_captured_timestamps_count"), &RenderingDevice::get_captured_timestamps_count);
 	ClassDB::bind_method(D_METHOD("get_captured_timestamps_frame"), &RenderingDevice::get_captured_timestamps_frame);
 	ClassDB::bind_method(D_METHOD("get_captured_timestamp_gpu_time", "index"), &RenderingDevice::get_captured_timestamp_gpu_time);
@@ -340,7 +337,26 @@ void RenderingDevice::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("submit"), &RenderingDevice::submit);
 	ClassDB::bind_method(D_METHOD("sync"), &RenderingDevice::sync);
 
+	ClassDB::bind_method(D_METHOD("barrier", "from", "to"), &RenderingDevice::barrier, DEFVAL(BARRIER_MASK_ALL), DEFVAL(BARRIER_MASK_ALL));
+	ClassDB::bind_method(D_METHOD("full_barrier"), &RenderingDevice::full_barrier);
+
 	ClassDB::bind_method(D_METHOD("create_local_device"), &RenderingDevice::create_local_device);
+
+	ClassDB::bind_method(D_METHOD("set_resource_name", "id", "name"), &RenderingDevice::set_resource_name);
+
+	ClassDB::bind_method(D_METHOD("draw_command_begin_label", "name", "color"), &RenderingDevice::draw_command_begin_label);
+	ClassDB::bind_method(D_METHOD("draw_command_insert_label", "name", "color"), &RenderingDevice::draw_command_insert_label);
+	ClassDB::bind_method(D_METHOD("draw_command_end_label"), &RenderingDevice::draw_command_end_label);
+
+	ClassDB::bind_method(D_METHOD("get_device_vendor_name"), &RenderingDevice::get_device_vendor_name);
+	ClassDB::bind_method(D_METHOD("get_device_name"), &RenderingDevice::get_device_name);
+	ClassDB::bind_method(D_METHOD("get_device_pipeline_cache_uuid"), &RenderingDevice::get_device_pipeline_cache_uuid);
+
+	BIND_CONSTANT(BARRIER_MASK_RASTER);
+	BIND_CONSTANT(BARRIER_MASK_COMPUTE);
+	BIND_CONSTANT(BARRIER_MASK_TRANSFER);
+	BIND_CONSTANT(BARRIER_MASK_ALL);
+	BIND_CONSTANT(BARRIER_MASK_NO_BARRIER);
 
 	BIND_ENUM_CONSTANT(DATA_FORMAT_R4G4_UNORM_PACK8);
 	BIND_ENUM_CONSTANT(DATA_FORMAT_R4G4B4A4_UNORM_PACK16);
@@ -744,6 +760,8 @@ void RenderingDevice::_bind_methods() {
 	BIND_ENUM_CONSTANT(DYNAMIC_STATE_STENCIL_REFERENCE);
 
 	BIND_ENUM_CONSTANT(INITIAL_ACTION_CLEAR); //start rendering and clear the framebuffer (supply params)
+	BIND_ENUM_CONSTANT(INITIAL_ACTION_CLEAR_REGION); //start rendering and clear the framebuffer (supply params)
+	BIND_ENUM_CONSTANT(INITIAL_ACTION_CLEAR_REGION_CONTINUE); //continue rendering and clear the framebuffer (supply params)
 	BIND_ENUM_CONSTANT(INITIAL_ACTION_KEEP); //start rendering); but keep attached color texture contents (depth will be cleared)
 	BIND_ENUM_CONSTANT(INITIAL_ACTION_DROP); //start rendering); ignore what is there); just write above it
 	BIND_ENUM_CONSTANT(INITIAL_ACTION_CONTINUE); //continue rendering (framebuffer must have been left in "continue" state as final action previously)

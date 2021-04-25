@@ -90,6 +90,7 @@ struct hb_blob_ptr_t
   unsigned int get_length () const { return b.get ()->length; }
   void destroy () { hb_blob_destroy (b.get ()); b = nullptr; }
 
+  private:
   hb_nonnull_ptr_t<hb_blob_t> b;
 };
 

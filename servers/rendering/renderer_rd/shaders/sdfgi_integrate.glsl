@@ -2,7 +2,7 @@
 
 #version 450
 
-VERSION_DEFINES
+#VERSION_DEFINES
 
 layout(local_size_x = 8, local_size_y = 8, local_size_z = 1) in;
 
@@ -39,8 +39,11 @@ layout(rgba32i, set = 0, binding = 13) uniform restrict iimage2D lightprobe_aver
 
 layout(rgba16f, set = 0, binding = 14) uniform restrict writeonly image2DArray lightprobe_ambient_texture;
 
+#ifdef USE_CUBEMAP_ARRAY
+layout(set = 1, binding = 0) uniform textureCubeArray sky_irradiance;
+#else
 layout(set = 1, binding = 0) uniform textureCube sky_irradiance;
-
+#endif
 layout(set = 1, binding = 1) uniform sampler linear_sampler_mipmaps;
 
 #define HISTORY_BITS 10
@@ -136,11 +139,23 @@ uint rgbe_encode(vec3 color) {
 	return (uint(sRed) & 0x1FF) | ((uint(sGreen) & 0x1FF) << 9) | ((uint(sBlue) & 0x1FF) << 18) | ((uint(exps) & 0x1F) << 27);
 }
 
+struct SH {
+#if (SH_SIZE == 16)
+	float c[48];
+#else
+	float c[28];
+#endif
+};
+
+shared SH sh_accum[64]; //8x8
+
 void main() {
 	ivec2 pos = ivec2(gl_GlobalInvocationID.xy);
 	if (any(greaterThanEqual(pos, params.image_size))) { //too large, do nothing
 		return;
 	}
+
+	uint probe_index = gl_LocalInvocationID.x + gl_LocalInvocationID.y * 8;
 
 #ifdef MODE_PROCESS
 
@@ -154,27 +169,9 @@ void main() {
 	vec3 probe_pos = cascades.data[params.cascade].offset + vec3(probe_cell) * probe_cell_size;
 	vec3 pos_to_uvw = 1.0 / params.grid_size;
 
-	vec4 probe_sh_accum[SH_SIZE] = vec4[](
-			vec4(0.0),
-			vec4(0.0),
-			vec4(0.0),
-			vec4(0.0),
-			vec4(0.0),
-			vec4(0.0),
-			vec4(0.0),
-			vec4(0.0),
-			vec4(0.0)
-#if (SH_SIZE == 16)
-					,
-			vec4(0.0),
-			vec4(0.0),
-			vec4(0.0),
-			vec4(0.0),
-			vec4(0.0),
-			vec4(0.0),
-			vec4(0.0)
-#endif
-	);
+	for (uint i = 0; i < SH_SIZE * 3; i++) {
+		sh_accum[probe_index].c[i] = 0.0;
+	}
 
 	// quickly ensure each probe has a different "offset" for the vogel function, based on integer world position
 	uvec3 h3 = hash3(uvec3(params.world_offset + probe_cell));
@@ -195,14 +192,12 @@ void main() {
 		vec3 inv_dir = 1.0 / ray_dir;
 
 		bool hit = false;
-		vec3 hit_normal;
-		vec3 hit_light;
-		vec3 hit_aniso0;
-		vec3 hit_aniso1;
+		uint hit_cascade;
 
 		float bias = params.ray_bias;
 		vec3 abs_ray_dir = abs(ray_dir);
 		ray_pos += ray_dir * 1.0 / max(abs_ray_dir.x, max(abs_ray_dir.y, abs_ray_dir.z)) * bias / cascades.data[params.cascade].to_cell;
+		vec3 uvw;
 
 		for (uint j = params.cascade; j < params.max_cascades; j++) {
 			//convert to local bounds
@@ -221,14 +216,12 @@ void main() {
 
 			float advance = 0.0;
 
-			vec3 uvw;
-
 			while (advance < max_advance) {
 				//read how much to advance from SDF
 				uvw = (pos + ray_dir * advance) * pos_to_uvw;
 
 				float distance = texture(sampler3D(sdf_cascades[j], linear_sampler), uvw).r * 255.0 - 1.0;
-				if (distance < 0.001) {
+				if (distance < 0.05) {
 					//consider hit
 					hit = true;
 					break;
@@ -238,17 +231,7 @@ void main() {
 			}
 
 			if (hit) {
-				const float EPSILON = 0.001;
-				hit_normal = normalize(vec3(
-						texture(sampler3D(sdf_cascades[j], linear_sampler), uvw + vec3(EPSILON, 0.0, 0.0)).r - texture(sampler3D(sdf_cascades[j], linear_sampler), uvw - vec3(EPSILON, 0.0, 0.0)).r,
-						texture(sampler3D(sdf_cascades[j], linear_sampler), uvw + vec3(0.0, EPSILON, 0.0)).r - texture(sampler3D(sdf_cascades[j], linear_sampler), uvw - vec3(0.0, EPSILON, 0.0)).r,
-						texture(sampler3D(sdf_cascades[j], linear_sampler), uvw + vec3(0.0, 0.0, EPSILON)).r - texture(sampler3D(sdf_cascades[j], linear_sampler), uvw - vec3(0.0, 0.0, EPSILON)).r));
-
-				hit_light = texture(sampler3D(light_cascades[j], linear_sampler), uvw).rgb;
-				vec4 aniso0 = texture(sampler3D(aniso0_cascades[j], linear_sampler), uvw);
-				hit_aniso0 = aniso0.rgb;
-				hit_aniso1 = vec3(aniso0.a, texture(sampler3D(aniso1_cascades[j], linear_sampler), uvw).rg);
-
+				hit_cascade = j;
 				break;
 			}
 
@@ -261,11 +244,32 @@ void main() {
 
 		vec4 light;
 		if (hit) {
-			//one liner magic
-			light.rgb = hit_light * (dot(max(vec3(0.0), (hit_normal * hit_aniso0)), vec3(1.0)) + dot(max(vec3(0.0), (-hit_normal * hit_aniso1)), vec3(1.0)));
-			light.a = 1.0;
+			//avoid reading different texture from different threads
+			for (uint j = params.cascade; j < params.max_cascades; j++) {
+				if (j == hit_cascade) {
+					const float EPSILON = 0.001;
+					vec3 hit_normal = normalize(vec3(
+							texture(sampler3D(sdf_cascades[hit_cascade], linear_sampler), uvw + vec3(EPSILON, 0.0, 0.0)).r - texture(sampler3D(sdf_cascades[hit_cascade], linear_sampler), uvw - vec3(EPSILON, 0.0, 0.0)).r,
+							texture(sampler3D(sdf_cascades[hit_cascade], linear_sampler), uvw + vec3(0.0, EPSILON, 0.0)).r - texture(sampler3D(sdf_cascades[hit_cascade], linear_sampler), uvw - vec3(0.0, EPSILON, 0.0)).r,
+							texture(sampler3D(sdf_cascades[hit_cascade], linear_sampler), uvw + vec3(0.0, 0.0, EPSILON)).r - texture(sampler3D(sdf_cascades[hit_cascade], linear_sampler), uvw - vec3(0.0, 0.0, EPSILON)).r));
+
+					vec3 hit_light = texture(sampler3D(light_cascades[hit_cascade], linear_sampler), uvw).rgb;
+					vec4 aniso0 = texture(sampler3D(aniso0_cascades[hit_cascade], linear_sampler), uvw);
+					vec3 hit_aniso0 = aniso0.rgb;
+					vec3 hit_aniso1 = vec3(aniso0.a, texture(sampler3D(aniso1_cascades[hit_cascade], linear_sampler), uvw).rg);
+
+					//one liner magic
+					light.rgb = hit_light * (dot(max(vec3(0.0), (hit_normal * hit_aniso0)), vec3(1.0)) + dot(max(vec3(0.0), (-hit_normal * hit_aniso1)), vec3(1.0)));
+					light.a = 1.0;
+				}
+			}
+
 		} else if (params.sky_mode == SKY_MODE_SKY) {
+#ifdef USE_CUBEMAP_ARRAY
+			light.rgb = textureLod(samplerCubeArray(sky_irradiance, linear_sampler_mipmaps), vec4(ray_dir, 0.0), 2.0).rgb; //use second mipmap because we dont usually throw a lot of rays, so this compensates
+#else
 			light.rgb = textureLod(samplerCube(sky_irradiance, linear_sampler_mipmaps), ray_dir, 2.0).rgb; //use second mipmap because we dont usually throw a lot of rays, so this compensates
+#endif
 			light.rgb *= params.sky_energy;
 			light.a = 0.0;
 
@@ -278,33 +282,33 @@ void main() {
 		}
 
 		vec3 ray_dir2 = ray_dir * ray_dir;
-		float c[SH_SIZE] = float[](
 
-				0.282095, //l0
-				0.488603 * ray_dir.y, //l1n1
-				0.488603 * ray_dir.z, //l1n0
-				0.488603 * ray_dir.x, //l1p1
-				1.092548 * ray_dir.x * ray_dir.y, //l2n2
-				1.092548 * ray_dir.y * ray_dir.z, //l2n1
-				0.315392 * (3.0 * ray_dir2.z - 1.0), //l20
-				1.092548 * ray_dir.x * ray_dir.z, //l2p1
-				0.546274 * (ray_dir2.x - ray_dir2.y) //l2p2
+#define SH_ACCUM(m_idx, m_value)                       \
+	{                                                  \
+		vec3 l = light.rgb * (m_value);                \
+		sh_accum[probe_index].c[m_idx * 3 + 0] += l.r; \
+		sh_accum[probe_index].c[m_idx * 3 + 1] += l.g; \
+		sh_accum[probe_index].c[m_idx * 3 + 2] += l.b; \
+	}
+		SH_ACCUM(0, 0.282095); //l0
+		SH_ACCUM(1, 0.488603 * ray_dir.y); //l1n1
+		SH_ACCUM(2, 0.488603 * ray_dir.z); //l1n0
+		SH_ACCUM(3, 0.488603 * ray_dir.x); //l1p1
+		SH_ACCUM(4, 1.092548 * ray_dir.x * ray_dir.y); //l2n2
+		SH_ACCUM(5, 1.092548 * ray_dir.y * ray_dir.z); //l2n1
+		SH_ACCUM(6, 0.315392 * (3.0 * ray_dir2.z - 1.0)); //l20
+		SH_ACCUM(7, 1.092548 * ray_dir.x * ray_dir.z); //l2p1
+		SH_ACCUM(8, 0.546274 * (ray_dir2.x - ray_dir2.y)); //l2p2
 #if (SH_SIZE == 16)
-				,
-				0.590043 * ray_dir.y * (3.0f * ray_dir2.x - ray_dir2.y),
-				2.890611 * ray_dir.y * ray_dir.x * ray_dir.z,
-				0.646360 * ray_dir.y * (-1.0f + 5.0f * ray_dir2.z),
-				0.373176 * (5.0f * ray_dir2.z * ray_dir.z - 3.0f * ray_dir.z),
-				0.457045 * ray_dir.x * (-1.0f + 5.0f * ray_dir2.z),
-				1.445305 * (ray_dir2.x - ray_dir2.y) * ray_dir.z,
-				0.590043 * ray_dir.x * (ray_dir2.x - 3.0f * ray_dir2.y)
+		SH_ACCUM(9, 0.590043 * ray_dir.y * (3.0f * ray_dir2.x - ray_dir2.y));
+		SH_ACCUM(10, 2.890611 * ray_dir.y * ray_dir.x * ray_dir.z);
+		SH_ACCUM(11, 0.646360 * ray_dir.y * (-1.0f + 5.0f * ray_dir2.z));
+		SH_ACCUM(12, 0.373176 * (5.0f * ray_dir2.z * ray_dir.z - 3.0f * ray_dir.z));
+		SH_ACCUM(13, 0.457045 * ray_dir.x * (-1.0f + 5.0f * ray_dir2.z));
+		SH_ACCUM(14, 1.445305 * (ray_dir2.x - ray_dir2.y) * ray_dir.z);
+		SH_ACCUM(15, 0.590043 * ray_dir.x * (ray_dir2.x - 3.0f * ray_dir2.y));
 
 #endif
-		);
-
-		for (uint j = 0; j < SH_SIZE; j++) {
-			probe_sh_accum[j] += light * c[j];
-		}
 	}
 
 	for (uint i = 0; i < SH_SIZE; i++) {
@@ -312,7 +316,7 @@ void main() {
 		ivec3 prev_pos = ivec3(pos.x, pos.y * SH_SIZE + i, int(params.history_index));
 		ivec2 average_pos = prev_pos.xy;
 
-		vec4 value = probe_sh_accum[i] * 4.0 / float(params.ray_count);
+		vec4 value = vec4(sh_accum[probe_index].c[i * 3 + 0], sh_accum[probe_index].c[i * 3 + 1], sh_accum[probe_index].c[i * 3 + 2], 1.0) * 4.0 / float(params.ray_count);
 
 		ivec4 ivalue = clamp(ivec4(value * float(1 << HISTORY_BITS)), -32768, 32767); //clamp to 16 bits, so higher values don't break average
 
@@ -344,37 +348,11 @@ void main() {
 	ivec2 oct_pos = (pos / OCT_SIZE) * (OCT_SIZE + 2) + ivec2(1);
 	ivec2 local_pos = pos % OCT_SIZE;
 
-	//fill the spherical harmonic
-	vec4 sh[SH_SIZE];
-
-	for (uint i = 0; i < SH_SIZE; i++) {
-		// store in history texture
-		ivec2 average_pos = sh_pos + ivec2(0, i);
-		ivec4 average = imageLoad(lightprobe_average_texture, average_pos);
-
-		sh[i] = (vec4(average) / float(params.history_size)) / float(1 << HISTORY_BITS);
-	}
-
 	//compute the octahedral normal for this texel
 	vec3 normal = octahedron_encode(vec2(local_pos) / float(OCT_SIZE));
-	/*
+
 	// read the spherical harmonic
-	const float c1 = 0.429043;
-	const float c2 = 0.511664;
-	const float c3 = 0.743125;
-	const float c4 = 0.886227;
-	const float c5 = 0.247708;
-	vec4 light = (c1 * sh[8] * (normal.x * normal.x - normal.y * normal.y) +
-					  c3 * sh[6] * normal.z * normal.z +
-					  c4 * sh[0] -
-					  c5 * sh[6] +
-					  2.0 * c1 * sh[4] * normal.x * normal.y +
-					  2.0 * c1 * sh[7] * normal.x * normal.z +
-					  2.0 * c1 * sh[5] * normal.y * normal.z +
-					  2.0 * c2 * sh[3] * normal.x +
-					  2.0 * c2 * sh[1] * normal.y +
-					  2.0 * c2 * sh[2] * normal.z);
-*/
+
 	vec3 normal2 = normal * normal;
 	float c[SH_SIZE] = float[](
 
@@ -426,7 +404,14 @@ void main() {
 	vec3 radiance = vec3(0.0);
 
 	for (uint i = 0; i < SH_SIZE; i++) {
-		vec3 m = sh[i].rgb * c[i] * 4.0;
+		// store in history texture
+		ivec2 average_pos = sh_pos + ivec2(0, i);
+		ivec4 average = imageLoad(lightprobe_average_texture, average_pos);
+
+		vec4 sh = (vec4(average) / float(params.history_size)) / float(1 << HISTORY_BITS);
+
+		vec3 m = sh.rgb * c[i] * 4.0;
+
 		irradiance += m * l_mult[i];
 		radiance += m;
 	}
@@ -515,13 +500,15 @@ void main() {
 		//can't scroll, must look for position in parent cascade
 
 		//to global coords
-		float probe_cell_size = float(params.grid_size.x / float(params.probe_axis_size - 1)) / cascades.data[params.cascade].to_cell;
+		float cell_to_probe = float(params.grid_size.x / float(params.probe_axis_size - 1));
+
+		float probe_cell_size = cell_to_probe / cascades.data[params.cascade].to_cell;
 		vec3 probe_pos = cascades.data[params.cascade].offset + vec3(probe_cell) * probe_cell_size;
 
 		//to parent local coords
+		float probe_cell_size_next = cell_to_probe / cascades.data[params.cascade + 1].to_cell;
 		probe_pos -= cascades.data[params.cascade + 1].offset;
-		probe_pos *= cascades.data[params.cascade + 1].to_cell;
-		probe_pos = probe_pos * float(params.probe_axis_size - 1) / float(params.grid_size.x);
+		probe_pos /= probe_cell_size_next;
 
 		ivec3 probe_posi = ivec3(probe_pos);
 		//add up all light, no need to use occlusion here, since occlusion will do its work afterwards
@@ -574,20 +561,28 @@ void main() {
 		}
 
 	} else {
-		// clear and let it re-raytrace, only for the last cascade, which happens very un-often
-		//scroll
+		//scroll at the edge of the highest cascade, just copy what is there,
+		//since its the closest we have anyway
+
 		for (uint j = 0; j < params.history_size; j++) {
+			ivec2 tex_pos;
+			tex_pos = probe_cell.xy;
+			tex_pos.x += probe_cell.z * int(params.probe_axis_size);
+
 			for (int i = 0; i < SH_SIZE; i++) {
 				// copy from history texture
+				ivec3 src_pos = ivec3(tex_pos.x, tex_pos.y * SH_SIZE + i, int(j));
 				ivec3 dst_pos = ivec3(pos.x, pos.y * SH_SIZE + i, int(j));
-				imageStore(lightprobe_history_scroll_texture, dst_pos, ivec4(0));
+				ivec4 value = imageLoad(lightprobe_history_texture, dst_pos);
+				imageStore(lightprobe_history_scroll_texture, dst_pos, value);
 			}
 		}
 
 		for (int i = 0; i < SH_SIZE; i++) {
 			// copy from average texture
-			ivec2 dst_pos = ivec2(pos.x, pos.y * SH_SIZE + i);
-			imageStore(lightprobe_average_scroll_texture, dst_pos, ivec4(0));
+			ivec2 spos = ivec2(pos.x, pos.y * SH_SIZE + i);
+			ivec4 average = imageLoad(lightprobe_average_texture, spos);
+			imageStore(lightprobe_average_scroll_texture, spos, average);
 		}
 	}
 

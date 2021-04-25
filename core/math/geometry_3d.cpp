@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,7 +33,7 @@
 #include "core/string/print_string.h"
 
 #include "thirdparty/misc/clipper.hpp"
-#include "thirdparty/misc/triangulator.h"
+#include "thirdparty/misc/polypartition.h"
 
 void Geometry3D::MeshData::optimize_vertices() {
 	Map<int, int> vtx_remap;
@@ -775,12 +775,15 @@ Vector<Plane> Geometry3D::build_box_planes(const Vector3 &p_extents) {
 }
 
 Vector<Plane> Geometry3D::build_cylinder_planes(real_t p_radius, real_t p_height, int p_sides, Vector3::Axis p_axis) {
+	ERR_FAIL_INDEX_V(p_axis, 3, Vector<Plane>());
+
 	Vector<Plane> planes;
 
+	const double sides_step = Math_TAU / p_sides;
 	for (int i = 0; i < p_sides; i++) {
 		Vector3 normal;
-		normal[(p_axis + 1) % 3] = Math::cos(i * (2.0 * Math_PI) / p_sides);
-		normal[(p_axis + 2) % 3] = Math::sin(i * (2.0 * Math_PI) / p_sides);
+		normal[(p_axis + 1) % 3] = Math::cos(i * sides_step);
+		normal[(p_axis + 2) % 3] = Math::sin(i * sides_step);
 
 		planes.push_back(Plane(normal, p_radius));
 	}
@@ -795,6 +798,8 @@ Vector<Plane> Geometry3D::build_cylinder_planes(real_t p_radius, real_t p_height
 }
 
 Vector<Plane> Geometry3D::build_sphere_planes(real_t p_radius, int p_lats, int p_lons, Vector3::Axis p_axis) {
+	ERR_FAIL_INDEX_V(p_axis, 3, Vector<Plane>());
+
 	Vector<Plane> planes;
 
 	Vector3 axis;
@@ -805,10 +810,11 @@ Vector<Plane> Geometry3D::build_sphere_planes(real_t p_radius, int p_lats, int p
 	axis_neg[(p_axis + 2) % 3] = 1.0;
 	axis_neg[p_axis] = -1.0;
 
+	const double lon_step = Math_TAU / p_lons;
 	for (int i = 0; i < p_lons; i++) {
 		Vector3 normal;
-		normal[(p_axis + 1) % 3] = Math::cos(i * (2.0 * Math_PI) / p_lons);
-		normal[(p_axis + 2) % 3] = Math::sin(i * (2.0 * Math_PI) / p_lons);
+		normal[(p_axis + 1) % 3] = Math::cos(i * lon_step);
+		normal[(p_axis + 2) % 3] = Math::sin(i * lon_step);
 
 		planes.push_back(Plane(normal, p_radius));
 
@@ -825,6 +831,8 @@ Vector<Plane> Geometry3D::build_sphere_planes(real_t p_radius, int p_lats, int p
 }
 
 Vector<Plane> Geometry3D::build_capsule_planes(real_t p_radius, real_t p_height, int p_sides, int p_lats, Vector3::Axis p_axis) {
+	ERR_FAIL_INDEX_V(p_axis, 3, Vector<Plane>());
+
 	Vector<Plane> planes;
 
 	Vector3 axis;
@@ -835,10 +843,11 @@ Vector<Plane> Geometry3D::build_capsule_planes(real_t p_radius, real_t p_height,
 	axis_neg[(p_axis + 2) % 3] = 1.0;
 	axis_neg[p_axis] = -1.0;
 
+	const double sides_step = Math_TAU / p_sides;
 	for (int i = 0; i < p_sides; i++) {
 		Vector3 normal;
-		normal[(p_axis + 1) % 3] = Math::cos(i * (2.0 * Math_PI) / p_sides);
-		normal[(p_axis + 2) % 3] = Math::sin(i * (2.0 * Math_PI) / p_sides);
+		normal[(p_axis + 1) % 3] = Math::cos(i * sides_step);
+		normal[(p_axis + 2) % 3] = Math::sin(i * sides_step);
 
 		planes.push_back(Plane(normal, p_radius));
 

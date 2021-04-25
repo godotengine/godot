@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -44,12 +44,12 @@ class LineEdit;
 class AcceptDialog : public Window {
 	GDCLASS(AcceptDialog, Window);
 
-	Window *parent_visible;
+	Window *parent_visible = nullptr;
 	Panel *bg;
 	HBoxContainer *hbc;
 	Label *label;
 	Button *ok;
-	bool hide_on_ok;
+	bool hide_on_ok = true;
 
 	void _custom_action(const String &p_action);
 	void _update_child_rects();
@@ -79,9 +79,9 @@ public:
 
 	void register_text_enter(Node *p_line_edit);
 
-	Button *get_ok() { return ok; }
+	Button *get_ok_button() { return ok; }
 	Button *add_button(const String &p_text, bool p_right = false, const String &p_action = "");
-	Button *add_cancel(const String &p_cancel = "");
+	Button *add_cancel_button(const String &p_cancel = "");
 
 	void set_hide_on_ok(bool p_hide);
 	bool get_hide_on_ok() const;
@@ -104,7 +104,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	Button *get_cancel();
+	Button *get_cancel_button();
 	ConfirmationDialog();
 };
 

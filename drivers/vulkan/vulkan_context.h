@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -41,6 +41,20 @@
 #include <vulkan/vulkan.h>
 
 class VulkanContext {
+public:
+	struct SubgroupCapabilities {
+		uint32_t size;
+		VkShaderStageFlags supportedStages;
+		VkSubgroupFeatureFlags supportedOperations;
+		VkBool32 quadOperationsInAllStages;
+
+		uint32_t supported_stages_flags_rd() const;
+		String supported_stages_desc() const;
+		uint32_t supported_operations_flags_rd() const;
+		String supported_operations_desc() const;
+	};
+
+private:
 	enum {
 		MAX_EXTENSIONS = 128,
 		MAX_LAYERS = 64,
@@ -56,6 +70,16 @@ class VulkanContext {
 	VkDevice device = VK_NULL_HANDLE;
 	bool device_initialized = false;
 	bool inst_initialized = false;
+
+	// Vulkan 1.0 doesn't return version info so we assume this by default until we know otherwise
+	uint32_t vulkan_major = 1;
+	uint32_t vulkan_minor = 0;
+	SubgroupCapabilities subgroup_capabilities;
+
+	String device_vendor;
+	String device_name;
+	String pipeline_cache_id;
+	uint32_t device_api_version = 0;
 
 	bool buffers_prepared = false;
 
@@ -119,9 +143,13 @@ class VulkanContext {
 	bool VK_GOOGLE_display_timing_enabled = true;
 	uint32_t enabled_extension_count = 0;
 	const char *extension_names[MAX_EXTENSIONS];
+	bool enabled_debug_utils = false;
 
-	uint32_t enabled_layer_count = 0;
-	const char *enabled_layers[MAX_LAYERS];
+	/**
+	 * True if VK_EXT_debug_report extension is used. VK_EXT_debug_report is deprecated but it is
+	 * still used if VK_EXT_debug_utils is not available.
+	 */
+	bool enabled_debug_report = false;
 
 	PFN_vkCreateDebugUtilsMessengerEXT CreateDebugUtilsMessengerEXT;
 	PFN_vkDestroyDebugUtilsMessengerEXT DestroyDebugUtilsMessengerEXT;
@@ -130,6 +158,9 @@ class VulkanContext {
 	PFN_vkCmdEndDebugUtilsLabelEXT CmdEndDebugUtilsLabelEXT;
 	PFN_vkCmdInsertDebugUtilsLabelEXT CmdInsertDebugUtilsLabelEXT;
 	PFN_vkSetDebugUtilsObjectNameEXT SetDebugUtilsObjectNameEXT;
+	PFN_vkCreateDebugReportCallbackEXT CreateDebugReportCallbackEXT;
+	PFN_vkDebugReportMessageEXT DebugReportMessageEXT;
+	PFN_vkDestroyDebugReportCallbackEXT DestroyDebugReportCallbackEXT;
 	PFN_vkGetPhysicalDeviceSurfaceSupportKHR fpGetPhysicalDeviceSurfaceSupportKHR;
 	PFN_vkGetPhysicalDeviceSurfaceCapabilitiesKHR fpGetPhysicalDeviceSurfaceCapabilitiesKHR;
 	PFN_vkGetPhysicalDeviceSurfaceFormatsKHR fpGetPhysicalDeviceSurfaceFormatsKHR;
@@ -143,15 +174,27 @@ class VulkanContext {
 	PFN_vkGetPastPresentationTimingGOOGLE fpGetPastPresentationTimingGOOGLE;
 
 	VkDebugUtilsMessengerEXT dbg_messenger = VK_NULL_HANDLE;
+	VkDebugReportCallbackEXT dbg_debug_report = VK_NULL_HANDLE;
 
-	Error _create_validation_layers();
+	Error _obtain_vulkan_version();
 	Error _initialize_extensions();
+	Error _check_capabilities();
 
-	VkBool32 _check_layers(uint32_t check_count, const char **check_names, uint32_t layer_count, VkLayerProperties *layers);
+	VkBool32 _check_layers(uint32_t check_count, const char *const *check_names, uint32_t layer_count, VkLayerProperties *layers);
 	static VKAPI_ATTR VkBool32 VKAPI_CALL _debug_messenger_callback(
 			VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
 			VkDebugUtilsMessageTypeFlagsEXT messageType,
 			const VkDebugUtilsMessengerCallbackDataEXT *pCallbackData,
+			void *pUserData);
+
+	static VKAPI_ATTR VkBool32 VKAPI_CALL _debug_report_callback(
+			VkDebugReportFlagsEXT flags,
+			VkDebugReportObjectTypeEXT objectType,
+			uint64_t object,
+			size_t location,
+			int32_t messageCode,
+			const char *pLayerPrefix,
+			const char *pMessage,
 			void *pUserData);
 
 	Error _create_physical_device();
@@ -170,16 +213,21 @@ class VulkanContext {
 protected:
 	virtual const char *_get_platform_surface_extension() const = 0;
 
-	// Enabled via command line argument.
-	bool use_validation_layers = false;
-
 	virtual Error _window_create(DisplayServer::WindowID p_window_id, VkSurfaceKHR p_surface, int p_width, int p_height);
+
+	virtual bool _use_validation_layers();
+
+	Error _get_preferred_validation_layers(uint32_t *count, const char *const **names);
 
 	VkInstance _get_instance() {
 		return inst;
 	}
 
 public:
+	uint32_t get_vulkan_major() const { return vulkan_major; };
+	uint32_t get_vulkan_minor() const { return vulkan_minor; };
+	SubgroupCapabilities get_subgroup_capabilities() const { return subgroup_capabilities; };
+
 	VkDevice get_device();
 	VkPhysicalDevice get_physical_device();
 	int get_swapchain_image_count() const;
@@ -208,6 +256,15 @@ public:
 	Error prepare_buffers();
 	Error swap_buffers();
 	Error initialize();
+
+	void command_begin_label(VkCommandBuffer p_command_buffer, String p_label_name, const Color p_color);
+	void command_insert_label(VkCommandBuffer p_command_buffer, String p_label_name, const Color p_color);
+	void command_end_label(VkCommandBuffer p_command_buffer);
+	void set_object_name(VkObjectType p_object_type, uint64_t p_object_handle, String p_object_name);
+
+	String get_device_vendor_name() const;
+	String get_device_name() const;
+	String get_device_pipeline_cache_uuid() const;
 
 	VulkanContext();
 	virtual ~VulkanContext();

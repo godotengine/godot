@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -81,21 +81,21 @@ public:
 	}
 
 public:
-	RigidBodyBullet *body;
-	real_t deltaTime;
+	RigidBodyBullet *body = nullptr;
+	real_t deltaTime = 0.0;
 
 private:
 	BulletPhysicsDirectBodyState3D() {}
 
 public:
 	virtual Vector3 get_total_gravity() const override;
-	virtual float get_total_angular_damp() const override;
-	virtual float get_total_linear_damp() const override;
+	virtual real_t get_total_angular_damp() const override;
+	virtual real_t get_total_linear_damp() const override;
 
 	virtual Vector3 get_center_of_mass() const override;
 	virtual Basis get_principal_inertia_axes() const override;
 	// get the mass
-	virtual float get_inverse_mass() const override;
+	virtual real_t get_inverse_mass() const override;
 	// get density of this body space
 	virtual Vector3 get_inverse_inertia() const override;
 	// get density of this body space
@@ -124,7 +124,7 @@ public:
 
 	virtual Vector3 get_contact_local_position(int p_contact_idx) const override;
 	virtual Vector3 get_contact_local_normal(int p_contact_idx) const override;
-	virtual float get_contact_impulse(int p_contact_idx) const override;
+	virtual real_t get_contact_impulse(int p_contact_idx) const override;
 	virtual int get_contact_local_shape(int p_contact_idx) const override;
 
 	virtual RID get_contact_collider(int p_contact_idx) const override;
@@ -144,18 +144,17 @@ public:
 class RigidBodyBullet : public RigidCollisionObjectBullet {
 public:
 	struct CollisionData {
-		RigidBodyBullet *otherObject;
-		int other_object_shape;
-		int local_shape;
+		RigidBodyBullet *otherObject = nullptr;
+		int other_object_shape = 0;
+		int local_shape = 0;
 		Vector3 hitLocalLocation;
 		Vector3 hitWorldLocation;
 		Vector3 hitNormal;
-		float appliedImpulse;
+		real_t appliedImpulse = 0.0;
 	};
 
 	struct ForceIntegrationCallback {
-		ObjectID id;
-		StringName method;
+		Callable callable;
 		Variant udata;
 	};
 
@@ -169,7 +168,7 @@ public:
 	};
 
 	struct KinematicUtilities {
-		RigidBodyBullet *owner;
+		RigidBodyBullet *owner = nullptr;
 		btScalar safe_margin;
 		Vector<KinematicShape> shapes;
 
@@ -194,10 +193,10 @@ private:
 	GodotMotionState *godotMotionState;
 	btRigidBody *btBody;
 	uint16_t locked_axis = 0;
-	real_t mass = 1;
-	real_t gravity_scale = 1;
-	real_t linearDamp = 0;
-	real_t angularDamp = 0;
+	real_t mass = 1.0;
+	real_t gravity_scale = 1.0;
+	real_t linearDamp = 0.0;
+	real_t angularDamp = 0.0;
 	bool can_sleep = true;
 	bool omit_forces_integration = false;
 	bool can_integrate_forces = false;
@@ -240,7 +239,7 @@ public:
 	virtual void set_space(SpaceBullet *p_space);
 
 	virtual void dispatch_callbacks();
-	void set_force_integration_callback(ObjectID p_id, const StringName &p_method, const Variant &p_udata = Variant());
+	void set_force_integration_callback(const Callable &p_callable, const Variant &p_udata = Variant());
 	void scratch_space_override_modificator();
 
 	virtual void on_collision_filters_change();
@@ -264,10 +263,8 @@ public:
 	}
 
 	bool can_add_collision() { return collisionsCount < maxCollisionsDetection; }
-	bool add_collision_object(RigidBodyBullet *p_otherObject, const Vector3 &p_hitWorldLocation, const Vector3 &p_hitLocalLocation, const Vector3 &p_hitNormal, const float &p_appliedImpulse, int p_other_shape_index, int p_local_shape_index);
+	bool add_collision_object(RigidBodyBullet *p_otherObject, const Vector3 &p_hitWorldLocation, const Vector3 &p_hitLocalLocation, const Vector3 &p_hitNormal, const real_t &p_appliedImpulse, int p_other_shape_index, int p_local_shape_index);
 	bool was_colliding(RigidBodyBullet *p_other_object);
-
-	void assert_no_constraints();
 
 	void set_activation_state(bool p_active);
 	bool is_active() const;

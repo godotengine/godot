@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -66,10 +66,10 @@ GotoLineDialog::GotoLineDialog() {
 	set_title(TTR("Go to Line"));
 
 	VBoxContainer *vbc = memnew(VBoxContainer);
-	vbc->set_anchor_and_margin(MARGIN_LEFT, Control::ANCHOR_BEGIN, 8 * EDSCALE);
-	vbc->set_anchor_and_margin(MARGIN_TOP, Control::ANCHOR_BEGIN, 8 * EDSCALE);
-	vbc->set_anchor_and_margin(MARGIN_RIGHT, Control::ANCHOR_END, -8 * EDSCALE);
-	vbc->set_anchor_and_margin(MARGIN_BOTTOM, Control::ANCHOR_END, -8 * EDSCALE);
+	vbc->set_anchor_and_offset(SIDE_LEFT, Control::ANCHOR_BEGIN, 8 * EDSCALE);
+	vbc->set_anchor_and_offset(SIDE_TOP, Control::ANCHOR_BEGIN, 8 * EDSCALE);
+	vbc->set_anchor_and_offset(SIDE_RIGHT, Control::ANCHOR_END, -8 * EDSCALE);
+	vbc->set_anchor_and_offset(SIDE_BOTTOM, Control::ANCHOR_END, -8 * EDSCALE);
 	add_child(vbc);
 
 	Label *l = memnew(Label);
@@ -109,6 +109,8 @@ void FindReplaceBar::_notification(int p_what) {
 }
 
 void FindReplaceBar::_unhandled_input(const Ref<InputEvent> &p_event) {
+	ERR_FAIL_COND(p_event.is_null());
+
 	Ref<InputEventKey> k = p_event;
 	if (!k.is_valid() || !k->is_pressed()) {
 		return;
@@ -140,7 +142,7 @@ bool FindReplaceBar::_search(uint32_t p_flags, int p_from_line, int p_from_col) 
 	bool found = text_editor->search(text, p_flags, p_from_line, p_from_col, line, col);
 
 	if (found) {
-		if (!preserve_cursor) {
+		if (!preserve_cursor && !is_selection_only()) {
 			text_editor->unfold_line(line);
 			text_editor->cursor_set_line(line, false);
 			text_editor->cursor_set_column(col + text.length(), false);
@@ -325,7 +327,7 @@ void FindReplaceBar::_update_results_count() {
 	results_count = 0;
 
 	String searched = get_search_text();
-	if (searched.empty()) {
+	if (searched.is_empty()) {
 		return;
 	}
 
@@ -356,7 +358,7 @@ void FindReplaceBar::_update_results_count() {
 }
 
 void FindReplaceBar::_update_matches_label() {
-	if (search_text->get_text().empty() || results_count == -1) {
+	if (search_text->get_text().is_empty() || results_count == -1) {
 		matches_label->hide();
 	} else {
 		matches_label->show();
@@ -483,13 +485,13 @@ void FindReplaceBar::_show_search(bool p_focus_replace, bool p_show_only) {
 		search_text->set_text(text_editor->get_selection_text());
 	}
 
-	if (!get_search_text().empty()) {
+	if (!get_search_text().is_empty()) {
 		if (p_focus_replace) {
 			replace_text->select_all();
-			replace_text->set_cursor_position(replace_text->get_text().length());
+			replace_text->set_caret_column(replace_text->get_text().length());
 		} else {
 			search_text->select_all();
-			search_text->set_cursor_position(search_text->get_text().length());
+			search_text->set_caret_column(search_text->get_text().length());
 		}
 
 		results_count = -1;
@@ -691,6 +693,8 @@ FindReplaceBar::FindReplaceBar() {
 // This function should be used to handle shortcuts that could otherwise
 // be handled too late if they weren't handled here.
 void CodeTextEditor::_input(const Ref<InputEvent> &event) {
+	ERR_FAIL_COND(event.is_null());
+
 	const Ref<InputEventKey> key_event = event;
 	if (!key_event.is_valid() || !key_event->is_pressed() || !text_editor->has_focus()) {
 		return;
@@ -723,9 +727,9 @@ void CodeTextEditor::_text_editor_gui_input(const Ref<InputEvent> &p_event) {
 
 	if (mb.is_valid()) {
 		if (mb->is_pressed() && mb->get_command()) {
-			if (mb->get_button_index() == BUTTON_WHEEL_UP) {
+			if (mb->get_button_index() == MOUSE_BUTTON_WHEEL_UP) {
 				_zoom_in();
-			} else if (mb->get_button_index() == BUTTON_WHEEL_DOWN) {
+			} else if (mb->get_button_index() == MOUSE_BUTTON_WHEEL_DOWN) {
 				_zoom_out();
 			}
 		}
@@ -1309,7 +1313,7 @@ void CodeTextEditor::toggle_inline_comment(const String &delimiter) {
 		for (int i = begin; i <= end; i++) {
 			String line_text = text_editor->get_line(i);
 
-			if (line_text.strip_edges().empty()) {
+			if (line_text.strip_edges().is_empty()) {
 				line_text = delimiter;
 			} else {
 				if (is_commented) {
@@ -1548,7 +1552,7 @@ void CodeTextEditor::validate_script() {
 
 void CodeTextEditor::_warning_label_gui_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseButton> mb = p_event;
-	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == BUTTON_LEFT) {
+	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MOUSE_BUTTON_LEFT) {
 		_warning_button_pressed();
 	}
 }
@@ -1572,7 +1576,7 @@ void CodeTextEditor::_toggle_scripts_pressed() {
 
 void CodeTextEditor::_error_pressed(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseButton> mb = p_event;
-	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == BUTTON_LEFT) {
+	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MOUSE_BUTTON_LEFT) {
 		goto_error();
 	}
 }

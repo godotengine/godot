@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -286,7 +286,7 @@ RenameDialog::RenameDialog(SceneTreeEditor *p_scene_tree_editor, UndoRedo *p_und
 	// ---- Dialog related
 
 	set_min_size(Size2(383, 0));
-	get_ok()->set_text(TTR("Rename"));
+	get_ok_button()->set_text(TTR("Rename"));
 	Button *but_reset = add_button(TTR("Reset"));
 
 	eh.errfunc = _error_handler;
@@ -434,7 +434,10 @@ String RenameDialog::_substitute(const String &subject, const Node *node, int co
 	}
 
 	int current = EditorNode::get_singleton()->get_editor_data().get_edited_scene();
-	result = result.replace("${SCENE}", EditorNode::get_singleton()->get_editor_data().get_scene_title(current));
+	// Always request the scene title with the extension stripped.
+	// Otherwise, the result could vary depending on whether a scene with the same name
+	// (but different extension) is currently open.
+	result = result.replace("${SCENE}", EditorNode::get_singleton()->get_editor_data().get_scene_title(current, true));
 
 	Node *root_node = SceneTree::get_singleton()->get_edited_scene_root();
 	if (root_node) {
@@ -572,7 +575,7 @@ void RenameDialog::rename() {
 	// Forward recursive as opposed to the actual renaming.
 	_iterate_scene(root_node, selected_node_list, &global_count);
 
-	if (undo_redo && !to_rename.empty()) {
+	if (undo_redo && !to_rename.is_empty()) {
 		undo_redo->create_action(TTR("Batch Rename"));
 
 		// Make sure to iterate reversed so that child nodes will find parents.
@@ -629,7 +632,7 @@ void RenameDialog::_insert_text(String text) {
 
 	if (_is_main_field(focus_owner)) {
 		focus_owner->selection_delete();
-		focus_owner->append_at_cursor(text);
+		focus_owner->insert_text_at_caret(text);
 		_update_preview();
 	}
 }

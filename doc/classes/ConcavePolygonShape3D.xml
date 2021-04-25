@@ -28,6 +28,11 @@
 			</description>
 		</method>
 	</methods>
+	<members>
+		<member name="backface_collision" type="bool" setter="set_backface_collision_enabled" getter="is_backface_collision_enabled" default="false">
+			If set to [code]true[/code], collisions occur on both sides of the concave shape faces. Otherwise they occur only along the face normals.
+		</member>
+	</members>
 	<constants>
 	</constants>
 </class>

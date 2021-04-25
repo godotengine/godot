@@ -2,7 +2,7 @@
 
 #version 450
 
-VERSION_DEFINES
+#VERSION_DEFINES
 
 layout(local_size_x = 8, local_size_y = 8, local_size_z = 1) in;
 
@@ -97,6 +97,8 @@ void main() {
 	float blend = 0.0;
 
 #if 1
+	// No interpolation
+
 	vec3 inv_dir = 1.0 / ray_dir;
 
 	float rough = 0.5;
@@ -161,113 +163,10 @@ void main() {
 
 		hit_light *= (dot(max(vec3(0.0), (hit_normal * hit_aniso0)), vec3(1.0)) + dot(max(vec3(0.0), (-hit_normal * hit_aniso1)), vec3(1.0)));
 
-		if (blend > 0.0) {
-			light = mix(light, hit_light, blend);
-			blend = 0.0;
-		} else {
-			light = hit_light;
-
-			//process blend
-			float blend_from = (float(params.probe_axis_size - 1) / 2.0) - 2.5;
-			float blend_to = blend_from + 2.0;
-
-			vec3 cam_pos = params.cam_transform[3].xyz - cascades.data[i].offset;
-			cam_pos *= cascades.data[i].to_cell;
-
-			pos += ray_dir * min(advance, max_advance);
-			vec3 inner_pos = pos - cam_pos;
-
-			inner_pos = inner_pos * float(params.probe_axis_size - 1) / params.grid_size.x;
-
-			float len = length(inner_pos);
-
-			inner_pos = abs(normalize(inner_pos));
-			len *= max(inner_pos.x, max(inner_pos.y, inner_pos.z));
-
-			if (len >= blend_from) {
-				blend = smoothstep(blend_from, blend_to, len);
-
-				pos /= cascades.data[i].to_cell;
-				pos += cascades.data[i].offset;
-				ray_pos = pos;
-				hit = false; //continue trace for blend
-
-				continue;
-			}
-		}
+		light = hit_light;
 
 		break;
 	}
-
-	light = mix(light, vec3(0.0), blend);
-
-#else
-
-	vec3 inv_dir = 1.0 / ray_dir;
-
-	bool hit = false;
-	vec4 light_accum = vec4(0.0);
-
-	float blend_size = (params.grid_size.x / float(params.probe_axis_size - 1)) * 0.5;
-
-	float radius_sizes[MAX_CASCADES];
-	for (uint i = 0; i < params.max_cascades; i++) {
-		radius_sizes[i] = (1.0 / cascades.data[i].to_cell) * (params.grid_size.x * 0.5 - blend_size);
-	}
-
-	float max_distance = radius_sizes[params.max_cascades - 1];
-	float advance = 0;
-	while (advance < max_distance) {
-		for (uint i = 0; i < params.max_cascades; i++) {
-			if (advance < radius_sizes[i]) {
-				vec3 pos = (ray_pos + ray_dir * advance) - cascades.data[i].offset;
-				pos *= cascades.data[i].to_cell * pos_to_uvw;
-
-				float distance = texture(sampler3D(sdf_cascades[i], linear_sampler), pos).r * 255.0 - 1.0;
-
-				vec4 hit_light = vec4(0.0);
-				if (distance < 1.0) {
-					hit_light.a = max(0.0, 1.0 - distance);
-					hit_light.rgb = texture(sampler3D(light_cascades[i], linear_sampler), pos).rgb;
-					hit_light.rgb *= hit_light.a;
-				}
-
-				distance /= cascades.data[i].to_cell;
-
-				if (i < (params.max_cascades - 1)) {
-					pos = (ray_pos + ray_dir * advance) - cascades.data[i + 1].offset;
-					pos *= cascades.data[i + 1].to_cell * pos_to_uvw;
-
-					float distance2 = texture(sampler3D(sdf_cascades[i + 1], linear_sampler), pos).r * 255.0 - 1.0;
-
-					vec4 hit_light2 = vec4(0.0);
-					if (distance2 < 1.0) {
-						hit_light2.a = max(0.0, 1.0 - distance2);
-						hit_light2.rgb = texture(sampler3D(light_cascades[i + 1], linear_sampler), pos).rgb;
-						hit_light2.rgb *= hit_light2.a;
-					}
-
-					float prev_radius = i == 0 ? 0.0 : radius_sizes[i - 1];
-					float blend = (advance - prev_radius) / (radius_sizes[i] - prev_radius);
-
-					distance2 /= cascades.data[i + 1].to_cell;
-
-					hit_light = mix(hit_light, hit_light2, blend);
-					distance = mix(distance, distance2, blend);
-				}
-
-				light_accum += hit_light;
-				advance += distance;
-				break;
-			}
-		}
-
-		if (light_accum.a > 0.98) {
-			break;
-		}
-	}
-
-	light = light_accum.rgb / light_accum.a;
 
 #endif
 

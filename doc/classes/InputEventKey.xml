@@ -32,11 +32,11 @@
 			If [code]true[/code], the key was already pressed before this event. It means the user is holding the key down.
 		</member>
 		<member name="keycode" type="int" setter="set_keycode" getter="get_keycode" default="0">
-			The key keycode, which corresponds to one of the [enum KeyList] constants. Represent key in the current keyboard layout.
+			The key keycode, which corresponds to one of the [enum Key] constants. Represent key in the current keyboard layout.
 			To get a human-readable representation of the [InputEventKey], use [code]OS.get_keycode_string(event.keycode)[/code] where [code]event[/code] is the [InputEventKey].
 		</member>
 		<member name="physical_keycode" type="int" setter="set_physical_keycode" getter="get_physical_keycode" default="0">
-			Key physical keycode, which corresponds to one of the [enum KeyList] constants. Represent the physical location of a key on the 101/102-key US QWERTY keyboard.
+			Key physical keycode, which corresponds to one of the [enum Key] constants. Represent the physical location of a key on the 101/102-key US QWERTY keyboard.
 			To get a human-readable representation of the [InputEventKey], use [code]OS.get_keycode_string(event.keycode)[/code] where [code]event[/code] is the [InputEventKey].
 		</member>
 		<member name="pressed" type="bool" setter="set_pressed" getter="is_pressed" default="false">

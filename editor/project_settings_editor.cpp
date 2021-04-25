@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -52,9 +52,11 @@ void ProjectSettingsEditor::popup_project_settings() {
 	localization_editor->update_translations();
 	autoload_settings->update_autoload();
 	plugin_settings->update_plugins();
+	import_defaults_editor->clear();
 }
 
 void ProjectSettingsEditor::queue_save() {
+	EditorNode::get_singleton()->notify_settings_changed();
 	timer->start();
 }
 
@@ -74,8 +76,12 @@ void ProjectSettingsEditor::_advanced_pressed() {
 	if (advanced->is_pressed()) {
 		_update_advanced_bar();
 		advanced_bar->show();
+		EditorSettings::get_singleton()->set_project_metadata("project_settings", "advanced_mode", true);
+		inspector->set_restrict_to_basic_settings(false);
 	} else {
 		advanced_bar->hide();
+		EditorSettings::get_singleton()->set_project_metadata("project_settings", "advanced_mode", false);
+		inspector->set_restrict_to_basic_settings(true);
 	}
 }
 
@@ -96,10 +102,9 @@ void ProjectSettingsEditor::_add_setting() {
 	String setting = _get_setting_name();
 
 	// Initialize the property with the default value for the given type.
-	// The type list starts at 1 (as we exclude Nil), so add 1 to the selected value.
 	Callable::CallError ce;
 	Variant value;
-	Variant::construct(Variant::Type(type->get_selected() + 1), value, nullptr, 0, ce);
+	Variant::construct(Variant::Type(type->get_selected_id()), value, nullptr, 0, ce);
 
 	undo_redo->create_action(TTR("Add Project Setting"));
 	undo_redo->add_do_property(ps, setting, value);
@@ -156,7 +161,7 @@ void ProjectSettingsEditor::_update_advanced_bar() {
 	bool disable_add = true;
 	bool disable_del = true;
 
-	if (!property_box->get_text().empty()) {
+	if (!property_box->get_text().is_empty()) {
 		const String setting = _get_setting_name();
 		bool setting_exists = ps->has_setting(setting);
 		if (setting_exists) {
@@ -190,14 +195,11 @@ void ProjectSettingsEditor::_update_advanced_bar() {
 
 	add_button->set_disabled(disable_add);
 	del_button->set_disabled(disable_del);
-
-	error_label->set_text(error_msg);
-	error_label->set_visible(error_msg != "");
 }
 
 String ProjectSettingsEditor::_get_setting_name() const {
 	const String cat = category_box->get_text();
-	const String name = (cat.empty() ? "global" : cat.strip_edges()).plus_file(property_box->get_text().strip_edges());
+	const String name = (cat.is_empty() ? "global" : cat.strip_edges()).plus_file(property_box->get_text().strip_edges());
 	const String feature = feature_override->get_item_text(feature_override->get_selected());
 
 	return (feature == "") ? name : (name + "." + feature);
@@ -255,6 +257,7 @@ void ProjectSettingsEditor::_add_feature_overrides() {
 }
 
 void ProjectSettingsEditor::_editor_restart() {
+	ProjectSettings::get_singleton()->save();
 	EditorNode::get_singleton()->save_all_scenes();
 	EditorNode::get_singleton()->restart_editor();
 }
@@ -267,21 +270,216 @@ void ProjectSettingsEditor::_editor_restart_close() {
 	restart_container->hide();
 }
 
+void ProjectSettingsEditor::_action_added(const String &p_name) {
+	String name = "input/" + p_name;
+
+	if (ProjectSettings::get_singleton()->has_setting(name)) {
+		action_map->show_message(vformat(TTR("An action with the name '%s' already exists."), name));
+		return;
+	}
+
+	Dictionary action;
+	action["events"] = Array();
+	action["deadzone"] = 0.5f;
+
+	undo_redo->create_action(TTR("Add Input Action"));
+	undo_redo->add_do_method(ProjectSettings::get_singleton(), "set", name, action);
+	undo_redo->add_undo_method(ProjectSettings::get_singleton(), "clear", name);
+
+	undo_redo->add_do_method(this, "_update_action_map_editor");
+	undo_redo->add_undo_method(this, "_update_action_map_editor");
+	undo_redo->add_do_method(this, "queue_save");
+	undo_redo->add_undo_method(this, "queue_save");
+	undo_redo->commit_action();
+}
+
+void ProjectSettingsEditor::_action_edited(const String &p_name, const Dictionary &p_action) {
+	const String property_name = "input/" + p_name;
+	Dictionary old_val = ProjectSettings::get_singleton()->get(property_name);
+
+	if (old_val["deadzone"] != p_action["deadzone"]) {
+		// Deadzone Changed
+		undo_redo->create_action(TTR("Change Action deadzone"));
+		undo_redo->add_do_method(ProjectSettings::get_singleton(), "set", property_name, p_action);
+		undo_redo->add_undo_method(ProjectSettings::get_singleton(), "set", property_name, old_val);
+
+	} else {
+		// Events changed
+		int event_count = ((Array)p_action["events"]).size();
+		int old_event_count = ((Array)old_val["events"]).size();
+
+		if (event_count == old_event_count) {
+			undo_redo->create_action(TTR("Edit Input Action Event"));
+		} else if (event_count > old_event_count) {
+			undo_redo->create_action(TTR("Add Input Action Event"));
+		} else if (event_count < old_event_count) {
+			undo_redo->create_action(TTR("Remove Input Action Event"));
+		}
+
+		undo_redo->add_do_method(ProjectSettings::get_singleton(), "set", property_name, p_action);
+		undo_redo->add_undo_method(ProjectSettings::get_singleton(), "set", property_name, old_val);
+	}
+
+	undo_redo->add_do_method(this, "_update_action_map_editor");
+	undo_redo->add_undo_method(this, "_update_action_map_editor");
+	undo_redo->add_do_method(this, "queue_save");
+	undo_redo->add_undo_method(this, "queue_save");
+	undo_redo->commit_action();
+}
+
+void ProjectSettingsEditor::_action_removed(const String &p_name) {
+	const String property_name = "input/" + p_name;
+
+	Dictionary old_val = ProjectSettings::get_singleton()->get(property_name);
+	int order = ProjectSettings::get_singleton()->get_order(property_name);
+
+	undo_redo->create_action(TTR("Erase Input Action"));
+	undo_redo->add_do_method(ProjectSettings::get_singleton(), "clear", property_name);
+	undo_redo->add_undo_method(ProjectSettings::get_singleton(), "set", property_name, old_val);
+	undo_redo->add_undo_method(ProjectSettings::get_singleton(), "set_order", property_name, order);
+
+	undo_redo->add_do_method(this, "_update_action_map_editor");
+	undo_redo->add_undo_method(this, "_update_action_map_editor");
+	undo_redo->add_do_method(this, "queue_save");
+	undo_redo->add_undo_method(this, "queue_save");
+	undo_redo->commit_action();
+}
+
+void ProjectSettingsEditor::_action_renamed(const String &p_old_name, const String &p_new_name) {
+	const String old_property_name = "input/" + p_old_name;
+	const String new_property_name = "input/" + p_new_name;
+
+	if (ProjectSettings::get_singleton()->has_setting(new_property_name)) {
+		action_map->show_message(vformat(TTR("An action with the name '%s' already exists."), new_property_name));
+		return;
+	}
+
+	int order = ProjectSettings::get_singleton()->get_order(old_property_name);
+	Dictionary action = ProjectSettings::get_singleton()->get(old_property_name);
+
+	undo_redo->create_action(TTR("Rename Input Action Event"));
+	// Do: clear old, set new
+	undo_redo->add_do_method(ProjectSettings::get_singleton(), "clear", old_property_name);
+	undo_redo->add_do_method(ProjectSettings::get_singleton(), "set", new_property_name, action);
+	undo_redo->add_do_method(ProjectSettings::get_singleton(), "set_order", new_property_name, order);
+	// Undo: clear new, set old
+	undo_redo->add_undo_method(ProjectSettings::get_singleton(), "clear", new_property_name);
+	undo_redo->add_undo_method(ProjectSettings::get_singleton(), "set", old_property_name, action);
+	undo_redo->add_undo_method(ProjectSettings::get_singleton(), "set_order", old_property_name, order);
+
+	undo_redo->add_do_method(this, "_update_action_map_editor");
+	undo_redo->add_undo_method(this, "_update_action_map_editor");
+	undo_redo->add_do_method(this, "queue_save");
+	undo_redo->add_undo_method(this, "queue_save");
+	undo_redo->commit_action();
+}
+
+void ProjectSettingsEditor::_action_reordered(const String &p_action_name, const String &p_relative_to, bool p_before) {
+	const String action_name = "input/" + p_action_name;
+	const String target_name = "input/" + p_relative_to;
+
+	// It is much easier to rebuild the custom "input" properties rather than messing around with the "order" values of them.
+	Variant action_value = ps->get(action_name);
+	Variant target_value = ps->get(target_name);
+
+	List<PropertyInfo> props;
+	OrderedHashMap<String, Variant> action_values;
+	ProjectSettings::get_singleton()->get_property_list(&props);
+
+	undo_redo->create_action(TTR("Update Input Action Order"));
+
+	for (List<PropertyInfo>::Element *E = props.front(); E; E = E->next()) {
+		PropertyInfo prop = E->get();
+		// Skip builtins and non-inputs
+		if (ProjectSettings::get_singleton()->is_builtin_setting(prop.name) || !prop.name.begins_with("input/")) {
+			continue;
+		}
+
+		action_values.insert(prop.name, ps->get(prop.name));
+
+		undo_redo->add_do_method(ProjectSettings::get_singleton(), "clear", prop.name);
+		undo_redo->add_undo_method(ProjectSettings::get_singleton(), "clear", prop.name);
+	}
+
+	for (OrderedHashMap<String, Variant>::Element E = action_values.front(); E; E = E.next()) {
+		String name = E.key();
+		Variant value = E.get();
+
+		if (name == target_name) {
+			if (p_before) {
+				// Insert before target
+				undo_redo->add_do_method(ProjectSettings::get_singleton(), "set", action_name, action_value);
+				undo_redo->add_do_method(ProjectSettings::get_singleton(), "set", target_name, target_value);
+
+				undo_redo->add_undo_method(ProjectSettings::get_singleton(), "set", target_name, target_value);
+				undo_redo->add_undo_method(ProjectSettings::get_singleton(), "set", action_name, action_value);
+			} else {
+				// Insert after target
+				undo_redo->add_do_method(ProjectSettings::get_singleton(), "set", target_name, target_value);
+				undo_redo->add_do_method(ProjectSettings::get_singleton(), "set", action_name, action_value);
+
+				undo_redo->add_undo_method(ProjectSettings::get_singleton(), "set", action_name, action_value);
+				undo_redo->add_undo_method(ProjectSettings::get_singleton(), "set", target_name, target_value);
+			}
+
+		} else if (name != action_name) {
+			undo_redo->add_do_method(ProjectSettings::get_singleton(), "set", name, value);
+			undo_redo->add_undo_method(ProjectSettings::get_singleton(), "set", name, value);
+		}
+	}
+
+	undo_redo->add_do_method(this, "_update_action_map_editor");
+	undo_redo->add_undo_method(this, "_update_action_map_editor");
+	undo_redo->add_do_method(this, "queue_save");
+	undo_redo->add_undo_method(this, "queue_save");
+	undo_redo->commit_action();
+}
+
+void ProjectSettingsEditor::_update_action_map_editor() {
+	Vector<ActionMapEditor::ActionInfo> actions;
+
+	List<PropertyInfo> props;
+	ProjectSettings::get_singleton()->get_property_list(&props);
+
+	const Ref<Texture2D> builtin_icon = get_theme_icon("PinPressed", "EditorIcons");
+	for (List<PropertyInfo>::Element *E = props.front(); E; E = E->next()) {
+		const String property_name = E->get().name;
+
+		if (!property_name.begins_with("input/")) {
+			continue;
+		}
+
+		// Strip the "input/" from the left.
+		String display_name = property_name.substr(String("input/").size() - 1);
+		Dictionary action = ProjectSettings::get_singleton()->get(property_name);
+
+		ActionMapEditor::ActionInfo action_info;
+		action_info.action = action;
+		action_info.editable = true;
+		action_info.name = display_name;
+
+		const bool is_builtin_input = ProjectSettings::get_singleton()->get_input_presets().find(property_name) != nullptr;
+		if (is_builtin_input) {
+			action_info.editable = false;
+			action_info.icon = builtin_icon;
+		}
+
+		actions.push_back(action_info);
+	}
+
+	action_map->update_action_list(actions);
+}
+
 void ProjectSettingsEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			if (!is_visible()) {
 				EditorSettings::get_singleton()->set_project_metadata("dialog_bounds", "project_settings", Rect2(get_position(), get_size()));
-				if (advanced->is_pressed()) {
-					advanced->set_pressed(false);
-					advanced_bar->hide();
-				}
 			}
 		} break;
 		case NOTIFICATION_ENTER_TREE: {
 			inspector->edit(ps);
 
-			error_label->add_theme_color_override("font_color", error_label->get_theme_color("error_color", "Editor"));
 			add_button->set_icon(get_theme_icon("Add", "EditorIcons"));
 			del_button->set_icon(get_theme_icon("Remove", "EditorIcons"));
 
@@ -292,6 +490,8 @@ void ProjectSettingsEditor::_notification(int p_what) {
 			restart_container->add_theme_style_override("panel", get_theme_stylebox("bg", "Tree"));
 			restart_icon->set_texture(get_theme_icon("StatusWarning", "EditorIcons"));
 			restart_label->add_theme_color_override("font_color", get_theme_color("warning_color", "Editor"));
+
+			_update_action_map_editor();
 		} break;
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 			search_box->set_right_icon(get_theme_icon("Search", "EditorIcons"));
@@ -302,6 +502,8 @@ void ProjectSettingsEditor::_notification(int p_what) {
 
 void ProjectSettingsEditor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("queue_save"), &ProjectSettingsEditor::queue_save);
+
+	ClassDB::bind_method(D_METHOD("_update_action_map_editor"), &ProjectSettingsEditor::_update_action_map_editor);
 }
 
 ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
@@ -339,23 +541,19 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 		search_bar->add_child(search_box);
 
 		advanced = memnew(CheckButton);
-		advanced->set_text(TTR("Advanced"));
+		advanced->set_text(TTR("Advanced Settings"));
 		advanced->connect("pressed", callable_mp(this, &ProjectSettingsEditor::_advanced_pressed));
 		search_bar->add_child(advanced);
 	}
 
 	{
 		// Advanced bar.
-		advanced_bar = memnew(VBoxContainer);
-		advanced_bar->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+		advanced_bar = memnew(HBoxContainer);
 		advanced_bar->hide();
 		header->add_child(advanced_bar);
 
-		advanced_bar->add_child(memnew(HSeparator));
-
-		HBoxContainer *hbc = memnew(HBoxContainer);
+		HBoxContainer *hbc = advanced_bar;
 		hbc->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-		advanced_bar->add_margin_child(TTR("Add or Remove Custom Project Settings:"), hbc, true);
 
 		category_box = memnew(LineEdit);
 		category_box->set_h_size_flags(Control::SIZE_EXPAND_FILL);
@@ -364,7 +562,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 		hbc->add_child(category_box);
 
 		Label *l = memnew(Label);
-		l->set_text("/");
+		l->set_text(" / ");
 		hbc->add_child(l);
 
 		property_box = memnew(LineEdit);
@@ -381,9 +579,12 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 		type->set_custom_minimum_size(Size2(100, 0) * EDSCALE);
 		hbc->add_child(type);
 
-		// Start at 1 to avoid adding "Nil" as an option
-		for (int i = 1; i < Variant::VARIANT_MAX; i++) {
-			type->add_item(Variant::get_type_name(Variant::Type(i)));
+		for (int i = 0; i < Variant::VARIANT_MAX; i++) {
+			// There's no point in adding Nil types, and Object types
+			// can't be serialized correctly in the project settings.
+			if (i != Variant::NIL && i != Variant::OBJECT) {
+				type->add_item(Variant::get_type_name(Variant::Type(i)), i);
+			}
 		}
 
 		l = memnew(Label);
@@ -404,9 +605,6 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 		del_button->set_flat(true);
 		del_button->connect("pressed", callable_mp(this, &ProjectSettingsEditor::_delete_setting), varray(false));
 		hbc->add_child(del_button);
-
-		error_label = memnew(Label);
-		advanced_bar->add_child(error_label);
 	}
 
 	inspector = memnew(SectionedInspector);
@@ -444,10 +642,16 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	restart_close_button->connect("pressed", callable_mp(this, &ProjectSettingsEditor::_editor_restart_close));
 	restart_hb->add_child(restart_close_button);
 
-	inputmap_editor = memnew(InputMapEditor);
-	inputmap_editor->set_name(TTR("Input Map"));
-	inputmap_editor->connect("inputmap_changed", callable_mp(this, &ProjectSettingsEditor::queue_save));
-	tab_container->add_child(inputmap_editor);
+	action_map = memnew(ActionMapEditor);
+	action_map->set_name(TTR("Input Map"));
+	action_map->connect("action_added", callable_mp(this, &ProjectSettingsEditor::_action_added));
+	action_map->connect("action_edited", callable_mp(this, &ProjectSettingsEditor::_action_edited));
+	action_map->connect("action_removed", callable_mp(this, &ProjectSettingsEditor::_action_removed));
+	action_map->connect("action_renamed", callable_mp(this, &ProjectSettingsEditor::_action_renamed));
+	action_map->connect("action_reordered", callable_mp(this, &ProjectSettingsEditor::_action_reordered));
+	action_map->set_toggle_editable_label(TTR("Show Built-in Actions"));
+	action_map->set_show_uneditable(false);
+	tab_container->add_child(action_map);
 
 	localization_editor = memnew(LocalizationEditor);
 	localization_editor->set_name(TTR("Localization"));
@@ -478,6 +682,20 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	del_confirmation->connect("confirmed", callable_mp(this, &ProjectSettingsEditor::_delete_setting), varray(true));
 	add_child(del_confirmation);
 
-	get_ok()->set_text(TTR("Close"));
+	get_ok_button()->set_text(TTR("Close"));
 	set_hide_on_ok(true);
+
+	bool use_advanced = EditorSettings::get_singleton()->get_project_metadata("project_settings", "advanced_mode", false);
+
+	if (use_advanced) {
+		advanced->set_pressed(true);
+		advanced_bar->show();
+	}
+
+	inspector->set_restrict_to_basic_settings(!use_advanced);
+
+	import_defaults_editor = memnew(ImportDefaultsEditor);
+	import_defaults_editor->set_name(TTR("Import Defaults"));
+	tab_container->add_child(import_defaults_editor);
+	import_defaults_editor->connect("project_settings_changed", callable_mp(this, &ProjectSettingsEditor::queue_save));
 }

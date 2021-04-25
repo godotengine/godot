@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -74,57 +74,44 @@ private:
 	struct Bone {
 		String name;
 
-		bool enabled;
-		int parent;
-		int sort_index; //used for re-sorting process order
+		bool enabled = true;
+		int parent = -1;
+		int sort_index = 0; //used for re-sorting process order
 
-		bool disable_rest;
+		bool disable_rest = false;
 		Transform rest;
 
 		Transform pose;
 		Transform pose_global;
 
-		bool custom_pose_enable;
+		bool custom_pose_enable = false;
 		Transform custom_pose;
 
-		float global_pose_override_amount;
-		bool global_pose_override_reset;
+		float global_pose_override_amount = 0.0;
+		bool global_pose_override_reset = false;
 		Transform global_pose_override;
 
 #ifndef _3D_DISABLED
-		PhysicalBone3D *physical_bone;
-		PhysicalBone3D *cache_parent_physical_bone;
+		PhysicalBone3D *physical_bone = nullptr;
+		PhysicalBone3D *cache_parent_physical_bone = nullptr;
 #endif // _3D_DISABLED
 
 		List<ObjectID> nodes_bound;
-
-		Bone() {
-			parent = -1;
-			enabled = true;
-			disable_rest = false;
-			custom_pose_enable = false;
-			global_pose_override_amount = 0;
-			global_pose_override_reset = false;
-#ifndef _3D_DISABLED
-			physical_bone = nullptr;
-			cache_parent_physical_bone = nullptr;
-#endif // _3D_DISABLED
-		}
 	};
 
 	Set<SkinReference *> skin_bindings;
 
 	void _skin_changed();
 
-	bool animate_physical_bones;
+	bool animate_physical_bones = true;
 	Vector<Bone> bones;
 	Vector<int> process_order;
-	bool process_order_dirty;
+	bool process_order_dirty = true;
 
 	void _make_dirty();
-	bool dirty;
+	bool dirty = false;
 
-	uint64_t version;
+	uint64_t version = 1;
 
 	// bind helpers
 	Array _get_bound_child_nodes_to_bone(int p_bone) const {
@@ -156,6 +143,7 @@ public:
 	void add_bone(const String &p_name);
 	int find_bone(const String &p_name) const;
 	String get_bone_name(int p_bone) const;
+	void set_bone_name(int p_bone, const String &p_name);
 
 	bool is_bone_parent_of(int p_bone_id, int p_parent_bone_id) const;
 

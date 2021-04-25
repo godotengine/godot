@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -78,14 +78,14 @@ struct Color {
 	void operator-=(const Color &p_color);
 
 	Color operator*(const Color &p_color) const;
-	Color operator*(real_t p_rvalue) const;
+	Color operator*(float p_scalar) const;
 	void operator*=(const Color &p_color);
-	void operator*=(real_t p_rvalue);
+	void operator*=(float p_scalar);
 
 	Color operator/(const Color &p_color) const;
-	Color operator/(real_t p_rvalue) const;
+	Color operator/(float p_scalar) const;
 	void operator/=(const Color &p_color);
-	void operator/=(real_t p_rvalue);
+	void operator/=(float p_scalar);
 
 	bool is_equal_approx(const Color &p_color) const;
 
@@ -182,9 +182,12 @@ struct Color {
 	static Color html(const String &p_rgba);
 	static bool html_is_valid(const String &p_color);
 	static Color named(const String &p_name);
+	static Color named(const String &p_name, const Color &p_default);
+	static int find_named_color(const String &p_name);
 	static int get_named_color_count();
 	static String get_named_color_name(int p_idx);
 	static Color get_named_color(int p_idx);
+	static Color from_string(const String &p_string, const Color &p_default);
 	String to_html(bool p_alpha = true) const;
 	Color from_hsv(float p_h, float p_s, float p_v, float p_a) const;
 	static Color from_rgbe9995(uint32_t p_rgbe);
@@ -194,13 +197,13 @@ struct Color {
 
 	// For the binder.
 	_FORCE_INLINE_ void set_r8(int32_t r8) { r = (CLAMP(r8, 0, 255) / 255.0); }
-	_FORCE_INLINE_ int32_t get_r8() const { return int32_t(CLAMP(r * 255.0, 0.0, 255.0)); }
+	_FORCE_INLINE_ int32_t get_r8() const { return int32_t(CLAMP(Math::round(r * 255.0f), 0.0f, 255.0f)); }
 	_FORCE_INLINE_ void set_g8(int32_t g8) { g = (CLAMP(g8, 0, 255) / 255.0); }
-	_FORCE_INLINE_ int32_t get_g8() const { return int32_t(CLAMP(g * 255.0, 0.0, 255.0)); }
+	_FORCE_INLINE_ int32_t get_g8() const { return int32_t(CLAMP(Math::round(g * 255.0f), 0.0f, 255.0f)); }
 	_FORCE_INLINE_ void set_b8(int32_t b8) { b = (CLAMP(b8, 0, 255) / 255.0); }
-	_FORCE_INLINE_ int32_t get_b8() const { return int32_t(CLAMP(b * 255.0, 0.0, 255.0)); }
+	_FORCE_INLINE_ int32_t get_b8() const { return int32_t(CLAMP(Math::round(b * 255.0f), 0.0f, 255.0f)); }
 	_FORCE_INLINE_ void set_a8(int32_t a8) { a = (CLAMP(a8, 0, 255) / 255.0); }
-	_FORCE_INLINE_ int32_t get_a8() const { return int32_t(CLAMP(a * 255.0, 0.0, 255.0)); }
+	_FORCE_INLINE_ int32_t get_a8() const { return int32_t(CLAMP(Math::round(a * 255.0f), 0.0f, 255.0f)); }
 
 	_FORCE_INLINE_ void set_h(float p_h) { set_hsv(p_h, get_s(), get_v()); }
 	_FORCE_INLINE_ void set_s(float p_s) { set_hsv(get_h(), p_s, get_v()); }
@@ -238,6 +241,19 @@ struct Color {
 		b = p_c.b;
 		a = p_a;
 	}
+
+	Color(const String &p_code) {
+		if (html_is_valid(p_code)) {
+			*this = html(p_code);
+		} else {
+			*this = named(p_code);
+		}
+	}
+
+	Color(const String &p_code, float p_a) {
+		*this = Color(p_code);
+		a = p_a;
+	}
 };
 
 bool Color::operator<(const Color &p_color) const {
@@ -256,8 +272,8 @@ bool Color::operator<(const Color &p_color) const {
 	}
 }
 
-_FORCE_INLINE_ Color operator*(real_t p_real, const Color &p_color) {
-	return p_color * p_real;
+_FORCE_INLINE_ Color operator*(float p_scalar, const Color &p_color) {
+	return p_color * p_scalar;
 }
 
 #endif // COLOR_H

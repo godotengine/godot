@@ -2,7 +2,7 @@
 
 #version 450
 
-VERSION_DEFINES
+#VERSION_DEFINES
 
 #ifdef MODE_DYNAMIC
 layout(local_size_x = 8, local_size_y = 8, local_size_z = 1) in;
@@ -51,10 +51,10 @@ struct Light {
 	float attenuation;
 
 	vec3 color;
-	float spot_angle_radians;
+	float cos_spot_angle;
 
 	vec3 position;
-	float spot_attenuation;
+	float inv_spot_attenuation;
 
 	vec3 direction;
 	bool has_shadow;
@@ -208,6 +208,15 @@ float raymarch(float distance, float distance_adv, vec3 from, vec3 direction) {
 	return occlusion; //max(0.0,distance);
 }
 
+float get_omni_attenuation(float distance, float inv_range, float decay) {
+	float nd = distance * inv_range;
+	nd *= nd;
+	nd *= nd; // nd^4
+	nd = max(1.0 - nd, 0.0);
+	nd *= nd; // nd^2
+	return nd * pow(max(distance, 0.0001), -decay);
+}
+
 bool compute_light_vector(uint light, vec3 pos, out float attenuation, out vec3 light_pos) {
 	if (lights.data[light].type == LIGHT_TYPE_DIRECTIONAL) {
 		light_pos = pos - lights.data[light].direction * length(vec3(params.limits));
@@ -220,17 +229,19 @@ bool compute_light_vector(uint light, vec3 pos, out float attenuation, out vec3 
 			return false;
 		}
 
-		attenuation = pow(clamp(1.0 - distance / lights.data[light].radius, 0.0001, 1.0), lights.data[light].attenuation);
+		attenuation = get_omni_attenuation(distance, 1.0 / lights.data[light].radius, lights.data[light].attenuation);
 
 		if (lights.data[light].type == LIGHT_TYPE_SPOT) {
 			vec3 rel = normalize(pos - light_pos);
-			float angle = acos(dot(rel, lights.data[light].direction));
-			if (angle > lights.data[light].spot_angle_radians) {
+			float cos_spot_angle = lights.data[light].cos_spot_angle;
+			float cos_angle = dot(rel, lights.data[light].direction);
+			if (cos_angle < cos_spot_angle) {
 				return false;
 			}
 
-			float d = clamp(angle / lights.data[light].spot_angle_radians, 0, 1);
-			attenuation *= pow(1.0 - d, lights.data[light].spot_attenuation);
+			float scos = max(cos_angle, cos_spot_angle);
+			float spot_rim = max(0.0001, (1.0 - scos) / (1.0 - cos_spot_angle));
+			attenuation *= 1.0 - pow(spot_rim, lights.data[light].inv_spot_attenuation);
 		}
 	}
 

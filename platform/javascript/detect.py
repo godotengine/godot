@@ -1,7 +1,14 @@
 import os
 import sys
 
-from emscripten_helpers import run_closure_compiler, create_engine_file, add_js_libraries
+from emscripten_helpers import (
+    run_closure_compiler,
+    create_engine_file,
+    add_js_libraries,
+    add_js_pre,
+    add_js_externs,
+    create_template_zip,
+)
 from methods import get_compiler_version
 from SCons.Util import WhereIs
 
@@ -50,27 +57,28 @@ def get_flags():
 
 
 def configure(env):
-    if not isinstance(env["initial_memory"], int):
+    try:
+        env["initial_memory"] = int(env["initial_memory"])
+    except Exception:
         print("Initial memory must be a valid integer")
         sys.exit(255)
 
     ## Build type
-
-    if env["target"] == "release":
+    if env["target"].startswith("release"):
         # Use -Os to prioritize optimizing for reduced file size. This is
         # particularly valuable for the web platform because it directly
         # decreases download time.
         # -Os reduces file size by around 5 MiB over -O3. -Oz only saves about
         # 100 KiB over -Os, which does not justify the negative impact on
         # run-time performance.
-        env.Append(CCFLAGS=["-Os"])
-        env.Append(LINKFLAGS=["-Os"])
-    elif env["target"] == "release_debug":
-        env.Append(CCFLAGS=["-Os"])
-        env.Append(LINKFLAGS=["-Os"])
-        env.Append(CPPDEFINES=["DEBUG_ENABLED"])
-        # Retain function names for backtraces at the cost of file size.
-        env.Append(LINKFLAGS=["--profiling-funcs"])
+        if env["optimize"] != "none":
+            env.Append(CCFLAGS=["-Os"])
+            env.Append(LINKFLAGS=["-Os"])
+
+        if env["target"] == "release_debug":
+            env.Append(CPPDEFINES=["DEBUG_ENABLED"])
+            # Retain function names for backtraces at the cost of file size.
+            env.Append(LINKFLAGS=["--profiling-funcs"])
     else:  # "debug"
         env.Append(CPPDEFINES=["DEBUG_ENABLED"])
         env.Append(CCFLAGS=["-O1", "-g"])
@@ -84,11 +92,12 @@ def configure(env):
         if not env["threads_enabled"]:
             print("Threads must be enabled to build the editor. Please add the 'threads_enabled=yes' option")
             sys.exit(255)
-        if env["initial_memory"] < 32:
-            print("Editor build requires at least 32MiB of initial memory. Forcing it.")
-            env["initial_memory"] = 32
-    elif env["builtin_icu"]:
+        if env["initial_memory"] < 64:
+            print("Editor build requires at least 64MiB of initial memory. Forcing it.")
+            env["initial_memory"] = 64
         env.Append(CCFLAGS=["-frtti"])
+    elif env["builtin_icu"]:
+        env.Append(CCFLAGS=["-fno-exceptions", "-frtti"])
     else:
         # Disable exceptions and rtti on non-tools (template) builds
         # These flags help keep the file size down.
@@ -131,11 +140,19 @@ def configure(env):
         jscc = env.Builder(generator=run_closure_compiler, suffix=".cc.js", src_suffix=".js")
         env.Append(BUILDERS={"BuildJS": jscc})
 
-    # Add helper method for adding libraries.
+    # Add helper method for adding libraries, externs, pre-js.
+    env["JS_LIBS"] = []
+    env["JS_PRE"] = []
+    env["JS_EXTERNS"] = []
     env.AddMethod(add_js_libraries, "AddJSLibraries")
+    env.AddMethod(add_js_pre, "AddJSPre")
+    env.AddMethod(add_js_externs, "AddJSExterns")
 
     # Add method that joins/compiles our Engine files.
     env.AddMethod(create_engine_file, "CreateEngineFile")
+
+    # Add method for creating the final zip file
+    env.AddMethod(create_template_zip, "CreateTemplateZip")
 
     # Closure compiler extern and support for ecmascript specs (const, let, etc).
     env["ENV"]["EMCC_CLOSURE_ARGS"] = "--language_in ECMASCRIPT6"
@@ -213,7 +230,15 @@ def configure(env):
     env.Append(LINKFLAGS=["-s", "OFFSCREEN_FRAMEBUFFER=1"])
 
     # callMain for manual start.
-    env.Append(LINKFLAGS=["-s", "EXTRA_EXPORTED_RUNTIME_METHODS=['callMain']"])
+    env.Append(LINKFLAGS=["-s", "EXTRA_EXPORTED_RUNTIME_METHODS=['callMain','cwrap']"])
 
     # Add code that allow exiting runtime.
     env.Append(LINKFLAGS=["-s", "EXIT_RUNTIME=1"])
+
+    # TODO remove once we have GLES support back (temporary fix undefined symbols due to dead code elimination).
+    env.Append(
+        LINKFLAGS=[
+            "-s",
+            "EXPORTED_FUNCTIONS=['_main', '_emscripten_webgl_get_current_context', '_emscripten_webgl_commit_frame', '_emscripten_webgl_create_context']",
+        ]
+    )

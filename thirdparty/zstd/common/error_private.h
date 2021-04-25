@@ -21,7 +21,7 @@ extern "C" {
 /* ****************************************
 *  Dependencies
 ******************************************/
-#include <stddef.h>        /* size_t */
+#include "zstd_deps.h"    /* size_t */
 #include "zstd_errors.h"  /* enum list */
 
 

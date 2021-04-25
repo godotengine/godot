@@ -2,7 +2,7 @@
 
 #version 450
 
-VERSION_DEFINES
+#VERSION_DEFINES
 
 layout(local_size_x = 64, local_size_y = 1, local_size_z = 1) in;
 
@@ -146,11 +146,11 @@ layout(set = 2, binding = 1) uniform texture2D height_field_texture;
 
 /* SET 3: MATERIAL */
 
-#ifdef USE_MATERIAL_UNIFORMS
+#ifdef MATERIAL_UNIFORMS_USED
 layout(set = 3, binding = 0, std140) uniform MaterialUniforms{
-	/* clang-format off */
-MATERIAL_UNIFORMS
-	/* clang-format on */
+
+#MATERIAL_UNIFORMS
+
 } material;
 #endif
 
@@ -173,7 +173,7 @@ uint hash(uint x) {
 	return x;
 }
 
-bool emit_particle(mat4 p_xform, vec3 p_velocity, vec4 p_color, vec4 p_custom, uint p_flags) {
+bool emit_subparticle(mat4 p_xform, vec3 p_velocity, vec4 p_color, vec4 p_custom, uint p_flags) {
 	if (!params.can_emit) {
 		return false;
 	}
@@ -196,11 +196,7 @@ bool emit_particle(mat4 p_xform, vec3 p_velocity, vec4 p_color, vec4 p_custom, u
 	return true;
 }
 
-/* clang-format off */
-
-COMPUTE_SHADER_GLOBALS
-
-/* clang-format on */
+#GLOBALS
 
 void main() {
 	uint particle = gl_GlobalInvocationID.x;
@@ -255,6 +251,115 @@ void main() {
 #endif
 
 	/* Process physics if active */
+
+	if (params.sub_emitter_mode) {
+		if (!PARTICLE.is_active) {
+			int src_index = atomicAdd(src_particles.particle_count, -1) - 1;
+
+			if (src_index >= 0) {
+				PARTICLE.is_active = true;
+				restart = true;
+
+				if (bool(src_particles.data[src_index].flags & EMISSION_FLAG_HAS_POSITION)) {
+					PARTICLE.xform[3] = src_particles.data[src_index].xform[3];
+				} else {
+					PARTICLE.xform[3] = vec4(0, 0, 0, 1);
+					restart_position = true;
+				}
+				if (bool(src_particles.data[src_index].flags & EMISSION_FLAG_HAS_ROTATION_SCALE)) {
+					PARTICLE.xform[0] = src_particles.data[src_index].xform[0];
+					PARTICLE.xform[1] = src_particles.data[src_index].xform[1];
+					PARTICLE.xform[2] = src_particles.data[src_index].xform[2];
+				} else {
+					PARTICLE.xform[0] = vec4(1, 0, 0, 0);
+					PARTICLE.xform[1] = vec4(0, 1, 0, 0);
+					PARTICLE.xform[2] = vec4(0, 0, 1, 0);
+					restart_rotation_scale = true;
+				}
+				if (bool(src_particles.data[src_index].flags & EMISSION_FLAG_HAS_VELOCITY)) {
+					PARTICLE.velocity = src_particles.data[src_index].velocity;
+				} else {
+					PARTICLE.velocity = vec3(0);
+					restart_velocity = true;
+				}
+				if (bool(src_particles.data[src_index].flags & EMISSION_FLAG_HAS_COLOR)) {
+					PARTICLE.color = src_particles.data[src_index].color;
+				} else {
+					PARTICLE.color = vec4(1);
+					restart_color = true;
+				}
+
+				if (bool(src_particles.data[src_index].flags & EMISSION_FLAG_HAS_CUSTOM)) {
+					PARTICLE.custom = src_particles.data[src_index].custom;
+				} else {
+					PARTICLE.custom = vec4(0);
+					restart_custom = true;
+				}
+			}
+		}
+
+	} else if (FRAME.emitting) {
+		float restart_phase = float(index) / float(params.total_particles);
+
+		if (FRAME.randomness > 0.0) {
+			uint seed = FRAME.cycle;
+			if (restart_phase >= FRAME.system_phase) {
+				seed -= uint(1);
+			}
+			seed *= uint(params.total_particles);
+			seed += uint(index);
+			float random = float(hash(seed) % uint(65536)) / 65536.0;
+			restart_phase += FRAME.randomness * random * 1.0 / float(params.total_particles);
+		}
+
+		restart_phase *= (1.0 - FRAME.explosiveness);
+
+		if (FRAME.system_phase > FRAME.prev_system_phase) {
+			// restart_phase >= prev_system_phase is used so particles emit in the first frame they are processed
+
+			if (restart_phase >= FRAME.prev_system_phase && restart_phase < FRAME.system_phase) {
+				restart = true;
+				if (params.use_fractional_delta) {
+					local_delta = (FRAME.system_phase - restart_phase) * params.lifetime;
+				}
+			}
+
+		} else if (FRAME.delta > 0.0) {
+			if (restart_phase >= FRAME.prev_system_phase) {
+				restart = true;
+				if (params.use_fractional_delta) {
+					local_delta = (1.0 - restart_phase + FRAME.system_phase) * params.lifetime;
+				}
+
+			} else if (restart_phase < FRAME.system_phase) {
+				restart = true;
+				if (params.use_fractional_delta) {
+					local_delta = (FRAME.system_phase - restart_phase) * params.lifetime;
+				}
+			}
+		}
+
+		uint current_cycle = FRAME.cycle;
+
+		if (FRAME.system_phase < restart_phase) {
+			current_cycle -= uint(1);
+		}
+
+		uint particle_number = current_cycle * uint(params.total_particles) + particle;
+
+		if (restart) {
+			PARTICLE.is_active = FRAME.emitting;
+			restart_position = true;
+			restart_rotation_scale = true;
+			restart_velocity = true;
+			restart_color = true;
+			restart_custom = true;
+		}
+	}
+
+	if (restart && PARTICLE.is_active) {
+#CODE : START
+	}
 
 	if (PARTICLE.is_active) {
 		for (uint i = 0; i < FRAME.attractor_count; i++) {
@@ -434,116 +539,7 @@ void main() {
 		}
 	}
 
-	if (params.sub_emitter_mode) {
-		if (!PARTICLE.is_active) {
-			int src_index = atomicAdd(src_particles.particle_count, -1) - 1;
-
-			if (src_index >= 0) {
-				PARTICLE.is_active = true;
-				restart = true;
-
-				if (bool(src_particles.data[src_index].flags & EMISSION_FLAG_HAS_POSITION)) {
-					PARTICLE.xform[3] = src_particles.data[src_index].xform[3];
-				} else {
-					PARTICLE.xform[3] = vec4(0, 0, 0, 1);
-					restart_position = true;
-				}
-				if (bool(src_particles.data[src_index].flags & EMISSION_FLAG_HAS_ROTATION_SCALE)) {
-					PARTICLE.xform[0] = src_particles.data[src_index].xform[0];
-					PARTICLE.xform[1] = src_particles.data[src_index].xform[1];
-					PARTICLE.xform[2] = src_particles.data[src_index].xform[2];
-				} else {
-					PARTICLE.xform[0] = vec4(1, 0, 0, 0);
-					PARTICLE.xform[1] = vec4(0, 1, 0, 0);
-					PARTICLE.xform[2] = vec4(0, 0, 1, 0);
-					restart_rotation_scale = true;
-				}
-				if (bool(src_particles.data[src_index].flags & EMISSION_FLAG_HAS_VELOCITY)) {
-					PARTICLE.velocity = src_particles.data[src_index].velocity;
-				} else {
-					PARTICLE.velocity = vec3(0);
-					restart_velocity = true;
-				}
-				if (bool(src_particles.data[src_index].flags & EMISSION_FLAG_HAS_COLOR)) {
-					PARTICLE.color = src_particles.data[src_index].color;
-				} else {
-					PARTICLE.color = vec4(1);
-					restart_color = true;
-				}
-
-				if (bool(src_particles.data[src_index].flags & EMISSION_FLAG_HAS_CUSTOM)) {
-					PARTICLE.custom = src_particles.data[src_index].custom;
-				} else {
-					PARTICLE.custom = vec4(0);
-					restart_custom = true;
-				}
-			}
-		}
-
-	} else if (FRAME.emitting) {
-		float restart_phase = float(index) / float(params.total_particles);
-
-		if (FRAME.randomness > 0.0) {
-			uint seed = FRAME.cycle;
-			if (restart_phase >= FRAME.system_phase) {
-				seed -= uint(1);
-			}
-			seed *= uint(params.total_particles);
-			seed += uint(index);
-			float random = float(hash(seed) % uint(65536)) / 65536.0;
-			restart_phase += FRAME.randomness * random * 1.0 / float(params.total_particles);
-		}
-
-		restart_phase *= (1.0 - FRAME.explosiveness);
-
-		if (FRAME.system_phase > FRAME.prev_system_phase) {
-			// restart_phase >= prev_system_phase is used so particles emit in the first frame they are processed
-
-			if (restart_phase >= FRAME.prev_system_phase && restart_phase < FRAME.system_phase) {
-				restart = true;
-				if (params.use_fractional_delta) {
-					local_delta = (FRAME.system_phase - restart_phase) * params.lifetime;
-				}
-			}
-
-		} else if (FRAME.delta > 0.0) {
-			if (restart_phase >= FRAME.prev_system_phase) {
-				restart = true;
-				if (params.use_fractional_delta) {
-					local_delta = (1.0 - restart_phase + FRAME.system_phase) * params.lifetime;
-				}
-
-			} else if (restart_phase < FRAME.system_phase) {
-				restart = true;
-				if (params.use_fractional_delta) {
-					local_delta = (FRAME.system_phase - restart_phase) * params.lifetime;
-				}
-			}
-		}
-
-		uint current_cycle = FRAME.cycle;
-
-		if (FRAME.system_phase < restart_phase) {
-			current_cycle -= uint(1);
-		}
-
-		uint particle_number = current_cycle * uint(params.total_particles) + particle;
-
-		if (restart) {
-			PARTICLE.is_active = FRAME.emitting;
-			restart_position = true;
-			restart_rotation_scale = true;
-			restart_velocity = true;
-			restart_color = true;
-			restart_custom = true;
-		}
-	}
-
 	if (PARTICLE.is_active) {
-		/* clang-format off */
-
-COMPUTE_SHADER_CODE
-
-		/* clang-format on */
+#CODE : PROCESS
 	}
 }

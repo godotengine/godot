@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -38,16 +38,15 @@
 #include "core/version_hash.gen.h"
 
 void EditorAbout::_theme_changed() {
-	Control *base = EditorNode::get_singleton()->get_gui_base();
-	Ref<Font> font = base->get_theme_font("source", "EditorFonts");
-	int font_size = base->get_theme_font_size("source_size", "EditorFonts");
+	const Ref<Font> font = get_theme_font("source", "EditorFonts");
+	const int font_size = get_theme_font_size("source_size", "EditorFonts");
 	_tpl_text->add_theme_font_override("normal_font", font);
 	_tpl_text->add_theme_font_size_override("normal_font_size", font_size);
 	_tpl_text->add_theme_constant_override("line_separation", 6 * EDSCALE);
 	_license_text->add_theme_font_override("normal_font", font);
 	_license_text->add_theme_font_size_override("normal_font_size", font_size);
 	_license_text->add_theme_constant_override("line_separation", 6 * EDSCALE);
-	_logo->set_texture(base->get_theme_icon("Logo", "EditorIcons"));
+	_logo->set_texture(get_theme_icon("Logo", "EditorIcons"));
 }
 
 void EditorAbout::_notification(int p_what) {
@@ -133,7 +132,7 @@ EditorAbout::EditorAbout() {
 	Label *about_text = memnew(Label);
 	about_text->set_v_size_flags(Control::SIZE_SHRINK_CENTER);
 	about_text->set_text(VERSION_FULL_NAME + hash +
-						 String::utf8("\n\xc2\xa9 2007-2020 Juan Linietsky, Ariel Manzur.\n\xc2\xa9 2014-2020 ") +
+						 String::utf8("\n\xc2\xa9 2007-2021 Juan Linietsky, Ariel Manzur.\n\xc2\xa9 2014-2021 ") +
 						 TTR("Godot Engine contributors") + "\n");
 	hbc->add_child(about_text);
 

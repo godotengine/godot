@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -433,8 +433,8 @@ void JoypadOSX::poll_joypads() const {
 	}
 }
 
-static const Input::JoyAxis axis_correct(int p_value, int p_min, int p_max) {
-	Input::JoyAxis jx;
+static const Input::JoyAxisValue axis_correct(int p_value, int p_min, int p_max) {
+	Input::JoyAxisValue jx;
 	if (p_min < 0) {
 		jx.min = -1;
 		if (p_value < 0) {

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -601,10 +601,10 @@ void RendererCanvasRenderRD::_render_item(RD::DrawListID p_draw_list, const Item
 					push_constant.flags |= FLAGS_NINEPACH_DRAW_CENTER;
 				}
 
-				push_constant.ninepatch_margins[0] = np->margin[MARGIN_LEFT];
-				push_constant.ninepatch_margins[1] = np->margin[MARGIN_TOP];
-				push_constant.ninepatch_margins[2] = np->margin[MARGIN_RIGHT];
-				push_constant.ninepatch_margins[3] = np->margin[MARGIN_BOTTOM];
+				push_constant.ninepatch_margins[0] = np->margin[SIDE_LEFT];
+				push_constant.ninepatch_margins[1] = np->margin[SIDE_TOP];
+				push_constant.ninepatch_margins[2] = np->margin[SIDE_RIGHT];
+				push_constant.ninepatch_margins[3] = np->margin[SIDE_BOTTOM];
 
 				RD::get_singleton()->draw_list_set_push_constant(p_draw_list, &push_constant, sizeof(PushConstant));
 				RD::get_singleton()->draw_list_bind_index_array(p_draw_list, shader.quad_index_array);
@@ -1367,7 +1367,7 @@ void RendererCanvasRenderRD::canvas_render_items(RID p_to_render_target, Item *p
 	}
 
 	if (light_count > 0) {
-		RD::get_singleton()->buffer_update(state.lights_uniform_buffer, 0, sizeof(LightUniform) * light_count, &state.light_uniforms[0], true);
+		RD::get_singleton()->buffer_update(state.lights_uniform_buffer, 0, sizeof(LightUniform) * light_count, &state.light_uniforms[0]);
 	}
 
 	{
@@ -1421,7 +1421,7 @@ void RendererCanvasRenderRD::canvas_render_items(RID p_to_render_target, Item *p
 		//print_line("w: " + itos(ssize.width) + " s: " + rtos(canvas_scale));
 		state_buffer.tex_to_sdf = 1.0 / ((canvas_scale.x + canvas_scale.y) * 0.5);
 
-		RD::get_singleton()->buffer_update(state.canvas_state_buffer, 0, sizeof(State::Buffer), &state_buffer, true);
+		RD::get_singleton()->buffer_update(state.canvas_state_buffer, 0, sizeof(State::Buffer), &state_buffer);
 	}
 
 	{ //default filter/repeat
@@ -1622,7 +1622,7 @@ void RendererCanvasRenderRD::light_update_shadow(RID p_rid, int p_shadow_index, 
 			projection.set_frustum(xmin, xmax, ymin, ymax, nearp, farp);
 		}
 
-		Vector3 cam_target = Basis(Vector3(0, 0, Math_PI * 2 * ((i + 3) / 4.0))).xform(Vector3(0, 1, 0));
+		Vector3 cam_target = Basis(Vector3(0, 0, Math_TAU * ((i + 3) / 4.0))).xform(Vector3(0, 1, 0));
 		projection = projection * CameraMatrix(Transform().looking_at(cam_target, Vector3(0, 0, -1)).affine_inverse());
 
 		ShadowRenderPushConstant push_constant;
@@ -1689,7 +1689,7 @@ void RendererCanvasRenderRD::light_update_directional_shadow(RID p_rid, int p_sh
 
 	to_light_xform[2] = from_pos;
 	to_light_xform[1] = light_dir;
-	to_light_xform[0] = -light_dir.tangent();
+	to_light_xform[0] = -light_dir.orthogonal();
 
 	to_light_xform.invert();
 
@@ -2012,6 +2012,9 @@ void RendererCanvasRenderRD::ShaderData::set_code(const String &p_code) {
 	uses_screen_texture = false;
 
 	ShaderCompilerRD::IdentifierActions actions;
+	actions.entry_point_stages["vertex"] = ShaderCompilerRD::STAGE_VERTEX;
+	actions.entry_point_stages["fragment"] = ShaderCompilerRD::STAGE_FRAGMENT;
+	actions.entry_point_stages["light"] = ShaderCompilerRD::STAGE_FRAGMENT;
 
 	actions.render_mode_values["blend_add"] = Pair<int *, int>(&blend_mode, BLEND_MODE_ADD);
 	actions.render_mode_values["blend_mix"] = Pair<int *, int>(&blend_mode, BLEND_MODE_MIX);
@@ -2048,7 +2051,7 @@ void RendererCanvasRenderRD::ShaderData::set_code(const String &p_code) {
 	print_line("\n**fragment_code:\n" + gen_code.fragment);
 	print_line("\n**light_code:\n" + gen_code.light);
 #endif
-	canvas_singleton->shader.canvas_shader.version_set_code(version, gen_code.uniforms, gen_code.vertex_global, gen_code.vertex, gen_code.fragment_global, gen_code.light, gen_code.fragment, gen_code.defines);
+	canvas_singleton->shader.canvas_shader.version_set_code(version, gen_code.code, gen_code.uniforms, gen_code.stage_globals[ShaderCompilerRD::STAGE_VERTEX], gen_code.stage_globals[ShaderCompilerRD::STAGE_FRAGMENT], gen_code.defines);
 	ERR_FAIL_COND(!canvas_singleton->shader.canvas_shader.version_is_valid(version));
 
 	ubo_size = gen_code.uniform_total_size;
@@ -2237,6 +2240,11 @@ Variant RendererCanvasRenderRD::ShaderData::get_default_parameter(const StringNa
 		return ShaderLanguage::constant_value_to_variant(default_value, uniform.type, uniform.hint);
 	}
 	return Variant();
+}
+
+RS::ShaderNativeSourceCode RendererCanvasRenderRD::ShaderData::get_native_source_code() const {
+	RendererCanvasRenderRD *canvas_singleton = (RendererCanvasRenderRD *)RendererCanvasRender::singleton;
+	return canvas_singleton->shader.canvas_shader.version_get_native_source_code(version);
 }
 
 RendererCanvasRenderRD::ShaderData::ShaderData() {
@@ -2488,8 +2496,8 @@ RendererCanvasRenderRD::RendererCanvasRenderRD(RendererStorageRD *p_storage) {
 
 		actions.renames["COLOR"] = "color";
 		actions.renames["NORMAL"] = "normal";
-		actions.renames["NORMALMAP"] = "normal_map";
-		actions.renames["NORMALMAP_DEPTH"] = "normal_depth";
+		actions.renames["NORMAL_MAP"] = "normal_map";
+		actions.renames["NORMAL_MAP_DEPTH"] = "normal_map_depth";
 		actions.renames["TEXTURE"] = "color_texture";
 		actions.renames["TEXTURE_PIXEL_SIZE"] = "draw_data.color_texture_pixel_size";
 		actions.renames["NORMAL_TEXTURE"] = "normal_texture";
@@ -2501,7 +2509,7 @@ RendererCanvasRenderRD::RendererCanvasRenderRD(RendererStorageRD *p_storage) {
 		actions.renames["FRAGCOORD"] = "gl_FragCoord";
 		actions.renames["POINT_COORD"] = "gl_PointCoord";
 
-		actions.renames["LIGHT_POSITION"] = "light_pos";
+		actions.renames["LIGHT_POSITION"] = "light_position";
 		actions.renames["LIGHT_COLOR"] = "light_color";
 		actions.renames["LIGHT_ENERGY"] = "light_energy";
 		actions.renames["LIGHT"] = "light";
@@ -2517,7 +2525,7 @@ RendererCanvasRenderRD::RendererCanvasRenderRD(RendererStorageRD *p_storage) {
 		actions.usage_defines["SCREEN_UV"] = "#define SCREEN_UV_USED\n";
 		actions.usage_defines["SCREEN_PIXEL_SIZE"] = "@SCREEN_UV";
 		actions.usage_defines["NORMAL"] = "#define NORMAL_USED\n";
-		actions.usage_defines["NORMALMAP"] = "#define NORMALMAP_USED\n";
+		actions.usage_defines["NORMAL_MAP"] = "#define NORMAL_MAP_USED\n";
 		actions.usage_defines["LIGHT"] = "#define LIGHT_SHADER_CODE_USED\n";
 
 		actions.render_mode_defines["skip_vertex_transform"] = "#define SKIP_TRANSFORM_USED\n";
@@ -2690,9 +2698,10 @@ RendererCanvasRenderRD::RendererCanvasRenderRD(RendererStorageRD *p_storage) {
 		state.default_transforms_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, shader.default_version_rd_shader, TRANSFORMS_UNIFORM_SET);
 	}
 
-	default_canvas_texture = storage->canvas_texture_create();
+	default_canvas_texture = storage->canvas_texture_allocate();
+	storage->canvas_texture_initialize(default_canvas_texture);
 
-	state.shadow_texture_size = GLOBAL_GET("rendering/quality/2d_shadow_atlas/size");
+	state.shadow_texture_size = GLOBAL_GET("rendering/2d/shadow_atlas/size");
 
 	//create functions for shader and material
 	storage->shader_set_data_request_function(RendererStorageRD::SHADER_TYPE_2D, _create_shader_funcs);
@@ -2701,9 +2710,14 @@ RendererCanvasRenderRD::RendererCanvasRenderRD(RendererStorageRD *p_storage) {
 	state.time = 0;
 
 	{
-		default_canvas_group_shader = storage->shader_create();
+		default_canvas_group_shader = storage->shader_allocate();
+		storage->shader_initialize(default_canvas_group_shader);
+
 		storage->shader_set_code(default_canvas_group_shader, "shader_type canvas_item; \nvoid fragment() {\n\tvec4 c = textureLod(SCREEN_TEXTURE,SCREEN_UV,0.0); if (c.a > 0.0001) c.rgb/=c.a; COLOR *= c; \n}\n");
-		default_canvas_group_material = storage->material_create();
+
+		default_canvas_group_material = storage->material_allocate();
+		storage->material_initialize(default_canvas_group_material);
+
 		storage->material_set_shader(default_canvas_group_material, default_canvas_group_shader);
 	}
 

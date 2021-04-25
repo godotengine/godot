@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="XRPositionalTracker" inherits="Object" version="4.0">
+<class name="XRPositionalTracker" inherits="Reference" version="4.0">
 	<brief_description>
 		A tracked object.
 	</brief_description>
@@ -12,13 +12,6 @@
 		<link title="VR tutorial index">https://docs.godotengine.org/en/latest/tutorials/vr/index.html</link>
 	</tutorials>
 	<methods>
-		<method name="get_hand" qualifiers="const">
-			<return type="int" enum="XRPositionalTracker.TrackerHand">
-			</return>
-			<description>
-				Returns the hand holding this tracker, if known. See [enum TrackerHand] constants.
-			</description>
-		</method>
 		<method name="get_joy_id" qualifiers="const">
 			<return type="int">
 			</return>
@@ -47,6 +40,13 @@
 				Returns the world-space controller position.
 			</description>
 		</method>
+		<method name="get_tracker_hand" qualifiers="const">
+			<return type="int" enum="XRPositionalTracker.TrackerHand">
+			</return>
+			<description>
+				Returns the hand holding this tracker, if known. See [enum TrackerHand] constants.
+			</description>
+		</method>
 		<method name="get_tracker_id" qualifiers="const">
 			<return type="int">
 			</return>
@@ -68,20 +68,6 @@
 				Returns the tracker's type, which will be one of the values from the [enum XRServer.TrackerType] enum.
 			</description>
 		</method>
-		<method name="get_tracks_orientation" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-				Returns [code]true[/code] if this device tracks orientation.
-			</description>
-		</method>
-		<method name="get_tracks_position" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-				Returns [code]true[/code] if this device tracks position.
-			</description>
-		</method>
 		<method name="get_transform" qualifiers="const">
 			<return type="Transform">
 			</return>
@@ -89,6 +75,20 @@
 			</argument>
 			<description>
 				Returns the transform combining this device's orientation and position.
+			</description>
+		</method>
+		<method name="is_tracking_orientation" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Returns [code]true[/code] if this device is tracking orientation.
+			</description>
+		</method>
+		<method name="is_tracking_position" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Returns [code]true[/code] if this device is tracking position.
 			</description>
 		</method>
 	</methods>
@@ -101,10 +101,10 @@
 		<constant name="TRACKER_HAND_UNKNOWN" value="0" enum="TrackerHand">
 			The hand this tracker is held in is unknown or not applicable.
 		</constant>
-		<constant name="TRACKER_LEFT_HAND" value="1" enum="TrackerHand">
+		<constant name="TRACKER_HAND_LEFT" value="1" enum="TrackerHand">
 			This tracker is the left hand controller.
 		</constant>
-		<constant name="TRACKER_RIGHT_HAND" value="2" enum="TrackerHand">
+		<constant name="TRACKER_HAND_RIGHT" value="2" enum="TrackerHand">
 			This tracker is the right hand controller.
 		</constant>
 	</constants>

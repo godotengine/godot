@@ -30,6 +30,8 @@ while IFS= read -rd '' f; do
         continue
     elif [[ "$f" == "platform/android/java/lib/src/com/google"* ]]; then
         continue
+    elif [[ "$f" == *"-so_wrap."* ]]; then
+        continue
     fi
     # Ensure that files are UTF-8 formatted.
     recode UTF-8 "$f" 2> /dev/null
@@ -38,15 +40,6 @@ while IFS= read -rd '' f; do
     # Remove trailing space characters and ensures that files end
     # with newline characters. -l option handles newlines conveniently.
     perl -i -ple 's/\s*$//g' "$f"
-    # Remove the character sequence "== true" if it has a leading space.
-    perl -i -pe 's/\x20== true//g' "$f"
-
-    if [[ $(uname) == "Linux" ]] && [[ "$f" != *"xml" ]]; then
-        # Remove empty lines after the opening brace of indented blocks.
-        sed -z -i 's/\x7B\x0A\x0A\x09/\x7B\x0A\x09/g' "$f"
-        # Remove empty lines before the closing brace (in some cases).
-        sed -z -i 's/\x0A\x0A\x7D/\x0A\x7D/g' "$f"
-    fi
 done
 
 git diff > patch.patch

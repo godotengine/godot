@@ -1,6 +1,6 @@
 # Russian translation of the Godot Engine editor
-# Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.
-# Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).
+# Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.
+# Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).
 # This file is distributed under the same license as the Godot source code.
 # Аркадий Авас <savvot@gmail.com>, 2018.
 # Artem Varaksa <aymfst@gmail.com>, 2018.
@@ -56,7 +56,7 @@
 # Константин Рин <email.to.rean@gmail.com>, 2019, 2020.
 # Maxim Samburskiy <alpacones@outlook.com>, 2019.
 # Dima Koshel <form.eater@gmail.com>, 2019.
-# Danil Alexeev <danil@alexeev.xyz>, 2019, 2020.
+# Danil Alexeev <danil@alexeev.xyz>, 2019, 2020, 2021.
 # Ravager <al.porkhunov@gmail.com>, 2019.
 # Александр <akonn7@mail.ru>, 2019.
 # Rei <clxgamer12@gmail.com>, 2019.
@@ -89,11 +89,15 @@
 # Nikita Epifanov <nikgreens@protonmail.com>, 2020.
 # Cube Show <griiv.06@gmail.com>, 2020.
 # Roman Tolkachyov <roman@tolkachyov.name>, 2020.
+# Igor Grachev <igorecha.9999@gmail.com>, 2020.
+# Dmytro Meleshko <dmytro.meleshko@gmail.com>, 2021.
+# narrnika <narr13niki@gmail.com>, 2021.
+# nec-trou <darya.bilyalova@gmail.com>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-12-01 20:29+0000\n"
+"PO-Revision-Date: 2021-04-19 22:33+0000\n"
 "Last-Translator: Danil Alexeev <danil@alexeev.xyz>\n"
 "Language-Team: Russian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ru/>\n"
@@ -103,7 +107,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
 "%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 4.4-dev\n"
+"X-Generator: Weblate 4.7-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -731,7 +735,7 @@ msgstr "Выбрать треки для копирования"
 #: editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp editor/property_editor.cpp
-#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
+#: editor/scene_tree_dock.cpp scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Copy"
 msgstr "Копировать"
 
@@ -1117,8 +1121,8 @@ msgid ""
 "Remove selected files from the project? (no undo)\n"
 "You can find the removed files in the system trash to restore them."
 msgstr ""
-"Удалить выбранные файлы из проекта? (Нельзя восстановить)\n"
-"Вы можете найти удалённые файлы в Корзине, чтобы восстановить их."
+"Удалить выбранные файлы из проекта? (Нельзя отменить)\n"
+"Вы можете найти удалённые файлы в корзине, чтобы восстановить их."
 
 #: editor/dependency_editor.cpp
 msgid ""
@@ -1128,8 +1132,8 @@ msgid ""
 "You can find the removed files in the system trash to restore them."
 msgstr ""
 "Удаляемые файлы требуются для правильной работы других ресурсов.\n"
-"Всё равно удалить их? (Нельзя отменить!)\n"
-"Вы можете найти удалённые файлы в Корзине, чтобы восстановить их."
+"Всё равно удалить их? (Нельзя отменить)\n"
+"Вы можете найти удалённые файлы в корзине, чтобы восстановить их."
 
 #: editor/dependency_editor.cpp
 msgid "Cannot remove:"
@@ -1936,8 +1940,8 @@ msgid "Open a File or Directory"
 msgstr "Открыть каталог или файл"
 
 #: editor/editor_file_dialog.cpp editor/editor_node.cpp
-#: editor/editor_properties.cpp editor/inspector_dock.cpp
-#: editor/plugins/animation_player_editor_plugin.cpp
+#: editor/editor_properties.cpp editor/import_defaults_editor.cpp
+#: editor/inspector_dock.cpp editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/script_editor_plugin.cpp scene/gui/file_dialog.cpp
 msgid "Save"
 msgstr "Сохранить"
@@ -2028,10 +2032,6 @@ msgstr "Предпросмотр:"
 msgid "File:"
 msgstr "Файл:"
 
-#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
-msgid "Must use a valid extension."
-msgstr "Нужно использовать доступное расширение."
-
 #: editor/editor_file_system.cpp
 msgid "ScanSources"
 msgstr "Сканировать исходники"
@@ -2079,7 +2079,7 @@ msgstr "Свойства"
 
 #: editor/editor_help.cpp
 msgid "override:"
-msgstr "Переопределить:"
+msgstr "переопределено:"
 
 #: editor/editor_help.cpp
 msgid "default:"
@@ -2469,6 +2469,10 @@ msgid "There is no defined scene to run."
 msgstr "Нет открытой сцены для запуска."
 
 #: editor/editor_node.cpp
+msgid "Save scene before running..."
+msgstr "Сохранение сцены перед запуском..."
+
+#: editor/editor_node.cpp
 msgid "Could not start subprocess!"
 msgstr "Не удаётся запустить подпроцесс!"
 
@@ -2511,18 +2515,6 @@ msgstr "Для сохранения сцены требуется корнево
 #: editor/editor_node.cpp
 msgid "Save Scene As..."
 msgstr "Сохранить сцену как..."
-
-#: editor/editor_node.cpp
-msgid "No"
-msgstr "Нет"
-
-#: editor/editor_node.cpp
-msgid "Yes"
-msgstr "Да"
-
-#: editor/editor_node.cpp
-msgid "This scene has never been saved. Save before running?"
-msgstr "Эта сцена никогда не была сохранена. Сохранить перед запуском?"
 
 #: editor/editor_node.cpp editor/scene_tree_dock.cpp
 msgid "This operation can't be done without a scene."
@@ -2573,6 +2565,10 @@ msgid "Quit"
 msgstr "Выход"
 
 #: editor/editor_node.cpp
+msgid "Yes"
+msgstr "Да"
+
+#: editor/editor_node.cpp
 msgid "Exit the editor?"
 msgstr "Выйти из редактора?"
 
@@ -2620,8 +2616,8 @@ msgstr ""
 "конфигурации."
 
 #: editor/editor_node.cpp
-msgid "Unable to find script field for addon plugin at: 'res://addons/%s'."
-msgstr "Не удаётся найти поле script для плагина: «res://addons/%s»."
+msgid "Unable to find script field for addon plugin at: '%s'."
+msgstr "Не удаётся найти поле script для плагина: «%s»."
 
 #: editor/editor_node.cpp
 msgid "Unable to load addon script from path: '%s'."
@@ -2671,7 +2667,7 @@ msgstr "Сцена «%s» имеет испорченные зависимост
 
 #: editor/editor_node.cpp
 msgid "Clear Recent Scenes"
-msgstr "Очистить последние сцены"
+msgstr "Очистить недавние сцены"
 
 #: editor/editor_node.cpp
 msgid ""
@@ -2817,7 +2813,7 @@ msgstr "Открыть сцену..."
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 msgid "Open Recent"
-msgstr "Открыть последнее"
+msgstr "Открыть недавнее"
 
 #: editor/editor_node.cpp
 msgid "Save Scene"
@@ -3051,14 +3047,6 @@ msgid "Help"
 msgstr "Справка"
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/script_text_editor.cpp
-#: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
-#: editor/plugins/visual_shader_editor_plugin.cpp editor/project_manager.cpp
-#: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
-msgid "Search"
-msgstr "Поиск"
-
-#: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/shader_editor_plugin.cpp
 msgid "Online Docs"
 msgstr "Онлайн документация"
@@ -3113,7 +3101,7 @@ msgstr "Запустить сцену"
 
 #: editor/editor_node.cpp
 msgid "Play custom scene"
-msgstr "Запустить выборочную сцену"
+msgstr "Запустить произвольную сцену"
 
 #: editor/editor_node.cpp
 msgid "Play Custom Scene"
@@ -3223,6 +3211,24 @@ msgstr "Объединить с существующей"
 #: editor/editor_node.cpp
 msgid "Open & Run a Script"
 msgstr "Открыть и запустить скрипт"
+
+#: editor/editor_node.cpp
+msgid ""
+"The following files are newer on disk.\n"
+"What action should be taken?"
+msgstr ""
+"Следующие файлы изменены на диске.\n"
+"Какое действие следует выполнить?"
+
+#: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/shader_editor_plugin.cpp
+msgid "Reload"
+msgstr "Перезагрузить"
+
+#: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/shader_editor_plugin.cpp
+msgid "Resave"
+msgstr "Пересохранить"
 
 #: editor/editor_node.cpp
 msgid "New Inherited"
@@ -3435,7 +3441,7 @@ msgstr "Сделать уникальным"
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 #: editor/plugins/tile_map_editor_plugin.cpp editor/property_editor.cpp
-#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
+#: editor/scene_tree_dock.cpp scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Paste"
 msgstr "Вставить"
 
@@ -3559,7 +3565,7 @@ msgstr "(Текущий)"
 
 #: editor/export_template_manager.cpp
 msgid "Retrieving mirrors, please wait..."
-msgstr "Получение зеркал, пожалуйста подождите..."
+msgstr "Получение зеркал, пожалуйста, ждите..."
 
 #: editor/export_template_manager.cpp
 msgid "Remove template version '%s'?"
@@ -3751,6 +3757,13 @@ msgstr ""
 "переимпортируйте вручную."
 
 #: editor/filesystem_dock.cpp
+msgid ""
+"Importing has been disabled for this file, so it can't be opened for editing."
+msgstr ""
+"Импорт был отключён для этого файла, поэтому его нельзя открыть для "
+"редактирования."
+
+#: editor/filesystem_dock.cpp
 msgid "Cannot move/rename resources root."
 msgstr "Нельзя переместить/переименовать корень."
 
@@ -3795,6 +3808,12 @@ msgid ""
 "\n"
 "Do you wish to overwrite them?"
 msgstr ""
+"Обнаружен конфликт следующих файлов (или папок) с объектами находящимися в "
+"целевой директории '%s':\n"
+"\n"
+"%s\n"
+"\n"
+"Вы хотите их перезаписать?"
 
 #: editor/filesystem_dock.cpp
 msgid "Renaming file:"
@@ -3876,7 +3895,7 @@ msgstr "Дублировать..."
 
 #: editor/filesystem_dock.cpp
 msgid "Move to Trash"
-msgstr "Удалить в Корзину"
+msgstr "Удалить в корзину"
 
 #: editor/filesystem_dock.cpp editor/plugins/animation_player_editor_plugin.cpp
 msgid "Rename..."
@@ -3908,7 +3927,7 @@ msgid ""
 "Please Wait..."
 msgstr ""
 "Сканирование файлов,\n"
-"пожалуйста, подождите..."
+"пожалуйста, ждите..."
 
 #: editor/filesystem_dock.cpp
 msgid "Move"
@@ -3980,15 +3999,23 @@ msgstr "Заменить: "
 
 #: editor/find_in_files.cpp
 msgid "Replace all (no undo)"
-msgstr "Заменить всё (без возможности отмены)"
+msgstr "Заменить всё (нельзя отменить)"
 
 #: editor/find_in_files.cpp
 msgid "Searching..."
 msgstr "Поиск..."
 
 #: editor/find_in_files.cpp
-msgid "Search complete"
-msgstr "Поиск завершен"
+msgid "%d match in %d file."
+msgstr "%d совпадение в %d файле."
+
+#: editor/find_in_files.cpp
+msgid "%d matches in %d file."
+msgstr "%d совпадения(ий) в %d файле."
+
+#: editor/find_in_files.cpp
+msgid "%d matches in %d files."
+msgstr "%d совпадения(ий) в %d файле(ах)."
 
 #: editor/groups_editor.cpp
 msgid "Add to Group"
@@ -4124,6 +4151,22 @@ msgstr "Вы вернули производный от Node объект в м�
 msgid "Saving..."
 msgstr "Сохранение..."
 
+#: editor/import_defaults_editor.cpp
+msgid "Select Importer"
+msgstr "Выберите импортёр"
+
+#: editor/import_defaults_editor.cpp
+msgid "Importer:"
+msgstr "Импортёр:"
+
+#: editor/import_defaults_editor.cpp
+msgid "Reset to Defaults"
+msgstr "Сбросить настройки"
+
+#: editor/import_dock.cpp
+msgid "Keep File (No Import)"
+msgstr "Сохранить файл (без импорта)"
+
 #: editor/import_dock.cpp
 msgid "%d Files"
 msgstr "%d файлов"
@@ -4226,7 +4269,7 @@ msgstr "Перейти к следующему редактируемому об
 
 #: editor/inspector_dock.cpp
 msgid "History of recently edited objects."
-msgstr "История последних отредактированных объектов."
+msgstr "История недавно отредактированных объектов."
 
 #: editor/inspector_dock.cpp
 msgid "Object properties."
@@ -5080,7 +5123,7 @@ msgstr "Время ожидания."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Bad download hash, assuming file has been tampered with."
-msgstr "Несовпадение хэша загрузки, возможно файл был изменён."
+msgstr "Несовпадение хеша загрузки, возможно файл был изменён."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Expected:"
@@ -5091,8 +5134,8 @@ msgid "Got:"
 msgstr "Получено:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-msgid "Failed sha256 hash check"
-msgstr "Не удалось проверить sha256 хэш"
+msgid "Failed SHA-256 hash check"
+msgstr "Не удалось проверить хеш SHA-256"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Asset Download Error:"
@@ -5195,7 +5238,6 @@ msgid "Sort:"
 msgstr "Сортировка:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#: editor/project_settings_editor.cpp
 msgid "Category:"
 msgstr "Категория:"
 
@@ -5226,12 +5268,10 @@ msgstr "ZIP файл ассетов"
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid ""
 "Can't determine a save path for lightmap images.\n"
-"Save your scene (for images to be saved in the same dir), or pick a save "
-"path from the BakedLightmap properties."
+"Save your scene and try again."
 msgstr ""
-"Не удается определить путь для сохранения lightmap.\n"
-"Сохраните ваши сцены (чтобы изображения были сохранены в том же разделе), "
-"или выберите путь сохранения в свойствах BakedLightmap."
+"Не удалось определить путь для сохранения изображений карты освещения.\n"
+"Сохраните сцену и попробуйте ещё раз."
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid ""
@@ -5247,8 +5287,33 @@ msgstr ""
 "Сбой создания карты освещенности, убедитесь, что путь доступен для записи."
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
+msgid "Failed determining lightmap size. Maximum lightmap size too small?"
+msgstr ""
+"Не удалось определить размер карты освещения. Максимальный размер карты "
+"освещения слишком мал?"
+
+#: editor/plugins/baked_lightmap_editor_plugin.cpp
+msgid ""
+"Some mesh is invalid. Make sure the UV2 channel values are contained within "
+"the [0.0,1.0] square region."
+msgstr ""
+"Некоторая полисетка некорректна. Убедитесь, что значения канала UV2 "
+"находятся в квадратной области [0.0,1.0]."
+
+#: editor/plugins/baked_lightmap_editor_plugin.cpp
+msgid ""
+"Godot editor was built without ray tracing support, lightmaps can't be baked."
+msgstr ""
+"Редактор Godot был собран без поддержки трассировки лучей, карты освещения "
+"невозможно запечь."
+
+#: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid "Bake Lightmaps"
 msgstr "Запекать карты освещения"
+
+#: editor/plugins/baked_lightmap_editor_plugin.cpp
+msgid "Select lightmap bake file:"
+msgstr "Выберите файл запекания карты освещения:"
 
 #: editor/plugins/camera_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -5696,7 +5761,7 @@ msgstr "Очистить пользовательские кости"
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "View"
-msgstr "Обзор"
+msgstr "Вид"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Always Show Grid"
@@ -5736,7 +5801,7 @@ msgstr "Кадрировать выбранное"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Preview Canvas Scale"
-msgstr "Просмотреть Canvas Scale"
+msgstr "Предпросмотр Canvas Scale"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Translation mask for inserting keys."
@@ -6340,6 +6405,10 @@ msgid "Can only set point into a ParticlesMaterial process material"
 msgstr "Возможно установить точку только в ParticlesMaterial материал"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
+msgid "Convert to CPUParticles2D"
+msgstr "Преобразовать в CPUParticles2D"
+
+#: editor/plugins/particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Generation Time (sec):"
 msgstr "Время генерации (сек):"
@@ -6398,10 +6467,6 @@ msgstr "Генерация AABB"
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Generate Visibility AABB"
-msgstr "Генерировать AABB"
-
-#: editor/plugins/particles_editor_plugin.cpp
-msgid "Generate AABB"
 msgstr "Генерировать AABB"
 
 #: editor/plugins/path_2d_editor_plugin.cpp
@@ -6708,7 +6773,7 @@ msgstr "Привязка"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Enable Snap"
-msgstr "Активировать привязку"
+msgstr "Включить привязку"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Grid"
@@ -6951,7 +7016,7 @@ msgstr "Сохранить всё"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Soft Reload Script"
-msgstr "Мягкая перезагрузка скрипта"
+msgstr "Мягко перезагрузить скрипт"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Copy Script Path"
@@ -6993,6 +7058,14 @@ msgstr "Закрыть документацию"
 #: editor/plugins/script_editor_plugin.cpp editor/project_manager.cpp
 msgid "Run"
 msgstr "Запустить"
+
+#: editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/script_text_editor.cpp
+#: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
+#: editor/plugins/visual_shader_editor_plugin.cpp editor/project_manager.cpp
+#: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
+msgid "Search"
+msgstr "Поиск"
 
 #: editor/plugins/script_editor_plugin.cpp editor/script_editor_debugger.cpp
 msgid "Step Into"
@@ -7046,16 +7119,6 @@ msgid ""
 msgstr ""
 "Следующие файлы новее на диске.\n"
 "Какие меры должны быть приняты?:"
-
-#: editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/shader_editor_plugin.cpp
-msgid "Reload"
-msgstr "Перезагрузить"
-
-#: editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/shader_editor_plugin.cpp
-msgid "Resave"
-msgstr "Пересохранить"
 
 #: editor/plugins/script_editor_plugin.cpp editor/script_editor_debugger.cpp
 msgid "Debugger"
@@ -7153,8 +7216,8 @@ msgstr "Точки останова"
 msgid "Go To"
 msgstr "Перейти к"
 
-#: editor/plugins/script_text_editor.cpp scene/gui/line_edit.cpp
-#: scene/gui/text_edit.cpp
+#: editor/plugins/script_text_editor.cpp editor/scene_tree_dock.cpp
+#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Cut"
 msgstr "Вырезать"
 
@@ -7181,7 +7244,7 @@ msgstr "Переключить комментарий"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Fold/Unfold Line"
-msgstr "Свернуть/Развернуть строку"
+msgstr "Свернуть/развернуть строку"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Fold All Lines"
@@ -7213,11 +7276,11 @@ msgstr "Преобразовать отступ в пробелы"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Convert Indent to Tabs"
-msgstr "Преобразовать отступы в табуляторы"
+msgstr "Преобразовать отступы в табуляцию"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Auto Indent"
-msgstr "Авто-отступ"
+msgstr "Автоотступ"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Find in Files..."
@@ -7377,8 +7440,12 @@ msgid "Yaw"
 msgstr "Рыскание"
 
 #: editor/plugins/spatial_editor_plugin.cpp
+msgid "Size"
+msgstr "Размер"
+
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Objects Drawn"
-msgstr "Нарисовано обьектов"
+msgstr "Нарисовано объектов"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Material Changes"
@@ -7555,6 +7622,11 @@ msgstr "Модификатор замедления свободного вид�
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "View Rotation Locked"
 msgstr "Блокировать вращение камеры"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid ""
+"To zoom further, change the camera's clipping planes (View -> Settings...)"
+msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid ""
@@ -8624,10 +8696,6 @@ msgid "Error"
 msgstr "Ошибка"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-msgid "No commit message was provided"
-msgstr "Не указано сообщение коммита"
-
-#: editor/plugins/version_control_editor_plugin.cpp
 msgid "No files added to stage"
 msgstr "Не добавлены файлы для коммита"
 
@@ -8682,10 +8750,6 @@ msgstr "Индекс. выбранные"
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Stage All"
 msgstr "Индекс. всё"
-
-#: editor/plugins/version_control_editor_plugin.cpp
-msgid "Add a commit message"
-msgstr "Добавьте сообщение коммита"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Commit Changes"
@@ -9891,7 +9955,7 @@ msgstr "OpenGL ES 3.0"
 
 #: editor/project_manager.cpp
 msgid "Not supported by your GPU drivers."
-msgstr ""
+msgstr "Не поддерживается вашими драйверами GPU."
 
 #: editor/project_manager.cpp
 msgid ""
@@ -10066,6 +10130,10 @@ msgstr "Менеджер проектов"
 #: editor/project_manager.cpp
 msgid "Projects"
 msgstr "Проекты"
+
+#: editor/project_manager.cpp
+msgid "Loading, please wait..."
+msgstr "Загрузка, пожалуйста, ждите..."
 
 #: editor/project_manager.cpp
 msgid "Last Modified"
@@ -10437,6 +10505,10 @@ msgstr "Автозагрузка"
 msgid "Plugins"
 msgstr "Плагины"
 
+#: editor/project_settings_editor.cpp
+msgid "Import Defaults"
+msgstr "Шаблоны импорта"
+
 #: editor/property_editor.cpp
 msgid "Preset..."
 msgstr "Предустановка..."
@@ -10688,6 +10760,14 @@ msgid "Instance Child Scene"
 msgstr "Добавить дочернюю сцену"
 
 #: editor/scene_tree_dock.cpp
+msgid "Can't paste root node into the same scene."
+msgstr "Невозможно вставить корневой узел в ту же сцену."
+
+#: editor/scene_tree_dock.cpp
+msgid "Paste Node(s)"
+msgstr "Вставить узел(узлы)"
+
+#: editor/scene_tree_dock.cpp
 msgid "Detach Script"
 msgstr "Открепить скрипт"
 
@@ -10815,6 +10895,10 @@ msgid "Attach Script"
 msgstr "Прикрепить скрипт"
 
 #: editor/scene_tree_dock.cpp
+msgid "Cut Node(s)"
+msgstr "Вырезать узел(узлы)"
+
+#: editor/scene_tree_dock.cpp
 msgid "Remove Node(s)"
 msgstr "Удалить узел(узлы)"
 
@@ -10927,6 +11011,13 @@ msgstr "Убрать скрипт у выбранного узла."
 #: editor/scene_tree_dock.cpp
 msgid "Remote"
 msgstr "Удаленный"
+
+#: editor/scene_tree_dock.cpp
+msgid ""
+"If selected, the Remote scene tree dock will cause the project to stutter "
+"every time it updates.\n"
+"Switch back to the Local scene tree dock to improve performance."
+msgstr ""
 
 #: editor/scene_tree_dock.cpp
 msgid "Local"
@@ -11623,6 +11714,34 @@ msgid "Give a MeshLibrary resource to this GridMap to use its meshes."
 msgstr ""
 "Предоставьте ресурс MeshLibrary этой GridMap, чтобы использовать его сетки."
 
+#: modules/lightmapper_cpu/lightmapper_cpu.cpp
+msgid "Begin Bake"
+msgstr "Начать запекание"
+
+#: modules/lightmapper_cpu/lightmapper_cpu.cpp
+msgid "Preparing data structures"
+msgstr "Подготовка структур данных"
+
+#: modules/lightmapper_cpu/lightmapper_cpu.cpp
+msgid "Generate buffers"
+msgstr "Генерировать буфферы"
+
+#: modules/lightmapper_cpu/lightmapper_cpu.cpp
+msgid "Direct lighting"
+msgstr "Прямое освещение"
+
+#: modules/lightmapper_cpu/lightmapper_cpu.cpp
+msgid "Indirect lighting"
+msgstr "Непрямое освещение"
+
+#: modules/lightmapper_cpu/lightmapper_cpu.cpp
+msgid "Post processing"
+msgstr "Постобработка"
+
+#: modules/lightmapper_cpu/lightmapper_cpu.cpp
+msgid "Plotting lightmaps"
+msgstr "Построение карт освещения"
+
 #: modules/mono/csharp_script.cpp
 msgid "Class name can't be a reserved keyword"
 msgstr "Имя класса не может быть зарезервированным ключевым словом"
@@ -12135,12 +12254,15 @@ msgid "Select device from the list"
 msgstr "Выберите устройство из списка"
 
 #: platform/android/export/export.cpp
-msgid "ADB executable not configured in the Editor Settings."
-msgstr "Исполняемый файл ADB не сконфигурирован в настройках редактора."
+msgid "Unable to find the 'apksigner' tool."
+msgstr "Не удалось найти инструмент «apksigner»."
 
 #: platform/android/export/export.cpp
-msgid "OpenJDK jarsigner not configured in the Editor Settings."
-msgstr "OpenJDK jarsigner не настроен в Настройках Редактора."
+msgid ""
+"Android build template not installed in the project. Install it from the "
+"Project menu."
+msgstr ""
+"Шаблон сборки Android не установлен в проекте. Установите его в меню проекта."
 
 #: platform/android/export/export.cpp
 msgid "Debug keystore not configured in the Editor Settings nor in the preset."
@@ -12154,27 +12276,34 @@ msgstr ""
 "Хранилище ключей не настроено ни в настройках редактора, ни в предустановках."
 
 #: platform/android/export/export.cpp
-msgid "Custom build requires a valid Android SDK path in Editor Settings."
+msgid "A valid Android SDK path is required in Editor Settings."
 msgstr ""
-"Пользовательская сборка требует наличия правильного пути к Android SDK в "
-"настройках редактора."
+"Требуется указать действительный путь к Android SDK в Настройках редактора."
 
 #: platform/android/export/export.cpp
-msgid "Invalid Android SDK path for custom build in Editor Settings."
-msgstr ""
-"Неправильный путь к Android SDK для пользовательской сборки в настройках "
-"редактора."
+msgid "Invalid Android SDK path in Editor Settings."
+msgstr "Недействительный путь Android SDK в Настройках редактора."
 
 #: platform/android/export/export.cpp
 msgid "Missing 'platform-tools' directory!"
 msgstr "Директория «platform-tools» отсутствует!"
 
 #: platform/android/export/export.cpp
-msgid ""
-"Android build template not installed in the project. Install it from the "
-"Project menu."
+msgid "Unable to find Android SDK platform-tools' adb command."
+msgstr "Не удалось найти команду adb в Android SDK platform-tools."
+
+#: platform/android/export/export.cpp
+msgid "Please check in the Android SDK directory specified in Editor Settings."
 msgstr ""
-"Шаблон сборки Android не установлен в проекте. Установите его в меню проекта."
+"Пожалуйста, проверьте каталог Android SDK, указанный в Настройках редактора."
+
+#: platform/android/export/export.cpp
+msgid "Missing 'build-tools' directory!"
+msgstr "Директория «build-tools» отсутствует!"
+
+#: platform/android/export/export.cpp
+msgid "Unable to find Android SDK build-tools' apksigner command."
+msgstr "Не удалось найти команду apksigner в Android SDK build-tools."
 
 #: platform/android/export/export.cpp
 msgid "Invalid public key for APK expansion."
@@ -12431,6 +12560,16 @@ msgstr ""
 msgid "An empty CollisionPolygon2D has no effect on collision."
 msgstr "Пустой CollisionPolygon2D не влияет на столкновения."
 
+#: scene/2d/collision_polygon_2d.cpp
+msgid "Invalid polygon. At least 3 points are needed in 'Solids' build mode."
+msgstr ""
+"Недопустимый полигон. В режиме «Solids» необходимо по крайней мере 3 точки."
+
+#: scene/2d/collision_polygon_2d.cpp
+msgid "Invalid polygon. At least 2 points are needed in 'Segments' build mode."
+msgstr ""
+"Недопустимый полигон. В режиме «Segments» необходимо по крайней мере 2 точки."
+
 #: scene/2d/collision_shape_2d.cpp
 msgid ""
 "CollisionShape2D only serves to provide a collision shape to a "
@@ -12469,23 +12608,26 @@ msgstr ""
 
 #: scene/2d/joints_2d.cpp
 msgid "Node A and Node B must be PhysicsBody2Ds"
-msgstr ""
+msgstr "Узел А и Узел B должны быть экземплярами класса PhysicsBody2D"
 
 #: scene/2d/joints_2d.cpp
 msgid "Node A must be a PhysicsBody2D"
-msgstr ""
+msgstr "Узел А должен быть экземпляром класса PhysicsBody2D"
 
 #: scene/2d/joints_2d.cpp
 msgid "Node B must be a PhysicsBody2D"
-msgstr ""
+msgstr "Узел B должен быть экземпляром класса PhysicsBody2D"
 
 #: scene/2d/joints_2d.cpp
 msgid "Joint is not connected to two PhysicsBody2Ds"
 msgstr ""
+"Сустав должен быть связан с двумя объектами являющимися экземплярами класса "
+"PhysicsBody2D"
 
 #: scene/2d/joints_2d.cpp
 msgid "Node A and Node B must be different PhysicsBody2Ds"
 msgstr ""
+"Узел А и Узел B должны быть различными экземплярами класса PhysicsBody2D"
 
 #: scene/2d/light_2d.cpp
 msgid ""
@@ -12643,28 +12785,28 @@ msgid "ARVROrigin requires an ARVRCamera child node."
 msgstr "ARVROrigin требует дочерний узел ARVRCamera."
 
 #: scene/3d/baked_lightmap.cpp
-msgid "%d%%"
-msgstr "%d%%"
+msgid "Finding meshes and lights"
+msgstr "Поиск полисеток и источников света"
 
 #: scene/3d/baked_lightmap.cpp
-msgid "(Time Left: %d:%02d s)"
-msgstr "(Осталось: %d:%02d сек)"
+msgid "Preparing geometry (%d/%d)"
+msgstr "Подготовка геометрии (%d/%d)"
 
 #: scene/3d/baked_lightmap.cpp
-msgid "Plotting Meshes: "
-msgstr "Построение полисетки: "
+msgid "Preparing environment"
+msgstr "Подготовка окружения"
 
 #: scene/3d/baked_lightmap.cpp
-msgid "Plotting Lights:"
-msgstr "Построение света:"
-
-#: scene/3d/baked_lightmap.cpp scene/3d/gi_probe.cpp
-msgid "Finishing Plot"
-msgstr "Завершение построения"
+msgid "Generating capture"
+msgstr "Создание захвата"
 
 #: scene/3d/baked_lightmap.cpp
-msgid "Lighting Meshes: "
-msgstr "Освещение полисетки: "
+msgid "Saving lightmaps"
+msgstr "Сохранение карт освещения"
+
+#: scene/3d/baked_lightmap.cpp
+msgid "Done"
+msgstr "Готово"
 
 #: scene/3d/collision_object.cpp
 msgid ""
@@ -12739,17 +12881,16 @@ msgid "Plotting Meshes"
 msgstr "Построение полисетки"
 
 #: scene/3d/gi_probe.cpp
+msgid "Finishing Plot"
+msgstr "Завершение построения"
+
+#: scene/3d/gi_probe.cpp
 msgid ""
 "GIProbes are not supported by the GLES2 video driver.\n"
 "Use a BakedLightmap instead."
 msgstr ""
 "GIProbes не поддерживаются видеодрайвером GLES2.\n"
 "Вместо этого используйте BakedLightmap."
-
-#: scene/3d/interpolated_camera.cpp
-msgid ""
-"InterpolatedCamera has been deprecated and will be removed in Godot 4.0."
-msgstr "InterpolatedCamera устарела и будет удалена в Godot 4.0."
 
 #: scene/3d/light.cpp
 msgid "A SpotLight with an angle wider than 90 degrees cannot cast shadows."
@@ -12815,23 +12956,23 @@ msgstr ""
 
 #: scene/3d/physics_joint.cpp
 msgid "Node A and Node B must be PhysicsBodies"
-msgstr ""
+msgstr "Узел А и Узел В должны быть наследниками класса PhysicsBody"
 
 #: scene/3d/physics_joint.cpp
 msgid "Node A must be a PhysicsBody"
-msgstr ""
+msgstr "Узел А должен быть наследником класса PhysicsBody"
 
 #: scene/3d/physics_joint.cpp
 msgid "Node B must be a PhysicsBody"
-msgstr ""
+msgstr "Узел В должен быть наследником класса PhysicsBody"
 
 #: scene/3d/physics_joint.cpp
 msgid "Joint is not connected to any PhysicsBodies"
-msgstr ""
+msgstr "Сустав не соединён ни с одним экземпляром класса PhysicsBody"
 
 #: scene/3d/physics_joint.cpp
 msgid "Node A and Node B must be different PhysicsBodies"
-msgstr ""
+msgstr "Узел А и Узел В должны быть различными объектами класса PhysicsBody"
 
 #: scene/3d/remote_transform.cpp
 msgid ""
@@ -12993,6 +13134,14 @@ msgstr "Внимание!"
 msgid "Please Confirm..."
 msgstr "Подтверждение..."
 
+#: scene/gui/file_dialog.cpp
+msgid "Must use a valid extension."
+msgstr "Нужно использовать доступное расширение."
+
+#: scene/gui/graph_edit.cpp
+msgid "Enable grid minimap."
+msgstr "Включить миникарту сетки."
+
 #: scene/gui/popup.cpp
 msgid ""
 "Popups will hide by default unless you call popup() or any of the popup*() "
@@ -13048,6 +13197,14 @@ msgid "Viewport size must be greater than 0 to render anything."
 msgstr "Размер окна просмотра должен быть больше 0 для рендеринга."
 
 #: scene/resources/visual_shader_nodes.cpp
+msgid ""
+"The sampler port is connected but not used. Consider changing the source to "
+"'SamplerPort'."
+msgstr ""
+"Порт сэмплера подключен, но не используется. Рассмотрите возможность "
+"изменения источника на «SamplerPort»."
+
+#: scene/resources/visual_shader_nodes.cpp
 msgid "Invalid source for preview."
 msgstr "Неверный источник для предпросмотра."
 
@@ -13075,14 +13232,50 @@ msgstr "Изменения могут быть назначены только �
 msgid "Constants cannot be modified."
 msgstr "Константы не могут быть изменены."
 
+#~ msgid ""
+#~ "InterpolatedCamera has been deprecated and will be removed in Godot 4.0."
+#~ msgstr "InterpolatedCamera устарела и будет удалена в Godot 4.0."
+
+#~ msgid "No"
+#~ msgstr "Нет"
+
+#~ msgid "This scene has never been saved. Save before running?"
+#~ msgstr "Эта сцена никогда не была сохранена. Сохранить перед запуском?"
+
+#~ msgid "ADB executable not configured in the Editor Settings."
+#~ msgstr "Исполняемый файл ADB не сконфигурирован в настройках редактора."
+
+#~ msgid "OpenJDK jarsigner not configured in the Editor Settings."
+#~ msgstr "OpenJDK jarsigner не настроен в Настройках Редактора."
+
+#~ msgid "Custom build requires a valid Android SDK path in Editor Settings."
+#~ msgstr ""
+#~ "Пользовательская сборка требует наличия правильного пути к Android SDK в "
+#~ "настройках редактора."
+
+#~ msgid "%d%%"
+#~ msgstr "%d%%"
+
+#~ msgid "(Time Left: %d:%02d s)"
+#~ msgstr "(Осталось: %d:%02d сек)"
+
+#~ msgid "Plotting Meshes: "
+#~ msgstr "Построение полисетки: "
+
+#~ msgid "Lighting Meshes: "
+#~ msgstr "Освещение полисетки: "
+
+#~ msgid "Search complete"
+#~ msgstr "Поиск завершен"
+
+#~ msgid "No commit message was provided"
+#~ msgstr "Не указано сообщение коммита"
+
+#~ msgid "Add a commit message"
+#~ msgstr "Добавьте сообщение коммита"
+
 #~ msgid "There is already file or folder with the same name in this location."
 #~ msgstr "По этому пути уже существует файл или папка с указанным именем."
-
-#~ msgid "Missing 'build-tools' directory!"
-#~ msgstr "Директория «build-tools» отсутствует!"
-
-#~ msgid "Unable to find the zipalign tool."
-#~ msgstr "Не удалось найти инструмент zipalign."
 
 #~ msgid "Aligning APK..."
 #~ msgstr "Выравнивание APK..."
@@ -13425,9 +13618,6 @@ msgstr "Константы не могут быть изменены."
 
 #~ msgid "Failed to save solution."
 #~ msgstr "Не удалось сохранить решение."
-
-#~ msgid "Done"
-#~ msgstr "Готово"
 
 #~ msgid "Failed to create C# project."
 #~ msgstr "Не удалось создать C# проект."
@@ -14708,9 +14898,6 @@ msgstr "Константы не могут быть изменены."
 
 #~ msgid "Use Default Light"
 #~ msgstr "Использовать стандартный свет"
-
-#~ msgid "Use Default sRGB"
-#~ msgstr "Использовать sRGB"
 
 #~ msgid "Default Light Normal:"
 #~ msgstr "Образец стандартного освещения:"

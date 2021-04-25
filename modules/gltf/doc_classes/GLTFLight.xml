@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="GLTFLight" inherits="Resource" version="4.0">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+	</methods>
+	<members>
+		<member name="color" type="Color" setter="set_color" getter="get_color" default="Color( 0, 0, 0, 1 )">
+		</member>
+		<member name="inner_cone_angle" type="float" setter="set_inner_cone_angle" getter="get_inner_cone_angle" default="0.0">
+		</member>
+		<member name="intensity" type="float" setter="set_intensity" getter="get_intensity" default="0.0">
+		</member>
+		<member name="outer_cone_angle" type="float" setter="set_outer_cone_angle" getter="get_outer_cone_angle" default="0.0">
+		</member>
+		<member name="range" type="float" setter="set_range" getter="get_range" default="0.0">
+		</member>
+		<member name="type" type="String" setter="set_type" getter="get_type" default="&quot;&quot;">
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

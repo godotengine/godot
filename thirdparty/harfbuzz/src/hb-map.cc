@@ -42,7 +42,9 @@
 /**
  * hb_map_create: (Xconstructor)
  *
- * Return value: (transfer full):
+ * Creates a new, initially empty map.
+ *
+ * Return value: (transfer full): The new #hb_map_t
  *
  * Since: 1.7.7
  **/
@@ -62,7 +64,9 @@ hb_map_create ()
 /**
  * hb_map_get_empty:
  *
- * Return value: (transfer full):
+ * Fetches the singleton empty #hb_map_t.
+ *
+ * Return value: (transfer full): The empty #hb_map_t
  *
  * Since: 1.7.7
  **/
@@ -74,9 +78,11 @@ hb_map_get_empty ()
 
 /**
  * hb_map_reference: (skip)
- * @map: a map.
+ * @map: A map
  *
- * Return value: (transfer full):
+ * Increases the reference count on a map.
+ *
+ * Return value: (transfer full): The map
  *
  * Since: 1.7.7
  **/
@@ -88,7 +94,11 @@ hb_map_reference (hb_map_t *map)
 
 /**
  * hb_map_destroy: (skip)
- * @map: a map.
+ * @map: A map
+ *
+ * Decreases the reference count on a map. When
+ * the reference count reaches zero, the map is
+ * destroyed, freeing all memory.
  *
  * Since: 1.7.7
  **/
@@ -104,13 +114,15 @@ hb_map_destroy (hb_map_t *map)
 
 /**
  * hb_map_set_user_data: (skip)
- * @map: a map.
- * @key:
- * @data:
- * @destroy:
- * @replace:
+ * @map: A map
+ * @key: The user-data key to set
+ * @data: A pointer to the user data to set
+ * @destroy: (nullable): A callback to call when @data is not needed anymore
+ * @replace: Whether to replace an existing data with the same key
  *
- * Return value:
+ * Attaches a user-data key/data pair to the specified map.
+ *
+ * Return value: %true if success, %false otherwise
  *
  * Since: 1.7.7
  **/
@@ -126,10 +138,13 @@ hb_map_set_user_data (hb_map_t           *map,
 
 /**
  * hb_map_get_user_data: (skip)
- * @map: a map.
- * @key:
+ * @map: A map
+ * @key: The user-data key to query
  *
- * Return value: (transfer none):
+ * Fetches the user data associated with the specified key,
+ * attached to the specified map.
+ *
+ * Return value: (transfer none): A pointer to the user data
  *
  * Since: 1.7.7
  **/
@@ -143,11 +158,11 @@ hb_map_get_user_data (hb_map_t           *map,
 
 /**
  * hb_map_allocation_successful:
- * @map: a map.
+ * @map: A map
  *
+ * Tests whether memory allocation for a set was successful.
  *
- *
- * Return value:
+ * Return value: %true if allocation succeeded, %false otherwise
  *
  * Since: 1.7.7
  **/
@@ -160,11 +175,11 @@ hb_map_allocation_successful (const hb_map_t  *map)
 
 /**
  * hb_map_set:
- * @map: a map.
- * @key:
- * @value:
+ * @map: A map
+ * @key: The key to store in the map
+ * @value: The value to store for @key
  *
- *
+ * Stores @key:@value in the map.
  *
  * Since: 1.7.7
  **/
@@ -178,10 +193,10 @@ hb_map_set (hb_map_t       *map,
 
 /**
  * hb_map_get:
- * @map: a map.
- * @key:
+ * @map: A map
+ * @key: The key to query
  *
- *
+ * Fetches the value stored for @key in @map.
  *
  * Since: 1.7.7
  **/
@@ -194,10 +209,10 @@ hb_map_get (const hb_map_t *map,
 
 /**
  * hb_map_del:
- * @map: a map.
- * @key:
+ * @map: A map
+ * @key: The key to delete
  *
- *
+ * Removes @key and its stored value from @map.
  *
  * Since: 1.7.7
  **/
@@ -210,10 +225,12 @@ hb_map_del (hb_map_t       *map,
 
 /**
  * hb_map_has:
- * @map: a map.
- * @key:
+ * @map: A map
+ * @key: The key to query
  *
+ * Tests whether @key is an element of @map.
  *
+ * Return value: %true if @key is found in @map, %false otherwise
  *
  * Since: 1.7.7
  **/
@@ -227,23 +244,28 @@ hb_map_has (const hb_map_t *map,
 
 /**
  * hb_map_clear:
- * @map: a map.
+ * @map: A map
  *
- *
+ * Clears out the contents of @map.
  *
  * Since: 1.7.7
  **/
 void
 hb_map_clear (hb_map_t *map)
 {
+  if (unlikely (hb_object_is_immutable (map)))
+    return;
+
   return map->clear ();
 }
 
 /**
  * hb_map_is_empty:
- * @map: a map.
+ * @map: A map
  *
+ * Tests whether @map is empty (contains no elements).
  *
+ * Return value: %true if @map is empty
  *
  * Since: 1.7.7
  **/
@@ -255,9 +277,11 @@ hb_map_is_empty (const hb_map_t *map)
 
 /**
  * hb_map_get_population:
- * @map: a map.
+ * @map: A map
  *
+ * Returns the number of key-value pairs in the map.
  *
+ * Return value: The population of @map
  *
  * Since: 1.7.7
  **/

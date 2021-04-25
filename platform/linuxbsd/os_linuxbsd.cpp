@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -65,9 +65,9 @@ void OS_LinuxBSD::initialize_joypads() {
 
 String OS_LinuxBSD::get_unique_id() const {
 	static String machine_id;
-	if (machine_id.empty()) {
+	if (machine_id.is_empty()) {
 		if (FileAccess *f = FileAccess::open("/etc/machine-id", FileAccess::READ)) {
-			while (machine_id.empty() && !f->eof_reached()) {
+			while (machine_id.is_empty() && !f->eof_reached()) {
 				machine_id = f->get_line().strip_edges();
 			}
 			f->close();
@@ -128,7 +128,7 @@ Error OS_LinuxBSD::shell_open(String p_uri) {
 	args.push_back(p_uri);
 
 	// Agnostic
-	ok = execute("xdg-open", args, true, nullptr, nullptr, &err_code);
+	ok = execute("xdg-open", args, nullptr, &err_code);
 	if (ok == OK && !err_code) {
 		return OK;
 	} else if (err_code == 2) {
@@ -136,25 +136,25 @@ Error OS_LinuxBSD::shell_open(String p_uri) {
 	}
 	// GNOME
 	args.push_front("open"); // The command is `gio open`, so we need to add it to args
-	ok = execute("gio", args, true, nullptr, nullptr, &err_code);
+	ok = execute("gio", args, nullptr, &err_code);
 	if (ok == OK && !err_code) {
 		return OK;
 	} else if (err_code == 2) {
 		return ERR_FILE_NOT_FOUND;
 	}
 	args.pop_front();
-	ok = execute("gvfs-open", args, true, nullptr, nullptr, &err_code);
+	ok = execute("gvfs-open", args, nullptr, &err_code);
 	if (ok == OK && !err_code) {
 		return OK;
 	} else if (err_code == 2) {
 		return ERR_FILE_NOT_FOUND;
 	}
 	// KDE
-	ok = execute("kde-open5", args, true, nullptr, nullptr, &err_code);
+	ok = execute("kde-open5", args, nullptr, &err_code);
 	if (ok == OK && !err_code) {
 		return OK;
 	}
-	ok = execute("kde-open", args, true, nullptr, nullptr, &err_code);
+	ok = execute("kde-open", args, nullptr, &err_code);
 	return !err_code ? ok : FAILED;
 }
 
@@ -232,7 +232,7 @@ String OS_LinuxBSD::get_system_dir(SystemDir p_dir) const {
 	String pipe;
 	List<String> arg;
 	arg.push_back(xdgparam);
-	Error err = const_cast<OS_LinuxBSD *>(this)->execute("xdg-user-dir", arg, true, nullptr, &pipe);
+	Error err = const_cast<OS_LinuxBSD *>(this)->execute("xdg-user-dir", arg, &pipe);
 	if (err != OK) {
 		return ".";
 	}
@@ -246,7 +246,7 @@ void OS_LinuxBSD::run() {
 		return;
 	}
 
-	main_loop->init();
+	main_loop->initialize();
 
 	//uint64_t last_ticks=get_ticks_usec();
 
@@ -263,7 +263,7 @@ void OS_LinuxBSD::run() {
 		}
 	};
 
-	main_loop->finish();
+	main_loop->finalize();
 }
 
 void OS_LinuxBSD::disable_crash_handler() {
@@ -307,7 +307,7 @@ Error OS_LinuxBSD::move_to_trash(const String &p_path) {
 	List<String> args;
 	args.push_back(p_path);
 	args.push_front("trash"); // The command is `gio trash <file_name>` so we need to add it to args.
-	Error result = execute("gio", args, true, nullptr, nullptr, &err_code); // For GNOME based machines.
+	Error result = execute("gio", args, nullptr, &err_code); // For GNOME based machines.
 	if (result == OK && !err_code) {
 		return OK;
 	} else if (err_code == 2) {
@@ -317,7 +317,7 @@ Error OS_LinuxBSD::move_to_trash(const String &p_path) {
 	args.pop_front();
 	args.push_front("move");
 	args.push_back("trash:/"); // The command is `kioclient5 move <file_name> trash:/`.
-	result = execute("kioclient5", args, true, nullptr, nullptr, &err_code); // For KDE based machines.
+	result = execute("kioclient5", args, nullptr, &err_code); // For KDE based machines.
 	if (result == OK && !err_code) {
 		return OK;
 	} else if (err_code == 2) {
@@ -326,7 +326,7 @@ Error OS_LinuxBSD::move_to_trash(const String &p_path) {
 
 	args.pop_front();
 	args.pop_back();
-	result = execute("gvfs-trash", args, true, nullptr, nullptr, &err_code); // For older Linux machines.
+	result = execute("gvfs-trash", args, nullptr, &err_code); // For older Linux machines.
 	if (result == OK && !err_code) {
 		return OK;
 	} else if (err_code == 2) {
@@ -410,7 +410,7 @@ Error OS_LinuxBSD::move_to_trash(const String &p_path) {
 	OS::Time time = OS::get_singleton()->get_time(false);
 	String timestamp = vformat("%04d-%02d-%02dT%02d:%02d:", date.year, date.month, date.day, time.hour, time.min);
 	timestamp = vformat("%s%02d", timestamp, time.sec); // vformat only supports up to 6 arguments.
-	String trash_info = "[Trash Info]\nPath=" + p_path.http_escape() + "\nDeletionDate=" + timestamp + "\n";
+	String trash_info = "[Trash Info]\nPath=" + p_path.uri_encode() + "\nDeletionDate=" + timestamp + "\n";
 	{
 		Error err;
 		FileAccess *file = FileAccess::open(trash_path + "/info/" + file_name + ".trashinfo", FileAccess::WRITE, &err);
@@ -432,7 +432,7 @@ Error OS_LinuxBSD::move_to_trash(const String &p_path) {
 	mv_args.push_back(trash_path + "/files");
 	{
 		int retval;
-		Error err = execute("mv", mv_args, true, nullptr, nullptr, &retval);
+		Error err = execute("mv", mv_args, nullptr, &retval);
 
 		// Issue an error if "mv" failed to move the given resource to the trash can.
 		if (err != OK || retval != 0) {

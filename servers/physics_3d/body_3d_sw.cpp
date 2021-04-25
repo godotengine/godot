@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -51,18 +51,18 @@ void Body3DSW::_update_transform_dependant() {
 }
 
 void Body3DSW::update_inertias() {
-	//update shapes and motions
+	// Update shapes and motions.
 
 	switch (mode) {
 		case PhysicsServer3D::BODY_MODE_RIGID: {
-			//update tensor for all shapes, not the best way but should be somehow OK. (inspired from bullet)
+			// Update tensor for all shapes, not the best way but should be somehow OK. (inspired from bullet)
 			real_t total_area = 0;
 
 			for (int i = 0; i < get_shape_count(); i++) {
 				total_area += get_shape_area(i);
 			}
 
-			// We have to recompute the center of mass
+			// We have to recompute the center of mass.
 			center_of_mass_local.zero();
 
 			for (int i = 0; i < get_shape_count(); i++) {
@@ -70,20 +70,23 @@ void Body3DSW::update_inertias() {
 
 				real_t mass = area * this->mass / total_area;
 
-				// NOTE: we assume that the shape origin is also its center of mass
+				// NOTE: we assume that the shape origin is also its center of mass.
 				center_of_mass_local += mass * get_shape_transform(i).origin;
 			}
 
 			center_of_mass_local /= mass;
 
-			// Recompute the inertia tensor
+			// Recompute the inertia tensor.
 			Basis inertia_tensor;
 			inertia_tensor.set_zero();
+			bool inertia_set = false;
 
 			for (int i = 0; i < get_shape_count(); i++) {
 				if (is_shape_disabled(i)) {
 					continue;
 				}
+
+				inertia_set = true;
 
 				const Shape3DSW *shape = get_shape(i);
 
@@ -102,7 +105,12 @@ void Body3DSW::update_inertias() {
 				inertia_tensor += shape_inertia_tensor + (Basis() * shape_origin.dot(shape_origin) - shape_origin.outer(shape_origin)) * mass;
 			}
 
-			// Compute the principal axes of inertia
+			// Set the inertia to a valid value when there are no valid shapes.
+			if (!inertia_set) {
+				inertia_tensor.set_diagonal(Vector3(1.0, 1.0, 1.0));
+			}
+
+			// Compute the principal axes of inertia.
 			principal_inertia_axes_local = inertia_tensor.diagonalize().transposed();
 			_inv_inertia = inertia_tensor.get_main_diagonal().inverse();
 
@@ -493,20 +501,18 @@ void Body3DSW::integrate_forces(real_t p_step) {
 
 	if (mode == PhysicsServer3D::BODY_MODE_KINEMATIC) {
 		//compute motion, angular and etc. velocities from prev transform
-		linear_velocity = (new_transform.origin - get_transform().origin) / p_step;
+		motion = new_transform.origin - get_transform().origin;
+		do_motion = true;
+		linear_velocity = motion / p_step;
 
 		//compute a FAKE angular velocity, not so easy
-		Basis rot = new_transform.basis.orthonormalized().transposed() * get_transform().basis.orthonormalized();
+		Basis rot = new_transform.basis.orthonormalized() * get_transform().basis.orthonormalized().transposed();
 		Vector3 axis;
 		real_t angle;
 
 		rot.get_axis_angle(axis, angle);
 		axis.normalize();
-		angular_velocity = axis.normalized() * (angle / p_step);
-
-		motion = new_transform.origin - get_transform().origin;
-		do_motion = true;
-
+		angular_velocity = axis * (angle / p_step);
 	} else {
 		if (!omit_force_integration && !first_integration) {
 			//overridden by direct state query
@@ -687,15 +693,16 @@ void Body3DSW::call_queries() {
 
 		Variant v = dbs;
 
-		Object *obj = ObjectDB::get_instance(fi_callback->id);
+		Object *obj = fi_callback->callable.get_object();
 		if (!obj) {
-			set_force_integration_callback(ObjectID(), StringName());
+			set_force_integration_callback(Callable());
 		} else {
 			const Variant *vp[2] = { &v, &fi_callback->udata };
 
 			Callable::CallError ce;
 			int argc = (fi_callback->udata.get_type() == Variant::NIL) ? 1 : 2;
-			obj->call(fi_callback->method, vp, argc, ce);
+			Variant rv;
+			fi_callback->callable.call(vp, argc, rv, ce);
 		}
 	}
 }
@@ -719,16 +726,15 @@ bool Body3DSW::sleep_test(real_t p_step) {
 	}
 }
 
-void Body3DSW::set_force_integration_callback(ObjectID p_id, const StringName &p_method, const Variant &p_udata) {
+void Body3DSW::set_force_integration_callback(const Callable &p_callable, const Variant &p_udata) {
 	if (fi_callback) {
 		memdelete(fi_callback);
 		fi_callback = nullptr;
 	}
 
-	if (p_id.is_valid()) {
+	if (p_callable.get_object()) {
 		fi_callback = memnew(ForceIntegrationCallback);
-		fi_callback->id = p_id;
-		fi_callback->method = p_method;
+		fi_callback->callable = p_callable;
 		fi_callback->udata = p_udata;
 	}
 }
@@ -755,8 +761,6 @@ Body3DSW::Body3DSW() :
 	omit_force_integration = false;
 	//applied_torque=0;
 	island_step = 0;
-	island_next = nullptr;
-	island_list_next = nullptr;
 	first_time_kinematic = false;
 	first_integration = false;
 	_set_static(false);

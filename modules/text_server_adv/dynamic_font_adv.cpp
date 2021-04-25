@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,8 +30,11 @@
 
 #include "dynamic_font_adv.h"
 
+#ifdef MODULE_FREETYPE_ENABLED
+
 #include FT_STROKER_H
 #include FT_ADVANCES_H
+#include FT_MULTIPLE_MASTERS_H
 
 DynamicFontDataAdvanced::DataAtSize *DynamicFontDataAdvanced::get_data_for_size(int p_size, int p_outline_size) {
 	ERR_FAIL_COND_V(!valid, nullptr);
@@ -54,7 +57,7 @@ DynamicFontDataAdvanced::DataAtSize *DynamicFontDataAdvanced::get_data_for_size(
 		fds = E->get();
 	} else {
 		if (font_mem == nullptr && font_path != String()) {
-			if (!font_mem_cache.empty()) {
+			if (!font_mem_cache.is_empty()) {
 				font_mem = font_mem_cache.ptr();
 				font_mem_size = font_mem_cache.size();
 			} else {
@@ -123,10 +126,10 @@ DynamicFontDataAdvanced::DataAtSize *DynamicFontDataAdvanced::get_data_for_size(
 		fds->size = p_size;
 		fds->ascent = (fds->face->size->metrics.ascender / 64.0) / oversampling * fds->scale_color_font;
 		fds->descent = (-fds->face->size->metrics.descender / 64.0) / oversampling * fds->scale_color_font;
-		fds->underline_position = -fds->face->underline_position / 64.0 / oversampling * fds->scale_color_font;
-		fds->underline_thickness = fds->face->underline_thickness / 64.0 / oversampling * fds->scale_color_font;
+		fds->underline_position = (-FT_MulFix(fds->face->underline_position, fds->face->size->metrics.y_scale) / 64.0) / oversampling * fds->scale_color_font;
+		fds->underline_thickness = (FT_MulFix(fds->face->underline_thickness, fds->face->size->metrics.y_scale) / 64.0) / oversampling * fds->scale_color_font;
 
-		//Load os2 TTF pable
+		//Load os2 TTF table
 		fds->os2 = (TT_OS2 *)FT_Get_Sfnt_Table(fds->face, FT_SFNT_OS2);
 
 		fds->hb_handle = hb_ft_font_create(fds->face, nullptr);
@@ -134,14 +137,89 @@ DynamicFontDataAdvanced::DataAtSize *DynamicFontDataAdvanced::get_data_for_size(
 			memdelete(fds);
 			ERR_FAIL_V_MSG(nullptr, "Error loading HB font.");
 		}
+
 		if (p_outline_size != 0) {
 			size_cache_outline[id] = fds;
 		} else {
 			size_cache[id] = fds;
 		}
+
+		// Write variations.
+		if (fds->face->face_flags & FT_FACE_FLAG_MULTIPLE_MASTERS) {
+			FT_MM_Var *amaster;
+
+			FT_Get_MM_Var(fds->face, &amaster);
+
+			Vector<hb_variation_t> hb_vars;
+			Vector<FT_Fixed> coords;
+			coords.resize(amaster->num_axis);
+
+			FT_Get_Var_Design_Coordinates(fds->face, coords.size(), coords.ptrw());
+
+			for (FT_UInt i = 0; i < amaster->num_axis; i++) {
+				hb_variation_t var;
+
+				// Reset to default.
+				var.tag = amaster->axis[i].tag;
+				var.value = (double)amaster->axis[i].def / 65536.f;
+				coords.write[i] = amaster->axis[i].def;
+
+				if (variations.has(var.tag)) {
+					var.value = variations[var.tag];
+					coords.write[i] = CLAMP(variations[var.tag] * 65536.f, amaster->axis[i].minimum, amaster->axis[i].maximum);
+				}
+
+				hb_vars.push_back(var);
+			}
+
+			FT_Set_Var_Design_Coordinates(fds->face, coords.size(), coords.ptrw());
+			hb_font_set_variations(fds->hb_handle, hb_vars.is_empty() ? nullptr : &hb_vars[0], hb_vars.size());
+
+			FT_Done_MM_Var(library, amaster);
+		}
+	}
+	return fds;
+}
+
+Dictionary DynamicFontDataAdvanced::get_variation_list() const {
+	_THREAD_SAFE_METHOD_
+	DataAtSize *fds = const_cast<DynamicFontDataAdvanced *>(this)->get_data_for_size(base_size);
+	if (fds == nullptr) {
+		return Dictionary();
 	}
 
-	return fds;
+	Dictionary ret;
+	// Read variations.
+	if (fds->face->face_flags & FT_FACE_FLAG_MULTIPLE_MASTERS) {
+		FT_MM_Var *amaster;
+
+		FT_Get_MM_Var(fds->face, &amaster);
+
+		for (FT_UInt i = 0; i < amaster->num_axis; i++) {
+			ret[(int32_t)amaster->axis[i].tag] = Vector3i(amaster->axis[i].minimum / 65536, amaster->axis[i].maximum / 65536, amaster->axis[i].def / 65536);
+		}
+
+		FT_Done_MM_Var(library, amaster);
+	}
+	return ret;
+}
+
+void DynamicFontDataAdvanced::set_variation(const String &p_name, double p_value) {
+	_THREAD_SAFE_METHOD_
+	int32_t tag = TS->name_to_tag(p_name);
+	if (!variations.has(tag) || (variations[tag] != p_value)) {
+		variations[tag] = p_value;
+		clear_cache();
+	}
+}
+
+double DynamicFontDataAdvanced::get_variation(const String &p_name) const {
+	_THREAD_SAFE_METHOD_
+	int32_t tag = TS->name_to_tag(p_name);
+	if (!variations.has(tag)) {
+		return 0.f;
+	}
+	return variations[tag];
 }
 
 Dictionary DynamicFontDataAdvanced::get_feature_list() const {
@@ -153,7 +231,7 @@ Dictionary DynamicFontDataAdvanced::get_feature_list() const {
 
 	Dictionary out;
 	// Read feature flags.
-	unsigned int count = hb_ot_layout_table_get_feature_tags(hb_font_get_face(fds->hb_handle), HB_OT_TAG_GSUB, 0, NULL, NULL);
+	unsigned int count = hb_ot_layout_table_get_feature_tags(hb_font_get_face(fds->hb_handle), HB_OT_TAG_GSUB, 0, nullptr, nullptr);
 	if (count != 0) {
 		hb_tag_t *feature_tags = (hb_tag_t *)memalloc(count * sizeof(hb_tag_t));
 		hb_ot_layout_table_get_feature_tags(hb_font_get_face(fds->hb_handle), HB_OT_TAG_GSUB, 0, &count, feature_tags);
@@ -162,7 +240,7 @@ Dictionary DynamicFontDataAdvanced::get_feature_list() const {
 		}
 		memfree(feature_tags);
 	}
-	count = hb_ot_layout_table_get_feature_tags(hb_font_get_face(fds->hb_handle), HB_OT_TAG_GPOS, 0, NULL, NULL);
+	count = hb_ot_layout_table_get_feature_tags(hb_font_get_face(fds->hb_handle), HB_OT_TAG_GPOS, 0, nullptr, nullptr);
 	if (count != 0) {
 		hb_tag_t *feature_tags = (hb_tag_t *)memalloc(count * sizeof(hb_tag_t));
 		hb_ot_layout_table_get_feature_tags(hb_font_get_face(fds->hb_handle), HB_OT_TAG_GPOS, 0, &count, feature_tags);
@@ -356,8 +434,8 @@ DynamicFontDataAdvanced::Character DynamicFontDataAdvanced::bitmap_to_character(
 	}
 
 	Character chr;
-	chr.align = Vector2(xofs, -yofs) * p_data->scale_color_font / oversampling;
-	chr.advance = advance * p_data->scale_color_font / oversampling;
+	chr.align = (Vector2(xofs, -yofs) * p_data->scale_color_font / oversampling).round();
+	chr.advance = (advance * p_data->scale_color_font / oversampling).round();
 	chr.texture_idx = tex_pos.index;
 	chr.found = true;
 
@@ -561,7 +639,7 @@ bool DynamicFontDataAdvanced::is_script_supported(uint32_t p_script) const {
 	DataAtSize *fds = const_cast<DynamicFontDataAdvanced *>(this)->get_data_for_size(base_size);
 	ERR_FAIL_COND_V(fds == nullptr, false);
 
-	unsigned int count = hb_ot_layout_table_get_script_tags(hb_font_get_face(fds->hb_handle), HB_OT_TAG_GSUB, 0, NULL, NULL);
+	unsigned int count = hb_ot_layout_table_get_script_tags(hb_font_get_face(fds->hb_handle), HB_OT_TAG_GSUB, 0, nullptr, nullptr);
 	if (count != 0) {
 		hb_tag_t *script_tags = (hb_tag_t *)memalloc(count * sizeof(hb_tag_t));
 		hb_ot_layout_table_get_script_tags(hb_font_get_face(fds->hb_handle), HB_OT_TAG_GSUB, 0, &count, script_tags);
@@ -573,7 +651,7 @@ bool DynamicFontDataAdvanced::is_script_supported(uint32_t p_script) const {
 		}
 		memfree(script_tags);
 	}
-	count = hb_ot_layout_table_get_script_tags(hb_font_get_face(fds->hb_handle), HB_OT_TAG_GPOS, 0, NULL, NULL);
+	count = hb_ot_layout_table_get_script_tags(hb_font_get_face(fds->hb_handle), HB_OT_TAG_GPOS, 0, nullptr, nullptr);
 	if (count != 0) {
 		hb_tag_t *script_tags = (hb_tag_t *)memalloc(count * sizeof(hb_tag_t));
 		hb_ot_layout_table_get_script_tags(hb_font_get_face(fds->hb_handle), HB_OT_TAG_GPOS, 0, &count, script_tags);
@@ -870,7 +948,7 @@ Vector2 DynamicFontDataAdvanced::draw_glyph(RID p_canvas, int p_size, const Vect
 		ERR_FAIL_COND_V(ch.texture_idx < -1 || ch.texture_idx >= fds->textures.size(), Vector2());
 
 		if (ch.texture_idx != -1) {
-			Point2 cpos = p_pos;
+			Point2i cpos = p_pos;
 			cpos += ch.align;
 			Color modulate = p_color;
 			if (FT_HAS_COLOR(fds->face)) {
@@ -901,7 +979,7 @@ Vector2 DynamicFontDataAdvanced::draw_glyph_outline(RID p_canvas, int p_size, in
 		ERR_FAIL_COND_V(ch.texture_idx < -1 || ch.texture_idx >= fds->textures.size(), Vector2());
 
 		if (ch.texture_idx != -1) {
-			Point2 cpos = p_pos;
+			Point2i cpos = p_pos;
 			cpos += ch.align;
 			Color modulate = p_color;
 			if (FT_HAS_COLOR(fds->face)) {
@@ -919,9 +997,34 @@ Vector2 DynamicFontDataAdvanced::draw_glyph_outline(RID p_canvas, int p_size, in
 	return advance;
 }
 
+bool DynamicFontDataAdvanced::get_glyph_contours(int p_size, uint32_t p_index, Vector<Vector3> &r_points, Vector<int32_t> &r_contours, bool &r_orientation) const {
+	_THREAD_SAFE_METHOD_
+	DataAtSize *fds = const_cast<DynamicFontDataAdvanced *>(this)->get_data_for_size(p_size);
+	ERR_FAIL_COND_V(fds == nullptr, false);
+
+	int error = FT_Load_Glyph(fds->face, p_index, FT_LOAD_NO_BITMAP | (force_autohinter ? FT_LOAD_FORCE_AUTOHINT : 0));
+	ERR_FAIL_COND_V(error, false);
+
+	r_points.clear();
+	r_contours.clear();
+
+	float h = fds->ascent;
+	float scale = (1.0 / 64.0) / oversampling * fds->scale_color_font;
+	for (short i = 0; i < fds->face->glyph->outline.n_points; i++) {
+		r_points.push_back(Vector3(fds->face->glyph->outline.points[i].x * scale, h - fds->face->glyph->outline.points[i].y * scale, FT_CURVE_TAG(fds->face->glyph->outline.tags[i])));
+	}
+	for (short i = 0; i < fds->face->glyph->outline.n_contours; i++) {
+		r_contours.push_back(fds->face->glyph->outline.contours[i]);
+	}
+	r_orientation = (FT_Outline_Get_Orientation(&fds->face->glyph->outline) == FT_ORIENTATION_FILL_RIGHT);
+	return true;
+}
+
 DynamicFontDataAdvanced::~DynamicFontDataAdvanced() {
 	clear_cache();
 	if (library != nullptr) {
 		FT_Done_FreeType(library);
 	}
 }
+
+#endif // MODULE_FREETYPE_ENABLED

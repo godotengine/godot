@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="VisualShaderNodeStep" inherits="VisualShaderNode" version="4.0">
+	<brief_description>
+		Calculates a Step function within the visual shader graph.
+	</brief_description>
+	<description>
+		Translates to [code]step(edge, x)[/code] in the shader language.
+		Returns [code]0.0[/code] if [code]x[/code] is smaller than [code]edge[/code] and [code]1.0[/code] otherwise.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+	</methods>
+	<members>
+		<member name="op_type" type="int" setter="set_op_type" getter="get_op_type" enum="VisualShaderNodeStep.OpType" default="0">
+			A type of operands and returned value.
+		</member>
+	</members>
+	<constants>
+		<constant name="OP_TYPE_SCALAR" value="0" enum="OpType">
+			A scalar type.
+		</constant>
+		<constant name="OP_TYPE_VECTOR" value="1" enum="OpType">
+			A vector type.
+		</constant>
+		<constant name="OP_TYPE_VECTOR_SCALAR" value="2" enum="OpType">
+			A vector type. [code]edge[/code] port is using a scalar type.
+		</constant>
+		<constant name="OP_TYPE_MAX" value="3" enum="OpType">
+			Represents the size of the [enum OpType] enum.
+		</constant>
+	</constants>
+</class>

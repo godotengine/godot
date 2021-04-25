@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -43,24 +43,24 @@ class AnimationNodeBlendSpace1D : public AnimationRootNode {
 	struct BlendPoint {
 		StringName name;
 		Ref<AnimationRootNode> node;
-		float position;
+		float position = 0.0;
 	};
 
 	BlendPoint blend_points[MAX_BLEND_POINTS];
-	int blend_points_used;
+	int blend_points_used = 0;
 
-	float max_space;
-	float min_space;
+	float max_space = 1.0;
+	float min_space = -1.0;
 
-	float snap;
+	float snap = 0.1;
 
-	String value_label;
+	String value_label = "value";
 
 	void _add_blend_point(int p_index, const Ref<AnimationRootNode> &p_node);
 
 	void _tree_changed();
 
-	StringName blend_position;
+	StringName blend_position = "blend_position";
 
 protected:
 	virtual void _validate_property(PropertyInfo &property) const override;

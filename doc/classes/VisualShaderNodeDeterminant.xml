@@ -4,7 +4,7 @@
 		Calculates the determinant of a [Transform] within the visual shader graph.
 	</brief_description>
 	<description>
-		Translates to [code]deteminant(x)[/code] in the shader language.
+		Translates to [code]determinant(x)[/code] in the shader language.
 	</description>
 	<tutorials>
 	</tutorials>

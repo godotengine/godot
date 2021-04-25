@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -46,6 +46,7 @@ class EditorSettings : public Resource {
 	_THREAD_SAFE_CLASS_
 
 public:
+	inline static const String PROJECT_EDITOR_SETTINGS_PATH = "res://.godot/editor";
 	struct Plugin {
 		EditorPlugin *instance = nullptr;
 		String path;
@@ -83,7 +84,8 @@ private:
 	int last_order;
 
 	Ref<Resource> clipboard;
-	Map<String, Ref<Shortcut>> shortcuts;
+	mutable Map<String, Ref<Shortcut>> shortcuts;
+	Map<String, List<Ref<InputEvent>>> builtin_action_overrides;
 
 	String resource_path;
 	String settings_dir;
@@ -184,6 +186,9 @@ public:
 	bool is_shortcut(const String &p_name, const Ref<InputEvent> &p_event) const;
 	Ref<Shortcut> get_shortcut(const String &p_name) const;
 	void get_shortcut_list(List<String> *r_shortcuts);
+
+	void set_builtin_action_override(const String &p_name, const Array &p_events);
+	const Array get_builtin_action_overrides(const String &p_name) const;
 
 	void notify_changes();
 

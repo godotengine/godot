@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="SliderJoint3D" inherits="Joint3D" version="4.0">
 	<brief_description>
-		Piston kind of slider between two bodies in 3D.
+		Slider between two PhysicsBodies in 3D.
 	</brief_description>
 	<description>
-		Slides across the X axis of the pivot object.
+		Slides across the X axis of the pivot object. See also [Generic6DOFJoint3D].
 	</description>
 	<tutorials>
 	</tutorials>

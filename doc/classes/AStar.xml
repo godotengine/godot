@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="AStar" inherits="Reference" version="4.0">
 	<brief_description>
-		An implementation of A* to find shortest paths among connected points in space.
+		An implementation of A* to find the shortest paths among connected points in space.
 	</brief_description>
 	<description>
 		A* (A star) is a computer algorithm that is widely used in pathfinding and graph traversal, the process of plotting short paths among vertices (points), passing through a given set of edges (segments). It enjoys widespread use due to its performance and accuracy. Godot's A* implementation uses points in three-dimensional space and Euclidean distances by default.
@@ -33,6 +33,7 @@
 		[/csharp]
 		[/codeblocks]
 		[method _estimate_cost] should return a lower bound of the distance, i.e. [code]_estimate_cost(u, v) &lt;= _compute_cost(u, v)[/code]. This serves as a hint to the algorithm because the custom [code]_compute_cost[/code] might be computation-heavy. If this is not the case, make [method _estimate_cost] return the same value as [method _compute_cost] to provide the algorithm with the most accurate information.
+		If the default [method _estimate_cost] and [method _compute_cost] methods are used, or if the supplied [method _estimate_cost] method returns a lower bound of the cost, then the paths returned by A* will be the lowest cost paths. Here, the cost of a path equals to the sum of the [method _compute_cost] results of all segments in the path multiplied by the [code]weight_scale[/code]s of the end points of the respective segments. If the default methods are used and the [code]weight_scale[/code]s of all points are set to [code]1.0[/code], then this equals to the sum of Euclidean distances of all segments in the path.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -71,7 +72,8 @@
 			<argument index="2" name="weight_scale" type="float" default="1.0">
 			</argument>
 			<description>
-				Adds a new point at the given position with the given identifier. The algorithm prefers points with lower [code]weight_scale[/code] to form a path. The [code]id[/code] must be 0 or larger, and the [code]weight_scale[/code] must be 1 or larger.
+				Adds a new point at the given position with the given identifier. The [code]id[/code] must be 0 or larger, and the [code]weight_scale[/code] must be 1 or larger.
+				The [code]weight_scale[/code] is multiplied by the result of [method _compute_cost] when determining the overall cost of traveling across a segment from a neighboring point to this point. Thus, all else being equal, the algorithm prefers points with lower [code]weight_scale[/code]s to form a path.
 				[codeblocks]
 				[gdscript]
 				var astar = AStar.new()
@@ -287,6 +289,7 @@
 			</argument>
 			<description>
 				Returns an array with the points that are in the path found by AStar between the given points. The array is ordered from the starting point to the ending point of the path.
+				[b]Note:[/b] This method is not thread-safe. If called from a [Thread], it will return an empty [PackedVector3Array] and will print an error message.
 			</description>
 		</method>
 		<method name="get_point_position" qualifiers="const">
@@ -380,7 +383,7 @@
 			<argument index="1" name="weight_scale" type="float">
 			</argument>
 			<description>
-				Sets the [code]weight_scale[/code] for the point with the given [code]id[/code].
+				Sets the [code]weight_scale[/code] for the point with the given [code]id[/code]. The [code]weight_scale[/code] is multiplied by the result of [method _compute_cost] when determining the overall cost of traveling across a segment from a neighboring point to this point.
 			</description>
 		</method>
 	</methods>

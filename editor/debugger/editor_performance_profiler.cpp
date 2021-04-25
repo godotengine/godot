@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -102,7 +102,7 @@ void EditorPerformanceProfiler::_monitor_draw() {
 		}
 	}
 
-	if (active.empty()) {
+	if (active.is_empty()) {
 		info_message->show();
 		return;
 	}
@@ -217,7 +217,7 @@ void EditorPerformanceProfiler::_build_monitor_tree() {
 		TreeItem *item = _create_monitor_item(i.value().name, base);
 		item->set_checked(0, monitor_checked.has(i.key()));
 		i.value().item = item;
-		if (!i.value().history.empty()) {
+		if (!i.value().history.is_empty()) {
 			i.value().update_value(i.value().history.front()->get());
 		}
 	}
@@ -249,7 +249,7 @@ TreeItem *EditorPerformanceProfiler::_create_monitor_item(const StringName &p_mo
 
 void EditorPerformanceProfiler::_marker_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseButton> mb = p_event;
-	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == BUTTON_LEFT) {
+	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MOUSE_BUTTON_LEFT) {
 		Vector<StringName> active;
 		for (OrderedHashMap<StringName, Monitor>::Element i = monitors.front(); i; i = i.next()) {
 			if (i.value().item->is_checked(0)) {
@@ -382,7 +382,7 @@ EditorPerformanceProfiler::EditorPerformanceProfiler() {
 	info_message->set_align(Label::ALIGN_CENTER);
 	info_message->set_autowrap(true);
 	info_message->set_custom_minimum_size(Size2(100 * EDSCALE, 0));
-	info_message->set_anchors_and_margins_preset(PRESET_WIDE, PRESET_MODE_KEEP_SIZE, 8 * EDSCALE);
+	info_message->set_anchors_and_offsets_preset(PRESET_WIDE, PRESET_MODE_KEEP_SIZE, 8 * EDSCALE);
 	monitor_draw->add_child(info_message);
 
 	for (int i = 0; i < Performance::MONITOR_MAX; i++) {

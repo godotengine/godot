@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -50,16 +50,16 @@ private:
 	Ref<Texture2D> texture_pressed;
 	Ref<BitMap> bitmask;
 	Ref<Shape2D> shape;
-	bool shape_centered;
-	bool shape_visible;
+	bool shape_centered = true;
+	bool shape_visible = true;
 
 	Ref<RectangleShape2D> unit_rect;
 
 	StringName action;
-	bool passby_press;
-	int finger_pressed;
+	bool passby_press = false;
+	int finger_pressed = -1;
 
-	VisibilityMode visibility;
+	VisibilityMode visibility = VISIBILITY_ALWAYS;
 
 	void _input(const Ref<InputEvent> &p_event);
 

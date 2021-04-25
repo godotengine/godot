@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -103,10 +103,11 @@ class GDScriptAnalyzer {
 	bool validate_call_arg(const MethodInfo &p_method, const GDScriptParser::CallNode *p_call);
 	GDScriptParser::DataType get_operation_type(Variant::Operator p_operation, const GDScriptParser::DataType &p_a, const GDScriptParser::DataType &p_b, bool &r_valid, const GDScriptParser::Node *p_source);
 	GDScriptParser::DataType get_operation_type(Variant::Operator p_operation, const GDScriptParser::DataType &p_a, bool &r_valid, const GDScriptParser::Node *p_source);
+	void update_array_literal_element_type(const GDScriptParser::DataType &p_base_type, GDScriptParser::ArrayNode *p_array_literal);
 	bool is_type_compatible(const GDScriptParser::DataType &p_target, const GDScriptParser::DataType &p_source, bool p_allow_implicit_conversion = false) const;
 	void push_error(const String &p_message, const GDScriptParser::Node *p_origin);
 	void mark_node_unsafe(const GDScriptParser::Node *p_node);
-	bool class_exists(const StringName &p_class);
+	bool class_exists(const StringName &p_class) const;
 	Ref<GDScriptParserRef> get_parser_for(const String &p_path);
 #ifdef DEBUG_ENABLED
 	bool is_shadowing(GDScriptParser::IdentifierNode *p_local, const String &p_context);
@@ -119,8 +120,6 @@ public:
 	Error analyze();
 
 	GDScriptAnalyzer(GDScriptParser *p_parser);
-
-	static void cleanup();
 };
 
 #endif // GDSCRIPT_ANALYZER_H

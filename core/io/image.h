@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -244,7 +244,7 @@ public:
 	/**
 	 * Resize the image, using the preferred interpolation method.
 	 */
-	void resize_to_po2(bool p_square = false);
+	void resize_to_po2(bool p_square = false, Interpolation p_interpolation = INTERPOLATE_BILINEAR);
 	void resize(int p_width, int p_height, Interpolation p_interpolation = INTERPOLATE_BILINEAR);
 	void shrink_x2();
 	bool is_size_po2() const;
@@ -285,7 +285,7 @@ public:
 	/**
 	 * returns true when the image is empty (0,0) in size
 	 */
-	bool empty() const;
+	bool is_empty() const;
 
 	Vector<uint8_t> get_data() const;
 
@@ -350,10 +350,10 @@ public:
 	void fix_alpha_edges();
 	void premultiply_alpha();
 	void srgb_to_linear();
-	void normalmap_to_xy();
+	void normal_map_to_xy();
 	Ref<Image> rgbe_to_srgb();
 	Ref<Image> get_image_from_mipmap(int p_mipamp) const;
-	void bumpmap_to_normalmap(float bump_scale = 1.0);
+	void bump_map_to_normal_map(float bump_scale = 1.0);
 
 	void blit_rect(const Ref<Image> &p_src, const Rect2 &p_src_rect, const Point2 &p_dest);
 	void blit_rect_mask(const Ref<Image> &p_src, const Ref<Image> &p_mask, const Rect2 &p_src_rect, const Point2 &p_dest);
@@ -389,6 +389,8 @@ public:
 	Color get_pixel(int p_x, int p_y) const;
 	void set_pixelv(const Point2i &p_point, const Color &p_color);
 	void set_pixel(int p_x, int p_y, const Color &p_color);
+
+	void adjust_bcs(float p_brightness, float p_contrast, float p_saturation);
 
 	void set_as_black();
 

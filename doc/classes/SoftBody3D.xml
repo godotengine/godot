@@ -44,6 +44,12 @@
 				Returns an individual bit on the collision mask.
 			</description>
 		</method>
+		<method name="get_physics_rid" qualifiers="const">
+			<return type="RID">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="remove_collision_exception_with">
 			<return type="void">
 			</return>
@@ -77,8 +83,6 @@
 		</method>
 	</methods>
 	<members>
-		<member name="areaAngular_stiffness" type="float" setter="set_areaAngular_stiffness" getter="get_areaAngular_stiffness" default="0.5">
-		</member>
 		<member name="collision_layer" type="int" setter="set_collision_layer" getter="get_collision_layer" default="1">
 			The physics layers this SoftBody3D is in.
 			Collidable objects can exist in any of 32 different layers. These layers work like a tagging system, and are not visual. A collidable can use these layers to select with which objects it can collide, using the collision_mask property.
@@ -96,8 +100,6 @@
 		<member name="parent_collision_ignore" type="NodePath" setter="set_parent_collision_ignore" getter="get_parent_collision_ignore" default="NodePath(&quot;&quot;)">
 			[NodePath] to a [CollisionObject3D] this SoftBody3D should avoid clipping.
 		</member>
-		<member name="pose_matching_coefficient" type="float" setter="set_pose_matching_coefficient" getter="get_pose_matching_coefficient" default="0.0">
-		</member>
 		<member name="pressure_coefficient" type="float" setter="set_pressure_coefficient" getter="get_pressure_coefficient" default="0.0">
 		</member>
 		<member name="ray_pickable" type="bool" setter="set_ray_pickable" getter="is_ray_pickable" default="true">
@@ -108,8 +110,6 @@
 		</member>
 		<member name="total_mass" type="float" setter="set_total_mass" getter="get_total_mass" default="1.0">
 			The SoftBody3D's mass.
-		</member>
-		<member name="volume_stiffness" type="float" setter="set_volume_stiffness" getter="get_volume_stiffness" default="0.5">
 		</member>
 	</members>
 	<constants>

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -219,6 +219,11 @@ void TextServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("create_font_system", "name", "base_size"), &TextServer::create_font_system, DEFVAL(16));
 	ClassDB::bind_method(D_METHOD("create_font_resource", "filename", "base_size"), &TextServer::create_font_resource, DEFVAL(16));
 	ClassDB::bind_method(D_METHOD("create_font_memory", "data", "type", "base_size"), &TextServer::_create_font_memory, DEFVAL(16));
+	ClassDB::bind_method(D_METHOD("create_font_bitmap", "height", "ascent", "base_size"), &TextServer::create_font_bitmap);
+
+	ClassDB::bind_method(D_METHOD("font_bitmap_add_texture", "font", "texture"), &TextServer::font_bitmap_add_texture);
+	ClassDB::bind_method(D_METHOD("font_bitmap_add_char", "font", "char", "texture_idx", "rect", "align", "advance"), &TextServer::font_bitmap_add_char);
+	ClassDB::bind_method(D_METHOD("font_bitmap_add_kerning_pair", "font", "A", "B", "kerning"), &TextServer::font_bitmap_add_kerning_pair);
 
 	ClassDB::bind_method(D_METHOD("font_get_height", "font", "size"), &TextServer::font_get_height);
 	ClassDB::bind_method(D_METHOD("font_get_ascent", "font", "size"), &TextServer::font_get_ascent);
@@ -227,10 +232,20 @@ void TextServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("font_get_underline_position", "font", "size"), &TextServer::font_get_underline_position);
 	ClassDB::bind_method(D_METHOD("font_get_underline_thickness", "font", "size"), &TextServer::font_get_underline_thickness);
 
+	ClassDB::bind_method(D_METHOD("font_get_spacing_space", "font"), &TextServer::font_get_spacing_space);
+	ClassDB::bind_method(D_METHOD("font_set_spacing_space", "font", "value"), &TextServer::font_set_spacing_space);
+
+	ClassDB::bind_method(D_METHOD("font_get_spacing_glyph", "font"), &TextServer::font_get_spacing_glyph);
+	ClassDB::bind_method(D_METHOD("font_set_spacing_glyph", "font", "value"), &TextServer::font_set_spacing_glyph);
+
 	ClassDB::bind_method(D_METHOD("font_set_antialiased", "font", "antialiased"), &TextServer::font_set_antialiased);
 	ClassDB::bind_method(D_METHOD("font_get_antialiased", "font"), &TextServer::font_get_antialiased);
 
 	ClassDB::bind_method(D_METHOD("font_get_feature_list", "font"), &TextServer::font_get_feature_list);
+	ClassDB::bind_method(D_METHOD("font_get_variation_list", "font"), &TextServer::font_get_variation_list);
+
+	ClassDB::bind_method(D_METHOD("font_set_variation", "font", "tag", "value"), &TextServer::font_set_variation);
+	ClassDB::bind_method(D_METHOD("font_get_variation", "font", "tag"), &TextServer::font_get_variation);
 
 	ClassDB::bind_method(D_METHOD("font_set_hinting", "font", "hinting"), &TextServer::font_set_hinting);
 	ClassDB::bind_method(D_METHOD("font_get_hinting", "font"), &TextServer::font_get_hinting);
@@ -276,11 +291,13 @@ void TextServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_hex_code_box_size", "size", "index"), &TextServer::get_hex_code_box_size);
 	ClassDB::bind_method(D_METHOD("draw_hex_code_box", "canvas", "size", "pos", "index", "color"), &TextServer::draw_hex_code_box);
 
+	ClassDB::bind_method(D_METHOD("font_get_glyph_contours", "font", "size", "index"), &TextServer::_font_get_glyph_contours);
+
 	/* Shaped text buffer interface */
 
 	ClassDB::bind_method(D_METHOD("create_shaped_text", "direction", "orientation"), &TextServer::create_shaped_text, DEFVAL(DIRECTION_AUTO), DEFVAL(ORIENTATION_HORIZONTAL));
 
-	ClassDB::bind_method(D_METHOD("shaped_text_clear"), &TextServer::shaped_text_clear);
+	ClassDB::bind_method(D_METHOD("shaped_text_clear", "rid"), &TextServer::shaped_text_clear);
 
 	ClassDB::bind_method(D_METHOD("shaped_text_set_direction", "shaped", "direction"), &TextServer::shaped_text_set_direction, DEFVAL(DIRECTION_AUTO));
 	ClassDB::bind_method(D_METHOD("shaped_text_get_direction", "shaped"), &TextServer::shaped_text_get_direction);
@@ -372,6 +389,7 @@ void TextServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(GRAPHEME_IS_BREAK_SOFT);
 	BIND_ENUM_CONSTANT(GRAPHEME_IS_TAB);
 	BIND_ENUM_CONSTANT(GRAPHEME_IS_ELONGATION);
+	BIND_ENUM_CONSTANT(GRAPHEME_IS_PUNCTUATION);
 
 	/* Hinting */
 	BIND_ENUM_CONSTANT(HINTING_NONE);
@@ -385,7 +403,13 @@ void TextServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(FEATURE_KASHIDA_JUSTIFICATION);
 	BIND_ENUM_CONSTANT(FEATURE_BREAK_ITERATORS);
 	BIND_ENUM_CONSTANT(FEATURE_FONT_SYSTEM);
+	BIND_ENUM_CONSTANT(FEATURE_FONT_VARIABLE);
 	BIND_ENUM_CONSTANT(FEATURE_USE_SUPPORT_DATA);
+
+	/* FT Contour Point Types */
+	BIND_ENUM_CONSTANT(CONTOUR_CURVE_TAG_ON);
+	BIND_ENUM_CONSTANT(CONTOUR_CURVE_TAG_OFF_CONIC);
+	BIND_ENUM_CONSTANT(CONTOUR_CURVE_TAG_OFF_CUBIC);
 }
 
 Vector3 TextServer::hex_code_box_font_size[2] = { Vector3(5, 5, 1), Vector3(10, 10, 2) };
@@ -544,7 +568,7 @@ void TextServer::draw_hex_code_box(RID p_canvas, int p_size, const Vector2 &p_po
 Vector<Vector2i> TextServer::shaped_text_get_line_breaks_adv(RID p_shaped, const Vector<float> &p_width, int p_start, bool p_once, uint8_t /*TextBreakFlag*/ p_break_flags) const {
 	Vector<Vector2i> lines;
 
-	ERR_FAIL_COND_V(p_width.empty(), lines);
+	ERR_FAIL_COND_V(p_width.is_empty(), lines);
 
 	const_cast<TextServer *>(this)->shaped_text_update_breaks(p_shaped);
 	const Vector<Glyph> &logical = const_cast<TextServer *>(this)->shaped_text_sort_logical(p_shaped);
@@ -674,7 +698,7 @@ Vector<Vector2i> TextServer::shaped_text_get_line_breaks(RID p_shaped, float p_w
 Vector<Vector2i> TextServer::shaped_text_get_word_breaks(RID p_shaped) const {
 	Vector<Vector2i> words;
 
-	const_cast<TextServer *>(this)->shaped_text_update_breaks(p_shaped);
+	const_cast<TextServer *>(this)->shaped_text_update_justification_ops(p_shaped);
 	const Vector<Glyph> &logical = const_cast<TextServer *>(this)->shaped_text_sort_logical(p_shaped);
 	const Vector2i &range = shaped_text_get_range(p_shaped);
 
@@ -685,8 +709,8 @@ Vector<Vector2i> TextServer::shaped_text_get_word_breaks(RID p_shaped) const {
 
 	for (int i = 0; i < l_size; i++) {
 		if (l_gl[i].count > 0) {
-			if ((l_gl[i].flags & GRAPHEME_IS_SPACE) == GRAPHEME_IS_SPACE) {
-				words.push_back(Vector2i(word_start, l_gl[i].end - 1));
+			if (((l_gl[i].flags & GRAPHEME_IS_SPACE) == GRAPHEME_IS_SPACE) || ((l_gl[i].flags & GRAPHEME_IS_PUNCTUATION) == GRAPHEME_IS_PUNCTUATION)) {
+				words.push_back(Vector2i(word_start, l_gl[i].start));
 				word_start = l_gl[i].end;
 			}
 		}
@@ -899,7 +923,7 @@ Vector<Vector2> TextServer::shaped_text_get_selection(RID p_shaped, int p_start,
 	float off = 0.0f;
 	for (int i = 0; i < v_size; i++) {
 		for (int k = 0; k < glyphs[i].repeat; k++) {
-			if (glyphs[i].count > 0 && glyphs[i].index != 0) {
+			if ((glyphs[i].count > 0) && ((glyphs[i].index != 0) || ((glyphs[i].flags & GRAPHEME_IS_SPACE) == GRAPHEME_IS_SPACE))) {
 				if (glyphs[i].start < end && glyphs[i].end > start) {
 					// Grapheme fully in selection range.
 					if (glyphs[i].start >= start && glyphs[i].end <= end) {
@@ -956,6 +980,10 @@ Vector<Vector2> TextServer::shaped_text_get_selection(RID p_shaped, int p_start,
 
 	// Merge intersecting ranges.
 	int i = 0;
+	while (i < ranges.size()) {
+		i++;
+	}
+	i = 0;
 	while (i < ranges.size()) {
 		int j = i + 1;
 		while (j < ranges.size()) {
@@ -1028,31 +1056,36 @@ int TextServer::shaped_text_hit_test_position(RID p_shaped, float p_coords) cons
 
 	float off = 0.0f;
 	for (int i = 0; i < v_size; i++) {
-		for (int k = 0; k < glyphs[i].repeat; k++) {
-			if (glyphs[i].count > 0) {
-				float advance = 0.f;
-				for (int j = 0; j < glyphs[i].count; j++) {
-					advance += glyphs[i + j].advance;
-				}
-				// Place caret to the left of clicked grapheme.
-				if (p_coords >= off && p_coords < off + advance / 2) {
-					if ((glyphs[i].flags & GRAPHEME_IS_RTL) == GRAPHEME_IS_RTL) {
-						return glyphs[i].end;
-					} else {
-						return glyphs[i].start;
-					}
-				}
-				// Place caret to the right of clicked grapheme.
-				if (p_coords >= off + advance / 2 && p_coords < off + advance) {
-					if ((glyphs[i].flags & GRAPHEME_IS_RTL) == GRAPHEME_IS_RTL) {
-						return glyphs[i].start;
-					} else {
-						return glyphs[i].end;
-					}
+		if (glyphs[i].count > 0) {
+			float advance = 0.f;
+			for (int j = 0; j < glyphs[i].count; j++) {
+				advance += glyphs[i + j].advance * glyphs[i + j].repeat;
+			}
+			if (((glyphs[i].flags & GRAPHEME_IS_VIRTUAL) == GRAPHEME_IS_VIRTUAL) && (p_coords >= off && p_coords < off + advance)) {
+				if ((glyphs[i].flags & GRAPHEME_IS_RTL) == GRAPHEME_IS_RTL) {
+					return glyphs[i].end;
+				} else {
+					return glyphs[i].start;
 				}
 			}
-			off += glyphs[i].advance;
+			// Place caret to the left of clicked grapheme.
+			if (p_coords >= off && p_coords < off + advance / 2) {
+				if ((glyphs[i].flags & GRAPHEME_IS_RTL) == GRAPHEME_IS_RTL) {
+					return glyphs[i].end;
+				} else {
+					return glyphs[i].start;
+				}
+			}
+			// Place caret to the right of clicked grapheme.
+			if (p_coords >= off + advance / 2 && p_coords < off + advance) {
+				if ((glyphs[i].flags & GRAPHEME_IS_RTL) == GRAPHEME_IS_RTL) {
+					return glyphs[i].start;
+				} else {
+					return glyphs[i].end;
+				}
+			}
 		}
+		off += glyphs[i].advance * glyphs[i].repeat;
 	}
 	return 0;
 }
@@ -1184,6 +1217,21 @@ void TextServer::shaped_text_draw_outline(RID p_shaped, RID p_canvas, const Vect
 
 RID TextServer::_create_font_memory(const PackedByteArray &p_data, const String &p_type, int p_base_size) {
 	return create_font_memory(p_data.ptr(), p_data.size(), p_type, p_base_size);
+}
+
+Dictionary TextServer::_font_get_glyph_contours(RID p_font, int p_size, uint32_t p_index) const {
+	Vector<Vector3> points;
+	Vector<int32_t> contours;
+	bool orientation;
+	bool ok = font_get_glyph_contours(p_font, p_size, p_index, points, contours, orientation);
+	Dictionary out;
+
+	if (ok) {
+		out["points"] = points;
+		out["contours"] = contours;
+		out["orientation"] = orientation;
+	}
+	return out;
 }
 
 void TextServer::_shaped_text_set_bidi_override(RID p_shaped, const Array &p_override) {

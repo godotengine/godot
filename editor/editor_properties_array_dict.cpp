@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -550,7 +550,7 @@ void EditorPropertyArray::_length_changed(double p_page) {
 void EditorPropertyArray::setup(Variant::Type p_array_type, const String &p_hint_string) {
 	array_type = p_array_type;
 
-	if (array_type == Variant::ARRAY && !p_hint_string.empty()) {
+	if (array_type == Variant::ARRAY && !p_hint_string.is_empty()) {
 		int hint_subtype_separator = p_hint_string.find(":");
 		if (hint_subtype_separator >= 0) {
 			String subtype_string = p_hint_string.substr(0, hint_subtype_separator);
@@ -573,8 +573,7 @@ void EditorPropertyArray::_bind_methods() {
 
 EditorPropertyArray::EditorPropertyArray() {
 	object.instance();
-	page_idx = 0;
-	page_len = 10;
+	page_len = int(EDITOR_GET("interface/inspector/max_array_dictionary_items_per_page"));
 	edit = memnew(Button);
 	edit->set_flat(true);
 	edit->set_h_size_flags(SIZE_EXPAND_FILL);
@@ -975,7 +974,7 @@ void EditorPropertyDictionary::update_property() {
 				Ref<StyleBoxFlat> flat;
 				flat.instance();
 				for (int j = 0; j < 4; j++) {
-					flat->set_default_margin(Margin(j), 2 * EDSCALE);
+					flat->set_default_margin(Side(j), 2 * EDSCALE);
 				}
 				flat->set_bg_color(get_theme_color("prop_subsection", "Editor"));
 
@@ -1069,8 +1068,7 @@ void EditorPropertyDictionary::_bind_methods() {
 
 EditorPropertyDictionary::EditorPropertyDictionary() {
 	object.instance();
-	page_idx = 0;
-	page_len = 10;
+	page_len = int(EDITOR_GET("interface/inspector/max_array_dictionary_items_per_page"));
 	edit = memnew(Button);
 	edit->set_flat(true);
 	edit->set_h_size_flags(SIZE_EXPAND_FILL);

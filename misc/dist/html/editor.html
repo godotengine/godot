@@ -1,11 +1,37 @@
 <!DOCTYPE html>
-<html xmlns='http://www.w3.org/1999/xhtml' lang='' xml:lang=''>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
 <head>
-	<meta charset='utf-8' />
-	<meta name='viewport' content='width=device-width, user-scalable=no' />
-	<link id='-gd-engine-icon' rel='icon' type='image/png' href='favicon.png' />
-	<title></title>
-	<style type='text/css'>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no" />
+	<meta name="author" content="Godot Engine" />
+	<meta name="description" content="Use the Godot Engine editor directly in your web browser, without having to install anything." />
+	<meta name="mobile-web-app-capable" content="yes" />
+	<meta name="apple-mobile-web-app-capable" content="yes" />
+	<meta name="application-name" content="Godot" />
+	<meta name="apple-mobile-web-app-title" content="Godot" />
+	<meta name="theme-color" content="#478cbf" />
+	<meta name="msapplication-navbutton-color" content="#478cbf" />
+	<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+	<meta name="msapplication-starturl" content="/latest" />
+	<meta property="og:site_name" content="Godot Engine Web Editor" />
+  	<meta property="og:url" name="twitter:url" content="https://editor.godotengine.org/releases/latest/" />
+	<meta property="og:title" name="twitter:title" content="Free and open source 2D and 3D game engine" />
+	<meta property="og:description" name="twitter:description" content="Use the Godot Engine editor directly in your web browser, without having to install anything." />
+	<meta property="og:image" name="twitter:image" content="https://godotengine.org/themes/godotengine/assets/og_image.png" />
+	<meta property="og:type" content="website" />
+	<meta name="twitter:card" content="summary" />
+	<link id="-gd-engine-icon" rel="icon" type="image/png" href="favicon.png" />
+	<link rel="apple-touch-icon" type="image/png" href="favicon.png" />
+	<link rel="manifest" href="manifest.json" />
+	<title>Godot Engine Web Editor (@GODOT_VERSION@)</title>
+	<style>
+		*:focus {
+			/* More visible outline for better keyboard navigation. */
+			outline: 0.125rem solid hsl(220, 100%, 62.5%);
+			/* Make the outline always appear above other elements. */
+			/* Otherwise, one of its sides can be hidden by tabs in the Download and More layouts. */
+			position: relative;
+		}
 
 		body {
 			touch-action: none;
@@ -18,13 +44,67 @@
 			overflow: hidden;
 		}
 
+		a {
+			color: hsl(205, 100%, 75%);
+			text-decoration-color: hsla(205, 100%, 75%, 0.3);
+			text-decoration-thickness: 0.125rem;
+		}
+
+		a:hover {
+			filter: brightness(117.5%);
+		}
+
+		a:active {
+			filter: brightness(82.5%);
+		}
+
+		.welcome-modal {
+			display: none;
+ 			position: fixed;
+			z-index: 1;
+			left: 0;
+			top: 0;
+			width: 100%;
+			height: 100%;
+			overflow: auto;
+			background-color: hsla(0, 0%, 0%, 0.5);
+		}
+
+		.welcome-modal-content {
+			background-color: #333b4f;
+			box-shadow: 0 0.25rem 0.25rem hsla(0, 0%, 0%, 0.5);
+			line-height: 1.5;
+			max-width: 38rem;
+			margin: 4rem auto 0 auto;
+			color: white;
+			border-radius: 0.5rem;
+			padding: 1rem 1rem 2rem 1rem;
+		}
+
+		#tabs-buttons {
+			/* Match the default background color of the editor window for a seamless appearance. */
+			background-color: #202531;
+		}
+
+		#tab-game {
+			/* Use a pure black background to better distinguish the running project */
+			/* from the editor window, and to use a more neutral background color (no tint). */
+			background-color: black;
+			/* Make the background span the entire page height. */
+			min-height: 100vh;
+		}
+
 		#canvas, #gameCanvas {
 			display: block;
 			margin: 0;
 			color: white;
 		}
 
-		#canvas:focus, #gameCanvas:focus {
+		/* Don't show distracting focus outlines for the main tabs' contents. */
+		#tab-editor canvas:focus,
+		#tab-game canvas:focus,
+		#canvas:focus,
+		#gameCanvas:focus {
 			outline: none;
 		}
 
@@ -43,10 +123,6 @@
 			border: 1px solid #202531;
 			padding: 0.5rem 1rem;
 			margin: 0 0.5rem;
-		}
-
-		.btn:focus {
-			outline: 1px solid #699ce8;
 		}
 
 		.btn:not(:disabled):hover {
@@ -153,6 +229,36 @@
 	</style>
 </head>
 <body>
+	<div
+		id="welcome-modal"
+		class="welcome-modal"
+		role="dialog"
+		aria-labelledby="welcome-modal-title"
+		aria-describedby="welcome-modal-description"
+		onclick="if (event.target === this) closeWelcomeModal(false)"
+	>
+		<div class="welcome-modal-content">
+			<h2 id="welcome-modal-title">Important - Please read before continuing</h2>
+			<div id="welcome-modal-description">
+				<p>
+					The Godot Web Editor has some limitations compared to the native version.
+					Its main focus is education and experimentation;
+					<strong>it is not recommended for production</strong>.
+				</p>
+				<p>
+					Refer to the
+					<a
+						href="https://docs.godotengine.org/en/latest/tutorials/editor/using_the_web_editor.html"
+						target="_blank"
+						rel="noopener"
+					>Web editor documentation</a> for usage instructions and limitations.
+				</p>
+			</div>
+			<button id="welcome-modal-dismiss" class="btn" type="button" onclick="closeWelcomeModal(true)" style="margin-top: 1rem">
+				OK, don't show again
+			</button>
+		</div>
+	</div>
 	<div id="tabs-buttons">
 		<button id="btn-tab-loader" class="btn tab-btn" onclick="showTab('loader')">Loader</button>
 		<button id="btn-tab-editor" class="btn tab-btn" disabled="disabled" onclick="showTab('editor')">Editor</button>
@@ -160,8 +266,8 @@
 		<button id="btn-tab-game" class="btn tab-btn" disabled="disabled" onclick="showTab('game')">Game</button>
 		<button id="btn-close-game" class="btn close-btn"  disabled="disabled" onclick="closeGame()">×</button>
 	</div>
-	<div id='tabs'>
-		<div id='tab-loader'>
+	<div id="tabs">
+		<div id="tab-loader">
 			<div style="color: #e0e0e0;" id="persistence">
 				<label for="videoMode" style="display: none;">Select video driver:</label><br />
 				<select id="videoMode" style="display: none;">
@@ -169,30 +275,41 @@
 					<option value="GLES3">WebGL 2</option>
 				</select>
 				<br />
-				<img src="logo.svg">
+				<img src="logo.svg" alt="Godot Engine logo" width="1024" height="414" style="width: auto; height: auto; max-width: 85%; max-height: 250px" />
 				<br />
-				<label for="zip-file" style="margin-right: 1rem">Preload project ZIP:</label> <input id="zip-file" type="file" id="files" name="files" style="margin-bottom: 1rem"/>
+				@GODOT_VERSION@
 				<br />
-				<button id="startButton" class="btn" style="margin-bottom: 4rem">Start Godot editor</button>
+				<a href="releases/">Need an old version?</a>
 				<br />
-				<button class="btn" onclick="clearPersistence()">Clear persistent data</button>
+				<br />
+				<br />
+				<label for="zip-file" style="margin-right: 1rem">Preload project ZIP:</label> <input id="zip-file" type="file" name="files" style="margin-bottom: 1rem"/>
+				<br />
+<a href="demo.zip">(Try this for example)</a>
+				<br />
+				<br />
+				<button id="startButton" class="btn" style="margin-bottom: 4rem; font-weight: 700">Start Godot editor</button>
+				<br />
+				<button class="btn" onclick="clearPersistence()" style="margin-bottom: 1.5rem">Clear persistent data</button>
+				<br />
+				<a href="https://docs.godotengine.org/en/latest/tutorials/editor/using_the_web_editor.html">Web editor documentation</a>
 			</div>
 		</div>
-		<div id='tab-editor' style="display: none;">
-			<canvas id='editor-canvas' tabindex="1">
+		<div id="tab-editor" style="display: none;">
+			<canvas id="editor-canvas" tabindex="1">
 				HTML5 canvas appears to be unsupported in the current browser.<br />
 				Please try updating or use a different browser.
 			</canvas>
 		</div>
-		<div id='tab-game' style="display: none;">
-			<canvas id='game-canvas' tabindex="2">
+		<div id="tab-game" style="display: none;">
+			<canvas id="game-canvas" tabindex="2">
 				HTML5 canvas appears to be unsupported in the current browser.<br />
 				Please try updating or use a different browser.
 			</canvas>
 		</div>
-		<div id='tab-status' style="display: none;">
-			<div id='status-progress' style='display: none;' oncontextmenu='event.preventDefault();'><div id ='status-progress-inner'></div></div>
-			<div id='status-indeterminate' style='display: none;' oncontextmenu='event.preventDefault();'>
+		<div id="tab-status" style="display: none;">
+			<div id="status-progress" style="display: none;" oncontextmenu="event.preventDefault();"><div id="status-progress-inner"></div></div>
+			<div id="status-indeterminate" style="display: none;" oncontextmenu="event.preventDefault();">
 				<div></div>
 				<div></div>
 				<div></div>
@@ -202,14 +319,32 @@
 				<div></div>
 				<div></div>
 			</div>
-			<div id='status-notice' class='godot' style='display: none;'></div>
+			<div id="status-notice" class="godot" style="display: none;"></div>
 		</div>
 	</div>
+	<script>
+		window.addEventListener("load", () => {
+			if ("serviceWorker" in navigator) {
+				navigator.serviceWorker.register("service.worker.js");
+			}
 
-	<script type='text/javascript' src='godot.tools.js'></script>
-	<script type='text/javascript'>//<![CDATA[
+			if (localStorage.getItem("welcomeModalDismissed") !== 'true') {
+				document.getElementById("welcome-modal").style.display = "block";
+				document.getElementById("welcome-modal-dismiss").focus();
+			}
+		});
 
-		var engine = new Engine;
+		function closeWelcomeModal(dontShowAgain) {
+			document.getElementById("welcome-modal").style.display = "none";
+			if (dontShowAgain) {
+				localStorage.setItem("welcomeModalDismissed", 'true');
+			}
+		}
+	</script>
+	<script src="godot.tools.js"></script>
+	<script>//<![CDATA[
+
+		var editor = null;
 		var game = null;
 		var setStatusMode;
 		var setStatusNotice;
@@ -231,13 +366,11 @@
 
 				});
 			}
-			if (!window.confirm("Are you sure you want to delete all the locally stored files?")) {
+			if (!window.confirm("Are you sure you want to delete all the locally stored files?\nClicking \"OK\" will permanently remove your projects and editor settings!")) {
 				return;
 			}
 			Promise.all([
-				deleteDB("/home/web_user/projects"),
-				deleteDB("/home/web_user/.config"),
-				deleteDB("/home/web_user/.cache"),
+				deleteDB("/home/web_user"),
 			]).then(function(results) {
 				alert("Done.");
 			}).catch(function (err) {
@@ -259,6 +392,10 @@
 			tabs.forEach(function (elem) {
 				if (elem.id == 'tab-' + name) {
 					elem.style.display = 'block';
+					if (name == 'editor' || name == 'game') {
+						const canvas = document.getElementById(name + '-canvas');
+						canvas.focus();
+					}
 				} else {
 					elem.style.display = 'none';
 				}
@@ -292,14 +429,14 @@
 
 		function closeEditor() {
 			closeGame();
-			if (engine) {
-				engine.requestQuit();
+			if (editor) {
+				editor.requestQuit();
 			}
 		}
 
 		function startEditor(zip) {
 			const INDETERMINATE_STATUS_STEP_MS = 100;
-			const persistentPaths = ['/home/web_user/.config', '/home/web_user/.cache', '/home/web_user/projects'];
+			const persistentPaths = ['/home/web_user'];
 
 			var editorCanvas = document.getElementById('editor-canvas');
 			var gameCanvas = document.getElementById('game-canvas');
@@ -307,6 +444,7 @@
 			var statusProgressInner = document.getElementById('status-progress-inner');
 			var statusIndeterminate = document.getElementById('status-indeterminate');
 			var statusNotice = document.getElementById('status-notice');
+			var headerDiv = document.getElementById('tabs-buttons');
 
 			var initializing = true;
 			var statusMode = 'hidden';
@@ -320,16 +458,23 @@
 			}
 			requestAnimationFrame(animate);
 
+			var lastScale = 0;
+			var lastWidth = 0;
+			var lastHeight = 0;
 			function adjustCanvasDimensions() {
 				var scale = window.devicePixelRatio || 1;
-				var header = document.getElementById('tabs-buttons');
-				var headerHeight = header.offsetHeight + 1;
+				var headerHeight = headerDiv.offsetHeight + 1;
 				var width = window.innerWidth;
 				var height = window.innerHeight - headerHeight;
-				editorCanvas.width = width * scale;
-				editorCanvas.height = height * scale;
-				editorCanvas.style.width = width + "px";
-				editorCanvas.style.height = height + "px";
+				if (lastScale !== scale || lastWidth !== width || lastHeight !== height) {
+					editorCanvas.width = width * scale;
+					editorCanvas.height = height * scale;
+					editorCanvas.style.width = width + "px";
+					editorCanvas.style.height = height + "px";
+					lastScale = scale;
+					lastWidth = width;
+					lastHeight = height;
+				}
 			}
 			animationCallbacks.push(adjustCanvasDimensions);
 			adjustCanvasDimensions();
@@ -383,24 +528,23 @@
 				});
 			};
 
-			engine.setProgressFunc((current, total) => {
-				if (total > 0) {
-					statusProgressInner.style.width = current/total * 100 + '%';
-					setStatusMode('progress');
-					if (current === total) {
-						// wait for progress bar animation
-						setTimeout(() => {
-							setStatusMode('indeterminate');
-						}, 100);
-					}
-				} else {
-					setStatusMode('indeterminate');
-				}
-			});
+			const gameConfig = {
+				'persistentPaths': persistentPaths,
+				'unloadAfterInit': false,
+				'canvas': gameCanvas,
+				'canvasResizePolicy': 1,
+				'onExit': function () {
+					setGameTabEnabled(false);
+					showTab('editor');
+					game = null;
+				},
+			};
 
-			engine.setPersistentPaths(persistentPaths);
-
-			engine.setOnExecute(function(args) {
+			var OnEditorExit = function () {
+				showTab('loader');
+				setLoaderEnabled(true);
+			};
+			function Execute(args) {
 				const is_editor = args.filter(function(v) { return v == '--editor' || v == '-e' }).length != 0;
 				const is_project_manager = args.filter(function(v) { return v == '--project-manager' }).length != 0;
 				const is_game = !is_editor && !is_project_manager;
@@ -413,42 +557,60 @@
 						return;
 					}
 					setGameTabEnabled(true);
-					game = new Engine();
-					game.setPersistentPaths(persistentPaths);
-					game.setUnloadAfterInit(false);
-					game.setOnExecute(engine.onExecute);
-					game.setCanvas(gameCanvas);
-					game.setCanvasResizedOnStart(true);
-					game.setOnExit(function() {
-						setGameTabEnabled(false);
-						showTab('editor');
-						game = null;
-					});
+					game = new Engine(gameConfig);
 					showTab('game');
 					game.init().then(function() {
 						requestAnimationFrame(function() {
-							game.start.apply(game, args).then(function() {
+							game.start({'args': args}).then(function() {
 								gameCanvas.focus();
 							});
 						});
 					});
 				} else { // New editor instances will be run in the same canvas. We want to wait for it to exit.
-					engine.setOnExit(function(code) {
+					OnEditorExit = function(code) {
 						setLoaderEnabled(true);
 						setTimeout(function() {
-							engine.init().then(function() {
+							editor.init().then(function() {
 								setLoaderEnabled(false);
-								engine.setOnExit(function() {
+								OnEditorExit = function() {
 									showTab('loader');
 									setLoaderEnabled(true);
-								});
-								engine.start.apply(engine, args);
+								};
+								editor.start({'args': args, 'persistentDrops': is_project_manager});
 							});
 						}, 0);
-						engine.setOnExit(null);
-					});
+						OnEditorExit = null;
+					};
 				}
-			});
+			}
+
+			const editorConfig = {
+				'unloadAfterInit': false,
+				'onProgress': function progressFunction (current, total) {
+					if (total > 0) {
+						statusProgressInner.style.width = current/total * 100 + '%';
+						setStatusMode('progress');
+						if (current === total) {
+							// wait for progress bar animation
+							setTimeout(() => {
+								setStatusMode('indeterminate');
+							}, 100);
+						}
+					} else {
+						setStatusMode('indeterminate');
+					}
+				},
+				'canvas': editorCanvas,
+				'canvasResizePolicy': 0,
+				'onExit': function() {
+					if (OnEditorExit) {
+						OnEditorExit();
+					}
+				},
+				'onExecute': Execute,
+				'persistentPaths': persistentPaths,
+			};
+			editor = new Engine(editorConfig);
 
 			function displayFailureNotice(err) {
 				var msg = err.message || err;
@@ -462,26 +624,20 @@
 				displayFailureNotice('WebGL not available');
 			} else {
 				setStatusMode('indeterminate');
-				engine.setCanvas(editorCanvas);
-				engine.setUnloadAfterInit(false); // Don't want to reload when starting game.
-				engine.init('godot.tools').then(function() {
+				editor.init('godot.tools').then(function() {
 					if (zip) {
-						engine.copyToFS("/home/web_user/preload.zip", zip);
+						editor.copyToFS("/tmp/preload.zip", zip);
 					}
 					try {
 						// Avoid user creating project in the persistent root folder.
-						engine.copyToFS("/home/web_user/projects/keep", new Uint8Array());
+						editor.copyToFS("/home/web_user/keep", new Uint8Array());
 					} catch(e) {
 						// File exists
 					}
 					//selectVideoMode();
 					showTab('editor');
 					setLoaderEnabled(false);
-					engine.setOnExit(function() {
-						showTab('loader');
-						setLoaderEnabled(true);
-					});
-					engine.start('--video-driver', video_driver).then(function() {
+					editor.start({'args': ['--project-manager', '--video-driver', video_driver], 'persistentDrops': true}).then(function() {
 						setStatusMode('hidden');
 						initializing = false;
 					});

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -178,7 +178,6 @@ public:
 		}
 
 		Token() {
-			type = EMPTY;
 		}
 	};
 
@@ -230,7 +229,7 @@ private:
 	_FORCE_INLINE_ bool _is_at_end() { return position >= length; }
 	_FORCE_INLINE_ char32_t _peek(int p_offset = 0) { return position + p_offset >= 0 && position + p_offset < length ? _current[p_offset] : '\0'; }
 	int indent_level() const { return indent_stack.size(); }
-	bool has_error() const { return !error_stack.empty(); }
+	bool has_error() const { return !error_stack.is_empty(); }
 	Token pop_error();
 	char32_t _advance();
 	void _skip_whitespace();

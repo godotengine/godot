@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -129,8 +129,11 @@ void TouchScreenButton::_notification(int p_what) {
 			if (shape.is_valid()) {
 				Color draw_col = get_tree()->get_debug_collisions_color();
 
-				Vector2 size = texture.is_null() ? shape->get_rect().size : texture->get_size();
-				Vector2 pos = shape_centered ? size * 0.5f : Vector2();
+				Vector2 pos;
+				if (shape_centered && texture.is_valid()) {
+					pos = texture->get_size() * 0.5;
+				}
+
 				draw_set_transform_matrix(get_canvas_transform().translated(pos));
 				shape->draw(get_canvas_item(), draw_col);
 			}
@@ -186,6 +189,8 @@ String TouchScreenButton::get_action() const {
 }
 
 void TouchScreenButton::_input(const Ref<InputEvent> &p_event) {
+	ERR_FAIL_COND(p_event.is_null());
+
 	if (!get_tree()) {
 		return;
 	}
@@ -251,9 +256,12 @@ bool TouchScreenButton::_is_point_inside(const Point2 &p_point) {
 	if (shape.is_valid()) {
 		check_rect = false;
 
-		Vector2 size = texture.is_null() ? shape->get_rect().size : texture->get_size();
-		Transform2D xform = shape_centered ? Transform2D().translated(size * 0.5f) : Transform2D();
-		touched = shape->collide(xform, unit_rect, Transform2D(0, coord + Vector2(0.5, 0.5)));
+		Vector2 pos;
+		if (shape_centered && texture.is_valid()) {
+			pos = texture->get_size() * 0.5;
+		}
+
+		touched = shape->collide(Transform2D().translated(pos), unit_rect, Transform2D(0, coord + Vector2(0.5, 0.5)));
 	}
 
 	if (bitmask.is_valid()) {
@@ -399,11 +407,6 @@ void TouchScreenButton::_bind_methods() {
 }
 
 TouchScreenButton::TouchScreenButton() {
-	finger_pressed = -1;
-	passby_press = false;
-	visibility = VISIBILITY_ALWAYS;
-	shape_centered = true;
-	shape_visible = true;
 	unit_rect = Ref<RectangleShape2D>(memnew(RectangleShape2D));
-	unit_rect->set_extents(Vector2(0.5, 0.5));
+	unit_rect->set_size(Vector2(1, 1));
 }

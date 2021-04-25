@@ -242,5 +242,11 @@
 		</constant>
 		<constant name="ARRAY_FLAG_USE_8_BONE_WEIGHTS" value="134217728" enum="ArrayFormat">
 		</constant>
+		<constant name="BLEND_SHAPE_MODE_NORMALIZED" value="0" enum="BlendShapeMode">
+			Blend shapes are normalized.
+		</constant>
+		<constant name="BLEND_SHAPE_MODE_RELATIVE" value="1" enum="BlendShapeMode">
+			Blend shapes are relative to base weight.
+		</constant>
 	</constants>
 </class>

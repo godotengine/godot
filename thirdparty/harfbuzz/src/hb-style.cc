@@ -65,6 +65,7 @@ typedef enum {
   HB_STYLE_TAG_WIDTH		= HB_TAG ('w','d','t','h'),
   HB_STYLE_TAG_WEIGHT		= HB_TAG ('w','g','h','t'),
 
+  /*< private >*/
   _HB_STYLE_TAG_MAX_VALUE	= HB_TAG_MAX_SIGNED /*< skip >*/
 } hb_style_tag_t;
 

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -517,7 +517,7 @@ void EditorVisualProfiler::_graph_tex_input(const Ref<InputEvent> &p_ev) {
 	Ref<InputEventMouseMotion> mm = p_ev;
 
 	if (
-			(mb.is_valid() && mb->get_button_index() == BUTTON_LEFT && mb->is_pressed()) ||
+			(mb.is_valid() && mb->get_button_index() == MOUSE_BUTTON_LEFT && mb->is_pressed()) ||
 			(mm.is_valid())) {
 		int half_w = graph->get_size().width / 2;
 		int x = me->get_position().x;
@@ -549,7 +549,7 @@ void EditorVisualProfiler::_graph_tex_input(const Ref<InputEvent> &p_ev) {
 			hover_metric = -1;
 		}
 
-		if (mb.is_valid() || mm->get_button_mask() & BUTTON_MASK_LEFT) {
+		if (mb.is_valid() || mm->get_button_mask() & MOUSE_BUTTON_MASK_LEFT) {
 			//cursor_metric=x;
 			updating_frame = true;
 
@@ -666,7 +666,7 @@ bool EditorVisualProfiler::is_profiling() {
 Vector<Vector<String>> EditorVisualProfiler::get_data_as_csv() const {
 	Vector<Vector<String>> res;
 #if 0
-	if (frame_metrics.empty()) {
+	if (frame_metrics.is_empty()) {
 		return res;
 	}
 

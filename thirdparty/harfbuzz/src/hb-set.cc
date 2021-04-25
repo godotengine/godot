@@ -30,11 +30,11 @@
 /**
  * SECTION:hb-set
  * @title: hb-set
- * @short_description: Object representing a set of integers
+ * @short_description: Objects representing a set of integers
  * @include: hb.h
  *
  * Set objects represent a mathematical set of integer values.  They are
- * used in non-shaping API to query certain set of characters or glyphs,
+ * used in non-shaping APIs to query certain sets of characters or glyphs,
  * or other integer values.
  **/
 
@@ -42,7 +42,9 @@
 /**
  * hb_set_create: (Xconstructor)
  *
- * Return value: (transfer full):
+ * Creates a new, initially empty set.
+ *
+ * Return value: (transfer full): The new #hb_set_t
  *
  * Since: 0.9.2
  **/
@@ -62,7 +64,9 @@ hb_set_create ()
 /**
  * hb_set_get_empty:
  *
- * Return value: (transfer full):
+ * Fetches the singleton empty #hb_set_t.
+ *
+ * Return value: (transfer full): The empty #hb_set_t
  *
  * Since: 0.9.2
  **/
@@ -74,9 +78,11 @@ hb_set_get_empty ()
 
 /**
  * hb_set_reference: (skip)
- * @set: a set.
+ * @set: A set
  *
- * Return value: (transfer full):
+ * Increases the reference count on a set.
+ *
+ * Return value: (transfer full): The set
  *
  * Since: 0.9.2
  **/
@@ -88,7 +94,11 @@ hb_set_reference (hb_set_t *set)
 
 /**
  * hb_set_destroy: (skip)
- * @set: a set.
+ * @set: A set
+ *
+ * Decreases the reference count on a set. When
+ * the reference count reaches zero, the set is
+ * destroyed, freeing all memory.
  *
  * Since: 0.9.2
  **/
@@ -104,13 +114,15 @@ hb_set_destroy (hb_set_t *set)
 
 /**
  * hb_set_set_user_data: (skip)
- * @set: a set.
- * @key:
- * @data:
- * @destroy:
- * @replace:
+ * @set: A set
+ * @key: The user-data key to set
+ * @data: A pointer to the user data to set
+ * @destroy: (nullable): A callback to call when @data is not needed anymore
+ * @replace: Whether to replace an existing data with the same key
  *
- * Return value:
+ * Attaches a user-data key/data pair to the specified set.
+ *
+ * Return value: %true if success, %false otherwise
  *
  * Since: 0.9.2
  **/
@@ -126,10 +138,13 @@ hb_set_set_user_data (hb_set_t           *set,
 
 /**
  * hb_set_get_user_data: (skip)
- * @set: a set.
- * @key:
+ * @set: A set
+ * @key: The user-data key to query
  *
- * Return value: (transfer none):
+ * Fetches the user data associated with the specified key,
+ * attached to the specified set.
+ *
+ * Return value: (transfer none): A pointer to the user data
  *
  * Since: 0.9.2
  **/
@@ -143,11 +158,11 @@ hb_set_get_user_data (hb_set_t           *set,
 
 /**
  * hb_set_allocation_successful:
- * @set: a set.
+ * @set: A set
  *
+ * Tests whether memory allocation for a set was successful.
  *
- *
- * Return value:
+ * Return value: %true if allocation succeeded, %false otherwise
  *
  * Since: 0.9.2
  **/
@@ -159,15 +174,18 @@ hb_set_allocation_successful (const hb_set_t  *set)
 
 /**
  * hb_set_clear:
- * @set: a set.
+ * @set: A set
  *
- *
+ * Clears out the contents of a set.
  *
  * Since: 0.9.2
  **/
 void
 hb_set_clear (hb_set_t *set)
 {
+  if (unlikely (hb_object_is_immutable (set)))
+    return;
+
   set->clear ();
 }
 
@@ -175,9 +193,9 @@ hb_set_clear (hb_set_t *set)
  * hb_set_is_empty:
  * @set: a set.
  *
+ * Tests whether a set is empty (contains no elements).
  *
- *
- * Return value:
+ * Return value: %true if @set is empty
  *
  * Since: 0.9.7
  **/
@@ -189,12 +207,12 @@ hb_set_is_empty (const hb_set_t *set)
 
 /**
  * hb_set_has:
- * @set: a set.
- * @codepoint:
+ * @set: A set
+ * @codepoint: The element to query
  *
+ * Tests whether @codepoint belongs to @set.
  *
- *
- * Return value:
+ * Return value: %true if @codepoint is in @set, %false otherwise
  *
  * Since: 0.9.2
  **/
@@ -207,10 +225,10 @@ hb_set_has (const hb_set_t *set,
 
 /**
  * hb_set_add:
- * @set: a set.
- * @codepoint:
+ * @set: A set
+ * @codepoint: The element to add to @set
  *
- *
+ * Adds @codepoint to @set.
  *
  * Since: 0.9.2
  **/
@@ -223,11 +241,12 @@ hb_set_add (hb_set_t       *set,
 
 /**
  * hb_set_add_range:
- * @set: a set.
- * @first:
- * @last:
+ * @set: A set
+ * @first: The first element to add to @set
+ * @last: The final element to add to @set
  *
- *
+ * Adds all of the elements from @first to @last
+ * (inclusive) to @set.
  *
  * Since: 0.9.7
  **/
@@ -241,10 +260,10 @@ hb_set_add_range (hb_set_t       *set,
 
 /**
  * hb_set_del:
- * @set: a set.
- * @codepoint:
+ * @set: A set
+ * @codepoint: Removes @codepoint from @set
  *
- *
+ * Removes @codepoint from @set.
  *
  * Since: 0.9.2
  **/
@@ -257,11 +276,12 @@ hb_set_del (hb_set_t       *set,
 
 /**
  * hb_set_del_range:
- * @set: a set.
- * @first:
- * @last:
+ * @set: A set
+ * @first: The first element to remove from @set
+ * @last: The final element to remove from @set
  *
- *
+ * Removes all of the elements from @first to @last
+ * (inclusive) from @set.
  *
  * Since: 0.9.7
  **/
@@ -275,12 +295,13 @@ hb_set_del_range (hb_set_t       *set,
 
 /**
  * hb_set_is_equal:
- * @set: a set.
- * @other: other set.
+ * @set: A set
+ * @other: Another set
  *
+ * Tests whether @set and @other are equal (contain the same
+ * elements).
  *
- *
- * Return value: %TRUE if the two sets are equal, %FALSE otherwise.
+ * Return value: %true if the two sets are equal, %false otherwise.
  *
  * Since: 0.9.7
  **/
@@ -293,12 +314,12 @@ hb_set_is_equal (const hb_set_t *set,
 
 /**
  * hb_set_is_subset:
- * @set: a set.
- * @larger_set: other set.
+ * @set: A set
+ * @larger_set: Another set
  *
+ * Tests whether @set is a subset of @larger_set.
  *
- *
- * Return value: %TRUE if the @set is a subset of (or equal to) @larger_set, %FALSE otherwise.
+ * Return value: %true if the @set is a subset of (or equal to) @larger_set, %false otherwise.
  *
  * Since: 1.8.1
  **/
@@ -311,10 +332,10 @@ hb_set_is_subset (const hb_set_t *set,
 
 /**
  * hb_set_set:
- * @set: a set.
- * @other:
+ * @set: A set
+ * @other: Another set
  *
- *
+ * Makes the contents of @set equal to the contents of @other.
  *
  * Since: 0.9.2
  **/
@@ -327,10 +348,10 @@ hb_set_set (hb_set_t       *set,
 
 /**
  * hb_set_union:
- * @set: a set.
- * @other:
+ * @set: A set
+ * @other: Another set
  *
- *
+ * Makes @set the union of @set and @other.
  *
  * Since: 0.9.2
  **/
@@ -343,10 +364,10 @@ hb_set_union (hb_set_t       *set,
 
 /**
  * hb_set_intersect:
- * @set: a set.
- * @other:
+ * @set: A set
+ * @other: Another set
  *
- *
+ * Makes @set the intersection of @set and @other.
  *
  * Since: 0.9.2
  **/
@@ -359,10 +380,10 @@ hb_set_intersect (hb_set_t       *set,
 
 /**
  * hb_set_subtract:
- * @set: a set.
- * @other:
+ * @set: A set
+ * @other: Another set
  *
- *
+ * Subtracts the contents of @other from @set.
  *
  * Since: 0.9.2
  **/
@@ -375,10 +396,11 @@ hb_set_subtract (hb_set_t       *set,
 
 /**
  * hb_set_symmetric_difference:
- * @set: a set.
- * @other:
+ * @set: A set
+ * @other: Another set
  *
- *
+ * Makes @set the symmetric difference of @set
+ * and @other.
  *
  * Since: 0.9.2
  **/
@@ -392,9 +414,9 @@ hb_set_symmetric_difference (hb_set_t       *set,
 #ifndef HB_DISABLE_DEPRECATED
 /**
  * hb_set_invert:
- * @set: a set.
+ * @set: A set
  *
- *
+ * Inverts the contents of @set.
  *
  * Since: 0.9.10
  *
@@ -408,11 +430,11 @@ hb_set_invert (hb_set_t *set HB_UNUSED)
 
 /**
  * hb_set_get_population:
- * @set: a set.
+ * @set: A set
  *
- * Returns the number of numbers in the set.
+ * Returns the number of elements in the set.
  *
- * Return value: set population.
+ * Return value: The population of @set
  *
  * Since: 0.9.7
  **/
@@ -424,11 +446,11 @@ hb_set_get_population (const hb_set_t *set)
 
 /**
  * hb_set_get_min:
- * @set: a set.
+ * @set: A set
  *
- * Finds the minimum number in the set.
+ * Finds the smallest element in the set.
  *
- * Return value: minimum of the set, or %HB_SET_VALUE_INVALID if set is empty.
+ * Return value: minimum of @set, or #HB_SET_VALUE_INVALID if @set is empty.
  *
  * Since: 0.9.7
  **/
@@ -440,11 +462,11 @@ hb_set_get_min (const hb_set_t *set)
 
 /**
  * hb_set_get_max:
- * @set: a set.
+ * @set: A set
  *
- * Finds the maximum number in the set.
+ * Finds the largest element in the set.
  *
- * Return value: minimum of the set, or %HB_SET_VALUE_INVALID if set is empty.
+ * Return value: maximum of @set, or #HB_SET_VALUE_INVALID if @set is empty.
  *
  * Since: 0.9.7
  **/
@@ -456,14 +478,15 @@ hb_set_get_max (const hb_set_t *set)
 
 /**
  * hb_set_next:
- * @set: a set.
- * @codepoint: (inout):
+ * @set: A set
+ * @codepoint: (inout): Input = Code point to query
+ *             Output = Code point retrieved
  *
- * Gets the next number in @set that is greater than current value of @codepoint.
+ * Fetches the next element in @set that is greater than current value of @codepoint.
  *
- * Set @codepoint to %HB_SET_VALUE_INVALID to get started.
+ * Set @codepoint to #HB_SET_VALUE_INVALID to get started.
  *
- * Return value: whether there was a next value.
+ * Return value: %true if there was a next value, %false otherwise
  *
  * Since: 0.9.2
  **/
@@ -476,14 +499,15 @@ hb_set_next (const hb_set_t *set,
 
 /**
  * hb_set_previous:
- * @set: a set.
- * @codepoint: (inout):
+ * @set: A set
+ * @codepoint: (inout): Input = Code point to query
+ *             Output = Code point retrieved
  *
- * Gets the previous number in @set that is lower than current value of @codepoint.
+ * Fetches the previous element in @set that is lower than current value of @codepoint.
  *
- * Set @codepoint to %HB_SET_VALUE_INVALID to get started.
+ * Set @codepoint to #HB_SET_VALUE_INVALID to get started.
  *
- * Return value: whether there was a previous value.
+ * Return value: %true if there was a previous value, %false otherwise
  *
  * Since: 1.8.0
  **/
@@ -496,16 +520,17 @@ hb_set_previous (const hb_set_t *set,
 
 /**
  * hb_set_next_range:
- * @set: a set.
- * @first: (out): output first codepoint in the range.
- * @last: (inout): input current last and output last codepoint in the range.
+ * @set: A set
+ * @first: (out): The first code point in the range
+ * @last: (inout): Input = The current last code point in the range
+ *         Output = The last code point in the range
  *
- * Gets the next consecutive range of numbers in @set that
+ * Fetches the next consecutive range of elements in @set that
  * are greater than current value of @last.
  *
- * Set @last to %HB_SET_VALUE_INVALID to get started.
+ * Set @last to #HB_SET_VALUE_INVALID to get started.
  *
- * Return value: whether there was a next range.
+ * Return value: %true if there was a next range, %false otherwise
  *
  * Since: 0.9.7
  **/
@@ -519,16 +544,17 @@ hb_set_next_range (const hb_set_t *set,
 
 /**
  * hb_set_previous_range:
- * @set: a set.
- * @first: (inout): input current first and output first codepoint in the range.
- * @last: (out): output last codepoint in the range.
+ * @set: A set
+ * @first: (inout): Input = The current first code point in the range
+ *         Output = The first code point in the range
+ * @last: (out): The last code point in the range
  *
- * Gets the previous consecutive range of numbers in @set that
- * are less than current value of @first.
+ * Fetches the previous consecutive range of elements in @set that
+ * are greater than current value of @last.
  *
- * Set @first to %HB_SET_VALUE_INVALID to get started.
+ * Set @first to #HB_SET_VALUE_INVALID to get started.
  *
- * Return value: whether there was a previous range.
+ * Return value: %true if there was a previous range, %false otherwise
  *
  * Since: 1.8.0
  **/

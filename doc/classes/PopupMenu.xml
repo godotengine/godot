@@ -205,8 +205,10 @@
 			</return>
 			<argument index="0" name="label" type="String" default="&quot;&quot;">
 			</argument>
+			<argument index="1" name="id" type="int" default="-1">
+			</argument>
 			<description>
-				Adds a separator between items. Separators also occupy an index.
+				Adds a separator between items. Separators also occupy an index, which you can set by using the [code]id[/code] parameter.
 				A [code]label[/code] can optionally be provided, which will appear at the center of the separator.
 			</description>
 		</method>
@@ -563,7 +565,7 @@
 			<argument index="1" name="state" type="int">
 			</argument>
 			<description>
-				Sets the state of an multistate item. See [method add_multistate_item] for details.
+				Sets the state of a multistate item. See [method add_multistate_item] for details.
 			</description>
 		</method>
 		<method name="set_item_opentype_feature">
@@ -662,13 +664,13 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Cycle to the next state of an multistate item. See [method add_multistate_item] for details.
+				Cycle to the next state of a multistate item. See [method add_multistate_item] for details.
 			</description>
 		</method>
 	</methods>
 	<members>
 		<member name="allow_search" type="bool" setter="set_allow_search" getter="get_allow_search" default="true">
-			If [code]true[/code], allows to navigate [PopupMenu] with letter keys.
+			If [code]true[/code], allows navigating [PopupMenu] with letter keys.
 		</member>
 		<member name="hide_on_checkable_item_selection" type="bool" setter="set_hide_on_checkable_item_selection" getter="is_hide_on_checkable_item_selection" default="true">
 			If [code]true[/code], hides the [PopupMenu] when a checkbox or radio button is selected.
@@ -715,19 +717,22 @@
 		<theme_item name="font" type="Font">
 			[Font] used for the menu items.
 		</theme_item>
+		<theme_item name="font_accelerator_color" type="Color" default="Color( 0.7, 0.7, 0.7, 0.8 )">
+			The text [Color] used for shortcuts and accelerators that show next to the menu item name when defined. See [method get_item_accelerator] for more info on accelerators.
+		</theme_item>
 		<theme_item name="font_color" type="Color" default="Color( 0.88, 0.88, 0.88, 1 )">
 			The default text [Color] for menu items' names.
 		</theme_item>
-		<theme_item name="font_color_accel" type="Color" default="Color( 0.7, 0.7, 0.7, 0.8 )">
-			The text [Color] used for shortcuts and accelerators that show next to the menu item name when defined. See [method get_item_accelerator] for more info on accelerators.
-		</theme_item>
-		<theme_item name="font_color_disabled" type="Color" default="Color( 0.4, 0.4, 0.4, 0.8 )">
+		<theme_item name="font_disabled_color" type="Color" default="Color( 0.4, 0.4, 0.4, 0.8 )">
 			[Color] used for disabled menu items' text.
 		</theme_item>
-		<theme_item name="font_color_hover" type="Color" default="Color( 0.88, 0.88, 0.88, 1 )">
+		<theme_item name="font_hover_color" type="Color" default="Color( 0.88, 0.88, 0.88, 1 )">
 			[Color] used for the hovered text.
 		</theme_item>
-		<theme_item name="font_color_separator" type="Color" default="Color( 0.88, 0.88, 0.88, 1 )">
+		<theme_item name="font_outline_color" type="Color" default="Color( 1, 1, 1, 1 )">
+			The tint of text outline of the menu item.
+		</theme_item>
+		<theme_item name="font_separator_color" type="Color" default="Color( 0.88, 0.88, 0.88, 1 )">
 			[Color] used for labeled separators' text. See [method add_separator].
 		</theme_item>
 		<theme_item name="font_size" type="int">
@@ -739,11 +744,18 @@
 		<theme_item name="hseparation" type="int" default="4">
 			The horizontal space between the item's name and the shortcut text/submenu arrow.
 		</theme_item>
+		<theme_item name="item_end_padding" type="int" default="2">
+		</theme_item>
+		<theme_item name="item_start_padding" type="int" default="2">
+		</theme_item>
 		<theme_item name="labeled_separator_left" type="StyleBox">
 			[StyleBox] for the left side of labeled separator. See [method add_separator].
 		</theme_item>
 		<theme_item name="labeled_separator_right" type="StyleBox">
 			[StyleBox] for the right side of labeled separator. See [method add_separator].
+		</theme_item>
+		<theme_item name="outline_size" type="int" default="0">
+			The size of the item text outline.
 		</theme_item>
 		<theme_item name="panel" type="StyleBox">
 			Default [StyleBox] of the [PopupMenu] items.

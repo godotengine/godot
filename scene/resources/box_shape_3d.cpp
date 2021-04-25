@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,8 +34,8 @@
 Vector<Vector3> BoxShape3D::get_debug_mesh_lines() const {
 	Vector<Vector3> lines;
 	AABB aabb;
-	aabb.position = -get_extents();
-	aabb.size = aabb.position * -2;
+	aabb.position = -size / 2;
+	aabb.size = size;
 
 	for (int i = 0; i < 12; i++) {
 		Vector3 a, b;
@@ -48,33 +48,32 @@ Vector<Vector3> BoxShape3D::get_debug_mesh_lines() const {
 }
 
 real_t BoxShape3D::get_enclosing_radius() const {
-	return extents.length();
+	return size.length() / 2;
 }
 
 void BoxShape3D::_update_shape() {
-	PhysicsServer3D::get_singleton()->shape_set_data(get_shape(), extents);
+	PhysicsServer3D::get_singleton()->shape_set_data(get_shape(), size / 2);
 	Shape3D::_update_shape();
 }
 
-void BoxShape3D::set_extents(const Vector3 &p_extents) {
-	extents = p_extents;
+void BoxShape3D::set_size(const Vector3 &p_size) {
+	size = p_size;
 	_update_shape();
 	notify_change_to_owners();
-	_change_notify("extents");
 }
 
-Vector3 BoxShape3D::get_extents() const {
-	return extents;
+Vector3 BoxShape3D::get_size() const {
+	return size;
 }
 
 void BoxShape3D::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("set_extents", "extents"), &BoxShape3D::set_extents);
-	ClassDB::bind_method(D_METHOD("get_extents"), &BoxShape3D::get_extents);
+	ClassDB::bind_method(D_METHOD("set_size", "size"), &BoxShape3D::set_size);
+	ClassDB::bind_method(D_METHOD("get_size"), &BoxShape3D::get_size);
 
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "extents"), "set_extents", "get_extents");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "size"), "set_size", "get_size");
 }
 
 BoxShape3D::BoxShape3D() :
 		Shape3D(PhysicsServer3D::get_singleton()->shape_create(PhysicsServer3D::SHAPE_BOX)) {
-	set_extents(Vector3(1, 1, 1));
+	set_size(Vector3(2, 2, 2));
 }

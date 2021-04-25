@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -151,7 +151,7 @@ void Voxelizer::_plot_face(int p_idx, int p_level, int p_x, int p_y, int p_z, co
 				Vector2 uv;
 				Vector3 lnormal;
 				get_uv_and_normal(intersection, p_vtx, p_uv, p_normal, uv, lnormal);
-				if (lnormal == Vector3()) { //just in case normal as nor provided
+				if (lnormal == Vector3()) { //just in case normal is not provided
 					lnormal = normal;
 				}
 
@@ -183,7 +183,7 @@ void Voxelizer::_plot_face(int p_idx, int p_level, int p_x, int p_y, int p_z, co
 			Vector3 lnormal;
 			Vector2 uv;
 			get_uv_and_normal(inters, p_vtx, p_uv, p_normal, uv, normal);
-			if (lnormal == Vector3()) { //just in case normal as nor provided
+			if (lnormal == Vector3()) { //just in case normal is not provided
 				lnormal = normal;
 			}
 
@@ -294,7 +294,7 @@ void Voxelizer::_plot_face(int p_idx, int p_level, int p_x, int p_y, int p_z, co
 Vector<Color> Voxelizer::_get_bake_texture(Ref<Image> p_image, const Color &p_color_mul, const Color &p_color_add) {
 	Vector<Color> ret;
 
-	if (p_image.is_null() || p_image->empty()) {
+	if (p_image.is_null() || p_image->is_empty()) {
 		ret.resize(bake_texture_size * bake_texture_size);
 		for (int i = 0; i < bake_texture_size * bake_texture_size; i++) {
 			ret.write[i] = p_color_add;
@@ -344,7 +344,7 @@ Voxelizer::MaterialCache Voxelizer::_get_material_cache(Ref<Material> p_material
 
 		Ref<Image> img_albedo;
 		if (albedo_tex.is_valid()) {
-			img_albedo = albedo_tex->get_data();
+			img_albedo = albedo_tex->get_image();
 			mc.albedo = _get_bake_texture(img_albedo, mat->get_albedo(), Color(0, 0, 0)); // albedo texture, color is multiplicative
 		} else {
 			mc.albedo = _get_bake_texture(img_albedo, Color(1, 1, 1), mat->get_albedo()); // no albedo texture, color is additive
@@ -358,7 +358,7 @@ Voxelizer::MaterialCache Voxelizer::_get_material_cache(Ref<Material> p_material
 		Ref<Image> img_emission;
 
 		if (emission_tex.is_valid()) {
-			img_emission = emission_tex->get_data();
+			img_emission = emission_tex->get_image();
 		}
 
 		if (mat->get_emission_operator() == StandardMaterial3D::EMISSION_OP_ADD) {
@@ -1007,7 +1007,4 @@ Transform Voxelizer::get_to_cell_space_xform() const {
 }
 
 Voxelizer::Voxelizer() {
-	sorted = false;
-	color_scan_cell_width = 4;
-	bake_texture_size = 128;
 }

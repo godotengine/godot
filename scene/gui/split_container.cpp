@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -102,7 +102,7 @@ void SplitContainer::_resort() {
 		middle_sep += clamped_split_offset;
 		if (should_clamp_split_offset) {
 			split_offset = clamped_split_offset;
-			_change_notify("split_offset");
+
 			should_clamp_split_offset = false;
 		}
 	}
@@ -207,6 +207,8 @@ void SplitContainer::_notification(int p_what) {
 }
 
 void SplitContainer::_gui_input(const Ref<InputEvent> &p_event) {
+	ERR_FAIL_COND(p_event.is_null());
+
 	if (collapsed || !_getch(0) || !_getch(1) || dragger_visibility != DRAGGER_VISIBLE) {
 		return;
 	}
@@ -214,7 +216,7 @@ void SplitContainer::_gui_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseButton> mb = p_event;
 
 	if (mb.is_valid()) {
-		if (mb->get_button_index() == BUTTON_LEFT) {
+		if (mb->get_button_index() == MOUSE_BUTTON_LEFT) {
 			if (mb->is_pressed()) {
 				int sep = get_theme_constant("separation");
 
@@ -359,12 +361,5 @@ void SplitContainer::_bind_methods() {
 }
 
 SplitContainer::SplitContainer(bool p_vertical) {
-	mouse_inside = false;
-	split_offset = 0;
-	should_clamp_split_offset = false;
-	middle_sep = 0;
 	vertical = p_vertical;
-	dragging = false;
-	collapsed = false;
-	dragger_visibility = DRAGGER_VISIBLE;
 }

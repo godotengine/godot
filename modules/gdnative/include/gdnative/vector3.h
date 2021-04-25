@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,9 +35,9 @@
 extern "C" {
 #endif
 
-#include <stdint.h>
+#include <gdnative/math_defs.h>
 
-#define GODOT_VECTOR3_SIZE 12
+#define GODOT_VECTOR3_SIZE (sizeof(godot_real_t) * 3)
 
 #ifndef GODOT_CORE_API_GODOT_VECTOR3_TYPE_DEFINED
 #define GODOT_CORE_API_GODOT_VECTOR3_TYPE_DEFINED
@@ -46,7 +46,7 @@ typedef struct {
 } godot_vector3;
 #endif
 
-#define GODOT_VECTOR3I_SIZE 12
+#define GODOT_VECTOR3I_SIZE (sizeof(int32_t) * 3)
 
 #ifndef GODOT_CORE_API_GODOT_VECTOR3I_TYPE_DEFINED
 #define GODOT_CORE_API_GODOT_VECTOR3I_TYPE_DEFINED
@@ -55,145 +55,16 @@ typedef struct {
 } godot_vector3i;
 #endif
 
-// reduce extern "C" nesting for VS2013
-#ifdef __cplusplus
-}
-#endif
-
-#include <gdnative/basis.h>
 #include <gdnative/gdnative.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-typedef enum {
-	GODOT_VECTOR3_AXIS_X,
-	GODOT_VECTOR3_AXIS_Y,
-	GODOT_VECTOR3_AXIS_Z,
-} godot_vector3_axis;
-
-// Vector3
-
-void GDAPI godot_vector3_new(godot_vector3 *r_dest, const godot_real p_x, const godot_real p_y, const godot_real p_z);
-
-godot_string GDAPI godot_vector3_as_string(const godot_vector3 *p_self);
-
-godot_vector3i GDAPI godot_vector3_as_vector3i(const godot_vector3 *p_self);
-
-godot_int GDAPI godot_vector3_min_axis(const godot_vector3 *p_self);
-
-godot_int GDAPI godot_vector3_max_axis(const godot_vector3 *p_self);
-
-godot_real GDAPI godot_vector3_length(const godot_vector3 *p_self);
-
-godot_real GDAPI godot_vector3_length_squared(const godot_vector3 *p_self);
-
-godot_bool GDAPI godot_vector3_is_normalized(const godot_vector3 *p_self);
-
-godot_vector3 GDAPI godot_vector3_normalized(const godot_vector3 *p_self);
-
-godot_vector3 GDAPI godot_vector3_inverse(const godot_vector3 *p_self);
-
-godot_vector3 GDAPI godot_vector3_snapped(const godot_vector3 *p_self, const godot_vector3 *p_by);
-
-godot_vector3 GDAPI godot_vector3_rotated(const godot_vector3 *p_self, const godot_vector3 *p_axis, const godot_real p_phi);
-
-godot_vector3 GDAPI godot_vector3_lerp(const godot_vector3 *p_self, const godot_vector3 *p_b, const godot_real p_t);
-
-godot_vector3 GDAPI godot_vector3_cubic_interpolate(const godot_vector3 *p_self, const godot_vector3 *p_b, const godot_vector3 *p_pre_a, const godot_vector3 *p_post_b, const godot_real p_t);
-
-godot_vector3 GDAPI godot_vector3_move_toward(const godot_vector3 *p_self, const godot_vector3 *p_to, const godot_real p_delta);
-
-godot_real GDAPI godot_vector3_dot(const godot_vector3 *p_self, const godot_vector3 *p_b);
-
-godot_vector3 GDAPI godot_vector3_cross(const godot_vector3 *p_self, const godot_vector3 *p_b);
-
-godot_basis GDAPI godot_vector3_outer(const godot_vector3 *p_self, const godot_vector3 *p_b);
-
-godot_basis GDAPI godot_vector3_to_diagonal_matrix(const godot_vector3 *p_self);
-
-godot_vector3 GDAPI godot_vector3_abs(const godot_vector3 *p_self);
-
-godot_vector3 GDAPI godot_vector3_sign(const godot_vector3 *p_self);
-
-godot_vector3 GDAPI godot_vector3_floor(const godot_vector3 *p_self);
-
-godot_vector3 GDAPI godot_vector3_ceil(const godot_vector3 *p_self);
-
-godot_vector3 GDAPI godot_vector3_direction_to(const godot_vector3 *p_self, const godot_vector3 *p_b);
-
-godot_real GDAPI godot_vector3_distance_to(const godot_vector3 *p_self, const godot_vector3 *p_b);
-
-godot_real GDAPI godot_vector3_distance_squared_to(const godot_vector3 *p_self, const godot_vector3 *p_b);
-
-godot_real GDAPI godot_vector3_angle_to(const godot_vector3 *p_self, const godot_vector3 *p_to);
-
-godot_vector3 GDAPI godot_vector3_slide(const godot_vector3 *p_self, const godot_vector3 *p_n);
-
-godot_vector3 GDAPI godot_vector3_bounce(const godot_vector3 *p_self, const godot_vector3 *p_n);
-
-godot_vector3 GDAPI godot_vector3_reflect(const godot_vector3 *p_self, const godot_vector3 *p_n);
-
-godot_vector3 GDAPI godot_vector3_operator_add(const godot_vector3 *p_self, const godot_vector3 *p_b);
-
-godot_vector3 GDAPI godot_vector3_operator_subtract(const godot_vector3 *p_self, const godot_vector3 *p_b);
-
-godot_vector3 GDAPI godot_vector3_operator_multiply_vector(const godot_vector3 *p_self, const godot_vector3 *p_b);
-
-godot_vector3 GDAPI godot_vector3_operator_multiply_scalar(const godot_vector3 *p_self, const godot_real p_b);
-
-godot_vector3 GDAPI godot_vector3_operator_divide_vector(const godot_vector3 *p_self, const godot_vector3 *p_b);
-
-godot_vector3 GDAPI godot_vector3_operator_divide_scalar(const godot_vector3 *p_self, const godot_real p_b);
-
-godot_bool GDAPI godot_vector3_operator_equal(const godot_vector3 *p_self, const godot_vector3 *p_b);
-
-godot_bool GDAPI godot_vector3_operator_less(const godot_vector3 *p_self, const godot_vector3 *p_b);
-
-godot_vector3 GDAPI godot_vector3_operator_neg(const godot_vector3 *p_self);
-
-void GDAPI godot_vector3_set_axis(godot_vector3 *p_self, const godot_vector3_axis p_axis, const godot_real p_val);
-
-godot_real GDAPI godot_vector3_get_axis(const godot_vector3 *p_self, const godot_vector3_axis p_axis);
-
-// Vector3i
-
-void GDAPI godot_vector3i_new(godot_vector3i *r_dest, const godot_int p_x, const godot_int p_y, const godot_int p_z);
-
-godot_string GDAPI godot_vector3i_as_string(const godot_vector3i *p_self);
-
-godot_vector3 GDAPI godot_vector3i_as_vector3(const godot_vector3i *p_self);
-
-godot_int GDAPI godot_vector3i_min_axis(const godot_vector3i *p_self);
-
-godot_int GDAPI godot_vector3i_max_axis(const godot_vector3i *p_self);
-
-godot_vector3i GDAPI godot_vector3i_abs(const godot_vector3i *p_self);
-
-godot_vector3i GDAPI godot_vector3i_sign(const godot_vector3i *p_self);
-
-godot_vector3i GDAPI godot_vector3i_operator_add(const godot_vector3i *p_self, const godot_vector3i *p_b);
-
-godot_vector3i GDAPI godot_vector3i_operator_subtract(const godot_vector3i *p_self, const godot_vector3i *p_b);
-
-godot_vector3i GDAPI godot_vector3i_operator_multiply_vector(const godot_vector3i *p_self, const godot_vector3i *p_b);
-
-godot_vector3i GDAPI godot_vector3i_operator_multiply_scalar(const godot_vector3i *p_self, const godot_int p_b);
-
-godot_vector3i GDAPI godot_vector3i_operator_divide_vector(const godot_vector3i *p_self, const godot_vector3i *p_b);
-
-godot_vector3i GDAPI godot_vector3i_operator_divide_scalar(const godot_vector3i *p_self, const godot_int p_b);
-
-godot_bool GDAPI godot_vector3i_operator_equal(const godot_vector3i *p_self, const godot_vector3i *p_b);
-
-godot_bool GDAPI godot_vector3i_operator_less(const godot_vector3i *p_self, const godot_vector3i *p_b);
-
-godot_vector3i GDAPI godot_vector3i_operator_neg(const godot_vector3i *p_self);
-
-void GDAPI godot_vector3i_set_axis(godot_vector3i *p_self, const godot_vector3_axis p_axis, const godot_int p_val);
-
-godot_int GDAPI godot_vector3i_get_axis(const godot_vector3i *p_self, const godot_vector3_axis p_axis);
+void GDAPI godot_vector3_new(godot_vector3 *p_self);
+void GDAPI godot_vector3_new_copy(godot_vector3 *r_dest, const godot_vector3 *p_src);
+void GDAPI godot_vector3i_new(godot_vector3i *p_self);
+void GDAPI godot_vector3i_new_copy(godot_vector3i *r_dest, const godot_vector3i *p_src);
+godot_real_t GDAPI *godot_vector3_operator_index(godot_vector3 *p_self, godot_int p_index);
+const godot_real_t GDAPI *godot_vector3_operator_index_const(const godot_vector3 *p_self, godot_int p_index);
+int32_t GDAPI *godot_vector3i_operator_index(godot_vector3i *p_self, godot_int p_index);
+const int32_t GDAPI *godot_vector3i_operator_index_const(const godot_vector3i *p_self, godot_int p_index);
 
 #ifdef __cplusplus
 }

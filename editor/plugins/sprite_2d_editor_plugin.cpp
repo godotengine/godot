@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -120,7 +120,7 @@ void Sprite2DEditor::_menu_option(int p_option) {
 
 	switch (p_option) {
 		case MENU_OPTION_CONVERT_TO_MESH_2D: {
-			debug_uv_dialog->get_ok()->set_text(TTR("Create Mesh2D"));
+			debug_uv_dialog->get_ok_button()->set_text(TTR("Create Mesh2D"));
 			debug_uv_dialog->set_title(TTR("Mesh2D Preview"));
 
 			_update_mesh_data();
@@ -129,7 +129,7 @@ void Sprite2DEditor::_menu_option(int p_option) {
 
 		} break;
 		case MENU_OPTION_CONVERT_TO_POLYGON_2D: {
-			debug_uv_dialog->get_ok()->set_text(TTR("Create Polygon2D"));
+			debug_uv_dialog->get_ok_button()->set_text(TTR("Create Polygon2D"));
 			debug_uv_dialog->set_title(TTR("Polygon2D Preview"));
 
 			_update_mesh_data();
@@ -137,7 +137,7 @@ void Sprite2DEditor::_menu_option(int p_option) {
 			debug_uv->update();
 		} break;
 		case MENU_OPTION_CREATE_COLLISION_POLY_2D: {
-			debug_uv_dialog->get_ok()->set_text(TTR("Create CollisionPolygon2D"));
+			debug_uv_dialog->get_ok_button()->set_text(TTR("Create CollisionPolygon2D"));
 			debug_uv_dialog->set_title(TTR("CollisionPolygon2D Preview"));
 
 			_update_mesh_data();
@@ -146,7 +146,7 @@ void Sprite2DEditor::_menu_option(int p_option) {
 
 		} break;
 		case MENU_OPTION_CREATE_LIGHT_OCCLUDER_2D: {
-			debug_uv_dialog->get_ok()->set_text(TTR("Create LightOccluder2D"));
+			debug_uv_dialog->get_ok_button()->set_text(TTR("Create LightOccluder2D"));
 			debug_uv_dialog->set_title(TTR("LightOccluder2D Preview"));
 
 			_update_mesh_data();
@@ -171,10 +171,15 @@ void Sprite2DEditor::_update_mesh_data() {
 		return;
 	}
 
-	Ref<Image> image = texture->get_data();
+	Ref<Image> image = texture->get_image();
 	ERR_FAIL_COND(image.is_null());
+
+	if (image->is_compressed()) {
+		image->decompress();
+	}
+
 	Rect2 rect;
-	if (node->is_region()) {
+	if (node->is_region_enabled()) {
 		rect = node->get_region_rect();
 	} else {
 		rect.size = Size2(image->get_width(), image->get_height());
@@ -340,7 +345,7 @@ void Sprite2DEditor::_convert_to_mesh_2d_node() {
 }
 
 void Sprite2DEditor::_convert_to_polygon_2d_node() {
-	if (computed_outline_lines.empty()) {
+	if (computed_outline_lines.is_empty()) {
 		err_dialog->set_text(TTR("Invalid geometry, can't create polygon."));
 		err_dialog->popup_centered();
 		return;
@@ -398,7 +403,7 @@ void Sprite2DEditor::_convert_to_polygon_2d_node() {
 }
 
 void Sprite2DEditor::_create_collision_polygon_2d_node() {
-	if (computed_outline_lines.empty()) {
+	if (computed_outline_lines.is_empty()) {
 		err_dialog->set_text(TTR("Invalid geometry, can't create collision polygon."));
 		err_dialog->popup_centered();
 		return;
@@ -420,7 +425,7 @@ void Sprite2DEditor::_create_collision_polygon_2d_node() {
 }
 
 void Sprite2DEditor::_create_light_occluder_2d_node() {
-	if (computed_outline_lines.empty()) {
+	if (computed_outline_lines.is_empty()) {
 		err_dialog->set_text(TTR("Invalid geometry, can't create light occluder."));
 		err_dialog->popup_centered();
 		return;
@@ -515,7 +520,7 @@ Sprite2DEditor::Sprite2DEditor() {
 	add_child(err_dialog);
 
 	debug_uv_dialog = memnew(ConfirmationDialog);
-	debug_uv_dialog->get_ok()->set_text(TTR("Create Mesh2D"));
+	debug_uv_dialog->get_ok_button()->set_text(TTR("Create Mesh2D"));
 	debug_uv_dialog->set_title("Mesh 2D Preview");
 	VBoxContainer *vb = memnew(VBoxContainer);
 	debug_uv_dialog->add_child(vb);
@@ -583,7 +588,7 @@ void Sprite2DEditorPlugin::make_visible(bool p_visible) {
 Sprite2DEditorPlugin::Sprite2DEditorPlugin(EditorNode *p_node) {
 	editor = p_node;
 	sprite_editor = memnew(Sprite2DEditor);
-	editor->get_viewport()->add_child(sprite_editor);
+	editor->get_main_control()->add_child(sprite_editor);
 	make_visible(false);
 
 	//sprite_editor->options->hide();

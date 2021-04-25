@@ -5,7 +5,7 @@
 	</brief_description>
 	<description>
 		Counts down a specified interval and emits a signal on reaching 0. Can be set to repeat or "one-shot" mode.
-		[b]Note:[/b] To create an one-shot timer without instantiating a node, use [method SceneTree.create_timer].
+		[b]Note:[/b] To create a one-shot timer without instantiating a node, use [method SceneTree.create_timer].
 	</description>
 	<tutorials>
 		<link title="2D Dodge The Creeps Demo">https://godotengine.org/asset-library/asset/515</link>
@@ -47,8 +47,8 @@
 		<member name="paused" type="bool" setter="set_paused" getter="is_paused">
 			If [code]true[/code], the timer is paused and will not process until it is unpaused again, even if [method start] is called.
 		</member>
-		<member name="process_mode" type="int" setter="set_timer_process_mode" getter="get_timer_process_mode" enum="Timer.TimerProcessMode" default="1">
-			Processing mode. See [enum TimerProcessMode].
+		<member name="process_callback" type="int" setter="set_timer_process_callback" getter="get_timer_process_callback" enum="Timer.TimerProcessCallback" default="1">
+			Processing callback. See [enum TimerProcessCallback].
 		</member>
 		<member name="time_left" type="float" setter="" getter="get_time_left">
 			The timer's remaining time in seconds. Returns 0 if the timer is inactive.
@@ -66,10 +66,10 @@
 		</signal>
 	</signals>
 	<constants>
-		<constant name="TIMER_PROCESS_PHYSICS" value="0" enum="TimerProcessMode">
+		<constant name="TIMER_PROCESS_PHYSICS" value="0" enum="TimerProcessCallback">
 			Update the timer during the physics step at each frame (fixed framerate processing).
 		</constant>
-		<constant name="TIMER_PROCESS_IDLE" value="1" enum="TimerProcessMode">
+		<constant name="TIMER_PROCESS_IDLE" value="1" enum="TimerProcessCallback">
 			Update the timer during the idle time at each frame.
 		</constant>
 	</constants>

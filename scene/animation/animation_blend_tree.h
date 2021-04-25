@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,10 +37,10 @@ class AnimationNodeAnimation : public AnimationRootNode {
 	GDCLASS(AnimationNodeAnimation, AnimationRootNode);
 
 	StringName animation;
-	StringName time;
+	StringName time = "time";
 
-	uint64_t last_version;
-	bool skip;
+	uint64_t last_version = 0;
+	bool skip = false;
 
 protected:
 	void _validate_property(PropertyInfo &property) const override;
@@ -71,26 +71,26 @@ public:
 	};
 
 private:
-	float fade_in;
-	float fade_out;
+	float fade_in = 0.1;
+	float fade_out = 0.1;
 
-	bool autorestart;
-	float autorestart_delay;
-	float autorestart_random_delay;
-	MixMode mix;
+	bool autorestart = false;
+	float autorestart_delay = 1.0;
+	float autorestart_random_delay = 0.0;
+	MixMode mix = MIX_MODE_BLEND;
 
-	bool sync;
+	bool sync = false;
 
 	/*	bool active;
 	bool do_start;
 	float time;
 	float remaining;*/
 
-	StringName active;
-	StringName prev_active;
-	StringName time;
-	StringName remaining;
-	StringName time_to_restart;
+	StringName active = "active";
+	StringName prev_active = "prev_active";
+	StringName time = "time";
+	StringName remaining = "remaining";
+	StringName time_to_restart = "time_to_restart";
 
 protected:
 	static void _bind_methods();
@@ -132,8 +132,8 @@ VARIANT_ENUM_CAST(AnimationNodeOneShot::MixMode)
 class AnimationNodeAdd2 : public AnimationNode {
 	GDCLASS(AnimationNodeAdd2, AnimationNode);
 
-	StringName add_amount;
-	bool sync;
+	StringName add_amount = "add_amount";
+	bool sync = false;
 
 protected:
 	static void _bind_methods();
@@ -156,8 +156,8 @@ public:
 class AnimationNodeAdd3 : public AnimationNode {
 	GDCLASS(AnimationNodeAdd3, AnimationNode);
 
-	StringName add_amount;
-	bool sync;
+	StringName add_amount = "add_amount";
+	bool sync = false;
 
 protected:
 	static void _bind_methods();
@@ -180,8 +180,8 @@ public:
 class AnimationNodeBlend2 : public AnimationNode {
 	GDCLASS(AnimationNodeBlend2, AnimationNode);
 
-	StringName blend_amount;
-	bool sync;
+	StringName blend_amount = "blend_amount";
+	bool sync = false;
 
 protected:
 	static void _bind_methods();
@@ -225,7 +225,7 @@ public:
 class AnimationNodeTimeScale : public AnimationNode {
 	GDCLASS(AnimationNodeTimeScale, AnimationNode);
 
-	StringName scale;
+	StringName scale = "scale";
 
 protected:
 	static void _bind_methods();
@@ -244,7 +244,7 @@ public:
 class AnimationNodeTimeSeek : public AnimationNode {
 	GDCLASS(AnimationNodeTimeSeek, AnimationNode);
 
-	StringName seek_pos;
+	StringName seek_pos = "seek_position";
 
 protected:
 	static void _bind_methods();
@@ -268,12 +268,11 @@ class AnimationNodeTransition : public AnimationNode {
 	};
 	struct InputData {
 		String name;
-		bool auto_advance;
-		InputData() { auto_advance = false; }
+		bool auto_advance = false;
 	};
 
 	InputData inputs[MAX_INPUTS];
-	int enabled_inputs;
+	int enabled_inputs = 0;
 
 	/*
 	float prev_xfading;
@@ -282,13 +281,13 @@ class AnimationNodeTransition : public AnimationNode {
 	int current;
 	int prev_current; */
 
-	StringName prev_xfading;
-	StringName prev;
-	StringName time;
-	StringName current;
-	StringName prev_current;
+	StringName prev_xfading = "prev_xfading";
+	StringName prev = "prev";
+	StringName time = "time";
+	StringName current = "current";
+	StringName prev_current = "prev_current";
 
-	float xfade;
+	float xfade = 0.0;
 
 	void _update_inputs();
 
@@ -352,6 +351,8 @@ protected:
 	bool _get(const StringName &p_name, Variant &r_ret) const;
 	void _get_property_list(List<PropertyInfo> *p_list) const;
 
+	virtual void reset_state() override;
+
 public:
 	enum ConnectionError {
 		CONNECTION_OK,
@@ -381,7 +382,7 @@ public:
 
 	struct NodeConnection {
 		StringName input_node;
-		int input_index;
+		int input_index = 0;
 		StringName output_node;
 	};
 

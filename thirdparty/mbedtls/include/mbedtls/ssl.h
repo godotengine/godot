@@ -1409,7 +1409,7 @@ void mbedtls_ssl_conf_dbg( mbedtls_ssl_config *conf,
  * \note           For DTLS, you need to provide either a non-NULL
  *                 f_recv_timeout callback, or a f_recv that doesn't block.
  *
- * \note           See the documentations of \c mbedtls_ssl_sent_t,
+ * \note           See the documentations of \c mbedtls_ssl_send_t,
  *                 \c mbedtls_ssl_recv_t and \c mbedtls_ssl_recv_timeout_t for
  *                 the conventions those callbacks must follow.
  *

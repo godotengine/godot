@@ -2,7 +2,7 @@
 
 #version 450
 
-VERSION_DEFINES
+#VERSION_DEFINES
 
 layout(local_size_x = 64, local_size_y = 1, local_size_z = 1) in;
 
@@ -43,10 +43,10 @@ struct Light {
 	float attenuation;
 
 	vec3 color;
-	float spot_angle_radians;
+	float cos_spot_angle;
 
 	vec3 position;
-	float spot_attenuation;
+	float inv_spot_attenuation;
 
 	vec3 direction;
 	bool has_shadow;
@@ -146,13 +146,15 @@ bool compute_light_vector(uint light, uint cell, vec3 pos, out float attenuation
 
 		if (lights.data[light].type == LIGHT_TYPE_SPOT) {
 			vec3 rel = normalize(pos - light_pos);
-			float angle = acos(dot(rel, lights.data[light].direction));
-			if (angle > lights.data[light].spot_angle_radians) {
+			float cos_spot_angle = lights.data[light].cos_spot_angle;
+			float cos_angle = dot(rel, lights.data[light].direction);
+			if (cos_angle < cos_spot_angle) {
 				return false;
 			}
 
-			float d = clamp(angle / lights.data[light].spot_angle_radians, 0, 1);
-			attenuation *= pow(1.0 - d, lights.data[light].spot_attenuation);
+			float scos = max(cos_angle, cos_spot_angle);
+			float spot_rim = max(0.0001, (1.0 - scos) / (1.0 - cos_spot_angle));
+			attenuation *= 1.0 - pow(spot_rim, lights.data[light].inv_spot_attenuation);
 		}
 	}
 

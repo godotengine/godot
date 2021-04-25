@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="VisualShaderNodeComment" inherits="VisualShaderNodeResizableBase" version="4.0">
+	<brief_description>
+		A comment node to be placed on visual shader graph.
+	</brief_description>
+	<description>
+		A resizable rectangular area with changeable [member title] and [member description] used for better organizing of other visual shader nodes.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+	</methods>
+	<members>
+		<member name="description" type="String" setter="set_description" getter="get_description" default="&quot;&quot;">
+			An additional description which placed below the title.
+		</member>
+		<member name="title" type="String" setter="set_title" getter="get_title" default="&quot;Comment&quot;">
+			A title of the node.
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

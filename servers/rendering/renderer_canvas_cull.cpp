@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -97,7 +97,7 @@ void _collect_ysort_children(RendererCanvasCull::Item *p_canvas_item, Transform2
 	}
 }
 
-void _mark_ysort_dirty(RendererCanvasCull::Item *ysort_owner, RID_PtrOwner<RendererCanvasCull::Item> &canvas_item_owner) {
+void _mark_ysort_dirty(RendererCanvasCull::Item *ysort_owner, RID_PtrOwner<RendererCanvasCull::Item, true> &canvas_item_owner) {
 	do {
 		ysort_owner->ysort_children_count = -1;
 		ysort_owner = canvas_item_owner.owns(ysort_owner->parent) ? canvas_item_owner.getornull(ysort_owner->parent) : nullptr;
@@ -144,10 +144,12 @@ void RendererCanvasCull::_cull_canvas_item(Item *p_canvas_item, const Transform2
 
 	if (ci->clip) {
 		if (p_canvas_clip != nullptr) {
-			ci->final_clip_rect = p_canvas_clip->final_clip_rect.clip(global_rect);
+			ci->final_clip_rect = p_canvas_clip->final_clip_rect.intersection(global_rect);
 		} else {
 			ci->final_clip_rect = global_rect;
 		}
+		ci->final_clip_rect.position = ci->final_clip_rect.position.round();
+		ci->final_clip_rect.size = ci->final_clip_rect.size.round();
 		ci->final_clip_owner = ci;
 
 	} else {
@@ -195,7 +197,7 @@ void RendererCanvasCull::_cull_canvas_item(Item *p_canvas_item, const Transform2
 	}
 
 	if (ci->copy_back_buffer) {
-		ci->copy_back_buffer->screen_rect = xform.xform(ci->copy_back_buffer->rect).clip(p_clip_rect);
+		ci->copy_back_buffer->screen_rect = xform.xform(ci->copy_back_buffer->rect).intersection(p_clip_rect);
 	}
 
 	if (use_canvas_group) {
@@ -356,12 +358,12 @@ bool RendererCanvasCull::was_sdf_used() {
 	return sdf_used;
 }
 
-RID RendererCanvasCull::canvas_create() {
+RID RendererCanvasCull::canvas_allocate() {
+	return canvas_owner.allocate_rid();
+}
+void RendererCanvasCull::canvas_initialize(RID p_rid) {
 	Canvas *canvas = memnew(Canvas);
-	ERR_FAIL_COND_V(!canvas, RID());
-	RID rid = canvas_owner.make_rid(canvas);
-
-	return rid;
+	canvas_owner.initialize_rid(p_rid, canvas);
 }
 
 void RendererCanvasCull::canvas_set_item_mirroring(RID p_canvas, RID p_item, const Point2 &p_mirroring) {
@@ -393,11 +395,12 @@ void RendererCanvasCull::canvas_set_parent(RID p_canvas, RID p_parent, float p_s
 	canvas->parent_scale = p_scale;
 }
 
-RID RendererCanvasCull::canvas_item_create() {
+RID RendererCanvasCull::canvas_item_allocate() {
+	return canvas_item_owner.allocate_rid();
+}
+void RendererCanvasCull::canvas_item_initialize(RID p_rid) {
 	Item *canvas_item = memnew(Item);
-	ERR_FAIL_COND_V(!canvas_item, RID());
-
-	return canvas_item_owner.make_rid(canvas_item);
+	canvas_item_owner.initialize_rid(p_rid, canvas_item);
 }
 
 void RendererCanvasCull::canvas_item_set_parent(RID p_item, RID p_parent) {
@@ -524,11 +527,11 @@ void RendererCanvasCull::canvas_item_add_line(RID p_item, const Point2 &p_from, 
 	Item::CommandPrimitive *line = canvas_item->alloc_command<Item::CommandPrimitive>();
 	ERR_FAIL_COND(!line);
 	if (p_width > 1.001) {
-		Vector2 t = (p_from - p_to).tangent().normalized();
-		line->points[0] = p_from + t * p_width;
-		line->points[1] = p_from - t * p_width;
-		line->points[2] = p_to - t * p_width;
-		line->points[3] = p_to + t * p_width;
+		Vector2 t = (p_from - p_to).orthogonal().normalized() * p_width * 0.5;
+		line->points[0] = p_from + t;
+		line->points[1] = p_from - t;
+		line->points[2] = p_to - t;
+		line->points[3] = p_to + t;
 		line->point_count = 4;
 	} else {
 		line->point_count = 2;
@@ -600,7 +603,7 @@ void RendererCanvasCull::canvas_item_add_polyline(RID p_item, const Vector<Point
 			if (i == pc - 1) {
 				t = prev_t;
 			} else {
-				t = (p_points[i + 1] - p_points[i]).normalized().tangent();
+				t = (p_points[i + 1] - p_points[i]).normalized().orthogonal();
 				if (i == 0) {
 					prev_t = t;
 				}
@@ -650,7 +653,7 @@ void RendererCanvasCull::canvas_item_add_polyline(RID p_item, const Vector<Point
 			if (i == pc - 1) {
 				t = prev_t;
 			} else {
-				t = (p_points[i + 1] - p_points[i]).normalized().tangent();
+				t = (p_points[i + 1] - p_points[i]).normalized().orthogonal();
 				if (i == 0) {
 					prev_t = t;
 				}
@@ -721,8 +724,10 @@ void RendererCanvasCull::canvas_item_add_circle(RID p_item, const Point2 &p_pos,
 	static const int circle_points = 64;
 
 	points.resize(circle_points);
+	const real_t circle_point_step = Math_TAU / circle_points;
+
 	for (int i = 0; i < circle_points; i++) {
-		float angle = (i / float(circle_points)) * 2 * Math_PI;
+		float angle = i * circle_point_step;
 		points.write[i].x = Math::cos(angle) * p_radius;
 		points.write[i].y = Math::sin(angle) * p_radius;
 		points.write[i] += p_pos;
@@ -825,10 +830,10 @@ void RendererCanvasCull::canvas_item_add_nine_patch(RID p_item, const Rect2 &p_r
 	style->source = p_source;
 	style->draw_center = p_draw_center;
 	style->color = p_modulate;
-	style->margin[MARGIN_LEFT] = p_topleft.x;
-	style->margin[MARGIN_TOP] = p_topleft.y;
-	style->margin[MARGIN_RIGHT] = p_bottomright.x;
-	style->margin[MARGIN_BOTTOM] = p_bottomright.y;
+	style->margin[SIDE_LEFT] = p_topleft.x;
+	style->margin[SIDE_TOP] = p_topleft.y;
+	style->margin[SIDE_RIGHT] = p_bottomright.x;
+	style->margin[SIDE_BOTTOM] = p_bottomright.y;
 	style->axis_x = p_x_axis_mode;
 	style->axis_y = p_y_axis_mode;
 }
@@ -874,7 +879,7 @@ void RendererCanvasCull::canvas_item_add_polygon(RID p_item, const Vector<Point2
 	ERR_FAIL_COND(uv_size != 0 && (uv_size != pointcount));
 #endif
 	Vector<int> indices = Geometry2D::triangulate_polygon(p_points);
-	ERR_FAIL_COND_MSG(indices.empty(), "Invalid polygon data, triangulation failed.");
+	ERR_FAIL_COND_MSG(indices.is_empty(), "Invalid polygon data, triangulation failed.");
 
 	Item::CommandPolygon *polygon = canvas_item->alloc_command<Item::CommandPolygon>();
 	ERR_FAIL_COND(!polygon);
@@ -889,10 +894,10 @@ void RendererCanvasCull::canvas_item_add_triangle_array(RID p_item, const Vector
 
 	int vertex_count = p_points.size();
 	ERR_FAIL_COND(vertex_count == 0);
-	ERR_FAIL_COND(!p_colors.empty() && p_colors.size() != vertex_count && p_colors.size() != 1);
-	ERR_FAIL_COND(!p_uvs.empty() && p_uvs.size() != vertex_count);
-	ERR_FAIL_COND(!p_bones.empty() && p_bones.size() != vertex_count * 4);
-	ERR_FAIL_COND(!p_weights.empty() && p_weights.size() != vertex_count * 4);
+	ERR_FAIL_COND(!p_colors.is_empty() && p_colors.size() != vertex_count && p_colors.size() != 1);
+	ERR_FAIL_COND(!p_uvs.is_empty() && p_uvs.size() != vertex_count);
+	ERR_FAIL_COND(!p_bones.is_empty() && p_bones.size() != vertex_count * 4);
+	ERR_FAIL_COND(!p_weights.is_empty() && p_weights.size() != vertex_count * 4);
 
 	Vector<int> indices = p_indices;
 
@@ -1073,10 +1078,13 @@ void RendererCanvasCull::canvas_item_set_canvas_group_mode(RID p_item, RS::Canva
 	}
 }
 
-RID RendererCanvasCull::canvas_light_create() {
+RID RendererCanvasCull::canvas_light_allocate() {
+	return canvas_light_owner.allocate_rid();
+}
+void RendererCanvasCull::canvas_light_initialize(RID p_rid) {
 	RendererCanvasRender::Light *clight = memnew(RendererCanvasRender::Light);
 	clight->light_internal = RSG::canvas_render->light_create();
-	return canvas_light_owner.make_rid(clight);
+	return canvas_light_owner.initialize_rid(p_rid, clight);
 }
 
 void RendererCanvasCull::canvas_light_set_mode(RID p_light, RS::CanvasLightMode p_mode) {
@@ -1266,10 +1274,13 @@ void RendererCanvasCull::canvas_light_set_shadow_smooth(RID p_light, float p_smo
 	clight->shadow_smooth = p_smooth;
 }
 
-RID RendererCanvasCull::canvas_light_occluder_create() {
+RID RendererCanvasCull::canvas_light_occluder_allocate() {
+	return canvas_light_occluder_owner.allocate_rid();
+}
+void RendererCanvasCull::canvas_light_occluder_initialize(RID p_rid) {
 	RendererCanvasRender::LightOccluderInstance *occluder = memnew(RendererCanvasRender::LightOccluderInstance);
 
-	return canvas_light_occluder_owner.make_rid(occluder);
+	return canvas_light_occluder_owner.initialize_rid(p_rid, occluder);
 }
 
 void RendererCanvasCull::canvas_light_occluder_attach_to_canvas(RID p_occluder, RID p_canvas) {
@@ -1347,10 +1358,13 @@ void RendererCanvasCull::canvas_light_occluder_set_light_mask(RID p_occluder, in
 	occluder->light_mask = p_mask;
 }
 
-RID RendererCanvasCull::canvas_occluder_polygon_create() {
+RID RendererCanvasCull::canvas_occluder_polygon_allocate() {
+	return canvas_light_occluder_polygon_owner.allocate_rid();
+}
+void RendererCanvasCull::canvas_occluder_polygon_initialize(RID p_rid) {
 	LightOccluderPolygon *occluder_poly = memnew(LightOccluderPolygon);
 	occluder_poly->occluder = RSG::canvas_render->occluder_polygon_create();
-	return canvas_light_occluder_polygon_owner.make_rid(occluder_poly);
+	return canvas_light_occluder_polygon_owner.initialize_rid(p_rid, occluder_poly);
 }
 
 void RendererCanvasCull::canvas_occluder_polygon_set_shape(RID p_occluder_polygon, const Vector<Vector2> &p_shape, bool p_closed) {
@@ -1391,8 +1405,11 @@ void RendererCanvasCull::canvas_set_shadow_texture_size(int p_size) {
 	RSG::canvas_render->set_shadow_texture_size(p_size);
 }
 
-RID RendererCanvasCull::canvas_texture_create() {
-	return RSG::storage->canvas_texture_create();
+RID RendererCanvasCull::canvas_texture_allocate() {
+	return RSG::storage->canvas_texture_allocate();
+}
+void RendererCanvasCull::canvas_texture_initialize(RID p_rid) {
+	RSG::storage->canvas_texture_initialize(p_rid);
 }
 
 void RendererCanvasCull::canvas_texture_set_channel(RID p_canvas_texture, RS::CanvasTextureChannel p_channel, RID p_texture) {

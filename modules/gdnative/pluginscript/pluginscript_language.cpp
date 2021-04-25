@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -407,7 +407,7 @@ bool PluginScriptLanguage::handles_global_class_type(const String &p_type) const
 }
 
 String PluginScriptLanguage::get_global_class_name(const String &p_path, String *r_base_type, String *r_icon_path) const {
-	if (!p_path.empty()) {
+	if (!p_path.is_empty()) {
 		Ref<PluginScript> script = ResourceLoader::load(p_path, "PluginScript");
 		if (script.is_valid()) {
 			if (r_base_type) {

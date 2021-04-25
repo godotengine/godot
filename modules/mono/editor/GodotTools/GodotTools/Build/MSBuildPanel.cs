@@ -43,8 +43,6 @@ namespace GodotTools.Build
                 GD.PushError("Failed to setup Godot NuGet Offline Packages: " + e.Message);
             }
 
-            BuildManager.GenerateEditorScriptMetadata();
-
             if (!BuildManager.BuildProjectBlocking("Debug"))
                 return; // Build failed
 
@@ -73,8 +71,6 @@ namespace GodotTools.Build
             {
                 GD.PushError("Failed to setup Godot NuGet Offline Packages: " + e.Message);
             }
-
-            BuildManager.GenerateEditorScriptMetadata();
 
             if (!BuildManager.BuildProjectBlocking("Debug", targets: new[] {"Rebuild"}))
                 return; // Build failed

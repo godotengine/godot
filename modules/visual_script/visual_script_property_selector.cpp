@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -310,7 +310,7 @@ void VisualScriptPropertySelector::_update_search() {
 		found = true;
 	}
 
-	get_ok()->set_disabled(root->get_children() == nullptr);
+	get_ok_button()->set_disabled(root->get_children() == nullptr);
 }
 
 void VisualScriptPropertySelector::create_visualscript_item(const String &name, TreeItem *const root, const String &search_input, const String &text) {
@@ -358,7 +358,7 @@ void VisualScriptPropertySelector::get_visual_node_names(const String &root_filt
 			continue;
 		}
 
-		bool in_modifier = p_modifiers.empty();
+		bool in_modifier = p_modifiers.is_empty();
 		for (Set<String>::Element *F = p_modifiers.front(); F && in_modifier; F = F->next()) {
 			if (E->get().findn(F->get()) != -1) {
 				in_modifier = true;
@@ -705,8 +705,8 @@ VisualScriptPropertySelector::VisualScriptPropertySelector() {
 	search_box->connect("gui_input", callable_mp(this, &VisualScriptPropertySelector::_sbox_input));
 	search_options = memnew(Tree);
 	vbc->add_margin_child(TTR("Matches:"), search_options, true);
-	get_ok()->set_text(TTR("Open"));
-	get_ok()->set_disabled(true);
+	get_ok_button()->set_text(TTR("Open"));
+	get_ok_button()->set_disabled(true);
 	register_text_enter(search_box);
 	set_hide_on_ok(false);
 	search_options->connect("item_activated", callable_mp(this, &VisualScriptPropertySelector::_confirmed));

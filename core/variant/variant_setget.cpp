@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -437,6 +437,11 @@ void Variant::get_member_list(Variant::Type p_type, List<StringName> *r_members)
 	}
 }
 
+int Variant::get_member_count(Type p_type) {
+	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, -1);
+	return variant_setters_getters_names[p_type].size();
+}
+
 Variant::ValidatedSetter Variant::get_member_validated_setter(Variant::Type p_type, const StringName &p_member) {
 	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, nullptr);
 
@@ -582,18 +587,18 @@ Variant Variant::get_named(const StringName &p_member, bool &r_valid) const {
 
 #define INDEXED_SETGET_STRUCT_TYPED(m_base_type, m_elem_type)                                                                        \
 	struct VariantIndexedSetGet_##m_base_type {                                                                                      \
-		static void get(const Variant *base, int64_t index, Variant *value, bool &oob) {                                             \
+		static void get(const Variant *base, int64_t index, Variant *value, bool *oob) {                                             \
 			int64_t size = VariantGetInternalPtr<m_base_type>::get_ptr(base)->size();                                                \
 			if (index < 0) {                                                                                                         \
 				index += size;                                                                                                       \
 			}                                                                                                                        \
 			if (index < 0 || index >= size) {                                                                                        \
-				oob = true;                                                                                                          \
+				*oob = true;                                                                                                         \
 				return;                                                                                                              \
 			}                                                                                                                        \
 			VariantTypeAdjust<m_elem_type>::adjust(value);                                                                           \
 			*VariantGetInternalPtr<m_elem_type>::get_ptr(value) = (*VariantGetInternalPtr<m_base_type>::get_ptr(base))[index];       \
-			oob = false;                                                                                                             \
+			*oob = false;                                                                                                            \
 		}                                                                                                                            \
 		static void ptr_get(const void *base, int64_t index, void *member) {                                                         \
 			/* avoid ptrconvert for performance*/                                                                                    \
@@ -603,10 +608,10 @@ Variant Variant::get_named(const StringName &p_member, bool &r_valid) const {
 			OOB_TEST(index, v.size());                                                                                               \
 			PtrToArg<m_elem_type>::encode(v[index], member);                                                                         \
 		}                                                                                                                            \
-		static void set(Variant *base, int64_t index, const Variant *value, bool &valid, bool &oob) {                                \
+		static void set(Variant *base, int64_t index, const Variant *value, bool *valid, bool *oob) {                                \
 			if (value->get_type() != GetTypeInfo<m_elem_type>::VARIANT_TYPE) {                                                       \
-				oob = false;                                                                                                         \
-				valid = false;                                                                                                       \
+				*oob = false;                                                                                                        \
+				*valid = false;                                                                                                      \
 				return;                                                                                                              \
 			}                                                                                                                        \
 			int64_t size = VariantGetInternalPtr<m_base_type>::get_ptr(base)->size();                                                \
@@ -614,25 +619,25 @@ Variant Variant::get_named(const StringName &p_member, bool &r_valid) const {
 				index += size;                                                                                                       \
 			}                                                                                                                        \
 			if (index < 0 || index >= size) {                                                                                        \
-				oob = true;                                                                                                          \
-				valid = false;                                                                                                       \
+				*oob = true;                                                                                                         \
+				*valid = false;                                                                                                      \
 				return;                                                                                                              \
 			}                                                                                                                        \
 			(*VariantGetInternalPtr<m_base_type>::get_ptr(base)).write[index] = *VariantGetInternalPtr<m_elem_type>::get_ptr(value); \
-			oob = false;                                                                                                             \
-			valid = true;                                                                                                            \
+			*oob = false;                                                                                                            \
+			*valid = true;                                                                                                           \
 		}                                                                                                                            \
-		static void validated_set(Variant *base, int64_t index, const Variant *value, bool &oob) {                                   \
+		static void validated_set(Variant *base, int64_t index, const Variant *value, bool *oob) {                                   \
 			int64_t size = VariantGetInternalPtr<m_base_type>::get_ptr(base)->size();                                                \
 			if (index < 0) {                                                                                                         \
 				index += size;                                                                                                       \
 			}                                                                                                                        \
 			if (index < 0 || index >= size) {                                                                                        \
-				oob = true;                                                                                                          \
+				*oob = true;                                                                                                         \
 				return;                                                                                                              \
 			}                                                                                                                        \
 			(*VariantGetInternalPtr<m_base_type>::get_ptr(base)).write[index] = *VariantGetInternalPtr<m_elem_type>::get_ptr(value); \
-			oob = false;                                                                                                             \
+			*oob = false;                                                                                                            \
 		}                                                                                                                            \
 		static void ptr_set(void *base, int64_t index, const void *member) {                                                         \
 			/* avoid ptrconvert for performance*/                                                                                    \
@@ -648,18 +653,18 @@ Variant Variant::get_named(const StringName &p_member, bool &r_valid) const {
 
 #define INDEXED_SETGET_STRUCT_TYPED_NUMERIC(m_base_type, m_elem_type, m_assign_type)                                                 \
 	struct VariantIndexedSetGet_##m_base_type {                                                                                      \
-		static void get(const Variant *base, int64_t index, Variant *value, bool &oob) {                                             \
+		static void get(const Variant *base, int64_t index, Variant *value, bool *oob) {                                             \
 			int64_t size = VariantGetInternalPtr<m_base_type>::get_ptr(base)->size();                                                \
 			if (index < 0) {                                                                                                         \
 				index += size;                                                                                                       \
 			}                                                                                                                        \
 			if (index < 0 || index >= size) {                                                                                        \
-				oob = true;                                                                                                          \
+				*oob = true;                                                                                                         \
 				return;                                                                                                              \
 			}                                                                                                                        \
 			VariantTypeAdjust<m_elem_type>::adjust(value);                                                                           \
 			*VariantGetInternalPtr<m_elem_type>::get_ptr(value) = (*VariantGetInternalPtr<m_base_type>::get_ptr(base))[index];       \
-			oob = false;                                                                                                             \
+			*oob = false;                                                                                                            \
 		}                                                                                                                            \
 		static void ptr_get(const void *base, int64_t index, void *member) {                                                         \
 			/* avoid ptrconvert for performance*/                                                                                    \
@@ -669,14 +674,14 @@ Variant Variant::get_named(const StringName &p_member, bool &r_valid) const {
 			OOB_TEST(index, v.size());                                                                                               \
 			PtrToArg<m_elem_type>::encode(v[index], member);                                                                         \
 		}                                                                                                                            \
-		static void set(Variant *base, int64_t index, const Variant *value, bool &valid, bool &oob) {                                \
+		static void set(Variant *base, int64_t index, const Variant *value, bool *valid, bool *oob) {                                \
 			int64_t size = VariantGetInternalPtr<m_base_type>::get_ptr(base)->size();                                                \
 			if (index < 0) {                                                                                                         \
 				index += size;                                                                                                       \
 			}                                                                                                                        \
 			if (index < 0 || index >= size) {                                                                                        \
-				oob = true;                                                                                                          \
-				valid = false;                                                                                                       \
+				*oob = true;                                                                                                         \
+				*valid = false;                                                                                                      \
 				return;                                                                                                              \
 			}                                                                                                                        \
 			m_assign_type num;                                                                                                       \
@@ -685,25 +690,25 @@ Variant Variant::get_named(const StringName &p_member, bool &r_valid) const {
 			} else if (value->get_type() == Variant::FLOAT) {                                                                        \
 				num = (m_assign_type)*VariantGetInternalPtr<double>::get_ptr(value);                                                 \
 			} else {                                                                                                                 \
-				oob = false;                                                                                                         \
-				valid = false;                                                                                                       \
+				*oob = false;                                                                                                        \
+				*valid = false;                                                                                                      \
 				return;                                                                                                              \
 			}                                                                                                                        \
 			(*VariantGetInternalPtr<m_base_type>::get_ptr(base)).write[index] = num;                                                 \
-			oob = false;                                                                                                             \
-			valid = true;                                                                                                            \
+			*oob = false;                                                                                                            \
+			*valid = true;                                                                                                           \
 		}                                                                                                                            \
-		static void validated_set(Variant *base, int64_t index, const Variant *value, bool &oob) {                                   \
+		static void validated_set(Variant *base, int64_t index, const Variant *value, bool *oob) {                                   \
 			int64_t size = VariantGetInternalPtr<m_base_type>::get_ptr(base)->size();                                                \
 			if (index < 0) {                                                                                                         \
 				index += size;                                                                                                       \
 			}                                                                                                                        \
 			if (index < 0 || index >= size) {                                                                                        \
-				oob = true;                                                                                                          \
+				*oob = true;                                                                                                         \
 				return;                                                                                                              \
 			}                                                                                                                        \
 			(*VariantGetInternalPtr<m_base_type>::get_ptr(base)).write[index] = *VariantGetInternalPtr<m_elem_type>::get_ptr(value); \
-			oob = false;                                                                                                             \
+			*oob = false;                                                                                                            \
 		}                                                                                                                            \
 		static void ptr_set(void *base, int64_t index, const void *member) {                                                         \
 			/* avoid ptrconvert for performance*/                                                                                    \
@@ -719,14 +724,14 @@ Variant Variant::get_named(const StringName &p_member, bool &r_valid) const {
 
 #define INDEXED_SETGET_STRUCT_BULTIN_NUMERIC(m_base_type, m_elem_type, m_assign_type, m_max)                                   \
 	struct VariantIndexedSetGet_##m_base_type {                                                                                \
-		static void get(const Variant *base, int64_t index, Variant *value, bool &oob) {                                       \
+		static void get(const Variant *base, int64_t index, Variant *value, bool *oob) {                                       \
 			if (index < 0 || index >= m_max) {                                                                                 \
-				oob = true;                                                                                                    \
+				*oob = true;                                                                                                   \
 				return;                                                                                                        \
 			}                                                                                                                  \
 			VariantTypeAdjust<m_elem_type>::adjust(value);                                                                     \
 			*VariantGetInternalPtr<m_elem_type>::get_ptr(value) = (*VariantGetInternalPtr<m_base_type>::get_ptr(base))[index]; \
-			oob = false;                                                                                                       \
+			*oob = false;                                                                                                      \
 		}                                                                                                                      \
 		static void ptr_get(const void *base, int64_t index, void *member) {                                                   \
 			/* avoid ptrconvert for performance*/                                                                              \
@@ -734,10 +739,10 @@ Variant Variant::get_named(const StringName &p_member, bool &r_valid) const {
 			OOB_TEST(index, m_max);                                                                                            \
 			PtrToArg<m_elem_type>::encode(v[index], member);                                                                   \
 		}                                                                                                                      \
-		static void set(Variant *base, int64_t index, const Variant *value, bool &valid, bool &oob) {                          \
+		static void set(Variant *base, int64_t index, const Variant *value, bool *valid, bool *oob) {                          \
 			if (index < 0 || index >= m_max) {                                                                                 \
-				oob = true;                                                                                                    \
-				valid = false;                                                                                                 \
+				*oob = true;                                                                                                   \
+				*valid = false;                                                                                                \
 				return;                                                                                                        \
 			}                                                                                                                  \
 			m_assign_type num;                                                                                                 \
@@ -746,21 +751,21 @@ Variant Variant::get_named(const StringName &p_member, bool &r_valid) const {
 			} else if (value->get_type() == Variant::FLOAT) {                                                                  \
 				num = (m_assign_type)*VariantGetInternalPtr<double>::get_ptr(value);                                           \
 			} else {                                                                                                           \
-				oob = false;                                                                                                   \
-				valid = false;                                                                                                 \
+				*oob = false;                                                                                                  \
+				*valid = false;                                                                                                \
 				return;                                                                                                        \
 			}                                                                                                                  \
 			(*VariantGetInternalPtr<m_base_type>::get_ptr(base))[index] = num;                                                 \
-			oob = false;                                                                                                       \
-			valid = true;                                                                                                      \
+			*oob = false;                                                                                                      \
+			*valid = true;                                                                                                     \
 		}                                                                                                                      \
-		static void validated_set(Variant *base, int64_t index, const Variant *value, bool &oob) {                             \
+		static void validated_set(Variant *base, int64_t index, const Variant *value, bool *oob) {                             \
 			if (index < 0 || index >= m_max) {                                                                                 \
-				oob = true;                                                                                                    \
+				*oob = true;                                                                                                   \
 				return;                                                                                                        \
 			}                                                                                                                  \
 			(*VariantGetInternalPtr<m_base_type>::get_ptr(base))[index] = *VariantGetInternalPtr<m_elem_type>::get_ptr(value); \
-			oob = false;                                                                                                       \
+			*oob = false;                                                                                                      \
 		}                                                                                                                      \
 		static void ptr_set(void *base, int64_t index, const void *member) {                                                   \
 			/* avoid ptrconvert for performance*/                                                                              \
@@ -774,14 +779,14 @@ Variant Variant::get_named(const StringName &p_member, bool &r_valid) const {
 
 #define INDEXED_SETGET_STRUCT_BULTIN_ACCESSOR(m_base_type, m_elem_type, m_accessor, m_max)                                                \
 	struct VariantIndexedSetGet_##m_base_type {                                                                                           \
-		static void get(const Variant *base, int64_t index, Variant *value, bool &oob) {                                                  \
+		static void get(const Variant *base, int64_t index, Variant *value, bool *oob) {                                                  \
 			if (index < 0 || index >= m_max) {                                                                                            \
-				oob = true;                                                                                                               \
+				*oob = true;                                                                                                              \
 				return;                                                                                                                   \
 			}                                                                                                                             \
 			VariantTypeAdjust<m_elem_type>::adjust(value);                                                                                \
 			*VariantGetInternalPtr<m_elem_type>::get_ptr(value) = (*VariantGetInternalPtr<m_base_type>::get_ptr(base))m_accessor[index];  \
-			oob = false;                                                                                                                  \
+			*oob = false;                                                                                                                 \
 		}                                                                                                                                 \
 		static void ptr_get(const void *base, int64_t index, void *member) {                                                              \
 			/* avoid ptrconvert for performance*/                                                                                         \
@@ -789,27 +794,27 @@ Variant Variant::get_named(const StringName &p_member, bool &r_valid) const {
 			OOB_TEST(index, m_max);                                                                                                       \
 			PtrToArg<m_elem_type>::encode(v m_accessor[index], member);                                                                   \
 		}                                                                                                                                 \
-		static void set(Variant *base, int64_t index, const Variant *value, bool &valid, bool &oob) {                                     \
+		static void set(Variant *base, int64_t index, const Variant *value, bool *valid, bool *oob) {                                     \
 			if (value->get_type() != GetTypeInfo<m_elem_type>::VARIANT_TYPE) {                                                            \
-				oob = false;                                                                                                              \
-				valid = false;                                                                                                            \
+				*oob = false;                                                                                                             \
+				*valid = false;                                                                                                           \
 			}                                                                                                                             \
 			if (index < 0 || index >= m_max) {                                                                                            \
-				oob = true;                                                                                                               \
-				valid = false;                                                                                                            \
+				*oob = true;                                                                                                              \
+				*valid = false;                                                                                                           \
 				return;                                                                                                                   \
 			}                                                                                                                             \
 			(*VariantGetInternalPtr<m_base_type>::get_ptr(base)) m_accessor[index] = *VariantGetInternalPtr<m_elem_type>::get_ptr(value); \
-			oob = false;                                                                                                                  \
-			valid = true;                                                                                                                 \
+			*oob = false;                                                                                                                 \
+			*valid = true;                                                                                                                \
 		}                                                                                                                                 \
-		static void validated_set(Variant *base, int64_t index, const Variant *value, bool &oob) {                                        \
+		static void validated_set(Variant *base, int64_t index, const Variant *value, bool *oob) {                                        \
 			if (index < 0 || index >= m_max) {                                                                                            \
-				oob = true;                                                                                                               \
+				*oob = true;                                                                                                              \
 				return;                                                                                                                   \
 			}                                                                                                                             \
 			(*VariantGetInternalPtr<m_base_type>::get_ptr(base)) m_accessor[index] = *VariantGetInternalPtr<m_elem_type>::get_ptr(value); \
-			oob = false;                                                                                                                  \
+			*oob = false;                                                                                                                 \
 		}                                                                                                                                 \
 		static void ptr_set(void *base, int64_t index, const void *member) {                                                              \
 			/* avoid ptrconvert for performance*/                                                                                         \
@@ -823,14 +828,14 @@ Variant Variant::get_named(const StringName &p_member, bool &r_valid) const {
 
 #define INDEXED_SETGET_STRUCT_BULTIN_FUNC(m_base_type, m_elem_type, m_set, m_get, m_max)                                           \
 	struct VariantIndexedSetGet_##m_base_type {                                                                                    \
-		static void get(const Variant *base, int64_t index, Variant *value, bool &oob) {                                           \
+		static void get(const Variant *base, int64_t index, Variant *value, bool *oob) {                                           \
 			if (index < 0 || index >= m_max) {                                                                                     \
-				oob = true;                                                                                                        \
+				*oob = true;                                                                                                       \
 				return;                                                                                                            \
 			}                                                                                                                      \
 			VariantTypeAdjust<m_elem_type>::adjust(value);                                                                         \
 			*VariantGetInternalPtr<m_elem_type>::get_ptr(value) = VariantGetInternalPtr<m_base_type>::get_ptr(base)->m_get(index); \
-			oob = false;                                                                                                           \
+			*oob = false;                                                                                                          \
 		}                                                                                                                          \
 		static void ptr_get(const void *base, int64_t index, void *member) {                                                       \
 			/* avoid ptrconvert for performance*/                                                                                  \
@@ -838,27 +843,27 @@ Variant Variant::get_named(const StringName &p_member, bool &r_valid) const {
 			OOB_TEST(index, m_max);                                                                                                \
 			PtrToArg<m_elem_type>::encode(v.m_get(index), member);                                                                 \
 		}                                                                                                                          \
-		static void set(Variant *base, int64_t index, const Variant *value, bool &valid, bool &oob) {                              \
+		static void set(Variant *base, int64_t index, const Variant *value, bool *valid, bool *oob) {                              \
 			if (value->get_type() != GetTypeInfo<m_elem_type>::VARIANT_TYPE) {                                                     \
-				oob = false;                                                                                                       \
-				valid = false;                                                                                                     \
+				*oob = false;                                                                                                      \
+				*valid = false;                                                                                                    \
 			}                                                                                                                      \
 			if (index < 0 || index >= m_max) {                                                                                     \
-				oob = true;                                                                                                        \
-				valid = false;                                                                                                     \
+				*oob = true;                                                                                                       \
+				*valid = false;                                                                                                    \
 				return;                                                                                                            \
 			}                                                                                                                      \
 			VariantGetInternalPtr<m_base_type>::get_ptr(base)->m_set(index, *VariantGetInternalPtr<m_elem_type>::get_ptr(value));  \
-			oob = false;                                                                                                           \
-			valid = true;                                                                                                          \
+			*oob = false;                                                                                                          \
+			*valid = true;                                                                                                         \
 		}                                                                                                                          \
-		static void validated_set(Variant *base, int64_t index, const Variant *value, bool &oob) {                                 \
+		static void validated_set(Variant *base, int64_t index, const Variant *value, bool *oob) {                                 \
 			if (index < 0 || index >= m_max) {                                                                                     \
-				oob = true;                                                                                                        \
+				*oob = true;                                                                                                       \
 				return;                                                                                                            \
 			}                                                                                                                      \
 			VariantGetInternalPtr<m_base_type>::get_ptr(base)->m_set(index, *VariantGetInternalPtr<m_elem_type>::get_ptr(value));  \
-			oob = false;                                                                                                           \
+			*oob = false;                                                                                                          \
 		}                                                                                                                          \
 		static void ptr_set(void *base, int64_t index, const void *member) {                                                       \
 			/* avoid ptrconvert for performance*/                                                                                  \
@@ -870,76 +875,77 @@ Variant Variant::get_named(const StringName &p_member, bool &r_valid) const {
 		static uint64_t get_indexed_size(const Variant *base) { return m_max; }                                                    \
 	};
 
-#define INDEXED_SETGET_STRUCT_VARIANT(m_base_type)                                                    \
-	struct VariantIndexedSetGet_##m_base_type {                                                       \
-		static void get(const Variant *base, int64_t index, Variant *value, bool &oob) {              \
-			int64_t size = VariantGetInternalPtr<m_base_type>::get_ptr(base)->size();                 \
-			if (index < 0) {                                                                          \
-				index += size;                                                                        \
-			}                                                                                         \
-			if (index < 0 || index >= size) {                                                         \
-				oob = true;                                                                           \
-				return;                                                                               \
-			}                                                                                         \
-			*value = (*VariantGetInternalPtr<m_base_type>::get_ptr(base))[index];                     \
-			oob = false;                                                                              \
-		}                                                                                             \
-		static void ptr_get(const void *base, int64_t index, void *member) {                          \
-			/* avoid ptrconvert for performance*/                                                     \
-			const m_base_type &v = *reinterpret_cast<const m_base_type *>(base);                      \
-			if (index < 0)                                                                            \
-				index += v.size();                                                                    \
-			OOB_TEST(index, v.size());                                                                \
-			PtrToArg<Variant>::encode(v[index], member);                                              \
-		}                                                                                             \
-		static void set(Variant *base, int64_t index, const Variant *value, bool &valid, bool &oob) { \
-			int64_t size = VariantGetInternalPtr<m_base_type>::get_ptr(base)->size();                 \
-			if (index < 0) {                                                                          \
-				index += size;                                                                        \
-			}                                                                                         \
-			if (index < 0 || index >= size) {                                                         \
-				oob = true;                                                                           \
-				valid = false;                                                                        \
-				return;                                                                               \
-			}                                                                                         \
-			(*VariantGetInternalPtr<m_base_type>::get_ptr(base))[index] = *value;                     \
-			oob = false;                                                                              \
-			valid = true;                                                                             \
-		}                                                                                             \
-		static void validated_set(Variant *base, int64_t index, const Variant *value, bool &oob) {    \
-			int64_t size = VariantGetInternalPtr<m_base_type>::get_ptr(base)->size();                 \
-			if (index < 0) {                                                                          \
-				index += size;                                                                        \
-			}                                                                                         \
-			if (index < 0 || index >= size) {                                                         \
-				oob = true;                                                                           \
-				return;                                                                               \
-			}                                                                                         \
-			(*VariantGetInternalPtr<m_base_type>::get_ptr(base))[index] = *value;                     \
-			oob = false;                                                                              \
-		}                                                                                             \
-		static void ptr_set(void *base, int64_t index, const void *member) {                          \
-			/* avoid ptrconvert for performance*/                                                     \
-			m_base_type &v = *reinterpret_cast<m_base_type *>(base);                                  \
-			if (index < 0)                                                                            \
-				index += v.size();                                                                    \
-			OOB_TEST(index, v.size());                                                                \
-			v[index] = PtrToArg<Variant>::convert(member);                                            \
-		}                                                                                             \
-		static Variant::Type get_index_type() { return Variant::NIL; }                                \
-		static uint64_t get_indexed_size(const Variant *base) { return 0; }                           \
-	};
+struct VariantIndexedSetGet_Array {
+	static void get(const Variant *base, int64_t index, Variant *value, bool *oob) {
+		int64_t size = VariantGetInternalPtr<Array>::get_ptr(base)->size();
+		if (index < 0) {
+			index += size;
+		}
+		if (index < 0 || index >= size) {
+			*oob = true;
+			return;
+		}
+		*value = (*VariantGetInternalPtr<Array>::get_ptr(base))[index];
+		*oob = false;
+	}
+	static void ptr_get(const void *base, int64_t index, void *member) {
+		/* avoid ptrconvert for performance*/
+		const Array &v = *reinterpret_cast<const Array *>(base);
+		if (index < 0) {
+			index += v.size();
+		}
+		OOB_TEST(index, v.size());
+		PtrToArg<Variant>::encode(v[index], member);
+	}
+	static void set(Variant *base, int64_t index, const Variant *value, bool *valid, bool *oob) {
+		int64_t size = VariantGetInternalPtr<Array>::get_ptr(base)->size();
+		if (index < 0) {
+			index += size;
+		}
+		if (index < 0 || index >= size) {
+			*oob = true;
+			*valid = false;
+			return;
+		}
+		VariantGetInternalPtr<Array>::get_ptr(base)->set(index, *value);
+		*oob = false;
+		*valid = true;
+	}
+	static void validated_set(Variant *base, int64_t index, const Variant *value, bool *oob) {
+		int64_t size = VariantGetInternalPtr<Array>::get_ptr(base)->size();
+		if (index < 0) {
+			index += size;
+		}
+		if (index < 0 || index >= size) {
+			*oob = true;
+			return;
+		}
+		VariantGetInternalPtr<Array>::get_ptr(base)->set(index, *value);
+		*oob = false;
+	}
+	static void ptr_set(void *base, int64_t index, const void *member) {
+		/* avoid ptrconvert for performance*/
+		Array &v = *reinterpret_cast<Array *>(base);
+		if (index < 0) {
+			index += v.size();
+		}
+		OOB_TEST(index, v.size());
+		v.set(index, PtrToArg<Variant>::convert(member));
+	}
+	static Variant::Type get_index_type() { return Variant::NIL; }
+	static uint64_t get_indexed_size(const Variant *base) { return 0; }
+};
 
 #define INDEXED_SETGET_STRUCT_DICT(m_base_type)                                                                                     \
 	struct VariantIndexedSetGet_##m_base_type {                                                                                     \
-		static void get(const Variant *base, int64_t index, Variant *value, bool &oob) {                                            \
+		static void get(const Variant *base, int64_t index, Variant *value, bool *oob) {                                            \
 			const Variant *ptr = VariantGetInternalPtr<m_base_type>::get_ptr(base)->getptr(index);                                  \
 			if (!ptr) {                                                                                                             \
-				oob = true;                                                                                                         \
+				*oob = true;                                                                                                        \
 				return;                                                                                                             \
 			}                                                                                                                       \
 			*value = *ptr;                                                                                                          \
-			oob = false;                                                                                                            \
+			*oob = false;                                                                                                           \
 		}                                                                                                                           \
 		static void ptr_get(const void *base, int64_t index, void *member) {                                                        \
 			/* avoid ptrconvert for performance*/                                                                                   \
@@ -948,14 +954,14 @@ Variant Variant::get_named(const StringName &p_member, bool &r_valid) const {
 			NULL_TEST(ptr);                                                                                                         \
 			PtrToArg<Variant>::encode(*ptr, member);                                                                                \
 		}                                                                                                                           \
-		static void set(Variant *base, int64_t index, const Variant *value, bool &valid, bool &oob) {                               \
+		static void set(Variant *base, int64_t index, const Variant *value, bool *valid, bool *oob) {                               \
 			(*VariantGetInternalPtr<m_base_type>::get_ptr(base))[index] = *value;                                                   \
-			oob = false;                                                                                                            \
-			valid = true;                                                                                                           \
+			*oob = false;                                                                                                           \
+			*valid = true;                                                                                                          \
 		}                                                                                                                           \
-		static void validated_set(Variant *base, int64_t index, const Variant *value, bool &oob) {                                  \
+		static void validated_set(Variant *base, int64_t index, const Variant *value, bool *oob) {                                  \
 			(*VariantGetInternalPtr<m_base_type>::get_ptr(base))[index] = *value;                                                   \
-			oob = false;                                                                                                            \
+			*oob = false;                                                                                                           \
 		}                                                                                                                           \
 		static void ptr_set(void *base, int64_t index, const void *member) {                                                        \
 			m_base_type &v = *reinterpret_cast<m_base_type *>(base);                                                                \
@@ -985,12 +991,11 @@ INDEXED_SETGET_STRUCT_TYPED(PackedVector3Array, Vector3)
 INDEXED_SETGET_STRUCT_TYPED(PackedStringArray, String)
 INDEXED_SETGET_STRUCT_TYPED(PackedColorArray, Color)
 
-INDEXED_SETGET_STRUCT_VARIANT(Array)
 INDEXED_SETGET_STRUCT_DICT(Dictionary)
 
 struct VariantIndexedSetterGetterInfo {
-	void (*setter)(Variant *base, int64_t index, const Variant *value, bool &valid, bool &oob);
-	void (*getter)(const Variant *base, int64_t index, Variant *value, bool &oob);
+	void (*setter)(Variant *base, int64_t index, const Variant *value, bool *valid, bool *oob);
+	void (*getter)(const Variant *base, int64_t index, Variant *value, bool *oob);
 
 	Variant::ValidatedIndexedSetter validated_setter;
 	Variant::ValidatedIndexedGetter validated_getter;
@@ -1040,6 +1045,7 @@ void register_indexed_setters_getters() {
 	REGISTER_INDEXED_MEMBER(PackedByteArray);
 	REGISTER_INDEXED_MEMBER(PackedInt32Array);
 	REGISTER_INDEXED_MEMBER(PackedInt64Array);
+	REGISTER_INDEXED_MEMBER(PackedFloat32Array);
 	REGISTER_INDEXED_MEMBER(PackedFloat64Array);
 	REGISTER_INDEXED_MEMBER(PackedVector2Array);
 	REGISTER_INDEXED_MEMBER(PackedVector3Array);
@@ -1083,7 +1089,7 @@ Variant::PTRIndexedGetter Variant::get_member_ptr_indexed_getter(Variant::Type p
 
 void Variant::set_indexed(int64_t p_index, const Variant &p_value, bool &r_valid, bool &r_oob) {
 	if (likely(variant_indexed_setters_getters[type].valid)) {
-		variant_indexed_setters_getters[type].setter(this, p_index, &p_value, r_valid, r_oob);
+		variant_indexed_setters_getters[type].setter(this, p_index, &p_value, &r_valid, &r_oob);
 	} else {
 		r_valid = false;
 		r_oob = false;
@@ -1092,7 +1098,7 @@ void Variant::set_indexed(int64_t p_index, const Variant &p_value, bool &r_valid
 Variant Variant::get_indexed(int64_t p_index, bool &r_valid, bool &r_oob) const {
 	if (likely(variant_indexed_setters_getters[type].valid)) {
 		Variant ret;
-		variant_indexed_setters_getters[type].getter(this, p_index, &ret, r_oob);
+		variant_indexed_setters_getters[type].getter(this, p_index, &ret, &r_oob);
 		r_valid = !r_oob;
 		return ret;
 	} else {
@@ -1111,14 +1117,14 @@ uint64_t Variant::get_indexed_size() const {
 }
 
 struct VariantKeyedSetGetDictionary {
-	static void get(const Variant *base, const Variant *key, Variant *value, bool &r_valid) {
+	static void get(const Variant *base, const Variant *key, Variant *value, bool *r_valid) {
 		const Variant *ptr = VariantGetInternalPtr<Dictionary>::get_ptr(base)->getptr(*key);
 		if (!ptr) {
-			r_valid = false;
+			*r_valid = false;
 			return;
 		}
 		*value = *ptr;
-		r_valid = true;
+		*r_valid = true;
 	}
 	static void ptr_get(const void *base, const void *key, void *value) {
 		/* avoid ptrconvert for performance*/
@@ -1127,17 +1133,17 @@ struct VariantKeyedSetGetDictionary {
 		NULL_TEST(ptr);
 		PtrToArg<Variant>::encode(*ptr, value);
 	}
-	static void set(Variant *base, const Variant *key, const Variant *value, bool &r_valid) {
+	static void set(Variant *base, const Variant *key, const Variant *value, bool *r_valid) {
 		(*VariantGetInternalPtr<Dictionary>::get_ptr(base))[*key] = *value;
-		r_valid = true;
+		*r_valid = true;
 	}
 	static void ptr_set(void *base, const void *key, const void *value) {
 		Dictionary &v = *reinterpret_cast<Dictionary *>(base);
 		v[PtrToArg<Variant>::convert(key)] = PtrToArg<Variant>::convert(value);
 	}
 
-	static bool has(const Variant *base, const Variant *key, bool &r_valid) {
-		r_valid = true;
+	static bool has(const Variant *base, const Variant *key, bool *r_valid) {
+		*r_valid = true;
 		return VariantGetInternalPtr<Dictionary>::get_ptr(base)->has(*key);
 	}
 	static bool ptr_has(const void *base, const void *key) {
@@ -1148,15 +1154,15 @@ struct VariantKeyedSetGetDictionary {
 };
 
 struct VariantKeyedSetGetObject {
-	static void get(const Variant *base, const Variant *key, Variant *value, bool &r_valid) {
+	static void get(const Variant *base, const Variant *key, Variant *value, bool *r_valid) {
 		Object *obj = base->get_validated_object();
 
 		if (!obj) {
-			r_valid = false;
+			*r_valid = false;
 			*value = Variant();
 			return;
 		}
-		*value = obj->getvar(*key, &r_valid);
+		*value = obj->getvar(*key, r_valid);
 	}
 	static void ptr_get(const void *base, const void *key, void *value) {
 		const Object *obj = PtrToArg<Object *>::convert(base);
@@ -1164,14 +1170,14 @@ struct VariantKeyedSetGetObject {
 		Variant v = obj->getvar(PtrToArg<Variant>::convert(key));
 		PtrToArg<Variant>::encode(v, value);
 	}
-	static void set(Variant *base, const Variant *key, const Variant *value, bool &r_valid) {
+	static void set(Variant *base, const Variant *key, const Variant *value, bool *r_valid) {
 		Object *obj = base->get_validated_object();
 
 		if (!obj) {
-			r_valid = false;
+			*r_valid = false;
 			return;
 		}
-		obj->setvar(*key, *value, &r_valid);
+		obj->setvar(*key, *value, r_valid);
 	}
 	static void ptr_set(void *base, const void *key, const void *value) {
 		Object *obj = PtrToArg<Object *>::convert(base);
@@ -1179,13 +1185,13 @@ struct VariantKeyedSetGetObject {
 		obj->setvar(PtrToArg<Variant>::convert(key), PtrToArg<Variant>::convert(value));
 	}
 
-	static bool has(const Variant *base, const Variant *key, bool &r_valid) {
+	static bool has(const Variant *base, const Variant *key, bool *r_valid) {
 		Object *obj = base->get_validated_object();
-		if (obj != nullptr) {
-			r_valid = false;
+		if (!obj) {
+			*r_valid = false;
 			return false;
 		}
-		r_valid = true;
+		*r_valid = true;
 		bool exists;
 		obj->getvar(*key, &exists);
 		return exists;
@@ -1198,14 +1204,6 @@ struct VariantKeyedSetGetObject {
 		return valid;
 	}
 };
-
-/*typedef void (*ValidatedKeyedSetter)(Variant *base, const Variant *key, const Variant *value);
-typedef void (*ValidatedKeyedGetter)(const Variant *base, const Variant *key, Variant *value, bool &valid);
-typedef bool (*ValidatedKeyedChecker)(const Variant *base, const Variant *key);
-
-typedef void (*PTRKeyedSetter)(void *base, const void *key, const void *value);
-typedef void (*PTRKeyedGetter)(const void *base, const void *key, void *value);
-typedef bool (*PTRKeyedChecker)(const void *base, const void *key);*/
 
 struct VariantKeyedSetterGetterInfo {
 	Variant::ValidatedKeyedSetter validated_setter;
@@ -1274,7 +1272,7 @@ Variant::PTRKeyedChecker Variant::get_member_ptr_keyed_checker(Variant::Type p_t
 
 void Variant::set_keyed(const Variant &p_key, const Variant &p_value, bool &r_valid) {
 	if (likely(variant_keyed_setters_getters[type].valid)) {
-		variant_keyed_setters_getters[type].validated_setter(this, &p_key, &p_value, r_valid);
+		variant_keyed_setters_getters[type].validated_setter(this, &p_key, &p_value, &r_valid);
 	} else {
 		r_valid = false;
 	}
@@ -1282,7 +1280,7 @@ void Variant::set_keyed(const Variant &p_key, const Variant &p_value, bool &r_va
 Variant Variant::get_keyed(const Variant &p_key, bool &r_valid) const {
 	if (likely(variant_keyed_setters_getters[type].valid)) {
 		Variant ret;
-		variant_keyed_setters_getters[type].validated_getter(this, &p_key, &ret, r_valid);
+		variant_keyed_setters_getters[type].validated_getter(this, &p_key, &ret, &r_valid);
 		return ret;
 	} else {
 		r_valid = false;
@@ -1291,7 +1289,7 @@ Variant Variant::get_keyed(const Variant &p_key, bool &r_valid) const {
 }
 bool Variant::has_key(const Variant &p_key, bool &r_valid) const {
 	if (likely(variant_keyed_setters_getters[type].valid)) {
-		return variant_keyed_setters_getters[type].validated_checker(this, &p_key, r_valid);
+		return variant_keyed_setters_getters[type].validated_checker(this, &p_key, &r_valid);
 	} else {
 		r_valid = false;
 		return false;
@@ -1480,7 +1478,7 @@ bool Variant::iter_init(Variant &r_iter, bool &valid) const {
 
 		case STRING: {
 			const String *str = reinterpret_cast<const String *>(_data._mem);
-			if (str->empty()) {
+			if (str->is_empty()) {
 				return false;
 			}
 			r_iter = 0;
@@ -1488,7 +1486,7 @@ bool Variant::iter_init(Variant &r_iter, bool &valid) const {
 		} break;
 		case DICTIONARY: {
 			const Dictionary *dic = reinterpret_cast<const Dictionary *>(_data._mem);
-			if (dic->empty()) {
+			if (dic->is_empty()) {
 				return false;
 			}
 
@@ -1499,7 +1497,7 @@ bool Variant::iter_init(Variant &r_iter, bool &valid) const {
 		} break;
 		case ARRAY: {
 			const Array *arr = reinterpret_cast<const Array *>(_data._mem);
-			if (arr->empty()) {
+			if (arr->is_empty()) {
 				return false;
 			}
 			r_iter = 0;
@@ -2031,6 +2029,24 @@ Variant Variant::duplicate(bool deep) const {
 			return operator Dictionary().duplicate(deep);
 		case ARRAY:
 			return operator Array().duplicate(deep);
+		case PACKED_BYTE_ARRAY:
+			return operator Vector<uint8_t>().duplicate();
+		case PACKED_INT32_ARRAY:
+			return operator Vector<int32_t>().duplicate();
+		case PACKED_INT64_ARRAY:
+			return operator Vector<int64_t>().duplicate();
+		case PACKED_FLOAT32_ARRAY:
+			return operator Vector<float>().duplicate();
+		case PACKED_FLOAT64_ARRAY:
+			return operator Vector<double>().duplicate();
+		case PACKED_STRING_ARRAY:
+			return operator Vector<String>().duplicate();
+		case PACKED_VECTOR2_ARRAY:
+			return operator Vector<Vector2>().duplicate();
+		case PACKED_VECTOR3_ARRAY:
+			return operator Vector<Vector3>().duplicate();
+		case PACKED_COLOR_ARRAY:
+			return operator Vector<Color>().duplicate();
 		default:
 			return *this;
 	}
@@ -2183,7 +2199,7 @@ void Variant::interpolate(const Variant &a, const Variant &b, float c, Variant &
 		}
 			return;
 		case STRING: {
-			//this is pretty funny and bizarre, but artists like to use it for typewritter effects
+			//this is pretty funny and bizarre, but artists like to use it for typewriter effects
 			String sa = *reinterpret_cast<const String *>(a._data._mem);
 			String sb = *reinterpret_cast<const String *>(b._data._mem);
 			String dst;

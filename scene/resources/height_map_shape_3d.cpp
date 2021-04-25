@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -41,10 +41,10 @@ Vector<Vector3> HeightMapShape3D::get_debug_mesh_lines() const {
 		Vector2 size(map_width - 1, map_depth - 1);
 		Vector2 start = size * -0.5;
 
-		const real_t *r = map_data.ptr();
+		const float *r = map_data.ptr();
 
 		// reserve some memory for our points..
-		points.resize(((map_width - 1) * map_depth * 2) + (map_width * (map_depth - 1) * 2));
+		points.resize(((map_width - 1) * map_depth * 2) + (map_width * (map_depth - 1) * 2) + ((map_width - 1) * (map_depth - 1) * 2));
 
 		// now set our points
 		int r_offset = 0;
@@ -62,6 +62,11 @@ Vector<Vector3> HeightMapShape3D::get_debug_mesh_lines() const {
 
 				if (d != map_depth - 1) {
 					points.write[w_offset++] = height;
+					points.write[w_offset++] = Vector3(height.x, r[r_offset + map_width - 1], height.z + 1.0);
+				}
+
+				if ((w != map_width - 1) && (d != map_depth - 1)) {
+					points.write[w_offset++] = Vector3(height.x + 1.0, r[r_offset], height.z);
 					points.write[w_offset++] = Vector3(height.x, r[r_offset + map_width - 1], height.z + 1.0);
 				}
 
@@ -100,15 +105,13 @@ void HeightMapShape3D::set_map_width(int p_new) {
 		int new_size = map_width * map_depth;
 		map_data.resize(map_width * map_depth);
 
-		real_t *w = map_data.ptrw();
+		float *w = map_data.ptrw();
 		while (was_size < new_size) {
 			w[was_size++] = 0.0;
 		}
 
 		_update_shape();
 		notify_change_to_owners();
-		_change_notify("map_width");
-		_change_notify("map_data");
 	}
 }
 
@@ -126,15 +129,13 @@ void HeightMapShape3D::set_map_depth(int p_new) {
 		int new_size = map_width * map_depth;
 		map_data.resize(new_size);
 
-		real_t *w = map_data.ptrw();
+		float *w = map_data.ptrw();
 		while (was_size < new_size) {
 			w[was_size++] = 0.0;
 		}
 
 		_update_shape();
 		notify_change_to_owners();
-		_change_notify("map_depth");
-		_change_notify("map_data");
 	}
 }
 
@@ -150,8 +151,8 @@ void HeightMapShape3D::set_map_data(PackedFloat32Array p_new) {
 	}
 
 	// copy
-	real_t *w = map_data.ptrw();
-	const real_t *r = p_new.ptr();
+	float *w = map_data.ptrw();
+	const float *r = p_new.ptr();
 	for (int i = 0; i < size; i++) {
 		float val = r[i];
 		w[i] = val;
@@ -171,7 +172,6 @@ void HeightMapShape3D::set_map_data(PackedFloat32Array p_new) {
 
 	_update_shape();
 	notify_change_to_owners();
-	_change_notify("map_data");
 }
 
 PackedFloat32Array HeightMapShape3D::get_map_data() const {
@@ -193,16 +193,12 @@ void HeightMapShape3D::_bind_methods() {
 
 HeightMapShape3D::HeightMapShape3D() :
 		Shape3D(PhysicsServer3D::get_singleton()->shape_create(PhysicsServer3D::SHAPE_HEIGHTMAP)) {
-	map_width = 2;
-	map_depth = 2;
 	map_data.resize(map_width * map_depth);
-	real_t *w = map_data.ptrw();
+	float *w = map_data.ptrw();
 	w[0] = 0.0;
 	w[1] = 0.0;
 	w[2] = 0.0;
 	w[3] = 0.0;
-	min_height = 0.0;
-	max_height = 0.0;
 
 	_update_shape();
 }

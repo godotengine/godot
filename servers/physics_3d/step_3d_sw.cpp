@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,19 +33,23 @@
 
 #include "core/os/os.h"
 
-void Step3DSW::_populate_island(Body3DSW *p_body, Body3DSW **p_island, Constraint3DSW **p_constraint_island) {
-	p_body->set_island_step(_step);
-	p_body->set_island_next(*p_island);
-	*p_island = p_body;
+#define BODY_ISLAND_COUNT_RESERVE 128
+#define BODY_ISLAND_SIZE_RESERVE 512
+#define ISLAND_COUNT_RESERVE 128
+#define ISLAND_SIZE_RESERVE 512
 
-	for (Map<Constraint3DSW *, int>::Element *E = p_body->get_constraint_map().front(); E; E = E->next()) {
+void Step3DSW::_populate_island(Body3DSW *p_body, LocalVector<Body3DSW *> &p_body_island, LocalVector<Constraint3DSW *> &p_constraint_island) {
+	p_body->set_island_step(_step);
+	p_body_island.push_back(p_body);
+
+	// Faster with reversed iterations.
+	for (Map<Constraint3DSW *, int>::Element *E = p_body->get_constraint_map().back(); E; E = E->prev()) {
 		Constraint3DSW *c = (Constraint3DSW *)E->key();
 		if (c->get_island_step() == _step) {
 			continue; //already processed
 		}
 		c->set_island_step(_step);
-		c->set_island_next(*p_constraint_island);
-		*p_constraint_island = c;
+		p_constraint_island.push_back(c);
 
 		for (int i = 0; i < c->get_body_count(); i++) {
 			if (i == E->get()) {
@@ -55,87 +59,79 @@ void Step3DSW::_populate_island(Body3DSW *p_body, Body3DSW **p_island, Constrain
 			if (b->get_island_step() == _step || b->get_mode() == PhysicsServer3D::BODY_MODE_STATIC || b->get_mode() == PhysicsServer3D::BODY_MODE_KINEMATIC) {
 				continue; //no go
 			}
-			_populate_island(c->get_body_ptr()[i], p_island, p_constraint_island);
+			_populate_island(c->get_body_ptr()[i], p_body_island, p_constraint_island);
 		}
 	}
 }
 
-void Step3DSW::_setup_island(Constraint3DSW *p_island, real_t p_delta) {
-	Constraint3DSW *ci = p_island;
-	while (ci) {
-		ci->setup(p_delta);
-		//todo remove from island if process fails
-		ci = ci->get_island_next();
+void Step3DSW::_setup_island(LocalVector<Constraint3DSW *> &p_constraint_island, real_t p_delta) {
+	uint32_t constraint_count = p_constraint_island.size();
+	uint32_t valid_constraint_count = 0;
+	for (uint32_t constraint_index = 0; constraint_index < constraint_count; ++constraint_index) {
+		Constraint3DSW *constraint = p_constraint_island[constraint_index];
+		if (p_constraint_island[constraint_index]->setup(p_delta)) {
+			// Keep this constraint for solving.
+			p_constraint_island[valid_constraint_count++] = constraint;
+		}
 	}
+	p_constraint_island.resize(valid_constraint_count);
 }
 
-void Step3DSW::_solve_island(Constraint3DSW *p_island, int p_iterations, real_t p_delta) {
-	int at_priority = 1;
+void Step3DSW::_solve_island(LocalVector<Constraint3DSW *> &p_constraint_island, int p_iterations, real_t p_delta) {
+	int current_priority = 1;
 
-	while (p_island) {
+	uint32_t constraint_count = p_constraint_island.size();
+	while (constraint_count > 0) {
 		for (int i = 0; i < p_iterations; i++) {
-			Constraint3DSW *ci = p_island;
-			while (ci) {
-				ci->solve(p_delta);
-				ci = ci->get_island_next();
+			// Go through all iterations.
+			for (uint32_t constraint_index = 0; constraint_index < constraint_count; ++constraint_index) {
+				p_constraint_island[constraint_index]->solve(p_delta);
 			}
 		}
 
-		at_priority++;
-
-		{
-			Constraint3DSW *ci = p_island;
-			Constraint3DSW *prev = nullptr;
-			while (ci) {
-				if (ci->get_priority() < at_priority) {
-					if (prev) {
-						prev->set_island_next(ci->get_island_next()); //remove
-					} else {
-						p_island = ci->get_island_next();
-					}
-				} else {
-					prev = ci;
-				}
-
-				ci = ci->get_island_next();
+		// Check priority to keep only higher priority constraints.
+		uint32_t priority_constraint_count = 0;
+		++current_priority;
+		for (uint32_t constraint_index = 0; constraint_index < constraint_count; ++constraint_index) {
+			Constraint3DSW *constraint = p_constraint_island[constraint_index];
+			if (constraint->get_priority() >= current_priority) {
+				// Keep this constraint for the next iteration.
+				p_constraint_island[priority_constraint_count++] = constraint;
 			}
 		}
+		constraint_count = priority_constraint_count;
 	}
 }
 
-void Step3DSW::_check_suspend(Body3DSW *p_island, real_t p_delta) {
+void Step3DSW::_check_suspend(const LocalVector<Body3DSW *> &p_body_island, real_t p_delta) {
 	bool can_sleep = true;
 
-	Body3DSW *b = p_island;
-	while (b) {
-		if (b->get_mode() == PhysicsServer3D::BODY_MODE_STATIC || b->get_mode() == PhysicsServer3D::BODY_MODE_KINEMATIC) {
-			b = b->get_island_next();
-			continue; //ignore for static
+	uint32_t body_count = p_body_island.size();
+	for (uint32_t body_index = 0; body_index < body_count; ++body_index) {
+		Body3DSW *body = p_body_island[body_index];
+
+		if (body->get_mode() == PhysicsServer3D::BODY_MODE_STATIC || body->get_mode() == PhysicsServer3D::BODY_MODE_KINEMATIC) {
+			continue; // Ignore for static.
 		}
 
-		if (!b->sleep_test(p_delta)) {
+		if (!body->sleep_test(p_delta)) {
 			can_sleep = false;
 		}
-
-		b = b->get_island_next();
 	}
 
-	//put all to sleep or wake up everyoen
+	// Put all to sleep or wake up everyone.
+	for (uint32_t body_index = 0; body_index < body_count; ++body_index) {
+		Body3DSW *body = p_body_island[body_index];
 
-	b = p_island;
-	while (b) {
-		if (b->get_mode() == PhysicsServer3D::BODY_MODE_STATIC || b->get_mode() == PhysicsServer3D::BODY_MODE_KINEMATIC) {
-			b = b->get_island_next();
-			continue; //ignore for static
+		if (body->get_mode() == PhysicsServer3D::BODY_MODE_STATIC || body->get_mode() == PhysicsServer3D::BODY_MODE_KINEMATIC) {
+			continue; // Ignore for static.
 		}
 
-		bool active = b->is_active();
+		bool active = body->is_active();
 
 		if (active == can_sleep) {
-			b->set_active(!can_sleep);
+			body->set_active(!can_sleep);
 		}
-
-		b = b->get_island_next();
 	}
 }
 
@@ -145,6 +141,8 @@ void Step3DSW::step(Space3DSW *p_space, real_t p_delta, int p_iterations) {
 	p_space->setup(); //update inertias, etc
 
 	const SelfList<Body3DSW>::List *body_list = &p_space->get_active_body_list();
+
+	const SelfList<SoftBody3DSW>::List *soft_body_list = &p_space->get_active_soft_body_list();
 
 	/* INTEGRATE FORCES */
 
@@ -160,6 +158,15 @@ void Step3DSW::step(Space3DSW *p_space, real_t p_delta, int p_iterations) {
 		active_count++;
 	}
 
+	/* UPDATE SOFT BODY MOTION */
+
+	const SelfList<SoftBody3DSW> *sb = soft_body_list->first();
+	while (sb) {
+		sb->self()->predict_motion(p_delta);
+		sb = sb->next();
+		active_count++;
+	}
+
 	p_space->set_active_objects(active_count);
 
 	{ //profile
@@ -170,33 +177,43 @@ void Step3DSW::step(Space3DSW *p_space, real_t p_delta, int p_iterations) {
 
 	/* GENERATE CONSTRAINT ISLANDS */
 
-	Body3DSW *island_list = nullptr;
-	Constraint3DSW *constraint_island_list = nullptr;
 	b = body_list->first();
 
-	int island_count = 0;
+	uint32_t body_island_count = 0;
+	uint32_t island_count = 0;
 
 	while (b) {
 		Body3DSW *body = b->self();
 
 		if (body->get_island_step() != _step) {
-			Body3DSW *island = nullptr;
-			Constraint3DSW *constraint_island = nullptr;
-			_populate_island(body, &island, &constraint_island);
+			++body_island_count;
+			if (body_islands.size() < body_island_count) {
+				body_islands.resize(body_island_count);
+			}
+			LocalVector<Body3DSW *> &body_island = body_islands[body_island_count - 1];
+			body_island.clear();
+			body_island.reserve(BODY_ISLAND_SIZE_RESERVE);
 
-			island->set_island_list_next(island_list);
-			island_list = island;
+			++island_count;
+			if (constraint_islands.size() < island_count) {
+				constraint_islands.resize(island_count);
+			}
+			LocalVector<Constraint3DSW *> &constraint_island = constraint_islands[island_count - 1];
+			constraint_island.clear();
+			constraint_island.reserve(ISLAND_SIZE_RESERVE);
 
-			if (constraint_island) {
-				constraint_island->set_island_list_next(constraint_island_list);
-				constraint_island_list = constraint_island;
-				island_count++;
+			_populate_island(body, body_island, constraint_island);
+
+			body_islands.push_back(body_island);
+
+			if (constraint_island.is_empty()) {
+				--island_count;
 			}
 		}
 		b = b->next();
 	}
 
-	p_space->set_island_count(island_count);
+	p_space->set_island_count((int)island_count);
 
 	const SelfList<Area3DSW>::List &aml = p_space->get_moved_area_list();
 
@@ -207,11 +224,34 @@ void Step3DSW::step(Space3DSW *p_space, real_t p_delta, int p_iterations) {
 				continue;
 			}
 			c->set_island_step(_step);
-			c->set_island_next(nullptr);
-			c->set_island_list_next(constraint_island_list);
-			constraint_island_list = c;
+			++island_count;
+			if (constraint_islands.size() < island_count) {
+				constraint_islands.resize(island_count);
+			}
+			LocalVector<Constraint3DSW *> &constraint_island = constraint_islands[island_count - 1];
+			constraint_island.clear();
+			constraint_island.push_back(c);
 		}
 		p_space->area_remove_from_moved_list((SelfList<Area3DSW> *)aml.first()); //faster to remove here
+	}
+
+	sb = soft_body_list->first();
+	while (sb) {
+		for (const Set<Constraint3DSW *>::Element *E = sb->self()->get_constraints().front(); E; E = E->next()) {
+			Constraint3DSW *c = E->get();
+			if (c->get_island_step() == _step) {
+				continue;
+			}
+			c->set_island_step(_step);
+			++island_count;
+			if (constraint_islands.size() < island_count) {
+				constraint_islands.resize(island_count);
+			}
+			LocalVector<Constraint3DSW *> &constraint_island = constraint_islands[island_count - 1];
+			constraint_island.clear();
+			constraint_island.push_back(c);
+		}
+		sb = sb->next();
 	}
 
 	{ //profile
@@ -222,12 +262,8 @@ void Step3DSW::step(Space3DSW *p_space, real_t p_delta, int p_iterations) {
 
 	/* SETUP CONSTRAINT ISLANDS */
 
-	{
-		Constraint3DSW *ci = constraint_island_list;
-		while (ci) {
-			_setup_island(ci, p_delta);
-			ci = ci->get_island_list_next();
-		}
+	for (uint32_t island_index = 0; island_index < island_count; ++island_index) {
+		_setup_island(constraint_islands[island_index], p_delta);
 	}
 
 	{ //profile
@@ -238,13 +274,10 @@ void Step3DSW::step(Space3DSW *p_space, real_t p_delta, int p_iterations) {
 
 	/* SOLVE CONSTRAINT ISLANDS */
 
-	{
-		Constraint3DSW *ci = constraint_island_list;
-		while (ci) {
-			//iterating each island separatedly improves cache efficiency
-			_solve_island(ci, p_iterations, p_delta);
-			ci = ci->get_island_list_next();
-		}
+	for (uint32_t island_index = 0; island_index < island_count; ++island_index) {
+		// Warning: _solve_island modifies the constraint islands for optimization purpose,
+		// their content is not reliable after these calls and shouldn't be used anymore.
+		_solve_island(constraint_islands[island_index], p_iterations, p_delta);
 	}
 
 	{ //profile
@@ -264,12 +297,16 @@ void Step3DSW::step(Space3DSW *p_space, real_t p_delta, int p_iterations) {
 
 	/* SLEEP / WAKE UP ISLANDS */
 
-	{
-		Body3DSW *bi = island_list;
-		while (bi) {
-			_check_suspend(bi, p_delta);
-			bi = bi->get_island_list_next();
-		}
+	for (uint32_t island_index = 0; island_index < body_island_count; ++island_index) {
+		_check_suspend(body_islands[island_index], p_delta);
+	}
+
+	/* UPDATE SOFT BODY CONSTRAINTS */
+
+	sb = soft_body_list->first();
+	while (sb) {
+		sb->self()->solve_constraints(p_delta);
+		sb = sb->next();
 	}
 
 	{ //profile
@@ -285,4 +322,7 @@ void Step3DSW::step(Space3DSW *p_space, real_t p_delta, int p_iterations) {
 
 Step3DSW::Step3DSW() {
 	_step = 1;
+
+	body_islands.reserve(BODY_ISLAND_COUNT_RESERVE);
+	constraint_islands.reserve(ISLAND_COUNT_RESERVE);
 }

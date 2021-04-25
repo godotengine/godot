@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,7 +33,7 @@
 #include "core/os/os.h"
 
 void PhysicsServer2DWrapMT::thread_exit() {
-	exit = true;
+	exit.set();
 }
 
 void PhysicsServer2DWrapMT::thread_step(real_t p_delta) {
@@ -52,9 +52,9 @@ void PhysicsServer2DWrapMT::thread_loop() {
 
 	physics_2d_server->init();
 
-	exit = false;
-	step_thread_up = true;
-	while (!exit) {
+	exit.clear();
+	step_thread_up.set();
+	while (!exit.is_set()) {
 		// flush commands one by one, until exit is requested
 		command_queue.wait_and_flush_one();
 	}
@@ -76,7 +76,7 @@ void PhysicsServer2DWrapMT::step(real_t p_step) {
 }
 
 void PhysicsServer2DWrapMT::sync() {
-	if (thread) {
+	if (create_thread) {
 		if (first_frame) {
 			first_frame = false;
 		} else {
@@ -97,8 +97,8 @@ void PhysicsServer2DWrapMT::end_sync() {
 void PhysicsServer2DWrapMT::init() {
 	if (create_thread) {
 		//OS::get_singleton()->release_rendering_thread();
-		thread = Thread::create(_thread_callback, this);
-		while (!step_thread_up) {
+		thread.start(_thread_callback, this);
+		while (!step_thread_up.is_set()) {
 			OS::get_singleton()->delay_usec(1000);
 		}
 	} else {
@@ -107,37 +107,19 @@ void PhysicsServer2DWrapMT::init() {
 }
 
 void PhysicsServer2DWrapMT::finish() {
-	if (thread) {
+	if (thread.is_started()) {
 		command_queue.push(this, &PhysicsServer2DWrapMT::thread_exit);
-		Thread::wait_to_finish(thread);
-		memdelete(thread);
-
-		thread = nullptr;
+		thread.wait_to_finish();
 	} else {
 		physics_2d_server->finish();
 	}
-
-	line_shape_free_cached_ids();
-	ray_shape_free_cached_ids();
-	segment_shape_free_cached_ids();
-	circle_shape_free_cached_ids();
-	rectangle_shape_free_cached_ids();
-	capsule_shape_free_cached_ids();
-	convex_polygon_shape_free_cached_ids();
-	concave_polygon_shape_free_cached_ids();
-
-	space_free_cached_ids();
-	area_free_cached_ids();
-	body_free_cached_ids();
 }
 
 PhysicsServer2DWrapMT::PhysicsServer2DWrapMT(PhysicsServer2D *p_contained, bool p_create_thread) :
 		command_queue(p_create_thread) {
 	physics_2d_server = p_contained;
 	create_thread = p_create_thread;
-	thread = nullptr;
 	step_pending = 0;
-	step_thread_up = false;
 
 	pool_max_size = GLOBAL_GET("memory/limits/multithreaded_server/rid_pool_prealloc");
 

@@ -30,7 +30,6 @@ def get_opts():
 
 
 def get_flags():
-
     return [
         ("tools", False),
         ("xaudio2", True),
@@ -39,7 +38,6 @@ def get_flags():
 
 
 def configure(env):
-
     env.msvc = True
 
     if env["bits"] != "default":
@@ -56,16 +54,19 @@ def configure(env):
     ## Build type
 
     if env["target"] == "release":
-        env.Append(CCFLAGS=["/O2", "/GL"])
         env.Append(CCFLAGS=["/MD"])
-        env.Append(LINKFLAGS=["/SUBSYSTEM:WINDOWS", "/LTCG"])
+        env.Append(LINKFLAGS=["/SUBSYSTEM:WINDOWS"])
+        if env["optimize"] != "none":
+            env.Append(CCFLAGS=["/O2", "/GL"])
+            env.Append(LINKFLAGS=["/LTCG"])
 
     elif env["target"] == "release_debug":
-        env.Append(CCFLAGS=["/O2", "/Zi"])
         env.Append(CCFLAGS=["/MD"])
-        env.Append(CPPDEFINES=["DEBUG_ENABLED"])
         env.Append(LINKFLAGS=["/SUBSYSTEM:CONSOLE"])
         env.AppendUnique(CPPDEFINES=["WINDOWS_SUBSYSTEM_CONSOLE"])
+        env.Append(CPPDEFINES=["DEBUG_ENABLED"])
+        if env["optimize"] != "none":
+            env.Append(CCFLAGS=["/O2", "/Zi"])
 
     elif env["target"] == "debug":
         env.Append(CCFLAGS=["/Zi"])

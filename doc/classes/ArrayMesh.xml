@@ -121,11 +121,21 @@
 				Will perform a UV unwrap on the [ArrayMesh] to prepare the mesh for lightmapping.
 			</description>
 		</method>
-		<method name="regen_normalmaps">
+		<method name="regen_normal_maps">
 			<return type="void">
 			</return>
 			<description>
 				Will regenerate normal maps for the [ArrayMesh].
+			</description>
+		</method>
+		<method name="set_blend_shape_name">
+			<return type="void">
+			</return>
+			<argument index="0" name="index" type="int">
+			</argument>
+			<argument index="1" name="name" type="StringName">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="surface_find_by_name" qualifiers="const">
@@ -209,19 +219,15 @@
 		</method>
 	</methods>
 	<members>
-		<member name="blend_shape_mode" type="int" setter="set_blend_shape_mode" getter="get_blend_shape_mode" enum="ArrayMesh.BlendShapeMode" default="1">
-			Sets the blend shape mode to one of [enum ArrayMesh.BlendShapeMode].
+		<member name="blend_shape_mode" type="int" setter="set_blend_shape_mode" getter="get_blend_shape_mode" enum="Mesh.BlendShapeMode" default="1">
+			Sets the blend shape mode to one of [enum Mesh.BlendShapeMode].
 		</member>
 		<member name="custom_aabb" type="AABB" setter="set_custom_aabb" getter="get_custom_aabb" default="AABB( 0, 0, 0, 0, 0, 0 )">
 			Overrides the [AABB] with one defined by user for use with frustum culling. Especially useful to avoid unexpected culling when using a shader to offset vertices.
 		</member>
+		<member name="shadow_mesh" type="ArrayMesh" setter="set_shadow_mesh" getter="get_shadow_mesh">
+		</member>
 	</members>
 	<constants>
-		<constant name="BLEND_SHAPE_MODE_NORMALIZED" value="0" enum="BlendShapeMode">
-			Blend shapes are normalized.
-		</constant>
-		<constant name="BLEND_SHAPE_MODE_RELATIVE" value="1" enum="BlendShapeMode">
-			Blend shapes are relative to base weight.
-		</constant>
 	</constants>
 </class>

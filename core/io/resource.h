@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -90,6 +90,8 @@ public:
 	static Node *(*_get_local_scene_func)(); //used by editor
 
 	virtual bool editor_can_reload_from_file();
+	virtual void reset_state(); //for resources that use variable amount of properties, either via _validate_property or _get_property_list, this function needs to be implemented to correctly clear state
+	virtual Error copy_from(const Ref<Resource> &p_resource);
 	virtual void reload_from_file();
 
 	void register_owner(Object *p_owner);
@@ -149,16 +151,15 @@ typedef Ref<Resource> RES;
 class ResourceCache {
 	friend class Resource;
 	friend class ResourceLoader; //need the lock
-	static RWLock *lock;
+	static RWLock lock;
 	static HashMap<String, Resource *> resources;
 #ifdef TOOLS_ENABLED
 	static HashMap<String, HashMap<String, int>> resource_path_cache; // each tscn has a set of resource paths and IDs
-	static RWLock *path_cache_lock;
+	static RWLock path_cache_lock;
 #endif // TOOLS_ENABLED
 	friend void unregister_core_types();
 	static void clear();
 	friend void register_core_types();
-	static void setup();
 
 public:
 	static void reload_externals();

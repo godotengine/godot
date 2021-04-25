@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -133,7 +133,7 @@ void RemoteTransform3D::set_remote_node(const NodePath &p_remote_node) {
 		_update_remote();
 	}
 
-	update_configuration_warning();
+	update_configuration_warnings();
 }
 
 NodePath RemoteTransform3D::get_remote_node() const {
@@ -179,17 +179,14 @@ void RemoteTransform3D::force_update_cache() {
 	_update_cache();
 }
 
-String RemoteTransform3D::get_configuration_warning() const {
-	String warning = Node3D::get_configuration_warning();
+TypedArray<String> RemoteTransform3D::get_configuration_warnings() const {
+	TypedArray<String> warnings = Node::get_configuration_warnings();
 
 	if (!has_node(remote_node) || !Object::cast_to<Node3D>(get_node(remote_node))) {
-		if (!warning.empty()) {
-			warning += "\n\n";
-		}
-		warning += TTR("The \"Remote Path\" property must point to a valid Node3D or Node3D-derived node to work.");
+		warnings.push_back(TTR("The \"Remote Path\" property must point to a valid Node3D or Node3D-derived node to work."));
 	}
 
-	return warning;
+	return warnings;
 }
 
 void RemoteTransform3D::_bind_methods() {
@@ -217,10 +214,5 @@ void RemoteTransform3D::_bind_methods() {
 }
 
 RemoteTransform3D::RemoteTransform3D() {
-	use_global_coordinates = true;
-	update_remote_position = true;
-	update_remote_rotation = true;
-	update_remote_scale = true;
-
 	set_notify_transform(true);
 }

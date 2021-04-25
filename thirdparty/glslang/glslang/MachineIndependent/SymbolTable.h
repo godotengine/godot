@@ -613,20 +613,24 @@ public:
     //
 protected:
     static const int globalLevel = 3;
-    bool isSharedLevel(int level)  { return level <= 1; }              // exclude all per-compile levels
-    bool isBuiltInLevel(int level) { return level <= 2; }              // exclude user globals
-    bool isGlobalLevel(int level)  { return level <= globalLevel; }    // include user globals
+    static bool isSharedLevel(int level)  { return level <= 1; }            // exclude all per-compile levels
+    static bool isBuiltInLevel(int level) { return level <= 2; }            // exclude user globals
+    static bool isGlobalLevel(int level)  { return level <= globalLevel; }  // include user globals
 public:
     bool isEmpty() { return table.size() == 0; }
     bool atBuiltInLevel() { return isBuiltInLevel(currentLevel()); }
     bool atGlobalLevel()  { return isGlobalLevel(currentLevel()); }
-
+    static bool isBuiltInSymbol(int uniqueId) {
+        int level = uniqueId >> LevelFlagBitOffset;
+        return isBuiltInLevel(level);
+    }
     void setNoBuiltInRedeclarations() { noBuiltInRedeclarations = true; }
     void setSeparateNameSpaces() { separateNameSpaces = true; }
 
     void push()
     {
         table.push_back(new TSymbolTableLevel);
+        updateUniqueIdLevelFlag();
     }
 
     // Make a new symbol-table level to represent the scope introduced by a structure
@@ -639,6 +643,7 @@ public:
     {
         assert(thisSymbol.getName().size() == 0);
         table.push_back(new TSymbolTableLevel);
+        updateUniqueIdLevelFlag();
         table.back()->setThisLevel();
         insert(thisSymbol);
     }
@@ -648,6 +653,7 @@ public:
         table[currentLevel()]->getPreviousDefaultPrecisions(p);
         delete table.back();
         table.pop_back();
+        updateUniqueIdLevelFlag();
     }
 
     //
@@ -867,12 +873,20 @@ public:
             table[level]->readOnly();
     }
 
+    // Add current level in the high-bits of unique id
+    void updateUniqueIdLevelFlag() {
+        // clamp level to avoid overflow
+        uint32_t level = currentLevel() > 7 ? 7 : currentLevel();
+        uniqueId &= ((1 << LevelFlagBitOffset) - 1);
+        uniqueId |= (level << LevelFlagBitOffset);
+    }
+
 protected:
     TSymbolTable(TSymbolTable&);
     TSymbolTable& operator=(TSymbolTableLevel&);
 
     int currentLevel() const { return static_cast<int>(table.size()) - 1; }
-
+    static const uint32_t LevelFlagBitOffset = 28;
     std::vector<TSymbolTableLevel*> table;
     int uniqueId;     // for unique identification in code generation
     bool noBuiltInRedeclarations;

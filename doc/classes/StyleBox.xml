@@ -39,19 +39,19 @@
 		<method name="get_default_margin" qualifiers="const">
 			<return type="float">
 			</return>
-			<argument index="0" name="margin" type="int" enum="Margin">
+			<argument index="0" name="margin" type="int" enum="Side">
 			</argument>
 			<description>
-				Returns the default value of the specified [enum Margin].
+				Returns the default margin of the specified [enum Side].
 			</description>
 		</method>
 		<method name="get_margin" qualifiers="const">
 			<return type="float">
 			</return>
-			<argument index="0" name="margin" type="int" enum="Margin">
+			<argument index="0" name="margin" type="int" enum="Side">
 			</argument>
 			<description>
-				Returns the content margin offset for the specified [enum Margin].
+				Returns the content margin offset for the specified [enum Side].
 				Positive values reduce size inwards, unlike [Control]'s margin values.
 			</description>
 		</method>
@@ -72,12 +72,12 @@
 		<method name="set_default_margin">
 			<return type="void">
 			</return>
-			<argument index="0" name="margin" type="int" enum="Margin">
+			<argument index="0" name="margin" type="int" enum="Side">
 			</argument>
 			<argument index="1" name="offset" type="float">
 			</argument>
 			<description>
-				Sets the default value of the specified [enum Margin] to given [code]offset[/code] in pixels.
+				Sets the default value of the specified [enum Side] to [code]offset[/code] pixels.
 			</description>
 		</method>
 		<method name="test_mask" qualifiers="const">

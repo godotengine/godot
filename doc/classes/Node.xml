@@ -9,7 +9,7 @@
 		[b]Scene tree:[/b] The [SceneTree] contains the active tree of nodes. When a node is added to the scene tree, it receives the [constant NOTIFICATION_ENTER_TREE] notification and its [method _enter_tree] callback is triggered. Child nodes are always added [i]after[/i] their parent node, i.e. the [method _enter_tree] callback of a parent node will be triggered before its child's.
 		Once all nodes have been added in the scene tree, they receive the [constant NOTIFICATION_READY] notification and their respective [method _ready] callbacks are triggered. For groups of nodes, the [method _ready] callback is called in reverse order, starting with the children and moving up to the parent nodes.
 		This means that when adding a node to the scene tree, the following order will be used for the callbacks: [method _enter_tree] of the parent, [method _enter_tree] of the children, [method _ready] of the children and finally [method _ready] of the parent (recursively for the entire scene tree).
-		[b]Processing:[/b] Nodes can override the "process" state, so that they receive a callback on each frame requesting them to process (do something). Normal processing (callback [method _process], toggled with [method set_process]) happens as fast as possible and is dependent on the frame rate, so the processing time [i]delta[/i] is passed as an argument. Physics processing (callback [method _physics_process], toggled with [method set_physics_process]) happens a fixed number of times per second (60 by default) and is useful for code related to the physics engine.
+		[b]Processing:[/b] Nodes can override the "process" state, so that they receive a callback on each frame requesting them to process (do something). Normal processing (callback [method _process], toggled with [method set_process]) happens as fast as possible and is dependent on the frame rate, so the processing time [i]delta[/i] (in seconds) is passed as an argument. Physics processing (callback [method _physics_process], toggled with [method set_physics_process]) happens a fixed number of times per second (60 by default) and is useful for code related to the physics engine.
 		Nodes can also process input events. When present, the [method _input] function will be called for each input that the program receives. In many cases, this can be overkill (unless used for simple projects), and the [method _unhandled_input] function might be preferred; it is called when the input event was not handled by anyone else (typically, GUI [Control] nodes), ensuring that the node only receives the events that were meant for it.
 		To keep track of the scene hierarchy (especially when instancing scenes into other scenes), an "owner" can be set for the node with the [member owner] property. This keeps track of who instanced what. This is mostly useful when writing editors and tools, though.
 		Finally, when a node is freed with [method Object.free] or [method queue_free], it will also free all its children.
@@ -37,13 +37,13 @@
 				Corresponds to the [constant NOTIFICATION_EXIT_TREE] notification in [method Object._notification] and signal [signal tree_exiting]. To get notified when the node has already left the active tree, connect to the [signal tree_exited].
 			</description>
 		</method>
-		<method name="_get_configuration_warning" qualifiers="virtual">
-			<return type="String">
+		<method name="_get_configuration_warnings" qualifiers="virtual">
+			<return type="String[]">
 			</return>
 			<description>
-				The string returned from this method is displayed as a warning in the Scene Dock if the script that overrides it is a [code]tool[/code] script.
-				Returning an empty string produces no warning.
-				Call [method update_configuration_warning] when the warning needs to be updated for this node.
+				The elements in the array returned from this method are displayed as warnings in the Scene Dock if the script that overrides it is a [code]tool[/code] script.
+				Returning an empty array produces no warnings.
+				Call [method update_configuration_warnings] when the warnings need to be updated for this node.
 			</description>
 		</method>
 		<method name="_input" qualifiers="virtual">
@@ -65,7 +65,7 @@
 			<argument index="0" name="delta" type="float">
 			</argument>
 			<description>
-				Called during the physics processing step of the main loop. Physics processing means that the frame rate is synced to the physics, i.e. the [code]delta[/code] variable should be constant.
+				Called during the physics processing step of the main loop. Physics processing means that the frame rate is synced to the physics, i.e. the [code]delta[/code] variable should be constant. [code]delta[/code] is in seconds.
 				It is only called if physics processing is enabled, which is done automatically if this method is overridden, and can be toggled with [method set_physics_process].
 				Corresponds to the [constant NOTIFICATION_PHYSICS_PROCESS] notification in [method Object._notification].
 				[b]Note:[/b] This method is only called if the node is present in the scene tree (i.e. if it's not orphan).
@@ -77,7 +77,7 @@
 			<argument index="0" name="delta" type="float">
 			</argument>
 			<description>
-				Called during the processing step of the main loop. Processing happens at every frame and as fast as possible, so the [code]delta[/code] time since the previous frame is not constant.
+				Called during the processing step of the main loop. Processing happens at every frame and as fast as possible, so the [code]delta[/code] time since the previous frame is not constant. [code]delta[/code] is in seconds.
 				It is only called if processing is enabled, which is done automatically if this method is overridden, and can be toggled with [method set_process].
 				Corresponds to the [constant NOTIFICATION_PROCESS] notification in [method Object._notification].
 				[b]Note:[/b] This method is only called if the node is present in the scene tree (i.e. if it's not orphan).
@@ -128,7 +128,7 @@
 			</argument>
 			<description>
 				Adds a child node. Nodes can have any number of children, but every child must have a unique name. Child nodes are automatically deleted when the parent node is deleted, so an entire scene can be removed by deleting its topmost node.
-				If [code]legible_unique_name[/code] is [code]true[/code], the child node will have an human-readable name based on the name of the node being instanced instead of its type.
+				If [code]legible_unique_name[/code] is [code]true[/code], the child node will have a human-readable name based on the name of the node being instanced instead of its type.
 				[b]Note:[/b] If the child node already has a parent, the function will fail. Use [method remove_child] first to remove the node from its current parent. For example:
 				[codeblocks]
 				[gdscript]
@@ -158,8 +158,8 @@
 			<argument index="1" name="legible_unique_name" type="bool" default="false">
 			</argument>
 			<description>
-				Adds a [code]sibling[/code] node to current's node parent, at the the same level as that node, right below it.
-				If [code]legible_unique_name[/code] is [code]true[/code], the child node will have an human-readable name based on the name of the node being instanced instead of its type.
+				Adds a [code]sibling[/code] node to current's node parent, at the same level as that node, right below it.
+				If [code]legible_unique_name[/code] is [code]true[/code], the child node will have a human-readable name based on the name of the node being instanced instead of its type.
 				Use [method add_child] instead of this method if you don't need the child node to be added below a specific node in the list of children.
 			</description>
 		</method>
@@ -179,7 +179,7 @@
 			<return type="bool">
 			</return>
 			<description>
-				Returns [code]true[/code] if the node can process while the scene tree is paused (see [member pause_mode]). Always returns [code]true[/code] if the scene tree is not paused, and [code]false[/code] if the node is not in the tree.
+				Returns [code]true[/code] if the node can process while the scene tree is paused (see [member process_mode]). Always returns [code]true[/code] if the scene tree is not paused, and [code]false[/code] if the node is not in the tree.
 			</description>
 		</method>
 		<method name="duplicate" qualifiers="const">
@@ -243,6 +243,12 @@
 			</return>
 			<description>
 				Returns an array of references to node's children.
+			</description>
+		</method>
+		<method name="get_editor_description" qualifiers="const">
+			<return type="String">
+			</return>
+			<description>
 			</description>
 		</method>
 		<method name="get_groups" qualifiers="const">
@@ -361,7 +367,7 @@
 			<return type="float">
 			</return>
 			<description>
-				Returns the time elapsed since the last physics-bound frame (see [method _physics_process]). This is always a constant value in physics processing unless the frames per second is changed via [member Engine.iterations_per_second].
+				Returns the time elapsed (in seconds) since the last physics-bound frame (see [method _physics_process]). This is always a constant value in physics processing unless the frames per second is changed via [member Engine.iterations_per_second].
 			</description>
 		</method>
 		<method name="get_process_delta_time" qualifiers="const">
@@ -590,7 +596,7 @@
 			<return type="void">
 			</return>
 			<description>
-				Moves this node to the bottom of parent node's children hierarchy. This is often useful in GUIs ([Control] nodes), because their order of drawing depends on their order in the tree, i.e. the further they are on the node list, the higher they are drawn. After using [code]raise[/code], a Control will be drawn on top of their siblings.
+				Moves this node to the bottom of parent node's children hierarchy. This is often useful in GUIs ([Control] nodes), because their order of drawing depends on their order in the tree. The top Node is drawn first, then any siblings below the top Node in the hierarchy are successively drawn on top of it. After using [code]raise[/code], a Control will be drawn on top of its siblings.
 			</description>
 		</method>
 		<method name="remove_and_skip">
@@ -623,10 +629,11 @@
 			</return>
 			<argument index="0" name="node" type="Node">
 			</argument>
-			<argument index="1" name="keep_data" type="bool" default="false">
+			<argument index="1" name="keep_groups" type="bool" default="false">
 			</argument>
 			<description>
 				Replaces a node in a scene by the given one. Subscriptions that pass through this node will be lost.
+				If [code]keep_groups[/code] is [code]true[/code], the [code]node[/code] is added to the same groups that the replaced node is in.
 			</description>
 		</method>
 		<method name="request_ready">
@@ -756,6 +763,14 @@
 				Sets the folded state of the node in the Scene dock.
 			</description>
 		</method>
+		<method name="set_editor_description">
+			<return type="void">
+			</return>
+			<argument index="0" name="editor_description" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="set_network_master">
 			<return type="void">
 			</return>
@@ -841,12 +856,12 @@
 				Sets whether this is an instance load placeholder. See [InstancePlaceholder].
 			</description>
 		</method>
-		<method name="update_configuration_warning">
+		<method name="update_configuration_warnings">
 			<return type="void">
 			</return>
 			<description>
 				Updates the warning displayed for this node in the Scene Dock.
-				Use [method _get_configuration_warning] to setup the warning message to display.
+				Use [method _get_configuration_warnings] to setup the warning message to display.
 			</description>
 		</method>
 	</methods>
@@ -867,8 +882,8 @@
 		<member name="owner" type="Node" setter="set_owner" getter="get_owner">
 			The node owner. A node can have any other node as owner (as long as it is a valid parent, grandparent, etc. ascending in the tree). When saving a node (using [PackedScene]), all the nodes it owns will be saved with it. This allows for the creation of complex [SceneTree]s, with instancing and subinstancing.
 		</member>
-		<member name="pause_mode" type="int" setter="set_pause_mode" getter="get_pause_mode" enum="Node.PauseMode" default="0">
-			Pause mode. How the node will behave if the [SceneTree] is paused.
+		<member name="process_mode" type="int" setter="set_process_mode" getter="get_process_mode" enum="Node.ProcessMode" default="0">
+			Can be used to pause or unpause the node, or make the node paused based on the [SceneTree], or make it inherit the process mode from its parent (default).
 		</member>
 		<member name="process_priority" type="int" setter="set_process_priority" getter="get_process_priority" default="0">
 			The node's priority in the execution order of the enabled processing callbacks (i.e. [constant NOTIFICATION_PROCESS], [constant NOTIFICATION_PHYSICS_PROCESS] and their internal counterparts). Nodes whose process priority value is [i]lower[/i] will have their processing callbacks executed first.
@@ -1016,14 +1031,20 @@
 		<constant name="NOTIFICATION_TEXT_SERVER_CHANGED" value="2018">
 			Notification received when text server is changed.
 		</constant>
-		<constant name="PAUSE_MODE_INHERIT" value="0" enum="PauseMode">
-			Inherits pause mode from the node's parent. For the root node, it is equivalent to [constant PAUSE_MODE_STOP]. Default.
+		<constant name="PROCESS_MODE_INHERIT" value="0" enum="ProcessMode">
+			Inherits process mode from the node's parent. For the root node, it is equivalent to [constant PROCESS_MODE_PAUSABLE]. Default.
 		</constant>
-		<constant name="PAUSE_MODE_STOP" value="1" enum="PauseMode">
-			Stops processing when the [SceneTree] is paused.
+		<constant name="PROCESS_MODE_PAUSABLE" value="1" enum="ProcessMode">
+			Stops processing when the [SceneTree] is paused (process when unpaused). This is the inverse of [constant PROCESS_MODE_WHEN_PAUSED].
 		</constant>
-		<constant name="PAUSE_MODE_PROCESS" value="2" enum="PauseMode">
-			Continue to process regardless of the [SceneTree] pause state.
+		<constant name="PROCESS_MODE_WHEN_PAUSED" value="2" enum="ProcessMode">
+			Only process when the [SceneTree] is paused (don't process when unpaused). This is the inverse of [constant PROCESS_MODE_PAUSABLE].
+		</constant>
+		<constant name="PROCESS_MODE_ALWAYS" value="3" enum="ProcessMode">
+			Always process. Continue processing always, ignoring the [SceneTree]'s paused property. This is the inverse of [constant PROCESS_MODE_DISABLED].
+		</constant>
+		<constant name="PROCESS_MODE_DISABLED" value="4" enum="ProcessMode">
+			Never process. Completely disables processing, ignoring the [SceneTree]'s paused property. This is the inverse of [constant PROCESS_MODE_ALWAYS].
 		</constant>
 		<constant name="DUPLICATE_SIGNALS" value="1" enum="DuplicateFlags">
 			Duplicate the node's signals.

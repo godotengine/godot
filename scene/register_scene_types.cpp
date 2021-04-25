@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -50,7 +50,6 @@
 #include "scene/2d/line_2d.h"
 #include "scene/2d/mesh_instance_2d.h"
 #include "scene/2d/multimesh_instance_2d.h"
-#include "scene/2d/navigation_2d.h"
 #include "scene/2d/navigation_agent_2d.h"
 #include "scene/2d/navigation_obstacle_2d.h"
 #include "scene/2d/parallax_background.h"
@@ -118,7 +117,7 @@
 #include "scene/gui/tabs.h"
 #include "scene/gui/text_edit.h"
 #include "scene/gui/texture_button.h"
-#include "scene/gui/texture_progress.h"
+#include "scene/gui/texture_progress_bar.h"
 #include "scene/gui/texture_rect.h"
 #include "scene/gui/tree.h"
 #include "scene/gui/video_player.h"
@@ -175,6 +174,7 @@
 #include "scene/resources/video_stream.h"
 #include "scene/resources/visual_shader.h"
 #include "scene/resources/visual_shader_nodes.h"
+#include "scene/resources/visual_shader_sdf_nodes.h"
 #include "scene/resources/world_2d.h"
 #include "scene/resources/world_3d.h"
 #include "scene/resources/world_margin_shape_3d.h"
@@ -205,7 +205,6 @@
 #include "scene/3d/listener_3d.h"
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/3d/multimesh_instance_3d.h"
-#include "scene/3d/navigation_3d.h"
 #include "scene/3d/navigation_agent_3d.h"
 #include "scene/3d/navigation_obstacle_3d.h"
 #include "scene/3d/navigation_region_3d.h"
@@ -349,7 +348,7 @@ void register_scene_types() {
 
 	OS::get_singleton()->yield(); //may take time to init
 
-	ClassDB::register_class<TextureProgress>();
+	ClassDB::register_class<TextureProgressBar>();
 	ClassDB::register_class<ItemList>();
 
 	ClassDB::register_class<LineEdit>();
@@ -515,7 +514,6 @@ void register_scene_types() {
 	ClassDB::register_class<ConeTwistJoint3D>();
 	ClassDB::register_class<Generic6DOFJoint3D>();
 
-	ClassDB::register_class<Navigation3D>();
 	ClassDB::register_class<NavigationRegion3D>();
 	ClassDB::register_class<NavigationAgent3D>();
 	ClassDB::register_class<NavigationObstacle3D>();
@@ -533,6 +531,8 @@ void register_scene_types() {
 	ClassDB::register_virtual_class<VisualShaderNodeOutput>();
 	ClassDB::register_virtual_class<VisualShaderNodeResizableBase>();
 	ClassDB::register_virtual_class<VisualShaderNodeGroupBase>();
+	ClassDB::register_virtual_class<VisualShaderNodeConstant>();
+	ClassDB::register_class<VisualShaderNodeComment>();
 	ClassDB::register_class<VisualShaderNodeFloatConstant>();
 	ClassDB::register_class<VisualShaderNodeIntConstant>();
 	ClassDB::register_class<VisualShaderNodeBooleanConstant>();
@@ -555,19 +555,14 @@ void register_scene_types() {
 	ClassDB::register_class<VisualShaderNodeDeterminant>();
 	ClassDB::register_class<VisualShaderNodeScalarDerivativeFunc>();
 	ClassDB::register_class<VisualShaderNodeVectorDerivativeFunc>();
-	ClassDB::register_class<VisualShaderNodeScalarClamp>();
-	ClassDB::register_class<VisualShaderNodeVectorClamp>();
+	ClassDB::register_class<VisualShaderNodeClamp>();
 	ClassDB::register_class<VisualShaderNodeFaceForward>();
 	ClassDB::register_class<VisualShaderNodeOuterProduct>();
-	ClassDB::register_class<VisualShaderNodeVectorScalarStep>();
-	ClassDB::register_class<VisualShaderNodeScalarSmoothStep>();
-	ClassDB::register_class<VisualShaderNodeVectorSmoothStep>();
-	ClassDB::register_class<VisualShaderNodeVectorScalarSmoothStep>();
+	ClassDB::register_class<VisualShaderNodeSmoothStep>();
+	ClassDB::register_class<VisualShaderNodeStep>();
 	ClassDB::register_class<VisualShaderNodeVectorDistance>();
 	ClassDB::register_class<VisualShaderNodeVectorRefract>();
-	ClassDB::register_class<VisualShaderNodeScalarInterp>();
-	ClassDB::register_class<VisualShaderNodeVectorInterp>();
-	ClassDB::register_class<VisualShaderNodeVectorScalarMix>();
+	ClassDB::register_class<VisualShaderNodeMix>();
 	ClassDB::register_class<VisualShaderNodeVectorCompose>();
 	ClassDB::register_class<VisualShaderNodeTransformCompose>();
 	ClassDB::register_class<VisualShaderNodeVectorDecompose>();
@@ -593,13 +588,18 @@ void register_scene_types() {
 	ClassDB::register_class<VisualShaderNodeCubemapUniform>();
 	ClassDB::register_class<VisualShaderNodeIf>();
 	ClassDB::register_class<VisualShaderNodeSwitch>();
-	ClassDB::register_class<VisualShaderNodeScalarSwitch>();
 	ClassDB::register_class<VisualShaderNodeFresnel>();
 	ClassDB::register_class<VisualShaderNodeExpression>();
 	ClassDB::register_class<VisualShaderNodeGlobalExpression>();
 	ClassDB::register_class<VisualShaderNodeIs>();
 	ClassDB::register_class<VisualShaderNodeCompare>();
 	ClassDB::register_class<VisualShaderNodeMultiplyAdd>();
+
+	ClassDB::register_class<VisualShaderNodeSDFToScreenUV>();
+	ClassDB::register_class<VisualShaderNodeScreenUVToSDF>();
+	ClassDB::register_class<VisualShaderNodeTextureSDF>();
+	ClassDB::register_class<VisualShaderNodeTextureSDFNormal>();
+	ClassDB::register_class<VisualShaderNodeSDFRaymarch>();
 
 	ClassDB::register_class<ShaderMaterial>();
 	ClassDB::register_virtual_class<CanvasItem>();
@@ -791,7 +791,6 @@ void register_scene_types() {
 	ClassDB::register_class<PathFollow2D>();
 
 	ClassDB::register_class<NavigationMesh>();
-	ClassDB::register_class<Navigation2D>();
 	ClassDB::register_class<NavigationPolygon>();
 	ClassDB::register_class<NavigationRegion2D>();
 	ClassDB::register_class<NavigationAgent2D>();
@@ -812,6 +811,8 @@ void register_scene_types() {
 	ClassDB::add_compatibility_class("DynamicFont", "Font");
 	ClassDB::add_compatibility_class("DynamicFontData", "FontData");
 	ClassDB::add_compatibility_class("ToolButton", "Button");
+	ClassDB::add_compatibility_class("Navigation3D", "Node3D");
+	ClassDB::add_compatibility_class("Navigation2D", "Node2D");
 
 	// Renamed in 4.0.
 	// Keep alphabetical ordering to easily locate classes and avoid duplicates.
@@ -863,7 +864,6 @@ void register_scene_types() {
 	ClassDB::add_compatibility_class("Listener", "Listener3D");
 	ClassDB::add_compatibility_class("MeshInstance", "MeshInstance3D");
 	ClassDB::add_compatibility_class("MultiMeshInstance", "MultiMeshInstance3D");
-	ClassDB::add_compatibility_class("Navigation", "Navigation3D");
 	ClassDB::add_compatibility_class("NavigationAgent", "NavigationAgent3D");
 	ClassDB::add_compatibility_class("NavigationMeshInstance", "NavigationRegion3D");
 	ClassDB::add_compatibility_class("NavigationObstacle", "NavigationObstacle3D");
@@ -915,6 +915,7 @@ void register_scene_types() {
 	ClassDB::add_compatibility_class("SpringArm", "SpringArm3D");
 	ClassDB::add_compatibility_class("Sprite", "Sprite2D");
 	ClassDB::add_compatibility_class("StaticBody", "StaticBody3D");
+	ClassDB::add_compatibility_class("TextureProgress", "TextureProgressBar");
 	ClassDB::add_compatibility_class("VehicleBody", "VehicleBody3D");
 	ClassDB::add_compatibility_class("VehicleWheel", "VehicleWheel3D");
 	ClassDB::add_compatibility_class("ViewportContainer", "SubViewportContainer");
@@ -926,6 +927,16 @@ void register_scene_types() {
 	ClassDB::add_compatibility_class("VisualShaderNodeScalarFunc", "VisualShaderNodeFloatFunc");
 	ClassDB::add_compatibility_class("VisualShaderNodeScalarOp", "VisualShaderNodeFloatOp");
 	ClassDB::add_compatibility_class("VisualShaderNodeScalarUniform", "VisualShaderNodeFloatUniform");
+	ClassDB::add_compatibility_class("VisualShaderNodeScalarClamp", "VisualShaderNodeClamp");
+	ClassDB::add_compatibility_class("VisualShaderNodeVectorClamp", "VisualShaderNodeClamp");
+	ClassDB::add_compatibility_class("VisualShaderNodeScalarInterp", "VisualShaderNodeMix");
+	ClassDB::add_compatibility_class("VisualShaderNodeVectorInterp", "VisualShaderNodeMix");
+	ClassDB::add_compatibility_class("VisualShaderNodeVectorScalarMix", "VisualShaderNodeMix");
+	ClassDB::add_compatibility_class("VisualShaderNodeScalarSmoothStep", "VisualShaderNodeSmoothStep");
+	ClassDB::add_compatibility_class("VisualShaderNodeVectorSmoothStep", "VisualShaderNodeSmoothStep");
+	ClassDB::add_compatibility_class("VisualShaderNodeVectorScalarSmoothStep", "VisualShaderNodeSmoothStep");
+	ClassDB::add_compatibility_class("VisualShaderNodeVectorScalarStep", "VisualShaderNodeStep");
+	ClassDB::add_compatibility_class("VisualShaderNodeScalarSwitch", "VisualShaderNodeSwitch");
 	ClassDB::add_compatibility_class("World", "World3D");
 	ClassDB::add_compatibility_class("StreamTexture", "StreamTexture2D");
 	ClassDB::add_compatibility_class("Light2D", "PointLight2D");
@@ -935,17 +946,19 @@ void register_scene_types() {
 	OS::get_singleton()->yield(); //may take time to init
 
 	for (int i = 0; i < 20; i++) {
-		GLOBAL_DEF("layer_names/2d_render/layer_" + itos(i + 1), "");
-		GLOBAL_DEF("layer_names/2d_physics/layer_" + itos(i + 1), "");
-		GLOBAL_DEF("layer_names/3d_render/layer_" + itos(i + 1), "");
-		GLOBAL_DEF("layer_names/3d_physics/layer_" + itos(i + 1), "");
+		GLOBAL_DEF_BASIC(vformat("layer_names/2d_render/layer_%d", i), "");
+		GLOBAL_DEF_BASIC(vformat("layer_names/2d_physics/layer_%d", i), "");
+		GLOBAL_DEF_BASIC(vformat("layer_names/2d_navigation/layer_%d", i), "");
+		GLOBAL_DEF_BASIC(vformat("layer_names/3d_render/layer_%d", i), "");
+		GLOBAL_DEF_BASIC(vformat("layer_names/3d_physics/layer_%d", i), "");
+		GLOBAL_DEF_BASIC(vformat("layer_names/3d_navigation/layer_%d", i), "");
 	}
 
 	bool default_theme_hidpi = GLOBAL_DEF("gui/theme/use_hidpi", false);
 	ProjectSettings::get_singleton()->set_custom_property_info("gui/theme/use_hidpi", PropertyInfo(Variant::BOOL, "gui/theme/use_hidpi", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED));
-	String theme_path = GLOBAL_DEF("gui/theme/custom", "");
+	String theme_path = GLOBAL_DEF_RST("gui/theme/custom", "");
 	ProjectSettings::get_singleton()->set_custom_property_info("gui/theme/custom", PropertyInfo(Variant::STRING, "gui/theme/custom", PROPERTY_HINT_FILE, "*.tres,*.res,*.theme", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED));
-	String font_path = GLOBAL_DEF("gui/theme/custom_font", "");
+	String font_path = GLOBAL_DEF_RST("gui/theme/custom_font", "");
 	ProjectSettings::get_singleton()->set_custom_property_info("gui/theme/custom_font", PropertyInfo(Variant::STRING, "gui/theme/custom_font", PROPERTY_HINT_FILE, "*.tres,*.res,*.font", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED));
 
 	Ref<Font> font;

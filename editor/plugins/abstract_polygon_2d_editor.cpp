@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -264,7 +264,7 @@ bool AbstractPolygon2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) 
 		Vector2 cpoint = _get_node()->get_global_transform().affine_inverse().xform(canvas_item_editor->snap_point(canvas_item_editor->get_canvas_transform().affine_inverse().xform(mb->get_position())));
 
 		if (mode == MODE_EDIT || (_is_line() && mode == MODE_CREATE)) {
-			if (mb->get_button_index() == BUTTON_LEFT) {
+			if (mb->get_button_index() == MOUSE_BUTTON_LEFT) {
 				if (mb->is_pressed()) {
 					if (mb->get_control() || mb->get_shift() || mb->get_alt()) {
 						return false;
@@ -326,7 +326,7 @@ bool AbstractPolygon2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) 
 						return true;
 					}
 				}
-			} else if (mb->get_button_index() == BUTTON_RIGHT && mb->is_pressed() && !edited_point.valid()) {
+			} else if (mb->get_button_index() == MOUSE_BUTTON_RIGHT && mb->is_pressed() && !edited_point.valid()) {
 				const PosVertex closest = closest_point(gpoint);
 
 				if (closest.valid()) {
@@ -335,7 +335,7 @@ bool AbstractPolygon2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) 
 				}
 			}
 		} else if (mode == MODE_DELETE) {
-			if (mb->get_button_index() == BUTTON_LEFT && mb->is_pressed()) {
+			if (mb->get_button_index() == MOUSE_BUTTON_LEFT && mb->is_pressed()) {
 				const PosVertex closest = closest_point(gpoint);
 
 				if (closest.valid()) {
@@ -346,7 +346,7 @@ bool AbstractPolygon2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) 
 		}
 
 		if (mode == MODE_CREATE) {
-			if (mb->get_button_index() == BUTTON_LEFT && mb->is_pressed()) {
+			if (mb->get_button_index() == MOUSE_BUTTON_LEFT && mb->is_pressed()) {
 				if (_is_line()) {
 					// for lines, we don't have a wip mode, and we can undo each single add point.
 					Vector<Vector2> vertices = _get_polygon(0);
@@ -384,7 +384,7 @@ bool AbstractPolygon2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) 
 						return true;
 					}
 				}
-			} else if (mb->get_button_index() == BUTTON_RIGHT && mb->is_pressed() && wip_active) {
+			} else if (mb->get_button_index() == MOUSE_BUTTON_RIGHT && mb->is_pressed() && wip_active) {
 				_wip_cancel();
 			}
 		}
@@ -395,7 +395,7 @@ bool AbstractPolygon2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) 
 	if (mm.is_valid()) {
 		Vector2 gpoint = mm->get_position();
 
-		if (edited_point.valid() && (wip_active || (mm->get_button_mask() & BUTTON_MASK_LEFT))) {
+		if (edited_point.valid() && (wip_active || (mm->get_button_mask() & MOUSE_BUTTON_MASK_LEFT))) {
 			Vector2 cpoint = _get_node()->get_global_transform().affine_inverse().xform(canvas_item_editor->snap_point(canvas_item_editor->get_canvas_transform().affine_inverse().xform(gpoint)));
 
 			//Move the point in a single axis. Should only work when editing a polygon and while holding shift.
@@ -585,11 +585,11 @@ void AbstractPolygon2DEditor::edit(Node *p_polygon) {
 		edited_point = PosVertex();
 		hover_point = Vertex();
 		selected_point = Vertex();
-
-		canvas_item_editor->update_viewport();
 	} else {
 		_set_node(nullptr);
 	}
+
+	canvas_item_editor->update_viewport();
 }
 
 void AbstractPolygon2DEditor::_bind_methods() {
@@ -724,7 +724,7 @@ AbstractPolygon2DEditor::AbstractPolygon2DEditor(EditorNode *p_editor, bool p_wi
 
 	create_resource = memnew(ConfirmationDialog);
 	add_child(create_resource);
-	create_resource->get_ok()->set_text(TTR("Create"));
+	create_resource->get_ok_button()->set_text(TTR("Create"));
 
 	mode = MODE_EDIT;
 }

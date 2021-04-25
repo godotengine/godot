@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -76,6 +76,9 @@ bool FileSystemDock::_create_tree(TreeItem *p_parent, EditorFileSystemDirectory 
 	subdirectory_item->set_metadata(0, lpath);
 	if (!p_select_in_favorites && (path == lpath || ((display_mode == DISPLAY_MODE_SPLIT) && path.get_base_dir() == lpath))) {
 		subdirectory_item->select(0);
+		// Keep select an item when re-created a tree
+		// To prevent crashing when nothing is selected.
+		subdirectory_item->set_as_cursor(0);
 	}
 
 	if (p_unfold_path && path.begins_with(lpath) && path != lpath) {
@@ -531,7 +534,7 @@ void FileSystemDock::_navigate_to_path(const String &p_path, bool p_select_in_fa
 	}
 
 	String file_name = p_path.get_file();
-	if (!file_name.empty()) {
+	if (!file_name.is_empty()) {
 		for (int i = 0; i < files->get_item_count(); i++) {
 			if (files->get_item_text(i) == file_name) {
 				files->select(i, true);
@@ -677,17 +680,17 @@ void FileSystemDock::_sort_file_info_list(List<FileSystemDock::FileInfo> &r_file
 			break;
 		case FILE_SORT_TYPE_REVERSE:
 			r_file_list.sort_custom<FileInfoTypeComparator>();
-			r_file_list.invert();
+			r_file_list.reverse();
 			break;
 		case FILE_SORT_MODIFIED_TIME:
 			r_file_list.sort_custom<FileInfoModifiedTimeComparator>();
 			break;
 		case FILE_SORT_MODIFIED_TIME_REVERSE:
 			r_file_list.sort_custom<FileInfoModifiedTimeComparator>();
-			r_file_list.invert();
+			r_file_list.reverse();
 			break;
 		case FILE_SORT_NAME_REVERSE:
-			r_file_list.invert();
+			r_file_list.reverse();
 			break;
 		default: // FILE_SORT_NAME
 			break;
@@ -941,8 +944,41 @@ void FileSystemDock::_select_file(const String &p_path, bool p_select_in_favorit
 			fpath = fpath.substr(0, fpath.length() - 1);
 		}
 	} else if (fpath != "Favorites") {
+		if (FileAccess::exists(fpath + ".import")) {
+			Ref<ConfigFile> config;
+			config.instance();
+			Error err = config->load(fpath + ".import");
+			if (err == OK) {
+				if (config->has_section_key("remap", "importer")) {
+					String importer = config->get_value("remap", "importer");
+					if (importer == "keep") {
+						EditorNode::get_singleton()->show_warning(TTR("Importing has been disabled for this file, so it can't be opened for editing."));
+						return;
+					}
+				}
+			}
+		}
+
 		if (ResourceLoader::get_resource_type(fpath) == "PackedScene") {
-			editor->open_request(fpath);
+			bool is_imported = false;
+
+			{
+				List<String> importer_exts;
+				ResourceImporterScene::get_singleton()->get_recognized_extensions(&importer_exts);
+				String extension = fpath.get_extension();
+				for (List<String>::Element *E = importer_exts.front(); E; E = E->next()) {
+					if (extension.nocasecmp_to(E->get()) == 0) {
+						is_imported = true;
+						break;
+					}
+				}
+			}
+
+			if (is_imported) {
+				ResourceImporterScene::get_singleton()->show_advanced_options(fpath);
+			} else {
+				editor->open_request(fpath);
+			}
 		} else {
 			editor->load_resource(fpath);
 		}
@@ -1407,10 +1443,28 @@ void FileSystemDock::_make_scene_confirm() {
 
 void FileSystemDock::_file_removed(String p_file) {
 	emit_signal("file_removed", p_file);
+
+	// Find the closest parent directory available, in case multiple items were deleted along the same path.
+	path = p_file.get_base_dir();
+	DirAccessRef da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+	while (!da->dir_exists(path)) {
+		path = path.get_base_dir();
+	}
+
+	current_path->set_text(path);
 }
 
 void FileSystemDock::_folder_removed(String p_folder) {
 	emit_signal("folder_removed", p_folder);
+
+	// Find the closest parent directory available, in case multiple items were deleted along the same path.
+	path = p_folder.get_base_dir();
+	DirAccessRef da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+	while (!da->dir_exists(path)) {
+		path = path.get_base_dir();
+	}
+
+	current_path->set_text(path);
 }
 
 void FileSystemDock::_rename_operation_confirm() {
@@ -1465,6 +1519,9 @@ void FileSystemDock::_rename_operation_confirm() {
 
 	print_verbose("FileSystem: saving moved scenes.");
 	_save_scenes_after_move(file_renames);
+
+	path = new_path;
+	current_path->set_text(path);
 }
 
 void FileSystemDock::_duplicate_operation_confirm() {
@@ -1528,7 +1585,7 @@ void FileSystemDock::_move_operation_confirm(const String &p_to_path, bool p_ove
 	if (!p_overwrite) {
 		to_move_path = p_to_path;
 		Vector<String> conflicting_items = _check_existing();
-		if (!conflicting_items.empty()) {
+		if (!conflicting_items.is_empty()) {
 			// Ask to do something.
 			overwrite_dialog->set_text(vformat(
 					TTR("The following files or folders conflict with items in the target location '%s':\n\n%s\n\nDo you wish to overwrite them?"),
@@ -1573,6 +1630,9 @@ void FileSystemDock::_move_operation_confirm(const String &p_to_path, bool p_ove
 
 		print_verbose("FileSystem: saving moved scenes.");
 		_save_scenes_after_move(file_renames);
+
+		path = p_to_path;
+		current_path->set_text(path);
 	}
 }
 
@@ -1721,7 +1781,7 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 					paths.push_back(fpath);
 				}
 			}
-			if (!paths.empty()) {
+			if (!paths.is_empty()) {
 				emit_signal("instance", paths);
 			}
 		} break;
@@ -1753,7 +1813,7 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 
 		case FILE_DEPENDENCIES: {
 			// Checkout the file dependencies.
-			if (!p_selected.empty()) {
+			if (!p_selected.is_empty()) {
 				String fpath = p_selected[0];
 				deps_editor->edit(fpath);
 			}
@@ -1761,7 +1821,7 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 
 		case FILE_OWNERS: {
 			// Checkout the file owners.
-			if (!p_selected.empty()) {
+			if (!p_selected.is_empty()) {
 				String fpath = p_selected[0];
 				owners_editor->show(fpath);
 			}
@@ -1784,7 +1844,7 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 
 		case FILE_RENAME: {
 			// Rename the active file.
-			if (!p_selected.empty()) {
+			if (!p_selected.is_empty()) {
 				to_rename.path = p_selected[0];
 				if (to_rename.path != "res://") {
 					to_rename.is_file = !to_rename.path.ends_with("/");
@@ -1885,7 +1945,7 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 		} break;
 
 		case FILE_COPY_PATH: {
-			if (!p_selected.empty()) {
+			if (!p_selected.is_empty()) {
 				String fpath = p_selected[0];
 				DisplayServer::get_singleton()->clipboard_set(fpath);
 			}
@@ -1898,7 +1958,7 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 }
 
 void FileSystemDock::_resource_created() {
-	Object *c = new_resource_dialog->instance_selected();
+	Variant c = new_resource_dialog->instance_selected();
 
 	ERR_FAIL_COND(!c);
 	Resource *r = Object::cast_to<Resource>(c);
@@ -1912,17 +1972,14 @@ void FileSystemDock::_resource_created() {
 		memdelete(node);
 	}
 
-	REF res(r);
-	editor->push_item(c);
-
-	RES current_res = RES(r);
+	editor->push_item(r);
 
 	String fpath = path;
 	if (!fpath.ends_with("/")) {
 		fpath = fpath.get_base_dir();
 	}
 
-	editor->save_resource_as(current_res, fpath);
+	editor->save_resource_as(RES(r), fpath);
 }
 
 void FileSystemDock::_search_changed(const String &p_text, const Control *p_from) {
@@ -2013,7 +2070,7 @@ Variant FileSystemDock::get_drag_data_fw(const Point2 &p_point, Control *p_from)
 		all_not_favorites = true;
 	}
 
-	if (paths.empty()) {
+	if (paths.is_empty()) {
 		return Variant();
 	}
 
@@ -2061,7 +2118,7 @@ bool FileSystemDock::can_drop_data_fw(const Point2 &p_point, const Variant &p_da
 		String to_dir;
 		bool favorite;
 		_get_drag_target_folder(to_dir, favorite, p_point, p_from);
-		return !to_dir.empty();
+		return !to_dir.is_empty();
 	}
 
 	if (drag_data.has("type") && (String(drag_data["type"]) == "files" || String(drag_data["type"]) == "files_and_dirs")) {
@@ -2074,7 +2131,7 @@ bool FileSystemDock::can_drop_data_fw(const Point2 &p_point, const Variant &p_da
 			return true;
 		}
 
-		if (to_dir.empty()) {
+		if (to_dir.is_empty()) {
 			return false;
 		}
 
@@ -2169,7 +2226,7 @@ void FileSystemDock::drop_data_fw(const Point2 &p_point, const Variant &p_data, 
 		String to_dir;
 		bool favorite;
 		_get_drag_target_folder(to_dir, favorite, p_point, p_from);
-		if (res.is_valid() && !to_dir.empty()) {
+		if (res.is_valid() && !to_dir.is_empty()) {
 			EditorNode::get_singleton()->push_item(res.ptr());
 			EditorNode::get_singleton()->save_resource_as(res, to_dir);
 		}
@@ -2180,7 +2237,7 @@ void FileSystemDock::drop_data_fw(const Point2 &p_point, const Variant &p_data, 
 		String to_dir;
 		bool favorite;
 		_get_drag_target_folder(to_dir, favorite, p_point, p_from);
-		if (!to_dir.empty()) {
+		if (!to_dir.is_empty()) {
 			Vector<String> fnames = drag_data["files"];
 			to_move.clear();
 			for (int i = 0; i < fnames.size(); i++) {
@@ -2188,7 +2245,7 @@ void FileSystemDock::drop_data_fw(const Point2 &p_point, const Variant &p_data, 
 					to_move.push_back(FileOrFolder(fnames[i], !fnames[i].ends_with("/")));
 				}
 			}
-			if (!to_move.empty()) {
+			if (!to_move.is_empty()) {
 				if (Input::get_singleton()->is_key_pressed(KEY_CONTROL)) {
 					for (int i = 0; i < to_move.size(); i++) {
 						String new_path;
@@ -2291,7 +2348,7 @@ void FileSystemDock::_get_drag_target_folder(String &target, bool &target_favori
 
 void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, Vector<String> p_paths, bool p_display_path_dependent_options) {
 	// Add options for files and folders.
-	ERR_FAIL_COND_MSG(p_paths.empty(), "Path cannot be empty.");
+	ERR_FAIL_COND_MSG(p_paths.is_empty(), "Path cannot be empty.");
 
 	Vector<String> filenames;
 	Vector<String> foldernames;
@@ -2414,7 +2471,7 @@ void FileSystemDock::_tree_rmb_select(const Vector2 &p_pos) {
 	}
 
 	// Popup.
-	if (!paths.empty()) {
+	if (!paths.is_empty()) {
 		tree_popup->set_size(Size2(1, 1));
 		_file_and_folders_fill_popup(tree_popup, paths);
 		tree_popup->set_position(tree->get_screen_position() + p_pos);
@@ -2447,14 +2504,14 @@ void FileSystemDock::_file_list_rmb_select(int p_item, const Vector2 &p_pos) {
 			continue;
 		}
 		if (files->get_item_text(p_item) == "..") {
-			files->unselect(i);
+			files->deselect(i);
 			continue;
 		}
 		paths.push_back(files->get_item_metadata(i));
 	}
 
 	// Popup.
-	if (!paths.empty()) {
+	if (!paths.is_empty()) {
 		file_list_popup->clear();
 		file_list_popup->set_size(Size2(1, 1));
 		_file_and_folders_fill_popup(file_list_popup, paths, searched_string.length() == 0);
@@ -2564,8 +2621,9 @@ void FileSystemDock::_get_imported_files(const String &p_path, Vector<String> &f
 }
 
 void FileSystemDock::_update_import_dock() {
-	if (!import_dock_needs_update)
+	if (!import_dock_needs_update) {
 		return;
+	}
 
 	// List selected.
 	Vector<String> selected;
@@ -2576,8 +2634,9 @@ void FileSystemDock::_update_import_dock() {
 	} else {
 		// Use the file list.
 		for (int i = 0; i < files->get_item_count(); i++) {
-			if (!files->is_selected(i))
+			if (!files->is_selected(i)) {
 				continue;
+			}
 
 			selected.push_back(files->get_item_metadata(i));
 		}
@@ -2602,7 +2661,10 @@ void FileSystemDock::_update_import_dock() {
 			break;
 		}
 
-		String type = cf->get_value("remap", "type");
+		String type;
+		if (cf->has_section_key("remap", "type")) {
+			type = cf->get_value("remap", "type");
+		}
 		if (import_type == "") {
 			import_type = type;
 		} else if (import_type != type) {
@@ -2694,7 +2756,22 @@ FileSystemDock::FileSystemDock(EditorNode *p_editor) {
 	// `KEY_MASK_CMD | KEY_C` conflicts with other editor shortcuts.
 	ED_SHORTCUT("filesystem_dock/copy_path", TTR("Copy Path"), KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_C);
 	ED_SHORTCUT("filesystem_dock/duplicate", TTR("Duplicate..."), KEY_MASK_CMD | KEY_D);
+
+#if defined(WINDOWS_ENABLED)
+	// TRANSLATORS: This string is only used on Windows, as it refers to the system trash
+	// as "Recycle Bin" instead of "Trash". Make sure to use the translation of "Recycle Bin"
+	// recommended by Microsoft for the target language.
+	ED_SHORTCUT("filesystem_dock/delete", TTR("Move to Recycle Bin"), KEY_DELETE);
+#elif defined(OSX_ENABLED)
+	// TRANSLATORS: This string is only used on macOS, as it refers to the system trash
+	// as "Bin" instead of "Trash". Make sure to use the translation of "Bin"
+	// recommended by Apple for the target language.
+	ED_SHORTCUT("filesystem_dock/delete", TTR("Move to Bin"), KEY_DELETE);
+#else
+	// TRANSLATORS: This string is only used on platforms other than Windows and macOS.
 	ED_SHORTCUT("filesystem_dock/delete", TTR("Move to Trash"), KEY_DELETE);
+#endif
+
 	ED_SHORTCUT("filesystem_dock/rename", TTR("Rename..."), KEY_F2);
 
 	VBoxContainer *top_vbc = memnew(VBoxContainer);
@@ -2837,7 +2914,7 @@ FileSystemDock::FileSystemDock(EditorNode *p_editor) {
 	add_child(remove_dialog);
 
 	move_dialog = memnew(EditorDirDialog);
-	move_dialog->get_ok()->set_text(TTR("Move"));
+	move_dialog->get_ok_button()->set_text(TTR("Move"));
 	add_child(move_dialog);
 	move_dialog->connect("dir_selected", callable_mp(this, &FileSystemDock::_move_operation_confirm), make_binds(false));
 
@@ -2847,13 +2924,13 @@ FileSystemDock::FileSystemDock(EditorNode *p_editor) {
 
 	rename_dialog_text = memnew(LineEdit);
 	rename_dialog_vb->add_margin_child(TTR("Name:"), rename_dialog_text);
-	rename_dialog->get_ok()->set_text(TTR("Rename"));
+	rename_dialog->get_ok_button()->set_text(TTR("Rename"));
 	add_child(rename_dialog);
 	rename_dialog->register_text_enter(rename_dialog_text);
 	rename_dialog->connect("confirmed", callable_mp(this, &FileSystemDock::_rename_operation_confirm));
 
 	overwrite_dialog = memnew(ConfirmationDialog);
-	overwrite_dialog->get_ok()->set_text(TTR("Overwrite"));
+	overwrite_dialog->get_ok_button()->set_text(TTR("Overwrite"));
 	add_child(overwrite_dialog);
 	overwrite_dialog->connect("confirmed", callable_mp(this, &FileSystemDock::_move_with_overwrite));
 
@@ -2863,7 +2940,7 @@ FileSystemDock::FileSystemDock(EditorNode *p_editor) {
 
 	duplicate_dialog_text = memnew(LineEdit);
 	duplicate_dialog_vb->add_margin_child(TTR("Name:"), duplicate_dialog_text);
-	duplicate_dialog->get_ok()->set_text(TTR("Duplicate"));
+	duplicate_dialog->get_ok_button()->set_text(TTR("Duplicate"));
 	add_child(duplicate_dialog);
 	duplicate_dialog->register_text_enter(duplicate_dialog_text);
 	duplicate_dialog->connect("confirmed", callable_mp(this, &FileSystemDock::_duplicate_operation_confirm));

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -55,23 +55,18 @@ void XRCamera3D::_notification(int p_what) {
 	};
 };
 
-String XRCamera3D::get_configuration_warning() const {
-	if (!is_visible() || !is_inside_tree()) {
-		return String();
+TypedArray<String> XRCamera3D::get_configuration_warnings() const {
+	TypedArray<String> warnings = Node::get_configuration_warnings();
+
+	if (is_visible() && is_inside_tree()) {
+		// must be child node of XROrigin3D!
+		XROrigin3D *origin = Object::cast_to<XROrigin3D>(get_parent());
+		if (origin == nullptr) {
+			warnings.push_back(TTR("XRCamera3D must have an XROrigin3D node as its parent."));
+		};
 	}
 
-	String warning = Camera3D::get_configuration_warning();
-
-	// must be child node of XROrigin3D!
-	XROrigin3D *origin = Object::cast_to<XROrigin3D>(get_parent());
-	if (origin == nullptr) {
-		if (!warning.empty()) {
-			warning += "\n\n";
-		}
-		warning += TTR("XRCamera3D must have an XROrigin3D node as its parent.");
-	};
-
-	return warning;
+	return warnings;
 };
 
 Vector3 XRCamera3D::project_local_ray_normal(const Point2 &p_pos) const {
@@ -91,9 +86,9 @@ Vector3 XRCamera3D::project_local_ray_normal(const Point2 &p_pos) const {
 	Vector2 cpos = get_viewport()->get_camera_coords(p_pos);
 	Vector3 ray;
 
-	CameraMatrix cm = xr_interface->get_projection_for_eye(XRInterface::EYE_MONO, viewport_size.aspect(), get_znear(), get_zfar());
+	CameraMatrix cm = xr_interface->get_projection_for_eye(XRInterface::EYE_MONO, viewport_size.aspect(), get_near(), get_far());
 	Vector2 screen_he = cm.get_viewport_half_extents();
-	ray = Vector3(((cpos.x / viewport_size.width) * 2.0 - 1.0) * screen_he.x, ((1.0 - (cpos.y / viewport_size.height)) * 2.0 - 1.0) * screen_he.y, -get_znear()).normalized();
+	ray = Vector3(((cpos.x / viewport_size.width) * 2.0 - 1.0) * screen_he.x, ((1.0 - (cpos.y / viewport_size.height)) * 2.0 - 1.0) * screen_he.y, -get_near()).normalized();
 
 	return ray;
 };
@@ -113,7 +108,7 @@ Point2 XRCamera3D::unproject_position(const Vector3 &p_pos) const {
 
 	Size2 viewport_size = get_viewport()->get_visible_rect().size;
 
-	CameraMatrix cm = xr_interface->get_projection_for_eye(XRInterface::EYE_MONO, viewport_size.aspect(), get_znear(), get_zfar());
+	CameraMatrix cm = xr_interface->get_projection_for_eye(XRInterface::EYE_MONO, viewport_size.aspect(), get_near(), get_far());
 
 	Plane p(get_camera_transform().xform_inv(p_pos), 1.0);
 
@@ -142,7 +137,7 @@ Vector3 XRCamera3D::project_position(const Point2 &p_point, float p_z_depth) con
 
 	Size2 viewport_size = get_viewport()->get_visible_rect().size;
 
-	CameraMatrix cm = xr_interface->get_projection_for_eye(XRInterface::EYE_MONO, viewport_size.aspect(), get_znear(), get_zfar());
+	CameraMatrix cm = xr_interface->get_projection_for_eye(XRInterface::EYE_MONO, viewport_size.aspect(), get_near(), get_far());
 
 	Vector2 vp_he = cm.get_viewport_half_extents();
 
@@ -170,7 +165,7 @@ Vector<Plane> XRCamera3D::get_frustum() const {
 	ERR_FAIL_COND_V(!is_inside_world(), Vector<Plane>());
 
 	Size2 viewport_size = get_viewport()->get_visible_rect().size;
-	CameraMatrix cm = xr_interface->get_projection_for_eye(XRInterface::EYE_MONO, viewport_size.aspect(), get_znear(), get_zfar());
+	CameraMatrix cm = xr_interface->get_projection_for_eye(XRInterface::EYE_MONO, viewport_size.aspect(), get_near(), get_far());
 	return cm.get_projection_planes(get_camera_transform());
 };
 
@@ -190,8 +185,8 @@ void XRController3D::_notification(int p_what) {
 			ERR_FAIL_NULL(xr_server);
 
 			// find the tracker for our controller
-			XRPositionalTracker *tracker = xr_server->find_by_type_and_id(XRServer::TRACKER_CONTROLLER, controller_id);
-			if (tracker == nullptr) {
+			Ref<XRPositionalTracker> tracker = xr_server->find_by_type_and_id(XRServer::TRACKER_CONTROLLER, controller_id);
+			if (!tracker.is_valid()) {
 				// this controller is currently turned off
 				is_active = false;
 				button_states = 0;
@@ -247,7 +242,7 @@ void XRController3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_joystick_axis", "axis"), &XRController3D::get_joystick_axis);
 
 	ClassDB::bind_method(D_METHOD("get_is_active"), &XRController3D::get_is_active);
-	ClassDB::bind_method(D_METHOD("get_hand"), &XRController3D::get_hand);
+	ClassDB::bind_method(D_METHOD("get_tracker_hand"), &XRController3D::get_tracker_hand);
 
 	ClassDB::bind_method(D_METHOD("get_rumble"), &XRController3D::get_rumble);
 	ClassDB::bind_method(D_METHOD("set_rumble", "rumble"), &XRController3D::set_rumble);
@@ -265,7 +260,7 @@ void XRController3D::set_controller_id(int p_controller_id) {
 	// We don't check any bounds here, this controller may not yet be active and just be a place holder until it is.
 	// Note that setting this to 0 means this node is not bound to a controller yet.
 	controller_id = p_controller_id;
-	update_configuration_warning();
+	update_configuration_warnings();
 };
 
 int XRController3D::get_controller_id() const {
@@ -277,8 +272,8 @@ String XRController3D::get_controller_name() const {
 	XRServer *xr_server = XRServer::get_singleton();
 	ERR_FAIL_NULL_V(xr_server, String());
 
-	XRPositionalTracker *tracker = xr_server->find_by_type_and_id(XRServer::TRACKER_CONTROLLER, controller_id);
-	if (tracker == nullptr) {
+	Ref<XRPositionalTracker> tracker = xr_server->find_by_type_and_id(XRServer::TRACKER_CONTROLLER, controller_id);
+	if (!tracker.is_valid()) {
 		return String("Not connected");
 	};
 
@@ -290,8 +285,8 @@ int XRController3D::get_joystick_id() const {
 	XRServer *xr_server = XRServer::get_singleton();
 	ERR_FAIL_NULL_V(xr_server, 0);
 
-	XRPositionalTracker *tracker = xr_server->find_by_type_and_id(XRServer::TRACKER_CONTROLLER, controller_id);
-	if (tracker == nullptr) {
+	Ref<XRPositionalTracker> tracker = xr_server->find_by_type_and_id(XRServer::TRACKER_CONTROLLER, controller_id);
+	if (!tracker.is_valid()) {
 		// No tracker? no joystick id... (0 is our first joystick)
 		return -1;
 	};
@@ -322,8 +317,8 @@ real_t XRController3D::get_rumble() const {
 	XRServer *xr_server = XRServer::get_singleton();
 	ERR_FAIL_NULL_V(xr_server, 0.0);
 
-	XRPositionalTracker *tracker = xr_server->find_by_type_and_id(XRServer::TRACKER_CONTROLLER, controller_id);
-	if (tracker == nullptr) {
+	Ref<XRPositionalTracker> tracker = xr_server->find_by_type_and_id(XRServer::TRACKER_CONTROLLER, controller_id);
+	if (!tracker.is_valid()) {
 		return 0.0;
 	};
 
@@ -335,8 +330,8 @@ void XRController3D::set_rumble(real_t p_rumble) {
 	XRServer *xr_server = XRServer::get_singleton();
 	ERR_FAIL_NULL(xr_server);
 
-	XRPositionalTracker *tracker = xr_server->find_by_type_and_id(XRServer::TRACKER_CONTROLLER, controller_id);
-	if (tracker != nullptr) {
+	Ref<XRPositionalTracker> tracker = xr_server->find_by_type_and_id(XRServer::TRACKER_CONTROLLER, controller_id);
+	if (tracker.is_valid()) {
 		tracker->set_rumble(p_rumble);
 	};
 };
@@ -349,43 +344,35 @@ bool XRController3D::get_is_active() const {
 	return is_active;
 };
 
-XRPositionalTracker::TrackerHand XRController3D::get_hand() const {
+XRPositionalTracker::TrackerHand XRController3D::get_tracker_hand() const {
 	// get our XRServer
 	XRServer *xr_server = XRServer::get_singleton();
 	ERR_FAIL_NULL_V(xr_server, XRPositionalTracker::TRACKER_HAND_UNKNOWN);
 
-	XRPositionalTracker *tracker = xr_server->find_by_type_and_id(XRServer::TRACKER_CONTROLLER, controller_id);
-	if (tracker == nullptr) {
+	Ref<XRPositionalTracker> tracker = xr_server->find_by_type_and_id(XRServer::TRACKER_CONTROLLER, controller_id);
+	if (!tracker.is_valid()) {
 		return XRPositionalTracker::TRACKER_HAND_UNKNOWN;
 	};
 
-	return tracker->get_hand();
+	return tracker->get_tracker_hand();
 };
 
-String XRController3D::get_configuration_warning() const {
-	if (!is_visible() || !is_inside_tree()) {
-		return String();
+TypedArray<String> XRController3D::get_configuration_warnings() const {
+	TypedArray<String> warnings = Node::get_configuration_warnings();
+
+	if (is_visible() && is_inside_tree()) {
+		// must be child node of XROrigin!
+		XROrigin3D *origin = Object::cast_to<XROrigin3D>(get_parent());
+		if (origin == nullptr) {
+			warnings.push_back(TTR("XRController3D must have an XROrigin3D node as its parent."));
+		}
+
+		if (controller_id == 0) {
+			warnings.push_back(TTR("The controller ID must not be 0 or this controller won't be bound to an actual controller."));
+		}
 	}
 
-	String warning = Node3D::get_configuration_warning();
-
-	// must be child node of XROrigin!
-	XROrigin3D *origin = Object::cast_to<XROrigin3D>(get_parent());
-	if (origin == nullptr) {
-		if (!warning.empty()) {
-			warning += "\n\n";
-		}
-		warning += TTR("XRController3D must have an XROrigin3D node as its parent.");
-	};
-
-	if (controller_id == 0) {
-		if (!warning.empty()) {
-			warning += "\n\n";
-		}
-		warning += TTR("The controller ID must not be 0 or this controller won't be bound to an actual controller.");
-	};
-
-	return warning;
+	return warnings;
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -404,8 +391,8 @@ void XRAnchor3D::_notification(int p_what) {
 			ERR_FAIL_NULL(xr_server);
 
 			// find the tracker for our anchor
-			XRPositionalTracker *tracker = xr_server->find_by_type_and_id(XRServer::TRACKER_ANCHOR, anchor_id);
-			if (tracker == nullptr) {
+			Ref<XRPositionalTracker> tracker = xr_server->find_by_type_and_id(XRServer::TRACKER_ANCHOR, anchor_id);
+			if (!tracker.is_valid()) {
 				// this anchor is currently not available
 				is_active = false;
 			} else {
@@ -459,7 +446,7 @@ void XRAnchor3D::set_anchor_id(int p_anchor_id) {
 	// We don't check any bounds here, this anchor may not yet be active and just be a place holder until it is.
 	// Note that setting this to 0 means this node is not bound to an anchor yet.
 	anchor_id = p_anchor_id;
-	update_configuration_warning();
+	update_configuration_warnings();
 };
 
 int XRAnchor3D::get_anchor_id() const {
@@ -475,8 +462,8 @@ String XRAnchor3D::get_anchor_name() const {
 	XRServer *xr_server = XRServer::get_singleton();
 	ERR_FAIL_NULL_V(xr_server, String());
 
-	XRPositionalTracker *tracker = xr_server->find_by_type_and_id(XRServer::TRACKER_ANCHOR, anchor_id);
-	if (tracker == nullptr) {
+	Ref<XRPositionalTracker> tracker = xr_server->find_by_type_and_id(XRServer::TRACKER_ANCHOR, anchor_id);
+	if (!tracker.is_valid()) {
 		return String("Not connected");
 	};
 
@@ -487,30 +474,22 @@ bool XRAnchor3D::get_is_active() const {
 	return is_active;
 };
 
-String XRAnchor3D::get_configuration_warning() const {
-	if (!is_visible() || !is_inside_tree()) {
-		return String();
+TypedArray<String> XRAnchor3D::get_configuration_warnings() const {
+	TypedArray<String> warnings = Node::get_configuration_warnings();
+
+	if (is_visible() && is_inside_tree()) {
+		// must be child node of XROrigin3D!
+		XROrigin3D *origin = Object::cast_to<XROrigin3D>(get_parent());
+		if (origin == nullptr) {
+			warnings.push_back(TTR("XRAnchor3D must have an XROrigin3D node as its parent."));
+		}
+
+		if (anchor_id == 0) {
+			warnings.push_back(TTR("The anchor ID must not be 0 or this anchor won't be bound to an actual anchor."));
+		}
 	}
 
-	String warning = Node3D::get_configuration_warning();
-
-	// must be child node of XROrigin3D!
-	XROrigin3D *origin = Object::cast_to<XROrigin3D>(get_parent());
-	if (origin == nullptr) {
-		if (!warning.empty()) {
-			warning += "\n\n";
-		}
-		warning += TTR("XRAnchor3D must have an XROrigin3D node as its parent.");
-	};
-
-	if (anchor_id == 0) {
-		if (!warning.empty()) {
-			warning += "\n\n";
-		}
-		warning += TTR("The anchor ID must not be 0 or this anchor won't be bound to an actual anchor.");
-	};
-
-	return warning;
+	return warnings;
 };
 
 Plane XRAnchor3D::get_plane() const {
@@ -528,21 +507,16 @@ Ref<Mesh> XRAnchor3D::get_mesh() const {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-String XROrigin3D::get_configuration_warning() const {
-	if (!is_visible() || !is_inside_tree()) {
-		return String();
-	}
+TypedArray<String> XROrigin3D::get_configuration_warnings() const {
+	TypedArray<String> warnings = Node::get_configuration_warnings();
 
-	String warning = Node3D::get_configuration_warning();
-
-	if (tracked_camera == nullptr) {
-		if (!warning.empty()) {
-			warning += "\n\n";
+	if (is_visible() && is_inside_tree()) {
+		if (tracked_camera == nullptr) {
+			warnings.push_back(TTR("XROrigin3D requires an XRCamera3D child node."));
 		}
-		warning += TTR("XROrigin3D requires an XRCamera3D child node.");
 	}
 
-	return warning;
+	return warnings;
 };
 
 void XROrigin3D::_bind_methods() {

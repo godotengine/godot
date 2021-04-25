@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -83,7 +83,7 @@ protected:
 	static DisplayServerCreate server_create_functions[MAX_SERVERS];
 	static int server_create_count;
 
-	friend class RenderingServerDefault;
+	friend class RendererViewport;
 	virtual void _set_use_vsync(bool p_enable);
 
 public:
@@ -339,6 +339,11 @@ public:
 	virtual void keyboard_set_current_layout(int p_index);
 	virtual String keyboard_get_layout_language(int p_index) const;
 	virtual String keyboard_get_layout_name(int p_index) const;
+
+	virtual int tablet_get_driver_count() const { return 1; };
+	virtual String tablet_get_driver_name(int p_driver) const { return "default"; };
+	virtual String tablet_get_current_driver() const { return "default"; };
+	virtual void tablet_set_current_driver(const String &p_driver){};
 
 	virtual void process_events() = 0;
 

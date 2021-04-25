@@ -1,19 +1,19 @@
 # Thai translation of the Godot Engine editor
-# Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.
-# Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).
+# Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.
+# Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).
 # This file is distributed under the same license as the Godot source code.
 # Kaveeta Vivatchai <goodytong@gmail.com>, 2017.
 # Poommetee Ketson (Noshyaar) <poommetee@protonmail.com>, 2017-2018.
-# Thanachart Monpassorn <nunf_2539@hotmail.com>, 2020.
+# Thanachart Monpassorn <nunf_2539@hotmail.com>, 2020, 2021.
 # Anonymous <noreply@weblate.org>, 2020.
 # Lon3r <mptube.p@gmail.com>, 2020.
-# Kongfa Warorot <gongpha@hotmail.com>, 2020.
+# Kongfa Warorot <gongpha@hotmail.com>, 2020, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-12-01 20:29+0000\n"
-"Last-Translator: Kongfa Warorot <gongpha@hotmail.com>\n"
+"PO-Revision-Date: 2021-04-05 14:28+0000\n"
+"Last-Translator: Thanachart Monpassorn <nunf_2539@hotmail.com>\n"
 "Language-Team: Thai <https://hosted.weblate.org/projects/godot-engine/godot/"
 "th/>\n"
 "Language: th\n"
@@ -21,7 +21,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.4-dev\n"
+"X-Generator: Weblate 4.6-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -643,7 +643,7 @@ msgstr "เลือกแทร็กที่จะคัดลอก"
 #: editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp editor/property_editor.cpp
-#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
+#: editor/scene_tree_dock.cpp scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Copy"
 msgstr "คัดลอก"
 
@@ -1836,8 +1836,8 @@ msgid "Open a File or Directory"
 msgstr "เปิดไฟล์หรือโฟลเดอร์"
 
 #: editor/editor_file_dialog.cpp editor/editor_node.cpp
-#: editor/editor_properties.cpp editor/inspector_dock.cpp
-#: editor/plugins/animation_player_editor_plugin.cpp
+#: editor/editor_properties.cpp editor/import_defaults_editor.cpp
+#: editor/inspector_dock.cpp editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/script_editor_plugin.cpp scene/gui/file_dialog.cpp
 msgid "Save"
 msgstr "บันทึก"
@@ -1927,10 +1927,6 @@ msgstr "ตัวอย่าง:"
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "File:"
 msgstr "ไฟล์:"
-
-#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
-msgid "Must use a valid extension."
-msgstr "นามสกุลไฟล์ไม่ถูกต้อง"
 
 #: editor/editor_file_system.cpp
 msgid "ScanSources"
@@ -2350,6 +2346,10 @@ msgid "There is no defined scene to run."
 msgstr "ยังไม่ได้เลือกฉากที่จะเล่น"
 
 #: editor/editor_node.cpp
+msgid "Save scene before running..."
+msgstr "บันทึกฉากก่อนที่จะทำงาน..."
+
+#: editor/editor_node.cpp
 msgid "Could not start subprocess!"
 msgstr "ไม่สามารถเริ่มขั้นตอนย่อย!"
 
@@ -2392,18 +2392,6 @@ msgstr "โหนดแม่จำเป็นต้องทำการบั
 #: editor/editor_node.cpp
 msgid "Save Scene As..."
 msgstr "บันทึกฉากเป็น..."
-
-#: editor/editor_node.cpp
-msgid "No"
-msgstr "ไม่"
-
-#: editor/editor_node.cpp
-msgid "Yes"
-msgstr "ใช่"
-
-#: editor/editor_node.cpp
-msgid "This scene has never been saved. Save before running?"
-msgstr "ฉากนี้ยังไม่ได้บันทึก บันทึกก่อนเริ่ม?"
 
 #: editor/editor_node.cpp editor/scene_tree_dock.cpp
 msgid "This operation can't be done without a scene."
@@ -2454,6 +2442,10 @@ msgid "Quit"
 msgstr "ออก"
 
 #: editor/editor_node.cpp
+msgid "Yes"
+msgstr "ใช่"
+
+#: editor/editor_node.cpp
 msgid "Exit the editor?"
 msgstr "ออกโปรแกรม?"
 
@@ -2497,8 +2489,8 @@ msgid "Unable to enable addon plugin at: '%s' parsing of config failed."
 msgstr "ไม่สามารถเปิดใช้งานปลั๊กอิน: '%s'"
 
 #: editor/editor_node.cpp
-msgid "Unable to find script field for addon plugin at: 'res://addons/%s'."
-msgstr "ไม่พบชื่อสคริปต์ในปลั๊กอิน: 'res://addons/%s'"
+msgid "Unable to find script field for addon plugin at: '%s'."
+msgstr "ไม่พบไฟล์สคริปต์สำหรับปลั๊กอินที่: '%s'."
 
 #: editor/editor_node.cpp
 msgid "Unable to load addon script from path: '%s'."
@@ -2915,14 +2907,6 @@ msgid "Help"
 msgstr "ช่วยเหลือ"
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/script_text_editor.cpp
-#: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
-#: editor/plugins/visual_shader_editor_plugin.cpp editor/project_manager.cpp
-#: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
-msgid "Search"
-msgstr "ค้นหา"
-
-#: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/shader_editor_plugin.cpp
 msgid "Online Docs"
 msgstr "คู่มือ"
@@ -3082,6 +3066,24 @@ msgstr "รวมกับที่มีอยู่เดิม"
 #: editor/editor_node.cpp
 msgid "Open & Run a Script"
 msgstr "เปิดและรันสคริปต์"
+
+#: editor/editor_node.cpp
+msgid ""
+"The following files are newer on disk.\n"
+"What action should be taken?"
+msgstr ""
+"ไฟล์เหล่านี้มีความใหม่กว่าบนดิสก์\n"
+"ต้องจะทำอย่างไรต่อไป?"
+
+#: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/shader_editor_plugin.cpp
+msgid "Reload"
+msgstr "โหลดใหม่"
+
+#: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/shader_editor_plugin.cpp
+msgid "Resave"
+msgstr "บันทึกอีกครั้ง"
 
 #: editor/editor_node.cpp
 msgid "New Inherited"
@@ -3290,7 +3292,7 @@ msgstr "ไม่ใช้ร่วมกับวัตถุอื่น"
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 #: editor/plugins/tile_map_editor_plugin.cpp editor/property_editor.cpp
-#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
+#: editor/scene_tree_dock.cpp scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Paste"
 msgstr "วาง"
 
@@ -3599,6 +3601,11 @@ msgid "Status: Import of file failed. Please fix file and reimport manually."
 msgstr "สถานะ: นำเข้าไฟล์ล้มเหลว กรุณาแก้ไขไฟล์และนำเข้าใหม่"
 
 #: editor/filesystem_dock.cpp
+msgid ""
+"Importing has been disabled for this file, so it can't be opened for editing."
+msgstr "การนำเข้าไฟล์นี้ถูกปิด, ดังนั้นจึงไม่สามารถเปิดเพื่อแก้ไขใดๆได้"
+
+#: editor/filesystem_dock.cpp
 msgid "Cannot move/rename resources root."
 msgstr "ไม่สามารถย้าย/เปลี่ยนชื่อโฟลเดอร์ราก"
 
@@ -3643,6 +3650,11 @@ msgid ""
 "\n"
 "Do you wish to overwrite them?"
 msgstr ""
+"ไฟล์หรือโฟลเดอร์ต่อไปนี้มีความขัดแย้งกับรายการในตำแหน่งเป้าหมาย '%s':\n"
+"\n"
+"%s\n"
+"\n"
+"คุณต้องการที่จะเขียนทับหรือไม่?"
 
 #: editor/filesystem_dock.cpp
 msgid "Renaming file:"
@@ -3833,8 +3845,16 @@ msgid "Searching..."
 msgstr "กำลังค้นหา..."
 
 #: editor/find_in_files.cpp
-msgid "Search complete"
-msgstr "ค้นหาสำเร็จ"
+msgid "%d match in %d file."
+msgstr "%d ตรงกับไฟล์ %d"
+
+#: editor/find_in_files.cpp
+msgid "%d matches in %d file."
+msgstr "%d ตรงกับไฟล์ %d"
+
+#: editor/find_in_files.cpp
+msgid "%d matches in %d files."
+msgstr "%d ตรงกับไฟล์ %d"
 
 #: editor/groups_editor.cpp
 msgid "Add to Group"
@@ -3970,6 +3990,22 @@ msgstr "คุณส่งคืนออบเจกต์โหนดย่อ
 msgid "Saving..."
 msgstr "กำลังบันทึก..."
 
+#: editor/import_defaults_editor.cpp
+msgid "Select Importer"
+msgstr "เลือกตัวนำเข้า"
+
+#: editor/import_defaults_editor.cpp
+msgid "Importer:"
+msgstr "ตัวนำเข้า:"
+
+#: editor/import_defaults_editor.cpp
+msgid "Reset to Defaults"
+msgstr "รีเซ็ตเป็นค่าเริ่มต้น"
+
+#: editor/import_dock.cpp
+msgid "Keep File (No Import)"
+msgstr "เก็บไฟล์ (ไม่นำเข้า)"
+
 #: editor/import_dock.cpp
 msgid "%d Files"
 msgstr "ไฟล์ %d"
@@ -4078,7 +4114,7 @@ msgstr "คุณสมบัติออบเจกต์"
 
 #: editor/inspector_dock.cpp
 msgid "Filter properties"
-msgstr "คุญสมบัติตัวกรอง"
+msgstr "คุณสมบัติตัวกรอง"
 
 #: editor/inspector_dock.cpp
 msgid "Changes may be lost!"
@@ -4925,8 +4961,8 @@ msgid "Got:"
 msgstr "ที่ได้รับ:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-msgid "Failed sha256 hash check"
-msgstr "ผิดพลาดในการตรวจสอบแฮช SHA256"
+msgid "Failed SHA-256 hash check"
+msgstr "ผิดพลาดในการตรวจสอบแฮช SHA-256"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Asset Download Error:"
@@ -5029,7 +5065,6 @@ msgid "Sort:"
 msgstr "เรียงตาม:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#: editor/project_settings_editor.cpp
 msgid "Category:"
 msgstr "หมวดหมู่:"
 
@@ -5060,11 +5095,10 @@ msgstr "ทรัพยากรไฟล์ ZIP"
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid ""
 "Can't determine a save path for lightmap images.\n"
-"Save your scene (for images to be saved in the same dir), or pick a save "
-"path from the BakedLightmap properties."
+"Save your scene and try again."
 msgstr ""
-"ไม่สามารถเลือกตำแหน่งที่จะบันทึกภาพ lightmap\n"
-"กรุณาบันทึกฉาก (เพื่อบันทึกภาพในโฟลเดอร์เดียวกัน) หรือระบุตำแหน่งในคุณสมบัติของ BakedLightmap"
+"ไม่สามารถกำหนดตำแหน่งการบันทึกสำหรับภาพ lightmap\n"
+"ลองบันทึกฉากของคุณแล้วลองอีกครั้ง"
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid ""
@@ -5078,8 +5112,29 @@ msgid "Failed creating lightmap images, make sure path is writable."
 msgstr "ผิดพลาดขณะสร้างภาพ lightmap กรุณาตรวจสอบว่าสามารถเขียนไฟล์ในตำแหน่งที่บันทึกได้"
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
+msgid "Failed determining lightmap size. Maximum lightmap size too small?"
+msgstr "การกำหนดขนาด lightmap ล้มเหลว ขนาด lightmap สูงสุดเล็กเกินไป?"
+
+#: editor/plugins/baked_lightmap_editor_plugin.cpp
+msgid ""
+"Some mesh is invalid. Make sure the UV2 channel values are contained within "
+"the [0.0,1.0] square region."
+msgstr "mesh บางส่วนไม่ถูกต้อง ตรวจสอบให้แน่ใจว่าค่า UV2 อยู่ในพื้นที่สี่เหลี่ยม [0.0,1.0]"
+
+#: editor/plugins/baked_lightmap_editor_plugin.cpp
+msgid ""
+"Godot editor was built without ray tracing support, lightmaps can't be baked."
+msgstr ""
+"เอดิเตอร์ Godot ถูกสร้างโดยไม่ได้สนับสนุน ray tracing ดังนั้นจึงไม่สามารถ bake lightmaps "
+"ได้"
+
+#: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid "Bake Lightmaps"
 msgstr "สร้าง Lightmaps"
+
+#: editor/plugins/baked_lightmap_editor_plugin.cpp
+msgid "Select lightmap bake file:"
+msgstr "เลือกไฟล์ bake ของ lightmap :"
 
 #: editor/plugins/camera_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -6159,6 +6214,10 @@ msgid "Can only set point into a ParticlesMaterial process material"
 msgstr "สามารถกำหนดจุดให้แก่ ParticlesMaterial เท่านั้น"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
+msgid "Convert to CPUParticles2D"
+msgstr "แปลงเป็น CPUParticles2D"
+
+#: editor/plugins/particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Generation Time (sec):"
 msgstr "เวลาในการสร้าง (วินาที):"
@@ -6218,10 +6277,6 @@ msgstr "กำลังสร้าง AABB"
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Generate Visibility AABB"
 msgstr "สร้างการมองเห็น AABB"
-
-#: editor/plugins/particles_editor_plugin.cpp
-msgid "Generate AABB"
-msgstr "สร้าง AABB"
 
 #: editor/plugins/path_2d_editor_plugin.cpp
 msgid "Remove Point from Curve"
@@ -6808,6 +6863,14 @@ msgstr "ปิดคู่มือ"
 msgid "Run"
 msgstr "เริ่ม"
 
+#: editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/script_text_editor.cpp
+#: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
+#: editor/plugins/visual_shader_editor_plugin.cpp editor/project_manager.cpp
+#: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
+msgid "Search"
+msgstr "ค้นหา"
+
 #: editor/plugins/script_editor_plugin.cpp editor/script_editor_debugger.cpp
 msgid "Step Into"
 msgstr "คำสั่งต่อไป"
@@ -6860,16 +6923,6 @@ msgid ""
 msgstr ""
 "ไฟล์ต่อไปนี้ในดิสก์ใหม่กว่า\n"
 "จะทำอย่างไรต่อไป?:"
-
-#: editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/shader_editor_plugin.cpp
-msgid "Reload"
-msgstr "โหลดใหม่"
-
-#: editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/shader_editor_plugin.cpp
-msgid "Resave"
-msgstr "บันทึกอีกครั้ง"
 
 #: editor/plugins/script_editor_plugin.cpp editor/script_editor_debugger.cpp
 msgid "Debugger"
@@ -6963,8 +7016,8 @@ msgstr "เบรกพอยต์"
 msgid "Go To"
 msgstr "ไปยัง"
 
-#: editor/plugins/script_text_editor.cpp scene/gui/line_edit.cpp
-#: scene/gui/text_edit.cpp
+#: editor/plugins/script_text_editor.cpp editor/scene_tree_dock.cpp
+#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Cut"
 msgstr "ตัด"
 
@@ -7187,6 +7240,10 @@ msgid "Yaw"
 msgstr "Yaw"
 
 #: editor/plugins/spatial_editor_plugin.cpp
+msgid "Size"
+msgstr "ขนาด"
+
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Objects Drawn"
 msgstr "ออบเจกต์ที่วาด"
 
@@ -7365,6 +7422,11 @@ msgstr "ปรับความเร็วมุมมองอิสระ"
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "View Rotation Locked"
 msgstr "ล็อคการหมุนวิวแล้ว"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid ""
+"To zoom further, change the camera's clipping planes (View -> Settings...)"
+msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid ""
@@ -8426,10 +8488,6 @@ msgid "Error"
 msgstr "ผิดพลาด"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-msgid "No commit message was provided"
-msgstr "ไม่ได้ระบุข้อความ commit"
-
-#: editor/plugins/version_control_editor_plugin.cpp
 msgid "No files added to stage"
 msgstr "ไม่มีไฟล์เพิ่มไฟยัง stage"
 
@@ -8484,10 +8542,6 @@ msgstr "เลือก stage"
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Stage All"
 msgstr "Stage ทั้งหมด"
-
-#: editor/plugins/version_control_editor_plugin.cpp
-msgid "Add a commit message"
-msgstr "เพิ่มข้อความ commit"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Commit Changes"
@@ -9659,7 +9713,7 @@ msgstr "OpenGL ES 3.0"
 
 #: editor/project_manager.cpp
 msgid "Not supported by your GPU drivers."
-msgstr ""
+msgstr "ไม่รองรับโดยไดรเวอร์ GPU ของคุณ"
 
 #: editor/project_manager.cpp
 msgid ""
@@ -9826,6 +9880,10 @@ msgstr "ตัวจัดการโปรเจกต์"
 #: editor/project_manager.cpp
 msgid "Projects"
 msgstr "โปรเจกต์"
+
+#: editor/project_manager.cpp
+msgid "Loading, please wait..."
+msgstr "กำลังโหลด โปรดรอ..."
 
 #: editor/project_manager.cpp
 msgid "Last Modified"
@@ -10192,6 +10250,10 @@ msgstr "ออโต้โหลด"
 msgid "Plugins"
 msgstr "ปลั๊กอิน"
 
+#: editor/project_settings_editor.cpp
+msgid "Import Defaults"
+msgstr "นำเข้าค่าเริ่มต้น"
+
 #: editor/property_editor.cpp
 msgid "Preset..."
 msgstr "พรีเซ็ต..."
@@ -10439,6 +10501,14 @@ msgid "Instance Child Scene"
 msgstr "อินสแตนซ์ฉากลูก"
 
 #: editor/scene_tree_dock.cpp
+msgid "Can't paste root node into the same scene."
+msgstr "ไม่สามารถวางโหนดรากในฉากเดียวกัน"
+
+#: editor/scene_tree_dock.cpp
+msgid "Paste Node(s)"
+msgstr "วางโหนด"
+
+#: editor/scene_tree_dock.cpp
 msgid "Detach Script"
 msgstr "ค้นพบสคริปต์"
 
@@ -10564,6 +10634,10 @@ msgid "Attach Script"
 msgstr "แนบสคริปต์"
 
 #: editor/scene_tree_dock.cpp
+msgid "Cut Node(s)"
+msgstr "ตัดโหนด"
+
+#: editor/scene_tree_dock.cpp
 msgid "Remove Node(s)"
 msgstr "ลบโหนด"
 
@@ -10671,6 +10745,13 @@ msgstr "ถอดสคริปต์ออกจากโหนดที่เ
 #: editor/scene_tree_dock.cpp
 msgid "Remote"
 msgstr "ระยะไกล"
+
+#: editor/scene_tree_dock.cpp
+msgid ""
+"If selected, the Remote scene tree dock will cause the project to stutter "
+"every time it updates.\n"
+"Switch back to the Local scene tree dock to improve performance."
+msgstr ""
 
 #: editor/scene_tree_dock.cpp
 msgid "Local"
@@ -11362,6 +11443,34 @@ msgstr "ตัวกรอง mesh"
 msgid "Give a MeshLibrary resource to this GridMap to use its meshes."
 msgstr "มอบทรัพยากร MeshLibrary ให้กับ GridMap นี้เพื่อใช้ mesh"
 
+#: modules/lightmapper_cpu/lightmapper_cpu.cpp
+msgid "Begin Bake"
+msgstr "เริ่มต้น Bake"
+
+#: modules/lightmapper_cpu/lightmapper_cpu.cpp
+msgid "Preparing data structures"
+msgstr "กำลังเตรียมโครงสร้างข้อมูล"
+
+#: modules/lightmapper_cpu/lightmapper_cpu.cpp
+msgid "Generate buffers"
+msgstr "สร้างบัฟเฟอร์"
+
+#: modules/lightmapper_cpu/lightmapper_cpu.cpp
+msgid "Direct lighting"
+msgstr "lighting แบบตรง"
+
+#: modules/lightmapper_cpu/lightmapper_cpu.cpp
+msgid "Indirect lighting"
+msgstr "lighting แบบอ้อม"
+
+#: modules/lightmapper_cpu/lightmapper_cpu.cpp
+msgid "Post processing"
+msgstr "หลังประมวลผล"
+
+#: modules/lightmapper_cpu/lightmapper_cpu.cpp
+msgid "Plotting lightmaps"
+msgstr "กำลังพล็อต lightmaps"
+
 #: modules/mono/csharp_script.cpp
 msgid "Class name can't be a reserved keyword"
 msgstr "ชื่อคลาสไม่สามารถมีคีย์เวิร์ดได้"
@@ -11860,12 +11969,14 @@ msgid "Select device from the list"
 msgstr "เลือกอุปกรณ์จากรายชื่อ"
 
 #: platform/android/export/export.cpp
-msgid "ADB executable not configured in the Editor Settings."
-msgstr "ADB executable ยังไม่ได้กำหนดค่าในตั้งค่าเอดิเตอร์"
+msgid "Unable to find the 'apksigner' tool."
+msgstr "ไม่สามารถหาเครื่องมือ 'apksigner'"
 
 #: platform/android/export/export.cpp
-msgid "OpenJDK jarsigner not configured in the Editor Settings."
-msgstr "OpenJDK jarsigner ยังไม่ได้กำหนดค่าในตั้งค่าเอดิเตอร์"
+msgid ""
+"Android build template not installed in the project. Install it from the "
+"Project menu."
+msgstr "เทมเพลตการสร้างสำหรับแอนดรอยด์ไม่ถูกติดตั้ง สามารถติดตั้งจากเมนูโปรเจกต์"
 
 #: platform/android/export/export.cpp
 msgid "Debug keystore not configured in the Editor Settings nor in the preset."
@@ -11876,22 +11987,32 @@ msgid "Release keystore incorrectly configured in the export preset."
 msgstr "Release keystore กำหนดค่าไว้อย่างไม่ถูกต้องในพรีเซ็ตสำหรับการส่งออก"
 
 #: platform/android/export/export.cpp
-msgid "Custom build requires a valid Android SDK path in Editor Settings."
-msgstr "การสร้างแบบกำหนดเองต้องมีที่อยู่ Android SDK ในการตั้งค่าเอดิเตอร์"
+msgid "A valid Android SDK path is required in Editor Settings."
+msgstr "ต้องการที่อยู่ของ Android SDK ที่ถูกต้อง ในการตั้งค่าเอดิเตอร์"
 
 #: platform/android/export/export.cpp
-msgid "Invalid Android SDK path for custom build in Editor Settings."
-msgstr "ที่อยู่ Android SDK ผิดพลาดสำหรับการสร้างแบบกำหนดเองในการตั้งค่าเอดิเตอร์"
+msgid "Invalid Android SDK path in Editor Settings."
+msgstr "ที่อยู่ Android SDK ไม่ถูกต้องในตั้งค่าของเอดิเตอร์"
 
 #: platform/android/export/export.cpp
 msgid "Missing 'platform-tools' directory!"
 msgstr "ไดเร็กทอรี 'platform-tools' หายไป!"
 
 #: platform/android/export/export.cpp
-msgid ""
-"Android build template not installed in the project. Install it from the "
-"Project menu."
-msgstr "เทมเพลตการสร้างสำหรับแอนดรอยด์ไม่ถูกติดตั้ง สามารถติดตั้งจากเมนูโปรเจกต์"
+msgid "Unable to find Android SDK platform-tools' adb command."
+msgstr "ไม่พบคำสั่ง adb ของ Android SDK platform-tools"
+
+#: platform/android/export/export.cpp
+msgid "Please check in the Android SDK directory specified in Editor Settings."
+msgstr "โปรดตรวจสอบในไดเร็กทอรี Android SDK ที่ระบุใตัวตั้งค่าของเอดิเตอร์"
+
+#: platform/android/export/export.cpp
+msgid "Missing 'build-tools' directory!"
+msgstr "ไดเร็กทอรี 'build-tools' หายไป!"
+
+#: platform/android/export/export.cpp
+msgid "Unable to find Android SDK build-tools' apksigner command."
+msgstr "ไม่พบคำสั่ง apksigner ของ Android SDK build-tools"
 
 #: platform/android/export/export.cpp
 msgid "Invalid public key for APK expansion."
@@ -12137,6 +12258,14 @@ msgstr ""
 msgid "An empty CollisionPolygon2D has no effect on collision."
 msgstr "CollisionPolygon2D ที่ว่างเปล่าจะไม่มีผลทางกายภาพ"
 
+#: scene/2d/collision_polygon_2d.cpp
+msgid "Invalid polygon. At least 3 points are needed in 'Solids' build mode."
+msgstr "โพลีกอนไม่ถูกต้อง ต้องมีอย่างน้อย 3 จุด ในโหมดการสร้างแบบ 'Solids'"
+
+#: scene/2d/collision_polygon_2d.cpp
+msgid "Invalid polygon. At least 2 points are needed in 'Segments' build mode."
+msgstr "โพลีกอนไม่ถูกต้อง ต้องมีอย่างน้อย 2 จุด ในโหมดการสร้างแบบ 'Segments'"
+
 #: scene/2d/collision_shape_2d.cpp
 msgid ""
 "CollisionShape2D only serves to provide a collision shape to a "
@@ -12171,23 +12300,23 @@ msgstr ""
 
 #: scene/2d/joints_2d.cpp
 msgid "Node A and Node B must be PhysicsBody2Ds"
-msgstr ""
+msgstr "โหนด A และ โหนด B จะต้องเป็น PhysicsBody2D"
 
 #: scene/2d/joints_2d.cpp
 msgid "Node A must be a PhysicsBody2D"
-msgstr ""
+msgstr "Node A จะต้องเป็น PhysicsBody2D"
 
 #: scene/2d/joints_2d.cpp
 msgid "Node B must be a PhysicsBody2D"
-msgstr ""
+msgstr "Node B จะต้องเป็น PhysicsBody2D"
 
 #: scene/2d/joints_2d.cpp
 msgid "Joint is not connected to two PhysicsBody2Ds"
-msgstr ""
+msgstr "ข้อต่อไม่ได้เชื่อมโยงกับ PhysicsBody2D สองโหนด"
 
 #: scene/2d/joints_2d.cpp
 msgid "Node A and Node B must be different PhysicsBody2Ds"
-msgstr ""
+msgstr "โหนด A และโหนด B จะต้องเป็น PhysicsBody2D ที่แตกต่างกัน"
 
 #: scene/2d/light_2d.cpp
 msgid ""
@@ -12323,28 +12452,28 @@ msgid "ARVROrigin requires an ARVRCamera child node."
 msgstr "ARVROrigin จำเป็นต้องมี ARVRCamera เป็นโหนดลูก"
 
 #: scene/3d/baked_lightmap.cpp
-msgid "%d%%"
-msgstr "%d%%"
+msgid "Finding meshes and lights"
+msgstr "กำลังหา meshes และ lights"
 
 #: scene/3d/baked_lightmap.cpp
-msgid "(Time Left: %d:%02d s)"
-msgstr "(เหลืออีก: %d:%02d วิ)"
+msgid "Preparing geometry (%d/%d)"
+msgstr "กำลังเตรียมรูปเรขาคณิต (%d/%d)"
 
 #: scene/3d/baked_lightmap.cpp
-msgid "Plotting Meshes: "
-msgstr "วางแนว meshes: "
+msgid "Preparing environment"
+msgstr "กำลังเตรียมสภาพแวดล้อม"
 
 #: scene/3d/baked_lightmap.cpp
-msgid "Plotting Lights:"
-msgstr "วางแนวแสง:"
-
-#: scene/3d/baked_lightmap.cpp scene/3d/gi_probe.cpp
-msgid "Finishing Plot"
-msgstr "เสร็จสิ้นการวางแนว"
+msgid "Generating capture"
+msgstr "กำลังสร้าง capture"
 
 #: scene/3d/baked_lightmap.cpp
-msgid "Lighting Meshes: "
-msgstr "ส่องแสงบนพื้นผิว: "
+msgid "Saving lightmaps"
+msgstr "กำลังบันทึก lightmaps"
+
+#: scene/3d/baked_lightmap.cpp
+msgid "Done"
+msgstr "เสร็จสิ้น"
 
 #: scene/3d/collision_object.cpp
 msgid ""
@@ -12411,17 +12540,16 @@ msgid "Plotting Meshes"
 msgstr "วางแนว meshes"
 
 #: scene/3d/gi_probe.cpp
+msgid "Finishing Plot"
+msgstr "เสร็จสิ้นการวางแนว"
+
+#: scene/3d/gi_probe.cpp
 msgid ""
 "GIProbes are not supported by the GLES2 video driver.\n"
 "Use a BakedLightmap instead."
 msgstr ""
 "ไดรเวอร์วีดีโอ GLES2 ไม่สนับสนุน GIProbe\n"
 "ใช้ BakedLightmap แทน"
-
-#: scene/3d/interpolated_camera.cpp
-msgid ""
-"InterpolatedCamera has been deprecated and will be removed in Godot 4.0."
-msgstr "InterpolatedCamera เลิกใช้งานแล้วและจะถูกลบออกใน Godot 4.0"
 
 #: scene/3d/light.cpp
 msgid "A SpotLight with an angle wider than 90 degrees cannot cast shadows."
@@ -12485,23 +12613,23 @@ msgstr ""
 
 #: scene/3d/physics_joint.cpp
 msgid "Node A and Node B must be PhysicsBodies"
-msgstr ""
+msgstr "โหนด A และโหนด B จะต้องเป็น PhysicsBody"
 
 #: scene/3d/physics_joint.cpp
 msgid "Node A must be a PhysicsBody"
-msgstr ""
+msgstr "Node A จะต้องเป็น PhysicsBody"
 
 #: scene/3d/physics_joint.cpp
 msgid "Node B must be a PhysicsBody"
-msgstr ""
+msgstr "Node A จะต้องเป็น PhysicsBody"
 
 #: scene/3d/physics_joint.cpp
 msgid "Joint is not connected to any PhysicsBodies"
-msgstr ""
+msgstr "ข้อต่อไม่ได้เชื่อมโยงกับ PhysicsBody ใด ๆ"
 
 #: scene/3d/physics_joint.cpp
 msgid "Node A and Node B must be different PhysicsBodies"
-msgstr ""
+msgstr "โหนด A และโหนด B จะต้องเป็น PhysicsBody ที่แตกต่างกัน"
 
 #: scene/3d/remote_transform.cpp
 msgid ""
@@ -12652,6 +12780,14 @@ msgstr "แจ้งเตือน!"
 msgid "Please Confirm..."
 msgstr "กรุณายืนยัน..."
 
+#: scene/gui/file_dialog.cpp
+msgid "Must use a valid extension."
+msgstr "นามสกุลไฟล์ไม่ถูกต้อง"
+
+#: scene/gui/graph_edit.cpp
+msgid "Enable grid minimap."
+msgstr "เปิดเส้นกริดมินิแมพ"
+
 #: scene/gui/popup.cpp
 msgid ""
 "Popups will hide by default unless you call popup() or any of the popup*() "
@@ -12702,6 +12838,12 @@ msgid "Viewport size must be greater than 0 to render anything."
 msgstr "ขนาดวิวพอร์ตจะต้องมากกว่า 0 เพื่อที่จะเรนเดอร์ได้"
 
 #: scene/resources/visual_shader_nodes.cpp
+msgid ""
+"The sampler port is connected but not used. Consider changing the source to "
+"'SamplerPort'."
+msgstr "พอร์ตตัวอย่างเชื่อมต่ออยู่แต่ไม่ได้ใช้ ควรที่จะเปลี่ยนเป็น \"SamplerPort\""
+
+#: scene/resources/visual_shader_nodes.cpp
 msgid "Invalid source for preview."
 msgstr "แหล่งที่มาไม่ถูกต้องสำหรับการแสดงตัวอย่าง"
 
@@ -12729,14 +12871,48 @@ msgstr "Varyings สามารถกำหนดในังก์ชันเ
 msgid "Constants cannot be modified."
 msgstr "ค่าคงที่ไม่สามารถแก้ไขได้"
 
+#~ msgid ""
+#~ "InterpolatedCamera has been deprecated and will be removed in Godot 4.0."
+#~ msgstr "InterpolatedCamera เลิกใช้งานแล้วและจะถูกลบออกใน Godot 4.0"
+
+#~ msgid "No"
+#~ msgstr "ไม่"
+
+#~ msgid "This scene has never been saved. Save before running?"
+#~ msgstr "ฉากนี้ยังไม่ได้บันทึก บันทึกก่อนเริ่ม?"
+
+#~ msgid "ADB executable not configured in the Editor Settings."
+#~ msgstr "ADB executable ยังไม่ได้กำหนดค่าในตั้งค่าเอดิเตอร์"
+
+#~ msgid "OpenJDK jarsigner not configured in the Editor Settings."
+#~ msgstr "OpenJDK jarsigner ยังไม่ได้กำหนดค่าในตั้งค่าเอดิเตอร์"
+
+#~ msgid "Custom build requires a valid Android SDK path in Editor Settings."
+#~ msgstr "การสร้างแบบกำหนดเองต้องมีที่อยู่ Android SDK ในการตั้งค่าเอดิเตอร์"
+
+#~ msgid "%d%%"
+#~ msgstr "%d%%"
+
+#~ msgid "(Time Left: %d:%02d s)"
+#~ msgstr "(เหลืออีก: %d:%02d วิ)"
+
+#~ msgid "Plotting Meshes: "
+#~ msgstr "วางแนว meshes: "
+
+#~ msgid "Lighting Meshes: "
+#~ msgstr "ส่องแสงบนพื้นผิว: "
+
+#~ msgid "Search complete"
+#~ msgstr "ค้นหาสำเร็จ"
+
+#~ msgid "No commit message was provided"
+#~ msgstr "ไม่ได้ระบุข้อความ commit"
+
+#~ msgid "Add a commit message"
+#~ msgstr "เพิ่มข้อความ commit"
+
 #~ msgid "There is already file or folder with the same name in this location."
 #~ msgstr "มีไฟล์หรือโฟลเดอร์ชื่อเดียวกันอยู่แล้ว"
-
-#~ msgid "Missing 'build-tools' directory!"
-#~ msgstr "ไดเร็กทอรี 'build-tools' หายไป!"
-
-#~ msgid "Unable to find the zipalign tool."
-#~ msgstr "ไม่สามารถหา zipalign tool"
 
 #~ msgid "Aligning APK..."
 #~ msgstr "จัดเรียง APK..."
@@ -13054,9 +13230,6 @@ msgstr "ค่าคงที่ไม่สามารถแก้ไขได
 
 #~ msgid "Failed to save solution."
 #~ msgstr "ผิดพลาดในการบันทึก solution"
-
-#~ msgid "Done"
-#~ msgstr "เสร็จสิ้น"
 
 #~ msgid "Failed to create C# project."
 #~ msgstr "ผิดพลาดในการสร้างโปรเจกต์ C#"

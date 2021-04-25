@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -52,7 +52,7 @@ public:
 private:
 	struct Item {
 		Ref<Texture2D> icon;
-		bool icon_transposed;
+		bool icon_transposed = false;
 		Rect2i icon_region;
 		Color icon_modulate;
 		Ref<Texture2D> tag_icon;
@@ -62,10 +62,10 @@ private:
 		String language;
 		TextDirection text_direction = TEXT_DIRECTION_AUTO;
 
-		bool selectable;
-		bool selected;
-		bool disabled;
-		bool tooltip_enabled;
+		bool selectable = false;
+		bool selected = false;
+		bool disabled = false;
+		bool tooltip_enabled = false;
 		Variant metadata;
 		String tooltip;
 		Color custom_fg;
@@ -79,44 +79,44 @@ private:
 		bool operator<(const Item &p_another) const { return text < p_another.text; }
 	};
 
-	int current;
+	int current = -1;
 
-	bool shape_changed;
+	bool shape_changed = true;
 
-	bool ensure_selected_visible;
-	bool same_column_width;
+	bool ensure_selected_visible = false;
+	bool same_column_width = false;
 
-	bool auto_height;
-	float auto_height_value;
+	bool auto_height = false;
+	float auto_height_value = 0.0;
 
 	Vector<Item> items;
 	Vector<int> separators;
 
-	SelectMode select_mode;
-	IconMode icon_mode;
+	SelectMode select_mode = SELECT_SINGLE;
+	IconMode icon_mode = ICON_MODE_LEFT;
 	VScrollBar *scroll_bar;
 
-	uint64_t search_time_msec;
+	uint64_t search_time_msec = 0;
 	String search_string;
 
-	int current_columns;
-	int fixed_column_width;
-	int max_text_lines;
-	int max_columns;
+	int current_columns = 1;
+	int fixed_column_width = 0;
+	int max_text_lines = 1;
+	int max_columns = 1;
 
 	Size2 fixed_icon_size;
 
 	Size2 max_item_size_cache;
 
-	int defer_select_single;
+	int defer_select_single = -1;
 
-	bool allow_rmb_select;
+	bool allow_rmb_select = false;
 
-	bool allow_reselect;
+	bool allow_reselect = false;
 
-	real_t icon_scale;
+	real_t icon_scale = 1.0;
 
-	bool do_autoscroll_to_bottom;
+	bool do_autoscroll_to_bottom = false;
 
 	Array _get_items() const;
 	void _set_items(const Array &p_items);
@@ -130,8 +130,8 @@ protected:
 	static void _bind_methods();
 
 public:
-	void add_item(const String &p_item, const Ref<Texture2D> &p_texture = Ref<Texture2D>(), bool p_selectable = true);
-	void add_icon_item(const Ref<Texture2D> &p_item, bool p_selectable = true);
+	int add_item(const String &p_item, const Ref<Texture2D> &p_texture = Ref<Texture2D>(), bool p_selectable = true);
+	int add_icon_item(const Ref<Texture2D> &p_item, bool p_selectable = true);
 
 	void set_item_text(int p_idx, const String &p_text);
 	String get_item_text(int p_idx) const;
@@ -183,8 +183,8 @@ public:
 	Color get_item_custom_fg_color(int p_idx) const;
 
 	void select(int p_idx, bool p_single = true);
-	void unselect(int p_idx);
-	void unselect_all();
+	void deselect(int p_idx);
+	void deselect_all();
 	bool is_selected(int p_idx) const;
 	Vector<int> get_selected_items();
 	bool is_anything_selected();

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -42,52 +42,52 @@ class VehicleWheel3D : public Node3D {
 
 	Transform m_worldTransform;
 	Transform local_xform;
-	bool engine_traction;
-	bool steers;
+	bool engine_traction = false;
+	bool steers = false;
 
 	Vector3 m_chassisConnectionPointCS; //const
 	Vector3 m_wheelDirectionCS; //const
 	Vector3 m_wheelAxleCS; // const or modified by steering
 
-	real_t m_suspensionRestLength;
-	real_t m_maxSuspensionTravelCm;
-	real_t m_wheelRadius;
+	real_t m_suspensionRestLength = 0.15;
+	real_t m_maxSuspensionTravelCm = 500.0;
+	real_t m_wheelRadius = 0.5;
 
-	real_t m_suspensionStiffness;
-	real_t m_wheelsDampingCompression;
-	real_t m_wheelsDampingRelaxation;
-	real_t m_frictionSlip;
-	real_t m_maxSuspensionForce;
-	bool m_bIsFrontWheel;
+	real_t m_suspensionStiffness = 5.88;
+	real_t m_wheelsDampingCompression = 0.83;
+	real_t m_wheelsDampingRelaxation = 0.88;
+	real_t m_frictionSlip = 10.5;
+	real_t m_maxSuspensionForce = 6000.0;
+	bool m_bIsFrontWheel = false;
 
-	VehicleBody3D *body;
+	VehicleBody3D *body = nullptr;
 
 	//btVector3	m_wheelAxleCS; // const or modified by steering ?
 
-	real_t m_steering;
-	real_t m_rotation;
-	real_t m_deltaRotation;
-	real_t m_rpm;
-	real_t m_rollInfluence;
-	real_t m_engineForce;
-	real_t m_brake;
+	real_t m_steering = 0.0;
+	real_t m_rotation = 0.0;
+	real_t m_deltaRotation = 0.0;
+	real_t m_rpm = 0.0;
+	real_t m_rollInfluence = 0.1;
+	real_t m_engineForce = 0.0;
+	real_t m_brake = 0.0;
 
-	real_t m_clippedInvContactDotSuspension;
-	real_t m_suspensionRelativeVelocity;
+	real_t m_clippedInvContactDotSuspension = 1.0;
+	real_t m_suspensionRelativeVelocity = 0.0;
 	//calculated by suspension
-	real_t m_wheelsSuspensionForce;
-	real_t m_skidInfo;
+	real_t m_wheelsSuspensionForce = 0.0;
+	real_t m_skidInfo = 0.0;
 
 	struct RaycastInfo {
 		//set by raycaster
 		Vector3 m_contactNormalWS; //contactnormal
 		Vector3 m_contactPointWS; //raycast hitpoint
-		real_t m_suspensionLength;
+		real_t m_suspensionLength = 0.0;
 		Vector3 m_hardPointWS; //raycast starting point
 		Vector3 m_wheelDirectionWS; //direction in worldspace
 		Vector3 m_wheelAxleWS; // axle in worldspace
-		bool m_isInContact;
-		PhysicsBody3D *m_groundObject; //could be general void* ptr
+		bool m_isInContact = false;
+		PhysicsBody3D *m_groundObject = nullptr; //could be general void* ptr
 	} m_raycastInfo;
 
 	void _update(PhysicsDirectBodyState3D *s);
@@ -97,29 +97,29 @@ protected:
 	static void _bind_methods();
 
 public:
-	void set_radius(float p_radius);
-	float get_radius() const;
+	void set_radius(real_t p_radius);
+	real_t get_radius() const;
 
-	void set_suspension_rest_length(float p_length);
-	float get_suspension_rest_length() const;
+	void set_suspension_rest_length(real_t p_length);
+	real_t get_suspension_rest_length() const;
 
-	void set_suspension_travel(float p_length);
-	float get_suspension_travel() const;
+	void set_suspension_travel(real_t p_length);
+	real_t get_suspension_travel() const;
 
-	void set_suspension_stiffness(float p_value);
-	float get_suspension_stiffness() const;
+	void set_suspension_stiffness(real_t p_value);
+	real_t get_suspension_stiffness() const;
 
-	void set_suspension_max_force(float p_value);
-	float get_suspension_max_force() const;
+	void set_suspension_max_force(real_t p_value);
+	real_t get_suspension_max_force() const;
 
-	void set_damping_compression(float p_value);
-	float get_damping_compression() const;
+	void set_damping_compression(real_t p_value);
+	real_t get_damping_compression() const;
 
-	void set_damping_relaxation(float p_value);
-	float get_damping_relaxation() const;
+	void set_damping_relaxation(real_t p_value);
+	real_t get_damping_relaxation() const;
 
-	void set_friction_slip(float p_value);
-	float get_friction_slip() const;
+	void set_friction_slip(real_t p_value);
+	real_t get_friction_slip() const;
 
 	void set_use_as_traction(bool p_enable);
 	bool is_used_as_traction() const;
@@ -129,23 +129,23 @@ public:
 
 	bool is_in_contact() const;
 
-	void set_roll_influence(float p_value);
-	float get_roll_influence() const;
+	void set_roll_influence(real_t p_value);
+	real_t get_roll_influence() const;
 
-	float get_skidinfo() const;
+	real_t get_skidinfo() const;
 
-	float get_rpm() const;
+	real_t get_rpm() const;
 
-	void set_engine_force(float p_engine_force);
-	float get_engine_force() const;
+	void set_engine_force(real_t p_engine_force);
+	real_t get_engine_force() const;
 
-	void set_brake(float p_brake);
-	float get_brake() const;
+	void set_brake(real_t p_brake);
+	real_t get_brake() const;
 
-	void set_steering(float p_steering);
-	float get_steering() const;
+	void set_steering(real_t p_steering);
+	real_t get_steering() const;
 
-	String get_configuration_warning() const override;
+	TypedArray<String> get_configuration_warnings() const override;
 
 	VehicleWheel3D();
 };
@@ -153,12 +153,12 @@ public:
 class VehicleBody3D : public RigidBody3D {
 	GDCLASS(VehicleBody3D, RigidBody3D);
 
-	float engine_force;
-	float brake;
+	real_t engine_force = 0.0;
+	real_t brake = 0.0;
 
-	real_t m_pitchControl;
-	real_t m_steeringValue;
-	real_t m_currentVehicleSpeedKmHour;
+	real_t m_pitchControl = 0.0;
+	real_t m_steeringValue = 0.0;
+	real_t m_currentVehicleSpeedKmHour = 0.0;
 
 	Set<RID> exclude;
 
@@ -168,12 +168,12 @@ class VehicleBody3D : public RigidBody3D {
 	Vector<real_t> m_sideImpulse;
 
 	struct btVehicleWheelContactPoint {
-		PhysicsDirectBodyState3D *m_s;
-		PhysicsBody3D *m_body1;
+		PhysicsDirectBodyState3D *m_s = nullptr;
+		PhysicsBody3D *m_body1 = nullptr;
 		Vector3 m_frictionPositionWorld;
 		Vector3 m_frictionDirectionWorld;
-		real_t m_jacDiagABInv;
-		real_t m_maxImpulse;
+		real_t m_jacDiagABInv = 0.0;
+		real_t m_maxImpulse = 0.0;
 
 		btVehicleWheelContactPoint(PhysicsDirectBodyState3D *s, PhysicsBody3D *body1, const Vector3 &frictionPosWorld, const Vector3 &frictionDirectionWorld, real_t maxImpulse);
 	};
@@ -195,14 +195,14 @@ class VehicleBody3D : public RigidBody3D {
 	void _direct_state_changed(Object *p_state) override;
 
 public:
-	void set_engine_force(float p_engine_force);
-	float get_engine_force() const;
+	void set_engine_force(real_t p_engine_force);
+	real_t get_engine_force() const;
 
-	void set_brake(float p_brake);
-	float get_brake() const;
+	void set_brake(real_t p_brake);
+	real_t get_brake() const;
 
-	void set_steering(float p_steering);
-	float get_steering() const;
+	void set_steering(real_t p_steering);
+	real_t get_steering() const;
 
 	VehicleBody3D();
 };
