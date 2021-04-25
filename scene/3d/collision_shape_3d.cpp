@@ -161,12 +161,10 @@ void CollisionShape3D::set_shape(const Ref<Shape3D> &p_shape) {
 	}
 	if (!shape.is_null()) {
 		shape->unregister_owner(this);
-		shape->disconnect("changed", callable_mp(this, &CollisionShape3D::_shape_changed));
 	}
 	shape = p_shape;
 	if (!shape.is_null()) {
 		shape->register_owner(this);
-		shape->connect("changed", callable_mp(this, &CollisionShape3D::_shape_changed));
 	}
 	update_gizmo();
 	if (parent) {
@@ -176,8 +174,9 @@ void CollisionShape3D::set_shape(const Ref<Shape3D> &p_shape) {
 		}
 	}
 
-	if (is_inside_tree()) {
-		_shape_changed();
+	if (is_inside_tree() && parent) {
+		// If this is a heightfield shape our center may have changed
+		_update_in_shape_owner(true);
 	}
 	update_configuration_warnings();
 }
@@ -208,11 +207,4 @@ CollisionShape3D::~CollisionShape3D() {
 		shape->unregister_owner(this);
 	}
 	//RenderingServer::get_singleton()->free(indicator);
-}
-
-void CollisionShape3D::_shape_changed() {
-	// If this is a heightfield shape our center may have changed
-	if (parent) {
-		_update_in_shape_owner(true);
-	}
 }
