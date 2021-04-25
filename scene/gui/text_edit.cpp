@@ -2054,6 +2054,7 @@ void TextEdit::indent_selected_lines_left() {
 	if (is_selection_active() && get_selection_to_column() == 0) {
 		end_line--;
 	}
+	String first_line_text = get_line(start_line);
 	String last_line_text = get_line(end_line);
 
 	for (int i = start_line; i <= end_line; i++) {
@@ -2078,10 +2079,17 @@ void TextEdit::indent_selected_lines_left() {
 		}
 	}
 
-	// Fix selection and cursor being off by one on the last line.
-	if (is_selection_active() && last_line_text != get_line(end_line)) {
-		select(selection.from_line, selection.from_column - removed_characters,
-				selection.to_line, initial_selection_end_column - removed_characters);
+	if (is_selection_active()) {
+		// Fix selection being off by one on the first line.
+		if (first_line_text != get_line(start_line)) {
+			select(selection.from_line, selection.from_column - removed_characters,
+					selection.to_line, initial_selection_end_column);
+		}
+		// Fix selection being off by one on the last line.
+		if (last_line_text != get_line(end_line)) {
+			select(selection.from_line, selection.from_column,
+					selection.to_line, initial_selection_end_column - removed_characters);
+		}
 	}
 	cursor_set_column(initial_cursor_column - removed_characters, false);
 	end_complex_operation();
