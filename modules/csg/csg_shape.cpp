@@ -880,7 +880,7 @@ void CSGMesh3D::set_mesh(const Ref<Mesh> &p_mesh) {
 		mesh->connect("changed", callable_mp(this, &CSGMesh3D::_mesh_changed));
 	}
 
-	_make_dirty();
+	_mesh_changed();
 }
 
 Ref<Mesh> CSGMesh3D::get_mesh() {
