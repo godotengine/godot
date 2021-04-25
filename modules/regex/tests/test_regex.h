@@ -130,16 +130,6 @@ TEST_CASE("[RegEx] Empty Pattern") {
 	CHECK(re.is_valid());
 }
 
-TEST_CASE("[RegEx] Invalid offset") {
-	const String s = "Godot";
-
-	RegEx re("o");
-	REQUIRE(re.is_valid());
-	CHECK(re.search(s, -1) == nullptr);
-	CHECK(re.search_all(s, -1).size() == 0);
-	CHECK(re.sub(s, "", true, -1) == "");
-}
-
 TEST_CASE("[RegEx] Invalid end position") {
 	const String s = "Godot";
 
