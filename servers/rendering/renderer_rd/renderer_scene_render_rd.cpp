@@ -2554,6 +2554,7 @@ void RendererSceneRenderRD::_setup_lights(const PagedArray<RID> &p_lights, const
 
 					light_data.soft_shadow_scale = storage->light_get_param(base, RS::LIGHT_PARAM_SHADOW_BLUR);
 					light_data.softshadow_angle = angular_diameter;
+					light_data.bake_mode = storage->light_get_bake_mode(base);
 
 					if (angular_diameter <= 0.0) {
 						light_data.soft_shadow_scale *= directional_shadow_quality_radius_get(); // Only use quality radius for PCF
@@ -2621,6 +2622,7 @@ void RendererSceneRenderRD::_setup_lights(const PagedArray<RID> &p_lights, const
 		light_data.color[1] = linear_col.g * energy;
 		light_data.color[2] = linear_col.b * energy;
 		light_data.specular_amount = storage->light_get_param(base, RS::LIGHT_PARAM_SPECULAR) * 2.0;
+		light_data.bake_mode = storage->light_get_bake_mode(base);
 
 		float radius = MAX(0.001, storage->light_get_param(base, RS::LIGHT_PARAM_RANGE));
 		light_data.inv_radius = 1.0 / radius;

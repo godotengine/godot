@@ -105,7 +105,7 @@ public:
 	Vector<Ref<Shape3D>> convex_decompose() const;
 	Ref<Shape3D> create_trimesh_shape() const;
 	Ref<NavigationMesh> create_navigation_mesh();
-	Error lightmap_unwrap_cached(int *&r_cache_data, unsigned int &r_cache_size, bool &r_used_cache, const Transform &p_base_transform, float p_texel_size);
+	Error lightmap_unwrap_cached(const Transform &p_base_transform, float p_texel_size, const Vector<uint8_t> &p_src_cache, Vector<uint8_t> &r_dst_cache);
 
 	void set_lightmap_size_hint(const Size2i &p_size);
 	Size2i get_lightmap_size_hint() const;

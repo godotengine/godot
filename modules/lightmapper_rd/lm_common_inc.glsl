@@ -84,9 +84,8 @@ layout(set = 0, binding = 7, std430) restrict readonly buffer Probes {
 probe_positions;
 
 layout(set = 0, binding = 8) uniform utexture3D grid;
-layout(set = 0, binding = 9) uniform texture3D grid_sdf;
 
-layout(set = 0, binding = 10) uniform texture2DArray albedo_tex;
-layout(set = 0, binding = 11) uniform texture2DArray emission_tex;
+layout(set = 0, binding = 9) uniform texture2DArray albedo_tex;
+layout(set = 0, binding = 10) uniform texture2DArray emission_tex;
 
-layout(set = 0, binding = 12) uniform sampler linear_sampler;
+layout(set = 0, binding = 11) uniform sampler linear_sampler;

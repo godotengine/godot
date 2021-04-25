@@ -1136,7 +1136,7 @@ Ref<Animation> ResourceImporterScene::import_animation_from_other_importer(Edito
 	return importer->import_animation(p_path, p_flags, p_bake_fps);
 }
 
-void ResourceImporterScene::_generate_meshes(Node *p_node, const Dictionary &p_mesh_data, bool p_generate_lods, bool p_create_shadow_meshes, LightBakeMode p_light_bake_mode, float p_lightmap_texel_size, const Vector<uint8_t> &p_src_lightmap_cache, Vector<uint8_t> &r_dst_lightmap_cache) {
+void ResourceImporterScene::_generate_meshes(Node *p_node, const Dictionary &p_mesh_data, bool p_generate_lods, bool p_create_shadow_meshes, LightBakeMode p_light_bake_mode, float p_lightmap_texel_size, const Vector<uint8_t> &p_src_lightmap_cache, Vector<Vector<uint8_t>> &r_lightmap_caches) {
 	EditorSceneImporterMeshNode3D *src_mesh_node = Object::cast_to<EditorSceneImporterMeshNode3D>(p_node);
 	if (src_mesh_node) {
 		//is mesh
@@ -1216,7 +1216,28 @@ void ResourceImporterScene::_generate_meshes(Node *p_node, const Dictionary &p_m
 						n = n->get_parent_spatial();
 					}
 
-					//use xf as transform for mesh, and bake it
+					Vector<uint8_t> lightmap_cache;
+					src_mesh_node->get_mesh()->lightmap_unwrap_cached(xf, p_lightmap_texel_size, p_src_lightmap_cache, lightmap_cache);
+
+					if (!lightmap_cache.is_empty()) {
+						if (r_lightmap_caches.is_empty()) {
+							r_lightmap_caches.push_back(lightmap_cache);
+						} else {
+							String new_md5 = String::md5(lightmap_cache.ptr()); // MD5 is stored at the beginning of the cache data
+
+							for (int i = 0; i < r_lightmap_caches.size(); i++) {
+								String md5 = String::md5(r_lightmap_caches[i].ptr());
+								if (new_md5 < md5) {
+									r_lightmap_caches.insert(i, lightmap_cache);
+									break;
+								}
+
+								if (new_md5 == md5) {
+									break;
+								}
+							}
+						}
+					}
 				}
 
 				if (save_to_file != String()) {
@@ -1265,7 +1286,7 @@ void ResourceImporterScene::_generate_meshes(Node *p_node, const Dictionary &p_m
 	}
 
 	for (int i = 0; i < p_node->get_child_count(); i++) {
-		_generate_meshes(p_node->get_child(i), p_mesh_data, p_generate_lods, p_create_shadow_meshes, p_light_bake_mode, p_lightmap_texel_size, p_src_lightmap_cache, r_dst_lightmap_cache);
+		_generate_meshes(p_node->get_child(i), p_mesh_data, p_generate_lods, p_create_shadow_meshes, p_light_bake_mode, p_lightmap_texel_size, p_src_lightmap_cache, r_lightmap_caches);
 	}
 }
 
@@ -1433,7 +1454,7 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 	float lightmap_texel_size = MAX(0.001, texel_size);
 
 	Vector<uint8_t> src_lightmap_cache;
-	Vector<uint8_t> dst_lightmap_cache;
+	Vector<Vector<uint8_t>> mesh_lightmap_caches;
 
 	{
 		src_lightmap_cache = FileAccess::get_file_as_array(p_source_file + ".unwrap_cache", &err);
@@ -1446,124 +1467,20 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 	if (subresources.has("meshes")) {
 		mesh_data = subresources["meshes"];
 	}
-	_generate_meshes(scene, mesh_data, gen_lods, create_shadow_meshes, LightBakeMode(light_bake_mode), lightmap_texel_size, src_lightmap_cache, dst_lightmap_cache);
+	_generate_meshes(scene, mesh_data, gen_lods, create_shadow_meshes, LightBakeMode(light_bake_mode), lightmap_texel_size, src_lightmap_cache, mesh_lightmap_caches);
 
-	if (dst_lightmap_cache.size()) {
+	if (mesh_lightmap_caches.size()) {
 		FileAccessRef f = FileAccess::open(p_source_file + ".unwrap_cache", FileAccess::WRITE);
 		if (f) {
-			f->store_buffer(dst_lightmap_cache.ptr(), dst_lightmap_cache.size());
+			f->store_32(mesh_lightmap_caches.size());
+			for (int i = 0; i < mesh_lightmap_caches.size(); i++) {
+				String md5 = String::md5(mesh_lightmap_caches[i].ptr());
+				f->store_buffer(mesh_lightmap_caches[i].ptr(), mesh_lightmap_caches[i].size());
+			}
+			f->close();
 		}
 	}
 	err = OK;
-
-#if 0
-	if (light_bake_mode == 2 /* || generate LOD */) {
-		Map<Ref<ArrayMesh>, Transform> meshes;
-		_find_meshes(scene, meshes);
-
-		String file_id = src_path.get_file();
-		String cache_file_path = base_path.plus_file(file_id + ".unwrap_cache");
-
-		Vector<unsigned char> cache_data;
-
-		if (FileAccess::exists(cache_file_path)) {
-			Error err2;
-			FileAccess *file = FileAccess::open(cache_file_path, FileAccess::READ, &err2);
-
-			if (err2) {
-				if (file) {
-					memdelete(file);
-				}
-			} else {
-				int cache_size = file->get_len();
-				cache_data.resize(cache_size);
-				file->get_buffer(cache_data.ptrw(), cache_size);
-			}
-		}
-
-		Map<String, unsigned int> used_unwraps;
-
-		EditorProgress progress2("gen_lightmaps", TTR("Generating Lightmaps"), meshes.size());
-		int step = 0;
-		for (Map<Ref<ArrayMesh>, Transform>::Element *E = meshes.front(); E; E = E->next()) {
-			Ref<ArrayMesh> mesh = E->key();
-			String name = mesh->get_name();
-			if (name == "") { //should not happen but..
-				name = "Mesh " + itos(step);
-			}
-
-			progress2.step(TTR("Generating for Mesh: ") + name + " (" + itos(step) + "/" + itos(meshes.size()) + ")", step);
-
-			int *ret_cache_data = (int *)cache_data.ptrw();
-			unsigned int ret_cache_size = cache_data.size();
-			bool ret_used_cache = true; // Tell the unwrapper to use the cache
-			Error err2 = mesh->lightmap_unwrap_cached(ret_cache_data, ret_cache_size, ret_used_cache, E->get(), texel_size);
-
-			if (err2 != OK) {
-				EditorNode::add_io_error("Mesh '" + name + "' failed lightmap generation. Please fix geometry.");
-			} else {
-`				String hash = String::md5((unsigned char *)ret_cache_data);
-				used_unwraps.insert(hash, ret_cache_size);
-
-				if (!ret_used_cache) {
-					// Cache was not used, add the generated entry to the current cache
-					if (cache_data.is_empty()) {
-						cache_data.resize(4 + ret_cache_size);
-						int *data = (int *)cache_data.ptrw();
-						data[0] = 1;
-						memcpy(&data[1], ret_cache_data, ret_cache_size);
-					} else {
-						int current_size = cache_data.size();
-						cache_data.resize(cache_data.size() + ret_cache_size);
-							unsigned char *ptrw = cache_data.ptrw();
-						memcpy(&ptrw[current_size], ret_cache_data, ret_cache_size);
-						int *data = (int *)ptrw;
-						data[0] += 1;
-					}
-				}
-			}
-			step++;
-		}
-
-		Error err2;
-		FileAccess *file = FileAccess::open(cache_file_path, FileAccess::WRITE, &err2);
-
-		if (err2) {
-			if (file) {
-				memdelete(file);
-			}
-		} else {
-			// Store number of entries
-			file->store_32(used_unwraps.size());
-
-			// Store cache entries
-			const int *cache = (int *)cache_data.ptr();
-			unsigned int r_idx = 1;
-			for (int i = 0; i < cache[0]; ++i) {
-				unsigned char *entry_start = (unsigned char *)&cache[r_idx];
-				String entry_hash = String::md5(entry_start);
-				if (used_unwraps.has(entry_hash)) {
-					unsigned int entry_size = used_unwraps[entry_hash];
-					file->store_buffer(entry_start, entry_size);
-				}
-
-				r_idx += 4; // hash
-				r_idx += 2; // size hint
-
-				int vertex_count = cache[r_idx];
-				r_idx += 1; // vertex count
-				r_idx += vertex_count; // vertex
-				r_idx += vertex_count * 2; // uvs
-
-				int index_count = cache[r_idx];
-				r_idx += 1; // index count
-				r_idx += index_count; // indices
-			}
-
-			file->close();
-		}
-	}
-#endif
 
 	progress.step(TTR("Running Custom Script..."), 2);
 
