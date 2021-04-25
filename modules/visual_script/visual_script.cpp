@@ -1010,6 +1010,8 @@ void VisualScript::_set_data(const Dictionary &p_data) {
 			data_connect(data_connections[j + 0], data_connections[j + 1], data_connections[j + 2], data_connections[j + 3]);
 		}
 	}
+	script_class_name = d["script_class_name"];
+	script_class_icon_path = d["script_class_icon_path"];
 	is_tool_script = d["is_tool_script"];
 	scroll = d["scroll"];
 
@@ -1108,10 +1110,35 @@ Dictionary VisualScript::_get_data() const {
 	}
 	d["data_connections"] = dataconns;
 
+	if (ScriptServer::is_global_class(script_class_name)) {
+		d["script_class_name"] = script_class_name;
+		d["script_class_icon_path"] = script_class_icon_path;
+	} else {
+		d["script_class_name"] = StringName();
+		d["script_class_icon_path"] = "";
+	}
 	d["is_tool_script"] = is_tool_script;
 	d["scroll"] = scroll;
 
 	return d;
+}
+
+StringName VisualScript::get_script_class_name() const {
+	return script_class_name;
+}
+
+String VisualScript::get_script_class_icon_path() const {
+	return script_class_icon_path;
+}
+
+void VisualScript::set_script_class_name(const StringName &p_name) {
+	if (String(p_name).is_valid_identifier()) {
+		script_class_name = p_name;
+	}
+}
+
+void VisualScript::set_script_class_icon_path(const String &p_path) {
+	script_class_icon_path = p_path;
 }
 
 void VisualScript::_bind_methods() {
@@ -1170,6 +1197,11 @@ void VisualScript::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_set_data", "data"), &VisualScript::_set_data);
 	ClassDB::bind_method(D_METHOD("_get_data"), &VisualScript::_get_data);
+
+	ClassDB::bind_method(D_METHOD("set_script_class_name", "script_class_name"), &VisualScript::set_script_class_name);
+	ClassDB::bind_method(D_METHOD("get_script_class_name"), &VisualScript::get_script_class_name);
+	ClassDB::bind_method(D_METHOD("set_script_class_icon_path", "script_class_icon_path"), &VisualScript::set_script_class_icon_path);
+	ClassDB::bind_method(D_METHOD("get_script_class_icon_path"), &VisualScript::get_script_class_icon_path);
 
 	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "_set_data", "_get_data");
 
@@ -2244,6 +2276,27 @@ Error VisualScriptLanguage::execute_file(const String &p_path) {
 }
 
 void VisualScriptLanguage::finish() {
+}
+
+bool VisualScriptLanguage::handles_global_class_type(const String &p_type) const {
+	return p_type == "VisualScript";
+}
+
+String VisualScriptLanguage::get_global_class_name(const String &p_path, String *r_base_type, String *r_icon_path) const {
+	Ref<VisualScript> script = ResourceLoader::load(p_path, "VisualScript");
+	if (script.is_null()) {
+		if (r_base_type)
+			*r_base_type = "";
+		if (r_icon_path)
+			*r_icon_path = "";
+		return "";
+	}
+
+	if (r_base_type)
+		*r_base_type = script->get_instance_base_type();
+	if (r_icon_path)
+		*r_icon_path = script->get_script_class_icon_path();
+	return String(script->get_script_class_name()).is_valid_identifier() ? script->get_script_class_name() : StringName();
 }
 
 /* EDITOR FUNCTIONS */
