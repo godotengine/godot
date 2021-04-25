@@ -9,17 +9,17 @@
 	<tutorials>
 	</tutorials>
 	<methods>
-		<method name="_pressed" qualifiers="virtual">
+		<method name="_clicked" qualifiers="virtual">
 			<return type="void" />
 			<description>
-				Called when the button is pressed. If you need to know the button's pressed state (and [member toggle_mode] is active), use [method _toggled] instead.
+				Called when the button is clicked.
 			</description>
 		</method>
 		<method name="_toggled" qualifiers="virtual">
 			<return type="void" />
 			<argument index="0" name="button_pressed" type="bool" />
 			<description>
-				Called when the button is toggled (only if [member toggle_mode] is active).
+				If [member toggle_mode] is [code]true[/code], called when the button is toggled.
 			</description>
 		</method>
 		<method name="get_draw_mode" qualifiers="const">
@@ -38,7 +38,7 @@
 			<return type="void" />
 			<argument index="0" name="pressed" type="bool" />
 			<description>
-				Changes the [member pressed] state of the button, without emitting [signal toggled]. Use when you just want to change the state of the button without sending the pressed event (e.g. when initializing scene). Only works if [member toggle_mode] is [code]true[/code].
+				Changes the [member pressed] state of the button, without emitting [signal button_toggled]. Use when you just want to change the state of the button without sending the pressed event (e.g. when initializing scene). Only works if [member toggle_mode] is [code]true[/code].
 				[b]Note:[/b] This method doesn't unpress other buttons in [member button_group].
 			</description>
 		</method>
@@ -64,7 +64,7 @@
 		</member>
 		<member name="pressed" type="bool" setter="set_pressed" getter="is_pressed" default="false">
 			If [code]true[/code], the button's state is pressed. Means the button is pressed down or toggled (if [member toggle_mode] is active). Only works if [member toggle_mode] is [code]true[/code].
-			[b]Note:[/b] Setting [member pressed] will result in [signal toggled] to be emitted. If you want to change the pressed state without emitting that signal, use [method set_pressed_no_signal].
+			[b]Note:[/b] Setting [member pressed] will result in [signal button_toggled] to be emitted. If you want to change the pressed state without emitting that signal, use [method set_pressed_no_signal].
 		</member>
 		<member name="shortcut" type="Shortcut" setter="set_shortcut" getter="get_shortcut">
 			[Shortcut] associated to the button.
@@ -76,30 +76,30 @@
 			If [code]true[/code], the button will add information about its shortcut in the tooltip.
 		</member>
 		<member name="toggle_mode" type="bool" setter="set_toggle_mode" getter="is_toggle_mode" default="false">
-			If [code]true[/code], the button is in toggle mode. Makes the button flip state between pressed and unpressed each time its area is clicked.
+			If [code]true[/code], the button is in toggle mode. Makes the button flip state between pressed and released each time it's clicked.
 		</member>
 	</members>
 	<signals>
-		<signal name="button_down">
+		<signal name="button_clicked">
 			<description>
-				Emitted when the button starts being held down.
+				Emitted when the button is clicked.
+				If [member action_mode] is [constant ACTION_MODE_BUTTON_PRESS], emitted with [signal button_pressed]. If [member action_mode] is [constant ACTION_MODE_BUTTON_RELEASE], emitted with [signal button_released] if the mouse is still over the button.
 			</description>
 		</signal>
-		<signal name="button_up">
+		<signal name="button_pressed">
 			<description>
-				Emitted when the button stops being held down.
+				Emitted when the button starts being pressed.
 			</description>
 		</signal>
-		<signal name="pressed">
+		<signal name="button_released">
 			<description>
-				Emitted when the button is toggled or pressed. This is on [signal button_down] if [member action_mode] is [constant ACTION_MODE_BUTTON_PRESS] and on [signal button_up] otherwise.
-				If you need to know the button's pressed state (and [member toggle_mode] is active), use [signal toggled] instead.
+				Emitted when the button is released.
 			</description>
 		</signal>
-		<signal name="toggled">
+		<signal name="button_toggled">
 			<argument index="0" name="button_pressed" type="bool" />
 			<description>
-				Emitted when the button was just toggled between pressed and normal states (only if [member toggle_mode] is active). The new state is contained in the [code]button_pressed[/code] argument.
+				If [member toggle_mode] is [code]true[/code], emitted whenever the button is clicked. The new state is contained in the [code]button_pressed[/code] argument.
 			</description>
 		</signal>
 	</signals>

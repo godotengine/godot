@@ -2320,28 +2320,28 @@ GraphEdit::GraphEdit() {
 	zoom_minus->set_flat(true);
 	zoom_hb->add_child(zoom_minus);
 	zoom_minus->set_tooltip(RTR("Zoom Out"));
-	zoom_minus->connect("pressed", callable_mp(this, &GraphEdit::_zoom_minus));
+	zoom_minus->connect("button_clicked", callable_mp(this, &GraphEdit::_zoom_minus));
 	zoom_minus->set_focus_mode(FOCUS_NONE);
 
 	zoom_reset = memnew(Button);
 	zoom_reset->set_flat(true);
 	zoom_hb->add_child(zoom_reset);
 	zoom_reset->set_tooltip(RTR("Zoom Reset"));
-	zoom_reset->connect("pressed", callable_mp(this, &GraphEdit::_zoom_reset));
+	zoom_reset->connect("button_clicked", callable_mp(this, &GraphEdit::_zoom_reset));
 	zoom_reset->set_focus_mode(FOCUS_NONE);
 
 	zoom_plus = memnew(Button);
 	zoom_plus->set_flat(true);
 	zoom_hb->add_child(zoom_plus);
 	zoom_plus->set_tooltip(RTR("Zoom In"));
-	zoom_plus->connect("pressed", callable_mp(this, &GraphEdit::_zoom_plus));
+	zoom_plus->connect("button_clicked", callable_mp(this, &GraphEdit::_zoom_plus));
 	zoom_plus->set_focus_mode(FOCUS_NONE);
 
 	snap_button = memnew(Button);
 	snap_button->set_flat(true);
 	snap_button->set_toggle_mode(true);
 	snap_button->set_tooltip(RTR("Enable snap and show grid."));
-	snap_button->connect("pressed", callable_mp(this, &GraphEdit::_snap_toggled));
+	snap_button->connect("button_clicked", callable_mp(this, &GraphEdit::_snap_toggled));
 	snap_button->set_pressed(true);
 	snap_button->set_focus_mode(FOCUS_NONE);
 	zoom_hb->add_child(snap_button);
@@ -2358,7 +2358,7 @@ GraphEdit::GraphEdit() {
 	minimap_button->set_flat(true);
 	minimap_button->set_toggle_mode(true);
 	minimap_button->set_tooltip(RTR("Enable grid minimap."));
-	minimap_button->connect("pressed", callable_mp(this, &GraphEdit::_minimap_toggled));
+	minimap_button->connect("button_clicked", callable_mp(this, &GraphEdit::_minimap_toggled));
 	minimap_button->set_pressed(true);
 	minimap_button->set_focus_mode(FOCUS_NONE);
 	zoom_hb->add_child(minimap_button);
@@ -2367,7 +2367,7 @@ GraphEdit::GraphEdit() {
 	layout_button->set_flat(true);
 	zoom_hb->add_child(layout_button);
 	layout_button->set_tooltip(RTR("Arrange nodes."));
-	layout_button->connect("pressed", callable_mp(this, &GraphEdit::arrange_nodes));
+	layout_button->connect("button_clicked", callable_mp(this, &GraphEdit::arrange_nodes));
 	layout_button->set_focus_mode(FOCUS_NONE);
 
 	Vector2 minimap_size = Vector2(240, 160);

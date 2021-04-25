@@ -845,7 +845,7 @@ EditorResourcePicker::EditorResourcePicker() {
 	assign_button->set_clip_text(true);
 	assign_button->set_drag_forwarding(this);
 	add_child(assign_button);
-	assign_button->connect("pressed", callable_mp(this, &EditorResourcePicker::_resource_selected));
+	assign_button->connect("button_clicked", callable_mp(this, &EditorResourcePicker::_resource_selected));
 	assign_button->connect("draw", callable_mp(this, &EditorResourcePicker::_button_draw));
 	assign_button->connect("gui_input", callable_mp(this, &EditorResourcePicker::_button_input));
 
@@ -860,7 +860,7 @@ EditorResourcePicker::EditorResourcePicker() {
 	edit_button = memnew(Button);
 	edit_button->set_flat(true);
 	edit_button->set_toggle_mode(true);
-	edit_button->connect("pressed", callable_mp(this, &EditorResourcePicker::_update_menu));
+	edit_button->connect("button_clicked", callable_mp(this, &EditorResourcePicker::_update_menu));
 	add_child(edit_button);
 	edit_button->connect("gui_input", callable_mp(this, &EditorResourcePicker::_button_input));
 }

@@ -637,7 +637,7 @@ void Skeleton3DEditor::create_editors() {
 	edit_mode_button->set_toggle_mode(true);
 	edit_mode_button->set_focus_mode(FOCUS_NONE);
 	edit_mode_button->set_tooltip(TTR("Edit Mode\nShow buttons on joints."));
-	edit_mode_button->connect("toggled", callable_mp(this, &Skeleton3DEditor::edit_mode_toggled));
+	edit_mode_button->connect("button_toggled", callable_mp(this, &Skeleton3DEditor::edit_mode_toggled));
 
 	edit_mode = false;
 
@@ -679,7 +679,7 @@ void Skeleton3DEditor::create_editors() {
 	key_insert_button = memnew(Button);
 	key_insert_button->set_flat(true);
 	key_insert_button->set_focus_mode(FOCUS_NONE);
-	key_insert_button->connect("pressed", callable_mp(this, &Skeleton3DEditor::insert_keys), varray(false));
+	key_insert_button->connect("button_clicked", callable_mp(this, &Skeleton3DEditor::insert_keys), varray(false));
 	key_insert_button->set_tooltip(TTR("Insert key of bone poses already exist track."));
 	key_insert_button->set_shortcut(ED_SHORTCUT("skeleton_3d_editor/insert_key_to_existing_tracks", TTR("Insert Key (Existing Tracks)"), Key::INSERT));
 	animation_hb->add_child(key_insert_button);
@@ -687,7 +687,7 @@ void Skeleton3DEditor::create_editors() {
 	key_insert_all_button = memnew(Button);
 	key_insert_all_button->set_flat(true);
 	key_insert_all_button->set_focus_mode(FOCUS_NONE);
-	key_insert_all_button->connect("pressed", callable_mp(this, &Skeleton3DEditor::insert_keys), varray(true));
+	key_insert_all_button->connect("button_clicked", callable_mp(this, &Skeleton3DEditor::insert_keys), varray(true));
 	key_insert_all_button->set_tooltip(TTR("Insert key of all bone poses."));
 	key_insert_all_button->set_shortcut(ED_SHORTCUT("skeleton_3d_editor/insert_key_of_all_bones", TTR("Insert Key (All Bones)"), KeyModifierMask::CMD + Key::INSERT));
 	animation_hb->add_child(key_insert_all_button);

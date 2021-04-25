@@ -349,8 +349,8 @@ void EditorPropertyArray::update_property() {
 			reorder_button->set_icon(get_theme_icon(SNAME("TripleBar"), SNAME("EditorIcons")));
 			reorder_button->set_default_cursor_shape(Control::CURSOR_MOVE);
 			reorder_button->connect("gui_input", callable_mp(this, &EditorPropertyArray::_reorder_button_gui_input));
-			reorder_button->connect("button_down", callable_mp(this, &EditorPropertyArray::_reorder_button_down), varray(i + offset));
-			reorder_button->connect("button_up", callable_mp(this, &EditorPropertyArray::_reorder_button_up));
+			reorder_button->connect("button_pressed", callable_mp(this, &EditorPropertyArray::_reorder_button_pressed), varray(i + offset));
+			reorder_button->connect("button_released", callable_mp(this, &EditorPropertyArray::_reorder_button_released));
 			hbox->add_child(reorder_button);
 
 			String prop_name = "indices/" + itos(i + offset);
@@ -385,11 +385,11 @@ void EditorPropertyArray::update_property() {
 				Button *edit = memnew(Button);
 				edit->set_icon(get_theme_icon(SNAME("Edit"), SNAME("EditorIcons")));
 				hbox->add_child(edit);
-				edit->connect("pressed", callable_mp(this, &EditorPropertyArray::_change_type), varray(edit, i + offset));
+				edit->connect("button_clicked", callable_mp(this, &EditorPropertyArray::_change_type), varray(edit, i + offset));
 			} else {
 				Button *remove = memnew(Button);
 				remove->set_icon(get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")));
-				remove->connect("pressed", callable_mp(this, &EditorPropertyArray::_remove_pressed), varray(i + offset));
+				remove->connect("button_clicked", callable_mp(this, &EditorPropertyArray::_remove_pressed), varray(i + offset));
 				hbox->add_child(remove);
 			}
 
@@ -632,7 +632,7 @@ void EditorPropertyArray::_reorder_button_gui_input(const Ref<InputEvent> &p_eve
 	}
 }
 
-void EditorPropertyArray::_reorder_button_down(int p_index) {
+void EditorPropertyArray::_reorder_button_pressed(int p_index) {
 	reorder_from_index = p_index;
 	reorder_to_index = p_index;
 	reorder_selected_element_hbox = Object::cast_to<HBoxContainer>(vbox->get_child(p_index % page_length + 2));
@@ -642,7 +642,7 @@ void EditorPropertyArray::_reorder_button_down(int p_index) {
 	Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_CAPTURED);
 }
 
-void EditorPropertyArray::_reorder_button_up() {
+void EditorPropertyArray::_reorder_button_released() {
 	if (reorder_from_index != reorder_to_index) {
 		// Move the element.
 		Variant array = object->get_array();
@@ -678,7 +678,7 @@ EditorPropertyArray::EditorPropertyArray() {
 	edit = memnew(Button);
 	edit->set_h_size_flags(SIZE_EXPAND_FILL);
 	edit->set_clip_text(true);
-	edit->connect("pressed", callable_mp(this, &EditorPropertyArray::_edit_pressed));
+	edit->connect("button_clicked", callable_mp(this, &EditorPropertyArray::_edit_pressed));
 	edit->set_toggle_mode(true);
 	edit->set_drag_forwarding(this);
 	edit->connect("draw", callable_mp(this, &EditorPropertyArray::_button_draw));
@@ -1114,14 +1114,14 @@ void EditorPropertyDictionary::update_property() {
 			Button *edit = memnew(Button);
 			edit->set_icon(get_theme_icon(SNAME("Edit"), SNAME("EditorIcons")));
 			hbox->add_child(edit);
-			edit->connect("pressed", callable_mp(this, &EditorPropertyDictionary::_change_type), varray(edit, change_index));
+			edit->connect("button_clicked", callable_mp(this, &EditorPropertyDictionary::_change_type), varray(edit, change_index));
 
 			prop->update_property();
 
 			if (i == amount + 1) {
 				Button *butt_add_item = memnew(Button);
 				butt_add_item->set_text(TTR("Add Key/Value Pair"));
-				butt_add_item->connect("pressed", callable_mp(this, &EditorPropertyDictionary::_add_key_value));
+				butt_add_item->connect("button_clicked", callable_mp(this, &EditorPropertyDictionary::_add_key_value));
 				add_vbox->add_child(butt_add_item);
 			}
 		}
@@ -1173,7 +1173,7 @@ EditorPropertyDictionary::EditorPropertyDictionary() {
 	edit = memnew(Button);
 	edit->set_h_size_flags(SIZE_EXPAND_FILL);
 	edit->set_clip_text(true);
-	edit->connect("pressed", callable_mp(this, &EditorPropertyDictionary::_edit_pressed));
+	edit->connect("button_clicked", callable_mp(this, &EditorPropertyDictionary::_edit_pressed));
 	edit->set_toggle_mode(true);
 	add_child(edit);
 	add_focusable(edit);

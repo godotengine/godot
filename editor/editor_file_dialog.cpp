@@ -1505,9 +1505,9 @@ EditorFileDialog::EditorFileDialog() {
 	pathhb->add_child(dir_next);
 	pathhb->add_child(dir_up);
 
-	dir_prev->connect("pressed", callable_mp(this, &EditorFileDialog::_go_back));
-	dir_next->connect("pressed", callable_mp(this, &EditorFileDialog::_go_forward));
-	dir_up->connect("pressed", callable_mp(this, &EditorFileDialog::_go_up));
+	dir_prev->connect("button_clicked", callable_mp(this, &EditorFileDialog::_go_back));
+	dir_next->connect("button_clicked", callable_mp(this, &EditorFileDialog::_go_forward));
+	dir_up->connect("button_clicked", callable_mp(this, &EditorFileDialog::_go_up));
 
 	Label *l = memnew(Label(TTR("Path:")));
 	l->set_theme_type_variation("HeaderSmall");
@@ -1524,14 +1524,14 @@ EditorFileDialog::EditorFileDialog() {
 	refresh = memnew(Button);
 	refresh->set_flat(true);
 	refresh->set_tooltip(TTR("Refresh files."));
-	refresh->connect("pressed", callable_mp(this, &EditorFileDialog::update_file_list));
+	refresh->connect("button_clicked", callable_mp(this, &EditorFileDialog::update_file_list));
 	pathhb->add_child(refresh);
 
 	favorite = memnew(Button);
 	favorite->set_flat(true);
 	favorite->set_toggle_mode(true);
 	favorite->set_tooltip(TTR("(Un)favorite current folder."));
-	favorite->connect("pressed", callable_mp(this, &EditorFileDialog::_favorite_pressed));
+	favorite->connect("button_clicked", callable_mp(this, &EditorFileDialog::_favorite_pressed));
 	pathhb->add_child(favorite);
 
 	show_hidden = memnew(Button);
@@ -1539,7 +1539,7 @@ EditorFileDialog::EditorFileDialog() {
 	show_hidden->set_toggle_mode(true);
 	show_hidden->set_pressed(is_showing_hidden_files());
 	show_hidden->set_tooltip(TTR("Toggle the visibility of hidden files."));
-	show_hidden->connect("toggled", callable_mp(this, &EditorFileDialog::set_show_hidden_files));
+	show_hidden->connect("button_toggled", callable_mp(this, &EditorFileDialog::set_show_hidden_files));
 	pathhb->add_child(show_hidden);
 
 	pathhb->add_child(memnew(VSeparator));
@@ -1549,7 +1549,7 @@ EditorFileDialog::EditorFileDialog() {
 
 	mode_thumbnails = memnew(Button);
 	mode_thumbnails->set_flat(true);
-	mode_thumbnails->connect("pressed", callable_mp(this, &EditorFileDialog::set_display_mode), varray(DISPLAY_THUMBNAILS));
+	mode_thumbnails->connect("button_clicked", callable_mp(this, &EditorFileDialog::set_display_mode), varray(DISPLAY_THUMBNAILS));
 	mode_thumbnails->set_toggle_mode(true);
 	mode_thumbnails->set_pressed(display_mode == DISPLAY_THUMBNAILS);
 	mode_thumbnails->set_button_group(view_mode_group);
@@ -1558,7 +1558,7 @@ EditorFileDialog::EditorFileDialog() {
 
 	mode_list = memnew(Button);
 	mode_list->set_flat(true);
-	mode_list->connect("pressed", callable_mp(this, &EditorFileDialog::set_display_mode), varray(DISPLAY_LIST));
+	mode_list->connect("button_clicked", callable_mp(this, &EditorFileDialog::set_display_mode), varray(DISPLAY_LIST));
 	mode_list->set_toggle_mode(true);
 	mode_list->set_pressed(display_mode == DISPLAY_LIST);
 	mode_list->set_button_group(view_mode_group);
@@ -1574,7 +1574,7 @@ EditorFileDialog::EditorFileDialog() {
 
 	makedir = memnew(Button);
 	makedir->set_text(TTR("Create Folder"));
-	makedir->connect("pressed", callable_mp(this, &EditorFileDialog::_make_dir));
+	makedir->connect("button_clicked", callable_mp(this, &EditorFileDialog::_make_dir));
 	pathhb->add_child(makedir);
 
 	list_hb = memnew(HSplitContainer);
@@ -1601,11 +1601,11 @@ EditorFileDialog::EditorFileDialog() {
 	fav_up = memnew(Button);
 	fav_up->set_flat(true);
 	fav_hb->add_child(fav_up);
-	fav_up->connect("pressed", callable_mp(this, &EditorFileDialog::_favorite_move_up));
+	fav_up->connect("button_clicked", callable_mp(this, &EditorFileDialog::_favorite_move_up));
 	fav_down = memnew(Button);
 	fav_down->set_flat(true);
 	fav_hb->add_child(fav_down);
-	fav_down->connect("pressed", callable_mp(this, &EditorFileDialog::_favorite_move_down));
+	fav_down->connect("button_clicked", callable_mp(this, &EditorFileDialog::_favorite_move_down));
 
 	favorites = memnew(ItemList);
 	fav_vb->add_child(favorites);

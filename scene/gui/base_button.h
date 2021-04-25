@@ -66,13 +66,13 @@ private:
 	Ref<ButtonGroup> button_group;
 
 	void _unpress_group();
-	void _pressed();
+	void _clicked();
 	void _toggled(bool p_pressed);
 
 	void on_action_event(Ref<InputEvent> p_event);
 
 protected:
-	virtual void pressed();
+	virtual void clicked();
 	virtual void toggled(bool p_pressed);
 	static void _bind_methods();
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
@@ -81,7 +81,7 @@ protected:
 
 	bool _is_focus_owner_in_shorcut_context() const;
 
-	GDVIRTUAL0(_pressed)
+	GDVIRTUAL0(_clicked)
 	GDVIRTUAL1(_toggled, bool)
 
 public:
@@ -103,7 +103,7 @@ public:
 
 	void set_pressed(bool p_pressed); // Only works in toggle mode.
 	void set_pressed_no_signal(bool p_pressed);
-	void set_toggle_mode(bool p_on);
+	void set_toggle_mode(bool p_pressed);
 	bool is_toggle_mode() const;
 
 	void set_shortcut_in_tooltip(bool p_on);

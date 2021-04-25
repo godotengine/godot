@@ -168,7 +168,7 @@ EditorZoomWidget::EditorZoomWidget() {
 	zoom_minus = memnew(Button);
 	zoom_minus->set_flat(true);
 	add_child(zoom_minus);
-	zoom_minus->connect("pressed", callable_mp(this, &EditorZoomWidget::_button_zoom_minus));
+	zoom_minus->connect("button_clicked", callable_mp(this, &EditorZoomWidget::_button_zoom_minus));
 	zoom_minus->set_shortcut(ED_SHORTCUT("canvas_item_editor/zoom_minus", TTR("Zoom Out"), KeyModifierMask::CMD | Key::MINUS));
 	zoom_minus->set_shortcut_context(this);
 	zoom_minus->set_focus_mode(FOCUS_NONE);
@@ -179,7 +179,7 @@ EditorZoomWidget::EditorZoomWidget() {
 	zoom_reset->add_theme_constant_override("outline_size", 1);
 	zoom_reset->add_theme_color_override("font_outline_color", Color(0, 0, 0));
 	zoom_reset->add_theme_color_override("font_color", Color(1, 1, 1));
-	zoom_reset->connect("pressed", callable_mp(this, &EditorZoomWidget::_button_zoom_reset));
+	zoom_reset->connect("button_clicked", callable_mp(this, &EditorZoomWidget::_button_zoom_reset));
 	zoom_reset->set_shortcut(ED_SHORTCUT("canvas_item_editor/zoom_reset", TTR("Zoom Reset"), KeyModifierMask::CMD | Key::KEY_0));
 	zoom_reset->set_shortcut_context(this);
 	zoom_reset->set_focus_mode(FOCUS_NONE);
@@ -190,7 +190,7 @@ EditorZoomWidget::EditorZoomWidget() {
 	zoom_plus = memnew(Button);
 	zoom_plus->set_flat(true);
 	add_child(zoom_plus);
-	zoom_plus->connect("pressed", callable_mp(this, &EditorZoomWidget::_button_zoom_plus));
+	zoom_plus->connect("button_clicked", callable_mp(this, &EditorZoomWidget::_button_zoom_plus));
 	zoom_plus->set_shortcut(ED_SHORTCUT("canvas_item_editor/zoom_plus", TTR("Zoom In"), KeyModifierMask::CMD | Key::EQUAL)); // Usually direct access key for PLUS
 	zoom_plus->set_shortcut_context(this);
 	zoom_plus->set_focus_mode(FOCUS_NONE);

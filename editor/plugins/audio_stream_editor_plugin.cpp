@@ -231,14 +231,14 @@ AudioStreamEditor::AudioStreamEditor() {
 	_play_button->set_flat(true);
 	hbox->add_child(_play_button);
 	_play_button->set_focus_mode(Control::FOCUS_NONE);
-	_play_button->connect("pressed", callable_mp(this, &AudioStreamEditor::_play));
+	_play_button->connect("button_clicked", callable_mp(this, &AudioStreamEditor::_play));
 	_play_button->set_shortcut(ED_SHORTCUT("inspector/audio_preview_play_pause", TTR("Audio Preview Play/Pause"), Key::SPACE));
 
 	_stop_button = memnew(Button);
 	_stop_button->set_flat(true);
 	hbox->add_child(_stop_button);
 	_stop_button->set_focus_mode(Control::FOCUS_NONE);
-	_stop_button->connect("pressed", callable_mp(this, &AudioStreamEditor::_stop));
+	_stop_button->connect("button_clicked", callable_mp(this, &AudioStreamEditor::_stop));
 
 	_current_label = memnew(Label);
 	_current_label->set_align(Label::ALIGN_RIGHT);

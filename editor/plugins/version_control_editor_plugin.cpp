@@ -399,7 +399,7 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	metadata_selection->add_item("None", (int)EditorVCSInterface::VCSMetadata::NONE);
 	metadata_selection->add_item("Git", (int)EditorVCSInterface::VCSMetadata::GIT);
 	metadata_selection->select((int)EditorVCSInterface::VCSMetadata::GIT);
-	metadata_dialog->get_ok_button()->connect("pressed", callable_mp(this, &VersionControlEditorPlugin::_create_vcs_metadata_files));
+	metadata_dialog->get_ok_button()->connect("button_clicked", callable_mp(this, &VersionControlEditorPlugin::_create_vcs_metadata_files));
 	metadata_hb->add_child(metadata_selection);
 	metadata_vb->add_child(metadata_hb);
 	l = memnew(Label);
@@ -440,7 +440,7 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 
 	set_up_init_button = memnew(Button);
 	set_up_init_button->set_text(TTR("Initialize"));
-	set_up_init_button->connect("pressed", callable_mp(this, &VersionControlEditorPlugin::_initialize_vcs));
+	set_up_init_button->connect("button_clicked", callable_mp(this, &VersionControlEditorPlugin::_initialize_vcs));
 	set_up_vbc->add_child(set_up_init_button);
 
 	version_commit_dock = memnew(VBoxContainer);
@@ -465,7 +465,7 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	refresh_button->set_tooltip(TTR("Detect new changes"));
 	refresh_button->set_text(TTR("Refresh"));
 	refresh_button->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("Reload"), SNAME("EditorIcons")));
-	refresh_button->connect("pressed", callable_mp(this, &VersionControlEditorPlugin::_refresh_stage_area));
+	refresh_button->connect("button_clicked", callable_mp(this, &VersionControlEditorPlugin::_refresh_stage_area));
 	stage_tools->add_child(refresh_button);
 
 	stage_files = memnew(Tree);
@@ -502,12 +502,12 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	stage_selected_button = memnew(Button);
 	stage_selected_button->set_h_size_flags(Button::SIZE_EXPAND_FILL);
 	stage_selected_button->set_text(TTR("Stage Selected"));
-	stage_selected_button->connect("pressed", callable_mp(this, &VersionControlEditorPlugin::_stage_selected));
+	stage_selected_button->connect("button_clicked", callable_mp(this, &VersionControlEditorPlugin::_stage_selected));
 	stage_buttons->add_child(stage_selected_button);
 
 	stage_all_button = memnew(Button);
 	stage_all_button->set_text(TTR("Stage All"));
-	stage_all_button->connect("pressed", callable_mp(this, &VersionControlEditorPlugin::_stage_all));
+	stage_all_button->connect("button_clicked", callable_mp(this, &VersionControlEditorPlugin::_stage_all));
 	stage_buttons->add_child(stage_all_button);
 
 	commit_box_vbc->add_child(memnew(HSeparator));
@@ -526,7 +526,7 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	commit_button = memnew(Button);
 	commit_button->set_text(TTR("Commit Changes"));
 	commit_button->set_disabled(true);
-	commit_button->connect("pressed", callable_mp(this, &VersionControlEditorPlugin::_send_commit_msg));
+	commit_button->connect("button_clicked", callable_mp(this, &VersionControlEditorPlugin::_send_commit_msg));
 	commit_box_vbc->add_child(commit_button);
 
 	commit_status = memnew(Label);
@@ -561,7 +561,7 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	diff_refresh_button = memnew(Button);
 	diff_refresh_button->set_tooltip(TTR("Detect changes in file diff"));
 	diff_refresh_button->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("Reload"), SNAME("EditorIcons")));
-	diff_refresh_button->connect("pressed", callable_mp(this, &VersionControlEditorPlugin::_refresh_file_diff));
+	diff_refresh_button->connect("button_clicked", callable_mp(this, &VersionControlEditorPlugin::_refresh_file_diff));
 	diff_hbc->add_child(diff_refresh_button);
 
 	diff = memnew(RichTextLabel);

@@ -1037,13 +1037,13 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	new_anim->set_flat(true);
 	new_anim->set_tooltip(TTR("New Animation"));
 	hbc_animlist->add_child(new_anim);
-	new_anim->connect("pressed", callable_mp(this, &SpriteFramesEditor::_animation_add));
+	new_anim->connect("button_clicked", callable_mp(this, &SpriteFramesEditor::_animation_add));
 
 	remove_anim = memnew(Button);
 	remove_anim->set_flat(true);
 	remove_anim->set_tooltip(TTR("Remove Animation"));
 	hbc_animlist->add_child(remove_anim);
-	remove_anim->connect("pressed", callable_mp(this, &SpriteFramesEditor::_animation_remove));
+	remove_anim->connect("button_clicked", callable_mp(this, &SpriteFramesEditor::_animation_remove));
 
 	animations = memnew(Tree);
 	sub_vb->add_child(animations);
@@ -1068,7 +1068,7 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	anim_loop = memnew(CheckButton);
 	anim_loop->set_text(TTR("Loop"));
 	vbc_animlist->add_child(anim_loop);
-	anim_loop->connect("pressed", callable_mp(this, &SpriteFramesEditor::_animation_loop_changed));
+	anim_loop->connect("button_clicked", callable_mp(this, &SpriteFramesEditor::_animation_loop_changed));
 
 	VBoxContainer *vbc = memnew(VBoxContainer);
 	add_child(vbc);
@@ -1134,19 +1134,19 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	hbc->add_spacer();
 
 	zoom_out = memnew(Button);
-	zoom_out->connect("pressed", callable_mp(this, &SpriteFramesEditor::_zoom_out));
+	zoom_out->connect("button_clicked", callable_mp(this, &SpriteFramesEditor::_zoom_out));
 	zoom_out->set_flat(true);
 	zoom_out->set_tooltip(TTR("Zoom Out"));
 	hbc->add_child(zoom_out);
 
 	zoom_reset = memnew(Button);
-	zoom_reset->connect("pressed", callable_mp(this, &SpriteFramesEditor::_zoom_reset));
+	zoom_reset->connect("button_clicked", callable_mp(this, &SpriteFramesEditor::_zoom_reset));
 	zoom_reset->set_flat(true);
 	zoom_reset->set_tooltip(TTR("Zoom Reset"));
 	hbc->add_child(zoom_reset);
 
 	zoom_in = memnew(Button);
-	zoom_in->connect("pressed", callable_mp(this, &SpriteFramesEditor::_zoom_in));
+	zoom_in->connect("button_clicked", callable_mp(this, &SpriteFramesEditor::_zoom_in));
 	zoom_in->set_flat(true);
 	zoom_in->set_tooltip(TTR("Zoom In"));
 	hbc->add_child(zoom_in);
@@ -1169,15 +1169,15 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	dialog = memnew(AcceptDialog);
 	add_child(dialog);
 
-	load->connect("pressed", callable_mp(this, &SpriteFramesEditor::_load_pressed));
-	load_sheet->connect("pressed", callable_mp(this, &SpriteFramesEditor::_open_sprite_sheet));
-	_delete->connect("pressed", callable_mp(this, &SpriteFramesEditor::_delete_pressed));
-	copy->connect("pressed", callable_mp(this, &SpriteFramesEditor::_copy_pressed));
-	paste->connect("pressed", callable_mp(this, &SpriteFramesEditor::_paste_pressed));
-	empty->connect("pressed", callable_mp(this, &SpriteFramesEditor::_empty_pressed));
-	empty2->connect("pressed", callable_mp(this, &SpriteFramesEditor::_empty2_pressed));
-	move_up->connect("pressed", callable_mp(this, &SpriteFramesEditor::_up_pressed));
-	move_down->connect("pressed", callable_mp(this, &SpriteFramesEditor::_down_pressed));
+	load->connect("button_clicked", callable_mp(this, &SpriteFramesEditor::_load_pressed));
+	load_sheet->connect("button_clicked", callable_mp(this, &SpriteFramesEditor::_open_sprite_sheet));
+	_delete->connect("button_clicked", callable_mp(this, &SpriteFramesEditor::_delete_pressed));
+	copy->connect("button_clicked", callable_mp(this, &SpriteFramesEditor::_copy_pressed));
+	paste->connect("button_clicked", callable_mp(this, &SpriteFramesEditor::_paste_pressed));
+	empty->connect("button_clicked", callable_mp(this, &SpriteFramesEditor::_empty_pressed));
+	empty2->connect("button_clicked", callable_mp(this, &SpriteFramesEditor::_empty2_pressed));
+	move_up->connect("button_clicked", callable_mp(this, &SpriteFramesEditor::_up_pressed));
+	move_down->connect("button_clicked", callable_mp(this, &SpriteFramesEditor::_down_pressed));
 	file->connect("files_selected", callable_mp(this, &SpriteFramesEditor::_file_load_request), make_binds(-1));
 	loading_scene = false;
 	sel = -1;
@@ -1221,7 +1221,7 @@ SpriteFramesEditor::SpriteFramesEditor() {
 
 	Button *select_clear_all = memnew(Button);
 	select_clear_all->set_text(TTR("Select/Clear All Frames"));
-	select_clear_all->connect("pressed", callable_mp(this, &SpriteFramesEditor::_sheet_select_clear_all_frames));
+	select_clear_all->connect("button_clicked", callable_mp(this, &SpriteFramesEditor::_sheet_select_clear_all_frames));
 	split_sheet_hb->add_child(select_clear_all);
 
 	split_sheet_vb->add_child(split_sheet_hb);
@@ -1261,21 +1261,21 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	split_sheet_zoom_out->set_flat(true);
 	split_sheet_zoom_out->set_focus_mode(FOCUS_NONE);
 	split_sheet_zoom_out->set_tooltip(TTR("Zoom Out"));
-	split_sheet_zoom_out->connect("pressed", callable_mp(this, &SpriteFramesEditor::_sheet_zoom_out));
+	split_sheet_zoom_out->connect("button_clicked", callable_mp(this, &SpriteFramesEditor::_sheet_zoom_out));
 	split_sheet_zoom_hb->add_child(split_sheet_zoom_out);
 
 	split_sheet_zoom_reset = memnew(Button);
 	split_sheet_zoom_reset->set_flat(true);
 	split_sheet_zoom_reset->set_focus_mode(FOCUS_NONE);
 	split_sheet_zoom_reset->set_tooltip(TTR("Zoom Reset"));
-	split_sheet_zoom_reset->connect("pressed", callable_mp(this, &SpriteFramesEditor::_sheet_zoom_reset));
+	split_sheet_zoom_reset->connect("button_clicked", callable_mp(this, &SpriteFramesEditor::_sheet_zoom_reset));
 	split_sheet_zoom_hb->add_child(split_sheet_zoom_reset);
 
 	split_sheet_zoom_in = memnew(Button);
 	split_sheet_zoom_in->set_flat(true);
 	split_sheet_zoom_in->set_focus_mode(FOCUS_NONE);
 	split_sheet_zoom_in->set_tooltip(TTR("Zoom In"));
-	split_sheet_zoom_in->connect("pressed", callable_mp(this, &SpriteFramesEditor::_sheet_zoom_in));
+	split_sheet_zoom_in->connect("button_clicked", callable_mp(this, &SpriteFramesEditor::_sheet_zoom_in));
 	split_sheet_zoom_hb->add_child(split_sheet_zoom_in);
 
 	file_split_sheet = memnew(EditorFileDialog);

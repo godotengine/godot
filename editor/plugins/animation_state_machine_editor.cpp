@@ -1222,7 +1222,7 @@ AnimationNodeStateMachineEditor::AnimationNodeStateMachineEditor() {
 	tool_select->set_button_group(bg);
 	tool_select->set_pressed(true);
 	tool_select->set_tooltip(TTR("Select and move nodes.\nRMB to add new nodes.\nShift+LMB to create connections."));
-	tool_select->connect("pressed", callable_mp(this, &AnimationNodeStateMachineEditor::_update_mode), varray(), CONNECT_DEFERRED);
+	tool_select->connect("button_clicked", callable_mp(this, &AnimationNodeStateMachineEditor::_update_mode), varray(), CONNECT_DEFERRED);
 
 	tool_create = memnew(Button);
 	tool_create->set_flat(true);
@@ -1230,7 +1230,7 @@ AnimationNodeStateMachineEditor::AnimationNodeStateMachineEditor() {
 	tool_create->set_toggle_mode(true);
 	tool_create->set_button_group(bg);
 	tool_create->set_tooltip(TTR("Create new nodes."));
-	tool_create->connect("pressed", callable_mp(this, &AnimationNodeStateMachineEditor::_update_mode), varray(), CONNECT_DEFERRED);
+	tool_create->connect("button_clicked", callable_mp(this, &AnimationNodeStateMachineEditor::_update_mode), varray(), CONNECT_DEFERRED);
 
 	tool_connect = memnew(Button);
 	tool_connect->set_flat(true);
@@ -1238,7 +1238,7 @@ AnimationNodeStateMachineEditor::AnimationNodeStateMachineEditor() {
 	tool_connect->set_toggle_mode(true);
 	tool_connect->set_button_group(bg);
 	tool_connect->set_tooltip(TTR("Connect nodes."));
-	tool_connect->connect("pressed", callable_mp(this, &AnimationNodeStateMachineEditor::_update_mode), varray(), CONNECT_DEFERRED);
+	tool_connect->connect("button_clicked", callable_mp(this, &AnimationNodeStateMachineEditor::_update_mode), varray(), CONNECT_DEFERRED);
 
 	tool_erase_hb = memnew(HBoxContainer);
 	top_hb->add_child(tool_erase_hb);
@@ -1247,7 +1247,7 @@ AnimationNodeStateMachineEditor::AnimationNodeStateMachineEditor() {
 	tool_erase->set_flat(true);
 	tool_erase->set_tooltip(TTR("Remove selected node or transition."));
 	tool_erase_hb->add_child(tool_erase);
-	tool_erase->connect("pressed", callable_mp(this, &AnimationNodeStateMachineEditor::_erase_selected));
+	tool_erase->connect("button_clicked", callable_mp(this, &AnimationNodeStateMachineEditor::_erase_selected));
 	tool_erase->set_disabled(true);
 
 	tool_erase_hb->add_child(memnew(VSeparator));
@@ -1256,14 +1256,14 @@ AnimationNodeStateMachineEditor::AnimationNodeStateMachineEditor() {
 	tool_autoplay->set_flat(true);
 	tool_autoplay->set_tooltip(TTR("Toggle autoplay this animation on start, restart or seek to zero."));
 	tool_erase_hb->add_child(tool_autoplay);
-	tool_autoplay->connect("pressed", callable_mp(this, &AnimationNodeStateMachineEditor::_autoplay_selected));
+	tool_autoplay->connect("button_clicked", callable_mp(this, &AnimationNodeStateMachineEditor::_autoplay_selected));
 	tool_autoplay->set_disabled(true);
 
 	tool_end = memnew(Button);
 	tool_end->set_flat(true);
 	tool_end->set_tooltip(TTR("Set the end animation. This is useful for sub-transitions."));
 	tool_erase_hb->add_child(tool_end);
-	tool_end->connect("pressed", callable_mp(this, &AnimationNodeStateMachineEditor::_end_selected));
+	tool_end->connect("button_clicked", callable_mp(this, &AnimationNodeStateMachineEditor::_end_selected));
 	tool_end->set_disabled(true);
 
 	top_hb->add_child(memnew(VSeparator));

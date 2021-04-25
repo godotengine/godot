@@ -1078,19 +1078,19 @@ TextureRegionEditor::TextureRegionEditor(EditorNode *p_editor) {
 	zoom_out = memnew(Button);
 	zoom_out->set_flat(true);
 	zoom_out->set_tooltip(TTR("Zoom Out"));
-	zoom_out->connect("pressed", callable_mp(this, &TextureRegionEditor::_zoom_out));
+	zoom_out->connect("button_clicked", callable_mp(this, &TextureRegionEditor::_zoom_out));
 	zoom_hb->add_child(zoom_out);
 
 	zoom_reset = memnew(Button);
 	zoom_reset->set_flat(true);
 	zoom_reset->set_tooltip(TTR("Zoom Reset"));
-	zoom_reset->connect("pressed", callable_mp(this, &TextureRegionEditor::_zoom_reset));
+	zoom_reset->connect("button_clicked", callable_mp(this, &TextureRegionEditor::_zoom_reset));
 	zoom_hb->add_child(zoom_reset);
 
 	zoom_in = memnew(Button);
 	zoom_in->set_flat(true);
 	zoom_in->set_tooltip(TTR("Zoom In"));
-	zoom_in->connect("pressed", callable_mp(this, &TextureRegionEditor::_zoom_in));
+	zoom_in->connect("button_clicked", callable_mp(this, &TextureRegionEditor::_zoom_in));
 	zoom_hb->add_child(zoom_in);
 
 	vscroll = memnew(VScrollBar);

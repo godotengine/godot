@@ -1181,7 +1181,7 @@ AnimationBezierTrackEdit::AnimationBezierTrackEdit() {
 	set_clip_contents(true);
 
 	close_button = memnew(Button);
-	close_button->connect("pressed", Callable(this, SNAME("emit_signal")), varray(SNAME("close_request")));
+	close_button->connect("button_clicked", Callable(this, SNAME("emit_signal")), varray(SNAME("close_request")));
 	close_button->set_text(TTR("Close"));
 
 	right_column = memnew(VBoxContainer);

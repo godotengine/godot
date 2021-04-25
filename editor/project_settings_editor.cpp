@@ -533,7 +533,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 
 	advanced = memnew(CheckButton);
 	advanced->set_text(TTR("Advanced Settings"));
-	advanced->connect("toggled", callable_mp(this, &ProjectSettingsEditor::_advanced_toggled));
+	advanced->connect("button_toggled", callable_mp(this, &ProjectSettingsEditor::_advanced_toggled));
 	search_bar->add_child(advanced);
 
 	HBoxContainer *header = memnew(HBoxContainer);
@@ -565,13 +565,13 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	add_button = memnew(Button);
 	add_button->set_text(TTR("Add"));
 	add_button->set_disabled(true);
-	add_button->connect("pressed", callable_mp(this, &ProjectSettingsEditor::_add_setting));
+	add_button->connect("button_clicked", callable_mp(this, &ProjectSettingsEditor::_add_setting));
 	header->add_child(add_button);
 
 	del_button = memnew(Button);
 	del_button->set_text(TTR("Delete"));
 	del_button->set_disabled(true);
-	del_button->connect("pressed", callable_mp(this, &ProjectSettingsEditor::_delete_setting));
+	del_button->connect("button_clicked", callable_mp(this, &ProjectSettingsEditor::_delete_setting));
 	header->add_child(del_button);
 
 	inspector = memnew(SectionedInspector);
@@ -600,13 +600,13 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	restart_hb->add_spacer();
 
 	Button *restart_button = memnew(Button);
-	restart_button->connect("pressed", callable_mp(this, &ProjectSettingsEditor::_editor_restart));
+	restart_button->connect("button_clicked", callable_mp(this, &ProjectSettingsEditor::_editor_restart));
 	restart_hb->add_child(restart_button);
 	restart_button->set_text(TTR("Save & Restart"));
 
 	restart_close_button = memnew(Button);
 	restart_close_button->set_flat(true);
-	restart_close_button->connect("pressed", callable_mp(this, &ProjectSettingsEditor::_editor_restart_close));
+	restart_close_button->connect("button_clicked", callable_mp(this, &ProjectSettingsEditor::_editor_restart_close));
 	restart_hb->add_child(restart_close_button);
 
 	action_map = memnew(ActionMapEditor);

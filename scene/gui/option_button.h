@@ -48,7 +48,7 @@ class OptionButton : public Button {
 	Array _get_items() const;
 	void _set_items(const Array &p_items);
 
-	virtual void pressed() override;
+	virtual void clicked() override;
 
 protected:
 	Size2 get_minimum_size() const override;

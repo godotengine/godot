@@ -950,9 +950,9 @@ FileDialog::FileDialog() {
 	hbc->add_child(dir_prev);
 	hbc->add_child(dir_next);
 	hbc->add_child(dir_up);
-	dir_prev->connect("pressed", callable_mp(this, &FileDialog::_go_back));
-	dir_next->connect("pressed", callable_mp(this, &FileDialog::_go_forward));
-	dir_up->connect("pressed", callable_mp(this, &FileDialog::_go_up));
+	dir_prev->connect("button_clicked", callable_mp(this, &FileDialog::_go_back));
+	dir_next->connect("button_clicked", callable_mp(this, &FileDialog::_go_forward));
+	dir_up->connect("button_clicked", callable_mp(this, &FileDialog::_go_up));
 
 	hbc->add_child(memnew(Label(TTRC("Path:"))));
 
@@ -971,7 +971,7 @@ FileDialog::FileDialog() {
 	refresh = memnew(Button);
 	refresh->set_flat(true);
 	refresh->set_tooltip(TTRC("Refresh files."));
-	refresh->connect("pressed", callable_mp(this, &FileDialog::update_file_list));
+	refresh->connect("button_clicked", callable_mp(this, &FileDialog::update_file_list));
 	hbc->add_child(refresh);
 
 	show_hidden = memnew(Button);
@@ -979,7 +979,7 @@ FileDialog::FileDialog() {
 	show_hidden->set_toggle_mode(true);
 	show_hidden->set_pressed(is_showing_hidden_files());
 	show_hidden->set_tooltip(TTRC("Toggle the visibility of hidden files."));
-	show_hidden->connect("toggled", callable_mp(this, &FileDialog::set_show_hidden_files));
+	show_hidden->connect("button_toggled", callable_mp(this, &FileDialog::set_show_hidden_files));
 	hbc->add_child(show_hidden);
 
 	shortcuts_container = memnew(HBoxContainer);
@@ -987,7 +987,7 @@ FileDialog::FileDialog() {
 
 	makedir = memnew(Button);
 	makedir->set_text(TTRC("Create Folder"));
-	makedir->connect("pressed", callable_mp(this, &FileDialog::_make_dir));
+	makedir->connect("button_clicked", callable_mp(this, &FileDialog::_make_dir));
 	hbc->add_child(makedir);
 	vbox->add_child(hbc);
 

@@ -185,7 +185,7 @@ void EditorPath::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_READY: {
-			connect("pressed", callable_mp(this, &EditorPath::_show_popup));
+			connect("button_clicked", callable_mp(this, &EditorPath::_show_popup));
 		} break;
 	}
 }

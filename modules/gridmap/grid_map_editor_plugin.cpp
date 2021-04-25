@@ -1252,7 +1252,7 @@ GridMapEditor::GridMapEditor(EditorNode *p_editor) {
 	mode_thumbnail->set_pressed(true);
 	mode_thumbnail->set_icon(p_editor->get_gui_base()->get_theme_icon(SNAME("FileThumbnail"), SNAME("EditorIcons")));
 	hb->add_child(mode_thumbnail);
-	mode_thumbnail->connect("pressed", callable_mp(this, &GridMapEditor::_set_display_mode), varray(DISPLAY_THUMBNAIL));
+	mode_thumbnail->connect("button_clicked", callable_mp(this, &GridMapEditor::_set_display_mode), varray(DISPLAY_THUMBNAIL));
 
 	mode_list = memnew(Button);
 	mode_list->set_flat(true);
@@ -1260,7 +1260,7 @@ GridMapEditor::GridMapEditor(EditorNode *p_editor) {
 	mode_list->set_pressed(false);
 	mode_list->set_icon(p_editor->get_gui_base()->get_theme_icon(SNAME("FileList"), SNAME("EditorIcons")));
 	hb->add_child(mode_list);
-	mode_list->connect("pressed", callable_mp(this, &GridMapEditor::_set_display_mode), varray(DISPLAY_LIST));
+	mode_list->connect("button_clicked", callable_mp(this, &GridMapEditor::_set_display_mode), varray(DISPLAY_LIST));
 
 	size_slider = memnew(HSlider);
 	size_slider->set_h_size_flags(SIZE_EXPAND_FILL);

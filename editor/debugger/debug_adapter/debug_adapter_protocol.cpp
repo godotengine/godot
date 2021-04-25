@@ -991,7 +991,7 @@ DebugAdapterProtocol::DebugAdapterProtocol() {
 	reset_ids();
 
 	EditorNode *node = EditorNode::get_singleton();
-	node->get_pause_button()->connect("pressed", callable_mp(this, &DebugAdapterProtocol::on_debug_paused));
+	node->get_pause_button()->connect("button_clicked", callable_mp(this, &DebugAdapterProtocol::on_debug_paused));
 
 	EditorDebuggerNode *debugger_node = EditorDebuggerNode::get_singleton();
 	debugger_node->connect("breakpoint_toggled", callable_mp(this, &DebugAdapterProtocol::on_debug_breakpoint_toggled));

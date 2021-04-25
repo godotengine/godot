@@ -5,16 +5,16 @@
 	</brief_description>
 	<description>
 		Button is the standard themed button. It can contain text and an icon, and will display them according to the current [Theme].
-		[b]Example of creating a button and assigning an action when pressed by code:[/b]
+		[b]Example of creating a button and assigning an action when clicked by code:[/b]
 		[codeblocks]
 		[gdscript]
 		func _ready():
 		    var button = Button.new()
 		    button.text = "Click me"
-		    button.connect("pressed", self, "_button_pressed")
+		    button.connect("button_clicked", self, "_button_clicked")
 		    add_child(button)
 
-		func _button_pressed():
+		func _button_clicked():
 		    print("Hello world!")
 		[/gdscript]
 		[csharp]
@@ -22,11 +22,11 @@
 		{
 		    var button = new Button();
 		    button.Text = "Click me";
-		    button.Connect("pressed", this, nameof(ButtonPressed));
+		    button.Connect("button_clicked", this, nameof(ButtonClicked));
 		    AddChild(button);
 		}
 
-		private void ButtonPressed()
+		private void ButtonClicked()
 		{
 		    GD.Print("Hello world!");
 		}

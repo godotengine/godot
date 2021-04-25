@@ -820,7 +820,7 @@ GenericTilePolygonEditor::GenericTilePolygonEditor() {
 	button_center_view = memnew(Button);
 	button_center_view->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("CenterView"), SNAME("EditorIcons")));
 	button_center_view->set_anchors_and_offsets_preset(Control::PRESET_TOP_RIGHT, Control::PRESET_MODE_MINSIZE, 5);
-	button_center_view->connect("pressed", callable_mp(this, &GenericTilePolygonEditor::_center_view));
+	button_center_view->connect("button_clicked", callable_mp(this, &GenericTilePolygonEditor::_center_view));
 	button_center_view->set_flat(true);
 	button_center_view->set_disabled(true);
 	root->add_child(button_center_view);

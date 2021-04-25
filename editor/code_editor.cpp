@@ -658,25 +658,25 @@ FindReplaceBar::FindReplaceBar() {
 	find_prev->set_flat(true);
 	hbc_button_search->add_child(find_prev);
 	find_prev->set_focus_mode(FOCUS_NONE);
-	find_prev->connect("pressed", callable_mp(this, &FindReplaceBar::search_prev));
+	find_prev->connect("button_clicked", callable_mp(this, &FindReplaceBar::search_prev));
 
 	find_next = memnew(Button);
 	find_next->set_flat(true);
 	hbc_button_search->add_child(find_next);
 	find_next->set_focus_mode(FOCUS_NONE);
-	find_next->connect("pressed", callable_mp(this, &FindReplaceBar::search_next));
+	find_next->connect("button_clicked", callable_mp(this, &FindReplaceBar::search_next));
 
 	case_sensitive = memnew(CheckBox);
 	hbc_option_search->add_child(case_sensitive);
 	case_sensitive->set_text(TTR("Match Case"));
 	case_sensitive->set_focus_mode(FOCUS_NONE);
-	case_sensitive->connect("toggled", callable_mp(this, &FindReplaceBar::_search_options_changed));
+	case_sensitive->connect("button_toggled", callable_mp(this, &FindReplaceBar::_search_options_changed));
 
 	whole_words = memnew(CheckBox);
 	hbc_option_search->add_child(whole_words);
 	whole_words->set_text(TTR("Whole Words"));
 	whole_words->set_focus_mode(FOCUS_NONE);
-	whole_words->connect("toggled", callable_mp(this, &FindReplaceBar::_search_options_changed));
+	whole_words->connect("button_toggled", callable_mp(this, &FindReplaceBar::_search_options_changed));
 
 	// replace toolbar
 	replace_text = memnew(LineEdit);
@@ -687,23 +687,23 @@ FindReplaceBar::FindReplaceBar() {
 	replace = memnew(Button);
 	hbc_button_replace->add_child(replace);
 	replace->set_text(TTR("Replace"));
-	replace->connect("pressed", callable_mp(this, &FindReplaceBar::_replace));
+	replace->connect("button_clicked", callable_mp(this, &FindReplaceBar::_replace));
 
 	replace_all = memnew(Button);
 	hbc_button_replace->add_child(replace_all);
 	replace_all->set_text(TTR("Replace All"));
-	replace_all->connect("pressed", callable_mp(this, &FindReplaceBar::_replace_all));
+	replace_all->connect("button_clicked", callable_mp(this, &FindReplaceBar::_replace_all));
 
 	selection_only = memnew(CheckBox);
 	hbc_option_replace->add_child(selection_only);
 	selection_only->set_text(TTR("Selection Only"));
 	selection_only->set_focus_mode(FOCUS_NONE);
-	selection_only->connect("toggled", callable_mp(this, &FindReplaceBar::_search_options_changed));
+	selection_only->connect("button_toggled", callable_mp(this, &FindReplaceBar::_search_options_changed));
 
 	hide_button = memnew(TextureButton);
 	add_child(hide_button);
 	hide_button->set_focus_mode(FOCUS_NONE);
-	hide_button->connect("pressed", callable_mp(this, &FindReplaceBar::_hide_bar));
+	hide_button->connect("button_clicked", callable_mp(this, &FindReplaceBar::_hide_bar));
 	hide_button->set_v_size_flags(SIZE_SHRINK_CENTER);
 }
 
@@ -1846,7 +1846,7 @@ CodeTextEditor::CodeTextEditor() {
 
 	toggle_scripts_button = memnew(Button);
 	toggle_scripts_button->set_flat(true);
-	toggle_scripts_button->connect("pressed", callable_mp(this, &CodeTextEditor::_toggle_scripts_pressed));
+	toggle_scripts_button->connect("button_clicked", callable_mp(this, &CodeTextEditor::_toggle_scripts_pressed));
 	status_bar->add_child(toggle_scripts_button);
 	toggle_scripts_button->hide();
 
@@ -1869,7 +1869,7 @@ CodeTextEditor::CodeTextEditor() {
 	status_bar->add_child(error_button);
 	error_button->set_v_size_flags(SIZE_EXPAND | SIZE_SHRINK_CENTER);
 	error_button->set_default_cursor_shape(CURSOR_POINTING_HAND);
-	error_button->connect("pressed", callable_mp(this, &CodeTextEditor::_error_button_pressed));
+	error_button->connect("button_clicked", callable_mp(this, &CodeTextEditor::_error_button_pressed));
 	error_button->set_tooltip(TTR("Errors"));
 
 	error_button->add_theme_color_override("font_color", EditorNode::get_singleton()->get_gui_base()->get_theme_color(SNAME("error_color"), SNAME("Editor")));
@@ -1885,7 +1885,7 @@ CodeTextEditor::CodeTextEditor() {
 	status_bar->add_child(warning_button);
 	warning_button->set_v_size_flags(SIZE_EXPAND | SIZE_SHRINK_CENTER);
 	warning_button->set_default_cursor_shape(CURSOR_POINTING_HAND);
-	warning_button->connect("pressed", callable_mp(this, &CodeTextEditor::_warning_button_pressed));
+	warning_button->connect("button_clicked", callable_mp(this, &CodeTextEditor::_warning_button_pressed));
 	warning_button->set_tooltip(TTR("Warnings"));
 
 	warning_button->add_theme_color_override("font_color", EditorNode::get_singleton()->get_gui_base()->get_theme_color(SNAME("warning_color"), SNAME("Editor")));

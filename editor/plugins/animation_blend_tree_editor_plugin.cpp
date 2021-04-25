@@ -184,7 +184,7 @@ void AnimationNodeBlendTreeEditor::_update_graph() {
 			open_in_editor->set_text(TTR("Open Editor"));
 			open_in_editor->set_icon(get_theme_icon(SNAME("Edit"), SNAME("EditorIcons")));
 			node->add_child(open_in_editor);
-			open_in_editor->connect("pressed", callable_mp(this, &AnimationNodeBlendTreeEditor::_open_in_editor), varray(E), CONNECT_DEFERRED);
+			open_in_editor->connect("button_clicked", callable_mp(this, &AnimationNodeBlendTreeEditor::_open_in_editor), varray(E), CONNECT_DEFERRED);
 			open_in_editor->set_h_size_flags(SIZE_SHRINK_CENTER);
 		}
 
@@ -194,7 +194,7 @@ void AnimationNodeBlendTreeEditor::_update_graph() {
 			edit_filters->set_text(TTR("Edit Filters"));
 			edit_filters->set_icon(get_theme_icon(SNAME("AnimationFilter"), SNAME("EditorIcons")));
 			node->add_child(edit_filters);
-			edit_filters->connect("pressed", callable_mp(this, &AnimationNodeBlendTreeEditor::_edit_filters), varray(E), CONNECT_DEFERRED);
+			edit_filters->connect("button_clicked", callable_mp(this, &AnimationNodeBlendTreeEditor::_edit_filters), varray(E), CONNECT_DEFERRED);
 			edit_filters->set_h_size_flags(SIZE_SHRINK_CENTER);
 		}
 
@@ -977,7 +977,7 @@ AnimationNodeBlendTreeEditor::AnimationNodeBlendTreeEditor() {
 
 	filter_enabled = memnew(CheckBox);
 	filter_enabled->set_text(TTR("Enable Filtering"));
-	filter_enabled->connect("pressed", callable_mp(this, &AnimationNodeBlendTreeEditor::_filter_toggled));
+	filter_enabled->connect("button_clicked", callable_mp(this, &AnimationNodeBlendTreeEditor::_filter_toggled));
 	filter_vbox->add_child(filter_enabled);
 
 	filters = memnew(Tree);

@@ -120,23 +120,23 @@ void BaseButton::_notification(int p_what) {
 	}
 }
 
-void BaseButton::_pressed() {
-	GDVIRTUAL_CALL(_pressed);
-	pressed();
-	emit_signal(SNAME("pressed"));
+void BaseButton::_clicked() {
+	GDVIRTUAL_CALL(_clicked);
+	clicked();
+	emit_signal(SNAME("button_clicked"));
 }
 
 void BaseButton::_toggled(bool p_pressed) {
 	GDVIRTUAL_CALL(_toggled, p_pressed);
 	toggled(p_pressed);
-	emit_signal(SNAME("toggled"), p_pressed);
+	emit_signal(SNAME("button_toggled"), p_pressed);
 }
 
 void BaseButton::on_action_event(Ref<InputEvent> p_event) {
 	if (p_event->is_pressed()) {
 		status.press_attempt = true;
 		status.pressing_inside = true;
-		emit_signal(SNAME("button_down"));
+		emit_signal(SNAME("button_pressed"));
 	}
 
 	if (status.press_attempt && status.pressing_inside) {
@@ -153,14 +153,14 @@ void BaseButton::on_action_event(Ref<InputEvent> p_event) {
 				status.pressed = !status.pressed;
 				_unpress_group();
 				if (button_group.is_valid()) {
-					button_group->emit_signal(SNAME("pressed"), this);
+					button_group->emit_signal(SNAME("button_clicked"), this);
 				}
 				_toggled(status.pressed);
-				_pressed();
+				_clicked();
 			}
 		} else {
 			if ((p_event->is_pressed() && action_mode == ACTION_MODE_BUTTON_PRESS) || (!p_event->is_pressed() && action_mode == ACTION_MODE_BUTTON_RELEASE)) {
-				_pressed();
+				_clicked();
 			}
 		}
 	}
@@ -174,13 +174,13 @@ void BaseButton::on_action_event(Ref<InputEvent> p_event) {
 		}
 		status.press_attempt = false;
 		status.pressing_inside = false;
-		emit_signal(SNAME("button_up"));
+		emit_signal(SNAME("button_released"));
 	}
 
 	update();
 }
 
-void BaseButton::pressed() {
+void BaseButton::clicked() {
 }
 
 void BaseButton::toggled(bool p_pressed) {
@@ -218,7 +218,7 @@ void BaseButton::set_pressed(bool p_pressed) {
 	if (p_pressed) {
 		_unpress_group();
 		if (button_group.is_valid()) {
-			button_group->emit_signal(SNAME("pressed"), this);
+			button_group->emit_signal(SNAME("button_clicked"), this);
 		}
 	}
 	_toggled(status.pressed);
@@ -284,13 +284,13 @@ BaseButton::DrawMode BaseButton::get_draw_mode() const {
 	return DRAW_NORMAL;
 }
 
-void BaseButton::set_toggle_mode(bool p_on) {
+void BaseButton::set_toggle_mode(bool p_pressed) {
 	// Make sure to set 'pressed' to false if we are not in toggle mode
-	if (!p_on) {
+	if (!p_pressed) {
 		set_pressed(false);
 	}
 
-	toggle_mode = p_on;
+	toggle_mode = p_pressed;
 }
 
 bool BaseButton::is_toggle_mode() const {
@@ -434,13 +434,13 @@ void BaseButton::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_shortcut_context", "node"), &BaseButton::set_shortcut_context);
 	ClassDB::bind_method(D_METHOD("get_shortcut_context"), &BaseButton::get_shortcut_context);
 
-	GDVIRTUAL_BIND(_pressed);
+	GDVIRTUAL_BIND(_clicked);
 	GDVIRTUAL_BIND(_toggled, "button_pressed");
 
-	ADD_SIGNAL(MethodInfo("pressed"));
-	ADD_SIGNAL(MethodInfo("button_up"));
-	ADD_SIGNAL(MethodInfo("button_down"));
-	ADD_SIGNAL(MethodInfo("toggled", PropertyInfo(Variant::BOOL, "button_pressed")));
+	ADD_SIGNAL(MethodInfo("button_clicked"));
+	ADD_SIGNAL(MethodInfo("button_pressed"));
+	ADD_SIGNAL(MethodInfo("button_released"));
+	ADD_SIGNAL(MethodInfo("button_toggled", PropertyInfo(Variant::BOOL, "button_pressed")));
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "disabled"), "set_disabled", "is_disabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "toggle_mode"), "set_toggle_mode", "is_toggle_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "shortcut_in_tooltip"), "set_shortcut_in_tooltip", "is_shortcut_in_tooltip_enabled");
@@ -500,7 +500,7 @@ BaseButton *ButtonGroup::get_pressed_button() {
 void ButtonGroup::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_pressed_button"), &ButtonGroup::get_pressed_button);
 	ClassDB::bind_method(D_METHOD("get_buttons"), &ButtonGroup::_get_buttons);
-	ADD_SIGNAL(MethodInfo("pressed", PropertyInfo(Variant::OBJECT, "button")));
+	ADD_SIGNAL(MethodInfo("button_clicked", PropertyInfo(Variant::OBJECT, "button")));
 }
 
 ButtonGroup::ButtonGroup() {

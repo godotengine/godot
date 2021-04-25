@@ -541,10 +541,10 @@ void Path3DEditorPlugin::_handle_option_pressed(int p_option) {
 
 void Path3DEditorPlugin::_notification(int p_what) {
 	if (p_what == NOTIFICATION_ENTER_TREE) {
-		curve_create->connect("pressed", callable_mp(this, &Path3DEditorPlugin::_mode_changed), make_binds(0));
-		curve_edit->connect("pressed", callable_mp(this, &Path3DEditorPlugin::_mode_changed), make_binds(1));
-		curve_del->connect("pressed", callable_mp(this, &Path3DEditorPlugin::_mode_changed), make_binds(2));
-		curve_close->connect("pressed", callable_mp(this, &Path3DEditorPlugin::_close_curve));
+		curve_create->connect("button_clicked", callable_mp(this, &Path3DEditorPlugin::_mode_changed), make_binds(0));
+		curve_edit->connect("button_clicked", callable_mp(this, &Path3DEditorPlugin::_mode_changed), make_binds(1));
+		curve_del->connect("button_clicked", callable_mp(this, &Path3DEditorPlugin::_mode_changed), make_binds(2));
+		curve_close->connect("button_clicked", callable_mp(this, &Path3DEditorPlugin::_close_curve));
 	}
 }
 

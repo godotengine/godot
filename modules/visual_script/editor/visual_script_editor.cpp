@@ -694,7 +694,7 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 				Button *btn = memnew(Button);
 				btn->set_text(TTR("Add Input Port"));
 				hbnc->add_child(btn);
-				btn->connect("pressed", callable_mp(this, &VisualScriptEditor::_add_input_port), varray(E), CONNECT_DEFERRED);
+				btn->connect("button_clicked", callable_mp(this, &VisualScriptEditor::_add_input_port), varray(E), CONNECT_DEFERRED);
 			}
 			if (nd_list->is_output_port_editable()) {
 				if (nd_list->is_input_port_editable()) {
@@ -704,7 +704,7 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 				Button *btn = memnew(Button);
 				btn->set_text(TTR("Add Output Port"));
 				hbnc->add_child(btn);
-				btn->connect("pressed", callable_mp(this, &VisualScriptEditor::_add_output_port), varray(E), CONNECT_DEFERRED);
+				btn->connect("button_clicked", callable_mp(this, &VisualScriptEditor::_add_output_port), varray(E), CONNECT_DEFERRED);
 			}
 			gnode->add_child(hbnc);
 		} else if (Object::cast_to<VisualScriptExpression>(node.ptr())) {
@@ -853,7 +853,7 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 					Button *rmbtn = memnew(Button);
 					rmbtn->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")));
 					hbc->add_child(rmbtn);
-					rmbtn->connect("pressed", callable_mp(this, &VisualScriptEditor::_remove_input_port), varray(E, i), CONNECT_DEFERRED);
+					rmbtn->connect("button_clicked", callable_mp(this, &VisualScriptEditor::_remove_input_port), varray(E, i), CONNECT_DEFERRED);
 				} else {
 					hbc->add_child(memnew(Label(left_name)));
 				}
@@ -885,7 +885,7 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 					} else {
 						button->set_text(value);
 					}
-					button->connect("pressed", callable_mp(this, &VisualScriptEditor::_default_value_edited), varray(button, E, i));
+					button->connect("button_clicked", callable_mp(this, &VisualScriptEditor::_default_value_edited), varray(button, E, i));
 					hbc2->add_child(button);
 				}
 			} else {
@@ -909,7 +909,7 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 					Button *rmbtn = memnew(Button);
 					rmbtn->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")));
 					hbc->add_child(rmbtn);
-					rmbtn->connect("pressed", callable_mp(this, &VisualScriptEditor::_remove_output_port), varray(E, i), CONNECT_DEFERRED);
+					rmbtn->connect("button_clicked", callable_mp(this, &VisualScriptEditor::_remove_output_port), varray(E, i), CONNECT_DEFERRED);
 
 					if (nd_list->is_output_port_type_editable()) {
 						OptionButton *opbtn = memnew(OptionButton);
@@ -1408,7 +1408,7 @@ void VisualScriptEditor::_add_func_input() {
 	func_input_vbox->add_child(hbox);
 	hbox->set_meta("id", hbox->get_index());
 
-	delete_button->connect("pressed", callable_mp(this, &VisualScriptEditor::_remove_func_input), varray(hbox));
+	delete_button->connect("button_clicked", callable_mp(this, &VisualScriptEditor::_remove_func_input), varray(hbox));
 
 	name_box->select_all();
 	name_box->grab_focus();
@@ -4350,7 +4350,7 @@ VisualScriptEditor::VisualScriptEditor() {
 	CheckButton *tool_script_check = memnew(CheckButton);
 	tool_script_check->set_text(TTR("Make Tool:"));
 	members_section->add_child(tool_script_check);
-	tool_script_check->connect("pressed", callable_mp(this, &VisualScriptEditor::_toggle_tool_script));
+	tool_script_check->connect("button_clicked", callable_mp(this, &VisualScriptEditor::_toggle_tool_script));
 
 	///       Members        ///
 
@@ -4406,7 +4406,7 @@ VisualScriptEditor::VisualScriptEditor() {
 
 	toggle_scripts_button = memnew(Button);
 	toggle_scripts_button->set_flat(true);
-	toggle_scripts_button->connect("pressed", callable_mp(this, &VisualScriptEditor::_toggle_scripts_pressed));
+	toggle_scripts_button->connect("button_clicked", callable_mp(this, &VisualScriptEditor::_toggle_scripts_pressed));
 	status_bar->add_child(toggle_scripts_button);
 
 	/// Add Buttons to Top Bar/Zoom bar.
@@ -4417,18 +4417,18 @@ VisualScriptEditor::VisualScriptEditor() {
 	graph_hbc->add_child(base_lbl);
 
 	base_type_select = memnew(Button);
-	base_type_select->connect("pressed", callable_mp(this, &VisualScriptEditor::_change_base_type));
+	base_type_select->connect("button_clicked", callable_mp(this, &VisualScriptEditor::_change_base_type));
 	graph_hbc->add_child(base_type_select);
 
 	Button *add_nds = memnew(Button);
 	add_nds->set_text(TTR("Add Nodes..."));
 	graph_hbc->add_child(add_nds);
-	add_nds->connect("pressed", callable_mp(this, &VisualScriptEditor::_add_node_dialog));
+	add_nds->connect("button_clicked", callable_mp(this, &VisualScriptEditor::_add_node_dialog));
 
 	Button *fn_btn = memnew(Button);
 	fn_btn->set_text(TTR("Add Function..."));
 	graph_hbc->add_child(fn_btn);
-	fn_btn->connect("pressed", callable_mp(this, &VisualScriptEditor::_create_function_dialog));
+	fn_btn->connect("button_clicked", callable_mp(this, &VisualScriptEditor::_create_function_dialog));
 
 	// Add Function Dialog.
 	VBoxContainer *function_vb = memnew(VBoxContainer);
@@ -4456,7 +4456,7 @@ VisualScriptEditor::VisualScriptEditor() {
 	Button *add_input_button = memnew(Button);
 	add_input_button->set_h_size_flags(SIZE_EXPAND_FILL);
 	add_input_button->set_text(TTR("Add Input"));
-	add_input_button->connect("pressed", callable_mp(this, &VisualScriptEditor::_add_func_input));
+	add_input_button->connect("button_clicked", callable_mp(this, &VisualScriptEditor::_add_func_input));
 	function_vb->add_child(add_input_button);
 
 	func_input_scroll = memnew(ScrollContainer);
@@ -4471,7 +4471,7 @@ VisualScriptEditor::VisualScriptEditor() {
 	function_create_dialog->set_title(TTR("Create Function"));
 	function_create_dialog->add_child(function_vb);
 	function_create_dialog->get_ok_button()->set_text(TTR("Create"));
-	function_create_dialog->get_ok_button()->connect("pressed", callable_mp(this, &VisualScriptEditor::_create_function));
+	function_create_dialog->get_ok_button()->connect("button_clicked", callable_mp(this, &VisualScriptEditor::_create_function));
 	add_child(function_create_dialog);
 
 	select_func_text = memnew(Label);
@@ -4551,7 +4551,7 @@ VisualScriptEditor::VisualScriptEditor() {
 	new_connect_node_select = memnew(VisualScriptPropertySelector);
 	add_child(new_connect_node_select);
 	new_connect_node_select->connect("selected", callable_mp(this, &VisualScriptEditor::_selected_connect_node));
-	new_connect_node_select->get_cancel_button()->connect("pressed", callable_mp(this, &VisualScriptEditor::_cancel_connect_node));
+	new_connect_node_select->get_cancel_button()->connect("button_clicked", callable_mp(this, &VisualScriptEditor::_cancel_connect_node));
 
 	new_virtual_method_select = memnew(VisualScriptPropertySelector);
 	add_child(new_virtual_method_select);

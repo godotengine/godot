@@ -597,7 +597,7 @@ ShaderCreateDialog::ShaderCreateDialog() {
 
 	internal = memnew(CheckBox);
 	internal->set_text(TTR("On"));
-	internal->connect("toggled", callable_mp(this, &ShaderCreateDialog::_built_in_toggled));
+	internal->connect("button_toggled", callable_mp(this, &ShaderCreateDialog::_built_in_toggled));
 	gc->add_child(memnew(Label(TTR("Built-in Shader:"))));
 	gc->add_child(internal);
 
@@ -611,7 +611,7 @@ ShaderCreateDialog::ShaderCreateDialog() {
 	file_path->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	hb->add_child(file_path);
 	path_button = memnew(Button);
-	path_button->connect("pressed", callable_mp(this, &ShaderCreateDialog::_browse_path));
+	path_button->connect("button_clicked", callable_mp(this, &ShaderCreateDialog::_browse_path));
 	hb->add_child(path_button);
 	gc->add_child(memnew(Label(TTR("Path:"))));
 	gc->add_child(hb);

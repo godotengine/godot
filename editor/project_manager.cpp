@@ -472,7 +472,7 @@ private:
 						ConfirmationDialog *cd = memnew(ConfirmationDialog);
 						cd->set_title(TTR("Warning: This folder is not empty"));
 						cd->set_text(TTR("You are about to create a Godot project in a non-empty folder.\nThe entire contents of this folder will be imported as project resources!\n\nAre you sure you wish to continue?"));
-						cd->get_ok_button()->connect("pressed", callable_mp(this, &ProjectDialog::_nonempty_confirmation_ok_pressed));
+						cd->get_ok_button()->connect("button_clicked", callable_mp(this, &ProjectDialog::_nonempty_confirmation_ok_pressed));
 						get_parent()->add_child(cd);
 						cd->popup_centered();
 						cd->grab_focus();
@@ -819,7 +819,7 @@ public:
 		create_dir = memnew(Button);
 		pnhb->add_child(create_dir);
 		create_dir->set_text(TTR("Create Folder"));
-		create_dir->connect("pressed", callable_mp(this, &ProjectDialog::_create_folder));
+		create_dir->connect("button_clicked", callable_mp(this, &ProjectDialog::_create_folder));
 
 		path_container = memnew(VBoxContainer);
 		vb->add_child(path_container);
@@ -858,7 +858,7 @@ public:
 
 		browse = memnew(Button);
 		browse->set_text(TTR("Browse"));
-		browse->connect("pressed", callable_mp(this, &ProjectDialog::_browse_path));
+		browse->connect("button_clicked", callable_mp(this, &ProjectDialog::_browse_path));
 		pphb->add_child(browse);
 
 		// install status icon
@@ -868,7 +868,7 @@ public:
 
 		install_browse = memnew(Button);
 		install_browse->set_text(TTR("Browse"));
-		install_browse->connect("pressed", callable_mp(this, &ProjectDialog::_browse_install_path));
+		install_browse->connect("button_clicked", callable_mp(this, &ProjectDialog::_browse_install_path));
 		iphb->add_child(install_browse);
 
 		msg = memnew(Label);
@@ -1385,7 +1385,7 @@ void ProjectList::create_project_item_control(int p_index) {
 	favorite->set_normal_texture(favorite_icon);
 	// This makes the project's "hover" style display correctly when hovering the favorite icon.
 	favorite->set_mouse_filter(MOUSE_FILTER_PASS);
-	favorite->connect("pressed", callable_mp(this, &ProjectList::_favorite_pressed), varray(hb));
+	favorite->connect("button_clicked", callable_mp(this, &ProjectList::_favorite_pressed), varray(hb));
 	favorite_box->add_child(favorite);
 	favorite_box->set_alignment(BoxContainer::ALIGN_CENTER);
 	hb->add_child(favorite_box);
@@ -1458,7 +1458,7 @@ void ProjectList::create_project_item_control(int p_index) {
 		path_hb->add_child(show);
 
 		if (!item.missing) {
-			show->connect("pressed", callable_mp(this, &ProjectList::_show_project), varray(item.path));
+			show->connect("button_clicked", callable_mp(this, &ProjectList::_show_project), varray(item.path));
 			show->set_tooltip(TTR("Show in File Manager"));
 		} else {
 			show->set_tooltip(TTR("Error: Project is missing on the filesystem."));
@@ -2425,8 +2425,8 @@ void ProjectManager::_files_dropped(PackedStringArray p_files, int p_screen) {
 			memdelete(dir);
 		}
 		if (confirm) {
-			multi_scan_ask->get_ok_button()->disconnect("pressed", callable_mp(this, &ProjectManager::_scan_multiple_folders));
-			multi_scan_ask->get_ok_button()->connect("pressed", callable_mp(this, &ProjectManager::_scan_multiple_folders), varray(folders));
+			multi_scan_ask->get_ok_button()->disconnect("button_clicked", callable_mp(this, &ProjectManager::_scan_multiple_folders));
+			multi_scan_ask->get_ok_button()->connect("button_clicked", callable_mp(this, &ProjectManager::_scan_multiple_folders), varray(folders));
 			multi_scan_ask->set_text(
 					vformat(TTR("Are you sure to scan %s folders for existing Godot projects?\nThis could take a while."), folders.size()));
 			multi_scan_ask->popup_centered();
@@ -2634,19 +2634,19 @@ ProjectManager::ProjectManager() {
 		Button *create = memnew(Button);
 		create->set_text(TTR("New Project"));
 		create->set_shortcut(ED_SHORTCUT("project_manager/new_project", TTR("New Project"), KeyModifierMask::CMD | Key::N));
-		create->connect("pressed", callable_mp(this, &ProjectManager::_new_project));
+		create->connect("button_clicked", callable_mp(this, &ProjectManager::_new_project));
 		tree_vb->add_child(create);
 
 		Button *import = memnew(Button);
 		import->set_text(TTR("Import"));
 		import->set_shortcut(ED_SHORTCUT("project_manager/import_project", TTR("Import Project"), KeyModifierMask::CMD | Key::I));
-		import->connect("pressed", callable_mp(this, &ProjectManager::_import_project));
+		import->connect("button_clicked", callable_mp(this, &ProjectManager::_import_project));
 		tree_vb->add_child(import);
 
 		Button *scan = memnew(Button);
 		scan->set_text(TTR("Scan"));
 		scan->set_shortcut(ED_SHORTCUT("project_manager/scan_projects", TTR("Scan Projects"), KeyModifierMask::CMD | Key::S));
-		scan->connect("pressed", callable_mp(this, &ProjectManager::_scan_projects));
+		scan->connect("button_clicked", callable_mp(this, &ProjectManager::_scan_projects));
 		tree_vb->add_child(scan);
 
 		tree_vb->add_child(memnew(HSeparator));
@@ -2654,38 +2654,38 @@ ProjectManager::ProjectManager() {
 		open_btn = memnew(Button);
 		open_btn->set_text(TTR("Edit"));
 		open_btn->set_shortcut(ED_SHORTCUT("project_manager/edit_project", TTR("Edit Project"), KeyModifierMask::CMD | Key::E));
-		open_btn->connect("pressed", callable_mp(this, &ProjectManager::_open_selected_projects_ask));
+		open_btn->connect("button_clicked", callable_mp(this, &ProjectManager::_open_selected_projects_ask));
 		tree_vb->add_child(open_btn);
 
 		run_btn = memnew(Button);
 		run_btn->set_text(TTR("Run"));
 		run_btn->set_shortcut(ED_SHORTCUT("project_manager/run_project", TTR("Run Project"), KeyModifierMask::CMD | Key::R));
-		run_btn->connect("pressed", callable_mp(this, &ProjectManager::_run_project));
+		run_btn->connect("button_clicked", callable_mp(this, &ProjectManager::_run_project));
 		tree_vb->add_child(run_btn);
 
 		rename_btn = memnew(Button);
 		rename_btn->set_text(TTR("Rename"));
 		// The F2 shortcut isn't overridden with Enter on macOS as Enter is already used to edit a project.
 		rename_btn->set_shortcut(ED_SHORTCUT("project_manager/rename_project", TTR("Rename Project"), Key::F2));
-		rename_btn->connect("pressed", callable_mp(this, &ProjectManager::_rename_project));
+		rename_btn->connect("button_clicked", callable_mp(this, &ProjectManager::_rename_project));
 		tree_vb->add_child(rename_btn);
 
 		erase_btn = memnew(Button);
 		erase_btn->set_text(TTR("Remove"));
 		erase_btn->set_shortcut(ED_SHORTCUT("project_manager/remove_project", TTR("Remove Project"), Key::KEY_DELETE));
-		erase_btn->connect("pressed", callable_mp(this, &ProjectManager::_erase_project));
+		erase_btn->connect("button_clicked", callable_mp(this, &ProjectManager::_erase_project));
 		tree_vb->add_child(erase_btn);
 
 		erase_missing_btn = memnew(Button);
 		erase_missing_btn->set_text(TTR("Remove Missing"));
-		erase_missing_btn->connect("pressed", callable_mp(this, &ProjectManager::_erase_missing_projects));
+		erase_missing_btn->connect("button_clicked", callable_mp(this, &ProjectManager::_erase_missing_projects));
 		tree_vb->add_child(erase_missing_btn);
 
 		tree_vb->add_spacer();
 
 		about_btn = memnew(Button);
 		about_btn->set_text(TTR("About"));
-		about_btn->connect("pressed", callable_mp(this, &ProjectManager::_show_about));
+		about_btn->connect("button_clicked", callable_mp(this, &ProjectManager::_show_about));
 		tree_vb->add_child(about_btn);
 	}
 
@@ -2713,7 +2713,7 @@ ProjectManager::ProjectManager() {
 		version_btn->set_self_modulate(Color(1, 1, 1, 0.6));
 		version_btn->set_underline_mode(LinkButton::UNDERLINE_MODE_ON_HOVER);
 		version_btn->set_tooltip(TTR("Click to copy."));
-		version_btn->connect("pressed", callable_mp(this, &ProjectManager::_version_button_pressed));
+		version_btn->connect("button_clicked", callable_mp(this, &ProjectManager::_version_button_pressed));
 		spacer_vb->add_child(version_btn);
 
 		// Add a small horizontal spacer between the version and language buttons
@@ -2767,7 +2767,7 @@ ProjectManager::ProjectManager() {
 		// Dialogs
 		language_restart_ask = memnew(ConfirmationDialog);
 		language_restart_ask->get_ok_button()->set_text(TTR("Restart Now"));
-		language_restart_ask->get_ok_button()->connect("pressed", callable_mp(this, &ProjectManager::_restart_confirm));
+		language_restart_ask->get_ok_button()->connect("button_clicked", callable_mp(this, &ProjectManager::_restart_confirm));
 		language_restart_ask->get_cancel_button()->set_text(TTR("Continue"));
 		add_child(language_restart_ask);
 
@@ -2781,12 +2781,12 @@ ProjectManager::ProjectManager() {
 
 		erase_missing_ask = memnew(ConfirmationDialog);
 		erase_missing_ask->get_ok_button()->set_text(TTR("Remove All"));
-		erase_missing_ask->get_ok_button()->connect("pressed", callable_mp(this, &ProjectManager::_erase_missing_projects_confirm));
+		erase_missing_ask->get_ok_button()->connect("button_clicked", callable_mp(this, &ProjectManager::_erase_missing_projects_confirm));
 		add_child(erase_missing_ask);
 
 		erase_ask = memnew(ConfirmationDialog);
 		erase_ask->get_ok_button()->set_text(TTR("Remove"));
-		erase_ask->get_ok_button()->connect("pressed", callable_mp(this, &ProjectManager::_erase_project_confirm));
+		erase_ask->get_ok_button()->connect("button_clicked", callable_mp(this, &ProjectManager::_erase_project_confirm));
 		add_child(erase_ask);
 
 		VBoxContainer *erase_ask_vb = memnew(VBoxContainer);
@@ -2801,12 +2801,12 @@ ProjectManager::ProjectManager() {
 
 		multi_open_ask = memnew(ConfirmationDialog);
 		multi_open_ask->get_ok_button()->set_text(TTR("Edit"));
-		multi_open_ask->get_ok_button()->connect("pressed", callable_mp(this, &ProjectManager::_open_selected_projects));
+		multi_open_ask->get_ok_button()->connect("button_clicked", callable_mp(this, &ProjectManager::_open_selected_projects));
 		add_child(multi_open_ask);
 
 		multi_run_ask = memnew(ConfirmationDialog);
 		multi_run_ask->get_ok_button()->set_text(TTR("Run"));
-		multi_run_ask->get_ok_button()->connect("pressed", callable_mp(this, &ProjectManager::_run_project_confirm));
+		multi_run_ask->get_ok_button()->connect("button_clicked", callable_mp(this, &ProjectManager::_run_project_confirm));
 		add_child(multi_run_ask);
 
 		multi_scan_ask = memnew(ConfirmationDialog);
@@ -2814,7 +2814,7 @@ ProjectManager::ProjectManager() {
 		add_child(multi_scan_ask);
 
 		ask_update_settings = memnew(ConfirmationDialog);
-		ask_update_settings->get_ok_button()->connect("pressed", callable_mp(this, &ProjectManager::_confirm_update_settings));
+		ask_update_settings->get_ok_button()->connect("button_clicked", callable_mp(this, &ProjectManager::_confirm_update_settings));
 		add_child(ask_update_settings);
 
 		npdialog = memnew(ProjectDialog);

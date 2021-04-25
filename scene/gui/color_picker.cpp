@@ -1167,7 +1167,7 @@ ColorPicker::ColorPicker() :
 	hb_smpl->add_child(btn_pick);
 	btn_pick->set_toggle_mode(true);
 	btn_pick->set_tooltip(RTR("Pick a color from the editor window."));
-	btn_pick->connect("pressed", callable_mp(this, &ColorPicker::_screen_pick_pressed));
+	btn_pick->connect("button_clicked", callable_mp(this, &ColorPicker::_screen_pick_pressed));
 
 	VBoxContainer *vbl = memnew(VBoxContainer);
 	add_child(vbl, false, INTERNAL_MODE_FRONT);
@@ -1214,17 +1214,17 @@ ColorPicker::ColorPicker() :
 
 	hhb->add_child(btn_hsv);
 	btn_hsv->set_text(RTR("HSV"));
-	btn_hsv->connect("toggled", callable_mp(this, &ColorPicker::set_hsv_mode));
+	btn_hsv->connect("button_toggled", callable_mp(this, &ColorPicker::set_hsv_mode));
 
 	hhb->add_child(btn_raw);
 	btn_raw->set_text(RTR("Raw"));
-	btn_raw->connect("toggled", callable_mp(this, &ColorPicker::set_raw_mode));
+	btn_raw->connect("button_toggled", callable_mp(this, &ColorPicker::set_raw_mode));
 
 	hhb->add_child(text_type);
 	text_type->set_text("#");
 	text_type->set_tooltip(TTR("Switch between hexadecimal and code values."));
 	if (Engine::get_singleton()->is_editor_hint()) {
-		text_type->connect("pressed", callable_mp(this, &ColorPicker::_text_type_toggled));
+		text_type->connect("button_clicked", callable_mp(this, &ColorPicker::_text_type_toggled));
 	} else {
 		text_type->set_flat(true);
 		text_type->set_mouse_filter(MOUSE_FILTER_IGNORE);
@@ -1276,7 +1276,7 @@ ColorPicker::ColorPicker() :
 
 	btn_add_preset->set_icon_align(Button::ALIGN_CENTER);
 	btn_add_preset->set_tooltip(RTR("Add current color as a preset."));
-	btn_add_preset->connect("pressed", callable_mp(this, &ColorPicker::_add_preset_pressed));
+	btn_add_preset->connect("button_clicked", callable_mp(this, &ColorPicker::_add_preset_pressed));
 	preset_container->add_child(btn_add_preset);
 }
 
@@ -1300,7 +1300,7 @@ void ColorPickerButton::_modal_closed() {
 	set_pressed(false);
 }
 
-void ColorPickerButton::pressed() {
+void ColorPickerButton::clicked() {
 	_update_picker();
 
 	Size2 size = get_size() * get_viewport()->get_canvas_transform().get_scale();

@@ -1916,7 +1916,7 @@ AnimationTimelineEdit::AnimationTimelineEdit() {
 	loop = memnew(Button);
 	loop->set_flat(true);
 	loop->set_tooltip(TTR("Animation Looping"));
-	loop->connect("pressed", callable_mp(this, &AnimationTimelineEdit::_anim_loop_pressed));
+	loop->connect("button_clicked", callable_mp(this, &AnimationTimelineEdit::_anim_loop_pressed));
 	loop->set_toggle_mode(true);
 	len_hb->add_child(loop);
 	add_child(len_hb);
@@ -6067,14 +6067,14 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	imported_anim_warning = memnew(Button);
 	imported_anim_warning->hide();
 	imported_anim_warning->set_tooltip(TTR("Warning: Editing imported animation"));
-	imported_anim_warning->connect("pressed", callable_mp(this, &AnimationTrackEditor::_show_imported_anim_warning));
+	imported_anim_warning->connect("button_clicked", callable_mp(this, &AnimationTrackEditor::_show_imported_anim_warning));
 	bottom_hb->add_child(imported_anim_warning);
 
 	bottom_hb->add_spacer();
 
 	selected_filter = memnew(Button);
 	selected_filter->set_flat(true);
-	selected_filter->connect("pressed", callable_mp(this, &AnimationTrackEditor::_view_group_toggle)); // Same function works the same.
+	selected_filter->connect("button_clicked", callable_mp(this, &AnimationTrackEditor::_view_group_toggle)); // Same function works the same.
 	selected_filter->set_toggle_mode(true);
 	selected_filter->set_tooltip(TTR("Only show tracks from nodes selected in tree."));
 
@@ -6082,7 +6082,7 @@ AnimationTrackEditor::AnimationTrackEditor() {
 
 	view_group = memnew(Button);
 	view_group->set_flat(true);
-	view_group->connect("pressed", callable_mp(this, &AnimationTrackEditor::_view_group_toggle));
+	view_group->connect("button_clicked", callable_mp(this, &AnimationTrackEditor::_view_group_toggle));
 	view_group->set_toggle_mode(true);
 	view_group->set_tooltip(TTR("Group tracks by node or display them as plain list."));
 
@@ -6293,7 +6293,7 @@ AnimationTrackEditor::AnimationTrackEditor() {
 
 	Button *select_all_button = memnew(Button);
 	select_all_button->set_text(TTR("Select All/None"));
-	select_all_button->connect("pressed", callable_mp(this, &AnimationTrackEditor::_select_all_tracks_for_copy));
+	select_all_button->connect("button_clicked", callable_mp(this, &AnimationTrackEditor::_select_all_tracks_for_copy));
 	track_vbox->add_child(select_all_button);
 
 	track_copy_select = memnew(Tree);

@@ -150,7 +150,7 @@ namespace GodotTools.Build
                 Pressed = true,
                 FocusMode = FocusModeEnum.None
             };
-            _errorsBtn.Toggled += ErrorsToggled;
+            _errorsBtn.ButtonToggled += ErrorsToggled;
             toolBarHBox.AddChild(_errorsBtn);
 
             _warningsBtn = new Button
@@ -162,7 +162,7 @@ namespace GodotTools.Build
                 Pressed = true,
                 FocusMode = FocusModeEnum.None
             };
-            _warningsBtn.Toggled += WarningsToggled;
+            _warningsBtn.ButtonToggled += WarningsToggled;
             toolBarHBox.AddChild(_warningsBtn);
 
             _viewLogBtn = new Button
@@ -172,7 +172,7 @@ namespace GodotTools.Build
                 Pressed = true,
                 FocusMode = FocusModeEnum.None
             };
-            _viewLogBtn.Toggled += ViewLogToggled;
+            _viewLogBtn.ButtonToggled += ViewLogToggled;
             toolBarHBox.AddChild(_viewLogBtn);
 
             BuildOutputView = new BuildOutputView();

@@ -280,7 +280,7 @@ ShaderFileEditor::ShaderFileEditor(EditorNode *p_node) {
 		stage_hb->add_child(button);
 		stages[i] = button;
 		button->set_button_group(bg);
-		button->connect("pressed", callable_mp(this, &ShaderFileEditor::_version_selected), varray(i));
+		button->connect("button_clicked", callable_mp(this, &ShaderFileEditor::_version_selected), varray(i));
 	}
 
 	error_text = memnew(RichTextLabel);

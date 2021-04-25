@@ -339,11 +339,11 @@ void FileSystemDock::_notification(int p_what) {
 
 			button_reload->set_icon(get_theme_icon(SNAME("Reload"), ei));
 			button_toggle_display_mode->set_icon(get_theme_icon(SNAME("Panels2"), ei));
-			button_file_list_display_mode->connect("pressed", callable_mp(this, &FileSystemDock::_toggle_file_display));
+			button_file_list_display_mode->connect("button_clicked", callable_mp(this, &FileSystemDock::_toggle_file_display));
 
 			files->connect("item_activated", callable_mp(this, &FileSystemDock::_file_list_activate_file));
-			button_hist_next->connect("pressed", callable_mp(this, &FileSystemDock::_fw_history));
-			button_hist_prev->connect("pressed", callable_mp(this, &FileSystemDock::_bw_history));
+			button_hist_next->connect("button_clicked", callable_mp(this, &FileSystemDock::_fw_history));
+			button_hist_prev->connect("button_clicked", callable_mp(this, &FileSystemDock::_bw_history));
 
 			tree_search_box->set_right_icon(get_theme_icon(SNAME("Search"), ei));
 			tree_search_box->set_clear_button_enabled(true);
@@ -2829,7 +2829,7 @@ FileSystemDock::FileSystemDock(EditorNode *p_editor) {
 	toolbar_hbc->add_child(current_path);
 
 	button_reload = memnew(Button);
-	button_reload->connect("pressed", callable_mp(this, &FileSystemDock::_rescan));
+	button_reload->connect("button_clicked", callable_mp(this, &FileSystemDock::_rescan));
 	button_reload->set_focus_mode(FOCUS_NONE);
 	button_reload->set_tooltip(TTR("Re-Scan Filesystem"));
 	button_reload->hide();
@@ -2837,7 +2837,7 @@ FileSystemDock::FileSystemDock(EditorNode *p_editor) {
 
 	button_toggle_display_mode = memnew(Button);
 	button_toggle_display_mode->set_toggle_mode(true);
-	button_toggle_display_mode->connect("toggled", callable_mp(this, &FileSystemDock::_toggle_split_mode));
+	button_toggle_display_mode->connect("button_toggled", callable_mp(this, &FileSystemDock::_toggle_split_mode));
 	button_toggle_display_mode->set_focus_mode(FOCUS_NONE);
 	button_toggle_display_mode->set_tooltip(TTR("Toggle Split Mode"));
 	button_toggle_display_mode->set_flat(true);

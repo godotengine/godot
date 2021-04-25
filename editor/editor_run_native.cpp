@@ -53,7 +53,7 @@ void EditorRunNative::_notification(int p_what) {
 					small_icon->create_from_image(im);
 					MenuButton *mb = memnew(MenuButton);
 					mb->get_popup()->connect("id_pressed", callable_mp(this, &EditorRunNative::run_native), varray(i));
-					mb->connect("pressed", callable_mp(this, &EditorRunNative::run_native), varray(-1, i));
+					mb->connect("button_clicked", callable_mp(this, &EditorRunNative::run_native), varray(-1, i));
 					mb->set_icon(small_icon);
 					add_child(mb);
 					menus[i] = mb;

@@ -84,7 +84,7 @@ EditorDebuggerNode::EditorDebuggerNode() {
 	EditorNode *editor = EditorNode::get_singleton();
 	editor->get_undo_redo()->set_method_notify_callback(_method_changeds, this);
 	editor->get_undo_redo()->set_property_notify_callback(_property_changeds, this);
-	editor->get_pause_button()->connect("pressed", callable_mp(this, &EditorDebuggerNode::_paused));
+	editor->get_pause_button()->connect("button_clicked", callable_mp(this, &EditorDebuggerNode::_paused));
 }
 
 ScriptEditorDebugger *EditorDebuggerNode::_add_debugger() {

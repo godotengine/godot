@@ -1042,11 +1042,11 @@ ProjectExportDialog::ProjectExportDialog() {
 	duplicate_preset = memnew(Button);
 	duplicate_preset->set_flat(true);
 	preset_hb->add_child(duplicate_preset);
-	duplicate_preset->connect("pressed", callable_mp(this, &ProjectExportDialog::_duplicate_preset));
+	duplicate_preset->connect("button_clicked", callable_mp(this, &ProjectExportDialog::_duplicate_preset));
 	delete_preset = memnew(Button);
 	delete_preset->set_flat(true);
 	preset_hb->add_child(delete_preset);
-	delete_preset->connect("pressed", callable_mp(this, &ProjectExportDialog::_delete_preset));
+	delete_preset->connect("button_clicked", callable_mp(this, &ProjectExportDialog::_delete_preset));
 
 	// Preset settings.
 
@@ -1060,7 +1060,7 @@ ProjectExportDialog::ProjectExportDialog() {
 	runnable = memnew(CheckButton);
 	runnable->set_text(TTR("Runnable"));
 	runnable->set_tooltip(TTR("If checked, the preset will be available for use in one-click deploy.\nOnly one preset per platform may be marked as runnable."));
-	runnable->connect("pressed", callable_mp(this, &ProjectExportDialog::_runnable_pressed));
+	runnable->connect("button_clicked", callable_mp(this, &ProjectExportDialog::_runnable_pressed));
 	settings_vb->add_child(runnable);
 
 	export_path = memnew(EditorPropertyPath);
@@ -1151,12 +1151,12 @@ ProjectExportDialog::ProjectExportDialog() {
 	sec_vb->set_name(TTR("Encryption"));
 
 	enc_pck = memnew(CheckButton);
-	enc_pck->connect("toggled", callable_mp(this, &ProjectExportDialog::_enc_pck_changed));
+	enc_pck->connect("button_toggled", callable_mp(this, &ProjectExportDialog::_enc_pck_changed));
 	enc_pck->set_text(TTR("Encrypt Exported PCK"));
 	sec_vb->add_child(enc_pck);
 
 	enc_directory = memnew(CheckButton);
-	enc_directory->connect("toggled", callable_mp(this, &ProjectExportDialog::_enc_directory_changed));
+	enc_directory->connect("button_toggled", callable_mp(this, &ProjectExportDialog::_enc_directory_changed));
 	enc_directory->set_text(TTR("Encrypt Index (File Names and Info)"));
 	sec_vb->add_child(enc_directory);
 
@@ -1187,7 +1187,7 @@ ProjectExportDialog::ProjectExportDialog() {
 
 	LinkButton *sec_more_info = memnew(LinkButton);
 	sec_more_info->set_text(TTR("More Info..."));
-	sec_more_info->connect("pressed", callable_mp(this, &ProjectExportDialog::_open_key_help_link));
+	sec_more_info->connect("button_clicked", callable_mp(this, &ProjectExportDialog::_open_key_help_link));
 	sec_vb->add_child(sec_more_info);
 
 	sections->connect("tab_changed", callable_mp(this, &ProjectExportDialog::_tab_changed));
@@ -1216,7 +1216,7 @@ ProjectExportDialog::ProjectExportDialog() {
 	get_cancel_button()->set_text(TTR("Close"));
 	get_ok_button()->set_text(TTR("Export PCK/ZIP..."));
 	export_button = add_button(TTR("Export Project..."), !DisplayServer::get_singleton()->get_swap_cancel_ok(), "export");
-	export_button->connect("pressed", callable_mp(this, &ProjectExportDialog::_export_project));
+	export_button->connect("button_clicked", callable_mp(this, &ProjectExportDialog::_export_project));
 	// Disable initially before we select a valid preset
 	export_button->set_disabled(true);
 	get_ok_button()->set_disabled(true);
@@ -1231,7 +1231,7 @@ ProjectExportDialog::ProjectExportDialog() {
 	export_all_dialog->connect("custom_action", callable_mp(this, &ProjectExportDialog::_export_all_dialog_action));
 
 	export_all_button = add_button(TTR("Export All..."), !DisplayServer::get_singleton()->get_swap_cancel_ok(), "export");
-	export_all_button->connect("pressed", callable_mp(this, &ProjectExportDialog::_export_all_dialog));
+	export_all_button->connect("button_clicked", callable_mp(this, &ProjectExportDialog::_export_all_dialog));
 	export_all_button->set_disabled(true);
 
 	export_pck_zip = memnew(EditorFileDialog);
@@ -1266,7 +1266,7 @@ ProjectExportDialog::ProjectExportDialog() {
 	download_templates->set_text(TTR("Manage Export Templates"));
 	download_templates->set_v_size_flags(Control::SIZE_SHRINK_CENTER);
 	export_templates_error->add_child(download_templates);
-	download_templates->connect("pressed", callable_mp(this, &ProjectExportDialog::_open_export_template_manager));
+	download_templates->connect("button_clicked", callable_mp(this, &ProjectExportDialog::_open_export_template_manager));
 
 	export_project = memnew(EditorFileDialog);
 	export_project->set_access(EditorFileDialog::ACCESS_FILESYSTEM);

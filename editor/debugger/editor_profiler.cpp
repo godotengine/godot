@@ -576,12 +576,12 @@ EditorProfiler::EditorProfiler() {
 	activate = memnew(Button);
 	activate->set_toggle_mode(true);
 	activate->set_text(TTR("Start"));
-	activate->connect("pressed", callable_mp(this, &EditorProfiler::_activate_pressed));
+	activate->connect("button_clicked", callable_mp(this, &EditorProfiler::_activate_pressed));
 	hb->add_child(activate);
 
 	clear_button = memnew(Button);
 	clear_button->set_text(TTR("Clear"));
-	clear_button->connect("pressed", callable_mp(this, &EditorProfiler::_clear_pressed));
+	clear_button->connect("button_clicked", callable_mp(this, &EditorProfiler::_clear_pressed));
 	clear_button->set_disabled(true);
 	hb->add_child(clear_button);
 

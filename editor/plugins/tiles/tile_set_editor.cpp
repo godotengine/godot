@@ -688,7 +688,7 @@ TileSetEditor::TileSetEditor() {
 	sources_delete_button = memnew(Button);
 	sources_delete_button->set_flat(true);
 	sources_delete_button->set_disabled(true);
-	sources_delete_button->connect("pressed", callable_mp(this, &TileSetEditor::_source_delete_pressed));
+	sources_delete_button->connect("button_clicked", callable_mp(this, &TileSetEditor::_source_delete_pressed));
 	sources_bottom_actions->add_child(sources_delete_button);
 
 	sources_add_button = memnew(MenuButton);

@@ -832,10 +832,10 @@ ScriptCreateDialog::ScriptCreateDialog() {
 	parent_name->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	hb->add_child(parent_name);
 	parent_search_button = memnew(Button);
-	parent_search_button->connect("pressed", callable_mp(this, &ScriptCreateDialog::_browse_class_in_tree));
+	parent_search_button->connect("button_clicked", callable_mp(this, &ScriptCreateDialog::_browse_class_in_tree));
 	hb->add_child(parent_search_button);
 	parent_browse_button = memnew(Button);
-	parent_browse_button->connect("pressed", callable_mp(this, &ScriptCreateDialog::_browse_path), varray(true, false));
+	parent_browse_button->connect("button_clicked", callable_mp(this, &ScriptCreateDialog::_browse_path), varray(true, false));
 	hb->add_child(parent_browse_button);
 	gc->add_child(memnew(Label(TTR("Inherits:"))));
 	gc->add_child(hb);
@@ -860,7 +860,7 @@ ScriptCreateDialog::ScriptCreateDialog() {
 
 	internal = memnew(CheckBox);
 	internal->set_text(TTR("On"));
-	internal->connect("pressed", callable_mp(this, &ScriptCreateDialog::_built_in_pressed));
+	internal->connect("button_clicked", callable_mp(this, &ScriptCreateDialog::_built_in_pressed));
 	gc->add_child(memnew(Label(TTR("Built-in Script:"))));
 	gc->add_child(internal);
 
@@ -873,7 +873,7 @@ ScriptCreateDialog::ScriptCreateDialog() {
 	file_path->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	hb->add_child(file_path);
 	path_button = memnew(Button);
-	path_button->connect("pressed", callable_mp(this, &ScriptCreateDialog::_browse_path), varray(false, true));
+	path_button->connect("button_clicked", callable_mp(this, &ScriptCreateDialog::_browse_path), varray(false, true));
 	hb->add_child(path_button);
 	Label *label = memnew(Label(TTR("Path:")));
 	gc->add_child(label);

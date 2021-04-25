@@ -377,8 +377,8 @@ ResourcePreloaderEditor::ResourcePreloaderEditor() {
 	dialog = memnew(AcceptDialog);
 	add_child(dialog);
 
-	load->connect("pressed", callable_mp(this, &ResourcePreloaderEditor::_load_pressed));
-	paste->connect("pressed", callable_mp(this, &ResourcePreloaderEditor::_paste_pressed));
+	load->connect("button_clicked", callable_mp(this, &ResourcePreloaderEditor::_load_pressed));
+	paste->connect("button_clicked", callable_mp(this, &ResourcePreloaderEditor::_paste_pressed));
 	file->connect("files_selected", callable_mp(this, &ResourcePreloaderEditor::_files_load_request));
 	tree->connect("item_edited", callable_mp(this, &ResourcePreloaderEditor::_item_edited));
 	loading_scene = false;

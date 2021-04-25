@@ -119,8 +119,8 @@ class EditorPropertyArray : public EditorProperty {
 	void drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);
 
 	void _reorder_button_gui_input(const Ref<InputEvent> &p_event);
-	void _reorder_button_down(int p_index);
-	void _reorder_button_up();
+	void _reorder_button_pressed(int p_index);
+	void _reorder_button_released();
 
 protected:
 	static void _bind_methods();

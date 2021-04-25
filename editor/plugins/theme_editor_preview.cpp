@@ -216,7 +216,7 @@ ThemeEditorPreview::ThemeEditorPreview() {
 	picker_button->set_flat(true);
 	picker_button->set_toggle_mode(true);
 	picker_button->set_tooltip(TTR("Toggle the control picker, allowing to visually select control types for edit."));
-	picker_button->connect("pressed", callable_mp(this, &ThemeEditorPreview::_picker_button_cbk));
+	picker_button->connect("button_clicked", callable_mp(this, &ThemeEditorPreview::_picker_button_cbk));
 
 	MarginContainer *preview_body = memnew(MarginContainer);
 	preview_body->set_custom_minimum_size(Size2(480, 0) * EDSCALE);
@@ -499,5 +499,5 @@ SceneThemeEditorPreview::SceneThemeEditorPreview() {
 	reload_scene_button->set_flat(true);
 	reload_scene_button->set_tooltip(TTR("Reload the scene to reflect its most actual state."));
 	preview_toolbar->add_child(reload_scene_button);
-	reload_scene_button->connect("pressed", callable_mp(this, &SceneThemeEditorPreview::_reload_scene));
+	reload_scene_button->connect("button_clicked", callable_mp(this, &SceneThemeEditorPreview::_reload_scene));
 }

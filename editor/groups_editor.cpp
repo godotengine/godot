@@ -460,7 +460,7 @@ GroupDialog::GroupDialog() {
 	Button *add_group_button = memnew(Button);
 	add_group_button->set_text(TTR("Add"));
 	chbc->add_child(add_group_button);
-	add_group_button->connect("pressed", callable_mp(this, &GroupDialog::_add_group_pressed), varray(String()));
+	add_group_button->connect("button_clicked", callable_mp(this, &GroupDialog::_add_group_pressed), varray(String()));
 
 	VBoxContainer *vbc_add = memnew(VBoxContainer);
 	hbc->add_child(vbc_add);
@@ -498,7 +498,7 @@ GroupDialog::GroupDialog() {
 	add_button = memnew(Button);
 	add_button->set_flat(true);
 	add_button->set_text(TTR("Add"));
-	add_button->connect("pressed", callable_mp(this, &GroupDialog::_add_pressed));
+	add_button->connect("button_clicked", callable_mp(this, &GroupDialog::_add_pressed));
 
 	vbc_buttons->add_child(add_button);
 	vbc_buttons->add_spacer();
@@ -508,7 +508,7 @@ GroupDialog::GroupDialog() {
 	remove_button = memnew(Button);
 	remove_button->set_flat(true);
 	remove_button->set_text(TTR("Remove"));
-	remove_button->connect("pressed", callable_mp(this, &GroupDialog::_removed_pressed));
+	remove_button->connect("button_clicked", callable_mp(this, &GroupDialog::_removed_pressed));
 
 	vbc_buttons->add_child(remove_button);
 
@@ -701,7 +701,7 @@ GroupsEditor::GroupsEditor() {
 	Button *group_dialog_button = memnew(Button);
 	group_dialog_button->set_text(TTR("Manage Groups"));
 	vbc->add_child(group_dialog_button);
-	group_dialog_button->connect("pressed", callable_mp(this, &GroupsEditor::_show_group_dialog));
+	group_dialog_button->connect("button_clicked", callable_mp(this, &GroupsEditor::_show_group_dialog));
 
 	HBoxContainer *hbc = memnew(HBoxContainer);
 	vbc->add_child(hbc);
@@ -714,7 +714,7 @@ GroupsEditor::GroupsEditor() {
 	add = memnew(Button);
 	add->set_text(TTR("Add"));
 	hbc->add_child(add);
-	add->connect("pressed", callable_mp(this, &GroupsEditor::_add_group), varray(String()));
+	add->connect("button_clicked", callable_mp(this, &GroupsEditor::_add_group), varray(String()));
 
 	tree = memnew(Tree);
 	tree->set_hide_root(true);

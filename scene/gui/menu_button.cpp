@@ -85,7 +85,7 @@ void MenuButton::_popup_visibility_changed(bool p_visible) {
 	}
 }
 
-void MenuButton::pressed() {
+void MenuButton::clicked() {
 	emit_signal(SNAME("about_to_popup"));
 	Size2 size = get_size() * get_viewport()->get_canvas_transform().get_scale();
 
@@ -142,7 +142,7 @@ void MenuButton::_notification(int p_what) {
 			if (menu_btn_other && menu_btn_other != this && menu_btn_other->is_switch_on_hover() && !menu_btn_other->is_disabled() &&
 					(get_parent()->is_ancestor_of(menu_btn_other) || menu_btn_other->get_parent()->is_ancestor_of(popup))) {
 				popup->hide();
-				menu_btn_other->pressed();
+				menu_btn_other->clicked();
 			}
 		} break;
 	}

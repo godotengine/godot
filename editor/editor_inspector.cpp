@@ -2084,7 +2084,7 @@ EditorInspectorArray::EditorInspectorArray() {
 	add_button = memnew(Button);
 	add_button->set_text(TTR("Add Element"));
 	add_button->set_text_align(Button::ALIGN_CENTER);
-	add_button->connect("pressed", callable_mp(this, &EditorInspectorArray::_add_button_pressed));
+	add_button->connect("button_clicked", callable_mp(this, &EditorInspectorArray::_add_button_pressed));
 	vbox->add_child(add_button);
 
 	hbox_pagination = memnew(HBoxContainer);
@@ -2094,12 +2094,12 @@ EditorInspectorArray::EditorInspectorArray() {
 
 	first_page_button = memnew(Button);
 	first_page_button->set_flat(true);
-	first_page_button->connect("pressed", callable_mp(this, &EditorInspectorArray::_first_page_button_pressed));
+	first_page_button->connect("button_clicked", callable_mp(this, &EditorInspectorArray::_first_page_button_pressed));
 	hbox_pagination->add_child(first_page_button);
 
 	prev_page_button = memnew(Button);
 	prev_page_button->set_flat(true);
-	prev_page_button->connect("pressed", callable_mp(this, &EditorInspectorArray::_prev_page_button_pressed));
+	prev_page_button->connect("button_clicked", callable_mp(this, &EditorInspectorArray::_prev_page_button_pressed));
 	hbox_pagination->add_child(prev_page_button);
 
 	page_line_edit = memnew(LineEdit);
@@ -2111,12 +2111,12 @@ EditorInspectorArray::EditorInspectorArray() {
 	hbox_pagination->add_child(page_count_label);
 	next_page_button = memnew(Button);
 	next_page_button->set_flat(true);
-	next_page_button->connect("pressed", callable_mp(this, &EditorInspectorArray::_next_page_button_pressed));
+	next_page_button->connect("button_clicked", callable_mp(this, &EditorInspectorArray::_next_page_button_pressed));
 	hbox_pagination->add_child(next_page_button);
 
 	last_page_button = memnew(Button);
 	last_page_button->set_flat(true);
-	last_page_button->connect("pressed", callable_mp(this, &EditorInspectorArray::_last_page_button_pressed));
+	last_page_button->connect("button_clicked", callable_mp(this, &EditorInspectorArray::_last_page_button_pressed));
 	hbox_pagination->add_child(last_page_button);
 
 	control_dropping = memnew(Control);

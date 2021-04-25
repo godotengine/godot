@@ -153,7 +153,7 @@ void Button::_notification(int p_what) {
 					if (rtl && has_theme_stylebox(SNAME("pressed_mirrored"))) {
 						style = get_theme_stylebox(SNAME("pressed_mirrored"));
 					} else {
-						style = get_theme_stylebox(SNAME("pressed"));
+						style = get_theme_stylebox(SNAME("button_clicked"));
 					}
 
 					if (!flat) {

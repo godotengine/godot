@@ -453,12 +453,12 @@ ConnectDialog::ConnectDialog() {
 	Button *add_bind = memnew(Button);
 	add_bind->set_text(TTR("Add"));
 	add_bind_hb->add_child(add_bind);
-	add_bind->connect("pressed", callable_mp(this, &ConnectDialog::_add_bind));
+	add_bind->connect("button_clicked", callable_mp(this, &ConnectDialog::_add_bind));
 
 	Button *del_bind = memnew(Button);
 	del_bind->set_text(TTR("Remove"));
 	add_bind_hb->add_child(del_bind);
-	del_bind->connect("pressed", callable_mp(this, &ConnectDialog::_remove_bind));
+	del_bind->connect("button_clicked", callable_mp(this, &ConnectDialog::_remove_bind));
 
 	vbc_right->add_margin_child(TTR("Add Extra Call Argument:"), add_bind_hb);
 
@@ -477,7 +477,7 @@ ConnectDialog::ConnectDialog() {
 	advanced = memnew(CheckButton);
 	dstm_hb->add_child(advanced);
 	advanced->set_text(TTR("Advanced"));
-	advanced->connect("pressed", callable_mp(this, &ConnectDialog::_advanced_pressed));
+	advanced->connect("button_clicked", callable_mp(this, &ConnectDialog::_advanced_pressed));
 
 	deferred = memnew(CheckBox);
 	deferred->set_h_size_flags(0);
@@ -1099,7 +1099,7 @@ ConnectionsDock::ConnectionsDock(EditorNode *p_editor) {
 	vbc->add_child(hb);
 	hb->add_spacer();
 	hb->add_child(connect_button);
-	connect_button->connect("pressed", callable_mp(this, &ConnectionsDock::_connect_pressed));
+	connect_button->connect("button_clicked", callable_mp(this, &ConnectionsDock::_connect_pressed));
 
 	connect_dialog = memnew(ConnectDialog);
 	add_child(connect_dialog);

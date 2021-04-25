@@ -194,7 +194,7 @@ void PluginConfigDialog::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_READY: {
 			connect("confirmed", callable_mp(this, &PluginConfigDialog::_on_confirmed));
-			get_cancel_button()->connect("pressed", callable_mp(this, &PluginConfigDialog::_on_cancelled));
+			get_cancel_button()->connect("button_clicked", callable_mp(this, &PluginConfigDialog::_on_cancelled));
 		} break;
 	}
 }

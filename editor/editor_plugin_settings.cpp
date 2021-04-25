@@ -197,10 +197,10 @@ EditorPluginSettings::EditorPluginSettings() {
 	title_hb->add_child(l);
 	title_hb->add_spacer();
 	create_plugin = memnew(Button(TTR("Create")));
-	create_plugin->connect("pressed", callable_mp(this, &EditorPluginSettings::_create_clicked));
+	create_plugin->connect("button_clicked", callable_mp(this, &EditorPluginSettings::_create_clicked));
 	title_hb->add_child(create_plugin);
 	update_list = memnew(Button(TTR("Update")));
-	update_list->connect("pressed", callable_mp(this, &EditorPluginSettings::update_plugins));
+	update_list->connect("button_clicked", callable_mp(this, &EditorPluginSettings::update_plugins));
 	title_hb->add_child(update_list);
 	add_child(title_hb);
 

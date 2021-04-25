@@ -368,7 +368,7 @@ EditorLog::EditorLog() {
 	clear_button->set_focus_mode(FOCUS_NONE);
 	clear_button->set_shortcut(ED_SHORTCUT("editor/clear_output", TTR("Clear Output"), KeyModifierMask::CMD | KeyModifierMask::SHIFT | Key::K));
 	clear_button->set_shortcut_context(this);
-	clear_button->connect("pressed", callable_mp(this, &EditorLog::_clear_request));
+	clear_button->connect("button_clicked", callable_mp(this, &EditorLog::_clear_request));
 	hb_tools->add_child(clear_button);
 
 	// Copy.
@@ -377,7 +377,7 @@ EditorLog::EditorLog() {
 	copy_button->set_focus_mode(FOCUS_NONE);
 	copy_button->set_shortcut(ED_SHORTCUT("editor/copy_output", TTR("Copy Selection"), KeyModifierMask::CMD | Key::C));
 	copy_button->set_shortcut_context(this);
-	copy_button->connect("pressed", callable_mp(this, &EditorLog::_copy_request));
+	copy_button->connect("button_clicked", callable_mp(this, &EditorLog::_copy_request));
 	hb_tools->add_child(copy_button);
 
 	// A second hbox to make a 2x2 grid of buttons.
@@ -392,7 +392,7 @@ EditorLog::EditorLog() {
 	collapse_button->set_tooltip(TTR("Collapse duplicate messages into one log entry. Shows number of occurrences."));
 	collapse_button->set_toggle_mode(true);
 	collapse_button->set_pressed(false);
-	collapse_button->connect("toggled", callable_mp(this, &EditorLog::_set_collapse));
+	collapse_button->connect("button_toggled", callable_mp(this, &EditorLog::_set_collapse));
 	hb_tools2->add_child(collapse_button);
 
 	// Show Search.
@@ -403,7 +403,7 @@ EditorLog::EditorLog() {
 	show_search_button->set_pressed(true);
 	show_search_button->set_shortcut(ED_SHORTCUT("editor/open_search", TTR("Focus Search/Filter Bar"), KeyModifierMask::CMD | Key::F));
 	show_search_button->set_shortcut_context(this);
-	show_search_button->connect("toggled", callable_mp(this, &EditorLog::_set_search_visible));
+	show_search_button->connect("button_toggled", callable_mp(this, &EditorLog::_set_search_visible));
 	hb_tools2->add_child(show_search_button);
 
 	// Message Type Filters.

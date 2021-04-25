@@ -1980,7 +1980,7 @@ TileMapEditorTilesPlugin::TileMapEditorTilesPlugin() {
 	select_tool_button->set_toggle_mode(true);
 	select_tool_button->set_button_group(tool_buttons_group);
 	select_tool_button->set_shortcut(ED_SHORTCUT("tiles_editor/selection_tool", "Selection", Key::S));
-	select_tool_button->connect("pressed", callable_mp(this, &TileMapEditorTilesPlugin::_update_toolbar));
+	select_tool_button->connect("button_clicked", callable_mp(this, &TileMapEditorTilesPlugin::_update_toolbar));
 	tilemap_tiles_tools_buttons->add_child(select_tool_button);
 
 	paint_tool_button = memnew(Button);
@@ -1989,7 +1989,7 @@ TileMapEditorTilesPlugin::TileMapEditorTilesPlugin() {
 	paint_tool_button->set_button_group(tool_buttons_group);
 	paint_tool_button->set_shortcut(ED_SHORTCUT("tiles_editor/paint_tool", "Paint", Key::D));
 	paint_tool_button->set_tooltip(TTR("Shift: Draw line.") + "\n" + TTR("Shift+Ctrl: Draw rectangle."));
-	paint_tool_button->connect("pressed", callable_mp(this, &TileMapEditorTilesPlugin::_update_toolbar));
+	paint_tool_button->connect("button_clicked", callable_mp(this, &TileMapEditorTilesPlugin::_update_toolbar));
 	tilemap_tiles_tools_buttons->add_child(paint_tool_button);
 
 	line_tool_button = memnew(Button);
@@ -1997,7 +1997,7 @@ TileMapEditorTilesPlugin::TileMapEditorTilesPlugin() {
 	line_tool_button->set_toggle_mode(true);
 	line_tool_button->set_button_group(tool_buttons_group);
 	line_tool_button->set_shortcut(ED_SHORTCUT("tiles_editor/line_tool", "Line", Key::L));
-	line_tool_button->connect("pressed", callable_mp(this, &TileMapEditorTilesPlugin::_update_toolbar));
+	line_tool_button->connect("button_clicked", callable_mp(this, &TileMapEditorTilesPlugin::_update_toolbar));
 	tilemap_tiles_tools_buttons->add_child(line_tool_button);
 
 	rect_tool_button = memnew(Button);
@@ -2005,7 +2005,7 @@ TileMapEditorTilesPlugin::TileMapEditorTilesPlugin() {
 	rect_tool_button->set_toggle_mode(true);
 	rect_tool_button->set_button_group(tool_buttons_group);
 	rect_tool_button->set_shortcut(ED_SHORTCUT("tiles_editor/rect_tool", "Rect", Key::R));
-	rect_tool_button->connect("pressed", callable_mp(this, &TileMapEditorTilesPlugin::_update_toolbar));
+	rect_tool_button->connect("button_clicked", callable_mp(this, &TileMapEditorTilesPlugin::_update_toolbar));
 	tilemap_tiles_tools_buttons->add_child(rect_tool_button);
 
 	bucket_tool_button = memnew(Button);
@@ -2013,7 +2013,7 @@ TileMapEditorTilesPlugin::TileMapEditorTilesPlugin() {
 	bucket_tool_button->set_toggle_mode(true);
 	bucket_tool_button->set_button_group(tool_buttons_group);
 	bucket_tool_button->set_shortcut(ED_SHORTCUT("tiles_editor/bucket_tool", "Bucket", Key::B));
-	bucket_tool_button->connect("pressed", callable_mp(this, &TileMapEditorTilesPlugin::_update_toolbar));
+	bucket_tool_button->connect("button_clicked", callable_mp(this, &TileMapEditorTilesPlugin::_update_toolbar));
 	tilemap_tiles_tools_buttons->add_child(bucket_tool_button);
 	toolbar->add_child(tilemap_tiles_tools_buttons);
 
@@ -2030,7 +2030,7 @@ TileMapEditorTilesPlugin::TileMapEditorTilesPlugin() {
 	picker_button->set_toggle_mode(true);
 	picker_button->set_shortcut(ED_SHORTCUT("tiles_editor/picker", "Picker", Key::P));
 	picker_button->set_tooltip(TTR("Alternatively hold Ctrl with other tools to pick tile."));
-	picker_button->connect("pressed", callable_mp(CanvasItemEditor::get_singleton(), &CanvasItemEditor::update_viewport));
+	picker_button->connect("button_clicked", callable_mp(CanvasItemEditor::get_singleton(), &CanvasItemEditor::update_viewport));
 	tools_settings->add_child(picker_button);
 
 	// Erase button.
@@ -2039,7 +2039,7 @@ TileMapEditorTilesPlugin::TileMapEditorTilesPlugin() {
 	erase_button->set_toggle_mode(true);
 	erase_button->set_shortcut(ED_SHORTCUT("tiles_editor/eraser", "Eraser", Key::E));
 	erase_button->set_tooltip(TTR("Alternatively use RMB to erase tiles."));
-	erase_button->connect("pressed", callable_mp(CanvasItemEditor::get_singleton(), &CanvasItemEditor::update_viewport));
+	erase_button->connect("button_clicked", callable_mp(CanvasItemEditor::get_singleton(), &CanvasItemEditor::update_viewport));
 	tools_settings->add_child(erase_button);
 
 	// Separator 2.
@@ -2057,7 +2057,7 @@ TileMapEditorTilesPlugin::TileMapEditorTilesPlugin() {
 	random_tile_checkbox = memnew(CheckBox);
 	random_tile_checkbox->set_flat(true);
 	random_tile_checkbox->set_text(TTR("Place Random Tile"));
-	random_tile_checkbox->connect("toggled", callable_mp(this, &TileMapEditorTilesPlugin::_on_random_tile_checkbox_toggled));
+	random_tile_checkbox->connect("button_toggled", callable_mp(this, &TileMapEditorTilesPlugin::_on_random_tile_checkbox_toggled));
 	tools_settings->add_child(random_tile_checkbox);
 
 	// Random tile scattering.
@@ -3231,7 +3231,7 @@ TileMapEditorTerrainsPlugin::TileMapEditorTerrainsPlugin() {
 	paint_tool_button->set_button_group(tool_buttons_group);
 	paint_tool_button->set_pressed(true);
 	paint_tool_button->set_shortcut(ED_SHORTCUT("tiles_editor/paint_tool", "Paint", Key::D));
-	paint_tool_button->connect("pressed", callable_mp(this, &TileMapEditorTerrainsPlugin::_update_toolbar));
+	paint_tool_button->connect("button_clicked", callable_mp(this, &TileMapEditorTerrainsPlugin::_update_toolbar));
 	tilemap_tiles_tools_buttons->add_child(paint_tool_button);
 
 	line_tool_button = memnew(Button);
@@ -3239,7 +3239,7 @@ TileMapEditorTerrainsPlugin::TileMapEditorTerrainsPlugin() {
 	line_tool_button->set_toggle_mode(true);
 	line_tool_button->set_button_group(tool_buttons_group);
 	line_tool_button->set_shortcut(ED_SHORTCUT("tiles_editor/line_tool", "Line", Key::L));
-	line_tool_button->connect("pressed", callable_mp(this, &TileMapEditorTerrainsPlugin::_update_toolbar));
+	line_tool_button->connect("button_clicked", callable_mp(this, &TileMapEditorTerrainsPlugin::_update_toolbar));
 	tilemap_tiles_tools_buttons->add_child(line_tool_button);
 
 	rect_tool_button = memnew(Button);
@@ -3247,7 +3247,7 @@ TileMapEditorTerrainsPlugin::TileMapEditorTerrainsPlugin() {
 	rect_tool_button->set_toggle_mode(true);
 	rect_tool_button->set_button_group(tool_buttons_group);
 	rect_tool_button->set_shortcut(ED_SHORTCUT("tiles_editor/rect_tool", "Rect", Key::R));
-	rect_tool_button->connect("pressed", callable_mp(this, &TileMapEditorTerrainsPlugin::_update_toolbar));
+	rect_tool_button->connect("button_clicked", callable_mp(this, &TileMapEditorTerrainsPlugin::_update_toolbar));
 	tilemap_tiles_tools_buttons->add_child(rect_tool_button);
 
 	bucket_tool_button = memnew(Button);
@@ -3255,7 +3255,7 @@ TileMapEditorTerrainsPlugin::TileMapEditorTerrainsPlugin() {
 	bucket_tool_button->set_toggle_mode(true);
 	bucket_tool_button->set_button_group(tool_buttons_group);
 	bucket_tool_button->set_shortcut(ED_SHORTCUT("tiles_editor/bucket_tool", "Bucket", Key::B));
-	bucket_tool_button->connect("pressed", callable_mp(this, &TileMapEditorTerrainsPlugin::_update_toolbar));
+	bucket_tool_button->connect("button_clicked", callable_mp(this, &TileMapEditorTerrainsPlugin::_update_toolbar));
 	tilemap_tiles_tools_buttons->add_child(bucket_tool_button);
 
 	toolbar->add_child(tilemap_tiles_tools_buttons);
@@ -3272,7 +3272,7 @@ TileMapEditorTerrainsPlugin::TileMapEditorTerrainsPlugin() {
 	picker_button->set_flat(true);
 	picker_button->set_toggle_mode(true);
 	picker_button->set_shortcut(ED_SHORTCUT("tiles_editor/picker", "Picker", Key::P));
-	picker_button->connect("pressed", callable_mp(CanvasItemEditor::get_singleton(), &CanvasItemEditor::update_viewport));
+	picker_button->connect("button_clicked", callable_mp(CanvasItemEditor::get_singleton(), &CanvasItemEditor::update_viewport));
 	tools_settings->add_child(picker_button);
 
 	// Erase button.
@@ -3280,7 +3280,7 @@ TileMapEditorTerrainsPlugin::TileMapEditorTerrainsPlugin() {
 	erase_button->set_flat(true);
 	erase_button->set_toggle_mode(true);
 	erase_button->set_shortcut(ED_SHORTCUT("tiles_editor/eraser", "Eraser", Key::E));
-	erase_button->connect("pressed", callable_mp(CanvasItemEditor::get_singleton(), &CanvasItemEditor::update_viewport));
+	erase_button->connect("button_clicked", callable_mp(CanvasItemEditor::get_singleton(), &CanvasItemEditor::update_viewport));
 	tools_settings->add_child(erase_button);
 
 	// Separator 2.
@@ -3946,7 +3946,7 @@ TileMapEditor::TileMapEditor() {
 	layers_selection_button = memnew(Button);
 	layers_selection_button->set_toggle_mode(true);
 	layers_selection_button->connect("draw", callable_mp(this, &TileMapEditor::_layers_selection_button_draw));
-	layers_selection_button->connect("pressed", callable_mp(this, &TileMapEditor::_layers_selection_button_pressed));
+	layers_selection_button->connect("button_clicked", callable_mp(this, &TileMapEditor::_layers_selection_button_pressed));
 	layers_selection_button->connect("hidden", callable_mp((Window *)layers_selection_popup, &Popup::hide));
 	layers_selection_button->set_tooltip(TTR("Tile Map Layer"));
 	layers_selection_button->add_child(layers_selection_popup);
@@ -3956,7 +3956,7 @@ TileMapEditor::TileMapEditor() {
 	toogle_highlight_selected_layer_button->set_flat(true);
 	toogle_highlight_selected_layer_button->set_toggle_mode(true);
 	toogle_highlight_selected_layer_button->set_pressed(true);
-	toogle_highlight_selected_layer_button->connect("pressed", callable_mp(this, &TileMapEditor::_update_layers_selection));
+	toogle_highlight_selected_layer_button->connect("button_clicked", callable_mp(this, &TileMapEditor::_update_layers_selection));
 	toogle_highlight_selected_layer_button->set_tooltip(TTR("Highlight Selected TileMap Layer"));
 	tile_map_toolbar->add_child(toogle_highlight_selected_layer_button);
 
@@ -3967,7 +3967,7 @@ TileMapEditor::TileMapEditor() {
 	toggle_grid_button->set_flat(true);
 	toggle_grid_button->set_toggle_mode(true);
 	toggle_grid_button->set_tooltip(TTR("Toggle grid visibility."));
-	toggle_grid_button->connect("toggled", callable_mp(this, &TileMapEditor::_on_grid_toggled));
+	toggle_grid_button->connect("button_toggled", callable_mp(this, &TileMapEditor::_on_grid_toggled));
 	tile_map_toolbar->add_child(toggle_grid_button);
 
 	// Advanced settings menu button.

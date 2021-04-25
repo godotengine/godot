@@ -37,7 +37,6 @@
 class MenuButton : public Button {
 	GDCLASS(MenuButton, Button);
 
-	bool clicked = false;
 	bool switch_on_hover = false;
 	bool disable_shortcuts = false;
 	PopupMenu *popup;
@@ -57,7 +56,7 @@ protected:
 	virtual void unhandled_key_input(const Ref<InputEvent> &p_event) override;
 
 public:
-	virtual void pressed() override;
+	virtual void clicked() override;
 
 	PopupMenu *get_popup() const;
 	void set_switch_on_hover(bool p_enabled);

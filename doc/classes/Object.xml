@@ -162,9 +162,9 @@
 				[gdscript]
 				func _ready():
 				    var button = Button.new()
-				    # `button_down` here is a Signal object, and we thus call the Signal.connect() method,
+				    # `button_pressed` here is a Signal object, and we thus call the Signal.connect() method,
 				    # not Object.connect(). See discussion below for a more in-depth overview of the API.
-				    button.button_down.connect(_on_button_down)
+				    button.button_pressed.connect(_on_button_pressed)
 
 				    # This assumes that a `Player` class exists which defines a `hit` signal.
 				    var player = Player.new()
@@ -172,8 +172,8 @@
 				    # returns a new Callable with the parameter binds.
 				    player.hit.connect(_on_player_hit.bind("sword", 100))
 
-				func _on_button_down():
-				    print("Button down!")
+				func _on_button_pressed():
+				    print("Button pressed!")
 
 				func _on_player_hit(weapon_type, damage):
 				    print("Hit with weapon %s for %d damage." % [weapon_type, damage])
@@ -183,7 +183,7 @@
 				{
 				    var button = new Button();
 				    // C# supports passing signals as events, so we can use this idiomatic construct:
-				    button.ButtonDown += OnButtonDown;
+				    button.ButtonPressed += OnButtonPressed;
 
 				    // This assumes that a `Player` class exists which defines a `Hit` signal.
 				    var player = new Player();
@@ -191,9 +191,9 @@
 				    player.Hit.Connect(OnPlayerHit, new Godot.Collections.Array {"sword", 100 });
 				}
 
-				private void OnButtonDown()
+				private void OnButtonPressed()
 				{
-				    GD.Print("Button down!");
+				    GD.Print("Button pressed!");
 				}
 
 				private void OnPlayerHit(string weaponType, int damage)
@@ -209,40 +209,40 @@
 				func _ready():
 				    var button = Button.new()
 				    # Option 1: Object.connect() with an implicit Callable for the defined function.
-				    button.connect("button_down", _on_button_down)
+				    button.connect("button_pressed", _on_button_pressed)
 				    # Option 2: Object.connect() with a constructed Callable using a target object and method name.
-				    button.connect("button_down", Callable(self, "_on_button_down"))
+				    button.connect("button_pressed", Callable(self, "_on_button_pressed"))
 				    # Option 3: Signal.connect() with an implicit Callable for the defined function.
-				    button.button_down.connect(_on_button_down)
+				    button.button_pressed.connect(_on_button_pressed)
 				    # Option 4: Signal.connect() with a constructed Callable using a target object and method name.
-				    button.button_down.connect(Callable(self, "_on_button_down"))
+				    button.button_pressed.connect(Callable(self, "_on_button_pressed"))
 
-				func _on_button_down():
-				    print("Button down!")
+				func _on_button_pressed():
+				    print("Button pressed!")
 				[/gdscript]
 				[csharp]
 				public override void _Ready()
 				{
 				    var button = new Button();
 				    // Option 1: Object.Connect() with an implicit Callable for the defined function.
-				    button.Connect("button_down", OnButtonDown);
+				    button.Connect("button_pressed", OnButtonPressed);
 				    // Option 2: Object.connect() with a constructed Callable using a target object and method name.
-				    button.Connect("button_down", new Callable(self, nameof(OnButtonDown)));
+				    button.Connect("button_pressed", new Callable(self, nameof(OnButtonPressed)));
 				    // Option 3: Signal.connect() with an implicit Callable for the defined function.
-				    button.ButtonDown.Connect(OnButtonDown);
+				    button.ButtonPressed.Connect(OnButtonPressed);
 				    // Option 3b: In C#, we can use signals as events and connect with this more idiomatic syntax:
-				    button.ButtonDown += OnButtonDown;
+				    button.ButtonPressed += OnButtonPressed;
 				    // Option 4: Signal.connect() with a constructed Callable using a target object and method name.
-				    button.ButtonDown.Connect(new Callable(self, nameof(OnButtonDown)));
+				    button.ButtonPressed.Connect(new Callable(self, nameof(OnButtonPressed)));
 				}
 
-				private void OnButtonDown()
+				private void OnButtonPressed()
 				{
-				    GD.Print("Button down!");
+				    GD.Print("Button pressed!");
 				}
 				[/csharp]
 				[/codeblocks]
-				While all options have the same outcome ([code]button[/code]'s [signal BaseButton.button_down] signal will be connected to [code]_on_button_down[/code]), option 3 offers the best validation: it will throw a compile-time error if either the [code]button_down[/code] signal or the [code]_on_button_down[/code] callable are undefined. On the other hand, option 2 only relies on string names and will only be able to validate either names at runtime: it will throw a runtime error if [code]"button_down"[/code] doesn't correspond to a signal, or if [code]"_on_button_down"[/code] is not a registered method in the object [code]self[/code]. The main reason for using options 1, 2, or 4 would be if you actually need to use strings (e.g. to connect signals programmatically based on strings read from a configuration file). Otherwise, option 3 is the recommended (and fastest) method.
+				While all options have the same outcome ([code]button[/code]'s [signal BaseButton.button_pressed] signal will be connected to [code]_on_button_pressed[/code]), option 3 offers the best validation: it will throw a compile-time error if either the [code]button_pressed[/code] signal or the [code]_on_button_pressed[/code] callable are undefined. On the other hand, option 2 only relies on string names and will only be able to validate either names at runtime: it will throw a runtime error if [code]"button_pressed"[/code] doesn't correspond to a signal, or if [code]"_on_button_pressed"[/code] is not a registered method in the object [code]self[/code]. The main reason for using options 1, 2, or 4 would be if you actually need to use strings (e.g. to connect signals programmatically based on strings read from a configuration file). Otherwise, option 3 is the recommended (and fastest) method.
 				[b]Parameter bindings and passing:[/b]
 				For legacy or language-specific reasons, there are also several ways to bind parameters to signals. One can pass a [code]binds[/code] [Array] to [method Object.connect] or [method Signal.connect], or use the recommended [method Callable.bind] method to create a new callable from an existing one, with the given parameter binds.
 				One can also pass additional parameters when emitting the signal with [method emit_signal]. The examples below show the relationship between those two types of parameters.

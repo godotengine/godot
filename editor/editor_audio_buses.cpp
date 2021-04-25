@@ -781,21 +781,21 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses, bool p_is_master) {
 	solo->set_toggle_mode(true);
 	solo->set_tooltip(TTR("Solo"));
 	solo->set_focus_mode(FOCUS_NONE);
-	solo->connect("pressed", callable_mp(this, &EditorAudioBus::_solo_toggled));
+	solo->connect("button_clicked", callable_mp(this, &EditorAudioBus::_solo_toggled));
 	hbc->add_child(solo);
 	mute = memnew(Button);
 	mute->set_flat(true);
 	mute->set_toggle_mode(true);
 	mute->set_tooltip(TTR("Mute"));
 	mute->set_focus_mode(FOCUS_NONE);
-	mute->connect("pressed", callable_mp(this, &EditorAudioBus::_mute_toggled));
+	mute->connect("button_clicked", callable_mp(this, &EditorAudioBus::_mute_toggled));
 	hbc->add_child(mute);
 	bypass = memnew(Button);
 	bypass->set_flat(true);
 	bypass->set_toggle_mode(true);
 	bypass->set_tooltip(TTR("Bypass"));
 	bypass->set_focus_mode(FOCUS_NONE);
-	bypass->connect("pressed", callable_mp(this, &EditorAudioBus::_bypass_toggled));
+	bypass->connect("button_clicked", callable_mp(this, &EditorAudioBus::_bypass_toggled));
 	hbc->add_child(bypass);
 	hbc->add_spacer();
 
@@ -1265,7 +1265,7 @@ EditorAudioBuses::EditorAudioBuses() {
 	top_hb->add_child(add);
 	add->set_text(TTR("Add Bus"));
 	add->set_tooltip(TTR("Add a new Audio Bus to this layout."));
-	add->connect("pressed", callable_mp(this, &EditorAudioBuses::_add_bus));
+	add->connect("button_clicked", callable_mp(this, &EditorAudioBuses::_add_bus));
 
 	VSeparator *separator = memnew(VSeparator);
 	top_hb->add_child(separator);
@@ -1274,25 +1274,25 @@ EditorAudioBuses::EditorAudioBuses() {
 	load->set_text(TTR("Load"));
 	load->set_tooltip(TTR("Load an existing Bus Layout."));
 	top_hb->add_child(load);
-	load->connect("pressed", callable_mp(this, &EditorAudioBuses::_load_layout));
+	load->connect("button_clicked", callable_mp(this, &EditorAudioBuses::_load_layout));
 
 	save_as = memnew(Button);
 	save_as->set_text(TTR("Save As"));
 	save_as->set_tooltip(TTR("Save this Bus Layout to a file."));
 	top_hb->add_child(save_as);
-	save_as->connect("pressed", callable_mp(this, &EditorAudioBuses::_save_as_layout));
+	save_as->connect("button_clicked", callable_mp(this, &EditorAudioBuses::_save_as_layout));
 
 	_default = memnew(Button);
 	_default->set_text(TTR("Load Default"));
 	_default->set_tooltip(TTR("Load the default Bus Layout."));
 	top_hb->add_child(_default);
-	_default->connect("pressed", callable_mp(this, &EditorAudioBuses::_load_default_layout));
+	_default->connect("button_clicked", callable_mp(this, &EditorAudioBuses::_load_default_layout));
 
 	_new = memnew(Button);
 	_new->set_text(TTR("Create"));
 	_new->set_tooltip(TTR("Create a new Bus Layout."));
 	top_hb->add_child(_new);
-	_new->connect("pressed", callable_mp(this, &EditorAudioBuses::_new_layout));
+	_new->connect("button_clicked", callable_mp(this, &EditorAudioBuses::_new_layout));
 
 	bus_scroll = memnew(ScrollContainer);
 	bus_scroll->set_v_size_flags(SIZE_EXPAND_FILL);

@@ -1619,7 +1619,7 @@ AnimationPlayerEditor::AnimationPlayerEditor(EditorNode *p_editor, AnimationPlay
 	onion_toggle->set_flat(true);
 	onion_toggle->set_toggle_mode(true);
 	onion_toggle->set_tooltip(TTR("Enable Onion Skinning"));
-	onion_toggle->connect("pressed", callable_mp(this, &AnimationPlayerEditor::_onion_skinning_menu), varray(ONION_SKINNING_ENABLE));
+	onion_toggle->connect("button_clicked", callable_mp(this, &AnimationPlayerEditor::_onion_skinning_menu), varray(ONION_SKINNING_ENABLE));
 	hb->add_child(onion_toggle);
 
 	onion_skinning = memnew(MenuButton);
@@ -1646,7 +1646,7 @@ AnimationPlayerEditor::AnimationPlayerEditor(EditorNode *p_editor, AnimationPlay
 	pin->set_toggle_mode(true);
 	pin->set_tooltip(TTR("Pin AnimationPlayer"));
 	hb->add_child(pin);
-	pin->connect("pressed", callable_mp(this, &AnimationPlayerEditor::_pin_pressed));
+	pin->connect("button_clicked", callable_mp(this, &AnimationPlayerEditor::_pin_pressed));
 
 	file = memnew(EditorFileDialog);
 	add_child(file);
@@ -1688,13 +1688,13 @@ AnimationPlayerEditor::AnimationPlayerEditor(EditorNode *p_editor, AnimationPlay
 
 	blend_editor.tree->connect("item_edited", callable_mp(this, &AnimationPlayerEditor::_blend_edited));
 
-	autoplay->connect("pressed", callable_mp(this, &AnimationPlayerEditor::_autoplay_pressed));
+	autoplay->connect("button_clicked", callable_mp(this, &AnimationPlayerEditor::_autoplay_pressed));
 	autoplay->set_toggle_mode(true);
-	play->connect("pressed", callable_mp(this, &AnimationPlayerEditor::_play_pressed));
-	play_from->connect("pressed", callable_mp(this, &AnimationPlayerEditor::_play_from_pressed));
-	play_bw->connect("pressed", callable_mp(this, &AnimationPlayerEditor::_play_bw_pressed));
-	play_bw_from->connect("pressed", callable_mp(this, &AnimationPlayerEditor::_play_bw_from_pressed));
-	stop->connect("pressed", callable_mp(this, &AnimationPlayerEditor::_stop_pressed));
+	play->connect("button_clicked", callable_mp(this, &AnimationPlayerEditor::_play_pressed));
+	play_from->connect("button_clicked", callable_mp(this, &AnimationPlayerEditor::_play_from_pressed));
+	play_bw->connect("button_clicked", callable_mp(this, &AnimationPlayerEditor::_play_bw_pressed));
+	play_bw_from->connect("button_clicked", callable_mp(this, &AnimationPlayerEditor::_play_bw_from_pressed));
+	stop->connect("button_clicked", callable_mp(this, &AnimationPlayerEditor::_stop_pressed));
 
 	animation->connect("item_selected", callable_mp(this, &AnimationPlayerEditor::_animation_selected));
 

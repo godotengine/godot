@@ -662,12 +662,12 @@ EditorSettingsDialog::EditorSettingsDialog() {
 	restart_hb->add_child(restart_label);
 	restart_hb->add_spacer();
 	Button *restart_button = memnew(Button);
-	restart_button->connect("pressed", callable_mp(this, &EditorSettingsDialog::_editor_restart));
+	restart_button->connect("button_clicked", callable_mp(this, &EditorSettingsDialog::_editor_restart));
 	restart_hb->add_child(restart_button);
 	restart_button->set_text(TTR("Save & Restart"));
 	restart_close_button = memnew(Button);
 	restart_close_button->set_flat(true);
-	restart_close_button->connect("pressed", callable_mp(this, &EditorSettingsDialog::_editor_restart_close));
+	restart_close_button->connect("button_clicked", callable_mp(this, &EditorSettingsDialog::_editor_restart_close));
 	restart_hb->add_child(restart_close_button);
 	restart_container->hide();
 

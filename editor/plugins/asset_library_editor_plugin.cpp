@@ -101,7 +101,7 @@ EditorAssetLibraryItem::EditorAssetLibraryItem() {
 	icon = memnew(TextureButton);
 	icon->set_custom_minimum_size(Size2(64, 64) * EDSCALE);
 	icon->set_default_cursor_shape(CURSOR_POINTING_HAND);
-	icon->connect("pressed", callable_mp(this, &EditorAssetLibraryItem::_asset_clicked));
+	icon->connect("button_clicked", callable_mp(this, &EditorAssetLibraryItem::_asset_clicked));
 
 	hb->add_child(icon);
 
@@ -112,17 +112,17 @@ EditorAssetLibraryItem::EditorAssetLibraryItem() {
 
 	title = memnew(LinkButton);
 	title->set_underline_mode(LinkButton::UNDERLINE_MODE_ON_HOVER);
-	title->connect("pressed", callable_mp(this, &EditorAssetLibraryItem::_asset_clicked));
+	title->connect("button_clicked", callable_mp(this, &EditorAssetLibraryItem::_asset_clicked));
 	vb->add_child(title);
 
 	category = memnew(LinkButton);
 	category->set_underline_mode(LinkButton::UNDERLINE_MODE_ON_HOVER);
-	category->connect("pressed", callable_mp(this, &EditorAssetLibraryItem::_category_clicked));
+	category->connect("button_clicked", callable_mp(this, &EditorAssetLibraryItem::_category_clicked));
 	vb->add_child(category);
 
 	author = memnew(LinkButton);
 	author->set_underline_mode(LinkButton::UNDERLINE_MODE_ON_HOVER);
-	author->connect("pressed", callable_mp(this, &EditorAssetLibraryItem::_author_clicked));
+	author->connect("button_clicked", callable_mp(this, &EditorAssetLibraryItem::_author_clicked));
 	vb->add_child(author);
 
 	price = memnew(Label);
@@ -242,7 +242,7 @@ void EditorAssetLibraryItemDescription::add_preview(int p_id, bool p_video, cons
 	preview.button = memnew(Button);
 	preview.button->set_icon(previews->get_theme_icon(SNAME("ThumbnailWait"), SNAME("EditorIcons")));
 	preview.button->set_toggle_mode(true);
-	preview.button->connect("pressed", callable_mp(this, &EditorAssetLibraryItemDescription::_preview_click), varray(p_id));
+	preview.button->connect("button_clicked", callable_mp(this, &EditorAssetLibraryItemDescription::_preview_click), varray(p_id));
 	preview_hb->add_child(preview.button);
 	if (!p_video) {
 		preview.image = previews->get_theme_icon(SNAME("ThumbnailWait"), SNAME("EditorIcons"));
@@ -499,7 +499,7 @@ EditorAssetLibraryItemDownload::EditorAssetLibraryItemDownload() {
 	title->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 
 	dismiss = memnew(TextureButton);
-	dismiss->connect("pressed", callable_mp(this, &EditorAssetLibraryItemDownload::_close));
+	dismiss->connect("button_clicked", callable_mp(this, &EditorAssetLibraryItemDownload::_close));
 	title_hb->add_child(dismiss);
 
 	title->set_clip_text(true);
@@ -519,11 +519,11 @@ EditorAssetLibraryItemDownload::EditorAssetLibraryItemDownload() {
 	install = memnew(Button);
 	install->set_text(TTR("Install..."));
 	install->set_disabled(true);
-	install->connect("pressed", callable_mp(this, &EditorAssetLibraryItemDownload::_install));
+	install->connect("button_clicked", callable_mp(this, &EditorAssetLibraryItemDownload::_install));
 
 	retry = memnew(Button);
 	retry->set_text(TTR("Retry"));
-	retry->connect("pressed", callable_mp(this, &EditorAssetLibraryItemDownload::_make_request));
+	retry->connect("button_clicked", callable_mp(this, &EditorAssetLibraryItemDownload::_make_request));
 	// Only show the Retry button in case of a failure.
 	retry->hide();
 
@@ -977,7 +977,7 @@ HBoxContainer *EditorAssetLibrary::_make_pages(int p_page, int p_page_count, int
 	Button *first = memnew(Button);
 	first->set_text(TTR("First"));
 	if (p_page != 0) {
-		first->connect("pressed", callable_mp(this, &EditorAssetLibrary::_search), varray(0));
+		first->connect("button_clicked", callable_mp(this, &EditorAssetLibrary::_search), varray(0));
 	} else {
 		first->set_disabled(true);
 		first->set_focus_mode(Control::FOCUS_NONE);
@@ -987,7 +987,7 @@ HBoxContainer *EditorAssetLibrary::_make_pages(int p_page, int p_page_count, int
 	Button *prev = memnew(Button);
 	prev->set_text(TTR("Previous"));
 	if (p_page > 0) {
-		prev->connect("pressed", callable_mp(this, &EditorAssetLibrary::_search), varray(p_page - 1));
+		prev->connect("button_clicked", callable_mp(this, &EditorAssetLibrary::_search), varray(p_page - 1));
 	} else {
 		prev->set_disabled(true);
 		prev->set_focus_mode(Control::FOCUS_NONE);
@@ -1008,7 +1008,7 @@ HBoxContainer *EditorAssetLibrary::_make_pages(int p_page, int p_page_count, int
 			Button *current = memnew(Button);
 			// Add padding to make page number buttons easier to click.
 			current->set_text(vformat(" %d ", i + 1));
-			current->connect("pressed", callable_mp(this, &EditorAssetLibrary::_search), varray(i));
+			current->connect("button_clicked", callable_mp(this, &EditorAssetLibrary::_search), varray(i));
 
 			hbc->add_child(current);
 		}
@@ -1017,7 +1017,7 @@ HBoxContainer *EditorAssetLibrary::_make_pages(int p_page, int p_page_count, int
 	Button *next = memnew(Button);
 	next->set_text(TTR("Next"));
 	if (p_page < p_page_count - 1) {
-		next->connect("pressed", callable_mp(this, &EditorAssetLibrary::_search), varray(p_page + 1));
+		next->connect("button_clicked", callable_mp(this, &EditorAssetLibrary::_search), varray(p_page + 1));
 	} else {
 		next->set_disabled(true);
 		next->set_focus_mode(Control::FOCUS_NONE);
@@ -1028,7 +1028,7 @@ HBoxContainer *EditorAssetLibrary::_make_pages(int p_page, int p_page_count, int
 	Button *last = memnew(Button);
 	last->set_text(TTR("Last"));
 	if (p_page != p_page_count - 1) {
-		last->connect("pressed", callable_mp(this, &EditorAssetLibrary::_search), varray(p_page_count - 1));
+		last->connect("button_clicked", callable_mp(this, &EditorAssetLibrary::_search), varray(p_page_count - 1));
 	} else {
 		last->set_disabled(true);
 		last->set_focus_mode(Control::FOCUS_NONE);
@@ -1364,12 +1364,12 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 	Button *open_asset = memnew(Button);
 	open_asset->set_text(TTR("Import..."));
 	search_hb->add_child(open_asset);
-	open_asset->connect("pressed", callable_mp(this, &EditorAssetLibrary::_asset_open));
+	open_asset->connect("button_clicked", callable_mp(this, &EditorAssetLibrary::_asset_open));
 
 	Button *plugins = memnew(Button);
 	plugins->set_text(TTR("Plugins..."));
 	search_hb->add_child(plugins);
-	plugins->connect("pressed", callable_mp(this, &EditorAssetLibrary::_manage_plugins));
+	plugins->connect("button_clicked", callable_mp(this, &EditorAssetLibrary::_manage_plugins));
 
 	if (p_templates_only) {
 		open_asset->hide();

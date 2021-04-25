@@ -149,7 +149,7 @@ EditorAbout::EditorAbout() {
 	version_btn->set_meta(META_TEXT_TO_COPY, "v" VERSION_FULL_BUILD + hash);
 	version_btn->set_underline_mode(LinkButton::UNDERLINE_MODE_ON_HOVER);
 	version_btn->set_tooltip(TTR("Click to copy."));
-	version_btn->connect("pressed", callable_mp(this, &EditorAbout::_version_button_pressed));
+	version_btn->connect("button_clicked", callable_mp(this, &EditorAbout::_version_button_pressed));
 	version_info_vbc->add_child(version_btn);
 
 	Label *about_text = memnew(Label);

@@ -176,7 +176,7 @@ GPUParticlesCollisionSDFEditorPlugin::GPUParticlesCollisionSDFEditorPlugin(Edito
 	bake->set_flat(true);
 	bake->set_icon(editor->get_gui_base()->get_theme_icon(SNAME("Bake"), SNAME("EditorIcons")));
 	bake->set_text(TTR("Bake SDF"));
-	bake->connect("pressed", callable_mp(this, &GPUParticlesCollisionSDFEditorPlugin::_bake));
+	bake->connect("button_clicked", callable_mp(this, &GPUParticlesCollisionSDFEditorPlugin::_bake));
 	bake_hb->add_child(bake);
 	bake_info = memnew(Label);
 	bake_info->set_h_size_flags(Control::SIZE_EXPAND_FILL);

@@ -344,7 +344,7 @@ TextControlEditor::TextControlEditor() {
 	clear_formatting->set_flat(true);
 	clear_formatting->set_tooltip(TTR("Clear Formatting"));
 	add_child(clear_formatting);
-	clear_formatting->connect("pressed", callable_mp(this, &TextControlEditor::_clear_formatting));
+	clear_formatting->connect("button_clicked", callable_mp(this, &TextControlEditor::_clear_formatting));
 }
 
 /*************************************************************************/

@@ -1702,7 +1702,7 @@ DynamicFontImportSettings::DynamicFontImportSettings() {
 	page2_hb_vars->add_child(add_var);
 	add_var->set_tooltip(TTR("Add configuration"));
 	add_var->set_icon(add_var->get_theme_icon("Add", "EditorIcons"));
-	add_var->connect("pressed", callable_mp(this, &DynamicFontImportSettings::_variation_add));
+	add_var->connect("button_clicked", callable_mp(this, &DynamicFontImportSettings::_variation_add));
 
 	vars_list = memnew(Tree);
 	page2_side_vb->add_child(vars_list);
@@ -1772,12 +1772,12 @@ DynamicFontImportSettings::DynamicFontImportSettings() {
 	Button *btn_fill = memnew(Button);
 	text_hb->add_child(btn_fill);
 	btn_fill->set_text(TTR("Shape text and add glyphs"));
-	btn_fill->connect("pressed", callable_mp(this, &DynamicFontImportSettings::_glyph_text_selected));
+	btn_fill->connect("button_clicked", callable_mp(this, &DynamicFontImportSettings::_glyph_text_selected));
 
 	Button *btn_clear = memnew(Button);
 	text_hb->add_child(btn_clear);
 	btn_clear->set_text(TTR("Clear glyph list"));
-	btn_clear->connect("pressed", callable_mp(this, &DynamicFontImportSettings::_glyph_clear));
+	btn_clear->connect("button_clicked", callable_mp(this, &DynamicFontImportSettings::_glyph_clear));
 
 	// Page 4 layout: Character map
 	VBoxContainer *page4_vb = memnew(VBoxContainer);
@@ -1854,7 +1854,7 @@ DynamicFontImportSettings::DynamicFontImportSettings() {
 	hb_lang->add_child(add_lang);
 	add_lang->set_tooltip(TTR("Add language override"));
 	add_lang->set_icon(add_var->get_theme_icon("Add", "EditorIcons"));
-	add_lang->connect("pressed", callable_mp(this, &DynamicFontImportSettings::_lang_add));
+	add_lang->connect("button_clicked", callable_mp(this, &DynamicFontImportSettings::_lang_add));
 
 	lang_list = memnew(Tree);
 	page5_vb->add_child(lang_list);
@@ -1882,7 +1882,7 @@ DynamicFontImportSettings::DynamicFontImportSettings() {
 	hb_script->add_child(add_script);
 	add_script->set_tooltip(TTR("Add script override"));
 	add_script->set_icon(add_var->get_theme_icon("Add", "EditorIcons"));
-	add_script->connect("pressed", callable_mp(this, &DynamicFontImportSettings::_script_add));
+	add_script->connect("button_clicked", callable_mp(this, &DynamicFontImportSettings::_script_add));
 
 	script_list = memnew(Tree);
 	page5_vb->add_child(script_list);

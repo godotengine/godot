@@ -3633,7 +3633,7 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	members_overview_alphabeta_sort_button->set_tooltip(TTR("Toggle alphabetical sorting of the method list."));
 	members_overview_alphabeta_sort_button->set_toggle_mode(true);
 	members_overview_alphabeta_sort_button->set_pressed(EditorSettings::get_singleton()->get("text_editor/script_list/sort_members_outline_alphabetically"));
-	members_overview_alphabeta_sort_button->connect("toggled", callable_mp(this, &ScriptEditor::_toggle_members_overview_alpha_sort));
+	members_overview_alphabeta_sort_button->connect("button_toggled", callable_mp(this, &ScriptEditor::_toggle_members_overview_alpha_sort));
 
 	buttons_hbox->add_child(members_overview_alphabeta_sort_button);
 
@@ -3773,14 +3773,14 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	site_search = memnew(Button);
 	site_search->set_flat(true);
 	site_search->set_text(TTR("Online Docs"));
-	site_search->connect("pressed", callable_mp(this, &ScriptEditor::_menu_option), varray(SEARCH_WEBSITE));
+	site_search->connect("button_clicked", callable_mp(this, &ScriptEditor::_menu_option), varray(SEARCH_WEBSITE));
 	menu_hb->add_child(site_search);
 	site_search->set_tooltip(TTR("Open Godot online documentation."));
 
 	help_search = memnew(Button);
 	help_search->set_flat(true);
 	help_search->set_text(TTR("Search Help"));
-	help_search->connect("pressed", callable_mp(this, &ScriptEditor::_menu_option), varray(SEARCH_HELP));
+	help_search->connect("button_clicked", callable_mp(this, &ScriptEditor::_menu_option), varray(SEARCH_HELP));
 	menu_hb->add_child(help_search);
 	help_search->set_tooltip(TTR("Search the reference documentation."));
 
@@ -3788,14 +3788,14 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 
 	script_back = memnew(Button);
 	script_back->set_flat(true);
-	script_back->connect("pressed", callable_mp(this, &ScriptEditor::_history_back));
+	script_back->connect("button_clicked", callable_mp(this, &ScriptEditor::_history_back));
 	menu_hb->add_child(script_back);
 	script_back->set_disabled(true);
 	script_back->set_tooltip(TTR("Go to previous edited document."));
 
 	script_forward = memnew(Button);
 	script_forward->set_flat(true);
-	script_forward->connect("pressed", callable_mp(this, &ScriptEditor::_history_forward));
+	script_forward->connect("button_clicked", callable_mp(this, &ScriptEditor::_history_forward));
 	menu_hb->add_child(script_forward);
 	script_forward->set_disabled(true);
 	script_forward->set_tooltip(TTR("Go to next edited document."));

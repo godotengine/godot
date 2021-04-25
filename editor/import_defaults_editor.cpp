@@ -195,7 +195,7 @@ ImportDefaultsEditor::ImportDefaultsEditor() {
 	reset_defaults = memnew(Button);
 	reset_defaults->set_text(TTR("Reset to Defaults"));
 	reset_defaults->set_disabled(true);
-	reset_defaults->connect("pressed", callable_mp(this, &ImportDefaultsEditor::_reset));
+	reset_defaults->connect("button_clicked", callable_mp(this, &ImportDefaultsEditor::_reset));
 	hb->add_child(reset_defaults);
 	add_child(hb);
 	inspector = memnew(EditorInspector);
@@ -204,7 +204,7 @@ ImportDefaultsEditor::ImportDefaultsEditor() {
 	CenterContainer *cc = memnew(CenterContainer);
 	save_defaults = memnew(Button);
 	save_defaults->set_text(TTR("Save"));
-	save_defaults->connect("pressed", callable_mp(this, &ImportDefaultsEditor::_save));
+	save_defaults->connect("button_clicked", callable_mp(this, &ImportDefaultsEditor::_save));
 	cc->add_child(save_defaults);
 	add_child(cc);
 

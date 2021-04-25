@@ -243,7 +243,7 @@ Button *AcceptDialog::add_button(const String &p_text, bool p_right, const Strin
 	}
 
 	if (p_action != "") {
-		button->connect("pressed", callable_mp(this, &AcceptDialog::_custom_action), varray(p_action));
+		button->connect("button_clicked", callable_mp(this, &AcceptDialog::_custom_action), varray(p_action));
 	}
 
 	return button;
@@ -255,7 +255,7 @@ Button *AcceptDialog::add_cancel_button(const String &p_cancel) {
 		c = TTRC("Cancel");
 	}
 	Button *b = swap_cancel_ok ? add_button(c, true) : add_button(c);
-	b->connect("pressed", callable_mp(this, &AcceptDialog::_cancel_pressed));
+	b->connect("button_clicked", callable_mp(this, &AcceptDialog::_cancel_pressed));
 	return b;
 }
 
@@ -273,11 +273,11 @@ void AcceptDialog::remove_button(Control *p_button) {
 	}
 	hbc->remove_child(button);
 
-	if (button->is_connected("pressed", callable_mp(this, &AcceptDialog::_custom_action))) {
-		button->disconnect("pressed", callable_mp(this, &AcceptDialog::_custom_action));
+	if (button->is_connected("button_clicked", callable_mp(this, &AcceptDialog::_custom_action))) {
+		button->disconnect("button_clicked", callable_mp(this, &AcceptDialog::_custom_action));
 	}
-	if (button->is_connected("pressed", callable_mp(this, &AcceptDialog::_cancel_pressed))) {
-		button->disconnect("pressed", callable_mp(this, &AcceptDialog::_cancel_pressed));
+	if (button->is_connected("button_clicked", callable_mp(this, &AcceptDialog::_cancel_pressed))) {
+		button->disconnect("button_clicked", callable_mp(this, &AcceptDialog::_cancel_pressed));
 	}
 }
 
@@ -340,7 +340,7 @@ AcceptDialog::AcceptDialog() {
 	hbc->add_child(ok);
 	hbc->add_spacer();
 
-	ok->connect("pressed", callable_mp(this, &AcceptDialog::_ok_pressed));
+	ok->connect("button_clicked", callable_mp(this, &AcceptDialog::_ok_pressed));
 
 	set_title(TTRC("Alert!"));
 

@@ -126,7 +126,7 @@ public:
 	StringName _unhandled_input;
 	StringName _unhandled_key_input;
 
-	StringName _pressed;
+	StringName _clicked;
 	StringName _toggled;
 
 	StringName _update_scroll;

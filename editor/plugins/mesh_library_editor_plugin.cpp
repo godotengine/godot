@@ -283,12 +283,12 @@ MeshLibraryEditor::MeshLibraryEditor(EditorNode *p_editor) {
 	editor = p_editor;
 	cd_remove = memnew(ConfirmationDialog);
 	add_child(cd_remove);
-	cd_remove->get_ok_button()->connect("pressed", callable_mp(this, &MeshLibraryEditor::_menu_remove_confirm));
+	cd_remove->get_ok_button()->connect("button_clicked", callable_mp(this, &MeshLibraryEditor::_menu_remove_confirm));
 	cd_update = memnew(ConfirmationDialog);
 	add_child(cd_update);
 	cd_update->get_ok_button()->set_text("Apply without Transforms");
-	cd_update->get_ok_button()->connect("pressed", callable_mp(this, &MeshLibraryEditor::_menu_update_confirm), varray(false));
-	cd_update->add_button("Apply with Transforms")->connect("pressed", callable_mp(this, &MeshLibraryEditor::_menu_update_confirm), varray(true));
+	cd_update->get_ok_button()->connect("button_clicked", callable_mp(this, &MeshLibraryEditor::_menu_update_confirm), varray(false));
+	cd_update->add_button("Apply with Transforms")->connect("button_clicked", callable_mp(this, &MeshLibraryEditor::_menu_update_confirm), varray(true));
 }
 
 void MeshLibraryEditorPlugin::edit(Object *p_node) {

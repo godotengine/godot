@@ -156,7 +156,7 @@ namespace GodotTools
             }
         }
 
-        private void BuildSolutionPressed()
+        private void BuildSolutionClicked()
         {
             if (!File.Exists(GodotSharpDirs.ProjectSlnPath))
             {
@@ -428,7 +428,7 @@ namespace GodotTools
                 Shortcut = buildSolutionShortcut,
                 ShortcutInTooltip = true
             };
-            _toolBarBuildButton.PressedSignal += BuildSolutionPressed;
+            _toolBarBuildButton.ButtonClicked += BuildSolutionClicked;
             AddControlToContainer(CustomControlContainer.Toolbar, _toolBarBuildButton);
 
             if (File.Exists(GodotSharpDirs.ProjectSlnPath) && File.Exists(GodotSharpDirs.ProjectCsProjPath))
