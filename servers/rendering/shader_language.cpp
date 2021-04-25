@@ -3956,8 +3956,6 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 		ERR_FAIL_COND_V(!expr, nullptr);
 
 		/* OK now see what's NEXT to the operator.. */
-		/* OK now see what's NEXT to the operator.. */
-		/* OK now see what's NEXT to the operator.. */
 
 		while (true) {
 			TkPos pos2 = _get_tkpos();
@@ -4734,7 +4732,6 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 
 		ERR_FAIL_COND_V(next_op == -1, nullptr);
 
-		// OK! create operator..
 		// OK! create operator..
 		if (is_unary) {
 			int expr_pos = next_op;

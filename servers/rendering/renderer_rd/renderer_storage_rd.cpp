@@ -7923,7 +7923,6 @@ void RendererStorageRD::global_variable_set_override(const StringName &p_name, c
 		_global_variable_mark_buffer_dirty(gv.buffer_index, gv.buffer_elements);
 	} else {
 		//texture
-		//texture
 		for (Set<RID>::Element *E = gv.texture_materials.front(); E; E = E->next()) {
 			Material *material = material_owner.getornull(E->get());
 			ERR_CONTINUE(!material);
