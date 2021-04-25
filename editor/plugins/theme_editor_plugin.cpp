@@ -592,7 +592,7 @@ ThemeItemEditorDialog::ThemeItemEditorDialog() {
 	Button *edit_add_class_button = memnew(Button);
 	edit_add_class_button->set_text(TTR("Add"));
 	edit_add_class->add_child(edit_add_class_button);
-	edit_add_class_button->connect("pressed", callable_mp(this, &ThemeItemEditorDialog::_add_class_type_items));
+	edit_add_class_button->connect("button_clicked", callable_mp(this, &ThemeItemEditorDialog::_add_class_type_items));
 
 	Label *edit_add_custom_label = memnew(Label);
 	edit_add_custom_label->set_text(TTR("Add Custom Type:"));
@@ -606,7 +606,7 @@ ThemeItemEditorDialog::ThemeItemEditorDialog() {
 	Button *edit_add_custom_button = memnew(Button);
 	edit_add_custom_button->set_text(TTR("Add"));
 	edit_add_custom->add_child(edit_add_custom_button);
-	edit_add_custom_button->connect("pressed", callable_mp(this, &ThemeItemEditorDialog::_add_custom_type));
+	edit_add_custom_button->connect("button_clicked", callable_mp(this, &ThemeItemEditorDialog::_add_custom_type));
 
 	VBoxContainer *edit_items_vb = memnew(VBoxContainer);
 	edit_items_vb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
@@ -624,42 +624,42 @@ ThemeItemEditorDialog::ThemeItemEditorDialog() {
 	edit_items_add_color->set_flat(true);
 	edit_items_add_color->set_disabled(true);
 	edit_items_toolbar->add_child(edit_items_add_color);
-	edit_items_add_color->connect("pressed", callable_mp(this, &ThemeItemEditorDialog::_open_add_theme_item_dialog), varray(Theme::DATA_TYPE_COLOR));
+	edit_items_add_color->connect("button_clicked", callable_mp(this, &ThemeItemEditorDialog::_open_add_theme_item_dialog), varray(Theme::DATA_TYPE_COLOR));
 
 	edit_items_add_constant = memnew(Button);
 	edit_items_add_constant->set_tooltip(TTR("Add Constant Item"));
 	edit_items_add_constant->set_flat(true);
 	edit_items_add_constant->set_disabled(true);
 	edit_items_toolbar->add_child(edit_items_add_constant);
-	edit_items_add_constant->connect("pressed", callable_mp(this, &ThemeItemEditorDialog::_open_add_theme_item_dialog), varray(Theme::DATA_TYPE_CONSTANT));
+	edit_items_add_constant->connect("button_clicked", callable_mp(this, &ThemeItemEditorDialog::_open_add_theme_item_dialog), varray(Theme::DATA_TYPE_CONSTANT));
 
 	edit_items_add_font = memnew(Button);
 	edit_items_add_font->set_tooltip(TTR("Add Font Item"));
 	edit_items_add_font->set_flat(true);
 	edit_items_add_font->set_disabled(true);
 	edit_items_toolbar->add_child(edit_items_add_font);
-	edit_items_add_font->connect("pressed", callable_mp(this, &ThemeItemEditorDialog::_open_add_theme_item_dialog), varray(Theme::DATA_TYPE_FONT));
+	edit_items_add_font->connect("button_clicked", callable_mp(this, &ThemeItemEditorDialog::_open_add_theme_item_dialog), varray(Theme::DATA_TYPE_FONT));
 
 	edit_items_add_font_size = memnew(Button);
 	edit_items_add_font_size->set_tooltip(TTR("Add Font Size Item"));
 	edit_items_add_font_size->set_flat(true);
 	edit_items_add_font_size->set_disabled(true);
 	edit_items_toolbar->add_child(edit_items_add_font_size);
-	edit_items_add_font_size->connect("pressed", callable_mp(this, &ThemeItemEditorDialog::_open_add_theme_item_dialog), varray(Theme::DATA_TYPE_FONT_SIZE));
+	edit_items_add_font_size->connect("button_clicked", callable_mp(this, &ThemeItemEditorDialog::_open_add_theme_item_dialog), varray(Theme::DATA_TYPE_FONT_SIZE));
 
 	edit_items_add_icon = memnew(Button);
 	edit_items_add_icon->set_tooltip(TTR("Add Icon Item"));
 	edit_items_add_icon->set_flat(true);
 	edit_items_add_icon->set_disabled(true);
 	edit_items_toolbar->add_child(edit_items_add_icon);
-	edit_items_add_icon->connect("pressed", callable_mp(this, &ThemeItemEditorDialog::_open_add_theme_item_dialog), varray(Theme::DATA_TYPE_ICON));
+	edit_items_add_icon->connect("button_clicked", callable_mp(this, &ThemeItemEditorDialog::_open_add_theme_item_dialog), varray(Theme::DATA_TYPE_ICON));
 
 	edit_items_add_stylebox = memnew(Button);
 	edit_items_add_stylebox->set_tooltip(TTR("Add StyleBox Item"));
 	edit_items_add_stylebox->set_flat(true);
 	edit_items_add_stylebox->set_disabled(true);
 	edit_items_toolbar->add_child(edit_items_add_stylebox);
-	edit_items_add_stylebox->connect("pressed", callable_mp(this, &ThemeItemEditorDialog::_open_add_theme_item_dialog), varray(Theme::DATA_TYPE_STYLEBOX));
+	edit_items_add_stylebox->connect("button_clicked", callable_mp(this, &ThemeItemEditorDialog::_open_add_theme_item_dialog), varray(Theme::DATA_TYPE_STYLEBOX));
 
 	edit_items_toolbar->add_child(memnew(VSeparator));
 
@@ -672,21 +672,21 @@ ThemeItemEditorDialog::ThemeItemEditorDialog() {
 	edit_items_remove_class->set_flat(true);
 	edit_items_remove_class->set_disabled(true);
 	edit_items_toolbar->add_child(edit_items_remove_class);
-	edit_items_remove_class->connect("pressed", callable_mp(this, &ThemeItemEditorDialog::_remove_class_items));
+	edit_items_remove_class->connect("button_clicked", callable_mp(this, &ThemeItemEditorDialog::_remove_class_items));
 
 	edit_items_remove_custom = memnew(Button);
 	edit_items_remove_custom->set_tooltip(TTR("Remove Custom Items"));
 	edit_items_remove_custom->set_flat(true);
 	edit_items_remove_custom->set_disabled(true);
 	edit_items_toolbar->add_child(edit_items_remove_custom);
-	edit_items_remove_custom->connect("pressed", callable_mp(this, &ThemeItemEditorDialog::_remove_custom_items));
+	edit_items_remove_custom->connect("button_clicked", callable_mp(this, &ThemeItemEditorDialog::_remove_custom_items));
 
 	edit_items_remove_all = memnew(Button);
 	edit_items_remove_all->set_tooltip(TTR("Remove All Items"));
 	edit_items_remove_all->set_flat(true);
 	edit_items_remove_all->set_disabled(true);
 	edit_items_toolbar->add_child(edit_items_remove_all);
-	edit_items_remove_all->connect("pressed", callable_mp(this, &ThemeItemEditorDialog::_remove_all_items));
+	edit_items_remove_all->connect("button_clicked", callable_mp(this, &ThemeItemEditorDialog::_remove_all_items));
 
 	edit_items_tree = memnew(Tree);
 	edit_items_tree->set_v_size_flags(Control::SIZE_EXPAND_FILL);
@@ -1073,7 +1073,7 @@ ThemeEditor::ThemeEditor() {
 	theme_edit_button->set_text(TTR("Edit Theme Items"));
 	theme_edit_button->set_tooltip(TTR("Customize Theme items."));
 	theme_edit_button->set_flat(true);
-	theme_edit_button->connect("pressed", callable_mp(this, &ThemeEditor::_theme_edit_button_cbk));
+	theme_edit_button->connect("button_clicked", callable_mp(this, &ThemeEditor::_theme_edit_button_cbk));
 	top_menu->add_child(theme_edit_button);
 
 	ScrollContainer *scroll = memnew(ScrollContainer);

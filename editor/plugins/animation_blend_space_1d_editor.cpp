@@ -603,7 +603,7 @@ AnimationNodeBlendSpace1DEditor::AnimationNodeBlendSpace1DEditor() {
 	top_hb->add_child(tool_blend);
 	tool_blend->set_pressed(true);
 	tool_blend->set_tooltip(TTR("Set the blending position within the space"));
-	tool_blend->connect("pressed", callable_mp(this, &AnimationNodeBlendSpace1DEditor::_tool_switch), varray(3));
+	tool_blend->connect("button_clicked", callable_mp(this, &AnimationNodeBlendSpace1DEditor::_tool_switch), varray(3));
 
 	tool_select = memnew(Button);
 	tool_select->set_flat(true);
@@ -611,7 +611,7 @@ AnimationNodeBlendSpace1DEditor::AnimationNodeBlendSpace1DEditor() {
 	tool_select->set_button_group(bg);
 	top_hb->add_child(tool_select);
 	tool_select->set_tooltip(TTR("Select and move points, create points with RMB."));
-	tool_select->connect("pressed", callable_mp(this, &AnimationNodeBlendSpace1DEditor::_tool_switch), varray(0));
+	tool_select->connect("button_clicked", callable_mp(this, &AnimationNodeBlendSpace1DEditor::_tool_switch), varray(0));
 
 	tool_create = memnew(Button);
 	tool_create->set_flat(true);
@@ -619,7 +619,7 @@ AnimationNodeBlendSpace1DEditor::AnimationNodeBlendSpace1DEditor() {
 	tool_create->set_button_group(bg);
 	top_hb->add_child(tool_create);
 	tool_create->set_tooltip(TTR("Create points."));
-	tool_create->connect("pressed", callable_mp(this, &AnimationNodeBlendSpace1DEditor::_tool_switch), varray(1));
+	tool_create->connect("button_clicked", callable_mp(this, &AnimationNodeBlendSpace1DEditor::_tool_switch), varray(1));
 
 	tool_erase_sep = memnew(VSeparator);
 	top_hb->add_child(tool_erase_sep);
@@ -627,7 +627,7 @@ AnimationNodeBlendSpace1DEditor::AnimationNodeBlendSpace1DEditor() {
 	tool_erase->set_flat(true);
 	top_hb->add_child(tool_erase);
 	tool_erase->set_tooltip(TTR("Erase points."));
-	tool_erase->connect("pressed", callable_mp(this, &AnimationNodeBlendSpace1DEditor::_erase_selected));
+	tool_erase->connect("button_clicked", callable_mp(this, &AnimationNodeBlendSpace1DEditor::_erase_selected));
 
 	top_hb->add_child(memnew(VSeparator));
 
@@ -637,7 +637,7 @@ AnimationNodeBlendSpace1DEditor::AnimationNodeBlendSpace1DEditor() {
 	top_hb->add_child(snap);
 	snap->set_pressed(true);
 	snap->set_tooltip(TTR("Enable snap and show grid."));
-	snap->connect("pressed", callable_mp(this, &AnimationNodeBlendSpace1DEditor::_snap_toggled));
+	snap->connect("button_clicked", callable_mp(this, &AnimationNodeBlendSpace1DEditor::_snap_toggled));
 
 	snap_value = memnew(SpinBox);
 	top_hb->add_child(snap_value);
@@ -660,7 +660,7 @@ AnimationNodeBlendSpace1DEditor::AnimationNodeBlendSpace1DEditor() {
 	open_editor = memnew(Button);
 	edit_hb->add_child(open_editor);
 	open_editor->set_text(TTR("Open Editor"));
-	open_editor->connect("pressed", callable_mp(this, &AnimationNodeBlendSpace1DEditor::_open_editor), varray(), CONNECT_DEFERRED);
+	open_editor->connect("button_clicked", callable_mp(this, &AnimationNodeBlendSpace1DEditor::_open_editor), varray(), CONNECT_DEFERRED);
 
 	edit_hb->hide();
 	open_editor->hide();

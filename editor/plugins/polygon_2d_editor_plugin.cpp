@@ -183,7 +183,7 @@ void Polygon2DEditor::_update_bone_list() {
 			cb->set_pressed(true);
 		}
 
-		cb->connect("pressed", callable_mp(this, &Polygon2DEditor::_bone_paint_selected), varray(i));
+		cb->connect("button_clicked", callable_mp(this, &Polygon2DEditor::_bone_paint_selected), varray(i));
 	}
 
 	uv_edit_draw->update();
@@ -1219,7 +1219,7 @@ Polygon2DEditor::Polygon2DEditor(EditorNode *p_editor) :
 	button_uv->set_flat(true);
 	add_child(button_uv);
 	button_uv->set_tooltip(TTR("Open Polygon 2D UV editor."));
-	button_uv->connect("pressed", callable_mp(this, &Polygon2DEditor::_menu_option), varray(MODE_EDIT_UV));
+	button_uv->connect("button_clicked", callable_mp(this, &Polygon2DEditor::_menu_option), varray(MODE_EDIT_UV));
 
 	uv_mode = UV_MODE_EDIT_POINT;
 	uv_edit = memnew(AcceptDialog);
@@ -1257,10 +1257,10 @@ Polygon2DEditor::Polygon2DEditor(EditorNode *p_editor) :
 	uv_edit_mode[2]->set_button_group(uv_edit_group);
 	uv_edit_mode[3]->set_button_group(uv_edit_group);
 
-	uv_edit_mode[0]->connect("pressed", callable_mp(this, &Polygon2DEditor::_uv_edit_mode_select), varray(0));
-	uv_edit_mode[1]->connect("pressed", callable_mp(this, &Polygon2DEditor::_uv_edit_mode_select), varray(1));
-	uv_edit_mode[2]->connect("pressed", callable_mp(this, &Polygon2DEditor::_uv_edit_mode_select), varray(2));
-	uv_edit_mode[3]->connect("pressed", callable_mp(this, &Polygon2DEditor::_uv_edit_mode_select), varray(3));
+	uv_edit_mode[0]->connect("button_clicked", callable_mp(this, &Polygon2DEditor::_uv_edit_mode_select), varray(0));
+	uv_edit_mode[1]->connect("button_clicked", callable_mp(this, &Polygon2DEditor::_uv_edit_mode_select), varray(1));
+	uv_edit_mode[2]->connect("button_clicked", callable_mp(this, &Polygon2DEditor::_uv_edit_mode_select), varray(2));
+	uv_edit_mode[3]->connect("button_clicked", callable_mp(this, &Polygon2DEditor::_uv_edit_mode_select), varray(3));
 
 	uv_mode_hb->add_child(memnew(VSeparator));
 
@@ -1270,7 +1270,7 @@ Polygon2DEditor::Polygon2DEditor(EditorNode *p_editor) :
 		uv_button[i]->set_flat(true);
 		uv_button[i]->set_toggle_mode(true);
 		uv_mode_hb->add_child(uv_button[i]);
-		uv_button[i]->connect("pressed", callable_mp(this, &Polygon2DEditor::_uv_mode), varray(i));
+		uv_button[i]->connect("button_clicked", callable_mp(this, &Polygon2DEditor::_uv_mode), varray(i));
 		uv_button[i]->set_focus_mode(FOCUS_NONE);
 	}
 
@@ -1350,7 +1350,7 @@ Polygon2DEditor::Polygon2DEditor(EditorNode *p_editor) :
 	b_snap_enable->set_toggle_mode(true);
 	b_snap_enable->set_pressed(use_snap);
 	b_snap_enable->set_tooltip(TTR("Enable Snap"));
-	b_snap_enable->connect("toggled", callable_mp(this, &Polygon2DEditor::_set_use_snap));
+	b_snap_enable->connect("button_toggled", callable_mp(this, &Polygon2DEditor::_set_use_snap));
 
 	b_snap_grid = memnew(Button);
 	b_snap_grid->set_flat(true);
@@ -1360,7 +1360,7 @@ Polygon2DEditor::Polygon2DEditor(EditorNode *p_editor) :
 	b_snap_grid->set_toggle_mode(true);
 	b_snap_grid->set_pressed(snap_show_grid);
 	b_snap_grid->set_tooltip(TTR("Show Grid"));
-	b_snap_grid->connect("toggled", callable_mp(this, &Polygon2DEditor::_set_show_grid));
+	b_snap_grid->connect("button_toggled", callable_mp(this, &Polygon2DEditor::_set_show_grid));
 
 	grid_settings = memnew(AcceptDialog);
 	grid_settings->set_title(TTR("Configure Grid:"));
@@ -1438,7 +1438,7 @@ Polygon2DEditor::Polygon2DEditor(EditorNode *p_editor) :
 	sync_bones = memnew(Button(TTR("Sync Bones to Polygon")));
 	bone_scroll_main_vb->add_child(sync_bones);
 	sync_bones->set_h_size_flags(0);
-	sync_bones->connect("pressed", callable_mp(this, &Polygon2DEditor::_sync_bones));
+	sync_bones->connect("button_clicked", callable_mp(this, &Polygon2DEditor::_sync_bones));
 	uv_main_hsc->add_child(bone_scroll_main_vb);
 	bone_scroll = memnew(ScrollContainer);
 	bone_scroll->set_v_scroll(true);

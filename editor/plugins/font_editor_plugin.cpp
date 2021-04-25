@@ -188,13 +188,13 @@ void FontDataEditor::init_lang_add() {
 	add_child(le);
 
 	button->set_icon(get_theme_icon("Add", "EditorIcons"));
-	button->connect("pressed", callable_mp(this, &FontDataEditor::add_lang));
+	button->connect("button_clicked", callable_mp(this, &FontDataEditor::add_lang));
 }
 
 void FontDataEditor::init_lang_edit() {
 	button->set_icon(get_theme_icon("Remove", "EditorIcons"));
-	button->connect("pressed", callable_mp(this, &FontDataEditor::remove_lang));
-	chk->connect("toggled", callable_mp(this, &FontDataEditor::toggle_lang));
+	button->connect("button_clicked", callable_mp(this, &FontDataEditor::remove_lang));
+	chk->connect("button_toggled", callable_mp(this, &FontDataEditor::toggle_lang));
 }
 
 void FontDataEditor::init_script_add() {
@@ -205,13 +205,13 @@ void FontDataEditor::init_script_add() {
 	add_child(le);
 
 	button->set_icon(get_theme_icon("Add", "EditorIcons"));
-	button->connect("pressed", callable_mp(this, &FontDataEditor::add_script));
+	button->connect("button_clicked", callable_mp(this, &FontDataEditor::add_script));
 }
 
 void FontDataEditor::init_script_edit() {
 	button->set_icon(get_theme_icon("Remove", "EditorIcons"));
-	button->connect("pressed", callable_mp(this, &FontDataEditor::remove_script));
-	chk->connect("toggled", callable_mp(this, &FontDataEditor::toggle_script));
+	button->connect("button_clicked", callable_mp(this, &FontDataEditor::remove_script));
+	chk->connect("button_toggled", callable_mp(this, &FontDataEditor::toggle_script));
 }
 
 void FontDataEditor::add_lang() {

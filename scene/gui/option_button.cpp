@@ -114,7 +114,7 @@ void OptionButton::_selected(int p_which) {
 	_select(p_which, true);
 }
 
-void OptionButton::pressed() {
+void OptionButton::clicked() {
 	Size2 size = get_size();
 	popup->set_position(get_screen_position() + Size2(0, size.height * get_global_transform().get_scale().y));
 	popup->set_size(Size2(size.width, 0));

@@ -3054,7 +3054,7 @@ void EditorNode::add_editor_plugin(EditorPlugin *p_editor, bool p_config_changed
 		Button *tb = memnew(Button);
 		tb->set_flat(true);
 		tb->set_toggle_mode(true);
-		tb->connect("pressed", callable_mp(singleton, &EditorNode::_editor_select), varray(singleton->main_editor_buttons.size()));
+		tb->connect("button_clicked", callable_mp(singleton, &EditorNode::_editor_select), varray(singleton->main_editor_buttons.size()));
 		tb->set_text(p_editor->get_name());
 		Ref<Texture2D> icon = p_editor->get_icon();
 
@@ -4935,7 +4935,7 @@ void EditorNode::_scene_tab_changed(int p_tab) {
 Button *EditorNode::add_bottom_panel_item(String p_text, Control *p_item) {
 	Button *tb = memnew(Button);
 	tb->set_flat(true);
-	tb->connect("toggled", callable_mp(this, &EditorNode::_bottom_panel_switch), varray(bottom_panel_items.size()));
+	tb->connect("button_toggled", callable_mp(this, &EditorNode::_bottom_panel_switch), varray(bottom_panel_items.size()));
 	tb->set_text(p_text);
 	tb->set_toggle_mode(true);
 	tb->set_focus_mode(Control::FOCUS_NONE);
@@ -4981,8 +4981,8 @@ void EditorNode::raise_bottom_panel_item(Control *p_item) {
 	}
 
 	for (int i = 0; i < bottom_panel_items.size(); i++) {
-		bottom_panel_items[i].button->disconnect("toggled", callable_mp(this, &EditorNode::_bottom_panel_switch));
-		bottom_panel_items[i].button->connect("toggled", callable_mp(this, &EditorNode::_bottom_panel_switch), varray(i));
+		bottom_panel_items[i].button->disconnect("button_toggled", callable_mp(this, &EditorNode::_bottom_panel_switch));
+		bottom_panel_items[i].button->connect("button_toggled", callable_mp(this, &EditorNode::_bottom_panel_switch), varray(i));
 	}
 }
 
@@ -5001,8 +5001,8 @@ void EditorNode::remove_bottom_panel_item(Control *p_item) {
 	}
 
 	for (int i = 0; i < bottom_panel_items.size(); i++) {
-		bottom_panel_items[i].button->disconnect("toggled", callable_mp(this, &EditorNode::_bottom_panel_switch));
-		bottom_panel_items[i].button->connect("toggled", callable_mp(this, &EditorNode::_bottom_panel_switch), varray(i));
+		bottom_panel_items[i].button->disconnect("button_toggled", callable_mp(this, &EditorNode::_bottom_panel_switch));
+		bottom_panel_items[i].button->connect("button_toggled", callable_mp(this, &EditorNode::_bottom_panel_switch), varray(i));
 	}
 }
 
@@ -6005,7 +6005,7 @@ EditorNode::EditorNode() {
 		dock_tab_move_left->set_icon(theme->get_icon("Back", "EditorIcons"));
 	}
 	dock_tab_move_left->set_focus_mode(Control::FOCUS_NONE);
-	dock_tab_move_left->connect("pressed", callable_mp(this, &EditorNode::_dock_move_left));
+	dock_tab_move_left->connect("button_clicked", callable_mp(this, &EditorNode::_dock_move_left));
 	dock_hb->add_child(dock_tab_move_left);
 
 	Label *dock_label = memnew(Label);
@@ -6022,7 +6022,7 @@ EditorNode::EditorNode() {
 		dock_tab_move_right->set_icon(theme->get_icon("Back", "EditorIcons"));
 	}
 	dock_tab_move_right->set_focus_mode(Control::FOCUS_NONE);
-	dock_tab_move_right->connect("pressed", callable_mp(this, &EditorNode::_dock_move_right));
+	dock_tab_move_right->connect("button_clicked", callable_mp(this, &EditorNode::_dock_move_right));
 
 	dock_hb->add_child(dock_tab_move_right);
 	dock_vb->add_child(dock_hb);
@@ -6039,7 +6039,7 @@ EditorNode::EditorNode() {
 	dock_float->set_text(TTR("Make Floating"));
 	dock_float->set_focus_mode(Control::FOCUS_NONE);
 	dock_float->set_h_size_flags(Control::SIZE_SHRINK_CENTER);
-	dock_float->connect("pressed", callable_mp(this, &EditorNode::_dock_make_float));
+	dock_float->connect("button_clicked", callable_mp(this, &EditorNode::_dock_make_float));
 
 	dock_vb->add_child(dock_float);
 
@@ -6121,7 +6121,7 @@ EditorNode::EditorNode() {
 	distraction_free->set_shortcut(ED_SHORTCUT("editor/distraction_free_mode", TTR("Distraction Free Mode"), KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_F11));
 #endif
 	distraction_free->set_tooltip(TTR("Toggle distraction-free mode."));
-	distraction_free->connect("pressed", callable_mp(this, &EditorNode::_toggle_distraction_free_mode));
+	distraction_free->connect("button_clicked", callable_mp(this, &EditorNode::_toggle_distraction_free_mode));
 	distraction_free->set_icon(gui_base->get_theme_icon("DistractionFree", "EditorIcons"));
 	distraction_free->set_toggle_mode(true);
 
@@ -6132,7 +6132,7 @@ EditorNode::EditorNode() {
 	scene_tab_add->set_tooltip(TTR("Add a new scene."));
 	scene_tab_add->set_icon(gui_base->get_theme_icon("Add", "EditorIcons"));
 	scene_tab_add->add_theme_color_override("icon_normal_color", Color(0.6f, 0.6f, 0.6f, 0.8f));
-	scene_tab_add->connect("pressed", callable_mp(this, &EditorNode::_menu_option), make_binds(FILE_NEW_SCENE));
+	scene_tab_add->connect("button_clicked", callable_mp(this, &EditorNode::_menu_option), make_binds(FILE_NEW_SCENE));
 
 	scene_root_parent = memnew(PanelContainer);
 	scene_root_parent->set_custom_minimum_size(Size2(0, 80) * EDSCALE);
@@ -6168,7 +6168,7 @@ EditorNode::EditorNode() {
 	prev_scene->set_icon(gui_base->get_theme_icon("PrevScene", "EditorIcons"));
 	prev_scene->set_tooltip(TTR("Go to previously opened scene."));
 	prev_scene->set_disabled(true);
-	prev_scene->connect("pressed", callable_mp(this, &EditorNode::_menu_option), make_binds(FILE_OPEN_PREV));
+	prev_scene->connect("button_clicked", callable_mp(this, &EditorNode::_menu_option), make_binds(FILE_OPEN_PREV));
 	gui_base->add_child(prev_scene);
 	prev_scene->set_position(Point2(3, 24));
 	prev_scene->hide();
@@ -6405,7 +6405,7 @@ EditorNode::EditorNode() {
 	play_button->set_toggle_mode(true);
 	play_button->set_icon(gui_base->get_theme_icon("MainPlay", "EditorIcons"));
 	play_button->set_focus_mode(Control::FOCUS_NONE);
-	play_button->connect("pressed", callable_mp(this, &EditorNode::_menu_option), make_binds(RUN_PLAY));
+	play_button->connect("button_clicked", callable_mp(this, &EditorNode::_menu_option), make_binds(RUN_PLAY));
 	play_button->set_tooltip(TTR("Play the project."));
 #ifdef OSX_ENABLED
 	play_button->set_shortcut(ED_SHORTCUT("editor/play", TTR("Play"), KEY_MASK_CMD | KEY_B));
@@ -6432,7 +6432,7 @@ EditorNode::EditorNode() {
 	play_hb->add_child(stop_button);
 	stop_button->set_focus_mode(Control::FOCUS_NONE);
 	stop_button->set_icon(gui_base->get_theme_icon("Stop", "EditorIcons"));
-	stop_button->connect("pressed", callable_mp(this, &EditorNode::_menu_option), make_binds(RUN_STOP));
+	stop_button->connect("button_clicked", callable_mp(this, &EditorNode::_menu_option), make_binds(RUN_STOP));
 	stop_button->set_tooltip(TTR("Stop the scene."));
 	stop_button->set_disabled(true);
 #ifdef OSX_ENABLED
@@ -6451,7 +6451,7 @@ EditorNode::EditorNode() {
 	play_scene_button->set_toggle_mode(true);
 	play_scene_button->set_focus_mode(Control::FOCUS_NONE);
 	play_scene_button->set_icon(gui_base->get_theme_icon("PlayScene", "EditorIcons"));
-	play_scene_button->connect("pressed", callable_mp(this, &EditorNode::_menu_option), make_binds(RUN_PLAY_SCENE));
+	play_scene_button->connect("button_clicked", callable_mp(this, &EditorNode::_menu_option), make_binds(RUN_PLAY_SCENE));
 	play_scene_button->set_tooltip(TTR("Play the edited scene."));
 #ifdef OSX_ENABLED
 	play_scene_button->set_shortcut(ED_SHORTCUT("editor/play_scene", TTR("Play Scene"), KEY_MASK_CMD | KEY_R));
@@ -6465,7 +6465,7 @@ EditorNode::EditorNode() {
 	play_custom_scene_button->set_toggle_mode(true);
 	play_custom_scene_button->set_focus_mode(Control::FOCUS_NONE);
 	play_custom_scene_button->set_icon(gui_base->get_theme_icon("PlayCustom", "EditorIcons"));
-	play_custom_scene_button->connect("pressed", callable_mp(this, &EditorNode::_menu_option), make_binds(RUN_PLAY_CUSTOM_SCENE));
+	play_custom_scene_button->connect("button_clicked", callable_mp(this, &EditorNode::_menu_option), make_binds(RUN_PLAY_CUSTOM_SCENE));
 	play_custom_scene_button->set_tooltip(TTR("Play custom scene"));
 #ifdef OSX_ENABLED
 	play_custom_scene_button->set_shortcut(ED_SHORTCUT("editor/play_custom_scene", TTR("Play Custom Scene"), KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_R));
@@ -6631,7 +6631,7 @@ EditorNode::EditorNode() {
 	bottom_panel_hb->add_child(bottom_panel_raise);
 	bottom_panel_raise->hide();
 	bottom_panel_raise->set_toggle_mode(true);
-	bottom_panel_raise->connect("toggled", callable_mp(this, &EditorNode::_bottom_panel_raise_toggled));
+	bottom_panel_raise->connect("button_toggled", callable_mp(this, &EditorNode::_bottom_panel_raise_toggled));
 
 	log = memnew(EditorLog);
 	Button *output_button = add_bottom_panel_item(TTR("Output"), log);

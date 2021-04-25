@@ -171,7 +171,7 @@ SceneStringNames::SceneStringNames() {
 	_mouse_enter = StaticCString::create("_mouse_enter");
 	_mouse_exit = StaticCString::create("_mouse_exit");
 
-	_pressed = StaticCString::create("_pressed");
+	_clicked = StaticCString::create("_clicked");
 	_toggled = StaticCString::create("_toggled");
 
 	frame_changed = StaticCString::create("frame_changed");

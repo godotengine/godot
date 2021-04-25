@@ -661,7 +661,7 @@ LocalizationEditor::LocalizationEditor() {
 		tvb->add_child(thb);
 
 		Button *addtr = memnew(Button(TTR("Add...")));
-		addtr->connect("pressed", callable_mp(this, &LocalizationEditor::_translation_file_open));
+		addtr->connect("button_clicked", callable_mp(this, &LocalizationEditor::_translation_file_open));
 		thb->add_child(addtr);
 
 		VBoxContainer *tmc = memnew(VBoxContainer);
@@ -689,7 +689,7 @@ LocalizationEditor::LocalizationEditor() {
 		tvb->add_child(thb);
 
 		Button *addtr = memnew(Button(TTR("Add...")));
-		addtr->connect("pressed", callable_mp(this, &LocalizationEditor::_translation_res_file_open));
+		addtr->connect("button_clicked", callable_mp(this, &LocalizationEditor::_translation_res_file_open));
 		thb->add_child(addtr);
 
 		VBoxContainer *tmc = memnew(VBoxContainer);
@@ -713,7 +713,7 @@ LocalizationEditor::LocalizationEditor() {
 		tvb->add_child(thb);
 
 		addtr = memnew(Button(TTR("Add...")));
-		addtr->connect("pressed", callable_mp(this, &LocalizationEditor::_translation_res_option_file_open));
+		addtr->connect("button_clicked", callable_mp(this, &LocalizationEditor::_translation_res_option_file_open));
 		translation_res_option_add_button = addtr;
 		thb->add_child(addtr);
 
@@ -775,11 +775,11 @@ LocalizationEditor::LocalizationEditor() {
 		tvb->add_child(thb);
 
 		Button *addtr = memnew(Button(TTR("Add...")));
-		addtr->connect("pressed", callable_mp(this, &LocalizationEditor::_pot_file_open));
+		addtr->connect("button_clicked", callable_mp(this, &LocalizationEditor::_pot_file_open));
 		thb->add_child(addtr);
 
 		Button *generate = memnew(Button(TTR("Generate POT")));
-		generate->connect("pressed", callable_mp(this, &LocalizationEditor::_pot_generate_open));
+		generate->connect("button_clicked", callable_mp(this, &LocalizationEditor::_pot_generate_open));
 		thb->add_child(generate);
 
 		VBoxContainer *tmc = memnew(VBoxContainer);

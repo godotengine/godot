@@ -491,7 +491,7 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id) {
 
 			register_output_port(p_id, 0, preview);
 
-			preview->connect("pressed", callable_mp(VisualShaderEditor::get_singleton(), &VisualShaderEditor::_preview_select_port), varray(p_id, 0), CONNECT_DEFERRED);
+			preview->connect("button_clicked", callable_mp(VisualShaderEditor::get_singleton(), &VisualShaderEditor::_preview_select_port), varray(p_id, 0), CONNECT_DEFERRED);
 			custom_editor->add_child(preview);
 
 			VisualShaderNode::PortType port_left = vsnode->get_input_port_type(0);
@@ -532,14 +532,14 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id) {
 
 			Button *add_input_btn = memnew(Button);
 			add_input_btn->set_text(TTR("Add Input"));
-			add_input_btn->connect("pressed", callable_mp(VisualShaderEditor::get_singleton(), &VisualShaderEditor::_add_input_port), varray(p_id, group_node->get_free_input_port_id(), VisualShaderNode::PORT_TYPE_VECTOR, input_port_name), CONNECT_DEFERRED);
+			add_input_btn->connect("button_clicked", callable_mp(VisualShaderEditor::get_singleton(), &VisualShaderEditor::_add_input_port), varray(p_id, group_node->get_free_input_port_id(), VisualShaderNode::PORT_TYPE_VECTOR, input_port_name), CONNECT_DEFERRED);
 			hb2->add_child(add_input_btn);
 
 			hb2->add_spacer();
 
 			Button *add_output_btn = memnew(Button);
 			add_output_btn->set_text(TTR("Add Output"));
-			add_output_btn->connect("pressed", callable_mp(VisualShaderEditor::get_singleton(), &VisualShaderEditor::_add_output_port), varray(p_id, group_node->get_free_output_port_id(), VisualShaderNode::PORT_TYPE_VECTOR, output_port_name), CONNECT_DEFERRED);
+			add_output_btn->connect("button_clicked", callable_mp(VisualShaderEditor::get_singleton(), &VisualShaderEditor::_add_output_port), varray(p_id, group_node->get_free_output_port_id(), VisualShaderNode::PORT_TYPE_VECTOR, output_port_name), CONNECT_DEFERRED);
 			hb2->add_child(add_output_btn);
 
 			node->add_child(hb2);
@@ -586,7 +586,7 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id) {
 		Button *button = memnew(Button);
 		hb->add_child(button);
 		register_default_input_button(p_id, i, button);
-		button->connect("pressed", callable_mp(VisualShaderEditor::get_singleton(), &VisualShaderEditor::_edit_port_default_input), varray(button, p_id, i));
+		button->connect("button_clicked", callable_mp(VisualShaderEditor::get_singleton(), &VisualShaderEditor::_edit_port_default_input), varray(button, p_id, i));
 		if (default_value.get_type() != Variant::NIL) { // only a label
 			set_input_port_default_value(p_type, p_id, i, default_value);
 		} else {
@@ -622,7 +622,7 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id) {
 					Button *remove_btn = memnew(Button);
 					remove_btn->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon("Remove", "EditorIcons"));
 					remove_btn->set_tooltip(TTR("Remove") + " " + name_left);
-					remove_btn->connect("pressed", callable_mp(VisualShaderEditor::get_singleton(), &VisualShaderEditor::_remove_input_port), varray(p_id, i), CONNECT_DEFERRED);
+					remove_btn->connect("button_clicked", callable_mp(VisualShaderEditor::get_singleton(), &VisualShaderEditor::_remove_input_port), varray(p_id, i), CONNECT_DEFERRED);
 					hb->add_child(remove_btn);
 				} else {
 					Label *label = memnew(Label);
@@ -649,7 +649,7 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id) {
 					Button *remove_btn = memnew(Button);
 					remove_btn->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon("Remove", "EditorIcons"));
 					remove_btn->set_tooltip(TTR("Remove") + " " + name_left);
-					remove_btn->connect("pressed", callable_mp(VisualShaderEditor::get_singleton(), &VisualShaderEditor::_remove_output_port), varray(p_id, i), CONNECT_DEFERRED);
+					remove_btn->connect("button_clicked", callable_mp(VisualShaderEditor::get_singleton(), &VisualShaderEditor::_remove_output_port), varray(p_id, i), CONNECT_DEFERRED);
 					hb->add_child(remove_btn);
 
 					LineEdit *name_box = memnew(LineEdit);
@@ -688,7 +688,7 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id) {
 
 			register_output_port(p_id, i, preview);
 
-			preview->connect("pressed", callable_mp(VisualShaderEditor::get_singleton(), &VisualShaderEditor::_preview_select_port), varray(p_id, i), CONNECT_DEFERRED);
+			preview->connect("button_clicked", callable_mp(VisualShaderEditor::get_singleton(), &VisualShaderEditor::_preview_select_port), varray(p_id, i), CONNECT_DEFERRED);
 			hb->add_child(preview);
 		}
 
@@ -3567,14 +3567,14 @@ VisualShaderEditor::VisualShaderEditor() {
 	graph->get_zoom_hbox()->add_child(add_node);
 	add_node->set_text(TTR("Add Node..."));
 	graph->get_zoom_hbox()->move_child(add_node, 0);
-	add_node->connect("pressed", callable_mp(this, &VisualShaderEditor::_show_members_dialog), varray(false));
+	add_node->connect("button_clicked", callable_mp(this, &VisualShaderEditor::_show_members_dialog), varray(false));
 
 	preview_shader = memnew(Button);
 	preview_shader->set_flat(true);
 	preview_shader->set_toggle_mode(true);
 	preview_shader->set_tooltip(TTR("Show generated shader code."));
 	graph->get_zoom_hbox()->add_child(preview_shader);
-	preview_shader->connect("pressed", callable_mp(this, &VisualShaderEditor::_show_preview_text));
+	preview_shader->connect("button_clicked", callable_mp(this, &VisualShaderEditor::_show_preview_text));
 
 	///////////////////////////////////////
 	// PREVIEW WINDOW
@@ -3681,7 +3681,7 @@ VisualShaderEditor::VisualShaderEditor() {
 	members_dialog->set_exclusive(false);
 	members_dialog->add_child(members_vb);
 	members_dialog->get_ok_button()->set_text(TTR("Create"));
-	members_dialog->get_ok_button()->connect("pressed", callable_mp(this, &VisualShaderEditor::_member_create));
+	members_dialog->get_ok_button()->connect("button_clicked", callable_mp(this, &VisualShaderEditor::_member_create));
 	members_dialog->get_ok_button()->set_disabled(true);
 	members_dialog->connect("cancelled", callable_mp(this, &VisualShaderEditor::_member_cancel));
 	add_child(members_dialog);
@@ -3719,7 +3719,7 @@ VisualShaderEditor::VisualShaderEditor() {
 	Button *comment_desc_confirm_button = memnew(Button);
 	comment_desc_confirm_button->set_text(TTR("OK"));
 	comment_desc_vbox->add_child(comment_desc_confirm_button);
-	comment_desc_confirm_button->connect("pressed", callable_mp(this, &VisualShaderEditor::_comment_desc_confirm));
+	comment_desc_confirm_button->connect("button_clicked", callable_mp(this, &VisualShaderEditor::_comment_desc_confirm));
 	add_child(comment_desc_change_popup);
 
 	///////////////////////////////////////

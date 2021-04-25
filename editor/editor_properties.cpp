@@ -172,7 +172,7 @@ EditorPropertyMultilineText::EditorPropertyMultilineText() {
 	text->set_h_size_flags(SIZE_EXPAND_FILL);
 	open_big_text = memnew(Button);
 	open_big_text->set_flat(true);
-	open_big_text->connect("pressed", callable_mp(this, &EditorPropertyMultilineText::_open_big_text));
+	open_big_text->connect("button_clicked", callable_mp(this, &EditorPropertyMultilineText::_open_big_text));
 	hb->add_child(open_big_text);
 	big_text_dialog = nullptr;
 	big_text = nullptr;
@@ -306,7 +306,7 @@ EditorPropertyPath::EditorPropertyPath() {
 	path_hb->add_child(path_edit);
 	add_focusable(path);
 	dialog = nullptr;
-	path_edit->connect("pressed", callable_mp(this, &EditorPropertyPath::_path_pressed));
+	path_edit->connect("button_clicked", callable_mp(this, &EditorPropertyPath::_path_pressed));
 	folder = false;
 	global = false;
 	save_mode = false;
@@ -346,7 +346,7 @@ EditorPropertyClassName::EditorPropertyClassName() {
 	add_child(property);
 	add_focusable(property);
 	property->set_text(selected_type);
-	property->connect("pressed", callable_mp(this, &EditorPropertyClassName::_property_selected));
+	property->connect("button_clicked", callable_mp(this, &EditorPropertyClassName::_property_selected));
 	dialog = memnew(CreateDialog);
 	dialog->set_base_type(base_type);
 	dialog->connect("create", callable_mp(this, &EditorPropertyClassName::_dialog_created));
@@ -447,7 +447,7 @@ EditorPropertyMember::EditorPropertyMember() {
 	property->set_clip_text(true);
 	add_child(property);
 	add_focusable(property);
-	property->connect("pressed", callable_mp(this, &EditorPropertyMember::_property_select));
+	property->connect("button_clicked", callable_mp(this, &EditorPropertyMember::_property_select));
 }
 
 ///////////////////// CHECK /////////////////////////
@@ -469,7 +469,7 @@ EditorPropertyCheck::EditorPropertyCheck() {
 	checkbox->set_text(TTR("On"));
 	add_child(checkbox);
 	add_focusable(checkbox);
-	checkbox->connect("pressed", callable_mp(this, &EditorPropertyCheck::_checkbox_pressed));
+	checkbox->connect("button_clicked", callable_mp(this, &EditorPropertyCheck::_checkbox_pressed));
 }
 
 ///////////////////// ENUM /////////////////////////
@@ -558,7 +558,7 @@ void EditorPropertyFlags::setup(const Vector<String> &p_options) {
 			CheckBox *cb = memnew(CheckBox);
 			cb->set_text(option);
 			cb->set_clip_text(true);
-			cb->connect("pressed", callable_mp(this, &EditorPropertyFlags::_flag_toggled));
+			cb->connect("button_clicked", callable_mp(this, &EditorPropertyFlags::_flag_toggled));
 			add_focusable(cb);
 			vbox->add_child(cb);
 			flags.push_back(cb);
@@ -795,7 +795,7 @@ EditorPropertyLayers::EditorPropertyLayers() {
 	button = memnew(Button);
 	button->set_toggle_mode(true);
 	button->set_text("...");
-	button->connect("pressed", callable_mp(this, &EditorPropertyLayers::_button_pressed));
+	button->connect("button_clicked", callable_mp(this, &EditorPropertyLayers::_button_pressed));
 	hb->add_child(button);
 	set_bottom_editor(hb);
 	layers = memnew(PopupMenu);
@@ -882,7 +882,7 @@ EditorPropertyObjectID::EditorPropertyObjectID() {
 	edit = memnew(Button);
 	add_child(edit);
 	add_focusable(edit);
-	edit->connect("pressed", callable_mp(this, &EditorPropertyObjectID::_edit_pressed));
+	edit->connect("button_clicked", callable_mp(this, &EditorPropertyObjectID::_edit_pressed));
 }
 
 ///////////////////// FLOAT /////////////////////////
@@ -2353,12 +2353,12 @@ EditorPropertyNodePath::EditorPropertyNodePath() {
 	assign->set_flat(true);
 	assign->set_h_size_flags(SIZE_EXPAND_FILL);
 	assign->set_clip_text(true);
-	assign->connect("pressed", callable_mp(this, &EditorPropertyNodePath::_node_assign));
+	assign->connect("button_clicked", callable_mp(this, &EditorPropertyNodePath::_node_assign));
 	hbc->add_child(assign);
 
 	clear = memnew(Button);
 	clear->set_flat(true);
-	clear->connect("pressed", callable_mp(this, &EditorPropertyNodePath::_node_clear));
+	clear->connect("button_clicked", callable_mp(this, &EditorPropertyNodePath::_node_clear));
 	hbc->add_child(clear);
 	use_path_from_scene_root = false;
 
@@ -3242,7 +3242,7 @@ EditorPropertyResource::EditorPropertyResource() {
 	assign->set_flat(true);
 	assign->set_h_size_flags(SIZE_EXPAND_FILL);
 	assign->set_clip_text(true);
-	assign->connect("pressed", callable_mp(this, &EditorPropertyResource::_resource_selected));
+	assign->connect("button_clicked", callable_mp(this, &EditorPropertyResource::_resource_selected));
 	assign->set_drag_forwarding(this);
 	assign->connect("draw", callable_mp(this, &EditorPropertyResource::_button_draw));
 	hbc->add_child(assign);
@@ -3264,7 +3264,7 @@ EditorPropertyResource::EditorPropertyResource() {
 	edit->set_toggle_mode(true);
 	menu->connect("id_pressed", callable_mp(this, &EditorPropertyResource::_menu_option));
 	menu->connect("popup_hide", callable_mp((BaseButton *)edit, &BaseButton::set_pressed), varray(false));
-	edit->connect("pressed", callable_mp(this, &EditorPropertyResource::_update_menu));
+	edit->connect("button_clicked", callable_mp(this, &EditorPropertyResource::_update_menu));
 	hbc->add_child(edit);
 	edit->connect("gui_input", callable_mp(this, &EditorPropertyResource::_button_input));
 	add_focusable(edit);

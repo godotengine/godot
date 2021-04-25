@@ -85,7 +85,7 @@ ReparentDialog::ReparentDialog() {
 
 	//vbc->add_margin_child("Options:",node_only);
 
-	//cancel->connect("pressed", this,"_cancel");
+	//cancel->connect("button_clicked", this,"_cancel");
 
 	get_ok_button()->set_text(TTR("Reparent"));
 }

@@ -91,14 +91,14 @@ void ExportTemplateManager::_update_template_list() {
 			Button *redownload = memnew(Button);
 			redownload->set_text(TTR("Redownload"));
 			current_hb->add_child(redownload);
-			redownload->connect("pressed", callable_mp(this, &ExportTemplateManager::_download_template), varray(current_version));
+			redownload->connect("button_clicked", callable_mp(this, &ExportTemplateManager::_download_template), varray(current_version));
 		}
 
 		Button *uninstall = memnew(Button);
 		uninstall->set_text(TTR("Uninstall"));
 		current_hb->add_child(uninstall);
 		current->set_text(current_version + " " + TTR("(Installed)"));
-		uninstall->connect("pressed", callable_mp(this, &ExportTemplateManager::_uninstall_template), varray(current_version));
+		uninstall->connect("button_clicked", callable_mp(this, &ExportTemplateManager::_uninstall_template), varray(current_version));
 
 	} else {
 		current->add_theme_color_override("font_color", current->get_theme_color("error_color", "Editor"));
@@ -110,7 +110,7 @@ void ExportTemplateManager::_update_template_list() {
 			redownload->set_tooltip(TTR("Official export templates aren't available for development builds."));
 		}
 
-		redownload->connect("pressed", callable_mp(this, &ExportTemplateManager::_download_template), varray(current_version));
+		redownload->connect("button_clicked", callable_mp(this, &ExportTemplateManager::_download_template), varray(current_version));
 		current_hb->add_child(redownload);
 		current->set_text(current_version + " " + TTR("(Missing)"));
 	}
@@ -132,7 +132,7 @@ void ExportTemplateManager::_update_template_list() {
 
 		uninstall->set_text(TTR("Uninstall"));
 		hbc->add_child(uninstall);
-		uninstall->connect("pressed", callable_mp(this, &ExportTemplateManager::_uninstall_template), varray(E->get()));
+		uninstall->connect("button_clicked", callable_mp(this, &ExportTemplateManager::_uninstall_template), varray(E->get()));
 
 		installed_vb->add_child(hbc);
 	}
@@ -372,7 +372,7 @@ void ExportTemplateManager::_http_download_mirror_completed(int p_status, int p_
 			ERR_CONTINUE(!m.has("url") || !m.has("name"));
 			LinkButton *lb = memnew(LinkButton);
 			lb->set_text(m["name"]);
-			lb->connect("pressed", callable_mp(this, &ExportTemplateManager::_begin_template_download), varray(m["url"]));
+			lb->connect("button_clicked", callable_mp(this, &ExportTemplateManager::_begin_template_download), varray(m["url"]));
 			template_list->add_child(lb);
 			mirrors_found = true;
 		}

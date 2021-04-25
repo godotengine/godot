@@ -87,7 +87,7 @@ OpenTypeFeaturesEditor::OpenTypeFeaturesEditor() {
 	button->set_flat(true);
 	bc->add_child(button);
 
-	button->connect("pressed", callable_mp(this, &OpenTypeFeaturesEditor::_remove_feature));
+	button->connect("button_clicked", callable_mp(this, &OpenTypeFeaturesEditor::_remove_feature));
 
 	setting = false;
 }
@@ -172,7 +172,7 @@ OpenTypeFeaturesAdd::OpenTypeFeaturesAdd() {
 	button->set_tooltip(RTR("Add feature..."));
 	add_child(button);
 
-	button->connect("pressed", callable_mp(this, &OpenTypeFeaturesAdd::_features_menu));
+	button->connect("button_clicked", callable_mp(this, &OpenTypeFeaturesAdd::_features_menu));
 	menu->connect("id_pressed", callable_mp(this, &OpenTypeFeaturesAdd::_add_feature));
 	menu_cv->connect("id_pressed", callable_mp(this, &OpenTypeFeaturesAdd::_add_feature));
 	menu_ss->connect("id_pressed", callable_mp(this, &OpenTypeFeaturesAdd::_add_feature));
