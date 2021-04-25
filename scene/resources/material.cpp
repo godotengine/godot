@@ -672,7 +672,7 @@ void BaseMaterial3D::_update_shader() {
 		code += "uniform sampler2D texture_flowmap : hint_aniso," + texfilter_str + ";\n";
 	}
 	if (features[FEATURE_AMBIENT_OCCLUSION]) {
-		code += "uniform sampler2D texture_ambient_occlusion : hint_white;\n";
+		code += "uniform sampler2D texture_ambient_occlusion : hint_white, " + texfilter_str + ";\n";
 		code += "uniform vec4 ao_texture_channel;\n";
 		code += "uniform float ao_light_affect;\n";
 	}
