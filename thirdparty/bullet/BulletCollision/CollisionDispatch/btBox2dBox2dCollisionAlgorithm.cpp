@@ -80,7 +80,6 @@ struct ClipVertex
 	btVector3 v;
 	int id;
 	//b2ContactID id;
-	//b2ContactID id;
 };
 
 #define b2Dot(a, b) (a).dot(b)

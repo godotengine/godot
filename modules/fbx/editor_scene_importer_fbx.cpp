@@ -1014,7 +1014,6 @@ Node3D *EditorSceneImporterFBX::_generate_scene(
 						int track_idx = animation->add_track(Animation::TYPE_TRANSFORM);
 
 						// animation->track_set_path(track_idx, node_path);
-						// animation->track_set_path(track_idx, node_path);
 						Ref<FBXBone> bone;
 
 						// note we must not run the below code if the entry doesn't exist, it will create dummy entries which is very bad.
