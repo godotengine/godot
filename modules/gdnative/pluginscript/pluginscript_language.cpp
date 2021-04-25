@@ -159,6 +159,10 @@ bool PluginScriptLanguage::can_inherit_from_file() const {
 	return _desc.can_inherit_from_file;
 }
 
+bool PluginScriptLanguage::has_delayed_script_class_metadata() const {
+	return _desc.has_delayed_script_class_metadata;
+}
+
 int PluginScriptLanguage::find_function(const String &p_function, const String &p_code) const {
 	if (_desc.find_function) {
 		return _desc.find_function(_data, (godot_string *)&p_function, (godot_string *)&p_code);
