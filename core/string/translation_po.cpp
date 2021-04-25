@@ -47,14 +47,14 @@ void TranslationPO::print_translation_map() {
 
 	List<StringName> context_l;
 	translation_map.get_key_list(&context_l);
-	for (auto E = context_l.front(); E; E = E->next()) {
+	for (List<StringName>::Element *E = context_l.front(); E; E = E->next()) {
 		StringName ctx = E->get();
 		file->store_line(" ===== Context: " + String::utf8(String(ctx).utf8()) + " ===== ");
 		const HashMap<StringName, Vector<StringName>> &inner_map = translation_map[ctx];
 
 		List<StringName> id_l;
 		inner_map.get_key_list(&id_l);
-		for (auto E2 = id_l.front(); E2; E2 = E2->next()) {
+		for (List<StringName>::Element *E2 = id_l.front(); E2; E2 = E2->next()) {
 			StringName id = E2->get();
 			file->store_line("msgid: " + String::utf8(String(id).utf8()));
 			for (int i = 0; i < inner_map[id].size(); i++) {
@@ -74,7 +74,7 @@ Dictionary TranslationPO::_get_messages() const {
 
 	List<StringName> context_l;
 	translation_map.get_key_list(&context_l);
-	for (auto E = context_l.front(); E; E = E->next()) {
+	for (List<StringName>::Element *E = context_l.front(); E; E = E->next()) {
 		StringName ctx = E->get();
 		const HashMap<StringName, Vector<StringName>> &id_str_map = translation_map[ctx];
 
@@ -82,7 +82,7 @@ Dictionary TranslationPO::_get_messages() const {
 		List<StringName> id_l;
 		id_str_map.get_key_list(&id_l);
 		// Save list of id and strs associated with a context in a temporary dictionary.
-		for (auto E2 = id_l.front(); E2; E2 = E2->next()) {
+		for (List<StringName>::Element *E2 = id_l.front(); E2; E2 = E2->next()) {
 			StringName id = E2->get();
 			d2[id] = id_str_map[id];
 		}
@@ -98,14 +98,14 @@ void TranslationPO::_set_messages(const Dictionary &p_messages) {
 
 	List<Variant> context_l;
 	p_messages.get_key_list(&context_l);
-	for (auto E = context_l.front(); E; E = E->next()) {
+	for (List<Variant>::Element *E = context_l.front(); E; E = E->next()) {
 		StringName ctx = E->get();
 		const Dictionary &id_str_map = p_messages[ctx];
 
 		HashMap<StringName, Vector<StringName>> temp_map;
 		List<Variant> id_l;
 		id_str_map.get_key_list(&id_l);
-		for (auto E2 = id_l.front(); E2; E2 = E2->next()) {
+		for (List<Variant>::Element *E2 = id_l.front(); E2; E2 = E2->next()) {
 			StringName id = E2->get();
 			temp_map[id] = id_str_map[id];
 		}
@@ -121,7 +121,7 @@ Vector<String> TranslationPO::_get_message_list() const {
 	get_message_list(&msgs);
 
 	Vector<String> v;
-	for (auto E = msgs.front(); E; E = E->next()) {
+	for (List<StringName>::Element *E = msgs.front(); E; E = E->next()) {
 		v.push_back(E->get());
 	}
 
@@ -281,7 +281,7 @@ void TranslationPO::get_message_list(List<StringName> *r_messages) const {
 	List<StringName> context_l;
 	translation_map.get_key_list(&context_l);
 
-	for (auto E = context_l.front(); E; E = E->next()) {
+	for (List<StringName>::Element *E = context_l.front(); E; E = E->next()) {
 		if (String(E->get()) != "") {
 			continue;
 		}
@@ -289,7 +289,7 @@ void TranslationPO::get_message_list(List<StringName> *r_messages) const {
 		List<StringName> msgid_l;
 		translation_map[E->get()].get_key_list(&msgid_l);
 
-		for (auto E2 = msgid_l.front(); E2; E2 = E2->next()) {
+		for (List<StringName>::Element *E2 = msgid_l.front(); E2; E2 = E2->next()) {
 			r_messages->push_back(E2->get());
 		}
 	}
@@ -300,7 +300,7 @@ int TranslationPO::get_message_count() const {
 	translation_map.get_key_list(&context_l);
 
 	int count = 0;
-	for (auto E = context_l.front(); E; E = E->next()) {
+	for (List<StringName>::Element *E = context_l.front(); E; E = E->next()) {
 		count += translation_map[E->get()].size();
 	}
 	return count;

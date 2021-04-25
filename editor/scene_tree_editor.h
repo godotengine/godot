@@ -43,7 +43,7 @@ class SceneTreeEditor : public Control {
 
 	EditorSelection *editor_selection;
 
-	enum {
+	enum SceneTreeEditorButton {
 		BUTTON_SUBSCENE = 0,
 		BUTTON_VISIBILITY = 1,
 		BUTTON_SCRIPT = 2,

@@ -168,7 +168,7 @@ Vector<Vector3> NavMap::get_path(Vector3 p_origin, Vector3 p_destination, bool p
 				const Vector3 new_entry = Geometry3D::get_closest_point_to_segment(least_cost_poly->entry, pathway);
 				const float new_distance = least_cost_poly->entry.distance_to(new_entry) + least_cost_poly->traveled_distance;
 
-				auto it = std::find(
+				const std::vector<gd::NavigationPoly>::iterator it = std::find(
 						navigation_polys.begin(),
 						navigation_polys.end(),
 						gd::NavigationPoly(connection.polygon));
@@ -504,7 +504,7 @@ void NavMap::add_region(NavRegion *p_region) {
 }
 
 void NavMap::remove_region(NavRegion *p_region) {
-	std::vector<NavRegion *>::iterator it = std::find(regions.begin(), regions.end(), p_region);
+	const std::vector<NavRegion *>::iterator it = std::find(regions.begin(), regions.end(), p_region);
 	if (it != regions.end()) {
 		regions.erase(it);
 		regenerate_links = true;
@@ -524,7 +524,7 @@ void NavMap::add_agent(RvoAgent *agent) {
 
 void NavMap::remove_agent(RvoAgent *agent) {
 	remove_agent_as_controlled(agent);
-	auto it = std::find(agents.begin(), agents.end(), agent);
+	const std::vector<RvoAgent *>::iterator it = std::find(agents.begin(), agents.end(), agent);
 	if (it != agents.end()) {
 		agents.erase(it);
 		agents_dirty = true;
@@ -540,7 +540,7 @@ void NavMap::set_agent_as_controlled(RvoAgent *agent) {
 }
 
 void NavMap::remove_agent_as_controlled(RvoAgent *agent) {
-	auto it = std::find(controlled_agents.begin(), controlled_agents.end(), agent);
+	const std::vector<RvoAgent *>::iterator it = std::find(controlled_agents.begin(), controlled_agents.end(), agent);
 	if (it != controlled_agents.end()) {
 		controlled_agents.erase(it);
 	}

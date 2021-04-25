@@ -122,7 +122,7 @@ GdNavigationServer::~GdNavigationServer() {
 }
 
 void GdNavigationServer::add_command(SetCommand *command) const {
-	auto mut_this = const_cast<GdNavigationServer *>(this);
+	GdNavigationServer *mut_this = const_cast<GdNavigationServer *>(this);
 	{
 		MutexLock lock(commands_mutex);
 		mut_this->commands.push_back(command);
@@ -130,7 +130,7 @@ void GdNavigationServer::add_command(SetCommand *command) const {
 }
 
 RID GdNavigationServer::map_create() const {
-	auto mut_this = const_cast<GdNavigationServer *>(this);
+	GdNavigationServer *mut_this = const_cast<GdNavigationServer *>(this);
 	MutexLock lock(mut_this->operations_mutex);
 	NavMap *space = memnew(NavMap);
 	RID rid = map_owner.make_rid(space);
@@ -240,7 +240,7 @@ RID GdNavigationServer::map_get_closest_point_owner(RID p_map, const Vector3 &p_
 }
 
 RID GdNavigationServer::region_create() const {
-	auto mut_this = const_cast<GdNavigationServer *>(this);
+	GdNavigationServer *mut_this = const_cast<GdNavigationServer *>(this);
 	MutexLock lock(mut_this->operations_mutex);
 	NavRegion *reg = memnew(NavRegion);
 	RID rid = region_owner.make_rid(reg);
@@ -330,7 +330,7 @@ Vector3 GdNavigationServer::region_get_connection_pathway_end(RID p_region, int 
 }
 
 RID GdNavigationServer::agent_create() const {
-	auto mut_this = const_cast<GdNavigationServer *>(this);
+	GdNavigationServer *mut_this = const_cast<GdNavigationServer *>(this);
 	MutexLock lock(mut_this->operations_mutex);
 	RvoAgent *agent = memnew(RvoAgent());
 	RID rid = agent_owner.make_rid(agent);
@@ -504,7 +504,7 @@ COMMAND_1(free, RID, p_object) {
 }
 
 void GdNavigationServer::set_active(bool p_active) const {
-	auto mut_this = const_cast<GdNavigationServer *>(this);
+	GdNavigationServer *mut_this = const_cast<GdNavigationServer *>(this);
 	MutexLock lock(mut_this->operations_mutex);
 	mut_this->active = p_active;
 }

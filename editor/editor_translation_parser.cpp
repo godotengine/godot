@@ -105,7 +105,7 @@ void EditorTranslationParser::get_recognized_extensions(List<String> *r_extensio
 	for (int i = 0; i < temp.size(); i++) {
 		extensions.insert(temp[i]);
 	}
-	for (auto E = extensions.front(); E; E = E->next()) {
+	for (Set<String>::Element *E = extensions.front(); E; E = E->next()) {
 		r_extensions->push_back(E->get());
 	}
 }
