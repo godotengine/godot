@@ -93,7 +93,7 @@ protected:
 	bool _is_software_skinning_enabled() const;
 	static bool _is_global_software_skinning_enabled();
 
-	void _initialize_skinning(bool p_force_reset = false);
+	void _initialize_skinning(bool p_force_reset = false, bool p_call_attach_skeleton = true);
 	void _update_skinning();
 
 protected:

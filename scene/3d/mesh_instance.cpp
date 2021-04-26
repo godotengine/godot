@@ -143,7 +143,7 @@ void MeshInstance::set_mesh(const Ref<Mesh> &p_mesh) {
 		mesh->connect(CoreStringNames::get_singleton()->changed, this, SceneStringNames::get_singleton()->_mesh_changed);
 		materials.resize(mesh->get_surface_count());
 
-		_initialize_skinning();
+		_initialize_skinning(false, false);
 	} else {
 
 		set_base(RID());
@@ -208,7 +208,7 @@ bool MeshInstance::_is_software_skinning_enabled() const {
 	return global_software_skinning;
 }
 
-void MeshInstance::_initialize_skinning(bool p_force_reset) {
+void MeshInstance::_initialize_skinning(bool p_force_reset, bool p_call_attach_skeleton) {
 	if (mesh.is_null()) {
 		return;
 	}
@@ -324,7 +324,9 @@ void MeshInstance::_initialize_skinning(bool p_force_reset) {
 				update_mesh = true;
 			}
 
-			visual_server->instance_attach_skeleton(get_instance(), RID());
+			if (p_call_attach_skeleton) {
+				visual_server->instance_attach_skeleton(get_instance(), RID());
+			}
 
 			if (is_visible_in_tree() && (software_skinning_flags & SoftwareSkinning::FLAG_BONES_READY)) {
 				// Intialize from current skeleton pose.
@@ -336,7 +338,9 @@ void MeshInstance::_initialize_skinning(bool p_force_reset) {
 				skin_ref->get_skeleton_node()->disconnect("skeleton_updated", this, "_update_skinning");
 			}
 
-			visual_server->instance_attach_skeleton(get_instance(), skin_ref->get_skeleton());
+			if (p_call_attach_skeleton) {
+				visual_server->instance_attach_skeleton(get_instance(), skin_ref->get_skeleton());
+			}
 
 			if (software_skinning) {
 				memdelete(software_skinning);
@@ -345,7 +349,9 @@ void MeshInstance::_initialize_skinning(bool p_force_reset) {
 			}
 		}
 	} else {
-		visual_server->instance_attach_skeleton(get_instance(), RID());
+		if (p_call_attach_skeleton) {
+			visual_server->instance_attach_skeleton(get_instance(), RID());
+		}
 		if (software_skinning) {
 			memdelete(software_skinning);
 			software_skinning = nullptr;
