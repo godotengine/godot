@@ -416,6 +416,7 @@ public:
 	String c_unescape() const;
 	String json_escape() const;
 	String word_wrap(int p_chars_per_line) const;
+	Error parse_url(String &r_scheme, String &r_host, int &r_port, String &r_path) const;
 
 	String property_name_encode() const;
 

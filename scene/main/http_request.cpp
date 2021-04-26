@@ -40,9 +40,7 @@ Error HTTPRequest::_request() {
 }
 
 Error HTTPRequest::_parse_url(const String &p_url) {
-	url = p_url;
 	use_ssl = false;
-
 	request_string = "";
 	port = 80;
 	request_sent = false;
@@ -52,35 +50,20 @@ Error HTTPRequest::_parse_url(const String &p_url) {
 	downloaded.set(0);
 	redirections = 0;
 
-	String url_lower = url.to_lower();
-	if (url_lower.begins_with("http://")) {
-		url = url.substr(7, url.length() - 7);
-	} else if (url_lower.begins_with("https://")) {
-		url = url.substr(8, url.length() - 8);
+	String scheme;
+	Error err = p_url.parse_url(scheme, url, port, request_string);
+	ERR_FAIL_COND_V_MSG(err != OK, err, "Error parsing URL: " + p_url + ".");
+	if (scheme == "https://") {
 		use_ssl = true;
-		port = 443;
-	} else {
-		ERR_FAIL_V_MSG(ERR_INVALID_PARAMETER, "Malformed URL: " + url + ".");
+	} else if (scheme != "http://") {
+		ERR_FAIL_V_MSG(ERR_INVALID_PARAMETER, "Invalid URL scheme: " + scheme + ".");
 	}
-
-	ERR_FAIL_COND_V_MSG(url.length() < 1, ERR_INVALID_PARAMETER, "URL too short: " + url + ".");
-
-	int slash_pos = url.find("/");
-
-	if (slash_pos != -1) {
-		request_string = url.substr(slash_pos, url.length());
-		url = url.substr(0, slash_pos);
-	} else {
+	if (port == 0) {
+		port = use_ssl ? 443 : 80;
+	}
+	if (request_string.is_empty()) {
 		request_string = "/";
 	}
-
-	int colon_pos = url.find(":");
-	if (colon_pos != -1) {
-		port = url.substr(colon_pos + 1, url.length()).to_int();
-		url = url.substr(0, colon_pos);
-		ERR_FAIL_COND_V(port < 1 || port > 65535, ERR_INVALID_PARAMETER);
-	}
-
 	return OK;
 }
 
