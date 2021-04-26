@@ -408,10 +408,7 @@ def configure(env):
 
     # Link those statically for portability
     if env["use_static_cpp"]:
-        # Workaround for GH-31743, Ubuntu 18.04 i386 crashes when it's used.
-        # That doesn't make any sense but it's likely a Ubuntu bug?
-        if is64 or env["bits"] == "64":
-            env.Append(LINKFLAGS=["-static-libgcc", "-static-libstdc++"])
+        env.Append(LINKFLAGS=["-static-libgcc", "-static-libstdc++"])
         if env["use_llvm"]:
             env["LINKCOM"] = env["LINKCOM"] + " -l:libatomic.a"
 
