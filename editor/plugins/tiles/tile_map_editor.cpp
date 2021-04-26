@@ -2454,9 +2454,8 @@ bool TileMapEditorTerrainsPlugin::forward_canvas_gui_input(const Ref<InputEvent>
 	}
 
 	// Get the selected terrain.
-	int selected_terrain_set;
-
 	TerrainsTilePattern selected_terrains_tile_pattern;
+	int selected_terrain_set = -1;
 
 	TreeItem *selected_tree_item = terrains_tree->get_selected();
 	if (selected_tree_item && selected_tree_item->get_metadata(0)) {
@@ -2486,17 +2485,19 @@ bool TileMapEditorTerrainsPlugin::forward_canvas_gui_input(const Ref<InputEvent>
 
 		switch (drag_type) {
 			case DRAG_TYPE_PAINT: {
-				Vector<Vector2i> line = TileMapEditor::get_line(tile_map, tile_map->world_to_map(drag_last_mouse_pos), tile_map->world_to_map(mpos));
-				Map<Vector2i, TerrainsTilePattern> to_draw;
-				for (int i = 0; i < line.size(); i++) {
-					to_draw[line[i]] = selected_terrains_tile_pattern;
-				}
-				Map<Vector2i, TileMapCell> modified = _draw_terrains(to_draw, selected_terrain_set);
-				for (Map<Vector2i, TileMapCell>::Element *E = modified.front(); E; E = E->next()) {
-					if (!drag_modified.has(E->key())) {
-						drag_modified[E->key()] = tile_map->get_cell(E->key());
+				if (selected_terrain_set >= 0) {
+					Vector<Vector2i> line = TileMapEditor::get_line(tile_map, tile_map->world_to_map(drag_last_mouse_pos), tile_map->world_to_map(mpos));
+					Map<Vector2i, TerrainsTilePattern> to_draw;
+					for (int i = 0; i < line.size(); i++) {
+						to_draw[line[i]] = selected_terrains_tile_pattern;
 					}
-					tile_map->set_cell(E->key(), E->get().source_id, E->get().get_atlas_coords(), E->get().alternative_tile);
+					Map<Vector2i, TileMapCell> modified = _draw_terrains(to_draw, selected_terrain_set);
+					for (Map<Vector2i, TileMapCell>::Element *E = modified.front(); E; E = E->next()) {
+						if (!drag_modified.has(E->key())) {
+							drag_modified[E->key()] = tile_map->get_cell(E->key());
+						}
+						tile_map->set_cell(E->key(), E->get().source_id, E->get().get_atlas_coords(), E->get().alternative_tile);
+					}
 				}
 			} break;
 			default:
@@ -2520,7 +2521,7 @@ bool TileMapEditorTerrainsPlugin::forward_canvas_gui_input(const Ref<InputEvent>
 					drag_type = DRAG_TYPE_PICK;
 				} else {
 					// Paint otherwise.
-					if (!selected_terrains_tile_pattern.is_empty() && tool_buttons_group->get_pressed_button() == paint_tool_button) {
+					if (selected_terrain_set >= 0 && !selected_terrains_tile_pattern.is_empty() && tool_buttons_group->get_pressed_button() == paint_tool_button) {
 						drag_type = DRAG_TYPE_PAINT;
 						drag_start_mouse_pos = mpos;
 
