@@ -119,6 +119,9 @@ public:
 	void set_distraction_free_mode(bool p_enter);
 	bool is_distraction_free_mode_enabled() const;
 
+	Ref<Texture> get_class_icon(const String &p_name, const String &p_fallback) const;
+	Ref<Texture> get_object_icon(const Object *p_object, const String &p_fallback) const;
+
 	EditorInterface();
 };
 
