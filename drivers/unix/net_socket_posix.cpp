@@ -452,7 +452,7 @@ Error NetSocketPosix::poll(PollType p_type, int p_timeout) const {
 	FD_ZERO(&wr);
 	FD_ZERO(&ex);
 	FD_SET(_sock, &ex);
-	struct timeval timeout = { p_timeout, 0 };
+	struct timeval timeout = { p_timeout / 1000, (p_timeout % 1000) * 1000 };
 	// For blocking operation, pass NULL timeout pointer to select.
 	struct timeval *tp = NULL;
 	if (p_timeout >= 0) {
