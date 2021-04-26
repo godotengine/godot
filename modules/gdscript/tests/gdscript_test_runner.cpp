@@ -441,7 +441,7 @@ GDScriptTest::TestResult GDScriptTest::execute_test_code(bool p_is_generating) {
 		result.output = get_text_for_status(result.status) + "\n";
 
 		const List<GDScriptParser::ParserError> &errors = parser.get_errors();
-		for (auto *E = errors.front(); E; E = E->next()) {
+		for (const List<GDScriptParser::ParserError>::Element *E = errors.front(); E; E = E->next()) {
 			result.output += E->get().message + "\n"; // TODO: line, column?
 			break; // Only the first error since the following might be cascading.
 		}
@@ -460,7 +460,7 @@ GDScriptTest::TestResult GDScriptTest::execute_test_code(bool p_is_generating) {
 		result.output = get_text_for_status(result.status) + "\n";
 
 		const List<GDScriptParser::ParserError> &errors = parser.get_errors();
-		for (auto *E = errors.front(); E; E = E->next()) {
+		for (const List<GDScriptParser::ParserError>::Element *E = errors.front(); E; E = E->next()) {
 			result.output += E->get().message + "\n"; // TODO: line, column?
 			break; // Only the first error since the following might be cascading.
 		}

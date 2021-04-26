@@ -39,7 +39,7 @@ POTGenerator *POTGenerator::singleton = nullptr;
 
 #ifdef DEBUG_POT
 void POTGenerator::_print_all_translation_strings() {
-	for (auto E = all_translation_strings.front(); E; E = E.next()) {
+	for (OrderedHashMap<String, Vector<POTGenerator::MsgidData>>::Element E = all_translation_strings.front(); E; E = E.next()) {
 		Vector<MsgidData> v_md = all_translation_strings[E.key()];
 		for (int i = 0; i < v_md.size(); i++) {
 			print_line("++++++");
