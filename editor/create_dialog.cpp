@@ -229,7 +229,11 @@ void CreateDialog::_configure_search_option_item(TreeItem *r_item, const String 
 		r_item->set_text(0, p_type);
 	} else if (script_type) {
 		r_item->set_metadata(0, p_type);
-		r_item->set_text(0, p_type + " (" + ScriptServer::get_global_class_path(p_type).get_file() + ")");
+		String text = p_type;
+		if (!EDITOR_GET("interface/editors/create_dialog_hide_script_class_filepath")) {
+			text += " (" + ScriptServer::get_global_class_path(p_type).get_file() + ")";
+		}
+		r_item->set_text(0, text);
 	} else {
 		r_item->set_metadata(0, custom_type_parents[p_type]);
 		r_item->set_text(0, p_type);
