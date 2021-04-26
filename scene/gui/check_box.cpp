@@ -34,7 +34,9 @@
 
 Size2 CheckBox::get_icon_size() const {
 	Ref<Texture> checked = Control::get_icon("checked");
+	Ref<Texture> checked_disabled = Control::get_icon("checked_disabled");
 	Ref<Texture> unchecked = Control::get_icon("unchecked");
+	Ref<Texture> unchecked_disabled = Control::get_icon("unchecked_disabled");
 	Ref<Texture> radio_checked = Control::get_icon("radio_checked");
 	Ref<Texture> radio_unchecked = Control::get_icon("radio_unchecked");
 
@@ -73,8 +75,8 @@ void CheckBox::_notification(int p_what) {
 
 		RID ci = get_canvas_item();
 
-		Ref<Texture> on = Control::get_icon(is_radio() ? "radio_checked" : "checked");
-		Ref<Texture> off = Control::get_icon(is_radio() ? "radio_unchecked" : "unchecked");
+		Ref<Texture> on = Control::get_icon(vformat("%s%s", is_radio() ? "radio_checked" : "checked", is_disabled() ? "_disabled" : ""));
+		Ref<Texture> off = Control::get_icon(vformat("%s%s", is_radio() ? "radio_unchecked" : "unchecked", is_disabled() ? "_disabled" : ""));
 		Ref<StyleBox> sb = get_stylebox("normal");
 
 		Vector2 ofs;

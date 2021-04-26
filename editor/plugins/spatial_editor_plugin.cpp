@@ -3473,9 +3473,6 @@ void SpatialEditorViewport::reset() {
 }
 
 void SpatialEditorViewport::focus_selection() {
-	if (!get_selected_count())
-		return;
-
 	Vector3 center;
 	int count = 0;
 

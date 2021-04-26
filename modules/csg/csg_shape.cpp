@@ -911,7 +911,7 @@ void CSGMesh::set_mesh(const Ref<Mesh> &p_mesh) {
 		mesh->connect("changed", this, "_mesh_changed");
 	}
 
-	_make_dirty();
+	_mesh_changed();
 }
 
 Ref<Mesh> CSGMesh::get_mesh() {
