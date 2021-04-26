@@ -93,7 +93,7 @@ private:
 		Map<Vector2i, int> autotile_priority_map;
 		Map<Vector2i, int> autotile_z_index_map;
 
-		Vector<CompatibilityShapeData *> shapes = Vector<CompatibilityShapeData *>();
+		Vector<CompatibilityShapeData> shapes;
 		Ref<OccluderPolygon2D> occluder;
 		Vector2 occluder_offset;
 		Ref<NavigationPolygon> navigation;

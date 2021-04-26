@@ -732,29 +732,68 @@ void TileSet::compatibility_conversion() {
 							tile_data->tile_set_material(ctd->material);
 							tile_data->set_modulate(ctd->modulate);
 							tile_data->set_z_index(ctd->z_index);
-							if (ctd->autotile_z_index_map.has(coords)) {
-								tile_data->set_z_index(ctd->autotile_z_index_map[coords]);
+							if (ctd->autotile_occluder_map.has(coords)) {
+								if (get_occlusion_layers_count() < 1) {
+									set_occlusion_layers_count(1);
+								}
+								tile_data->set_occluder(0, ctd->autotile_occluder_map[coords]);
+							}
+							if (ctd->autotile_navpoly_map.has(coords)) {
+								if (get_navigation_layers_count() < 1) {
+									set_navigation_layers_count(1);
+								}
+								tile_data->set_navigation_polygon(0, ctd->autotile_navpoly_map[coords]);
 							}
 							if (ctd->autotile_priority_map.has(coords)) {
 								tile_data->set_probability(ctd->autotile_priority_map[coords]);
 							}
+							if (ctd->autotile_z_index_map.has(coords)) {
+								tile_data->set_z_index(ctd->autotile_z_index_map[coords]);
+							}
+
+							// Add the shapes.
+							if (ctd->shapes.size() > 0) {
+								if (get_physics_layers_count() < 1) {
+									set_physics_layers_count(1);
+								}
+							}
+							for (int k = 0; k < ctd->shapes.size(); k++) {
+								CompatibilityShapeData csd = ctd->shapes[k];
+								if (csd.autotile_coords == coords) {
+									tile_data->set_collision_shapes_count(0, tile_data->get_collision_shapes_count(0) + 1);
+									int index = tile_data->get_collision_shapes_count(0) - 1;
+									tile_data->set_collision_shape_one_way(0, index, csd.one_way);
+									tile_data->set_collision_shape_one_way_margin(0, index, csd.one_way_margin);
+									tile_data->set_collision_shape_shape(0, index, csd.shape);
+									// Ignores transform for now.
+								}
+							}
 
 							// -- TODO: handle --
+							// Those are offset for the whole atlas, they are likely useless for the atlases, but might make sense for single tiles.
 							// texture offset
+							// occluder_offset
+							// navigation_offset
+
+							// For terrains, ignored for now?
 							// bitmask_mode
 							// bitmask_flags
-							// occluder_map
-							// navpoly_map
-							// "occluder"
-							// "occluder_offset"
-							// "navigation"
-							// "navigation_offset"
-
-							print_line(vformat("Created compatibility tile: source id=%d, coords=(%s), alternative=%d", source_id, String(coords), alternative_tile));
 						}
 					}
 				}
 				break;
+		}
+
+		// Offset all shapes
+		for (int k = 0; k < ctd->shapes.size(); k++) {
+			Ref<ConvexPolygonShape2D> convex = ctd->shapes[k].shape;
+			if (convex.is_valid()) {
+				Vector<Vector2> points = convex->get_points();
+				for (int i_point = 0; i_point < points.size(); i_point++) {
+					points.write[i_point] = points[i_point] - get_tile_size() / 2;
+				}
+				convex->set_points(points);
+			}
 		}
 
 		// Add the mapping to the map
@@ -762,6 +801,9 @@ void TileSet::compatibility_conversion() {
 	}
 
 	// Reset compatibility data
+	for (Map<int, CompatibilityTileData *>::Element *E = compatibility_data.front(); E; E = E->next()) {
+		memdelete(E->get());
+	}
 	compatibility_data = Map<int, CompatibilityTileData *>();
 }
 #endif // DISABLE_DEPRECATED
@@ -772,7 +814,7 @@ bool TileSet::_set(const StringName &p_name, const Variant &p_value) {
 #ifndef DISABLE_DEPRECATED
 	// TODO: THIS IS HOW WE CHECK IF WE HAVE A DEPRECATED RESOURCE
 	// This should be moved to a dedicated conversion system
-	if (components[0].is_valid_integer()) {
+	if (components.size() >= 1 && components[0].is_valid_integer()) {
 		int id = components[0].to_int();
 
 		// Get or create the compatibility object
@@ -783,6 +825,10 @@ bool TileSet::_set(const StringName &p_name, const Variant &p_value) {
 			compatibility_data.insert(id, ctd);
 		} else {
 			ctd = E->get();
+		}
+
+		if (components.size() < 2) {
+			return false;
 		}
 
 		String what = components[1];
@@ -877,9 +923,32 @@ bool TileSet::_set(const StringName &p_name, const Variant &p_value) {
 					p.pop_front();
 				}
 			}
+
+		} else if (what == "shapes") {
+			Array p = p_value;
+			for (int i = 0; i < p.size(); i++) {
+				CompatibilityShapeData csd;
+				Dictionary d = p[i];
+				for (int j = 0; j < d.size(); j++) {
+					String key = d.get_key_at_index(j);
+					if (key == "autotile_coord") {
+						csd.autotile_coords = d[key];
+					} else if (key == "one_way") {
+						csd.one_way = d[key];
+					} else if (key == "one_way_margin") {
+						csd.one_way_margin = d[key];
+					} else if (key == "shape") {
+						csd.shape = d[key];
+					} else if (key == "shape_transform") {
+						csd.transform = d[key];
+					}
+				}
+				ctd->shapes.push_back(csd);
+			}
+
 			/*
-		// INGORED FOR NOW, they seem duplicated data compared to the shapes array
-		else if (what == "shape") {
+		// IGNORED FOR NOW, they seem duplicated data compared to the shapes array
+		} else if (what == "shape") {
 			// TODO
 		} else if (what == "shape_offset") {
 			// TODO
@@ -890,21 +959,18 @@ bool TileSet::_set(const StringName &p_name, const Variant &p_value) {
 		} else if (what == "shape_one_way_margin") {
 			// TODO
 		}
-		*/
-		} else if (what == "shapes") {
-			// TODO
-		} else if (what == "occluder") {
-			// TODO
-		} else if (what == "occluder_offset") {
-			// TODO
-		} else if (what == "navigation") {
-			// TODO
+		// IGNORED FOR NOW, maybe useless ?
+		else if (what == "occluder_offset") {
+			// Not
 		} else if (what == "navigation_offset") {
 			// TODO
+		}
+		*/
+
 		} else if (what == "z_index") {
 			ctd->z_index = p_value;
 
-			// TODO: remove the consersion from here, it's not where it should be done
+			// TODO: remove the conversion from here, it's not where it should be done
 			compatibility_conversion();
 		} else {
 			return false;
