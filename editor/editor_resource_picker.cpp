@@ -110,9 +110,15 @@ void EditorResourcePicker::_file_selected(const String &p_path) {
 	if (base_type != "") {
 		bool any_type_matches = false;
 
+		int script_index;
+		EditorFileSystemDirectory *fsdir = EditorFileSystem::get_singleton()->find_file(p_path, &script_index);
+		String file_script_name = fsdir ? fsdir->get_file_script_class_name(script_index) : "";
+		String res_type = !file_script_name.is_empty() ? file_script_name : loaded_resource->get_class();
+
 		for (int i = 0; i < base_type.get_slice_count(","); i++) {
 			String base = base_type.get_slice(",", i);
-			if (loaded_resource->is_class(base)) {
+
+			if (EditorNode::get_editor_data().class_equals_or_inherits(res_type, base)) {
 				any_type_matches = true;
 				break;
 			}
@@ -170,7 +176,9 @@ void EditorResourcePicker::_update_menu_items() {
 			paste_valid = true;
 		} else {
 			for (int i = 0; i < base_type.get_slice_count(","); i++) {
-				if (ClassDB::is_parent_class(cb->get_class(), base_type.get_slice(",", i))) {
+				StringName script_name = EditorNode::get_editor_data().script_class_get_name(cb->get_path());
+				StringName class_name = script_name != StringName() ? script_name : StringName(cb->get_class());
+				if (EditorNode::get_editor_data().class_equals_or_inherits(class_name, base_type.get_slice(",", i))) {
 					paste_valid = true;
 					break;
 				}
@@ -198,12 +206,7 @@ void EditorResourcePicker::_update_menu_items() {
 		}
 		for (int i = 0; i < conversions.size(); i++) {
 			String what = conversions[i]->converts_to();
-			Ref<Texture2D> icon;
-			if (has_theme_icon(what, "EditorIcons")) {
-				icon = get_theme_icon(what, "EditorIcons");
-			} else {
-				icon = get_theme_icon(what, "Resource");
-			}
+			Ref<Texture2D> icon = EditorNode::get_singleton()->get_class_icon(what, "Resource");
 
 			edit_menu->add_icon_item(icon, vformat(TTR("Convert To %s"), what), CONVERT_BASE_ID + i);
 		}
@@ -217,6 +220,10 @@ void EditorResourcePicker::_edit_menu_cbk(int p_which) {
 			for (int i = 0; i < base_type.get_slice_count(","); i++) {
 				String base = base_type.get_slice(",", i);
 				ResourceLoader::get_recognized_extensions_for_type(base, &extensions);
+				if (ScriptServer::is_global_class(base)) {
+					String native = ScriptServer::get_global_class_native_base(base);
+					ResourceLoader::get_recognized_extensions_for_type(native, &extensions);
+				}
 			}
 
 			Set<String> valid_extensions;
@@ -270,8 +277,17 @@ void EditorResourcePicker::_edit_menu_cbk(int p_which) {
 				propvalues.push_back(p);
 			}
 
-			String orig_type = edited_resource->get_class();
-			Object *inst = ClassDB::instantiate(orig_type);
+			Object *inst = nullptr;
+			Ref<Script> res_script = edited_resource->get_script();
+			if (res_script.is_valid()) {
+				StringName script_name = EditorNode::get_editor_data().script_class_get_name(res_script->get_path());
+				if (ScriptServer::is_global_class(script_name)) {
+					inst = ScriptServer::instantiate_global_class(script_name);
+				}
+			}
+			if (!inst) {
+				inst = ClassDB::instantiate(edited_resource->get_class());
+			}
 			Ref<Resource> unique_resource = Ref<Resource>(Object::cast_to<Resource>(inst));
 			ERR_FAIL_COND(unique_resource.is_null());
 
@@ -334,13 +350,7 @@ void EditorResourcePicker::_edit_menu_cbk(int p_which) {
 			Variant obj;
 
 			if (ScriptServer::is_global_class(intype)) {
-				obj = ClassDB::instantiate(ScriptServer::get_global_class_native_base(intype));
-				if (obj) {
-					Ref<Script> script = ResourceLoader::load(ScriptServer::get_global_class_path(intype));
-					if (script.is_valid()) {
-						((Object *)obj)->set_script(script);
-					}
-				}
+				obj = ScriptServer::instantiate_global_class(intype);
 			} else {
 				obj = ClassDB::instantiate(intype);
 			}
@@ -594,21 +604,25 @@ void EditorResourcePicker::drop_data_fw(const Point2 &p_point, const Variant &p_
 			for (Set<String>::Element *E = allowed_types.front(); E; E = E->next()) {
 				String at = E->get().strip_edges();
 
-				if (at == "StandardMaterial3D" && ClassDB::is_parent_class(dropped_resource->get_class(), "Texture2D")) {
+				EditorData &ed = EditorNode::get_editor_data();
+				StringName script_name = ed.script_class_get_name(dropped_resource->get_path());
+				String class_name = script_name != StringName() ? script_name : StringName(dropped_resource->get_class());
+
+				if (at == "StandardMaterial3D" && ed.class_equals_or_inherits(class_name, "Texture2D")) {
 					Ref<StandardMaterial3D> mat = memnew(StandardMaterial3D);
 					mat->set_texture(StandardMaterial3D::TextureParam::TEXTURE_ALBEDO, dropped_resource);
 					dropped_resource = mat;
 					break;
 				}
 
-				if (at == "ShaderMaterial" && ClassDB::is_parent_class(dropped_resource->get_class(), "Shader")) {
+				if (at == "ShaderMaterial" && ClassDB::is_parent_class(class_name, "Shader")) {
 					Ref<ShaderMaterial> mat = memnew(ShaderMaterial);
 					mat->set_shader(dropped_resource);
 					dropped_resource = mat;
 					break;
 				}
 
-				if (at == "Font" && ClassDB::is_parent_class(dropped_resource->get_class(), "FontData")) {
+				if (at == "Font" && ClassDB::is_parent_class(class_name, "FontData")) {
 					Ref<Font> font = memnew(Font);
 					font->add_data(dropped_resource);
 					dropped_resource = font;
