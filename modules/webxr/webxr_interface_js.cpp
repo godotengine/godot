@@ -162,7 +162,7 @@ String WebXRInterfaceJS::get_reference_space_type() const {
 	return reference_space_type;
 }
 
-ARVRPositionalTracker *WebXRInterfaceJS::get_controller(int p_controller_id) const {
+Ref<ARVRPositionalTracker> WebXRInterfaceJS::get_controller(int p_controller_id) const {
 	ARVRServer *arvr_server = ARVRServer::get_singleton();
 	ERR_FAIL_NULL_V(arvr_server, nullptr);
 
@@ -382,10 +382,10 @@ void WebXRInterfaceJS::_update_tracker(int p_controller_id) {
 	ARVRServer *arvr_server = ARVRServer::get_singleton();
 	ERR_FAIL_NULL(arvr_server);
 
-	ARVRPositionalTracker *tracker = arvr_server->find_by_type_and_id(ARVRServer::TRACKER_CONTROLLER, p_controller_id + 1);
+	Ref<ARVRPositionalTracker> tracker = arvr_server->find_by_type_and_id(ARVRServer::TRACKER_CONTROLLER, p_controller_id + 1);
 	if (godot_webxr_is_controller_connected(p_controller_id)) {
-		if (tracker == nullptr) {
-			tracker = memnew(ARVRPositionalTracker);
+		if (tracker.is_null()) {
+			tracker.instance();
 			tracker->set_type(ARVRServer::TRACKER_CONTROLLER);
 			// Controller id's 0 and 1 are always the left and right hands.
 			if (p_controller_id < 2) {
@@ -425,7 +425,7 @@ void WebXRInterfaceJS::_update_tracker(int p_controller_id) {
 			}
 			free(axes);
 		}
-	} else if (tracker) {
+	} else if (tracker.is_valid()) {
 		arvr_server->remove_tracker(tracker);
 	}
 }
