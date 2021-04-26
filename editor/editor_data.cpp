@@ -972,6 +972,27 @@ String EditorData::script_class_get_icon_path(const StringName &p_class) const {
 	return ret;
 }
 
+Ref<Script> EditorData::script_class_get_base_from_anonymous_path(const String &p_path) const {
+	StringName name = script_class_get_name(p_path);
+	if (name != StringName()) {
+		return NULL;
+	}
+	Ref<Script> script = ResourceLoader::load(p_path, "Script");
+	if (script.is_null()) {
+		return NULL;
+	}
+	do {
+		if (script_class_get_name(script->get_path()) != StringName()) {
+			return script;
+		}
+		if (script->get_path().find("::") != -1) {
+			WARN_PRINT_ONCE("If you remove a built-in script that derives a script class, inheritance cannot be determined. The entire script is removed.");
+		}
+		script = script->get_base_script();
+	} while (script.is_valid());
+	return NULL;
+}
+
 StringName EditorData::script_class_get_name(const String &p_path) const {
 	return _script_class_file_to_path.has(p_path) ? _script_class_file_to_path[p_path] : StringName();
 }

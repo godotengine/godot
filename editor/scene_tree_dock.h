@@ -109,6 +109,7 @@ class SceneTreeDock : public VBoxContainer {
 	Button *button_add;
 	Button *button_instance;
 	Button *button_create_script;
+	Button *button_extend_script;
 	Button *button_detach_script;
 
 	Button *button_2d;
