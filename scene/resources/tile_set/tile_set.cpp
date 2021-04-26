@@ -468,6 +468,7 @@ void TileSet::set_terrain_color(int p_terrain_set, int p_terrain_index, Color p_
 }
 
 Color TileSet::get_terrain_color(int p_terrain_set, int p_terrain_index) const {
+	ERR_FAIL_INDEX_V(p_terrain_set, terrain_sets.size(), Color());
 	ERR_FAIL_INDEX_V(p_terrain_index, terrain_sets[p_terrain_set].terrains.size(), Color());
 	return terrain_sets[p_terrain_set].terrains[p_terrain_index].color;
 }
