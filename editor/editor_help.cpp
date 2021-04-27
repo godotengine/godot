@@ -58,7 +58,6 @@ void EditorHelp::_init_colors() {
 }
 
 void EditorHelp::_unhandled_key_input(const Ref<InputEvent> &p_ev) {
-
 	if (!is_visible_in_tree())
 		return;
 

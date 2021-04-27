@@ -214,6 +214,7 @@ void PopupMenu::_scroll(float p_factor, const Point2 &p_over) {
 }
 
 void PopupMenu::_gui_input(const Ref<InputEvent> &p_event) {
+	ERR_FAIL_COND(p_event.is_null());
 
 	if (p_event->is_action("ui_down") && p_event->is_pressed()) {
 

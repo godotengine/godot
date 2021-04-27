@@ -6023,6 +6023,7 @@ void SpatialEditor::snap_selected_nodes_to_floor() {
 }
 
 void SpatialEditor::_unhandled_key_input(Ref<InputEvent> p_event) {
+	ERR_FAIL_COND(p_event.is_null());
 
 	if (!is_visible_in_tree() || get_viewport()->gui_has_modal_stack())
 		return;
