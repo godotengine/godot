@@ -310,6 +310,7 @@ public:
 		Ref<Script> script;
 		String class_name;
 		String class_member;
+		String class_path;
 		int location;
 	};
 

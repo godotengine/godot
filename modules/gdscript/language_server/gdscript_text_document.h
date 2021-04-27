@@ -45,6 +45,7 @@ protected:
 	void didOpen(const Variant &p_param);
 	void didClose(const Variant &p_param);
 	void didChange(const Variant &p_param);
+	void didSave(const Variant &p_param);
 
 	void sync_script_content(const String &p_path, const String &p_content);
 	void show_native_symbol_in_editor(const String &p_symbol_id);
@@ -61,6 +62,7 @@ public:
 	Array documentSymbol(const Dictionary &p_params);
 	Array completion(const Dictionary &p_params);
 	Dictionary resolve(const Dictionary &p_params);
+	Dictionary rename(const Dictionary &p_params);
 	Array foldingRange(const Dictionary &p_params);
 	Array codeLens(const Dictionary &p_params);
 	Array documentLink(const Dictionary &p_params);
