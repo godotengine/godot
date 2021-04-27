@@ -389,8 +389,6 @@
 		<theme_item name="outline_size" type="int" default="0">
 			The size of the tab text outline.
 		</theme_item>
-		<theme_item name="panel" type="StyleBox">
-		</theme_item>
 		<theme_item name="tab_disabled" type="StyleBox">
 			The style of disabled tabs.
 		</theme_item>
