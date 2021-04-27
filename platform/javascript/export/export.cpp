@@ -28,6 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
+#include "core/io/image_loader.h"
 #include "core/io/json.h"
 #include "core/io/tcp_server.h"
 #include "core/io/zip_io.h"
@@ -41,6 +42,7 @@ class EditorHTTPServer : public Reference {
 private:
 	Ref<TCP_Server> server;
 	Ref<StreamPeerTCP> connection;
+	Map<String, String> mimes;
 	uint64_t time = 0;
 	uint8_t req_buf[4096];
 	int req_pos = 0;
@@ -54,6 +56,13 @@ private:
 
 public:
 	EditorHTTPServer() {
+		mimes["html"] = "text/html";
+		mimes["js"] = "application/javascript";
+		mimes["json"] = "application/json";
+		mimes["pck"] = "application/octet-stream";
+		mimes["png"] = "image/png";
+		mimes["svg"] = "image/svg";
+		mimes["wasm"] = "application/wasm";
 		server.instance();
 		stop();
 	}
@@ -82,44 +91,12 @@ public:
 		// Wrong protocol
 		ERR_FAIL_COND_MSG(req[0] != "GET" || req[2] != "HTTP/1.1", "Invalid method or HTTP version.");
 
-		const String cache_path = EditorSettings::get_singleton()->get_cache_dir();
-		const String basereq = "/tmp_js_export";
-		String filepath;
-		String ctype;
-		if (req[1] == basereq + ".html") {
-			filepath = cache_path.plus_file(req[1].get_file());
-			ctype = "text/html";
-		} else if (req[1] == basereq + ".js") {
-			filepath = cache_path.plus_file(req[1].get_file());
-			ctype = "application/javascript";
-		} else if (req[1] == basereq + ".audio.worklet.js") {
-			filepath = cache_path.plus_file(req[1].get_file());
-			ctype = "application/javascript";
-		} else if (req[1] == basereq + ".worker.js") {
-			filepath = cache_path.plus_file(req[1].get_file());
-			ctype = "application/javascript";
-		} else if (req[1] == basereq + ".pck") {
-			filepath = cache_path.plus_file(req[1].get_file());
-			ctype = "application/octet-stream";
-		} else if (req[1] == basereq + ".png" || req[1] == "/favicon.png") {
-			// Also allow serving the generated favicon for a smoother loading experience.
-			if (req[1] == "/favicon.png") {
-				filepath = EditorSettings::get_singleton()->get_cache_dir().plus_file("favicon.png");
-			} else {
-				filepath = basereq + ".png";
-			}
-			ctype = "image/png";
-		} else if (req[1] == basereq + ".side.wasm") {
-			filepath = cache_path.plus_file(req[1].get_file());
-			ctype = "application/wasm";
-		} else if (req[1] == basereq + ".wasm") {
-			filepath = cache_path.plus_file(req[1].get_file());
-			ctype = "application/wasm";
-		} else if (req[1].ends_with(".wasm")) {
-			filepath = cache_path.plus_file(req[1].get_file()); // TODO dangerous?
-			ctype = "application/wasm";
-		}
-		if (filepath.is_empty() || !FileAccess::exists(filepath)) {
+		const String req_file = req[1].get_file();
+		const String req_ext = req[1].get_extension();
+		const String cache_path = EditorSettings::get_singleton()->get_cache_dir().plus_file("web");
+		const String filepath = cache_path.plus_file(req_file);
+
+		if (!mimes.has(req_ext) || !FileAccess::exists(filepath)) {
 			String s = "HTTP/1.1 404 Not Found\r\n";
 			s += "Connection: Close\r\n";
 			s += "\r\n";
@@ -127,6 +104,8 @@ public:
 			connection->put_data((const uint8_t *)cs.get_data(), cs.size() - 1);
 			return;
 		}
+		const String ctype = mimes[req_ext];
+
 		FileAccess *f = FileAccess::open(filepath, FileAccess::READ);
 		ERR_FAIL_COND(!f);
 		String s = "HTTP/1.1 200 OK\r\n";
@@ -304,11 +283,16 @@ void EditorExportPlatformJavaScript::_fix_html(Vector<uint8_t> &p_html, const Re
 	config["fileSizes"] = p_file_sizes;
 	const String str_config = JSON::print(config);
 
+	String head_include;
+	if (p_preset->get("html/export_icon")) {
+		head_include += "<link id='-gd-engine-icon' rel='icon' type='image/png' href='" + p_name + ".icon.png' />\n";
+	}
+	head_include += static_cast<String>(p_preset->get("html/head_include"));
 	for (int i = 0; i < lines.size(); i++) {
 		String current_line = lines[i];
 		current_line = current_line.replace("$GODOT_URL", p_name + ".js");
 		current_line = current_line.replace("$GODOT_PROJECT_NAME", ProjectSettings::get_singleton()->get_setting("application/config/name"));
-		current_line = current_line.replace("$GODOT_HEAD_INCLUDE", p_preset->get("html/head_include"));
+		current_line = current_line.replace("$GODOT_HEAD_INCLUDE", head_include);
 		current_line = current_line.replace("$GODOT_CONFIG", str_config);
 		str_export += current_line + "\n";
 	}
@@ -350,6 +334,7 @@ void EditorExportPlatformJavaScript::get_export_options(List<ExportOption> *r_op
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "vram_texture_compression/for_desktop"), true)); // S3TC
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "vram_texture_compression/for_mobile"), false)); // ETC or ETC2, depending on renderer
 
+	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "html/export_icon"), true));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "html/custom_html_shell", PROPERTY_HINT_FILE, "*.html"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "html/head_include", PROPERTY_HINT_MULTILINE_TEXT), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "html/canvas_resize_policy", PROPERTY_HINT_ENUM, "None,Project,Adaptive"), 2));
@@ -422,6 +407,7 @@ Error EditorExportPlatformJavaScript::export_project(const Ref<EditorExportPrese
 	String custom_debug = p_preset->get("custom_template/debug");
 	String custom_release = p_preset->get("custom_template/release");
 	String custom_html = p_preset->get("html/custom_html_shell");
+	bool export_icon = p_preset->get("html/export_icon");
 
 	String template_path = p_debug ? custom_debug : custom_release;
 
@@ -567,7 +553,7 @@ Error EditorExportPlatformJavaScript::export_project(const Ref<EditorExportPrese
 	const String splash_path = String(GLOBAL_GET("application/boot_splash/image")).strip_edges();
 	if (!splash_path.is_empty()) {
 		splash.instance();
-		const Error err = splash->load(splash_path);
+		const Error err = ImageLoader::load_image(splash_path, splash);
 		if (err) {
 			EditorNode::get_singleton()->show_warning(TTR("Could not read boot splash image file:") + "\n" + splash_path + "\n" + TTR("Using default boot splash image."));
 			splash.unref();
@@ -584,18 +570,21 @@ Error EditorExportPlatformJavaScript::export_project(const Ref<EditorExportPrese
 
 	// Save a favicon that can be accessed without waiting for the project to finish loading.
 	// This way, the favicon can be displayed immediately when loading the page.
-	Ref<Image> favicon;
-	const String favicon_path = String(GLOBAL_GET("application/config/icon")).strip_edges();
-	if (!favicon_path.is_empty()) {
-		favicon.instance();
-		const Error err = favicon->load(favicon_path);
-		if (err) {
-			favicon.unref();
+	if (export_icon) {
+		Ref<Image> favicon;
+		const String favicon_path = String(GLOBAL_GET("application/config/icon")).strip_edges();
+		if (!favicon_path.is_empty()) {
+			favicon.instance();
+			const Error err = ImageLoader::load_image(favicon_path, favicon);
+			if (err) {
+				favicon.unref();
+			}
 		}
-	}
 
-	if (favicon.is_valid()) {
-		const String favicon_png_path = p_path.get_base_dir().plus_file("favicon.png");
+		if (favicon.is_null()) {
+			favicon = EditorNode::get_singleton()->get_editor_theme()->get_icon("DefaultProjectIcon", "EditorIcons")->get_image();
+		}
+		const String favicon_png_path = p_path.get_base_dir().plus_file(p_path.get_file().get_basename() + ".icon.png");
 		if (favicon->save_png(favicon_png_path) != OK) {
 			EditorNode::get_singleton()->show_warning(TTR("Could not write file:") + "\n" + favicon_png_path);
 			return ERR_FILE_CANT_WRITE;
@@ -644,7 +633,16 @@ Error EditorExportPlatformJavaScript::run(const Ref<EditorExportPreset> &p_prese
 		return OK;
 	}
 
-	const String basepath = EditorSettings::get_singleton()->get_cache_dir().plus_file("tmp_js_export");
+	const String dest = EditorSettings::get_singleton()->get_cache_dir().plus_file("web");
+	DirAccessRef da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+	if (!da->dir_exists(dest)) {
+		Error err = da->make_dir_recursive(dest);
+		if (err != OK) {
+			EditorNode::get_singleton()->show_warning(TTR("Could not create HTTP server directory:") + "\n" + dest);
+			return err;
+		}
+	}
+	const String basepath = dest.plus_file("tmp_js_export");
 	Error err = export_project(p_preset, true, basepath + ".html", p_debug_flags);
 	if (err != OK) {
 		// Export generates several files, clean them up on failure.
@@ -656,7 +654,7 @@ Error EditorExportPlatformJavaScript::run(const Ref<EditorExportPreset> &p_prese
 		DirAccess::remove_file_or_error(basepath + ".png");
 		DirAccess::remove_file_or_error(basepath + ".side.wasm");
 		DirAccess::remove_file_or_error(basepath + ".wasm");
-		DirAccess::remove_file_or_error(EditorSettings::get_singleton()->get_cache_dir().plus_file("favicon.png"));
+		DirAccess::remove_file_or_error(basepath + ".icon.png");
 		return err;
 	}
 
@@ -678,7 +676,10 @@ Error EditorExportPlatformJavaScript::run(const Ref<EditorExportPreset> &p_prese
 		server->stop();
 		err = server->listen(bind_port, bind_ip);
 	}
-	ERR_FAIL_COND_V_MSG(err != OK, err, "Unable to start HTTP server.");
+	if (err != OK) {
+		EditorNode::get_singleton()->show_warning(TTR("Error starting HTTP server:") + "\n" + itos(err));
+		return err;
+	}
 
 	OS::get_singleton()->shell_open(String("http://" + bind_host + ":" + itos(bind_port) + "/tmp_js_export.html"));
 	// FIXME: Find out how to clean up export files after running the successfully
