@@ -491,13 +491,19 @@ public:
 	FUNC2(particles_set_use_local_coordinates, RID, bool)
 	FUNC2(particles_set_process_material, RID, RID)
 	FUNC2(particles_set_fixed_fps, RID, int)
+	FUNC2(particles_set_interpolate, RID, bool)
 	FUNC2(particles_set_fractional_delta, RID, bool)
 	FUNC1R(bool, particles_is_inactive, RID)
+	FUNC3(particles_set_trails, RID, bool, float)
+	FUNC2(particles_set_trail_bind_poses, RID, const Vector<Transform> &)
+
 	FUNC1(particles_request_process, RID)
 	FUNC1(particles_restart, RID)
 	FUNC6(particles_emit, RID, const Transform &, const Vector3 &, const Color &, const Color &, uint32_t)
 	FUNC2(particles_set_subemitter, RID, RID)
 	FUNC2(particles_set_collision_base_size, RID, float)
+
+	FUNC2(particles_set_transform_align, RID, RS::ParticlesTransformAlign)
 
 	FUNC2(particles_set_draw_order, RID, RS::ParticlesDrawOrder)
 

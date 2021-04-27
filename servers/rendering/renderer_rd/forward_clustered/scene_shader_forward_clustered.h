@@ -126,6 +126,7 @@ public:
 		bool uses_discard;
 		bool uses_roughness;
 		bool uses_normal;
+		bool uses_particle_trails;
 
 		bool unshaded;
 		bool uses_vertex;

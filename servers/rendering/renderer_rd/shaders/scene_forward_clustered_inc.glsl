@@ -61,12 +61,11 @@ layout(set = 0, binding = 2) uniform sampler shadow_sampler;
 #define INSTANCE_FLAGS_MULTIMESH_FORMAT_2D (1 << 13)
 #define INSTANCE_FLAGS_MULTIMESH_HAS_COLOR (1 << 14)
 #define INSTANCE_FLAGS_MULTIMESH_HAS_CUSTOM_DATA (1 << 15)
-#define INSTANCE_FLAGS_MULTIMESH_STRIDE_SHIFT 16
+#define INSTANCE_FLAGS_PARTICLE_TRAIL_SHIFT 16
 //3 bits of stride
-#define INSTANCE_FLAGS_MULTIMESH_STRIDE_MASK 0x7
+#define INSTANCE_FLAGS_PARTICLE_TRAIL_MASK 0xFF
 
-#define INSTANCE_FLAGS_SKELETON (1 << 19)
-#define INSTANCE_FLAGS_NON_UNIFORM_SCALE (1 << 20)
+#define INSTANCE_FLAGS_NON_UNIFORM_SCALE (1 << 24)
 
 layout(set = 0, binding = 3, std430) restrict readonly buffer OmniLights {
 	LightData data[];

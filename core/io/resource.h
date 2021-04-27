@@ -88,7 +88,9 @@ protected:
 
 public:
 	static Node *(*_get_local_scene_func)(); //used by editor
+	static void (*_update_configuration_warning)(); //used by editor
 
+	void update_configuration_warning();
 	virtual bool editor_can_reload_from_file();
 	virtual void reset_state(); //for resources that use variable amount of properties, either via _validate_property or _get_property_list, this function needs to be implemented to correctly clear state
 	virtual Error copy_from(const Ref<Resource> &p_resource);
