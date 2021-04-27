@@ -123,6 +123,13 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="get_local_port" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Returns the local port this server is listening to.
+			</description>
+		</method>
 		<method name="is_connection_available" qualifiers="const">
 			<return type="bool">
 			</return>
@@ -145,7 +152,7 @@
 			<argument index="1" name="bind_address" type="String" default="&quot;*&quot;">
 			</argument>
 			<description>
-				Starts the server by opening a UDP socket listening on the given port. You can optionally specify a [code]bind_address[/code] to only listen for packets sent to that address. See also [method PacketPeerUDP.listen].
+				Starts the server by opening a UDP socket listening on the given port. You can optionally specify a [code]bind_address[/code] to only listen for packets sent to that address. See also [method PacketPeerUDP.bind].
 			</description>
 		</method>
 		<method name="poll">
