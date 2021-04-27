@@ -631,8 +631,22 @@ public:
 	virtual void particles_set_use_local_coordinates(RID p_particles, bool p_enable) = 0;
 	virtual void particles_set_process_material(RID p_particles, RID p_material) = 0;
 	virtual void particles_set_fixed_fps(RID p_particles, int p_fps) = 0;
+	virtual void particles_set_interpolate(RID p_particles, bool p_enable) = 0;
 	virtual void particles_set_fractional_delta(RID p_particles, bool p_enable) = 0;
 	virtual void particles_set_collision_base_size(RID p_particles, float p_size) = 0;
+
+	enum ParticlesTransformAlign {
+		PARTICLES_TRANSFORM_ALIGN_DISABLED,
+		PARTICLES_TRANSFORM_ALIGN_Z_BILLBOARD,
+		PARTICLES_TRANSFORM_ALIGN_Y_TO_VELOCITY,
+		PARTICLES_TRANSFORM_ALIGN_Z_BILLBOARD_Y_TO_VELOCITY,
+	};
+
+	virtual void particles_set_transform_align(RID p_particles, ParticlesTransformAlign p_transform_align) = 0;
+
+	virtual void particles_set_trails(RID p_particles, bool p_enable, float p_length_sec) = 0;
+	virtual void particles_set_trail_bind_poses(RID p_particles, const Vector<Transform> &p_bind_poses) = 0;
+
 	virtual bool particles_is_inactive(RID p_particles) = 0;
 	virtual void particles_request_process(RID p_particles) = 0;
 	virtual void particles_restart(RID p_particles) = 0;

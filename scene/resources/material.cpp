@@ -543,6 +543,9 @@ void BaseMaterial3D::_update_shader() {
 	if (flags[FLAG_DISABLE_DEPTH_TEST]) {
 		code += ",depth_test_disabled";
 	}
+	if (flags[FLAG_PARTICLE_TRAILS_MODE]) {
+		code += ",particle_trails";
+	}
 	if (shading_mode == SHADING_MODE_PER_VERTEX) {
 		code += ",vertex_lighting";
 	}
@@ -1597,6 +1600,9 @@ void BaseMaterial3D::set_flag(Flags p_flag, bool p_enabled) {
 	if (p_flag == FLAG_USE_SHADOW_TO_OPACITY || p_flag == FLAG_USE_TEXTURE_REPEAT || p_flag == FLAG_SUBSURFACE_MODE_SKIN || p_flag == FLAG_USE_POINT_SIZE) {
 		notify_property_list_changed();
 	}
+	if (p_flag == FLAG_PARTICLE_TRAILS_MODE) {
+		update_configuration_warning();
+	}
 	_queue_shader_change();
 }
 
@@ -2177,6 +2183,8 @@ Shader::Mode BaseMaterial3D::get_shader_mode() const {
 }
 
 void BaseMaterial3D::_bind_methods() {
+	static_assert(sizeof(MaterialKey) == 16, "MaterialKey should be 16 bytes");
+
 	ClassDB::bind_method(D_METHOD("set_albedo", "albedo"), &BaseMaterial3D::set_albedo);
 	ClassDB::bind_method(D_METHOD("get_albedo"), &BaseMaterial3D::get_albedo);
 
@@ -2534,6 +2542,7 @@ void BaseMaterial3D::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "fixed_size"), "set_flag", "get_flag", FLAG_FIXED_SIZE);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "use_point_size"), "set_flag", "get_flag", FLAG_USE_POINT_SIZE);
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "point_size", PROPERTY_HINT_RANGE, "0.1,128,0.1"), "set_point_size", "get_point_size");
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "use_particle_trails"), "set_flag", "get_flag", FLAG_PARTICLE_TRAILS_MODE);
 	ADD_GROUP("Proximity Fade", "proximity_fade_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "proximity_fade_enable"), "set_proximity_fade", "is_proximity_fade_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "proximity_fade_distance", PROPERTY_HINT_RANGE, "0,4096,0.01"), "set_proximity_fade_distance", "get_proximity_fade_distance");
@@ -2635,6 +2644,7 @@ void BaseMaterial3D::_bind_methods() {
 	BIND_ENUM_CONSTANT(FLAG_USE_TEXTURE_REPEAT);
 	BIND_ENUM_CONSTANT(FLAG_INVERT_HEIGHTMAP);
 	BIND_ENUM_CONSTANT(FLAG_SUBSURFACE_MODE_SKIN);
+	BIND_ENUM_CONSTANT(FLAG_PARTICLE_TRAILS_MODE);
 	BIND_ENUM_CONSTANT(FLAG_MAX);
 
 	BIND_ENUM_CONSTANT(DIFFUSE_BURLEY);

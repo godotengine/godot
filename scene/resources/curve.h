@@ -122,7 +122,7 @@ public:
 	void bake();
 	int get_bake_resolution() const { return _bake_resolution; }
 	void set_bake_resolution(int p_resolution);
-	real_t interpolate_baked(real_t offset);
+	real_t interpolate_baked(real_t offset) const;
 
 	void ensure_default_setup(float p_min, float p_max);
 

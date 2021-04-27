@@ -110,6 +110,12 @@ String Resource::get_name() const {
 	return name;
 }
 
+void Resource::update_configuration_warning() {
+	if (_update_configuration_warning) {
+		_update_configuration_warning();
+	}
+}
+
 bool Resource::editor_can_reload_from_file() {
 	return true; //by default yes
 }
@@ -320,6 +326,7 @@ void Resource::setup_local_to_scene() {
 }
 
 Node *(*Resource::_get_local_scene_func)() = nullptr;
+void (*Resource::_update_configuration_warning)() = nullptr;
 
 void Resource::set_as_translation_remapped(bool p_remapped) {
 	if (remapped_list.in_list() == p_remapped) {

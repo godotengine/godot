@@ -34,6 +34,7 @@
 #include "core/templates/rid.h"
 #include "scene/3d/visual_instance_3d.h"
 #include "scene/resources/material.h"
+#include "scene/resources/skin.h"
 
 class GPUParticles3D : public GeometryInstance3D {
 private:
@@ -44,6 +45,13 @@ public:
 		DRAW_ORDER_INDEX,
 		DRAW_ORDER_LIFETIME,
 		DRAW_ORDER_VIEW_DEPTH,
+	};
+
+	enum TransformAlign {
+		TRANSFORM_ALIGN_DISABLED,
+		TRANSFORM_ALIGN_Z_BILLBOARD,
+		TRANSFORM_ALIGN_Y_TO_VELOCITY,
+		TRANSFORM_ALIGN_Z_BILLBOARD_Y_TO_VELOCITY
 	};
 
 	enum {
@@ -64,16 +72,25 @@ private:
 	bool local_coords;
 	int fixed_fps;
 	bool fractional_delta;
+	bool interpolate = true;
 	NodePath sub_emitter;
 	float collision_base_size;
+
+	bool trail_enabled = false;
+	float trail_length = 0.3;
+
+	TransformAlign transform_align = TRANSFORM_ALIGN_DISABLED;
 
 	Ref<Material> process_material;
 
 	DrawOrder draw_order;
 
 	Vector<Ref<Mesh>> draw_passes;
+	Ref<Skin> skin;
 
 	void _attach_sub_emitter();
+
+	void _skinning_changed();
 
 protected:
 	static void _bind_methods();
@@ -96,6 +113,8 @@ public:
 	void set_process_material(const Ref<Material> &p_material);
 	void set_speed_scale(float p_scale);
 	void set_collision_base_size(float p_ratio);
+	void set_enable_trail(bool p_enabled);
+	void set_trail_length(float p_seconds);
 
 	bool is_emitting() const;
 	int get_amount() const;
@@ -109,12 +128,17 @@ public:
 	Ref<Material> get_process_material() const;
 	float get_speed_scale() const;
 	float get_collision_base_size() const;
+	bool is_trail_enabled() const;
+	float get_trail_length() const;
 
 	void set_fixed_fps(int p_count);
 	int get_fixed_fps() const;
 
 	void set_fractional_delta(bool p_enable);
 	bool get_fractional_delta() const;
+
+	void set_interpolate(bool p_enable);
+	bool get_interpolate() const;
 
 	void set_draw_order(DrawOrder p_order);
 	DrawOrder get_draw_order() const;
@@ -129,6 +153,12 @@ public:
 
 	void set_sub_emitter(const NodePath &p_path);
 	NodePath get_sub_emitter() const;
+
+	void set_skin(const Ref<Skin> &p_skin);
+	Ref<Skin> get_skin() const;
+
+	void set_transform_align(TransformAlign p_align);
+	TransformAlign get_transform_align() const;
 
 	void restart();
 
@@ -148,6 +178,7 @@ public:
 };
 
 VARIANT_ENUM_CAST(GPUParticles3D::DrawOrder)
+VARIANT_ENUM_CAST(GPUParticles3D::TransformAlign)
 VARIANT_ENUM_CAST(GPUParticles3D::EmitFlags)
 
 #endif // PARTICLES_H

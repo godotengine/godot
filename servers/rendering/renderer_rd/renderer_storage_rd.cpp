@@ -3888,22 +3888,37 @@ bool RendererStorageRD::particles_get_emitting(RID p_particles) {
 }
 
 void RendererStorageRD::_particles_free_data(Particles *particles) {
-	if (!particles->particle_buffer.is_valid()) {
-		return;
+	if (particles->particle_buffer.is_valid()) {
+		RD::get_singleton()->free(particles->particle_buffer);
+		particles->particle_buffer = RID();
+		RD::get_singleton()->free(particles->particle_instance_buffer);
+		particles->particle_instance_buffer = RID();
 	}
-	RD::get_singleton()->free(particles->particle_buffer);
-	RD::get_singleton()->free(particles->frame_params_buffer);
-	RD::get_singleton()->free(particles->particle_instance_buffer);
-	particles->particles_transforms_buffer_uniform_set = RID();
-	particles->particle_buffer = RID();
 
+	if (particles->frame_params_buffer.is_valid()) {
+		RD::get_singleton()->free(particles->frame_params_buffer);
+		particles->frame_params_buffer = RID();
+	}
+	particles->particles_transforms_buffer_uniform_set = RID();
+
+	if (RD::get_singleton()->uniform_set_is_valid(particles->trail_bind_pose_uniform_set)) {
+		RD::get_singleton()->free(particles->trail_bind_pose_uniform_set);
+	}
+	particles->trail_bind_pose_uniform_set = RID();
+
+	if (particles->trail_bind_pose_buffer.is_valid()) {
+		RD::get_singleton()->free(particles->trail_bind_pose_buffer);
+		particles->trail_bind_pose_buffer = RID();
+	}
 	if (RD::get_singleton()->uniform_set_is_valid(particles->collision_textures_uniform_set)) {
 		RD::get_singleton()->free(particles->collision_textures_uniform_set);
 	}
+	particles->collision_textures_uniform_set = RID();
 
 	if (particles->particles_sort_buffer.is_valid()) {
 		RD::get_singleton()->free(particles->particles_sort_buffer);
 		particles->particles_sort_buffer = RID();
+		particles->particles_sort_uniform_set = RID();
 	}
 
 	if (particles->emission_buffer != nullptr) {
@@ -3912,6 +3927,12 @@ void RendererStorageRD::_particles_free_data(Particles *particles) {
 		RD::get_singleton()->free(particles->emission_storage_buffer);
 		particles->emission_storage_buffer = RID();
 	}
+
+	if (RD::get_singleton()->uniform_set_is_valid(particles->particles_material_uniform_set)) {
+		//will need to be re-created
+		RD::get_singleton()->free(particles->particles_material_uniform_set);
+	}
+	particles->particles_material_uniform_set = RID();
 }
 
 void RendererStorageRD::particles_set_amount(RID p_particles, int p_amount) {
@@ -3926,38 +3947,12 @@ void RendererStorageRD::particles_set_amount(RID p_particles, int p_amount) {
 
 	particles->amount = p_amount;
 
-	if (particles->amount > 0) {
-		particles->particle_buffer = RD::get_singleton()->storage_buffer_create(sizeof(ParticleData) * p_amount);
-		particles->frame_params_buffer = RD::get_singleton()->storage_buffer_create(sizeof(ParticlesFrameParams) * 1);
-		particles->particle_instance_buffer = RD::get_singleton()->storage_buffer_create(sizeof(float) * 4 * (3 + 1 + 1) * p_amount);
-		//needs to clear it
-
-		{
-			Vector<RD::Uniform> uniforms;
-
-			{
-				RD::Uniform u;
-				u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
-				u.binding = 1;
-				u.ids.push_back(particles->particle_buffer);
-				uniforms.push_back(u);
-			}
-			{
-				RD::Uniform u;
-				u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
-				u.binding = 2;
-				u.ids.push_back(particles->particle_instance_buffer);
-				uniforms.push_back(u);
-			}
-
-			particles->particles_copy_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, particles_shader.copy_shader.version_get_shader(particles_shader.copy_shader_version, 0), 0);
-		}
-	}
-
 	particles->prev_ticks = 0;
 	particles->phase = 0;
 	particles->prev_phase = 0;
 	particles->clear = true;
+
+	particles->dependency.changed_notify(DEPENDENCY_CHANGED_PARTICLES);
 }
 
 void RendererStorageRD::particles_set_lifetime(RID p_particles, float p_lifetime) {
@@ -4013,6 +4008,22 @@ void RendererStorageRD::particles_set_fixed_fps(RID p_particles, int p_fps) {
 	ERR_FAIL_COND(!particles);
 
 	particles->fixed_fps = p_fps;
+
+	_particles_free_data(particles);
+
+	particles->prev_ticks = 0;
+	particles->phase = 0;
+	particles->prev_phase = 0;
+	particles->clear = true;
+
+	particles->dependency.changed_notify(DEPENDENCY_CHANGED_PARTICLES);
+}
+
+void RendererStorageRD::particles_set_interpolate(RID p_particles, bool p_enable) {
+	Particles *particles = particles_owner.getornull(p_particles);
+	ERR_FAIL_COND(!particles);
+
+	particles->interpolate = p_enable;
 }
 
 void RendererStorageRD::particles_set_fractional_delta(RID p_particles, bool p_enable) {
@@ -4022,11 +4033,54 @@ void RendererStorageRD::particles_set_fractional_delta(RID p_particles, bool p_e
 	particles->fractional_delta = p_enable;
 }
 
+void RendererStorageRD::particles_set_trails(RID p_particles, bool p_enable, float p_length) {
+	Particles *particles = particles_owner.getornull(p_particles);
+	ERR_FAIL_COND(!particles);
+	ERR_FAIL_COND(p_length < 0.1);
+	p_length = MIN(10.0, p_length);
+
+	particles->trails_enabled = p_enable;
+	particles->trail_length = p_length;
+
+	_particles_free_data(particles);
+
+	particles->prev_ticks = 0;
+	particles->phase = 0;
+	particles->prev_phase = 0;
+	particles->clear = true;
+
+	particles->dependency.changed_notify(DEPENDENCY_CHANGED_PARTICLES);
+}
+
+void RendererStorageRD::particles_set_trail_bind_poses(RID p_particles, const Vector<Transform> &p_bind_poses) {
+	Particles *particles = particles_owner.getornull(p_particles);
+	ERR_FAIL_COND(!particles);
+	if (particles->trail_bind_pose_buffer.is_valid() && particles->trail_bind_poses.size() != p_bind_poses.size()) {
+		_particles_free_data(particles);
+
+		particles->prev_ticks = 0;
+		particles->phase = 0;
+		particles->prev_phase = 0;
+		particles->clear = true;
+	}
+	particles->trail_bind_poses = p_bind_poses;
+	particles->trail_bind_poses_dirty = true;
+
+	particles->dependency.changed_notify(DEPENDENCY_CHANGED_PARTICLES);
+}
+
 void RendererStorageRD::particles_set_collision_base_size(RID p_particles, float p_size) {
 	Particles *particles = particles_owner.getornull(p_particles);
 	ERR_FAIL_COND(!particles);
 
 	particles->collision_base_size = p_size;
+}
+
+void RendererStorageRD::particles_set_transform_align(RID p_particles, RS::ParticlesTransformAlign p_transform_align) {
+	Particles *particles = particles_owner.getornull(p_particles);
+	ERR_FAIL_COND(!particles);
+
+	particles->transform_align = p_transform_align;
 }
 
 void RendererStorageRD::particles_set_process_material(RID p_particles, RID p_material) {
@@ -4152,8 +4206,13 @@ AABB RendererStorageRD::particles_get_current_aabb(RID p_particles) {
 	const Particles *particles = particles_owner.getornull(p_particles);
 	ERR_FAIL_COND_V(!particles, AABB());
 
+	int total_amount = particles->amount;
+	if (particles->trails_enabled && particles->trail_bind_poses.size() > 1) {
+		total_amount *= particles->trail_bind_poses.size();
+	}
+
 	Vector<ParticleData> data;
-	data.resize(particles->amount);
+	data.resize(total_amount);
 
 	Vector<uint8_t> buffer = RD::get_singleton()->buffer_get_data(particles->particle_buffer);
 
@@ -4162,8 +4221,9 @@ AABB RendererStorageRD::particles_get_current_aabb(RID p_particles) {
 	AABB aabb;
 	if (buffer.size()) {
 		bool first = true;
+
 		const ParticleData *particle_data = (const ParticleData *)data.ptr();
-		for (int i = 0; i < particles->amount; i++) {
+		for (int i = 0; i < total_amount; i++) {
 			if (particle_data[i].active) {
 				Vector3 pos = Vector3(particle_data[i].xform[12], particle_data[i].xform[13], particle_data[i].xform[14]);
 				if (!particles->use_local_coords) {
@@ -4224,14 +4284,12 @@ RID RendererStorageRD::particles_get_draw_pass_mesh(RID p_particles, int p_pass)
 void RendererStorageRD::particles_add_collision(RID p_particles, RID p_particles_collision_instance) {
 	Particles *particles = particles_owner.getornull(p_particles);
 	ERR_FAIL_COND(!particles);
-
 	particles->collisions.insert(p_particles_collision_instance);
 }
 
 void RendererStorageRD::particles_remove_collision(RID p_particles, RID p_particles_collision_instance) {
 	Particles *particles = particles_owner.getornull(p_particles);
 	ERR_FAIL_COND(!particles);
-
 	particles->collisions.erase(p_particles_collision_instance);
 }
 
@@ -4286,7 +4344,12 @@ void RendererStorageRD::_particles_process(Particles *p_particles, float p_delta
 
 	float new_phase = Math::fmod((float)p_particles->phase + (p_delta / p_particles->lifetime) * p_particles->speed_scale, (float)1.0);
 
-	ParticlesFrameParams &frame_params = p_particles->frame_params;
+	//move back history (if there is any)
+	for (uint32_t i = p_particles->frame_history.size() - 1; i > 0; i--) {
+		p_particles->frame_history[i] = p_particles->frame_history[i - 1];
+	}
+	//update current frame
+	ParticlesFrameParams &frame_params = p_particles->frame_history[0];
 
 	if (p_particles->clear) {
 		p_particles->cycle_number = 0;
@@ -4317,6 +4380,10 @@ void RendererStorageRD::_particles_process(Particles *p_particles, float p_delta
 	}
 
 	frame_params.cycle = p_particles->cycle_number;
+	frame_params.frame = p_particles->frame_counter++;
+	frame_params.pad0 = 0;
+	frame_params.pad1 = 0;
+	frame_params.pad2 = 0;
 
 	{ //collision and attractors
 
@@ -4515,12 +4582,18 @@ void RendererStorageRD::_particles_process(Particles *p_particles, float p_delta
 
 	ParticlesShader::PushConstant push_constant;
 
+	int process_amount = p_particles->amount;
+
+	if (p_particles->trails_enabled && p_particles->trail_bind_poses.size() > 1) {
+		process_amount *= p_particles->trail_bind_poses.size();
+	}
 	push_constant.clear = p_particles->clear;
 	push_constant.total_particles = p_particles->amount;
 	push_constant.lifetime = p_particles->lifetime;
-	push_constant.trail_size = 1;
+	push_constant.trail_size = p_particles->trail_params.size();
 	push_constant.use_fractional_delta = p_particles->fractional_delta;
 	push_constant.sub_emitter_mode = !p_particles->emitting && p_particles->emission_buffer && (p_particles->emission_buffer->particle_count > 0 || p_particles->force_sub_emit);
+	push_constant.trail_pass = false;
 
 	p_particles->force_sub_emit = false; //reset
 
@@ -4553,7 +4626,17 @@ void RendererStorageRD::_particles_process(Particles *p_particles, float p_delta
 
 	p_particles->clear = false;
 
-	RD::get_singleton()->buffer_update(p_particles->frame_params_buffer, 0, sizeof(ParticlesFrameParams), &frame_params);
+	if (p_particles->trail_params.size() > 1) {
+		//fill the trail params
+		for (uint32_t i = 0; i < p_particles->trail_params.size(); i++) {
+			uint32_t src_idx = i * p_particles->frame_history.size() / p_particles->trail_params.size();
+			p_particles->trail_params[i] = p_particles->frame_history[src_idx];
+		}
+	} else {
+		p_particles->trail_params[0] = p_particles->frame_history[0];
+	}
+
+	RD::get_singleton()->buffer_update(p_particles->frame_params_buffer, 0, sizeof(ParticlesFrameParams) * p_particles->trail_params.size(), p_particles->trail_params.ptr());
 
 	ParticlesMaterialData *m = (ParticlesMaterialData *)material_get_data(p_particles->process_material, SHADER_TYPE_PARTICLES);
 	if (!m) {
@@ -4575,27 +4658,45 @@ void RendererStorageRD::_particles_process(Particles *p_particles, float p_delta
 
 	RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(ParticlesShader::PushConstant));
 
-	RD::get_singleton()->compute_list_dispatch_threads(compute_list, p_particles->amount, 1, 1);
+	if (p_particles->trails_enabled && p_particles->trail_bind_poses.size() > 1) {
+		//trails requires two passes in order to catch particle starts
+		RD::get_singleton()->compute_list_dispatch_threads(compute_list, process_amount / p_particles->trail_bind_poses.size(), 1, 1);
+
+		RD::get_singleton()->compute_list_add_barrier(compute_list);
+
+		push_constant.trail_pass = true;
+		RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(ParticlesShader::PushConstant));
+		RD::get_singleton()->compute_list_dispatch_threads(compute_list, process_amount - p_particles->amount, 1, 1);
+	} else {
+		RD::get_singleton()->compute_list_dispatch_threads(compute_list, process_amount, 1, 1);
+	}
 
 	RD::get_singleton()->compute_list_end();
 }
 
-void RendererStorageRD::particles_set_view_axis(RID p_particles, const Vector3 &p_axis) {
+void RendererStorageRD::particles_set_view_axis(RID p_particles, const Vector3 &p_axis, const Vector3 &p_up_axis) {
 	Particles *particles = particles_owner.getornull(p_particles);
 	ERR_FAIL_COND(!particles);
 
-	if (particles->draw_order != RS::PARTICLES_DRAW_ORDER_VIEW_DEPTH) {
-		return; //uninteresting for other modes
+	if (particles->draw_order != RS::PARTICLES_DRAW_ORDER_VIEW_DEPTH && particles->transform_align != RS::PARTICLES_TRANSFORM_ALIGN_Z_BILLBOARD && particles->transform_align != RS::PARTICLES_TRANSFORM_ALIGN_Z_BILLBOARD_Y_TO_VELOCITY) {
+		return;
 	}
 
+	if (particles->particle_buffer.is_null()) {
+		return; //particles have not processed yet
+	}
+
+	bool do_sort = particles->draw_order == RS::PARTICLES_DRAW_ORDER_VIEW_DEPTH;
+
 	//copy to sort buffer
-	if (particles->particles_sort_buffer == RID()) {
+	if (do_sort && particles->particles_sort_buffer == RID()) {
 		uint32_t size = particles->amount;
 		if (size & 1) {
 			size++; //make multiple of 16
 		}
 		size *= sizeof(float) * 2;
 		particles->particles_sort_buffer = RD::get_singleton()->storage_buffer_create(size);
+
 		{
 			Vector<RD::Uniform> uniforms;
 
@@ -4611,41 +4712,105 @@ void RendererStorageRD::particles_set_view_axis(RID p_particles, const Vector3 &
 		}
 	}
 
+	ParticlesShader::CopyPushConstant copy_push_constant;
+
+	if (particles->trails_enabled && particles->trail_bind_poses.size() > 1) {
+		int fixed_fps = 60.0;
+		if (particles->fixed_fps > 0) {
+			fixed_fps = particles->fixed_fps;
+		}
+
+		copy_push_constant.trail_size = particles->trail_bind_poses.size();
+		copy_push_constant.trail_total = particles->frame_history.size();
+		copy_push_constant.frame_delta = 1.0 / fixed_fps;
+	} else {
+		copy_push_constant.trail_size = 1;
+		copy_push_constant.trail_total = 1;
+		copy_push_constant.frame_delta = 0.0;
+	}
+	copy_push_constant.frame_remainder = particles->interpolate ? particles->frame_remainder : 0.0;
+	copy_push_constant.total_particles = particles->amount;
+
 	Vector3 axis = -p_axis; // cameras look to z negative
 
 	if (particles->use_local_coords) {
 		axis = particles->emission_transform.basis.xform_inv(axis).normalized();
 	}
 
-	ParticlesShader::CopyPushConstant copy_push_constant;
-	copy_push_constant.total_particles = particles->amount;
 	copy_push_constant.sort_direction[0] = axis.x;
 	copy_push_constant.sort_direction[1] = axis.y;
 	copy_push_constant.sort_direction[2] = axis.z;
 
+	copy_push_constant.align_up[0] = p_up_axis.x;
+	copy_push_constant.align_up[1] = p_up_axis.y;
+	copy_push_constant.align_up[2] = p_up_axis.z;
+
+	copy_push_constant.align_mode = particles->transform_align;
+
+	if (do_sort) {
+		RD::ComputeListID compute_list = RD::get_singleton()->compute_list_begin();
+
+		RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, particles_shader.copy_pipelines[ParticlesShader::COPY_MODE_FILL_SORT_BUFFER]);
+		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, particles->particles_copy_uniform_set, 0);
+		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, particles->particles_sort_uniform_set, 1);
+		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, particles->trail_bind_pose_uniform_set, 2);
+		RD::get_singleton()->compute_list_set_push_constant(compute_list, &copy_push_constant, sizeof(ParticlesShader::CopyPushConstant));
+
+		RD::get_singleton()->compute_list_dispatch_threads(compute_list, particles->amount, 1, 1);
+
+		RD::get_singleton()->compute_list_end();
+		effects.sort_buffer(particles->particles_sort_uniform_set, particles->amount);
+	}
+
+	copy_push_constant.total_particles *= copy_push_constant.total_particles;
+
 	RD::ComputeListID compute_list = RD::get_singleton()->compute_list_begin();
-	RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, particles_shader.copy_pipelines[ParticlesShader::COPY_MODE_FILL_SORT_BUFFER]);
+	RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, particles_shader.copy_pipelines[do_sort ? ParticlesShader::COPY_MODE_FILL_INSTANCES_WITH_SORT_BUFFER : ParticlesShader::COPY_MODE_FILL_INSTANCES]);
 	RD::get_singleton()->compute_list_bind_uniform_set(compute_list, particles->particles_copy_uniform_set, 0);
-	RD::get_singleton()->compute_list_bind_uniform_set(compute_list, particles->particles_sort_uniform_set, 1);
+	if (do_sort) {
+		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, particles->particles_sort_uniform_set, 1);
+	}
+	RD::get_singleton()->compute_list_bind_uniform_set(compute_list, particles->trail_bind_pose_uniform_set, 2);
+
 	RD::get_singleton()->compute_list_set_push_constant(compute_list, &copy_push_constant, sizeof(ParticlesShader::CopyPushConstant));
 
-	RD::get_singleton()->compute_list_dispatch_threads(compute_list, particles->amount, 1, 1);
-
-	RD::get_singleton()->compute_list_end();
-
-	effects.sort_buffer(particles->particles_sort_uniform_set, particles->amount);
-
-	compute_list = RD::get_singleton()->compute_list_begin();
-	RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, particles_shader.copy_pipelines[ParticlesShader::COPY_MODE_FILL_INSTANCES_WITH_SORT_BUFFER]);
-	RD::get_singleton()->compute_list_bind_uniform_set(compute_list, particles->particles_copy_uniform_set, 0);
-	RD::get_singleton()->compute_list_bind_uniform_set(compute_list, particles->particles_sort_uniform_set, 1);
-	RD::get_singleton()->compute_list_set_push_constant(compute_list, &copy_push_constant, sizeof(ParticlesShader::CopyPushConstant));
-
-	RD::get_singleton()->compute_list_dispatch_threads(compute_list, particles->amount, 1, 1);
+	RD::get_singleton()->compute_list_dispatch_threads(compute_list, copy_push_constant.total_particles, 1, 1);
 
 	RD::get_singleton()->compute_list_end();
 }
 
+void RendererStorageRD::_particles_update_buffers(Particles *particles) {
+	if (particles->amount > 0 && particles->particle_buffer.is_null()) {
+		int total_amount = particles->amount;
+		if (particles->trails_enabled && particles->trail_bind_poses.size() > 1) {
+			total_amount *= particles->trail_bind_poses.size();
+		}
+		particles->particle_buffer = RD::get_singleton()->storage_buffer_create(sizeof(ParticleData) * total_amount);
+		particles->particle_instance_buffer = RD::get_singleton()->storage_buffer_create(sizeof(float) * 4 * (3 + 1 + 1) * total_amount);
+		//needs to clear it
+
+		{
+			Vector<RD::Uniform> uniforms;
+
+			{
+				RD::Uniform u;
+				u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
+				u.binding = 1;
+				u.ids.push_back(particles->particle_buffer);
+				uniforms.push_back(u);
+			}
+			{
+				RD::Uniform u;
+				u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
+				u.binding = 2;
+				u.ids.push_back(particles->particle_instance_buffer);
+				uniforms.push_back(u);
+			}
+
+			particles->particles_copy_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, particles_shader.copy_shader.version_get_shader(particles_shader.copy_shader_version, 0), 0);
+		}
+	}
+}
 void RendererStorageRD::update_particles() {
 	while (particle_update_list) {
 		//use transform feedback to process particles
@@ -4656,6 +4821,8 @@ void RendererStorageRD::update_particles() {
 		particle_update_list = particles->update_list;
 		particles->update_list = nullptr;
 		particles->dirty = false;
+
+		_particles_update_buffers(particles);
 
 		if (particles->restart_request) {
 			particles->prev_ticks = 0;
@@ -4688,12 +4855,81 @@ void RendererStorageRD::update_particles() {
 			}
 		}
 
+#ifndef _MSC_VER
+#warning Should use display refresh rate for all this
+#endif
+
+		float screen_hz = 60;
+
+		int fixed_fps = 0;
+		if (particles->fixed_fps > 0) {
+			fixed_fps = particles->fixed_fps;
+		} else if (particles->trails_enabled && particles->trail_bind_poses.size() > 1) {
+			fixed_fps = screen_hz;
+		}
+		{
+			//update trails
+			int history_size = 1;
+			int trail_steps = 1;
+			if (particles->trails_enabled && particles->trail_bind_poses.size() > 1) {
+				history_size = MAX(1, int(particles->trail_length * fixed_fps));
+				trail_steps = particles->trail_bind_poses.size();
+			}
+
+			if (uint32_t(history_size) != particles->frame_history.size()) {
+				particles->frame_history.resize(history_size);
+				memset(particles->frame_history.ptr(), 0, sizeof(ParticlesFrameParams) * history_size);
+			}
+
+			if (uint32_t(trail_steps) != particles->trail_params.size() || particles->frame_params_buffer.is_null()) {
+				particles->trail_params.resize(trail_steps);
+				if (particles->frame_params_buffer.is_valid()) {
+					RD::get_singleton()->free(particles->frame_params_buffer);
+				}
+				particles->frame_params_buffer = RD::get_singleton()->storage_buffer_create(sizeof(ParticlesFrameParams) * trail_steps);
+			}
+
+			if (particles->trail_bind_poses.size() > 1 && particles->trail_bind_pose_buffer.is_null()) {
+				particles->trail_bind_pose_buffer = RD::get_singleton()->storage_buffer_create(sizeof(float) * 16 * particles->trail_bind_poses.size());
+				particles->trail_bind_poses_dirty = true;
+			}
+
+			if (particles->trail_bind_pose_uniform_set.is_null()) {
+				Vector<RD::Uniform> uniforms;
+				{
+					RD::Uniform u;
+					u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
+					u.binding = 0;
+					if (particles->trail_bind_pose_buffer.is_valid()) {
+						u.ids.push_back(particles->trail_bind_pose_buffer);
+					} else {
+						u.ids.push_back(default_rd_storage_buffer);
+					}
+					uniforms.push_back(u);
+				}
+
+				particles->trail_bind_pose_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, particles_shader.copy_shader.version_get_shader(particles_shader.copy_shader_version, 0), 2);
+			}
+
+			if (particles->trail_bind_pose_buffer.is_valid() && particles->trail_bind_poses_dirty) {
+				if (particles_shader.pose_update_buffer.size() < uint32_t(particles->trail_bind_poses.size()) * 16) {
+					particles_shader.pose_update_buffer.resize(particles->trail_bind_poses.size() * 16);
+				}
+
+				for (int i = 0; i < particles->trail_bind_poses.size(); i++) {
+					store_transform(particles->trail_bind_poses[i], &particles_shader.pose_update_buffer[i * 16]);
+				}
+
+				RD::get_singleton()->buffer_update(particles->trail_bind_pose_buffer, 0, particles->trail_bind_poses.size() * 16 * sizeof(float), particles_shader.pose_update_buffer.ptr());
+			}
+		}
+
 		bool zero_time_scale = Engine::get_singleton()->get_time_scale() <= 0.0;
 
 		if (particles->clear && particles->pre_process_time > 0.0) {
 			float frame_time;
-			if (particles->fixed_fps > 0) {
-				frame_time = 1.0 / particles->fixed_fps;
+			if (fixed_fps > 0) {
+				frame_time = 1.0 / fixed_fps;
 			} else {
 				frame_time = 1.0 / 30.0;
 			}
@@ -4706,14 +4942,14 @@ void RendererStorageRD::update_particles() {
 			}
 		}
 
-		if (particles->fixed_fps > 0) {
+		if (fixed_fps > 0) {
 			float frame_time;
 			float decr;
 			if (zero_time_scale) {
 				frame_time = 0.0;
-				decr = 1.0 / particles->fixed_fps;
+				decr = 1.0 / fixed_fps;
 			} else {
-				frame_time = 1.0 / particles->fixed_fps;
+				frame_time = 1.0 / fixed_fps;
 				decr = frame_time;
 			}
 			float delta = RendererCompositorRD::singleton->get_frame_delta_time();
@@ -4741,16 +4977,39 @@ void RendererStorageRD::update_particles() {
 
 		//copy particles to instance buffer
 
-		if (particles->draw_order != RS::PARTICLES_DRAW_ORDER_VIEW_DEPTH) {
+		if (particles->draw_order != RS::PARTICLES_DRAW_ORDER_VIEW_DEPTH && particles->transform_align != RS::PARTICLES_TRANSFORM_ALIGN_Z_BILLBOARD && particles->transform_align != RS::PARTICLES_TRANSFORM_ALIGN_Z_BILLBOARD_Y_TO_VELOCITY) {
+			//does not need view dependent operation, do copy here
 			ParticlesShader::CopyPushConstant copy_push_constant;
-			copy_push_constant.total_particles = particles->amount;
+
+			int total_amount = particles->amount;
+			if (particles->trails_enabled && particles->trail_bind_poses.size() > 1) {
+				total_amount *= particles->trail_bind_poses.size();
+			}
+
+			copy_push_constant.total_particles = total_amount;
+			copy_push_constant.frame_remainder = particles->interpolate ? particles->frame_remainder : 0.0;
+			copy_push_constant.align_mode = particles->transform_align;
+			copy_push_constant.align_up[0] = 0;
+			copy_push_constant.align_up[1] = 0;
+			copy_push_constant.align_up[2] = 0;
+
+			if (particles->trails_enabled && particles->trail_bind_poses.size() > 1) {
+				copy_push_constant.trail_size = particles->trail_bind_poses.size();
+				copy_push_constant.trail_total = particles->frame_history.size();
+				copy_push_constant.frame_delta = 1.0 / fixed_fps;
+			} else {
+				copy_push_constant.trail_size = 1;
+				copy_push_constant.trail_total = 1;
+				copy_push_constant.frame_delta = 0.0;
+			}
 
 			RD::ComputeListID compute_list = RD::get_singleton()->compute_list_begin();
 			RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, particles_shader.copy_pipelines[ParticlesShader::COPY_MODE_FILL_INSTANCES]);
 			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, particles->particles_copy_uniform_set, 0);
+			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, particles->trail_bind_pose_uniform_set, 2);
 			RD::get_singleton()->compute_list_set_push_constant(compute_list, &copy_push_constant, sizeof(ParticlesShader::CopyPushConstant));
 
-			RD::get_singleton()->compute_list_dispatch_threads(compute_list, particles->amount, 1, 1);
+			RD::get_singleton()->compute_list_dispatch_threads(compute_list, total_amount, 1, 1);
 
 			RD::get_singleton()->compute_list_end();
 		}
@@ -8324,9 +8583,10 @@ bool RendererStorageRD::free(RID p_rid) {
 		light_owner.free(p_rid);
 
 	} else if (particles_owner.owns(p_rid)) {
+		update_particles();
 		Particles *particles = particles_owner.getornull(p_rid);
-		_particles_free_data(particles);
 		particles->dependency.deleted_notify(p_rid);
+		_particles_free_data(particles);
 		particles_owner.free(p_rid);
 	} else if (particles_collision_owner.owns(p_rid)) {
 		ParticlesCollision *particles_collision = particles_collision_owner.getornull(p_rid);
@@ -8863,14 +9123,14 @@ RendererStorageRD::RendererStorageRD() {
 		actions.renames["COLOR"] = "PARTICLE.color";
 		actions.renames["VELOCITY"] = "PARTICLE.velocity";
 		//actions.renames["MASS"] = "mass"; ?
-		actions.renames["ACTIVE"] = "PARTICLE.is_active";
+		actions.renames["ACTIVE"] = "particle_active";
 		actions.renames["RESTART"] = "restart";
 		actions.renames["CUSTOM"] = "PARTICLE.custom";
 		actions.renames["TRANSFORM"] = "PARTICLE.xform";
 		actions.renames["TIME"] = "FRAME.time";
 		actions.renames["LIFETIME"] = "params.lifetime";
 		actions.renames["DELTA"] = "local_delta";
-		actions.renames["NUMBER"] = "particle";
+		actions.renames["NUMBER"] = "particle_number";
 		actions.renames["INDEX"] = "index";
 		//actions.renames["GRAVITY"] = "current_gravity";
 		actions.renames["EMISSION_TRANSFORM"] = "FRAME.emission_transform";

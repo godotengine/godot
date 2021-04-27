@@ -1538,3 +1538,554 @@ void PointMesh::_create_mesh_array(Array &p_arr) const {
 PointMesh::PointMesh() {
 	primitive_type = PRIMITIVE_POINTS;
 }
+// TUBE TRAIL
+
+void TubeTrailMesh::set_radius(const float p_radius) {
+	radius = p_radius;
+	_request_update();
+}
+float TubeTrailMesh::get_radius() const {
+	return radius;
+}
+
+void TubeTrailMesh::set_radial_steps(const int p_radial_steps) {
+	ERR_FAIL_COND(p_radial_steps < 3 || p_radial_steps > 128);
+	radial_steps = p_radial_steps;
+	_request_update();
+}
+int TubeTrailMesh::get_radial_steps() const {
+	return radial_steps;
+}
+
+void TubeTrailMesh::set_sections(const int p_sections) {
+	ERR_FAIL_COND(p_sections < 2 || p_sections > 128);
+	sections = p_sections;
+	_request_update();
+}
+int TubeTrailMesh::get_sections() const {
+	return sections;
+}
+
+void TubeTrailMesh::set_section_length(float p_section_length) {
+	section_length = p_section_length;
+	_request_update();
+}
+float TubeTrailMesh::get_section_length() const {
+	return section_length;
+}
+
+void TubeTrailMesh::set_section_rings(const int p_section_rings) {
+	ERR_FAIL_COND(p_section_rings < 1 || p_section_rings > 1024);
+	section_rings = p_section_rings;
+	_request_update();
+}
+int TubeTrailMesh::get_section_rings() const {
+	return section_rings;
+}
+
+void TubeTrailMesh::set_curve(const Ref<Curve> &p_curve) {
+	if (curve == p_curve) {
+		return;
+	}
+	if (curve.is_valid()) {
+		curve->disconnect("changed", callable_mp(this, &TubeTrailMesh::_curve_changed));
+	}
+	curve = p_curve;
+	if (curve.is_valid()) {
+		curve->connect("changed", callable_mp(this, &TubeTrailMesh::_curve_changed));
+	}
+	_request_update();
+}
+Ref<Curve> TubeTrailMesh::get_curve() const {
+	return curve;
+}
+
+void TubeTrailMesh::_curve_changed() {
+	_request_update();
+}
+int TubeTrailMesh::get_builtin_bind_pose_count() const {
+	return sections + 1;
+}
+
+Transform TubeTrailMesh::get_builtin_bind_pose(int p_index) const {
+	float depth = section_length * sections;
+
+	Transform xform;
+	xform.origin.y = depth / 2.0 - section_length * float(p_index);
+	xform.origin.y = -xform.origin.y; //bind is an inverse transform, so negate y
+
+	return xform;
+}
+
+void TubeTrailMesh::_create_mesh_array(Array &p_arr) const {
+	PackedVector3Array points;
+	PackedVector3Array normals;
+	PackedFloat32Array tangents;
+	PackedVector2Array uvs;
+	PackedInt32Array bone_indices;
+	PackedFloat32Array bone_weights;
+	PackedInt32Array indices;
+
+	int point = 0;
+
+#define ADD_TANGENT(m_x, m_y, m_z, m_d) \
+	tangents.push_back(m_x);            \
+	tangents.push_back(m_y);            \
+	tangents.push_back(m_z);            \
+	tangents.push_back(m_d);
+
+	int thisrow = 0;
+	int prevrow = 0;
+
+	int total_rings = section_rings * sections;
+	float depth = section_length * sections;
+
+	for (int j = 0; j <= total_rings; j++) {
+		float v = j;
+		v /= total_rings;
+
+		float y = depth * v;
+		y = (depth * 0.5) - y;
+
+		int bone = j / section_rings;
+		float blend = 1.0 - float(j % section_rings) / float(section_rings);
+
+		for (int i = 0; i <= radial_steps; i++) {
+			float u = i;
+			u /= radial_steps;
+
+			float r = radius;
+			if (curve.is_valid() && curve->get_point_count() > 0) {
+				r *= curve->interpolate_baked(v);
+			}
+			float x = sin(u * Math_TAU);
+			float z = cos(u * Math_TAU);
+
+			Vector3 p = Vector3(x * r, y, z * r);
+			points.push_back(p);
+			normals.push_back(Vector3(x, 0, z));
+			ADD_TANGENT(z, 0.0, -x, 1.0)
+			uvs.push_back(Vector2(u, v * 0.5));
+			point++;
+			{
+				bone_indices.push_back(bone);
+				bone_indices.push_back(MIN(sections, bone + 1));
+				bone_indices.push_back(0);
+				bone_indices.push_back(0);
+
+				bone_weights.push_back(blend);
+				bone_weights.push_back(1.0 - blend);
+				bone_weights.push_back(0);
+				bone_weights.push_back(0);
+			}
+
+			if (i > 0 && j > 0) {
+				indices.push_back(prevrow + i - 1);
+				indices.push_back(prevrow + i);
+				indices.push_back(thisrow + i - 1);
+
+				indices.push_back(prevrow + i);
+				indices.push_back(thisrow + i);
+				indices.push_back(thisrow + i - 1);
+			}
+		}
+
+		prevrow = thisrow;
+		thisrow = point;
+	}
+
+	// add top
+	float scale_pos = 1.0;
+	if (curve.is_valid() && curve->get_point_count() > 0) {
+		scale_pos = curve->interpolate_baked(0);
+	}
+
+	if (scale_pos > CMP_EPSILON) {
+		float y = depth * 0.5;
+
+		thisrow = point;
+		points.push_back(Vector3(0.0, y, 0));
+		normals.push_back(Vector3(0.0, 1.0, 0.0));
+		ADD_TANGENT(1.0, 0.0, 0.0, 1.0)
+		uvs.push_back(Vector2(0.25, 0.75));
+		point++;
+
+		bone_indices.push_back(0);
+		bone_indices.push_back(0);
+		bone_indices.push_back(0);
+		bone_indices.push_back(0);
+
+		bone_weights.push_back(1.0);
+		bone_weights.push_back(0);
+		bone_weights.push_back(0);
+		bone_weights.push_back(0);
+
+		float rm = radius * scale_pos;
+
+		for (int i = 0; i <= radial_steps; i++) {
+			float r = i;
+			r /= radial_steps;
+
+			float x = sin(r * Math_TAU);
+			float z = cos(r * Math_TAU);
+
+			float u = ((x + 1.0) * 0.25);
+			float v = 0.5 + ((z + 1.0) * 0.25);
+
+			Vector3 p = Vector3(x * rm, y, z * rm);
+			points.push_back(p);
+			normals.push_back(Vector3(0.0, 1.0, 0.0));
+			ADD_TANGENT(1.0, 0.0, 0.0, 1.0)
+			uvs.push_back(Vector2(u, v));
+			point++;
+
+			bone_indices.push_back(0);
+			bone_indices.push_back(0);
+			bone_indices.push_back(0);
+			bone_indices.push_back(0);
+
+			bone_weights.push_back(1.0);
+			bone_weights.push_back(0);
+			bone_weights.push_back(0);
+			bone_weights.push_back(0);
+
+			if (i > 0) {
+				indices.push_back(thisrow);
+				indices.push_back(point - 1);
+				indices.push_back(point - 2);
+			};
+		};
+	};
+
+	float scale_neg = 1.0;
+	if (curve.is_valid() && curve->get_point_count() > 0) {
+		scale_neg = curve->interpolate_baked(1.0);
+	}
+
+	// add bottom
+	if (scale_neg > CMP_EPSILON) {
+		float y = depth * -0.5;
+
+		thisrow = point;
+		points.push_back(Vector3(0.0, y, 0.0));
+		normals.push_back(Vector3(0.0, -1.0, 0.0));
+		ADD_TANGENT(1.0, 0.0, 0.0, 1.0)
+		uvs.push_back(Vector2(0.75, 0.75));
+		point++;
+
+		bone_indices.push_back(sections);
+		bone_indices.push_back(0);
+		bone_indices.push_back(0);
+		bone_indices.push_back(0);
+
+		bone_weights.push_back(1.0);
+		bone_weights.push_back(0);
+		bone_weights.push_back(0);
+		bone_weights.push_back(0);
+
+		float rm = radius * scale_neg;
+
+		for (int i = 0; i <= radial_steps; i++) {
+			float r = i;
+			r /= radial_steps;
+
+			float x = sin(r * Math_TAU);
+			float z = cos(r * Math_TAU);
+
+			float u = 0.5 + ((x + 1.0) * 0.25);
+			float v = 1.0 - ((z + 1.0) * 0.25);
+
+			Vector3 p = Vector3(x * rm, y, z * rm);
+			points.push_back(p);
+			normals.push_back(Vector3(0.0, -1.0, 0.0));
+			ADD_TANGENT(1.0, 0.0, 0.0, 1.0)
+			uvs.push_back(Vector2(u, v));
+			point++;
+
+			bone_indices.push_back(sections);
+			bone_indices.push_back(0);
+			bone_indices.push_back(0);
+			bone_indices.push_back(0);
+
+			bone_weights.push_back(1.0);
+			bone_weights.push_back(0);
+			bone_weights.push_back(0);
+			bone_weights.push_back(0);
+
+			if (i > 0) {
+				indices.push_back(thisrow);
+				indices.push_back(point - 2);
+				indices.push_back(point - 1);
+			};
+		};
+	};
+
+	p_arr[RS::ARRAY_VERTEX] = points;
+	p_arr[RS::ARRAY_NORMAL] = normals;
+	p_arr[RS::ARRAY_TANGENT] = tangents;
+	p_arr[RS::ARRAY_TEX_UV] = uvs;
+	p_arr[RS::ARRAY_BONES] = bone_indices;
+	p_arr[RS::ARRAY_WEIGHTS] = bone_weights;
+	p_arr[RS::ARRAY_INDEX] = indices;
+}
+
+void TubeTrailMesh::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_radius", "radius"), &TubeTrailMesh::set_radius);
+	ClassDB::bind_method(D_METHOD("get_radius"), &TubeTrailMesh::get_radius);
+
+	ClassDB::bind_method(D_METHOD("set_radial_steps", "radial_steps"), &TubeTrailMesh::set_radial_steps);
+	ClassDB::bind_method(D_METHOD("get_radial_steps"), &TubeTrailMesh::get_radial_steps);
+
+	ClassDB::bind_method(D_METHOD("set_sections", "sections"), &TubeTrailMesh::set_sections);
+	ClassDB::bind_method(D_METHOD("get_sections"), &TubeTrailMesh::get_sections);
+
+	ClassDB::bind_method(D_METHOD("set_section_length", "section_length"), &TubeTrailMesh::set_section_length);
+	ClassDB::bind_method(D_METHOD("get_section_length"), &TubeTrailMesh::get_section_length);
+
+	ClassDB::bind_method(D_METHOD("set_section_rings", "section_rings"), &TubeTrailMesh::set_section_rings);
+	ClassDB::bind_method(D_METHOD("get_section_rings"), &TubeTrailMesh::get_section_rings);
+
+	ClassDB::bind_method(D_METHOD("set_curve", "curve"), &TubeTrailMesh::set_curve);
+	ClassDB::bind_method(D_METHOD("get_curve"), &TubeTrailMesh::get_curve);
+
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "radius", PROPERTY_HINT_RANGE, "0.001,100.0,0.001,or_greater"), "set_radius", "get_radius");
+
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "radial_steps", PROPERTY_HINT_RANGE, "3,128,1"), "set_radial_steps", "get_radial_steps");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "sections", PROPERTY_HINT_RANGE, "2,128,1"), "set_sections", "get_sections");
+
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "section_length", PROPERTY_HINT_RANGE, "0.001,1024.0,0.001,or_greater"), "set_section_length", "get_section_length");
+
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "section_rings", PROPERTY_HINT_RANGE, "1,128,1"), "set_section_rings", "get_section_rings");
+
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "curve", PROPERTY_HINT_RESOURCE_TYPE, "Curve"), "set_curve", "get_curve");
+}
+
+TubeTrailMesh::TubeTrailMesh() {
+}
+
+// TUBE TRAIL
+
+void RibbonTrailMesh::set_shape(Shape p_shape) {
+	shape = p_shape;
+	_request_update();
+}
+RibbonTrailMesh::Shape RibbonTrailMesh::get_shape() const {
+	return shape;
+}
+
+void RibbonTrailMesh::set_size(const float p_size) {
+	size = p_size;
+	_request_update();
+}
+float RibbonTrailMesh::get_size() const {
+	return size;
+}
+
+void RibbonTrailMesh::set_sections(const int p_sections) {
+	ERR_FAIL_COND(p_sections < 2 || p_sections > 128);
+	sections = p_sections;
+	_request_update();
+}
+int RibbonTrailMesh::get_sections() const {
+	return sections;
+}
+
+void RibbonTrailMesh::set_section_length(float p_section_length) {
+	section_length = p_section_length;
+	_request_update();
+}
+float RibbonTrailMesh::get_section_length() const {
+	return section_length;
+}
+
+void RibbonTrailMesh::set_section_segments(const int p_section_segments) {
+	ERR_FAIL_COND(p_section_segments < 1 || p_section_segments > 1024);
+	section_segments = p_section_segments;
+	_request_update();
+}
+int RibbonTrailMesh::get_section_segments() const {
+	return section_segments;
+}
+
+void RibbonTrailMesh::set_curve(const Ref<Curve> &p_curve) {
+	if (curve == p_curve) {
+		return;
+	}
+	if (curve.is_valid()) {
+		curve->disconnect("changed", callable_mp(this, &RibbonTrailMesh::_curve_changed));
+	}
+	curve = p_curve;
+	if (curve.is_valid()) {
+		curve->connect("changed", callable_mp(this, &RibbonTrailMesh::_curve_changed));
+	}
+	_request_update();
+}
+Ref<Curve> RibbonTrailMesh::get_curve() const {
+	return curve;
+}
+
+void RibbonTrailMesh::_curve_changed() {
+	_request_update();
+}
+int RibbonTrailMesh::get_builtin_bind_pose_count() const {
+	return sections + 1;
+}
+
+Transform RibbonTrailMesh::get_builtin_bind_pose(int p_index) const {
+	float depth = section_length * sections;
+
+	Transform xform;
+	xform.origin.y = depth / 2.0 - section_length * float(p_index);
+	xform.origin.y = -xform.origin.y; //bind is an inverse transform, so negate y
+
+	return xform;
+}
+
+void RibbonTrailMesh::_create_mesh_array(Array &p_arr) const {
+	PackedVector3Array points;
+	PackedVector3Array normals;
+	PackedFloat32Array tangents;
+	PackedVector2Array uvs;
+	PackedInt32Array bone_indices;
+	PackedFloat32Array bone_weights;
+	PackedInt32Array indices;
+
+#define ADD_TANGENT(m_x, m_y, m_z, m_d) \
+	tangents.push_back(m_x);            \
+	tangents.push_back(m_y);            \
+	tangents.push_back(m_z);            \
+	tangents.push_back(m_d);
+
+	int total_segments = section_segments * sections;
+	float depth = section_length * sections;
+
+	for (int j = 0; j <= total_segments; j++) {
+		float v = j;
+		v /= total_segments;
+
+		float y = depth * v;
+		y = (depth * 0.5) - y;
+
+		int bone = j / section_segments;
+		float blend = 1.0 - float(j % section_segments) / float(section_segments);
+
+		float s = size;
+
+		if (curve.is_valid() && curve->get_point_count() > 0) {
+			s *= curve->interpolate_baked(v);
+		}
+
+		points.push_back(Vector3(-s * 0.5, y, 0));
+		points.push_back(Vector3(+s * 0.5, y, 0));
+		if (shape == SHAPE_CROSS) {
+			points.push_back(Vector3(0, y, -s * 0.5));
+			points.push_back(Vector3(0, y, +s * 0.5));
+		}
+
+		normals.push_back(Vector3(0, 0, 1));
+		normals.push_back(Vector3(0, 0, 1));
+		if (shape == SHAPE_CROSS) {
+			normals.push_back(Vector3(1, 0, 0));
+			normals.push_back(Vector3(1, 0, 0));
+		}
+
+		uvs.push_back(Vector2(0, v));
+		uvs.push_back(Vector2(1, v));
+		if (shape == SHAPE_CROSS) {
+			uvs.push_back(Vector2(0, v));
+			uvs.push_back(Vector2(1, v));
+		}
+
+		ADD_TANGENT(0.0, 1.0, 0.0, 1.0)
+		ADD_TANGENT(0.0, 1.0, 0.0, 1.0)
+		if (shape == SHAPE_CROSS) {
+			ADD_TANGENT(0.0, 1.0, 0.0, 1.0)
+			ADD_TANGENT(0.0, 1.0, 0.0, 1.0)
+		}
+
+		for (int i = 0; i < (shape == SHAPE_CROSS ? 4 : 2); i++) {
+			bone_indices.push_back(bone);
+			bone_indices.push_back(MIN(sections, bone + 1));
+			bone_indices.push_back(0);
+			bone_indices.push_back(0);
+
+			bone_weights.push_back(blend);
+			bone_weights.push_back(1.0 - blend);
+			bone_weights.push_back(0);
+			bone_weights.push_back(0);
+		}
+
+		if (j > 0) {
+			if (shape == SHAPE_CROSS) {
+				int base = j * 4 - 4;
+				indices.push_back(base + 0);
+				indices.push_back(base + 1);
+				indices.push_back(base + 4);
+
+				indices.push_back(base + 1);
+				indices.push_back(base + 5);
+				indices.push_back(base + 4);
+
+				indices.push_back(base + 2);
+				indices.push_back(base + 3);
+				indices.push_back(base + 6);
+
+				indices.push_back(base + 3);
+				indices.push_back(base + 7);
+				indices.push_back(base + 6);
+			} else {
+				int base = j * 2 - 2;
+				indices.push_back(base + 0);
+				indices.push_back(base + 1);
+				indices.push_back(base + 2);
+
+				indices.push_back(base + 1);
+				indices.push_back(base + 3);
+				indices.push_back(base + 2);
+			}
+		}
+	}
+
+	p_arr[RS::ARRAY_VERTEX] = points;
+	p_arr[RS::ARRAY_NORMAL] = normals;
+	p_arr[RS::ARRAY_TANGENT] = tangents;
+	p_arr[RS::ARRAY_TEX_UV] = uvs;
+	p_arr[RS::ARRAY_BONES] = bone_indices;
+	p_arr[RS::ARRAY_WEIGHTS] = bone_weights;
+	p_arr[RS::ARRAY_INDEX] = indices;
+}
+
+void RibbonTrailMesh::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_size", "size"), &RibbonTrailMesh::set_size);
+	ClassDB::bind_method(D_METHOD("get_size"), &RibbonTrailMesh::get_size);
+
+	ClassDB::bind_method(D_METHOD("set_sections", "sections"), &RibbonTrailMesh::set_sections);
+	ClassDB::bind_method(D_METHOD("get_sections"), &RibbonTrailMesh::get_sections);
+
+	ClassDB::bind_method(D_METHOD("set_section_length", "section_length"), &RibbonTrailMesh::set_section_length);
+	ClassDB::bind_method(D_METHOD("get_section_length"), &RibbonTrailMesh::get_section_length);
+
+	ClassDB::bind_method(D_METHOD("set_section_segments", "section_segments"), &RibbonTrailMesh::set_section_segments);
+	ClassDB::bind_method(D_METHOD("get_section_segments"), &RibbonTrailMesh::get_section_segments);
+
+	ClassDB::bind_method(D_METHOD("set_curve", "curve"), &RibbonTrailMesh::set_curve);
+	ClassDB::bind_method(D_METHOD("get_curve"), &RibbonTrailMesh::get_curve);
+
+	ClassDB::bind_method(D_METHOD("set_shape", "shape"), &RibbonTrailMesh::set_shape);
+	ClassDB::bind_method(D_METHOD("get_shape"), &RibbonTrailMesh::get_shape);
+
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "shape", PROPERTY_HINT_ENUM, "Flat,Cross"), "set_shape", "get_shape");
+
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "size", PROPERTY_HINT_RANGE, "0.001,100.0,0.001,or_greater"), "set_size", "get_size");
+
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "sections", PROPERTY_HINT_RANGE, "2,128,1"), "set_sections", "get_sections");
+
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "section_length", PROPERTY_HINT_RANGE, "0.001,1024.0,0.001,or_greater"), "set_section_length", "get_section_length");
+
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "section_segments", PROPERTY_HINT_RANGE, "1,128,1"), "set_section_segments", "get_section_segments");
+
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "curve", PROPERTY_HINT_RESOURCE_TYPE, "Curve"), "set_curve", "get_curve");
+}
+
+RibbonTrailMesh::RibbonTrailMesh() {
+}

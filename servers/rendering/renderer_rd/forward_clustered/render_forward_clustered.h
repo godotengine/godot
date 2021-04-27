@@ -196,9 +196,9 @@ class RenderForwardClustered : public RendererSceneRenderRD {
 		INSTANCE_DATA_FLAG_MULTIMESH_FORMAT_2D = 1 << 13,
 		INSTANCE_DATA_FLAG_MULTIMESH_HAS_COLOR = 1 << 14,
 		INSTANCE_DATA_FLAG_MULTIMESH_HAS_CUSTOM_DATA = 1 << 15,
-		INSTANCE_DATA_FLAGS_MULTIMESH_STRIDE_SHIFT = 16,
-		INSTANCE_DATA_FLAGS_MULTIMESH_STRIDE_MASK = 0x7,
-		INSTANCE_DATA_FLAG_SKELETON = 1 << 19,
+		INSTANCE_DATA_FLAGS_PARTICLE_TRAIL_SHIFT = 16,
+		INSTANCE_DATA_FLAGS_PARTICLE_TRAIL_MASK = 0xFF,
+		INSTANCE_DATA_FLAGS_NON_UNIFORM_SCALE = 1 << 24,
 	};
 
 	struct SceneState {
@@ -398,6 +398,7 @@ class RenderForwardClustered : public RendererSceneRenderRD {
 			FLAG_USES_DEPTH_TEXTURE = 8192,
 			FLAG_USES_NORMAL_TEXTURE = 16384,
 			FLAG_USES_DOUBLE_SIDED_SHADOWS = 32768,
+			FLAG_USES_PARTICLE_TRAILS = 65536,
 		};
 
 		union {
@@ -453,6 +454,7 @@ class RenderForwardClustered : public RendererSceneRenderRD {
 		uint32_t layer_mask = 1;
 		RID transforms_uniform_set;
 		uint32_t instance_count = 0;
+		uint32_t trail_steps = 1;
 		RID mesh_instance;
 		bool can_sdfgi = false;
 		//used during setup

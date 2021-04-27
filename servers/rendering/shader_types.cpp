@@ -219,6 +219,7 @@ ShaderTypes::ShaderTypes() {
 	shader_modes[RS::SHADER_SPATIAL].modes.push_back("shadow_to_opacity");
 
 	shader_modes[RS::SHADER_SPATIAL].modes.push_back("vertex_lighting");
+	shader_modes[RS::SHADER_SPATIAL].modes.push_back("particle_trails");
 
 	shader_modes[RS::SHADER_SPATIAL].modes.push_back("alpha_to_coverage");
 	shader_modes[RS::SHADER_SPATIAL].modes.push_back("alpha_to_coverage_and_one");
@@ -327,7 +328,7 @@ ShaderTypes::ShaderTypes() {
 	shader_modes[RS::SHADER_PARTICLES].functions["start"].built_ins["LIFETIME"] = constt(ShaderLanguage::TYPE_FLOAT);
 	shader_modes[RS::SHADER_PARTICLES].functions["start"].built_ins["DELTA"] = constt(ShaderLanguage::TYPE_FLOAT);
 	shader_modes[RS::SHADER_PARTICLES].functions["start"].built_ins["NUMBER"] = constt(ShaderLanguage::TYPE_UINT);
-	shader_modes[RS::SHADER_PARTICLES].functions["start"].built_ins["INDEX"] = constt(ShaderLanguage::TYPE_INT);
+	shader_modes[RS::SHADER_PARTICLES].functions["start"].built_ins["INDEX"] = constt(ShaderLanguage::TYPE_UINT);
 	shader_modes[RS::SHADER_PARTICLES].functions["start"].built_ins["EMISSION_TRANSFORM"] = constt(ShaderLanguage::TYPE_MAT4);
 	shader_modes[RS::SHADER_PARTICLES].functions["start"].built_ins["RANDOM_SEED"] = constt(ShaderLanguage::TYPE_UINT);
 	shader_modes[RS::SHADER_PARTICLES].functions["start"].built_ins["RESTART_POSITION"] = constt(ShaderLanguage::TYPE_BOOL);

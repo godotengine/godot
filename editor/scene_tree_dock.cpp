@@ -33,6 +33,7 @@
 #include "core/config/project_settings.h"
 #include "core/input/input.h"
 #include "core/io/resource_saver.h"
+#include "core/object/message_queue.h"
 #include "core/os/keyboard.h"
 #include "editor/debugger/editor_debugger_node.h"
 #include "editor/editor_feature_profile.h"
@@ -3016,7 +3017,16 @@ void SceneTreeDock::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("node_created", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_RESOURCE_TYPE, "Node")));
 }
 
+SceneTreeDock *SceneTreeDock::singleton = nullptr;
+
+void SceneTreeDock::_update_configuration_warning() {
+	if (singleton) {
+		MessageQueue::get_singleton()->push_callable(callable_mp(singleton->scene_tree, &SceneTreeEditor::update_warning));
+	}
+}
+
 SceneTreeDock::SceneTreeDock(EditorNode *p_editor, Node *p_scene_root, EditorSelection *p_editor_selection, EditorData &p_editor_data) {
+	singleton = this;
 	set_name("Scene");
 	editor = p_editor;
 	edited_scene = nullptr;
@@ -3207,9 +3217,12 @@ SceneTreeDock::SceneTreeDock(EditorNode *p_editor, Node *p_scene_root, EditorSel
 	EDITOR_DEF("interface/editors/show_scene_tree_root_selection", true);
 	EDITOR_DEF("interface/editors/derive_script_globals_by_name", true);
 	EDITOR_DEF("_use_favorites_root_selection", false);
+
+	Resource::_update_configuration_warning = _update_configuration_warning;
 }
 
 SceneTreeDock::~SceneTreeDock() {
+	singleton = nullptr;
 	if (!node_clipboard.is_empty()) {
 		_clear_clipboard();
 	}

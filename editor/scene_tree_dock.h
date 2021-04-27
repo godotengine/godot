@@ -244,6 +244,9 @@ class SceneTreeDock : public VBoxContainer {
 	bool profile_allow_editing;
 	bool profile_allow_script_editing;
 
+	static SceneTreeDock *singleton;
+	static void _update_configuration_warning();
+
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();

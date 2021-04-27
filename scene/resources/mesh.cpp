@@ -579,6 +579,13 @@ Vector<Ref<Shape3D>> Mesh::convex_decompose() const {
 	return ret;
 }
 
+int Mesh::get_builtin_bind_pose_count() const {
+	return 0;
+}
+Transform Mesh::get_builtin_bind_pose(int p_index) const {
+	return Transform();
+}
+
 Mesh::Mesh() {
 }
 

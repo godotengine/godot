@@ -76,6 +76,11 @@ struct FrameParams {
 	float time;
 	float delta;
 
+	uint frame;
+	uint pad0;
+	uint pad1;
+	uint pad2;
+
 	uint random_seed;
 	uint attractor_count;
 	uint collider_count;
@@ -92,10 +97,16 @@ layout(set = 1, binding = 0, std430) restrict buffer FrameHistory {
 }
 frame_history;
 
+#define PARTICLE_FLAG_ACTIVE uint(1)
+#define PARTICLE_FLAG_STARTED uint(2)
+#define PARTICLE_FLAG_TRAILED uint(4)
+#define PARTICLE_FRAME_MASK uint(0xFFFF)
+#define PARTICLE_FRAME_SHIFT uint(16)
+
 struct ParticleData {
 	mat4 xform;
 	vec3 velocity;
-	bool is_active;
+	uint flags;
 	vec4 color;
 	vec4 custom;
 };
@@ -162,7 +173,7 @@ layout(push_constant, binding = 0, std430) uniform Params {
 	bool use_fractional_delta;
 	bool sub_emitter_mode;
 	bool can_emit;
-	uint pad;
+	bool trail_pass;
 }
 params;
 
@@ -201,6 +212,14 @@ bool emit_subparticle(mat4 p_xform, vec3 p_velocity, vec4 p_color, vec4 p_custom
 void main() {
 	uint particle = gl_GlobalInvocationID.x;
 
+	if (params.trail_size > 1) {
+		if (params.trail_pass) {
+			particle += (particle / (params.trail_size - 1)) + 1;
+		} else {
+			particle *= params.trail_size;
+		}
+	}
+
 	if (particle >= params.total_particles * params.trail_size) {
 		return; //discard
 	}
@@ -229,12 +248,35 @@ void main() {
 		PARTICLE.color = vec4(1.0);
 		PARTICLE.custom = vec4(0.0);
 		PARTICLE.velocity = vec3(0.0);
-		PARTICLE.is_active = false;
+		PARTICLE.flags = 0;
 		PARTICLE.xform = mat4(
 				vec4(1.0, 0.0, 0.0, 0.0),
 				vec4(0.0, 1.0, 0.0, 0.0),
 				vec4(0.0, 0.0, 1.0, 0.0),
 				vec4(0.0, 0.0, 0.0, 1.0));
+	}
+
+	//clear started flag if set
+
+	if (params.trail_pass) {
+		//trail started
+		uint src_idx = index * params.trail_size;
+		if (bool(particles.data[src_idx].flags & PARTICLE_FLAG_STARTED)) {
+			//save start conditions for trails
+			PARTICLE.color = particles.data[src_idx].color;
+			PARTICLE.custom = particles.data[src_idx].custom;
+			PARTICLE.velocity = particles.data[src_idx].velocity;
+			PARTICLE.flags = PARTICLE_FLAG_TRAILED | ((frame_history.data[0].frame & PARTICLE_FRAME_MASK) << PARTICLE_FRAME_SHIFT); //mark it as trailed, save in which frame it will start
+			PARTICLE.xform = particles.data[src_idx].xform;
+		}
+
+		if (bool(PARTICLE.flags & PARTICLE_FLAG_TRAILED) && ((PARTICLE.flags >> PARTICLE_FRAME_SHIFT) == (FRAME.frame & PARTICLE_FRAME_MASK))) { //check this is trailed and see if it should start now
+			// we just assume that this is the first frame of the particle, the rest is deterministic
+			PARTICLE.flags = PARTICLE_FLAG_ACTIVE | (particles.data[src_idx].flags & (PARTICLE_FRAME_MASK << PARTICLE_FRAME_SHIFT));
+			return; //- this appears like it should be correct, but it seems not to be.. wonder why.
+		}
+	} else {
+		PARTICLE.flags &= ~PARTICLE_FLAG_STARTED;
 	}
 
 	bool collided = false;
@@ -245,19 +287,17 @@ void main() {
 
 #if !defined(DISABLE_VELOCITY)
 
-	if (PARTICLE.is_active) {
+	if (bool(PARTICLE.flags & PARTICLE_FLAG_ACTIVE)) {
 		PARTICLE.xform[3].xyz += PARTICLE.velocity * local_delta;
 	}
 #endif
 
-	/* Process physics if active */
-
-	if (params.sub_emitter_mode) {
-		if (!PARTICLE.is_active) {
+	if (!params.trail_pass && params.sub_emitter_mode) {
+		if (!bool(PARTICLE.flags & PARTICLE_FLAG_ACTIVE)) {
 			int src_index = atomicAdd(src_particles.particle_count, -1) - 1;
 
 			if (src_index >= 0) {
-				PARTICLE.is_active = true;
+				PARTICLE.flags = (PARTICLE_FLAG_ACTIVE | PARTICLE_FLAG_STARTED | (FRAME.cycle << PARTICLE_FRAME_SHIFT));
 				restart = true;
 
 				if (bool(src_particles.data[src_index].flags & EMISSION_FLAG_HAS_POSITION)) {
@@ -339,16 +379,12 @@ void main() {
 			}
 		}
 
-		uint current_cycle = FRAME.cycle;
-
-		if (FRAME.system_phase < restart_phase) {
-			current_cycle -= uint(1);
+		if (params.trail_pass) {
+			restart = false;
 		}
 
-		uint particle_number = current_cycle * uint(params.total_particles) + particle;
-
 		if (restart) {
-			PARTICLE.is_active = FRAME.emitting;
+			PARTICLE.flags = FRAME.emitting ? (PARTICLE_FLAG_ACTIVE | PARTICLE_FLAG_STARTED | (FRAME.cycle << PARTICLE_FRAME_SHIFT)) : 0;
 			restart_position = true;
 			restart_rotation_scale = true;
 			restart_velocity = true;
@@ -357,11 +393,15 @@ void main() {
 		}
 	}
 
-	if (restart && PARTICLE.is_active) {
+	bool particle_active = bool(PARTICLE.flags & PARTICLE_FLAG_ACTIVE);
+
+	uint particle_number = (PARTICLE.flags >> PARTICLE_FRAME_SHIFT) * uint(params.total_particles) + index;
+
+	if (restart && particle_active) {
 #CODE : START
 	}
 
-	if (PARTICLE.is_active) {
+	if (particle_active) {
 		for (uint i = 0; i < FRAME.attractor_count; i++) {
 			vec3 dir;
 			float amount;
@@ -539,7 +579,12 @@ void main() {
 		}
 	}
 
-	if (PARTICLE.is_active) {
+	if (particle_active) {
 #CODE : PROCESS
+	}
+
+	PARTICLE.flags &= ~PARTICLE_FLAG_ACTIVE;
+	if (particle_active) {
+		PARTICLE.flags |= PARTICLE_FLAG_ACTIVE;
 	}
 }
