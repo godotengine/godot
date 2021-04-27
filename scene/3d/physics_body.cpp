@@ -457,6 +457,7 @@ void RigidBody::_direct_state_changed(Object *p_state) {
 	if (get_script_instance())
 		get_script_instance()->call("_integrate_forces", state);
 	set_ignore_transform_notification(false);
+	_on_transform_changed();
 
 	if (contact_monitor) {
 
@@ -2224,6 +2225,7 @@ void PhysicalBone::_direct_state_changed(Object *p_state) {
 	set_ignore_transform_notification(true);
 	set_global_transform(global_transform);
 	set_ignore_transform_notification(false);
+	_on_transform_changed();
 
 	// Update skeleton
 	if (parent_skeleton) {
