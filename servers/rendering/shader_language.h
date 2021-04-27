@@ -891,6 +891,7 @@ private:
 	bool _propagate_function_call_sampler_builtin_reference(StringName p_name, int p_argument, const StringName &p_builtin);
 	bool _validate_varying_assign(ShaderNode::Varying &p_varying, String *r_message);
 	bool _validate_varying_using(ShaderNode::Varying &p_varying, String *r_message);
+	bool _check_node_constness(const Node *p_node) const;
 
 	Node *_parse_expression(BlockNode *p_block, const FunctionInfo &p_function_info);
 	Node *_parse_array_constructor(BlockNode *p_block, const FunctionInfo &p_function_info, DataType p_type, const StringName &p_struct_name, int p_array_size);
