@@ -223,10 +223,10 @@ public:
 	virtual PortType get_input_port_type(int p_port) const = 0;
 	virtual String get_input_port_name(int p_port) const = 0;
 
-	void set_input_port_default_value(int p_port, const Variant &p_value);
+	virtual void set_input_port_default_value(int p_port, const Variant &p_value);
 	Variant get_input_port_default_value(int p_port) const; // if NIL (default if node does not set anything) is returned, it means no default value is wanted if disconnected, thus no input var must be supplied (empty string will be supplied)
 	Array get_default_input_values() const;
-	void set_default_input_values(const Array &p_values);
+	virtual void set_default_input_values(const Array &p_values);
 
 	virtual int get_output_port_count() const = 0;
 	virtual PortType get_output_port_type(int p_port) const = 0;
@@ -272,6 +272,7 @@ class VisualShaderNodeCustom : public VisualShaderNode {
 		int type = 0;
 	};
 
+	bool is_initialized = false;
 	List<Port> input_ports;
 	List<Port> output_ports;
 
@@ -288,7 +289,12 @@ protected:
 	virtual PortType get_output_port_type(int p_port) const override;
 	virtual String get_output_port_name(int p_port) const override;
 
+	virtual void set_input_port_default_value(int p_port, const Variant &p_value) override;
+	virtual void set_default_input_values(const Array &p_values) override;
+
 protected:
+	void _set_input_port_default_value(int p_port, const Variant &p_value);
+
 	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
 	virtual String generate_global_per_node(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const override;
 
@@ -297,6 +303,9 @@ protected:
 public:
 	VisualShaderNodeCustom();
 	void update_ports();
+
+	bool _is_initialized();
+	void _set_initialized(bool p_enabled);
 };
 
 /////

@@ -353,6 +353,11 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id) {
 	bool is_expression = !expression_node.is_null();
 	String expression = "";
 
+	VisualShaderNodeCustom *custom_node = Object::cast_to<VisualShaderNodeCustom>(vsnode.ptr());
+	if (custom_node) {
+		custom_node->_set_initialized(true);
+	}
+
 	GraphNode *node = memnew(GraphNode);
 	register_link(p_type, p_id, vsnode.ptr(), node);
 
@@ -1782,8 +1787,15 @@ void VisualShaderEditor::_port_edited() {
 	ERR_FAIL_COND(!vsn.is_valid());
 
 	undo_redo->create_action(TTR("Set Input Default Port"));
-	undo_redo->add_do_method(vsn.ptr(), "set_input_port_default_value", editing_port, value);
-	undo_redo->add_undo_method(vsn.ptr(), "set_input_port_default_value", editing_port, vsn->get_input_port_default_value(editing_port));
+
+	Ref<VisualShaderNodeCustom> custom = Object::cast_to<VisualShaderNodeCustom>(vsn.ptr());
+	if (custom.is_valid()) {
+		undo_redo->add_do_method(custom.ptr(), "_set_input_port_default_value", editing_port, value);
+		undo_redo->add_undo_method(custom.ptr(), "_set_input_port_default_value", editing_port, vsn->get_input_port_default_value(editing_port));
+	} else {
+		undo_redo->add_do_method(vsn.ptr(), "set_input_port_default_value", editing_port, value);
+		undo_redo->add_undo_method(vsn.ptr(), "set_input_port_default_value", editing_port, vsn->get_input_port_default_value(editing_port));
+	}
 	undo_redo->add_do_method(graph_plugin.ptr(), "set_input_port_default_value", type, editing_node, editing_port, value);
 	undo_redo->add_undo_method(graph_plugin.ptr(), "set_input_port_default_value", type, editing_node, editing_port, vsn->get_input_port_default_value(editing_port));
 	undo_redo->commit_action();
