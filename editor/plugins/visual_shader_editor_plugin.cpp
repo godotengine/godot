@@ -807,6 +807,14 @@ VisualShaderGraphPlugin::~VisualShaderGraphPlugin() {
 
 /////////////////
 
+void VisualShaderEditor::_on_shader_changed() {
+	if (visual_shader.is_null()) {
+		hide();
+		return;
+	}
+	_update_preview();
+}
+
 void VisualShaderEditor::edit(VisualShader *p_visual_shader) {
 	bool changed = false;
 	if (p_visual_shader) {
@@ -819,8 +827,8 @@ void VisualShaderEditor::edit(VisualShader *p_visual_shader) {
 		}
 		visual_shader = Ref<VisualShader>(p_visual_shader);
 		graph_plugin->register_shader(visual_shader.ptr());
-		if (!visual_shader->is_connected("changed", callable_mp(this, &VisualShaderEditor::_update_preview))) {
-			visual_shader->connect("changed", callable_mp(this, &VisualShaderEditor::_update_preview));
+		if (!visual_shader->is_connected("changed", callable_mp(this, &VisualShaderEditor::_on_shader_changed))) {
+			visual_shader->connect("changed", callable_mp(this, &VisualShaderEditor::_on_shader_changed));
 		}
 #ifndef DISABLE_DEPRECATED
 		String version = VERSION_BRANCH;
@@ -832,8 +840,8 @@ void VisualShaderEditor::edit(VisualShader *p_visual_shader) {
 		_set_mode(visual_shader->get_mode());
 	} else {
 		if (visual_shader.is_valid()) {
-			if (visual_shader->is_connected("changed", callable_mp(this, &VisualShaderEditor::_update_preview))) {
-				visual_shader->disconnect("changed", callable_mp(this, &VisualShaderEditor::_update_preview));
+			if (visual_shader->is_connected("changed", callable_mp(this, &VisualShaderEditor::_on_shader_changed))) {
+				visual_shader->disconnect("changed", callable_mp(this, &VisualShaderEditor::_on_shader_changed));
 			}
 		}
 		visual_shader.unref();

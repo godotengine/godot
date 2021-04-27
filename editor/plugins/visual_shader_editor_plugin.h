@@ -435,6 +435,7 @@ class VisualShaderEditor : public VBoxContainer {
 	void _update_created_node(GraphNode *node);
 	void _update_uniforms(bool p_update_refs);
 	void _update_uniform_refs(Set<String> &p_names);
+	void _on_shader_changed();
 
 	void _visibility_changed();
 
