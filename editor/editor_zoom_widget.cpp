@@ -51,17 +51,17 @@ void EditorZoomWidget::_update_zoom_label() {
 }
 
 void EditorZoomWidget::_button_zoom_minus() {
-	set_zoom_by_increments(-6);
+	set_zoom_by_increments(-6, Input::get_singleton()->is_key_pressed(KEY_ALT));
 	emit_signal("zoom_changed", zoom);
 }
 
 void EditorZoomWidget::_button_zoom_reset() {
-	set_zoom(1.0);
+	set_zoom(1.0 * MAX(1, EDSCALE));
 	emit_signal("zoom_changed", zoom);
 }
 
 void EditorZoomWidget::_button_zoom_plus() {
-	set_zoom_by_increments(6);
+	set_zoom_by_increments(6, Input::get_singleton()->is_key_pressed(KEY_ALT));
 	emit_signal("zoom_changed", zoom);
 }
 
@@ -76,31 +76,69 @@ void EditorZoomWidget::set_zoom(float p_zoom) {
 	}
 }
 
-void EditorZoomWidget::set_zoom_by_increments(int p_increment_count) {
-	// Base increment factor defined as the twelveth root of two.
-	// This allow a smooth geometric evolution of the zoom, with the advantage of
-	// visiting all integer power of two scale factors.
-	// note: this is analogous to the 'semitones' interval in the music world
-	// In order to avoid numerical imprecisions, we compute and edit a zoom index
-	// with the following relation: zoom = 2 ^ (index / 12)
+void EditorZoomWidget::set_zoom_by_increments(int p_increment_count, bool p_integer_only) {
+	// Remove editor scale from the index computation.
+	const float zoom_noscale = zoom / MAX(1, EDSCALE);
 
-	if (zoom < CMP_EPSILON || p_increment_count == 0) {
-		return;
+	if (p_integer_only) {
+		// Only visit integer scaling factors above 100%, and fractions with an integer denominator below 100%
+		// (1/2 = 50%, 1/3 = 33.33%, 1/4 = 25%, …).
+		// This is useful when working on pixel art projects to avoid distortion.
+		// This algorithm is designed to handle fractional start zoom values correctly
+		// (e.g. 190% will zoom up to 200% and down to 100%).
+		if (zoom_noscale + p_increment_count * 0.001 >= 1.0 - CMP_EPSILON) {
+			// New zoom is certain to be above 100%.
+			if (p_increment_count >= 1) {
+				// Zooming.
+				set_zoom(Math::floor(zoom_noscale + p_increment_count) * MAX(1, EDSCALE));
+			} else {
+				// Dezooming.
+				set_zoom(Math::ceil(zoom_noscale + p_increment_count) * MAX(1, EDSCALE));
+			}
+		} else {
+			if (p_increment_count >= 1) {
+				// Zooming. Convert the current zoom into a denominator.
+				float new_zoom = 1.0 / Math::ceil(1.0 / zoom_noscale - p_increment_count);
+				if (Math::is_equal_approx(zoom_noscale, new_zoom)) {
+					// New zoom is identical to the old zoom, so try again.
+					// This can happen due to floating-point precision issues.
+					new_zoom = 1.0 / Math::ceil(1.0 / zoom_noscale - p_increment_count - 1);
+				}
+				set_zoom(new_zoom * MAX(1, EDSCALE));
+			} else {
+				// Dezooming. Convert the current zoom into a denominator.
+				float new_zoom = 1.0 / Math::floor(1.0 / zoom_noscale - p_increment_count);
+				if (Math::is_equal_approx(zoom_noscale, new_zoom)) {
+					// New zoom is identical to the old zoom, so try again.
+					// This can happen due to floating-point precision issues.
+					new_zoom = 1.0 / Math::floor(1.0 / zoom_noscale - p_increment_count + 1);
+				}
+				set_zoom(new_zoom * MAX(1, EDSCALE));
+			}
+		}
+	} else {
+		// Base increment factor defined as the twelveth root of two.
+		// This allow a smooth geometric evolution of the zoom, with the advantage of
+		// visiting all integer power of two scale factors.
+		// note: this is analogous to the 'semitones' interval in the music world
+		// In order to avoid numerical imprecisions, we compute and edit a zoom index
+		// with the following relation: zoom = 2 ^ (index / 12)
+
+		if (zoom < CMP_EPSILON || p_increment_count == 0) {
+			return;
+		}
+
+		// zoom = 2**(index/12) => log2(zoom) = index/12
+		float closest_zoom_index = Math::round(Math::log(zoom_noscale) * 12.f / Math::log(2.f));
+
+		float new_zoom_index = closest_zoom_index + p_increment_count;
+		float new_zoom = Math::pow(2.f, new_zoom_index / 12.f);
+
+		// Restore Editor scale transformation
+		new_zoom *= MAX(1, EDSCALE);
+
+		set_zoom(new_zoom);
 	}
-
-	// Remove Editor scale from the index computation
-	float zoom_noscale = zoom / MAX(1, EDSCALE);
-
-	// zoom = 2**(index/12) => log2(zoom) = index/12
-	float closest_zoom_index = Math::round(Math::log(zoom_noscale) * 12.f / Math::log(2.f));
-
-	float new_zoom_index = closest_zoom_index + p_increment_count;
-	float new_zoom = Math::pow(2.f, new_zoom_index / 12.f);
-
-	// Restore Editor scale transformation
-	new_zoom *= MAX(1, EDSCALE);
-
-	set_zoom(new_zoom);
 }
 
 void EditorZoomWidget::_notification(int p_what) {
@@ -118,7 +156,7 @@ void EditorZoomWidget::_notification(int p_what) {
 void EditorZoomWidget::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_zoom", "zoom"), &EditorZoomWidget::set_zoom);
 	ClassDB::bind_method(D_METHOD("get_zoom"), &EditorZoomWidget::get_zoom);
-	ClassDB::bind_method(D_METHOD("set_zoom_by_increments", "increment"), &EditorZoomWidget::set_zoom_by_increments);
+	ClassDB::bind_method(D_METHOD("set_zoom_by_increments", "increment", "integer_only"), &EditorZoomWidget::set_zoom_by_increments);
 
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "zoom"), "set_zoom", "get_zoom");
 
