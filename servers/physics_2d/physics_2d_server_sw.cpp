@@ -30,6 +30,7 @@
 
 #include "physics_2d_server_sw.h"
 #include "broad_phase_2d_basic.h"
+#include "broad_phase_2d_bvh.h"
 #include "broad_phase_2d_hash_grid.h"
 #include "collision_solver_2d_sw.h"
 #include "core/os/os.h"
@@ -1440,8 +1441,19 @@ Physics2DServerSW *Physics2DServerSW::singletonsw = NULL;
 Physics2DServerSW::Physics2DServerSW() {
 
 	singletonsw = this;
-	BroadPhase2DSW::create_func = BroadPhase2DHashGrid::_create;
-	//BroadPhase2DSW::create_func=BroadPhase2DBasic::_create;
+
+	GLOBAL_DEF("physics/2d/use_bvh", true);
+	GLOBAL_DEF("physics/2d/bp_hash_table_size", 4096);
+	GLOBAL_DEF("physics/2d/cell_size", 128);
+	GLOBAL_DEF("physics/2d/large_object_surface_threshold_in_cells", 512);
+
+	bool use_bvh = GLOBAL_GET("physics/2d/use_bvh");
+
+	if (use_bvh) {
+		BroadPhase2DSW::create_func = BroadPhase2DBVH::_create;
+	} else {
+		BroadPhase2DSW::create_func = BroadPhase2DHashGrid::_create;
+	}
 
 	active = true;
 	island_count = 0;
@@ -1450,7 +1462,7 @@ Physics2DServerSW::Physics2DServerSW() {
 #ifdef NO_THREADS
 	using_threads = false;
 #else
-	using_threads = int(ProjectSettings::get_singleton()->get("physics/2d/thread_model")) == 2;
+	using_threads = int(GLOBAL_GET("physics/2d/thread_model")) == 2;
 #endif
 	flushing_queries = false;
 };

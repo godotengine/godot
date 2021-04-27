@@ -5,7 +5,7 @@ void _debug_recursive_print_tree(int p_tree_id) const {
 		_debug_recursive_print_tree_node(_root_node_id[p_tree_id]);
 }
 
-String _debug_aabb_to_string(const BVH_ABB &aabb) const {
+String _debug_aabb_to_string(const BVHABB_CLASS &aabb) const {
 	String sz = "(";
 	sz += itos(aabb.min.x);
 	sz += " ~ ";

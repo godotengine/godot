@@ -170,13 +170,16 @@ struct Rect2 {
 	bool operator!=(const Rect2 &p_rect) const { return position != p_rect.position || size != p_rect.size; }
 
 	inline Rect2 grow(real_t p_by) const {
-
 		Rect2 g = *this;
-		g.position.x -= p_by;
-		g.position.y -= p_by;
-		g.size.width += p_by * 2;
-		g.size.height += p_by * 2;
+		g.grow_by(p_by);
 		return g;
+	}
+
+	inline void grow_by(real_t p_by) {
+		position.x -= p_by;
+		position.y -= p_by;
+		size.width += p_by * 2;
+		size.height += p_by * 2;
 	}
 
 	inline Rect2 grow_margin(Margin p_margin, real_t p_amount) const {

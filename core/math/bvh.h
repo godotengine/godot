@@ -48,9 +48,9 @@
 
 #include "bvh_tree.h"
 
-#define BVHTREE_CLASS BVH_Tree<T, 2, MAX_ITEMS, USE_PAIRS>
+#define BVHTREE_CLASS BVH_Tree<T, 2, MAX_ITEMS, USE_PAIRS, Bounds, Point>
 
-template <class T, bool USE_PAIRS = false, int MAX_ITEMS = 32>
+template <class T, bool USE_PAIRS = false, int MAX_ITEMS = 32, class Bounds = AABB, class Point = Vector3>
 class BVH_Manager {
 
 public:
@@ -88,7 +88,7 @@ public:
 		unpair_callback_userdata = p_userdata;
 	}
 
-	BVHHandle create(T *p_userdata, bool p_active, const AABB &p_aabb = AABB(), int p_subindex = 0, bool p_pairable = false, uint32_t p_pairable_type = 0, uint32_t p_pairable_mask = 1) {
+	BVHHandle create(T *p_userdata, bool p_active, const Bounds &p_aabb = Bounds(), int p_subindex = 0, bool p_pairable = false, uint32_t p_pairable_type = 0, uint32_t p_pairable_mask = 1) {
 
 		// not sure if absolutely necessary to flush collisions here. It will cost performance to, instead
 		// of waiting for update, so only uncomment this if there are bugs.
@@ -108,7 +108,7 @@ public:
 
 		if (USE_PAIRS) {
 			// for safety initialize the expanded AABB
-			AABB &expanded_aabb = tree._pairs[h.id()].expanded_aabb;
+			Bounds &expanded_aabb = tree._pairs[h.id()].expanded_aabb;
 			expanded_aabb = p_aabb;
 			expanded_aabb.grow_by(tree._pairing_expansion);
 
@@ -125,7 +125,7 @@ public:
 	////////////////////////////////////////////////////
 	// wrapper versions that use uint32_t instead of handle
 	// for backward compatibility. Less type safe
-	void move(uint32_t p_handle, const AABB &p_aabb) {
+	void move(uint32_t p_handle, const Bounds &p_aabb) {
 		BVHHandle h;
 		h.set(p_handle);
 		move(h, p_aabb);
@@ -143,7 +143,7 @@ public:
 		force_collision_check(h);
 	}
 
-	bool activate(uint32_t p_handle, const AABB &p_aabb, bool p_delay_collision_check = false) {
+	bool activate(uint32_t p_handle, const Bounds &p_aabb, bool p_delay_collision_check = false) {
 		BVHHandle h;
 		h.set(p_handle);
 		return activate(h, p_aabb, p_delay_collision_check);
@@ -180,7 +180,7 @@ public:
 
 	////////////////////////////////////////////////////
 
-	void move(BVHHandle p_handle, const AABB &p_aabb) {
+	void move(BVHHandle p_handle, const Bounds &p_aabb) {
 
 		if (tree.item_move(p_handle, p_aabb)) {
 			if (USE_PAIRS) {
@@ -207,7 +207,7 @@ public:
 	void force_collision_check(BVHHandle p_handle) {
 		if (USE_PAIRS) {
 			// the aabb should already be up to date in the BVH
-			AABB aabb;
+			Bounds aabb;
 			item_get_AABB(p_handle, aabb);
 
 			// add it as changed even if aabb not different
@@ -221,7 +221,7 @@ public:
 	// these should be read as set_visible for render trees,
 	// but generically this makes items add or remove from the
 	// tree internally, to speed things up by ignoring inactive items
-	bool activate(BVHHandle p_handle, const AABB &p_aabb, bool p_delay_collision_check = false) {
+	bool activate(BVHHandle p_handle, const Bounds &p_aabb, bool p_delay_collision_check = false) {
 		// sending the aabb here prevents the need for the BVH to maintain
 		// a redundant copy of the aabb.
 		// returns success
@@ -294,7 +294,7 @@ public:
 				// when the pairable state changes, we need to force a collision check because newly pairable
 				// items may be in collision, and unpairable items might move out of collision.
 				// We cannot depend on waiting for the next update, because that may come much later.
-				AABB aabb;
+				Bounds aabb;
 				item_get_AABB(p_handle, aabb);
 
 				// passing false disables the optimization which prevents collision checks if
@@ -311,7 +311,7 @@ public:
 	}
 
 	// cull tests
-	int cull_aabb(const AABB &p_aabb, T **p_result_array, int p_result_max, int *p_subindex_array = nullptr, uint32_t p_mask = 0xFFFFFFFF) {
+	int cull_aabb(const Bounds &p_aabb, T **p_result_array, int p_result_max, int *p_subindex_array = nullptr, uint32_t p_mask = 0xFFFFFFFF) {
 		typename BVHTREE_CLASS::CullParams params;
 
 		params.result_count_overall = 0;
@@ -328,7 +328,7 @@ public:
 		return params.result_count_overall;
 	}
 
-	int cull_segment(const Vector3 &p_from, const Vector3 &p_to, T **p_result_array, int p_result_max, int *p_subindex_array = nullptr, uint32_t p_mask = 0xFFFFFFFF) {
+	int cull_segment(const Point &p_from, const Point &p_to, T **p_result_array, int p_result_max, int *p_subindex_array = nullptr, uint32_t p_mask = 0xFFFFFFFF) {
 		typename BVHTREE_CLASS::CullParams params;
 
 		params.result_count_overall = 0;
@@ -346,7 +346,7 @@ public:
 		return params.result_count_overall;
 	}
 
-	int cull_point(const Vector3 &p_point, T **p_result_array, int p_result_max, int *p_subindex_array = nullptr, uint32_t p_mask = 0xFFFFFFFF) {
+	int cull_point(const Point &p_point, T **p_result_array, int p_result_max, int *p_subindex_array = nullptr, uint32_t p_mask = 0xFFFFFFFF) {
 		typename BVHTREE_CLASS::CullParams params;
 
 		params.result_count_overall = 0;
@@ -396,7 +396,7 @@ private:
 			return;
 		}
 
-		AABB bb;
+		Bounds bb;
 
 		typename BVHTREE_CLASS::CullParams params;
 
@@ -411,8 +411,8 @@ private:
 			const BVHHandle &h = changed_items[n];
 
 			// use the expanded aabb for pairing
-			const AABB &expanded_aabb = tree._pairs[h.id()].expanded_aabb;
-			BVH_ABB abb;
+			const Bounds &expanded_aabb = tree._pairs[h.id()].expanded_aabb;
+			BVHABB_CLASS abb;
 			abb.from(expanded_aabb);
 
 			// find all the existing paired aabbs that are no longer
@@ -457,8 +457,8 @@ private:
 	}
 
 public:
-	void item_get_AABB(BVHHandle p_handle, AABB &r_aabb) {
-		BVH_ABB abb;
+	void item_get_AABB(BVHHandle p_handle, Bounds &r_aabb) {
+		BVHABB_CLASS abb;
 		tree.item_get_ABB(p_handle, abb);
 		abb.to(r_aabb);
 	}
@@ -494,8 +494,8 @@ private:
 	}
 
 	// returns true if unpair
-	bool _find_leavers_process_pair(typename BVHTREE_CLASS::ItemPairs &p_pairs_from, const BVH_ABB &p_abb_from, BVHHandle p_from, BVHHandle p_to, bool p_full_check) {
-		BVH_ABB abb_to;
+	bool _find_leavers_process_pair(typename BVHTREE_CLASS::ItemPairs &p_pairs_from, const BVHABB_CLASS &p_abb_from, BVHHandle p_from, BVHHandle p_to, bool p_full_check) {
+		BVHABB_CLASS abb_to;
 		tree.item_get_ABB(p_to, abb_to);
 
 		// do they overlap?
@@ -526,10 +526,10 @@ private:
 
 	// find all the existing paired aabbs that are no longer
 	// paired, and send callbacks
-	void _find_leavers(BVHHandle p_handle, const BVH_ABB &expanded_abb_from, bool p_full_check) {
+	void _find_leavers(BVHHandle p_handle, const BVHABB_CLASS &expanded_abb_from, bool p_full_check) {
 		typename BVHTREE_CLASS::ItemPairs &p_from = tree._pairs[p_handle.id()];
 
-		BVH_ABB abb_from = expanded_abb_from;
+		BVHABB_CLASS abb_from = expanded_abb_from;
 
 		// remove from pairing list for every partner
 		for (unsigned int n = 0; n < p_from.extended_pairs.size(); n++) {
@@ -608,7 +608,7 @@ private:
 		_tick++;
 	}
 
-	void _add_changed_item(BVHHandle p_handle, const AABB &aabb, bool p_check_aabb = true) {
+	void _add_changed_item(BVHHandle p_handle, const Bounds &aabb, bool p_check_aabb = true) {
 
 		// Note that non pairable items can pair with pairable,
 		// so all types must be added to the list
@@ -616,7 +616,7 @@ private:
 		// aabb check with expanded aabb. This greatly decreases processing
 		// at the cost of slightly less accurate pairing checks
 		// Note this pairing AABB is separate from the AABB in the actual tree
-		AABB &expanded_aabb = tree._pairs[p_handle.id()].expanded_aabb;
+		Bounds &expanded_aabb = tree._pairs[p_handle.id()].expanded_aabb;
 
 		// passing p_check_aabb false disables the optimization which prevents collision checks if
 		// the aabb hasn't changed. This is needed where set_pairable has been called, but the position

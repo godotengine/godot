@@ -48,6 +48,8 @@
 #include "core/print_string.h"
 #include <limits.h>
 
+#define BVHABB_CLASS BVH_ABB<Bounds, Point>
+
 // never do these checks in release
 #if defined(TOOLS_ENABLED) && defined(DEBUG_ENABLED)
 //#define BVH_VERBOSE
@@ -146,7 +148,7 @@ public:
 	}
 };
 
-template <class T, int MAX_CHILDREN, int MAX_ITEMS, bool USE_PAIRS = false>
+template <class T, int MAX_CHILDREN, int MAX_ITEMS, bool USE_PAIRS = false, class Bounds = AABB, class Point = Vector3>
 class BVH_Tree {
 	friend class BVH;
 
@@ -269,7 +271,7 @@ private:
 		node.neg_leaf_id = -(int)child_leaf_id;
 	}
 
-	void node_remove_item(uint32_t p_ref_id, BVH_ABB *r_old_aabb = nullptr) {
+	void node_remove_item(uint32_t p_ref_id, BVHABB_CLASS *r_old_aabb = nullptr) {
 		// get the reference
 		ItemRef &ref = _refs[p_ref_id];
 		uint32_t owner_node_id = ref.tnode_id;
@@ -286,7 +288,7 @@ private:
 
 		// if the aabb is not determining the corner size, then there is no need to refit!
 		// (optimization, as merging AABBs takes a lot of time)
-		const BVH_ABB &old_aabb = leaf.get_aabb(ref.item_id);
+		const BVHABB_CLASS &old_aabb = leaf.get_aabb(ref.item_id);
 
 		// shrink a little to prevent using corner aabbs
 		// in order to miss the corners first we shrink by node_expansion
@@ -294,7 +296,7 @@ private:
 		// shrink by an epsilon, in order to miss out the very corner aabbs
 		// which are important in determining the bound. Any other aabb
 		// within this can be removed and not affect the overall bound.
-		BVH_ABB node_bound = tnode.aabb;
+		BVHABB_CLASS node_bound = tnode.aabb;
 		node_bound.expand(-_node_expansion - 0.001f);
 		bool refit = true;
 
@@ -348,7 +350,7 @@ private:
 
 	// returns true if needs refit of PARENT tree only, the node itself AABB is calculated
 	// within this routine
-	bool _node_add_item(uint32_t p_node_id, uint32_t p_ref_id, const BVH_ABB &p_aabb) {
+	bool _node_add_item(uint32_t p_node_id, uint32_t p_ref_id, const BVHABB_CLASS &p_aabb) {
 		ItemRef &ref = _refs[p_ref_id];
 		ref.tnode_id = p_node_id;
 
@@ -362,7 +364,7 @@ private:
 		bool needs_refit = true;
 
 		// expand bound now
-		BVH_ABB expanded = p_aabb;
+		BVHABB_CLASS expanded = p_aabb;
 		expanded.expand(_node_expansion);
 
 		// the bound will only be valid if there is an item in there already
@@ -390,7 +392,7 @@ private:
 		return needs_refit;
 	}
 
-	uint32_t _node_create_another_child(uint32_t p_node_id, const BVH_ABB &p_aabb) {
+	uint32_t _node_create_another_child(uint32_t p_node_id, const BVHABB_CLASS &p_aabb) {
 		uint32_t child_node_id;
 		TNode *child_node = _nodes.request(child_node_id);
 		child_node->clear();
