@@ -539,12 +539,13 @@ private:
 
 	VBoxContainer *controls_vb;
 	HBoxContainer *zoom_hb;
-	float _get_next_zoom_value(int p_increment_count) const;
+	float _get_next_zoom_value(int p_increment_count, bool p_integer_only = false) const;
 	void _zoom_on_position(float p_zoom, Point2 p_position = Point2());
 	void _update_zoom_label();
 	void _button_zoom_minus();
 	void _button_zoom_reset();
 	void _button_zoom_plus();
+	void _shortcut_zoom_set(float p_zoom);
 	void _button_toggle_smart_snap(bool p_status);
 	void _button_toggle_grid_snap(bool p_status);
 	void _button_override_camera(bool p_pressed);

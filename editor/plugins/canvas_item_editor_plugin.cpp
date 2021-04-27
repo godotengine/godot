@@ -1277,8 +1277,9 @@ bool CanvasItemEditor::_gui_input_zoom_or_pan(const Ref<InputEvent> &p_event, bo
 				view_offset.y += int(EditorSettings::get_singleton()->get("editors/2d/pan_speed")) / zoom * b->get_factor();
 				update_viewport();
 			} else {
-				float new_zoom = _get_next_zoom_value(-1);
-				if (b->get_factor() != 1.f) {
+				float new_zoom = _get_next_zoom_value(-1, b->get_alt());
+				if (!Math::is_equal_approx(b->get_factor(), 1.0f)) {
+					// Handle high-precision (analog) scrolling.
 					new_zoom = zoom * ((new_zoom / zoom - 1.f) * b->get_factor() + 1.f);
 				}
 				_zoom_on_position(new_zoom, b->get_position());
@@ -1292,8 +1293,9 @@ bool CanvasItemEditor::_gui_input_zoom_or_pan(const Ref<InputEvent> &p_event, bo
 				view_offset.y -= int(EditorSettings::get_singleton()->get("editors/2d/pan_speed")) / zoom * b->get_factor();
 				update_viewport();
 			} else {
-				float new_zoom = _get_next_zoom_value(1);
-				if (b->get_factor() != 1.f) {
+				float new_zoom = _get_next_zoom_value(1, b->get_alt());
+				if (!Math::is_equal_approx(b->get_factor(), 1.0f)) {
+					// Handle high-precision (analog) scrolling.
 					new_zoom = zoom * ((new_zoom / zoom - 1.f) * b->get_factor() + 1.f);
 				}
 				_zoom_on_position(new_zoom, b->get_position());
@@ -1322,6 +1324,20 @@ bool CanvasItemEditor::_gui_input_zoom_or_pan(const Ref<InputEvent> &p_event, bo
 
 	Ref<InputEventKey> k = p_event;
 	if (k.is_valid()) {
+		if (k->is_pressed()) {
+			if (ED_GET_SHORTCUT("canvas_item_editor/zoom_100_percent")->is_shortcut(p_event)) {
+				_shortcut_zoom_set(1.0);
+			} else if (ED_GET_SHORTCUT("canvas_item_editor/zoom_200_percent")->is_shortcut(p_event)) {
+				_shortcut_zoom_set(2.0);
+			} else if (ED_GET_SHORTCUT("canvas_item_editor/zoom_400_percent")->is_shortcut(p_event)) {
+				_shortcut_zoom_set(4.0);
+			} else if (ED_GET_SHORTCUT("canvas_item_editor/zoom_800_percent")->is_shortcut(p_event)) {
+				_shortcut_zoom_set(8.0);
+			} else if (ED_GET_SHORTCUT("canvas_item_editor/zoom_1600_percent")->is_shortcut(p_event)) {
+				_shortcut_zoom_set(16.0);
+			}
+		}
+
 		bool is_pan_key = pan_view_shortcut.is_valid() && pan_view_shortcut->is_shortcut(p_event);
 
 		if (is_pan_key && (EditorSettings::get_singleton()->get("editors/2d/simple_panning") || drag_type != DRAG_NONE)) {
@@ -4452,31 +4468,69 @@ void CanvasItemEditor::_set_anchors_preset(Control::LayoutPreset p_preset) {
 	undo_redo->commit_action();
 }
 
-float CanvasItemEditor::_get_next_zoom_value(int p_increment_count) const {
-	// Base increment factor defined as the twelveth root of two.
-	// This allow a smooth geometric evolution of the zoom, with the advantage of
-	// visiting all integer power of two scale factors.
-	// note: this is analogous to the 'semitones' interval in the music world
-	// In order to avoid numerical imprecisions, we compute and edit a zoom index
-	// with the following relation: zoom = 2 ^ (index / 12)
+float CanvasItemEditor::_get_next_zoom_value(int p_increment_count, bool p_integer_only) const {
+	// Remove editor scale from the index computation.
+	const float zoom_noscale = zoom / MAX(1, EDSCALE);
 
-	if (zoom < CMP_EPSILON || p_increment_count == 0) {
-		return 1.f;
+	if (p_integer_only) {
+		// Only visit integer scaling factors above 100%, and fractions with an integer denominator below 100%
+		// (1/2 = 50%, 1/3 = 33.33%, 1/4 = 25%, …).
+		// This is useful when working on pixel art projects to avoid distortion.
+		// This algorithm is designed to handle fractional start zoom values correctly
+		// (e.g. 190% will zoom up to 200% and down to 100%).
+		if (zoom_noscale + p_increment_count * 0.001 >= 1.0 - CMP_EPSILON) {
+			// New zoom is certain to be above 100%.
+			if (p_increment_count >= 1) {
+				// Zooming.
+				return Math::floor(zoom_noscale + p_increment_count) * MAX(1, EDSCALE);
+			} else {
+				// Dezooming.
+				return Math::ceil(zoom_noscale + p_increment_count) * MAX(1, EDSCALE);
+			}
+		} else {
+			if (p_increment_count >= 1) {
+				// Zooming. Convert the current zoom into a denominator.
+				float new_zoom = 1.0 / Math::ceil(1.0 / zoom_noscale - p_increment_count);
+				if (Math::is_equal_approx(zoom_noscale, new_zoom)) {
+					// New zoom is identical to the old zoom, so try again.
+					// This can happen due to floating-point precision issues.
+					new_zoom = 1.0 / Math::ceil(1.0 / zoom_noscale - p_increment_count - 1);
+				}
+				return new_zoom * MAX(1, EDSCALE);
+			} else {
+				// Dezooming. Convert the current zoom into a denominator.
+				float new_zoom = 1.0 / Math::floor(1.0 / zoom_noscale - p_increment_count);
+				if (Math::is_equal_approx(zoom_noscale, new_zoom)) {
+					// New zoom is identical to the old zoom, so try again.
+					// This can happen due to floating-point precision issues.
+					new_zoom = 1.0 / Math::floor(1.0 / zoom_noscale - p_increment_count + 1);
+				}
+				return new_zoom * MAX(1, EDSCALE);
+			}
+		}
+	} else {
+		// Base increment factor defined as the twelveth root of two.
+		// This allow a smooth geometric evolution of the zoom, with the advantage of
+		// visiting all integer power of two scale factors.
+		// note: this is analogous to the 'semitones' interval in the music world
+		// In order to avoid numerical imprecisions, we compute and edit a zoom index
+		// with the following relation: zoom = 2 ^ (index / 12)
+
+		if (zoom < CMP_EPSILON || p_increment_count == 0) {
+			return 1.f;
+		}
+
+		// zoom = 2**(index/12) => log2(zoom) = index/12
+		float closest_zoom_index = Math::round(Math::log(zoom_noscale) * 12.f / Math::log(2.f));
+
+		float new_zoom_index = closest_zoom_index + p_increment_count;
+		float new_zoom = Math::pow(2.f, new_zoom_index / 12.f);
+
+		// Restore editor scale transformation.
+		new_zoom *= MAX(1, EDSCALE);
+
+		return new_zoom;
 	}
-
-	// Remove Editor scale from the index computation
-	float zoom_noscale = zoom / MAX(1, EDSCALE);
-
-	// zoom = 2**(index/12) => log2(zoom) = index/12
-	float closest_zoom_index = Math::round(Math::log(zoom_noscale) * 12.f / Math::log(2.f));
-
-	float new_zoom_index = closest_zoom_index + p_increment_count;
-	float new_zoom = Math::pow(2.f, new_zoom_index / 12.f);
-
-	// Restore Editor scale transformation
-	new_zoom *= MAX(1, EDSCALE);
-
-	return new_zoom;
 }
 
 void CanvasItemEditor::_zoom_on_position(float p_zoom, Point2 p_position) {
@@ -4524,7 +4578,11 @@ void CanvasItemEditor::_update_zoom_label() {
 }
 
 void CanvasItemEditor::_button_zoom_minus() {
-	_zoom_on_position(_get_next_zoom_value(-6), viewport_scrollable->get_size() / 2.0);
+	if (Input::get_singleton()->is_key_pressed(KEY_ALT)) {
+		_zoom_on_position(_get_next_zoom_value(-1, true), viewport_scrollable->get_size() / 2.0);
+	} else {
+		_zoom_on_position(_get_next_zoom_value(-6), viewport_scrollable->get_size() / 2.0);
+	}
 }
 
 void CanvasItemEditor::_button_zoom_reset() {
@@ -4532,7 +4590,15 @@ void CanvasItemEditor::_button_zoom_reset() {
 }
 
 void CanvasItemEditor::_button_zoom_plus() {
-	_zoom_on_position(_get_next_zoom_value(6), viewport_scrollable->get_size() / 2.0);
+	if (Input::get_singleton()->is_key_pressed(KEY_ALT)) {
+		_zoom_on_position(_get_next_zoom_value(1, true), viewport_scrollable->get_size() / 2.0);
+	} else {
+		_zoom_on_position(_get_next_zoom_value(6), viewport_scrollable->get_size() / 2.0);
+	}
+}
+
+void CanvasItemEditor::_shortcut_zoom_set(float p_zoom) {
+	_zoom_on_position(p_zoom * MAX(1, EDSCALE), viewport_scrollable->get_size() / 2.0);
 }
 
 void CanvasItemEditor::_button_toggle_smart_snap(bool p_status) {
@@ -6002,6 +6068,16 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 
 	skeleton_menu->get_popup()->set_item_checked(skeleton_menu->get_popup()->get_item_index(SKELETON_SHOW_BONES), true);
 	singleton = this;
+
+	// To ensure that scripts can parse the list of shortcuts correctly, we have to define
+	// those shortcuts one by one.
+	// Resetting zoom to 100% is a duplicate shortcut of `canvas_item_editor/reset_zoom`,
+	// but it ensures both 1 and Ctrl + 0 can be used to reset zoom.
+	ED_SHORTCUT("canvas_item_editor/zoom_100_percent", TTR("Zoom To 100%"), KEY_1);
+	ED_SHORTCUT("canvas_item_editor/zoom_200_percent", TTR("Zoom To 200%"), KEY_2);
+	ED_SHORTCUT("canvas_item_editor/zoom_400_percent", TTR("Zoom To 400%"), KEY_3);
+	ED_SHORTCUT("canvas_item_editor/zoom_800_percent", TTR("Zoom To 800%"), KEY_4);
+	ED_SHORTCUT("canvas_item_editor/zoom_1600_percent", TTR("Zoom To 1600%"), KEY_5);
 
 	set_process_unhandled_key_input(true);
 
