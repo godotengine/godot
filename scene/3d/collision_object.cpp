@@ -37,6 +37,22 @@
 
 void CollisionObject::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE: {
+			if (_are_collision_shapes_visible()) {
+				debug_shape_old_transform = get_global_transform();
+				for (Map<uint32_t, ShapeData>::Element *E = shapes.front(); E; E = E->next()) {
+					debug_shapes_to_update.insert(E->key());
+				}
+				_update_debug_shapes();
+			}
+		} break;
+
+		case NOTIFICATION_EXIT_TREE: {
+			if (debug_shapes_count > 0) {
+				_clear_debug_shapes();
+			}
+		} break;
+
 		case NOTIFICATION_ENTER_WORLD: {
 			if (area) {
 				PhysicsServer::get_singleton()->area_set_transform(rid, get_global_transform());
@@ -62,6 +78,8 @@ void CollisionObject::_notification(int p_what) {
 				PhysicsServer::get_singleton()->body_set_state(rid, PhysicsServer::BODY_STATE_TRANSFORM, get_global_transform());
 			}
 
+			_on_transform_changed();
+
 		} break;
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			_update_pickable();
@@ -74,11 +92,6 @@ void CollisionObject::_notification(int p_what) {
 				PhysicsServer::get_singleton()->body_set_space(rid, RID());
 			}
 
-		} break;
-		case NOTIFICATION_PREDELETE: {
-			if (debug_shape_count > 0) {
-				_clear_debug_shapes();
-			}
 		} break;
 	}
 }
@@ -171,6 +184,33 @@ void CollisionObject::_update_pickable() {
 	}
 }
 
+bool CollisionObject::_are_collision_shapes_visible() {
+	return is_inside_tree() && get_tree()->is_debugging_collisions_hint() && !Engine::get_singleton()->is_editor_hint();
+}
+
+void CollisionObject::_update_shape_data(uint32_t p_owner) {
+	if (_are_collision_shapes_visible()) {
+		if (debug_shapes_to_update.empty()) {
+			call_deferred("_update_debug_shapes");
+		}
+		debug_shapes_to_update.insert(p_owner);
+	}
+}
+
+void CollisionObject::_shape_changed(const Ref<Shape> &p_shape) {
+	for (Map<uint32_t, ShapeData>::Element *E = shapes.front(); E; E = E->next()) {
+		ShapeData &shapedata = E->get();
+		ShapeData::ShapeBase *shapes = shapedata.shapes.ptrw();
+		for (int i = 0; i < shapedata.shapes.size(); i++) {
+			ShapeData::ShapeBase &s = shapes[i];
+			if (s.shape == p_shape && s.debug_shape.is_valid()) {
+				Ref<Mesh> mesh = s.shape->get_debug_mesh();
+				VS::get_singleton()->instance_set_base(s.debug_shape, mesh->get_rid());
+			}
+		}
+	}
+}
+
 void CollisionObject::_update_debug_shapes() {
 	for (Set<uint32_t>::Element *shapedata_idx = debug_shapes_to_update.front(); shapedata_idx; shapedata_idx = shapedata_idx->next()) {
 		if (shapes.has(shapedata_idx->get())) {
@@ -178,24 +218,27 @@ void CollisionObject::_update_debug_shapes() {
 			ShapeData::ShapeBase *shapes = shapedata.shapes.ptrw();
 			for (int i = 0; i < shapedata.shapes.size(); i++) {
 				ShapeData::ShapeBase &s = shapes[i];
-				if (s.debug_shape) {
-					s.debug_shape->queue_delete();
-					s.debug_shape = nullptr;
-					--debug_shape_count;
-				}
 				if (s.shape.is_null() || shapedata.disabled) {
-					continue;
+					if (s.debug_shape.is_valid()) {
+						VS::get_singleton()->free(s.debug_shape);
+						s.debug_shape = RID();
+						--debug_shapes_count;
+					}
+				}
+				if (!s.debug_shape.is_valid()) {
+					s.debug_shape = VS::get_singleton()->instance_create();
+					VS::get_singleton()->instance_set_scenario(s.debug_shape, get_world()->get_scenario());
+
+					if (!s.shape->is_connected("changed", this, "_shape_changed")) {
+						s.shape->connect("changed", this, "_shape_changed", varray(s.shape), CONNECT_DEFERRED);
+					}
+
+					++debug_shapes_count;
 				}
 
 				Ref<Mesh> mesh = s.shape->get_debug_mesh();
-				MeshInstance *mi = memnew(MeshInstance);
-				mi->set_transform(shapedata.xform);
-				mi->set_mesh(mesh);
-				add_child(mi);
-
-				mi->force_update_transform();
-				s.debug_shape = mi;
-				++debug_shape_count;
+				VS::get_singleton()->instance_set_base(s.debug_shape, mesh->get_rid());
+				VS::get_singleton()->instance_set_transform(s.debug_shape, get_global_transform() * shapedata.xform);
 			}
 		}
 	}
@@ -208,22 +251,29 @@ void CollisionObject::_clear_debug_shapes() {
 		ShapeData::ShapeBase *shapes = shapedata.shapes.ptrw();
 		for (int i = 0; i < shapedata.shapes.size(); i++) {
 			ShapeData::ShapeBase &s = shapes[i];
-			if (s.debug_shape) {
-				s.debug_shape->queue_delete();
-				s.debug_shape = nullptr;
+			if (s.debug_shape.is_valid()) {
+				VS::get_singleton()->free(s.debug_shape);
+				s.debug_shape = RID();
+				if (s.shape.is_valid() && s.shape->is_connected("changed", this, "_shape_changed")) {
+					s.shape->disconnect("changed", this, "_shape_changed");
+				}
 			}
 		}
 	}
 
-	debug_shape_count = 0;
+	debug_shapes_count = 0;
 }
 
-void CollisionObject::_update_shape_data(uint32_t p_owner) {
-	if (is_inside_tree() && get_tree()->is_debugging_collisions_hint() && !Engine::get_singleton()->is_editor_hint()) {
-		if (debug_shapes_to_update.empty()) {
-			call_deferred("_update_debug_shapes");
+void CollisionObject::_on_transform_changed() {
+	if (debug_shapes_count > 0 && !debug_shape_old_transform.is_equal_approx(get_global_transform())) {
+		debug_shape_old_transform = get_global_transform();
+		for (Map<uint32_t, ShapeData>::Element *E = shapes.front(); E; E = E->next()) {
+			ShapeData &shapedata = E->get();
+			const ShapeData::ShapeBase *shapes = shapedata.shapes.ptr();
+			for (int i = 0; i < shapedata.shapes.size(); i++) {
+				VS::get_singleton()->instance_set_transform(shapes[i].debug_shape, debug_shape_old_transform * shapedata.xform);
+			}
 		}
-		debug_shapes_to_update.insert(p_owner);
 	}
 }
 
@@ -267,6 +317,7 @@ void CollisionObject::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("shape_find_owner", "shape_index"), &CollisionObject::shape_find_owner);
 
 	ClassDB::bind_method(D_METHOD("_update_debug_shapes"), &CollisionObject::_update_debug_shapes);
+	ClassDB::bind_method(D_METHOD("_shape_changed", "shape"), &CollisionObject::_shape_changed);
 
 	BIND_VMETHOD(MethodInfo("_input_event", PropertyInfo(Variant::OBJECT, "camera"), PropertyInfo(Variant::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, "InputEvent"), PropertyInfo(Variant::VECTOR3, "click_position"), PropertyInfo(Variant::VECTOR3, "click_normal"), PropertyInfo(Variant::INT, "shape_idx")));
 
@@ -312,7 +363,11 @@ void CollisionObject::shape_owner_set_disabled(uint32_t p_owner, bool p_disabled
 	ERR_FAIL_COND(!shapes.has(p_owner));
 
 	ShapeData &sd = shapes[p_owner];
+	if (sd.disabled == p_disabled) {
+		return;
+	}
 	sd.disabled = p_disabled;
+
 	for (int i = 0; i < sd.shapes.size(); i++) {
 		if (area) {
 			PhysicsServer::get_singleton()->area_set_shape_disabled(rid, sd.shapes[i].index, p_disabled);
@@ -413,7 +468,7 @@ void CollisionObject::shape_owner_remove_shape(uint32_t p_owner, int p_shape) {
 	ERR_FAIL_COND(!shapes.has(p_owner));
 	ERR_FAIL_INDEX(p_shape, shapes[p_owner].shapes.size());
 
-	const ShapeData::ShapeBase &s = shapes[p_owner].shapes[p_shape];
+	ShapeData::ShapeBase &s = shapes[p_owner].shapes.write[p_shape];
 	int index_to_remove = s.index;
 
 	if (area) {
@@ -422,9 +477,12 @@ void CollisionObject::shape_owner_remove_shape(uint32_t p_owner, int p_shape) {
 		PhysicsServer::get_singleton()->body_remove_shape(rid, index_to_remove);
 	}
 
-	if (s.debug_shape) {
-		s.debug_shape->queue_delete();
-		--debug_shape_count;
+	if (s.debug_shape.is_valid()) {
+		VS::get_singleton()->free(s.debug_shape);
+		if (s.shape.is_valid() && s.shape->is_connected("changed", this, "_shape_changed")) {
+			s.shape->disconnect("changed", this, "_shape_changed");
+		}
+		--debug_shapes_count;
 	}
 
 	shapes[p_owner].shapes.remove(p_shape);
