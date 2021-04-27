@@ -106,7 +106,7 @@ size_t NetSocketPosix::_set_addr_storage(struct sockaddr_storage *p_addr, const 
 		addr6->sin6_family = AF_INET6;
 		addr6->sin6_port = htons(p_port);
 		if (p_ip.is_valid()) {
-			copymem(&addr6->sin6_addr.s6_addr, p_ip.get_ipv6(), 16);
+			memcpy(&addr6->sin6_addr.s6_addr, p_ip.get_ipv6(), 16);
 		} else {
 			addr6->sin6_addr = in6addr_any;
 		}
@@ -121,7 +121,7 @@ size_t NetSocketPosix::_set_addr_storage(struct sockaddr_storage *p_addr, const 
 		addr4->sin_port = htons(p_port); // short, network byte order
 
 		if (p_ip.is_valid()) {
-			copymem(&addr4->sin_addr.s_addr, p_ip.get_ipv4(), 4);
+			memcpy(&addr4->sin_addr.s_addr, p_ip.get_ipv4(), 4);
 		} else {
 			addr4->sin_addr.s_addr = INADDR_ANY;
 		}
@@ -283,13 +283,13 @@ _FORCE_INLINE_ Error NetSocketPosix::_change_multicast_group(IP_Address p_ip, St
 		ERR_FAIL_COND_V(!if_ip.is_valid(), ERR_INVALID_PARAMETER);
 		struct ip_mreq greq;
 		int sock_opt = p_add ? IP_ADD_MEMBERSHIP : IP_DROP_MEMBERSHIP;
-		copymem(&greq.imr_multiaddr, p_ip.get_ipv4(), 4);
-		copymem(&greq.imr_interface, if_ip.get_ipv4(), 4);
+		memcpy(&greq.imr_multiaddr, p_ip.get_ipv4(), 4);
+		memcpy(&greq.imr_interface, if_ip.get_ipv4(), 4);
 		ret = setsockopt(_sock, level, sock_opt, (const char *)&greq, sizeof(greq));
 	} else {
 		struct ipv6_mreq greq;
 		int sock_opt = p_add ? IPV6_ADD_MEMBERSHIP : IPV6_DROP_MEMBERSHIP;
-		copymem(&greq.ipv6mr_multiaddr, p_ip.get_ipv6(), 16);
+		memcpy(&greq.ipv6mr_multiaddr, p_ip.get_ipv6(), 16);
 		greq.ipv6mr_interface = if_v6id;
 		ret = setsockopt(_sock, level, sock_opt, (const char *)&greq, sizeof(greq));
 	}

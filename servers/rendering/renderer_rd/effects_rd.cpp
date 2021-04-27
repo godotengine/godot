@@ -226,7 +226,7 @@ RID EffectsRD::_get_compute_uniform_set_from_image_pair(RID p_texture1, RID p_te
 }
 
 void EffectsRD::copy_to_atlas_fb(RID p_source_rd_texture, RID p_dest_framebuffer, const Rect2 &p_uv_rect, RD::DrawListID p_draw_list, bool p_flip_y, bool p_panorama) {
-	zeromem(&copy_to_fb.push_constant, sizeof(CopyToFbPushConstant));
+	memset(&copy_to_fb.push_constant, 0, sizeof(CopyToFbPushConstant));
 
 	copy_to_fb.push_constant.use_section = true;
 	copy_to_fb.push_constant.section[0] = p_uv_rect.position.x;
@@ -247,7 +247,7 @@ void EffectsRD::copy_to_atlas_fb(RID p_source_rd_texture, RID p_dest_framebuffer
 }
 
 void EffectsRD::copy_to_fb_rect(RID p_source_rd_texture, RID p_dest_framebuffer, const Rect2i &p_rect, bool p_flip_y, bool p_force_luminance, bool p_alpha_to_zero, bool p_srgb, RID p_secondary) {
-	zeromem(&copy_to_fb.push_constant, sizeof(CopyToFbPushConstant));
+	memset(&copy_to_fb.push_constant, 0, sizeof(CopyToFbPushConstant));
 
 	if (p_flip_y) {
 		copy_to_fb.push_constant.flip_y = true;
@@ -275,7 +275,7 @@ void EffectsRD::copy_to_fb_rect(RID p_source_rd_texture, RID p_dest_framebuffer,
 }
 
 void EffectsRD::copy_to_rect(RID p_source_rd_texture, RID p_dest_texture, const Rect2i &p_rect, bool p_flip_y, bool p_force_luminance, bool p_all_source, bool p_8_bit_dst, bool p_alpha_to_one) {
-	zeromem(&copy.push_constant, sizeof(CopyPushConstant));
+	memset(&copy.push_constant, 0, sizeof(CopyPushConstant));
 	if (p_flip_y) {
 		copy.push_constant.flags |= COPY_FLAG_FLIP_Y;
 	}
@@ -309,7 +309,7 @@ void EffectsRD::copy_to_rect(RID p_source_rd_texture, RID p_dest_texture, const 
 }
 
 void EffectsRD::copy_cubemap_to_panorama(RID p_source_cube, RID p_dest_panorama, const Size2i &p_panorama_size, float p_lod, bool p_is_array) {
-	zeromem(&copy.push_constant, sizeof(CopyPushConstant));
+	memset(&copy.push_constant, 0, sizeof(CopyPushConstant));
 
 	copy.push_constant.section[0] = 0;
 	copy.push_constant.section[1] = 0;
@@ -329,7 +329,7 @@ void EffectsRD::copy_cubemap_to_panorama(RID p_source_cube, RID p_dest_panorama,
 }
 
 void EffectsRD::copy_depth_to_rect_and_linearize(RID p_source_rd_texture, RID p_dest_texture, const Rect2i &p_rect, bool p_flip_y, float p_z_near, float p_z_far) {
-	zeromem(&copy.push_constant, sizeof(CopyPushConstant));
+	memset(&copy.push_constant, 0, sizeof(CopyPushConstant));
 	if (p_flip_y) {
 		copy.push_constant.flags |= COPY_FLAG_FLIP_Y;
 	}
@@ -353,7 +353,7 @@ void EffectsRD::copy_depth_to_rect_and_linearize(RID p_source_rd_texture, RID p_
 }
 
 void EffectsRD::copy_depth_to_rect(RID p_source_rd_texture, RID p_dest_texture, const Rect2i &p_rect, bool p_flip_y) {
-	zeromem(&copy.push_constant, sizeof(CopyPushConstant));
+	memset(&copy.push_constant, 0, sizeof(CopyPushConstant));
 	if (p_flip_y) {
 		copy.push_constant.flags |= COPY_FLAG_FLIP_Y;
 	}
@@ -375,7 +375,7 @@ void EffectsRD::copy_depth_to_rect(RID p_source_rd_texture, RID p_dest_texture, 
 }
 
 void EffectsRD::set_color(RID p_dest_texture, const Color &p_color, const Rect2i &p_region, bool p_8bit_dst) {
-	zeromem(&copy.push_constant, sizeof(CopyPushConstant));
+	memset(&copy.push_constant, 0, sizeof(CopyPushConstant));
 
 	copy.push_constant.section[0] = 0;
 	copy.push_constant.section[1] = 0;
@@ -397,7 +397,7 @@ void EffectsRD::set_color(RID p_dest_texture, const Color &p_color, const Rect2i
 }
 
 void EffectsRD::gaussian_blur(RID p_source_rd_texture, RID p_texture, RID p_back_texture, const Rect2i &p_region, bool p_8bit_dst) {
-	zeromem(&copy.push_constant, sizeof(CopyPushConstant));
+	memset(&copy.push_constant, 0, sizeof(CopyPushConstant));
 
 	uint32_t base_flags = 0;
 	copy.push_constant.section[0] = p_region.position.x;
@@ -430,7 +430,7 @@ void EffectsRD::gaussian_blur(RID p_source_rd_texture, RID p_texture, RID p_back
 }
 
 void EffectsRD::gaussian_glow(RID p_source_rd_texture, RID p_back_texture, const Size2i &p_size, float p_strength, bool p_high_quality, bool p_first_pass, float p_luminance_cap, float p_exposure, float p_bloom, float p_hdr_bleed_treshold, float p_hdr_bleed_scale, RID p_auto_exposure, float p_auto_exposure_grey) {
-	zeromem(&copy.push_constant, sizeof(CopyPushConstant));
+	memset(&copy.push_constant, 0, sizeof(CopyPushConstant));
 
 	CopyMode copy_mode = p_first_pass && p_auto_exposure.is_valid() ? COPY_MODE_GAUSSIAN_GLOW_AUTO_EXPOSURE : COPY_MODE_GAUSSIAN_GLOW;
 	uint32_t base_flags = 0;
@@ -657,7 +657,7 @@ void EffectsRD::merge_specular(RID p_dest_framebuffer, RID p_specular, RID p_bas
 }
 
 void EffectsRD::make_mipmap(RID p_source_rd_texture, RID p_dest_texture, const Size2i &p_size) {
-	zeromem(&copy.push_constant, sizeof(CopyPushConstant));
+	memset(&copy.push_constant, 0, sizeof(CopyPushConstant));
 
 	copy.push_constant.section[0] = 0;
 	copy.push_constant.section[1] = 0;
@@ -694,7 +694,7 @@ void EffectsRD::copy_cubemap_to_dp(RID p_source_rd_texture, RID p_dst_framebuffe
 }
 
 void EffectsRD::tonemapper(RID p_source_color, RID p_dst_framebuffer, const TonemapSettings &p_settings) {
-	zeromem(&tonemap.push_constant, sizeof(TonemapPushConstant));
+	memset(&tonemap.push_constant, 0, sizeof(TonemapPushConstant));
 
 	tonemap.push_constant.use_bcs = p_settings.use_bcs;
 	tonemap.push_constant.bcs[0] = p_settings.brightness;
@@ -1294,7 +1294,7 @@ void EffectsRD::roughness_limit(RID p_source_normal, RID p_roughness, const Size
 }
 
 void EffectsRD::cubemap_roughness(RID p_source_rd_texture, RID p_dest_framebuffer, uint32_t p_face_id, uint32_t p_sample_count, float p_roughness, float p_size) {
-	zeromem(&roughness.push_constant, sizeof(CubemapRoughnessPushConstant));
+	memset(&roughness.push_constant, 0, sizeof(CubemapRoughnessPushConstant));
 
 	roughness.push_constant.face_id = p_face_id > 9 ? 0 : p_face_id;
 	roughness.push_constant.roughness = p_roughness;
@@ -1368,7 +1368,7 @@ void EffectsRD::cubemap_filter(RID p_source_cubemap, Vector<RID> p_dest_cubemap,
 void EffectsRD::render_sky(RD::DrawListID p_list, float p_time, RID p_fb, RID p_samplers, RID p_fog, PipelineCacheRD *p_pipeline, RID p_uniform_set, RID p_texture_set, const CameraMatrix &p_camera, const Basis &p_orientation, float p_multiplier, const Vector3 &p_position) {
 	SkyPushConstant sky_push_constant;
 
-	zeromem(&sky_push_constant, sizeof(SkyPushConstant));
+	memset(&sky_push_constant, 0, sizeof(SkyPushConstant));
 
 	sky_push_constant.proj[0] = p_camera.matrix[2][0];
 	sky_push_constant.proj[1] = p_camera.matrix[0][0];
@@ -1510,7 +1510,7 @@ EffectsRD::EffectsRD() {
 		copy_modes.push_back("\n#define MODE_CUBEMAP_ARRAY_TO_PANORAMA\n");
 
 		copy.shader.initialize(copy_modes);
-		zeromem(&copy.push_constant, sizeof(CopyPushConstant));
+		memset(&copy.push_constant, 0, sizeof(CopyPushConstant));
 		copy.shader_version = copy.shader.version_create();
 
 		for (int i = 0; i < COPY_MODE_MAX; i++) {

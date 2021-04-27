@@ -211,7 +211,7 @@ public:
 		ERR_FAIL_COND_V(err != OK, err);
 		ERR_FAIL_COND_V(p_len < r_read, ERR_OUT_OF_MEMORY);
 
-		copymem(p_buffer, buffer, r_read);
+		memcpy(p_buffer, buffer, r_read);
 		r_ip = udp->get_packet_address();
 		r_port = udp->get_packet_port();
 		return err;
@@ -315,7 +315,7 @@ public:
 				Vector<String> s = E->key().rsplit(":", false, 1);
 				ERR_CONTINUE(s.size() != 2); // BUG!
 
-				copymem(p_buffer, buffer, r_read);
+				memcpy(p_buffer, buffer, r_read);
 				r_ip = s[0];
 				r_port = s[1].to_int();
 				break; // err = OK

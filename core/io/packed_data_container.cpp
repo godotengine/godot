@@ -317,7 +317,7 @@ Error PackedDataContainer::pack(const Variant &p_data) {
 	datalen = tmpdata.size();
 	data.resize(tmpdata.size());
 	uint8_t *w = data.ptrw();
-	copymem(w, tmpdata.ptr(), tmpdata.size());
+	memcpy(w, tmpdata.ptr(), tmpdata.size());
 
 	return OK;
 }

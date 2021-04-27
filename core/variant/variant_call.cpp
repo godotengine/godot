@@ -500,7 +500,7 @@ struct _VariantCall {
 			const uint8_t *r = p_instance->ptr();
 			CharString cs;
 			cs.resize(p_instance->size() + 1);
-			copymem(cs.ptrw(), r, p_instance->size());
+			memcpy(cs.ptrw(), r, p_instance->size());
 			cs[p_instance->size()] = 0;
 
 			s = cs.get_data();

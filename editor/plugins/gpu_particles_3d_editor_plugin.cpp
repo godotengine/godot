@@ -346,7 +346,7 @@ void GPUParticles3DEditor::_generate_emission_points() {
 
 	{
 		uint8_t *iw = point_img.ptrw();
-		zeromem(iw, w * h * 3 * sizeof(float));
+		memset(iw, 0, w * h * 3 * sizeof(float));
 		const Vector3 *r = points.ptr();
 		float *wf = (float *)iw;
 		for (int i = 0; i < point_count; i++) {
@@ -374,7 +374,7 @@ void GPUParticles3DEditor::_generate_emission_points() {
 
 		{
 			uint8_t *iw = point_img2.ptrw();
-			zeromem(iw, w * h * 3 * sizeof(float));
+			memset(iw, 0, w * h * 3 * sizeof(float));
 			const Vector3 *r = normals.ptr();
 			float *wf = (float *)iw;
 			for (int i = 0; i < point_count; i++) {

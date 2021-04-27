@@ -433,7 +433,7 @@ Error StreamPeerBuffer::put_data(const uint8_t *p_data, int p_bytes) {
 	}
 
 	uint8_t *w = data.ptrw();
-	copymem(&w[pointer], p_data, p_bytes);
+	memcpy(&w[pointer], p_data, p_bytes);
 
 	pointer += p_bytes;
 	return OK;
@@ -466,7 +466,7 @@ Error StreamPeerBuffer::get_partial_data(uint8_t *p_buffer, int p_bytes, int &r_
 	}
 
 	const uint8_t *r = data.ptr();
-	copymem(p_buffer, r + pointer, r_received);
+	memcpy(p_buffer, r + pointer, r_received);
 
 	pointer += r_received;
 	// FIXME: return what? OK or ERR_*

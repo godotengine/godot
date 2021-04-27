@@ -39,7 +39,7 @@ void BitMap::create(const Size2 &p_size) {
 	width = p_size.width;
 	height = p_size.height;
 	bitmask.resize(((width * height) / 8) + 1);
-	zeromem(bitmask.ptrw(), bitmask.size());
+	memset(bitmask.ptrw(), 0, bitmask.size());
 }
 
 void BitMap::create_from_image_alpha(const Ref<Image> &p_image, float p_threshold) {

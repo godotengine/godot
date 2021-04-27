@@ -897,7 +897,7 @@ void MultiplayerAPI::_send_rpc(Node *p_from, int p_to, bool p_unreliable, bool p
 			// Special optimization when only the byte vector is sent.
 			const Vector<uint8_t> data = *p_arg[0];
 			MAKE_ROOM(ofs + data.size());
-			copymem(&(packet_cache.write[ofs]), data.ptr(), sizeof(uint8_t) * data.size());
+			memcpy(&(packet_cache.write[ofs]), data.ptr(), sizeof(uint8_t) * data.size());
 			ofs += data.size();
 		} else {
 			// Arguments

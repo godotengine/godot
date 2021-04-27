@@ -86,13 +86,13 @@ ClusterBuilderSharedDataRD::ClusterBuilderSharedDataRD() {
 
 		Vector<uint8_t> vertex_data;
 		vertex_data.resize(sizeof(float) * icosphere_vertex_count * 3);
-		copymem(vertex_data.ptrw(), icosphere_vertices, vertex_data.size());
+		memcpy(vertex_data.ptrw(), icosphere_vertices, vertex_data.size());
 
 		sphere_vertex_buffer = RD::get_singleton()->vertex_buffer_create(vertex_data.size(), vertex_data);
 
 		Vector<uint8_t> index_data;
 		index_data.resize(sizeof(uint32_t) * icosphere_triangle_count * 3);
-		copymem(index_data.ptrw(), icosphere_triangle_indices, index_data.size());
+		memcpy(index_data.ptrw(), icosphere_triangle_indices, index_data.size());
 
 		sphere_index_buffer = RD::get_singleton()->index_buffer_create(icosphere_triangle_count * 3, RD::INDEX_BUFFER_FORMAT_UINT32, index_data);
 
@@ -130,13 +130,13 @@ ClusterBuilderSharedDataRD::ClusterBuilderSharedDataRD() {
 
 		Vector<uint8_t> vertex_data;
 		vertex_data.resize(sizeof(float) * cone_vertex_count * 3);
-		copymem(vertex_data.ptrw(), cone_vertices, vertex_data.size());
+		memcpy(vertex_data.ptrw(), cone_vertices, vertex_data.size());
 
 		cone_vertex_buffer = RD::get_singleton()->vertex_buffer_create(vertex_data.size(), vertex_data);
 
 		Vector<uint8_t> index_data;
 		index_data.resize(sizeof(uint32_t) * cone_triangle_count * 3);
-		copymem(index_data.ptrw(), cone_triangle_indices, index_data.size());
+		memcpy(index_data.ptrw(), cone_triangle_indices, index_data.size());
 
 		cone_index_buffer = RD::get_singleton()->index_buffer_create(cone_triangle_count * 3, RD::INDEX_BUFFER_FORMAT_UINT32, index_data);
 
@@ -184,13 +184,13 @@ ClusterBuilderSharedDataRD::ClusterBuilderSharedDataRD() {
 
 		Vector<uint8_t> vertex_data;
 		vertex_data.resize(sizeof(float) * box_vertex_count * 3);
-		copymem(vertex_data.ptrw(), box_vertices, vertex_data.size());
+		memcpy(vertex_data.ptrw(), box_vertices, vertex_data.size());
 
 		box_vertex_buffer = RD::get_singleton()->vertex_buffer_create(vertex_data.size(), vertex_data);
 
 		Vector<uint8_t> index_data;
 		index_data.resize(sizeof(uint32_t) * box_triangle_count * 3);
-		copymem(index_data.ptrw(), box_triangle_indices, index_data.size());
+		memcpy(index_data.ptrw(), box_triangle_indices, index_data.size());
 
 		box_index_buffer = RD::get_singleton()->index_buffer_create(box_triangle_count * 3, RD::INDEX_BUFFER_FORMAT_UINT32, index_data);
 
