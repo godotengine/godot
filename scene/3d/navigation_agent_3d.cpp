@@ -111,12 +111,7 @@ void NavigationAgent3D::_notification(int p_what) {
 		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
 			if (agent_parent) {
 				NavigationServer3D::get_singleton()->agent_set_position(agent, agent_parent->get_global_transform().origin);
-				if (!target_reached) {
-					if (distance_to_target() < target_desired_distance) {
-						emit_signal("target_reached");
-						target_reached = true;
-					}
-				}
+				_check_distance_to_target();
 			}
 		} break;
 	}
@@ -314,11 +309,21 @@ void NavigationAgent3D::update_navigation() {
 		while (o.distance_to(navigation_path[nav_path_index] - Vector3(0, navigation_height_offset, 0)) < target_desired_distance) {
 			nav_path_index += 1;
 			if (nav_path_index == navigation_path.size()) {
+				_check_distance_to_target();
 				nav_path_index -= 1;
 				navigation_finished = true;
 				emit_signal("navigation_finished");
 				break;
 			}
+		}
+	}
+}
+
+void NavigationAgent3D::_check_distance_to_target() {
+	if (!target_reached) {
+		if (distance_to_target() < target_desired_distance) {
+			emit_signal("target_reached");
+			target_reached = true;
 		}
 	}
 }
