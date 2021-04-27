@@ -392,6 +392,7 @@ struct _VariantCall {
 	VCALL_LOCALMEM1R(Vector2, rotated);
 	VCALL_LOCALMEM0R(Vector2, tangent);
 	VCALL_LOCALMEM0R(Vector2, floor);
+	VCALL_LOCALMEM1R(Vector2, from_angle);
 	VCALL_LOCALMEM0R(Vector2, ceil);
 	VCALL_LOCALMEM0R(Vector2, round);
 	VCALL_LOCALMEM1R(Vector2, snapped);
@@ -1688,6 +1689,7 @@ void register_variant_methods() {
 	ADDFUNC1R(VECTOR2, VECTOR2, Vector2, rotated, REAL, "phi", varray());
 	ADDFUNC0R(VECTOR2, VECTOR2, Vector2, tangent, varray());
 	ADDFUNC0R(VECTOR2, VECTOR2, Vector2, floor, varray());
+	ADDFUNC1R(VECTOR2, VECTOR2, Vector2, from_angle, REAL, "angle", varray());
 	ADDFUNC0R(VECTOR2, VECTOR2, Vector2, ceil, varray());
 	ADDFUNC0R(VECTOR2, VECTOR2, Vector2, round, varray());
 	ADDFUNC1R(VECTOR2, VECTOR2, Vector2, snapped, VECTOR2, "by", varray());
