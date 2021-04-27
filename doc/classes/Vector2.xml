@@ -155,6 +155,18 @@
 				Returns the vector with all components rounded down (towards negative infinity).
 			</description>
 		</method>
+		<method name="from_angle" qualifiers="static">
+			<return type="Vector2" />
+			<argument index="0" name="angle" type="float" />
+			<description>
+				Creates a unit [Vector2] rotated to the given [code]angle[/code] in radians. This is equivalent to doing [code]Vector2(cos(angle), sin(angle))[/code] or [code]Vector2.RIGHT.rotated(angle)[/code].
+				[codeblock]
+				print(Vector2.from_angle(0)) # Prints (1, 0).
+				print(Vector2(1, 0).angle()) # Prints 0, which is the angle used above.
+				print(Vector2.from_angle(PI / 2)) # Prints (0, 1).
+				[/codeblock]
+			</description>
+		</method>
 		<method name="is_equal_approx" qualifiers="const">
 			<return type="bool" />
 			<argument index="0" name="to" type="Vector2" />
