@@ -193,19 +193,23 @@ jobs:
           scons tools=yes target=debug use_asan=yes use_ubsan=yes
           ls -l bin/
 
-      # Download and test project to check leaks and invalid memory usage.
+      # Download test project
       # CI has no audio device, so use the Dummy audio driver to avoid spurious error messages.
-      - name: Importing and running project project
+      - name: Download project
         run: |
-          wget2 https://github.com/qarmin/RegressionTestProject/archive/3.x.zip
-          unzip 3.x.zip
-          mv "RegressionTestProject-3.x" "test_project"
+          wget2 https://github.com/qarmin/RegressionTestProject/archive/3.3.zip
+          unzip 3.3.zip
+          mv "RegressionTestProject-3.3" "test_project"
 
-          echo "----- Open editor to check for memory leaks -----"
+      # Editor is quite complicated piece of software, so it is easy to introduce bug here
+      - name: Open and close editor
+        run: |
           DRI_PRIME=0 xvfb-run bin/godot.x11.tools.64s --audio-driver Dummy -e -q --path test_project 2>&1 | tee sanitizers_log.txt || true
           misc/scripts/check_ci_log.py sanitizers_log.txt
 
-          echo "----- Run and test project -----"
+      # Run test project
+      - name: Run project
+        run: |
           DRI_PRIME=0 xvfb-run bin/godot.x11.tools.64s 30 --video-driver GLES3 --audio-driver Dummy --path test_project 2>&1 | tee sanitizers_log.txt || true
           misc/scripts/check_ci_log.py sanitizers_log.txt
 
