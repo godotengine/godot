@@ -120,6 +120,7 @@ private:
 	float extra_cull_margin = 0.0;
 	LightmapScale lightmap_scale = LIGHTMAP_SCALE_1X;
 	GIMode gi_mode = GI_MODE_DISABLED;
+	bool ignore_occlusion_culling = false;
 
 	const StringName *_instance_uniform_get_remap(const StringName p_name) const;
 
@@ -166,6 +167,9 @@ public:
 	Variant get_shader_instance_uniform(const StringName &p_uniform) const;
 
 	void set_custom_aabb(AABB aabb);
+
+	void set_ignore_occlusion_culling(bool p_enabled);
+	bool is_ignoring_occlusion_culling();
 
 	GeometryInstance3D();
 };

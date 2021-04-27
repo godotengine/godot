@@ -103,6 +103,9 @@ public:
 	static _ALWAYS_INLINE_ double log(double p_x) { return ::log(p_x); }
 	static _ALWAYS_INLINE_ float log(float p_x) { return ::logf(p_x); }
 
+	static _ALWAYS_INLINE_ double log2(double p_x) { return ::log2(p_x); }
+	static _ALWAYS_INLINE_ float log2(float p_x) { return ::log2f(p_x); }
+
 	static _ALWAYS_INLINE_ double exp(double p_x) { return ::exp(p_x); }
 	static _ALWAYS_INLINE_ float exp(float p_x) { return ::expf(p_x); }
 

@@ -147,6 +147,7 @@ public:
 		DEBUG_DRAW_CLUSTER_SPOT_LIGHTS,
 		DEBUG_DRAW_CLUSTER_DECALS,
 		DEBUG_DRAW_CLUSTER_REFLECTION_PROBES,
+		DEBUG_DRAW_OCCLUDERS,
 	};
 
 	enum DefaultCanvasItemTextureFilter {
@@ -304,6 +305,7 @@ private:
 	ScreenSpaceAA screen_space_aa = SCREEN_SPACE_AA_DISABLED;
 	bool use_debanding = false;
 	float lod_threshold = 1.0;
+	bool use_occlusion_culling = false;
 
 	Ref<ViewportTexture> default_texture;
 	Set<ViewportTexture *> viewport_textures;
@@ -480,7 +482,6 @@ protected:
 	void _notification(int p_what);
 	void _process_picking();
 	static void _bind_methods();
-	virtual void _validate_property(PropertyInfo &property) const override;
 
 public:
 	uint64_t get_processed_events_count() const { return event_count; }
@@ -555,6 +556,9 @@ public:
 
 	void set_lod_threshold(float p_pixels);
 	float get_lod_threshold() const;
+
+	void set_use_occlusion_culling(bool p_us_occlusion_culling);
+	bool is_using_occlusion_culling() const;
 
 	Vector2 get_camera_coords(const Vector2 &p_viewport_coords) const;
 	Vector2 get_camera_rect_size() const;

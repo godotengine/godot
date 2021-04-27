@@ -321,7 +321,7 @@ void World3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_environment"), &World3D::get_environment);
 	ClassDB::bind_method(D_METHOD("set_fallback_environment", "env"), &World3D::set_fallback_environment);
 	ClassDB::bind_method(D_METHOD("get_fallback_environment"), &World3D::get_fallback_environment);
-	ClassDB::bind_method(D_METHOD("set_camera_effects", "env"), &World3D::set_camera_effects);
+	ClassDB::bind_method(D_METHOD("set_camera_effects", "effects"), &World3D::set_camera_effects);
 	ClassDB::bind_method(D_METHOD("get_camera_effects"), &World3D::get_camera_effects);
 	ClassDB::bind_method(D_METHOD("get_direct_space_state"), &World3D::get_direct_space_state);
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "environment", PROPERTY_HINT_RESOURCE_TYPE, "Environment"), "set_environment", "get_environment");

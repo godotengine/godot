@@ -713,6 +713,11 @@ public:
 	virtual void camera_set_camera_effects(RID p_camera, RID p_camera_effects) = 0;
 	virtual void camera_set_use_vertical_aspect(RID p_camera, bool p_enable) = 0;
 
+	/* OCCLUDER API */
+
+	virtual RID occluder_create() = 0;
+	virtual void occluder_set_mesh(RID p_occluder, const PackedVector3Array &p_vertices, const PackedInt32Array &p_indices) = 0;
+
 	/* VIEWPORT TARGET API */
 
 	enum CanvasItemTextureFilter {
@@ -826,6 +831,17 @@ public:
 
 	virtual void viewport_set_lod_threshold(RID p_viewport, float p_pixels) = 0;
 
+	virtual void viewport_set_use_occlusion_culling(RID p_viewport, bool p_use_debanding) = 0;
+	virtual void viewport_set_occlusion_rays_per_thread(int p_rays_per_thread) = 0;
+
+	enum ViewportOcclusionCullingBuildQuality {
+		VIEWPORT_OCCLUSION_BUILD_QUALITY_LOW = 0,
+		VIEWPORT_OCCLUSION_BUILD_QUALITY_MEDIUM = 1,
+		VIEWPORT_OCCLUSION_BUILD_QUALITY_HIGH = 2,
+	};
+
+	virtual void viewport_set_occlusion_culling_build_quality(ViewportOcclusionCullingBuildQuality p_quality) = 0;
+
 	enum ViewportRenderInfo {
 		VIEWPORT_RENDER_INFO_OBJECTS_IN_FRAME,
 		VIEWPORT_RENDER_INFO_VERTICES_IN_FRAME,
@@ -862,6 +878,7 @@ public:
 		VIEWPORT_DEBUG_DRAW_CLUSTER_SPOT_LIGHTS,
 		VIEWPORT_DEBUG_DRAW_CLUSTER_DECALS,
 		VIEWPORT_DEBUG_DRAW_CLUSTER_REFLECTION_PROBES,
+		VIEWPORT_DEBUG_DRAW_OCCLUDERS,
 	};
 
 	virtual void viewport_set_debug_draw(RID p_viewport, ViewportDebugDraw p_draw) = 0;
@@ -1109,6 +1126,7 @@ public:
 		INSTANCE_DECAL,
 		INSTANCE_GI_PROBE,
 		INSTANCE_LIGHTMAP,
+		INSTANCE_OCCLUDER,
 		INSTANCE_MAX,
 
 		INSTANCE_GEOMETRY_MASK = (1 << INSTANCE_MESH) | (1 << INSTANCE_MULTIMESH) | (1 << INSTANCE_IMMEDIATE) | (1 << INSTANCE_PARTICLES)
@@ -1147,6 +1165,7 @@ public:
 		INSTANCE_FLAG_USE_BAKED_LIGHT,
 		INSTANCE_FLAG_USE_DYNAMIC_GI,
 		INSTANCE_FLAG_DRAW_NEXT_FRAME_IF_VISIBLE,
+		INSTANCE_FLAG_IGNORE_OCCLUSION_CULLING,
 		INSTANCE_FLAG_MAX
 	};
 
@@ -1505,6 +1524,7 @@ VARIANT_ENUM_CAST(RenderingServer::ViewportMSAA);
 VARIANT_ENUM_CAST(RenderingServer::ViewportScreenSpaceAA);
 VARIANT_ENUM_CAST(RenderingServer::ViewportRenderInfo);
 VARIANT_ENUM_CAST(RenderingServer::ViewportDebugDraw);
+VARIANT_ENUM_CAST(RenderingServer::ViewportOcclusionCullingBuildQuality);
 VARIANT_ENUM_CAST(RenderingServer::SkyMode);
 VARIANT_ENUM_CAST(RenderingServer::EnvironmentBG);
 VARIANT_ENUM_CAST(RenderingServer::EnvironmentAmbientSource);

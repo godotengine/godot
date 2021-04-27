@@ -548,6 +548,12 @@ public:
 	void lightmap_set_probe_capture_update_speed(float p_speed) override {}
 	float lightmap_get_probe_capture_update_speed() const override { return 0; }
 
+	/* OCCLUDER */
+
+	RID occluder_allocate() override { return RID(); }
+	void occluder_initialize(RID p_rid) override {}
+	void occluder_set_mesh(RID p_occluder, const PackedVector3Array &p_vertices, const PackedInt32Array &p_indices) {}
+
 	/* PARTICLES */
 
 	RID particles_allocate() override { return RID(); }

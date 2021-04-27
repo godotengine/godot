@@ -338,6 +338,15 @@ GeometryInstance3D::GIMode GeometryInstance3D::get_gi_mode() const {
 	return gi_mode;
 }
 
+void GeometryInstance3D::set_ignore_occlusion_culling(bool p_enabled) {
+	ignore_occlusion_culling = p_enabled;
+	RS::get_singleton()->instance_geometry_set_flag(get_instance(), RS::INSTANCE_FLAG_IGNORE_OCCLUSION_CULLING, ignore_occlusion_culling);
+}
+
+bool GeometryInstance3D::is_ignoring_occlusion_culling() {
+	return ignore_occlusion_culling;
+}
+
 void GeometryInstance3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_material_override", "material"), &GeometryInstance3D::set_material_override);
 	ClassDB::bind_method(D_METHOD("get_material_override"), &GeometryInstance3D::get_material_override);
@@ -345,20 +354,23 @@ void GeometryInstance3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_cast_shadows_setting", "shadow_casting_setting"), &GeometryInstance3D::set_cast_shadows_setting);
 	ClassDB::bind_method(D_METHOD("get_cast_shadows_setting"), &GeometryInstance3D::get_cast_shadows_setting);
 
+	ClassDB::bind_method(D_METHOD("set_lod_bias", "bias"), &GeometryInstance3D::set_lod_bias);
+	ClassDB::bind_method(D_METHOD("get_lod_bias"), &GeometryInstance3D::get_lod_bias);
+
 	ClassDB::bind_method(D_METHOD("set_lod_max_hysteresis", "mode"), &GeometryInstance3D::set_lod_max_hysteresis);
 	ClassDB::bind_method(D_METHOD("get_lod_max_hysteresis"), &GeometryInstance3D::get_lod_max_hysteresis);
 
 	ClassDB::bind_method(D_METHOD("set_lod_max_distance", "mode"), &GeometryInstance3D::set_lod_max_distance);
 	ClassDB::bind_method(D_METHOD("get_lod_max_distance"), &GeometryInstance3D::get_lod_max_distance);
 
-	ClassDB::bind_method(D_METHOD("set_shader_instance_uniform", "uniform", "value"), &GeometryInstance3D::set_shader_instance_uniform);
-	ClassDB::bind_method(D_METHOD("get_shader_instance_uniform", "uniform"), &GeometryInstance3D::get_shader_instance_uniform);
-
 	ClassDB::bind_method(D_METHOD("set_lod_min_hysteresis", "mode"), &GeometryInstance3D::set_lod_min_hysteresis);
 	ClassDB::bind_method(D_METHOD("get_lod_min_hysteresis"), &GeometryInstance3D::get_lod_min_hysteresis);
 
 	ClassDB::bind_method(D_METHOD("set_lod_min_distance", "mode"), &GeometryInstance3D::set_lod_min_distance);
 	ClassDB::bind_method(D_METHOD("get_lod_min_distance"), &GeometryInstance3D::get_lod_min_distance);
+
+	ClassDB::bind_method(D_METHOD("set_shader_instance_uniform", "uniform", "value"), &GeometryInstance3D::set_shader_instance_uniform);
+	ClassDB::bind_method(D_METHOD("get_shader_instance_uniform", "uniform"), &GeometryInstance3D::get_shader_instance_uniform);
 
 	ClassDB::bind_method(D_METHOD("set_extra_cull_margin", "margin"), &GeometryInstance3D::set_extra_cull_margin);
 	ClassDB::bind_method(D_METHOD("get_extra_cull_margin"), &GeometryInstance3D::get_extra_cull_margin);
@@ -369,8 +381,8 @@ void GeometryInstance3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_gi_mode", "mode"), &GeometryInstance3D::set_gi_mode);
 	ClassDB::bind_method(D_METHOD("get_gi_mode"), &GeometryInstance3D::get_gi_mode);
 
-	ClassDB::bind_method(D_METHOD("set_lod_bias", "bias"), &GeometryInstance3D::set_lod_bias);
-	ClassDB::bind_method(D_METHOD("get_lod_bias"), &GeometryInstance3D::get_lod_bias);
+	ClassDB::bind_method(D_METHOD("set_ignore_occlusion_culling", "ignore_culling"), &GeometryInstance3D::set_ignore_occlusion_culling);
+	ClassDB::bind_method(D_METHOD("is_ignoring_occlusion_culling"), &GeometryInstance3D::is_ignoring_occlusion_culling);
 
 	ClassDB::bind_method(D_METHOD("set_custom_aabb", "aabb"), &GeometryInstance3D::set_custom_aabb);
 
@@ -381,6 +393,7 @@ void GeometryInstance3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "cast_shadow", PROPERTY_HINT_ENUM, "Off,On,Double-Sided,Shadows Only"), "set_cast_shadows_setting", "get_cast_shadows_setting");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "extra_cull_margin", PROPERTY_HINT_RANGE, "0,16384,0.01"), "set_extra_cull_margin", "get_extra_cull_margin");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "lod_bias", PROPERTY_HINT_RANGE, "0.001,128,0.001"), "set_lod_bias", "get_lod_bias");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "ignore_occlusion_culling"), "set_ignore_occlusion_culling", "is_ignoring_occlusion_culling");
 	ADD_GROUP("Global Illumination", "gi_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "gi_mode", PROPERTY_HINT_ENUM, "Disabled,Baked,Dynamic"), "set_gi_mode", "get_gi_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "gi_lightmap_scale", PROPERTY_HINT_ENUM, "1x,2x,4x,8x"), "set_lightmap_scale", "get_lightmap_scale");
