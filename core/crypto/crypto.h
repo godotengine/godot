@@ -31,6 +31,7 @@
 #ifndef CRYPTO_H
 #define CRYPTO_H
 
+#include "core/crypto/hashing_context.h"
 #include "core/reference.h"
 #include "core/resource.h"
 
@@ -46,8 +47,11 @@ protected:
 
 public:
 	static CryptoKey *create();
-	virtual Error load(String p_path) = 0;
-	virtual Error save(String p_path) = 0;
+	virtual Error load(String p_path, bool p_public_only = false) = 0;
+	virtual Error save(String p_path, bool p_public_only = false) = 0;
+	virtual String save_to_string(bool p_public_only = false) = 0;
+	virtual Error load_from_string(String p_string_key, bool p_public_only = false) = 0;
+	virtual bool is_public_only() const = 0;
 };
 
 class X509Certificate : public Resource {
@@ -79,6 +83,11 @@ public:
 	virtual PoolByteArray generate_random_bytes(int p_bytes) = 0;
 	virtual Ref<CryptoKey> generate_rsa(int p_bytes) = 0;
 	virtual Ref<X509Certificate> generate_self_signed_certificate(Ref<CryptoKey> p_key, String p_issuer_name, String p_not_before, String p_not_after) = 0;
+
+	virtual Vector<uint8_t> sign(HashingContext::HashType p_hash_type, Vector<uint8_t> p_hash, Ref<CryptoKey> p_key) = 0;
+	virtual bool verify(HashingContext::HashType p_hash_type, Vector<uint8_t> p_hash, Vector<uint8_t> p_signature, Ref<CryptoKey> p_key) = 0;
+	virtual Vector<uint8_t> encrypt(Ref<CryptoKey> p_key, Vector<uint8_t> p_plaintext) = 0;
+	virtual Vector<uint8_t> decrypt(Ref<CryptoKey> p_key, Vector<uint8_t> p_ciphertext) = 0;
 
 	Crypto();
 };

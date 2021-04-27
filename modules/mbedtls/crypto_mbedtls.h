@@ -44,15 +44,19 @@ class CryptoKeyMbedTLS : public CryptoKey {
 
 private:
 	mbedtls_pk_context pkey;
-	int locks;
+	int locks = 0;
+	bool public_only = true;
 
 public:
 	static CryptoKey *create();
 	static void make_default() { CryptoKey::_create = create; }
 	static void finalize() { CryptoKey::_create = NULL; }
 
-	virtual Error load(String p_path);
-	virtual Error save(String p_path);
+	virtual Error load(String p_path, bool p_public_only);
+	virtual Error save(String p_path, bool p_public_only);
+	virtual String save_to_string(bool p_public_only);
+	virtual Error load_from_string(String p_string_key, bool p_public_only);
+	virtual bool is_public_only() const { return public_only; };
 
 	CryptoKeyMbedTLS() {
 		mbedtls_pk_init(&pkey);
@@ -105,6 +109,7 @@ private:
 	mbedtls_entropy_context entropy;
 	mbedtls_ctr_drbg_context ctr_drbg;
 	static X509CertificateMbedTLS *default_certs;
+	mbedtls_md_type_t _md_type_from_hashtype(HashingContext::HashType p_hash_type, int &r_size);
 
 public:
 	static Crypto *create();
@@ -116,6 +121,10 @@ public:
 	virtual PoolByteArray generate_random_bytes(int p_bytes);
 	virtual Ref<CryptoKey> generate_rsa(int p_bytes);
 	virtual Ref<X509Certificate> generate_self_signed_certificate(Ref<CryptoKey> p_key, String p_issuer_name, String p_not_before, String p_not_after);
+	virtual Vector<uint8_t> sign(HashingContext::HashType p_hash_type, Vector<uint8_t> p_hash, Ref<CryptoKey> p_key);
+	virtual bool verify(HashingContext::HashType p_hash_type, Vector<uint8_t> p_hash, Vector<uint8_t> p_signature, Ref<CryptoKey> p_key);
+	virtual Vector<uint8_t> encrypt(Ref<CryptoKey> p_key, Vector<uint8_t> p_plaintext);
+	virtual Vector<uint8_t> decrypt(Ref<CryptoKey> p_key, Vector<uint8_t> p_ciphertext);
 
 	CryptoMbedTLS();
 	~CryptoMbedTLS();

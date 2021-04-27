@@ -44,8 +44,11 @@ CryptoKey *CryptoKey::create() {
 }
 
 void CryptoKey::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("save", "path"), &CryptoKey::save);
-	ClassDB::bind_method(D_METHOD("load", "path"), &CryptoKey::load);
+	ClassDB::bind_method(D_METHOD("save", "path", "public_only"), &CryptoKey::save, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("load", "path", "public_only"), &CryptoKey::load, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("is_public_only"), &CryptoKey::is_public_only);
+	ClassDB::bind_method(D_METHOD("save_to_string", "public_only"), &CryptoKey::save_to_string, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("load_from_string", "string_key", "public_only"), &CryptoKey::load_from_string, DEFVAL(false));
 }
 
 X509Certificate *(*X509Certificate::_create)() = NULL;
@@ -80,6 +83,10 @@ void Crypto::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("generate_random_bytes", "size"), &Crypto::generate_random_bytes);
 	ClassDB::bind_method(D_METHOD("generate_rsa", "size"), &Crypto::generate_rsa);
 	ClassDB::bind_method(D_METHOD("generate_self_signed_certificate", "key", "issuer_name", "not_before", "not_after"), &Crypto::generate_self_signed_certificate, DEFVAL("CN=myserver,O=myorganisation,C=IT"), DEFVAL("20140101000000"), DEFVAL("20340101000000"));
+	ClassDB::bind_method(D_METHOD("sign", "hash_type", "hash", "key"), &Crypto::sign);
+	ClassDB::bind_method(D_METHOD("verify", "hash_type", "hash", "signature", "key"), &Crypto::verify);
+	ClassDB::bind_method(D_METHOD("encrypt", "key", "plaintext"), &Crypto::encrypt);
+	ClassDB::bind_method(D_METHOD("decrypt", "key", "ciphertext"), &Crypto::decrypt);
 }
 
 Crypto::Crypto() {
@@ -98,7 +105,12 @@ RES ResourceFormatLoaderCrypto::load(const String &p_path, const String &p_origi
 	} else if (el == "key") {
 		CryptoKey *key = CryptoKey::create();
 		if (key)
-			key->load(p_path);
+			key->load(p_path, false);
+		return key;
+	} else if (el == "pub") {
+		CryptoKey *key = CryptoKey::create();
+		if (key)
+			key->load(p_path, true);
 		return key;
 	}
 	return NULL;
@@ -108,6 +120,7 @@ void ResourceFormatLoaderCrypto::get_recognized_extensions(List<String> *p_exten
 
 	p_extensions->push_back("crt");
 	p_extensions->push_back("key");
+	p_extensions->push_back("pub");
 }
 
 bool ResourceFormatLoaderCrypto::handles_type(const String &p_type) const {
@@ -120,7 +133,7 @@ String ResourceFormatLoaderCrypto::get_resource_type(const String &p_path) const
 	String el = p_path.get_extension().to_lower();
 	if (el == "crt")
 		return "X509Certificate";
-	else if (el == "key")
+	else if (el == "key" || el == "pub")
 		return "CryptoKey";
 	return "";
 }
@@ -133,7 +146,8 @@ Error ResourceFormatSaverCrypto::save(const String &p_path, const RES &p_resourc
 	if (cert.is_valid()) {
 		err = cert->save(p_path);
 	} else if (key.is_valid()) {
-		err = key->save(p_path);
+		String el = p_path.get_extension().to_lower();
+		err = key->save(p_path, el == "pub");
 	} else {
 		ERR_FAIL_V(ERR_INVALID_PARAMETER);
 	}
@@ -149,7 +163,10 @@ void ResourceFormatSaverCrypto::get_recognized_extensions(const RES &p_resource,
 		p_extensions->push_back("crt");
 	}
 	if (key) {
-		p_extensions->push_back("key");
+		if (!key->is_public_only()) {
+			p_extensions->push_back("key");
+		}
+		p_extensions->push_back("pub");
 	}
 }
 bool ResourceFormatSaverCrypto::recognize(const RES &p_resource) const {
