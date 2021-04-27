@@ -1211,27 +1211,39 @@ bool TileSet::_get(const StringName &p_name, Variant &r_ret) const {
 	return false;
 }
 
-void TileSet::_append_property_list_with_prefix(const StringName &p_name, List<PropertyInfo> *p_to_prepend, List<PropertyInfo> *p_list) {
-	for (List<PropertyInfo>::Element *E_property = p_to_prepend->front(); E_property; E_property = E_property->next()) {
-		E_property->get().name = vformat("%s/%s", p_name, E_property->get().name);
-		p_list->push_back(E_property->get());
-	}
-}
-
 void TileSet::_get_property_list(List<PropertyInfo> *p_list) const {
+	PropertyInfo property_info;
 	// Rendering.
 	p_list->push_back(PropertyInfo(Variant::NIL, "Rendering", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_GROUP));
 	for (int i = 0; i < occlusion_layers.size(); i++) {
 		p_list->push_back(PropertyInfo(Variant::INT, vformat("occlusion_layer_%d/light_mask", i), PROPERTY_HINT_LAYERS_2D_RENDER));
-		p_list->push_back(PropertyInfo(Variant::BOOL, vformat("occlusion_layer_%d/sdf_collision", i)));
+
+		// occlusion_layer_%d/sdf_collision
+		property_info = PropertyInfo(Variant::BOOL, vformat("occlusion_layer_%d/sdf_collision", i));
+		if (occlusion_layers[i].sdf_collision == false) {
+			property_info.usage ^= PROPERTY_USAGE_STORAGE;
+		}
+		p_list->push_back(property_info);
 	}
 
 	// Physics.
 	p_list->push_back(PropertyInfo(Variant::NIL, "Physics", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_GROUP));
 	for (int i = 0; i < physics_layers.size(); i++) {
 		p_list->push_back(PropertyInfo(Variant::INT, vformat("physics_layer_%d/collision_layer", i), PROPERTY_HINT_LAYERS_2D_PHYSICS));
-		p_list->push_back(PropertyInfo(Variant::INT, vformat("physics_layer_%d/collision_mask", i), PROPERTY_HINT_LAYERS_2D_PHYSICS));
-		p_list->push_back(PropertyInfo(Variant::OBJECT, vformat("physics_layer_%d/physics_material", i), PROPERTY_HINT_RESOURCE_TYPE, "PhysicsMaterial"));
+
+		// physics_layer_%d/collision_mask
+		property_info = PropertyInfo(Variant::INT, vformat("physics_layer_%d/collision_mask", i), PROPERTY_HINT_LAYERS_2D_PHYSICS);
+		if (physics_layers[i].collision_mask == 1) {
+			property_info.usage ^= PROPERTY_USAGE_STORAGE;
+		}
+		p_list->push_back(property_info);
+
+		// physics_layer_%d/physics_material
+		property_info = PropertyInfo(Variant::OBJECT, vformat("physics_layer_%d/physics_material", i), PROPERTY_HINT_RESOURCE_TYPE, "PhysicsMaterial");
+		if (!physics_layers[i].physics_material.is_valid()) {
+			property_info.usage ^= PROPERTY_USAGE_STORAGE;
+		}
+		p_list->push_back(property_info);
 	}
 
 	// Terrains.
@@ -1265,7 +1277,6 @@ void TileSet::_get_property_list(List<PropertyInfo> *p_list) const {
 	// Sources.
 	// Note: sources have to be listed in at the end as some TileData rely on the TileSet properties being initialized first.
 	for (Map<int, Ref<TileSetSource>>::Element *E_source = sources.front(); E_source; E_source = E_source->next()) {
-		// Add a dummy property to show the tile exists.
 		p_list->push_back(PropertyInfo(Variant::INT, vformat("sources/%d", E_source->key()), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR));
 	}
 }
@@ -1623,30 +1634,52 @@ bool TileSetAtlasSource::_get(const StringName &p_name, Variant &r_ret) const {
 
 void TileSetAtlasSource::_get_property_list(List<PropertyInfo> *p_list) const {
 	// Atlases data.
+	PropertyInfo property_info;
 	for (Map<Vector2i, TileAlternativesData>::Element *E_tile = tiles.front(); E_tile; E_tile = E_tile->next()) {
 		List<PropertyInfo> tile_property_list;
-		if (E_tile->get().size_in_atlas != Vector2i(1, 1)) {
-			tile_property_list.push_back(PropertyInfo(Variant::VECTOR2I, "size_in_atlas", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR));
-		}
-		if (E_tile->get().next_alternative_id != 1) {
-			tile_property_list.push_back(PropertyInfo(Variant::INT, "next_alternative_id", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR));
-		}
 
-		// Atlases data.
+		// size_in_atlas
+		property_info = PropertyInfo(Variant::VECTOR2I, "size_in_atlas", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR);
+		if (E_tile->get().size_in_atlas == Vector2i(1, 1)) {
+			property_info.usage ^= PROPERTY_USAGE_STORAGE;
+		}
+		tile_property_list.push_back(property_info);
+
+		// next_alternative_id
+		property_info = PropertyInfo(Variant::INT, "next_alternative_id", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR);
+		if (E_tile->get().next_alternative_id == 1) {
+			property_info.usage ^= PROPERTY_USAGE_STORAGE;
+		}
+		tile_property_list.push_back(property_info);
+
 		for (Map<int, TileData *>::Element *E_alternative = E_tile->get().alternatives.front(); E_alternative; E_alternative = E_alternative->next()) {
-			// Add a dummy property to show the tile exists.
+			// Add a dummy property to show the alternative exists.
 			tile_property_list.push_back(PropertyInfo(Variant::INT, vformat("%d", E_alternative->key()), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR));
 
+			// Get the alternative tile's properties and append them to the list of properties.
 			List<PropertyInfo> alternative_property_list;
 			E_alternative->get()->get_property_list(&alternative_property_list);
-			TileSet::_append_property_list_with_prefix(vformat("%d", E_alternative->key()), &alternative_property_list, &tile_property_list);
+			for (List<PropertyInfo>::Element *E_property = alternative_property_list.front(); E_property; E_property = E_property->next()) {
+				property_info = E_property->get();
+				bool valid;
+				Variant default_value = ClassDB::class_get_default_property_value("TileData", property_info.name, &valid);
+				Variant value = E_alternative->get()->get(property_info.name);
+				if (valid && value == default_value) {
+					property_info.usage ^= PROPERTY_USAGE_STORAGE;
+				}
+				property_info.name = vformat("%s/%s", vformat("%d", E_alternative->key()), property_info.name);
+				tile_property_list.push_back(property_info);
+			}
 		}
 
-		TileSet::_append_property_list_with_prefix(vformat("%d:%d", E_tile->key().x, E_tile->key().y), &tile_property_list, p_list);
+		// Add all alternative.
+		for (List<PropertyInfo>::Element *E_property = tile_property_list.front(); E_property; E_property = E_property->next()) {
+			E_property->get().name = vformat("%s/%s", vformat("%d:%d", E_tile->key().x, E_tile->key().y), E_property->get().name);
+			p_list->push_back(E_property->get());
+		}
 	}
 }
 
-// --- TileSetAtlasSource ---
 void TileSetAtlasSource::create_tile(const Vector2i p_atlas_coords, const Vector2i p_size) {
 	// Create a tile if it does not exists.
 	ERR_FAIL_COND(p_atlas_coords.x < 0 || p_atlas_coords.y < 0);
@@ -2548,22 +2581,46 @@ bool TileData::_get(const StringName &p_name, Variant &r_ret) const {
 }
 
 void TileData::_get_property_list(List<PropertyInfo> *p_list) const {
+	PropertyInfo property_info;
 	// Add the groups manually.
 	if (tile_set) {
 		// Occlusion layers.
 		p_list->push_back(PropertyInfo(Variant::NIL, "Rendering", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_GROUP));
 		for (int i = 0; i < occluders.size(); i++) {
-			p_list->push_back(PropertyInfo(Variant::OBJECT, vformat("occlusion_layer_%d/polygon", i), PROPERTY_HINT_RESOURCE_TYPE, "OccluderPolygon2D", PROPERTY_USAGE_DEFAULT));
+			// occlusion_layer_%d/polygon
+			property_info = PropertyInfo(Variant::OBJECT, vformat("occlusion_layer_%d/polygon", i), PROPERTY_HINT_RESOURCE_TYPE, "OccluderPolygon2D", PROPERTY_USAGE_DEFAULT);
+			if (!occluders[i].is_valid()) {
+				property_info.usage ^= PROPERTY_USAGE_STORAGE;
+			}
+			p_list->push_back(property_info);
 		}
 
 		// Physics layers.
 		p_list->push_back(PropertyInfo(Variant::NIL, "Physics", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_GROUP));
 		for (int i = 0; i < physics.size(); i++) {
 			p_list->push_back(PropertyInfo(Variant::INT, vformat("physics_layer_%d/shapes_count", i), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR));
+
 			for (int j = 0; j < physics[i].shapes.size(); j++) {
-				p_list->push_back(PropertyInfo(Variant::OBJECT, vformat("physics_layer_%d/shape_%d/shape", i, j), PROPERTY_HINT_RESOURCE_TYPE, "Shape2D", PROPERTY_USAGE_DEFAULT));
-				p_list->push_back(PropertyInfo(Variant::BOOL, vformat("physics_layer_%d/shape_%d/one_way", i, j)));
-				p_list->push_back(PropertyInfo(Variant::FLOAT, vformat("physics_layer_%d/shape_%d/one_way_margin", i, j)));
+				// physics_layer_%d/shapes_count
+				property_info = PropertyInfo(Variant::OBJECT, vformat("physics_layer_%d/shape_%d/shape", i, j), PROPERTY_HINT_RESOURCE_TYPE, "Shape2D", PROPERTY_USAGE_DEFAULT);
+				if (!physics[i].shapes[j].shape.is_valid()) {
+					property_info.usage ^= PROPERTY_USAGE_STORAGE;
+				}
+				p_list->push_back(property_info);
+
+				// physics_layer_%d/shape_%d/one_way
+				property_info = PropertyInfo(Variant::BOOL, vformat("physics_layer_%d/shape_%d/one_way", i, j));
+				if (physics[i].shapes[j].one_way == false) {
+					property_info.usage ^= PROPERTY_USAGE_STORAGE;
+				}
+				p_list->push_back(property_info);
+
+				// physics_layer_%d/shape_%d/one_way_margin
+				property_info = PropertyInfo(Variant::FLOAT, vformat("physics_layer_%d/shape_%d/one_way_margin", i, j));
+				if (physics[i].shapes[j].one_way_margin == 1.0) {
+					property_info.usage ^= PROPERTY_USAGE_STORAGE;
+				}
+				p_list->push_back(property_info);
 			}
 		}
 
@@ -2571,65 +2628,140 @@ void TileData::_get_property_list(List<PropertyInfo> *p_list) const {
 		if (terrain_set >= 0) {
 			p_list->push_back(PropertyInfo(Variant::NIL, "Terrains", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_GROUP));
 			if (is_valid_peering_bit_terrain(TileSet::CELL_NEIGHBOR_RIGHT_SIDE)) {
-				p_list->push_back(PropertyInfo(Variant::INT, "terrains_peering_bit/right_side"));
+				property_info = PropertyInfo(Variant::INT, "terrains_peering_bit/right_side");
+				if (get_peering_bit_terrain(TileSet::CELL_NEIGHBOR_RIGHT_SIDE) == -1) {
+					property_info.usage ^= PROPERTY_USAGE_STORAGE;
+				}
+				p_list->push_back(property_info);
 			}
 			if (is_valid_peering_bit_terrain(TileSet::CELL_NEIGHBOR_RIGHT_CORNER)) {
-				p_list->push_back(PropertyInfo(Variant::INT, "terrains_peering_bit/right_corner"));
+				property_info = PropertyInfo(Variant::INT, "terrains_peering_bit/right_corner");
+				if (get_peering_bit_terrain(TileSet::CELL_NEIGHBOR_RIGHT_CORNER) == -1) {
+					property_info.usage ^= PROPERTY_USAGE_STORAGE;
+				}
+				p_list->push_back(property_info);
 			}
 			if (is_valid_peering_bit_terrain(TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE)) {
-				p_list->push_back(PropertyInfo(Variant::INT, "terrains_peering_bit/bottom_right_side"));
+				property_info = PropertyInfo(Variant::INT, "terrains_peering_bit/bottom_right_side");
+				if (get_peering_bit_terrain(TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE) == -1) {
+					property_info.usage ^= PROPERTY_USAGE_STORAGE;
+				}
+				p_list->push_back(property_info);
 			}
 			if (is_valid_peering_bit_terrain(TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_CORNER)) {
-				p_list->push_back(PropertyInfo(Variant::INT, "terrains_peering_bit/bottom_right_corner"));
+				property_info = PropertyInfo(Variant::INT, "terrains_peering_bit/bottom_right_corner");
+				if (get_peering_bit_terrain(TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_CORNER) == -1) {
+					property_info.usage ^= PROPERTY_USAGE_STORAGE;
+				}
+				p_list->push_back(property_info);
 			}
 			if (is_valid_peering_bit_terrain(TileSet::CELL_NEIGHBOR_BOTTOM_SIDE)) {
-				p_list->push_back(PropertyInfo(Variant::INT, "terrains_peering_bit/bottom_side"));
+				property_info = PropertyInfo(Variant::INT, "terrains_peering_bit/bottom_side");
+				if (get_peering_bit_terrain(TileSet::CELL_NEIGHBOR_BOTTOM_SIDE) == -1) {
+					property_info.usage ^= PROPERTY_USAGE_STORAGE;
+				}
+				p_list->push_back(property_info);
 			}
 			if (is_valid_peering_bit_terrain(TileSet::CELL_NEIGHBOR_BOTTOM_CORNER)) {
-				p_list->push_back(PropertyInfo(Variant::INT, "terrains_peering_bit/bottom_corner"));
+				property_info = PropertyInfo(Variant::INT, "terrains_peering_bit/bottom_corner");
+				if (get_peering_bit_terrain(TileSet::CELL_NEIGHBOR_BOTTOM_CORNER) == -1) {
+					property_info.usage ^= PROPERTY_USAGE_STORAGE;
+				}
+				p_list->push_back(property_info);
 			}
 			if (is_valid_peering_bit_terrain(TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE)) {
-				p_list->push_back(PropertyInfo(Variant::INT, "terrains_peering_bit/bottom_left_side"));
+				property_info = PropertyInfo(Variant::INT, "terrains_peering_bit/bottom_left_side");
+				if (get_peering_bit_terrain(TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE) == -1) {
+					property_info.usage ^= PROPERTY_USAGE_STORAGE;
+				}
+				p_list->push_back(property_info);
 			}
 			if (is_valid_peering_bit_terrain(TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_CORNER)) {
-				p_list->push_back(PropertyInfo(Variant::INT, "terrains_peering_bit/bottom_left_corner"));
+				property_info = PropertyInfo(Variant::INT, "terrains_peering_bit/bottom_left_corner");
+				if (get_peering_bit_terrain(TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_CORNER) == -1) {
+					property_info.usage ^= PROPERTY_USAGE_STORAGE;
+				}
+				p_list->push_back(property_info);
 			}
 			if (is_valid_peering_bit_terrain(TileSet::CELL_NEIGHBOR_LEFT_SIDE)) {
-				p_list->push_back(PropertyInfo(Variant::INT, "terrains_peering_bit/left_side"));
+				property_info = PropertyInfo(Variant::INT, "terrains_peering_bit/left_side");
+				if (get_peering_bit_terrain(TileSet::CELL_NEIGHBOR_LEFT_SIDE) == -1) {
+					property_info.usage ^= PROPERTY_USAGE_STORAGE;
+				}
+				p_list->push_back(property_info);
 			}
 			if (is_valid_peering_bit_terrain(TileSet::CELL_NEIGHBOR_LEFT_CORNER)) {
-				p_list->push_back(PropertyInfo(Variant::INT, "terrains_peering_bit/left_corner"));
+				property_info = PropertyInfo(Variant::INT, "terrains_peering_bit/left_corner");
+				if (get_peering_bit_terrain(TileSet::CELL_NEIGHBOR_LEFT_CORNER) == -1) {
+					property_info.usage ^= PROPERTY_USAGE_STORAGE;
+				}
+				p_list->push_back(property_info);
 			}
 			if (is_valid_peering_bit_terrain(TileSet::CELL_NEIGHBOR_TOP_LEFT_SIDE)) {
-				p_list->push_back(PropertyInfo(Variant::INT, "terrains_peering_bit/top_left_side"));
+				property_info = PropertyInfo(Variant::INT, "terrains_peering_bit/top_left_side");
+				if (get_peering_bit_terrain(TileSet::CELL_NEIGHBOR_TOP_LEFT_SIDE) == -1) {
+					property_info.usage ^= PROPERTY_USAGE_STORAGE;
+				}
+				p_list->push_back(property_info);
 			}
 			if (is_valid_peering_bit_terrain(TileSet::CELL_NEIGHBOR_TOP_LEFT_CORNER)) {
-				p_list->push_back(PropertyInfo(Variant::INT, "terrains_peering_bit/top_left_corner"));
+				property_info = PropertyInfo(Variant::INT, "terrains_peering_bit/top_left_corner");
+				if (get_peering_bit_terrain(TileSet::CELL_NEIGHBOR_TOP_LEFT_CORNER) == -1) {
+					property_info.usage ^= PROPERTY_USAGE_STORAGE;
+				}
+				p_list->push_back(property_info);
 			}
 			if (is_valid_peering_bit_terrain(TileSet::CELL_NEIGHBOR_TOP_SIDE)) {
-				p_list->push_back(PropertyInfo(Variant::INT, "terrains_peering_bit/top_side"));
+				property_info = PropertyInfo(Variant::INT, "terrains_peering_bit/top_side");
+				if (get_peering_bit_terrain(TileSet::CELL_NEIGHBOR_TOP_SIDE) == -1) {
+					property_info.usage ^= PROPERTY_USAGE_STORAGE;
+				}
+				p_list->push_back(property_info);
 			}
 			if (is_valid_peering_bit_terrain(TileSet::CELL_NEIGHBOR_TOP_CORNER)) {
-				p_list->push_back(PropertyInfo(Variant::INT, "terrains_peering_bit/top_corner"));
+				property_info = PropertyInfo(Variant::INT, "terrains_peering_bit/top_corner");
+				if (get_peering_bit_terrain(TileSet::CELL_NEIGHBOR_TOP_CORNER) == -1) {
+					property_info.usage ^= PROPERTY_USAGE_STORAGE;
+				}
+				p_list->push_back(property_info);
 			}
 			if (is_valid_peering_bit_terrain(TileSet::CELL_NEIGHBOR_TOP_RIGHT_SIDE)) {
-				p_list->push_back(PropertyInfo(Variant::INT, "terrains_peering_bit/top_right_side"));
+				property_info = PropertyInfo(Variant::INT, "terrains_peering_bit/top_right_side");
+				if (get_peering_bit_terrain(TileSet::CELL_NEIGHBOR_TOP_RIGHT_SIDE) == -1) {
+					property_info.usage ^= PROPERTY_USAGE_STORAGE;
+				}
+				p_list->push_back(property_info);
 			}
 			if (is_valid_peering_bit_terrain(TileSet::CELL_NEIGHBOR_TOP_RIGHT_CORNER)) {
-				p_list->push_back(PropertyInfo(Variant::INT, "terrains_peering_bit/top_right_corner"));
+				property_info = PropertyInfo(Variant::INT, "terrains_peering_bit/top_right_corner");
+				if (get_peering_bit_terrain(TileSet::CELL_NEIGHBOR_TOP_RIGHT_CORNER) == -1) {
+					property_info.usage ^= PROPERTY_USAGE_STORAGE;
+				}
+				p_list->push_back(property_info);
 			}
 		}
 
 		// Navigation layers.
 		p_list->push_back(PropertyInfo(Variant::NIL, "Navigation", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_GROUP));
 		for (int i = 0; i < navigation.size(); i++) {
-			p_list->push_back(PropertyInfo(Variant::OBJECT, vformat("navigation_layer_%d/polygon", i), PROPERTY_HINT_RESOURCE_TYPE, "NavigationPolygon", PROPERTY_USAGE_DEFAULT));
+			property_info = PropertyInfo(Variant::OBJECT, vformat("navigation_layer_%d/polygon", i), PROPERTY_HINT_RESOURCE_TYPE, "NavigationPolygon", PROPERTY_USAGE_DEFAULT);
+			if (!navigation[i].is_valid()) {
+				property_info.usage ^= PROPERTY_USAGE_STORAGE;
+			}
+			p_list->push_back(property_info);
 		}
 
 		// Custom data layers.
 		p_list->push_back(PropertyInfo(Variant::NIL, "Custom data", PROPERTY_HINT_NONE, "custom_data_", PROPERTY_USAGE_GROUP));
 		for (int i = 0; i < custom_data.size(); i++) {
-			p_list->push_back(PropertyInfo(tile_set->get_custom_data_type(i), vformat("custom_data_%d", i), PROPERTY_HINT_NONE, String(), PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_NIL_IS_VARIANT));
+			Variant default_val;
+			Callable::CallError error;
+			Variant::construct(custom_data[i].get_type(), default_val, nullptr, 0, error);
+			property_info = PropertyInfo(tile_set->get_custom_data_type(i), vformat("custom_data_%d", i), PROPERTY_HINT_NONE, String(), PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_NIL_IS_VARIANT);
+			if (custom_data[i] == default_val) {
+				property_info.usage ^= PROPERTY_USAGE_STORAGE;
+			}
+			p_list->push_back(property_info);
 		}
 	}
 }

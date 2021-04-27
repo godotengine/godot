@@ -327,9 +327,6 @@ public:
 
 	TileSet();
 	~TileSet();
-
-public:
-	static void _append_property_list_with_prefix(const StringName &p_name, List<PropertyInfo> *p_to_prepend, List<PropertyInfo> *p_list);
 };
 
 class TileSetSource : public Resource {
