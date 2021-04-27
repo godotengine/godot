@@ -90,8 +90,8 @@ struct NativeScriptDesc {
 	bool is_tool = false;
 
 	inline NativeScriptDesc() {
-		zeromem(&create_func, sizeof(godot_nativescript_instance_create_func));
-		zeromem(&destroy_func, sizeof(godot_nativescript_instance_destroy_func));
+		memset(&create_func, 0, sizeof(godot_nativescript_instance_create_func));
+		memset(&destroy_func, 0, sizeof(godot_nativescript_instance_destroy_func));
 	}
 };
 

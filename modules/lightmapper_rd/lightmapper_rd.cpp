@@ -432,10 +432,10 @@ void LightmapperRD::_create_acceleration_structures(RenderingDevice *rd, Size2i 
 	triangle_indices.resize(triangle_sort.size());
 	Vector<uint32_t> grid_indices;
 	grid_indices.resize(grid_size * grid_size * grid_size * 2);
-	zeromem(grid_indices.ptrw(), grid_indices.size() * sizeof(uint32_t));
+	memset(grid_indices.ptrw(), 0, grid_indices.size() * sizeof(uint32_t));
 	Vector<bool> solid;
 	solid.resize(grid_size * grid_size * grid_size);
-	zeromem(solid.ptrw(), solid.size() * sizeof(bool));
+	memset(solid.ptrw(), 0, solid.size() * sizeof(bool));
 
 	{
 		uint32_t *tiw = triangle_indices.ptrw();
@@ -1674,7 +1674,7 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 	if (probe_positions.size() > 0) {
 		probe_values.resize(probe_positions.size() * 9);
 		Vector<uint8_t> probe_data = rd->buffer_get_data(light_probe_buffer);
-		copymem(probe_values.ptrw(), probe_data.ptr(), probe_data.size());
+		memcpy(probe_values.ptrw(), probe_data.ptr(), probe_data.size());
 		rd->free(light_probe_buffer);
 
 #ifdef DEBUG_TEXTURES
@@ -1743,7 +1743,7 @@ Vector<Color> LightmapperRD::get_bake_probe_sh(int p_probe) const {
 	ERR_FAIL_INDEX_V(p_probe, probe_positions.size(), Vector<Color>());
 	Vector<Color> ret;
 	ret.resize(9);
-	copymem(ret.ptrw(), &probe_values[p_probe * 9], sizeof(Color) * 9);
+	memcpy(ret.ptrw(), &probe_values[p_probe * 9], sizeof(Color) * 9);
 	return ret;
 }
 

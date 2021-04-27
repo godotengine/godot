@@ -976,7 +976,7 @@ void CPUParticles2D::_update_particle_data_buffer() {
 			ptr[7] = t.elements[2][1];
 
 		} else {
-			zeromem(ptr, sizeof(float) * 8);
+			memset(ptr, 0, sizeof(float) * 8);
 		}
 
 		Color c = r[idx].color;
@@ -1080,7 +1080,7 @@ void CPUParticles2D::_notification(int p_what) {
 						ptr[7] = t.elements[2][1];
 
 					} else {
-						zeromem(ptr, sizeof(float) * 8);
+						memset(ptr, 0, sizeof(float) * 8);
 					}
 
 					ptr += 16;

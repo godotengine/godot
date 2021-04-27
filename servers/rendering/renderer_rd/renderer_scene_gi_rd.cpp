@@ -1564,7 +1564,7 @@ void RendererSceneGIRD::SDFGI::render_region(RID p_render_buffers, int p_region,
 		//clear dispatch indirect data
 
 		SDFGIShader::PreprocessPushConstant push_constant;
-		zeromem(&push_constant, sizeof(SDFGIShader::PreprocessPushConstant));
+		memset(&push_constant, 0, sizeof(SDFGIShader::PreprocessPushConstant));
 
 		RENDER_TIMESTAMP("Scroll SDF");
 
@@ -2602,7 +2602,7 @@ void RendererSceneGIRD::GIProbeInstance::update(bool p_update_light_instances, c
 				p_scene_render->_render_material(to_world_xform * xform, cm, true, p_scene_render->cull_argument, dynamic_maps[0].fb, Rect2i(Vector2i(), rect.size));
 
 				GIProbeDynamicPushConstant push_constant;
-				zeromem(&push_constant, sizeof(GIProbeDynamicPushConstant));
+				memset(&push_constant, 0, sizeof(GIProbeDynamicPushConstant));
 				push_constant.limits[0] = octree_size.x;
 				push_constant.limits[1] = octree_size.y;
 				push_constant.limits[2] = octree_size.z;

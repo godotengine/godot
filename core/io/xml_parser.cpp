@@ -433,7 +433,7 @@ Error XMLParser::open_buffer(const Vector<uint8_t> &p_buffer) {
 
 	length = p_buffer.size();
 	data = memnew_arr(char, length + 1);
-	copymem(data, p_buffer.ptr(), length);
+	memcpy(data, p_buffer.ptr(), length);
 	data[length] = 0;
 	P = data;
 	return OK;

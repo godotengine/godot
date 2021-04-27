@@ -38,7 +38,6 @@
 */
 
 #include "core/error/error_macros.h"
-#include "core/os/copymem.h"
 #include "core/os/memory.h"
 #include "core/templates/cowdata.h"
 #include "core/templates/sort_array.h"
@@ -134,7 +133,7 @@ public:
 	Vector<uint8_t> to_byte_array() const {
 		Vector<uint8_t> ret;
 		ret.resize(size() * sizeof(T));
-		copymem(ret.ptrw(), ptr(), sizeof(T) * size());
+		memcpy(ret.ptrw(), ptr(), sizeof(T) * size());
 		return ret;
 	}
 

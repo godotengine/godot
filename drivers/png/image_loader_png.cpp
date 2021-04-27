@@ -88,7 +88,7 @@ Vector<uint8_t> ImageLoaderPNG::lossless_pack_png(const Ref<Image> &p_image) {
 	{
 		// must be closed before call to image_to_png
 		uint8_t *writer = out_buffer.ptrw();
-		copymem(writer, "PNG ", 4);
+		memcpy(writer, "PNG ", 4);
 	}
 
 	Error err = PNGDriverCommon::image_to_png(p_image, out_buffer);

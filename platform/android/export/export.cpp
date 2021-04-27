@@ -2247,7 +2247,7 @@ public:
 				}
 				r_command_line_flags.resize(base + 4 + length);
 				encode_uint32(length, &r_command_line_flags.write[base]);
-				copymem(&r_command_line_flags.write[base + 4], command_line_argument.ptr(), length);
+				memcpy(&r_command_line_flags.write[base + 4], command_line_argument.ptr(), length);
 			}
 		}
 	}

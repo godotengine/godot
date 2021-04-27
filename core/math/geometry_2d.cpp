@@ -358,7 +358,7 @@ Vector<Point2i> Geometry2D::pack_rects(const Vector<Size2i> &p_sizes, const Size
 Vector<Vector3i> Geometry2D::partial_pack_rects(const Vector<Vector2i> &p_sizes, const Size2i &p_atlas_size) {
 	Vector<stbrp_node> nodes;
 	nodes.resize(p_atlas_size.width);
-	zeromem(nodes.ptrw(), sizeof(stbrp_node) * nodes.size());
+	memset(nodes.ptrw(), 0, sizeof(stbrp_node) * nodes.size());
 
 	stbrp_context context;
 	stbrp_init_target(&context, p_atlas_size.width, p_atlas_size.height, nodes.ptrw(), p_atlas_size.width);

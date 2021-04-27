@@ -85,11 +85,11 @@ void SoftBodyRenderingServerHandler::commit_changes() {
 }
 
 void SoftBodyRenderingServerHandler::set_vertex(int p_vertex_id, const void *p_vector3) {
-	copymem(&write_buffer[p_vertex_id * stride + offset_vertices], p_vector3, sizeof(float) * 3);
+	memcpy(&write_buffer[p_vertex_id * stride + offset_vertices], p_vector3, sizeof(float) * 3);
 }
 
 void SoftBodyRenderingServerHandler::set_normal(int p_vertex_id, const void *p_vector3) {
-	copymem(&write_buffer[p_vertex_id * stride + offset_normal], p_vector3, sizeof(float) * 3);
+	memcpy(&write_buffer[p_vertex_id * stride + offset_normal], p_vector3, sizeof(float) * 3);
 }
 
 void SoftBodyRenderingServerHandler::set_aabb(const AABB &p_aabb) {

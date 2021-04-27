@@ -204,7 +204,7 @@ void AudioStreamOGGVorbis::set_data(const Vector<uint8_t> &p_data) {
 			clear_data();
 
 			data = memalloc(src_data_len);
-			copymem(data, src_datar, src_data_len);
+			memcpy(data, src_datar, src_data_len);
 			data_len = src_data_len;
 
 			break;
@@ -221,7 +221,7 @@ Vector<uint8_t> AudioStreamOGGVorbis::get_data() const {
 		vdata.resize(data_len);
 		{
 			uint8_t *w = vdata.ptrw();
-			copymem(w, data, data_len);
+			memcpy(w, data, data_len);
 		}
 	}
 

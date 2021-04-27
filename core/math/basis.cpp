@@ -31,7 +31,6 @@
 #include "basis.h"
 
 #include "core/math/math_funcs.h"
-#include "core/os/copymem.h"
 #include "core/string/print_string.h"
 
 #define cofac(row1, col1, row2, col2) \

@@ -2756,7 +2756,7 @@ void RenderForwardClustered::geometry_instance_set_lightmap_capture(GeometryInst
 			ginstance->lightmap_sh = geometry_instance_lightmap_sh.alloc();
 		}
 
-		copymem(ginstance->lightmap_sh->sh, p_sh9, sizeof(Color) * 9);
+		memcpy(ginstance->lightmap_sh->sh, p_sh9, sizeof(Color) * 9);
 	} else {
 		if (ginstance->lightmap_sh != nullptr) {
 			geometry_instance_lightmap_sh.free(ginstance->lightmap_sh);

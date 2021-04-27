@@ -74,7 +74,7 @@ int PacketPeerMbedDTLS::bio_recv(void *ctx, unsigned char *buf, size_t len) {
 	if (err != OK) {
 		return MBEDTLS_ERR_SSL_INTERNAL_ERROR;
 	}
-	copymem(buf, buffer, buffer_size);
+	memcpy(buf, buffer, buffer_size);
 	return buffer_size;
 }
 
@@ -89,8 +89,8 @@ int PacketPeerMbedDTLS::_set_cookie() {
 	uint8_t client_id[18];
 	IP_Address addr = base->get_packet_address();
 	uint16_t port = base->get_packet_port();
-	copymem(client_id, addr.get_ipv6(), 16);
-	copymem(&client_id[16], (uint8_t *)&port, 2);
+	memcpy(client_id, addr.get_ipv6(), 16);
+	memcpy(&client_id[16], (uint8_t *)&port, 2);
 	return mbedtls_ssl_set_client_transport_id(ssl_ctx->get_context(), client_id, 18);
 }
 

@@ -756,7 +756,7 @@ void RendererStorageRD::texture_3d_initialize(RID p_texture, Image::Format p_for
 		for (int i = 0; i < p_data.size(); i++) {
 			uint32_t s = images[i]->get_data().size();
 
-			copymem(&all_data.write[offset], images[i]->get_data().ptr(), s);
+			memcpy(&all_data.write[offset], images[i]->get_data().ptr(), s);
 			{
 				Texture::BufferSlice3D slice;
 				slice.size.width = images[i]->get_width();
@@ -919,7 +919,7 @@ void RendererStorageRD::texture_3d_update(RID p_texture, const Vector<Ref<Image>
 
 		for (int i = 0; i < p_data.size(); i++) {
 			uint32_t s = images[i]->get_data().size();
-			copymem(&all_data.write[offset], images[i]->get_data().ptr(), s);
+			memcpy(&all_data.write[offset], images[i]->get_data().ptr(), s);
 			offset += s;
 		}
 	}
@@ -2108,13 +2108,13 @@ _FORCE_INLINE_ static void _fill_std140_ubo_empty(ShaderLanguage::DataType type,
 		case ShaderLanguage::TYPE_INT:
 		case ShaderLanguage::TYPE_UINT:
 		case ShaderLanguage::TYPE_FLOAT: {
-			zeromem(data, 4);
+			memset(data, 0, 4);
 		} break;
 		case ShaderLanguage::TYPE_BVEC2:
 		case ShaderLanguage::TYPE_IVEC2:
 		case ShaderLanguage::TYPE_UVEC2:
 		case ShaderLanguage::TYPE_VEC2: {
-			zeromem(data, 8);
+			memset(data, 0, 8);
 		} break;
 		case ShaderLanguage::TYPE_BVEC3:
 		case ShaderLanguage::TYPE_IVEC3:
@@ -2124,16 +2124,16 @@ _FORCE_INLINE_ static void _fill_std140_ubo_empty(ShaderLanguage::DataType type,
 		case ShaderLanguage::TYPE_IVEC4:
 		case ShaderLanguage::TYPE_UVEC4:
 		case ShaderLanguage::TYPE_VEC4: {
-			zeromem(data, 16);
+			memset(data, 0, 16);
 		} break;
 		case ShaderLanguage::TYPE_MAT2: {
-			zeromem(data, 32);
+			memset(data, 0, 32);
 		} break;
 		case ShaderLanguage::TYPE_MAT3: {
-			zeromem(data, 48);
+			memset(data, 0, 48);
 		} break;
 		case ShaderLanguage::TYPE_MAT4: {
-			zeromem(data, 64);
+			memset(data, 0, 64);
 		} break;
 
 		default: {
@@ -3412,10 +3412,10 @@ void RendererStorageRD::_multimesh_make_local(MultiMesh *multimesh) const {
 			Vector<uint8_t> buffer = RD::get_singleton()->buffer_get_data(multimesh->buffer);
 			{
 				const uint8_t *r = buffer.ptr();
-				copymem(w, r, buffer.size());
+				memcpy(w, r, buffer.size());
 			}
 		} else {
-			zeromem(w, multimesh->instances * multimesh->stride_cache * sizeof(float));
+			memset(w, 0, multimesh->instances * multimesh->stride_cache * sizeof(float));
 		}
 	}
 	uint32_t data_cache_dirty_region_count = (multimesh->instances - 1) / MULTIMESH_DIRTY_REGION_SIZE + 1;
@@ -3771,7 +3771,7 @@ Vector<float> RendererStorageRD::multimesh_get_buffer(RID p_multimesh) const {
 		{
 			float *w = ret.ptrw();
 			const uint8_t *r = buffer.ptr();
-			copymem(w, r, buffer.size());
+			memcpy(w, r, buffer.size());
 		}
 
 		return ret;
@@ -4068,7 +4068,7 @@ void RendererStorageRD::_particles_allocate_emission_buffer(Particles *particles
 	ERR_FAIL_COND(particles->emission_buffer != nullptr);
 
 	particles->emission_buffer_data.resize(sizeof(ParticleEmissionBuffer::Data) * particles->amount + sizeof(uint32_t) * 4);
-	zeromem(particles->emission_buffer_data.ptrw(), particles->emission_buffer_data.size());
+	memset(particles->emission_buffer_data.ptrw(), 0, particles->emission_buffer_data.size());
 	particles->emission_buffer = (ParticleEmissionBuffer *)particles->emission_buffer_data.ptrw();
 	particles->emission_buffer->particle_max = particles->amount;
 
@@ -5230,7 +5230,7 @@ void RendererStorageRD::skeleton_allocate_data(RID p_skeleton, int p_bones, bool
 	if (skeleton->size) {
 		skeleton->data.resize(skeleton->size * (skeleton->use_2d ? 8 : 12));
 		skeleton->buffer = RD::get_singleton()->storage_buffer_create(skeleton->data.size() * sizeof(float));
-		zeromem(skeleton->data.ptrw(), skeleton->data.size() * sizeof(float));
+		memset(skeleton->data.ptrw(), 0, skeleton->data.size() * sizeof(float));
 
 		_skeleton_make_dirty(skeleton);
 
@@ -6872,7 +6872,7 @@ RID RendererStorageRD::render_target_get_sdf_texture(RID p_render_target) {
 
 		Vector<uint8_t> pv;
 		pv.resize(16 * 4);
-		zeromem(pv.ptrw(), 16 * 4);
+		memset(pv.ptrw(), 0, 16 * 4);
 		Vector<Vector<uint8_t>> vpv;
 
 		rt->sdf_buffer_read = RD::get_singleton()->texture_create(tformat, RD::TextureView(), vpv);
@@ -7359,7 +7359,7 @@ void RendererStorageRD::_update_decal_atlas() {
 			v_offsetsv.resize(base_size);
 
 			int *v_offsets = v_offsetsv.ptrw();
-			zeromem(v_offsets, sizeof(int) * base_size);
+			memset(v_offsets, 0, sizeof(int) * base_size);
 
 			int max_height = 0;
 
@@ -8115,7 +8115,7 @@ void RendererStorageRD::_update_global_variables() {
 		if (total_regions / global_variables.buffer_dirty_region_count <= 4) {
 			// 25% of regions dirty, just update all buffer
 			RD::get_singleton()->buffer_update(global_variables.buffer, 0, sizeof(GlobalVariables::Value) * global_variables.buffer_size, global_variables.buffer_values);
-			zeromem(global_variables.buffer_dirty_regions, sizeof(bool) * total_regions);
+			memset(global_variables.buffer_dirty_regions, 0, sizeof(bool) * total_regions);
 		} else {
 			uint32_t region_byte_size = sizeof(GlobalVariables::Value) * GlobalVariables::BUFFER_DIRTY_REGION_SIZE;
 
@@ -8403,10 +8403,10 @@ RendererStorageRD::RendererStorageRD() {
 	global_variables.buffer_size = GLOBAL_GET("rendering/limits/global_shader_variables/buffer_size");
 	global_variables.buffer_size = MAX(4096, global_variables.buffer_size);
 	global_variables.buffer_values = memnew_arr(GlobalVariables::Value, global_variables.buffer_size);
-	zeromem(global_variables.buffer_values, sizeof(GlobalVariables::Value) * global_variables.buffer_size);
+	memset(global_variables.buffer_values, 0, sizeof(GlobalVariables::Value) * global_variables.buffer_size);
 	global_variables.buffer_usage = memnew_arr(GlobalVariables::ValueUsage, global_variables.buffer_size);
 	global_variables.buffer_dirty_regions = memnew_arr(bool, global_variables.buffer_size / GlobalVariables::BUFFER_DIRTY_REGION_SIZE);
-	zeromem(global_variables.buffer_dirty_regions, sizeof(bool) * global_variables.buffer_size / GlobalVariables::BUFFER_DIRTY_REGION_SIZE);
+	memset(global_variables.buffer_dirty_regions, 0, sizeof(bool) * global_variables.buffer_size / GlobalVariables::BUFFER_DIRTY_REGION_SIZE);
 	global_variables.buffer = RD::get_singleton()->storage_buffer_create(sizeof(GlobalVariables::Value) * global_variables.buffer_size);
 
 	material_update_list = nullptr;

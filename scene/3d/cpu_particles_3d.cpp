@@ -1050,7 +1050,7 @@ void CPUParticles3D::_update_particle_data_buffer() {
 			ptr[10] = t.basis.elements[2][2];
 			ptr[11] = t.origin.z;
 		} else {
-			zeromem(ptr, sizeof(float) * 12);
+			memset(ptr, 0, sizeof(float) * 12);
 		}
 
 		Color c = r[idx].color;
@@ -1155,7 +1155,7 @@ void CPUParticles3D::_notification(int p_what) {
 					ptr[10] = t.basis.elements[2][2];
 					ptr[11] = t.origin.z;
 				} else {
-					zeromem(ptr, sizeof(float) * 12);
+					memset(ptr, 0, sizeof(float) * 12);
 				}
 
 				ptr += 20;

@@ -562,7 +562,7 @@ Error NetworkedMultiplayerENet::put_packet(const uint8_t *p_buffer, int p_buffer
 	ENetPacket *packet = enet_packet_create(nullptr, p_buffer_size + 8, packet_flags);
 	encode_uint32(unique_id, &packet->data[0]); // Source ID
 	encode_uint32(target_peer, &packet->data[4]); // Dest ID
-	copymem(&packet->data[8], p_buffer, p_buffer_size);
+	memcpy(&packet->data[8], p_buffer, p_buffer_size);
 
 	if (server) {
 		if (target_peer == 0) {
@@ -673,7 +673,7 @@ size_t NetworkedMultiplayerENet::enet_compress(void *context, const ENetBuffer *
 	while (total) {
 		for (size_t i = 0; i < inBufferCount; i++) {
 			int to_copy = MIN(total, int(inBuffers[i].dataLength));
-			copymem(&enet->src_compressor_mem.write[ofs], inBuffers[i].data, to_copy);
+			memcpy(&enet->src_compressor_mem.write[ofs], inBuffers[i].data, to_copy);
 			ofs += to_copy;
 			total -= to_copy;
 		}
@@ -710,7 +710,7 @@ size_t NetworkedMultiplayerENet::enet_compress(void *context, const ENetBuffer *
 		return 0; // Do not bother
 	}
 
-	copymem(outData, enet->dst_compressor_mem.ptr(), ret);
+	memcpy(outData, enet->dst_compressor_mem.ptr(), ret);
 
 	return ret;
 }

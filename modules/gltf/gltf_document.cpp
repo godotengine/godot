@@ -1157,7 +1157,7 @@ Error GLTFDocument::_encode_buffer_view(Ref<GLTFState> state, const double *src,
 			}
 			int64_t old_size = gltf_buffer.size();
 			gltf_buffer.resize(old_size + (buffer.size() * sizeof(int8_t)));
-			copymem(gltf_buffer.ptrw() + old_size, buffer.ptrw(), buffer.size() * sizeof(int8_t));
+			memcpy(gltf_buffer.ptrw() + old_size, buffer.ptrw(), buffer.size() * sizeof(int8_t));
 			bv->byte_length = buffer.size() * sizeof(int8_t);
 		} break;
 		case COMPONENT_TYPE_UNSIGNED_BYTE: {
@@ -1203,7 +1203,7 @@ Error GLTFDocument::_encode_buffer_view(Ref<GLTFState> state, const double *src,
 			}
 			int64_t old_size = gltf_buffer.size();
 			gltf_buffer.resize(old_size + (buffer.size() * sizeof(int16_t)));
-			copymem(gltf_buffer.ptrw() + old_size, buffer.ptrw(), buffer.size() * sizeof(int16_t));
+			memcpy(gltf_buffer.ptrw() + old_size, buffer.ptrw(), buffer.size() * sizeof(int16_t));
 			bv->byte_length = buffer.size() * sizeof(int16_t);
 		} break;
 		case COMPONENT_TYPE_UNSIGNED_SHORT: {
@@ -1227,7 +1227,7 @@ Error GLTFDocument::_encode_buffer_view(Ref<GLTFState> state, const double *src,
 			}
 			int64_t old_size = gltf_buffer.size();
 			gltf_buffer.resize(old_size + (buffer.size() * sizeof(uint16_t)));
-			copymem(gltf_buffer.ptrw() + old_size, buffer.ptrw(), buffer.size() * sizeof(uint16_t));
+			memcpy(gltf_buffer.ptrw() + old_size, buffer.ptrw(), buffer.size() * sizeof(uint16_t));
 			bv->byte_length = buffer.size() * sizeof(uint16_t);
 		} break;
 		case COMPONENT_TYPE_INT: {
@@ -1247,7 +1247,7 @@ Error GLTFDocument::_encode_buffer_view(Ref<GLTFState> state, const double *src,
 			}
 			int64_t old_size = gltf_buffer.size();
 			gltf_buffer.resize(old_size + (buffer.size() * sizeof(int32_t)));
-			copymem(gltf_buffer.ptrw() + old_size, buffer.ptrw(), buffer.size() * sizeof(int32_t));
+			memcpy(gltf_buffer.ptrw() + old_size, buffer.ptrw(), buffer.size() * sizeof(int32_t));
 			bv->byte_length = buffer.size() * sizeof(int32_t);
 		} break;
 		case COMPONENT_TYPE_FLOAT: {
@@ -1267,7 +1267,7 @@ Error GLTFDocument::_encode_buffer_view(Ref<GLTFState> state, const double *src,
 			}
 			int64_t old_size = gltf_buffer.size();
 			gltf_buffer.resize(old_size + (buffer.size() * sizeof(float)));
-			copymem(gltf_buffer.ptrw() + old_size, buffer.ptrw(), buffer.size() * sizeof(float));
+			memcpy(gltf_buffer.ptrw() + old_size, buffer.ptrw(), buffer.size() * sizeof(float));
 			bv->byte_length = buffer.size() * sizeof(float);
 		} break;
 	}
@@ -2864,7 +2864,7 @@ Error GLTFDocument::_serialize_images(Ref<GLTFState> state, const String &p_path
 
 			bv->byte_length = buffer.size();
 			state->buffers.write[bi].resize(state->buffers[bi].size() + bv->byte_length);
-			copymem(&state->buffers.write[bi].write[bv->byte_offset], buffer.ptr(), buffer.size());
+			memcpy(&state->buffers.write[bi].write[bv->byte_offset], buffer.ptr(), buffer.size());
 			ERR_FAIL_COND_V(bv->byte_offset + bv->byte_length > state->buffers[bi].size(), ERR_FILE_CORRUPT);
 
 			state->buffer_views.push_back(bv);
