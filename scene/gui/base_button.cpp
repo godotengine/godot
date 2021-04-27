@@ -52,6 +52,7 @@ void BaseButton::_unpress_group() {
 }
 
 void BaseButton::_gui_input(Ref<InputEvent> p_event) {
+	ERR_FAIL_COND(p_event.is_null());
 
 	if (status.disabled) // no interaction with disabled button
 		return;
@@ -355,6 +356,7 @@ Ref<ShortCut> BaseButton::get_shortcut() const {
 }
 
 void BaseButton::_unhandled_input(Ref<InputEvent> p_event) {
+	ERR_FAIL_COND(p_event.is_null());
 
 	if (!is_disabled() && is_visible_in_tree() && !p_event->is_echo() && shortcut.is_valid() && shortcut->is_shortcut(p_event)) {
 

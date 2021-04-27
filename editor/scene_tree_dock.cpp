@@ -70,6 +70,7 @@ void SceneTreeDock::_input(Ref<InputEvent> p_event) {
 }
 
 void SceneTreeDock::_unhandled_key_input(Ref<InputEvent> p_event) {
+	ERR_FAIL_COND(p_event.is_null());
 
 	if (get_viewport()->get_modal_stack_top())
 		return; //ignore because of modal window

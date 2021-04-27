@@ -468,6 +468,7 @@ float CanvasItemEditor::snap_angle(float p_target, float p_start) const {
 }
 
 void CanvasItemEditor::_unhandled_key_input(const Ref<InputEvent> &p_ev) {
+	ERR_FAIL_COND(p_ev.is_null());
 
 	Ref<InputEventKey> k = p_ev;
 

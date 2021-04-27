@@ -2654,6 +2654,8 @@ String AnimationTrackEdit::get_tooltip(const Point2 &p_pos) const {
 }
 
 void AnimationTrackEdit::_gui_input(const Ref<InputEvent> &p_event) {
+	ERR_FAIL_COND(p_event.is_null());
+
 	if (p_event->is_pressed()) {
 		if (ED_GET_SHORTCUT("animation_editor/duplicate_selection")->is_shortcut(p_event)) {
 			emit_signal("duplicate_request");
