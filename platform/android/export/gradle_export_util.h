@@ -241,12 +241,6 @@ String _get_xr_features_tag(const Ref<EditorExportPreset> &p_preset) {
 	String manifest_xr_features;
 	bool uses_xr = (int)(p_preset->get("xr_features/xr_mode")) == 1;
 	if (uses_xr) {
-		int dof_index = p_preset->get("xr_features/degrees_of_freedom"); // 0: none, 1: 3dof and 6dof, 2: 6dof
-		if (dof_index == 1) {
-			manifest_xr_features += "    <uses-feature tools:node=\"replace\" android:name=\"android.hardware.vr.headtracking\" android:required=\"false\" android:version=\"1\" />\n";
-		} else if (dof_index == 2) {
-			manifest_xr_features += "    <uses-feature tools:node=\"replace\" android:name=\"android.hardware.vr.headtracking\" android:required=\"true\" android:version=\"1\" />\n";
-		}
 		int hand_tracking_index = p_preset->get("xr_features/hand_tracking"); // 0: none, 1: optional, 2: required
 		if (hand_tracking_index == 1) {
 			manifest_xr_features += "    <uses-feature tools:node=\"replace\" android:name=\"oculus.software.handtracking\" android:required=\"false\" />\n";
@@ -278,10 +272,7 @@ String _get_activity_tag(const Ref<EditorExportPreset> &p_preset) {
 			"tools:replace=\"android:screenOrientation\" "
 			"android:screenOrientation=\"%s\">\n",
 			orientation);
-	if (uses_xr) {
-		String focus_awareness = bool_to_string(p_preset->get("xr_features/focus_awareness"));
-		manifest_activity_text += vformat("            <meta-data tools:node=\"replace\" android:name=\"com.oculus.vr.focusaware\" android:value=\"%s\" />\n", focus_awareness);
-	} else {
+	if (!uses_xr) {
 		manifest_activity_text += "            <meta-data tools:node=\"remove\" android:name=\"com.oculus.vr.focusaware\" />\n";
 	}
 	manifest_activity_text += "        </activity>\n";
@@ -289,16 +280,11 @@ String _get_activity_tag(const Ref<EditorExportPreset> &p_preset) {
 }
 
 String _get_application_tag(const Ref<EditorExportPreset> &p_preset) {
-	bool uses_xr = (int)(p_preset->get("xr_features/xr_mode")) == 1;
 	String manifest_application_text =
 			"    <application android:label=\"@string/godot_project_name_string\"\n"
 			"        android:allowBackup=\"false\" tools:ignore=\"GoogleAppIndexingWarning\"\n"
-			"        android:icon=\"@mipmap/icon\">\n\n"
-			"        <meta-data tools:node=\"remove\" android:name=\"xr_mode_metadata_name\" />\n";
+			"        android:icon=\"@mipmap/icon\">\n\n";
 
-	if (uses_xr) {
-		manifest_application_text += "        <meta-data tools:node=\"replace\" android:name=\"com.samsung.android.vr.application.mode\" android:value=\"vr_only\" />\n";
-	}
 	manifest_application_text += _get_activity_tag(p_preset);
 	manifest_application_text += "    </application>\n";
 	return manifest_application_text;
