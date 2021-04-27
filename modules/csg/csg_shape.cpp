@@ -1741,7 +1741,6 @@ CSGBrush *CSGPolygon3D::_build_brush() {
 
 			path_cache->connect("tree_exited", callable_mp(this, &CSGPolygon3D::_path_exited));
 			path_cache->connect("curve_changed", callable_mp(this, &CSGPolygon3D::_path_changed));
-			path_cache = nullptr;
 		}
 		curve = path->get_curve();
 		if (curve.is_null()) {
