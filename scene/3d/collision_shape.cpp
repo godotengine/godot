@@ -151,8 +151,6 @@ void CollisionShape::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("make_convex_from_brothers"), &CollisionShape::make_convex_from_brothers);
 	ClassDB::set_method_flags("CollisionShape", "make_convex_from_brothers", METHOD_FLAGS_DEFAULT | METHOD_FLAG_EDITOR);
 
-	ClassDB::bind_method(D_METHOD("_shape_changed"), &CollisionShape::_shape_changed);
-
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "shape", PROPERTY_HINT_RESOURCE_TYPE, "Shape"), "set_shape", "get_shape");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "disabled"), "set_disabled", "is_disabled");
 }
@@ -163,12 +161,10 @@ void CollisionShape::set_shape(const Ref<Shape> &p_shape) {
 	}
 	if (!shape.is_null()) {
 		shape->unregister_owner(this);
-		shape->disconnect("changed", this, "_shape_changed");
 	}
 	shape = p_shape;
 	if (!shape.is_null()) {
 		shape->register_owner(this);
-		shape->connect("changed", this, "_shape_changed");
 	}
 	update_gizmo();
 	if (parent) {
@@ -178,8 +174,9 @@ void CollisionShape::set_shape(const Ref<Shape> &p_shape) {
 		}
 	}
 
-	if (is_inside_tree()) {
-		_shape_changed();
+	if (is_inside_tree() && parent) {
+		// If this is a heightfield shape our center may have changed
+		_update_in_shape_owner(true);
 	}
 	update_configuration_warning();
 }
@@ -213,11 +210,4 @@ CollisionShape::~CollisionShape() {
 		shape->unregister_owner(this);
 	}
 	//VisualServer::get_singleton()->free(indicator);
-}
-
-void CollisionShape::_shape_changed() {
-	// If this is a heightfield shape our center may have changed
-	if (parent) {
-		_update_in_shape_owner(true);
-	}
 }
