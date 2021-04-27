@@ -3168,6 +3168,36 @@ bool ShaderLanguage::_validate_varying_using(ShaderNode::Varying &p_varying, Str
 	return true;
 }
 
+bool ShaderLanguage::_check_node_constness(const Node *p_node) const {
+	switch (p_node->type) {
+		case Node::TYPE_OPERATOR: {
+			OperatorNode *op_node = (OperatorNode *)p_node;
+			for (int i = (1 ? op_node->op == OP_CALL : 0); i < op_node->arguments.size(); i++) {
+				if (!_check_node_constness(op_node->arguments[i])) {
+					return false;
+				}
+			}
+		} break;
+		case Node::TYPE_CONSTANT:
+			break;
+		case Node::TYPE_VARIABLE: {
+			VariableNode *varn = (VariableNode *)p_node;
+			if (!varn->is_const) {
+				return false;
+			}
+		} break;
+		case Node::TYPE_ARRAY: {
+			ArrayNode *arrn = (ArrayNode *)p_node;
+			if (!arrn->is_const) {
+				return false;
+			}
+		} break;
+		default:
+			return false;
+	}
+	return true;
+}
+
 bool ShaderLanguage::_validate_assign(Node *p_node, const FunctionInfo &p_function_info, String *r_message) {
 	if (p_node->type == Node::TYPE_OPERATOR) {
 		OperatorNode *op = static_cast<OperatorNode *>(p_node);
@@ -5384,8 +5414,13 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 						return ERR_PARSE_ERROR;
 					}
 					if (node->is_const && n->type == Node::TYPE_OPERATOR && ((OperatorNode *)n)->op == OP_CALL) {
-						_set_error("Expected constant expression after '='");
-						return ERR_PARSE_ERROR;
+						OperatorNode *op = ((OperatorNode *)n);
+						for (int i = 1; i < op->arguments.size(); i++) {
+							if (!_check_node_constness(op->arguments[i])) {
+								_set_error("Expected constant expression for argument '" + itos(i - 1) + "' of function call after '='");
+								return ERR_PARSE_ERROR;
+							}
+						}
 					}
 					decl.initializer = n;
 
@@ -6964,8 +6999,13 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 									return ERR_PARSE_ERROR;
 								}
 								if (expr->type == Node::TYPE_OPERATOR && ((OperatorNode *)expr)->op == OP_CALL) {
-									_set_error("Expected constant expression after '='");
-									return ERR_PARSE_ERROR;
+									OperatorNode *op = ((OperatorNode *)expr);
+									for (int i = 1; i < op->arguments.size(); i++) {
+										if (!_check_node_constness(op->arguments[i])) {
+											_set_error("Expected constant expression for argument '" + itos(i - 1) + "' of function call after '='");
+											return ERR_PARSE_ERROR;
+										}
+									}
 								}
 
 								constant.initializer = static_cast<ConstantNode *>(expr);
