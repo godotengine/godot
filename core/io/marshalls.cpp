@@ -325,7 +325,7 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 			}
 
 		} break;
-		case Variant::TRANSFORM: {
+		case Variant::TRANSFORM3D: {
 			ERR_FAIL_COND_V(len < 4 * 12, ERR_INVALID_DATA);
 			Transform3D val;
 			for (int i = 0; i < 3; i++) {
@@ -1138,7 +1138,7 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 			r_len += 9 * 4;
 
 		} break;
-		case Variant::TRANSFORM: {
+		case Variant::TRANSFORM3D: {
 			if (buf) {
 				Transform3D val = p_variant;
 				for (int i = 0; i < 3; i++) {

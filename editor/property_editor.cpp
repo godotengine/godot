@@ -791,7 +791,7 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 			}
 
 		} break;
-		case Variant::TRANSFORM: {
+		case Variant::TRANSFORM3D: {
 			field_names.push_back("xx");
 			field_names.push_back("xy");
 			field_names.push_back("xz");
@@ -1557,7 +1557,7 @@ void CustomPropertyEditor::_modified(String p_string) {
 			_emit_changed_whole_or_field();
 
 		} break;
-		case Variant::TRANSFORM: {
+		case Variant::TRANSFORM3D: {
 			Basis basis;
 			for (int i = 0; i < 9; i++) {
 				basis.elements[i / 3][i % 3] = _parse_real_expression(value_editor[(i / 3) * 4 + i % 3]->get_text());
@@ -1639,7 +1639,7 @@ void CustomPropertyEditor::_focus_enter() {
 		case Variant::AABB:
 		case Variant::TRANSFORM2D:
 		case Variant::BASIS:
-		case Variant::TRANSFORM: {
+		case Variant::TRANSFORM3D: {
 			for (int i = 0; i < MAX_VALUE_EDITORS; ++i) {
 				if (value_editor[i]->has_focus()) {
 					focused_value_editor = i;
@@ -1665,7 +1665,7 @@ void CustomPropertyEditor::_focus_exit() {
 		case Variant::AABB:
 		case Variant::TRANSFORM2D:
 		case Variant::BASIS:
-		case Variant::TRANSFORM: {
+		case Variant::TRANSFORM3D: {
 			for (int i = 0; i < MAX_VALUE_EDITORS; ++i) {
 				value_editor[i]->select(0, 0);
 			}
