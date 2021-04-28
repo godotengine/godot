@@ -4130,6 +4130,26 @@ void RasterizerSceneGLES3::_post_process(Environment *env, const CameraMatrix &p
 	state.tonemap_shader.set_conditional(TonemapShaderGLES3::V_FLIP, false);
 }
 
+bool RasterizerSceneGLES3::_element_needs_directional_add(RenderList::Element *e) {
+	// return whether this element should take part in directional add
+	if (e->sort_key & SORT_KEY_UNSHADED_FLAG) {
+		return false;
+	}
+
+	for (int i = 0; i < state.directional_light_count; i++) {
+		LightInstance *l = directional_lights[i];
+		// any unbaked and unculled light?
+		if (e->instance->baked_light && l->light_ptr->bake_mode == VS::LightBakeMode::LIGHT_BAKE_ALL) {
+			continue;
+		}
+		if ((e->instance->layer_mask & l->light_ptr->cull_mask) == 0) {
+			continue;
+		}
+		return true;
+	}
+	return false; // no visible unbaked light
+}
+
 void RasterizerSceneGLES3::render_scene(const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, InstanceBase **p_cull_result, int p_cull_count, RID *p_light_cull_result, int p_light_cull_count, RID *p_reflection_probe_cull_result, int p_reflection_probe_cull_count, RID p_environment, RID p_shadow_atlas, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass) {
 
 	//first of all, make a new render pass
@@ -4609,14 +4629,50 @@ void RasterizerSceneGLES3::render_scene(const Transform &p_cam_transform, const 
 
 	render_list.sort_by_reverse_depth_and_priority(true);
 
-	if (state.directional_light_count == 0) {
-		directional_light = NULL;
+	if (state.directional_light_count <= 1) {
+		if (state.directional_light_count == 1) {
+			directional_light = directional_lights[0];
+			_setup_directional_light(0, p_cam_transform.affine_inverse(), use_shadows);
+		} else {
+			directional_light = NULL;
+		}
 		_render_list(&render_list.elements[render_list.max_elements - render_list.alpha_element_count], render_list.alpha_element_count, p_cam_transform, p_cam_projection, sky, false, true, false, false, use_shadows);
 	} else {
-		for (int i = 0; i < state.directional_light_count; i++) {
-			directional_light = directional_lights[i];
-			_setup_directional_light(i, p_cam_transform.affine_inverse(), use_shadows);
-			_render_list(&render_list.elements[render_list.max_elements - render_list.alpha_element_count], render_list.alpha_element_count, p_cam_transform, p_cam_projection, sky, false, true, false, i > 0, use_shadows);
+		// special handling for multiple directional lights
+
+		// first chunk_start
+		int chunk_split = render_list.max_elements - render_list.alpha_element_count;
+
+		while (chunk_split < render_list.max_elements) {
+			int chunk_start = chunk_split;
+			bool first = true;
+			bool chunk_directional_add = false;
+			uint32_t chunk_priority = 0;
+
+			// determine chunk end
+			for (; chunk_split < render_list.max_elements; chunk_split++) {
+				bool directional_add = _element_needs_directional_add(render_list.elements[chunk_split]);
+				uint32_t priority = uint32_t(render_list.elements[chunk_split]->sort_key >> RenderList::SORT_KEY_PRIORITY_SHIFT);
+				if (first) {
+					chunk_directional_add = directional_add;
+					chunk_priority = priority;
+					first = false;
+				}
+				if ((directional_add != chunk_directional_add) || (priority != chunk_priority)) {
+					break;
+				}
+			}
+
+			if (chunk_directional_add) {
+				for (int i = 0; i < state.directional_light_count; i++) {
+					directional_light = directional_lights[i];
+					_setup_directional_light(i, p_cam_transform.affine_inverse(), use_shadows);
+					_render_list(&render_list.elements[chunk_start], chunk_split - chunk_start, p_cam_transform, p_cam_projection, sky, false, true, false, i > 0, use_shadows);
+				}
+			} else {
+				directional_light = NULL;
+				_render_list(&render_list.elements[chunk_start], chunk_split - chunk_start, p_cam_transform, p_cam_projection, sky, false, true, false, false, use_shadows);
+			}
 		}
 	}
 
