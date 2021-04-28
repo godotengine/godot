@@ -573,6 +573,42 @@ void MeshInstance::create_trimesh_collision() {
 	}
 }
 
+Node *MeshInstance::create_multiple_convex_collisions_node() {
+
+	if (mesh.is_null())
+		return NULL;
+
+	Vector<Ref<Shape> > shapes = mesh->convex_decompose();
+	if (!shapes.size()) {
+		return NULL;
+	}
+
+	StaticBody *static_body = memnew(StaticBody);
+	for (int i = 0; i < shapes.size(); i++) {
+		CollisionShape *cshape = memnew(CollisionShape);
+		cshape->set_shape(shapes[i]);
+		static_body->add_child(cshape);
+	}
+	return static_body;
+}
+
+void MeshInstance::create_multiple_convex_collisions() {
+
+	StaticBody *static_body = Object::cast_to<StaticBody>(create_multiple_convex_collisions_node());
+	ERR_FAIL_COND(!static_body);
+	static_body->set_name(String(get_name()) + "_col");
+
+	add_child(static_body);
+	if (get_owner()) {
+		static_body->set_owner(get_owner());
+		int count = static_body->get_child_count();
+		for (int i = 0; i < count; i++) {
+			CollisionShape *cshape = Object::cast_to<CollisionShape>(static_body->get_child(i));
+			cshape->set_owner(get_owner());
+		}
+	}
+}
+
 Node *MeshInstance::create_convex_collision_node() {
 
 	if (mesh.is_null())
@@ -803,6 +839,8 @@ void MeshInstance::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("create_trimesh_collision"), &MeshInstance::create_trimesh_collision);
 	ClassDB::set_method_flags("MeshInstance", "create_trimesh_collision", METHOD_FLAGS_DEFAULT);
+	ClassDB::bind_method(D_METHOD("create_multiple_convex_collisions"), &MeshInstance::create_multiple_convex_collisions);
+	ClassDB::set_method_flags("MeshInstance", "create_multiple_convex_collisions", METHOD_FLAGS_DEFAULT);
 	ClassDB::bind_method(D_METHOD("create_convex_collision"), &MeshInstance::create_convex_collision);
 	ClassDB::set_method_flags("MeshInstance", "create_convex_collision", METHOD_FLAGS_DEFAULT);
 	ClassDB::bind_method(D_METHOD("_mesh_changed"), &MeshInstance::_mesh_changed);
