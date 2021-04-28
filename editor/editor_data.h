@@ -132,6 +132,7 @@ private:
 
 	List<PropertyData> clipboard;
 	UndoRedo undo_redo;
+	Vector<Callable> undo_redo_callbacks;
 
 	void _cleanup_history();
 
@@ -166,6 +167,9 @@ public:
 	EditorPlugin *get_editor_plugin(int p_idx);
 
 	UndoRedo &get_undo_redo();
+	void add_undo_redo_inspector_hook_callback(Callable p_callable); // Callbacks shoud have 4 args: (Object* undo_redo, Object *modified_object, String property, Varian new_value)
+	void remove_undo_redo_inspector_hook_callback(Callable p_callable);
+	const Vector<Callable> get_undo_redo_inspector_hook_callback();
 
 	void save_editor_global_states();
 	void restore_editor_global_states();

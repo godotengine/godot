@@ -157,6 +157,16 @@
 				Registers a custom translation parser plugin for extracting translatable strings from custom files.
 			</description>
 		</method>
+		<method name="add_undo_redo_inspector_hook_callback">
+			<return type="void">
+			</return>
+			<argument index="0" name="callable" type="Callable">
+			</argument>
+			<description>
+				Hooks a callback into the undo/redo action creation when a property is modified in the inspector. This allows, for example, to save other properties that may be lost when a given property is modified.
+				The callback should have 4 arguments: [Object] [code]undo_redo[/code], [Object] [code]modified_object[/code], [String] [code]property[/code] and [Variant] [code]new_value[/code]. They are, respectively, the [UndoRedo] object used by the inspector, the currently modified object, the name of the modified property and the new value the property is about to take.
+			</description>
+		</method>
 		<method name="apply_changes" qualifiers="virtual">
 			<return type="void">
 			</return>
@@ -620,6 +630,15 @@
 			</argument>
 			<description>
 				Removes a registered custom translation parser plugin.
+			</description>
+		</method>
+		<method name="remove_undo_redo_inspector_hook_callback">
+			<return type="void">
+			</return>
+			<argument index="0" name="callable" type="Callable">
+			</argument>
+			<description>
+				Removes a callback previsously added by [method add_undo_redo_inspector_hook_callback].
 			</description>
 		</method>
 		<method name="save_external_data" qualifiers="virtual">

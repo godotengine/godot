@@ -426,6 +426,18 @@ UndoRedo &EditorData::get_undo_redo() {
 	return undo_redo;
 }
 
+void EditorData::add_undo_redo_inspector_hook_callback(Callable p_callable) {
+	undo_redo_callbacks.push_back(p_callable);
+}
+
+void EditorData::remove_undo_redo_inspector_hook_callback(Callable p_callable) {
+	undo_redo_callbacks.erase(p_callable);
+}
+
+const Vector<Callable> EditorData::get_undo_redo_inspector_hook_callback() {
+	return undo_redo_callbacks;
+}
+
 void EditorData::remove_editor_plugin(EditorPlugin *p_plugin) {
 	p_plugin->undo_redo = nullptr;
 	editor_plugins.erase(p_plugin);
