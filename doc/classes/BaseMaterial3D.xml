@@ -142,6 +142,7 @@
 		</member>
 		<member name="clearcoat_enabled" type="bool" setter="set_feature" getter="get_feature" default="false">
 			If [code]true[/code], clearcoat rendering is enabled. Adds a secondary transparent pass to the lighting calculation resulting in an added specular blob. This makes materials appear as if they have a clear layer on them that can be either glossy or rough.
+			[b]Note:[/b] Clearcoat rendering is not visible if the material's [member shading_mode] is [constant SHADING_MODE_UNSHADED].
 		</member>
 		<member name="clearcoat_gloss" type="float" setter="set_clearcoat_gloss" getter="get_clearcoat_gloss" default="0.5">
 			Sets the roughness of the clearcoat pass. A higher value results in a smoother clearcoat while a lower value results in a rougher clearcoat.
@@ -304,6 +305,7 @@
 		</member>
 		<member name="rim_enabled" type="bool" setter="set_feature" getter="get_feature" default="false">
 			If [code]true[/code], rim effect is enabled. Rim lighting increases the brightness at glancing angles on an object.
+			[b]Note:[/b] Rim lighting is not visible if the material's [member shading_mode] is [constant SHADING_MODE_UNSHADED].
 		</member>
 		<member name="rim_texture" type="Texture2D" setter="set_texture" getter="get_texture">
 			Texture used to set the strength of the rim lighting effect per-pixel. Multiplied by [member rim].
