@@ -1384,8 +1384,8 @@ void RasterizerStorageGLES3::texture_set_flags(RID p_texture, uint32_t p_flags) 
 	Texture *texture = texture_owner.get(p_texture);
 	ERR_FAIL_COND(!texture);
 	if (texture->render_target) {
-
-		p_flags &= VS::TEXTURE_FLAG_FILTER; //can change only filter
+		// only allow filter and repeat flags for render target (ie. viewport) textures
+		p_flags &= (VS::TEXTURE_FLAG_FILTER | VS::TEXTURE_FLAG_REPEAT);
 	}
 
 	bool had_mipmaps = texture->flags & VS::TEXTURE_FLAG_MIPMAPS;
