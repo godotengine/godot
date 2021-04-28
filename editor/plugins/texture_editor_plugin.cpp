@@ -143,7 +143,7 @@ TextureEditor::~TextureEditor() {
 
 //
 bool EditorInspectorPluginTexture::can_handle(Object *p_object) {
-	return Object::cast_to<ImageTexture>(p_object) != nullptr || Object::cast_to<AtlasTexture>(p_object) != nullptr || Object::cast_to<StreamTexture2D>(p_object) != nullptr || Object::cast_to<LargeTexture>(p_object) != nullptr || Object::cast_to<AnimatedTexture>(p_object) != nullptr;
+	return Object::cast_to<ImageTexture>(p_object) != nullptr || Object::cast_to<AtlasTexture>(p_object) != nullptr || Object::cast_to<StreamTexture2D>(p_object) != nullptr || Object::cast_to<AnimatedTexture>(p_object) != nullptr;
 }
 
 void EditorInspectorPluginTexture::parse_begin(Object *p_object) {

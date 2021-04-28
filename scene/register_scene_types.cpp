@@ -729,7 +729,6 @@ void register_scene_types() {
 	ClassDB::register_class<ImageTexture>();
 	ClassDB::register_class<AtlasTexture>();
 	ClassDB::register_class<MeshTexture>();
-	ClassDB::register_class<LargeTexture>();
 	ClassDB::register_class<CurveTexture>();
 	ClassDB::register_class<GradientTexture>();
 	ClassDB::register_class<ProxyTexture>();

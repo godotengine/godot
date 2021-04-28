@@ -297,51 +297,6 @@ public:
 	MeshTexture();
 };
 
-class LargeTexture : public Texture2D {
-	GDCLASS(LargeTexture, Texture2D);
-	RES_BASE_EXTENSION("largetex");
-
-protected:
-	struct Piece {
-		Point2 offset;
-		Ref<Texture2D> texture;
-	};
-
-	Vector<Piece> pieces;
-	Size2i size;
-
-	Array _get_data() const;
-	void _set_data(const Array &p_array);
-	static void _bind_methods();
-
-public:
-	virtual int get_width() const override;
-	virtual int get_height() const override;
-	virtual RID get_rid() const override;
-
-	virtual bool has_alpha() const override;
-
-	int add_piece(const Point2 &p_offset, const Ref<Texture2D> &p_texture);
-	void set_piece_offset(int p_idx, const Point2 &p_offset);
-	void set_piece_texture(int p_idx, const Ref<Texture2D> &p_texture);
-
-	void set_size(const Size2 &p_size);
-	void clear();
-
-	int get_piece_count() const;
-	Vector2 get_piece_offset(int p_idx) const;
-	Ref<Texture2D> get_piece_texture(int p_idx) const;
-	Ref<Image> to_image() const;
-
-	virtual void draw(RID p_canvas_item, const Point2 &p_pos, const Color &p_modulate = Color(1, 1, 1), bool p_transpose = false) const override;
-	virtual void draw_rect(RID p_canvas_item, const Rect2 &p_rect, bool p_tile = false, const Color &p_modulate = Color(1, 1, 1), bool p_transpose = false) const override;
-	virtual void draw_rect_region(RID p_canvas_item, const Rect2 &p_rect, const Rect2 &p_src_rect, const Color &p_modulate = Color(1, 1, 1), bool p_transpose = false, bool p_clip_uv = true) const override;
-
-	bool is_pixel_opaque(int p_x, int p_y) const override;
-
-	LargeTexture();
-};
-
 class TextureLayered : public Texture {
 	GDCLASS(TextureLayered, Texture);
 

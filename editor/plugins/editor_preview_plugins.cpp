@@ -81,7 +81,6 @@ bool EditorTexturePreviewPlugin::generate_small_preview_automatically() const {
 Ref<Texture2D> EditorTexturePreviewPlugin::generate(const RES &p_from, const Size2 &p_size) const {
 	Ref<Image> img;
 	Ref<AtlasTexture> atex = p_from;
-	Ref<LargeTexture> ltex = p_from;
 	if (atex.is_valid()) {
 		Ref<Texture2D> tex = atex->get_atlas();
 		if (!tex.is_valid()) {
@@ -94,8 +93,6 @@ Ref<Texture2D> EditorTexturePreviewPlugin::generate(const RES &p_from, const Siz
 		}
 
 		img = atlas->get_rect(atex->get_region());
-	} else if (ltex.is_valid()) {
-		img = ltex->to_image();
 	} else {
 		Ref<Texture2D> tex = p_from;
 		if (tex.is_valid()) {
