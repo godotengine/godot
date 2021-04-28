@@ -71,10 +71,8 @@ const GodotWebXR = {
 			// enabled or disabled. When using the WebXR API Emulator, this
 			// gets picked up automatically, however, in the Oculus Browser
 			// on the Quest, we need to pause and resume the main loop.
-			Browser.pauseAsyncCallbacks();
 			Browser.mainLoop.pause();
 			window.setTimeout(function () {
-				Browser.resumeAsyncCallbacks();
 				Browser.mainLoop.resume();
 			}, 0);
 		},
