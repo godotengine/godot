@@ -2459,7 +2459,7 @@ bool Main::iteration() {
 
 	static const int max_physics_steps = 8;
 	if (fixed_fps == -1 && advance.physics_steps > max_physics_steps) {
-		process_step -= (advance.physics_steps - max_physics_steps) * physics_step;
+		process_step -= ((double)advance.physics_steps - max_physics_steps) * physics_step;
 		advance.physics_steps = max_physics_steps;
 	}
 

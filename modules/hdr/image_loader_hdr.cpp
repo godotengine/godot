@@ -65,7 +65,7 @@ Error ImageLoaderHDR::load_image(Ref<Image> p_image, FileAccess *f, bool p_force
 
 	Vector<uint8_t> imgdata;
 
-	imgdata.resize(height * width * sizeof(uint32_t));
+	imgdata.resize((uint64_t)height * width * sizeof(uint32_t));
 
 	{
 		uint8_t *w = imgdata.ptrw();

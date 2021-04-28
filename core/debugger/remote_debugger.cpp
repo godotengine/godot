@@ -826,7 +826,7 @@ void RemoteDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 		loop_time_sec = (OS::get_singleton()->get_ticks_usec() - loop_begin_usec) / 1000000.0f;
 		RenderingServer::get_singleton()->sync();
 		if (RenderingServer::get_singleton()->has_changed()) {
-			RenderingServer::get_singleton()->draw(true, loop_time_sec * Engine::get_singleton()->get_time_scale());
+			RenderingServer::get_singleton()->draw(true, (double)loop_time_sec * Engine::get_singleton()->get_time_scale());
 		}
 	}
 
