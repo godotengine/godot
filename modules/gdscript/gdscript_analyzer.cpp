@@ -856,6 +856,7 @@ void GDScriptAnalyzer::resolve_node(GDScriptParser::Node *p_node) {
 		case GDScriptParser::Node::DICTIONARY:
 		case GDScriptParser::Node::GET_NODE:
 		case GDScriptParser::Node::IDENTIFIER:
+		case GDScriptParser::Node::LAMBDA:
 		case GDScriptParser::Node::LITERAL:
 		case GDScriptParser::Node::PRELOAD:
 		case GDScriptParser::Node::SELF:
@@ -1457,6 +1458,9 @@ void GDScriptAnalyzer::reduce_expression(GDScriptParser::ExpressionNode *p_expre
 			break;
 		case GDScriptParser::Node::IDENTIFIER:
 			reduce_identifier(static_cast<GDScriptParser::IdentifierNode *>(p_expression));
+			break;
+		case GDScriptParser::Node::LAMBDA:
+			reduce_lambda(static_cast<GDScriptParser::LambdaNode *>(p_expression));
 			break;
 		case GDScriptParser::Node::LITERAL:
 			reduce_literal(static_cast<GDScriptParser::LiteralNode *>(p_expression));
@@ -2061,6 +2065,12 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool is_awa
 		is_self = true;
 	} else if (callee_type == GDScriptParser::Node::SUBSCRIPT) {
 		GDScriptParser::SubscriptNode *subscript = static_cast<GDScriptParser::SubscriptNode *>(p_call->callee);
+		if (subscript->base == nullptr) {
+			// Invalid syntax, error already set on parser.
+			p_call->set_datatype(call_type);
+			mark_node_unsafe(p_call);
+			return;
+		}
 		if (!subscript->is_attribute) {
 			// Invalid call. Error already sent in parser.
 			// TODO: Could check if Callable here.
@@ -2097,6 +2107,8 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool is_awa
 
 		if (is_self && parser->current_function != nullptr && parser->current_function->is_static && !is_static) {
 			push_error(vformat(R"*(Cannot call non-static function "%s()" from static function "%s()".)*", p_call->function_name, parser->current_function->identifier->name), p_call->callee);
+		} else if (is_self && !is_static && !lambda_stack.is_empty()) {
+			push_error(vformat(R"*(Cannot call non-static function "%s()" from a lambda function.)*", p_call->function_name), p_call->callee);
 		}
 
 		call_type = return_type;
@@ -2219,6 +2231,8 @@ void GDScriptAnalyzer::reduce_get_node(GDScriptParser::GetNodeNode *p_get_node) 
 
 	if (!ClassDB::is_parent_class(GDScriptParser::get_real_class_name(parser->current_class->base_type.native_type), result.native_type)) {
 		push_error(R"*(Cannot use shorthand "get_node()" notation ("$") on a class that isn't a node.)*", p_get_node);
+	} else if (!lambda_stack.is_empty()) {
+		push_error(R"*(Cannot use shorthand "get_node()" notation ("$") inside a lambda. Use a captured variable instead.)*", p_get_node);
 	}
 
 	p_get_node->set_datatype(result);
@@ -2346,6 +2360,7 @@ void GDScriptAnalyzer::reduce_identifier_from_base(GDScriptParser::IdentifierNod
 				case GDScriptParser::ClassNode::Member::ENUM_VALUE:
 					p_identifier->is_constant = true;
 					p_identifier->reduced_value = member.enum_value.value;
+					p_identifier->source = GDScriptParser::IdentifierNode::MEMBER_CONSTANT;
 					break;
 				case GDScriptParser::ClassNode::Member::VARIABLE:
 					p_identifier->source = GDScriptParser::IdentifierNode::MEMBER_VARIABLE;
@@ -2446,42 +2461,65 @@ void GDScriptAnalyzer::reduce_identifier(GDScriptParser::IdentifierNode *p_ident
 		}
 	}
 
+	bool found_source = false;
 	// Check if identifier is local.
 	// If that's the case, the declaration already was solved before.
 	switch (p_identifier->source) {
 		case GDScriptParser::IdentifierNode::FUNCTION_PARAMETER:
 			p_identifier->set_datatype(p_identifier->parameter_source->get_datatype());
-			return;
+			found_source = true;
+			break;
 		case GDScriptParser::IdentifierNode::LOCAL_CONSTANT:
 		case GDScriptParser::IdentifierNode::MEMBER_CONSTANT:
 			p_identifier->set_datatype(p_identifier->constant_source->get_datatype());
 			p_identifier->is_constant = true;
 			// TODO: Constant should have a value on the node itself.
 			p_identifier->reduced_value = p_identifier->constant_source->initializer->reduced_value;
-			return;
+			found_source = true;
+			break;
 		case GDScriptParser::IdentifierNode::MEMBER_VARIABLE:
 			p_identifier->variable_source->usages++;
 			[[fallthrough]];
 		case GDScriptParser::IdentifierNode::LOCAL_VARIABLE:
 			p_identifier->set_datatype(p_identifier->variable_source->get_datatype());
-			return;
+			found_source = true;
+			break;
 		case GDScriptParser::IdentifierNode::LOCAL_ITERATOR:
 			p_identifier->set_datatype(p_identifier->bind_source->get_datatype());
-			return;
+			found_source = true;
+			break;
 		case GDScriptParser::IdentifierNode::LOCAL_BIND: {
 			GDScriptParser::DataType result = p_identifier->bind_source->get_datatype();
 			result.is_constant = true;
 			p_identifier->set_datatype(result);
-			return;
-		}
+			found_source = true;
+		} break;
 		case GDScriptParser::IdentifierNode::UNDEFINED_SOURCE:
 			break;
 	}
 
 	// Not a local, so check members.
-	reduce_identifier_from_base(p_identifier);
-	if (p_identifier->get_datatype().is_set()) {
-		// Found.
+	if (!found_source) {
+		reduce_identifier_from_base(p_identifier);
+		if (p_identifier->source != GDScriptParser::IdentifierNode::UNDEFINED_SOURCE || p_identifier->get_datatype().is_set()) {
+			// Found.
+			found_source = true;
+		}
+	}
+
+	if (found_source) {
+		// If the identifier is local, check if it's any kind of capture by comparing their source function.
+		// Only capture locals and members and enum values. Constants are still accessible from the lambda using the script reference.
+		if (p_identifier->source == GDScriptParser::IdentifierNode::UNDEFINED_SOURCE || p_identifier->source == GDScriptParser::IdentifierNode::MEMBER_CONSTANT || lambda_stack.is_empty()) {
+			return;
+		}
+
+		GDScriptParser::FunctionNode *function_test = lambda_stack.back()->get()->function;
+		while (function_test != nullptr && function_test != p_identifier->source_function && function_test->source_lambda != nullptr && !function_test->source_lambda->captures_indices.has(p_identifier->name)) {
+			function_test->source_lambda->captures_indices[p_identifier->name] = function_test->source_lambda->captures.size();
+			function_test->source_lambda->captures.push_back(p_identifier);
+			function_test = function_test->source_lambda->parent_function;
+		}
 		return;
 	}
 
@@ -2561,6 +2599,57 @@ void GDScriptAnalyzer::reduce_identifier(GDScriptParser::IdentifierNode *p_ident
 	GDScriptParser::DataType dummy;
 	dummy.kind = GDScriptParser::DataType::VARIANT;
 	p_identifier->set_datatype(dummy); // Just so type is set to something.
+}
+
+void GDScriptAnalyzer::reduce_lambda(GDScriptParser::LambdaNode *p_lambda) {
+	// Lambda is always a Callable.
+	GDScriptParser::DataType lambda_type;
+	lambda_type.type_source = GDScriptParser::DataType::ANNOTATED_INFERRED;
+	lambda_type.kind = GDScriptParser::DataType::BUILTIN;
+	lambda_type.builtin_type = Variant::CALLABLE;
+	p_lambda->set_datatype(lambda_type);
+
+	if (p_lambda->function == nullptr) {
+		return;
+	}
+
+	GDScriptParser::FunctionNode *previous_function = parser->current_function;
+	parser->current_function = p_lambda->function;
+
+	lambda_stack.push_back(p_lambda);
+
+	for (int i = 0; i < p_lambda->function->parameters.size(); i++) {
+		resolve_parameter(p_lambda->function->parameters[i]);
+	}
+
+	resolve_suite(p_lambda->function->body);
+
+	int captures_amount = p_lambda->captures.size();
+	if (captures_amount > 0) {
+		// Create space for lambda parameters.
+		// At the beginning to not mess with optional parameters.
+		int param_count = p_lambda->function->parameters.size();
+		p_lambda->function->parameters.resize(param_count + captures_amount);
+		for (int i = param_count - 1; i >= 0; i--) {
+			p_lambda->function->parameters.write[i + captures_amount] = p_lambda->function->parameters[i];
+			p_lambda->function->parameters_indices[p_lambda->function->parameters[i]->identifier->name] = i + captures_amount;
+		}
+
+		// Add captures as extra parameters at the beginning.
+		for (int i = 0; i < p_lambda->captures.size(); i++) {
+			GDScriptParser::IdentifierNode *capture = p_lambda->captures[i];
+			GDScriptParser::ParameterNode *capture_param = parser->alloc_node<GDScriptParser::ParameterNode>();
+			capture_param->identifier = capture;
+			capture_param->usages = capture->usages;
+			capture_param->set_datatype(capture->get_datatype());
+
+			p_lambda->function->parameters.write[i] = capture_param;
+			p_lambda->function->parameters_indices[capture->name] = i;
+		}
+	}
+
+	lambda_stack.pop_back();
+	parser->current_function = previous_function;
 }
 
 void GDScriptAnalyzer::reduce_literal(GDScriptParser::LiteralNode *p_literal) {

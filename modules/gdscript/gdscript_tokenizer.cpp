@@ -242,6 +242,16 @@ void GDScriptTokenizer::set_multiline_mode(bool p_state) {
 	multiline_mode = p_state;
 }
 
+void GDScriptTokenizer::push_expression_indented_block() {
+	indent_stack_stack.push_back(indent_stack);
+}
+
+void GDScriptTokenizer::pop_expression_indented_block() {
+	ERR_FAIL_COND(indent_stack_stack.size() == 0);
+	indent_stack = indent_stack_stack.back()->get();
+	indent_stack_stack.pop_back();
+}
+
 int GDScriptTokenizer::get_cursor_line() const {
 	return cursor_line;
 }

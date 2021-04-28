@@ -76,6 +76,7 @@ public:
 	struct GetNodeNode;
 	struct IdentifierNode;
 	struct IfNode;
+	struct LambdaNode;
 	struct LiteralNode;
 	struct MatchNode;
 	struct MatchBranchNode;
@@ -267,6 +268,7 @@ public:
 			GET_NODE,
 			IDENTIFIER,
 			IF,
+			LAMBDA,
 			LITERAL,
 			MATCH,
 			MATCH_BRANCH,
@@ -728,6 +730,7 @@ public:
 		bool is_coroutine = false;
 		MultiplayerAPI::RPCMode rpc_mode = MultiplayerAPI::RPC_MODE_DISABLED;
 		MethodInfo info;
+		LambdaNode *source_lambda = nullptr;
 #ifdef TOOLS_ENABLED
 		Vector<Variant> default_arg_values;
 		String doc_description;
@@ -771,6 +774,7 @@ public:
 			VariableNode *variable_source;
 			IdentifierNode *bind_source;
 		};
+		FunctionNode *source_function = nullptr;
 
 		int usages = 0; // Useful for binds/iterator variable.
 
@@ -786,6 +790,21 @@ public:
 
 		IfNode() {
 			type = IF;
+		}
+	};
+
+	struct LambdaNode : public ExpressionNode {
+		FunctionNode *function = nullptr;
+		FunctionNode *parent_function = nullptr;
+		Vector<IdentifierNode *> captures;
+		Map<StringName, int> captures_indices;
+
+		bool has_name() const {
+			return function && function->identifier;
+		}
+
+		LambdaNode() {
+			type = LAMBDA;
 		}
 	};
 
@@ -942,6 +961,7 @@ public:
 				IdentifierNode *bind;
 			};
 			StringName name;
+			FunctionNode *source_function = nullptr;
 
 			int start_line = 0, end_line = 0;
 			int start_column = 0, end_column = 0;
@@ -951,10 +971,11 @@ public:
 			String get_name() const;
 
 			Local() {}
-			Local(ConstantNode *p_constant) {
+			Local(ConstantNode *p_constant, FunctionNode *p_source_function) {
 				type = CONSTANT;
 				constant = p_constant;
 				name = p_constant->identifier->name;
+				source_function = p_source_function;
 
 				start_line = p_constant->start_line;
 				end_line = p_constant->end_line;
@@ -963,10 +984,11 @@ public:
 				leftmost_column = p_constant->leftmost_column;
 				rightmost_column = p_constant->rightmost_column;
 			}
-			Local(VariableNode *p_variable) {
+			Local(VariableNode *p_variable, FunctionNode *p_source_function) {
 				type = VARIABLE;
 				variable = p_variable;
 				name = p_variable->identifier->name;
+				source_function = p_source_function;
 
 				start_line = p_variable->start_line;
 				end_line = p_variable->end_line;
@@ -975,10 +997,11 @@ public:
 				leftmost_column = p_variable->leftmost_column;
 				rightmost_column = p_variable->rightmost_column;
 			}
-			Local(ParameterNode *p_parameter) {
+			Local(ParameterNode *p_parameter, FunctionNode *p_source_function) {
 				type = PARAMETER;
 				parameter = p_parameter;
 				name = p_parameter->identifier->name;
+				source_function = p_source_function;
 
 				start_line = p_parameter->start_line;
 				end_line = p_parameter->end_line;
@@ -987,10 +1010,11 @@ public:
 				leftmost_column = p_parameter->leftmost_column;
 				rightmost_column = p_parameter->rightmost_column;
 			}
-			Local(IdentifierNode *p_identifier) {
+			Local(IdentifierNode *p_identifier, FunctionNode *p_source_function) {
 				type = FOR_VARIABLE;
 				bind = p_identifier;
 				name = p_identifier->name;
+				source_function = p_source_function;
 
 				start_line = p_identifier->start_line;
 				end_line = p_identifier->end_line;
@@ -1015,9 +1039,9 @@ public:
 		bool has_local(const StringName &p_name) const;
 		const Local &get_local(const StringName &p_name) const;
 		template <class T>
-		void add_local(T *p_local) {
+		void add_local(T *p_local, FunctionNode *p_source_function) {
 			locals_indices[p_local->identifier->name] = locals.size();
-			locals.push_back(Local(p_local));
+			locals.push_back(Local(p_local, p_source_function));
 		}
 		void add_local(const Local &p_local) {
 			locals_indices[p_local.name] = locals.size();
@@ -1191,6 +1215,8 @@ private:
 	CompletionCall completion_call;
 	List<CompletionCall> completion_call_stack;
 	bool passed_cursor = false;
+	bool in_lambda = false;
+	bool lambda_ended = false; // Marker for when a lambda ends, to apply an end of statement if needed.
 
 	typedef bool (GDScriptParser::*AnnotationAction)(const AnnotationNode *p_annotation, Node *p_target);
 	struct AnnotationInfo {
@@ -1278,10 +1304,11 @@ private:
 
 	GDScriptTokenizer::Token advance();
 	bool match(GDScriptTokenizer::Token::Type p_token_type);
-	bool check(GDScriptTokenizer::Token::Type p_token_type);
+	bool check(GDScriptTokenizer::Token::Type p_token_type) const;
 	bool consume(GDScriptTokenizer::Token::Type p_token_type, const String &p_error_message);
-	bool is_at_end();
-	bool is_statement_end();
+	bool is_at_end() const;
+	bool is_statement_end_token() const;
+	bool is_statement_end() const;
 	void end_statement(const String &p_context);
 	void synchronize();
 	void push_multiline(bool p_state);
@@ -1299,7 +1326,8 @@ private:
 	EnumNode *parse_enum();
 	ParameterNode *parse_parameter();
 	FunctionNode *parse_function();
-	SuiteNode *parse_suite(const String &p_context, SuiteNode *p_suite = nullptr);
+	void parse_function_signature(FunctionNode *p_function, SuiteNode *p_body, const String &p_type);
+	SuiteNode *parse_suite(const String &p_context, SuiteNode *p_suite = nullptr, bool p_for_lambda = false);
 	// Annotations
 	AnnotationNode *parse_annotation(uint32_t p_valid_targets);
 	bool register_annotation(const MethodInfo &p_info, uint32_t p_target_kinds, AnnotationAction p_apply, int p_optional_arguments = 0, bool p_is_vararg = false);
@@ -1354,6 +1382,7 @@ private:
 	ExpressionNode *parse_await(ExpressionNode *p_previous_operand, bool p_can_assign);
 	ExpressionNode *parse_attribute(ExpressionNode *p_previous_operand, bool p_can_assign);
 	ExpressionNode *parse_subscript(ExpressionNode *p_previous_operand, bool p_can_assign);
+	ExpressionNode *parse_lambda(ExpressionNode *p_previous_operand, bool p_can_assign);
 	ExpressionNode *parse_invalid_token(ExpressionNode *p_previous_operand, bool p_can_assign);
 	TypeNode *parse_type(bool p_allow_void = false);
 #ifdef TOOLS_ENABLED
@@ -1415,10 +1444,11 @@ public:
 		void print_expression(ExpressionNode *p_expression);
 		void print_enum(EnumNode *p_enum);
 		void print_for(ForNode *p_for);
-		void print_function(FunctionNode *p_function);
+		void print_function(FunctionNode *p_function, const String &p_context = "Function");
 		void print_get_node(GetNodeNode *p_get_node);
 		void print_if(IfNode *p_if, bool p_is_elif = false);
 		void print_identifier(IdentifierNode *p_identifier);
+		void print_lambda(LambdaNode *p_lambda);
 		void print_literal(LiteralNode *p_literal);
 		void print_match(MatchNode *p_match);
 		void print_match_branch(MatchBranchNode *p_match_branch);
