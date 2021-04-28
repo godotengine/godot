@@ -490,9 +490,9 @@ void AudioStreamSample::set_data(const Vector<uint8_t> &p_data) {
 		const uint8_t *r = p_data.ptr();
 		int alloc_len = datalen + DATA_PAD * 2;
 		data = memalloc(alloc_len); //alloc with some padding for interpolation
-		zeromem(data, alloc_len);
+		memset(data, 0, alloc_len);
 		uint8_t *dataptr = (uint8_t *)data;
-		copymem(dataptr + DATA_PAD, r, datalen);
+		memcpy(dataptr + DATA_PAD, r, datalen);
 		data_bytes = datalen;
 	}
 
@@ -507,7 +507,7 @@ Vector<uint8_t> AudioStreamSample::get_data() const {
 		{
 			uint8_t *w = pv.ptrw();
 			uint8_t *dataptr = (uint8_t *)data;
-			copymem(w, dataptr + DATA_PAD, data_bytes);
+			memcpy(w, dataptr + DATA_PAD, data_bytes);
 		}
 	}
 

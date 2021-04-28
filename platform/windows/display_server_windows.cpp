@@ -332,7 +332,7 @@ static BOOL CALLBACK _MonitorEnumProcUsableSize(HMONITOR hMonitor, HDC hdcMonito
 	EnumRectData *data = (EnumRectData *)dwData;
 	if (data->count == data->screen) {
 		MONITORINFO minfo;
-		zeromem(&minfo, sizeof(MONITORINFO));
+		memset(&minfo, 0, sizeof(MONITORINFO));
 		minfo.cbSize = sizeof(MONITORINFO);
 		GetMonitorInfoA(hMonitor, &minfo);
 

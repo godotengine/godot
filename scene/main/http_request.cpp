@@ -123,7 +123,7 @@ Error HTTPRequest::request(const String &p_url, const Vector<String> &p_custom_h
 	size_t len = charstr.length();
 	raw_data.resize(len);
 	uint8_t *w = raw_data.ptrw();
-	copymem(w, charstr.ptr(), len);
+	memcpy(w, charstr.ptr(), len);
 
 	return request_raw(p_url, p_custom_headers, p_ssl_validate_domain, p_method, raw_data);
 }

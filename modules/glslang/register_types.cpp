@@ -173,7 +173,7 @@ static Vector<uint8_t> _compile_shader_glsl(RenderingDevice::ShaderStage p_stage
 	ret.resize(SpirV.size() * sizeof(uint32_t));
 	{
 		uint8_t *w = ret.ptrw();
-		copymem(w, &SpirV[0], SpirV.size() * sizeof(uint32_t));
+		memcpy(w, &SpirV[0], SpirV.size() * sizeof(uint32_t));
 	}
 
 	return ret;

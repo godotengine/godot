@@ -168,10 +168,10 @@ Vector<uint8_t> WebSocketMultiplayerPeer::_make_pkt(uint8_t p_type, int32_t p_fr
 	out.resize(PROTO_SIZE + p_data_size);
 
 	uint8_t *w = out.ptrw();
-	copymem(&w[0], &p_type, 1);
-	copymem(&w[1], &p_from, 4);
-	copymem(&w[5], &p_to, 4);
-	copymem(&w[PROTO_SIZE], p_data, p_data_size);
+	memcpy(&w[0], &p_type, 1);
+	memcpy(&w[1], &p_from, 4);
+	memcpy(&w[5], &p_to, 4);
+	memcpy(&w[PROTO_SIZE], p_data, p_data_size);
 
 	return out;
 }
@@ -211,7 +211,7 @@ void WebSocketMultiplayerPeer::_store_pkt(int32_t p_source, int32_t p_dest, cons
 	packet.size = p_data_size;
 	packet.source = p_source;
 	packet.destination = p_dest;
-	copymem(packet.data, &p_data[PROTO_SIZE], p_data_size);
+	memcpy(packet.data, &p_data[PROTO_SIZE], p_data_size);
 	_incoming_packets.push_back(packet);
 	emit_signal("peer_packet", p_source);
 }
@@ -263,9 +263,9 @@ void WebSocketMultiplayerPeer::_process_multiplayer(Ref<WebSocketPeer> p_peer, u
 	uint8_t type = 0;
 	uint32_t from = 0;
 	int32_t to = 0;
-	copymem(&type, in_buffer, 1);
-	copymem(&from, &in_buffer[1], 4);
-	copymem(&to, &in_buffer[5], 4);
+	memcpy(&type, in_buffer, 1);
+	memcpy(&from, &in_buffer[1], 4);
+	memcpy(&to, &in_buffer[5], 4);
 
 	if (is_server()) { // Server can resend
 
@@ -299,7 +299,7 @@ void WebSocketMultiplayerPeer::_process_multiplayer(Ref<WebSocketPeer> p_peer, u
 		// System message
 		ERR_FAIL_COND(data_size < 4);
 		int id = 0;
-		copymem(&id, &in_buffer[PROTO_SIZE], 4);
+		memcpy(&id, &in_buffer[PROTO_SIZE], 4);
 
 		switch (type) {
 			case SYS_ADD: // Add peer

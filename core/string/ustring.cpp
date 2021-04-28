@@ -4765,7 +4765,7 @@ Vector<uint8_t> String::to_ascii_buffer() const {
 	size_t len = charstr.length();
 	retval.resize(len);
 	uint8_t *w = retval.ptrw();
-	copymem(w, charstr.ptr(), len);
+	memcpy(w, charstr.ptr(), len);
 
 	return retval;
 }
@@ -4781,7 +4781,7 @@ Vector<uint8_t> String::to_utf8_buffer() const {
 	size_t len = charstr.length();
 	retval.resize(len);
 	uint8_t *w = retval.ptrw();
-	copymem(w, charstr.ptr(), len);
+	memcpy(w, charstr.ptr(), len);
 
 	return retval;
 }
@@ -4797,7 +4797,7 @@ Vector<uint8_t> String::to_utf16_buffer() const {
 	size_t len = charstr.length() * sizeof(char16_t);
 	retval.resize(len);
 	uint8_t *w = retval.ptrw();
-	copymem(w, (const void *)charstr.ptr(), len);
+	memcpy(w, (const void *)charstr.ptr(), len);
 
 	return retval;
 }
@@ -4812,7 +4812,7 @@ Vector<uint8_t> String::to_utf32_buffer() const {
 	size_t len = s->length() * sizeof(char32_t);
 	retval.resize(len);
 	uint8_t *w = retval.ptrw();
-	copymem(w, (const void *)s->ptr(), len);
+	memcpy(w, (const void *)s->ptr(), len);
 
 	return retval;
 }

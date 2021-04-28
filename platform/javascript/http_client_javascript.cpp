@@ -209,7 +209,7 @@ PackedByteArray HTTPClient::read_response_body_chunk() {
 		return chunk;
 	}
 	chunk.resize(read);
-	copymem(chunk.ptrw(), response_buffer.ptr(), read);
+	memcpy(chunk.ptrw(), response_buffer.ptr(), read);
 	return chunk;
 }
 

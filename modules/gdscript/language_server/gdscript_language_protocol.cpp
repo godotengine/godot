@@ -32,7 +32,6 @@
 
 #include "core/config/project_settings.h"
 #include "core/io/json.h"
-#include "core/os/copymem.h"
 #include "editor/doc_tools.h"
 #include "editor/editor_log.h"
 #include "editor/editor_node.h"

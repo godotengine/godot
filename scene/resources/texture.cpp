@@ -410,7 +410,7 @@ Ref<Image> StreamTexture2D::load_image_from_file(FileAccess *f, int p_size_limit
 					Vector<uint8_t> id = mipmap_images[i]->get_data();
 					int len = id.size();
 					const uint8_t *r = id.ptr();
-					copymem(&wr[ofs], r, len);
+					memcpy(&wr[ofs], r, len);
 					ofs += len;
 				}
 			}

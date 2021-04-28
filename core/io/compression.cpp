@@ -32,7 +32,6 @@
 
 #include "core/config/project_settings.h"
 #include "core/io/zip_io.h"
-#include "core/os/copymem.h"
 
 #include "thirdparty/misc/fastlz.h"
 
@@ -44,8 +43,8 @@ int Compression::compress(uint8_t *p_dst, const uint8_t *p_src, int p_src_size, 
 		case MODE_FASTLZ: {
 			if (p_src_size < 16) {
 				uint8_t src[16];
-				zeromem(&src[p_src_size], 16 - p_src_size);
-				copymem(src, p_src, p_src_size);
+				memset(&src[p_src_size], 0, 16 - p_src_size);
+				memcpy(src, p_src, p_src_size);
 				return fastlz_compress(src, 16, p_dst);
 			} else {
 				return fastlz_compress(p_src, p_src_size, p_dst);
@@ -136,7 +135,7 @@ int Compression::decompress(uint8_t *p_dst, int p_dst_max_size, const uint8_t *p
 			if (p_dst_max_size < 16) {
 				uint8_t dst[16];
 				ret_size = fastlz_decompress(p_src, p_src_size, dst, 16);
-				copymem(p_dst, dst, p_dst_max_size);
+				memcpy(p_dst, dst, p_dst_max_size);
 			} else {
 				ret_size = fastlz_decompress(p_src, p_src_size, p_dst, p_dst_max_size);
 			}

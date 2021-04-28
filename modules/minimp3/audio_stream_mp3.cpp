@@ -172,7 +172,7 @@ void AudioStreamMP3::set_data(const Vector<uint8_t> &p_data) {
 	clear_data();
 
 	data = memalloc(src_data_len);
-	copymem(data, src_datar, src_data_len);
+	memcpy(data, src_datar, src_data_len);
 	data_len = src_data_len;
 }
 
@@ -183,7 +183,7 @@ Vector<uint8_t> AudioStreamMP3::get_data() const {
 		vdata.resize(data_len);
 		{
 			uint8_t *w = vdata.ptrw();
-			copymem(w, data, data_len);
+			memcpy(w, data, data_len);
 		}
 	}
 

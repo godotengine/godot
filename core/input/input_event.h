@@ -33,7 +33,6 @@
 
 #include "core/io/resource.h"
 #include "core/math/transform_2d.h"
-#include "core/os/copymem.h"
 #include "core/string/ustring.h"
 #include "core/typedefs.h"
 

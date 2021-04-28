@@ -1600,7 +1600,7 @@ Error RenderingDeviceVulkan::_buffer_update(Buffer *p_buffer, size_t p_offset, c
 		}
 
 		//copy to staging buffer
-		copymem(((uint8_t *)data_ptr) + block_write_offset, p_data + submit_from, block_write_amount);
+		memcpy(((uint8_t *)data_ptr) + block_write_offset, p_data + submit_from, block_write_amount);
 
 		//unmap
 		vmaUnmapMemory(allocator, staging_buffer_blocks[staging_buffer_current].allocation);
@@ -2558,7 +2558,7 @@ Vector<uint8_t> RenderingDeviceVulkan::_texture_get_data_from_image(Texture *tex
 						const uint8_t *rptr = slice_read_ptr + y * layout.rowPitch;
 						uint8_t *wptr = write_ptr + y * line_width;
 
-						copymem(wptr, rptr, line_width);
+						memcpy(wptr, rptr, line_width);
 					}
 
 				} else {
@@ -2566,7 +2566,7 @@ Vector<uint8_t> RenderingDeviceVulkan::_texture_get_data_from_image(Texture *tex
 					for (uint32_t y = 0; y < height; y++) {
 						const uint8_t *rptr = slice_read_ptr + y * layout.rowPitch;
 						uint8_t *wptr = write_ptr + y * pixel_size * width;
-						copymem(wptr, rptr, (uint64_t)pixel_size * width);
+						memcpy(wptr, rptr, (uint64_t)pixel_size * width);
 					}
 				}
 			}
@@ -2699,7 +2699,7 @@ Vector<uint8_t> RenderingDeviceVulkan::texture_get_data(RID p_texture, uint32_t 
 		{
 			buffer_data.resize(buffer_size);
 			uint8_t *w = buffer_data.ptrw();
-			copymem(w, buffer_mem, buffer_size);
+			memcpy(w, buffer_mem, buffer_size);
 		}
 
 		vmaUnmapMemory(allocator, tmp_buffer.allocation);
@@ -5359,7 +5359,7 @@ Vector<uint8_t> RenderingDeviceVulkan::buffer_get_data(RID p_buffer) {
 	{
 		buffer_data.resize(buffer->size);
 		uint8_t *w = buffer_data.ptrw();
-		copymem(w, buffer_mem, buffer->size);
+		memcpy(w, buffer_mem, buffer->size);
 	}
 
 	vmaUnmapMemory(allocator, tmp_buffer.allocation);

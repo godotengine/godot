@@ -1105,7 +1105,7 @@ void SurfaceTool::optimize_indices_for_cache() {
 	ERR_FAIL_COND(index_array.size() == 0);
 
 	LocalVector old_index_array = index_array;
-	zeromem(index_array.ptr(), index_array.size() * sizeof(int));
+	memset(index_array.ptr(), 0, index_array.size() * sizeof(int));
 	optimize_vertex_cache_func((unsigned int *)index_array.ptr(), (unsigned int *)old_index_array.ptr(), old_index_array.size(), vertex_array.size());
 }
 

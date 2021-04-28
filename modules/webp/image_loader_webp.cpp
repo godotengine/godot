@@ -68,7 +68,7 @@ static Vector<uint8_t> _webp_lossy_pack(const Ref<Image> &p_image, float p_quali
 	w[1] = 'E';
 	w[2] = 'B';
 	w[3] = 'P';
-	copymem(&w[4], dst_buff, dst_size);
+	memcpy(&w[4], dst_buff, dst_size);
 	free(dst_buff);
 
 	return dst;
