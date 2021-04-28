@@ -3107,7 +3107,7 @@ bool EditorInspectorDefaultPlugin::parse_property(Object *p_object, Variant::Typ
 			editor->setup(min, max, step, hide_slider);
 			add_property_editor(p_path, editor);
 		} break;
-		case Variant::TRANSFORM: {
+		case Variant::TRANSFORM3D: {
 			EditorPropertyTransform *editor = memnew(EditorPropertyTransform);
 			double min = -65535, max = 65535, step = default_float_step;
 			bool hide_slider = true;

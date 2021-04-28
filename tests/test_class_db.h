@@ -240,7 +240,7 @@ bool arg_default_value_is_assignable_to_type(const Context &p_context, const Var
 				   p_arg_type.name == p_context.names_cache.node_path_type;
 		case Variant::NODE_PATH:
 			return p_arg_type.name == p_context.names_cache.node_path_type;
-		case Variant::TRANSFORM:
+		case Variant::TRANSFORM3D:
 		case Variant::TRANSFORM2D:
 		case Variant::BASIS:
 		case Variant::QUAT:

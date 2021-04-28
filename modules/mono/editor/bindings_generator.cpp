@@ -2520,8 +2520,8 @@ bool BindingsGenerator::_arg_default_value_is_assignable_to_type(const Variant &
 				   p_arg_type.name == name_cache.type_NodePath;
 		case Variant::NODE_PATH:
 			return p_arg_type.name == name_cache.type_NodePath;
-		case Variant::TRANSFORM:
 		case Variant::TRANSFORM2D:
+		case Variant::TRANSFORM3D:
 		case Variant::BASIS:
 		case Variant::QUAT:
 		case Variant::PLANE:
@@ -3123,7 +3123,7 @@ bool BindingsGenerator::_arg_default_value_from_variant(const Variant &p_val, Ar
 			}
 			r_iarg.def_param_mode = ArgumentInterface::NULLABLE_VAL;
 		} break;
-		case Variant::TRANSFORM: {
+		case Variant::TRANSFORM3D: {
 			Transform3D transform = p_val.operator Transform3D();
 			if (transform == Transform3D()) {
 				r_iarg.default_argument = "Transform.Identity";

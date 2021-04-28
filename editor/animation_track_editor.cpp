@@ -3915,7 +3915,7 @@ AnimationTrackEditor::TrackIndices AnimationTrackEditor::_confirm_insert(InsertD
 						h.type == Variant::COLOR ||
 						h.type == Variant::PLANE ||
 						h.type == Variant::TRANSFORM2D ||
-						h.type == Variant::TRANSFORM) {
+						h.type == Variant::TRANSFORM3D) {
 					update_mode = Animation::UPDATE_CONTINUOUS;
 				}
 
@@ -4468,7 +4468,7 @@ void AnimationTrackEditor::_new_track_property_selected(String p_name) {
 					h.type == Variant::COLOR ||
 					h.type == Variant::PLANE ||
 					h.type == Variant::TRANSFORM2D ||
-					h.type == Variant::TRANSFORM) {
+					h.type == Variant::TRANSFORM3D) {
 				update_mode = Animation::UPDATE_CONTINUOUS;
 			}
 

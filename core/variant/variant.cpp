@@ -99,7 +99,7 @@ String Variant::get_type_name(Variant::Type p_type) {
 			return "Basis";
 
 		} break;
-		case TRANSFORM: {
+		case TRANSFORM3D: {
 			return "Transform3D";
 
 		} break;
@@ -275,7 +275,7 @@ bool Variant::can_convert(Variant::Type p_type_from, Variant::Type p_type_to) {
 		} break;
 		case TRANSFORM2D: {
 			static const Type valid[] = {
-				TRANSFORM,
+				TRANSFORM3D,
 				NIL
 			};
 
@@ -319,7 +319,7 @@ bool Variant::can_convert(Variant::Type p_type_from, Variant::Type p_type_to) {
 			valid_types = valid;
 
 		} break;
-		case TRANSFORM: {
+		case TRANSFORM3D: {
 			static const Type valid[] = {
 				TRANSFORM2D,
 				QUAT,
@@ -582,7 +582,7 @@ bool Variant::can_convert_strict(Variant::Type p_type_from, Variant::Type p_type
 		} break;
 		case TRANSFORM2D: {
 			static const Type valid[] = {
-				TRANSFORM,
+				TRANSFORM3D,
 				NIL
 			};
 
@@ -626,7 +626,7 @@ bool Variant::can_convert_strict(Variant::Type p_type_from, Variant::Type p_type
 			valid_types = valid;
 
 		} break;
-		case TRANSFORM: {
+		case TRANSFORM3D: {
 			static const Type valid[] = {
 				TRANSFORM2D,
 				QUAT,
@@ -881,8 +881,8 @@ bool Variant::is_zero() const {
 			return *_data._basis == Basis();
 
 		} break;
-		case TRANSFORM: {
-			return *_data._transform == Transform3D();
+		case TRANSFORM3D: {
+			return *_data._transform3d == Transform3D();
 
 		} break;
 
@@ -1100,8 +1100,8 @@ void Variant::reference(const Variant &p_variant) {
 			_data._basis = memnew(Basis(*p_variant._data._basis));
 
 		} break;
-		case TRANSFORM: {
-			_data._transform = memnew(Transform3D(*p_variant._data._transform));
+		case TRANSFORM3D: {
+			_data._transform3d = memnew(Transform3D(*p_variant._data._transform3d));
 		} break;
 
 		// misc types
@@ -1289,8 +1289,8 @@ void Variant::_clear_internal() {
 		case BASIS: {
 			memdelete(_data._basis);
 		} break;
-		case TRANSFORM: {
-			memdelete(_data._transform);
+		case TRANSFORM3D: {
+			memdelete(_data._transform3d);
 		} break;
 
 			// misc types
@@ -1682,7 +1682,7 @@ String Variant::stringify(List<const void *> &stack) const {
 
 			return mtx + ")";
 		} break;
-		case TRANSFORM:
+		case TRANSFORM3D:
 			return operator Transform3D();
 		case STRING_NAME:
 			return operator StringName();
@@ -1960,8 +1960,8 @@ Variant::operator Basis() const {
 		return *reinterpret_cast<const Quat *>(_data._mem);
 	} else if (type == VECTOR3) {
 		return Basis(*reinterpret_cast<const Vector3 *>(_data._mem));
-	} else if (type == TRANSFORM) { // unexposed in Variant::can_convert?
-		return _data._transform->basis;
+	} else if (type == TRANSFORM3D) { // unexposed in Variant::can_convert?
+		return _data._transform3d->basis;
 	} else {
 		return Basis();
 	}
@@ -1972,16 +1972,16 @@ Variant::operator Quat() const {
 		return *reinterpret_cast<const Quat *>(_data._mem);
 	} else if (type == BASIS) {
 		return *_data._basis;
-	} else if (type == TRANSFORM) {
-		return _data._transform->basis;
+	} else if (type == TRANSFORM3D) {
+		return _data._transform3d->basis;
 	} else {
 		return Quat();
 	}
 }
 
 Variant::operator Transform3D() const {
-	if (type == TRANSFORM) {
-		return *_data._transform;
+	if (type == TRANSFORM3D) {
+		return *_data._transform3d;
 	} else if (type == BASIS) {
 		return Transform3D(*_data._basis, Vector3());
 	} else if (type == QUAT) {
@@ -2004,8 +2004,8 @@ Variant::operator Transform3D() const {
 Variant::operator Transform2D() const {
 	if (type == TRANSFORM2D) {
 		return *_data._transform2d;
-	} else if (type == TRANSFORM) {
-		const Transform3D &t = *_data._transform;
+	} else if (type == TRANSFORM3D) {
+		const Transform3D &t = *_data._transform3d;
 		Transform2D m;
 		m.elements[0][0] = t.basis.elements[0][0];
 		m.elements[0][1] = t.basis.elements[1][0];
@@ -2501,8 +2501,8 @@ Variant::Variant(const Quat &p_quat) {
 }
 
 Variant::Variant(const Transform3D &p_transform) {
-	type = TRANSFORM;
-	_data._transform = memnew(Transform3D(p_transform));
+	type = TRANSFORM3D;
+	_data._transform3d = memnew(Transform3D(p_transform));
 }
 
 Variant::Variant(const Transform2D &p_transform) {
@@ -2745,8 +2745,8 @@ void Variant::operator=(const Variant &p_variant) {
 		case BASIS: {
 			*_data._basis = *(p_variant._data._basis);
 		} break;
-		case TRANSFORM: {
-			*_data._transform = *(p_variant._data._transform);
+		case TRANSFORM3D: {
+			*_data._transform3d = *(p_variant._data._transform3d);
 		} break;
 
 		// misc types
@@ -2934,13 +2934,13 @@ uint32_t Variant::hash() const {
 			return hash;
 
 		} break;
-		case TRANSFORM: {
+		case TRANSFORM3D: {
 			uint32_t hash = 5831;
 			for (int i = 0; i < 3; i++) {
 				for (int j = 0; j < 3; j++) {
-					hash = hash_djb2_one_float(_data._transform->basis.elements[i][j], hash);
+					hash = hash_djb2_one_float(_data._transform3d->basis.elements[i][j], hash);
 				}
-				hash = hash_djb2_one_float(_data._transform->origin[i], hash);
+				hash = hash_djb2_one_float(_data._transform3d->origin[i], hash);
 			}
 
 			return hash;
@@ -3255,9 +3255,9 @@ bool Variant::hash_compare(const Variant &p_variant) const {
 			return true;
 		} break;
 
-		case TRANSFORM: {
-			const Transform3D *l = _data._transform;
-			const Transform3D *r = p_variant._data._transform;
+		case TRANSFORM3D: {
+			const Transform3D *l = _data._transform3d;
+			const Transform3D *r = p_variant._data._transform3d;
 
 			for (int i = 0; i < 3; i++) {
 				if (!(hash_compare_vector3(l->basis.elements[i], r->basis.elements[i]))) {
