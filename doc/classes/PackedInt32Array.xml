@@ -60,6 +60,15 @@
 				Creates a copy of the array, and returns it.
 			</description>
 		</method>
+		<method name="fill">
+			<return type="void">
+			</return>
+			<argument index="0" name="value" type="int">
+			</argument>
+			<description>
+				Assigns the given value to all elements in the array. This can typically be used together with [method resize] to create an array with a given size and initialized elements.
+			</description>
+		</method>
 		<method name="has">
 			<return type="bool">
 			</return>
