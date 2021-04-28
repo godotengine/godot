@@ -6,7 +6,7 @@ env:
   GODOT_BASE_BRANCH: 3.x
   SCONSFLAGS: platform=javascript verbose=yes warnings=all werror=yes debug_symbols=no --jobs=2
   SCONS_CACHE_LIMIT: 4096
-  EM_VERSION: 1.39.20
+  EM_VERSION: 2.0.15
   EM_CACHE_FOLDER: 'emsdk-cache'
 
 jobs:
