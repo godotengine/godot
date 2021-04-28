@@ -327,6 +327,8 @@ void GIProbe::set_compress(bool p_enable) {
 	if (probe_data.is_valid()) {
 		probe_data->set_compress(p_enable);
 	}
+
+	update_configuration_warning();
 }
 
 bool GIProbe::is_compressed() const {
@@ -500,6 +502,14 @@ String GIProbe::get_configuration_warning() const {
 		}
 		warning += TTR("GIProbes are not supported by the GLES2 video driver.\nUse a BakedLightmap instead.");
 	}
+
+	if (is_compressed()) {
+		if (warning != String()) {
+			warning += "\n\n";
+		}
+		warning += TTR("The GIProbe Compress property has been deprecated due to known bugs and no longer has any effect.\nTo remove this warning, disable the GIProbe's Compress property.");
+	}
+
 	return warning;
 }
 

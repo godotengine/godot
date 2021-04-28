@@ -486,7 +486,6 @@ public:
 		GI_PROBE_ETC2
 	};
 
-	virtual GIProbeCompression gi_probe_get_dynamic_data_get_preferred_compression() const = 0;
 	virtual RID gi_probe_dynamic_data_create(int p_width, int p_height, int p_depth, GIProbeCompression p_compression) = 0;
 	virtual void gi_probe_dynamic_data_update(RID p_gi_probe_data, int p_depth_slice, int p_slice_count, int p_mipmap, const void *p_data) = 0;
 

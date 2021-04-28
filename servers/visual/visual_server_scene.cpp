@@ -2541,9 +2541,7 @@ void VisualServerScene::_setup_gi_probe(Instance *p_instance) {
 
 	_gi_probe_fill_local_data(0, 0, 0, 0, 0, cells, header, ldw.ptr(), probe->dynamic.level_cell_lists.ptrw());
 
-	bool compress = VSG::storage->gi_probe_is_compressed(p_instance->base);
-
-	probe->dynamic.compression = compress ? VSG::storage->gi_probe_get_dynamic_data_get_preferred_compression() : RasterizerStorage::GI_PROBE_UNCOMPRESSED;
+	probe->dynamic.compression = RasterizerStorage::GI_PROBE_UNCOMPRESSED;
 
 	probe->dynamic.probe_data = VSG::storage->gi_probe_dynamic_data_create(header->width, header->height, header->depth, probe->dynamic.compression);
 

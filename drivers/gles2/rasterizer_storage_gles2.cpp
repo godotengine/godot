@@ -4427,10 +4427,6 @@ uint32_t RasterizerStorageGLES2::gi_probe_get_version(RID p_probe) {
 	return 0;
 }
 
-RasterizerStorage::GIProbeCompression RasterizerStorageGLES2::gi_probe_get_dynamic_data_get_preferred_compression() const {
-	return GI_PROBE_UNCOMPRESSED;
-}
-
 RID RasterizerStorageGLES2::gi_probe_dynamic_data_create(int p_width, int p_height, int p_depth, GIProbeCompression p_compression) {
 	return RID();
 }

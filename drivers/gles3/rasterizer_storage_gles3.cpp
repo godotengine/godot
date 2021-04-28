@@ -6160,6 +6160,10 @@ bool RasterizerStorageGLES3::gi_probe_is_interior(RID p_probe) const {
 
 void RasterizerStorageGLES3::gi_probe_set_compress(RID p_probe, bool p_enable) {
 
+	if (p_enable) {
+		WARN_DEPRECATED_MSG("GIProbe's Compress property has been deprecated due to known bugs and will be removed in Godot 4.0.");
+	}
+
 	GIProbe *gip = gi_probe_owner.getornull(p_probe);
 	ERR_FAIL_COND(!gip);
 
@@ -6213,14 +6217,6 @@ uint32_t RasterizerStorageGLES3::gi_probe_get_version(RID p_probe) {
 	return gip->version;
 }
 
-RasterizerStorage::GIProbeCompression RasterizerStorageGLES3::gi_probe_get_dynamic_data_get_preferred_compression() const {
-	if (config.s3tc_supported) {
-		return GI_PROBE_S3TC;
-	} else {
-		return GI_PROBE_UNCOMPRESSED;
-	}
-}
-
 RID RasterizerStorageGLES3::gi_probe_dynamic_data_create(int p_width, int p_height, int p_depth, GIProbeCompression p_compression) {
 
 	GIProbeData *gipd = memnew(GIProbeData);
@@ -6228,7 +6224,7 @@ RID RasterizerStorageGLES3::gi_probe_dynamic_data_create(int p_width, int p_heig
 	gipd->width = p_width;
 	gipd->height = p_height;
 	gipd->depth = p_depth;
-	gipd->compression = p_compression;
+	gipd->compression = GI_PROBE_UNCOMPRESSED;
 
 	glActiveTexture(GL_TEXTURE0);
 	glGenTextures(1, &gipd->tex_id);
@@ -6242,13 +6238,7 @@ RID RasterizerStorageGLES3::gi_probe_dynamic_data_create(int p_width, int p_heig
 	}
 
 	while (true) {
-
-		if (gipd->compression == GI_PROBE_S3TC) {
-			int size = p_width * p_height * p_depth;
-			glCompressedTexImage3D(GL_TEXTURE_3D, level, _EXT_COMPRESSED_RGBA_S3TC_DXT5_EXT, p_width, p_height, p_depth, 0, size, NULL);
-		} else {
-			glTexImage3D(GL_TEXTURE_3D, level, GL_RGBA8, p_width, p_height, p_depth, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-		}
+		glTexImage3D(GL_TEXTURE_3D, level, GL_RGBA8, p_width, p_height, p_depth, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
 
 		if (p_width <= min_size || p_height <= min_size || p_depth <= min_size)
 			break;
@@ -6295,12 +6285,7 @@ void RasterizerStorageGLES3::gi_probe_dynamic_data_update(RID p_gi_probe_data, i
 */
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_3D, gipd->tex_id);
-	if (gipd->compression == GI_PROBE_S3TC) {
-		int size = (gipd->width >> p_mipmap) * (gipd->height >> p_mipmap) * p_slice_count;
-		glCompressedTexSubImage3D(GL_TEXTURE_3D, p_mipmap, 0, 0, p_depth_slice, gipd->width >> p_mipmap, gipd->height >> p_mipmap, p_slice_count, _EXT_COMPRESSED_RGBA_S3TC_DXT5_EXT, size, p_data);
-	} else {
-		glTexSubImage3D(GL_TEXTURE_3D, p_mipmap, 0, 0, p_depth_slice, gipd->width >> p_mipmap, gipd->height >> p_mipmap, p_slice_count, GL_RGBA, GL_UNSIGNED_BYTE, p_data);
-	}
+	glTexSubImage3D(GL_TEXTURE_3D, p_mipmap, 0, 0, p_depth_slice, gipd->width >> p_mipmap, gipd->height >> p_mipmap, p_slice_count, GL_RGBA, GL_UNSIGNED_BYTE, p_data);
 	//glTexImage3D(GL_TEXTURE_3D,p_mipmap,GL_RGBA8,gipd->width>>p_mipmap,gipd->height>>p_mipmap,gipd->depth>>p_mipmap,0,GL_RGBA,GL_UNSIGNED_BYTE,p_data);
 	//glTexImage3D(GL_TEXTURE_3D,p_mipmap,GL_RGBA8,gipd->width>>p_mipmap,gipd->height>>p_mipmap,gipd->depth>>p_mipmap,0,GL_RGBA,GL_UNSIGNED_BYTE,data.ptr());
 }
