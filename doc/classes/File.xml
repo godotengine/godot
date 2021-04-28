@@ -275,6 +275,7 @@
 			</argument>
 			<description>
 				Opens a compressed file for reading or writing.
+				[b]Note:[/b] [method open_compressed] can only read files that were saved by Godot, not third-party compression formats. See [url=https://github.com/godotengine/godot/issues/28999]GitHub issue #28999[/url] for a workaround.
 			</description>
 		</method>
 		<method name="open_encrypted">
