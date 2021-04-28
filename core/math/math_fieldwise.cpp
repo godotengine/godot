@@ -141,7 +141,7 @@ Variant fieldwise_assign(const Variant &p_target, const Variant &p_source, const
 			return target;
 		}
 
-		case Variant::TRANSFORM: {
+		case Variant::TRANSFORM3D: {
 			SETUP_TYPE(Transform3D)
 
 			/**/ TRY_TRANSFER_FIELD("xx", basis.elements[0][0])

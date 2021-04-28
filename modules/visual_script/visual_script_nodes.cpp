@@ -3921,7 +3921,7 @@ void register_visual_script_nodes() {
 	VisualScriptLanguage::singleton->add_register_func("functions/deconstruct/" + Variant::get_type_name(Variant::Type::QUAT), create_node_deconst_typed<Variant::Type::QUAT>);
 	VisualScriptLanguage::singleton->add_register_func("functions/deconstruct/" + Variant::get_type_name(Variant::Type::AABB), create_node_deconst_typed<Variant::Type::AABB>);
 	VisualScriptLanguage::singleton->add_register_func("functions/deconstruct/" + Variant::get_type_name(Variant::Type::BASIS), create_node_deconst_typed<Variant::Type::BASIS>);
-	VisualScriptLanguage::singleton->add_register_func("functions/deconstruct/" + Variant::get_type_name(Variant::Type::TRANSFORM), create_node_deconst_typed<Variant::Type::TRANSFORM>);
+	VisualScriptLanguage::singleton->add_register_func("functions/deconstruct/" + Variant::get_type_name(Variant::Type::TRANSFORM3D), create_node_deconst_typed<Variant::Type::TRANSFORM3D>);
 	VisualScriptLanguage::singleton->add_register_func("functions/compose_array", create_node_generic<VisualScriptComposeArray>);
 
 	for (int i = 1; i < Variant::VARIANT_MAX; i++) {

@@ -199,7 +199,7 @@ protected:
 					pinfo.type = Variant::TRANSFORM2D;
 				} break;
 				case RS::GLOBAL_VAR_TYPE_TRANSFORM: {
-					pinfo.type = Variant::TRANSFORM;
+					pinfo.type = Variant::TRANSFORM3D;
 				} break;
 				case RS::GLOBAL_VAR_TYPE_MAT4: {
 					pinfo.type = Variant::PACKED_INT32_ARRAY;

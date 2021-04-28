@@ -571,7 +571,7 @@ Variant Tween::_run_equation(InterpolateData &p_data) {
 			result = r;
 		} break;
 
-		case Variant::TRANSFORM: {
+		case Variant::TRANSFORM3D: {
 			// Get the transforms for the initial and delta values
 			Transform3D i = initial_val;
 			Transform3D d = delta_val;
@@ -1229,7 +1229,7 @@ bool Tween::_calc_delta_val(const Variant &p_initial_val, const Variant &p_final
 					f.elements[2][2] - i.elements[2][2]);
 		} break;
 
-		case Variant::TRANSFORM: {
+		case Variant::TRANSFORM3D: {
 			// Build a new transform which is the difference between the initial and final values
 			Transform3D i = initial_val;
 			Transform3D f = final_val;
@@ -1269,7 +1269,7 @@ bool Tween::_calc_delta_val(const Variant &p_initial_val, const Variant &p_final
 				Variant::QUAT,
 				Variant::AABB,
 				Variant::BASIS,
-				Variant::TRANSFORM,
+				Variant::TRANSFORM3D,
 				Variant::COLOR,
 			};
 

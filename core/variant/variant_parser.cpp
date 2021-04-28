@@ -1489,7 +1489,7 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 			p_store_string_func(p_store_string_ud, s + " )");
 
 		} break;
-		case Variant::TRANSFORM: {
+		case Variant::TRANSFORM3D: {
 			String s = "Transform3D( ";
 			Transform3D t = p_variant;
 			Basis &m3 = t.basis;

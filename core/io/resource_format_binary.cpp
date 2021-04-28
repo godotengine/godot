@@ -1416,7 +1416,7 @@ void ResourceFormatSaverBinaryInstance::write_variant(FileAccess *f, const Varia
 			f->store_real(val.elements[2].z);
 
 		} break;
-		case Variant::TRANSFORM: {
+		case Variant::TRANSFORM3D: {
 			f->store_32(VARIANT_TRANSFORM);
 			Transform3D val = p_property;
 			f->store_real(val.basis.elements[0].x);

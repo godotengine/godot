@@ -91,7 +91,7 @@ public:
 		QUAT,
 		AABB,
 		BASIS,
-		TRANSFORM,
+		TRANSFORM3D,
 
 		// misc types
 		COLOR,
@@ -200,7 +200,7 @@ private:
 		Transform2D *_transform2d;
 		::AABB *_aabb;
 		Basis *_basis;
-		Transform3D *_transform;
+		Transform3D *_transform3d;
 		PackedArrayRefBase *packed_array;
 		void *_ptr; //generic pointer
 		uint8_t _mem[sizeof(ObjData) > (sizeof(real_t) * 4) ? sizeof(ObjData) : (sizeof(real_t) * 4)];
@@ -322,8 +322,8 @@ public:
 	operator ::AABB() const;
 	operator Quat() const;
 	operator Basis() const;
-	operator Transform3D() const;
 	operator Transform2D() const;
+	operator Transform3D() const;
 
 	operator Color() const;
 	operator NodePath() const;

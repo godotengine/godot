@@ -55,7 +55,7 @@ public:
 			case Variant::BASIS:
 				init_basis(v);
 				break;
-			case Variant::TRANSFORM:
+			case Variant::TRANSFORM3D:
 				init_transform(v);
 				break;
 			case Variant::STRING_NAME:
@@ -144,8 +144,8 @@ public:
 	_FORCE_INLINE_ static const ::AABB *get_aabb(const Variant *v) { return v->_data._aabb; }
 	_FORCE_INLINE_ static Basis *get_basis(Variant *v) { return v->_data._basis; }
 	_FORCE_INLINE_ static const Basis *get_basis(const Variant *v) { return v->_data._basis; }
-	_FORCE_INLINE_ static Transform3D *get_transform(Variant *v) { return v->_data._transform; }
-	_FORCE_INLINE_ static const Transform3D *get_transform(const Variant *v) { return v->_data._transform; }
+	_FORCE_INLINE_ static Transform3D *get_transform(Variant *v) { return v->_data._transform3d; }
+	_FORCE_INLINE_ static const Transform3D *get_transform(const Variant *v) { return v->_data._transform3d; }
 
 	// Misc types.
 	_FORCE_INLINE_ static Color *get_color(Variant *v) { return reinterpret_cast<Color *>(v->_data._mem); }
@@ -217,8 +217,8 @@ public:
 		v->type = Variant::BASIS;
 	}
 	_FORCE_INLINE_ static void init_transform(Variant *v) {
-		v->_data._transform = memnew(Transform3D);
-		v->type = Variant::TRANSFORM;
+		v->_data._transform3d = memnew(Transform3D);
+		v->type = Variant::TRANSFORM3D;
 	}
 	_FORCE_INLINE_ static void init_string_name(Variant *v) {
 		memnew_placement(v->_data._mem, StringName);
@@ -320,7 +320,7 @@ public:
 				return get_rect2(v);
 			case Variant::RECT2I:
 				return get_rect2i(v);
-			case Variant::TRANSFORM:
+			case Variant::TRANSFORM3D:
 				return get_transform(v);
 			case Variant::TRANSFORM2D:
 				return get_transform2d(v);
@@ -398,7 +398,7 @@ public:
 				return get_rect2(v);
 			case Variant::RECT2I:
 				return get_rect2i(v);
-			case Variant::TRANSFORM:
+			case Variant::TRANSFORM3D:
 				return get_transform(v);
 			case Variant::TRANSFORM2D:
 				return get_transform2d(v);
