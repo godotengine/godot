@@ -615,7 +615,7 @@ void ParticlesMaterial::_update_shader() {
 		}
 		// turn particle by rotation in Y
 		if (particle_flags[PARTICLE_FLAG_ROTATE_Y]) {
-			code += "	TRANSFORM = TRANSFORM * mat4(vec4(cos(CUSTOM.x), 0.0, -sin(CUSTOM.x), 0.0), vec4(0.0, 1.0, 0.0, 0.0), vec4(sin(CUSTOM.x), 0.0, cos(CUSTOM.x), 0.0), vec4(0.0, 0.0, 0.0, 1.0));\n";
+			code += "	TRANSFORM = mat4(vec4(cos(CUSTOM.x), 0.0, -sin(CUSTOM.x), 0.0), vec4(0.0, 1.0, 0.0, 0.0), vec4(sin(CUSTOM.x), 0.0, cos(CUSTOM.x), 0.0), vec4(0.0, 0.0, 0.0, 1.0));\n";
 		}
 	}
 	//scale by scale
