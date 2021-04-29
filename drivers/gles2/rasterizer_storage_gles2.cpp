@@ -3401,7 +3401,7 @@ void RasterizerStorageGLES2::multimesh_set_as_bulk_array(RID p_multimesh, const 
 
 	PoolVector<float>::Read r = p_array.read();
 	ERR_FAIL_COND(!r.ptr());
-	copymem(multimesh->data.ptrw(), r.ptr(), dsize * sizeof(float));
+	memcpy(multimesh->data.ptrw(), r.ptr(), dsize * sizeof(float));
 
 	multimesh->dirty_data = true;
 	multimesh->dirty_aabb = true;
@@ -4466,7 +4466,7 @@ void RasterizerStorageGLES2::lightmap_capture_set_octree(RID p_capture, const Po
 	if (p_octree.size()) {
 		PoolVector<LightmapCaptureOctree>::Write w = capture->octree.write();
 		PoolVector<uint8_t>::Read r = p_octree.read();
-		copymem(w.ptr(), r.ptr(), p_octree.size());
+		memcpy(w.ptr(), r.ptr(), p_octree.size());
 	}
 	capture->instance_change_notify(true, false);
 }
@@ -4483,7 +4483,7 @@ PoolVector<uint8_t> RasterizerStorageGLES2::lightmap_capture_get_octree(RID p_ca
 	{
 		PoolVector<LightmapCaptureOctree>::Read r = capture->octree.read();
 		PoolVector<uint8_t>::Write w = ret.write();
-		copymem(w.ptr(), r.ptr(), ret.size());
+		memcpy(w.ptr(), r.ptr(), ret.size());
 	}
 
 	return ret;

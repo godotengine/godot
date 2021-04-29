@@ -493,9 +493,9 @@ void AudioStreamSample::set_data(const PoolVector<uint8_t> &p_data) {
 		PoolVector<uint8_t>::Read r = p_data.read();
 		int alloc_len = datalen + DATA_PAD * 2;
 		data = AudioServer::get_singleton()->audio_data_alloc(alloc_len); //alloc with some padding for interpolation
-		zeromem(data, alloc_len);
+		memset(data, 0, alloc_len);
 		uint8_t *dataptr = (uint8_t *)data;
-		copymem(dataptr + DATA_PAD, r.ptr(), datalen);
+		memcpy(dataptr + DATA_PAD, r.ptr(), datalen);
 		data_bytes = datalen;
 	}
 
@@ -511,7 +511,7 @@ PoolVector<uint8_t> AudioStreamSample::get_data() const {
 
 			PoolVector<uint8_t>::Write w = pv.write();
 			uint8_t *dataptr = (uint8_t *)data;
-			copymem(w.ptr(), dataptr + DATA_PAD, data_bytes);
+			memcpy(w.ptr(), dataptr + DATA_PAD, data_bytes);
 		}
 	}
 

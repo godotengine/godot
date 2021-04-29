@@ -1239,7 +1239,7 @@ Vector<Geometry::PackRectsResult> Geometry::partial_pack_rects(const Vector<Vect
 
 	Vector<stbrp_node> nodes;
 	nodes.resize(p_atlas_size.width);
-	zeromem(nodes.ptrw(), sizeof(stbrp_node) * nodes.size());
+	memset(nodes.ptrw(), 0, sizeof(stbrp_node) * nodes.size());
 
 	stbrp_context context;
 	stbrp_init_target(&context, p_atlas_size.width, p_atlas_size.height, nodes.ptrw(), p_atlas_size.width);

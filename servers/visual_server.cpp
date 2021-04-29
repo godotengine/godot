@@ -380,7 +380,7 @@ Error VisualServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint32_
 
 							uint16_t vector[2] = { Math::make_half_float(src[i].x), Math::make_half_float(src[i].y) };
 
-							copymem(&vw[p_offsets[ai] + i * p_stride], vector, sizeof(uint16_t) * 2);
+							memcpy(&vw[p_offsets[ai] + i * p_stride], vector, sizeof(uint16_t) * 2);
 
 							if (i == 0) {
 
@@ -396,7 +396,7 @@ Error VisualServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint32_
 
 							float vector[2] = { src[i].x, src[i].y };
 
-							copymem(&vw[p_offsets[ai] + i * p_stride], vector, sizeof(float) * 2);
+							memcpy(&vw[p_offsets[ai] + i * p_stride], vector, sizeof(float) * 2);
 
 							if (i == 0) {
 
@@ -426,7 +426,7 @@ Error VisualServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint32_
 
 							uint16_t vector[4] = { Math::make_half_float(src[i].x), Math::make_half_float(src[i].y), Math::make_half_float(src[i].z), Math::make_half_float(1.0) };
 
-							copymem(&vw[p_offsets[ai] + i * p_stride], vector, sizeof(uint16_t) * 4);
+							memcpy(&vw[p_offsets[ai] + i * p_stride], vector, sizeof(uint16_t) * 4);
 
 							if (i == 0) {
 
@@ -442,7 +442,7 @@ Error VisualServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint32_
 
 							float vector[3] = { src[i].x, src[i].y, src[i].z };
 
-							copymem(&vw[p_offsets[ai] + i * p_stride], vector, sizeof(float) * 3);
+							memcpy(&vw[p_offsets[ai] + i * p_stride], vector, sizeof(float) * 3);
 
 							if (i == 0) {
 
@@ -481,14 +481,14 @@ Error VisualServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint32_
 							0,
 						};
 
-						copymem(&vw[p_offsets[ai] + i * p_stride], vector, 4);
+						memcpy(&vw[p_offsets[ai] + i * p_stride], vector, 4);
 					}
 
 				} else {
 					for (int i = 0; i < p_vertex_array_len; i++) {
 
 						float vector[3] = { src[i].x, src[i].y, src[i].z };
-						copymem(&vw[p_offsets[ai] + i * p_stride], vector, 3 * 4);
+						memcpy(&vw[p_offsets[ai] + i * p_stride], vector, 3 * 4);
 					}
 				}
 
@@ -515,7 +515,7 @@ Error VisualServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint32_
 							(int8_t)CLAMP(src[i * 4 + 3] * 127, -128, 127)
 						};
 
-						copymem(&vw[p_offsets[ai] + i * p_stride], xyzw, 4);
+						memcpy(&vw[p_offsets[ai] + i * p_stride], xyzw, 4);
 					}
 
 				} else {
@@ -528,7 +528,7 @@ Error VisualServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint32_
 							src[i * 4 + 3]
 						};
 
-						copymem(&vw[p_offsets[ai] + i * p_stride], xyzw, 4 * 4);
+						memcpy(&vw[p_offsets[ai] + i * p_stride], xyzw, 4 * 4);
 					}
 				}
 
@@ -555,13 +555,13 @@ Error VisualServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint32_
 							colors[j] = CLAMP(int((src[i][j]) * 255.0), 0, 255);
 						}
 
-						copymem(&vw[p_offsets[ai] + i * p_stride], colors, 4);
+						memcpy(&vw[p_offsets[ai] + i * p_stride], colors, 4);
 					}
 				} else {
 
 					for (int i = 0; i < p_vertex_array_len; i++) {
 
-						copymem(&vw[p_offsets[ai] + i * p_stride], &src[i], 4 * 4);
+						memcpy(&vw[p_offsets[ai] + i * p_stride], &src[i], 4 * 4);
 					}
 				}
 
@@ -583,7 +583,7 @@ Error VisualServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint32_
 					for (int i = 0; i < p_vertex_array_len; i++) {
 
 						uint16_t uv[2] = { Math::make_half_float(src[i].x), Math::make_half_float(src[i].y) };
-						copymem(&vw[p_offsets[ai] + i * p_stride], uv, 2 * 2);
+						memcpy(&vw[p_offsets[ai] + i * p_stride], uv, 2 * 2);
 					}
 
 				} else {
@@ -591,7 +591,7 @@ Error VisualServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint32_
 
 						float uv[2] = { src[i].x, src[i].y };
 
-						copymem(&vw[p_offsets[ai] + i * p_stride], uv, 2 * 4);
+						memcpy(&vw[p_offsets[ai] + i * p_stride], uv, 2 * 4);
 					}
 				}
 
@@ -614,7 +614,7 @@ Error VisualServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint32_
 					for (int i = 0; i < p_vertex_array_len; i++) {
 
 						uint16_t uv[2] = { Math::make_half_float(src[i].x), Math::make_half_float(src[i].y) };
-						copymem(&vw[p_offsets[ai] + i * p_stride], uv, 2 * 2);
+						memcpy(&vw[p_offsets[ai] + i * p_stride], uv, 2 * 2);
 					}
 
 				} else {
@@ -622,7 +622,7 @@ Error VisualServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint32_
 
 						float uv[2] = { src[i].x, src[i].y };
 
-						copymem(&vw[p_offsets[ai] + i * p_stride], uv, 2 * 4);
+						memcpy(&vw[p_offsets[ai] + i * p_stride], uv, 2 * 4);
 					}
 				}
 			} break;
@@ -647,7 +647,7 @@ Error VisualServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint32_
 							data[j] = CLAMP(src[i * VS::ARRAY_WEIGHTS_SIZE + j] * 65535, 0, 65535);
 						}
 
-						copymem(&vw[p_offsets[ai] + i * p_stride], data, 2 * 4);
+						memcpy(&vw[p_offsets[ai] + i * p_stride], data, 2 * 4);
 					}
 				} else {
 
@@ -658,7 +658,7 @@ Error VisualServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint32_
 							data[j] = src[i * VS::ARRAY_WEIGHTS_SIZE + j];
 						}
 
-						copymem(&vw[p_offsets[ai] + i * p_stride], data, 4 * 4);
+						memcpy(&vw[p_offsets[ai] + i * p_stride], data, 4 * 4);
 					}
 				}
 
@@ -685,7 +685,7 @@ Error VisualServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint32_
 							max_bone = MAX(data[j], max_bone);
 						}
 
-						copymem(&vw[p_offsets[ai] + i * p_stride], data, 4);
+						memcpy(&vw[p_offsets[ai] + i * p_stride], data, 4);
 					}
 
 				} else {
@@ -697,7 +697,7 @@ Error VisualServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint32_
 							max_bone = MAX(data[j], max_bone);
 						}
 
-						copymem(&vw[p_offsets[ai] + i * p_stride], data, 2 * 4);
+						memcpy(&vw[p_offsets[ai] + i * p_stride], data, 2 * 4);
 					}
 				}
 
@@ -721,11 +721,11 @@ Error VisualServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint32_
 					if (p_vertex_array_len < (1 << 16)) {
 						uint16_t v = src[i];
 
-						copymem(&iw[i * 2], &v, 2);
+						memcpy(&iw[i * 2], &v, 2);
 					} else {
 						uint32_t v = src[i];
 
-						copymem(&iw[i * 4], &v, 4);
+						memcpy(&iw[i * 4], &v, 4);
 					}
 				}
 			} break;

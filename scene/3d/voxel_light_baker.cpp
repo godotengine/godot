@@ -731,7 +731,7 @@ void VoxelLightBaker::_check_init_light() {
 		leaf_voxel_count = 0;
 		_fixup_plot(0, 0); //pre fixup, so normal, albedo, emission, etc. work for lighting.
 		bake_light.resize(bake_cells.size());
-		//zeromem(bake_light.ptrw(), bake_light.size() * sizeof(Light));
+		//memset(bake_light.ptrw(), 0, bake_light.size() * sizeof(Light));
 		first_leaf = -1;
 		_init_light_plot(0, 0, 0, 0, 0, CHILD_EMPTY);
 	}
@@ -1596,7 +1596,7 @@ PoolVector<uint8_t> VoxelLightBaker::create_capture_octree(int p_subdiv) {
 	ret.resize(ret_bytes);
 	{
 		PoolVector<uint8_t>::Write w = ret.write();
-		copymem(w.ptr(), octree.ptr(), ret_bytes);
+		memcpy(w.ptr(), octree.ptr(), ret_bytes);
 	}
 
 	return ret;

@@ -181,7 +181,7 @@ PoolVector<uint8_t> AudioStreamMP3::get_data() const {
 		vdata.resize(data_len);
 		{
 			PoolVector<uint8_t>::Write w = vdata.write();
-			copymem(w.ptr(), data, data_len);
+			memcpy(w.ptr(), data, data_len);
 		}
 	}
 

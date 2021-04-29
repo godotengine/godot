@@ -444,7 +444,7 @@ Error StreamPeerBuffer::put_data(const uint8_t *p_data, int p_bytes) {
 	}
 
 	PoolVector<uint8_t>::Write w = data.write();
-	copymem(&w[pointer], p_data, p_bytes);
+	memcpy(&w[pointer], p_data, p_bytes);
 
 	pointer += p_bytes;
 	return OK;
@@ -479,7 +479,7 @@ Error StreamPeerBuffer::get_partial_data(uint8_t *p_buffer, int p_bytes, int &r_
 	}
 
 	PoolVector<uint8_t>::Read r = data.read();
-	copymem(p_buffer, r.ptr() + pointer, r_received);
+	memcpy(p_buffer, r.ptr() + pointer, r_received);
 
 	pointer += r_received;
 	// FIXME: return what? OK or ERR_*

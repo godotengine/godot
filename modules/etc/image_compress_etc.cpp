@@ -31,7 +31,6 @@
 #include "image_compress_etc.h"
 
 #include "core/image.h"
-#include "core/os/copymem.h"
 #include "core/os/os.h"
 #include "core/print_string.h"
 

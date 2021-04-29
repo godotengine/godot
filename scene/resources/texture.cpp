@@ -630,7 +630,7 @@ Error StreamTexture::_load_data(const String &p_path, int &tw, int &th, int &tw_
 					PoolVector<uint8_t> id = mipmap_images[i]->get_data();
 					int len = id.size();
 					PoolVector<uint8_t>::Read r = id.read();
-					copymem(&w[ofs], r.ptr(), len);
+					memcpy(&w[ofs], r.ptr(), len);
 					ofs += len;
 				}
 			}
@@ -699,7 +699,7 @@ Error StreamTexture::_load_data(const String &p_path, int &tw, int &th, int &tw_
 				int expected = total_size - ofs;
 				if (bytes < expected) {
 					//this is a compatibility workaround for older format, which saved less mipmaps2. It is still recommended the image is reimported.
-					zeromem(w.ptr() + bytes, (expected - bytes));
+					memset(w.ptr() + bytes, 0, (expected - bytes));
 				} else if (bytes != expected) {
 					ERR_FAIL_V(ERR_FILE_CORRUPT);
 				}
@@ -2328,7 +2328,7 @@ Error TextureLayered::load(const String &p_path) {
 						PoolVector<uint8_t> id = mipmap_images[i]->get_data();
 						int len = id.size();
 						PoolVector<uint8_t>::Read r = id.read();
-						copymem(&w[ofs], r.ptr(), len);
+						memcpy(&w[ofs], r.ptr(), len);
 						ofs += len;
 					}
 				}

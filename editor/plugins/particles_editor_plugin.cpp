@@ -396,7 +396,7 @@ void ParticlesEditor::_generate_emission_points() {
 
 	{
 		PoolVector<uint8_t>::Write iw = point_img.write();
-		zeromem(iw.ptr(), w * h * 3 * sizeof(float));
+		memset(iw.ptr(), 0, w * h * 3 * sizeof(float));
 		PoolVector<Vector3>::Read r = points.read();
 		float *wf = (float *)iw.ptr();
 		for (int i = 0; i < point_count; i++) {
@@ -426,7 +426,7 @@ void ParticlesEditor::_generate_emission_points() {
 
 		{
 			PoolVector<uint8_t>::Write iw = point_img2.write();
-			zeromem(iw.ptr(), w * h * 3 * sizeof(float));
+			memset(iw.ptr(), 0, w * h * 3 * sizeof(float));
 			PoolVector<Vector3>::Read r = normals.read();
 			float *wf = (float *)iw.ptr();
 			for (int i = 0; i < point_count; i++) {

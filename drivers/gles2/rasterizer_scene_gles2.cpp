@@ -1558,7 +1558,7 @@ void RasterizerSceneGLES2::_setup_geometry(RenderList::Element *p_element, Raste
 
 							size_t transform_buffer_offset = i * 12;
 
-							copymem(&buffer[transform_buffer_offset], row, sizeof(row));
+							memcpy(&buffer[transform_buffer_offset], row, sizeof(row));
 						}
 					}
 

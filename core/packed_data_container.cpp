@@ -336,7 +336,7 @@ Error PackedDataContainer::pack(const Variant &p_data) {
 	datalen = tmpdata.size();
 	data.resize(tmpdata.size());
 	PoolVector<uint8_t>::Write w = data.write();
-	copymem(w.ptr(), tmpdata.ptr(), tmpdata.size());
+	memcpy(w.ptr(), tmpdata.ptr(), tmpdata.size());
 
 	return OK;
 }

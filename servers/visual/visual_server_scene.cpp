@@ -1272,7 +1272,7 @@ _FORCE_INLINE_ static void _light_capture_sample_octree(const RasterizerStorage:
 
 	Vector3 color[2][8];
 	float alpha[2][8];
-	zeromem(alpha, sizeof(float) * 2 * 8);
+	memset(alpha, 0, sizeof(float) * 2 * 8);
 
 	//find cell at given level first
 
@@ -2573,7 +2573,7 @@ void VisualServerScene::_setup_gi_probe(Instance *p_instance) {
 		size /= size_divisor;
 		mipmap.resize(size);
 		PoolVector<uint8_t>::Write w = mipmap.write();
-		zeromem(w.ptr(), size);
+		memset(w.ptr(), 0, size);
 		w.release();
 
 		probe->dynamic.mipmaps_3d.push_back(mipmap);
@@ -3154,7 +3154,7 @@ void VisualServerScene::_bake_gi_probe(Instance *p_gi_probe) {
 				const InstanceGIProbeData::CompBlockS3TC &b = mmr[i];
 
 				uint8_t *blockptr = &mmw[b.offset * 16];
-				copymem(blockptr, b.alpha, 8); //copy alpha part, which is precomputed
+				memcpy(blockptr, b.alpha, 8); //copy alpha part, which is precomputed
 
 				Vector3 colors[16];
 

@@ -329,7 +329,7 @@ struct _VariantCall {
 		size_t len = charstr.length();
 		retval.resize(len);
 		PoolByteArray::Write w = retval.write();
-		copymem(w.ptr(), charstr.ptr(), len);
+		memcpy(w.ptr(), charstr.ptr(), len);
 		w.release();
 
 		r_ret = retval;
@@ -348,7 +348,7 @@ struct _VariantCall {
 		size_t len = charstr.length();
 		retval.resize(len);
 		PoolByteArray::Write w = retval.write();
-		copymem(w.ptr(), charstr.ptr(), len);
+		memcpy(w.ptr(), charstr.ptr(), len);
 		w.release();
 
 		r_ret = retval;
@@ -366,7 +366,7 @@ struct _VariantCall {
 		size_t len = s->length() * sizeof(wchar_t);
 		retval.resize(len);
 		PoolByteArray::Write w = retval.write();
-		copymem(w.ptr(), s->ptr(), len);
+		memcpy(w.ptr(), s->ptr(), len);
 		w.release();
 
 		r_ret = retval;
@@ -585,7 +585,7 @@ struct _VariantCall {
 			PoolByteArray::Read r = ba->read();
 			CharString cs;
 			cs.resize(ba->size() + 1);
-			copymem(cs.ptrw(), r.ptr(), ba->size());
+			memcpy(cs.ptrw(), r.ptr(), ba->size());
 			cs[ba->size()] = 0;
 
 			s = cs.get_data();
