@@ -1640,7 +1640,7 @@ String DisplayServerOSX::get_name() const {
 }
 
 const NSMenu *DisplayServerOSX::_get_menu_root(const String &p_menu_root) const {
-	const NSMenu *menu = NULL;
+	const NSMenu *menu = nullptr;
 	if (p_menu_root == "") {
 		// Main menu.x
 		menu = [NSApp mainMenu];
@@ -1655,13 +1655,13 @@ const NSMenu *DisplayServerOSX::_get_menu_root(const String &p_menu_root) const 
 	}
 	if (menu == apple_menu) {
 		// Do not allow to change Apple menu.
-		return NULL;
+		return nullptr;
 	}
 	return menu;
 }
 
 NSMenu *DisplayServerOSX::_get_menu_root(const String &p_menu_root) {
-	NSMenu *menu = NULL;
+	NSMenu *menu = nullptr;
 	if (p_menu_root == "") {
 		// Main menu.
 		menu = [NSApp mainMenu];
@@ -1678,7 +1678,7 @@ NSMenu *DisplayServerOSX::_get_menu_root(const String &p_menu_root) {
 	}
 	if (menu == apple_menu) {
 		// Do not allow to change Apple menu.
-		return NULL;
+		return nullptr;
 	}
 	return menu;
 }
@@ -3029,7 +3029,7 @@ void DisplayServerOSX::cursor_set_shape(CursorShape p_shape) {
 		return;
 	}
 
-	if (cursors[p_shape] != NULL) {
+	if (cursors[p_shape] != nullptr) {
 		[cursors[p_shape] set];
 	} else {
 		switch (p_shape) {
@@ -3202,9 +3202,9 @@ void DisplayServerOSX::cursor_set_custom_image(const RES &p_cursor, CursorShape 
 		[nsimage release];
 	} else {
 		// Reset to default system cursor
-		if (cursors[p_shape] != NULL) {
+		if (cursors[p_shape] != nullptr) {
 			[cursors[p_shape] release];
-			cursors[p_shape] = NULL;
+			cursors[p_shape] = nullptr;
 		}
 
 		CursorShape c = cursor_shape;
@@ -3759,12 +3759,12 @@ DisplayServerOSX::DisplayServerOSX(const String &p_rendering_driver, WindowMode 
 
 	// Register to be notified on keyboard layout changes
 	CFNotificationCenterAddObserver(CFNotificationCenterGetDistributedCenter(),
-			NULL, keyboard_layout_changed,
-			kTISNotifySelectedKeyboardInputSourceChanged, NULL,
+			nullptr, keyboard_layout_changed,
+			kTISNotifySelectedKeyboardInputSourceChanged, nullptr,
 			CFNotificationSuspensionBehaviorDeliverImmediately);
 
 	// Register to be notified on displays arrangement changes
-	CGDisplayRegisterReconfigurationCallback(displays_arrangement_changed, NULL);
+	CGDisplayRegisterReconfigurationCallback(displays_arrangement_changed, nullptr);
 
 	// Menu bar setup must go between sharedApplication above and
 	// finishLaunching below, in order to properly emulate the behavior
@@ -3854,7 +3854,7 @@ DisplayServerOSX::DisplayServerOSX(const String &p_rendering_driver, WindowMode 
 		context_vulkan = memnew(VulkanContextOSX);
 		if (context_vulkan->initialize() != OK) {
 			memdelete(context_vulkan);
-			context_vulkan = NULL;
+			context_vulkan = nullptr;
 			r_error = ERR_CANT_CREATE;
 			ERR_FAIL_MSG("Could not initialize Vulkan");
 		}
@@ -3926,8 +3926,8 @@ DisplayServerOSX::~DisplayServerOSX() {
 	}
 #endif
 
-	CFNotificationCenterRemoveObserver(CFNotificationCenterGetDistributedCenter(), NULL, kTISNotifySelectedKeyboardInputSourceChanged, NULL);
-	CGDisplayRemoveReconfigurationCallback(displays_arrangement_changed, NULL);
+	CFNotificationCenterRemoveObserver(CFNotificationCenterGetDistributedCenter(), nullptr, kTISNotifySelectedKeyboardInputSourceChanged, nullptr);
+	CGDisplayRemoveReconfigurationCallback(displays_arrangement_changed, nullptr);
 
 	cursors_cache.clear();
 }

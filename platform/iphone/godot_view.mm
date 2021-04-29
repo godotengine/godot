@@ -291,14 +291,14 @@ static const float earth_gravity = 9.80665;
 
 - (void)initTouches {
 	for (int i = 0; i < max_touches; i++) {
-		godot_touches[i] = NULL;
+		godot_touches[i] = nullptr;
 	}
 }
 
 - (int)getTouchIDForTouch:(UITouch *)p_touch {
 	int first = -1;
 	for (int i = 0; i < max_touches; i++) {
-		if (first == -1 && godot_touches[i] == NULL) {
+		if (first == -1 && godot_touches[i] == nullptr) {
 			first = i;
 			continue;
 		}
@@ -318,11 +318,11 @@ static const float earth_gravity = 9.80665;
 - (int)removeTouch:(UITouch *)p_touch {
 	int remaining = 0;
 	for (int i = 0; i < max_touches; i++) {
-		if (godot_touches[i] == NULL) {
+		if (godot_touches[i] == nullptr) {
 			continue;
 		}
 		if (godot_touches[i] == p_touch) {
-			godot_touches[i] = NULL;
+			godot_touches[i] = nullptr;
 		} else {
 			++remaining;
 		}
@@ -332,7 +332,7 @@ static const float earth_gravity = 9.80665;
 
 - (void)clearTouches {
 	for (int i = 0; i < max_touches; i++) {
-		godot_touches[i] = NULL;
+		godot_touches[i] = nullptr;
 	}
 }
 

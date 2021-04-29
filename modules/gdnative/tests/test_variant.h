@@ -107,7 +107,7 @@ TEST_CASE("[GDNative Variant] Variant call") {
 	godot_string_name_new_with_latin1_chars(&method, "is_valid_identifier");
 
 	godot_variant_call_error error;
-	godot_variant_call(&self, &method, NULL, 0, &ret, &error);
+	godot_variant_call(&self, &method, nullptr, 0, &ret, &error);
 
 	CHECK(godot_variant_get_type(&ret) == GODOT_VARIANT_TYPE_BOOL);
 	CHECK(godot_variant_as_bool(&ret));

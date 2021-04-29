@@ -1045,7 +1045,7 @@ TEST_CASE("[String] lstrip and rstrip") {
 
 TEST_CASE("[String] ensuring empty string into parse_utf8 passes empty string") {
 	String empty;
-	CHECK(empty.parse_utf8(NULL, -1));
+	CHECK(empty.parse_utf8(nullptr, -1));
 }
 
 TEST_CASE("[String] Cyrillic to_lower()") {

@@ -65,10 +65,10 @@ void JavaScriptToolsEditorPlugin::_download_zip(Variant p_v) {
 
 	FileAccess *src_f;
 	zlib_filefunc_def io = zipio_create_io_from_file(&src_f);
-	zipFile zip = zipOpen2("/tmp/project.zip", APPEND_STATUS_CREATE, NULL, &io);
+	zipFile zip = zipOpen2("/tmp/project.zip", APPEND_STATUS_CREATE, nullptr, &io);
 	String base_path = resource_path.substr(0, resource_path.rfind("/")) + "/";
 	_zip_recursive(resource_path, base_path, zip);
-	zipClose(zip, NULL);
+	zipClose(zip, nullptr);
 	godot_js_editor_download_file("/tmp/project.zip", "project.zip", "application/zip");
 }
 
@@ -88,12 +88,12 @@ void JavaScriptToolsEditorPlugin::_zip_file(String p_path, String p_base_path, z
 	String path = p_path.replace_first(p_base_path, "");
 	zipOpenNewFileInZip(p_zip,
 			path.utf8().get_data(),
-			NULL,
-			NULL,
+			nullptr,
+			nullptr,
 			0,
-			NULL,
+			nullptr,
 			0,
-			NULL,
+			nullptr,
 			Z_DEFLATED,
 			Z_DEFAULT_COMPRESSION);
 	zipWriteInFileInZip(p_zip, data.ptr(), data.size());
@@ -116,12 +116,12 @@ void JavaScriptToolsEditorPlugin::_zip_recursive(String p_path, String p_base_pa
 			String path = cs.replace_first(p_base_path, "") + "/";
 			zipOpenNewFileInZip(p_zip,
 					path.utf8().get_data(),
-					NULL,
-					NULL,
+					nullptr,
+					nullptr,
 					0,
-					NULL,
+					nullptr,
 					0,
-					NULL,
+					nullptr,
 					Z_DEFLATED,
 					Z_DEFAULT_COMPRESSION);
 			zipCloseFileInZip(p_zip);

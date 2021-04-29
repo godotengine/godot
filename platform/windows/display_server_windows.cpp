@@ -1419,13 +1419,13 @@ void DisplayServerWindows::enable_for_stealing_focus(OS::ProcessID pid) {
 }
 
 int DisplayServerWindows::keyboard_get_layout_count() const {
-	return GetKeyboardLayoutList(0, NULL);
+	return GetKeyboardLayoutList(0, nullptr);
 }
 
 int DisplayServerWindows::keyboard_get_current_layout() const {
 	HKL cur_layout = GetKeyboardLayout(0);
 
-	int layout_count = GetKeyboardLayoutList(0, NULL);
+	int layout_count = GetKeyboardLayoutList(0, nullptr);
 	HKL *layouts = (HKL *)memalloc(layout_count * sizeof(HKL));
 	GetKeyboardLayoutList(layout_count, layouts);
 
@@ -1440,7 +1440,7 @@ int DisplayServerWindows::keyboard_get_current_layout() const {
 }
 
 void DisplayServerWindows::keyboard_set_current_layout(int p_index) {
-	int layout_count = GetKeyboardLayoutList(0, NULL);
+	int layout_count = GetKeyboardLayoutList(0, nullptr);
 
 	ERR_FAIL_INDEX(p_index, layout_count);
 
@@ -1451,7 +1451,7 @@ void DisplayServerWindows::keyboard_set_current_layout(int p_index) {
 }
 
 String DisplayServerWindows::keyboard_get_layout_language(int p_index) const {
-	int layout_count = GetKeyboardLayoutList(0, NULL);
+	int layout_count = GetKeyboardLayoutList(0, nullptr);
 
 	ERR_FAIL_INDEX_V(p_index, layout_count, "");
 
@@ -1481,7 +1481,7 @@ String _get_full_layout_name_from_registry(HKL p_layout) {
 
 	DWORD buffer = 1024;
 	DWORD vtype = REG_SZ;
-	if (RegQueryValueExW(hkey, L"Layout Text", NULL, &vtype, (LPBYTE)layout_text, &buffer) == ERROR_SUCCESS) {
+	if (RegQueryValueExW(hkey, L"Layout Text", nullptr, &vtype, (LPBYTE)layout_text, &buffer) == ERROR_SUCCESS) {
 		ret = String::utf16((const char16_t *)layout_text);
 	}
 	RegCloseKey(hkey);
@@ -1489,7 +1489,7 @@ String _get_full_layout_name_from_registry(HKL p_layout) {
 }
 
 String DisplayServerWindows::keyboard_get_layout_name(int p_index) const {
-	int layout_count = GetKeyboardLayoutList(0, NULL);
+	int layout_count = GetKeyboardLayoutList(0, nullptr);
 
 	ERR_FAIL_INDEX_V(p_index, layout_count, "");
 
