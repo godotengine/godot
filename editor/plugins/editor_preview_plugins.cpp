@@ -838,14 +838,15 @@ Ref<Texture> EditorFontPreviewPlugin::generate_from_path(const String &p_path, c
 	ril.ptr()->wait();
 	RES res = ril.ptr()->get_resource();
 	Ref<DynamicFont> sampled_font;
+	sampled_font.instance();
 	if (res->is_class("DynamicFont")) {
-		sampled_font = res->duplicate();
-		if (sampled_font->get_outline_color() == Color(1, 1, 1, 1)) {
-			sampled_font->set_outline_color(Color(0, 0, 0, 1));
+		Ref<DynamicFont> font = res;
+		sampled_font->set_font_data(font->get_font_data()->duplicate());
+		for (int i = 0; i < font->get_fallback_count(); i++) {
+			sampled_font->add_fallback(font->get_fallback(i)->duplicate());
 		}
 	} else if (res->is_class("DynamicFontData")) {
-		sampled_font.instance();
-		sampled_font->set_font_data(res);
+		sampled_font->set_font_data(res->duplicate());
 	}
 	sampled_font->set_size(50);
 
