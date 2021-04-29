@@ -1206,7 +1206,7 @@ std::string ParseTokenAsString(const TokenPtr t) {
 
 // ------------------------------------------------------------------------------------------------
 // extract a required element from a scope, abort if the element cannot be found
-ElementPtr GetRequiredElement(const ScopePtr sc, const std::string &index, const ElementPtr element /*= NULL*/) {
+ElementPtr GetRequiredElement(const ScopePtr sc, const std::string &index, const ElementPtr element /*= nullptr*/) {
 	const ElementPtr el = sc->GetElement(index);
 	TokenPtr token = el->KeyToken();
 	ERR_FAIL_COND_V(!token, nullptr);
@@ -1227,7 +1227,7 @@ bool HasElement(const ScopePtr sc, const std::string &index) {
 
 // ------------------------------------------------------------------------------------------------
 // extract a required element from a scope, abort if the element cannot be found
-ElementPtr GetOptionalElement(const ScopePtr sc, const std::string &index, const ElementPtr element /*= NULL*/) {
+ElementPtr GetOptionalElement(const ScopePtr sc, const std::string &index, const ElementPtr element /*= nullptr*/) {
 	const ElementPtr el = sc->GetElement(index);
 	return el;
 }
