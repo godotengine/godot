@@ -2004,6 +2004,7 @@ Node *Node::_duplicate(int p_flags, Map<const Node *, Node *> *r_duplimap) const
 
 	if (get_filename() != "") { //an instance
 		node->set_filename(get_filename());
+		node->data.editable_instance = data.editable_instance;
 	}
 
 	StringName script_property_name = CoreStringNames::get_singleton()->_script;
@@ -2016,19 +2017,26 @@ Node *Node::_duplicate(int p_flags, Map<const Node *, Node *> *r_duplimap) const
 		// Since nodes in the instanced hierarchy won't be duplicated explicitly, we need to make an inventory
 		// of all the nodes in the tree of the instanced scene in order to transfer the values of the properties
 
+		Vector<const Node *> instance_roots;
+		instance_roots.push_back(this);
+
 		for (List<const Node *>::Element *N = node_tree.front(); N; N = N->next()) {
 			for (int i = 0; i < N->get()->get_child_count(); ++i) {
 
 				Node *descendant = N->get()->get_child(i);
 				// Skip nodes not really belonging to the instanced hierarchy; they'll be processed normally later
 				// but remember non-instanced nodes that are hidden below instanced ones
-				if (descendant->data.owner != this) {
-					if (descendant->get_parent() && descendant->get_parent() != this && descendant->get_parent()->data.owner == this && descendant->data.owner != descendant->get_parent())
+				if (instance_roots.find(descendant->get_owner()) == -1) {
+					if (descendant->get_parent() && descendant->get_parent() != this && descendant->data.owner != descendant->get_parent())
 						hidden_roots.push_back(descendant);
 					continue;
 				}
 
 				node_tree.push_back(descendant);
+
+				if (descendant->get_filename() != "" && instance_roots.find(descendant->get_owner()) != -1) {
+					instance_roots.push_back(descendant);
+				}
 			}
 		}
 	}
