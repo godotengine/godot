@@ -50,7 +50,7 @@ int add_path(int p_argc, char **p_args) {
 
 	p_args[p_argc++] = (char *)"--path";
 	p_args[p_argc++] = (char *)[str cStringUsingEncoding:NSUTF8StringEncoding];
-	p_args[p_argc] = NULL;
+	p_args[p_argc] = nullptr;
 
 	return p_argc;
 };
@@ -69,7 +69,7 @@ int add_cmdline(int p_argc, char **p_args) {
 		p_args[p_argc++] = (char *)[str cStringUsingEncoding:NSUTF8StringEncoding];
 	};
 
-	p_args[p_argc] = NULL;
+	p_args[p_argc] = nullptr;
 
 	return p_argc;
 };

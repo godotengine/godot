@@ -38,7 +38,7 @@
 #include "scene/main/window.h"
 #include "scene/resources/font.h"
 
-///////////////////// NULL /////////////////////////
+///////////////////// Nil /////////////////////////
 
 void EditorPropertyNil::update_property() {
 }

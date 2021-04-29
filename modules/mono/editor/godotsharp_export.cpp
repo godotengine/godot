@@ -91,7 +91,7 @@ Error get_assembly_dependencies(GDMonoAssembly *p_assembly, MonoAssemblyName *re
 
 		mono_assembly_get_assemblyref(image, i, reusable_aname);
 
-		GDMonoAssembly *ref_assembly = NULL;
+		GDMonoAssembly *ref_assembly = nullptr;
 		if (!GDMono::get_singleton()->load_assembly(ref_name, reusable_aname, &ref_assembly, /* refonly: */ true, p_search_dirs)) {
 			ERR_FAIL_V_MSG(ERR_CANT_RESOLVE, "Cannot load assembly (refonly): '" + ref_name + "'.");
 		}

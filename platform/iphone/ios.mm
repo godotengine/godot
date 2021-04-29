@@ -56,16 +56,16 @@ void iOS::alert(const char *p_alert, const char *p_title) {
 String iOS::get_model() const {
 	// [[UIDevice currentDevice] model] only returns "iPad" or "iPhone".
 	size_t size;
-	sysctlbyname("hw.machine", NULL, &size, NULL, 0);
+	sysctlbyname("hw.machine", nullptr, &size, nullptr, 0);
 	char *model = (char *)malloc(size);
-	if (model == NULL) {
+	if (model == nullptr) {
 		return "";
 	}
-	sysctlbyname("hw.machine", model, &size, NULL, 0);
+	sysctlbyname("hw.machine", model, &size, nullptr, 0);
 	NSString *platform = [NSString stringWithCString:model encoding:NSUTF8StringEncoding];
 	free(model);
 	const char *str = [platform UTF8String];
-	return String(str != NULL ? str : "");
+	return String(str != nullptr ? str : "");
 }
 
 String iOS::get_rate_url(int p_app_id) const {

@@ -104,7 +104,7 @@ Node3D *EditorSceneImporterFBX::import_scene(const String &p_path, uint32_t p_fl
 		bool is_binary = false;
 		data.resize(f->get_len());
 
-		ERR_FAIL_COND_V(data.size() < 64, NULL);
+		ERR_FAIL_COND_V(data.size() < 64, nullptr);
 
 		f->get_buffer(data.ptrw(), data.size());
 		PackedByteArray fbx_header;

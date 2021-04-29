@@ -816,7 +816,7 @@ Error VulkanContext::_create_physical_device() {
 		}
 	}
 
-	/* Call with NULL data to get count */
+	/* Call with nullptr data to get count */
 	vkGetPhysicalDeviceQueueFamilyProperties(gpu, &queue_family_count, nullptr);
 	ERR_FAIL_COND_V(queue_family_count == 0, ERR_CANT_CREATE);
 

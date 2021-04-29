@@ -353,7 +353,7 @@ public:
 };
 
 Error EditorExportPlatformJavaScript::_extract_template(const String &p_template, const String &p_dir, const String &p_name, bool pwa) {
-	FileAccess *src_f = NULL;
+	FileAccess *src_f = nullptr;
 	zlib_filefunc_def io = zipio_create_io_from_file(&src_f);
 	unzFile pkg = unzOpen2(p_template.utf8().get_data(), &io);
 
@@ -372,7 +372,7 @@ Error EditorExportPlatformJavaScript::_extract_template(const String &p_template
 		//get filename
 		unz_file_info info;
 		char fname[16384];
-		unzGetCurrentFileInfo(pkg, &info, fname, 16384, NULL, 0, NULL, 0);
+		unzGetCurrentFileInfo(pkg, &info, fname, 16384, nullptr, 0, nullptr, 0);
 
 		String file = fname;
 

@@ -128,7 +128,7 @@ AnimationCurve::~AnimationCurve() {
 
 // ------------------------------------------------------------------------------------------------
 AnimationCurveNode::AnimationCurveNode(uint64_t id, const ElementPtr element, const std::string &name,
-		const Document &doc, const char *const *target_prop_whitelist /*= NULL*/,
+		const Document &doc, const char *const *target_prop_whitelist /*= nullptr*/,
 		size_t whitelist_size /*= 0*/) :
 		Object(id, element, name), target(), doc(doc) {
 	// find target node

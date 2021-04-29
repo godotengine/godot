@@ -136,13 +136,13 @@ DisplayServerIPhone::~DisplayServerIPhone() {
 		if (rendering_device_vulkan) {
 			rendering_device_vulkan->finalize();
 			memdelete(rendering_device_vulkan);
-			rendering_device_vulkan = NULL;
+			rendering_device_vulkan = nullptr;
 		}
 
 		if (context_vulkan) {
 			context_vulkan->window_destroy(MAIN_WINDOW_ID);
 			memdelete(context_vulkan);
-			context_vulkan = NULL;
+			context_vulkan = nullptr;
 		}
 	}
 #endif

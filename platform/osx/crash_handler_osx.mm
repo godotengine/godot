@@ -70,7 +70,7 @@ static uint64_t load_address() {
 }
 
 static void handle_crash(int sig) {
-	if (OS::get_singleton() == NULL) {
+	if (OS::get_singleton() == nullptr) {
 		abort();
 	}
 
@@ -105,7 +105,7 @@ static void handle_crash(int sig) {
 			if (dladdr(bt_buffer[i], &info) && info.dli_sname) {
 				if (info.dli_sname[0] == '_') {
 					int status;
-					char *demangled = abi::__cxa_demangle(info.dli_sname, NULL, 0, &status);
+					char *demangled = abi::__cxa_demangle(info.dli_sname, nullptr, 0, &status);
 
 					if (status == 0 && demangled) {
 						snprintf(fname, 1024, "%s", demangled);
@@ -167,9 +167,9 @@ void CrashHandler::disable() {
 		return;
 
 #ifdef CRASH_HANDLER_ENABLED
-	signal(SIGSEGV, NULL);
-	signal(SIGFPE, NULL);
-	signal(SIGILL, NULL);
+	signal(SIGSEGV, nullptr);
+	signal(SIGFPE, nullptr);
+	signal(SIGILL, nullptr);
 #endif
 
 	disabled = true;
