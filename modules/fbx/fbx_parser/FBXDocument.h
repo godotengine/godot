@@ -31,6 +31,7 @@
 /** @file  FBXDocument.h
  *  @brief FBX DOM
  */
+
 #ifndef FBX_DOCUMENT_H
 #define FBX_DOCUMENT_H
 
@@ -1099,7 +1100,6 @@ private:
 class Document {
 public:
 	Document(const Parser &parser, const ImportSettings &settings);
-
 	~Document();
 
 	LazyObject *GetObject(uint64_t id) const;
@@ -1202,7 +1202,6 @@ private:
 	void ReadObjects();
 	void ReadPropertyTemplates();
 	void ReadConnections();
-	void ReadGlobalSettings();
 
 private:
 	const ImportSettings &settings;

@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  FBXParseTools.h                                                      */
+/*  FBXError.h                                                           */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,88 +28,48 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef FBX_PARSE_TOOLS_H
-#define FBX_PARSE_TOOLS_H
+//
+// Created by Gordon MacPherson on 20/04/2021.
+//
 
-#include "FBXError.h"
-#include "core/error/error_macros.h"
-#include "core/string/ustring.h"
+#ifndef FBX_ERROR_H
+#define FBX_ERROR_H
 
-#include <stdint.h>
-#include <algorithm>
-#include <locale>
+#include "core/string/print_string.h"
 
-template <class char_t>
-inline bool IsNewLine(char_t c) {
-	return c == '\n' || c == '\r';
-}
-template <class char_t>
-inline bool IsSpace(char_t c) {
-	return (c == (char_t)' ' || c == (char_t)'\t');
-}
+#define FBX_ERROR_DETECTED FBXError::IsCorrupt()
+#define IF_FBX_IS_CORRUPT_RETURN \
+	if (FBXError::IsCorrupt()) { \
+		return;                  \
+	}
+#define IS_FBX_CORRUPT FBXError::IsCorrupt()
+#define FBX_CORRUPT FBXError::SetCorrupt()
 
-template <class char_t>
-inline bool IsSpaceOrNewLine(char_t c) {
-	return IsNewLine(c) || IsSpace(c);
-}
+#define FBX_CORRUPT_ERROR_PTR \
+	FBX_CORRUPT;              \
+	return nullptr;
 
-template <class char_t>
-inline bool IsLineEnd(char_t c) {
-	return (c == (char_t)'\r' || c == (char_t)'\n' || c == (char_t)'\0' || c == (char_t)'\f');
-}
-
-// ------------------------------------------------------------------------------------
-// Special version of the function, providing higher accuracy and safety
-// It is mainly used by fast_atof to prevent ugly and unwanted integer overflows.
-// ------------------------------------------------------------------------------------
-inline uint64_t strtoul10_64(const char *in, bool &errored, const char **out = nullptr, unsigned int *max_inout = nullptr) {
-	unsigned int cur = 0;
-	uint64_t value = 0;
-
-	errored = *in < '0' || *in > '9';
-	if (errored) {
-		FBX_CORRUPT;
-		return 0;
+#define FBX_CORRUPT_ERROR_BOOL \
+	if (IS_FBX_CORRUPT) {      \
+		return false;          \
 	}
 
-	for (;;) {
-		if (*in < '0' || *in > '9') {
-			break;
-		}
-
-		const uint64_t new_value = (value * (uint64_t)10) + ((uint64_t)(*in - '0'));
-
-		// numeric overflow, we rely on you
-		if (new_value < value) {
-			//WARN_PRINT( "Converting the string \" " + in + " \" into a value resulted in overflow." );
-			return 0;
-		}
-
-		value = new_value;
-
-		++in;
-		++cur;
-
-		if (max_inout && *max_inout == cur) {
-			if (out) { /* skip to end */
-				while (*in >= '0' && *in <= '9') {
-					++in;
-				}
-				*out = in;
-			}
-
-			return value;
-		}
-	}
-	if (out) {
-		*out = in;
+struct FBXError {
+	static bool IsCorrupt() {
+		return FBXError::corrupt;
 	}
 
-	if (max_inout) {
-		*max_inout = cur;
+	static void ClearCorrupt() {
+		FBXError::corrupt = false;
 	}
 
-	return value;
-}
+	static void SetCorrupt() {
+		print_error("FBX Document was found to be corrupt, we have decided to stop all operations");
+		FBXError::corrupt = true;
+	}
 
-#endif // FBX_PARSE_TOOLS_H
+	// NOTE: thread local should be required, but may crash since godot is not in the same static lib
+	thread_local static bool corrupt;
+};
+
+#endif // FBX_ERROR_H

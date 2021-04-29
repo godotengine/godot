@@ -99,15 +99,15 @@ CameraSwitcher::CameraSwitcher(uint64_t id, const ElementPtr element, const Docu
 	const ElementPtr CameraId = sc->GetElement("CameraId");
 	const ElementPtr CameraName = sc->GetElement("CameraName");
 	const ElementPtr CameraIndexName = sc->GetElement("CameraIndexName");
-
+	IF_FBX_IS_CORRUPT_RETURN;
 	if (CameraId) {
 		cameraId = ParseTokenAsInt(GetRequiredToken(CameraId, 0));
 	}
-
+	IF_FBX_IS_CORRUPT_RETURN;
 	if (CameraName) {
 		cameraName = GetRequiredToken(CameraName, 0)->StringContents();
 	}
-
+	IF_FBX_IS_CORRUPT_RETURN;
 	if (CameraIndexName && CameraIndexName->Tokens().size()) {
 		cameraIndexName = GetRequiredToken(CameraIndexName, 0)->StringContents();
 	}

@@ -87,18 +87,20 @@ using namespace Util;
 Model::Model(uint64_t id, const ElementPtr element, const Document &doc, const std::string &name) :
 		Object(id, element, name), shading("Y") {
 	const ScopePtr sc = GetRequiredScope(element);
+	IF_FBX_IS_CORRUPT_RETURN;
 	const ElementPtr Shading = sc->GetElement("Shading");
 	const ElementPtr Culling = sc->GetElement("Culling");
-
+	IF_FBX_IS_CORRUPT_RETURN;
 	if (Shading) {
 		shading = GetRequiredToken(Shading, 0)->StringContents();
 	}
-
+	IF_FBX_IS_CORRUPT_RETURN;
 	if (Culling) {
 		culling = ParseTokenAsString(GetRequiredToken(Culling, 0));
 	}
-
+	IF_FBX_IS_CORRUPT_RETURN;
 	ResolveLinks(element, doc);
+	IF_FBX_IS_CORRUPT_RETURN;
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -159,6 +161,10 @@ void Model::ResolveLinks(const ElementPtr element, const Document &doc) {
 // ------------------------------------------------------------------------------------------------
 bool Model::IsNull() const {
 	const std::vector<const NodeAttribute *> &attrs = GetAttributes();
+	if (IS_FBX_CORRUPT) {
+		return true;
+	}
+
 	for (const NodeAttribute *att : attrs) {
 		const Null *null_tag = dynamic_cast<const Null *>(att);
 		if (null_tag) {

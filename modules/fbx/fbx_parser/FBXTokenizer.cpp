@@ -124,16 +124,22 @@ void ProcessDataToken(TokenList &output_tokens, const char *&start, const char *
 
 			if (!in_double_quotes && IsSpaceOrNewLine(*c)) {
 				TokenizeError("unexpected whitespace in token", line, column);
+				FBX_CORRUPT;
+				return;
 			}
 		}
 
 		if (in_double_quotes) {
 			TokenizeError("non-terminated double quotes", line, column);
+			FBX_CORRUPT;
+			return;
 		}
 
 		output_tokens.push_back(new_Token(start, end + 1, type, line, column));
 	} else if (must_have_token) {
 		TokenizeError("unexpected character, expected data token", line, column);
+		FBX_CORRUPT;
+		return;
 	}
 
 	start = end = nullptr;
@@ -185,6 +191,7 @@ void Tokenize(TokenList &output_tokens, const char *input, size_t length, bool &
 			case '\"':
 				if (token_begin) {
 					TokenizeError("unexpected double-quote", line, column);
+					FBX_CORRUPT;
 					corrupt = true;
 					return;
 				}

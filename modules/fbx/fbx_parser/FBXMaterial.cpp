@@ -94,17 +94,18 @@ Material::Material(uint64_t id, const ElementPtr element, const Document &doc, c
 
 	const ElementPtr ShadingModel = sc->GetElement("ShadingModel");
 	const ElementPtr MultiLayer = sc->GetElement("MultiLayer");
-
+	IF_FBX_IS_CORRUPT_RETURN;
 	if (MultiLayer) {
 		multilayer = !!ParseTokenAsInt(GetRequiredToken(MultiLayer, 0));
 	}
-
+	IF_FBX_IS_CORRUPT_RETURN;
 	if (ShadingModel) {
 		shading = ParseTokenAsString(GetRequiredToken(ShadingModel, 0));
 	} else {
 		DOMWarning("shading mode not specified, assuming phong", element);
 		shading = "phong";
 	}
+	IF_FBX_IS_CORRUPT_RETURN;
 
 	std::string templateName;
 
@@ -132,6 +133,8 @@ Material::Material(uint64_t id, const ElementPtr element, const Document &doc, c
 			continue;
 		}
 
+		IF_FBX_IS_CORRUPT_RETURN;
+
 		const Texture *tex = dynamic_cast<const Texture *>(ob);
 		if (!tex) {
 			LayeredTexture *layeredTexture = dynamic_cast<LayeredTexture *>(ob);
@@ -145,7 +148,7 @@ Material::Material(uint64_t id, const ElementPtr element, const Document &doc, c
 			if (layeredTextures.find(prop) != layeredTextures.end()) {
 				DOMWarning("duplicate layered texture link: " + prop, element);
 			}
-
+			IF_FBX_IS_CORRUPT_RETURN;
 			layeredTextures[prop] = layeredTexture;
 			layeredTexture->fillTexture(doc);
 		} else {
@@ -153,9 +156,11 @@ Material::Material(uint64_t id, const ElementPtr element, const Document &doc, c
 			if (textures.find(prop) != textures.end()) {
 				DOMWarning("duplicate texture link: " + prop, element);
 			}
-
+			IF_FBX_IS_CORRUPT_RETURN;
 			textures[prop] = tex;
 		}
+
+		IF_FBX_IS_CORRUPT_RETURN;
 	}
 }
 
@@ -175,29 +180,29 @@ Texture::Texture(uint64_t id, const ElementPtr element, const Document &doc, con
 	const ElementPtr ModelUVScaling = sc->GetElement("ModelUVScaling");
 	const ElementPtr Texture_Alpha_Source = sc->GetElement("Texture_Alpha_Source");
 	const ElementPtr Cropping = sc->GetElement("Cropping");
-
+	IF_FBX_IS_CORRUPT_RETURN;
 	if (Type) {
 		type = ParseTokenAsString(GetRequiredToken(Type, 0));
 	}
-
+	IF_FBX_IS_CORRUPT_RETURN;
 	if (FileName) {
 		fileName = ParseTokenAsString(GetRequiredToken(FileName, 0));
 	}
-
+	IF_FBX_IS_CORRUPT_RETURN;
 	if (RelativeFilename) {
 		relativeFileName = ParseTokenAsString(GetRequiredToken(RelativeFilename, 0));
 	}
-
+	IF_FBX_IS_CORRUPT_RETURN;
 	if (ModelUVTranslation) {
 		uvTrans = Vector2(ParseTokenAsFloat(GetRequiredToken(ModelUVTranslation, 0)),
 				ParseTokenAsFloat(GetRequiredToken(ModelUVTranslation, 1)));
 	}
-
+	IF_FBX_IS_CORRUPT_RETURN;
 	if (ModelUVScaling) {
 		uvScaling = Vector2(ParseTokenAsFloat(GetRequiredToken(ModelUVScaling, 0)),
 				ParseTokenAsFloat(GetRequiredToken(ModelUVScaling, 1)));
 	}
-
+	IF_FBX_IS_CORRUPT_RETURN;
 	if (Cropping) {
 		crop[0] = ParseTokenAsInt(GetRequiredToken(Cropping, 0));
 		crop[1] = ParseTokenAsInt(GetRequiredToken(Cropping, 1));
@@ -208,6 +213,7 @@ Texture::Texture(uint64_t id, const ElementPtr element, const Document &doc, con
 		// (and vc9 WARNS about the new (i.e. compliant) behaviour).
 		crop[0] = crop[1] = crop[2] = crop[3] = 0;
 	}
+	IF_FBX_IS_CORRUPT_RETURN;
 
 	if (Texture_Alpha_Source) {
 		alphaSource = ParseTokenAsString(GetRequiredToken(Texture_Alpha_Source, 0));
@@ -216,12 +222,14 @@ Texture::Texture(uint64_t id, const ElementPtr element, const Document &doc, con
 	// 3DS Max and FBX SDK use "Scaling" and "Translation" instead of "ModelUVScaling" and "ModelUVTranslation". Use these properties if available.
 	bool ok = true;
 	const Vector3 &scaling = PropertyGet<Vector3>(this, "Scaling", ok);
+	IF_FBX_IS_CORRUPT_RETURN;
 	if (ok) {
 		uvScaling.x = scaling.x;
 		uvScaling.y = scaling.y;
 	}
 
 	const Vector3 &trans = PropertyGet<Vector3>(this, "Translation", ok);
+	IF_FBX_IS_CORRUPT_RETURN;
 	if (ok) {
 		uvTrans.x = trans.x;
 		uvTrans.y = trans.y;
@@ -238,6 +246,7 @@ Texture::Texture(uint64_t id, const ElementPtr element, const Document &doc, con
 			}
 
 			const Video *const video = dynamic_cast<const Video *>(ob);
+			IF_FBX_IS_CORRUPT_RETURN;
 			if (video) {
 				media = video;
 			}
@@ -254,10 +263,11 @@ LayeredTexture::LayeredTexture(uint64_t id, const ElementPtr element, const Docu
 
 	ElementPtr BlendModes = sc->GetElement("BlendModes");
 	ElementPtr Alphas = sc->GetElement("Alphas");
-
+	IF_FBX_IS_CORRUPT_RETURN;
 	if (BlendModes != nullptr) {
 		blendMode = (BlendMode)ParseTokenAsInt(GetRequiredToken(BlendModes, 0));
 	}
+	IF_FBX_IS_CORRUPT_RETURN;
 	if (Alphas != nullptr) {
 		alpha = ParseTokenAsFloat(GetRequiredToken(Alphas, 0));
 	}
@@ -272,6 +282,7 @@ void LayeredTexture::fillTexture(const Document &doc) {
 		const Connection *con = conns.at(i);
 
 		const Object *const ob = con->SourceObject();
+		IF_FBX_IS_CORRUPT_RETURN;
 		if (!ob) {
 			DOMWarning("failed to read source object for texture link, ignoring", element);
 			continue;
@@ -302,19 +313,21 @@ Video::Video(uint64_t id, const ElementPtr element, const Document &doc, const s
 	}
 	const ElementPtr RelativeFilename = sc->GetElement("RelativeFilename");
 	const ElementPtr Content = sc->GetElement("Content");
-
+	IF_FBX_IS_CORRUPT_RETURN;
 	if (Type) {
 		type = ParseTokenAsString(GetRequiredToken(Type, 0));
 	}
-
+	IF_FBX_IS_CORRUPT_RETURN;
 	if (FileName) {
 		fileName = ParseTokenAsString(GetRequiredToken(FileName, 0));
 	}
-
+	IF_FBX_IS_CORRUPT_RETURN;
 	if (RelativeFilename) {
 		relativeFileName = ParseTokenAsString(GetRequiredToken(RelativeFilename, 0));
 	}
+	IF_FBX_IS_CORRUPT_RETURN;
 
+	// NOTE: we should investigate improvements here, i see a lot of dangerous resources.
 	if (Content && !Content->Tokens().empty()) {
 		//this field is omitted when the embedded texture is already loaded, let's ignore if it's not found
 		try {
@@ -329,22 +342,33 @@ Video::Video(uint64_t id, const ElementPtr element, const Document &doc, const s
 					// First time compute size (it could be large like 64Gb and it is good to allocate it once)
 					for (uint32_t tokenIdx = 0; tokenIdx < numTokens; ++tokenIdx) {
 						const Token *dataToken = GetRequiredToken(Content, tokenIdx);
+						IF_FBX_IS_CORRUPT_RETURN;
 						size_t tokenLength = dataToken->end() - dataToken->begin() - 2; // ignore double quotes
 						const char *base64data = dataToken->begin() + 1;
 						const size_t outLength = Util::ComputeDecodedSizeBase64(base64data, tokenLength);
 						if (outLength == 0) {
 							DOMError("Corrupted embedded content found", element);
+							FBX_CORRUPT;
+							return;
 						}
 						targetLength += outLength;
 					}
 					if (targetLength == 0) {
 						DOMError("Corrupted embedded content found", element);
+						FBX_CORRUPT;
+						return;
 					} else {
 						content = new uint8_t[targetLength];
 						contentLength = static_cast<uint64_t>(targetLength);
 						size_t dst_offset = 0;
 						for (uint32_t tokenIdx = 0; tokenIdx < numTokens; ++tokenIdx) {
 							const Token *dataToken = GetRequiredToken(Content, tokenIdx);
+							if (!dataToken) {
+								delete[] content;
+								contentLength = 0;
+								FBX_CORRUPT;
+								return;
+							}
 							ERR_FAIL_COND(!dataToken);
 							size_t tokenLength = dataToken->end() - dataToken->begin() - 2; // ignore double quotes
 							const char *base64data = dataToken->begin() + 1;
@@ -359,6 +383,8 @@ Video::Video(uint64_t id, const ElementPtr element, const Document &doc, const s
 				}
 			} else if (static_cast<size_t>(token->end() - data) < 5) {
 				DOMError("binary data array is too short, need five (5) bytes for type signature and element count", element);
+				FBX_CORRUPT;
+				return;
 			} else if (*data != 'R') {
 				DOMWarning("video content is not raw binary data, ignoring", element);
 			} else {
