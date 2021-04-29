@@ -759,12 +759,14 @@ void Node3DEditorViewport::_update_name() {
 	view_menu->set_size(Vector2(0, 0)); // resets the button size
 }
 
-void Node3DEditorViewport::_compute_edit(const Point2 &p_point) {
+void Node3DEditorViewport::_compute_edit(const Point2 &p_point, bool p_auto_center) {
 	_edit.click_ray = _get_ray(Vector2(p_point.x, p_point.y));
 	_edit.click_ray_pos = _get_ray_pos(Vector2(p_point.x, p_point.y));
 	_edit.plane = TRANSFORM_VIEW;
+	if (p_auto_center) {
+		_edit.center = spatial_editor->get_gizmo_transform().origin;
+	}
 	spatial_editor->update_transform_gizmo();
-	_edit.center = spatial_editor->get_gizmo_transform().origin;
 
 	List<Node *> &selection = editor_selection->get_selected_node_list();
 
@@ -1119,6 +1121,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 		}
 	}
 
+	_edit.center = spatial_editor->get_gizmo_target_center();
 	Ref<InputEventMouseButton> b = p_event;
 
 	if (b.is_valid()) {
@@ -1288,7 +1291,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 						}
 						//handle rotate
 						_edit.mode = TRANSFORM_ROTATE;
-						_compute_edit(b->get_position());
+						_compute_edit(b->get_position(), false);
 						break;
 					}
 
@@ -3320,7 +3323,7 @@ void Node3DEditorViewport::update_transform_gizmo_view() {
 
 	Transform3D xform = spatial_editor->get_gizmo_transform();
 
-	Transform3D camera_xform = camera->get_transform();
+	const Transform3D camera_xform = camera->get_transform();
 
 	if (xform.origin.distance_squared_to(camera_xform.origin) < 0.01) {
 		for (int i = 0; i < 3; i++) {
@@ -3335,18 +3338,23 @@ void Node3DEditorViewport::update_transform_gizmo_view() {
 		return;
 	}
 
-	Vector3 camz = -camera_xform.get_basis().get_axis(2).normalized();
-	Vector3 camy = -camera_xform.get_basis().get_axis(1).normalized();
-	Plane p(camera_xform.origin, camz);
-	float gizmo_d = MAX(Math::abs(p.distance_to(xform.origin)), CMP_EPSILON);
-	float d0 = camera->unproject_position(camera_xform.origin + camz * gizmo_d).y;
-	float d1 = camera->unproject_position(camera_xform.origin + camz * gizmo_d + camy).y;
-	float dd = Math::abs(d0 - d1);
-	if (dd == 0) {
-		dd = 0.0001;
-	}
+	const Vector3 camz = -camera_xform.get_basis().get_axis(2).normalized();
+	const Vector3 camy = -camera_xform.get_basis().get_axis(1).normalized();
+	const Plane p(camera_xform.origin, camz);
+	const real_t gizmo_d = MAX(Math::abs(p.distance_to(xform.origin)), CMP_EPSILON);
+	const real_t d0 = camera->unproject_position(camera_xform.origin + camz * gizmo_d).y;
+	const real_t d1 = camera->unproject_position(camera_xform.origin + camz * gizmo_d + camy).y;
+	const real_t dd = MAX(Math::abs(d0 - d1), CMP_EPSILON);
 
-	float gizmo_size = EditorSettings::get_singleton()->get("editors/3d/manipulator_gizmo_size");
+	if (camera->is_position_in_frustum(spatial_editor->get_gizmo_target_center())) {
+		xform.origin = spatial_editor->get_gizmo_target_center();
+	} else {
+		// When not in frustum, place the gizmo in the middle of the screen.
+		xform.origin = camera->project_position(viewport->get_size() / 2, gizmo_d);
+	}
+	spatial_editor->set_gizmo_transform(xform);
+
+	const real_t gizmo_size = EditorSettings::get_singleton()->get("editors/3d/manipulator_gizmo_size");
 	// At low viewport heights, multiply the gizmo scale based on the viewport height.
 	// This prevents the gizmo from growing very large and going outside the viewport.
 	const int viewport_base_height = 400 * MAX(1, EDSCALE);
@@ -3354,9 +3362,8 @@ void Node3DEditorViewport::update_transform_gizmo_view() {
 			(gizmo_size / Math::abs(dd)) * MAX(1, EDSCALE) *
 			MIN(viewport_base_height, subviewport_container->get_size().height) / viewport_base_height /
 			subviewport_container->get_stretch_shrink();
-	Vector3 scale = Vector3(1, 1, 1) * gizmo_scale;
 
-	xform.basis.scale(scale);
+	xform.basis *= gizmo_scale;
 
 	// if the determinant is zero, we should disable the gizmo from being rendered
 	// this prevents supplying bad values to the renderer and then having to filter it out again
@@ -3975,15 +3982,14 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, Edito
 	zoom_indicator_delay = 0.0;
 
 	spatial_editor = p_spatial_editor;
-	SubViewportContainer *c = memnew(SubViewportContainer);
-	subviewport_container = c;
-	c->set_stretch(true);
-	add_child(c);
-	c->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
+	subviewport_container = memnew(SubViewportContainer);
+	subviewport_container->set_stretch(true);
+	add_child(subviewport_container);
+	subviewport_container->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
 	viewport = memnew(SubViewport);
 	viewport->set_disable_input(true);
 
-	c->add_child(viewport);
+	subviewport_container->add_child(viewport);
 	surface = memnew(Control);
 	surface->set_drag_forwarding(this);
 	add_child(surface);
@@ -4594,6 +4600,7 @@ void Node3DEditor::update_transform_gizmo() {
 
 	Vector3 pcenter = center.position + center.size * 0.5;
 	gizmo.visible = !first;
+	gizmo.target_center = pcenter;
 	gizmo.transform.origin = pcenter;
 	gizmo.transform.basis = gizmo_basis;
 

@@ -287,7 +287,7 @@ private:
 	bool orthogonal;
 	bool auto_orthogonal;
 	bool lock_rotation;
-	float gizmo_scale;
+	real_t gizmo_scale;
 
 	bool freelook_active;
 	real_t freelook_speed;
@@ -313,7 +313,7 @@ private:
 	};
 
 	void _update_name();
-	void _compute_edit(const Point2 &p_point);
+	void _compute_edit(const Point2 &p_point, bool p_auto_center = true);
 	void _clear_selected();
 	void _select_clicked(bool p_append, bool p_single, bool p_allow_locked = false);
 	void _select(Node *p_node, bool p_append, bool p_single);
@@ -642,6 +642,7 @@ private:
 	struct Gizmo {
 		bool visible = false;
 		float scale = 0;
+		Vector3 target_center;
 		Transform3D transform;
 	} gizmo;
 
@@ -827,7 +828,9 @@ public:
 	float get_zfar() const { return settings_zfar->get_value(); }
 	float get_fov() const { return settings_fov->get_value(); }
 
+	Vector3 get_gizmo_target_center() const { return gizmo.target_center; }
 	Transform3D get_gizmo_transform() const { return gizmo.transform; }
+	void set_gizmo_transform(const Transform3D &p_transform) { gizmo.transform = p_transform; }
 	bool is_gizmo_visible() const { return gizmo.visible; }
 
 	ToolMode get_tool_mode() const { return tool_mode; }
