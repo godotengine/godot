@@ -153,6 +153,7 @@ public:
 	bool get_cull_mask_bit(int p_layer) const;
 
 	virtual Vector<Plane> get_frustum() const;
+	bool is_position_in_frustum(const Vector3 &p_position) const;
 
 	void set_environment(const Ref<Environment> &p_environment);
 	Ref<Environment> get_environment() const;

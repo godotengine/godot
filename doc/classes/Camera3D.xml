@@ -55,8 +55,17 @@
 			<argument index="0" name="world_point" type="Vector3">
 			</argument>
 			<description>
-				Returns [code]true[/code] if the given position is behind the camera.
+				Returns [code]true[/code] if the given position is behind the camera (the blue part of the linked diagram). [url=https://raw.githubusercontent.com/godotengine/godot-docs/master/img/camera3d_position_frustum.png]See this diagram[/url] for an overview of position query methods.
 				[b]Note:[/b] A position which returns [code]false[/code] may still be outside the camera's field of view.
+			</description>
+		</method>
+		<method name="is_position_in_frustum" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="world_point" type="Vector3">
+			</argument>
+			<description>
+				Returns [code]true[/code] if the given position is inside the camera's frustum (the green part of the linked diagram). [url=https://raw.githubusercontent.com/godotengine/godot-docs/master/img/camera3d_position_frustum.png]See this diagram[/url] for an overview of position query methods.
 			</description>
 		</method>
 		<method name="make_current">

@@ -500,6 +500,7 @@ void Camera3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_doppler_tracking", "mode"), &Camera3D::set_doppler_tracking);
 	ClassDB::bind_method(D_METHOD("get_doppler_tracking"), &Camera3D::get_doppler_tracking);
 	ClassDB::bind_method(D_METHOD("get_frustum"), &Camera3D::get_frustum);
+	ClassDB::bind_method(D_METHOD("is_position_in_frustum", "world_point"), &Camera3D::is_position_in_frustum);
 	ClassDB::bind_method(D_METHOD("get_camera_rid"), &Camera3D::get_camera);
 
 	ClassDB::bind_method(D_METHOD("set_cull_mask_bit", "layer", "enable"), &Camera3D::set_cull_mask_bit);
@@ -621,6 +622,16 @@ Vector<Plane> Camera3D::get_frustum() const {
 	}
 
 	return cm.get_projection_planes(get_camera_transform());
+}
+
+bool Camera3D::is_position_in_frustum(const Vector3 &p_position) const {
+	Vector<Plane> frustum = get_frustum();
+	for (int i = 0; i < frustum.size(); i++) {
+		if (frustum[i].is_point_over(p_position)) {
+			return false;
+		}
+	}
+	return true;
 }
 
 void Camera3D::set_v_offset(float p_offset) {
