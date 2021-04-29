@@ -34,9 +34,6 @@
 		<member name="size_2d_override_stretch" type="bool" setter="set_size_2d_override_stretch" getter="is_size_2d_override_stretch_enabled" default="false">
 			If [code]true[/code], the 2D size override affects stretch as well.
 		</member>
-		<member name="xr" type="bool" setter="set_use_xr" getter="is_using_xr" default="false">
-			If [code]true[/code], the sub-viewport will be used in AR/VR process.
-		</member>
 	</members>
 	<constants>
 		<constant name="CLEAR_MODE_ALWAYS" value="0" enum="ClearMode">
