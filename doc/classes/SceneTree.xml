@@ -21,7 +21,8 @@
 			<argument index="1" name="method" type="StringName">
 			</argument>
 			<description>
-				Calls [code]method[/code] on each member of the given group.
+				Calls [code]method[/code] on each member of the given group. You can pass arguments to [code]method[/code] by specifying them at the end of the method call.
+				[b]Note:[/b] [method call_group] will always call methods with an one-frame delay, in a way similar to [method Object.call_deferred]. To call methods immediately, use [method call_group_flags] with the [constant GROUP_CALL_REALTIME] flag.
 			</description>
 		</method>
 		<method name="call_group_flags" qualifiers="vararg">
@@ -34,7 +35,8 @@
 			<argument index="2" name="method" type="StringName">
 			</argument>
 			<description>
-				Calls [code]method[/code] on each member of the given group, respecting the given [enum GroupCallFlags].
+				Calls [code]method[/code] on each member of the given group, respecting the given [enum GroupCallFlags]. You can pass arguments to [code]method[/code] by specifying them at the end of the method call.
+				[b]Note:[/b] Group call flags are used to control the method calling behavior. If the [constant GROUP_CALL_REALTIME] flag is present in the [code]flags[/code] argument, methods will be called immediately. If this flag isn't present in [code]flags[/code], methods will be called with a one-frame delay in a way similar to [method call_group].
 			</description>
 		</method>
 		<method name="change_scene">
