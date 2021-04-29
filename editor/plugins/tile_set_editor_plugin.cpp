@@ -319,7 +319,7 @@ void TileSetEditor::_notification(int p_what) {
 			tool_editmode[EDITMODE_NAVIGATION]->set_icon(get_theme_icon("Navigation2D", "EditorIcons"));
 			tool_editmode[EDITMODE_BITMASK]->set_icon(get_theme_icon("PackedDataContainer", "EditorIcons"));
 			tool_editmode[EDITMODE_PRIORITY]->set_icon(get_theme_icon("MaterialPreviewLight1", "EditorIcons"));
-			tool_editmode[EDITMODE_ICON]->set_icon(get_theme_icon("LargeTexture", "EditorIcons"));
+			tool_editmode[EDITMODE_ICON]->set_icon(get_theme_icon("Image", "EditorIcons"));
 			tool_editmode[EDITMODE_Z_INDEX]->set_icon(get_theme_icon("Sort", "EditorIcons"));
 
 			scroll->add_theme_style_override("bg", get_theme_stylebox("bg", "Tree"));
