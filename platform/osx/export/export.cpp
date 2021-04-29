@@ -192,7 +192,7 @@ void _rgba8_to_packbits_encode(int p_ch, int p_size, PoolVector<uint8_t> &p_sour
 			if ((p_source.read()[(i + 1) * 4 + p_ch] == cur) && (p_source.read()[(i + 2) * 4 + p_ch] == cur)) {
 				if (buf_size > 0) {
 					result.write[res_size++] = (uint8_t)(buf_size - 1);
-					copymem(&result.write[res_size], &buf, buf_size);
+					memcpy(&result.write[res_size], &buf, buf_size);
 					res_size += buf_size;
 					buf_size = 0;
 				}
@@ -218,7 +218,7 @@ void _rgba8_to_packbits_encode(int p_ch, int p_size, PoolVector<uint8_t> &p_sour
 				buf[buf_size++] = cur;
 				if (buf_size == 128) {
 					result.write[res_size++] = (uint8_t)(buf_size - 1);
-					copymem(&result.write[res_size], &buf, buf_size);
+					memcpy(&result.write[res_size], &buf, buf_size);
 					res_size += buf_size;
 					buf_size = 0;
 				}
@@ -226,7 +226,7 @@ void _rgba8_to_packbits_encode(int p_ch, int p_size, PoolVector<uint8_t> &p_sour
 		} else {
 			buf[buf_size++] = cur;
 			result.write[res_size++] = (uint8_t)(buf_size - 1);
-			copymem(&result.write[res_size], &buf, buf_size);
+			memcpy(&result.write[res_size], &buf, buf_size);
 			res_size += buf_size;
 			buf_size = 0;
 		}
@@ -236,7 +236,7 @@ void _rgba8_to_packbits_encode(int p_ch, int p_size, PoolVector<uint8_t> &p_sour
 
 	int ofs = p_dest.size();
 	p_dest.resize(p_dest.size() + res_size);
-	copymem(&p_dest.write[ofs], result.ptr(), res_size);
+	memcpy(&p_dest.write[ofs], result.ptr(), res_size);
 }
 
 void EditorExportPlatformOSX::_make_icon(const Ref<Image> &p_icon, Vector<uint8_t> &p_data) {
@@ -296,7 +296,7 @@ void EditorExportPlatformOSX::_make_icon(const Ref<Image> &p_icon, Vector<uint8_
 			memdelete(f);
 			len += 8;
 			len = BSWAP32(len);
-			copymem(&data.write[ofs], icon_infos[i].name, 4);
+			memcpy(&data.write[ofs], icon_infos[i].name, 4);
 			encode_uint32(len, &data.write[ofs + 4]);
 
 			// Clean up generated file.
@@ -316,7 +316,7 @@ void EditorExportPlatformOSX::_make_icon(const Ref<Image> &p_icon, Vector<uint8_
 
 				int len = data.size() - ofs;
 				len = BSWAP32(len);
-				copymem(&data.write[ofs], icon_infos[i].name, 4);
+				memcpy(&data.write[ofs], icon_infos[i].name, 4);
 				encode_uint32(len, &data.write[ofs + 4]);
 			}
 
@@ -331,7 +331,7 @@ void EditorExportPlatformOSX::_make_icon(const Ref<Image> &p_icon, Vector<uint8_
 				}
 				len += 8;
 				len = BSWAP32(len);
-				copymem(&data.write[ofs], icon_infos[i].mask_name, 4);
+				memcpy(&data.write[ofs], icon_infos[i].mask_name, 4);
 				encode_uint32(len, &data.write[ofs + 4]);
 			}
 		}

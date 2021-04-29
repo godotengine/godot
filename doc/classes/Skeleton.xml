@@ -212,6 +212,16 @@
 			<description>
 			</description>
 		</method>
+		<method name="set_bone_name">
+			<return type="void">
+			</return>
+			<argument index="0" name="bone_idx" type="int">
+			</argument>
+			<argument index="1" name="name" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="set_bone_parent">
 			<return type="void">
 			</return>

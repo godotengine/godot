@@ -394,7 +394,7 @@ public:
 		virtual JointType get_joint_type() { return JOINT_TYPE_NONE; }
 
 		/// "j" is used to set the parameter inside the PhysicsServer
-		virtual bool _set(const StringName &p_name, const Variant &p_value, RID j = RID());
+		virtual bool _set(const StringName &p_name, const Variant &p_value, RID j);
 		virtual bool _get(const StringName &p_name, Variant &r_ret) const;
 		virtual void _get_property_list(List<PropertyInfo> *p_list) const;
 
@@ -404,7 +404,7 @@ public:
 	struct PinJointData : public JointData {
 		virtual JointType get_joint_type() { return JOINT_TYPE_PIN; }
 
-		virtual bool _set(const StringName &p_name, const Variant &p_value, RID j = RID());
+		virtual bool _set(const StringName &p_name, const Variant &p_value, RID j);
 		virtual bool _get(const StringName &p_name, Variant &r_ret) const;
 		virtual void _get_property_list(List<PropertyInfo> *p_list) const;
 
@@ -421,7 +421,7 @@ public:
 	struct ConeJointData : public JointData {
 		virtual JointType get_joint_type() { return JOINT_TYPE_CONE; }
 
-		virtual bool _set(const StringName &p_name, const Variant &p_value, RID j = RID());
+		virtual bool _set(const StringName &p_name, const Variant &p_value, RID j);
 		virtual bool _get(const StringName &p_name, Variant &r_ret) const;
 		virtual void _get_property_list(List<PropertyInfo> *p_list) const;
 
@@ -442,7 +442,7 @@ public:
 	struct HingeJointData : public JointData {
 		virtual JointType get_joint_type() { return JOINT_TYPE_HINGE; }
 
-		virtual bool _set(const StringName &p_name, const Variant &p_value, RID j = RID());
+		virtual bool _set(const StringName &p_name, const Variant &p_value, RID j);
 		virtual bool _get(const StringName &p_name, Variant &r_ret) const;
 		virtual void _get_property_list(List<PropertyInfo> *p_list) const;
 
@@ -465,7 +465,7 @@ public:
 	struct SliderJointData : public JointData {
 		virtual JointType get_joint_type() { return JOINT_TYPE_SLIDER; }
 
-		virtual bool _set(const StringName &p_name, const Variant &p_value, RID j = RID());
+		virtual bool _set(const StringName &p_name, const Variant &p_value, RID j);
 		virtual bool _get(const StringName &p_name, Variant &r_ret) const;
 		virtual void _get_property_list(List<PropertyInfo> *p_list) const;
 
@@ -543,7 +543,7 @@ public:
 
 		virtual JointType get_joint_type() { return JOINT_TYPE_6DOF; }
 
-		virtual bool _set(const StringName &p_name, const Variant &p_value, RID j = RID());
+		virtual bool _set(const StringName &p_name, const Variant &p_value, RID j);
 		virtual bool _get(const StringName &p_name, Variant &r_ret) const;
 		virtual void _get_property_list(List<PropertyInfo> *p_list) const;
 

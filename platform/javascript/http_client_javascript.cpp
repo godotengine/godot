@@ -211,7 +211,7 @@ PoolByteArray HTTPClient::read_response_body_chunk() {
 	}
 	chunk.resize(read);
 	PoolByteArray::Write w = chunk.write();
-	copymem(&w[0], response_buffer.ptr(), read);
+	memcpy(&w[0], response_buffer.ptr(), read);
 	return chunk;
 }
 

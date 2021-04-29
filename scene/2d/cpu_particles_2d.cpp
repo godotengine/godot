@@ -55,7 +55,7 @@ void CPUParticles2D::set_amount(int p_amount) {
 
 		// each particle must be set to false
 		// zeroing the data also prevents uninitialized memory being sent to GPU
-		zeromem(static_cast<void *>(&w[0]), p_amount * sizeof(Particle));
+		memset(static_cast<void *>(&w[0]), 0, p_amount * sizeof(Particle));
 		// cast to prevent compiler warning .. note this relies on Particle not containing any complex types.
 		// an alternative is to use some zero method per item but the generated code will be far less efficient.
 	}
@@ -1041,7 +1041,7 @@ void CPUParticles2D::_update_particle_data_buffer() {
 				ptr[12] = r[idx].custom[3];
 
 			} else {
-				zeromem(ptr, sizeof(float) * 13);
+				memset(ptr, 0, sizeof(float) * 13);
 			}
 
 			ptr += 13;
@@ -1143,7 +1143,7 @@ void CPUParticles2D::_notification(int p_what) {
 					ptr[7] = t.elements[2][1];
 
 				} else {
-					zeromem(ptr, sizeof(float) * 8);
+					memset(ptr, 0, sizeof(float) * 8);
 				}
 
 				ptr += 13;

@@ -35,7 +35,6 @@
 #include "core/io/image_loader.h"
 #include "core/io/resource_loader.h"
 #include "core/math/math_funcs.h"
-#include "core/os/copymem.h"
 #include "core/print_string.h"
 
 #include "thirdparty/misc/hq2x.h"
@@ -1369,7 +1368,7 @@ void Image::shrink_x2() {
 			PoolVector<uint8_t>::Write w = new_img.write();
 			PoolVector<uint8_t>::Read r = data.read();
 
-			copymem(w.ptr(), &r[ofs], new_size);
+			memcpy(w.ptr(), &r[ofs], new_size);
 		}
 
 		width = MAX(width / 2, 1);
@@ -1593,7 +1592,7 @@ void Image::create(int p_width, int p_height, bool p_use_mipmaps, Format p_forma
 	data.resize(size);
 	{
 		PoolVector<uint8_t>::Write w = data.write();
-		zeromem(w.ptr(), size);
+		memset(w.ptr(), 0, size);
 	}
 
 	width = p_width;

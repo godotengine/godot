@@ -3273,37 +3273,37 @@ _FORCE_INLINE_ static void _fill_std140_ubo_empty(ShaderLanguage::DataType type,
 		case ShaderLanguage::TYPE_INT:
 		case ShaderLanguage::TYPE_UINT:
 		case ShaderLanguage::TYPE_FLOAT: {
-			zeromem(data, 4);
+			memset(data, 0, 4);
 		} break;
 		case ShaderLanguage::TYPE_BVEC2:
 		case ShaderLanguage::TYPE_IVEC2:
 		case ShaderLanguage::TYPE_UVEC2:
 		case ShaderLanguage::TYPE_VEC2: {
-			zeromem(data, 8);
+			memset(data, 0, 8);
 		} break;
 		case ShaderLanguage::TYPE_BVEC3:
 		case ShaderLanguage::TYPE_IVEC3:
 		case ShaderLanguage::TYPE_UVEC3:
 		case ShaderLanguage::TYPE_VEC3: {
-			zeromem(data, 12);
+			memset(data, 0, 12);
 		} break;
 		case ShaderLanguage::TYPE_BVEC4:
 		case ShaderLanguage::TYPE_IVEC4:
 		case ShaderLanguage::TYPE_UVEC4:
 		case ShaderLanguage::TYPE_VEC4: {
 
-			zeromem(data, 16);
+			memset(data, 0, 16);
 		} break;
 		case ShaderLanguage::TYPE_MAT2: {
 
-			zeromem(data, 32);
+			memset(data, 0, 32);
 		} break;
 		case ShaderLanguage::TYPE_MAT3: {
 
-			zeromem(data, 48);
+			memset(data, 0, 48);
 		} break;
 		case ShaderLanguage::TYPE_MAT4: {
-			zeromem(data, 64);
+			memset(data, 0, 64);
 		} break;
 
 		default: {
@@ -4099,7 +4099,7 @@ PoolVector<uint8_t> RasterizerStorageGLES3::mesh_surface_get_array(RID p_mesh, i
 	ERR_FAIL_NULL_V(data, PoolVector<uint8_t>());
 	{
 		PoolVector<uint8_t>::Write w = ret.write();
-		copymem(w.ptr(), data, surface->array_byte_size);
+		memcpy(w.ptr(), data, surface->array_byte_size);
 	}
 	glUnmapBuffer(GL_ARRAY_BUFFER);
 #endif
@@ -4131,7 +4131,7 @@ PoolVector<uint8_t> RasterizerStorageGLES3::mesh_surface_get_index_array(RID p_m
 		ERR_FAIL_NULL_V(data, PoolVector<uint8_t>());
 		{
 			PoolVector<uint8_t>::Write w = ret.write();
-			copymem(w.ptr(), data, surface->index_array_byte_size);
+			memcpy(w.ptr(), data, surface->index_array_byte_size);
 		}
 		glUnmapBuffer(GL_ELEMENT_ARRAY_BUFFER);
 #endif
@@ -4193,7 +4193,7 @@ Vector<PoolVector<uint8_t> > RasterizerStorageGLES3::mesh_surface_get_blend_shap
 		ERR_FAIL_COND_V(!data, Vector<PoolVector<uint8_t> >());
 		{
 			PoolVector<uint8_t>::Write w = ret.write();
-			copymem(w.ptr(), data, mesh->surfaces[p_surface]->array_byte_size);
+			memcpy(w.ptr(), data, mesh->surfaces[p_surface]->array_byte_size);
 		}
 		glUnmapBuffer(GL_ELEMENT_ARRAY_BUFFER);
 #endif
@@ -5060,7 +5060,7 @@ void RasterizerStorageGLES3::multimesh_set_as_bulk_array(RID p_multimesh, const 
 	ERR_FAIL_COND(dsize != p_array.size());
 
 	PoolVector<float>::Read r = p_array.read();
-	copymem(multimesh->data.ptrw(), r.ptr(), dsize * sizeof(float));
+	memcpy(multimesh->data.ptrw(), r.ptr(), dsize * sizeof(float));
 
 	multimesh->dirty_data = true;
 	multimesh->dirty_aabb = true;
@@ -6321,7 +6321,7 @@ void RasterizerStorageGLES3::lightmap_capture_set_octree(RID p_capture, const Po
 	if (p_octree.size()) {
 		PoolVector<LightmapCaptureOctree>::Write w = capture->octree.write();
 		PoolVector<uint8_t>::Read r = p_octree.read();
-		copymem(w.ptr(), r.ptr(), p_octree.size());
+		memcpy(w.ptr(), r.ptr(), p_octree.size());
 	}
 	capture->instance_change_notify(true, false);
 }
@@ -6338,7 +6338,7 @@ PoolVector<uint8_t> RasterizerStorageGLES3::lightmap_capture_get_octree(RID p_ca
 	{
 		PoolVector<LightmapCaptureOctree>::Read r = capture->octree.read();
 		PoolVector<uint8_t>::Write w = ret.write();
-		copymem(w.ptr(), r.ptr(), ret.size());
+		memcpy(w.ptr(), r.ptr(), ret.size());
 	}
 
 	return ret;

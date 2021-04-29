@@ -967,7 +967,7 @@ void LightmapperCPU::_post_process(uint32_t p_idx, void *r_output) {
 				PoolByteArray data;
 				data.resize(data_size);
 				PoolByteArray::Write w = data.write();
-				copymem(w.ptr(), output, data_size);
+				memcpy(w.ptr(), output, data_size);
 				current_image->create(size.x, size.y, false, Image::FORMAT_RGBF, data);
 			}
 
@@ -976,7 +976,7 @@ void LightmapperCPU::_post_process(uint32_t p_idx, void *r_output) {
 			PoolByteArray denoised_data = denoised_image->get_data();
 			denoised_image.unref();
 			PoolByteArray::Read r = denoised_data.read();
-			copymem(output, r.ptr(), data_size);
+			memcpy(output, r.ptr(), data_size);
 		}
 	}
 
@@ -1074,7 +1074,7 @@ void LightmapperCPU::_fix_seams(const LocalVector<UVSeam> &p_seams, Vector3 *r_l
 	LocalVector<Vector3> extra_buffer;
 	extra_buffer.resize(p_size.x * p_size.y);
 
-	copymem(extra_buffer.ptr(), r_lightmap, p_size.x * p_size.y * sizeof(Vector3));
+	memcpy(extra_buffer.ptr(), r_lightmap, p_size.x * p_size.y * sizeof(Vector3));
 
 	Vector3 *read_ptr = extra_buffer.ptr();
 	Vector3 *write_ptr = r_lightmap;
@@ -1084,7 +1084,7 @@ void LightmapperCPU::_fix_seams(const LocalVector<UVSeam> &p_seams, Vector3 *r_l
 			_fix_seam(p_seams[j].edge0[0], p_seams[j].edge0[1], p_seams[j].edge1[0], p_seams[j].edge1[1], read_ptr, write_ptr, p_size);
 			_fix_seam(p_seams[j].edge1[0], p_seams[j].edge1[1], p_seams[j].edge0[0], p_seams[j].edge0[1], read_ptr, write_ptr, p_size);
 		}
-		copymem(read_ptr, write_ptr, p_size.x * p_size.y * sizeof(Vector3));
+		memcpy(read_ptr, write_ptr, p_size.x * p_size.y * sizeof(Vector3));
 	}
 }
 

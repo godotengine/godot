@@ -31,7 +31,6 @@
 #ifndef POOL_VECTOR_H
 #define POOL_VECTOR_H
 
-#include "core/os/copymem.h"
 #include "core/os/memory.h"
 #include "core/os/mutex.h"
 #include "core/os/rw_lock.h"

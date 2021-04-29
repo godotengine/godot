@@ -1146,7 +1146,7 @@ void *AudioServer::audio_data_alloc(uint32_t p_data_len, const uint8_t *p_from_d
 	void *ad = memalloc(p_data_len);
 	ERR_FAIL_COND_V(!ad, NULL);
 	if (p_from_data) {
-		copymem(ad, p_from_data, p_data_len);
+		memcpy(ad, p_from_data, p_data_len);
 	}
 
 	audio_data_lock.lock();

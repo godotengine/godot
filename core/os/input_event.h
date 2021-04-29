@@ -32,7 +32,6 @@
 #define INPUT_EVENT_H
 
 #include "core/math/transform_2d.h"
-#include "core/os/copymem.h"
 #include "core/resource.h"
 #include "core/typedefs.h"
 #include "core/ustring.h"

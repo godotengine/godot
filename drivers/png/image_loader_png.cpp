@@ -93,7 +93,7 @@ PoolVector<uint8_t> ImageLoaderPNG::lossless_pack_png(const Ref<Image> &p_image)
 	{
 		// must be closed before call to image_to_png
 		PoolVector<uint8_t>::Write writer = out_buffer.write();
-		copymem(writer.ptr(), "PNG ", 4);
+		memcpy(writer.ptr(), "PNG ", 4);
 	}
 
 	Error err = PNGDriverCommon::image_to_png(p_image, out_buffer);

@@ -383,7 +383,7 @@ void RayCast::_update_debug_shape() {
 		int array_size = sizeof(Vector3) * verts.size();
 		byte_array.resize(array_size);
 		PoolByteArray::Write w = byte_array.write();
-		copymem(w.ptr(), verts.ptr(), array_size);
+		memcpy(w.ptr(), verts.ptr(), array_size);
 
 		VS::get_singleton()->mesh_surface_update_region(mesh->get_rid(), 0, 0, byte_array);
 	}

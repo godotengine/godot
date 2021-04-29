@@ -765,7 +765,7 @@ static void _encode_string(const String &p_string, uint8_t *&buf, int &r_len) {
 	if (buf) {
 		encode_uint32(utf8.length(), buf);
 		buf += 4;
-		copymem(buf, utf8.get_data(), utf8.length());
+		memcpy(buf, utf8.get_data(), utf8.length());
 		buf += utf8.length();
 	}
 
@@ -918,7 +918,7 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 				if (buf) {
 					encode_uint32(utf8.length(), buf);
 					buf += 4;
-					copymem(buf, utf8.get_data(), utf8.length());
+					memcpy(buf, utf8.get_data(), utf8.length());
 					buf += pad + utf8.length();
 				}
 
@@ -975,7 +975,7 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 				for (int i = 0; i < 3; i++) {
 					for (int j = 0; j < 2; j++) {
 
-						copymem(&buf[(i * 2 + j) * 4], &val.elements[i][j], sizeof(float));
+						memcpy(&buf[(i * 2 + j) * 4], &val.elements[i][j], sizeof(float));
 					}
 				}
 			}
@@ -1031,7 +1031,7 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 				for (int i = 0; i < 3; i++) {
 					for (int j = 0; j < 3; j++) {
 
-						copymem(&buf[(i * 3 + j) * 4], &val.elements[i][j], sizeof(float));
+						memcpy(&buf[(i * 3 + j) * 4], &val.elements[i][j], sizeof(float));
 					}
 				}
 			}
@@ -1046,7 +1046,7 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 				for (int i = 0; i < 3; i++) {
 					for (int j = 0; j < 3; j++) {
 
-						copymem(&buf[(i * 3 + j) * 4], &val.basis.elements[i][j], sizeof(float));
+						memcpy(&buf[(i * 3 + j) * 4], &val.basis.elements[i][j], sizeof(float));
 					}
 				}
 
@@ -1162,7 +1162,7 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 				if (buf) {
 					encode_uint32(utf8.length()+1,buf);
 					buf+=4;
-					copymem(buf,utf8.get_data(),utf8.length()+1);
+					memcpy(buf,utf8.get_data(),utf8.length()+1);
 				}
 
 				r_len+=4+utf8.length()+1;
@@ -1217,7 +1217,7 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 				encode_uint32(datalen, buf);
 				buf += 4;
 				PoolVector<uint8_t>::Read r = data.read();
-				copymem(buf, &r[0], datalen * datasize);
+				memcpy(buf, &r[0], datalen * datasize);
 				buf += datalen * datasize;
 			}
 
@@ -1282,7 +1282,7 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 				if (buf) {
 					encode_uint32(utf8.length() + 1, buf);
 					buf += 4;
-					copymem(buf, utf8.get_data(), utf8.length() + 1);
+					memcpy(buf, utf8.get_data(), utf8.length() + 1);
 					buf += utf8.length() + 1;
 				}
 
