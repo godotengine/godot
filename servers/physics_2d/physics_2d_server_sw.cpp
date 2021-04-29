@@ -598,7 +598,7 @@ void Physics2DServerSW::body_set_space(RID p_body, RID p_space) {
 	if (body->get_space() == space)
 		return; //pointless
 
-	body->clear_constraint_list();
+	body->clear_constraint_map();
 	body->set_space(space);
 };
 

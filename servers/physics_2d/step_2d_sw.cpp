@@ -37,8 +37,9 @@ void Step2DSW::_populate_island(Body2DSW *p_body, Body2DSW **p_island, Constrain
 	p_body->set_island_next(*p_island);
 	*p_island = p_body;
 
-	for (const List<Pair<Constraint2DSW *, int> >::Element *E = p_body->get_constraint_list().front(); E; E = E->next()) {
-		Constraint2DSW *c = (Constraint2DSW *)E->get().first;
+	for (Map<Constraint2DSW *, int>::Element *E = p_body->get_constraint_map().front(); E; E = E->next()) {
+
+		Constraint2DSW *c = (Constraint2DSW *)E->key();
 		if (c->get_island_step() == _step)
 			continue; //already processed
 		c->set_island_step(_step);
@@ -46,7 +47,7 @@ void Step2DSW::_populate_island(Body2DSW *p_body, Body2DSW **p_island, Constrain
 		*p_constraint_island = c;
 
 		for (int i = 0; i < c->get_body_count(); i++) {
-			if (i == E->get().second)
+			if (i == E->get())
 				continue;
 			Body2DSW *b = c->get_body_ptr()[i];
 			if (b->get_island_step() == _step || b->get_mode() == Physics2DServer::BODY_MODE_STATIC || b->get_mode() == Physics2DServer::BODY_MODE_KINEMATIC)

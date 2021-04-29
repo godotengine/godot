@@ -89,7 +89,7 @@ AreaPair2DSW::~AreaPair2DSW() {
 		if (area->has_monitor_callback())
 			area->remove_body_from_query(body, body_shape, area_shape);
 	}
-	body->remove_constraint(this, 0);
+	body->remove_constraint(this);
 	area->remove_constraint(this);
 }
 
