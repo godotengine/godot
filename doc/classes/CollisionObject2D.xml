@@ -99,15 +99,6 @@
 				Removes the given shape owner.
 			</description>
 		</method>
-		<method name="shape_find_owner" qualifiers="const">
-			<return type="int">
-			</return>
-			<argument index="0" name="shape_index" type="int">
-			</argument>
-			<description>
-				Returns the [code]owner_id[/code] of the given shape.
-			</description>
-		</method>
 		<method name="set_collision_layer_bit">
 			<return type="void">
 			</return>
@@ -130,6 +121,15 @@
 			<description>
 				If [code]value[/value] is [code]true[/code], sets the specified [code]bit[/code] in the the [member collision_mask].
 				If [code]value[/value] is [code]false[/code], clears the specified [code]bit[/code] in the the [member collision_mask].
+			</description>
+		</method>
+		<method name="shape_find_owner" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="shape_index" type="int">
+			</argument>
+			<description>
+				Returns the [code]owner_id[/code] of the given shape.
 			</description>
 		</method>
 		<method name="shape_owner_add_shape">
