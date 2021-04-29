@@ -50,17 +50,15 @@ subject to the following restrictions:
   The heightfield heights are determined from the data type used for the
   heightfieldData array.  
 
-   - PHY_UCHAR: height at a point is the uchar value at the
+   - unsigned char: height at a point is the uchar value at the
        grid point, multipled by heightScale.  uchar isn't recommended
        because of its inability to deal with negative values, and
        low resolution (8-bit).
 
-   - PHY_SHORT: height at a point is the short int value at that grid
+   - short: height at a point is the short int value at that grid
        point, multipled by heightScale.
 
-   - PHY_FLOAT: height at a point is the float value at that grid
-       point.  heightScale is ignored when using the float heightfield
-       data type.
+   - float or dobule: height at a point is the value at that grid point.
 
   Whatever the caller specifies as minHeight and maxHeight will be honored.
   The class will not inspect the heightfield to discover the actual minimum
@@ -75,6 +73,14 @@ btHeightfieldTerrainShape : public btConcaveShape
 public:
 	struct Range
 	{
+		Range() {}
+		Range(btScalar min, btScalar max) : min(min), max(max) {}
+
+		bool overlaps(const Range& other) const
+		{
+			return !(min > other.max || max < other.min);
+		}
+
 		btScalar min;
 		btScalar max;
 	};
@@ -95,7 +101,8 @@ protected:
 	union {
 		const unsigned char* m_heightfieldDataUnsignedChar;
 		const short* m_heightfieldDataShort;
-		const btScalar* m_heightfieldDataFloat;
+		const float* m_heightfieldDataFloat;
+		const double* m_heightfieldDataDouble;
 		const void* m_heightfieldDataUnknown;
 	};
 
@@ -135,11 +142,33 @@ protected:
 public:
 	BT_DECLARE_ALIGNED_ALLOCATOR();
 
-	/// preferred constructor
+	/// preferred constructors
+	btHeightfieldTerrainShape(
+		int heightStickWidth, int heightStickLength,
+		const float* heightfieldData, btScalar minHeight, btScalar maxHeight,
+		int upAxis, bool flipQuadEdges);
+	btHeightfieldTerrainShape(
+		int heightStickWidth, int heightStickLength,
+		const double* heightfieldData, btScalar minHeight, btScalar maxHeight,
+		int upAxis, bool flipQuadEdges);
+	btHeightfieldTerrainShape(
+		int heightStickWidth, int heightStickLength,
+		const short* heightfieldData, btScalar heightScale, btScalar minHeight, btScalar maxHeight,
+		int upAxis, bool flipQuadEdges);
+	btHeightfieldTerrainShape(
+		int heightStickWidth, int heightStickLength,
+		const unsigned char* heightfieldData, btScalar heightScale, btScalar minHeight, btScalar maxHeight,
+		int upAxis, bool flipQuadEdges);
+
+	/// legacy constructor
 	/**
 	  This constructor supports a range of heightfield
 	  data types, and allows for a non-zero minimum height value.
 	  heightScale is needed for any integer-based heightfield data types.
+
+	  This legacy constructor considers `PHY_FLOAT` to mean `btScalar`.
+	  With `BT_USE_DOUBLE_PRECISION`, it will expect `heightfieldData`
+	  to be double-precision.
 	 */
 	btHeightfieldTerrainShape(int heightStickWidth, int heightStickLength,
 							  const void* heightfieldData, btScalar heightScale,
@@ -150,7 +179,7 @@ public:
 	/// legacy constructor
 	/**
 	  The legacy constructor assumes the heightfield has a minimum height
-	  of zero.  Only unsigned char or floats are supported.  For legacy
+	  of zero.  Only unsigned char or btScalar data are supported.  For legacy
 	  compatibility reasons, heightScale is calculated as maxHeight / 65535 
 	  (and is only used when useFloatData = false).
  	 */

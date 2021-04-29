@@ -10,7 +10,7 @@ env_bullet = env_modules.Clone()
 thirdparty_obj = []
 
 if env["builtin_bullet"]:
-    # Build only version 2 for now (as of 2.89)
+    # Build only "Bullet2" API (not "Bullet3" folders).
     # Sync file list with relevant upstream CMakeLists.txt for each folder.
     thirdparty_dir = "#thirdparty/bullet/"
 
@@ -187,6 +187,7 @@ if env["builtin_bullet"]:
         "LinearMath/btGeometryUtil.cpp",
         "LinearMath/btPolarDecomposition.cpp",
         "LinearMath/btQuickprof.cpp",
+        "LinearMath/btReducedVector.cpp",
         "LinearMath/btSerializer.cpp",
         "LinearMath/btSerializer64.cpp",
         "LinearMath/btThreads.cpp",

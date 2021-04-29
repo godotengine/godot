@@ -29,7 +29,7 @@ class btDeformableMousePickingForce : public btDeformableLagrangianForce
 
 public:
 	typedef btAlignedObjectArray<btVector3> TVStack;
-	btDeformableMousePickingForce(btScalar k, btScalar d, const btSoftBody::Face& face, btVector3 mouse_pos, btScalar maxForce = 0.3) : m_elasticStiffness(k), m_dampingStiffness(d), m_face(face), m_mouse_pos(mouse_pos), m_maxForce(maxForce)
+	btDeformableMousePickingForce(btScalar k, btScalar d, const btSoftBody::Face& face, const btVector3& mouse_pos, btScalar maxForce = 0.3) : m_elasticStiffness(k), m_dampingStiffness(d), m_face(face), m_mouse_pos(mouse_pos), m_maxForce(maxForce)
 	{
 	}
 

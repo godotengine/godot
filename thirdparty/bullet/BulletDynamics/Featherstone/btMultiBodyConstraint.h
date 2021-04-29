@@ -94,7 +94,7 @@ protected:
 									 bool angConstraint = false,
 
 									 btScalar relaxation = 1.f,
-									 bool isFriction = false, btScalar desiredVelocity = 0, btScalar cfmSlip = 0);
+									 bool isFriction = false, btScalar desiredVelocity = 0, btScalar cfmSlip = 0, btScalar damping = 1.0);
 
 public:
 	BT_DECLARE_ALIGNED_ALLOCATOR();
