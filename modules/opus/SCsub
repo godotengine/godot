@@ -10,6 +10,10 @@ Import("env_modules")
 env_opus = env_modules.Clone()
 
 # Thirdparty source files
+
+thirdparty_obj = []
+
+# Thirdparty source files
 if env["builtin_opus"]:
     thirdparty_dir = "#thirdparty/opus/"
 
@@ -233,7 +237,16 @@ if env["builtin_opus"]:
 
     env_thirdparty = env_opus.Clone()
     env_thirdparty.disable_warnings()
-    env_thirdparty.add_source_files(env.modules_sources, thirdparty_sources)
+    env_thirdparty.add_source_files(thirdparty_obj, thirdparty_sources)
+    env.modules_sources += thirdparty_obj
 
-# Module files
-env_opus.add_source_files(env.modules_sources, "register_types.cpp")
+
+# Godot source files
+
+module_obj = []
+
+env_opus.add_source_files(module_obj, "*.cpp")
+env.modules_sources += module_obj
+
+# Needed to force rebuilding the module files when the thirdparty library is updated.
+env.Depends(module_obj, thirdparty_obj)
