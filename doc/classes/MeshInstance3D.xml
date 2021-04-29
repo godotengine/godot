@@ -20,18 +20,18 @@
 				This helper creates a [StaticBody3D] child node with a [ConvexPolygonShape3D] collision shape calculated from the mesh geometry. It's mainly used for testing.
 			</description>
 		</method>
-		<method name="create_multiple_convex_collisions">
-			<return type="void">
-			</return>
-			<description>
-				This helper creates a [StaticBody3D] child node with multiple [ConvexPolygonShape3D] collision shapes calculated from the mesh geometry via convex decomposition. It's mainly used for testing.
-			</description>
-		</method>
 		<method name="create_debug_tangents">
 			<return type="void">
 			</return>
 			<description>
 				This helper creates a [MeshInstance3D] child node with gizmos at every vertex calculated from the mesh geometry. It's mainly used for testing.
+			</description>
+		</method>
+		<method name="create_multiple_convex_collisions">
+			<return type="void">
+			</return>
+			<description>
+				This helper creates a [StaticBody3D] child node with multiple [ConvexPolygonShape3D] collision shapes calculated from the mesh geometry via convex decomposition. It's mainly used for testing.
 			</description>
 		</method>
 		<method name="create_trimesh_collision">
