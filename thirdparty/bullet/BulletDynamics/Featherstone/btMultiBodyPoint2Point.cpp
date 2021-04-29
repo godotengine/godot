@@ -27,7 +27,7 @@ subject to the following restrictions:
 #endif
 
 btMultiBodyPoint2Point::btMultiBodyPoint2Point(btMultiBody* body, int link, btRigidBody* bodyB, const btVector3& pivotInA, const btVector3& pivotInB)
-	: btMultiBodyConstraint(body, 0, link, -1, BTMBP2PCONSTRAINT_DIM, false),
+	: btMultiBodyConstraint(body, 0, link, -1, BTMBP2PCONSTRAINT_DIM, false, MULTIBODY_CONSTRAINT_POINT_TO_POINT),
 	  m_rigidBodyA(0),
 	  m_rigidBodyB(bodyB),
 	  m_pivotInA(pivotInA),
@@ -37,7 +37,7 @@ btMultiBodyPoint2Point::btMultiBodyPoint2Point(btMultiBody* body, int link, btRi
 }
 
 btMultiBodyPoint2Point::btMultiBodyPoint2Point(btMultiBody* bodyA, int linkA, btMultiBody* bodyB, int linkB, const btVector3& pivotInA, const btVector3& pivotInB)
-	: btMultiBodyConstraint(bodyA, bodyB, linkA, linkB, BTMBP2PCONSTRAINT_DIM, false),
+	: btMultiBodyConstraint(bodyA, bodyB, linkA, linkB, BTMBP2PCONSTRAINT_DIM, false, MULTIBODY_CONSTRAINT_POINT_TO_POINT),
 	  m_rigidBodyA(0),
 	  m_rigidBodyB(0),
 	  m_pivotInA(pivotInA),

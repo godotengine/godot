@@ -851,11 +851,11 @@ void bFile::swapData(char *data, short type, int arraySize, bool ignoreEndianFla
 
 void bFile::safeSwapPtr(char *dst, const char *src)
 {
+	if (!src || !dst)
+		return;
+
 	int ptrFile = mFileDNA->getPointerSize();
 	int ptrMem = mMemoryDNA->getPointerSize();
-
-	if (!src && !dst)
-		return;
 
 	if (ptrFile == ptrMem)
 	{

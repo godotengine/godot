@@ -20,6 +20,21 @@ subject to the following restrictions:
 #include "LinearMath/btAlignedObjectArray.h"
 #include "btMultiBody.h"
 
+
+//Don't change any of the existing enum values, so add enum types at the end for serialization compatibility
+enum btTypedMultiBodyConstraintType
+{
+	MULTIBODY_CONSTRAINT_LIMIT=3,
+	MULTIBODY_CONSTRAINT_1DOF_JOINT_MOTOR,
+	MULTIBODY_CONSTRAINT_GEAR,
+	MULTIBODY_CONSTRAINT_POINT_TO_POINT,
+	MULTIBODY_CONSTRAINT_SLIDER,
+	MULTIBODY_CONSTRAINT_SPHERICAL_MOTOR,
+	MULTIBODY_CONSTRAINT_FIXED,
+	
+	MAX_MULTIBODY_CONSTRAINT_TYPE,
+};
+
 class btMultiBody;
 struct btSolverInfo;
 
@@ -45,6 +60,8 @@ protected:
 	btMultiBody* m_bodyB;
 	int m_linkA;
 	int m_linkB;
+
+	int m_type; //btTypedMultiBodyConstraintType
 
 	int m_numRows;
 	int m_jacSizeA;
@@ -77,17 +94,21 @@ protected:
 									 bool angConstraint = false,
 
 									 btScalar relaxation = 1.f,
-									 bool isFriction = false, btScalar desiredVelocity = 0, btScalar cfmSlip = 0);
+									 bool isFriction = false, btScalar desiredVelocity = 0, btScalar cfmSlip = 0, btScalar damping = 1.0);
 
 public:
 	BT_DECLARE_ALIGNED_ALLOCATOR();
 
-	btMultiBodyConstraint(btMultiBody * bodyA, btMultiBody * bodyB, int linkA, int linkB, int numRows, bool isUnilateral);
+	btMultiBodyConstraint(btMultiBody * bodyA, btMultiBody * bodyB, int linkA, int linkB, int numRows, bool isUnilateral, int type);
 	virtual ~btMultiBodyConstraint();
 
 	void updateJacobianSizes();
 	void allocateJacobiansMultiDof();
 
+	int getConstraintType() const
+	{
+		return m_type;
+	}
 	//many constraints have setFrameInB/setPivotInB. Will use 'getConstraintType' later.
 	virtual void setFrameInB(const btMatrix3x3& frameInB) {}
 	virtual void setPivotInB(const btVector3& pivotInB) {}

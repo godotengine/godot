@@ -26,10 +26,12 @@ subject to the following restrictions:
 #endif
 
 #if defined(BT_USE_SSE)
+#define v0000 (_mm_set_ps(0.0f, 0.0f, 0.0f, 0.0f))
 #define v1000 (_mm_set_ps(0.0f, 0.0f, 0.0f, 1.0f))
 #define v0100 (_mm_set_ps(0.0f, 0.0f, 1.0f, 0.0f))
 #define v0010 (_mm_set_ps(0.0f, 1.0f, 0.0f, 0.0f))
 #elif defined(BT_USE_NEON)
+const btSimdFloat4 ATTRIBUTE_ALIGNED16(v0000) = {0.0f, 0.0f, 0.0f, 0.0f};
 const btSimdFloat4 ATTRIBUTE_ALIGNED16(v1000) = {1.0f, 0.0f, 0.0f, 0.0f};
 const btSimdFloat4 ATTRIBUTE_ALIGNED16(v0100) = {0.0f, 1.0f, 0.0f, 0.0f};
 const btSimdFloat4 ATTRIBUTE_ALIGNED16(v0010) = {0.0f, 0.0f, 1.0f, 0.0f};
@@ -330,6 +332,20 @@ public:
 				 btScalar(0.0), btScalar(0.0), btScalar(1.0));
 #endif
 	}
+    
+    /**@brief Set the matrix to the identity */
+    void setZero()
+    {
+#if (defined(BT_USE_SSE_IN_API) && defined(BT_USE_SSE)) || defined(BT_USE_NEON)
+        m_el[0] = v0000;
+        m_el[1] = v0000;
+        m_el[2] = v0000;
+#else
+        setValue(btScalar(0.0), btScalar(0.0), btScalar(0.0),
+                 btScalar(0.0), btScalar(0.0), btScalar(0.0),
+                 btScalar(0.0), btScalar(0.0), btScalar(0.0));
+#endif
+    }
 
 	static const btMatrix3x3& getIdentity()
 	{

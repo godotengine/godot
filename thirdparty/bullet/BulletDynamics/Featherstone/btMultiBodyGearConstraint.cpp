@@ -21,7 +21,7 @@ subject to the following restrictions:
 #include "BulletCollision/CollisionDispatch/btCollisionObject.h"
 
 btMultiBodyGearConstraint::btMultiBodyGearConstraint(btMultiBody* bodyA, int linkA, btMultiBody* bodyB, int linkB, const btVector3& pivotInA, const btVector3& pivotInB, const btMatrix3x3& frameInA, const btMatrix3x3& frameInB)
-	: btMultiBodyConstraint(bodyA, bodyB, linkA, linkB, 1, false),
+	: btMultiBodyConstraint(bodyA, bodyB, linkA, linkB, 1, false, MULTIBODY_CONSTRAINT_GEAR),
 	  m_gearRatio(1),
 	  m_gearAuxLink(-1),
 	  m_erp(0),

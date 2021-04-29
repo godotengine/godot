@@ -36,7 +36,7 @@ public:
 		CL_SIMD_SOLVER,
 		DX_SOLVER,
 		DX_SIMD_SOLVER,
-        DEFORMABLE_SOLVER
+		DEFORMABLE_SOLVER
 	};
 
 protected:

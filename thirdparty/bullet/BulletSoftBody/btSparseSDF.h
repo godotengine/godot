@@ -22,36 +22,36 @@ subject to the following restrictions:
 
 // Fast Hash
 
-#if !defined (get16bits)
-#define get16bits(d) ((((unsigned int)(((const unsigned char *)(d))[1])) << 8)\
-+(unsigned int)(((const unsigned char *)(d))[0]) )
+#if !defined(get16bits)
+#define get16bits(d) ((((unsigned int)(((const unsigned char*)(d))[1])) << 8) + (unsigned int)(((const unsigned char*)(d))[0]))
 #endif
 //
 // super hash function by Paul Hsieh
 //
-inline unsigned int HsiehHash (const char * data, int len) {
-  unsigned int hash = len, tmp;
-  len>>=2;
+inline unsigned int HsiehHash(const char* data, int len)
+{
+	unsigned int hash = len, tmp;
+	len >>= 2;
 
-    /* Main loop */
-    for (;len > 0; len--) {
-        hash  += get16bits (data);
-        tmp    = (get16bits (data+2) << 11) ^ hash;
-        hash   = (hash << 16) ^ tmp;
-        data  += 2*sizeof (unsigned short);
-        hash  += hash >> 11;
-    }
+	/* Main loop */
+	for (; len > 0; len--)
+	{
+		hash += get16bits(data);
+		tmp = (get16bits(data + 2) << 11) ^ hash;
+		hash = (hash << 16) ^ tmp;
+		data += 2 * sizeof(unsigned short);
+		hash += hash >> 11;
+	}
 
+	/* Force "avalanching" of final 127 bits */
+	hash ^= hash << 3;
+	hash += hash >> 5;
+	hash ^= hash << 4;
+	hash += hash >> 17;
+	hash ^= hash << 25;
+	hash += hash >> 6;
 
-    /* Force "avalanching" of final 127 bits */
-    hash ^= hash << 3;
-    hash += hash >> 5;
-    hash ^= hash << 4;
-    hash += hash >> 17;
-    hash ^= hash << 25;
-    hash += hash >> 6;
-
-    return hash;
+	return hash;
 }
 
 template <const int CELLSIZE>
@@ -81,7 +81,7 @@ struct btSparseSdf
 
 	btAlignedObjectArray<Cell*> cells;
 	btScalar voxelsz;
-    btScalar m_defaultVoxelsz;
+	btScalar m_defaultVoxelsz;
 	int puid;
 	int ncells;
 	int m_clampCells;
@@ -103,16 +103,16 @@ struct btSparseSdf
 		//if this limit is reached, the SDF is reset (at the cost of some performance during the reset)
 		m_clampCells = clampCells;
 		cells.resize(hashsize, 0);
-        m_defaultVoxelsz = 0.25;
+		m_defaultVoxelsz = 0.25;
 		Reset();
 	}
 	//
-    
-    void setDefaultVoxelsz(btScalar sz)
-    {
-        m_defaultVoxelsz = sz;
-    }
-    
+
+	void setDefaultVoxelsz(btScalar sz)
+	{
+		m_defaultVoxelsz = sz;
+	}
+
 	void Reset()
 	{
 		for (int i = 0, ni = cells.size(); i < ni; ++i)
@@ -162,7 +162,7 @@ struct btSparseSdf
 		nqueries = 1;
 		nprobes = 1;
 		++puid;  ///@todo: Reset puid's when int range limit is reached	*/
-				 /* else setup a priority list...						*/
+		/* else setup a priority list...						*/
 	}
 	//
 	int RemoveReferences(btCollisionShape* pcs)
@@ -221,7 +221,7 @@ struct btSparseSdf
 			else
 			{
 				// printf("c->hash/c[0][1][2]=%d,%d,%d,%d\n", c->hash, c->c[0], c->c[1],c->c[2]);
-                        //printf("h,ixb,iyb,izb=%d,%d,%d,%d\n", h,ix.b, iy.b, iz.b);
+				//printf("h,ixb,iyb,izb=%d,%d,%d,%d\n", h,ix.b, iy.b, iz.b);
 
 				c = c->next;
 			}
@@ -363,7 +363,7 @@ struct btSparseSdf
 		myset.p = (void*)shape;
 		const char* ptr = (const char*)&myset;
 
-		unsigned int result = HsiehHash(ptr, sizeof(btS) );
+		unsigned int result = HsiehHash(ptr, sizeof(btS));
 
 		return result;
 	}
