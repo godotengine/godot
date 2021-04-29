@@ -264,6 +264,127 @@ void TileSetEditor::_tile_set_changed() {
 	tile_set_changed_needs_update = true;
 }
 
+void TileSetEditor::_undo_redo_inspector_callback(Object *p_undo_redo, Object *p_edited, String p_property, Variant p_new_value) {
+	UndoRedo *undo_redo = Object::cast_to<UndoRedo>(p_undo_redo);
+	ERR_FAIL_COND(!undo_redo);
+
+#define ADD_UNDO(obj, property) undo_redo->add_undo_property(obj, property, tile_data->get(property));
+	TileSet *tile_set = Object::cast_to<TileSet>(p_edited);
+	if (tile_set) {
+		Vector<String> components = p_property.split("/", true, 3);
+		for (int i = 0; i < tile_set->get_source_count(); i++) {
+			int source_id = tile_set->get_source_id(i);
+
+			Ref<TileSetAtlasSource> tas = tile_set->get_source(source_id);
+			if (tas.is_valid()) {
+				for (int j = 0; j < tas->get_tiles_count(); j++) {
+					Vector2i tile_id = tas->get_tile_id(j);
+					for (int k = 0; k < tas->get_alternative_tiles_count(tile_id); k++) {
+						int alternative_id = tas->get_alternative_tile_id(tile_id, k);
+						TileData *tile_data = Object::cast_to<TileData>(tas->get_tile_data(tile_id, alternative_id));
+						ERR_FAIL_COND(!tile_data);
+
+						if (p_property == "occlusion_layers_count") {
+							int new_layer_count = p_new_value;
+							int old_layer_count = tile_set->get_occlusion_layers_count();
+							if (new_layer_count < old_layer_count) {
+								for (int occclusion_layer_index = new_layer_count - 1; occclusion_layer_index < old_layer_count; occclusion_layer_index++) {
+									ADD_UNDO(tile_data, vformat("occlusion_layer_%d/polygon", occclusion_layer_index));
+								}
+							}
+						} else if (p_property == "physics_layers_count") {
+							int new_layer_count = p_new_value;
+							int old_layer_count = tile_set->get_physics_layers_count();
+							if (new_layer_count < old_layer_count) {
+								for (int physics_layer_index = new_layer_count - 1; physics_layer_index < old_layer_count; physics_layer_index++) {
+									ADD_UNDO(tile_data, vformat("physics_layer_%d/shapes_count", physics_layer_index));
+									for (int shape_index = 0; shape_index < tile_data->get_collision_shapes_count(physics_layer_index); shape_index++) {
+										ADD_UNDO(tile_data, vformat("physics_layer_%d/shape_%d/shape", physics_layer_index, shape_index));
+										ADD_UNDO(tile_data, vformat("physics_layer_%d/shape_%d/one_way", physics_layer_index, shape_index));
+										ADD_UNDO(tile_data, vformat("physics_layer_%d/shape_%d/one_way_margin", physics_layer_index, shape_index));
+									}
+								}
+							}
+						} else if ((p_property == "terrains_sets_count" && tile_data->get_terrain_set() >= (int)p_new_value) ||
+								   (components.size() == 2 && components[0].begins_with("terrain_set_") && components[0].trim_prefix("terrain_set_").is_valid_integer() && components[1] == "mode") ||
+								   (components.size() == 2 && components[0].begins_with("terrain_set_") && components[0].trim_prefix("terrain_set_").is_valid_integer() && components[1] == "terrains_count" && tile_data->get_terrain_set() == components[0].trim_prefix("terrain_set_").to_int() && (int)p_new_value < tile_set->get_terrains_count(tile_data->get_terrain_set()))) {
+							ADD_UNDO(tile_data, "terrain_set");
+							if (tile_data->is_valid_peering_bit_terrain(TileSet::CELL_NEIGHBOR_RIGHT_SIDE)) {
+								ADD_UNDO(tile_data, "terrains_peering_bit/right_side");
+							}
+							if (tile_data->is_valid_peering_bit_terrain(TileSet::CELL_NEIGHBOR_RIGHT_CORNER)) {
+								ADD_UNDO(tile_data, "terrains_peering_bit/right_corner");
+							}
+							if (tile_data->is_valid_peering_bit_terrain(TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE)) {
+								ADD_UNDO(tile_data, "terrains_peering_bit/bottom_right_side");
+							}
+							if (tile_data->is_valid_peering_bit_terrain(TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_CORNER)) {
+								ADD_UNDO(tile_data, "terrains_peering_bit/bottom_right_corner");
+							}
+							if (tile_data->is_valid_peering_bit_terrain(TileSet::CELL_NEIGHBOR_BOTTOM_SIDE)) {
+								ADD_UNDO(tile_data, "terrains_peering_bit/bottom_side");
+							}
+							if (tile_data->is_valid_peering_bit_terrain(TileSet::CELL_NEIGHBOR_BOTTOM_CORNER)) {
+								ADD_UNDO(tile_data, "terrains_peering_bit/bottom_corner");
+							}
+							if (tile_data->is_valid_peering_bit_terrain(TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE)) {
+								ADD_UNDO(tile_data, "terrains_peering_bit/bottom_left_side");
+							}
+							if (tile_data->is_valid_peering_bit_terrain(TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_CORNER)) {
+								ADD_UNDO(tile_data, "terrains_peering_bit/bottom_left_corner");
+							}
+							if (tile_data->is_valid_peering_bit_terrain(TileSet::CELL_NEIGHBOR_LEFT_SIDE)) {
+								ADD_UNDO(tile_data, "terrains_peering_bit/left_side");
+							}
+							if (tile_data->is_valid_peering_bit_terrain(TileSet::CELL_NEIGHBOR_LEFT_CORNER)) {
+								ADD_UNDO(tile_data, "terrains_peering_bit/left_corner");
+							}
+							if (tile_data->is_valid_peering_bit_terrain(TileSet::CELL_NEIGHBOR_TOP_LEFT_SIDE)) {
+								ADD_UNDO(tile_data, "terrains_peering_bit/top_left_side");
+							}
+							if (tile_data->is_valid_peering_bit_terrain(TileSet::CELL_NEIGHBOR_TOP_LEFT_CORNER)) {
+								ADD_UNDO(tile_data, "terrains_peering_bit/top_left_corner");
+							}
+							if (tile_data->is_valid_peering_bit_terrain(TileSet::CELL_NEIGHBOR_TOP_SIDE)) {
+								ADD_UNDO(tile_data, "terrains_peering_bit/top_side");
+							}
+							if (tile_data->is_valid_peering_bit_terrain(TileSet::CELL_NEIGHBOR_TOP_CORNER)) {
+								ADD_UNDO(tile_data, "terrains_peering_bit/top_corner");
+							}
+							if (tile_data->is_valid_peering_bit_terrain(TileSet::CELL_NEIGHBOR_TOP_RIGHT_SIDE)) {
+								ADD_UNDO(tile_data, "terrains_peering_bit/top_right_side");
+							}
+							if (tile_data->is_valid_peering_bit_terrain(TileSet::CELL_NEIGHBOR_TOP_RIGHT_CORNER)) {
+								ADD_UNDO(tile_data, "terrains_peering_bit/top_right_corner");
+							}
+						} else if (p_property == "navigation_layers_count") {
+							int new_layer_count = p_new_value;
+							int old_layer_count = tile_set->get_navigation_layers_count();
+							if (new_layer_count < old_layer_count) {
+								for (int navigation_layer_index = new_layer_count - 1; navigation_layer_index < old_layer_count; navigation_layer_index++) {
+									ADD_UNDO(tile_data, vformat("navigation_layer_%d/polygon", navigation_layer_index));
+								}
+							}
+						} else if (p_property == "custom_data_layers_count") {
+							int new_layer_count = p_new_value;
+							int old_layer_count = tile_set->get_custom_data_layers_count();
+							if (new_layer_count < old_layer_count) {
+								for (int custom_data_layer_index = new_layer_count - 1; custom_data_layer_index < old_layer_count; custom_data_layer_index++) {
+									ADD_UNDO(tile_data, vformat("custom_data_%d", custom_data_layer_index));
+								}
+							}
+						} else if (components.size() == 2 && components[0].begins_with("custom_data_layer_") && components[0].trim_prefix("custom_data_layer_").is_valid_integer() && components[1] == "type") {
+							int custom_data_layer = components[0].trim_prefix("custom_data_layer_").is_valid_integer();
+							ADD_UNDO(tile_data, vformat("custom_data_%d", custom_data_layer));
+						}
+					}
+				}
+			}
+		}
+	}
+#undef ADD_UNDO
+}
+
 void TileSetEditor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("can_drop_data_fw"), &TileSetEditor::can_drop_data_fw);
 	ClassDB::bind_method(D_METHOD("drop_data_fw"), &TileSetEditor::drop_data_fw);
@@ -377,6 +498,9 @@ TileSetEditor::TileSetEditor() {
 	tile_set_atlas_source_editor->connect("source_id_changed", callable_mp(this, &TileSetEditor::_update_atlas_sources_list));
 	split_container->add_child(tile_set_atlas_source_editor);
 	tile_set_atlas_source_editor->hide();
+
+	// Registers UndoRedo inspector callback.
+	EditorNode::get_singleton()->get_editor_data().add_undo_redo_inspector_hook_callback(callable_mp(this, &TileSetEditor::_undo_redo_inspector_callback));
 }
 
 TileSetEditor::~TileSetEditor() {

@@ -228,6 +228,8 @@ private:
 	void _tile_set_atlas_source_changed();
 	void _atlas_source_proxy_object_changed(String p_what);
 
+	void _undo_redo_inspector_callback(Object *p_undo_redo, Object *p_edited, String p_property, Variant p_new_value);
+
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();

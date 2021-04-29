@@ -74,6 +74,8 @@ private:
 
 	void _tile_set_changed();
 
+	void _undo_redo_inspector_callback(Object *p_undo_redo, Object *p_edited, String p_property, Variant p_new_value);
+
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();

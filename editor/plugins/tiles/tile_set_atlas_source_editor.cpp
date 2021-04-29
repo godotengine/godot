@@ -1245,6 +1245,31 @@ void TileSetAtlasSourceEditor::_atlas_source_proxy_object_changed(String p_what)
 	}
 }
 
+void TileSetAtlasSourceEditor::_undo_redo_inspector_callback(Object *p_undo_redo, Object *p_edited, String p_property, Variant p_new_value) {
+	UndoRedo *undo_redo = Object::cast_to<UndoRedo>(p_undo_redo);
+	ERR_FAIL_COND(!undo_redo);
+
+#define ADD_UNDO(obj, property) undo_redo->add_undo_property(obj, property, tile_data->get(property));
+
+	TileProxyObject *tile_data = Object::cast_to<TileProxyObject>(p_edited);
+	if (tile_data) {
+		Vector<String> components = String(p_property).split("/", true, 2);
+		if (components.size() == 2 && components[1] == "shapes_count") {
+			int layer_index = components[0].trim_prefix("physics_layer_").to_int();
+			int new_shapes_count = p_new_value;
+			int old_shapes_count = tile_data->get(vformat("physics_layer_%d/shapes_count", layer_index));
+			if (new_shapes_count < old_shapes_count) {
+				for (int i = new_shapes_count - 1; i < old_shapes_count; i++) {
+					ADD_UNDO(tile_data, vformat("physics_layer_%d/shape_%d/shape", layer_index, i));
+					ADD_UNDO(tile_data, vformat("physics_layer_%d/shape_%d/one_way", layer_index, i));
+					ADD_UNDO(tile_data, vformat("physics_layer_%d/shape_%d/one_way_margin", layer_index, i));
+				}
+			}
+		}
+	}
+#undef ADD_UNDO
+}
+
 void TileSetAtlasSourceEditor::edit(Ref<TileSet> p_tile_set, TileSetAtlasSource *p_tile_set_atlas_source, int p_source_id) {
 	ERR_FAIL_COND(!p_tile_set.is_valid());
 	ERR_FAIL_COND(!p_tile_set_atlas_source);
