@@ -362,7 +362,10 @@ void NetworkedMultiplayerENet::poll() {
 							// To myself and only myself
 							incoming_packets.push_back(packet);
 						} else if (!server_relay) {
-							// No other destination is allowed when server is not relaying
+							// When relaying is disabled, other destinations will only be processed by the server.
+							if (target == 0 || target < -1) {
+								incoming_packets.push_back(packet);
+							}
 							continue;
 						} else if (target == 0) {
 							// Re-send to everyone but sender :|
