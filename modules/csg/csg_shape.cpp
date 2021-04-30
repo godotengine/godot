@@ -89,6 +89,7 @@ uint32_t CSGShape3D::get_collision_mask() const {
 }
 
 void CSGShape3D::set_collision_mask_bit(int p_bit, bool p_value) {
+	ERR_FAIL_INDEX_MSG(p_bit, 32, "Collision mask bit must be between 0 and 31 inclusive.");
 	uint32_t mask = get_collision_mask();
 	if (p_value) {
 		mask |= 1 << p_bit;
@@ -99,20 +100,23 @@ void CSGShape3D::set_collision_mask_bit(int p_bit, bool p_value) {
 }
 
 bool CSGShape3D::get_collision_mask_bit(int p_bit) const {
+	ERR_FAIL_INDEX_V_MSG(p_bit, 32, false, "Collision mask bit must be between 0 and 31 inclusive.");
 	return get_collision_mask() & (1 << p_bit);
 }
 
 void CSGShape3D::set_collision_layer_bit(int p_bit, bool p_value) {
-	uint32_t mask = get_collision_layer();
+	ERR_FAIL_INDEX_MSG(p_bit, 32, "Collision layer bit must be between 0 and 31 inclusive.");
+	uint32_t layer = get_collision_layer();
 	if (p_value) {
-		mask |= 1 << p_bit;
+		layer |= 1 << p_bit;
 	} else {
-		mask &= ~(1 << p_bit);
+		layer &= ~(1 << p_bit);
 	}
-	set_collision_layer(mask);
+	set_collision_layer(layer);
 }
 
 bool CSGShape3D::get_collision_layer_bit(int p_bit) const {
+	ERR_FAIL_INDEX_V_MSG(p_bit, 32, false, "Collision layer bit must be between 0 and 31 inclusive.");
 	return get_collision_layer() & (1 << p_bit);
 }
 

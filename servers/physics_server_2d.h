@@ -128,8 +128,8 @@ public:
 	void set_margin(real_t p_margin);
 	real_t get_margin() const;
 
-	void set_collision_mask(int p_collision_mask);
-	int get_collision_mask() const;
+	void set_collision_mask(uint32_t p_mask);
+	uint32_t get_collision_mask() const;
 
 	void set_collide_with_bodies(bool p_enable);
 	bool is_collide_with_bodies_enabled() const;

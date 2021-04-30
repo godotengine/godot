@@ -172,11 +172,11 @@ real_t PhysicsShapeQueryParameters3D::get_margin() const {
 	return margin;
 }
 
-void PhysicsShapeQueryParameters3D::set_collision_mask(int p_collision_mask) {
+void PhysicsShapeQueryParameters3D::set_collision_mask(uint32_t p_collision_mask) {
 	collision_mask = p_collision_mask;
 }
 
-int PhysicsShapeQueryParameters3D::get_collision_mask() const {
+uint32_t PhysicsShapeQueryParameters3D::get_collision_mask() const {
 	return collision_mask;
 }
 
