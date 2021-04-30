@@ -32,7 +32,7 @@
 #include "core/list.h"
 #include "core/print_string.h"
 
-BroadPhaseSW::ID BroadPhaseBasic::create(CollisionObjectSW *p_object, int p_subindex, const AABB &p_aabb) {
+BroadPhaseSW::ID BroadPhaseBasic::create(CollisionObjectSW *p_object, int p_subindex, const AABB &p_aabb, bool p_static) {
 	ERR_FAIL_COND_V(p_object == nullptr, 0);
 
 	current++;

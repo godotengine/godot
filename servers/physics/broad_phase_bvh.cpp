@@ -32,8 +32,8 @@
 #include "collision_object_sw.h"
 #include "core/project_settings.h"
 
-BroadPhaseSW::ID BroadPhaseBVH::create(CollisionObjectSW *p_object, int p_subindex, const AABB &p_aabb) {
-	ID oid = bvh.create(p_object, true, p_aabb, p_subindex, false, 1 << p_object->get_type(), 0);
+BroadPhaseSW::ID BroadPhaseBVH::create(CollisionObjectSW *p_object, int p_subindex, const AABB &p_aabb, bool p_static) {
+	ID oid = bvh.create(p_object, true, p_aabb, p_subindex, !p_static, 1 << p_object->get_type(), p_static ? 0 : 0xFFFFF); // Pair everything, don't care?
 	return oid + 1;
 }
 
@@ -43,7 +43,7 @@ void BroadPhaseBVH::move(ID p_id, const AABB &p_aabb) {
 
 void BroadPhaseBVH::set_static(ID p_id, bool p_static) {
 	CollisionObjectSW *it = bvh.get(p_id - 1);
-	bvh.set_pairable(p_id - 1, !p_static, 1 << it->get_type(), p_static ? 0 : 0xFFFFF); //pair everything, don't care 1?
+	bvh.set_pairable(p_id - 1, !p_static, 1 << it->get_type(), p_static ? 0 : 0xFFFFF, false); // Pair everything, don't care?
 }
 void BroadPhaseBVH::remove(ID p_id) {
 	bvh.erase(p_id - 1);
