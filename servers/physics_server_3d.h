@@ -125,8 +125,8 @@ public:
 	void set_margin(real_t p_margin);
 	real_t get_margin() const;
 
-	void set_collision_mask(int p_collision_mask);
-	int get_collision_mask() const;
+	void set_collision_mask(uint32_t p_collision_mask);
+	uint32_t get_collision_mask() const;
 
 	void set_exclude(const Vector<RID> &p_exclude);
 	Vector<RID> get_exclude() const;
