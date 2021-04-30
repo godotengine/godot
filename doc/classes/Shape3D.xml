@@ -10,6 +10,13 @@
 		<link title="Physics introduction">https://docs.godotengine.org/en/latest/tutorials/physics/physics_introduction.html</link>
 	</tutorials>
 	<methods>
+		<method name="get_debug_mesh">
+			<return type="ArrayMesh">
+			</return>
+			<description>
+				Returns the [ArrayMesh] used to draw the debug collision for this [Shape3D].
+			</description>
+		</method>
 	</methods>
 	<members>
 		<member name="margin" type="float" setter="set_margin" getter="get_margin" default="0.04">
