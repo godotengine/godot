@@ -166,10 +166,11 @@ float Physics2DShapeQueryParameters::get_margin() const {
 	return margin;
 }
 
-void Physics2DShapeQueryParameters::set_collision_mask(int p_collision_mask) {
+void Physics2DShapeQueryParameters::set_collision_mask(uint32_t p_collision_mask) {
 	collision_mask = p_collision_mask;
 }
-int Physics2DShapeQueryParameters::get_collision_mask() const {
+
+uint32_t Physics2DShapeQueryParameters::get_collision_mask() const {
 	return collision_mask;
 }
 
