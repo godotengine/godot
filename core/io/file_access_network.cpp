@@ -487,7 +487,6 @@ FileAccessNetwork::~FileAccessNetwork() {
 
 	FileAccessNetworkClient *nc = FileAccessNetworkClient::singleton;
 	nc->lock_mutex();
-	id = nc->last_id++;
 	nc->accesses.erase(id);
 	nc->unlock_mutex();
 }
