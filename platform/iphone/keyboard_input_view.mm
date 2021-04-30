@@ -88,13 +88,15 @@
 	self.text = existingString;
 	self.previousText = existingString;
 
+	NSInteger safeStartIndex = MAX(start, 0);
+
 	NSRange textRange;
 
 	// Either a simple cursor or a selection.
 	if (end > 0) {
-		textRange = NSMakeRange(start, end - start);
+		textRange = NSMakeRange(safeStartIndex, end - start);
 	} else {
-		textRange = NSMakeRange(start, 0);
+		textRange = NSMakeRange(safeStartIndex, 0);
 	}
 
 	self.selectedRange = textRange;
