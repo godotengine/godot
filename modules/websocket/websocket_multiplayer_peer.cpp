@@ -99,6 +99,8 @@ Error WebSocketMultiplayerPeer::get_packet(const uint8_t **r_buffer, int &r_buff
 		_current_packet.data = nullptr;
 	}
 
+	ERR_FAIL_COND_V(_incoming_packets.size() == 0, ERR_UNAVAILABLE);
+
 	_current_packet = _incoming_packets.front()->get();
 	_incoming_packets.pop_front();
 
