@@ -226,8 +226,9 @@ static void _get_drives(List<String> *list) {
 		while (getmntent_r(mtab, &mnt, strings, sizeof(strings))) {
 			if (mnt.mnt_dir != nullptr && _filter_drive(&mnt)) {
 				// Avoid duplicates
-				if (!list->find(mnt.mnt_dir)) {
-					list->push_back(mnt.mnt_dir);
+				String name = String::utf8(mnt.mnt_dir);
+				if (!list->find(name)) {
+					list->push_back(name);
 				}
 			}
 		}
@@ -240,8 +241,9 @@ static void _get_drives(List<String> *list) {
 	const char *home = getenv("HOME");
 	if (home) {
 		// Only add if it's not a duplicate
-		if (!list->find(home)) {
-			list->push_back(home);
+		String home_name = String::utf8(home);
+		if (!list->find(home_name)) {
+			list->push_back(home_name);
 		}
 
 		// Check $HOME/.config/gtk-3.0/bookmarks
@@ -254,7 +256,7 @@ static void _get_drives(List<String> *list) {
 				// Parse only file:// links
 				if (strncmp(string, "file://", 7) == 0) {
 					// Strip any unwanted edges on the strings and push_back if it's not a duplicate
-					String fpath = String(string + 7).strip_edges().split_spaces()[0].uri_decode();
+					String fpath = String::utf8(string + 7).strip_edges().split_spaces()[0].uri_decode();
 					if (!list->find(fpath)) {
 						list->push_back(fpath);
 					}
