@@ -168,6 +168,14 @@ enum JoystickList {
 	JOY_OPENVR_TOUCHPADY = JOY_AXIS_1,
 };
 
+enum JoyAxisRange {
+	NEGATIVE_HALF_AXIS = -1,
+	FULL_AXIS = 0,
+	POSITIVE_HALF_AXIS = 1
+};
+
+VARIANT_ENUM_CAST(JoyAxisRange)
+
 enum MidiMessageList {
 	MIDI_MESSAGE_NOTE_OFF = 0x8,
 	MIDI_MESSAGE_NOTE_ON = 0x9,
@@ -215,18 +223,20 @@ public:
 	float get_action_strength(const StringName &p_action, bool p_exact_match = false) const;
 	float get_action_raw_strength(const StringName &p_action, bool p_exact_match = false) const;
 
-	// To be removed someday, since they do not make sense for all events
-	virtual bool is_pressed() const;
+	// To be removed someday, since it doesn't make sense for all events
 	virtual bool is_echo() const;
-	// ...-.
 
 	virtual String as_text() const;
 
 	virtual Ref<InputEvent> xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs = Vector2()) const;
 
-	virtual bool action_match(const Ref<InputEvent> &p_event, bool p_exact_match, bool *p_pressed, float *p_strength, float *p_raw_strength, float p_deadzone) const;
+	virtual bool action_match(const Ref<InputEvent> &p_event, bool p_exact_match) const;
 	virtual bool shortcut_match(const Ref<InputEvent> &p_event, bool p_exact_match = true) const;
+
 	virtual bool is_action_type() const;
+	virtual bool is_pressed() const;
+	virtual float get_strength(float p_deadzone = 0.0f) const;
+	virtual void copy_action_values(const Ref<InputEvent> &p_event) {}
 
 	virtual bool accumulate(const Ref<InputEvent> &p_event) { return false; }
 	InputEvent();
@@ -312,10 +322,11 @@ public:
 	uint32_t get_scancode_with_modifiers() const;
 	uint32_t get_physical_scancode_with_modifiers() const;
 
-	virtual bool action_match(const Ref<InputEvent> &p_event, bool p_exact_match, bool *p_pressed, float *p_strength, float *p_raw_strength, float p_deadzone) const;
+	virtual bool action_match(const Ref<InputEvent> &p_event, bool p_exact_match) const;
 	virtual bool shortcut_match(const Ref<InputEvent> &p_event, bool p_exact_match = true) const;
 
 	virtual bool is_action_type() const { return true; }
+	virtual void copy_action_values(const Ref<InputEvent> &p_event);
 
 	virtual String as_text() const;
 
@@ -371,10 +382,13 @@ public:
 	bool is_doubleclick() const;
 
 	virtual Ref<InputEvent> xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs = Vector2()) const;
-	virtual bool action_match(const Ref<InputEvent> &p_event, bool p_exact_match, bool *p_pressed, float *p_strength, float *p_raw_strength, float p_deadzone) const;
+
+	virtual bool action_match(const Ref<InputEvent> &p_event, bool p_exact_match) const;
 	virtual bool shortcut_match(const Ref<InputEvent> &p_event, bool p_exact_match = true) const;
 
 	virtual bool is_action_type() const { return true; }
+	virtual void copy_action_values(const Ref<InputEvent> &p_event);
+
 	virtual String as_text() const;
 
 	InputEventMouseButton();
@@ -416,6 +430,7 @@ class InputEventJoypadMotion : public InputEvent {
 	GDCLASS(InputEventJoypadMotion, InputEvent);
 	int axis; ///< Joypad axis
 	float axis_value; ///< -1 to 1
+	JoyAxisRange axis_range;
 
 protected:
 	static void _bind_methods();
@@ -427,12 +442,18 @@ public:
 	void set_axis_value(float p_value);
 	float get_axis_value() const;
 
-	virtual bool is_pressed() const;
+	void set_axis_range(JoyAxisRange p_range);
+	JoyAxisRange get_axis_range() const;
 
-	virtual bool action_match(const Ref<InputEvent> &p_event, bool p_exact_match, bool *p_pressed, float *p_strength, float *p_raw_strength, float p_deadzone) const;
+	virtual bool is_pressed() const;
+	virtual float get_strength(float p_deadzone = 0.0f) const;
+
+	virtual bool action_match(const Ref<InputEvent> &p_event, bool p_exact_match) const;
 	virtual bool shortcut_match(const Ref<InputEvent> &p_event, bool p_exact_match = true) const;
 
 	virtual bool is_action_type() const { return true; }
+	virtual void copy_action_values(const Ref<InputEvent> &p_event);
+
 	virtual String as_text() const;
 
 	InputEventJoypadMotion();
@@ -456,11 +477,14 @@ public:
 
 	void set_pressure(float p_pressure);
 	float get_pressure() const;
+	virtual float get_strength(float p_deadzone = 0.0f) const;
 
-	virtual bool action_match(const Ref<InputEvent> &p_event, bool p_exact_match, bool *p_pressed, float *p_strength, float *p_raw_strength, float p_deadzone) const;
+	virtual bool action_match(const Ref<InputEvent> &p_event, bool p_exact_match) const;
 	virtual bool shortcut_match(const Ref<InputEvent> &p_event, bool p_exact_match = true) const;
 
 	virtual bool is_action_type() const { return true; }
+	virtual void copy_action_values(const Ref<InputEvent> &p_event);
+
 	virtual String as_text() const;
 
 	InputEventJoypadButton();
@@ -540,14 +564,16 @@ public:
 	virtual bool is_pressed() const;
 
 	void set_strength(float p_strength);
-	float get_strength() const;
+	virtual float get_strength(float p_deadzone = 0.0f) const;
 
 	virtual bool is_action(const StringName &p_action) const;
 
-	virtual bool action_match(const Ref<InputEvent> &p_event, bool p_exact_match, bool *p_pressed, float *p_strength, float *p_raw_strength, float p_deadzone) const;
+	virtual bool action_match(const Ref<InputEvent> &p_event, bool p_exact_match) const;
 	virtual bool shortcut_match(const Ref<InputEvent> &p_event, bool p_exact_match = true) const;
 
 	virtual bool is_action_type() const { return true; }
+	virtual void copy_action_values(const Ref<InputEvent> &p_event);
+
 	virtual String as_text() const;
 
 	InputEventAction();

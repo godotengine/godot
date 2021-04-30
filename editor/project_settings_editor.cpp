@@ -297,7 +297,7 @@ void ProjectSettingsEditor::_device_input_add() {
 			Ref<InputEventJoypadMotion> jm;
 			jm.instance();
 			jm->set_axis(device_index->get_selected() >> 1);
-			jm->set_axis_value((device_index->get_selected() & 1) ? 1 : -1);
+			jm->set_axis_range((JoyAxisRange)((device_index->get_selected() & 1) ? 1 : -1));
 			jm->set_device(_get_current_device());
 
 			for (int i = 0; i < events.size(); i++) {
@@ -306,7 +306,7 @@ void ProjectSettingsEditor::_device_input_add() {
 					continue;
 				}
 
-				if (aie->get_device() == jm->get_device() && aie->get_axis() == jm->get_axis() && aie->get_axis_value() == jm->get_axis_value()) {
+				if (aie->get_device() == jm->get_device() && aie->get_axis() == jm->get_axis() && aie->get_axis_range() == jm->get_axis_range()) {
 					return;
 				}
 			}
@@ -542,7 +542,7 @@ void ProjectSettingsEditor::_add_item(int p_item, Ref<InputEvent> p_exiting_even
 
 			Ref<InputEventJoypadMotion> jm = p_exiting_event;
 			if (jm.is_valid()) {
-				device_index->select(jm->get_axis() * 2 + (jm->get_axis_value() > 0 ? 1 : 0));
+				device_index->select(jm->get_axis() * 2 + (jm->get_axis_range() == POSITIVE_HALF_AXIS ? 1 : 0));
 				_set_current_device(jm->get_device());
 				device_input->get_ok()->set_text(TTR("Change"));
 			} else {
@@ -830,9 +830,9 @@ void ProjectSettingsEditor::_update_actions() {
 
 			if (jm.is_valid()) {
 				int ax = jm->get_axis();
-				int n = 2 * ax + (jm->get_axis_value() < 0 ? 0 : 1);
+				int n = 2 * ax + (jm->get_axis_range() == POSITIVE_HALF_AXIS ? 1 : 0);
 				String desc = _axis_names[n];
-				String str = _get_device_string(jm->get_device()) + ", " + TTR("Axis") + " " + itos(ax) + " " + (jm->get_axis_value() < 0 ? "-" : "+") + desc + ".";
+				String str = _get_device_string(jm->get_device()) + ", " + TTR("Axis") + " " + itos(ax) + " " + (jm->get_axis_range() == POSITIVE_HALF_AXIS ? "+" : "-") + desc + ".";
 				action2->set_text(0, str);
 				action2->set_icon(0, get_icon("JoyAxis", "EditorIcons"));
 			}

@@ -1198,6 +1198,15 @@
 		<constant name="JOY_OPENVR_TOUCHPADY" value="1" enum="JoystickList">
 			OpenVR touchpad Y axis (Joystick axis on Oculus Touch and Windows MR controllers).
 		</constant>
+		<constant name="NEGATIVE_HALF_AXIS" value="-1" enum="JoyAxisRange">
+			Joystick negative half-axis range from [code]-1.0[/code] to [code]0.0[/code].
+		</constant>
+		<constant name="FULL_AXIS" value="0" enum="JoyAxisRange">
+			Joystick full axis range from [code]-1.0[/code] to [code]1.0[/code].
+		</constant>
+		<constant name="POSITIVE_HALF_AXIS" value="1" enum="JoyAxisRange">
+			Joystick positive half-axis range from [code]0.0[/code] to [code]1.0[/code].
+		</constant>
 		<constant name="MIDI_MESSAGE_NOTE_OFF" value="8" enum="MidiMessageList">
 			MIDI note OFF message. See the documentation of [InputEventMIDI] for information of how to use MIDI inputs.
 		</constant>

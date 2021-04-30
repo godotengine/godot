@@ -54,7 +54,7 @@ private:
 
 	mutable Map<StringName, Action> input_map;
 
-	List<Ref<InputEvent>>::Element *_find_event(Action &p_action, const Ref<InputEvent> &p_event, bool p_exact_match = false, bool *p_pressed = nullptr, float *p_strength = nullptr, float *p_raw_strength = nullptr) const;
+	List<Ref<InputEvent>>::Element *_find_event(Action &p_action, const Ref<InputEvent> &p_event, bool p_exact_match = false) const;
 
 	Array _get_action_list(const StringName &p_action);
 	Array _get_actions();
@@ -73,13 +73,17 @@ public:
 	float action_get_deadzone(const StringName &p_action);
 	void action_set_deadzone(const StringName &p_action, float p_deadzone);
 	void action_add_event(const StringName &p_action, const Ref<InputEvent> &p_event);
-	bool action_has_event(const StringName &p_action, const Ref<InputEvent> &p_event);
+	bool action_has_event(const StringName &p_action, const Ref<InputEvent> &p_event, bool p_exact_match = true);
 	void action_erase_event(const StringName &p_action, const Ref<InputEvent> &p_event);
 	void action_erase_events(const StringName &p_action);
 
 	const List<Ref<InputEvent>> *get_action_list(const StringName &p_action);
 	bool event_is_action(const Ref<InputEvent> &p_event, const StringName &p_action, bool p_exact_match = false) const;
-	bool event_get_action_status(const Ref<InputEvent> &p_event, const StringName &p_action, bool p_exact_match = false, bool *p_pressed = nullptr, float *p_strength = nullptr, float *p_raw_strength = nullptr) const;
+	bool is_action_pressed(const StringName &p_action) const;
+	float get_action_strength(const StringName &p_action) const;
+	float get_action_raw_strength(const StringName &p_action) const;
+	List<StringName> update_actions_with_event(const Ref<InputEvent> &p_event);
+	bool event_get_action_status(const Ref<InputEvent> &p_event, const StringName &p_action, bool p_exact_match = false, bool *r_pressed = nullptr, float *r_strength = nullptr, float *r_raw_strength = nullptr) const;
 
 	const Map<StringName, Action> &get_action_map() const;
 	void load_from_globals();
