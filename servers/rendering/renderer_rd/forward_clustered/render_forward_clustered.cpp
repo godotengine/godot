@@ -466,6 +466,10 @@ void RenderForwardClustered::_render_list_template(RenderingDevice::DrawListID p
 		RD::get_singleton()->draw_list_set_push_constant(draw_list, &push_constant, sizeof(SceneState::PushConstant));
 
 		uint32_t instance_count = surf->owner->instance_count > 1 ? surf->owner->instance_count : element_info.repeat;
+		if (surf->flags & GeometryInstanceSurfaceDataCache::FLAG_USES_PARTICLE_TRAILS) {
+			instance_count /= surf->owner->trail_steps;
+		}
+
 		RD::get_singleton()->draw_list_draw(draw_list, index_array_rd.is_valid(), instance_count);
 		i += element_info.repeat - 1; //skip equal elements
 	}
@@ -2379,9 +2383,13 @@ void RenderForwardClustered::_geometry_instance_add_surface_with_material(Geomet
 		flags |= GeometryInstanceSurfaceDataCache::FLAG_PASS_SHADOW;
 	}
 
+	if (p_material->shader_data->uses_particle_trails) {
+		flags |= GeometryInstanceSurfaceDataCache::FLAG_USES_PARTICLE_TRAILS;
+	}
+
 	SceneShaderForwardClustered::MaterialData *material_shadow = nullptr;
 	void *surface_shadow = nullptr;
-	if (!p_material->shader_data->writes_modelview_or_projection && !p_material->shader_data->uses_vertex && !p_material->shader_data->uses_discard && !p_material->shader_data->uses_depth_pre_pass) {
+	if (!p_material->shader_data->uses_particle_trails && !p_material->shader_data->writes_modelview_or_projection && !p_material->shader_data->uses_vertex && !p_material->shader_data->uses_discard && !p_material->shader_data->uses_depth_pre_pass) {
 		flags |= GeometryInstanceSurfaceDataCache::FLAG_USES_SHARED_SHADOW_MATERIAL;
 		material_shadow = (SceneShaderForwardClustered::MaterialData *)storage->material_get_data(scene_shader.default_material, RendererStorageRD::SHADER_TYPE_3D);
 
@@ -2550,7 +2558,7 @@ void RenderForwardClustered::_geometry_instance_update(GeometryInstance *p_geome
 				}
 			}
 
-			ginstance->instance_count = storage->particles_get_amount(ginstance->data->base);
+			ginstance->instance_count = storage->particles_get_amount(ginstance->data->base, ginstance->trail_steps);
 
 		} break;
 
@@ -2564,42 +2572,26 @@ void RenderForwardClustered::_geometry_instance_update(GeometryInstance *p_geome
 
 	if (ginstance->data->base_type == RS::INSTANCE_MULTIMESH) {
 		ginstance->base_flags |= INSTANCE_DATA_FLAG_MULTIMESH;
-		uint32_t stride;
 		if (storage->multimesh_get_transform_format(ginstance->data->base) == RS::MULTIMESH_TRANSFORM_2D) {
 			ginstance->base_flags |= INSTANCE_DATA_FLAG_MULTIMESH_FORMAT_2D;
-			stride = 2;
-		} else {
-			stride = 3;
 		}
 		if (storage->multimesh_uses_colors(ginstance->data->base)) {
 			ginstance->base_flags |= INSTANCE_DATA_FLAG_MULTIMESH_HAS_COLOR;
-			stride += 1;
 		}
 		if (storage->multimesh_uses_custom_data(ginstance->data->base)) {
 			ginstance->base_flags |= INSTANCE_DATA_FLAG_MULTIMESH_HAS_CUSTOM_DATA;
-			stride += 1;
 		}
 
-		ginstance->base_flags |= (stride << INSTANCE_DATA_FLAGS_MULTIMESH_STRIDE_SHIFT);
 		ginstance->transforms_uniform_set = storage->multimesh_get_3d_uniform_set(ginstance->data->base, scene_shader.default_shader_rd, TRANSFORMS_UNIFORM_SET);
 
 	} else if (ginstance->data->base_type == RS::INSTANCE_PARTICLES) {
 		ginstance->base_flags |= INSTANCE_DATA_FLAG_MULTIMESH;
-		uint32_t stride;
-		if (false) { // 2D particles
-			ginstance->base_flags |= INSTANCE_DATA_FLAG_MULTIMESH_FORMAT_2D;
-			stride = 2;
-		} else {
-			stride = 3;
-		}
 
 		ginstance->base_flags |= INSTANCE_DATA_FLAG_MULTIMESH_HAS_COLOR;
-		stride += 1;
-
 		ginstance->base_flags |= INSTANCE_DATA_FLAG_MULTIMESH_HAS_CUSTOM_DATA;
-		stride += 1;
 
-		ginstance->base_flags |= (stride << INSTANCE_DATA_FLAGS_MULTIMESH_STRIDE_SHIFT);
+		//for particles, stride is the trail size
+		ginstance->base_flags |= (ginstance->trail_steps << INSTANCE_DATA_FLAGS_PARTICLE_TRAIL_SHIFT);
 
 		if (!storage->particles_is_using_local_coords(ginstance->data->base)) {
 			store_transform = false;
@@ -2608,7 +2600,6 @@ void RenderForwardClustered::_geometry_instance_update(GeometryInstance *p_geome
 
 	} else if (ginstance->data->base_type == RS::INSTANCE_MESH) {
 		if (storage->skeleton_is_valid(ginstance->data->skeleton)) {
-			ginstance->base_flags |= INSTANCE_DATA_FLAG_SKELETON;
 			ginstance->transforms_uniform_set = storage->skeleton_get_3d_uniform_set(ginstance->data->skeleton, scene_shader.default_shader_rd, TRANSFORMS_UNIFORM_SET);
 			if (ginstance->data->dirty_dependencies) {
 				storage->skeleton_update_dependency(ginstance->data->skeleton, &ginstance->data->dependency_tracker);
@@ -2643,6 +2634,7 @@ void RenderForwardClustered::_geometry_instance_dependency_changed(RendererStora
 	switch (p_notification) {
 		case RendererStorage::DEPENDENCY_CHANGED_MATERIAL:
 		case RendererStorage::DEPENDENCY_CHANGED_MESH:
+		case RendererStorage::DEPENDENCY_CHANGED_PARTICLES:
 		case RendererStorage::DEPENDENCY_CHANGED_MULTIMESH:
 		case RendererStorage::DEPENDENCY_CHANGED_SKELETON_DATA: {
 			static_cast<RenderForwardClustered *>(singleton)->_geometry_instance_mark_dirty(static_cast<GeometryInstance *>(p_tracker->userdata));

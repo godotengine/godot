@@ -73,6 +73,7 @@ void SceneShaderForwardClustered::ShaderData::set_code(const String &p_code) {
 	uses_time = false;
 	writes_modelview_or_projection = false;
 	uses_world_coordinates = false;
+	uses_particle_trails = false;
 
 	int depth_drawi = DEPTH_DRAW_OPAQUE;
 
@@ -101,6 +102,7 @@ void SceneShaderForwardClustered::ShaderData::set_code(const String &p_code) {
 
 	actions.render_mode_flags["unshaded"] = &unshaded;
 	actions.render_mode_flags["wireframe"] = &wireframe;
+	actions.render_mode_flags["particle_trails"] = &uses_particle_trails;
 
 	actions.usage_flag_pointers["ALPHA"] = &uses_alpha;
 	actions.render_mode_flags["depth_prepass_alpha"] = &uses_depth_pre_pass;
@@ -714,6 +716,7 @@ void SceneShaderForwardClustered::init(RendererStorageRD *p_storage, const Strin
 		actions.render_mode_defines["ensure_correct_normals"] = "#define ENSURE_CORRECT_NORMALS\n";
 		actions.render_mode_defines["cull_front"] = "#define DO_SIDE_CHECK\n";
 		actions.render_mode_defines["cull_disabled"] = "#define DO_SIDE_CHECK\n";
+		actions.render_mode_defines["particle_trails"] = "#define USE_PARTICLE_TRAILS\n";
 
 		bool force_lambert = GLOBAL_GET("rendering/shading/overrides/force_lambert_over_burley");
 

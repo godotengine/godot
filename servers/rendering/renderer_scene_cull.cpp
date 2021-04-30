@@ -1427,6 +1427,9 @@ void RendererSceneCull::_update_instance(Instance *p_instance) {
 		pair.pair_mask |= 1 << RS::INSTANCE_LIGHT;
 		pair.pair_mask |= 1 << RS::INSTANCE_GI_PROBE;
 		pair.pair_mask |= 1 << RS::INSTANCE_LIGHTMAP;
+		if (p_instance->base_type == RS::INSTANCE_PARTICLES) {
+			pair.pair_mask |= 1 << RS::INSTANCE_PARTICLES_COLLISION;
+		}
 
 		pair.pair_mask |= geometry_instance_pair_mask;
 
@@ -2410,7 +2413,7 @@ void RendererSceneCull::_frustum_cull(CullData &cull_data, FrustumCullResult &cu
 						cull_data.cull->lock.lock();
 						RSG::storage->particles_request_process(idata.base_rid);
 						cull_data.cull->lock.unlock();
-						RSG::storage->particles_set_view_axis(idata.base_rid, -cull_data.cam_transform.basis.get_axis(2).normalized());
+						RSG::storage->particles_set_view_axis(idata.base_rid, -cull_data.cam_transform.basis.get_axis(2).normalized(), cull_data.cam_transform.basis.get_axis(1).normalized());
 						//particles visible? request redraw
 						RenderingServerDefault::redraw_request();
 					}

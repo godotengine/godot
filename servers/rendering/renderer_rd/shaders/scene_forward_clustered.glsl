@@ -48,11 +48,11 @@ layout(location = 8) in vec4 custom2_attrib;
 layout(location = 9) in vec4 custom3_attrib;
 #endif
 
-#if defined(BONES_USED)
+#if defined(BONES_USED) || defined(USE_PARTICLE_TRAILS)
 layout(location = 10) in uvec4 bone_attrib;
 #endif
 
-#if defined(WEIGHTS_USED)
+#if defined(WEIGHTS_USED) || defined(USE_PARTICLE_TRAILS)
 layout(location = 11) in vec4 weight_attrib;
 #endif
 
@@ -125,10 +125,72 @@ void main() {
 
 	if (is_multimesh) {
 		//multimesh, instances are for it
-		uint offset = (instances.data[instance_index].flags >> INSTANCE_FLAGS_MULTIMESH_STRIDE_SHIFT) & INSTANCE_FLAGS_MULTIMESH_STRIDE_MASK;
-		offset *= gl_InstanceIndex;
 
 		mat4 matrix;
+
+#ifdef USE_PARTICLE_TRAILS
+		uint trail_size = (instances.data[instance_index].flags >> INSTANCE_FLAGS_PARTICLE_TRAIL_SHIFT) & INSTANCE_FLAGS_PARTICLE_TRAIL_MASK;
+		uint stride = 3 + 1 + 1; //particles always uses this format
+
+		uint offset = trail_size * stride * gl_InstanceIndex;
+
+#ifdef COLOR_USED
+		vec4 pcolor;
+#endif
+		{
+			uint boffset = offset + bone_attrib.x * stride;
+			matrix = mat4(transforms.data[boffset + 0], transforms.data[boffset + 1], transforms.data[boffset + 2], vec4(0.0, 0.0, 0.0, 1.0)) * weight_attrib.x;
+#ifdef COLOR_USED
+			pcolor = transforms.data[boffset + 3] * weight_attrib.x;
+#endif
+		}
+		if (weight_attrib.y > 0.001) {
+			uint boffset = offset + bone_attrib.y * stride;
+			matrix += mat4(transforms.data[boffset + 0], transforms.data[boffset + 1], transforms.data[boffset + 2], vec4(0.0, 0.0, 0.0, 1.0)) * weight_attrib.y;
+#ifdef COLOR_USED
+			pcolor += transforms.data[boffset + 3] * weight_attrib.y;
+#endif
+		}
+		if (weight_attrib.z > 0.001) {
+			uint boffset = offset + bone_attrib.z * stride;
+			matrix += mat4(transforms.data[boffset + 0], transforms.data[boffset + 1], transforms.data[boffset + 2], vec4(0.0, 0.0, 0.0, 1.0)) * weight_attrib.z;
+#ifdef COLOR_USED
+			pcolor += transforms.data[boffset + 3] * weight_attrib.z;
+#endif
+		}
+		if (weight_attrib.w > 0.001) {
+			uint boffset = offset + bone_attrib.w * stride;
+			matrix += mat4(transforms.data[boffset + 0], transforms.data[boffset + 1], transforms.data[boffset + 2], vec4(0.0, 0.0, 0.0, 1.0)) * weight_attrib.w;
+#ifdef COLOR_USED
+			pcolor += transforms.data[boffset + 3] * weight_attrib.w;
+#endif
+		}
+
+		instance_custom = transforms.data[offset + 4];
+
+#ifdef COLOR_USED
+		color_interp *= pcolor;
+#endif
+
+#else
+		uint stride = 0;
+		{
+			//TODO implement a small lookup table for the stride
+			if (bool(instances.data[instance_index].flags & INSTANCE_FLAGS_MULTIMESH_FORMAT_2D)) {
+				stride += 2;
+			} else {
+				stride += 3;
+			}
+			if (bool(instances.data[instance_index].flags & INSTANCE_FLAGS_MULTIMESH_HAS_COLOR)) {
+				stride += 1;
+			}
+			if (bool(instances.data[instance_index].flags & INSTANCE_FLAGS_MULTIMESH_HAS_CUSTOM_DATA)) {
+				stride += 1;
+			}
+		}
+
+		uint offset = stride * gl_InstanceIndex;
+
 		if (bool(instances.data[instance_index].flags & INSTANCE_FLAGS_MULTIMESH_FORMAT_2D)) {
 			matrix = mat4(transforms.data[offset + 0], transforms.data[offset + 1], vec4(0.0, 0.0, 1.0, 0.0), vec4(0.0, 0.0, 0.0, 1.0));
 			offset += 2;
@@ -148,6 +210,7 @@ void main() {
 			instance_custom = transforms.data[offset];
 		}
 
+#endif
 		//transpose
 		matrix = transpose(matrix);
 		world_matrix = world_matrix * matrix;
@@ -163,32 +226,6 @@ void main() {
 	vec3 tangent = tangent_attrib.xyz * 2.0 - 1.0;
 	float binormalf = tangent_attrib.a * 2.0 - 1.0;
 	vec3 binormal = normalize(cross(normal, tangent) * binormalf);
-#endif
-
-#if 0
-	if (bool(instances.data[instance_index].flags & INSTANCE_FLAGS_SKELETON)) {
-		//multimesh, instances are for it
-
-		uvec2 bones_01 = uvec2(bone_attrib.x & 0xFFFF, bone_attrib.x >> 16) * 3;
-		uvec2 bones_23 = uvec2(bone_attrib.y & 0xFFFF, bone_attrib.y >> 16) * 3;
-		vec2 weights_01 = unpackUnorm2x16(bone_attrib.z);
-		vec2 weights_23 = unpackUnorm2x16(bone_attrib.w);
-
-		mat4 m = mat4(transforms.data[bones_01.x], transforms.data[bones_01.x + 1], transforms.data[bones_01.x + 2], vec4(0.0, 0.0, 0.0, 1.0)) * weights_01.x;
-		m += mat4(transforms.data[bones_01.y], transforms.data[bones_01.y + 1], transforms.data[bones_01.y + 2], vec4(0.0, 0.0, 0.0, 1.0)) * weights_01.y;
-		m += mat4(transforms.data[bones_23.x], transforms.data[bones_23.x + 1], transforms.data[bones_23.x + 2], vec4(0.0, 0.0, 0.0, 1.0)) * weights_23.x;
-		m += mat4(transforms.data[bones_23.y], transforms.data[bones_23.y + 1], transforms.data[bones_23.y + 2], vec4(0.0, 0.0, 0.0, 1.0)) * weights_23.y;
-
-		//reverse order because its transposed
-		vertex = (vec4(vertex, 1.0) * m).xyz;
-		normal = (vec4(normal, 0.0) * m).xyz;
-
-#if defined(TANGENT_USED) || defined(NORMAL_MAP_USED) || defined(LIGHT_ANISOTROPY_USED)
-
-		tangent = (vec4(tangent, 0.0) * m).xyz;
-		binormal = (vec4(binormal, 0.0) * m).xyz;
-#endif
-	}
 #endif
 
 #ifdef UV_USED

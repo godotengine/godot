@@ -443,6 +443,7 @@ public:
 					singleton->_instance_queue_update(instance, false, true);
 				} break;
 				case RendererStorage::DEPENDENCY_CHANGED_MESH:
+				case RendererStorage::DEPENDENCY_CHANGED_PARTICLES:
 				case RendererStorage::DEPENDENCY_CHANGED_MULTIMESH:
 				case RendererStorage::DEPENDENCY_CHANGED_DECAL:
 				case RendererStorage::DEPENDENCY_CHANGED_LIGHT:
@@ -661,6 +662,7 @@ public:
 
 		_FORCE_INLINE_ bool operator()(void *p_data) {
 			Instance *p_instance = (Instance *)p_data;
+
 			if (instance != p_instance && instance->transformed_aabb.intersects(p_instance->transformed_aabb) && (pair_mask & (1 << p_instance->base_type))) {
 				//test is more coarse in indexer
 				p_instance->pair_check = pair_pass;

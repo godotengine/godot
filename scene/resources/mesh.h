@@ -165,6 +165,9 @@ public:
 
 	Vector<Ref<Shape3D>> convex_decompose() const;
 
+	virtual int get_builtin_bind_pose_count() const;
+	virtual Transform get_builtin_bind_pose(int p_index) const;
+
 	Mesh();
 };
 

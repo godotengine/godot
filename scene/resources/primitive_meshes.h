@@ -336,4 +336,98 @@ public:
 	PointMesh();
 };
 
+class TubeTrailMesh : public PrimitiveMesh {
+	GDCLASS(TubeTrailMesh, PrimitiveMesh);
+
+private:
+	float radius = 1.0;
+	int radial_steps = 8;
+	int sections = 5;
+	float section_length = 0.2;
+	int section_rings = 3;
+
+	Ref<Curve> curve;
+
+	void _curve_changed();
+
+protected:
+	static void _bind_methods();
+	virtual void _create_mesh_array(Array &p_arr) const override;
+
+public:
+	void set_radius(const float p_radius);
+	float get_radius() const;
+
+	void set_radial_steps(const int p_radial_steps);
+	int get_radial_steps() const;
+
+	void set_sections(const int p_sections);
+	int get_sections() const;
+
+	void set_section_length(float p_sectionlength);
+	float get_section_length() const;
+
+	void set_section_rings(const int p_section_rings);
+	int get_section_rings() const;
+
+	void set_curve(const Ref<Curve> &p_curve);
+	Ref<Curve> get_curve() const;
+
+	virtual int get_builtin_bind_pose_count() const override;
+	virtual Transform get_builtin_bind_pose(int p_index) const override;
+
+	TubeTrailMesh();
+};
+
+class RibbonTrailMesh : public PrimitiveMesh {
+	GDCLASS(RibbonTrailMesh, PrimitiveMesh);
+
+public:
+	enum Shape {
+		SHAPE_FLAT,
+		SHAPE_CROSS
+	};
+
+private:
+	float size = 1.0;
+	int sections = 5;
+	float section_length = 0.2;
+	int section_segments = 3;
+
+	Shape shape = SHAPE_CROSS;
+
+	Ref<Curve> curve;
+
+	void _curve_changed();
+
+protected:
+	static void _bind_methods();
+	virtual void _create_mesh_array(Array &p_arr) const override;
+
+public:
+	void set_shape(Shape p_shape);
+	Shape get_shape() const;
+
+	void set_size(const float p_size);
+	float get_size() const;
+
+	void set_sections(const int p_sections);
+	int get_sections() const;
+
+	void set_section_length(float p_sectionlength);
+	float get_section_length() const;
+
+	void set_section_segments(const int p_section_segments);
+	int get_section_segments() const;
+
+	void set_curve(const Ref<Curve> &p_curve);
+	Ref<Curve> get_curve() const;
+
+	virtual int get_builtin_bind_pose_count() const override;
+	virtual Transform get_builtin_bind_pose(int p_index) const override;
+
+	RibbonTrailMesh();
+};
+
+VARIANT_ENUM_CAST(RibbonTrailMesh::Shape)
 #endif
