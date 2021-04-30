@@ -30,6 +30,9 @@
 
 #include "main_timer_sync.h"
 
+#include "core/math/math_funcs.h"
+#include "core/os/os.h"
+
 void MainFrameTime::clamp_idle(float min_idle_step, float max_idle_step) {
 	if (idle_step < min_idle_step) {
 		idle_step = min_idle_step;
@@ -39,6 +42,244 @@ void MainFrameTime::clamp_idle(float min_idle_step, float max_idle_step) {
 }
 
 /////////////////////////////////
+
+void MainTimerSync::DeltaSmoother::update_refresh_rate_estimator(int p_delta) {
+	// the calling code should prevent 0 or negative values of delta
+	// (preventing divide by zero)
+
+	// note that if the estimate gets locked, and something external changes this
+	// (e.g. user changes to non-vsync in the OS), then the results may be less than ideal,
+	// but usually it will detect this via the FPS measurement and not attempt smoothing.
+	// This should be a rare occurrence anyway, and will be cured next time user restarts game.
+	if (_estimate_locked) {
+		return;
+	}
+
+	// First average the delta over NUM_READINGS
+	_estimator_total_delta += p_delta;
+	_estimator_delta_readings++;
+
+	const int NUM_READINGS = 60;
+
+	if (_estimator_delta_readings < NUM_READINGS) {
+		return;
+	}
+
+	// use average
+	p_delta = _estimator_total_delta / NUM_READINGS;
+
+	// reset the averager for next time
+	_estimator_delta_readings = 0;
+	_estimator_total_delta = 0;
+
+	///////////////////////////////
+
+	int fps = Math::round(1000000.0 / p_delta);
+
+	// initial estimation, to speed up converging, special case we will estimate the refresh rate
+	// from the first average FPS reading
+	if (_estimated_fps == 0) {
+		// below 50 might be chugging loading stuff, or else
+		// dropping loads of frames, so the estimate will be inaccurate
+		if (fps >= 50) {
+			_estimated_fps = fps;
+#ifdef GODOT_DEBUG_DELTA_SMOOTHER
+			print_line("initial guess (average measured) refresh rate: " + itos(fps));
+#endif
+		} else {
+			// can't get started until above 50
+			return;
+		}
+	}
+
+	// we hit our exact estimated refresh rate.
+	// increase our confidence in the estimate.
+	if (fps == _estimated_fps) {
+		// note that each hit is an average of NUM_READINGS frames
+		_hits_at_estimated++;
+
+		if (_estimate_complete && _hits_at_estimated == 20) {
+			_estimate_locked = true;
+#ifdef GODOT_DEBUG_DELTA_SMOOTHER
+			print_line("estimate LOCKED at " + itos(_estimated_fps) + " fps");
+#endif
+			return;
+		}
+
+		// if we are getting pretty confident in this estimate, decide it is complete
+		// (it can still be increased later, and possibly lowered but only for a short time)
+		if ((!_estimate_complete) && (_hits_at_estimated > 2)) {
+			// when the estimate is complete we turn on smoothing
+			if (_estimated_fps) {
+				_estimate_complete = true;
+				_vsync_delta = 1000000 / _estimated_fps;
+
+#ifdef GODOT_DEBUG_DELTA_SMOOTHER
+				print_line("estimate complete. vsync_delta " + itos(_vsync_delta) + ", fps " + itos(_estimated_fps));
+#endif
+			}
+		}
+
+#ifdef GODOT_DEBUG_DELTA_SMOOTHER
+		if ((_hits_at_estimated % (400 / NUM_READINGS)) == 0) {
+			String sz = "hits at estimated : " + itos(_hits_at_estimated) + ", above : " + itos(_hits_above_estimated) + "( " + itos(_hits_one_above_estimated) + " ), below : " + itos(_hits_below_estimated) + " (" + itos(_hits_one_below_estimated) + " )";
+
+			print_line(sz);
+		}
+#endif
+
+		return;
+	}
+
+	const int SIGNIFICANCE_UP = 1;
+	const int SIGNIFICANCE_DOWN = 2;
+
+	// we are not usually interested in slowing the estimate
+	// but we may have overshot, so make it possible to reduce
+	if (fps < _estimated_fps) {
+		// micro changes
+		if (fps == (_estimated_fps - 1)) {
+			_hits_one_below_estimated++;
+
+			if ((_hits_one_below_estimated > _hits_at_estimated) && (_hits_one_below_estimated > SIGNIFICANCE_DOWN)) {
+				_estimated_fps--;
+				made_new_estimate();
+			}
+
+			return;
+		} else {
+			_hits_below_estimated++;
+
+			// don't allow large lowering if we are established at a refresh rate, as it will probably be dropped frames
+			bool established = _estimate_complete && (_hits_at_estimated > 10);
+
+			// macro changes
+			// note there is a large barrier to macro lowering. That is because it is more likely to be dropped frames
+			// than mis-estimation of the refresh rate.
+			if (!established) {
+				if (((_hits_below_estimated / 8) > _hits_at_estimated) && (_hits_below_estimated > SIGNIFICANCE_DOWN)) {
+					// decrease the estimate
+					_estimated_fps--;
+					made_new_estimate();
+				}
+			}
+
+			return;
+		}
+	}
+
+	// Changes increasing the estimate.
+	// micro changes
+	if (fps == (_estimated_fps + 1)) {
+		_hits_one_above_estimated++;
+
+		if ((_hits_one_above_estimated > _hits_at_estimated) && (_hits_one_above_estimated > SIGNIFICANCE_UP)) {
+			_estimated_fps++;
+			made_new_estimate();
+		}
+		return;
+	} else {
+		_hits_above_estimated++;
+
+		// macro changes
+		if ((_hits_above_estimated > _hits_at_estimated) && (_hits_above_estimated > SIGNIFICANCE_UP)) {
+			// increase the estimate
+			int change = fps - _estimated_fps;
+			change /= 2;
+			change = MAX(1, change);
+
+			_estimated_fps += change;
+			made_new_estimate();
+		}
+		return;
+	}
+}
+
+bool MainTimerSync::DeltaSmoother::fps_allows_smoothing(int p_delta) {
+	_measurement_time += p_delta;
+	_measurement_frame_count++;
+
+	if (_measurement_frame_count == _measurement_end_frame) {
+		// only switch on or off if the estimate is complete
+		if (_estimate_complete) {
+			int64_t time_passed = _measurement_time - _measurement_start_time;
+
+			// average delta
+			time_passed /= MEASURE_FPS_OVER_NUM_FRAMES;
+
+			// estimate fps
+			if (time_passed) {
+				float fps = 1000000.0f / time_passed;
+				float ratio = fps / (float)_estimated_fps;
+
+				//print_line("ratio : " + String(Variant(ratio)));
+
+				if ((ratio > 0.95) && (ratio < 1.05)) {
+					_measurement_allows_smoothing = true;
+				} else {
+					_measurement_allows_smoothing = false;
+				}
+			}
+		} // estimate complete
+
+		// new start time for next iteration
+		_measurement_start_time = _measurement_time;
+		_measurement_end_frame += MEASURE_FPS_OVER_NUM_FRAMES;
+	}
+
+	return _measurement_allows_smoothing;
+}
+
+int MainTimerSync::DeltaSmoother::smooth_delta(int p_delta) {
+	// Conditions to disable smoothing.
+	// Note that vsync is a request, it cannot be relied on, the OS may override this.
+	// If the OS turns vsync on without vsync in the app, smoothing will not be enabled.
+	// If the OS turns vsync off with sync enabled in the app, the smoothing must detect this
+	// via the error metric and switch off.
+	if (!OS::get_singleton()->is_delta_smoothing_enabled() || !OS::get_singleton()->is_vsync_enabled() || Engine::get_singleton()->is_editor_hint()) {
+		return p_delta;
+	}
+
+	// keep a running guesstimate of the FPS, and turn off smoothing if
+	// conditions not close to the estimated FPS
+	if (!fps_allows_smoothing(p_delta)) {
+		return p_delta;
+	}
+
+	// we can't cope with negative deltas .. OS bug on some hardware
+	// and also very small deltas caused by vsync being off.
+	// This could possibly be part of a hiccup, this value isn't fixed in stone...
+	if (p_delta < 1000) {
+		return p_delta;
+	}
+
+	// note still some vsync off will still get through to this point...
+	// and we need to cope with it by not converging the estimator / and / or not smoothing
+	update_refresh_rate_estimator(p_delta);
+
+	// no smoothing until we know what the refresh rate is
+	if (!_estimate_complete) {
+		return p_delta;
+	}
+
+	// accumulate the time we have available to use
+	_leftover_time += p_delta;
+
+	// how many vsyncs units can we fit?
+	int units = _leftover_time / _vsync_delta;
+
+	// a delta must include minimum 1 vsync
+	// (if it is less than that, it is either random error or we are no longer running at the vsync rate,
+	// in which case we should switch off delta smoothing, or re-estimate the refresh rate)
+	units = MAX(units, 1);
+
+	_leftover_time -= units * _vsync_delta;
+	// print_line("units " + itos(units) + ", leftover " + itos(_leftover_time/1000) + " ms");
+
+	return units * _vsync_delta;
+}
+
+/////////////////////////////////////
 
 // returns the fraction of p_frame_slice required for the timer to overshoot
 // before advance_core considers changing the physics_steps return from
@@ -194,6 +435,8 @@ MainFrameTime MainTimerSync::advance_checked(float p_frame_slice, int p_iteratio
 float MainTimerSync::get_cpu_idle_step() {
 	uint64_t cpu_ticks_elapsed = current_cpu_ticks_usec - last_cpu_ticks_usec;
 	last_cpu_ticks_usec = current_cpu_ticks_usec;
+
+	cpu_ticks_elapsed = _delta_smoother.smooth_delta(cpu_ticks_elapsed);
 
 	return cpu_ticks_elapsed / 1000000.0;
 }

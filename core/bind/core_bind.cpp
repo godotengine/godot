@@ -596,6 +596,14 @@ bool _OS::is_vsync_via_compositor_enabled() const {
 	return OS::get_singleton()->is_vsync_via_compositor_enabled();
 }
 
+void _OS::set_delta_smoothing(bool p_enabled) {
+	OS::get_singleton()->set_delta_smoothing(p_enabled);
+}
+
+bool _OS::is_delta_smoothing_enabled() const {
+	return OS::get_singleton()->is_delta_smoothing_enabled();
+}
+
 _OS::PowerState _OS::get_power_state() {
 	return _OS::PowerState(OS::get_singleton()->get_power_state());
 }
@@ -1369,6 +1377,9 @@ void _OS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_vsync_via_compositor", "enable"), &_OS::set_vsync_via_compositor);
 	ClassDB::bind_method(D_METHOD("is_vsync_via_compositor_enabled"), &_OS::is_vsync_via_compositor_enabled);
 
+	ClassDB::bind_method(D_METHOD("set_delta_smoothing", "delta_smoothing_enabled"), &_OS::set_delta_smoothing);
+	ClassDB::bind_method(D_METHOD("is_delta_smoothing_enabled"), &_OS::is_delta_smoothing_enabled);
+
 	ClassDB::bind_method(D_METHOD("has_feature", "tag_name"), &_OS::has_feature);
 
 	ClassDB::bind_method(D_METHOD("get_power_state"), &_OS::get_power_state);
@@ -1391,6 +1402,7 @@ void _OS::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "exit_code"), "set_exit_code", "get_exit_code");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "vsync_enabled"), "set_use_vsync", "is_vsync_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "vsync_via_compositor"), "set_vsync_via_compositor", "is_vsync_via_compositor_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "delta_smoothing"), "set_delta_smoothing", "is_delta_smoothing_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "low_processor_usage_mode"), "set_low_processor_usage_mode", "is_in_low_processor_usage_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "low_processor_usage_mode_sleep_usec"), "set_low_processor_usage_mode_sleep_usec", "get_low_processor_usage_mode_sleep_usec");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "keep_screen_on"), "set_keep_screen_on", "is_keep_screen_on");
