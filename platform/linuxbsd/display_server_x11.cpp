@@ -4291,6 +4291,7 @@ DisplayServerX11::~DisplayServerX11() {
 	for (Map<WindowID, WindowData>::Element *E = windows.front(); E; E = E->next()) {
 #ifdef VULKAN_ENABLED
 		if (rendering_driver == "vulkan") {
+			ERR_FAIL_NULL(context_vulkan);
 			context_vulkan->window_destroy(E->key());
 		}
 #endif

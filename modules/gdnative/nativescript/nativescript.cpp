@@ -920,7 +920,6 @@ void NativeScriptInstance::get_property_list(List<PropertyInfo> *p_properties) c
 
 		script_data = script_data->base_data;
 	}
-	return;
 }
 
 Variant::Type NativeScriptInstance::get_property_type(const StringName &p_name, bool *r_is_valid) const {

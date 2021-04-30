@@ -693,7 +693,6 @@ float AnimationNodeTransition::process(float p_time, bool p_seek) {
 		prev = prev_current;
 		prev_xfading = xfade;
 		time = 0;
-		switched = true;
 	}
 
 	if (current < 0 || current >= enabled_inputs || prev >= enabled_inputs) {

@@ -187,7 +187,6 @@ void PluginScriptLanguage::auto_indent_code(String &p_code, int p_from_line, int
 	if (_desc.auto_indent_code) {
 		_desc.auto_indent_code(_data, (godot_string *)&p_code, p_from_line, p_to_line);
 	}
-	return;
 }
 
 void PluginScriptLanguage::add_global_constant(const StringName &p_variable, const Variant &p_value) {

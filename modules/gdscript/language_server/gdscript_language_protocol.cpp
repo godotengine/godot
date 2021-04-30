@@ -45,7 +45,7 @@ Error GDScriptLanguageProtocol::LSPeer::handle_data() {
 		while (true) {
 			if (req_pos >= LSP_MAX_BUFFER_SIZE) {
 				req_pos = 0;
-				ERR_FAIL_COND_V_MSG(true, ERR_OUT_OF_MEMORY, "Response header too big");
+				ERR_FAIL_V_MSG(ERR_OUT_OF_MEMORY, "Response header too big");
 			}
 			Error err = connection->get_partial_data(&req_buf[req_pos], 1, read);
 			if (err != OK) {
@@ -74,7 +74,7 @@ Error GDScriptLanguageProtocol::LSPeer::handle_data() {
 			if (req_pos >= LSP_MAX_BUFFER_SIZE) {
 				req_pos = 0;
 				has_header = false;
-				ERR_FAIL_COND_V_MSG(req_pos >= LSP_MAX_BUFFER_SIZE, ERR_OUT_OF_MEMORY, "Response content too big");
+				ERR_FAIL_V_MSG(ERR_OUT_OF_MEMORY, "Response content too big");
 			}
 			Error err = connection->get_partial_data(&req_buf[req_pos], 1, read);
 			if (err != OK) {

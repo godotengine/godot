@@ -794,7 +794,6 @@ void RendererSceneGIRD::SDFGI::update(RendererSceneEnvironmentRD *p_env, const V
 		cascade.dirty_regions = Vector3i();
 
 		Vector3 probe_half_size = Vector3(1, 1, 1) * cascade.cell_size * float(cascade_size / SDFGI::PROBE_DIVISOR) * 0.5;
-		probe_half_size = Vector3(0, 0, 0);
 
 		Vector3 world_position = p_world_position;
 		world_position.y *= y_mult;

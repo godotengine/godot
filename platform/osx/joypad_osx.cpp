@@ -286,8 +286,9 @@ bool JoypadOSX::configure_joypad(IOHIDDeviceRef p_device_ref, joypad *p_joy) {
 	}
 	if ((!refCF) || (!CFStringGetCString((CFStringRef)refCF, c_name, sizeof(c_name), kCFStringEncodingUTF8))) {
 		name = "Unidentified Joypad";
+	} else {
+		name = c_name;
 	}
-	name = c_name;
 
 	int id = input->get_unused_joy_id();
 	ERR_FAIL_COND_V(id == -1, false);

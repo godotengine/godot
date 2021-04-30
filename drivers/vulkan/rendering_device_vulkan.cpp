@@ -1528,7 +1528,7 @@ Error RenderingDeviceVulkan::_staging_buffer_allocate(uint32_t p_amount, uint32_
 			//this is an old block, which was already processed, let's reuse
 			staging_buffer_blocks.write[staging_buffer_current].frame_used = frames_drawn;
 			staging_buffer_blocks.write[staging_buffer_current].fill_amount = 0;
-		} else if (staging_buffer_blocks[staging_buffer_current].frame_used > frames_drawn - frame_count) {
+		} else {
 			//this block may still be in use, let's not touch it unless we have to, so.. can we create a new one?
 			if ((uint64_t)staging_buffer_blocks.size() * staging_buffer_block_size < staging_buffer_max_size) {
 				//we are still allowed to create a new block, so let's do that and insert it for current pos
@@ -4321,7 +4321,6 @@ RID RenderingDeviceVulkan::shader_create(const Vector<ShaderStageData> &p_stages
 					layout_binding.pImmutableSamplers = nullptr; //no support for this yet
 
 					info.stages = 1 << stage;
-					info.binding = info.binding;
 
 					if (set >= (uint32_t)set_bindings.size()) {
 						set_bindings.resize(set + 1);
