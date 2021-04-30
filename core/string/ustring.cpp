@@ -3784,27 +3784,28 @@ String String::uri_encode() const {
 }
 
 String String::uri_decode() const {
-	String res;
-	for (int i = 0; i < length(); ++i) {
-		if (unicode_at(i) == '%' && i + 2 < length()) {
-			char32_t ord1 = unicode_at(i + 1);
+	CharString src = utf8();
+	CharString res;
+	for (int i = 0; i < src.length(); ++i) {
+		if (src[i] == '%' && i + 2 < src.length()) {
+			char ord1 = src[i + 1];
 			if ((ord1 >= '0' && ord1 <= '9') || (ord1 >= 'A' && ord1 <= 'Z')) {
-				char32_t ord2 = unicode_at(i + 2);
+				char ord2 = src[i + 2];
 				if ((ord2 >= '0' && ord2 <= '9') || (ord2 >= 'A' && ord2 <= 'Z')) {
 					char bytes[3] = { (char)ord1, (char)ord2, 0 };
 					res += (char)strtol(bytes, nullptr, 16);
 					i += 2;
 				}
 			} else {
-				res += unicode_at(i);
+				res += src[i];
 			}
-		} else if (unicode_at(i) == '+') {
+		} else if (src[i] == '+') {
 			res += ' ';
 		} else {
-			res += unicode_at(i);
+			res += src[i];
 		}
 	}
-	return String::utf8(res.ascii());
+	return String::utf8(res);
 }
 
 String String::c_unescape() const {
