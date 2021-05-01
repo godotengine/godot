@@ -410,6 +410,21 @@
 				Infinity values of the same sign are considered equal.
 			</description>
 		</method>
+		<method name="is_equal_approx_tolerance">
+			<return type="bool">
+			</return>
+			<argument index="0" name="a" type="float">
+			</argument>
+			<argument index="1" name="b" type="float">
+			</argument>
+			<argument index="2" name="tolerance" type="float">
+			</argument>
+			<description>
+				Returns [code]true[/code] if [code]a[/code] and [code]b[/code] are approximately equal to each other by using [code]tolerance[/code] as tolerance.
+				Here, approximately equal means that [code]a[/code] and [code]b[/code] are within a small internal epsilon of each other, which scales with the magnitude of the numbers.
+				Infinity values of the same sign are considered equal.
+			</description>
+		</method>
 		<method name="is_inf">
 			<return type="bool">
 			</return>
@@ -1713,8 +1728,7 @@
 		<constant name="KEY_LESS" value="60" enum="Key">
 			&lt; key.
 		</constant>
-		<constant name="KEY_EQUAL" value="61" enum="Key">
-			= key.
+		<constant name="KEY_EQUAL" value="61" enum="Key"> = key.
 		</constant>
 		<constant name="KEY_GREATER" value="62" enum="Key">
 			&gt; key.

@@ -977,38 +977,8 @@ void SurfaceTool::mikktSetTSpaceDefault(const SMikkTSpaceContext *pContext, cons
 	}
 }
 
-void SurfaceTool::generate_tangents() {
-	ERR_FAIL_COND(!(format & Mesh::ARRAY_FORMAT_TEX_UV));
-	ERR_FAIL_COND(!(format & Mesh::ARRAY_FORMAT_NORMAL));
-
-	SMikkTSpaceInterface mkif;
-	mkif.m_getNormal = mikktGetNormal;
-	mkif.m_getNumFaces = mikktGetNumFaces;
-	mkif.m_getNumVerticesOfFace = mikktGetNumVerticesOfFace;
-	mkif.m_getPosition = mikktGetPosition;
-	mkif.m_getTexCoord = mikktGetTexCoord;
-	mkif.m_setTSpace = mikktSetTSpaceDefault;
-	mkif.m_setTSpaceBasic = nullptr;
-
-	SMikkTSpaceContext msc;
-	msc.m_pInterface = &mkif;
-
-	TangentGenerationContextUserData triangle_data;
-	triangle_data.vertices = &vertex_array;
-	for (uint32_t i = 0; i < vertex_array.size(); i++) {
-		vertex_array[i].binormal = Vector3();
-		vertex_array[i].tangent = Vector3();
-	}
-	triangle_data.indices = &index_array;
-	msc.m_pUserData = &triangle_data;
-
-	bool res = genTangSpaceDefault(&msc);
-
-	ERR_FAIL_COND(!res);
-	format |= Mesh::ARRAY_FORMAT_TANGENT;
-}
-
 void SurfaceTool::generate_normals(bool p_flip) {
+	uint32_t startTime = OS::get_singleton()->get_ticks_msec();
 	ERR_FAIL_COND(primitive != Mesh::PRIMITIVE_TRIANGLES);
 
 	bool was_indexed = index_array.size();
@@ -1052,6 +1022,308 @@ void SurfaceTool::generate_normals(bool p_flip) {
 
 	if (was_indexed) {
 		index();
+	}
+
+	uint32_t endTime = OS::get_singleton()->get_ticks_msec();
+	printf("Generated normals for mesh (old) in %d ms (%d vertices, %d indices) \n", (endTime - startTime), vertex_array.size(), index_array.size());
+}
+
+void SurfaceTool::generate_tangents() {
+	uint32_t startTime = OS::get_singleton()->get_ticks_msec();
+
+	ERR_FAIL_COND(!(format & Mesh::ARRAY_FORMAT_TEX_UV));
+	ERR_FAIL_COND(!(format & Mesh::ARRAY_FORMAT_NORMAL));
+
+	SMikkTSpaceInterface mkif;
+	mkif.m_getNormal = mikktGetNormal;
+	mkif.m_getNumFaces = mikktGetNumFaces;
+	mkif.m_getNumVerticesOfFace = mikktGetNumVerticesOfFace;
+	mkif.m_getPosition = mikktGetPosition;
+	mkif.m_getTexCoord = mikktGetTexCoord;
+	mkif.m_setTSpace = mikktSetTSpaceDefault;
+	mkif.m_setTSpaceBasic = nullptr;
+
+	SMikkTSpaceContext msc;
+	msc.m_pInterface = &mkif;
+
+	TangentGenerationContextUserData triangle_data;
+	triangle_data.vertices = &vertex_array;
+	for (uint32_t i = 0; i < vertex_array.size(); i++) {
+		vertex_array[i].binormal = Vector3();
+		vertex_array[i].tangent = Vector3();
+	}
+	triangle_data.indices = &index_array;
+	msc.m_pUserData = &triangle_data;
+
+	bool res = genTangSpaceDefault(&msc);
+
+	ERR_FAIL_COND(!res);
+	format |= Mesh::ARRAY_FORMAT_TANGENT;
+	uint32_t endTime = OS::get_singleton()->get_ticks_msec();
+
+	printf("Generated tangents for mesh (old) in %d ms (%d vertices, %d indices) \n", (endTime - startTime), vertex_array.size(), index_array.size());
+}
+
+void SurfaceTool::generate_normals_smoothed(bool p_flip, float smoothingAngle) {
+	ERR_FAIL_COND(primitive != Mesh::PRIMITIVE_TRIANGLES);
+	ERR_FAIL_COND(!(format & Mesh::ARRAY_FORMAT_VERTEX));
+	ERR_FAIL_COND(!(format & Mesh::ARRAY_FORMAT_INDEX));
+
+	uint32_t startTime = OS::get_singleton()->get_ticks_msec();
+
+	const uint32_t vertexCount = vertex_array.size();
+	const uint32_t indexCount = index_array.size();
+
+	smoothingAngle = CLAMP(smoothingAngle, 0.0f, 175.0f);
+
+	// Compute per-face normals but store them per-vertex
+	Vector3 min, max;
+	min = max = vertex_array[0].vertex;
+	for (uint32_t i = 0; i < indexCount; i += 3) {
+		const Vector3 v1 = vertex_array[index_array[i + 0]].vertex;
+		const Vector3 v2 = vertex_array[index_array[i + 1]].vertex;
+		const Vector3 v3 = vertex_array[index_array[i + 2]].vertex;
+		Vector3 n;
+
+		if (!p_flip) {
+			n = (v1 - v3).cross(v1 - v2);
+		} else {
+			n = (v2 - v1).cross(v3 - v1);
+		}
+
+		vertex_array[index_array[i + 0]].normal = n;
+		vertex_array[index_array[i + 1]].normal = n;
+		vertex_array[index_array[i + 2]].normal = n;
+
+		min = min.min(v1);
+		min = min.min(v2);
+		min = min.min(v3);
+
+		max = max.max(v1);
+		max = max.max(v2);
+		max = max.max(v3);
+	}
+
+	Vector<int> verticesFound;
+	verticesFound.resize(16);
+
+	const real_t posEpsilon = (max - min).length() * 1e-4f;
+
+	// Check if use the angle limit (then use the faster path)
+	if (smoothingAngle >= 175.0f) {
+		Vector<bool> vertexDone;
+		vertexDone.resize(vertexCount);
+		vertexDone.fill(false);
+
+		for (uint32_t i = 0; i < vertexCount; i++) {
+			if (vertexDone[i])
+				continue;
+
+			// Get all vertices that share this one
+			find_vertices(vertex_array[i].vertex, posEpsilon, verticesFound);
+			const int verticesFoundCount = verticesFound.size();
+
+			// Get the smooth normal
+			Vector3 n;
+			for (int a = 0; a < verticesFoundCount; a++)
+				n += vertex_array[verticesFound[a]].normal;
+
+			n.normalize();
+
+			// Write the smoothed normal back to all affected normals
+			for (int a = 0; a < verticesFoundCount; a++) {
+				const auto vtx = verticesFound[a];
+				vertex_array[vtx].normal = n;
+				vertexDone.set(vtx, true);
+			}
+		}
+	} else {
+		const real_t limit = cosf(Math::deg2rad(smoothingAngle));
+
+		for (uint32_t i = 0; i < vertexCount; i++) {
+			// Get all vertices that share this one
+
+			find_vertices(vertex_array[i].vertex, posEpsilon, verticesFound);
+			const int verticesFoundCount = verticesFound.size();
+
+			// Get the smooth normal
+			Vector3 vr = vertex_array[i].normal;
+			const real_t vrlen = vr.length();
+			Vector3 n;
+			for (int a = 0; a < verticesFoundCount; a++) {
+				Vector3 v = vertex_array[verticesFound[a]].normal;
+
+				// Check whether the angle between the two normals is not too large
+				real_t lt = limit * vrlen * v.length();
+				if (v * vr >= Vector3(lt, lt, lt))
+					n += v;
+			}
+
+			n.normalize();
+			vertex_array[i].normal = n;
+		}
+	}
+
+	format |= Mesh::ARRAY_FORMAT_NORMAL;
+
+	uint32_t endTime = OS::get_singleton()->get_ticks_msec();
+	printf("Generated normals for mesh in %d ms (%d vertices, %d indices) \n", (endTime - startTime), vertexCount, indexCount);
+}
+
+void SurfaceTool::generate_tangents_smoothed(float smoothingAngle) {
+	ERR_FAIL_COND(!(format & Mesh::ARRAY_FORMAT_TEX_UV));
+	ERR_FAIL_COND(!(format & Mesh::ARRAY_FORMAT_NORMAL));
+	ERR_FAIL_COND(!(format & Mesh::ARRAY_FORMAT_INDEX));
+	ERR_FAIL_COND(!(format & Mesh::ARRAY_FORMAT_VERTEX));
+
+	uint32_t startTime = OS::get_singleton()->get_ticks_msec();
+
+	const uint32_t vertexCount = vertex_array.size();
+	const uint32_t indexCount = index_array.size();
+	smoothingAngle = CLAMP(smoothingAngle, 0.0f, 45.0f);
+
+	const real_t angleEpsilon = 0.9999f;
+	Vector<bool> vertexDone;
+	vertexDone.resize(vertexCount);
+	vertexDone.fill(false);
+
+	// Calculate the tangent for every face
+	Vector3 min, max;
+	min = max = vertex_array[0].vertex;
+	for (uint32_t i = 0; i < indexCount; i += 3) {
+		const int p0 = index_array[i + 0], p1 = index_array[i + 1], p2 = index_array[i + 2];
+
+		const Vector3 v1 = vertex_array[p0].vertex;
+		const Vector3 v2 = vertex_array[p1].vertex;
+		const Vector3 v3 = vertex_array[p2].vertex;
+
+		min = min.min(v1);
+		min = min.min(v2);
+		min = min.min(v3);
+
+		max = max.max(v1);
+		max = max.max(v2);
+		max = max.max(v3);
+
+		// Position differences p1->p2 and p1->p3
+		Vector3 v = v2 - v1, w = v3 - v1;
+
+		// Texture offset p1->p2 and p1->p3
+		float sx = vertex_array[p1].uv.x - vertex_array[p0].uv.x, sy = vertex_array[p1].uv.y - vertex_array[p0].uv.y;
+		float tx = vertex_array[p2].uv.x - vertex_array[p0].uv.x, ty = vertex_array[p2].uv.y - vertex_array[p0].uv.y;
+		const float dirCorrection = (tx * sy - ty * sx) < 0.0f ? -1.0f : 1.0f;
+
+		// When t1, t2, t3 in same position in UV space, just use default UV direction
+		if (sx * ty == sy * tx) {
+			sx = 0.0;
+			sy = 1.0;
+			tx = 1.0;
+			ty = 0.0;
+		}
+
+		// Tangent points in the direction where to positive X axis of the texture coord's would point in model space
+		// Bitangent's points along the positive Y axis of the texture coord's, respectively
+		Vector3 tangent, bitangent;
+		tangent.x = (w.x * sy - v.x * ty) * dirCorrection;
+		tangent.y = (w.y * sy - v.y * ty) * dirCorrection;
+		tangent.z = (w.z * sy - v.z * ty) * dirCorrection;
+
+		bitangent.x = (w.x * sx - v.x * tx) * dirCorrection;
+		bitangent.y = (w.y * sx - v.y * tx) * dirCorrection;
+		bitangent.z = (w.z * sx - v.z * tx) * dirCorrection;
+
+		// Store for every vertex of that face
+		for (uint32_t b = 0; b < 3; b++) {
+			const int p = index_array[i + b];
+
+			// Project tangent and bitangent into the plane formed by the vertex' normal
+			Vector3 localTangent = tangent - vertex_array[p].vertex * (tangent * vertex_array[p].normal);
+			Vector3 localBitangent = bitangent - vertex_array[p].vertex * (bitangent * vertex_array[p].normal);
+
+			localTangent.normalize();
+			localBitangent.normalize();
+
+			// Reconstruct tangent according to normal and bitangent when it's infinite or NaN
+			if (localTangent.is_inf() || localTangent.is_nan()) {
+				localTangent = vertex_array[p].normal.cross(localBitangent); //cross product
+				localTangent.normalize();
+			}
+
+			vertex_array[p].tangent = localTangent;
+		}
+	}
+
+	Vector<int> verticesFound;
+	verticesFound.resize(16);
+
+	const float posEpsilon = (max - min).length() * 1e-4f;
+	const float limit = cosf(Math::deg2rad(smoothingAngle));
+	Vector<int> closeVertices;
+
+	// In the second pass we now smooth out all tangents at the same local position if they are not too far off
+	for (uint32_t a = 0; a < vertexCount; a++) {
+		if (vertexDone[a])
+			continue;
+
+		const Vector3 origPos = vertex_array[a].vertex;
+		const Vector3 origNorm = vertex_array[a].normal;
+		const Vector3 origTang = vertex_array[a].tangent;
+		closeVertices.clear();
+
+		find_vertices(origPos, posEpsilon, verticesFound);
+		const int verticesFoundCount = verticesFound.size();
+
+		closeVertices.append(a);
+
+		// Look among them for other vertices sharing the same normal and a close-enough tangent
+		for (int b = 0; b < verticesFoundCount; b++) {
+			const int idx = verticesFound[b];
+
+			Vector3 currentNormal = vertex_array[idx].normal;
+			Vector3 normalSum = currentNormal * origNorm;
+
+			if (vertexDone[idx])
+				continue;
+			if (normalSum < Vector3(angleEpsilon, angleEpsilon, angleEpsilon))
+				continue;
+			if (vertex_array[idx].tangent * origTang < Vector3(limit, limit, limit))
+				continue;
+
+			// It's similar enough -> add it to the smoothing group
+			closeVertices.append(idx);
+			vertexDone.set(idx, true);
+		}
+
+		// Smooth the tangents of all vertices that were found to be close enough
+		Vector3 smoothTangent(0, 0, 0);
+		for (int b = 0; b < closeVertices.size(); b++) {
+			int closeVert = closeVertices[b];
+			Vector3 tangent = vertex_array[closeVert].tangent;
+			smoothTangent += tangent;
+		}
+		smoothTangent.normalize();
+
+		// Write it back into all affected tangents
+		for (int b = 0; b < closeVertices.size(); b++) {
+			vertex_array[closeVertices[b]].tangent = smoothTangent;
+		}
+	}
+
+	uint32_t endTime = OS::get_singleton()->get_ticks_msec();
+	format |= Mesh::ARRAY_FORMAT_TANGENT;
+
+	printf("Generated tangents for mesh in %d ms (%d vertices, %d indices) \n", (endTime - startTime), vertexCount, indexCount);
+}
+
+void SurfaceTool::find_vertices(const Vector3 &position, real_t epsilon, Vector<int> &result) {
+	result.clear();
+
+	if (vertex_array.size() == 0)
+		return;
+
+	for (uint32_t i = 0; i < vertex_array.size(); i++) {
+		if (position.is_equal_approx_tolerance(vertex_array[i].vertex, epsilon))
+			result.append(i);
 	}
 }
 
@@ -1175,6 +1447,8 @@ void SurfaceTool::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("deindex"), &SurfaceTool::deindex);
 	ClassDB::bind_method(D_METHOD("generate_normals", "flip"), &SurfaceTool::generate_normals, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("generate_tangents"), &SurfaceTool::generate_tangents);
+	ClassDB::bind_method(D_METHOD("generate_tangents_smoothed", "smoothingAngle"), &SurfaceTool::generate_tangents_smoothed, DEFVAL(45.0f));
+	ClassDB::bind_method(D_METHOD("generate_normals_smoothed", "flip", "smoothingAngle"), &SurfaceTool::generate_normals_smoothed, DEFVAL(false), DEFVAL(175.0f));
 
 	ClassDB::bind_method(D_METHOD("optimize_indices_for_cache"), &SurfaceTool::optimize_indices_for_cache);
 

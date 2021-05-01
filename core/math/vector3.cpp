@@ -115,6 +115,10 @@ bool Vector3::is_equal_approx(const Vector3 &p_v) const {
 	return Math::is_equal_approx(x, p_v.x) && Math::is_equal_approx(y, p_v.y) && Math::is_equal_approx(z, p_v.z);
 }
 
+bool Vector3::is_equal_approx_tolerance(const Vector3 &p_v, real_t tolerance) const {
+	return Math::is_equal_approx(x, p_v.x, tolerance) && Math::is_equal_approx(y, p_v.y, tolerance) && Math::is_equal_approx(z, p_v.z, tolerance);
+}
+
 Vector3::operator String() const {
 	return (rtos(x) + ", " + rtos(y) + ", " + rtos(z));
 }

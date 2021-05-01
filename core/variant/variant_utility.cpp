@@ -201,6 +201,10 @@ struct VariantUtilityFunctions {
 		return Math::is_equal_approx(x, y);
 	}
 
+	static inline bool is_equal_approx_tolerance(double x, double y, double tolerance) {
+		return Math::is_equal_approx(x, y, tolerance);
+	}
+
 	static inline bool is_zero_approx(double x) {
 		return Math::is_zero_approx(x);
 	}
@@ -1176,6 +1180,7 @@ void Variant::_register_variant_utility_functions() {
 	FUNCBINDR(is_inf, sarray("x"), Variant::UTILITY_FUNC_TYPE_MATH);
 
 	FUNCBINDR(is_equal_approx, sarray("a", "b"), Variant::UTILITY_FUNC_TYPE_MATH);
+	FUNCBINDR(is_equal_approx_tolerance, sarray("a", "b", "tolerance"), Variant::UTILITY_FUNC_TYPE_MATH);
 	FUNCBINDR(is_zero_approx, sarray("x"), Variant::UTILITY_FUNC_TYPE_MATH);
 
 	FUNCBINDR(ease, sarray("x", "curve"), Variant::UTILITY_FUNC_TYPE_MATH);
