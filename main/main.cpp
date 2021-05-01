@@ -1346,7 +1346,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		} else if (vsync_mode == "Mailbox") {
 			window_vsync_mode = DisplayServer::VSYNC_MAILBOX;
 		} else {
-			WARN_PRINT("VSync mode unknown.");
+			WARN_PRINT("Project VSync mode unknown.");
 			window_vsync_mode = DisplayServer::VSYNC_ENABLED;
 		}
 	}

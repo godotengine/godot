@@ -442,6 +442,25 @@ void EditorNode::_unhandled_input(const Ref<InputEvent> &p_event) {
 	}
 }
 
+void EditorNode::_update_vsync_mode() {
+	const String vsync_mode = EDITOR_GET("interface/editor/vsync_mode");
+
+	DisplayServer::VSyncMode window_vsync_mode;
+	if (vsync_mode == "Disabled") {
+		window_vsync_mode = DisplayServer::VSYNC_DISABLED;
+	} else if (vsync_mode == "Enabled") {
+		window_vsync_mode = DisplayServer::VSYNC_ENABLED;
+	} else if (vsync_mode == "Adaptive") {
+		window_vsync_mode = DisplayServer::VSYNC_ADAPTIVE;
+	} else if (vsync_mode == "Mailbox") {
+		window_vsync_mode = DisplayServer::VSYNC_MAILBOX;
+	} else {
+		WARN_PRINT("Editor VSync mode unknown.");
+		window_vsync_mode = DisplayServer::VSYNC_ENABLED;
+	}
+	DisplayServer::get_singleton()->window_set_vsync_mode(window_vsync_mode);
+}
+
 void EditorNode::_update_from_settings() {
 	int current_filter = GLOBAL_GET("rendering/textures/canvas_textures/default_texture_filter");
 	if (current_filter != scene_root->get_default_canvas_item_texture_filter()) {
@@ -636,6 +655,8 @@ void EditorNode::_notification(int p_what) {
 		} break;
 
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
+			_update_vsync_mode();
+
 			scene_tabs->set_tab_close_display_policy((bool(EDITOR_GET("interface/scene_tabs/always_show_close_button")) ? Tabs::CLOSE_BUTTON_SHOW_ALWAYS : Tabs::CLOSE_BUTTON_SHOW_ACTIVE_ONLY));
 			theme = create_custom_theme(theme_base->get_theme());
 
@@ -5711,6 +5732,8 @@ EditorNode::EditorNode() {
 	}
 
 	FileAccess::set_backup_save(EDITOR_GET("filesystem/on_save/safe_save_on_backup_then_rename"));
+
+	_update_vsync_mode();
 
 	{
 		int display_scale = EditorSettings::get_singleton()->get("interface/editor/display_scale");
