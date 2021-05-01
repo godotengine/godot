@@ -2250,16 +2250,16 @@ void EditorNode::_run(bool p_current, const String &p_custom) {
 
 	args = ProjectSettings::get_singleton()->get("editor/main_run_args");
 	skip_breakpoints = ScriptEditor::get_singleton()->get_debugger()->is_skip_breakpoints();
+	emit_signal("play_pressed");
 
 	Error error = editor_run.run(run_filename, args, breakpoints, skip_breakpoints);
 
 	if (error != OK) {
-
+		emit_signal("stop_pressed");
 		show_accept(TTR("Could not start subprocess!"), TTR("OK"));
 		return;
 	}
 
-	emit_signal("play_pressed");
 	if (p_current) {
 		play_scene_button->set_pressed(true);
 		play_scene_button->set_icon(gui_base->get_icon("Reload", "EditorIcons"));
