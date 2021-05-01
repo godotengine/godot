@@ -128,6 +128,7 @@ Variant PackedDataContainer::_get_at_ofs(uint32_t p_ofs, const uint8_t *p_buf, b
 uint32_t PackedDataContainer::_type_at_ofs(uint32_t p_ofs) const {
 
 	PoolVector<uint8_t>::Read rd = data.read();
+	ERR_FAIL_COND_V(!rd.ptr(), 0);
 	const uint8_t *r = &rd[p_ofs];
 	uint32_t type = decode_uint32(r);
 
@@ -158,6 +159,10 @@ int PackedDataContainer::_size(uint32_t p_ofs) const {
 Variant PackedDataContainer::_key_at_ofs(uint32_t p_ofs, const Variant &p_key, bool &err) const {
 
 	PoolVector<uint8_t>::Read rd = data.read();
+	if (!rd.ptr()) {
+		err = true;
+		ERR_FAIL_COND_V(!rd.ptr(), Variant());
+	}
 	const uint8_t *r = &rd[p_ofs];
 	uint32_t type = decode_uint32(r);
 
