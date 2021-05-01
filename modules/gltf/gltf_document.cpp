@@ -2389,9 +2389,9 @@ Error GLTFDocument::_serialize_meshes(Ref<GLTFState> state) {
 						for (int i = 0; i < ret_size; i++) {
 							Color tangent;
 							tangent.r = tarr[(i * 4) + 0];
-							tangent.r = tarr[(i * 4) + 1];
-							tangent.r = tarr[(i * 4) + 2];
-							tangent.r = tarr[(i * 4) + 3];
+							tangent.g = tarr[(i * 4) + 1];
+							tangent.b = tarr[(i * 4) + 2];
+							tangent.a = tarr[(i * 4) + 3];
 						}
 						t["TANGENT"] = _encode_accessor_as_color(state, attribs, true);
 					}
