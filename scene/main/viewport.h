@@ -234,6 +234,7 @@ private:
 	Size2i size;
 	Size2i size_2d_override;
 	bool size_allocated = false;
+	bool use_xr = false;
 
 	RID contact_2d_debug;
 	RID contact_3d_debug_multimesh;
@@ -534,6 +535,9 @@ public:
 	void set_transparent_background(bool p_enable);
 	bool has_transparent_background() const;
 
+	void set_use_xr(bool p_use_xr);
+	bool is_using_xr();
+
 	Ref<ViewportTexture> get_texture() const;
 
 	void set_shadow_atlas_size(int p_size);
@@ -656,7 +660,6 @@ public:
 private:
 	UpdateMode update_mode = UPDATE_WHEN_VISIBLE;
 	ClearMode clear_mode = CLEAR_MODE_ALWAYS;
-	bool xr = false;
 	bool size_2d_override_stretch = false;
 
 protected:
@@ -671,9 +674,6 @@ public:
 
 	void set_size_2d_override(const Size2i &p_size);
 	Size2i get_size_2d_override() const;
-
-	void set_use_xr(bool p_use_xr);
-	bool is_using_xr();
 
 	void set_size_2d_override_stretch(bool p_enable);
 	bool is_size_2d_override_stretch_enabled() const;
