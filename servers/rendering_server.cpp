@@ -422,7 +422,7 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint
 					value |= CLAMP(int((src[i * 4 + 0] * 0.5 + 0.5) * 1023.0), 0, 1023);
 					value |= CLAMP(int((src[i * 4 + 1] * 0.5 + 0.5) * 1023.0), 0, 1023) << 10;
 					value |= CLAMP(int((src[i * 4 + 2] * 0.5 + 0.5) * 1023.0), 0, 1023) << 20;
-					value |= CLAMP(int((src[i * 4 + 3] * 0.5 + 0.5) * 3.0), 0, 3) << 30;
+					value |= CLAMP(int((src[i * 4 + 3] * 0.5 + 0.5) * 1023.0), 0, 1023) << 30;
 
 					memcpy(&vw[p_offsets[ai] + i * p_vertex_stride], &value, 4);
 				}
