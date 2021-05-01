@@ -98,6 +98,9 @@ public:
 	void set_time_scale(float p_scale);
 	float get_time_scale() const;
 
+	void set_print_error_messages(bool p_enabled);
+	bool is_printing_error_messages() const;
+
 	void set_frame_delay(uint32_t p_msec);
 	uint32_t get_frame_delay() const;
 
