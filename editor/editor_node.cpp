@@ -541,6 +541,8 @@ void EditorNode::_notification(int p_what) {
 		} break;
 
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
+			OS::get_singleton()->set_use_vsync(bool(EDITOR_GET("interface/editor/use_vsync")));
+
 			scene_tabs->set_tab_close_display_policy((bool(EDITOR_GET("interface/scene_tabs/always_show_close_button")) ? Tabs::CLOSE_BUTTON_SHOW_ALWAYS : Tabs::CLOSE_BUTTON_SHOW_ACTIVE_ONLY));
 			theme = create_editor_theme(theme_base->get_theme());
 
@@ -5871,6 +5873,8 @@ EditorNode::EditorNode() {
 		EditorSettings::create();
 
 	FileAccess::set_backup_save(EDITOR_GET("filesystem/on_save/safe_save_on_backup_then_rename"));
+
+	OS::get_singleton()->set_use_vsync(bool(EDITOR_GET("interface/editor/use_vsync")));
 
 	{
 		int display_scale = EditorSettings::get_singleton()->get("interface/editor/display_scale");
