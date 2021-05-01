@@ -364,6 +364,8 @@
 		<member name="transparency" type="int" setter="set_transparency" getter="get_transparency" enum="BaseMaterial3D.Transparency" default="0">
 			If [code]true[/code], transparency is enabled on the body. See also [member blend_mode].
 		</member>
+		<member name="use_particle_trails" type="bool" setter="set_flag" getter="get_flag" default="false">
+		</member>
 		<member name="use_point_size" type="bool" setter="set_flag" getter="get_flag" default="false">
 			If [code]true[/code], render point size can be changed.
 			[b]Note:[/b] this is only effective for objects whose geometry is point-based rather than triangle-based. See also [member point_size].
@@ -655,7 +657,9 @@
 		<constant name="FLAG_SUBSURFACE_MODE_SKIN" value="18" enum="Flags">
 			Enables the skin mode for subsurface scattering which is used to improve the look of subsurface scattering when used for human skin.
 		</constant>
-		<constant name="FLAG_MAX" value="19" enum="Flags">
+		<constant name="FLAG_PARTICLE_TRAILS_MODE" value="19" enum="Flags">
+		</constant>
+		<constant name="FLAG_MAX" value="20" enum="Flags">
 			Represents the size of the [enum Flags] enum.
 		</constant>
 		<constant name="DIFFUSE_BURLEY" value="0" enum="DiffuseMode">

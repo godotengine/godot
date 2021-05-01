@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="TubeTrailMesh" inherits="PrimitiveMesh" version="4.0">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+	</methods>
+	<members>
+		<member name="curve" type="Curve" setter="set_curve" getter="get_curve">
+		</member>
+		<member name="radial_steps" type="int" setter="set_radial_steps" getter="get_radial_steps" default="8">
+		</member>
+		<member name="radius" type="float" setter="set_radius" getter="get_radius" default="1.0">
+		</member>
+		<member name="section_length" type="float" setter="set_section_length" getter="get_section_length" default="0.2">
+		</member>
+		<member name="section_rings" type="int" setter="set_section_rings" getter="get_section_rings" default="3">
+		</member>
+		<member name="sections" type="int" setter="set_sections" getter="get_sections" default="5">
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

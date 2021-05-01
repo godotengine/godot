@@ -2075,16 +2075,14 @@ void RibbonTrailMesh::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_shape"), &RibbonTrailMesh::get_shape);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "shape", PROPERTY_HINT_ENUM, "Flat,Cross"), "set_shape", "get_shape");
-
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "size", PROPERTY_HINT_RANGE, "0.001,100.0,0.001,or_greater"), "set_size", "get_size");
-
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "sections", PROPERTY_HINT_RANGE, "2,128,1"), "set_sections", "get_sections");
-
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "section_length", PROPERTY_HINT_RANGE, "0.001,1024.0,0.001,or_greater"), "set_section_length", "get_section_length");
-
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "section_segments", PROPERTY_HINT_RANGE, "1,128,1"), "set_section_segments", "get_section_segments");
-
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "curve", PROPERTY_HINT_RESOURCE_TYPE, "Curve"), "set_curve", "get_curve");
+
+	BIND_ENUM_CONSTANT(SHAPE_FLAT)
+	BIND_ENUM_CONSTANT(SHAPE_CROSS)
 }
 
 RibbonTrailMesh::RibbonTrailMesh() {

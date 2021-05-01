@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="RibbonTrailMesh" inherits="PrimitiveMesh" version="4.0">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+	</methods>
+	<members>
+		<member name="curve" type="Curve" setter="set_curve" getter="get_curve">
+		</member>
+		<member name="section_length" type="float" setter="set_section_length" getter="get_section_length" default="0.2">
+		</member>
+		<member name="section_segments" type="int" setter="set_section_segments" getter="get_section_segments" default="3">
+		</member>
+		<member name="sections" type="int" setter="set_sections" getter="get_sections" default="5">
+		</member>
+		<member name="shape" type="int" setter="set_shape" getter="get_shape" enum="RibbonTrailMesh.Shape" default="1">
+		</member>
+		<member name="size" type="float" setter="set_size" getter="get_size" default="1.0">
+		</member>
+	</members>
+	<constants>
+		<constant name="SHAPE_FLAT" value="0" enum="Shape">
+		</constant>
+		<constant name="SHAPE_CROSS" value="1" enum="Shape">
+		</constant>
+	</constants>
+</class>
