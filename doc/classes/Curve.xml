@@ -108,7 +108,7 @@
 				Returns the Y value for the point that would exist at the X position [code]offset[/code] along the curve.
 			</description>
 		</method>
-		<method name="interpolate_baked">
+		<method name="interpolate_baked" qualifiers="const">
 			<return type="float">
 			</return>
 			<argument index="0" name="offset" type="float">
