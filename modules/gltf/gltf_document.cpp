@@ -2384,16 +2384,17 @@ Error GLTFDocument::_serialize_meshes(Ref<GLTFState> state) {
 					Vector<real_t> tarr = array_morph[Mesh::ARRAY_TANGENT];
 					if (tarr.size()) {
 						const int ret_size = tarr.size() / 4;
-						Vector<Color> attribs;
+						Vector<Vector3> attribs;
 						attribs.resize(ret_size);
 						for (int i = 0; i < ret_size; i++) {
-							Color tangent;
-							tangent.r = tarr[(i * 4) + 0];
-							tangent.r = tarr[(i * 4) + 1];
-							tangent.r = tarr[(i * 4) + 2];
-							tangent.r = tarr[(i * 4) + 3];
+							Vector3 tangent;
+							tangent.x = tarr[(i * 4) + 0];
+							tangent.y = tarr[(i * 4) + 1];
+							tangent.z = tarr[(i * 4) + 2];
+							float flip = tarr[(i * 4) + 3];
+							attribs.write[i] = tangent * flip;
 						}
-						t["TANGENT"] = _encode_accessor_as_color(state, attribs, true);
+						t["TANGENT"] = _encode_accessor_as_vec3(state, attribs, true);
 					}
 					targets.push_back(t);
 				}
@@ -2513,7 +2514,19 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> state) {
 				array[Mesh::ARRAY_NORMAL] = _decode_accessor_as_vec3(state, a["NORMAL"], true);
 			}
 			if (a.has("TANGENT")) {
-				array[Mesh::ARRAY_TANGENT] = _decode_accessor_as_floats(state, a["TANGENT"], true);
+				Vector<float> tans = _decode_accessor_as_floats(state, a["TANGENT"], true);
+				if (tans.size()) {
+					const int ret_size = tans.size() / 3;
+					Vector<float> attribs;
+					attribs.resize(ret_size * 4);
+					for (int i = 0; i < ret_size; i++) {
+						attribs.write[(i * 4) + 0] = tans[(i * 3) + 0];
+						attribs.write[(i * 4) + 1] = tans[(i * 3) + 1];
+						attribs.write[(i * 4) + 2] = tans[(i * 3) + 2];
+						attribs.write[(i * 4) + 3] = 1;
+					}
+					array[Mesh::ARRAY_TANGENT] = attribs;
+				}
 			}
 			if (a.has("TEXCOORD_0")) {
 				array[Mesh::ARRAY_TEX_UV] = _decode_accessor_as_vec2(state, a["TEXCOORD_0"], true);
@@ -2762,7 +2775,7 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> state) {
 									w4[l * 4 + 1] = r4[l * 4 + 1];
 									w4[l * 4 + 2] = r4[l * 4 + 2];
 								}
-								w4[l * 4 + 3] = r4[l * 4 + 3]; //copy flip value
+								w4[l * 4 + 3] = r4[l * 4 + 3]; // Copy the flip value. Should already be -1 or 1
 							}
 						}
 
