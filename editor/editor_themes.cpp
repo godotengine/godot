@@ -774,8 +774,6 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	style_tree_bg->set_border_color(dark_color_3);
 	theme->set_stylebox("bg", "Tree", style_tree_bg);
 
-	const Color guide_color = Color(mono_color.r, mono_color.g, mono_color.b, 0.05);
-	Color relationship_line_color = Color(mono_color.r, mono_color.g, mono_color.b, relationship_line_opacity);
 	// Tree
 	theme->set_icon("checked", "Tree", theme->get_icon("GuiChecked", "EditorIcons"));
 	theme->set_icon("unchecked", "Tree", theme->get_icon("GuiUnchecked", "EditorIcons"));
@@ -791,17 +789,31 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_color("font_color", "Tree", font_color);
 	theme->set_color("font_color_selected", "Tree", mono_color);
 	theme->set_color("title_button_color", "Tree", font_color);
-	theme->set_color("guide_color", "Tree", guide_color);
-	theme->set_color("relationship_line_color", "Tree", relationship_line_color);
 	theme->set_color("drop_position_color", "Tree", accent_color);
 	theme->set_constant("vseparation", "Tree", (extra_spacing + default_margin_size) * EDSCALE);
 	theme->set_constant("hseparation", "Tree", (extra_spacing + default_margin_size) * EDSCALE);
 	theme->set_constant("item_margin", "Tree", 3 * default_margin_size * EDSCALE);
 	theme->set_constant("button_margin", "Tree", default_margin_size * EDSCALE);
-	theme->set_constant("draw_relationship_lines", "Tree", relationship_line_opacity >= 0.01);
-	theme->set_constant("draw_guides", "Tree", relationship_line_opacity < 0.01);
 	theme->set_constant("scroll_border", "Tree", 40 * EDSCALE);
 	theme->set_constant("scroll_speed", "Tree", 12);
+
+	const Color guide_color = mono_color * Color(1, 1, 1, 0.05);
+	Color relationship_line_color = mono_color * Color(1, 1, 1, relationship_line_opacity);
+
+	theme->set_constant("draw_guides", "Tree", relationship_line_opacity < 0.01);
+	theme->set_color("guide_color", "Tree", guide_color);
+
+	int relationship_line_width = 1;
+	Color parent_line_color = mono_color * Color(1, 1, 1, CLAMP(relationship_line_opacity + 0.45, 0.0, 1.0));
+	Color children_line_color = mono_color * Color(1, 1, 1, CLAMP(relationship_line_opacity + 0.25, 0.0, 1.0));
+	theme->set_constant("draw_relationship_lines", "Tree", relationship_line_opacity >= 0.01);
+	theme->set_constant("relationship_line_width", "Tree", relationship_line_width);
+	theme->set_constant("parent_hl_line_width", "Tree", relationship_line_width * 2);
+	theme->set_constant("children_hl_line_width", "Tree", relationship_line_width);
+	theme->set_constant("parent_hl_line_margin", "Tree", relationship_line_width * 3);
+	theme->set_color("relationship_line_color", "Tree", relationship_line_color);
+	theme->set_color("parent_hl_line_color", "Tree", parent_line_color);
+	theme->set_color("children_hl_line_color", "Tree", children_line_color);
 
 	Ref<StyleBoxFlat> style_tree_btn = style_default->duplicate();
 	style_tree_btn->set_bg_color(contrast_color_1);
