@@ -599,10 +599,13 @@ void GPUParticles2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_trail_section_subdivisions", "subdivisions"), &GPUParticles2D::set_trail_section_subdivisions);
 	ClassDB::bind_method(D_METHOD("get_trail_section_subdivisions"), &GPUParticles2D::get_trail_section_subdivisions);
 
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_texture", "get_texture");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "emitting"), "set_emitting", "is_emitting");
 	ADD_PROPERTY_DEFAULT("emitting", true); // Workaround for doctool in headless mode, as dummy rasterizer always returns false.
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "amount", PROPERTY_HINT_RANGE, "1,1000000,1,exp"), "set_amount", "get_amount");
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "sub_emitter", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "GPUParticles2D"), "set_sub_emitter", "get_sub_emitter");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "process_material", PROPERTY_HINT_RESOURCE_TYPE, "ShaderMaterial,ParticlesMaterial"), "set_process_material", "get_process_material");
+
 	ADD_GROUP("Time", "");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "lifetime", PROPERTY_HINT_RANGE, "0.01,600.0,0.01,or_greater,suffix:s"), "set_lifetime", "get_lifetime");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "one_shot"), "set_one_shot", "get_one_shot");
@@ -613,21 +616,20 @@ void GPUParticles2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "fixed_fps", PROPERTY_HINT_RANGE, "0,1000,1,suffix:FPS"), "set_fixed_fps", "get_fixed_fps");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "interpolate"), "set_interpolate", "get_interpolate");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "fract_delta"), "set_fractional_delta", "get_fractional_delta");
+
 	ADD_GROUP("Collision", "collision_");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "collision_base_size", PROPERTY_HINT_RANGE, "0,128,0.01,or_greater,suffix:px"), "set_collision_base_size", "get_collision_base_size");
+
 	ADD_GROUP("Drawing", "");
 	ADD_PROPERTY(PropertyInfo(Variant::RECT2, "visibility_rect", PROPERTY_HINT_NONE, "suffix:px"), "set_visibility_rect", "get_visibility_rect");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "local_coords"), "set_use_local_coordinates", "get_use_local_coordinates");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "draw_order", PROPERTY_HINT_ENUM, "Index,Lifetime,Reverse Lifetime"), "set_draw_order", "get_draw_order");
+
 	ADD_GROUP("Trails", "trail_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "trail_enabled"), "set_trail_enabled", "is_trail_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "trail_length_secs", PROPERTY_HINT_RANGE, "0.01,10,0.01,suffix:s"), "set_trail_length", "get_trail_length");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "trail_sections", PROPERTY_HINT_RANGE, "2,128,1"), "set_trail_sections", "get_trail_sections");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "trail_section_subdivisions", PROPERTY_HINT_RANGE, "1,1024,1"), "set_trail_section_subdivisions", "get_trail_section_subdivisions");
-	ADD_GROUP("Process Material", "process_");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "process_material", PROPERTY_HINT_RESOURCE_TYPE, "ShaderMaterial,ParticlesMaterial"), "set_process_material", "get_process_material");
-	ADD_GROUP("Textures", "");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_texture", "get_texture");
 
 	BIND_ENUM_CONSTANT(DRAW_ORDER_INDEX);
 	BIND_ENUM_CONSTANT(DRAW_ORDER_LIFETIME);
