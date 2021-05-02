@@ -1835,6 +1835,10 @@ void ProjectManager::_notification(int p_what) {
 
 			_dim_window();
 		} break;
+		case NOTIFICATION_WM_ABOUT: {
+
+			_show_about();
+		} break;
 	}
 }
 
@@ -2283,6 +2287,11 @@ void ProjectManager::_erase_missing_projects() {
 	erase_missing_ask->popup_centered_minsize();
 }
 
+void ProjectManager::_show_about() {
+
+	about->popup_centered(Size2(780, 500) * EDSCALE);
+}
+
 void ProjectManager::_language_selected(int p_id) {
 
 	String lang = language_btn->get_item_metadata(p_id);
@@ -2393,6 +2402,7 @@ void ProjectManager::_bind_methods() {
 	ClassDB::bind_method("_erase_missing_projects", &ProjectManager::_erase_missing_projects);
 	ClassDB::bind_method("_erase_project_confirm", &ProjectManager::_erase_project_confirm);
 	ClassDB::bind_method("_erase_missing_projects_confirm", &ProjectManager::_erase_missing_projects_confirm);
+	ClassDB::bind_method("_show_about", &ProjectManager::_show_about);
 	ClassDB::bind_method("_language_selected", &ProjectManager::_language_selected);
 	ClassDB::bind_method("_restart_confirm", &ProjectManager::_restart_confirm);
 	ClassDB::bind_method("_on_order_option_changed", &ProjectManager::_on_order_option_changed);
@@ -2505,7 +2515,7 @@ ProjectManager::ProjectManager() {
 	String cp;
 	cp += 0xA9;
 	// TRANSLATORS: This refers to the application where users manage their Godot projects.
-	OS::get_singleton()->set_window_title(VERSION_NAME + String(" - ") + TTR("Project Manager") + " - " + cp + " 2007-2021 Juan Linietsky, Ariel Manzur & Godot Contributors");
+	OS::get_singleton()->set_window_title(VERSION_NAME + String(" - ") + TTR("Project Manager"));
 
 	Control *center_box = memnew(Control);
 	center_box->set_v_size_flags(SIZE_EXPAND_FILL);
@@ -2634,6 +2644,11 @@ ProjectManager::ProjectManager() {
 	erase_missing_btn = erase_missing;
 
 	tree_vb->add_spacer();
+
+	about_btn = memnew(Button);
+	about_btn->set_text(TTR("About"));
+	about_btn->connect("pressed", this, "_show_about");
+	tree_vb->add_child(about_btn);
 
 	if (StreamPeerSSL::is_available()) {
 		asset_library = memnew(EditorAssetLibrary(true));
@@ -2774,6 +2789,9 @@ ProjectManager::ProjectManager() {
 	open_templates->get_ok()->set_text(TTR("Open Asset Library"));
 	open_templates->connect("confirmed", this, "_open_asset_library");
 	add_child(open_templates);
+
+	about = memnew(EditorAbout);
+	add_child(about);
 }
 
 ProjectManager::~ProjectManager() {
