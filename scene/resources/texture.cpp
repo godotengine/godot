@@ -1724,11 +1724,16 @@ void GradientTexture::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_gradient"), &GradientTexture::get_gradient);
 
 	ClassDB::bind_method(D_METHOD("set_width", "width"), &GradientTexture::set_width);
+	// The `get_width()` method is already exposed by the parent class Texture.
+
+	ClassDB::bind_method(D_METHOD("set_use_hdr", "enabled"), &GradientTexture::set_use_hdr);
+	ClassDB::bind_method(D_METHOD("is_using_hdr"), &GradientTexture::is_using_hdr);
 
 	ClassDB::bind_method(D_METHOD("_update"), &GradientTexture::_update);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "gradient", PROPERTY_HINT_RESOURCE_TYPE, "Gradient"), "set_gradient", "get_gradient");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "width", PROPERTY_HINT_RANGE, "1,4096"), "set_width", "get_width");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_hdr"), "set_use_hdr", "is_using_hdr");
 }
 
 void GradientTexture::set_gradient(Ref<Gradient> p_gradient) {
@@ -1766,27 +1771,43 @@ void GradientTexture::_update() {
 		return;
 	}
 
-	PoolVector<uint8_t> data;
-	data.resize(width * 4);
-	{
-		PoolVector<uint8_t>::Write wd8 = data.write();
+	if (use_hdr) {
+		// High dynamic range.
+		Ref<Image> image = memnew(Image(width, 1, false, Image::FORMAT_RGBAF));
 		Gradient &g = **gradient;
-
+		// `create()` isn't available for non-uint8_t data, so fill in the data manually.
+		image->lock();
 		for (int i = 0; i < width; i++) {
 			float ofs = float(i) / (width - 1);
-			Color color = g.get_color_at_offset(ofs);
-
-			wd8[i * 4 + 0] = uint8_t(CLAMP(color.r * 255.0, 0, 255));
-			wd8[i * 4 + 1] = uint8_t(CLAMP(color.g * 255.0, 0, 255));
-			wd8[i * 4 + 2] = uint8_t(CLAMP(color.b * 255.0, 0, 255));
-			wd8[i * 4 + 3] = uint8_t(CLAMP(color.a * 255.0, 0, 255));
+			image->set_pixel(i, 0, g.get_color_at_offset(ofs));
 		}
+		image->unlock();
+
+		VS::get_singleton()->texture_allocate(texture, width, 1, 0, Image::FORMAT_RGBAF, VS::TEXTURE_TYPE_2D, VS::TEXTURE_FLAG_FILTER);
+		VS::get_singleton()->texture_set_data(texture, image);
+	} else {
+		// Low dynamic range. "Overbright" colors will be clamped.
+		PoolVector<uint8_t> data;
+		data.resize(width * 4);
+		{
+			PoolVector<uint8_t>::Write wd8 = data.write();
+			Gradient &g = **gradient;
+
+			for (int i = 0; i < width; i++) {
+				float ofs = float(i) / (width - 1);
+				Color color = g.get_color_at_offset(ofs);
+
+				wd8[i * 4 + 0] = uint8_t(CLAMP(color.r * 255.0, 0, 255));
+				wd8[i * 4 + 1] = uint8_t(CLAMP(color.g * 255.0, 0, 255));
+				wd8[i * 4 + 2] = uint8_t(CLAMP(color.b * 255.0, 0, 255));
+				wd8[i * 4 + 3] = uint8_t(CLAMP(color.a * 255.0, 0, 255));
+			}
+		}
+
+		Ref<Image> image = memnew(Image(width, 1, false, Image::FORMAT_RGBA8, data));
+		VS::get_singleton()->texture_allocate(texture, width, 1, 0, Image::FORMAT_RGBA8, VS::TEXTURE_TYPE_2D, VS::TEXTURE_FLAG_FILTER);
+		VS::get_singleton()->texture_set_data(texture, image);
 	}
-
-	Ref<Image> image = memnew(Image(width, 1, false, Image::FORMAT_RGBA8, data));
-
-	VS::get_singleton()->texture_allocate(texture, width, 1, 0, Image::FORMAT_RGBA8, VS::TEXTURE_TYPE_2D, VS::TEXTURE_FLAG_FILTER);
-	VS::get_singleton()->texture_set_data(texture, image);
 
 	emit_changed();
 }
@@ -1797,6 +1818,19 @@ void GradientTexture::set_width(int p_width) {
 }
 int GradientTexture::get_width() const {
 	return width;
+}
+
+void GradientTexture::set_use_hdr(bool p_enabled) {
+	if (p_enabled == use_hdr) {
+		return;
+	}
+
+	use_hdr = p_enabled;
+	_queue_update();
+}
+
+bool GradientTexture::is_using_hdr() const {
+	return use_hdr;
 }
 
 Ref<Image> GradientTexture::get_data() const {
