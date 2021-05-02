@@ -719,6 +719,8 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_color("guide_color", "Tree", Color(0, 0, 0, 0.1));
 	theme->set_color("drop_position_color", "Tree", Color(1, 0.3, 0.2));
 	theme->set_color("relationship_line_color", "Tree", Color(0.27, 0.27, 0.27));
+	theme->set_color("parent_hl_line_color", "Tree", Color(0.27, 0.27, 0.27));
+	theme->set_color("children_hl_line_color", "Tree", Color(0.27, 0.27, 0.27));
 	theme->set_color("custom_button_font_highlight", "Tree", control_font_hover_color);
 
 	theme->set_constant("hseparation", "Tree", 4 * scale);
@@ -726,6 +728,10 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_constant("item_margin", "Tree", 12 * scale);
 	theme->set_constant("button_margin", "Tree", 4 * scale);
 	theme->set_constant("draw_relationship_lines", "Tree", 0);
+	theme->set_constant("relationship_line_width", "Tree", 1);
+	theme->set_constant("parent_hl_line_width", "Tree", 1);
+	theme->set_constant("children_hl_line_width", "Tree", 1);
+	theme->set_constant("parent_hl_line_margin", "Tree", 0);
 	theme->set_constant("draw_guides", "Tree", 1);
 	theme->set_constant("scroll_border", "Tree", 4);
 	theme->set_constant("scroll_speed", "Tree", 12);
