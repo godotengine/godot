@@ -102,6 +102,8 @@ public:
 	int find_file_index(const String &p_file) const;
 	int find_dir_index(const String &p_dir) const;
 
+	void force_update();
+
 	EditorFileSystemDirectory();
 	~EditorFileSystemDirectory();
 };

@@ -68,6 +68,11 @@ int EditorFileSystemDirectory::find_dir_index(const String &p_dir) const {
 	return -1;
 }
 
+void EditorFileSystemDirectory::force_update() {
+	// We set modified_time to 0 to force `EditorFileSystem::_scan_fs_changes` to search changes in the directory
+	modified_time = 0;
+}
+
 int EditorFileSystemDirectory::get_subdir_count() const {
 	return subdirs.size();
 }
@@ -854,9 +859,11 @@ void EditorFileSystem::_scan_fs_changes(EditorFileSystemDirectory *p_dir, const 
 
 		//then scan files and directories and check what's different
 
-		DirAccess *da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+		DirAccessRef da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 
-		da->change_dir(cd);
+		Error ret = da->change_dir(cd);
+		ERR_FAIL_COND_MSG(ret != OK, "Cannot change to '" + cd + "' folder.");
+
 		da->list_dir_begin();
 		while (true) {
 			String f = da->get_next();
@@ -944,7 +951,6 @@ void EditorFileSystem::_scan_fs_changes(EditorFileSystemDirectory *p_dir, const 
 		}
 
 		da->list_dir_end();
-		memdelete(da);
 	}
 
 	for (int i = 0; i < p_dir->files.size(); i++) {

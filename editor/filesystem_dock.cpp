@@ -1465,6 +1465,10 @@ void FileSystemDock::_folder_removed(String p_folder) {
 	}
 
 	current_path->set_text(path);
+	EditorFileSystemDirectory *efd = EditorFileSystem::get_singleton()->get_filesystem_path(path);
+	if (efd) {
+		efd->force_update();
+	}
 }
 
 void FileSystemDock::_rename_operation_confirm() {
