@@ -257,6 +257,14 @@ public:
 	static void evaluate(const Variant &p_left, const Variant &p_right, Variant *r_ret, bool &r_valid) {
 		const A &a = *VariantGetInternalPtr<A>::get_ptr(&p_left);
 		const B &b = *VariantGetInternalPtr<B>::get_ptr(&p_right);
+
+#if defined(DEBUG_ENABLED)
+		if (b < 0 || a < 0) {
+			*r_ret = "Invalid operands for bit shifting. Only positive operands are supported.";
+			r_valid = false;
+			return;
+		}
+#endif
 		*r_ret = a << b;
 		r_valid = true;
 	}
@@ -276,6 +284,14 @@ public:
 	static void evaluate(const Variant &p_left, const Variant &p_right, Variant *r_ret, bool &r_valid) {
 		const A &a = *VariantGetInternalPtr<A>::get_ptr(&p_left);
 		const B &b = *VariantGetInternalPtr<B>::get_ptr(&p_right);
+
+#if defined(DEBUG_ENABLED)
+		if (b < 0 || a < 0) {
+			*r_ret = "Invalid operands for bit shifting. Only positive operands are supported.";
+			r_valid = false;
+			return;
+		}
+#endif
 		*r_ret = a >> b;
 		r_valid = true;
 	}
