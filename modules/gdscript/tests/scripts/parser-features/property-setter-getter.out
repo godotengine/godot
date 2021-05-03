@@ -1,0 +1,23 @@
+GDTEST_OK
+>> WARNING
+>> Line: 2
+>> UNUSED_PRIVATE_CLASS_VARIABLE
+>> The class variable '_backing' is declared but never used in the script.
+Not using self:
+1000
+0
+5000
+4000
+950
+-50
+5000
+4000
+Using self:
+5000
+4000
+5000
+4000
+950
+-50
+5000
+4000

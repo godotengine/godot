@@ -1,6 +1,6 @@
 func args(a, b):
-    print(a)
-    print(b)
+	print(a)
+	print(b)
 
 func test():
-    args(1,2
+	args(1,2

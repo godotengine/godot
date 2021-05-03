@@ -1,0 +1,73 @@
+GDTEST_OK
+>> WARNING
+>> Line: 3
+>> ASSERT_ALWAYS_TRUE
+>> Assert statement is redundant because the expression is always true.
+>> WARNING
+>> Line: 4
+>> ASSERT_ALWAYS_TRUE
+>> Assert statement is redundant because the expression is always true.
+>> WARNING
+>> Line: 5
+>> ASSERT_ALWAYS_TRUE
+>> Assert statement is redundant because the expression is always true.
+>> WARNING
+>> Line: 6
+>> ASSERT_ALWAYS_TRUE
+>> Assert statement is redundant because the expression is always true.
+>> WARNING
+>> Line: 7
+>> ASSERT_ALWAYS_TRUE
+>> Assert statement is redundant because the expression is always true.
+>> WARNING
+>> Line: 8
+>> ASSERT_ALWAYS_TRUE
+>> Assert statement is redundant because the expression is always true.
+>> WARNING
+>> Line: 11
+>> ASSERT_ALWAYS_TRUE
+>> Assert statement is redundant because the expression is always true.
+>> WARNING
+>> Line: 12
+>> ASSERT_ALWAYS_TRUE
+>> Assert statement is redundant because the expression is always true.
+>> WARNING
+>> Line: 13
+>> ASSERT_ALWAYS_TRUE
+>> Assert statement is redundant because the expression is always true.
+>> WARNING
+>> Line: 14
+>> ASSERT_ALWAYS_TRUE
+>> Assert statement is redundant because the expression is always true.
+>> WARNING
+>> Line: 15
+>> ASSERT_ALWAYS_TRUE
+>> Assert statement is redundant because the expression is always true.
+>> WARNING
+>> Line: 16
+>> ASSERT_ALWAYS_TRUE
+>> Assert statement is redundant because the expression is always true.
+>> WARNING
+>> Line: 19
+>> ASSERT_ALWAYS_TRUE
+>> Assert statement is redundant because the expression is always true.
+>> WARNING
+>> Line: 20
+>> ASSERT_ALWAYS_TRUE
+>> Assert statement is redundant because the expression is always true.
+>> WARNING
+>> Line: 21
+>> ASSERT_ALWAYS_TRUE
+>> Assert statement is redundant because the expression is always true.
+>> WARNING
+>> Line: 22
+>> ASSERT_ALWAYS_TRUE
+>> Assert statement is redundant because the expression is always true.
+>> WARNING
+>> Line: 23
+>> ASSERT_ALWAYS_TRUE
+>> Assert statement is redundant because the expression is always true.
+>> WARNING
+>> Line: 24
+>> ASSERT_ALWAYS_TRUE
+>> Assert statement is redundant because the expression is always true.

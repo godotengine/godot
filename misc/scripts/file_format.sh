@@ -20,6 +20,9 @@ while IFS= read -rd '' f; do
         continue
     elif [[ "$f" == *"sln" ]]; then
         continue
+    elif [[ "$f" == *".out" ]]; then
+        # GDScript integration testing files.
+        continue
     elif [[ "$f" == *"patch" ]]; then
         continue
     elif [[ "$f" == *"pot" ]]; then

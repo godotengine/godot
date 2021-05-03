@@ -1,6 +1,7 @@
 var a # No init.
 var b = 42 # Init.
 
+
 func test():
 	var c # No init, local.
 	var d = 23 # Init, local.

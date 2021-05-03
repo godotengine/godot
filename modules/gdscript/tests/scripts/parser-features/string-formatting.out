@@ -1,0 +1,29 @@
+GDTEST_OK
+>> WARNING
+>> Line: 2
+>> ASSERT_ALWAYS_TRUE
+>> Assert statement is redundant because the expression is always true.
+>> WARNING
+>> Line: 3
+>> ASSERT_ALWAYS_TRUE
+>> Assert statement is redundant because the expression is always true.
+>> WARNING
+>> Line: 4
+>> ASSERT_ALWAYS_TRUE
+>> Assert statement is redundant because the expression is always true.
+>> WARNING
+>> Line: 6
+>> ASSERT_ALWAYS_TRUE
+>> Assert statement is redundant because the expression is always true.
+>> WARNING
+>> Line: 9
+>> ASSERT_ALWAYS_TRUE
+>> Assert statement is redundant because the expression is always true.
+>> WARNING
+>> Line: 11
+>> ASSERT_ALWAYS_TRUE
+>> Assert statement is redundant because the expression is always true.
+>> WARNING
+>> Line: 13
+>> ASSERT_ALWAYS_TRUE
+>> Assert statement is redundant because the expression is always true.
