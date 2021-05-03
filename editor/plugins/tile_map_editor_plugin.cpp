@@ -573,6 +573,7 @@ void TileMapEditor::_update_palette() {
 		entries2.sort_custom<SwapComparator>();
 
 		Ref<Texture2D> tex = tileset->tile_get_texture(sel_tile);
+		Color modulate = tileset->tile_get_modulate(sel_tile);
 
 		for (int i = 0; i < entries2.size(); i++) {
 			manual_palette->add_item(String());
@@ -588,6 +589,7 @@ void TileMapEditor::_update_palette() {
 				}
 
 				manual_palette->set_item_icon(manual_palette->get_item_count() - 1, tex);
+				manual_palette->set_item_icon_modulate(manual_palette->get_item_count() - 1, modulate);
 			}
 
 			manual_palette->set_item_metadata(manual_palette->get_item_count() - 1, entries2[i]);
