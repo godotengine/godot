@@ -2043,9 +2043,9 @@ CSGBrush *CSGPolygon3D::_build_brush() {
 
 							Vector3 v[4] = {
 								prev_xf.xform(Vector3(final_polygon[j].x, final_polygon[j].y, 0)),
-								prev_xf.xform(Vector3(final_polygon[j_n].x, final_polygon[j_n].y, 0)),
-								xf.xform(Vector3(final_polygon[j_n].x, final_polygon[j_n].y, 0)),
 								xf.xform(Vector3(final_polygon[j].x, final_polygon[j].y, 0)),
+								xf.xform(Vector3(final_polygon[j_n].x, final_polygon[j_n].y, 0)),
+								prev_xf.xform(Vector3(final_polygon[j_n].x, final_polygon[j_n].y, 0)),
 							};
 
 							Vector2 u[4] = {
@@ -2090,7 +2090,7 @@ CSGBrush *CSGPolygon3D::_build_brush() {
 					if (i == 0 && !path_joined) {
 						for (int j = 0; j < triangles.size(); j += 3) {
 							for (int k = 0; k < 3; k++) {
-								int src[3] = { 0, 1, 2 };
+								int src[3] = { 0, 2, 1 };
 								Vector2 p = final_polygon[triangles[j + src[k]]];
 								Vector3 v = Vector3(p.x, p.y, 0);
 								facesw[face * 3 + k] = xf.xform(v);
@@ -2107,7 +2107,7 @@ CSGBrush *CSGPolygon3D::_build_brush() {
 					if (i == splits && !path_joined) {
 						for (int j = 0; j < triangles.size(); j += 3) {
 							for (int k = 0; k < 3; k++) {
-								int src[3] = { 0, 2, 1 };
+								int src[3] = { 0, 1, 2 };
 								Vector2 p = final_polygon[triangles[j + src[k]]];
 								Vector3 v = Vector3(p.x, p.y, 0);
 								facesw[face * 3 + k] = xf.xform(v);
