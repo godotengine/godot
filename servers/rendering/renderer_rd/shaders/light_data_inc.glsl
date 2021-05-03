@@ -1,3 +1,6 @@
+#define LIGHT_BAKE_DISABLED 0
+#define LIGHT_BAKE_DYNAMIC 1
+#define LIGHT_BAKE_STATIC 2
 
 struct LightData { //this structure needs to be as packed as possible
 	vec3 position;
@@ -23,7 +26,7 @@ struct LightData { //this structure needs to be as packed as possible
 	float soft_shadow_scale; // scales the shadow kernel for blurrier shadows
 	uint mask;
 	float shadow_volumetric_fog_fade;
-	uint pad;
+	uint bake_mode;
 	vec4 projector_rect; //projector rect in srgb decal atlas
 };
 
@@ -60,7 +63,8 @@ struct DirectionalLightData {
 	bool shadow_enabled;
 	float fade_from;
 	float fade_to;
-	uvec3 pad;
+	uvec2 pad;
+	uint bake_mode;
 	float shadow_volumetric_fog_fade;
 	vec4 shadow_bias;
 	vec4 shadow_normal_bias;

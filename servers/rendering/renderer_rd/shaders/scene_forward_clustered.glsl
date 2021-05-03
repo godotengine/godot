@@ -1227,6 +1227,10 @@ void main() {
 				continue; //not masked
 			}
 
+			if (directional_lights.data[i].bake_mode == LIGHT_BAKE_STATIC && bool(instances.data[instance_index].flags & INSTANCE_FLAGS_USE_LIGHTMAP)) {
+				continue; // Statically baked light and object uses lightmap, skip
+			}
+
 			float shadow = 1.0;
 
 #ifdef USE_SOFT_SHADOWS
@@ -1676,6 +1680,10 @@ void main() {
 						continue; //not masked
 					}
 
+					if (omni_lights.data[light_index].bake_mode == LIGHT_BAKE_STATIC && bool(instances.data[instance_index].flags & INSTANCE_FLAGS_USE_LIGHTMAP)) {
+						continue; // Statically baked light and object uses lightmap, skip
+					}
+
 					float shadow = light_process_omni_shadow(light_index, vertex, view);
 
 					shadow = blur_shadow(shadow);
@@ -1747,6 +1755,10 @@ void main() {
 
 					if (!bool(spot_lights.data[light_index].mask & instances.data[instance_index].layer_mask)) {
 						continue; //not masked
+					}
+
+					if (spot_lights.data[light_index].bake_mode == LIGHT_BAKE_STATIC && bool(instances.data[instance_index].flags & INSTANCE_FLAGS_USE_LIGHTMAP)) {
+						continue; // Statically baked light and object uses lightmap, skip
 					}
 
 					float shadow = light_process_spot_shadow(light_index, vertex, view);
