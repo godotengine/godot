@@ -2469,7 +2469,7 @@ void EditorInspector::_notification(int p_what) {
 		}
 		if (refresh_countdown > 0) {
 			refresh_countdown -= get_process_delta_time();
-			if (refresh_countdown <= 0) {
+			if (refresh_countdown <= 0 && !update_tree_pending) {
 				for (Map<StringName, List<EditorProperty *>>::Element *F = editor_property_map.front(); F; F = F->next()) {
 					for (List<EditorProperty *>::Element *E = F->get().front(); E; E = E->next()) {
 						if (!E->get()->is_cache_valid()) {
