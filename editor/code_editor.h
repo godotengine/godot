@@ -84,7 +84,7 @@ class FindReplaceBar : public HBoxContainer {
 	int results_count;
 
 	bool replace_all_mode;
-	bool preserve_cursor;
+	bool preserve_caret;
 
 	void _get_search_from(int &r_line, int &r_col);
 	void _update_results_count();

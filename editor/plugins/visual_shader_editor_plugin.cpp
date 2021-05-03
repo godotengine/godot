@@ -3608,7 +3608,7 @@ VisualShaderEditor::VisualShaderEditor() {
 	preview_text->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	preview_text->set_syntax_highlighter(syntax_highlighter);
 	preview_text->set_draw_line_numbers(true);
-	preview_text->set_readonly(true);
+	preview_text->set_editable(false);
 
 	error_text = memnew(Label);
 	preview_vbox->add_child(error_text);
