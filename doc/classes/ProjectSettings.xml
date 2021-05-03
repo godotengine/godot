@@ -1579,6 +1579,10 @@
 		</member>
 		<member name="rendering/vulkan/descriptor_pools/max_descriptors_per_pool" type="int" setter="" getter="" default="64">
 		</member>
+		<member name="rendering/vulkan/rendering/back_end" type="int" setter="" getter="" default="0">
+		</member>
+		<member name="rendering/vulkan/rendering/back_end.mobile" type="int" setter="" getter="" default="1">
+		</member>
 		<member name="rendering/vulkan/staging_buffer/block_size_kb" type="int" setter="" getter="" default="256">
 		</member>
 		<member name="rendering/vulkan/staging_buffer/max_size_mb" type="int" setter="" getter="" default="128">
