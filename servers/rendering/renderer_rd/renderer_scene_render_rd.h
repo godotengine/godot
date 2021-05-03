@@ -79,7 +79,6 @@ protected:
 	RenderBufferData *render_buffers_get_data(RID p_render_buffers);
 
 	virtual void _base_uniforms_changed() = 0;
-	virtual void _render_buffers_uniform_set_changed(RID p_render_buffers) = 0;
 	virtual RID _render_buffers_get_normal_texture(RID p_render_buffers) = 0;
 
 	void _process_ssao(RID p_render_buffers, RID p_environment, RID p_normal_buffer, const CameraMatrix &p_projection);
@@ -150,6 +149,7 @@ private:
 		uint32_t render_step = 0;
 		uint64_t last_pass = 0;
 		uint32_t render_index = 0;
+		uint32_t cull_mask = 0;
 
 		Transform transform;
 	};
@@ -161,6 +161,8 @@ private:
 	struct DecalInstance {
 		RID decal;
 		Transform transform;
+		uint32_t render_index;
+		uint32_t cull_mask;
 	};
 
 	mutable RID_Owner<DecalInstance> decal_instance_owner;
@@ -305,6 +307,7 @@ private:
 		uint64_t last_scene_shadow_pass = 0;
 		uint64_t last_pass = 0;
 		uint32_t light_index = 0;
+		uint32_t cull_mask = 0;
 		uint32_t light_directional_index = 0;
 
 		uint32_t current_shadow_atlas_key = 0;
@@ -448,6 +451,8 @@ private:
 
 	struct Cluster {
 		/* Scene State UBO */
+
+		// !BAS! Most data here is not just used by our clustering logic but also by other lighting implementations. Maybe rename this struct to something more appropriate
 
 		enum {
 			REFLECTION_AMBIENT_DISABLED = 0,
@@ -1085,6 +1090,8 @@ public:
 		return li->transform;
 	}
 
+	void _fill_instance_indices(const RID *p_omni_light_instances, uint32_t p_omni_light_instance_count, uint32_t *p_omni_light_indices, const RID *p_spot_light_instances, uint32_t p_spot_light_instance_count, uint32_t *p_spot_light_indices, const RID *p_reflection_probe_instances, uint32_t p_reflection_probe_instance_count, uint32_t *p_reflection_probe_indices, const RID *p_decal_instances, uint32_t p_decal_instance_count, uint32_t *p_decal_instance_indices, uint32_t p_layer_mask, uint32_t p_max_dst_words = 2);
+
 	/* gi light probes */
 
 	RID gi_probe_instance_create(RID p_base);
@@ -1192,6 +1199,7 @@ public:
 	virtual bool is_dynamic_gi_supported() const;
 	virtual bool is_clustered_enabled() const;
 	virtual bool is_volumetric_supported() const;
+	virtual uint32_t get_max_elements() const;
 
 	RendererSceneRenderRD(RendererStorageRD *p_storage);
 	~RendererSceneRenderRD();

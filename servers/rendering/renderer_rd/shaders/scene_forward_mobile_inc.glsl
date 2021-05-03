@@ -1,35 +1,29 @@
 #define M_PI 3.14159265359
-#define ROUGHNESS_MAX_LOD 5
 
-#define MAX_GI_PROBES 8
-
-#if defined(has_GL_KHR_shader_subgroup_ballot) && defined(has_GL_KHR_shader_subgroup_arithmetic)
-
-#extension GL_KHR_shader_subgroup_ballot : enable
-#extension GL_KHR_shader_subgroup_arithmetic : enable
-
-#define USE_SUBGROUPS
-
-#endif
-
-#include "cluster_data_inc.glsl"
 #include "decal_data_inc.glsl"
 
-#if !defined(MODE_RENDER_DEPTH) || defined(MODE_RENDER_MATERIAL) || defined(MODE_RENDER_SDF) || defined(MODE_RENDER_NORMAL_ROUGHNESS) || defined(MODE_RENDER_GIPROBE) || defined(TANGENT_USED) || defined(NORMAL_MAP_USED)
+#if !defined(MODE_RENDER_DEPTH) || defined(MODE_RENDER_MATERIAL) || defined(TANGENT_USED) || defined(NORMAL_MAP_USED)
 #ifndef NORMAL_USED
 #define NORMAL_USED
 #endif
 #endif
 
+/* don't exceed 128 bytes!! */
+/* put instance data into our push content, not a array */
 layout(push_constant, binding = 0, std430) uniform DrawCall {
-	uint instance_index;
-	uint uv_offset;
-	uint pad0;
-	uint pad1;
+	mat4 transform; // 64 - 64
+	uint flags; // 04 - 68
+	uint instance_uniforms_ofs; //base offset in global buffer for instance variables	// 04 - 72
+	uint gi_offset; //GI information when using lightmapping (VCT or lightmap index)    // 04 - 76
+	uint layer_mask; // 04 - 80
+	vec4 lightmap_uv_scale; // 16 - 96 doubles as uv_offset when needed
+
+	uvec2 reflection_probes; // 08 - 104
+	uvec2 omni_lights; // 08 - 112
+	uvec2 spot_lights; // 08 - 120
+	uvec2 decals; // 08 - 128
 }
 draw_call;
-
-#define SDFGI_MAX_CASCADES 8
 
 /* Set 0: Base Pass (never changes) */
 
@@ -122,41 +116,6 @@ layout(set = 0, binding = 12, std430) restrict readonly buffer GlobalVariableDat
 }
 global_variables;
 
-struct SDFGIProbeCascadeData {
-	vec3 position;
-	float to_probe;
-	ivec3 probe_world_offset;
-	float to_cell; // 1/bounds * grid_size
-};
-
-layout(set = 0, binding = 13, std140) uniform SDFGI {
-	vec3 grid_size;
-	uint max_cascades;
-
-	bool use_occlusion;
-	int probe_axis_size;
-	float probe_to_uvw;
-	float normal_bias;
-
-	vec3 lightprobe_tex_pixel_size;
-	float energy;
-
-	vec3 lightprobe_uv_offset;
-	float y_mult;
-
-	vec3 occlusion_clamp;
-	uint pad3;
-
-	vec3 occlusion_renormalize;
-	uint pad4;
-
-	vec3 cascade_probe_size;
-	uint pad5;
-
-	SDFGIProbeCascadeData cascades[SDFGI_MAX_CASCADES];
-}
-sdfgi;
-
 /* Set 1: Render Pass (changes per render pass) */
 
 layout(set = 1, binding = 0, std140) uniform SceneData {
@@ -168,11 +127,6 @@ layout(set = 1, binding = 0, std140) uniform SceneData {
 
 	vec2 viewport_size;
 	vec2 screen_pixel_size;
-
-	uint cluster_shift;
-	uint cluster_width;
-	uint cluster_type_size;
-	uint max_cluster_element_count_div_32;
 
 	//use vec4s because std140 doesnt play nice with vec2s, z and w are wasted
 	vec4 directional_penumbra_shadow_kernel[32];
@@ -213,19 +167,6 @@ layout(set = 1, binding = 0, std140) uniform SceneData {
 
 	vec4 ao_color;
 
-	mat4 sdf_to_bounds;
-
-	ivec3 sdf_offset;
-	bool material_uv2_mode;
-
-	ivec3 sdf_size;
-	bool gi_upscale_for_msaa;
-
-	bool volumetric_fog_enabled;
-	float volumetric_fog_inv_length;
-	float volumetric_fog_detail_spread;
-	uint volumetric_fog_pad;
-
 	bool fog_enabled;
 	float fog_density;
 	float fog_height;
@@ -235,27 +176,17 @@ layout(set = 1, binding = 0, std140) uniform SceneData {
 	float fog_sun_scatter;
 
 	float fog_aerial_perspective;
+	bool material_uv2_mode;
 
 	float time;
 	float reflection_multiplier; // one normally, zero when rendering reflections
 
 	bool pancake_shadows;
+	uint pad1;
+	uint pad2;
+	uint pad3;
 }
 scene_data;
-
-struct InstanceData {
-	mat4 transform;
-	uint flags;
-	uint instance_uniforms_ofs; //base offset in global buffer for instance variables
-	uint gi_offset; //GI information when using lightmapping (VCT or lightmap index)
-	uint layer_mask;
-	vec4 lightmap_uv_scale;
-};
-
-layout(set = 1, binding = 1, std430) buffer restrict readonly InstanceDataBuffer {
-	InstanceData data[];
-}
-instances;
 
 #ifdef USE_RADIANCE_CUBEMAP_ARRAY
 
@@ -273,63 +204,11 @@ layout(set = 1, binding = 4) uniform texture2D shadow_atlas;
 
 layout(set = 1, binding = 5) uniform texture2D directional_shadow_atlas;
 
+// this needs to change to providing just the lightmap we're using..
 layout(set = 1, binding = 6) uniform texture2DArray lightmap_textures[MAX_LIGHTMAP_TEXTURES];
-
-layout(set = 1, binding = 7) uniform texture3D gi_probe_textures[MAX_GI_PROBES];
-
-layout(set = 1, binding = 8, std430) buffer restrict readonly ClusterBuffer {
-	uint data[];
-}
-cluster_buffer;
-
-#ifdef MODE_RENDER_SDF
-
-layout(r16ui, set = 1, binding = 9) uniform restrict writeonly uimage3D albedo_volume_grid;
-layout(r32ui, set = 1, binding = 10) uniform restrict writeonly uimage3D emission_grid;
-layout(r32ui, set = 1, binding = 11) uniform restrict writeonly uimage3D emission_aniso_grid;
-layout(r32ui, set = 1, binding = 12) uniform restrict uimage3D geom_facing_grid;
-
-//still need to be present for shaders that use it, so remap them to something
-#define depth_buffer shadow_atlas
-#define color_buffer shadow_atlas
-#define normal_roughness_buffer shadow_atlas
-
-#else
 
 layout(set = 1, binding = 9) uniform texture2D depth_buffer;
 layout(set = 1, binding = 10) uniform texture2D color_buffer;
-
-layout(set = 1, binding = 11) uniform texture2D normal_roughness_buffer;
-layout(set = 1, binding = 12) uniform texture2D ao_buffer;
-layout(set = 1, binding = 13) uniform texture2D ambient_buffer;
-layout(set = 1, binding = 14) uniform texture2D reflection_buffer;
-layout(set = 1, binding = 15) uniform texture2DArray sdfgi_lightprobe_texture;
-layout(set = 1, binding = 16) uniform texture3D sdfgi_occlusion_cascades;
-
-struct GIProbeData {
-	mat4 xform;
-	vec3 bounds;
-	float dynamic_range;
-
-	float bias;
-	float normal_bias;
-	bool blend_ambient;
-	uint texture_slot;
-
-	float anisotropy_strength;
-	float ambient_occlusion;
-	float ambient_occlusion_size;
-	uint mipmaps;
-};
-
-layout(set = 1, binding = 17, std140) uniform GIProbes {
-	GIProbeData data[MAX_GI_PROBES];
-}
-gi_probes;
-
-layout(set = 1, binding = 18) uniform texture3D volumetric_fog_texture;
-
-#endif
 
 /* Set 2 Skeleton & Instancing (can change per item) */
 
