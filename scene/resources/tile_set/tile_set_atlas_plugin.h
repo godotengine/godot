@@ -39,38 +39,10 @@ class TileSet;
 class TileMap;
 struct TileMapQuadrant;
 
-class TileSetAtlasPluginTileSetData {
-public:
-	// TileSet properties.
-	virtual bool set(const StringName &p_name, const Variant &p_value) = 0;
-	virtual bool get(const StringName &p_name, Variant &r_ret) const = 0;
-	virtual void get_property_list(List<PropertyInfo> *p_list) const = 0;
-
-	virtual ~TileSetAtlasPluginTileSetData(){};
-};
-
-class TileSetAtlasPluginTileData {
-public:
-	// TileSet tile properties.
-	virtual bool set(const StringName &p_name, const Variant &p_value) = 0;
-	virtual bool get(const StringName &p_name, Variant &r_ret) const = 0;
-	virtual void get_property_list(List<PropertyInfo> *p_list) const = 0;
-
-	virtual ~TileSetAtlasPluginTileData(){};
-};
-
 class TileSetPlugin : public Object {
 	GDCLASS(TileSetPlugin, Object);
 
 public:
-	/*
-    // Get the list of tileset layers supported by a tileset plugin
-    virtual int get_layer_type_count() { return 0; };
-    virtual StringName get_layer_type(int p_id) { return ""; };
-    virtual String get_layer_type_icon(int p_id) { return ""; };
-    virtual bool get_layer_type_multiple_mode(int p_id) { return true; };
-*/
-
 	// Tilemap updates.
 	virtual void tilemap_notification(TileMap *p_tile_map, int p_what){};
 	virtual void update_dirty_quadrants(TileMap *p_tile_map, SelfList<TileMapQuadrant>::List &r_dirty_quadrant_list){};

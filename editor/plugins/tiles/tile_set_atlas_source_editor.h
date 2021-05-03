@@ -44,6 +44,20 @@ class TileSetAtlasSourceEditor : public HBoxContainer {
 	GDCLASS(TileSetAtlasSourceEditor, HBoxContainer);
 
 private:
+	// A class to store which tiles are selected.
+	struct TileSelection {
+		Vector2i tile = TileSetAtlasSource::INVALID_ATLAS_COORDS;
+		int alternative = TileSetAtlasSource::INVALID_TILE_ALTERNATIVE;
+
+		bool operator<(const TileSelection &p_other) const {
+			if (tile == p_other.tile) {
+				return alternative < p_other.alternative;
+			} else {
+				return tile < p_other.tile;
+			}
+		}
+	};
+
 	// -- Proxy object for an atlas source, needed by the inspector --
 	class TileSetAtlasSourceProxyObject : public Object {
 		GDCLASS(TileSetAtlasSourceProxyObject, Object);
@@ -71,12 +85,11 @@ private:
 		GDCLASS(TileProxyObject, Object);
 
 	private:
-		TileSetAtlasSourceEditor *tiles_editor_source_tab;
+		TileSetAtlasSourceEditor *tiles_set_atlas_source_editor;
 
 		TileSetAtlasSource *tile_set_atlas_source = nullptr;
 		int source_id;
-		Vector2i coords;
-		int alternative_tile;
+		Set<TileSelection> tiles = Set<TileSelection>();
 
 	protected:
 		bool _set(const StringName &p_name, const Variant &p_value);
@@ -87,10 +100,10 @@ private:
 
 	public:
 		// Update the proxyed object.
-		void edit(TileSetAtlasSource *p_tile_set_atlas_source, int p_source_id = -1, Vector2i p_coords = TileSetAtlasSource::INVALID_ATLAS_COORDS, int p_alternative_tile = TileSetAtlasSource::INVALID_TILE_ALTERNATIVE);
+		void edit(TileSetAtlasSource *p_tile_set_atlas_source, int p_source_id = -1, Set<TileSelection> p_tiles = Set<TileSelection>());
 
 		TileProxyObject(TileSetAtlasSourceEditor *p_tiles_editor_source_tab) {
-			tiles_editor_source_tab = p_tiles_editor_source_tab;
+			tiles_set_atlas_source_editor = p_tiles_editor_source_tab;
 		}
 	};
 
@@ -128,6 +141,8 @@ private:
 		DRAG_TYPE_REMOVE_TILES_USING_RECT,
 
 		DRAG_TYPE_MOVE_TILE,
+
+		DRAG_TYPE_RECT_SELECT,
 
 		// Warning: keep in this order.
 		DRAG_TYPE_RESIZE_TOP_LEFT,
@@ -178,9 +193,10 @@ private:
 	MenuButton *tool_advanced_menu_buttom;
 
 	// Selection.
-	Vector2i selected_tile = TileSetAtlasSource::INVALID_ATLAS_COORDS;
-	int selected_alternative = TileSetAtlasSource::INVALID_TILE_ALTERNATIVE;
-	void _set_selected_tile(Vector2i p_selected_tile, int p_selected_alternative);
+	Set<TileSelection> selection;
+
+	void _set_selection_from_array(Array p_selection);
+	Array _get_selection_as_array();
 
 	// A control on the tile atlas to draw and handle input events.
 	Vector2i hovered_base_tile_coords = TileSetAtlasSource::INVALID_ATLAS_COORDS;
