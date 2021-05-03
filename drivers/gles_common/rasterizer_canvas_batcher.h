@@ -504,6 +504,7 @@ public:
 		bool extra_matrix_sent; // whether sent on this item (in which case sofware transform can't be used untl end of item)
 		int transform_extra_command_number_p1; // plus one to allow fast checking against zero
 		Transform2D transform_combined; // final * extra
+		Transform2D skeleton_base_inverse_xform; // used in software skinning
 	};
 
 	// used during try_join
@@ -587,7 +588,7 @@ protected:
 	bool _detect_item_batch_break(RenderItemState &r_ris, RasterizerCanvas::Item *p_ci, bool &r_batch_break);
 
 	// drives the loop filling batches and flushing
-	void render_joined_item_commands(const BItemJoined &p_bij, RasterizerCanvas::Item *p_current_clip, bool &r_reclip, typename T_STORAGE::Material *p_material, bool p_lit);
+	void render_joined_item_commands(const BItemJoined &p_bij, RasterizerCanvas::Item *p_current_clip, bool &r_reclip, typename T_STORAGE::Material *p_material, bool p_lit, const RenderItemState &p_ris);
 
 private:
 	// flush once full or end of joined item
@@ -1824,9 +1825,12 @@ PREAMBLE(bool)::_software_skin_poly(RasterizerCanvas::Item::CommandPolygon *p_po
 	Vector2 *pTemps = (Vector2 *)alloca(num_verts * sizeof(Vector2));
 	memset((void *)pTemps, 0, num_verts * sizeof(Vector2));
 
-	// these are used in the shader but don't appear to be needed for software transform
-	//	const Transform2D &skel_trans = get_this()->state.skeleton_transform;
-	//	const Transform2D &skel_trans_inv = get_this()->state.skeleton_transform_inverse;
+	// only the inverse appears to be needed
+	const Transform2D &skel_trans_inv = p_fill_state.skeleton_base_inverse_xform;
+	// we can't get this from the state, because more than one skeleton item may have been joined together..
+	// we need to handle the base skeleton on a per item basis as the joined item is rendered.
+	// const Transform2D &skel_trans = get_this()->state.skeleton_transform;
+	// const Transform2D &skel_trans_inv = get_this()->state.skeleton_transform_inverse;
 
 	// get the bone transforms.
 	// this is not ideal because we don't know in advance which bones are needed
@@ -1838,7 +1842,10 @@ PREAMBLE(bool)::_software_skin_poly(RasterizerCanvas::Item::CommandPolygon *p_po
 
 	if (num_verts && (p_poly->bones.size() == num_verts * 4) && (p_poly->weights.size() == p_poly->bones.size())) {
 
-		const Transform2D &item_transform = p_item->xform;
+		// instead of using the p_item->xform we use the final transform,
+		// because we want the poly transform RELATIVE to the base skeleton.
+		Transform2D item_transform = skel_trans_inv * p_item->final_transform;
+
 		Transform2D item_transform_inv = item_transform.affine_inverse();
 
 		for (int n = 0; n < num_verts; n++) {
@@ -2534,7 +2541,7 @@ PREAMBLE(void)::flush_render_batches(RasterizerCanvas::Item *p_first_item, Raste
 #endif
 }
 
-PREAMBLE(void)::render_joined_item_commands(const BItemJoined &p_bij, RasterizerCanvas::Item *p_current_clip, bool &r_reclip, typename T_STORAGE::Material *p_material, bool p_lit) {
+PREAMBLE(void)::render_joined_item_commands(const BItemJoined &p_bij, RasterizerCanvas::Item *p_current_clip, bool &r_reclip, typename T_STORAGE::Material *p_material, bool p_lit, const RenderItemState &p_ris) {
 
 	RasterizerCanvas::Item *item = 0;
 	RasterizerCanvas::Item *first_item = bdata.item_refs[p_bij.first_item_ref].item;
@@ -2580,6 +2587,20 @@ PREAMBLE(void)::render_joined_item_commands(const BItemJoined &p_bij, Rasterizer
 		// ONCE OFF fill state setup, that will be retained over multiple calls to
 		// prefill_joined_item()
 		fill_state.transform_combined = item->final_transform;
+
+		// calculate skeleton base inverse transform if required for software skinning
+		// put in the fill state as this is readily accessible from the software skinner
+		if (item->skeleton.is_valid() && bdata.settings_use_software_skinning && get_storage()->skeleton_owner.owns(item->skeleton)) {
+			typename T_STORAGE::Skeleton *skeleton = nullptr;
+			skeleton = get_storage()->skeleton_owner.get(item->skeleton);
+
+			if (skeleton->use_2d) {
+				// with software skinning we still need to know the skeleton inverse transform, the other two aren't needed
+				// but are left in for simplicity here
+				Transform2D skeleton_transform = p_ris.item_group_base_transform * skeleton->base_transform_2d;
+				fill_state.skeleton_base_inverse_xform = skeleton_transform.affine_inverse();
+			}
+		}
 
 		// decide the initial transform mode, and make a backup
 		// in orig_transform_mode in case we need to switch back

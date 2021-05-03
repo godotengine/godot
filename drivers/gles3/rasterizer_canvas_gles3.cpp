@@ -1485,7 +1485,7 @@ void RasterizerCanvasGLES3::render_joined_item(const BItemJoined &p_bij, RenderI
 	}
 	if (unshaded || (state.canvas_item_modulate.a > 0.001 && (!r_ris.shader_cache || r_ris.shader_cache->canvas_item.light_mode != RasterizerStorageGLES3::Shader::CanvasItem::LIGHT_MODE_LIGHT_ONLY) && !p_ci->light_masked)) {
 		RasterizerStorageGLES3::Material *material_ptr = nullptr;
-		render_joined_item_commands(p_bij, NULL, reclip, material_ptr, false);
+		render_joined_item_commands(p_bij, NULL, reclip, material_ptr, false, r_ris);
 	}
 
 	if ((blend_mode == RasterizerStorageGLES3::Shader::CanvasItem::BLEND_MODE_MIX || blend_mode == RasterizerStorageGLES3::Shader::CanvasItem::BLEND_MODE_PMALPHA) && r_ris.item_group_light && !unshaded) {
@@ -1600,10 +1600,10 @@ void RasterizerCanvasGLES3::render_joined_item(const BItemJoined &p_bij, RenderI
 				// this can greatly reduce fill rate ..
 				// at the cost of glScissor commands, so is optional
 				if (!bdata.settings_scissor_lights || r_ris.current_clip) {
-					render_joined_item_commands(p_bij, NULL, reclip, nullptr, true);
+					render_joined_item_commands(p_bij, NULL, reclip, nullptr, true, r_ris);
 				} else {
 					bool scissor = _light_scissor_begin(p_bij.bounding_rect, light->xform_cache, light->rect_cache);
-					render_joined_item_commands(p_bij, NULL, reclip, nullptr, true);
+					render_joined_item_commands(p_bij, NULL, reclip, nullptr, true, r_ris);
 					if (scissor) {
 						glDisable(GL_SCISSOR_TEST);
 					}
