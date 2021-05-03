@@ -658,11 +658,15 @@ Vector<Vector2> TileMapEditor::_bucket_fill(const Point2i &p_start, bool erase, 
 	}
 
 	// Check if the tile variation is the same
-	Vector2 prev_position = node->get_cell_autotile_coord(p_start.x, p_start.y);
 	if (ids.size() == 1 && ids[0] == prev_id) {
 		int current = manual_palette->get_current();
-		Vector2 position = manual_palette->get_item_metadata(current);
-		if (prev_position == position) {
+		if (current == -1) {
+			// Same ID, no variation selected, nothing to change
+			return Vector<Vector2>();
+		}
+		Vector2 prev_autotile_coord = node->get_cell_autotile_coord(p_start.x, p_start.y);
+		Vector2 autotile_coord = manual_palette->get_item_metadata(current);
+		if (autotile_coord == prev_autotile_coord) {
 			// Same ID and variation, nothing to change
 			return Vector<Vector2>();
 		}
