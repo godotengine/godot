@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  rid_glue.cpp                                                         */
+/*  placeholder_glue.cpp                                                 */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,37 +28,29 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifdef MONO_GLUE_ENABLED
+#ifndef GLUE_HEADER_H
+#define GLUE_HEADER_H
 
-#include "core/io/resource.h"
-#include "core/object/class_db.h"
-#include "core/templates/rid.h"
+#include "core/object/object.h"
 
-#include "../mono_gd/gd_mono_marshal.h"
+#include "../mono_gd/gd_mono_internals.h"
+#include "../mono_gd/gd_mono_utils.h"
 
-RID *godot_icall_RID_Ctor(Object *p_from) {
-	Resource *res_from = Object::cast_to<Resource>(p_from);
-
-	if (res_from) {
-		return memnew(RID(res_from->get_rid()));
-	}
-
-	return memnew(RID);
+MonoObject *godot_icall_InteropUtils_unmanaged_get_managed(Object *unmanaged) {
+	return GDMonoUtils::unmanaged_get_managed(unmanaged);
 }
 
-void godot_icall_RID_Dtor(RID *p_ptr) {
-	ERR_FAIL_NULL(p_ptr);
-	memdelete(p_ptr);
+void godot_icall_InteropUtils_tie_managed_to_unmanaged(MonoObject *managed, Object *unmanaged) {
+	GDMonoInternals::tie_managed_to_unmanaged(managed, unmanaged);
 }
 
-uint32_t godot_icall_RID_get_id(RID *p_ptr) {
-	return p_ptr->get_id();
+void godot_register_placeholder_icalls() {
+	GDMonoUtils::add_internal_call(
+			"Godot.NativeInterop.InteropUtils::internal_unmanaged_get_managed",
+			godot_icall_InteropUtils_unmanaged_get_managed);
+	GDMonoUtils::add_internal_call(
+			"Godot.NativeInterop.InteropUtils::internal_tie_managed_to_unmanaged",
+			godot_icall_InteropUtils_tie_managed_to_unmanaged);
 }
 
-void godot_register_rid_icalls() {
-	GDMonoUtils::add_internal_call("Godot.RID::godot_icall_RID_Ctor", godot_icall_RID_Ctor);
-	GDMonoUtils::add_internal_call("Godot.RID::godot_icall_RID_Dtor", godot_icall_RID_Dtor);
-	GDMonoUtils::add_internal_call("Godot.RID::godot_icall_RID_get_id", godot_icall_RID_get_id);
-}
-
-#endif // MONO_GLUE_ENABLED
+#endif // GLUE_HEADER_H

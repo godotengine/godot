@@ -28,8 +28,6 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifdef MONO_GLUE_ENABLED
-
 #include "core/string/ustring.h"
 #include "core/templates/vector.h"
 #include "core/variant/variant.h"
@@ -81,5 +79,3 @@ void godot_register_string_icalls() {
 	GDMonoUtils::add_internal_call("Godot.StringExtensions::godot_icall_String_sha256_text", godot_icall_String_sha256_text);
 	GDMonoUtils::add_internal_call("Godot.StringExtensions::godot_icall_String_simplify_path", godot_icall_String_simplify_path);
 }
-
-#endif // MONO_GLUE_ENABLED

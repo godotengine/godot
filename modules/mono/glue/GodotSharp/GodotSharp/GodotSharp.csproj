@@ -7,10 +7,19 @@
     <TargetFramework>netstandard2.1</TargetFramework>
     <DocumentationFile>$(OutputPath)/$(AssemblyName).xml</DocumentationFile>
     <EnableDefaultItems>false</EnableDefaultItems>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <LangVersion>9</LangVersion>
+
+    <!-- Disabled temporarily as it pollutes the warnings, but we need to document public APIs. -->
+    <NoWarn>CS1591</NoWarn>
   </PropertyGroup>
   <PropertyGroup>
     <DefineConstants>$(DefineConstants);GODOT</DefineConstants>
   </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="ReflectionAnalyzers" Version="0.1.22-dev" PrivateAssets="all" IncludeAssets="runtime; build; native; contentfiles; analyzers" />
+    <!--PackageReference Include="IDisposableAnalyzers" Version="3.4.13" PrivateAssets="all" IncludeAssets="runtime; build; native; contentfiles; analyzers" /-->
+  </ItemGroup>
   <ItemGroup>
     <Compile Include="Core\AABB.cs" />
     <Compile Include="Core\Array.cs" />
@@ -47,14 +56,22 @@
     <Compile Include="Core\MarshalUtils.cs" />
     <Compile Include="Core\Mathf.cs" />
     <Compile Include="Core\MathfEx.cs" />
+    <Compile Include="Core\NativeInterop\InteropUtils.cs" />
+    <Compile Include="Core\NativeInterop\NativeFuncs.extended.cs" />
+    <Compile Include="Core\NativeInterop\VariantSpanHelpers.cs" />
+    <Compile Include="Core\NativeInterop\VariantUtils.cs" />
     <Compile Include="Core\NodePath.cs" />
     <Compile Include="Core\Object.base.cs" />
+    <Compile Include="Core\Object.exceptions.cs" />
     <Compile Include="Core\Plane.cs" />
     <Compile Include="Core\Projection.cs" />
     <Compile Include="Core\Quaternion.cs" />
     <Compile Include="Core\Rect2.cs" />
     <Compile Include="Core\Rect2i.cs" />
     <Compile Include="Core\RID.cs" />
+    <Compile Include="Core\NativeInterop\NativeFuncs.cs" />
+    <Compile Include="Core\NativeInterop\InteropStructs.cs" />
+    <Compile Include="Core\NativeInterop\Marshaling.cs" />
     <Compile Include="Core\SignalInfo.cs" />
     <Compile Include="Core\SignalAwaiter.cs" />
     <Compile Include="Core\StringExtensions.cs" />

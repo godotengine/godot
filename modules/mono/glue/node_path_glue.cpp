@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  nodepath_glue.cpp                                                    */
+/*  node_path_glue.cpp                                                   */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,25 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifdef MONO_GLUE_ENABLED
-
 #include "core/string/node_path.h"
 #include "core/string/ustring.h"
 
 #include "../mono_gd/gd_mono_marshal.h"
-
-NodePath *godot_icall_NodePath_Ctor(MonoString *p_path) {
-	return memnew(NodePath(GDMonoMarshal::mono_string_to_godot(p_path)));
-}
-
-void godot_icall_NodePath_Dtor(NodePath *p_ptr) {
-	ERR_FAIL_NULL(p_ptr);
-	memdelete(p_ptr);
-}
-
-MonoString *godot_icall_NodePath_operator_String(NodePath *p_np) {
-	return GDMonoMarshal::mono_string_from_godot(p_np->operator String());
-}
 
 MonoBoolean godot_icall_NodePath_is_absolute(NodePath *p_ptr) {
 	return (MonoBoolean)p_ptr->is_absolute();
@@ -76,18 +61,11 @@ MonoString *godot_icall_NodePath_get_concatenated_subnames(NodePath *p_ptr) {
 	return GDMonoMarshal::mono_string_from_godot(p_ptr->get_concatenated_subnames());
 }
 
-NodePath *godot_icall_NodePath_get_as_property_path(NodePath *p_ptr) {
-	return memnew(NodePath(p_ptr->get_as_property_path()));
+void godot_icall_NodePath_get_as_property_path(NodePath *p_ptr, NodePath *r_dest) {
+	*r_dest = p_ptr->get_as_property_path();
 }
 
-MonoBoolean godot_icall_NodePath_is_empty(NodePath *p_ptr) {
-	return (MonoBoolean)p_ptr->is_empty();
-}
-
-void godot_register_nodepath_icalls() {
-	GDMonoUtils::add_internal_call("Godot.NodePath::godot_icall_NodePath_Ctor", godot_icall_NodePath_Ctor);
-	GDMonoUtils::add_internal_call("Godot.NodePath::godot_icall_NodePath_Dtor", godot_icall_NodePath_Dtor);
-	GDMonoUtils::add_internal_call("Godot.NodePath::godot_icall_NodePath_operator_String", godot_icall_NodePath_operator_String);
+void godot_register_node_path_icalls() {
 	GDMonoUtils::add_internal_call("Godot.NodePath::godot_icall_NodePath_get_as_property_path", godot_icall_NodePath_get_as_property_path);
 	GDMonoUtils::add_internal_call("Godot.NodePath::godot_icall_NodePath_get_concatenated_names", godot_icall_NodePath_get_concatenated_names);
 	GDMonoUtils::add_internal_call("Godot.NodePath::godot_icall_NodePath_get_concatenated_subnames", godot_icall_NodePath_get_concatenated_subnames);
@@ -96,7 +74,4 @@ void godot_register_nodepath_icalls() {
 	GDMonoUtils::add_internal_call("Godot.NodePath::godot_icall_NodePath_get_subname", godot_icall_NodePath_get_subname);
 	GDMonoUtils::add_internal_call("Godot.NodePath::godot_icall_NodePath_get_subname_count", godot_icall_NodePath_get_subname_count);
 	GDMonoUtils::add_internal_call("Godot.NodePath::godot_icall_NodePath_is_absolute", godot_icall_NodePath_is_absolute);
-	GDMonoUtils::add_internal_call("Godot.NodePath::godot_icall_NodePath_is_empty", godot_icall_NodePath_is_empty);
 }
-
-#endif // MONO_GLUE_ENABLED

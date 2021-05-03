@@ -398,7 +398,7 @@ class CSharpLanguage : public ScriptLanguage {
 	String _debug_error;
 
 	friend class GDMono;
-	void _on_scripts_domain_unloaded();
+	void _on_scripts_domain_about_to_unload();
 
 #ifdef TOOLS_ENABLED
 	EditorPlugin *godotsharp_editor = nullptr;

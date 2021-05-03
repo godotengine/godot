@@ -7,38 +7,44 @@ namespace Godot
     {
         private bool _disposed = false;
 
-        private static StringName nativeName = "Object";
-
-        internal IntPtr ptr;
-        internal bool memoryOwn;
+        internal IntPtr NativePtr;
+        internal bool MemoryOwn;
 
         /// <summary>
         /// Constructs a new <see cref="Object"/>.
         /// </summary>
         public Object() : this(false)
         {
-            if (ptr == IntPtr.Zero)
-                ptr = godot_icall_Object_Ctor(this);
+            if (NativePtr == IntPtr.Zero)
+            {
+#if NET
+                unsafe
+                {
+                    ptr = NativeCtor();
+                }
+#else
+                NativePtr = _gd__invoke_class_constructor(NativeCtor);
+#endif
+                NativeInterop.InteropUtils.TieManagedToUnmanaged(this, NativePtr);
+            }
+
             _InitializeGodotScriptInstanceInternals();
         }
 
         internal void _InitializeGodotScriptInstanceInternals()
         {
-            godot_icall_Object_ConnectEventSignals(ptr);
+            godot_icall_Object_ConnectEventSignals(NativePtr);
         }
 
         internal Object(bool memoryOwn)
         {
-            this.memoryOwn = memoryOwn;
+            this.MemoryOwn = memoryOwn;
         }
 
         /// <summary>
         /// The pointer to the native instance of this <see cref="Object"/>.
         /// </summary>
-        public IntPtr NativeInstance
-        {
-            get { return ptr; }
-        }
+        public IntPtr NativeInstance => NativePtr;
 
         internal static IntPtr GetPtr(Object instance)
         {
@@ -48,7 +54,7 @@ namespace Godot
             if (instance._disposed)
                 throw new ObjectDisposedException(instance.GetType().FullName);
 
-            return instance.ptr;
+            return instance.NativePtr;
         }
 
         ~Object()
@@ -73,19 +79,19 @@ namespace Godot
             if (_disposed)
                 return;
 
-            if (ptr != IntPtr.Zero)
+            if (NativePtr != IntPtr.Zero)
             {
-                if (memoryOwn)
+                if (MemoryOwn)
                 {
-                    memoryOwn = false;
-                    godot_icall_RefCounted_Disposed(this, ptr, !disposing);
+                    MemoryOwn = false;
+                    godot_icall_RefCounted_Disposed(this, NativePtr, !disposing);
                 }
                 else
                 {
-                    godot_icall_Object_Disposed(this, ptr);
+                    godot_icall_Object_Disposed(this, NativePtr);
                 }
 
-                ptr = IntPtr.Zero;
+                this.NativePtr = IntPtr.Zero;
             }
 
             _disposed = true;
@@ -137,13 +143,49 @@ namespace Godot
         /// </summary>
         public dynamic DynamicObject => new DynamicGodotObject(this);
 
-        internal static IntPtr __ClassDB_get_method(StringName type, string method)
+        internal static unsafe IntPtr ClassDB_get_method(StringName type, string method)
         {
-            return godot_icall_Object_ClassDB_get_method(StringName.GetPtr(type), method);
+            IntPtr methodBind;
+            fixed (char* methodChars = method)
+            {
+                methodBind = NativeInterop.NativeFuncs
+                    .godotsharp_method_bind_get_method(ref type.NativeValue, methodChars);
+            }
+
+            if (methodBind == IntPtr.Zero)
+                throw new NativeMethodBindNotFoundException(type + "." + method);
+
+            return methodBind;
         }
 
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern IntPtr godot_icall_Object_Ctor(Object obj);
+#if NET
+        internal static unsafe delegate* unmanaged<IntPtr> _gd__ClassDB_get_constructor(StringName type)
+        {
+            // for some reason the '??' operator doesn't support 'delegate*'
+            var nativeConstructor = NativeInterop.NativeFuncs
+                .godotsharp_get_class_constructor(ref type.NativeValue);
+
+            if (nativeConstructor == null)
+                throw new NativeConstructorNotFoundException(type);
+
+            return nativeConstructor;
+        }
+#else
+        internal static IntPtr ClassDB_get_constructor(StringName type)
+        {
+            // for some reason the '??' operator doesn't support 'delegate*'
+            var nativeConstructor = NativeInterop.NativeFuncs
+                .godotsharp_get_class_constructor(ref type.NativeValue);
+
+            if (nativeConstructor == IntPtr.Zero)
+                throw new NativeConstructorNotFoundException(type);
+
+            return nativeConstructor;
+        }
+
+        internal static IntPtr _gd__invoke_class_constructor(IntPtr ctorFuncPtr)
+            => NativeInterop.NativeFuncs.godotsharp_invoke_class_constructor(ctorFuncPtr);
+#endif
 
         [MethodImpl(MethodImplOptions.InternalCall)]
         internal static extern void godot_icall_Object_Disposed(Object obj, IntPtr ptr);
@@ -156,9 +198,5 @@ namespace Godot
 
         [MethodImpl(MethodImplOptions.InternalCall)]
         internal static extern string godot_icall_Object_ToString(IntPtr ptr);
-
-        // Used by the generated API
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern IntPtr godot_icall_Object_ClassDB_get_method(IntPtr type, string method);
     }
 }

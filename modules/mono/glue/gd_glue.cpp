@@ -28,8 +28,6 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifdef MONO_GLUE_ENABLED
-
 #include "core/io/marshalls.h"
 #include "core/os/os.h"
 #include "core/string/ustring.h"
@@ -41,10 +39,9 @@
 #include "../mono_gd/gd_mono_marshal.h"
 #include "../mono_gd/gd_mono_utils.h"
 
-MonoObject *godot_icall_GD_bytes2var(MonoArray *p_bytes, MonoBoolean p_allow_objects) {
+MonoObject *godot_icall_GD_bytes2var(PackedByteArray *p_bytes, MonoBoolean p_allow_objects) {
 	Variant ret;
-	PackedByteArray varr = GDMonoMarshal::mono_array_to_PackedByteArray(p_bytes);
-	Error err = decode_variant(ret, varr.ptr(), varr.size(), nullptr, p_allow_objects);
+	Error err = decode_variant(ret, p_bytes->ptr(), p_bytes->size(), nullptr, p_allow_objects);
 	if (err != OK) {
 		ret = RTR("Not enough bytes for decoding bytes, or invalid format.");
 	}
@@ -285,18 +282,17 @@ void godot_icall_GD_pushwarning(MonoString *p_str) {
 	WARN_PRINT(GDMonoMarshal::mono_string_to_godot(p_str));
 }
 
-MonoArray *godot_icall_GD_var2bytes(MonoObject *p_var, MonoBoolean p_full_objects) {
+void godot_icall_GD_var2bytes(MonoObject *p_var, MonoBoolean p_full_objects, PackedByteArray *r_bytes) {
+	memnew_placement(r_bytes, PackedByteArray);
+
 	Variant var = GDMonoMarshal::mono_object_to_variant(p_var);
 
-	PackedByteArray barr;
 	int len;
 	Error err = encode_variant(var, nullptr, len, p_full_objects);
-	ERR_FAIL_COND_V_MSG(err != OK, nullptr, "Unexpected error encoding variable to bytes, likely unserializable type found (Object or RID).");
+	ERR_FAIL_COND_MSG(err != OK, "Unexpected error encoding variable to bytes, likely unserializable type found (Object or RID).");
 
-	barr.resize(len);
-	encode_variant(var, barr.ptrw(), len, p_full_objects);
-
-	return GDMonoMarshal::PackedByteArray_to_mono_array(barr);
+	r_bytes->resize(len);
+	encode_variant(var, r_bytes->ptrw(), len, p_full_objects);
 }
 
 MonoString *godot_icall_GD_var2str(MonoObject *p_var) {
@@ -344,5 +340,3 @@ void godot_register_gd_icalls() {
 	// Dispatcher
 	GDMonoUtils::add_internal_call("Godot.Dispatcher::godot_icall_DefaultGodotTaskScheduler", godot_icall_DefaultGodotTaskScheduler);
 }
-
-#endif // MONO_GLUE_ENABLED

@@ -39,7 +39,6 @@ class GDMonoMethod : public IMonoClassMember {
 	StringName name;
 
 	uint16_t params_count;
-	unsigned int params_buffer_size = 0;
 	ManagedType return_type;
 	Vector<ManagedType> param_types;
 

@@ -38,7 +38,12 @@
 
 Error gd_mono_connect_signal_awaiter(Object *p_source, const StringName &p_signal, Object *p_target, MonoObject *p_awaiter);
 
-class SignalAwaiterCallable : public CallableCustom {
+class BaseSignalCallable : public CallableCustom {
+public:
+	virtual StringName get_signal() const = 0;
+};
+
+class SignalAwaiterCallable : public BaseSignalCallable {
 	ObjectID target_id;
 	MonoGCHandleData awaiter_handle;
 	StringName signal;
@@ -59,7 +64,7 @@ public:
 
 	ObjectID get_object() const override;
 
-	_FORCE_INLINE_ StringName get_signal() const { return signal; }
+	StringName get_signal() const override;
 
 	void call(const Variant **p_arguments, int p_argcount, Variant &r_return_value, Callable::CallError &r_call_error) const override;
 
@@ -67,7 +72,7 @@ public:
 	~SignalAwaiterCallable();
 };
 
-class EventSignalCallable : public CallableCustom {
+class EventSignalCallable : public BaseSignalCallable {
 	Object *owner = nullptr;
 	const CSharpScript::EventSignal *event_signal;
 
@@ -87,7 +92,7 @@ public:
 
 	ObjectID get_object() const override;
 
-	StringName get_signal() const;
+	StringName get_signal() const override;
 
 	void call(const Variant **p_arguments, int p_argcount, Variant &r_return_value, Callable::CallError &r_call_error) const override;
 

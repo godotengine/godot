@@ -6,6 +6,7 @@ using real_t = System.Single;
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using Godot.NativeInterop;
 
 namespace Godot
 {
@@ -26,9 +27,10 @@ namespace Godot
         /// <param name="bytes">Byte array that will be decoded to a <c>Variant</c>.</param>
         /// <param name="allowObjects">If objects should be decoded.</param>
         /// <returns>The decoded <c>Variant</c>.</returns>
-        public static object Bytes2Var(byte[] bytes, bool allowObjects = false)
+        public static unsafe object Bytes2Var(byte[] bytes, bool allowObjects = false)
         {
-            return godot_icall_GD_bytes2var(bytes, allowObjects);
+            using var varBytes = Marshaling.mono_array_to_PackedByteArray(bytes);
+            return godot_icall_GD_bytes2var(&varBytes, allowObjects);
         }
 
         /// <summary>
@@ -527,7 +529,7 @@ namespace Godot
         /// <returns>If the class exists in <see cref="ClassDB"/>.</returns>
         public static bool TypeExists(StringName type)
         {
-            return godot_icall_GD_type_exists(StringName.GetPtr(type));
+            return godot_icall_GD_type_exists(ref type.NativeValue);
         }
 
         /// <summary>
@@ -539,9 +541,14 @@ namespace Godot
         /// <param name="var">Variant that will be encoded.</param>
         /// <param name="fullObjects">If objects should be serialized.</param>
         /// <returns>The <c>Variant</c> encoded as an array of bytes.</returns>
-        public static byte[] Var2Bytes(object var, bool fullObjects = false)
+        public static unsafe byte[] Var2Bytes(object var, bool fullObjects = false)
         {
-            return godot_icall_GD_var2bytes(var, fullObjects);
+            godot_packed_byte_array varBytes;
+            godot_icall_GD_var2bytes(var, fullObjects, &varBytes);
+            using (varBytes)
+            {
+                return Marshaling.PackedByteArray_to_mono_array(&varBytes);
+            }
         }
 
         /// <summary>
@@ -576,7 +583,7 @@ namespace Godot
         }
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern object godot_icall_GD_bytes2var(byte[] bytes, bool allowObjects);
+        internal static extern unsafe object godot_icall_GD_bytes2var(godot_packed_byte_array* bytes, bool allowObjects);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
         internal static extern object godot_icall_GD_convert(object what, Variant.Type type);
@@ -636,10 +643,10 @@ namespace Godot
         internal static extern object godot_icall_GD_str2var(string str);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern bool godot_icall_GD_type_exists(IntPtr type);
+        internal static extern bool godot_icall_GD_type_exists(ref godot_string_name type);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern byte[] godot_icall_GD_var2bytes(object what, bool fullObjects);
+        internal static extern unsafe void godot_icall_GD_var2bytes(object what, bool fullObjects, godot_packed_byte_array* bytes);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
         internal static extern string godot_icall_GD_var2str(object var);

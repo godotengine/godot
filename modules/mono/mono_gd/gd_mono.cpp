@@ -408,10 +408,6 @@ void GDMono::initialize() {
 }
 
 void GDMono::initialize_load_assemblies() {
-#ifndef MONO_GLUE_ENABLED
-	CRASH_NOW_MSG("Mono: This binary was built with 'mono_glue=no'; cannot load assemblies.");
-#endif
-
 	// Load assemblies. The API and tools assemblies are required,
 	// the application is aborted if these assemblies cannot be loaded.
 
@@ -446,59 +442,34 @@ bool GDMono::_are_api_assemblies_out_of_sync() {
 	return out_of_sync;
 }
 
-namespace GodotSharpBindings {
-#ifdef MONO_GLUE_ENABLED
-
-uint64_t get_core_api_hash();
-#ifdef TOOLS_ENABLED
-uint64_t get_editor_api_hash();
-#endif
-uint32_t get_bindings_version();
-uint32_t get_cs_glue_version();
-
-void register_generated_icalls();
-
-#else
-
-uint64_t get_core_api_hash() {
-	GD_UNREACHABLE();
-}
-#ifdef TOOLS_ENABLED
-uint64_t get_editor_api_hash() {
-	GD_UNREACHABLE();
-}
-#endif
-uint32_t get_bindings_version() {
-	GD_UNREACHABLE();
-}
-
-uint32_t get_cs_glue_version() {
-	GD_UNREACHABLE();
-}
-
-void register_generated_icalls() {
-	/* Fine, just do nothing */
-}
-
-#endif // MONO_GLUE_ENABLED
-} // namespace GodotSharpBindings
+void godot_register_collections_icalls();
+void godot_register_gd_icalls();
+void godot_register_node_path_icalls();
+void godot_register_object_icalls();
+void godot_register_rid_icalls();
+void godot_register_string_icalls();
+void godot_register_scene_tree_icalls();
+void godot_register_placeholder_icalls();
 
 void GDMono::_register_internal_calls() {
-	GodotSharpBindings::register_generated_icalls();
+	// Registers internal calls that were not generated.
+	godot_register_collections_icalls();
+	godot_register_gd_icalls();
+	godot_register_node_path_icalls();
+	godot_register_object_icalls();
+	godot_register_string_icalls();
+	godot_register_scene_tree_icalls();
+	godot_register_placeholder_icalls();
 }
 
 void GDMono::_init_godot_api_hashes() {
-#if defined(MONO_GLUE_ENABLED) && defined(DEBUG_METHODS_ENABLED)
-	if (get_api_core_hash() != GodotSharpBindings::get_core_api_hash()) {
-		ERR_PRINT("Mono: Core API hash mismatch.");
-	}
+#ifdef DEBUG_METHODS_ENABLED
+	get_api_core_hash();
 
 #ifdef TOOLS_ENABLED
-	if (get_api_editor_hash() != GodotSharpBindings::get_editor_api_hash()) {
-		ERR_PRINT("Mono: Editor API hash mismatch.");
-	}
+	get_api_editor_hash();
 #endif // TOOLS_ENABLED
-#endif // MONO_GLUE_ENABLED && DEBUG_METHODS_ENABLED
+#endif // DEBUG_METHODS_ENABLED
 }
 
 void GDMono::_init_exception_policy() {
@@ -601,16 +572,6 @@ ApiAssemblyInfo::Version ApiAssemblyInfo::Version::get_from_loaded_assembly(GDMo
 		if (api_hash_field) {
 			api_assembly_version.godot_api_hash = GDMonoMarshal::unbox<uint64_t>(api_hash_field->get_value(nullptr));
 		}
-
-		GDMonoField *binds_ver_field = nativecalls_klass->get_field("bindings_version");
-		if (binds_ver_field) {
-			api_assembly_version.bindings_version = GDMonoMarshal::unbox<uint32_t>(binds_ver_field->get_value(nullptr));
-		}
-
-		GDMonoField *cs_glue_ver_field = nativecalls_klass->get_field("cs_glue_version");
-		if (cs_glue_ver_field) {
-			api_assembly_version.cs_glue_version = GDMonoMarshal::unbox<uint32_t>(cs_glue_ver_field->get_value(nullptr));
-		}
 	}
 
 	return api_assembly_version;
@@ -698,12 +659,8 @@ static bool try_get_cached_api_hash_for(const String &p_api_assemblies_dir, bool
 		return false;
 	}
 
-	r_out_of_sync = GodotSharpBindings::get_bindings_version() != (uint32_t)cfg->get_value("core", "bindings_version") ||
-			GodotSharpBindings::get_cs_glue_version() != (uint32_t)cfg->get_value("core", "cs_glue_version") ||
-			GodotSharpBindings::get_bindings_version() != (uint32_t)cfg->get_value("editor", "bindings_version") ||
-			GodotSharpBindings::get_cs_glue_version() != (uint32_t)cfg->get_value("editor", "cs_glue_version") ||
-			GodotSharpBindings::get_core_api_hash() != (uint64_t)cfg->get_value("core", "api_hash") ||
-			GodotSharpBindings::get_editor_api_hash() != (uint64_t)cfg->get_value("editor", "api_hash");
+	r_out_of_sync = GDMono::get_singleton()->get_api_core_hash() != (uint64_t)cfg->get_value("core", "api_hash") ||
+			GDMono::get_singleton()->get_api_editor_hash() != (uint64_t)cfg->get_value("editor", "api_hash");
 
 	return true;
 }
@@ -719,14 +676,9 @@ static void create_cached_api_hash_for(const String &p_api_assemblies_dir) {
 	cfg->set_value("core", "modified_time", FileAccess::get_modified_time(core_api_assembly_path));
 	cfg->set_value("editor", "modified_time", FileAccess::get_modified_time(editor_api_assembly_path));
 
-	cfg->set_value("core", "bindings_version", GodotSharpBindings::get_bindings_version());
-	cfg->set_value("core", "cs_glue_version", GodotSharpBindings::get_cs_glue_version());
-	cfg->set_value("editor", "bindings_version", GodotSharpBindings::get_bindings_version());
-	cfg->set_value("editor", "cs_glue_version", GodotSharpBindings::get_cs_glue_version());
-
 	// This assumes the prebuilt api assemblies we copied to the project are not out of sync
-	cfg->set_value("core", "api_hash", GodotSharpBindings::get_core_api_hash());
-	cfg->set_value("editor", "api_hash", GodotSharpBindings::get_editor_api_hash());
+	cfg->set_value("core", "api_hash", GDMono::get_singleton()->get_api_core_hash());
+	cfg->set_value("editor", "api_hash", GDMono::get_singleton()->get_api_editor_hash());
 
 	Error err = cfg->save(cached_api_hash_path);
 	ERR_FAIL_COND(err != OK);
@@ -764,7 +716,7 @@ String GDMono::update_api_assemblies_from_prebuilt(const String &p_config, const
 	bool api_assemblies_out_of_sync = false;
 
 	if (p_core_api_out_of_sync && p_editor_api_out_of_sync) {
-		api_assemblies_out_of_sync = p_core_api_out_of_sync || p_editor_api_out_of_sync;
+		api_assemblies_out_of_sync = *p_core_api_out_of_sync || *p_editor_api_out_of_sync;
 	} else if (FileAccess::exists(core_assembly_path) && FileAccess::exists(editor_assembly_path)) {
 		// Determine if they're out of sync
 		if (!try_get_cached_api_hash_for(dst_assemblies_dir, api_assemblies_out_of_sync)) {
@@ -824,14 +776,16 @@ bool GDMono::_load_core_api_assembly(LoadedApiAssembly &r_loaded_api_assembly, c
 	bool success = load_assembly(CORE_API_ASSEMBLY_NAME, &r_loaded_api_assembly.assembly, p_refonly);
 #endif
 
+#ifdef DEBUG_METHODS_ENABLED
 	if (success) {
 		ApiAssemblyInfo::Version api_assembly_ver = ApiAssemblyInfo::Version::get_from_loaded_assembly(r_loaded_api_assembly.assembly, ApiAssemblyInfo::API_CORE);
-		r_loaded_api_assembly.out_of_sync = GodotSharpBindings::get_core_api_hash() != api_assembly_ver.godot_api_hash ||
-				GodotSharpBindings::get_bindings_version() != api_assembly_ver.bindings_version ||
-				GodotSharpBindings::get_cs_glue_version() != api_assembly_ver.cs_glue_version;
+		r_loaded_api_assembly.out_of_sync = get_api_core_hash() != api_assembly_ver.godot_api_hash;
 	} else {
 		r_loaded_api_assembly.out_of_sync = false;
 	}
+#else
+	r_loaded_api_assembly.out_of_sync = false;
+#endif
 
 	return success;
 }
@@ -854,14 +808,16 @@ bool GDMono::_load_editor_api_assembly(LoadedApiAssembly &r_loaded_api_assembly,
 	bool success = FileAccess::exists(assembly_path) &&
 			load_assembly_from(EDITOR_API_ASSEMBLY_NAME, assembly_path, &r_loaded_api_assembly.assembly, p_refonly);
 
+#ifdef DEBUG_METHODS_ENABLED
 	if (success) {
 		ApiAssemblyInfo::Version api_assembly_ver = ApiAssemblyInfo::Version::get_from_loaded_assembly(r_loaded_api_assembly.assembly, ApiAssemblyInfo::API_EDITOR);
-		r_loaded_api_assembly.out_of_sync = GodotSharpBindings::get_editor_api_hash() != api_assembly_ver.godot_api_hash ||
-				GodotSharpBindings::get_bindings_version() != api_assembly_ver.bindings_version ||
-				GodotSharpBindings::get_cs_glue_version() != api_assembly_ver.cs_glue_version;
+		r_loaded_api_assembly.out_of_sync = get_api_editor_hash() != api_assembly_ver.godot_api_hash;
 	} else {
 		r_loaded_api_assembly.out_of_sync = false;
 	}
+#else
+	r_loaded_api_assembly.out_of_sync = false;
+#endif
 
 	return success;
 }
@@ -1091,12 +1047,12 @@ Error GDMono::_unload_scripts_domain() {
 Error GDMono::reload_scripts_domain() {
 	ERR_FAIL_COND_V(!runtime_initialized, ERR_BUG);
 
+	CSharpLanguage::get_singleton()->_on_scripts_domain_about_to_unload();
+
 	if (scripts_domain) {
 		Error domain_unload_err = _unload_scripts_domain();
 		ERR_FAIL_COND_V_MSG(domain_unload_err != OK, domain_unload_err, "Mono: Failed to unload scripts domain.");
 	}
-
-	CSharpLanguage::get_singleton()->_on_scripts_domain_unloaded();
 
 	Error domain_load_err = _load_scripts_domain();
 	ERR_FAIL_COND_V_MSG(domain_load_err != OK, domain_load_err, "Mono: Failed to load scripts domain.");

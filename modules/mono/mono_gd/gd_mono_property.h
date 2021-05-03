@@ -45,8 +45,6 @@ class GDMonoProperty : public IMonoClassMember {
 	bool attrs_fetched;
 	MonoCustomAttrInfo *attributes = nullptr;
 
-	unsigned int param_buffer_size;
-
 public:
 	virtual GDMonoClass *get_enclosing_class() const final { return owner; }
 

@@ -25,11 +25,11 @@ def get_opts(platform):
             PathVariable.PathAccept,
         ),
         BoolVariable("mono_static", "Statically link Mono", default_mono_static),
-        BoolVariable("mono_glue", "Build with the Mono glue sources", True),
         BoolVariable("build_cil", "Build C# solutions", True),
         BoolVariable(
             "copy_mono_root", "Make a copy of the Mono installation directory to bundle with the editor", True
         ),
+        # TODO: It would be great if this could be detected automatically instead
         BoolVariable(
             "mono_bundles_zlib", "Specify if the Mono runtime was built with bundled zlib", default_mono_bundles_zlib
         ),

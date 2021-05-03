@@ -57,6 +57,7 @@
 #endif
 
 #include "godotsharp_dirs.h"
+#include "managed_callable.h"
 #include "mono_gd/gd_mono_cache.h"
 #include "mono_gd/gd_mono_class.h"
 #include "mono_gd/gd_mono_marshal.h"
@@ -108,6 +109,9 @@ Error CSharpLanguage::execute_file(const String &p_path) {
 	return OK;
 }
 
+extern void *godotsharp_pinvoke_funcs[101];
+[[maybe_unused]] volatile void **do_not_strip_godotsharp_pinvoke_funcs;
+
 void CSharpLanguage::init() {
 #ifdef DEBUG_METHODS_ENABLED
 	if (OS::get_singleton()->get_cmdline_args().find("--class-db-json")) {
@@ -118,20 +122,18 @@ void CSharpLanguage::init() {
 	}
 #endif
 
-	gdmono = memnew(GDMono);
-	gdmono->initialize();
+	// Hopefully this will be enough for all compilers. Otherwise we could use the printf on fake getenv trick.
+	do_not_strip_godotsharp_pinvoke_funcs = (volatile void **)godotsharp_pinvoke_funcs;
 
 #if defined(TOOLS_ENABLED) && defined(DEBUG_METHODS_ENABLED)
-	// Generate bindings here, before loading assemblies. 'initialize_load_assemblies' aborts
-	// the applications if the api assemblies or the main tools assembly is missing, but this
-	// is not a problem for BindingsGenerator as it only needs the tools project editor assembly.
+	// Generate the bindings here, before loading assemblies. The Godot assemblies
+	// may be missing if the glue wasn't generated yet in order to build them.
 	List<String> cmdline_args = OS::get_singleton()->get_cmdline_args();
 	BindingsGenerator::handle_cmdline_args(cmdline_args);
 #endif
 
-#ifndef MONO_GLUE_ENABLED
-	print_line("Run this binary with '--generate-mono-glue path/to/modules/mono/glue'");
-#endif
+	gdmono = memnew(GDMono);
+	gdmono->initialize();
 
 	if (gdmono->is_runtime_initialized()) {
 		gdmono->initialize_load_assemblies();
@@ -596,7 +598,9 @@ Vector<ScriptLanguage::StackInfo> CSharpLanguage::debug_get_current_stack_info()
 		return Vector<StackInfo>();
 	}
 	_recursion_flag_ = true;
-	SCOPE_EXIT { _recursion_flag_ = false; };
+	SCOPE_EXIT {
+		_recursion_flag_ = false;
+	};
 
 	GD_MONO_SCOPE_THREAD_ATTACH;
 
@@ -628,7 +632,9 @@ Vector<ScriptLanguage::StackInfo> CSharpLanguage::stack_trace_get_info(MonoObjec
 		return Vector<StackInfo>();
 	}
 	_recursion_flag_ = true;
-	SCOPE_EXIT { _recursion_flag_ = false; };
+	SCOPE_EXIT {
+		_recursion_flag_ = false;
+	};
 
 	GD_MONO_SCOPE_THREAD_ATTACH;
 
@@ -824,13 +830,13 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 		for (SelfList<ManagedCallable> *elem = ManagedCallable::instances.first(); elem; elem = elem->next()) {
 			ManagedCallable *managed_callable = elem->self();
 
-			MonoDelegate *delegate = (MonoDelegate *)managed_callable->delegate_handle.get_target();
-
 			Array serialized_data;
 			MonoObject *managed_serialized_data = GDMonoMarshal::variant_to_mono_object(serialized_data);
 
 			MonoException *exc = nullptr;
-			bool success = (bool)CACHED_METHOD_THUNK(DelegateUtils, TrySerializeDelegate).invoke(delegate, managed_serialized_data, &exc);
+			bool success = (bool)CACHED_METHOD_THUNK(DelegateUtils, TrySerializeDelegateWithGCHandle)
+								   .invoke(managed_callable->delegate_handle,
+										   managed_serialized_data, &exc);
 
 			if (exc) {
 				GDMonoUtils::debug_print_unhandled_exception(exc);
@@ -1149,10 +1155,11 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 			const Array &serialized_data = elem.value;
 
 			MonoObject *managed_serialized_data = GDMonoMarshal::variant_to_mono_object(serialized_data);
-			MonoDelegate *delegate = nullptr;
+			void *delegate = nullptr;
 
 			MonoException *exc = nullptr;
-			bool success = (bool)CACHED_METHOD_THUNK(DelegateUtils, TryDeserializeDelegate).invoke(managed_serialized_data, &delegate, &exc);
+			bool success = (bool)CACHED_METHOD_THUNK(DelegateUtils, TryDeserializeDelegateWithGCHandle)
+								   .invoke(managed_serialized_data, &delegate, &exc);
 
 			if (exc) {
 				GDMonoUtils::debug_print_unhandled_exception(exc);
@@ -1161,7 +1168,7 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 
 			if (success) {
 				ERR_CONTINUE(delegate == nullptr);
-				managed_callable->set_delegate(delegate);
+				managed_callable->delegate_handle = delegate;
 			} else if (OS::get_singleton()->is_stdout_verbose()) {
 				OS::get_singleton()->print("Failed to deserialize delegate\n");
 			}
@@ -1289,7 +1296,7 @@ bool CSharpLanguage::debug_break(const String &p_error, bool p_allow_continue) {
 	}
 }
 
-void CSharpLanguage::_on_scripts_domain_unloaded() {
+void CSharpLanguage::_on_scripts_domain_about_to_unload() {
 	for (KeyValue<Object *, CSharpScriptBinding> &E : script_bindings) {
 		CSharpScriptBinding &script_binding = E.value;
 		script_binding.gchandle.release();
@@ -1302,8 +1309,7 @@ void CSharpLanguage::_on_scripts_domain_unloaded() {
 
 		for (SelfList<ManagedCallable> *elem = ManagedCallable::instances.first(); elem; elem = elem->next()) {
 			ManagedCallable *managed_callable = elem->self();
-			managed_callable->delegate_handle.release();
-			managed_callable->delegate_invoke = nullptr;
+			managed_callable->release_delegate_handle();
 		}
 	}
 #endif
@@ -1455,7 +1461,7 @@ void CSharpLanguage::_instance_binding_free_callback(void *, void *, void *p_bin
 
 	if (GDMono::get_singleton() == nullptr) {
 #ifdef DEBUG_ENABLED
-		CRASH_COND(!csharp_lang->script_bindings.is_empty());
+		CRASH_COND(csharp_lang && !csharp_lang->script_bindings.is_empty());
 #endif
 		// Mono runtime finalized, all the gchandle bindings were already released
 		return;
@@ -1784,7 +1790,8 @@ void CSharpInstance::get_event_signals_state_for_reloading(List<Pair<StringName,
 		MonoObject *managed_serialized_data = GDMonoMarshal::variant_to_mono_object(serialized_data);
 
 		MonoException *exc = nullptr;
-		bool success = (bool)CACHED_METHOD_THUNK(DelegateUtils, TrySerializeDelegate).invoke(delegate_field_value, managed_serialized_data, &exc);
+		bool success = (bool)CACHED_METHOD_THUNK(DelegateUtils, TrySerializeDelegate)
+							   .invoke(delegate_field_value, managed_serialized_data, &exc);
 
 		if (exc) {
 			GDMonoUtils::debug_print_unhandled_exception(exc);

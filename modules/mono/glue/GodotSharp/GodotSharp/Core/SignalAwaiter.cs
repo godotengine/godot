@@ -1,5 +1,6 @@
 using System;
 using System.Runtime.CompilerServices;
+using Godot.NativeInterop;
 
 namespace Godot
 {
@@ -11,34 +12,22 @@ namespace Godot
 
         public SignalAwaiter(Object source, StringName signal, Object target)
         {
-            godot_icall_SignalAwaiter_connect(Object.GetPtr(source), StringName.GetPtr(signal), Object.GetPtr(target), this);
+            godot_icall_SignalAwaiter_connect(Object.GetPtr(source), ref signal.NativeValue, Object.GetPtr(target), this);
         }
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern Error godot_icall_SignalAwaiter_connect(IntPtr source, IntPtr signal, IntPtr target, SignalAwaiter awaiter);
+        internal static extern Error godot_icall_SignalAwaiter_connect(IntPtr source, ref godot_string_name signal, IntPtr target, SignalAwaiter awaiter);
 
-        public bool IsCompleted
-        {
-            get
-            {
-                return _completed;
-            }
-        }
+        public bool IsCompleted => _completed;
 
         public void OnCompleted(Action action)
         {
             this._action = action;
         }
 
-        public object[] GetResult()
-        {
-            return _result;
-        }
+        public object[] GetResult() => _result;
 
-        public IAwaiter<object[]> GetAwaiter()
-        {
-            return this;
-        }
+        public IAwaiter<object[]> GetAwaiter() => this;
 
         internal void SignalCallback(object[] args)
         {

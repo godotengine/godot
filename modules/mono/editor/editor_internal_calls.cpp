@@ -46,7 +46,6 @@
 #include "main/main.h"
 
 #include "../csharp_script.h"
-#include "../glue/cs_glue_version.gen.h"
 #include "../godotsharp_dirs.h"
 #include "../mono_gd/gd_mono_marshal.h"
 #include "../utils/macos_utils.h"

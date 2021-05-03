@@ -48,8 +48,6 @@ CachedData cached_data;
 	}
 
 #define CACHE_CLASS_AND_CHECK(m_class, m_val) CACHE_AND_CHECK(cached_data.class_##m_class, m_val)
-#define CACHE_NS_CLASS_AND_CHECK(m_ns, m_class, m_val) CACHE_AND_CHECK(cached_data.class_##m_ns##_##m_class, m_val)
-#define CACHE_RAW_MONO_CLASS_AND_CHECK(m_class, m_val) CACHE_AND_CHECK(cached_data.rawclass_##m_class, m_val)
 #define CACHE_FIELD_AND_CHECK(m_class, m_field, m_val) CACHE_AND_CHECK(cached_data.field_##m_class##_##m_field, m_val)
 #define CACHE_METHOD_AND_CHECK(m_class, m_method, m_val) CACHE_AND_CHECK(cached_data.method_##m_class##_##m_method, m_val)
 #define CACHE_PROPERTY_AND_CHECK(m_class, m_property, m_val) CACHE_AND_CHECK(cached_data.property_##m_class##_##m_property, m_val)
@@ -68,23 +66,7 @@ void CachedData::clear_corlib_cache() {
 	corlib_cache_updated = false;
 
 	class_MonoObject = nullptr;
-	class_bool = nullptr;
-	class_int8_t = nullptr;
-	class_int16_t = nullptr;
-	class_int32_t = nullptr;
-	class_int64_t = nullptr;
-	class_uint8_t = nullptr;
-	class_uint16_t = nullptr;
-	class_uint32_t = nullptr;
-	class_uint64_t = nullptr;
-	class_float = nullptr;
-	class_double = nullptr;
 	class_String = nullptr;
-	class_IntPtr = nullptr;
-
-	class_System_Collections_IEnumerable = nullptr;
-	class_System_Collections_ICollection = nullptr;
-	class_System_Collections_IDictionary = nullptr;
 
 #ifdef DEBUG_ENABLED
 	class_System_Diagnostics_StackTrace = nullptr;
@@ -99,38 +81,12 @@ void CachedData::clear_corlib_cache() {
 void CachedData::clear_godot_api_cache() {
 	godot_api_cache_updated = false;
 
-	rawclass_Dictionary = nullptr;
-
-	class_Vector2 = nullptr;
-	class_Vector2i = nullptr;
-	class_Rect2 = nullptr;
-	class_Rect2i = nullptr;
-	class_Transform2D = nullptr;
-	class_Vector3 = nullptr;
-	class_Vector3i = nullptr;
-	class_Vector4 = nullptr;
-	class_Vector4i = nullptr;
-	class_Basis = nullptr;
-	class_Quaternion = nullptr;
-	class_Transform3D = nullptr;
-	class_Projection = nullptr;
-	class_AABB = nullptr;
-	class_Color = nullptr;
-	class_Plane = nullptr;
-	class_StringName = nullptr;
-	class_NodePath = nullptr;
-	class_RID = nullptr;
 	class_GodotObject = nullptr;
 	class_GodotResource = nullptr;
 	class_Node = nullptr;
 	class_Control = nullptr;
-	class_Node3D = nullptr;
-	class_WeakRef = nullptr;
 	class_Callable = nullptr;
 	class_SignalInfo = nullptr;
-	class_Array = nullptr;
-	class_Dictionary = nullptr;
-	class_MarshalUtils = nullptr;
 	class_ISerializationListener = nullptr;
 
 #ifdef DEBUG_ENABLED
@@ -157,68 +113,39 @@ void CachedData::clear_godot_api_cache() {
 	field_AssemblyHasScriptsAttribute_scriptTypes = nullptr;
 
 	field_GodotObject_ptr = nullptr;
-	field_StringName_ptr = nullptr;
-	field_NodePath_ptr = nullptr;
-	field_Image_ptr = nullptr;
-	field_RID_ptr = nullptr;
 
 	methodthunk_GodotObject_Dispose.nullify();
-	methodthunk_Array_GetPtr.nullify();
-	methodthunk_Dictionary_GetPtr.nullify();
 	methodthunk_SignalAwaiter_SignalCallback.nullify();
 	methodthunk_GodotTaskScheduler_Activate.nullify();
 
 	methodthunk_Delegate_Equals.nullify();
 
+	methodthunk_DelegateUtils_TrySerializeDelegateWithGCHandle.nullify();
+	methodthunk_DelegateUtils_TryDeserializeDelegateWithGCHandle.nullify();
 	methodthunk_DelegateUtils_TrySerializeDelegate.nullify();
 	methodthunk_DelegateUtils_TryDeserializeDelegate.nullify();
+	methodthunk_DelegateUtils_InvokeWithVariantArgs.nullify();
+	methodthunk_DelegateUtils_DelegateEquals.nullify();
+	methodthunk_DelegateUtils_FreeGCHandle.nullify();
 
-	// Start of MarshalUtils methods
+	methodthunk_Marshaling_managed_to_variant_type.nullify();
+	methodthunk_Marshaling_try_get_array_element_type.nullify();
+	methodthunk_Marshaling_variant_to_mono_object_of_type.nullify();
+	methodthunk_Marshaling_variant_to_mono_object.nullify();
+	methodthunk_Marshaling_mono_object_to_variant_out.nullify();
 
-	methodthunk_MarshalUtils_TypeIsGenericArray.nullify();
-	methodthunk_MarshalUtils_TypeIsGenericDictionary.nullify();
-	methodthunk_MarshalUtils_TypeIsSystemGenericList.nullify();
-	methodthunk_MarshalUtils_TypeIsSystemGenericDictionary.nullify();
-	methodthunk_MarshalUtils_TypeIsGenericIEnumerable.nullify();
-	methodthunk_MarshalUtils_TypeIsGenericICollection.nullify();
-	methodthunk_MarshalUtils_TypeIsGenericIDictionary.nullify();
+	methodthunk_Marshaling_SetFieldValue.nullify();
+
 	methodthunk_MarshalUtils_TypeHasFlagsAttribute.nullify();
-
-	methodthunk_MarshalUtils_GetGenericTypeDefinition.nullify();
-
-	methodthunk_MarshalUtils_ArrayGetElementType.nullify();
-	methodthunk_MarshalUtils_DictionaryGetKeyValueTypes.nullify();
-
-	methodthunk_MarshalUtils_MakeGenericArrayType.nullify();
-	methodthunk_MarshalUtils_MakeGenericDictionaryType.nullify();
-
-	// End of MarshalUtils methods
 
 	task_scheduler_handle = Ref<MonoGCHandleRef>();
 }
 
 #define GODOT_API_CLASS(m_class) (GDMono::get_singleton()->get_core_api_assembly()->get_class(BINDINGS_NAMESPACE, #m_class))
-#define GODOT_API_NS_CLASS(m_ns, m_class) (GDMono::get_singleton()->get_core_api_assembly()->get_class(m_ns, #m_class))
 
 void update_corlib_cache() {
 	CACHE_CLASS_AND_CHECK(MonoObject, GDMono::get_singleton()->get_corlib_assembly()->get_class(mono_get_object_class()));
-	CACHE_CLASS_AND_CHECK(bool, GDMono::get_singleton()->get_corlib_assembly()->get_class(mono_get_boolean_class()));
-	CACHE_CLASS_AND_CHECK(int8_t, GDMono::get_singleton()->get_corlib_assembly()->get_class(mono_get_sbyte_class()));
-	CACHE_CLASS_AND_CHECK(int16_t, GDMono::get_singleton()->get_corlib_assembly()->get_class(mono_get_int16_class()));
-	CACHE_CLASS_AND_CHECK(int32_t, GDMono::get_singleton()->get_corlib_assembly()->get_class(mono_get_int32_class()));
-	CACHE_CLASS_AND_CHECK(int64_t, GDMono::get_singleton()->get_corlib_assembly()->get_class(mono_get_int64_class()));
-	CACHE_CLASS_AND_CHECK(uint8_t, GDMono::get_singleton()->get_corlib_assembly()->get_class(mono_get_byte_class()));
-	CACHE_CLASS_AND_CHECK(uint16_t, GDMono::get_singleton()->get_corlib_assembly()->get_class(mono_get_uint16_class()));
-	CACHE_CLASS_AND_CHECK(uint32_t, GDMono::get_singleton()->get_corlib_assembly()->get_class(mono_get_uint32_class()));
-	CACHE_CLASS_AND_CHECK(uint64_t, GDMono::get_singleton()->get_corlib_assembly()->get_class(mono_get_uint64_class()));
-	CACHE_CLASS_AND_CHECK(float, GDMono::get_singleton()->get_corlib_assembly()->get_class(mono_get_single_class()));
-	CACHE_CLASS_AND_CHECK(double, GDMono::get_singleton()->get_corlib_assembly()->get_class(mono_get_double_class()));
 	CACHE_CLASS_AND_CHECK(String, GDMono::get_singleton()->get_corlib_assembly()->get_class(mono_get_string_class()));
-	CACHE_CLASS_AND_CHECK(IntPtr, GDMono::get_singleton()->get_corlib_assembly()->get_class(mono_get_intptr_class()));
-
-	CACHE_CLASS_AND_CHECK(System_Collections_IEnumerable, GDMono::get_singleton()->get_corlib_assembly()->get_class("System.Collections", "IEnumerable"));
-	CACHE_CLASS_AND_CHECK(System_Collections_ICollection, GDMono::get_singleton()->get_corlib_assembly()->get_class("System.Collections", "ICollection"));
-	CACHE_CLASS_AND_CHECK(System_Collections_IDictionary, GDMono::get_singleton()->get_corlib_assembly()->get_class("System.Collections", "IDictionary"));
 
 #ifdef DEBUG_ENABLED
 	CACHE_CLASS_AND_CHECK(System_Diagnostics_StackTrace, GDMono::get_singleton()->get_corlib_assembly()->get_class("System.Diagnostics", "StackTrace"));
@@ -235,36 +162,12 @@ void update_corlib_cache() {
 }
 
 void update_godot_api_cache() {
-	CACHE_CLASS_AND_CHECK(Vector2, GODOT_API_CLASS(Vector2));
-	CACHE_CLASS_AND_CHECK(Vector2i, GODOT_API_CLASS(Vector2i));
-	CACHE_CLASS_AND_CHECK(Rect2, GODOT_API_CLASS(Rect2));
-	CACHE_CLASS_AND_CHECK(Rect2i, GODOT_API_CLASS(Rect2i));
-	CACHE_CLASS_AND_CHECK(Transform2D, GODOT_API_CLASS(Transform2D));
-	CACHE_CLASS_AND_CHECK(Vector3, GODOT_API_CLASS(Vector3));
-	CACHE_CLASS_AND_CHECK(Vector3i, GODOT_API_CLASS(Vector3i));
-	CACHE_CLASS_AND_CHECK(Vector4, GODOT_API_CLASS(Vector4));
-	CACHE_CLASS_AND_CHECK(Vector4i, GODOT_API_CLASS(Vector4i));
-	CACHE_CLASS_AND_CHECK(Basis, GODOT_API_CLASS(Basis));
-	CACHE_CLASS_AND_CHECK(Quaternion, GODOT_API_CLASS(Quaternion));
-	CACHE_CLASS_AND_CHECK(Transform3D, GODOT_API_CLASS(Transform3D));
-	CACHE_CLASS_AND_CHECK(Projection, GODOT_API_CLASS(Projection));
-	CACHE_CLASS_AND_CHECK(AABB, GODOT_API_CLASS(AABB));
-	CACHE_CLASS_AND_CHECK(Color, GODOT_API_CLASS(Color));
-	CACHE_CLASS_AND_CHECK(Plane, GODOT_API_CLASS(Plane));
-	CACHE_CLASS_AND_CHECK(StringName, GODOT_API_CLASS(StringName));
-	CACHE_CLASS_AND_CHECK(NodePath, GODOT_API_CLASS(NodePath));
-	CACHE_CLASS_AND_CHECK(RID, GODOT_API_CLASS(RID));
 	CACHE_CLASS_AND_CHECK(GodotObject, GODOT_API_CLASS(Object));
 	CACHE_CLASS_AND_CHECK(GodotResource, GODOT_API_CLASS(Resource));
 	CACHE_CLASS_AND_CHECK(Node, GODOT_API_CLASS(Node));
 	CACHE_CLASS_AND_CHECK(Control, GODOT_API_CLASS(Control));
-	CACHE_CLASS_AND_CHECK(Node3D, GODOT_API_CLASS(Node3D));
-	CACHE_CLASS_AND_CHECK(WeakRef, GODOT_API_CLASS(WeakRef));
 	CACHE_CLASS_AND_CHECK(Callable, GODOT_API_CLASS(Callable));
 	CACHE_CLASS_AND_CHECK(SignalInfo, GODOT_API_CLASS(SignalInfo));
-	CACHE_CLASS_AND_CHECK(Array, GODOT_API_NS_CLASS(BINDINGS_NAMESPACE_COLLECTIONS, Array));
-	CACHE_CLASS_AND_CHECK(Dictionary, GODOT_API_NS_CLASS(BINDINGS_NAMESPACE_COLLECTIONS, Dictionary));
-	CACHE_CLASS_AND_CHECK(MarshalUtils, GODOT_API_CLASS(MarshalUtils));
 	CACHE_CLASS_AND_CHECK(ISerializationListener, GODOT_API_CLASS(ISerializationListener));
 
 #ifdef DEBUG_ENABLED
@@ -291,39 +194,40 @@ void update_godot_api_cache() {
 	CACHE_FIELD_AND_CHECK(AssemblyHasScriptsAttribute, scriptTypes, CACHED_CLASS(AssemblyHasScriptsAttribute)->get_field("scriptTypes"));
 
 	CACHE_FIELD_AND_CHECK(GodotObject, ptr, CACHED_CLASS(GodotObject)->get_field(BINDINGS_PTR_FIELD));
-	CACHE_FIELD_AND_CHECK(StringName, ptr, CACHED_CLASS(StringName)->get_field(BINDINGS_PTR_FIELD));
-	CACHE_FIELD_AND_CHECK(NodePath, ptr, CACHED_CLASS(NodePath)->get_field(BINDINGS_PTR_FIELD));
-	CACHE_FIELD_AND_CHECK(RID, ptr, CACHED_CLASS(RID)->get_field(BINDINGS_PTR_FIELD));
 
 	CACHE_METHOD_THUNK_AND_CHECK(GodotObject, Dispose, CACHED_CLASS(GodotObject)->get_method("Dispose", 0));
-	CACHE_METHOD_THUNK_AND_CHECK(Array, GetPtr, GODOT_API_NS_CLASS(BINDINGS_NAMESPACE_COLLECTIONS, Array)->get_method("GetPtr", 0));
-	CACHE_METHOD_THUNK_AND_CHECK(Dictionary, GetPtr, GODOT_API_NS_CLASS(BINDINGS_NAMESPACE_COLLECTIONS, Dictionary)->get_method("GetPtr", 0));
 	CACHE_METHOD_THUNK_AND_CHECK(SignalAwaiter, SignalCallback, GODOT_API_CLASS(SignalAwaiter)->get_method("SignalCallback", 1));
 	CACHE_METHOD_THUNK_AND_CHECK(GodotTaskScheduler, Activate, GODOT_API_CLASS(GodotTaskScheduler)->get_method("Activate", 0));
 
+	CACHE_METHOD_THUNK_AND_CHECK(DelegateUtils, TrySerializeDelegateWithGCHandle, GODOT_API_CLASS(DelegateUtils)->get_method("TrySerializeDelegateWithGCHandle", 2));
+	CACHE_METHOD_THUNK_AND_CHECK(DelegateUtils, TryDeserializeDelegateWithGCHandle, GODOT_API_CLASS(DelegateUtils)->get_method("TryDeserializeDelegateWithGCHandle", 2));
 	CACHE_METHOD_THUNK_AND_CHECK(DelegateUtils, TrySerializeDelegate, GODOT_API_CLASS(DelegateUtils)->get_method("TrySerializeDelegate", 2));
 	CACHE_METHOD_THUNK_AND_CHECK(DelegateUtils, TryDeserializeDelegate, GODOT_API_CLASS(DelegateUtils)->get_method("TryDeserializeDelegate", 2));
+	CACHE_METHOD_THUNK_AND_CHECK(DelegateUtils, InvokeWithVariantArgs, GODOT_API_CLASS(DelegateUtils)->get_method("InvokeWithVariantArgs", 4));
+	CACHE_METHOD_THUNK_AND_CHECK(DelegateUtils, DelegateEquals, GODOT_API_CLASS(DelegateUtils)->get_method("DelegateEquals", 2));
+	CACHE_METHOD_THUNK_AND_CHECK(DelegateUtils, FreeGCHandle, GODOT_API_CLASS(DelegateUtils)->get_method("FreeGCHandle", 1));
 
-	// Start of MarshalUtils methods
+	GDMonoClass *gd_mono_marshal_class = GDMono::get_singleton()->get_core_api_assembly()->get_class(
+			"Godot.NativeInterop", "Marshaling");
 
-	CACHE_METHOD_THUNK_AND_CHECK(MarshalUtils, TypeIsGenericArray, GODOT_API_CLASS(MarshalUtils)->get_method("TypeIsGenericArray", 1));
-	CACHE_METHOD_THUNK_AND_CHECK(MarshalUtils, TypeIsGenericDictionary, GODOT_API_CLASS(MarshalUtils)->get_method("TypeIsGenericDictionary", 1));
-	CACHE_METHOD_THUNK_AND_CHECK(MarshalUtils, TypeIsSystemGenericList, GODOT_API_CLASS(MarshalUtils)->get_method("TypeIsSystemGenericList", 1));
-	CACHE_METHOD_THUNK_AND_CHECK(MarshalUtils, TypeIsSystemGenericDictionary, GODOT_API_CLASS(MarshalUtils)->get_method("TypeIsSystemGenericDictionary", 1));
-	CACHE_METHOD_THUNK_AND_CHECK(MarshalUtils, TypeIsGenericIEnumerable, GODOT_API_CLASS(MarshalUtils)->get_method("TypeIsGenericIEnumerable", 1));
-	CACHE_METHOD_THUNK_AND_CHECK(MarshalUtils, TypeIsGenericICollection, GODOT_API_CLASS(MarshalUtils)->get_method("TypeIsGenericICollection", 1));
-	CACHE_METHOD_THUNK_AND_CHECK(MarshalUtils, TypeIsGenericIDictionary, GODOT_API_CLASS(MarshalUtils)->get_method("TypeIsGenericIDictionary", 1));
+	ERR_FAIL_COND_MSG(gd_mono_marshal_class == nullptr,
+			"Mono Cache: Class `Godot.NativeInterop.Marshaling` not found.");
+
+	CACHE_METHOD_THUNK_AND_CHECK(Marshaling, managed_to_variant_type,
+			gd_mono_marshal_class->get_method("managed_to_variant_type", 2));
+	CACHE_METHOD_THUNK_AND_CHECK(Marshaling, try_get_array_element_type,
+			gd_mono_marshal_class->get_method("try_get_array_element_type", 2));
+	CACHE_METHOD_THUNK_AND_CHECK(Marshaling, variant_to_mono_object_of_type,
+			gd_mono_marshal_class->get_method("variant_to_mono_object_of_type", 2));
+	CACHE_METHOD_THUNK_AND_CHECK(Marshaling, variant_to_mono_object,
+			gd_mono_marshal_class->get_method("variant_to_mono_object", 1));
+	CACHE_METHOD_THUNK_AND_CHECK(Marshaling, mono_object_to_variant_out,
+			gd_mono_marshal_class->get_method("mono_object_to_variant_out", 3));
+
+	CACHE_METHOD_THUNK_AND_CHECK(Marshaling, SetFieldValue,
+			gd_mono_marshal_class->get_method("SetFieldValue", 3));
+
 	CACHE_METHOD_THUNK_AND_CHECK(MarshalUtils, TypeHasFlagsAttribute, GODOT_API_CLASS(MarshalUtils)->get_method("TypeHasFlagsAttribute", 1));
-
-	CACHE_METHOD_THUNK_AND_CHECK(MarshalUtils, GetGenericTypeDefinition, GODOT_API_CLASS(MarshalUtils)->get_method("GetGenericTypeDefinition", 2));
-
-	CACHE_METHOD_THUNK_AND_CHECK(MarshalUtils, ArrayGetElementType, GODOT_API_CLASS(MarshalUtils)->get_method("ArrayGetElementType", 2));
-	CACHE_METHOD_THUNK_AND_CHECK(MarshalUtils, DictionaryGetKeyValueTypes, GODOT_API_CLASS(MarshalUtils)->get_method("DictionaryGetKeyValueTypes", 3));
-
-	CACHE_METHOD_THUNK_AND_CHECK(MarshalUtils, MakeGenericArrayType, GODOT_API_CLASS(MarshalUtils)->get_method("MakeGenericArrayType", 1));
-	CACHE_METHOD_THUNK_AND_CHECK(MarshalUtils, MakeGenericDictionaryType, GODOT_API_CLASS(MarshalUtils)->get_method("MakeGenericDictionaryType", 2));
-
-	// End of MarshalUtils methods
 
 #ifdef DEBUG_ENABLED
 	CACHE_METHOD_THUNK_AND_CHECK(DebuggingUtils, GetStackFrameInfo, GODOT_API_CLASS(DebuggingUtils)->get_method("GetStackFrameInfo", 4));
