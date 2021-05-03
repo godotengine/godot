@@ -591,7 +591,7 @@ Variant Node::_rpc_bind(const Variant **p_args, int p_argcount, Callable::CallEr
 	if (p_args[0]->get_type() != Variant::STRING_NAME) {
 		r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 		r_error.argument = 0;
-		r_error.expected = Variant::STRING;
+		r_error.expected = Variant::STRING_NAME;
 		return Variant();
 	}
 
@@ -620,7 +620,7 @@ Variant Node::_rpc_id_bind(const Variant **p_args, int p_argcount, Callable::Cal
 	if (p_args[1]->get_type() != Variant::STRING_NAME) {
 		r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 		r_error.argument = 1;
-		r_error.expected = Variant::STRING;
+		r_error.expected = Variant::STRING_NAME;
 		return Variant();
 	}
 
@@ -643,7 +643,7 @@ Variant Node::_rpc_unreliable_bind(const Variant **p_args, int p_argcount, Calla
 	if (p_args[0]->get_type() != Variant::STRING_NAME) {
 		r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 		r_error.argument = 0;
-		r_error.expected = Variant::STRING;
+		r_error.expected = Variant::STRING_NAME;
 		return Variant();
 	}
 
@@ -672,7 +672,7 @@ Variant Node::_rpc_unreliable_id_bind(const Variant **p_args, int p_argcount, Ca
 	if (p_args[1]->get_type() != Variant::STRING_NAME) {
 		r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 		r_error.argument = 1;
-		r_error.expected = Variant::STRING;
+		r_error.expected = Variant::STRING_NAME;
 		return Variant();
 	}
 
