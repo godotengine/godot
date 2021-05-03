@@ -42,23 +42,7 @@ struct CachedData {
 
 	// Let's use the no-namespace format for these too
 	GDMonoClass *class_MonoObject; // object
-	GDMonoClass *class_bool; // bool
-	GDMonoClass *class_int8_t; // sbyte
-	GDMonoClass *class_int16_t; // short
-	GDMonoClass *class_int32_t; // int
-	GDMonoClass *class_int64_t; // long
-	GDMonoClass *class_uint8_t; // byte
-	GDMonoClass *class_uint16_t; // ushort
-	GDMonoClass *class_uint32_t; // uint
-	GDMonoClass *class_uint64_t; // ulong
-	GDMonoClass *class_float; // float
-	GDMonoClass *class_double; // double
 	GDMonoClass *class_String; // string
-	GDMonoClass *class_IntPtr; // System.IntPtr
-
-	GDMonoClass *class_System_Collections_IEnumerable;
-	GDMonoClass *class_System_Collections_ICollection;
-	GDMonoClass *class_System_Collections_IDictionary;
 
 #ifdef DEBUG_ENABLED
 	GDMonoClass *class_System_Diagnostics_StackTrace;
@@ -68,37 +52,13 @@ struct CachedData {
 #endif
 
 	GDMonoClass *class_KeyNotFoundException;
-
-	MonoClass *rawclass_Dictionary;
 	// -----------------------------------------------
 
-	GDMonoClass *class_Vector2;
-	GDMonoClass *class_Vector2i;
-	GDMonoClass *class_Rect2;
-	GDMonoClass *class_Rect2i;
-	GDMonoClass *class_Transform2D;
-	GDMonoClass *class_Vector3;
-	GDMonoClass *class_Vector3i;
-	GDMonoClass *class_Basis;
-	GDMonoClass *class_Quaternion;
-	GDMonoClass *class_Transform3D;
-	GDMonoClass *class_AABB;
-	GDMonoClass *class_Color;
-	GDMonoClass *class_Plane;
-	GDMonoClass *class_StringName;
-	GDMonoClass *class_NodePath;
-	GDMonoClass *class_RID;
 	GDMonoClass *class_GodotObject;
 	GDMonoClass *class_GodotResource;
-	GDMonoClass *class_Node;
 	GDMonoClass *class_Control;
-	GDMonoClass *class_Node3D;
-	GDMonoClass *class_WeakRef;
 	GDMonoClass *class_Callable;
 	GDMonoClass *class_SignalInfo;
-	GDMonoClass *class_Array;
-	GDMonoClass *class_Dictionary;
-	GDMonoClass *class_MarshalUtils;
 	GDMonoClass *class_ISerializationListener;
 
 #ifdef DEBUG_ENABLED
@@ -122,41 +82,30 @@ struct CachedData {
 	GDMonoField *field_AssemblyHasScriptsAttribute_scriptTypes;
 
 	GDMonoField *field_GodotObject_ptr;
-	GDMonoField *field_StringName_ptr;
-	GDMonoField *field_NodePath_ptr;
-	GDMonoField *field_Image_ptr;
-	GDMonoField *field_RID_ptr;
 
 	GDMonoMethodThunk<MonoObject *> methodthunk_GodotObject_Dispose;
-	GDMonoMethodThunkR<Array *, MonoObject *> methodthunk_Array_GetPtr;
-	GDMonoMethodThunkR<Dictionary *, MonoObject *> methodthunk_Dictionary_GetPtr;
 	GDMonoMethodThunk<MonoObject *, MonoArray *> methodthunk_SignalAwaiter_SignalCallback;
 	GDMonoMethodThunk<MonoObject *> methodthunk_GodotTaskScheduler_Activate;
 
 	GDMonoMethodThunkR<MonoBoolean, MonoObject *, MonoObject *> methodthunk_Delegate_Equals;
 
+	GDMonoMethodThunkR<MonoBoolean, void *, MonoObject *> methodthunk_DelegateUtils_TrySerializeDelegateWithGCHandle;
+	GDMonoMethodThunkR<MonoBoolean, MonoObject *, void **> methodthunk_DelegateUtils_TryDeserializeDelegateWithGCHandle;
+
 	GDMonoMethodThunkR<MonoBoolean, MonoDelegate *, MonoObject *> methodthunk_DelegateUtils_TrySerializeDelegate;
 	GDMonoMethodThunkR<MonoBoolean, MonoObject *, MonoDelegate **> methodthunk_DelegateUtils_TryDeserializeDelegate;
 
-	// Start of MarshalUtils methods
+	GDMonoMethodThunk<void *, const Variant **, uint32_t, const Variant *> methodthunk_DelegateUtils_InvokeWithVariantArgs;
+	GDMonoMethodThunkR<MonoBoolean, void *, void *> methodthunk_DelegateUtils_DelegateEquals;
+	GDMonoMethodThunk<void *> methodthunk_DelegateUtils_FreeGCHandle;
 
-	GDMonoMethodThunkR<MonoBoolean, MonoReflectionType *> methodthunk_MarshalUtils_TypeIsGenericArray;
-	GDMonoMethodThunkR<MonoBoolean, MonoReflectionType *> methodthunk_MarshalUtils_TypeIsGenericDictionary;
-	GDMonoMethodThunkR<MonoBoolean, MonoReflectionType *> methodthunk_MarshalUtils_TypeIsSystemGenericList;
-	GDMonoMethodThunkR<MonoBoolean, MonoReflectionType *> methodthunk_MarshalUtils_TypeIsSystemGenericDictionary;
-	GDMonoMethodThunkR<MonoBoolean, MonoReflectionType *> methodthunk_MarshalUtils_TypeIsGenericIEnumerable;
-	GDMonoMethodThunkR<MonoBoolean, MonoReflectionType *> methodthunk_MarshalUtils_TypeIsGenericICollection;
-	GDMonoMethodThunkR<MonoBoolean, MonoReflectionType *> methodthunk_MarshalUtils_TypeIsGenericIDictionary;
+	GDMonoMethodThunkR<int32_t, MonoReflectionType *, MonoBoolean *> methodthunk_Marshaling_managed_to_variant_type;
+	GDMonoMethodThunkR<MonoBoolean, MonoReflectionType *, MonoReflectionType **> methodthunk_Marshaling_try_get_array_element_type;
+	GDMonoMethodThunkR<MonoObject *, const Variant *, MonoReflectionType *> methodthunk_Marshaling_variant_to_mono_object_of_type;
+	GDMonoMethodThunkR<MonoObject *, const Variant *> methodthunk_Marshaling_variant_to_mono_object;
+	GDMonoMethodThunk<MonoObject *, MonoBoolean, Variant *> methodthunk_Marshaling_mono_object_to_variant_out;
 
-	GDMonoMethodThunk<MonoReflectionType *, MonoReflectionType **> methodthunk_MarshalUtils_GetGenericTypeDefinition;
-
-	GDMonoMethodThunk<MonoReflectionType *, MonoReflectionType **> methodthunk_MarshalUtils_ArrayGetElementType;
-	GDMonoMethodThunk<MonoReflectionType *, MonoReflectionType **, MonoReflectionType **> methodthunk_MarshalUtils_DictionaryGetKeyValueTypes;
-
-	GDMonoMethodThunkR<MonoReflectionType *, MonoReflectionType *> methodthunk_MarshalUtils_MakeGenericArrayType;
-	GDMonoMethodThunkR<MonoReflectionType *, MonoReflectionType *, MonoReflectionType *> methodthunk_MarshalUtils_MakeGenericDictionaryType;
-
-	// End of MarshalUtils methods
+	GDMonoMethodThunk<MonoReflectionField *, MonoObject *, const Variant *> methodthunk_Marshaling_SetFieldValue;
 
 	Ref<MonoGCHandleRef> task_scheduler_handle;
 
@@ -177,10 +126,6 @@ extern CachedData cached_data;
 void update_corlib_cache();
 void update_godot_api_cache();
 
-inline void clear_corlib_cache() {
-	cached_data.clear_corlib_cache();
-}
-
 inline void clear_godot_api_cache() {
 	cached_data.clear_godot_api_cache();
 }
@@ -188,10 +133,8 @@ inline void clear_godot_api_cache() {
 
 #define CACHED_CLASS(m_class) (GDMonoCache::cached_data.class_##m_class)
 #define CACHED_CLASS_RAW(m_class) (GDMonoCache::cached_data.class_##m_class->get_mono_ptr())
-#define CACHED_RAW_MONO_CLASS(m_class) (GDMonoCache::cached_data.rawclass_##m_class)
 #define CACHED_FIELD(m_class, m_field) (GDMonoCache::cached_data.field_##m_class##_##m_field)
 #define CACHED_METHOD(m_class, m_method) (GDMonoCache::cached_data.method_##m_class##_##m_method)
 #define CACHED_METHOD_THUNK(m_class, m_method) (GDMonoCache::cached_data.methodthunk_##m_class##_##m_method)
-#define CACHED_PROPERTY(m_class, m_property) (GDMonoCache::cached_data.property_##m_class##_##m_property)
 
 #endif // GD_MONO_CACHE_H

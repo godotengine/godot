@@ -28,8 +28,6 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifdef MONO_GLUE_ENABLED
-
 #include "core/object/class_db.h"
 #include "core/object/ref_counted.h"
 #include "core/string/string_name.h"
@@ -42,12 +40,6 @@
 #include "../mono_gd/gd_mono_utils.h"
 #include "../signal_awaiter_utils.h"
 #include "arguments_vector.h"
-
-Object *godot_icall_Object_Ctor(MonoObject *p_obj) {
-	Object *instance = memnew(Object);
-	GDMonoInternals::tie_managed_to_unmanaged(p_obj, instance);
-	return instance;
-}
 
 void godot_icall_Object_Disposed(MonoObject *p_obj, Object *p_ptr) {
 #ifdef DEBUG_ENABLED
@@ -131,12 +123,6 @@ void godot_icall_Object_ConnectEventSignals(Object *p_ptr) {
 	if (csharp_instance) {
 		csharp_instance->connect_event_signals();
 	}
-}
-
-MethodBind *godot_icall_Object_ClassDB_get_method(StringName *p_type, MonoString *p_method) {
-	StringName type = p_type ? *p_type : StringName();
-	StringName method(GDMonoMarshal::mono_string_to_godot(p_method));
-	return ClassDB::get_method(type, method);
 }
 
 MonoObject *godot_icall_Object_weakref(Object *p_ptr) {
@@ -240,11 +226,9 @@ MonoString *godot_icall_Object_ToString(Object *p_ptr) {
 }
 
 void godot_register_object_icalls() {
-	GDMonoUtils::add_internal_call("Godot.Object::godot_icall_Object_Ctor", godot_icall_Object_Ctor);
 	GDMonoUtils::add_internal_call("Godot.Object::godot_icall_Object_Disposed", godot_icall_Object_Disposed);
 	GDMonoUtils::add_internal_call("Godot.Object::godot_icall_RefCounted_Disposed", godot_icall_RefCounted_Disposed);
 	GDMonoUtils::add_internal_call("Godot.Object::godot_icall_Object_ConnectEventSignals", godot_icall_Object_ConnectEventSignals);
-	GDMonoUtils::add_internal_call("Godot.Object::godot_icall_Object_ClassDB_get_method", godot_icall_Object_ClassDB_get_method);
 	GDMonoUtils::add_internal_call("Godot.Object::godot_icall_Object_ToString", godot_icall_Object_ToString);
 	GDMonoUtils::add_internal_call("Godot.Object::godot_icall_Object_weakref", godot_icall_Object_weakref);
 	GDMonoUtils::add_internal_call("Godot.SignalAwaiter::godot_icall_SignalAwaiter_connect", godot_icall_SignalAwaiter_connect);
@@ -253,5 +237,3 @@ void godot_register_object_icalls() {
 	GDMonoUtils::add_internal_call("Godot.DynamicGodotObject::godot_icall_DynamicGodotObject_GetMember", godot_icall_DynamicGodotObject_GetMember);
 	GDMonoUtils::add_internal_call("Godot.DynamicGodotObject::godot_icall_DynamicGodotObject_SetMember", godot_icall_DynamicGodotObject_SetMember);
 }
-
-#endif // MONO_GLUE_ENABLED

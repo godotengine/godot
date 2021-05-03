@@ -2,7 +2,7 @@ supported_platforms = ["windows", "osx", "linuxbsd", "server", "android", "haiku
 
 
 def can_build(env, platform):
-    return not env["arch"].startswith("rv")
+    return env["module_gdnative_enabled"] and not env["arch"].startswith("rv")
 
 
 def configure(env):
@@ -36,7 +36,6 @@ def configure(env):
         )
     )
     envvars.Add(BoolVariable("mono_static", "Statically link Mono", default_mono_static))
-    envvars.Add(BoolVariable("mono_glue", "Build with the Mono glue sources", True))
     envvars.Add(BoolVariable("build_cil", "Build C# solutions", True))
     envvars.Add(
         BoolVariable("copy_mono_root", "Make a copy of the Mono installation directory to bundle with the editor", True)
