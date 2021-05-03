@@ -196,7 +196,7 @@ void DisplayServerAndroid::window_set_input_text_callback(const Callable &p_call
 }
 
 void DisplayServerAndroid::window_set_rect_changed_callback(const Callable &p_callable, DisplayServer::WindowID p_window) {
-	// Not supported on Android.
+	rect_changed_callback = p_callable;
 }
 
 void DisplayServerAndroid::window_set_drop_files_callback(const Callable &p_callable, DisplayServer::WindowID p_window) {
@@ -387,6 +387,19 @@ void DisplayServerAndroid::reset_window() {
 		}
 	}
 #endif
+}
+
+void DisplayServerAndroid::notify_surface_changed(int p_width, int p_height) {
+	if (rect_changed_callback.is_null()) {
+		return;
+	}
+
+	const Variant size = Rect2i(0, 0, p_width, p_height);
+	const Variant *sizep = &size;
+	Variant ret;
+	Callable::CallError ce;
+
+	rect_changed_callback.call(reinterpret_cast<const Variant **>(&sizep), 1, ret, ce);
 }
 
 DisplayServerAndroid::DisplayServerAndroid(const String &p_rendering_driver, DisplayServer::WindowMode p_mode, uint32_t p_flags, const Vector2i &p_resolution, Error &r_error) {
