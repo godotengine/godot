@@ -250,7 +250,7 @@ void GDScriptFunctions::call(Function p_func, const Variant **p_args, int p_arg_
 			VALIDATE_ARG_COUNT(2);
 			VALIDATE_ARG_NUM(0);
 			VALIDATE_ARG_NUM(1);
-			r_ret = Math::posmod((int)*p_args[0], (int)*p_args[1]);
+			r_ret = Math::posmod((int64_t)*p_args[0], (int64_t)*p_args[1]);
 		} break;
 		case MATH_FLOOR: {
 			VALIDATE_ARG_COUNT(1);
