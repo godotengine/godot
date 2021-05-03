@@ -526,6 +526,12 @@ void DependencyRemoveDialog::ok_pressed() {
 		EditorFileSystem::get_singleton()->scan_changes();
 	}
 
+	Vector<String> files_removed;
+	for (Map<String, String>::Element *F = all_remove_files.front(); F; F = F->next()) {
+		files_removed.push_back(F->key());
+	}
+	emit_signal("files_removed", files_removed);
+
 	// If some files/dirs would be deleted, favorite dirs need to be updated
 	Vector<String> previous_favorites = EditorSettings::get_singleton()->get_favorites();
 	Vector<String> new_favorites;
@@ -550,6 +556,7 @@ void DependencyRemoveDialog::ok_pressed() {
 void DependencyRemoveDialog::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("file_removed", PropertyInfo(Variant::STRING, "file")));
 	ADD_SIGNAL(MethodInfo("folder_removed", PropertyInfo(Variant::STRING, "folder")));
+	ADD_SIGNAL(MethodInfo("files_removed", PropertyInfo(Variant::PACKED_STRING_ARRAY, "files")));
 }
 
 DependencyRemoveDialog::DependencyRemoveDialog() {
