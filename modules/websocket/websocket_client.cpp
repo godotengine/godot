@@ -43,34 +43,18 @@ Error WebSocketClient::connect_to_url(String p_url, const Vector<String> p_proto
 
 	String host = p_url;
 	String path = "/";
-	int p_len = -1;
+	String scheme = "";
 	int port = 80;
+	Error err = p_url.parse_url(scheme, host, port, path);
+	ERR_FAIL_COND_V_MSG(err != OK, err, "Invalid URL: " + p_url);
+
 	bool ssl = false;
-	if (host.begins_with("wss://")) {
-		ssl = true; // we should implement this
-		host = host.substr(6, host.length() - 6);
-		port = 443;
-	} else {
-		ssl = false;
-		if (host.begins_with("ws://")) {
-			host = host.substr(5, host.length() - 5);
-		}
+	if (scheme == "wss://") {
+		ssl = true;
 	}
-
-	// Path
-	p_len = host.find("/");
-	if (p_len != -1) {
-		path = host.substr(p_len, host.length() - p_len);
-		host = host.substr(0, p_len);
+	if (port == 0) {
+		port = ssl ? 443 : 80;
 	}
-
-	// Port
-	p_len = host.rfind(":");
-	if (p_len != -1 && p_len == host.find(":")) {
-		port = host.substr(p_len, host.length() - p_len).to_int();
-		host = host.substr(0, p_len);
-	}
-
 	return connect_to_host(host, path, port, ssl, p_protocols, p_custom_headers);
 }
 

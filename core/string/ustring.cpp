@@ -240,6 +240,71 @@ String String::word_wrap(int p_chars_per_line) const {
 	return ret;
 }
 
+Error String::parse_url(String &r_scheme, String &r_host, int &r_port, String &r_path) const {
+	// Splits the URL into scheme, host, port, path. Strip credentials when present.
+	String base = *this;
+	r_scheme = "";
+	r_host = "";
+	r_port = 0;
+	r_path = "";
+	int pos = base.find("://");
+	// Scheme
+	if (pos != -1) {
+		r_scheme = base.substr(0, pos + 3).to_lower();
+		base = base.substr(pos + 3, base.length() - pos - 3);
+	}
+	pos = base.find("/");
+	// Path
+	if (pos != -1) {
+		r_path = base.substr(pos, base.length() - pos);
+		base = base.substr(0, pos);
+	}
+	// Host
+	pos = base.find("@");
+	if (pos != -1) {
+		// Strip credentials
+		base = base.substr(pos + 1, base.length() - pos - 1);
+	}
+	if (base.begins_with("[")) {
+		// Literal IPv6
+		pos = base.rfind("]");
+		if (pos == -1) {
+			return ERR_INVALID_PARAMETER;
+		}
+		r_host = base.substr(1, pos - 1);
+		base = base.substr(pos + 1, base.length() - pos - 1);
+	} else {
+		// Anything else
+		if (base.get_slice_count(":") > 1) {
+			return ERR_INVALID_PARAMETER;
+		}
+		pos = base.rfind(":");
+		if (pos == -1) {
+			r_host = base;
+			base = "";
+		} else {
+			r_host = base.substr(0, pos);
+			base = base.substr(pos, base.length() - pos);
+		}
+	}
+	if (r_host.is_empty()) {
+		return ERR_INVALID_PARAMETER;
+	}
+	r_host = r_host.to_lower();
+	// Port
+	if (base.begins_with(":")) {
+		base = base.substr(1, base.length() - 1);
+		if (!base.is_valid_integer()) {
+			return ERR_INVALID_PARAMETER;
+		}
+		r_port = base.to_int();
+		if (r_port < 1 || r_port > 65535) {
+			return ERR_INVALID_PARAMETER;
+		}
+	}
+	return OK;
+}
+
 void String::copy_from(const char *p_cstr) {
 	// copy Latin-1 encoded c-string directly
 	if (!p_cstr) {
