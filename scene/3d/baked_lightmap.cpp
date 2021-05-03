@@ -1457,7 +1457,7 @@ int BakedLightmap::get_bounces() const {
 }
 
 void BakedLightmap::set_bias(float p_bias) {
-	ERR_FAIL_COND(p_bias < 0.00001);
+	ERR_FAIL_COND(p_bias < 0.00001f);
 	bias = p_bias;
 }
 
