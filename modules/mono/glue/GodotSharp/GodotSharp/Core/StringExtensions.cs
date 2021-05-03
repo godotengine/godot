@@ -192,7 +192,7 @@ namespace Godot
         /// </summary>
         public static string CEscape(this string instance)
         {
-            var sb = new StringBuilder(string.Copy(instance));
+            var sb = new StringBuilder(instance);
 
             sb.Replace("\\", "\\\\");
             sb.Replace("\a", "\\a");
@@ -215,7 +215,7 @@ namespace Godot
         /// </summary>
         public static string CUnescape(this string instance)
         {
-            var sb = new StringBuilder(string.Copy(instance));
+            var sb = new StringBuilder(instance);
 
             sb.Replace("\\a", "\a");
             sb.Replace("\\b", "\b");
@@ -732,7 +732,7 @@ namespace Godot
         /// </summary>
         public static string JSONEscape(this string instance)
         {
-            var sb = new StringBuilder(string.Copy(instance));
+            var sb = new StringBuilder(instance);
 
             sb.Replace("\\", "\\\\");
             sb.Replace("\b", "\\b");
