@@ -474,6 +474,7 @@ const OrderedHashMap<String, List<Ref<InputEvent>>> &InputMap::get_builtins() {
 
 	inputs = List<Ref<InputEvent>>();
 	inputs.push_back(InputEventKey::create_reference(KEY_TAB));
+	inputs.push_back(InputEventKey::create_reference(KEY_ENTER));
 	default_builtin_cache.insert("ui_text_completion_accept", inputs);
 
 	// Newlines
