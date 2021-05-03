@@ -151,6 +151,22 @@
 				Returns [code]true[/code] if both [Callable]s invoke the same custom target.
 			</description>
 		</method>
+		<method name="rpc" qualifiers="vararg const">
+			<return type="void">
+			</return>
+			<description>
+				Perform an RPC (Remote Procedure Call). This is used for multiplayer and is normally not available unless the function being called has been marked as [i]RPC[/i]. Calling it on unsupported functions will result in an error.
+			</description>
+		</method>
+		<method name="rpc_id" qualifiers="vararg const">
+			<return type="void">
+			</return>
+			<argument index="0" name="peer_id" type="int">
+			</argument>
+			<description>
+				Perform an RPC (Remote Procedure Call) on a specific peer ID (see multiplayer documentation for reference). This is used for multiplayer and is normally not available unless the function being called has been marked as [i]RPC[/i]. Calling it on unsupported functions will result in an error.
+			</description>
+		</method>
 		<method name="unbind" qualifiers="const">
 			<return type="Callable">
 			</return>

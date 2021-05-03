@@ -54,6 +54,20 @@ void Callable::call(const Variant **p_arguments, int p_argcount, Variant &r_retu
 	}
 }
 
+void Callable::rpc(int p_id, const Variant **p_arguments, int p_argcount, CallError &r_call_error) const {
+	if (is_null()) {
+		r_call_error.error = CallError::CALL_ERROR_INSTANCE_IS_NULL;
+		r_call_error.argument = 0;
+		r_call_error.expected = 0;
+	} else if (!is_custom()) {
+		r_call_error.error = CallError::CALL_ERROR_INVALID_METHOD;
+		r_call_error.argument = 0;
+		r_call_error.expected = 0;
+	} else {
+		custom->rpc(p_id, p_arguments, p_argcount, r_call_error);
+	}
+}
+
 Callable Callable::bind(const Variant **p_arguments, int p_argcount) const {
 	Vector<Variant> args;
 	args.resize(p_argcount);
@@ -281,6 +295,12 @@ Callable::~Callable() {
 			memdelete(custom);
 		}
 	}
+}
+
+void CallableCustom::rpc(int p_peer_id, const Variant **p_arguments, int p_argcount, Callable::CallError &r_call_error) const {
+	r_call_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
+	r_call_error.argument = 0;
+	r_call_error.expected = 0;
 }
 
 const Callable *CallableCustom::get_base_comparator() const {
