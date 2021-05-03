@@ -7986,7 +7986,11 @@ void RenderingDeviceVulkan::_free_rids(T &p_owner, const char *p_type) {
 	List<RID> owned;
 	p_owner.get_owned_list(&owned);
 	if (owned.size()) {
-		WARN_PRINT(itos(owned.size()) + " RIDs of type '" + p_type + "' were leaked.");
+		if (owned.size() == 1) {
+			WARN_PRINT(vformat("1 RID of type \"%s\" was leaked.", p_type));
+		} else {
+			WARN_PRINT(vformat("%d RIDs of type \"%s\" were leaked.", owned.size(), p_type));
+		}
 		for (List<RID>::Element *E = owned.front(); E; E = E->next()) {
 			free(E->get());
 		}
@@ -8199,7 +8203,11 @@ void RenderingDeviceVulkan::finalize() {
 		List<RID> owned;
 		texture_owner.get_owned_list(&owned);
 		if (owned.size()) {
-			WARN_PRINT(itos(owned.size()) + " RIDs of type 'Texture' were leaked.");
+			if (owned.size() == 1) {
+				WARN_PRINT("1 RID of type \"Texture\" was leaked.");
+			} else {
+				WARN_PRINT(vformat("%d RIDs of type \"Texture\" were leaked.", owned.size()));
+			}
 			//free shared first
 			for (List<RID>::Element *E = owned.front(); E;) {
 				List<RID>::Element *N = E->next();
