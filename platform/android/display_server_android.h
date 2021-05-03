@@ -112,6 +112,7 @@ private:
 	Callable window_event_callback;
 	Callable input_event_callback;
 	Callable input_text_callback;
+	Callable rect_changed_callback;
 
 	void _window_callback(const Callable &p_callable, const Variant &p_arg) const;
 
@@ -215,6 +216,7 @@ public:
 	static void register_android_driver();
 
 	void reset_window();
+	void notify_surface_changed(int p_width, int p_height);
 
 	virtual Point2i mouse_get_position() const;
 	virtual int mouse_get_button_state() const;
