@@ -155,6 +155,7 @@ private:
 			r_out[keys[i]] = p_inp[keys[i]];
 		}
 	}
+	void _convert_mesh_instances(Ref<GLTFState> state);
 	double _filter_number(double p_float);
 	String _get_component_type_name(const uint32_t p_component);
 	int _get_component_type_size(const int component_type);
@@ -249,7 +250,6 @@ private:
 			const GLTFSkeletonIndex skel_i);
 	Error _create_skeletons(Ref<GLTFState> state);
 	Error _map_skin_joints_indices_to_skeleton_bone_indices(Ref<GLTFState> state);
-	Error _serialize_skins(Ref<GLTFState> state);
 	Error _create_skins(Ref<GLTFState> state);
 	bool _skins_are_same(const Ref<Skin> skin_a, const Ref<Skin> skin_b);
 	void _remove_duplicate_skins(Ref<GLTFState> state);
@@ -338,7 +338,6 @@ private:
 			GLTFNodeIndex p_node_i);
 	Error _encode_buffer_bins(Ref<GLTFState> state, const String &p_path);
 	Error _encode_buffer_glb(Ref<GLTFState> state, const String &p_path);
-	Error _serialize_bone_attachment(Ref<GLTFState> state);
 	Dictionary _serialize_texture_transform_uv1(Ref<BaseMaterial3D> p_material);
 	Dictionary _serialize_texture_transform_uv2(Ref<BaseMaterial3D> p_material);
 	Error _serialize_version(Ref<GLTFState> state);
@@ -371,20 +370,21 @@ public:
 			const GLTFAnimationIndex index, const int bake_fps);
 	GLTFMeshIndex _convert_mesh_instance(Ref<GLTFState> state,
 			MeshInstance3D *p_mesh_instance);
-	void _convert_mesh_instances(Ref<GLTFState> state);
+	void _convert_skins(Ref<GLTFState> state);
 	GLTFCameraIndex _convert_camera(Ref<GLTFState> state, Camera3D *p_camera);
 	void _convert_light_to_gltf(Light3D *light, Ref<GLTFState> state, Node3D *spatial, Ref<GLTFNode> gltf_node);
 	GLTFLightIndex _convert_light(Ref<GLTFState> state, Light3D *p_light);
-	GLTFSkeletonIndex _convert_skeleton(Ref<GLTFState> state, Skeleton3D *p_skeleton);
+	GLTFSkeletonIndex _convert_skeleton(Ref<GLTFState> state, Skeleton3D *p_skeleton, Ref<GLTFNode> p_node, MeshInstance3D *p_mi);
 	void _convert_spatial(Ref<GLTFState> state, Node3D *p_spatial, Ref<GLTFNode> p_node);
 	void _convert_scene_node(Ref<GLTFState> state, Node *p_current, Node *p_root,
 			const GLTFNodeIndex p_gltf_current,
 			const GLTFNodeIndex p_gltf_root);
 
+	void _create_mesh_skin(Ref<GLTFState> state, MeshInstance3D *p_mi, Ref<GLTFNode> p_gltf_node);
+	void _convert_mesh_skins(Ref<GLTFState> state);
 #ifdef MODULE_CSG_ENABLED
 	void _convert_csg_shape_to_gltf(Node *p_current, GLTFNodeIndex p_gltf_parent, Ref<GLTFNode> gltf_node, Ref<GLTFState> state);
 #endif // MODULE_CSG_ENABLED
-
 	void _create_gltf_node(Ref<GLTFState> state,
 			Node *p_scene_parent,
 			GLTFNodeIndex current_node_i,
@@ -409,21 +409,12 @@ public:
 			Ref<GLTFNode> gltf_node, Ref<GLTFState> state,
 			Node *p_root_node);
 #endif // MODULE_GRIDMAP_ENABLED
-	void _convert_mult_mesh_instance_to_gltf(
+	void _convert_multi_mesh_instance_to_gltf(
 			Node *p_scene_parent,
 			const GLTFNodeIndex &p_parent_node_index,
 			const GLTFNodeIndex &p_root_node_index,
 			Ref<GLTFNode> gltf_node, Ref<GLTFState> state,
 			Node *p_root_node);
-	void _convert_skeleton_to_gltf(
-			Node *p_scene_parent, Ref<GLTFState> state,
-			const GLTFNodeIndex &p_parent_node_index,
-			const GLTFNodeIndex &p_root_node_index,
-			Ref<GLTFNode> gltf_node, Node *p_root_node);
-	void _convert_bone_attachment_to_gltf(Node *p_scene_parent,
-			Ref<GLTFState> state,
-			Ref<GLTFNode> gltf_node,
-			bool &retflag);
 	void _convert_mesh_to_gltf(Node *p_scene_parent,
 			Ref<GLTFState> state, Node3D *spatial,
 			Ref<GLTFNode> gltf_node);
