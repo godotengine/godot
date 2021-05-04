@@ -131,6 +131,11 @@ Comment: doctest
 Copyright: 2016-2020, Viktor Kirilov
 License: Expat
 
+Files: ./thirdparty/embree-aarch64/
+Comment: Embree-aarch64
+Copyright: 2009-2021 Intel Corporation
+License: Apache-2.0
+
 Files: ./thirdparty/enet/
 Comment: ENet
 Copyright: 2002-2020, Lee Salzman

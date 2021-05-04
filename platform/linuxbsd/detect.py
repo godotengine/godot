@@ -325,6 +325,10 @@ def configure(env):
     if not env["builtin_pcre2"]:
         env.ParseConfig("pkg-config libpcre2-32 --cflags --libs")
 
+    if not env["builtin_embree"]:
+        # No pkgconfig file so far, hardcode expected lib name.
+        env.Append(LIBS=["embree3"])
+
     ## Flags
 
     if os.system("pkg-config --exists alsa") == 0:  # 0 means found

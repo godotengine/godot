@@ -145,6 +145,7 @@ opts.Add(BoolVariable("use_precise_math_checks", "Math checks use very precise e
 # Thirdparty libraries
 opts.Add(BoolVariable("builtin_bullet", "Use the built-in Bullet library", True))
 opts.Add(BoolVariable("builtin_certs", "Use the built-in SSL certificates bundles", True))
+opts.Add(BoolVariable("builtin_embree", "Use the built-in Embree library", True))
 opts.Add(BoolVariable("builtin_enet", "Use the built-in ENet library", True))
 opts.Add(BoolVariable("builtin_freetype", "Use the built-in FreeType library", True))
 opts.Add(BoolVariable("builtin_glslang", "Use the built-in glslang library", True))
