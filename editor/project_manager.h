@@ -89,6 +89,7 @@ class ProjectManager : public Control {
 	ProjectDialog *npdialog;
 
 	OptionButton *language_btn;
+	LinkButton *version_btn;
 
 	void _open_asset_library();
 	void _scan_projects();
@@ -123,6 +124,7 @@ class ProjectManager : public Control {
 	void _unhandled_key_input(const Ref<InputEvent> &p_ev);
 	void _files_dropped(PackedStringArray p_files, int p_screen);
 
+	void _version_button_pressed();
 	void _on_order_option_changed(int p_idx);
 	void _on_tab_changed(int p_tab);
 	void _on_search_term_changed(const String &p_term);
