@@ -130,6 +130,7 @@ class CSharpScript : public Script {
 #endif
 
 	Map<StringName, PropertyInfo> member_info;
+	List<StringName> member_order;
 
 	void _clear();
 
