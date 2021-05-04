@@ -31,6 +31,7 @@
 #include "audio_stream_sample.h"
 
 #include "core/io/marshalls.h"
+#include "core/io/resource_loader.h"
 #include "core/os/file_access.h"
 
 void AudioStreamPlaybackSample::start(float p_from_pos) {
@@ -518,6 +519,75 @@ PoolVector<uint8_t> AudioStreamSample::get_data() const {
 	return pv;
 }
 
+Error AudioStreamSample::load(const String &p_path) {
+#ifdef DEBUG_ENABLED
+	if (p_path.begins_with("res://") && ResourceLoader::exists(p_path)) {
+		WARN_PRINTS("Loaded resource as image file, this will not work on export: '" + p_path + "'. Instead, import the image file as an Image resource and load it normally as a resource.");
+	}
+#endif
+	Error err;
+	FileAccess *file = FileAccess::open(p_path, FileAccess::READ, &err);
+	if (!file) {
+		ERR_PRINTS("Error opening file '" + p_path + "'.");
+		return err;
+	}
+
+	err = parse_wave_data_header(file);
+	if (err != OK) {
+		file->close();
+		memdelete(file);
+		return err;
+	}
+
+	AudioStreamSample::WaveData wave_data;
+	err = AudioStreamSample::parse_wave_data_body(file, &wave_data);
+
+	file->close();
+	memdelete(file);
+
+	if (err != OK) {
+		return err;
+	}
+
+	////////////////////////////////////////
+
+	bool is16 = wave_data.format_bits != 8;
+	int rate = wave_data.format_freq;
+
+	PoolVector<uint8_t> dst_data;
+	AudioStreamSample::Format dst_format;
+
+	dst_format = is16 ? AudioStreamSample::FORMAT_16_BITS : AudioStreamSample::FORMAT_8_BITS;
+	dst_data.resize(wave_data.data.size() * (is16 ? 2 : 1));
+	{
+		PoolVector<uint8_t>::Write w = dst_data.write();
+
+		int ds = wave_data.data.size();
+		for (int i = 0; i < ds; i++) {
+
+			if (is16) {
+				int16_t v = CLAMP(wave_data.data[i] * 32768, -32768, 32767);
+				encode_uint16(v, &w[i * 2]);
+			} else {
+				int8_t v = CLAMP(wave_data.data[i] * 128, -128, 127);
+				w[i] = v;
+			}
+		}
+	}
+
+	////////////////////////////////////////
+
+	set_data(dst_data);
+	set_format(dst_format);
+	set_mix_rate(rate);
+	set_loop_mode(wave_data.loop);
+	set_loop_begin(wave_data.loop_begin);
+	set_loop_end(wave_data.loop_end);
+	set_stereo(wave_data.format_channels == 2);
+
+	return OK;
+}
+
 Error AudioStreamSample::save_to_wav(const String &p_path) {
 	if (format == AudioStreamSample::FORMAT_IMA_ADPCM) {
 		WARN_PRINTS("Saving IMA_ADPC samples are not supported yet");
@@ -628,6 +698,7 @@ void AudioStreamSample::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_stereo", "stereo"), &AudioStreamSample::set_stereo);
 	ClassDB::bind_method(D_METHOD("is_stereo"), &AudioStreamSample::is_stereo);
 
+	ClassDB::bind_method(D_METHOD("load", "path"), &AudioStreamSample::load);
 	ClassDB::bind_method(D_METHOD("save_to_wav", "path"), &AudioStreamSample::save_to_wav);
 
 	ADD_PROPERTY(PropertyInfo(Variant::POOL_BYTE_ARRAY, "data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "set_data", "get_data");
