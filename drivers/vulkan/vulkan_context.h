@@ -54,6 +54,12 @@ public:
 		String supported_operations_desc() const;
 	};
 
+	struct MultiviewCapabilities {
+		bool is_supported;
+		int32_t max_view_count;
+		int32_t max_instance_count;
+	};
+
 private:
 	enum {
 		MAX_EXTENSIONS = 128,
@@ -75,6 +81,7 @@ private:
 	uint32_t vulkan_major = 1;
 	uint32_t vulkan_minor = 0;
 	SubgroupCapabilities subgroup_capabilities;
+	MultiviewCapabilities multiview_capabilities;
 
 	String device_vendor;
 	String device_name;
@@ -227,6 +234,7 @@ public:
 	uint32_t get_vulkan_major() const { return vulkan_major; };
 	uint32_t get_vulkan_minor() const { return vulkan_minor; };
 	SubgroupCapabilities get_subgroup_capabilities() const { return subgroup_capabilities; };
+	MultiviewCapabilities get_multiview_capabilities() const { return multiview_capabilities; };
 
 	VkDevice get_device();
 	VkPhysicalDevice get_physical_device();
