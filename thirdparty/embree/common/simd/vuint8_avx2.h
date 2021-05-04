@@ -66,8 +66,8 @@ namespace embree
     /// Loads and Stores
     ////////////////////////////////////////////////////////////////////////////////
 
-    static __forceinline vuint8 load(const unsigned char* ptr)  { return _mm256_cvtepu8_epi32(_mm_loadl_epi64((__m128i*)ptr)); }
-    static __forceinline vuint8 loadu(const unsigned char* ptr) { return _mm256_cvtepu8_epi32(_mm_loadl_epi64((__m128i*)ptr)); }
+    static __forceinline vuint8 load(const uint8_t* ptr)  { return _mm256_cvtepu8_epi32(_mm_loadl_epi64((__m128i*)ptr)); }
+    static __forceinline vuint8 loadu(const uint8_t* ptr) { return _mm256_cvtepu8_epi32(_mm_loadl_epi64((__m128i*)ptr)); }
     static __forceinline vuint8 load(const unsigned short* ptr)  { return _mm256_cvtepu16_epi32(_mm_load_si128((__m128i*)ptr)); }
     static __forceinline vuint8 loadu(const unsigned short* ptr) { return _mm256_cvtepu16_epi32(_mm_loadu_si128((__m128i*)ptr)); }
 
@@ -107,7 +107,7 @@ namespace embree
       _mm256_stream_ps((float*)ptr,_mm256_castsi256_ps(v));
     }
 
-    static __forceinline void store(unsigned char* ptr, const vuint8& i)
+    static __forceinline void store(uint8_t* ptr, const vuint8& i)
     {
       for (size_t j=0; j<8; j++)
         ptr[j] = i[j];
@@ -139,14 +139,14 @@ namespace embree
 #if defined(__AVX512VL__)
       _mm256_i32scatter_epi32((int*)ptr, ofs, v, scale);
 #else
-      *(unsigned int*)(((char*)ptr)+scale*ofs[0]) = v[0];
-      *(unsigned int*)(((char*)ptr)+scale*ofs[1]) = v[1];
-      *(unsigned int*)(((char*)ptr)+scale*ofs[2]) = v[2];
-      *(unsigned int*)(((char*)ptr)+scale*ofs[3]) = v[3];
-      *(unsigned int*)(((char*)ptr)+scale*ofs[4]) = v[4];
-      *(unsigned int*)(((char*)ptr)+scale*ofs[5]) = v[5];
-      *(unsigned int*)(((char*)ptr)+scale*ofs[6]) = v[6];
-      *(unsigned int*)(((char*)ptr)+scale*ofs[7]) = v[7];
+      *(unsigned int*)(((int8_t*)ptr) + scale * ofs[0]) = v[0];
+      *(unsigned int*)(((int8_t*)ptr) + scale * ofs[1]) = v[1];
+      *(unsigned int*)(((int8_t*)ptr) + scale * ofs[2]) = v[2];
+      *(unsigned int*)(((int8_t*)ptr) + scale * ofs[3]) = v[3];
+      *(unsigned int*)(((int8_t*)ptr) + scale * ofs[4]) = v[4];
+      *(unsigned int*)(((int8_t*)ptr) + scale * ofs[5]) = v[5];
+      *(unsigned int*)(((int8_t*)ptr) + scale * ofs[6]) = v[6];
+      *(unsigned int*)(((int8_t*)ptr) + scale * ofs[7]) = v[7];
 #endif
     }
 
@@ -156,14 +156,14 @@ namespace embree
 #if defined(__AVX512VL__)
       _mm256_mask_i32scatter_epi32((int*)ptr, mask, ofs, v, scale);
 #else
-      if (likely(mask[0])) *(unsigned int*)(((char*)ptr)+scale*ofs[0]) = v[0];
-      if (likely(mask[1])) *(unsigned int*)(((char*)ptr)+scale*ofs[1]) = v[1];
-      if (likely(mask[2])) *(unsigned int*)(((char*)ptr)+scale*ofs[2]) = v[2];
-      if (likely(mask[3])) *(unsigned int*)(((char*)ptr)+scale*ofs[3]) = v[3];
-      if (likely(mask[4])) *(unsigned int*)(((char*)ptr)+scale*ofs[4]) = v[4];
-      if (likely(mask[5])) *(unsigned int*)(((char*)ptr)+scale*ofs[5]) = v[5];
-      if (likely(mask[6])) *(unsigned int*)(((char*)ptr)+scale*ofs[6]) = v[6];
-      if (likely(mask[7])) *(unsigned int*)(((char*)ptr)+scale*ofs[7]) = v[7];
+      if (likely(mask[0])) *(unsigned int*)(((int8_t*)ptr)+scale*ofs[0]) = v[0];
+      if (likely(mask[1])) *(unsigned int*)(((int8_t*)ptr)+scale*ofs[1]) = v[1];
+      if (likely(mask[2])) *(unsigned int*)(((int8_t*)ptr)+scale*ofs[2]) = v[2];
+      if (likely(mask[3])) *(unsigned int*)(((int8_t*)ptr)+scale*ofs[3]) = v[3];
+      if (likely(mask[4])) *(unsigned int*)(((int8_t*)ptr)+scale*ofs[4]) = v[4];
+      if (likely(mask[5])) *(unsigned int*)(((int8_t*)ptr)+scale*ofs[5]) = v[5];
+      if (likely(mask[6])) *(unsigned int*)(((int8_t*)ptr)+scale*ofs[6]) = v[6];
+      if (likely(mask[7])) *(unsigned int*)(((int8_t*)ptr)+scale*ofs[7]) = v[7];
 #endif
     }
 
@@ -379,6 +379,8 @@ namespace embree
 
   __forceinline int toScalar(const vuint8& v) { return _mm_cvtsi128_si32(_mm256_castsi256_si128(v)); }
 
+#if !defined(__aarch64__)
+
   __forceinline vuint8 permute(const vuint8& v, const __m256i& index) {
     return _mm256_permutevar8x32_epi32(v, index);
   }
@@ -394,7 +396,10 @@ namespace embree
 #else
     return _mm256_alignr_epi8(a, b, 4*i);
 #endif
-  }  
+  }
+
+#endif
+
 
   ////////////////////////////////////////////////////////////////////////////////
   /// Reductions

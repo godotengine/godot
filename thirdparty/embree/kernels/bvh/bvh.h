@@ -81,7 +81,7 @@ namespace embree
     struct CreateAlloc : public FastAllocator::Create {
       __forceinline CreateAlloc (BVHN* bvh) : FastAllocator::Create(&bvh->alloc) {}
     };
-    
+
     typedef BVHNodeRecord<NodeRef>     NodeRecord;
     typedef BVHNodeRecordMB<NodeRef>   NodeRecordMB;
     typedef BVHNodeRecordMB4D<NodeRef> NodeRecordMB4D;

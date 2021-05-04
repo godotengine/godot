@@ -78,7 +78,7 @@ namespace embree
       return _mm512_load_si512(addr);
     }
 
-    static __forceinline vllong8 load(const unsigned char* ptr) {
+    static __forceinline vllong8 load(const uint8_t* ptr) {
       return _mm512_cvtepu8_epi64(*(__m128i*)ptr); 
     }
 
