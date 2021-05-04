@@ -489,7 +489,6 @@ Size2 Font::get_string_size(const String &p_string) const {
 	const CharType *sptr = &p_string[0];
 
 	for (int i = 0; i < l; i++) {
-
 		w += get_char_size(sptr[i], sptr[i + 1]).width;
 	}
 
@@ -525,6 +524,23 @@ Size2 Font::get_wordwrap_string_size(const String &p_string, float p_width) cons
 	}
 
 	return Size2(p_width, h);
+}
+
+Size2 Font::get_multiline_string_size(const String &p_string) {
+	Vector<String> lines = p_string.split_lines();
+	return total_size_of_lines(lines);
+}
+
+Size2 Font::total_size_of_lines(Vector<String> p_lines) {
+	int num_lines = p_lines.size();
+
+	Size2 size;
+	size.height = get_height() * num_lines;
+	for (int i = 0; i < num_lines; i++) {
+		Size2 line_size = get_string_size(p_lines[i]);
+		size.width = line_size.width > size.width ? line_size.width : size.width;
+	}
+	return size;
 }
 
 void BitmapFont::set_fallback(const Ref<BitmapFont> &p_fallback) {
