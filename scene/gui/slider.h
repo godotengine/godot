@@ -81,7 +81,7 @@ class HSlider : public Slider {
 
 public:
 	HSlider() :
-			Slider(HORIZONTAL) { set_v_size_flags(0); }
+			Slider(HORIZONTAL) { set_size_flags_vertical(0); }
 };
 
 class VSlider : public Slider {
@@ -89,7 +89,7 @@ class VSlider : public Slider {
 
 public:
 	VSlider() :
-			Slider(VERTICAL) { set_h_size_flags(0); }
+			Slider(VERTICAL) { set_size_flags_horizontal(0); }
 };
 
 #endif // SLIDER_H

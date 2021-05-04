@@ -118,7 +118,7 @@ void EditorPerformanceProfiler::_monitor_draw() {
 	if (active.size() == 1) {
 		rows = 1;
 	}
-	Size2i cell_size = Size2i(monitor_draw->get_size()) / Size2i(columns, rows);
+	Size2i cell_size = Size2i(monitor_draw->get_rect_size()) / Size2i(columns, rows);
 	float spacing = float(POINT_SEPARATION) / float(columns);
 	float value_multiplier = EditorSettings::get_singleton()->is_dark_theme() ? 1.4f : 0.55f;
 	float hue_shift = 1.0f / float(monitors.size());
@@ -262,7 +262,7 @@ void EditorPerformanceProfiler::_marker_input(const Ref<InputEvent> &p_event) {
 			if (active.size() == 1) {
 				rows = 1;
 			}
-			Size2i cell_size = Size2i(monitor_draw->get_size()) / Size2i(columns, rows);
+			Size2i cell_size = Size2i(monitor_draw->get_rect_size()) / Size2i(columns, rows);
 			Vector2i index = mb->get_position() / cell_size;
 			Rect2i rect(index * cell_size + Point2i(MARGIN, MARGIN), cell_size - Point2i(MARGIN, MARGIN) * 2);
 			if (rect.has_point(mb->get_position())) {
@@ -371,7 +371,7 @@ EditorPerformanceProfiler::EditorPerformanceProfiler() {
 	add_child(monitor_tree);
 
 	monitor_draw = memnew(Control);
-	monitor_draw->set_clip_contents(true);
+	monitor_draw->set_rect_clip_contents(true);
 	monitor_draw->connect("draw", callable_mp(this, &EditorPerformanceProfiler::_monitor_draw));
 	monitor_draw->connect("gui_input", callable_mp(this, &EditorPerformanceProfiler::_marker_input));
 	add_child(monitor_draw);
@@ -381,7 +381,7 @@ EditorPerformanceProfiler::EditorPerformanceProfiler() {
 	info_message->set_valign(Label::VALIGN_CENTER);
 	info_message->set_align(Label::ALIGN_CENTER);
 	info_message->set_autowrap(true);
-	info_message->set_custom_minimum_size(Size2(100 * EDSCALE, 0));
+	info_message->set_rect_minimum_size(Size2(100 * EDSCALE, 0));
 	info_message->set_anchors_and_offsets_preset(PRESET_WIDE, PRESET_MODE_KEEP_SIZE, 8 * EDSCALE);
 	monitor_draw->add_child(info_message);
 

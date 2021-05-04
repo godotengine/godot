@@ -41,7 +41,7 @@ Color ColorRect::get_color() const {
 
 void ColorRect::_notification(int p_what) {
 	if (p_what == NOTIFICATION_DRAW) {
-		draw_rect(Rect2(Point2(), get_size()), color);
+		draw_rect(Rect2(Point2(), get_rect_size()), color);
 	}
 }
 

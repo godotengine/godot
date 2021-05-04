@@ -85,8 +85,8 @@ void StyleBoxPreview::_bind_methods() {
 
 StyleBoxPreview::StyleBoxPreview() {
 	preview = memnew(Control);
-	preview->set_custom_minimum_size(Size2(0, 150 * EDSCALE));
-	preview->set_clip_contents(true);
+	preview->set_rect_minimum_size(Size2(0, 150 * EDSCALE));
+	preview->set_rect_clip_contents(true);
 	preview->connect("draw", callable_mp(this, &StyleBoxPreview::_redraw));
 	add_margin_child(TTR("Preview:"), preview);
 }

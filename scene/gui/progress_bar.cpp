@@ -59,22 +59,22 @@ void ProgressBar::_notification(int p_what) {
 		int font_size = get_theme_font_size("font_size");
 		Color font_color = get_theme_color("font_color");
 
-		draw_style_box(bg, Rect2(Point2(), get_size()));
+		draw_style_box(bg, Rect2(Point2(), get_rect_size()));
 		float r = get_as_ratio();
 		int mp = fg->get_minimum_size().width;
-		int p = r * (get_size().width - mp);
+		int p = r * (get_rect_size().width - mp);
 		if (p > 0) {
 			if (is_layout_rtl()) {
-				draw_style_box(fg, Rect2(Point2(p, 0), Size2(fg->get_minimum_size().width, get_size().height)));
+				draw_style_box(fg, Rect2(Point2(p, 0), Size2(fg->get_minimum_size().width, get_rect_size().height)));
 			} else {
-				draw_style_box(fg, Rect2(Point2(0, 0), Size2(p + fg->get_minimum_size().width, get_size().height)));
+				draw_style_box(fg, Rect2(Point2(0, 0), Size2(p + fg->get_minimum_size().width, get_rect_size().height)));
 			}
 		}
 
 		if (percent_visible) {
 			String txt = TS->format_number(itos(int(get_as_ratio() * 100))) + TS->percent_sign();
 			TextLine tl = TextLine(txt, font, font_size);
-			Vector2 text_pos = (Point2(get_size().width - tl.get_size().x, get_size().height - tl.get_size().y) / 2).round();
+			Vector2 text_pos = (Point2(get_rect_size().width - tl.get_size().x, get_rect_size().height - tl.get_size().y) / 2).round();
 			Color font_outline_color = get_theme_color("font_outline_color");
 			int outline_size = get_theme_constant("outline_size");
 			if (outline_size > 0 && font_outline_color.a > 0) {
@@ -102,6 +102,6 @@ void ProgressBar::_bind_methods() {
 }
 
 ProgressBar::ProgressBar() {
-	set_v_size_flags(0);
+	set_size_flags_vertical(0);
 	set_step(0.01);
 }

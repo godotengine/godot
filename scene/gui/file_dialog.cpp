@@ -962,7 +962,7 @@ FileDialog::FileDialog() {
 	dir = memnew(LineEdit);
 	dir->set_structured_text_bidi_override(Control::STRUCTURED_TEXT_FILE);
 	hbc->add_child(dir);
-	dir->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	dir->set_size_flags_horizontal(Control::SIZE_EXPAND_FILL);
 
 	refresh = memnew(Button);
 	refresh->set_flat(true);
@@ -1002,12 +1002,12 @@ FileDialog::FileDialog() {
 	file_box->add_child(memnew(Label(TTRC("File:"))));
 	file = memnew(LineEdit);
 	file->set_structured_text_bidi_override(Control::STRUCTURED_TEXT_FILE);
-	file->set_stretch_ratio(4);
-	file->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	file->set_size_flags_stretch_ratio(4);
+	file->set_size_flags_horizontal(Control::SIZE_EXPAND_FILL);
 	file_box->add_child(file);
 	filter = memnew(OptionButton);
-	filter->set_stretch_ratio(3);
-	filter->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	filter->set_size_flags_stretch_ratio(3);
+	filter->set_size_flags_horizontal(Control::SIZE_EXPAND_FILL);
 	filter->set_clip_text(true); // too many extensions overflows it
 	file_box->add_child(filter);
 	vbox->add_child(file_box);

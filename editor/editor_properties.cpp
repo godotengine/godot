@@ -151,7 +151,7 @@ void EditorPropertyMultilineText::_notification(int p_what) {
 			open_big_text->set_icon(df);
 			Ref<Font> font = get_theme_font("font", "Label");
 			int font_size = get_theme_font_size("font_size", "Label");
-			text->set_custom_minimum_size(Vector2(0, font->get_height(font_size) * 6));
+			text->set_rect_minimum_size(Vector2(0, font->get_height(font_size) * 6));
 
 		} break;
 	}
@@ -169,7 +169,7 @@ EditorPropertyMultilineText::EditorPropertyMultilineText() {
 	text->set_wrap_enabled(true);
 	add_focusable(text);
 	hb->add_child(text);
-	text->set_h_size_flags(SIZE_EXPAND_FILL);
+	text->set_size_flags_horizontal(SIZE_EXPAND_FILL);
 	open_big_text = memnew(Button);
 	open_big_text->set_flat(true);
 	open_big_text->connect("pressed", callable_mp(this, &EditorPropertyMultilineText::_open_big_text));
@@ -299,7 +299,7 @@ EditorPropertyPath::EditorPropertyPath() {
 	path_hb->add_child(path);
 	path->connect("text_entered", callable_mp(this, &EditorPropertyPath::_path_selected));
 	path->connect("focus_exited", callable_mp(this, &EditorPropertyPath::_path_focus_exited));
-	path->set_h_size_flags(SIZE_EXPAND_FILL);
+	path->set_size_flags_horizontal(SIZE_EXPAND_FILL);
 
 	path_edit = memnew(Button);
 	path_edit->set_clip_text(true);
@@ -639,7 +639,7 @@ public:
 		switch (p_what) {
 			case NOTIFICATION_DRAW: {
 				Rect2 rect;
-				rect.size = get_size();
+				rect.size = get_rect_size();
 				flag_rects.clear();
 
 				const int bsize = (rect.size.height * 80 / 100) / 2;
@@ -790,7 +790,7 @@ EditorPropertyLayers::EditorPropertyLayers() {
 	add_child(hb);
 	grid = memnew(EditorPropertyLayersGrid);
 	grid->connect("flag_changed", callable_mp(this, &EditorPropertyLayers::_grid_changed));
-	grid->set_h_size_flags(SIZE_EXPAND_FILL);
+	grid->set_size_flags_horizontal(SIZE_EXPAND_FILL);
 	hb->add_child(grid);
 	button = memnew(Button);
 	button->set_toggle_mode(true);
@@ -992,7 +992,7 @@ void EditorPropertyEasing::_drag_easing(const Ref<InputEvent> &p_ev) {
 void EditorPropertyEasing::_draw_easing() {
 	RID ci = easing_draw->get_canvas_item();
 
-	Size2 s = easing_draw->get_size();
+	Size2 s = easing_draw->get_rect_size();
 
 	const int points = 48;
 
@@ -1104,7 +1104,7 @@ void EditorPropertyEasing::_notification(int p_what) {
 				preset->add_icon_item(get_theme_icon("CurveInOut", "EditorIcons"), "In-Out", EASING_IN_OUT);
 				preset->add_icon_item(get_theme_icon("CurveOutIn", "EditorIcons"), "Out-In", EASING_OUT_IN);
 			}
-			easing_draw->set_custom_minimum_size(Size2(0, get_theme_font("font", "Label")->get_height(get_theme_font_size("font_size", "Label")) * 2));
+			easing_draw->set_rect_minimum_size(Size2(0, get_theme_font("font", "Label")->get_height(get_theme_font_size("font_size", "Label")) * 2));
 		} break;
 	}
 }
@@ -1116,7 +1116,7 @@ EditorPropertyEasing::EditorPropertyEasing() {
 	easing_draw = memnew(Control);
 	easing_draw->connect("draw", callable_mp(this, &EditorPropertyEasing::_draw_easing));
 	easing_draw->connect("gui_input", callable_mp(this, &EditorPropertyEasing::_drag_easing));
-	easing_draw->set_default_cursor_shape(Control::CURSOR_MOVE);
+	easing_draw->set_mouse_default_cursor_shape(Control::CURSOR_MOVE);
 	add_child(easing_draw);
 
 	preset = memnew(PopupMenu);
@@ -1213,7 +1213,7 @@ EditorPropertyVector2::EditorPropertyVector2(bool p_force_wide) {
 		add_focusable(spin[i]);
 		spin[i]->connect("value_changed", callable_mp(this, &EditorPropertyVector2::_value_changed), varray(desc[i]));
 		if (horizontal) {
-			spin[i]->set_h_size_flags(SIZE_EXPAND_FILL);
+			spin[i]->set_size_flags_horizontal(SIZE_EXPAND_FILL);
 		}
 	}
 
@@ -1309,7 +1309,7 @@ EditorPropertyRect2::EditorPropertyRect2(bool p_force_wide) {
 		add_focusable(spin[i]);
 		spin[i]->connect("value_changed", callable_mp(this, &EditorPropertyRect2::_value_changed), varray(desc[i]));
 		if (horizontal) {
-			spin[i]->set_h_size_flags(SIZE_EXPAND_FILL);
+			spin[i]->set_size_flags_horizontal(SIZE_EXPAND_FILL);
 		}
 	}
 
@@ -1404,7 +1404,7 @@ EditorPropertyVector3::EditorPropertyVector3(bool p_force_wide) {
 		add_focusable(spin[i]);
 		spin[i]->connect("value_changed", callable_mp(this, &EditorPropertyVector3::_value_changed), varray(desc[i]));
 		if (horizontal) {
-			spin[i]->set_h_size_flags(SIZE_EXPAND_FILL);
+			spin[i]->set_size_flags_horizontal(SIZE_EXPAND_FILL);
 		}
 	}
 
@@ -1486,7 +1486,7 @@ EditorPropertyVector2i::EditorPropertyVector2i(bool p_force_wide) {
 		add_focusable(spin[i]);
 		spin[i]->connect("value_changed", callable_mp(this, &EditorPropertyVector2i::_value_changed), varray(desc[i]));
 		if (horizontal) {
-			spin[i]->set_h_size_flags(SIZE_EXPAND_FILL);
+			spin[i]->set_size_flags_horizontal(SIZE_EXPAND_FILL);
 		}
 	}
 
@@ -1582,7 +1582,7 @@ EditorPropertyRect2i::EditorPropertyRect2i(bool p_force_wide) {
 		add_focusable(spin[i]);
 		spin[i]->connect("value_changed", callable_mp(this, &EditorPropertyRect2i::_value_changed), varray(desc[i]));
 		if (horizontal) {
-			spin[i]->set_h_size_flags(SIZE_EXPAND_FILL);
+			spin[i]->set_size_flags_horizontal(SIZE_EXPAND_FILL);
 		}
 	}
 
@@ -1665,7 +1665,7 @@ EditorPropertyVector3i::EditorPropertyVector3i(bool p_force_wide) {
 		add_focusable(spin[i]);
 		spin[i]->connect("value_changed", callable_mp(this, &EditorPropertyVector3i::_value_changed), varray(desc[i]));
 		if (horizontal) {
-			spin[i]->set_h_size_flags(SIZE_EXPAND_FILL);
+			spin[i]->set_size_flags_horizontal(SIZE_EXPAND_FILL);
 		}
 	}
 
@@ -1751,7 +1751,7 @@ EditorPropertyPlane::EditorPropertyPlane(bool p_force_wide) {
 		add_focusable(spin[i]);
 		spin[i]->connect("value_changed", callable_mp(this, &EditorPropertyPlane::_value_changed), varray(desc[i]));
 		if (horizontal) {
-			spin[i]->set_h_size_flags(SIZE_EXPAND_FILL);
+			spin[i]->set_size_flags_horizontal(SIZE_EXPAND_FILL);
 		}
 	}
 
@@ -1834,7 +1834,7 @@ EditorPropertyQuat::EditorPropertyQuat() {
 		add_focusable(spin[i]);
 		spin[i]->connect("value_changed", callable_mp(this, &EditorPropertyQuat::_value_changed), varray(desc[i]));
 		if (horizontal) {
-			spin[i]->set_h_size_flags(SIZE_EXPAND_FILL);
+			spin[i]->set_size_flags_horizontal(SIZE_EXPAND_FILL);
 		}
 	}
 
@@ -1912,7 +1912,7 @@ EditorPropertyAABB::EditorPropertyAABB() {
 		spin[i]->set_flat(true);
 
 		g->add_child(spin[i]);
-		spin[i]->set_h_size_flags(SIZE_EXPAND_FILL);
+		spin[i]->set_size_flags_horizontal(SIZE_EXPAND_FILL);
 		add_focusable(spin[i]);
 		spin[i]->connect("value_changed", callable_mp(this, &EditorPropertyAABB::_value_changed), varray(desc[i]));
 	}
@@ -1987,7 +1987,7 @@ EditorPropertyTransform2D::EditorPropertyTransform2D() {
 		spin[i]->set_label(desc[i]);
 		spin[i]->set_flat(true);
 		g->add_child(spin[i]);
-		spin[i]->set_h_size_flags(SIZE_EXPAND_FILL);
+		spin[i]->set_size_flags_horizontal(SIZE_EXPAND_FILL);
 		add_focusable(spin[i]);
 		spin[i]->connect("value_changed", callable_mp(this, &EditorPropertyTransform2D::_value_changed), varray(desc[i]));
 	}
@@ -2068,7 +2068,7 @@ EditorPropertyBasis::EditorPropertyBasis() {
 		spin[i]->set_label(desc[i]);
 		spin[i]->set_flat(true);
 		g->add_child(spin[i]);
-		spin[i]->set_h_size_flags(SIZE_EXPAND_FILL);
+		spin[i]->set_size_flags_horizontal(SIZE_EXPAND_FILL);
 		add_focusable(spin[i]);
 		spin[i]->connect("value_changed", callable_mp(this, &EditorPropertyBasis::_value_changed), varray(desc[i]));
 	}
@@ -2157,7 +2157,7 @@ EditorPropertyTransform::EditorPropertyTransform() {
 		spin[i]->set_label(desc[i]);
 		spin[i]->set_flat(true);
 		g->add_child(spin[i]);
-		spin[i]->set_h_size_flags(SIZE_EXPAND_FILL);
+		spin[i]->set_size_flags_horizontal(SIZE_EXPAND_FILL);
 		add_focusable(spin[i]);
 		spin[i]->connect("value_changed", callable_mp(this, &EditorPropertyTransform::_value_changed), varray(desc[i]));
 	}
@@ -2351,7 +2351,7 @@ EditorPropertyNodePath::EditorPropertyNodePath() {
 	add_child(hbc);
 	assign = memnew(Button);
 	assign->set_flat(true);
-	assign->set_h_size_flags(SIZE_EXPAND_FILL);
+	assign->set_size_flags_horizontal(SIZE_EXPAND_FILL);
 	assign->set_clip_text(true);
 	assign->connect("pressed", callable_mp(this, &EditorPropertyNodePath::_node_assign));
 	hbc->add_child(assign);
@@ -2634,12 +2634,12 @@ void EditorPropertyResource::_resource_preview(const String &p_path, const Ref<T
 			preview->set_offset(SIDE_LEFT, assign->get_icon()->get_width() + assign->get_theme_stylebox("normal")->get_default_margin(SIDE_LEFT) + get_theme_constant("hseparation", "Button"));
 			if (type == "GradientTexture") {
 				preview->set_stretch_mode(TextureRect::STRETCH_SCALE);
-				assign->set_custom_minimum_size(Size2(1, 1));
+				assign->set_rect_minimum_size(Size2(1, 1));
 			} else {
 				preview->set_stretch_mode(TextureRect::STRETCH_KEEP_ASPECT_CENTERED);
 				int thumbnail_size = EditorSettings::get_singleton()->get("filesystem/file_dialog/thumbnail_size");
 				thumbnail_size *= EDSCALE;
-				assign->set_custom_minimum_size(Size2(1, thumbnail_size));
+				assign->set_rect_minimum_size(Size2(1, thumbnail_size));
 			}
 			preview->set_texture(p_preview);
 			assign->set_text("");
@@ -2980,7 +2980,7 @@ void EditorPropertyResource::update_property() {
 	if (res == RES()) {
 		assign->set_icon(Ref<Texture2D>());
 		assign->set_text(TTR("[empty]"));
-		assign->set_custom_minimum_size(Size2(1, 1));
+		assign->set_rect_minimum_size(Size2(1, 1));
 	} else {
 		assign->set_icon(EditorNode::get_singleton()->get_object_icon(res.operator->(), "Object"));
 
@@ -3080,7 +3080,7 @@ void EditorPropertyResource::expand_all_folding() {
 void EditorPropertyResource::_button_draw() {
 	if (dropping) {
 		Color color = get_theme_color("accent_color", "Editor");
-		assign->draw_rect(Rect2(Point2(), assign->get_size()), color, false);
+		assign->draw_rect(Rect2(Point2(), assign->get_rect_size()), color, false);
 	}
 }
 
@@ -3240,7 +3240,7 @@ EditorPropertyResource::EditorPropertyResource() {
 	add_child(hbc);
 	assign = memnew(Button);
 	assign->set_flat(true);
-	assign->set_h_size_flags(SIZE_EXPAND_FILL);
+	assign->set_size_flags_horizontal(SIZE_EXPAND_FILL);
 	assign->set_clip_text(true);
 	assign->connect("pressed", callable_mp(this, &EditorPropertyResource::_resource_selected));
 	assign->set_drag_forwarding(this);

@@ -88,7 +88,7 @@ void Button::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_DRAW: {
 			RID ci = get_canvas_item();
-			Size2 size = get_size();
+			Size2 size = get_rect_size();
 			Color color;
 			Color color_icon(1, 1, 1, 1);
 
@@ -220,7 +220,7 @@ void Button::_notification(int p_what) {
 				}
 
 				if (expand_icon) {
-					Size2 _size = get_size() - style->get_offset() * 2;
+					Size2 _size = get_rect_size() - style->get_offset() * 2;
 					_size.width -= get_theme_constant("hseparation") + icon_ofs_region;
 					if (!clip_text) {
 						_size.width -= text_buf->get_size().width;

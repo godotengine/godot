@@ -87,11 +87,11 @@ void CheckBox::_notification(int p_what) {
 
 		Vector2 ofs;
 		if (is_layout_rtl()) {
-			ofs.x = get_size().x - sb->get_margin(SIDE_RIGHT) - get_icon_size().width;
+			ofs.x = get_rect_size().x - sb->get_margin(SIDE_RIGHT) - get_icon_size().width;
 		} else {
 			ofs.x = sb->get_margin(SIDE_LEFT);
 		}
-		ofs.y = int((get_size().height - get_icon_size().height) / 2) + get_theme_constant("check_vadjust");
+		ofs.y = int((get_rect_size().height - get_icon_size().height) / 2) + get_theme_constant("check_vadjust");
 
 		if (is_pressed()) {
 			on->draw(ci, ofs);

@@ -371,7 +371,7 @@ ResourcePreloaderEditor::ResourcePreloaderEditor() {
 	tree->set_column_min_width(1, 3);
 	tree->set_column_expand(0, true);
 	tree->set_column_expand(1, true);
-	tree->set_v_size_flags(SIZE_EXPAND_FILL);
+	tree->set_size_flags_vertical(SIZE_EXPAND_FILL);
 
 	tree->set_drag_forwarding(this);
 	vbc->add_child(tree);
@@ -419,7 +419,7 @@ void ResourcePreloaderEditorPlugin::make_visible(bool p_visible) {
 ResourcePreloaderEditorPlugin::ResourcePreloaderEditorPlugin(EditorNode *p_node) {
 	editor = p_node;
 	preloader_editor = memnew(ResourcePreloaderEditor);
-	preloader_editor->set_custom_minimum_size(Size2(0, 250) * EDSCALE);
+	preloader_editor->set_rect_minimum_size(Size2(0, 250) * EDSCALE);
 
 	button = editor->add_bottom_panel_item(TTR("ResourcePreloader"), preloader_editor);
 	button->hide();

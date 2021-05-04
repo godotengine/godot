@@ -200,7 +200,7 @@ ImportDefaultsEditor::ImportDefaultsEditor() {
 	add_child(hb);
 	inspector = memnew(EditorInspector);
 	add_child(inspector);
-	inspector->set_v_size_flags(SIZE_EXPAND_FILL);
+	inspector->set_size_flags_vertical(SIZE_EXPAND_FILL);
 	CenterContainer *cc = memnew(CenterContainer);
 	save_defaults = memnew(Button);
 	save_defaults->set_text(TTR("Save"));

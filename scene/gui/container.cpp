@@ -99,22 +99,22 @@ void Container::fit_child_in_rect(Control *p_child, const Rect2 &p_rect) {
 	Size2 minsize = p_child->get_combined_minimum_size();
 	Rect2 r = p_rect;
 
-	if (!(p_child->get_h_size_flags() & SIZE_FILL)) {
+	if (!(p_child->get_size_flags_horizontal() & SIZE_FILL)) {
 		r.size.x = minsize.width;
-		if (p_child->get_h_size_flags() & SIZE_SHRINK_END) {
+		if (p_child->get_size_flags_horizontal() & SIZE_SHRINK_END) {
 			r.position.x += p_rect.size.width - minsize.width;
-		} else if (p_child->get_h_size_flags() & SIZE_SHRINK_CENTER) {
+		} else if (p_child->get_size_flags_horizontal() & SIZE_SHRINK_CENTER) {
 			r.position.x += Math::floor((p_rect.size.x - minsize.width) / 2);
 		} else {
 			r.position.x += 0;
 		}
 	}
 
-	if (!(p_child->get_v_size_flags() & SIZE_FILL)) {
+	if (!(p_child->get_size_flags_vertical() & SIZE_FILL)) {
 		r.size.y = minsize.y;
-		if (p_child->get_v_size_flags() & SIZE_SHRINK_END) {
+		if (p_child->get_size_flags_vertical() & SIZE_SHRINK_END) {
 			r.position.y += p_rect.size.height - minsize.height;
-		} else if (p_child->get_v_size_flags() & SIZE_SHRINK_CENTER) {
+		} else if (p_child->get_size_flags_vertical() & SIZE_SHRINK_CENTER) {
 			r.position.y += Math::floor((p_rect.size.y - minsize.height) / 2);
 		} else {
 			r.position.y += 0;
@@ -122,8 +122,8 @@ void Container::fit_child_in_rect(Control *p_child, const Rect2 &p_rect) {
 	}
 
 	p_child->set_rect(r);
-	p_child->set_rotation(0);
-	p_child->set_scale(Vector2(1, 1));
+	p_child->set_rect_rotation(0);
+	p_child->set_rect_scale(Vector2(1, 1));
 }
 
 void Container::queue_sort() {

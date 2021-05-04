@@ -64,16 +64,16 @@ void SplitContainer::_resort() {
 	// If we have only one element
 	if (!first || !second) {
 		if (first) {
-			fit_child_in_rect(first, Rect2(Point2(), get_size()));
+			fit_child_in_rect(first, Rect2(Point2(), get_rect_size()));
 		} else if (second) {
-			fit_child_in_rect(second, Rect2(Point2(), get_size()));
+			fit_child_in_rect(second, Rect2(Point2(), get_rect_size()));
 		}
 		return;
 	}
 
 	// Determine expanded children
-	bool first_expanded = (vertical ? first->get_v_size_flags() : first->get_h_size_flags()) & SIZE_EXPAND;
-	bool second_expanded = (vertical ? second->get_v_size_flags() : second->get_h_size_flags()) & SIZE_EXPAND;
+	bool first_expanded = (vertical ? first->get_size_flags_vertical() : first->get_size_flags_horizontal()) & SIZE_EXPAND;
+	bool second_expanded = (vertical ? second->get_size_flags_vertical() : second->get_size_flags_horizontal()) & SIZE_EXPAND;
 
 	// Determine the separation between items
 	Ref<Texture2D> g = get_theme_icon("grabber");
@@ -85,12 +85,12 @@ void SplitContainer::_resort() {
 	Size2 ms_second = second->get_combined_minimum_size();
 
 	// Compute the separator position without the split offset
-	float ratio = first->get_stretch_ratio() / (first->get_stretch_ratio() + second->get_stretch_ratio());
+	float ratio = first->get_size_flags_stretch_ratio() / (first->get_size_flags_stretch_ratio() + second->get_size_flags_stretch_ratio());
 	int no_offset_middle_sep = 0;
 	if (first_expanded && second_expanded) {
-		no_offset_middle_sep = get_size()[axis] * ratio - sep / 2;
+		no_offset_middle_sep = get_rect_size()[axis] * ratio - sep / 2;
 	} else if (first_expanded) {
-		no_offset_middle_sep = get_size()[axis] - ms_second[axis] - sep;
+		no_offset_middle_sep = get_rect_size()[axis] - ms_second[axis] - sep;
 	} else {
 		no_offset_middle_sep = ms_first[axis];
 	}
@@ -98,7 +98,7 @@ void SplitContainer::_resort() {
 	// Compute the final middle separation
 	middle_sep = no_offset_middle_sep;
 	if (!collapsed) {
-		int clamped_split_offset = CLAMP(split_offset, ms_first[axis] - no_offset_middle_sep, (get_size()[axis] - ms_second[axis] - sep) - no_offset_middle_sep);
+		int clamped_split_offset = CLAMP(split_offset, ms_first[axis] - no_offset_middle_sep, (get_rect_size()[axis] - ms_second[axis] - sep) - no_offset_middle_sep);
 		middle_sep += clamped_split_offset;
 		if (should_clamp_split_offset) {
 			split_offset = clamped_split_offset;
@@ -108,19 +108,19 @@ void SplitContainer::_resort() {
 	}
 
 	if (vertical) {
-		fit_child_in_rect(first, Rect2(Point2(0, 0), Size2(get_size().width, middle_sep)));
+		fit_child_in_rect(first, Rect2(Point2(0, 0), Size2(get_rect_size().width, middle_sep)));
 		int sofs = middle_sep + sep;
-		fit_child_in_rect(second, Rect2(Point2(0, sofs), Size2(get_size().width, get_size().height - sofs)));
+		fit_child_in_rect(second, Rect2(Point2(0, sofs), Size2(get_rect_size().width, get_rect_size().height - sofs)));
 	} else {
 		if (is_layout_rtl()) {
-			middle_sep = get_size().width - middle_sep - sep;
-			fit_child_in_rect(second, Rect2(Point2(0, 0), Size2(middle_sep, get_size().height)));
+			middle_sep = get_rect_size().width - middle_sep - sep;
+			fit_child_in_rect(second, Rect2(Point2(0, 0), Size2(middle_sep, get_rect_size().height)));
 			int sofs = middle_sep + sep;
-			fit_child_in_rect(first, Rect2(Point2(sofs, 0), Size2(get_size().width - sofs, get_size().height)));
+			fit_child_in_rect(first, Rect2(Point2(sofs, 0), Size2(get_rect_size().width - sofs, get_rect_size().height)));
 		} else {
-			fit_child_in_rect(first, Rect2(Point2(0, 0), Size2(middle_sep, get_size().height)));
+			fit_child_in_rect(first, Rect2(Point2(0, 0), Size2(middle_sep, get_rect_size().height)));
 			int sofs = middle_sep + sep;
-			fit_child_in_rect(second, Rect2(Point2(sofs, 0), Size2(get_size().width - sofs, get_size().height)));
+			fit_child_in_rect(second, Rect2(Point2(sofs, 0), Size2(get_rect_size().width - sofs, get_rect_size().height)));
 		}
 	}
 
@@ -192,7 +192,7 @@ void SplitContainer::_notification(int p_what) {
 
 			int sep = dragger_visibility != DRAGGER_HIDDEN_COLLAPSED ? get_theme_constant("separation") : 0;
 			Ref<Texture2D> tex = get_theme_icon("grabber");
-			Size2 size = get_size();
+			Size2 size = get_rect_size();
 
 			if (vertical) {
 				draw_texture(tex, Point2i((size.x - tex->get_width()) / 2, middle_sep + (sep - tex->get_height()) / 2));
@@ -271,7 +271,7 @@ void SplitContainer::_gui_input(const Ref<InputEvent> &p_event) {
 	}
 }
 
-Control::CursorShape SplitContainer::get_cursor_shape(const Point2 &p_pos) const {
+Control::CursorShape SplitContainer::get_mouse_cursor_shape(const Point2 &p_pos) const {
 	if (dragging) {
 		return (vertical ? CURSOR_VSPLIT : CURSOR_HSPLIT);
 	}
@@ -290,7 +290,7 @@ Control::CursorShape SplitContainer::get_cursor_shape(const Point2 &p_pos) const
 		}
 	}
 
-	return Control::get_cursor_shape(p_pos);
+	return Control::get_mouse_cursor_shape(p_pos);
 }
 
 void SplitContainer::set_split_offset(int p_offset) {

@@ -1208,7 +1208,7 @@ void SceneTreeDock::_notification(int p_what) {
 			// create_root_dialog
 			HBoxContainer *top_row = memnew(HBoxContainer);
 			top_row->set_name("NodeShortcutsTopRow");
-			top_row->set_h_size_flags(SIZE_EXPAND_FILL);
+			top_row->set_size_flags_horizontal(SIZE_EXPAND_FILL);
 			top_row->add_child(memnew(Label(TTR("Create Root Node:"))));
 			top_row->add_spacer();
 
@@ -1769,7 +1769,7 @@ void SceneTreeDock::_do_reparent(Node *p_new_parent, int p_position_in_parent, V
 				editor_data->get_undo_redo().add_do_method(node, "set_global_transform", Object::cast_to<Node3D>(node)->get_global_transform());
 			}
 			if (Object::cast_to<Control>(node)) {
-				editor_data->get_undo_redo().add_do_method(node, "set_global_position", Object::cast_to<Control>(node)->get_global_position());
+				editor_data->get_undo_redo().add_do_method(node, "set_global_position", Object::cast_to<Control>(node)->get_rect_global_position());
 			}
 		}
 
@@ -1813,7 +1813,7 @@ void SceneTreeDock::_do_reparent(Node *p_new_parent, int p_position_in_parent, V
 				editor_data->get_undo_redo().add_undo_method(node, "set_transform", Object::cast_to<Node3D>(node)->get_transform());
 			}
 			if (Object::cast_to<Control>(node)) {
-				editor_data->get_undo_redo().add_undo_method(node, "set_position", Object::cast_to<Control>(node)->get_position());
+				editor_data->get_undo_redo().add_undo_method(node, "set_position", Object::cast_to<Control>(node)->get_rect_position());
 			}
 		}
 	}
@@ -2109,9 +2109,9 @@ void SceneTreeDock::_do_create(Node *p_parent) {
 			ms.height = 40;
 		}
 		if (ct->is_layout_rtl()) {
-			ct->set_position(ct->get_position() - Vector2(ms.x, 0));
+			ct->set_rect_position(ct->get_rect_position() - Vector2(ms.x, 0));
 		}
-		ct->set_size(ms);
+		ct->set_rect_size(ms);
 	}
 
 	emit_signal("node_created", c);
@@ -3078,7 +3078,7 @@ SceneTreeDock::SceneTreeDock(EditorNode *p_editor, Node *p_scene_root, EditorSel
 
 	vbc->add_child(filter_hbc);
 	filter = memnew(LineEdit);
-	filter->set_h_size_flags(SIZE_EXPAND_FILL);
+	filter->set_size_flags_horizontal(SIZE_EXPAND_FILL);
 	filter->set_placeholder(TTR("Filter nodes"));
 	filter_hbc->add_child(filter);
 	filter->add_theme_constant_override("minimum_character_width", 0);
@@ -3106,7 +3106,7 @@ SceneTreeDock::SceneTreeDock(EditorNode *p_editor, Node *p_scene_root, EditorSel
 	edit_remote = memnew(Button);
 	edit_remote->set_flat(true);
 	button_hb->add_child(edit_remote);
-	edit_remote->set_h_size_flags(SIZE_EXPAND_FILL);
+	edit_remote->set_size_flags_horizontal(SIZE_EXPAND_FILL);
 	edit_remote->set_text(TTR("Remote"));
 	edit_remote->set_toggle_mode(true);
 	edit_remote->set_tooltip(TTR("If selected, the Remote scene tree dock will cause the project to stutter every time it updates.\nSwitch back to the Local scene tree dock to improve performance."));
@@ -3115,7 +3115,7 @@ SceneTreeDock::SceneTreeDock(EditorNode *p_editor, Node *p_scene_root, EditorSel
 	edit_local = memnew(Button);
 	edit_local->set_flat(true);
 	button_hb->add_child(edit_local);
-	edit_local->set_h_size_flags(SIZE_EXPAND_FILL);
+	edit_local->set_size_flags_horizontal(SIZE_EXPAND_FILL);
 	edit_local->set_text(TTR("Local"));
 	edit_local->set_toggle_mode(true);
 	edit_local->set_pressed(true);
@@ -3131,7 +3131,7 @@ SceneTreeDock::SceneTreeDock(EditorNode *p_editor, Node *p_scene_root, EditorSel
 	scene_tree = memnew(SceneTreeEditor(false, true, true));
 
 	vbc->add_child(scene_tree);
-	scene_tree->set_v_size_flags(SIZE_EXPAND | SIZE_FILL);
+	scene_tree->set_size_flags_vertical(SIZE_EXPAND | SIZE_FILL);
 	scene_tree->connect("rmb_pressed", callable_mp(this, &SceneTreeDock::_tree_rmb));
 
 	scene_tree->connect("node_selected", callable_mp(this, &SceneTreeDock::_node_selected), varray(), CONNECT_DEFERRED);

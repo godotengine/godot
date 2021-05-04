@@ -728,7 +728,7 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 			Ref<VisualScriptComment> vsc = node;
 			gnode->set_comment(true);
 			gnode->set_resizable(true);
-			gnode->set_custom_minimum_size(vsc->get_size() * EDSCALE);
+			gnode->set_rect_minimum_size(vsc->get_size() * EDSCALE);
 			gnode->connect("resize_request", callable_mp(this, &VisualScriptEditor::_comment_node_resized), varray(E->get()));
 		}
 
@@ -841,7 +841,7 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 					if (nd_list->is_input_port_name_editable()) {
 						LineEdit *name_box = memnew(LineEdit);
 						hbc->add_child(name_box);
-						name_box->set_custom_minimum_size(Size2(60 * EDSCALE, 0));
+						name_box->set_rect_minimum_size(Size2(60 * EDSCALE, 0));
 						name_box->set_text(left_name);
 						name_box->set_expand_to_text_length_enabled(true);
 						name_box->connect("resized", callable_mp(this, &VisualScriptEditor::_update_node_size), varray(E->get()));
@@ -856,7 +856,7 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 							opbtn->add_item(Variant::get_type_name(Variant::Type(j)));
 						}
 						opbtn->select(left_type);
-						opbtn->set_custom_minimum_size(Size2(100 * EDSCALE, 0));
+						opbtn->set_rect_minimum_size(Size2(100 * EDSCALE, 0));
 						hbc->add_child(opbtn);
 						opbtn->connect("item_selected", callable_mp(this, &VisualScriptEditor::_change_port_type), varray(E->get(), i, true), CONNECT_DEFERRED);
 					}
@@ -882,7 +882,7 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 					}
 
 					if (left_type == Variant::COLOR) {
-						button->set_custom_minimum_size(Size2(30, 0) * EDSCALE);
+						button->set_rect_minimum_size(Size2(30, 0) * EDSCALE);
 						button->connect("draw", callable_mp(this, &VisualScriptEditor::_draw_color_over_button), varray(button, value));
 					} else if (left_type == Variant::OBJECT && Ref<Resource>(value).is_valid()) {
 						Ref<Resource> res = value;
@@ -901,7 +901,7 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 				}
 			} else {
 				Control *c = memnew(Control);
-				c->set_custom_minimum_size(Size2(10, 0) * EDSCALE);
+				c->set_rect_minimum_size(Size2(10, 0) * EDSCALE);
 				hbc->add_child(c);
 			}
 
@@ -928,7 +928,7 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 							opbtn->add_item(Variant::get_type_name(Variant::Type(j)));
 						}
 						opbtn->select(right_type);
-						opbtn->set_custom_minimum_size(Size2(100 * EDSCALE, 0));
+						opbtn->set_rect_minimum_size(Size2(100 * EDSCALE, 0));
 						hbc->add_child(opbtn);
 						opbtn->connect("item_selected", callable_mp(this, &VisualScriptEditor::_change_port_type), varray(E->get(), i, false), CONNECT_DEFERRED);
 					}
@@ -936,7 +936,7 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 					if (nd_list->is_output_port_name_editable()) {
 						LineEdit *name_box = memnew(LineEdit);
 						hbc->add_child(name_box);
-						name_box->set_custom_minimum_size(Size2(60 * EDSCALE, 0));
+						name_box->set_rect_minimum_size(Size2(60 * EDSCALE, 0));
 						name_box->set_text(right_name);
 						name_box->set_expand_to_text_length_enabled(true);
 						name_box->connect("resized", callable_mp(this, &VisualScriptEditor::_update_node_size), varray(E->get()));
@@ -1009,7 +1009,7 @@ void VisualScriptEditor::_change_port_type(int p_select, int p_id, int p_port, b
 void VisualScriptEditor::_update_node_size(int p_id) {
 	Node *node = graph->get_node(itos(p_id));
 	if (Object::cast_to<Control>(node)) {
-		Object::cast_to<Control>(node)->set_size(Vector2(1, 1)); // Shrink if text is smaller.
+		Object::cast_to<Control>(node)->set_rect_size(Vector2(1, 1)); // Shrink if text is smaller.
 	}
 }
 
@@ -1348,19 +1348,19 @@ void VisualScriptEditor::_create_function() {
 }
 
 void VisualScriptEditor::_add_node_dialog() {
-	_generic_search(script->get_instance_base_type(), graph->get_global_position() + Vector2(55, 80), true);
+	_generic_search(script->get_instance_base_type(), graph->get_rect_global_position() + Vector2(55, 80), true);
 }
 
 void VisualScriptEditor::_add_func_input() {
 	HBoxContainer *hbox = memnew(HBoxContainer);
-	hbox->set_h_size_flags(SIZE_EXPAND_FILL);
+	hbox->set_size_flags_horizontal(SIZE_EXPAND_FILL);
 
 	Label *name_label = memnew(Label);
 	name_label->set_text(TTR("Name:"));
 	hbox->add_child(name_label);
 
 	LineEdit *name_box = memnew(LineEdit);
-	name_box->set_h_size_flags(SIZE_EXPAND_FILL);
+	name_box->set_size_flags_horizontal(SIZE_EXPAND_FILL);
 	name_box->set_text("input");
 	name_box->connect("focus_entered", callable_mp(this, &VisualScriptEditor::_deselect_input_names));
 	hbox->add_child(name_box);
@@ -1370,7 +1370,7 @@ void VisualScriptEditor::_add_func_input() {
 	hbox->add_child(type_label);
 
 	OptionButton *type_box = memnew(OptionButton);
-	type_box->set_custom_minimum_size(Size2(120 * EDSCALE, 0));
+	type_box->set_rect_minimum_size(Size2(120 * EDSCALE, 0));
 	for (int i = Variant::NIL; i < Variant::VARIANT_MAX; i++) {
 		type_box->add_item(Variant::get_type_name(Variant::Type(i)));
 	}
@@ -1627,7 +1627,7 @@ void VisualScriptEditor::_expression_text_changed(const String &p_text, int p_id
 
 	Node *node = graph->get_node(itos(p_id));
 	if (Object::cast_to<Control>(node)) {
-		Object::cast_to<Control>(node)->set_size(Vector2(1, 1)); // Shrink if text is smaller.
+		Object::cast_to<Control>(node)->set_rect_size(Vector2(1, 1)); // Shrink if text is smaller.
 	}
 
 	updating_graph = false;
@@ -1635,7 +1635,7 @@ void VisualScriptEditor::_expression_text_changed(const String &p_text, int p_id
 
 Vector2 VisualScriptEditor::_get_available_pos(bool centered, Vector2 ofs) const {
 	if (centered) {
-		ofs = graph->get_scroll_ofs() + graph->get_size() * 0.5;
+		ofs = graph->get_scroll_ofs() + graph->get_rect_size() * 0.5;
 	}
 
 	if (graph->is_using_snap()) {
@@ -1808,15 +1808,15 @@ void VisualScriptEditor::_on_nodes_duplicate() {
 
 void VisualScriptEditor::_generic_search(String p_base_type, Vector2 pos, bool node_centered) {
 	if (node_centered) {
-		port_action_pos = graph->get_size() / 2.0f;
+		port_action_pos = graph->get_rect_size() / 2.0f;
 	} else {
-		port_action_pos = graph->get_viewport()->get_mouse_position() - graph->get_global_position();
+		port_action_pos = graph->get_viewport()->get_mouse_position() - graph->get_rect_global_position();
 	}
 
 	new_connect_node_select->select_from_visual_script(p_base_type, false, false); // neither connecting nor reset text
 
 	// Ensure that the dialog fits inside the graph.
-	Size2 bounds = graph->get_global_position() + graph->get_size() - new_connect_node_select->get_size();
+	Size2 bounds = graph->get_rect_global_position() + graph->get_rect_size() - new_connect_node_select->get_size();
 	pos.x = pos.x > bounds.x ? bounds.x : pos.x;
 	pos.y = pos.y > bounds.y ? bounds.y : pos.y;
 
@@ -2461,7 +2461,7 @@ void VisualScriptEditor::_draw_color_over_button(Object *obj, Color p_color) {
 	}
 
 	Ref<StyleBox> normal = get_theme_stylebox("normal", "Button");
-	button->draw_rect(Rect2(normal->get_offset(), button->get_size() - normal->get_minimum_size()), p_color);
+	button->draw_rect(Rect2(normal->get_offset(), button->get_rect_size() - normal->get_minimum_size()), p_color);
 }
 
 void VisualScriptEditor::_button_resource_previewed(const String &p_path, const Ref<Texture2D> &p_preview, const Ref<Texture2D> &p_small_preview, Variant p_ud) {
@@ -2594,7 +2594,7 @@ void VisualScriptEditor::_center_on_node(int p_id) {
 
 	if (gn) {
 		gn->set_selected(true);
-		Vector2 new_scroll = gn->get_position_offset() - graph->get_size() * 0.5 + gn->get_size() * 0.5;
+		Vector2 new_scroll = gn->get_position_offset() - graph->get_rect_size() * 0.5 + gn->get_rect_size() * 0.5;
 		graph->set_scroll_ofs(new_scroll);
 		script->set_scroll(new_scroll / EDSCALE);
 		script->set_edited(true);
@@ -3123,7 +3123,7 @@ void VisualScriptEditor::_port_action_menu(int p_option) {
 			}
 			// Ensure that the dialog fits inside the graph.
 			Vector2 pos = mouse_up_position;
-			Size2 bounds = graph->get_global_position() + graph->get_size() - new_connect_node_select->get_size();
+			Size2 bounds = graph->get_rect_global_position() + graph->get_rect_size() - new_connect_node_select->get_size();
 			pos.x = pos.x > bounds.x ? bounds.x : pos.x;
 			pos.y = pos.y > bounds.y ? bounds.y : pos.y;
 			new_connect_node_select->set_position(pos);
@@ -3147,7 +3147,7 @@ void VisualScriptEditor::_port_action_menu(int p_option) {
 			}
 			// Ensure that the dialog fits inside the graph.
 			Vector2 pos = mouse_up_position;
-			Size2 bounds = graph->get_global_position() + graph->get_size() - new_connect_node_select->get_size();
+			Size2 bounds = graph->get_rect_global_position() + graph->get_rect_size() - new_connect_node_select->get_size();
 			pos.x = pos.x > bounds.x ? bounds.x : pos.x;
 			pos.y = pos.y > bounds.y ? bounds.y : pos.y;
 			new_connect_node_select->set_position(pos);
@@ -3559,7 +3559,7 @@ void VisualScriptEditor::_default_value_edited(Node *p_button, int p_id, int p_i
 		Variant::construct(pinfo.type, existing, &existingp, 1, ce);
 	}
 
-	default_value_edit->set_position(Object::cast_to<Control>(p_button)->get_global_position() + Vector2(0, Object::cast_to<Control>(p_button)->get_size().y));
+	default_value_edit->set_position(Object::cast_to<Control>(p_button)->get_rect_global_position() + Vector2(0, Object::cast_to<Control>(p_button)->get_rect_size().y));
 	default_value_edit->set_size(Size2(1, 1));
 
 	if (pinfo.type == Variant::NODE_PATH) {
@@ -3706,8 +3706,8 @@ void VisualScriptEditor::_comment_node_resized(const Vector2 &p_new_size, int p_
 	undo_redo->add_undo_method(vsc.ptr(), "set_size", vsc->get_size());
 	undo_redo->commit_action();
 
-	gn->set_custom_minimum_size(new_size);
-	gn->set_size(Size2(1, 1));
+	gn->set_rect_minimum_size(new_size);
+	gn->set_rect_size(Size2(1, 1));
 	graph->set_block_minimum_size_adjust(false);
 	updating_graph = false;
 }
@@ -4111,10 +4111,10 @@ void VisualScriptEditor::_member_rmb_selected(const Vector2 &p_pos) {
 	ERR_FAIL_COND(!ti);
 
 	member_popup->clear();
-	member_popup->set_position(members->get_global_position() + p_pos);
+	member_popup->set_position(members->get_rect_global_position() + p_pos);
 	member_popup->set_size(Vector2());
 
-	function_name_edit->set_position(members->get_global_position() + p_pos);
+	function_name_edit->set_position(members->get_rect_global_position() + p_pos);
 	function_name_edit->set_size(Vector2());
 
 	TreeItem *root = members->get_root();
@@ -4291,7 +4291,7 @@ VisualScriptEditor::VisualScriptEditor() {
 	members_section = memnew(VBoxContainer);
 	// Add but wait until done setting up this.
 	ScriptEditor::get_singleton()->get_left_list_split()->call_deferred("add_child", members_section);
-	members_section->set_v_size_flags(SIZE_EXPAND_FILL);
+	members_section->set_size_flags_vertical(SIZE_EXPAND_FILL);
 
 	CheckButton *tool_script_check = memnew(CheckButton);
 	tool_script_check->set_text(TTR("Make Tool:"));
@@ -4302,7 +4302,7 @@ VisualScriptEditor::VisualScriptEditor() {
 
 	members = memnew(Tree);
 	members_section->add_margin_child(TTR("Members:"), members, true);
-	members->set_custom_minimum_size(Size2(0, 50 * EDSCALE));
+	members->set_rect_minimum_size(Size2(0, 50 * EDSCALE));
 	members->set_hide_root(true);
 	members->connect("button_pressed", callable_mp(this, &VisualScriptEditor::_member_button));
 	members->connect("item_edited", callable_mp(this, &VisualScriptEditor::_member_edited));
@@ -4329,7 +4329,7 @@ VisualScriptEditor::VisualScriptEditor() {
 
 	graph = memnew(GraphEdit);
 	add_child(graph);
-	graph->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	graph->set_size_flags_vertical(Control::SIZE_EXPAND_FILL);
 	graph->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
 	graph->connect("node_selected", callable_mp(this, &VisualScriptEditor::_node_selected));
 	graph->connect("begin_node_move", callable_mp(this, &VisualScriptEditor::_begin_node_move));
@@ -4366,8 +4366,8 @@ VisualScriptEditor::VisualScriptEditor() {
 
 	// Add Function Dialog.
 	VBoxContainer *function_vb = memnew(VBoxContainer);
-	function_vb->set_v_size_flags(SIZE_EXPAND_FILL);
-	function_vb->set_custom_minimum_size(Size2(450, 300) * EDSCALE);
+	function_vb->set_size_flags_vertical(SIZE_EXPAND_FILL);
+	function_vb->set_rect_minimum_size(Size2(450, 300) * EDSCALE);
 
 	HBoxContainer *func_name_hbox = memnew(HBoxContainer);
 	function_vb->add_child(func_name_hbox);
@@ -4377,7 +4377,7 @@ VisualScriptEditor::VisualScriptEditor() {
 	func_name_hbox->add_child(func_name_label);
 
 	func_name_box = memnew(LineEdit);
-	func_name_box->set_h_size_flags(SIZE_EXPAND_FILL);
+	func_name_box->set_size_flags_horizontal(SIZE_EXPAND_FILL);
 	func_name_box->set_placeholder(TTR("function_name"));
 	func_name_box->set_text("");
 	func_name_box->connect("focus_entered", callable_mp(this, &VisualScriptEditor::_deselect_input_names));
@@ -4388,17 +4388,17 @@ VisualScriptEditor::VisualScriptEditor() {
 	function_vb->add_child(memnew(HSeparator));
 
 	Button *add_input_button = memnew(Button);
-	add_input_button->set_h_size_flags(SIZE_EXPAND_FILL);
+	add_input_button->set_size_flags_horizontal(SIZE_EXPAND_FILL);
 	add_input_button->set_text(TTR("Add Input"));
 	add_input_button->connect("pressed", callable_mp(this, &VisualScriptEditor::_add_func_input));
 	function_vb->add_child(add_input_button);
 
 	func_input_scroll = memnew(ScrollContainer);
-	func_input_scroll->set_v_size_flags(SIZE_EXPAND_FILL);
+	func_input_scroll->set_size_flags_vertical(SIZE_EXPAND_FILL);
 	function_vb->add_child(func_input_scroll);
 
 	func_input_vbox = memnew(VBoxContainer);
-	func_input_vbox->set_h_size_flags(SIZE_EXPAND_FILL);
+	func_input_vbox->set_size_flags_horizontal(SIZE_EXPAND_FILL);
 	func_input_scroll->add_child(func_input_vbox);
 
 	function_create_dialog = memnew(ConfirmationDialog);
@@ -4412,7 +4412,7 @@ VisualScriptEditor::VisualScriptEditor() {
 	select_func_text->set_text(TTR("Select or create a function to edit its graph."));
 	select_func_text->set_align(Label::ALIGN_CENTER);
 	select_func_text->set_valign(Label::VALIGN_CENTER);
-	select_func_text->set_h_size_flags(SIZE_EXPAND_FILL);
+	select_func_text->set_size_flags_horizontal(SIZE_EXPAND_FILL);
 	add_child(select_func_text);
 
 	hint_text = memnew(Label);

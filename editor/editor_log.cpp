@@ -154,7 +154,7 @@ EditorLog::EditorLog() {
 	vb->add_child(hb);
 	title = memnew(Label);
 	title->set_text(TTR("Output:"));
-	title->set_h_size_flags(SIZE_EXPAND_FILL);
+	title->set_size_flags_horizontal(SIZE_EXPAND_FILL);
 	hb->add_child(title);
 
 	copybutton = memnew(Button);
@@ -175,9 +175,9 @@ EditorLog::EditorLog() {
 	log->set_scroll_follow(true);
 	log->set_selection_enabled(true);
 	log->set_focus_mode(FOCUS_CLICK);
-	log->set_custom_minimum_size(Size2(0, 180) * EDSCALE);
-	log->set_v_size_flags(SIZE_EXPAND_FILL);
-	log->set_h_size_flags(SIZE_EXPAND_FILL);
+	log->set_rect_minimum_size(Size2(0, 180) * EDSCALE);
+	log->set_size_flags_vertical(SIZE_EXPAND_FILL);
+	log->set_size_flags_horizontal(SIZE_EXPAND_FILL);
 	vb->add_child(log);
 	add_message(VERSION_FULL_NAME " (c) 2007-2021 Juan Linietsky, Ariel Manzur & Godot Contributors.");
 

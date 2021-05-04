@@ -102,7 +102,7 @@ ConnectionInfoDialog::ConnectionInfoDialog() {
 	tree->set_column_title(1, TTR("Signal"));
 	tree->set_column_title(2, TTR("Target"));
 	vbc->add_child(tree);
-	tree->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	tree->set_size_flags_vertical(Control::SIZE_EXPAND_FILL);
 	tree->set_allow_rmb_select(true);
 }
 
@@ -1517,7 +1517,7 @@ void ScriptTextEditor::_text_edit_gui_input(const Ref<InputEvent> &ev) {
 
 	CodeEdit *tx = code_editor->get_text_editor();
 	if (mb.is_valid() && mb->get_button_index() == MOUSE_BUTTON_RIGHT && mb->is_pressed()) {
-		local_pos = mb->get_global_position() - tx->get_global_position();
+		local_pos = mb->get_global_position() - tx->get_rect_global_position();
 		create_menu = true;
 	} else if (k.is_valid() && k->get_keycode() == KEY_MENU) {
 		local_pos = tx->_get_cursor_pixel_pos();
@@ -1679,7 +1679,7 @@ void ScriptTextEditor::_enable_code_editor() {
 	VSplitContainer *editor_box = memnew(VSplitContainer);
 	add_child(editor_box);
 	editor_box->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
-	editor_box->set_v_size_flags(SIZE_EXPAND_FILL);
+	editor_box->set_size_flags_vertical(SIZE_EXPAND_FILL);
 
 	editor_box->add_child(code_editor);
 	code_editor->connect("show_warnings_panel", callable_mp(this, &ScriptTextEditor::_show_warnings_panel));
@@ -1813,7 +1813,7 @@ ScriptTextEditor::ScriptTextEditor() {
 	code_editor->add_theme_constant_override("separation", 2);
 	code_editor->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
 	code_editor->set_code_complete_func(_code_complete_scripts, this);
-	code_editor->set_v_size_flags(SIZE_EXPAND_FILL);
+	code_editor->set_size_flags_vertical(SIZE_EXPAND_FILL);
 
 	code_editor->get_text_editor()->set_draw_breakpoints_gutter(true);
 	code_editor->get_text_editor()->set_draw_executing_lines_gutter(true);
@@ -1826,8 +1826,8 @@ ScriptTextEditor::ScriptTextEditor() {
 	code_editor->get_text_editor()->set_gutter_type(connection_gutter, TextEdit::GUTTER_TPYE_ICON);
 
 	warnings_panel = memnew(RichTextLabel);
-	warnings_panel->set_custom_minimum_size(Size2(0, 100 * EDSCALE));
-	warnings_panel->set_h_size_flags(SIZE_EXPAND_FILL);
+	warnings_panel->set_rect_minimum_size(Size2(0, 100 * EDSCALE));
+	warnings_panel->set_size_flags_horizontal(SIZE_EXPAND_FILL);
 	warnings_panel->set_meta_underline(true);
 	warnings_panel->set_selection_enabled(true);
 	warnings_panel->set_focus_mode(FOCUS_CLICK);

@@ -46,7 +46,7 @@ void TextureLayeredEditor::_gui_input(Ref<InputEvent> p_event) {
 }
 
 void TextureLayeredEditor::_texture_rect_draw() {
-	texture_rect->draw_rect(Rect2(Point2(), texture_rect->get_size()), Color(1, 1, 1, 1));
+	texture_rect->draw_rect(Rect2(Point2(), texture_rect->get_rect_size()), Color(1, 1, 1, 1));
 }
 
 void TextureLayeredEditor::_notification(int p_what) {
@@ -59,7 +59,7 @@ void TextureLayeredEditor::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_DRAW) {
 		Ref<Texture2D> checkerboard = get_theme_icon("Checkerboard", "EditorIcons");
-		Size2 size = get_size();
+		Size2 size = get_rect_size();
 
 		draw_texture_rect(checkerboard, Rect2(Point2(), size), true);
 	}
@@ -149,7 +149,7 @@ void TextureLayeredEditor::_make_shaders() {
 }
 
 void TextureLayeredEditor::_texture_rect_update_area() {
-	Size2 size = get_size();
+	Size2 size = get_rect_size();
 	int tex_width = texture->get_width() * size.height / texture->get_height();
 	int tex_height = size.height;
 
@@ -169,8 +169,8 @@ void TextureLayeredEditor::_texture_rect_update_area() {
 	int ofs_x = (size.width - tex_width) / 2;
 	int ofs_y = (size.height - tex_height) / 2;
 
-	texture_rect->set_position(Vector2(ofs_x, ofs_y));
-	texture_rect->set_size(Vector2(tex_width, tex_height));
+	texture_rect->set_rect_position(Vector2(ofs_x, ofs_y));
+	texture_rect->set_rect_size(Vector2(tex_width, tex_height));
 }
 
 void TextureLayeredEditor::edit(Ref<TextureLayered> p_texture) {
@@ -217,7 +217,7 @@ void TextureLayeredEditor::_bind_methods() {
 
 TextureLayeredEditor::TextureLayeredEditor() {
 	set_texture_repeat(TextureRepeat::TEXTURE_REPEAT_ENABLED);
-	set_custom_minimum_size(Size2(1, 150));
+	set_rect_minimum_size(Size2(1, 150));
 	texture_rect = memnew(Control);
 	texture_rect->connect("draw", callable_mp(this, &TextureLayeredEditor::_texture_rect_draw));
 	texture_rect->set_mouse_filter(MOUSE_FILTER_IGNORE);
@@ -229,7 +229,7 @@ TextureLayeredEditor::TextureLayeredEditor() {
 	add_child(layer);
 	layer->set_anchor(SIDE_RIGHT, 1);
 	layer->set_anchor(SIDE_LEFT, 1);
-	layer->set_h_grow_direction(GROW_DIRECTION_BEGIN);
+	layer->set_grow_horizontal(GROW_DIRECTION_BEGIN);
 	layer->set_modulate(Color(1, 1, 1, 0.8));
 	info = memnew(Label);
 	add_child(info);
@@ -237,8 +237,8 @@ TextureLayeredEditor::TextureLayeredEditor() {
 	info->set_anchor(SIDE_LEFT, 1);
 	info->set_anchor(SIDE_BOTTOM, 1);
 	info->set_anchor(SIDE_TOP, 1);
-	info->set_h_grow_direction(GROW_DIRECTION_BEGIN);
-	info->set_v_grow_direction(GROW_DIRECTION_BEGIN);
+	info->set_grow_horizontal(GROW_DIRECTION_BEGIN);
+	info->set_grow_vertical(GROW_DIRECTION_BEGIN);
 	info->add_theme_color_override("font_color", Color(1, 1, 1, 1));
 	info->add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.5));
 	info->add_theme_constant_override("shadow_as_outline", 1);

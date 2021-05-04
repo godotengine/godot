@@ -174,7 +174,7 @@ void VideoPlayer::_notification(int p_notification) {
 				return;
 			}
 
-			Size2 s = expand ? get_size() : texture->get_size();
+			Size2 s = expand ? get_rect_size() : texture->get_size();
 			draw_texture_rect(texture, Rect2(Point2(), s), false);
 
 		} break;

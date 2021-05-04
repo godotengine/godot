@@ -65,7 +65,7 @@ void AudioStreamEditor::_notification(int p_what) {
 
 void AudioStreamEditor::_draw_preview() {
 	Rect2 rect = _preview->get_rect();
-	Size2 size = get_size();
+	Size2 size = get_rect_size();
 
 	Ref<AudioStreamPreview> preview = AudioStreamPreviewGenerator::get_singleton()->generate_preview(stream);
 	float preview_len = preview->get_length();
@@ -198,7 +198,7 @@ void AudioStreamEditor::_bind_methods() {
 }
 
 AudioStreamEditor::AudioStreamEditor() {
-	set_custom_minimum_size(Size2(1, 100) * EDSCALE);
+	set_rect_minimum_size(Size2(1, 100) * EDSCALE);
 
 	_player = memnew(AudioStreamPlayer);
 	_player->connect("finished", callable_mp(this, &AudioStreamEditor::_on_finished));
@@ -209,7 +209,7 @@ AudioStreamEditor::AudioStreamEditor() {
 	add_child(vbox);
 
 	_preview = memnew(ColorRect);
-	_preview->set_v_size_flags(SIZE_EXPAND_FILL);
+	_preview->set_size_flags_vertical(SIZE_EXPAND_FILL);
 	_preview->connect("draw", callable_mp(this, &AudioStreamEditor::_draw_preview));
 	vbox->add_child(_preview);
 
@@ -237,7 +237,7 @@ AudioStreamEditor::AudioStreamEditor() {
 
 	_current_label = memnew(Label);
 	_current_label->set_align(Label::ALIGN_RIGHT);
-	_current_label->set_h_size_flags(SIZE_EXPAND_FILL);
+	_current_label->set_size_flags_horizontal(SIZE_EXPAND_FILL);
 	_current_label->add_theme_font_override("font", EditorNode::get_singleton()->get_gui_base()->get_theme_font("status_source", "EditorFonts"));
 	_current_label->add_theme_font_size_override("font_size", EditorNode::get_singleton()->get_gui_base()->get_theme_font_size("status_source_size", "EditorFonts"));
 	_current_label->set_modulate(Color(1, 1, 1, 0.5));

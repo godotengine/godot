@@ -71,7 +71,7 @@ void PanelContainer::_notification(int p_what) {
 			style = get_theme_stylebox("panel", "PanelContainer");
 		}
 
-		style->draw(ci, Rect2(Point2(), get_size()));
+		style->draw(ci, Rect2(Point2(), get_rect_size()));
 	}
 
 	if (p_what == NOTIFICATION_SORT_CHILDREN) {
@@ -83,7 +83,7 @@ void PanelContainer::_notification(int p_what) {
 			style = get_theme_stylebox("panel", "PanelContainer");
 		}
 
-		Size2 size = get_size();
+		Size2 size = get_rect_size();
 		Point2 ofs;
 		if (style.is_valid()) {
 			size -= style->get_minimum_size();

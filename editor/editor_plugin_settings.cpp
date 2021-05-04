@@ -203,7 +203,7 @@ EditorPluginSettings::EditorPluginSettings() {
 	add_child(title_hb);
 
 	plugin_list = memnew(Tree);
-	plugin_list->set_v_size_flags(SIZE_EXPAND_FILL);
+	plugin_list->set_size_flags_vertical(SIZE_EXPAND_FILL);
 	plugin_list->set_columns(5);
 	plugin_list->set_column_titles_visible(true);
 	plugin_list->set_column_title(0, TTR("Name:"));
@@ -225,8 +225,8 @@ EditorPluginSettings::EditorPluginSettings() {
 
 	VBoxContainer *mc = memnew(VBoxContainer);
 	mc->add_child(plugin_list);
-	mc->set_v_size_flags(SIZE_EXPAND_FILL);
-	mc->set_h_size_flags(SIZE_EXPAND_FILL);
+	mc->set_size_flags_vertical(SIZE_EXPAND_FILL);
+	mc->set_size_flags_horizontal(SIZE_EXPAND_FILL);
 
 	add_child(mc);
 

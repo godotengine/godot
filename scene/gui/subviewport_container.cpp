@@ -80,7 +80,7 @@ void SubViewportContainer::set_stretch_shrink(int p_shrink) {
 			continue;
 		}
 
-		c->set_size(get_size() / shrink);
+		c->set_size(get_rect_size() / shrink);
 	}
 
 	update();
@@ -102,7 +102,7 @@ void SubViewportContainer::_notification(int p_what) {
 				continue;
 			}
 
-			c->set_size(get_size() / shrink);
+			c->set_size(get_rect_size() / shrink);
 		}
 	}
 
@@ -131,7 +131,7 @@ void SubViewportContainer::_notification(int p_what) {
 			}
 
 			if (stretch) {
-				draw_texture_rect(c->get_texture(), Rect2(Vector2(), get_size()));
+				draw_texture_rect(c->get_texture(), Rect2(Vector2(), get_rect_size()));
 			} else {
 				draw_texture_rect(c->get_texture(), Rect2(Vector2(), c->get_size()));
 			}

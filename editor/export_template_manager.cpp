@@ -80,7 +80,7 @@ void ExportTemplateManager::_update_template_list() {
 			String(VERSION_STATUS) != String("rc");
 
 	Label *current = memnew(Label);
-	current->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	current->set_size_flags_horizontal(Control::SIZE_EXPAND_FILL);
 	current_hb->add_child(current);
 
 	if (templates.has(current_version)) {
@@ -125,7 +125,7 @@ void ExportTemplateManager::_update_template_list() {
 		Label *version = memnew(Label);
 		version->set_modulate(current->get_theme_color("disabled_font_color", "Editor"));
 		version->set_text(text);
-		version->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+		version->set_size_flags_horizontal(Control::SIZE_EXPAND_FILL);
 		hbc->add_child(version);
 
 		Button *uninstall = memnew(Button);
@@ -660,7 +660,7 @@ ExportTemplateManager::ExportTemplateManager() {
 	installed_scroll->add_child(installed_vb);
 	installed_scroll->set_enable_v_scroll(true);
 	installed_scroll->set_enable_h_scroll(false);
-	installed_vb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	installed_vb->set_size_flags_horizontal(Control::SIZE_EXPAND_FILL);
 
 	get_cancel_button()->set_text(TTR("Close"));
 	get_ok_button()->set_text(TTR("Install From File"));
@@ -699,7 +699,7 @@ ExportTemplateManager::ExportTemplateManager() {
 	VBoxContainer *vbc = memnew(VBoxContainer);
 	template_downloader->add_child(vbc);
 	ScrollContainer *sc = memnew(ScrollContainer);
-	sc->set_custom_minimum_size(Size2(400, 200) * EDSCALE);
+	sc->set_rect_minimum_size(Size2(400, 200) * EDSCALE);
 	vbc->add_margin_child(TTR("Select mirror from list: (Shift+Click: Open in Browser)"), sc);
 	template_list = memnew(VBoxContainer);
 	sc->add_child(template_list);

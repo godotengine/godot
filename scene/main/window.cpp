@@ -853,7 +853,7 @@ Size2 Window::_get_contents_minimum_size() const {
 	for (int i = 0; i < get_child_count(); i++) {
 		Control *c = Object::cast_to<Control>(get_child(i));
 		if (c) {
-			Point2i pos = c->get_position();
+			Point2i pos = c->get_rect_position();
 			Size2i min = c->get_combined_minimum_size();
 
 			max.x = MAX(pos.x + min.x, max.x);

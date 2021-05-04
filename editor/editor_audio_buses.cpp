@@ -91,17 +91,17 @@ void EditorAudioBus::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_DRAW: {
 			if (is_master) {
-				draw_style_box(get_theme_stylebox("disabled", "Button"), Rect2(Vector2(), get_size()));
+				draw_style_box(get_theme_stylebox("disabled", "Button"), Rect2(Vector2(), get_rect_size()));
 			} else if (has_focus()) {
-				draw_style_box(get_theme_stylebox("focus", "Button"), Rect2(Vector2(), get_size()));
+				draw_style_box(get_theme_stylebox("focus", "Button"), Rect2(Vector2(), get_rect_size()));
 			} else {
-				draw_style_box(get_theme_stylebox("panel", "TabContainer"), Rect2(Vector2(), get_size()));
+				draw_style_box(get_theme_stylebox("panel", "TabContainer"), Rect2(Vector2(), get_rect_size()));
 			}
 
 			if (get_index() != 0 && hovering_drop) {
 				Color accent = get_theme_color("accent_color", "Editor");
 				accent.a *= 0.7;
-				draw_rect(Rect2(Point2(), get_size()), accent, false);
+				draw_rect(Rect2(Point2(), get_rect_size()), accent, false);
 			}
 		} break;
 		case NOTIFICATION_PROCESS: {
@@ -383,13 +383,13 @@ void EditorAudioBus::_show_value(float slider_value) {
 
 	slider->set_tooltip(text);
 	audio_value_preview_label->set_text(text);
-	Vector2 slider_size = slider->get_size();
-	Vector2 slider_position = slider->get_global_position();
+	Vector2 slider_size = slider->get_rect_size();
+	Vector2 slider_position = slider->get_rect_global_position();
 	float left_padding = 5.0f;
 	float vert_padding = 10.0f;
 	Vector2 box_position = Vector2(slider_size.x + left_padding, (slider_size.y - vert_padding) * (1.0f - slider->get_value()) - vert_padding);
-	audio_value_preview_box->set_position(slider_position + box_position);
-	audio_value_preview_box->set_size(audio_value_preview_label->get_size());
+	audio_value_preview_box->set_rect_position(slider_position + box_position);
+	audio_value_preview_box->set_rect_size(audio_value_preview_label->get_rect_size());
 	if (slider->has_focus() && !audio_value_preview_box->is_visible()) {
 		audio_value_preview_box->show();
 	}
@@ -487,7 +487,7 @@ void EditorAudioBus::_effect_edited() {
 	if (effect->get_metadata(0) == Variant()) {
 		Rect2 area = effects->get_item_rect(effect);
 
-		effect_options->set_position(effects->get_global_position() + area.position + Vector2(0, area.size.y));
+		effect_options->set_position(effects->get_rect_global_position() + area.position + Vector2(0, area.size.y));
 		effect_options->popup();
 		//add effect
 	} else {
@@ -536,7 +536,7 @@ void EditorAudioBus::_gui_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseButton> mb = p_event;
 	if (mb.is_valid() && mb->get_button_index() == MOUSE_BUTTON_RIGHT && mb->is_pressed()) {
 		Vector2 pos = Vector2(mb->get_position().x, mb->get_position().y);
-		bus_popup->set_position(get_global_position() + pos);
+		bus_popup->set_position(get_rect_global_position() + pos);
 		bus_popup->popup();
 	}
 }
@@ -574,8 +574,8 @@ Variant EditorAudioBus::get_drag_data(const Point2 &p_point) {
 	c->add_child(p);
 	p->set_modulate(Color(1, 1, 1, 0.7));
 	p->add_theme_style_override("panel", get_theme_stylebox("focus", "Button"));
-	p->set_size(get_size());
-	p->set_position(-p_point);
+	p->set_rect_size(get_rect_size());
+	p->set_rect_position(-p_point);
 	set_drag_preview(c);
 	Dictionary d;
 	d["type"] = "move_audio_bus";
@@ -767,7 +767,7 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses, bool p_is_master) {
 	VBoxContainer *vb = memnew(VBoxContainer);
 	add_child(vb);
 
-	set_v_size_flags(SIZE_EXPAND_FILL);
+	set_size_flags_vertical(SIZE_EXPAND_FILL);
 
 	track_name = memnew(LineEdit);
 	track_name->connect("text_entered", callable_mp(this, &EditorAudioBus::_name_changed));
@@ -818,17 +818,17 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses, bool p_is_master) {
 	slider->set_min(0.0);
 	slider->set_max(1.0);
 	slider->set_step(0.0001);
-	slider->set_clip_contents(false);
+	slider->set_rect_clip_contents(false);
 
 	audio_value_preview_box = memnew(Panel);
 	HBoxContainer *audioprev_hbc = memnew(HBoxContainer);
-	audioprev_hbc->set_v_size_flags(SIZE_EXPAND_FILL);
-	audioprev_hbc->set_h_size_flags(SIZE_EXPAND_FILL);
+	audioprev_hbc->set_size_flags_vertical(SIZE_EXPAND_FILL);
+	audioprev_hbc->set_size_flags_horizontal(SIZE_EXPAND_FILL);
 	audio_value_preview_box->add_child(audioprev_hbc);
 
 	audio_value_preview_label = memnew(Label);
-	audio_value_preview_label->set_v_size_flags(SIZE_EXPAND_FILL);
-	audio_value_preview_label->set_h_size_flags(SIZE_EXPAND_FILL);
+	audio_value_preview_label->set_size_flags_vertical(SIZE_EXPAND_FILL);
+	audio_value_preview_label->set_size_flags_horizontal(SIZE_EXPAND_FILL);
 	audio_value_preview_label->set_mouse_filter(MOUSE_FILTER_PASS);
 
 	audioprev_hbc->add_child(audio_value_preview_label);
@@ -882,9 +882,9 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses, bool p_is_master) {
 
 	effects = memnew(Tree);
 	effects->set_hide_root(true);
-	effects->set_custom_minimum_size(Size2(0, 80) * EDSCALE);
+	effects->set_rect_minimum_size(Size2(0, 80) * EDSCALE);
 	effects->set_hide_folding(true);
-	effects->set_v_size_flags(SIZE_EXPAND_FILL);
+	effects->set_size_flags_vertical(SIZE_EXPAND_FILL);
 	vb->add_child(effects);
 	effects->connect("item_edited", callable_mp(this, &EditorAudioBus::_effect_edited));
 	effects->connect("cell_selected", callable_mp(this, &EditorAudioBus::_effect_selected));
@@ -923,7 +923,7 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses, bool p_is_master) {
 
 	bus_options = memnew(MenuButton);
 	bus_options->set_shortcut_context(this);
-	bus_options->set_h_size_flags(SIZE_SHRINK_END);
+	bus_options->set_size_flags_horizontal(SIZE_SHRINK_END);
 	bus_options->set_anchor(SIDE_RIGHT, 0.0);
 	bus_options->set_tooltip(TTR("Bus options"));
 	hbc->add_child(bus_options);
@@ -944,12 +944,12 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses, bool p_is_master) {
 void EditorAudioBusDrop::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_DRAW: {
-			draw_style_box(get_theme_stylebox("normal", "Button"), Rect2(Vector2(), get_size()));
+			draw_style_box(get_theme_stylebox("normal", "Button"), Rect2(Vector2(), get_rect_size()));
 
 			if (hovering_drop) {
 				Color accent = get_theme_color("accent_color", "Editor");
 				accent.a *= 0.7;
-				draw_rect(Rect2(Point2(), get_size()), accent, false);
+				draw_rect(Rect2(Point2(), get_rect_size()), accent, false);
 			}
 		} break;
 		case NOTIFICATION_MOUSE_ENTER: {
@@ -1140,7 +1140,7 @@ void EditorAudioBuses::_request_drop_end() {
 		drop_end = memnew(EditorAudioBusDrop);
 
 		bus_hb->add_child(drop_end);
-		drop_end->set_custom_minimum_size(Object::cast_to<Control>(bus_hb->get_child(0))->get_size());
+		drop_end->set_rect_minimum_size(Object::cast_to<Control>(bus_hb->get_child(0))->get_rect_size());
 		drop_end->connect("dropped", callable_mp(this, &EditorAudioBuses::_drop_at_index), varray(), CONNECT_DEFERRED);
 	}
 }
@@ -1262,7 +1262,7 @@ EditorAudioBuses::EditorAudioBuses() {
 	String layout_path = ProjectSettings::get_singleton()->get("audio/buses/default_bus_layout");
 	file->set_text(String(TTR("Layout")) + ": " + layout_path.get_file());
 	file->set_clip_text(true);
-	file->set_h_size_flags(SIZE_EXPAND_FILL);
+	file->set_size_flags_horizontal(SIZE_EXPAND_FILL);
 	top_hb->add_child(file);
 
 	add = memnew(Button);
@@ -1299,12 +1299,12 @@ EditorAudioBuses::EditorAudioBuses() {
 	_new->connect("pressed", callable_mp(this, &EditorAudioBuses::_new_layout));
 
 	bus_scroll = memnew(ScrollContainer);
-	bus_scroll->set_v_size_flags(SIZE_EXPAND_FILL);
+	bus_scroll->set_size_flags_vertical(SIZE_EXPAND_FILL);
 	bus_scroll->set_enable_h_scroll(true);
 	bus_scroll->set_enable_v_scroll(false);
 	add_child(bus_scroll);
 	bus_hb = memnew(HBoxContainer);
-	bus_hb->set_v_size_flags(SIZE_EXPAND_FILL);
+	bus_hb->set_size_flags_vertical(SIZE_EXPAND_FILL);
 	bus_scroll->add_child(bus_hb);
 
 	save_timer = memnew(Timer);
@@ -1313,7 +1313,7 @@ EditorAudioBuses::EditorAudioBuses() {
 	add_child(save_timer);
 	save_timer->connect("timeout", callable_mp(this, &EditorAudioBuses::_server_save));
 
-	set_v_size_flags(SIZE_EXPAND_FILL);
+	set_size_flags_vertical(SIZE_EXPAND_FILL);
 
 	edited_path = ProjectSettings::get_singleton()->get("audio/buses/default_bus_layout");
 
@@ -1415,15 +1415,15 @@ void EditorAudioMeterNotches::_draw_audio_notches() {
 
 	for (int i = 0; i < notches.size(); i++) {
 		AudioNotch n = notches[i];
-		draw_line(Vector2(0, (1.0f - n.relative_position) * (get_size().y - btm_padding - top_padding) + top_padding),
-				Vector2(line_length, (1.0f - n.relative_position) * (get_size().y - btm_padding - top_padding) + top_padding),
+		draw_line(Vector2(0, (1.0f - n.relative_position) * (get_rect_size().y - btm_padding - top_padding) + top_padding),
+				Vector2(line_length, (1.0f - n.relative_position) * (get_rect_size().y - btm_padding - top_padding) + top_padding),
 				notch_color,
 				1);
 
 		if (n.render_db_value) {
 			draw_string(font,
 					Vector2(line_length + label_space,
-							(1.0f - n.relative_position) * (get_size().y - btm_padding - top_padding) + (font_height / 4) + top_padding),
+							(1.0f - n.relative_position) * (get_rect_size().y - btm_padding - top_padding) + (font_height / 4) + top_padding),
 					String::num(Math::abs(n.db_value)) + "dB",
 					HALIGN_LEFT, -1, font_size,
 					notch_color);

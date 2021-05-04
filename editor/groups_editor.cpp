@@ -417,11 +417,11 @@ GroupDialog::GroupDialog() {
 
 	HBoxContainer *hbc = memnew(HBoxContainer);
 	vbc->add_child(hbc);
-	hbc->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	hbc->set_size_flags_vertical(Control::SIZE_EXPAND_FILL);
 
 	VBoxContainer *vbc_left = memnew(VBoxContainer);
 	hbc->add_child(vbc_left);
-	vbc_left->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	vbc_left->set_size_flags_horizontal(Control::SIZE_EXPAND_FILL);
 
 	Label *group_title = memnew(Label);
 	group_title->set_text(TTR("Groups"));
@@ -433,7 +433,7 @@ GroupDialog::GroupDialog() {
 	groups->set_select_mode(Tree::SELECT_SINGLE);
 	groups->set_allow_reselect(true);
 	groups->set_allow_rmb_select(true);
-	groups->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	groups->set_size_flags_vertical(Control::SIZE_EXPAND_FILL);
 	groups->add_theme_constant_override("draw_guides", 1);
 	groups->connect("item_selected", callable_mp(this, &GroupDialog::_group_selected));
 	groups->connect("button_pressed", callable_mp(this, &GroupDialog::_delete_group_pressed));
@@ -441,11 +441,11 @@ GroupDialog::GroupDialog() {
 
 	HBoxContainer *chbc = memnew(HBoxContainer);
 	vbc_left->add_child(chbc);
-	chbc->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	chbc->set_size_flags_horizontal(Control::SIZE_EXPAND_FILL);
 
 	add_group_text = memnew(LineEdit);
 	chbc->add_child(add_group_text);
-	add_group_text->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	add_group_text->set_size_flags_horizontal(Control::SIZE_EXPAND_FILL);
 	add_group_text->connect("text_entered", callable_mp(this, &GroupDialog::_add_group_pressed));
 
 	Button *add_group_button = memnew(Button);
@@ -455,7 +455,7 @@ GroupDialog::GroupDialog() {
 
 	VBoxContainer *vbc_add = memnew(VBoxContainer);
 	hbc->add_child(vbc_add);
-	vbc_add->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	vbc_add->set_size_flags_horizontal(Control::SIZE_EXPAND_FILL);
 
 	Label *out_of_group_title = memnew(Label);
 	out_of_group_title->set_text(TTR("Nodes Not in Group"));
@@ -466,7 +466,7 @@ GroupDialog::GroupDialog() {
 	nodes_to_add->set_hide_root(true);
 	nodes_to_add->set_hide_folding(true);
 	nodes_to_add->set_select_mode(Tree::SELECT_MULTI);
-	nodes_to_add->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	nodes_to_add->set_size_flags_vertical(Control::SIZE_EXPAND_FILL);
 	nodes_to_add->add_theme_constant_override("draw_guides", 1);
 
 	HBoxContainer *add_filter_hbc = memnew(HBoxContainer);
@@ -474,15 +474,15 @@ GroupDialog::GroupDialog() {
 	vbc_add->add_child(add_filter_hbc);
 
 	add_filter = memnew(LineEdit);
-	add_filter->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	add_filter->set_size_flags_horizontal(Control::SIZE_EXPAND_FILL);
 	add_filter->set_placeholder(TTR("Filter nodes"));
 	add_filter_hbc->add_child(add_filter);
 	add_filter->connect("text_changed", callable_mp(this, &GroupDialog::_add_filter_changed));
 
 	VBoxContainer *vbc_buttons = memnew(VBoxContainer);
 	hbc->add_child(vbc_buttons);
-	vbc_buttons->set_h_size_flags(Control::SIZE_SHRINK_CENTER);
-	vbc_buttons->set_v_size_flags(Control::SIZE_SHRINK_CENTER);
+	vbc_buttons->set_size_flags_horizontal(Control::SIZE_SHRINK_CENTER);
+	vbc_buttons->set_size_flags_vertical(Control::SIZE_SHRINK_CENTER);
 
 	add_button = memnew(Button);
 	add_button->set_flat(true);
@@ -503,7 +503,7 @@ GroupDialog::GroupDialog() {
 
 	VBoxContainer *vbc_remove = memnew(VBoxContainer);
 	hbc->add_child(vbc_remove);
-	vbc_remove->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	vbc_remove->set_size_flags_horizontal(Control::SIZE_EXPAND_FILL);
 
 	Label *in_group_title = memnew(Label);
 	in_group_title->set_text(TTR("Nodes in Group"));
@@ -511,7 +511,7 @@ GroupDialog::GroupDialog() {
 
 	nodes_to_remove = memnew(Tree);
 	vbc_remove->add_child(nodes_to_remove);
-	nodes_to_remove->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	nodes_to_remove->set_size_flags_vertical(Control::SIZE_EXPAND_FILL);
 	nodes_to_remove->set_hide_root(true);
 	nodes_to_remove->set_hide_folding(true);
 	nodes_to_remove->set_select_mode(Tree::SELECT_MULTI);
@@ -522,7 +522,7 @@ GroupDialog::GroupDialog() {
 	vbc_remove->add_child(remove_filter_hbc);
 
 	remove_filter = memnew(LineEdit);
-	remove_filter->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	remove_filter->set_size_flags_horizontal(Control::SIZE_EXPAND_FILL);
 	remove_filter->set_placeholder(TTR("Filter nodes"));
 	remove_filter_hbc->add_child(remove_filter);
 	remove_filter->connect("text_changed", callable_mp(this, &GroupDialog::_remove_filter_changed));
@@ -532,7 +532,7 @@ GroupDialog::GroupDialog() {
 	group_empty->set_valign(Label::VALIGN_CENTER);
 	group_empty->set_align(Label::ALIGN_CENTER);
 	group_empty->set_autowrap(true);
-	group_empty->set_custom_minimum_size(Size2(100 * EDSCALE, 0));
+	group_empty->set_rect_minimum_size(Size2(100 * EDSCALE, 0));
 	nodes_to_remove->add_child(group_empty);
 	group_empty->set_anchors_and_offsets_preset(Control::PRESET_WIDE, Control::PRESET_MODE_KEEP_SIZE, 8 * EDSCALE);
 
@@ -687,7 +687,7 @@ GroupsEditor::GroupsEditor() {
 	vbc->add_child(hbc);
 
 	group_name = memnew(LineEdit);
-	group_name->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	group_name->set_size_flags_horizontal(Control::SIZE_EXPAND_FILL);
 	hbc->add_child(group_name);
 	group_name->connect("text_entered", callable_mp(this, &GroupsEditor::_add_group));
 
@@ -698,7 +698,7 @@ GroupsEditor::GroupsEditor() {
 
 	tree = memnew(Tree);
 	tree->set_hide_root(true);
-	tree->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	tree->set_size_flags_vertical(Control::SIZE_EXPAND_FILL);
 	vbc->add_child(tree);
 	tree->connect("button_pressed", callable_mp(this, &GroupsEditor::_remove_group));
 	tree->add_theme_constant_override("draw_guides", 1);

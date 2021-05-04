@@ -152,7 +152,7 @@ void LinkButton::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_DRAW: {
 			RID ci = get_canvas_item();
-			Size2 size = get_size();
+			Size2 size = get_rect_size();
 			Color color;
 			bool do_underline = false;
 
@@ -303,5 +303,5 @@ void LinkButton::_bind_methods() {
 LinkButton::LinkButton() {
 	text_buf.instance();
 	set_focus_mode(FOCUS_NONE);
-	set_default_cursor_shape(CURSOR_POINTING_HAND);
+	set_mouse_default_cursor_shape(CURSOR_POINTING_HAND);
 }

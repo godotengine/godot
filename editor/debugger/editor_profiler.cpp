@@ -169,8 +169,8 @@ void EditorProfiler::_item_edited() {
 }
 
 void EditorProfiler::_update_plot() {
-	const int w = graph->get_size().width;
-	const int h = graph->get_size().height;
+	const int w = graph->get_rect_size().width;
+	const int h = graph->get_rect_size().height;
 	bool reset_texture = false;
 	const int desired_len = w * h * 4;
 
@@ -405,12 +405,12 @@ void EditorProfiler::_graph_tex_draw() {
 	}
 	if (seeking) {
 		int frame = cursor_metric_edit->get_value() - _get_frame_metric(0).frame_number;
-		int cur_x = (2 * frame + 1) * graph->get_size().x / (2 * frame_metrics.size()) + 1;
-		graph->draw_line(Vector2(cur_x, 0), Vector2(cur_x, graph->get_size().y), Color(1, 1, 1, 0.8));
+		int cur_x = (2 * frame + 1) * graph->get_rect_size().x / (2 * frame_metrics.size()) + 1;
+		graph->draw_line(Vector2(cur_x, 0), Vector2(cur_x, graph->get_rect_size().y), Color(1, 1, 1, 0.8));
 	}
 	if (hover_metric > -1 && hover_metric < total_metrics) {
-		int cur_x = (2 * hover_metric + 1) * graph->get_size().x / (2 * frame_metrics.size()) + 1;
-		graph->draw_line(Vector2(cur_x, 0), Vector2(cur_x, graph->get_size().y), Color(1, 1, 1, 0.4));
+		int cur_x = (2 * hover_metric + 1) * graph->get_rect_size().x / (2 * frame_metrics.size()) + 1;
+		graph->draw_line(Vector2(cur_x, 0), Vector2(cur_x, graph->get_rect_size().y), Color(1, 1, 1, 0.4));
 	}
 }
 
@@ -441,7 +441,7 @@ void EditorProfiler::_graph_tex_input(const Ref<InputEvent> &p_ev) {
 			(mb.is_valid() && mb->get_button_index() == MOUSE_BUTTON_LEFT && mb->is_pressed()) ||
 			(mm.is_valid())) {
 		int x = me->get_position().x - 1;
-		x = x * frame_metrics.size() / graph->get_size().width;
+		x = x * frame_metrics.size() / graph->get_rect_size().width;
 
 		hover_metric = x;
 
@@ -595,7 +595,7 @@ EditorProfiler::EditorProfiler() {
 	hb->add_child(memnew(Label(TTR("Frame #:"))));
 
 	cursor_metric_edit = memnew(SpinBox);
-	cursor_metric_edit->set_h_size_flags(SIZE_FILL);
+	cursor_metric_edit->set_size_flags_horizontal(SIZE_FILL);
 	cursor_metric_edit->set_value(0);
 	cursor_metric_edit->set_editable(false);
 	hb->add_child(cursor_metric_edit);
@@ -605,10 +605,10 @@ EditorProfiler::EditorProfiler() {
 
 	h_split = memnew(HSplitContainer);
 	add_child(h_split);
-	h_split->set_v_size_flags(SIZE_EXPAND_FILL);
+	h_split->set_size_flags_vertical(SIZE_EXPAND_FILL);
 
 	variables = memnew(Tree);
-	variables->set_custom_minimum_size(Size2(320, 0) * EDSCALE);
+	variables->set_rect_minimum_size(Size2(320, 0) * EDSCALE);
 	variables->set_hide_folding(true);
 	h_split->add_child(variables);
 	variables->set_hide_root(true);
@@ -633,7 +633,7 @@ EditorProfiler::EditorProfiler() {
 	graph->connect("mouse_exited", callable_mp(this, &EditorProfiler::_graph_tex_mouse_exit));
 
 	h_split->add_child(graph);
-	graph->set_h_size_flags(SIZE_EXPAND_FILL);
+	graph->set_size_flags_horizontal(SIZE_EXPAND_FILL);
 
 	int metric_size = CLAMP(int(EDITOR_DEF("debugger/profiler_frame_history_size", 600)), 60, 1024);
 	frame_metrics.resize(metric_size);

@@ -958,7 +958,7 @@ void Polygon2DEditor::_uv_draw() {
 
 	if (snap_show_grid) {
 		Color grid_color = Color(1.0, 1.0, 1.0, 0.15);
-		Size2 s = uv_edit_draw->get_size();
+		Size2 s = uv_edit_draw->get_rect_size();
 		int last_cell = 0;
 
 		if (snap_step.x != 0) {
@@ -1158,28 +1158,28 @@ void Polygon2DEditor::_uv_draw() {
 		uv_edit_draw->draw_circle(bone_paint_pos, bone_paint_radius->get_value() * EDSCALE, Color(1, 1, 1, 0.1));
 	}
 
-	rect.position = -uv_edit_draw->get_size();
-	rect.size = uv_edit_draw->get_size() * 2.0 + base_tex->get_size() * uv_draw_zoom;
+	rect.position = -uv_edit_draw->get_rect_size();
+	rect.size = uv_edit_draw->get_rect_size() * 2.0 + base_tex->get_size() * uv_draw_zoom;
 
 	updating_uv_scroll = true;
 
 	uv_hscroll->set_min(rect.position.x);
 	uv_hscroll->set_max(rect.position.x + rect.size.x);
-	if (ABS(rect.position.x - (rect.position.x + rect.size.x)) <= uv_edit_draw->get_size().x) {
+	if (ABS(rect.position.x - (rect.position.x + rect.size.x)) <= uv_edit_draw->get_rect_size().x) {
 		uv_hscroll->hide();
 	} else {
 		uv_hscroll->show();
-		uv_hscroll->set_page(uv_edit_draw->get_size().x);
+		uv_hscroll->set_page(uv_edit_draw->get_rect_size().x);
 		uv_hscroll->set_value(uv_draw_ofs.x);
 	}
 
 	uv_vscroll->set_min(rect.position.y);
 	uv_vscroll->set_max(rect.position.y + rect.size.y);
-	if (ABS(rect.position.y - (rect.position.y + rect.size.y)) <= uv_edit_draw->get_size().y) {
+	if (ABS(rect.position.y - (rect.position.y + rect.size.y)) <= uv_edit_draw->get_rect_size().y) {
 		uv_vscroll->hide();
 	} else {
 		uv_vscroll->show();
-		uv_vscroll->set_page(uv_edit_draw->get_size().y);
+		uv_vscroll->set_page(uv_edit_draw->get_rect_size().y);
 		uv_vscroll->set_value(uv_draw_ofs.y);
 	}
 
@@ -1297,8 +1297,8 @@ Polygon2DEditor::Polygon2DEditor(EditorNode *p_editor) :
 
 	bone_paint_strength = memnew(HSlider);
 	uv_mode_hb->add_child(bone_paint_strength);
-	bone_paint_strength->set_custom_minimum_size(Size2(75 * EDSCALE, 0));
-	bone_paint_strength->set_v_size_flags(SIZE_SHRINK_CENTER);
+	bone_paint_strength->set_rect_minimum_size(Size2(75 * EDSCALE, 0));
+	bone_paint_strength->set_size_flags_vertical(SIZE_SHRINK_CENTER);
 	bone_paint_strength->set_min(0);
 	bone_paint_strength->set_max(1);
 	bone_paint_strength->set_step(0.01);
@@ -1319,15 +1319,15 @@ Polygon2DEditor::Polygon2DEditor(EditorNode *p_editor) :
 
 	HSplitContainer *uv_main_hsc = memnew(HSplitContainer);
 	uv_main_vb->add_child(uv_main_hsc);
-	uv_main_hsc->set_v_size_flags(SIZE_EXPAND_FILL);
+	uv_main_hsc->set_size_flags_vertical(SIZE_EXPAND_FILL);
 	uv_edit_draw = memnew(Panel);
 	uv_main_hsc->add_child(uv_edit_draw);
-	uv_edit_draw->set_h_size_flags(SIZE_EXPAND_FILL);
-	uv_edit_draw->set_custom_minimum_size(Size2(200, 200) * EDSCALE);
+	uv_edit_draw->set_size_flags_horizontal(SIZE_EXPAND_FILL);
+	uv_edit_draw->set_rect_minimum_size(Size2(200, 200) * EDSCALE);
 
 	Control *space = memnew(Control);
 	uv_mode_hb->add_child(space);
-	space->set_h_size_flags(SIZE_EXPAND_FILL);
+	space->set_size_flags_horizontal(SIZE_EXPAND_FILL);
 
 	uv_menu = memnew(MenuButton);
 	uv_mode_hb->add_child(uv_menu);
@@ -1413,13 +1413,13 @@ Polygon2DEditor::Polygon2DEditor(EditorNode *p_editor) :
 	uv_zoom->set_max(16);
 	uv_zoom->set_value(1);
 	uv_zoom->set_step(0.01);
-	uv_zoom->set_v_size_flags(SIZE_SHRINK_CENTER);
+	uv_zoom->set_size_flags_vertical(SIZE_SHRINK_CENTER);
 
 	uv_mode_hb->add_child(uv_zoom);
-	uv_zoom->set_custom_minimum_size(Size2(80 * EDSCALE, 0));
+	uv_zoom->set_rect_minimum_size(Size2(80 * EDSCALE, 0));
 	uv_zoom_value = memnew(SpinBox);
 	uv_zoom->share(uv_zoom_value);
-	uv_zoom_value->set_custom_minimum_size(Size2(50, 0));
+	uv_zoom_value->set_rect_minimum_size(Size2(50, 0));
 	uv_mode_hb->add_child(uv_zoom_value);
 	uv_zoom->connect("value_changed", callable_mp(this, &Polygon2DEditor::_uv_scroll_changed));
 
@@ -1434,17 +1434,17 @@ Polygon2DEditor::Polygon2DEditor(EditorNode *p_editor) :
 
 	bone_scroll_main_vb = memnew(VBoxContainer);
 	bone_scroll_main_vb->hide();
-	bone_scroll_main_vb->set_custom_minimum_size(Size2(150 * EDSCALE, 0));
+	bone_scroll_main_vb->set_rect_minimum_size(Size2(150 * EDSCALE, 0));
 	sync_bones = memnew(Button(TTR("Sync Bones to Polygon")));
 	bone_scroll_main_vb->add_child(sync_bones);
-	sync_bones->set_h_size_flags(0);
+	sync_bones->set_size_flags_horizontal(0);
 	sync_bones->connect("pressed", callable_mp(this, &Polygon2DEditor::_sync_bones));
 	uv_main_hsc->add_child(bone_scroll_main_vb);
 	bone_scroll = memnew(ScrollContainer);
 	bone_scroll->set_v_scroll(true);
 	bone_scroll->set_h_scroll(false);
 	bone_scroll_main_vb->add_child(bone_scroll);
-	bone_scroll->set_v_size_flags(SIZE_EXPAND_FILL);
+	bone_scroll->set_size_flags_vertical(SIZE_EXPAND_FILL);
 	bone_scroll_vb = memnew(VBoxContainer);
 	bone_scroll->add_child(bone_scroll_vb);
 
@@ -1460,7 +1460,7 @@ Polygon2DEditor::Polygon2DEditor(EditorNode *p_editor) :
 	error = memnew(AcceptDialog);
 	add_child(error);
 
-	uv_edit_draw->set_clip_contents(true);
+	uv_edit_draw->set_rect_clip_contents(true);
 }
 
 Polygon2DEditorPlugin::Polygon2DEditorPlugin(EditorNode *p_node) :

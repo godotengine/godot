@@ -476,9 +476,9 @@ void Sprite2DEditor::_debug_uv_draw() {
 	Point2 draw_pos_offset = Point2(1.0, 1.0);
 	Size2 draw_size_offset = Size2(2.0, 2.0);
 
-	debug_uv->set_clip_contents(true);
+	debug_uv->set_rect_clip_contents(true);
 	debug_uv->draw_texture(tex, draw_pos_offset);
-	debug_uv->set_custom_minimum_size(tex->get_size() + draw_size_offset);
+	debug_uv->set_rect_minimum_size(tex->get_size() + draw_size_offset);
 	debug_uv->draw_set_transform(draw_pos_offset, 0, Size2(1.0, 1.0));
 
 	Color color = Color(1.0, 0.8, 0.7);
@@ -525,7 +525,7 @@ Sprite2DEditor::Sprite2DEditor() {
 	VBoxContainer *vb = memnew(VBoxContainer);
 	debug_uv_dialog->add_child(vb);
 	ScrollContainer *scroll = memnew(ScrollContainer);
-	scroll->set_custom_minimum_size(Size2(800, 500) * EDSCALE);
+	scroll->set_rect_minimum_size(Size2(800, 500) * EDSCALE);
 	scroll->set_enable_h_scroll(true);
 	scroll->set_enable_v_scroll(true);
 	vb->add_margin_child(TTR("Preview:"), scroll, true);

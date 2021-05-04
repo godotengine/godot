@@ -519,7 +519,7 @@ public:
 
 	VScrollBar *get_v_scroll() { return vscroll; }
 
-	virtual CursorShape get_cursor_shape(const Point2 &p_pos) const override;
+	virtual CursorShape get_mouse_cursor_shape(const Point2 &p_pos) const override;
 
 	void set_selection_enabled(bool p_enabled);
 	bool is_selection_enabled() const;

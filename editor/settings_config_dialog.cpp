@@ -568,18 +568,18 @@ EditorSettingsDialog::EditorSettingsDialog() {
 	tab_general->set_name(TTR("General"));
 
 	HBoxContainer *hbc = memnew(HBoxContainer);
-	hbc->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	hbc->set_size_flags_horizontal(Control::SIZE_EXPAND_FILL);
 	tab_general->add_child(hbc);
 
 	search_box = memnew(LineEdit);
 	search_box->set_placeholder(TTR("Search"));
-	search_box->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	search_box->set_size_flags_horizontal(Control::SIZE_EXPAND_FILL);
 	hbc->add_child(search_box);
 
 	inspector = memnew(SectionedInspector);
 	inspector->get_inspector()->set_use_filter(true);
 	inspector->register_search_box(search_box);
-	inspector->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	inspector->set_size_flags_vertical(Control::SIZE_EXPAND_FILL);
 	inspector->get_inspector()->set_undo_redo(undo_redo);
 	tab_general->add_child(inspector);
 	inspector->get_inspector()->connect("property_edited", callable_mp(this, &EditorSettingsDialog::_settings_property_edited));
@@ -590,7 +590,7 @@ EditorSettingsDialog::EditorSettingsDialog() {
 	HBoxContainer *restart_hb = memnew(HBoxContainer);
 	restart_container->add_child(restart_hb);
 	restart_icon = memnew(TextureRect);
-	restart_icon->set_v_size_flags(Control::SIZE_SHRINK_CENTER);
+	restart_icon->set_size_flags_vertical(Control::SIZE_SHRINK_CENTER);
 	restart_hb->add_child(restart_icon);
 	restart_label = memnew(Label);
 	restart_label->set_text(TTR("The editor must be restarted for changes to take effect."));
@@ -615,12 +615,12 @@ EditorSettingsDialog::EditorSettingsDialog() {
 
 	shortcut_search_box = memnew(LineEdit);
 	shortcut_search_box->set_placeholder(TTR("Search"));
-	shortcut_search_box->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	shortcut_search_box->set_size_flags_horizontal(Control::SIZE_EXPAND_FILL);
 	tab_shortcuts->add_child(shortcut_search_box);
 	shortcut_search_box->connect("text_changed", callable_mp(this, &EditorSettingsDialog::_filter_shortcuts));
 
 	shortcuts = memnew(Tree);
-	shortcuts->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	shortcuts->set_size_flags_vertical(Control::SIZE_EXPAND_FILL);
 	shortcuts->set_columns(2);
 	shortcuts->set_hide_root(true);
 	shortcuts->set_column_titles_visible(true);

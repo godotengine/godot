@@ -232,11 +232,11 @@ void PopupPanel::_update_child_rects() {
 		}
 
 		if (c == panel) {
-			c->set_position(Vector2());
-			c->set_size(get_size());
+			c->set_rect_position(Vector2());
+			c->set_rect_size(get_size());
 		} else {
-			c->set_position(cpos);
-			c->set_size(csize);
+			c->set_rect_position(cpos);
+			c->set_rect_size(csize);
 		}
 	}
 }

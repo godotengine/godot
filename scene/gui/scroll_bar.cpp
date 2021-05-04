@@ -77,7 +77,7 @@ void ScrollBar::_gui_input(Ref<InputEvent> p_event) {
 			double incr_size = orientation == VERTICAL ? incr->get_height() : incr->get_width();
 			double grabber_ofs = get_grabber_offset();
 			double grabber_size = get_grabber_size();
-			double total = orientation == VERTICAL ? get_size().height : get_size().width;
+			double total = orientation == VERTICAL ? get_rect_size().height : get_rect_size().width;
 
 			if (ofs < decr_size) {
 				set_value(get_value() - (custom_step >= 0 ? custom_step : get_step()));
@@ -155,7 +155,7 @@ void ScrollBar::_gui_input(Ref<InputEvent> p_event) {
 
 			double decr_size = orientation == VERTICAL ? decr->get_height() : decr->get_width();
 			double incr_size = orientation == VERTICAL ? incr->get_height() : incr->get_width();
-			double total = orientation == VERTICAL ? get_size().height : get_size().width;
+			double total = orientation == VERTICAL ? get_rect_size().height : get_rect_size().width;
 
 			HighlightStatus new_hilite;
 
@@ -238,7 +238,7 @@ void ScrollBar::_notification(int p_what) {
 			ofs.y += decr->get_height();
 		}
 
-		Size2 area = get_size();
+		Size2 area = get_rect_size();
 
 		if (orientation == HORIZONTAL) {
 			area.width -= incr->get_width() + decr->get_width();
@@ -259,11 +259,11 @@ void ScrollBar::_notification(int p_what) {
 
 		if (orientation == HORIZONTAL) {
 			grabber_rect.size.width = get_grabber_size();
-			grabber_rect.size.height = get_size().height;
+			grabber_rect.size.height = get_rect_size().height;
 			grabber_rect.position.y = 0;
 			grabber_rect.position.x = get_grabber_offset() + decr->get_width() + bg->get_margin(SIDE_LEFT);
 		} else {
-			grabber_rect.size.width = get_size().width;
+			grabber_rect.size.width = get_rect_size().width;
 			grabber_rect.size.height = get_grabber_size();
 			grabber_rect.position.y = get_grabber_offset() + decr->get_height() + bg->get_margin(SIDE_TOP);
 			grabber_rect.position.x = 0;
@@ -414,7 +414,7 @@ double ScrollBar::get_grabber_size() const {
 double ScrollBar::get_area_size() const {
 	switch (orientation) {
 		case VERTICAL: {
-			double area = get_size().height;
+			double area = get_rect_size().height;
 			area -= get_theme_stylebox("scroll")->get_minimum_size().height;
 			area -= get_theme_icon("increment")->get_height();
 			area -= get_theme_icon("decrement")->get_height();
@@ -422,7 +422,7 @@ double ScrollBar::get_area_size() const {
 			return area;
 		} break;
 		case HORIZONTAL: {
-			double area = get_size().width;
+			double area = get_rect_size().width;
 			area -= get_theme_stylebox("scroll")->get_minimum_size().width;
 			area -= get_theme_icon("increment")->get_width();
 			area -= get_theme_icon("decrement")->get_width();

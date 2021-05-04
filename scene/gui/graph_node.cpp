@@ -179,7 +179,7 @@ void GraphNode::_get_property_list(List<PropertyInfo> *p_list) const {
 void GraphNode::_resort() {
 	/** First pass, determine minimum size AND amount of stretchable elements */
 
-	Size2i new_size = get_size();
+	Size2i new_size = get_rect_size();
 	Ref<StyleBox> sb = get_theme_stylebox("frame");
 
 	int sep = get_theme_constant("separation");
@@ -205,11 +205,11 @@ void GraphNode::_resort() {
 
 		stretch_min += size.height;
 		msc.min_size = size.height;
-		msc.will_stretch = c->get_v_size_flags() & SIZE_EXPAND;
+		msc.will_stretch = c->get_size_flags_vertical() & SIZE_EXPAND;
 
 		if (msc.will_stretch) {
 			stretch_avail += msc.min_size;
-			stretch_ratio_total += c->get_stretch_ratio();
+			stretch_ratio_total += c->get_size_flags_stretch_ratio();
 		}
 		msc.final_size = msc.min_size;
 		min_size_cache[c] = msc;
@@ -249,12 +249,12 @@ void GraphNode::_resort() {
 			if (msc.will_stretch) { //wants to stretch
 				//let's see if it can really stretch
 
-				int final_pixel_size = stretch_avail * c->get_stretch_ratio() / stretch_ratio_total;
+				int final_pixel_size = stretch_avail * c->get_size_flags_stretch_ratio() / stretch_ratio_total;
 				if (final_pixel_size < msc.min_size) {
 					//if available stretching area is too small for widget,
 					//then remove it from stretching area
 					msc.will_stretch = false;
-					stretch_ratio_total -= c->get_stretch_ratio();
+					stretch_ratio_total -= c->get_size_flags_stretch_ratio();
 					refit_successful = false;
 					stretch_avail -= msc.min_size;
 					msc.final_size = msc.min_size;
@@ -326,11 +326,11 @@ bool GraphNode::has_point(const Point2 &p_point) const {
 		Ref<StyleBox> comment = get_theme_stylebox("comment");
 		Ref<Texture2D> resizer = get_theme_icon("resizer");
 
-		if (Rect2(get_size() - resizer->get_size(), resizer->get_size()).has_point(p_point)) {
+		if (Rect2(get_rect_size() - resizer->get_size(), resizer->get_size()).has_point(p_point)) {
 			return true;
 		}
 
-		if (Rect2(0, 0, get_size().width, comment->get_margin(SIDE_TOP)).has_point(p_point)) {
+		if (Rect2(0, 0, get_rect_size().width, comment->get_margin(SIDE_TOP)).has_point(p_point)) {
 			return true;
 		}
 
@@ -369,21 +369,21 @@ void GraphNode::_notification(int p_what) {
 			int edgeofs = get_theme_constant("port_offset");
 			icofs.y += sb->get_margin(SIDE_TOP);
 
-			draw_style_box(sb, Rect2(Point2(), get_size()));
+			draw_style_box(sb, Rect2(Point2(), get_rect_size()));
 
 			switch (overlay) {
 				case OVERLAY_DISABLED: {
 				} break;
 				case OVERLAY_BREAKPOINT: {
-					draw_style_box(get_theme_stylebox("breakpoint"), Rect2(Point2(), get_size()));
+					draw_style_box(get_theme_stylebox("breakpoint"), Rect2(Point2(), get_rect_size()));
 				} break;
 				case OVERLAY_POSITION: {
-					draw_style_box(get_theme_stylebox("position"), Rect2(Point2(), get_size()));
+					draw_style_box(get_theme_stylebox("position"), Rect2(Point2(), get_rect_size()));
 
 				} break;
 			}
 
-			int w = get_size().width - sb->get_minimum_size().x;
+			int w = get_rect_size().width - sb->get_minimum_size().x;
 
 			if (show_close) {
 				w -= close->get_width();
@@ -421,12 +421,12 @@ void GraphNode::_notification(int p_what) {
 					if (s.custom_slot_right.is_valid()) {
 						p = s.custom_slot_right;
 					}
-					p->draw(get_canvas_item(), icofs + Point2(get_size().x - edgeofs, cache_y[E->key()]), s.color_right);
+					p->draw(get_canvas_item(), icofs + Point2(get_rect_size().x - edgeofs, cache_y[E->key()]), s.color_right);
 				}
 			}
 
 			if (resizable) {
-				draw_texture(resizer, get_size() - resizer->get_size(), resizer_color);
+				draw_texture(resizer, get_rect_size() - resizer->get_size(), resizer_color);
 			}
 		} break;
 
@@ -712,7 +712,7 @@ void GraphNode::_connpos_update() {
 			}
 			if (slot_info[idx].enable_right) {
 				ConnCache cc;
-				cc.pos = Point2i(get_size().width - edgeofs, y + h / 2);
+				cc.pos = Point2i(get_rect_size().width - edgeofs, y + h / 2);
 				cc.type = slot_info[idx].type_right;
 				cc.color = slot_info[idx].color_right;
 				conn_output_cache.push_back(cc);
@@ -750,8 +750,8 @@ Vector2 GraphNode::get_connection_input_position(int p_idx) {
 
 	ERR_FAIL_INDEX_V(p_idx, conn_input_cache.size(), Vector2());
 	Vector2 pos = conn_input_cache[p_idx].pos;
-	pos.x *= get_scale().x;
-	pos.y *= get_scale().y;
+	pos.x *= get_rect_scale().x;
+	pos.y *= get_rect_scale().y;
 	return pos;
 }
 
@@ -780,8 +780,8 @@ Vector2 GraphNode::get_connection_output_position(int p_idx) {
 
 	ERR_FAIL_INDEX_V(p_idx, conn_output_cache.size(), Vector2());
 	Vector2 pos = conn_output_cache[p_idx].pos;
-	pos.x *= get_scale().x;
-	pos.y *= get_scale().y;
+	pos.x *= get_rect_scale().x;
+	pos.y *= get_rect_scale().y;
 	return pos;
 }
 
@@ -822,10 +822,10 @@ void GraphNode::_gui_input(const Ref<InputEvent> &p_ev) {
 
 			Ref<Texture2D> resizer = get_theme_icon("resizer");
 
-			if (resizable && mpos.x > get_size().x - resizer->get_width() && mpos.y > get_size().y - resizer->get_height()) {
+			if (resizable && mpos.x > get_rect_size().x - resizer->get_width() && mpos.y > get_rect_size().y - resizer->get_height()) {
 				resizing = true;
 				resizing_from = mpos;
-				resizing_from_size = get_size();
+				resizing_from_size = get_rect_size();
 				accept_event();
 				return;
 			}

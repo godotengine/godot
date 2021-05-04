@@ -2163,7 +2163,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 				Vector2 cpos = pos;
 				while (c) {
 					if (gui.mouse_focus_mask != 0 || c->has_point(cpos)) {
-						cursor_shape = c->get_cursor_shape(cpos);
+						cursor_shape = c->get_mouse_cursor_shape(cpos);
 					} else {
 						cursor_shape = Control::CURSOR_ARROW;
 					}
@@ -2195,7 +2195,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 
 			Control *drag_preview = _gui_get_drag_preview();
 			if (drag_preview) {
-				drag_preview->set_position(mpos);
+				drag_preview->set_rect_position(mpos);
 			}
 
 			gui.drag_mouse_over = over;
@@ -2473,7 +2473,7 @@ void Viewport::_gui_set_drag_preview(Control *p_base, Control *p_control) {
 		memdelete(drag_preview);
 	}
 	p_control->set_as_top_level(true);
-	p_control->set_position(gui.last_mouse_pos);
+	p_control->set_rect_position(gui.last_mouse_pos);
 	p_base->get_root_parent_control()->add_child(p_control); //add as child of viewport
 	p_control->raise();
 

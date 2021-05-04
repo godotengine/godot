@@ -45,25 +45,25 @@ void TextureRect::_notification(int p_what) {
 
 		switch (stretch_mode) {
 			case STRETCH_SCALE_ON_EXPAND: {
-				size = expand ? get_size() : texture->get_size();
+				size = expand ? get_rect_size() : texture->get_size();
 			} break;
 			case STRETCH_SCALE: {
-				size = get_size();
+				size = get_rect_size();
 			} break;
 			case STRETCH_TILE: {
-				size = get_size();
+				size = get_rect_size();
 				tile = true;
 			} break;
 			case STRETCH_KEEP: {
 				size = texture->get_size();
 			} break;
 			case STRETCH_KEEP_CENTERED: {
-				offset = (get_size() - texture->get_size()) / 2;
+				offset = (get_rect_size() - texture->get_size()) / 2;
 				size = texture->get_size();
 			} break;
 			case STRETCH_KEEP_ASPECT_CENTERED:
 			case STRETCH_KEEP_ASPECT: {
-				size = get_size();
+				size = get_rect_size();
 				int tex_width = texture->get_width() * size.height / texture->get_height();
 				int tex_height = size.height;
 
@@ -81,7 +81,7 @@ void TextureRect::_notification(int p_what) {
 				size.height = tex_height;
 			} break;
 			case STRETCH_KEEP_ASPECT_COVERED: {
-				size = get_size();
+				size = get_rect_size();
 
 				Size2 tex_size = texture->get_size();
 				Size2 scale_size(size.width / tex_size.width, size.height / tex_size.height);

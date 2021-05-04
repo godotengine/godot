@@ -174,8 +174,8 @@ private:
 		real_t offset[4] = { 0.0, 0.0, 0.0, 0.0 };
 		real_t anchor[4] = { ANCHOR_BEGIN, ANCHOR_BEGIN, ANCHOR_BEGIN, ANCHOR_BEGIN };
 		FocusMode focus_mode = FOCUS_NONE;
-		GrowDirection h_grow = GROW_DIRECTION_END;
-		GrowDirection v_grow = GROW_DIRECTION_END;
+		GrowDirection grow_horizontal = GROW_DIRECTION_END;
+		GrowDirection grow_vertical = GROW_DIRECTION_END;
 
 		LayoutDirection layout_dir = LAYOUT_DIRECTION_INHERITED;
 
@@ -184,10 +184,10 @@ private:
 		Vector2 pivot_offset;
 		bool size_warning = true;
 
-		int h_size_flags = SIZE_FILL;
-		int v_size_flags = SIZE_FILL;
+		int size_flags_horizontal = SIZE_FILL;
+		int size_flags_vertical = SIZE_FILL;
 		real_t expand = 1.0;
-		Point2 custom_minimum_size;
+		Point2 rect_minimum_size;
 
 		MouseFilter mouse_filter = MOUSE_FILTER_STOP;
 
@@ -202,7 +202,7 @@ private:
 		Control *theme_owner = nullptr;
 		Window *theme_owner_window = nullptr;
 		String tooltip;
-		CursorShape default_cursor = CURSOR_ARROW;
+		CursorShape mouse_cursor_shape = CURSOR_ARROW;
 
 		List<Control *>::Element *RI = nullptr;
 
@@ -228,9 +228,9 @@ private:
 	Control *_get_focus_neighbor(Side p_side, int p_count = 0);
 
 	void _set_anchor(Side p_side, real_t p_anchor);
-	void _set_position(const Point2 &p_point);
-	void _set_global_position(const Point2 &p_point);
-	void _set_size(const Size2 &p_size);
+	void _set_rect_position(const Point2 &p_point);
+	void _set_rect_global_position(const Point2 &p_point);
+	void _set_rect_size(const Size2 &p_size);
 
 	void _theme_changed();
 
@@ -349,8 +349,8 @@ public:
 	void set_drag_preview(Control *p_control);
 	void force_drag(const Variant &p_data, Control *p_control);
 
-	void set_custom_minimum_size(const Size2 &p_custom);
-	Size2 get_custom_minimum_size() const;
+	void set_rect_minimum_size(const Size2 &p_rect_minimum_size);
+	Size2 get_rect_minimum_size() const;
 
 	Control *get_parent_control() const;
 
@@ -378,14 +378,14 @@ public:
 	Point2 get_begin() const;
 	Point2 get_end() const;
 
-	void set_position(const Point2 &p_point, bool p_keep_offsets = false);
-	void set_global_position(const Point2 &p_point, bool p_keep_offsets = false);
-	Point2 get_position() const;
-	Point2 get_global_position() const;
+	void set_rect_position(const Point2 &p_point, bool p_keep_offsets = false);
+	void set_rect_global_position(const Point2 &p_point, bool p_keep_offsets = false);
+	Point2 get_rect_position() const;
+	Point2 get_rect_global_position() const;
 	Point2 get_screen_position() const;
 
-	void set_size(const Size2 &p_size, bool p_keep_offsets = false);
-	Size2 get_size() const;
+	void set_rect_size(const Size2 &p_size, bool p_keep_offsets = false);
+	Size2 get_rect_size() const;
 
 	Rect2 get_rect() const;
 	Rect2 get_global_rect() const;
@@ -395,34 +395,34 @@ public:
 
 	void set_rect(const Rect2 &p_rect); // Reset anchors to begin and set rect, for faster container children sorting.
 
-	void set_rotation(real_t p_radians);
-	void set_rotation_degrees(real_t p_degrees);
-	real_t get_rotation() const;
-	real_t get_rotation_degrees() const;
+	void set_rect_rotation(real_t p_radians);
+	void set_rect_rotation_degrees(real_t p_degrees);
+	real_t get_rect_rotation() const;
+	real_t get_rect_rotation_degrees() const;
 
-	void set_h_grow_direction(GrowDirection p_direction);
-	GrowDirection get_h_grow_direction() const;
+	void set_grow_horizontal(GrowDirection p_direction);
+	GrowDirection get_grow_horizontal() const;
 
-	void set_v_grow_direction(GrowDirection p_direction);
-	GrowDirection get_v_grow_direction() const;
+	void set_grow_vertical(GrowDirection p_direction);
+	GrowDirection get_grow_vertical() const;
 
-	void set_pivot_offset(const Vector2 &p_pivot);
-	Vector2 get_pivot_offset() const;
+	void set_rect_pivot_offset(const Vector2 &p_pivot);
+	Vector2 get_rect_pivot_offset() const;
 
-	void set_scale(const Vector2 &p_scale);
-	Vector2 get_scale() const;
+	void set_rect_scale(const Vector2 &p_scale);
+	Vector2 get_rect_scale() const;
 
 	void set_theme(const Ref<Theme> &p_theme);
 	Ref<Theme> get_theme() const;
 
-	void set_h_size_flags(int p_flags);
-	int get_h_size_flags() const;
+	void set_size_flags_horizontal(int p_flags);
+	int get_size_flags_horizontal() const;
 
-	void set_v_size_flags(int p_flags);
-	int get_v_size_flags() const;
+	void set_size_flags_vertical(int p_flags);
+	int get_size_flags_vertical() const;
 
-	void set_stretch_ratio(real_t p_ratio);
-	real_t get_stretch_ratio() const;
+	void set_size_flags_stretch_ratio(real_t p_ratio);
+	real_t get_size_flags_stretch_ratio() const;
 
 	void minimum_size_changed();
 
@@ -495,9 +495,9 @@ public:
 
 	/* CURSOR */
 
-	void set_default_cursor_shape(CursorShape p_shape);
-	CursorShape get_default_cursor_shape() const;
-	virtual CursorShape get_cursor_shape(const Point2 &p_pos = Point2i()) const;
+	void set_mouse_default_cursor_shape(CursorShape p_shape);
+	CursorShape get_mouse_default_cursor_shape() const;
+	virtual CursorShape get_mouse_cursor_shape(const Point2 &p_pos = Point2i()) const;
 
 	virtual Transform2D get_transform() const override;
 
@@ -514,8 +514,8 @@ public:
 
 	Control *get_root_parent_control() const;
 
-	void set_clip_contents(bool p_clip);
-	bool is_clipping_contents();
+	void set_rect_clip_contents(bool p_clip);
+	bool is_rect_clipping_contents();
 
 	void set_block_minimum_size_adjust(bool p_block);
 	bool is_minimum_size_adjust_blocked() const;

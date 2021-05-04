@@ -836,7 +836,7 @@ EditorAutoloadSettings::EditorAutoloadSettings() {
 
 	autoload_add_path = memnew(LineEdit);
 	hbc->add_child(autoload_add_path);
-	autoload_add_path->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	autoload_add_path->set_size_flags_horizontal(Control::SIZE_EXPAND_FILL);
 	autoload_add_path->connect("text_changed", callable_mp(this, &EditorAutoloadSettings::_autoload_path_text_changed));
 
 	browse_button = memnew(Button);
@@ -849,7 +849,7 @@ EditorAutoloadSettings::EditorAutoloadSettings() {
 	file_dialog->connect("dir_selected", callable_mp(this, &EditorAutoloadSettings::_set_autoload_add_path));
 	file_dialog->connect("files_selected", callable_mp(this, &EditorAutoloadSettings::_set_autoload_add_path));
 
-	hbc->set_h_size_flags(SIZE_EXPAND_FILL);
+	hbc->set_size_flags_horizontal(SIZE_EXPAND_FILL);
 	file_dialog->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
 	file_dialog->connect("file_selected", callable_mp(this, &EditorAutoloadSettings::_autoload_file_callback));
 
@@ -858,7 +858,7 @@ EditorAutoloadSettings::EditorAutoloadSettings() {
 	hbc->add_child(l);
 
 	autoload_add_name = memnew(LineEdit);
-	autoload_add_name->set_h_size_flags(SIZE_EXPAND_FILL);
+	autoload_add_name->set_size_flags_horizontal(SIZE_EXPAND_FILL);
 	autoload_add_name->connect("text_entered", callable_mp(this, &EditorAutoloadSettings::_autoload_text_entered));
 	autoload_add_name->connect("text_changed", callable_mp(this, &EditorAutoloadSettings::_autoload_text_changed));
 	hbc->add_child(autoload_add_name);
@@ -899,7 +899,7 @@ EditorAutoloadSettings::EditorAutoloadSettings() {
 	tree->connect("item_edited", callable_mp(this, &EditorAutoloadSettings::_autoload_edited));
 	tree->connect("button_pressed", callable_mp(this, &EditorAutoloadSettings::_autoload_button_pressed));
 	tree->connect("item_activated", callable_mp(this, &EditorAutoloadSettings::_autoload_activated));
-	tree->set_v_size_flags(SIZE_EXPAND_FILL);
+	tree->set_size_flags_vertical(SIZE_EXPAND_FILL);
 
 	add_child(tree, true);
 }

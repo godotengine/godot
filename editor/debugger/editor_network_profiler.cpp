@@ -148,12 +148,12 @@ EditorNetworkProfiler::EditorNetworkProfiler() {
 
 	incoming_bandwidth_text = memnew(LineEdit);
 	incoming_bandwidth_text->set_editable(false);
-	incoming_bandwidth_text->set_custom_minimum_size(Size2(120, 0) * EDSCALE);
+	incoming_bandwidth_text->set_rect_minimum_size(Size2(120, 0) * EDSCALE);
 	incoming_bandwidth_text->set_align(LineEdit::Align::ALIGN_RIGHT);
 	hb->add_child(incoming_bandwidth_text);
 
 	Control *down_up_spacer = memnew(Control);
-	down_up_spacer->set_custom_minimum_size(Size2(30, 0) * EDSCALE);
+	down_up_spacer->set_rect_minimum_size(Size2(30, 0) * EDSCALE);
 	hb->add_child(down_up_spacer);
 
 	lb = memnew(Label);
@@ -162,7 +162,7 @@ EditorNetworkProfiler::EditorNetworkProfiler() {
 
 	outgoing_bandwidth_text = memnew(LineEdit);
 	outgoing_bandwidth_text->set_editable(false);
-	outgoing_bandwidth_text->set_custom_minimum_size(Size2(120, 0) * EDSCALE);
+	outgoing_bandwidth_text->set_rect_minimum_size(Size2(120, 0) * EDSCALE);
 	outgoing_bandwidth_text->set_align(LineEdit::Align::ALIGN_RIGHT);
 	hb->add_child(outgoing_bandwidth_text);
 
@@ -170,8 +170,8 @@ EditorNetworkProfiler::EditorNetworkProfiler() {
 	set_bandwidth(0, 0);
 
 	counters_display = memnew(Tree);
-	counters_display->set_custom_minimum_size(Size2(300, 0) * EDSCALE);
-	counters_display->set_v_size_flags(SIZE_EXPAND_FILL);
+	counters_display->set_rect_minimum_size(Size2(300, 0) * EDSCALE);
+	counters_display->set_size_flags_vertical(SIZE_EXPAND_FILL);
 	counters_display->set_hide_folding(true);
 	counters_display->set_hide_root(true);
 	counters_display->set_columns(5);

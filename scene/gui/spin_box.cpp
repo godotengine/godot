@@ -77,7 +77,7 @@ void SpinBox::_line_edit_input(const Ref<InputEvent> &p_event) {
 
 void SpinBox::_range_click_timeout() {
 	if (!drag.enabled && Input::get_singleton()->is_mouse_button_pressed(MOUSE_BUTTON_LEFT)) {
-		bool up = get_local_mouse_position().y < (get_size().height / 2);
+		bool up = get_local_mouse_position().y < (get_rect_size().height / 2);
 		set_value(get_value() + (up ? get_step() : -get_step()));
 
 		if (range_click_timer->is_one_shot()) {
@@ -109,7 +109,7 @@ void SpinBox::_gui_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseButton> mb = p_event;
 
 	if (mb.is_valid() && mb->is_pressed()) {
-		bool up = mb->get_position().y < (get_size().height / 2);
+		bool up = mb->get_position().y < (get_rect_size().height / 2);
 
 		switch (mb->get_button_index()) {
 			case MOUSE_BUTTON_LEFT: {
@@ -191,7 +191,7 @@ void SpinBox::_notification(int p_what) {
 		_adjust_width_for_icon(updown);
 
 		RID ci = get_canvas_item();
-		Size2i size = get_size();
+		Size2i size = get_rect_size();
 
 		if (is_layout_rtl()) {
 			updown->draw(ci, Point2i(0, (size.height - updown->get_height()) / 2));

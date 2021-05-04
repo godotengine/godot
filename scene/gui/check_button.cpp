@@ -93,9 +93,9 @@ void CheckButton::_notification(int p_what) {
 		if (rtl) {
 			ofs.x = sb->get_margin(SIDE_LEFT);
 		} else {
-			ofs.x = get_size().width - (tex_size.width + sb->get_margin(SIDE_RIGHT));
+			ofs.x = get_rect_size().width - (tex_size.width + sb->get_margin(SIDE_RIGHT));
 		}
-		ofs.y = (get_size().height - tex_size.height) / 2 + get_theme_constant("check_vadjust");
+		ofs.y = (get_rect_size().height - tex_size.height) / 2 + get_theme_constant("check_vadjust");
 
 		if (is_pressed()) {
 			on->draw(ci, ofs);

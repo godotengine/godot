@@ -97,7 +97,7 @@ NodeDock::NodeDock() {
 	connections_button->set_text(TTR("Signals"));
 	connections_button->set_toggle_mode(true);
 	connections_button->set_pressed(true);
-	connections_button->set_h_size_flags(SIZE_EXPAND_FILL);
+	connections_button->set_size_flags_horizontal(SIZE_EXPAND_FILL);
 	connections_button->set_clip_text(true);
 	mode_hb->add_child(connections_button);
 	connections_button->connect("pressed", callable_mp(this, &NodeDock::show_connections));
@@ -107,7 +107,7 @@ NodeDock::NodeDock() {
 	groups_button->set_text(TTR("Groups"));
 	groups_button->set_toggle_mode(true);
 	groups_button->set_pressed(false);
-	groups_button->set_h_size_flags(SIZE_EXPAND_FILL);
+	groups_button->set_size_flags_horizontal(SIZE_EXPAND_FILL);
 	groups_button->set_clip_text(true);
 	mode_hb->add_child(groups_button);
 	groups_button->connect("pressed", callable_mp(this, &NodeDock::show_groups));
@@ -115,19 +115,19 @@ NodeDock::NodeDock() {
 	connections = memnew(ConnectionsDock(EditorNode::get_singleton()));
 	connections->set_undoredo(EditorNode::get_undo_redo());
 	add_child(connections);
-	connections->set_v_size_flags(SIZE_EXPAND_FILL);
+	connections->set_size_flags_vertical(SIZE_EXPAND_FILL);
 	connections->hide();
 
 	groups = memnew(GroupsEditor);
 	groups->set_undo_redo(EditorNode::get_undo_redo());
 	add_child(groups);
-	groups->set_v_size_flags(SIZE_EXPAND_FILL);
+	groups->set_size_flags_vertical(SIZE_EXPAND_FILL);
 	groups->hide();
 
 	select_a_node = memnew(Label);
 	select_a_node->set_text(TTR("Select a single node to edit its signals and groups."));
-	select_a_node->set_custom_minimum_size(Size2(100 * EDSCALE, 0));
-	select_a_node->set_v_size_flags(SIZE_EXPAND_FILL);
+	select_a_node->set_rect_minimum_size(Size2(100 * EDSCALE, 0));
+	select_a_node->set_size_flags_vertical(SIZE_EXPAND_FILL);
 	select_a_node->set_valign(Label::VALIGN_CENTER);
 	select_a_node->set_align(Label::ALIGN_CENTER);
 	select_a_node->set_autowrap(true);

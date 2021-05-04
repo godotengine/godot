@@ -564,7 +564,7 @@ InspectorDock::InspectorDock(EditorNode *p_editor, EditorData &p_editor_data) {
 	add_child(node_info_hb);
 
 	editor_path = memnew(EditorPath(editor->get_editor_history()));
-	editor_path->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	editor_path->set_size_flags_horizontal(Control::SIZE_EXPAND_FILL);
 	node_info_hb->add_child(editor_path);
 
 	object_menu = memnew(MenuButton);
@@ -580,7 +580,7 @@ InspectorDock::InspectorDock(EditorNode *p_editor, EditorData &p_editor_data) {
 	new_resource_dialog->connect("create", callable_mp(this, &InspectorDock::_resource_created));
 
 	search = memnew(LineEdit);
-	search->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	search->set_size_flags_horizontal(Control::SIZE_EXPAND_FILL);
 	search->set_placeholder(TTR("Filter properties"));
 	search->set_right_icon(get_theme_icon("Search", "EditorIcons"));
 	search->set_clear_button_enabled(true);
@@ -607,7 +607,7 @@ InspectorDock::InspectorDock(EditorNode *p_editor, EditorData &p_editor_data) {
 	add_child(inspector);
 	inspector->set_autoclear(true);
 	inspector->set_show_categories(true);
-	inspector->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	inspector->set_size_flags_vertical(Control::SIZE_EXPAND_FILL);
 	inspector->set_use_doc_hints(true);
 	inspector->set_hide_script(false);
 	inspector->set_enable_capitalize_paths(bool(EDITOR_GET("interface/inspector/capitalize_properties")));

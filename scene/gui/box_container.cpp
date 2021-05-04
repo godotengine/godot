@@ -41,7 +41,7 @@ struct _MinSizeCache {
 void BoxContainer::_resort() {
 	/** First pass, determine minimum size AND amount of stretchable elements */
 
-	Size2i new_size = get_size();
+	Size2i new_size = get_rect_size();
 
 	int sep = get_theme_constant("separation"); //,vertical?"VBoxContainer":"HBoxContainer");
 	bool rtl = is_layout_rtl();
@@ -68,17 +68,17 @@ void BoxContainer::_resort() {
 		if (vertical) { /* VERTICAL */
 			stretch_min += size.height;
 			msc.min_size = size.height;
-			msc.will_stretch = c->get_v_size_flags() & SIZE_EXPAND;
+			msc.will_stretch = c->get_size_flags_vertical() & SIZE_EXPAND;
 
 		} else { /* HORIZONTAL */
 			stretch_min += size.width;
 			msc.min_size = size.width;
-			msc.will_stretch = c->get_h_size_flags() & SIZE_EXPAND;
+			msc.will_stretch = c->get_size_flags_horizontal() & SIZE_EXPAND;
 		}
 
 		if (msc.will_stretch) {
 			stretch_avail += msc.min_size;
-			stretch_ratio_total += c->get_stretch_ratio();
+			stretch_ratio_total += c->get_size_flags_stretch_ratio();
 		}
 		msc.final_size = msc.min_size;
 		min_size_cache[c] = msc;
@@ -121,14 +121,14 @@ void BoxContainer::_resort() {
 
 			if (msc.will_stretch) { //wants to stretch
 				//let's see if it can really stretch
-				float final_pixel_size = stretch_avail * c->get_stretch_ratio() / stretch_ratio_total;
+				float final_pixel_size = stretch_avail * c->get_size_flags_stretch_ratio() / stretch_ratio_total;
 				// Add leftover fractional pixels to error accumulator
 				error += final_pixel_size - (int)final_pixel_size;
 				if (final_pixel_size < msc.min_size) {
 					//if available stretching area is too small for widget,
 					//then remove it from stretching area
 					msc.will_stretch = false;
-					stretch_ratio_total -= c->get_stretch_ratio();
+					stretch_ratio_total -= c->get_size_flags_stretch_ratio();
 					refit_successful = false;
 					stretch_avail -= msc.min_size;
 					msc.final_size = msc.min_size;
@@ -318,9 +318,9 @@ Control *BoxContainer::add_spacer(bool p_begin) {
 	c->set_mouse_filter(MOUSE_FILTER_PASS); //allow spacer to pass mouse events
 
 	if (vertical) {
-		c->set_v_size_flags(SIZE_EXPAND_FILL);
+		c->set_size_flags_vertical(SIZE_EXPAND_FILL);
 	} else {
-		c->set_h_size_flags(SIZE_EXPAND_FILL);
+		c->set_size_flags_horizontal(SIZE_EXPAND_FILL);
 	}
 
 	add_child(c);
@@ -356,7 +356,7 @@ MarginContainer *VBoxContainer::add_margin_child(const String &p_label, Control 
 	mc->add_child(p_control);
 	add_child(mc);
 	if (p_expand) {
-		mc->set_v_size_flags(SIZE_EXPAND_FILL);
+		mc->set_size_flags_vertical(SIZE_EXPAND_FILL);
 	}
 
 	return mc;

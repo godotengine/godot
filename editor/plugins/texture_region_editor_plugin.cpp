@@ -89,7 +89,7 @@ void TextureRegionEditor::_region_draw() {
 
 	if (snap_mode == SNAP_GRID) {
 		Color grid_color = Color(1.0, 1.0, 1.0, 0.15);
-		Size2 s = edit_draw->get_size();
+		Size2 s = edit_draw->get_rect_size();
 		int last_cell = 0;
 
 		if (snap_step.x != 0) {
@@ -199,7 +199,7 @@ void TextureRegionEditor::_region_draw() {
 		scroll_rect.expand_to(raw_endpoints[i]);
 	}
 
-	const Size2 scroll_margin = edit_draw->get_size() / draw_zoom;
+	const Size2 scroll_margin = edit_draw->get_rect_size() / draw_zoom;
 	scroll_rect.position -= scroll_margin;
 	scroll_rect.size += scroll_margin * 2;
 
@@ -256,10 +256,10 @@ void TextureRegionEditor::_region_draw() {
 			-mtx.basis_xform(Vector2(margins[3], 0)) + Vector2(endpoints[2].x - draw_ofs.x * draw_zoom, 0)
 		};
 
-		draw_margin_line(edit_draw, pos[0], pos[0] + Vector2(edit_draw->get_size().x, 0));
-		draw_margin_line(edit_draw, pos[1], pos[1] + Vector2(edit_draw->get_size().x, 0));
-		draw_margin_line(edit_draw, pos[2], pos[2] + Vector2(0, edit_draw->get_size().y));
-		draw_margin_line(edit_draw, pos[3], pos[3] + Vector2(0, edit_draw->get_size().y));
+		draw_margin_line(edit_draw, pos[0], pos[0] + Vector2(edit_draw->get_rect_size().x, 0));
+		draw_margin_line(edit_draw, pos[1], pos[1] + Vector2(edit_draw->get_rect_size().x, 0));
+		draw_margin_line(edit_draw, pos[2], pos[2] + Vector2(0, edit_draw->get_rect_size().y));
+		draw_margin_line(edit_draw, pos[3], pos[3] + Vector2(0, edit_draw->get_rect_size().y));
 	}
 }
 
@@ -682,15 +682,15 @@ void TextureRegionEditor::_zoom_on_position(float p_zoom, Point2 p_position) {
 }
 
 void TextureRegionEditor::_zoom_in() {
-	_zoom_on_position(draw_zoom * 1.5, edit_draw->get_size() / 2.0);
+	_zoom_on_position(draw_zoom * 1.5, edit_draw->get_rect_size() / 2.0);
 }
 
 void TextureRegionEditor::_zoom_reset() {
-	_zoom_on_position(1.0, edit_draw->get_size() / 2.0);
+	_zoom_on_position(1.0, edit_draw->get_rect_size() / 2.0);
 }
 
 void TextureRegionEditor::_zoom_out() {
-	_zoom_on_position(draw_zoom / 1.5, edit_draw->get_size() / 2.0);
+	_zoom_on_position(draw_zoom / 1.5, edit_draw->get_rect_size() / 2.0);
 }
 
 void TextureRegionEditor::apply_rect(const Rect2 &p_rect) {
@@ -1058,12 +1058,12 @@ TextureRegionEditor::TextureRegionEditor(EditorNode *p_editor) {
 
 	edit_draw = memnew(Panel);
 	add_child(edit_draw);
-	edit_draw->set_v_size_flags(SIZE_EXPAND_FILL);
+	edit_draw->set_size_flags_vertical(SIZE_EXPAND_FILL);
 	edit_draw->connect("draw", callable_mp(this, &TextureRegionEditor::_region_draw));
 	edit_draw->connect("gui_input", callable_mp(this, &TextureRegionEditor::_region_input));
 
 	draw_zoom = 1.0;
-	edit_draw->set_clip_contents(true);
+	edit_draw->set_rect_clip_contents(true);
 
 	HBoxContainer *zoom_hb = memnew(HBoxContainer);
 	edit_draw->add_child(zoom_hb);
@@ -1175,7 +1175,7 @@ TextureRegionEditorPlugin::TextureRegionEditorPlugin(EditorNode *p_node) {
 	editor = p_node;
 
 	region_editor = memnew(TextureRegionEditor(p_node));
-	region_editor->set_custom_minimum_size(Size2(0, 200) * EDSCALE);
+	region_editor->set_rect_minimum_size(Size2(0, 200) * EDSCALE);
 	region_editor->hide();
 	region_editor->connect("visibility_changed", callable_mp(this, &TextureRegionEditorPlugin::_editor_visiblity_changed));
 

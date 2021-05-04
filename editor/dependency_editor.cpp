@@ -241,7 +241,7 @@ DependencyEditor::DependencyEditor() {
 	vb->add_child(hbc);
 
 	MarginContainer *mc = memnew(MarginContainer);
-	mc->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	mc->set_size_flags_vertical(Control::SIZE_EXPAND_FILL);
 
 	mc->add_child(tree);
 	vb->add_child(mc);
@@ -262,7 +262,7 @@ void DependencyEditorOwners::_list_rmb_select(int p_item, const Vector2 &p_pos) 
 		file_options->add_item(TTR("Open"), FILE_OPEN);
 	}
 
-	file_options->set_position(owners->get_global_position() + p_pos);
+	file_options->set_position(owners->get_rect_global_position() + p_pos);
 	file_options->popup();
 }
 
@@ -564,7 +564,7 @@ DependencyRemoveDialog::DependencyRemoveDialog() {
 	owners = memnew(Tree);
 	owners->set_hide_root(true);
 	vb->add_child(owners);
-	owners->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	owners->set_size_flags_vertical(Control::SIZE_EXPAND_FILL);
 }
 
 //////////////
@@ -616,7 +616,7 @@ DependencyErrorDialog::DependencyErrorDialog() {
 	files = memnew(Tree);
 	files->set_hide_root(true);
 	vb->add_margin_child(TTR("Load failed due to missing dependencies:"), files, true);
-	files->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	files->set_size_flags_vertical(Control::SIZE_EXPAND_FILL);
 
 	set_min_size(Size2(500, 220) * EDSCALE);
 	get_ok_button()->set_text(TTR("Open Anyway"));

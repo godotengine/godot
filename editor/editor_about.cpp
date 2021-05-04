@@ -73,10 +73,10 @@ TextureRect *EditorAbout::get_logo() const {
 ScrollContainer *EditorAbout::_populate_list(const String &p_name, const List<String> &p_sections, const char *const *const p_src[], const int p_flag_single_column) {
 	ScrollContainer *sc = memnew(ScrollContainer);
 	sc->set_name(p_name);
-	sc->set_v_size_flags(Control::SIZE_EXPAND);
+	sc->set_size_flags_vertical(Control::SIZE_EXPAND);
 
 	VBoxContainer *vbc = memnew(VBoxContainer);
-	vbc->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	vbc->set_size_flags_horizontal(Control::SIZE_EXPAND_FILL);
 	sc->add_child(vbc);
 
 	for (int i = 0; i < p_sections.size(); i++) {
@@ -88,7 +88,7 @@ ScrollContainer *EditorAbout::_populate_list(const String &p_name, const List<St
 			vbc->add_child(lbl);
 
 			ItemList *il = memnew(ItemList);
-			il->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+			il->set_size_flags_horizontal(Control::SIZE_EXPAND_FILL);
 			il->set_same_column_width(true);
 			il->set_auto_height(true);
 			il->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
@@ -115,7 +115,7 @@ EditorAbout::EditorAbout() {
 	VBoxContainer *vbc = memnew(VBoxContainer);
 	vbc->connect("theme_changed", callable_mp(this, &EditorAbout::_theme_changed));
 	HBoxContainer *hbc = memnew(HBoxContainer);
-	hbc->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	hbc->set_size_flags_horizontal(Control::SIZE_EXPAND_FILL);
 	hbc->set_alignment(BoxContainer::ALIGN_CENTER);
 	hbc->add_theme_constant_override("separation", 30 * EDSCALE);
 	add_child(vbc);
@@ -130,15 +130,15 @@ EditorAbout::EditorAbout() {
 	}
 
 	Label *about_text = memnew(Label);
-	about_text->set_v_size_flags(Control::SIZE_SHRINK_CENTER);
+	about_text->set_size_flags_vertical(Control::SIZE_SHRINK_CENTER);
 	about_text->set_text(VERSION_FULL_NAME + hash +
 						 String::utf8("\n\xc2\xa9 2007-2021 Juan Linietsky, Ariel Manzur.\n\xc2\xa9 2014-2021 ") +
 						 TTR("Godot Engine contributors") + "\n");
 	hbc->add_child(about_text);
 
 	TabContainer *tc = memnew(TabContainer);
-	tc->set_custom_minimum_size(Size2(950, 400) * EDSCALE);
-	tc->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	tc->set_rect_minimum_size(Size2(950, 400) * EDSCALE);
+	tc->set_size_flags_vertical(Control::SIZE_EXPAND_FILL);
 	vbc->add_child(tc);
 
 	// Authors
@@ -175,8 +175,8 @@ EditorAbout::EditorAbout() {
 
 	_license_text = memnew(RichTextLabel);
 	_license_text->set_name(TTR("License"));
-	_license_text->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	_license_text->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	_license_text->set_size_flags_horizontal(Control::SIZE_EXPAND_FILL);
+	_license_text->set_size_flags_vertical(Control::SIZE_EXPAND_FILL);
 	_license_text->set_text(String::utf8(GODOT_LICENSE_TEXT));
 	tc->add_child(_license_text);
 
@@ -184,19 +184,19 @@ EditorAbout::EditorAbout() {
 
 	VBoxContainer *license_thirdparty = memnew(VBoxContainer);
 	license_thirdparty->set_name(TTR("Third-party Licenses"));
-	license_thirdparty->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	license_thirdparty->set_size_flags_horizontal(Control::SIZE_EXPAND_FILL);
 	tc->add_child(license_thirdparty);
 
 	Label *tpl_label = memnew(Label);
-	tpl_label->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	tpl_label->set_size_flags_horizontal(Control::SIZE_EXPAND_FILL);
 	tpl_label->set_autowrap(true);
 	tpl_label->set_text(TTR("Godot Engine relies on a number of third-party free and open source libraries, all compatible with the terms of its MIT license. The following is an exhaustive list of all such third-party components with their respective copyright statements and license terms."));
-	tpl_label->set_size(Size2(630, 1) * EDSCALE);
+	tpl_label->set_rect_size(Size2(630, 1) * EDSCALE);
 	license_thirdparty->add_child(tpl_label);
 
 	HSplitContainer *tpl_hbc = memnew(HSplitContainer);
-	tpl_hbc->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	tpl_hbc->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	tpl_hbc->set_size_flags_horizontal(Control::SIZE_EXPAND_FILL);
+	tpl_hbc->set_size_flags_vertical(Control::SIZE_EXPAND_FILL);
 	tpl_hbc->set_split_offset(240 * EDSCALE);
 	license_thirdparty->add_child(tpl_hbc);
 
@@ -250,8 +250,8 @@ EditorAbout::EditorAbout() {
 	tpl_hbc->add_child(_tpl_tree);
 
 	_tpl_text = memnew(RichTextLabel);
-	_tpl_text->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	_tpl_text->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	_tpl_text->set_size_flags_horizontal(Control::SIZE_EXPAND_FILL);
+	_tpl_text->set_size_flags_vertical(Control::SIZE_EXPAND_FILL);
 	tpl_hbc->add_child(_tpl_text);
 
 	_tpl_tree->connect("item_selected", callable_mp(this, &EditorAbout::_license_tree_selected));

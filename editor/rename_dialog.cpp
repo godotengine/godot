@@ -55,7 +55,7 @@ RenameDialog::RenameDialog(SceneTreeEditor *p_scene_tree_editor, UndoRedo *p_und
 
 	GridContainer *grd_main = memnew(GridContainer);
 	grd_main->set_columns(2);
-	grd_main->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	grd_main->set_size_flags_vertical(Control::SIZE_EXPAND_FILL);
 	vbc->add_child(grd_main);
 
 	// ---- 1st & 2nd row
@@ -65,14 +65,14 @@ RenameDialog::RenameDialog(SceneTreeEditor *p_scene_tree_editor, UndoRedo *p_und
 
 	lne_search = memnew(LineEdit);
 	lne_search->set_name("lne_search");
-	lne_search->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	lne_search->set_size_flags_horizontal(Control::SIZE_EXPAND_FILL);
 
 	Label *lbl_replace = memnew(Label);
 	lbl_replace->set_text(TTR("Replace:"));
 
 	lne_replace = memnew(LineEdit);
 	lne_replace->set_name("lne_replace");
-	lne_replace->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	lne_replace->set_size_flags_horizontal(Control::SIZE_EXPAND_FILL);
 
 	grd_main->add_child(lbl_search);
 	grd_main->add_child(lbl_replace);
@@ -86,14 +86,14 @@ RenameDialog::RenameDialog(SceneTreeEditor *p_scene_tree_editor, UndoRedo *p_und
 
 	lne_prefix = memnew(LineEdit);
 	lne_prefix->set_name("lne_prefix");
-	lne_prefix->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	lne_prefix->set_size_flags_horizontal(Control::SIZE_EXPAND_FILL);
 
 	Label *lbl_suffix = memnew(Label);
 	lbl_suffix->set_text(TTR("Suffix:"));
 
 	lne_suffix = memnew(LineEdit);
 	lne_suffix->set_name("lne_suffix");
-	lne_suffix->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	lne_suffix->set_size_flags_horizontal(Control::SIZE_EXPAND_FILL);
 
 	grd_main->add_child(lbl_prefix);
 	grd_main->add_child(lbl_suffix);
@@ -118,7 +118,7 @@ RenameDialog::RenameDialog(SceneTreeEditor *p_scene_tree_editor, UndoRedo *p_und
 	// ---- Tab Substitute
 
 	VBoxContainer *vbc_substitute = memnew(VBoxContainer);
-	vbc_substitute->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	vbc_substitute->set_size_flags_horizontal(Control::SIZE_EXPAND_FILL);
 
 	vbc_substitute->set_name(TTR("Substitute"));
 	tabc_features->add_child(vbc_substitute);
@@ -138,7 +138,7 @@ RenameDialog::RenameDialog(SceneTreeEditor *p_scene_tree_editor, UndoRedo *p_und
 	but_insert_name->set_tooltip(String("${NAME}\n") + TTR("Node name."));
 	but_insert_name->set_focus_mode(Control::FOCUS_NONE);
 	but_insert_name->connect("pressed", callable_mp(this, &RenameDialog::_insert_text), make_binds("${NAME}"));
-	but_insert_name->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	but_insert_name->set_size_flags_horizontal(Control::SIZE_EXPAND_FILL);
 	grd_substitute->add_child(but_insert_name);
 
 	// Parent
@@ -148,7 +148,7 @@ RenameDialog::RenameDialog(SceneTreeEditor *p_scene_tree_editor, UndoRedo *p_und
 	but_insert_parent->set_tooltip(String("${PARENT}\n") + TTR("Node's parent name, if available."));
 	but_insert_parent->set_focus_mode(Control::FOCUS_NONE);
 	but_insert_parent->connect("pressed", callable_mp(this, &RenameDialog::_insert_text), make_binds("${PARENT}"));
-	but_insert_parent->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	but_insert_parent->set_size_flags_horizontal(Control::SIZE_EXPAND_FILL);
 	grd_substitute->add_child(but_insert_parent);
 
 	// Type
@@ -158,7 +158,7 @@ RenameDialog::RenameDialog(SceneTreeEditor *p_scene_tree_editor, UndoRedo *p_und
 	but_insert_type->set_tooltip(String("${TYPE}\n") + TTR("Node type."));
 	but_insert_type->set_focus_mode(Control::FOCUS_NONE);
 	but_insert_type->connect("pressed", callable_mp(this, &RenameDialog::_insert_text), make_binds("${TYPE}"));
-	but_insert_type->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	but_insert_type->set_size_flags_horizontal(Control::SIZE_EXPAND_FILL);
 	grd_substitute->add_child(but_insert_type);
 
 	// Scene
@@ -168,7 +168,7 @@ RenameDialog::RenameDialog(SceneTreeEditor *p_scene_tree_editor, UndoRedo *p_und
 	but_insert_scene->set_tooltip(String("${SCENE}\n") + TTR("Current scene name."));
 	but_insert_scene->set_focus_mode(Control::FOCUS_NONE);
 	but_insert_scene->connect("pressed", callable_mp(this, &RenameDialog::_insert_text), make_binds("${SCENE}"));
-	but_insert_scene->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	but_insert_scene->set_size_flags_horizontal(Control::SIZE_EXPAND_FILL);
 	grd_substitute->add_child(but_insert_scene);
 
 	// Root
@@ -178,7 +178,7 @@ RenameDialog::RenameDialog(SceneTreeEditor *p_scene_tree_editor, UndoRedo *p_und
 	but_insert_root->set_tooltip(String("${ROOT}\n") + TTR("Root node name."));
 	but_insert_root->set_focus_mode(Control::FOCUS_NONE);
 	but_insert_root->connect("pressed", callable_mp(this, &RenameDialog::_insert_text), make_binds("${ROOT}"));
-	but_insert_root->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	but_insert_root->set_size_flags_horizontal(Control::SIZE_EXPAND_FILL);
 	grd_substitute->add_child(but_insert_root);
 
 	// Count
@@ -188,7 +188,7 @@ RenameDialog::RenameDialog(SceneTreeEditor *p_scene_tree_editor, UndoRedo *p_und
 	but_insert_count->set_tooltip(String("${COUNTER}\n") + TTR("Sequential integer counter.\nCompare counter options."));
 	but_insert_count->set_focus_mode(Control::FOCUS_NONE);
 	but_insert_count->connect("pressed", callable_mp(this, &RenameDialog::_insert_text), make_binds("${COUNTER}"));
-	but_insert_count->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	but_insert_count->set_size_flags_horizontal(Control::SIZE_EXPAND_FILL);
 	grd_substitute->add_child(but_insert_count);
 
 	chk_per_level_counter = memnew(CheckBox);
@@ -233,7 +233,7 @@ RenameDialog::RenameDialog(SceneTreeEditor *p_scene_tree_editor, UndoRedo *p_und
 	// ---- Tab Process
 
 	VBoxContainer *vbc_process = memnew(VBoxContainer);
-	vbc_process->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	vbc_process->set_size_flags_horizontal(Control::SIZE_EXPAND_FILL);
 	vbc_process->set_name(TTR("Post-Process"));
 	tabc_features->add_child(vbc_process);
 
@@ -274,7 +274,7 @@ RenameDialog::RenameDialog(SceneTreeEditor *p_scene_tree_editor, UndoRedo *p_und
 	// -- Preview
 
 	HSeparator *sep_preview = memnew(HSeparator);
-	sep_preview->set_custom_minimum_size(Size2(10, 20));
+	sep_preview->set_rect_minimum_size(Size2(10, 20));
 	vbc->add_child(sep_preview);
 
 	lbl_preview_title = memnew(Label);

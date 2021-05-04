@@ -144,8 +144,8 @@ void EditorVisualProfiler::_item_selected() {
 }
 
 void EditorVisualProfiler::_update_plot() {
-	int w = graph->get_size().width;
-	int h = graph->get_size().height;
+	int w = graph->get_rect_size().width;
+	int h = graph->get_rect_size().height;
 
 	bool reset_texture = false;
 
@@ -446,18 +446,18 @@ void EditorVisualProfiler::_graph_tex_draw() {
 			frame = 0;
 		}
 
-		int half_width = graph->get_size().x / 2;
+		int half_width = graph->get_rect_size().x / 2;
 		int cur_x = frame * half_width / max_frames;
 		//cur_x /= 2.0;
 
-		graph->draw_line(Vector2(cur_x, 0), Vector2(cur_x, graph->get_size().y), Color(1, 1, 1, 0.8));
-		graph->draw_line(Vector2(cur_x + half_width, 0), Vector2(cur_x + half_width, graph->get_size().y), Color(1, 1, 1, 0.8));
+		graph->draw_line(Vector2(cur_x, 0), Vector2(cur_x, graph->get_rect_size().y), Color(1, 1, 1, 0.8));
+		graph->draw_line(Vector2(cur_x + half_width, 0), Vector2(cur_x + half_width, graph->get_rect_size().y), Color(1, 1, 1, 0.8));
 	}
 
 	if (graph_height_cpu > 0) {
-		int frame_y = graph->get_size().y - graph_limit * graph->get_size().y / graph_height_cpu - 1;
+		int frame_y = graph->get_rect_size().y - graph_limit * graph->get_rect_size().y / graph_height_cpu - 1;
 
-		int half_width = graph->get_size().x / 2;
+		int half_width = graph->get_rect_size().x / 2;
 
 		graph->draw_line(Vector2(0, frame_y), Vector2(half_width, frame_y), Color(1, 1, 1, 0.3));
 
@@ -466,18 +466,18 @@ void EditorVisualProfiler::_graph_tex_draw() {
 	}
 
 	if (graph_height_gpu > 0) {
-		int frame_y = graph->get_size().y - graph_limit * graph->get_size().y / graph_height_gpu - 1;
+		int frame_y = graph->get_rect_size().y - graph_limit * graph->get_rect_size().y / graph_height_gpu - 1;
 
-		int half_width = graph->get_size().x / 2;
+		int half_width = graph->get_rect_size().x / 2;
 
-		graph->draw_line(Vector2(half_width, frame_y), Vector2(graph->get_size().x, frame_y), Color(1, 1, 1, 0.3));
+		graph->draw_line(Vector2(half_width, frame_y), Vector2(graph->get_rect_size().x, frame_y), Color(1, 1, 1, 0.3));
 
 		String limit_str = String::num(graph_limit, 2);
 		graph->draw_string(font, Vector2(half_width * 2 - font->get_string_size(limit_str, font_size).x - 2, frame_y - 2), limit_str, HALIGN_LEFT, -1, font_size, Color(1, 1, 1, 0.6));
 	}
 
 	graph->draw_string(font, Vector2(font->get_string_size("X", font_size).x, font->get_ascent(font_size) + 2), "CPU:", HALIGN_LEFT, -1, font_size, Color(1, 1, 1, 0.8));
-	graph->draw_string(font, Vector2(font->get_string_size("X", font_size).x + graph->get_size().width / 2, font->get_ascent(font_size) + 2), "GPU:", HALIGN_LEFT, -1, font_size, Color(1, 1, 1, 0.8));
+	graph->draw_string(font, Vector2(font->get_string_size("X", font_size).x + graph->get_rect_size().width / 2, font->get_ascent(font_size) + 2), "GPU:", HALIGN_LEFT, -1, font_size, Color(1, 1, 1, 0.8));
 
 	/*
 	if (hover_metric != -1 && frame_metrics[hover_metric].valid) {
@@ -519,7 +519,7 @@ void EditorVisualProfiler::_graph_tex_input(const Ref<InputEvent> &p_ev) {
 	if (
 			(mb.is_valid() && mb->get_button_index() == MOUSE_BUTTON_LEFT && mb->is_pressed()) ||
 			(mm.is_valid())) {
-		int half_w = graph->get_size().width / 2;
+		int half_w = graph->get_rect_size().width / 2;
 		int x = me->get_position().x;
 		if (x > half_w) {
 			x -= half_w;
@@ -588,11 +588,11 @@ void EditorVisualProfiler::_graph_tex_input(const Ref<InputEvent> &p_ev) {
 				frame_delay->start();
 			}
 
-			bool touched_cpu = me->get_position().x < graph->get_size().width * 0.5;
+			bool touched_cpu = me->get_position().x < graph->get_rect_size().width * 0.5;
 
 			const Metric::Area *areas = frame_metrics[metric].areas.ptr();
 			int area_count = frame_metrics[metric].areas.size();
-			float posy = (1.0 - (me->get_position().y / graph->get_size().height)) * (touched_cpu ? graph_height_cpu : graph_height_gpu);
+			float posy = (1.0 - (me->get_position().y / graph->get_rect_size().height)) * (touched_cpu ? graph_height_cpu : graph_height_gpu);
 			int last_valid = -1;
 			bool found = false;
 			for (int i = 0; i < area_count - 1; i++) {
@@ -754,7 +754,7 @@ EditorVisualProfiler::EditorVisualProfiler() {
 	hb->add_child(memnew(Label(TTR("Frame #:"))));
 
 	cursor_metric_edit = memnew(SpinBox);
-	cursor_metric_edit->set_h_size_flags(SIZE_FILL);
+	cursor_metric_edit->set_size_flags_horizontal(SIZE_FILL);
 	hb->add_child(cursor_metric_edit);
 	cursor_metric_edit->connect("value_changed", callable_mp(this, &EditorVisualProfiler::_cursor_metric_changed));
 
@@ -762,10 +762,10 @@ EditorVisualProfiler::EditorVisualProfiler() {
 
 	h_split = memnew(HSplitContainer);
 	add_child(h_split);
-	h_split->set_v_size_flags(SIZE_EXPAND_FILL);
+	h_split->set_size_flags_vertical(SIZE_EXPAND_FILL);
 
 	variables = memnew(Tree);
-	variables->set_custom_minimum_size(Size2(300, 0) * EDSCALE);
+	variables->set_rect_minimum_size(Size2(300, 0) * EDSCALE);
 	variables->set_hide_folding(true);
 	h_split->add_child(variables);
 	variables->set_hide_root(true);
@@ -791,7 +791,7 @@ EditorVisualProfiler::EditorVisualProfiler() {
 	graph->connect("mouse_exited", callable_mp(this, &EditorVisualProfiler::_graph_tex_mouse_exit));
 
 	h_split->add_child(graph);
-	graph->set_h_size_flags(SIZE_EXPAND_FILL);
+	graph->set_size_flags_horizontal(SIZE_EXPAND_FILL);
 
 	int metric_size = CLAMP(int(EDITOR_DEF("debugger/profiler_frame_history_size", 600)), 60, 1024);
 	frame_metrics.resize(metric_size);

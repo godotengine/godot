@@ -59,7 +59,7 @@ void EditorSpinSlider::_gui_input(const Ref<InputEvent> &p_event) {
 			if (mb->is_pressed()) {
 				if (updown_offset != -1 && mb->get_position().x > updown_offset) {
 					//there is an updown, so use it.
-					if (mb->get_position().y < get_size().height / 2) {
+					if (mb->get_position().y < get_rect_size().height / 2) {
 						set_value(get_value() + get_step());
 					} else {
 						set_value(get_value() - get_step());
@@ -215,7 +215,7 @@ void EditorSpinSlider::_notification(int p_what) {
 
 		Ref<StyleBox> sb = get_theme_stylebox("normal", "LineEdit");
 		if (!flat) {
-			draw_style_box(sb, Rect2(Vector2(), get_size()));
+			draw_style_box(sb, Rect2(Vector2(), get_rect_size()));
 		}
 		Ref<Font> font = get_theme_font("font", "LineEdit");
 		int font_size = get_theme_font_size("font_size", "LineEdit");
@@ -223,7 +223,7 @@ void EditorSpinSlider::_notification(int p_what) {
 		int sep = sep_base + sb->get_offset().x; //make it have the same margin on both sides, looks better
 
 		int string_width = font->get_string_size(label, font_size).width;
-		int number_width = get_size().width - sb->get_minimum_size().width - string_width - sep;
+		int number_width = get_rect_size().width - sb->get_minimum_size().width - string_width - sep;
 
 		Ref<Texture2D> updown = get_theme_icon("updown", "SpinBox");
 
@@ -233,7 +233,7 @@ void EditorSpinSlider::_notification(int p_what) {
 
 		String numstr = get_text_value();
 
-		int vofs = (get_size().height - font->get_height(font_size)) / 2 + font->get_ascent(font_size);
+		int vofs = (get_rect_size().height - font->get_height(font_size)) / 2 + font->get_ascent(font_size);
 
 		Color fc = get_theme_color("font_color", "LineEdit");
 		Color lc;
@@ -245,12 +245,12 @@ void EditorSpinSlider::_notification(int p_what) {
 
 		if (flat && label != String()) {
 			Color label_bg_color = get_theme_color("dark_color_3", "Editor");
-			draw_rect(Rect2(Vector2(), Vector2(sb->get_offset().x * 2 + string_width, get_size().height)), label_bg_color);
+			draw_rect(Rect2(Vector2(), Vector2(sb->get_offset().x * 2 + string_width, get_rect_size().height)), label_bg_color);
 		}
 
 		if (has_focus()) {
 			Ref<StyleBox> focus = get_theme_stylebox("focus", "LineEdit");
-			draw_style_box(focus, Rect2(Vector2(), get_size()));
+			draw_style_box(focus, Rect2(Vector2(), get_rect_size()));
 		}
 
 		draw_string(font, Vector2(Math::round(sb->get_offset().x), vofs), label, HALIGN_LEFT, -1, font_size, lc * Color(1, 1, 1, 0.5));
@@ -259,8 +259,8 @@ void EditorSpinSlider::_notification(int p_what) {
 
 		if (get_step() == 1) {
 			Ref<Texture2D> updown2 = get_theme_icon("updown", "SpinBox");
-			int updown_vofs = (get_size().height - updown2->get_height()) / 2;
-			updown_offset = get_size().width - sb->get_margin(SIDE_RIGHT) - updown2->get_width();
+			int updown_vofs = (get_rect_size().height - updown2->get_height()) / 2;
+			updown_offset = get_rect_size().width - sb->get_margin(SIDE_RIGHT) - updown2->get_width();
 			Color c(1, 1, 1);
 			if (hover_updown) {
 				c *= Color(1.2, 1.2, 1.2);
@@ -271,9 +271,9 @@ void EditorSpinSlider::_notification(int p_what) {
 			}
 		} else if (!hide_slider) {
 			int grabber_w = 4 * EDSCALE;
-			int width = get_size().width - sb->get_minimum_size().width - grabber_w;
+			int width = get_rect_size().width - sb->get_minimum_size().width - grabber_w;
 			int ofs = sb->get_offset().x;
-			int svofs = (get_size().height + vofs) / 2 - 1;
+			int svofs = (get_rect_size().height + vofs) / 2 - 1;
 			Color c = fc;
 			c.a = 0.2;
 
@@ -305,12 +305,12 @@ void EditorSpinSlider::_notification(int p_what) {
 				}
 
 				Vector2 scale = get_global_transform_with_canvas().get_scale();
-				grabber->set_scale(scale);
-				grabber->set_size(Size2(0, 0));
-				grabber->set_position(get_global_position() + (grabber_rect.position + grabber_rect.size * 0.5 - grabber->get_size() * 0.5) * scale);
+				grabber->set_rect_scale(scale);
+				grabber->set_rect_size(Size2(0, 0));
+				grabber->set_rect_position(get_rect_global_position() + (grabber_rect.position + grabber_rect.size * 0.5 - grabber->get_rect_size() * 0.5) * scale);
 
 				if (mousewheel_over_grabber) {
-					Input::get_singleton()->warp_mouse_position(grabber->get_position() + grabber_rect.size);
+					Input::get_singleton()->warp_mouse_position(grabber->get_rect_position() + grabber_rect.size);
 				}
 
 				grabber_range = width;

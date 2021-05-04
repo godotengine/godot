@@ -101,7 +101,7 @@ void AnimationNodeBlendSpace1DEditor::_blend_space_gui_input(const Ref<InputEven
 		menu->set_position(blend_space_draw->get_screen_transform().xform(mb->get_position()));
 		menu->popup();
 
-		add_point_pos = (mb->get_position() / blend_space_draw->get_size()).x;
+		add_point_pos = (mb->get_position() / blend_space_draw->get_rect_size()).x;
 		add_point_pos *= (blend_space->get_max_space() - blend_space->get_min_space());
 		add_point_pos += blend_space->get_min_space();
 
@@ -162,7 +162,7 @@ void AnimationNodeBlendSpace1DEditor::_blend_space_gui_input(const Ref<InputEven
 
 	// *set* the blend
 	if (mb.is_valid() && !mb->is_pressed() && tool_blend->is_pressed() && mb->get_button_index() == MOUSE_BUTTON_LEFT) {
-		float blend_pos = mb->get_position().x / blend_space_draw->get_size().x;
+		float blend_pos = mb->get_position().x / blend_space_draw->get_rect_size().x;
 		blend_pos *= blend_space->get_max_space() - blend_space->get_min_space();
 		blend_pos += blend_space->get_min_space();
 
@@ -179,13 +179,13 @@ void AnimationNodeBlendSpace1DEditor::_blend_space_gui_input(const Ref<InputEven
 
 	if (mm.is_valid() && dragging_selected_attempt) {
 		dragging_selected = true;
-		drag_ofs = ((mm->get_position() - drag_from) / blend_space_draw->get_size()) * ((blend_space->get_max_space() - blend_space->get_min_space()) * Vector2(1, 0));
+		drag_ofs = ((mm->get_position() - drag_from) / blend_space_draw->get_rect_size()) * ((blend_space->get_max_space() - blend_space->get_min_space()) * Vector2(1, 0));
 		blend_space_draw->update();
 		_update_edited_point_pos();
 	}
 
 	if (mm.is_valid() && tool_blend->is_pressed() && mm->get_button_mask() & MOUSE_BUTTON_MASK_LEFT) {
-		float blend_pos = mm->get_position().x / blend_space_draw->get_size().x;
+		float blend_pos = mm->get_position().x / blend_space_draw->get_rect_size().x;
 		blend_pos *= blend_space->get_max_space() - blend_space->get_min_space();
 		blend_pos += blend_space->get_min_space();
 
@@ -205,7 +205,7 @@ void AnimationNodeBlendSpace1DEditor::_blend_space_draw() {
 	Ref<Texture2D> icon = get_theme_icon("KeyValue", "EditorIcons");
 	Ref<Texture2D> icon_selected = get_theme_icon("KeySelected", "EditorIcons");
 
-	Size2 s = blend_space_draw->get_size();
+	Size2 s = blend_space_draw->get_rect_size();
 
 	if (blend_space_draw->has_focus()) {
 		Color color = get_theme_color("accent_color", "Editor");
@@ -667,13 +667,13 @@ AnimationNodeBlendSpace1DEditor::AnimationNodeBlendSpace1DEditor() {
 
 	VBoxContainer *main_vb = memnew(VBoxContainer);
 	add_child(main_vb);
-	main_vb->set_v_size_flags(SIZE_EXPAND_FILL);
+	main_vb->set_size_flags_vertical(SIZE_EXPAND_FILL);
 
 	panel = memnew(PanelContainer);
-	panel->set_clip_contents(true);
+	panel->set_rect_clip_contents(true);
 	main_vb->add_child(panel);
-	panel->set_h_size_flags(SIZE_EXPAND_FILL);
-	panel->set_v_size_flags(SIZE_EXPAND_FILL);
+	panel->set_size_flags_horizontal(SIZE_EXPAND_FILL);
+	panel->set_size_flags_vertical(SIZE_EXPAND_FILL);
 
 	blend_space_draw = memnew(Control);
 	blend_space_draw->connect("gui_input", callable_mp(this, &AnimationNodeBlendSpace1DEditor::_blend_space_gui_input));
@@ -685,7 +685,7 @@ AnimationNodeBlendSpace1DEditor::AnimationNodeBlendSpace1DEditor() {
 	{
 		HBoxContainer *bottom_hb = memnew(HBoxContainer);
 		main_vb->add_child(bottom_hb);
-		bottom_hb->set_h_size_flags(SIZE_EXPAND_FILL);
+		bottom_hb->set_size_flags_horizontal(SIZE_EXPAND_FILL);
 
 		min_value = memnew(SpinBox);
 		min_value->set_min(-10000);
@@ -743,5 +743,5 @@ AnimationNodeBlendSpace1DEditor::AnimationNodeBlendSpace1DEditor() {
 	dragging_selected = false;
 	dragging_selected_attempt = false;
 
-	set_custom_minimum_size(Size2(0, 150 * EDSCALE));
+	set_rect_minimum_size(Size2(0, 150 * EDSCALE));
 }

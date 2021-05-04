@@ -504,7 +504,7 @@
 			Maximum lines of text allowed in each item. Space will be reserved even when there is not enough lines of text to display.
 			[b]Note:[/b] This property takes effect only when [member icon_mode] is [constant ICON_MODE_TOP]. To make the text wrap, [member fixed_column_width] should be greater than zero.
 		</member>
-		<member name="rect_clip_content" type="bool" setter="set_clip_contents" getter="is_clipping_contents" override="true" default="true" />
+		<member name="rect_clip_contents" type="bool" setter="set_rect_clip_contents" getter="is_rect_clipping_contents" override="true" default="true" />
 		<member name="same_column_width" type="bool" setter="set_same_column_width" getter="is_same_column_width" default="false">
 			Whether all columns will have the same width.
 			If [code]true[/code], the width is equal to the largest column width of all columns.

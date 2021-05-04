@@ -38,7 +38,7 @@ void NinePatchRect::_notification(int p_what) {
 			return;
 		}
 
-		Rect2 rect = Rect2(Point2(), get_size());
+		Rect2 rect = Rect2(Point2(), get_rect_size());
 		Rect2 src_rect = region_rect;
 
 		texture->get_rect_region(rect, src_rect, rect, src_rect);

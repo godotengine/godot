@@ -605,7 +605,7 @@ void EditorFileDialog::_item_list_item_rmb_selected(int p_item, const Vector2 &p
 	}
 
 	if (item_menu->get_item_count() > 0) {
-		item_menu->set_position(item_list->get_global_position() + p_pos);
+		item_menu->set_position(item_list->get_rect_global_position() + p_pos);
 		item_menu->popup();
 	}
 }
@@ -626,7 +626,7 @@ void EditorFileDialog::_item_list_rmb_clicked(const Vector2 &p_pos) {
 	item_menu->add_separator();
 	item_menu->add_icon_item(item_list->get_theme_icon("Filesystem", "EditorIcons"), TTR("Open in File Manager"), ITEM_MENU_SHOW_IN_EXPLORER);
 
-	item_menu->set_position(item_list->get_global_position() + p_pos);
+	item_menu->set_position(item_list->get_rect_global_position() + p_pos);
 	item_menu->popup();
 }
 
@@ -1515,7 +1515,7 @@ EditorFileDialog::EditorFileDialog() {
 	dir = memnew(LineEdit);
 	dir->set_structured_text_bidi_override(Control::STRUCTURED_TEXT_FILE);
 	pathhb->add_child(dir);
-	dir->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	dir->set_size_flags_horizontal(Control::SIZE_EXPAND_FILL);
 
 	refresh = memnew(Button);
 	refresh->set_flat(true);
@@ -1577,15 +1577,15 @@ EditorFileDialog::EditorFileDialog() {
 
 	vbc->add_child(pathhb);
 	vbc->add_child(list_hb);
-	list_hb->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	list_hb->set_size_flags_vertical(Control::SIZE_EXPAND_FILL);
 
 	VSplitContainer *vsc = memnew(VSplitContainer);
 	list_hb->add_child(vsc);
 
 	VBoxContainer *fav_vb = memnew(VBoxContainer);
 	vsc->add_child(fav_vb);
-	fav_vb->set_custom_minimum_size(Size2(150, 100) * EDSCALE);
-	fav_vb->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	fav_vb->set_rect_minimum_size(Size2(150, 100) * EDSCALE);
+	fav_vb->set_size_flags_vertical(Control::SIZE_EXPAND_FILL);
 	HBoxContainer *fav_hb = memnew(HBoxContainer);
 	fav_vb->add_child(fav_hb);
 	fav_hb->add_child(memnew(Label(TTR("Favorites:"))));
@@ -1601,13 +1601,13 @@ EditorFileDialog::EditorFileDialog() {
 
 	favorites = memnew(ItemList);
 	fav_vb->add_child(favorites);
-	favorites->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	favorites->set_size_flags_vertical(Control::SIZE_EXPAND_FILL);
 	favorites->connect("item_selected", callable_mp(this, &EditorFileDialog::_favorite_selected));
 
 	VBoxContainer *rec_vb = memnew(VBoxContainer);
 	vsc->add_child(rec_vb);
-	rec_vb->set_custom_minimum_size(Size2(150, 100) * EDSCALE);
-	rec_vb->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	rec_vb->set_rect_minimum_size(Size2(150, 100) * EDSCALE);
+	rec_vb->set_size_flags_vertical(Control::SIZE_EXPAND_FILL);
 	recent = memnew(ItemList);
 	recent->set_allow_reselect(true);
 	rec_vb->add_margin_child(TTR("Recent:"), recent, true);
@@ -1615,21 +1615,21 @@ EditorFileDialog::EditorFileDialog() {
 
 	VBoxContainer *item_vb = memnew(VBoxContainer);
 	list_hb->add_child(item_vb);
-	item_vb->set_custom_minimum_size(Size2(320, 0) * EDSCALE);
+	item_vb->set_rect_minimum_size(Size2(320, 0) * EDSCALE);
 
 	HBoxContainer *preview_hb = memnew(HBoxContainer);
-	preview_hb->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	preview_hb->set_size_flags_vertical(Control::SIZE_EXPAND_FILL);
 	item_vb->add_child(preview_hb);
 
 	VBoxContainer *list_vb = memnew(VBoxContainer);
-	list_vb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	list_vb->set_size_flags_horizontal(Control::SIZE_EXPAND_FILL);
 	list_vb->add_child(memnew(Label(TTR("Directories & Files:"))));
 	preview_hb->add_child(list_vb);
 
 	// Item (files and folders) list with context menu.
 
 	item_list = memnew(ItemList);
-	item_list->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	item_list->set_size_flags_vertical(Control::SIZE_EXPAND_FILL);
 	item_list->connect("item_rmb_selected", callable_mp(this, &EditorFileDialog::_item_list_item_rmb_selected));
 	item_list->connect("rmb_clicked", callable_mp(this, &EditorFileDialog::_item_list_rmb_clicked));
 	item_list->set_allow_rmb_select(true);
@@ -1653,15 +1653,15 @@ EditorFileDialog::EditorFileDialog() {
 	file_box->add_child(memnew(Label(TTR("File:"))));
 	file = memnew(LineEdit);
 	file->set_structured_text_bidi_override(Control::STRUCTURED_TEXT_FILE);
-	file->set_stretch_ratio(4);
-	file->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	file->set_size_flags_stretch_ratio(4);
+	file->set_size_flags_horizontal(Control::SIZE_EXPAND_FILL);
 	file_box->add_child(file);
 	filter = memnew(OptionButton);
-	filter->set_stretch_ratio(3);
-	filter->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	filter->set_size_flags_stretch_ratio(3);
+	filter->set_size_flags_horizontal(Control::SIZE_EXPAND_FILL);
 	filter->set_clip_text(true); // Too many extensions overflow it.
 	file_box->add_child(filter);
-	file_box->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	file_box->set_size_flags_horizontal(Control::SIZE_EXPAND_FILL);
 	item_vb->add_child(file_box);
 
 	dir_access = DirAccess::create(DirAccess::ACCESS_RESOURCES);

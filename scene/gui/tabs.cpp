@@ -110,7 +110,7 @@ void Tabs::_gui_input(const Ref<InputEvent> &p_event) {
 					highlight_arrow = 0;
 				}
 			} else {
-				int limit_minus_buttons = get_size().width - incr->get_width() - decr->get_width();
+				int limit_minus_buttons = get_rect_size().width - incr->get_width() - decr->get_width();
 				if (pos.x > limit_minus_buttons + decr->get_width()) {
 					highlight_arrow = 1;
 				} else if (pos.x > limit_minus_buttons) {
@@ -188,7 +188,7 @@ void Tabs::_gui_input(const Ref<InputEvent> &p_event) {
 						return;
 					}
 				} else {
-					int limit = get_size().width - incr->get_width() - decr->get_width();
+					int limit = get_rect_size().width - incr->get_width() - decr->get_width();
 					if (pos.x > limit + decr->get_width()) {
 						if (missing_right) {
 							offset++;
@@ -283,10 +283,10 @@ void Tabs::_notification(int p_what) {
 			Color font_outline_color = get_theme_color("font_outline_color");
 			int outline_size = get_theme_constant("outline_size");
 
-			Vector2 size = get_size();
+			Vector2 size = get_rect_size();
 			bool rtl = is_layout_rtl();
 
-			int h = get_size().height;
+			int h = get_rect_size().height;
 			int w = 0;
 			int mw = 0;
 
@@ -296,9 +296,9 @@ void Tabs::_notification(int p_what) {
 			}
 
 			if (tab_align == ALIGN_CENTER) {
-				w = (get_size().width - mw) / 2;
+				w = (get_rect_size().width - mw) / 2;
 			} else if (tab_align == ALIGN_RIGHT) {
-				w = get_size().width - mw;
+				w = get_rect_size().width - mw;
 			}
 
 			if (w < 0) {
@@ -310,8 +310,8 @@ void Tabs::_notification(int p_what) {
 			Ref<Texture2D> incr_hl = get_theme_icon("increment_highlight");
 			Ref<Texture2D> decr_hl = get_theme_icon("decrement_highlight");
 
-			int limit = get_size().width;
-			int limit_minus_buttons = get_size().width - incr->get_width() - decr->get_width();
+			int limit = get_rect_size().width;
+			int limit_minus_buttons = get_rect_size().width - incr->get_width() - decr->get_width();
 
 			missing_right = false;
 
@@ -450,7 +450,7 @@ void Tabs::_notification(int p_what) {
 			}
 
 			if (offset > 0 || missing_right) {
-				int vofs = (get_size().height - incr->get_size().height) / 2;
+				int vofs = (get_rect_size().height - incr->get_size().height) / 2;
 
 				if (rtl) {
 					if (missing_right) {
@@ -673,7 +673,7 @@ void Tabs::_update_cache() {
 	Ref<StyleBox> tab_selected = get_theme_stylebox("tab_selected");
 	Ref<Texture2D> incr = get_theme_icon("increment");
 	Ref<Texture2D> decr = get_theme_icon("decrement");
-	int limit_minus_buttons = get_size().width - incr->get_width() - decr->get_width();
+	int limit_minus_buttons = get_rect_size().width - incr->get_width() - decr->get_width();
 
 	int w = 0;
 	int mw = 0;
@@ -995,8 +995,8 @@ void Tabs::_ensure_no_over_offset() {
 	Ref<Texture2D> incr = get_theme_icon("increment");
 	Ref<Texture2D> decr = get_theme_icon("decrement");
 
-	int limit = get_size().width;
-	int limit_minus_buttons = get_size().width - incr->get_width() - decr->get_width();
+	int limit = get_rect_size().width;
+	int limit_minus_buttons = get_rect_size().width - incr->get_width() - decr->get_width();
 
 	while (offset > 0) {
 		int total_w = 0;
@@ -1035,8 +1035,8 @@ void Tabs::ensure_tab_visible(int p_idx) {
 	int prev_offset = offset;
 	Ref<Texture2D> incr = get_theme_icon("increment");
 	Ref<Texture2D> decr = get_theme_icon("decrement");
-	int limit = get_size().width;
-	int limit_minus_buttons = get_size().width - incr->get_width() - decr->get_width();
+	int limit = get_rect_size().width;
+	int limit_minus_buttons = get_rect_size().width - incr->get_width() - decr->get_width();
 
 	for (int i = offset; i <= p_idx; i++) {
 		int total_w = tabs[i].ofs_cache + tabs[i].size_cache;
@@ -1053,9 +1053,9 @@ void Tabs::ensure_tab_visible(int p_idx) {
 Rect2 Tabs::get_tab_rect(int p_tab) const {
 	ERR_FAIL_INDEX_V(p_tab, tabs.size(), Rect2());
 	if (is_layout_rtl()) {
-		return Rect2(get_size().width - tabs[p_tab].ofs_cache - tabs[p_tab].size_cache, 0, tabs[p_tab].size_cache, get_size().height);
+		return Rect2(get_rect_size().width - tabs[p_tab].ofs_cache - tabs[p_tab].size_cache, 0, tabs[p_tab].size_cache, get_rect_size().height);
 	} else {
-		return Rect2(tabs[p_tab].ofs_cache, 0, tabs[p_tab].size_cache, get_size().height);
+		return Rect2(tabs[p_tab].ofs_cache, 0, tabs[p_tab].size_cache, get_rect_size().height);
 	}
 }
 

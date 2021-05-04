@@ -109,7 +109,7 @@ EditorLayoutsDialog::EditorLayoutsDialog() {
 	layout_names->set_offset(SIDE_TOP, 5);
 	layout_names->set_anchor_and_offset(SIDE_LEFT, Control::ANCHOR_BEGIN, 5);
 	layout_names->set_anchor_and_offset(SIDE_RIGHT, Control::ANCHOR_END, -5);
-	layout_names->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	layout_names->set_size_flags_vertical(Control::SIZE_EXPAND_FILL);
 	layout_names->set_select_mode(ItemList::SELECT_MULTI);
 	layout_names->set_allow_rmb_select(true);
 

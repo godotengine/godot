@@ -55,7 +55,7 @@ void SpriteFramesEditor::_open_sprite_sheet() {
 }
 
 void SpriteFramesEditor::_sheet_preview_draw() {
-	Size2i size = split_sheet_preview->get_size();
+	Size2i size = split_sheet_preview->get_rect_size();
 	int h = split_sheet_h->get_value();
 	int v = split_sheet_v->get_value();
 	int width = size.width / h;
@@ -106,7 +106,7 @@ void SpriteFramesEditor::_sheet_preview_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseButton> mb = p_event;
 
 	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MOUSE_BUTTON_LEFT) {
-		Size2i size = split_sheet_preview->get_size();
+		Size2i size = split_sheet_preview->get_rect_size();
 		int h = split_sheet_h->get_value();
 		int v = split_sheet_v->get_value();
 
@@ -206,7 +206,7 @@ void SpriteFramesEditor::_sheet_zoom_in() {
 	if (sheet_zoom < max_sheet_zoom) {
 		sheet_zoom *= scale_ratio;
 		Size2 texture_size = split_sheet_preview->get_texture()->get_size();
-		split_sheet_preview->set_custom_minimum_size(texture_size * sheet_zoom);
+		split_sheet_preview->set_rect_minimum_size(texture_size * sheet_zoom);
 	}
 }
 
@@ -214,7 +214,7 @@ void SpriteFramesEditor::_sheet_zoom_out() {
 	if (sheet_zoom > min_sheet_zoom) {
 		sheet_zoom /= scale_ratio;
 		Size2 texture_size = split_sheet_preview->get_texture()->get_size();
-		split_sheet_preview->set_custom_minimum_size(texture_size * sheet_zoom);
+		split_sheet_preview->set_rect_minimum_size(texture_size * sheet_zoom);
 	}
 }
 
@@ -222,7 +222,7 @@ void SpriteFramesEditor::_sheet_zoom_reset() {
 	// Default the zoom to match the editor scale, but don't dezoom on editor scales below 100% to prevent pixel art from looking bad.
 	sheet_zoom = MAX(1.0, EDSCALE);
 	Size2 texture_size = split_sheet_preview->get_texture()->get_size();
-	split_sheet_preview->set_custom_minimum_size(texture_size * sheet_zoom);
+	split_sheet_preview->set_rect_minimum_size(texture_size * sheet_zoom);
 }
 
 void SpriteFramesEditor::_sheet_select_clear_all_frames() {
@@ -972,11 +972,11 @@ void SpriteFramesEditor::_bind_methods() {
 SpriteFramesEditor::SpriteFramesEditor() {
 	VBoxContainer *vbc_animlist = memnew(VBoxContainer);
 	add_child(vbc_animlist);
-	vbc_animlist->set_custom_minimum_size(Size2(150, 0) * EDSCALE);
+	vbc_animlist->set_rect_minimum_size(Size2(150, 0) * EDSCALE);
 
 	VBoxContainer *sub_vb = memnew(VBoxContainer);
 	vbc_animlist->add_margin_child(TTR("Animations:"), sub_vb, true);
-	sub_vb->set_v_size_flags(SIZE_EXPAND_FILL);
+	sub_vb->set_size_flags_vertical(SIZE_EXPAND_FILL);
 
 	HBoxContainer *hbc_animlist = memnew(HBoxContainer);
 	sub_vb->add_child(hbc_animlist);
@@ -995,7 +995,7 @@ SpriteFramesEditor::SpriteFramesEditor() {
 
 	animations = memnew(Tree);
 	sub_vb->add_child(animations);
-	animations->set_v_size_flags(SIZE_EXPAND_FILL);
+	animations->set_size_flags_vertical(SIZE_EXPAND_FILL);
 	animations->set_hide_root(true);
 	animations->connect("cell_selected", callable_mp(this, &SpriteFramesEditor::_animation_select));
 	animations->connect("item_edited", callable_mp(this, &SpriteFramesEditor::_animation_name_edited));
@@ -1009,7 +1009,7 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	anim_speed->set_min(0);
 	anim_speed->set_max(100);
 	anim_speed->set_step(0.01);
-	anim_speed->set_h_size_flags(SIZE_EXPAND_FILL);
+	anim_speed->set_size_flags_horizontal(SIZE_EXPAND_FILL);
 	hbc_anim_speed->add_child(anim_speed);
 	anim_speed->connect("value_changed", callable_mp(this, &SpriteFramesEditor::_animation_fps_changed));
 
@@ -1020,7 +1020,7 @@ SpriteFramesEditor::SpriteFramesEditor() {
 
 	VBoxContainer *vbc = memnew(VBoxContainer);
 	add_child(vbc);
-	vbc->set_h_size_flags(SIZE_EXPAND_FILL);
+	vbc->set_size_flags_horizontal(SIZE_EXPAND_FILL);
 
 	sub_vb = memnew(VBoxContainer);
 	vbc->add_margin_child(TTR("Animation Frames:"), sub_vb, true);
@@ -1101,7 +1101,7 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	add_child(file);
 
 	tree = memnew(ItemList);
-	tree->set_v_size_flags(SIZE_EXPAND_FILL);
+	tree->set_size_flags_vertical(SIZE_EXPAND_FILL);
 	tree->set_icon_mode(ItemList::ICON_MODE_TOP);
 
 	tree->set_max_columns(0);
@@ -1173,8 +1173,8 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	split_sheet_vb->add_child(split_sheet_hb);
 
 	PanelContainer *split_sheet_panel = memnew(PanelContainer);
-	split_sheet_panel->set_h_size_flags(SIZE_EXPAND_FILL);
-	split_sheet_panel->set_v_size_flags(SIZE_EXPAND_FILL);
+	split_sheet_panel->set_size_flags_horizontal(SIZE_EXPAND_FILL);
+	split_sheet_panel->set_size_flags_vertical(SIZE_EXPAND_FILL);
 	split_sheet_vb->add_child(split_sheet_panel);
 
 	split_sheet_preview = memnew(TextureRect);
@@ -1190,14 +1190,14 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	split_sheet_panel->add_child(splite_sheet_scroll);
 	CenterContainer *cc = memnew(CenterContainer);
 	cc->add_child(split_sheet_preview);
-	cc->set_h_size_flags(SIZE_EXPAND_FILL);
-	cc->set_v_size_flags(SIZE_EXPAND_FILL);
+	cc->set_size_flags_horizontal(SIZE_EXPAND_FILL);
+	cc->set_size_flags_vertical(SIZE_EXPAND_FILL);
 	splite_sheet_scroll->add_child(cc);
 
 	MarginContainer *split_sheet_zoom_margin = memnew(MarginContainer);
 	split_sheet_panel->add_child(split_sheet_zoom_margin);
-	split_sheet_zoom_margin->set_h_size_flags(0);
-	split_sheet_zoom_margin->set_v_size_flags(0);
+	split_sheet_zoom_margin->set_size_flags_horizontal(0);
+	split_sheet_zoom_margin->set_size_flags_vertical(0);
 	split_sheet_zoom_margin->add_theme_constant_override("margin_top", 5);
 	split_sheet_zoom_margin->add_theme_constant_override("margin_left", 5);
 	HBoxContainer *split_sheet_zoom_hb = memnew(HBoxContainer);
@@ -1287,7 +1287,7 @@ void SpriteFramesEditorPlugin::make_visible(bool p_visible) {
 SpriteFramesEditorPlugin::SpriteFramesEditorPlugin(EditorNode *p_node) {
 	editor = p_node;
 	frames_editor = memnew(SpriteFramesEditor);
-	frames_editor->set_custom_minimum_size(Size2(0, 300) * EDSCALE);
+	frames_editor->set_rect_minimum_size(Size2(0, 300) * EDSCALE);
 	button = editor->add_bottom_panel_item(TTR("SpriteFrames"), frames_editor);
 	button->hide();
 }

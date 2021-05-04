@@ -335,7 +335,7 @@ GDNativeLibraryEditor::GDNativeLibraryEditor() {
 	label->set_text(TTR("Platform:"));
 	hbox->add_child(label);
 	filter = memnew(MenuButton);
-	filter->set_h_size_flags(SIZE_EXPAND_FILL);
+	filter->set_size_flags_horizontal(SIZE_EXPAND_FILL);
 	filter->set_text_align(filter->ALIGN_LEFT);
 	hbox->add_child(filter);
 	PopupMenu *filter_list = filter->get_popup();
@@ -352,7 +352,7 @@ GDNativeLibraryEditor::GDNativeLibraryEditor() {
 
 	tree = memnew(Tree);
 	container->add_child(tree);
-	tree->set_v_size_flags(SIZE_EXPAND_FILL);
+	tree->set_size_flags_vertical(SIZE_EXPAND_FILL);
 	tree->set_hide_root(true);
 	tree->set_column_titles_visible(true);
 	tree->set_columns(4);
@@ -380,7 +380,7 @@ GDNativeLibraryEditor::GDNativeLibraryEditor() {
 	new_architecture_dialog->set_title(TTR("Add an architecture entry"));
 	new_architecture_input = memnew(LineEdit);
 	new_architecture_dialog->add_child(new_architecture_input);
-	//	new_architecture_dialog->set_custom_minimum_size(Vector2(300, 80) * EDSCALE);
+	//	new_architecture_dialog->set_rect_minimum_size(Vector2(300, 80) * EDSCALE);
 	new_architecture_input->set_anchors_and_offsets_preset(PRESET_HCENTER_WIDE, PRESET_MODE_MINSIZE, 5 * EDSCALE);
 	new_architecture_dialog->get_ok_button()->connect("pressed", callable_mp(this, &GDNativeLibraryEditor::_on_create_new_entry));
 }
@@ -411,7 +411,7 @@ void GDNativeLibraryEditorPlugin::make_visible(bool p_visible) {
 
 GDNativeLibraryEditorPlugin::GDNativeLibraryEditorPlugin(EditorNode *p_node) {
 	library_editor = memnew(GDNativeLibraryEditor);
-	library_editor->set_custom_minimum_size(Size2(0, 250 * EDSCALE));
+	library_editor->set_rect_minimum_size(Size2(0, 250 * EDSCALE));
 	button = p_node->add_bottom_panel_item(TTR("GDNativeLibrary"), library_editor);
 	button->hide();
 }

@@ -107,8 +107,8 @@ void ViewportRotationControl::_notification(int p_what) {
 }
 
 void ViewportRotationControl::_draw() {
-	Vector2i center = get_size() / 2.0;
-	float radius = get_size().x / 2.0;
+	Vector2i center = get_rect_size() / 2.0;
+	float radius = get_rect_size().x / 2.0;
 
 	if (focused_axis > -2 || orbiting) {
 		draw_circle(center, radius, Color(0.5, 0.5, 0.5, 0.25));
@@ -135,7 +135,7 @@ void ViewportRotationControl::_draw_axis(const Axis2D &p_axis) {
 	Color c = focused ? Color(0.9, 0.9, 0.9) : axis_color;
 
 	if (positive) {
-		Vector2i center = get_size() / 2.0;
+		Vector2i center = get_rect_size() / 2.0;
 		draw_line(center, p_axis.screen_point, c, 1.5 * EDSCALE);
 	}
 
@@ -149,8 +149,8 @@ void ViewportRotationControl::_draw_axis(const Axis2D &p_axis) {
 }
 
 void ViewportRotationControl::_get_sorted_axis(Vector<Axis2D> &r_axis) {
-	Vector2i center = get_size() / 2.0;
-	float radius = get_size().x / 2.0;
+	Vector2i center = get_rect_size() / 2.0;
+	float radius = get_rect_size().x / 2.0;
 
 	float axis_radius = radius - AXIS_CIRCLE_RADIUS - 2.0 * EDSCALE;
 	Basis camera_basis = viewport->to_camera_transform(viewport->cursor).get_basis().inverse();
@@ -191,7 +191,7 @@ void ViewportRotationControl::_gui_input(Ref<InputEvent> p_event) {
 	if (mb.is_valid() && mb->get_button_index() == MOUSE_BUTTON_LEFT) {
 		Vector2 pos = mb->get_position();
 		if (mb->is_pressed()) {
-			if (pos.distance_to(get_size() / 2.0) < get_size().x / 2.0) {
+			if (pos.distance_to(get_rect_size() / 2.0) < get_rect_size().x / 2.0) {
 				orbiting = true;
 			}
 		} else {
@@ -227,7 +227,7 @@ void ViewportRotationControl::_update_focus() {
 	focused_axis = -2;
 	Vector2 mouse_pos = get_local_mouse_position();
 
-	if (mouse_pos.distance_to(get_size() / 2.0) < get_size().x / 2.0) {
+	if (mouse_pos.distance_to(get_rect_size() / 2.0) < get_rect_size().x / 2.0) {
 		focused_axis = -1;
 	}
 
@@ -625,9 +625,9 @@ void Node3DEditorViewport::_find_items_at_pos(const Point2 &p_pos, bool &r_inclu
 Vector3 Node3DEditorViewport::_get_screen_to_space(const Vector3 &p_vector3) {
 	CameraMatrix cm;
 	if (orthogonal) {
-		cm.set_orthogonal(camera->get_size(), get_size().aspect(), get_znear() + p_vector3.z, get_zfar());
+		cm.set_orthogonal(camera->get_size(), get_rect_size().aspect(), get_znear() + p_vector3.z, get_zfar());
 	} else {
-		cm.set_perspective(get_fov(), get_size().aspect(), get_znear() + p_vector3.z, get_zfar());
+		cm.set_perspective(get_fov(), get_rect_size().aspect(), get_znear() + p_vector3.z, get_zfar());
 	}
 	Vector2 screen_he = cm.get_viewport_half_extents();
 
@@ -637,7 +637,7 @@ Vector3 Node3DEditorViewport::_get_screen_to_space(const Vector3 &p_vector3) {
 	camera_transform.basis.rotate(Vector3(0, 1, 0), -cursor.y_rot);
 	camera_transform.translate(0, 0, cursor.distance);
 
-	return camera_transform.xform(Vector3(((p_vector3.x / get_size().width) * 2.0 - 1.0) * screen_he.x, ((1.0 - (p_vector3.y / get_size().height)) * 2.0 - 1.0) * screen_he.y, -(get_znear() + p_vector3.z)));
+	return camera_transform.xform(Vector3(((p_vector3.x / get_rect_size().width) * 2.0 - 1.0) * screen_he.x, ((1.0 - (p_vector3.y / get_rect_size().height)) * 2.0 - 1.0) * screen_he.y, -(get_znear() + p_vector3.z)));
 }
 
 void Node3DEditorViewport::_select_region() {
@@ -755,7 +755,7 @@ void Node3DEditorViewport::_update_name() {
 		view_menu->set_text(view_mode);
 	}
 
-	view_menu->set_size(Vector2(0, 0)); // resets the button size
+	view_menu->set_rect_size(Vector2(0, 0)); // resets the button size
 }
 
 void Node3DEditorViewport::_compute_edit(const Point2 &p_point) {
@@ -2586,12 +2586,12 @@ void Node3DEditorViewport::_notification(int p_what) {
 		bool show_cinema = view_menu->get_popup()->is_item_checked(view_menu->get_popup()->get_item_index(VIEW_CINEMATIC_PREVIEW));
 		cinema_label->set_visible(show_cinema);
 		if (show_cinema) {
-			float cinema_half_width = cinema_label->get_size().width / 2.0f;
+			float cinema_half_width = cinema_label->get_rect_size().width / 2.0f;
 			cinema_label->set_anchor_and_offset(SIDE_LEFT, 0.5f, -cinema_half_width);
 		}
 
 		if (lock_rotation) {
-			float locked_half_width = locked_label->get_size().width / 2.0f;
+			float locked_half_width = locked_label->get_rect_size().width / 2.0f;
 			locked_label->set_anchor_and_offset(SIDE_LEFT, 0.5f, -locked_half_width);
 		}
 	}
@@ -2642,7 +2642,7 @@ void Node3DEditorViewport::_notification(int p_what) {
 
 static void draw_indicator_bar(Control &surface, real_t fill, const Ref<Texture2D> icon, const Ref<Font> font, int font_size, const String &text) {
 	// Adjust bar size from control height
-	const Vector2 surface_size = surface.get_size();
+	const Vector2 surface_size = surface.get_rect_size();
 	const real_t h = surface_size.y / 2.0;
 	const real_t y = (surface_size.y - h) / 2.0;
 
@@ -2675,7 +2675,7 @@ void Node3DEditorViewport::_draw() {
 	}
 
 	if (surface->has_focus()) {
-		Size2 size = surface->get_size();
+		Size2 size = surface->get_rect_size();
 		Rect2 r = Rect2(Point2(), size);
 		get_theme_stylebox("Focus", "EditorStyles")->draw(surface->get_canvas_item(), r);
 	}
@@ -2699,7 +2699,7 @@ void Node3DEditorViewport::_draw() {
 	if (message_time > 0) {
 		Ref<Font> font = get_theme_font("font", "Label");
 		int font_size = get_theme_font_size("font_size", "Label");
-		Point2 msgpos = Point2(5, get_size().y - 20);
+		Point2 msgpos = Point2(5, get_rect_size().y - 20);
 		font->draw_string(ci, msgpos + Point2(1, 1), message, HALIGN_LEFT, -1, font_size, Color(0, 0, 0, 0.8));
 		font->draw_string(ci, msgpos + Point2(-1, -1), message, HALIGN_LEFT, -1, font_size, Color(0, 0, 0, 0.8));
 		font->draw_string(ci, msgpos, message, HALIGN_LEFT, -1, font_size, Color(1, 1, 1, 1));
@@ -2737,7 +2737,7 @@ void Node3DEditorViewport::_draw() {
 	if (previewing) {
 		Size2 ss = Size2(ProjectSettings::get_singleton()->get("display/window/size/width"), ProjectSettings::get_singleton()->get("display/window/size/height"));
 		float aspect = ss.aspect();
-		Size2 s = get_size();
+		Size2 s = get_rect_size();
 
 		Rect2 draw_rect;
 
@@ -3349,7 +3349,7 @@ void Node3DEditorViewport::update_transform_gizmo_view() {
 	const int viewport_base_height = 400 * MAX(1, EDSCALE);
 	gizmo_scale =
 			(gizmo_size / Math::abs(dd)) * MAX(1, EDSCALE) *
-			MIN(viewport_base_height, subviewport_container->get_size().height) / viewport_base_height /
+			MIN(viewport_base_height, subviewport_container->get_rect_size().height) / viewport_base_height /
 			subviewport_container->get_stretch_shrink();
 	Vector3 scale = Vector3(1, 1, 1) * gizmo_scale;
 
@@ -3985,7 +3985,7 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, Edito
 	surface->set_drag_forwarding(this);
 	add_child(surface);
 	surface->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
-	surface->set_clip_contents(true);
+	surface->set_rect_clip_contents(true);
 	camera = memnew(Camera3D);
 	camera->set_disable_gizmo(true);
 	camera->set_cull_mask(((1 << 20) - 1) | (1 << (GIZMO_BASE_LAYER + p_index)) | (1 << GIZMO_EDIT_LAYER) | (1 << GIZMO_GRID_LAYER) | (1 << MISC_TOOL_LAYER));
@@ -3995,11 +3995,11 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, Edito
 
 	VBoxContainer *vbox = memnew(VBoxContainer);
 	surface->add_child(vbox);
-	vbox->set_position(Point2(10, 10) * EDSCALE);
+	vbox->set_rect_position(Point2(10, 10) * EDSCALE);
 
 	view_menu = memnew(MenuButton);
 	view_menu->set_flat(false);
-	view_menu->set_h_size_flags(0);
+	view_menu->set_size_flags_horizontal(0);
 	view_menu->set_shortcut_context(this);
 	vbox->add_child(view_menu);
 
@@ -4117,7 +4117,7 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, Edito
 	preview_camera = memnew(CheckBox);
 	preview_camera->set_text(TTR("Preview"));
 	vbox->add_child(preview_camera);
-	preview_camera->set_h_size_flags(0);
+	preview_camera->set_size_flags_horizontal(0);
 	preview_camera->hide();
 	preview_camera->connect("toggled", callable_mp(this, &Node3DEditorViewport::_toggle_camera_preview));
 	previewing = nullptr;
@@ -4130,14 +4130,14 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, Edito
 	info_label->set_anchor_and_offset(SIDE_TOP, ANCHOR_END, -90 * EDSCALE);
 	info_label->set_anchor_and_offset(SIDE_RIGHT, ANCHOR_END, -10 * EDSCALE);
 	info_label->set_anchor_and_offset(SIDE_BOTTOM, ANCHOR_END, -10 * EDSCALE);
-	info_label->set_h_grow_direction(GROW_DIRECTION_BEGIN);
-	info_label->set_v_grow_direction(GROW_DIRECTION_BEGIN);
+	info_label->set_grow_horizontal(GROW_DIRECTION_BEGIN);
+	info_label->set_grow_vertical(GROW_DIRECTION_BEGIN);
 	surface->add_child(info_label);
 	info_label->hide();
 
 	cinema_label = memnew(Label);
 	cinema_label->set_anchor_and_offset(SIDE_TOP, ANCHOR_BEGIN, 10 * EDSCALE);
-	cinema_label->set_h_grow_direction(GROW_DIRECTION_END);
+	cinema_label->set_grow_horizontal(GROW_DIRECTION_END);
 	cinema_label->set_align(Label::ALIGN_CENTER);
 	surface->add_child(cinema_label);
 	cinema_label->set_text(TTR("Cinematic Preview"));
@@ -4147,8 +4147,8 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, Edito
 	locked_label = memnew(Label);
 	locked_label->set_anchor_and_offset(SIDE_TOP, ANCHOR_END, -20 * EDSCALE);
 	locked_label->set_anchor_and_offset(SIDE_BOTTOM, ANCHOR_END, -10 * EDSCALE);
-	locked_label->set_h_grow_direction(GROW_DIRECTION_END);
-	locked_label->set_v_grow_direction(GROW_DIRECTION_BEGIN);
+	locked_label->set_grow_horizontal(GROW_DIRECTION_END);
+	locked_label->set_grow_vertical(GROW_DIRECTION_BEGIN);
 	locked_label->set_align(Label::ALIGN_CENTER);
 	surface->add_child(locked_label);
 	locked_label->set_text(TTR("View Rotation Locked"));
@@ -4169,15 +4169,15 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, Edito
 
 	top_right_vbox = memnew(VBoxContainer);
 	top_right_vbox->set_anchors_and_offsets_preset(PRESET_TOP_RIGHT, PRESET_MODE_MINSIZE, 2.0 * EDSCALE);
-	top_right_vbox->set_h_grow_direction(GROW_DIRECTION_BEGIN);
+	top_right_vbox->set_grow_horizontal(GROW_DIRECTION_BEGIN);
 	// Make sure frame time labels don't touch the viewport's edge.
-	top_right_vbox->set_custom_minimum_size(Size2(100, 0) * EDSCALE);
+	top_right_vbox->set_rect_minimum_size(Size2(100, 0) * EDSCALE);
 	// Prevent visible spacing between frame time labels.
 	top_right_vbox->add_theme_constant_override("separation", 0);
 
 	rotation_control = memnew(ViewportRotationControl);
-	rotation_control->set_custom_minimum_size(Size2(80, 80) * EDSCALE);
-	rotation_control->set_h_size_flags(SIZE_SHRINK_END);
+	rotation_control->set_rect_minimum_size(Size2(80, 80) * EDSCALE);
+	rotation_control->set_size_flags_horizontal(SIZE_SHRINK_END);
 	rotation_control->set_viewport(this);
 	top_right_vbox->add_child(rotation_control);
 
@@ -4231,7 +4231,7 @@ void Node3DEditorViewportContainer::_gui_input(const Ref<InputEvent> &p_event) {
 
 	if (mb.is_valid() && mb->get_button_index() == MOUSE_BUTTON_LEFT) {
 		if (mb->is_pressed()) {
-			Vector2 size = get_size();
+			Vector2 size = get_rect_size();
 
 			int h_sep = get_theme_constant("separation", "HSplitContainer");
 			int v_sep = get_theme_constant("separation", "VSplitContainer");
@@ -4277,7 +4277,7 @@ void Node3DEditorViewportContainer::_gui_input(const Ref<InputEvent> &p_event) {
 
 	if (mm.is_valid()) {
 		if (view == VIEW_USE_3_VIEWPORTS || view == VIEW_USE_3_VIEWPORTS_ALT || view == VIEW_USE_4_VIEWPORTS) {
-			Vector2 size = get_size();
+			Vector2 size = get_rect_size();
 
 			int h_sep = get_theme_constant("separation", "HSplitContainer");
 			int v_sep = get_theme_constant("separation", "VSplitContainer");
@@ -4296,15 +4296,15 @@ void Node3DEditorViewportContainer::_gui_input(const Ref<InputEvent> &p_event) {
 		}
 
 		if (dragging_h) {
-			float new_ratio = drag_begin_ratio.x + (mm->get_position().x - drag_begin_pos.x) / get_size().width;
-			new_ratio = CLAMP(new_ratio, 40 / get_size().width, (get_size().width - 40) / get_size().width);
+			float new_ratio = drag_begin_ratio.x + (mm->get_position().x - drag_begin_pos.x) / get_rect_size().width;
+			new_ratio = CLAMP(new_ratio, 40 / get_rect_size().width, (get_rect_size().width - 40) / get_rect_size().width);
 			ratio_h = new_ratio;
 			queue_sort();
 			update();
 		}
 		if (dragging_v) {
-			float new_ratio = drag_begin_ratio.y + (mm->get_position().y - drag_begin_pos.y) / get_size().height;
-			new_ratio = CLAMP(new_ratio, 40 / get_size().height, (get_size().height - 40) / get_size().height);
+			float new_ratio = drag_begin_ratio.y + (mm->get_position().y - drag_begin_pos.y) / get_rect_size().height;
+			new_ratio = CLAMP(new_ratio, 40 / get_rect_size().height, (get_rect_size().height - 40) / get_rect_size().height);
 			ratio_v = new_ratio;
 			queue_sort();
 			update();
@@ -4326,7 +4326,7 @@ void Node3DEditorViewportContainer::_notification(int p_what) {
 		Ref<Texture2D> vdiag_grabber = get_theme_icon("GuiViewportVdiagsplitter", "EditorIcons");
 		Ref<Texture2D> vh_grabber = get_theme_icon("GuiViewportVhsplitter", "EditorIcons");
 
-		Vector2 size = get_size();
+		Vector2 size = get_rect_size();
 
 		int h_sep = get_theme_constant("separation", "HSplitContainer");
 
@@ -4345,37 +4345,37 @@ void Node3DEditorViewportContainer::_notification(int p_what) {
 			} break;
 			case VIEW_USE_2_VIEWPORTS: {
 				draw_texture(v_grabber, Vector2((size.width - v_grabber->get_width()) / 2, mid_h - v_grabber->get_height() / 2));
-				set_default_cursor_shape(CURSOR_VSPLIT);
+				set_mouse_default_cursor_shape(CURSOR_VSPLIT);
 
 			} break;
 			case VIEW_USE_2_VIEWPORTS_ALT: {
 				draw_texture(h_grabber, Vector2(mid_w - h_grabber->get_width() / 2, (size.height - h_grabber->get_height()) / 2));
-				set_default_cursor_shape(CURSOR_HSPLIT);
+				set_mouse_default_cursor_shape(CURSOR_HSPLIT);
 
 			} break;
 			case VIEW_USE_3_VIEWPORTS: {
 				if ((hovering_v && hovering_h && !dragging_v && !dragging_h) || (dragging_v && dragging_h)) {
 					draw_texture(hdiag_grabber, Vector2(mid_w - hdiag_grabber->get_width() / 2, mid_h - v_grabber->get_height() / 4));
-					set_default_cursor_shape(CURSOR_DRAG);
+					set_mouse_default_cursor_shape(CURSOR_DRAG);
 				} else if ((hovering_v && !dragging_h) || dragging_v) {
 					draw_texture(v_grabber, Vector2((size.width - v_grabber->get_width()) / 2, mid_h - v_grabber->get_height() / 2));
-					set_default_cursor_shape(CURSOR_VSPLIT);
+					set_mouse_default_cursor_shape(CURSOR_VSPLIT);
 				} else if (hovering_h || dragging_h) {
 					draw_texture(h_grabber, Vector2(mid_w - h_grabber->get_width() / 2, mid_h + v_grabber->get_height() / 2 + (size_bottom - h_grabber->get_height()) / 2));
-					set_default_cursor_shape(CURSOR_HSPLIT);
+					set_mouse_default_cursor_shape(CURSOR_HSPLIT);
 				}
 
 			} break;
 			case VIEW_USE_3_VIEWPORTS_ALT: {
 				if ((hovering_v && hovering_h && !dragging_v && !dragging_h) || (dragging_v && dragging_h)) {
 					draw_texture(vdiag_grabber, Vector2(mid_w - vdiag_grabber->get_width() + v_grabber->get_height() / 4, mid_h - vdiag_grabber->get_height() / 2));
-					set_default_cursor_shape(CURSOR_DRAG);
+					set_mouse_default_cursor_shape(CURSOR_DRAG);
 				} else if ((hovering_v && !dragging_h) || dragging_v) {
 					draw_texture(v_grabber, Vector2((size_left - v_grabber->get_width()) / 2, mid_h - v_grabber->get_height() / 2));
-					set_default_cursor_shape(CURSOR_VSPLIT);
+					set_mouse_default_cursor_shape(CURSOR_VSPLIT);
 				} else if (hovering_h || dragging_h) {
 					draw_texture(h_grabber, Vector2(mid_w - h_grabber->get_width() / 2, (size.height - h_grabber->get_height()) / 2));
-					set_default_cursor_shape(CURSOR_HSPLIT);
+					set_mouse_default_cursor_shape(CURSOR_HSPLIT);
 				}
 
 			} break;
@@ -4383,13 +4383,13 @@ void Node3DEditorViewportContainer::_notification(int p_what) {
 				Vector2 half(mid_w, mid_h);
 				if ((hovering_v && hovering_h && !dragging_v && !dragging_h) || (dragging_v && dragging_h)) {
 					draw_texture(vh_grabber, half - vh_grabber->get_size() / 2.0);
-					set_default_cursor_shape(CURSOR_DRAG);
+					set_mouse_default_cursor_shape(CURSOR_DRAG);
 				} else if ((hovering_v && !dragging_h) || dragging_v) {
 					draw_texture(v_grabber, half - v_grabber->get_size() / 2.0);
-					set_default_cursor_shape(CURSOR_VSPLIT);
+					set_mouse_default_cursor_shape(CURSOR_VSPLIT);
 				} else if (hovering_h || dragging_h) {
 					draw_texture(h_grabber, half - h_grabber->get_size() / 2.0);
-					set_default_cursor_shape(CURSOR_HSPLIT);
+					set_mouse_default_cursor_shape(CURSOR_HSPLIT);
 				}
 
 			} break;
@@ -4408,7 +4408,7 @@ void Node3DEditorViewportContainer::_notification(int p_what) {
 
 		ERR_FAIL_COND(vc != 4);
 
-		Size2 size = get_size();
+		Size2 size = get_rect_size();
 
 		if (size.x < 10 || size.y < 10) {
 			for (int i = 0; i < 4; i++) {
@@ -4521,7 +4521,7 @@ void Node3DEditorViewportContainer::_bind_methods() {
 }
 
 Node3DEditorViewportContainer::Node3DEditorViewportContainer() {
-	set_clip_contents(true);
+	set_rect_clip_contents(true);
 	view = VIEW_USE_1_VIEWPORT;
 	mouseover = false;
 	ratio_h = 0.5;
@@ -6208,7 +6208,7 @@ void Node3DEditor::_unhandled_key_input(Ref<InputEvent> p_event) {
 }
 
 void Node3DEditor::_sun_environ_settings_pressed() {
-	Vector2 pos = sun_environ_settings->get_screen_position() + sun_environ_settings->get_size();
+	Vector2 pos = sun_environ_settings->get_screen_position() + sun_environ_settings->get_rect_size();
 	sun_environ_popup->set_position(pos - Vector2(sun_environ_popup->get_contents_minimum_size().width / 2, 0));
 	sun_environ_popup->popup();
 }
@@ -6295,8 +6295,8 @@ void Node3DEditor::_notification(int p_what) {
 		sun_title->add_theme_font_override("font", get_theme_font("title_font", "Window"));
 		environ_title->add_theme_font_override("font", get_theme_font("title_font", "Window"));
 
-		sun_state->set_custom_minimum_size(sun_vb->get_combined_minimum_size());
-		environ_state->set_custom_minimum_size(environ_vb->get_combined_minimum_size());
+		sun_state->set_rect_minimum_size(sun_vb->get_combined_minimum_size());
+		environ_state->set_rect_minimum_size(environ_vb->get_combined_minimum_size());
 	} else if (p_what == NOTIFICATION_ENTER_TREE) {
 		_register_all_gizmos();
 		_update_gizmos_menu();
@@ -6544,7 +6544,7 @@ void Node3DEditor::clear() {
 }
 
 void Node3DEditor::_sun_direction_draw() {
-	sun_direction->draw_rect(Rect2(Vector2(), sun_direction->get_size()), Color(1, 1, 1, 1));
+	sun_direction->draw_rect(Rect2(Vector2(), sun_direction->get_rect_size()), Color(1, 1, 1, 1));
 	sun_direction_material->set_shader_param("sun_direction", -preview_sun->get_transform().basis.get_axis(Vector3::AXIS_Z));
 	float nrg = sun_energy->get_value();
 	sun_direction_material->set_shader_param("sun_color", Vector3(sun_color->get_pick_color().r * nrg, sun_color->get_pick_color().g * nrg, sun_color->get_pick_color().b * nrg));
@@ -6906,15 +6906,15 @@ Node3DEditor::Node3DEditor(EditorNode *p_editor) {
 	/* REST OF MENU */
 
 	palette_split = memnew(HSplitContainer);
-	palette_split->set_v_size_flags(SIZE_EXPAND_FILL);
+	palette_split->set_size_flags_vertical(SIZE_EXPAND_FILL);
 	vbc->add_child(palette_split);
 
 	shader_split = memnew(VSplitContainer);
-	shader_split->set_h_size_flags(SIZE_EXPAND_FILL);
+	shader_split->set_size_flags_horizontal(SIZE_EXPAND_FILL);
 	palette_split->add_child(shader_split);
 	viewport_base = memnew(Node3DEditorViewportContainer);
 	shader_split->add_child(viewport_base);
-	viewport_base->set_v_size_flags(SIZE_EXPAND_FILL);
+	viewport_base->set_size_flags_vertical(SIZE_EXPAND_FILL);
 	for (uint32_t i = 0; i < VIEWPORTS_COUNT; i++) {
 		viewports[i] = memnew(Node3DEditorViewport(this, editor, i));
 		viewports[i]->connect("toggle_maximize_view", callable_mp(this, &Node3DEditor::_toggle_maximize_view));
@@ -6955,7 +6955,7 @@ Node3DEditor::Node3DEditor(EditorNode *p_editor) {
 	settings_dialog->set_title(TTR("Viewport Settings"));
 	add_child(settings_dialog);
 	settings_vbc = memnew(VBoxContainer);
-	settings_vbc->set_custom_minimum_size(Size2(200, 0) * EDSCALE);
+	settings_vbc->set_rect_minimum_size(Size2(200, 0) * EDSCALE);
 	settings_dialog->add_child(settings_vbc);
 
 	settings_fov = memnew(SpinBox);
@@ -7001,7 +7001,7 @@ Node3DEditor::Node3DEditor(EditorNode *p_editor) {
 
 	for (int i = 0; i < 3; i++) {
 		xform_translate[i] = memnew(LineEdit);
-		xform_translate[i]->set_h_size_flags(SIZE_EXPAND_FILL);
+		xform_translate[i]->set_size_flags_horizontal(SIZE_EXPAND_FILL);
 		xform_hbc->add_child(xform_translate[i]);
 	}
 
@@ -7014,7 +7014,7 @@ Node3DEditor::Node3DEditor(EditorNode *p_editor) {
 
 	for (int i = 0; i < 3; i++) {
 		xform_rotate[i] = memnew(LineEdit);
-		xform_rotate[i]->set_h_size_flags(SIZE_EXPAND_FILL);
+		xform_rotate[i]->set_size_flags_horizontal(SIZE_EXPAND_FILL);
 		xform_hbc->add_child(xform_rotate[i]);
 	}
 
@@ -7027,7 +7027,7 @@ Node3DEditor::Node3DEditor(EditorNode *p_editor) {
 
 	for (int i = 0; i < 3; i++) {
 		xform_scale[i] = memnew(LineEdit);
-		xform_scale[i]->set_h_size_flags(SIZE_EXPAND_FILL);
+		xform_scale[i]->set_size_flags_horizontal(SIZE_EXPAND_FILL);
 		xform_hbc->add_child(xform_scale[i]);
 	}
 
@@ -7036,7 +7036,7 @@ Node3DEditor::Node3DEditor(EditorNode *p_editor) {
 	xform_vbc->add_child(l);
 
 	xform_type = memnew(OptionButton);
-	xform_type->set_h_size_flags(SIZE_EXPAND_FILL);
+	xform_type->set_size_flags_horizontal(SIZE_EXPAND_FILL);
 	xform_type->add_item(TTR("Pre"));
 	xform_type->add_item(TTR("Post"));
 	xform_vbc->add_child(xform_type);
@@ -7069,7 +7069,7 @@ Node3DEditor::Node3DEditor(EditorNode *p_editor) {
 
 		sun_vb = memnew(VBoxContainer);
 		sun_environ_hb->add_child(sun_vb);
-		sun_vb->set_custom_minimum_size(Size2(200 * EDSCALE, 0));
+		sun_vb->set_rect_minimum_size(Size2(200 * EDSCALE, 0));
 		sun_vb->hide();
 
 		sun_title = memnew(Label);
@@ -7079,12 +7079,12 @@ Node3DEditor::Node3DEditor(EditorNode *p_editor) {
 
 		CenterContainer *sun_direction_center = memnew(CenterContainer);
 		sun_direction = memnew(Control);
-		sun_direction->set_custom_minimum_size(Size2i(128, 128) * EDSCALE);
+		sun_direction->set_rect_minimum_size(Size2i(128, 128) * EDSCALE);
 		sun_direction_center->add_child(sun_direction);
 		sun_vb->add_margin_child(TTR("Sun Direction"), sun_direction_center);
 		sun_direction->connect("gui_input", callable_mp(this, &Node3DEditor::_sun_direction_input));
 		sun_direction->connect("draw", callable_mp(this, &Node3DEditor::_sun_direction_draw));
-		sun_direction->set_default_cursor_shape(CURSOR_MOVE);
+		sun_direction->set_mouse_default_cursor_shape(CURSOR_MOVE);
 
 		String sun_dir_shader_code = "shader_type canvas_item; uniform vec3 sun_direction; uniform vec3 sun_color; void fragment() { vec3 n; n.xy = UV * 2.0 - 1.0; n.z = sqrt(max(0.0, 1.0 - dot(n.xy, n.xy))); COLOR.rgb = dot(n,sun_direction) * sun_color; COLOR.a = 1.0 - smoothstep(0.99,1.0,length(n.xy)); }";
 		sun_direction_shader.instance();
@@ -7121,16 +7121,16 @@ Node3DEditor::Node3DEditor(EditorNode *p_editor) {
 		sun_environ_hb->add_child(sun_state);
 		sun_state->set_align(Label::ALIGN_CENTER);
 		sun_state->set_valign(Label::VALIGN_CENTER);
-		sun_state->set_h_size_flags(SIZE_EXPAND_FILL);
+		sun_state->set_size_flags_horizontal(SIZE_EXPAND_FILL);
 
 		VSeparator *sc = memnew(VSeparator);
-		sc->set_custom_minimum_size(Size2(50 * EDSCALE, 0));
-		sc->set_v_size_flags(SIZE_EXPAND_FILL);
+		sc->set_rect_minimum_size(Size2(50 * EDSCALE, 0));
+		sc->set_size_flags_vertical(SIZE_EXPAND_FILL);
 		sun_environ_hb->add_child(sc);
 
 		environ_vb = memnew(VBoxContainer);
 		sun_environ_hb->add_child(environ_vb);
-		environ_vb->set_custom_minimum_size(Size2(200 * EDSCALE, 0));
+		environ_vb->set_rect_minimum_size(Size2(200 * EDSCALE, 0));
 		environ_vb->hide();
 
 		environ_title = memnew(Label);
@@ -7151,7 +7151,7 @@ Node3DEditor::Node3DEditor(EditorNode *p_editor) {
 		environ_energy->set_max(8.0);
 		environ_vb->add_margin_child(TTR("Sky Energy"), environ_energy);
 		HBoxContainer *fx_vb = memnew(HBoxContainer);
-		fx_vb->set_h_size_flags(SIZE_EXPAND_FILL);
+		fx_vb->set_size_flags_horizontal(SIZE_EXPAND_FILL);
 
 		environ_ao_button = memnew(Button);
 		environ_ao_button->set_text(TTR("AO"));
@@ -7185,7 +7185,7 @@ Node3DEditor::Node3DEditor(EditorNode *p_editor) {
 		sun_environ_hb->add_child(environ_state);
 		environ_state->set_align(Label::ALIGN_CENTER);
 		environ_state->set_valign(Label::VALIGN_CENTER);
-		environ_state->set_h_size_flags(SIZE_EXPAND_FILL);
+		environ_state->set_size_flags_horizontal(SIZE_EXPAND_FILL);
 
 		preview_sun = memnew(DirectionalLight3D);
 		preview_sun->set_shadow(true);
@@ -7327,7 +7327,7 @@ void Node3DEditor::remove_gizmo_plugin(Ref<EditorNode3DGizmoPlugin> p_plugin) {
 Node3DEditorPlugin::Node3DEditorPlugin(EditorNode *p_node) {
 	editor = p_node;
 	spatial_editor = memnew(Node3DEditor(p_node));
-	spatial_editor->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	spatial_editor->set_size_flags_vertical(Control::SIZE_EXPAND_FILL);
 	editor->get_main_control()->add_child(spatial_editor);
 
 	spatial_editor->hide();

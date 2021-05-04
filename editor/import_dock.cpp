@@ -572,7 +572,7 @@ ImportDock::ImportDock() {
 	import_as->set_disabled(true);
 	import_as->connect("item_selected", callable_mp(this, &ImportDock::_importer_selected));
 	hb->add_child(import_as);
-	import_as->set_h_size_flags(SIZE_EXPAND_FILL);
+	import_as->set_size_flags_horizontal(SIZE_EXPAND_FILL);
 	preset = memnew(MenuButton);
 	preset->set_text(TTR("Preset"));
 	preset->set_disabled(true);
@@ -581,7 +581,7 @@ ImportDock::ImportDock() {
 
 	import_opts = memnew(EditorInspector);
 	add_child(import_opts);
-	import_opts->set_v_size_flags(SIZE_EXPAND_FILL);
+	import_opts->set_size_flags_vertical(SIZE_EXPAND_FILL);
 	import_opts->connect("property_toggled", callable_mp(this, &ImportDock::_property_toggled));
 
 	hb = memnew(HBoxContainer);

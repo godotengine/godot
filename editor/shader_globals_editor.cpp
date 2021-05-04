@@ -454,12 +454,12 @@ ShaderGlobalsEditor::ShaderGlobalsEditor() {
 
 	add_menu_hb->add_child(memnew(Label(TTR("Name:"))));
 	variable_name = memnew(LineEdit);
-	variable_name->set_h_size_flags(SIZE_EXPAND_FILL);
+	variable_name->set_size_flags_horizontal(SIZE_EXPAND_FILL);
 	add_menu_hb->add_child(variable_name);
 
 	add_menu_hb->add_child(memnew(Label(TTR("Type:"))));
 	variable_type = memnew(OptionButton);
-	variable_type->set_h_size_flags(SIZE_EXPAND_FILL);
+	variable_type->set_size_flags_horizontal(SIZE_EXPAND_FILL);
 	add_menu_hb->add_child(variable_type);
 
 	for (int i = 0; i < RS::GLOBAL_VAR_TYPE_MAX; i++) {
@@ -471,7 +471,7 @@ ShaderGlobalsEditor::ShaderGlobalsEditor() {
 	variable_add->connect("pressed", callable_mp(this, &ShaderGlobalsEditor::_variable_added));
 
 	inspector = memnew(EditorInspector);
-	inspector->set_v_size_flags(SIZE_EXPAND_FILL);
+	inspector->set_size_flags_vertical(SIZE_EXPAND_FILL);
 	add_child(inspector);
 	inspector->set_use_wide_editors(true);
 	inspector->set_enable_capitalize_paths(false);

@@ -340,7 +340,7 @@ ItemListEditor::ItemListEditor() {
 	//dialog->set_child_rect(vbc);
 
 	HBoxContainer *hbc = memnew(HBoxContainer);
-	hbc->set_h_size_flags(SIZE_EXPAND_FILL);
+	hbc->set_size_flags_horizontal(SIZE_EXPAND_FILL);
 	vbc->add_child(hbc);
 
 	add_button = memnew(Button);
@@ -357,7 +357,7 @@ ItemListEditor::ItemListEditor() {
 
 	property_editor = memnew(EditorInspector);
 	vbc->add_child(property_editor);
-	property_editor->set_v_size_flags(SIZE_EXPAND_FILL);
+	property_editor->set_size_flags_vertical(SIZE_EXPAND_FILL);
 }
 
 ItemListEditor::~ItemListEditor() {
