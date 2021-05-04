@@ -389,6 +389,8 @@ protected:
 
 public:
 	virtual void update_property();
+	virtual void update_using_vector(Vector3 p_vector);
+	Vector3 get_vector();
 	void setup(double p_min, double p_max, double p_step, bool p_no_slider);
 	EditorPropertyVector3();
 };
@@ -485,6 +487,7 @@ protected:
 
 public:
 	virtual void update_property();
+	virtual void update_using_transform(Transform p_transform);
 	void setup(double p_min, double p_max, double p_step, bool p_no_slider);
 	EditorPropertyTransform();
 };
