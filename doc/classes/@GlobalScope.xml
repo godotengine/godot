@@ -652,6 +652,31 @@
 				Converts a 2D point expressed in the polar coordinate system (a distance from the origin [code]r[/code] and an angle [code]th[/code]) to the cartesian coordinate system (X and Y axis).
 			</description>
 		</method>
+		<method name="posmod">
+			<return type="int">
+			</return>
+			<argument index="0" name="x" type="int">
+			</argument>
+			<argument index="1" name="y" type="int">
+			</argument>
+			<description>
+				Returns the integer modulus of [code]x/y[/code] that wraps equally in positive and negative.
+				[codeblock]
+				for i in range(-3, 4):
+				    print("%2d %2d %2d" % [i, i % 3, posmod(i, 3)])
+				[/codeblock]
+				Produces:
+				[codeblock]
+				-3  0  0
+				-2 -2  1
+				-1 -1  2
+				0  0  0
+				1  1  1
+				2  2  2
+				3  0  0
+				[/codeblock]
+			</description>
+		</method>
 		<method name="pow">
 			<return type="float">
 			</return>
