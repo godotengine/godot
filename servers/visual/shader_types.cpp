@@ -159,6 +159,8 @@ ShaderTypes::ShaderTypes() {
 	shader_modes[VS::SHADER_SPATIAL].modes.push_back("blend_add");
 	shader_modes[VS::SHADER_SPATIAL].modes.push_back("blend_sub");
 	shader_modes[VS::SHADER_SPATIAL].modes.push_back("blend_mul");
+	shader_modes[VS::SHADER_SPATIAL].modes.push_back("blend_max");
+	shader_modes[VS::SHADER_SPATIAL].modes.push_back("blend_min");
 
 	shader_modes[VS::SHADER_SPATIAL].modes.push_back("depth_draw_opaque");
 	shader_modes[VS::SHADER_SPATIAL].modes.push_back("depth_draw_always");
@@ -257,6 +259,8 @@ ShaderTypes::ShaderTypes() {
 	shader_modes[VS::SHADER_CANVAS_ITEM].modes.push_back("blend_mul");
 	shader_modes[VS::SHADER_CANVAS_ITEM].modes.push_back("blend_premul_alpha");
 	shader_modes[VS::SHADER_CANVAS_ITEM].modes.push_back("blend_disabled");
+	shader_modes[VS::SHADER_CANVAS_ITEM].modes.push_back("blend_max");
+	shader_modes[VS::SHADER_CANVAS_ITEM].modes.push_back("blend_min");
 
 	shader_modes[VS::SHADER_CANVAS_ITEM].modes.push_back("unshaded");
 	shader_modes[VS::SHADER_CANVAS_ITEM].modes.push_back("light_only");
