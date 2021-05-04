@@ -7844,6 +7844,10 @@ void RenderingDeviceVulkan::initialize(VulkanContext *p_context, bool p_local_de
 		device_capabilities.subgroup_size = subgroup_capabilities.size;
 		device_capabilities.subgroup_in_shaders = subgroup_capabilities.supported_stages_flags_rd();
 		device_capabilities.subgroup_operations = subgroup_capabilities.supported_operations_flags_rd();
+
+		// get info about further features
+		VulkanContext::MultiviewCapabilities multiview_capabilies = p_context->get_multiview_capabilities();
+		device_capabilities.supports_multiview = multiview_capabilies.is_supported && multiview_capabilies.max_view_count > 1;
 	}
 
 	context = p_context;
