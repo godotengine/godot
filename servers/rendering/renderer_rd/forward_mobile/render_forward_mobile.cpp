@@ -1272,42 +1272,12 @@ void RenderForwardMobile::_fill_instance_data(RenderListType p_render_list, uint
 
 	rl->element_info.resize(p_offset + element_total);
 
-	uint32_t repeats = 0;
-	GeometryInstanceSurfaceDataCache *prev_surface = nullptr;
 	for (uint32_t i = 0; i < element_total; i++) {
 		GeometryInstanceSurfaceDataCache *surface = rl->elements[i + p_offset];
-		GeometryInstanceForwardMobile *inst = surface->owner;
-
-		bool cant_repeat = inst->flags_cache & INSTANCE_DATA_FLAG_MULTIMESH || inst->mesh_instance.is_valid();
-
-		if (prev_surface != nullptr && !cant_repeat && prev_surface->sort.sort_key1 == surface->sort.sort_key1 && prev_surface->sort.sort_key2 == surface->sort.sort_key2) {
-			//this element is the same as the previous one, count repeats to draw it using instancing
-			repeats++;
-		} else {
-			if (repeats > 0) {
-				for (uint32_t j = 1; j <= repeats; j++) {
-					rl->element_info[p_offset + i - j].repeat = j;
-				}
-			}
-			repeats = 1;
-		}
-
 		RenderElementInfo &element_info = rl->element_info[p_offset + i];
 
 		element_info.lod_index = surface->lod_index;
 		element_info.uses_lightmap = surface->sort.uses_lightmap;
-
-		if (cant_repeat) {
-			prev_surface = nullptr;
-		} else {
-			prev_surface = surface;
-		}
-	}
-
-	if (repeats > 0) {
-		for (uint32_t j = 1; j <= repeats; j++) {
-			rl->element_info[p_offset + element_total - j].repeat = j;
-		}
 	}
 }
 
@@ -1523,13 +1493,12 @@ void RenderForwardMobile::_render_list_template(RenderingDevice::DrawListID p_dr
 
 		RD::get_singleton()->draw_list_set_push_constant(draw_list, &push_constant, sizeof(GeometryInstanceForwardMobile::PushConstant));
 
-		uint32_t instance_count = surf->owner->instance_count > 1 ? surf->owner->instance_count : element_info.repeat;
+		uint32_t instance_count = surf->owner->instance_count > 1 ? surf->owner->instance_count : 1;
 		if (surf->flags & GeometryInstanceSurfaceDataCache::FLAG_USES_PARTICLE_TRAILS) {
 			instance_count /= surf->owner->trail_steps;
 		}
 
 		RD::get_singleton()->draw_list_draw(draw_list, index_array_rd.is_valid(), instance_count);
-		i += element_info.repeat - 1; //skip equal elements
 	}
 }
 
@@ -1872,7 +1841,7 @@ void RenderForwardMobile::_geometry_instance_add_surface_with_material(GeometryI
 	sdcache->sort.material_id_low = p_material_id & 0x0000FFFF;
 	sdcache->sort.material_id_hi = p_material_id >> 16;
 	sdcache->sort.shader_id = p_shader_id;
-	sdcache->sort.geometry_id = p_mesh.get_local_index(); //only meshes can repeat anyway
+	sdcache->sort.geometry_id = p_mesh.get_local_index();
 	// sdcache->sort.uses_forward_gi = ginstance->can_sdfgi;
 	sdcache->sort.priority = p_material->priority;
 }
