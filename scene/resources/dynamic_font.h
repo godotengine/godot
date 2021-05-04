@@ -234,7 +234,7 @@ private:
 	Color outline_color;
 
 protected:
-	void _reload_cache();
+	void _reload_cache(const char *p_triggering_property = "");
 
 	bool _set(const StringName &p_name, const Variant &p_value);
 	bool _get(const StringName &p_name, Variant &r_ret) const;
