@@ -34,11 +34,7 @@
 #include "broad_phase_octree.h"
 #include "core/debugger/engine_debugger.h"
 #include "core/os/os.h"
-#include "joints/cone_twist_joint_3d_sw.h"
-#include "joints/generic_6dof_joint_3d_sw.h"
-#include "joints/hinge_joint_3d_sw.h"
-#include "joints/pin_joint_3d_sw.h"
-#include "joints/slider_joint_3d_sw.h"
+#include "joints_3d_sw.h"
 
 #define FLUSH_QUERY_CHECK(m_object) \
 	ERR_FAIL_COND_MSG(m_object->get_space() && flushing_queries, "Can't change this state while flushing queries. Use call_deferred() or set_deferred() to change monitoring state instead.");
