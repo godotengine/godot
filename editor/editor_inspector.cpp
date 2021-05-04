@@ -35,7 +35,7 @@
 #include "editor/doc_tools.h"
 #include "editor_feature_profile.h"
 #include "editor_node.h"
-#include "editor_scale.h"
+#include "editordeps/editor_scale.h"
 #include "multi_node_edit.h"
 #include "scene/resources/packed_scene.h"
 

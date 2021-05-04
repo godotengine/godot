@@ -74,6 +74,10 @@
 #include "servers/text_server.h"
 #include "servers/xr_server.h"
 
+#ifndef EDITORDEPS_DISABLED
+#include "editordeps/register_editordeps_types.h"
+#endif
+
 #ifdef TESTS_ENABLED
 #include "tests/test_main.h"
 #endif
@@ -1745,6 +1749,10 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 	MAIN_PRINT("Main: Load Scene Types");
 
 	register_scene_types();
+
+#ifndef EDITORDEPS_DISABLED
+	register_editordeps_types();
+#endif
 
 #ifdef TOOLS_ENABLED
 	ClassDB::set_current_api(ClassDB::API_EDITOR);

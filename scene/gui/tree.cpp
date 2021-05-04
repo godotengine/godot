@@ -42,7 +42,7 @@
 #include "box_container.h"
 
 #ifdef TOOLS_ENABLED
-#include "editor/editor_scale.h"
+#include "editordeps/editor_scale.h"
 #endif
 
 #include <limits.h>

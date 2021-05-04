@@ -35,8 +35,8 @@
 #include "core/os/os.h"
 
 #ifdef TOOLS_ENABLED
-#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "editordeps/editor_scale.h"
 #endif
 #include "scene/main/window.h"
 

@@ -34,7 +34,7 @@
 #include "core/os/dir_access.h"
 #include "editor/editor_settings.h"
 #include "editor_node.h"
-#include "editor_scale.h"
+#include "editordeps/editor_scale.h"
 
 const char *EditorFeatureProfile::feature_names[FEATURE_MAX] = {
 	TTRC("3D Editor"),

@@ -33,7 +33,7 @@
 #include "core/config/project_settings.h"
 #include "editor/editor_export.h"
 #include "editor/editor_node.h"
-#include "editor/editor_scale.h"
+#include "editordeps/editor_scale.h"
 
 ProjectSettingsEditor *ProjectSettingsEditor::singleton = nullptr;
 

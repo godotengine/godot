@@ -35,7 +35,7 @@
 #include "scene/scene_string_names.h"
 
 #ifdef TOOLS_ENABLED
-#include "editor/editor_scale.h"
+#include "editordeps/editor_scale.h"
 #endif
 
 #ifdef TOOLS_ENABLED

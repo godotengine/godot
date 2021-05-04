@@ -30,7 +30,7 @@
 
 #include "font_editor_plugin.h"
 
-#include "editor/editor_scale.h"
+#include "editordeps/editor_scale.h"
 
 void FontDataPreview::_notification(int p_what) {
 	if (p_what == NOTIFICATION_DRAW) {

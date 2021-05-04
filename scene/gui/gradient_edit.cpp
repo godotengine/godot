@@ -33,7 +33,7 @@
 #include "core/os/keyboard.h"
 
 #ifdef TOOLS_ENABLED
-#include "editor/editor_scale.h"
+#include "editordeps/editor_scale.h"
 #define SPACING (3 * EDSCALE)
 #define POINT_WIDTH (8 * EDSCALE)
 #else

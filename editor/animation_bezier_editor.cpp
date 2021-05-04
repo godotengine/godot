@@ -31,7 +31,7 @@
 #include "animation_bezier_editor.h"
 
 #include "editor/editor_node.h"
-#include "editor_scale.h"
+#include "editordeps/editor_scale.h"
 #include "scene/resources/text_line.h"
 
 float AnimationBezierTrackEdit::_bezier_h_to_pixel(float p_h) {

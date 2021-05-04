@@ -35,9 +35,9 @@
 #include "core/os/keyboard.h"
 #include "core/version.h"
 #include "editor/editor_node.h"
-#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/project_settings_editor.h"
+#include "editordeps/editor_scale.h"
 
 void EditorAssetLibraryItem::configure(const String &p_title, int p_asset_id, const String &p_category, int p_category_id, const String &p_author, int p_author_id, const String &p_cost) {
 	title->set_text(p_title);

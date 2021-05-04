@@ -30,8 +30,8 @@
 
 #include "scene_import_settings.h"
 #include "editor/editor_node.h"
-#include "editor/editor_scale.h"
 #include "editor/import/scene_importer_mesh_node_3d.h"
+#include "editordeps/editor_scale.h"
 #include "scene/resources/surface_tool.h"
 
 class SceneImportSettingsData : public Object {

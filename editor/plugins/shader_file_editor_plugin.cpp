@@ -35,9 +35,9 @@
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
 #include "editor/editor_node.h"
-#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/property_editor.h"
+#include "editordeps/editor_scale.h"
 #include "servers/display_server.h"
 #include "servers/rendering/shader_types.h"
 

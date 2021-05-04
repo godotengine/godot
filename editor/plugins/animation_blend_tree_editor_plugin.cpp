@@ -35,7 +35,7 @@
 #include "core/io/resource_loader.h"
 #include "core/os/keyboard.h"
 #include "editor/editor_inspector.h"
-#include "editor/editor_scale.h"
+#include "editordeps/editor_scale.h"
 #include "scene/animation/animation_player.h"
 #include "scene/gui/menu_button.h"
 #include "scene/gui/panel.h"

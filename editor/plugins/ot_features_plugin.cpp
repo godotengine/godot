@@ -30,7 +30,7 @@
 
 #include "ot_features_plugin.h"
 
-#include "editor/editor_scale.h"
+#include "editordeps/editor_scale.h"
 
 void OpenTypeFeaturesEditor::_value_changed(double val) {
 	if (setting) {

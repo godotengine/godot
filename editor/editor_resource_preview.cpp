@@ -36,8 +36,8 @@
 #include "core/object/message_queue.h"
 #include "core/os/file_access.h"
 #include "editor_node.h"
-#include "editor_scale.h"
 #include "editor_settings.h"
+#include "editordeps/editor_scale.h"
 
 bool EditorResourcePreviewGenerator::handles(const String &p_type) const {
 	if (get_script_instance() && get_script_instance()->has_method("handles")) {

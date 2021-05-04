@@ -30,7 +30,7 @@
 
 #include "material_editor_plugin.h"
 
-#include "editor/editor_scale.h"
+#include "editordeps/editor_scale.h"
 #include "scene/gui/subviewport_container.h"
 #include "scene/resources/particles_material.h"
 #include "scene/resources/sky_material.h"

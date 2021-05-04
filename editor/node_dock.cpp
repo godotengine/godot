@@ -31,7 +31,7 @@
 #include "node_dock.h"
 
 #include "editor_node.h"
-#include "editor_scale.h"
+#include "editordeps/editor_scale.h"
 
 void NodeDock::show_groups() {
 	groups_button->set_pressed(true);

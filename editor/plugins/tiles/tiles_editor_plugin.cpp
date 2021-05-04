@@ -31,8 +31,8 @@
 #include "tiles_editor_plugin.h"
 
 #include "editor/editor_node.h"
-#include "editor/editor_scale.h"
 #include "editor/plugins/canvas_item_editor_plugin.h"
+#include "editordeps/editor_scale.h"
 
 #include "scene/2d/tile_map.h"
 #include "scene/resources/tile_set.h"

@@ -34,7 +34,7 @@
 #include "editor/filesystem_dock.h"
 #include "editor_node.h"
 #include "editor_properties_array_dict.h"
-#include "editor_scale.h"
+#include "editordeps/editor_scale.h"
 #include "scene/main/window.h"
 #include "scene/resources/font.h"
 

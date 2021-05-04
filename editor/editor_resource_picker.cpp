@@ -32,8 +32,8 @@
 
 #include "editor/editor_resource_preview.h"
 #include "editor_node.h"
-#include "editor_scale.h"
 #include "editor_settings.h"
+#include "editordeps/editor_scale.h"
 #include "filesystem_dock.h"
 
 void EditorResourcePicker::_update_resource() {

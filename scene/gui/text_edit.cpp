@@ -42,7 +42,7 @@
 #include "scene/main/window.h"
 
 #ifdef TOOLS_ENABLED
-#include "editor/editor_scale.h"
+#include "editordeps/editor_scale.h"
 #endif
 
 #define TAB_PIXELS

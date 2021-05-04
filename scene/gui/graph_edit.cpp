@@ -37,7 +37,7 @@
 #include "scene/gui/button.h"
 
 #ifdef TOOLS_ENABLED
-#include "editor/editor_scale.h"
+#include "editordeps/editor_scale.h"
 #endif
 
 #define ZOOM_SCALE 1.2

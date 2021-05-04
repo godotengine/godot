@@ -37,7 +37,7 @@
 #include "core/variant/variant.h"
 #include "editor/editor_node.h"
 #include "editor/editor_resource_preview.h"
-#include "editor/editor_scale.h"
+#include "editordeps/editor_scale.h"
 #include "scene/main/window.h"
 #include "visual_script_expression.h"
 #include "visual_script_flow_control.h"

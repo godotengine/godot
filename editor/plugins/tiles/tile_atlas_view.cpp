@@ -38,8 +38,8 @@
 #include "scene/gui/panel.h"
 #include "scene/gui/texture_rect.h"
 
-#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "editordeps/editor_scale.h"
 
 void TileAtlasView::_gui_input(const Ref<InputEvent> &p_event) {
 	bool ctrl = Input::get_singleton()->is_key_pressed(KEY_CTRL);

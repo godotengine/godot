@@ -33,7 +33,7 @@
 #include "core/os/dir_access.h"
 #include "core/os/os.h"
 #include "editor_node.h"
-#include "editor_scale.h"
+#include "editordeps/editor_scale.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/check_box.h"
