@@ -434,8 +434,8 @@ void ScrollContainer::update_scrollbars() {
 
 	Size2 min = child_max_size;
 
-	bool hide_scroll_v = !scroll_v || min.height <= size.height;
-	bool hide_scroll_h = !scroll_h || min.width <= size.width;
+	bool hide_scroll_v = !scroll_v || (min.height <= size.height && !scroll_v_always_visible);
+	bool hide_scroll_h = !scroll_h || (min.width <= size.width && !scroll_h_always_visible);
 
 	v_scroll->set_max(min.height);
 	if (hide_scroll_v) {
@@ -445,9 +445,9 @@ void ScrollContainer::update_scrollbars() {
 	} else {
 		v_scroll->show();
 		if (hide_scroll_h) {
-			v_scroll->set_page(size.height);
+			v_scroll->set_page((min.height <= size.height && scroll_v_always_visible) ? min.height : size.height);
 		} else {
-			v_scroll->set_page(size.height - hmin.height);
+			v_scroll->set_page((min.height <= size.height && scroll_v_always_visible) ? min.height : size.height - hmin.height);
 		}
 
 		scroll.y = v_scroll->get_value();
@@ -461,9 +461,9 @@ void ScrollContainer::update_scrollbars() {
 	} else {
 		h_scroll->show();
 		if (hide_scroll_v) {
-			h_scroll->set_page(size.width);
+			h_scroll->set_page((min.width <= size.width && scroll_h_always_visible) ? min.width : size.width);
 		} else {
-			h_scroll->set_page(size.width - vmin.width);
+			h_scroll->set_page((min.width <= size.width && scroll_h_always_visible) ? min.width : size.width - vmin.width);
 		}
 
 		scroll.x = h_scroll->get_value();
@@ -496,6 +496,19 @@ bool ScrollContainer::is_h_scroll_enabled() const {
 	return scroll_h;
 }
 
+void ScrollContainer::set_h_scroll_always_visible(bool p_visible) {
+	if (scroll_h_always_visible == p_visible) {
+		return;
+	}
+
+	scroll_h_always_visible = p_visible;
+	update_scrollbars();
+}
+
+bool ScrollContainer::is_h_scroll_always_visible() const {
+	return scroll_h_always_visible;
+}
+
 void ScrollContainer::set_enable_v_scroll(bool p_enable) {
 	if (scroll_v == p_enable) {
 		return;
@@ -508,6 +521,19 @@ void ScrollContainer::set_enable_v_scroll(bool p_enable) {
 
 bool ScrollContainer::is_v_scroll_enabled() const {
 	return scroll_v;
+}
+
+void ScrollContainer::set_v_scroll_always_visible(bool p_visible) {
+	if (scroll_v_always_visible == p_visible) {
+		return;
+	}
+
+	scroll_v_always_visible = p_visible;
+	update_scrollbars();
+}
+
+bool ScrollContainer::is_v_scroll_always_visible() const {
+	return scroll_v_always_visible;
 }
 
 int ScrollContainer::get_v_scroll() const {
@@ -583,8 +609,12 @@ void ScrollContainer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_gui_input"), &ScrollContainer::_gui_input);
 	ClassDB::bind_method(D_METHOD("set_enable_h_scroll", "enable"), &ScrollContainer::set_enable_h_scroll);
 	ClassDB::bind_method(D_METHOD("is_h_scroll_enabled"), &ScrollContainer::is_h_scroll_enabled);
+	ClassDB::bind_method(D_METHOD("set_h_scroll_always_visible", "enable"), &ScrollContainer::set_h_scroll_always_visible);
+	ClassDB::bind_method(D_METHOD("is_h_scroll_always_visible"), &ScrollContainer::is_h_scroll_always_visible);
 	ClassDB::bind_method(D_METHOD("set_enable_v_scroll", "enable"), &ScrollContainer::set_enable_v_scroll);
 	ClassDB::bind_method(D_METHOD("is_v_scroll_enabled"), &ScrollContainer::is_v_scroll_enabled);
+	ClassDB::bind_method(D_METHOD("set_v_scroll_always_visible", "enable"), &ScrollContainer::set_v_scroll_always_visible);
+	ClassDB::bind_method(D_METHOD("is_v_scroll_always_visible"), &ScrollContainer::is_v_scroll_always_visible);
 	ClassDB::bind_method(D_METHOD("_update_scrollbar_position"), &ScrollContainer::_update_scrollbar_position);
 	ClassDB::bind_method(D_METHOD("set_h_scroll", "value"), &ScrollContainer::set_h_scroll);
 	ClassDB::bind_method(D_METHOD("get_h_scroll"), &ScrollContainer::get_h_scroll);
@@ -606,8 +636,10 @@ void ScrollContainer::_bind_methods() {
 	ADD_GROUP("Scroll", "scroll_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "scroll_horizontal_enabled"), "set_enable_h_scroll", "is_h_scroll_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "scroll_horizontal"), "set_h_scroll", "get_h_scroll");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "scroll_horizontal_always_visible"), "set_h_scroll_always_visible", "is_h_scroll_always_visible");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "scroll_vertical_enabled"), "set_enable_v_scroll", "is_v_scroll_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "scroll_vertical"), "set_v_scroll", "get_v_scroll");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "scroll_vertical_always_visible"), "set_v_scroll_always_visible", "is_v_scroll_always_visible");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "scroll_deadzone"), "set_deadzone", "get_deadzone");
 
 	GLOBAL_DEF("gui/common/default_scroll_deadzone", 0);
