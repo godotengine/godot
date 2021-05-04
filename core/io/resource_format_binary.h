@@ -82,10 +82,11 @@ class ResourceInteractiveLoaderBinary : public ResourceInteractiveLoader {
 
 	Error parse_variant(Variant &r_v);
 
+	virtual Error _poll();
+
 public:
 	virtual void set_local_path(const String &p_local_path);
 	virtual Ref<Resource> get_resource();
-	virtual Error poll();
 	virtual int get_stage() const;
 	virtual int get_stage_count() const;
 	virtual void set_translation_remapped(bool p_remapped);

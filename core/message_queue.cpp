@@ -46,16 +46,26 @@ Error MessageQueue::push_call(ObjectID p_id, const StringName &p_method, const V
 
 	int room_needed = sizeof(Message) + sizeof(Variant) * p_argcount;
 
-	if ((buffer_end + room_needed) >= buffer_size) {
-		String type;
-		if (ObjectDB::get_instance(p_id))
-			type = ObjectDB::get_instance(p_id)->get_class();
-		print_line("Failed method: " + type + ":" + p_method + " target ID: " + itos(p_id));
-		statistics();
-		ERR_FAIL_V_MSG(ERR_OUT_OF_MEMORY, "Message queue out of memory. Try increasing 'memory/limits/message_queue/max_size_kb' in project settings.");
+	Map<Thread::ID, ThreadBuffer>::Element *thread_buffer = thread_buffers.find(Thread::get_caller_id());
+	uint8_t *write_ptr;
+	if (likely(!thread_buffer)) {
+		if ((buffer_end + room_needed) >= buffer_size) {
+			String type;
+			if (ObjectDB::get_instance(p_id))
+				type = ObjectDB::get_instance(p_id)->get_class();
+			print_line("Failed method: " + type + ":" + p_method + " target ID: " + itos(p_id));
+			statistics();
+			ERR_FAIL_V_MSG(ERR_OUT_OF_MEMORY, "Message queue out of memory. Try increasing 'memory/limits/message_queue/max_size_kb' in project settings.");
+		}
+		write_ptr = &buffer[buffer_end];
+		buffer_end += room_needed;
+	} else {
+		int curr_size = thread_buffer->get().data.size();
+		thread_buffer->get().data.resize(curr_size + room_needed);
+		write_ptr = thread_buffer->get().data.ptrw() + curr_size;
 	}
 
-	Message *msg = memnew_placement(&buffer[buffer_end], Message);
+	Message *msg = memnew_placement(write_ptr, Message);
 	msg->args = p_argcount;
 	msg->instance_id = p_id;
 	msg->target = p_method;
@@ -63,12 +73,12 @@ Error MessageQueue::push_call(ObjectID p_id, const StringName &p_method, const V
 	if (p_show_error)
 		msg->type |= FLAG_SHOW_ERROR;
 
-	buffer_end += sizeof(Message);
+	write_ptr += sizeof(Message);
 
 	for (int i = 0; i < p_argcount; i++) {
 
-		Variant *v = memnew_placement(&buffer[buffer_end], Variant);
-		buffer_end += sizeof(Variant);
+		Variant *v = memnew_placement(write_ptr, Variant);
+		write_ptr += sizeof(Variant);
 		*v = *p_args[i];
 	}
 
@@ -96,25 +106,34 @@ Error MessageQueue::push_set(ObjectID p_id, const StringName &p_prop, const Vari
 
 	uint8_t room_needed = sizeof(Message) + sizeof(Variant);
 
-	if ((buffer_end + room_needed) >= buffer_size) {
-		String type;
-		if (ObjectDB::get_instance(p_id))
-			type = ObjectDB::get_instance(p_id)->get_class();
-		print_line("Failed set: " + type + ":" + p_prop + " target ID: " + itos(p_id));
-		statistics();
-		ERR_FAIL_V_MSG(ERR_OUT_OF_MEMORY, "Message queue out of memory. Try increasing 'memory/limits/message_queue/max_size_kb' in project settings.");
+	Map<Thread::ID, ThreadBuffer>::Element *thread_buffer = thread_buffers.find(Thread::get_caller_id());
+	uint8_t *write_ptr;
+	if (likely(!thread_buffer)) {
+		if ((buffer_end + room_needed) >= buffer_size) {
+			String type;
+			if (ObjectDB::get_instance(p_id))
+				type = ObjectDB::get_instance(p_id)->get_class();
+			print_line("Failed set: " + type + ":" + p_prop + " target ID: " + itos(p_id));
+			statistics();
+			ERR_FAIL_V_MSG(ERR_OUT_OF_MEMORY, "Message queue out of memory. Try increasing 'memory/limits/message_queue/max_size_kb' in project settings.");
+		}
+		write_ptr = &buffer[buffer_end];
+		buffer_end += room_needed;
+	} else {
+		int curr_size = thread_buffer->get().data.size();
+		thread_buffer->get().data.resize(curr_size + room_needed);
+		write_ptr = thread_buffer->get().data.ptrw() + curr_size;
 	}
 
-	Message *msg = memnew_placement(&buffer[buffer_end], Message);
+	Message *msg = memnew_placement(write_ptr, Message);
 	msg->args = 1;
 	msg->instance_id = p_id;
 	msg->target = p_prop;
 	msg->type = TYPE_SET;
 
-	buffer_end += sizeof(Message);
+	write_ptr += sizeof(Message);
 
-	Variant *v = memnew_placement(&buffer[buffer_end], Variant);
-	buffer_end += sizeof(Variant);
+	Variant *v = memnew_placement(write_ptr, Variant);
 	*v = p_value;
 
 	return OK;
@@ -128,20 +147,31 @@ Error MessageQueue::push_notification(ObjectID p_id, int p_notification) {
 
 	uint8_t room_needed = sizeof(Message);
 
-	if ((buffer_end + room_needed) >= buffer_size) {
-		print_line("Failed notification: " + itos(p_notification) + " target ID: " + itos(p_id));
-		statistics();
-		ERR_FAIL_V_MSG(ERR_OUT_OF_MEMORY, "Message queue out of memory. Try increasing 'memory/limits/message_queue/max_size_kb' in project settings.");
+	Map<Thread::ID, ThreadBuffer>::Element *thread_buffer = thread_buffers.find(Thread::get_caller_id());
+	uint8_t *write_ptr;
+	if (likely(!thread_buffer)) {
+		if ((buffer_end + room_needed) >= buffer_size) {
+			String type;
+			if (ObjectDB::get_instance(p_id))
+				type = ObjectDB::get_instance(p_id)->get_class();
+			print_line("Failed notification: " + itos(p_notification) + " target ID: " + itos(p_id));
+			statistics();
+			ERR_FAIL_V_MSG(ERR_OUT_OF_MEMORY, "Message queue out of memory. Try increasing 'memory/limits/message_queue/max_size_kb' in project settings.");
+		}
+		write_ptr = &buffer[buffer_end];
+		buffer_end += room_needed;
+	} else {
+		int curr_size = thread_buffer->get().data.size();
+		thread_buffer->get().data.resize(curr_size + room_needed);
+		write_ptr = thread_buffer->get().data.ptrw() + curr_size;
 	}
 
-	Message *msg = memnew_placement(&buffer[buffer_end], Message);
+	Message *msg = memnew_placement(write_ptr, Message);
 
 	msg->type = TYPE_NOTIFICATION;
 	msg->instance_id = p_id;
 	//msg->target;
 	msg->notification = p_notification;
-
-	buffer_end += sizeof(Message);
 
 	return OK;
 }
@@ -160,7 +190,50 @@ Error MessageQueue::push_set(Object *p_object, const StringName &p_prop, const V
 	return push_set(p_object->get_instance_id(), p_prop, p_value);
 }
 
+void MessageQueue::set_current_thread_accumulation_enabled(bool p_enabled) {
+	_THREAD_SAFE_METHOD_
+
+	Thread::ID caller_tid = Thread::get_caller_id();
+
+	if (caller_tid == Thread::get_main_id()) {
+		return;
+	}
+
+	Map<Thread::ID, ThreadBuffer>::Element *thread_buffer = thread_buffers.find(caller_tid);
+
+	if (p_enabled) {
+		if (!thread_buffer) {
+			thread_buffer = thread_buffers.insert(caller_tid, ThreadBuffer());
+			thread_buffer->get().users = 1;
+		} else {
+			thread_buffer->get().users++;
+		}
+	} else {
+		ERR_FAIL_COND(!thread_buffer);
+
+		bool must_flush = --thread_buffer->get().users == 0;
+		if (must_flush) {
+			int thread_buffer_size = thread_buffer->get().data.size();
+			if (thread_buffer_size) {
+				// Append this thread's buffer to the main one so it's processed on the next flush
+				if (buffer_end + thread_buffer_size >= buffer_size) {
+					print_line("Failed flushing of queue for thread ID: " + itos(caller_tid));
+					statistics();
+					ERR_FAIL_MSG("Message queue out of memory. Try increasing 'memory/limits/message_queue/max_size_kb' in project settings.");
+				} else {
+					memcpy(buffer + buffer_end, thread_buffer->get().data.ptr(), thread_buffer_size);
+					buffer_end += thread_buffer_size;
+				}
+			}
+
+			thread_buffers.erase(thread_buffer);
+		}
+	}
+}
+
 void MessageQueue::statistics() {
+
+	// TODO: Report about thread-specific buffers (they end up contributing to the main buffer, but some numbers won't harm)
 
 	Map<StringName, int> set_count;
 	Map<int, int> notify_count;

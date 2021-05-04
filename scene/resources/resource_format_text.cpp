@@ -389,7 +389,7 @@ Ref<PackedScene> ResourceInteractiveLoaderText::_parse_node_tag(VariantParser::R
 	return packed_scene;
 }
 
-Error ResourceInteractiveLoaderText::poll() {
+Error ResourceInteractiveLoaderText::_poll() {
 
 	if (error != OK)
 		return error;

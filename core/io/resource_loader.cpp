@@ -31,6 +31,7 @@
 #include "resource_loader.h"
 
 #include "core/io/resource_importer.h"
+#include "core/message_queue.h"
 #include "core/os/file_access.h"
 #include "core/os/os.h"
 #include "core/path_remap.h"
@@ -42,6 +43,14 @@
 Ref<ResourceFormatLoader> ResourceLoader::loader[ResourceLoader::MAX_LOADERS];
 
 int ResourceLoader::loader_count = 0;
+
+Error ResourceInteractiveLoader::poll() {
+
+	MessageQueue::get_singleton()->set_current_thread_accumulation_enabled(true);
+	Error result = _poll();
+	MessageQueue::get_singleton()->set_current_thread_accumulation_enabled(false);
+	return result;
+}
 
 Error ResourceInteractiveLoader::wait() {
 
@@ -124,13 +133,14 @@ class ResourceInteractiveLoaderDefault : public ResourceInteractiveLoader {
 
 	GDCLASS(ResourceInteractiveLoaderDefault, ResourceInteractiveLoader);
 
+	virtual Error _poll() { return ERR_FILE_EOF; }
+
 public:
 	Ref<Resource> resource;
 
 	virtual void set_local_path(const String &p_local_path) { /*scene->set_filename(p_local_path);*/
 	}
 	virtual Ref<Resource> get_resource() { return resource; }
-	virtual Error poll() { return ERR_FILE_EOF; }
 	virtual int get_stage() const { return 1; }
 	virtual int get_stage_count() const { return 1; }
 	virtual void set_translation_remapped(bool p_remapped) { resource->set_as_translation_remapped(p_remapped); }

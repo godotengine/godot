@@ -109,10 +109,11 @@ class ResourceInteractiveLoaderText : public ResourceInteractiveLoader {
 
 	Ref<PackedScene> _parse_node_tag(VariantParser::ResourceParser &parser);
 
+	virtual Error _poll();
+
 public:
 	virtual void set_local_path(const String &p_local_path);
 	virtual Ref<Resource> get_resource();
-	virtual Error poll();
 	virtual int get_stage() const;
 	virtual int get_stage_count() const;
 	virtual void set_translation_remapped(bool p_remapped);

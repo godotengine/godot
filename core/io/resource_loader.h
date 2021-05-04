@@ -43,11 +43,12 @@ class ResourceInteractiveLoader : public Reference {
 
 protected:
 	static void _bind_methods();
+	virtual Error _poll() = 0;
 
 public:
 	virtual void set_local_path(const String &p_local_path) = 0;
 	virtual Ref<Resource> get_resource() = 0;
-	virtual Error poll() = 0;
+	Error poll();
 	virtual int get_stage() const = 0;
 	virtual int get_stage_count() const = 0;
 	virtual void set_translation_remapped(bool p_remapped) = 0;

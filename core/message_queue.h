@@ -31,8 +31,11 @@
 #ifndef MESSAGE_QUEUE_H
 #define MESSAGE_QUEUE_H
 
+#include "core/map.h"
 #include "core/object.h"
+#include "core/os/thread.h"
 #include "core/os/thread_safe.h"
+#include "core/vector.h"
 
 class MessageQueue {
 
@@ -73,6 +76,12 @@ class MessageQueue {
 
 	bool flushing;
 
+	struct ThreadBuffer {
+		Vector<uint8_t> data;
+		int users;
+	};
+	Map<Thread::ID, ThreadBuffer> thread_buffers;
+
 public:
 	static MessageQueue *get_singleton();
 
@@ -91,6 +100,8 @@ public:
 	bool is_flushing() const;
 
 	int get_max_buffer_usage() const;
+
+	void set_current_thread_accumulation_enabled(bool p_enabled);
 
 	MessageQueue();
 	~MessageQueue();
