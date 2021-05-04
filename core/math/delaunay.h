@@ -36,7 +36,6 @@
 class Delaunay2D {
 public:
 	struct Triangle {
-
 		int points[3];
 		bool bad;
 		Triangle() { bad = false; }
@@ -60,7 +59,6 @@ public:
 	};
 
 	static bool circum_circle_contains(const Vector<Vector2> &p_vertices, const Triangle &p_triangle, int p_vertex) {
-
 		Vector2 p1 = p_vertices[p_triangle.points[0]];
 		Vector2 p2 = p_vertices[p_triangle.points[1]];
 		Vector2 p3 = p_vertices[p_triangle.points[2]];
@@ -92,7 +90,6 @@ public:
 	}
 
 	static Vector<Triangle> triangulate(const Vector<Vector2> &p_points) {
-
 		Vector<Vector2> points = p_points;
 		Vector<Triangle> triangles;
 
@@ -146,7 +143,6 @@ public:
 			}
 
 			for (int j = 0; j < polygon.size(); j++) {
-
 				if (polygon[j].bad) {
 					continue;
 				}

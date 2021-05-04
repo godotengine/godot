@@ -36,7 +36,6 @@
 class ResourceImporter;
 
 class ResourceFormatImporter : public ResourceFormatLoader {
-
 	struct PathAndType {
 		String path;
 		String type;
@@ -94,7 +93,6 @@ public:
 };
 
 class ResourceImporter : public Reference {
-
 	GDCLASS(ResourceImporter, Reference);
 
 public:

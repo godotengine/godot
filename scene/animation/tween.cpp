@@ -33,7 +33,6 @@
 #include "core/method_bind_ext.gen.inc"
 
 void Tween::_add_pending_command(StringName p_key, const Variant &p_arg1, const Variant &p_arg2, const Variant &p_arg3, const Variant &p_arg4, const Variant &p_arg5, const Variant &p_arg6, const Variant &p_arg7, const Variant &p_arg8, const Variant &p_arg9, const Variant &p_arg10) {
-
 	// Add a new pending command and reference it
 	pending_commands.push_back(PendingCommand());
 	PendingCommand &cmd = pending_commands.back()->get();
@@ -90,10 +89,8 @@ void Tween::_add_pending_command(StringName p_key, const Variant &p_arg1, const 
 }
 
 void Tween::_process_pending_commands() {
-
 	// For each pending command...
 	for (List<PendingCommand>::Element *E = pending_commands.front(); E; E = E->next()) {
-
 		// Get the command
 		PendingCommand &cmd = E->get();
 		Variant::CallError err;
@@ -121,7 +118,6 @@ void Tween::_process_pending_commands() {
 }
 
 bool Tween::_set(const StringName &p_name, const Variant &p_value) {
-
 	// Set the correct attribute based on the given name
 	String name = p_name;
 	if (name == "playback/speed" || name == "speed") { // Backwards compatibility
@@ -140,7 +136,6 @@ bool Tween::_set(const StringName &p_name, const Variant &p_value) {
 }
 
 bool Tween::_get(const StringName &p_name, Variant &r_ret) const {
-
 	// Get the correct attribute based on the given name
 	String name = p_name;
 	if (name == "playback/speed") { // Backwards compatibility
@@ -168,7 +163,6 @@ void Tween::_get_property_list(List<PropertyInfo> *p_list) const {
 void Tween::_notification(int p_what) {
 	// What notification did we receive?
 	switch (p_what) {
-
 		case NOTIFICATION_ENTER_TREE: {
 			// Are we not already active?
 			if (!is_active()) {
@@ -289,7 +283,6 @@ void Tween::_bind_methods() {
 }
 
 Variant Tween::_get_initial_val(const InterpolateData &p_data) const {
-
 	// What type of data are we interpolating?
 	switch (p_data.type) {
 		case INTER_PROPERTY:
@@ -366,7 +359,6 @@ Variant Tween::_get_final_val(const InterpolateData &p_data) const {
 }
 
 Variant &Tween::_get_delta_val(InterpolateData &p_data) {
-
 	// What kind of data are we interpolating?
 	switch (p_data.type) {
 		case INTER_PROPERTY:
@@ -438,7 +430,6 @@ Variant Tween::_run_equation(InterpolateData &p_data) {
 
 	// What type of data are we interpolating?
 	switch (initial_val.get_type()) {
-
 		case Variant::BOOL:
 			// Run the boolean specific equation (checking if it is at least 0.5)
 			result = (_run_equation(p_data.trans_type, p_data.ease_type, p_data.elapsed - p_data.delay, initial_val, delta_val, p_data.duration)) >= 0.5;
@@ -613,14 +604,12 @@ Variant Tween::_run_equation(InterpolateData &p_data) {
 }
 
 bool Tween::_apply_tween_value(InterpolateData &p_data, Variant &value) {
-
 	// Get the object we want to apply the new value to
 	Object *object = ObjectDB::get_instance(p_data.id);
 	ERR_FAIL_COND_V(object == NULL, false);
 
 	// What kind of data are we mutating?
 	switch (p_data.type) {
-
 		case INTER_PROPERTY:
 		case FOLLOW_PROPERTY:
 		case TARGETING_PROPERTY: {
@@ -696,7 +685,6 @@ void Tween::_tween_process(float p_delta) {
 
 	// For each tween we wish to interpolate...
 	for (List<InterpolateData>::Element *E = interpolates.front(); E; E = E->next()) {
-
 		// Get the data from it
 		InterpolateData &data = E->get();
 
@@ -852,7 +840,6 @@ float Tween::get_speed_scale() const {
 }
 
 bool Tween::start() {
-
 	ERR_FAIL_COND_V_MSG(!is_inside_tree(), false, "Tween was not added to the SceneTree!");
 
 	// Are there any pending updates?
@@ -913,7 +900,6 @@ bool Tween::stop(Object *p_object, StringName p_key) {
 	// Find the tween that has the given target object and string key
 	pending_update++;
 	for (List<InterpolateData>::Element *E = interpolates.front(); E; E = E->next()) {
-
 		// Get the object the tween is targeting
 		InterpolateData &data = E->get();
 		Object *object = ObjectDB::get_instance(data.id);
@@ -1134,7 +1120,6 @@ real_t Tween::get_runtime() const {
 }
 
 bool Tween::_calc_delta_val(const Variant &p_initial_val, const Variant &p_final_val, Variant &p_delta_val) {
-
 	// Get the initial, final, and delta values
 	const Variant &initial_val = p_initial_val;
 	const Variant &final_val = p_final_val;
@@ -1142,7 +1127,6 @@ bool Tween::_calc_delta_val(const Variant &p_initial_val, const Variant &p_final
 
 	// What kind of data are we interpolating?
 	switch (initial_val.get_type()) {
-
 		case Variant::BOOL:
 			// We'll treat booleans just like integers
 		case Variant::INT:
@@ -1274,7 +1258,6 @@ bool Tween::_calc_delta_val(const Variant &p_initial_val, const Variant &p_final
 }
 
 bool Tween::_build_interpolation(InterpolateType p_interpolation_type, Object *p_object, NodePath *p_property, StringName *p_method, Variant p_initial_val, Variant p_final_val, real_t p_duration, TransitionType p_trans_type, EaseType p_ease_type, real_t p_delay) {
-
 	// TODO: Add initialization+implementation for remaining interpolation types
 	// TODO: Fix this method's organization to take advantage of the type
 

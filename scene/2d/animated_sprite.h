@@ -35,11 +35,9 @@
 #include "scene/resources/texture.h"
 
 class SpriteFrames : public Resource {
-
 	GDCLASS(SpriteFrames, Resource);
 
 	struct Anim {
-
 		float speed;
 		bool loop;
 		Vector<Ref<Texture>> frames;
@@ -83,7 +81,6 @@ public:
 	void add_frame(const StringName &p_anim, const Ref<Texture> &p_frame, int p_at_pos = -1);
 	int get_frame_count(const StringName &p_anim) const;
 	_FORCE_INLINE_ Ref<Texture> get_frame(const StringName &p_anim, int p_idx) const {
-
 		const Map<StringName, Anim>::Element *E = animations.find(p_anim);
 		ERR_FAIL_COND_V_MSG(!E, Ref<Texture>(), "Animation '" + String(p_anim) + "' doesn't exist.");
 		ERR_FAIL_COND_V(p_idx < 0, Ref<Texture>());
@@ -94,7 +91,6 @@ public:
 	}
 
 	_FORCE_INLINE_ Ref<Texture> get_normal_frame(const StringName &p_anim, int p_idx) const {
-
 		const Map<StringName, Anim>::Element *E = animations.find(p_anim);
 		ERR_FAIL_COND_V_MSG(!E, Ref<Texture>(), "Animation '" + String(p_anim) + "' doesn't exist.");
 		ERR_FAIL_COND_V(p_idx < 0, Ref<Texture>());
@@ -123,7 +119,6 @@ public:
 };
 
 class AnimatedSprite : public Node2D {
-
 	GDCLASS(AnimatedSprite, Node2D);
 
 	Ref<SpriteFrames> frames;

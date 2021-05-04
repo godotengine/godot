@@ -117,7 +117,6 @@ void LineBuilder::clear_output() {
 }
 
 void LineBuilder::build() {
-
 	// Need at least 2 points to draw a line
 	if (points.size() < 2) {
 		clear_output();
@@ -220,7 +219,6 @@ void LineBuilder::build() {
 
 	// For each additional segment
 	for (int i = 1; i < len - 1; ++i) {
-
 		pos1 = points[i];
 		Vector2 pos2 = points[i + 1];
 
@@ -359,7 +357,6 @@ void LineBuilder::build() {
 
 		// Add joint geometry
 		if (current_joint_mode != Line2D::LINE_JOINT_SHARP) {
-
 			/* ________________ cbegin
 			 *               / \
 			 *              /   \
@@ -541,7 +538,6 @@ void LineBuilder::strip_add_tri(Vector2 up, Orientation orientation) {
 }
 
 void LineBuilder::strip_add_arc(Vector2 center, float angle_delta, Orientation orientation) {
-
 	// Take the two last vertices and extrude an arc made of triangles
 	// that all share one of the initial vertices
 
@@ -570,7 +566,6 @@ void LineBuilder::strip_add_arc(Vector2 center, float angle_delta, Orientation o
 }
 
 void LineBuilder::new_arc(Vector2 center, Vector2 vbegin, float angle_delta, Color color, Rect2 uv_rect) {
-
 	// Make a standalone arc that doesn't use existing vertices,
 	// with undistorted UVs from within a square section
 

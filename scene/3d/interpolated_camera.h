@@ -34,7 +34,6 @@
 #include "scene/3d/camera.h"
 
 class InterpolatedCamera : public Camera {
-
 	GDCLASS(InterpolatedCamera, Camera);
 
 	bool enabled;

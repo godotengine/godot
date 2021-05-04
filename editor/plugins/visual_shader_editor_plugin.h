@@ -41,7 +41,6 @@
 #include "scene/resources/visual_shader.h"
 
 class VisualShaderNodePlugin : public Reference {
-
 	GDCLASS(VisualShaderNodePlugin, Reference);
 
 protected:
@@ -52,7 +51,6 @@ public:
 };
 
 class VisualShaderEditor : public VBoxContainer {
-
 	GDCLASS(VisualShaderEditor, VBoxContainer);
 
 	CustomPropertyEditor *property_editor;
@@ -282,7 +280,6 @@ public:
 };
 
 class VisualShaderEditorPlugin : public EditorPlugin {
-
 	GDCLASS(VisualShaderEditorPlugin, EditorPlugin);
 
 	VisualShaderEditor *visual_shader_editor;
@@ -301,7 +298,6 @@ public:
 };
 
 class VisualShaderNodePluginDefault : public VisualShaderNodePlugin {
-
 	GDCLASS(VisualShaderNodePluginDefault, VisualShaderNodePlugin);
 
 public:

@@ -37,7 +37,6 @@
 #include "gdscript_function.h"
 
 class GDScriptNativeClass : public Reference {
-
 	GDCLASS(GDScriptNativeClass, Reference);
 
 	StringName name;
@@ -54,7 +53,6 @@ public:
 };
 
 class GDScript : public Script {
-
 	GDCLASS(GDScript, Script);
 	bool tool;
 	bool valid;
@@ -321,7 +319,6 @@ struct GDScriptWarning {
 #endif // DEBUG_ENABLED
 
 class GDScriptLanguage : public ScriptLanguage {
-
 	friend class GDScriptFunctionState;
 
 	static GDScriptLanguage *singleton;
@@ -332,7 +329,6 @@ class GDScriptLanguage : public ScriptLanguage {
 	Map<StringName, Variant> named_globals;
 
 	struct CallLevel {
-
 		Variant *stack;
 		GDScriptFunction *function;
 		GDScriptInstance *instance;
@@ -371,7 +367,6 @@ public:
 	bool debug_break_parse(const String &p_file, int p_line, const String &p_error);
 
 	_FORCE_INLINE_ void enter_function(GDScriptInstance *p_instance, GDScriptFunction *p_function, Variant *p_stack, int *p_ip, int *p_line) {
-
 		if (Thread::get_main_id() != Thread::get_caller_id())
 			return; //no support for other threads than main for now
 
@@ -394,7 +389,6 @@ public:
 	}
 
 	_FORCE_INLINE_ void exit_function() {
-
 		if (Thread::get_main_id() != Thread::get_caller_id())
 			return; //no support for other threads than main for now
 
@@ -402,7 +396,6 @@ public:
 			ScriptDebugger::get_singleton()->set_depth(ScriptDebugger::get_singleton()->get_depth() - 1);
 
 		if (_debug_call_stack_pos == 0) {
-
 			_debug_error = "Stack Underflow (Engine Bug)";
 			ScriptDebugger::get_singleton()->debug(this);
 			return;
@@ -428,7 +421,6 @@ public:
 	}
 
 	struct {
-
 		StringName _init;
 		StringName _notification;
 		StringName _set;

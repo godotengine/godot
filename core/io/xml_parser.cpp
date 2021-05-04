@@ -48,7 +48,6 @@ static bool _equalsn(const CharType *str1, const CharType *str2, int len) {
 }
 
 String XMLParser::_replace_special_characters(const String &origstr) {
-
 	int pos = origstr.find("&");
 	int oldPos = 0;
 
@@ -148,7 +147,6 @@ void XMLParser::_ignore_definition() {
 }
 
 bool XMLParser::_parse_cdata() {
-
 	if (*(P + 1) != '[')
 		return false;
 
@@ -190,7 +188,6 @@ bool XMLParser::_parse_cdata() {
 }
 
 void XMLParser::_parse_comment() {
-
 	node_type = NODE_COMMENT;
 	P += 1;
 
@@ -217,7 +214,6 @@ void XMLParser::_parse_comment() {
 }
 
 void XMLParser::_parse_opening_xml_element() {
-
 	node_type = NODE_ELEMENT;
 	node_empty = false;
 	attributes.clear();
@@ -304,7 +300,6 @@ void XMLParser::_parse_opening_xml_element() {
 }
 
 void XMLParser::_parse_current_node() {
-
 	char *start = P;
 	node_offset = P - data;
 
@@ -342,12 +337,10 @@ void XMLParser::_parse_current_node() {
 }
 
 uint64_t XMLParser::get_node_offset() const {
-
 	return node_offset;
 };
 
 Error XMLParser::seek(uint64_t p_pos) {
-
 	ERR_FAIL_COND_V(!data, ERR_FILE_EOF);
 	ERR_FAIL_COND_V(p_pos >= length, ERR_FILE_EOF);
 
@@ -357,7 +350,6 @@ Error XMLParser::seek(uint64_t p_pos) {
 };
 
 void XMLParser::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("read"), &XMLParser::read);
 	ClassDB::bind_method(D_METHOD("get_node_type"), &XMLParser::get_node_type);
 	ClassDB::bind_method(D_METHOD("get_node_name"), &XMLParser::get_node_name);
@@ -386,7 +378,6 @@ void XMLParser::_bind_methods() {
 };
 
 Error XMLParser::read() {
-
 	// if not end reached, parse the node
 	if (P && (P - data) < (int64_t)length - 1 && *P != 0) {
 		_parse_current_node();
@@ -397,11 +388,9 @@ Error XMLParser::read() {
 }
 
 XMLParser::NodeType XMLParser::get_node_type() {
-
 	return node_type;
 }
 String XMLParser::get_node_data() const {
-
 	ERR_FAIL_COND_V(node_type != NODE_TEXT, "");
 	return node_name;
 }
@@ -411,21 +400,17 @@ String XMLParser::get_node_name() const {
 	return node_name;
 }
 int XMLParser::get_attribute_count() const {
-
 	return attributes.size();
 }
 String XMLParser::get_attribute_name(int p_idx) const {
-
 	ERR_FAIL_INDEX_V(p_idx, attributes.size(), "");
 	return attributes[p_idx].name;
 }
 String XMLParser::get_attribute_value(int p_idx) const {
-
 	ERR_FAIL_INDEX_V(p_idx, attributes.size(), "");
 	return attributes[p_idx].value;
 }
 bool XMLParser::has_attribute(const String &p_name) const {
-
 	for (int i = 0; i < attributes.size(); i++) {
 		if (attributes[i].name == p_name)
 			return true;
@@ -434,7 +419,6 @@ bool XMLParser::has_attribute(const String &p_name) const {
 	return false;
 }
 String XMLParser::get_attribute_value(const String &p_name) const {
-
 	int idx = -1;
 	for (int i = 0; i < attributes.size(); i++) {
 		if (attributes[i].name == p_name) {
@@ -449,7 +433,6 @@ String XMLParser::get_attribute_value(const String &p_name) const {
 }
 
 String XMLParser::get_attribute_value_safe(const String &p_name) const {
-
 	int idx = -1;
 	for (int i = 0; i < attributes.size(); i++) {
 		if (attributes[i].name == p_name) {
@@ -463,12 +446,10 @@ String XMLParser::get_attribute_value_safe(const String &p_name) const {
 	return attributes[idx].value;
 }
 bool XMLParser::is_empty() const {
-
 	return node_empty;
 }
 
 Error XMLParser::open_buffer(const Vector<uint8_t> &p_buffer) {
-
 	ERR_FAIL_COND_V(p_buffer.size() == 0, ERR_INVALID_DATA);
 
 	if (data) {
@@ -484,7 +465,6 @@ Error XMLParser::open_buffer(const Vector<uint8_t> &p_buffer) {
 }
 
 Error XMLParser::open(const String &p_path) {
-
 	Error err;
 	FileAccess *file = FileAccess::open(p_path, FileAccess::READ, &err);
 
@@ -508,7 +488,6 @@ Error XMLParser::open(const String &p_path) {
 }
 
 void XMLParser::skip_section() {
-
 	// skip if this element is empty anyway.
 	if (is_empty())
 		return;
@@ -526,7 +505,6 @@ void XMLParser::skip_section() {
 }
 
 void XMLParser::close() {
-
 	if (data)
 		memdelete_arr(data);
 	data = NULL;
@@ -538,12 +516,10 @@ void XMLParser::close() {
 }
 
 int XMLParser::get_current_line() const {
-
 	return 0;
 }
 
 XMLParser::XMLParser() {
-
 	data = NULL;
 	close();
 	special_characters.push_back("&amp;");
@@ -553,7 +529,6 @@ XMLParser::XMLParser() {
 	special_characters.push_back("'apos;");
 }
 XMLParser::~XMLParser() {
-
 	if (data)
 		memdelete_arr(data);
 }

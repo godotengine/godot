@@ -37,7 +37,6 @@
 #include "scene/resources/animation.h"
 
 class AnimationTreePlayer : public Node {
-
 	GDCLASS(AnimationTreePlayer, Node);
 	OBJ_CATEGORY("Animation Nodes");
 
@@ -77,13 +76,11 @@ private:
 	};
 
 	struct TrackKey {
-
 		uint32_t id;
 		StringName subpath_concatenated;
 		int bone_idx;
 
 		inline bool operator<(const TrackKey &p_right) const {
-
 			if (id == p_right.id) {
 				if (bone_idx == p_right.bone_idx) {
 					return subpath_concatenated < p_right.subpath_concatenated;
@@ -124,13 +121,11 @@ private:
 	TrackMap track_map;
 
 	struct Input {
-
 		StringName node;
 		//Input() { node=-1;  }
 	};
 
 	struct NodeBase {
-
 		bool cycletest;
 
 		NodeType type;
@@ -143,7 +138,6 @@ private:
 	};
 
 	struct NodeOut : public NodeBase {
-
 		NodeOut() {
 			type = NODE_OUTPUT;
 			inputs.resize(1);
@@ -151,7 +145,6 @@ private:
 	};
 
 	struct AnimationNode : public NodeBase {
-
 		Ref<Animation> animation;
 
 		struct TrackRef {
@@ -179,7 +172,6 @@ private:
 	};
 
 	struct OneShotNode : public NodeBase {
-
 		bool active;
 		bool start;
 		float fade_in;
@@ -211,7 +203,6 @@ private:
 	};
 
 	struct MixNode : public NodeBase {
-
 		float amount;
 		MixNode() {
 			type = NODE_MIX;
@@ -220,7 +211,6 @@ private:
 	};
 
 	struct Blend2Node : public NodeBase {
-
 		float value;
 		HashMap<NodePath, bool> filter;
 		Blend2Node() {
@@ -231,7 +221,6 @@ private:
 	};
 
 	struct Blend3Node : public NodeBase {
-
 		float value;
 		Blend3Node() {
 			type = NODE_BLEND3;
@@ -241,7 +230,6 @@ private:
 	};
 
 	struct Blend4Node : public NodeBase {
-
 		Point2 value;
 		Blend4Node() {
 			type = NODE_BLEND4;
@@ -250,7 +238,6 @@ private:
 	};
 
 	struct TimeScaleNode : public NodeBase {
-
 		float scale;
 		TimeScaleNode() {
 			type = NODE_TIMESCALE;
@@ -260,7 +247,6 @@ private:
 	};
 
 	struct TimeSeekNode : public NodeBase {
-
 		float seek_pos;
 
 		TimeSeekNode() {
@@ -271,9 +257,7 @@ private:
 	};
 
 	struct TransitionNode : public NodeBase {
-
 		struct InputData {
-
 			bool auto_advance;
 			InputData() { auto_advance = false; }
 		};
@@ -451,7 +435,6 @@ public:
 	NodePath get_master_player() const;
 
 	struct Connection {
-
 		StringName src_node;
 		StringName dst_node;
 		int dst_input;

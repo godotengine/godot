@@ -144,7 +144,6 @@ private:
 	Type type;
 
 	struct ObjData {
-
 #ifdef DEBUG_ENABLED
 		// Will be null for every type deriving from Reference as they have their
 		// own reference count mechanism
@@ -359,7 +358,6 @@ public:
 	static String get_operator_name(Operator p_op);
 	static void evaluate(const Operator &p_op, const Variant &p_a, const Variant &p_b, Variant &r_ret, bool &r_valid);
 	static _FORCE_INLINE_ Variant evaluate(const Operator &p_op, const Variant &p_a, const Variant &p_b) {
-
 		bool valid = true;
 		Variant res;
 		evaluate(p_op, p_a, p_b, res, valid);
@@ -457,22 +455,18 @@ Vector<Variant> varray(const Variant &p_arg1, const Variant &p_arg2, const Varia
 Vector<Variant> varray(const Variant &p_arg1, const Variant &p_arg2, const Variant &p_arg3, const Variant &p_arg4, const Variant &p_arg5);
 
 struct VariantHasher {
-
 	static _FORCE_INLINE_ uint32_t hash(const Variant &p_variant) { return p_variant.hash(); }
 };
 
 struct VariantComparator {
-
 	static _FORCE_INLINE_ bool compare(const Variant &p_lhs, const Variant &p_rhs) { return p_lhs.hash_compare(p_rhs); }
 };
 
 Variant::ObjData &Variant::_get_obj() {
-
 	return *reinterpret_cast<ObjData *>(&_data._mem[0]);
 }
 
 const Variant::ObjData &Variant::_get_obj() const {
-
 	return *reinterpret_cast<const ObjData *>(&_data._mem[0]);
 }
 

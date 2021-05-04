@@ -47,7 +47,6 @@ public:
 };
 
 class EditorProperty : public Container {
-
 	GDCLASS(EditorProperty, Container);
 
 private:

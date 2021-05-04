@@ -38,7 +38,6 @@
 class Physics2DDirectSpaceState;
 
 class Physics2DDirectBodyState : public Object {
-
 	GDCLASS(Physics2DDirectBodyState, Object);
 
 protected:
@@ -97,7 +96,6 @@ class Physics2DShapeQueryResult;
 
 //used for script
 class Physics2DShapeQueryParameters : public Reference {
-
 	GDCLASS(Physics2DShapeQueryParameters, Reference);
 	friend class Physics2DDirectSpaceState;
 	RID shape;
@@ -143,7 +141,6 @@ public:
 };
 
 class Physics2DDirectSpaceState : public Object {
-
 	GDCLASS(Physics2DDirectSpaceState, Object);
 
 	Dictionary _intersect_ray(const Vector2 &p_from, const Vector2 &p_to, const Vector<RID> &p_exclude = Vector<RID>(), uint32_t p_layers = 0, bool p_collide_with_bodies = true, bool p_collide_with_areas = false);
@@ -160,7 +157,6 @@ protected:
 
 public:
 	struct RayResult {
-
 		Vector2 position;
 		Vector2 normal;
 		RID rid;
@@ -173,7 +169,6 @@ public:
 	virtual bool intersect_ray(const Vector2 &p_from, const Vector2 &p_to, RayResult &r_result, const Set<RID> &p_exclude = Set<RID>(), uint32_t p_collision_layer = 0xFFFFFFFF, bool p_collide_with_bodies = true, bool p_collide_with_areas = false) = 0;
 
 	struct ShapeResult {
-
 		RID rid;
 		ObjectID collider_id;
 		Object *collider;
@@ -191,7 +186,6 @@ public:
 	virtual bool collide_shape(RID p_shape, const Transform2D &p_shape_xform, const Vector2 &p_motion, float p_margin, Vector2 *r_results, int p_result_max, int &r_result_count, const Set<RID> &p_exclude = Set<RID>(), uint32_t p_collision_layer = 0xFFFFFFFF, bool p_collide_with_bodies = true, bool p_collide_with_areas = false) = 0;
 
 	struct ShapeRestInfo {
-
 		Vector2 point;
 		Vector2 normal;
 		RID rid;
@@ -207,7 +201,6 @@ public:
 };
 
 class Physics2DShapeQueryResult : public Reference {
-
 	GDCLASS(Physics2DShapeQueryResult, Reference);
 
 	Vector<Physics2DDirectSpaceState::ShapeResult> result;
@@ -230,7 +223,6 @@ public:
 class Physics2DTestMotionResult;
 
 class Physics2DServer : public Object {
-
 	GDCLASS(Physics2DServer, Object);
 
 	static Physics2DServer *singleton;
@@ -493,7 +485,6 @@ public:
 	virtual Physics2DDirectBodyState *body_get_direct_state(RID p_body) = 0;
 
 	struct MotionResult {
-
 		Vector2 motion;
 		Vector2 remainder;
 
@@ -516,7 +507,6 @@ public:
 	virtual bool body_test_motion(RID p_body, const Transform2D &p_from, const Vector2 &p_motion, bool p_infinite_inertia, float p_margin = 0.001, MotionResult *r_result = NULL, bool p_exclude_raycast_shapes = true) = 0;
 
 	struct SeparationResult {
-
 		float collision_depth;
 		Vector2 collision_point;
 		Vector2 collision_normal;
@@ -607,7 +597,6 @@ public:
 };
 
 class Physics2DTestMotionResult : public Reference {
-
 	GDCLASS(Physics2DTestMotionResult, Reference);
 
 	Physics2DServer::MotionResult result;

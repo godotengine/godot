@@ -38,7 +38,6 @@
 #include "scene/resources/dynamic_font.h"
 
 void EditorLog::_error_handler(void *p_self, const char *p_func, const char *p_file, int p_line, const char *p_error, const char *p_errorexp, ErrorHandlerType p_type) {
-
 	EditorLog *self = (EditorLog *)p_self;
 	if (self->current != Thread::get_caller_id())
 		return;
@@ -58,9 +57,7 @@ void EditorLog::_error_handler(void *p_self, const char *p_func, const char *p_f
 }
 
 void EditorLog::_notification(int p_what) {
-
 	if (p_what == NOTIFICATION_ENTER_TREE) {
-
 		//button->set_icon(get_icon("Console","EditorIcons"));
 		log->add_font_override("normal_font", get_font("output_source", "EditorFonts"));
 		log->add_color_override("selection_color", get_color("accent_color", "Editor") * Color(1, 1, 1, 0.4));
@@ -76,7 +73,6 @@ void EditorLog::_notification(int p_what) {
 }
 
 void EditorLog::_clear_request() {
-
 	log->clear();
 	tool_button->set_icon(Ref<Texture>());
 }
@@ -138,13 +134,11 @@ void EditorLog::set_tool_button(ToolButton *p_tool_button) {
 }
 
 void EditorLog::_undo_redo_cbk(void *p_self, const String &p_name) {
-
 	EditorLog *self = (EditorLog *)p_self;
 	self->add_message(p_name, EditorLog::MSG_TYPE_EDITOR);
 }
 
 void EditorLog::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("_clear_request"), &EditorLog::_clear_request);
 	ClassDB::bind_method(D_METHOD("_copy_request"), &EditorLog::_copy_request);
 	ADD_SIGNAL(MethodInfo("clear_request"));
@@ -152,7 +146,6 @@ void EditorLog::_bind_methods() {
 }
 
 EditorLog::EditorLog() {
-
 	VBoxContainer *vb = this;
 
 	HBoxContainer *hb = memnew(HBoxContainer);
@@ -196,7 +189,6 @@ EditorLog::EditorLog() {
 }
 
 void EditorLog::deinit() {
-
 	remove_error_handler(&eh);
 }
 

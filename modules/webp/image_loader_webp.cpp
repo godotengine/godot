@@ -39,7 +39,6 @@
 #include <webp/encode.h>
 
 static PoolVector<uint8_t> _webp_lossy_pack(const Ref<Image> &p_image, float p_quality) {
-
 	ERR_FAIL_COND_V(p_image.is_null() || p_image->empty(), PoolVector<uint8_t>());
 
 	Ref<Image> img = p_image->duplicate();
@@ -55,7 +54,6 @@ static PoolVector<uint8_t> _webp_lossy_pack(const Ref<Image> &p_image, float p_q
 	uint8_t *dst_buff = NULL;
 	size_t dst_size = 0;
 	if (img->get_format() == Image::FORMAT_RGB8) {
-
 		dst_size = WebPEncodeRGB(r.ptr(), s.width, s.height, 3 * s.width, CLAMP(p_quality * 100.0, 0, 100.0), &dst_buff);
 	} else {
 		dst_size = WebPEncodeRGBA(r.ptr(), s.width, s.height, 4 * s.width, CLAMP(p_quality * 100.0, 0, 100.0), &dst_buff);
@@ -76,7 +74,6 @@ static PoolVector<uint8_t> _webp_lossy_pack(const Ref<Image> &p_image, float p_q
 }
 
 static Ref<Image> _webp_lossy_unpack(const PoolVector<uint8_t> &p_buffer) {
-
 	int size = p_buffer.size() - 4;
 	ERR_FAIL_COND_V(size <= 0, Ref<Image>());
 	PoolVector<uint8_t>::Read r = p_buffer.read();
@@ -115,7 +112,6 @@ static Ref<Image> _webp_lossy_unpack(const PoolVector<uint8_t> &p_buffer) {
 }
 
 Error webp_load_image_from_buffer(Image *p_image, const uint8_t *p_buffer, int p_buffer_len) {
-
 	ERR_FAIL_NULL_V(p_image, ERR_INVALID_PARAMETER);
 
 	WebPBitstreamFeatures features;
@@ -144,7 +140,6 @@ Error webp_load_image_from_buffer(Image *p_image, const uint8_t *p_buffer, int p
 }
 
 static Ref<Image> _webp_mem_loader_func(const uint8_t *p_png, int p_size) {
-
 	Ref<Image> img;
 	img.instance();
 	Error err = webp_load_image_from_buffer(img.ptr(), p_png, p_size);
@@ -153,7 +148,6 @@ static Ref<Image> _webp_mem_loader_func(const uint8_t *p_png, int p_size) {
 }
 
 Error ImageLoaderWEBP::load_image(Ref<Image> p_image, FileAccess *f, bool p_force_linear, float p_scale) {
-
 	PoolVector<uint8_t> src_image;
 	int src_image_len = f->get_len();
 	ERR_FAIL_COND_V(src_image_len == 0, ERR_FILE_CORRUPT);
@@ -171,7 +165,6 @@ Error ImageLoaderWEBP::load_image(Ref<Image> p_image, FileAccess *f, bool p_forc
 }
 
 void ImageLoaderWEBP::get_recognized_extensions(List<String> *p_extensions) const {
-
 	p_extensions->push_back("webp");
 }
 

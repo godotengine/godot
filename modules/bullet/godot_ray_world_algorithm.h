@@ -42,7 +42,6 @@
 class btDiscreteDynamicsWorld;
 
 class GodotRayWorldAlgorithm : public btActivatingCollisionAlgorithm {
-
 	const btDiscreteDynamicsWorld *m_world;
 	btPersistentManifold *m_manifoldPtr;
 	bool m_ownManifold;
@@ -61,7 +60,6 @@ public:
 			manifoldArray.push_back(m_manifoldPtr);
 	}
 	struct CreateFunc : public btCollisionAlgorithmCreateFunc {
-
 		const btDiscreteDynamicsWorld *m_world;
 		CreateFunc(const btDiscreteDynamicsWorld *world);
 
@@ -72,7 +70,6 @@ public:
 	};
 
 	struct SwappedCreateFunc : public btCollisionAlgorithmCreateFunc {
-
 		const btDiscreteDynamicsWorld *m_world;
 		SwappedCreateFunc(const btDiscreteDynamicsWorld *world);
 

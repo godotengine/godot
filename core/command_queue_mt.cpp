@@ -34,30 +34,24 @@
 #include "core/project_settings.h"
 
 void CommandQueueMT::lock() {
-
 	mutex.lock();
 }
 
 void CommandQueueMT::unlock() {
-
 	mutex.unlock();
 }
 
 void CommandQueueMT::wait_for_flush() {
-
 	// wait one millisecond for a flush to happen
 	OS::get_singleton()->delay_usec(1000);
 }
 
 CommandQueueMT::SyncSemaphore *CommandQueueMT::_alloc_sync_sem() {
-
 	int idx = -1;
 
 	while (true) {
-
 		lock();
 		for (int i = 0; i < SYNC_SEMAPHORES; i++) {
-
 			if (!sync_sems[i].in_use) {
 				sync_sems[i].in_use = true;
 				idx = i;
@@ -101,7 +95,6 @@ tryagain:
 }
 
 CommandQueueMT::CommandQueueMT(bool p_sync) {
-
 	read_ptr_and_epoch = 0;
 	write_ptr_and_epoch = 0;
 	dealloc_ptr = 0;
@@ -112,7 +105,6 @@ CommandQueueMT::CommandQueueMT(bool p_sync) {
 	command_mem = (uint8_t *)memalloc(command_mem_size);
 
 	for (int i = 0; i < SYNC_SEMAPHORES; i++) {
-
 		sync_sems[i].in_use = false;
 	}
 	if (p_sync) {
@@ -123,7 +115,6 @@ CommandQueueMT::CommandQueueMT(bool p_sync) {
 }
 
 CommandQueueMT::~CommandQueueMT() {
-
 	if (sync)
 		memdelete(sync);
 	memfree(command_mem);

@@ -46,22 +46,18 @@
 typedef GLXContext (*GLXCREATECONTEXTATTRIBSARBPROC)(Display *, GLXFBConfig, GLXContext, Bool, const int *);
 
 struct ContextGL_X11_Private {
-
 	::GLXContext glx_context;
 };
 
 void ContextGL_X11::release_current() {
-
 	glXMakeCurrent(x11_display, None, NULL);
 }
 
 void ContextGL_X11::make_current() {
-
 	glXMakeCurrent(x11_display, x11_window, p->glx_context);
 }
 
 void ContextGL_X11::swap_buffers() {
-
 	glXSwapBuffers(x11_display, x11_window);
 }
 
@@ -85,7 +81,6 @@ static void set_class_hint(Display *p_display, Window p_window) {
 }
 
 Error ContextGL_X11::initialize() {
-
 	//const char *extensions = glXQueryExtensionsString(x11_display, DefaultScreen(x11_display));
 
 	GLXCREATECONTEXTATTRIBSARBPROC glXCreateContextAttribsARB = (GLXCREATECONTEXTATTRIBSARBPROC)glXGetProcAddress((const GLubyte *)"glXCreateContextAttribsARB");
@@ -167,17 +162,14 @@ Error ContextGL_X11::initialize() {
 
 	switch (context_type) {
 		case OLDSTYLE: {
-
 			p->glx_context = glXCreateContext(x11_display, vi, 0, GL_TRUE);
 			ERR_FAIL_COND_V(!p->glx_context, ERR_UNCONFIGURED);
 		} break;
 		case GLES_2_0_COMPATIBLE: {
-
 			p->glx_context = glXCreateNewContext(x11_display, fbconfig, GLX_RGBA_TYPE, 0, true);
 			ERR_FAIL_COND_V(!p->glx_context, ERR_UNCONFIGURED);
 		} break;
 		case GLES_3_0_COMPATIBLE: {
-
 			static int context_attribs[] = {
 				GLX_CONTEXT_MAJOR_VERSION_ARB, 3,
 				GLX_CONTEXT_MINOR_VERSION_ARB, 3,
@@ -213,7 +205,6 @@ Error ContextGL_X11::initialize() {
 }
 
 int ContextGL_X11::get_window_width() {
-
 	XWindowAttributes xwa;
 	XGetWindowAttributes(x11_display, x11_window, &xwa);
 
@@ -264,13 +255,11 @@ void ContextGL_X11::set_use_vsync(bool p_use) {
 	use_vsync = p_use;
 }
 bool ContextGL_X11::is_using_vsync() const {
-
 	return use_vsync;
 }
 
 ContextGL_X11::ContextGL_X11(::Display *p_x11_display, ::Window &p_x11_window, const OS::VideoMode &p_default_video_mode, ContextType p_context_type) :
 		x11_window(p_x11_window) {
-
 	default_video_mode = p_default_video_mode;
 	x11_display = p_x11_display;
 

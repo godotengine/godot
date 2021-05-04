@@ -38,7 +38,6 @@
 #include "step_2d_sw.h"
 
 class Physics2DServerSW : public Physics2DServer {
-
 	GDCLASS(Physics2DServerSW, Physics2DServer);
 
 	friend class Physics2DDirectSpaceStateSW;
@@ -78,7 +77,6 @@ class Physics2DServerSW : public Physics2DServer {
 
 public:
 	struct CollCbkData {
-
 		Vector2 valid_dir;
 		real_t valid_depth;
 		int max;

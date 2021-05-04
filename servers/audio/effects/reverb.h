@@ -57,7 +57,6 @@ private:
 	static const float allpass_tunings[MAX_ALLPASS];
 
 	struct Comb {
-
 		int size;
 		float *buffer;
 		float feedback;
@@ -76,7 +75,6 @@ private:
 	};
 
 	struct AllPass {
-
 		int size;
 		float *buffer;
 		int pos;
@@ -98,7 +96,6 @@ private:
 	float hpf_h1, hpf_h2;
 
 	struct Parameters {
-
 		float room_size;
 		float damp;
 		float wet;

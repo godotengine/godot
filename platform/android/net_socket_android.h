@@ -45,7 +45,6 @@
  * joins/leaves a multicast group.
  */
 class NetSocketAndroid : public NetSocketPosix {
-
 private:
 	static jobject net_utils;
 	static jclass cls;

@@ -56,7 +56,6 @@
 */
 
 class SoftBodyBullet : public CollisionObjectBullet {
-
 private:
 	btSoftBody *bt_soft_body;
 	Vector<Vector<int>> indices_table;

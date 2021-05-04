@@ -145,7 +145,6 @@ struct BVH_ABB {
 		Vector3 ofs = min + half_extents;
 
 		for (unsigned int i = 0; i < p_num_planes; i++) {
-
 			const Plane &p = p_hull.planes[p_plane_ids[i]];
 			Vector3 point(
 					(p.normal.x > 0) ? -half_extents.x : half_extents.x,

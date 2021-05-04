@@ -43,7 +43,6 @@ import javax.microedition.khronos.opengles.GL10;
  * Godot's renderer implementation.
  */
 class GodotRenderer implements GLSurfaceView.Renderer {
-
 	private final GodotPluginRegistry pluginRegistry;
 	private boolean activityJustResumed = false;
 

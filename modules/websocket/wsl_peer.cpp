@@ -234,7 +234,6 @@ void WSLPeer::poll() {
 }
 
 Error WSLPeer::put_packet(const uint8_t *p_buffer, int p_buffer_size) {
-
 	ERR_FAIL_COND_V(!is_connected_to_host(), FAILED);
 
 	struct wslay_event_msg msg; // Should I use fragmented?
@@ -251,7 +250,6 @@ Error WSLPeer::put_packet(const uint8_t *p_buffer, int p_buffer_size) {
 }
 
 Error WSLPeer::get_packet(const uint8_t **r_buffer, int &r_buffer_size) {
-
 	r_buffer_size = 0;
 
 	ERR_FAIL_COND_V(!is_connected_to_host(), FAILED);
@@ -270,7 +268,6 @@ Error WSLPeer::get_packet(const uint8_t **r_buffer, int &r_buffer_size) {
 }
 
 int WSLPeer::get_available_packet_count() const {
-
 	if (!is_connected_to_host())
 		return 0;
 
@@ -278,12 +275,10 @@ int WSLPeer::get_available_packet_count() const {
 }
 
 bool WSLPeer::was_string_packet() const {
-
 	return _is_string;
 }
 
 bool WSLPeer::is_connected_to_host() const {
-
 	return _data != NULL;
 }
 
@@ -305,21 +300,18 @@ void WSLPeer::close(int p_code, String p_reason) {
 }
 
 IP_Address WSLPeer::get_connected_host() const {
-
 	ERR_FAIL_COND_V(!is_connected_to_host() || _data->tcp.is_null(), IP_Address());
 
 	return _data->tcp->get_connected_host();
 }
 
 uint16_t WSLPeer::get_connected_port() const {
-
 	ERR_FAIL_COND_V(!is_connected_to_host() || _data->tcp.is_null(), 0);
 
 	return _data->tcp->get_connected_port();
 }
 
 void WSLPeer::set_no_delay(bool p_enabled) {
-
 	ERR_FAIL_COND(!is_connected_to_host() || _data->tcp.is_null());
 	_data->tcp->set_no_delay(p_enabled);
 }
@@ -337,7 +329,6 @@ WSLPeer::WSLPeer() {
 }
 
 WSLPeer::~WSLPeer() {
-
 	close();
 	invalidate();
 	_wsl_destroy(&_data);

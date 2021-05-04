@@ -51,7 +51,6 @@ static const float AUDIO_PEAK_OFFSET = 0.0000000001f;
 static const float AUDIO_MIN_PEAK_DB = -200.0f; // linear2db(AUDIO_PEAK_OFFSET)
 
 struct AudioFrame {
-
 	//left and right samples
 	float l, r;
 
@@ -108,7 +107,6 @@ struct AudioFrame {
 	}
 
 	_FORCE_INLINE_ AudioFrame linear_interpolate(const AudioFrame &p_b, float p_t) const {
-
 		AudioFrame res = *this;
 
 		res.l += (p_t * (p_b.l - l));

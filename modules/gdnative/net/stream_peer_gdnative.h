@@ -36,7 +36,6 @@
 #include "modules/gdnative/include/net/godot_net.h"
 
 class StreamPeerGDNative : public StreamPeer {
-
 	GDCLASS(StreamPeerGDNative, StreamPeer);
 
 protected:

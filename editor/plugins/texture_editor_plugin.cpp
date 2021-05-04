@@ -38,14 +38,11 @@ void TextureEditor::_gui_input(Ref<InputEvent> p_event) {
 }
 
 void TextureEditor::_notification(int p_what) {
-
 	if (p_what == NOTIFICATION_READY) {
-
 		//get_scene()->connect("node_removed",this,"_node_removed");
 	}
 
 	if (p_what == NOTIFICATION_DRAW) {
-
 		Ref<Texture> checkerboard = get_icon("Checkerboard", "EditorIcons");
 		Size2 size = get_size();
 
@@ -104,14 +101,12 @@ void TextureEditor::_notification(int p_what) {
 }
 
 void TextureEditor::_changed_callback(Object *p_changed, const char *p_prop) {
-
 	if (!is_visible())
 		return;
 	update();
 }
 
 void TextureEditor::edit(Ref<Texture> p_texture) {
-
 	if (!texture.is_null())
 		texture->remove_change_receptor(this);
 
@@ -126,12 +121,10 @@ void TextureEditor::edit(Ref<Texture> p_texture) {
 }
 
 void TextureEditor::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("_gui_input"), &TextureEditor::_gui_input);
 }
 
 TextureEditor::TextureEditor() {
-
 	set_custom_minimum_size(Size2(1, 150));
 }
 
@@ -142,12 +135,10 @@ TextureEditor::~TextureEditor() {
 }
 //
 bool EditorInspectorPluginTexture::can_handle(Object *p_object) {
-
 	return Object::cast_to<ImageTexture>(p_object) != NULL || Object::cast_to<AtlasTexture>(p_object) != NULL || Object::cast_to<StreamTexture>(p_object) != NULL || Object::cast_to<LargeTexture>(p_object) != NULL || Object::cast_to<AnimatedTexture>(p_object) != NULL;
 }
 
 void EditorInspectorPluginTexture::parse_begin(Object *p_object) {
-
 	Texture *texture = Object::cast_to<Texture>(p_object);
 	if (!texture) {
 		return;
@@ -160,7 +151,6 @@ void EditorInspectorPluginTexture::parse_begin(Object *p_object) {
 }
 
 TextureEditorPlugin::TextureEditorPlugin(EditorNode *p_node) {
-
 	Ref<EditorInspectorPluginTexture> plugin;
 	plugin.instance();
 	add_inspector_plugin(plugin);

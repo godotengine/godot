@@ -34,7 +34,6 @@
 #include "parallax_background.h"
 
 void ParallaxLayer::set_motion_scale(const Size2 &p_scale) {
-
 	motion_scale = p_scale;
 
 	ParallaxBackground *pb = Object::cast_to<ParallaxBackground>(get_parent());
@@ -46,12 +45,10 @@ void ParallaxLayer::set_motion_scale(const Size2 &p_scale) {
 }
 
 Size2 ParallaxLayer::get_motion_scale() const {
-
 	return motion_scale;
 }
 
 void ParallaxLayer::set_motion_offset(const Size2 &p_offset) {
-
 	motion_offset = p_offset;
 
 	ParallaxBackground *pb = Object::cast_to<ParallaxBackground>(get_parent());
@@ -63,18 +60,15 @@ void ParallaxLayer::set_motion_offset(const Size2 &p_offset) {
 }
 
 Size2 ParallaxLayer::get_motion_offset() const {
-
 	return motion_offset;
 }
 
 void ParallaxLayer::_update_mirroring() {
-
 	if (!is_inside_tree())
 		return;
 
 	ParallaxBackground *pb = Object::cast_to<ParallaxBackground>(get_parent());
 	if (pb) {
-
 		RID c = pb->get_canvas();
 		RID ci = get_canvas_item();
 		Point2 mirrorScale = mirroring * get_scale();
@@ -83,7 +77,6 @@ void ParallaxLayer::_update_mirroring() {
 }
 
 void ParallaxLayer::set_mirroring(const Size2 &p_mirroring) {
-
 	mirroring = p_mirroring;
 	if (mirroring.x < 0)
 		mirroring.x = 0;
@@ -94,22 +87,17 @@ void ParallaxLayer::set_mirroring(const Size2 &p_mirroring) {
 }
 
 Size2 ParallaxLayer::get_mirroring() const {
-
 	return mirroring;
 }
 
 void ParallaxLayer::_notification(int p_what) {
-
 	switch (p_what) {
-
 		case NOTIFICATION_ENTER_TREE: {
-
 			orig_offset = get_position();
 			orig_scale = get_scale();
 			_update_mirroring();
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
-
 			set_position(orig_offset);
 			set_scale(orig_scale);
 		} break;
@@ -155,7 +143,6 @@ String ParallaxLayer::get_configuration_warning() const {
 }
 
 void ParallaxLayer::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("set_motion_scale", "scale"), &ParallaxLayer::set_motion_scale);
 	ClassDB::bind_method(D_METHOD("get_motion_scale"), &ParallaxLayer::get_motion_scale);
 	ClassDB::bind_method(D_METHOD("set_motion_offset", "offset"), &ParallaxLayer::set_motion_offset);

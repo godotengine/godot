@@ -85,7 +85,6 @@ Quat ImportUtils::EulerToQuaternion(FBXDocParser::Model::RotOrder mode, const Ve
 }
 
 Vector3 ImportUtils::BasisToEuler(FBXDocParser::Model::RotOrder mode, const Basis &p_rotation) {
-
 	// FBX is using intrinsic euler, we can convert intrinsic to extrinsic (the one used in godot
 	// by simply invert its order: https://www.cs.utexas.edu/~theshark/courses/cs354/lectures/cs354-14.pdf
 	switch (mode) {

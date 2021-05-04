@@ -81,7 +81,6 @@ bool Polygon2D::_edit_use_rect() const {
 }
 
 bool Polygon2D::_edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const {
-
 	Vector<Vector2> polygon2d = Variant(polygon);
 	if (internal_vertices > 0) {
 		polygon2d.resize(polygon2d.size() - internal_vertices);
@@ -95,11 +94,8 @@ void Polygon2D::_skeleton_bone_setup_changed() {
 }
 
 void Polygon2D::_notification(int p_what) {
-
 	switch (p_what) {
-
 		case NOTIFICATION_DRAW: {
-
 			if (polygon.size() < 3)
 				return;
 
@@ -147,7 +143,6 @@ void Polygon2D::_notification(int p_what) {
 			points.resize(len);
 
 			{
-
 				PoolVector<Vector2>::Read polyr = polygon.read();
 				for (int i = 0; i < len; i++) {
 					points.write[i] = polyr[i] + offset;
@@ -155,7 +150,6 @@ void Polygon2D::_notification(int p_what) {
 			}
 
 			if (invert) {
-
 				Rect2 bounds;
 				int highest_idx = -1;
 				float highest_y = -1e20;
@@ -195,12 +189,10 @@ void Polygon2D::_notification(int p_what) {
 
 				points.resize(points.size() + 7);
 				for (int i = points.size() - 1; i >= highest_idx + 7; i--) {
-
 					points.write[i] = points[i - 7];
 				}
 
 				for (int i = 0; i < 7; i++) {
-
 					points.write[highest_idx + i + 1] = ep[i];
 				}
 
@@ -208,7 +200,6 @@ void Polygon2D::_notification(int p_what) {
 			}
 
 			if (texture.is_valid()) {
-
 				Transform2D texmat(tex_rot, tex_ofs);
 				texmat.scale(tex_scale);
 				Size2 tex_size = texture->get_size();
@@ -216,7 +207,6 @@ void Polygon2D::_notification(int p_what) {
 				uvs.resize(len);
 
 				if (points.size() == uv.size()) {
-
 					PoolVector<Vector2>::Read uvr = uv.read();
 
 					for (int i = 0; i < len; i++) {
@@ -359,12 +349,10 @@ void Polygon2D::set_polygon(const PoolVector<Vector2> &p_polygon) {
 }
 
 PoolVector<Vector2> Polygon2D::get_polygon() const {
-
 	return polygon;
 }
 
 void Polygon2D::set_internal_vertex_count(int p_count) {
-
 	internal_vertices = p_count;
 }
 
@@ -373,49 +361,40 @@ int Polygon2D::get_internal_vertex_count() const {
 }
 
 void Polygon2D::set_uv(const PoolVector<Vector2> &p_uv) {
-
 	uv = p_uv;
 	update();
 }
 
 PoolVector<Vector2> Polygon2D::get_uv() const {
-
 	return uv;
 }
 
 void Polygon2D::set_polygons(const Array &p_polygons) {
-
 	polygons = p_polygons;
 	update();
 }
 
 Array Polygon2D::get_polygons() const {
-
 	return polygons;
 }
 
 void Polygon2D::set_color(const Color &p_color) {
-
 	color = p_color;
 	update();
 }
 Color Polygon2D::get_color() const {
-
 	return color;
 }
 
 void Polygon2D::set_vertex_colors(const PoolVector<Color> &p_colors) {
-
 	vertex_colors = p_colors;
 	update();
 }
 PoolVector<Color> Polygon2D::get_vertex_colors() const {
-
 	return vertex_colors;
 }
 
 void Polygon2D::set_texture(const Ref<Texture> &p_texture) {
-
 	texture = p_texture;
 
 	/*if (texture.is_valid()) {
@@ -429,81 +408,65 @@ void Polygon2D::set_texture(const Ref<Texture> &p_texture) {
 	update();
 }
 Ref<Texture> Polygon2D::get_texture() const {
-
 	return texture;
 }
 
 void Polygon2D::set_texture_offset(const Vector2 &p_offset) {
-
 	tex_ofs = p_offset;
 	update();
 }
 Vector2 Polygon2D::get_texture_offset() const {
-
 	return tex_ofs;
 }
 
 void Polygon2D::set_texture_rotation(float p_rot) {
-
 	tex_rot = p_rot;
 	update();
 }
 float Polygon2D::get_texture_rotation() const {
-
 	return tex_rot;
 }
 
 void Polygon2D::set_texture_rotation_degrees(float p_rot) {
-
 	set_texture_rotation(Math::deg2rad(p_rot));
 }
 float Polygon2D::get_texture_rotation_degrees() const {
-
 	return Math::rad2deg(get_texture_rotation());
 }
 
 void Polygon2D::set_texture_scale(const Size2 &p_scale) {
-
 	tex_scale = p_scale;
 	update();
 }
 Size2 Polygon2D::get_texture_scale() const {
-
 	return tex_scale;
 }
 
 void Polygon2D::set_invert(bool p_invert) {
-
 	invert = p_invert;
 	update();
 }
 bool Polygon2D::get_invert() const {
-
 	return invert;
 }
 
 void Polygon2D::set_antialiased(bool p_antialiased) {
-
 	antialiased = p_antialiased;
 	update();
 }
 bool Polygon2D::get_antialiased() const {
-
 	return antialiased;
 }
 
 void Polygon2D::set_invert_border(float p_invert_border) {
-
 	invert_border = p_invert_border;
 	update();
 }
 float Polygon2D::get_invert_border() const {
-
 	return invert_border;
 }
 
 void Polygon2D::set_offset(const Vector2 &p_offset) {
-
 	offset = p_offset;
 	rect_cache_dirty = true;
 	update();
@@ -511,12 +474,10 @@ void Polygon2D::set_offset(const Vector2 &p_offset) {
 }
 
 Vector2 Polygon2D::get_offset() const {
-
 	return offset;
 }
 
 void Polygon2D::add_bone(const NodePath &p_path, const PoolVector<float> &p_weights) {
-
 	Bone bone;
 	bone.path = p_path;
 	bone.weights = p_weights;
@@ -530,12 +491,10 @@ NodePath Polygon2D::get_bone_path(int p_index) const {
 	return bone_weights[p_index].path;
 }
 PoolVector<float> Polygon2D::get_bone_weights(int p_index) const {
-
 	ERR_FAIL_INDEX_V(p_index, bone_weights.size(), PoolVector<float>());
 	return bone_weights[p_index].weights;
 }
 void Polygon2D::erase_bone(int p_idx) {
-
 	ERR_FAIL_INDEX(p_idx, bone_weights.size());
 	bone_weights.remove(p_idx);
 }
@@ -564,7 +523,6 @@ Array Polygon2D::_get_bones() const {
 	return bones;
 }
 void Polygon2D::_set_bones(const Array &p_bones) {
-
 	ERR_FAIL_COND(p_bones.size() & 1);
 	clear_bones();
 	for (int i = 0; i < p_bones.size(); i += 2) {
@@ -584,7 +542,6 @@ NodePath Polygon2D::get_skeleton() const {
 }
 
 void Polygon2D::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("set_polygon", "polygon"), &Polygon2D::set_polygon);
 	ClassDB::bind_method(D_METHOD("get_polygon"), &Polygon2D::get_polygon);
 
@@ -674,7 +631,6 @@ void Polygon2D::_bind_methods() {
 }
 
 Polygon2D::Polygon2D() {
-
 	invert = 0;
 	invert_border = 100;
 	antialiased = false;

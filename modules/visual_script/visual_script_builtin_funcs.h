@@ -34,7 +34,6 @@
 #include "visual_script.h"
 
 class VisualScriptBuiltinFunc : public VisualScriptNode {
-
 	GDCLASS(VisualScriptBuiltinFunc, VisualScriptNode);
 
 public:

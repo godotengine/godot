@@ -37,7 +37,6 @@
 //#define collision_solver gjk_epa_calculate_penetration
 
 bool CollisionSolverSW::solve_static_plane(const ShapeSW *p_shape_A, const Transform &p_transform_A, const ShapeSW *p_shape_B, const Transform &p_transform_B, CallbackResult p_result_callback, void *p_userdata, bool p_swap_result) {
-
 	const PlaneShapeSW *plane = static_cast<const PlaneShapeSW *>(p_shape_A);
 	if (p_shape_B->get_type() == PhysicsServer::SHAPE_PLANE)
 		return false;
@@ -69,7 +68,6 @@ bool CollisionSolverSW::solve_static_plane(const ShapeSW *p_shape_A, const Trans
 	bool found = false;
 
 	for (int i = 0; i < support_count; i++) {
-
 		supports[i] = p_transform_B.xform(supports[i]);
 		if (p.distance_to(supports[i]) >= 0)
 			continue;
@@ -89,7 +87,6 @@ bool CollisionSolverSW::solve_static_plane(const ShapeSW *p_shape_A, const Trans
 }
 
 bool CollisionSolverSW::solve_ray(const ShapeSW *p_shape_A, const Transform &p_transform_A, const ShapeSW *p_shape_B, const Transform &p_transform_B, CallbackResult p_result_callback, void *p_userdata, bool p_swap_result) {
-
 	const RayShapeSW *ray = static_cast<const RayShapeSW *>(p_shape_A);
 
 	Vector3 from = p_transform_A.origin;
@@ -121,7 +118,6 @@ bool CollisionSolverSW::solve_ray(const ShapeSW *p_shape_A, const Transform &p_t
 }
 
 struct _ConcaveCollisionInfo {
-
 	const Transform *transform_A;
 	const ShapeSW *shape_A;
 	const Transform *transform_B;
@@ -138,7 +134,6 @@ struct _ConcaveCollisionInfo {
 };
 
 void CollisionSolverSW::concave_callback(void *p_userdata, ShapeSW *p_convex) {
-
 	_ConcaveCollisionInfo &cinfo = *(_ConcaveCollisionInfo *)(p_userdata);
 	cinfo.aabb_tests++;
 
@@ -151,7 +146,6 @@ void CollisionSolverSW::concave_callback(void *p_userdata, ShapeSW *p_convex) {
 }
 
 bool CollisionSolverSW::solve_concave(const ShapeSW *p_shape_A, const Transform &p_transform_A, const ShapeSW *p_shape_B, const Transform &p_transform_B, CallbackResult p_result_callback, void *p_userdata, bool p_swap_result, real_t p_margin_A, real_t p_margin_B) {
-
 	const ConcaveShapeSW *concave_B = static_cast<const ConcaveShapeSW *>(p_shape_B);
 
 	_ConcaveCollisionInfo cinfo;
@@ -175,7 +169,6 @@ bool CollisionSolverSW::solve_concave(const ShapeSW *p_shape_A, const Transform 
 
 	AABB local_aabb;
 	for (int i = 0; i < 3; i++) {
-
 		Vector3 axis(p_transform_B.basis.get_axis(i));
 		real_t axis_scale = 1.0 / axis.length();
 		axis *= axis_scale;
@@ -197,7 +190,6 @@ bool CollisionSolverSW::solve_concave(const ShapeSW *p_shape_A, const Transform 
 }
 
 bool CollisionSolverSW::solve_static(const ShapeSW *p_shape_A, const Transform &p_transform_A, const ShapeSW *p_shape_B, const Transform &p_transform_B, CallbackResult p_result_callback, void *p_userdata, Vector3 *r_sep_axis, real_t p_margin_A, real_t p_margin_B) {
-
 	PhysicsServer::ShapeType type_A = p_shape_A->get_type();
 	PhysicsServer::ShapeType type_B = p_shape_B->get_type();
 	bool concave_A = p_shape_A->is_concave();
@@ -212,7 +204,6 @@ bool CollisionSolverSW::solve_static(const ShapeSW *p_shape_A, const Transform &
 	}
 
 	if (type_A == PhysicsServer::SHAPE_PLANE) {
-
 		if (type_B == PhysicsServer::SHAPE_PLANE)
 			return false;
 		if (type_B == PhysicsServer::SHAPE_RAY) {
@@ -226,7 +217,6 @@ bool CollisionSolverSW::solve_static(const ShapeSW *p_shape_A, const Transform &
 		}
 
 	} else if (type_A == PhysicsServer::SHAPE_RAY) {
-
 		if (type_B == PhysicsServer::SHAPE_RAY)
 			return false;
 
@@ -237,7 +227,6 @@ bool CollisionSolverSW::solve_static(const ShapeSW *p_shape_A, const Transform &
 		}
 
 	} else if (concave_B) {
-
 		if (concave_A)
 			return false;
 
@@ -247,13 +236,11 @@ bool CollisionSolverSW::solve_static(const ShapeSW *p_shape_A, const Transform &
 			return solve_concave(p_shape_B, p_transform_B, p_shape_A, p_transform_A, p_result_callback, p_userdata, true, p_margin_A, p_margin_B);
 
 	} else {
-
 		return collision_solver(p_shape_A, p_transform_A, p_shape_B, p_transform_B, p_result_callback, p_userdata, false, r_sep_axis, p_margin_A, p_margin_B);
 	}
 }
 
 void CollisionSolverSW::concave_distance_callback(void *p_userdata, ShapeSW *p_convex) {
-
 	_ConcaveCollisionInfo &cinfo = *(_ConcaveCollisionInfo *)(p_userdata);
 	cinfo.aabb_tests++;
 	if (cinfo.collided)
@@ -265,7 +252,6 @@ void CollisionSolverSW::concave_distance_callback(void *p_userdata, ShapeSW *p_c
 	if (cinfo.collided)
 		return;
 	if (!cinfo.tested || close_A.distance_squared_to(close_B) < cinfo.close_A.distance_squared_to(cinfo.close_B)) {
-
 		cinfo.close_A = close_A;
 		cinfo.close_B = close_B;
 		cinfo.tested = true;
@@ -275,7 +261,6 @@ void CollisionSolverSW::concave_distance_callback(void *p_userdata, ShapeSW *p_c
 }
 
 bool CollisionSolverSW::solve_distance_plane(const ShapeSW *p_shape_A, const Transform &p_transform_A, const ShapeSW *p_shape_B, const Transform &p_transform_B, Vector3 &r_point_A, Vector3 &r_point_B) {
-
 	const PlaneShapeSW *plane = static_cast<const PlaneShapeSW *>(p_shape_A);
 	if (p_shape_B->get_type() == PhysicsServer::SHAPE_PLANE)
 		return false;
@@ -309,7 +294,6 @@ bool CollisionSolverSW::solve_distance_plane(const ShapeSW *p_shape_A, const Tra
 	real_t closest_d = 0;
 
 	for (int i = 0; i < support_count; i++) {
-
 		supports[i] = p_transform_B.xform(supports[i]);
 		real_t d = p.distance_to(supports[i]);
 		if (i == 0 || d < closest_d) {
@@ -327,12 +311,10 @@ bool CollisionSolverSW::solve_distance_plane(const ShapeSW *p_shape_A, const Tra
 }
 
 bool CollisionSolverSW::solve_distance(const ShapeSW *p_shape_A, const Transform &p_transform_A, const ShapeSW *p_shape_B, const Transform &p_transform_B, Vector3 &r_point_A, Vector3 &r_point_B, const AABB &p_concave_hint, Vector3 *r_sep_axis) {
-
 	if (p_shape_A->is_concave())
 		return false;
 
 	if (p_shape_B->get_type() == PhysicsServer::SHAPE_PLANE) {
-
 		Vector3 a, b;
 		bool col = solve_distance_plane(p_shape_B, p_transform_B, p_shape_A, p_transform_A, a, b);
 		r_point_A = b;
@@ -340,7 +322,6 @@ bool CollisionSolverSW::solve_distance(const ShapeSW *p_shape_A, const Transform
 		return !col;
 
 	} else if (p_shape_B->is_concave()) {
-
 		if (p_shape_A->is_concave())
 			return false;
 
@@ -372,7 +353,6 @@ bool CollisionSolverSW::solve_distance(const ShapeSW *p_shape_A, const Transform
 
 		AABB local_aabb;
 		for (int i = 0; i < 3; i++) {
-
 			Vector3 axis(p_transform_B.basis.get_axis(i));
 			real_t axis_scale = ((real_t)1.0) / axis.length();
 			axis *= axis_scale;
@@ -400,7 +380,6 @@ bool CollisionSolverSW::solve_distance(const ShapeSW *p_shape_A, const Transform
 
 		return !cinfo.collided;
 	} else {
-
 		return gjk_epa_calculate_distance(p_shape_A, p_transform_A, p_shape_B, p_transform_B, r_point_A, r_point_B); //should pass sepaxis..
 	}
 }

@@ -35,7 +35,6 @@
 #include "editor_settings.h"
 
 void EditorProfiler::_make_metric_ptrs(Metric &m) {
-
 	for (int i = 0; i < m.categories.size(); i++) {
 		m.category_ptrs[m.categories[i].signature] = &m.categories.write[i];
 		for (int j = 0; j < m.categories[i].items.size(); j++) {
@@ -45,7 +44,6 @@ void EditorProfiler::_make_metric_ptrs(Metric &m) {
 }
 
 void EditorProfiler::add_frame_metric(const Metric &p_metric, bool p_final) {
-
 	++last_metric;
 	if (last_metric >= frame_metrics.size())
 		last_metric = 0;
@@ -69,7 +67,6 @@ void EditorProfiler::add_frame_metric(const Metric &p_metric, bool p_final) {
 	updating_frame = false;
 
 	if (frame_delay->is_stopped()) {
-
 		frame_delay->set_wait_time(p_final ? 0.1 : 1);
 		frame_delay->start();
 	}
@@ -81,7 +78,6 @@ void EditorProfiler::add_frame_metric(const Metric &p_metric, bool p_final) {
 }
 
 void EditorProfiler::clear() {
-
 	int metric_size = EditorSettings::get_singleton()->get("debugger/profiler_frame_history_size");
 	metric_size = CLAMP(metric_size, 60, 1024);
 	frame_metrics.clear();
@@ -110,7 +106,6 @@ static String _get_percent_txt(float p_value, float p_total) {
 }
 
 String EditorProfiler::_get_time_as_text(const Metric &m, float p_time, int p_calls) {
-
 	const int dmode = display_mode->get_selected();
 
 	if (dmode == DISPLAY_FRAME_TIME) {
@@ -131,7 +126,6 @@ String EditorProfiler::_get_time_as_text(const Metric &m, float p_time, int p_ca
 }
 
 Color EditorProfiler::_get_color_from_signature(const StringName &p_signature) const {
-
 	Color bc = get_color("error_color", "Editor");
 	double rot = ABS(double(p_signature.hash()) / double(0x7FFFFFFF));
 	Color c;
@@ -140,7 +134,6 @@ Color EditorProfiler::_get_color_from_signature(const StringName &p_signature) c
 }
 
 void EditorProfiler::_item_edited() {
-
 	if (updating_frame)
 		return;
 
@@ -164,7 +157,6 @@ void EditorProfiler::_item_edited() {
 }
 
 void EditorProfiler::_update_plot() {
-
 	const int w = graph->get_size().width;
 	const int h = graph->get_size().height;
 	bool reset_texture = false;
@@ -197,7 +189,6 @@ void EditorProfiler::_update_plot() {
 			continue;
 
 		for (Set<StringName>::Element *E = plot_sigs.front(); E; E = E->next()) {
-
 			const Map<StringName, Metric::Category *>::Element *F = m.category_ptrs.find(E->get());
 			if (F) {
 				highest = MAX(F->get()->total_time, highest);
@@ -228,7 +219,6 @@ void EditorProfiler::_update_plot() {
 		//Map<StringName,int> plot_max;
 
 		for (int i = 0; i < w; i++) {
-
 			for (int j = 0; j < h * 4; j++) {
 				column[j] = 0;
 			}
@@ -242,11 +232,9 @@ void EditorProfiler::_update_plot() {
 				next = current + 1; //just because for loop must work
 
 			for (Set<StringName>::Element *E = plot_sigs.front(); E; E = E->next()) {
-
 				int plot_pos = -1;
 
 				for (int j = current; j < next; j++) {
-
 					//wrap
 					int idx = last_metric + 1 + j;
 					while (idx >= frame_metrics.size()) {
@@ -292,7 +280,6 @@ void EditorProfiler::_update_plot() {
 				}
 
 				if (prev_plot != -1 && plot_pos == -1) {
-
 					plot_pos = prev_plot;
 				}
 
@@ -310,7 +297,6 @@ void EditorProfiler::_update_plot() {
 				Color col = _get_color_from_signature(E->get());
 
 				for (int j = prev_plot; j <= plot_pos; j++) {
-
 					column[j * 4 + 0] += Math::fast_ftoi(CLAMP(col.r * 255, 0, 255));
 					column[j * 4 + 1] += Math::fast_ftoi(CLAMP(col.g * 255, 0, 255));
 					column[j * 4 + 2] += Math::fast_ftoi(CLAMP(col.b * 255, 0, 255));
@@ -319,7 +305,6 @@ void EditorProfiler::_update_plot() {
 			}
 
 			for (int j = 0; j < h * 4; j += 4) {
-
 				const int a = column[j + 3];
 				if (a > 0) {
 					column[j + 0] /= a;
@@ -349,7 +334,6 @@ void EditorProfiler::_update_plot() {
 	img->create(w, h, 0, Image::FORMAT_RGBA8, graph_image);
 
 	if (reset_texture) {
-
 		if (graph_texture.is_null()) {
 			graph_texture.instance();
 		}
@@ -363,7 +347,6 @@ void EditorProfiler::_update_plot() {
 }
 
 void EditorProfiler::_update_frame() {
-
 	int cursor_metric = _get_cursor_index();
 
 	ERR_FAIL_INDEX(cursor_metric, frame_metrics.size());
@@ -377,7 +360,6 @@ void EditorProfiler::_update_frame() {
 	int dtime = display_time->get_selected();
 
 	for (int i = 0; i < m.categories.size(); i++) {
-
 		TreeItem *category = variables->create_item(root);
 		category->set_cell_mode(0, TreeItem::CELL_MODE_CHECK);
 		category->set_editable(0, true);
@@ -420,7 +402,6 @@ void EditorProfiler::_update_frame() {
 }
 
 void EditorProfiler::_activate_pressed() {
-
 	if (activate->is_pressed()) {
 		activate->set_icon(get_icon("Stop", "EditorIcons"));
 		activate->set_text(TTR("Stop"));
@@ -432,13 +413,11 @@ void EditorProfiler::_activate_pressed() {
 }
 
 void EditorProfiler::_clear_pressed() {
-
 	clear();
 	_update_plot();
 }
 
 void EditorProfiler::_notification(int p_what) {
-
 	if (p_what == NOTIFICATION_ENTER_TREE) {
 		activate->set_icon(get_icon("Play", "EditorIcons"));
 		clear_button->set_icon(get_icon("Clear", "EditorIcons"));
@@ -446,11 +425,9 @@ void EditorProfiler::_notification(int p_what) {
 }
 
 void EditorProfiler::_graph_tex_draw() {
-
 	if (last_metric < 0)
 		return;
 	if (seeking) {
-
 		int max_frames = frame_metrics.size();
 		int frame = cursor_metric_edit->get_value() - (frame_metrics[last_metric].frame_number - max_frames + 1);
 		if (frame < 0)
@@ -462,7 +439,6 @@ void EditorProfiler::_graph_tex_draw() {
 	}
 
 	if (hover_metric != -1 && frame_metrics[hover_metric].valid) {
-
 		int max_frames = frame_metrics.size();
 		int frame = frame_metrics[hover_metric].frame_number - (frame_metrics[last_metric].frame_number - max_frames + 1);
 		if (frame < 0)
@@ -475,7 +451,6 @@ void EditorProfiler::_graph_tex_draw() {
 }
 
 void EditorProfiler::_graph_tex_mouse_exit() {
-
 	hover_metric = -1;
 	graph->update();
 }
@@ -489,7 +464,6 @@ void EditorProfiler::_cursor_metric_changed(double) {
 }
 
 void EditorProfiler::_graph_tex_input(const Ref<InputEvent> &p_ev) {
-
 	if (last_metric < 0)
 		return;
 
@@ -500,7 +474,6 @@ void EditorProfiler::_graph_tex_input(const Ref<InputEvent> &p_ev) {
 	if (
 			(mb.is_valid() && mb->get_button_index() == BUTTON_LEFT && mb->is_pressed()) ||
 			(mm.is_valid())) {
-
 		int x = me->get_position().x;
 		x = x * frame_metrics.size() / graph->get_size().width;
 
@@ -521,7 +494,6 @@ void EditorProfiler::_graph_tex_input(const Ref<InputEvent> &p_ev) {
 		}
 
 		if (show_hover) {
-
 			hover_metric = metric;
 
 		} else {
@@ -535,7 +507,6 @@ void EditorProfiler::_graph_tex_input(const Ref<InputEvent> &p_ev) {
 			//metric may be invalid, so look for closest metric that is valid, this makes snap feel better
 			bool valid = false;
 			for (int i = 0; i < frame_metrics.size(); i++) {
-
 				if (frame_metrics[metric].valid) {
 					valid = true;
 					break;
@@ -570,7 +541,6 @@ void EditorProfiler::_graph_tex_input(const Ref<InputEvent> &p_ev) {
 }
 
 int EditorProfiler::_get_cursor_index() const {
-
 	if (last_metric < 0)
 		return 0;
 	if (!frame_metrics[last_metric].valid)
@@ -587,19 +557,16 @@ int EditorProfiler::_get_cursor_index() const {
 }
 
 void EditorProfiler::disable_seeking() {
-
 	seeking = false;
 	graph->update();
 }
 
 void EditorProfiler::_combo_changed(int) {
-
 	_update_frame();
 	_update_plot();
 }
 
 void EditorProfiler::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("_update_frame"), &EditorProfiler::_update_frame);
 	ClassDB::bind_method(D_METHOD("_update_plot"), &EditorProfiler::_update_plot);
 	ClassDB::bind_method(D_METHOD("_activate_pressed"), &EditorProfiler::_activate_pressed);
@@ -616,7 +583,6 @@ void EditorProfiler::_bind_methods() {
 }
 
 void EditorProfiler::set_enabled(bool p_enable) {
-
 	activate->set_disabled(!p_enable);
 }
 
@@ -636,7 +602,6 @@ Vector<Vector<String>> EditorProfiler::get_data_as_csv() const {
 	const Vector<EditorProfiler::Metric::Category> &categories = frame_metrics[0].categories;
 
 	for (int j = 0; j < categories.size(); j++) {
-
 		const EditorProfiler::Metric::Category &c = categories[j];
 		signatures.push_back(c.signature);
 
@@ -653,7 +618,6 @@ Vector<Vector<String>> EditorProfiler::get_data_as_csv() const {
 	int index = last_metric;
 
 	for (int i = 0; i < frame_metrics.size(); i++) {
-
 		++index;
 
 		if (index >= frame_metrics.size()) {
@@ -667,7 +631,6 @@ Vector<Vector<String>> EditorProfiler::get_data_as_csv() const {
 		const Vector<EditorProfiler::Metric::Category> &frame_cat = frame_metrics[index].categories;
 
 		for (int j = 0; j < frame_cat.size(); j++) {
-
 			const EditorProfiler::Metric::Category &c = frame_cat[j];
 			values.write[it++] = String::num_real(c.total_time);
 
@@ -682,7 +645,6 @@ Vector<Vector<String>> EditorProfiler::get_data_as_csv() const {
 }
 
 EditorProfiler::EditorProfiler() {
-
 	HBoxContainer *hb = memnew(HBoxContainer);
 	add_child(hb);
 	activate = memnew(Button);

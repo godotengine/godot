@@ -46,13 +46,11 @@ Area2DSW::BodyKey::BodyKey(Area2DSW *p_body, uint32_t p_body_shape, uint32_t p_a
 }
 
 void Area2DSW::_shapes_changed() {
-
 	if (!moved_list.in_list() && get_space())
 		get_space()->area_add_to_moved_list(&moved_list);
 }
 
 void Area2DSW::set_transform(const Transform2D &p_transform) {
-
 	if (!moved_list.in_list() && get_space())
 		get_space()->area_add_to_moved_list(&moved_list);
 
@@ -61,7 +59,6 @@ void Area2DSW::set_transform(const Transform2D &p_transform) {
 }
 
 void Area2DSW::set_space(Space2DSW *p_space) {
-
 	if (get_space()) {
 		if (monitor_query_list.in_list())
 			get_space()->area_remove_from_monitor_query_list(&monitor_query_list);
@@ -76,7 +73,6 @@ void Area2DSW::set_space(Space2DSW *p_space) {
 }
 
 void Area2DSW::set_monitor_callback(ObjectID p_id, const StringName &p_method) {
-
 	if (p_id == monitor_callback_id) {
 		monitor_callback_method = p_method;
 		return;
@@ -97,7 +93,6 @@ void Area2DSW::set_monitor_callback(ObjectID p_id, const StringName &p_method) {
 }
 
 void Area2DSW::set_area_monitor_callback(ObjectID p_id, const StringName &p_method) {
-
 	if (p_id == area_monitor_callback_id) {
 		area_monitor_callback_method = p_method;
 		return;
@@ -127,7 +122,6 @@ void Area2DSW::set_space_override_mode(Physics2DServer::AreaSpaceOverrideMode p_
 }
 
 void Area2DSW::set_param(Physics2DServer::AreaParameter p_param, const Variant &p_value) {
-
 	switch (p_param) {
 		case Physics2DServer::AREA_PARAM_GRAVITY:
 			gravity = p_value;
@@ -157,7 +151,6 @@ void Area2DSW::set_param(Physics2DServer::AreaParameter p_param, const Variant &
 }
 
 Variant Area2DSW::get_param(Physics2DServer::AreaParameter p_param) const {
-
 	switch (p_param) {
 		case Physics2DServer::AREA_PARAM_GRAVITY:
 			return gravity;
@@ -181,7 +174,6 @@ Variant Area2DSW::get_param(Physics2DServer::AreaParameter p_param) const {
 }
 
 void Area2DSW::_queue_monitor_update() {
-
 	ERR_FAIL_COND(!get_space());
 
 	if (!monitor_query_list.in_list())
@@ -189,7 +181,6 @@ void Area2DSW::_queue_monitor_update() {
 }
 
 void Area2DSW::set_monitorable(bool p_monitorable) {
-
 	if (monitorable == p_monitorable)
 		return;
 
@@ -198,9 +189,7 @@ void Area2DSW::set_monitorable(bool p_monitorable) {
 }
 
 void Area2DSW::call_queries() {
-
 	if (monitor_callback_id && !monitored_bodies.empty()) {
-
 		Variant res[5];
 		Variant *resptr[5];
 		for (int i = 0; i < 5; i++)
@@ -214,7 +203,6 @@ void Area2DSW::call_queries() {
 		}
 
 		for (Map<BodyKey, BodyState>::Element *E = monitored_bodies.front(); E;) {
-
 			if (E->get().state == 0) { // Nothing happened
 				Map<BodyKey, BodyState>::Element *next = E->next();
 				monitored_bodies.erase(E);
@@ -238,7 +226,6 @@ void Area2DSW::call_queries() {
 	}
 
 	if (area_monitor_callback_id && !monitored_areas.empty()) {
-
 		Variant res[5];
 		Variant *resptr[5];
 		for (int i = 0; i < 5; i++)
@@ -252,7 +239,6 @@ void Area2DSW::call_queries() {
 		}
 
 		for (Map<BodyKey, BodyState>::Element *E = monitored_areas.front(); E;) {
-
 			if (E->get().state == 0) { // Nothing happened
 				Map<BodyKey, BodyState>::Element *next = E->next();
 				monitored_areas.erase(E);
@@ -280,7 +266,6 @@ Area2DSW::Area2DSW() :
 		CollisionObject2DSW(TYPE_AREA),
 		monitor_query_list(this),
 		moved_list(this) {
-
 	_set_static(true); //areas are not active by default
 	space_override_mode = Physics2DServer::AREA_SPACE_OVERRIDE_DISABLED;
 	gravity = 9.80665;

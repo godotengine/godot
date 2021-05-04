@@ -37,7 +37,6 @@
 #include "scene/gui/spin_box.h"
 
 class SpriteEditor : public Control {
-
 	GDCLASS(SpriteEditor, Control);
 
 	enum Menu {
@@ -97,7 +96,6 @@ public:
 };
 
 class SpriteEditorPlugin : public EditorPlugin {
-
 	GDCLASS(SpriteEditorPlugin, EditorPlugin);
 
 	SpriteEditor *sprite_editor;

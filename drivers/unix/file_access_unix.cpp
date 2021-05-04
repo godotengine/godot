@@ -63,17 +63,14 @@
 #endif
 
 void FileAccessUnix::check_errors() const {
-
 	ERR_FAIL_COND_MSG(!f, "File must be opened before use.");
 
 	if (feof(f)) {
-
 		last_error = ERR_FILE_EOF;
 	}
 }
 
 Error FileAccessUnix::_open(const String &p_path, int p_mode_flags) {
-
 	if (f)
 		fclose(f);
 	f = NULL;
@@ -150,7 +147,6 @@ Error FileAccessUnix::_open(const String &p_path, int p_mode_flags) {
 }
 
 void FileAccessUnix::close() {
-
 	if (!f)
 		return;
 
@@ -174,22 +170,18 @@ void FileAccessUnix::close() {
 }
 
 bool FileAccessUnix::is_open() const {
-
 	return (f != NULL);
 }
 
 String FileAccessUnix::get_path() const {
-
 	return path_src;
 }
 
 String FileAccessUnix::get_path_absolute() const {
-
 	return path;
 }
 
 void FileAccessUnix::seek(size_t p_position) {
-
 	ERR_FAIL_COND_MSG(!f, "File must be opened before use.");
 
 	last_error = OK;
@@ -198,7 +190,6 @@ void FileAccessUnix::seek(size_t p_position) {
 }
 
 void FileAccessUnix::seek_end(int64_t p_position) {
-
 	ERR_FAIL_COND_MSG(!f, "File must be opened before use.");
 
 	if (fseek(f, p_position, SEEK_END))
@@ -206,7 +197,6 @@ void FileAccessUnix::seek_end(int64_t p_position) {
 }
 
 size_t FileAccessUnix::get_position() const {
-
 	ERR_FAIL_COND_V_MSG(!f, 0, "File must be opened before use.");
 
 	long pos = ftell(f);
@@ -218,7 +208,6 @@ size_t FileAccessUnix::get_position() const {
 }
 
 size_t FileAccessUnix::get_len() const {
-
 	ERR_FAIL_COND_V_MSG(!f, 0, "File must be opened before use.");
 
 	long pos = ftell(f);
@@ -232,12 +221,10 @@ size_t FileAccessUnix::get_len() const {
 }
 
 bool FileAccessUnix::eof_reached() const {
-
 	return last_error == ERR_FILE_EOF;
 }
 
 uint8_t FileAccessUnix::get_8() const {
-
 	ERR_FAIL_COND_V_MSG(!f, 0, "File must be opened before use.");
 	uint8_t b;
 	if (fread(&b, 1, 1, f) == 0) {
@@ -257,31 +244,26 @@ int FileAccessUnix::get_buffer(uint8_t *p_dst, int p_length) const {
 };
 
 Error FileAccessUnix::get_error() const {
-
 	return last_error;
 }
 
 void FileAccessUnix::flush() {
-
 	ERR_FAIL_COND_MSG(!f, "File must be opened before use.");
 	fflush(f);
 }
 
 void FileAccessUnix::store_8(uint8_t p_dest) {
-
 	ERR_FAIL_COND_MSG(!f, "File must be opened before use.");
 	ERR_FAIL_COND(fwrite(&p_dest, 1, 1, f) != 1);
 }
 
 void FileAccessUnix::store_buffer(const uint8_t *p_src, int p_length) {
-
 	ERR_FAIL_COND_MSG(!f, "File must be opened before use.");
 	ERR_FAIL_COND(!p_src);
 	ERR_FAIL_COND((int)fwrite(p_src, 1, p_length, f) != p_length);
 }
 
 bool FileAccessUnix::file_exists(const String &p_path) {
-
 	int err;
 	struct stat st;
 	String filename = fix_path(p_path);
@@ -311,7 +293,6 @@ bool FileAccessUnix::file_exists(const String &p_path) {
 }
 
 uint64_t FileAccessUnix::_get_modified_time(const String &p_file) {
-
 	String file = fix_path(p_file);
 	struct stat flags;
 	int err = stat(file.utf8().get_data(), &flags);
@@ -324,7 +305,6 @@ uint64_t FileAccessUnix::_get_modified_time(const String &p_file) {
 }
 
 uint32_t FileAccessUnix::_get_unix_permissions(const String &p_file) {
-
 	String file = fix_path(p_file);
 	struct stat flags;
 	int err = stat(file.utf8().get_data(), &flags);
@@ -337,7 +317,6 @@ uint32_t FileAccessUnix::_get_unix_permissions(const String &p_file) {
 }
 
 Error FileAccessUnix::_set_unix_permissions(const String &p_file, uint32_t p_permissions) {
-
 	String file = fix_path(p_file);
 
 	int err = chmod(file.utf8().get_data(), p_permissions);
@@ -349,7 +328,6 @@ Error FileAccessUnix::_set_unix_permissions(const String &p_file, uint32_t p_per
 }
 
 FileAccess *FileAccessUnix::create_libc() {
-
 	return memnew(FileAccessUnix);
 }
 
@@ -362,7 +340,6 @@ FileAccessUnix::FileAccessUnix() :
 }
 
 FileAccessUnix::~FileAccessUnix() {
-
 	close();
 }
 

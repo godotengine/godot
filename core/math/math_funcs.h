@@ -41,7 +41,6 @@
 #include <math.h>
 
 class Math {
-
 	static RandomPCG default_rand;
 
 public:
@@ -331,7 +330,6 @@ public:
 	}
 
 	static _ALWAYS_INLINE_ float absf(float g) {
-
 		union {
 			float f;
 			uint32_t i;
@@ -343,7 +341,6 @@ public:
 	}
 
 	static _ALWAYS_INLINE_ double absd(double g) {
-
 		union {
 			double d;
 			uint64_t i;
@@ -355,7 +352,6 @@ public:
 
 	//this function should be as fast as possible and rounding mode should not matter
 	static _ALWAYS_INLINE_ int fast_ftoi(float a) {
-
 		static int b;
 
 #if (defined(_WIN32_WINNT) && _WIN32_WINNT >= 0x0603) || WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP // windows 8 phone?
@@ -410,7 +406,6 @@ public:
 	}
 
 	static _ALWAYS_INLINE_ float halfptr_to_float(const uint16_t *h) {
-
 		union {
 			uint32_t u32;
 			float f32;
@@ -425,7 +420,6 @@ public:
 	}
 
 	static _ALWAYS_INLINE_ uint16_t make_half_float(float f) {
-
 		union {
 			float fv;
 			uint32_t ui;
@@ -456,7 +450,6 @@ public:
 		}
 		// check if exponent is <= -15
 		else if (exp <= 0x38000000) {
-
 			/*// store a denorm half-float value or zero
 		exp = (0x38000000 - exp) >> 23;
 		mantissa >>= (14 + exp);

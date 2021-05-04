@@ -43,7 +43,6 @@
 #include "servers/visual_server.h"
 
 void ScriptDebuggerRemote::_send_video_memory() {
-
 	List<ResourceUsage> usage;
 	if (resource_usage_func)
 		resource_usage_func(&usage);
@@ -54,7 +53,6 @@ void ScriptDebuggerRemote::_send_video_memory() {
 	packet_peer_stream->put_var(usage.size() * 4);
 
 	for (List<ResourceUsage>::Element *E = usage.front(); E; E = E->next()) {
-
 		packet_peer_stream->put_var(E->get().path);
 		packet_peer_stream->put_var(E->get().type);
 		packet_peer_stream->put_var(E->get().format);
@@ -63,7 +61,6 @@ void ScriptDebuggerRemote::_send_video_memory() {
 }
 
 Error ScriptDebuggerRemote::connect_to_host(const String &p_host, uint16_t p_port) {
-
 	IP_Address ip;
 	if (p_host.is_valid_ip_address())
 		ip = p_host;
@@ -78,12 +75,10 @@ Error ScriptDebuggerRemote::connect_to_host(const String &p_host, uint16_t p_por
 	tcp_client->connect_to_host(ip, port);
 
 	for (int i = 0; i < tries; i++) {
-
 		if (tcp_client->get_status() == StreamPeerTCP::STATUS_CONNECTED) {
 			print_verbose("Remote Debugger: Connected!");
 			break;
 		} else {
-
 			const int ms = waits[i];
 			OS::get_singleton()->delay_usec(ms * 1000);
 			print_verbose("Remote Debugger: Connection failed with status: '" + String::num(tcp_client->get_status()) + "', retrying in " + String::num(ms) + " msec.");
@@ -91,7 +86,6 @@ Error ScriptDebuggerRemote::connect_to_host(const String &p_host, uint16_t p_por
 	};
 
 	if (tcp_client->get_status() != StreamPeerTCP::STATUS_CONNECTED) {
-
 		ERR_PRINTS("Remote Debugger: Unable to connect. Status: " + String::num(tcp_client->get_status()) + ".");
 		return FAILED;
 	};
@@ -102,7 +96,6 @@ Error ScriptDebuggerRemote::connect_to_host(const String &p_host, uint16_t p_por
 }
 
 void ScriptDebuggerRemote::_put_variable(const String &p_name, const Variant &p_variable) {
-
 	packet_peer_stream->put_var(p_name);
 
 	Variant var = p_variable;
@@ -123,7 +116,6 @@ void ScriptDebuggerRemote::_put_variable(const String &p_name, const Variant &p_
 }
 
 void ScriptDebuggerRemote::_save_node(ObjectID id, const String &p_path) {
-
 	Node *node = Object::cast_to<Node>(ObjectDB::get_instance(id));
 	ERR_FAIL_COND(!node);
 
@@ -133,7 +125,6 @@ void ScriptDebuggerRemote::_save_node(ObjectID id, const String &p_path) {
 }
 
 void ScriptDebuggerRemote::debug(ScriptLanguage *p_script, bool p_can_continue, bool p_is_error_breakpoint) {
-
 	//this function is called when there is a debugger break (bug on script)
 	//or when execution is paused from editor
 
@@ -165,7 +156,6 @@ void ScriptDebuggerRemote::debug(ScriptLanguage *p_script, bool p_can_continue, 
 		_get_output();
 
 		if (packet_peer_stream->get_available_packet_count() > 0) {
-
 			Variant var;
 			Error err = packet_peer_stream->get_var(var);
 
@@ -180,13 +170,11 @@ void ScriptDebuggerRemote::debug(ScriptLanguage *p_script, bool p_can_continue, 
 			String command = cmd[0];
 
 			if (command == "get_stack_dump") {
-
 				packet_peer_stream->put_var("stack_dump");
 				int slc = p_script->debug_get_stack_level_count();
 				packet_peer_stream->put_var(slc);
 
 				for (int i = 0; i < slc; i++) {
-
 					Dictionary d;
 					d["file"] = p_script->debug_get_stack_level_source(i);
 					d["line"] = p_script->debug_get_stack_level_line(i);
@@ -198,7 +186,6 @@ void ScriptDebuggerRemote::debug(ScriptLanguage *p_script, bool p_can_continue, 
 				}
 
 			} else if (command == "get_stack_frame_vars") {
-
 				cmd.remove(0);
 				ERR_CONTINUE(cmd.size() != 1);
 				int lv = cmd[0];
@@ -246,7 +233,6 @@ void ScriptDebuggerRemote::debug(ScriptLanguage *p_script, bool p_can_continue, 
 					List<Variant>::Element *F = member_vals.front();
 
 					while (E) {
-
 						_put_variable(E->get(), F->get());
 
 						E = E->next();
@@ -269,12 +255,10 @@ void ScriptDebuggerRemote::debug(ScriptLanguage *p_script, bool p_can_continue, 
 				}
 
 			} else if (command == "step") {
-
 				set_depth(-1);
 				set_lines_left(1);
 				break;
 			} else if (command == "next") {
-
 				set_depth(0);
 				set_lines_left(1);
 				break;
@@ -288,20 +272,16 @@ void ScriptDebuggerRemote::debug(ScriptLanguage *p_script, bool p_can_continue, 
 				ERR_PRINT("Got break when already broke!");
 				break;
 			} else if (command == "request_scene_tree") {
-
 #ifdef DEBUG_ENABLED
 				if (scene_tree)
 					scene_tree->_debugger_request_tree();
 #endif
 			} else if (command == "request_video_mem") {
-
 				_send_video_memory();
 			} else if (command == "inspect_object") {
-
 				ObjectID id = cmd[1];
 				_send_object_id(id);
 			} else if (command == "set_object_property") {
-
 				_set_object_property(cmd[1], cmd[2], cmd[3]);
 
 			} else if (command == "override_camera_2D:set") {
@@ -341,7 +321,6 @@ void ScriptDebuggerRemote::debug(ScriptLanguage *p_script, bool p_can_continue, 
 			} else if (command == "reload_scripts") {
 				reload_all_scripts = true;
 			} else if (command == "breakpoint") {
-
 				bool set = cmd[3];
 				if (set)
 					insert_breakpoint(cmd[2], cmd[1]);
@@ -377,10 +356,8 @@ void ScriptDebuggerRemote::debug(ScriptLanguage *p_script, bool p_can_continue, 
 }
 
 void ScriptDebuggerRemote::_get_output() {
-
 	mutex.lock();
 	if (output_strings.size()) {
-
 		locking = true;
 		packet_peer_stream->put_var("output");
 		packet_peer_stream->put_var(output_strings.size());
@@ -477,7 +454,6 @@ void ScriptDebuggerRemote::_get_output() {
 }
 
 void ScriptDebuggerRemote::line_poll() {
-
 	//the purpose of this is just processing events every now and then when the script might get too busy
 	//otherwise bugs like infinite loops can't be caught
 	if (poll_every % 2048 == 0)
@@ -486,7 +462,6 @@ void ScriptDebuggerRemote::line_poll() {
 }
 
 void ScriptDebuggerRemote::_err_handler(void *ud, const char *p_func, const char *p_file, int p_line, const char *p_err, const char *p_descr, ErrorHandlerType p_type) {
-
 	if (p_type == ERR_HANDLER_SCRIPT)
 		return; //ignore script errors, those go through debugger
 
@@ -503,7 +478,6 @@ void ScriptDebuggerRemote::_err_handler(void *ud, const char *p_func, const char
 }
 
 bool ScriptDebuggerRemote::_parse_live_edit(const Array &p_command) {
-
 #ifdef DEBUG_ENABLED
 
 	String cmdstr = p_command[0];
@@ -511,71 +485,54 @@ bool ScriptDebuggerRemote::_parse_live_edit(const Array &p_command) {
 		return false;
 
 	if (cmdstr == "live_set_root") {
-
 		scene_tree->_live_edit_root_func(p_command[1], p_command[2]);
 
 	} else if (cmdstr == "live_node_path") {
-
 		scene_tree->_live_edit_node_path_func(p_command[1], p_command[2]);
 
 	} else if (cmdstr == "live_res_path") {
-
 		scene_tree->_live_edit_res_path_func(p_command[1], p_command[2]);
 
 	} else if (cmdstr == "live_node_prop_res") {
-
 		scene_tree->_live_edit_node_set_res_func(p_command[1], p_command[2], p_command[3]);
 
 	} else if (cmdstr == "live_node_prop") {
-
 		scene_tree->_live_edit_node_set_func(p_command[1], p_command[2], p_command[3]);
 
 	} else if (cmdstr == "live_res_prop_res") {
-
 		scene_tree->_live_edit_res_set_res_func(p_command[1], p_command[2], p_command[3]);
 
 	} else if (cmdstr == "live_res_prop") {
-
 		scene_tree->_live_edit_res_set_func(p_command[1], p_command[2], p_command[3]);
 
 	} else if (cmdstr == "live_node_call") {
-
 		scene_tree->_live_edit_node_call_func(p_command[1], p_command[2], p_command[3], p_command[4], p_command[5], p_command[6], p_command[7]);
 
 	} else if (cmdstr == "live_res_call") {
-
 		scene_tree->_live_edit_res_call_func(p_command[1], p_command[2], p_command[3], p_command[4], p_command[5], p_command[6], p_command[7]);
 
 	} else if (cmdstr == "live_create_node") {
-
 		scene_tree->_live_edit_create_node_func(p_command[1], p_command[2], p_command[3]);
 
 	} else if (cmdstr == "live_instance_node") {
-
 		scene_tree->_live_edit_instance_node_func(p_command[1], p_command[2], p_command[3]);
 
 	} else if (cmdstr == "live_remove_node") {
-
 		scene_tree->_live_edit_remove_node_func(p_command[1]);
 
 	} else if (cmdstr == "live_remove_and_keep_node") {
-
 		scene_tree->_live_edit_remove_and_keep_node_func(p_command[1], p_command[2]);
 
 	} else if (cmdstr == "live_restore_node") {
-
 		scene_tree->_live_edit_restore_node_func(p_command[1], p_command[2], p_command[3]);
 
 	} else if (cmdstr == "live_duplicate_node") {
-
 		scene_tree->_live_edit_duplicate_node_func(p_command[1], p_command[2]);
 
 	} else if (cmdstr == "live_reparent_node") {
-
 		scene_tree->_live_edit_reparent_node_func(p_command[1], p_command[2], p_command[3], p_command[4]);
 
 	} else {
-
 		return false;
 	}
 
@@ -587,7 +544,6 @@ bool ScriptDebuggerRemote::_parse_live_edit(const Array &p_command) {
 }
 
 void ScriptDebuggerRemote::_send_object_id(ObjectID p_id) {
-
 	Object *obj = ObjectDB::get_instance(p_id);
 	if (!obj)
 		return;
@@ -597,7 +553,6 @@ void ScriptDebuggerRemote::_send_object_id(ObjectID p_id) {
 
 	if (ScriptInstance *si = obj->get_script_instance()) {
 		if (!si->get_script().is_null()) {
-
 			typedef Map<const Script *, Set<StringName>> ScriptMemberMap;
 			typedef Map<const Script *, Map<StringName, Variant>> ScriptConstantsMap;
 
@@ -611,7 +566,6 @@ void ScriptDebuggerRemote::_send_object_id(ObjectID p_id) {
 
 			Ref<Script> base = si->get_script()->get_base_script();
 			while (base.is_valid()) {
-
 				members[base.ptr()] = Set<StringName>();
 				base->get_members(&(members[base.ptr()]));
 
@@ -726,7 +680,6 @@ void ScriptDebuggerRemote::_send_object_id(ObjectID p_id) {
 }
 
 void ScriptDebuggerRemote::_set_object_property(ObjectID p_id, const String &p_property, const Variant &p_value) {
-
 	Object *obj = ObjectDB::get_instance(p_id);
 	if (!obj)
 		return;
@@ -741,12 +694,10 @@ void ScriptDebuggerRemote::_set_object_property(ObjectID p_id, const String &p_p
 }
 
 void ScriptDebuggerRemote::_poll_events() {
-
 	//this si called from ::idle_poll, happens only when running the game,
 	//does not get called while on debug break
 
 	while (packet_peer_stream->get_available_packet_count() > 0) {
-
 		_get_output();
 
 		//send over output_strings
@@ -766,28 +717,22 @@ void ScriptDebuggerRemote::_poll_events() {
 		//cmd.remove(0);
 
 		if (command == "break") {
-
 			if (get_break_language())
 				debug(get_break_language());
 		} else if (command == "request_scene_tree") {
-
 #ifdef DEBUG_ENABLED
 			if (scene_tree)
 				scene_tree->_debugger_request_tree();
 #endif
 		} else if (command == "request_video_mem") {
-
 			_send_video_memory();
 		} else if (command == "inspect_object") {
-
 			ObjectID id = cmd[1];
 			_send_object_id(id);
 		} else if (command == "set_object_property") {
-
 			_set_object_property(cmd[1], cmd[2], cmd[3]);
 
 		} else if (command == "start_profiling") {
-
 			for (int i = 0; i < ScriptServer::get_language_count(); i++) {
 				ScriptServer::get_language(i)->profiling_start();
 			}
@@ -803,7 +748,6 @@ void ScriptDebuggerRemote::_poll_events() {
 			print_line("PROFILING ALRIGHT!");
 
 		} else if (command == "stop_profiling") {
-
 			for (int i = 0; i < ScriptServer::get_language_count(); i++) {
 				ScriptServer::get_language(i)->profiling_stop();
 			}
@@ -811,11 +755,9 @@ void ScriptDebuggerRemote::_poll_events() {
 			_send_profiling_data(false);
 			print_line("PROFILING END!");
 		} else if (command == "start_network_profiling") {
-
 			multiplayer->profiling_start();
 			profiling_network = true;
 		} else if (command == "stop_network_profiling") {
-
 			multiplayer->profiling_end();
 			profiling_network = false;
 		} else if (command == "override_camera_2D:set") {
@@ -855,7 +797,6 @@ void ScriptDebuggerRemote::_poll_events() {
 		} else if (command == "reload_scripts") {
 			reload_all_scripts = true;
 		} else if (command == "breakpoint") {
-
 			bool set = cmd[3];
 			if (set)
 				insert_breakpoint(cmd[2], cmd[1]);
@@ -870,7 +811,6 @@ void ScriptDebuggerRemote::_poll_events() {
 }
 
 void ScriptDebuggerRemote::_send_profiling_data(bool p_for_frame) {
-
 	int ofs = 0;
 
 	for (int i = 0; i < ScriptServer::get_language_count(); i++) {
@@ -893,9 +833,7 @@ void ScriptDebuggerRemote::_send_profiling_data(bool p_for_frame) {
 	uint64_t total_script_time = 0;
 
 	for (int i = 0; i < to_send; i++) {
-
 		if (!profiler_function_signature_map.has(profile_info_ptrs[i]->signature)) {
-
 			int idx = profiler_function_signature_map.size();
 			packet_peer_stream->put_var("profile_sig");
 			packet_peer_stream->put_var(2);
@@ -927,11 +865,9 @@ void ScriptDebuggerRemote::_send_profiling_data(bool p_for_frame) {
 	packet_peer_stream->put_var(USEC_TO_SEC(total_script_time)); //total script execution time
 
 	if (p_for_frame) {
-
 		packet_peer_stream->put_var(profile_frame_data.size()); //how many profile framedatas to send
 		packet_peer_stream->put_var(to_send); //how many script functions to send
 		for (int i = 0; i < profile_frame_data.size(); i++) {
-
 			packet_peer_stream->put_var(profile_frame_data[i].name);
 			packet_peer_stream->put_var(profile_frame_data[i].data);
 		}
@@ -941,7 +877,6 @@ void ScriptDebuggerRemote::_send_profiling_data(bool p_for_frame) {
 	}
 
 	for (int i = 0; i < to_send; i++) {
-
 		int sig_id = -1;
 
 		if (profiler_function_signature_map.has(profile_info_ptrs[i]->signature)) {
@@ -960,24 +895,20 @@ void ScriptDebuggerRemote::_send_profiling_data(bool p_for_frame) {
 }
 
 void ScriptDebuggerRemote::idle_poll() {
-
 	// this function is called every frame, except when there is a debugger break (::debug() in this class)
 	// execution stops and remains in the ::debug function
 
 	_get_output();
 
 	if (requested_quit) {
-
 		packet_peer_stream->put_var("kill_me");
 		packet_peer_stream->put_var(0);
 		requested_quit = false;
 	}
 
 	if (performance) {
-
 		uint64_t pt = OS::get_singleton()->get_ticks_msec();
 		if (pt - last_perf_time > 1000) {
-
 			last_perf_time = pt;
 			int max = performance->get("MONITOR_MAX");
 			Array arr;
@@ -992,7 +923,6 @@ void ScriptDebuggerRemote::idle_poll() {
 	}
 
 	if (profiling) {
-
 		if (skip_profile_frame) {
 			skip_profile_frame = false;
 		} else {
@@ -1014,7 +944,6 @@ void ScriptDebuggerRemote::idle_poll() {
 	}
 
 	if (reload_all_scripts) {
-
 		for (int i = 0; i < ScriptServer::get_language_count(); i++) {
 			ScriptServer::get_language(i)->reload_all_scripts();
 		}
@@ -1054,10 +983,8 @@ void ScriptDebuggerRemote::_send_network_bandwidth_usage() {
 }
 
 void ScriptDebuggerRemote::send_message(const String &p_message, const Array &p_args) {
-
 	mutex.lock();
 	if (!locking && tcp_client->is_connected_to_host()) {
-
 		if (messages.size() >= max_messages_per_frame) {
 			n_messages_dropped++;
 		} else {
@@ -1071,7 +998,6 @@ void ScriptDebuggerRemote::send_message(const String &p_message, const Array &p_
 }
 
 void ScriptDebuggerRemote::send_error(const String &p_func, const String &p_file, int p_line, const String &p_err, const String &p_descr, ErrorHandlerType p_type, const Vector<ScriptLanguage::StackInfo> &p_stack_info) {
-
 	OutputError oe;
 	oe.error = p_err;
 	oe.error_descr = p_descr;
@@ -1116,7 +1042,6 @@ void ScriptDebuggerRemote::send_error(const String &p_func, const String &p_file
 	mutex.lock();
 
 	if (!locking && tcp_client->is_connected_to_host()) {
-
 		if (oe.warning) {
 			if (warn_count > max_warnings_per_second) {
 				n_warnings_dropped++;
@@ -1136,7 +1061,6 @@ void ScriptDebuggerRemote::send_error(const String &p_func, const String &p_file
 }
 
 void ScriptDebuggerRemote::_print_handler(void *p_this, const String &p_string, bool p_error) {
-
 	ScriptDebuggerRemote *sdr = (ScriptDebuggerRemote *)p_this;
 
 	uint64_t ticks = OS::get_singleton()->get_ticks_usec() / 1000;
@@ -1163,7 +1087,6 @@ void ScriptDebuggerRemote::_print_handler(void *p_this, const String &p_string, 
 
 	sdr->mutex.lock();
 	if (!sdr->locking && sdr->tcp_client->is_connected_to_host()) {
-
 		if (overflowed)
 			s += "[...]";
 
@@ -1182,7 +1105,6 @@ void ScriptDebuggerRemote::_print_handler(void *p_this, const String &p_string, 
 }
 
 void ScriptDebuggerRemote::request_quit() {
-
 	requested_quit = true;
 }
 
@@ -1191,11 +1113,9 @@ void ScriptDebuggerRemote::set_multiplayer(Ref<MultiplayerAPI> p_multiplayer) {
 }
 
 bool ScriptDebuggerRemote::is_profiling() const {
-
 	return profiling;
 }
 void ScriptDebuggerRemote::add_profiling_frame_data(const StringName &p_name, const Array &p_data) {
-
 	int idx = -1;
 	for (int i = 0; i < profile_frame_data.size(); i++) {
 		if (profile_frame_data[i].name == p_name) {
@@ -1224,7 +1144,6 @@ void ScriptDebuggerRemote::profiling_end() {
 }
 
 void ScriptDebuggerRemote::profiling_set_frame_times(float p_frame_time, float p_idle_time, float p_physics_time, float p_physics_frame_time) {
-
 	frame_time = p_frame_time;
 	idle_time = p_idle_time;
 	physics_time = p_physics_time;
@@ -1269,7 +1188,6 @@ ScriptDebuggerRemote::ScriptDebuggerRemote() :
 		locking(false),
 		poll_every(0),
 		scene_tree(NULL) {
-
 	packet_peer_stream->set_stream_peer(tcp_client);
 	packet_peer_stream->set_output_buffer_max_size((1024 * 1024 * 8) - 4); // 8 MiB should be way more than enough, minus 4 bytes for separator.
 
@@ -1287,7 +1205,6 @@ ScriptDebuggerRemote::ScriptDebuggerRemote() :
 }
 
 ScriptDebuggerRemote::~ScriptDebuggerRemote() {
-
 	remove_print_handler(&phl);
 	remove_error_handler(&eh);
 }

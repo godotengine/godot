@@ -35,7 +35,6 @@ Vector<Vector3> HeightMapShape::get_debug_mesh_lines() {
 	Vector<Vector3> points;
 
 	if ((map_width != 0) && (map_depth != 0)) {
-
 		// This will be slow for large maps...
 		// also we'll have to figure out how well bullet centers this shape...
 
@@ -77,7 +76,6 @@ Vector<Vector3> HeightMapShape::get_debug_mesh_lines() {
 }
 
 void HeightMapShape::_update_shape() {
-
 	Dictionary d;
 	d["width"] = map_width;
 	d["depth"] = map_depth;
@@ -189,7 +187,6 @@ void HeightMapShape::_bind_methods() {
 
 HeightMapShape::HeightMapShape() :
 		Shape(PhysicsServer::get_singleton()->shape_create(PhysicsServer::SHAPE_HEIGHTMAP)) {
-
 	map_width = 2;
 	map_depth = 2;
 	map_data.resize(map_width * map_depth);

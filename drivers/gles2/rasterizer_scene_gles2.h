@@ -94,7 +94,6 @@ private:
 public:
 	RasterizerStorageGLES2 *storage;
 	struct State {
-
 		bool texscreen_copied;
 		int current_blend_mode;
 		float current_line_width;
@@ -309,7 +308,6 @@ public:
 	/* REFLECTION PROBE INSTANCE */
 
 	struct ReflectionProbeInstance : public RID_Data {
-
 		RasterizerStorageGLES2::ReflectionProbe *probe_ptr;
 		RID probe;
 		RID self;
@@ -502,7 +500,6 @@ public:
 	/* LIGHT INSTANCE */
 
 	struct LightInstance : public RID_Data {
-
 		struct ShadowTransform {
 			CameraMatrix camera;
 			Transform transform;
@@ -568,7 +565,6 @@ public:
 	};
 
 	struct RenderList {
-
 		enum {
 			MAX_LIGHTS = 255,
 			MAX_REFLECTION_PROBES = 255,
@@ -653,7 +649,6 @@ public:
 		}
 
 		struct SortByDepth {
-
 			_FORCE_INLINE_ bool operator()(const Element *A, const Element *B) const {
 				return A->instance->depth < B->instance->depth;
 			}
@@ -670,7 +665,6 @@ public:
 		}
 
 		struct SortByReverseDepthAndPriority {
-
 			_FORCE_INLINE_ bool operator()(const Element *A, const Element *B) const {
 				if (A->priority == B->priority) {
 					return A->instance->depth > B->instance->depth;

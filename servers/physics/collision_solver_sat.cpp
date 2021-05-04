@@ -65,7 +65,6 @@
  *************************************************************************/
 
 struct _CollectorCallback {
-
 	CollisionSolverSW::CallbackResult callback;
 	void *userdata;
 	bool swap;
@@ -74,7 +73,6 @@ struct _CollectorCallback {
 	Vector3 *prev_axis;
 
 	_FORCE_INLINE_ void call(const Vector3 &p_point_A, const Vector3 &p_point_B) {
-
 		if (swap)
 			callback(p_point_B, p_point_A, userdata);
 		else
@@ -85,7 +83,6 @@ struct _CollectorCallback {
 typedef void (*GenerateContactsFunc)(const Vector3 *, int, const Vector3 *, int, _CollectorCallback *);
 
 static void _generate_contacts_point_point(const Vector3 *p_points_A, int p_point_count_A, const Vector3 *p_points_B, int p_point_count_B, _CollectorCallback *p_callback) {
-
 #ifdef DEBUG_ENABLED
 	ERR_FAIL_COND(p_point_count_A != 1);
 	ERR_FAIL_COND(p_point_count_B != 1);
@@ -95,7 +92,6 @@ static void _generate_contacts_point_point(const Vector3 *p_points_A, int p_poin
 }
 
 static void _generate_contacts_point_edge(const Vector3 *p_points_A, int p_point_count_A, const Vector3 *p_points_B, int p_point_count_B, _CollectorCallback *p_callback) {
-
 #ifdef DEBUG_ENABLED
 	ERR_FAIL_COND(p_point_count_A != 1);
 	ERR_FAIL_COND(p_point_count_B != 2);
@@ -106,7 +102,6 @@ static void _generate_contacts_point_edge(const Vector3 *p_points_A, int p_point
 }
 
 static void _generate_contacts_point_face(const Vector3 *p_points_A, int p_point_count_A, const Vector3 *p_points_B, int p_point_count_B, _CollectorCallback *p_callback) {
-
 #ifdef DEBUG_ENABLED
 	ERR_FAIL_COND(p_point_count_A != 1);
 	ERR_FAIL_COND(p_point_count_B < 3);
@@ -118,7 +113,6 @@ static void _generate_contacts_point_face(const Vector3 *p_points_A, int p_point
 }
 
 static void _generate_contacts_point_circle(const Vector3 *p_points_A, int p_point_count_A, const Vector3 *p_points_B, int p_point_count_B, _CollectorCallback *p_callback) {
-
 #ifdef DEBUG_ENABLED
 	ERR_FAIL_COND(p_point_count_A != 1);
 	ERR_FAIL_COND(p_point_count_B != 3);
@@ -130,7 +124,6 @@ static void _generate_contacts_point_circle(const Vector3 *p_points_A, int p_poi
 }
 
 static void _generate_contacts_edge_edge(const Vector3 *p_points_A, int p_point_count_A, const Vector3 *p_points_B, int p_point_count_B, _CollectorCallback *p_callback) {
-
 #ifdef DEBUG_ENABLED
 	ERR_FAIL_COND(p_point_count_A != 2);
 	ERR_FAIL_COND(p_point_count_B != 2); // circle is actually a 4x3 matrix
@@ -142,7 +135,6 @@ static void _generate_contacts_edge_edge(const Vector3 *p_points_A, int p_point_
 	Vector3 c = rel_A.cross(rel_B).cross(rel_B);
 
 	if (Math::is_zero_approx(rel_A.dot(c))) {
-
 		// should handle somehow..
 		//ERR_PRINT("TODO FIX");
 		//return;
@@ -177,7 +169,6 @@ static void _generate_contacts_edge_edge(const Vector3 *p_points_A, int p_point_
 }
 
 static void _generate_contacts_edge_circle(const Vector3 *p_points_A, int p_point_count_A, const Vector3 *p_points_B, int p_point_count_B, _CollectorCallback *p_callback) {
-
 #ifdef DEBUG_ENABLED
 	ERR_FAIL_COND(p_point_count_A != 2);
 	ERR_FAIL_COND(p_point_count_B != 3);
@@ -276,7 +267,6 @@ static void _generate_contacts_edge_circle(const Vector3 *p_points_A, int p_poin
 }
 
 static void _generate_contacts_face_face(const Vector3 *p_points_A, int p_point_count_A, const Vector3 *p_points_B, int p_point_count_B, _CollectorCallback *p_callback) {
-
 #ifdef DEBUG_ENABLED
 	ERR_FAIL_COND(p_point_count_A < 2);
 	ERR_FAIL_COND(p_point_count_B < 3);
@@ -292,7 +282,6 @@ static void _generate_contacts_face_face(const Vector3 *p_points_A, int p_point_
 
 	// copy A points to clipbuf_src
 	for (int i = 0; i < p_point_count_A; i++) {
-
 		clipbuf_src[i] = p_points_A[i];
 	}
 
@@ -300,7 +289,6 @@ static void _generate_contacts_face_face(const Vector3 *p_points_A, int p_point_
 
 	// go through all of B points
 	for (int i = 0; i < p_point_count_B; i++) {
-
 		int i_n = (i + 1) % p_point_count_B;
 
 		Vector3 edge0_B = p_points_B[i];
@@ -314,7 +302,6 @@ static void _generate_contacts_face_face(const Vector3 *p_points_A, int p_point_
 		int dst_idx = 0;
 		bool edge = clipbuf_len == 2;
 		for (int j = 0; j < clipbuf_len; j++) {
-
 			int j_n = (j + 1) % clipbuf_len;
 
 			Vector3 edge0_A = clipbuf_src[j];
@@ -332,7 +319,6 @@ static void _generate_contacts_face_face(const Vector3 *p_points_A, int p_point_
 			// check for different sides and non coplanar
 			//if ( (dist0*dist1) < -CMP_EPSILON && !(edge && j)) {
 			if ((dist0 * dist1) < 0 && !(edge && j)) {
-
 				// calculate intersection
 				Vector3 rel = edge1_A - edge0_A;
 				real_t den = clip.normal.dot(rel);
@@ -353,7 +339,6 @@ static void _generate_contacts_face_face(const Vector3 *p_points_A, int p_point_
 	//Plane plane_A(p_points_A[0],p_points_A[1],p_points_A[2]);
 
 	for (int i = 0; i < clipbuf_len; i++) {
-
 		real_t d = plane_B.distance_to(clipbuf_src[i]);
 		/*
 		if (d>CMP_EPSILON)
@@ -370,7 +355,6 @@ static void _generate_contacts_face_face(const Vector3 *p_points_A, int p_point_
 }
 
 static void _generate_contacts_face_circle(const Vector3 *p_points_A, int p_point_count_A, const Vector3 *p_points_B, int p_point_count_B, _CollectorCallback *p_callback) {
-
 #ifdef DEBUG_ENABLED
 	ERR_FAIL_COND(p_point_count_A < 3);
 	ERR_FAIL_COND(p_point_count_B != 3);
@@ -450,7 +434,6 @@ static void _generate_contacts_face_circle(const Vector3 *p_points_A, int p_poin
 }
 
 static void _generate_contacts_circle_circle(const Vector3 *p_points_A, int p_point_count_A, const Vector3 *p_points_B, int p_point_count_B, _CollectorCallback *p_callback) {
-
 #ifdef DEBUG_ENABLED
 	ERR_FAIL_COND(p_point_count_A != 3);
 	ERR_FAIL_COND(p_point_count_B != 3);
@@ -554,7 +537,6 @@ static void _generate_contacts_circle_circle(const Vector3 *p_points_A, int p_po
 }
 
 static void _generate_contacts_from_supports(const Vector3 *p_points_A, int p_point_count_A, ShapeSW::FeatureType p_feature_type_A, const Vector3 *p_points_B, int p_point_count_B, ShapeSW::FeatureType p_feature_type_B, _CollectorCallback *p_callback) {
-
 #ifdef DEBUG_ENABLED
 	ERR_FAIL_COND(p_point_count_A < 1);
 	ERR_FAIL_COND(p_point_count_B < 1);
@@ -606,7 +588,6 @@ static void _generate_contacts_from_supports(const Vector3 *p_points_A, int p_po
 		version_A = p_feature_type_B;
 		version_B = p_feature_type_A;
 	} else {
-
 		pointcount_B = p_point_count_B;
 		pointcount_A = p_point_count_A;
 		points_A = p_points_A;
@@ -622,7 +603,6 @@ static void _generate_contacts_from_supports(const Vector3 *p_points_A, int p_po
 
 template <class ShapeA, class ShapeB, bool withMargin = false>
 class SeparatorAxisTest {
-
 	const ShapeA *shape_A;
 	const ShapeB *shape_B;
 	const Transform *transform_A;
@@ -636,7 +616,6 @@ class SeparatorAxisTest {
 
 public:
 	_FORCE_INLINE_ bool test_previous_axis() {
-
 		if (callback && callback->prev_axis && *callback->prev_axis != Vector3())
 			return test_axis(*callback->prev_axis);
 		else
@@ -644,7 +623,6 @@ public:
 	}
 
 	_FORCE_INLINE_ bool test_axis(const Vector3 &p_axis) {
-
 		Vector3 axis = p_axis;
 
 		if (Math::abs(axis.x) < CMP_EPSILON &&
@@ -710,7 +688,6 @@ public:
 	}
 
 	_FORCE_INLINE_ void generate_contacts() {
-
 		// nothing to do, don't generate
 		if (best_axis == Vector3(0.0, 0.0, 0.0))
 			return;
@@ -734,7 +711,6 @@ public:
 		}
 
 		if (withMargin) {
-
 			for (int i = 0; i < support_count_A; i++) {
 				supports_A[i] += -best_axis * margin_A;
 			}
@@ -749,7 +725,6 @@ public:
 		}
 
 		if (withMargin) {
-
 			for (int i = 0; i < support_count_B; i++) {
 				supports_B[i] += best_axis * margin_B;
 			}
@@ -781,7 +756,6 @@ typedef void (*CollisionFunc)(const ShapeSW *, const Transform &, const ShapeSW 
 
 template <bool withMargin>
 static void _collision_sphere_sphere(const ShapeSW *p_a, const Transform &p_transform_a, const ShapeSW *p_b, const Transform &p_transform_b, _CollectorCallback *p_collector, real_t p_margin_a, real_t p_margin_b) {
-
 	const SphereShapeSW *sphere_A = static_cast<const SphereShapeSW *>(p_a);
 	const SphereShapeSW *sphere_B = static_cast<const SphereShapeSW *>(p_b);
 
@@ -800,7 +774,6 @@ static void _collision_sphere_sphere(const ShapeSW *p_a, const Transform &p_tran
 
 template <bool withMargin>
 static void _collision_sphere_box(const ShapeSW *p_a, const Transform &p_transform_a, const ShapeSW *p_b, const Transform &p_transform_b, _CollectorCallback *p_collector, real_t p_margin_a, real_t p_margin_b) {
-
 	const SphereShapeSW *sphere_A = static_cast<const SphereShapeSW *>(p_a);
 	const BoxShapeSW *box_B = static_cast<const BoxShapeSW *>(p_b);
 
@@ -812,7 +785,6 @@ static void _collision_sphere_box(const ShapeSW *p_a, const Transform &p_transfo
 	// test faces
 
 	for (int i = 0; i < 3; i++) {
-
 		Vector3 axis = p_transform_b.basis.get_axis(i).normalized();
 
 		if (!separator.test_axis(axis))
@@ -838,7 +810,6 @@ static void _collision_sphere_box(const ShapeSW *p_a, const Transform &p_transfo
 	// test edges
 
 	for (int i = 0; i < 3; i++) {
-
 		Vector3 axis = point_axis.cross(p_transform_b.basis.get_axis(i)).cross(p_transform_b.basis.get_axis(i)).normalized();
 
 		if (!separator.test_axis(axis))
@@ -850,7 +821,6 @@ static void _collision_sphere_box(const ShapeSW *p_a, const Transform &p_transfo
 
 template <bool withMargin>
 static void _collision_sphere_capsule(const ShapeSW *p_a, const Transform &p_transform_a, const ShapeSW *p_b, const Transform &p_transform_b, _CollectorCallback *p_collector, real_t p_margin_a, real_t p_margin_b) {
-
 	const SphereShapeSW *sphere_A = static_cast<const SphereShapeSW *>(p_a);
 	const CapsuleShapeSW *capsule_B = static_cast<const CapsuleShapeSW *>(p_b);
 
@@ -947,7 +917,6 @@ static void _collision_sphere_cylinder(const ShapeSW *p_a, const Transform &p_tr
 
 template <bool withMargin>
 static void _collision_sphere_convex_polygon(const ShapeSW *p_a, const Transform &p_transform_a, const ShapeSW *p_b, const Transform &p_transform_b, _CollectorCallback *p_collector, real_t p_margin_a, real_t p_margin_b) {
-
 	const SphereShapeSW *sphere_A = static_cast<const SphereShapeSW *>(p_a);
 	const ConvexPolygonShapeSW *convex_polygon_B = static_cast<const ConvexPolygonShapeSW *>(p_b);
 
@@ -967,7 +936,6 @@ static void _collision_sphere_convex_polygon(const ShapeSW *p_a, const Transform
 
 	// faces of B
 	for (int i = 0; i < face_count; i++) {
-
 		Vector3 axis = p_transform_b.xform(faces[i].plane).normal;
 
 		if (!separator.test_axis(axis))
@@ -976,7 +944,6 @@ static void _collision_sphere_convex_polygon(const ShapeSW *p_a, const Transform
 
 	// edges of B
 	for (int i = 0; i < edge_count; i++) {
-
 		Vector3 v1 = p_transform_b.xform(vertices[edges[i].a]);
 		Vector3 v2 = p_transform_b.xform(vertices[edges[i].b]);
 		Vector3 v3 = p_transform_a.origin;
@@ -992,7 +959,6 @@ static void _collision_sphere_convex_polygon(const ShapeSW *p_a, const Transform
 
 	// vertices of B
 	for (int i = 0; i < vertex_count; i++) {
-
 		Vector3 v1 = p_transform_b.xform(vertices[i]);
 		Vector3 v2 = p_transform_a.origin;
 
@@ -1007,7 +973,6 @@ static void _collision_sphere_convex_polygon(const ShapeSW *p_a, const Transform
 
 template <bool withMargin>
 static void _collision_sphere_face(const ShapeSW *p_a, const Transform &p_transform_a, const ShapeSW *p_b, const Transform &p_transform_b, _CollectorCallback *p_collector, real_t p_margin_a, real_t p_margin_b) {
-
 	const SphereShapeSW *sphere_A = static_cast<const SphereShapeSW *>(p_a);
 	const FaceShapeSW *face_B = static_cast<const FaceShapeSW *>(p_b);
 
@@ -1024,7 +989,6 @@ static void _collision_sphere_face(const ShapeSW *p_a, const Transform &p_transf
 
 	// edges and points of B
 	for (int i = 0; i < 3; i++) {
-
 		Vector3 n1 = vertex[i] - p_transform_a.origin;
 
 		if (!separator.test_axis(n1.normalized())) {
@@ -1045,7 +1009,6 @@ static void _collision_sphere_face(const ShapeSW *p_a, const Transform &p_transf
 
 template <bool withMargin>
 static void _collision_box_box(const ShapeSW *p_a, const Transform &p_transform_a, const ShapeSW *p_b, const Transform &p_transform_b, _CollectorCallback *p_collector, real_t p_margin_a, real_t p_margin_b) {
-
 	const BoxShapeSW *box_A = static_cast<const BoxShapeSW *>(p_a);
 	const BoxShapeSW *box_B = static_cast<const BoxShapeSW *>(p_b);
 
@@ -1057,7 +1020,6 @@ static void _collision_box_box(const ShapeSW *p_a, const Transform &p_transform_
 	// test faces of A
 
 	for (int i = 0; i < 3; i++) {
-
 		Vector3 axis = p_transform_a.basis.get_axis(i).normalized();
 
 		if (!separator.test_axis(axis))
@@ -1067,7 +1029,6 @@ static void _collision_box_box(const ShapeSW *p_a, const Transform &p_transform_
 	// test faces of B
 
 	for (int i = 0; i < 3; i++) {
-
 		Vector3 axis = p_transform_b.basis.get_axis(i).normalized();
 
 		if (!separator.test_axis(axis))
@@ -1076,9 +1037,7 @@ static void _collision_box_box(const ShapeSW *p_a, const Transform &p_transform_
 
 	// test combined edges
 	for (int i = 0; i < 3; i++) {
-
 		for (int j = 0; j < 3; j++) {
-
 			Vector3 axis = p_transform_a.basis.get_axis(i).cross(p_transform_b.basis.get_axis(j));
 
 			if (Math::is_zero_approx(axis.length_squared()))
@@ -1123,7 +1082,6 @@ static void _collision_box_box(const ShapeSW *p_a, const Transform &p_transform_
 		//now try edges, which become cylinders!
 
 		for (int i = 0; i < 3; i++) {
-
 			//a ->b
 			Vector3 axis_a = p_transform_a.basis.get_axis(i);
 
@@ -1143,7 +1101,6 @@ static void _collision_box_box(const ShapeSW *p_a, const Transform &p_transform_
 
 template <bool withMargin>
 static void _collision_box_capsule(const ShapeSW *p_a, const Transform &p_transform_a, const ShapeSW *p_b, const Transform &p_transform_b, _CollectorCallback *p_collector, real_t p_margin_a, real_t p_margin_b) {
-
 	const BoxShapeSW *box_A = static_cast<const BoxShapeSW *>(p_a);
 	const CapsuleShapeSW *capsule_B = static_cast<const CapsuleShapeSW *>(p_b);
 
@@ -1154,7 +1111,6 @@ static void _collision_box_capsule(const ShapeSW *p_a, const Transform &p_transf
 
 	// faces of A
 	for (int i = 0; i < 3; i++) {
-
 		Vector3 axis = p_transform_a.basis.get_axis(i).normalized();
 
 		if (!separator.test_axis(axis))
@@ -1166,7 +1122,6 @@ static void _collision_box_capsule(const ShapeSW *p_a, const Transform &p_transf
 	// edges of A, capsule cylinder
 
 	for (int i = 0; i < 3; i++) {
-
 		// cylinder
 		Vector3 box_axis = p_transform_a.basis.get_axis(i);
 		Vector3 axis = box_axis.cross(cyl_axis);
@@ -1203,7 +1158,6 @@ static void _collision_box_capsule(const ShapeSW *p_a, const Transform &p_transf
 	// capsule balls, edges of A
 
 	for (int i = 0; i < 2; i++) {
-
 		Vector3 capsule_axis = p_transform_b.basis.get_axis(2) * (capsule_B->get_height() * 0.5);
 
 		Vector3 sphere_pos = p_transform_b.origin + ((i == 0) ? capsule_axis : -capsule_axis);
@@ -1225,7 +1179,6 @@ static void _collision_box_capsule(const ShapeSW *p_a, const Transform &p_transf
 		// test edges of A
 
 		for (int j = 0; j < 3; j++) {
-
 			Vector3 axis = point_axis.cross(p_transform_a.basis.get_axis(j)).cross(p_transform_a.basis.get_axis(j)).normalized();
 
 			if (!separator.test_axis(axis))
@@ -1351,7 +1304,6 @@ static void _collision_box_cylinder(const ShapeSW *p_a, const Transform &p_trans
 
 template <bool withMargin>
 static void _collision_box_convex_polygon(const ShapeSW *p_a, const Transform &p_transform_a, const ShapeSW *p_b, const Transform &p_transform_b, _CollectorCallback *p_collector, real_t p_margin_a, real_t p_margin_b) {
-
 	const BoxShapeSW *box_A = static_cast<const BoxShapeSW *>(p_a);
 	const ConvexPolygonShapeSW *convex_polygon_B = static_cast<const ConvexPolygonShapeSW *>(p_b);
 
@@ -1371,7 +1323,6 @@ static void _collision_box_convex_polygon(const ShapeSW *p_a, const Transform &p
 
 	// faces of A
 	for (int i = 0; i < 3; i++) {
-
 		Vector3 axis = p_transform_a.basis.get_axis(i).normalized();
 
 		if (!separator.test_axis(axis))
@@ -1380,7 +1331,6 @@ static void _collision_box_convex_polygon(const ShapeSW *p_a, const Transform &p
 
 	// faces of B
 	for (int i = 0; i < face_count; i++) {
-
 		Vector3 axis = p_transform_b.xform(faces[i].plane).normal;
 
 		if (!separator.test_axis(axis))
@@ -1389,11 +1339,9 @@ static void _collision_box_convex_polygon(const ShapeSW *p_a, const Transform &p
 
 	// A<->B edges
 	for (int i = 0; i < 3; i++) {
-
 		Vector3 e1 = p_transform_a.basis.get_axis(i);
 
 		for (int j = 0; j < edge_count; j++) {
-
 			Vector3 e2 = p_transform_b.basis.xform(vertices[edges[j].a]) - p_transform_b.basis.xform(vertices[edges[j].b]);
 
 			Vector3 axis = e1.cross(e2).normalized();
@@ -1404,10 +1352,8 @@ static void _collision_box_convex_polygon(const ShapeSW *p_a, const Transform &p
 	}
 
 	if (withMargin) {
-
 		// calculate closest points between vertices and box edges
 		for (int v = 0; v < vertex_count; v++) {
-
 			Vector3 vtxb = p_transform_b.xform(vertices[v]);
 			Vector3 ab_vec = vtxb - p_transform_a.origin;
 
@@ -1428,7 +1374,6 @@ static void _collision_box_convex_polygon(const ShapeSW *p_a, const Transform &p
 			//now try edges, which become cylinders!
 
 			for (int i = 0; i < 3; i++) {
-
 				//a ->b
 				Vector3 axis_a = p_transform_a.basis.get_axis(i);
 
@@ -1450,7 +1395,6 @@ static void _collision_box_convex_polygon(const ShapeSW *p_a, const Transform &p
 						point += p_transform_a.basis.get_axis(l) * he[l];
 
 					for (int e = 0; e < edge_count; e++) {
-
 						Vector3 p1 = p_transform_b.xform(vertices[edges[e].a]);
 						Vector3 p2 = p_transform_b.xform(vertices[edges[e].b]);
 						Vector3 n = (p2 - p1);
@@ -1468,7 +1412,6 @@ static void _collision_box_convex_polygon(const ShapeSW *p_a, const Transform &p
 
 template <bool withMargin>
 static void _collision_box_face(const ShapeSW *p_a, const Transform &p_transform_a, const ShapeSW *p_b, const Transform &p_transform_b, _CollectorCallback *p_collector, real_t p_margin_a, real_t p_margin_b) {
-
 	const BoxShapeSW *box_A = static_cast<const BoxShapeSW *>(p_a);
 	const FaceShapeSW *face_B = static_cast<const FaceShapeSW *>(p_b);
 
@@ -1485,7 +1428,6 @@ static void _collision_box_face(const ShapeSW *p_a, const Transform &p_transform
 
 	// faces of A
 	for (int i = 0; i < 3; i++) {
-
 		Vector3 axis = p_transform_a.basis.get_axis(i).normalized();
 
 		if (!separator.test_axis(axis))
@@ -1495,11 +1437,9 @@ static void _collision_box_face(const ShapeSW *p_a, const Transform &p_transform
 	// combined edges
 
 	for (int i = 0; i < 3; i++) {
-
 		Vector3 e = vertex[i] - vertex[(i + 1) % 3];
 
 		for (int j = 0; j < 3; j++) {
-
 			Vector3 axis = p_transform_a.basis.get_axis(j);
 
 			if (!separator.test_axis(e.cross(axis).normalized()))
@@ -1508,10 +1448,8 @@ static void _collision_box_face(const ShapeSW *p_a, const Transform &p_transform
 	}
 
 	if (withMargin) {
-
 		// calculate closest points between vertices and box edges
 		for (int v = 0; v < 3; v++) {
-
 			Vector3 ab_vec = vertex[v] - p_transform_a.origin;
 
 			Vector3 cnormal_a = p_transform_a.basis.xform_inv(ab_vec);
@@ -1531,7 +1469,6 @@ static void _collision_box_face(const ShapeSW *p_a, const Transform &p_transform
 			//now try edges, which become cylinders!
 
 			for (int i = 0; i < 3; i++) {
-
 				//a ->b
 				Vector3 axis_a = p_transform_a.basis.get_axis(i);
 
@@ -1553,7 +1490,6 @@ static void _collision_box_face(const ShapeSW *p_a, const Transform &p_transform
 						point += p_transform_a.basis.get_axis(l) * he[l];
 
 					for (int e = 0; e < 3; e++) {
-
 						Vector3 p1 = vertex[e];
 						Vector3 p2 = vertex[(e + 1) % 3];
 
@@ -1572,7 +1508,6 @@ static void _collision_box_face(const ShapeSW *p_a, const Transform &p_transform
 
 template <bool withMargin>
 static void _collision_capsule_capsule(const ShapeSW *p_a, const Transform &p_transform_a, const ShapeSW *p_b, const Transform &p_transform_b, _CollectorCallback *p_collector, real_t p_margin_a, real_t p_margin_b) {
-
 	const CapsuleShapeSW *capsule_A = static_cast<const CapsuleShapeSW *>(p_a);
 	const CapsuleShapeSW *capsule_B = static_cast<const CapsuleShapeSW *>(p_b);
 
@@ -1689,7 +1624,6 @@ static void _collision_capsule_cylinder(const ShapeSW *p_a, const Transform &p_t
 
 template <bool withMargin>
 static void _collision_capsule_convex_polygon(const ShapeSW *p_a, const Transform &p_transform_a, const ShapeSW *p_b, const Transform &p_transform_b, _CollectorCallback *p_collector, real_t p_margin_a, real_t p_margin_b) {
-
 	const CapsuleShapeSW *capsule_A = static_cast<const CapsuleShapeSW *>(p_a);
 	const ConvexPolygonShapeSW *convex_polygon_B = static_cast<const ConvexPolygonShapeSW *>(p_b);
 
@@ -1708,7 +1642,6 @@ static void _collision_capsule_convex_polygon(const ShapeSW *p_a, const Transfor
 
 	// faces of B
 	for (int i = 0; i < face_count; i++) {
-
 		Vector3 axis = p_transform_b.xform(faces[i].plane).normal;
 
 		if (!separator.test_axis(axis))
@@ -1718,7 +1651,6 @@ static void _collision_capsule_convex_polygon(const ShapeSW *p_a, const Transfor
 	// edges of B, capsule cylinder
 
 	for (int i = 0; i < edge_count; i++) {
-
 		// cylinder
 		Vector3 edge_axis = p_transform_b.basis.xform(vertices[edges[i].a]) - p_transform_b.basis.xform(vertices[edges[i].b]);
 		Vector3 axis = edge_axis.cross(p_transform_a.basis.get_axis(2)).normalized();
@@ -1730,7 +1662,6 @@ static void _collision_capsule_convex_polygon(const ShapeSW *p_a, const Transfor
 	// capsule balls, edges of B
 
 	for (int i = 0; i < 2; i++) {
-
 		// edges of B, capsule cylinder
 
 		Vector3 capsule_axis = p_transform_a.basis.get_axis(2) * (capsule_A->get_height() * 0.5);
@@ -1738,7 +1669,6 @@ static void _collision_capsule_convex_polygon(const ShapeSW *p_a, const Transfor
 		Vector3 sphere_pos = p_transform_a.origin + ((i == 0) ? capsule_axis : -capsule_axis);
 
 		for (int j = 0; j < edge_count; j++) {
-
 			Vector3 n1 = sphere_pos - p_transform_b.xform(vertices[edges[j].a]);
 			Vector3 n2 = p_transform_b.basis.xform(vertices[edges[j].a]) - p_transform_b.basis.xform(vertices[edges[j].b]);
 
@@ -1754,7 +1684,6 @@ static void _collision_capsule_convex_polygon(const ShapeSW *p_a, const Transfor
 
 template <bool withMargin>
 static void _collision_capsule_face(const ShapeSW *p_a, const Transform &p_transform_a, const ShapeSW *p_b, const Transform &p_transform_b, _CollectorCallback *p_collector, real_t p_margin_a, real_t p_margin_b) {
-
 	const CapsuleShapeSW *capsule_A = static_cast<const CapsuleShapeSW *>(p_a);
 	const FaceShapeSW *face_B = static_cast<const FaceShapeSW *>(p_b);
 
@@ -1774,7 +1703,6 @@ static void _collision_capsule_face(const ShapeSW *p_a, const Transform &p_trans
 	Vector3 capsule_axis = p_transform_a.basis.get_axis(2) * (capsule_A->get_height() * 0.5);
 
 	for (int i = 0; i < 3; i++) {
-
 		// edge-cylinder
 		Vector3 edge_axis = vertex[i] - vertex[(i + 1) % 3];
 		Vector3 axis = edge_axis.cross(capsule_axis).normalized();
@@ -1786,7 +1714,6 @@ static void _collision_capsule_face(const ShapeSW *p_a, const Transform &p_trans
 			return;
 
 		for (int j = 0; j < 2; j++) {
-
 			// point-spheres
 			Vector3 sphere_pos = p_transform_a.origin + ((j == 0) ? capsule_axis : -capsule_axis);
 
@@ -1972,7 +1899,6 @@ static void _collision_cylinder_face(const ShapeSW *p_a, const Transform &p_tran
 
 template <bool withMargin>
 static void _collision_convex_polygon_convex_polygon(const ShapeSW *p_a, const Transform &p_transform_a, const ShapeSW *p_b, const Transform &p_transform_b, _CollectorCallback *p_collector, real_t p_margin_a, real_t p_margin_b) {
-
 	const ConvexPolygonShapeSW *convex_polygon_A = static_cast<const ConvexPolygonShapeSW *>(p_a);
 	const ConvexPolygonShapeSW *convex_polygon_B = static_cast<const ConvexPolygonShapeSW *>(p_b);
 
@@ -2001,7 +1927,6 @@ static void _collision_convex_polygon_convex_polygon(const ShapeSW *p_a, const T
 
 	// faces of A
 	for (int i = 0; i < face_count_A; i++) {
-
 		Vector3 axis = p_transform_a.xform(faces_A[i].plane).normal;
 		//Vector3 axis = p_transform_a.basis.xform( faces_A[i].plane.normal ).normalized();
 
@@ -2011,7 +1936,6 @@ static void _collision_convex_polygon_convex_polygon(const ShapeSW *p_a, const T
 
 	// faces of B
 	for (int i = 0; i < face_count_B; i++) {
-
 		Vector3 axis = p_transform_b.xform(faces_B[i].plane).normal;
 		//Vector3 axis = p_transform_b.basis.xform( faces_B[i].plane.normal ).normalized();
 
@@ -2021,11 +1945,9 @@ static void _collision_convex_polygon_convex_polygon(const ShapeSW *p_a, const T
 
 	// A<->B edges
 	for (int i = 0; i < edge_count_A; i++) {
-
 		Vector3 e1 = p_transform_a.basis.xform(vertices_A[edges_A[i].a]) - p_transform_a.basis.xform(vertices_A[edges_A[i].b]);
 
 		for (int j = 0; j < edge_count_B; j++) {
-
 			Vector3 e2 = p_transform_b.basis.xform(vertices_B[edges_B[j].a]) - p_transform_b.basis.xform(vertices_B[edges_B[j].b]);
 
 			Vector3 axis = e1.cross(e2).normalized();
@@ -2036,14 +1958,11 @@ static void _collision_convex_polygon_convex_polygon(const ShapeSW *p_a, const T
 	}
 
 	if (withMargin) {
-
 		//vertex-vertex
 		for (int i = 0; i < vertex_count_A; i++) {
-
 			Vector3 va = p_transform_a.xform(vertices_A[i]);
 
 			for (int j = 0; j < vertex_count_B; j++) {
-
 				if (!separator.test_axis((va - p_transform_b.xform(vertices_B[j])).normalized()))
 					return;
 			}
@@ -2051,13 +1970,11 @@ static void _collision_convex_polygon_convex_polygon(const ShapeSW *p_a, const T
 		//edge-vertex (shell)
 
 		for (int i = 0; i < edge_count_A; i++) {
-
 			Vector3 e1 = p_transform_a.basis.xform(vertices_A[edges_A[i].a]);
 			Vector3 e2 = p_transform_a.basis.xform(vertices_A[edges_A[i].b]);
 			Vector3 n = (e2 - e1);
 
 			for (int j = 0; j < vertex_count_B; j++) {
-
 				Vector3 e3 = p_transform_b.xform(vertices_B[j]);
 
 				if (!separator.test_axis((e1 - e3).cross(n).cross(n).normalized()))
@@ -2066,13 +1983,11 @@ static void _collision_convex_polygon_convex_polygon(const ShapeSW *p_a, const T
 		}
 
 		for (int i = 0; i < edge_count_B; i++) {
-
 			Vector3 e1 = p_transform_b.basis.xform(vertices_B[edges_B[i].a]);
 			Vector3 e2 = p_transform_b.basis.xform(vertices_B[edges_B[i].b]);
 			Vector3 n = (e2 - e1);
 
 			for (int j = 0; j < vertex_count_A; j++) {
-
 				Vector3 e3 = p_transform_a.xform(vertices_A[j]);
 
 				if (!separator.test_axis((e1 - e3).cross(n).cross(n).normalized()))
@@ -2086,7 +2001,6 @@ static void _collision_convex_polygon_convex_polygon(const ShapeSW *p_a, const T
 
 template <bool withMargin>
 static void _collision_convex_polygon_face(const ShapeSW *p_a, const Transform &p_transform_a, const ShapeSW *p_b, const Transform &p_transform_b, _CollectorCallback *p_collector, real_t p_margin_a, real_t p_margin_b) {
-
 	const ConvexPolygonShapeSW *convex_polygon_A = static_cast<const ConvexPolygonShapeSW *>(p_a);
 	const FaceShapeSW *face_B = static_cast<const FaceShapeSW *>(p_b);
 
@@ -2112,7 +2026,6 @@ static void _collision_convex_polygon_face(const ShapeSW *p_a, const Transform &
 
 	// faces of A
 	for (int i = 0; i < face_count; i++) {
-
 		//Vector3 axis = p_transform_a.xform( faces[i].plane ).normal;
 		Vector3 axis = p_transform_a.basis.xform(faces[i].plane.normal).normalized();
 
@@ -2122,11 +2035,9 @@ static void _collision_convex_polygon_face(const ShapeSW *p_a, const Transform &
 
 	// A<->B edges
 	for (int i = 0; i < edge_count; i++) {
-
 		Vector3 e1 = p_transform_a.xform(vertices[edges[i].a]) - p_transform_a.xform(vertices[edges[i].b]);
 
 		for (int j = 0; j < 3; j++) {
-
 			Vector3 e2 = vertex[j] - vertex[(j + 1) % 3];
 
 			Vector3 axis = e1.cross(e2).normalized();
@@ -2137,14 +2048,11 @@ static void _collision_convex_polygon_face(const ShapeSW *p_a, const Transform &
 	}
 
 	if (withMargin) {
-
 		//vertex-vertex
 		for (int i = 0; i < vertex_count; i++) {
-
 			Vector3 va = p_transform_a.xform(vertices[i]);
 
 			for (int j = 0; j < 3; j++) {
-
 				if (!separator.test_axis((va - vertex[j]).normalized()))
 					return;
 			}
@@ -2152,13 +2060,11 @@ static void _collision_convex_polygon_face(const ShapeSW *p_a, const Transform &
 		//edge-vertex (shell)
 
 		for (int i = 0; i < edge_count; i++) {
-
 			Vector3 e1 = p_transform_a.basis.xform(vertices[edges[i].a]);
 			Vector3 e2 = p_transform_a.basis.xform(vertices[edges[i].b]);
 			Vector3 n = (e2 - e1);
 
 			for (int j = 0; j < 3; j++) {
-
 				Vector3 e3 = vertex[j];
 
 				if (!separator.test_axis((e1 - e3).cross(n).cross(n).normalized()))
@@ -2167,13 +2073,11 @@ static void _collision_convex_polygon_face(const ShapeSW *p_a, const Transform &
 		}
 
 		for (int i = 0; i < 3; i++) {
-
 			Vector3 e1 = vertex[i];
 			Vector3 e2 = vertex[(i + 1) % 3];
 			Vector3 n = (e2 - e1);
 
 			for (int j = 0; j < vertex_count; j++) {
-
 				Vector3 e3 = p_transform_a.xform(vertices[j]);
 
 				if (!separator.test_axis((e1 - e3).cross(n).cross(n).normalized()))
@@ -2186,7 +2090,6 @@ static void _collision_convex_polygon_face(const ShapeSW *p_a, const Transform &
 }
 
 bool sat_calculate_penetration(const ShapeSW *p_shape_A, const Transform &p_transform_A, const ShapeSW *p_shape_B, const Transform &p_transform_B, CollisionSolverSW::CallbackResult p_result_callback, void *p_userdata, bool p_swap, Vector3 *r_prev_axis, real_t p_margin_a, real_t p_margin_b) {
-
 	PhysicsServer::ShapeType type_A = p_shape_A->get_type();
 
 	ERR_FAIL_COND_V(type_A == PhysicsServer::SHAPE_PLANE, false);

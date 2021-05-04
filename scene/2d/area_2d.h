@@ -35,7 +35,6 @@
 #include "scene/2d/collision_object_2d.h"
 
 class Area2D : public CollisionObject2D {
-
 	GDCLASS(Area2D, CollisionObject2D);
 
 public:
@@ -68,7 +67,6 @@ private:
 	void _body_exit_tree(ObjectID p_id);
 
 	struct ShapePair {
-
 		int body_shape;
 		int area_shape;
 		bool operator<(const ShapePair &p_sp) const {
@@ -86,7 +84,6 @@ private:
 	};
 
 	struct BodyState {
-
 		int rc;
 		bool in_tree;
 		VSet<ShapePair> shapes;
@@ -100,7 +97,6 @@ private:
 	void _area_exit_tree(ObjectID p_id);
 
 	struct AreaShapePair {
-
 		int area_shape;
 		int self_shape;
 		bool operator<(const AreaShapePair &p_sp) const {
@@ -118,7 +114,6 @@ private:
 	};
 
 	struct AreaState {
-
 		int rc;
 		bool in_tree;
 		VSet<AreaShapePair> shapes;

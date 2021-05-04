@@ -86,7 +86,6 @@ bool EditorFeatureProfile::is_class_editor_disabled(const StringName &p_class) c
 }
 
 void EditorFeatureProfile::set_disable_class_property(const StringName &p_class, const StringName &p_property, bool p_disabled) {
-
 	if (p_disabled) {
 		if (!disabled_properties.has(p_class)) {
 			disabled_properties[p_class] = Set<StringName>();
@@ -102,7 +101,6 @@ void EditorFeatureProfile::set_disable_class_property(const StringName &p_class,
 	}
 }
 bool EditorFeatureProfile::is_class_property_disabled(const StringName &p_class, const StringName &p_property) const {
-
 	if (!disabled_properties.has(p_class)) {
 		return false;
 	}
@@ -119,7 +117,6 @@ bool EditorFeatureProfile::has_class_properties_disabled(const StringName &p_cla
 }
 
 void EditorFeatureProfile::set_disable_feature(Feature p_feature, bool p_disable) {
-
 	ERR_FAIL_INDEX(p_feature, FEATURE_MAX);
 	features_disabled[p_feature] = p_disable;
 }
@@ -134,7 +131,6 @@ String EditorFeatureProfile::get_feature_name(Feature p_feature) {
 }
 
 Error EditorFeatureProfile::save_to_file(const String &p_path) {
-
 	Dictionary json;
 	json["type"] = "feature_profile";
 	Array dis_classes;
@@ -180,7 +176,6 @@ Error EditorFeatureProfile::save_to_file(const String &p_path) {
 }
 
 Error EditorFeatureProfile::load_from_file(const String &p_path) {
-
 	Error err;
 	String text = FileAccess::get_file_as_string(p_path, &err);
 	if (err != OK) {
@@ -232,7 +227,6 @@ Error EditorFeatureProfile::load_from_file(const String &p_path) {
 	}
 
 	if (json.has("disabled_features")) {
-
 		Array disabled_features_arr = json["disabled_features"];
 		for (int i = 0; i < FEATURE_MAX; i++) {
 			bool found = false;
@@ -253,7 +247,6 @@ Error EditorFeatureProfile::load_from_file(const String &p_path) {
 }
 
 void EditorFeatureProfile::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("set_disable_class", "class_name", "disable"), &EditorFeatureProfile::set_disable_class);
 	ClassDB::bind_method(D_METHOD("is_class_disabled", "class_name"), &EditorFeatureProfile::is_class_disabled);
 
@@ -282,7 +275,6 @@ void EditorFeatureProfile::_bind_methods() {
 }
 
 EditorFeatureProfile::EditorFeatureProfile() {
-
 	for (int i = 0; i < FEATURE_MAX; i++) {
 		features_disabled[i] = false;
 	}
@@ -292,7 +284,6 @@ EditorFeatureProfile::EditorFeatureProfile() {
 
 void EditorFeatureProfileManager::_notification(int p_what) {
 	if (p_what == NOTIFICATION_READY) {
-
 		current_profile = EDITOR_GET("_default_feature_profile");
 		if (current_profile != String()) {
 			current.instance();
@@ -317,7 +308,6 @@ String EditorFeatureProfileManager::_get_selected_profile() {
 }
 
 void EditorFeatureProfileManager::_update_profile_list(const String &p_select_profile) {
-
 	String selected_profile;
 	if (p_select_profile == String()) { //default, keep
 		if (profile_list->get_selected() >= 0) {
@@ -382,10 +372,8 @@ void EditorFeatureProfileManager::_update_profile_list(const String &p_select_pr
 }
 
 void EditorFeatureProfileManager::_profile_action(int p_action) {
-
 	switch (p_action) {
 		case PROFILE_CLEAR: {
-
 			EditorSettings::get_singleton()->set("_default_feature_profile", "");
 			EditorSettings::get_singleton()->save();
 			current_profile = "";
@@ -395,7 +383,6 @@ void EditorFeatureProfileManager::_profile_action(int p_action) {
 			_emit_current_profile_changed();
 		} break;
 		case PROFILE_SET: {
-
 			String selected = _get_selected_profile();
 			ERR_FAIL_COND(selected == String());
 			if (selected == current_profile) {
@@ -410,22 +397,18 @@ void EditorFeatureProfileManager::_profile_action(int p_action) {
 			_emit_current_profile_changed();
 		} break;
 		case PROFILE_IMPORT: {
-
 			import_profiles->popup_centered_ratio();
 		} break;
 		case PROFILE_EXPORT: {
-
 			export_profile->popup_centered_ratio();
 			export_profile->set_current_file(_get_selected_profile() + ".profile");
 		} break;
 		case PROFILE_NEW: {
-
 			new_profile_dialog->popup_centered_minsize();
 			new_profile_name->clear();
 			new_profile_name->grab_focus();
 		} break;
 		case PROFILE_ERASE: {
-
 			String selected = _get_selected_profile();
 			ERR_FAIL_COND(selected == String());
 
@@ -436,7 +419,6 @@ void EditorFeatureProfileManager::_profile_action(int p_action) {
 }
 
 void EditorFeatureProfileManager::_erase_selected_profile() {
-
 	String selected = _get_selected_profile();
 	ERR_FAIL_COND(selected == String());
 	DirAccessRef da = DirAccess::open(EditorSettings::get_singleton()->get_feature_profiles_dir());
@@ -470,12 +452,10 @@ void EditorFeatureProfileManager::_create_new_profile() {
 }
 
 void EditorFeatureProfileManager::_profile_selected(int p_what) {
-
 	_update_selected_profile();
 }
 
 void EditorFeatureProfileManager::_fill_classes_from(TreeItem *p_parent, const String &p_class, const String &p_selected) {
-
 	TreeItem *class_item = class_list->create_item(p_parent);
 	class_item->set_cell_mode(0, TreeItem::CELL_MODE_CHECK);
 	class_item->set_icon(0, EditorNode::get_singleton()->get_class_icon(p_class, "Node"));
@@ -522,7 +502,6 @@ void EditorFeatureProfileManager::_fill_classes_from(TreeItem *p_parent, const S
 }
 
 void EditorFeatureProfileManager::_class_list_item_selected() {
-
 	if (updating_features)
 		return;
 
@@ -567,7 +546,6 @@ void EditorFeatureProfileManager::_class_list_item_selected() {
 	ClassDB::get_property_list(class_name, &props, true);
 
 	for (List<PropertyInfo>::Element *E = props.front(); E; E = E->next()) {
-
 		String name = E->get().name;
 		if (!(E->get().usage & PROPERTY_USAGE_EDITOR))
 			continue;
@@ -586,7 +564,6 @@ void EditorFeatureProfileManager::_class_list_item_selected() {
 }
 
 void EditorFeatureProfileManager::_class_list_item_edited() {
-
 	if (updating_features)
 		return;
 
@@ -651,7 +628,6 @@ void EditorFeatureProfileManager::_property_item_edited() {
 }
 
 void EditorFeatureProfileManager::_update_selected_profile() {
-
 	String class_selected;
 	int feature_selected = -1;
 
@@ -724,7 +700,6 @@ void EditorFeatureProfileManager::_update_selected_profile() {
 }
 
 void EditorFeatureProfileManager::_import_profiles(const Vector<String> &p_paths) {
-
 	//test it first
 	for (int i = 0; i < p_paths.size(); i++) {
 		Ref<EditorFeatureProfile> profile;
@@ -759,7 +734,6 @@ void EditorFeatureProfileManager::_import_profiles(const Vector<String> &p_paths
 }
 
 void EditorFeatureProfileManager::_export_profile(const String &p_path) {
-
 	ERR_FAIL_COND(edited.is_null());
 	Error err = edited->save_to_file(p_path);
 	if (err != OK) {
@@ -768,7 +742,6 @@ void EditorFeatureProfileManager::_export_profile(const String &p_path) {
 }
 
 void EditorFeatureProfileManager::_save_and_update() {
-
 	String edited_path = _get_selected_profile();
 	ERR_FAIL_COND(edited_path == String());
 	ERR_FAIL_COND(edited.is_null());
@@ -781,7 +754,6 @@ void EditorFeatureProfileManager::_save_and_update() {
 }
 
 void EditorFeatureProfileManager::_emit_current_profile_changed() {
-
 	emit_signal("current_feature_profile_changed");
 }
 
@@ -796,7 +768,6 @@ Ref<EditorFeatureProfile> EditorFeatureProfileManager::get_current_profile() {
 EditorFeatureProfileManager *EditorFeatureProfileManager::singleton = NULL;
 
 void EditorFeatureProfileManager::_bind_methods() {
-
 	ClassDB::bind_method("_update_selected_profile", &EditorFeatureProfileManager::_update_selected_profile);
 	ClassDB::bind_method("_profile_action", &EditorFeatureProfileManager::_profile_action);
 	ClassDB::bind_method("_create_new_profile", &EditorFeatureProfileManager::_create_new_profile);
@@ -813,7 +784,6 @@ void EditorFeatureProfileManager::_bind_methods() {
 }
 
 EditorFeatureProfileManager::EditorFeatureProfileManager() {
-
 	VBoxContainer *main_vbc = memnew(VBoxContainer);
 	add_child(main_vbc);
 

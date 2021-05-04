@@ -71,7 +71,6 @@ public:
 };
 
 class CharString {
-
 	CowData<char> _cowdata;
 	static const char _null;
 
@@ -113,7 +112,6 @@ protected:
 typedef wchar_t CharType;
 
 struct StrRange {
-
 	const CharType *c_str;
 	int len;
 
@@ -124,7 +122,6 @@ struct StrRange {
 };
 
 class String {
-
 	CowData<CharType> _cowdata;
 	static const CharType _null;
 
@@ -381,26 +378,20 @@ String rtos(double p_val);
 String rtoss(double p_val); //scientific version
 
 struct NoCaseComparator {
-
 	bool operator()(const String &p_a, const String &p_b) const {
-
 		return p_a.nocasecmp_to(p_b) < 0;
 	}
 };
 
 struct NaturalNoCaseComparator {
-
 	bool operator()(const String &p_a, const String &p_b) const {
-
 		return p_a.naturalnocasecmp_to(p_b) < 0;
 	}
 };
 
 template <typename L, typename R>
 _FORCE_INLINE_ bool is_str_less(const L *l_ptr, const R *r_ptr) {
-
 	while (true) {
-
 		if (*l_ptr == 0 && *r_ptr == 0)
 			return false;
 		else if (*l_ptr == 0)

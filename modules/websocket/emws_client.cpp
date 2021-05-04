@@ -64,7 +64,6 @@ void EMWSClient::_esws_on_close(void *obj, int code, const char *reason, int was
 }
 
 Error EMWSClient::connect_to_host(String p_host, String p_path, uint16_t p_port, bool p_ssl, const Vector<String> p_protocols, const Vector<String> p_custom_headers) {
-
 	if (_js_id) {
 		godot_js_websocket_destroy(_js_id);
 		_js_id = 0;
@@ -105,12 +104,10 @@ void EMWSClient::poll() {
 }
 
 Ref<WebSocketPeer> EMWSClient::get_peer(int p_peer_id) const {
-
 	return _peer;
 }
 
 NetworkedMultiplayerPeer::ConnectionStatus EMWSClient::get_connection_status() const {
-
 	if (_peer->is_connected_to_host()) {
 		if (_is_connecting)
 			return CONNECTION_CONNECTING;
@@ -121,17 +118,14 @@ NetworkedMultiplayerPeer::ConnectionStatus EMWSClient::get_connection_status() c
 }
 
 void EMWSClient::disconnect_from_host(int p_code, String p_reason) {
-
 	_peer->close(p_code, p_reason);
 }
 
 IP_Address EMWSClient::get_connected_host() const {
-
 	ERR_FAIL_V_MSG(IP_Address(), "Not supported in HTML5 export.");
 }
 
 uint16_t EMWSClient::get_connected_port() const {
-
 	ERR_FAIL_V_MSG(0, "Not supported in HTML5 export.");
 }
 
@@ -154,7 +148,6 @@ EMWSClient::EMWSClient() {
 }
 
 EMWSClient::~EMWSClient() {
-
 	disconnect_from_host();
 	_peer = Ref<EMWSPeer>();
 	if (_js_id) {

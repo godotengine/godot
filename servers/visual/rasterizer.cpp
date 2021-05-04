@@ -36,14 +36,12 @@
 Rasterizer *(*Rasterizer::_create_func)() = NULL;
 
 Rasterizer *Rasterizer::create() {
-
 	return _create_func();
 }
 
 RasterizerStorage *RasterizerStorage::base_singleton = NULL;
 
 RasterizerStorage::RasterizerStorage() {
-
 	base_singleton = this;
 }
 

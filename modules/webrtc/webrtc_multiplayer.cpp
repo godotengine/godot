@@ -320,7 +320,6 @@ Error WebRTCMultiplayer::put_packet(const uint8_t *p_buffer, int p_buffer_size) 
 	Map<int, Ref<ConnectedPeer>>::Element *E = NULL;
 
 	if (target_peer > 0) {
-
 		E = peer_map.find(target_peer);
 		ERR_FAIL_COND_V_MSG(!E, ERR_INVALID_PARAMETER, "Invalid target peer: " + itos(target_peer) + ".");
 
@@ -332,7 +331,6 @@ Error WebRTCMultiplayer::put_packet(const uint8_t *p_buffer, int p_buffer_size) 
 		int exclude = -target_peer;
 
 		for (Map<int, Ref<ConnectedPeer>>::Element *F = peer_map.front(); F; F = F->next()) {
-
 			// Exclude packet. If target_peer == 0 then don't exclude any packets
 			if (target_peer != 0 && F->key() == exclude)
 				continue;

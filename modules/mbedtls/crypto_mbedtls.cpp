@@ -197,7 +197,6 @@ Crypto *CryptoMbedTLS::create() {
 }
 
 void CryptoMbedTLS::initialize_crypto() {
-
 #ifdef DEBUG_ENABLED
 	mbedtls_debug_set_threshold(1);
 #endif

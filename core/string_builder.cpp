@@ -33,7 +33,6 @@
 #include <string.h>
 
 StringBuilder &StringBuilder::append(const String &p_string) {
-
 	if (p_string == String())
 		return *this;
 
@@ -46,7 +45,6 @@ StringBuilder &StringBuilder::append(const String &p_string) {
 }
 
 StringBuilder &StringBuilder::append(const char *p_cstring) {
-
 	int32_t len = strlen(p_cstring);
 
 	c_strings.push_back(p_cstring);
@@ -58,7 +56,6 @@ StringBuilder &StringBuilder::append(const char *p_cstring) {
 }
 
 String StringBuilder::as_string() const {
-
 	if (string_length == 0)
 		return "";
 
@@ -80,7 +77,6 @@ String StringBuilder::as_string() const {
 
 			godot_string_elem++;
 		} else {
-
 			const char *s = c_strings[c_string_elem];
 
 			for (int32_t j = 0; j < appended_strings[i]; j++) {

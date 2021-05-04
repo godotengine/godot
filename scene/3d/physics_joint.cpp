@@ -33,7 +33,6 @@
 #include "scene/scene_string_names.h"
 
 void Joint::_disconnect_signals() {
-
 	Node *node_a = get_node_or_null(a);
 	PhysicsBody *body_a = Object::cast_to<PhysicsBody>(node_a);
 	if (body_a)
@@ -46,13 +45,11 @@ void Joint::_disconnect_signals() {
 }
 
 void Joint::_body_exit_tree() {
-
 	_disconnect_signals();
 	_update_joint(true);
 }
 
 void Joint::_update_joint(bool p_only_free) {
-
 	if (joint.is_valid()) {
 		if (ba.is_valid() && bb.is_valid()) {
 			PhysicsServer::get_singleton()->body_remove_collision_exception(ba, bb);
@@ -132,7 +129,6 @@ void Joint::_update_joint(bool p_only_free) {
 }
 
 void Joint::set_node_a(const NodePath &p_node_a) {
-
 	if (a == p_node_a)
 		return;
 
@@ -144,12 +140,10 @@ void Joint::set_node_a(const NodePath &p_node_a) {
 }
 
 NodePath Joint::get_node_a() const {
-
 	return a;
 }
 
 void Joint::set_node_b(const NodePath &p_node_b) {
-
 	if (b == p_node_b)
 		return;
 
@@ -161,26 +155,21 @@ void Joint::set_node_b(const NodePath &p_node_b) {
 }
 
 NodePath Joint::get_node_b() const {
-
 	return b;
 }
 
 void Joint::set_solver_priority(int p_priority) {
-
 	solver_priority = p_priority;
 	if (joint.is_valid())
 		PhysicsServer::get_singleton()->joint_set_solver_priority(joint, solver_priority);
 }
 
 int Joint::get_solver_priority() const {
-
 	return solver_priority;
 }
 
 void Joint::_notification(int p_what) {
-
 	switch (p_what) {
-
 		case NOTIFICATION_READY: {
 			_update_joint();
 		} break;
@@ -194,7 +183,6 @@ void Joint::_notification(int p_what) {
 }
 
 void Joint::set_exclude_nodes_from_collision(bool p_enable) {
-
 	if (exclude_from_collision == p_enable)
 		return;
 	exclude_from_collision = p_enable;
@@ -202,12 +190,10 @@ void Joint::set_exclude_nodes_from_collision(bool p_enable) {
 }
 
 bool Joint::get_exclude_nodes_from_collision() const {
-
 	return exclude_from_collision;
 }
 
 String Joint::get_configuration_warning() const {
-
 	String node_warning = Node::get_configuration_warning();
 
 	if (!warning.empty()) {
@@ -221,7 +207,6 @@ String Joint::get_configuration_warning() const {
 }
 
 void Joint::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("_body_exit_tree"), &Joint::_body_exit_tree);
 
 	ClassDB::bind_method(D_METHOD("set_node_a", "node"), &Joint::set_node_a);
@@ -244,7 +229,6 @@ void Joint::_bind_methods() {
 }
 
 Joint::Joint() {
-
 	exclude_from_collision = true;
 	solver_priority = 1;
 	set_notify_transform(true);
@@ -253,7 +237,6 @@ Joint::Joint() {
 ///////////////////////////////////
 
 void PinJoint::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("set_param", "param", "value"), &PinJoint::set_param);
 	ClassDB::bind_method(D_METHOD("get_param", "param"), &PinJoint::get_param);
 
@@ -267,20 +250,17 @@ void PinJoint::_bind_methods() {
 }
 
 void PinJoint::set_param(Param p_param, float p_value) {
-
 	ERR_FAIL_INDEX(p_param, 3);
 	params[p_param] = p_value;
 	if (get_joint().is_valid())
 		PhysicsServer::get_singleton()->pin_joint_set_param(get_joint(), PhysicsServer::PinJointParam(p_param), p_value);
 }
 float PinJoint::get_param(Param p_param) const {
-
 	ERR_FAIL_INDEX_V(p_param, 3, 0);
 	return params[p_param];
 }
 
 RID PinJoint::_configure_joint(PhysicsBody *body_a, PhysicsBody *body_b) {
-
 	Vector3 pinpos = get_global_transform().origin;
 	Vector3 local_a = body_a->get_global_transform().affine_inverse().xform(pinpos);
 	Vector3 local_b;
@@ -298,7 +278,6 @@ RID PinJoint::_configure_joint(PhysicsBody *body_a, PhysicsBody *body_b) {
 }
 
 PinJoint::PinJoint() {
-
 	params[PARAM_BIAS] = 0.3;
 	params[PARAM_DAMPING] = 1;
 	params[PARAM_IMPULSE_CLAMP] = 0;
@@ -309,27 +288,22 @@ PinJoint::PinJoint() {
 ///////////////////////////////////
 
 void HingeJoint::_set_upper_limit(float p_limit) {
-
 	set_param(PARAM_LIMIT_UPPER, Math::deg2rad(p_limit));
 }
 
 float HingeJoint::_get_upper_limit() const {
-
 	return Math::rad2deg(get_param(PARAM_LIMIT_UPPER));
 }
 
 void HingeJoint::_set_lower_limit(float p_limit) {
-
 	set_param(PARAM_LIMIT_LOWER, Math::deg2rad(p_limit));
 }
 
 float HingeJoint::_get_lower_limit() const {
-
 	return Math::rad2deg(get_param(PARAM_LIMIT_LOWER));
 }
 
 void HingeJoint::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("set_param", "param", "value"), &HingeJoint::set_param);
 	ClassDB::bind_method(D_METHOD("get_param", "param"), &HingeJoint::get_param);
 
@@ -371,7 +345,6 @@ void HingeJoint::_bind_methods() {
 }
 
 void HingeJoint::set_param(Param p_param, float p_value) {
-
 	ERR_FAIL_INDEX(p_param, PARAM_MAX);
 	params[p_param] = p_value;
 	if (get_joint().is_valid())
@@ -380,13 +353,11 @@ void HingeJoint::set_param(Param p_param, float p_value) {
 	update_gizmo();
 }
 float HingeJoint::get_param(Param p_param) const {
-
 	ERR_FAIL_INDEX_V(p_param, PARAM_MAX, 0);
 	return params[p_param];
 }
 
 void HingeJoint::set_flag(Flag p_flag, bool p_value) {
-
 	ERR_FAIL_INDEX(p_flag, FLAG_MAX);
 	flags[p_flag] = p_value;
 	if (get_joint().is_valid())
@@ -395,13 +366,11 @@ void HingeJoint::set_flag(Flag p_flag, bool p_value) {
 	update_gizmo();
 }
 bool HingeJoint::get_flag(Flag p_flag) const {
-
 	ERR_FAIL_INDEX_V(p_flag, FLAG_MAX, false);
 	return flags[p_flag];
 }
 
 RID HingeJoint::_configure_joint(PhysicsBody *body_a, PhysicsBody *body_b) {
-
 	Transform gt = get_global_transform();
 	Transform ainv = body_a->get_global_transform().affine_inverse();
 
@@ -428,7 +397,6 @@ RID HingeJoint::_configure_joint(PhysicsBody *body_a, PhysicsBody *body_b) {
 }
 
 HingeJoint::HingeJoint() {
-
 	params[PARAM_BIAS] = 0.3;
 	params[PARAM_LIMIT_UPPER] = Math_PI * 0.5;
 	params[PARAM_LIMIT_LOWER] = -Math_PI * 0.5;
@@ -447,27 +415,22 @@ HingeJoint::HingeJoint() {
 //////////////////////////////////
 
 void SliderJoint::_set_upper_limit_angular(float p_limit_angular) {
-
 	set_param(PARAM_ANGULAR_LIMIT_UPPER, Math::deg2rad(p_limit_angular));
 }
 
 float SliderJoint::_get_upper_limit_angular() const {
-
 	return Math::rad2deg(get_param(PARAM_ANGULAR_LIMIT_UPPER));
 }
 
 void SliderJoint::_set_lower_limit_angular(float p_limit_angular) {
-
 	set_param(PARAM_ANGULAR_LIMIT_LOWER, Math::deg2rad(p_limit_angular));
 }
 
 float SliderJoint::_get_lower_limit_angular() const {
-
 	return Math::rad2deg(get_param(PARAM_ANGULAR_LIMIT_LOWER));
 }
 
 void SliderJoint::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("set_param", "param", "value"), &SliderJoint::set_param);
 	ClassDB::bind_method(D_METHOD("get_param", "param"), &SliderJoint::get_param);
 
@@ -529,7 +492,6 @@ void SliderJoint::_bind_methods() {
 }
 
 void SliderJoint::set_param(Param p_param, float p_value) {
-
 	ERR_FAIL_INDEX(p_param, PARAM_MAX);
 	params[p_param] = p_value;
 	if (get_joint().is_valid())
@@ -537,13 +499,11 @@ void SliderJoint::set_param(Param p_param, float p_value) {
 	update_gizmo();
 }
 float SliderJoint::get_param(Param p_param) const {
-
 	ERR_FAIL_INDEX_V(p_param, PARAM_MAX, 0);
 	return params[p_param];
 }
 
 RID SliderJoint::_configure_joint(PhysicsBody *body_a, PhysicsBody *body_b) {
-
 	Transform gt = get_global_transform();
 	Transform ainv = body_a->get_global_transform().affine_inverse();
 
@@ -567,7 +527,6 @@ RID SliderJoint::_configure_joint(PhysicsBody *body_a, PhysicsBody *body_b) {
 }
 
 SliderJoint::SliderJoint() {
-
 	params[PARAM_LINEAR_LIMIT_UPPER] = 1.0;
 	params[PARAM_LINEAR_LIMIT_LOWER] = -1.0;
 	params[PARAM_LINEAR_LIMIT_SOFTNESS] = 1.0;
@@ -596,27 +555,22 @@ SliderJoint::SliderJoint() {
 //////////////////////////////////
 
 void ConeTwistJoint::_set_swing_span(float p_limit_angular) {
-
 	set_param(PARAM_SWING_SPAN, Math::deg2rad(p_limit_angular));
 }
 
 float ConeTwistJoint::_get_swing_span() const {
-
 	return Math::rad2deg(get_param(PARAM_SWING_SPAN));
 }
 
 void ConeTwistJoint::_set_twist_span(float p_limit_angular) {
-
 	set_param(PARAM_TWIST_SPAN, Math::deg2rad(p_limit_angular));
 }
 
 float ConeTwistJoint::_get_twist_span() const {
-
 	return Math::rad2deg(get_param(PARAM_TWIST_SPAN));
 }
 
 void ConeTwistJoint::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("set_param", "param", "value"), &ConeTwistJoint::set_param);
 	ClassDB::bind_method(D_METHOD("get_param", "param"), &ConeTwistJoint::get_param);
 
@@ -642,7 +596,6 @@ void ConeTwistJoint::_bind_methods() {
 }
 
 void ConeTwistJoint::set_param(Param p_param, float p_value) {
-
 	ERR_FAIL_INDEX(p_param, PARAM_MAX);
 	params[p_param] = p_value;
 	if (get_joint().is_valid())
@@ -651,13 +604,11 @@ void ConeTwistJoint::set_param(Param p_param, float p_value) {
 	update_gizmo();
 }
 float ConeTwistJoint::get_param(Param p_param) const {
-
 	ERR_FAIL_INDEX_V(p_param, PARAM_MAX, 0);
 	return params[p_param];
 }
 
 RID ConeTwistJoint::_configure_joint(PhysicsBody *body_a, PhysicsBody *body_b) {
-
 	Transform gt = get_global_transform();
 	//Vector3 cone_twistpos = gt.origin;
 	//Vector3 cone_twistdir = gt.basis.get_axis(2);
@@ -684,7 +635,6 @@ RID ConeTwistJoint::_configure_joint(PhysicsBody *body_a, PhysicsBody *body_b) {
 }
 
 ConeTwistJoint::ConeTwistJoint() {
-
 	params[PARAM_SWING_SPAN] = Math_PI * 0.25;
 	params[PARAM_TWIST_SPAN] = Math_PI;
 	params[PARAM_BIAS] = 0.3;
@@ -695,67 +645,54 @@ ConeTwistJoint::ConeTwistJoint() {
 /////////////////////////////////////////////////////////////////////
 
 void Generic6DOFJoint::_set_angular_hi_limit_x(float p_limit_angular) {
-
 	set_param_x(PARAM_ANGULAR_UPPER_LIMIT, Math::deg2rad(p_limit_angular));
 }
 
 float Generic6DOFJoint::_get_angular_hi_limit_x() const {
-
 	return Math::rad2deg(get_param_x(PARAM_ANGULAR_UPPER_LIMIT));
 }
 
 void Generic6DOFJoint::_set_angular_lo_limit_x(float p_limit_angular) {
-
 	set_param_x(PARAM_ANGULAR_LOWER_LIMIT, Math::deg2rad(p_limit_angular));
 }
 
 float Generic6DOFJoint::_get_angular_lo_limit_x() const {
-
 	return Math::rad2deg(get_param_x(PARAM_ANGULAR_LOWER_LIMIT));
 }
 
 void Generic6DOFJoint::_set_angular_hi_limit_y(float p_limit_angular) {
-
 	set_param_y(PARAM_ANGULAR_UPPER_LIMIT, Math::deg2rad(p_limit_angular));
 }
 
 float Generic6DOFJoint::_get_angular_hi_limit_y() const {
-
 	return Math::rad2deg(get_param_y(PARAM_ANGULAR_UPPER_LIMIT));
 }
 
 void Generic6DOFJoint::_set_angular_lo_limit_y(float p_limit_angular) {
-
 	set_param_y(PARAM_ANGULAR_LOWER_LIMIT, Math::deg2rad(p_limit_angular));
 }
 
 float Generic6DOFJoint::_get_angular_lo_limit_y() const {
-
 	return Math::rad2deg(get_param_y(PARAM_ANGULAR_LOWER_LIMIT));
 }
 
 void Generic6DOFJoint::_set_angular_hi_limit_z(float p_limit_angular) {
-
 	set_param_z(PARAM_ANGULAR_UPPER_LIMIT, Math::deg2rad(p_limit_angular));
 }
 
 float Generic6DOFJoint::_get_angular_hi_limit_z() const {
-
 	return Math::rad2deg(get_param_z(PARAM_ANGULAR_UPPER_LIMIT));
 }
 
 void Generic6DOFJoint::_set_angular_lo_limit_z(float p_limit_angular) {
-
 	set_param_z(PARAM_ANGULAR_LOWER_LIMIT, Math::deg2rad(p_limit_angular));
 }
 
 float Generic6DOFJoint::_get_angular_lo_limit_z() const {
-
 	return Math::rad2deg(get_param_z(PARAM_ANGULAR_LOWER_LIMIT));
 }
 
 void Generic6DOFJoint::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("_set_angular_hi_limit_x", "angle"), &Generic6DOFJoint::_set_angular_hi_limit_x);
 	ClassDB::bind_method(D_METHOD("_get_angular_hi_limit_x"), &Generic6DOFJoint::_get_angular_hi_limit_x);
 
@@ -914,7 +851,6 @@ void Generic6DOFJoint::_bind_methods() {
 }
 
 void Generic6DOFJoint::set_param_x(Param p_param, float p_value) {
-
 	ERR_FAIL_INDEX(p_param, PARAM_MAX);
 	params_x[p_param] = p_value;
 	if (get_joint().is_valid())
@@ -923,13 +859,11 @@ void Generic6DOFJoint::set_param_x(Param p_param, float p_value) {
 	update_gizmo();
 }
 float Generic6DOFJoint::get_param_x(Param p_param) const {
-
 	ERR_FAIL_INDEX_V(p_param, PARAM_MAX, 0);
 	return params_x[p_param];
 }
 
 void Generic6DOFJoint::set_param_y(Param p_param, float p_value) {
-
 	ERR_FAIL_INDEX(p_param, PARAM_MAX);
 	params_y[p_param] = p_value;
 	if (get_joint().is_valid())
@@ -937,13 +871,11 @@ void Generic6DOFJoint::set_param_y(Param p_param, float p_value) {
 	update_gizmo();
 }
 float Generic6DOFJoint::get_param_y(Param p_param) const {
-
 	ERR_FAIL_INDEX_V(p_param, PARAM_MAX, 0);
 	return params_y[p_param];
 }
 
 void Generic6DOFJoint::set_param_z(Param p_param, float p_value) {
-
 	ERR_FAIL_INDEX(p_param, PARAM_MAX);
 	params_z[p_param] = p_value;
 	if (get_joint().is_valid())
@@ -951,13 +883,11 @@ void Generic6DOFJoint::set_param_z(Param p_param, float p_value) {
 	update_gizmo();
 }
 float Generic6DOFJoint::get_param_z(Param p_param) const {
-
 	ERR_FAIL_INDEX_V(p_param, PARAM_MAX, 0);
 	return params_z[p_param];
 }
 
 void Generic6DOFJoint::set_flag_x(Flag p_flag, bool p_enabled) {
-
 	ERR_FAIL_INDEX(p_flag, FLAG_MAX);
 	flags_x[p_flag] = p_enabled;
 	if (get_joint().is_valid())
@@ -965,13 +895,11 @@ void Generic6DOFJoint::set_flag_x(Flag p_flag, bool p_enabled) {
 	update_gizmo();
 }
 bool Generic6DOFJoint::get_flag_x(Flag p_flag) const {
-
 	ERR_FAIL_INDEX_V(p_flag, FLAG_MAX, false);
 	return flags_x[p_flag];
 }
 
 void Generic6DOFJoint::set_flag_y(Flag p_flag, bool p_enabled) {
-
 	ERR_FAIL_INDEX(p_flag, FLAG_MAX);
 	flags_y[p_flag] = p_enabled;
 	if (get_joint().is_valid())
@@ -979,13 +907,11 @@ void Generic6DOFJoint::set_flag_y(Flag p_flag, bool p_enabled) {
 	update_gizmo();
 }
 bool Generic6DOFJoint::get_flag_y(Flag p_flag) const {
-
 	ERR_FAIL_INDEX_V(p_flag, FLAG_MAX, false);
 	return flags_y[p_flag];
 }
 
 void Generic6DOFJoint::set_flag_z(Flag p_flag, bool p_enabled) {
-
 	ERR_FAIL_INDEX(p_flag, FLAG_MAX);
 	flags_z[p_flag] = p_enabled;
 	if (get_joint().is_valid())
@@ -993,13 +919,11 @@ void Generic6DOFJoint::set_flag_z(Flag p_flag, bool p_enabled) {
 	update_gizmo();
 }
 bool Generic6DOFJoint::get_flag_z(Flag p_flag) const {
-
 	ERR_FAIL_INDEX_V(p_flag, FLAG_MAX, false);
 	return flags_z[p_flag];
 }
 
 RID Generic6DOFJoint::_configure_joint(PhysicsBody *body_a, PhysicsBody *body_b) {
-
 	Transform gt = get_global_transform();
 	//Vector3 cone_twistpos = gt.origin;
 	//Vector3 cone_twistdir = gt.basis.get_axis(2);
@@ -1033,7 +957,6 @@ RID Generic6DOFJoint::_configure_joint(PhysicsBody *body_a, PhysicsBody *body_b)
 }
 
 Generic6DOFJoint::Generic6DOFJoint() {
-
 	set_param_x(PARAM_LINEAR_LOWER_LIMIT, 0);
 	set_param_x(PARAM_LINEAR_UPPER_LIMIT, 0);
 	set_param_x(PARAM_LINEAR_LIMIT_SOFTNESS, 0.7);

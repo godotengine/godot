@@ -36,7 +36,6 @@
 #include "scene/gui/texture_rect.h"
 
 int TabContainer::_get_top_margin() const {
-
 	if (!tabs_visible)
 		return 0;
 
@@ -53,7 +52,6 @@ int TabContainer::_get_top_margin() const {
 
 	Vector<Control *> tabs = _get_tabs();
 	for (int i = 0; i < tabs.size(); i++) {
-
 		Control *c = tabs[i];
 		if (!c->has_meta("_tab_icon"))
 			continue;
@@ -68,13 +66,11 @@ int TabContainer::_get_top_margin() const {
 }
 
 void TabContainer::_gui_input(const Ref<InputEvent> &p_event) {
-
 	Ref<InputEventMouseButton> mb = p_event;
 
 	Popup *popup = get_popup();
 
 	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == BUTTON_LEFT) {
-
 		Point2 pos(mb->get_position().x, mb->get_position().y);
 		Size2 size = get_size();
 
@@ -146,13 +142,11 @@ void TabContainer::_gui_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseMotion> mm = p_event;
 
 	if (mm.is_valid()) {
-
 		Point2 pos(mm->get_position().x, mm->get_position().y);
 		Size2 size = get_size();
 
 		// Mouse must be on tabs in the tab header area.
 		if (pos.x < tabs_ofs_cache || pos.y > _get_top_margin()) {
-
 			if (menu_hovered || highlight_arrow > -1) {
 				menu_hovered = false;
 				highlight_arrow = -1;
@@ -163,7 +157,6 @@ void TabContainer::_gui_input(const Ref<InputEvent> &p_event) {
 
 		Ref<Texture> menu = get_icon("menu");
 		if (popup) {
-
 			if (pos.x >= size.width - menu->get_width()) {
 				if (!menu_hovered) {
 					menu_hovered = true;
@@ -196,13 +189,11 @@ void TabContainer::_gui_input(const Ref<InputEvent> &p_event) {
 		Ref<Texture> increment = get_icon("increment");
 		Ref<Texture> decrement = get_icon("decrement");
 		if (pos.x >= size.width - increment->get_width() - popup_ofs) {
-
 			if (highlight_arrow != 1) {
 				highlight_arrow = 1;
 				update();
 			}
 		} else if (pos.x >= size.width - increment->get_width() - decrement->get_width() - popup_ofs) {
-
 			if (highlight_arrow != 0) {
 				highlight_arrow = 0;
 				update();
@@ -215,16 +206,12 @@ void TabContainer::_gui_input(const Ref<InputEvent> &p_event) {
 }
 
 void TabContainer::_notification(int p_what) {
-
 	switch (p_what) {
-
 		case NOTIFICATION_TRANSLATION_CHANGED: {
-
 			minimum_size_changed();
 			update();
 		} break;
 		case NOTIFICATION_RESIZED: {
-
 			Vector<Control *> tabs = _get_tabs();
 			int side_margin = get_constant("side_margin");
 			Ref<Texture> menu = get_icon("menu");
@@ -260,7 +247,6 @@ void TabContainer::_notification(int p_what) {
 			}
 		} break;
 		case NOTIFICATION_DRAW: {
-
 			RID canvas = get_canvas_item();
 			Size2 size = get_size();
 
@@ -399,7 +385,6 @@ void TabContainer::_notification(int p_what) {
 
 			// Draw the navigation buttons.
 			if (buttons_visible_cache) {
-
 				x -= increment->get_width();
 				if (last_tab_cache < tabs.size() - 1) {
 					draw_texture(highlight_arrow == 1 ? increment_hl : increment, Point2(x, (header_height - increment->get_height()) / 2));
@@ -416,7 +401,6 @@ void TabContainer::_notification(int p_what) {
 			}
 		} break;
 		case NOTIFICATION_THEME_CHANGED: {
-
 			minimum_size_changed();
 			call_deferred("_on_theme_changed"); // Wait until all changed theme.
 		} break;
@@ -498,7 +482,6 @@ void TabContainer::_on_mouse_exited() {
 }
 
 int TabContainer::_get_tab_width(int p_index) const {
-
 	ERR_FAIL_INDEX_V(p_index, get_tab_count(), 0);
 	Control *control = Object::cast_to<Control>(_get_tabs()[p_index]);
 	if (!control || control->is_set_as_toplevel() || get_tab_hidden(p_index))
@@ -535,10 +518,8 @@ int TabContainer::_get_tab_width(int p_index) const {
 }
 
 Vector<Control *> TabContainer::_get_tabs() const {
-
 	Vector<Control *> controls;
 	for (int i = 0; i < get_child_count(); i++) {
-
 		Control *control = Object::cast_to<Control>(get_child(i));
 		if (!control || control->is_toplevel_control())
 			continue;
@@ -549,12 +530,10 @@ Vector<Control *> TabContainer::_get_tabs() const {
 }
 
 void TabContainer::_child_renamed_callback() {
-
 	update();
 }
 
 void TabContainer::add_child_notify(Node *p_child) {
-
 	Container::add_child_notify(p_child);
 
 	Control *c = Object::cast_to<Control>(p_child);
@@ -590,12 +569,10 @@ void TabContainer::add_child_notify(Node *p_child) {
 }
 
 int TabContainer::get_tab_count() const {
-
 	return _get_tabs().size();
 }
 
 void TabContainer::set_current_tab(int p_current) {
-
 	ERR_FAIL_INDEX(p_current, get_tab_count());
 
 	int pending_previous = current;
@@ -617,17 +594,14 @@ void TabContainer::set_current_tab(int p_current) {
 }
 
 int TabContainer::get_current_tab() const {
-
 	return current;
 }
 
 int TabContainer::get_previous_tab() const {
-
 	return previous;
 }
 
 Control *TabContainer::get_tab_control(int p_idx) const {
-
 	Vector<Control *> tabs = _get_tabs();
 	if (p_idx >= 0 && p_idx < tabs.size())
 		return tabs[p_idx];
@@ -636,7 +610,6 @@ Control *TabContainer::get_tab_control(int p_idx) const {
 }
 
 Control *TabContainer::get_current_tab_control() const {
-
 	Vector<Control *> tabs = _get_tabs();
 	if (current >= 0 && current < tabs.size())
 		return tabs[current];
@@ -645,7 +618,6 @@ Control *TabContainer::get_current_tab_control() const {
 }
 
 void TabContainer::remove_child_notify(Node *p_child) {
-
 	Container::remove_child_notify(p_child);
 
 	if (!Object::cast_to<Control>(p_child)) {
@@ -660,7 +632,6 @@ void TabContainer::remove_child_notify(Node *p_child) {
 }
 
 void TabContainer::_update_current_tab() {
-
 	int tc = get_tab_count();
 	if (current >= tc)
 		current = tc - 1;
@@ -671,7 +642,6 @@ void TabContainer::_update_current_tab() {
 }
 
 Variant TabContainer::get_drag_data(const Point2 &p_point) {
-
 	if (!drag_to_rearrange_enabled)
 		return Variant();
 
@@ -700,7 +670,6 @@ Variant TabContainer::get_drag_data(const Point2 &p_point) {
 }
 
 bool TabContainer::can_drop_data(const Point2 &p_point, const Variant &p_data) const {
-
 	if (!drag_to_rearrange_enabled)
 		return false;
 
@@ -709,7 +678,6 @@ bool TabContainer::can_drop_data(const Point2 &p_point, const Variant &p_data) c
 		return false;
 
 	if (String(d["type"]) == "tabc_element") {
-
 		NodePath from_path = d["from_path"];
 		NodePath to_path = get_path();
 		if (from_path == to_path) {
@@ -727,7 +695,6 @@ bool TabContainer::can_drop_data(const Point2 &p_point, const Variant &p_data) c
 }
 
 void TabContainer::drop_data(const Point2 &p_point, const Variant &p_data) {
-
 	if (!drag_to_rearrange_enabled)
 		return;
 
@@ -738,7 +705,6 @@ void TabContainer::drop_data(const Point2 &p_point, const Variant &p_data) {
 		return;
 
 	if (String(d["type"]) == "tabc_element") {
-
 		int tab_from_id = d["tabc_element"];
 		NodePath from_path = d["from_path"];
 		NodePath to_path = get_path();
@@ -767,7 +733,6 @@ void TabContainer::drop_data(const Point2 &p_point, const Variant &p_data) {
 }
 
 int TabContainer::get_tab_idx_at_point(const Point2 &p_point) const {
-
 	if (get_tab_count() == 0)
 		return -1;
 
@@ -807,7 +772,6 @@ int TabContainer::get_tab_idx_at_point(const Point2 &p_point) const {
 }
 
 void TabContainer::set_tab_align(TabAlign p_align) {
-
 	ERR_FAIL_INDEX(p_align, 3);
 	align = p_align;
 	update();
@@ -816,12 +780,10 @@ void TabContainer::set_tab_align(TabAlign p_align) {
 }
 
 TabContainer::TabAlign TabContainer::get_tab_align() const {
-
 	return align;
 }
 
 void TabContainer::set_tabs_visible(bool p_visible) {
-
 	if (p_visible == tabs_visible)
 		return;
 
@@ -829,7 +791,6 @@ void TabContainer::set_tabs_visible(bool p_visible) {
 
 	Vector<Control *> tabs = _get_tabs();
 	for (int i = 0; i < tabs.size(); i++) {
-
 		Control *c = tabs[i];
 		if (p_visible)
 			c->set_margin(MARGIN_TOP, _get_top_margin());
@@ -842,7 +803,6 @@ void TabContainer::set_tabs_visible(bool p_visible) {
 }
 
 bool TabContainer::are_tabs_visible() const {
-
 	return tabs_visible;
 }
 
@@ -861,12 +821,10 @@ bool TabContainer::is_all_tabs_in_front() const {
 }
 
 Control *TabContainer::_get_tab(int p_idx) const {
-
 	return get_tab_control(p_idx);
 }
 
 void TabContainer::set_tab_title(int p_tab, const String &p_title) {
-
 	Control *child = _get_tab(p_tab);
 	ERR_FAIL_COND(!child);
 	child->set_meta("_tab_name", p_title);
@@ -874,7 +832,6 @@ void TabContainer::set_tab_title(int p_tab, const String &p_title) {
 }
 
 String TabContainer::get_tab_title(int p_tab) const {
-
 	Control *child = _get_tab(p_tab);
 	ERR_FAIL_COND_V(!child, "");
 	if (child->has_meta("_tab_name"))
@@ -884,14 +841,12 @@ String TabContainer::get_tab_title(int p_tab) const {
 }
 
 void TabContainer::set_tab_icon(int p_tab, const Ref<Texture> &p_icon) {
-
 	Control *child = _get_tab(p_tab);
 	ERR_FAIL_COND(!child);
 	child->set_meta("_tab_icon", p_icon);
 	update();
 }
 Ref<Texture> TabContainer::get_tab_icon(int p_tab) const {
-
 	Control *child = _get_tab(p_tab);
 	ERR_FAIL_COND_V(!child, Ref<Texture>());
 	if (child->has_meta("_tab_icon"))
@@ -901,7 +856,6 @@ Ref<Texture> TabContainer::get_tab_icon(int p_tab) const {
 }
 
 void TabContainer::set_tab_disabled(int p_tab, bool p_disabled) {
-
 	Control *child = _get_tab(p_tab);
 	ERR_FAIL_COND(!child);
 	child->set_meta("_tab_disabled", p_disabled);
@@ -909,7 +863,6 @@ void TabContainer::set_tab_disabled(int p_tab, bool p_disabled) {
 }
 
 bool TabContainer::get_tab_disabled(int p_tab) const {
-
 	Control *child = _get_tab(p_tab);
 	ERR_FAIL_COND_V(!child, false);
 	if (child->has_meta("_tab_disabled"))
@@ -919,7 +872,6 @@ bool TabContainer::get_tab_disabled(int p_tab) const {
 }
 
 void TabContainer::set_tab_hidden(int p_tab, bool p_hidden) {
-
 	Control *child = _get_tab(p_tab);
 	ERR_FAIL_COND(!child);
 	child->set_meta("_tab_hidden", p_hidden);
@@ -939,7 +891,6 @@ void TabContainer::set_tab_hidden(int p_tab, bool p_hidden) {
 }
 
 bool TabContainer::get_tab_hidden(int p_tab) const {
-
 	Control *child = _get_tab(p_tab);
 	ERR_FAIL_COND_V(!child, false);
 	if (child->has_meta("_tab_hidden"))
@@ -949,10 +900,8 @@ bool TabContainer::get_tab_hidden(int p_tab) const {
 }
 
 void TabContainer::get_translatable_strings(List<String> *p_strings) const {
-
 	Vector<Control *> tabs = _get_tabs();
 	for (int i = 0; i < tabs.size(); i++) {
-
 		Control *c = tabs[i];
 
 		if (!c->has_meta("_tab_name"))
@@ -966,12 +915,10 @@ void TabContainer::get_translatable_strings(List<String> *p_strings) const {
 }
 
 Size2 TabContainer::get_minimum_size() const {
-
 	Size2 ms;
 
 	Vector<Control *> tabs = _get_tabs();
 	for (int i = 0; i < tabs.size(); i++) {
-
 		Control *c = tabs[i];
 
 		if (!c->is_visible_in_tree() && !use_hidden_tabs_for_min_size)
@@ -1044,7 +991,6 @@ bool TabContainer::get_use_hidden_tabs_for_min_size() const {
 }
 
 void TabContainer::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("_gui_input"), &TabContainer::_gui_input);
 	ClassDB::bind_method(D_METHOD("get_tab_count"), &TabContainer::get_tab_count);
 	ClassDB::bind_method(D_METHOD("set_current_tab", "tab_idx"), &TabContainer::set_current_tab);
@@ -1096,7 +1042,6 @@ void TabContainer::_bind_methods() {
 }
 
 TabContainer::TabContainer() {
-
 	first_tab_cache = 0;
 	last_tab_cache = 0;
 	buttons_visible_cache = false;

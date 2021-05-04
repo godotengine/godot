@@ -39,7 +39,6 @@
 #include "scene/gui/texture_button.h"
 
 class WindowDialog : public Popup {
-
 	GDCLASS(WindowDialog, Popup);
 
 	enum DRAG_TYPE {
@@ -90,7 +89,6 @@ public:
 };
 
 class PopupDialog : public Popup {
-
 	GDCLASS(PopupDialog, Popup);
 
 protected:
@@ -104,7 +102,6 @@ public:
 class LineEdit;
 
 class AcceptDialog : public WindowDialog {
-
 	GDCLASS(AcceptDialog, WindowDialog);
 
 	HBoxContainer *hbc;
@@ -154,7 +151,6 @@ public:
 };
 
 class ConfirmationDialog : public AcceptDialog {
-
 	GDCLASS(ConfirmationDialog, AcceptDialog);
 	Button *cancel;
 

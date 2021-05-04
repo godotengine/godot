@@ -43,7 +43,6 @@ void RemoteTransform::_update_cache() {
 }
 
 void RemoteTransform::_update_remote() {
-
 	if (!is_inside_tree())
 		return;
 
@@ -59,7 +58,6 @@ void RemoteTransform::_update_remote() {
 
 	//todo make faster
 	if (use_global_coordinates) {
-
 		if (update_remote_position && update_remote_rotation && update_remote_scale) {
 			n->set_global_transform(get_global_transform());
 		} else {
@@ -102,11 +100,8 @@ void RemoteTransform::_update_remote() {
 }
 
 void RemoteTransform::_notification(int p_what) {
-
 	switch (p_what) {
-
 		case NOTIFICATION_ENTER_TREE: {
-
 			_update_cache();
 
 		} break;
@@ -115,7 +110,6 @@ void RemoteTransform::_notification(int p_what) {
 				break;
 
 			if (cache) {
-
 				_update_remote();
 			}
 
@@ -124,7 +118,6 @@ void RemoteTransform::_notification(int p_what) {
 }
 
 void RemoteTransform::set_remote_node(const NodePath &p_remote_node) {
-
 	remote_node = p_remote_node;
 	if (is_inside_tree()) {
 		_update_cache();
@@ -135,7 +128,6 @@ void RemoteTransform::set_remote_node(const NodePath &p_remote_node) {
 }
 
 NodePath RemoteTransform::get_remote_node() const {
-
 	return remote_node;
 }
 
@@ -179,7 +171,6 @@ void RemoteTransform::force_update_cache() {
 }
 
 String RemoteTransform::get_configuration_warning() const {
-
 	String warning = Spatial::get_configuration_warning();
 	if (!has_node(remote_node) || !Object::cast_to<Spatial>(get_node(remote_node))) {
 		if (warning != String()) {
@@ -192,7 +183,6 @@ String RemoteTransform::get_configuration_warning() const {
 }
 
 void RemoteTransform::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("set_remote_node", "path"), &RemoteTransform::set_remote_node);
 	ClassDB::bind_method(D_METHOD("get_remote_node"), &RemoteTransform::get_remote_node);
 	ClassDB::bind_method(D_METHOD("force_update_cache"), &RemoteTransform::force_update_cache);
@@ -217,7 +207,6 @@ void RemoteTransform::_bind_methods() {
 }
 
 RemoteTransform::RemoteTransform() {
-
 	use_global_coordinates = true;
 	update_remote_position = true;
 	update_remote_rotation = true;

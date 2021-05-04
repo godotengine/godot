@@ -92,7 +92,6 @@ static const double abs_resolution_mult = 10000.0;
 static const double abs_resolution_range_mult = 10.0;
 
 void OS_X11::initialize_core() {
-
 	crash_handler.initialize();
 
 	OS_Unix::initialize_core();
@@ -103,7 +102,6 @@ int OS_X11::get_current_video_driver() const {
 }
 
 Error OS_X11::initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver) {
-
 	long im_event_mask = 0;
 	last_button_state = 0;
 
@@ -137,7 +135,6 @@ Error OS_X11::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 
 	// Try to support IME if detectable auto-repeat is supported
 	if (xkb_dar == True) {
-
 #ifdef X_HAVE_UTF8_STRING
 		// Xutf8LookupString will be used later instead of XmbLookupString before
 		// the multibyte sequences can be converted to unicode string.
@@ -218,10 +215,8 @@ Error OS_X11::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 		if (xim_styles) {
 			xim_style = 0L;
 			for (int i = 0; i < xim_styles->count_styles; i++) {
-
 				if (xim_styles->supported_styles[i] ==
 						(XIMPreeditNothing | XIMStatusNothing)) {
-
 					xim_style = xim_styles->supported_styles[i];
 					break;
 				}
@@ -259,7 +254,6 @@ Error OS_X11::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 				getenv("PRIMUS_libGL") ||
 				getenv("PRIMUS_LOAD_GLOBAL") ||
 				getenv("BUMBLEBEE_SOCKET")) {
-
 			print_verbose("Optirun/primusrun detected. Skipping GPU detection");
 			use_prime = 0;
 		}
@@ -274,7 +268,6 @@ Error OS_X11::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 			for (int i = 0; i < libraries.size(); ++i) {
 				if (FileAccess::exists(libraries[i] + "/libGL.so.1") ||
 						FileAccess::exists(libraries[i] + "/libGL.so")) {
-
 					print_verbose("Custom libGL override detected. Skipping GPU detection");
 					use_prime = 0;
 				}
@@ -503,7 +496,6 @@ Error OS_X11::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 			WARN_PRINT("XCreateIC couldn't create xic");
 		}
 	} else {
-
 		xic = NULL;
 		WARN_PRINT("XCreateIC couldn't create xic");
 	}
@@ -517,7 +509,6 @@ Error OS_X11::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 	}
 
 	for (int i = 0; i < CURSOR_MAX; i++) {
-
 		cursors[i] = None;
 		img[i] = NULL;
 	}
@@ -525,7 +516,6 @@ Error OS_X11::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 	current_cursor = CURSOR_ARROW;
 
 	for (int i = 0; i < CURSOR_MAX; i++) {
-
 		static const char *cursor_file[] = {
 			"left_ptr",
 			"xterm",
@@ -750,7 +740,6 @@ bool OS_X11::refresh_device_info() {
 
 void OS_X11::xim_destroy_callback(::XIM im, ::XPointer client_data,
 		::XPointer call_data) {
-
 	WARN_PRINT("Input method stopped");
 	OS_X11 *os = reinterpret_cast<OS_X11 *>(client_data);
 	os->xim = NULL;
@@ -758,7 +747,6 @@ void OS_X11::xim_destroy_callback(::XIM im, ::XPointer client_data,
 }
 
 void OS_X11::set_ime_active(const bool p_active) {
-
 	im_active = p_active;
 
 	if (!xic) {
@@ -780,7 +768,6 @@ void OS_X11::set_ime_active(const bool p_active) {
 }
 
 void OS_X11::set_ime_position(const Point2 &p_pos) {
-
 	im_position = p_pos;
 
 	if (!xic)
@@ -802,7 +789,6 @@ void OS_X11::set_ime_position(const Point2 &p_pos) {
 }
 
 String OS_X11::get_unique_id() const {
-
 	static String machine_id;
 	if (machine_id.empty()) {
 		if (FileAccess *f = FileAccess::open("/etc/machine-id", FileAccess::READ)) {
@@ -882,7 +868,6 @@ void OS_X11::finalize() {
 }
 
 void OS_X11::set_mouse_mode(MouseMode p_mode) {
-
 	if (p_mode == mouse_mode)
 		return;
 
@@ -901,7 +886,6 @@ void OS_X11::set_mouse_mode(MouseMode p_mode) {
 	mouse_mode = p_mode;
 
 	if (mouse_mode == MOUSE_MODE_CAPTURED || mouse_mode == MOUSE_MODE_CONFINED) {
-
 		//flush pending motion events
 		flush_mouse_motion();
 
@@ -929,12 +913,9 @@ void OS_X11::set_mouse_mode(MouseMode p_mode) {
 }
 
 void OS_X11::warp_mouse_position(const Point2 &p_to) {
-
 	if (mouse_mode == MOUSE_MODE_CAPTURED) {
-
 		last_mouse_pos = p_to;
 	} else {
-
 		/*XWindowAttributes xwa;
 		XGetWindowAttributes(x11_display, x11_window, &xwa);
 		printf("%d %d\n", xwa.x, xwa.y); needed? */
@@ -979,14 +960,12 @@ Point2 OS_X11::get_mouse_position() const {
 }
 
 bool OS_X11::get_window_per_pixel_transparency_enabled() const {
-
 	if (!is_layered_allowed())
 		return false;
 	return layered_window;
 }
 
 void OS_X11::set_window_per_pixel_transparency_enabled(bool p_enabled) {
-
 	if (!is_layered_allowed())
 		return;
 	if (layered_window != p_enabled) {
@@ -1360,7 +1339,6 @@ Size2 OS_X11::get_min_window_size() const {
 }
 
 void OS_X11::set_min_window_size(const Size2 p_size) {
-
 	if ((p_size != Size2()) && (max_size != Size2()) && ((p_size.x > max_size.x) || (p_size.y > max_size.y))) {
 		ERR_PRINT("Minimum window size can't be larger than maximum window size!");
 		return;
@@ -1389,7 +1367,6 @@ void OS_X11::set_min_window_size(const Size2 p_size) {
 }
 
 void OS_X11::set_max_window_size(const Size2 p_size) {
-
 	if ((p_size != Size2()) && ((p_size.x < min_size.x) || (p_size.y < min_size.y))) {
 		ERR_PRINT("Maximum window size can't be smaller than minimum window size!");
 		return;
@@ -1418,7 +1395,6 @@ void OS_X11::set_max_window_size(const Size2 p_size) {
 }
 
 void OS_X11::set_window_size(const Size2 p_size) {
-
 	if (current_videomode.width == p_size.width && current_videomode.height == p_size.height)
 		return;
 
@@ -1476,7 +1452,6 @@ void OS_X11::set_window_size(const Size2 p_size) {
 }
 
 void OS_X11::set_window_fullscreen(bool p_enabled) {
-
 	if (current_videomode.fullscreen == p_enabled)
 		return;
 
@@ -1505,7 +1480,6 @@ bool OS_X11::is_window_fullscreen() const {
 }
 
 void OS_X11::set_window_resizable(bool p_enabled) {
-
 	XSizeHints *xsh;
 	xsh = XAllocSizeHints();
 	if (!p_enabled) {
@@ -1736,7 +1710,6 @@ bool OS_X11::is_window_focused() const {
 }
 
 void OS_X11::set_borderless_window(bool p_borderless) {
-
 	if (get_borderless_window() == p_borderless)
 		return;
 
@@ -1756,11 +1729,9 @@ void OS_X11::set_borderless_window(bool p_borderless) {
 }
 
 bool OS_X11::get_borderless_window() {
-
 	bool borderless = current_videomode.borderless_window;
 	Atom prop = XInternAtom(x11_display, "_MOTIF_WM_HINTS", True);
 	if (prop != None) {
-
 		Atom type;
 		int format;
 		unsigned long len;
@@ -1816,7 +1787,6 @@ void *OS_X11::get_native_handle(int p_handle_type) {
 }
 
 void OS_X11::get_key_modifier_state(unsigned int p_x11_state, Ref<InputEventWithModifiers> state) {
-
 	state->set_shift((p_x11_state & ShiftMask));
 	state->set_control((p_x11_state & ControlMask));
 	state->set_alt((p_x11_state & Mod1Mask /*|| p_x11_state&Mod5Mask*/)); //altgr should not count as alt
@@ -1824,7 +1794,6 @@ void OS_X11::get_key_modifier_state(unsigned int p_x11_state, Ref<InputEventWith
 }
 
 unsigned int OS_X11::get_mouse_button_state(unsigned int p_x11_button, int p_x11_type) {
-
 	unsigned int mask = 1 << (p_x11_button - 1);
 
 	if (p_x11_type == ButtonPress) {
@@ -1837,7 +1806,6 @@ unsigned int OS_X11::get_mouse_button_state(unsigned int p_x11_button, int p_x11
 }
 
 void OS_X11::_handle_key_event(XKeyEvent *p_event, LocalVector<XEvent> &p_events, uint32_t &p_event_index, bool p_echo) {
-
 	// X11 functions don't know what const is
 	XKeyEvent *xkeyevent = p_event;
 
@@ -1880,7 +1848,6 @@ void OS_X11::_handle_key_event(XKeyEvent *p_event, LocalVector<XEvent> &p_events
 	}
 
 	if (xkeyevent->type == KeyPress && xic) {
-
 		Status status;
 #ifdef X_HAVE_UTF8_STRING
 		int utf8len = 8;
@@ -1934,7 +1901,6 @@ void OS_X11::_handle_key_event(XKeyEvent *p_event, LocalVector<XEvent> &p_events
 		memfree(utf8string);
 #else
 		do {
-
 			int mnbytes = XmbLookupString(xic, xkeyevent, xmbstring, xmblen - 1, &keysym_unicode, &status);
 			xmbstring[mnbytes] = '\0';
 
@@ -1995,7 +1961,6 @@ void OS_X11::_handle_key_event(XKeyEvent *p_event, LocalVector<XEvent> &p_events
 	// check that their difference in time is below a threshold.
 
 	if (xkeyevent->type != KeyPress) {
-
 		p_echo = false;
 
 		// make sure there are events pending,
@@ -2188,7 +2153,6 @@ struct Property {
 };
 
 static Property read_property(Display *p_display, Window p_window, Atom p_property) {
-
 	Atom actual_type = None;
 	int actual_format = 0;
 	unsigned long nitems = 0;
@@ -2219,11 +2183,9 @@ static Property read_property(Display *p_display, Window p_window, Atom p_proper
 }
 
 static Atom pick_target_from_list(Display *p_display, Atom *p_list, int p_count) {
-
 	static const char *target_type = "text/uri-list";
 
 	for (int i = 0; i < p_count; i++) {
-
 		Atom atom = p_list[i];
 
 		if (atom != None && String(XGetAtomName(p_display, atom)) == target_type)
@@ -2233,7 +2195,6 @@ static Atom pick_target_from_list(Display *p_display, Atom *p_list, int p_count)
 }
 
 static Atom pick_target_from_atoms(Display *p_disp, Atom p_t1, Atom p_t2, Atom p_t3) {
-
 	static const char *target_type = "text/uri-list";
 	if (p_t1 != None && String(XGetAtomName(p_disp, p_t1)) == target_type)
 		return p_t1;
@@ -2248,7 +2209,6 @@ static Atom pick_target_from_atoms(Display *p_disp, Atom p_t1, Atom p_t2, Atom p
 }
 
 void OS_X11::_window_changed(XEvent *event) {
-
 	if (xic) {
 		//  Not portable.
 		set_ime_position(Point2(0, 1));
@@ -2332,7 +2292,6 @@ void OS_X11::_poll_events() {
 }
 
 void OS_X11::process_xevents() {
-
 	//printf("checking events %i\n", XPending(x11_display));
 
 	do_mouse_warp = false;
@@ -2356,9 +2315,7 @@ void OS_X11::process_xevents() {
 		XEvent &event = events[event_index];
 
 		if (XGetEventData(x11_display, &event.xcookie)) {
-
 			if (event.xcookie.type == GenericEvent && event.xcookie.extension == xi.opcode) {
-
 				XIDeviceEvent *event_data = (XIDeviceEvent *)event.xcookie.data;
 				int index = event_data->detail;
 				Vector2 pos = Vector2(event_data->event_x, event_data->event_y);
@@ -2465,7 +2422,6 @@ void OS_X11::process_xevents() {
 							//XIAllowTouchEvents(x11_display, event_data->deviceid, event_data->detail, x11_window, XIAcceptTouch);
 
 					case XI_TouchEnd: {
-
 						bool is_begin = event_data->evtype == XI_TouchBegin;
 
 						Ref<InputEventScreenTouch> st;
@@ -2493,14 +2449,12 @@ void OS_X11::process_xevents() {
 					} break;
 
 					case XI_TouchUpdate: {
-
 						Map<int, Vector2>::Element *curr_pos_elem = xi.state.find(index);
 						if (!curr_pos_elem) { // Defensive
 							break;
 						}
 
 						if (curr_pos_elem->value() != pos) {
-
 							Ref<InputEventScreenDrag> sd;
 							sd.instance();
 							sd->set_index(index);
@@ -2593,7 +2547,6 @@ void OS_X11::process_xevents() {
 
 				// Release every pointer to avoid sticky points
 				for (Map<int, Vector2>::Element *E = xi.state.front(); E; E = E->next()) {
-
 					Ref<InputEventScreenTouch> st;
 					st.instance();
 					st->set_index(E->key());
@@ -2615,7 +2568,6 @@ void OS_X11::process_xevents() {
 				break;
 			case ButtonPress:
 			case ButtonRelease: {
-
 				/* exit in case of a mouse button press */
 				last_timestamp = event.xbutton.time;
 				if (mouse_mode == MOUSE_MODE_CAPTURED) {
@@ -2639,13 +2591,10 @@ void OS_X11::process_xevents() {
 				mb->set_pressed((event.type == ButtonPress));
 
 				if (event.type == ButtonPress) {
-
 					uint64_t diff = get_ticks_usec() / 1000 - last_click_ms;
 
 					if (mb->get_button_index() == last_click_button_index) {
-
 						if (diff < 400 && Point2(last_click_pos).distance_to(Point2(event.xbutton.x, event.xbutton.y)) < 5) {
-
 							last_click_ms = 0;
 							last_click_pos = Point2(-100, -100);
 							last_click_button_index = -1;
@@ -2666,7 +2615,6 @@ void OS_X11::process_xevents() {
 
 			} break;
 			case MotionNotify: {
-
 				// The X11 API requires filtering one-by-one through the motion
 				// notify events, in order to figure out which event is the one
 				// generated by warping the mouse pointer.
@@ -2722,7 +2670,6 @@ void OS_X11::process_xevents() {
 				}
 
 				if (!last_mouse_pos_valid) {
-
 					last_mouse_pos = pos;
 					last_mouse_pos_valid = true;
 				}
@@ -2784,7 +2731,6 @@ void OS_X11::process_xevents() {
 			} break;
 			case KeyPress:
 			case KeyRelease: {
-
 				last_timestamp = event.xkey.time;
 
 				// key event is a little complex, so
@@ -2795,7 +2741,6 @@ void OS_X11::process_xevents() {
 			case SelectionNotify:
 
 				if (event.xselection.target == requested) {
-
 					Property p = read_property(x11_display, x11_window, XInternAtom(x11_display, "PRIMARY", 0));
 
 					Vector<String> files = String((char *)p.data).split("\n", false);
@@ -2826,7 +2771,6 @@ void OS_X11::process_xevents() {
 					main_loop->notification(MainLoop::NOTIFICATION_WM_QUIT_REQUEST);
 
 				else if ((unsigned int)event.xclient.message_type == (unsigned int)xdnd_enter) {
-
 					//File(s) have been dragged over the window, check for supported target (text/uri-list)
 					xdnd_version = (event.xclient.data.l[1] >> 24);
 					Window source = event.xclient.data.l[0];
@@ -2837,7 +2781,6 @@ void OS_X11::process_xevents() {
 					} else
 						requested = pick_target_from_atoms(x11_display, event.xclient.data.l[2], event.xclient.data.l[3], event.xclient.data.l[4]);
 				} else if ((unsigned int)event.xclient.message_type == (unsigned int)xdnd_position) {
-
 					//xdnd position event, reply with an XDND status message
 					//just depending on type of data for now
 					XClientMessageEvent m;
@@ -2856,7 +2799,6 @@ void OS_X11::process_xevents() {
 					XSendEvent(x11_display, event.xclient.data.l[0], False, NoEventMask, (XEvent *)&m);
 					XFlush(x11_display);
 				} else if ((unsigned int)event.xclient.message_type == (unsigned int)xdnd_drop) {
-
 					if (requested != None) {
 						xdnd_source_window = event.xclient.data.l[0];
 						if (xdnd_version >= 1)
@@ -2887,7 +2829,6 @@ void OS_X11::process_xevents() {
 	XFlush(x11_display);
 
 	if (do_mouse_warp) {
-
 		XWarpPointer(x11_display, None, x11_window,
 				0, 0, 0, 0, (int)current_videomode.width / 2, (int)current_videomode.height / 2);
 
@@ -2907,7 +2848,6 @@ void OS_X11::process_xevents() {
 }
 
 MainLoop *OS_X11::get_main_loop() const {
-
 	return main_loop;
 }
 
@@ -2923,13 +2863,11 @@ void OS_X11::delete_main_loop() {
 }
 
 void OS_X11::set_main_loop(MainLoop *p_main_loop) {
-
 	main_loop = p_main_loop;
 	input->set_main_loop(p_main_loop);
 }
 
 bool OS_X11::can_draw() const {
-
 	return !minimized;
 };
 
@@ -3102,7 +3040,6 @@ String OS_X11::_get_clipboard(Atom p_source, Window x11_window) const {
 }
 
 String OS_X11::get_clipboard() const {
-
 	String ret;
 	ret = _get_clipboard(XInternAtom(x11_display, "CLIPBOARD", 0), x11_window);
 
@@ -3166,7 +3103,6 @@ void OS_X11::_clipboard_transfer_ownership(Atom p_source, Window x11_window) con
 }
 
 String OS_X11::get_name() const {
-
 	return "X11";
 }
 
@@ -3208,12 +3144,10 @@ Error OS_X11::shell_open(String p_uri) {
 }
 
 bool OS_X11::_check_internal_feature_support(const String &p_feature) {
-
 	return p_feature == "pc";
 }
 
 String OS_X11::get_config_path() const {
-
 	if (has_environment("XDG_CONFIG_HOME")) {
 		return get_environment("XDG_CONFIG_HOME");
 	} else if (has_environment("HOME")) {
@@ -3224,7 +3158,6 @@ String OS_X11::get_config_path() const {
 }
 
 String OS_X11::get_data_path() const {
-
 	if (has_environment("XDG_DATA_HOME")) {
 		return get_environment("XDG_DATA_HOME");
 	} else if (has_environment("HOME")) {
@@ -3235,7 +3168,6 @@ String OS_X11::get_data_path() const {
 }
 
 String OS_X11::get_cache_path() const {
-
 	if (has_environment("XDG_CACHE_HOME")) {
 		return get_environment("XDG_CACHE_HOME");
 	} else if (has_environment("HOME")) {
@@ -3246,46 +3178,37 @@ String OS_X11::get_cache_path() const {
 }
 
 String OS_X11::get_system_dir(SystemDir p_dir) const {
-
 	String xdgparam;
 
 	switch (p_dir) {
 		case SYSTEM_DIR_DESKTOP: {
-
 			xdgparam = "DESKTOP";
 		} break;
 		case SYSTEM_DIR_DCIM: {
-
 			xdgparam = "PICTURES";
 
 		} break;
 		case SYSTEM_DIR_DOCUMENTS: {
-
 			xdgparam = "DOCUMENTS";
 
 		} break;
 		case SYSTEM_DIR_DOWNLOADS: {
-
 			xdgparam = "DOWNLOAD";
 
 		} break;
 		case SYSTEM_DIR_MOVIES: {
-
 			xdgparam = "VIDEOS";
 
 		} break;
 		case SYSTEM_DIR_MUSIC: {
-
 			xdgparam = "MUSIC";
 
 		} break;
 		case SYSTEM_DIR_PICTURES: {
-
 			xdgparam = "PICTURES";
 
 		} break;
 		case SYSTEM_DIR_RINGTONES: {
-
 			xdgparam = "MUSIC";
 
 		} break;
@@ -3301,7 +3224,6 @@ String OS_X11::get_system_dir(SystemDir p_dir) const {
 }
 
 void OS_X11::move_window_to_foreground() {
-
 	XEvent xev;
 	Atom net_active_window = XInternAtom(x11_display, "_NET_ACTIVE_WINDOW", False);
 
@@ -3318,7 +3240,6 @@ void OS_X11::move_window_to_foreground() {
 }
 
 void OS_X11::set_cursor_shape(CursorShape p_shape) {
-
 	ERR_FAIL_INDEX(p_shape, CURSOR_MAX);
 
 	if (p_shape == current_cursor) {
@@ -3337,14 +3258,11 @@ void OS_X11::set_cursor_shape(CursorShape p_shape) {
 }
 
 OS::CursorShape OS_X11::get_cursor_shape() const {
-
 	return current_cursor;
 }
 
 void OS_X11::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot) {
-
 	if (p_cursor.is_valid()) {
-
 		Map<CursorShape, Vector<Variant>>::Element *cursor_c = cursors_cache.find(p_shape);
 
 		if (cursor_c) {
@@ -3452,28 +3370,24 @@ void OS_X11::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, c
 }
 
 void OS_X11::release_rendering_thread() {
-
 #if defined(OPENGL_ENABLED)
 	context_gl->release_current();
 #endif
 }
 
 void OS_X11::make_rendering_thread() {
-
 #if defined(OPENGL_ENABLED)
 	context_gl->make_current();
 #endif
 }
 
 void OS_X11::swap_buffers() {
-
 #if defined(OPENGL_ENABLED)
 	context_gl->swap_buffers();
 #endif
 }
 
 void OS_X11::alert(const String &p_alert, const String &p_title) {
-
 	if (is_no_window_mode_enabled()) {
 		print_line("ALERT: " + p_title + ": " + p_alert);
 		return;
@@ -3629,7 +3543,6 @@ void OS_X11::force_process_input() {
 }
 
 void OS_X11::run() {
-
 	force_quit = false;
 
 	if (!main_loop)
@@ -3643,7 +3556,6 @@ void OS_X11::run() {
 	//uint64_t frame=0;
 
 	while (!force_quit) {
-
 		process_xevents(); // get rid of pending events
 #ifdef JOYDEV_ENABLED
 		joypad->process_joypads();
@@ -3679,11 +3591,9 @@ bool OS_X11::is_vsync_enabled() const {
 }
 */
 void OS_X11::set_context(int p_context) {
-
 	XClassHint *classHint = XAllocClassHint();
 
 	if (classHint) {
-
 		CharString name_str;
 		switch (p_context) {
 			case CONTEXT_EDITOR:
@@ -3829,7 +3739,6 @@ Error OS_X11::move_to_trash(const String &p_path) {
 }
 
 OS::LatinKeyboardVariant OS_X11::get_latin_keyboard_variant() const {
-
 	XkbDescRec *xkbdesc = XkbAllocKeyboard();
 	ERR_FAIL_COND_V(!xkbdesc, LATIN_KEYBOARD_QWERTY);
 
@@ -3972,7 +3881,6 @@ void OS_X11::update_real_mouse_position() {
 
 	if (xquerypointer_result) {
 		if (win_x > 0 && win_y > 0 && win_x <= current_videomode.width && win_y <= current_videomode.height) {
-
 			last_mouse_pos.x = win_x;
 			last_mouse_pos.y = win_y;
 			last_mouse_pos_valid = true;
@@ -3982,7 +3890,6 @@ void OS_X11::update_real_mouse_position() {
 }
 
 OS_X11::OS_X11() {
-
 #ifdef PULSEAUDIO_ENABLED
 	AudioDriverManager::add_driver(&driver_pulseaudio);
 #endif

@@ -38,7 +38,6 @@
 class DocData {
 public:
 	struct ArgumentDoc {
-
 		String name;
 		String type;
 		String enumeration;
@@ -46,7 +45,6 @@ public:
 	};
 
 	struct MethodDoc {
-
 		String name;
 		String return_type;
 		String return_enum;
@@ -59,7 +57,6 @@ public:
 	};
 
 	struct ConstantDoc {
-
 		String name;
 		String value;
 		String enumeration;
@@ -67,7 +64,6 @@ public:
 	};
 
 	struct PropertyDoc {
-
 		String name;
 		String type;
 		String enumeration;
@@ -89,7 +85,6 @@ public:
 	};
 
 	struct ClassDoc {
-
 		String name;
 		String inherits;
 		String category;

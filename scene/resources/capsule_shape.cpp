@@ -32,7 +32,6 @@
 #include "servers/physics_server.h"
 
 Vector<Vector3> CapsuleShape::get_debug_mesh_lines() {
-
 	float radius = get_radius();
 	float height = get_height();
 
@@ -40,7 +39,6 @@ Vector<Vector3> CapsuleShape::get_debug_mesh_lines() {
 
 	Vector3 d(0, 0, height * 0.5);
 	for (int i = 0; i < 360; i++) {
-
 		float ra = Math::deg2rad((float)i);
 		float rb = Math::deg2rad((float)i + 1);
 		Point2 a = Vector2(Math::sin(ra), Math::cos(ra)) * radius;
@@ -53,7 +51,6 @@ Vector<Vector3> CapsuleShape::get_debug_mesh_lines() {
 		points.push_back(Vector3(b.x, b.y, 0) - d);
 
 		if (i % 90 == 0) {
-
 			points.push_back(Vector3(a.x, a.y, 0) + d);
 			points.push_back(Vector3(a.x, a.y, 0) - d);
 		}
@@ -70,7 +67,6 @@ Vector<Vector3> CapsuleShape::get_debug_mesh_lines() {
 }
 
 void CapsuleShape::_update_shape() {
-
 	Dictionary d;
 	d["radius"] = radius;
 	d["height"] = height;
@@ -79,7 +75,6 @@ void CapsuleShape::_update_shape() {
 }
 
 void CapsuleShape::set_radius(float p_radius) {
-
 	radius = p_radius;
 	_update_shape();
 	notify_change_to_owners();
@@ -87,12 +82,10 @@ void CapsuleShape::set_radius(float p_radius) {
 }
 
 float CapsuleShape::get_radius() const {
-
 	return radius;
 }
 
 void CapsuleShape::set_height(float p_height) {
-
 	height = p_height;
 	_update_shape();
 	notify_change_to_owners();
@@ -100,12 +93,10 @@ void CapsuleShape::set_height(float p_height) {
 }
 
 float CapsuleShape::get_height() const {
-
 	return height;
 }
 
 void CapsuleShape::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("set_radius", "radius"), &CapsuleShape::set_radius);
 	ClassDB::bind_method(D_METHOD("get_radius"), &CapsuleShape::get_radius);
 	ClassDB::bind_method(D_METHOD("set_height", "height"), &CapsuleShape::set_height);
@@ -117,7 +108,6 @@ void CapsuleShape::_bind_methods() {
 
 CapsuleShape::CapsuleShape() :
 		Shape(PhysicsServer::get_singleton()->shape_create(PhysicsServer::SHAPE_CAPSULE)) {
-
 	radius = 1.0;
 	height = 1.0;
 	_update_shape();

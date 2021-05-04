@@ -155,7 +155,6 @@ real_t G6DOFTranslationalLimitMotorSW::solveLinearAxis(
 		int limit_index,
 		const Vector3 &axis_normal_on_a,
 		const Vector3 &anchorPos) {
-
 	///find relative velocity
 	//    Vector3 rel_pos1 = pointInA - body1->get_transform().origin;
 	//    Vector3 rel_pos2 = pointInB - body2->get_transform().origin;
@@ -391,7 +390,6 @@ void Generic6DOFJointSW::solve(real_t p_timestep) {
 	real_t angularJacDiagABInv;
 	for (i = 0; i < 3; i++) {
 		if (m_angularLimits[i].m_enableLimit && m_angularLimits[i].needApplyTorques()) {
-
 			// get axis
 			angular_axis = getAxis(i);
 
@@ -429,75 +427,60 @@ void Generic6DOFJointSW::calcAnchorPos(void) {
 } // Generic6DOFJointSW::calcAnchorPos()
 
 void Generic6DOFJointSW::set_param(Vector3::Axis p_axis, PhysicsServer::G6DOFJointAxisParam p_param, real_t p_value) {
-
 	ERR_FAIL_INDEX(p_axis, 3);
 	switch (p_param) {
 		case PhysicsServer::G6DOF_JOINT_LINEAR_LOWER_LIMIT: {
-
 			m_linearLimits.m_lowerLimit[p_axis] = p_value;
 		} break;
 		case PhysicsServer::G6DOF_JOINT_LINEAR_UPPER_LIMIT: {
-
 			m_linearLimits.m_upperLimit[p_axis] = p_value;
 
 		} break;
 		case PhysicsServer::G6DOF_JOINT_LINEAR_LIMIT_SOFTNESS: {
-
 			m_linearLimits.m_limitSoftness[p_axis] = p_value;
 
 		} break;
 		case PhysicsServer::G6DOF_JOINT_LINEAR_RESTITUTION: {
-
 			m_linearLimits.m_restitution[p_axis] = p_value;
 
 		} break;
 		case PhysicsServer::G6DOF_JOINT_LINEAR_DAMPING: {
-
 			m_linearLimits.m_damping[p_axis] = p_value;
 
 		} break;
 		case PhysicsServer::G6DOF_JOINT_ANGULAR_LOWER_LIMIT: {
-
 			m_angularLimits[p_axis].m_loLimit = p_value;
 
 		} break;
 		case PhysicsServer::G6DOF_JOINT_ANGULAR_UPPER_LIMIT: {
-
 			m_angularLimits[p_axis].m_hiLimit = p_value;
 
 		} break;
 		case PhysicsServer::G6DOF_JOINT_ANGULAR_LIMIT_SOFTNESS: {
-
 			m_angularLimits[p_axis].m_limitSoftness = p_value;
 
 		} break;
 		case PhysicsServer::G6DOF_JOINT_ANGULAR_DAMPING: {
-
 			m_angularLimits[p_axis].m_damping = p_value;
 
 		} break;
 		case PhysicsServer::G6DOF_JOINT_ANGULAR_RESTITUTION: {
-
 			m_angularLimits[p_axis].m_bounce = p_value;
 
 		} break;
 		case PhysicsServer::G6DOF_JOINT_ANGULAR_FORCE_LIMIT: {
-
 			m_angularLimits[p_axis].m_maxLimitForce = p_value;
 
 		} break;
 		case PhysicsServer::G6DOF_JOINT_ANGULAR_ERP: {
-
 			m_angularLimits[p_axis].m_ERP = p_value;
 
 		} break;
 		case PhysicsServer::G6DOF_JOINT_ANGULAR_MOTOR_TARGET_VELOCITY: {
-
 			m_angularLimits[p_axis].m_targetVelocity = p_value;
 
 		} break;
 		case PhysicsServer::G6DOF_JOINT_ANGULAR_MOTOR_FORCE_LIMIT: {
-
 			m_angularLimits[p_axis].m_maxLimitForce = p_value;
 
 		} break;
@@ -534,71 +517,57 @@ real_t Generic6DOFJointSW::get_param(Vector3::Axis p_axis, PhysicsServer::G6DOFJ
 	ERR_FAIL_INDEX_V(p_axis, 3, 0);
 	switch (p_param) {
 		case PhysicsServer::G6DOF_JOINT_LINEAR_LOWER_LIMIT: {
-
 			return m_linearLimits.m_lowerLimit[p_axis];
 		} break;
 		case PhysicsServer::G6DOF_JOINT_LINEAR_UPPER_LIMIT: {
-
 			return m_linearLimits.m_upperLimit[p_axis];
 
 		} break;
 		case PhysicsServer::G6DOF_JOINT_LINEAR_LIMIT_SOFTNESS: {
-
 			return m_linearLimits.m_limitSoftness[p_axis];
 
 		} break;
 		case PhysicsServer::G6DOF_JOINT_LINEAR_RESTITUTION: {
-
 			return m_linearLimits.m_restitution[p_axis];
 
 		} break;
 		case PhysicsServer::G6DOF_JOINT_LINEAR_DAMPING: {
-
 			return m_linearLimits.m_damping[p_axis];
 
 		} break;
 		case PhysicsServer::G6DOF_JOINT_ANGULAR_LOWER_LIMIT: {
-
 			return m_angularLimits[p_axis].m_loLimit;
 
 		} break;
 		case PhysicsServer::G6DOF_JOINT_ANGULAR_UPPER_LIMIT: {
-
 			return m_angularLimits[p_axis].m_hiLimit;
 
 		} break;
 		case PhysicsServer::G6DOF_JOINT_ANGULAR_LIMIT_SOFTNESS: {
-
 			return m_angularLimits[p_axis].m_limitSoftness;
 
 		} break;
 		case PhysicsServer::G6DOF_JOINT_ANGULAR_DAMPING: {
-
 			return m_angularLimits[p_axis].m_damping;
 
 		} break;
 		case PhysicsServer::G6DOF_JOINT_ANGULAR_RESTITUTION: {
-
 			return m_angularLimits[p_axis].m_bounce;
 
 		} break;
 		case PhysicsServer::G6DOF_JOINT_ANGULAR_FORCE_LIMIT: {
-
 			return m_angularLimits[p_axis].m_maxLimitForce;
 
 		} break;
 		case PhysicsServer::G6DOF_JOINT_ANGULAR_ERP: {
-
 			return m_angularLimits[p_axis].m_ERP;
 
 		} break;
 		case PhysicsServer::G6DOF_JOINT_ANGULAR_MOTOR_TARGET_VELOCITY: {
-
 			return m_angularLimits[p_axis].m_targetVelocity;
 
 		} break;
 		case PhysicsServer::G6DOF_JOINT_ANGULAR_MOTOR_FORCE_LIMIT: {
-
 			return m_angularLimits[p_axis].m_maxMotorForce;
 
 		} break;
@@ -633,20 +602,16 @@ real_t Generic6DOFJointSW::get_param(Vector3::Axis p_axis, PhysicsServer::G6DOFJ
 }
 
 void Generic6DOFJointSW::set_flag(Vector3::Axis p_axis, PhysicsServer::G6DOFJointAxisFlag p_flag, bool p_value) {
-
 	ERR_FAIL_INDEX(p_axis, 3);
 
 	switch (p_flag) {
 		case PhysicsServer::G6DOF_JOINT_FLAG_ENABLE_LINEAR_LIMIT: {
-
 			m_linearLimits.enable_limit[p_axis] = p_value;
 		} break;
 		case PhysicsServer::G6DOF_JOINT_FLAG_ENABLE_ANGULAR_LIMIT: {
-
 			m_angularLimits[p_axis].m_enableLimit = p_value;
 		} break;
 		case PhysicsServer::G6DOF_JOINT_FLAG_ENABLE_MOTOR: {
-
 			m_angularLimits[p_axis].m_enableMotor = p_value;
 		} break;
 		case PhysicsServer::G6DOF_JOINT_FLAG_ENABLE_LINEAR_MOTOR: {
@@ -663,19 +628,15 @@ void Generic6DOFJointSW::set_flag(Vector3::Axis p_axis, PhysicsServer::G6DOFJoin
 	}
 }
 bool Generic6DOFJointSW::get_flag(Vector3::Axis p_axis, PhysicsServer::G6DOFJointAxisFlag p_flag) const {
-
 	ERR_FAIL_INDEX_V(p_axis, 3, 0);
 	switch (p_flag) {
 		case PhysicsServer::G6DOF_JOINT_FLAG_ENABLE_LINEAR_LIMIT: {
-
 			return m_linearLimits.enable_limit[p_axis];
 		} break;
 		case PhysicsServer::G6DOF_JOINT_FLAG_ENABLE_ANGULAR_LIMIT: {
-
 			return m_angularLimits[p_axis].m_enableLimit;
 		} break;
 		case PhysicsServer::G6DOF_JOINT_FLAG_ENABLE_MOTOR: {
-
 			return m_angularLimits[p_axis].m_enableMotor;
 		} break;
 		case PhysicsServer::G6DOF_JOINT_FLAG_ENABLE_LINEAR_MOTOR: {

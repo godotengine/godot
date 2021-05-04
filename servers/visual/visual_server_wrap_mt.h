@@ -37,7 +37,6 @@
 #include "servers/visual_server.h"
 
 class VisualServerWrapMT : public VisualServer {
-
 	// the real visual server
 	mutable VisualServer *visual_server;
 

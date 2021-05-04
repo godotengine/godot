@@ -31,7 +31,6 @@
 #include "func_ref.h"
 
 Variant FuncRef::call_func(const Variant **p_args, int p_argcount, Variant::CallError &r_error) {
-
 	if (id == 0) {
 		r_error.error = Variant::CallError::CALL_ERROR_INSTANCE_IS_NULL;
 		return Variant();
@@ -47,7 +46,6 @@ Variant FuncRef::call_func(const Variant **p_args, int p_argcount, Variant::Call
 }
 
 Variant FuncRef::call_funcv(const Array &p_args) {
-
 	ERR_FAIL_COND_V(id == 0, Variant());
 
 	Object *obj = ObjectDB::get_instance(id);
@@ -58,13 +56,11 @@ Variant FuncRef::call_funcv(const Array &p_args) {
 }
 
 void FuncRef::set_instance(Object *p_obj) {
-
 	ERR_FAIL_NULL(p_obj);
 	id = p_obj->get_instance_id();
 }
 
 void FuncRef::set_function(const StringName &p_func) {
-
 	function = p_func;
 }
 
@@ -84,7 +80,6 @@ bool FuncRef::is_valid() const {
 }
 
 void FuncRef::_bind_methods() {
-
 	{
 		MethodInfo mi;
 		mi.name = "call_func";

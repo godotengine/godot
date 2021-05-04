@@ -42,7 +42,6 @@
 #include "core/typedefs.h"
 
 class PhysicsDirectSpaceStateSW : public PhysicsDirectSpaceState {
-
 	GDCLASS(PhysicsDirectSpaceStateSW, PhysicsDirectSpaceState);
 
 public:
@@ -60,7 +59,6 @@ public:
 };
 
 class SpaceSW : public RID_Data {
-
 public:
 	enum ElapsedTime {
 		ELAPSED_TIME_INTEGRATE_FORCES,

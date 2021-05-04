@@ -42,7 +42,6 @@
 Performance *Performance::singleton = NULL;
 
 void Performance::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("get_monitor", "monitor"), &Performance::get_monitor);
 
 	BIND_ENUM_CONSTANT(TIME_FPS);
@@ -89,7 +88,6 @@ float Performance::_get_node_count() const {
 }
 
 String Performance::get_monitor_name(Monitor p_monitor) const {
-
 	ERR_FAIL_INDEX_V(p_monitor, MONITOR_MAX, String());
 	static const char *names[MONITOR_MAX] = {
 
@@ -131,7 +129,6 @@ String Performance::get_monitor_name(Monitor p_monitor) const {
 }
 
 float Performance::get_monitor(Monitor p_monitor) const {
-
 	switch (p_monitor) {
 		case TIME_FPS:
 			return Engine::get_singleton()->get_frames_per_second();
@@ -246,17 +243,14 @@ Performance::MonitorType Performance::get_monitor_type(Monitor p_monitor) const 
 }
 
 void Performance::set_process_time(float p_pt) {
-
 	_process_time = p_pt;
 }
 
 void Performance::set_physics_process_time(float p_pt) {
-
 	_physics_process_time = p_pt;
 }
 
 Performance::Performance() {
-
 	_process_time = 0;
 	_physics_process_time = 0;
 	singleton = this;

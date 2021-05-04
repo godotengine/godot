@@ -41,7 +41,6 @@
 #include "core/ustring.h"
 
 class BindingsGenerator {
-
 	struct ConstantInterface {
 		String name;
 		String proxy_name;
@@ -441,7 +440,6 @@ class BindingsGenerator {
 		}
 
 		TypeInterface() {
-
 			api_type = ClassDB::API_NONE;
 
 			is_enum = false;

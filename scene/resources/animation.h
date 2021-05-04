@@ -34,7 +34,6 @@
 #include "core/resource.h"
 
 class Animation : public Resource {
-
 	GDCLASS(Animation, Resource);
 	RES_BASE_EXTENSION("anim");
 
@@ -64,7 +63,6 @@ public:
 
 private:
 	struct Track {
-
 		TrackType type;
 		InterpolationType interpolation;
 		bool loop_wrap;
@@ -81,7 +79,6 @@ private:
 	};
 
 	struct Key {
-
 		float transition;
 		float time; // time in secs
 		Key() { transition = 1; }
@@ -90,12 +87,10 @@ private:
 	// transform key holds either Vector3 or Quaternion
 	template <class T>
 	struct TKey : public Key {
-
 		T value;
 	};
 
 	struct TransformKey {
-
 		Vector3 loc;
 		Quat rot;
 		Vector3 scale;
@@ -104,7 +99,6 @@ private:
 	/* TRANSFORM TRACK */
 
 	struct TransformTrack : public Track {
-
 		Vector<TKey<TransformKey>> transforms;
 
 		TransformTrack() { type = TYPE_TRANSFORM; }
@@ -113,7 +107,6 @@ private:
 	/* PROPERTY VALUE TRACK */
 
 	struct ValueTrack : public Track {
-
 		UpdateMode update_mode;
 		bool update_on_seek;
 		Vector<TKey<Variant>> values;
@@ -127,13 +120,11 @@ private:
 	/* METHOD TRACK */
 
 	struct MethodKey : public Key {
-
 		StringName method;
 		Vector<Variant> params;
 	};
 
 	struct MethodTrack : public Track {
-
 		Vector<MethodKey> methods;
 		MethodTrack() { type = TYPE_METHOD; }
 	};
@@ -147,7 +138,6 @@ private:
 	};
 
 	struct BezierTrack : public Track {
-
 		Vector<TKey<BezierKey>> values;
 
 		BezierTrack() {
@@ -168,7 +158,6 @@ private:
 	};
 
 	struct AudioTrack : public Track {
-
 		Vector<TKey<AudioKey>> values;
 
 		AudioTrack() {
@@ -179,7 +168,6 @@ private:
 	/* AUDIO TRACK */
 
 	struct AnimationTrack : public Track {
-
 		Vector<TKey<StringName>> values;
 
 		AnimationTrack() {
@@ -243,25 +231,21 @@ private:
 	}
 
 	PoolVector<int> _value_track_get_key_indices(int p_track, float p_time, float p_delta) const {
-
 		List<int> idxs;
 		value_track_get_key_indices(p_track, p_time, p_delta, &idxs);
 		PoolVector<int> idxr;
 
 		for (List<int>::Element *E = idxs.front(); E; E = E->next()) {
-
 			idxr.push_back(E->get());
 		}
 		return idxr;
 	}
 	PoolVector<int> _method_track_get_key_indices(int p_track, float p_time, float p_delta) const {
-
 		List<int> idxs;
 		method_track_get_key_indices(p_track, p_time, p_delta, &idxs);
 		PoolVector<int> idxr;
 
 		for (List<int>::Element *E = idxs.front(); E; E = E->next()) {
-
 			idxr.push_back(E->get());
 		}
 		return idxr;

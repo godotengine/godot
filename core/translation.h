@@ -34,7 +34,6 @@
 #include "core/resource.h"
 
 class Translation : public Resource {
-
 	GDCLASS(Translation, Resource);
 	OBJ_SAVE_TYPE(Translation);
 	RES_BASE_EXTENSION("translation");
@@ -65,7 +64,6 @@ public:
 };
 
 class TranslationServer : public Object {
-
 	GDCLASS(TranslationServer, Object);
 
 	String locale;

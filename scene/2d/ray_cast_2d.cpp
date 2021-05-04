@@ -36,29 +36,24 @@
 #include "servers/physics_2d_server.h"
 
 void RayCast2D::set_cast_to(const Vector2 &p_point) {
-
 	cast_to = p_point;
 	if (is_inside_tree() && (Engine::get_singleton()->is_editor_hint() || get_tree()->is_debugging_collisions_hint()))
 		update();
 }
 
 Vector2 RayCast2D::get_cast_to() const {
-
 	return cast_to;
 }
 
 void RayCast2D::set_collision_mask(uint32_t p_mask) {
-
 	collision_mask = p_mask;
 }
 
 uint32_t RayCast2D::get_collision_mask() const {
-
 	return collision_mask;
 }
 
 void RayCast2D::set_collision_mask_bit(int p_bit, bool p_value) {
-
 	uint32_t mask = get_collision_mask();
 	if (p_value)
 		mask |= 1 << p_bit;
@@ -68,16 +63,13 @@ void RayCast2D::set_collision_mask_bit(int p_bit, bool p_value) {
 }
 
 bool RayCast2D::get_collision_mask_bit(int p_bit) const {
-
 	return get_collision_mask() & (1 << p_bit);
 }
 
 bool RayCast2D::is_colliding() const {
-
 	return collided;
 }
 Object *RayCast2D::get_collider() const {
-
 	if (against == 0)
 		return NULL;
 
@@ -85,20 +77,16 @@ Object *RayCast2D::get_collider() const {
 }
 
 int RayCast2D::get_collider_shape() const {
-
 	return against_shape;
 }
 Vector2 RayCast2D::get_collision_point() const {
-
 	return collision_point;
 }
 Vector2 RayCast2D::get_collision_normal() const {
-
 	return collision_normal;
 }
 
 void RayCast2D::set_enabled(bool p_enabled) {
-
 	enabled = p_enabled;
 	update();
 	if (is_inside_tree() && !Engine::get_singleton()->is_editor_hint())
@@ -108,12 +96,10 @@ void RayCast2D::set_enabled(bool p_enabled) {
 }
 
 bool RayCast2D::is_enabled() const {
-
 	return enabled;
 }
 
 void RayCast2D::set_exclude_parent_body(bool p_exclude_parent_body) {
-
 	if (exclude_parent_body == p_exclude_parent_body)
 		return;
 
@@ -131,16 +117,12 @@ void RayCast2D::set_exclude_parent_body(bool p_exclude_parent_body) {
 }
 
 bool RayCast2D::get_exclude_parent_body() const {
-
 	return exclude_parent_body;
 }
 
 void RayCast2D::_notification(int p_what) {
-
 	switch (p_what) {
-
 		case NOTIFICATION_ENTER_TREE: {
-
 			if (enabled && !Engine::get_singleton()->is_editor_hint())
 				set_physics_process_internal(true);
 			else
@@ -154,14 +136,12 @@ void RayCast2D::_notification(int p_what) {
 			}
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
-
 			if (enabled)
 				set_physics_process_internal(false);
 
 		} break;
 
 		case NOTIFICATION_DRAW: {
-
 			if (!Engine::get_singleton()->is_editor_hint() && !get_tree()->is_debugging_collisions_hint())
 				break;
 			Transform2D xf;
@@ -191,7 +171,6 @@ void RayCast2D::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
-
 			if (!enabled)
 				break;
 
@@ -217,7 +196,6 @@ void RayCast2D::_update_raycast_state() {
 	Physics2DDirectSpaceState::RayResult rr;
 
 	if (dss->intersect_ray(gt.get_origin(), gt.xform(to), rr, exclude, collision_mask, collide_with_bodies, collide_with_areas)) {
-
 		collided = true;
 		against = rr.collider_id;
 		collision_point = rr.position;
@@ -235,12 +213,10 @@ void RayCast2D::force_raycast_update() {
 }
 
 void RayCast2D::add_exception_rid(const RID &p_rid) {
-
 	exclude.insert(p_rid);
 }
 
 void RayCast2D::add_exception(const Object *p_object) {
-
 	ERR_FAIL_NULL(p_object);
 	const CollisionObject2D *co = Object::cast_to<CollisionObject2D>(p_object);
 	if (!co)
@@ -249,12 +225,10 @@ void RayCast2D::add_exception(const Object *p_object) {
 }
 
 void RayCast2D::remove_exception_rid(const RID &p_rid) {
-
 	exclude.erase(p_rid);
 }
 
 void RayCast2D::remove_exception(const Object *p_object) {
-
 	ERR_FAIL_NULL(p_object);
 	const CollisionObject2D *co = Object::cast_to<CollisionObject2D>(p_object);
 	if (!co)
@@ -263,32 +237,26 @@ void RayCast2D::remove_exception(const Object *p_object) {
 }
 
 void RayCast2D::clear_exceptions() {
-
 	exclude.clear();
 }
 
 void RayCast2D::set_collide_with_areas(bool p_clip) {
-
 	collide_with_areas = p_clip;
 }
 
 bool RayCast2D::is_collide_with_areas_enabled() const {
-
 	return collide_with_areas;
 }
 
 void RayCast2D::set_collide_with_bodies(bool p_clip) {
-
 	collide_with_bodies = p_clip;
 }
 
 bool RayCast2D::is_collide_with_bodies_enabled() const {
-
 	return collide_with_bodies;
 }
 
 void RayCast2D::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("set_enabled", "enabled"), &RayCast2D::set_enabled);
 	ClassDB::bind_method(D_METHOD("is_enabled"), &RayCast2D::is_enabled);
 
@@ -337,7 +305,6 @@ void RayCast2D::_bind_methods() {
 }
 
 RayCast2D::RayCast2D() {
-
 	enabled = false;
 	against = 0;
 	collided = false;

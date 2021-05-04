@@ -34,12 +34,10 @@
 #include "scene/main/viewport.h"
 
 Size2 ViewportContainer::get_minimum_size() const {
-
 	if (stretch)
 		return Size2();
 	Size2 ms;
 	for (int i = 0; i < get_child_count(); i++) {
-
 		Viewport *c = Object::cast_to<Viewport>(get_child(i));
 		if (!c)
 			continue;
@@ -53,19 +51,16 @@ Size2 ViewportContainer::get_minimum_size() const {
 }
 
 void ViewportContainer::set_stretch(bool p_enable) {
-
 	stretch = p_enable;
 	queue_sort();
 	update();
 }
 
 bool ViewportContainer::is_stretch_enabled() const {
-
 	return stretch;
 }
 
 void ViewportContainer::set_stretch_shrink(int p_shrink) {
-
 	ERR_FAIL_COND(p_shrink < 1);
 	if (shrink == p_shrink)
 		return;
@@ -76,7 +71,6 @@ void ViewportContainer::set_stretch_shrink(int p_shrink) {
 		return;
 
 	for (int i = 0; i < get_child_count(); i++) {
-
 		Viewport *c = Object::cast_to<Viewport>(get_child(i));
 		if (!c)
 			continue;
@@ -88,19 +82,15 @@ void ViewportContainer::set_stretch_shrink(int p_shrink) {
 }
 
 int ViewportContainer::get_stretch_shrink() const {
-
 	return shrink;
 }
 
 void ViewportContainer::_notification(int p_what) {
-
 	if (p_what == NOTIFICATION_RESIZED) {
-
 		if (!stretch)
 			return;
 
 		for (int i = 0; i < get_child_count(); i++) {
-
 			Viewport *c = Object::cast_to<Viewport>(get_child(i));
 			if (!c)
 				continue;
@@ -110,9 +100,7 @@ void ViewportContainer::_notification(int p_what) {
 	}
 
 	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_VISIBILITY_CHANGED) {
-
 		for (int i = 0; i < get_child_count(); i++) {
-
 			Viewport *c = Object::cast_to<Viewport>(get_child(i));
 			if (!c)
 				continue;
@@ -127,9 +115,7 @@ void ViewportContainer::_notification(int p_what) {
 	}
 
 	if (p_what == NOTIFICATION_DRAW) {
-
 		for (int i = 0; i < get_child_count(); i++) {
-
 			Viewport *c = Object::cast_to<Viewport>(get_child(i));
 			if (!c)
 				continue;
@@ -159,7 +145,6 @@ void ViewportContainer::_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEvent> ev = p_event->xformed_by(xform.affine_inverse());
 
 	for (int i = 0; i < get_child_count(); i++) {
-
 		Viewport *c = Object::cast_to<Viewport>(get_child(i));
 		if (!c || c->is_input_disabled())
 			continue;
@@ -185,7 +170,6 @@ void ViewportContainer::_unhandled_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEvent> ev = p_event->xformed_by(xform.affine_inverse());
 
 	for (int i = 0; i < get_child_count(); i++) {
-
 		Viewport *c = Object::cast_to<Viewport>(get_child(i));
 		if (!c || c->is_input_disabled())
 			continue;
@@ -195,7 +179,6 @@ void ViewportContainer::_unhandled_input(const Ref<InputEvent> &p_event) {
 }
 
 void ViewportContainer::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("_unhandled_input", "event"), &ViewportContainer::_unhandled_input);
 	ClassDB::bind_method(D_METHOD("_input", "event"), &ViewportContainer::_input);
 	ClassDB::bind_method(D_METHOD("set_stretch", "enable"), &ViewportContainer::set_stretch);
@@ -209,7 +192,6 @@ void ViewportContainer::_bind_methods() {
 }
 
 ViewportContainer::ViewportContainer() {
-
 	stretch = false;
 	shrink = 1;
 	set_process_input(true);

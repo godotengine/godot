@@ -45,7 +45,6 @@
 #include "scene/resources/material.h"
 
 struct CSGBrush {
-
 	struct Face {
 		Vector3 vertices[3];
 		Vector2 uvs[3];
@@ -66,7 +65,6 @@ struct CSGBrush {
 };
 
 struct CSGBrushOperation {
-
 	enum Operation {
 		OPERATION_UNION,
 		OPERATION_INTERSECTION,
@@ -76,7 +74,6 @@ struct CSGBrushOperation {
 	void merge_brushes(Operation p_operation, const CSGBrush &p_brush_a, const CSGBrush &p_brush_b, CSGBrush &r_merged_brush, float p_vertex_snap);
 
 	struct MeshMerge {
-
 		struct Face {
 			bool from_b;
 			bool inside;
@@ -157,7 +154,6 @@ struct CSGBrushOperation {
 	};
 
 	struct Build2DFaces {
-
 		struct Vertex2D {
 			Vector2 point;
 			Vector2 uv;

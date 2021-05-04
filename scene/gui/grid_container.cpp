@@ -31,11 +31,8 @@
 #include "grid_container.h"
 
 void GridContainer::_notification(int p_what) {
-
 	switch (p_what) {
-
 		case NOTIFICATION_SORT_CHILDREN: {
-
 			Map<int, int> col_minw; // Max of min_width  of all controls in each col (indexed by col).
 			Map<int, int> row_minh; // Max of min_height of all controls in each row (indexed by row).
 			Set<int> col_expanded; // Columns which have the SIZE_EXPAND flag set.
@@ -168,14 +165,12 @@ void GridContainer::_notification(int p_what) {
 
 		} break;
 		case NOTIFICATION_THEME_CHANGED: {
-
 			minimum_size_changed();
 		} break;
 	}
 }
 
 void GridContainer::set_columns(int p_columns) {
-
 	ERR_FAIL_COND(p_columns < 1);
 	columns = p_columns;
 	queue_sort();
@@ -183,12 +178,10 @@ void GridContainer::set_columns(int p_columns) {
 }
 
 int GridContainer::get_columns() const {
-
 	return columns;
 }
 
 void GridContainer::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("set_columns", "columns"), &GridContainer::set_columns);
 	ClassDB::bind_method(D_METHOD("get_columns"), &GridContainer::get_columns);
 
@@ -196,7 +189,6 @@ void GridContainer::_bind_methods() {
 }
 
 Size2 GridContainer::get_minimum_size() const {
-
 	Map<int, int> col_minw;
 	Map<int, int> row_minh;
 
@@ -208,7 +200,6 @@ Size2 GridContainer::get_minimum_size() const {
 
 	int valid_controls_index = 0;
 	for (int i = 0; i < get_child_count(); i++) {
-
 		Control *c = Object::cast_to<Control>(get_child(i));
 		if (!c || !c->is_visible())
 			continue;
@@ -247,7 +238,6 @@ Size2 GridContainer::get_minimum_size() const {
 }
 
 GridContainer::GridContainer() {
-
 	set_mouse_filter(MOUSE_FILTER_PASS);
 	columns = 1;
 }

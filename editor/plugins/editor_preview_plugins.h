@@ -71,7 +71,6 @@ public:
 };
 
 class EditorPackedScenePreviewPlugin : public EditorResourcePreviewGenerator {
-
 public:
 	virtual bool handles(const String &p_type) const;
 	virtual Ref<Texture> generate(const RES &p_from, const Size2 &p_size) const;
@@ -81,7 +80,6 @@ public:
 };
 
 class EditorMaterialPreviewPlugin : public EditorResourcePreviewGenerator {
-
 	GDCLASS(EditorMaterialPreviewPlugin, EditorResourcePreviewGenerator);
 
 	RID scenario;
@@ -127,7 +125,6 @@ public:
 };
 
 class EditorMeshPreviewPlugin : public EditorResourcePreviewGenerator {
-
 	GDCLASS(EditorMeshPreviewPlugin, EditorResourcePreviewGenerator);
 
 	RID scenario;
@@ -155,7 +152,6 @@ public:
 };
 
 class EditorFontPreviewPlugin : public EditorResourcePreviewGenerator {
-
 	GDCLASS(EditorFontPreviewPlugin, EditorResourcePreviewGenerator);
 
 	RID viewport;

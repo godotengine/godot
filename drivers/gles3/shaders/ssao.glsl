@@ -5,7 +5,6 @@ layout(location = 0) in highp vec4 vertex_attrib;
 /* clang-format on */
 
 void main() {
-
 	gl_Position = vertex_attrib;
 	gl_Position.z = 1.0;
 }

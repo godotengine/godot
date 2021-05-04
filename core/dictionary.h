@@ -40,7 +40,6 @@ class Variant;
 struct DictionaryPrivate;
 
 class Dictionary {
-
 	mutable DictionaryPrivate *_p;
 
 	void _ref(const Dictionary &p_from) const;

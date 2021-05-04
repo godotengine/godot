@@ -77,7 +77,6 @@ private:
 			const FBXDocParser::Document *doc,
 			uint64_t current_element,
 			bool reverse_lookup = false) {
-
 		const std::vector<const FBXDocParser::Connection *> &conns = reverse_lookup ? doc->GetConnectionsByDestinationSequenced(current_element) : doc->GetConnectionsBySourceSequenced(current_element);
 		//print_verbose("[doc] looking for " + String(element_to_find));
 		// using the temp pattern here so we can debug before it returns

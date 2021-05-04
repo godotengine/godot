@@ -35,7 +35,6 @@
 #include "core/math/octree.h"
 
 class BroadPhaseOctree : public BroadPhaseSW {
-
 	Octree<CollisionObjectSW, true> octree;
 
 	static void *_pair_callback(void *, OctreeElementID, CollisionObjectSW *, int, OctreeElementID, CollisionObjectSW *, int);

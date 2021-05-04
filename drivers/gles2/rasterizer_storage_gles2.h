@@ -53,7 +53,6 @@ public:
 	static GLuint system_fbo;
 
 	struct Config {
-
 		bool shrink_textures_x2;
 		bool use_fast_texture_filter;
 		bool use_anisotropic_filter;
@@ -109,7 +108,6 @@ public:
 	} config;
 
 	struct Resources {
-
 		GLuint white_tex;
 		GLuint black_tex;
 		GLuint normal_tex;
@@ -130,7 +128,6 @@ public:
 	} resources;
 
 	mutable struct Shaders {
-
 		ShaderCompilerGLES2 compiler;
 
 		CopyShaderGLES2 copy;
@@ -143,7 +140,6 @@ public:
 	} shaders;
 
 	struct Info {
-
 		uint64_t texture_mem;
 		uint64_t vertex_mem;
 
@@ -188,10 +184,8 @@ public:
 		SelfList<RasterizerScene::InstanceBase>::List instance_list;
 
 		_FORCE_INLINE_ void instance_change_notify(bool p_aabb, bool p_materials) {
-
 			SelfList<RasterizerScene::InstanceBase> *instances = instance_list.first();
 			while (instances) {
-
 				instances->self()->base_changed(p_aabb, p_materials);
 				instances = instances->next();
 			}
@@ -215,7 +209,6 @@ public:
 	};
 
 	struct Geometry : public Instantiable {
-
 		enum Type {
 			GEOMETRY_INVALID,
 			GEOMETRY_SURFACE,
@@ -245,7 +238,6 @@ public:
 	struct RenderTarget;
 
 	struct Texture : RID_Data {
-
 		Texture *proxy;
 		Set<Texture *> proxy_owners;
 
@@ -388,7 +380,6 @@ public:
 	/* SKY API */
 
 	struct Sky : public RID_Data {
-
 		RID panorama;
 		GLuint radiance;
 		int radiance_size;
@@ -404,7 +395,6 @@ public:
 	struct Material;
 
 	struct Shader : public RID_Data {
-
 		RID self;
 
 		VS::ShaderMode mode;
@@ -433,7 +423,6 @@ public:
 		uint64_t last_pass;
 
 		struct CanvasItem {
-
 			enum BlendMode {
 				BLEND_MODE_MIX,
 				BLEND_MODE_ADD,
@@ -474,7 +463,6 @@ public:
 		} canvas_item;
 
 		struct Spatial {
-
 			enum BlendMode {
 				BLEND_MODE_MIX,
 				BLEND_MODE_ADD,
@@ -520,7 +508,6 @@ public:
 		} spatial;
 
 		struct Particles {
-
 		} particles;
 
 		bool uses_vertex_time;
@@ -528,7 +515,6 @@ public:
 
 		Shader() :
 				dirty_list(this) {
-
 			shader = NULL;
 			valid = false;
 			custom_code_id = 0;
@@ -561,7 +547,6 @@ public:
 	/* COMMON MATERIAL API */
 
 	struct Material : public RID_Data {
-
 		Shader *shader;
 		Map<StringName, Variant> params;
 		SelfList<Material> list;
@@ -632,7 +617,6 @@ public:
 	struct Mesh;
 
 	struct Surface : public Geometry {
-
 		struct Attrib {
 			bool enabled;
 			bool integer;
@@ -696,7 +680,6 @@ public:
 	struct MultiMesh;
 
 	struct Mesh : public GeometryOwner {
-
 		bool active;
 
 		Vector<Surface *> surfaces;
@@ -767,7 +750,6 @@ public:
 	/* MULTIMESH API */
 
 	struct MultiMesh : public GeometryOwner {
-
 		RID mesh;
 		int size;
 
@@ -841,7 +823,6 @@ public:
 	/* IMMEDIATE API */
 
 	struct Immediate : public Geometry {
-
 		struct Chunk {
 			RID texture;
 			VS::PrimitiveType primitive;
@@ -889,7 +870,6 @@ public:
 	/* SKELETON API */
 
 	struct Skeleton : RID_Data {
-
 		bool use_2d;
 
 		int size;
@@ -1001,7 +981,6 @@ public:
 	/* PROBE API */
 
 	struct ReflectionProbe : Instantiable {
-
 		VS::ReflectionProbeUpdateMode update_mode;
 		float intensity;
 		Color interior_ambient;
@@ -1090,7 +1069,6 @@ public:
 	/* LIGHTMAP */
 
 	struct LightmapCapture : public Instantiable {
-
 		PoolVector<LightmapCaptureOctree> octree;
 		AABB bounds;
 		Transform cell_xform;
@@ -1206,7 +1184,6 @@ public:
 		Effect copy_screen_effect;
 
 		struct MipMaps {
-
 			struct Size {
 				GLuint fbo;
 				GLuint color;
@@ -1303,7 +1280,6 @@ public:
 	/* CANVAS SHADOW */
 
 	struct CanvasLightShadow : public RID_Data {
-
 		int size;
 		int height;
 		GLuint fbo;
@@ -1318,7 +1294,6 @@ public:
 	/* LIGHT SHADOW MAPPING */
 
 	struct CanvasOccluder : public RID_Data {
-
 		GLuint vertex_id; // 0 means, unconfigured
 		GLuint index_id; // 0 means, unconfigured
 		PoolVector<Vector2> lines;
@@ -1335,7 +1310,6 @@ public:
 	virtual bool free(RID p_rid);
 
 	struct Frame {
-
 		RenderTarget *current_rt;
 
 		bool clear_request;

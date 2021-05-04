@@ -41,7 +41,6 @@ import android.util.Log;
  * to receive broadcast and multicast packets.
  */
 public class GodotNetUtils {
-
 	/* A single, reference counted, multicast lock, or null if permission CHANGE_WIFI_MULTICAST_STATE is missing */
 	private WifiManager.MulticastLock multicastLock;
 

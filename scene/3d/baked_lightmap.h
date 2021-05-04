@@ -49,7 +49,6 @@ class BakedLightmapData : public Resource {
 	Transform cell_space_xform;
 
 	struct User {
-
 		NodePath path;
 		struct {
 			Ref<Texture> single;

@@ -35,7 +35,6 @@
 #include <core/os/keyboard.h>
 
 struct _WinTranslatePair {
-
 	unsigned int keysym;
 	unsigned int keycode;
 };

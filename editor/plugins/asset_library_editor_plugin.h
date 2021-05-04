@@ -50,7 +50,6 @@
 #include "scene/main/http_request.h"
 
 class EditorAssetLibraryItem : public PanelContainer {
-
 	GDCLASS(EditorAssetLibraryItem, PanelContainer);
 
 	TextureButton *icon;
@@ -81,7 +80,6 @@ public:
 };
 
 class EditorAssetLibraryItemDescription : public ConfirmationDialog {
-
 	GDCLASS(EditorAssetLibraryItemDescription, ConfirmationDialog);
 
 	EditorAssetLibraryItem *item;
@@ -129,7 +127,6 @@ public:
 };
 
 class EditorAssetLibraryItemDownload : public PanelContainer {
-
 	GDCLASS(EditorAssetLibraryItemDownload, PanelContainer);
 
 	TextureRect *icon;
@@ -238,7 +235,6 @@ class EditorAssetLibrary : public PanelContainer {
 	};
 
 	struct ImageQueue {
-
 		bool active;
 		int queue_id;
 		ImageType image_type;
@@ -311,7 +307,6 @@ public:
 };
 
 class AssetLibraryEditorPlugin : public EditorPlugin {
-
 	GDCLASS(AssetLibraryEditorPlugin, EditorPlugin);
 
 	EditorAssetLibrary *addon_library;

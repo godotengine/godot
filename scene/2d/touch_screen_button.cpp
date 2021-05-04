@@ -35,39 +35,32 @@
 #include "core/os/os.h"
 
 void TouchScreenButton::set_texture(const Ref<Texture> &p_texture) {
-
 	texture = p_texture;
 	update();
 }
 
 Ref<Texture> TouchScreenButton::get_texture() const {
-
 	return texture;
 }
 
 void TouchScreenButton::set_texture_pressed(const Ref<Texture> &p_texture_pressed) {
-
 	texture_pressed = p_texture_pressed;
 	update();
 }
 
 Ref<Texture> TouchScreenButton::get_texture_pressed() const {
-
 	return texture_pressed;
 }
 
 void TouchScreenButton::set_bitmask(const Ref<BitMap> &p_bitmask) {
-
 	bitmask = p_bitmask;
 }
 
 Ref<BitMap> TouchScreenButton::get_bitmask() const {
-
 	return bitmask;
 }
 
 void TouchScreenButton::set_shape(const Ref<Shape2D> &p_shape) {
-
 	if (shape.is_valid())
 		shape->disconnect("changed", this, "update");
 
@@ -80,45 +73,36 @@ void TouchScreenButton::set_shape(const Ref<Shape2D> &p_shape) {
 }
 
 Ref<Shape2D> TouchScreenButton::get_shape() const {
-
 	return shape;
 }
 
 void TouchScreenButton::set_shape_centered(bool p_shape_centered) {
-
 	shape_centered = p_shape_centered;
 	update();
 }
 
 bool TouchScreenButton::is_shape_visible() const {
-
 	return shape_visible;
 }
 
 void TouchScreenButton::set_shape_visible(bool p_shape_visible) {
-
 	shape_visible = p_shape_visible;
 	update();
 }
 
 bool TouchScreenButton::is_shape_centered() const {
-
 	return shape_centered;
 }
 
 void TouchScreenButton::_notification(int p_what) {
-
 	switch (p_what) {
-
 		case NOTIFICATION_DRAW: {
-
 			if (!is_inside_tree())
 				return;
 			if (!Engine::get_singleton()->is_editor_hint() && !OS::get_singleton()->has_touchscreen_ui_hint() && visibility == VISIBILITY_TOUCHSCREEN_ONLY)
 				return;
 
 			if (finger_pressed != -1) {
-
 				if (texture_pressed.is_valid())
 					draw_texture(texture_pressed, Point2());
 				else if (texture.is_valid())
@@ -144,7 +128,6 @@ void TouchScreenButton::_notification(int p_what) {
 
 		} break;
 		case NOTIFICATION_ENTER_TREE: {
-
 			if (!Engine::get_singleton()->is_editor_hint() && !OS::get_singleton()->has_touchscreen_ui_hint() && visibility == VISIBILITY_TOUCHSCREEN_ONLY)
 				return;
 			update();
@@ -176,17 +159,14 @@ void TouchScreenButton::_notification(int p_what) {
 }
 
 bool TouchScreenButton::is_pressed() const {
-
 	return finger_pressed != -1;
 }
 
 void TouchScreenButton::set_action(const String &p_action) {
-
 	action = p_action;
 }
 
 String TouchScreenButton::get_action() const {
-
 	return action;
 }
 
@@ -204,21 +184,17 @@ void TouchScreenButton::_input(const Ref<InputEvent> &p_event) {
 	const InputEventScreenTouch *st = Object::cast_to<InputEventScreenTouch>(*p_event);
 
 	if (passby_press) {
-
 		const InputEventScreenDrag *sd = Object::cast_to<InputEventScreenDrag>(*p_event);
 
 		if (st && !st->is_pressed() && finger_pressed == st->get_index()) {
-
 			_release();
 		}
 
 		if ((st && st->is_pressed()) || sd) {
-
 			int index = st ? st->get_index() : sd->get_index();
 			Point2 coord = st ? st->get_position() : sd->get_position();
 
 			if (finger_pressed == -1 || index == finger_pressed) {
-
 				if (_is_point_inside(coord)) {
 					if (finger_pressed == -1) {
 						_press(index);
@@ -232,11 +208,8 @@ void TouchScreenButton::_input(const Ref<InputEvent> &p_event) {
 		}
 
 	} else {
-
 		if (st) {
-
 			if (st->is_pressed()) {
-
 				const bool can_press = finger_pressed == -1;
 				if (!can_press)
 					return; //already fingering
@@ -268,10 +241,8 @@ bool TouchScreenButton::_is_point_inside(const Point2 &p_point) {
 	}
 
 	if (bitmask.is_valid()) {
-
 		check_rect = false;
 		if (!touched && Rect2(Point2(), bitmask->get_size()).has_point(coord)) {
-
 			if (bitmask->get_bit(coord))
 				touched = true;
 		}
@@ -286,11 +257,9 @@ bool TouchScreenButton::_is_point_inside(const Point2 &p_point) {
 }
 
 void TouchScreenButton::_press(int p_finger_pressed) {
-
 	finger_pressed = p_finger_pressed;
 
 	if (action != StringName()) {
-
 		Input::get_singleton()->action_press(action);
 		Ref<InputEventAction> iea;
 		iea.instance();
@@ -304,14 +273,11 @@ void TouchScreenButton::_press(int p_finger_pressed) {
 }
 
 void TouchScreenButton::_release(bool p_exiting_tree) {
-
 	finger_pressed = -1;
 
 	if (action != StringName()) {
-
 		Input::get_singleton()->action_release(action);
 		if (!p_exiting_tree) {
-
 			Ref<InputEventAction> iea;
 			iea.instance();
 			iea->set_action(action);
@@ -352,22 +318,18 @@ void TouchScreenButton::set_visibility_mode(VisibilityMode p_mode) {
 }
 
 TouchScreenButton::VisibilityMode TouchScreenButton::get_visibility_mode() const {
-
 	return visibility;
 }
 
 void TouchScreenButton::set_passby_press(bool p_enable) {
-
 	passby_press = p_enable;
 }
 
 bool TouchScreenButton::is_passby_press_enabled() const {
-
 	return passby_press;
 }
 
 void TouchScreenButton::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("set_texture", "texture"), &TouchScreenButton::set_texture);
 	ClassDB::bind_method(D_METHOD("get_texture"), &TouchScreenButton::get_texture);
 
@@ -417,7 +379,6 @@ void TouchScreenButton::_bind_methods() {
 }
 
 TouchScreenButton::TouchScreenButton() {
-
 	finger_pressed = -1;
 	passby_press = false;
 	visibility = VISIBILITY_ALWAYS;

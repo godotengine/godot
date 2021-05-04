@@ -35,7 +35,6 @@
 #include "scene/resources/mesh.h"
 
 class ImmediateGeometry : public GeometryInstance {
-
 	GDCLASS(ImmediateGeometry, GeometryInstance);
 
 	RID im;

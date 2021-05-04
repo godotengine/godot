@@ -31,39 +31,32 @@
 #include "immediate_geometry.h"
 
 void ImmediateGeometry::begin(Mesh::PrimitiveType p_primitive, const Ref<Texture> &p_texture) {
-
 	VS::get_singleton()->immediate_begin(im, (VS::PrimitiveType)p_primitive, p_texture.is_valid() ? p_texture->get_rid() : RID());
 	if (p_texture.is_valid())
 		cached_textures.push_back(p_texture);
 }
 
 void ImmediateGeometry::set_normal(const Vector3 &p_normal) {
-
 	VS::get_singleton()->immediate_normal(im, p_normal);
 }
 
 void ImmediateGeometry::set_tangent(const Plane &p_tangent) {
-
 	VS::get_singleton()->immediate_tangent(im, p_tangent);
 }
 
 void ImmediateGeometry::set_color(const Color &p_color) {
-
 	VS::get_singleton()->immediate_color(im, p_color);
 }
 
 void ImmediateGeometry::set_uv(const Vector2 &p_uv) {
-
 	VS::get_singleton()->immediate_uv(im, p_uv);
 }
 
 void ImmediateGeometry::set_uv2(const Vector2 &p_uv2) {
-
 	VS::get_singleton()->immediate_uv2(im, p_uv2);
 }
 
 void ImmediateGeometry::add_vertex(const Vector3 &p_vertex) {
-
 	VS::get_singleton()->immediate_vertex(im, p_vertex);
 	if (empty) {
 		aabb.position = p_vertex;
@@ -75,28 +68,23 @@ void ImmediateGeometry::add_vertex(const Vector3 &p_vertex) {
 }
 
 void ImmediateGeometry::end() {
-
 	VS::get_singleton()->immediate_end(im);
 }
 
 void ImmediateGeometry::clear() {
-
 	VS::get_singleton()->immediate_clear(im);
 	empty = true;
 	cached_textures.clear();
 }
 
 AABB ImmediateGeometry::get_aabb() const {
-
 	return aabb;
 }
 PoolVector<Face3> ImmediateGeometry::get_faces(uint32_t p_usage_flags) const {
-
 	return PoolVector<Face3>();
 }
 
 void ImmediateGeometry::add_sphere(int p_lats, int p_lons, float p_radius, bool p_add_uv) {
-
 	for (int i = 1; i <= p_lats; i++) {
 		double lat0 = Math_PI * (-0.5 + (double)(i - 1) / p_lats);
 		double z0 = Math::sin(lat0);
@@ -107,7 +95,6 @@ void ImmediateGeometry::add_sphere(int p_lats, int p_lons, float p_radius, bool 
 		double zr1 = Math::cos(lat1);
 
 		for (int j = p_lons; j >= 1; j--) {
-
 			double lng0 = 2 * Math_PI * (double)(j - 1) / p_lons;
 			double x0 = Math::cos(lng0);
 			double y0 = Math::sin(lng0);
@@ -143,7 +130,6 @@ void ImmediateGeometry::add_sphere(int p_lats, int p_lons, float p_radius, bool 
 }
 
 void ImmediateGeometry::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("begin", "primitive", "texture"), &ImmediateGeometry::begin, DEFVAL(Ref<Texture>()));
 	ClassDB::bind_method(D_METHOD("set_normal", "normal"), &ImmediateGeometry::set_normal);
 	ClassDB::bind_method(D_METHOD("set_tangent", "tangent"), &ImmediateGeometry::set_tangent);
@@ -157,13 +143,11 @@ void ImmediateGeometry::_bind_methods() {
 }
 
 ImmediateGeometry::ImmediateGeometry() {
-
 	im = VisualServer::get_singleton()->immediate_create();
 	set_base(im);
 	empty = true;
 }
 
 ImmediateGeometry::~ImmediateGeometry() {
-
 	VisualServer::get_singleton()->free(im);
 }

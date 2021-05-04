@@ -43,7 +43,6 @@
 #include <stdlib.h>
 
 class OS {
-
 	static OS *singleton;
 	static uint64_t target_ticks;
 	String _execpath;
@@ -95,7 +94,6 @@ public:
 		RENDER_SEPARATE_THREAD
 	};
 	struct VideoMode {
-
 		int width, height;
 		bool fullscreen;
 		bool resizable;
@@ -338,7 +336,6 @@ public:
 	};
 
 	struct Date {
-
 		int year;
 		Month month;
 		int day;
@@ -347,7 +344,6 @@ public:
 	};
 
 	struct Time {
-
 		int hour;
 		int min;
 		int sec;

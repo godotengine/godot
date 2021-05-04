@@ -94,7 +94,6 @@ private:
 	void _queue_update();
 
 	union ConnectionKey {
-
 		struct {
 			uint64_t node : 32;
 			uint64_t port : 32;

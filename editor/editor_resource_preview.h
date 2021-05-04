@@ -38,7 +38,6 @@
 #include "scene/resources/texture.h"
 
 class EditorResourcePreviewGenerator : public Reference {
-
 	GDCLASS(EditorResourcePreviewGenerator, Reference);
 
 protected:
@@ -56,7 +55,6 @@ public:
 };
 
 class EditorResourcePreview : public Node {
-
 	GDCLASS(EditorResourcePreview, Node);
 
 	static EditorResourcePreview *singleton;

@@ -34,7 +34,6 @@
 #include "servers/visual_server.h"
 
 Size2 Button::get_minimum_size() const {
-
 	Size2 minsize = get_font("font")->get_string_size(xl_text);
 	if (clip_text)
 		minsize.width = 0;
@@ -47,7 +46,6 @@ Size2 Button::get_minimum_size() const {
 			_icon = icon;
 
 		if (!_icon.is_null()) {
-
 			minsize.height = MAX(minsize.height, _icon->get_height());
 			minsize.width += _icon->get_width();
 			if (xl_text != "")
@@ -59,21 +57,17 @@ Size2 Button::get_minimum_size() const {
 }
 
 void Button::_set_internal_margin(Margin p_margin, float p_value) {
-
 	_internal_margin[p_margin] = p_value;
 }
 
 void Button::_notification(int p_what) {
-
 	switch (p_what) {
 		case NOTIFICATION_TRANSLATION_CHANGED: {
-
 			xl_text = tr(text);
 			minimum_size_changed();
 			update();
 		} break;
 		case NOTIFICATION_DRAW: {
-
 			RID ci = get_canvas_item();
 			Size2 size = get_size();
 			Color color;
@@ -83,7 +77,6 @@ void Button::_notification(int p_what) {
 
 			switch (get_draw_mode()) {
 				case DRAW_NORMAL: {
-
 					style = get_stylebox("normal");
 					if (!flat)
 						style->draw(ci, Rect2(Point2(0, 0), size));
@@ -92,7 +85,6 @@ void Button::_notification(int p_what) {
 						color_icon = get_color("icon_color_normal");
 				} break;
 				case DRAW_HOVER_PRESSED: {
-
 					if (has_stylebox("hover_pressed") && has_stylebox_override("hover_pressed")) {
 						style = get_stylebox("hover_pressed");
 						if (!flat)
@@ -109,7 +101,6 @@ void Button::_notification(int p_what) {
 					FALLTHROUGH;
 				}
 				case DRAW_PRESSED: {
-
 					style = get_stylebox("pressed");
 					if (!flat)
 						style->draw(ci, Rect2(Point2(0, 0), size));
@@ -122,7 +113,6 @@ void Button::_notification(int p_what) {
 
 				} break;
 				case DRAW_HOVER: {
-
 					style = get_stylebox("hover");
 					if (!flat)
 						style->draw(ci, Rect2(Point2(0, 0), size));
@@ -132,7 +122,6 @@ void Button::_notification(int p_what) {
 
 				} break;
 				case DRAW_DISABLED: {
-
 					style = get_stylebox("disabled");
 					if (!flat)
 						style->draw(ci, Rect2(Point2(0, 0), size));
@@ -144,7 +133,6 @@ void Button::_notification(int p_what) {
 			}
 
 			if (has_focus()) {
-
 				Ref<StyleBox> style2 = get_stylebox("focus");
 				style2->draw(ci, Rect2(Point2(), size));
 			}
@@ -158,7 +146,6 @@ void Button::_notification(int p_what) {
 
 			Rect2 icon_region = Rect2();
 			if (!_icon.is_null()) {
-
 				int valign = size.height - style->get_minimum_size().y;
 				if (is_disabled()) {
 					color_icon.a = 0.4;
@@ -235,7 +222,6 @@ void Button::_notification(int p_what) {
 }
 
 void Button::set_text(const String &p_text) {
-
 	if (text == p_text)
 		return;
 	text = p_text;
@@ -245,12 +231,10 @@ void Button::set_text(const String &p_text) {
 	minimum_size_changed();
 }
 String Button::get_text() const {
-
 	return text;
 }
 
 void Button::set_icon(const Ref<Texture> &p_icon) {
-
 	if (icon == p_icon)
 		return;
 	icon = p_icon;
@@ -260,59 +244,49 @@ void Button::set_icon(const Ref<Texture> &p_icon) {
 }
 
 Ref<Texture> Button::get_icon() const {
-
 	return icon;
 }
 
 void Button::set_expand_icon(bool p_expand_icon) {
-
 	expand_icon = p_expand_icon;
 	update();
 	minimum_size_changed();
 }
 
 bool Button::is_expand_icon() const {
-
 	return expand_icon;
 }
 
 void Button::set_flat(bool p_flat) {
-
 	flat = p_flat;
 	update();
 	_change_notify("flat");
 }
 
 bool Button::is_flat() const {
-
 	return flat;
 }
 
 void Button::set_clip_text(bool p_clip_text) {
-
 	clip_text = p_clip_text;
 	update();
 	minimum_size_changed();
 }
 
 bool Button::get_clip_text() const {
-
 	return clip_text;
 }
 
 void Button::set_text_align(TextAlign p_align) {
-
 	align = p_align;
 	update();
 }
 
 Button::TextAlign Button::get_text_align() const {
-
 	return align;
 }
 
 void Button::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("set_text", "text"), &Button::set_text);
 	ClassDB::bind_method(D_METHOD("get_text"), &Button::get_text);
 	ClassDB::bind_method(D_METHOD("set_button_icon", "texture"), &Button::set_icon);
@@ -339,7 +313,6 @@ void Button::_bind_methods() {
 }
 
 Button::Button(const String &p_text) {
-
 	flat = false;
 	clip_text = false;
 	expand_icon = false;

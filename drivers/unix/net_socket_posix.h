@@ -45,7 +45,6 @@
 #endif
 
 class NetSocketPosix : public NetSocket {
-
 private:
 	SOCKET_TYPE _sock;
 	IP::Type _ip_type;

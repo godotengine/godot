@@ -39,31 +39,25 @@
 //////////////////////////////////////////
 
 int VisualScriptReturn::get_output_sequence_port_count() const {
-
 	return 0;
 }
 
 bool VisualScriptReturn::has_input_sequence_port() const {
-
 	return true;
 }
 
 int VisualScriptReturn::get_input_value_port_count() const {
-
 	return with_value ? 1 : 0;
 }
 int VisualScriptReturn::get_output_value_port_count() const {
-
 	return 0;
 }
 
 String VisualScriptReturn::get_output_sequence_port_text(int p_port) const {
-
 	return String();
 }
 
 PropertyInfo VisualScriptReturn::get_input_value_port_info(int p_idx) const {
-
 	PropertyInfo pinfo;
 	pinfo.name = "result";
 	pinfo.type = type;
@@ -74,17 +68,14 @@ PropertyInfo VisualScriptReturn::get_output_value_port_info(int p_idx) const {
 }
 
 String VisualScriptReturn::get_caption() const {
-
 	return "Return";
 }
 
 String VisualScriptReturn::get_text() const {
-
 	return get_name();
 }
 
 void VisualScriptReturn::set_return_type(Variant::Type p_type) {
-
 	if (type == p_type)
 		return;
 	type = p_type;
@@ -92,7 +83,6 @@ void VisualScriptReturn::set_return_type(Variant::Type p_type) {
 }
 
 Variant::Type VisualScriptReturn::get_return_type() const {
-
 	return type;
 }
 
@@ -105,12 +95,10 @@ void VisualScriptReturn::set_enable_return_value(bool p_enable) {
 }
 
 bool VisualScriptReturn::is_return_value_enabled() const {
-
 	return with_value;
 }
 
 void VisualScriptReturn::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("set_return_type", "type"), &VisualScriptReturn::set_return_type);
 	ClassDB::bind_method(D_METHOD("get_return_type"), &VisualScriptReturn::get_return_type);
 	ClassDB::bind_method(D_METHOD("set_enable_return_value", "enable"), &VisualScriptReturn::set_enable_return_value);
@@ -136,7 +124,6 @@ public:
 	//virtual bool get_output_port_unsequenced(int p_idx,Variant* r_value,Variant* p_working_mem,String &r_error) const { return true; }
 
 	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Variant::CallError &r_error, String &r_error_str) {
-
 		if (with_value) {
 			*p_working_mem = *p_inputs[0];
 			return STEP_EXIT_FUNCTION_BIT;
@@ -148,7 +135,6 @@ public:
 };
 
 VisualScriptNodeInstance *VisualScriptReturn::instance(VisualScriptInstance *p_instance) {
-
 	VisualScriptNodeInstanceReturn *instance = memnew(VisualScriptNodeInstanceReturn);
 	instance->node = this;
 	instance->instance = p_instance;
@@ -157,14 +143,12 @@ VisualScriptNodeInstance *VisualScriptReturn::instance(VisualScriptInstance *p_i
 }
 
 VisualScriptReturn::VisualScriptReturn() {
-
 	with_value = false;
 	type = Variant::NIL;
 }
 
 template <bool with_value>
 static Ref<VisualScriptNode> create_return_node(const String &p_name) {
-
 	Ref<VisualScriptReturn> node;
 	node.instance();
 	node->set_enable_return_value(with_value);
@@ -176,26 +160,21 @@ static Ref<VisualScriptNode> create_return_node(const String &p_name) {
 //////////////////////////////////////////
 
 int VisualScriptCondition::get_output_sequence_port_count() const {
-
 	return 3;
 }
 
 bool VisualScriptCondition::has_input_sequence_port() const {
-
 	return true;
 }
 
 int VisualScriptCondition::get_input_value_port_count() const {
-
 	return 1;
 }
 int VisualScriptCondition::get_output_value_port_count() const {
-
 	return 0;
 }
 
 String VisualScriptCondition::get_output_sequence_port_text(int p_port) const {
-
 	if (p_port == 0)
 		return "true";
 	else if (p_port == 1)
@@ -205,7 +184,6 @@ String VisualScriptCondition::get_output_sequence_port_text(int p_port) const {
 }
 
 PropertyInfo VisualScriptCondition::get_input_value_port_info(int p_idx) const {
-
 	PropertyInfo pinfo;
 	pinfo.name = "cond";
 	pinfo.type = Variant::BOOL;
@@ -216,12 +194,10 @@ PropertyInfo VisualScriptCondition::get_output_value_port_info(int p_idx) const 
 }
 
 String VisualScriptCondition::get_caption() const {
-
 	return "Condition";
 }
 
 String VisualScriptCondition::get_text() const {
-
 	return "if (cond) is:  ";
 }
 
@@ -238,7 +214,6 @@ public:
 	//virtual bool get_output_port_unsequenced(int p_idx,Variant* r_value,Variant* p_working_mem,String &r_error) const { return true; }
 
 	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Variant::CallError &r_error, String &r_error_str) {
-
 		if (p_start_mode == START_MODE_CONTINUE_SEQUENCE)
 			return 2;
 		else if (p_inputs[0]->operator bool())
@@ -249,7 +224,6 @@ public:
 };
 
 VisualScriptNodeInstance *VisualScriptCondition::instance(VisualScriptInstance *p_instance) {
-
 	VisualScriptNodeInstanceCondition *instance = memnew(VisualScriptNodeInstanceCondition);
 	instance->node = this;
 	instance->instance = p_instance;
@@ -264,26 +238,21 @@ VisualScriptCondition::VisualScriptCondition() {
 //////////////////////////////////////////
 
 int VisualScriptWhile::get_output_sequence_port_count() const {
-
 	return 2;
 }
 
 bool VisualScriptWhile::has_input_sequence_port() const {
-
 	return true;
 }
 
 int VisualScriptWhile::get_input_value_port_count() const {
-
 	return 1;
 }
 int VisualScriptWhile::get_output_value_port_count() const {
-
 	return 0;
 }
 
 String VisualScriptWhile::get_output_sequence_port_text(int p_port) const {
-
 	if (p_port == 0)
 		return "repeat";
 	else
@@ -291,7 +260,6 @@ String VisualScriptWhile::get_output_sequence_port_text(int p_port) const {
 }
 
 PropertyInfo VisualScriptWhile::get_input_value_port_info(int p_idx) const {
-
 	PropertyInfo pinfo;
 	pinfo.name = "cond";
 	pinfo.type = Variant::BOOL;
@@ -302,12 +270,10 @@ PropertyInfo VisualScriptWhile::get_output_value_port_info(int p_idx) const {
 }
 
 String VisualScriptWhile::get_caption() const {
-
 	return "While";
 }
 
 String VisualScriptWhile::get_text() const {
-
 	return "while (cond): ";
 }
 
@@ -324,7 +290,6 @@ public:
 	//virtual bool get_output_port_unsequenced(int p_idx,Variant* r_value,Variant* p_working_mem,String &r_error) const { return true; }
 
 	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Variant::CallError &r_error, String &r_error_str) {
-
 		bool keep_going = p_inputs[0]->operator bool();
 
 		if (keep_going)
@@ -335,7 +300,6 @@ public:
 };
 
 VisualScriptNodeInstance *VisualScriptWhile::instance(VisualScriptInstance *p_instance) {
-
 	VisualScriptNodeInstanceWhile *instance = memnew(VisualScriptNodeInstanceWhile);
 	instance->node = this;
 	instance->instance = p_instance;
@@ -349,26 +313,21 @@ VisualScriptWhile::VisualScriptWhile() {
 //////////////////////////////////////////
 
 int VisualScriptIterator::get_output_sequence_port_count() const {
-
 	return 2;
 }
 
 bool VisualScriptIterator::has_input_sequence_port() const {
-
 	return true;
 }
 
 int VisualScriptIterator::get_input_value_port_count() const {
-
 	return 1;
 }
 int VisualScriptIterator::get_output_value_port_count() const {
-
 	return 1;
 }
 
 String VisualScriptIterator::get_output_sequence_port_text(int p_port) const {
-
 	if (p_port == 0)
 		return "each";
 	else
@@ -376,7 +335,6 @@ String VisualScriptIterator::get_output_sequence_port_text(int p_port) const {
 }
 
 PropertyInfo VisualScriptIterator::get_input_value_port_info(int p_idx) const {
-
 	PropertyInfo pinfo;
 	pinfo.name = "input";
 	pinfo.type = Variant::NIL;
@@ -389,12 +347,10 @@ PropertyInfo VisualScriptIterator::get_output_value_port_info(int p_idx) const {
 	return pinfo;
 }
 String VisualScriptIterator::get_caption() const {
-
 	return "Iterator";
 }
 
 String VisualScriptIterator::get_text() const {
-
 	return "for (elem) in (input): ";
 }
 
@@ -411,7 +367,6 @@ public:
 	//virtual bool get_output_port_unsequenced(int p_idx,Variant* r_value,Variant* p_working_mem,String &r_error) const { return true; }
 
 	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Variant::CallError &r_error, String &r_error_str) {
-
 		if (p_start_mode == START_MODE_BEGIN_SEQUENCE) {
 			p_working_mem[0] = *p_inputs[0];
 			bool valid;
@@ -462,7 +417,6 @@ public:
 };
 
 VisualScriptNodeInstance *VisualScriptIterator::instance(VisualScriptInstance *p_instance) {
-
 	VisualScriptNodeInstanceIterator *instance = memnew(VisualScriptNodeInstanceIterator);
 	instance->node = this;
 	instance->instance = p_instance;
@@ -477,26 +431,21 @@ VisualScriptIterator::VisualScriptIterator() {
 //////////////////////////////////////////
 
 int VisualScriptSequence::get_output_sequence_port_count() const {
-
 	return steps;
 }
 
 bool VisualScriptSequence::has_input_sequence_port() const {
-
 	return true;
 }
 
 int VisualScriptSequence::get_input_value_port_count() const {
-
 	return 0;
 }
 int VisualScriptSequence::get_output_value_port_count() const {
-
 	return 1;
 }
 
 String VisualScriptSequence::get_output_sequence_port_text(int p_port) const {
-
 	return itos(p_port + 1);
 }
 
@@ -507,17 +456,14 @@ PropertyInfo VisualScriptSequence::get_output_value_port_info(int p_idx) const {
 	return PropertyInfo(Variant::INT, "current");
 }
 String VisualScriptSequence::get_caption() const {
-
 	return "Sequence";
 }
 
 String VisualScriptSequence::get_text() const {
-
 	return "in order: ";
 }
 
 void VisualScriptSequence::set_steps(int p_steps) {
-
 	ERR_FAIL_COND(p_steps < 1);
 	if (steps == p_steps)
 		return;
@@ -527,12 +473,10 @@ void VisualScriptSequence::set_steps(int p_steps) {
 }
 
 int VisualScriptSequence::get_steps() const {
-
 	return steps;
 }
 
 void VisualScriptSequence::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("set_steps", "steps"), &VisualScriptSequence::set_steps);
 	ClassDB::bind_method(D_METHOD("get_steps"), &VisualScriptSequence::get_steps);
 
@@ -550,9 +494,7 @@ public:
 	//virtual bool get_output_port_unsequenced(int p_idx,Variant* r_value,Variant* p_working_mem,String &r_error) const { return true; }
 
 	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Variant::CallError &r_error, String &r_error_str) {
-
 		if (p_start_mode == START_MODE_BEGIN_SEQUENCE) {
-
 			p_working_mem[0] = 0;
 		}
 
@@ -570,7 +512,6 @@ public:
 };
 
 VisualScriptNodeInstance *VisualScriptSequence::instance(VisualScriptInstance *p_instance) {
-
 	VisualScriptNodeInstanceSequence *instance = memnew(VisualScriptNodeInstanceSequence);
 	instance->node = this;
 	instance->instance = p_instance;
@@ -578,7 +519,6 @@ VisualScriptNodeInstance *VisualScriptSequence::instance(VisualScriptInstance *p
 	return instance;
 }
 VisualScriptSequence::VisualScriptSequence() {
-
 	steps = 1;
 }
 
@@ -587,26 +527,21 @@ VisualScriptSequence::VisualScriptSequence() {
 //////////////////////////////////////////
 
 int VisualScriptSwitch::get_output_sequence_port_count() const {
-
 	return case_values.size() + 1;
 }
 
 bool VisualScriptSwitch::has_input_sequence_port() const {
-
 	return true;
 }
 
 int VisualScriptSwitch::get_input_value_port_count() const {
-
 	return case_values.size() + 1;
 }
 int VisualScriptSwitch::get_output_value_port_count() const {
-
 	return 0;
 }
 
 String VisualScriptSwitch::get_output_sequence_port_text(int p_port) const {
-
 	if (p_port == case_values.size())
 		return "done";
 
@@ -614,7 +549,6 @@ String VisualScriptSwitch::get_output_sequence_port_text(int p_port) const {
 }
 
 PropertyInfo VisualScriptSwitch::get_input_value_port_info(int p_idx) const {
-
 	if (p_idx < case_values.size()) {
 		return PropertyInfo(case_values[p_idx].type, " =");
 	} else
@@ -622,17 +556,14 @@ PropertyInfo VisualScriptSwitch::get_input_value_port_info(int p_idx) const {
 }
 
 PropertyInfo VisualScriptSwitch::get_output_value_port_info(int p_idx) const {
-
 	return PropertyInfo();
 }
 
 String VisualScriptSwitch::get_caption() const {
-
 	return "Switch";
 }
 
 String VisualScriptSwitch::get_text() const {
-
 	return "'input' is:";
 }
 
@@ -646,13 +577,11 @@ public:
 	//virtual bool get_output_port_unsequenced(int p_idx,Variant* r_value,Variant* p_working_mem,String &r_error) const { return false; }
 
 	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Variant::CallError &r_error, String &r_error_str) {
-
 		if (p_start_mode == START_MODE_CONTINUE_SEQUENCE) {
 			return case_count; //exit
 		}
 
 		for (int i = 0; i < case_count; i++) {
-
 			if (*p_inputs[i] == *p_inputs[case_count]) {
 				return i | STEP_FLAG_PUSH_STACK_BIT;
 			}
@@ -663,7 +592,6 @@ public:
 };
 
 VisualScriptNodeInstance *VisualScriptSwitch::instance(VisualScriptInstance *p_instance) {
-
 	VisualScriptNodeInstanceSwitch *instance = memnew(VisualScriptNodeInstanceSwitch);
 	instance->instance = p_instance;
 	instance->case_count = case_values.size();
@@ -671,7 +599,6 @@ VisualScriptNodeInstance *VisualScriptSwitch::instance(VisualScriptInstance *p_i
 }
 
 bool VisualScriptSwitch::_set(const StringName &p_name, const Variant &p_value) {
-
 	if (String(p_name) == "case_count") {
 		case_values.resize(p_value);
 		_change_notify();
@@ -680,7 +607,6 @@ bool VisualScriptSwitch::_set(const StringName &p_name, const Variant &p_value) 
 	}
 
 	if (String(p_name).begins_with("case/")) {
-
 		int idx = String(p_name).get_slice("/", 1).to_int();
 		ERR_FAIL_INDEX_V(idx, case_values.size(), false);
 
@@ -695,14 +621,12 @@ bool VisualScriptSwitch::_set(const StringName &p_name, const Variant &p_value) 
 }
 
 bool VisualScriptSwitch::_get(const StringName &p_name, Variant &r_ret) const {
-
 	if (String(p_name) == "case_count") {
 		r_ret = case_values.size();
 		return true;
 	}
 
 	if (String(p_name).begins_with("case/")) {
-
 		int idx = String(p_name).get_slice("/", 1).to_int();
 		ERR_FAIL_INDEX_V(idx, case_values.size(), false);
 
@@ -713,7 +637,6 @@ bool VisualScriptSwitch::_get(const StringName &p_name, Variant &r_ret) const {
 	return false;
 }
 void VisualScriptSwitch::_get_property_list(List<PropertyInfo> *p_list) const {
-
 	p_list->push_back(PropertyInfo(Variant::INT, "case_count", PROPERTY_HINT_RANGE, "0,128"));
 
 	String argt = "Any";
@@ -737,46 +660,37 @@ VisualScriptSwitch::VisualScriptSwitch() {
 //////////////////////////////////////////
 
 int VisualScriptTypeCast::get_output_sequence_port_count() const {
-
 	return 2;
 }
 
 bool VisualScriptTypeCast::has_input_sequence_port() const {
-
 	return true;
 }
 
 int VisualScriptTypeCast::get_input_value_port_count() const {
-
 	return 1;
 }
 int VisualScriptTypeCast::get_output_value_port_count() const {
-
 	return 1;
 }
 
 String VisualScriptTypeCast::get_output_sequence_port_text(int p_port) const {
-
 	return p_port == 0 ? "yes" : "no";
 }
 
 PropertyInfo VisualScriptTypeCast::get_input_value_port_info(int p_idx) const {
-
 	return PropertyInfo(Variant::OBJECT, "instance");
 }
 
 PropertyInfo VisualScriptTypeCast::get_output_value_port_info(int p_idx) const {
-
 	return PropertyInfo(Variant::OBJECT, "", PROPERTY_HINT_TYPE_STRING, get_base_type());
 }
 
 String VisualScriptTypeCast::get_caption() const {
-
 	return "Type Cast";
 }
 
 String VisualScriptTypeCast::get_text() const {
-
 	if (script != String())
 		return "Is " + script.get_file() + "?";
 	else
@@ -784,7 +698,6 @@ String VisualScriptTypeCast::get_text() const {
 }
 
 void VisualScriptTypeCast::set_base_type(const StringName &p_type) {
-
 	if (base_type == p_type)
 		return;
 
@@ -794,12 +707,10 @@ void VisualScriptTypeCast::set_base_type(const StringName &p_type) {
 }
 
 StringName VisualScriptTypeCast::get_base_type() const {
-
 	return base_type;
 }
 
 void VisualScriptTypeCast::set_base_script(const String &p_path) {
-
 	if (script == p_path)
 		return;
 
@@ -808,12 +719,10 @@ void VisualScriptTypeCast::set_base_script(const String &p_path) {
 	ports_changed_notify();
 }
 String VisualScriptTypeCast::get_base_script() const {
-
 	return script;
 }
 
 VisualScriptTypeCast::TypeGuess VisualScriptTypeCast::guess_output_type(TypeGuess *p_inputs, int p_output) const {
-
 	TypeGuess tg;
 	tg.type = Variant::OBJECT;
 	if (script != String()) {
@@ -837,7 +746,6 @@ public:
 	//virtual bool get_output_port_unsequenced(int p_idx,Variant* r_value,Variant* p_working_mem,String &r_error) const { return false; }
 
 	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Variant::CallError &r_error, String &r_error_str) {
-
 		Object *obj = *p_inputs[0];
 
 		*p_outputs[0] = Variant();
@@ -849,7 +757,6 @@ public:
 		}
 
 		if (script != String()) {
-
 			Ref<Script> obj_script = obj->get_script();
 			if (!obj_script.is_valid()) {
 				return 1; //well, definitely not the script because object we got has no script.
@@ -867,7 +774,6 @@ public:
 			}
 
 			while (obj_script.is_valid()) {
-
 				if (cast_script == obj_script) {
 					*p_outputs[0] = *p_inputs[0]; //copy
 					return 0; // it is the script, yey
@@ -888,7 +794,6 @@ public:
 };
 
 VisualScriptNodeInstance *VisualScriptTypeCast::instance(VisualScriptInstance *p_instance) {
-
 	VisualScriptNodeInstanceTypeCast *instance = memnew(VisualScriptNodeInstanceTypeCast);
 	instance->instance = p_instance;
 	instance->base_type = base_type;
@@ -897,7 +802,6 @@ VisualScriptNodeInstance *VisualScriptTypeCast::instance(VisualScriptInstance *p
 }
 
 void VisualScriptTypeCast::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("set_base_type", "type"), &VisualScriptTypeCast::set_base_type);
 	ClassDB::bind_method(D_METHOD("get_base_type"), &VisualScriptTypeCast::get_base_type);
 
@@ -921,12 +825,10 @@ void VisualScriptTypeCast::_bind_methods() {
 }
 
 VisualScriptTypeCast::VisualScriptTypeCast() {
-
 	base_type = "Object";
 }
 
 void register_visual_script_flow_control_nodes() {
-
 	VisualScriptLanguage::singleton->add_register_func("flow_control/return", create_return_node<false>);
 	VisualScriptLanguage::singleton->add_register_func("flow_control/return_with_value", create_return_node<true>);
 	VisualScriptLanguage::singleton->add_register_func("flow_control/condition", create_node_generic<VisualScriptCondition>);

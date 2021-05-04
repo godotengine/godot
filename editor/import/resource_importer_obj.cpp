@@ -38,12 +38,10 @@
 #include "scene/resources/surface_tool.h"
 
 uint32_t EditorOBJImporter::get_import_flags() const {
-
 	return IMPORT_SCENE;
 }
 
 static Error _parse_material_library(const String &p_path, Map<String, Ref<SpatialMaterial>> &material_map, List<String> *r_missing_deps) {
-
 	FileAccessRef f = FileAccess::open(p_path, FileAccess::READ);
 	ERR_FAIL_COND_V_MSG(!f, ERR_CANT_OPEN, vformat("Couldn't open MTL file '%s', it may not exist or not be readable.", p_path));
 
@@ -51,7 +49,6 @@ static Error _parse_material_library(const String &p_path, Map<String, Ref<Spati
 	String current_name;
 	String base_path = p_path.get_base_dir();
 	while (true) {
-
 		String l = f->get_line().strip_edges();
 
 		if (l.begins_with("newmtl ")) {
@@ -204,7 +201,6 @@ static Error _parse_material_library(const String &p_path, Map<String, Ref<Spati
 }
 
 static Error _parse_obj(const String &p_path, List<Ref<Mesh>> &r_meshes, bool p_single_mesh, bool p_generate_tangents, bool p_optimize, Vector3 p_scale_mesh, Vector3 p_offset_mesh, List<String> *r_missing_deps) {
-
 	FileAccessRef f = FileAccess::open(p_path, FileAccess::READ);
 	ERR_FAIL_COND_V_MSG(!f, ERR_CANT_OPEN, vformat("Couldn't open OBJ file '%s', it may not exist or not be readable.", p_path));
 
@@ -231,7 +227,6 @@ static Error _parse_obj(const String &p_path, List<Ref<Mesh>> &r_meshes, bool p_
 	String current_group;
 
 	while (true) {
-
 		String l = f->get_line().strip_edges();
 		while (l.length() && l[l.length() - 1] == '\\') {
 			String add = f->get_line().strip_edges();
@@ -283,12 +278,10 @@ static Error _parse_obj(const String &p_path, List<Ref<Mesh>> &r_meshes, bool p_
 
 			ERR_FAIL_COND_V(face[0].size() != face[1].size(), ERR_FILE_CORRUPT);
 			for (int i = 2; i < v.size() - 1; i++) {
-
 				face[2] = v[i + 1].split("/");
 
 				ERR_FAIL_COND_V(face[0].size() != face[2].size(), ERR_FILE_CORRUPT);
 				for (int j = 0; j < 3; j++) {
-
 					int idx = j;
 
 					if (idx < 2) {
@@ -365,7 +358,6 @@ static Error _parse_obj(const String &p_path, List<Ref<Mesh>> &r_meshes, bool p_
 			}
 
 			if (l.begins_with("o ") || f->eof_reached()) {
-
 				if (!p_single_mesh) {
 					mesh->set_name(name);
 					r_meshes.push_back(mesh);
@@ -384,12 +376,10 @@ static Error _parse_obj(const String &p_path, List<Ref<Mesh>> &r_meshes, bool p_
 			}
 
 			if (l.begins_with("usemtl ")) {
-
 				current_material = l.replace("usemtl", "").strip_edges();
 			}
 
 			if (l.begins_with("g ")) {
-
 				current_group = l.substr(2, l.length()).strip_edges();
 			}
 
@@ -411,7 +401,6 @@ static Error _parse_obj(const String &p_path, List<Ref<Mesh>> &r_meshes, bool p_
 	}
 
 	if (p_single_mesh) {
-
 		r_meshes.push_back(mesh);
 	}
 
@@ -419,7 +408,6 @@ static Error _parse_obj(const String &p_path, List<Ref<Mesh>> &r_meshes, bool p_
 }
 
 Node *EditorOBJImporter::import_scene(const String &p_path, uint32_t p_flags, int p_bake_fps, List<String> *r_missing_deps, Error *r_err) {
-
 	List<Ref<Mesh>> meshes;
 
 	Error err = _parse_obj(p_path, meshes, false, p_flags & IMPORT_GENERATE_TANGENT_ARRAYS, p_flags & IMPORT_USE_COMPRESSION, Vector3(1, 1, 1), Vector3(0, 0, 0), r_missing_deps);
@@ -434,7 +422,6 @@ Node *EditorOBJImporter::import_scene(const String &p_path, uint32_t p_flags, in
 	Spatial *scene = memnew(Spatial);
 
 	for (List<Ref<Mesh>>::Element *E = meshes.front(); E; E = E->next()) {
-
 		MeshInstance *mi = memnew(MeshInstance);
 		mi->set_mesh(E->get());
 		mi->set_name(E->get()->get_name());
@@ -449,12 +436,10 @@ Node *EditorOBJImporter::import_scene(const String &p_path, uint32_t p_flags, in
 	return scene;
 }
 Ref<Animation> EditorOBJImporter::import_animation(const String &p_path, uint32_t p_flags, int p_bake_fps) {
-
 	return Ref<Animation>();
 }
 
 void EditorOBJImporter::get_extensions(List<String> *r_extensions) const {
-
 	r_extensions->push_back("obj");
 }
 
@@ -469,7 +454,6 @@ String ResourceImporterOBJ::get_visible_name() const {
 	return "OBJ As Mesh";
 }
 void ResourceImporterOBJ::get_recognized_extensions(List<String> *p_extensions) const {
-
 	p_extensions->push_back("obj");
 }
 String ResourceImporterOBJ::get_save_extension() const {
@@ -487,19 +471,16 @@ String ResourceImporterOBJ::get_preset_name(int p_idx) const {
 }
 
 void ResourceImporterOBJ::get_import_options(List<ImportOption> *r_options, int p_preset) const {
-
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "generate_tangents"), true));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::VECTOR3, "scale_mesh"), Vector3(1, 1, 1)));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::VECTOR3, "offset_mesh"), Vector3(0, 0, 0)));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "optimize_mesh"), true));
 }
 bool ResourceImporterOBJ::get_option_visibility(const String &p_option, const Map<StringName, Variant> &p_options) const {
-
 	return true;
 }
 
 Error ResourceImporterOBJ::import(const String &p_source_file, const String &p_save_path, const Map<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {
-
 	List<Ref<Mesh>> meshes;
 
 	Error err = _parse_obj(p_source_file, meshes, true, p_options["generate_tangents"], p_options["optimize_mesh"], p_options["scale_mesh"], p_options["offset_mesh"], NULL);

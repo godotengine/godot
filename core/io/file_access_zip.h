@@ -41,14 +41,11 @@
 #include <stdlib.h>
 
 class ZipArchive : public PackSource {
-
 public:
 	struct File {
-
 		int package;
 		unz_file_pos file_pos;
 		File() {
-
 			package = -1;
 		};
 	};

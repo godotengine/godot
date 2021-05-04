@@ -36,7 +36,6 @@
 #include "core/os/thread_safe.h"
 
 class Input : public Object {
-
 	GDCLASS(Input, Object);
 
 	static Input *singleton;

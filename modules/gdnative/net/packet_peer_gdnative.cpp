@@ -67,7 +67,6 @@ int PacketPeerGDNative::get_available_packet_count() const {
 extern "C" {
 
 void GDAPI godot_net_bind_packet_peer(godot_object *p_obj, const godot_net_packet_peer *p_impl) {
-
 	((PacketPeerGDNative *)p_obj)->set_native_packet_peer(p_impl);
 }
 }

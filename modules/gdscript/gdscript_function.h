@@ -217,7 +217,6 @@ public:
 	};
 
 	struct StackDebug {
-
 		int line;
 		int pos;
 		bool added;
@@ -295,7 +294,6 @@ private:
 
 public:
 	struct CallState {
-
 		GDScript *script;
 		GDScriptInstance *instance;
 #ifdef DEBUG_ENABLED
@@ -353,7 +351,6 @@ public:
 };
 
 class GDScriptFunctionState : public Reference {
-
 	GDCLASS(GDScriptFunctionState, Reference);
 	friend class GDScriptFunction;
 	GDScriptFunction *function;

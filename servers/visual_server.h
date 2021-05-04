@@ -40,7 +40,6 @@
 #include "core/variant.h"
 
 class VisualServer : public Object {
-
 	GDCLASS(VisualServer, Object);
 
 	static VisualServer *singleton;

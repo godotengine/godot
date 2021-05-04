@@ -41,7 +41,6 @@
  */
 
 class FileAccess {
-
 public:
 	enum AccessType {
 		ACCESS_RESOURCES,
@@ -73,7 +72,6 @@ private:
 	static CreateFunc create_func[ACCESS_MAX]; /** default file access creation function for a platform */
 	template <class T>
 	static FileAccess *_create_builtin() {
-
 		return memnew(T);
 	}
 
@@ -172,7 +170,6 @@ public:
 
 	template <class T>
 	static void make_default(AccessType p_access) {
-
 		create_func[p_access] = _create_builtin<T>;
 	}
 
@@ -181,9 +178,7 @@ public:
 };
 
 struct FileAccessRef {
-
 	_FORCE_INLINE_ FileAccess *operator->() {
-
 		return f;
 	}
 

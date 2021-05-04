@@ -36,7 +36,6 @@
 #include "core/os/os.h"
 
 class PowerX11 {
-
 private:
 	int nsecs_left;
 	int percent_left;

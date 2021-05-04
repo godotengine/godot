@@ -146,7 +146,6 @@ VERTEX_SHADER_GLOBALS
 /* clang-format on */
 
 void main() {
-
 	vec4 color = color_attrib;
 
 #ifdef USE_INSTANCING
@@ -358,7 +357,6 @@ uniform vec2 screen_pixel_size;
 #endif
 
 layout(std140) uniform CanvasItemData {
-
 	highp mat4 projection_matrix;
 	highp float time;
 };
@@ -366,7 +364,6 @@ layout(std140) uniform CanvasItemData {
 #ifdef USE_LIGHTING
 
 layout(std140) uniform LightData {
-
 	highp mat4 light_matrix;
 	highp mat4 light_local_matrix;
 	highp mat4 shadow_matrix;
@@ -465,7 +462,6 @@ uniform vec4 np_margins;
 // there are two ninepatch modes, and we don't want to waste a conditional
 #if defined USE_NINEPATCH_SCALING
 float map_ninepatch_axis(float pixel, float draw_size, float tex_pixel_size, float margin_begin, float margin_end, float s_ratio, int np_repeat, inout int draw_center) {
-
 	float tex_size = 1.0 / tex_pixel_size;
 
 	float screen_margin_begin = margin_begin / s_ratio;
@@ -504,7 +500,6 @@ float map_ninepatch_axis(float pixel, float draw_size, float tex_pixel_size, flo
 }
 #else
 float map_ninepatch_axis(float pixel, float draw_size, float tex_pixel_size, float margin_begin, float margin_end, int np_repeat, inout int draw_center) {
-
 	float tex_size = 1.0 / tex_pixel_size;
 
 	if (pixel < margin_begin) {
@@ -550,7 +545,6 @@ float map_ninepatch_axis(float pixel, float draw_size, float tex_pixel_size, flo
 uniform bool use_default_normal;
 
 void main() {
-
 	vec4 color = color_interp;
 	vec2 uv = uv_interp;
 
@@ -582,7 +576,6 @@ void main() {
 #endif
 
 	if (clip_rect_uv) {
-
 		uv = clamp(uv, src_rect.xy, src_rect.xy + abs(src_rect.zw));
 	}
 
@@ -738,11 +731,9 @@ FRAGMENT_SHADER_CODE
 			point = -shadow_vec;
 			sh = 0.5 + (1.0 / 8.0);
 		} else if (angle_to_light > 0.0) {
-
 			point = vec2(shadow_vec.y, -shadow_vec.x);
 			sh = 0.25 + (1.0 / 8.0);
 		} else {
-
 			point = vec2(-shadow_vec.y, shadow_vec.x);
 			sh = 0.75 + (1.0 / 8.0);
 		}

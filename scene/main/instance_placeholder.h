@@ -36,7 +36,6 @@
 class PackedScene;
 
 class InstancePlaceholder : public Node {
-
 	GDCLASS(InstancePlaceholder, Node);
 
 	String path;

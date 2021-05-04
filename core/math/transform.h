@@ -93,14 +93,12 @@ public:
 	Transform interpolate_with(const Transform &p_transform, real_t p_c) const;
 
 	_FORCE_INLINE_ Transform inverse_xform(const Transform &t) const {
-
 		Vector3 v = t.origin - origin;
 		return Transform(basis.transpose_xform(t.basis),
 				basis.xform(v));
 	}
 
 	void set(real_t xx, real_t xy, real_t xz, real_t yx, real_t yy, real_t yz, real_t zx, real_t zy, real_t zz, real_t tx, real_t ty, real_t tz) {
-
 		basis.set(xx, xy, xz, yx, yy, yz, zx, zy, zz);
 		origin.x = tx;
 		origin.y = ty;
@@ -115,14 +113,12 @@ public:
 };
 
 _FORCE_INLINE_ Vector3 Transform::xform(const Vector3 &p_vector) const {
-
 	return Vector3(
 			basis[0].dot(p_vector) + origin.x,
 			basis[1].dot(p_vector) + origin.y,
 			basis[2].dot(p_vector) + origin.z);
 }
 _FORCE_INLINE_ Vector3 Transform::xform_inv(const Vector3 &p_vector) const {
-
 	Vector3 v = p_vector - origin;
 
 	return Vector3(
@@ -132,7 +128,6 @@ _FORCE_INLINE_ Vector3 Transform::xform_inv(const Vector3 &p_vector) const {
 }
 
 _FORCE_INLINE_ Plane Transform::xform(const Plane &p_plane) const {
-
 	Vector3 point = p_plane.normal * p_plane.d;
 	Vector3 point_dir = point + p_plane.normal;
 	point = xform(point);
@@ -145,7 +140,6 @@ _FORCE_INLINE_ Plane Transform::xform(const Plane &p_plane) const {
 	return Plane(normal, d);
 }
 _FORCE_INLINE_ Plane Transform::xform_inv(const Plane &p_plane) const {
-
 	Vector3 point = p_plane.normal * p_plane.d;
 	Vector3 point_dir = point + p_plane.normal;
 	point = xform_inv(point);
@@ -159,7 +153,6 @@ _FORCE_INLINE_ Plane Transform::xform_inv(const Plane &p_plane) const {
 }
 
 _FORCE_INLINE_ AABB Transform::xform(const AABB &p_aabb) const {
-
 	/* http://dev.theomader.com/transform-bounding-boxes/ */
 	Vector3 min = p_aabb.position;
 	Vector3 max = p_aabb.position + p_aabb.size;
@@ -185,7 +178,6 @@ _FORCE_INLINE_ AABB Transform::xform(const AABB &p_aabb) const {
 }
 
 _FORCE_INLINE_ AABB Transform::xform_inv(const AABB &p_aabb) const {
-
 	/* define vertices */
 	Vector3 vertices[8] = {
 		Vector3(p_aabb.position.x + p_aabb.size.x, p_aabb.position.y + p_aabb.size.y, p_aabb.position.z + p_aabb.size.z),
@@ -203,7 +195,6 @@ _FORCE_INLINE_ AABB Transform::xform_inv(const AABB &p_aabb) const {
 	ret.position = xform_inv(vertices[0]);
 
 	for (int i = 1; i < 8; i++) {
-
 		ret.expand_to(xform_inv(vertices[i]));
 	}
 
@@ -211,7 +202,6 @@ _FORCE_INLINE_ AABB Transform::xform_inv(const AABB &p_aabb) const {
 }
 
 PoolVector<Vector3> Transform::xform(const PoolVector<Vector3> &p_array) const {
-
 	PoolVector<Vector3> array;
 	array.resize(p_array.size());
 
@@ -225,7 +215,6 @@ PoolVector<Vector3> Transform::xform(const PoolVector<Vector3> &p_array) const {
 }
 
 PoolVector<Vector3> Transform::xform_inv(const PoolVector<Vector3> &p_array) const {
-
 	PoolVector<Vector3> array;
 	array.resize(p_array.size());
 

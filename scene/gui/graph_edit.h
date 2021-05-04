@@ -42,7 +42,6 @@
 class GraphEdit;
 
 class GraphEditFilter : public Control {
-
 	GDCLASS(GraphEditFilter, Control);
 
 	friend class GraphEdit;
@@ -94,7 +93,6 @@ private:
 };
 
 class GraphEdit : public Control {
-
 	GDCLASS(GraphEdit, Control);
 
 public:
@@ -189,7 +187,6 @@ private:
 	bool lines_on_bg;
 
 	struct ConnType {
-
 		union {
 			struct {
 				uint32_t type_a;

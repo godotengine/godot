@@ -40,15 +40,12 @@
 class SceneTree;
 
 class ScriptDebuggerRemote : public ScriptDebugger {
-
 	struct Message {
-
 		String message;
 		Array data;
 	};
 
 	struct ProfileInfoSort {
-
 		bool operator()(ScriptLanguage::ProfilingInfo *A, ScriptLanguage::ProfilingInfo *B) const {
 			return A->total_time < B->total_time;
 		}
@@ -78,7 +75,6 @@ class ScriptDebuggerRemote : public ScriptDebugger {
 	Mutex mutex;
 
 	struct OutputError {
-
 		int hr;
 		int min;
 		int sec;
@@ -144,7 +140,6 @@ class ScriptDebuggerRemote : public ScriptDebugger {
 	void _send_network_bandwidth_usage();
 
 	struct FrameData {
-
 		StringName name;
 		Array data;
 	};
@@ -164,7 +159,6 @@ public:
 	};
 
 	struct ResourceUsage {
-
 		String path;
 		String format;
 		String type;

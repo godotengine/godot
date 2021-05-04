@@ -37,12 +37,10 @@ VisualServer *VisualServer::singleton = NULL;
 VisualServer *(*VisualServer::create_func)() = NULL;
 
 VisualServer *VisualServer::get_singleton() {
-
 	return singleton;
 }
 
 VisualServer *VisualServer::create() {
-
 	ERR_FAIL_COND_V(singleton, NULL);
 
 	if (create_func)
@@ -52,7 +50,6 @@ VisualServer *VisualServer::create() {
 }
 
 RID VisualServer::texture_create_from_image(const Ref<Image> &p_image, uint32_t p_flags) {
-
 	ERR_FAIL_COND_V(!p_image.is_valid(), RID());
 	RID texture = texture_create();
 	texture_allocate(texture, p_image->get_width(), p_image->get_height(), 0, p_image->get_format(), VS::TEXTURE_TYPE_2D, p_flags); //if it has mipmaps, use, else generate
@@ -64,12 +61,10 @@ RID VisualServer::texture_create_from_image(const Ref<Image> &p_image, uint32_t 
 }
 
 Array VisualServer::_texture_debug_usage_bind() {
-
 	List<TextureInfo> list;
 	texture_debug_usage(&list);
 	Array arr;
 	for (const List<TextureInfo>::Element *E = list.front(); E; E = E->next()) {
-
 		Dictionary dict;
 		dict["texture"] = E->get().texture;
 		dict["width"] = E->get().width;
@@ -84,7 +79,6 @@ Array VisualServer::_texture_debug_usage_bind() {
 }
 
 Array VisualServer::_shader_get_param_list_bind(RID p_shader) const {
-
 	List<PropertyInfo> l;
 	shader_get_param_list(p_shader, &l);
 	return convert_property_list(&l);
@@ -100,19 +94,16 @@ static Array to_array(const Vector<ObjectID> &ids) {
 }
 
 Array VisualServer::_instances_cull_aabb_bind(const AABB &p_aabb, RID p_scenario) const {
-
 	Vector<ObjectID> ids = instances_cull_aabb(p_aabb, p_scenario);
 	return to_array(ids);
 }
 
 Array VisualServer::_instances_cull_ray_bind(const Vector3 &p_from, const Vector3 &p_to, RID p_scenario) const {
-
 	Vector<ObjectID> ids = instances_cull_ray(p_from, p_to, p_scenario);
 	return to_array(ids);
 }
 
 Array VisualServer::_instances_cull_convex_bind(const Array &p_convex, RID p_scenario) const {
-
 	Vector<Plane> planes;
 	for (int i = 0; i < p_convex.size(); ++i) {
 		Variant v = p_convex[i];
@@ -125,7 +116,6 @@ Array VisualServer::_instances_cull_convex_bind(const Array &p_convex, RID p_sce
 }
 
 RID VisualServer::get_test_texture() {
-
 	if (test_texture.is_valid()) {
 		return test_texture;
 	};
@@ -139,20 +129,16 @@ RID VisualServer::get_test_texture() {
 		PoolVector<uint8_t>::Write w = test_data.write();
 
 		for (int x = 0; x < TEST_TEXTURE_SIZE; x++) {
-
 			for (int y = 0; y < TEST_TEXTURE_SIZE; y++) {
-
 				Color c;
 				int r = 255 - (x + y) / 2;
 
 				if ((x % (TEST_TEXTURE_SIZE / 8)) < 2 || (y % (TEST_TEXTURE_SIZE / 8)) < 2) {
-
 					c.r = y;
 					c.g = r;
 					c.b = x;
 
 				} else {
-
 					c.r = r;
 					c.g = x;
 					c.b = y;
@@ -173,7 +159,6 @@ RID VisualServer::get_test_texture() {
 }
 
 void VisualServer::_free_internal_rids() {
-
 	if (test_texture.is_valid())
 		free(test_texture);
 	if (white_texture.is_valid())
@@ -183,7 +168,6 @@ void VisualServer::_free_internal_rids() {
 }
 
 RID VisualServer::_make_test_cube() {
-
 	PoolVector<Vector3> vertices;
 	PoolVector<Vector3> normals;
 	PoolVector<float> tangents;
@@ -199,20 +183,17 @@ RID VisualServer::_make_test_cube() {
 	uvs.push_back(Vector3(uv_points[m_idx * 2 + 0], uv_points[m_idx * 2 + 1], 0));
 
 	for (int i = 0; i < 6; i++) {
-
 		Vector3 face_points[4];
 		Vector3 normal_points[4];
 		float uv_points[8] = { 0, 0, 0, 1, 1, 1, 1, 0 };
 
 		for (int j = 0; j < 4; j++) {
-
 			float v[3];
 			v[0] = 1.0;
 			v[1] = 1 - 2 * ((j >> 1) & 1);
 			v[2] = v[1] * (1 - 2 * (j & 1));
 
 			for (int k = 0; k < 3; k++) {
-
 				if (i < 3)
 					face_points[j][(i + k) % 3] = v[k];
 				else
@@ -265,7 +246,6 @@ RID VisualServer::_make_test_cube() {
 }
 
 RID VisualServer::make_sphere_mesh(int p_lats, int p_lons, float p_radius) {
-
 	PoolVector<Vector3> vertices;
 	PoolVector<Vector3> normals;
 
@@ -279,7 +259,6 @@ RID VisualServer::make_sphere_mesh(int p_lats, int p_lons, float p_radius) {
 		double zr1 = Math::cos(lat1);
 
 		for (int j = p_lons; j >= 1; j--) {
-
 			double lng0 = 2 * Math_PI * (double)(j - 1) / p_lons;
 			double x0 = Math::cos(lng0);
 			double y0 = Math::sin(lng0);
@@ -322,7 +301,6 @@ RID VisualServer::make_sphere_mesh(int p_lats, int p_lons, float p_radius) {
 }
 
 RID VisualServer::get_white_texture() {
-
 	if (white_texture.is_valid())
 		return white_texture;
 
@@ -344,7 +322,6 @@ RID VisualServer::get_white_texture() {
 #define SMALL_VEC3 Vector3(0.00001, 0.00001, 0.00001)
 
 Error VisualServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint32_t *p_offsets, uint32_t p_stride, PoolVector<uint8_t> &r_vertex_array, int p_vertex_array_len, PoolVector<uint8_t> &r_index_array, int p_index_array_len, AABB &r_aabb, Vector<AABB> &r_bone_aabb) {
-
 	PoolVector<uint8_t>::Write vw = r_vertex_array.write();
 
 	PoolVector<uint8_t>::Write iw;
@@ -355,16 +332,12 @@ Error VisualServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint32_
 	int max_bone = 0;
 
 	for (int ai = 0; ai < VS::ARRAY_MAX; ai++) {
-
 		if (!(p_format & (1 << ai))) // no array
 			continue;
 
 		switch (ai) {
-
 			case VS::ARRAY_VERTEX: {
-
 				if (p_format & VS::ARRAY_FLAG_USE_2D_VERTICES) {
-
 					PoolVector<Vector2> array = p_arrays[ai];
 					ERR_FAIL_COND_V(array.size() != p_vertex_array_len, ERR_INVALID_PARAMETER);
 
@@ -375,34 +348,27 @@ Error VisualServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint32_
 					Rect2 aabb;
 
 					if (p_format & ARRAY_COMPRESS_VERTEX) {
-
 						for (int i = 0; i < p_vertex_array_len; i++) {
-
 							uint16_t vector[2] = { Math::make_half_float(src[i].x), Math::make_half_float(src[i].y) };
 
 							memcpy(&vw[p_offsets[ai] + i * p_stride], vector, sizeof(uint16_t) * 2);
 
 							if (i == 0) {
-
 								aabb = Rect2(src[i], SMALL_VEC2); //must have a bit of size
 							} else {
-
 								aabb.expand_to(src[i]);
 							}
 						}
 
 					} else {
 						for (int i = 0; i < p_vertex_array_len; i++) {
-
 							float vector[2] = { src[i].x, src[i].y };
 
 							memcpy(&vw[p_offsets[ai] + i * p_stride], vector, sizeof(float) * 2);
 
 							if (i == 0) {
-
 								aabb = Rect2(src[i], SMALL_VEC2); //must have a bit of size
 							} else {
-
 								aabb.expand_to(src[i]);
 							}
 						}
@@ -421,34 +387,27 @@ Error VisualServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint32_
 					AABB aabb;
 
 					if (p_format & ARRAY_COMPRESS_VERTEX) {
-
 						for (int i = 0; i < p_vertex_array_len; i++) {
-
 							uint16_t vector[4] = { Math::make_half_float(src[i].x), Math::make_half_float(src[i].y), Math::make_half_float(src[i].z), Math::make_half_float(1.0) };
 
 							memcpy(&vw[p_offsets[ai] + i * p_stride], vector, sizeof(uint16_t) * 4);
 
 							if (i == 0) {
-
 								aabb = AABB(src[i], SMALL_VEC3);
 							} else {
-
 								aabb.expand_to(src[i]);
 							}
 						}
 
 					} else {
 						for (int i = 0; i < p_vertex_array_len; i++) {
-
 							float vector[3] = { src[i].x, src[i].y, src[i].z };
 
 							memcpy(&vw[p_offsets[ai] + i * p_stride], vector, sizeof(float) * 3);
 
 							if (i == 0) {
-
 								aabb = AABB(src[i], SMALL_VEC3);
 							} else {
-
 								aabb.expand_to(src[i]);
 							}
 						}
@@ -459,7 +418,6 @@ Error VisualServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint32_
 
 			} break;
 			case VS::ARRAY_NORMAL: {
-
 				ERR_FAIL_COND_V(p_arrays[ai].get_type() != Variant::POOL_VECTOR3_ARRAY, ERR_INVALID_PARAMETER);
 
 				PoolVector<Vector3> array = p_arrays[ai];
@@ -471,9 +429,7 @@ Error VisualServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint32_
 				// setting vertices means regenerating the AABB
 
 				if (p_format & ARRAY_COMPRESS_NORMAL) {
-
 					for (int i = 0; i < p_vertex_array_len; i++) {
-
 						int8_t vector[4] = {
 							(int8_t)CLAMP(src[i].x * 127, -128, 127),
 							(int8_t)CLAMP(src[i].y * 127, -128, 127),
@@ -486,7 +442,6 @@ Error VisualServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint32_
 
 				} else {
 					for (int i = 0; i < p_vertex_array_len; i++) {
-
 						float vector[3] = { src[i].x, src[i].y, src[i].z };
 						memcpy(&vw[p_offsets[ai] + i * p_stride], vector, 3 * 4);
 					}
@@ -495,7 +450,6 @@ Error VisualServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint32_
 			} break;
 
 			case VS::ARRAY_TANGENT: {
-
 				ERR_FAIL_COND_V(p_arrays[ai].get_type() != Variant::POOL_REAL_ARRAY, ERR_INVALID_PARAMETER);
 
 				PoolVector<real_t> array = p_arrays[ai];
@@ -506,7 +460,6 @@ Error VisualServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint32_
 				const real_t *src = read.ptr();
 
 				if (p_format & ARRAY_COMPRESS_TANGENT) {
-
 					for (int i = 0; i < p_vertex_array_len; i++) {
 						int8_t xyzw[4] = {
 							(int8_t)CLAMP(src[i * 4 + 0] * 127, -128, 127),
@@ -520,7 +473,6 @@ Error VisualServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint32_
 
 				} else {
 					for (int i = 0; i < p_vertex_array_len; i++) {
-
 						float xyzw[4] = {
 							src[i * 4 + 0],
 							src[i * 4 + 1],
@@ -534,7 +486,6 @@ Error VisualServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint32_
 
 			} break;
 			case VS::ARRAY_COLOR: {
-
 				ERR_FAIL_COND_V(p_arrays[ai].get_type() != Variant::POOL_COLOR_ARRAY, ERR_INVALID_PARAMETER);
 
 				PoolVector<Color> array = p_arrays[ai];
@@ -545,29 +496,23 @@ Error VisualServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint32_
 				const Color *src = read.ptr();
 
 				if (p_format & ARRAY_COMPRESS_COLOR) {
-
 					for (int i = 0; i < p_vertex_array_len; i++) {
-
 						uint8_t colors[4];
 
 						for (int j = 0; j < 4; j++) {
-
 							colors[j] = CLAMP(int((src[i][j]) * 255.0), 0, 255);
 						}
 
 						memcpy(&vw[p_offsets[ai] + i * p_stride], colors, 4);
 					}
 				} else {
-
 					for (int i = 0; i < p_vertex_array_len; i++) {
-
 						memcpy(&vw[p_offsets[ai] + i * p_stride], &src[i], 4 * 4);
 					}
 				}
 
 			} break;
 			case VS::ARRAY_TEX_UV: {
-
 				ERR_FAIL_COND_V(p_arrays[ai].get_type() != Variant::POOL_VECTOR3_ARRAY && p_arrays[ai].get_type() != Variant::POOL_VECTOR2_ARRAY, ERR_INVALID_PARAMETER);
 
 				PoolVector<Vector2> array = p_arrays[ai];
@@ -579,16 +524,13 @@ Error VisualServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint32_
 				const Vector2 *src = read.ptr();
 
 				if (p_format & ARRAY_COMPRESS_TEX_UV) {
-
 					for (int i = 0; i < p_vertex_array_len; i++) {
-
 						uint16_t uv[2] = { Math::make_half_float(src[i].x), Math::make_half_float(src[i].y) };
 						memcpy(&vw[p_offsets[ai] + i * p_stride], uv, 2 * 2);
 					}
 
 				} else {
 					for (int i = 0; i < p_vertex_array_len; i++) {
-
 						float uv[2] = { src[i].x, src[i].y };
 
 						memcpy(&vw[p_offsets[ai] + i * p_stride], uv, 2 * 4);
@@ -598,7 +540,6 @@ Error VisualServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint32_
 			} break;
 
 			case VS::ARRAY_TEX_UV2: {
-
 				ERR_FAIL_COND_V(p_arrays[ai].get_type() != Variant::POOL_VECTOR3_ARRAY && p_arrays[ai].get_type() != Variant::POOL_VECTOR2_ARRAY, ERR_INVALID_PARAMETER);
 
 				PoolVector<Vector2> array = p_arrays[ai];
@@ -610,16 +551,13 @@ Error VisualServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint32_
 				const Vector2 *src = read.ptr();
 
 				if (p_format & ARRAY_COMPRESS_TEX_UV2) {
-
 					for (int i = 0; i < p_vertex_array_len; i++) {
-
 						uint16_t uv[2] = { Math::make_half_float(src[i].x), Math::make_half_float(src[i].y) };
 						memcpy(&vw[p_offsets[ai] + i * p_stride], uv, 2 * 2);
 					}
 
 				} else {
 					for (int i = 0; i < p_vertex_array_len; i++) {
-
 						float uv[2] = { src[i].x, src[i].y };
 
 						memcpy(&vw[p_offsets[ai] + i * p_stride], uv, 2 * 4);
@@ -627,7 +565,6 @@ Error VisualServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint32_
 				}
 			} break;
 			case VS::ARRAY_WEIGHTS: {
-
 				ERR_FAIL_COND_V(p_arrays[ai].get_type() != Variant::POOL_REAL_ARRAY, ERR_INVALID_PARAMETER);
 
 				PoolVector<real_t> array = p_arrays[ai];
@@ -639,9 +576,7 @@ Error VisualServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint32_
 				const real_t *src = read.ptr();
 
 				if (p_format & ARRAY_COMPRESS_WEIGHTS) {
-
 					for (int i = 0; i < p_vertex_array_len; i++) {
-
 						uint16_t data[VS::ARRAY_WEIGHTS_SIZE];
 						for (int j = 0; j < VS::ARRAY_WEIGHTS_SIZE; j++) {
 							data[j] = CLAMP(src[i * VS::ARRAY_WEIGHTS_SIZE + j] * 65535, 0, 65535);
@@ -650,9 +585,7 @@ Error VisualServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint32_
 						memcpy(&vw[p_offsets[ai] + i * p_stride], data, 2 * 4);
 					}
 				} else {
-
 					for (int i = 0; i < p_vertex_array_len; i++) {
-
 						float data[VS::ARRAY_WEIGHTS_SIZE];
 						for (int j = 0; j < VS::ARRAY_WEIGHTS_SIZE; j++) {
 							data[j] = src[i * VS::ARRAY_WEIGHTS_SIZE + j];
@@ -664,7 +597,6 @@ Error VisualServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint32_
 
 			} break;
 			case VS::ARRAY_BONES: {
-
 				ERR_FAIL_COND_V(p_arrays[ai].get_type() != Variant::POOL_INT_ARRAY && p_arrays[ai].get_type() != Variant::POOL_REAL_ARRAY, ERR_INVALID_PARAMETER);
 
 				PoolVector<int> array = p_arrays[ai];
@@ -676,9 +608,7 @@ Error VisualServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint32_
 				const int *src = read.ptr();
 
 				if (!(p_format & ARRAY_FLAG_USE_16_BIT_BONES)) {
-
 					for (int i = 0; i < p_vertex_array_len; i++) {
-
 						uint8_t data[VS::ARRAY_WEIGHTS_SIZE];
 						for (int j = 0; j < VS::ARRAY_WEIGHTS_SIZE; j++) {
 							data[j] = CLAMP(src[i * VS::ARRAY_WEIGHTS_SIZE + j], 0, 255);
@@ -690,7 +620,6 @@ Error VisualServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint32_
 
 				} else {
 					for (int i = 0; i < p_vertex_array_len; i++) {
-
 						uint16_t data[VS::ARRAY_WEIGHTS_SIZE];
 						for (int j = 0; j < VS::ARRAY_WEIGHTS_SIZE; j++) {
 							data[j] = src[i * VS::ARRAY_WEIGHTS_SIZE + j];
@@ -703,7 +632,6 @@ Error VisualServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint32_
 
 			} break;
 			case VS::ARRAY_INDEX: {
-
 				ERR_FAIL_COND_V(p_index_array_len <= 0, ERR_INVALID_DATA);
 				ERR_FAIL_COND_V(p_arrays[ai].get_type() != Variant::POOL_INT_ARRAY, ERR_INVALID_PARAMETER);
 
@@ -717,7 +645,6 @@ Error VisualServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint32_
 				const int *src = read.ptr();
 
 				for (int i = 0; i < p_index_array_len; i++) {
-
 					if (p_vertex_array_len < (1 << 16)) {
 						uint16_t v = src[i];
 
@@ -756,7 +683,6 @@ Error VisualServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint32_
 		bool any_valid = false;
 
 		if (vertices.size() && bones.size() == vertices.size() * 4 && weights.size() == bones.size()) {
-
 			int vs = vertices.size();
 			PoolVector<Vector3>::Read rv = vertices.read();
 			PoolVector<int>::Read rb = bones.read();
@@ -765,10 +691,8 @@ Error VisualServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint32_
 			AABB *bptr = r_bone_aabb.ptrw();
 
 			for (int i = 0; i < vs; i++) {
-
 				Vector3 v = rv[i];
 				for (int j = 0; j < 4; j++) {
-
 					int idx = rb[i * 4 + j];
 					float w = rw[i * 4 + j];
 					if (w == 0)
@@ -787,7 +711,6 @@ Error VisualServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint32_
 		}
 
 		if (!any_valid && first) {
-
 			r_bone_aabb.clear();
 		}
 	}
@@ -806,11 +729,9 @@ uint32_t VisualServer::mesh_surface_get_format_stride(uint32_t p_format, int p_v
 }
 
 uint32_t VisualServer::mesh_surface_make_offsets_from_format(uint32_t p_format, int p_vertex_len, int p_index_len, uint32_t *r_offsets) const {
-
 	int total_elem_size = 0;
 
 	for (int i = 0; i < VS::ARRAY_MAX; i++) {
-
 		r_offsets[i] = 0; //reset
 
 		if (!(p_format & (1 << i))) // no array
@@ -819,9 +740,7 @@ uint32_t VisualServer::mesh_surface_make_offsets_from_format(uint32_t p_format, 
 		int elem_size = 0;
 
 		switch (i) {
-
 			case VS::ARRAY_VERTEX: {
-
 				if (p_format & ARRAY_FLAG_USE_2D_VERTICES) {
 					elem_size = 2;
 				} else {
@@ -840,7 +759,6 @@ uint32_t VisualServer::mesh_surface_make_offsets_from_format(uint32_t p_format, 
 
 			} break;
 			case VS::ARRAY_NORMAL: {
-
 				if (p_format & ARRAY_COMPRESS_NORMAL) {
 					elem_size = sizeof(uint32_t);
 				} else {
@@ -858,7 +776,6 @@ uint32_t VisualServer::mesh_surface_make_offsets_from_format(uint32_t p_format, 
 
 			} break;
 			case VS::ARRAY_COLOR: {
-
 				if (p_format & ARRAY_COMPRESS_COLOR) {
 					elem_size = sizeof(uint32_t);
 				} else {
@@ -883,7 +800,6 @@ uint32_t VisualServer::mesh_surface_make_offsets_from_format(uint32_t p_format, 
 
 			} break;
 			case VS::ARRAY_WEIGHTS: {
-
 				if (p_format & ARRAY_COMPRESS_WEIGHTS) {
 					elem_size = sizeof(uint16_t) * 4;
 				} else {
@@ -892,7 +808,6 @@ uint32_t VisualServer::mesh_surface_make_offsets_from_format(uint32_t p_format, 
 
 			} break;
 			case VS::ARRAY_BONES: {
-
 				if (p_format & ARRAY_FLAG_USE_16_BIT_BONES) {
 					elem_size = sizeof(uint16_t) * 4;
 				} else {
@@ -901,14 +816,12 @@ uint32_t VisualServer::mesh_surface_make_offsets_from_format(uint32_t p_format, 
 
 			} break;
 			case VS::ARRAY_INDEX: {
-
 				if (p_index_len <= 0) {
 					ERR_PRINT("index_array_len==NO_INDEX_ARRAY");
 					break;
 				}
 				/* determine whether using 16 or 32 bits indices */
 				if (p_vertex_len >= (1 << 16)) {
-
 					elem_size = 4;
 
 				} else {
@@ -929,7 +842,6 @@ uint32_t VisualServer::mesh_surface_make_offsets_from_format(uint32_t p_format, 
 }
 
 void VisualServer::mesh_add_surface_from_arrays(RID p_mesh, PrimitiveType p_primitive, const Array &p_arrays, const Array &p_blend_shapes, uint32_t p_compress_format) {
-
 	ERR_FAIL_INDEX(p_primitive, VS::PRIMITIVE_MAX);
 	ERR_FAIL_COND(p_arrays.size() != VS::ARRAY_MAX);
 
@@ -940,14 +852,12 @@ void VisualServer::mesh_add_surface_from_arrays(RID p_mesh, PrimitiveType p_prim
 	int array_len = 0;
 
 	for (int i = 0; i < p_arrays.size(); i++) {
-
 		if (p_arrays[i].get_type() == Variant::NIL)
 			continue;
 
 		format |= (1 << i);
 
 		if (i == VS::ARRAY_VERTEX) {
-
 			Variant var = p_arrays[i];
 			switch (var.get_type()) {
 				case Variant::POOL_VECTOR2_ARRAY: {
@@ -964,7 +874,6 @@ void VisualServer::mesh_add_surface_from_arrays(RID p_mesh, PrimitiveType p_prim
 			array_len = PoolVector3Array(p_arrays[i]).size();
 			ERR_FAIL_COND(array_len == 0);
 		} else if (i == VS::ARRAY_INDEX) {
-
 			index_array_len = PoolIntArray(p_arrays[i]).size();
 		}
 	}
@@ -974,11 +883,9 @@ void VisualServer::mesh_add_surface_from_arrays(RID p_mesh, PrimitiveType p_prim
 	if (p_blend_shapes.size()) {
 		//validate format for morphs
 		for (int i = 0; i < p_blend_shapes.size(); i++) {
-
 			uint32_t bsformat = 0;
 			Array arr = p_blend_shapes[i];
 			for (int j = 0; j < arr.size(); j++) {
-
 				if (arr[j].get_type() != Variant::NIL)
 					bsformat |= (1 << j);
 			}
@@ -992,7 +899,6 @@ void VisualServer::mesh_add_surface_from_arrays(RID p_mesh, PrimitiveType p_prim
 	int total_elem_size = 0;
 
 	for (int i = 0; i < VS::ARRAY_MAX; i++) {
-
 		offsets[i] = 0; //reset
 
 		if (!(format & (1 << i))) // no array
@@ -1001,9 +907,7 @@ void VisualServer::mesh_add_surface_from_arrays(RID p_mesh, PrimitiveType p_prim
 		int elem_size = 0;
 
 		switch (i) {
-
 			case VS::ARRAY_VERTEX: {
-
 				Variant arr = p_arrays[0];
 				if (arr.get_type() == Variant::POOL_VECTOR2_ARRAY) {
 					elem_size = 2;
@@ -1028,7 +932,6 @@ void VisualServer::mesh_add_surface_from_arrays(RID p_mesh, PrimitiveType p_prim
 
 			} break;
 			case VS::ARRAY_NORMAL: {
-
 				if (p_compress_format & ARRAY_COMPRESS_NORMAL) {
 					elem_size = sizeof(uint32_t);
 				} else {
@@ -1046,7 +949,6 @@ void VisualServer::mesh_add_surface_from_arrays(RID p_mesh, PrimitiveType p_prim
 
 			} break;
 			case VS::ARRAY_COLOR: {
-
 				if (p_compress_format & ARRAY_COMPRESS_COLOR) {
 					elem_size = sizeof(uint32_t);
 				} else {
@@ -1071,7 +973,6 @@ void VisualServer::mesh_add_surface_from_arrays(RID p_mesh, PrimitiveType p_prim
 
 			} break;
 			case VS::ARRAY_WEIGHTS: {
-
 				if (p_compress_format & ARRAY_COMPRESS_WEIGHTS) {
 					elem_size = sizeof(uint16_t) * 4;
 				} else {
@@ -1080,7 +981,6 @@ void VisualServer::mesh_add_surface_from_arrays(RID p_mesh, PrimitiveType p_prim
 
 			} break;
 			case VS::ARRAY_BONES: {
-
 				PoolVector<int> bones = p_arrays[VS::ARRAY_BONES];
 				int max_bone = 0;
 
@@ -1102,14 +1002,12 @@ void VisualServer::mesh_add_surface_from_arrays(RID p_mesh, PrimitiveType p_prim
 
 			} break;
 			case VS::ARRAY_INDEX: {
-
 				if (index_array_len <= 0) {
 					ERR_PRINT("index_array_len==NO_INDEX_ARRAY");
 					break;
 				}
 				/* determine whether using 16 or 32 bits indices */
 				if (array_len >= (1 << 16)) {
-
 					elem_size = 4;
 
 				} else {
@@ -1149,7 +1047,6 @@ void VisualServer::mesh_add_surface_from_arrays(RID p_mesh, PrimitiveType p_prim
 	Vector<PoolVector<uint8_t>> blend_shape_data;
 
 	for (int i = 0; i < p_blend_shapes.size(); i++) {
-
 		PoolVector<uint8_t> vertex_array_shape;
 		vertex_array_shape.resize(array_size);
 		PoolVector<uint8_t> noindex;
@@ -1166,13 +1063,11 @@ void VisualServer::mesh_add_surface_from_arrays(RID p_mesh, PrimitiveType p_prim
 }
 
 Array VisualServer::_get_array_from_surface(uint32_t p_format, PoolVector<uint8_t> p_vertex_data, int p_vertex_len, PoolVector<uint8_t> p_index_data, int p_index_len) const {
-
 	uint32_t offsets[ARRAY_MAX];
 
 	int total_elem_size = 0;
 
 	for (int i = 0; i < VS::ARRAY_MAX; i++) {
-
 		offsets[i] = 0; //reset
 
 		if (!(p_format & (1 << i))) // no array
@@ -1181,9 +1076,7 @@ Array VisualServer::_get_array_from_surface(uint32_t p_format, PoolVector<uint8_
 		int elem_size = 0;
 
 		switch (i) {
-
 			case VS::ARRAY_VERTEX: {
-
 				if (p_format & ARRAY_FLAG_USE_2D_VERTICES) {
 					elem_size = 2;
 				} else {
@@ -1202,7 +1095,6 @@ Array VisualServer::_get_array_from_surface(uint32_t p_format, PoolVector<uint8_
 
 			} break;
 			case VS::ARRAY_NORMAL: {
-
 				if (p_format & ARRAY_COMPRESS_NORMAL) {
 					elem_size = sizeof(uint32_t);
 				} else {
@@ -1220,7 +1112,6 @@ Array VisualServer::_get_array_from_surface(uint32_t p_format, PoolVector<uint8_
 
 			} break;
 			case VS::ARRAY_COLOR: {
-
 				if (p_format & ARRAY_COMPRESS_COLOR) {
 					elem_size = sizeof(uint32_t);
 				} else {
@@ -1245,7 +1136,6 @@ Array VisualServer::_get_array_from_surface(uint32_t p_format, PoolVector<uint8_
 
 			} break;
 			case VS::ARRAY_WEIGHTS: {
-
 				if (p_format & ARRAY_COMPRESS_WEIGHTS) {
 					elem_size = sizeof(uint16_t) * 4;
 				} else {
@@ -1254,7 +1144,6 @@ Array VisualServer::_get_array_from_surface(uint32_t p_format, PoolVector<uint8_
 
 			} break;
 			case VS::ARRAY_BONES: {
-
 				if (p_format & ARRAY_FLAG_USE_16_BIT_BONES) {
 					elem_size = sizeof(uint16_t) * 4;
 				} else {
@@ -1263,14 +1152,12 @@ Array VisualServer::_get_array_from_surface(uint32_t p_format, PoolVector<uint8_
 
 			} break;
 			case VS::ARRAY_INDEX: {
-
 				if (p_index_len <= 0) {
 					ERR_PRINT("index_array_len==NO_INDEX_ARRAY");
 					break;
 				}
 				/* determine whether using 16 or 32 bits indices */
 				if (p_vertex_len >= (1 << 16)) {
-
 					elem_size = 4;
 
 				} else {
@@ -1294,34 +1181,26 @@ Array VisualServer::_get_array_from_surface(uint32_t p_format, PoolVector<uint8_
 	PoolVector<uint8_t>::Read r = p_vertex_data.read();
 
 	for (int i = 0; i < VS::ARRAY_MAX; i++) {
-
 		if (!(p_format & (1 << i)))
 			continue;
 
 		switch (i) {
-
 			case VS::ARRAY_VERTEX: {
-
 				if (p_format & ARRAY_FLAG_USE_2D_VERTICES) {
-
 					PoolVector<Vector2> arr_2d;
 					arr_2d.resize(p_vertex_len);
 
 					if (p_format & ARRAY_COMPRESS_VERTEX) {
-
 						PoolVector<Vector2>::Write w = arr_2d.write();
 
 						for (int j = 0; j < p_vertex_len; j++) {
-
 							const uint16_t *v = (const uint16_t *)&r[j * total_elem_size + offsets[i]];
 							w[j] = Vector2(Math::halfptr_to_float(&v[0]), Math::halfptr_to_float(&v[1]));
 						}
 					} else {
-
 						PoolVector<Vector2>::Write w = arr_2d.write();
 
 						for (int j = 0; j < p_vertex_len; j++) {
-
 							const float *v = (const float *)&r[j * total_elem_size + offsets[i]];
 							w[j] = Vector2(v[0], v[1]);
 						}
@@ -1329,25 +1208,20 @@ Array VisualServer::_get_array_from_surface(uint32_t p_format, PoolVector<uint8_
 
 					ret[i] = arr_2d;
 				} else {
-
 					PoolVector<Vector3> arr_3d;
 					arr_3d.resize(p_vertex_len);
 
 					if (p_format & ARRAY_COMPRESS_VERTEX) {
-
 						PoolVector<Vector3>::Write w = arr_3d.write();
 
 						for (int j = 0; j < p_vertex_len; j++) {
-
 							const uint16_t *v = (const uint16_t *)&r[j * total_elem_size + offsets[i]];
 							w[j] = Vector3(Math::halfptr_to_float(&v[0]), Math::halfptr_to_float(&v[1]), Math::halfptr_to_float(&v[2]));
 						}
 					} else {
-
 						PoolVector<Vector3>::Write w = arr_3d.write();
 
 						for (int j = 0; j < p_vertex_len; j++) {
-
 							const float *v = (const float *)&r[j * total_elem_size + offsets[i]];
 							w[j] = Vector3(v[0], v[1], v[2]);
 						}
@@ -1362,12 +1236,10 @@ Array VisualServer::_get_array_from_surface(uint32_t p_format, PoolVector<uint8_
 				arr.resize(p_vertex_len);
 
 				if (p_format & ARRAY_COMPRESS_NORMAL) {
-
 					PoolVector<Vector3>::Write w = arr.write();
 					const float multiplier = 1.f / 127.f;
 
 					for (int j = 0; j < p_vertex_len; j++) {
-
 						const int8_t *v = (const int8_t *)&r[j * total_elem_size + offsets[i]];
 						w[j] = Vector3(float(v[0]) * multiplier, float(v[1]) * multiplier, float(v[2]) * multiplier);
 					}
@@ -1375,7 +1247,6 @@ Array VisualServer::_get_array_from_surface(uint32_t p_format, PoolVector<uint8_
 					PoolVector<Vector3>::Write w = arr.write();
 
 					for (int j = 0; j < p_vertex_len; j++) {
-
 						const float *v = (const float *)&r[j * total_elem_size + offsets[i]];
 						w[j] = Vector3(v[0], v[1], v[2]);
 					}
@@ -1392,14 +1263,12 @@ Array VisualServer::_get_array_from_surface(uint32_t p_format, PoolVector<uint8_
 					PoolVector<float>::Write w = arr.write();
 
 					for (int j = 0; j < p_vertex_len; j++) {
-
 						const int8_t *v = (const int8_t *)&r[j * total_elem_size + offsets[i]];
 						for (int k = 0; k < 4; k++) {
 							w[j * 4 + k] = float(v[k] / 127.0);
 						}
 					}
 				} else {
-
 					PoolVector<float>::Write w = arr.write();
 
 					for (int j = 0; j < p_vertex_len; j++) {
@@ -1414,16 +1283,13 @@ Array VisualServer::_get_array_from_surface(uint32_t p_format, PoolVector<uint8_
 
 			} break;
 			case VS::ARRAY_COLOR: {
-
 				PoolVector<Color> arr;
 				arr.resize(p_vertex_len);
 
 				if (p_format & ARRAY_COMPRESS_COLOR) {
-
 					PoolVector<Color>::Write w = arr.write();
 
 					for (int j = 0; j < p_vertex_len; j++) {
-
 						const uint8_t *v = (const uint8_t *)&r[j * total_elem_size + offsets[i]];
 						w[j] = Color(float(v[0] / 255.0), float(v[1] / 255.0), float(v[2] / 255.0), float(v[3] / 255.0));
 					}
@@ -1431,7 +1297,6 @@ Array VisualServer::_get_array_from_surface(uint32_t p_format, PoolVector<uint8_
 					PoolVector<Color>::Write w = arr.write();
 
 					for (int j = 0; j < p_vertex_len; j++) {
-
 						const float *v = (const float *)&r[j * total_elem_size + offsets[i]];
 						w[j] = Color(v[0], v[1], v[2], v[3]);
 					}
@@ -1440,25 +1305,20 @@ Array VisualServer::_get_array_from_surface(uint32_t p_format, PoolVector<uint8_
 				ret[i] = arr;
 			} break;
 			case VS::ARRAY_TEX_UV: {
-
 				PoolVector<Vector2> arr;
 				arr.resize(p_vertex_len);
 
 				if (p_format & ARRAY_COMPRESS_TEX_UV) {
-
 					PoolVector<Vector2>::Write w = arr.write();
 
 					for (int j = 0; j < p_vertex_len; j++) {
-
 						const uint16_t *v = (const uint16_t *)&r[j * total_elem_size + offsets[i]];
 						w[j] = Vector2(Math::halfptr_to_float(&v[0]), Math::halfptr_to_float(&v[1]));
 					}
 				} else {
-
 					PoolVector<Vector2>::Write w = arr.write();
 
 					for (int j = 0; j < p_vertex_len; j++) {
-
 						const float *v = (const float *)&r[j * total_elem_size + offsets[i]];
 						w[j] = Vector2(v[0], v[1]);
 					}
@@ -1472,20 +1332,16 @@ Array VisualServer::_get_array_from_surface(uint32_t p_format, PoolVector<uint8_
 				arr.resize(p_vertex_len);
 
 				if (p_format & ARRAY_COMPRESS_TEX_UV2) {
-
 					PoolVector<Vector2>::Write w = arr.write();
 
 					for (int j = 0; j < p_vertex_len; j++) {
-
 						const uint16_t *v = (const uint16_t *)&r[j * total_elem_size + offsets[i]];
 						w[j] = Vector2(Math::halfptr_to_float(&v[0]), Math::halfptr_to_float(&v[1]));
 					}
 				} else {
-
 					PoolVector<Vector2>::Write w = arr.write();
 
 					for (int j = 0; j < p_vertex_len; j++) {
-
 						const float *v = (const float *)&r[j * total_elem_size + offsets[i]];
 						w[j] = Vector2(v[0], v[1]);
 					}
@@ -1495,21 +1351,18 @@ Array VisualServer::_get_array_from_surface(uint32_t p_format, PoolVector<uint8_
 
 			} break;
 			case VS::ARRAY_WEIGHTS: {
-
 				PoolVector<float> arr;
 				arr.resize(p_vertex_len * 4);
 				if (p_format & ARRAY_COMPRESS_WEIGHTS) {
 					PoolVector<float>::Write w = arr.write();
 
 					for (int j = 0; j < p_vertex_len; j++) {
-
 						const uint16_t *v = (const uint16_t *)&r[j * total_elem_size + offsets[i]];
 						for (int k = 0; k < 4; k++) {
 							w[j * 4 + k] = float(v[k] / 65535.0);
 						}
 					}
 				} else {
-
 					PoolVector<float>::Write w = arr.write();
 
 					for (int j = 0; j < p_vertex_len; j++) {
@@ -1524,22 +1377,18 @@ Array VisualServer::_get_array_from_surface(uint32_t p_format, PoolVector<uint8_
 
 			} break;
 			case VS::ARRAY_BONES: {
-
 				PoolVector<int> arr;
 				arr.resize(p_vertex_len * 4);
 				if (p_format & ARRAY_FLAG_USE_16_BIT_BONES) {
-
 					PoolVector<int>::Write w = arr.write();
 
 					for (int j = 0; j < p_vertex_len; j++) {
-
 						const uint16_t *v = (const uint16_t *)&r[j * total_elem_size + offsets[i]];
 						for (int k = 0; k < 4; k++) {
 							w[j * 4 + k] = v[k];
 						}
 					}
 				} else {
-
 					PoolVector<int>::Write w = arr.write();
 
 					for (int j = 0; j < p_vertex_len; j++) {
@@ -1561,16 +1410,13 @@ Array VisualServer::_get_array_from_surface(uint32_t p_format, PoolVector<uint8_
 				PoolVector<int> arr;
 				arr.resize(p_index_len);
 				if (p_vertex_len < (1 << 16)) {
-
 					PoolVector<int>::Write w = arr.write();
 
 					for (int j = 0; j < p_index_len; j++) {
-
 						const uint16_t *v = (const uint16_t *)&ir[j * 2];
 						w[j] = *v;
 					}
 				} else {
-
 					PoolVector<int>::Write w = arr.write();
 
 					for (int j = 0; j < p_index_len; j++) {
@@ -1590,7 +1436,6 @@ Array VisualServer::_get_array_from_surface(uint32_t p_format, PoolVector<uint8_
 }
 
 Array VisualServer::mesh_surface_get_arrays(RID p_mesh, int p_surface) const {
-
 	PoolVector<uint8_t> vertex_data = mesh_surface_get_array(p_mesh, p_surface);
 	ERR_FAIL_COND_V(vertex_data.size() == 0, Array());
 	int vertex_len = mesh_surface_get_array_len(p_mesh, p_surface);
@@ -1604,7 +1449,6 @@ Array VisualServer::mesh_surface_get_arrays(RID p_mesh, int p_surface) const {
 }
 
 Array VisualServer::mesh_surface_get_blend_shape_arrays(RID p_mesh, int p_surface) const {
-
 	Vector<PoolVector<uint8_t>> blend_shape_data = mesh_surface_get_blend_shapes(p_mesh, p_surface);
 	if (blend_shape_data.size() > 0) {
 		int vertex_len = mesh_surface_get_array_len(p_mesh, p_surface);
@@ -1627,7 +1471,6 @@ Array VisualServer::mesh_surface_get_blend_shape_arrays(RID p_mesh, int p_surfac
 }
 
 Array VisualServer::_mesh_surface_get_skeleton_aabb_bind(RID p_mesh, int p_surface) const {
-
 	Vector<AABB> vec = VS::get_singleton()->mesh_surface_get_skeleton_aabb(p_mesh, p_surface);
 	Array arr;
 	for (int i = 0; i < vec.size(); i++) {
@@ -1637,7 +1480,6 @@ Array VisualServer::_mesh_surface_get_skeleton_aabb_bind(RID p_mesh, int p_surfa
 }
 
 void VisualServer::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("force_sync"), &VisualServer::sync);
 	ClassDB::bind_method(D_METHOD("force_draw", "swap_buffers", "frame_step"), &VisualServer::draw, DEFVAL(true), DEFVAL(0.0));
 
@@ -2325,27 +2167,22 @@ void VisualServer::_bind_methods() {
 }
 
 void VisualServer::_canvas_item_add_style_box(RID p_item, const Rect2 &p_rect, const Rect2 &p_source, RID p_texture, const Vector<float> &p_margins, const Color &p_modulate) {
-
 	ERR_FAIL_COND(p_margins.size() != 4);
 	//canvas_item_add_style_box(p_item,p_rect,p_source,p_texture,Vector2(p_margins[0],p_margins[1]),Vector2(p_margins[2],p_margins[3]),true,p_modulate);
 }
 
 void VisualServer::_camera_set_orthogonal(RID p_camera, float p_size, float p_z_near, float p_z_far) {
-
 	camera_set_orthogonal(p_camera, p_size, p_z_near, p_z_far);
 }
 
 void VisualServer::mesh_add_surface_from_mesh_data(RID p_mesh, const Geometry::MeshData &p_mesh_data) {
-
 	PoolVector<Vector3> vertices;
 	PoolVector<Vector3> normals;
 
 	for (int i = 0; i < p_mesh_data.faces.size(); i++) {
-
 		const Geometry::MeshData::Face &f = p_mesh_data.faces[i];
 
 		for (int j = 2; j < f.indices.size(); j++) {
-
 #define _ADD_VERTEX(m_idx)                                      \
 	vertices.push_back(p_mesh_data.vertices[f.indices[m_idx]]); \
 	normals.push_back(f.plane.normal);
@@ -2364,7 +2201,6 @@ void VisualServer::mesh_add_surface_from_mesh_data(RID p_mesh, const Geometry::M
 }
 
 void VisualServer::mesh_add_surface_from_planes(RID p_mesh, const PoolVector<Plane> &p_planes) {
-
 	Geometry::MeshData mdata = Geometry::build_convex_mesh(p_planes);
 	mesh_add_surface_from_mesh_data(p_mesh, mdata);
 }
@@ -2374,7 +2210,6 @@ void VisualServer::immediate_vertex_2d(RID p_immediate, const Vector2 &p_vertex)
 }
 
 RID VisualServer::instance_create2(RID p_base, RID p_scenario) {
-
 	RID instance = instance_create();
 	instance_set_base(instance, p_base);
 	instance_set_scenario(instance, p_scenario);
@@ -2390,7 +2225,6 @@ void VisualServer::set_render_loop_enabled(bool p_enabled) {
 }
 
 VisualServer::VisualServer() {
-
 	//ERR_FAIL_COND(singleton);
 	singleton = this;
 
@@ -2491,6 +2325,5 @@ VisualServer::VisualServer() {
 }
 
 VisualServer::~VisualServer() {
-
 	singleton = NULL;
 }

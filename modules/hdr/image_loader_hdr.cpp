@@ -34,7 +34,6 @@
 #include "core/print_string.h"
 
 Error ImageLoaderHDR::load_image(Ref<Image> p_image, FileAccess *f, bool p_force_linear, float p_scale) {
-
 	String header = f->get_token();
 
 	ERR_FAIL_COND_V_MSG(header != "#?RADIANCE" && header != "#?RGBE", ERR_FILE_UNRECOGNIZED, "Unsupported header information in HDR: " + header + ".");
@@ -68,7 +67,6 @@ Error ImageLoaderHDR::load_image(Ref<Image> p_image, FileAccess *f, bool p_force
 	imgdata.resize(height * width * sizeof(uint32_t));
 
 	{
-
 		PoolVector<uint8_t>::Write w = imgdata.write();
 
 		uint8_t *ptr = (uint8_t *)w.ptr();
@@ -123,7 +121,6 @@ Error ImageLoaderHDR::load_image(Ref<Image> p_image, FileAccess *f, bool p_force
 
 		//convert
 		for (int i = 0; i < width * height; i++) {
-
 			float exp = pow(2.0f, ptr[3] - 128.0f);
 
 			Color c(
@@ -146,7 +143,6 @@ Error ImageLoaderHDR::load_image(Ref<Image> p_image, FileAccess *f, bool p_force
 }
 
 void ImageLoaderHDR::get_recognized_extensions(List<String> *p_extensions) const {
-
 	p_extensions->push_back("hdr");
 }
 

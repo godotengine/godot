@@ -34,7 +34,6 @@
 #include "scene/gui/popup.h"
 
 class PopupMenu : public Popup {
-
 	GDCLASS(PopupMenu, Popup);
 
 	struct Item {

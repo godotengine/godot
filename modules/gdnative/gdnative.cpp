@@ -63,7 +63,6 @@ GDNativeLibrary::~GDNativeLibrary() {
 }
 
 bool GDNativeLibrary::_set(const StringName &p_name, const Variant &p_property) {
-
 	String name = p_name;
 
 	if (name.begins_with("entry/")) {
@@ -157,7 +156,6 @@ void GDNativeLibrary::set_config_file(Ref<ConfigFile> p_config_file) {
 
 	String entry_lib_path;
 	{
-
 		List<String> entry_keys;
 
 		if (p_config_file->has_section("entry"))
@@ -189,7 +187,6 @@ void GDNativeLibrary::set_config_file(Ref<ConfigFile> p_config_file) {
 
 	Vector<String> dependency_paths;
 	{
-
 		List<String> dependency_keys;
 
 		if (p_config_file->has_section("dependencies"))
@@ -402,7 +399,6 @@ bool GDNative::initialize() {
 }
 
 bool GDNative::terminate() {
-
 	if (!initialized) {
 		ERR_PRINT("No valid library handle, can't terminate GDNative object");
 		return false;
@@ -471,7 +467,6 @@ Vector<StringName> GDNativeCallRegistry::get_native_call_types() {
 }
 
 Variant GDNative::call_native(StringName p_native_call_type, StringName p_procedure_name, Array p_arguments) {
-
 	Map<StringName, native_call_cb>::Element *E = GDNativeCallRegistry::singleton->native_calls.find(p_native_call_type);
 	if (!E) {
 		ERR_PRINT((String("No handler for native call type \"" + p_native_call_type) + "\" found").utf8().get_data());
@@ -497,7 +492,6 @@ Variant GDNative::call_native(StringName p_native_call_type, StringName p_proced
 }
 
 Error GDNative::get_symbol(StringName p_procedure_name, void *&r_handle, bool p_optional) const {
-
 	if (!initialized) {
 		ERR_PRINT("No valid library handle, can't get symbol from GDNative object");
 		return ERR_CANT_OPEN;
@@ -545,7 +539,6 @@ String GDNativeLibraryResourceLoader::get_resource_type(const String &p_path) co
 }
 
 Error GDNativeLibraryResourceSaver::save(const String &p_path, const RES &p_resource, uint32_t p_flags) {
-
 	Ref<GDNativeLibrary> lib = p_resource;
 
 	if (lib.is_null()) {

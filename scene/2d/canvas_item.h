@@ -45,7 +45,6 @@ class Font;
 class StyleBox;
 
 class CanvasItemMaterial : public Material {
-
 	GDCLASS(CanvasItemMaterial, Material);
 
 public:
@@ -66,7 +65,6 @@ public:
 
 private:
 	union MaterialKey {
-
 		struct {
 			uint32_t blend_mode : 4;
 			uint32_t light_mode : 4;
@@ -99,7 +97,6 @@ private:
 	MaterialKey current_key;
 
 	_FORCE_INLINE_ MaterialKey _compute_key() const {
-
 		MaterialKey mk;
 		mk.key = 0;
 		mk.blend_mode = blend_mode;
@@ -162,7 +159,6 @@ VARIANT_ENUM_CAST(CanvasItemMaterial::BlendMode)
 VARIANT_ENUM_CAST(CanvasItemMaterial::LightMode)
 
 class CanvasItem : public Node {
-
 	GDCLASS(CanvasItem, Node);
 
 public:

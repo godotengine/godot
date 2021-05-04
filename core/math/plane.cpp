@@ -33,12 +33,10 @@
 #include "core/math/math_funcs.h"
 
 void Plane::set_normal(const Vector3 &p_normal) {
-
 	normal = p_normal;
 }
 
 void Plane::normalize() {
-
 	real_t l = normal.length();
 	if (l == 0) {
 		*this = Plane(0, 0, 0, 0);
@@ -49,7 +47,6 @@ void Plane::normalize() {
 }
 
 Plane Plane::normalized() const {
-
 	Plane p = *this;
 	p.normalize();
 	return p;
@@ -60,7 +57,6 @@ Vector3 Plane::get_any_point() const {
 }
 
 Vector3 Plane::get_any_perpendicular_normal() const {
-
 	static const Vector3 p1 = Vector3(1, 0, 0);
 	static const Vector3 p2 = Vector3(0, 1, 0);
 	Vector3 p;
@@ -79,7 +75,6 @@ Vector3 Plane::get_any_perpendicular_normal() const {
 /* intersections */
 
 bool Plane::intersect_3(const Plane &p_plane1, const Plane &p_plane2, Vector3 *r_result) const {
-
 	const Plane &p_plane0 = *this;
 	Vector3 normal0 = p_plane0.normal;
 	Vector3 normal1 = p_plane1.normal;
@@ -101,13 +96,11 @@ bool Plane::intersect_3(const Plane &p_plane1, const Plane &p_plane2, Vector3 *r
 }
 
 bool Plane::intersects_ray(const Vector3 &p_from, const Vector3 &p_dir, Vector3 *p_intersection) const {
-
 	Vector3 segment = p_dir;
 	real_t den = normal.dot(segment);
 
 	//printf("den is %i\n",den);
 	if (Math::is_zero_approx(den)) {
-
 		return false;
 	}
 
@@ -126,13 +119,11 @@ bool Plane::intersects_ray(const Vector3 &p_from, const Vector3 &p_dir, Vector3 
 }
 
 bool Plane::intersects_segment(const Vector3 &p_begin, const Vector3 &p_end, Vector3 *p_intersection) const {
-
 	Vector3 segment = p_begin - p_end;
 	real_t den = normal.dot(segment);
 
 	//printf("den is %i\n",den);
 	if (Math::is_zero_approx(den)) {
-
 		return false;
 	}
 
@@ -140,7 +131,6 @@ bool Plane::intersects_segment(const Vector3 &p_begin, const Vector3 &p_end, Vec
 	//printf("dist is %i\n",dist);
 
 	if (dist < -CMP_EPSILON || dist > (1.0 + CMP_EPSILON)) {
-
 		return false;
 	}
 
@@ -153,11 +143,9 @@ bool Plane::intersects_segment(const Vector3 &p_begin, const Vector3 &p_end, Vec
 /* misc */
 
 bool Plane::is_equal_approx(const Plane &p_plane) const {
-
 	return normal.is_equal_approx(p_plane.normal) && Math::is_equal_approx(d, p_plane.d);
 }
 
 Plane::operator String() const {
-
 	return normal.operator String() + ", " + rtos(d);
 }

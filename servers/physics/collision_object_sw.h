@@ -59,7 +59,6 @@ private:
 	uint32_t collision_mask;
 
 	struct Shape {
-
 		Transform xform;
 		Transform xform_inv;
 		BroadPhaseSW::ID bpid;

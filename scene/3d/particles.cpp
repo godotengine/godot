@@ -36,16 +36,13 @@
 #include "servers/visual_server.h"
 
 AABB Particles::get_aabb() const {
-
 	return AABB();
 }
 PoolVector<Face3> Particles::get_faces(uint32_t p_usage_flags) const {
-
 	return PoolVector<Face3>();
 }
 
 void Particles::set_emitting(bool p_emitting) {
-
 	VS::get_singleton()->particles_set_emitting(particles, p_emitting);
 
 	if (p_emitting && one_shot) {
@@ -56,25 +53,21 @@ void Particles::set_emitting(bool p_emitting) {
 }
 
 void Particles::set_amount(int p_amount) {
-
 	ERR_FAIL_COND_MSG(p_amount < 1, "Amount of particles cannot be smaller than 1.");
 	amount = p_amount;
 	VS::get_singleton()->particles_set_amount(particles, amount);
 }
 void Particles::set_lifetime(float p_lifetime) {
-
 	ERR_FAIL_COND_MSG(p_lifetime <= 0, "Particles lifetime must be greater than 0.");
 	lifetime = p_lifetime;
 	VS::get_singleton()->particles_set_lifetime(particles, lifetime);
 }
 
 void Particles::set_one_shot(bool p_one_shot) {
-
 	one_shot = p_one_shot;
 	VS::get_singleton()->particles_set_one_shot(particles, one_shot);
 
 	if (is_emitting()) {
-
 		set_process_internal(true);
 		if (!one_shot)
 			VisualServer::get_singleton()->particles_restart(particles);
@@ -85,34 +78,28 @@ void Particles::set_one_shot(bool p_one_shot) {
 }
 
 void Particles::set_pre_process_time(float p_time) {
-
 	pre_process_time = p_time;
 	VS::get_singleton()->particles_set_pre_process_time(particles, pre_process_time);
 }
 void Particles::set_explosiveness_ratio(float p_ratio) {
-
 	explosiveness_ratio = p_ratio;
 	VS::get_singleton()->particles_set_explosiveness_ratio(particles, explosiveness_ratio);
 }
 void Particles::set_randomness_ratio(float p_ratio) {
-
 	randomness_ratio = p_ratio;
 	VS::get_singleton()->particles_set_randomness_ratio(particles, randomness_ratio);
 }
 void Particles::set_visibility_aabb(const AABB &p_aabb) {
-
 	visibility_aabb = p_aabb;
 	VS::get_singleton()->particles_set_custom_aabb(particles, visibility_aabb);
 	update_gizmo();
 	_change_notify("visibility_aabb");
 }
 void Particles::set_use_local_coordinates(bool p_enable) {
-
 	local_coords = p_enable;
 	VS::get_singleton()->particles_set_use_local_coordinates(particles, local_coords);
 }
 void Particles::set_process_material(const Ref<Material> &p_material) {
-
 	process_material = p_material;
 	RID material_rid;
 	if (process_material.is_valid())
@@ -123,83 +110,66 @@ void Particles::set_process_material(const Ref<Material> &p_material) {
 }
 
 void Particles::set_speed_scale(float p_scale) {
-
 	speed_scale = p_scale;
 	VS::get_singleton()->particles_set_speed_scale(particles, p_scale);
 }
 
 bool Particles::is_emitting() const {
-
 	return VS::get_singleton()->particles_get_emitting(particles);
 }
 int Particles::get_amount() const {
-
 	return amount;
 }
 float Particles::get_lifetime() const {
-
 	return lifetime;
 }
 bool Particles::get_one_shot() const {
-
 	return one_shot;
 }
 
 float Particles::get_pre_process_time() const {
-
 	return pre_process_time;
 }
 float Particles::get_explosiveness_ratio() const {
-
 	return explosiveness_ratio;
 }
 float Particles::get_randomness_ratio() const {
-
 	return randomness_ratio;
 }
 AABB Particles::get_visibility_aabb() const {
-
 	return visibility_aabb;
 }
 bool Particles::get_use_local_coordinates() const {
-
 	return local_coords;
 }
 Ref<Material> Particles::get_process_material() const {
-
 	return process_material;
 }
 
 float Particles::get_speed_scale() const {
-
 	return speed_scale;
 }
 
 void Particles::set_draw_order(DrawOrder p_order) {
-
 	draw_order = p_order;
 	VS::get_singleton()->particles_set_draw_order(particles, VS::ParticlesDrawOrder(p_order));
 }
 
 Particles::DrawOrder Particles::get_draw_order() const {
-
 	return draw_order;
 }
 
 void Particles::set_draw_passes(int p_count) {
-
 	ERR_FAIL_COND(p_count < 1);
 	draw_passes.resize(p_count);
 	VS::get_singleton()->particles_set_draw_passes(particles, p_count);
 	_change_notify();
 }
 int Particles::get_draw_passes() const {
-
 	return draw_passes.size();
 }
 
 void Particles::set_draw_pass_mesh(int p_pass, const Ref<Mesh> &p_mesh) {
-
 	ERR_FAIL_INDEX(p_pass, draw_passes.size());
 
 	draw_passes.write[p_pass] = p_mesh;
@@ -214,7 +184,6 @@ void Particles::set_draw_pass_mesh(int p_pass, const Ref<Mesh> &p_mesh) {
 }
 
 Ref<Mesh> Particles::get_draw_pass_mesh(int p_pass) const {
-
 	ERR_FAIL_INDEX_V(p_pass, draw_passes.size(), Ref<Mesh>());
 
 	return draw_passes[p_pass];
@@ -239,7 +208,6 @@ bool Particles::get_fractional_delta() const {
 }
 
 String Particles::get_configuration_warning() const {
-
 	if (OS::get_singleton()->get_current_video_driver() == OS::VIDEO_DRIVER_GLES2) {
 		return TTR("GPU-based particles are not supported by the GLES2 video driver.\nUse the CPUParticles node instead. You can use the \"Convert to CPUParticles\" option for this purpose.");
 	}
@@ -291,18 +259,15 @@ String Particles::get_configuration_warning() const {
 }
 
 void Particles::restart() {
-
 	VisualServer::get_singleton()->particles_restart(particles);
 	VisualServer::get_singleton()->particles_set_emitting(particles, true);
 }
 
 AABB Particles::capture_aabb() const {
-
 	return VS::get_singleton()->particles_get_current_aabb(particles);
 }
 
 void Particles::_validate_property(PropertyInfo &property) const {
-
 	if (property.name.begins_with("draw_pass_")) {
 		int index = property.name.get_slicec('_', 2).to_int() - 1;
 		if (index >= draw_passes.size()) {
@@ -313,12 +278,10 @@ void Particles::_validate_property(PropertyInfo &property) const {
 }
 
 void Particles::_notification(int p_what) {
-
 	if (p_what == NOTIFICATION_PAUSED || p_what == NOTIFICATION_UNPAUSED) {
 		if (can_process()) {
 			VS::get_singleton()->particles_set_speed_scale(particles, speed_scale);
 		} else {
-
 			VS::get_singleton()->particles_set_speed_scale(particles, 0);
 		}
 	}
@@ -326,7 +289,6 @@ void Particles::_notification(int p_what) {
 	// Use internal process when emitting and one_shot are on so that when
 	// the shot ends the editor can properly update
 	if (p_what == NOTIFICATION_INTERNAL_PROCESS) {
-
 		if (one_shot && !is_emitting()) {
 			_change_notify();
 			set_process_internal(false);
@@ -342,7 +304,6 @@ void Particles::_notification(int p_what) {
 }
 
 void Particles::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("set_emitting", "emitting"), &Particles::set_emitting);
 	ClassDB::bind_method(D_METHOD("set_amount", "amount"), &Particles::set_amount);
 	ClassDB::bind_method(D_METHOD("set_lifetime", "secs"), &Particles::set_lifetime);
@@ -404,7 +365,6 @@ void Particles::_bind_methods() {
 	ADD_GROUP("Draw Passes", "draw_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "draw_passes", PROPERTY_HINT_RANGE, "0," + itos(MAX_DRAW_PASSES) + ",1"), "set_draw_passes", "get_draw_passes");
 	for (int i = 0; i < MAX_DRAW_PASSES; i++) {
-
 		ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "draw_pass_" + itos(i + 1), PROPERTY_HINT_RESOURCE_TYPE, "Mesh"), "set_draw_pass_mesh", "get_draw_pass_mesh", i);
 	}
 
@@ -416,7 +376,6 @@ void Particles::_bind_methods() {
 }
 
 Particles::Particles() {
-
 	particles = VS::get_singleton()->particles_create();
 	set_base(particles);
 	one_shot = false; // Needed so that set_emitting doesn't access uninitialized values
@@ -437,6 +396,5 @@ Particles::Particles() {
 }
 
 Particles::~Particles() {
-
 	VS::get_singleton()->free(particles);
 }

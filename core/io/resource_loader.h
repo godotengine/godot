@@ -35,7 +35,6 @@
 #include "core/resource.h"
 
 class ResourceInteractiveLoader : public Reference {
-
 	GDCLASS(ResourceInteractiveLoader, Reference);
 	friend class ResourceLoader;
 	String path_loading;
@@ -58,7 +57,6 @@ public:
 };
 
 class ResourceFormatLoader : public Reference {
-
 	GDCLASS(ResourceFormatLoader, Reference);
 
 protected:
@@ -90,7 +88,6 @@ typedef Error (*ResourceLoaderImport)(const String &p_path);
 typedef void (*ResourceLoadedCallback)(RES p_resource, const String &p_path);
 
 class ResourceLoader {
-
 	enum {
 		MAX_LOADERS = 64
 	};
@@ -131,7 +128,6 @@ class ResourceLoader {
 		}
 	};
 	struct LoadingMapKeyHasher {
-
 		static _FORCE_INLINE_ uint32_t hash(const LoadingMapKey &p_key) { return p_key.path.hash() + HashMapHasherDefault::hash(p_key.thread); }
 	};
 

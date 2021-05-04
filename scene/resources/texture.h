@@ -43,7 +43,6 @@
 #include "servers/visual_server.h"
 
 class Texture : public Resource {
-
 	GDCLASS(Texture, Resource);
 	OBJ_SAVE_TYPE(Texture); // Saves derived classes with common type so they can be interchanged.
 
@@ -89,7 +88,6 @@ VARIANT_ENUM_CAST(Texture::Flags);
 class BitMap;
 
 class ImageTexture : public Texture {
-
 	GDCLASS(ImageTexture, Texture);
 	RES_BASE_EXTENSION("tex");
 
@@ -163,7 +161,6 @@ public:
 };
 
 class StreamTexture : public Texture {
-
 	GDCLASS(StreamTexture, Texture);
 
 public:
@@ -246,7 +243,6 @@ public:
 VARIANT_ENUM_CAST(ImageTexture::Storage);
 
 class AtlasTexture : public Texture {
-
 	GDCLASS(AtlasTexture, Texture);
 	RES_BASE_EXTENSION("atlastex");
 
@@ -293,7 +289,6 @@ public:
 class Mesh;
 
 class MeshTexture : public Texture {
-
 	GDCLASS(MeshTexture, Texture);
 	RES_BASE_EXTENSION("meshtex");
 
@@ -334,13 +329,11 @@ public:
 };
 
 class LargeTexture : public Texture {
-
 	GDCLASS(LargeTexture, Texture);
 	RES_BASE_EXTENSION("largetex");
 
 protected:
 	struct Piece {
-
 		Point2 offset;
 		Ref<Texture> texture;
 	};
@@ -384,7 +377,6 @@ public:
 };
 
 class CubeMap : public Resource {
-
 	GDCLASS(CubeMap, Resource);
 	RES_BASE_EXTENSION("cubemap");
 
@@ -466,7 +458,6 @@ VARIANT_ENUM_CAST(CubeMap::Side)
 VARIANT_ENUM_CAST(CubeMap::Storage)
 
 class TextureLayered : public Resource {
-
 	GDCLASS(TextureLayered, Resource);
 
 public:
@@ -530,7 +521,6 @@ public:
 VARIANT_ENUM_CAST(TextureLayered::Flags)
 
 class Texture3D : public TextureLayered {
-
 	GDCLASS(Texture3D, TextureLayered);
 
 public:
@@ -539,7 +529,6 @@ public:
 };
 
 class TextureArray : public TextureLayered {
-
 	GDCLASS(TextureArray, TextureLayered);
 
 public:
@@ -556,7 +545,6 @@ public:
 };
 
 class CurveTexture : public Texture {
-
 	GDCLASS(CurveTexture, Texture);
 	RES_BASE_EXTENSION("curvetex")
 
@@ -609,7 +597,6 @@ class GradientTexture : public Texture {
 
 public:
 	struct Point {
-
 		float offset;
 		Color color;
 		bool operator<(const Point &p_ponit) const {
@@ -691,7 +678,6 @@ private:
 	RID proxy;
 
 	struct Frame {
-
 		Ref<Texture> texture;
 		float delay_sec;
 

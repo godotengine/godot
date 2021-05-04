@@ -44,7 +44,6 @@
 */
 
 class RenameDialog : public ConfirmationDialog {
-
 	GDCLASS(RenameDialog, ConfirmationDialog);
 
 	virtual void ok_pressed() { rename(); };

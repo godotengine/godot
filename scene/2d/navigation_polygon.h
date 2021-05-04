@@ -34,7 +34,6 @@
 #include "scene/2d/node_2d.h"
 
 class NavigationPolygon : public Resource {
-
 	GDCLASS(NavigationPolygon, Resource);
 
 	PoolVector<Vector2> vertices;
@@ -87,7 +86,6 @@ public:
 class Navigation2D;
 
 class NavigationPolygonInstance : public Node2D {
-
 	GDCLASS(NavigationPolygonInstance, Node2D);
 
 	bool enabled;

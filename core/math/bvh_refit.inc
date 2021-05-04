@@ -117,13 +117,11 @@ void refit_branch(uint32_t p_node_id) {
 
 	// while there are still more nodes on the stack
 	while (ii.pop(rp)) {
-
 		TNode &tnode = _nodes[rp.node_id];
 
 		// do children first
 		if (!tnode.is_leaf()) {
 			for (int n = 0; n < tnode.num_children; n++) {
-
 				uint32_t child_id = tnode.children[n];
 
 				// add to the stack

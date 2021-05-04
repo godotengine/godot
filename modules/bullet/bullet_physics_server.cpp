@@ -90,35 +90,27 @@ RID BulletPhysicsServer::shape_create(ShapeType p_shape) {
 
 	switch (p_shape) {
 		case SHAPE_PLANE: {
-
 			shape = bulletnew(PlaneShapeBullet);
 		} break;
 		case SHAPE_SPHERE: {
-
 			shape = bulletnew(SphereShapeBullet);
 		} break;
 		case SHAPE_BOX: {
-
 			shape = bulletnew(BoxShapeBullet);
 		} break;
 		case SHAPE_CAPSULE: {
-
 			shape = bulletnew(CapsuleShapeBullet);
 		} break;
 		case SHAPE_CYLINDER: {
-
 			shape = bulletnew(CylinderShapeBullet);
 		} break;
 		case SHAPE_CONVEX_POLYGON: {
-
 			shape = bulletnew(ConvexPolygonShapeBullet);
 		} break;
 		case SHAPE_CONCAVE_POLYGON: {
-
 			shape = bulletnew(ConcavePolygonShapeBullet);
 		} break;
 		case SHAPE_HEIGHTMAP: {
-
 			shape = bulletnew(HeightMapShapeBullet);
 		} break;
 		case SHAPE_RAY: {
@@ -178,7 +170,6 @@ RID BulletPhysicsServer::space_create() {
 }
 
 void BulletPhysicsServer::space_set_active(RID p_space, bool p_active) {
-
 	SpaceBullet *space = space_owner.get(p_space);
 	ERR_FAIL_COND(!space);
 
@@ -373,7 +364,6 @@ void BulletPhysicsServer::area_set_param(RID p_area, AreaParameter p_param, cons
 			space->set_param(p_param, p_value);
 		}
 	} else {
-
 		AreaBullet *area = area_owner.get(p_area);
 		ERR_FAIL_COND(!area);
 
@@ -499,7 +489,6 @@ PhysicsServer::BodyMode BulletPhysicsServer::body_get_mode(RID p_body) const {
 }
 
 void BulletPhysicsServer::body_add_shape(RID p_body, RID p_shape, const Transform &p_transform, bool p_disabled) {
-
 	RigidBodyBullet *body = rigid_body_owner.get(p_body);
 	ERR_FAIL_COND(!body);
 
@@ -653,7 +642,6 @@ void BulletPhysicsServer::body_set_kinematic_safe_margin(RID p_body, real_t p_ma
 	ERR_FAIL_COND(!body);
 
 	if (body->get_kinematic_utilities()) {
-
 		body->get_kinematic_utilities()->setSafeMargin(p_margin);
 	}
 }
@@ -663,7 +651,6 @@ real_t BulletPhysicsServer::body_get_kinematic_safe_margin(RID p_body) const {
 	ERR_FAIL_COND_V(!body, 0);
 
 	if (body->get_kinematic_utilities()) {
-
 		return body->get_kinematic_utilities()->safe_margin;
 	}
 
@@ -1473,7 +1460,6 @@ bool BulletPhysicsServer::generic_6dof_joint_get_flag(RID p_joint, Vector3::Axis
 
 void BulletPhysicsServer::free(RID p_rid) {
 	if (shape_owner.owns(p_rid)) {
-
 		ShapeBullet *shape = shape_owner.get(p_rid);
 
 		// Notify the shape is configured
@@ -1484,7 +1470,6 @@ void BulletPhysicsServer::free(RID p_rid) {
 		shape_owner.free(p_rid);
 		bulletdelete(shape);
 	} else if (rigid_body_owner.owns(p_rid)) {
-
 		RigidBodyBullet *body = rigid_body_owner.get(p_rid);
 
 		body->set_space(NULL);
@@ -1495,7 +1480,6 @@ void BulletPhysicsServer::free(RID p_rid) {
 		bulletdelete(body);
 
 	} else if (soft_body_owner.owns(p_rid)) {
-
 		SoftBodyBullet *body = soft_body_owner.get(p_rid);
 
 		body->set_space(NULL);
@@ -1504,7 +1488,6 @@ void BulletPhysicsServer::free(RID p_rid) {
 		bulletdelete(body);
 
 	} else if (area_owner.owns(p_rid)) {
-
 		AreaBullet *area = area_owner.get(p_rid);
 
 		area->set_space(NULL);
@@ -1515,14 +1498,12 @@ void BulletPhysicsServer::free(RID p_rid) {
 		bulletdelete(area);
 
 	} else if (joint_owner.owns(p_rid)) {
-
 		JointBullet *joint = joint_owner.get(p_rid);
 		joint->destroy_internal_constraint();
 		joint_owner.free(p_rid);
 		bulletdelete(joint);
 
 	} else if (space_owner.owns(p_rid)) {
-
 		SpaceBullet *space = space_owner.get(p_rid);
 
 		space->remove_all_collision_objects();
@@ -1531,7 +1512,6 @@ void BulletPhysicsServer::free(RID p_rid) {
 		space_owner.free(p_rid);
 		bulletdelete(space);
 	} else {
-
 		ERR_FAIL_MSG("Invalid ID.");
 	}
 }
@@ -1547,7 +1527,6 @@ void BulletPhysicsServer::step(float p_deltaTime) {
 	BulletPhysicsDirectBodyState::singleton_setDeltaTime(p_deltaTime);
 
 	for (int i = 0; i < active_spaces_count; ++i) {
-
 		active_spaces[i]->step(p_deltaTime);
 	}
 }

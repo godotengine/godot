@@ -38,7 +38,6 @@
 #include "skeleton.h"
 
 class PhysicsBody : public CollisionObject {
-
 	GDCLASS(PhysicsBody, CollisionObject);
 
 	uint32_t collision_layer;
@@ -77,7 +76,6 @@ public:
 };
 
 class StaticBody : public PhysicsBody {
-
 	GDCLASS(StaticBody, PhysicsBody);
 
 	Vector3 constant_linear_velocity;
@@ -114,7 +112,6 @@ private:
 };
 
 class RigidBody : public PhysicsBody {
-
 	GDCLASS(RigidBody, PhysicsBody);
 
 public:
@@ -148,7 +145,6 @@ protected:
 	bool custom_integrator;
 
 	struct ShapePair {
-
 		int body_shape;
 		int local_shape;
 		bool tagged;
@@ -167,19 +163,16 @@ protected:
 		}
 	};
 	struct RigidBody_RemoveAction {
-
 		ObjectID body_id;
 		ShapePair pair;
 	};
 	struct BodyState {
-
 		//int rc;
 		bool in_tree;
 		VSet<ShapePair> shapes;
 	};
 
 	struct ContactMonitor {
-
 		bool locked;
 		Map<ObjectID, BodyState> body_map;
 	};
@@ -281,7 +274,6 @@ VARIANT_ENUM_CAST(RigidBody::Mode);
 class KinematicCollision;
 
 class KinematicBody : public PhysicsBody {
-
 	GDCLASS(KinematicBody, PhysicsBody);
 
 public:
@@ -350,7 +342,6 @@ public:
 };
 
 class KinematicCollision : public Reference {
-
 	GDCLASS(KinematicCollision, Reference);
 
 	KinematicBody *owner;
@@ -377,7 +368,6 @@ public:
 };
 
 class PhysicalBone : public PhysicsBody {
-
 	GDCLASS(PhysicalBone, PhysicsBody);
 
 public:

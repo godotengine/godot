@@ -78,7 +78,6 @@ typedef struct _xrr_monitor_info {
 #undef CursorShape
 
 class OS_X11 : public OS_Unix {
-
 	Atom wm_delete;
 	Atom xdnd_enter;
 	Atom xdnd_position;

@@ -138,7 +138,6 @@ AnimationCurveNode::AnimationCurveNode(uint64_t id, const ElementPtr element, co
 	const std::vector<const Connection *> &conns = doc.GetConnectionsBySourceSequenced(ID(), whitelist, 3);
 
 	for (const Connection *con : conns) {
-
 		// link should go for a property
 		if (!con->PropertyName().length()) {
 			continue;
@@ -209,7 +208,6 @@ const AnimationCurveNodeList AnimationLayer::Nodes(const char *const *target_pro
 	nodes.reserve(conns.size());
 
 	for (const Connection *con : conns) {
-
 		// link should not go to a property
 		if (con->PropertyName().length()) {
 			continue;
@@ -260,7 +258,6 @@ AnimationStack::AnimationStack(uint64_t id, const ElementPtr element, const std:
 	layers.reserve(conns.size());
 
 	for (const Connection *con : conns) {
-
 		// link should not go to a property
 		if (con->PropertyName().length()) {
 			continue;

@@ -35,7 +35,6 @@
 #include "core/os/input_event.h"
 
 class InputMap : public Object {
-
 	GDCLASS(InputMap, Object);
 
 public:

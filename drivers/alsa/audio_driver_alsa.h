@@ -40,7 +40,6 @@
 #include "asound-so_wrap.h"
 
 class AudioDriverALSA : public AudioDriver {
-
 	Thread thread;
 	Mutex mutex;
 

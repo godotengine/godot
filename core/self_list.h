@@ -38,13 +38,11 @@ template <class T>
 class SelfList {
 public:
 	class List {
-
 		SelfList<T> *_first;
 		SelfList<T> *_last;
 
 	public:
 		void add(SelfList<T> *p_elem) {
-
 			ERR_FAIL_COND(p_elem->_root);
 
 			p_elem->_root = this;
@@ -62,7 +60,6 @@ public:
 		}
 
 		void add_last(SelfList<T> *p_elem) {
-
 			ERR_FAIL_COND(p_elem->_root);
 
 			p_elem->_root = this;
@@ -80,7 +77,6 @@ public:
 		}
 
 		void remove(SelfList<T> *p_elem) {
-
 			ERR_FAIL_COND(p_elem->_root != this);
 			if (p_elem->_next) {
 				p_elem->_next->_prev = p_elem->_prev;
@@ -131,7 +127,6 @@ public:
 	_FORCE_INLINE_ T *self() const { return _self; }
 
 	_FORCE_INLINE_ SelfList(T *p_self) {
-
 		_self = p_self;
 		_next = NULL;
 		_prev = NULL;
@@ -139,7 +134,6 @@ public:
 	}
 
 	_FORCE_INLINE_ ~SelfList() {
-
 		if (_root)
 			_root->remove(this);
 	}

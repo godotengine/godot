@@ -36,7 +36,6 @@ Map<ParticlesMaterial::MaterialKey, ParticlesMaterial::ShaderData> ParticlesMate
 ParticlesMaterial::ShaderNames *ParticlesMaterial::shader_names = NULL;
 
 void ParticlesMaterial::init_shaders() {
-
 	dirty_materials = memnew(SelfList<ParticlesMaterial>::List);
 
 	shader_names = memnew(ShaderNames);
@@ -102,7 +101,6 @@ void ParticlesMaterial::init_shaders() {
 }
 
 void ParticlesMaterial::finish_shaders() {
-
 	memdelete(dirty_materials);
 	dirty_materials = NULL;
 
@@ -110,7 +108,6 @@ void ParticlesMaterial::finish_shaders() {
 }
 
 void ParticlesMaterial::_update_shader() {
-
 	dirty_materials->remove(&element);
 
 	MaterialKey mk = _compute_key();
@@ -129,7 +126,6 @@ void ParticlesMaterial::_update_shader() {
 	current_key = mk;
 
 	if (shader_map.has(mk)) {
-
 		VS::get_singleton()->material_set_shader(_get_material(), shader_map[mk].shader);
 		shader_map[mk].users++;
 		return;
@@ -309,7 +305,6 @@ void ParticlesMaterial::_update_shader() {
 	code += "		float spread_rad = spread * degree_to_rad;\n";
 
 	if (flags[FLAG_DISABLE_Z]) {
-
 		code += "		float angle1_rad = rand_from_seed_m1_p1(alt_seed) * spread_rad;\n";
 		code += "		angle1_rad += direction.x != 0.0 ? atan(direction.y, direction.x) : sign(direction.y) * (pi / 2.0);\n";
 		code += "		vec3 rot = vec3(cos(angle1_rad), sin(angle1_rad), 0.0);\n";
@@ -354,7 +349,6 @@ void ParticlesMaterial::_update_shader() {
 
 			if (emission_shape == EMISSION_SHAPE_DIRECTED_POINTS) {
 				if (flags[FLAG_DISABLE_Z]) {
-
 					code += "		mat2 rotm;";
 					code += "		rotm[0] = texelFetch(emission_texture_normal, emission_tex_ofs, 0).xy;\n";
 					code += "		rotm[1] = rotm[0].yx * vec2(1.0, -1.0);\n";
@@ -389,7 +383,6 @@ void ParticlesMaterial::_update_shader() {
 		code += "		float tex_linear_velocity = 0.0;\n";
 
 	if (flags[FLAG_DISABLE_Z]) {
-
 		if (tex_parameters[PARAM_ORBIT_VELOCITY].is_valid())
 			code += "		float tex_orbit_velocity = textureLod(orbit_velocity_texture, vec2(tv, 0.0), 0.0).r;\n";
 		else
@@ -459,7 +452,6 @@ void ParticlesMaterial::_update_shader() {
 	code += "		VELOCITY += force * DELTA;\n";
 	code += "		// orbit velocity\n";
 	if (flags[FLAG_DISABLE_Z]) {
-
 		code += "		float orbit_amount = (orbit_velocity + tex_orbit_velocity) * mix(1.0, rand_from_seed(alt_seed), orbit_velocity_random);\n";
 		code += "		if (orbit_amount != 0.0) {\n";
 		code += "		     float ang = orbit_amount * DELTA * pi * 2.0;\n";
@@ -530,7 +522,6 @@ void ParticlesMaterial::_update_shader() {
 	code += "\n";
 
 	if (flags[FLAG_DISABLE_Z]) {
-
 		if (flags[FLAG_ALIGN_Y_TO_VELOCITY]) {
 			code += "	if (length(VELOCITY) > 0.0) {\n";
 			code += "		TRANSFORM[1].xyz = normalize(VELOCITY);\n";
@@ -606,11 +597,9 @@ void ParticlesMaterial::_update_shader() {
 }
 
 void ParticlesMaterial::flush_changes() {
-
 	material_mutex.lock();
 
 	while (dirty_materials->first()) {
-
 		dirty_materials->first()->self()->_update_shader();
 	}
 
@@ -618,7 +607,6 @@ void ParticlesMaterial::flush_changes() {
 }
 
 void ParticlesMaterial::_queue_shader_change() {
-
 	material_mutex.lock();
 
 	if (!element.in_list()) {
@@ -629,7 +617,6 @@ void ParticlesMaterial::_queue_shader_change() {
 }
 
 bool ParticlesMaterial::_is_shader_dirty() const {
-
 	bool dirty = false;
 
 	material_mutex.lock();
@@ -642,39 +629,32 @@ bool ParticlesMaterial::_is_shader_dirty() const {
 }
 
 void ParticlesMaterial::set_direction(Vector3 p_direction) {
-
 	direction = p_direction;
 	VisualServer::get_singleton()->material_set_param(_get_material(), shader_names->direction, direction);
 }
 
 Vector3 ParticlesMaterial::get_direction() const {
-
 	return direction;
 }
 
 void ParticlesMaterial::set_spread(float p_spread) {
-
 	spread = p_spread;
 	VisualServer::get_singleton()->material_set_param(_get_material(), shader_names->spread, p_spread);
 }
 
 float ParticlesMaterial::get_spread() const {
-
 	return spread;
 }
 
 void ParticlesMaterial::set_flatness(float p_flatness) {
-
 	flatness = p_flatness;
 	VisualServer::get_singleton()->material_set_param(_get_material(), shader_names->flatness, p_flatness);
 }
 float ParticlesMaterial::get_flatness() const {
-
 	return flatness;
 }
 
 void ParticlesMaterial::set_param(Parameter p_param, float p_value) {
-
 	ERR_FAIL_INDEX(p_param, PARAM_MAX);
 
 	parameters[p_param] = p_value;
@@ -721,14 +701,12 @@ void ParticlesMaterial::set_param(Parameter p_param, float p_value) {
 	}
 }
 float ParticlesMaterial::get_param(Parameter p_param) const {
-
 	ERR_FAIL_INDEX_V(p_param, PARAM_MAX, 0);
 
 	return parameters[p_param];
 }
 
 void ParticlesMaterial::set_param_randomness(Parameter p_param, float p_value) {
-
 	ERR_FAIL_INDEX(p_param, PARAM_MAX);
 
 	randomness[p_param] = p_value;
@@ -775,14 +753,12 @@ void ParticlesMaterial::set_param_randomness(Parameter p_param, float p_value) {
 	}
 }
 float ParticlesMaterial::get_param_randomness(Parameter p_param) const {
-
 	ERR_FAIL_INDEX_V(p_param, PARAM_MAX, 0);
 
 	return randomness[p_param];
 }
 
 static void _adjust_curve_range(const Ref<Texture> &p_texture, float p_min, float p_max) {
-
 	Ref<CurveTexture> curve_tex = p_texture;
 	if (!curve_tex.is_valid())
 		return;
@@ -791,7 +767,6 @@ static void _adjust_curve_range(const Ref<Texture> &p_texture, float p_min, floa
 }
 
 void ParticlesMaterial::set_param_texture(Parameter p_param, const Ref<Texture> &p_texture) {
-
 	ERR_FAIL_INDEX(p_param, PARAM_MAX);
 
 	tex_parameters[p_param] = p_texture;
@@ -850,25 +825,21 @@ void ParticlesMaterial::set_param_texture(Parameter p_param, const Ref<Texture> 
 	_queue_shader_change();
 }
 Ref<Texture> ParticlesMaterial::get_param_texture(Parameter p_param) const {
-
 	ERR_FAIL_INDEX_V(p_param, PARAM_MAX, Ref<Texture>());
 
 	return tex_parameters[p_param];
 }
 
 void ParticlesMaterial::set_color(const Color &p_color) {
-
 	VisualServer::get_singleton()->material_set_param(_get_material(), shader_names->color, p_color);
 	color = p_color;
 }
 
 Color ParticlesMaterial::get_color() const {
-
 	return color;
 }
 
 void ParticlesMaterial::set_color_ramp(const Ref<Texture> &p_texture) {
-
 	color_ramp = p_texture;
 	VisualServer::get_singleton()->material_set_param(_get_material(), shader_names->color_ramp, p_texture);
 	_queue_shader_change();
@@ -876,7 +847,6 @@ void ParticlesMaterial::set_color_ramp(const Ref<Texture> &p_texture) {
 }
 
 Ref<Texture> ParticlesMaterial::get_color_ramp() const {
-
 	return color_ramp;
 }
 
@@ -902,87 +872,71 @@ void ParticlesMaterial::set_emission_shape(EmissionShape p_shape) {
 }
 
 void ParticlesMaterial::set_emission_sphere_radius(float p_radius) {
-
 	emission_sphere_radius = p_radius;
 	VisualServer::get_singleton()->material_set_param(_get_material(), shader_names->emission_sphere_radius, p_radius);
 }
 
 void ParticlesMaterial::set_emission_box_extents(Vector3 p_extents) {
-
 	emission_box_extents = p_extents;
 	VisualServer::get_singleton()->material_set_param(_get_material(), shader_names->emission_box_extents, p_extents);
 }
 
 void ParticlesMaterial::set_emission_point_texture(const Ref<Texture> &p_points) {
-
 	emission_point_texture = p_points;
 	VisualServer::get_singleton()->material_set_param(_get_material(), shader_names->emission_texture_points, p_points);
 }
 
 void ParticlesMaterial::set_emission_normal_texture(const Ref<Texture> &p_normals) {
-
 	emission_normal_texture = p_normals;
 	VisualServer::get_singleton()->material_set_param(_get_material(), shader_names->emission_texture_normal, p_normals);
 }
 
 void ParticlesMaterial::set_emission_color_texture(const Ref<Texture> &p_colors) {
-
 	emission_color_texture = p_colors;
 	VisualServer::get_singleton()->material_set_param(_get_material(), shader_names->emission_texture_color, p_colors);
 	_queue_shader_change();
 }
 
 void ParticlesMaterial::set_emission_point_count(int p_count) {
-
 	emission_point_count = p_count;
 	VisualServer::get_singleton()->material_set_param(_get_material(), shader_names->emission_texture_point_count, p_count);
 }
 
 ParticlesMaterial::EmissionShape ParticlesMaterial::get_emission_shape() const {
-
 	return emission_shape;
 }
 
 float ParticlesMaterial::get_emission_sphere_radius() const {
-
 	return emission_sphere_radius;
 }
 Vector3 ParticlesMaterial::get_emission_box_extents() const {
-
 	return emission_box_extents;
 }
 Ref<Texture> ParticlesMaterial::get_emission_point_texture() const {
-
 	return emission_point_texture;
 }
 Ref<Texture> ParticlesMaterial::get_emission_normal_texture() const {
-
 	return emission_normal_texture;
 }
 
 Ref<Texture> ParticlesMaterial::get_emission_color_texture() const {
-
 	return emission_color_texture;
 }
 
 int ParticlesMaterial::get_emission_point_count() const {
-
 	return emission_point_count;
 }
 
 void ParticlesMaterial::set_trail_divisor(int p_divisor) {
-
 	trail_divisor = p_divisor;
 	VisualServer::get_singleton()->material_set_param(_get_material(), shader_names->trail_divisor, p_divisor);
 }
 
 int ParticlesMaterial::get_trail_divisor() const {
-
 	return trail_divisor;
 }
 
 void ParticlesMaterial::set_trail_size_modifier(const Ref<CurveTexture> &p_trail_size_modifier) {
-
 	trail_size_modifier = p_trail_size_modifier;
 
 	Ref<CurveTexture> curve = trail_size_modifier;
@@ -995,24 +949,20 @@ void ParticlesMaterial::set_trail_size_modifier(const Ref<CurveTexture> &p_trail
 }
 
 Ref<CurveTexture> ParticlesMaterial::get_trail_size_modifier() const {
-
 	return trail_size_modifier;
 }
 
 void ParticlesMaterial::set_trail_color_modifier(const Ref<GradientTexture> &p_trail_color_modifier) {
-
 	trail_color_modifier = p_trail_color_modifier;
 	VisualServer::get_singleton()->material_set_param(_get_material(), shader_names->trail_color_modifier, p_trail_color_modifier);
 	_queue_shader_change();
 }
 
 Ref<GradientTexture> ParticlesMaterial::get_trail_color_modifier() const {
-
 	return trail_color_modifier;
 }
 
 void ParticlesMaterial::set_gravity(const Vector3 &p_gravity) {
-
 	gravity = p_gravity;
 	Vector3 gset = gravity;
 	if (gset == Vector3()) {
@@ -1022,29 +972,24 @@ void ParticlesMaterial::set_gravity(const Vector3 &p_gravity) {
 }
 
 Vector3 ParticlesMaterial::get_gravity() const {
-
 	return gravity;
 }
 
 void ParticlesMaterial::set_lifetime_randomness(float p_lifetime) {
-
 	lifetime_randomness = p_lifetime;
 	VisualServer::get_singleton()->material_set_param(_get_material(), shader_names->lifetime_randomness, lifetime_randomness);
 }
 
 float ParticlesMaterial::get_lifetime_randomness() const {
-
 	return lifetime_randomness;
 }
 
 RID ParticlesMaterial::get_shader_rid() const {
-
 	ERR_FAIL_COND_V(!shader_map.has(current_key), RID());
 	return shader_map[current_key].shader;
 }
 
 void ParticlesMaterial::_validate_property(PropertyInfo &property) const {
-
 	if (property.name == "color" && color_ramp.is_valid()) {
 		property.usage = 0;
 	}
@@ -1075,12 +1020,10 @@ void ParticlesMaterial::_validate_property(PropertyInfo &property) const {
 }
 
 Shader::Mode ParticlesMaterial::get_shader_mode() const {
-
 	return Shader::MODE_PARTICLES;
 }
 
 void ParticlesMaterial::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("set_direction", "degrees"), &ParticlesMaterial::set_direction);
 	ClassDB::bind_method(D_METHOD("get_direction"), &ParticlesMaterial::get_direction);
 
@@ -1248,7 +1191,6 @@ void ParticlesMaterial::_bind_methods() {
 
 ParticlesMaterial::ParticlesMaterial() :
 		element(this) {
-
 	set_direction(Vector3(1, 0, 0));
 	set_spread(45);
 	set_flatness(0);
@@ -1289,7 +1231,6 @@ ParticlesMaterial::ParticlesMaterial() :
 }
 
 ParticlesMaterial::~ParticlesMaterial() {
-
 	material_mutex.lock();
 
 	if (shader_map.has(current_key)) {

@@ -56,7 +56,6 @@ class EditorNetworkProfiler;
 class ScriptEditorDebuggerInspectedObject;
 
 class ScriptEditorDebugger : public MarginContainer {
-
 	GDCLASS(ScriptEditorDebugger, MarginContainer);
 
 public:

@@ -40,7 +40,6 @@
 #include "core/variant.h"
 
 class ShaderLanguage {
-
 public:
 	enum TokenType {
 		TK_EMPTY,
@@ -510,7 +509,6 @@ public:
 	};
 
 	struct ShaderNode : public Node {
-
 		struct Constant {
 			StringName name;
 			DataType type;

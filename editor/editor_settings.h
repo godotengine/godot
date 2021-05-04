@@ -42,7 +42,6 @@
 class EditorPlugin;
 
 class EditorSettings : public Resource {
-
 	GDCLASS(EditorSettings, Resource);
 
 private:
@@ -50,7 +49,6 @@ private:
 
 public:
 	struct Plugin {
-
 		EditorPlugin *instance;
 		String path;
 		String name;

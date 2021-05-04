@@ -52,7 +52,6 @@ Line2D::Line2D() {
 
 #ifdef TOOLS_ENABLED
 Rect2 Line2D::_edit_get_rect() const {
-
 	if (_points.size() == 0)
 		return Rect2(0, 0, 0, 0);
 	Vector2 d = Vector2(_width, _width);
@@ -69,7 +68,6 @@ bool Line2D::_edit_use_rect() const {
 }
 
 bool Line2D::_edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const {
-
 	const real_t d = _width / 2 + p_tolerance;
 	PoolVector<Vector2>::Read points = _points.read();
 	for (int i = 0; i < _points.size() - 1; i++) {
@@ -169,7 +167,6 @@ Color Line2D::get_default_color() const {
 }
 
 void Line2D::set_gradient(const Ref<Gradient> &p_gradient) {
-
 	// Cleanup previous connection if any
 	if (_gradient.is_valid()) {
 		_gradient->disconnect(CoreStringNames::get_singleton()->changed, this, "_gradient_changed");
@@ -352,7 +349,6 @@ void Line2D::_curve_changed() {
 
 // static
 void Line2D::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("set_points", "points"), &Line2D::set_points);
 	ClassDB::bind_method(D_METHOD("get_points"), &Line2D::get_points);
 

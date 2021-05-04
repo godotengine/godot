@@ -34,7 +34,6 @@
 #include "scene/3d/skeleton.h"
 
 class BoneAttachment : public Spatial {
-
 	GDCLASS(BoneAttachment, Spatial);
 
 	bool bound;

@@ -36,7 +36,6 @@
 #include "scene/resources/texture.h"
 
 class Font : public Resource {
-
 	GDCLASS(Font, Resource);
 
 protected:
@@ -104,7 +103,6 @@ public:
 };
 
 class BitmapFont : public Font {
-
 	GDCLASS(BitmapFont, Font);
 	RES_BASE_EXTENSION("font");
 
@@ -112,7 +110,6 @@ class BitmapFont : public Font {
 
 public:
 	struct Character {
-
 		int texture_idx;
 		Rect2 rect;
 		float v_align;
@@ -126,7 +123,6 @@ public:
 	};
 
 	struct KerningPairKey {
-
 		union {
 			struct {
 				uint32_t A, B;

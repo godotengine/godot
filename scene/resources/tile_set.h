@@ -40,7 +40,6 @@
 #include "scene/resources/texture.h"
 
 class TileSet : public Resource {
-
 	GDCLASS(TileSet, Resource);
 
 public:
@@ -112,7 +111,6 @@ public:
 
 private:
 	struct TileData {
-
 		String name;
 		Ref<Texture> texture;
 		Ref<Texture> normal_map;

@@ -240,7 +240,6 @@ static bool is_joypad(IOHIDDeviceRef p_device_ref) {
 }
 
 void JoypadOSX::_device_added(IOReturn p_res, IOHIDDeviceRef p_device) {
-
 	if (p_res != kIOReturnSuccess || have_device(p_device)) {
 		return;
 	}
@@ -264,7 +263,6 @@ void JoypadOSX::_device_added(IOReturn p_res, IOHIDDeviceRef p_device) {
 }
 
 void JoypadOSX::_device_removed(IOReturn p_res, IOHIDDeviceRef p_device) {
-
 	int device = get_joy_ref(p_device);
 	ERR_FAIL_COND(device == -1);
 
@@ -274,7 +272,6 @@ void JoypadOSX::_device_removed(IOReturn p_res, IOHIDDeviceRef p_device) {
 }
 
 static String _hex_str(uint8_t p_byte) {
-
 	static const char *dict = "0123456789abcdef";
 	char ret[3];
 	ret[2] = 0;
@@ -286,7 +283,6 @@ static String _hex_str(uint8_t p_byte) {
 }
 
 bool JoypadOSX::configure_joypad(IOHIDDeviceRef p_device_ref, joypad *p_joy) {
-
 	p_joy->device_ref = p_device_ref;
 	/* get device name */
 	String name;
@@ -353,7 +349,6 @@ bool JoypadOSX::configure_joypad(IOHIDDeviceRef p_device_ref, joypad *p_joy) {
 		}                               \
 	}
 bool joypad::config_force_feedback(io_service_t p_service) {
-
 	HRESULT ret = FFCreateDevice(p_service, &ff_device);
 	ERR_FAIL_COND_V(ret != FF_OK, false);
 
@@ -375,7 +370,6 @@ bool joypad::config_force_feedback(io_service_t p_service) {
 
 #define TEST_FF(ff) (features.supportedEffects & (ff))
 bool joypad::check_ff_features() {
-
 	FFCAPABILITIES features;
 	HRESULT ret = FFDeviceGetForceFeedbackCapabilities(ff_device, &features);
 	if (ret == FF_OK && (features.supportedEffects & FFCAP_ET_CONSTANTFORCE)) {
@@ -566,7 +560,6 @@ static CFDictionaryRef create_match_dictionary(const UInt32 page, const UInt32 u
 }
 
 void JoypadOSX::config_hid_manager(CFArrayRef p_matching_array) const {
-
 	CFRunLoopRef runloop = CFRunLoopGetCurrent();
 	IOReturn ret = IOHIDManagerOpen(hid_manager, kIOHIDOptionsTypeNone);
 	ERR_FAIL_COND(ret != kIOReturnSuccess);
@@ -610,7 +603,6 @@ JoypadOSX::JoypadOSX() {
 }
 
 JoypadOSX::~JoypadOSX() {
-
 	for (int i = 0; i < device_list.size(); i++) {
 		device_list.write[i].free();
 	}

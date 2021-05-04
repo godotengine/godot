@@ -41,7 +41,6 @@
 /* This DisjointSet class uses Find with path compression and Union by rank */
 template <typename T, class C = Comparator<T>, class AL = DefaultAllocator>
 class DisjointSet {
-
 	struct Element {
 		T object;
 		Element *parent = nullptr;
@@ -103,7 +102,6 @@ typename DisjointSet<T, C, AL>::Element *DisjointSet<T, C, AL>::insert_or_get(T 
 
 template <typename T, class C, class AL>
 void DisjointSet<T, C, AL>::create_union(T a, T b) {
-
 	Element *x = insert_or_get(a);
 	Element *y = insert_or_get(b);
 

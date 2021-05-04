@@ -42,7 +42,6 @@ public:
 	};
 
 	struct Viewport : public RID_Data {
-
 		RID self;
 		RID parent;
 
@@ -78,7 +77,6 @@ public:
 		bool transparent_bg;
 
 		struct CanvasKey {
-
 			int64_t stacking;
 			RID canvas;
 			bool operator<(const CanvasKey &p_canvas) const {
@@ -98,7 +96,6 @@ public:
 		};
 
 		struct CanvasData {
-
 			CanvasBase *canvas;
 			Transform2D transform;
 			int layer;
@@ -131,12 +128,10 @@ public:
 
 	struct ViewportSort {
 		_FORCE_INLINE_ bool operator()(const Viewport *p_left, const Viewport *p_right) const {
-
 			bool left_to_screen = p_left->viewport_to_screen_rect.size != Size2();
 			bool right_to_screen = p_right->viewport_to_screen_rect.size != Size2();
 
 			if (left_to_screen == right_to_screen) {
-
 				return p_left->parent == p_right->self;
 			}
 			return right_to_screen;

@@ -221,7 +221,6 @@ DirectPropertyMap PropertyTable::GetUnparsedProperties() const {
 
 	// Loop through all the lazy properties (which is all the properties)
 	for (const LazyPropertyMap::value_type &element : lazyProps) {
-
 		// Skip parsed properties
 		if (props.end() != props.find(element.first))
 			continue;

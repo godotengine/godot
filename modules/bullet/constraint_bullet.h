@@ -45,7 +45,6 @@ class SpaceBullet;
 class btTypedConstraint;
 
 class ConstraintBullet : public RIDBullet {
-
 protected:
 	SpaceBullet *space;
 	btTypedConstraint *constraint;

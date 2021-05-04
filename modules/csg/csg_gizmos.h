@@ -36,7 +36,6 @@
 #include "editor/spatial_editor_gizmos.h"
 
 class CSGShapeSpatialGizmoPlugin : public EditorSpatialGizmoPlugin {
-
 	GDCLASS(CSGShapeSpatialGizmoPlugin, EditorSpatialGizmoPlugin);
 
 public:

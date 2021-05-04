@@ -83,7 +83,6 @@ static const char *uwp_device_capabilities[] = {
 };
 
 class AppxPackager {
-
 	enum {
 		FILE_HEADER_MAGIC = 0x04034b50,
 		DATA_DESCRIPTOR_MAGIC = 0x08074b50,
@@ -107,13 +106,11 @@ class AppxPackager {
 	};
 
 	struct BlockHash {
-
 		String base64_hash;
 		size_t compressed_size;
 	};
 
 	struct FileMeta {
-
 		String name;
 		int lfh_size;
 		bool compressed;
@@ -195,7 +192,6 @@ public:
 ///////////////////////////////////////////////////////////////////////////
 
 String AppxPackager::hash_block(const uint8_t *p_block_data, size_t p_block_len) {
-
 	unsigned char hash[32];
 	char base64[45];
 
@@ -208,21 +204,18 @@ String AppxPackager::hash_block(const uint8_t *p_block_data, size_t p_block_len)
 }
 
 void AppxPackager::make_block_map(const String &p_path) {
-
 	FileAccess *tmp_file = FileAccess::open(p_path, FileAccess::WRITE);
 
 	tmp_file->store_string("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>");
 	tmp_file->store_string("<BlockMap xmlns=\"http://schemas.microsoft.com/appx/2010/blockmap\" HashMethod=\"http://www.w3.org/2001/04/xmlenc#sha256\">");
 
 	for (int i = 0; i < file_metadata.size(); i++) {
-
 		FileMeta file = file_metadata[i];
 
 		tmp_file->store_string(
 				"<File Name=\"" + file.name.replace("/", "\\") + "\" Size=\"" + itos(file.uncompressed_size) + "\" LfhSize=\"" + itos(file.lfh_size) + "\">");
 
 		for (int j = 0; j < file.hashes.size(); j++) {
-
 			tmp_file->store_string("<Block Hash=\"" + file.hashes[j].base64_hash + "\" ");
 			if (file.compressed)
 				tmp_file->store_string("Size=\"" + itos(file.hashes[j].compressed_size) + "\" ");
@@ -239,7 +232,6 @@ void AppxPackager::make_block_map(const String &p_path) {
 }
 
 String AppxPackager::content_type(String p_extension) {
-
 	if (p_extension == "png")
 		return "image/png";
 	else if (p_extension == "jpg")
@@ -253,7 +245,6 @@ String AppxPackager::content_type(String p_extension) {
 }
 
 void AppxPackager::make_content_types(const String &p_path) {
-
 	FileAccess *tmp_file = FileAccess::open(p_path, FileAccess::WRITE);
 
 	tmp_file->store_string("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
@@ -262,7 +253,6 @@ void AppxPackager::make_content_types(const String &p_path) {
 	Map<String, String> types;
 
 	for (int i = 0; i < file_metadata.size(); i++) {
-
 		String ext = file_metadata[i].name.get_extension().to_lower();
 
 		if (types.has(ext))
@@ -289,7 +279,6 @@ void AppxPackager::make_content_types(const String &p_path) {
 }
 
 Vector<uint8_t> AppxPackager::make_file_header(FileMeta p_file_meta) {
-
 	Vector<uint8_t> buf;
 	buf.resize(BASE_FILE_HEADER_SIZE + p_file_meta.name.length());
 
@@ -332,7 +321,6 @@ Vector<uint8_t> AppxPackager::make_file_header(FileMeta p_file_meta) {
 }
 
 void AppxPackager::store_central_dir_header(const FileMeta &p_file, bool p_do_hash) {
-
 	Vector<uint8_t> &buf = central_dir_data;
 	int offs = buf.size();
 	buf.resize(buf.size() + BASE_CENTRAL_DIR_SIZE + p_file.name.length());
@@ -384,7 +372,6 @@ void AppxPackager::store_central_dir_header(const FileMeta &p_file, bool p_do_ha
 }
 
 Vector<uint8_t> AppxPackager::make_end_of_central_record() {
-
 	Vector<uint8_t> buf;
 	buf.resize(ZIP64_END_OF_CENTRAL_DIR_SIZE + 12 + END_OF_CENTRAL_DIR_SIZE); // Size plus magic
 
@@ -454,14 +441,12 @@ Vector<uint8_t> AppxPackager::make_end_of_central_record() {
 }
 
 void AppxPackager::init(FileAccess *p_fa) {
-
 	package = p_fa;
 	central_dir_offset = 0;
 	end_of_central_dir_offset = 0;
 }
 
 Error AppxPackager::add_file(String p_file_name, const uint8_t *p_buffer, size_t p_len, int p_file_no, int p_total_files, bool p_compress) {
-
 	if (p_file_no >= 1 && p_total_files >= 1) {
 		if (EditorNode::progress_task_step(progress_task, "File: " + p_file_name, (p_file_no * 100) / p_total_files)) {
 			return ERR_SKIP;
@@ -485,7 +470,6 @@ Error AppxPackager::add_file(String p_file_name, const uint8_t *p_buffer, size_t
 	Vector<uint8_t> strm_out;
 
 	if (p_compress) {
-
 		strm.zalloc = zipio_alloc;
 		strm.zfree = zipio_free;
 		strm.opaque = &strm_f;
@@ -498,7 +482,6 @@ Error AppxPackager::add_file(String p_file_name, const uint8_t *p_buffer, size_t
 	int step = 0;
 
 	while (p_len - step > 0) {
-
 		size_t block_size = (p_len - step) > BLOCK_SIZE ? (size_t)BLOCK_SIZE : (p_len - step);
 
 		for (uint64_t i = 0; i < block_size; i++) {
@@ -509,7 +492,6 @@ Error AppxPackager::add_file(String p_file_name, const uint8_t *p_buffer, size_t
 		bh.base64_hash = hash_block(strm_in.ptr(), block_size);
 
 		if (p_compress) {
-
 			strm.avail_in = block_size;
 			strm.avail_out = strm_out.size();
 			strm.next_in = (uint8_t *)strm_in.ptr();
@@ -542,7 +524,6 @@ Error AppxPackager::add_file(String p_file_name, const uint8_t *p_buffer, size_t
 	}
 
 	if (p_compress) {
-
 		strm.avail_in = 0;
 		strm.avail_out = strm_out.size();
 		strm.next_in = (uint8_t *)strm_in.ptr();
@@ -562,7 +543,6 @@ Error AppxPackager::add_file(String p_file_name, const uint8_t *p_buffer, size_t
 		meta.compressed_size = strm.total_out;
 
 	} else {
-
 		meta.compressed_size = p_len;
 	}
 
@@ -585,7 +565,6 @@ Error AppxPackager::add_file(String p_file_name, const uint8_t *p_buffer, size_t
 }
 
 void AppxPackager::finish() {
-
 	// Create and add block map file
 	EditorNode::progress_task_step("export", "Creating block map...", 4);
 
@@ -652,7 +631,6 @@ AppxPackager::~AppxPackager() {}
 ////////////////////////////////////////////////////////////////////
 
 class EditorExportPlatformUWP : public EditorExportPlatform {
-
 	GDCLASS(EditorExportPlatformUWP, EditorExportPlatform);
 
 	Ref<ImageTexture> logo;
@@ -664,7 +642,6 @@ class EditorExportPlatformUWP : public EditorExportPlatform {
 	};
 
 	bool _valid_resource_name(const String &p_name) const {
-
 		if (p_name.empty())
 			return false;
 		if (p_name.ends_with("."))
@@ -687,7 +664,6 @@ class EditorExportPlatformUWP : public EditorExportPlatform {
 	}
 
 	bool _valid_guid(const String &p_guid) const {
-
 		Vector<String> parts = p_guid.split("-");
 
 		if (parts.size() != 5)
@@ -704,7 +680,6 @@ class EditorExportPlatformUWP : public EditorExportPlatform {
 	}
 
 	bool _valid_bgcolor(const String &p_color) const {
-
 		if (p_color.empty())
 			return true;
 		if (p_color.begins_with("#") && p_color.is_valid_html_color())
@@ -751,7 +726,6 @@ class EditorExportPlatformUWP : public EditorExportPlatform {
 	}
 
 	bool _valid_image(const StreamTexture *p_image, int p_width, int p_height) const {
-
 		if (!p_image) {
 			return false;
 		}
@@ -762,7 +736,6 @@ class EditorExportPlatformUWP : public EditorExportPlatform {
 	}
 
 	Vector<uint8_t> _fix_manifest(const Ref<EditorExportPreset> &p_preset, const Vector<uint8_t> &p_template, bool p_give_internet) const {
-
 		String result = String::utf8((const char *)p_template.ptr(), p_template.size());
 
 		result = result.replace("$godot_version$", VERSION_FULL_NAME);
@@ -870,7 +843,6 @@ class EditorExportPlatformUWP : public EditorExportPlatform {
 	}
 
 	Vector<uint8_t> _get_image_data(const Ref<EditorExportPreset> &p_preset, const String &p_path) {
-
 		Vector<uint8_t> data;
 		StreamTexture *image = NULL;
 
@@ -900,7 +872,6 @@ class EditorExportPlatformUWP : public EditorExportPlatform {
 		Error err = image->get_data()->save_png(tmp_path);
 
 		if (err != OK) {
-
 			String err_string = "Couldn't save temp logo file.";
 
 			EditorNode::add_io_error(err_string);
@@ -910,7 +881,6 @@ class EditorExportPlatformUWP : public EditorExportPlatform {
 		FileAccess *f = FileAccess::open(tmp_path, FileAccess::READ, &err);
 
 		if (err != OK) {
-
 			String err_string = "Couldn't open temp logo file.";
 			// Cleanup generated file.
 			DirAccess::remove_file_or_error(tmp_path);
@@ -929,7 +899,6 @@ class EditorExportPlatformUWP : public EditorExportPlatform {
 	}
 
 	static bool _should_compress_asset(const String &p_path, const Vector<uint8_t> &p_data) {
-
 		/* TODO: This was copied verbatim from Android export. It should be
 		* refactored to the parent class and also be used for .zip export.
 		*/
@@ -980,7 +949,6 @@ class EditorExportPlatformUWP : public EditorExportPlatform {
 	}
 
 	static Error save_appx_file(void *p_userdata, const String &p_path, const Vector<uint8_t> &p_data, int p_file, int p_total) {
-
 		AppxPackager *packager = (AppxPackager *)p_userdata;
 		String dst_path = p_path.replace_first("res://", "game/");
 
@@ -1087,7 +1055,6 @@ public:
 	}
 
 	virtual bool can_export(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates) const {
-
 		String err;
 		bool valid = false;
 
@@ -1259,7 +1226,6 @@ public:
 		unzFile pkg = unzOpen2(src_appx.utf8().get_data(), &io);
 
 		if (!pkg) {
-
 			EditorNode::add_io_error("Could not find template appx to export:\n" + src_appx);
 			return ERR_FILE_NOT_FOUND;
 		}
@@ -1277,7 +1243,6 @@ public:
 		int template_file_no = 1;
 
 		while (ret == UNZ_OK) {
-
 			// get file name
 			unz_file_info info;
 			char fname[16834];
@@ -1295,7 +1260,6 @@ public:
 			bool do_read = true;
 
 			if (path.begins_with("Assets/")) {
-
 				path = path.replace(".scale-100", "");
 
 				data = _get_image_data(p_preset, path);
@@ -1312,7 +1276,6 @@ public:
 			}
 
 			if (path == "AppxManifest.xml") {
-
 				data = _fix_manifest(p_preset, data, p_flags & (DEBUG_FLAG_DUMB_CLIENT | DEBUG_FLAG_REMOTE_DEBUG));
 			}
 
@@ -1355,7 +1318,6 @@ public:
 		encode_uint32(cl.size(), clf.ptrw());
 
 		for (int i = 0; i < cl.size(); i++) {
-
 			CharString txt = cl[i].utf8();
 			int base = clf.size();
 			clf.resize(base + 4 + txt.length());
@@ -1444,7 +1406,6 @@ public:
 	}
 
 	virtual void get_platform_features(List<String> *r_features) {
-
 		r_features->push_back("pc");
 		r_features->push_back("UWP");
 	}
@@ -1460,7 +1421,6 @@ public:
 };
 
 void register_uwp_exporter() {
-
 #ifdef WINDOWS_ENABLED
 	EDITOR_DEF("export/uwp/signtool", "");
 	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING, "export/uwp/signtool", PROPERTY_HINT_GLOBAL_FILE, "*.exe"));

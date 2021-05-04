@@ -36,7 +36,6 @@
 #include "core/os/os.h"
 
 class PowerUWP {
-
 private:
 	int nsecs_left;
 	int percent_left;

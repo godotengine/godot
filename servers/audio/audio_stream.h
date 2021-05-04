@@ -37,7 +37,6 @@
 #include "servers/audio_server.h"
 
 class AudioStreamPlayback : public Reference {
-
 	GDCLASS(AudioStreamPlayback, Reference);
 
 public:
@@ -54,7 +53,6 @@ public:
 };
 
 class AudioStreamPlaybackResampled : public AudioStreamPlayback {
-
 	GDCLASS(AudioStreamPlaybackResampled, AudioStreamPlayback);
 
 	enum {
@@ -80,7 +78,6 @@ public:
 };
 
 class AudioStream : public Resource {
-
 	GDCLASS(AudioStream, Resource);
 	OBJ_SAVE_TYPE(AudioStream); // Saves derived classes with common type so they can be interchanged.
 
@@ -99,7 +96,6 @@ public:
 class AudioStreamPlaybackMicrophone;
 
 class AudioStreamMicrophone : public AudioStream {
-
 	GDCLASS(AudioStreamMicrophone, AudioStream);
 	friend class AudioStreamPlaybackMicrophone;
 
@@ -118,7 +114,6 @@ public:
 };
 
 class AudioStreamPlaybackMicrophone : public AudioStreamPlaybackResampled {
-
 	GDCLASS(AudioStreamPlaybackMicrophone, AudioStreamPlaybackResampled);
 	friend class AudioStreamMicrophone;
 
@@ -152,7 +147,6 @@ public:
 class AudioStreamPlaybackRandomPitch;
 
 class AudioStreamRandomPitch : public AudioStream {
-
 	GDCLASS(AudioStreamRandomPitch, AudioStream);
 	friend class AudioStreamPlaybackRandomPitch;
 
@@ -179,7 +173,6 @@ public:
 };
 
 class AudioStreamPlaybackRandomPitch : public AudioStreamPlayback {
-
 	GDCLASS(AudioStreamPlaybackRandomPitch, AudioStreamPlayback);
 	friend class AudioStreamRandomPitch;
 

@@ -50,7 +50,6 @@ class ShapeOwnerBullet;
 class btBvhTriangleMeshShape;
 
 class ShapeBullet : public RIDBullet {
-
 	Map<ShapeOwnerBullet *, int> owners;
 	real_t margin;
 
@@ -95,7 +94,6 @@ public:
 };
 
 class PlaneShapeBullet : public ShapeBullet {
-
 	Plane plane;
 
 public:
@@ -111,7 +109,6 @@ private:
 };
 
 class SphereShapeBullet : public ShapeBullet {
-
 	real_t radius;
 
 public:
@@ -128,7 +125,6 @@ private:
 };
 
 class BoxShapeBullet : public ShapeBullet {
-
 	btVector3 half_extents;
 
 public:
@@ -145,7 +141,6 @@ private:
 };
 
 class CapsuleShapeBullet : public ShapeBullet {
-
 	real_t height;
 	real_t radius;
 
@@ -164,7 +159,6 @@ private:
 };
 
 class CylinderShapeBullet : public ShapeBullet {
-
 	real_t height;
 	real_t radius;
 
@@ -183,7 +177,6 @@ private:
 };
 
 class ConvexPolygonShapeBullet : public ShapeBullet {
-
 public:
 	btAlignedObjectArray<btVector3> vertices;
 
@@ -218,7 +211,6 @@ private:
 };
 
 class HeightMapShapeBullet : public ShapeBullet {
-
 public:
 	PoolVector<real_t> heights;
 	int width;
@@ -238,7 +230,6 @@ private:
 };
 
 class RayShapeBullet : public ShapeBullet {
-
 public:
 	real_t length;
 	bool slips_on_slope;

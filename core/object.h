@@ -142,7 +142,6 @@ enum PropertyUsageFlags {
 #define ADD_GROUP(m_name, m_prefix) ClassDB::add_property_group(get_class_static(), m_name, m_prefix)
 
 struct PropertyInfo {
-
 	Variant::Type type;
 	String name;
 	StringName class_name; //for classes
@@ -172,7 +171,6 @@ struct PropertyInfo {
 			hint(p_hint),
 			hint_string(p_hint_string),
 			usage(p_usage) {
-
 		if (hint == PROPERTY_HINT_RESOURCE_TYPE) {
 			class_name = hint_string;
 		} else {
@@ -204,7 +202,6 @@ struct PropertyInfo {
 Array convert_property_list(const List<PropertyInfo> *p_list);
 
 struct MethodInfo {
-
 	String name;
 	PropertyInfo return_val;
 	uint32_t flags;
@@ -307,7 +304,6 @@ public:                                                                         
 	virtual bool is_class_ptr(void *p_ptr) const { return (p_ptr == get_class_ptr_static()) ? true : m_inherits::is_class_ptr(p_ptr); } \
                                                                                                                                         \
 	static void get_valid_parents_static(List<String> *p_parents) {                                                                     \
-                                                                                                                                        \
 		if (m_class::_get_valid_parents_static != m_inherits::_get_valid_parents_static) {                                              \
 			m_class::_get_valid_parents_static(p_parents);                                                                              \
 		}                                                                                                                               \
@@ -417,7 +413,6 @@ public:
 	};
 
 	struct Connection {
-
 		Object *source;
 		StringName signal;
 		Object *target;
@@ -447,9 +442,7 @@ private:
 	friend void postinitialize_handler(Object *);
 
 	struct Signal {
-
 		struct Target {
-
 			ObjectID _id;
 			StringName method;
 
@@ -463,7 +456,6 @@ private:
 		};
 
 		struct Slot {
-
 			int reference_count;
 			Connection conn;
 			List<Connection>::Element *cE;
@@ -772,11 +764,8 @@ bool predelete_handler(Object *p_object);
 void postinitialize_handler(Object *p_object);
 
 class ObjectDB {
-
 	struct ObjectPtrHash {
-
 		static _FORCE_INLINE_ uint32_t hash(const Object *p_obj) {
-
 			union {
 				const Object *p;
 				unsigned long i;

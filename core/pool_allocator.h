@@ -60,7 +60,6 @@ private:
 	};
 
 	struct Entry {
-
 		unsigned int pos;
 		unsigned int len;
 		unsigned int lock;
@@ -99,7 +98,6 @@ private:
 		return p_entry.pos + aligned(p_entry.len);
 	}
 	inline int aligned(int p_size) const {
-
 		int rem = p_size % align;
 		if (rem)
 			p_size += align - rem;

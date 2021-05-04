@@ -40,7 +40,6 @@
 
 class Camera;
 class AudioStreamPlayer3D : public Spatial {
-
 	GDCLASS(AudioStreamPlayer3D, Spatial);
 
 public:
@@ -70,7 +69,6 @@ private:
 	};
 
 	struct Output {
-
 		AudioFilterSW filter;
 		AudioFilterSW::Processor filter_process[8];
 		AudioFrame vol[4];

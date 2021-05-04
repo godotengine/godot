@@ -152,7 +152,6 @@ public:
 	mutable RID_Owner<DummyMesh> mesh_owner;
 
 	RID texture_create() {
-
 		DummyTexture *texture = memnew(DummyTexture);
 		ERR_FAIL_COND_V(!texture, RID());
 		return texture_owner.make_rid(texture);
@@ -594,14 +593,11 @@ public:
 
 	/* LIGHTMAP CAPTURE */
 	struct Instantiable : public RID_Data {
-
 		SelfList<RasterizerScene::InstanceBase>::List instance_list;
 
 		_FORCE_INLINE_ void instance_change_notify(bool p_aabb = true, bool p_materials = true) {
-
 			SelfList<RasterizerScene::InstanceBase> *instances = instance_list.first();
 			while (instances) {
-
 				instances->self()->base_changed(p_aabb, p_materials);
 				instances = instances->next();
 			}
@@ -610,7 +606,6 @@ public:
 		_FORCE_INLINE_ void instance_remove_deps() {
 			SelfList<RasterizerScene::InstanceBase> *instances = instance_list.first();
 			while (instances) {
-
 				SelfList<RasterizerScene::InstanceBase> *next = instances->next();
 				instances->self()->base_removed();
 				instances = next;
@@ -623,7 +618,6 @@ public:
 	};
 
 	struct LightmapCapture : public Instantiable {
-
 		PoolVector<LightmapCaptureOctree> octree;
 		AABB bounds;
 		Transform cell_xform;

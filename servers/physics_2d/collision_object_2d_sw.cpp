@@ -33,7 +33,6 @@
 #include "space_2d_sw.h"
 
 void CollisionObject2DSW::add_shape(Shape2DSW *p_shape, const Transform2D &p_transform, bool p_disabled) {
-
 	Shape s;
 	s.shape = p_shape;
 	s.xform = p_transform;
@@ -53,7 +52,6 @@ void CollisionObject2DSW::add_shape(Shape2DSW *p_shape, const Transform2D &p_tra
 }
 
 void CollisionObject2DSW::set_shape(int p_index, Shape2DSW *p_shape) {
-
 	ERR_FAIL_INDEX(p_index, shapes.size());
 	shapes[p_index].shape->remove_owner(this);
 	shapes.write[p_index].shape = p_shape;
@@ -68,13 +66,11 @@ void CollisionObject2DSW::set_shape(int p_index, Shape2DSW *p_shape) {
 }
 
 void CollisionObject2DSW::set_shape_metadata(int p_index, const Variant &p_metadata) {
-
 	ERR_FAIL_INDEX(p_index, shapes.size());
 	shapes.write[p_index].metadata = p_metadata;
 }
 
 void CollisionObject2DSW::set_shape_transform(int p_index, const Transform2D &p_transform) {
-
 	ERR_FAIL_INDEX(p_index, shapes.size());
 
 	shapes.write[p_index].xform = p_transform;
@@ -115,10 +111,8 @@ void CollisionObject2DSW::set_shape_as_disabled(int p_idx, bool p_disabled) {
 }
 
 void CollisionObject2DSW::remove_shape(Shape2DSW *p_shape) {
-
 	//remove a shape, all the times it appears
 	for (int i = 0; i < shapes.size(); i++) {
-
 		if (shapes[i].shape == p_shape) {
 			remove_shape(i);
 			i--;
@@ -127,11 +121,9 @@ void CollisionObject2DSW::remove_shape(Shape2DSW *p_shape) {
 }
 
 void CollisionObject2DSW::remove_shape(int p_index) {
-
 	//remove anything from shape to be erased to end, so subindices don't change
 	ERR_FAIL_INDEX(p_index, shapes.size());
 	for (int i = p_index; i < shapes.size(); i++) {
-
 		if (shapes[i].bpid == 0)
 			continue;
 		//should never get here with a null owner
@@ -164,9 +156,7 @@ void CollisionObject2DSW::_set_static(bool p_static) {
 }
 
 void CollisionObject2DSW::_unregister_shapes() {
-
 	for (int i = 0; i < shapes.size(); i++) {
-
 		Shape &s = shapes.write[i];
 		if (s.bpid > 0) {
 			space->get_broadphase()->remove(s.bpid);
@@ -176,12 +166,10 @@ void CollisionObject2DSW::_unregister_shapes() {
 }
 
 void CollisionObject2DSW::_update_shapes() {
-
 	if (!space)
 		return;
 
 	for (int i = 0; i < shapes.size(); i++) {
-
 		Shape &s = shapes.write[i];
 
 		if (s.disabled)
@@ -204,12 +192,10 @@ void CollisionObject2DSW::_update_shapes() {
 }
 
 void CollisionObject2DSW::_update_shapes_with_motion(const Vector2 &p_motion) {
-
 	if (!space)
 		return;
 
 	for (int i = 0; i < shapes.size(); i++) {
-
 		Shape &s = shapes.write[i];
 		if (s.disabled)
 			continue;
@@ -231,13 +217,10 @@ void CollisionObject2DSW::_update_shapes_with_motion(const Vector2 &p_motion) {
 }
 
 void CollisionObject2DSW::_set_space(Space2DSW *p_space) {
-
 	if (space) {
-
 		space->remove_object(this);
 
 		for (int i = 0; i < shapes.size(); i++) {
-
 			Shape &s = shapes.write[i];
 			if (s.bpid) {
 				space->get_broadphase()->remove(s.bpid);
@@ -249,21 +232,18 @@ void CollisionObject2DSW::_set_space(Space2DSW *p_space) {
 	space = p_space;
 
 	if (space) {
-
 		space->add_object(this);
 		_update_shapes();
 	}
 }
 
 void CollisionObject2DSW::_shape_changed() {
-
 	_update_shapes();
 	_shapes_changed();
 }
 
 CollisionObject2DSW::CollisionObject2DSW(Type p_type) :
 		pending_shape_update_list(this) {
-
 	_static = true;
 	type = p_type;
 	space = NULL;

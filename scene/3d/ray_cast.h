@@ -34,7 +34,6 @@
 #include "scene/3d/spatial.h"
 
 class RayCast : public Spatial {
-
 	GDCLASS(RayCast, Spatial);
 
 	bool enabled;

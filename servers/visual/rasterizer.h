@@ -83,7 +83,6 @@ public:
 	virtual int environment_get_canvas_max_layer(RID p_env) = 0;
 
 	struct InstanceBase : RID_Data {
-
 		VS::InstanceType base_type;
 		RID base;
 
@@ -127,7 +126,6 @@ public:
 		virtual void base_changed(bool p_aabb, bool p_materials) = 0;
 		InstanceBase() :
 				dependency_item(this) {
-
 			base_type = VS::INSTANCE_NONE;
 			cast_shadows = VS::SHADOW_CASTING_SETTING_ON;
 			receive_shadows = true;
@@ -492,7 +490,6 @@ public:
 	/* LIGHTMAP CAPTURE */
 
 	struct LightmapCaptureOctree {
-
 		enum {
 			CHILD_EMPTY = 0xFFFFFFFF
 		};
@@ -625,7 +622,6 @@ public:
 	};
 
 	struct Light : public RID_Data {
-
 		bool enabled;
 		Color color;
 		Transform2D xform;
@@ -695,9 +691,7 @@ public:
 	virtual void light_internal_free(RID p_rid) = 0;
 
 	struct Item : public RID_Data {
-
 		struct Command {
-
 			enum Type {
 
 				TYPE_LINE,
@@ -719,7 +713,6 @@ public:
 		};
 
 		struct CommandLine : public Command {
-
 			Point2 from, to;
 			Color color;
 			float width;
@@ -727,7 +720,6 @@ public:
 			CommandLine() { type = TYPE_LINE; }
 		};
 		struct CommandPolyLine : public Command {
-
 			bool antialiased;
 			bool multiline;
 			Vector<Point2> triangles;
@@ -742,7 +734,6 @@ public:
 		};
 
 		struct CommandRect : public Command {
-
 			Rect2 rect;
 			RID texture;
 			RID normal_map;
@@ -757,7 +748,6 @@ public:
 		};
 
 		struct CommandNinePatch : public Command {
-
 			Rect2 rect;
 			Rect2 source;
 			RID texture;
@@ -774,7 +764,6 @@ public:
 		};
 
 		struct CommandPrimitive : public Command {
-
 			Vector<Point2> points;
 			Vector<Point2> uvs;
 			Vector<Color> colors;
@@ -789,7 +778,6 @@ public:
 		};
 
 		struct CommandPolygon : public Command {
-
 			Vector<int> indices;
 			Vector<Point2> points;
 			Vector<Point2> uvs;
@@ -809,7 +797,6 @@ public:
 		};
 
 		struct CommandMesh : public Command {
-
 			RID mesh;
 			RID texture;
 			RID normal_map;
@@ -819,7 +806,6 @@ public:
 		};
 
 		struct CommandMultiMesh : public Command {
-
 			RID multimesh;
 			RID texture;
 			RID normal_map;
@@ -827,7 +813,6 @@ public:
 		};
 
 		struct CommandParticles : public Command {
-
 			RID particles;
 			RID texture;
 			RID normal_map;
@@ -835,7 +820,6 @@ public:
 		};
 
 		struct CommandCircle : public Command {
-
 			Point2 pos;
 			float radius;
 			Color color;
@@ -843,13 +827,11 @@ public:
 		};
 
 		struct CommandTransform : public Command {
-
 			Transform2D xform;
 			CommandTransform() { type = TYPE_TRANSFORM; }
 		};
 
 		struct CommandClipIgnore : public Command {
-
 			bool ignore;
 			CommandClipIgnore() {
 				type = TYPE_CLIP_IGNORE;
@@ -904,7 +886,6 @@ public:
 			//must update rect
 			int s = commands.size();
 			if (s == 0) {
-
 				rect = Rect2();
 				rect_dirty = false;
 				return rect;
@@ -917,23 +898,19 @@ public:
 			const Item::Command *const *cmd = &commands[0];
 
 			for (int i = 0; i < s; i++) {
-
 				const Item::Command *c = cmd[i];
 				Rect2 r;
 
 				switch (c->type) {
 					case Item::Command::TYPE_LINE: {
-
 						const Item::CommandLine *line = static_cast<const Item::CommandLine *>(c);
 						r.position = line->from;
 						r.expand_to(line->to);
 					} break;
 					case Item::Command::TYPE_POLYLINE: {
-
 						const Item::CommandPolyLine *pline = static_cast<const Item::CommandPolyLine *>(c);
 						if (pline->triangles.size()) {
 							for (int j = 0; j < pline->triangles.size(); j++) {
-
 								if (j == 0) {
 									r.position = pline->triangles[j];
 								} else {
@@ -941,9 +918,7 @@ public:
 								}
 							}
 						} else {
-
 							for (int j = 0; j < pline->lines.size(); j++) {
-
 								if (j == 0) {
 									r.position = pline->lines[j];
 								} else {
@@ -954,18 +929,15 @@ public:
 
 					} break;
 					case Item::Command::TYPE_RECT: {
-
 						const Item::CommandRect *crect = static_cast<const Item::CommandRect *>(c);
 						r = crect->rect;
 
 					} break;
 					case Item::Command::TYPE_NINEPATCH: {
-
 						const Item::CommandNinePatch *style = static_cast<const Item::CommandNinePatch *>(c);
 						r = style->rect;
 					} break;
 					case Item::Command::TYPE_PRIMITIVE: {
-
 						const Item::CommandPrimitive *primitive = static_cast<const Item::CommandPrimitive *>(c);
 						r.position = primitive->points[0];
 						for (int j = 1; j < primitive->points.size(); j++) {
@@ -973,7 +945,6 @@ public:
 						}
 					} break;
 					case Item::Command::TYPE_POLYGON: {
-
 						const Item::CommandPolygon *polygon = static_cast<const Item::CommandPolygon *>(c);
 						int l = polygon->points.size();
 						const Point2 *pp = &polygon->points[0];
@@ -983,7 +954,6 @@ public:
 						}
 
 						if (skeleton != RID()) {
-
 							// calculate bone AABBs
 							int bone_count = RasterizerStorage::base_singleton->skeleton_get_bone_count(skeleton);
 
@@ -995,7 +965,6 @@ public:
 								bptr[j].size = Vector2(-1, -1); //negative means unused
 							}
 							if (l && polygon->bones.size() == l * 4 && polygon->weights.size() == polygon->bones.size()) {
-
 								for (int j = 0; j < l; j++) {
 									Point2 p = pp[j];
 									for (int k = 0; k < 4; k++) {
@@ -1033,7 +1002,6 @@ public:
 
 					} break;
 					case Item::Command::TYPE_MESH: {
-
 						const Item::CommandMesh *mesh = static_cast<const Item::CommandMesh *>(c);
 						AABB aabb = RasterizerStorage::base_singleton->mesh_get_aabb(mesh->mesh, RID());
 
@@ -1041,7 +1009,6 @@ public:
 
 					} break;
 					case Item::Command::TYPE_MULTIMESH: {
-
 						const Item::CommandMultiMesh *multimesh = static_cast<const Item::CommandMultiMesh *>(c);
 						AABB aabb = RasterizerStorage::base_singleton->multimesh_get_aabb(multimesh->multimesh);
 
@@ -1049,7 +1016,6 @@ public:
 
 					} break;
 					case Item::Command::TYPE_PARTICLES: {
-
 						const Item::CommandParticles *particles_cmd = static_cast<const Item::CommandParticles *>(c);
 						if (particles_cmd->particles.is_valid()) {
 							AABB aabb = RasterizerStorage::base_singleton->particles_get_aabb(particles_cmd->particles);
@@ -1058,13 +1024,11 @@ public:
 
 					} break;
 					case Item::Command::TYPE_CIRCLE: {
-
 						const Item::CommandCircle *circle = static_cast<const Item::CommandCircle *>(c);
 						r.position = Point2(-circle->radius, -circle->radius) + circle->pos;
 						r.size = Point2(circle->radius * 2.0, circle->radius * 2.0);
 					} break;
 					case Item::Command::TYPE_TRANSFORM: {
-
 						const Item::CommandTransform *transform = static_cast<const Item::CommandTransform *>(c);
 						xf = transform->xform;
 						found_xform = true;
@@ -1072,7 +1036,6 @@ public:
 					} break;
 
 					case Item::Command::TYPE_CLIP_IGNORE: {
-
 					} break;
 				}
 
@@ -1135,7 +1098,6 @@ public:
 	virtual void canvas_debug_viewport_shadows(Light *p_lights_with_shadow) = 0;
 
 	struct LightOccluderInstance : public RID_Data {
-
 		bool enabled;
 		RID canvas;
 		RID polygon;

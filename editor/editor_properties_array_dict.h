@@ -36,7 +36,6 @@
 #include "scene/gui/button.h"
 
 class EditorPropertyArrayObject : public Reference {
-
 	GDCLASS(EditorPropertyArrayObject, Reference);
 
 	Variant array;
@@ -53,7 +52,6 @@ public:
 };
 
 class EditorPropertyDictionaryObject : public Reference {
-
 	GDCLASS(EditorPropertyDictionaryObject, Reference);
 
 	Variant new_item_key;

@@ -35,7 +35,6 @@
 #include "servers/audio_server.h"
 
 int VideoPlayer::sp_get_channel_count() const {
-
 	if (playback.is_null()) {
 		return 0;
 	}
@@ -44,7 +43,6 @@ int VideoPlayer::sp_get_channel_count() const {
 }
 
 bool VideoPlayer::mix(AudioFrame *p_buffer, int p_frames) {
-
 	// Check the amount resampler can really handle.
 	// If it cannot, wait "wait_resampler_phase_limit" times.
 	// This mechanism contributes to smoother pause/unpause operation.
@@ -59,7 +57,6 @@ bool VideoPlayer::mix(AudioFrame *p_buffer, int p_frames) {
 
 // Called from main thread (eg VideoStreamPlaybackWebm::update)
 int VideoPlayer::_audio_mix_callback(void *p_udata, const float *p_data, int p_frames) {
-
 	ERR_FAIL_NULL_V(p_udata, 0);
 	ERR_FAIL_NULL_V(p_data, 0);
 
@@ -79,14 +76,12 @@ int VideoPlayer::_audio_mix_callback(void *p_udata, const float *p_data, int p_f
 }
 
 void VideoPlayer::_mix_audios(void *p_self) {
-
 	ERR_FAIL_NULL(p_self);
 	reinterpret_cast<VideoPlayer *>(p_self)->_mix_audio();
 }
 
 // Called from audio thread
 void VideoPlayer::_mix_audio() {
-
 	if (!stream.is_valid()) {
 		return;
 	}
@@ -110,7 +105,6 @@ void VideoPlayer::_mix_audio() {
 		ERR_FAIL_COND(!target);
 
 		for (int j = 0; j < buffer_size; j++) {
-
 			target[j] += buffer[j] * vol;
 		}
 
@@ -123,7 +117,6 @@ void VideoPlayer::_mix_audio() {
 		}
 
 		for (int j = 0; j < buffer_size; j++) {
-
 			AudioFrame frame = buffer[j] * vol;
 			for (int k = 0; k < cc; k++) {
 				targets[k][j] += frame;
@@ -133,11 +126,8 @@ void VideoPlayer::_mix_audio() {
 }
 
 void VideoPlayer::_notification(int p_notification) {
-
 	switch (p_notification) {
-
 		case NOTIFICATION_ENTER_TREE: {
-
 			AudioServer::get_singleton()->add_callback(_mix_audios, this);
 
 			if (stream.is_valid() && autoplay && !Engine::get_singleton()->is_editor_hint()) {
@@ -147,13 +137,11 @@ void VideoPlayer::_notification(int p_notification) {
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
-
 			AudioServer::get_singleton()->remove_callback(_mix_audios, this);
 
 		} break;
 
 		case NOTIFICATION_INTERNAL_PROCESS: {
-
 			bus_index = AudioServer::get_singleton()->thread_find_bus_index(bus);
 
 			if (stream.is_null() || paused || playback.is_null() || !playback->is_playing())
@@ -176,7 +164,6 @@ void VideoPlayer::_notification(int p_notification) {
 		} break;
 
 		case NOTIFICATION_DRAW: {
-
 			if (texture.is_null())
 				return;
 			if (texture->get_width() == 0)
@@ -190,7 +177,6 @@ void VideoPlayer::_notification(int p_notification) {
 };
 
 Size2 VideoPlayer::get_minimum_size() const {
-
 	if (!expand && !texture.is_null())
 		return texture->get_size();
 	else
@@ -198,19 +184,16 @@ Size2 VideoPlayer::get_minimum_size() const {
 }
 
 void VideoPlayer::set_expand(bool p_expand) {
-
 	expand = p_expand;
 	update();
 	minimum_size_changed();
 }
 
 bool VideoPlayer::has_expand() const {
-
 	return expand;
 }
 
 void VideoPlayer::set_stream(const Ref<VideoStream> &p_stream) {
-
 	stop();
 
 	AudioServer::get_singleton()->lock();
@@ -256,12 +239,10 @@ void VideoPlayer::set_stream(const Ref<VideoStream> &p_stream) {
 };
 
 Ref<VideoStream> VideoPlayer::get_stream() const {
-
 	return stream;
 };
 
 void VideoPlayer::play() {
-
 	ERR_FAIL_COND(!is_inside_tree());
 	if (playback.is_null())
 		return;
@@ -274,7 +255,6 @@ void VideoPlayer::play() {
 };
 
 void VideoPlayer::stop() {
-
 	if (!is_inside_tree())
 		return;
 	if (playback.is_null())
@@ -288,7 +268,6 @@ void VideoPlayer::stop() {
 };
 
 bool VideoPlayer::is_playing() const {
-
 	if (playback.is_null())
 		return false;
 
@@ -296,7 +275,6 @@ bool VideoPlayer::is_playing() const {
 };
 
 void VideoPlayer::set_paused(bool p_paused) {
-
 	paused = p_paused;
 	if (playback.is_valid()) {
 		playback->set_paused(p_paused);
@@ -306,17 +284,14 @@ void VideoPlayer::set_paused(bool p_paused) {
 };
 
 bool VideoPlayer::is_paused() const {
-
 	return paused;
 }
 
 void VideoPlayer::set_buffering_msec(int p_msec) {
-
 	buffering_ms = p_msec;
 }
 
 int VideoPlayer::get_buffering_msec() const {
-
 	return buffering_ms;
 }
 
@@ -325,22 +300,18 @@ void VideoPlayer::set_audio_track(int p_track) {
 }
 
 int VideoPlayer::get_audio_track() const {
-
 	return audio_track;
 }
 
 void VideoPlayer::set_volume(float p_vol) {
-
 	volume = p_vol;
 };
 
 float VideoPlayer::get_volume() const {
-
 	return volume;
 };
 
 void VideoPlayer::set_volume_db(float p_db) {
-
 	if (p_db < -79)
 		set_volume(0);
 	else
@@ -348,7 +319,6 @@ void VideoPlayer::set_volume_db(float p_db) {
 };
 
 float VideoPlayer::get_volume_db() const {
-
 	if (volume == 0)
 		return -80;
 	else
@@ -356,27 +326,23 @@ float VideoPlayer::get_volume_db() const {
 };
 
 String VideoPlayer::get_stream_name() const {
-
 	if (stream.is_null())
 		return "<No Stream>";
 	return stream->get_name();
 };
 
 float VideoPlayer::get_stream_position() const {
-
 	if (playback.is_null())
 		return 0;
 	return playback->get_playback_position();
 };
 
 void VideoPlayer::set_stream_position(float p_position) {
-
 	if (playback.is_valid())
 		playback->seek(p_position);
 }
 
 Ref<Texture> VideoPlayer::get_video_texture() const {
-
 	if (playback.is_valid())
 		return playback->get_texture();
 
@@ -384,17 +350,14 @@ Ref<Texture> VideoPlayer::get_video_texture() const {
 }
 
 void VideoPlayer::set_autoplay(bool p_enable) {
-
 	autoplay = p_enable;
 };
 
 bool VideoPlayer::has_autoplay() const {
-
 	return autoplay;
 };
 
 void VideoPlayer::set_bus(const StringName &p_bus) {
-
 	//if audio is active, must lock this
 	AudioServer::get_singleton()->lock();
 	bus = p_bus;
@@ -402,7 +365,6 @@ void VideoPlayer::set_bus(const StringName &p_bus) {
 }
 
 StringName VideoPlayer::get_bus() const {
-
 	for (int i = 0; i < AudioServer::get_singleton()->get_bus_count(); i++) {
 		if (AudioServer::get_singleton()->get_bus_name(i) == bus) {
 			return bus;
@@ -412,9 +374,7 @@ StringName VideoPlayer::get_bus() const {
 }
 
 void VideoPlayer::_validate_property(PropertyInfo &p_property) const {
-
 	if (p_property.name == "bus") {
-
 		String options;
 		for (int i = 0; i < AudioServer::get_singleton()->get_bus_count(); i++) {
 			if (i > 0)
@@ -428,7 +388,6 @@ void VideoPlayer::_validate_property(PropertyInfo &p_property) const {
 }
 
 void VideoPlayer::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("set_stream", "stream"), &VideoPlayer::set_stream);
 	ClassDB::bind_method(D_METHOD("get_stream"), &VideoPlayer::get_stream);
 
@@ -485,7 +444,6 @@ void VideoPlayer::_bind_methods() {
 }
 
 VideoPlayer::VideoPlayer() {
-
 	volume = 1;
 	loops = false;
 	paused = false;
@@ -506,7 +464,6 @@ VideoPlayer::VideoPlayer() {
 };
 
 VideoPlayer::~VideoPlayer() {
-
 	//	if (stream_rid.is_valid())
 	//		AudioServer::get_singleton()->free(stream_rid);
 	resampler.clear(); //Not necessary here, but make in consistent with other "stream_player" classes

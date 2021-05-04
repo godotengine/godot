@@ -60,7 +60,6 @@ bool Sprite::_edit_use_pivot() const {
 }
 
 bool Sprite::_edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const {
-
 	return is_pixel_opaque(p_point);
 }
 
@@ -78,7 +77,6 @@ Rect2 Sprite::get_anchorable_rect() const {
 }
 
 void Sprite::_get_rects(Rect2 &r_src_rect, Rect2 &r_dst_rect, bool &r_filter_clip) const {
-
 	Rect2 base_rect;
 
 	if (region) {
@@ -113,11 +111,8 @@ void Sprite::_get_rects(Rect2 &r_src_rect, Rect2 &r_dst_rect, bool &r_filter_cli
 }
 
 void Sprite::_notification(int p_what) {
-
 	switch (p_what) {
-
 		case NOTIFICATION_DRAW: {
-
 			if (texture.is_null())
 				return;
 
@@ -138,7 +133,6 @@ void Sprite::_notification(int p_what) {
 }
 
 void Sprite::set_texture(const Ref<Texture> &p_texture) {
-
 	if (p_texture == texture)
 		return;
 
@@ -157,67 +151,55 @@ void Sprite::set_texture(const Ref<Texture> &p_texture) {
 }
 
 void Sprite::set_normal_map(const Ref<Texture> &p_texture) {
-
 	normal_map = p_texture;
 	update();
 }
 
 Ref<Texture> Sprite::get_normal_map() const {
-
 	return normal_map;
 }
 
 Ref<Texture> Sprite::get_texture() const {
-
 	return texture;
 }
 
 void Sprite::set_centered(bool p_center) {
-
 	centered = p_center;
 	update();
 	item_rect_changed();
 }
 
 bool Sprite::is_centered() const {
-
 	return centered;
 }
 
 void Sprite::set_offset(const Point2 &p_offset) {
-
 	offset = p_offset;
 	update();
 	item_rect_changed();
 	_change_notify("offset");
 }
 Point2 Sprite::get_offset() const {
-
 	return offset;
 }
 
 void Sprite::set_flip_h(bool p_flip) {
-
 	hflip = p_flip;
 	update();
 }
 bool Sprite::is_flipped_h() const {
-
 	return hflip;
 }
 
 void Sprite::set_flip_v(bool p_flip) {
-
 	vflip = p_flip;
 	update();
 }
 bool Sprite::is_flipped_v() const {
-
 	return vflip;
 }
 
 void Sprite::set_region(bool p_region) {
-
 	if (p_region == region)
 		return;
 
@@ -226,12 +208,10 @@ void Sprite::set_region(bool p_region) {
 }
 
 bool Sprite::is_region() const {
-
 	return region;
 }
 
 void Sprite::set_region_rect(const Rect2 &p_region_rect) {
-
 	if (region_rect == p_region_rect)
 		return;
 
@@ -244,7 +224,6 @@ void Sprite::set_region_rect(const Rect2 &p_region_rect) {
 }
 
 Rect2 Sprite::get_region_rect() const {
-
 	return region_rect;
 }
 
@@ -258,7 +237,6 @@ bool Sprite::is_region_filter_clip_enabled() const {
 }
 
 void Sprite::set_frame(int p_frame) {
-
 	ERR_FAIL_INDEX(p_frame, vframes * hframes);
 
 	if (frame != p_frame)
@@ -272,7 +250,6 @@ void Sprite::set_frame(int p_frame) {
 }
 
 int Sprite::get_frame() const {
-
 	return frame;
 }
 
@@ -288,7 +265,6 @@ Vector2 Sprite::get_frame_coords() const {
 }
 
 void Sprite::set_vframes(int p_amount) {
-
 	ERR_FAIL_COND_MSG(p_amount < 1, "Amount of vframes cannot be smaller than 1.");
 	vframes = p_amount;
 	update();
@@ -296,12 +272,10 @@ void Sprite::set_vframes(int p_amount) {
 	_change_notify();
 }
 int Sprite::get_vframes() const {
-
 	return vframes;
 }
 
 void Sprite::set_hframes(int p_amount) {
-
 	ERR_FAIL_COND_MSG(p_amount < 1, "Amount of hframes cannot be smaller than 1.");
 	hframes = p_amount;
 	update();
@@ -309,12 +283,10 @@ void Sprite::set_hframes(int p_amount) {
 	_change_notify();
 }
 int Sprite::get_hframes() const {
-
 	return hframes;
 }
 
 bool Sprite::is_pixel_opaque(const Point2 &p_point) const {
-
 	if (texture.is_null())
 		return false;
 
@@ -362,7 +334,6 @@ bool Sprite::is_pixel_opaque(const Point2 &p_point) const {
 }
 
 Rect2 Sprite::get_rect() const {
-
 	if (texture.is_null())
 		return Rect2(0, 0, 1, 1);
 
@@ -390,7 +361,6 @@ Rect2 Sprite::get_rect() const {
 }
 
 void Sprite::_validate_property(PropertyInfo &property) const {
-
 	if (property.name == "frame") {
 		property.hint = PROPERTY_HINT_RANGE;
 		property.hint_string = "0," + itos(vframes * hframes - 1) + ",1";
@@ -403,7 +373,6 @@ void Sprite::_validate_property(PropertyInfo &property) const {
 }
 
 void Sprite::_texture_changed() {
-
 	// Changes to the texture need to trigger an update to make
 	// the editor redraw the sprite with the updated texture.
 	if (texture.is_valid()) {
@@ -412,7 +381,6 @@ void Sprite::_texture_changed() {
 }
 
 void Sprite::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("set_texture", "texture"), &Sprite::set_texture);
 	ClassDB::bind_method(D_METHOD("get_texture"), &Sprite::get_texture);
 
@@ -481,7 +449,6 @@ void Sprite::_bind_methods() {
 }
 
 Sprite::Sprite() {
-
 	centered = true;
 	hflip = false;
 	vflip = false;

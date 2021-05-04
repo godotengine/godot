@@ -36,7 +36,6 @@
 #include <android/native_window_jni.h>
 
 class PowerAndroid {
-
 	struct LocalReferenceHolder {
 		JNIEnv *m_env;
 		const char *m_func;

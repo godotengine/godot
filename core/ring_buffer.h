@@ -35,7 +35,6 @@
 
 template <typename T>
 class RingBuffer {
-
 	Vector<T> data;
 	int read_pos;
 	int write_pos;
@@ -78,7 +77,6 @@ public:
 	};
 
 	int copy(T *p_buf, int p_offset, int p_size) const {
-
 		int left = data_left();
 		if ((p_offset + p_size) > left) {
 			p_size -= left - p_offset;
@@ -104,7 +102,6 @@ public:
 	};
 
 	int find(const T &t, int p_offset, int p_max_size) const {
-
 		int left = data_left();
 		if ((p_offset + p_max_size) > left) {
 			p_max_size -= left - p_offset;
@@ -148,7 +145,6 @@ public:
 	};
 
 	int write(const T *p_buf, int p_size) {
-
 		int left = space_left();
 		p_size = MIN(left, p_size);
 
@@ -156,7 +152,6 @@ public:
 		int to_write = p_size;
 		int src = 0;
 		while (to_write) {
-
 			int end = pos + to_write;
 			end = MIN(end, size());
 			int total = end - pos;

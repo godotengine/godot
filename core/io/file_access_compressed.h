@@ -35,7 +35,6 @@
 #include "core/os/file_access.h"
 
 class FileAccessCompressed : public FileAccess {
-
 	Compression::Mode cmode;
 	bool writing;
 	uint32_t write_pos;

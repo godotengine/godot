@@ -33,12 +33,10 @@
 WebRTCPeerConnection *(*WebRTCPeerConnection::_create)() = NULL;
 
 Ref<WebRTCPeerConnection> WebRTCPeerConnection::create_ref() {
-
 	return create();
 }
 
 WebRTCPeerConnection *WebRTCPeerConnection::create() {
-
 	if (!_create)
 		return NULL;
 	return _create();

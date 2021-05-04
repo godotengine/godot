@@ -53,7 +53,6 @@ Size2 CheckBox::get_icon_size() const {
 }
 
 Size2 CheckBox::get_minimum_size() const {
-
 	Size2 minsize = Button::get_minimum_size();
 	Size2 tex_size = get_icon_size();
 	minsize.width += tex_size.width;
@@ -67,12 +66,9 @@ Size2 CheckBox::get_minimum_size() const {
 }
 
 void CheckBox::_notification(int p_what) {
-
 	if (p_what == NOTIFICATION_THEME_CHANGED) {
-
 		_set_internal_margin(MARGIN_LEFT, get_icon_size().width);
 	} else if (p_what == NOTIFICATION_DRAW) {
-
 		RID ci = get_canvas_item();
 
 		Ref<Texture> on = Control::get_icon(vformat("%s%s", is_radio() ? "radio_checked" : "checked", is_disabled() ? "_disabled" : ""));
@@ -91,7 +87,6 @@ void CheckBox::_notification(int p_what) {
 }
 
 bool CheckBox::is_radio() {
-
 	return get_button_group().is_valid();
 }
 

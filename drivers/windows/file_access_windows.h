@@ -39,7 +39,6 @@
 #include <stdio.h>
 
 class FileAccessWindows : public FileAccess {
-
 	FILE *f;
 	int flags;
 	void check_errors() const;

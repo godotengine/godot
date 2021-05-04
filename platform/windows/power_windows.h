@@ -38,7 +38,6 @@
 #include <windows.h>
 
 class PowerWindows {
-
 private:
 	int nsecs_left;
 	int percent_left;

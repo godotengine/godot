@@ -37,7 +37,6 @@
 class CollisionObject2D;
 
 class CollisionPolygon2D : public Node2D {
-
 	GDCLASS(CollisionPolygon2D, Node2D);
 
 public:

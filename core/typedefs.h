@@ -139,7 +139,6 @@ T *_nullptr() {
 #define SWAP(m_x, m_y) __swap_tmpl((m_x), (m_y))
 template <class T>
 inline void __swap_tmpl(T &x, T &y) {
-
 	T aux = x;
 	x = y;
 	y = aux;
@@ -173,7 +172,6 @@ inline void __swap_tmpl(T &x, T &y) {
 /** Function to find the next power of 2 to an integer */
 
 static _FORCE_INLINE_ unsigned int next_power_of_2(unsigned int x) {
-
 	if (x == 0)
 		return 0;
 
@@ -188,7 +186,6 @@ static _FORCE_INLINE_ unsigned int next_power_of_2(unsigned int x) {
 }
 
 static _FORCE_INLINE_ unsigned int previous_power_of_2(unsigned int x) {
-
 	x |= x >> 1;
 	x |= x >> 2;
 	x |= x >> 4;
@@ -198,7 +195,6 @@ static _FORCE_INLINE_ unsigned int previous_power_of_2(unsigned int x) {
 }
 
 static _FORCE_INLINE_ unsigned int closest_power_of_2(unsigned int x) {
-
 	unsigned int nx = next_power_of_2(x);
 	unsigned int px = previous_power_of_2(x);
 	return (nx - x) > (x - px) ? px : nx;
@@ -209,7 +205,6 @@ static inline int get_shift_from_power_of_2(unsigned int p_pixel);
 
 template <class T>
 static _FORCE_INLINE_ T nearest_power_of_2_templated(T x) {
-
 	--x;
 
 	// The number of operations on x is the base two logarithm
@@ -228,9 +223,7 @@ static _FORCE_INLINE_ T nearest_power_of_2_templated(T x) {
 /** Function to find the nearest (bigger) power of 2 to an integer */
 
 static inline unsigned int nearest_shift(unsigned int p_number) {
-
 	for (int i = 30; i >= 0; i--) {
-
 		if (p_number & (1 << i))
 			return i + 1;
 	}
@@ -243,7 +236,6 @@ static inline int get_shift_from_power_of_2(unsigned int p_pixel) {
 	// return a GL_TEXTURE_SIZE_ENUM
 
 	for (unsigned int i = 0; i < 32; i++) {
-
 		if (p_pixel == (unsigned int)(1 << i))
 			return i;
 	}
@@ -288,7 +280,6 @@ static inline uint64_t BSWAP64(uint64_t x) {
 
 template <class T>
 struct Comparator {
-
 	_ALWAYS_INLINE_ bool operator()(const T &p_a, const T &p_b) const { return (p_a < p_b); }
 };
 
@@ -296,7 +287,6 @@ void _global_lock();
 void _global_unlock();
 
 struct _GlobalLock {
-
 	_GlobalLock() { _global_lock(); }
 	~_GlobalLock() { _global_unlock(); }
 };

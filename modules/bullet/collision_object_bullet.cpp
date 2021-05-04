@@ -201,7 +201,6 @@ int CollisionObjectBullet::get_godot_object_flags() const {
 }
 
 void CollisionObjectBullet::set_transform(const Transform &p_global_transform) {
-
 	set_body_scale(p_global_transform.basis.get_scale_abs());
 
 	btTransform bt_transform;
@@ -345,7 +344,6 @@ void RigidCollisionObjectBullet::shape_changed(int p_shape_index) {
 }
 
 void RigidCollisionObjectBullet::reload_shapes() {
-
 	if (mainShape && mainShape->isCompound()) {
 		// Destroy compound
 		bulletdelete(mainShape);

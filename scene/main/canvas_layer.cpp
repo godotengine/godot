@@ -32,19 +32,16 @@
 #include "viewport.h"
 
 void CanvasLayer::set_layer(int p_xform) {
-
 	layer = p_xform;
 	if (viewport.is_valid())
 		VisualServer::get_singleton()->viewport_set_canvas_stacking(viewport, canvas, layer, get_position_in_parent());
 }
 
 int CanvasLayer::get_layer() const {
-
 	return layer;
 }
 
 void CanvasLayer::set_transform(const Transform2D &p_xform) {
-
 	transform = p_xform;
 	locrotscale_dirty = true;
 	if (viewport.is_valid())
@@ -52,12 +49,10 @@ void CanvasLayer::set_transform(const Transform2D &p_xform) {
 }
 
 Transform2D CanvasLayer::get_transform() const {
-
 	return transform;
 }
 
 void CanvasLayer::_update_xform() {
-
 	transform.set_rotation_and_scale(rot, scale);
 	transform.set_origin(ofs);
 	if (viewport.is_valid())
@@ -65,7 +60,6 @@ void CanvasLayer::_update_xform() {
 }
 
 void CanvasLayer::_update_locrotscale() {
-
 	ofs = transform.elements[2];
 	rot = transform.get_rotation();
 	scale = transform.get_scale();
@@ -73,7 +67,6 @@ void CanvasLayer::_update_locrotscale() {
 }
 
 void CanvasLayer::set_offset(const Vector2 &p_offset) {
-
 	if (locrotscale_dirty)
 		_update_locrotscale();
 
@@ -82,7 +75,6 @@ void CanvasLayer::set_offset(const Vector2 &p_offset) {
 }
 
 Vector2 CanvasLayer::get_offset() const {
-
 	if (locrotscale_dirty)
 		const_cast<CanvasLayer *>(this)->_update_locrotscale();
 
@@ -90,7 +82,6 @@ Vector2 CanvasLayer::get_offset() const {
 }
 
 void CanvasLayer::set_rotation(real_t p_radians) {
-
 	if (locrotscale_dirty)
 		_update_locrotscale();
 
@@ -99,7 +90,6 @@ void CanvasLayer::set_rotation(real_t p_radians) {
 }
 
 real_t CanvasLayer::get_rotation() const {
-
 	if (locrotscale_dirty)
 		const_cast<CanvasLayer *>(this)->_update_locrotscale();
 
@@ -107,17 +97,14 @@ real_t CanvasLayer::get_rotation() const {
 }
 
 void CanvasLayer::set_rotation_degrees(real_t p_degrees) {
-
 	set_rotation(Math::deg2rad(p_degrees));
 }
 
 real_t CanvasLayer::get_rotation_degrees() const {
-
 	return Math::rad2deg(get_rotation());
 }
 
 void CanvasLayer::set_scale(const Vector2 &p_scale) {
-
 	if (locrotscale_dirty)
 		_update_locrotscale();
 
@@ -126,7 +113,6 @@ void CanvasLayer::set_scale(const Vector2 &p_scale) {
 }
 
 Vector2 CanvasLayer::get_scale() const {
-
 	if (locrotscale_dirty)
 		const_cast<CanvasLayer *>(this)->_update_locrotscale();
 
@@ -134,13 +120,9 @@ Vector2 CanvasLayer::get_scale() const {
 }
 
 void CanvasLayer::_notification(int p_what) {
-
 	switch (p_what) {
-
 		case NOTIFICATION_ENTER_TREE: {
-
 			if (custom_viewport && ObjectDB::get_instance(custom_viewport_id)) {
-
 				vp = custom_viewport;
 			} else {
 				vp = Node::get_viewport();
@@ -157,7 +139,6 @@ void CanvasLayer::_notification(int p_what) {
 
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
-
 			vp->_canvas_layer_remove(this);
 			VisualServer::get_singleton()->viewport_remove_canvas(viewport, canvas);
 			viewport = RID();
@@ -165,7 +146,6 @@ void CanvasLayer::_notification(int p_what) {
 
 		} break;
 		case NOTIFICATION_MOVED_IN_PARENT: {
-
 			if (is_inside_tree())
 				VisualServer::get_singleton()->viewport_set_canvas_stacking(viewport, canvas, layer, get_position_in_parent());
 
@@ -174,7 +154,6 @@ void CanvasLayer::_notification(int p_what) {
 }
 
 Size2 CanvasLayer::get_viewport_size() const {
-
 	if (!is_inside_tree())
 		return Size2(1, 1);
 
@@ -183,7 +162,6 @@ Size2 CanvasLayer::get_viewport_size() const {
 }
 
 RID CanvasLayer::get_viewport() const {
-
 	return viewport;
 }
 
@@ -204,7 +182,6 @@ void CanvasLayer::set_custom_viewport(Node *p_viewport) {
 	}
 
 	if (is_inside_tree()) {
-
 		if (custom_viewport)
 			vp = custom_viewport;
 		else
@@ -220,7 +197,6 @@ void CanvasLayer::set_custom_viewport(Node *p_viewport) {
 }
 
 Node *CanvasLayer::get_custom_viewport() const {
-
 	return custom_viewport;
 }
 
@@ -229,12 +205,10 @@ void CanvasLayer::reset_sort_index() {
 }
 
 int CanvasLayer::get_sort_index() {
-
 	return sort_index++;
 }
 
 RID CanvasLayer::get_canvas() const {
-
 	return canvas;
 }
 
@@ -261,7 +235,6 @@ float CanvasLayer::get_follow_viewport_scale() const {
 }
 
 void CanvasLayer::_update_follow_viewport(bool p_force_exit) {
-
 	if (!is_inside_tree()) {
 		return;
 	}
@@ -273,7 +246,6 @@ void CanvasLayer::_update_follow_viewport(bool p_force_exit) {
 }
 
 void CanvasLayer::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("set_layer", "layer"), &CanvasLayer::set_layer);
 	ClassDB::bind_method(D_METHOD("get_layer"), &CanvasLayer::get_layer);
 
@@ -319,7 +291,6 @@ void CanvasLayer::_bind_methods() {
 }
 
 CanvasLayer::CanvasLayer() {
-
 	vp = NULL;
 	scale = Vector2(1, 1);
 	rot = 0;
@@ -334,6 +305,5 @@ CanvasLayer::CanvasLayer() {
 }
 
 CanvasLayer::~CanvasLayer() {
-
 	VS::get_singleton()->free(canvas);
 }

@@ -36,11 +36,8 @@
 #include "servers/physics_server.h"
 
 void CollisionObject::_notification(int p_what) {
-
 	switch (p_what) {
-
 		case NOTIFICATION_ENTER_WORLD: {
-
 			if (area)
 				PhysicsServer::get_singleton()->area_set_transform(rid, get_global_transform());
 			else
@@ -57,7 +54,6 @@ void CollisionObject::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_TRANSFORM_CHANGED: {
-
 			if (area)
 				PhysicsServer::get_singleton()->area_set_transform(rid, get_global_transform());
 			else
@@ -65,12 +61,10 @@ void CollisionObject::_notification(int p_what) {
 
 		} break;
 		case NOTIFICATION_VISIBILITY_CHANGED: {
-
 			_update_pickable();
 
 		} break;
 		case NOTIFICATION_EXIT_WORLD: {
-
 			if (area) {
 				PhysicsServer::get_singleton()->area_set_space(rid, RID());
 			} else
@@ -86,7 +80,6 @@ void CollisionObject::_notification(int p_what) {
 }
 
 void CollisionObject::_input_event(Node *p_camera, const Ref<InputEvent> &p_input_event, const Vector3 &p_pos, const Vector3 &p_normal, int p_shape) {
-
 	if (get_script_instance()) {
 		get_script_instance()->call(SceneStringNames::get_singleton()->_input_event, p_camera, p_input_event, p_pos, p_normal, p_shape);
 	}
@@ -94,7 +87,6 @@ void CollisionObject::_input_event(Node *p_camera, const Ref<InputEvent> &p_inpu
 }
 
 void CollisionObject::_mouse_enter() {
-
 	if (get_script_instance()) {
 		get_script_instance()->call(SceneStringNames::get_singleton()->_mouse_enter);
 	}
@@ -102,7 +94,6 @@ void CollisionObject::_mouse_enter() {
 }
 
 void CollisionObject::_mouse_exit() {
-
 	if (get_script_instance()) {
 		get_script_instance()->call(SceneStringNames::get_singleton()->_mouse_exit);
 	}
@@ -177,18 +168,15 @@ void CollisionObject::_update_shape_data(uint32_t p_owner) {
 }
 
 void CollisionObject::set_ray_pickable(bool p_ray_pickable) {
-
 	ray_pickable = p_ray_pickable;
 	_update_pickable();
 }
 
 bool CollisionObject::is_ray_pickable() const {
-
 	return ray_pickable;
 }
 
 void CollisionObject::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("set_ray_pickable", "ray_pickable"), &CollisionObject::set_ray_pickable);
 	ClassDB::bind_method(D_METHOD("is_ray_pickable"), &CollisionObject::is_ray_pickable);
 	ClassDB::bind_method(D_METHOD("set_capture_input_on_drag", "enable"), &CollisionObject::set_capture_input_on_drag);
@@ -223,7 +211,6 @@ void CollisionObject::_bind_methods() {
 }
 
 uint32_t CollisionObject::create_shape_owner(Object *p_owner) {
-
 	ShapeData sd;
 	uint32_t id;
 
@@ -241,7 +228,6 @@ uint32_t CollisionObject::create_shape_owner(Object *p_owner) {
 }
 
 void CollisionObject::remove_shape_owner(uint32_t owner) {
-
 	ERR_FAIL_COND(!shapes.has(owner));
 
 	shape_owner_clear_shapes(owner);
@@ -265,21 +251,18 @@ void CollisionObject::shape_owner_set_disabled(uint32_t p_owner, bool p_disabled
 }
 
 bool CollisionObject::is_shape_owner_disabled(uint32_t p_owner) const {
-
 	ERR_FAIL_COND_V(!shapes.has(p_owner), false);
 
 	return shapes[p_owner].disabled;
 }
 
 void CollisionObject::get_shape_owners(List<uint32_t> *r_owners) {
-
 	for (Map<uint32_t, ShapeData>::Element *E = shapes.front(); E; E = E->next()) {
 		r_owners->push_back(E->key());
 	}
 }
 
 Array CollisionObject::_get_shape_owners() {
-
 	Array ret;
 	for (Map<uint32_t, ShapeData>::Element *E = shapes.front(); E; E = E->next()) {
 		ret.push_back(E->key());
@@ -289,7 +272,6 @@ Array CollisionObject::_get_shape_owners() {
 }
 
 void CollisionObject::shape_owner_set_transform(uint32_t p_owner, const Transform &p_transform) {
-
 	ERR_FAIL_COND(!shapes.has(p_owner));
 
 	ShapeData &sd = shapes[p_owner];
@@ -305,21 +287,18 @@ void CollisionObject::shape_owner_set_transform(uint32_t p_owner, const Transfor
 	_update_shape_data(p_owner);
 }
 Transform CollisionObject::shape_owner_get_transform(uint32_t p_owner) const {
-
 	ERR_FAIL_COND_V(!shapes.has(p_owner), Transform());
 
 	return shapes[p_owner].xform;
 }
 
 Object *CollisionObject::shape_owner_get_owner(uint32_t p_owner) const {
-
 	ERR_FAIL_COND_V(!shapes.has(p_owner), NULL);
 
 	return shapes[p_owner].owner;
 }
 
 void CollisionObject::shape_owner_add_shape(uint32_t p_owner, const Ref<Shape> &p_shape) {
-
 	ERR_FAIL_COND(!shapes.has(p_owner));
 	ERR_FAIL_COND(p_shape.is_null());
 
@@ -340,20 +319,17 @@ void CollisionObject::shape_owner_add_shape(uint32_t p_owner, const Ref<Shape> &
 	_update_shape_data(p_owner);
 }
 int CollisionObject::shape_owner_get_shape_count(uint32_t p_owner) const {
-
 	ERR_FAIL_COND_V(!shapes.has(p_owner), 0);
 
 	return shapes[p_owner].shapes.size();
 }
 Ref<Shape> CollisionObject::shape_owner_get_shape(uint32_t p_owner, int p_shape) const {
-
 	ERR_FAIL_COND_V(!shapes.has(p_owner), Ref<Shape>());
 	ERR_FAIL_INDEX_V(p_shape, shapes[p_owner].shapes.size(), Ref<Shape>());
 
 	return shapes[p_owner].shapes[p_shape].shape;
 }
 int CollisionObject::shape_owner_get_shape_index(uint32_t p_owner, int p_shape) const {
-
 	ERR_FAIL_COND_V(!shapes.has(p_owner), -1);
 	ERR_FAIL_INDEX_V(p_shape, shapes[p_owner].shapes.size(), -1);
 
@@ -361,7 +337,6 @@ int CollisionObject::shape_owner_get_shape_index(uint32_t p_owner, int p_shape) 
 }
 
 void CollisionObject::shape_owner_remove_shape(uint32_t p_owner, int p_shape) {
-
 	ERR_FAIL_COND(!shapes.has(p_owner));
 	ERR_FAIL_INDEX(p_shape, shapes[p_owner].shapes.size());
 
@@ -393,7 +368,6 @@ void CollisionObject::shape_owner_remove_shape(uint32_t p_owner, int p_shape) {
 }
 
 void CollisionObject::shape_owner_clear_shapes(uint32_t p_owner) {
-
 	ERR_FAIL_COND(!shapes.has(p_owner));
 
 	while (shape_owner_get_shape_count(p_owner) > 0) {
@@ -402,7 +376,6 @@ void CollisionObject::shape_owner_clear_shapes(uint32_t p_owner) {
 }
 
 uint32_t CollisionObject::shape_find_owner(int p_shape_index) const {
-
 	ERR_FAIL_INDEX_V(p_shape_index, total_subshapes, 0);
 
 	for (const Map<uint32_t, ShapeData>::Element *E = shapes.front(); E; E = E->next()) {
@@ -418,7 +391,6 @@ uint32_t CollisionObject::shape_find_owner(int p_shape_index) const {
 }
 
 CollisionObject::CollisionObject(RID p_rid, bool p_area) {
-
 	rid = p_rid;
 	area = p_area;
 	capture_input_on_drag = false;
@@ -435,17 +407,14 @@ CollisionObject::CollisionObject(RID p_rid, bool p_area) {
 }
 
 void CollisionObject::set_capture_input_on_drag(bool p_capture) {
-
 	capture_input_on_drag = p_capture;
 }
 
 bool CollisionObject::get_capture_input_on_drag() const {
-
 	return capture_input_on_drag;
 }
 
 String CollisionObject::get_configuration_warning() const {
-
 	String warning = Spatial::get_configuration_warning();
 
 	if (shapes.empty()) {
@@ -459,7 +428,6 @@ String CollisionObject::get_configuration_warning() const {
 }
 
 CollisionObject::CollisionObject() {
-
 	capture_input_on_drag = false;
 	ray_pickable = true;
 	set_notify_transform(true);
@@ -469,6 +437,5 @@ CollisionObject::CollisionObject() {
 }
 
 CollisionObject::~CollisionObject() {
-
 	PhysicsServer::get_singleton()->free(rid);
 }

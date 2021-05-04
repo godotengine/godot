@@ -33,32 +33,26 @@
 #include "core/project_settings.h"
 
 void VisualServerWrapMT::thread_exit() {
-
 	exit.set();
 }
 
 void VisualServerWrapMT::thread_draw(bool p_swap_buffers, double frame_step) {
-
 	if (!draw_pending.decrement()) {
-
 		visual_server->draw(p_swap_buffers, frame_step);
 	}
 }
 
 void VisualServerWrapMT::thread_flush() {
-
 	draw_pending.decrement();
 }
 
 void VisualServerWrapMT::_thread_callback(void *_instance) {
-
 	VisualServerWrapMT *vsmt = reinterpret_cast<VisualServerWrapMT *>(_instance);
 
 	vsmt->thread_loop();
 }
 
 void VisualServerWrapMT::thread_loop() {
-
 	server_thread = Thread::get_caller_id();
 
 	OS::get_singleton()->make_rendering_thread();
@@ -80,33 +74,25 @@ void VisualServerWrapMT::thread_loop() {
 /* EVENT QUEUING */
 
 void VisualServerWrapMT::sync() {
-
 	if (create_thread) {
-
 		draw_pending.increment();
 		command_queue.push_and_sync(this, &VisualServerWrapMT::thread_flush);
 	} else {
-
 		command_queue.flush_all(); //flush all pending from other threads
 	}
 }
 
 void VisualServerWrapMT::draw(bool p_swap_buffers, double frame_step) {
-
 	if (create_thread) {
-
 		draw_pending.increment();
 		command_queue.push(this, &VisualServerWrapMT::thread_draw, p_swap_buffers, frame_step);
 	} else {
-
 		visual_server->draw(p_swap_buffers, frame_step);
 	}
 }
 
 void VisualServerWrapMT::init() {
-
 	if (create_thread) {
-
 		print_verbose("VisualServerWrapMT: Creating render thread");
 		OS::get_singleton()->release_rendering_thread();
 		if (create_thread) {
@@ -118,15 +104,12 @@ void VisualServerWrapMT::init() {
 		}
 		print_verbose("VisualServerWrapMT: Finished render thread");
 	} else {
-
 		visual_server->init();
 	}
 }
 
 void VisualServerWrapMT::finish() {
-
 	if (create_thread) {
-
 		command_queue.push(this, &VisualServerWrapMT::thread_exit);
 		thread.wait_to_finish();
 	} else {
@@ -160,7 +143,6 @@ void VisualServerWrapMT::finish() {
 }
 
 void VisualServerWrapMT::set_use_vsync_callback(bool p_enable) {
-
 	singleton_mt->call_set_use_vsync(p_enable);
 }
 
@@ -168,7 +150,6 @@ VisualServerWrapMT *VisualServerWrapMT::singleton_mt = NULL;
 
 VisualServerWrapMT::VisualServerWrapMT(VisualServer *p_contained, bool p_create_thread) :
 		command_queue(p_create_thread) {
-
 	singleton_mt = this;
 	OS::switch_vsync_function = set_use_vsync_callback; //as this goes to another thread, make sure it goes properly
 
@@ -184,7 +165,6 @@ VisualServerWrapMT::VisualServerWrapMT(VisualServer *p_contained, bool p_create_
 }
 
 VisualServerWrapMT::~VisualServerWrapMT() {
-
 	memdelete(visual_server);
 	//finish();
 }

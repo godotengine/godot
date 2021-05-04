@@ -120,7 +120,6 @@ void MultiplayerPeerGDNative::_bind_methods() {
 extern "C" {
 
 void GDAPI godot_net_bind_multiplayer_peer(godot_object *p_obj, const godot_net_multiplayer_peer *p_impl) {
-
 	((MultiplayerPeerGDNative *)p_obj)->set_native_multiplayer_peer(p_impl);
 }
 }

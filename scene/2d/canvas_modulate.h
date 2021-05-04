@@ -34,7 +34,6 @@
 #include "scene/2d/node_2d.h"
 
 class CanvasModulate : public Node2D {
-
 	GDCLASS(CanvasModulate, Node2D);
 
 	Color color;

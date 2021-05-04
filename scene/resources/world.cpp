@@ -37,18 +37,15 @@
 #include "scene/scene_string_names.h"
 
 struct SpatialIndexer {
-
 	Octree<VisibilityNotifier> octree;
 
 	struct NotifierData {
-
 		AABB aabb;
 		OctreeElementID id;
 	};
 
 	Map<VisibilityNotifier *, NotifierData> notifiers;
 	struct CameraData {
-
 		Map<VisibilityNotifier *, uint64_t> notifiers;
 	};
 
@@ -65,7 +62,6 @@ struct SpatialIndexer {
 	uint64_t last_frame;
 
 	void _notifier_add(VisibilityNotifier *p_notifier, const AABB &p_rect) {
-
 		ERR_FAIL_COND(notifiers.has(p_notifier));
 		notifiers[p_notifier].aabb = p_rect;
 		notifiers[p_notifier].id = octree.create(p_notifier, p_rect);
@@ -73,7 +69,6 @@ struct SpatialIndexer {
 	}
 
 	void _notifier_update(VisibilityNotifier *p_notifier, const AABB &p_rect) {
-
 		Map<VisibilityNotifier *, NotifierData>::Element *E = notifiers.find(p_notifier);
 		ERR_FAIL_COND(!E);
 		if (E->get().aabb == p_rect)
@@ -85,7 +80,6 @@ struct SpatialIndexer {
 	}
 
 	void _notifier_remove(VisibilityNotifier *p_notifier) {
-
 		Map<VisibilityNotifier *, NotifierData>::Element *E = notifiers.find(p_notifier);
 		ERR_FAIL_COND(!E);
 
@@ -94,7 +88,6 @@ struct SpatialIndexer {
 
 		List<Camera *> removed;
 		for (Map<Camera *, CameraData>::Element *F = cameras.front(); F; F = F->next()) {
-
 			Map<VisibilityNotifier *, uint64_t>::Element *G = F->get().notifiers.find(p_notifier);
 
 			if (G) {
@@ -104,7 +97,6 @@ struct SpatialIndexer {
 		}
 
 		while (!removed.empty()) {
-
 			p_notifier->_exit_camera(removed.front()->get());
 			removed.pop_front();
 		}
@@ -113,7 +105,6 @@ struct SpatialIndexer {
 	}
 
 	void _add_camera(Camera *p_camera) {
-
 		ERR_FAIL_COND(cameras.has(p_camera));
 		CameraData vd;
 		cameras[p_camera] = vd;
@@ -121,7 +112,6 @@ struct SpatialIndexer {
 	}
 
 	void _update_camera(Camera *p_camera) {
-
 		Map<Camera *, CameraData>::Element *E = cameras.find(p_camera);
 		ERR_FAIL_COND(!E);
 		changed = true;
@@ -131,7 +121,6 @@ struct SpatialIndexer {
 		ERR_FAIL_COND(!cameras.has(p_camera));
 		List<VisibilityNotifier *> removed;
 		for (Map<VisibilityNotifier *, uint64_t>::Element *E = cameras[p_camera].notifiers.front(); E; E = E->next()) {
-
 			removed.push_back(E->key());
 		}
 
@@ -144,7 +133,6 @@ struct SpatialIndexer {
 	}
 
 	void _update(uint64_t p_frame) {
-
 		if (p_frame == last_frame)
 			return;
 		last_frame = p_frame;
@@ -153,7 +141,6 @@ struct SpatialIndexer {
 			return;
 
 		for (Map<Camera *, CameraData>::Element *E = cameras.front(); E; E = E->next()) {
-
 			pass++;
 
 			Camera *c = E->key();
@@ -168,12 +155,10 @@ struct SpatialIndexer {
 			List<VisibilityNotifier *> removed;
 
 			for (int i = 0; i < culled; i++) {
-
 				//notifiers in frustum
 
 				Map<VisibilityNotifier *, uint64_t>::Element *H = E->get().notifiers.find(ptr[i]);
 				if (!H) {
-
 					E->get().notifiers.insert(ptr[i], pass);
 					added.push_back(ptr[i]);
 				} else {
@@ -182,7 +167,6 @@ struct SpatialIndexer {
 			}
 
 			for (Map<VisibilityNotifier *, uint64_t>::Element *F = E->get().notifiers.front(); F; F = F->next()) {
-
 				if (F->get() != pass)
 					removed.push_back(F->key());
 			}
@@ -202,7 +186,6 @@ struct SpatialIndexer {
 	}
 
 	SpatialIndexer() {
-
 		pass = 0;
 		last_frame = 0;
 		changed = false;
@@ -211,59 +194,50 @@ struct SpatialIndexer {
 };
 
 void World::_register_camera(Camera *p_camera) {
-
 #ifndef _3D_DISABLED
 	indexer->_add_camera(p_camera);
 #endif
 }
 
 void World::_update_camera(Camera *p_camera) {
-
 #ifndef _3D_DISABLED
 	indexer->_update_camera(p_camera);
 #endif
 }
 void World::_remove_camera(Camera *p_camera) {
-
 #ifndef _3D_DISABLED
 	indexer->_remove_camera(p_camera);
 #endif
 }
 
 void World::_register_notifier(VisibilityNotifier *p_notifier, const AABB &p_rect) {
-
 #ifndef _3D_DISABLED
 	indexer->_notifier_add(p_notifier, p_rect);
 #endif
 }
 
 void World::_update_notifier(VisibilityNotifier *p_notifier, const AABB &p_rect) {
-
 #ifndef _3D_DISABLED
 	indexer->_notifier_update(p_notifier, p_rect);
 #endif
 }
 
 void World::_remove_notifier(VisibilityNotifier *p_notifier) {
-
 #ifndef _3D_DISABLED
 	indexer->_notifier_remove(p_notifier);
 #endif
 }
 
 void World::_update(uint64_t p_frame) {
-
 #ifndef _3D_DISABLED
 	indexer->_update(p_frame);
 #endif
 }
 
 RID World::get_space() const {
-
 	return space;
 }
 RID World::get_scenario() const {
-
 	return scenario;
 }
 
@@ -282,7 +256,6 @@ void World::set_environment(const Ref<Environment> &p_environment) {
 }
 
 Ref<Environment> World::get_environment() const {
-
 	return environment;
 }
 
@@ -301,24 +274,20 @@ void World::set_fallback_environment(const Ref<Environment> &p_environment) {
 }
 
 Ref<Environment> World::get_fallback_environment() const {
-
 	return fallback_environment;
 }
 
 PhysicsDirectSpaceState *World::get_direct_space_state() {
-
 	return PhysicsServer::get_singleton()->space_get_direct_state(space);
 }
 
 void World::get_camera_list(List<Camera *> *r_cameras) {
-
 	for (Map<Camera *, SpatialIndexer::CameraData>::Element *E = indexer->cameras.front(); E; E = E->next()) {
 		r_cameras->push_back(E->key());
 	}
 }
 
 void World::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("get_space"), &World::get_space);
 	ClassDB::bind_method(D_METHOD("get_scenario"), &World::get_scenario);
 	ClassDB::bind_method(D_METHOD("set_environment", "env"), &World::set_environment);
@@ -334,7 +303,6 @@ void World::_bind_methods() {
 }
 
 World::World() {
-
 	space = PhysicsServer::get_singleton()->space_create();
 	scenario = VisualServer::get_singleton()->scenario_create();
 
@@ -354,7 +322,6 @@ World::World() {
 }
 
 World::~World() {
-
 	PhysicsServer::get_singleton()->free(space);
 	VisualServer::get_singleton()->free(scenario);
 

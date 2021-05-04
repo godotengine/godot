@@ -39,7 +39,6 @@
 #include "core/rid.h"
 
 class RefPtr {
-
 	enum {
 
 		DATASIZE = sizeof(void *) //*4 -ref was shrunk

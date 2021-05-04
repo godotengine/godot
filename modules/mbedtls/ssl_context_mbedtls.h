@@ -47,7 +47,6 @@
 class SSLContextMbedTLS;
 
 class CookieContextMbedTLS : public Reference {
-
 	friend class SSLContextMbedTLS;
 
 protected:
@@ -65,7 +64,6 @@ public:
 };
 
 class SSLContextMbedTLS : public Reference {
-
 protected:
 	bool inited;
 

@@ -36,7 +36,6 @@
 #include "servers/physics_2d_server.h"
 
 void Joint2D::_disconnect_signals() {
-
 	Node *node_a = get_node_or_null(a);
 	PhysicsBody2D *body_a = Object::cast_to<PhysicsBody2D>(node_a);
 	if (body_a)
@@ -49,13 +48,11 @@ void Joint2D::_disconnect_signals() {
 }
 
 void Joint2D::_body_exit_tree() {
-
 	_disconnect_signals();
 	_update_joint(true);
 }
 
 void Joint2D::_update_joint(bool p_only_free) {
-
 	if (joint.is_valid()) {
 		if (ba.is_valid() && bb.is_valid() && exclude_from_collision)
 			Physics2DServer::get_singleton()->joint_disable_collisions_between_bodies(joint, false);
@@ -134,7 +131,6 @@ void Joint2D::_update_joint(bool p_only_free) {
 }
 
 void Joint2D::set_node_a(const NodePath &p_node_a) {
-
 	if (a == p_node_a)
 		return;
 
@@ -146,12 +142,10 @@ void Joint2D::set_node_a(const NodePath &p_node_a) {
 }
 
 NodePath Joint2D::get_node_a() const {
-
 	return a;
 }
 
 void Joint2D::set_node_b(const NodePath &p_node_b) {
-
 	if (b == p_node_b)
 		return;
 
@@ -162,14 +156,11 @@ void Joint2D::set_node_b(const NodePath &p_node_b) {
 	_update_joint();
 }
 NodePath Joint2D::get_node_b() const {
-
 	return b;
 }
 
 void Joint2D::_notification(int p_what) {
-
 	switch (p_what) {
-
 		case NOTIFICATION_READY: {
 			_update_joint();
 		} break;
@@ -183,19 +174,16 @@ void Joint2D::_notification(int p_what) {
 }
 
 void Joint2D::set_bias(real_t p_bias) {
-
 	bias = p_bias;
 	if (joint.is_valid())
 		Physics2DServer::get_singleton()->get_singleton()->joint_set_param(joint, Physics2DServer::JOINT_PARAM_BIAS, bias);
 }
 
 real_t Joint2D::get_bias() const {
-
 	return bias;
 }
 
 void Joint2D::set_exclude_nodes_from_collision(bool p_enable) {
-
 	if (exclude_from_collision == p_enable)
 		return;
 
@@ -205,12 +193,10 @@ void Joint2D::set_exclude_nodes_from_collision(bool p_enable) {
 }
 
 bool Joint2D::get_exclude_nodes_from_collision() const {
-
 	return exclude_from_collision;
 }
 
 String Joint2D::get_configuration_warning() const {
-
 	String node_warning = Node2D::get_configuration_warning();
 
 	if (!warning.empty()) {
@@ -224,7 +210,6 @@ String Joint2D::get_configuration_warning() const {
 }
 
 void Joint2D::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("_body_exit_tree"), &Joint2D::_body_exit_tree);
 
 	ClassDB::bind_method(D_METHOD("set_node_a", "node"), &Joint2D::set_node_a);
@@ -246,7 +231,6 @@ void Joint2D::_bind_methods() {
 }
 
 Joint2D::Joint2D() {
-
 	bias = 0;
 	exclude_from_collision = true;
 }
@@ -256,10 +240,8 @@ Joint2D::Joint2D() {
 ///////////////////////////////////////////////////////////////////////////////
 
 void PinJoint2D::_notification(int p_what) {
-
 	switch (p_what) {
 		case NOTIFICATION_DRAW: {
-
 			if (!is_inside_tree())
 				break;
 
@@ -274,14 +256,12 @@ void PinJoint2D::_notification(int p_what) {
 }
 
 RID PinJoint2D::_configure_joint(PhysicsBody2D *body_a, PhysicsBody2D *body_b) {
-
 	RID pj = Physics2DServer::get_singleton()->pin_joint_create(get_global_transform().get_origin(), body_a->get_rid(), body_b ? body_b->get_rid() : RID());
 	Physics2DServer::get_singleton()->pin_joint_set_param(pj, Physics2DServer::PIN_JOINT_SOFTNESS, softness);
 	return pj;
 }
 
 void PinJoint2D::set_softness(real_t p_softness) {
-
 	softness = p_softness;
 	update();
 	if (get_joint().is_valid())
@@ -289,12 +269,10 @@ void PinJoint2D::set_softness(real_t p_softness) {
 }
 
 real_t PinJoint2D::get_softness() const {
-
 	return softness;
 }
 
 void PinJoint2D::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("set_softness", "softness"), &PinJoint2D::set_softness);
 	ClassDB::bind_method(D_METHOD("get_softness"), &PinJoint2D::get_softness);
 
@@ -302,7 +280,6 @@ void PinJoint2D::_bind_methods() {
 }
 
 PinJoint2D::PinJoint2D() {
-
 	softness = 0;
 }
 
@@ -311,7 +288,6 @@ PinJoint2D::PinJoint2D() {
 ///////////////////////////////////////////////////////////////////////////////
 
 void GrooveJoint2D::_notification(int p_what) {
-
 	switch (p_what) {
 		case NOTIFICATION_DRAW: {
 			if (!is_inside_tree())
@@ -330,7 +306,6 @@ void GrooveJoint2D::_notification(int p_what) {
 }
 
 RID GrooveJoint2D::_configure_joint(PhysicsBody2D *body_a, PhysicsBody2D *body_b) {
-
 	Transform2D gt = get_global_transform();
 	Vector2 groove_A1 = gt.get_origin();
 	Vector2 groove_A2 = gt.xform(Vector2(0, length));
@@ -340,29 +315,24 @@ RID GrooveJoint2D::_configure_joint(PhysicsBody2D *body_a, PhysicsBody2D *body_b
 }
 
 void GrooveJoint2D::set_length(real_t p_length) {
-
 	length = p_length;
 	update();
 }
 
 real_t GrooveJoint2D::get_length() const {
-
 	return length;
 }
 
 void GrooveJoint2D::set_initial_offset(real_t p_initial_offset) {
-
 	initial_offset = p_initial_offset;
 	update();
 }
 
 real_t GrooveJoint2D::get_initial_offset() const {
-
 	return initial_offset;
 }
 
 void GrooveJoint2D::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("set_length", "length"), &GrooveJoint2D::set_length);
 	ClassDB::bind_method(D_METHOD("get_length"), &GrooveJoint2D::get_length);
 	ClassDB::bind_method(D_METHOD("set_initial_offset", "offset"), &GrooveJoint2D::set_initial_offset);
@@ -373,7 +343,6 @@ void GrooveJoint2D::_bind_methods() {
 }
 
 GrooveJoint2D::GrooveJoint2D() {
-
 	length = 50;
 	initial_offset = 25;
 }
@@ -383,10 +352,8 @@ GrooveJoint2D::GrooveJoint2D() {
 ///////////////////////////////////////////////////////////////////////////////
 
 void DampedSpringJoint2D::_notification(int p_what) {
-
 	switch (p_what) {
 		case NOTIFICATION_DRAW: {
-
 			if (!is_inside_tree())
 				break;
 
@@ -402,7 +369,6 @@ void DampedSpringJoint2D::_notification(int p_what) {
 }
 
 RID DampedSpringJoint2D::_configure_joint(PhysicsBody2D *body_a, PhysicsBody2D *body_b) {
-
 	Transform2D gt = get_global_transform();
 	Vector2 anchor_A = gt.get_origin();
 	Vector2 anchor_B = gt.xform(Vector2(0, length));
@@ -417,18 +383,15 @@ RID DampedSpringJoint2D::_configure_joint(PhysicsBody2D *body_a, PhysicsBody2D *
 }
 
 void DampedSpringJoint2D::set_length(real_t p_length) {
-
 	length = p_length;
 	update();
 }
 
 real_t DampedSpringJoint2D::get_length() const {
-
 	return length;
 }
 
 void DampedSpringJoint2D::set_rest_length(real_t p_rest_length) {
-
 	rest_length = p_rest_length;
 	update();
 	if (get_joint().is_valid())
@@ -436,12 +399,10 @@ void DampedSpringJoint2D::set_rest_length(real_t p_rest_length) {
 }
 
 real_t DampedSpringJoint2D::get_rest_length() const {
-
 	return rest_length;
 }
 
 void DampedSpringJoint2D::set_stiffness(real_t p_stiffness) {
-
 	stiffness = p_stiffness;
 	update();
 	if (get_joint().is_valid())
@@ -449,12 +410,10 @@ void DampedSpringJoint2D::set_stiffness(real_t p_stiffness) {
 }
 
 real_t DampedSpringJoint2D::get_stiffness() const {
-
 	return stiffness;
 }
 
 void DampedSpringJoint2D::set_damping(real_t p_damping) {
-
 	damping = p_damping;
 	update();
 	if (get_joint().is_valid())
@@ -462,12 +421,10 @@ void DampedSpringJoint2D::set_damping(real_t p_damping) {
 }
 
 real_t DampedSpringJoint2D::get_damping() const {
-
 	return damping;
 }
 
 void DampedSpringJoint2D::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("set_length", "length"), &DampedSpringJoint2D::set_length);
 	ClassDB::bind_method(D_METHOD("get_length"), &DampedSpringJoint2D::get_length);
 	ClassDB::bind_method(D_METHOD("set_rest_length", "rest_length"), &DampedSpringJoint2D::set_rest_length);
@@ -484,7 +441,6 @@ void DampedSpringJoint2D::_bind_methods() {
 }
 
 DampedSpringJoint2D::DampedSpringJoint2D() {
-
 	length = 50;
 	rest_length = 0;
 	stiffness = 20;

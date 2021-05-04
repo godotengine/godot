@@ -38,7 +38,6 @@
 #include <miniupnpc/miniupnpc.h>
 
 class UPNP : public Reference {
-
 	GDCLASS(UPNP, Reference);
 
 private:

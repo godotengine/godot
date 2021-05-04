@@ -38,7 +38,6 @@ Size2 GradientEditor::get_minimum_size() const {
 	return Size2(0, 60) * EDSCALE;
 }
 void GradientEditor::_gradient_changed() {
-
 	if (editing)
 		return;
 
@@ -49,7 +48,6 @@ void GradientEditor::_gradient_changed() {
 }
 
 void GradientEditor::_ramp_changed() {
-
 	editing = true;
 	UndoRedo *undo_redo = EditorNode::get_singleton()->get_undo_redo();
 	undo_redo->create_action(TTR("Gradient Edited"));
@@ -62,7 +60,6 @@ void GradientEditor::_ramp_changed() {
 }
 
 void GradientEditor::_bind_methods() {
-
 	ClassDB::bind_method("_gradient_changed", &GradientEditor::_gradient_changed);
 	ClassDB::bind_method("_ramp_changed", &GradientEditor::_ramp_changed);
 }
@@ -81,12 +78,10 @@ GradientEditor::GradientEditor() {
 ///////////////////////
 
 bool EditorInspectorPluginGradient::can_handle(Object *p_object) {
-
 	return Object::cast_to<Gradient>(p_object) != NULL;
 }
 
 void EditorInspectorPluginGradient::parse_begin(Object *p_object) {
-
 	Gradient *gradient = Object::cast_to<Gradient>(p_object);
 	Ref<Gradient> g(gradient);
 
@@ -96,7 +91,6 @@ void EditorInspectorPluginGradient::parse_begin(Object *p_object) {
 }
 
 GradientEditorPlugin::GradientEditorPlugin(EditorNode *p_node) {
-
 	Ref<EditorInspectorPluginGradient> plugin;
 	plugin.instance();
 	add_inspector_plugin(plugin);

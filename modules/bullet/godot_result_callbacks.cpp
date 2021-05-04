@@ -126,7 +126,6 @@ bool GodotKinClosestConvexResultCallback::needsCollision(btBroadphaseProxy *prox
 		if (gObj == m_self_object) {
 			return false;
 		} else {
-
 			// A kinematic body can't be stopped by a rigid body since the mass of kinematic body is infinite
 			if (m_infinite_inertia && !btObj->isStaticOrKinematicObject())
 				return false;
@@ -201,12 +200,10 @@ bool GodotAllContactResultCallback::needsCollision(btBroadphaseProxy *proxy0) co
 }
 
 btScalar GodotAllContactResultCallback::addSingleResult(btManifoldPoint &cp, const btCollisionObjectWrapper *colObj0Wrap, int partId0, int index0, const btCollisionObjectWrapper *colObj1Wrap, int partId1, int index1) {
-
 	if (m_count >= m_resultMax)
 		return cp.getDistance();
 
 	if (cp.getDistance() <= 0) {
-
 		PhysicsDirectSpaceState::ShapeResult &result = m_results[m_count];
 		// Penetrated
 
@@ -295,7 +292,6 @@ bool GodotRestInfoContactResultCallback::needsCollision(btBroadphaseProxy *proxy
 }
 
 btScalar GodotRestInfoContactResultCallback::addSingleResult(btManifoldPoint &cp, const btCollisionObjectWrapper *colObj0Wrap, int partId0, int index0, const btCollisionObjectWrapper *colObj1Wrap, int partId1, int index1) {
-
 	if (cp.getDistance() <= m_min_distance) {
 		m_min_distance = cp.getDistance();
 
@@ -325,7 +321,6 @@ btScalar GodotRestInfoContactResultCallback::addSingleResult(btManifoldPoint &cp
 }
 
 void GodotDeepPenetrationContactResultCallback::addContactPoint(const btVector3 &normalOnBInWorld, const btVector3 &pointInWorldOnB, btScalar depth) {
-
 	if (m_penetration_distance > depth) { // Has penetration?
 
 		const bool isSwapped = m_manifoldPtr->getBody0() != m_body0Wrap->getCollisionObject();

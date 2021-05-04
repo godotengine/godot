@@ -34,27 +34,22 @@
 #include "servers/physics_server.h"
 
 void Area::set_space_override_mode(SpaceOverride p_mode) {
-
 	space_override = p_mode;
 	PhysicsServer::get_singleton()->area_set_space_override_mode(get_rid(), PhysicsServer::AreaSpaceOverrideMode(p_mode));
 }
 Area::SpaceOverride Area::get_space_override_mode() const {
-
 	return space_override;
 }
 
 void Area::set_gravity_is_point(bool p_enabled) {
-
 	gravity_is_point = p_enabled;
 	PhysicsServer::get_singleton()->area_set_param(get_rid(), PhysicsServer::AREA_PARAM_GRAVITY_IS_POINT, p_enabled);
 }
 bool Area::is_gravity_a_point() const {
-
 	return gravity_is_point;
 }
 
 void Area::set_gravity_distance_scale(real_t p_scale) {
-
 	gravity_distance_scale = p_scale;
 	PhysicsServer::get_singleton()->area_set_param(get_rid(), PhysicsServer::AREA_PARAM_GRAVITY_DISTANCE_SCALE, p_scale);
 }
@@ -64,57 +59,46 @@ real_t Area::get_gravity_distance_scale() const {
 }
 
 void Area::set_gravity_vector(const Vector3 &p_vec) {
-
 	gravity_vec = p_vec;
 	PhysicsServer::get_singleton()->area_set_param(get_rid(), PhysicsServer::AREA_PARAM_GRAVITY_VECTOR, p_vec);
 }
 Vector3 Area::get_gravity_vector() const {
-
 	return gravity_vec;
 }
 
 void Area::set_gravity(real_t p_gravity) {
-
 	gravity = p_gravity;
 	PhysicsServer::get_singleton()->area_set_param(get_rid(), PhysicsServer::AREA_PARAM_GRAVITY, p_gravity);
 }
 real_t Area::get_gravity() const {
-
 	return gravity;
 }
 void Area::set_linear_damp(real_t p_linear_damp) {
-
 	linear_damp = p_linear_damp;
 	PhysicsServer::get_singleton()->area_set_param(get_rid(), PhysicsServer::AREA_PARAM_LINEAR_DAMP, p_linear_damp);
 }
 real_t Area::get_linear_damp() const {
-
 	return linear_damp;
 }
 
 void Area::set_angular_damp(real_t p_angular_damp) {
-
 	angular_damp = p_angular_damp;
 	PhysicsServer::get_singleton()->area_set_param(get_rid(), PhysicsServer::AREA_PARAM_ANGULAR_DAMP, p_angular_damp);
 }
 
 real_t Area::get_angular_damp() const {
-
 	return angular_damp;
 }
 
 void Area::set_priority(real_t p_priority) {
-
 	priority = p_priority;
 	PhysicsServer::get_singleton()->area_set_param(get_rid(), PhysicsServer::AREA_PARAM_PRIORITY, p_priority);
 }
 real_t Area::get_priority() const {
-
 	return priority;
 }
 
 void Area::_body_enter_tree(ObjectID p_id) {
-
 	Object *obj = ObjectDB::get_instance(p_id);
 	Node *node = Object::cast_to<Node>(obj);
 	ERR_FAIL_COND(!node);
@@ -126,13 +110,11 @@ void Area::_body_enter_tree(ObjectID p_id) {
 	E->get().in_tree = true;
 	emit_signal(SceneStringNames::get_singleton()->body_entered, node);
 	for (int i = 0; i < E->get().shapes.size(); i++) {
-
 		emit_signal(SceneStringNames::get_singleton()->body_shape_entered, p_id, node, E->get().shapes[i].body_shape, E->get().shapes[i].area_shape);
 	}
 }
 
 void Area::_body_exit_tree(ObjectID p_id) {
-
 	Object *obj = ObjectDB::get_instance(p_id);
 	Node *node = Object::cast_to<Node>(obj);
 	ERR_FAIL_COND(!node);
@@ -142,13 +124,11 @@ void Area::_body_exit_tree(ObjectID p_id) {
 	E->get().in_tree = false;
 	emit_signal(SceneStringNames::get_singleton()->body_exited, node);
 	for (int i = 0; i < E->get().shapes.size(); i++) {
-
 		emit_signal(SceneStringNames::get_singleton()->body_shape_exited, p_id, node, E->get().shapes[i].body_shape, E->get().shapes[i].area_shape);
 	}
 }
 
 void Area::_body_inout(int p_status, const RID &p_body, int p_instance, int p_body_shape, int p_area_shape) {
-
 	bool body_in = p_status == PhysicsServer::AREA_BODY_ADDED;
 	ObjectID objid = p_instance;
 
@@ -165,7 +145,6 @@ void Area::_body_inout(int p_status, const RID &p_body, int p_instance, int p_bo
 
 	if (body_in) {
 		if (!E) {
-
 			E = body_map.insert(objid, BodyState());
 			E->get().rc = 0;
 			E->get().in_tree = node && node->is_inside_tree();
@@ -186,7 +165,6 @@ void Area::_body_inout(int p_status, const RID &p_body, int p_instance, int p_bo
 		}
 
 	} else {
-
 		E->get().rc--;
 
 		if (node)
@@ -211,7 +189,6 @@ void Area::_body_inout(int p_status, const RID &p_body, int p_instance, int p_bo
 }
 
 void Area::_clear_monitoring() {
-
 	ERR_FAIL_COND_MSG(locked, "This function can't be used during the in/out signal.");
 
 	{
@@ -220,7 +197,6 @@ void Area::_clear_monitoring() {
 		//disconnect all monitored stuff
 
 		for (Map<ObjectID, BodyState>::Element *E = bmcopy.front(); E; E = E->next()) {
-
 			Object *obj = ObjectDB::get_instance(E->key());
 			Node *node = Object::cast_to<Node>(obj);
 
@@ -232,7 +208,6 @@ void Area::_clear_monitoring() {
 				continue;
 
 			for (int i = 0; i < E->get().shapes.size(); i++) {
-
 				emit_signal(SceneStringNames::get_singleton()->body_shape_exited, E->key(), node, E->get().shapes[i].body_shape, E->get().shapes[i].area_shape);
 			}
 
@@ -244,13 +219,11 @@ void Area::_clear_monitoring() {
 	}
 
 	{
-
 		Map<ObjectID, AreaState> bmcopy = area_map;
 		area_map.clear();
 		//disconnect all monitored stuff
 
 		for (Map<ObjectID, AreaState>::Element *E = bmcopy.front(); E; E = E->next()) {
-
 			Object *obj = ObjectDB::get_instance(E->key());
 			Node *node = Object::cast_to<Node>(obj);
 
@@ -262,7 +235,6 @@ void Area::_clear_monitoring() {
 				continue;
 
 			for (int i = 0; i < E->get().shapes.size(); i++) {
-
 				emit_signal(SceneStringNames::get_singleton()->area_shape_exited, E->key(), node, E->get().shapes[i].area_shape, E->get().shapes[i].self_shape);
 			}
 
@@ -274,14 +246,12 @@ void Area::_clear_monitoring() {
 	}
 }
 void Area::_notification(int p_what) {
-
 	if (p_what == NOTIFICATION_EXIT_TREE) {
 		_clear_monitoring();
 	}
 }
 
 void Area::set_monitoring(bool p_enable) {
-
 	ERR_FAIL_COND_MSG(locked, "Function blocked during in/out signal. Use set_deferred(\"monitoring\", true/false).");
 
 	if (p_enable == monitoring)
@@ -290,7 +260,6 @@ void Area::set_monitoring(bool p_enable) {
 	monitoring = p_enable;
 
 	if (monitoring) {
-
 		PhysicsServer::get_singleton()->area_set_monitor_callback(get_rid(), this, SceneStringNames::get_singleton()->_body_inout);
 		PhysicsServer::get_singleton()->area_set_area_monitor_callback(get_rid(), this, SceneStringNames::get_singleton()->_area_inout);
 	} else {
@@ -301,7 +270,6 @@ void Area::set_monitoring(bool p_enable) {
 }
 
 void Area::_area_enter_tree(ObjectID p_id) {
-
 	Object *obj = ObjectDB::get_instance(p_id);
 	Node *node = Object::cast_to<Node>(obj);
 	ERR_FAIL_COND(!node);
@@ -313,13 +281,11 @@ void Area::_area_enter_tree(ObjectID p_id) {
 	E->get().in_tree = true;
 	emit_signal(SceneStringNames::get_singleton()->area_entered, node);
 	for (int i = 0; i < E->get().shapes.size(); i++) {
-
 		emit_signal(SceneStringNames::get_singleton()->area_shape_entered, p_id, node, E->get().shapes[i].area_shape, E->get().shapes[i].self_shape);
 	}
 }
 
 void Area::_area_exit_tree(ObjectID p_id) {
-
 	Object *obj = ObjectDB::get_instance(p_id);
 	Node *node = Object::cast_to<Node>(obj);
 	ERR_FAIL_COND(!node);
@@ -329,13 +295,11 @@ void Area::_area_exit_tree(ObjectID p_id) {
 	E->get().in_tree = false;
 	emit_signal(SceneStringNames::get_singleton()->area_exited, node);
 	for (int i = 0; i < E->get().shapes.size(); i++) {
-
 		emit_signal(SceneStringNames::get_singleton()->area_shape_exited, p_id, node, E->get().shapes[i].area_shape, E->get().shapes[i].self_shape);
 	}
 }
 
 void Area::_area_inout(int p_status, const RID &p_area, int p_instance, int p_area_shape, int p_self_shape) {
-
 	bool area_in = p_status == PhysicsServer::AREA_BODY_ADDED;
 	ObjectID objid = p_instance;
 
@@ -352,7 +316,6 @@ void Area::_area_inout(int p_status, const RID &p_area, int p_instance, int p_ar
 
 	if (area_in) {
 		if (!E) {
-
 			E = area_map.insert(objid, AreaState());
 			E->get().rc = 0;
 			E->get().in_tree = node && node->is_inside_tree();
@@ -373,7 +336,6 @@ void Area::_area_inout(int p_status, const RID &p_area, int p_instance, int p_ar
 		}
 
 	} else {
-
 		E->get().rc--;
 
 		if (node)
@@ -399,12 +361,10 @@ void Area::_area_inout(int p_status, const RID &p_area, int p_instance, int p_ar
 }
 
 bool Area::is_monitoring() const {
-
 	return monitoring;
 }
 
 Array Area::get_overlapping_bodies() const {
-
 	ERR_FAIL_COND_V(!monitoring, Array());
 	Array ret;
 	ret.resize(body_map.size());
@@ -422,7 +382,6 @@ Array Area::get_overlapping_bodies() const {
 }
 
 void Area::set_monitorable(bool p_enable) {
-
 	ERR_FAIL_COND_MSG(locked || (is_inside_tree() && PhysicsServer::get_singleton()->is_flushing_queries()), "Function blocked during in/out signal. Use set_deferred(\"monitorable\", true/false).");
 
 	if (p_enable == monitorable)
@@ -434,12 +393,10 @@ void Area::set_monitorable(bool p_enable) {
 }
 
 bool Area::is_monitorable() const {
-
 	return monitorable;
 }
 
 Array Area::get_overlapping_areas() const {
-
 	ERR_FAIL_COND_V(!monitoring, Array());
 	Array ret;
 	ret.resize(area_map.size());
@@ -457,7 +414,6 @@ Array Area::get_overlapping_areas() const {
 }
 
 bool Area::overlaps_area(Node *p_area) const {
-
 	ERR_FAIL_NULL_V(p_area, false);
 	const Map<ObjectID, AreaState>::Element *E = area_map.find(p_area->get_instance_id());
 	if (!E)
@@ -466,7 +422,6 @@ bool Area::overlaps_area(Node *p_area) const {
 }
 
 bool Area::overlaps_body(Node *p_body) const {
-
 	ERR_FAIL_NULL_V(p_body, false);
 	const Map<ObjectID, BodyState>::Element *E = body_map.find(p_body->get_instance_id());
 	if (!E)
@@ -474,28 +429,23 @@ bool Area::overlaps_body(Node *p_body) const {
 	return E->get().in_tree;
 }
 void Area::set_collision_mask(uint32_t p_mask) {
-
 	collision_mask = p_mask;
 	PhysicsServer::get_singleton()->area_set_collision_mask(get_rid(), p_mask);
 }
 
 uint32_t Area::get_collision_mask() const {
-
 	return collision_mask;
 }
 void Area::set_collision_layer(uint32_t p_layer) {
-
 	collision_layer = p_layer;
 	PhysicsServer::get_singleton()->area_set_collision_layer(get_rid(), p_layer);
 }
 
 uint32_t Area::get_collision_layer() const {
-
 	return collision_layer;
 }
 
 void Area::set_collision_mask_bit(int p_bit, bool p_value) {
-
 	uint32_t mask = get_collision_mask();
 	if (p_value)
 		mask |= 1 << p_bit;
@@ -505,12 +455,10 @@ void Area::set_collision_mask_bit(int p_bit, bool p_value) {
 }
 
 bool Area::get_collision_mask_bit(int p_bit) const {
-
 	return get_collision_mask() & (1 << p_bit);
 }
 
 void Area::set_collision_layer_bit(int p_bit, bool p_value) {
-
 	uint32_t layer = get_collision_layer();
 	if (p_value)
 		layer |= 1 << p_bit;
@@ -520,26 +468,21 @@ void Area::set_collision_layer_bit(int p_bit, bool p_value) {
 }
 
 bool Area::get_collision_layer_bit(int p_bit) const {
-
 	return get_collision_layer() & (1 << p_bit);
 }
 
 void Area::set_audio_bus_override(bool p_override) {
-
 	audio_bus_override = p_override;
 }
 
 bool Area::is_overriding_audio_bus() const {
-
 	return audio_bus_override;
 }
 
 void Area::set_audio_bus(const StringName &p_audio_bus) {
-
 	audio_bus = p_audio_bus;
 }
 StringName Area::get_audio_bus() const {
-
 	for (int i = 0; i < AudioServer::get_singleton()->get_bus_count(); i++) {
 		if (AudioServer::get_singleton()->get_bus_name(i) == audio_bus) {
 			return audio_bus;
@@ -549,20 +492,16 @@ StringName Area::get_audio_bus() const {
 }
 
 void Area::set_use_reverb_bus(bool p_enable) {
-
 	use_reverb_bus = p_enable;
 }
 bool Area::is_using_reverb_bus() const {
-
 	return use_reverb_bus;
 }
 
 void Area::set_reverb_bus(const StringName &p_audio_bus) {
-
 	reverb_bus = p_audio_bus;
 }
 StringName Area::get_reverb_bus() const {
-
 	for (int i = 0; i < AudioServer::get_singleton()->get_bus_count(); i++) {
 		if (AudioServer::get_singleton()->get_bus_name(i) == reverb_bus) {
 			return reverb_bus;
@@ -572,27 +511,21 @@ StringName Area::get_reverb_bus() const {
 }
 
 void Area::set_reverb_amount(float p_amount) {
-
 	reverb_amount = p_amount;
 }
 float Area::get_reverb_amount() const {
-
 	return reverb_amount;
 }
 
 void Area::set_reverb_uniformity(float p_uniformity) {
-
 	reverb_uniformity = p_uniformity;
 }
 float Area::get_reverb_uniformity() const {
-
 	return reverb_uniformity;
 }
 
 void Area::_validate_property(PropertyInfo &property) const {
-
 	if (property.name == "audio_bus_name" || property.name == "reverb_bus_name") {
-
 		String options;
 		for (int i = 0; i < AudioServer::get_singleton()->get_bus_count(); i++) {
 			if (i > 0)
@@ -606,7 +539,6 @@ void Area::_validate_property(PropertyInfo &property) const {
 }
 
 void Area::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("_body_enter_tree", "id"), &Area::_body_enter_tree);
 	ClassDB::bind_method(D_METHOD("_body_exit_tree", "id"), &Area::_body_exit_tree);
 
@@ -728,7 +660,6 @@ void Area::_bind_methods() {
 
 Area::Area() :
 		CollisionObject(PhysicsServer::get_singleton()->area_create(), true) {
-
 	space_override = SPACE_OVERRIDE_DISABLED;
 	set_gravity(9.8);
 	locked = false;

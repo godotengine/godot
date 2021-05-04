@@ -363,7 +363,6 @@ MeshGeometry::MappingData<T> MeshGeometry::resolve_vertex_data_array(
 		const std::string &ReferenceInformationType,
 		const std::string &dataElementName,
 		const std::string &indexOverride) {
-
 	ERR_FAIL_COND_V_MSG(source == nullptr, MappingData<T>(), "Invalid scope operator preventing memory corruption");
 
 	// UVIndex, MaterialIndex, NormalIndex, etc..

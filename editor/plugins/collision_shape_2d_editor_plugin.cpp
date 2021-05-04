@@ -40,14 +40,12 @@
 #include "scene/resources/segment_shape_2d.h"
 
 void CollisionShape2DEditor::_node_removed(Node *p_node) {
-
 	if (p_node == node) {
 		node = NULL;
 	}
 }
 
 Variant CollisionShape2DEditor::get_handle_value(int idx) const {
-
 	switch (shape_type) {
 		case CAPSULE_SHAPE: {
 			Ref<CapsuleShape2D> capsule = node->get_shape();
@@ -70,11 +68,9 @@ Variant CollisionShape2DEditor::get_handle_value(int idx) const {
 		} break;
 
 		case CONCAVE_POLYGON_SHAPE: {
-
 		} break;
 
 		case CONVEX_POLYGON_SHAPE: {
-
 		} break;
 
 		case LINE_SHAPE: {
@@ -122,7 +118,6 @@ Variant CollisionShape2DEditor::get_handle_value(int idx) const {
 }
 
 void CollisionShape2DEditor::set_handle(int idx, Point2 &p_point) {
-
 	switch (shape_type) {
 		case CAPSULE_SHAPE: {
 			if (idx < 2) {
@@ -150,11 +145,9 @@ void CollisionShape2DEditor::set_handle(int idx, Point2 &p_point) {
 		} break;
 
 		case CONCAVE_POLYGON_SHAPE: {
-
 		} break;
 
 		case CONVEX_POLYGON_SHAPE: {
-
 		} break;
 
 		case LINE_SHAPE: {
@@ -217,7 +210,6 @@ void CollisionShape2DEditor::set_handle(int idx, Point2 &p_point) {
 }
 
 void CollisionShape2DEditor::commit_handle(int idx, Variant &p_org) {
-
 	undo_redo->create_action(TTR("Set Handle"));
 
 	switch (shape_type) {
@@ -314,7 +306,6 @@ void CollisionShape2DEditor::commit_handle(int idx, Variant &p_org) {
 }
 
 bool CollisionShape2DEditor::forward_canvas_gui_input(const Ref<InputEvent> &p_event) {
-
 	if (!node) {
 		return false;
 	}
@@ -331,7 +322,6 @@ bool CollisionShape2DEditor::forward_canvas_gui_input(const Ref<InputEvent> &p_e
 	Transform2D xform = canvas_item_editor->get_canvas_transform() * node->get_global_transform();
 
 	if (mb.is_valid()) {
-
 		Vector2 gpoint = mb->get_position();
 
 		if (mb->get_button_index() == BUTTON_LEFT) {
@@ -373,7 +363,6 @@ bool CollisionShape2DEditor::forward_canvas_gui_input(const Ref<InputEvent> &p_e
 	Ref<InputEventMouseMotion> mm = p_event;
 
 	if (mm.is_valid()) {
-
 		if (edit_handle == -1 || !pressed) {
 			return false;
 		}
@@ -390,7 +379,6 @@ bool CollisionShape2DEditor::forward_canvas_gui_input(const Ref<InputEvent> &p_e
 }
 
 void CollisionShape2DEditor::_get_current_shape_type() {
-
 	if (!node) {
 		return;
 	}
@@ -425,7 +413,6 @@ void CollisionShape2DEditor::_get_current_shape_type() {
 }
 
 void CollisionShape2DEditor::forward_canvas_draw_over_viewport(Control *p_overlay) {
-
 	if (!node) {
 		return;
 	}
@@ -474,11 +461,9 @@ void CollisionShape2DEditor::forward_canvas_draw_over_viewport(Control *p_overla
 		} break;
 
 		case CONCAVE_POLYGON_SHAPE: {
-
 		} break;
 
 		case CONVEX_POLYGON_SHAPE: {
-
 		} break;
 
 		case LINE_SHAPE: {
@@ -533,9 +518,7 @@ void CollisionShape2DEditor::forward_canvas_draw_over_viewport(Control *p_overla
 }
 
 void CollisionShape2DEditor::_notification(int p_what) {
-
 	switch (p_what) {
-
 		case NOTIFICATION_ENTER_TREE: {
 			get_tree()->connect("node_removed", this, "_node_removed");
 		} break;
@@ -547,7 +530,6 @@ void CollisionShape2DEditor::_notification(int p_what) {
 }
 
 void CollisionShape2DEditor::edit(Node *p_node) {
-
 	if (!canvas_item_editor) {
 		canvas_item_editor = CanvasItemEditor::get_singleton();
 	}
@@ -568,13 +550,11 @@ void CollisionShape2DEditor::edit(Node *p_node) {
 }
 
 void CollisionShape2DEditor::_bind_methods() {
-
 	ClassDB::bind_method("_get_current_shape_type", &CollisionShape2DEditor::_get_current_shape_type);
 	ClassDB::bind_method(D_METHOD("_node_removed"), &CollisionShape2DEditor::_node_removed);
 }
 
 CollisionShape2DEditor::CollisionShape2DEditor(EditorNode *p_editor) {
-
 	node = NULL;
 	canvas_item_editor = NULL;
 	editor = p_editor;
@@ -586,24 +566,20 @@ CollisionShape2DEditor::CollisionShape2DEditor(EditorNode *p_editor) {
 }
 
 void CollisionShape2DEditorPlugin::edit(Object *p_obj) {
-
 	collision_shape_2d_editor->edit(Object::cast_to<Node>(p_obj));
 }
 
 bool CollisionShape2DEditorPlugin::handles(Object *p_obj) const {
-
 	return p_obj->is_class("CollisionShape2D");
 }
 
 void CollisionShape2DEditorPlugin::make_visible(bool visible) {
-
 	if (!visible) {
 		edit(NULL);
 	}
 }
 
 CollisionShape2DEditorPlugin::CollisionShape2DEditorPlugin(EditorNode *p_editor) {
-
 	editor = p_editor;
 
 	collision_shape_2d_editor = memnew(CollisionShape2DEditor(p_editor));

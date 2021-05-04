@@ -42,7 +42,6 @@
 #include "scene/gui/tool_button.h"
 
 class TileMapEditor : public VBoxContainer {
-
 	GDCLASS(TileMapEditor, VBoxContainer);
 
 	enum Tool {
@@ -232,7 +231,6 @@ public:
 };
 
 class TileMapEditorPlugin : public EditorPlugin {
-
 	GDCLASS(TileMapEditorPlugin, EditorPlugin);
 
 	TileMapEditor *tile_map_editor;

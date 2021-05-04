@@ -41,12 +41,10 @@
 #include "scene/resources/segment_shape_2d.h"
 
 void CollisionShape2D::_shape_changed() {
-
 	update();
 }
 
 void CollisionShape2D::_update_in_shape_owner(bool p_xform_only) {
-
 	parent->shape_owner_set_transform(owner_id, get_transform());
 	if (p_xform_only)
 		return;
@@ -56,11 +54,8 @@ void CollisionShape2D::_update_in_shape_owner(bool p_xform_only) {
 }
 
 void CollisionShape2D::_notification(int p_what) {
-
 	switch (p_what) {
-
 		case NOTIFICATION_PARENTED: {
-
 			parent = Object::cast_to<CollisionObject2D>(get_parent());
 			if (parent) {
 				owner_id = parent->create_shape_owner(this);
@@ -78,14 +73,12 @@ void CollisionShape2D::_notification(int p_what) {
 
 		} break;
 		case NOTIFICATION_ENTER_TREE: {
-
 			if (parent) {
 				_update_in_shape_owner();
 			}
 
 		} break;
 		case NOTIFICATION_LOCAL_TRANSFORM_CHANGED: {
-
 			if (parent) {
 				_update_in_shape_owner(true);
 			}
@@ -100,7 +93,6 @@ void CollisionShape2D::_notification(int p_what) {
 
 		} break;
 		case NOTIFICATION_DRAW: {
-
 			if (!Engine::get_singleton()->is_editor_hint() && !get_tree()->is_debugging_collisions_hint()) {
 				break;
 			}
@@ -170,12 +162,10 @@ void CollisionShape2D::set_shape(const Ref<Shape2D> &p_shape) {
 }
 
 Ref<Shape2D> CollisionShape2D::get_shape() const {
-
 	return shape;
 }
 
 bool CollisionShape2D::_edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const {
-
 	if (!shape.is_valid())
 		return false;
 
@@ -183,7 +173,6 @@ bool CollisionShape2D::_edit_is_selected_on_click(const Point2 &p_point, double 
 }
 
 String CollisionShape2D::get_configuration_warning() const {
-
 	String warning = Node2D::get_configuration_warning();
 
 	if (!Object::cast_to<CollisionObject2D>(get_parent())) {
@@ -233,7 +222,6 @@ void CollisionShape2D::set_one_way_collision(bool p_enable) {
 }
 
 bool CollisionShape2D::is_one_way_collision_enabled() const {
-
 	return one_way_collision;
 }
 
@@ -249,7 +237,6 @@ float CollisionShape2D::get_one_way_collision_margin() const {
 }
 
 void CollisionShape2D::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("set_shape", "shape"), &CollisionShape2D::set_shape);
 	ClassDB::bind_method(D_METHOD("get_shape"), &CollisionShape2D::get_shape);
 	ClassDB::bind_method(D_METHOD("set_disabled", "disabled"), &CollisionShape2D::set_disabled);
@@ -267,7 +254,6 @@ void CollisionShape2D::_bind_methods() {
 }
 
 CollisionShape2D::CollisionShape2D() {
-
 	rect = Rect2(-Point2(10, 10), Point2(20, 20));
 	set_notify_local_transform(true);
 	owner_id = 0;

@@ -5,7 +5,6 @@ layout(location = 0) in highp vec4 vertex_attrib;
 /* clang-format on */
 
 void main() {
-
 	gl_Position = vertex_attrib;
 }
 
@@ -33,7 +32,6 @@ uniform int source_mipmap;
 layout(location = 0) out mediump uint depth;
 
 void main() {
-
 	ivec2 ssP = ivec2(gl_FragCoord.xy);
 
 	// Rotated grid subsampling to avoid XY directional bias or Z precision bias while downsampling.

@@ -35,13 +35,11 @@
 #include "scene/resources/packed_scene.h"
 
 void EditorSubScene::_path_selected(const String &p_path) {
-
 	path->set_text(p_path);
 	_path_changed(p_path);
 }
 
 void EditorSubScene::_path_changed(const String &p_path) {
-
 	tree->clear();
 
 	if (scene) {
@@ -65,21 +63,17 @@ void EditorSubScene::_path_changed(const String &p_path) {
 }
 
 void EditorSubScene::_path_browse() {
-
 	file_dialog->popup_centered_ratio();
 }
 
 void EditorSubScene::_notification(int p_what) {
-
 	if (p_what == NOTIFICATION_VISIBILITY_CHANGED) {
-
 		if (is_visible() && scene == NULL)
 			_path_browse();
 	}
 }
 
 void EditorSubScene::_fill_tree(Node *p_node, TreeItem *p_parent) {
-
 	TreeItem *it = tree->create_item(p_parent);
 	it->set_metadata(0, p_node);
 	it->set_text(0, p_node->get_name());
@@ -88,7 +82,6 @@ void EditorSubScene::_fill_tree(Node *p_node, TreeItem *p_parent) {
 	it->set_icon(0, EditorNode::get_singleton()->get_object_icon(p_node, "Node"));
 
 	for (int i = 0; i < p_node->get_child_count(); i++) {
-
 		Node *c = p_node->get_child(i);
 		if (c->get_owner() != scene)
 			continue;
@@ -161,13 +154,10 @@ void EditorSubScene::ok_pressed() {
 }
 
 void EditorSubScene::_reown(Node *p_node, List<Node *> *p_to_reown) {
-
 	if (p_node == scene) {
-
 		scene->set_filename("");
 		p_to_reown->push_back(p_node);
 	} else if (p_node->get_owner() == scene) {
-
 		p_to_reown->push_back(p_node);
 	}
 
@@ -210,13 +200,11 @@ void EditorSubScene::move(Node *p_new_parent, Node *p_new_owner) {
 }
 
 void EditorSubScene::clear() {
-
 	path->set_text("");
 	_path_changed("");
 }
 
 void EditorSubScene::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("_path_selected"), &EditorSubScene::_path_selected);
 	ClassDB::bind_method(D_METHOD("_path_changed"), &EditorSubScene::_path_changed);
 	ClassDB::bind_method(D_METHOD("_path_browse"), &EditorSubScene::_path_browse);
@@ -226,7 +214,6 @@ void EditorSubScene::_bind_methods() {
 }
 
 EditorSubScene::EditorSubScene() {
-
 	scene = NULL;
 	is_root = false;
 
@@ -263,7 +250,6 @@ EditorSubScene::EditorSubScene() {
 	ResourceLoader::get_recognized_extensions_for_type("PackedScene", &extensions);
 
 	for (List<String>::Element *E = extensions.front(); E; E = E->next()) {
-
 		file_dialog->add_filter("*." + E->get());
 	}
 

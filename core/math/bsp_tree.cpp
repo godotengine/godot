@@ -34,11 +34,9 @@
 #include "core/print_string.h"
 
 void BSP_Tree::from_aabb(const AABB &p_aabb) {
-
 	planes.clear();
 
 	for (int i = 0; i < 3; i++) {
-
 		Vector3 n;
 		n[i] = 1;
 		planes.push_back(Plane(n, p_aabb.position[i] + p_aabb.size[i]));
@@ -48,7 +46,6 @@ void BSP_Tree::from_aabb(const AABB &p_aabb) {
 	nodes.clear();
 
 	for (int i = 0; i < 6; i++) {
-
 		Node n;
 		n.plane = i;
 		n.under = (i == 0) ? UNDER_LEAF : i - 1;
@@ -61,21 +58,17 @@ void BSP_Tree::from_aabb(const AABB &p_aabb) {
 }
 
 Vector<BSP_Tree::Node> BSP_Tree::get_nodes() const {
-
 	return nodes;
 }
 Vector<Plane> BSP_Tree::get_planes() const {
-
 	return planes;
 }
 
 AABB BSP_Tree::get_aabb() const {
-
 	return aabb;
 }
 
 int BSP_Tree::_get_points_inside(int p_node, const Vector3 *p_points, int *p_indices, const Vector3 &p_center, const Vector3 &p_half_extents, int p_indices_count) const {
-
 	const Node *node = &nodes[p_node];
 	const Plane &p = planes[node->plane];
 
@@ -96,11 +89,9 @@ int BSP_Tree::_get_points_inside(int p_node, const Vector3 *p_points, int *p_ind
 
 		//sort points, so the are under first, over last
 		for (int i = 0; i < p_indices_count; i++) {
-
 			int index = p_indices[i];
 
 			if (p.is_point_over(p_points[index])) {
-
 				// kind of slow (but cache friendly), should try something else,
 				// but this is a corner case most of the time
 
@@ -137,7 +128,6 @@ int BSP_Tree::_get_points_inside(int p_node, const Vector3 *p_points, int *p_ind
 	} else if (dist_min > 0) { //all points over plane
 
 		if (node->over == OVER_LEAF) {
-
 			return 0; // all these points are not visible
 		}
 
@@ -145,7 +135,6 @@ int BSP_Tree::_get_points_inside(int p_node, const Vector3 *p_points, int *p_ind
 	} else { //all points behind plane
 
 		if (node->under == UNDER_LEAF) {
-
 			return p_indices_count; // all these points are visible
 		}
 		return _get_points_inside(node->under, p_points, p_indices, p_center, p_half_extents, p_indices_count);
@@ -153,7 +142,6 @@ int BSP_Tree::_get_points_inside(int p_node, const Vector3 *p_points, int *p_ind
 }
 
 int BSP_Tree::get_points_inside(const Vector3 *p_points, int p_point_count) const {
-
 	if (nodes.size() == 0)
 		return 0;
 
@@ -169,7 +157,6 @@ int BSP_Tree::get_points_inside(const Vector3 *p_points, int p_point_count) cons
 		return 0;
 
 	for (int i = 0; i < p_point_count; i++) {
-
 		const Vector3 &point = p_points[i];
 		if (!aabb.has_point(point)) {
 			continue;
@@ -180,7 +167,6 @@ int BSP_Tree::get_points_inside(const Vector3 *p_points, int p_point_count) cons
 		bool pass = false;
 
 		while (true) {
-
 			if (idx == OVER_LEAF) {
 				pass = false;
 				break;
@@ -216,7 +202,6 @@ int BSP_Tree::get_points_inside(const Vector3 *p_points, int p_point_count) cons
 	AABB bounds;
 
 	for (int i = 0; i < p_point_count; i++) {
-
 		indices[i] = i;
 		if (i == 0)
 			bounds.pos = p_points[i];
@@ -230,7 +215,6 @@ int BSP_Tree::get_points_inside(const Vector3 *p_points, int p_point_count) cons
 }
 
 bool BSP_Tree::point_is_inside(const Vector3 &p_point) const {
-
 	if (!aabb.has_point(p_point)) {
 		return false;
 	}
@@ -246,12 +230,10 @@ bool BSP_Tree::point_is_inside(const Vector3 &p_point) const {
 	int idx = node_count - 1;
 
 	while (true) {
-
 		if (idx == OVER_LEAF) {
 			return false;
 		}
 		if (idx == UNDER_LEAF) {
-
 			return true;
 		}
 
@@ -272,7 +254,6 @@ bool BSP_Tree::point_is_inside(const Vector3 &p_point) const {
 }
 
 static int _bsp_find_best_half_plane(const Face3 *p_faces, const Vector<int> &p_indices, real_t p_tolerance) {
-
 	int ic = p_indices.size();
 	const int *indices = p_indices.ptr();
 
@@ -282,14 +263,12 @@ static int _bsp_find_best_half_plane(const Face3 *p_faces, const Vector<int> &p_
 	// Loop to find the polygon that best divides the set.
 
 	for (int i = 0; i < ic; i++) {
-
 		const Face3 &f = p_faces[indices[i]];
 		Plane p = f.get_plane();
 
 		int num_over = 0, num_under = 0, num_spanning = 0;
 
 		for (int j = 0; j < ic; j++) {
-
 			if (i == j)
 				continue;
 
@@ -297,11 +276,9 @@ static int _bsp_find_best_half_plane(const Face3 *p_faces, const Vector<int> &p_
 			int over = 0, under = 0;
 
 			for (int k = 0; k < 3; k++) {
-
 				real_t d = p.distance_to(g.vertex[j]);
 
 				if (Math::abs(d) > p_tolerance) {
-
 					if (d > 0)
 						over++;
 					else
@@ -327,7 +304,6 @@ static int _bsp_find_best_half_plane(const Face3 *p_faces, const Vector<int> &p_
 
 		//printf("plane %i, %i over, %i under, %i spanning, cost is %g\n",i,num_over,num_under,num_spanning,plane_cost);
 		if (plane_cost < best_plane_cost) {
-
 			best_plane = i;
 			best_plane_cost = plane_cost;
 		}
@@ -337,7 +313,6 @@ static int _bsp_find_best_half_plane(const Face3 *p_faces, const Vector<int> &p_
 }
 
 static int _bsp_create_node(const Face3 *p_faces, const Vector<int> &p_indices, Vector<Plane> &p_planes, Vector<BSP_Tree::Node> &p_nodes, real_t p_tolerance) {
-
 	ERR_FAIL_COND_V(p_nodes.size() == BSP_Tree::MAX_NODES, -1);
 
 	// should not reach here
@@ -357,7 +332,6 @@ static int _bsp_create_node(const Face3 *p_faces, const Vector<int> &p_indices, 
 	Plane divisor_plane = p_faces[indices[divisor_idx]].get_plane();
 
 	for (int i = 0; i < ic; i++) {
-
 		if (i == divisor_idx)
 			continue;
 
@@ -372,10 +346,8 @@ static int _bsp_create_node(const Face3 *p_faces, const Vector<int> &p_indices, 
 		int under_count = 0;
 
 		for (int j = 0; j < 3; j++) {
-
 			real_t d = divisor_plane.distance_to(f.vertex[j]);
 			if (Math::abs(d) > p_tolerance) {
-
 				if (d > 0)
 					over_count++;
 				else
@@ -411,7 +383,6 @@ static int _bsp_create_node(const Face3 *p_faces, const Vector<int> &p_indices, 
 	int divisor_plane_idx = -1;
 
 	for (int i = 0; i < p_planes.size(); i++) {
-
 		if (p_planes[i].is_equal_approx(divisor_plane)) {
 			divisor_plane_idx = i;
 			break;
@@ -419,7 +390,6 @@ static int _bsp_create_node(const Face3 *p_faces, const Vector<int> &p_indices, 
 	}
 
 	if (divisor_plane_idx == -1) {
-
 		ERR_FAIL_COND_V(p_planes.size() == BSP_Tree::MAX_PLANES, -1);
 		divisor_plane_idx = p_planes.size();
 		p_planes.push_back(divisor_plane);
@@ -436,7 +406,6 @@ static int _bsp_create_node(const Face3 *p_faces, const Vector<int> &p_indices, 
 }
 
 BSP_Tree::operator Variant() const {
-
 	Dictionary d;
 	d["error_radius"] = error_radius;
 
@@ -444,7 +413,6 @@ BSP_Tree::operator Variant() const {
 	plane_values.resize(planes.size() * 4);
 
 	for (int i = 0; i < planes.size(); i++) {
-
 		plane_values.write[i * 4 + 0] = planes[i].normal.x;
 		plane_values.write[i * 4 + 1] = planes[i].normal.y;
 		plane_values.write[i * 4 + 2] = planes[i].normal.z;
@@ -457,7 +425,6 @@ BSP_Tree::operator Variant() const {
 	dst_nodes.resize(nodes.size() * 3);
 
 	for (int i = 0; i < nodes.size(); i++) {
-
 		dst_nodes.set(i * 3 + 0, nodes[i].over);
 		dst_nodes.set(i * 3 + 1, nodes[i].under);
 		dst_nodes.set(i * 3 + 2, nodes[i].plane);
@@ -473,7 +440,6 @@ BSP_Tree::BSP_Tree() {
 }
 
 BSP_Tree::BSP_Tree(const Variant &p_variant) {
-
 	Dictionary d = p_variant;
 	ERR_FAIL_COND(!d.has("nodes"));
 	ERR_FAIL_COND(!d.has("planes"));
@@ -484,7 +450,6 @@ BSP_Tree::BSP_Tree(const Variant &p_variant) {
 	ERR_FAIL_COND(src_nodes.size() % 3);
 
 	if (d["planes"].get_type() == Variant::POOL_REAL_ARRAY) {
-
 		PoolVector<real_t> src_planes = d["planes"];
 		int plane_count = src_planes.size();
 		ERR_FAIL_COND(plane_count % 4);
@@ -493,7 +458,6 @@ BSP_Tree::BSP_Tree(const Variant &p_variant) {
 		if (plane_count) {
 			PoolVector<real_t>::Read r = src_planes.read();
 			for (int i = 0; i < plane_count / 4; i++) {
-
 				planes.write[i].normal.x = r[i * 4 + 0];
 				planes.write[i].normal.y = r[i * 4 + 1];
 				planes.write[i].normal.z = r[i * 4 + 2];
@@ -502,7 +466,6 @@ BSP_Tree::BSP_Tree(const Variant &p_variant) {
 		}
 
 	} else {
-
 		planes = d["planes"];
 	}
 
@@ -515,7 +478,6 @@ BSP_Tree::BSP_Tree(const Variant &p_variant) {
 	PoolVector<int>::Read r = src_nodes.read();
 
 	for (int i = 0; i < nodes.size(); i++) {
-
 		nodes.write[i].over = r[i * 3 + 0];
 		nodes.write[i].under = r[i * 3 + 1];
 		nodes.write[i].plane = r[i * 3 + 2];
@@ -523,7 +485,6 @@ BSP_Tree::BSP_Tree(const Variant &p_variant) {
 }
 
 BSP_Tree::BSP_Tree(const PoolVector<Face3> &p_faces, real_t p_error_radius) {
-
 	// compute aabb
 
 	int face_count = p_faces.size();
@@ -535,20 +496,16 @@ BSP_Tree::BSP_Tree(const PoolVector<Face3> &p_faces, real_t p_error_radius) {
 	Vector<int> indices;
 
 	for (int i = 0; i < face_count; i++) {
-
 		const Face3 &f = facesptr[i];
 
 		if (f.is_degenerate())
 			continue;
 
 		for (int j = 0; j < 3; j++) {
-
 			if (first) {
-
 				aabb.position = f.vertex[0];
 				first = false;
 			} else {
-
 				aabb.expand_to(f.vertex[j]);
 			}
 		}
@@ -561,7 +518,6 @@ BSP_Tree::BSP_Tree(const PoolVector<Face3> &p_faces, real_t p_error_radius) {
 	int top = _bsp_create_node(faces_r.ptr(), indices, planes, nodes, aabb.get_longest_axis_size() * 0.0001);
 
 	if (top < 0) {
-
 		nodes.clear();
 		planes.clear();
 		ERR_FAIL_COND(top < 0);

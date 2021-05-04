@@ -40,7 +40,6 @@
 #include "visual_server_viewport.h"
 
 class VisualServerRaster : public VisualServer {
-
 	enum {
 
 		MAX_INSTANCE_CULL = 8192,
@@ -61,7 +60,6 @@ class VisualServerRaster : public VisualServer {
 	RID black_image[4];
 
 	struct FrameDrawnCallbacks {
-
 		ObjectID object;
 		StringName method;
 		Variant param;

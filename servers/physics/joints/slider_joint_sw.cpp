@@ -116,7 +116,6 @@ SliderJointSW::SliderJointSW(BodySW *rbA, BodySW *rbB, const Transform &frameInA
 		JointSW(_arr, 2),
 		m_frameInA(frameInA),
 		m_frameInB(frameInB) {
-
 	A = rbA;
 	B = rbB;
 
@@ -185,7 +184,6 @@ bool SliderJointSW::setup(real_t p_step) {
 //-----------------------------------------------------------------------------
 
 void SliderJointSW::solve(real_t p_step) {
-
 	int i;
 	// linear
 	Vector3 velA = A->get_velocity_in_local_point(m_relPosA);
@@ -382,7 +380,6 @@ Vector3 SliderJointSW::getAncorInB(void) {
 } // SliderJointSW::getAncorInB();
 
 void SliderJointSW::set_param(PhysicsServer::SliderJointParam p_param, real_t p_value) {
-
 	switch (p_param) {
 		case PhysicsServer::SLIDER_JOINT_LINEAR_LIMIT_UPPER:
 			m_upperLinLimit = p_value;
@@ -458,7 +455,6 @@ void SliderJointSW::set_param(PhysicsServer::SliderJointParam p_param, real_t p_
 }
 
 real_t SliderJointSW::get_param(PhysicsServer::SliderJointParam p_param) const {
-
 	switch (p_param) {
 		case PhysicsServer::SLIDER_JOINT_LINEAR_LIMIT_UPPER:
 			return m_upperLinLimit;

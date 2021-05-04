@@ -146,7 +146,6 @@ TestFunc test_funcs[] = {
 };
 
 MainLoop *test() {
-
 	int count = 0;
 	int passed = 0;
 

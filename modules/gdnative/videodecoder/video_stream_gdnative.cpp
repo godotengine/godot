@@ -105,7 +105,6 @@ int64_t GDAPI godot_videodecoder_file_seek(void *ptr, int64_t pos, int whence) {
 }
 
 void GDAPI godot_videodecoder_register_decoder(const godot_videodecoder_interface_gdnative *p_interface) {
-
 	decoder_server.register_decoder_interface(p_interface);
 }
 }
@@ -256,7 +255,6 @@ bool VideoStreamPlaybackGDNative::is_paused() const {
 }
 
 void VideoStreamPlaybackGDNative::play() {
-
 	stop();
 
 	playing = true;
@@ -298,7 +296,6 @@ float VideoStreamPlaybackGDNative::get_length() const {
 }
 
 float VideoStreamPlaybackGDNative::get_playback_position() const {
-
 	ERR_FAIL_COND_V(interface == NULL, 0);
 	return interface->get_playback_position(data_struct);
 }
@@ -318,7 +315,6 @@ void VideoStreamPlaybackGDNative::set_audio_track(int p_idx) {
 }
 
 void VideoStreamPlaybackGDNative::set_mix_callback(AudioMixCallback p_callback, void *p_userdata) {
-
 	mix_udata = p_userdata;
 	mix_callback = p_callback;
 }
@@ -350,17 +346,14 @@ Ref<VideoStreamPlayback> VideoStreamGDNative::instance_playback() {
 }
 
 void VideoStreamGDNative::set_file(const String &p_file) {
-
 	file = p_file;
 }
 
 String VideoStreamGDNative::get_file() {
-
 	return file;
 }
 
 void VideoStreamGDNative::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("set_file", "file"), &VideoStreamGDNative::set_file);
 	ClassDB::bind_method(D_METHOD("get_file"), &VideoStreamGDNative::get_file);
 
@@ -368,7 +361,6 @@ void VideoStreamGDNative::_bind_methods() {
 }
 
 void VideoStreamGDNative::set_audio_track(int p_track) {
-
 	audio_track = p_track;
 }
 

@@ -44,7 +44,6 @@
 #endif
 
 class Physics2DServerWrapMT : public Physics2DServer {
-
 	mutable Physics2DServer *physics_2d_server;
 
 	mutable CommandQueueMT command_queue;
@@ -96,7 +95,6 @@ public:
 
 	//these work well, but should be used from the main thread only
 	bool shape_collide(RID p_shape_A, const Transform2D &p_xform_A, const Vector2 &p_motion_A, RID p_shape_B, const Transform2D &p_xform_B, const Vector2 &p_motion_B, Vector2 *r_results, int p_result_max, int &r_result_count) {
-
 		ERR_FAIL_COND_V(main_thread != Thread::get_caller_id(), false);
 		return physics_2d_server->shape_collide(p_shape_A, p_xform_A, p_motion_A, p_shape_B, p_xform_B, p_motion_B, r_results, p_result_max, r_result_count);
 	}
@@ -112,20 +110,17 @@ public:
 
 	// this function only works on physics process, errors and returns null otherwise
 	Physics2DDirectSpaceState *space_get_direct_state(RID p_space) {
-
 		ERR_FAIL_COND_V(main_thread != Thread::get_caller_id(), NULL);
 		return physics_2d_server->space_get_direct_state(p_space);
 	}
 
 	FUNC2(space_set_debug_contacts, RID, int);
 	virtual Vector<Vector2> space_get_contacts(RID p_space) const {
-
 		ERR_FAIL_COND_V(main_thread != Thread::get_caller_id(), Vector<Vector2>());
 		return physics_2d_server->space_get_contacts(p_space);
 	}
 
 	virtual int space_get_contact_count(RID p_space) const {
-
 		ERR_FAIL_COND_V(main_thread != Thread::get_caller_id(), 0);
 		return physics_2d_server->space_get_contact_count(p_space);
 	}
@@ -257,20 +252,17 @@ public:
 	FUNC2(body_set_pickable, RID, bool);
 
 	bool body_test_motion(RID p_body, const Transform2D &p_from, const Vector2 &p_motion, bool p_infinite_inertia, real_t p_margin = 0.001, MotionResult *r_result = NULL, bool p_exclude_raycast_shapes = true) {
-
 		ERR_FAIL_COND_V(main_thread != Thread::get_caller_id(), false);
 		return physics_2d_server->body_test_motion(p_body, p_from, p_motion, p_infinite_inertia, p_margin, r_result, p_exclude_raycast_shapes);
 	}
 
 	int body_test_ray_separation(RID p_body, const Transform2D &p_transform, bool p_infinite_inertia, Vector2 &r_recover_motion, SeparationResult *r_results, int p_result_max, float p_margin = 0.001) {
-
 		ERR_FAIL_COND_V(main_thread != Thread::get_caller_id(), false);
 		return physics_2d_server->body_test_ray_separation(p_body, p_transform, p_infinite_inertia, r_recover_motion, r_results, p_result_max, p_margin);
 	}
 
 	// this function only works on physics process, errors and returns null otherwise
 	Physics2DDirectBodyState *body_get_direct_state(RID p_body) {
-
 		ERR_FAIL_COND_V(main_thread != Thread::get_caller_id(), NULL);
 		return physics_2d_server->body_get_direct_state(p_body);
 	}
@@ -326,7 +318,6 @@ public:
 
 	template <class T>
 	static Physics2DServer *init_server() {
-
 #ifdef NO_THREADS
 		return memnew(T); // Always single unsafe when no threads are available.
 #else

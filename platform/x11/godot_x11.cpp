@@ -37,7 +37,6 @@
 #include "os_x11.h"
 
 int main(int argc, char *argv[]) {
-
 	OS_X11 os;
 
 	setlocale(LC_CTYPE, "");

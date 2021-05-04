@@ -82,7 +82,6 @@ void WindowsTerminalLogger::log_error(const char *p_function, const char *p_file
 		StdLogger::log_error(p_function, p_file, p_line, p_code, p_rationale, p_type);
 #ifndef UWP_ENABLED
 	} else {
-
 		CONSOLE_SCREEN_BUFFER_INFO sbi; //original
 		GetConsoleScreenBufferInfo(hCon, &sbi);
 
@@ -108,7 +107,6 @@ void WindowsTerminalLogger::log_error(const char *p_function, const char *p_file
 		basecol |= current_bg;
 
 		if (p_rationale && p_rationale[0]) {
-
 			SetConsoleTextAttribute(hCon, basecol | FOREGROUND_INTENSITY);
 			switch (p_type) {
 				case ERR_ERROR:
@@ -148,7 +146,6 @@ void WindowsTerminalLogger::log_error(const char *p_function, const char *p_file
 			logf("%s:%i\n", p_file, p_line);
 
 		} else {
-
 			SetConsoleTextAttribute(hCon, basecol | FOREGROUND_INTENSITY);
 			switch (p_type) {
 				case ERR_ERROR:

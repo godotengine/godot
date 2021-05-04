@@ -33,7 +33,6 @@
 #include "core/core_string_names.h"
 
 OpenSimplexNoise::OpenSimplexNoise() {
-
 	seed = 0;
 	persistence = 0.5;
 	octaves = 3;
@@ -53,7 +52,6 @@ void OpenSimplexNoise::_init_seeds() {
 }
 
 void OpenSimplexNoise::set_seed(int p_seed) {
-
 	if (seed == p_seed)
 		return;
 
@@ -65,7 +63,6 @@ void OpenSimplexNoise::set_seed(int p_seed) {
 }
 
 int OpenSimplexNoise::get_seed() const {
-
 	return seed;
 }
 
@@ -101,7 +98,6 @@ void OpenSimplexNoise::set_lacunarity(float p_lacunarity) {
 }
 
 Ref<Image> OpenSimplexNoise::get_image(int p_width, int p_height) const {
-
 	PoolVector<uint8_t> data;
 	data.resize(p_width * p_height);
 
@@ -120,7 +116,6 @@ Ref<Image> OpenSimplexNoise::get_image(int p_width, int p_height) const {
 }
 
 Ref<Image> OpenSimplexNoise::get_seamless_image(int p_size) const {
-
 	PoolVector<uint8_t> data;
 	data.resize(p_size * p_size);
 
@@ -128,7 +123,6 @@ Ref<Image> OpenSimplexNoise::get_seamless_image(int p_size) const {
 
 	for (int i = 0; i < p_size; i++) {
 		for (int j = 0; j < p_size; j++) {
-
 			float ii = (float)i / (float)p_size;
 			float jj = (float)j / (float)p_size;
 
@@ -153,7 +147,6 @@ Ref<Image> OpenSimplexNoise::get_seamless_image(int p_size) const {
 }
 
 void OpenSimplexNoise::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("get_seed"), &OpenSimplexNoise::get_seed);
 	ClassDB::bind_method(D_METHOD("set_seed", "seed"), &OpenSimplexNoise::set_seed);
 
@@ -188,12 +181,10 @@ void OpenSimplexNoise::_bind_methods() {
 }
 
 float OpenSimplexNoise::get_noise_1d(float x) const {
-
 	return get_noise_2d(x, 1.0);
 }
 
 float OpenSimplexNoise::get_noise_2d(float x, float y) const {
-
 	x /= period;
 	y /= period;
 
@@ -214,7 +205,6 @@ float OpenSimplexNoise::get_noise_2d(float x, float y) const {
 }
 
 float OpenSimplexNoise::get_noise_3d(float x, float y, float z) const {
-
 	x /= period;
 	y /= period;
 	z /= period;
@@ -237,7 +227,6 @@ float OpenSimplexNoise::get_noise_3d(float x, float y, float z) const {
 }
 
 float OpenSimplexNoise::get_noise_4d(float x, float y, float z, float w) const {
-
 	x /= period;
 	y /= period;
 	z /= period;

@@ -34,7 +34,6 @@
 #include "margin_container.h"
 
 Control *SplitContainer::_getch(int p_idx) const {
-
 	int idx = 0;
 
 	for (int i = 0; i < get_child_count(); i++) {
@@ -119,7 +118,6 @@ void SplitContainer::_resort() {
 }
 
 Size2 SplitContainer::get_minimum_size() const {
-
 	/* Calculate MINIMUM SIZE */
 
 	Size2i minimum;
@@ -128,12 +126,10 @@ Size2 SplitContainer::get_minimum_size() const {
 	sep = (dragger_visibility != DRAGGER_HIDDEN_COLLAPSED) ? MAX(sep, vertical ? g->get_height() : g->get_width()) : 0;
 
 	for (int i = 0; i < 2; i++) {
-
 		if (!_getch(i))
 			break;
 
 		if (i == 1) {
-
 			if (vertical)
 				minimum.height += sep;
 			else
@@ -143,11 +139,9 @@ Size2 SplitContainer::get_minimum_size() const {
 		Size2 ms = _getch(i)->get_combined_minimum_size();
 
 		if (vertical) {
-
 			minimum.height += ms.height;
 			minimum.width = MAX(minimum.width, ms.width);
 		} else {
-
 			minimum.width += ms.width;
 			minimum.height = MAX(minimum.height, ms.height);
 		}
@@ -157,21 +151,16 @@ Size2 SplitContainer::get_minimum_size() const {
 }
 
 void SplitContainer::_notification(int p_what) {
-
 	switch (p_what) {
-
 		case NOTIFICATION_SORT_CHILDREN: {
-
 			_resort();
 		} break;
 		case NOTIFICATION_MOUSE_EXIT: {
-
 			mouse_inside = false;
 			if (get_constant("autohide"))
 				update();
 		} break;
 		case NOTIFICATION_DRAW: {
-
 			if (!_getch(0) || !_getch(1))
 				return;
 
@@ -191,46 +180,36 @@ void SplitContainer::_notification(int p_what) {
 				draw_texture(tex, Point2i(middle_sep + (sep - tex->get_width()) / 2, (size.y - tex->get_height()) / 2));
 		} break;
 		case NOTIFICATION_THEME_CHANGED: {
-
 			minimum_size_changed();
 		} break;
 	}
 }
 
 void SplitContainer::_gui_input(const Ref<InputEvent> &p_event) {
-
 	if (collapsed || !_getch(0) || !_getch(1) || dragger_visibility != DRAGGER_VISIBLE)
 		return;
 
 	Ref<InputEventMouseButton> mb = p_event;
 
 	if (mb.is_valid()) {
-
 		if (mb->get_button_index() == BUTTON_LEFT) {
-
 			if (mb->is_pressed()) {
-
 				int sep = get_constant("separation");
 
 				if (vertical) {
-
 					if (mb->get_position().y > middle_sep && mb->get_position().y < middle_sep + sep) {
-
 						dragging = true;
 						drag_from = mb->get_position().y;
 						drag_ofs = split_offset;
 					}
 				} else {
-
 					if (mb->get_position().x > middle_sep && mb->get_position().x < middle_sep + sep) {
-
 						dragging = true;
 						drag_from = mb->get_position().x;
 						drag_ofs = split_offset;
 					}
 				}
 			} else {
-
 				dragging = false;
 			}
 		}
@@ -239,7 +218,6 @@ void SplitContainer::_gui_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseMotion> mm = p_event;
 
 	if (mm.is_valid()) {
-
 		bool mouse_inside_state = false;
 		if (vertical)
 			mouse_inside_state = mm->get_position().y > middle_sep && mm->get_position().y < middle_sep + get_constant("separation");
@@ -247,7 +225,6 @@ void SplitContainer::_gui_input(const Ref<InputEvent> &p_event) {
 			mouse_inside_state = mm->get_position().x > middle_sep && mm->get_position().x < middle_sep + get_constant("separation");
 
 		if (mouse_inside != mouse_inside_state) {
-
 			mouse_inside = mouse_inside_state;
 			if (get_constant("autohide"))
 				update();
@@ -264,20 +241,16 @@ void SplitContainer::_gui_input(const Ref<InputEvent> &p_event) {
 }
 
 Control::CursorShape SplitContainer::get_cursor_shape(const Point2 &p_pos) const {
-
 	if (dragging)
 		return (vertical ? CURSOR_VSPLIT : CURSOR_HSPLIT);
 
 	if (!collapsed && _getch(0) && _getch(1) && dragger_visibility == DRAGGER_VISIBLE) {
-
 		int sep = get_constant("separation");
 
 		if (vertical) {
-
 			if (p_pos.y > middle_sep && p_pos.y < middle_sep + sep)
 				return CURSOR_VSPLIT;
 		} else {
-
 			if (p_pos.x > middle_sep && p_pos.x < middle_sep + sep)
 				return CURSOR_HSPLIT;
 		}
@@ -287,7 +260,6 @@ Control::CursorShape SplitContainer::get_cursor_shape(const Point2 &p_pos) const
 }
 
 void SplitContainer::set_split_offset(int p_offset) {
-
 	if (split_offset == p_offset)
 		return;
 
@@ -297,7 +269,6 @@ void SplitContainer::set_split_offset(int p_offset) {
 }
 
 int SplitContainer::get_split_offset() const {
-
 	return split_offset;
 }
 
@@ -308,7 +279,6 @@ void SplitContainer::clamp_split_offset() {
 }
 
 void SplitContainer::set_collapsed(bool p_collapsed) {
-
 	if (collapsed == p_collapsed)
 		return;
 
@@ -317,24 +287,20 @@ void SplitContainer::set_collapsed(bool p_collapsed) {
 }
 
 void SplitContainer::set_dragger_visibility(DraggerVisibility p_visibility) {
-
 	dragger_visibility = p_visibility;
 	queue_sort();
 	update();
 }
 
 SplitContainer::DraggerVisibility SplitContainer::get_dragger_visibility() const {
-
 	return dragger_visibility;
 }
 
 bool SplitContainer::is_collapsed() const {
-
 	return collapsed;
 }
 
 void SplitContainer::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("_gui_input"), &SplitContainer::_gui_input);
 
 	ClassDB::bind_method(D_METHOD("set_split_offset", "offset"), &SplitContainer::set_split_offset);
@@ -359,7 +325,6 @@ void SplitContainer::_bind_methods() {
 }
 
 SplitContainer::SplitContainer(bool p_vertical) {
-
 	mouse_inside = false;
 	split_offset = 0;
 	should_clamp_split_offset = false;

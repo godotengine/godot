@@ -116,7 +116,6 @@ struct SurfaceData {
 };
 
 MeshInstance *FBXMeshData::create_fbx_mesh(const ImportState &state, const FBXDocParser::MeshGeometry *p_mesh_geometry, const FBXDocParser::Model *model, bool use_compression) {
-
 	mesh_geometry = p_mesh_geometry;
 	// todo: make this just use a uint64_t FBX ID this is a copy of our original materials unfortunately.
 	const std::vector<const FBXDocParser::Material *> &material_lookup = model->GetMaterials();
@@ -496,7 +495,6 @@ void FBXMeshData::reorganize_vertices(
 		HashMap<int, HashMap<int, Color>> &r_colors_raw,
 		HashMap<int, HashMap<int, Vector2>> &r_uv_1_raw,
 		HashMap<int, HashMap<int, Vector2>> &r_uv_2_raw) {
-
 	// Key: OldVertex; Value: [New vertices];
 	HashMap<int, Vector<int>> duplicated_vertices;
 
@@ -587,7 +585,6 @@ void FBXMeshData::reorganize_vertices(
 			HashMap<int, HashMap<int, Vector2>> *uv_raw = &r_uv_1_raw;
 			Vector2 *this_vert_poly_uv = &this_vert_poly_uv1;
 			for (int kk = 0; kk < 2; kk++) {
-
 				if (uv_raw->has(index)) {
 					const HashMap<PolygonId, Vector2> *uvs = uv_raw->getptr(index);
 
@@ -772,7 +769,6 @@ void FBXMeshData::add_vertex(
 		const HashMap<int, Color> &p_colors,
 		const Vector3 &p_morph_value,
 		const Vector3 &p_morph_normal) {
-
 	ERR_FAIL_INDEX_MSG(p_vertex, (Vertex)p_vertices_position.size(), "FBX file is corrupted, the position of the vertex can't be retrieved.");
 
 	if (p_normals.has(p_vertex) && !state.is_blender_fbx) {
@@ -1051,7 +1047,6 @@ HashMap<int, R> FBXMeshData::extract_per_vertex_data(
 		const FBXDocParser::MeshGeometry::MappingData<T> &p_mapping_data,
 		R (*collector_function)(const Vector<VertexData<T>> *p_vertex_data, R p_fall_back),
 		R p_fall_back) const {
-
 	/* When index_to_direct is set
 	 * index size is 184 ( contains index for the data array [values 0, 96] )
 	 * data size is 96 (contains uv coordinates)
@@ -1159,7 +1154,6 @@ HashMap<int, R> FBXMeshData::extract_per_vertex_data(
 				for (size_t polygon_vertex_index = 0;
 						polygon_vertex_index < p_mesh_indices.size();
 						polygon_vertex_index += 1) {
-
 					if (is_start_of_polygon(p_mesh_indices, polygon_vertex_index)) {
 						polygon_index += 1;
 						ERR_FAIL_INDEX_V_MSG(polygon_index, (int)p_mapping_data.data.size(), (HashMap<int, R>()), "FBX file seems corrupted: #ERR13");
@@ -1185,7 +1179,6 @@ HashMap<int, R> FBXMeshData::extract_per_vertex_data(
 				for (size_t polygon_vertex_index = 0;
 						polygon_vertex_index < p_mesh_indices.size();
 						polygon_vertex_index += 1) {
-
 					if (is_start_of_polygon(p_mesh_indices, polygon_vertex_index)) {
 						polygon_index += 1;
 						ERR_FAIL_INDEX_V_MSG(polygon_index, (int)p_mapping_data.index.size(), (HashMap<int, R>()), "FBX file seems corrupted: #ERR18");
@@ -1285,7 +1278,6 @@ HashMap<int, T> FBXMeshData::extract_per_polygon(
 		const std::vector<int> &p_polygon_indices,
 		const FBXDocParser::MeshGeometry::MappingData<T> &p_fbx_data,
 		T p_fallback_value) const {
-
 	ERR_FAIL_COND_V_MSG(p_fbx_data.ref_type == FBXDocParser::MeshGeometry::ReferenceType::index_to_direct && p_fbx_data.data.size() == 0, (HashMap<int, T>()), "invalid index to direct array");
 	ERR_FAIL_COND_V_MSG(p_fbx_data.ref_type == FBXDocParser::MeshGeometry::ReferenceType::index && p_fbx_data.index.size() == 0, (HashMap<int, T>()), "The FBX seems corrupted");
 
@@ -1311,7 +1303,6 @@ HashMap<int, T> FBXMeshData::extract_per_polygon(
 				for (int polygon_index = 0;
 						polygon_index < polygon_count;
 						polygon_index += 1) {
-
 					if (p_fbx_data.index.size() == 0) {
 						ERR_FAIL_INDEX_V_MSG(polygon_index, (int)p_fbx_data.data.size(), (HashMap<int, T>()), "FBX file is corrupted: #ERR62");
 						aggregate_polygon_data[polygon_index].push_back(p_fbx_data.data[polygon_index]);
@@ -1331,7 +1322,6 @@ HashMap<int, T> FBXMeshData::extract_per_polygon(
 				for (int polygon_index = 0;
 						polygon_index < polygon_count;
 						polygon_index += 1) {
-
 					ERR_FAIL_INDEX_V_MSG(polygon_index, (int)p_fbx_data.data.size(), (HashMap<int, T>()), "FBX file is corrupted: #ERR52");
 					aggregate_polygon_data[polygon_index].push_back(p_fbx_data.data[polygon_index]);
 				}
@@ -1347,7 +1337,6 @@ HashMap<int, T> FBXMeshData::extract_per_polygon(
 				for (int polygon_index = 0;
 						polygon_index < polygon_count;
 						polygon_index += 1) {
-
 					ERR_FAIL_INDEX_V_MSG(polygon_index, (int)p_fbx_data.index.size(), (HashMap<int, T>()), "FBX file is corrupted: #ERR53");
 					ERR_FAIL_INDEX_V_MSG(p_fbx_data.index[polygon_index], (int)p_fbx_data.data.size(), (HashMap<int, T>()), "FBX file is corrupted: #ERR54");
 					aggregate_polygon_data[polygon_index].push_back(p_fbx_data.data[p_fbx_data.index[polygon_index]]);
@@ -1405,7 +1394,6 @@ HashMap<int, T> FBXMeshData::extract_per_polygon(
 }
 
 void FBXMeshData::extract_morphs(const FBXDocParser::MeshGeometry *mesh_geometry, HashMap<String, MorphVertexData> &r_data) {
-
 	r_data.clear();
 
 	const int vertex_count = mesh_geometry->get_vertices().size();
@@ -1414,7 +1402,6 @@ void FBXMeshData::extract_morphs(const FBXDocParser::MeshGeometry *mesh_geometry
 		for (const FBXDocParser::BlendShapeChannel *blend_shape_channel : blend_shape->BlendShapeChannels()) {
 			const std::vector<const FBXDocParser::ShapeGeometry *> &shape_geometries = blend_shape_channel->GetShapeGeometries();
 			for (const FBXDocParser::ShapeGeometry *shape_geometry : shape_geometries) {
-
 				String morph_name = ImportUtils::FBXAnimMeshName(shape_geometry->Name()).c_str();
 				if (morph_name.empty()) {
 					morph_name = "morph";

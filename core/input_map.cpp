@@ -39,7 +39,6 @@ InputMap *InputMap::singleton = NULL;
 int InputMap::ALL_DEVICES = -1;
 
 void InputMap::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("has_action", "action"), &InputMap::has_action);
 	ClassDB::bind_method(D_METHOD("get_actions"), &InputMap::_get_actions);
 	ClassDB::bind_method(D_METHOD("add_action", "action", "deadzone"), &InputMap::add_action, DEFVAL(0.5f));
@@ -60,7 +59,6 @@ void InputMap::_bind_methods() {
  * matching action name (if possible).
  */
 String InputMap::_suggest_actions(const StringName &p_action) const {
-
 	List<StringName> actions = get_actions();
 	StringName closest_action;
 	float closest_similarity = 0.0;
@@ -85,7 +83,6 @@ String InputMap::_suggest_actions(const StringName &p_action) const {
 }
 
 void InputMap::add_action(const StringName &p_action, float p_deadzone) {
-
 	ERR_FAIL_COND_MSG(input_map.has(p_action), "InputMap already has action \"" + String(p_action) + "\".");
 	input_map[p_action] = Action();
 	static int last_id = 1;
@@ -95,21 +92,18 @@ void InputMap::add_action(const StringName &p_action, float p_deadzone) {
 }
 
 void InputMap::erase_action(const StringName &p_action) {
-
 	ERR_FAIL_COND_MSG(!input_map.has(p_action), _suggest_actions(p_action));
 
 	input_map.erase(p_action);
 }
 
 Array InputMap::_get_actions() {
-
 	Array ret;
 	List<StringName> actions = get_actions();
 	if (actions.empty())
 		return ret;
 
 	for (const List<StringName>::Element *E = actions.front(); E; E = E->next()) {
-
 		ret.push_back(E->get());
 	}
 
@@ -117,7 +111,6 @@ Array InputMap::_get_actions() {
 }
 
 List<StringName> InputMap::get_actions() const {
-
 	List<StringName> actions = List<StringName>();
 	if (input_map.empty()) {
 		return actions;
@@ -134,7 +127,6 @@ List<Ref<InputEvent>>::Element *InputMap::_find_event(Action &p_action, const Re
 	ERR_FAIL_COND_V(!p_event.is_valid(), NULL);
 
 	for (List<Ref<InputEvent>>::Element *E = p_action.inputs.front(); E; E = E->next()) {
-
 		const Ref<InputEvent> e = E->get();
 
 		//if (e.type != Ref<InputEvent>::KEY && e.device != p_event.device) -- unsure about the KEY comparison, why is this here?
@@ -152,19 +144,16 @@ List<Ref<InputEvent>>::Element *InputMap::_find_event(Action &p_action, const Re
 }
 
 bool InputMap::has_action(const StringName &p_action) const {
-
 	return input_map.has(p_action);
 }
 
 void InputMap::action_set_deadzone(const StringName &p_action, float p_deadzone) {
-
 	ERR_FAIL_COND_MSG(!input_map.has(p_action), _suggest_actions(p_action));
 
 	input_map[p_action].deadzone = p_deadzone;
 }
 
 void InputMap::action_add_event(const StringName &p_action, const Ref<InputEvent> &p_event) {
-
 	ERR_FAIL_COND_MSG(p_event.is_null(), "It's not a reference to a valid InputEvent object.");
 	ERR_FAIL_COND_MSG(!input_map.has(p_action), _suggest_actions(p_action));
 
@@ -175,14 +164,12 @@ void InputMap::action_add_event(const StringName &p_action, const Ref<InputEvent
 }
 
 bool InputMap::action_has_event(const StringName &p_action, const Ref<InputEvent> &p_event) {
-
 	ERR_FAIL_COND_V_MSG(!input_map.has(p_action), false, _suggest_actions(p_action));
 
 	return (_find_event(input_map[p_action], p_event) != NULL);
 }
 
 void InputMap::action_erase_event(const StringName &p_action, const Ref<InputEvent> &p_event) {
-
 	ERR_FAIL_COND_MSG(!input_map.has(p_action), _suggest_actions(p_action));
 
 	List<Ref<InputEvent>>::Element *E = _find_event(input_map[p_action], p_event);
@@ -195,19 +182,16 @@ void InputMap::action_erase_event(const StringName &p_action, const Ref<InputEve
 }
 
 void InputMap::action_erase_events(const StringName &p_action) {
-
 	ERR_FAIL_COND_MSG(!input_map.has(p_action), _suggest_actions(p_action));
 
 	input_map[p_action].inputs.clear();
 }
 
 Array InputMap::_get_action_list(const StringName &p_action) {
-
 	Array ret;
 	const List<Ref<InputEvent>> *al = get_action_list(p_action);
 	if (al) {
 		for (const List<Ref<InputEvent>>::Element *E = al->front(); E; E = E->next()) {
-
 			ret.push_back(E->get());
 		}
 	}
@@ -216,7 +200,6 @@ Array InputMap::_get_action_list(const StringName &p_action) {
 }
 
 const List<Ref<InputEvent>> *InputMap::get_action_list(const StringName &p_action) {
-
 	const Map<StringName, Action>::Element *E = input_map.find(p_action);
 	if (!E)
 		return NULL;
@@ -260,7 +243,6 @@ const Map<StringName, InputMap::Action> &InputMap::get_action_map() const {
 }
 
 void InputMap::load_from_globals() {
-
 	input_map.clear();
 
 	List<PropertyInfo> pinfo;
@@ -289,7 +271,6 @@ void InputMap::load_from_globals() {
 }
 
 void InputMap::load_default() {
-
 	Ref<InputEventKey> key;
 
 	add_action("ui_accept");
@@ -368,7 +349,6 @@ void InputMap::load_default() {
 }
 
 InputMap::InputMap() {
-
 	ERR_FAIL_COND_MSG(singleton, "Singleton in InputMap already exist.");
 	singleton = this;
 }

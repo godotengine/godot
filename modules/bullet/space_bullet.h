@@ -87,7 +87,6 @@ public:
 };
 
 class SpaceBullet : public RIDBullet {
-
 	friend class AreaBullet;
 	friend void onBulletTickCallback(btDynamicsWorld *world, btScalar timeStep);
 	friend class BulletPhysicsDirectSpaceState;

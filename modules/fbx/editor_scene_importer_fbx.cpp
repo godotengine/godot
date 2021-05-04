@@ -96,7 +96,6 @@ Node *EditorSceneImporterFBX::import_scene(const String &p_path, uint32_t p_flag
 	ERR_FAIL_COND_V(!f, NULL);
 
 	{
-
 		PoolByteArray data;
 		// broadphase tokenizing pass in which we identify the core
 		// syntax elements of FBX (brackets, commas, key:value mappings)
@@ -210,14 +209,11 @@ Node *EditorSceneImporterFBX::import_scene(const String &p_path, uint32_t p_flag
 
 template <class T>
 struct EditorSceneImporterAssetImportInterpolate {
-
 	T lerp(const T &a, const T &b, float c) const {
-
 		return a + (b - a) * c;
 	}
 
 	T catmull_rom(const T &p0, const T &p1, const T &p2, const T &p3, float t) {
-
 		float t2 = t * t;
 		float t3 = t2 * t;
 
@@ -240,7 +236,6 @@ struct EditorSceneImporterAssetImportInterpolate {
 //thank you for existing, partial specialization
 template <>
 struct EditorSceneImporterAssetImportInterpolate<Quat> {
-
 	Quat lerp(const Quat &a, const Quat &b, float c) const {
 		ERR_FAIL_COND_V(!a.is_normalized(), Quat());
 		ERR_FAIL_COND_V(!b.is_normalized(), Quat());
@@ -278,7 +273,6 @@ T EditorSceneImporterFBX::_interpolate_track(const Vector<float> &p_times, const
 
 	switch (p_interp) {
 		case AssetImportAnimation::INTERP_LINEAR: {
-
 			if (idx == -1) {
 				return p_values[0];
 			} else if (idx >= p_times.size() - 1) {
@@ -291,7 +285,6 @@ T EditorSceneImporterFBX::_interpolate_track(const Vector<float> &p_times, const
 
 		} break;
 		case AssetImportAnimation::INTERP_STEP: {
-
 			if (idx == -1) {
 				return p_values[0];
 			} else if (idx >= p_times.size() - 1) {
@@ -302,7 +295,6 @@ T EditorSceneImporterFBX::_interpolate_track(const Vector<float> &p_times, const
 
 		} break;
 		case AssetImportAnimation::INTERP_CATMULLROMSPLINE: {
-
 			if (idx == -1) {
 				return p_values[1];
 			} else if (idx >= p_times.size() - 1) {
@@ -315,7 +307,6 @@ T EditorSceneImporterFBX::_interpolate_track(const Vector<float> &p_times, const
 
 		} break;
 		case AssetImportAnimation::INTERP_CUBIC_SPLINE: {
-
 			if (idx == -1) {
 				return p_values[1];
 			} else if (idx >= p_times.size() - 1) {
@@ -375,7 +366,6 @@ Spatial *EditorSceneImporterFBX::_generate_scene(
 		int p_bake_fps,
 		const int32_t p_max_bone_weights,
 		bool p_is_blender_fbx) {
-
 	ImportState state;
 	state.is_blender_fbx = p_is_blender_fbx;
 	state.path = p_path;
@@ -547,7 +537,6 @@ Spatial *EditorSceneImporterFBX::_generate_scene(
 		const std::vector<uint64_t> &materials = p_document->GetMaterialIDs();
 
 		for (uint64_t material_id : materials) {
-
 			FBXDocParser::LazyObject *lazy_material = p_document->GetObject(material_id);
 			FBXDocParser::Material *mat = (FBXDocParser::Material *)lazy_material->Get<FBXDocParser::Material>();
 			ERR_CONTINUE_MSG(!mat, "Could not convert fbx material by id: " + itos(material_id));
@@ -1022,7 +1011,6 @@ Spatial *EditorSceneImporterFBX::_generate_scene(
 					// target id, [ track name, [time index, vector] ]
 					//std::map<uint64_t, std::map<StringName, FBXTrack > > AnimCurveNodes;
 					for (Map<uint64_t, Map<StringName, FBXTrack>>::Element *track = AnimCurveNodes.front(); track; track = track->next()) {
-
 						// 5 tracks
 						// current track index
 						// track count is 5
@@ -1057,7 +1045,6 @@ Spatial *EditorSceneImporterFBX::_generate_scene(
 						// if this is a skeleton mapped track we can just set the path for the track.
 						// todo: implement node paths here at some
 						if (state.fbx_bone_map.size() > 0 && state.fbx_bone_map.has(target_id)) {
-
 							if (bone->fbx_skeleton.is_valid() && bone.is_valid()) {
 								Ref<FBXSkeleton> fbx_skeleton = bone->fbx_skeleton;
 								String bone_path = state.root->get_path_to(fbx_skeleton->skeleton);
@@ -1394,14 +1381,12 @@ void EditorSceneImporterFBX::BuildDocumentNodes(
 		const FBXDocParser::Document *p_doc,
 		uint64_t id,
 		Ref<FBXNode> parent_node) {
-
 	// tree
 	// here we get the node 0 on the root by default
 	const std::vector<const FBXDocParser::Connection *> &conns = p_doc->GetConnectionsByDestinationSequenced(id, "Model");
 
 	// branch
 	for (const FBXDocParser::Connection *con : conns) {
-
 		// ignore object-property links
 		if (con->PropertyName().length()) {
 			// really important we document why this is ignored.
@@ -1464,7 +1449,6 @@ void EditorSceneImporterFBX::BuildDocumentNodes(
 
 			state.fbx_node_list.push_back(new_node);
 			if (!state.fbx_target_map.has(new_node->current_node_id)) {
-
 				state.fbx_target_map[new_node->current_node_id] = new_node;
 			}
 

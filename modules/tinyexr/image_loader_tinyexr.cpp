@@ -36,7 +36,6 @@
 #include "thirdparty/tinyexr/tinyexr.h"
 
 Error ImageLoaderTinyEXR::load_image(Ref<Image> p_image, FileAccess *f, bool p_force_linear, float p_scale) {
-
 	PoolVector<uint8_t> src_image;
 	int src_image_len = f->get_len();
 	ERR_FAIL_COND_V(src_image_len == 0, ERR_FILE_CORRUPT);
@@ -171,7 +170,6 @@ Error ImageLoaderTinyEXR::load_image(Ref<Image> p_image, FileAccess *f, bool p_f
 
 	//print_line("reading format: " + Image::get_format_name(format));
 	{
-
 		PoolVector<uint8_t>::Write imgdata_write = imgdata.write();
 		uint8_t *wd = imgdata_write.ptr();
 		uint16_t *iw16 = (uint16_t *)wd;

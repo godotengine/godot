@@ -33,20 +33,16 @@
 #include "core/engine.h"
 
 void InterpolatedCamera::_notification(int p_what) {
-
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
-
 			if (Engine::get_singleton()->is_editor_hint() && enabled)
 				set_process_internal(false);
 
 		} break;
 		case NOTIFICATION_INTERNAL_PROCESS: {
-
 			if (!enabled)
 				break;
 			if (has_node(target)) {
-
 				Spatial *node = Object::cast_to<Spatial>(get_node(target));
 				if (!node)
 					break;
@@ -58,18 +54,14 @@ void InterpolatedCamera::_notification(int p_what) {
 				set_global_transform(local_transform);
 				Camera *cam = Object::cast_to<Camera>(node);
 				if (cam) {
-
 					if (cam->get_projection() == get_projection()) {
-
 						float new_near = Math::lerp(get_znear(), cam->get_znear(), delta);
 						float new_far = Math::lerp(get_zfar(), cam->get_zfar(), delta);
 
 						if (cam->get_projection() == PROJECTION_ORTHOGONAL) {
-
 							float size = Math::lerp(get_size(), cam->get_size(), delta);
 							set_orthogonal(size, new_near, new_far);
 						} else {
-
 							float fov = Math::lerp(get_fov(), cam->get_fov(), delta);
 							set_perspective(fov, new_near, new_far);
 						}
@@ -82,29 +74,24 @@ void InterpolatedCamera::_notification(int p_what) {
 }
 
 void InterpolatedCamera::_set_target(const Object *p_target) {
-
 	ERR_FAIL_NULL(p_target);
 	set_target(Object::cast_to<Spatial>(p_target));
 }
 
 void InterpolatedCamera::set_target(const Spatial *p_target) {
-
 	ERR_FAIL_NULL(p_target);
 	target = get_path_to(p_target);
 }
 
 void InterpolatedCamera::set_target_path(const NodePath &p_path) {
-
 	target = p_path;
 }
 
 NodePath InterpolatedCamera::get_target_path() const {
-
 	return target;
 }
 
 void InterpolatedCamera::set_interpolation_enabled(bool p_enable) {
-
 	if (enabled == p_enable)
 		return;
 	enabled = p_enable;
@@ -117,22 +104,18 @@ void InterpolatedCamera::set_interpolation_enabled(bool p_enable) {
 }
 
 bool InterpolatedCamera::is_interpolation_enabled() const {
-
 	return enabled;
 }
 
 void InterpolatedCamera::set_speed(real_t p_speed) {
-
 	speed = p_speed;
 }
 
 real_t InterpolatedCamera::get_speed() const {
-
 	return speed;
 }
 
 void InterpolatedCamera::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("set_target_path", "target_path"), &InterpolatedCamera::set_target_path);
 	ClassDB::bind_method(D_METHOD("get_target_path"), &InterpolatedCamera::get_target_path);
 	ClassDB::bind_method(D_METHOD("set_target", "target"), &InterpolatedCamera::_set_target);
@@ -149,7 +132,6 @@ void InterpolatedCamera::_bind_methods() {
 }
 
 InterpolatedCamera::InterpolatedCamera() {
-
 	enabled = false;
 	speed = 1;
 }

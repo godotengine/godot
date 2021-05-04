@@ -50,12 +50,10 @@
 #endif
 
 DirAccess *DirAccessUnix::create_fs() {
-
 	return memnew(DirAccessUnix);
 }
 
 Error DirAccessUnix::list_dir_begin() {
-
 	list_dir_end(); //close any previous dir opening!
 
 	//char real_current_dir_name[2048]; //is this enough?!
@@ -70,7 +68,6 @@ Error DirAccessUnix::list_dir_begin() {
 }
 
 bool DirAccessUnix::file_exists(String p_file) {
-
 	GLOBAL_LOCK_FUNCTION
 
 	if (p_file.is_rel_path())
@@ -89,7 +86,6 @@ bool DirAccessUnix::file_exists(String p_file) {
 }
 
 bool DirAccessUnix::dir_exists(String p_dir) {
-
 	GLOBAL_LOCK_FUNCTION
 
 	if (p_dir.is_rel_path())
@@ -104,7 +100,6 @@ bool DirAccessUnix::dir_exists(String p_dir) {
 }
 
 uint64_t DirAccessUnix::get_modified_time(String p_file) {
-
 	if (p_file.is_rel_path())
 		p_file = current_dir.plus_file(p_file);
 
@@ -116,14 +111,12 @@ uint64_t DirAccessUnix::get_modified_time(String p_file) {
 	if (success) {
 		return flags.st_mtime;
 	} else {
-
 		ERR_FAIL_V(0);
 	};
 	return 0;
 };
 
 String DirAccessUnix::get_next() {
-
 	if (!dir_stream)
 		return "";
 
@@ -160,17 +153,14 @@ String DirAccessUnix::get_next() {
 }
 
 bool DirAccessUnix::current_is_dir() const {
-
 	return _cisdir;
 }
 
 bool DirAccessUnix::current_is_hidden() const {
-
 	return _cishidden;
 }
 
 void DirAccessUnix::list_dir_end() {
-
 	if (dir_stream)
 		closedir(dir_stream);
 	dir_stream = 0;
@@ -198,7 +188,6 @@ static bool _filter_drive(struct mntent *mnt) {
 #endif
 
 static void _get_drives(List<String> *list) {
-
 #if defined(HAVE_MNTENT) && defined(X11_ENABLED)
 	// Check /etc/mtab for the list of mounted partitions
 	FILE *mtab = setmntent("/etc/mtab", "r");
@@ -252,7 +241,6 @@ static void _get_drives(List<String> *list) {
 }
 
 int DirAccessUnix::get_drive_count() {
-
 	List<String> list;
 	_get_drives(&list);
 
@@ -260,7 +248,6 @@ int DirAccessUnix::get_drive_count() {
 }
 
 String DirAccessUnix::get_drive(int p_drive) {
-
 	List<String> list;
 	_get_drives(&list);
 
@@ -270,12 +257,10 @@ String DirAccessUnix::get_drive(int p_drive) {
 }
 
 bool DirAccessUnix::drives_are_shortcuts() {
-
 	return true;
 }
 
 Error DirAccessUnix::make_dir(String p_dir) {
-
 	GLOBAL_LOCK_FUNCTION
 
 	if (p_dir.is_rel_path())
@@ -298,7 +283,6 @@ Error DirAccessUnix::make_dir(String p_dir) {
 }
 
 Error DirAccessUnix::change_dir(String p_dir) {
-
 	GLOBAL_LOCK_FUNCTION
 
 	p_dir = fix_path(p_dir);
@@ -343,10 +327,8 @@ Error DirAccessUnix::change_dir(String p_dir) {
 }
 
 String DirAccessUnix::get_current_dir() {
-
 	String base = _get_root_path();
 	if (base != "") {
-
 		String bd = current_dir.replace_first(base, "");
 		if (bd.begins_with("/"))
 			return _get_root_string() + bd.substr(1, bd.length());
@@ -357,7 +339,6 @@ String DirAccessUnix::get_current_dir() {
 }
 
 Error DirAccessUnix::rename(String p_path, String p_new_path) {
-
 	if (p_path.is_rel_path())
 		p_path = get_current_dir().plus_file(p_path);
 
@@ -372,7 +353,6 @@ Error DirAccessUnix::rename(String p_path, String p_new_path) {
 }
 
 Error DirAccessUnix::remove(String p_path) {
-
 	if (p_path.is_rel_path())
 		p_path = get_current_dir().plus_file(p_path);
 
@@ -389,11 +369,9 @@ Error DirAccessUnix::remove(String p_path) {
 }
 
 size_t DirAccessUnix::get_space_left() {
-
 #ifndef NO_STATVFS
 	struct statvfs vfs;
 	if (statvfs(current_dir.utf8().get_data(), &vfs) != 0) {
-
 		return 0;
 	};
 
@@ -413,7 +391,6 @@ bool DirAccessUnix::is_hidden(const String &p_name) {
 }
 
 DirAccessUnix::DirAccessUnix() {
-
 	dir_stream = 0;
 	_cisdir = false;
 
@@ -429,7 +406,6 @@ DirAccessUnix::DirAccessUnix() {
 }
 
 DirAccessUnix::~DirAccessUnix() {
-
 	list_dir_end();
 }
 

@@ -34,14 +34,12 @@
 #include "editor_scale.h"
 
 void EditorPath::_add_children_to_popup(Object *p_obj, int p_depth) {
-
 	if (p_depth > 8)
 		return;
 
 	List<PropertyInfo> pinfo;
 	p_obj->get_property_list(&pinfo);
 	for (List<PropertyInfo>::Element *E = pinfo.front(); E; E = E->next()) {
-
 		if (!(E->get().usage & PROPERTY_USAGE_EDITOR))
 			continue;
 		if (E->get().hint != PROPERTY_HINT_RESOURCE_TYPE)
@@ -66,7 +64,6 @@ void EditorPath::_add_children_to_popup(Object *p_obj, int p_depth) {
 }
 
 void EditorPath::_about_to_show() {
-
 	Object *obj = ObjectDB::get_instance(history->get_path_object(history->get_path_size() - 1));
 	if (!obj)
 		return;
@@ -83,9 +80,7 @@ void EditorPath::_about_to_show() {
 }
 
 void EditorPath::update_path() {
-
 	for (int i = 0; i < history->get_path_size(); i++) {
-
 		Object *obj = ObjectDB::get_instance(history->get_path_object(i));
 		if (!obj)
 			continue;
@@ -97,7 +92,6 @@ void EditorPath::update_path() {
 		if (i == history->get_path_size() - 1) {
 			String name;
 			if (Object::cast_to<Resource>(obj)) {
-
 				Resource *r = Object::cast_to<Resource>(obj);
 				if (r->get_path().is_resource_file())
 					name = r->get_path().get_file();
@@ -122,7 +116,6 @@ void EditorPath::update_path() {
 }
 
 void EditorPath::_id_pressed(int p_idx) {
-
 	ERR_FAIL_INDEX(p_idx, objects.size());
 
 	Object *obj = ObjectDB::get_instance(objects[p_idx]);
@@ -133,7 +126,6 @@ void EditorPath::_id_pressed(int p_idx) {
 }
 
 void EditorPath::_notification(int p_what) {
-
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			update_path();
@@ -142,13 +134,11 @@ void EditorPath::_notification(int p_what) {
 }
 
 void EditorPath::_bind_methods() {
-
 	ClassDB::bind_method("_about_to_show", &EditorPath::_about_to_show);
 	ClassDB::bind_method("_id_pressed", &EditorPath::_id_pressed);
 }
 
 EditorPath::EditorPath(EditorHistory *p_history) {
-
 	history = p_history;
 	set_clip_text(true);
 	set_text_align(ALIGN_LEFT);

@@ -49,17 +49,14 @@
 #endif
 
 void FileAccessWindows::check_errors() const {
-
 	ERR_FAIL_COND(!f);
 
 	if (feof(f)) {
-
 		last_error = ERR_FILE_EOF;
 	}
 }
 
 Error FileAccessWindows::_open(const String &p_path, int p_mode_flags) {
-
 	path_src = p_path;
 	path = fix_path(p_path);
 	if (f)
@@ -83,7 +80,6 @@ Error FileAccessWindows::_open(const String &p_path, int p_mode_flags) {
 
 	struct _stat st;
 	if (_wstat(path.c_str(), &st) == 0) {
-
 		if (!S_ISREG(st.st_mode))
 			return ERR_FILE_CANT_OPEN;
 	};
@@ -99,7 +95,6 @@ Error FileAccessWindows::_open(const String &p_path, int p_mode_flags) {
 		if (f != INVALID_HANDLE_VALUE) {
 			String fname = d.cFileName;
 			if (fname != String()) {
-
 				String base_file = path.get_file();
 				if (base_file != fname && base_file.findn(fname) == 0) {
 					WARN_PRINTS("Case mismatch opening requested file '" + base_file + "', stored as '" + fname + "' in the filesystem. This file will not open when exported to other case-sensitive platforms.");
@@ -135,7 +130,6 @@ Error FileAccessWindows::_open(const String &p_path, int p_mode_flags) {
 }
 
 void FileAccessWindows::close() {
-
 	if (!f)
 		return;
 
@@ -143,7 +137,6 @@ void FileAccessWindows::close() {
 	f = NULL;
 
 	if (save_path != "") {
-
 		bool rename_error = true;
 		int attempts = 4;
 		while (rename_error && attempts) {
@@ -185,21 +178,17 @@ void FileAccessWindows::close() {
 }
 
 String FileAccessWindows::get_path() const {
-
 	return path_src;
 }
 
 String FileAccessWindows::get_path_absolute() const {
-
 	return path;
 }
 
 bool FileAccessWindows::is_open() const {
-
 	return (f != NULL);
 }
 void FileAccessWindows::seek(size_t p_position) {
-
 	ERR_FAIL_COND(!f);
 	last_error = OK;
 	if (fseek(f, p_position, SEEK_SET))
@@ -207,14 +196,12 @@ void FileAccessWindows::seek(size_t p_position) {
 	prev_op = 0;
 }
 void FileAccessWindows::seek_end(int64_t p_position) {
-
 	ERR_FAIL_COND(!f);
 	if (fseek(f, p_position, SEEK_END))
 		check_errors();
 	prev_op = 0;
 }
 size_t FileAccessWindows::get_position() const {
-
 	size_t aux_position = 0;
 	aux_position = ftell(f);
 	if (!aux_position) {
@@ -223,7 +210,6 @@ size_t FileAccessWindows::get_position() const {
 	return aux_position;
 }
 size_t FileAccessWindows::get_len() const {
-
 	ERR_FAIL_COND_V(!f, 0);
 
 	size_t pos = get_position();
@@ -235,13 +221,11 @@ size_t FileAccessWindows::get_len() const {
 }
 
 bool FileAccessWindows::eof_reached() const {
-
 	check_errors();
 	return last_error == ERR_FILE_EOF;
 }
 
 uint8_t FileAccessWindows::get_8() const {
-
 	ERR_FAIL_COND_V(!f, 0);
 	if (flags == READ_WRITE || flags == WRITE_READ) {
 		if (prev_op == WRITE) {
@@ -274,12 +258,10 @@ int FileAccessWindows::get_buffer(uint8_t *p_dst, int p_length) const {
 };
 
 Error FileAccessWindows::get_error() const {
-
 	return last_error;
 }
 
 void FileAccessWindows::flush() {
-
 	ERR_FAIL_COND(!f);
 	fflush(f);
 	if (prev_op == WRITE)
@@ -287,7 +269,6 @@ void FileAccessWindows::flush() {
 }
 
 void FileAccessWindows::store_8(uint8_t p_dest) {
-
 	ERR_FAIL_COND(!f);
 	if (flags == READ_WRITE || flags == WRITE_READ) {
 		if (prev_op == READ) {
@@ -314,23 +295,19 @@ void FileAccessWindows::store_buffer(const uint8_t *p_src, int p_length) {
 }
 
 bool FileAccessWindows::file_exists(const String &p_name) {
-
 	FILE *g;
 	//printf("opening file %s\n", p_fname.c_str());
 	String filename = fix_path(p_name);
 	_wfopen_s(&g, filename.c_str(), L"rb");
 	if (g == NULL) {
-
 		return false;
 	} else {
-
 		fclose(g);
 		return true;
 	}
 }
 
 uint64_t FileAccessWindows::_get_modified_time(const String &p_file) {
-
 	String file = fix_path(p_file);
 	if (file.ends_with("/") && file != "/")
 		file = file.substr(0, file.length() - 1);
@@ -339,7 +316,6 @@ uint64_t FileAccessWindows::_get_modified_time(const String &p_file) {
 	int rv = _wstat(file.c_str(), &st);
 
 	if (rv == 0) {
-
 		return st.st_mtime;
 	} else {
 		ERR_FAIL_V_MSG(0, "Failed to get modified time for: " + file + ".");
@@ -361,7 +337,6 @@ FileAccessWindows::FileAccessWindows() :
 		last_error(OK) {
 }
 FileAccessWindows::~FileAccessWindows() {
-
 	close();
 }
 

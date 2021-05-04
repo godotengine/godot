@@ -181,7 +181,6 @@ public:
 };
 
 class GDScriptTokenizerText : public GDScriptTokenizer {
-
 	enum {
 		MAX_LOOKAHEAD = 4,
 		TK_RB_SIZE = MAX_LOOKAHEAD * 2 + 1
@@ -253,7 +252,6 @@ public:
 };
 
 class GDScriptTokenizerBuffer : public GDScriptTokenizer {
-
 	enum {
 
 		TOKEN_BYTE_MASK = 0x80,

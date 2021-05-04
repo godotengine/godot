@@ -35,7 +35,6 @@
 
 template <int SHORT_BUFFER_SIZE = 64>
 class StringBuffer {
-
 	CharType short_buffer[SHORT_BUFFER_SIZE];
 	String buffer;
 	int string_length;

@@ -39,14 +39,12 @@
 #include "scene/resources/texture.h"
 
 class EditorHistory {
-
 	enum {
 
 		HISTORY_MAX = 64
 	};
 
 	struct Obj {
-
 		REF ref;
 		ObjectID object;
 		String property;
@@ -54,7 +52,6 @@ class EditorHistory {
 	};
 
 	struct History {
-
 		Vector<Obj> path;
 		int level;
 	};
@@ -66,7 +63,6 @@ class EditorHistory {
 	//Vector<EditorPlugin*> editor_plugins;
 
 	struct PropertyData {
-
 		String name;
 		Variant value;
 	};
@@ -106,10 +102,8 @@ public:
 class EditorSelection;
 
 class EditorData {
-
 public:
 	struct CustomType {
-
 		String name;
 		Ref<Script> script;
 		Ref<Texture> icon;
@@ -132,7 +126,6 @@ private:
 	Vector<EditorPlugin *> editor_plugins;
 
 	struct PropertyData {
-
 		String name;
 		Variant value;
 	};
@@ -237,7 +230,6 @@ public:
 };
 
 class EditorSelection : public Object {
-
 	GDCLASS(EditorSelection, Object);
 
 private:
