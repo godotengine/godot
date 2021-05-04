@@ -32,6 +32,7 @@
 #define AREA_2D_SW_H
 
 #include "collision_object_2d_sw.h"
+#include "core/map_mt.h"
 #include "core/self_list.h"
 #include "servers/physics_2d_server.h"
 //#include "servers/physics/query_sw.h"
@@ -95,8 +96,8 @@ class Area2DSW : public CollisionObject2DSW {
 		_FORCE_INLINE_ BodyState() { state = 0; }
 	};
 
-	Map<BodyKey, BodyState> monitored_bodies;
-	Map<BodyKey, BodyState> monitored_areas;
+	MapMT<BodyKey, BodyState> monitored_bodies;
+	MapMT<BodyKey, BodyState> monitored_areas;
 
 	//virtual void shape_changed_notify(Shape2DSW *p_shape);
 	//virtual void shape_deleted_notify(Shape2DSW *p_shape);
