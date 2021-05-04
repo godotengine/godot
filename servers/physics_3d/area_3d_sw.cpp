@@ -196,6 +196,7 @@ void Area3DSW::set_monitorable(bool p_monitorable) {
 
 	monitorable = p_monitorable;
 	_set_static(!monitorable);
+	_shapes_changed();
 }
 
 void Area3DSW::call_queries() {

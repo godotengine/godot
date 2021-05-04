@@ -105,20 +105,20 @@ bool Area2Pair3DSW::setup(real_t p_step) {
 
 	if (result != colliding) {
 		if (result) {
-			if (area_b->has_area_monitor_callback() && area_a->is_monitorable()) {
+			if (area_b->has_area_monitor_callback() && area_a_monitorable) {
 				area_b->add_area_to_query(area_a, shape_a, shape_b);
 			}
 
-			if (area_a->has_area_monitor_callback() && area_b->is_monitorable()) {
+			if (area_a->has_area_monitor_callback() && area_b_monitorable) {
 				area_a->add_area_to_query(area_b, shape_b, shape_a);
 			}
 
 		} else {
-			if (area_b->has_area_monitor_callback() && area_a->is_monitorable()) {
+			if (area_b->has_area_monitor_callback() && area_a_monitorable) {
 				area_b->remove_area_from_query(area_a, shape_a, shape_b);
 			}
 
-			if (area_a->has_area_monitor_callback() && area_b->is_monitorable()) {
+			if (area_a->has_area_monitor_callback() && area_b_monitorable) {
 				area_a->remove_area_from_query(area_b, shape_b, shape_a);
 			}
 		}
@@ -138,17 +138,19 @@ Area2Pair3DSW::Area2Pair3DSW(Area3DSW *p_area_a, int p_shape_a, Area3DSW *p_area
 	shape_a = p_shape_a;
 	shape_b = p_shape_b;
 	colliding = false;
+	area_a_monitorable = area_a->is_monitorable();
+	area_b_monitorable = area_b->is_monitorable();
 	area_a->add_constraint(this);
 	area_b->add_constraint(this);
 }
 
 Area2Pair3DSW::~Area2Pair3DSW() {
 	if (colliding) {
-		if (area_b->has_area_monitor_callback()) {
+		if (area_b->has_area_monitor_callback() && area_a_monitorable) {
 			area_b->remove_area_from_query(area_a, shape_a, shape_b);
 		}
 
-		if (area_a->has_area_monitor_callback()) {
+		if (area_a->has_area_monitor_callback() && area_b_monitorable) {
 			area_a->remove_area_from_query(area_b, shape_b, shape_a);
 		}
 	}
