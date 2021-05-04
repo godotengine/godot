@@ -53,7 +53,7 @@ class Theme : public Resource {
 
 	PoolVector<String> _get_icon_list(const String &p_node_type) const;
 	PoolVector<String> _get_stylebox_list(const String &p_node_type) const;
-	PoolVector<String> _get_stylebox_types(void) const;
+	PoolVector<String> _get_stylebox_types() const;
 	PoolVector<String> _get_font_list(const String &p_node_type) const;
 	PoolVector<String> _get_color_list(const String &p_node_type) const;
 	PoolVector<String> _get_constant_list(const String &p_node_type) const;

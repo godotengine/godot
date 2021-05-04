@@ -273,11 +273,11 @@ void ARVRController::set_controller_id(int p_controller_id) {
 	update_configuration_warning();
 };
 
-int ARVRController::get_controller_id(void) const {
+int ARVRController::get_controller_id() const {
 	return controller_id;
 };
 
-String ARVRController::get_controller_name(void) const {
+String ARVRController::get_controller_name() const {
 	// get our ARVRServer
 	ARVRServer *arvr_server = ARVRServer::get_singleton();
 	ERR_FAIL_NULL_V(arvr_server, String());
@@ -475,7 +475,7 @@ void ARVRAnchor::set_anchor_id(int p_anchor_id) {
 	update_configuration_warning();
 };
 
-int ARVRAnchor::get_anchor_id(void) const {
+int ARVRAnchor::get_anchor_id() const {
 	return anchor_id;
 };
 
@@ -483,7 +483,7 @@ Vector3 ARVRAnchor::get_size() const {
 	return size;
 };
 
-String ARVRAnchor::get_anchor_name(void) const {
+String ARVRAnchor::get_anchor_name() const {
 	// get our ARVRServer
 	ARVRServer *arvr_server = ARVRServer::get_singleton();
 	ERR_FAIL_NULL_V(arvr_server, String());

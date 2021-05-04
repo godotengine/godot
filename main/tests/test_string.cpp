@@ -1094,7 +1094,7 @@ bool test_35() {
 	return state;
 }
 
-typedef bool (*TestFunc)(void);
+typedef bool (*TestFunc)();
 
 TestFunc test_funcs[] = {
 

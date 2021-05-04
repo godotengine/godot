@@ -412,7 +412,7 @@ real_t Generic6DOFJointSW::getAngle(int axis_index) const {
 	return m_calculatedAxisAngleDiff[axis_index];
 }
 
-void Generic6DOFJointSW::calcAnchorPos(void) {
+void Generic6DOFJointSW::calcAnchorPos() {
 	real_t imA = A->get_inv_mass();
 	real_t imB = B->get_inv_mass();
 	real_t weight;

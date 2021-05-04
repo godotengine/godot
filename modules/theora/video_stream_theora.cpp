@@ -79,7 +79,7 @@ int VideoStreamPlaybackTheora::queue_page(ogg_page *page) {
 	return 0;
 }
 
-void VideoStreamPlaybackTheora::video_write(void) {
+void VideoStreamPlaybackTheora::video_write() {
 	th_ycbcr_buffer yuv;
 	th_decode_ycbcr_out(td, yuv);
 

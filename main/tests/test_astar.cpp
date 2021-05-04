@@ -352,7 +352,7 @@ bool test_solutions() {
 	return true;
 }
 
-typedef bool (*TestFunc)(void);
+typedef bool (*TestFunc)();
 
 TestFunc test_funcs[] = {
 	test_abc,

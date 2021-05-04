@@ -146,7 +146,7 @@ float Environment::get_ambient_light_energy() const {
 float Environment::get_ambient_light_sky_contribution() const {
 	return ambient_sky_contribution;
 }
-int Environment::get_camera_feed_id(void) const {
+int Environment::get_camera_feed_id() const {
 	return camera_feed_id;
 }
 

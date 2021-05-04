@@ -66,7 +66,7 @@ PoolVector<String> Theme::_get_stylebox_list(const String &p_node_type) const {
 	return ilret;
 }
 
-PoolVector<String> Theme::_get_stylebox_types(void) const {
+PoolVector<String> Theme::_get_stylebox_types() const {
 	PoolVector<String> ilret;
 	List<StringName> il;
 
