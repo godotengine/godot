@@ -206,12 +206,6 @@ Transform2D Transform2D::scaled(const Size2 &p_scale) const {
 	return copy;
 }
 
-Transform2D Transform2D::basis_scaled(const Size2 &p_scale) const {
-	Transform2D copy = *this;
-	copy.scale_basis(p_scale);
-	return copy;
-}
-
 Transform2D Transform2D::untranslated() const {
 	Transform2D copy = *this;
 	copy.elements[2] = Vector2();

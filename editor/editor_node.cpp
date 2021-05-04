@@ -6920,7 +6920,6 @@ EditorNode::EditorNode() {
 
 	_update_recent_scenes();
 
-	editor_data.restore_editor_global_states();
 	convert_old = false;
 	opening_prev = false;
 	set_process_unhandled_input(true);

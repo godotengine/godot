@@ -90,7 +90,6 @@ struct Transform2D {
 	_FORCE_INLINE_ void set_origin(const Vector2 &p_origin) { elements[2] = p_origin; }
 
 	Transform2D scaled(const Size2 &p_scale) const;
-	Transform2D basis_scaled(const Size2 &p_scale) const;
 	Transform2D translated(const Vector2 &p_offset) const;
 	Transform2D rotated(real_t p_phi) const;
 

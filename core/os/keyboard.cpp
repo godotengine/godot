@@ -452,17 +452,6 @@ const char *find_keycode_name(int p_keycode) {
 	return "";
 }
 
-int keycode_get_count() {
-	const _KeyCodeText *kct = &_keycodes[0];
-
-	int count = 0;
-	while (kct->text) {
-		count++;
-		kct++;
-	}
-	return count;
-}
-
 int keycode_get_value_by_index(int p_index) {
 	return _keycodes[p_index].code;
 }

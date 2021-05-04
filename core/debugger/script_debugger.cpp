@@ -73,10 +73,6 @@ bool ScriptDebugger::is_breakpoint(int p_line, const StringName &p_source) const
 	return breakpoints[p_line].has(p_source);
 }
 
-bool ScriptDebugger::is_breakpoint_line(int p_line) const {
-	return breakpoints.has(p_line);
-}
-
 String ScriptDebugger::breakpoint_find_source(const String &p_source) const {
 	return p_source;
 }
