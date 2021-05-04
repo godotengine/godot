@@ -172,12 +172,23 @@ namespace embree
           TravRayKStream<K,robust> &p = packets[rayID / K];
           const size_t i = rayID % K;
           const vint<Nx> bitmask(shiftTable[rayID]);
+
+#if defined (__aarch64__)
+          const vfloat<Nx> tNearX = madd(bminX, p.rdir.x[i], p.neg_org_rdir.x[i]);
+          const vfloat<Nx> tNearY = madd(bminY, p.rdir.y[i], p.neg_org_rdir.y[i]);
+          const vfloat<Nx> tNearZ = madd(bminZ, p.rdir.z[i], p.neg_org_rdir.z[i]);
+          const vfloat<Nx> tFarX  = madd(bmaxX, p.rdir.x[i], p.neg_org_rdir.x[i]);
+          const vfloat<Nx> tFarY  = madd(bmaxY, p.rdir.y[i], p.neg_org_rdir.y[i]);
+          const vfloat<Nx> tFarZ  = madd(bmaxZ, p.rdir.z[i], p.neg_org_rdir.z[i]); 
+#else
           const vfloat<Nx> tNearX = msub(bminX, p.rdir.x[i], p.org_rdir.x[i]);
           const vfloat<Nx> tNearY = msub(bminY, p.rdir.y[i], p.org_rdir.y[i]);
           const vfloat<Nx> tNearZ = msub(bminZ, p.rdir.z[i], p.org_rdir.z[i]);
           const vfloat<Nx> tFarX  = msub(bmaxX, p.rdir.x[i], p.org_rdir.x[i]);
           const vfloat<Nx> tFarY  = msub(bmaxY, p.rdir.y[i], p.org_rdir.y[i]);
           const vfloat<Nx> tFarZ  = msub(bmaxZ, p.rdir.z[i], p.org_rdir.z[i]); 
+#endif
+
           const vfloat<Nx> tNear  = maxi(tNearX, tNearY, tNearZ, vfloat<Nx>(p.tnear[i]));
           const vfloat<Nx> tFar   = mini(tFarX , tFarY , tFarZ,  vfloat<Nx>(p.tfar[i]));      
 

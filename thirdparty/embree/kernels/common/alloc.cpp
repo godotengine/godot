@@ -3,6 +3,9 @@
 
 #include "alloc.h"
 #include "../../common/sys/thread.h"
+#if defined(__aarch64__) && defined(BUILD_IOS)
+#include "../../common/sys/barrier.h"
+#endif
 
 namespace embree
 {

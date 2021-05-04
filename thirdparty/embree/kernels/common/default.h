@@ -55,6 +55,11 @@
 #include <utility>
 #include <sstream>
 
+#if !defined(_DEBUG) && defined(BUILD_IOS)
+#undef assert
+#define assert(_EXPR)
+#endif
+
 namespace embree
 {
   ////////////////////////////////////////////////////////////////////////////////

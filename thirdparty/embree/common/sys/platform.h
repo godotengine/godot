@@ -88,10 +88,10 @@
 #define dll_import __declspec(dllimport)
 #else
 #define dll_export __attribute__ ((visibility ("default")))
-#define dll_import 
+#define dll_import
 #endif
 
-#if defined(__WIN32__) && !defined(__MINGW32__)
+#ifdef __WIN32__
 #if !defined(__noinline)
 #define __noinline             __declspec(noinline)
 #endif
@@ -103,10 +103,15 @@
 #define __restrict__           //__restrict // causes issues with MSVC
 #endif
 #if !defined(__thread)
+// NOTE: Require `-fms-extensions` for clang
 #define __thread               __declspec(thread)
 #endif
 #if !defined(__aligned)
+#if defined(__MINGW32__)
+#define __aligned(...)           __attribute__((aligned(__VA_ARGS__)))
+#else
 #define __aligned(...)           __declspec(align(__VA_ARGS__))
+#endif
 #endif
 //#define __FUNCTION__           __FUNCTION__
 #define debugbreak()           __debugbreak()
@@ -142,7 +147,7 @@
 #endif
 
 // -- GODOT start --
-#if !defined(likely)
+#ifndef likely
 // -- GODOT end --
 #if defined(_MSC_VER) && !defined(__INTEL_COMPILER)
 #define   likely(expr) (expr)
@@ -169,11 +174,19 @@
 #define PRINT4(x,y,z,w) embree_cout << STRING(x) << " = " << (x) << ", " << STRING(y) << " = " << (y) << ", " << STRING(z) << " = " << (z) << ", " << STRING(w) << " = " << (w) << embree_endl
 
 #if defined(DEBUG) // only report file and line in debug mode
+  // -- GODOT start --
+  // #define THROW_RUNTIME_ERROR(str)
+  //   throw std::runtime_error(std::string(__FILE__) + " (" + toString(__LINE__) + "): " + std::string(str));
   #define THROW_RUNTIME_ERROR(str) \
-    throw std::runtime_error(std::string(__FILE__) + " (" + toString(__LINE__) + "): " + std::string(str));
+    printf(std::string(__FILE__) + " (" + toString(__LINE__) + "): " + std::string(str)), abort();
+  // -- GODOT end --
 #else
+  // -- GODOT start --
+  // #define THROW_RUNTIME_ERROR(str)
+  //   throw std::runtime_error(str);
   #define THROW_RUNTIME_ERROR(str) \
-    throw std::runtime_error(str);
+    abort();
+  // -- GODOT end --
 #endif
 
 #define FATAL(x)   THROW_RUNTIME_ERROR(x)
@@ -192,7 +205,7 @@ namespace embree {
 
 /* windows does not have ssize_t */
 #if defined(__WIN32__)
-#if defined(__X86_64__)
+#if defined(__X86_64__) || defined(__aarch64__)
 typedef int64_t ssize_t;
 #else
 typedef int32_t ssize_t;
@@ -316,7 +329,7 @@ __forceinline std::string toString(long long value) {
 /// Some macros for static profiling
 ////////////////////////////////////////////////////////////////////////////////
 
-#if defined (__GNUC__) 
+#if defined (__GNUC__)
 #define IACA_SSC_MARK( MARK_ID )						\
 __asm__ __volatile__ (									\
 					  "\n\t  movl $"#MARK_ID", %%ebx"	\
@@ -355,7 +368,7 @@ namespace embree
     bool active;
     const Closure f;
   };
-  
+
   template <typename Closure>
     OnScopeExitHelper<Closure> OnScopeExit(const Closure f) {
     return OnScopeExitHelper<Closure>(f);

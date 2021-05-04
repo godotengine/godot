@@ -41,7 +41,7 @@ namespace embree
         }
         const size_t gridBytes = 4*size_t(width)*size_t(height)*sizeof(float);  
         size_t rootBytes = time_steps*sizeof(BVH4::NodeRef);
-#if !defined(__X86_64__)
+#if !defined(__X86_64__) && !defined(__aarch64__)
         rootBytes += 4; // We read 2 elements behind the grid. As we store at least 8 root bytes after the grid we are fine in 64 bit mode. But in 32 bit mode we have to do additional padding.
 #endif
         void* data = alloc(offsetof(GridSOA,data)+bvhBytes+time_steps*gridBytes+rootBytes);
@@ -62,8 +62,8 @@ namespace embree
       __forceinline const BVH4::NodeRef& root(size_t t = 0) const { return (BVH4::NodeRef&)data[rootOffset + t*sizeof(BVH4::NodeRef)]; }
 
       /*! returns pointer to BVH array */
-      __forceinline       char* bvhData()       { return &data[0]; }
-      __forceinline const char* bvhData() const { return &data[0]; }
+      __forceinline       int8_t* bvhData()       { return &data[0]; }
+      __forceinline const int8_t* bvhData() const { return &data[0]; }
 
       /*! returns pointer to Grid array */
       __forceinline       float* gridData(size_t t = 0)       { return (float*) &data[gridOffset + t*gridBytes]; }
@@ -253,7 +253,7 @@ namespace embree
 
     public:
       BVH4::NodeRef troot;
-#if !defined(__X86_64__)
+#if !defined(__X86_64__) && !defined(__aarch64__)
       unsigned align1;
 #endif
       unsigned time_steps;
@@ -269,7 +269,7 @@ namespace embree
       unsigned gridBytes;
       unsigned rootOffset;
 
-      char data[1];        //!< after the struct we first store the BVH, then the grid, and finally the roots
+      int8_t data[1];      //!< after the struct we first store the BVH, then the grid, and finally the roots
     };
   }
 }

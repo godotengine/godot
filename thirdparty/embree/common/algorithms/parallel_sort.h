@@ -5,6 +5,9 @@
 
 #include "../simd/simd.h"
 #include "parallel_for.h"
+#if defined(TASKING_GCD) && defined(BUILD_IOS)
+#include "../sys/alloc.h"
+#endif
 #include <algorithm>
 
 namespace embree
@@ -320,7 +323,7 @@ namespace embree
 #pragma nounroll      
 #endif
       for (size_t i=startID; i<endID; i++) {
-#if defined(__X86_64__)
+#if defined(__X86_64__) || defined(__aarch64__)
         const size_t index = ((size_t)(Key)src[i] >> (size_t)shift) & (size_t)mask;
 #else
         const Key index = ((Key)src[i] >> shift) & mask;
@@ -382,7 +385,7 @@ namespace embree
 #endif
       for (size_t i=startID; i<endID; i++) {
         const Ty elt = src[i];
-#if defined(__X86_64__)
+#if defined(__X86_64__) || defined(__aarch64__)
         const size_t index = ((size_t)(Key)src[i] >> (size_t)shift) & (size_t)mask;
 #else
         const size_t index = ((Key)src[i] >> shift) & mask;

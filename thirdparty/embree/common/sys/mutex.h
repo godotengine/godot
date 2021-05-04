@@ -47,7 +47,7 @@ namespace embree
       {
         while (flag.load()) 
         {
-          _mm_pause();
+          _mm_pause(); 
           _mm_pause();
         }
         
@@ -74,7 +74,7 @@ namespace embree
     {
       while(flag.load())
       {
-        _mm_pause();
+        _mm_pause(); 
         _mm_pause();
       }
     }

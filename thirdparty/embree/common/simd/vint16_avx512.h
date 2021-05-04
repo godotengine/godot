@@ -90,10 +90,10 @@ namespace embree
 
     static __forceinline vint16 load (const void* addr) { return _mm512_load_si512((int*)addr); }
 
-    static __forceinline vint16 load(const unsigned char* ptr) { return _mm512_cvtepu8_epi32(_mm_load_si128((__m128i*)ptr)); }
+    static __forceinline vint16 load(const uint8_t* ptr) { return _mm512_cvtepu8_epi32(_mm_load_si128((__m128i*)ptr)); }
     static __forceinline vint16 load(const unsigned short* ptr) { return _mm512_cvtepu16_epi32(_mm256_load_si256((__m256i*)ptr)); }
 
-    static __forceinline vint16 loadu(const unsigned char* ptr) { return _mm512_cvtepu8_epi32(_mm_loadu_si128((__m128i*)ptr)); }
+    static __forceinline vint16 loadu(const uint8_t* ptr) { return _mm512_cvtepu8_epi32(_mm_loadu_si128((__m128i*)ptr)); }
     static __forceinline vint16 loadu(const unsigned short* ptr) { return _mm512_cvtepu16_epi32(_mm256_loadu_si256((__m256i*)ptr)); }
 
     static __forceinline vint16 loadu(const void* addr) { return _mm512_loadu_si512(addr); }

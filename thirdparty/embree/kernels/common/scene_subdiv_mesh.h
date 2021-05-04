@@ -275,11 +275,11 @@ namespace embree
     parallel_set<uint32_t> holeSet;
 
     /*! fast lookup table to detect invalid faces */
-    mvector<char> invalid_face;
+    mvector<int8_t> invalid_face;
 
     /*! test if face i is invalid in timestep j */
-    __forceinline       char& invalidFace(size_t i, size_t j = 0)       { return invalid_face[i*numTimeSteps+j]; }
-    __forceinline const char& invalidFace(size_t i, size_t j = 0) const { return invalid_face[i*numTimeSteps+j]; }
+    __forceinline       int8_t& invalidFace(size_t i, size_t j = 0)       { return invalid_face[i*numTimeSteps+j]; }
+    __forceinline const int8_t& invalidFace(size_t i, size_t j = 0) const { return invalid_face[i*numTimeSteps+j]; }
 
     /*! interpolation cache */
   public:
