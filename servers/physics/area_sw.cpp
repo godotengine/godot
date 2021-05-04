@@ -129,28 +129,52 @@ void AreaSW::set_space_override_mode(PhysicsServer::AreaSpaceOverrideMode p_mode
 void AreaSW::set_param(PhysicsServer::AreaParameter p_param, const Variant &p_value) {
 
 	switch (p_param) {
-		case PhysicsServer::AREA_PARAM_GRAVITY: gravity = p_value; break;
-		case PhysicsServer::AREA_PARAM_GRAVITY_VECTOR: gravity_vector = p_value; break;
-		case PhysicsServer::AREA_PARAM_GRAVITY_IS_POINT: gravity_is_point = p_value; break;
-		case PhysicsServer::AREA_PARAM_GRAVITY_DISTANCE_SCALE: gravity_distance_scale = p_value; break;
-		case PhysicsServer::AREA_PARAM_GRAVITY_POINT_ATTENUATION: point_attenuation = p_value; break;
-		case PhysicsServer::AREA_PARAM_LINEAR_DAMP: linear_damp = p_value; break;
-		case PhysicsServer::AREA_PARAM_ANGULAR_DAMP: angular_damp = p_value; break;
-		case PhysicsServer::AREA_PARAM_PRIORITY: priority = p_value; break;
+		case PhysicsServer::AREA_PARAM_GRAVITY:
+			gravity = p_value;
+			break;
+		case PhysicsServer::AREA_PARAM_GRAVITY_VECTOR:
+			gravity_vector = p_value;
+			break;
+		case PhysicsServer::AREA_PARAM_GRAVITY_IS_POINT:
+			gravity_is_point = p_value;
+			break;
+		case PhysicsServer::AREA_PARAM_GRAVITY_DISTANCE_SCALE:
+			gravity_distance_scale = p_value;
+			break;
+		case PhysicsServer::AREA_PARAM_GRAVITY_POINT_ATTENUATION:
+			point_attenuation = p_value;
+			break;
+		case PhysicsServer::AREA_PARAM_LINEAR_DAMP:
+			linear_damp = p_value;
+			break;
+		case PhysicsServer::AREA_PARAM_ANGULAR_DAMP:
+			angular_damp = p_value;
+			break;
+		case PhysicsServer::AREA_PARAM_PRIORITY:
+			priority = p_value;
+			break;
 	}
 }
 
 Variant AreaSW::get_param(PhysicsServer::AreaParameter p_param) const {
 
 	switch (p_param) {
-		case PhysicsServer::AREA_PARAM_GRAVITY: return gravity;
-		case PhysicsServer::AREA_PARAM_GRAVITY_VECTOR: return gravity_vector;
-		case PhysicsServer::AREA_PARAM_GRAVITY_IS_POINT: return gravity_is_point;
-		case PhysicsServer::AREA_PARAM_GRAVITY_DISTANCE_SCALE: return gravity_distance_scale;
-		case PhysicsServer::AREA_PARAM_GRAVITY_POINT_ATTENUATION: return point_attenuation;
-		case PhysicsServer::AREA_PARAM_LINEAR_DAMP: return linear_damp;
-		case PhysicsServer::AREA_PARAM_ANGULAR_DAMP: return angular_damp;
-		case PhysicsServer::AREA_PARAM_PRIORITY: return priority;
+		case PhysicsServer::AREA_PARAM_GRAVITY:
+			return gravity;
+		case PhysicsServer::AREA_PARAM_GRAVITY_VECTOR:
+			return gravity_vector;
+		case PhysicsServer::AREA_PARAM_GRAVITY_IS_POINT:
+			return gravity_is_point;
+		case PhysicsServer::AREA_PARAM_GRAVITY_DISTANCE_SCALE:
+			return gravity_distance_scale;
+		case PhysicsServer::AREA_PARAM_GRAVITY_POINT_ATTENUATION:
+			return point_attenuation;
+		case PhysicsServer::AREA_PARAM_LINEAR_DAMP:
+			return linear_damp;
+		case PhysicsServer::AREA_PARAM_ANGULAR_DAMP:
+			return angular_damp;
+		case PhysicsServer::AREA_PARAM_PRIORITY:
+			return priority;
 	}
 
 	return Variant();

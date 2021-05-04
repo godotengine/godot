@@ -83,9 +83,13 @@ class JavaClass : public Reference {
 
 		switch (p_sig) {
 
-			case ARG_TYPE_VOID: r_type = Variant::NIL; break;
+			case ARG_TYPE_VOID:
+				r_type = Variant::NIL;
+				break;
 			case ARG_TYPE_BOOLEAN | ARG_NUMBER_CLASS_BIT:
-			case ARG_TYPE_BOOLEAN: r_type = Variant::BOOL; break;
+			case ARG_TYPE_BOOLEAN:
+				r_type = Variant::BOOL;
+				break;
 			case ARG_TYPE_BYTE | ARG_NUMBER_CLASS_BIT:
 			case ARG_TYPE_BYTE:
 				r_type = Variant::INT;
@@ -121,10 +125,18 @@ class JavaClass : public Reference {
 				r_type = Variant::REAL;
 				likelihood = 0.5;
 				break;
-			case ARG_TYPE_STRING: r_type = Variant::STRING; break;
-			case ARG_TYPE_CLASS: r_type = Variant::OBJECT; break;
-			case ARG_ARRAY_BIT | ARG_TYPE_VOID: r_type = Variant::NIL; break;
-			case ARG_ARRAY_BIT | ARG_TYPE_BOOLEAN: r_type = Variant::ARRAY; break;
+			case ARG_TYPE_STRING:
+				r_type = Variant::STRING;
+				break;
+			case ARG_TYPE_CLASS:
+				r_type = Variant::OBJECT;
+				break;
+			case ARG_ARRAY_BIT | ARG_TYPE_VOID:
+				r_type = Variant::NIL;
+				break;
+			case ARG_ARRAY_BIT | ARG_TYPE_BOOLEAN:
+				r_type = Variant::ARRAY;
+				break;
 			case ARG_ARRAY_BIT | ARG_TYPE_BYTE:
 				r_type = Variant::POOL_BYTE_ARRAY;
 				likelihood = 1.0;
@@ -153,8 +165,12 @@ class JavaClass : public Reference {
 				r_type = Variant::POOL_REAL_ARRAY;
 				likelihood = 0.5;
 				break;
-			case ARG_ARRAY_BIT | ARG_TYPE_STRING: r_type = Variant::POOL_STRING_ARRAY; break;
-			case ARG_ARRAY_BIT | ARG_TYPE_CLASS: r_type = Variant::ARRAY; break;
+			case ARG_ARRAY_BIT | ARG_TYPE_STRING:
+				r_type = Variant::POOL_STRING_ARRAY;
+				break;
+			case ARG_ARRAY_BIT | ARG_TYPE_CLASS:
+				r_type = Variant::ARRAY;
+				break;
 		}
 	}
 

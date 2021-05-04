@@ -1323,14 +1323,30 @@ void Space2DSW::set_param(Physics2DServer::SpaceParameter p_param, real_t p_valu
 
 	switch (p_param) {
 
-		case Physics2DServer::SPACE_PARAM_CONTACT_RECYCLE_RADIUS: contact_recycle_radius = p_value; break;
-		case Physics2DServer::SPACE_PARAM_CONTACT_MAX_SEPARATION: contact_max_separation = p_value; break;
-		case Physics2DServer::SPACE_PARAM_BODY_MAX_ALLOWED_PENETRATION: contact_max_allowed_penetration = p_value; break;
-		case Physics2DServer::SPACE_PARAM_BODY_LINEAR_VELOCITY_SLEEP_THRESHOLD: body_linear_velocity_sleep_threshold = p_value; break;
-		case Physics2DServer::SPACE_PARAM_BODY_ANGULAR_VELOCITY_SLEEP_THRESHOLD: body_angular_velocity_sleep_threshold = p_value; break;
-		case Physics2DServer::SPACE_PARAM_BODY_TIME_TO_SLEEP: body_time_to_sleep = p_value; break;
-		case Physics2DServer::SPACE_PARAM_CONSTRAINT_DEFAULT_BIAS: constraint_bias = p_value; break;
-		case Physics2DServer::SPACE_PARAM_TEST_MOTION_MIN_CONTACT_DEPTH: test_motion_min_contact_depth = p_value; break;
+		case Physics2DServer::SPACE_PARAM_CONTACT_RECYCLE_RADIUS:
+			contact_recycle_radius = p_value;
+			break;
+		case Physics2DServer::SPACE_PARAM_CONTACT_MAX_SEPARATION:
+			contact_max_separation = p_value;
+			break;
+		case Physics2DServer::SPACE_PARAM_BODY_MAX_ALLOWED_PENETRATION:
+			contact_max_allowed_penetration = p_value;
+			break;
+		case Physics2DServer::SPACE_PARAM_BODY_LINEAR_VELOCITY_SLEEP_THRESHOLD:
+			body_linear_velocity_sleep_threshold = p_value;
+			break;
+		case Physics2DServer::SPACE_PARAM_BODY_ANGULAR_VELOCITY_SLEEP_THRESHOLD:
+			body_angular_velocity_sleep_threshold = p_value;
+			break;
+		case Physics2DServer::SPACE_PARAM_BODY_TIME_TO_SLEEP:
+			body_time_to_sleep = p_value;
+			break;
+		case Physics2DServer::SPACE_PARAM_CONSTRAINT_DEFAULT_BIAS:
+			constraint_bias = p_value;
+			break;
+		case Physics2DServer::SPACE_PARAM_TEST_MOTION_MIN_CONTACT_DEPTH:
+			test_motion_min_contact_depth = p_value;
+			break;
 	}
 }
 
@@ -1338,14 +1354,22 @@ real_t Space2DSW::get_param(Physics2DServer::SpaceParameter p_param) const {
 
 	switch (p_param) {
 
-		case Physics2DServer::SPACE_PARAM_CONTACT_RECYCLE_RADIUS: return contact_recycle_radius;
-		case Physics2DServer::SPACE_PARAM_CONTACT_MAX_SEPARATION: return contact_max_separation;
-		case Physics2DServer::SPACE_PARAM_BODY_MAX_ALLOWED_PENETRATION: return contact_max_allowed_penetration;
-		case Physics2DServer::SPACE_PARAM_BODY_LINEAR_VELOCITY_SLEEP_THRESHOLD: return body_linear_velocity_sleep_threshold;
-		case Physics2DServer::SPACE_PARAM_BODY_ANGULAR_VELOCITY_SLEEP_THRESHOLD: return body_angular_velocity_sleep_threshold;
-		case Physics2DServer::SPACE_PARAM_BODY_TIME_TO_SLEEP: return body_time_to_sleep;
-		case Physics2DServer::SPACE_PARAM_CONSTRAINT_DEFAULT_BIAS: return constraint_bias;
-		case Physics2DServer::SPACE_PARAM_TEST_MOTION_MIN_CONTACT_DEPTH: return test_motion_min_contact_depth;
+		case Physics2DServer::SPACE_PARAM_CONTACT_RECYCLE_RADIUS:
+			return contact_recycle_radius;
+		case Physics2DServer::SPACE_PARAM_CONTACT_MAX_SEPARATION:
+			return contact_max_separation;
+		case Physics2DServer::SPACE_PARAM_BODY_MAX_ALLOWED_PENETRATION:
+			return contact_max_allowed_penetration;
+		case Physics2DServer::SPACE_PARAM_BODY_LINEAR_VELOCITY_SLEEP_THRESHOLD:
+			return body_linear_velocity_sleep_threshold;
+		case Physics2DServer::SPACE_PARAM_BODY_ANGULAR_VELOCITY_SLEEP_THRESHOLD:
+			return body_angular_velocity_sleep_threshold;
+		case Physics2DServer::SPACE_PARAM_BODY_TIME_TO_SLEEP:
+			return body_time_to_sleep;
+		case Physics2DServer::SPACE_PARAM_CONSTRAINT_DEFAULT_BIAS:
+			return constraint_bias;
+		case Physics2DServer::SPACE_PARAM_TEST_MOTION_MIN_CONTACT_DEPTH:
+			return test_motion_min_contact_depth;
 	}
 	return 0;
 }

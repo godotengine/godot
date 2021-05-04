@@ -1088,16 +1088,36 @@ static bool _guess_expression_type(GDScriptCompletionContext &p_context, const G
 
 					Variant::Operator vop = Variant::OP_MAX;
 					switch (op->op) {
-						case GDScriptParser::OperatorNode::OP_ADD: vop = Variant::OP_ADD; break;
-						case GDScriptParser::OperatorNode::OP_SUB: vop = Variant::OP_SUBTRACT; break;
-						case GDScriptParser::OperatorNode::OP_MUL: vop = Variant::OP_MULTIPLY; break;
-						case GDScriptParser::OperatorNode::OP_DIV: vop = Variant::OP_DIVIDE; break;
-						case GDScriptParser::OperatorNode::OP_MOD: vop = Variant::OP_MODULE; break;
-						case GDScriptParser::OperatorNode::OP_SHIFT_LEFT: vop = Variant::OP_SHIFT_LEFT; break;
-						case GDScriptParser::OperatorNode::OP_SHIFT_RIGHT: vop = Variant::OP_SHIFT_RIGHT; break;
-						case GDScriptParser::OperatorNode::OP_BIT_AND: vop = Variant::OP_BIT_AND; break;
-						case GDScriptParser::OperatorNode::OP_BIT_OR: vop = Variant::OP_BIT_OR; break;
-						case GDScriptParser::OperatorNode::OP_BIT_XOR: vop = Variant::OP_BIT_XOR; break;
+						case GDScriptParser::OperatorNode::OP_ADD:
+							vop = Variant::OP_ADD;
+							break;
+						case GDScriptParser::OperatorNode::OP_SUB:
+							vop = Variant::OP_SUBTRACT;
+							break;
+						case GDScriptParser::OperatorNode::OP_MUL:
+							vop = Variant::OP_MULTIPLY;
+							break;
+						case GDScriptParser::OperatorNode::OP_DIV:
+							vop = Variant::OP_DIVIDE;
+							break;
+						case GDScriptParser::OperatorNode::OP_MOD:
+							vop = Variant::OP_MODULE;
+							break;
+						case GDScriptParser::OperatorNode::OP_SHIFT_LEFT:
+							vop = Variant::OP_SHIFT_LEFT;
+							break;
+						case GDScriptParser::OperatorNode::OP_SHIFT_RIGHT:
+							vop = Variant::OP_SHIFT_RIGHT;
+							break;
+						case GDScriptParser::OperatorNode::OP_BIT_AND:
+							vop = Variant::OP_BIT_AND;
+							break;
+						case GDScriptParser::OperatorNode::OP_BIT_OR:
+							vop = Variant::OP_BIT_OR;
+							break;
+						case GDScriptParser::OperatorNode::OP_BIT_XOR:
+							vop = Variant::OP_BIT_XOR;
+							break;
 						default: {
 						}
 					}

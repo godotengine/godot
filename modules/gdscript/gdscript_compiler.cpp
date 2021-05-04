@@ -186,16 +186,36 @@ int GDScriptCompiler::_parse_assign_right_expression(CodeGen &codegen, const GDS
 
 	switch (p_expression->op) {
 
-		case GDScriptParser::OperatorNode::OP_ASSIGN_ADD: var_op = Variant::OP_ADD; break;
-		case GDScriptParser::OperatorNode::OP_ASSIGN_SUB: var_op = Variant::OP_SUBTRACT; break;
-		case GDScriptParser::OperatorNode::OP_ASSIGN_MUL: var_op = Variant::OP_MULTIPLY; break;
-		case GDScriptParser::OperatorNode::OP_ASSIGN_DIV: var_op = Variant::OP_DIVIDE; break;
-		case GDScriptParser::OperatorNode::OP_ASSIGN_MOD: var_op = Variant::OP_MODULE; break;
-		case GDScriptParser::OperatorNode::OP_ASSIGN_SHIFT_LEFT: var_op = Variant::OP_SHIFT_LEFT; break;
-		case GDScriptParser::OperatorNode::OP_ASSIGN_SHIFT_RIGHT: var_op = Variant::OP_SHIFT_RIGHT; break;
-		case GDScriptParser::OperatorNode::OP_ASSIGN_BIT_AND: var_op = Variant::OP_BIT_AND; break;
-		case GDScriptParser::OperatorNode::OP_ASSIGN_BIT_OR: var_op = Variant::OP_BIT_OR; break;
-		case GDScriptParser::OperatorNode::OP_ASSIGN_BIT_XOR: var_op = Variant::OP_BIT_XOR; break;
+		case GDScriptParser::OperatorNode::OP_ASSIGN_ADD:
+			var_op = Variant::OP_ADD;
+			break;
+		case GDScriptParser::OperatorNode::OP_ASSIGN_SUB:
+			var_op = Variant::OP_SUBTRACT;
+			break;
+		case GDScriptParser::OperatorNode::OP_ASSIGN_MUL:
+			var_op = Variant::OP_MULTIPLY;
+			break;
+		case GDScriptParser::OperatorNode::OP_ASSIGN_DIV:
+			var_op = Variant::OP_DIVIDE;
+			break;
+		case GDScriptParser::OperatorNode::OP_ASSIGN_MOD:
+			var_op = Variant::OP_MODULE;
+			break;
+		case GDScriptParser::OperatorNode::OP_ASSIGN_SHIFT_LEFT:
+			var_op = Variant::OP_SHIFT_LEFT;
+			break;
+		case GDScriptParser::OperatorNode::OP_ASSIGN_SHIFT_RIGHT:
+			var_op = Variant::OP_SHIFT_RIGHT;
+			break;
+		case GDScriptParser::OperatorNode::OP_ASSIGN_BIT_AND:
+			var_op = Variant::OP_BIT_AND;
+			break;
+		case GDScriptParser::OperatorNode::OP_ASSIGN_BIT_OR:
+			var_op = Variant::OP_BIT_OR;
+			break;
+		case GDScriptParser::OperatorNode::OP_ASSIGN_BIT_XOR:
+			var_op = Variant::OP_BIT_XOR;
+			break;
 		case GDScriptParser::OperatorNode::OP_INIT_ASSIGN:
 		case GDScriptParser::OperatorNode::OP_ASSIGN: {
 

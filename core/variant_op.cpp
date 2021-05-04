@@ -894,7 +894,8 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 					case VECTOR2: {
 						_RETURN(p_a._data._transform2d->xform(*(const Vector2 *)p_b._data._mem));
 					}
-					default: _RETURN_FAIL;
+					default:
+						_RETURN_FAIL;
 				}
 			}
 
@@ -909,7 +910,8 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 					case REAL: {
 						_RETURN(*reinterpret_cast<const Quat *>(p_a._data._mem) * p_b._data._real);
 					}
-					default: _RETURN_FAIL;
+					default:
+						_RETURN_FAIL;
 				}
 			}
 
@@ -921,7 +923,8 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 					case BASIS: {
 						_RETURN(*p_a._data._basis * *p_b._data._basis);
 					}
-					default: _RETURN_FAIL;
+					default:
+						_RETURN_FAIL;
 				}
 			}
 
@@ -933,7 +936,8 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 					case TRANSFORM: {
 						_RETURN(*p_a._data._transform * *p_b._data._transform);
 					}
-					default: _RETURN_FAIL;
+					default:
+						_RETURN_FAIL;
 				}
 			}
 

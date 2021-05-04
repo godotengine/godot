@@ -775,11 +775,16 @@ static int _get_key_modifier_setting(const String &p_property) {
 
 	switch (EditorSettings::get_singleton()->get(p_property).operator int()) {
 
-		case 0: return 0;
-		case 1: return KEY_SHIFT;
-		case 2: return KEY_ALT;
-		case 3: return KEY_META;
-		case 4: return KEY_CONTROL;
+		case 0:
+			return 0;
+		case 1:
+			return KEY_SHIFT;
+		case 2:
+			return KEY_ALT;
+		case 3:
+			return KEY_META;
+		case 4:
+			return KEY_CONTROL;
 	}
 	return 0;
 }

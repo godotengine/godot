@@ -113,9 +113,12 @@ void AudioDriver::input_buffer_write(int32_t sample) {
 
 AudioDriver::SpeakerMode AudioDriver::get_speaker_mode_by_total_channels(int p_channels) const {
 	switch (p_channels) {
-		case 4: return SPEAKER_SURROUND_31;
-		case 6: return SPEAKER_SURROUND_51;
-		case 8: return SPEAKER_SURROUND_71;
+		case 4:
+			return SPEAKER_SURROUND_31;
+		case 6:
+			return SPEAKER_SURROUND_51;
+		case 8:
+			return SPEAKER_SURROUND_71;
 	}
 
 	// Default to STEREO
@@ -124,10 +127,14 @@ AudioDriver::SpeakerMode AudioDriver::get_speaker_mode_by_total_channels(int p_c
 
 int AudioDriver::get_total_channels_by_speaker_mode(AudioDriver::SpeakerMode p_mode) const {
 	switch (p_mode) {
-		case SPEAKER_MODE_STEREO: return 2;
-		case SPEAKER_SURROUND_31: return 4;
-		case SPEAKER_SURROUND_51: return 6;
-		case SPEAKER_SURROUND_71: return 8;
+		case SPEAKER_MODE_STEREO:
+			return 2;
+		case SPEAKER_SURROUND_31:
+			return 4;
+		case SPEAKER_SURROUND_51:
+			return 6;
+		case SPEAKER_SURROUND_71:
+			return 8;
 	}
 
 	ERR_FAIL_V(2);

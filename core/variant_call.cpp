@@ -803,10 +803,17 @@ struct _VariantCall {
 
 		switch (p_args[0]->type) {
 
-			case Variant::VECTOR2: r_ret = reinterpret_cast<Transform2D *>(p_self._data._ptr)->xform(p_args[0]->operator Vector2()); return;
-			case Variant::RECT2: r_ret = reinterpret_cast<Transform2D *>(p_self._data._ptr)->xform(p_args[0]->operator Rect2()); return;
-			case Variant::POOL_VECTOR2_ARRAY: r_ret = reinterpret_cast<Transform2D *>(p_self._data._ptr)->xform(p_args[0]->operator PoolVector2Array()); return;
-			default: r_ret = Variant();
+			case Variant::VECTOR2:
+				r_ret = reinterpret_cast<Transform2D *>(p_self._data._ptr)->xform(p_args[0]->operator Vector2());
+				return;
+			case Variant::RECT2:
+				r_ret = reinterpret_cast<Transform2D *>(p_self._data._ptr)->xform(p_args[0]->operator Rect2());
+				return;
+			case Variant::POOL_VECTOR2_ARRAY:
+				r_ret = reinterpret_cast<Transform2D *>(p_self._data._ptr)->xform(p_args[0]->operator PoolVector2Array());
+				return;
+			default:
+				r_ret = Variant();
 		}
 	}
 
@@ -814,10 +821,17 @@ struct _VariantCall {
 
 		switch (p_args[0]->type) {
 
-			case Variant::VECTOR2: r_ret = reinterpret_cast<Transform2D *>(p_self._data._ptr)->xform_inv(p_args[0]->operator Vector2()); return;
-			case Variant::RECT2: r_ret = reinterpret_cast<Transform2D *>(p_self._data._ptr)->xform_inv(p_args[0]->operator Rect2()); return;
-			case Variant::POOL_VECTOR2_ARRAY: r_ret = reinterpret_cast<Transform2D *>(p_self._data._ptr)->xform_inv(p_args[0]->operator PoolVector2Array()); return;
-			default: r_ret = Variant();
+			case Variant::VECTOR2:
+				r_ret = reinterpret_cast<Transform2D *>(p_self._data._ptr)->xform_inv(p_args[0]->operator Vector2());
+				return;
+			case Variant::RECT2:
+				r_ret = reinterpret_cast<Transform2D *>(p_self._data._ptr)->xform_inv(p_args[0]->operator Rect2());
+				return;
+			case Variant::POOL_VECTOR2_ARRAY:
+				r_ret = reinterpret_cast<Transform2D *>(p_self._data._ptr)->xform_inv(p_args[0]->operator PoolVector2Array());
+				return;
+			default:
+				r_ret = Variant();
 		}
 	}
 
@@ -825,8 +839,11 @@ struct _VariantCall {
 
 		switch (p_args[0]->type) {
 
-			case Variant::VECTOR2: r_ret = reinterpret_cast<Transform2D *>(p_self._data._ptr)->basis_xform(p_args[0]->operator Vector2()); return;
-			default: r_ret = Variant();
+			case Variant::VECTOR2:
+				r_ret = reinterpret_cast<Transform2D *>(p_self._data._ptr)->basis_xform(p_args[0]->operator Vector2());
+				return;
+			default:
+				r_ret = Variant();
 		}
 	}
 
@@ -834,8 +851,11 @@ struct _VariantCall {
 
 		switch (p_args[0]->type) {
 
-			case Variant::VECTOR2: r_ret = reinterpret_cast<Transform2D *>(p_self._data._ptr)->basis_xform_inv(p_args[0]->operator Vector2()); return;
-			default: r_ret = Variant();
+			case Variant::VECTOR2:
+				r_ret = reinterpret_cast<Transform2D *>(p_self._data._ptr)->basis_xform_inv(p_args[0]->operator Vector2());
+				return;
+			default:
+				r_ret = Variant();
 		}
 	}
 
@@ -883,11 +903,20 @@ struct _VariantCall {
 
 		switch (p_args[0]->type) {
 
-			case Variant::VECTOR3: r_ret = reinterpret_cast<Transform *>(p_self._data._ptr)->xform(p_args[0]->operator Vector3()); return;
-			case Variant::PLANE: r_ret = reinterpret_cast<Transform *>(p_self._data._ptr)->xform(p_args[0]->operator Plane()); return;
-			case Variant::AABB: r_ret = reinterpret_cast<Transform *>(p_self._data._ptr)->xform(p_args[0]->operator ::AABB()); return;
-			case Variant::POOL_VECTOR3_ARRAY: r_ret = reinterpret_cast<Transform *>(p_self._data._ptr)->xform(p_args[0]->operator ::PoolVector3Array()); return;
-			default: r_ret = Variant();
+			case Variant::VECTOR3:
+				r_ret = reinterpret_cast<Transform *>(p_self._data._ptr)->xform(p_args[0]->operator Vector3());
+				return;
+			case Variant::PLANE:
+				r_ret = reinterpret_cast<Transform *>(p_self._data._ptr)->xform(p_args[0]->operator Plane());
+				return;
+			case Variant::AABB:
+				r_ret = reinterpret_cast<Transform *>(p_self._data._ptr)->xform(p_args[0]->operator ::AABB());
+				return;
+			case Variant::POOL_VECTOR3_ARRAY:
+				r_ret = reinterpret_cast<Transform *>(p_self._data._ptr)->xform(p_args[0]->operator ::PoolVector3Array());
+				return;
+			default:
+				r_ret = Variant();
 		}
 	}
 
@@ -895,11 +924,20 @@ struct _VariantCall {
 
 		switch (p_args[0]->type) {
 
-			case Variant::VECTOR3: r_ret = reinterpret_cast<Transform *>(p_self._data._ptr)->xform_inv(p_args[0]->operator Vector3()); return;
-			case Variant::PLANE: r_ret = reinterpret_cast<Transform *>(p_self._data._ptr)->xform_inv(p_args[0]->operator Plane()); return;
-			case Variant::AABB: r_ret = reinterpret_cast<Transform *>(p_self._data._ptr)->xform_inv(p_args[0]->operator ::AABB()); return;
-			case Variant::POOL_VECTOR3_ARRAY: r_ret = reinterpret_cast<Transform *>(p_self._data._ptr)->xform_inv(p_args[0]->operator ::PoolVector3Array()); return;
-			default: r_ret = Variant();
+			case Variant::VECTOR3:
+				r_ret = reinterpret_cast<Transform *>(p_self._data._ptr)->xform_inv(p_args[0]->operator Vector3());
+				return;
+			case Variant::PLANE:
+				r_ret = reinterpret_cast<Transform *>(p_self._data._ptr)->xform_inv(p_args[0]->operator Plane());
+				return;
+			case Variant::AABB:
+				r_ret = reinterpret_cast<Transform *>(p_self._data._ptr)->xform_inv(p_args[0]->operator ::AABB());
+				return;
+			case Variant::POOL_VECTOR3_ARRAY:
+				r_ret = reinterpret_cast<Transform *>(p_self._data._ptr)->xform_inv(p_args[0]->operator ::PoolVector3Array());
+				return;
+			default:
+				r_ret = Variant();
 		}
 	}
 
@@ -1184,44 +1222,64 @@ Variant Variant::construct(const Variant::Type p_type, const Variant **p_args, i
 				return Variant();
 
 			// atomic types
-			case BOOL: return Variant(false);
-			case INT: return 0;
-			case REAL: return 0.0f;
+			case BOOL:
+				return Variant(false);
+			case INT:
+				return 0;
+			case REAL:
+				return 0.0f;
 			case STRING:
 				return String();
 
 			// math types
 			case VECTOR2:
 				return Vector2(); // 5
-			case RECT2: return Rect2();
-			case VECTOR3: return Vector3();
-			case TRANSFORM2D: return Transform2D();
-			case PLANE: return Plane();
-			case QUAT: return Quat();
+			case RECT2:
+				return Rect2();
+			case VECTOR3:
+				return Vector3();
+			case TRANSFORM2D:
+				return Transform2D();
+			case PLANE:
+				return Plane();
+			case QUAT:
+				return Quat();
 			case AABB:
 				return ::AABB(); // 10
-			case BASIS: return Basis();
+			case BASIS:
+				return Basis();
 			case TRANSFORM:
 				return Transform();
 
 			// misc types
-			case COLOR: return Color();
+			case COLOR:
+				return Color();
 			case NODE_PATH:
 				return NodePath(); // 15
-			case _RID: return RID();
-			case OBJECT: return (Object *)NULL;
-			case DICTIONARY: return Dictionary();
+			case _RID:
+				return RID();
+			case OBJECT:
+				return (Object *)NULL;
+			case DICTIONARY:
+				return Dictionary();
 			case ARRAY:
 				return Array(); // 20
-			case POOL_BYTE_ARRAY: return PoolByteArray();
-			case POOL_INT_ARRAY: return PoolIntArray();
-			case POOL_REAL_ARRAY: return PoolRealArray();
-			case POOL_STRING_ARRAY: return PoolStringArray();
+			case POOL_BYTE_ARRAY:
+				return PoolByteArray();
+			case POOL_INT_ARRAY:
+				return PoolIntArray();
+			case POOL_REAL_ARRAY:
+				return PoolRealArray();
+			case POOL_STRING_ARRAY:
+				return PoolStringArray();
 			case POOL_VECTOR2_ARRAY:
 				return PoolVector2Array(); // 25
-			case POOL_VECTOR3_ARRAY: return PoolVector3Array();
-			case POOL_COLOR_ARRAY: return PoolColorArray();
-			default: return Variant();
+			case POOL_VECTOR3_ARRAY:
+				return PoolVector3Array();
+			case POOL_COLOR_ARRAY:
+				return PoolColorArray();
+			default:
+				return Variant();
 		}
 
 	} else if (p_argcount == 1 && p_args[0]->type == p_type) {
@@ -1249,38 +1307,54 @@ Variant Variant::construct(const Variant::Type p_type, const Variant **p_args, i
 			case VECTOR2: {
 				return Vector2(*p_args[0]);
 			}
-			case RECT2: return (Rect2(*p_args[0]));
-			case VECTOR3: return (Vector3(*p_args[0]));
+			case RECT2:
+				return (Rect2(*p_args[0]));
+			case VECTOR3:
+				return (Vector3(*p_args[0]));
 			case TRANSFORM2D:
 				return (Transform2D(p_args[0]->operator Transform2D()));
-			case PLANE: return (Plane(*p_args[0]));
-			case QUAT: return (p_args[0]->operator Quat());
+			case PLANE:
+				return (Plane(*p_args[0]));
+			case QUAT:
+				return (p_args[0]->operator Quat());
 			case AABB:
 				return (::AABB(*p_args[0])); // 10
-			case BASIS: return (Basis(p_args[0]->operator Basis()));
+			case BASIS:
+				return (Basis(p_args[0]->operator Basis()));
 			case TRANSFORM:
 				return (Transform(p_args[0]->operator Transform()));
 
 			// misc types
-			case COLOR: return p_args[0]->type == Variant::STRING ? Color::html(*p_args[0]) : Color::hex(*p_args[0]);
+			case COLOR:
+				return p_args[0]->type == Variant::STRING ? Color::html(*p_args[0]) : Color::hex(*p_args[0]);
 			case NODE_PATH:
 				return (NodePath(p_args[0]->operator NodePath())); // 15
-			case _RID: return (RID(*p_args[0]));
-			case OBJECT: return ((Object *)(p_args[0]->operator Object *()));
-			case DICTIONARY: return p_args[0]->operator Dictionary();
+			case _RID:
+				return (RID(*p_args[0]));
+			case OBJECT:
+				return ((Object *)(p_args[0]->operator Object *()));
+			case DICTIONARY:
+				return p_args[0]->operator Dictionary();
 			case ARRAY:
 				return p_args[0]->operator Array(); // 20
 
 			// arrays
-			case POOL_BYTE_ARRAY: return (PoolByteArray(*p_args[0]));
-			case POOL_INT_ARRAY: return (PoolIntArray(*p_args[0]));
-			case POOL_REAL_ARRAY: return (PoolRealArray(*p_args[0]));
-			case POOL_STRING_ARRAY: return (PoolStringArray(*p_args[0]));
+			case POOL_BYTE_ARRAY:
+				return (PoolByteArray(*p_args[0]));
+			case POOL_INT_ARRAY:
+				return (PoolIntArray(*p_args[0]));
+			case POOL_REAL_ARRAY:
+				return (PoolRealArray(*p_args[0]));
+			case POOL_STRING_ARRAY:
+				return (PoolStringArray(*p_args[0]));
 			case POOL_VECTOR2_ARRAY:
 				return (PoolVector2Array(*p_args[0])); // 25
-			case POOL_VECTOR3_ARRAY: return (PoolVector3Array(*p_args[0]));
-			case POOL_COLOR_ARRAY: return (PoolColorArray(*p_args[0]));
-			default: return Variant();
+			case POOL_VECTOR3_ARRAY:
+				return (PoolVector3Array(*p_args[0]));
+			case POOL_COLOR_ARRAY:
+				return (PoolColorArray(*p_args[0]));
+			default:
+				return Variant();
 		}
 	} else if (p_argcount >= 1) {
 

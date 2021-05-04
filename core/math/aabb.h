@@ -181,14 +181,22 @@ Vector3 AABB::get_support(const Vector3 &p_normal) const {
 Vector3 AABB::get_endpoint(int p_point) const {
 
 	switch (p_point) {
-		case 0: return Vector3(position.x, position.y, position.z);
-		case 1: return Vector3(position.x, position.y, position.z + size.z);
-		case 2: return Vector3(position.x, position.y + size.y, position.z);
-		case 3: return Vector3(position.x, position.y + size.y, position.z + size.z);
-		case 4: return Vector3(position.x + size.x, position.y, position.z);
-		case 5: return Vector3(position.x + size.x, position.y, position.z + size.z);
-		case 6: return Vector3(position.x + size.x, position.y + size.y, position.z);
-		case 7: return Vector3(position.x + size.x, position.y + size.y, position.z + size.z);
+		case 0:
+			return Vector3(position.x, position.y, position.z);
+		case 1:
+			return Vector3(position.x, position.y, position.z + size.z);
+		case 2:
+			return Vector3(position.x, position.y + size.y, position.z);
+		case 3:
+			return Vector3(position.x, position.y + size.y, position.z + size.z);
+		case 4:
+			return Vector3(position.x + size.x, position.y, position.z);
+		case 5:
+			return Vector3(position.x + size.x, position.y, position.z + size.z);
+		case 6:
+			return Vector3(position.x + size.x, position.y + size.y, position.z);
+		case 7:
+			return Vector3(position.x + size.x, position.y + size.y, position.z + size.z);
 	};
 
 	ERR_FAIL_V(Vector3());

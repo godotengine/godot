@@ -440,7 +440,9 @@ int RasterizerSceneGLES3::get_directional_light_shadow_size(RID p_light_intance)
 		case VS::LIGHT_DIRECTIONAL_SHADOW_ORTHOGONAL:
 			break; //none
 		case VS::LIGHT_DIRECTIONAL_SHADOW_PARALLEL_2_SPLITS:
-		case VS::LIGHT_DIRECTIONAL_SHADOW_PARALLEL_4_SPLITS: shadow_size /= 2; break;
+		case VS::LIGHT_DIRECTIONAL_SHADOW_PARALLEL_4_SPLITS:
+			shadow_size /= 2;
+			break;
 	}
 
 	return shadow_size;

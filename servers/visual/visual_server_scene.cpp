@@ -1548,9 +1548,15 @@ bool VisualServerScene::_light_instance_update_shadow(Instance *p_instance, cons
 
 			int splits = 0;
 			switch (VSG::storage->light_directional_get_shadow_mode(p_instance->base)) {
-				case VS::LIGHT_DIRECTIONAL_SHADOW_ORTHOGONAL: splits = 1; break;
-				case VS::LIGHT_DIRECTIONAL_SHADOW_PARALLEL_2_SPLITS: splits = 2; break;
-				case VS::LIGHT_DIRECTIONAL_SHADOW_PARALLEL_4_SPLITS: splits = 4; break;
+				case VS::LIGHT_DIRECTIONAL_SHADOW_ORTHOGONAL:
+					splits = 1;
+					break;
+				case VS::LIGHT_DIRECTIONAL_SHADOW_PARALLEL_2_SPLITS:
+					splits = 2;
+					break;
+				case VS::LIGHT_DIRECTIONAL_SHADOW_PARALLEL_4_SPLITS:
+					splits = 4;
+					break;
 			}
 
 			float distances[5];

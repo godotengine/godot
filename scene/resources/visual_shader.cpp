@@ -1280,10 +1280,18 @@ Error VisualShader::_write_node(Type type, StringBuilder &global_code, StringBui
 		for (int i = 0; i < output_count; i++) {
 			String var_name = "n_out" + itos(node) + "p" + itos(i);
 			switch (vsnode->get_output_port_type(i)) {
-				case VisualShaderNode::PORT_TYPE_SCALAR: outputs[i] = "float " + var_name; break;
-				case VisualShaderNode::PORT_TYPE_VECTOR: outputs[i] = "vec3 " + var_name; break;
-				case VisualShaderNode::PORT_TYPE_BOOLEAN: outputs[i] = "bool " + var_name; break;
-				case VisualShaderNode::PORT_TYPE_TRANSFORM: outputs[i] = "mat4 " + var_name; break;
+				case VisualShaderNode::PORT_TYPE_SCALAR:
+					outputs[i] = "float " + var_name;
+					break;
+				case VisualShaderNode::PORT_TYPE_VECTOR:
+					outputs[i] = "vec3 " + var_name;
+					break;
+				case VisualShaderNode::PORT_TYPE_BOOLEAN:
+					outputs[i] = "bool " + var_name;
+					break;
+				case VisualShaderNode::PORT_TYPE_TRANSFORM:
+					outputs[i] = "mat4 " + var_name;
+					break;
 				default: {
 				}
 			}
@@ -1293,10 +1301,18 @@ Error VisualShader::_write_node(Type type, StringBuilder &global_code, StringBui
 		for (int i = 0; i < output_count; i++) {
 			outputs[i] = "n_out" + itos(node) + "p" + itos(i);
 			switch (vsnode->get_output_port_type(i)) {
-				case VisualShaderNode::PORT_TYPE_SCALAR: code += String() + "\tfloat " + outputs[i] + ";\n"; break;
-				case VisualShaderNode::PORT_TYPE_VECTOR: code += String() + "\tvec3 " + outputs[i] + ";\n"; break;
-				case VisualShaderNode::PORT_TYPE_BOOLEAN: code += String() + "\tbool " + outputs[i] + ";\n"; break;
-				case VisualShaderNode::PORT_TYPE_TRANSFORM: code += String() + "\tmat4 " + outputs[i] + ";\n"; break;
+				case VisualShaderNode::PORT_TYPE_SCALAR:
+					code += String() + "\tfloat " + outputs[i] + ";\n";
+					break;
+				case VisualShaderNode::PORT_TYPE_VECTOR:
+					code += String() + "\tvec3 " + outputs[i] + ";\n";
+					break;
+				case VisualShaderNode::PORT_TYPE_BOOLEAN:
+					code += String() + "\tbool " + outputs[i] + ";\n";
+					break;
+				case VisualShaderNode::PORT_TYPE_TRANSFORM:
+					code += String() + "\tmat4 " + outputs[i] + ";\n";
+					break;
 				default: {
 				}
 			}

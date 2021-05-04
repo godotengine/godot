@@ -108,9 +108,13 @@ RES ResourceFormatPVR::load(const String &p_path, const String &p_original_path,
 	switch (flags & 0xFF) {
 
 		case 0x18:
-		case 0xC: format = (flags & PVR_HAS_ALPHA) ? Image::FORMAT_PVRTC2A : Image::FORMAT_PVRTC2; break;
+		case 0xC:
+			format = (flags & PVR_HAS_ALPHA) ? Image::FORMAT_PVRTC2A : Image::FORMAT_PVRTC2;
+			break;
 		case 0x19:
-		case 0xD: format = (flags & PVR_HAS_ALPHA) ? Image::FORMAT_PVRTC4A : Image::FORMAT_PVRTC4; break;
+		case 0xD:
+			format = (flags & PVR_HAS_ALPHA) ? Image::FORMAT_PVRTC4A : Image::FORMAT_PVRTC4;
+			break;
 		case 0x16:
 			format = Image::FORMAT_L8;
 			break;

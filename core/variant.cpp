@@ -1066,17 +1066,38 @@ void Variant::reference(const Variant &p_variant) {
 
 void Variant::zero() {
 	switch (type) {
-		case NIL: break;
-		case BOOL: this->_data._bool = false; break;
-		case INT: this->_data._int = 0; break;
-		case REAL: this->_data._real = 0; break;
-		case VECTOR2: *reinterpret_cast<Vector2 *>(this->_data._mem) = Vector2(); break;
-		case RECT2: *reinterpret_cast<Rect2 *>(this->_data._mem) = Rect2(); break;
-		case VECTOR3: *reinterpret_cast<Vector3 *>(this->_data._mem) = Vector3(); break;
-		case PLANE: *reinterpret_cast<Plane *>(this->_data._mem) = Plane(); break;
-		case QUAT: *reinterpret_cast<Quat *>(this->_data._mem) = Quat(); break;
-		case COLOR: *reinterpret_cast<Color *>(this->_data._mem) = Color(); break;
-		default: this->clear(); break;
+		case NIL:
+			break;
+		case BOOL:
+			this->_data._bool = false;
+			break;
+		case INT:
+			this->_data._int = 0;
+			break;
+		case REAL:
+			this->_data._real = 0;
+			break;
+		case VECTOR2:
+			*reinterpret_cast<Vector2 *>(this->_data._mem) = Vector2();
+			break;
+		case RECT2:
+			*reinterpret_cast<Rect2 *>(this->_data._mem) = Rect2();
+			break;
+		case VECTOR3:
+			*reinterpret_cast<Vector3 *>(this->_data._mem) = Vector3();
+			break;
+		case PLANE:
+			*reinterpret_cast<Plane *>(this->_data._mem) = Plane();
+			break;
+		case QUAT:
+			*reinterpret_cast<Quat *>(this->_data._mem) = Quat();
+			break;
+		case COLOR:
+			*reinterpret_cast<Color *>(this->_data._mem) = Color();
+			break;
+		default:
+			this->clear();
+			break;
 	}
 }
 
@@ -1185,11 +1206,16 @@ Variant::operator signed int() const {
 
 	switch (type) {
 
-		case NIL: return 0;
-		case BOOL: return _data._bool ? 1 : 0;
-		case INT: return _data._int;
-		case REAL: return _data._real;
-		case STRING: return operator String().to_int();
+		case NIL:
+			return 0;
+		case BOOL:
+			return _data._bool ? 1 : 0;
+		case INT:
+			return _data._int;
+		case REAL:
+			return _data._real;
+		case STRING:
+			return operator String().to_int();
 		default: {
 
 			return 0;
@@ -1200,11 +1226,16 @@ Variant::operator unsigned int() const {
 
 	switch (type) {
 
-		case NIL: return 0;
-		case BOOL: return _data._bool ? 1 : 0;
-		case INT: return _data._int;
-		case REAL: return _data._real;
-		case STRING: return operator String().to_int();
+		case NIL:
+			return 0;
+		case BOOL:
+			return _data._bool ? 1 : 0;
+		case INT:
+			return _data._int;
+		case REAL:
+			return _data._real;
+		case STRING:
+			return operator String().to_int();
 		default: {
 
 			return 0;
@@ -1216,11 +1247,16 @@ Variant::operator int64_t() const {
 
 	switch (type) {
 
-		case NIL: return 0;
-		case BOOL: return _data._bool ? 1 : 0;
-		case INT: return _data._int;
-		case REAL: return _data._real;
-		case STRING: return operator String().to_int64();
+		case NIL:
+			return 0;
+		case BOOL:
+			return _data._bool ? 1 : 0;
+		case INT:
+			return _data._int;
+		case REAL:
+			return _data._real;
+		case STRING:
+			return operator String().to_int64();
 		default: {
 
 			return 0;
@@ -1252,11 +1288,16 @@ Variant::operator uint64_t() const {
 
 	switch (type) {
 
-		case NIL: return 0;
-		case BOOL: return _data._bool ? 1 : 0;
-		case INT: return _data._int;
-		case REAL: return _data._real;
-		case STRING: return operator String().to_int();
+		case NIL:
+			return 0;
+		case BOOL:
+			return _data._bool ? 1 : 0;
+		case INT:
+			return _data._int;
+		case REAL:
+			return _data._real;
+		case STRING:
+			return operator String().to_int();
 		default: {
 
 			return 0;
@@ -1269,11 +1310,16 @@ Variant::operator signed long() const {
 
 	switch (type) {
 
-		case NIL: return 0;
-		case BOOL: return _data._bool ? 1 : 0;
-		case INT: return _data._int;
-		case REAL: return _data._real;
-		case STRING: return operator String().to_int();
+		case NIL:
+			return 0;
+		case BOOL:
+			return _data._bool ? 1 : 0;
+		case INT:
+			return _data._int;
+		case REAL:
+			return _data._real;
+		case STRING:
+			return operator String().to_int();
 		default: {
 
 			return 0;
@@ -1287,11 +1333,16 @@ Variant::operator unsigned long() const {
 
 	switch (type) {
 
-		case NIL: return 0;
-		case BOOL: return _data._bool ? 1 : 0;
-		case INT: return _data._int;
-		case REAL: return _data._real;
-		case STRING: return operator String().to_int();
+		case NIL:
+			return 0;
+		case BOOL:
+			return _data._bool ? 1 : 0;
+		case INT:
+			return _data._int;
+		case REAL:
+			return _data._real;
+		case STRING:
+			return operator String().to_int();
 		default: {
 
 			return 0;
@@ -1306,11 +1357,16 @@ Variant::operator signed short() const {
 
 	switch (type) {
 
-		case NIL: return 0;
-		case BOOL: return _data._bool ? 1 : 0;
-		case INT: return _data._int;
-		case REAL: return _data._real;
-		case STRING: return operator String().to_int();
+		case NIL:
+			return 0;
+		case BOOL:
+			return _data._bool ? 1 : 0;
+		case INT:
+			return _data._int;
+		case REAL:
+			return _data._real;
+		case STRING:
+			return operator String().to_int();
 		default: {
 
 			return 0;
@@ -1321,11 +1377,16 @@ Variant::operator unsigned short() const {
 
 	switch (type) {
 
-		case NIL: return 0;
-		case BOOL: return _data._bool ? 1 : 0;
-		case INT: return _data._int;
-		case REAL: return _data._real;
-		case STRING: return operator String().to_int();
+		case NIL:
+			return 0;
+		case BOOL:
+			return _data._bool ? 1 : 0;
+		case INT:
+			return _data._int;
+		case REAL:
+			return _data._real;
+		case STRING:
+			return operator String().to_int();
 		default: {
 
 			return 0;
@@ -1336,11 +1397,16 @@ Variant::operator signed char() const {
 
 	switch (type) {
 
-		case NIL: return 0;
-		case BOOL: return _data._bool ? 1 : 0;
-		case INT: return _data._int;
-		case REAL: return _data._real;
-		case STRING: return operator String().to_int();
+		case NIL:
+			return 0;
+		case BOOL:
+			return _data._bool ? 1 : 0;
+		case INT:
+			return _data._int;
+		case REAL:
+			return _data._real;
+		case STRING:
+			return operator String().to_int();
 		default: {
 
 			return 0;
@@ -1351,11 +1417,16 @@ Variant::operator unsigned char() const {
 
 	switch (type) {
 
-		case NIL: return 0;
-		case BOOL: return _data._bool ? 1 : 0;
-		case INT: return _data._int;
-		case REAL: return _data._real;
-		case STRING: return operator String().to_int();
+		case NIL:
+			return 0;
+		case BOOL:
+			return _data._bool ? 1 : 0;
+		case INT:
+			return _data._int;
+		case REAL:
+			return _data._real;
+		case STRING:
+			return operator String().to_int();
 		default: {
 
 			return 0;
@@ -1372,11 +1443,16 @@ Variant::operator float() const {
 
 	switch (type) {
 
-		case NIL: return 0;
-		case BOOL: return _data._bool ? 1.0 : 0.0;
-		case INT: return (float)_data._int;
-		case REAL: return _data._real;
-		case STRING: return operator String().to_double();
+		case NIL:
+			return 0;
+		case BOOL:
+			return _data._bool ? 1.0 : 0.0;
+		case INT:
+			return (float)_data._int;
+		case REAL:
+			return _data._real;
+		case STRING:
+			return operator String().to_double();
 		default: {
 
 			return 0;
@@ -1387,11 +1463,16 @@ Variant::operator double() const {
 
 	switch (type) {
 
-		case NIL: return 0;
-		case BOOL: return _data._bool ? 1.0 : 0.0;
-		case INT: return (double)_data._int;
-		case REAL: return _data._real;
-		case STRING: return operator String().to_double();
+		case NIL:
+			return 0;
+		case BOOL:
+			return _data._bool ? 1.0 : 0.0;
+		case INT:
+			return (double)_data._int;
+		case REAL:
+			return _data._real;
+		case STRING:
+			return operator String().to_double();
 		default: {
 
 			return 0;
@@ -1427,24 +1508,34 @@ Variant::operator String() const {
 String Variant::stringify(List<const void *> &stack) const {
 	switch (type) {
 
-		case NIL: return "Null";
-		case BOOL: return _data._bool ? "True" : "False";
-		case INT: return itos(_data._int);
-		case REAL: return rtos(_data._real);
-		case STRING: return *reinterpret_cast<const String *>(_data._mem);
-		case VECTOR2: return "(" + operator Vector2() + ")";
-		case RECT2: return "(" + operator Rect2() + ")";
+		case NIL:
+			return "Null";
+		case BOOL:
+			return _data._bool ? "True" : "False";
+		case INT:
+			return itos(_data._int);
+		case REAL:
+			return rtos(_data._real);
+		case STRING:
+			return *reinterpret_cast<const String *>(_data._mem);
+		case VECTOR2:
+			return "(" + operator Vector2() + ")";
+		case RECT2:
+			return "(" + operator Rect2() + ")";
 		case TRANSFORM2D: {
 
 			Transform2D mat32 = operator Transform2D();
 			return "(" + Variant(mat32.elements[0]).operator String() + ", " + Variant(mat32.elements[1]).operator String() + ", " + Variant(mat32.elements[2]).operator String() + ")";
 		} break;
-		case VECTOR3: return "(" + operator Vector3() + ")";
+		case VECTOR3:
+			return "(" + operator Vector3() + ")";
 		case PLANE:
 			return operator Plane();
 		//case QUAT:
-		case AABB: return operator ::AABB();
-		case QUAT: return "(" + operator Quat() + ")";
+		case AABB:
+			return operator ::AABB();
+		case QUAT:
+			return "(" + operator Quat() + ")";
 		case BASIS: {
 
 			Basis mat3 = operator Basis();
@@ -1470,9 +1561,12 @@ String Variant::stringify(List<const void *> &stack) const {
 
 			return mtx + ")";
 		} break;
-		case TRANSFORM: return operator Transform();
-		case NODE_PATH: return operator NodePath();
-		case COLOR: return String::num(operator Color().r) + "," + String::num(operator Color().g) + "," + String::num(operator Color().b) + "," + String::num(operator Color().a);
+		case TRANSFORM:
+			return operator Transform();
+		case NODE_PATH:
+			return operator NodePath();
+		case COLOR:
+			return String::num(operator Color().r) + "," + String::num(operator Color().g) + "," + String::num(operator Color().b) + "," + String::num(operator Color().a);
 		case DICTIONARY: {
 
 			const Dictionary &d = *reinterpret_cast<const Dictionary *>(_data._mem);
@@ -3243,9 +3337,12 @@ bool Variant::is_shared() const {
 
 	switch (type) {
 
-		case OBJECT: return true;
-		case ARRAY: return true;
-		case DICTIONARY: return true;
+		case OBJECT:
+			return true;
+		case ARRAY:
+			return true;
+		case DICTIONARY:
+			return true;
 		default: {
 		}
 	}

@@ -266,10 +266,14 @@ protected:
 public:
 	_FORCE_INLINE_ int get_channel_count() const {
 		switch (get_speaker_mode()) {
-			case SPEAKER_MODE_STEREO: return 1;
-			case SPEAKER_SURROUND_31: return 2;
-			case SPEAKER_SURROUND_51: return 3;
-			case SPEAKER_SURROUND_71: return 4;
+			case SPEAKER_MODE_STEREO:
+				return 1;
+			case SPEAKER_SURROUND_31:
+				return 2;
+			case SPEAKER_SURROUND_51:
+				return 3;
+			case SPEAKER_SURROUND_71:
+				return 4;
 		}
 		ERR_FAIL_V(1);
 	}

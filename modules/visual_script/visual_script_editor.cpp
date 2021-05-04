@@ -355,74 +355,182 @@ static Color _color_from_type(Variant::Type p_type, bool dark_theme = true) {
 	Color color;
 	if (dark_theme)
 		switch (p_type) {
-			case Variant::NIL: color = Color(0.41, 0.93, 0.74); break;
+			case Variant::NIL:
+				color = Color(0.41, 0.93, 0.74);
+				break;
 
-			case Variant::BOOL: color = Color(0.55, 0.65, 0.94); break;
-			case Variant::INT: color = Color(0.49, 0.78, 0.94); break;
-			case Variant::REAL: color = Color(0.38, 0.85, 0.96); break;
-			case Variant::STRING: color = Color(0.42, 0.65, 0.93); break;
+			case Variant::BOOL:
+				color = Color(0.55, 0.65, 0.94);
+				break;
+			case Variant::INT:
+				color = Color(0.49, 0.78, 0.94);
+				break;
+			case Variant::REAL:
+				color = Color(0.38, 0.85, 0.96);
+				break;
+			case Variant::STRING:
+				color = Color(0.42, 0.65, 0.93);
+				break;
 
-			case Variant::VECTOR2: color = Color(0.74, 0.57, 0.95); break;
-			case Variant::RECT2: color = Color(0.95, 0.57, 0.65); break;
-			case Variant::VECTOR3: color = Color(0.84, 0.49, 0.93); break;
-			case Variant::TRANSFORM2D: color = Color(0.77, 0.93, 0.41); break;
-			case Variant::PLANE: color = Color(0.97, 0.44, 0.44); break;
-			case Variant::QUAT: color = Color(0.93, 0.41, 0.64); break;
-			case Variant::AABB: color = Color(0.93, 0.47, 0.57); break;
-			case Variant::BASIS: color = Color(0.89, 0.93, 0.41); break;
-			case Variant::TRANSFORM: color = Color(0.96, 0.66, 0.43); break;
+			case Variant::VECTOR2:
+				color = Color(0.74, 0.57, 0.95);
+				break;
+			case Variant::RECT2:
+				color = Color(0.95, 0.57, 0.65);
+				break;
+			case Variant::VECTOR3:
+				color = Color(0.84, 0.49, 0.93);
+				break;
+			case Variant::TRANSFORM2D:
+				color = Color(0.77, 0.93, 0.41);
+				break;
+			case Variant::PLANE:
+				color = Color(0.97, 0.44, 0.44);
+				break;
+			case Variant::QUAT:
+				color = Color(0.93, 0.41, 0.64);
+				break;
+			case Variant::AABB:
+				color = Color(0.93, 0.47, 0.57);
+				break;
+			case Variant::BASIS:
+				color = Color(0.89, 0.93, 0.41);
+				break;
+			case Variant::TRANSFORM:
+				color = Color(0.96, 0.66, 0.43);
+				break;
 
-			case Variant::COLOR: color = Color(0.62, 1.0, 0.44); break;
-			case Variant::NODE_PATH: color = Color(0.41, 0.58, 0.93); break;
-			case Variant::_RID: color = Color(0.41, 0.93, 0.6); break;
-			case Variant::OBJECT: color = Color(0.47, 0.95, 0.91); break;
-			case Variant::DICTIONARY: color = Color(0.47, 0.93, 0.69); break;
+			case Variant::COLOR:
+				color = Color(0.62, 1.0, 0.44);
+				break;
+			case Variant::NODE_PATH:
+				color = Color(0.41, 0.58, 0.93);
+				break;
+			case Variant::_RID:
+				color = Color(0.41, 0.93, 0.6);
+				break;
+			case Variant::OBJECT:
+				color = Color(0.47, 0.95, 0.91);
+				break;
+			case Variant::DICTIONARY:
+				color = Color(0.47, 0.93, 0.69);
+				break;
 
-			case Variant::ARRAY: color = Color(0.88, 0.88, 0.88); break;
-			case Variant::POOL_BYTE_ARRAY: color = Color(0.67, 0.96, 0.78); break;
-			case Variant::POOL_INT_ARRAY: color = Color(0.69, 0.86, 0.96); break;
-			case Variant::POOL_REAL_ARRAY: color = Color(0.59, 0.91, 0.97); break;
-			case Variant::POOL_STRING_ARRAY: color = Color(0.62, 0.77, 0.95); break;
-			case Variant::POOL_VECTOR2_ARRAY: color = Color(0.82, 0.7, 0.96); break;
-			case Variant::POOL_VECTOR3_ARRAY: color = Color(0.87, 0.61, 0.95); break;
-			case Variant::POOL_COLOR_ARRAY: color = Color(0.91, 1.0, 0.59); break;
+			case Variant::ARRAY:
+				color = Color(0.88, 0.88, 0.88);
+				break;
+			case Variant::POOL_BYTE_ARRAY:
+				color = Color(0.67, 0.96, 0.78);
+				break;
+			case Variant::POOL_INT_ARRAY:
+				color = Color(0.69, 0.86, 0.96);
+				break;
+			case Variant::POOL_REAL_ARRAY:
+				color = Color(0.59, 0.91, 0.97);
+				break;
+			case Variant::POOL_STRING_ARRAY:
+				color = Color(0.62, 0.77, 0.95);
+				break;
+			case Variant::POOL_VECTOR2_ARRAY:
+				color = Color(0.82, 0.7, 0.96);
+				break;
+			case Variant::POOL_VECTOR3_ARRAY:
+				color = Color(0.87, 0.61, 0.95);
+				break;
+			case Variant::POOL_COLOR_ARRAY:
+				color = Color(0.91, 1.0, 0.59);
+				break;
 
 			default:
 				color.set_hsv(p_type / float(Variant::VARIANT_MAX), 0.7, 0.7);
 		}
 	else
 		switch (p_type) {
-			case Variant::NIL: color = Color(0.15, 0.89, 0.63); break;
+			case Variant::NIL:
+				color = Color(0.15, 0.89, 0.63);
+				break;
 
-			case Variant::BOOL: color = Color(0.43, 0.56, 0.92); break;
-			case Variant::INT: color = Color(0.31, 0.7, 0.91); break;
-			case Variant::REAL: color = Color(0.15, 0.8, 0.94); break;
-			case Variant::STRING: color = Color(0.27, 0.56, 0.91); break;
+			case Variant::BOOL:
+				color = Color(0.43, 0.56, 0.92);
+				break;
+			case Variant::INT:
+				color = Color(0.31, 0.7, 0.91);
+				break;
+			case Variant::REAL:
+				color = Color(0.15, 0.8, 0.94);
+				break;
+			case Variant::STRING:
+				color = Color(0.27, 0.56, 0.91);
+				break;
 
-			case Variant::VECTOR2: color = Color(0.68, 0.46, 0.93); break;
-			case Variant::RECT2: color = Color(0.93, 0.46, 0.56); break;
-			case Variant::VECTOR3: color = Color(0.86, 0.42, 0.93); break;
-			case Variant::TRANSFORM2D: color = Color(0.59, 0.81, 0.1); break;
-			case Variant::PLANE: color = Color(0.97, 0.44, 0.44); break;
-			case Variant::QUAT: color = Color(0.93, 0.41, 0.64); break;
-			case Variant::AABB: color = Color(0.93, 0.47, 0.57); break;
-			case Variant::BASIS: color = Color(0.7, 0.73, 0.1); break;
-			case Variant::TRANSFORM: color = Color(0.96, 0.56, 0.28); break;
+			case Variant::VECTOR2:
+				color = Color(0.68, 0.46, 0.93);
+				break;
+			case Variant::RECT2:
+				color = Color(0.93, 0.46, 0.56);
+				break;
+			case Variant::VECTOR3:
+				color = Color(0.86, 0.42, 0.93);
+				break;
+			case Variant::TRANSFORM2D:
+				color = Color(0.59, 0.81, 0.1);
+				break;
+			case Variant::PLANE:
+				color = Color(0.97, 0.44, 0.44);
+				break;
+			case Variant::QUAT:
+				color = Color(0.93, 0.41, 0.64);
+				break;
+			case Variant::AABB:
+				color = Color(0.93, 0.47, 0.57);
+				break;
+			case Variant::BASIS:
+				color = Color(0.7, 0.73, 0.1);
+				break;
+			case Variant::TRANSFORM:
+				color = Color(0.96, 0.56, 0.28);
+				break;
 
-			case Variant::COLOR: color = Color(0.24, 0.75, 0.0); break;
-			case Variant::NODE_PATH: color = Color(0.41, 0.58, 0.93); break;
-			case Variant::_RID: color = Color(0.17, 0.9, 0.45); break;
-			case Variant::OBJECT: color = Color(0.07, 0.84, 0.76); break;
-			case Variant::DICTIONARY: color = Color(0.34, 0.91, 0.62); break;
+			case Variant::COLOR:
+				color = Color(0.24, 0.75, 0.0);
+				break;
+			case Variant::NODE_PATH:
+				color = Color(0.41, 0.58, 0.93);
+				break;
+			case Variant::_RID:
+				color = Color(0.17, 0.9, 0.45);
+				break;
+			case Variant::OBJECT:
+				color = Color(0.07, 0.84, 0.76);
+				break;
+			case Variant::DICTIONARY:
+				color = Color(0.34, 0.91, 0.62);
+				break;
 
-			case Variant::ARRAY: color = Color(0.45, 0.45, 0.45); break;
-			case Variant::POOL_BYTE_ARRAY: color = Color(0.38, 0.92, 0.6); break;
-			case Variant::POOL_INT_ARRAY: color = Color(0.38, 0.73, 0.92); break;
-			case Variant::POOL_REAL_ARRAY: color = Color(0.25, 0.83, 0.95); break;
-			case Variant::POOL_STRING_ARRAY: color = Color(0.38, 0.62, 0.92); break;
-			case Variant::POOL_VECTOR2_ARRAY: color = Color(0.62, 0.36, 0.92); break;
-			case Variant::POOL_VECTOR3_ARRAY: color = Color(0.79, 0.35, 0.92); break;
-			case Variant::POOL_COLOR_ARRAY: color = Color(0.57, 0.73, 0.0); break;
+			case Variant::ARRAY:
+				color = Color(0.45, 0.45, 0.45);
+				break;
+			case Variant::POOL_BYTE_ARRAY:
+				color = Color(0.38, 0.92, 0.6);
+				break;
+			case Variant::POOL_INT_ARRAY:
+				color = Color(0.38, 0.73, 0.92);
+				break;
+			case Variant::POOL_REAL_ARRAY:
+				color = Color(0.25, 0.83, 0.95);
+				break;
+			case Variant::POOL_STRING_ARRAY:
+				color = Color(0.38, 0.62, 0.92);
+				break;
+			case Variant::POOL_VECTOR2_ARRAY:
+				color = Color(0.62, 0.36, 0.92);
+				break;
+			case Variant::POOL_VECTOR3_ARRAY:
+				color = Color(0.79, 0.35, 0.92);
+				break;
+			case Variant::POOL_COLOR_ARRAY:
+				color = Color(0.57, 0.73, 0.0);
+				break;
 
 			default:
 				color.set_hsv(p_type / float(Variant::VARIANT_MAX), 0.3, 0.3);

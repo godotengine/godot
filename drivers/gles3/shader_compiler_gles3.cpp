@@ -54,39 +54,68 @@ static int _get_datatype_size(SL::DataType p_type) {
 
 	switch (p_type) {
 
-		case SL::TYPE_VOID: return 0;
-		case SL::TYPE_BOOL: return 4;
-		case SL::TYPE_BVEC2: return 8;
-		case SL::TYPE_BVEC3: return 12;
-		case SL::TYPE_BVEC4: return 16;
-		case SL::TYPE_INT: return 4;
-		case SL::TYPE_IVEC2: return 8;
-		case SL::TYPE_IVEC3: return 12;
-		case SL::TYPE_IVEC4: return 16;
-		case SL::TYPE_UINT: return 4;
-		case SL::TYPE_UVEC2: return 8;
-		case SL::TYPE_UVEC3: return 12;
-		case SL::TYPE_UVEC4: return 16;
-		case SL::TYPE_FLOAT: return 4;
-		case SL::TYPE_VEC2: return 8;
-		case SL::TYPE_VEC3: return 12;
-		case SL::TYPE_VEC4: return 16;
+		case SL::TYPE_VOID:
+			return 0;
+		case SL::TYPE_BOOL:
+			return 4;
+		case SL::TYPE_BVEC2:
+			return 8;
+		case SL::TYPE_BVEC3:
+			return 12;
+		case SL::TYPE_BVEC4:
+			return 16;
+		case SL::TYPE_INT:
+			return 4;
+		case SL::TYPE_IVEC2:
+			return 8;
+		case SL::TYPE_IVEC3:
+			return 12;
+		case SL::TYPE_IVEC4:
+			return 16;
+		case SL::TYPE_UINT:
+			return 4;
+		case SL::TYPE_UVEC2:
+			return 8;
+		case SL::TYPE_UVEC3:
+			return 12;
+		case SL::TYPE_UVEC4:
+			return 16;
+		case SL::TYPE_FLOAT:
+			return 4;
+		case SL::TYPE_VEC2:
+			return 8;
+		case SL::TYPE_VEC3:
+			return 12;
+		case SL::TYPE_VEC4:
+			return 16;
 		case SL::TYPE_MAT2:
 			return 32; //4 * 4 + 4 * 4
 		case SL::TYPE_MAT3:
 			return 48; // 4 * 4 + 4 * 4 + 4 * 4
-		case SL::TYPE_MAT4: return 64;
-		case SL::TYPE_SAMPLER2D: return 16;
-		case SL::TYPE_ISAMPLER2D: return 16;
-		case SL::TYPE_USAMPLER2D: return 16;
-		case SL::TYPE_SAMPLER2DARRAY: return 16;
-		case SL::TYPE_ISAMPLER2DARRAY: return 16;
-		case SL::TYPE_USAMPLER2DARRAY: return 16;
-		case SL::TYPE_SAMPLER3D: return 16;
-		case SL::TYPE_ISAMPLER3D: return 16;
-		case SL::TYPE_USAMPLER3D: return 16;
-		case SL::TYPE_SAMPLERCUBE: return 16;
-		case SL::TYPE_SAMPLEREXT: return 16;
+		case SL::TYPE_MAT4:
+			return 64;
+		case SL::TYPE_SAMPLER2D:
+			return 16;
+		case SL::TYPE_ISAMPLER2D:
+			return 16;
+		case SL::TYPE_USAMPLER2D:
+			return 16;
+		case SL::TYPE_SAMPLER2DARRAY:
+			return 16;
+		case SL::TYPE_ISAMPLER2DARRAY:
+			return 16;
+		case SL::TYPE_USAMPLER2DARRAY:
+			return 16;
+		case SL::TYPE_SAMPLER3D:
+			return 16;
+		case SL::TYPE_ISAMPLER3D:
+			return 16;
+		case SL::TYPE_USAMPLER3D:
+			return 16;
+		case SL::TYPE_SAMPLERCUBE:
+			return 16;
+		case SL::TYPE_SAMPLEREXT:
+			return 16;
 	}
 
 	ERR_FAIL_V(0);
@@ -96,37 +125,68 @@ static int _get_datatype_alignment(SL::DataType p_type) {
 
 	switch (p_type) {
 
-		case SL::TYPE_VOID: return 0;
-		case SL::TYPE_BOOL: return 4;
-		case SL::TYPE_BVEC2: return 8;
-		case SL::TYPE_BVEC3: return 16;
-		case SL::TYPE_BVEC4: return 16;
-		case SL::TYPE_INT: return 4;
-		case SL::TYPE_IVEC2: return 8;
-		case SL::TYPE_IVEC3: return 16;
-		case SL::TYPE_IVEC4: return 16;
-		case SL::TYPE_UINT: return 4;
-		case SL::TYPE_UVEC2: return 8;
-		case SL::TYPE_UVEC3: return 16;
-		case SL::TYPE_UVEC4: return 16;
-		case SL::TYPE_FLOAT: return 4;
-		case SL::TYPE_VEC2: return 8;
-		case SL::TYPE_VEC3: return 16;
-		case SL::TYPE_VEC4: return 16;
-		case SL::TYPE_MAT2: return 16;
-		case SL::TYPE_MAT3: return 16;
-		case SL::TYPE_MAT4: return 16;
-		case SL::TYPE_SAMPLER2D: return 16;
-		case SL::TYPE_ISAMPLER2D: return 16;
-		case SL::TYPE_USAMPLER2D: return 16;
-		case SL::TYPE_SAMPLER2DARRAY: return 16;
-		case SL::TYPE_ISAMPLER2DARRAY: return 16;
-		case SL::TYPE_USAMPLER2DARRAY: return 16;
-		case SL::TYPE_SAMPLER3D: return 16;
-		case SL::TYPE_ISAMPLER3D: return 16;
-		case SL::TYPE_USAMPLER3D: return 16;
-		case SL::TYPE_SAMPLERCUBE: return 16;
-		case SL::TYPE_SAMPLEREXT: return 16;
+		case SL::TYPE_VOID:
+			return 0;
+		case SL::TYPE_BOOL:
+			return 4;
+		case SL::TYPE_BVEC2:
+			return 8;
+		case SL::TYPE_BVEC3:
+			return 16;
+		case SL::TYPE_BVEC4:
+			return 16;
+		case SL::TYPE_INT:
+			return 4;
+		case SL::TYPE_IVEC2:
+			return 8;
+		case SL::TYPE_IVEC3:
+			return 16;
+		case SL::TYPE_IVEC4:
+			return 16;
+		case SL::TYPE_UINT:
+			return 4;
+		case SL::TYPE_UVEC2:
+			return 8;
+		case SL::TYPE_UVEC3:
+			return 16;
+		case SL::TYPE_UVEC4:
+			return 16;
+		case SL::TYPE_FLOAT:
+			return 4;
+		case SL::TYPE_VEC2:
+			return 8;
+		case SL::TYPE_VEC3:
+			return 16;
+		case SL::TYPE_VEC4:
+			return 16;
+		case SL::TYPE_MAT2:
+			return 16;
+		case SL::TYPE_MAT3:
+			return 16;
+		case SL::TYPE_MAT4:
+			return 16;
+		case SL::TYPE_SAMPLER2D:
+			return 16;
+		case SL::TYPE_ISAMPLER2D:
+			return 16;
+		case SL::TYPE_USAMPLER2D:
+			return 16;
+		case SL::TYPE_SAMPLER2DARRAY:
+			return 16;
+		case SL::TYPE_ISAMPLER2DARRAY:
+			return 16;
+		case SL::TYPE_USAMPLER2DARRAY:
+			return 16;
+		case SL::TYPE_SAMPLER3D:
+			return 16;
+		case SL::TYPE_ISAMPLER3D:
+			return 16;
+		case SL::TYPE_USAMPLER3D:
+			return 16;
+		case SL::TYPE_SAMPLERCUBE:
+			return 16;
+		case SL::TYPE_SAMPLEREXT:
+			return 16;
 	}
 
 	ERR_FAIL_V(0);
@@ -134,8 +194,10 @@ static int _get_datatype_alignment(SL::DataType p_type) {
 static String _interpstr(SL::DataInterpolation p_interp) {
 
 	switch (p_interp) {
-		case SL::INTERPOLATION_FLAT: return "flat ";
-		case SL::INTERPOLATION_SMOOTH: return "";
+		case SL::INTERPOLATION_FLAT:
+			return "flat ";
+		case SL::INTERPOLATION_SMOOTH:
+			return "";
 	}
 	return "";
 }
@@ -143,10 +205,14 @@ static String _interpstr(SL::DataInterpolation p_interp) {
 static String _prestr(SL::DataPrecision p_pres) {
 
 	switch (p_pres) {
-		case SL::PRECISION_LOWP: return "lowp ";
-		case SL::PRECISION_MEDIUMP: return "mediump ";
-		case SL::PRECISION_HIGHP: return "highp ";
-		case SL::PRECISION_DEFAULT: return "";
+		case SL::PRECISION_LOWP:
+			return "lowp ";
+		case SL::PRECISION_MEDIUMP:
+			return "mediump ";
+		case SL::PRECISION_HIGHP:
+			return "highp ";
+		case SL::PRECISION_DEFAULT:
+			return "";
 	}
 	return "";
 }
@@ -154,9 +220,12 @@ static String _prestr(SL::DataPrecision p_pres) {
 static String _qualstr(SL::ArgumentQualifier p_qual) {
 
 	switch (p_qual) {
-		case SL::ARGUMENT_QUALIFIER_IN: return "";
-		case SL::ARGUMENT_QUALIFIER_OUT: return "out ";
-		case SL::ARGUMENT_QUALIFIER_INOUT: return "inout ";
+		case SL::ARGUMENT_QUALIFIER_IN:
+			return "";
+		case SL::ARGUMENT_QUALIFIER_OUT:
+			return "out ";
+		case SL::ARGUMENT_QUALIFIER_INOUT:
+			return "inout ";
 	}
 	return "";
 }
@@ -184,7 +253,8 @@ static String f2sp0(float p_float) {
 static String get_constant_text(SL::DataType p_type, const Vector<SL::ConstantNode::Value> &p_values) {
 
 	switch (p_type) {
-		case SL::TYPE_BOOL: return p_values[0].boolean ? "true" : "false";
+		case SL::TYPE_BOOL:
+			return p_values[0].boolean ? "true" : "false";
 		case SL::TYPE_BVEC2:
 		case SL::TYPE_BVEC3:
 		case SL::TYPE_BVEC4: {
@@ -200,7 +270,8 @@ static String get_constant_text(SL::DataType p_type, const Vector<SL::ConstantNo
 			return text;
 		}
 
-		case SL::TYPE_INT: return itos(p_values[0].sint);
+		case SL::TYPE_INT:
+			return itos(p_values[0].sint);
 		case SL::TYPE_IVEC2:
 		case SL::TYPE_IVEC3:
 		case SL::TYPE_IVEC4: {
@@ -216,7 +287,8 @@ static String get_constant_text(SL::DataType p_type, const Vector<SL::ConstantNo
 			return text;
 
 		} break;
-		case SL::TYPE_UINT: return itos(p_values[0].uint) + "u";
+		case SL::TYPE_UINT:
+			return itos(p_values[0].uint) + "u";
 		case SL::TYPE_UVEC2:
 		case SL::TYPE_UVEC3:
 		case SL::TYPE_UVEC4: {
@@ -231,7 +303,8 @@ static String get_constant_text(SL::DataType p_type, const Vector<SL::ConstantNo
 			text += ")";
 			return text;
 		} break;
-		case SL::TYPE_FLOAT: return f2sp0(p_values[0].real);
+		case SL::TYPE_FLOAT:
+			return f2sp0(p_values[0].real);
 		case SL::TYPE_VEC2:
 		case SL::TYPE_VEC3:
 		case SL::TYPE_VEC4: {
@@ -262,7 +335,8 @@ static String get_constant_text(SL::DataType p_type, const Vector<SL::ConstantNo
 			return text;
 
 		} break;
-		default: ERR_FAIL_V(String());
+		default:
+			ERR_FAIL_V(String());
 	}
 }
 

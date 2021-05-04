@@ -94,18 +94,35 @@ void CanvasItemMaterial::_update_shader() {
 
 	String code = "shader_type canvas_item;\nrender_mode ";
 	switch (blend_mode) {
-		case BLEND_MODE_MIX: code += "blend_mix"; break;
-		case BLEND_MODE_ADD: code += "blend_add"; break;
-		case BLEND_MODE_SUB: code += "blend_sub"; break;
-		case BLEND_MODE_MUL: code += "blend_mul"; break;
-		case BLEND_MODE_PREMULT_ALPHA: code += "blend_premul_alpha"; break;
-		case BLEND_MODE_DISABLED: code += "blend_disabled"; break;
+		case BLEND_MODE_MIX:
+			code += "blend_mix";
+			break;
+		case BLEND_MODE_ADD:
+			code += "blend_add";
+			break;
+		case BLEND_MODE_SUB:
+			code += "blend_sub";
+			break;
+		case BLEND_MODE_MUL:
+			code += "blend_mul";
+			break;
+		case BLEND_MODE_PREMULT_ALPHA:
+			code += "blend_premul_alpha";
+			break;
+		case BLEND_MODE_DISABLED:
+			code += "blend_disabled";
+			break;
 	}
 
 	switch (light_mode) {
-		case LIGHT_MODE_NORMAL: break;
-		case LIGHT_MODE_UNSHADED: code += ",unshaded"; break;
-		case LIGHT_MODE_LIGHT_ONLY: code += ",light_only"; break;
+		case LIGHT_MODE_NORMAL:
+			break;
+		case LIGHT_MODE_UNSHADED:
+			code += ",unshaded";
+			break;
+		case LIGHT_MODE_LIGHT_ONLY:
+			code += ",light_only";
+			break;
 	}
 
 	code += ";\n";

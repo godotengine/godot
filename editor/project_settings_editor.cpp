@@ -769,12 +769,23 @@ void ProjectSettingsEditor::_update_actions() {
 			if (mb.is_valid()) {
 				String str = _get_device_string(mb->get_device()) + ", ";
 				switch (mb->get_button_index()) {
-					case BUTTON_LEFT: str += TTR("Left Button."); break;
-					case BUTTON_RIGHT: str += TTR("Right Button."); break;
-					case BUTTON_MIDDLE: str += TTR("Middle Button."); break;
-					case BUTTON_WHEEL_UP: str += TTR("Wheel Up."); break;
-					case BUTTON_WHEEL_DOWN: str += TTR("Wheel Down."); break;
-					default: str += TTR("Button") + " " + itos(mb->get_button_index()) + ".";
+					case BUTTON_LEFT:
+						str += TTR("Left Button.");
+						break;
+					case BUTTON_RIGHT:
+						str += TTR("Right Button.");
+						break;
+					case BUTTON_MIDDLE:
+						str += TTR("Middle Button.");
+						break;
+					case BUTTON_WHEEL_UP:
+						str += TTR("Wheel Up.");
+						break;
+					case BUTTON_WHEEL_DOWN:
+						str += TTR("Wheel Down.");
+						break;
+					default:
+						str += TTR("Button") + " " + itos(mb->get_button_index()) + ".";
 				}
 
 				action2->set_text(0, str);

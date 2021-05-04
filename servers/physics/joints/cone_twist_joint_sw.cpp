@@ -336,7 +336,8 @@ void ConeTwistJointSW::set_param(PhysicsServer::ConeTwistJointParam p_param, rea
 
 			m_relaxationFactor = p_value;
 		} break;
-		case PhysicsServer::CONE_TWIST_MAX: break; // Can't happen, but silences warning
+		case PhysicsServer::CONE_TWIST_MAX:
+			break; // Can't happen, but silences warning
 	}
 }
 
@@ -363,7 +364,8 @@ real_t ConeTwistJointSW::get_param(PhysicsServer::ConeTwistJointParam p_param) c
 
 			return m_relaxationFactor;
 		} break;
-		case PhysicsServer::CONE_TWIST_MAX: break; // Can't happen, but silences warning
+		case PhysicsServer::CONE_TWIST_MAX:
+			break; // Can't happen, but silences warning
 	}
 
 	return 0;

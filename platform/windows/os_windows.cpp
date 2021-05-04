@@ -2466,12 +2466,18 @@ void OS_Windows::request_attention() {
 
 void *OS_Windows::get_native_handle(int p_handle_type) {
 	switch (p_handle_type) {
-		case APPLICATION_HANDLE: return hInstance;
-		case DISPLAY_HANDLE: return NULL; // Do we have a value to return here?
-		case WINDOW_HANDLE: return hWnd;
-		case WINDOW_VIEW: return gl_context->get_hdc();
-		case OPENGL_CONTEXT: return gl_context->get_hglrc();
-		default: return NULL;
+		case APPLICATION_HANDLE:
+			return hInstance;
+		case DISPLAY_HANDLE:
+			return NULL; // Do we have a value to return here?
+		case WINDOW_HANDLE:
+			return hWnd;
+		case WINDOW_VIEW:
+			return gl_context->get_hdc();
+		case OPENGL_CONTEXT:
+			return gl_context->get_hglrc();
+		default:
+			return NULL;
 	}
 }
 

@@ -1800,12 +1800,18 @@ void OS_X11::request_attention() {
 
 void *OS_X11::get_native_handle(int p_handle_type) {
 	switch (p_handle_type) {
-		case APPLICATION_HANDLE: return NULL; // Do we have a value to return here?
-		case DISPLAY_HANDLE: return (void *)x11_display;
-		case WINDOW_HANDLE: return (void *)x11_window;
-		case WINDOW_VIEW: return NULL; // Do we have a value to return here?
-		case OPENGL_CONTEXT: return context_gl->get_glx_context();
-		default: return NULL;
+		case APPLICATION_HANDLE:
+			return NULL; // Do we have a value to return here?
+		case DISPLAY_HANDLE:
+			return (void *)x11_display;
+		case WINDOW_HANDLE:
+			return (void *)x11_window;
+		case WINDOW_VIEW:
+			return NULL; // Do we have a value to return here?
+		case OPENGL_CONTEXT:
+			return context_gl->get_glx_context();
+		default:
+			return NULL;
 	}
 }
 

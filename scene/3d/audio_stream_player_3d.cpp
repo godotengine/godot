@@ -99,10 +99,18 @@ void AudioStreamPlayer3D::_calc_output_vol(const Vector3 &source_dir, real_t tig
 	unsigned int speaker_count; // only main speakers (no LFE)
 	switch (AudioServer::get_singleton()->get_speaker_mode()) {
 		default: //fallthrough
-		case AudioServer::SPEAKER_MODE_STEREO: speaker_count = 2; break;
-		case AudioServer::SPEAKER_SURROUND_31: speaker_count = 3; break;
-		case AudioServer::SPEAKER_SURROUND_51: speaker_count = 5; break;
-		case AudioServer::SPEAKER_SURROUND_71: speaker_count = 7; break;
+		case AudioServer::SPEAKER_MODE_STEREO:
+			speaker_count = 2;
+			break;
+		case AudioServer::SPEAKER_SURROUND_31:
+			speaker_count = 3;
+			break;
+		case AudioServer::SPEAKER_SURROUND_51:
+			speaker_count = 5;
+			break;
+		case AudioServer::SPEAKER_SURROUND_71:
+			speaker_count = 7;
+			break;
 	}
 
 	Spcap spcap(speaker_count, speaker_directions); //TODO: should only be created/recreated once the speaker mode / speaker positions changes
@@ -311,7 +319,8 @@ float AudioStreamPlayer3D::_get_attenuation_db(float p_distance) const {
 		case ATTENUATION_LOGARITHMIC: {
 			att = -20 * Math::log(p_distance / unit_size + CMP_EPSILON);
 		} break;
-		case ATTENUATION_DISABLED: break;
+		case ATTENUATION_DISABLED:
+			break;
 		default: {
 			ERR_PRINT("Unknown attenuation type");
 			break;

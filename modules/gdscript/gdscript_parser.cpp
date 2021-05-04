@@ -910,10 +910,18 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
 			e.is_op = true;
 
 			switch (tokenizer->get_token()) {
-				case GDScriptTokenizer::TK_OP_ADD: e.op = OperatorNode::OP_POS; break;
-				case GDScriptTokenizer::TK_OP_SUB: e.op = OperatorNode::OP_NEG; break;
-				case GDScriptTokenizer::TK_OP_NOT: e.op = OperatorNode::OP_NOT; break;
-				case GDScriptTokenizer::TK_OP_BIT_INVERT: e.op = OperatorNode::OP_BIT_INVERT; break;
+				case GDScriptTokenizer::TK_OP_ADD:
+					e.op = OperatorNode::OP_POS;
+					break;
+				case GDScriptTokenizer::TK_OP_SUB:
+					e.op = OperatorNode::OP_NEG;
+					break;
+				case GDScriptTokenizer::TK_OP_NOT:
+					e.op = OperatorNode::OP_NOT;
+					break;
+				case GDScriptTokenizer::TK_OP_BIT_INVERT:
+					e.op = OperatorNode::OP_BIT_INVERT;
+					break;
 				default: {
 				}
 			}
@@ -1329,25 +1337,55 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
 
 		switch (tokenizer->get_token()) { //see operator
 
-			case GDScriptTokenizer::TK_OP_IN: op = OperatorNode::OP_IN; break;
-			case GDScriptTokenizer::TK_OP_EQUAL: op = OperatorNode::OP_EQUAL; break;
-			case GDScriptTokenizer::TK_OP_NOT_EQUAL: op = OperatorNode::OP_NOT_EQUAL; break;
-			case GDScriptTokenizer::TK_OP_LESS: op = OperatorNode::OP_LESS; break;
-			case GDScriptTokenizer::TK_OP_LESS_EQUAL: op = OperatorNode::OP_LESS_EQUAL; break;
-			case GDScriptTokenizer::TK_OP_GREATER: op = OperatorNode::OP_GREATER; break;
-			case GDScriptTokenizer::TK_OP_GREATER_EQUAL: op = OperatorNode::OP_GREATER_EQUAL; break;
-			case GDScriptTokenizer::TK_OP_AND: op = OperatorNode::OP_AND; break;
-			case GDScriptTokenizer::TK_OP_OR: op = OperatorNode::OP_OR; break;
-			case GDScriptTokenizer::TK_OP_ADD: op = OperatorNode::OP_ADD; break;
-			case GDScriptTokenizer::TK_OP_SUB: op = OperatorNode::OP_SUB; break;
-			case GDScriptTokenizer::TK_OP_MUL: op = OperatorNode::OP_MUL; break;
-			case GDScriptTokenizer::TK_OP_DIV: op = OperatorNode::OP_DIV; break;
+			case GDScriptTokenizer::TK_OP_IN:
+				op = OperatorNode::OP_IN;
+				break;
+			case GDScriptTokenizer::TK_OP_EQUAL:
+				op = OperatorNode::OP_EQUAL;
+				break;
+			case GDScriptTokenizer::TK_OP_NOT_EQUAL:
+				op = OperatorNode::OP_NOT_EQUAL;
+				break;
+			case GDScriptTokenizer::TK_OP_LESS:
+				op = OperatorNode::OP_LESS;
+				break;
+			case GDScriptTokenizer::TK_OP_LESS_EQUAL:
+				op = OperatorNode::OP_LESS_EQUAL;
+				break;
+			case GDScriptTokenizer::TK_OP_GREATER:
+				op = OperatorNode::OP_GREATER;
+				break;
+			case GDScriptTokenizer::TK_OP_GREATER_EQUAL:
+				op = OperatorNode::OP_GREATER_EQUAL;
+				break;
+			case GDScriptTokenizer::TK_OP_AND:
+				op = OperatorNode::OP_AND;
+				break;
+			case GDScriptTokenizer::TK_OP_OR:
+				op = OperatorNode::OP_OR;
+				break;
+			case GDScriptTokenizer::TK_OP_ADD:
+				op = OperatorNode::OP_ADD;
+				break;
+			case GDScriptTokenizer::TK_OP_SUB:
+				op = OperatorNode::OP_SUB;
+				break;
+			case GDScriptTokenizer::TK_OP_MUL:
+				op = OperatorNode::OP_MUL;
+				break;
+			case GDScriptTokenizer::TK_OP_DIV:
+				op = OperatorNode::OP_DIV;
+				break;
 			case GDScriptTokenizer::TK_OP_MOD:
 				op = OperatorNode::OP_MOD;
 				break;
 			//case GDScriptTokenizer::TK_OP_NEG: op=OperatorNode::OP_NEG ; break;
-			case GDScriptTokenizer::TK_OP_SHIFT_LEFT: op = OperatorNode::OP_SHIFT_LEFT; break;
-			case GDScriptTokenizer::TK_OP_SHIFT_RIGHT: op = OperatorNode::OP_SHIFT_RIGHT; break;
+			case GDScriptTokenizer::TK_OP_SHIFT_LEFT:
+				op = OperatorNode::OP_SHIFT_LEFT;
+				break;
+			case GDScriptTokenizer::TK_OP_SHIFT_RIGHT:
+				op = OperatorNode::OP_SHIFT_RIGHT;
+				break;
 			case GDScriptTokenizer::TK_OP_ASSIGN: {
 				_VALIDATE_ASSIGN op = OperatorNode::OP_ASSIGN;
 
@@ -1364,23 +1402,57 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
 				}
 
 			} break;
-			case GDScriptTokenizer::TK_OP_ASSIGN_ADD: _VALIDATE_ASSIGN op = OperatorNode::OP_ASSIGN_ADD; break;
-			case GDScriptTokenizer::TK_OP_ASSIGN_SUB: _VALIDATE_ASSIGN op = OperatorNode::OP_ASSIGN_SUB; break;
-			case GDScriptTokenizer::TK_OP_ASSIGN_MUL: _VALIDATE_ASSIGN op = OperatorNode::OP_ASSIGN_MUL; break;
-			case GDScriptTokenizer::TK_OP_ASSIGN_DIV: _VALIDATE_ASSIGN op = OperatorNode::OP_ASSIGN_DIV; break;
-			case GDScriptTokenizer::TK_OP_ASSIGN_MOD: _VALIDATE_ASSIGN op = OperatorNode::OP_ASSIGN_MOD; break;
-			case GDScriptTokenizer::TK_OP_ASSIGN_SHIFT_LEFT: _VALIDATE_ASSIGN op = OperatorNode::OP_ASSIGN_SHIFT_LEFT; break;
-			case GDScriptTokenizer::TK_OP_ASSIGN_SHIFT_RIGHT: _VALIDATE_ASSIGN op = OperatorNode::OP_ASSIGN_SHIFT_RIGHT; break;
-			case GDScriptTokenizer::TK_OP_ASSIGN_BIT_AND: _VALIDATE_ASSIGN op = OperatorNode::OP_ASSIGN_BIT_AND; break;
-			case GDScriptTokenizer::TK_OP_ASSIGN_BIT_OR: _VALIDATE_ASSIGN op = OperatorNode::OP_ASSIGN_BIT_OR; break;
-			case GDScriptTokenizer::TK_OP_ASSIGN_BIT_XOR: _VALIDATE_ASSIGN op = OperatorNode::OP_ASSIGN_BIT_XOR; break;
-			case GDScriptTokenizer::TK_OP_BIT_AND: op = OperatorNode::OP_BIT_AND; break;
-			case GDScriptTokenizer::TK_OP_BIT_OR: op = OperatorNode::OP_BIT_OR; break;
-			case GDScriptTokenizer::TK_OP_BIT_XOR: op = OperatorNode::OP_BIT_XOR; break;
-			case GDScriptTokenizer::TK_PR_IS: op = OperatorNode::OP_IS; break;
-			case GDScriptTokenizer::TK_CF_IF: op = OperatorNode::OP_TERNARY_IF; break;
-			case GDScriptTokenizer::TK_CF_ELSE: op = OperatorNode::OP_TERNARY_ELSE; break;
-			default: valid = false; break;
+			case GDScriptTokenizer::TK_OP_ASSIGN_ADD:
+				_VALIDATE_ASSIGN op = OperatorNode::OP_ASSIGN_ADD;
+				break;
+			case GDScriptTokenizer::TK_OP_ASSIGN_SUB:
+				_VALIDATE_ASSIGN op = OperatorNode::OP_ASSIGN_SUB;
+				break;
+			case GDScriptTokenizer::TK_OP_ASSIGN_MUL:
+				_VALIDATE_ASSIGN op = OperatorNode::OP_ASSIGN_MUL;
+				break;
+			case GDScriptTokenizer::TK_OP_ASSIGN_DIV:
+				_VALIDATE_ASSIGN op = OperatorNode::OP_ASSIGN_DIV;
+				break;
+			case GDScriptTokenizer::TK_OP_ASSIGN_MOD:
+				_VALIDATE_ASSIGN op = OperatorNode::OP_ASSIGN_MOD;
+				break;
+			case GDScriptTokenizer::TK_OP_ASSIGN_SHIFT_LEFT:
+				_VALIDATE_ASSIGN op = OperatorNode::OP_ASSIGN_SHIFT_LEFT;
+				break;
+			case GDScriptTokenizer::TK_OP_ASSIGN_SHIFT_RIGHT:
+				_VALIDATE_ASSIGN op = OperatorNode::OP_ASSIGN_SHIFT_RIGHT;
+				break;
+			case GDScriptTokenizer::TK_OP_ASSIGN_BIT_AND:
+				_VALIDATE_ASSIGN op = OperatorNode::OP_ASSIGN_BIT_AND;
+				break;
+			case GDScriptTokenizer::TK_OP_ASSIGN_BIT_OR:
+				_VALIDATE_ASSIGN op = OperatorNode::OP_ASSIGN_BIT_OR;
+				break;
+			case GDScriptTokenizer::TK_OP_ASSIGN_BIT_XOR:
+				_VALIDATE_ASSIGN op = OperatorNode::OP_ASSIGN_BIT_XOR;
+				break;
+			case GDScriptTokenizer::TK_OP_BIT_AND:
+				op = OperatorNode::OP_BIT_AND;
+				break;
+			case GDScriptTokenizer::TK_OP_BIT_OR:
+				op = OperatorNode::OP_BIT_OR;
+				break;
+			case GDScriptTokenizer::TK_OP_BIT_XOR:
+				op = OperatorNode::OP_BIT_XOR;
+				break;
+			case GDScriptTokenizer::TK_PR_IS:
+				op = OperatorNode::OP_IS;
+				break;
+			case GDScriptTokenizer::TK_CF_IF:
+				op = OperatorNode::OP_TERNARY_IF;
+				break;
+			case GDScriptTokenizer::TK_CF_ELSE:
+				op = OperatorNode::OP_TERNARY_ELSE;
+				break;
+			default:
+				valid = false;
+				break;
 		}
 
 		if (valid) {
@@ -1433,36 +1505,74 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
 					unary = true;
 					break;
 
-				case OperatorNode::OP_MUL: priority = 2; break;
-				case OperatorNode::OP_DIV: priority = 2; break;
-				case OperatorNode::OP_MOD: priority = 2; break;
+				case OperatorNode::OP_MUL:
+					priority = 2;
+					break;
+				case OperatorNode::OP_DIV:
+					priority = 2;
+					break;
+				case OperatorNode::OP_MOD:
+					priority = 2;
+					break;
 
-				case OperatorNode::OP_ADD: priority = 3; break;
-				case OperatorNode::OP_SUB: priority = 3; break;
+				case OperatorNode::OP_ADD:
+					priority = 3;
+					break;
+				case OperatorNode::OP_SUB:
+					priority = 3;
+					break;
 
-				case OperatorNode::OP_SHIFT_LEFT: priority = 4; break;
-				case OperatorNode::OP_SHIFT_RIGHT: priority = 4; break;
+				case OperatorNode::OP_SHIFT_LEFT:
+					priority = 4;
+					break;
+				case OperatorNode::OP_SHIFT_RIGHT:
+					priority = 4;
+					break;
 
-				case OperatorNode::OP_BIT_AND: priority = 5; break;
-				case OperatorNode::OP_BIT_XOR: priority = 6; break;
-				case OperatorNode::OP_BIT_OR: priority = 7; break;
+				case OperatorNode::OP_BIT_AND:
+					priority = 5;
+					break;
+				case OperatorNode::OP_BIT_XOR:
+					priority = 6;
+					break;
+				case OperatorNode::OP_BIT_OR:
+					priority = 7;
+					break;
 
-				case OperatorNode::OP_LESS: priority = 8; break;
-				case OperatorNode::OP_LESS_EQUAL: priority = 8; break;
-				case OperatorNode::OP_GREATER: priority = 8; break;
-				case OperatorNode::OP_GREATER_EQUAL: priority = 8; break;
+				case OperatorNode::OP_LESS:
+					priority = 8;
+					break;
+				case OperatorNode::OP_LESS_EQUAL:
+					priority = 8;
+					break;
+				case OperatorNode::OP_GREATER:
+					priority = 8;
+					break;
+				case OperatorNode::OP_GREATER_EQUAL:
+					priority = 8;
+					break;
 
-				case OperatorNode::OP_EQUAL: priority = 8; break;
-				case OperatorNode::OP_NOT_EQUAL: priority = 8; break;
+				case OperatorNode::OP_EQUAL:
+					priority = 8;
+					break;
+				case OperatorNode::OP_NOT_EQUAL:
+					priority = 8;
+					break;
 
-				case OperatorNode::OP_IN: priority = 10; break;
+				case OperatorNode::OP_IN:
+					priority = 10;
+					break;
 
 				case OperatorNode::OP_NOT:
 					priority = 11;
 					unary = true;
 					break;
-				case OperatorNode::OP_AND: priority = 12; break;
-				case OperatorNode::OP_OR: priority = 13; break;
+				case OperatorNode::OP_AND:
+					priority = 12;
+					break;
+				case OperatorNode::OP_OR:
+					priority = 13;
+					break;
 
 				case OperatorNode::OP_TERNARY_IF:
 					priority = 14;
@@ -1475,17 +1585,39 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
 					// Rigth-to-left should be false in this case, otherwise it would always error.
 					break;
 
-				case OperatorNode::OP_ASSIGN: priority = 15; break;
-				case OperatorNode::OP_ASSIGN_ADD: priority = 15; break;
-				case OperatorNode::OP_ASSIGN_SUB: priority = 15; break;
-				case OperatorNode::OP_ASSIGN_MUL: priority = 15; break;
-				case OperatorNode::OP_ASSIGN_DIV: priority = 15; break;
-				case OperatorNode::OP_ASSIGN_MOD: priority = 15; break;
-				case OperatorNode::OP_ASSIGN_SHIFT_LEFT: priority = 15; break;
-				case OperatorNode::OP_ASSIGN_SHIFT_RIGHT: priority = 15; break;
-				case OperatorNode::OP_ASSIGN_BIT_AND: priority = 15; break;
-				case OperatorNode::OP_ASSIGN_BIT_OR: priority = 15; break;
-				case OperatorNode::OP_ASSIGN_BIT_XOR: priority = 15; break;
+				case OperatorNode::OP_ASSIGN:
+					priority = 15;
+					break;
+				case OperatorNode::OP_ASSIGN_ADD:
+					priority = 15;
+					break;
+				case OperatorNode::OP_ASSIGN_SUB:
+					priority = 15;
+					break;
+				case OperatorNode::OP_ASSIGN_MUL:
+					priority = 15;
+					break;
+				case OperatorNode::OP_ASSIGN_DIV:
+					priority = 15;
+					break;
+				case OperatorNode::OP_ASSIGN_MOD:
+					priority = 15;
+					break;
+				case OperatorNode::OP_ASSIGN_SHIFT_LEFT:
+					priority = 15;
+					break;
+				case OperatorNode::OP_ASSIGN_SHIFT_RIGHT:
+					priority = 15;
+					break;
+				case OperatorNode::OP_ASSIGN_BIT_AND:
+					priority = 15;
+					break;
+				case OperatorNode::OP_ASSIGN_BIT_OR:
+					priority = 15;
+					break;
+				case OperatorNode::OP_ASSIGN_BIT_XOR:
+					priority = 15;
+					break;
 
 				default: {
 					_set_error("GDScriptParser bug, invalid operator in expression: " + itos(expression[i].op));
@@ -3191,9 +3323,15 @@ void GDScriptParser::_parse_block(BlockNode *p_block, bool p_static) {
 
 								ConstantNode *cn = alloc_node<ConstantNode>();
 								switch (args.size()) {
-									case 1: cn->value = (int)constants[0]; break;
-									case 2: cn->value = Vector2(constants[0], constants[1]); break;
-									case 3: cn->value = Vector3(constants[0], constants[1], constants[2]); break;
+									case 1:
+										cn->value = (int)constants[0];
+										break;
+									case 2:
+										cn->value = Vector2(constants[0], constants[1]);
+										break;
+									case 3:
+										cn->value = Vector3(constants[0], constants[1], constants[2]);
+										break;
 								}
 								cn->datatype = _type_from_variant(cn->value);
 								container = cn;
@@ -3205,9 +3343,15 @@ void GDScriptParser::_parse_block(BlockNode *p_block, bool p_static) {
 								on->arguments.push_back(tn);
 
 								switch (args.size()) {
-									case 1: tn->vtype = Variant::INT; break;
-									case 2: tn->vtype = Variant::VECTOR2; break;
-									case 3: tn->vtype = Variant::VECTOR3; break;
+									case 1:
+										tn->vtype = Variant::INT;
+										break;
+									case 2:
+										tn->vtype = Variant::VECTOR2;
+										break;
+									case 3:
+										tn->vtype = Variant::VECTOR3;
+										break;
 								}
 
 								for (int i = 0; i < args.size(); i++) {

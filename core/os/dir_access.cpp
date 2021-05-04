@@ -39,18 +39,24 @@ String DirAccess::_get_root_path() const {
 
 	switch (_access_type) {
 
-		case ACCESS_RESOURCES: return ProjectSettings::get_singleton()->get_resource_path();
-		case ACCESS_USERDATA: return OS::get_singleton()->get_user_data_dir();
-		default: return "";
+		case ACCESS_RESOURCES:
+			return ProjectSettings::get_singleton()->get_resource_path();
+		case ACCESS_USERDATA:
+			return OS::get_singleton()->get_user_data_dir();
+		default:
+			return "";
 	}
 }
 String DirAccess::_get_root_string() const {
 
 	switch (_access_type) {
 
-		case ACCESS_RESOURCES: return "res://";
-		case ACCESS_USERDATA: return "user://";
-		default: return "";
+		case ACCESS_RESOURCES:
+			return "res://";
+		case ACCESS_USERDATA:
+			return "user://";
+		default:
+			return "";
 	}
 }
 
@@ -224,7 +230,8 @@ String DirAccess::fix_path(String p_path) const {
 
 			return p_path;
 		} break;
-		case ACCESS_MAX: break; // Can't happen, but silences warning
+		case ACCESS_MAX:
+			break; // Can't happen, but silences warning
 	}
 
 	return p_path;

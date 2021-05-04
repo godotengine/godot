@@ -180,9 +180,15 @@ CSGBrush *CSGShape::_get_brush() {
 				CSGBrushOperation bop;
 
 				switch (child->get_operation()) {
-					case CSGShape::OPERATION_UNION: bop.merge_brushes(CSGBrushOperation::OPERATION_UNION, *n, *nn2, *nn, snap); break;
-					case CSGShape::OPERATION_INTERSECTION: bop.merge_brushes(CSGBrushOperation::OPERATION_INTERSECTION, *n, *nn2, *nn, snap); break;
-					case CSGShape::OPERATION_SUBTRACTION: bop.merge_brushes(CSGBrushOperation::OPERATION_SUBSTRACTION, *n, *nn2, *nn, snap); break;
+					case CSGShape::OPERATION_UNION:
+						bop.merge_brushes(CSGBrushOperation::OPERATION_UNION, *n, *nn2, *nn, snap);
+						break;
+					case CSGShape::OPERATION_INTERSECTION:
+						bop.merge_brushes(CSGBrushOperation::OPERATION_INTERSECTION, *n, *nn2, *nn, snap);
+						break;
+					case CSGShape::OPERATION_SUBTRACTION:
+						bop.merge_brushes(CSGBrushOperation::OPERATION_SUBSTRACTION, *n, *nn2, *nn, snap);
+						break;
 				}
 				memdelete(n);
 				memdelete(nn2);
@@ -1850,8 +1856,12 @@ CSGBrush *CSGPolygon::_build_brush() {
 	int face_count = 0;
 
 	switch (mode) {
-		case MODE_DEPTH: face_count = triangles.size() * 2 / 3 + (final_polygon.size()) * 2; break;
-		case MODE_SPIN: face_count = (spin_degrees < 360 ? triangles.size() * 2 / 3 : 0) + (final_polygon.size()) * 2 * spin_sides; break;
+		case MODE_DEPTH:
+			face_count = triangles.size() * 2 / 3 + (final_polygon.size()) * 2;
+			break;
+		case MODE_SPIN:
+			face_count = (spin_degrees < 360 ? triangles.size() * 2 / 3 : 0) + (final_polygon.size()) * 2 * spin_sides;
+			break;
 		case MODE_PATH: {
 			float bl = curve->get_baked_length();
 			int splits = MAX(2, Math::ceil(bl / path_interval));

@@ -741,10 +741,14 @@ const Map<StringName, MultiplayerAPI::RPCMode>::Element *Node::get_node_rset_mod
 
 bool Node::can_process_notification(int p_what) const {
 	switch (p_what) {
-		case NOTIFICATION_PHYSICS_PROCESS: return data.physics_process;
-		case NOTIFICATION_PROCESS: return data.idle_process;
-		case NOTIFICATION_INTERNAL_PROCESS: return data.idle_process_internal;
-		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: return data.physics_process_internal;
+		case NOTIFICATION_PHYSICS_PROCESS:
+			return data.physics_process;
+		case NOTIFICATION_PROCESS:
+			return data.idle_process;
+		case NOTIFICATION_INTERNAL_PROCESS:
+			return data.idle_process_internal;
+		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS:
+			return data.physics_process_internal;
 	}
 
 	return true;
@@ -2992,10 +2996,14 @@ void Node::_bind_methods() {
 
 String Node::_get_name_num_separator() {
 	switch (ProjectSettings::get_singleton()->get("node/name_num_separator").operator int()) {
-		case 0: return "";
-		case 1: return " ";
-		case 2: return "_";
-		case 3: return "-";
+		case 0:
+			return "";
+		case 1:
+			return " ";
+		case 2:
+			return "_";
+		case 3:
+			return "-";
 	}
 	return " ";
 }

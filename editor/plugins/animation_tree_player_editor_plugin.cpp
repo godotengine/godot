@@ -527,26 +527,49 @@ void AnimationTreePlayerEditor::_draw_node(const StringName &p_node) {
 			switch (type) {
 
 				case AnimationTreePlayer::NODE_TIMESCALE:
-				case AnimationTreePlayer::NODE_TIMESEEK: text = "in"; break;
-				case AnimationTreePlayer::NODE_OUTPUT: text = "out"; break;
-				case AnimationTreePlayer::NODE_ANIMATION: break;
-				case AnimationTreePlayer::NODE_ONESHOT: text = (i == 0 ? "in" : "add"); break;
+				case AnimationTreePlayer::NODE_TIMESEEK:
+					text = "in";
+					break;
+				case AnimationTreePlayer::NODE_OUTPUT:
+					text = "out";
+					break;
+				case AnimationTreePlayer::NODE_ANIMATION:
+					break;
+				case AnimationTreePlayer::NODE_ONESHOT:
+					text = (i == 0 ? "in" : "add");
+					break;
 				case AnimationTreePlayer::NODE_BLEND2:
-				case AnimationTreePlayer::NODE_MIX: text = (i == 0 ? "a" : "b"); break;
+				case AnimationTreePlayer::NODE_MIX:
+					text = (i == 0 ? "a" : "b");
+					break;
 				case AnimationTreePlayer::NODE_BLEND3:
 					switch (i) {
-						case 0: text = "b-"; break;
-						case 1: text = "a"; break;
-						case 2: text = "b+"; break;
+						case 0:
+							text = "b-";
+							break;
+						case 1:
+							text = "a";
+							break;
+						case 2:
+							text = "b+";
+							break;
 					}
 					break;
 
 				case AnimationTreePlayer::NODE_BLEND4:
 					switch (i) {
-						case 0: text = "a0"; break;
-						case 1: text = "b0"; break;
-						case 2: text = "a1"; break;
-						case 3: text = "b1"; break;
+						case 0:
+							text = "a0";
+							break;
+						case 1:
+							text = "b0";
+							break;
+						case 2:
+							text = "a1";
+							break;
+						case 3:
+							text = "b1";
+							break;
 					}
 					break;
 
@@ -597,7 +620,8 @@ void AnimationTreePlayerEditor::_draw_node(const StringName &p_node) {
 
 			font->draw_halign(ci, ofs + ascofs, HALIGN_CENTER, w, "edit...", font_color_title);
 		} break;
-		default: editable = false;
+		default:
+			editable = false;
 	}
 
 	if (editable) {

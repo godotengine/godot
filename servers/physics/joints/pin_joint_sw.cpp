@@ -132,18 +132,27 @@ void PinJointSW::solve(real_t p_step) {
 void PinJointSW::set_param(PhysicsServer::PinJointParam p_param, real_t p_value) {
 
 	switch (p_param) {
-		case PhysicsServer::PIN_JOINT_BIAS: m_tau = p_value; break;
-		case PhysicsServer::PIN_JOINT_DAMPING: m_damping = p_value; break;
-		case PhysicsServer::PIN_JOINT_IMPULSE_CLAMP: m_impulseClamp = p_value; break;
+		case PhysicsServer::PIN_JOINT_BIAS:
+			m_tau = p_value;
+			break;
+		case PhysicsServer::PIN_JOINT_DAMPING:
+			m_damping = p_value;
+			break;
+		case PhysicsServer::PIN_JOINT_IMPULSE_CLAMP:
+			m_impulseClamp = p_value;
+			break;
 	}
 }
 
 real_t PinJointSW::get_param(PhysicsServer::PinJointParam p_param) const {
 
 	switch (p_param) {
-		case PhysicsServer::PIN_JOINT_BIAS: return m_tau;
-		case PhysicsServer::PIN_JOINT_DAMPING: return m_damping;
-		case PhysicsServer::PIN_JOINT_IMPULSE_CLAMP: return m_impulseClamp;
+		case PhysicsServer::PIN_JOINT_BIAS:
+			return m_tau;
+		case PhysicsServer::PIN_JOINT_DAMPING:
+			return m_damping;
+		case PhysicsServer::PIN_JOINT_IMPULSE_CLAMP:
+			return m_impulseClamp;
 	}
 
 	return 0;

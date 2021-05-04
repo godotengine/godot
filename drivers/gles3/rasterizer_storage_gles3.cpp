@@ -2495,8 +2495,12 @@ void RasterizerStorageGLES3::shader_get_param_list(RID p_shader, List<PropertyIn
 		ShaderLanguage::ShaderNode::Uniform &u = shader->uniforms[E->get()];
 		pi.name = E->get();
 		switch (u.type) {
-			case ShaderLanguage::TYPE_VOID: pi.type = Variant::NIL; break;
-			case ShaderLanguage::TYPE_BOOL: pi.type = Variant::BOOL; break;
+			case ShaderLanguage::TYPE_VOID:
+				pi.type = Variant::NIL;
+				break;
+			case ShaderLanguage::TYPE_BOOL:
+				pi.type = Variant::BOOL;
+				break;
 			case ShaderLanguage::TYPE_BVEC2:
 				pi.type = Variant::INT;
 				pi.hint = PROPERTY_HINT_FLAGS;
@@ -2538,8 +2542,12 @@ void RasterizerStorageGLES3::shader_get_param_list(RID p_shader, List<PropertyIn
 				}
 
 			} break;
-			case ShaderLanguage::TYPE_VEC2: pi.type = Variant::VECTOR2; break;
-			case ShaderLanguage::TYPE_VEC3: pi.type = Variant::VECTOR3; break;
+			case ShaderLanguage::TYPE_VEC2:
+				pi.type = Variant::VECTOR2;
+				break;
+			case ShaderLanguage::TYPE_VEC3:
+				pi.type = Variant::VECTOR3;
+				break;
 			case ShaderLanguage::TYPE_VEC4: {
 				if (u.hint == ShaderLanguage::ShaderNode::Uniform::HINT_COLOR) {
 					pi.type = Variant::COLOR;
@@ -2547,9 +2555,15 @@ void RasterizerStorageGLES3::shader_get_param_list(RID p_shader, List<PropertyIn
 					pi.type = Variant::PLANE;
 				}
 			} break;
-			case ShaderLanguage::TYPE_MAT2: pi.type = Variant::TRANSFORM2D; break;
-			case ShaderLanguage::TYPE_MAT3: pi.type = Variant::BASIS; break;
-			case ShaderLanguage::TYPE_MAT4: pi.type = Variant::TRANSFORM; break;
+			case ShaderLanguage::TYPE_MAT2:
+				pi.type = Variant::TRANSFORM2D;
+				break;
+			case ShaderLanguage::TYPE_MAT3:
+				pi.type = Variant::BASIS;
+				break;
+			case ShaderLanguage::TYPE_MAT4:
+				pi.type = Variant::TRANSFORM;
+				break;
 			case ShaderLanguage::TYPE_SAMPLER2D:
 			case ShaderLanguage::TYPE_SAMPLEREXT:
 			case ShaderLanguage::TYPE_ISAMPLER2D:

@@ -826,8 +826,12 @@ void Tween::set_active(bool p_active) {
 
 	// Depending on physics or idle, set processing
 	switch (tween_process_mode) {
-		case TWEEN_PROCESS_IDLE: set_process_internal(p_active); break;
-		case TWEEN_PROCESS_PHYSICS: set_physics_process_internal(p_active); break;
+		case TWEEN_PROCESS_IDLE:
+			set_process_internal(p_active);
+			break;
+		case TWEEN_PROCESS_PHYSICS:
+			set_physics_process_internal(p_active);
+			break;
 	}
 }
 

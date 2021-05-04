@@ -6379,7 +6379,8 @@ void CanvasItemEditorViewport::_notification(int p_what) {
 			disconnect("mouse_exited", this, "_on_mouse_exit");
 		} break;
 
-		default: break;
+		default:
+			break;
 	}
 }
 

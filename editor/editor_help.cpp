@@ -1493,7 +1493,8 @@ void EditorHelp::_notification(int p_what) {
 				_class_desc_resized();
 			}
 		} break;
-		default: break;
+		default:
+			break;
 	}
 }
 
@@ -1637,7 +1638,8 @@ void EditorHelpBit::_notification(int p_what) {
 
 			rich_text->add_color_override("selection_color", get_color("accent_color", "Editor") * Color(1, 1, 1, 0.4));
 		} break;
-		default: break;
+		default:
+			break;
 	}
 }
 

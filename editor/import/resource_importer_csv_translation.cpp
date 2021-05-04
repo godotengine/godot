@@ -83,9 +83,15 @@ Error ResourceImporterCSVTranslation::import(const String &p_source_file, const 
 
 	String delimiter;
 	switch ((int)p_options["delimiter"]) {
-		case 0: delimiter = ","; break;
-		case 1: delimiter = ";"; break;
-		case 2: delimiter = "\t"; break;
+		case 0:
+			delimiter = ",";
+			break;
+		case 1:
+			delimiter = ";";
+			break;
+		case 2:
+			delimiter = "\t";
+			break;
 	}
 
 	FileAccessRef f = FileAccess::open(p_source_file, FileAccess::READ);

@@ -67,10 +67,14 @@ String JSON::_print_var(const Variant &p_var, const String &p_indent, int p_cur_
 
 	switch (p_var.get_type()) {
 
-		case Variant::NIL: return "null";
-		case Variant::BOOL: return p_var.operator bool() ? "true" : "false";
-		case Variant::INT: return itos(p_var);
-		case Variant::REAL: return rtos(p_var);
+		case Variant::NIL:
+			return "null";
+		case Variant::BOOL:
+			return p_var.operator bool() ? "true" : "false";
+		case Variant::INT:
+			return itos(p_var);
+		case Variant::REAL:
+			return rtos(p_var);
 		case Variant::POOL_INT_ARRAY:
 		case Variant::POOL_REAL_ARRAY:
 		case Variant::POOL_STRING_ARRAY:
@@ -114,7 +118,8 @@ String JSON::_print_var(const Variant &p_var, const String &p_indent, int p_cur_
 			s += end_statement + _make_indent(p_indent, p_cur_indent) + "}";
 			return s;
 		};
-		default: return "\"" + String(p_var).json_escape() + "\"";
+		default:
+			return "\"" + String(p_var).json_escape() + "\"";
 	}
 }
 
@@ -197,11 +202,21 @@ Error JSON::_get_token(const CharType *p_str, int &index, int p_len, Token &r_to
 
 						switch (next) {
 
-							case 'b': res = 8; break;
-							case 't': res = 9; break;
-							case 'n': res = 10; break;
-							case 'f': res = 12; break;
-							case 'r': res = 13; break;
+							case 'b':
+								res = 8;
+								break;
+							case 't':
+								res = 9;
+								break;
+							case 'n':
+								res = 10;
+								break;
+							case 'f':
+								res = 12;
+								break;
+							case 'r':
+								res = 13;
+								break;
 							case 'u': {
 								//hexnumbarh - oct is deprecated
 

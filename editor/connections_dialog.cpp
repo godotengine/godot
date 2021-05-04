@@ -173,19 +173,45 @@ void ConnectDialog::_add_bind() {
 	Variant value;
 
 	switch (vt) {
-		case Variant::BOOL: value = false; break;
-		case Variant::INT: value = 0; break;
-		case Variant::REAL: value = 0.0; break;
-		case Variant::STRING: value = ""; break;
-		case Variant::VECTOR2: value = Vector2(); break;
-		case Variant::RECT2: value = Rect2(); break;
-		case Variant::VECTOR3: value = Vector3(); break;
-		case Variant::PLANE: value = Plane(); break;
-		case Variant::QUAT: value = Quat(); break;
-		case Variant::AABB: value = AABB(); break;
-		case Variant::BASIS: value = Basis(); break;
-		case Variant::TRANSFORM: value = Transform(); break;
-		case Variant::COLOR: value = Color(); break;
+		case Variant::BOOL:
+			value = false;
+			break;
+		case Variant::INT:
+			value = 0;
+			break;
+		case Variant::REAL:
+			value = 0.0;
+			break;
+		case Variant::STRING:
+			value = "";
+			break;
+		case Variant::VECTOR2:
+			value = Vector2();
+			break;
+		case Variant::RECT2:
+			value = Rect2();
+			break;
+		case Variant::VECTOR3:
+			value = Vector3();
+			break;
+		case Variant::PLANE:
+			value = Plane();
+			break;
+		case Variant::QUAT:
+			value = Quat();
+			break;
+		case Variant::AABB:
+			value = AABB();
+			break;
+		case Variant::BASIS:
+			value = Basis();
+			break;
+		case Variant::TRANSFORM:
+			value = Transform();
+			break;
+		case Variant::COLOR:
+			value = Color();
+			break;
 		default: {
 			ERR_FAIL();
 		} break;

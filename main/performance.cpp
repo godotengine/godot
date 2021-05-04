@@ -133,37 +133,68 @@ String Performance::get_monitor_name(Monitor p_monitor) const {
 float Performance::get_monitor(Monitor p_monitor) const {
 
 	switch (p_monitor) {
-		case TIME_FPS: return Engine::get_singleton()->get_frames_per_second();
-		case TIME_PROCESS: return _process_time;
-		case TIME_PHYSICS_PROCESS: return _physics_process_time;
-		case MEMORY_STATIC: return Memory::get_mem_usage();
-		case MEMORY_DYNAMIC: return MemoryPool::total_memory;
-		case MEMORY_STATIC_MAX: return Memory::get_mem_max_usage();
-		case MEMORY_DYNAMIC_MAX: return MemoryPool::max_memory;
-		case MEMORY_MESSAGE_BUFFER_MAX: return MessageQueue::get_singleton()->get_max_buffer_usage();
-		case OBJECT_COUNT: return ObjectDB::get_object_count();
-		case OBJECT_RESOURCE_COUNT: return ResourceCache::get_cached_resource_count();
-		case OBJECT_NODE_COUNT: return _get_node_count();
-		case OBJECT_ORPHAN_NODE_COUNT: return Node::orphan_node_count;
-		case RENDER_OBJECTS_IN_FRAME: return VS::get_singleton()->get_render_info(VS::INFO_OBJECTS_IN_FRAME);
-		case RENDER_VERTICES_IN_FRAME: return VS::get_singleton()->get_render_info(VS::INFO_VERTICES_IN_FRAME);
-		case RENDER_MATERIAL_CHANGES_IN_FRAME: return VS::get_singleton()->get_render_info(VS::INFO_MATERIAL_CHANGES_IN_FRAME);
-		case RENDER_SHADER_CHANGES_IN_FRAME: return VS::get_singleton()->get_render_info(VS::INFO_SHADER_CHANGES_IN_FRAME);
-		case RENDER_SURFACE_CHANGES_IN_FRAME: return VS::get_singleton()->get_render_info(VS::INFO_SURFACE_CHANGES_IN_FRAME);
-		case RENDER_DRAW_CALLS_IN_FRAME: return VS::get_singleton()->get_render_info(VS::INFO_DRAW_CALLS_IN_FRAME);
-		case RENDER_2D_ITEMS_IN_FRAME: return VS::get_singleton()->get_render_info(VS::INFO_2D_ITEMS_IN_FRAME);
-		case RENDER_2D_DRAW_CALLS_IN_FRAME: return VS::get_singleton()->get_render_info(VS::INFO_2D_DRAW_CALLS_IN_FRAME);
-		case RENDER_VIDEO_MEM_USED: return VS::get_singleton()->get_render_info(VS::INFO_VIDEO_MEM_USED);
-		case RENDER_TEXTURE_MEM_USED: return VS::get_singleton()->get_render_info(VS::INFO_TEXTURE_MEM_USED);
-		case RENDER_VERTEX_MEM_USED: return VS::get_singleton()->get_render_info(VS::INFO_VERTEX_MEM_USED);
-		case RENDER_USAGE_VIDEO_MEM_TOTAL: return VS::get_singleton()->get_render_info(VS::INFO_USAGE_VIDEO_MEM_TOTAL);
-		case PHYSICS_2D_ACTIVE_OBJECTS: return Physics2DServer::get_singleton()->get_process_info(Physics2DServer::INFO_ACTIVE_OBJECTS);
-		case PHYSICS_2D_COLLISION_PAIRS: return Physics2DServer::get_singleton()->get_process_info(Physics2DServer::INFO_COLLISION_PAIRS);
-		case PHYSICS_2D_ISLAND_COUNT: return Physics2DServer::get_singleton()->get_process_info(Physics2DServer::INFO_ISLAND_COUNT);
-		case PHYSICS_3D_ACTIVE_OBJECTS: return PhysicsServer::get_singleton()->get_process_info(PhysicsServer::INFO_ACTIVE_OBJECTS);
-		case PHYSICS_3D_COLLISION_PAIRS: return PhysicsServer::get_singleton()->get_process_info(PhysicsServer::INFO_COLLISION_PAIRS);
-		case PHYSICS_3D_ISLAND_COUNT: return PhysicsServer::get_singleton()->get_process_info(PhysicsServer::INFO_ISLAND_COUNT);
-		case AUDIO_OUTPUT_LATENCY: return AudioServer::get_singleton()->get_output_latency();
+		case TIME_FPS:
+			return Engine::get_singleton()->get_frames_per_second();
+		case TIME_PROCESS:
+			return _process_time;
+		case TIME_PHYSICS_PROCESS:
+			return _physics_process_time;
+		case MEMORY_STATIC:
+			return Memory::get_mem_usage();
+		case MEMORY_DYNAMIC:
+			return MemoryPool::total_memory;
+		case MEMORY_STATIC_MAX:
+			return Memory::get_mem_max_usage();
+		case MEMORY_DYNAMIC_MAX:
+			return MemoryPool::max_memory;
+		case MEMORY_MESSAGE_BUFFER_MAX:
+			return MessageQueue::get_singleton()->get_max_buffer_usage();
+		case OBJECT_COUNT:
+			return ObjectDB::get_object_count();
+		case OBJECT_RESOURCE_COUNT:
+			return ResourceCache::get_cached_resource_count();
+		case OBJECT_NODE_COUNT:
+			return _get_node_count();
+		case OBJECT_ORPHAN_NODE_COUNT:
+			return Node::orphan_node_count;
+		case RENDER_OBJECTS_IN_FRAME:
+			return VS::get_singleton()->get_render_info(VS::INFO_OBJECTS_IN_FRAME);
+		case RENDER_VERTICES_IN_FRAME:
+			return VS::get_singleton()->get_render_info(VS::INFO_VERTICES_IN_FRAME);
+		case RENDER_MATERIAL_CHANGES_IN_FRAME:
+			return VS::get_singleton()->get_render_info(VS::INFO_MATERIAL_CHANGES_IN_FRAME);
+		case RENDER_SHADER_CHANGES_IN_FRAME:
+			return VS::get_singleton()->get_render_info(VS::INFO_SHADER_CHANGES_IN_FRAME);
+		case RENDER_SURFACE_CHANGES_IN_FRAME:
+			return VS::get_singleton()->get_render_info(VS::INFO_SURFACE_CHANGES_IN_FRAME);
+		case RENDER_DRAW_CALLS_IN_FRAME:
+			return VS::get_singleton()->get_render_info(VS::INFO_DRAW_CALLS_IN_FRAME);
+		case RENDER_2D_ITEMS_IN_FRAME:
+			return VS::get_singleton()->get_render_info(VS::INFO_2D_ITEMS_IN_FRAME);
+		case RENDER_2D_DRAW_CALLS_IN_FRAME:
+			return VS::get_singleton()->get_render_info(VS::INFO_2D_DRAW_CALLS_IN_FRAME);
+		case RENDER_VIDEO_MEM_USED:
+			return VS::get_singleton()->get_render_info(VS::INFO_VIDEO_MEM_USED);
+		case RENDER_TEXTURE_MEM_USED:
+			return VS::get_singleton()->get_render_info(VS::INFO_TEXTURE_MEM_USED);
+		case RENDER_VERTEX_MEM_USED:
+			return VS::get_singleton()->get_render_info(VS::INFO_VERTEX_MEM_USED);
+		case RENDER_USAGE_VIDEO_MEM_TOTAL:
+			return VS::get_singleton()->get_render_info(VS::INFO_USAGE_VIDEO_MEM_TOTAL);
+		case PHYSICS_2D_ACTIVE_OBJECTS:
+			return Physics2DServer::get_singleton()->get_process_info(Physics2DServer::INFO_ACTIVE_OBJECTS);
+		case PHYSICS_2D_COLLISION_PAIRS:
+			return Physics2DServer::get_singleton()->get_process_info(Physics2DServer::INFO_COLLISION_PAIRS);
+		case PHYSICS_2D_ISLAND_COUNT:
+			return Physics2DServer::get_singleton()->get_process_info(Physics2DServer::INFO_ISLAND_COUNT);
+		case PHYSICS_3D_ACTIVE_OBJECTS:
+			return PhysicsServer::get_singleton()->get_process_info(PhysicsServer::INFO_ACTIVE_OBJECTS);
+		case PHYSICS_3D_COLLISION_PAIRS:
+			return PhysicsServer::get_singleton()->get_process_info(PhysicsServer::INFO_COLLISION_PAIRS);
+		case PHYSICS_3D_ISLAND_COUNT:
+			return PhysicsServer::get_singleton()->get_process_info(PhysicsServer::INFO_ISLAND_COUNT);
+		case AUDIO_OUTPUT_LATENCY:
+			return AudioServer::get_singleton()->get_output_latency();
 
 		default: {
 		}

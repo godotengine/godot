@@ -224,10 +224,18 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 		} else {                                                                                                                                                \
 			int used = wofs - margin;                                                                                                                           \
 			switch (align) {                                                                                                                                    \
-				case ALIGN_LEFT: l.offset_caches.push_back(0); break;                                                                                           \
-				case ALIGN_CENTER: l.offset_caches.push_back(((p_width - margin) - used) / 2); break;                                                           \
-				case ALIGN_RIGHT: l.offset_caches.push_back(((p_width - margin) - used)); break;                                                                \
-				case ALIGN_FILL: l.offset_caches.push_back(line_wrapped ? ((p_width - margin) - used) : 0); break;                                              \
+				case ALIGN_LEFT:                                                                                                                                \
+					l.offset_caches.push_back(0);                                                                                                               \
+					break;                                                                                                                                      \
+				case ALIGN_CENTER:                                                                                                                              \
+					l.offset_caches.push_back(((p_width - margin) - used) / 2);                                                                                 \
+					break;                                                                                                                                      \
+				case ALIGN_RIGHT:                                                                                                                               \
+					l.offset_caches.push_back(((p_width - margin) - used));                                                                                     \
+					break;                                                                                                                                      \
+				case ALIGN_FILL:                                                                                                                                \
+					l.offset_caches.push_back(line_wrapped ? ((p_width - margin) - used) : 0);                                                                  \
+					break;                                                                                                                                      \
 			}                                                                                                                                                   \
 			l.height_caches.push_back(line_height);                                                                                                             \
 			l.ascent_caches.push_back(line_ascent);                                                                                                             \

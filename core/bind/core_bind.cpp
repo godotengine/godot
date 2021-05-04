@@ -576,14 +576,22 @@ String _OS::get_locale() const {
 
 String _OS::get_latin_keyboard_variant() const {
 	switch (OS::get_singleton()->get_latin_keyboard_variant()) {
-		case OS::LATIN_KEYBOARD_QWERTY: return "QWERTY";
-		case OS::LATIN_KEYBOARD_QWERTZ: return "QWERTZ";
-		case OS::LATIN_KEYBOARD_AZERTY: return "AZERTY";
-		case OS::LATIN_KEYBOARD_QZERTY: return "QZERTY";
-		case OS::LATIN_KEYBOARD_DVORAK: return "DVORAK";
-		case OS::LATIN_KEYBOARD_NEO: return "NEO";
-		case OS::LATIN_KEYBOARD_COLEMAK: return "COLEMAK";
-		default: return "ERROR";
+		case OS::LATIN_KEYBOARD_QWERTY:
+			return "QWERTY";
+		case OS::LATIN_KEYBOARD_QWERTZ:
+			return "QWERTZ";
+		case OS::LATIN_KEYBOARD_AZERTY:
+			return "AZERTY";
+		case OS::LATIN_KEYBOARD_QZERTY:
+			return "QZERTY";
+		case OS::LATIN_KEYBOARD_DVORAK:
+			return "DVORAK";
+		case OS::LATIN_KEYBOARD_NEO:
+			return "NEO";
+		case OS::LATIN_KEYBOARD_COLEMAK:
+			return "COLEMAK";
+		default:
+			return "ERROR";
 	}
 }
 

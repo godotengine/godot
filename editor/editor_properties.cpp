@@ -3235,13 +3235,27 @@ bool EditorInspectorDefaultPlugin::parse_property(Object *p_object, Variant::Typ
 
 				EditorPropertyMember::Type type = EditorPropertyMember::MEMBER_METHOD_OF_BASE_TYPE;
 				switch (p_hint) {
-					case PROPERTY_HINT_METHOD_OF_BASE_TYPE: type = EditorPropertyMember::MEMBER_METHOD_OF_BASE_TYPE; break;
-					case PROPERTY_HINT_METHOD_OF_INSTANCE: type = EditorPropertyMember::MEMBER_METHOD_OF_INSTANCE; break;
-					case PROPERTY_HINT_METHOD_OF_SCRIPT: type = EditorPropertyMember::MEMBER_METHOD_OF_SCRIPT; break;
-					case PROPERTY_HINT_PROPERTY_OF_VARIANT_TYPE: type = EditorPropertyMember::MEMBER_PROPERTY_OF_VARIANT_TYPE; break;
-					case PROPERTY_HINT_PROPERTY_OF_BASE_TYPE: type = EditorPropertyMember::MEMBER_PROPERTY_OF_BASE_TYPE; break;
-					case PROPERTY_HINT_PROPERTY_OF_INSTANCE: type = EditorPropertyMember::MEMBER_PROPERTY_OF_INSTANCE; break;
-					case PROPERTY_HINT_PROPERTY_OF_SCRIPT: type = EditorPropertyMember::MEMBER_PROPERTY_OF_SCRIPT; break;
+					case PROPERTY_HINT_METHOD_OF_BASE_TYPE:
+						type = EditorPropertyMember::MEMBER_METHOD_OF_BASE_TYPE;
+						break;
+					case PROPERTY_HINT_METHOD_OF_INSTANCE:
+						type = EditorPropertyMember::MEMBER_METHOD_OF_INSTANCE;
+						break;
+					case PROPERTY_HINT_METHOD_OF_SCRIPT:
+						type = EditorPropertyMember::MEMBER_METHOD_OF_SCRIPT;
+						break;
+					case PROPERTY_HINT_PROPERTY_OF_VARIANT_TYPE:
+						type = EditorPropertyMember::MEMBER_PROPERTY_OF_VARIANT_TYPE;
+						break;
+					case PROPERTY_HINT_PROPERTY_OF_BASE_TYPE:
+						type = EditorPropertyMember::MEMBER_PROPERTY_OF_BASE_TYPE;
+						break;
+					case PROPERTY_HINT_PROPERTY_OF_INSTANCE:
+						type = EditorPropertyMember::MEMBER_PROPERTY_OF_INSTANCE;
+						break;
+					case PROPERTY_HINT_PROPERTY_OF_SCRIPT:
+						type = EditorPropertyMember::MEMBER_PROPERTY_OF_SCRIPT;
+						break;
 					default: {
 					}
 				}

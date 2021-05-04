@@ -175,8 +175,12 @@ Timer::TimerProcessMode Timer::get_timer_process_mode() const {
 
 void Timer::_set_process(bool p_process, bool p_force) {
 	switch (timer_process_mode) {
-		case TIMER_PROCESS_PHYSICS: set_physics_process_internal(p_process && !paused); break;
-		case TIMER_PROCESS_IDLE: set_process_internal(p_process && !paused); break;
+		case TIMER_PROCESS_PHYSICS:
+			set_physics_process_internal(p_process && !paused);
+			break;
+		case TIMER_PROCESS_IDLE:
+			set_process_internal(p_process && !paused);
+			break;
 	}
 	processing = p_process;
 }
