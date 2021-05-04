@@ -658,7 +658,7 @@ InputEventConfigurationDialog::InputEventConfigurationDialog() {
 	for (int i = 0; i < MOD_MAX; i++) {
 		String name = mods[i];
 		mod_checkboxes[i] = memnew(CheckBox);
-		mod_checkboxes[i]->connect("toggled", callable_mp(this, &InputEventConfigurationDialog::_mod_toggled), varray(i));
+		mod_checkboxes[i]->connect("button_toggled", callable_mp(this, &InputEventConfigurationDialog::_mod_toggled), varray(i));
 		mod_checkboxes[i]->set_text(name);
 		mod_container->add_child(mod_checkboxes[i]);
 	}
@@ -666,7 +666,7 @@ InputEventConfigurationDialog::InputEventConfigurationDialog() {
 	mod_container->add_child(memnew(VSeparator));
 
 	store_command_checkbox = memnew(CheckBox);
-	store_command_checkbox->connect("toggled", callable_mp(this, &InputEventConfigurationDialog::_store_command_toggled));
+	store_command_checkbox->connect("button_toggled", callable_mp(this, &InputEventConfigurationDialog::_store_command_toggled));
 	store_command_checkbox->set_pressed(true);
 	store_command_checkbox->set_text(TTR("Store Command"));
 #ifdef APPLE_STYLE_KEYS
@@ -684,7 +684,7 @@ InputEventConfigurationDialog::InputEventConfigurationDialog() {
 	physical_key_checkbox = memnew(CheckBox);
 	physical_key_checkbox->set_text(TTR("Use Physical Keycode"));
 	physical_key_checkbox->set_tooltip(TTR("Stores the physical position of the key on the keyboard rather than the keys value. Used for compatibility with non-latin layouts."));
-	physical_key_checkbox->connect("toggled", callable_mp(this, &InputEventConfigurationDialog::_physical_keycode_toggled));
+	physical_key_checkbox->connect("button_toggled", callable_mp(this, &InputEventConfigurationDialog::_physical_keycode_toggled));
 	physical_key_checkbox->hide();
 	additional_options_container->add_child(physical_key_checkbox);
 
@@ -1117,7 +1117,7 @@ ActionMapEditor::ActionMapEditor() {
 	show_uneditable_actions_checkbox = memnew(CheckBox);
 	show_uneditable_actions_checkbox->set_pressed(false);
 	show_uneditable_actions_checkbox->set_text(TTR("Show Uneditable Actions"));
-	show_uneditable_actions_checkbox->connect("toggled", callable_mp(this, &ActionMapEditor::set_show_uneditable));
+	show_uneditable_actions_checkbox->connect("button_toggled", callable_mp(this, &ActionMapEditor::set_show_uneditable));
 	top_hbox->add_child(show_uneditable_actions_checkbox);
 
 	// Adding Action line edit + button
@@ -1133,7 +1133,7 @@ ActionMapEditor::ActionMapEditor() {
 
 	Button *add_button = memnew(Button);
 	add_button->set_text("Add");
-	add_button->connect("pressed", callable_mp(this, &ActionMapEditor::_add_action_pressed));
+	add_button->connect("button_clicked", callable_mp(this, &ActionMapEditor::_add_action_pressed));
 	add_hbox->add_child(add_button);
 
 	main_vbox->add_child(add_hbox);

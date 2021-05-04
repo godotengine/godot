@@ -3162,10 +3162,10 @@ void Node3DEditorViewport::_set_auto_orthogonal() {
 }
 
 void Node3DEditorViewport::_preview_exited_scene() {
-	preview_camera->disconnect("toggled", callable_mp(this, &Node3DEditorViewport::_toggle_camera_preview));
+	preview_camera->disconnect("button_toggled", callable_mp(this, &Node3DEditorViewport::_toggle_camera_preview));
 	preview_camera->set_pressed(false);
 	_toggle_camera_preview(false);
-	preview_camera->connect("toggled", callable_mp(this, &Node3DEditorViewport::_toggle_camera_preview));
+	preview_camera->connect("button_toggled", callable_mp(this, &Node3DEditorViewport::_toggle_camera_preview));
 	view_menu->show();
 }
 
@@ -3495,7 +3495,7 @@ void Node3DEditorViewport::set_state(const Dictionary &p_state) {
 	}
 
 	if (preview_camera->is_connected("toggled", callable_mp(this, &Node3DEditorViewport::_toggle_camera_preview))) {
-		preview_camera->disconnect("toggled", callable_mp(this, &Node3DEditorViewport::_toggle_camera_preview));
+		preview_camera->disconnect("button_toggled", callable_mp(this, &Node3DEditorViewport::_toggle_camera_preview));
 	}
 	if (p_state.has("previewing")) {
 		Node *pv = EditorNode::get_singleton()->get_edited_scene()->get_node(p_state["previewing"]);
@@ -3509,7 +3509,7 @@ void Node3DEditorViewport::set_state(const Dictionary &p_state) {
 			preview_camera->show();
 		}
 	}
-	preview_camera->connect("toggled", callable_mp(this, &Node3DEditorViewport::_toggle_camera_preview));
+	preview_camera->connect("button_toggled", callable_mp(this, &Node3DEditorViewport::_toggle_camera_preview));
 }
 
 Dictionary Node3DEditorViewport::get_state() const {
@@ -4119,7 +4119,7 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, Edito
 	vbox->add_child(preview_camera);
 	preview_camera->set_h_size_flags(0);
 	preview_camera->hide();
-	preview_camera->connect("toggled", callable_mp(this, &Node3DEditorViewport::_toggle_camera_preview));
+	preview_camera->connect("button_toggled", callable_mp(this, &Node3DEditorViewport::_toggle_camera_preview));
 	previewing = nullptr;
 	gizmo_scale = 1.0;
 
@@ -6698,7 +6698,7 @@ Node3DEditor::Node3DEditor(EditorNode *p_editor) {
 	tool_button[TOOL_MODE_SELECT]->set_flat(true);
 	tool_button[TOOL_MODE_SELECT]->set_pressed(true);
 	button_binds.write[0] = MENU_TOOL_SELECT;
-	tool_button[TOOL_MODE_SELECT]->connect("pressed", callable_mp(this, &Node3DEditor::_menu_item_pressed), button_binds);
+	tool_button[TOOL_MODE_SELECT]->connect("button_clicked", callable_mp(this, &Node3DEditor::_menu_item_pressed), button_binds);
 	tool_button[TOOL_MODE_SELECT]->set_shortcut(ED_SHORTCUT("spatial_editor/tool_select", TTR("Select Mode"), KEY_Q));
 	tool_button[TOOL_MODE_SELECT]->set_shortcut_context(this);
 	tool_button[TOOL_MODE_SELECT]->set_tooltip(keycode_get_string(KEY_MASK_CMD) + TTR("Drag: Rotate\nAlt+Drag: Move\nAlt+RMB: Depth list selection"));
@@ -6710,7 +6710,7 @@ Node3DEditor::Node3DEditor(EditorNode *p_editor) {
 	tool_button[TOOL_MODE_MOVE]->set_toggle_mode(true);
 	tool_button[TOOL_MODE_MOVE]->set_flat(true);
 	button_binds.write[0] = MENU_TOOL_MOVE;
-	tool_button[TOOL_MODE_MOVE]->connect("pressed", callable_mp(this, &Node3DEditor::_menu_item_pressed), button_binds);
+	tool_button[TOOL_MODE_MOVE]->connect("button_clicked", callable_mp(this, &Node3DEditor::_menu_item_pressed), button_binds);
 	tool_button[TOOL_MODE_MOVE]->set_shortcut(ED_SHORTCUT("spatial_editor/tool_move", TTR("Move Mode"), KEY_W));
 	tool_button[TOOL_MODE_MOVE]->set_shortcut_context(this);
 
@@ -6719,7 +6719,7 @@ Node3DEditor::Node3DEditor(EditorNode *p_editor) {
 	tool_button[TOOL_MODE_ROTATE]->set_toggle_mode(true);
 	tool_button[TOOL_MODE_ROTATE]->set_flat(true);
 	button_binds.write[0] = MENU_TOOL_ROTATE;
-	tool_button[TOOL_MODE_ROTATE]->connect("pressed", callable_mp(this, &Node3DEditor::_menu_item_pressed), button_binds);
+	tool_button[TOOL_MODE_ROTATE]->connect("button_clicked", callable_mp(this, &Node3DEditor::_menu_item_pressed), button_binds);
 	tool_button[TOOL_MODE_ROTATE]->set_shortcut(ED_SHORTCUT("spatial_editor/tool_rotate", TTR("Rotate Mode"), KEY_E));
 	tool_button[TOOL_MODE_ROTATE]->set_shortcut_context(this);
 
@@ -6728,7 +6728,7 @@ Node3DEditor::Node3DEditor(EditorNode *p_editor) {
 	tool_button[TOOL_MODE_SCALE]->set_toggle_mode(true);
 	tool_button[TOOL_MODE_SCALE]->set_flat(true);
 	button_binds.write[0] = MENU_TOOL_SCALE;
-	tool_button[TOOL_MODE_SCALE]->connect("pressed", callable_mp(this, &Node3DEditor::_menu_item_pressed), button_binds);
+	tool_button[TOOL_MODE_SCALE]->connect("button_clicked", callable_mp(this, &Node3DEditor::_menu_item_pressed), button_binds);
 	tool_button[TOOL_MODE_SCALE]->set_shortcut(ED_SHORTCUT("spatial_editor/tool_scale", TTR("Scale Mode"), KEY_R));
 	tool_button[TOOL_MODE_SCALE]->set_shortcut_context(this);
 
@@ -6739,35 +6739,35 @@ Node3DEditor::Node3DEditor(EditorNode *p_editor) {
 	tool_button[TOOL_MODE_LIST_SELECT]->set_toggle_mode(true);
 	tool_button[TOOL_MODE_LIST_SELECT]->set_flat(true);
 	button_binds.write[0] = MENU_TOOL_LIST_SELECT;
-	tool_button[TOOL_MODE_LIST_SELECT]->connect("pressed", callable_mp(this, &Node3DEditor::_menu_item_pressed), button_binds);
+	tool_button[TOOL_MODE_LIST_SELECT]->connect("button_clicked", callable_mp(this, &Node3DEditor::_menu_item_pressed), button_binds);
 	tool_button[TOOL_MODE_LIST_SELECT]->set_tooltip(TTR("Show a list of all objects at the position clicked\n(same as Alt+RMB in select mode)."));
 
 	tool_button[TOOL_LOCK_SELECTED] = memnew(Button);
 	hbc_menu->add_child(tool_button[TOOL_LOCK_SELECTED]);
 	tool_button[TOOL_LOCK_SELECTED]->set_flat(true);
 	button_binds.write[0] = MENU_LOCK_SELECTED;
-	tool_button[TOOL_LOCK_SELECTED]->connect("pressed", callable_mp(this, &Node3DEditor::_menu_item_pressed), button_binds);
+	tool_button[TOOL_LOCK_SELECTED]->connect("button_clicked", callable_mp(this, &Node3DEditor::_menu_item_pressed), button_binds);
 	tool_button[TOOL_LOCK_SELECTED]->set_tooltip(TTR("Lock the selected object in place (can't be moved)."));
 
 	tool_button[TOOL_UNLOCK_SELECTED] = memnew(Button);
 	hbc_menu->add_child(tool_button[TOOL_UNLOCK_SELECTED]);
 	tool_button[TOOL_UNLOCK_SELECTED]->set_flat(true);
 	button_binds.write[0] = MENU_UNLOCK_SELECTED;
-	tool_button[TOOL_UNLOCK_SELECTED]->connect("pressed", callable_mp(this, &Node3DEditor::_menu_item_pressed), button_binds);
+	tool_button[TOOL_UNLOCK_SELECTED]->connect("button_clicked", callable_mp(this, &Node3DEditor::_menu_item_pressed), button_binds);
 	tool_button[TOOL_UNLOCK_SELECTED]->set_tooltip(TTR("Unlock the selected object (can be moved)."));
 
 	tool_button[TOOL_GROUP_SELECTED] = memnew(Button);
 	hbc_menu->add_child(tool_button[TOOL_GROUP_SELECTED]);
 	tool_button[TOOL_GROUP_SELECTED]->set_flat(true);
 	button_binds.write[0] = MENU_GROUP_SELECTED;
-	tool_button[TOOL_GROUP_SELECTED]->connect("pressed", callable_mp(this, &Node3DEditor::_menu_item_pressed), button_binds);
+	tool_button[TOOL_GROUP_SELECTED]->connect("button_clicked", callable_mp(this, &Node3DEditor::_menu_item_pressed), button_binds);
 	tool_button[TOOL_GROUP_SELECTED]->set_tooltip(TTR("Makes sure the object's children are not selectable."));
 
 	tool_button[TOOL_UNGROUP_SELECTED] = memnew(Button);
 	hbc_menu->add_child(tool_button[TOOL_UNGROUP_SELECTED]);
 	tool_button[TOOL_UNGROUP_SELECTED]->set_flat(true);
 	button_binds.write[0] = MENU_UNGROUP_SELECTED;
-	tool_button[TOOL_UNGROUP_SELECTED]->connect("pressed", callable_mp(this, &Node3DEditor::_menu_item_pressed), button_binds);
+	tool_button[TOOL_UNGROUP_SELECTED]->connect("button_clicked", callable_mp(this, &Node3DEditor::_menu_item_pressed), button_binds);
 	tool_button[TOOL_UNGROUP_SELECTED]->set_tooltip(TTR("Restores the object's children's ability to be selected."));
 
 	hbc_menu->add_child(memnew(VSeparator));
@@ -6777,7 +6777,7 @@ Node3DEditor::Node3DEditor(EditorNode *p_editor) {
 	tool_option_button[TOOL_OPT_LOCAL_COORDS]->set_toggle_mode(true);
 	tool_option_button[TOOL_OPT_LOCAL_COORDS]->set_flat(true);
 	button_binds.write[0] = MENU_TOOL_LOCAL_COORDS;
-	tool_option_button[TOOL_OPT_LOCAL_COORDS]->connect("toggled", callable_mp(this, &Node3DEditor::_menu_item_toggled), button_binds);
+	tool_option_button[TOOL_OPT_LOCAL_COORDS]->connect("button_toggled", callable_mp(this, &Node3DEditor::_menu_item_toggled), button_binds);
 	tool_option_button[TOOL_OPT_LOCAL_COORDS]->set_shortcut(ED_SHORTCUT("spatial_editor/local_coords", TTR("Use Local Space"), KEY_T));
 	tool_option_button[TOOL_OPT_LOCAL_COORDS]->set_shortcut_context(this);
 
@@ -6786,7 +6786,7 @@ Node3DEditor::Node3DEditor(EditorNode *p_editor) {
 	tool_option_button[TOOL_OPT_USE_SNAP]->set_toggle_mode(true);
 	tool_option_button[TOOL_OPT_USE_SNAP]->set_flat(true);
 	button_binds.write[0] = MENU_TOOL_USE_SNAP;
-	tool_option_button[TOOL_OPT_USE_SNAP]->connect("toggled", callable_mp(this, &Node3DEditor::_menu_item_toggled), button_binds);
+	tool_option_button[TOOL_OPT_USE_SNAP]->connect("button_toggled", callable_mp(this, &Node3DEditor::_menu_item_toggled), button_binds);
 	tool_option_button[TOOL_OPT_USE_SNAP]->set_shortcut(ED_SHORTCUT("spatial_editor/snap", TTR("Use Snap"), KEY_Y));
 	tool_option_button[TOOL_OPT_USE_SNAP]->set_shortcut_context(this);
 
@@ -6798,7 +6798,7 @@ Node3DEditor::Node3DEditor(EditorNode *p_editor) {
 	tool_option_button[TOOL_OPT_OVERRIDE_CAMERA]->set_flat(true);
 	tool_option_button[TOOL_OPT_OVERRIDE_CAMERA]->set_disabled(true);
 	button_binds.write[0] = MENU_TOOL_OVERRIDE_CAMERA;
-	tool_option_button[TOOL_OPT_OVERRIDE_CAMERA]->connect("toggled", callable_mp(this, &Node3DEditor::_menu_item_toggled), button_binds);
+	tool_option_button[TOOL_OPT_OVERRIDE_CAMERA]->connect("button_toggled", callable_mp(this, &Node3DEditor::_menu_item_toggled), button_binds);
 	_update_camera_override_button(false);
 
 	hbc_menu->add_child(memnew(VSeparator));
@@ -6806,7 +6806,7 @@ Node3DEditor::Node3DEditor(EditorNode *p_editor) {
 	sun_button->set_tooltip(TTR("Toggle preview sunlight.\nIf a DirectionalLight3D node is added to the scene, preview sunlight is disabled."));
 	sun_button->set_toggle_mode(true);
 	sun_button->set_flat(true);
-	sun_button->connect("pressed", callable_mp(this, &Node3DEditor::_update_preview_environment), varray(), CONNECT_DEFERRED);
+	sun_button->connect("button_clicked", callable_mp(this, &Node3DEditor::_update_preview_environment), varray(), CONNECT_DEFERRED);
 	sun_button->set_disabled(true);
 
 	hbc_menu->add_child(sun_button);
@@ -6815,7 +6815,7 @@ Node3DEditor::Node3DEditor(EditorNode *p_editor) {
 	environ_button->set_tooltip(TTR("Toggle preview environment.\nIf a WorldEnvironment node is added to the scene, preview environment is disabled."));
 	environ_button->set_toggle_mode(true);
 	environ_button->set_flat(true);
-	environ_button->connect("pressed", callable_mp(this, &Node3DEditor::_update_preview_environment), varray(), CONNECT_DEFERRED);
+	environ_button->connect("button_clicked", callable_mp(this, &Node3DEditor::_update_preview_environment), varray(), CONNECT_DEFERRED);
 	environ_button->set_disabled(true);
 
 	hbc_menu->add_child(environ_button);
@@ -6823,7 +6823,7 @@ Node3DEditor::Node3DEditor(EditorNode *p_editor) {
 	sun_environ_settings = memnew(Button);
 	sun_environ_settings->set_tooltip(TTR("Edit Sun and Environment settings."));
 	sun_environ_settings->set_flat(true);
-	sun_environ_settings->connect("pressed", callable_mp(this, &Node3DEditor::_sun_environ_settings_pressed));
+	sun_environ_settings->connect("button_clicked", callable_mp(this, &Node3DEditor::_sun_environ_settings_pressed));
 
 	hbc_menu->add_child(sun_environ_settings);
 
@@ -6933,7 +6933,7 @@ Node3DEditor::Node3DEditor(EditorNode *p_editor) {
 	snap_dialog->set_title(TTR("Snap Settings"));
 	add_child(snap_dialog);
 	snap_dialog->connect("confirmed", callable_mp(this, &Node3DEditor::_snap_changed));
-	snap_dialog->get_cancel_button()->connect("pressed", callable_mp(this, &Node3DEditor::_snap_update));
+	snap_dialog->get_cancel_button()->connect("button_clicked", callable_mp(this, &Node3DEditor::_snap_update));
 
 	VBoxContainer *snap_dialog_vbc = memnew(VBoxContainer);
 	snap_dialog->add_child(snap_dialog_vbc);
@@ -7113,7 +7113,7 @@ Node3DEditor::Node3DEditor(EditorNode *p_editor) {
 
 		sun_add_to_scene = memnew(Button);
 		sun_add_to_scene->set_text(TTR("Add Sun to Scene"));
-		sun_add_to_scene->connect("pressed", callable_mp(this, &Node3DEditor::_add_sun_to_scene));
+		sun_add_to_scene->connect("button_clicked", callable_mp(this, &Node3DEditor::_add_sun_to_scene));
 		sun_vb->add_spacer();
 		sun_vb->add_child(sun_add_to_scene);
 
@@ -7156,28 +7156,28 @@ Node3DEditor::Node3DEditor(EditorNode *p_editor) {
 		environ_ao_button = memnew(Button);
 		environ_ao_button->set_text(TTR("AO"));
 		environ_ao_button->set_toggle_mode(true);
-		environ_ao_button->connect("pressed", callable_mp(this, &Node3DEditor::_preview_settings_changed), varray(), CONNECT_DEFERRED);
+		environ_ao_button->connect("button_clicked", callable_mp(this, &Node3DEditor::_preview_settings_changed), varray(), CONNECT_DEFERRED);
 		fx_vb->add_child(environ_ao_button);
 		environ_glow_button = memnew(Button);
 		environ_glow_button->set_text(TTR("Glow"));
 		environ_glow_button->set_toggle_mode(true);
-		environ_glow_button->connect("pressed", callable_mp(this, &Node3DEditor::_preview_settings_changed), varray(), CONNECT_DEFERRED);
+		environ_glow_button->connect("button_clicked", callable_mp(this, &Node3DEditor::_preview_settings_changed), varray(), CONNECT_DEFERRED);
 		fx_vb->add_child(environ_glow_button);
 		environ_tonemap_button = memnew(Button);
 		environ_tonemap_button->set_text(TTR("Tonemap"));
 		environ_tonemap_button->set_toggle_mode(true);
-		environ_tonemap_button->connect("pressed", callable_mp(this, &Node3DEditor::_preview_settings_changed), varray(), CONNECT_DEFERRED);
+		environ_tonemap_button->connect("button_clicked", callable_mp(this, &Node3DEditor::_preview_settings_changed), varray(), CONNECT_DEFERRED);
 		fx_vb->add_child(environ_tonemap_button);
 		environ_gi_button = memnew(Button);
 		environ_gi_button->set_text(TTR("GI"));
 		environ_gi_button->set_toggle_mode(true);
-		environ_gi_button->connect("pressed", callable_mp(this, &Node3DEditor::_preview_settings_changed), varray(), CONNECT_DEFERRED);
+		environ_gi_button->connect("button_clicked", callable_mp(this, &Node3DEditor::_preview_settings_changed), varray(), CONNECT_DEFERRED);
 		fx_vb->add_child(environ_gi_button);
 		environ_vb->add_margin_child(TTR("Post Process"), fx_vb);
 
 		environ_add_to_scene = memnew(Button);
 		environ_add_to_scene->set_text(TTR("Add Environment to Scene"));
-		environ_add_to_scene->connect("pressed", callable_mp(this, &Node3DEditor::_add_environment_to_scene));
+		environ_add_to_scene->connect("button_clicked", callable_mp(this, &Node3DEditor::_add_environment_to_scene));
 		environ_vb->add_spacer();
 		environ_vb->add_child(environ_add_to_scene);
 

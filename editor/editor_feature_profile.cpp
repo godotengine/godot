@@ -800,7 +800,7 @@ EditorFeatureProfileManager::EditorFeatureProfileManager() {
 	profile_actions[PROFILE_CLEAR] = memnew(Button(TTR("Unset")));
 	name_hbc->add_child(profile_actions[PROFILE_CLEAR]);
 	profile_actions[PROFILE_CLEAR]->set_disabled(true);
-	profile_actions[PROFILE_CLEAR]->connect("pressed", callable_mp(this, &EditorFeatureProfileManager::_profile_action), varray(PROFILE_CLEAR));
+	profile_actions[PROFILE_CLEAR]->connect("button_clicked", callable_mp(this, &EditorFeatureProfileManager::_profile_action), varray(PROFILE_CLEAR));
 
 	main_vbc->add_margin_child(TTR("Current Profile:"), name_hbc);
 
@@ -813,29 +813,29 @@ EditorFeatureProfileManager::EditorFeatureProfileManager() {
 	profile_actions[PROFILE_SET] = memnew(Button(TTR("Make Current")));
 	profiles_hbc->add_child(profile_actions[PROFILE_SET]);
 	profile_actions[PROFILE_SET]->set_disabled(true);
-	profile_actions[PROFILE_SET]->connect("pressed", callable_mp(this, &EditorFeatureProfileManager::_profile_action), varray(PROFILE_SET));
+	profile_actions[PROFILE_SET]->connect("button_clicked", callable_mp(this, &EditorFeatureProfileManager::_profile_action), varray(PROFILE_SET));
 
 	profile_actions[PROFILE_ERASE] = memnew(Button(TTR("Remove")));
 	profiles_hbc->add_child(profile_actions[PROFILE_ERASE]);
 	profile_actions[PROFILE_ERASE]->set_disabled(true);
-	profile_actions[PROFILE_ERASE]->connect("pressed", callable_mp(this, &EditorFeatureProfileManager::_profile_action), varray(PROFILE_ERASE));
+	profile_actions[PROFILE_ERASE]->connect("button_clicked", callable_mp(this, &EditorFeatureProfileManager::_profile_action), varray(PROFILE_ERASE));
 
 	profiles_hbc->add_child(memnew(VSeparator));
 
 	profile_actions[PROFILE_NEW] = memnew(Button(TTR("New")));
 	profiles_hbc->add_child(profile_actions[PROFILE_NEW]);
-	profile_actions[PROFILE_NEW]->connect("pressed", callable_mp(this, &EditorFeatureProfileManager::_profile_action), varray(PROFILE_NEW));
+	profile_actions[PROFILE_NEW]->connect("button_clicked", callable_mp(this, &EditorFeatureProfileManager::_profile_action), varray(PROFILE_NEW));
 
 	profiles_hbc->add_child(memnew(VSeparator));
 
 	profile_actions[PROFILE_IMPORT] = memnew(Button(TTR("Import")));
 	profiles_hbc->add_child(profile_actions[PROFILE_IMPORT]);
-	profile_actions[PROFILE_IMPORT]->connect("pressed", callable_mp(this, &EditorFeatureProfileManager::_profile_action), varray(PROFILE_IMPORT));
+	profile_actions[PROFILE_IMPORT]->connect("button_clicked", callable_mp(this, &EditorFeatureProfileManager::_profile_action), varray(PROFILE_IMPORT));
 
 	profile_actions[PROFILE_EXPORT] = memnew(Button(TTR("Export")));
 	profiles_hbc->add_child(profile_actions[PROFILE_EXPORT]);
 	profile_actions[PROFILE_EXPORT]->set_disabled(true);
-	profile_actions[PROFILE_EXPORT]->connect("pressed", callable_mp(this, &EditorFeatureProfileManager::_profile_action), varray(PROFILE_EXPORT));
+	profile_actions[PROFILE_EXPORT]->connect("button_clicked", callable_mp(this, &EditorFeatureProfileManager::_profile_action), varray(PROFILE_EXPORT));
 
 	main_vbc->add_margin_child(TTR("Available Profiles:"), profiles_hbc);
 

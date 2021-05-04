@@ -1039,7 +1039,7 @@ ColorPicker::ColorPicker() :
 	hb_smpl->add_child(btn_pick);
 	btn_pick->set_toggle_mode(true);
 	btn_pick->set_tooltip(RTR("Pick a color from the editor window."));
-	btn_pick->connect("pressed", callable_mp(this, &ColorPicker::_screen_pick_pressed));
+	btn_pick->connect("button_clicked", callable_mp(this, &ColorPicker::_screen_pick_pressed));
 
 	VBoxContainer *vbl = memnew(VBoxContainer);
 	add_child(vbl);
@@ -1086,11 +1086,11 @@ ColorPicker::ColorPicker() :
 
 	hhb->add_child(btn_hsv);
 	btn_hsv->set_text(RTR("HSV"));
-	btn_hsv->connect("toggled", callable_mp(this, &ColorPicker::set_hsv_mode));
+	btn_hsv->connect("button_toggled", callable_mp(this, &ColorPicker::set_hsv_mode));
 
 	hhb->add_child(btn_raw);
 	btn_raw->set_text(RTR("Raw"));
-	btn_raw->connect("toggled", callable_mp(this, &ColorPicker::set_raw_mode));
+	btn_raw->connect("button_toggled", callable_mp(this, &ColorPicker::set_raw_mode));
 
 	hhb->add_child(text_type);
 	text_type->set_text("#");
@@ -1099,7 +1099,7 @@ ColorPicker::ColorPicker() :
 #ifdef TOOLS_ENABLED
 		text_type->set_custom_minimum_size(Size2(28 * EDSCALE, 0)); // Adjust for the width of the "Script" icon.
 #endif
-		text_type->connect("pressed", callable_mp(this, &ColorPicker::_text_type_toggled));
+		text_type->connect("button_clicked", callable_mp(this, &ColorPicker::_text_type_toggled));
 	} else {
 		text_type->set_flat(true);
 		text_type->set_mouse_filter(MOUSE_FILTER_IGNORE);
@@ -1169,7 +1169,7 @@ ColorPicker::ColorPicker() :
 	add_child(preset_container2);
 	preset_container2->add_child(bt_add_preset);
 	bt_add_preset->set_tooltip(RTR("Add current color as a preset."));
-	bt_add_preset->connect("pressed", callable_mp(this, &ColorPicker::_add_preset_pressed));
+	bt_add_preset->connect("button_clicked", callable_mp(this, &ColorPicker::_add_preset_pressed));
 }
 
 /////////////////
@@ -1185,7 +1185,7 @@ void ColorPickerButton::_modal_closed() {
 	set_pressed(false);
 }
 
-void ColorPickerButton::pressed() {
+void ColorPickerButton::clicked() {
 	_update_picker();
 
 	popup->set_as_minsize();

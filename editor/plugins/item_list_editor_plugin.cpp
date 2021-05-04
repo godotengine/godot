@@ -329,7 +329,7 @@ ItemListEditor::ItemListEditor() {
 	toolbar_button->set_flat(true);
 	toolbar_button->set_text(TTR("Items"));
 	add_child(toolbar_button);
-	toolbar_button->connect("pressed", callable_mp(this, &ItemListEditor::_edit_items));
+	toolbar_button->connect("button_clicked", callable_mp(this, &ItemListEditor::_edit_items));
 
 	dialog = memnew(AcceptDialog);
 	dialog->set_title(TTR("Item List Editor"));
@@ -346,14 +346,14 @@ ItemListEditor::ItemListEditor() {
 	add_button = memnew(Button);
 	add_button->set_text(TTR("Add"));
 	hbc->add_child(add_button);
-	add_button->connect("pressed", callable_mp(this, &ItemListEditor::_add_pressed));
+	add_button->connect("button_clicked", callable_mp(this, &ItemListEditor::_add_pressed));
 
 	hbc->add_spacer();
 
 	del_button = memnew(Button);
 	del_button->set_text(TTR("Delete"));
 	hbc->add_child(del_button);
-	del_button->connect("pressed", callable_mp(this, &ItemListEditor::_delete_pressed));
+	del_button->connect("button_clicked", callable_mp(this, &ItemListEditor::_delete_pressed));
 
 	property_editor = memnew(EditorInspector);
 	vbc->add_child(property_editor);

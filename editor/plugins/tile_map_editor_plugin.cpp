@@ -2052,12 +2052,12 @@ TileMapEditor::TileMapEditor(EditorNode *p_editor) {
 
 	manual_button = memnew(CheckBox);
 	manual_button->set_text(TTR("Disable Autotile"));
-	manual_button->connect("toggled", callable_mp(this, &TileMapEditor::_manual_toggled));
+	manual_button->connect("button_toggled", callable_mp(this, &TileMapEditor::_manual_toggled));
 	add_child(manual_button);
 
 	priority_button = memnew(CheckBox);
 	priority_button->set_text(TTR("Enable Priority"));
-	priority_button->connect("toggled", callable_mp(this, &TileMapEditor::_priority_toggled));
+	priority_button->connect("button_toggled", callable_mp(this, &TileMapEditor::_priority_toggled));
 	add_child(priority_button);
 
 	search_box = memnew(LineEdit);
@@ -2131,7 +2131,7 @@ TileMapEditor::TileMapEditor(EditorNode *p_editor) {
 	paint_button->set_shortcut(ED_SHORTCUT("tile_map_editor/paint_tile", TTR("Paint Tile"), KEY_P));
 	paint_button->set_shortcut_context(this);
 	paint_button->set_tooltip(TTR("RMB: Erase"));
-	paint_button->connect("pressed", callable_mp(this, &TileMapEditor::_button_tool_select), make_binds(TOOL_NONE));
+	paint_button->connect("button_clicked", callable_mp(this, &TileMapEditor::_button_tool_select), make_binds(TOOL_NONE));
 	paint_button->set_toggle_mode(true);
 	toolbar->add_child(paint_button);
 
@@ -2140,7 +2140,7 @@ TileMapEditor::TileMapEditor(EditorNode *p_editor) {
 	line_button->set_shortcut(ED_SHORTCUT("tile_map_editor/line_fill", TTR("Line Fill"), KEY_L));
 	line_button->set_shortcut_context(this);
 	line_button->set_tooltip(TTR("RMB: Erase"));
-	line_button->connect("pressed", callable_mp(this, &TileMapEditor::_button_tool_select), make_binds(TOOL_LINE_PAINT));
+	line_button->connect("button_clicked", callable_mp(this, &TileMapEditor::_button_tool_select), make_binds(TOOL_LINE_PAINT));
 	line_button->set_toggle_mode(true);
 	toolbar->add_child(line_button);
 
@@ -2149,7 +2149,7 @@ TileMapEditor::TileMapEditor(EditorNode *p_editor) {
 	rectangle_button->set_shortcut(ED_SHORTCUT("tile_map_editor/rectangle_fill", TTR("Rectangle Fill"), KEY_O));
 	rectangle_button->set_shortcut_context(this);
 	rectangle_button->set_tooltip(TTR("Shift+LMB: Keep 1:1 proporsions\nRMB: Erase"));
-	rectangle_button->connect("pressed", callable_mp(this, &TileMapEditor::_button_tool_select), make_binds(TOOL_RECTANGLE_PAINT));
+	rectangle_button->connect("button_clicked", callable_mp(this, &TileMapEditor::_button_tool_select), make_binds(TOOL_RECTANGLE_PAINT));
 	rectangle_button->set_toggle_mode(true);
 	toolbar->add_child(rectangle_button);
 
@@ -2157,7 +2157,7 @@ TileMapEditor::TileMapEditor(EditorNode *p_editor) {
 	bucket_fill_button->set_flat(true);
 	bucket_fill_button->set_shortcut(ED_SHORTCUT("tile_map_editor/bucket_fill", TTR("Bucket Fill"), KEY_B));
 	bucket_fill_button->set_shortcut_context(this);
-	bucket_fill_button->connect("pressed", callable_mp(this, &TileMapEditor::_button_tool_select), make_binds(TOOL_BUCKET));
+	bucket_fill_button->connect("button_clicked", callable_mp(this, &TileMapEditor::_button_tool_select), make_binds(TOOL_BUCKET));
 	bucket_fill_button->set_toggle_mode(true);
 	toolbar->add_child(bucket_fill_button);
 
@@ -2165,7 +2165,7 @@ TileMapEditor::TileMapEditor(EditorNode *p_editor) {
 	picker_button->set_flat(true);
 	picker_button->set_shortcut(ED_SHORTCUT("tile_map_editor/pick_tile", TTR("Pick Tile"), KEY_I));
 	picker_button->set_shortcut_context(this);
-	picker_button->connect("pressed", callable_mp(this, &TileMapEditor::_button_tool_select), make_binds(TOOL_PICKING));
+	picker_button->connect("button_clicked", callable_mp(this, &TileMapEditor::_button_tool_select), make_binds(TOOL_PICKING));
 	picker_button->set_toggle_mode(true);
 	toolbar->add_child(picker_button);
 
@@ -2173,7 +2173,7 @@ TileMapEditor::TileMapEditor(EditorNode *p_editor) {
 	select_button->set_flat(true);
 	select_button->set_shortcut(ED_SHORTCUT("tile_map_editor/select", TTR("Select"), KEY_M));
 	select_button->set_shortcut_context(this);
-	select_button->connect("pressed", callable_mp(this, &TileMapEditor::_button_tool_select), make_binds(TOOL_SELECTING));
+	select_button->connect("button_clicked", callable_mp(this, &TileMapEditor::_button_tool_select), make_binds(TOOL_SELECTING));
 	select_button->set_toggle_mode(true);
 	toolbar->add_child(select_button);
 
@@ -2215,7 +2215,7 @@ TileMapEditor::TileMapEditor(EditorNode *p_editor) {
 	rotate_left_button->set_flat(true);
 	rotate_left_button->set_tooltip(TTR("Rotate Left"));
 	rotate_left_button->set_focus_mode(FOCUS_NONE);
-	rotate_left_button->connect("pressed", callable_mp(this, &TileMapEditor::_rotate), varray(-1));
+	rotate_left_button->connect("button_clicked", callable_mp(this, &TileMapEditor::_rotate), varray(-1));
 	rotate_left_button->set_shortcut(ED_SHORTCUT("tile_map_editor/rotate_left", TTR("Rotate Left"), KEY_A));
 	rotate_left_button->set_shortcut_context(this);
 	tool_hb->add_child(rotate_left_button);
@@ -2224,7 +2224,7 @@ TileMapEditor::TileMapEditor(EditorNode *p_editor) {
 	rotate_right_button->set_flat(true);
 	rotate_right_button->set_tooltip(TTR("Rotate Right"));
 	rotate_right_button->set_focus_mode(FOCUS_NONE);
-	rotate_right_button->connect("pressed", callable_mp(this, &TileMapEditor::_rotate), varray(1));
+	rotate_right_button->connect("button_clicked", callable_mp(this, &TileMapEditor::_rotate), varray(1));
 	rotate_right_button->set_shortcut(ED_SHORTCUT("tile_map_editor/rotate_right", TTR("Rotate Right"), KEY_S));
 	rotate_right_button->set_shortcut_context(this);
 	tool_hb->add_child(rotate_right_button);
@@ -2233,7 +2233,7 @@ TileMapEditor::TileMapEditor(EditorNode *p_editor) {
 	flip_horizontal_button->set_flat(true);
 	flip_horizontal_button->set_tooltip(TTR("Flip Horizontally"));
 	flip_horizontal_button->set_focus_mode(FOCUS_NONE);
-	flip_horizontal_button->connect("pressed", callable_mp(this, &TileMapEditor::_flip_horizontal));
+	flip_horizontal_button->connect("button_clicked", callable_mp(this, &TileMapEditor::_flip_horizontal));
 	flip_horizontal_button->set_shortcut(ED_SHORTCUT("tile_map_editor/flip_horizontal", TTR("Flip Horizontally"), KEY_X));
 	flip_horizontal_button->set_shortcut_context(this);
 	tool_hb->add_child(flip_horizontal_button);
@@ -2242,7 +2242,7 @@ TileMapEditor::TileMapEditor(EditorNode *p_editor) {
 	flip_vertical_button->set_flat(true);
 	flip_vertical_button->set_tooltip(TTR("Flip Vertically"));
 	flip_vertical_button->set_focus_mode(FOCUS_NONE);
-	flip_vertical_button->connect("pressed", callable_mp(this, &TileMapEditor::_flip_vertical));
+	flip_vertical_button->connect("button_clicked", callable_mp(this, &TileMapEditor::_flip_vertical));
 	flip_vertical_button->set_shortcut(ED_SHORTCUT("tile_map_editor/flip_vertical", TTR("Flip Vertically"), KEY_Z));
 	flip_vertical_button->set_shortcut_context(this);
 	tool_hb->add_child(flip_vertical_button);
@@ -2251,7 +2251,7 @@ TileMapEditor::TileMapEditor(EditorNode *p_editor) {
 	clear_transform_button->set_flat(true);
 	clear_transform_button->set_tooltip(TTR("Clear Transform"));
 	clear_transform_button->set_focus_mode(FOCUS_NONE);
-	clear_transform_button->connect("pressed", callable_mp(this, &TileMapEditor::_clear_transform));
+	clear_transform_button->connect("button_clicked", callable_mp(this, &TileMapEditor::_clear_transform));
 	clear_transform_button->set_shortcut(ED_SHORTCUT("tile_map_editor/clear_transform", TTR("Clear Transform"), KEY_W));
 	clear_transform_button->set_shortcut_context(this);
 	tool_hb->add_child(clear_transform_button);

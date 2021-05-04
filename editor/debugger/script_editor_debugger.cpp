@@ -761,8 +761,8 @@ void ScriptEditorDebugger::_notification(int p_what) {
 			next->set_icon(get_theme_icon("DebugNext", "EditorIcons"));
 			dobreak->set_icon(get_theme_icon("Pause", "EditorIcons"));
 			docontinue->set_icon(get_theme_icon("DebugContinue", "EditorIcons"));
-			le_set->connect("pressed", callable_mp(this, &ScriptEditorDebugger::_live_edit_set));
-			le_clear->connect("pressed", callable_mp(this, &ScriptEditorDebugger::_live_edit_clear));
+			le_set->connect("button_clicked", callable_mp(this, &ScriptEditorDebugger::_live_edit_set));
+			le_clear->connect("button_clicked", callable_mp(this, &ScriptEditorDebugger::_live_edit_clear));
 			error_tree->connect("item_selected", callable_mp(this, &ScriptEditorDebugger::_error_selected));
 			error_tree->connect("item_activated", callable_mp(this, &ScriptEditorDebugger::_error_activated));
 			vmem_refresh->set_icon(get_theme_icon("Reload", "EditorIcons"));
@@ -1545,7 +1545,7 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {
 		skip_breakpoints->set_flat(true);
 		hbc->add_child(skip_breakpoints);
 		skip_breakpoints->set_tooltip(TTR("Skip Breakpoints"));
-		skip_breakpoints->connect("pressed", callable_mp(this, &ScriptEditorDebugger::debug_skip_breakpoints));
+		skip_breakpoints->connect("button_clicked", callable_mp(this, &ScriptEditorDebugger::debug_skip_breakpoints));
 
 		hbc->add_child(memnew(VSeparator));
 
@@ -1553,7 +1553,7 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {
 		copy->set_flat(true);
 		hbc->add_child(copy);
 		copy->set_tooltip(TTR("Copy Error"));
-		copy->connect("pressed", callable_mp(this, &ScriptEditorDebugger::debug_copy));
+		copy->connect("button_clicked", callable_mp(this, &ScriptEditorDebugger::debug_copy));
 
 		hbc->add_child(memnew(VSeparator));
 
@@ -1562,14 +1562,14 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {
 		hbc->add_child(step);
 		step->set_tooltip(TTR("Step Into"));
 		step->set_shortcut(ED_GET_SHORTCUT("debugger/step_into"));
-		step->connect("pressed", callable_mp(this, &ScriptEditorDebugger::debug_step));
+		step->connect("button_clicked", callable_mp(this, &ScriptEditorDebugger::debug_step));
 
 		next = memnew(Button);
 		next->set_flat(true);
 		hbc->add_child(next);
 		next->set_tooltip(TTR("Step Over"));
 		next->set_shortcut(ED_GET_SHORTCUT("debugger/step_over"));
-		next->connect("pressed", callable_mp(this, &ScriptEditorDebugger::debug_next));
+		next->connect("button_clicked", callable_mp(this, &ScriptEditorDebugger::debug_next));
 
 		hbc->add_child(memnew(VSeparator));
 
@@ -1578,14 +1578,14 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {
 		hbc->add_child(dobreak);
 		dobreak->set_tooltip(TTR("Break"));
 		dobreak->set_shortcut(ED_GET_SHORTCUT("debugger/break"));
-		dobreak->connect("pressed", callable_mp(this, &ScriptEditorDebugger::debug_break));
+		dobreak->connect("button_clicked", callable_mp(this, &ScriptEditorDebugger::debug_break));
 
 		docontinue = memnew(Button);
 		docontinue->set_flat(true);
 		hbc->add_child(docontinue);
 		docontinue->set_tooltip(TTR("Continue"));
 		docontinue->set_shortcut(ED_GET_SHORTCUT("debugger/continue"));
-		docontinue->connect("pressed", callable_mp(this, &ScriptEditorDebugger::debug_continue));
+		docontinue->connect("button_clicked", callable_mp(this, &ScriptEditorDebugger::debug_continue));
 
 		HSplitContainer *sc = memnew(HSplitContainer);
 		vbc->add_child(sc);
@@ -1621,12 +1621,12 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {
 
 		Button *expand_all = memnew(Button);
 		expand_all->set_text(TTR("Expand All"));
-		expand_all->connect("pressed", callable_mp(this, &ScriptEditorDebugger::_expand_errors_list));
+		expand_all->connect("button_clicked", callable_mp(this, &ScriptEditorDebugger::_expand_errors_list));
 		errhb->add_child(expand_all);
 
 		Button *collapse_all = memnew(Button);
 		collapse_all->set_text(TTR("Collapse All"));
-		collapse_all->connect("pressed", callable_mp(this, &ScriptEditorDebugger::_collapse_errors_list));
+		collapse_all->connect("button_clicked", callable_mp(this, &ScriptEditorDebugger::_collapse_errors_list));
 		errhb->add_child(collapse_all);
 
 		Control *space = memnew(Control);
@@ -1636,7 +1636,7 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {
 		clearbutton = memnew(Button);
 		clearbutton->set_text(TTR("Clear"));
 		clearbutton->set_h_size_flags(0);
-		clearbutton->connect("pressed", callable_mp(this, &ScriptEditorDebugger::_clear_errors_list));
+		clearbutton->connect("button_clicked", callable_mp(this, &ScriptEditorDebugger::_clear_errors_list));
 		errhb->add_child(clearbutton);
 
 		error_tree = memnew(Tree);
@@ -1713,8 +1713,8 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {
 		vmem_export->set_tooltip(TTR("Export list to a CSV file"));
 		vmem_hb->add_child(vmem_export);
 		vmem_vb->add_child(vmem_hb);
-		vmem_refresh->connect("pressed", callable_mp(this, &ScriptEditorDebugger::_video_mem_request));
-		vmem_export->connect("pressed", callable_mp(this, &ScriptEditorDebugger::_video_mem_export));
+		vmem_refresh->connect("button_clicked", callable_mp(this, &ScriptEditorDebugger::_video_mem_request));
+		vmem_export->connect("button_clicked", callable_mp(this, &ScriptEditorDebugger::_video_mem_export));
 
 		VBoxContainer *vmmc = memnew(VBoxContainer);
 		vmem_tree = memnew(Tree);
@@ -1780,7 +1780,7 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {
 		HBoxContainer *buttons = memnew(HBoxContainer);
 
 		export_csv = memnew(Button(TTR("Export measures as CSV")));
-		export_csv->connect("pressed", callable_mp(this, &ScriptEditorDebugger::_export_csv));
+		export_csv->connect("button_clicked", callable_mp(this, &ScriptEditorDebugger::_export_csv));
 		buttons->add_child(export_csv);
 
 		misc->add_child(buttons);

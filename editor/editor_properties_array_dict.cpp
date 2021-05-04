@@ -358,11 +358,11 @@ void EditorPropertyArray::update_property() {
 				Button *edit = memnew(Button);
 				edit->set_icon(get_theme_icon("Edit", "EditorIcons"));
 				hb->add_child(edit);
-				edit->connect("pressed", callable_mp(this, &EditorPropertyArray::_change_type), varray(edit, i + offset));
+				edit->connect("button_clicked", callable_mp(this, &EditorPropertyArray::_change_type), varray(edit, i + offset));
 			} else {
 				Button *remove = memnew(Button);
 				remove->set_icon(get_theme_icon("Remove", "EditorIcons"));
-				remove->connect("pressed", callable_mp(this, &EditorPropertyArray::_remove_pressed), varray(i + offset));
+				remove->connect("button_clicked", callable_mp(this, &EditorPropertyArray::_remove_pressed), varray(i + offset));
 				hb->add_child(remove);
 			}
 
@@ -578,7 +578,7 @@ EditorPropertyArray::EditorPropertyArray() {
 	edit->set_flat(true);
 	edit->set_h_size_flags(SIZE_EXPAND_FILL);
 	edit->set_clip_text(true);
-	edit->connect("pressed", callable_mp(this, &EditorPropertyArray::_edit_pressed));
+	edit->connect("button_clicked", callable_mp(this, &EditorPropertyArray::_edit_pressed));
 	edit->set_toggle_mode(true);
 	edit->set_drag_forwarding(this);
 	edit->connect("draw", callable_mp(this, &EditorPropertyArray::_button_draw));
@@ -1013,14 +1013,14 @@ void EditorPropertyDictionary::update_property() {
 			Button *edit = memnew(Button);
 			edit->set_icon(get_theme_icon("Edit", "EditorIcons"));
 			hb->add_child(edit);
-			edit->connect("pressed", callable_mp(this, &EditorPropertyDictionary::_change_type), varray(edit, change_index));
+			edit->connect("button_clicked", callable_mp(this, &EditorPropertyDictionary::_change_type), varray(edit, change_index));
 
 			prop->update_property();
 
 			if (i == amount + 1) {
 				Button *butt_add_item = memnew(Button);
 				butt_add_item->set_text(TTR("Add Key/Value Pair"));
-				butt_add_item->connect("pressed", callable_mp(this, &EditorPropertyDictionary::_add_key_value));
+				butt_add_item->connect("button_clicked", callable_mp(this, &EditorPropertyDictionary::_add_key_value));
 				add_vbox->add_child(butt_add_item);
 			}
 		}
@@ -1073,7 +1073,7 @@ EditorPropertyDictionary::EditorPropertyDictionary() {
 	edit->set_flat(true);
 	edit->set_h_size_flags(SIZE_EXPAND_FILL);
 	edit->set_clip_text(true);
-	edit->connect("pressed", callable_mp(this, &EditorPropertyDictionary::_edit_pressed));
+	edit->connect("button_clicked", callable_mp(this, &EditorPropertyDictionary::_edit_pressed));
 	edit->set_toggle_mode(true);
 	add_child(edit);
 	add_focusable(edit);

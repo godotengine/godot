@@ -108,8 +108,8 @@ void BoneTransformEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			create_editors();
-			key_button->connect("pressed", callable_mp(this, &BoneTransformEditor::_key_button_pressed));
-			enabled_checkbox->connect("toggled", callable_mp(this, &BoneTransformEditor::_checkbox_toggled));
+			key_button->connect("button_clicked", callable_mp(this, &BoneTransformEditor::_key_button_pressed));
+			enabled_checkbox->connect("button_toggled", callable_mp(this, &BoneTransformEditor::_checkbox_toggled));
 			[[fallthrough]];
 		}
 		case NOTIFICATION_SORT_CHILDREN: {
