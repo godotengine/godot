@@ -44,7 +44,7 @@
 		</member>
 		<member name="symbol_prefix" type="String" setter="set_symbol_prefix" getter="get_symbol_prefix" default="&quot;godot_&quot;">
 			The prefix this library's entry point functions begin with. For example, a GDNativeLibrary would declare its [code]gdnative_init[/code] function as [code]godot_gdnative_init[/code] by default.
-			On platforms that require statically linking libraries (currently only iOS), each library must have a different [code]symbol_prefix[/code].
+			On platforms that require statically linking libraries (currently tvOS and iOS), each library must have a different [code]symbol_prefix[/code].
 		</member>
 	</members>
 	<constants>

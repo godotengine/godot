@@ -43,6 +43,9 @@ extern "C" {
 #if TARGET_OS_IPHONE
 #define GDCALLINGCONV __attribute__((visibility("default")))
 #define GDAPI GDCALLINGCONV
+#elif TARGET_OS_TV
+#define GDCALLINGCONV __attribute__((visibility("default")))
+#define GDAPI GDCALLINGCONV
 #elif TARGET_OS_MAC
 #define GDCALLINGCONV __attribute__((sysv_abi))
 #define GDAPI GDCALLINGCONV

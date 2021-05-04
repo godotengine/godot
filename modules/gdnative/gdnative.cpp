@@ -291,11 +291,11 @@ bool GDNative::initialize() {
 		ERR_PRINT("No library set for this platform");
 		return false;
 	}
-#ifdef IPHONE_ENABLED
-	// On iOS we use static linking by default.
+#if defined(IPHONE_ENABLED) || defined(TVOS_ENABLED)
+	// On tvOS/iOS we use static linking by default.
 	String path = "";
 
-	// On iOS dylibs is not allowed, but can be replaced with .framework or .xcframework.
+	// On tvOS/iOS dylibs is not allowed, but can be replaced with .framework or .xcframework.
 	// If they are used, we can run dlopen on them.
 	// They should be located under Frameworks directory, so we need to replace library path.
 	if (!lib_path.ends_with(".a")) {

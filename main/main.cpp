@@ -1220,6 +1220,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 	GLOBAL_DEF("display/window/ios/hide_home_indicator", true);
 	GLOBAL_DEF("input_devices/pointing/ios/touch_delay", 0.150);
+	GLOBAL_DEF("input_devices/pointing/tvos/press_end_delay", 0.150);
 
 	Engine::get_singleton()->set_frame_delay(frame_delay);
 
