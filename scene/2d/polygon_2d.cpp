@@ -631,7 +631,7 @@ void Polygon2D::_bind_methods() {
 }
 
 Polygon2D::Polygon2D() {
-	invert = 0;
+	invert = false;
 	invert_border = 100;
 	antialiased = false;
 	tex_rot = 0;

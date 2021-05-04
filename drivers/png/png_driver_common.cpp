@@ -118,7 +118,7 @@ Error png_to_image(const uint8_t *p_source, size_t p_size, bool p_force_linear, 
 	ERR_FAIL_COND_V_MSG(check_error(png_img), ERR_FILE_CORRUPT, png_img.message);
 	ERR_FAIL_COND_V(!success, ERR_FILE_CORRUPT);
 
-	p_image->create(png_img.width, png_img.height, 0, dest_format, buffer);
+	p_image->create(png_img.width, png_img.height, false, dest_format, buffer);
 
 	return OK;
 }

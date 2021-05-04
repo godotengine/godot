@@ -214,9 +214,9 @@ struct PVRTCBlock {
 
 _FORCE_INLINE_ bool is_po2(uint32_t p_input) {
 	if (p_input == 0)
-		return 0;
+		return false;
 	uint32_t minus1 = p_input - 1;
-	return ((p_input | minus1) == (p_input ^ minus1)) ? 1 : 0;
+	return ((p_input | minus1) == (p_input ^ minus1)) ? true : false;
 }
 
 static void unpack_5554(const PVRTCBlock *p_block, int p_ab_colors[2][4]) {

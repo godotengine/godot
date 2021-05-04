@@ -2277,7 +2277,7 @@ SpatialMaterial::SpatialMaterial() :
 	depth_draw_mode = DEPTH_DRAW_OPAQUE_ONLY;
 	cull_mode = CULL_BACK;
 	for (int i = 0; i < FLAG_MAX; i++) {
-		flags[i] = 0;
+		flags[i] = false;
 	}
 	diffuse_mode = DIFFUSE_BURLEY;
 	specular_mode = SPECULAR_SCHLICK_GGX;

@@ -784,7 +784,7 @@ Ref<Texture> CurvePreviewGenerator::generate(const Ref<Resource> &p_from, const 
 	img_ref.instance();
 	Image &im = **img_ref;
 
-	im.create(thumbnail_size, thumbnail_size / 2, 0, Image::FORMAT_RGBA8);
+	im.create(thumbnail_size, thumbnail_size / 2, false, Image::FORMAT_RGBA8);
 
 	im.lock();
 

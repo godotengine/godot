@@ -309,7 +309,7 @@ void HTTPClient::close() {
 	body_size = -1;
 	body_left = 0;
 	chunk_left = 0;
-	chunk_trailer_part = 0;
+	chunk_trailer_part = false;
 	read_until_eof = false;
 	response_num = 0;
 	handshaking = false;

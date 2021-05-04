@@ -303,7 +303,7 @@ public:
 
 	virtual void soft_body_remove_all_pinned_points(RID p_body) {}
 	virtual void soft_body_pin_point(RID p_body, int p_point_index, bool p_pin) {}
-	virtual bool soft_body_is_point_pinned(RID p_body, int p_point_index) { return 0; }
+	virtual bool soft_body_is_point_pinned(RID p_body, int p_point_index) { return false; }
 
 	/* JOINT API */
 
