@@ -752,7 +752,7 @@ private:
 
 	Error _validate_datatype(DataType p_type);
 
-	bool _validate_function_call(BlockNode *p_block, OperatorNode *p_func, DataType *r_ret_type);
+	bool _validate_function_call(BlockNode *p_block, OperatorNode *p_func, DataType *r_ret_type, bool p_is_constructor);
 	bool _parse_function_arguments(BlockNode *p_block, const Map<StringName, BuiltInInfo> &p_builtin_types, OperatorNode *p_func, int *r_complete_arg = NULL);
 
 	Node *_parse_expression(BlockNode *p_block, const Map<StringName, BuiltInInfo> &p_builtin_types);
