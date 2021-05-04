@@ -2615,6 +2615,7 @@ void RichTextLabel::pop() {
 // Creates a new line without adding an ItemNewline to the previous line.
 // Useful when wanting to calling remove_line and add a new line immediately after.
 void RichTextLabel::increment_line_count() {
+	_validate_line_caches(main);
 	current_frame->lines.resize(current_frame->lines.size() + 1);
 	_invalidate_current_line(current_frame);
 }
