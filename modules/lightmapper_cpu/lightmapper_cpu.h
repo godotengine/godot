@@ -121,15 +121,15 @@ class LightmapperCPU : public Lightmapper {
 
 	BakeParams parameters;
 
-	LocalVector<Ref<Image> > bake_textures;
-	Map<RID, Ref<Image> > albedo_textures;
-	Map<RID, Ref<Image> > emission_textures;
+	LocalVector<Ref<Image>> bake_textures;
+	Map<RID, Ref<Image>> albedo_textures;
+	Map<RID, Ref<Image>> emission_textures;
 
 	LocalVector<MeshInstance> mesh_instances;
 	LocalVector<Light> lights;
 
-	LocalVector<LocalVector<LightmapTexel> > scene_lightmaps;
-	LocalVector<LocalVector<int> > scene_lightmap_indices;
+	LocalVector<LocalVector<LightmapTexel>> scene_lightmaps;
+	LocalVector<LocalVector<int>> scene_lightmap_indices;
 	Set<int> no_shadow_meshes;
 
 	std::atomic<uint32_t> thread_progress;
@@ -144,7 +144,7 @@ class LightmapperCPU : public Lightmapper {
 	bool _parallel_run(int p_count, const String &p_description, BakeThreadFunc p_thread_func, void *p_userdata, BakeStepFunc p_substep_func = nullptr);
 
 	void _generate_buffer(uint32_t p_idx, void *p_unused);
-	Ref<Image> _init_bake_texture(const MeshData::TextureDef &p_texture_def, const Map<RID, Ref<Image> > &p_tex_cache, Image::Format p_default_format);
+	Ref<Image> _init_bake_texture(const MeshData::TextureDef &p_texture_def, const Map<RID, Ref<Image>> &p_tex_cache, Image::Format p_default_format);
 	Color _bilinear_sample(const Ref<Image> &p_img, const Vector2 &p_uv, bool p_clamp_x = false, bool p_clamp_y = false);
 	Vector3 _fix_sample_position(const Vector3 &p_position, const Vector3 &p_texel_center, const Vector3 &p_normal, const Vector3 &p_tangent, const Vector3 &p_bitangent, const Vector2 &p_texel_size);
 	void _plot_triangle(const Vector2 *p_vertices, const Vector3 *p_positions, const Vector3 *p_normals, const Vector2 *p_uvs, const Ref<Image> &p_albedo_texture, const Ref<Image> &p_emission_texture, Vector2i p_size, LocalVector<LightmapTexel> &r_texels, LocalVector<int> &r_lightmap_indices);

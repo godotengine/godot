@@ -85,7 +85,7 @@ protected:
 	};
 
 	Map<StringName, BlendShapeTrack> blend_shape_tracks;
-	Vector<Ref<Material> > materials;
+	Vector<Ref<Material>> materials;
 
 	void _mesh_changed();
 	void _resolve_skeleton_path();

@@ -315,7 +315,7 @@ private:
 	bool sync_to_physics;
 
 	Vector<Collision> colliders;
-	Vector<Ref<KinematicCollision2D> > slide_colliders;
+	Vector<Ref<KinematicCollision2D>> slide_colliders;
 	Ref<KinematicCollision2D> motion_cache;
 
 	_FORCE_INLINE_ bool _ignores_mode(Physics2DServer::BodyMode) const;

@@ -752,7 +752,7 @@ public:
 		if (animation != p_anim)
 			return;
 
-		for (Map<int, List<float> >::Element *E = key_ofs_map.front(); E; E = E->next()) {
+		for (Map<int, List<float>>::Element *E = key_ofs_map.front(); E; E = E->next()) {
 
 			int key = 0;
 			for (List<float>::Element *F = E->value().front(); F; F = F->next()) {
@@ -780,7 +780,7 @@ public:
 
 		bool update_obj = false;
 		bool change_notify_deserved = false;
-		for (Map<int, List<float> >::Element *E = key_ofs_map.front(); E; E = E->next()) {
+		for (Map<int, List<float>>::Element *E = key_ofs_map.front(); E; E = E->next()) {
 
 			int track = E->key();
 			for (List<float>::Element *F = E->value().front(); F; F = F->next()) {
@@ -1063,7 +1063,7 @@ public:
 
 	bool _get(const StringName &p_name, Variant &r_ret) const {
 
-		for (Map<int, List<float> >::Element *E = key_ofs_map.front(); E; E = E->next()) {
+		for (Map<int, List<float>>::Element *E = key_ofs_map.front(); E; E = E->next()) {
 
 			int track = E->key();
 			for (List<float>::Element *F = E->value().front(); F; F = F->next()) {
@@ -1211,7 +1211,7 @@ public:
 		bool show_time = true;
 		bool same_track_type = true;
 		bool same_key_type = true;
-		for (Map<int, List<float> >::Element *E = key_ofs_map.front(); E; E = E->next()) {
+		for (Map<int, List<float>>::Element *E = key_ofs_map.front(); E; E = E->next()) {
 
 			int track = E->key();
 			ERR_FAIL_INDEX(track, animation->get_track_count());
@@ -1365,7 +1365,7 @@ public:
 
 	Ref<Animation> animation;
 
-	Map<int, List<float> > key_ofs_map;
+	Map<int, List<float>> key_ofs_map;
 	Map<int, NodePath> base_map;
 	PropertyInfo hint;
 
@@ -4907,7 +4907,7 @@ void AnimationTrackEditor::_update_key_edit() {
 		multi_key_edit = memnew(AnimationMultiTrackKeyEdit);
 		multi_key_edit->animation = animation;
 
-		Map<int, List<float> > key_ofs_map;
+		Map<int, List<float>> key_ofs_map;
 		Map<int, NodePath> base_map;
 		int first_track = -1;
 		for (Map<SelectedKey, KeyInfo>::Element *E = selection.front(); E; E = E->next()) {
@@ -5199,7 +5199,7 @@ void AnimationTrackEditor::_anim_duplicate_keys(bool transpose) {
 
 		undo_redo->create_action(TTR("Anim Duplicate Keys"));
 
-		List<Pair<int, float> > new_selection_values;
+		List<Pair<int, float>> new_selection_values;
 
 		for (Map<SelectedKey, KeyInfo>::Element *E = selection.back(); E; E = E->prev()) {
 
@@ -5237,7 +5237,7 @@ void AnimationTrackEditor::_anim_duplicate_keys(bool transpose) {
 		//reselect duplicated
 
 		Map<SelectedKey, KeyInfo> new_selection;
-		for (List<Pair<int, float> >::Element *E = new_selection_values.front(); E; E = E->next()) {
+		for (List<Pair<int, float>>::Element *E = new_selection_values.front(); E; E = E->next()) {
 
 			int track = E->get().first;
 			float time = E->get().second;

@@ -133,7 +133,7 @@ void EditorAssetInstaller::open(const String &p_path, int p_depth) {
 		ret = unzGoToNextFile(pkg);
 	}
 
-	Map<String, Ref<Texture> > extension_guess;
+	Map<String, Ref<Texture>> extension_guess;
 	{
 		extension_guess["png"] = get_icon("ImageTexture", "EditorIcons");
 		extension_guess["jpg"] = get_icon("ImageTexture", "EditorIcons");

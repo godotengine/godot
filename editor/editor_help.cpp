@@ -809,7 +809,7 @@ void EditorHelp::_update_doc() {
 	// Constants and enums
 	if (cd.constants.size()) {
 
-		Map<String, Vector<DocData::ConstantDoc> > enums;
+		Map<String, Vector<DocData::ConstantDoc>> enums;
 		Vector<DocData::ConstantDoc> constants;
 
 		for (int i = 0; i < cd.constants.size(); i++) {
@@ -839,7 +839,7 @@ void EditorHelp::_update_doc() {
 
 			class_desc->add_newline();
 
-			for (Map<String, Vector<DocData::ConstantDoc> >::Element *E = enums.front(); E; E = E->next()) {
+			for (Map<String, Vector<DocData::ConstantDoc>>::Element *E = enums.front(); E; E = E->next()) {
 
 				enum_line[E->key()] = class_desc->get_line_count() - 2;
 
@@ -1206,7 +1206,7 @@ void EditorHelp::_help_callback(const String &p_topic) {
 		if (constant_line.has(name))
 			line = constant_line[name];
 		else {
-			Map<String, Map<String, int> >::Element *iter = enum_values_line.front();
+			Map<String, Map<String, int>>::Element *iter = enum_values_line.front();
 			while (true) {
 				if (iter->value().has(name)) {
 					line = iter->value()[name];
@@ -1507,8 +1507,8 @@ void EditorHelp::go_to_class(const String &p_class, int p_scroll) {
 	_goto_desc(p_class, p_scroll);
 }
 
-Vector<Pair<String, int> > EditorHelp::get_sections() {
-	Vector<Pair<String, int> > sections;
+Vector<Pair<String, int>> EditorHelp::get_sections() {
+	Vector<Pair<String, int>> sections;
 
 	for (int i = 0; i < section_line.size(); i++) {
 		sections.push_back(Pair<String, int>(section_line[i].first, i));

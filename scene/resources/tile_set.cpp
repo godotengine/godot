@@ -252,14 +252,14 @@ bool TileSet::_get(const StringName &p_name, Variant &r_ret) const {
 			r_ret = p;
 		} else if (what == "occluder_map") {
 			Array p;
-			for (Map<Vector2, Ref<OccluderPolygon2D> >::Element *E = tile_map[id].autotile_data.occluder_map.front(); E; E = E->next()) {
+			for (Map<Vector2, Ref<OccluderPolygon2D>>::Element *E = tile_map[id].autotile_data.occluder_map.front(); E; E = E->next()) {
 				p.push_back(E->key());
 				p.push_back(E->value());
 			}
 			r_ret = p;
 		} else if (what == "navpoly_map") {
 			Array p;
-			for (Map<Vector2, Ref<NavigationPolygon> >::Element *E = tile_map[id].autotile_data.navpoly_map.front(); E; E = E->next()) {
+			for (Map<Vector2, Ref<NavigationPolygon>>::Element *E = tile_map[id].autotile_data.navpoly_map.front(); E; E = E->next()) {
 				p.push_back(E->key());
 				p.push_back(E->value());
 			}
@@ -903,9 +903,9 @@ Ref<NavigationPolygon> TileSet::tile_get_navigation_polygon(int p_id) const {
 	return tile_map[p_id].navigation_polygon;
 }
 
-const Map<Vector2, Ref<OccluderPolygon2D> > &TileSet::autotile_get_light_oclusion_map(int p_id) const {
+const Map<Vector2, Ref<OccluderPolygon2D>> &TileSet::autotile_get_light_oclusion_map(int p_id) const {
 
-	static Map<Vector2, Ref<OccluderPolygon2D> > dummy;
+	static Map<Vector2, Ref<OccluderPolygon2D>> dummy;
 	ERR_FAIL_COND_V(!tile_map.has(p_id), dummy);
 	return tile_map[p_id].autotile_data.occluder_map;
 }
@@ -932,9 +932,9 @@ Ref<NavigationPolygon> TileSet::autotile_get_navigation_polygon(int p_id, const 
 	}
 }
 
-const Map<Vector2, Ref<NavigationPolygon> > &TileSet::autotile_get_navigation_map(int p_id) const {
+const Map<Vector2, Ref<NavigationPolygon>> &TileSet::autotile_get_navigation_map(int p_id) const {
 
-	static Map<Vector2, Ref<NavigationPolygon> > dummy;
+	static Map<Vector2, Ref<NavigationPolygon>> dummy;
 	ERR_FAIL_COND_V(!tile_map.has(p_id), dummy);
 	return tile_map[p_id].autotile_data.navpoly_map;
 }
@@ -1077,7 +1077,7 @@ void TileSet::_decompose_convex_shape(Ref<Shape2D> p_shape) {
 	Ref<ConvexPolygonShape2D> convex = p_shape;
 	if (!convex.is_valid())
 		return;
-	Vector<Vector<Vector2> > decomp = Geometry::decompose_polygon_in_convex(convex->get_points());
+	Vector<Vector<Vector2>> decomp = Geometry::decompose_polygon_in_convex(convex->get_points());
 	if (decomp.size() > 1) {
 		Array sub_shapes;
 		for (int i = 0; i < decomp.size(); i++) {

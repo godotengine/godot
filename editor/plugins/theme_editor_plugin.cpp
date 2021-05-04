@@ -120,12 +120,12 @@ struct _TECategory {
 		bool operator<(const Item<T> &p) const { return name < p.name; }
 	};
 
-	Set<RefItem<StyleBox> > stylebox_items;
-	Set<RefItem<Font> > font_items;
-	Set<RefItem<Texture> > icon_items;
+	Set<RefItem<StyleBox>> stylebox_items;
+	Set<RefItem<Font>> font_items;
+	Set<RefItem<Texture>> icon_items;
 
-	Set<Item<Color> > color_items;
-	Set<Item<int> > constant_items;
+	Set<Item<Color>> color_items;
+	Set<Item<int>> constant_items;
 };
 
 void ThemeEditor::_save_template_cbk(String fname) {
@@ -275,7 +275,7 @@ void ThemeEditor::_save_template_cbk(String fname) {
 		if (tc.stylebox_items.size())
 			file->store_line("\n; StyleBox Items:\n");
 
-		for (Set<_TECategory::RefItem<StyleBox> >::Element *F = tc.stylebox_items.front(); F; F = F->next()) {
+		for (Set<_TECategory::RefItem<StyleBox>>::Element *F = tc.stylebox_items.front(); F; F = F->next()) {
 
 			file->store_line(E->key() + "." + F->get().name + " = default");
 		}
@@ -283,7 +283,7 @@ void ThemeEditor::_save_template_cbk(String fname) {
 		if (tc.font_items.size())
 			file->store_line("\n; Font Items:\n");
 
-		for (Set<_TECategory::RefItem<Font> >::Element *F = tc.font_items.front(); F; F = F->next()) {
+		for (Set<_TECategory::RefItem<Font>>::Element *F = tc.font_items.front(); F; F = F->next()) {
 
 			file->store_line(E->key() + "." + F->get().name + " = default");
 		}
@@ -291,7 +291,7 @@ void ThemeEditor::_save_template_cbk(String fname) {
 		if (tc.icon_items.size())
 			file->store_line("\n; Icon Items:\n");
 
-		for (Set<_TECategory::RefItem<Texture> >::Element *F = tc.icon_items.front(); F; F = F->next()) {
+		for (Set<_TECategory::RefItem<Texture>>::Element *F = tc.icon_items.front(); F; F = F->next()) {
 
 			file->store_line(E->key() + "." + F->get().name + " = default");
 		}
@@ -299,7 +299,7 @@ void ThemeEditor::_save_template_cbk(String fname) {
 		if (tc.color_items.size())
 			file->store_line("\n; Color Items:\n");
 
-		for (Set<_TECategory::Item<Color> >::Element *F = tc.color_items.front(); F; F = F->next()) {
+		for (Set<_TECategory::Item<Color>>::Element *F = tc.color_items.front(); F; F = F->next()) {
 
 			file->store_line(E->key() + "." + F->get().name + " = default");
 		}
@@ -307,7 +307,7 @@ void ThemeEditor::_save_template_cbk(String fname) {
 		if (tc.constant_items.size())
 			file->store_line("\n; Constant Items:\n");
 
-		for (Set<_TECategory::Item<int> >::Element *F = tc.constant_items.front(); F; F = F->next()) {
+		for (Set<_TECategory::Item<int>>::Element *F = tc.constant_items.front(); F; F = F->next()) {
 
 			file->store_line(E->key() + "." + F->get().name + " = default");
 		}

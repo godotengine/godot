@@ -477,7 +477,7 @@ void SoftBody::become_mesh_owner() {
 	if (!mesh_owner) {
 		mesh_owner = true;
 
-		Vector<Ref<Material> > copy_materials;
+		Vector<Ref<Material>> copy_materials;
 		copy_materials.append_array(materials);
 
 		ERR_FAIL_COND(!mesh->get_surface_count());

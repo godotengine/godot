@@ -42,7 +42,7 @@ class SpriteFrames : public Resource {
 
 		float speed;
 		bool loop;
-		Vector<Ref<Texture> > frames;
+		Vector<Ref<Texture>> frames;
 
 		Anim() {
 			loop = true;

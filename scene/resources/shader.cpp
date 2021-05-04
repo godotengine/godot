@@ -121,7 +121,7 @@ Ref<Texture> Shader::get_default_texture_param(const StringName &p_param) const 
 
 void Shader::get_default_texture_param_list(List<StringName> *r_textures) const {
 
-	for (const Map<StringName, Ref<Texture> >::Element *E = default_textures.front(); E; E = E->next()) {
+	for (const Map<StringName, Ref<Texture>>::Element *E = default_textures.front(); E; E = E->next()) {
 
 		r_textures->push_back(E->key());
 	}

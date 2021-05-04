@@ -322,7 +322,7 @@ static NSMutableArray<ApplicationDelegateService *> *services = nil;
 	return result;
 }
 
-- (BOOL)application:(UIApplication *)application continueUserActivity:(NSUserActivity *)userActivity restorationHandler:(void (^)(NSArray<id<UIUserActivityRestoring> > *restorableObjects))restorationHandler {
+- (BOOL)application:(UIApplication *)application continueUserActivity:(NSUserActivity *)userActivity restorationHandler:(void (^)(NSArray<id<UIUserActivityRestoring>> *restorableObjects))restorationHandler {
 	BOOL result = NO;
 
 	for (ApplicationDelegateService *service in services) {

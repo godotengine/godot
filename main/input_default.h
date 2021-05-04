@@ -207,7 +207,7 @@ private:
 
 	void _parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_emulated);
 
-	List<Ref<InputEvent> > accumulated_events;
+	List<Ref<InputEvent>> accumulated_events;
 	bool use_accumulated_input;
 
 protected:

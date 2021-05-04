@@ -1855,25 +1855,25 @@ inline DA _convert_array_from_variant(const Variant &p_variant) {
 			return _convert_array<DA, Array>(p_variant.operator Array());
 		}
 		case Variant::POOL_BYTE_ARRAY: {
-			return _convert_array<DA, PoolVector<uint8_t> >(p_variant.operator PoolVector<uint8_t>());
+			return _convert_array<DA, PoolVector<uint8_t>>(p_variant.operator PoolVector<uint8_t>());
 		}
 		case Variant::POOL_INT_ARRAY: {
-			return _convert_array<DA, PoolVector<int> >(p_variant.operator PoolVector<int>());
+			return _convert_array<DA, PoolVector<int>>(p_variant.operator PoolVector<int>());
 		}
 		case Variant::POOL_REAL_ARRAY: {
-			return _convert_array<DA, PoolVector<real_t> >(p_variant.operator PoolVector<real_t>());
+			return _convert_array<DA, PoolVector<real_t>>(p_variant.operator PoolVector<real_t>());
 		}
 		case Variant::POOL_STRING_ARRAY: {
-			return _convert_array<DA, PoolVector<String> >(p_variant.operator PoolVector<String>());
+			return _convert_array<DA, PoolVector<String>>(p_variant.operator PoolVector<String>());
 		}
 		case Variant::POOL_VECTOR2_ARRAY: {
-			return _convert_array<DA, PoolVector<Vector2> >(p_variant.operator PoolVector<Vector2>());
+			return _convert_array<DA, PoolVector<Vector2>>(p_variant.operator PoolVector<Vector2>());
 		}
 		case Variant::POOL_VECTOR3_ARRAY: {
-			return _convert_array<DA, PoolVector<Vector3> >(p_variant.operator PoolVector<Vector3>());
+			return _convert_array<DA, PoolVector<Vector3>>(p_variant.operator PoolVector<Vector3>());
 		}
 		case Variant::POOL_COLOR_ARRAY: {
-			return _convert_array<DA, PoolVector<Color> >(p_variant.operator PoolVector<Color>());
+			return _convert_array<DA, PoolVector<Color>>(p_variant.operator PoolVector<Color>());
 		}
 		default: {
 			return DA();
@@ -1894,21 +1894,21 @@ Variant::operator PoolVector<uint8_t>() const {
 	if (type == POOL_BYTE_ARRAY)
 		return *reinterpret_cast<const PoolVector<uint8_t> *>(_data._mem);
 	else
-		return _convert_array_from_variant<PoolVector<uint8_t> >(*this);
+		return _convert_array_from_variant<PoolVector<uint8_t>>(*this);
 }
 Variant::operator PoolVector<int>() const {
 
 	if (type == POOL_INT_ARRAY)
 		return *reinterpret_cast<const PoolVector<int> *>(_data._mem);
 	else
-		return _convert_array_from_variant<PoolVector<int> >(*this);
+		return _convert_array_from_variant<PoolVector<int>>(*this);
 }
 Variant::operator PoolVector<real_t>() const {
 
 	if (type == POOL_REAL_ARRAY)
 		return *reinterpret_cast<const PoolVector<real_t> *>(_data._mem);
 	else
-		return _convert_array_from_variant<PoolVector<real_t> >(*this);
+		return _convert_array_from_variant<PoolVector<real_t>>(*this);
 }
 
 Variant::operator PoolVector<String>() const {
@@ -1916,21 +1916,21 @@ Variant::operator PoolVector<String>() const {
 	if (type == POOL_STRING_ARRAY)
 		return *reinterpret_cast<const PoolVector<String> *>(_data._mem);
 	else
-		return _convert_array_from_variant<PoolVector<String> >(*this);
+		return _convert_array_from_variant<PoolVector<String>>(*this);
 }
 Variant::operator PoolVector<Vector3>() const {
 
 	if (type == POOL_VECTOR3_ARRAY)
 		return *reinterpret_cast<const PoolVector<Vector3> *>(_data._mem);
 	else
-		return _convert_array_from_variant<PoolVector<Vector3> >(*this);
+		return _convert_array_from_variant<PoolVector<Vector3>>(*this);
 }
 Variant::operator PoolVector<Vector2>() const {
 
 	if (type == POOL_VECTOR2_ARRAY)
 		return *reinterpret_cast<const PoolVector<Vector2> *>(_data._mem);
 	else
-		return _convert_array_from_variant<PoolVector<Vector2> >(*this);
+		return _convert_array_from_variant<PoolVector<Vector2>>(*this);
 }
 
 Variant::operator PoolVector<Color>() const {
@@ -1938,7 +1938,7 @@ Variant::operator PoolVector<Color>() const {
 	if (type == POOL_COLOR_ARRAY)
 		return *reinterpret_cast<const PoolVector<Color> *>(_data._mem);
 	else
-		return _convert_array_from_variant<PoolVector<Color> >(*this);
+		return _convert_array_from_variant<PoolVector<Color>>(*this);
 }
 
 /* helpers */

@@ -117,7 +117,7 @@ private:
 
 	struct PlotMesh {
 		Ref<Material> override_material;
-		Vector<Ref<Material> > instance_materials;
+		Vector<Ref<Material>> instance_materials;
 		Ref<Mesh> mesh;
 		Transform local_xform;
 	};

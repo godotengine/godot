@@ -165,7 +165,7 @@ public:
 	virtual Variant::Type get_property_type(const StringName &p_name, bool *r_is_valid = NULL) const = 0;
 
 	virtual Object *get_owner() { return NULL; }
-	virtual void get_property_state(List<Pair<StringName, Variant> > &state);
+	virtual void get_property_state(List<Pair<StringName, Variant>> &state);
 
 	virtual void get_method_list(List<MethodInfo> *p_list) const = 0;
 	virtual bool has_method(const StringName &p_method) const = 0;
@@ -341,7 +341,7 @@ public:
 
 	virtual void get_recognized_extensions(List<String> *p_extensions) const = 0;
 	virtual void get_public_functions(List<MethodInfo> *p_functions) const = 0;
-	virtual void get_public_constants(List<Pair<String, Variant> > *p_constants) const = 0;
+	virtual void get_public_constants(List<Pair<String, Variant>> *p_constants) const = 0;
 
 	struct ProfilingInfo {
 		StringName signature;
@@ -423,7 +423,7 @@ class ScriptDebugger {
 	int depth;
 
 	static ScriptDebugger *singleton;
-	Map<int, Set<StringName> > breakpoints;
+	Map<int, Set<StringName>> breakpoints;
 
 	ScriptLanguage *break_lang;
 
@@ -441,7 +441,7 @@ public:
 	bool is_breakpoint(int p_line, const StringName &p_source) const;
 	bool is_breakpoint_line(int p_line) const;
 	void clear_breakpoints();
-	const Map<int, Set<StringName> > &get_breakpoints() const { return breakpoints; }
+	const Map<int, Set<StringName>> &get_breakpoints() const { return breakpoints; }
 
 	virtual void debug(ScriptLanguage *p_script, bool p_can_continue = true, bool p_is_error_breakpoint = false) = 0;
 	virtual void idle_poll();

@@ -2290,9 +2290,9 @@ public:
 		DirAccessRef da = DirAccess::open("res://android");
 
 		ERR_FAIL_COND_MSG(!da, "Cannot open directory 'res://android'.");
-		Map<String, List<String> > directory_paths;
-		Map<String, List<String> > manifest_sections;
-		Map<String, List<String> > gradle_sections;
+		Map<String, List<String>> directory_paths;
+		Map<String, List<String>> manifest_sections;
+		Map<String, List<String>> gradle_sections;
 		da->list_dir_begin();
 		String d = da->get_next();
 		while (d != String()) {

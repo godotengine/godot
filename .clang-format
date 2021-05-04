@@ -112,11 +112,10 @@ UseTab:          Always
 ---
 ### C++ specific config ###
 Language:        Cpp
-Standard:        Cpp03
+Standard:        c++14
 ---
 ### ObjC specific config ###
 Language:        ObjC
-Standard:        Cpp03
 ObjCBlockIndentWidth: 4
 # ObjCSpaceAfterProperty: false
 # ObjCSpaceBeforeProtocolList: true

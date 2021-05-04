@@ -42,7 +42,7 @@ class NavigationPolygon : public Resource {
 		Vector<int> indices;
 	};
 	Vector<Polygon> polygons;
-	Vector<PoolVector<Vector2> > outlines;
+	Vector<PoolVector<Vector2>> outlines;
 
 	mutable Rect2 item_rect;
 	mutable bool rect_cache_dirty;

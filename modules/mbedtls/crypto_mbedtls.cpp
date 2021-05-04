@@ -277,7 +277,7 @@ Ref<CryptoKey> CryptoMbedTLS::generate_rsa(int p_bytes) {
 }
 
 Ref<X509Certificate> CryptoMbedTLS::generate_self_signed_certificate(Ref<CryptoKey> p_key, String p_issuer_name, String p_not_before, String p_not_after) {
-	Ref<CryptoKeyMbedTLS> key = static_cast<Ref<CryptoKeyMbedTLS> >(p_key);
+	Ref<CryptoKeyMbedTLS> key = static_cast<Ref<CryptoKeyMbedTLS>>(p_key);
 	ERR_FAIL_COND_V_MSG(key.is_null(), NULL, "Invalid private key argument.");
 	mbedtls_x509write_cert crt;
 	mbedtls_x509write_crt_init(&crt);
@@ -343,7 +343,7 @@ Vector<uint8_t> CryptoMbedTLS::sign(HashingContext::HashType p_hash_type, Vector
 	mbedtls_md_type_t type = _md_type_from_hashtype(p_hash_type, size);
 	ERR_FAIL_COND_V_MSG(type == MBEDTLS_MD_NONE, Vector<uint8_t>(), "Invalid hash type.");
 	ERR_FAIL_COND_V_MSG(p_hash.size() != size, Vector<uint8_t>(), "Invalid hash provided. Size must be " + itos(size));
-	Ref<CryptoKeyMbedTLS> key = static_cast<Ref<CryptoKeyMbedTLS> >(p_key);
+	Ref<CryptoKeyMbedTLS> key = static_cast<Ref<CryptoKeyMbedTLS>>(p_key);
 	ERR_FAIL_COND_V_MSG(!key.is_valid(), Vector<uint8_t>(), "Invalid key provided.");
 	ERR_FAIL_COND_V_MSG(key->is_public_only(), Vector<uint8_t>(), "Invalid key provided. Cannot sign with public_only keys.");
 	size_t sig_size = 0;
@@ -361,13 +361,13 @@ bool CryptoMbedTLS::verify(HashingContext::HashType p_hash_type, Vector<uint8_t>
 	mbedtls_md_type_t type = _md_type_from_hashtype(p_hash_type, size);
 	ERR_FAIL_COND_V_MSG(type == MBEDTLS_MD_NONE, false, "Invalid hash type.");
 	ERR_FAIL_COND_V_MSG(p_hash.size() != size, false, "Invalid hash provided. Size must be " + itos(size));
-	Ref<CryptoKeyMbedTLS> key = static_cast<Ref<CryptoKeyMbedTLS> >(p_key);
+	Ref<CryptoKeyMbedTLS> key = static_cast<Ref<CryptoKeyMbedTLS>>(p_key);
 	ERR_FAIL_COND_V_MSG(!key.is_valid(), false, "Invalid key provided.");
 	return mbedtls_pk_verify(&(key->pkey), type, p_hash.ptr(), size, p_signature.ptr(), p_signature.size()) == 0;
 }
 
 Vector<uint8_t> CryptoMbedTLS::encrypt(Ref<CryptoKey> p_key, Vector<uint8_t> p_plaintext) {
-	Ref<CryptoKeyMbedTLS> key = static_cast<Ref<CryptoKeyMbedTLS> >(p_key);
+	Ref<CryptoKeyMbedTLS> key = static_cast<Ref<CryptoKeyMbedTLS>>(p_key);
 	ERR_FAIL_COND_V_MSG(!key.is_valid(), Vector<uint8_t>(), "Invalid key provided.");
 	uint8_t buf[1024];
 	size_t size;
@@ -380,7 +380,7 @@ Vector<uint8_t> CryptoMbedTLS::encrypt(Ref<CryptoKey> p_key, Vector<uint8_t> p_p
 }
 
 Vector<uint8_t> CryptoMbedTLS::decrypt(Ref<CryptoKey> p_key, Vector<uint8_t> p_ciphertext) {
-	Ref<CryptoKeyMbedTLS> key = static_cast<Ref<CryptoKeyMbedTLS> >(p_key);
+	Ref<CryptoKeyMbedTLS> key = static_cast<Ref<CryptoKeyMbedTLS>>(p_key);
 	ERR_FAIL_COND_V_MSG(!key.is_valid(), Vector<uint8_t>(), "Invalid key provided.");
 	ERR_FAIL_COND_V_MSG(key->is_public_only(), Vector<uint8_t>(), "Invalid key provided. Cannot decrypt using a public_only key.");
 	uint8_t buf[2048];

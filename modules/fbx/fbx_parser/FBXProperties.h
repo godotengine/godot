@@ -178,7 +178,7 @@ inline T PropertyGet(const PropertyTable *in, const std::string &name, const T &
 	}
 
 	// strong typing, no need to be lenient
-	const TypedProperty<T> *const tprop = prop->As<TypedProperty<T> >();
+	const TypedProperty<T> *const tprop = prop->As<TypedProperty<T>>();
 	if (nullptr == tprop) {
 		return defaultValue;
 	}
@@ -208,7 +208,7 @@ inline T PropertyGet(const PropertyTable *in, const std::string &name, bool &res
 	}
 
 	// strong typing, no need to be lenient
-	const TypedProperty<T> *const tprop = prop->As<TypedProperty<T> >();
+	const TypedProperty<T> *const tprop = prop->As<TypedProperty<T>>();
 	if (nullptr == tprop) {
 		result = false;
 		return T();

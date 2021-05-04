@@ -470,7 +470,7 @@ void BakedLightmap::_find_meshes_and_lights(Node *p_at_node, Vector<MeshesFound>
 	}
 }
 
-void BakedLightmap::_get_material_images(const MeshesFound &p_found_mesh, Lightmapper::MeshData &r_mesh_data, Vector<Ref<Texture> > &r_albedo_textures, Vector<Ref<Texture> > &r_emission_textures) {
+void BakedLightmap::_get_material_images(const MeshesFound &p_found_mesh, Lightmapper::MeshData &r_mesh_data, Vector<Ref<Texture>> &r_albedo_textures, Vector<Ref<Texture>> &r_emission_textures) {
 
 	for (int i = 0; i < p_found_mesh.mesh->get_surface_count(); ++i) {
 		Ref<SpatialMaterial> mat = p_found_mesh.overrides[i];
@@ -750,8 +750,8 @@ BakedLightmap::BakeError BakedLightmap::bake(Node *p_from_node, String p_data_sa
 			}
 		}
 
-		Vector<Ref<Texture> > albedo_textures;
-		Vector<Ref<Texture> > emission_textures;
+		Vector<Ref<Texture>> albedo_textures;
+		Vector<Ref<Texture>> emission_textures;
 
 		_get_material_images(mf, md, albedo_textures, emission_textures);
 
@@ -957,7 +957,7 @@ BakedLightmap::BakeError BakedLightmap::bake(Node *p_from_node, String p_data_sa
 		}
 	}
 
-	Vector<Ref<Image> > images;
+	Vector<Ref<Image>> images;
 	for (int i = 0; i < lightmapper->get_bake_texture_count(); i++) {
 		images.push_back(lightmapper->get_bake_texture(i));
 	}

@@ -2603,7 +2603,7 @@ void VisualServerScene::_setup_gi_probe(Instance *p_instance) {
 	if (probe->dynamic.compression == RasterizerStorage::GI_PROBE_S3TC) {
 
 		//create all blocks
-		Vector<Map<uint32_t, InstanceGIProbeData::CompBlockS3TC> > comp_blocks;
+		Vector<Map<uint32_t, InstanceGIProbeData::CompBlockS3TC>> comp_blocks;
 		int mipmap_count = probe->dynamic.mipmaps_3d.size();
 		comp_blocks.resize(mipmap_count);
 

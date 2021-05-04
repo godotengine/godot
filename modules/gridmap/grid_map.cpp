@@ -456,7 +456,7 @@ bool GridMap::_octant_update(const OctantKey &p_key) {
 	 * and set said multimesh bounding box to one containing all cells which have this item
 	 */
 
-	Map<int, List<Pair<Transform, IndexKey> > > multimesh_items;
+	Map<int, List<Pair<Transform, IndexKey>>> multimesh_items;
 
 	for (Set<IndexKey>::Element *E = g.cells.front(); E; E = E->next()) {
 
@@ -477,7 +477,7 @@ bool GridMap::_octant_update(const OctantKey &p_key) {
 		if (baked_meshes.size() == 0) {
 			if (mesh_library->get_item_mesh(c.item).is_valid()) {
 				if (!multimesh_items.has(c.item)) {
-					multimesh_items[c.item] = List<Pair<Transform, IndexKey> >();
+					multimesh_items[c.item] = List<Pair<Transform, IndexKey>>();
 				}
 
 				Pair<Transform, IndexKey> p;
@@ -517,7 +517,7 @@ bool GridMap::_octant_update(const OctantKey &p_key) {
 	//update multimeshes, only if not baked
 	if (baked_meshes.size() == 0) {
 
-		for (Map<int, List<Pair<Transform, IndexKey> > >::Element *E = multimesh_items.front(); E; E = E->next()) {
+		for (Map<int, List<Pair<Transform, IndexKey>>>::Element *E = multimesh_items.front(); E; E = E->next()) {
 			Octant::MultimeshInstance mmi;
 
 			RID mm = VS::get_singleton()->multimesh_create();
@@ -525,7 +525,7 @@ bool GridMap::_octant_update(const OctantKey &p_key) {
 			VS::get_singleton()->multimesh_set_mesh(mm, mesh_library->get_item_mesh(E->key())->get_rid());
 
 			int idx = 0;
-			for (List<Pair<Transform, IndexKey> >::Element *F = E->get().front(); F; F = F->next()) {
+			for (List<Pair<Transform, IndexKey>>::Element *F = E->get().front(); F; F = F->next()) {
 				VS::get_singleton()->multimesh_instance_set_transform(mm, idx, F->get().first);
 #ifdef TOOLS_ENABLED
 
@@ -1001,7 +1001,7 @@ void GridMap::make_baked_meshes(bool p_gen_lightmap_uv, float p_lightmap_uv_texe
 		return;
 
 	//generate
-	Map<OctantKey, Map<Ref<Material>, Ref<SurfaceTool> > > surface_map;
+	Map<OctantKey, Map<Ref<Material>, Ref<SurfaceTool>>> surface_map;
 
 	for (Map<IndexKey, Cell>::Element *E = cell_map.front(); E; E = E->next()) {
 
@@ -1030,10 +1030,10 @@ void GridMap::make_baked_meshes(bool p_gen_lightmap_uv, float p_lightmap_uv_texe
 		ok.z = key.z / octant_size;
 
 		if (!surface_map.has(ok)) {
-			surface_map[ok] = Map<Ref<Material>, Ref<SurfaceTool> >();
+			surface_map[ok] = Map<Ref<Material>, Ref<SurfaceTool>>();
 		}
 
-		Map<Ref<Material>, Ref<SurfaceTool> > &mat_map = surface_map[ok];
+		Map<Ref<Material>, Ref<SurfaceTool>> &mat_map = surface_map[ok];
 
 		for (int i = 0; i < mesh->get_surface_count(); i++) {
 
@@ -1053,11 +1053,11 @@ void GridMap::make_baked_meshes(bool p_gen_lightmap_uv, float p_lightmap_uv_texe
 		}
 	}
 
-	for (Map<OctantKey, Map<Ref<Material>, Ref<SurfaceTool> > >::Element *E = surface_map.front(); E; E = E->next()) {
+	for (Map<OctantKey, Map<Ref<Material>, Ref<SurfaceTool>>>::Element *E = surface_map.front(); E; E = E->next()) {
 
 		Ref<ArrayMesh> mesh;
 		mesh.instance();
-		for (Map<Ref<Material>, Ref<SurfaceTool> >::Element *F = E->get().front(); F; F = F->next()) {
+		for (Map<Ref<Material>, Ref<SurfaceTool>>::Element *F = E->get().front(); F; F = F->next()) {
 			F->get()->commit(mesh);
 		}
 

@@ -253,7 +253,7 @@ void WSLClient::poll() {
 					}
 					_connection = ssl;
 				} else {
-					ssl = static_cast<Ref<StreamPeerSSL> >(_connection);
+					ssl = static_cast<Ref<StreamPeerSSL>>(_connection);
 					ERR_FAIL_COND(ssl.is_null()); // Bug?
 					ssl->poll();
 				}

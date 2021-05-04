@@ -555,9 +555,9 @@ void Mesh::clear_cache() const {
 	debug_lines.clear();
 }
 
-Vector<Ref<Shape> > Mesh::convex_decompose() const {
+Vector<Ref<Shape>> Mesh::convex_decompose() const {
 
-	ERR_FAIL_COND_V(!convex_composition_function, Vector<Ref<Shape> >());
+	ERR_FAIL_COND_V(!convex_composition_function, Vector<Ref<Shape>>());
 
 	PoolVector<Face3> faces = get_faces();
 	Vector<Face3> f3;
@@ -567,9 +567,9 @@ Vector<Ref<Shape> > Mesh::convex_decompose() const {
 		f3.write[i] = f[i];
 	}
 
-	Vector<Vector<Face3> > decomposed = convex_composition_function(f3);
+	Vector<Vector<Face3>> decomposed = convex_composition_function(f3);
 
-	Vector<Ref<Shape> > ret;
+	Vector<Ref<Shape>> ret;
 
 	for (int i = 0; i < decomposed.size(); i++) {
 		Set<Vector3> points;
@@ -671,7 +671,7 @@ bool ArrayMesh::_set(const StringName &p_name, const Variant &p_value) {
 			if (d.has("index_count"))
 				index_count = d["index_count"];
 
-			Vector<PoolVector<uint8_t> > blend_shapes;
+			Vector<PoolVector<uint8_t>> blend_shapes;
 
 			if (d.has("blend_shape_data")) {
 				Array blend_shape_data = d["blend_shape_data"];
@@ -767,7 +767,7 @@ bool ArrayMesh::_get(const StringName &p_name, Variant &r_ret) const {
 	}
 	d["skeleton_aabb"] = arr;
 
-	Vector<PoolVector<uint8_t> > blend_shape_data = VS::get_singleton()->mesh_surface_get_blend_shapes(mesh, idx);
+	Vector<PoolVector<uint8_t>> blend_shape_data = VS::get_singleton()->mesh_surface_get_blend_shapes(mesh, idx);
 
 	Array md;
 	for (int i = 0; i < blend_shape_data.size(); i++) {
@@ -824,7 +824,7 @@ void ArrayMesh::_recompute_aabb() {
 	}
 }
 
-void ArrayMesh::add_surface(uint32_t p_format, PrimitiveType p_primitive, const PoolVector<uint8_t> &p_array, int p_vertex_count, const PoolVector<uint8_t> &p_index_array, int p_index_count, const AABB &p_aabb, const Vector<PoolVector<uint8_t> > &p_blend_shapes, const Vector<AABB> &p_bone_aabbs) {
+void ArrayMesh::add_surface(uint32_t p_format, PrimitiveType p_primitive, const PoolVector<uint8_t> &p_array, int p_vertex_count, const PoolVector<uint8_t> &p_index_array, int p_index_count, const AABB &p_aabb, const Vector<PoolVector<uint8_t>> &p_blend_shapes, const Vector<AABB> &p_bone_aabbs) {
 
 	Surface s;
 	s.aabb = p_aabb;
@@ -1096,7 +1096,7 @@ AABB ArrayMesh::get_custom_aabb() const {
 
 void ArrayMesh::regen_normalmaps() {
 
-	Vector<Ref<SurfaceTool> > surfs;
+	Vector<Ref<SurfaceTool>> surfs;
 	for (int i = 0; i < get_surface_count(); i++) {
 
 		Ref<SurfaceTool> st = memnew(SurfaceTool);
@@ -1143,7 +1143,7 @@ Error ArrayMesh::lightmap_unwrap_cached(int *&r_cache_data, unsigned int &r_cach
 	LocalVector<int> indices;
 	LocalVector<int> face_materials;
 	LocalVector<float> uv;
-	LocalVector<Pair<int, int> > uv_indices;
+	LocalVector<Pair<int, int>> uv_indices;
 
 	Vector<ArrayMeshLightmapSurface> lightmap_surfaces;
 
@@ -1378,7 +1378,7 @@ Error ArrayMesh::lightmap_unwrap_cached(int *&r_cache_data, unsigned int &r_cach
 	}
 
 	//create surfacetools for each surface..
-	LocalVector<Ref<SurfaceTool> > surfaces_tools;
+	LocalVector<Ref<SurfaceTool>> surfaces_tools;
 
 	for (int i = 0; i < lightmap_surfaces.size(); i++) {
 		Ref<SurfaceTool> st;

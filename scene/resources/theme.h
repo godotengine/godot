@@ -45,12 +45,12 @@ class Theme : public Resource {
 
 	void _emit_theme_changed();
 
-	HashMap<StringName, HashMap<StringName, Ref<Texture> > > icon_map;
-	HashMap<StringName, HashMap<StringName, Ref<StyleBox> > > style_map;
-	HashMap<StringName, HashMap<StringName, Ref<Font> > > font_map;
-	HashMap<StringName, HashMap<StringName, Ref<Shader> > > shader_map;
-	HashMap<StringName, HashMap<StringName, Color> > color_map;
-	HashMap<StringName, HashMap<StringName, int> > constant_map;
+	HashMap<StringName, HashMap<StringName, Ref<Texture>>> icon_map;
+	HashMap<StringName, HashMap<StringName, Ref<StyleBox>>> style_map;
+	HashMap<StringName, HashMap<StringName, Ref<Font>>> font_map;
+	HashMap<StringName, HashMap<StringName, Ref<Shader>>> shader_map;
+	HashMap<StringName, HashMap<StringName, Color>> color_map;
+	HashMap<StringName, HashMap<StringName, int>> constant_map;
 
 	PoolVector<String> _get_icon_list(const String &p_node_type) const;
 	PoolVector<String> _get_stylebox_list(const String &p_node_type) const;

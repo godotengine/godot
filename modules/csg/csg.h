@@ -56,12 +56,12 @@ struct CSGBrush {
 	};
 
 	Vector<Face> faces;
-	Vector<Ref<Material> > materials;
+	Vector<Ref<Material>> materials;
 
 	inline void _regen_face_aabbs();
 
 	// Create a brush from faces.
-	void build_from_faces(const PoolVector<Vector3> &p_vertices, const PoolVector<Vector2> &p_uvs, const PoolVector<bool> &p_smooth, const PoolVector<Ref<Material> > &p_materials, const PoolVector<bool> &p_invert_faces);
+	void build_from_faces(const PoolVector<Vector3> &p_vertices, const PoolVector<Vector2> &p_uvs, const PoolVector<bool> &p_smooth, const PoolVector<Ref<Material>> &p_materials, const PoolVector<bool> &p_invert_faces);
 	void copy_from(const CSGBrush &p_brush, const Transform &p_xform);
 };
 

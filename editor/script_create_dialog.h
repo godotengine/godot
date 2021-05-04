@@ -95,7 +95,7 @@ class ScriptCreateDialog : public ConfirmationDialog {
 
 	String script_template;
 	Vector<ScriptTemplateInfo> template_list;
-	Map<String, Vector<int> > template_overrides; // name : indices
+	Map<String, Vector<int>> template_overrides; // name : indices
 
 	void _update_script_templates(const String &p_extension);
 

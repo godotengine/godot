@@ -153,7 +153,7 @@ Error EditorFeatureProfile::save_to_file(const String &p_path) {
 
 	Array dis_props;
 
-	for (Map<StringName, Set<StringName> >::Element *E = disabled_properties.front(); E; E = E->next()) {
+	for (Map<StringName, Set<StringName>>::Element *E = disabled_properties.front(); E; E = E->next()) {
 		for (Set<StringName>::Element *F = E->get().front(); F; F = F->next()) {
 			dis_props.push_back(String(E->key()) + ":" + String(F->get()));
 		}

@@ -261,7 +261,7 @@ class EditorInspector : public ScrollContainer {
 	VBoxContainer *main_vbox;
 
 	//map use to cache the instanced editors
-	Map<StringName, List<EditorProperty *> > editor_property_map;
+	Map<StringName, List<EditorProperty *>> editor_property_map;
 	List<EditorInspectorSection *> sections;
 	Set<StringName> pending;
 
@@ -291,7 +291,7 @@ class EditorInspector : public ScrollContainer {
 	int property_focusable;
 	int update_scroll_request;
 
-	Map<StringName, Map<StringName, String> > descr_cache;
+	Map<StringName, Map<StringName, String>> descr_cache;
 	Map<StringName, String> class_descr_cache;
 	Set<StringName> restart_request_props;
 

@@ -545,7 +545,7 @@ void GDScript::update_exports() {
 void GDScript::_set_subclass_path(Ref<GDScript> &p_sc, const String &p_path) {
 
 	p_sc->path = p_path;
-	for (Map<StringName, Ref<GDScript> >::Element *E = p_sc->subclasses.front(); E; E = E->next()) {
+	for (Map<StringName, Ref<GDScript>>::Element *E = p_sc->subclasses.front(); E; E = E->next()) {
 
 		_set_subclass_path(E->get(), p_path);
 	}
@@ -612,7 +612,7 @@ Error GDScript::reload(bool p_keep_state) {
 
 	valid = true;
 
-	for (Map<StringName, Ref<GDScript> >::Element *E = subclasses.front(); E; E = E->next()) {
+	for (Map<StringName, Ref<GDScript>>::Element *E = subclasses.front(); E; E = E->next()) {
 
 		_set_subclass_path(E->get(), path);
 	}
@@ -679,7 +679,7 @@ bool GDScript::_get(const StringName &p_name, Variant &r_ret) const {
 			}
 
 			{
-				const Map<StringName, Ref<GDScript> >::Element *E = subclasses.find(p_name);
+				const Map<StringName, Ref<GDScript>>::Element *E = subclasses.find(p_name);
 				if (E) {
 
 					r_ret = E->get();
@@ -795,7 +795,7 @@ Error GDScript::load_byte_code(const String &p_path) {
 
 	valid = true;
 
-	for (Map<StringName, Ref<GDScript> >::Element *E = subclasses.front(); E; E = E->next()) {
+	for (Map<StringName, Ref<GDScript>>::Element *E = subclasses.front(); E; E = E->next()) {
 
 		_set_subclass_path(E->get(), path);
 	}
@@ -872,7 +872,7 @@ bool GDScript::has_script_signal(const StringName &p_signal) const {
 }
 void GDScript::get_script_signal_list(List<MethodInfo> *r_signals) const {
 
-	for (const Map<StringName, Vector<StringName> >::Element *E = _signals.front(); E; E = E->next()) {
+	for (const Map<StringName, Vector<StringName>>::Element *E = _signals.front(); E; E = E->next()) {
 
 		MethodInfo mi;
 		mi.name = E->key();
@@ -923,7 +923,7 @@ void GDScript::_save_orphaned_subclasses() {
 	};
 	Vector<ClassRefWithName> weak_subclasses;
 	// collect subclasses ObjectID and name
-	for (Map<StringName, Ref<GDScript> >::Element *E = subclasses.front(); E; E = E->next()) {
+	for (Map<StringName, Ref<GDScript>>::Element *E = subclasses.front(); E; E = E->next()) {
 		E->get()->_owner = NULL; //bye, you are no longer owned cause I died
 		ClassRefWithName subclass;
 		subclass.id = E->get()->get_instance_id();
@@ -1591,7 +1591,7 @@ void GDScriptLanguage::reload_all_scripts() {
 	print_verbose("GDScript: Reloading all scripts");
 	lock.lock();
 
-	List<Ref<GDScript> > scripts;
+	List<Ref<GDScript>> scripts;
 
 	SelfList<GDScript> *elem = script_list.first();
 	while (elem) {
@@ -1608,7 +1608,7 @@ void GDScriptLanguage::reload_all_scripts() {
 
 	scripts.sort_custom<GDScriptDepSort>(); //update in inheritance dependency order
 
-	for (List<Ref<GDScript> >::Element *E = scripts.front(); E; E = E->next()) {
+	for (List<Ref<GDScript>>::Element *E = scripts.front(); E; E = E->next()) {
 
 		print_verbose("GDScript: Reloading: " + E->get()->get_path());
 		E->get()->load_source_code(E->get()->get_path());
@@ -1623,7 +1623,7 @@ void GDScriptLanguage::reload_tool_script(const Ref<Script> &p_script, bool p_so
 
 	lock.lock();
 
-	List<Ref<GDScript> > scripts;
+	List<Ref<GDScript>> scripts;
 
 	SelfList<GDScript> *elem = script_list.first();
 	while (elem) {
@@ -1638,30 +1638,30 @@ void GDScriptLanguage::reload_tool_script(const Ref<Script> &p_script, bool p_so
 
 	//when someone asks you why dynamically typed languages are easier to write....
 
-	Map<Ref<GDScript>, Map<ObjectID, List<Pair<StringName, Variant> > > > to_reload;
+	Map<Ref<GDScript>, Map<ObjectID, List<Pair<StringName, Variant>>>> to_reload;
 
 	//as scripts are going to be reloaded, must proceed without locking here
 
 	scripts.sort_custom<GDScriptDepSort>(); //update in inheritance dependency order
 
-	for (List<Ref<GDScript> >::Element *E = scripts.front(); E; E = E->next()) {
+	for (List<Ref<GDScript>>::Element *E = scripts.front(); E; E = E->next()) {
 
 		bool reload = E->get() == p_script || to_reload.has(E->get()->get_base());
 
 		if (!reload)
 			continue;
 
-		to_reload.insert(E->get(), Map<ObjectID, List<Pair<StringName, Variant> > >());
+		to_reload.insert(E->get(), Map<ObjectID, List<Pair<StringName, Variant>>>());
 
 		if (!p_soft_reload) {
 
 			//save state and remove script from instances
-			Map<ObjectID, List<Pair<StringName, Variant> > > &map = to_reload[E->get()];
+			Map<ObjectID, List<Pair<StringName, Variant>>> &map = to_reload[E->get()];
 
 			while (E->get()->instances.front()) {
 				Object *obj = E->get()->instances.front()->get();
 				//save instance info
-				List<Pair<StringName, Variant> > state;
+				List<Pair<StringName, Variant>> state;
 				if (obj->get_script_instance()) {
 
 					obj->get_script_instance()->get_property_state(state);
@@ -1679,8 +1679,8 @@ void GDScriptLanguage::reload_tool_script(const Ref<Script> &p_script, bool p_so
 				//save instance info
 				if (obj->get_script_instance()) {
 
-					map.insert(obj->get_instance_id(), List<Pair<StringName, Variant> >());
-					List<Pair<StringName, Variant> > &state = map[obj->get_instance_id()];
+					map.insert(obj->get_instance_id(), List<Pair<StringName, Variant>>());
+					List<Pair<StringName, Variant>> &state = map[obj->get_instance_id()];
 					obj->get_script_instance()->get_property_state(state);
 					obj->set_script(RefPtr());
 				} else {
@@ -1691,21 +1691,21 @@ void GDScriptLanguage::reload_tool_script(const Ref<Script> &p_script, bool p_so
 
 #endif
 
-			for (Map<ObjectID, List<Pair<StringName, Variant> > >::Element *F = E->get()->pending_reload_state.front(); F; F = F->next()) {
+			for (Map<ObjectID, List<Pair<StringName, Variant>>>::Element *F = E->get()->pending_reload_state.front(); F; F = F->next()) {
 				map[F->key()] = F->get(); //pending to reload, use this one instead
 			}
 		}
 	}
 
-	for (Map<Ref<GDScript>, Map<ObjectID, List<Pair<StringName, Variant> > > >::Element *E = to_reload.front(); E; E = E->next()) {
+	for (Map<Ref<GDScript>, Map<ObjectID, List<Pair<StringName, Variant>>>>::Element *E = to_reload.front(); E; E = E->next()) {
 
 		Ref<GDScript> scr = E->key();
 		scr->reload(p_soft_reload);
 
 		//restore state if saved
-		for (Map<ObjectID, List<Pair<StringName, Variant> > >::Element *F = E->get().front(); F; F = F->next()) {
+		for (Map<ObjectID, List<Pair<StringName, Variant>>>::Element *F = E->get().front(); F; F = F->next()) {
 
-			List<Pair<StringName, Variant> > &saved_state = F->get();
+			List<Pair<StringName, Variant>> &saved_state = F->get();
 
 			Object *obj = ObjectDB::get_instance(F->key());
 			if (!obj)
@@ -1729,11 +1729,11 @@ void GDScriptLanguage::reload_tool_script(const Ref<Script> &p_script, bool p_so
 
 			if (script_instance->is_placeholder() && scr->is_placeholder_fallback_enabled()) {
 				PlaceHolderScriptInstance *placeholder = static_cast<PlaceHolderScriptInstance *>(script_instance);
-				for (List<Pair<StringName, Variant> >::Element *G = saved_state.front(); G; G = G->next()) {
+				for (List<Pair<StringName, Variant>>::Element *G = saved_state.front(); G; G = G->next()) {
 					placeholder->property_set_fallback(G->get().first, G->get().second);
 				}
 			} else {
-				for (List<Pair<StringName, Variant> >::Element *G = saved_state.front(); G; G = G->next()) {
+				for (List<Pair<StringName, Variant>>::Element *G = saved_state.front(); G; G = G->next()) {
 					script_instance->set(G->get().first, G->get().second);
 				}
 			}

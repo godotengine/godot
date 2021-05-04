@@ -258,7 +258,7 @@ void SpriteFramesEditor::_file_load_request(const PoolVector<String> &p_path, in
 
 	ERR_FAIL_COND(!frames->has_animation(edited_anim));
 
-	List<Ref<Texture> > resources;
+	List<Ref<Texture>> resources;
 
 	for (int i = 0; i < p_path.size(); i++) {
 
@@ -287,7 +287,7 @@ void SpriteFramesEditor::_file_load_request(const PoolVector<String> &p_path, in
 
 	int count = 0;
 
-	for (List<Ref<Texture> >::Element *E = resources.front(); E; E = E->next()) {
+	for (List<Ref<Texture>>::Element *E = resources.front(); E; E = E->next()) {
 
 		undo_redo->add_do_method(frames, "add_frame", edited_anim, E->get(), p_at_pos == -1 ? -1 : p_at_pos + count);
 		undo_redo->add_undo_method(frames, "remove_frame", edited_anim, p_at_pos == -1 ? fc : p_at_pos);

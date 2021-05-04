@@ -1146,7 +1146,7 @@ void VisualServer::mesh_add_surface_from_arrays(RID p_mesh, PrimitiveType p_prim
 	Error err = _surface_set_data(p_arrays, format, offsets, total_elem_size, vertex_array, array_len, index_array, index_array_len, aabb, bone_aabb);
 	ERR_FAIL_COND_MSG(err, "Invalid array format for surface.");
 
-	Vector<PoolVector<uint8_t> > blend_shape_data;
+	Vector<PoolVector<uint8_t>> blend_shape_data;
 
 	for (int i = 0; i < p_blend_shapes.size(); i++) {
 
@@ -1605,7 +1605,7 @@ Array VisualServer::mesh_surface_get_arrays(RID p_mesh, int p_surface) const {
 
 Array VisualServer::mesh_surface_get_blend_shape_arrays(RID p_mesh, int p_surface) const {
 
-	Vector<PoolVector<uint8_t> > blend_shape_data = mesh_surface_get_blend_shapes(p_mesh, p_surface);
+	Vector<PoolVector<uint8_t>> blend_shape_data = mesh_surface_get_blend_shapes(p_mesh, p_surface);
 	if (blend_shape_data.size() > 0) {
 		int vertex_len = mesh_surface_get_array_len(p_mesh, p_surface);
 

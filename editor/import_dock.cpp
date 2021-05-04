@@ -110,19 +110,19 @@ void ImportDock::set_edit_path(const String &p_path) {
 
 	_update_options(config);
 
-	List<Ref<ResourceImporter> > importers;
+	List<Ref<ResourceImporter>> importers;
 	ResourceFormatImporter::get_singleton()->get_importers_for_extension(p_path.get_extension(), &importers);
-	List<Pair<String, String> > importer_names;
+	List<Pair<String, String>> importer_names;
 
-	for (List<Ref<ResourceImporter> >::Element *E = importers.front(); E; E = E->next()) {
+	for (List<Ref<ResourceImporter>>::Element *E = importers.front(); E; E = E->next()) {
 		importer_names.push_back(Pair<String, String>(E->get()->get_visible_name(), E->get()->get_importer_name()));
 	}
 
-	importer_names.sort_custom<PairSort<String, String> >();
+	importer_names.sort_custom<PairSort<String, String>>();
 
 	import_as->clear();
 
-	for (List<Pair<String, String> >::Element *E = importer_names.front(); E; E = E->next()) {
+	for (List<Pair<String, String>>::Element *E = importer_names.front(); E; E = E->next()) {
 		import_as->add_item(E->get().first);
 		import_as->set_item_metadata(import_as->get_item_count() - 1, E->get().second);
 		if (E->get().second == importer_name) {
@@ -252,19 +252,19 @@ void ImportDock::set_edit_multiple_paths(const Vector<String> &p_paths) {
 
 	params->update();
 
-	List<Ref<ResourceImporter> > importers;
+	List<Ref<ResourceImporter>> importers;
 	ResourceFormatImporter::get_singleton()->get_importers_for_extension(p_paths[0].get_extension(), &importers);
-	List<Pair<String, String> > importer_names;
+	List<Pair<String, String>> importer_names;
 
-	for (List<Ref<ResourceImporter> >::Element *E = importers.front(); E; E = E->next()) {
+	for (List<Ref<ResourceImporter>>::Element *E = importers.front(); E; E = E->next()) {
 		importer_names.push_back(Pair<String, String>(E->get()->get_visible_name(), E->get()->get_importer_name()));
 	}
 
-	importer_names.sort_custom<PairSort<String, String> >();
+	importer_names.sort_custom<PairSort<String, String>>();
 
 	import_as->clear();
 
-	for (List<Pair<String, String> >::Element *E = importer_names.front(); E; E = E->next()) {
+	for (List<Pair<String, String>>::Element *E = importer_names.front(); E; E = E->next()) {
 		import_as->add_item(E->get().first);
 		import_as->set_item_metadata(import_as->get_item_count() - 1, E->get().second);
 		if (E->get().second == params->importer->get_importer_name()) {

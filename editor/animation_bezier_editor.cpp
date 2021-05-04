@@ -1079,7 +1079,7 @@ void AnimationBezierTrackEdit::duplicate_selection() {
 
 	undo_redo->create_action(TTR("Anim Duplicate Keys"));
 
-	List<Pair<int, float> > new_selection_values;
+	List<Pair<int, float>> new_selection_values;
 
 	for (Set<int>::Element *E = selection.back(); E; E = E->prev()) {
 
@@ -1106,7 +1106,7 @@ void AnimationBezierTrackEdit::duplicate_selection() {
 	//reselect duplicated
 
 	selection.clear();
-	for (List<Pair<int, float> >::Element *E = new_selection_values.front(); E; E = E->next()) {
+	for (List<Pair<int, float>>::Element *E = new_selection_values.front(); E; E = E->next()) {
 
 		int track = E->get().first;
 		float time = E->get().second;

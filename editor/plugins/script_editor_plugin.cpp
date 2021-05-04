@@ -985,7 +985,7 @@ Ref<Script> ScriptEditor::_get_current_script() {
 Array ScriptEditor::_get_open_scripts() const {
 
 	Array ret;
-	Vector<Ref<Script> > scripts = get_open_scripts();
+	Vector<Ref<Script>> scripts = get_open_scripts();
 	int scrits_amount = scripts.size();
 	for (int idx_script = 0; idx_script < scrits_amount; idx_script++) {
 		ret.push_back(scripts[idx_script]);
@@ -1641,7 +1641,7 @@ void ScriptEditor::ensure_select_current() {
 	_update_selected_editor_menu();
 }
 
-void ScriptEditor::_find_scripts(Node *p_base, Node *p_current, Set<Ref<Script> > &used) {
+void ScriptEditor::_find_scripts(Node *p_base, Node *p_current, Set<Ref<Script>> &used) {
 	if (p_current != p_base && p_current->get_owner() != p_base)
 		return;
 
@@ -1774,7 +1774,7 @@ void ScriptEditor::_update_help_overview() {
 		return;
 	}
 
-	Vector<Pair<String, int> > sections = se->get_sections();
+	Vector<Pair<String, int>> sections = se->get_sections();
 	for (int i = 0; i < sections.size(); i++) {
 		help_overview->add_item(sections[i].first);
 		help_overview->set_item_metadata(i, sections[i].second);
@@ -1827,7 +1827,7 @@ void ScriptEditor::_update_script_names() {
 	if (restoring_layout)
 		return;
 
-	Set<Ref<Script> > used;
+	Set<Ref<Script>> used;
 	Node *edited = EditorNode::get_singleton()->get_edited_scene();
 	if (edited) {
 		_find_scripts(edited, edited, used);
@@ -2999,9 +2999,9 @@ void ScriptEditor::_history_back() {
 	}
 }
 
-Vector<Ref<Script> > ScriptEditor::get_open_scripts() const {
+Vector<Ref<Script>> ScriptEditor::get_open_scripts() const {
 
-	Vector<Ref<Script> > out_scripts = Vector<Ref<Script> >();
+	Vector<Ref<Script>> out_scripts = Vector<Ref<Script>>();
 
 	for (int i = 0; i < tab_container->get_child_count(); i++) {
 		ScriptEditorBase *se = Object::cast_to<ScriptEditorBase>(tab_container->get_child(i));

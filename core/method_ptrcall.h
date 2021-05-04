@@ -171,7 +171,7 @@ struct PtrToArg<const T *> {
 
 #define MAKE_VECARG(m_type)                                                                      \
 	template <>                                                                                  \
-	struct PtrToArg<Vector<m_type> > {                                                           \
+	struct PtrToArg<Vector<m_type>> {                                                            \
 		_FORCE_INLINE_ static Vector<m_type> convert(const void *p_ptr) {                        \
 			const PoolVector<m_type> *dvs = reinterpret_cast<const PoolVector<m_type> *>(p_ptr); \
 			Vector<m_type> ret;                                                                  \
@@ -216,7 +216,7 @@ struct PtrToArg<const T *> {
 
 #define MAKE_VECARG_ALT(m_type, m_type_alt)                                                      \
 	template <>                                                                                  \
-	struct PtrToArg<Vector<m_type_alt> > {                                                       \
+	struct PtrToArg<Vector<m_type_alt>> {                                                        \
 		_FORCE_INLINE_ static Vector<m_type_alt> convert(const void *p_ptr) {                    \
 			const PoolVector<m_type> *dvs = reinterpret_cast<const PoolVector<m_type> *>(p_ptr); \
 			Vector<m_type_alt> ret;                                                              \
@@ -270,7 +270,7 @@ MAKE_VECARG_ALT(String, StringName);
 //for stuff that gets converted to Array vectors
 #define MAKE_VECARR(m_type)                                                    \
 	template <>                                                                \
-	struct PtrToArg<Vector<m_type> > {                                         \
+	struct PtrToArg<Vector<m_type>> {                                          \
 		_FORCE_INLINE_ static Vector<m_type> convert(const void *p_ptr) {      \
 			const Array *arr = reinterpret_cast<const Array *>(p_ptr);         \
 			Vector<m_type> ret;                                                \
@@ -310,7 +310,7 @@ MAKE_VECARR(Plane);
 
 #define MAKE_DVECARR(m_type)                                                       \
 	template <>                                                                    \
-	struct PtrToArg<PoolVector<m_type> > {                                         \
+	struct PtrToArg<PoolVector<m_type>> {                                          \
 		_FORCE_INLINE_ static PoolVector<m_type> convert(const void *p_ptr) {      \
 			const Array *arr = reinterpret_cast<const Array *>(p_ptr);             \
 			PoolVector<m_type> ret;                                                \
@@ -402,7 +402,7 @@ MAKE_STRINGCONV(StringName);
 MAKE_STRINGCONV_BY_REFERENCE(IP_Address);
 
 template <>
-struct PtrToArg<PoolVector<Face3> > {
+struct PtrToArg<PoolVector<Face3>> {
 	_FORCE_INLINE_ static PoolVector<Face3> convert(const void *p_ptr) {
 		const PoolVector<Vector3> *dvs = reinterpret_cast<const PoolVector<Vector3> *>(p_ptr);
 		PoolVector<Face3> ret;

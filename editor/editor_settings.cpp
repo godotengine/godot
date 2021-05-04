@@ -125,7 +125,7 @@ bool EditorSettings::_get(const StringName &p_name, Variant &r_ret) const {
 	if (p_name.operator String() == "shortcuts") {
 
 		Array arr;
-		for (const Map<String, Ref<ShortCut> >::Element *E = shortcuts.front(); E; E = E->next()) {
+		for (const Map<String, Ref<ShortCut>>::Element *E = shortcuts.front(); E; E = E->next()) {
 
 			Ref<ShortCut> sc = E->get();
 
@@ -1528,7 +1528,7 @@ void EditorSettings::add_shortcut(const String &p_name, Ref<ShortCut> &p_shortcu
 
 bool EditorSettings::is_shortcut(const String &p_name, const Ref<InputEvent> &p_event) const {
 
-	const Map<String, Ref<ShortCut> >::Element *E = shortcuts.find(p_name);
+	const Map<String, Ref<ShortCut>>::Element *E = shortcuts.find(p_name);
 	ERR_FAIL_COND_V_MSG(!E, false, "Unknown Shortcut: " + p_name + ".");
 
 	return E->get()->is_shortcut(p_event);
@@ -1536,7 +1536,7 @@ bool EditorSettings::is_shortcut(const String &p_name, const Ref<InputEvent> &p_
 
 Ref<ShortCut> EditorSettings::get_shortcut(const String &p_name) const {
 
-	const Map<String, Ref<ShortCut> >::Element *E = shortcuts.find(p_name);
+	const Map<String, Ref<ShortCut>>::Element *E = shortcuts.find(p_name);
 	if (!E)
 		return Ref<ShortCut>();
 
@@ -1545,7 +1545,7 @@ Ref<ShortCut> EditorSettings::get_shortcut(const String &p_name) const {
 
 void EditorSettings::get_shortcut_list(List<String> *r_shortcuts) {
 
-	for (const Map<String, Ref<ShortCut> >::Element *E = shortcuts.front(); E; E = E->next()) {
+	for (const Map<String, Ref<ShortCut>>::Element *E = shortcuts.front(); E; E = E->next()) {
 
 		r_shortcuts->push_back(E->key());
 	}

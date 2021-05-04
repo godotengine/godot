@@ -269,7 +269,7 @@ void Node::_propagate_exit_tree() {
 
 	if (ScriptDebugger::get_singleton() && data.filename != String()) {
 		//used for live edit
-		Map<String, Set<Node *> >::Element *E = data.tree->live_scene_edit_cache.find(data.filename);
+		Map<String, Set<Node *>>::Element *E = data.tree->live_scene_edit_cache.find(data.filename);
 		if (E) {
 			E->get().erase(this);
 			if (E->get().size() == 0) {
@@ -277,7 +277,7 @@ void Node::_propagate_exit_tree() {
 			}
 		}
 
-		Map<Node *, Map<ObjectID, Node *> >::Element *F = data.tree->live_edit_remove_list.find(this);
+		Map<Node *, Map<ObjectID, Node *>>::Element *F = data.tree->live_edit_remove_list.find(this);
 		if (F) {
 			for (Map<ObjectID, Node *>::Element *G = F->get().front(); G; G = G->next()) {
 

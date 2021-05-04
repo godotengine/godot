@@ -624,8 +624,8 @@ bool EditorProfiler::is_profiling() {
 	return activate->is_pressed();
 }
 
-Vector<Vector<String> > EditorProfiler::get_data_as_csv() const {
-	Vector<Vector<String> > res;
+Vector<Vector<String>> EditorProfiler::get_data_as_csv() const {
+	Vector<Vector<String>> res;
 
 	if (frame_metrics.empty()) {
 		return res;

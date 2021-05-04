@@ -144,7 +144,7 @@ private:
 	Button *dobreak;
 	Button *docontinue;
 
-	List<Vector<float> > perf_history;
+	List<Vector<float>> perf_history;
 	Vector<float> perf_max;
 	Vector<TreeItem *> perf_items;
 

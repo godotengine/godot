@@ -41,7 +41,7 @@ class ShaderCompilerGLES2 {
 public:
 	struct IdentifierActions {
 
-		Map<StringName, Pair<int *, int> > render_mode_values;
+		Map<StringName, Pair<int *, int>> render_mode_values;
 		Map<StringName, bool *> render_mode_flags;
 		Map<StringName, bool *> usage_flag_pointers;
 		Map<StringName, bool *> write_flag_pointers;

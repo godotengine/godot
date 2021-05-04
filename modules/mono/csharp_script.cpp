@@ -765,7 +765,7 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 
 	// There is no soft reloading with Mono. It's always hard reloading.
 
-	List<Ref<CSharpScript> > scripts;
+	List<Ref<CSharpScript>> scripts;
 
 	{
 		MutexLock lock(script_instances_mutex);
@@ -776,10 +776,10 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 		}
 	}
 
-	List<Ref<CSharpScript> > to_reload;
+	List<Ref<CSharpScript>> to_reload;
 
 	// We need to keep reference instances alive during reloading
-	List<Ref<Reference> > ref_instances;
+	List<Ref<Reference>> ref_instances;
 
 	for (Map<Object *, CSharpScriptBinding>::Element *E = script_bindings.front(); E; E = E->next()) {
 		CSharpScriptBinding &script_binding = E->value();
@@ -793,7 +793,7 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 
 	scripts.sort_custom<CSharpScriptDepSort>(); // Update in inheritance dependency order
 
-	for (List<Ref<CSharpScript> >::Element *E = scripts.front(); E; E = E->next()) {
+	for (List<Ref<CSharpScript>>::Element *E = scripts.front(); E; E = E->next()) {
 		Ref<CSharpScript> &script = E->get();
 
 		to_reload.push_back(script);
@@ -853,7 +853,7 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 	}
 
 	// After the state of all instances is saved, clear scripts and script instances
-	for (List<Ref<CSharpScript> >::Element *E = scripts.front(); E; E = E->next()) {
+	for (List<Ref<CSharpScript>>::Element *E = scripts.front(); E; E = E->next()) {
 		Ref<CSharpScript> &script = E->get();
 
 		while (script->instances.front()) {
@@ -868,7 +868,7 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 	if (gdmono->reload_scripts_domain() != OK) {
 		// Failed to reload the scripts domain
 		// Make sure to add the scripts back to their owners before returning
-		for (List<Ref<CSharpScript> >::Element *E = to_reload.front(); E; E = E->next()) {
+		for (List<Ref<CSharpScript>>::Element *E = to_reload.front(); E; E = E->next()) {
 			Ref<CSharpScript> scr = E->get();
 
 			for (const Map<ObjectID, CSharpScript::StateBackup>::Element *F = scr->pending_reload_state.front(); F; F = F->next()) {
@@ -893,7 +893,7 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 #endif
 
 				// Restore Variant properties state, it will be kept by the placeholder until the next script reloading
-				for (List<Pair<StringName, Variant> >::Element *G = scr->pending_reload_state[obj_id].properties.front(); G; G = G->next()) {
+				for (List<Pair<StringName, Variant>>::Element *G = scr->pending_reload_state[obj_id].properties.front(); G; G = G->next()) {
 					placeholder->property_set_fallback(G->get().first, G->get().second, NULL);
 				}
 
@@ -904,9 +904,9 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 		return;
 	}
 
-	List<Ref<CSharpScript> > to_reload_state;
+	List<Ref<CSharpScript>> to_reload_state;
 
-	for (List<Ref<CSharpScript> >::Element *E = to_reload.front(); E; E = E->next()) {
+	for (List<Ref<CSharpScript>>::Element *E = to_reload.front(); E; E = E->next()) {
 		Ref<CSharpScript> script = E->get();
 
 		if (!script->get_path().empty()) {
@@ -1014,7 +1014,7 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 		to_reload_state.push_back(script);
 	}
 
-	for (List<Ref<CSharpScript> >::Element *E = to_reload_state.front(); E; E = E->next()) {
+	for (List<Ref<CSharpScript>>::Element *E = to_reload_state.front(); E; E = E->next()) {
 		Ref<CSharpScript> script = E->get();
 
 		for (Set<ObjectID>::Element *F = script->pending_reload_instances.front(); F; F = F->next()) {
@@ -1032,7 +1032,7 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 
 			CSharpScript::StateBackup &state_backup = script->pending_reload_state[obj_id];
 
-			for (List<Pair<StringName, Variant> >::Element *G = state_backup.properties.front(); G; G = G->next()) {
+			for (List<Pair<StringName, Variant>>::Element *G = state_backup.properties.front(); G; G = G->next()) {
 				obj->get_script_instance()->set(G->get().first, G->get().second);
 			}
 
@@ -1587,7 +1587,7 @@ bool CSharpInstance::get(const StringName &p_name, Variant &r_ret) const {
 	return false;
 }
 
-void CSharpInstance::get_properties_state_for_reloading(List<Pair<StringName, Variant> > &r_state) {
+void CSharpInstance::get_properties_state_for_reloading(List<Pair<StringName, Variant>> &r_state) {
 
 	List<PropertyInfo> pinfo;
 	get_property_list(&pinfo);
@@ -3281,7 +3281,7 @@ bool CSharpScript::has_script_signal(const StringName &p_signal) const {
 }
 
 void CSharpScript::get_script_signal_list(List<MethodInfo> *r_signals) const {
-	for (const Map<StringName, Vector<Argument> >::Element *E = _signals.front(); E; E = E->next()) {
+	for (const Map<StringName, Vector<Argument>>::Element *E = _signals.front(); E; E = E->next()) {
 		MethodInfo mi;
 
 		mi.name = E->key();

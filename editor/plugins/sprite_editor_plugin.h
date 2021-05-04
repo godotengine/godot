@@ -60,8 +60,8 @@ class SpriteEditor : public Control {
 	ConfirmationDialog *debug_uv_dialog;
 	Control *debug_uv;
 	Vector<Vector2> uv_lines;
-	Vector<Vector<Vector2> > outline_lines;
-	Vector<Vector<Vector2> > computed_outline_lines;
+	Vector<Vector<Vector2>> outline_lines;
+	Vector<Vector<Vector2>> computed_outline_lines;
 	Vector<Vector2> computed_vertices;
 	Vector<Vector2> computed_uv;
 	Vector<int> computed_indices;

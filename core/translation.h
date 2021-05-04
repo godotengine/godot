@@ -71,7 +71,7 @@ class TranslationServer : public Object {
 	String locale;
 	String fallback;
 
-	Set<Ref<Translation> > translations;
+	Set<Ref<Translation>> translations;
 	Ref<Translation> tool_translation;
 
 	Map<String, String> locale_name_map;

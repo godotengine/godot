@@ -1967,7 +1967,7 @@ Error EditorSceneImporterGLTF::_determine_skeletons(GLTFState &state) {
 		skeleton_sets.get_representatives(groups_representatives);
 
 		Vector<GLTFNodeIndex> highest_group_members;
-		Vector<Vector<GLTFNodeIndex> > groups;
+		Vector<Vector<GLTFNodeIndex>> groups;
 		for (int i = 0; i < groups_representatives.size(); ++i) {
 			Vector<GLTFNodeIndex> group;
 			skeleton_sets.get_members(group, groups_representatives[i]);

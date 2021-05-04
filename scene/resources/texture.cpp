@@ -575,7 +575,7 @@ Error StreamTexture::_load_data(const String &p_path, int &tw, int &th, int &tw_
 		}
 
 		//mipmaps need to be read independently, they will be later combined
-		Vector<Ref<Image> > mipmap_images;
+		Vector<Ref<Image>> mipmap_images;
 		int total_size = 0;
 
 		for (uint32_t i = 0; i < mipmaps; i++) {
@@ -2287,7 +2287,7 @@ Error TextureLayered::load(const String &p_path) {
 			//look for a PNG file inside
 
 			int mipmaps = f->get_32();
-			Vector<Ref<Image> > mipmap_images;
+			Vector<Ref<Image>> mipmap_images;
 
 			for (int i = 0; i < mipmaps; i++) {
 				uint32_t size = f->get_32();

@@ -222,7 +222,7 @@ protected:
 
 	void make_grid(int p_width, int p_height, float p_cellsize, float p_cellheight, const Transform &p_xform = Transform()) {
 
-		Vector<Vector<float> > grid;
+		Vector<Vector<float>> grid;
 
 		grid.resize(p_width);
 

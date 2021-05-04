@@ -198,10 +198,10 @@ private:
 		NodePath focus_next;
 		NodePath focus_prev;
 
-		HashMap<StringName, Ref<Texture> > icon_override;
-		HashMap<StringName, Ref<Shader> > shader_override;
-		HashMap<StringName, Ref<StyleBox> > style_override;
-		HashMap<StringName, Ref<Font> > font_override;
+		HashMap<StringName, Ref<Texture>> icon_override;
+		HashMap<StringName, Ref<Shader>> shader_override;
+		HashMap<StringName, Ref<StyleBox>> style_override;
+		HashMap<StringName, Ref<Font>> font_override;
 		HashMap<StringName, Color> color_override;
 		HashMap<StringName, int> constant_override;
 

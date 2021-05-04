@@ -825,7 +825,7 @@ void VisualScript::rename_custom_signal(const StringName &p_name, const StringNa
 
 void VisualScript::get_custom_signal_list(List<StringName> *r_custom_signals) const {
 
-	for (const Map<StringName, Vector<Argument> >::Element *E = custom_signals.front(); E; E = E->next()) {
+	for (const Map<StringName, Vector<Argument>>::Element *E = custom_signals.front(); E; E = E->next()) {
 		r_custom_signals->push_back(E->key());
 	}
 
@@ -977,7 +977,7 @@ bool VisualScript::has_script_signal(const StringName &p_signal) const {
 
 void VisualScript::get_script_signal_list(List<MethodInfo> *r_signals) const {
 
-	for (const Map<StringName, Vector<Argument> >::Element *E = custom_signals.front(); E; E = E->next()) {
+	for (const Map<StringName, Vector<Argument>>::Element *E = custom_signals.front(); E; E = E->next()) {
 
 		MethodInfo mi;
 		mi.name = E->key();
@@ -1220,7 +1220,7 @@ Dictionary VisualScript::_get_data() const {
 	d["variables"] = vars;
 
 	Array sigs;
-	for (const Map<StringName, Vector<Argument> >::Element *E = custom_signals.front(); E; E = E->next()) {
+	for (const Map<StringName, Vector<Argument>>::Element *E = custom_signals.front(); E; E = E->next()) {
 
 		Dictionary cs;
 		cs["name"] = E->key();
@@ -2684,7 +2684,7 @@ void VisualScriptLanguage::get_recognized_extensions(List<String> *p_extensions)
 }
 void VisualScriptLanguage::get_public_functions(List<MethodInfo> *p_functions) const {
 }
-void VisualScriptLanguage::get_public_constants(List<Pair<String, Variant> > *p_constants) const {
+void VisualScriptLanguage::get_public_constants(List<Pair<String, Variant>> *p_constants) const {
 }
 
 void VisualScriptLanguage::profiling_start() {

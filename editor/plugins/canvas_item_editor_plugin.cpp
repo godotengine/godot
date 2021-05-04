@@ -2103,7 +2103,7 @@ bool CanvasItemEditor::_gui_input_move(const Ref<InputEvent> &p_event) {
 		if (m.is_valid()) {
 
 			// Save the ik chain for reapplying before IK solve
-			Vector<List<Dictionary> > all_bones_ik_states;
+			Vector<List<Dictionary>> all_bones_ik_states;
 			for (List<CanvasItem *>::Element *E = drag_selection.front(); E; E = E->next()) {
 				List<Dictionary> bones_ik_states;
 				_save_canvas_item_ik_chain(E->get(), NULL, &bones_ik_states);
@@ -2213,7 +2213,7 @@ bool CanvasItemEditor::_gui_input_move(const Ref<InputEvent> &p_event) {
 		if (drag_selection.size() > 0) {
 
 			// Save the ik chain for reapplying before IK solve
-			Vector<List<Dictionary> > all_bones_ik_states;
+			Vector<List<Dictionary>> all_bones_ik_states;
 			for (List<CanvasItem *>::Element *E = drag_selection.front(); E; E = E->next()) {
 				List<Dictionary> bones_ik_states;
 				_save_canvas_item_ik_chain(E->get(), NULL, &bones_ik_states);

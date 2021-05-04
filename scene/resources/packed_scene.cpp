@@ -82,7 +82,7 @@ Node *SceneState::instance(GenEditState p_edit_state) const {
 
 	bool gen_node_path_cache = p_edit_state != GEN_EDIT_STATE_DISABLED && node_path_cache.empty();
 
-	Map<Ref<Resource>, Ref<Resource> > resources_local_to_scene;
+	Map<Ref<Resource>, Ref<Resource>> resources_local_to_scene;
 
 	for (int i = 0; i < nc; i++) {
 
@@ -205,7 +205,7 @@ Node *SceneState::instance(GenEditState p_edit_state) const {
 						//https://github.com/godotengine/godot/issues/2958
 
 						//store old state
-						List<Pair<StringName, Variant> > old_state;
+						List<Pair<StringName, Variant>> old_state;
 						if (node->get_script_instance()) {
 							node->get_script_instance()->get_property_state(old_state);
 						}
@@ -213,7 +213,7 @@ Node *SceneState::instance(GenEditState p_edit_state) const {
 						node->set(snames[nprops[j].name], props[nprops[j].value], &valid);
 
 						//restore old state for new script, if exists
-						for (List<Pair<StringName, Variant> >::Element *E = old_state.front(); E; E = E->next()) {
+						for (List<Pair<StringName, Variant>>::Element *E = old_state.front(); E; E = E->next()) {
 							node->set(E->get().first, E->get().second);
 						}
 					} else {
@@ -226,7 +226,7 @@ Node *SceneState::instance(GenEditState p_edit_state) const {
 							if (res.is_valid()) {
 								if (res->is_local_to_scene()) {
 
-									Map<Ref<Resource>, Ref<Resource> >::Element *E = resources_local_to_scene.find(res);
+									Map<Ref<Resource>, Ref<Resource>>::Element *E = resources_local_to_scene.find(res);
 
 									if (E) {
 										value = E->get();
@@ -306,7 +306,7 @@ Node *SceneState::instance(GenEditState p_edit_state) const {
 		}
 	}
 
-	for (Map<Ref<Resource>, Ref<Resource> >::Element *E = resources_local_to_scene.front(); E; E = E->next()) {
+	for (Map<Ref<Resource>, Ref<Resource>>::Element *E = resources_local_to_scene.front(); E; E = E->next()) {
 
 		E->get()->setup_local_to_scene();
 	}

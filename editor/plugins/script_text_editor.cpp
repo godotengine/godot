@@ -756,7 +756,7 @@ static Node *_find_node_for_script(Node *p_base, Node *p_current, const Ref<Scri
 	return NULL;
 }
 
-static void _find_changed_scripts_for_external_editor(Node *p_base, Node *p_current, Set<Ref<Script> > &r_scripts) {
+static void _find_changed_scripts_for_external_editor(Node *p_base, Node *p_current, Set<Ref<Script>> &r_scripts) {
 
 	if (p_current->get_owner() != p_base && p_base != p_current)
 		return;
@@ -777,14 +777,14 @@ void ScriptEditor::_update_modified_scripts_for_external_editor(Ref<Script> p_fo
 
 	ERR_FAIL_COND(!get_tree());
 
-	Set<Ref<Script> > scripts;
+	Set<Ref<Script>> scripts;
 
 	Node *base = get_tree()->get_edited_scene_root();
 	if (base) {
 		_find_changed_scripts_for_external_editor(base, base, scripts);
 	}
 
-	for (Set<Ref<Script> >::Element *E = scripts.front(); E; E = E->next()) {
+	for (Set<Ref<Script>>::Element *E = scripts.front(); E; E = E->next()) {
 
 		Ref<Script> script = E->get();
 

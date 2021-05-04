@@ -91,7 +91,7 @@ class CSharpScript : public Script {
 		// TODO
 		// Replace with buffer containing the serialized state of managed scripts.
 		// Keep variant state backup to use only with script instance placeholders.
-		List<Pair<StringName, Variant> > properties;
+		List<Pair<StringName, Variant>> properties;
 	};
 
 	Set<ObjectID> pending_reload_instances;
@@ -110,7 +110,7 @@ class CSharpScript : public Script {
 		Variant::Type type;
 	};
 
-	Map<StringName, Vector<Argument> > _signals;
+	Map<StringName, Vector<Argument>> _signals;
 	bool signals_invalidated;
 
 #ifdef TOOLS_ENABLED
@@ -240,7 +240,7 @@ class CSharpInstance : public ScriptInstance {
 
 	MultiplayerAPI::RPCMode _member_get_rpc_mode(IMonoClassMember *p_member) const;
 
-	void get_properties_state_for_reloading(List<Pair<StringName, Variant> > &r_state);
+	void get_properties_state_for_reloading(List<Pair<StringName, Variant>> &r_state);
 
 public:
 	MonoObject *get_mono_object() const;
@@ -440,7 +440,7 @@ public:
 	virtual void frame();
 
 	/* TODO? */ virtual void get_public_functions(List<MethodInfo> *p_functions) const {}
-	/* TODO? */ virtual void get_public_constants(List<Pair<String, Variant> > *p_constants) const {}
+	/* TODO? */ virtual void get_public_constants(List<Pair<String, Variant>> *p_constants) const {}
 
 	virtual void reload_all_scripts();
 	virtual void reload_tool_script(const Ref<Script> &p_script, bool p_soft_reload);

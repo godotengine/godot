@@ -170,7 +170,7 @@ String ResourceImporterScene::get_visible_name() const {
 
 void ResourceImporterScene::get_recognized_extensions(List<String> *p_extensions) const {
 
-	for (Set<Ref<EditorSceneImporter> >::Element *E = importers.front(); E; E = E->next()) {
+	for (Set<Ref<EditorSceneImporter>>::Element *E = importers.front(); E; E = E->next()) {
 		E->get()->get_extensions(p_extensions);
 	}
 }
@@ -276,7 +276,7 @@ static String _fixstr(const String &p_what, const String &p_str) {
 	return what;
 }
 
-static void _gen_shape_list(const Ref<Mesh> &mesh, List<Ref<Shape> > &r_shape_list, bool p_convex) {
+static void _gen_shape_list(const Ref<Mesh> &mesh, List<Ref<Shape>> &r_shape_list, bool p_convex) {
 
 	if (!p_convex) {
 
@@ -284,7 +284,7 @@ static void _gen_shape_list(const Ref<Mesh> &mesh, List<Ref<Shape> > &r_shape_li
 		r_shape_list.push_back(shape);
 	} else {
 
-		Vector<Ref<Shape> > cd = mesh->convex_decompose();
+		Vector<Ref<Shape>> cd = mesh->convex_decompose();
 		if (cd.size()) {
 			for (int i = 0; i < cd.size(); i++) {
 				r_shape_list.push_back(cd[i]);
@@ -293,7 +293,7 @@ static void _gen_shape_list(const Ref<Mesh> &mesh, List<Ref<Shape> > &r_shape_li
 	}
 }
 
-Node *ResourceImporterScene::_fix_node(Node *p_node, Node *p_root, Map<Ref<Mesh>, List<Ref<Shape> > > &collision_map, LightBakeMode p_light_bake_mode) {
+Node *ResourceImporterScene::_fix_node(Node *p_node, Node *p_root, Map<Ref<Mesh>, List<Ref<Shape>>> &collision_map, LightBakeMode p_light_bake_mode) {
 
 	// children first
 	for (int i = 0; i < p_node->get_child_count(); i++) {
@@ -382,7 +382,7 @@ Node *ResourceImporterScene::_fix_node(Node *p_node, Node *p_root, Map<Ref<Mesh>
 			Ref<Mesh> mesh = mi->get_mesh();
 
 			if (mesh.is_valid()) {
-				List<Ref<Shape> > shapes;
+				List<Ref<Shape>> shapes;
 				String fixed_name;
 				if (collision_map.has(mesh)) {
 					shapes = collision_map[mesh];
@@ -458,7 +458,7 @@ Node *ResourceImporterScene::_fix_node(Node *p_node, Node *p_root, Map<Ref<Mesh>
 		Ref<Mesh> mesh = mi->get_mesh();
 
 		if (mesh.is_valid()) {
-			List<Ref<Shape> > shapes;
+			List<Ref<Shape>> shapes;
 			if (collision_map.has(mesh)) {
 				shapes = collision_map[mesh];
 			} else {
@@ -485,7 +485,7 @@ Node *ResourceImporterScene::_fix_node(Node *p_node, Node *p_root, Map<Ref<Mesh>
 		Ref<Mesh> mesh = mi->get_mesh();
 
 		if (mesh.is_valid()) {
-			List<Ref<Shape> > shapes;
+			List<Ref<Shape>> shapes;
 			String fixed_name;
 			if (collision_map.has(mesh)) {
 				shapes = collision_map[mesh];
@@ -587,7 +587,7 @@ Node *ResourceImporterScene::_fix_node(Node *p_node, Node *p_root, Map<Ref<Mesh>
 		Ref<ArrayMesh> mesh = mi->get_mesh();
 		if (!mesh.is_null()) {
 
-			List<Ref<Shape> > shapes;
+			List<Ref<Shape>> shapes;
 			if (collision_map.has(mesh)) {
 				shapes = collision_map[mesh];
 			} else if (_teststr(mesh->get_name(), "col")) {
@@ -913,7 +913,7 @@ void ResourceImporterScene::_find_meshes(Node *p_node, Map<Ref<ArrayMesh>, Trans
 	}
 }
 
-void ResourceImporterScene::_make_external_resources(Node *p_node, const String &p_base_path, bool p_make_animations, bool p_animations_as_text, bool p_keep_animations, bool p_make_materials, bool p_materials_as_text, bool p_keep_materials, bool p_make_meshes, bool p_meshes_as_text, Map<Ref<Animation>, Ref<Animation> > &p_animations, Map<Ref<Material>, Ref<Material> > &p_materials, Map<Ref<ArrayMesh>, Ref<ArrayMesh> > &p_meshes) {
+void ResourceImporterScene::_make_external_resources(Node *p_node, const String &p_base_path, bool p_make_animations, bool p_animations_as_text, bool p_keep_animations, bool p_make_materials, bool p_materials_as_text, bool p_keep_materials, bool p_make_meshes, bool p_meshes_as_text, Map<Ref<Animation>, Ref<Animation>> &p_animations, Map<Ref<Material>, Ref<Material>> &p_materials, Map<Ref<ArrayMesh>, Ref<ArrayMesh>> &p_meshes) {
 
 	List<PropertyInfo> pi;
 
@@ -1159,9 +1159,9 @@ void ResourceImporterScene::_replace_owner(Node *p_node, Node *p_scene, Node *p_
 	}
 }
 
-void ResourceImporterScene::_add_shapes(Node *p_node, const List<Ref<Shape> > &p_shapes) {
+void ResourceImporterScene::_add_shapes(Node *p_node, const List<Ref<Shape>> &p_shapes) {
 	int idx = 0;
-	for (const List<Ref<Shape> >::Element *E = p_shapes.front(); E; E = E->next()) {
+	for (const List<Ref<Shape>>::Element *E = p_shapes.front(); E; E = E->next()) {
 		CollisionShape *cshape = memnew(CollisionShape);
 		cshape->set_shape(E->get());
 		p_node->add_child(cshape);
@@ -1177,7 +1177,7 @@ Node *ResourceImporterScene::import_scene_from_other_importer(EditorSceneImporte
 	Ref<EditorSceneImporter> importer;
 	String ext = p_path.get_extension().to_lower();
 
-	for (Set<Ref<EditorSceneImporter> >::Element *E = importers.front(); E; E = E->next()) {
+	for (Set<Ref<EditorSceneImporter>>::Element *E = importers.front(); E; E = E->next()) {
 
 		if (E->get().ptr() == p_exception)
 			continue;
@@ -1209,7 +1209,7 @@ Ref<Animation> ResourceImporterScene::import_animation_from_other_importer(Edito
 	Ref<EditorSceneImporter> importer;
 	String ext = p_path.get_extension().to_lower();
 
-	for (Set<Ref<EditorSceneImporter> >::Element *E = importers.front(); E; E = E->next()) {
+	for (Set<Ref<EditorSceneImporter>>::Element *E = importers.front(); E; E = E->next()) {
 
 		if (E->get().ptr() == p_exception)
 			continue;
@@ -1244,7 +1244,7 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 	EditorProgress progress("import", TTR("Import Scene"), 104);
 	progress.step(TTR("Importing Scene..."), 0);
 
-	for (Set<Ref<EditorSceneImporter> >::Element *E = importers.front(); E; E = E->next()) {
+	for (Set<Ref<EditorSceneImporter>>::Element *E = importers.front(); E; E = E->next()) {
 
 		List<String> extensions;
 		E->get()->get_extensions(&extensions);
@@ -1339,7 +1339,7 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 	float anim_optimizer_maxang = p_options["animation/optimizer/max_angle"];
 	int light_bake_mode = p_options["meshes/light_baking"];
 
-	Map<Ref<Mesh>, List<Ref<Shape> > > collision_map;
+	Map<Ref<Mesh>, List<Ref<Shape>>> collision_map;
 
 	scene = _fix_node(scene, scene, collision_map, LightBakeMode(light_bake_mode));
 
@@ -1515,9 +1515,9 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 	}
 
 	if (external_animations || external_materials || external_meshes) {
-		Map<Ref<Animation>, Ref<Animation> > anim_map;
-		Map<Ref<Material>, Ref<Material> > mat_map;
-		Map<Ref<ArrayMesh>, Ref<ArrayMesh> > mesh_map;
+		Map<Ref<Animation>, Ref<Animation>> anim_map;
+		Map<Ref<Material>, Ref<Material>> mat_map;
+		Map<Ref<ArrayMesh>, Ref<ArrayMesh>> mesh_map;
 
 		bool keep_materials = bool(p_options["materials/keep_on_reimport"]);
 

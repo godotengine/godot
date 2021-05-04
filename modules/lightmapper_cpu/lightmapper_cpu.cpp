@@ -289,8 +289,8 @@ void LightmapperCPU::_generate_buffer(uint32_t p_idx, void *p_unused) {
 
 	MeshData &md = mesh_instances[p_idx].data;
 
-	LocalVector<Ref<Image> > albedo_images;
-	LocalVector<Ref<Image> > emission_images;
+	LocalVector<Ref<Image>> albedo_images;
+	LocalVector<Ref<Image>> emission_images;
 
 	for (int surface_id = 0; surface_id < md.albedo.size(); surface_id++) {
 		albedo_images.push_back(_init_bake_texture(md.albedo[surface_id], albedo_textures, Image::FORMAT_RGBA8));
@@ -323,7 +323,7 @@ void LightmapperCPU::_generate_buffer(uint32_t p_idx, void *p_unused) {
 	}
 }
 
-Ref<Image> LightmapperCPU::_init_bake_texture(const MeshData::TextureDef &p_texture_def, const Map<RID, Ref<Image> > &p_tex_cache, Image::Format p_default_format) {
+Ref<Image> LightmapperCPU::_init_bake_texture(const MeshData::TextureDef &p_texture_def, const Map<RID, Ref<Image>> &p_tex_cache, Image::Format p_default_format) {
 	Ref<Image> ret;
 	if (p_texture_def.tex_rid.is_valid()) {
 		ret = p_tex_cache[p_texture_def.tex_rid]->duplicate();
@@ -531,7 +531,7 @@ void LightmapperCPU::_plot_triangle(const Vector2 *p_vertices, const Vector3 *p_
 					segment.write[1] = v1;
 				}
 
-				Vector<Vector<Vector2> > intersected_segments = Geometry::intersect_polyline_with_polygon_2d(segment, pixel_polygon);
+				Vector<Vector<Vector2>> intersected_segments = Geometry::intersect_polyline_with_polygon_2d(segment, pixel_polygon);
 				ERR_FAIL_COND_MSG(intersected_segments.size() > 1, "[Lightmapper] Itersecting a segment and a convex polygon should give at most one segment.");
 				if (!intersected_segments.empty()) {
 					const Vector<Vector2> &intersected_segment = intersected_segments[0];
@@ -571,7 +571,7 @@ void LightmapperCPU::_plot_triangle(const Vector2 *p_vertices, const Vector3 *p_
 					middle_vertex = 2;
 				}
 
-				Vector<Vector<Vector2> > intersected_lines = Geometry::intersect_polyline_with_polygon_2d(line, pixel_polygon);
+				Vector<Vector<Vector2>> intersected_lines = Geometry::intersect_polyline_with_polygon_2d(line, pixel_polygon);
 
 				ERR_FAIL_COND_MSG(intersected_lines.size() > 1, "[Lightmapper] Itersecting a line and a convex polygon should give at most one line.");
 
@@ -593,7 +593,7 @@ void LightmapperCPU::_plot_triangle(const Vector2 *p_vertices, const Vector3 *p_
 				}
 			} else {
 
-				Vector<Vector<Vector2> > intersected_polygons = Geometry::intersect_polygons_2d(pixel_polygon, triangle_polygon);
+				Vector<Vector<Vector2>> intersected_polygons = Geometry::intersect_polygons_2d(pixel_polygon, triangle_polygon);
 
 				ERR_FAIL_COND_MSG(intersected_polygons.size() > 1, "[Lightmapper] Itersecting two convex polygons should give at most one polygon.");
 
@@ -1397,7 +1397,7 @@ LightmapperCPU::BakeError LightmapperCPU::bake(BakeQuality p_quality, bool p_use
 
 	raycaster.unref(); // Not needed anymore, free some memory.
 
-	LocalVector<LocalVector<Vector3> > lightmaps_data;
+	LocalVector<LocalVector<Vector3>> lightmaps_data;
 	lightmaps_data.resize(mesh_instances.size());
 
 	for (unsigned int i = 0; i < mesh_instances.size(); i++) {

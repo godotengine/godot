@@ -147,7 +147,7 @@ MeshGeometry::MeshGeometry(uint64_t id, const ElementPtr element, const std::str
 	const ElementCollection &Layer = sc->GetCollection("Layer");
 
 	// Store all layers
-	std::vector<std::tuple<int, std::string> > valid_layers;
+	std::vector<std::tuple<int, std::string>> valid_layers;
 
 	// now read the sub mesh information from the geometry (normals, uvs, etc)
 	for (ElementMap::const_iterator it = Layer.first; it != Layer.second; ++it) {

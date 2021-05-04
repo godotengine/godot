@@ -2387,12 +2387,12 @@ void TileSetEditor::_undo_tile_removal(int p_id) {
 		undo_redo->add_undo_method(tileset.ptr(), "tile_set_light_occluder", p_id, tileset->tile_get_light_occluder(p_id));
 		undo_redo->add_undo_method(tileset.ptr(), "tile_set_navigation_polygon", p_id, tileset->tile_get_navigation_polygon(p_id));
 	} else {
-		Map<Vector2, Ref<OccluderPolygon2D> > oclusion_map = tileset->autotile_get_light_oclusion_map(p_id);
-		for (Map<Vector2, Ref<OccluderPolygon2D> >::Element *E = oclusion_map.front(); E; E = E->next()) {
+		Map<Vector2, Ref<OccluderPolygon2D>> oclusion_map = tileset->autotile_get_light_oclusion_map(p_id);
+		for (Map<Vector2, Ref<OccluderPolygon2D>>::Element *E = oclusion_map.front(); E; E = E->next()) {
 			undo_redo->add_undo_method(tileset.ptr(), "autotile_set_light_occluder", p_id, E->value(), E->key());
 		}
-		Map<Vector2, Ref<NavigationPolygon> > navigation_map = tileset->autotile_get_navigation_map(p_id);
-		for (Map<Vector2, Ref<NavigationPolygon> >::Element *E = navigation_map.front(); E; E = E->next()) {
+		Map<Vector2, Ref<NavigationPolygon>> navigation_map = tileset->autotile_get_navigation_map(p_id);
+		for (Map<Vector2, Ref<NavigationPolygon>>::Element *E = navigation_map.front(); E; E = E->next()) {
 			undo_redo->add_undo_method(tileset.ptr(), "autotile_set_navigation_polygon", p_id, E->value(), E->key());
 		}
 		Map<Vector2, uint32_t> bitmask_map = tileset->autotile_get_bitmask_map(p_id);
@@ -2728,8 +2728,8 @@ void TileSetEditor::draw_polygon_shapes() {
 					}
 				}
 			} else {
-				Map<Vector2, Ref<OccluderPolygon2D> > map = tileset->autotile_get_light_oclusion_map(t_id);
-				for (Map<Vector2, Ref<OccluderPolygon2D> >::Element *E = map.front(); E; E = E->next()) {
+				Map<Vector2, Ref<OccluderPolygon2D>> map = tileset->autotile_get_light_oclusion_map(t_id);
+				for (Map<Vector2, Ref<OccluderPolygon2D>>::Element *E = map.front(); E; E = E->next()) {
 					Vector2 coord = E->key();
 					Vector2 anchor = tileset->autotile_get_size(t_id);
 					anchor.x += tileset->autotile_get_spacing(t_id);
@@ -2816,8 +2816,8 @@ void TileSetEditor::draw_polygon_shapes() {
 					}
 				}
 			} else {
-				Map<Vector2, Ref<NavigationPolygon> > map = tileset->autotile_get_navigation_map(t_id);
-				for (Map<Vector2, Ref<NavigationPolygon> >::Element *E = map.front(); E; E = E->next()) {
+				Map<Vector2, Ref<NavigationPolygon>> map = tileset->autotile_get_navigation_map(t_id);
+				for (Map<Vector2, Ref<NavigationPolygon>>::Element *E = map.front(); E; E = E->next()) {
 					Vector2 coord = E->key();
 					Vector2 anchor = tileset->autotile_get_size(t_id);
 					anchor.x += tileset->autotile_get_spacing(t_id);

@@ -3523,7 +3523,7 @@ VisualScriptConstructor::VisualScriptConstructor() {
 	type = Variant::NIL;
 }
 
-static Map<String, Pair<Variant::Type, MethodInfo> > constructor_map;
+static Map<String, Pair<Variant::Type, MethodInfo>> constructor_map;
 
 static Ref<VisualScriptNode> create_constructor_node(const String &p_name) {
 

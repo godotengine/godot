@@ -3510,7 +3510,7 @@ RID RasterizerStorageGLES3::mesh_create() {
 	return mesh_owner.make_rid(mesh);
 }
 
-void RasterizerStorageGLES3::mesh_add_surface(RID p_mesh, uint32_t p_format, VS::PrimitiveType p_primitive, const PoolVector<uint8_t> &p_array, int p_vertex_count, const PoolVector<uint8_t> &p_index_array, int p_index_count, const AABB &p_aabb, const Vector<PoolVector<uint8_t> > &p_blend_shapes, const Vector<AABB> &p_bone_aabbs) {
+void RasterizerStorageGLES3::mesh_add_surface(RID p_mesh, uint32_t p_format, VS::PrimitiveType p_primitive, const PoolVector<uint8_t> &p_array, int p_vertex_count, const PoolVector<uint8_t> &p_index_array, int p_index_count, const AABB &p_aabb, const Vector<PoolVector<uint8_t>> &p_blend_shapes, const Vector<AABB> &p_bone_aabbs) {
 
 	PoolVector<uint8_t> array = p_array;
 
@@ -4169,13 +4169,13 @@ AABB RasterizerStorageGLES3::mesh_surface_get_aabb(RID p_mesh, int p_surface) co
 
 	return mesh->surfaces[p_surface]->aabb;
 }
-Vector<PoolVector<uint8_t> > RasterizerStorageGLES3::mesh_surface_get_blend_shapes(RID p_mesh, int p_surface) const {
+Vector<PoolVector<uint8_t>> RasterizerStorageGLES3::mesh_surface_get_blend_shapes(RID p_mesh, int p_surface) const {
 
 	const Mesh *mesh = mesh_owner.getornull(p_mesh);
-	ERR_FAIL_COND_V(!mesh, Vector<PoolVector<uint8_t> >());
-	ERR_FAIL_INDEX_V(p_surface, mesh->surfaces.size(), Vector<PoolVector<uint8_t> >());
+	ERR_FAIL_COND_V(!mesh, Vector<PoolVector<uint8_t>>());
+	ERR_FAIL_INDEX_V(p_surface, mesh->surfaces.size(), Vector<PoolVector<uint8_t>>());
 
-	Vector<PoolVector<uint8_t> > bsarr;
+	Vector<PoolVector<uint8_t>> bsarr;
 
 	for (int i = 0; i < mesh->surfaces[p_surface]->blend_shapes.size(); i++) {
 
@@ -4190,7 +4190,7 @@ Vector<PoolVector<uint8_t> > RasterizerStorageGLES3::mesh_surface_get_blend_shap
 		}
 #else
 		void *data = glMapBufferRange(GL_ELEMENT_ARRAY_BUFFER, 0, mesh->surfaces[p_surface]->array_byte_size, GL_MAP_READ_BIT);
-		ERR_FAIL_COND_V(!data, Vector<PoolVector<uint8_t> >());
+		ERR_FAIL_COND_V(!data, Vector<PoolVector<uint8_t>>());
 		{
 			PoolVector<uint8_t>::Write w = ret.write();
 			memcpy(w.ptr(), data, mesh->surfaces[p_surface]->array_byte_size);

@@ -943,7 +943,7 @@ PoolVector2Array Curve2D::tessellate(int p_max_stages, float p_tolerance) const 
 	if (points.size() == 0) {
 		return tess;
 	}
-	Vector<Map<float, Vector2> > midpoints;
+	Vector<Map<float, Vector2>> midpoints;
 
 	midpoints.resize(points.size() - 1);
 
@@ -1622,7 +1622,7 @@ PoolVector3Array Curve3D::tessellate(int p_max_stages, float p_tolerance) const 
 	if (points.size() == 0) {
 		return tess;
 	}
-	Vector<Map<float, Vector3> > midpoints;
+	Vector<Map<float, Vector3>> midpoints;
 
 	midpoints.resize(points.size() - 1);
 

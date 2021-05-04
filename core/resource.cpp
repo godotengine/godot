@@ -150,7 +150,7 @@ void Resource::reload_from_file() {
 	}
 }
 
-Ref<Resource> Resource::duplicate_for_local_scene(Node *p_for_scene, Map<Ref<Resource>, Ref<Resource> > &remap_cache) {
+Ref<Resource> Resource::duplicate_for_local_scene(Node *p_for_scene, Map<Ref<Resource>, Ref<Resource>> &remap_cache) {
 
 	List<PropertyInfo> plist;
 	get_property_list(&plist);
@@ -189,7 +189,7 @@ Ref<Resource> Resource::duplicate_for_local_scene(Node *p_for_scene, Map<Ref<Res
 	return r;
 }
 
-void Resource::configure_for_local_scene(Node *p_for_scene, Map<Ref<Resource>, Ref<Resource> > &remap_cache) {
+void Resource::configure_for_local_scene(Node *p_for_scene, Map<Ref<Resource>, Ref<Resource>> &remap_cache) {
 
 	List<PropertyInfo> plist;
 	get_property_list(&plist);
@@ -437,7 +437,7 @@ Resource::~Resource() {
 
 HashMap<String, Resource *> ResourceCache::resources;
 #ifdef TOOLS_ENABLED
-HashMap<String, HashMap<String, int> > ResourceCache::resource_path_cache;
+HashMap<String, HashMap<String, int>> ResourceCache::resource_path_cache;
 #endif
 
 RWLock ResourceCache::lock;
@@ -486,7 +486,7 @@ Resource *ResourceCache::get(const String &p_path) {
 	return *res;
 }
 
-void ResourceCache::get_cached_resources(List<Ref<Resource> > *p_resources) {
+void ResourceCache::get_cached_resources(List<Ref<Resource>> *p_resources) {
 
 	lock.read_lock();
 	const String *K = NULL;

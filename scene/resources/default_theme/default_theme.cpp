@@ -38,7 +38,7 @@
 #include "font_hidpi.inc"
 #include "font_lodpi.inc"
 
-typedef Map<const void *, Ref<ImageTexture> > TexCacheMap;
+typedef Map<const void *, Ref<ImageTexture>> TexCacheMap;
 
 static TexCacheMap *tex_cache;
 static float scale = 1;

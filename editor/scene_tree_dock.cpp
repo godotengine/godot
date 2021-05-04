@@ -1358,7 +1358,7 @@ void SceneTreeDock::_set_owners(Node *p_owner, const Array &p_nodes) {
 	}
 }
 
-void SceneTreeDock::_fill_path_renames(Vector<StringName> base_path, Vector<StringName> new_base_path, Node *p_node, List<Pair<NodePath, NodePath> > *p_renames) {
+void SceneTreeDock::_fill_path_renames(Vector<StringName> base_path, Vector<StringName> new_base_path, Node *p_node, List<Pair<NodePath, NodePath>> *p_renames) {
 
 	base_path.push_back(p_node->get_name());
 	if (new_base_path.size())
@@ -1381,7 +1381,7 @@ void SceneTreeDock::_fill_path_renames(Vector<StringName> base_path, Vector<Stri
 	}
 }
 
-void SceneTreeDock::fill_path_renames(Node *p_node, Node *p_new_parent, List<Pair<NodePath, NodePath> > *p_renames) {
+void SceneTreeDock::fill_path_renames(Node *p_node, Node *p_new_parent, List<Pair<NodePath, NodePath>> *p_renames) {
 	Vector<StringName> base_path;
 	Node *n = p_node->get_parent();
 	while (n) {
@@ -1404,9 +1404,9 @@ void SceneTreeDock::fill_path_renames(Node *p_node, Node *p_new_parent, List<Pai
 	_fill_path_renames(base_path, new_base_path, p_node, p_renames);
 }
 
-void SceneTreeDock::perform_node_renames(Node *p_base, List<Pair<NodePath, NodePath> > *p_renames, Map<Ref<Animation>, Set<int> > *r_rem_anims) {
+void SceneTreeDock::perform_node_renames(Node *p_base, List<Pair<NodePath, NodePath>> *p_renames, Map<Ref<Animation>, Set<int>> *r_rem_anims) {
 
-	Map<Ref<Animation>, Set<int> > rem_anims;
+	Map<Ref<Animation>, Set<int>> rem_anims;
 
 	if (!r_rem_anims)
 		r_rem_anims = &rem_anims;
@@ -1436,7 +1436,7 @@ void SceneTreeDock::perform_node_renames(Node *p_base, List<Pair<NodePath, NodeP
 				Variant p = p_base->get(propertyname);
 				if (p.get_type() == Variant::NODE_PATH) {
 					NodePath root_path_new = root_path;
-					for (List<Pair<NodePath, NodePath> >::Element *F = p_renames->front(); F; F = F->next()) {
+					for (List<Pair<NodePath, NodePath>>::Element *F = p_renames->front(); F; F = F->next()) {
 						if (root_path == F->get().first) {
 							root_path_new = F->get().second;
 							break;
@@ -1444,7 +1444,7 @@ void SceneTreeDock::perform_node_renames(Node *p_base, List<Pair<NodePath, NodeP
 					}
 
 					// Goes through all paths to check if its matching
-					for (List<Pair<NodePath, NodePath> >::Element *F = p_renames->front(); F; F = F->next()) {
+					for (List<Pair<NodePath, NodePath>>::Element *F = p_renames->front(); F; F = F->next()) {
 						NodePath rel_path_old = root_path.rel_path_to(F->get().first);
 
 						// if old path detected, then it needs to be replaced with the new one
@@ -1493,7 +1493,7 @@ void SceneTreeDock::perform_node_renames(Node *p_base, List<Pair<NodePath, NodeP
 			NodePath root_path = root->get_path();
 			NodePath new_root_path = root_path;
 
-			for (List<Pair<NodePath, NodePath> >::Element *E = p_renames->front(); E; E = E->next()) {
+			for (List<Pair<NodePath, NodePath>>::Element *E = p_renames->front(); E; E = E->next()) {
 
 				if (E->get().first == root_path) {
 					new_root_path = E->get().second;
@@ -1532,7 +1532,7 @@ void SceneTreeDock::perform_node_renames(Node *p_base, List<Pair<NodePath, NodeP
 						if (!ran.has(i))
 							continue; //channel was removed
 
-						for (List<Pair<NodePath, NodePath> >::Element *F = p_renames->front(); F; F = F->next()) {
+						for (List<Pair<NodePath, NodePath>>::Element *F = p_renames->front(); F; F = F->next()) {
 
 							if (F->get().first == old_np) {
 
@@ -1583,7 +1583,7 @@ void SceneTreeDock::perform_node_renames(Node *p_base, List<Pair<NodePath, NodeP
 
 void SceneTreeDock::_node_prerenamed(Node *p_node, const String &p_new_name) {
 
-	List<Pair<NodePath, NodePath> > path_renames;
+	List<Pair<NodePath, NodePath>> path_renames;
 
 	Vector<StringName> base_path;
 	Node *n = p_node->get_parent();
@@ -1708,7 +1708,7 @@ void SceneTreeDock::_do_reparent(Node *p_new_parent, int p_position_in_parent, V
 
 	editor_data->get_undo_redo().create_action(TTR("Reparent Node"));
 
-	List<Pair<NodePath, NodePath> > path_renames;
+	List<Pair<NodePath, NodePath>> path_renames;
 	Vector<StringName> former_names;
 
 	int inc = 0;
@@ -1971,7 +1971,7 @@ void SceneTreeDock::_delete_confirm(bool p_cut) {
 	} else {
 
 		remove_list.sort_custom<Node::Comparator>(); //sort nodes to keep positions
-		List<Pair<NodePath, NodePath> > path_renames;
+		List<Pair<NodePath, NodePath>> path_renames;
 
 		//delete from animation
 		for (List<Node *>::Element *E = remove_list.front(); E; E = E->next()) {

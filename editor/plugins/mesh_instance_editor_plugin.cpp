@@ -197,7 +197,7 @@ void MeshInstanceEditor::_menu_option(int p_option) {
 				return;
 			}
 
-			Vector<Ref<Shape> > shapes = mesh->convex_decompose();
+			Vector<Ref<Shape>> shapes = mesh->convex_decompose();
 
 			if (!shapes.size()) {
 				err_dialog->set_text(TTR("Couldn't create any collision shapes."));

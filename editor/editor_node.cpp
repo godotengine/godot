@@ -176,7 +176,7 @@ EditorNode *EditorNode::singleton = NULL;
 void EditorNode::disambiguate_filenames(const Vector<String> p_full_paths, Vector<String> &r_filenames) {
 	// Keep track of a list of "index sets," i.e. sets of indices
 	// within disambiguated_scene_names which contain the same name.
-	Vector<Set<int> > index_sets;
+	Vector<Set<int>> index_sets;
 	Map<String, int> scene_name_to_set_index;
 	for (int i = 0; i < r_filenames.size(); i++) {
 		String scene_name = r_filenames[i];
@@ -648,7 +648,7 @@ void EditorNode::_on_plugin_ready(Object *p_script, const String &p_activate_nam
 
 void EditorNode::_resources_changed(const PoolVector<String> &p_resources) {
 
-	List<Ref<Resource> > changed;
+	List<Ref<Resource>> changed;
 
 	int rc = p_resources.size();
 	for (int i = 0; i < rc; i++) {
@@ -674,7 +674,7 @@ void EditorNode::_resources_changed(const PoolVector<String> &p_resources) {
 	}
 
 	if (changed.size()) {
-		for (List<Ref<Resource> >::Element *E = changed.front(); E; E = E->next()) {
+		for (List<Ref<Resource>>::Element *E = changed.front(); E; E = E->next()) {
 			E->get()->reload_from_file();
 		}
 	}
@@ -1418,7 +1418,7 @@ bool EditorNode::_validate_scene_recursive(const String &p_filename, Node *p_nod
 	return false;
 }
 
-static bool _find_edited_resources(const Ref<Resource> &p_resource, Set<Ref<Resource> > &edited_resources) {
+static bool _find_edited_resources(const Ref<Resource> &p_resource, Set<Ref<Resource>> &edited_resources) {
 
 	if (p_resource->is_edited()) {
 		edited_resources.insert(p_resource);
@@ -1455,11 +1455,11 @@ int EditorNode::_save_external_resources() {
 		flg |= ResourceSaver::FLAG_COMPRESS;
 	flg |= ResourceSaver::FLAG_REPLACE_SUBRESOURCE_PATHS;
 
-	Set<Ref<Resource> > edited_subresources;
+	Set<Ref<Resource>> edited_subresources;
 	int saved = 0;
-	List<Ref<Resource> > cached;
+	List<Ref<Resource>> cached;
 	ResourceCache::get_cached_resources(&cached);
-	for (List<Ref<Resource> >::Element *E = cached.front(); E; E = E->next()) {
+	for (List<Ref<Resource>>::Element *E = cached.front(); E; E = E->next()) {
 
 		Ref<Resource> res = E->get();
 		if (!res->get_path().is_resource_file())
@@ -1474,7 +1474,7 @@ int EditorNode::_save_external_resources() {
 	// clear later, because user may have put the same subresource in two different resources,
 	// which will be shared until the next reload
 
-	for (Set<Ref<Resource> >::Element *E = edited_subresources.front(); E; E = E->next()) {
+	for (Set<Ref<Resource>>::Element *E = edited_subresources.front(); E; E = E->next()) {
 		Ref<Resource> res = E->get();
 		res->set_edited(false);
 	}
@@ -3620,7 +3620,7 @@ Error EditorNode::load_scene(const String &p_scene, bool p_ignore_broken_deps, b
 
 	dependency_errors.erase(lpath); //at least not self path
 
-	for (Map<String, Set<String> >::Element *E = dependency_errors.front(); E; E = E->next()) {
+	for (Map<String, Set<String>>::Element *E = dependency_errors.front(); E; E = E->next()) {
 
 		String txt = vformat(TTR("Scene '%s' has broken dependencies:"), E->key()) + "\n";
 		for (Set<String>::Element *F = E->get().front(); F; F = F->next()) {
@@ -4071,8 +4071,8 @@ Ref<Texture> EditorNode::get_class_icon(const String &p_class, const String &p_f
 		return icon;
 	}
 
-	const Map<String, Vector<EditorData::CustomType> > &p_map = EditorNode::get_editor_data().get_custom_types();
-	for (const Map<String, Vector<EditorData::CustomType> >::Element *E = p_map.front(); E; E = E->next()) {
+	const Map<String, Vector<EditorData::CustomType>> &p_map = EditorNode::get_editor_data().get_custom_types();
+	for (const Map<String, Vector<EditorData::CustomType>>::Element *E = p_map.front(); E; E = E->next()) {
 		const Vector<EditorData::CustomType> &ct = E->value();
 		for (int i = 0; i < ct.size(); ++i) {
 			if (ct[i].name == p_class) {
@@ -5428,10 +5428,10 @@ void EditorNode::reload_scene(const String &p_path) {
 
 	//first of all, reload internal textures, materials, meshes, etc. as they might have changed on disk
 
-	List<Ref<Resource> > cached;
+	List<Ref<Resource>> cached;
 	ResourceCache::get_cached_resources(&cached);
-	List<Ref<Resource> > to_clear; //clear internal resources from previous scene from being used
-	for (List<Ref<Resource> >::Element *E = cached.front(); E; E = E->next()) {
+	List<Ref<Resource>> to_clear; //clear internal resources from previous scene from being used
+	for (List<Ref<Resource>>::Element *E = cached.front(); E; E = E->next()) {
 
 		if (E->get()->get_path().begins_with(p_path + "::")) { //subresources of existing scene
 			to_clear.push_back(E->get());
@@ -5562,9 +5562,9 @@ void EditorNode::remove_resource_conversion_plugin(const Ref<EditorResourceConve
 	resource_conversion_plugins.erase(p_plugin);
 }
 
-Vector<Ref<EditorResourceConversionPlugin> > EditorNode::find_resource_conversion_plugin(const Ref<Resource> &p_for_resource) {
+Vector<Ref<EditorResourceConversionPlugin>> EditorNode::find_resource_conversion_plugin(const Ref<Resource> &p_for_resource) {
 
-	Vector<Ref<EditorResourceConversionPlugin> > ret;
+	Vector<Ref<EditorResourceConversionPlugin>> ret;
 
 	for (int i = 0; i < resource_conversion_plugins.size(); i++) {
 		if (resource_conversion_plugins[i].is_valid() && resource_conversion_plugins[i]->handles(p_for_resource)) {

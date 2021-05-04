@@ -37,7 +37,7 @@
 #include "thirdparty/misc/triangulator.h"
 
 template <class T>
-T collect_first(const Vector<VertexData<T> > *p_data, T p_fall_back) {
+T collect_first(const Vector<VertexData<T>> *p_data, T p_fall_back) {
 	if (p_data->empty()) {
 		return p_fall_back;
 	}
@@ -46,7 +46,7 @@ T collect_first(const Vector<VertexData<T> > *p_data, T p_fall_back) {
 }
 
 template <class T>
-HashMap<int, T> collect_all(const Vector<VertexData<T> > *p_data, HashMap<int, T> p_fall_back) {
+HashMap<int, T> collect_all(const Vector<VertexData<T>> *p_data, HashMap<int, T> p_fall_back) {
 	if (p_data->empty()) {
 		return p_fall_back;
 	}
@@ -60,7 +60,7 @@ HashMap<int, T> collect_all(const Vector<VertexData<T> > *p_data, HashMap<int, T
 }
 
 template <class T>
-T collect_average(const Vector<VertexData<T> > *p_data, T p_fall_back) {
+T collect_average(const Vector<VertexData<T>> *p_data, T p_fall_back) {
 	if (p_data->empty()) {
 		return p_fall_back;
 	}
@@ -75,7 +75,7 @@ T collect_average(const Vector<VertexData<T> > *p_data, T p_fall_back) {
 	return combined.normalized();
 }
 
-HashMap<int, Vector3> collect_normal(const Vector<VertexData<Vector3> > *p_data, HashMap<int, Vector3> p_fall_back) {
+HashMap<int, Vector3> collect_normal(const Vector<VertexData<Vector3>> *p_data, HashMap<int, Vector3> p_fall_back) {
 	if (p_data->empty()) {
 		return p_fall_back;
 	}
@@ -88,7 +88,7 @@ HashMap<int, Vector3> collect_normal(const Vector<VertexData<Vector3> > *p_data,
 	return collection;
 }
 
-HashMap<int, Vector2> collect_uv(const Vector<VertexData<Vector2> > *p_data, HashMap<int, Vector2> p_fall_back) {
+HashMap<int, Vector2> collect_uv(const Vector<VertexData<Vector2>> *p_data, HashMap<int, Vector2> p_fall_back) {
 	if (p_data->empty()) {
 		return p_fall_back;
 	}
@@ -111,7 +111,7 @@ struct SurfaceData {
 	OrderedHashMap<Vertex, int> lookup_table; // proposed fix is to replace lookup_table[vertex_id] to give the position of the vertices_map[int] index.
 	LocalVector<Vertex> vertices_map; // this must be ordered the same as insertion <-- slow to do find() operation.
 	Ref<SpatialMaterial> material;
-	HashMap<PolygonId, Vector<DataIndex> > surface_polygon_vertex;
+	HashMap<PolygonId, Vector<DataIndex>> surface_polygon_vertex;
 	Array morphs;
 };
 
@@ -126,7 +126,7 @@ MeshInstance *FBXMeshData::create_fbx_mesh(const ImportState &state, const FBXDo
 
 	// Phase 1. Parse all FBX data.
 	HashMap<int, Vector3> normals;
-	HashMap<int, HashMap<int, Vector3> > normals_raw = extract_per_vertex_data(
+	HashMap<int, HashMap<int, Vector3>> normals_raw = extract_per_vertex_data(
 			vertices.size(),
 			mesh_geometry->get_edge_map(),
 			polygon_indices,
@@ -135,7 +135,7 @@ MeshInstance *FBXMeshData::create_fbx_mesh(const ImportState &state, const FBXDo
 			HashMap<int, Vector3>());
 
 	HashMap<int, Vector2> uvs_0;
-	HashMap<int, HashMap<int, Vector2> > uvs_0_raw = extract_per_vertex_data(
+	HashMap<int, HashMap<int, Vector2>> uvs_0_raw = extract_per_vertex_data(
 			vertices.size(),
 			mesh_geometry->get_edge_map(),
 			polygon_indices,
@@ -144,7 +144,7 @@ MeshInstance *FBXMeshData::create_fbx_mesh(const ImportState &state, const FBXDo
 			HashMap<int, Vector2>());
 
 	HashMap<int, Vector2> uvs_1;
-	HashMap<int, HashMap<int, Vector2> > uvs_1_raw = extract_per_vertex_data(
+	HashMap<int, HashMap<int, Vector2>> uvs_1_raw = extract_per_vertex_data(
 			vertices.size(),
 			mesh_geometry->get_edge_map(),
 			polygon_indices,
@@ -153,7 +153,7 @@ MeshInstance *FBXMeshData::create_fbx_mesh(const ImportState &state, const FBXDo
 			HashMap<int, Vector2>());
 
 	HashMap<int, Color> colors;
-	HashMap<int, HashMap<int, Color> > colors_raw = extract_per_vertex_data(
+	HashMap<int, HashMap<int, Color>> colors_raw = extract_per_vertex_data(
 			vertices.size(),
 			mesh_geometry->get_edge_map(),
 			polygon_indices,
@@ -492,13 +492,13 @@ void FBXMeshData::reorganize_vertices(
 		HashMap<int, Vector2> &r_uv_2,
 		HashMap<int, Color> &r_color,
 		HashMap<String, MorphVertexData> &r_morphs,
-		HashMap<int, HashMap<int, Vector3> > &r_normals_raw,
-		HashMap<int, HashMap<int, Color> > &r_colors_raw,
-		HashMap<int, HashMap<int, Vector2> > &r_uv_1_raw,
-		HashMap<int, HashMap<int, Vector2> > &r_uv_2_raw) {
+		HashMap<int, HashMap<int, Vector3>> &r_normals_raw,
+		HashMap<int, HashMap<int, Color>> &r_colors_raw,
+		HashMap<int, HashMap<int, Vector2>> &r_uv_1_raw,
+		HashMap<int, HashMap<int, Vector2>> &r_uv_2_raw) {
 
 	// Key: OldVertex; Value: [New vertices];
-	HashMap<int, Vector<int> > duplicated_vertices;
+	HashMap<int, Vector<int>> duplicated_vertices;
 
 	PolygonId polygon_index = -1;
 	for (int pv = 0; pv < (int)r_polygon_indices.size(); pv += 1) {
@@ -584,7 +584,7 @@ void FBXMeshData::reorganize_vertices(
 
 		// Take the UV1 and UV2 and see if we need to duplicate this polygon.
 		{
-			HashMap<int, HashMap<int, Vector2> > *uv_raw = &r_uv_1_raw;
+			HashMap<int, HashMap<int, Vector2>> *uv_raw = &r_uv_1_raw;
 			Vector2 *this_vert_poly_uv = &this_vert_poly_uv1;
 			for (int kk = 0; kk < 2; kk++) {
 
@@ -1049,7 +1049,7 @@ HashMap<int, R> FBXMeshData::extract_per_vertex_data(
 		const std::vector<FBXDocParser::MeshGeometry::Edge> &p_edge_map,
 		const std::vector<int> &p_mesh_indices,
 		const FBXDocParser::MeshGeometry::MappingData<T> &p_mapping_data,
-		R (*collector_function)(const Vector<VertexData<T> > *p_vertex_data, R p_fall_back),
+		R (*collector_function)(const Vector<VertexData<T>> *p_vertex_data, R p_fall_back),
 		R p_fall_back) const {
 
 	/* When index_to_direct is set
@@ -1068,7 +1068,7 @@ HashMap<int, R> FBXMeshData::extract_per_vertex_data(
 	ERR_FAIL_COND_V_MSG(p_mapping_data.ref_type == FBXDocParser::MeshGeometry::ReferenceType::index && p_mapping_data.index.size() == 0, (HashMap<int, R>()), "The FBX seems corrupted");
 
 	// Aggregate vertex data.
-	HashMap<Vertex, Vector<VertexData<T> > > aggregate_vertex_data;
+	HashMap<Vertex, Vector<VertexData<T>>> aggregate_vertex_data;
 
 	switch (p_mapping_data.map_type) {
 		case FBXDocParser::MeshGeometry::MapType::none: {
@@ -1255,7 +1255,7 @@ HashMap<int, R> FBXMeshData::extract_per_vertex_data(
 
 	// Aggregate the collected data.
 	for (const Vertex *index = aggregate_vertex_data.next(nullptr); index != nullptr; index = aggregate_vertex_data.next(index)) {
-		Vector<VertexData<T> > *aggregated_vertex = aggregate_vertex_data.getptr(*index);
+		Vector<VertexData<T>> *aggregated_vertex = aggregate_vertex_data.getptr(*index);
 		// This can't be null because we are just iterating.
 		CRASH_COND(aggregated_vertex == nullptr);
 
@@ -1292,7 +1292,7 @@ HashMap<int, T> FBXMeshData::extract_per_polygon(
 	const int polygon_count = count_polygons(p_polygon_indices);
 
 	// Aggregate vertex data.
-	HashMap<int, Vector<T> > aggregate_polygon_data;
+	HashMap<int, Vector<T>> aggregate_polygon_data;
 
 	switch (p_fbx_data.map_type) {
 		case FBXDocParser::MeshGeometry::MapType::none: {

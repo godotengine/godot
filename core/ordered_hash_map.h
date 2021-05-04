@@ -45,7 +45,7 @@
  */
 template <class K, class V, class Hasher = HashMapHasherDefault, class Comparator = HashMapComparatorDefault<K>, uint8_t MIN_HASH_TABLE_POWER = 3, uint8_t RELATIONSHIP = 8>
 class OrderedHashMap {
-	typedef List<Pair<const K *, V> > InternalList;
+	typedef List<Pair<const K *, V>> InternalList;
 	typedef HashMap<K, typename InternalList::Element *, Hasher, Comparator, MIN_HASH_TABLE_POWER, RELATIONSHIP> InternalMap;
 
 	InternalList list;

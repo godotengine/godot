@@ -420,7 +420,7 @@ void ScriptCreateDialog::_lang_changed(int l) {
 			templates[i].id = new_id;
 		}
 		// Disable overridden
-		for (Map<String, Vector<int> >::Element *E = template_overrides.front(); E; E = E->next()) {
+		for (Map<String, Vector<int>>::Element *E = template_overrides.front(); E; E = E->next()) {
 			const Vector<int> &overrides = E->get();
 
 			if (overrides.size() == 1) {

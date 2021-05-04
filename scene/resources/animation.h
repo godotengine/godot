@@ -105,7 +105,7 @@ private:
 
 	struct TransformTrack : public Track {
 
-		Vector<TKey<TransformKey> > transforms;
+		Vector<TKey<TransformKey>> transforms;
 
 		TransformTrack() { type = TYPE_TRANSFORM; }
 	};
@@ -116,7 +116,7 @@ private:
 
 		UpdateMode update_mode;
 		bool update_on_seek;
-		Vector<TKey<Variant> > values;
+		Vector<TKey<Variant>> values;
 
 		ValueTrack() {
 			type = TYPE_VALUE;
@@ -148,7 +148,7 @@ private:
 
 	struct BezierTrack : public Track {
 
-		Vector<TKey<BezierKey> > values;
+		Vector<TKey<BezierKey>> values;
 
 		BezierTrack() {
 			type = TYPE_BEZIER;
@@ -169,7 +169,7 @@ private:
 
 	struct AudioTrack : public Track {
 
-		Vector<TKey<AudioKey> > values;
+		Vector<TKey<AudioKey>> values;
 
 		AudioTrack() {
 			type = TYPE_AUDIO;
@@ -180,7 +180,7 @@ private:
 
 	struct AnimationTrack : public Track {
 
-		Vector<TKey<StringName> > values;
+		Vector<TKey<StringName>> values;
 
 		AnimationTrack() {
 			type = TYPE_ANIMATION;
@@ -216,7 +216,7 @@ private:
 	_FORCE_INLINE_ float _cubic_interpolate(const float &p_pre_a, const float &p_a, const float &p_b, const float &p_post_b, float p_c) const;
 
 	template <class T>
-	_FORCE_INLINE_ T _interpolate(const Vector<TKey<T> > &p_keys, float p_time, InterpolationType p_interp, bool p_loop_wrap, bool *p_ok) const;
+	_FORCE_INLINE_ T _interpolate(const Vector<TKey<T>> &p_keys, float p_time, InterpolationType p_interp, bool p_loop_wrap, bool *p_ok) const;
 
 	template <class T>
 	_FORCE_INLINE_ void _track_get_key_indices_in_range(const Vector<T> &p_array, float from_time, float to_time, List<int> *p_indices) const;

@@ -49,7 +49,7 @@ struct ColladaImport {
 	Collada collada;
 	Spatial *scene;
 
-	Vector<Ref<Animation> > animations;
+	Vector<Ref<Animation>> animations;
 
 	struct NodeMap {
 		//String path;
@@ -73,12 +73,12 @@ struct ColladaImport {
 
 	Map<String, NodeMap> node_map; //map from collada node to engine node
 	Map<String, String> node_name_map; //map from collada node to engine node
-	Map<String, Ref<ArrayMesh> > mesh_cache;
-	Map<String, Ref<Curve3D> > curve_cache;
-	Map<String, Ref<Material> > material_cache;
+	Map<String, Ref<ArrayMesh>> mesh_cache;
+	Map<String, Ref<Curve3D>> curve_cache;
+	Map<String, Ref<Material>> material_cache;
 	Map<Collada::Node *, Skeleton *> skeleton_map;
 
-	Map<Skeleton *, Map<String, int> > skeleton_bone_map;
+	Map<Skeleton *, Map<String, int>> skeleton_bone_map;
 
 	Set<String> valid_animated_nodes;
 	Vector<int> valid_animated_properties;
@@ -89,7 +89,7 @@ struct ColladaImport {
 	Error _create_scene(Collada::Node *p_node, Spatial *p_parent);
 	Error _create_resources(Collada::Node *p_node, bool p_use_compression);
 	Error _create_material(const String &p_target);
-	Error _create_mesh_surfaces(bool p_optimize, Ref<ArrayMesh> &p_mesh, const Map<String, Collada::NodeGeometry::Material> &p_material_map, const Collada::MeshData &meshdata, const Transform &p_local_xform, const Vector<int> &bone_remap, const Collada::SkinControllerData *p_skin_controller, const Collada::MorphControllerData *p_morph_data, Vector<Ref<ArrayMesh> > p_morph_meshes = Vector<Ref<ArrayMesh> >(), bool p_use_compression = false, bool p_use_mesh_material = false);
+	Error _create_mesh_surfaces(bool p_optimize, Ref<ArrayMesh> &p_mesh, const Map<String, Collada::NodeGeometry::Material> &p_material_map, const Collada::MeshData &meshdata, const Transform &p_local_xform, const Vector<int> &bone_remap, const Collada::SkinControllerData *p_skin_controller, const Collada::MorphControllerData *p_morph_data, Vector<Ref<ArrayMesh>> p_morph_meshes = Vector<Ref<ArrayMesh>>(), bool p_use_compression = false, bool p_use_mesh_material = false);
 	Error load(const String &p_path, int p_flags, bool p_force_make_tangents = false, bool p_use_compression = false);
 	void _fix_param_animation_tracks();
 	void create_animation(int p_clip, bool p_make_tracks_in_all_bones, bool p_import_value_tracks);
@@ -487,7 +487,7 @@ Error ColladaImport::_create_material(const String &p_target) {
 	return OK;
 }
 
-Error ColladaImport::_create_mesh_surfaces(bool p_optimize, Ref<ArrayMesh> &p_mesh, const Map<String, Collada::NodeGeometry::Material> &p_material_map, const Collada::MeshData &meshdata, const Transform &p_local_xform, const Vector<int> &bone_remap, const Collada::SkinControllerData *p_skin_controller, const Collada::MorphControllerData *p_morph_data, Vector<Ref<ArrayMesh> > p_morph_meshes, bool p_use_compression, bool p_use_mesh_material) {
+Error ColladaImport::_create_mesh_surfaces(bool p_optimize, Ref<ArrayMesh> &p_mesh, const Map<String, Collada::NodeGeometry::Material> &p_material_map, const Collada::MeshData &meshdata, const Transform &p_local_xform, const Vector<int> &bone_remap, const Collada::SkinControllerData *p_skin_controller, const Collada::MorphControllerData *p_morph_data, Vector<Ref<ArrayMesh>> p_morph_meshes, bool p_use_compression, bool p_use_mesh_material) {
 
 	bool local_xform_mirror = p_local_xform.basis.determinant() < 0;
 
@@ -606,7 +606,7 @@ Error ColladaImport::_create_mesh_surfaces(bool p_optimize, Ref<ArrayMesh> &p_me
 		/* ADD WEIGHTS IF EXIST */
 		/************************/
 
-		Map<int, Vector<Collada::Vertex::Weight> > pre_weights;
+		Map<int, Vector<Collada::Vertex::Weight>> pre_weights;
 
 		bool has_weights = false;
 
@@ -1101,7 +1101,7 @@ Error ColladaImport::_create_resources(Collada::Node *p_node, bool p_use_compres
 			String meshid;
 			Transform apply_xform;
 			Vector<int> bone_remap;
-			Vector<Ref<ArrayMesh> > morphs;
+			Vector<Ref<ArrayMesh>> morphs;
 
 			if (ng2->controller) {
 
@@ -1178,7 +1178,7 @@ Error ColladaImport::_create_resources(Collada::Node *p_node, bool p_use_compres
 									Ref<ArrayMesh> mesh = Ref<ArrayMesh>(memnew(ArrayMesh));
 									const Collada::MeshData &meshdata = collada.state.mesh_data_map[meshid2];
 									mesh->set_name(meshdata.name);
-									Error err = _create_mesh_surfaces(false, mesh, ng2->material_map, meshdata, apply_xform, bone_remap, skin, NULL, Vector<Ref<ArrayMesh> >(), false);
+									Error err = _create_mesh_surfaces(false, mesh, ng2->material_map, meshdata, apply_xform, bone_remap, skin, NULL, Vector<Ref<ArrayMesh>>(), false);
 									ERR_FAIL_COND_V(err, err);
 
 									morphs.push_back(mesh);

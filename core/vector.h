@@ -102,7 +102,7 @@ public:
 
 	void sort() {
 
-		sort_custom<_DefaultComparator<T> >();
+		sort_custom<_DefaultComparator<T>>();
 	}
 
 	void ordered_insert(const T &p_val) {

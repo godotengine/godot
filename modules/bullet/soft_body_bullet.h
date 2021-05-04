@@ -59,7 +59,7 @@ class SoftBodyBullet : public CollisionObjectBullet {
 
 private:
 	btSoftBody *bt_soft_body;
-	Vector<Vector<int> > indices_table;
+	Vector<Vector<int>> indices_table;
 	btSoftBody::Material *mat0; // This is just a copy of pointer managed by btSoftBody
 	bool isScratched;
 

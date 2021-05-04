@@ -171,7 +171,7 @@ void SceneTree::_flush_ugc() {
 
 	while (unique_group_calls.size()) {
 
-		Map<UGCall, Vector<Variant> >::Element *E = unique_group_calls.front();
+		Map<UGCall, Vector<Variant>>::Element *E = unique_group_calls.front();
 
 		Variant v[VARIANT_ARG_MAX];
 		for (int i = 0; i < E->get().size(); i++)
@@ -549,11 +549,11 @@ bool SceneTree::idle(float p_time) {
 
 	//go through timers
 
-	List<Ref<SceneTreeTimer> >::Element *L = timers.back(); //last element
+	List<Ref<SceneTreeTimer>>::Element *L = timers.back(); //last element
 
-	for (List<Ref<SceneTreeTimer> >::Element *E = timers.front(); E;) {
+	for (List<Ref<SceneTreeTimer>>::Element *E = timers.front(); E;) {
 
-		List<Ref<SceneTreeTimer> >::Element *N = E->next();
+		List<Ref<SceneTreeTimer>>::Element *N = E->next();
 		if (pause && !E->get()->is_pause_mode_process()) {
 			if (E == L) {
 				break; //break on last, so if new timers were added during list traversal, ignore them.
@@ -628,7 +628,7 @@ void SceneTree::finish() {
 	}
 
 	// cleanup timers
-	for (List<Ref<SceneTreeTimer> >::Element *E = timers.front(); E; E = E->next()) {
+	for (List<Ref<SceneTreeTimer>>::Element *E = timers.front(); E; E = E->next()) {
 		E->get()->release_connections();
 	}
 	timers.clear();
@@ -1376,7 +1376,7 @@ void SceneTree::_live_edit_node_set_func(int p_id, const StringName &p_prop, con
 	if (root->has_node(live_edit_root))
 		base = root->get_node(live_edit_root);
 
-	Map<String, Set<Node *> >::Element *E = live_scene_edit_cache.find(live_edit_scene);
+	Map<String, Set<Node *>>::Element *E = live_scene_edit_cache.find(live_edit_scene);
 	if (!E)
 		return; //scene not editable
 
@@ -1412,7 +1412,7 @@ void SceneTree::_live_edit_node_call_func(int p_id, const StringName &p_method, 
 	if (root->has_node(live_edit_root))
 		base = root->get_node(live_edit_root);
 
-	Map<String, Set<Node *> >::Element *E = live_scene_edit_cache.find(live_edit_scene);
+	Map<String, Set<Node *>>::Element *E = live_scene_edit_cache.find(live_edit_scene);
 	if (!E)
 		return; //scene not editable
 
@@ -1482,7 +1482,7 @@ void SceneTree::_live_edit_create_node_func(const NodePath &p_parent, const Stri
 	if (root->has_node(live_edit_root))
 		base = root->get_node(live_edit_root);
 
-	Map<String, Set<Node *> >::Element *E = live_scene_edit_cache.find(live_edit_scene);
+	Map<String, Set<Node *>>::Element *E = live_scene_edit_cache.find(live_edit_scene);
 	if (!E)
 		return; //scene not editable
 
@@ -1517,7 +1517,7 @@ void SceneTree::_live_edit_instance_node_func(const NodePath &p_parent, const St
 	if (root->has_node(live_edit_root))
 		base = root->get_node(live_edit_root);
 
-	Map<String, Set<Node *> >::Element *E = live_scene_edit_cache.find(live_edit_scene);
+	Map<String, Set<Node *>>::Element *E = live_scene_edit_cache.find(live_edit_scene);
 	if (!E)
 		return; //scene not editable
 
@@ -1547,7 +1547,7 @@ void SceneTree::_live_edit_remove_node_func(const NodePath &p_at) {
 	if (root->has_node(live_edit_root))
 		base = root->get_node(live_edit_root);
 
-	Map<String, Set<Node *> >::Element *E = live_scene_edit_cache.find(live_edit_scene);
+	Map<String, Set<Node *>>::Element *E = live_scene_edit_cache.find(live_edit_scene);
 	if (!E)
 		return; //scene not editable
 
@@ -1575,7 +1575,7 @@ void SceneTree::_live_edit_remove_and_keep_node_func(const NodePath &p_at, Objec
 	if (root->has_node(live_edit_root))
 		base = root->get_node(live_edit_root);
 
-	Map<String, Set<Node *> >::Element *E = live_scene_edit_cache.find(live_edit_scene);
+	Map<String, Set<Node *>>::Element *E = live_scene_edit_cache.find(live_edit_scene);
 	if (!E)
 		return; //scene not editable
 
@@ -1606,7 +1606,7 @@ void SceneTree::_live_edit_restore_node_func(ObjectID p_id, const NodePath &p_at
 	if (root->has_node(live_edit_root))
 		base = root->get_node(live_edit_root);
 
-	Map<String, Set<Node *> >::Element *E = live_scene_edit_cache.find(live_edit_scene);
+	Map<String, Set<Node *>>::Element *E = live_scene_edit_cache.find(live_edit_scene);
 	if (!E)
 		return; //scene not editable
 
@@ -1623,7 +1623,7 @@ void SceneTree::_live_edit_restore_node_func(ObjectID p_id, const NodePath &p_at
 			continue;
 		Node *n2 = n->get_node(p_at);
 
-		Map<Node *, Map<ObjectID, Node *> >::Element *EN = live_edit_remove_list.find(n);
+		Map<Node *, Map<ObjectID, Node *>>::Element *EN = live_edit_remove_list.find(n);
 
 		if (!EN)
 			continue;
@@ -1649,7 +1649,7 @@ void SceneTree::_live_edit_duplicate_node_func(const NodePath &p_at, const Strin
 	if (root->has_node(live_edit_root))
 		base = root->get_node(live_edit_root);
 
-	Map<String, Set<Node *> >::Element *E = live_scene_edit_cache.find(live_edit_scene);
+	Map<String, Set<Node *>>::Element *E = live_scene_edit_cache.find(live_edit_scene);
 	if (!E)
 		return; //scene not editable
 
@@ -1679,7 +1679,7 @@ void SceneTree::_live_edit_reparent_node_func(const NodePath &p_at, const NodePa
 	if (root->has_node(live_edit_root))
 		base = root->get_node(live_edit_root);
 
-	Map<String, Set<Node *> >::Element *E = live_scene_edit_cache.find(live_edit_scene);
+	Map<String, Set<Node *>>::Element *E = live_scene_edit_cache.find(live_edit_scene);
 	if (!E)
 		return; //scene not editable
 

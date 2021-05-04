@@ -943,7 +943,7 @@ Variant SceneTreeEditor::get_drag_data_fw(const Point2 &p_point, Control *p_from
 	}
 
 	Vector<Node *> selected;
-	Vector<Ref<Texture> > icons;
+	Vector<Ref<Texture>> icons;
 	TreeItem *next = tree->get_next_selected(NULL);
 	while (next) {
 

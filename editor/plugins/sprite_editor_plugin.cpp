@@ -209,7 +209,7 @@ void SpriteEditor::_update_mesh_data() {
 
 	float epsilon = simplification->get_value();
 
-	Vector<Vector<Vector2> > lines = bm->clip_opaque_to_polygons(rect, epsilon);
+	Vector<Vector<Vector2>> lines = bm->clip_opaque_to_polygons(rect, epsilon);
 
 	uv_lines.clear();
 

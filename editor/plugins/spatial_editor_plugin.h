@@ -719,8 +719,8 @@ private:
 	static SpatialEditor *singleton;
 
 	void _node_removed(Node *p_node);
-	Vector<Ref<EditorSpatialGizmoPlugin> > gizmo_plugins_by_priority;
-	Vector<Ref<EditorSpatialGizmoPlugin> > gizmo_plugins_by_name;
+	Vector<Ref<EditorSpatialGizmoPlugin>> gizmo_plugins_by_priority;
+	Vector<Ref<EditorSpatialGizmoPlugin>> gizmo_plugins_by_name;
 
 	void _register_all_gizmos();
 
@@ -848,7 +848,7 @@ public:
 protected:
 	int current_state;
 	List<EditorSpatialGizmo *> current_gizmos;
-	HashMap<String, Vector<Ref<SpatialMaterial> > > materials;
+	HashMap<String, Vector<Ref<SpatialMaterial>>> materials;
 
 	static void _bind_methods();
 	virtual bool has_gizmo(Spatial *p_spatial);

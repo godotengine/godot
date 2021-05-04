@@ -598,8 +598,8 @@ void ScriptDebuggerRemote::_send_object_id(ObjectID p_id) {
 	if (ScriptInstance *si = obj->get_script_instance()) {
 		if (!si->get_script().is_null()) {
 
-			typedef Map<const Script *, Set<StringName> > ScriptMemberMap;
-			typedef Map<const Script *, Map<StringName, Variant> > ScriptConstantsMap;
+			typedef Map<const Script *, Set<StringName>> ScriptMemberMap;
+			typedef Map<const Script *, Map<StringName, Variant>> ScriptConstantsMap;
 
 			ScriptMemberMap members;
 			members[si->get_script().ptr()] = Set<StringName>();
