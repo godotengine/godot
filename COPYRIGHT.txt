@@ -133,6 +133,11 @@ Copyright: 2018, Eric Lasota
  2018, Microsoft Corp.
 License: Expat
 
+Files: ./thirdparty/embree/
+Comment: Embree
+Copyright: 2009-2021 Intel Corporation
+License: Apache-2.0
+
 Files: ./thirdparty/enet/
 Comment: ENet
 Copyright: 2002-2020, Lee Salzman

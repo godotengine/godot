@@ -6,23 +6,13 @@ def can_build(env, platform):
     # `can_build()` for that module, so we need to duplicate that code as a short-term
     # solution.
 
-    # Embree requires at least SSE2 to be available, so 32-bit and ARM64 builds are
-    # not supported.
-    # It's also only relevant for tools build and desktop platforms,
-    # as doing lightmap generation on Android or HTML5 would be a bit far-fetched.
-    supported_platform = platform in ["x11", "osx", "windows", "server"]
-    supported_bits = env["bits"] == "64"
-    supported_arch = env["arch"] != "arm64"
+    if platform == "android":
+        return env["android_arch"] in ["arm64v8", "x86", "x86_64"]
 
-    # Hack to disable on Linux arm64. This won't work well for cross-compilation (checks
-    # host, not target) and would need a more thorough fix by refactoring our arch and
-    # bits-handling code.
-    from platform import machine
+    if platform in ["javascript", "server"]:
+        return False
 
-    if platform == "x11" and machine() != "x86_64":
-        supported_arch = False
-
-    return supported_platform and supported_bits and supported_arch
+    return True
 
 
 def configure(env):

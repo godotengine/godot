@@ -8,18 +8,31 @@
 #include "scene.h"
 #include "context.h"
 #include "../../include/embree3/rtcore_ray.h"
+
+#if defined(__aarch64__) && defined(BUILD_IOS)
+#include <mutex>
+#endif
+
 using namespace embree;
 
 RTC_NAMESPACE_BEGIN;
 
   /* mutex to make API thread safe */
-  static MutexSys g_mutex;
+#if defined(__aarch64__) && defined(BUILD_IOS)
+    static std::mutex g_mutex;
+#else
+    static MutexSys g_mutex;
+#endif
 
   RTC_API RTCDevice rtcNewDevice(const char* config)
   {
     RTC_CATCH_BEGIN;
     RTC_TRACE(rtcNewDevice);
+#if defined(__aarch64__) && defined(BUILD_IOS)
+    std::scoped_lock lock(g_mutex);
+#else
     Lock<MutexSys> lock(g_mutex);
+#endif
     Device* device = new Device(config);
     return (RTCDevice) device->refInc();
     RTC_CATCH_END(nullptr);
@@ -32,7 +45,11 @@ RTC_NAMESPACE_BEGIN;
     RTC_CATCH_BEGIN;
     RTC_TRACE(rtcRetainDevice);
     RTC_VERIFY_HANDLE(hdevice);
+#if defined(__aarch64__) && defined(BUILD_IOS)
+    std::scoped_lock lock(g_mutex);
+#else
     Lock<MutexSys> lock(g_mutex);
+#endif
     device->refInc();
     RTC_CATCH_END(nullptr);
   }
@@ -43,7 +60,11 @@ RTC_NAMESPACE_BEGIN;
     RTC_CATCH_BEGIN;
     RTC_TRACE(rtcReleaseDevice);
     RTC_VERIFY_HANDLE(hdevice);
+#if defined(__aarch64__) && defined(BUILD_IOS)
+    std::scoped_lock lock(g_mutex);
+#else
     Lock<MutexSys> lock(g_mutex);
+#endif
     device->refDec();
     RTC_CATCH_END(nullptr);
   }
@@ -54,7 +75,11 @@ RTC_NAMESPACE_BEGIN;
     RTC_CATCH_BEGIN;
     RTC_TRACE(rtcGetDeviceProperty);
     RTC_VERIFY_HANDLE(hdevice);
+#if defined(__aarch64__) && defined(BUILD_IOS)
+    std::scoped_lock lock(g_mutex);
+#else
     Lock<MutexSys> lock(g_mutex);
+#endif
     return device->getProperty(prop);
     RTC_CATCH_END(device);
     return 0;
@@ -67,7 +92,11 @@ RTC_NAMESPACE_BEGIN;
     RTC_TRACE(rtcSetDeviceProperty);
     const bool internal_prop = (size_t)prop >= 1000000 && (size_t)prop < 1000004;
     if (!internal_prop) RTC_VERIFY_HANDLE(hdevice); // allow NULL device for special internal settings
+#if defined(__aarch64__) && defined(BUILD_IOS)
+    std::scoped_lock lock(g_mutex);
+#else
     Lock<MutexSys> lock(g_mutex);
+#endif
     device->setProperty(prop,val);
     RTC_CATCH_END(device);
   }
@@ -183,7 +212,11 @@ RTC_NAMESPACE_BEGIN;
     RTC_CATCH_BEGIN;
     RTC_TRACE(rtcSetSceneProgressMonitorFunction);
     RTC_VERIFY_HANDLE(hscene);
+#if defined(__aarch64__) && defined(BUILD_IOS)
+    std::scoped_lock lock(g_mutex);
+#else
     Lock<MutexSys> lock(g_mutex);
+#endif
     scene->setProgressMonitorFunction(progress,ptr);
     RTC_CATCH_END2(scene);
   }
@@ -197,7 +230,10 @@ RTC_NAMESPACE_BEGIN;
     if (quality != RTC_BUILD_QUALITY_LOW &&
         quality != RTC_BUILD_QUALITY_MEDIUM &&
         quality != RTC_BUILD_QUALITY_HIGH)
-      throw std::runtime_error("invalid build quality");
+      // -- GODOT start --
+      // throw std::runtime_error("invalid build quality");
+      abort();
+      // -- GODOT end --
     scene->setBuildQuality(quality);
     RTC_CATCH_END2(scene);
   }
@@ -479,12 +515,12 @@ RTC_NAMESPACE_BEGIN;
 
     IntersectContext context(scene,user_context);
 #if !defined(EMBREE_RAY_PACKETS)
-    Ray4* ray4 = (Ray4*) rayhit;
+    RayHit4* rayhit4 = (RayHit4*)rayhit;
     for (size_t i=0; i<4; i++) {
       if (!valid[i]) continue;
-      RayHit ray1; ray4->get(i,ray1);
+      RayHit ray1; rayhit4->get(i,ray1);
       scene->intersectors.intersect((RTCRayHit&)ray1,&context);
-      ray4->set(i,ray1);
+      rayhit4->set(i,ray1);
     }
 #else
     scene->intersectors.intersect4(valid,*rayhit,&context);
@@ -510,12 +546,12 @@ RTC_NAMESPACE_BEGIN;
 
     IntersectContext context(scene,user_context);
 #if !defined(EMBREE_RAY_PACKETS)
-    Ray8* ray8 = (Ray8*) rayhit;
+    RayHit8* rayhit8 = (RayHit8*) rayhit;
     for (size_t i=0; i<8; i++) {
       if (!valid[i]) continue;
-      RayHit ray1; ray8->get(i,ray1);
+      RayHit ray1; rayhit8->get(i,ray1);
       scene->intersectors.intersect((RTCRayHit&)ray1,&context);
-      ray8->set(i,ray1);
+      rayhit8->set(i,ray1);
     }
 #else
     if (likely(scene->intersectors.intersector8))
@@ -543,12 +579,12 @@ RTC_NAMESPACE_BEGIN;
 
     IntersectContext context(scene,user_context);
 #if !defined(EMBREE_RAY_PACKETS)
-    Ray16* ray16 = (Ray16*) rayhit;
+    RayHit16* rayhit16 = (RayHit16*) rayhit;
     for (size_t i=0; i<16; i++) {
       if (!valid[i]) continue;
-      RayHit ray1; ray16->get(i,ray1);
+      RayHit ray1; rayhit16->get(i,ray1);
       scene->intersectors.intersect((RTCRayHit&)ray1,&context);
-      ray16->set(i,ray1);
+      rayhit16->set(i,ray1);
     }
 #else
     if (likely(scene->intersectors.intersector16))
@@ -730,12 +766,12 @@ RTC_NAMESPACE_BEGIN;
 
     IntersectContext context(scene,user_context);
 #if !defined(EMBREE_RAY_PACKETS)
-    RayHit4* ray4 = (RayHit4*) ray;
+    Ray4* ray4 = (Ray4*) ray;
     for (size_t i=0; i<4; i++) {
       if (!valid[i]) continue;
-      RayHit ray1; ray4->get(i,ray1);
+      Ray ray1; ray4->get(i,ray1);
       scene->intersectors.occluded((RTCRay&)ray1,&context);
-      ray4->geomID[i] = ray1.geomID; 
+      ray4->set(i,ray1);
     }
 #else
     scene->intersectors.occluded4(valid,*ray,&context);
@@ -761,10 +797,10 @@ RTC_NAMESPACE_BEGIN;
 
     IntersectContext context(scene,user_context);
 #if !defined(EMBREE_RAY_PACKETS)
-    RayHit8* ray8 = (RayHit8*) ray;
+    Ray8* ray8 = (Ray8*) ray;
     for (size_t i=0; i<8; i++) {
       if (!valid[i]) continue;
-      RayHit ray1; ray8->get(i,ray1);
+      Ray ray1; ray8->get(i,ray1);
       scene->intersectors.occluded((RTCRay&)ray1,&context);
       ray8->set(i,ray1);
     }
@@ -795,10 +831,10 @@ RTC_NAMESPACE_BEGIN;
 
     IntersectContext context(scene,user_context);
 #if !defined(EMBREE_RAY_PACKETS)
-    RayHit16* ray16 = (RayHit16*) ray;
+    Ray16* ray16 = (Ray16*) ray;
     for (size_t i=0; i<16; i++) {
       if (!valid[i]) continue;
-      RayHit ray1; ray16->get(i,ray1);
+      Ray ray1; ray16->get(i,ray1);
       scene->intersectors.occluded((RTCRay&)ray1,&context);
       ray16->set(i,ray1);
     }
@@ -1350,7 +1386,10 @@ RTC_NAMESPACE_BEGIN;
         quality != RTC_BUILD_QUALITY_MEDIUM &&
         quality != RTC_BUILD_QUALITY_HIGH &&
         quality != RTC_BUILD_QUALITY_REFIT)
-      throw std::runtime_error("invalid build quality");
+      // -- GODOT start --
+      // throw std::runtime_error("invalid build quality");
+      abort();
+      // -- GODOT end --
     geometry->setBuildQuality(quality);
     RTC_CATCH_END2(geometry);
   }

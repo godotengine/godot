@@ -192,8 +192,11 @@ LightmapRaycasterEmbree::~LightmapRaycasterEmbree() {
 	_MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_OFF);
 	_MM_SET_DENORMALS_ZERO_MODE(_MM_DENORMALS_ZERO_OFF);
 
-	if (embree_scene != nullptr)
+	if (embree_scene != nullptr) {
 		rtcReleaseScene(embree_scene);
-	if (embree_device != nullptr)
+	}
+
+	if (embree_device != nullptr) {
 		rtcReleaseDevice(embree_device);
+	}
 }

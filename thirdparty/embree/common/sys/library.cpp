@@ -27,9 +27,7 @@ namespace embree
 
   /* returns address of a symbol from the library */
   void* getSymbol(lib_t lib, const std::string& sym) {
-    // -- GODOT start --
-    return (void*) GetProcAddress(HMODULE(lib),sym.c_str());
-    // -- GODOT end --
+    return reinterpret_cast<void *>(GetProcAddress(HMODULE(lib),sym.c_str()));
   }
 
   /* closes the shared library */
@@ -63,7 +61,7 @@ namespace embree
     lib = dlopen((executable.path() + fullName).c_str(),RTLD_NOW);
     if (lib == nullptr) {
       const char* error = dlerror();
-      if (error) { 
+      if (error) {
         THROW_RUNTIME_ERROR(error);
       } else {
         THROW_RUNTIME_ERROR("could not load library "+executable.str());
