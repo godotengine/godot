@@ -1875,7 +1875,7 @@ void VisualScriptEditor::_members_gui_input(const Ref<InputEvent> &p_event) {
 	}
 
 	Ref<InputEventMouseButton> btn = p_event;
-	if (btn.is_valid() && btn->is_doubleclick()) {
+	if (btn.is_valid() && btn->is_double_click()) {
 		TreeItem *ti = members->get_selected();
 		if (ti && ti->get_parent() == members->get_root()->get_children()) { // to check if it's a function
 			_center_on_node(script->get_function_node_id(ti->get_metadata(0)));

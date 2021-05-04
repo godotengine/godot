@@ -2903,7 +2903,7 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 
 				completion_current = completion_options[completion_index];
 				update();
-				if (mb->is_doubleclick()) {
+				if (mb->is_double_click()) {
 					_confirm_completion();
 				}
 			}
@@ -3026,12 +3026,12 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 					selection.selecting_column = col;
 				}
 
-				if (!mb->is_doubleclick() && (OS::get_singleton()->get_ticks_msec() - last_dblclk) < 600 && cursor.line == prev_line) {
+				if (!mb->is_double_click() && (OS::get_singleton()->get_ticks_msec() - last_dblclk) < 600 && cursor.line == prev_line) {
 					// Triple-click select line.
 					selection.selecting_mode = SelectionMode::SELECTION_MODE_LINE;
 					_update_selection_mode_line();
 					last_dblclk = 0;
-				} else if (mb->is_doubleclick() && text[cursor.line].length()) {
+				} else if (mb->is_double_click() && text[cursor.line].length()) {
 					// Double-click select word.
 					selection.selecting_mode = SelectionMode::SELECTION_MODE_WORD;
 					_update_selection_mode_word();

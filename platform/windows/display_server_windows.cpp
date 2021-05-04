@@ -2412,17 +2412,17 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				case WM_LBUTTONDBLCLK: {
 					mb->set_pressed(true);
 					mb->set_button_index(1);
-					mb->set_doubleclick(true);
+					mb->set_double_click(true);
 				} break;
 				case WM_RBUTTONDBLCLK: {
 					mb->set_pressed(true);
 					mb->set_button_index(2);
-					mb->set_doubleclick(true);
+					mb->set_double_click(true);
 				} break;
 				case WM_MBUTTONDBLCLK: {
 					mb->set_pressed(true);
 					mb->set_button_index(3);
-					mb->set_doubleclick(true);
+					mb->set_double_click(true);
 				} break;
 				case WM_MOUSEWHEEL: {
 					mb->set_pressed(true);
@@ -2470,7 +2470,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 						mb->set_button_index(MOUSE_BUTTON_XBUTTON1);
 					else
 						mb->set_button_index(MOUSE_BUTTON_XBUTTON2);
-					mb->set_doubleclick(true);
+					mb->set_double_click(true);
 				} break;
 				default: {
 					return 0;

@@ -222,7 +222,7 @@ void DisplayServerIPhone::_window_callback(const Callable &p_callable, const Var
 
 // MARK: Touches
 
-void DisplayServerIPhone::touch_press(int p_idx, int p_x, int p_y, bool p_pressed, bool p_doubleclick) {
+void DisplayServerIPhone::touch_press(int p_idx, int p_x, int p_y, bool p_pressed, bool p_double_click) {
 	if (!GLOBAL_DEF("debug/disable_touch", false)) {
 		Ref<InputEventScreenTouch> ev;
 		ev.instance();

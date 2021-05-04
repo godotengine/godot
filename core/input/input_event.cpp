@@ -545,12 +545,12 @@ bool InputEventMouseButton::is_pressed() const {
 	return pressed;
 }
 
-void InputEventMouseButton::set_doubleclick(bool p_doubleclick) {
-	doubleclick = p_doubleclick;
+void InputEventMouseButton::set_double_click(bool p_double_click) {
+	double_click = p_double_click;
 }
 
-bool InputEventMouseButton::is_doubleclick() const {
-	return doubleclick;
+bool InputEventMouseButton::is_double_click() const {
+	return double_click;
 }
 
 Ref<InputEvent> InputEventMouseButton::xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs) const {
@@ -569,7 +569,7 @@ Ref<InputEvent> InputEventMouseButton::xformed_by(const Transform2D &p_xform, co
 
 	mb->set_button_mask(get_button_mask());
 	mb->set_pressed(pressed);
-	mb->set_doubleclick(doubleclick);
+	mb->set_double_click(double_click);
 	mb->set_factor(factor);
 	mb->set_button_index(button_index);
 
@@ -636,7 +636,7 @@ String InputEventMouseButton::as_text() const {
 	}
 
 	// Double Click
-	if (doubleclick) {
+	if (double_click) {
 		full_string += " (" + RTR("Double Click") + ")";
 	}
 
@@ -645,7 +645,7 @@ String InputEventMouseButton::as_text() const {
 
 String InputEventMouseButton::to_string() {
 	String p = is_pressed() ? "true" : "false";
-	String d = doubleclick ? "true" : "false";
+	String d = double_click ? "true" : "false";
 
 	int idx = get_button_index();
 	String button_string = itos(idx);
@@ -671,7 +671,7 @@ String InputEventMouseButton::to_string() {
 
 	// Work around the fact vformat can only take 5 substitutions but 6 need to be passed.
 	String index_and_mods = vformat("button_index=%s mods=%s", button_index, mods);
-	return vformat("InputEventMouseButton: %s pressed=%s position=(%s) button_mask=%s doubleclick=%s", index_and_mods, p, String(get_position()), itos(get_button_mask()), d);
+	return vformat("InputEventMouseButton: %s pressed=%s position=(%s) button_mask=%s double_click=%s", index_and_mods, p, String(get_position()), itos(get_button_mask()), d);
 }
 
 void InputEventMouseButton::_bind_methods() {
@@ -684,13 +684,13 @@ void InputEventMouseButton::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_pressed", "pressed"), &InputEventMouseButton::set_pressed);
 	//	ClassDB::bind_method(D_METHOD("is_pressed"), &InputEventMouseButton::is_pressed);
 
-	ClassDB::bind_method(D_METHOD("set_doubleclick", "doubleclick"), &InputEventMouseButton::set_doubleclick);
-	ClassDB::bind_method(D_METHOD("is_doubleclick"), &InputEventMouseButton::is_doubleclick);
+	ClassDB::bind_method(D_METHOD("set_double_click", "double_click"), &InputEventMouseButton::set_double_click);
+	ClassDB::bind_method(D_METHOD("is_double_click"), &InputEventMouseButton::is_double_click);
 
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "factor"), "set_factor", "get_factor");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "button_index"), "set_button_index", "get_button_index");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "pressed"), "set_pressed", "is_pressed");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "doubleclick"), "set_doubleclick", "is_doubleclick");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "double_click"), "set_double_click", "is_double_click");
 }
 
 ///////////////////////////////////

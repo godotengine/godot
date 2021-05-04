@@ -3162,14 +3162,14 @@ void DisplayServerX11::process_events() {
 							last_click_ms = 0;
 							last_click_pos = Point2i(-100, -100);
 							last_click_button_index = -1;
-							mb->set_doubleclick(true);
+							mb->set_double_click(true);
 						}
 
 					} else if (mb->get_button_index() < 4 || mb->get_button_index() > 7) {
 						last_click_button_index = mb->get_button_index();
 					}
 
-					if (!mb->is_doubleclick()) {
+					if (!mb->is_double_click()) {
 						last_click_ms += diff;
 						last_click_pos = Point2i(event.xbutton.x, event.xbutton.y);
 					}
