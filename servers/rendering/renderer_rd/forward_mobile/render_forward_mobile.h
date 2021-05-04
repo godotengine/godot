@@ -363,10 +363,9 @@ protected:
 	};
 
 	struct RenderElementInfo {
-		uint32_t repeat : 22;
 		uint32_t uses_lightmap : 1;
 		uint32_t lod_index : 8;
-		uint32_t reserved : 1; // was uses_forward_gi but we don't use that here
+		uint32_t reserved : 23;
 	};
 
 	template <PassMode p_pass_mode>
