@@ -35,6 +35,7 @@
 #include "core/vset.h"
 #include "scene/2d/navigation_2d.h"
 #include "scene/2d/node_2d.h"
+#include "scene/2d/physics_body_2d.h"
 #include "scene/resources/tile_set.h"
 
 class CollisionObject2D;
@@ -77,6 +78,7 @@ private:
 	Transform2D custom_transform;
 	HalfOffset half_offset;
 	bool use_parent;
+	RID rid;
 	CollisionObject2D *collision_parent;
 	bool use_kinematic;
 	Navigation2D *navigation;
@@ -134,7 +136,6 @@ private:
 
 		Vector2 pos;
 		List<RID> canvas_items;
-		RID body;
 		uint32_t shape_owner_id;
 
 		SelfList<Quadrant> dirty_list;
@@ -157,7 +158,6 @@ private:
 		void operator=(const Quadrant &q) {
 			pos = q.pos;
 			canvas_items = q.canvas_items;
-			body = q.body;
 			shape_owner_id = q.shape_owner_id;
 			cells = q.cells;
 			navpoly_ids = q.navpoly_ids;
@@ -167,7 +167,6 @@ private:
 				dirty_list(this) {
 			pos = q.pos;
 			canvas_items = q.canvas_items;
-			body = q.body;
 			shape_owner_id = q.shape_owner_id;
 			cells = q.cells;
 			occluder_instances = q.occluder_instances;
@@ -199,11 +198,22 @@ private:
 	uint32_t collision_mask;
 	mutable DataFormat format;
 
+	Map<uint32_t, CollisionObject2D::ShapeData> shapes;
+	int total_subshapes = 0;
+
 	TileOrigin tile_origin;
 
 	int occluder_light_mask;
 
 	void _fix_cell_transform(Transform2D &xform, const Cell &p_cell, const Vector2 &p_offset, const Size2 &p_sc);
+
+	uint32_t _create_shape_owner();
+	void _shape_owner_add_shape(uint32_t p_owner, const Ref<Shape2D> &p_shape);
+	int _shape_owner_get_shape_index(uint32_t p_owner, int p_shape) const;
+	void _shape_owner_clear_shapes(uint32_t p_owner);
+	int _shape_owner_get_shape_count(uint32_t p_owner) const;
+	void _shape_owner_remove_shape(uint32_t p_owner, int p_shape);
+	void _remove_shape_owner(uint32_t owner);
 
 	void _add_shape(int &shape_idx, const Quadrant &p_q, const Ref<Shape2D> &p_shape, const TileSet::ShapeData &p_shape_data, const Transform2D &p_xform, const Vector2 &p_metadata);
 
@@ -269,6 +279,7 @@ public:
 	void _set_celld(const Vector2 &p_pos, const Dictionary &p_data);
 	void set_cellv(const Vector2 &p_pos, int p_tile, bool p_flip_x = false, bool p_flip_y = false, bool p_transpose = false);
 	int get_cellv(const Vector2 &p_pos) const;
+	Vector2 get_cell_from_shape(int shape_id) const;
 
 	void make_bitmask_area_dirty(const Vector2 &p_pos);
 	void update_bitmask_area(const Vector2 &p_pos);
@@ -352,6 +363,8 @@ public:
 
 	void fix_invalid_tiles();
 	void clear();
+
+	RID get_rid() const;
 
 	TileMap();
 	~TileMap();

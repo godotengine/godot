@@ -53,6 +53,15 @@
 				Returns the coordinate (subtile column and row) of the autotile variation in the tileset. Returns a zero vector if the cell doesn't have autotiling.
 			</description>
 		</method>
+		<method name="get_cell_from_shape">
+			<return type="Vector2">
+			</return>
+			<argument index="0" name="shape_id" type="int">
+			</argument>
+			<description>
+				Returns the coordinate of the cell referenced by the shape_id. Returns a zero vector if the [code]shape_id[/code] is non-existent and prints error. Useful in [code]*_shape_entered[/code] methods with the [code]body_shape[/code] parameter
+			</description>
+		</method>
 		<method name="get_cellv" qualifiers="const">
 			<return type="int">
 			</return>
@@ -78,6 +87,13 @@
 			</argument>
 			<description>
 				Returns [code]true[/code] if the given collision mask bit is set.
+			</description>
+		</method>
+		<method name="get_rid">
+			<return type="RID">
+			</return>
+			<description>
+				Returns the [code]RID[/code] of the [code]TileMap[/code]. Use the [code]RID[/code] of the parent, when [code]use_parent[/code] is enabled.
 			</description>
 		</method>
 		<method name="get_used_cells" qualifiers="const">
