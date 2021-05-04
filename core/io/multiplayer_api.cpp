@@ -142,7 +142,8 @@ Node *MultiplayerAPI::get_root_node() {
 
 void MultiplayerAPI::set_network_peer(const Ref<NetworkedMultiplayerPeer> &p_peer) {
 
-	if (p_peer == network_peer) return; // Nothing to do
+	if (p_peer == network_peer)
+		return; // Nothing to do
 
 	ERR_FAIL_COND_MSG(p_peer.is_valid() && p_peer->get_connection_status() == NetworkedMultiplayerPeer::CONNECTION_DISCONNECTED,
 			"Supplied NetworkedMultiplayerPeer must be connecting or connected.");
@@ -504,8 +505,9 @@ void MultiplayerAPI::_send_rpc(Node *p_from, int p_to, bool p_unreliable, bool p
 
 	int ofs = 0;
 
-#define MAKE_ROOM(m_amount) \
-	if (packet_cache.size() < m_amount) packet_cache.resize(m_amount);
+#define MAKE_ROOM(m_amount)             \
+	if (packet_cache.size() < m_amount) \
+		packet_cache.resize(m_amount);
 
 	// Encode type.
 	MAKE_ROOM(1);

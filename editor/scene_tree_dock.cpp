@@ -613,8 +613,10 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			for (List<Node *>::Element *E = selection.front(); E; E = E->next()) {
 				int index = E->get()->get_index();
 
-				if (index > highest_id) highest_id = index;
-				if (index < lowest_id) lowest_id = index;
+				if (index > highest_id)
+					highest_id = index;
+				if (index < lowest_id)
+					lowest_id = index;
 
 				if (E->get()->get_parent() != common_parent)
 					common_parent = NULL;
@@ -623,8 +625,10 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			if (!common_parent || (MOVING_DOWN && highest_id >= common_parent->get_child_count() - MOVING_DOWN) || (MOVING_UP && lowest_id == 0))
 				break; // one or more nodes can not be moved
 
-			if (selection.size() == 1) editor_data->get_undo_redo().create_action(TTR("Move Node In Parent"));
-			if (selection.size() > 1) editor_data->get_undo_redo().create_action(TTR("Move Nodes In Parent"));
+			if (selection.size() == 1)
+				editor_data->get_undo_redo().create_action(TTR("Move Node In Parent"));
+			if (selection.size() > 1)
+				editor_data->get_undo_redo().create_action(TTR("Move Nodes In Parent"));
 
 			for (int i = 0; i < selection.size(); i++) {
 				Node *top_node = selection[i];

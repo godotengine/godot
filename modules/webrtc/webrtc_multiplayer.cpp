@@ -144,7 +144,8 @@ void WebRTCMultiplayer::poll() {
 
 void WebRTCMultiplayer::_find_next_peer() {
 	Map<int, Ref<ConnectedPeer>>::Element *E = peer_map.find(next_packet_peer);
-	if (E) E = E->next();
+	if (E)
+		E = E->next();
 	// After last.
 	while (E) {
 		for (List<Ref<WebRTCDataChannel>>::Element *F = E->get()->channels.front(); F; F = F->next()) {

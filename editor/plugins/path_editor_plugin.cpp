@@ -635,7 +635,8 @@ Ref<EditorSpatialGizmo> PathSpatialGizmoPlugin::create_gizmo(Spatial *p_spatial)
 	Ref<PathSpatialGizmo> ref;
 
 	Path *path = Object::cast_to<Path>(p_spatial);
-	if (path) ref = Ref<PathSpatialGizmo>(memnew(PathSpatialGizmo(path)));
+	if (path)
+		ref = Ref<PathSpatialGizmo>(memnew(PathSpatialGizmo(path)));
 
 	return ref;
 }

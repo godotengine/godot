@@ -3063,12 +3063,18 @@ void EditorNode::_update_debug_options() {
 	bool check_live_debug = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_live_debug", true);
 	bool check_reload_scripts = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_reload_scripts", true);
 
-	if (check_deploy_remote) _menu_option_confirm(RUN_DEPLOY_REMOTE_DEBUG, true);
-	if (check_file_server) _menu_option_confirm(RUN_FILE_SERVER, true);
-	if (check_debug_collisons) _menu_option_confirm(RUN_DEBUG_COLLISONS, true);
-	if (check_debug_navigation) _menu_option_confirm(RUN_DEBUG_NAVIGATION, true);
-	if (check_live_debug) _menu_option_confirm(RUN_LIVE_DEBUG, true);
-	if (check_reload_scripts) _menu_option_confirm(RUN_RELOAD_SCRIPTS, true);
+	if (check_deploy_remote)
+		_menu_option_confirm(RUN_DEPLOY_REMOTE_DEBUG, true);
+	if (check_file_server)
+		_menu_option_confirm(RUN_FILE_SERVER, true);
+	if (check_debug_collisons)
+		_menu_option_confirm(RUN_DEBUG_COLLISONS, true);
+	if (check_debug_navigation)
+		_menu_option_confirm(RUN_DEBUG_NAVIGATION, true);
+	if (check_live_debug)
+		_menu_option_confirm(RUN_LIVE_DEBUG, true);
+	if (check_reload_scripts)
+		_menu_option_confirm(RUN_RELOAD_SCRIPTS, true);
 }
 
 void EditorNode::_update_file_menu_opened() {
@@ -3342,7 +3348,8 @@ void EditorNode::_remove_edited_scene(bool p_change_tab) {
 		ScriptEditor::get_singleton()->close_builtin_scripts_from_scene(editor_data.get_scene_path(old_index));
 	}
 
-	if (p_change_tab) _scene_tab_changed(new_index);
+	if (p_change_tab)
+		_scene_tab_changed(new_index);
 	editor_data.remove_scene(old_index);
 	editor_data.get_undo_redo().clear_history(false);
 	_update_title();

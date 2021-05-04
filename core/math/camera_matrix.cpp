@@ -443,20 +443,23 @@ void CameraMatrix::invert() {
 
 		/** Divide column by minus pivot value **/
 		for (i = 0; i < 4; i++) {
-			if (i != k) matrix[i][k] /= (-pvt_val);
+			if (i != k)
+				matrix[i][k] /= (-pvt_val);
 		}
 
 		/** Reduce the matrix **/
 		for (i = 0; i < 4; i++) {
 			hold = matrix[i][k];
 			for (j = 0; j < 4; j++) {
-				if (i != k && j != k) matrix[i][j] += hold * matrix[k][j];
+				if (i != k && j != k)
+					matrix[i][j] += hold * matrix[k][j];
 			}
 		}
 
 		/** Divide row by pivot **/
 		for (j = 0; j < 4; j++) {
-			if (j != k) matrix[k][j] /= pvt_val;
+			if (j != k)
+				matrix[k][j] /= pvt_val;
 		}
 
 		/** Replace pivot by reciprocal (at last we can touch it). **/

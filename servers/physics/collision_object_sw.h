@@ -92,7 +92,8 @@ protected:
 #endif
 
 		transform = p_transform;
-		if (p_update_shapes) _update_shapes();
+		if (p_update_shapes)
+			_update_shapes();
 	}
 	_FORCE_INLINE_ void _set_inv_transform(const Transform &p_transform) { inv_transform = p_transform; }
 	void _set_static(bool p_static);

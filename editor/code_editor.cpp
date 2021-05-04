@@ -333,7 +333,8 @@ void FindReplaceBar::_update_results_count() {
 	results_count = 0;
 
 	String searched = get_search_text();
-	if (searched.empty()) return;
+	if (searched.empty())
+		return;
 
 	String full_text = text_edit->get_text();
 
@@ -341,7 +342,8 @@ void FindReplaceBar::_update_results_count() {
 
 	while (true) {
 		int pos = is_case_sensitive() ? full_text.find(searched, from_pos) : full_text.findn(searched, from_pos);
-		if (pos == -1) break;
+		if (pos == -1)
+			break;
 
 		int pos_subsequent = pos + searched.length();
 		if (is_whole_words()) {

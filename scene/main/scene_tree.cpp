@@ -2029,7 +2029,8 @@ void SceneTree::get_argument_options(const StringName &p_function, int p_idx, Li
 
 SceneTree::SceneTree() {
 
-	if (singleton == NULL) singleton = this;
+	if (singleton == NULL)
+		singleton = this;
 	_quit = false;
 	accept_quit = true;
 	quit_on_go_back = true;
@@ -2172,5 +2173,6 @@ SceneTree::~SceneTree() {
 		memdelete(root);
 	}
 
-	if (singleton == this) singleton = NULL;
+	if (singleton == this)
+		singleton = NULL;
 }

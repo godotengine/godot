@@ -35,7 +35,8 @@
 
 int StreamPeerMbedTLS::bio_send(void *ctx, const unsigned char *buf, size_t len) {
 
-	if (buf == NULL || len <= 0) return 0;
+	if (buf == NULL || len <= 0)
+		return 0;
 
 	StreamPeerMbedTLS *sp = (StreamPeerMbedTLS *)ctx;
 
@@ -54,7 +55,8 @@ int StreamPeerMbedTLS::bio_send(void *ctx, const unsigned char *buf, size_t len)
 
 int StreamPeerMbedTLS::bio_recv(void *ctx, unsigned char *buf, size_t len) {
 
-	if (buf == NULL || len <= 0) return 0;
+	if (buf == NULL || len <= 0)
+		return 0;
 
 	StreamPeerMbedTLS *sp = (StreamPeerMbedTLS *)ctx;
 

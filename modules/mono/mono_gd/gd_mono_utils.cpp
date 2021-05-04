@@ -525,9 +525,10 @@ namespace Marshal {
 
 #ifdef MONO_GLUE_ENABLED
 #ifdef TOOLS_ENABLED
-#define NO_GLUE_RET(m_ret)                                                   \
-	{                                                                        \
-		if (!GDMonoCache::cached_data.godot_api_cache_updated) return m_ret; \
+#define NO_GLUE_RET(m_ret)                                     \
+	{                                                          \
+		if (!GDMonoCache::cached_data.godot_api_cache_updated) \
+			return m_ret;                                      \
 	}
 #else
 #define NO_GLUE_RET(m_ret) \

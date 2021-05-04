@@ -610,7 +610,8 @@ String EditorExportPlatformIOS::_get_linker_flags() {
 	String result;
 	for (int i = 0; i < export_plugins.size(); ++i) {
 		String flags = export_plugins[i]->get_ios_linker_flags();
-		if (flags.length() == 0) continue;
+		if (flags.length() == 0)
+			continue;
 		if (result.length() > 0) {
 			result += ' ';
 		}

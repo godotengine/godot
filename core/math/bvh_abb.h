@@ -200,20 +200,26 @@ struct BVH_ABB {
 	}
 
 	bool intersects_point(const Point &p_pt) const {
-		if (_any_lessthan(-p_pt, neg_max)) return false;
-		if (_any_lessthan(p_pt, min)) return false;
+		if (_any_lessthan(-p_pt, neg_max))
+			return false;
+		if (_any_lessthan(p_pt, min))
+			return false;
 		return true;
 	}
 
 	bool intersects(const BVH_ABB &p_o) const {
-		if (_any_morethan(p_o.min, -neg_max)) return false;
-		if (_any_morethan(min, -p_o.neg_max)) return false;
+		if (_any_morethan(p_o.min, -neg_max))
+			return false;
+		if (_any_morethan(min, -p_o.neg_max))
+			return false;
 		return true;
 	}
 
 	bool is_other_within(const BVH_ABB &p_o) const {
-		if (_any_lessthan(p_o.neg_max, neg_max)) return false;
-		if (_any_lessthan(p_o.min, min)) return false;
+		if (_any_lessthan(p_o.neg_max, neg_max))
+			return false;
+		if (_any_lessthan(p_o.min, min))
+			return false;
 		return true;
 	}
 

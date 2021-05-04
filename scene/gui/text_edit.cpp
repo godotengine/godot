@@ -3048,7 +3048,8 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 				}
 			} break;
 			case KEY_TAB: {
-				if (k->get_command()) break; // Avoid tab when command.
+				if (k->get_command())
+					break; // Avoid tab when command.
 
 				if (readonly)
 					break;

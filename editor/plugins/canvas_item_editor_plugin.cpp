@@ -1682,20 +1682,28 @@ bool CanvasItemEditor::_gui_input_anchors(const Ref<InputEvent> &p_event) {
 
 			switch (drag_type) {
 				case DRAG_ANCHOR_TOP_LEFT:
-					if (!use_single_axis || !use_y) control->set_anchor(MARGIN_LEFT, new_anchor.x, false, false);
-					if (!use_single_axis || use_y) control->set_anchor(MARGIN_TOP, new_anchor.y, false, false);
+					if (!use_single_axis || !use_y)
+						control->set_anchor(MARGIN_LEFT, new_anchor.x, false, false);
+					if (!use_single_axis || use_y)
+						control->set_anchor(MARGIN_TOP, new_anchor.y, false, false);
 					break;
 				case DRAG_ANCHOR_TOP_RIGHT:
-					if (!use_single_axis || !use_y) control->set_anchor(MARGIN_RIGHT, new_anchor.x, false, false);
-					if (!use_single_axis || use_y) control->set_anchor(MARGIN_TOP, new_anchor.y, false, false);
+					if (!use_single_axis || !use_y)
+						control->set_anchor(MARGIN_RIGHT, new_anchor.x, false, false);
+					if (!use_single_axis || use_y)
+						control->set_anchor(MARGIN_TOP, new_anchor.y, false, false);
 					break;
 				case DRAG_ANCHOR_BOTTOM_RIGHT:
-					if (!use_single_axis || !use_y) control->set_anchor(MARGIN_RIGHT, new_anchor.x, false, false);
-					if (!use_single_axis || use_y) control->set_anchor(MARGIN_BOTTOM, new_anchor.y, false, false);
+					if (!use_single_axis || !use_y)
+						control->set_anchor(MARGIN_RIGHT, new_anchor.x, false, false);
+					if (!use_single_axis || use_y)
+						control->set_anchor(MARGIN_BOTTOM, new_anchor.y, false, false);
 					break;
 				case DRAG_ANCHOR_BOTTOM_LEFT:
-					if (!use_single_axis || !use_y) control->set_anchor(MARGIN_LEFT, new_anchor.x, false, false);
-					if (!use_single_axis || use_y) control->set_anchor(MARGIN_BOTTOM, new_anchor.y, false, false);
+					if (!use_single_axis || !use_y)
+						control->set_anchor(MARGIN_LEFT, new_anchor.x, false, false);
+					if (!use_single_axis || use_y)
+						control->set_anchor(MARGIN_BOTTOM, new_anchor.y, false, false);
 					break;
 				case DRAG_ANCHOR_ALL:
 					if (!use_single_axis || !use_y) {
@@ -5139,7 +5147,8 @@ void CanvasItemEditor::_focus_selection(int p_op) {
 	Map<Node *, Object *> &selection = editor_selection->get_selection();
 	for (Map<Node *, Object *>::Element *E = selection.front(); E; E = E->next()) {
 		CanvasItem *canvas_item = Object::cast_to<CanvasItem>(E->key());
-		if (!canvas_item) continue;
+		if (!canvas_item)
+			continue;
 		if (canvas_item->get_viewport() != EditorNode::get_singleton()->get_scene_root())
 			continue;
 

@@ -52,16 +52,20 @@ protected:
 public:
 	//operator Variant() const;
 	bool operator==(const IP_Address &p_ip) const {
-		if (p_ip.valid != valid) return false;
-		if (!valid) return false;
+		if (p_ip.valid != valid)
+			return false;
+		if (!valid)
+			return false;
 		for (int i = 0; i < 4; i++)
 			if (field32[i] != p_ip.field32[i])
 				return false;
 		return true;
 	}
 	bool operator!=(const IP_Address &p_ip) const {
-		if (p_ip.valid != valid) return true;
-		if (!valid) return true;
+		if (p_ip.valid != valid)
+			return true;
+		if (!valid)
+			return true;
 		for (int i = 0; i < 4; i++)
 			if (field32[i] != p_ip.field32[i])
 				return true;

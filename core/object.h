@@ -350,7 +350,8 @@ protected:                                                                      
 		return (bool (Object::*)(const StringName &, const Variant &)) & m_class::_set;                                                 \
 	}                                                                                                                                   \
 	virtual bool _setv(const StringName &p_name, const Variant &p_property) {                                                           \
-		if (m_inherits::_setv(p_name, p_property)) return true;                                                                         \
+		if (m_inherits::_setv(p_name, p_property))                                                                                      \
+			return true;                                                                                                                \
 		if (m_class::_get_set() != m_inherits::_get_set()) {                                                                            \
 			return _set(p_name, p_property);                                                                                            \
 		}                                                                                                                               \

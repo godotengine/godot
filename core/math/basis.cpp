@@ -951,7 +951,8 @@ void Basis::get_axis_angle(Vector3 &r_axis, real_t &r_angle) const {
 	real_t s = Math::sqrt((elements[1][2] - elements[2][1]) * (elements[1][2] - elements[2][1]) + (elements[2][0] - elements[0][2]) * (elements[2][0] - elements[0][2]) + (elements[0][1] - elements[1][0]) * (elements[0][1] - elements[1][0])); // s=|axis||sin(angle)|, used to normalise
 
 	angle = Math::acos((elements[0][0] + elements[1][1] + elements[2][2] - 1) / 2);
-	if (angle < 0) s = -s;
+	if (angle < 0)
+		s = -s;
 	x = (elements[2][1] - elements[1][2]) / s;
 	y = (elements[0][2] - elements[2][0]) / s;
 	z = (elements[1][0] - elements[0][1]) / s;

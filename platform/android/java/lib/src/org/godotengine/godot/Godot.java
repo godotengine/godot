@@ -1064,7 +1064,8 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 		int cnt = 0;
 		for (int i = cc.length; --i >= 0; cnt += cc[i] != 0 ? 1 : 0)
 			;
-		if (cnt == 0) return false;
+		if (cnt == 0)
+			return false;
 		mView.queueEvent(new Runnable() {
 			// This method will be called on the rendering thread:
 			public void run() {

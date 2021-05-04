@@ -441,7 +441,8 @@ public:
 	Variant(const Variant &p_variant);
 	_FORCE_INLINE_ Variant() { type = NIL; }
 	_FORCE_INLINE_ ~Variant() {
-		if (type != Variant::NIL) clear();
+		if (type != Variant::NIL)
+			clear();
 	}
 };
 

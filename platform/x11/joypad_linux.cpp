@@ -492,7 +492,8 @@ void JoypadLinux::process_joypads() {
 	}
 	for (int i = 0; i < JOYPADS_MAX; i++) {
 
-		if (joypads[i].fd == -1) continue;
+		if (joypads[i].fd == -1)
+			continue;
 
 		input_event events[32];
 		Joypad *joy = &joypads[i];

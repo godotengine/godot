@@ -388,7 +388,8 @@ Error OS::dialog_show(String p_title, String p_description, Vector<String> p_but
 
 		print("%ls\n--------\n%ls\n", p_title.c_str(), p_description.c_str());
 		for (int i = 0; i < p_buttons.size(); i++) {
-			if (i > 0) print(", ");
+			if (i > 0)
+				print(", ");
 			print("%i=%ls", i + 1, p_buttons[i].c_str());
 		};
 		print("\n");
@@ -696,7 +697,8 @@ bool OS::has_feature(const String &p_feature) {
 
 void OS::center_window() {
 
-	if (is_window_fullscreen()) return;
+	if (is_window_fullscreen())
+		return;
 
 	Point2 sp = get_screen_position(get_current_screen());
 	Size2 scr = get_screen_size(get_current_screen());

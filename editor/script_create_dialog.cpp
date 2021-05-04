@@ -165,11 +165,14 @@ String ScriptCreateDialog::_validate_path(const String &p_path, bool p_file_must
 
 	String p = p_path.strip_edges();
 
-	if (p == "") return TTR("Path is empty.");
-	if (p.get_file().get_basename() == "") return TTR("Filename is empty.");
+	if (p == "")
+		return TTR("Path is empty.");
+	if (p.get_file().get_basename() == "")
+		return TTR("Filename is empty.");
 
 	p = ProjectSettings::get_singleton()->localize_path(p);
-	if (!p.begins_with("res://")) return TTR("Path is not local.");
+	if (!p.begins_with("res://"))
+		return TTR("Path is not local.");
 
 	DirAccess *d = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 	if (d->change_dir(p.get_base_dir()) != OK) {
@@ -214,12 +217,15 @@ String ScriptCreateDialog::_validate_path(const String &p_path, bool p_file_must
 		index++;
 	}
 
-	if (!found) return TTR("Invalid extension.");
-	if (!match) return TTR("Wrong extension chosen.");
+	if (!found)
+		return TTR("Invalid extension.");
+	if (!match)
+		return TTR("Wrong extension chosen.");
 
 	/* Let ScriptLanguage do custom validation */
 	String path_error = ScriptServer::get_language(language_menu->get_selected())->validate_path(p);
-	if (path_error != "") return path_error;
+	if (path_error != "")
+		return path_error;
 
 	/* All checks passed */
 	return "";

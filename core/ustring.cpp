@@ -1955,7 +1955,8 @@ bool String::is_numeric() const {
 	};
 
 	int s = 0;
-	if (operator[](0) == '-') ++s;
+	if (operator[](0) == '-')
+		++s;
 	bool dot = false;
 	for (int i = s; i < length(); i++) {
 

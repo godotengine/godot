@@ -206,7 +206,8 @@ public:
 
 void ScriptEditorDebugger::debug_copy() {
 	String msg = reason->get_text();
-	if (msg == "") return;
+	if (msg == "")
+		return;
 	OS::get_singleton()->set_clipboard(msg);
 }
 

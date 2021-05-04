@@ -2931,11 +2931,13 @@ void Image::bumpmap_to_normalmap(float bump_scale) {
 
 		for (int ty = 0; ty < height; ty++) {
 			int py = ty + 1;
-			if (py >= height) py -= height;
+			if (py >= height)
+				py -= height;
 
 			for (int tx = 0; tx < width; tx++) {
 				int px = tx + 1;
-				if (px >= width) px -= width;
+				if (px >= width)
+					px -= width;
 				float here = read_ptr[ty * width + tx];
 				float to_right = read_ptr[ty * width + px];
 				float above = read_ptr[py * width + tx];

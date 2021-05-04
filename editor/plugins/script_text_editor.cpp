@@ -818,7 +818,8 @@ void ScriptTextEditor::_code_complete_scripts(void *p_ud, const String &p_code, 
 
 void ScriptTextEditor::_code_complete_script(const String &p_code, List<ScriptCodeCompletionOption> *r_options, bool &r_force) {
 
-	if (color_panel->is_visible_in_tree()) return;
+	if (color_panel->is_visible_in_tree())
+		return;
 	Node *base = get_tree()->get_edited_scene_root();
 	if (base) {
 		base = _find_node_for_script(base, base, script);

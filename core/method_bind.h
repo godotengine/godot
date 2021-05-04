@@ -165,7 +165,8 @@ struct VariantObjectClassChecker<Control *> {
 #define CHECK_NOARG(m_arg)                             \
 	{                                                  \
 		if (p_arg##m_arg.get_type() != Variant::NIL) { \
-			if (r_argerror) *r_argerror = (m_arg - 1); \
+			if (r_argerror)                            \
+				*r_argerror = (m_arg - 1);             \
 			return CALL_ERROR_EXTRA_ARGUMENT;          \
 		}                                              \
 	}

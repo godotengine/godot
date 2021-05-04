@@ -207,7 +207,8 @@ void VideoStreamPlaybackTheora::set_file(const String &p_file) {
 
 	while (!stateflag) {
 		int ret = buffer_data();
-		if (ret == 0) break;
+		if (ret == 0)
+			break;
 		while (ogg_sync_pageout(&oy, &og) > 0) {
 			ogg_stream_state test;
 
@@ -284,7 +285,8 @@ void VideoStreamPlaybackTheora::set_file(const String &p_file) {
 				return;
 			}
 			vorbis_p++;
-			if (vorbis_p == 3) break;
+			if (vorbis_p == 3)
+				break;
 		}
 
 		/* The header pages/packets will arrive before anything else we

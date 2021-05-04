@@ -123,10 +123,12 @@ class GDScriptCompiler {
 
 		Vector<int> opcodes;
 		void alloc_stack(int p_level) {
-			if (p_level >= stack_max) stack_max = p_level + 1;
+			if (p_level >= stack_max)
+				stack_max = p_level + 1;
 		}
 		void alloc_call(int p_params) {
-			if (p_params >= call_max) call_max = p_params;
+			if (p_params >= call_max)
+				call_max = p_params;
 		}
 
 		int current_line;

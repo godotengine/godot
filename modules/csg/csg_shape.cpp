@@ -1799,11 +1799,15 @@ CSGBrush *CSGPolygon::_build_brush() {
 			final_polygon_min = p;
 			final_polygon_max = final_polygon_min;
 		} else {
-			if (p.x < final_polygon_min.x) final_polygon_min.x = p.x;
-			if (p.y < final_polygon_min.y) final_polygon_min.y = p.y;
+			if (p.x < final_polygon_min.x)
+				final_polygon_min.x = p.x;
+			if (p.y < final_polygon_min.y)
+				final_polygon_min.y = p.y;
 
-			if (p.x > final_polygon_max.x) final_polygon_max.x = p.x;
-			if (p.y > final_polygon_max.y) final_polygon_max.y = p.y;
+			if (p.x > final_polygon_max.x)
+				final_polygon_max.x = p.x;
+			if (p.y > final_polygon_max.y)
+				final_polygon_max.y = p.y;
 		}
 	}
 	Vector2 final_polygon_size = final_polygon_max - final_polygon_min;

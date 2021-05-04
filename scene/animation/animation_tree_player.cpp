@@ -1525,7 +1525,8 @@ AnimationTreePlayer::Track *AnimationTreePlayer::_find_track(const NodePath &p_p
 		tr.skeleton = Object::cast_to<Skeleton>(child);
 		tr.spatial = Object::cast_to<Spatial>(child);
 		tr.bone_idx = bone_idx;
-		if (bone_idx == -1) tr.subpath = leftover_path;
+		if (bone_idx == -1)
+			tr.subpath = leftover_path;
 
 		track_map[key] = tr;
 	}

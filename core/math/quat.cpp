@@ -206,7 +206,8 @@ Quat Quat::slerpni(const Quat &p_to, const real_t &p_weight) const {
 
 	real_t dot = from.dot(p_to);
 
-	if (Math::absf(dot) > 0.9999) return from;
+	if (Math::absf(dot) > 0.9999)
+		return from;
 
 	real_t theta = Math::acos(dot),
 		   sinT = 1.0 / Math::sin(theta),

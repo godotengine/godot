@@ -387,7 +387,8 @@ Vector3 LightmapperCPU::_fix_sample_position(const Vector3 &p_position, const Ve
 
 	for (int i = -1; i <= 1; i += 1) {
 		for (int j = -1; j <= 1; j += 1) {
-			if (i == 0 && j == 0) continue;
+			if (i == 0 && j == 0)
+				continue;
 			Vector3 offset = Vector3(half_size.x * i, half_size.y * j, 0.0);
 			Vector3 rotated_offset = tangent_basis.xform_inv(offset);
 			Vector3 target = p_texel_center + rotated_offset;

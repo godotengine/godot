@@ -194,19 +194,22 @@ Ref<OpenSimplexNoise> NoiseTexture::get_noise() {
 }
 
 void NoiseTexture::set_width(int p_width) {
-	if (p_width == size.x) return;
+	if (p_width == size.x)
+		return;
 	size.x = p_width;
 	_queue_update();
 }
 
 void NoiseTexture::set_height(int p_height) {
-	if (p_height == size.y) return;
+	if (p_height == size.y)
+		return;
 	size.y = p_height;
 	_queue_update();
 }
 
 void NoiseTexture::set_seamless(bool p_seamless) {
-	if (p_seamless == seamless) return;
+	if (p_seamless == seamless)
+		return;
 	seamless = p_seamless;
 	_queue_update();
 }
@@ -216,7 +219,8 @@ bool NoiseTexture::get_seamless() {
 }
 
 void NoiseTexture::set_as_normalmap(bool p_as_normalmap) {
-	if (p_as_normalmap == as_normalmap) return;
+	if (p_as_normalmap == as_normalmap)
+		return;
 	as_normalmap = p_as_normalmap;
 	_queue_update();
 	_change_notify();
@@ -228,7 +232,8 @@ bool NoiseTexture::is_normalmap() {
 
 void NoiseTexture::set_bump_strength(float p_bump_strength) {
 
-	if (p_bump_strength == bump_strength) return;
+	if (p_bump_strength == bump_strength)
+		return;
 	bump_strength = p_bump_strength;
 	if (as_normalmap)
 		_queue_update();

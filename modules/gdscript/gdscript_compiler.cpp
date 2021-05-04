@@ -870,71 +870,92 @@ int GDScriptCompiler::_parse_expression(CodeGen &codegen, const GDScriptParser::
 				} break;
 				//unary operators
 				case GDScriptParser::OperatorNode::OP_NEG: {
-					if (!_create_unary_operator(codegen, on, Variant::OP_NEGATE, p_stack_level)) return -1;
+					if (!_create_unary_operator(codegen, on, Variant::OP_NEGATE, p_stack_level))
+						return -1;
 				} break;
 				case GDScriptParser::OperatorNode::OP_POS: {
-					if (!_create_unary_operator(codegen, on, Variant::OP_POSITIVE, p_stack_level)) return -1;
+					if (!_create_unary_operator(codegen, on, Variant::OP_POSITIVE, p_stack_level))
+						return -1;
 				} break;
 				case GDScriptParser::OperatorNode::OP_NOT: {
-					if (!_create_unary_operator(codegen, on, Variant::OP_NOT, p_stack_level)) return -1;
+					if (!_create_unary_operator(codegen, on, Variant::OP_NOT, p_stack_level))
+						return -1;
 				} break;
 				case GDScriptParser::OperatorNode::OP_BIT_INVERT: {
-					if (!_create_unary_operator(codegen, on, Variant::OP_BIT_NEGATE, p_stack_level)) return -1;
+					if (!_create_unary_operator(codegen, on, Variant::OP_BIT_NEGATE, p_stack_level))
+						return -1;
 				} break;
 				//binary operators (in precedence order)
 				case GDScriptParser::OperatorNode::OP_IN: {
-					if (!_create_binary_operator(codegen, on, Variant::OP_IN, p_stack_level)) return -1;
+					if (!_create_binary_operator(codegen, on, Variant::OP_IN, p_stack_level))
+						return -1;
 				} break;
 				case GDScriptParser::OperatorNode::OP_EQUAL: {
-					if (!_create_binary_operator(codegen, on, Variant::OP_EQUAL, p_stack_level)) return -1;
+					if (!_create_binary_operator(codegen, on, Variant::OP_EQUAL, p_stack_level))
+						return -1;
 				} break;
 				case GDScriptParser::OperatorNode::OP_NOT_EQUAL: {
-					if (!_create_binary_operator(codegen, on, Variant::OP_NOT_EQUAL, p_stack_level)) return -1;
+					if (!_create_binary_operator(codegen, on, Variant::OP_NOT_EQUAL, p_stack_level))
+						return -1;
 				} break;
 				case GDScriptParser::OperatorNode::OP_LESS: {
-					if (!_create_binary_operator(codegen, on, Variant::OP_LESS, p_stack_level)) return -1;
+					if (!_create_binary_operator(codegen, on, Variant::OP_LESS, p_stack_level))
+						return -1;
 				} break;
 				case GDScriptParser::OperatorNode::OP_LESS_EQUAL: {
-					if (!_create_binary_operator(codegen, on, Variant::OP_LESS_EQUAL, p_stack_level)) return -1;
+					if (!_create_binary_operator(codegen, on, Variant::OP_LESS_EQUAL, p_stack_level))
+						return -1;
 				} break;
 				case GDScriptParser::OperatorNode::OP_GREATER: {
-					if (!_create_binary_operator(codegen, on, Variant::OP_GREATER, p_stack_level)) return -1;
+					if (!_create_binary_operator(codegen, on, Variant::OP_GREATER, p_stack_level))
+						return -1;
 				} break;
 				case GDScriptParser::OperatorNode::OP_GREATER_EQUAL: {
-					if (!_create_binary_operator(codegen, on, Variant::OP_GREATER_EQUAL, p_stack_level)) return -1;
+					if (!_create_binary_operator(codegen, on, Variant::OP_GREATER_EQUAL, p_stack_level))
+						return -1;
 				} break;
 				case GDScriptParser::OperatorNode::OP_ADD: {
-					if (!_create_binary_operator(codegen, on, Variant::OP_ADD, p_stack_level)) return -1;
+					if (!_create_binary_operator(codegen, on, Variant::OP_ADD, p_stack_level))
+						return -1;
 				} break;
 				case GDScriptParser::OperatorNode::OP_SUB: {
-					if (!_create_binary_operator(codegen, on, Variant::OP_SUBTRACT, p_stack_level)) return -1;
+					if (!_create_binary_operator(codegen, on, Variant::OP_SUBTRACT, p_stack_level))
+						return -1;
 				} break;
 				case GDScriptParser::OperatorNode::OP_MUL: {
-					if (!_create_binary_operator(codegen, on, Variant::OP_MULTIPLY, p_stack_level)) return -1;
+					if (!_create_binary_operator(codegen, on, Variant::OP_MULTIPLY, p_stack_level))
+						return -1;
 				} break;
 				case GDScriptParser::OperatorNode::OP_DIV: {
-					if (!_create_binary_operator(codegen, on, Variant::OP_DIVIDE, p_stack_level)) return -1;
+					if (!_create_binary_operator(codegen, on, Variant::OP_DIVIDE, p_stack_level))
+						return -1;
 				} break;
 				case GDScriptParser::OperatorNode::OP_MOD: {
-					if (!_create_binary_operator(codegen, on, Variant::OP_MODULE, p_stack_level)) return -1;
+					if (!_create_binary_operator(codegen, on, Variant::OP_MODULE, p_stack_level))
+						return -1;
 				} break;
 				//case GDScriptParser::OperatorNode::OP_SHIFT_LEFT: { if (!_create_binary_operator(codegen,on,Variant::OP_SHIFT_LEFT,p_stack_level)) return -1;} break;
 				//case GDScriptParser::OperatorNode::OP_SHIFT_RIGHT: { if (!_create_binary_operator(codegen,on,Variant::OP_SHIFT_RIGHT,p_stack_level)) return -1;} break;
 				case GDScriptParser::OperatorNode::OP_BIT_AND: {
-					if (!_create_binary_operator(codegen, on, Variant::OP_BIT_AND, p_stack_level)) return -1;
+					if (!_create_binary_operator(codegen, on, Variant::OP_BIT_AND, p_stack_level))
+						return -1;
 				} break;
 				case GDScriptParser::OperatorNode::OP_BIT_OR: {
-					if (!_create_binary_operator(codegen, on, Variant::OP_BIT_OR, p_stack_level)) return -1;
+					if (!_create_binary_operator(codegen, on, Variant::OP_BIT_OR, p_stack_level))
+						return -1;
 				} break;
 				case GDScriptParser::OperatorNode::OP_BIT_XOR: {
-					if (!_create_binary_operator(codegen, on, Variant::OP_BIT_XOR, p_stack_level)) return -1;
+					if (!_create_binary_operator(codegen, on, Variant::OP_BIT_XOR, p_stack_level))
+						return -1;
 				} break;
 				//shift
 				case GDScriptParser::OperatorNode::OP_SHIFT_LEFT: {
-					if (!_create_binary_operator(codegen, on, Variant::OP_SHIFT_LEFT, p_stack_level)) return -1;
+					if (!_create_binary_operator(codegen, on, Variant::OP_SHIFT_LEFT, p_stack_level))
+						return -1;
 				} break;
 				case GDScriptParser::OperatorNode::OP_SHIFT_RIGHT: {
-					if (!_create_binary_operator(codegen, on, Variant::OP_SHIFT_RIGHT, p_stack_level)) return -1;
+					if (!_create_binary_operator(codegen, on, Variant::OP_SHIFT_RIGHT, p_stack_level))
+						return -1;
 				} break;
 				//assignment operators
 				case GDScriptParser::OperatorNode::OP_ASSIGN_ADD:

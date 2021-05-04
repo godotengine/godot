@@ -406,7 +406,8 @@ void FileDialog::_tree_item_activated() {
 void FileDialog::update_file_name() {
 	int idx = filter->get_selected() - 1;
 	if ((idx == -1 && filter->get_item_count() == 2) || (filter->get_item_count() > 2 && idx >= 0 && idx < filter->get_item_count() - 2)) {
-		if (idx == -1) idx += 1;
+		if (idx == -1)
+			idx += 1;
 		String filter_str = filters[idx];
 		String file_str = file->get_text();
 		String base_name = file_str.get_basename();

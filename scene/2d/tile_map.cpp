@@ -1355,7 +1355,8 @@ bool TileMap::get_collision_use_parent() const {
 
 void TileMap::set_collision_use_parent(bool p_use_parent) {
 
-	if (use_parent == p_use_parent) return;
+	if (use_parent == p_use_parent)
+		return;
 
 	_clear_quadrants();
 

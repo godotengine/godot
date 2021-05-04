@@ -1266,11 +1266,13 @@ void VisualShaderEditor::_port_name_focus_out(Object *line_edit, int p_node_id, 
 	List<String> output_names;
 
 	for (int i = 0; i < node->get_input_port_count(); i++) {
-		if (!p_output && i == p_port_id) continue;
+		if (!p_output && i == p_port_id)
+			continue;
 		input_names.push_back(node->get_input_port_name(i));
 	}
 	for (int i = 0; i < node->get_output_port_count(); i++) {
-		if (p_output && i == p_port_id) continue;
+		if (p_output && i == p_port_id)
+			continue;
 		output_names.push_back(node->get_output_port_name(i));
 	}
 

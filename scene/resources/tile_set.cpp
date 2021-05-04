@@ -993,7 +993,8 @@ void TileSet::_tile_set_shapes(int p_id, const Array &p_shapes) {
 
 		if (p_shapes[i].get_type() == Variant::OBJECT) {
 			Ref<Shape2D> shape = p_shapes[i];
-			if (shape.is_null()) continue;
+			if (shape.is_null())
+				continue;
 
 			s.shape = shape;
 			s.shape_transform = default_transform;

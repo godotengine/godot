@@ -99,7 +99,8 @@ private:
 			return false;
 		}
 		*out = next_power_of_2(o);
-		if (_add_overflow(o, static_cast<size_t>(32), &p)) return false; //no longer allocated here
+		if (_add_overflow(o, static_cast<size_t>(32), &p))
+			return false; //no longer allocated here
 		return true;
 #else
 		// Speed is more important than correctness here, do the operations unchecked

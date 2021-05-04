@@ -2867,13 +2867,15 @@ void OS_OSX::request_attention() {
 
 bool OS_OSX::get_window_per_pixel_transparency_enabled() const {
 
-	if (!is_layered_allowed()) return false;
+	if (!is_layered_allowed())
+		return false;
 	return layered_window;
 }
 
 void OS_OSX::set_window_per_pixel_transparency_enabled(bool p_enabled) {
 
-	if (!is_layered_allowed()) return;
+	if (!is_layered_allowed())
+		return;
 	if (layered_window != p_enabled) {
 		if (p_enabled) {
 			GLint opacity = 0;

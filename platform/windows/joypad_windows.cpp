@@ -281,7 +281,8 @@ void JoypadWindows::close_joypad(int id) {
 		return;
 	}
 
-	if (!d_joypads[id].attached) return;
+	if (!d_joypads[id].attached)
+		return;
 
 	d_joypads[id].di_joy->Unacquire();
 	d_joypads[id].di_joy->Release();

@@ -436,11 +436,13 @@ void ProjectSettingsEditor::_show_last_added(const Ref<InputEvent> &p_event, con
 			}
 			child = child->get_next();
 		}
-		if (found) break;
+		if (found)
+			break;
 		r = r->get_next();
 	}
 
-	if (found) input_editor->ensure_cursor_is_visible();
+	if (found)
+		input_editor->ensure_cursor_is_visible();
 }
 
 void ProjectSettingsEditor::_wait_for_key(const Ref<InputEvent> &p_event) {
@@ -1551,7 +1553,8 @@ void ProjectSettingsEditor::_update_translations() {
 			String n = names[i];
 			String l = langs[i];
 			bool is_checked = l_filter.has(l);
-			if (filter_mode == SHOW_ONLY_SELECTED_LOCALES && !is_checked) continue;
+			if (filter_mode == SHOW_ONLY_SELECTED_LOCALES && !is_checked)
+				continue;
 
 			TreeItem *t = translation_filter->create_item(root);
 			t->set_cell_mode(0, TreeItem::CELL_MODE_CHECK);

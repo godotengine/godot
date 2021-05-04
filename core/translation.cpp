@@ -1002,7 +1002,8 @@ String TranslationServer::get_locale() const {
 
 String TranslationServer::get_locale_name(const String &p_locale) const {
 
-	if (!locale_name_map.has(p_locale)) return String();
+	if (!locale_name_map.has(p_locale))
+		return String();
 	return locale_name_map[p_locale];
 }
 

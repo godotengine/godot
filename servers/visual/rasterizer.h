@@ -1121,7 +1121,8 @@ public:
 		}
 		virtual ~Item() {
 			clear();
-			if (copy_back_buffer) memdelete(copy_back_buffer);
+			if (copy_back_buffer)
+				memdelete(copy_back_buffer);
 		}
 	};
 
