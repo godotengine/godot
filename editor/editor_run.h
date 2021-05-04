@@ -47,6 +47,7 @@ public:
 private:
 	bool debug_collisions;
 	bool debug_navigation;
+	bool debug_async_shaders;
 	Status status;
 	String running_scene;
 
@@ -64,6 +65,9 @@ public:
 
 	void set_debug_navigation(bool p_debug);
 	bool get_debug_navigation() const;
+
+	void set_debug_async_shaders(bool p_debug);
+	bool get_debug_async_shaders() const;
 
 	EditorRun();
 };

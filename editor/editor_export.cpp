@@ -296,6 +296,11 @@ void EditorExportPlatform::gen_debug_flags(Vector<String> &r_flags, int p_flags)
 
 		r_flags.push_back("--debug-navigation");
 	}
+
+	if (p_flags & DEBUG_FLAG_ASYNC_SHADERS) {
+
+		r_flags.push_back("--debug-shader-fallbacks");
+	}
 }
 
 Error EditorExportPlatform::_save_pack_file(void *p_userdata, const String &p_path, const Vector<uint8_t> &p_data, int p_file, int p_total) {

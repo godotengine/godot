@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  context_gl_windows.h                                                 */
+/*  shader_cache_gles3.h                                                 */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,61 +28,33 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#if defined(OPENGL_ENABLED) || defined(GLES_ENABLED)
+#ifndef SHADER_CACHE_GLES3_H
+#define SHADER_CACHE_GLES3_H
 
-// Author: Juan Linietsky <reduzio@gmail.com>, (C) 2008
+#include "core/local_vector.h"
+#include "core/reference.h"
 
-#ifndef CONTEXT_GL_WIN_H
-#define CONTEXT_GL_WIN_H
+class DirAccess;
+class String;
 
-#include "core/error_list.h"
-#include "core/os/os.h"
+class ShaderCacheGLES3 {
+	static const char *const STORAGE_SUBPATH;
+	static const uint64_t MAX_STORAGE_SIZE;
 
-#include <windows.h>
+	DirAccess *storage_da;
+	String storage_path;
 
-typedef bool(APIENTRY *PFNWGLSWAPINTERVALEXTPROC)(int interval);
-typedef int(APIENTRY *PFNWGLGETSWAPINTERVALEXTPROC)(void);
-
-class ContextGL_Windows {
-
-	HDC hDC;
-	HGLRC hRC;
-	HGLRC hRC_offscreen;
-	unsigned int pixel_format;
-	HWND hWnd;
-	bool opengl_3_context;
-	bool use_vsync;
-	bool vsync_via_compositor;
-
-	PFNWGLSWAPINTERVALEXTPROC wglSwapIntervalEXT;
-	PFNWGLGETSWAPINTERVALEXTPROC wglGetSwapIntervalEXT;
-
-	static bool should_vsync_via_compositor();
+	void _purge_excess();
 
 public:
-	void release_current();
+	static String hash_program(const char *const *p_platform_strings, const LocalVector<const char *> &p_vertex_strings, const LocalVector<const char *> &p_fragment_strings);
 
-	void make_current();
+	bool retrieve(const String &p_program_hash, uint32_t *r_format, PoolByteArray *r_data);
+	void store(const String &p_program_hash, uint32_t p_program_format, const PoolByteArray &p_program_data);
+	void remove(const String &p_program_hash);
 
-	bool is_offscreen_available() const;
-	void make_offscreen_current();
-	void release_offscreen_current();
-
-	HDC get_hdc();
-	HGLRC get_hglrc();
-
-	int get_window_width();
-	int get_window_height();
-	void swap_buffers();
-
-	Error initialize();
-
-	void set_use_vsync(bool p_use);
-	bool is_using_vsync() const;
-
-	ContextGL_Windows(HWND hwnd, bool p_opengl_3_context);
-	~ContextGL_Windows();
+	ShaderCacheGLES3();
+	~ShaderCacheGLES3();
 };
 
-#endif
 #endif

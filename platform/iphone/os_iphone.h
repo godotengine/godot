@@ -65,6 +65,8 @@ private:
 
 	VideoMode video_mode;
 
+	EAGLContext *offscreen_gl_context;
+
 	virtual int get_video_driver_count() const;
 	virtual const char *get_video_driver_name(int p_driver) const;
 
@@ -85,6 +87,7 @@ private:
 	void set_data_dir(String p_dir);
 
 	String data_dir;
+	String cache_dir;
 
 	InputDefault *input;
 
@@ -97,7 +100,7 @@ private:
 public:
 	static OSIPhone *get_singleton();
 
-	OSIPhone(String p_data_dir);
+	OSIPhone(String p_data_dir, String p_cache_dir);
 	~OSIPhone();
 
 	bool iterate();
@@ -116,6 +119,7 @@ public:
 	Error shell_open(String p_uri);
 
 	String get_user_data_dir() const;
+	String get_cache_path() const;
 
 	String get_locale() const;
 
@@ -160,6 +164,10 @@ public:
 	virtual VideoMode get_video_mode(int p_screen = 0) const;
 
 	virtual void get_fullscreen_mode_list(List<VideoMode> *p_list, int p_screen = 0) const;
+
+	void set_offscreen_gl_context(EAGLContext *p_context);
+	virtual bool is_offscreen_gl_available() const;
+	virtual void set_offscreen_gl_current(bool p_current);
 
 	virtual void set_keep_screen_on(bool p_enabled);
 

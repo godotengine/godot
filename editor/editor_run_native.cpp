@@ -146,6 +146,8 @@ void EditorRunNative::_run_native(int p_idx, int p_platform) {
 		flags |= EditorExportPlatform::DEBUG_FLAG_VIEW_COLLISONS;
 	if (debug_navigation)
 		flags |= EditorExportPlatform::DEBUG_FLAG_VIEW_NAVIGATION;
+	if (debug_async_shaders)
+		flags |= EditorExportPlatform::DEBUG_FLAG_ASYNC_SHADERS;
 
 	eep->run(preset, p_idx, flags);
 }
@@ -201,6 +203,16 @@ bool EditorRunNative::get_debug_navigation() const {
 	return debug_navigation;
 }
 
+void EditorRunNative::set_debug_async_shaders(bool p_debug) {
+
+	debug_async_shaders = p_debug;
+}
+
+bool EditorRunNative::get_debug_async_shaders() const {
+
+	return debug_async_shaders;
+}
+
 EditorRunNative::EditorRunNative() {
 	set_process(true);
 	first = true;
@@ -208,6 +220,7 @@ EditorRunNative::EditorRunNative() {
 	deploy_debug_remote = false;
 	debug_collisions = false;
 	debug_navigation = false;
+	debug_async_shaders = false;
 	resume_idx = 0;
 	resume_platform = 0;
 }
