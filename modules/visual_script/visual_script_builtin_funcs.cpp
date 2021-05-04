@@ -760,7 +760,7 @@ void VisualScriptBuiltinFunc::exec_func(BuiltinFunc p_func, const Variant **p_in
 
 			VALIDATE_ARG_NUM(0);
 			VALIDATE_ARG_NUM(1);
-			*r_return = Math::posmod((int)*p_inputs[0], (int)*p_inputs[1]);
+			*r_return = Math::posmod((int64_t)*p_inputs[0], (int64_t)*p_inputs[1]);
 		} break;
 		case VisualScriptBuiltinFunc::MATH_FLOOR: {
 
