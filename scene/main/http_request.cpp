@@ -141,7 +141,7 @@ void HTTPRequest::cancel_request() {
 
 	if (file) {
 		memdelete(file);
-		file = NULL;
+		file = nullptr;
 	}
 	client->close();
 	body.resize(0);
@@ -527,7 +527,7 @@ HTTPRequest::HTTPRequest() {
 	requesting = false;
 	client.instance();
 	body_size_limit = -1;
-	file = NULL;
+	file = nullptr;
 
 	timer = memnew(Timer);
 	timer->set_one_shot(true);

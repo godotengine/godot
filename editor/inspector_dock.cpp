@@ -109,7 +109,7 @@ void InspectorDock::_menu_option(int p_option) {
 
 			editor_data->get_undo_redo().clear_history();
 
-			editor->get_editor_plugins_over()->edit(NULL);
+			editor->get_editor_plugins_over()->edit(nullptr);
 			editor->get_editor_plugins_over()->edit(current);
 
 		} break;
@@ -163,7 +163,7 @@ void InspectorDock::_resource_file_selected(String p_file) {
 
 void InspectorDock::_save_resource(bool save_as) const {
 	uint32_t current = EditorNode::get_singleton()->get_editor_history()->get_current();
-	Object *current_obj = current > 0 ? ObjectDB::get_instance(current) : NULL;
+	Object *current_obj = current > 0 ? ObjectDB::get_instance(current) : nullptr;
 
 	ERR_FAIL_COND(!Object::cast_to<Resource>(current_obj));
 
@@ -177,7 +177,7 @@ void InspectorDock::_save_resource(bool save_as) const {
 
 void InspectorDock::_unref_resource() const {
 	uint32_t current = EditorNode::get_singleton()->get_editor_history()->get_current();
-	Object *current_obj = current > 0 ? ObjectDB::get_instance(current) : NULL;
+	Object *current_obj = current > 0 ? ObjectDB::get_instance(current) : nullptr;
 
 	ERR_FAIL_COND(!Object::cast_to<Resource>(current_obj));
 
@@ -188,7 +188,7 @@ void InspectorDock::_unref_resource() const {
 
 void InspectorDock::_copy_resource() const {
 	uint32_t current = EditorNode::get_singleton()->get_editor_history()->get_current();
-	Object *current_obj = current > 0 ? ObjectDB::get_instance(current) : NULL;
+	Object *current_obj = current > 0 ? ObjectDB::get_instance(current) : nullptr;
 
 	ERR_FAIL_COND(!Object::cast_to<Resource>(current_obj));
 
@@ -402,7 +402,7 @@ void InspectorDock::update(Object *p_object) {
 		editor_path->set_disabled(true);
 		editor_path->set_text("");
 		editor_path->set_tooltip("");
-		editor_path->set_icon(NULL);
+		editor_path->set_icon(nullptr);
 
 		return;
 	}

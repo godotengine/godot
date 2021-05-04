@@ -83,7 +83,7 @@ const Variant *Dictionary::getptr(const Variant &p_key) const {
 	OrderedHashMap<Variant, Variant, VariantHasher, VariantComparator>::ConstElement E = ((const OrderedHashMap<Variant, Variant, VariantHasher, VariantComparator> *)&_p->variant_map)->find(p_key);
 
 	if (!E)
-		return NULL;
+		return nullptr;
 	return &E.get();
 }
 
@@ -91,7 +91,7 @@ Variant *Dictionary::getptr(const Variant &p_key) {
 	OrderedHashMap<Variant, Variant, VariantHasher, VariantComparator>::Element E = _p->variant_map.find(p_key);
 
 	if (!E)
-		return NULL;
+		return nullptr;
 	return &E.get();
 }
 
@@ -168,7 +168,7 @@ void Dictionary::_unref() const {
 	if (_p->refcount.unref()) {
 		memdelete(_p);
 	}
-	_p = NULL;
+	_p = nullptr;
 }
 uint32_t Dictionary::hash() const {
 	uint32_t h = hash_djb2_one_32(Variant::DICTIONARY);
@@ -214,17 +214,17 @@ Array Dictionary::values() const {
 }
 
 const Variant *Dictionary::next(const Variant *p_key) const {
-	if (p_key == NULL) {
+	if (p_key == nullptr) {
 		// caller wants to get the first element
 		if (_p->variant_map.front())
 			return &_p->variant_map.front().key();
-		return NULL;
+		return nullptr;
 	}
 	OrderedHashMap<Variant, Variant, VariantHasher, VariantComparator>::Element E = _p->variant_map.find(*p_key);
 
 	if (E && E.next())
 		return &E.next().key();
-	return NULL;
+	return nullptr;
 }
 
 Dictionary Dictionary::duplicate(bool p_deep) const {
@@ -246,7 +246,7 @@ const void *Dictionary::id() const {
 }
 
 Dictionary::Dictionary(const Dictionary &p_from) {
-	_p = NULL;
+	_p = nullptr;
 	_ref(p_from);
 }
 

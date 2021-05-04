@@ -351,7 +351,7 @@ public:
 };
 
 Error EditorExportPlatformJavaScript::_extract_template(const String &p_template, const String &p_dir, const String &p_name, bool pwa) {
-	FileAccess *src_f = NULL;
+	FileAccess *src_f = nullptr;
 	zlib_filefunc_def io = zipio_create_io_from_file(&src_f);
 	unzFile pkg = unzOpen2(p_template.utf8().get_data(), &io);
 
@@ -370,7 +370,7 @@ Error EditorExportPlatformJavaScript::_extract_template(const String &p_template
 		//get filename
 		unz_file_info info;
 		char fname[16384];
-		unzGetCurrentFileInfo(pkg, &info, fname, 16384, NULL, 0, NULL, 0);
+		unzGetCurrentFileInfo(pkg, &info, fname, 16384, nullptr, 0, nullptr, 0);
 
 		String file = fname;
 
@@ -548,7 +548,7 @@ Error EditorExportPlatformJavaScript::_build_pwa(const Ref<EditorExportPreset> &
 		sw.resize(f->get_len());
 		f->get_buffer(sw.ptrw(), sw.size());
 		memdelete(f);
-		f = NULL;
+		f = nullptr;
 	}
 	_replace_strings(replaces, sw);
 	Error err = _write_or_error(sw.ptr(), sw.size(), dir.plus_file(name + ".service.worker.js"));
@@ -768,7 +768,7 @@ Error EditorExportPlatformJavaScript::export_project(const Ref<EditorExportPrese
 		}
 	}
 	memdelete(da);
-	da = NULL;
+	da = nullptr;
 
 	// Extract templates.
 	error = _extract_template(template_path, base_dir, base_name, pwa);
@@ -778,18 +778,18 @@ Error EditorExportPlatformJavaScript::export_project(const Ref<EditorExportPrese
 
 	// Parse generated file sizes (pck and wasm, to help show a meaningful loading bar).
 	Dictionary file_sizes;
-	FileAccess *f = NULL;
+	FileAccess *f = nullptr;
 	f = FileAccess::open(pck_path, FileAccess::READ);
 	if (f) {
 		file_sizes[pck_path.get_file()] = (uint64_t)f->get_len();
 		memdelete(f);
-		f = NULL;
+		f = nullptr;
 	}
 	f = FileAccess::open(base_path + ".wasm", FileAccess::READ);
 	if (f) {
 		file_sizes[base_name + ".wasm"] = (uint64_t)f->get_len();
 		memdelete(f);
-		f = NULL;
+		f = nullptr;
 	}
 
 	// Read the HTML shell file (custom or from template).
@@ -803,7 +803,7 @@ Error EditorExportPlatformJavaScript::export_project(const Ref<EditorExportPrese
 	html.resize(f->get_len());
 	f->get_buffer(html.ptrw(), html.size());
 	memdelete(f);
-	f = NULL;
+	f = nullptr;
 
 	// Generate HTML file with replaced strings.
 	_fix_html(html, p_preset, base_name, p_debug, p_flags, shared_objects, file_sizes);

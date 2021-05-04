@@ -137,7 +137,7 @@ void CollisionSolverSW::concave_callback(void *p_userdata, ShapeSW *p_convex) {
 	_ConcaveCollisionInfo &cinfo = *(_ConcaveCollisionInfo *)(p_userdata);
 	cinfo.aabb_tests++;
 
-	bool collided = collision_solver(cinfo.shape_A, *cinfo.transform_A, p_convex, *cinfo.transform_B, cinfo.result_callback, cinfo.userdata, cinfo.swap_result, NULL, cinfo.margin_A, cinfo.margin_B);
+	bool collided = collision_solver(cinfo.shape_A, *cinfo.transform_A, p_convex, *cinfo.transform_B, cinfo.result_callback, cinfo.userdata, cinfo.swap_result, nullptr, cinfo.margin_A, cinfo.margin_B);
 	if (!collided)
 		return;
 
@@ -331,8 +331,8 @@ bool CollisionSolverSW::solve_distance(const ShapeSW *p_shape_A, const Transform
 		cinfo.transform_A = &p_transform_A;
 		cinfo.shape_A = p_shape_A;
 		cinfo.transform_B = &p_transform_B;
-		cinfo.result_callback = NULL;
-		cinfo.userdata = NULL;
+		cinfo.result_callback = nullptr;
+		cinfo.userdata = nullptr;
 		cinfo.swap_result = false;
 		cinfo.collided = false;
 		cinfo.collisions = 0;

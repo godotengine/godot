@@ -57,7 +57,7 @@ struct ColladaImport {
 		List<int> anim_tracks;
 
 		NodeMap() {
-			node = NULL;
+			node = nullptr;
 			bone = -1;
 		}
 	};
@@ -182,7 +182,7 @@ Error ColladaImport::_create_scene_skeletons(Collada::Node *p_node) {
 }
 
 Error ColladaImport::_create_scene(Collada::Node *p_node, Spatial *p_parent) {
-	Spatial *node = NULL;
+	Spatial *node = nullptr;
 
 	switch (p_node->type) {
 		case Collada::Node::TYPE_NODE: {
@@ -484,7 +484,7 @@ Error ColladaImport::_create_mesh_surfaces(bool p_optimize, Ref<ArrayMesh> &p_me
 
 		/* NORMAL SOURCE */
 
-		const Collada::MeshData::Source *normal_src = NULL;
+		const Collada::MeshData::Source *normal_src = nullptr;
 		int normal_ofs = 0;
 
 		if (p.sources.has("NORMAL")) {
@@ -494,7 +494,7 @@ Error ColladaImport::_create_mesh_surfaces(bool p_optimize, Ref<ArrayMesh> &p_me
 			normal_src = &meshdata.sources[normal_source_id];
 		}
 
-		const Collada::MeshData::Source *binormal_src = NULL;
+		const Collada::MeshData::Source *binormal_src = nullptr;
 		int binormal_ofs = 0;
 
 		if (p.sources.has("TEXBINORMAL")) {
@@ -504,7 +504,7 @@ Error ColladaImport::_create_mesh_surfaces(bool p_optimize, Ref<ArrayMesh> &p_me
 			binormal_src = &meshdata.sources[binormal_source_id];
 		}
 
-		const Collada::MeshData::Source *tangent_src = NULL;
+		const Collada::MeshData::Source *tangent_src = nullptr;
 		int tangent_ofs = 0;
 
 		if (p.sources.has("TEXTANGENT")) {
@@ -514,7 +514,7 @@ Error ColladaImport::_create_mesh_surfaces(bool p_optimize, Ref<ArrayMesh> &p_me
 			tangent_src = &meshdata.sources[tangent_source_id];
 		}
 
-		const Collada::MeshData::Source *uv_src = NULL;
+		const Collada::MeshData::Source *uv_src = nullptr;
 		int uv_ofs = 0;
 
 		if (p.sources.has("TEXCOORD0")) {
@@ -524,7 +524,7 @@ Error ColladaImport::_create_mesh_surfaces(bool p_optimize, Ref<ArrayMesh> &p_me
 			uv_src = &meshdata.sources[uv_source_id];
 		}
 
-		const Collada::MeshData::Source *uv2_src = NULL;
+		const Collada::MeshData::Source *uv2_src = nullptr;
 		int uv2_ofs = 0;
 
 		if (p.sources.has("TEXCOORD1")) {
@@ -534,7 +534,7 @@ Error ColladaImport::_create_mesh_surfaces(bool p_optimize, Ref<ArrayMesh> &p_me
 			uv2_src = &meshdata.sources[uv2_source_id];
 		}
 
-		const Collada::MeshData::Source *color_src = NULL;
+		const Collada::MeshData::Source *color_src = nullptr;
 		int color_ofs = 0;
 
 		if (p.sources.has("COLOR")) {
@@ -555,7 +555,7 @@ Error ColladaImport::_create_mesh_surfaces(bool p_optimize, Ref<ArrayMesh> &p_me
 		bool has_weights = false;
 
 		if (p_skin_controller) {
-			const Collada::SkinControllerData::Source *weight_src = NULL;
+			const Collada::SkinControllerData::Source *weight_src = nullptr;
 			int weight_ofs = 0;
 
 			if (p_skin_controller->weights.sources.has("WEIGHT")) {
@@ -965,7 +965,7 @@ Error ColladaImport::_create_resources(Collada::Node *p_node, bool p_use_compres
 				const Collada::CurveData::Source &interps = cd.sources[cd.control_vertices["INTERPOLATION"]];
 				ERR_FAIL_COND_V(interps.stride != 1, ERR_INVALID_DATA);
 
-				const Collada::CurveData::Source *tilts = NULL;
+				const Collada::CurveData::Source *tilts = nullptr;
 				if (cd.control_vertices.has("TILT") && cd.sources.has(cd.control_vertices["TILT"]))
 					tilts = &cd.sources[cd.control_vertices["TILT"]];
 
@@ -1006,8 +1006,8 @@ Error ColladaImport::_create_resources(Collada::Node *p_node, bool p_use_compres
 
 			ERR_FAIL_COND_V(!mi, ERR_BUG);
 
-			Collada::SkinControllerData *skin = NULL;
-			Collada::MorphControllerData *morph = NULL;
+			Collada::SkinControllerData *skin = nullptr;
+			Collada::MorphControllerData *morph = nullptr;
 			String meshid;
 			Transform apply_xform;
 			Vector<int> bone_remap;
@@ -1083,7 +1083,7 @@ Error ColladaImport::_create_resources(Collada::Node *p_node, bool p_use_compres
 									Ref<ArrayMesh> mesh = Ref<ArrayMesh>(memnew(ArrayMesh));
 									const Collada::MeshData &meshdata = collada.state.mesh_data_map[meshid2];
 									mesh->set_name(meshdata.name);
-									Error err = _create_mesh_surfaces(false, mesh, ng2->material_map, meshdata, apply_xform, bone_remap, skin, NULL, Vector<Ref<ArrayMesh>>(), false);
+									Error err = _create_mesh_surfaces(false, mesh, ng2->material_map, meshdata, apply_xform, bone_remap, skin, nullptr, Vector<Ref<ArrayMesh>>(), false);
 									ERR_FAIL_COND_V(err, err);
 
 									morphs.push_back(mesh);
@@ -1626,7 +1626,7 @@ Node *EditorSceneImporterCollada::import_scene(const String &p_path, uint32_t p_
 
 	Error err = state.load(p_path, flags, p_flags & EditorSceneImporter::IMPORT_GENERATE_TANGENT_ARRAYS, p_flags & EditorSceneImporter::IMPORT_USE_COMPRESSION);
 
-	ERR_FAIL_COND_V_MSG(err != OK, NULL, "Cannot load scene from file '" + p_path + "'.");
+	ERR_FAIL_COND_V_MSG(err != OK, nullptr, "Cannot load scene from file '" + p_path + "'.");
 
 	if (state.missing_textures.size()) {
 		/*

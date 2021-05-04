@@ -82,10 +82,10 @@ const char *Image::format_names[Image::FORMAT_MAX] = {
 
 };
 
-SavePNGFunc Image::save_png_func = NULL;
-SaveEXRFunc Image::save_exr_func = NULL;
+SavePNGFunc Image::save_png_func = nullptr;
+SaveEXRFunc Image::save_exr_func = nullptr;
 
-SavePNGBufferFunc Image::save_png_buffer_func = NULL;
+SavePNGBufferFunc Image::save_png_buffer_func = nullptr;
 
 void Image::_put_pixelb(int p_x, int p_y, uint32_t p_pixelsize, uint8_t *p_data, const uint8_t *p_pixel) {
 	uint32_t ofs = (p_y * width + p_x) * p_pixelsize;
@@ -2005,14 +2005,14 @@ Error Image::load(const String &p_path) {
 }
 
 Error Image::save_png(const String &p_path) const {
-	if (save_png_func == NULL)
+	if (save_png_func == nullptr)
 		return ERR_UNAVAILABLE;
 
 	return save_png_func(p_path, Ref<Image>((Image *)this));
 }
 
 PoolVector<uint8_t> Image::save_png_to_buffer() const {
-	if (save_png_buffer_func == NULL) {
+	if (save_png_buffer_func == nullptr) {
 		return PoolVector<uint8_t>();
 	}
 
@@ -2020,7 +2020,7 @@ PoolVector<uint8_t> Image::save_png_to_buffer() const {
 }
 
 Error Image::save_exr(const String &p_path, bool p_grayscale) const {
-	if (save_exr_func == NULL)
+	if (save_exr_func == nullptr)
 		return ERR_UNAVAILABLE;
 
 	return save_exr_func(p_path, Ref<Image>((Image *)this), p_grayscale);
@@ -2402,28 +2402,28 @@ void Image::fill(const Color &c) {
 	unlock();
 }
 
-ImageMemLoadFunc Image::_png_mem_loader_func = NULL;
-ImageMemLoadFunc Image::_jpg_mem_loader_func = NULL;
-ImageMemLoadFunc Image::_webp_mem_loader_func = NULL;
-ImageMemLoadFunc Image::_tga_mem_loader_func = NULL;
-ImageMemLoadFunc Image::_bmp_mem_loader_func = NULL;
+ImageMemLoadFunc Image::_png_mem_loader_func = nullptr;
+ImageMemLoadFunc Image::_jpg_mem_loader_func = nullptr;
+ImageMemLoadFunc Image::_webp_mem_loader_func = nullptr;
+ImageMemLoadFunc Image::_tga_mem_loader_func = nullptr;
+ImageMemLoadFunc Image::_bmp_mem_loader_func = nullptr;
 
-void (*Image::_image_compress_bc_func)(Image *, float, Image::CompressSource) = NULL;
-void (*Image::_image_compress_bptc_func)(Image *, float, Image::CompressSource) = NULL;
-void (*Image::_image_compress_pvrtc2_func)(Image *) = NULL;
-void (*Image::_image_compress_pvrtc4_func)(Image *) = NULL;
-void (*Image::_image_compress_etc1_func)(Image *, float) = NULL;
-void (*Image::_image_compress_etc2_func)(Image *, float, Image::CompressSource) = NULL;
-void (*Image::_image_decompress_pvrtc)(Image *) = NULL;
-void (*Image::_image_decompress_bc)(Image *) = NULL;
-void (*Image::_image_decompress_bptc)(Image *) = NULL;
-void (*Image::_image_decompress_etc1)(Image *) = NULL;
-void (*Image::_image_decompress_etc2)(Image *) = NULL;
+void (*Image::_image_compress_bc_func)(Image *, float, Image::CompressSource) = nullptr;
+void (*Image::_image_compress_bptc_func)(Image *, float, Image::CompressSource) = nullptr;
+void (*Image::_image_compress_pvrtc2_func)(Image *) = nullptr;
+void (*Image::_image_compress_pvrtc4_func)(Image *) = nullptr;
+void (*Image::_image_compress_etc1_func)(Image *, float) = nullptr;
+void (*Image::_image_compress_etc2_func)(Image *, float, Image::CompressSource) = nullptr;
+void (*Image::_image_decompress_pvrtc)(Image *) = nullptr;
+void (*Image::_image_decompress_bc)(Image *) = nullptr;
+void (*Image::_image_decompress_bptc)(Image *) = nullptr;
+void (*Image::_image_decompress_etc1)(Image *) = nullptr;
+void (*Image::_image_decompress_etc2)(Image *) = nullptr;
 
-PoolVector<uint8_t> (*Image::lossy_packer)(const Ref<Image> &, float) = NULL;
-Ref<Image> (*Image::lossy_unpacker)(const PoolVector<uint8_t> &) = NULL;
-PoolVector<uint8_t> (*Image::lossless_packer)(const Ref<Image> &) = NULL;
-Ref<Image> (*Image::lossless_unpacker)(const PoolVector<uint8_t> &) = NULL;
+PoolVector<uint8_t> (*Image::lossy_packer)(const Ref<Image> &, float) = nullptr;
+Ref<Image> (*Image::lossy_unpacker)(const PoolVector<uint8_t> &) = nullptr;
+PoolVector<uint8_t> (*Image::lossless_packer)(const Ref<Image> &) = nullptr;
+Ref<Image> (*Image::lossless_unpacker)(const PoolVector<uint8_t> &) = nullptr;
 
 void Image::_set_data(const Dictionary &p_data) {
 	ERR_FAIL_COND(!p_data.has("width"));

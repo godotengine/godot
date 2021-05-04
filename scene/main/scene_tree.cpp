@@ -104,7 +104,7 @@ void SceneTree::node_added(Node *p_node) {
 
 void SceneTree::node_removed(Node *p_node) {
 	if (current_scene == p_node) {
-		current_scene = NULL;
+		current_scene = nullptr;
 	}
 	emit_signal(node_removed_name, p_node);
 	if (call_lock > 0)
@@ -579,10 +579,10 @@ void SceneTree::finish() {
 	MainLoop::finish();
 
 	if (root) {
-		root->_set_tree(NULL);
+		root->_set_tree(nullptr);
 		root->_propagate_after_exit_tree();
 		memdelete(root); //delete root
-		root = NULL;
+		root = nullptr;
 	}
 
 	// cleanup timers
@@ -1186,7 +1186,7 @@ Node *SceneTree::get_current_scene() const {
 void SceneTree::_change_scene(Node *p_to) {
 	if (current_scene) {
 		memdelete(current_scene);
-		current_scene = NULL;
+		current_scene = nullptr;
 	}
 
 	// If we're quitting, abort.
@@ -1212,7 +1212,7 @@ Error SceneTree::change_scene(const String &p_path) {
 }
 
 Error SceneTree::change_scene_to(const Ref<PackedScene> &p_scene) {
-	Node *new_scene = NULL;
+	Node *new_scene = nullptr;
 	if (p_scene.is_valid()) {
 		new_scene = p_scene->instance();
 		ERR_FAIL_COND_V(!new_scene, ERR_CANT_CREATE);
@@ -1264,7 +1264,7 @@ void SceneTree::_live_edit_node_set_func(int p_id, const StringName &p_prop, con
 		return;
 
 	NodePath np = live_edit_node_path_cache[p_id];
-	Node *base = NULL;
+	Node *base = nullptr;
 	if (root->has_node(live_edit_root))
 		base = root->get_node(live_edit_root);
 
@@ -1297,7 +1297,7 @@ void SceneTree::_live_edit_node_call_func(int p_id, const StringName &p_method, 
 		return;
 
 	NodePath np = live_edit_node_path_cache[p_id];
-	Node *base = NULL;
+	Node *base = nullptr;
 	if (root->has_node(live_edit_root))
 		base = root->get_node(live_edit_root);
 
@@ -1361,7 +1361,7 @@ void SceneTree::_live_edit_root_func(const NodePath &p_scene_path, const String 
 }
 
 void SceneTree::_live_edit_create_node_func(const NodePath &p_parent, const String &p_type, const String &p_name) {
-	Node *base = NULL;
+	Node *base = nullptr;
 	if (root->has_node(live_edit_root))
 		base = root->get_node(live_edit_root);
 
@@ -1394,7 +1394,7 @@ void SceneTree::_live_edit_instance_node_func(const NodePath &p_parent, const St
 	if (!ps.is_valid())
 		return;
 
-	Node *base = NULL;
+	Node *base = nullptr;
 	if (root->has_node(live_edit_root))
 		base = root->get_node(live_edit_root);
 
@@ -1422,7 +1422,7 @@ void SceneTree::_live_edit_instance_node_func(const NodePath &p_parent, const St
 	}
 }
 void SceneTree::_live_edit_remove_node_func(const NodePath &p_at) {
-	Node *base = NULL;
+	Node *base = nullptr;
 	if (root->has_node(live_edit_root))
 		base = root->get_node(live_edit_root);
 
@@ -1448,7 +1448,7 @@ void SceneTree::_live_edit_remove_node_func(const NodePath &p_at) {
 	}
 }
 void SceneTree::_live_edit_remove_and_keep_node_func(const NodePath &p_at, ObjectID p_keep_id) {
-	Node *base = NULL;
+	Node *base = nullptr;
 	if (root->has_node(live_edit_root))
 		base = root->get_node(live_edit_root);
 
@@ -1477,7 +1477,7 @@ void SceneTree::_live_edit_remove_and_keep_node_func(const NodePath &p_at, Objec
 	}
 }
 void SceneTree::_live_edit_restore_node_func(ObjectID p_id, const NodePath &p_at, int p_at_pos) {
-	Node *base = NULL;
+	Node *base = nullptr;
 	if (root->has_node(live_edit_root))
 		base = root->get_node(live_edit_root);
 
@@ -1518,7 +1518,7 @@ void SceneTree::_live_edit_restore_node_func(ObjectID p_id, const NodePath &p_at
 	}
 }
 void SceneTree::_live_edit_duplicate_node_func(const NodePath &p_at, const String &p_new_name) {
-	Node *base = NULL;
+	Node *base = nullptr;
 	if (root->has_node(live_edit_root))
 		base = root->get_node(live_edit_root);
 
@@ -1546,7 +1546,7 @@ void SceneTree::_live_edit_duplicate_node_func(const NodePath &p_at, const Strin
 	}
 }
 void SceneTree::_live_edit_reparent_node_func(const NodePath &p_at, const NodePath &p_new_place, const String &p_new_name, int p_at_pos) {
-	Node *base = NULL;
+	Node *base = nullptr;
 	if (root->has_node(live_edit_root))
 		base = root->get_node(live_edit_root);
 
@@ -1821,7 +1821,7 @@ void SceneTree::_bind_methods() {
 	BIND_ENUM_CONSTANT(STRETCH_ASPECT_EXPAND);
 }
 
-SceneTree *SceneTree::singleton = NULL;
+SceneTree *SceneTree::singleton = nullptr;
 
 SceneTree::IdleCallback SceneTree::idle_callbacks[SceneTree::MAX_IDLE_CALLBACKS];
 int SceneTree::idle_callback_count = 0;
@@ -1881,7 +1881,7 @@ void SceneTree::get_argument_options(const StringName &p_function, int p_idx, Li
 }
 
 SceneTree::SceneTree() {
-	if (singleton == NULL)
+	if (singleton == nullptr)
 		singleton = this;
 	_quit = false;
 	accept_quit = true;
@@ -1905,7 +1905,7 @@ SceneTree::SceneTree() {
 	physics_process_time = 1;
 	idle_process_time = 1;
 
-	root = NULL;
+	root = nullptr;
 	input_handled = false;
 	pause = false;
 	current_frame = 0;
@@ -1934,7 +1934,7 @@ SceneTree::SceneTree() {
 	//root->set_world_2d( Ref<World2D>( memnew( World2D )));
 	root->set_as_audio_listener(true);
 	root->set_as_audio_listener_2d(true);
-	current_scene = NULL;
+	current_scene = nullptr;
 
 	int ref_atlas_size = GLOBAL_DEF_RST("rendering/quality/reflections/atlas_size", 2048);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/reflections/atlas_size", PropertyInfo(Variant::INT, "rendering/quality/reflections/atlas_size", PROPERTY_HINT_RANGE, "0,8192,or_greater")); //next_power_of_2 will return a 0 as min value
@@ -2008,7 +2008,7 @@ SceneTree::SceneTree() {
 	root->set_physics_object_picking(GLOBAL_DEF("physics/common/enable_object_picking", true));
 
 #ifdef TOOLS_ENABLED
-	edited_scene_root = NULL;
+	edited_scene_root = nullptr;
 #endif
 
 #ifdef DEBUG_ENABLED
@@ -2020,11 +2020,11 @@ SceneTree::SceneTree() {
 
 SceneTree::~SceneTree() {
 	if (root) {
-		root->_set_tree(NULL);
+		root->_set_tree(nullptr);
 		root->_propagate_after_exit_tree();
 		memdelete(root);
 	}
 
 	if (singleton == this)
-		singleton = NULL;
+		singleton = nullptr;
 }

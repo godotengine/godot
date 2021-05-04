@@ -133,9 +133,9 @@ public:
 		}
 
 		_FORCE_INLINE_ Element() {
-			next_ptr = 0;
-			prev_ptr = 0;
-			data = NULL;
+			next_ptr = nullptr;
+			prev_ptr = nullptr;
+			data = nullptr;
 		};
 	};
 
@@ -176,28 +176,28 @@ public:
 	* return a const iterator to the beginning of the list.
 	*/
 	_FORCE_INLINE_ const Element *front() const {
-		return _data ? _data->first : 0;
+		return _data ? _data->first : nullptr;
 	};
 
 	/**
 	* return an iterator to the beginning of the list.
 	*/
 	_FORCE_INLINE_ Element *front() {
-		return _data ? _data->first : 0;
+		return _data ? _data->first : nullptr;
 	};
 
 	/**
  	* return a const iterator to the last member of the list.
 	*/
 	_FORCE_INLINE_ const Element *back() const {
-		return _data ? _data->last : 0;
+		return _data ? _data->last : nullptr;
 	};
 
 	/**
  	* return an iterator to the last member of the list.
 	*/
 	_FORCE_INLINE_ Element *back() {
-		return _data ? _data->last : 0;
+		return _data ? _data->last : nullptr;
 	};
 
 	/**
@@ -206,8 +206,8 @@ public:
 	Element *push_back(const T &value) {
 		if (!_data) {
 			_data = memnew_allocator(_Data, A);
-			_data->first = NULL;
-			_data->last = NULL;
+			_data->first = nullptr;
+			_data->last = nullptr;
 			_data->size_cache = 0;
 		}
 
@@ -215,7 +215,7 @@ public:
 		n->value = (T &)value;
 
 		n->prev_ptr = _data->last;
-		n->next_ptr = 0;
+		n->next_ptr = nullptr;
 		n->data = _data;
 
 		if (_data->last) {
@@ -243,14 +243,14 @@ public:
 	Element *push_front(const T &value) {
 		if (!_data) {
 			_data = memnew_allocator(_Data, A);
-			_data->first = NULL;
-			_data->last = NULL;
+			_data->first = nullptr;
+			_data->last = nullptr;
 			_data->size_cache = 0;
 		}
 
 		Element *n = memnew_allocator(Element, A);
 		n->value = (T &)value;
-		n->prev_ptr = 0;
+		n->prev_ptr = nullptr;
 		n->next_ptr = _data->first;
 		n->data = _data;
 
@@ -337,7 +337,7 @@ public:
 			it = it->next();
 		};
 
-		return NULL;
+		return nullptr;
 	};
 
 	/**
@@ -349,7 +349,7 @@ public:
 
 			if (_data->size_cache == 0) {
 				memdelete_allocator<_Data, A>(_data);
-				_data = NULL;
+				_data = nullptr;
 			}
 
 			return ret;
@@ -487,7 +487,7 @@ public:
 
 		_data->last->next_ptr = p_I;
 		p_I->prev_ptr = _data->last;
-		p_I->next_ptr = NULL;
+		p_I->next_ptr = nullptr;
 		_data->last = p_I;
 	}
 
@@ -521,7 +521,7 @@ public:
 
 		_data->first->prev_ptr = p_I;
 		p_I->next_ptr = _data->first;
-		p_I->prev_ptr = NULL;
+		p_I->prev_ptr = nullptr;
 		_data->first = p_I;
 	}
 
@@ -636,12 +636,12 @@ public:
 		sort.sort(aux_buffer, s);
 
 		_data->first = aux_buffer[0];
-		aux_buffer[0]->prev_ptr = NULL;
+		aux_buffer[0]->prev_ptr = nullptr;
 		aux_buffer[0]->next_ptr = aux_buffer[1];
 
 		_data->last = aux_buffer[s - 1];
 		aux_buffer[s - 1]->prev_ptr = aux_buffer[s - 2];
-		aux_buffer[s - 1]->next_ptr = NULL;
+		aux_buffer[s - 1]->next_ptr = nullptr;
 
 		for (int i = 1; i < s - 1; i++) {
 			aux_buffer[i]->prev_ptr = aux_buffer[i - 1];
@@ -659,7 +659,7 @@ public:
 	 * copy constructor for the list
 	 */
 	List(const List &p_list) {
-		_data = NULL;
+		_data = nullptr;
 		const Element *it = p_list.front();
 		while (it) {
 			push_back(it->get());
@@ -668,7 +668,7 @@ public:
 	}
 
 	List() {
-		_data = NULL;
+		_data = nullptr;
 	};
 	~List() {
 		clear();

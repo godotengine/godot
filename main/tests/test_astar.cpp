@@ -359,7 +359,7 @@ TestFunc test_funcs[] = {
 	test_abcx,
 	test_add_remove,
 	test_solutions,
-	NULL
+	nullptr
 };
 
 MainLoop *test() {
@@ -378,7 +378,7 @@ MainLoop *test() {
 	}
 	OS::get_singleton()->print("\n");
 	OS::get_singleton()->print("Passed %i of %i tests\n", passed, count);
-	return NULL;
+	return nullptr;
 }
 
 } // namespace TestAStar

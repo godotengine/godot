@@ -37,7 +37,7 @@ Error AudioDriverDummy::init() {
 	active = false;
 	thread_exited = false;
 	exit_thread = false;
-	samples_in = NULL;
+	samples_in = nullptr;
 
 	mix_rate = GLOBAL_GET("audio/mix_rate");
 	speaker_mode = SPEAKER_MODE_STEREO;

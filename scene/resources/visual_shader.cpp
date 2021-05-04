@@ -891,7 +891,7 @@ VisualShader::RenderModeEnums VisualShader::render_mode_enums[] = {
 	{ Shader::MODE_SPATIAL, "diffuse" },
 	{ Shader::MODE_SPATIAL, "specular" },
 	{ Shader::MODE_CANVAS_ITEM, "blend" },
-	{ Shader::MODE_CANVAS_ITEM, NULL }
+	{ Shader::MODE_CANVAS_ITEM, nullptr }
 };
 
 static const char *type_string[VisualShader::TYPE_MAX] = {
@@ -1088,12 +1088,12 @@ void VisualShader::_get_property_list(List<PropertyInfo> *p_list) const {
 			}
 			p_list->push_back(PropertyInfo(Variant::VECTOR2, prop_name + "/position", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR));
 
-			if (Object::cast_to<VisualShaderNodeGroupBase>(E->get().node.ptr()) != NULL) {
+			if (Object::cast_to<VisualShaderNodeGroupBase>(E->get().node.ptr()) != nullptr) {
 				p_list->push_back(PropertyInfo(Variant::VECTOR2, prop_name + "/size", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR));
 				p_list->push_back(PropertyInfo(Variant::STRING, prop_name + "/input_ports", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR));
 				p_list->push_back(PropertyInfo(Variant::STRING, prop_name + "/output_ports", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR));
 			}
-			if (Object::cast_to<VisualShaderNodeExpression>(E->get().node.ptr()) != NULL) {
+			if (Object::cast_to<VisualShaderNodeExpression>(E->get().node.ptr()) != nullptr) {
 				p_list->push_back(PropertyInfo(Variant::STRING, prop_name + "/expression", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR));
 			}
 		}
@@ -1683,7 +1683,7 @@ const VisualShaderNodeInput::Port VisualShaderNodeInput::ports[] = {
 
 	{ Shader::MODE_PARTICLES, VisualShader::TYPE_VERTEX, VisualShaderNode::PORT_TYPE_TRANSFORM, "emission_transform", "EMISSION_TRANSFORM" },
 	{ Shader::MODE_PARTICLES, VisualShader::TYPE_VERTEX, VisualShaderNode::PORT_TYPE_SCALAR, "time", "TIME" },
-	{ Shader::MODE_MAX, VisualShader::TYPE_MAX, VisualShaderNode::PORT_TYPE_TRANSFORM, NULL, NULL },
+	{ Shader::MODE_MAX, VisualShader::TYPE_MAX, VisualShaderNode::PORT_TYPE_TRANSFORM, nullptr, nullptr },
 };
 
 const VisualShaderNodeInput::Port VisualShaderNodeInput::preview_ports[] = {
@@ -1732,7 +1732,7 @@ const VisualShaderNodeInput::Port VisualShaderNodeInput::preview_ports[] = {
 	{ Shader::MODE_PARTICLES, VisualShader::TYPE_VERTEX, VisualShaderNode::PORT_TYPE_SCALAR, "alpha", "1.0" },
 	{ Shader::MODE_PARTICLES, VisualShader::TYPE_VERTEX, VisualShaderNode::PORT_TYPE_VECTOR, "velocity", "vec3(0.0, 0.0, 1.0)" },
 	{ Shader::MODE_PARTICLES, VisualShader::TYPE_VERTEX, VisualShaderNode::PORT_TYPE_SCALAR, "time", "TIME" },
-	{ Shader::MODE_MAX, VisualShader::TYPE_MAX, VisualShaderNode::PORT_TYPE_TRANSFORM, NULL, NULL },
+	{ Shader::MODE_MAX, VisualShader::TYPE_MAX, VisualShaderNode::PORT_TYPE_TRANSFORM, nullptr, nullptr },
 };
 
 int VisualShaderNodeInput::get_input_port_count() const {
@@ -2194,7 +2194,7 @@ const VisualShaderNodeOutput::Port VisualShaderNodeOutput::ports[] = {
 	{ Shader::MODE_PARTICLES, VisualShader::TYPE_VERTEX, VisualShaderNode::PORT_TYPE_VECTOR, "custom", "CUSTOM.rgb" },
 	{ Shader::MODE_PARTICLES, VisualShader::TYPE_VERTEX, VisualShaderNode::PORT_TYPE_SCALAR, "custom_alpha", "CUSTOM.a" },
 	{ Shader::MODE_PARTICLES, VisualShader::TYPE_VERTEX, VisualShaderNode::PORT_TYPE_TRANSFORM, "transform", "TRANSFORM" },
-	{ Shader::MODE_MAX, VisualShader::TYPE_MAX, VisualShaderNode::PORT_TYPE_TRANSFORM, NULL, NULL },
+	{ Shader::MODE_MAX, VisualShader::TYPE_MAX, VisualShaderNode::PORT_TYPE_TRANSFORM, nullptr, nullptr },
 };
 
 int VisualShaderNodeOutput::get_input_port_count() const {
@@ -2713,7 +2713,7 @@ void VisualShaderNodeGroupBase::set_control(Control *p_control, int p_index) {
 }
 
 Control *VisualShaderNodeGroupBase::get_control(int p_index) {
-	ERR_FAIL_COND_V(!controls.has(p_index), NULL);
+	ERR_FAIL_COND_V(!controls.has(p_index), nullptr);
 	return controls[p_index];
 }
 

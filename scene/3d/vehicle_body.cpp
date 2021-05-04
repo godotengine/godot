@@ -96,7 +96,7 @@ void VehicleWheel::_notification(int p_what) {
 		if (!cb)
 			return;
 		cb->wheels.erase(this);
-		body = NULL;
+		body = nullptr;
 	}
 }
 
@@ -357,7 +357,7 @@ VehicleWheel::VehicleWheel() {
 	m_raycastInfo.m_isInContact = false;
 	m_raycastInfo.m_suspensionLength = 0.0;
 
-	body = NULL;
+	body = nullptr;
 }
 
 void VehicleBody::_update_wheel_transform(VehicleWheel &wheel, PhysicsDirectBodyState *s) {
@@ -423,7 +423,7 @@ real_t VehicleBody::_ray_cast(int p_idx, PhysicsDirectBodyState *s) {
 
 	bool col = ss->intersect_ray(source, target, rr, exclude, get_collision_mask());
 
-	wheel.m_raycastInfo.m_groundObject = 0;
+	wheel.m_raycastInfo.m_groundObject = nullptr;
 
 	if (col) {
 		param = source.distance_to(rr.position) / source.distance_to(target);
@@ -876,7 +876,7 @@ void VehicleBody::_direct_state_changed(Object *p_state) {
 		wheel.m_deltaRotation *= real_t(0.99); //damping of rotation when not in contact
 	}
 
-	state = NULL;
+	state = nullptr;
 }
 
 void VehicleBody::set_engine_force(float p_engine_force) {
@@ -939,7 +939,7 @@ VehicleBody::VehicleBody() {
 	engine_force = 0;
 	brake = 0;
 
-	state = NULL;
+	state = nullptr;
 	ccd = false;
 
 	exclude.insert(get_rid());

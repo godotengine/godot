@@ -46,7 +46,7 @@
 #include <stdlib.h>
 
 static void handle_crash(int sig) {
-	if (OS::get_singleton() == NULL) {
+	if (OS::get_singleton() == nullptr) {
 		abort();
 	}
 
@@ -79,7 +79,7 @@ static void handle_crash(int sig) {
 			if (dladdr(bt_buffer[i], &info) && info.dli_sname) {
 				if (info.dli_sname[0] == '_') {
 					int status;
-					char *demangled = abi::__cxa_demangle(info.dli_sname, NULL, 0, &status);
+					char *demangled = abi::__cxa_demangle(info.dli_sname, nullptr, nullptr, &status);
 
 					if (status == 0 && demangled) {
 						snprintf(fname, 1024, "%s", demangled);
@@ -102,7 +102,7 @@ static void handle_crash(int sig) {
 
 			// Try to get the file/line number using addr2line
 			int ret;
-			Error err = OS::get_singleton()->execute(String("addr2line"), args, true, NULL, &output, &ret);
+			Error err = OS::get_singleton()->execute(String("addr2line"), args, true, nullptr, &output, &ret);
 			if (err == OK) {
 				output.erase(output.length() - 1, 1);
 			}
@@ -132,9 +132,9 @@ void CrashHandler::disable() {
 		return;
 
 #ifdef CRASH_HANDLER_ENABLED
-	signal(SIGSEGV, NULL);
-	signal(SIGFPE, NULL);
-	signal(SIGILL, NULL);
+	signal(SIGSEGV, nullptr);
+	signal(SIGFPE, nullptr);
+	signal(SIGILL, nullptr);
 #endif
 
 	disabled = true;

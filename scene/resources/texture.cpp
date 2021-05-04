@@ -435,9 +435,9 @@ void StreamTexture::_requested_normal(void *p_ud) {
 	request_normal_callback(stex);
 }
 
-StreamTexture::TextureFormatRequestCallback StreamTexture::request_3d_callback = NULL;
-StreamTexture::TextureFormatRequestCallback StreamTexture::request_srgb_callback = NULL;
-StreamTexture::TextureFormatRequestCallback StreamTexture::request_normal_callback = NULL;
+StreamTexture::TextureFormatRequestCallback StreamTexture::request_3d_callback = nullptr;
+StreamTexture::TextureFormatRequestCallback StreamTexture::request_srgb_callback = nullptr;
+StreamTexture::TextureFormatRequestCallback StreamTexture::request_normal_callback = nullptr;
 
 uint32_t StreamTexture::get_flags() const {
 	return flags;
@@ -482,7 +482,7 @@ Error StreamTexture::_load_data(const String &p_path, int &tw, int &th, int &tw_
 		VS::get_singleton()->texture_set_detect_3d_callback(texture, _requested_3d, this);
 	} else {
 		//print_line("not requesting detect 3D at " + p_path);
-		VS::get_singleton()->texture_set_detect_3d_callback(texture, NULL, NULL);
+		VS::get_singleton()->texture_set_detect_3d_callback(texture, nullptr, nullptr);
 	}
 
 	if (request_srgb_callback && df & FORMAT_BIT_DETECT_SRGB) {
@@ -490,7 +490,7 @@ Error StreamTexture::_load_data(const String &p_path, int &tw, int &th, int &tw_
 		VS::get_singleton()->texture_set_detect_srgb_callback(texture, _requested_srgb, this);
 	} else {
 		//print_line("not requesting detect srgb at " + p_path);
-		VS::get_singleton()->texture_set_detect_srgb_callback(texture, NULL, NULL);
+		VS::get_singleton()->texture_set_detect_srgb_callback(texture, nullptr, nullptr);
 	}
 
 	if (request_srgb_callback && df & FORMAT_BIT_DETECT_NORMAL) {
@@ -498,7 +498,7 @@ Error StreamTexture::_load_data(const String &p_path, int &tw, int &th, int &tw_
 		VS::get_singleton()->texture_set_detect_normal_callback(texture, _requested_normal, this);
 	} else {
 		//print_line("not requesting detect normal at " + p_path);
-		VS::get_singleton()->texture_set_detect_normal_callback(texture, NULL, NULL);
+		VS::get_singleton()->texture_set_detect_normal_callback(texture, nullptr, nullptr);
 	}
 #endif
 	if (!(df & FORMAT_BIT_STREAM)) {

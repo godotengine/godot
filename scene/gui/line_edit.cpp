@@ -618,7 +618,7 @@ void LineEdit::drop_data(const Point2 &p_point, const Variant &p_data) {
 		int selected = selection.end - selection.begin;
 
 		Ref<Font> font = get_font("font");
-		if (font != NULL) {
+		if (font != nullptr) {
 			for (int i = selection.begin; i < selection.end; i++)
 				cached_width -= font->get_char_size(pass ? secret_character[0] : text[i]).width;
 		}
@@ -968,7 +968,7 @@ void LineEdit::paste_text() {
 }
 
 void LineEdit::undo() {
-	if (undo_stack_pos == NULL) {
+	if (undo_stack_pos == nullptr) {
 		if (undo_stack.size() <= 1) {
 			return;
 		}
@@ -990,7 +990,7 @@ void LineEdit::undo() {
 }
 
 void LineEdit::redo() {
-	if (undo_stack_pos == NULL) {
+	if (undo_stack_pos == nullptr) {
 		return;
 	}
 	if (undo_stack_pos == undo_stack.back()) {
@@ -1055,7 +1055,7 @@ void LineEdit::set_cursor_at_pixel_pos(int p_x) {
 
 	while (ofs < text.length()) {
 		int char_w = 0;
-		if (font != NULL) {
+		if (font != nullptr) {
 			char_w = font->get_char_size(pass ? secret_character[0] : text[ofs]).width;
 		}
 		pixel_ofs += char_w;
@@ -1102,7 +1102,7 @@ int LineEdit::get_cursor_pixel_pos() {
 	}
 
 	while (ofs < cursor_pos) {
-		if (font != NULL) {
+		if (font != nullptr) {
 			pixel_ofs += font->get_char_size(pass ? secret_character[0] : text[ofs]).width;
 		}
 		ofs++;
@@ -1161,7 +1161,7 @@ void LineEdit::delete_char() {
 		return;
 
 	Ref<Font> font = get_font("font");
-	if (font != NULL) {
+	if (font != nullptr) {
 		cached_width -= font->get_char_size(pass ? secret_character[0] : text[cursor_pos - 1]).width;
 	}
 
@@ -1181,7 +1181,7 @@ void LineEdit::delete_text(int p_from_column, int p_to_column) {
 			vformat("Positional parameters (from: %d, to: %d) are inverted or outside the text length (%d).", p_from_column, p_to_column, text.length()));
 	if (text.size() > 0) {
 		Ref<Font> font = get_font("font");
-		if (font != NULL) {
+		if (font != nullptr) {
 			for (int i = p_from_column; i < p_to_column; i++)
 				cached_width -= font->get_char_size(pass ? secret_character[0] : text[i]).width;
 		}
@@ -1664,7 +1664,7 @@ void LineEdit::_emit_text_change() {
 void LineEdit::update_cached_width() {
 	Ref<Font> font = get_font("font");
 	cached_width = 0;
-	if (font != NULL) {
+	if (font != nullptr) {
 		String text = get_text();
 		for (int i = 0; i < text.length(); i++) {
 			cached_width += font->get_char_size(pass ? secret_character[0] : text[i]).width;
@@ -1675,7 +1675,7 @@ void LineEdit::update_cached_width() {
 void LineEdit::update_placeholder_width() {
 	Ref<Font> font = get_font("font");
 	cached_placeholder_width = 0;
-	if (font != NULL) {
+	if (font != nullptr) {
 		for (int i = 0; i < placeholder_translated.length(); i++) {
 			cached_placeholder_width += font->get_char_size(placeholder_translated[i]).width;
 		}
@@ -1684,7 +1684,7 @@ void LineEdit::update_placeholder_width() {
 
 void LineEdit::_clear_redo() {
 	_create_undo_state();
-	if (undo_stack_pos == NULL) {
+	if (undo_stack_pos == nullptr) {
 		return;
 	}
 
@@ -1699,7 +1699,7 @@ void LineEdit::_clear_redo() {
 
 void LineEdit::_clear_undo_stack() {
 	undo_stack.clear();
-	undo_stack_pos = NULL;
+	undo_stack_pos = nullptr;
 	_create_undo_state();
 }
 
@@ -1827,7 +1827,7 @@ void LineEdit::_bind_methods() {
 }
 
 LineEdit::LineEdit() {
-	undo_stack_pos = NULL;
+	undo_stack_pos = nullptr;
 	_create_undo_state();
 	align = ALIGN_LEFT;
 	cached_width = 0;

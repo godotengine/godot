@@ -38,7 +38,7 @@
 #include "editor/editor_settings.h"
 #endif
 
-Input *Input::singleton = NULL;
+Input *Input::singleton = nullptr;
 
 Input *Input::get_singleton() {
 	return singleton;

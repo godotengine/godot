@@ -68,7 +68,7 @@ public:
 
 	static void destroySingleton() {
 		memdelete(singleton);
-		singleton = NULL;
+		singleton = nullptr;
 	}
 
 	static void singleton_setDeltaTime(real_t p_deltaTime) {
@@ -165,7 +165,7 @@ public:
 		btTransform transform;
 
 		KinematicShape() :
-				shape(NULL) {}
+				shape(nullptr) {}
 		bool is_active() const { return shape; }
 	};
 

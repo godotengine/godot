@@ -462,7 +462,7 @@ Error EditorExportPlatformOSX::_create_dmg(const String &p_dmg_path, const Strin
 	args.push_back(p_app_path_name);
 
 	String str;
-	Error err = OS::get_singleton()->execute("hdiutil", args, true, NULL, &str, NULL, true);
+	Error err = OS::get_singleton()->execute("hdiutil", args, true, nullptr, &str, nullptr, true);
 	ERR_FAIL_COND_V(err != OK, err);
 
 	print_line("hdiutil returned: " + str);
@@ -503,7 +503,7 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 		return ERR_FILE_BAD_PATH;
 	}
 
-	FileAccess *src_f = NULL;
+	FileAccess *src_f = nullptr;
 	zlib_filefunc_def io = zipio_create_io_from_file(&src_f);
 
 	if (ep.step("Creating app", 0)) {
@@ -571,7 +571,7 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 		// Get filename.
 		unz_file_info info;
 		char fname[16384];
-		ret = unzGetCurrentFileInfo(src_pkg_zip, &info, fname, 16384, NULL, 0, NULL, 0);
+		ret = unzGetCurrentFileInfo(src_pkg_zip, &info, fname, 16384, nullptr, 0, nullptr, 0);
 
 		String file = fname;
 

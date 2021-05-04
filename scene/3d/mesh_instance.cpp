@@ -538,11 +538,11 @@ PoolVector<Face3> MeshInstance::get_faces(uint32_t p_usage_flags) const {
 
 Node *MeshInstance::create_trimesh_collision_node() {
 	if (mesh.is_null())
-		return NULL;
+		return nullptr;
 
 	Ref<Shape> shape = mesh->create_trimesh_shape();
 	if (shape.is_null())
-		return NULL;
+		return nullptr;
 
 	StaticBody *static_body = memnew(StaticBody);
 	CollisionShape *cshape = memnew(CollisionShape);
@@ -566,11 +566,11 @@ void MeshInstance::create_trimesh_collision() {
 
 Node *MeshInstance::create_multiple_convex_collisions_node() {
 	if (mesh.is_null())
-		return NULL;
+		return nullptr;
 
 	Vector<Ref<Shape>> shapes = mesh->convex_decompose();
 	if (!shapes.size()) {
-		return NULL;
+		return nullptr;
 	}
 
 	StaticBody *static_body = memnew(StaticBody);
@@ -600,11 +600,11 @@ void MeshInstance::create_multiple_convex_collisions() {
 
 Node *MeshInstance::create_convex_collision_node() {
 	if (mesh.is_null())
-		return NULL;
+		return nullptr;
 
 	Ref<Shape> shape = mesh->create_convex_shape();
 	if (shape.is_null())
-		return NULL;
+		return nullptr;
 
 	StaticBody *static_body = memnew(StaticBody);
 	CollisionShape *cshape = memnew(CollisionShape);

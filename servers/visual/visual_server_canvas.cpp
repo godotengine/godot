@@ -39,7 +39,7 @@ void VisualServerCanvas::_render_canvas_item_tree(Item *p_canvas_item, const Tra
 	memset(z_list, 0, z_range * sizeof(RasterizerCanvas::Item *));
 	memset(z_last_list, 0, z_range * sizeof(RasterizerCanvas::Item *));
 
-	_render_canvas_item(p_canvas_item, p_transform, p_clip_rect, Color(1, 1, 1, 1), 0, z_list, z_last_list, NULL, NULL);
+	_render_canvas_item(p_canvas_item, p_transform, p_clip_rect, Color(1, 1, 1, 1), 0, z_list, z_last_list, nullptr, nullptr);
 
 	VSG::canvas_render->canvas_render_items_begin(p_modulate, p_lights, p_transform);
 	for (int i = 0; i < z_range; i++) {
@@ -60,7 +60,7 @@ void _collect_ysort_children(VisualServerCanvas::Item *p_canvas_item, Transform2
 				child_items[i]->ysort_modulate = p_modulate;
 				child_items[i]->ysort_xform = p_transform;
 				child_items[i]->ysort_pos = p_transform.xform(child_items[i]->xform.elements[2]);
-				child_items[i]->material_owner = child_items[i]->use_parent_material ? p_material_owner : NULL;
+				child_items[i]->material_owner = child_items[i]->use_parent_material ? p_material_owner : nullptr;
 				child_items[i]->ysort_index = r_index;
 			}
 
@@ -79,7 +79,7 @@ void _collect_ysort_children(VisualServerCanvas::Item *p_canvas_item, Transform2
 void _mark_ysort_dirty(VisualServerCanvas::Item *ysort_owner, RID_Owner<VisualServerCanvas::Item> &canvas_item_owner) {
 	do {
 		ysort_owner->ysort_children_count = -1;
-		ysort_owner = canvas_item_owner.owns(ysort_owner->parent) ? canvas_item_owner.getornull(ysort_owner->parent) : NULL;
+		ysort_owner = canvas_item_owner.owns(ysort_owner->parent) ? canvas_item_owner.getornull(ysort_owner->parent) : nullptr;
 	} while (ysort_owner && ysort_owner->sort_y);
 }
 
@@ -105,7 +105,7 @@ void VisualServerCanvas::_render_canvas_item(Item *p_canvas_item, const Transfor
 		ci->material_owner = p_material_owner;
 	else {
 		p_material_owner = ci;
-		ci->material_owner = NULL;
+		ci->material_owner = nullptr;
 	}
 
 	Color modulate(ci->modulate.r * p_modulate.r, ci->modulate.g * p_modulate.g, ci->modulate.b * p_modulate.b, ci->modulate.a * p_modulate.a);
@@ -117,7 +117,7 @@ void VisualServerCanvas::_render_canvas_item(Item *p_canvas_item, const Transfor
 	Item **child_items = ci->child_items.ptrw();
 
 	if (ci->clip) {
-		if (p_canvas_clip != NULL) {
+		if (p_canvas_clip != nullptr) {
 			ci->final_clip_rect = p_canvas_clip->final_clip_rect.clip(global_rect);
 		} else {
 			ci->final_clip_rect = global_rect;
@@ -133,7 +133,7 @@ void VisualServerCanvas::_render_canvas_item(Item *p_canvas_item, const Transfor
 	if (ci->sort_y) {
 		if (ci->ysort_children_count == -1) {
 			ci->ysort_children_count = 0;
-			_collect_ysort_children(ci, Transform2D(), p_material_owner, Color(1, 1, 1, 1), NULL, ci->ysort_children_count);
+			_collect_ysort_children(ci, Transform2D(), p_material_owner, Color(1, 1, 1, 1), nullptr, ci->ysort_children_count);
 		}
 
 		child_item_count = ci->ysort_children_count;
@@ -188,7 +188,7 @@ void VisualServerCanvas::_render_canvas_item(Item *p_canvas_item, const Transfor
 			z_last_list[zidx] = ci;
 		}
 
-		ci->next = NULL;
+		ci->next = nullptr;
 	}
 
 	for (int i = 0; i < child_item_count; i++) {
@@ -247,7 +247,7 @@ void VisualServerCanvas::render_canvas(Canvas *p_canvas, const Transform2D &p_tr
 		memset(z_last_list, 0, z_range * sizeof(RasterizerCanvas::Item *));
 
 		for (int i = 0; i < l; i++) {
-			_render_canvas_item(ci[i].item, p_transform, p_clip_rect, Color(1, 1, 1, 1), 0, z_list, z_last_list, NULL, NULL);
+			_render_canvas_item(ci[i].item, p_transform, p_clip_rect, Color(1, 1, 1, 1), 0, z_list, z_last_list, nullptr, nullptr);
 		}
 
 		VSG::canvas_render->canvas_render_items_begin(p_canvas->modulate, p_lights, p_transform);
@@ -874,12 +874,12 @@ void VisualServerCanvas::canvas_item_attach_skeleton(RID p_item, RID p_skeleton)
 void VisualServerCanvas::canvas_item_set_copy_to_backbuffer(RID p_item, bool p_enable, const Rect2 &p_rect) {
 	Item *canvas_item = canvas_item_owner.getornull(p_item);
 	ERR_FAIL_COND(!canvas_item);
-	if (bool(canvas_item->copy_back_buffer != NULL) != p_enable) {
+	if (bool(canvas_item->copy_back_buffer != nullptr) != p_enable) {
 		if (p_enable) {
 			canvas_item->copy_back_buffer = memnew(RasterizerCanvas::Item::CopyBackBuffer);
 		} else {
 			memdelete(canvas_item->copy_back_buffer);
-			canvas_item->copy_back_buffer = NULL;
+			canvas_item->copy_back_buffer = nullptr;
 		}
 	}
 

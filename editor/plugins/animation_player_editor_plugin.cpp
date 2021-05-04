@@ -47,12 +47,12 @@
 
 void AnimationPlayerEditor::_node_removed(Node *p_node) {
 	if (player && player == p_node) {
-		player = NULL;
+		player = nullptr;
 
 		set_process(false);
 
 		track_editor->set_animation(Ref<Animation>());
-		track_editor->set_root(NULL);
+		track_editor->set_root(nullptr);
 		track_editor->show_select_node_warning(true);
 		_update_player();
 	}
@@ -274,7 +274,7 @@ void AnimationPlayerEditor::_animation_selected(int p_which) {
 
 	} else {
 		track_editor->set_animation(Ref<Animation>());
-		track_editor->set_root(NULL);
+		track_editor->set_root(nullptr);
 	}
 
 	autoplay->set_pressed(current == player->get_autoplay());
@@ -376,7 +376,7 @@ void AnimationPlayerEditor::_animation_save_as(const Ref<Resource> &p_resource) 
 	if (p_resource->get_path() != "") {
 		path = p_resource->get_path();
 		if (extensions.size()) {
-			if (extensions.find(p_resource->get_path().get_extension().to_lower()) == NULL) {
+			if (extensions.find(p_resource->get_path().get_extension().to_lower()) == nullptr) {
 				path = p_resource->get_path().get_base_dir() + p_resource->get_name() + "." + extensions.front()->get();
 			}
 		}
@@ -678,7 +678,7 @@ void AnimationPlayerEditor::_animation_edit() {
 		}
 	} else {
 		track_editor->set_animation(Ref<Animation>());
-		track_editor->set_root(NULL);
+		track_editor->set_root(nullptr);
 	}
 }
 
@@ -784,10 +784,10 @@ void AnimationPlayerEditor::_update_player() {
 	frame->set_editable(animlist.size() != 0);
 	animation->set_disabled(animlist.size() == 0);
 	autoplay->set_disabled(animlist.size() == 0);
-	tool_anim->set_disabled(player == NULL);
+	tool_anim->set_disabled(player == nullptr);
 	onion_toggle->set_disabled(animlist.size() == 0);
 	onion_skinning->set_disabled(animlist.size() == 0);
-	pin->set_disabled(player == NULL);
+	pin->set_disabled(player == nullptr);
 
 	if (!player) {
 		AnimationPlayerEditor::singleton->get_track_editor()->update_keying();
@@ -1456,7 +1456,7 @@ void AnimationPlayerEditor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_pin_pressed"), &AnimationPlayerEditor::_pin_pressed);
 }
 
-AnimationPlayerEditor *AnimationPlayerEditor::singleton = NULL;
+AnimationPlayerEditor *AnimationPlayerEditor::singleton = nullptr;
 
 AnimationPlayer *AnimationPlayerEditor::get_player() const {
 	return player;
@@ -1471,7 +1471,7 @@ AnimationPlayerEditor::AnimationPlayerEditor(EditorNode *p_editor, AnimationPlay
 
 	set_focus_mode(FOCUS_ALL);
 
-	player = NULL;
+	player = nullptr;
 
 	HBoxContainer *hb = memnew(HBoxContainer);
 	add_child(hb);

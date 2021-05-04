@@ -1102,9 +1102,9 @@ struct _VariantCall {
 	}
 };
 
-_VariantCall::TypeFunc *_VariantCall::type_funcs = NULL;
-_VariantCall::ConstructFunc *_VariantCall::construct_funcs = NULL;
-_VariantCall::ConstantData *_VariantCall::constant_data = NULL;
+_VariantCall::TypeFunc *_VariantCall::type_funcs = nullptr;
+_VariantCall::ConstructFunc *_VariantCall::construct_funcs = nullptr;
+_VariantCall::ConstantData *_VariantCall::constant_data = nullptr;
 
 Variant Variant::call(const StringName &p_method, const Variant **p_args, int p_argcount, CallError &r_error) {
 	Variant ret;
@@ -1201,7 +1201,7 @@ Variant Variant::construct(const Variant::Type p_type, const Variant **p_args, i
 			case _RID:
 				return RID();
 			case OBJECT:
-				return (Object *)NULL;
+				return (Object *)nullptr;
 			case DICTIONARY:
 				return Dictionary();
 			case ARRAY:

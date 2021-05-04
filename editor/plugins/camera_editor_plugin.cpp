@@ -34,14 +34,14 @@
 
 void CameraEditor::_node_removed(Node *p_node) {
 	if (p_node == node) {
-		node = NULL;
-		SpatialEditor::get_singleton()->set_custom_camera(NULL);
+		node = nullptr;
+		SpatialEditor::get_singleton()->set_custom_camera(nullptr);
 		hide();
 	}
 }
 
 void CameraEditor::_pressed() {
-	Node *sn = (node && preview->is_pressed()) ? node : NULL;
+	Node *sn = (node && preview->is_pressed()) ? node : nullptr;
 	SpatialEditor::get_singleton()->set_custom_camera(sn);
 }
 
@@ -54,12 +54,12 @@ void CameraEditor::edit(Node *p_camera) {
 
 	if (!node) {
 		preview->set_pressed(false);
-		SpatialEditor::get_singleton()->set_custom_camera(NULL);
+		SpatialEditor::get_singleton()->set_custom_camera(nullptr);
 	} else {
 		if (preview->is_pressed())
 			SpatialEditor::get_singleton()->set_custom_camera(p_camera);
 		else
-			SpatialEditor::get_singleton()->set_custom_camera(NULL);
+			SpatialEditor::get_singleton()->set_custom_camera(nullptr);
 	}
 }
 
@@ -91,7 +91,7 @@ void CameraEditorPlugin::make_visible(bool p_visible) {
 	if (p_visible) {
 		//SpatialEditor::get_singleton()->set_can_preview(Object::cast_to<Camera>(p_object));
 	} else {
-		SpatialEditor::get_singleton()->set_can_preview(NULL);
+		SpatialEditor::get_singleton()->set_can_preview(nullptr);
 	}
 }
 

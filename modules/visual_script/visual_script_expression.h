@@ -134,7 +134,7 @@ class VisualScriptExpression : public VisualScriptNode {
 
 		Type type;
 
-		ENode() { next = NULL; }
+		ENode() { next = nullptr; }
 		virtual ~ENode() {
 			if (next) {
 				memdelete(next);

@@ -572,14 +572,14 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 
 		updating_scene_tree = true;
 
-		_update_scene_tree(NULL, p_data, 0);
+		_update_scene_tree(nullptr, p_data, 0);
 
 		updating_scene_tree = false;
 
 		le_clear->set_disabled(false);
 		le_set->set_disabled(false);
 	} else if (p_msg == "message:inspect_object") {
-		ScriptEditorDebuggerInspectedObject *debugObj = NULL;
+		ScriptEditorDebuggerInspectedObject *debugObj = nullptr;
 
 		ObjectID id = p_data[0];
 		String type = p_data[1];
@@ -1601,7 +1601,7 @@ void ScriptEditorDebugger::stop() {
 	vmem_refresh->set_disabled(true);
 
 	inspect_scene_tree->clear();
-	inspector->edit(NULL);
+	inspector->edit(nullptr);
 	EditorNode::get_singleton()->get_pause_button()->set_pressed(false);
 	EditorNode::get_singleton()->get_pause_button()->set_disabled(true);
 	EditorNode::get_singleton()->get_scene_tree_dock()->hide_remote_tree();
@@ -1681,7 +1681,7 @@ void ScriptEditorDebugger::_stack_dump_frame_selected() {
 		msg.push_back(d["frame"]);
 		ppeer->put_var(msg);
 	} else {
-		inspector->edit(NULL);
+		inspector->edit(nullptr);
 	}
 }
 
@@ -2129,7 +2129,7 @@ void ScriptEditorDebugger::_set_remote_object(ObjectID p_id, ScriptEditorDebugge
 void ScriptEditorDebugger::_clear_remote_objects() {
 	for (Map<ObjectID, ScriptEditorDebuggerInspectedObject *>::Element *E = remote_objects.front(); E; E = E->next()) {
 		if (editor->get_editor_history()->get_current() == E->value()->get_instance_id()) {
-			editor->push_item(NULL);
+			editor->push_item(nullptr);
 		}
 		memdelete(E->value());
 	}
@@ -2207,9 +2207,9 @@ void ScriptEditorDebugger::_item_menu_id_pressed(int p_option) {
 			TreeItem *ti = inspect_scene_tree->get_selected();
 			String text = ti->get_text(0);
 
-			if (ti->get_parent() == NULL) {
+			if (ti->get_parent() == nullptr) {
 				text = ".";
-			} else if (ti->get_parent()->get_parent() == NULL) {
+			} else if (ti->get_parent()->get_parent() == nullptr) {
 				text = ".";
 			} else {
 				while (ti->get_parent()->get_parent() != inspect_scene_tree->get_root()) {

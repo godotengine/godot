@@ -84,25 +84,25 @@
 // Singletons
 
 // Initialized in setup()
-static Engine *engine = NULL;
-static ProjectSettings *globals = NULL;
-static InputMap *input_map = NULL;
-static TranslationServer *translation_server = NULL;
-static Performance *performance = NULL;
-static PackedData *packed_data = NULL;
+static Engine *engine = nullptr;
+static ProjectSettings *globals = nullptr;
+static InputMap *input_map = nullptr;
+static TranslationServer *translation_server = nullptr;
+static Performance *performance = nullptr;
+static PackedData *packed_data = nullptr;
 #ifdef MINIZIP_ENABLED
-static ZipArchive *zip_packed_data = NULL;
+static ZipArchive *zip_packed_data = nullptr;
 #endif
-static FileAccessNetworkClient *file_access_network_client = NULL;
-static ScriptDebugger *script_debugger = NULL;
-static MessageQueue *message_queue = NULL;
+static FileAccessNetworkClient *file_access_network_client = nullptr;
+static ScriptDebugger *script_debugger = nullptr;
+static MessageQueue *message_queue = nullptr;
 
 // Initialized in setup2()
-static AudioServer *audio_server = NULL;
-static CameraServer *camera_server = NULL;
-static ARVRServer *arvr_server = NULL;
-static PhysicsServer *physics_server = NULL;
-static Physics2DServer *physics_2d_server = NULL;
+static AudioServer *audio_server = nullptr;
+static CameraServer *camera_server = nullptr;
+static ARVRServer *arvr_server = nullptr;
+static PhysicsServer *physics_server = nullptr;
+static Physics2DServer *physics_2d_server = nullptr;
 // We error out if setup2() doesn't turn this true
 static bool _start_success = false;
 
@@ -1605,7 +1605,7 @@ bool Main::start() {
 		game_path = GLOBAL_DEF("application/run/main_scene", "");
 	}
 
-	MainLoop *main_loop = NULL;
+	MainLoop *main_loop = nullptr;
 	if (editor) {
 		main_loop = memnew(SceneTree);
 	};
@@ -1730,7 +1730,7 @@ bool Main::start() {
 
 					RES res = ResourceLoader::load(path);
 					ERR_CONTINUE_MSG(res.is_null(), "Can't autoload: " + path);
-					Node *n = NULL;
+					Node *n = nullptr;
 					if (res->is_class("PackedScene")) {
 						Ref<PackedScene> ps = res;
 						n = ps->instance();
@@ -1742,7 +1742,7 @@ bool Main::start() {
 
 						Object *obj = ClassDB::instance(ibt);
 
-						ERR_CONTINUE_MSG(obj == NULL, "Cannot instance script for autoload, expected 'Node' inheritance, got: " + String(ibt));
+						ERR_CONTINUE_MSG(obj == nullptr, "Cannot instance script for autoload, expected 'Node' inheritance, got: " + String(ibt));
 
 						n = Object::cast_to<Node>(obj);
 						n->set_script(script_res.get_ref_ptr());
@@ -1768,7 +1768,7 @@ bool Main::start() {
 		}
 
 #ifdef TOOLS_ENABLED
-		EditorNode *editor_node = NULL;
+		EditorNode *editor_node = nullptr;
 		if (editor) {
 			editor_node = memnew(EditorNode);
 			sml->get_root()->add_child(editor_node);
@@ -1904,7 +1904,7 @@ bool Main::start() {
 			Crypto::load_default_certificates(GLOBAL_DEF("network/ssl/certificates", ""));
 
 			if (game_path != "") {
-				Node *scene = NULL;
+				Node *scene = nullptr;
 				Ref<PackedScene> scenedata = ResourceLoader::load(local_game_path);
 				if (scenedata.is_valid())
 					scene = scenedata->instance();

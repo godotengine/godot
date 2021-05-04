@@ -419,7 +419,7 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 				if (p_b.type == NIL)
 					_RETURN(true);
 				if (p_b.type == OBJECT)
-					_RETURN(_UNSAFE_OBJ_PROXY_PTR(p_b) == NULL);
+					_RETURN(_UNSAFE_OBJ_PROXY_PTR(p_b) == nullptr);
 
 				_RETURN(false);
 			}
@@ -438,7 +438,7 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 				if (p_b.type == OBJECT)
 					_RETURN(_UNSAFE_OBJ_PROXY_PTR(p_a) == _UNSAFE_OBJ_PROXY_PTR(p_b));
 				if (p_b.type == NIL)
-					_RETURN(_UNSAFE_OBJ_PROXY_PTR(p_a) == NULL);
+					_RETURN(_UNSAFE_OBJ_PROXY_PTR(p_a) == nullptr);
 
 				_RETURN_FAIL;
 			}
@@ -507,7 +507,7 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 				if (p_b.type == NIL)
 					_RETURN(false);
 				if (p_b.type == OBJECT)
-					_RETURN(_UNSAFE_OBJ_PROXY_PTR(p_b) != NULL);
+					_RETURN(_UNSAFE_OBJ_PROXY_PTR(p_b) != nullptr);
 
 				_RETURN(true);
 			}
@@ -527,7 +527,7 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 				if (p_b.type == OBJECT)
 					_RETURN((_UNSAFE_OBJ_PROXY_PTR(p_a) != _UNSAFE_OBJ_PROXY_PTR(p_b)));
 				if (p_b.type == NIL)
-					_RETURN(_UNSAFE_OBJ_PROXY_PTR(p_a) != NULL);
+					_RETURN(_UNSAFE_OBJ_PROXY_PTR(p_a) != nullptr);
 
 				_RETURN_FAIL;
 			}
@@ -2896,7 +2896,7 @@ bool Variant::iter_init(Variant &r_iter, bool &valid) const {
 			if (dic->empty())
 				return false;
 
-			const Variant *next = dic->next(NULL);
+			const Variant *next = dic->next(nullptr);
 			r_iter = *next;
 			return true;
 

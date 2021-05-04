@@ -585,7 +585,7 @@ Vector2 TileSet::autotile_get_subtile_for_bitmask(int p_id, uint16_t p_bitmask, 
 	ERR_FAIL_COND_V(!tile_map.has(p_id), Vector2());
 	//First try to forward selection to script
 	if (p_tilemap_node->get_class_name() == "TileMap") {
-		if (get_script_instance() != NULL) {
+		if (get_script_instance() != nullptr) {
 			if (get_script_instance()->has_method("_forward_subtile_selection")) {
 				Variant ret = get_script_instance()->call("_forward_subtile_selection", p_id, p_bitmask, p_tilemap_node, p_tile_location);
 				if (ret.get_type() == Variant::VECTOR2) {
@@ -645,7 +645,7 @@ Vector2 TileSet::autotile_get_subtile_for_bitmask(int p_id, uint16_t p_bitmask, 
 Vector2 TileSet::atlastile_get_subtile_by_priority(int p_id, const Node *p_tilemap_node, const Vector2 &p_tile_location) {
 	ERR_FAIL_COND_V(!tile_map.has(p_id), Vector2());
 	//First try to forward selection to script
-	if (get_script_instance() != NULL) {
+	if (get_script_instance() != nullptr) {
 		if (get_script_instance()->has_method("_forward_atlas_subtile_selection")) {
 			Variant ret = get_script_instance()->call("_forward_atlas_subtile_selection", p_id, p_tilemap_node, p_tile_location);
 			if (ret.get_type() == Variant::VECTOR2) {
@@ -1036,7 +1036,7 @@ bool TileSet::has_tile(int p_id) const {
 bool TileSet::is_tile_bound(int p_drawn_id, int p_neighbor_id) {
 	if (p_drawn_id == p_neighbor_id) {
 		return true;
-	} else if (get_script_instance() != NULL) {
+	} else if (get_script_instance() != nullptr) {
 		if (get_script_instance()->has_method("_is_tile_bound")) {
 			Variant ret = get_script_instance()->call("_is_tile_bound", p_drawn_id, p_neighbor_id);
 			if (ret.get_type() == Variant::BOOL) {

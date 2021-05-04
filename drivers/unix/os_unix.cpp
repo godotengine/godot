@@ -92,7 +92,7 @@ void OS_Unix::debug_break() {
 };
 
 static void handle_interrupt(int sig) {
-	if (ScriptDebugger::get_singleton() == NULL)
+	if (ScriptDebugger::get_singleton() == nullptr)
 		return;
 
 	ScriptDebugger::get_singleton()->set_depth(-1);
@@ -100,11 +100,11 @@ static void handle_interrupt(int sig) {
 }
 
 void OS_Unix::initialize_debugging() {
-	if (ScriptDebugger::get_singleton() != NULL) {
+	if (ScriptDebugger::get_singleton() != nullptr) {
 		struct sigaction action;
 		memset(&action, 0, sizeof(action));
 		action.sa_handler = handle_interrupt;
-		sigaction(SIGINT, &action, NULL);
+		sigaction(SIGINT, &action, nullptr);
 	}
 }
 
@@ -156,23 +156,23 @@ String OS_Unix::get_name() const {
 }
 
 uint64_t OS_Unix::get_unix_time() const {
-	return time(NULL);
+	return time(nullptr);
 };
 
 uint64_t OS_Unix::get_system_time_secs() const {
 	struct timeval tv_now;
-	gettimeofday(&tv_now, NULL);
+	gettimeofday(&tv_now, nullptr);
 	return uint64_t(tv_now.tv_sec);
 }
 
 uint64_t OS_Unix::get_system_time_msecs() const {
 	struct timeval tv_now;
-	gettimeofday(&tv_now, NULL);
+	gettimeofday(&tv_now, nullptr);
 	return uint64_t(tv_now.tv_sec) * 1000 + uint64_t(tv_now.tv_usec) / 1000;
 }
 
 OS::Date OS_Unix::get_date(bool utc) const {
-	time_t t = time(NULL);
+	time_t t = time(nullptr);
 	struct tm lt;
 	if (utc) {
 		gmtime_r(&t, &lt);
@@ -193,7 +193,7 @@ OS::Date OS_Unix::get_date(bool utc) const {
 }
 
 OS::Time OS_Unix::get_time(bool utc) const {
-	time_t t = time(NULL);
+	time_t t = time(nullptr);
 	struct tm lt;
 	if (utc) {
 		gmtime_r(&t, &lt);
@@ -209,7 +209,7 @@ OS::Time OS_Unix::get_time(bool utc) const {
 }
 
 OS::TimeZoneInfo OS_Unix::get_time_zone_info() const {
-	time_t t = time(NULL);
+	time_t t = time(nullptr);
 	struct tm lt;
 	localtime_r(&t, &lt);
 	char name[16];
@@ -357,7 +357,7 @@ int OS_Unix::get_process_id() const {
 };
 
 bool OS_Unix::has_environment(const String &p_var) const {
-	return getenv(p_var.utf8().get_data()) != NULL;
+	return getenv(p_var.utf8().get_data()) != nullptr;
 }
 
 String OS_Unix::get_locale() const {
@@ -409,7 +409,7 @@ Error OS_Unix::get_dynamic_library_symbol_handle(void *p_library_handle, const S
 	p_symbol_handle = dlsym(p_library_handle, p_name.utf8().get_data());
 
 	error = dlerror();
-	if (error != NULL) {
+	if (error != nullptr) {
 		ERR_FAIL_COND_V_MSG(!p_optional, ERR_CANT_RESOLVE, "Can't resolve symbol " + p_name + ". Error: " + error + ".");
 
 		return ERR_CANT_RESOLVE;

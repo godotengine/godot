@@ -42,15 +42,15 @@ ARVRInterfaceGDNative::ARVRInterfaceGDNative() {
 	print_verbose("Construct gdnative interface\n");
 
 	// we won't have our data pointer until our library gets set
-	data = NULL;
+	data = nullptr;
 
-	interface = NULL;
+	interface = nullptr;
 }
 
 ARVRInterfaceGDNative::~ARVRInterfaceGDNative() {
 	print_verbose("Destruct gdnative interface\n");
 
-	if (interface != NULL && is_initialized()) {
+	if (interface != nullptr && is_initialized()) {
 		uninitialize();
 	};
 
@@ -59,10 +59,10 @@ ARVRInterfaceGDNative::~ARVRInterfaceGDNative() {
 }
 
 void ARVRInterfaceGDNative::cleanup() {
-	if (interface != NULL) {
+	if (interface != nullptr) {
 		interface->destructor(data);
-		data = NULL;
-		interface = NULL;
+		data = nullptr;
+		interface = nullptr;
 	}
 }
 
@@ -80,7 +80,7 @@ void ARVRInterfaceGDNative::set_interface(const godot_arvr_interface_gdnative *p
 }
 
 StringName ARVRInterfaceGDNative::get_name() const {
-	ERR_FAIL_COND_V(interface == NULL, StringName());
+	ERR_FAIL_COND_V(interface == nullptr, StringName());
 
 	godot_string result = interface->get_name(data);
 
@@ -94,7 +94,7 @@ StringName ARVRInterfaceGDNative::get_name() const {
 int ARVRInterfaceGDNative::get_capabilities() const {
 	int capabilities;
 
-	ERR_FAIL_COND_V(interface == NULL, 0); // 0 = None
+	ERR_FAIL_COND_V(interface == nullptr, 0); // 0 = None
 
 	capabilities = interface->get_capabilities(data);
 
@@ -102,19 +102,19 @@ int ARVRInterfaceGDNative::get_capabilities() const {
 }
 
 bool ARVRInterfaceGDNative::get_anchor_detection_is_enabled() const {
-	ERR_FAIL_COND_V(interface == NULL, false);
+	ERR_FAIL_COND_V(interface == nullptr, false);
 
 	return interface->get_anchor_detection_is_enabled(data);
 }
 
 void ARVRInterfaceGDNative::set_anchor_detection_is_enabled(bool p_enable) {
-	ERR_FAIL_COND(interface == NULL);
+	ERR_FAIL_COND(interface == nullptr);
 
 	interface->set_anchor_detection_is_enabled(data, p_enable);
 }
 
 int ARVRInterfaceGDNative::get_camera_feed_id() {
-	ERR_FAIL_COND_V(interface == NULL, 0);
+	ERR_FAIL_COND_V(interface == nullptr, 0);
 
 	if ((interface->version.major > 1) || ((interface->version.major) == 1 && (interface->version.minor >= 1))) {
 		return (unsigned int)interface->get_camera_feed_id(data);
@@ -126,7 +126,7 @@ int ARVRInterfaceGDNative::get_camera_feed_id() {
 bool ARVRInterfaceGDNative::is_stereo() {
 	bool stereo;
 
-	ERR_FAIL_COND_V(interface == NULL, false);
+	ERR_FAIL_COND_V(interface == nullptr, false);
 
 	stereo = interface->is_stereo(data);
 
@@ -134,13 +134,13 @@ bool ARVRInterfaceGDNative::is_stereo() {
 }
 
 bool ARVRInterfaceGDNative::is_initialized() const {
-	ERR_FAIL_COND_V(interface == NULL, false);
+	ERR_FAIL_COND_V(interface == nullptr, false);
 
 	return interface->is_initialized(data);
 }
 
 bool ARVRInterfaceGDNative::initialize() {
-	ERR_FAIL_COND_V(interface == NULL, false);
+	ERR_FAIL_COND_V(interface == nullptr, false);
 
 	bool initialized = interface->initialize(data);
 
@@ -148,7 +148,7 @@ bool ARVRInterfaceGDNative::initialize() {
 		// if we successfully initialize our interface and we don't have a primary interface yet, this becomes our primary interface
 
 		ARVRServer *arvr_server = ARVRServer::get_singleton();
-		if ((arvr_server != NULL) && (arvr_server->get_primary_interface() == NULL)) {
+		if ((arvr_server != nullptr) && (arvr_server->get_primary_interface() == nullptr)) {
 			arvr_server->set_primary_interface(this);
 		};
 	};
@@ -157,10 +157,10 @@ bool ARVRInterfaceGDNative::initialize() {
 }
 
 void ARVRInterfaceGDNative::uninitialize() {
-	ERR_FAIL_COND(interface == NULL);
+	ERR_FAIL_COND(interface == nullptr);
 
 	ARVRServer *arvr_server = ARVRServer::get_singleton();
-	if (arvr_server != NULL) {
+	if (arvr_server != nullptr) {
 		// Whatever happens, make sure this is no longer our primary interface
 		arvr_server->clear_primary_interface_if(this);
 	}
@@ -169,7 +169,7 @@ void ARVRInterfaceGDNative::uninitialize() {
 }
 
 Size2 ARVRInterfaceGDNative::get_render_targetsize() {
-	ERR_FAIL_COND_V(interface == NULL, Size2());
+	ERR_FAIL_COND_V(interface == nullptr, Size2());
 
 	godot_vector2 result = interface->get_render_targetsize(data);
 	Vector2 *vec = (Vector2 *)&result;
@@ -180,7 +180,7 @@ Size2 ARVRInterfaceGDNative::get_render_targetsize() {
 Transform ARVRInterfaceGDNative::get_transform_for_eye(ARVRInterface::Eyes p_eye, const Transform &p_cam_transform) {
 	Transform *ret;
 
-	ERR_FAIL_COND_V(interface == NULL, Transform());
+	ERR_FAIL_COND_V(interface == nullptr, Transform());
 
 	godot_transform t = interface->get_transform_for_eye(data, (int)p_eye, (godot_transform *)&p_cam_transform);
 
@@ -192,7 +192,7 @@ Transform ARVRInterfaceGDNative::get_transform_for_eye(ARVRInterface::Eyes p_eye
 CameraMatrix ARVRInterfaceGDNative::get_projection_for_eye(ARVRInterface::Eyes p_eye, real_t p_aspect, real_t p_z_near, real_t p_z_far) {
 	CameraMatrix cm;
 
-	ERR_FAIL_COND_V(interface == NULL, CameraMatrix());
+	ERR_FAIL_COND_V(interface == nullptr, CameraMatrix());
 
 	interface->fill_projection_for_eye(data, (godot_real *)cm.matrix, (godot_int)p_eye, p_aspect, p_z_near, p_z_far);
 
@@ -200,7 +200,7 @@ CameraMatrix ARVRInterfaceGDNative::get_projection_for_eye(ARVRInterface::Eyes p
 }
 
 unsigned int ARVRInterfaceGDNative::get_external_texture_for_eye(ARVRInterface::Eyes p_eye) {
-	ERR_FAIL_COND_V(interface == NULL, 0);
+	ERR_FAIL_COND_V(interface == nullptr, 0);
 
 	if ((interface->version.major > 1) || ((interface->version.major) == 1 && (interface->version.minor >= 1))) {
 		return (unsigned int)interface->get_external_texture_for_eye(data, (godot_int)p_eye);
@@ -210,7 +210,7 @@ unsigned int ARVRInterfaceGDNative::get_external_texture_for_eye(ARVRInterface::
 }
 
 unsigned int ARVRInterfaceGDNative::get_external_depth_for_eye(ARVRInterface::Eyes p_eye) {
-	ERR_FAIL_COND_V(interface == NULL, 0);
+	ERR_FAIL_COND_V(interface == nullptr, 0);
 
 	if ((interface->version.major > 1) || ((interface->version.major) == 1 && (interface->version.minor >= 2))) {
 		return (unsigned int)interface->get_external_depth_for_eye(data, (godot_int)p_eye);
@@ -220,19 +220,19 @@ unsigned int ARVRInterfaceGDNative::get_external_depth_for_eye(ARVRInterface::Ey
 }
 
 void ARVRInterfaceGDNative::commit_for_eye(ARVRInterface::Eyes p_eye, RID p_render_target, const Rect2 &p_screen_rect) {
-	ERR_FAIL_COND(interface == NULL);
+	ERR_FAIL_COND(interface == nullptr);
 
 	interface->commit_for_eye(data, (godot_int)p_eye, (godot_rid *)&p_render_target, (godot_rect2 *)&p_screen_rect);
 }
 
 void ARVRInterfaceGDNative::process() {
-	ERR_FAIL_COND(interface == NULL);
+	ERR_FAIL_COND(interface == nullptr);
 
 	interface->process(data);
 }
 
 void ARVRInterfaceGDNative::notification(int p_what) {
-	ERR_FAIL_COND(interface == NULL);
+	ERR_FAIL_COND(interface == nullptr);
 
 	// this is only available in interfaces that implement 1.1 or later
 	if ((interface->version.major > 1) || ((interface->version.major == 1) && (interface->version.minor > 0))) {
@@ -267,7 +267,7 @@ godot_transform GDAPI godot_arvr_get_reference_frame() {
 	Transform *reference_frame_ptr = (Transform *)&reference_frame;
 
 	ARVRServer *arvr_server = ARVRServer::get_singleton();
-	if (arvr_server != NULL) {
+	if (arvr_server != nullptr) {
 		*reference_frame_ptr = arvr_server->get_reference_frame();
 	} else {
 		godot_transform_new_identity(&reference_frame);

@@ -86,7 +86,7 @@ public:
 
 	_FORCE_INLINE_ StringName remap_param(const StringName &p_param) const {
 		if (params_cache_dirty)
-			get_param_list(NULL);
+			get_param_list(nullptr);
 
 		const Map<StringName, StringName>::Element *E = params_cache.find(p_param);
 		if (E)
@@ -104,7 +104,7 @@ VARIANT_ENUM_CAST(Shader::Mode);
 
 class ResourceFormatLoaderShader : public ResourceFormatLoader {
 public:
-	virtual RES load(const String &p_path, const String &p_original_path = "", Error *r_error = NULL);
+	virtual RES load(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr);
 	virtual void get_recognized_extensions(List<String> *p_extensions) const;
 	virtual bool handles_type(const String &p_type) const;
 	virtual String get_resource_type(const String &p_path) const;

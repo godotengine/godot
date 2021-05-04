@@ -66,7 +66,7 @@ static Transform2D _canvas_get_transform(VisualServerViewport::Viewport *p_viewp
 
 void VisualServerViewport::_draw_3d(Viewport *p_viewport, ARVRInterface::Eyes p_eye) {
 	Ref<ARVRInterface> arvr_interface;
-	if (ARVRServer::get_singleton() != NULL) {
+	if (ARVRServer::get_singleton() != nullptr) {
 		arvr_interface = ARVRServer::get_singleton()->get_primary_interface();
 	}
 
@@ -112,9 +112,9 @@ void VisualServerViewport::_draw_viewport(Viewport *p_viewport, ARVRInterface::E
 		Map<Viewport::CanvasKey, Viewport::CanvasData *> canvas_map;
 
 		Rect2 clip_rect(0, 0, p_viewport->size.x, p_viewport->size.y);
-		RasterizerCanvas::Light *lights = NULL;
-		RasterizerCanvas::Light *lights_with_shadow = NULL;
-		RasterizerCanvas::Light *lights_with_mask = NULL;
+		RasterizerCanvas::Light *lights = nullptr;
+		RasterizerCanvas::Light *lights_with_shadow = nullptr;
+		RasterizerCanvas::Light *lights_with_mask = nullptr;
 		Rect2 shadow_rect;
 
 		int light_count = 0;
@@ -140,7 +140,7 @@ void VisualServerViewport::_draw_viewport(Viewport *p_viewport, ARVRInterface::E
 					if (clip_rect.intersects_transformed(cl->xform_cache, cl->rect_cache)) {
 						cl->filter_next_ptr = lights;
 						lights = cl;
-						cl->texture_cache = NULL;
+						cl->texture_cache = nullptr;
 						Transform2D scale;
 						scale.scale(cl->rect_cache.size);
 						scale.elements[2] = cl->rect_cache.position;
@@ -148,7 +148,7 @@ void VisualServerViewport::_draw_viewport(Viewport *p_viewport, ARVRInterface::E
 						cl->light_shader_pos = cl->xform_cache[2];
 						if (cl->shadow_buffer.is_valid()) {
 							cl->shadows_next_ptr = lights_with_shadow;
-							if (lights_with_shadow == NULL) {
+							if (lights_with_shadow == nullptr) {
 								shadow_rect = cl->xform_cache.xform(cl->rect_cache);
 							} else {
 								shadow_rect = shadow_rect.merge(cl->xform_cache.xform(cl->rect_cache));
@@ -174,7 +174,7 @@ void VisualServerViewport::_draw_viewport(Viewport *p_viewport, ARVRInterface::E
 		if (lights_with_shadow) {
 			//update shadows if any
 
-			RasterizerCanvas::LightOccluderInstance *occluders = NULL;
+			RasterizerCanvas::LightOccluderInstance *occluders = nullptr;
 
 			//make list of occluders
 			for (Map<RID, Viewport::CanvasData>::Element *E = p_viewport->canvas_map.front(); E; E = E->next()) {
@@ -217,7 +217,7 @@ void VisualServerViewport::_draw_viewport(Viewport *p_viewport, ARVRInterface::E
 
 			Transform2D xform = _canvas_get_transform(p_viewport, canvas, E->get(), clip_rect.size);
 
-			RasterizerCanvas::Light *canvas_lights = NULL;
+			RasterizerCanvas::Light *canvas_lights = nullptr;
 
 			RasterizerCanvas::Light *ptr = lights;
 			int canvas_layer_id = E->get()->layer;
@@ -259,7 +259,7 @@ void VisualServerViewport::draw_viewports() {
 	// get our arvr interface in case we need it
 	Ref<ARVRInterface> arvr_interface;
 
-	if (ARVRServer::get_singleton() != NULL) {
+	if (ARVRServer::get_singleton() != nullptr) {
 		arvr_interface = ARVRServer::get_singleton()->get_primary_interface();
 
 		// process all our active interfaces

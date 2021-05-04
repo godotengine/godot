@@ -234,7 +234,7 @@ ParticlesEditorBase::ParticlesEditorBase() {
 
 void ParticlesEditor::_node_removed(Node *p_node) {
 	if (p_node == node) {
-		node = NULL;
+		node = nullptr;
 		hide();
 	}
 }
@@ -425,7 +425,7 @@ void ParticlesEditor::_bind_methods() {
 }
 
 ParticlesEditor::ParticlesEditor() {
-	node = NULL;
+	node = nullptr;
 	particles_editor_hb = memnew(HBoxContainer);
 	SpatialEditor::get_singleton()->add_control_to_menu_panel(particles_editor_hb);
 	options = memnew(MenuButton);
@@ -475,7 +475,7 @@ void ParticlesEditorPlugin::make_visible(bool p_visible) {
 	} else {
 		particles_editor->particles_editor_hb->hide();
 		particles_editor->hide();
-		particles_editor->edit(NULL);
+		particles_editor->edit(nullptr);
 	}
 }
 

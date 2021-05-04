@@ -487,7 +487,7 @@ Ref<SpatialMaterial> FBXMaterial::import_material(ImportState &state) {
 				Ref<Texture> image_texture = ResourceLoader::load(path, "Texture", false, &err);
 
 				ERR_CONTINUE_MSG(err != OK, "unable to import image file not loaded yet: " + path);
-				ERR_CONTINUE(image_texture == NULL || image_texture.is_null());
+				ERR_CONTINUE(image_texture == nullptr || image_texture.is_null());
 
 				texture = image_texture;
 				state.cached_image_searches.insert(mapping.name, texture);

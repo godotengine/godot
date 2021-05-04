@@ -157,7 +157,7 @@ void RasterizerGLES3::initialize() {
 	if (OS::get_singleton()->is_stdout_verbose()) {
 		if (GLAD_GL_ARB_debug_output) {
 			glEnable(_EXT_DEBUG_OUTPUT_SYNCHRONOUS_ARB);
-			glDebugMessageCallbackARB(_gl_debug_print, NULL);
+			glDebugMessageCallbackARB(_gl_debug_print, nullptr);
 			glEnable(_EXT_DEBUG_OUTPUT);
 		} else {
 			print_line("OpenGL debugging not supported!");
@@ -235,7 +235,7 @@ void RasterizerGLES3::set_current_render_target(RID p_render_target) {
 		glViewport(0, 0, rt->width, rt->height);
 
 	} else {
-		storage->frame.current_rt = NULL;
+		storage->frame.current_rt = nullptr;
 		storage->frame.clear_request = false;
 		glViewport(0, 0, OS::get_singleton()->get_window_size().width, OS::get_singleton()->get_window_size().height);
 		glBindFramebuffer(GL_FRAMEBUFFER, RasterizerStorageGLES3::system_fbo);
@@ -243,7 +243,7 @@ void RasterizerGLES3::set_current_render_target(RID p_render_target) {
 }
 
 void RasterizerGLES3::restore_render_target(bool p_3d_was_drawn) {
-	ERR_FAIL_COND(storage->frame.current_rt == NULL);
+	ERR_FAIL_COND(storage->frame.current_rt == nullptr);
 	RasterizerStorageGLES3::RenderTarget *rt = storage->frame.current_rt;
 	if (p_3d_was_drawn && rt->external.fbo != 0) {
 		// our external render buffer is now leading, render 2d into that.

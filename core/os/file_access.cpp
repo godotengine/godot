@@ -36,14 +36,14 @@
 #include "core/os/os.h"
 #include "core/project_settings.h"
 
-FileAccess::CreateFunc FileAccess::create_func[ACCESS_MAX] = { 0, 0 };
+FileAccess::CreateFunc FileAccess::create_func[ACCESS_MAX] = { nullptr, nullptr };
 
-FileAccess::FileCloseFailNotify FileAccess::close_fail_notify = NULL;
+FileAccess::FileCloseFailNotify FileAccess::close_fail_notify = nullptr;
 
 bool FileAccess::backup_save = false;
 
 FileAccess *FileAccess::create(AccessType p_access) {
-	ERR_FAIL_INDEX_V(p_access, ACCESS_MAX, 0);
+	ERR_FAIL_INDEX_V(p_access, ACCESS_MAX, nullptr);
 
 	FileAccess *ret = create_func[p_access]();
 	ret->_set_access_type(p_access);
@@ -66,7 +66,7 @@ void FileAccess::_set_access_type(AccessType p_access) {
 };
 
 FileAccess *FileAccess::create_for_path(const String &p_path) {
-	FileAccess *ret = NULL;
+	FileAccess *ret = nullptr;
 	if (p_path.begins_with("res://")) {
 		ret = create(ACCESS_RESOURCES);
 	} else if (p_path.begins_with("user://")) {
@@ -86,7 +86,7 @@ Error FileAccess::reopen(const String &p_path, int p_mode_flags) {
 FileAccess *FileAccess::open(const String &p_path, int p_mode_flags, Error *r_error) {
 	//try packed data first
 
-	FileAccess *ret = NULL;
+	FileAccess *ret = nullptr;
 	if (!(p_mode_flags & WRITE) && PackedData::get_singleton() && !PackedData::get_singleton()->is_disabled()) {
 		ret = PackedData::get_singleton()->try_open_path(p_path);
 		if (ret) {
@@ -103,7 +103,7 @@ FileAccess *FileAccess::open(const String &p_path, int p_mode_flags, Error *r_er
 		*r_error = err;
 	if (err != OK) {
 		memdelete(ret);
-		ret = NULL;
+		ret = nullptr;
 	}
 
 	return ret;

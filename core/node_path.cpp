@@ -90,7 +90,7 @@ void NodePath::unref() {
 	if (data && data->refcount.unref()) {
 		memdelete(data);
 	}
-	data = NULL;
+	data = nullptr;
 }
 
 bool NodePath::operator==(const NodePath &p_path) const {
@@ -170,7 +170,7 @@ NodePath::operator String() const {
 }
 
 NodePath::NodePath(const NodePath &p_path) {
-	data = NULL;
+	data = nullptr;
 
 	if (p_path.data && p_path.data->refcount.ref()) {
 		data = p_path.data;
@@ -260,7 +260,7 @@ NodePath NodePath::get_as_property_path() const {
 }
 
 NodePath::NodePath(const Vector<StringName> &p_path, bool p_absolute) {
-	data = NULL;
+	data = nullptr;
 
 	if (p_path.size() == 0)
 		return;
@@ -274,7 +274,7 @@ NodePath::NodePath(const Vector<StringName> &p_path, bool p_absolute) {
 }
 
 NodePath::NodePath(const Vector<StringName> &p_path, const Vector<StringName> &p_subpath, bool p_absolute) {
-	data = NULL;
+	data = nullptr;
 
 	if (p_path.size() == 0 && p_subpath.size() == 0)
 		return;
@@ -318,7 +318,7 @@ NodePath NodePath::simplified() const {
 }
 
 NodePath::NodePath(const String &p_path) {
-	data = NULL;
+	data = nullptr;
 
 	if (p_path.length() == 0)
 		return;
@@ -401,7 +401,7 @@ bool NodePath::is_empty() const {
 	return !data;
 }
 NodePath::NodePath() {
-	data = NULL;
+	data = nullptr;
 }
 
 NodePath::~NodePath() {

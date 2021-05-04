@@ -80,7 +80,7 @@ private:
 			char_pos = 0;
 			word_len = 0;
 			pixel_width = 0;
-			next = 0;
+			next = nullptr;
 			space_count = 0;
 		}
 	};

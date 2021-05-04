@@ -171,7 +171,7 @@ public:
 	void set_node(Node *p_node);
 	void update_tree();
 
-	ConnectionsDock(EditorNode *p_editor = NULL);
+	ConnectionsDock(EditorNode *p_editor = nullptr);
 	~ConnectionsDock();
 };
 

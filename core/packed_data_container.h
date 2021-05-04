@@ -72,7 +72,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	virtual Variant getvar(const Variant &p_key, bool *r_valid = NULL) const;
+	virtual Variant getvar(const Variant &p_key, bool *r_valid = nullptr) const;
 	Error pack(const Variant &p_data);
 
 	int size() const;
@@ -97,7 +97,7 @@ public:
 	bool _is_dictionary() const;
 
 	int size() const;
-	virtual Variant getvar(const Variant &p_key, bool *r_valid = NULL) const;
+	virtual Variant getvar(const Variant &p_key, bool *r_valid = nullptr) const;
 
 	PackedDataContainerRef();
 };

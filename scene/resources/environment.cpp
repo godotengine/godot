@@ -293,7 +293,7 @@ void Environment::_validate_property(PropertyInfo &property) const {
 		"dof_blur_near_",
 		"glow_",
 		"adjustment_",
-		NULL
+		nullptr
 
 	};
 
@@ -302,7 +302,7 @@ void Environment::_validate_property(PropertyInfo &property) const {
 		"tonemap_",
 		"ss_reflections_",
 		"ssao_",
-		NULL
+		nullptr
 
 	};
 

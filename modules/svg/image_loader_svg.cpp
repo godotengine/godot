@@ -64,7 +64,7 @@ inline void change_nsvg_paint_color(NSVGpaint *p_paint, const uint32_t p_old, co
 }
 
 void ImageLoaderSVG::_convert_colors(NSVGimage *p_svg_image) {
-	for (NSVGshape *shape = p_svg_image->shapes; shape != NULL; shape = shape->next) {
+	for (NSVGshape *shape = p_svg_image->shapes; shape != nullptr; shape = shape->next) {
 		for (int i = 0; i < replace_colors.old_colors.size(); i++) {
 			change_nsvg_paint_color(&(shape->stroke), replace_colors.old_colors[i], replace_colors.new_colors[i]);
 			change_nsvg_paint_color(&(shape->fill), replace_colors.old_colors[i], replace_colors.new_colors[i]);
@@ -95,7 +95,7 @@ Error ImageLoaderSVG::_create_image(Ref<Image> p_image, const PoolVector<uint8_t
 	NSVGimage *svg_image;
 	PoolVector<uint8_t>::Read src_r = p_data->read();
 	svg_image = nsvgParse((char *)src_r.ptr(), "px", 96);
-	if (svg_image == NULL) {
+	if (svg_image == nullptr) {
 		ERR_PRINT("SVG Corrupted");
 		return ERR_FILE_CORRUPT;
 	}

@@ -50,7 +50,7 @@ public:
 	_FORCE_INLINE_ real_t get_max_bias() const { return max_bias; }
 
 	virtual Physics2DServer::JointType get_type() const = 0;
-	Joint2DSW(Body2DSW **p_body_ptr = NULL, int p_body_count = 0) :
+	Joint2DSW(Body2DSW **p_body_ptr = nullptr, int p_body_count = 0) :
 			Constraint2DSW(p_body_ptr, p_body_count) {
 		bias = 0;
 		max_force = max_bias = 3.40282e+38;
@@ -84,7 +84,7 @@ public:
 	void set_param(Physics2DServer::PinJointParam p_param, real_t p_value);
 	real_t get_param(Physics2DServer::PinJointParam p_param) const;
 
-	PinJoint2DSW(const Vector2 &p_pos, Body2DSW *p_body_a, Body2DSW *p_body_b = NULL);
+	PinJoint2DSW(const Vector2 &p_pos, Body2DSW *p_body_a, Body2DSW *p_body_b = nullptr);
 	~PinJoint2DSW();
 };
 

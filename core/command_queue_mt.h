@@ -329,7 +329,7 @@ class CommandQueueMT {
 		uint32_t alloc_size = ((sizeof(T) + 8 - 1) & ~(8 - 1)) + 8;
 
 		// Assert that the buffer is big enough to hold at least two messages.
-		ERR_FAIL_COND_V(alloc_size * 2 + sizeof(uint32_t) > command_mem_size, NULL);
+		ERR_FAIL_COND_V(alloc_size * 2 + sizeof(uint32_t) > command_mem_size, nullptr);
 
 	tryagain:
 		uint32_t write_ptr = write_ptr_and_epoch >> 1;
@@ -341,7 +341,7 @@ class CommandQueueMT {
 				if (dealloc_one()) {
 					goto tryagain;
 				}
-				return NULL;
+				return nullptr;
 			}
 		} else {
 			// ahead of dealloc_ptr, check that there is room
@@ -355,11 +355,11 @@ class CommandQueueMT {
 					if (dealloc_one()) {
 						goto tryagain;
 					}
-					return NULL;
+					return nullptr;
 				}
 
 				// if this happens, it's a bug
-				ERR_FAIL_COND_V((command_mem_size - write_ptr) < 8, NULL);
+				ERR_FAIL_COND_V((command_mem_size - write_ptr) < 8, nullptr);
 				// zero means, wrap to beginning
 
 				uint32_t *p = (uint32_t *)&command_mem[write_ptr];
@@ -392,7 +392,7 @@ class CommandQueueMT {
 		lock();
 		T *ret;
 
-		while ((ret = allocate<T>()) == NULL) {
+		while ((ret = allocate<T>()) == nullptr) {
 			unlock();
 			// sleep a little until fetch happened and some room is made
 			wait_for_flush();

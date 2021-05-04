@@ -80,9 +80,9 @@ class Navigation : public Spatial {
 			int C_edge;
 			List<ConnectionPending>::Element *P;
 			Edge() {
-				C = NULL;
+				C = nullptr;
 				C_edge = -1;
-				P = NULL;
+				P = nullptr;
 			}
 		};
 
@@ -107,8 +107,8 @@ class Navigation : public Spatial {
 		List<ConnectionPending> pending;
 
 		Connection() {
-			A = NULL;
-			B = NULL;
+			A = nullptr;
+			B = nullptr;
 			A_edge = -1;
 			B_edge = -1;
 		}
@@ -159,7 +159,7 @@ public:
 	Vector3 get_up_vector() const;
 
 	//API should be as dynamic as possible
-	int navmesh_add(const Ref<NavigationMesh> &p_mesh, const Transform &p_xform, Object *p_owner = NULL);
+	int navmesh_add(const Ref<NavigationMesh> &p_mesh, const Transform &p_xform, Object *p_owner = nullptr);
 	void navmesh_set_transform(int p_id, const Transform &p_xform);
 	void navmesh_remove(int p_id);
 

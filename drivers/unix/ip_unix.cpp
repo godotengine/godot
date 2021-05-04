@@ -105,13 +105,13 @@ IP_Address IP_Unix::_resolve_hostname(const String &p_hostname, Type p_type) {
 	};
 	hints.ai_flags &= ~AI_NUMERICHOST;
 
-	int s = getaddrinfo(p_hostname.utf8().get_data(), NULL, &hints, &result);
+	int s = getaddrinfo(p_hostname.utf8().get_data(), nullptr, &hints, &result);
 	if (s != 0) {
 		ERR_PRINT("getaddrinfo failed! Cannot resolve hostname.");
 		return IP_Address();
 	};
 
-	if (result == NULL || result->ai_addr == NULL) {
+	if (result == nullptr || result->ai_addr == nullptr) {
 		ERR_PRINT("Invalid response from getaddrinfo");
 		if (result)
 			freeaddrinfo(result);
@@ -211,13 +211,13 @@ void IP_Unix::get_local_interfaces(Map<String, Interface_Info> *r_interfaces) co
 #else // UNIX
 
 void IP_Unix::get_local_interfaces(Map<String, Interface_Info> *r_interfaces) const {
-	struct ifaddrs *ifAddrStruct = NULL;
-	struct ifaddrs *ifa = NULL;
+	struct ifaddrs *ifAddrStruct = nullptr;
+	struct ifaddrs *ifa = nullptr;
 	int family;
 
 	getifaddrs(&ifAddrStruct);
 
-	for (ifa = ifAddrStruct; ifa != NULL; ifa = ifa->ifa_next) {
+	for (ifa = ifAddrStruct; ifa != nullptr; ifa = ifa->ifa_next) {
 		if (!ifa->ifa_addr)
 			continue;
 
@@ -240,7 +240,7 @@ void IP_Unix::get_local_interfaces(Map<String, Interface_Info> *r_interfaces) co
 		info.ip_addresses.push_front(_sockaddr2ip(ifa->ifa_addr));
 	}
 
-	if (ifAddrStruct != NULL)
+	if (ifAddrStruct != nullptr)
 		freeifaddrs(ifAddrStruct);
 }
 #endif

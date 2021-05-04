@@ -90,7 +90,7 @@ void DictionaryPropertyEdit::edit(Object *p_obj, const StringName &p_prop) {
 Node *DictionaryPropertyEdit::get_node() {
 	Object *o = ObjectDB::get_instance(obj);
 	if (!o)
-		return NULL;
+		return nullptr;
 
 	return cast_to<Node>(o);
 }

@@ -40,14 +40,14 @@ void ARVRCamera::_notification(int p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			// need to find our ARVROrigin parent and let it know we're its camera!
 			ARVROrigin *origin = Object::cast_to<ARVROrigin>(get_parent());
-			if (origin != NULL) {
+			if (origin != nullptr) {
 				origin->set_tracked_camera(this);
 			}
 		}; break;
 		case NOTIFICATION_EXIT_TREE: {
 			// need to find our ARVROrigin parent and let it know we're no longer its camera!
 			ARVROrigin *origin = Object::cast_to<ARVROrigin>(get_parent());
-			if (origin != NULL) {
+			if (origin != nullptr) {
 				origin->clear_tracked_camera_if(this);
 			}
 		}; break;
@@ -61,7 +61,7 @@ String ARVRCamera::get_configuration_warning() const {
 	String warning = Camera::get_configuration_warning();
 	// must be child node of ARVROrigin!
 	ARVROrigin *origin = Object::cast_to<ARVROrigin>(get_parent());
-	if (origin == NULL) {
+	if (origin == nullptr) {
 		if (warning != String()) {
 			warning += "\n\n";
 		}
@@ -374,7 +374,7 @@ String ARVRController::get_configuration_warning() const {
 	String warning = Spatial::get_configuration_warning();
 	// must be child node of ARVROrigin!
 	ARVROrigin *origin = Object::cast_to<ARVROrigin>(get_parent());
-	if (origin == NULL) {
+	if (origin == nullptr) {
 		if (warning != String()) {
 			warning += "\n\n";
 		}
@@ -507,7 +507,7 @@ String ARVRAnchor::get_configuration_warning() const {
 	String warning = Spatial::get_configuration_warning();
 	// must be child node of ARVROrigin!
 	ARVROrigin *origin = Object::cast_to<ARVROrigin>(get_parent());
-	if (origin == NULL) {
+	if (origin == nullptr) {
 		if (warning != String()) {
 			warning += "\n\n";
 		}
@@ -553,7 +553,7 @@ String ARVROrigin::get_configuration_warning() const {
 		return String();
 
 	String warning = Spatial::get_configuration_warning();
-	if (tracked_camera == NULL) {
+	if (tracked_camera == nullptr) {
 		if (warning != String()) {
 			warning += "\n\n";
 		}
@@ -575,7 +575,7 @@ void ARVROrigin::set_tracked_camera(ARVRCamera *p_tracked_camera) {
 
 void ARVROrigin::clear_tracked_camera_if(ARVRCamera *p_tracked_camera) {
 	if (tracked_camera == p_tracked_camera) {
-		tracked_camera = NULL;
+		tracked_camera = nullptr;
 	};
 };
 
@@ -613,7 +613,7 @@ void ARVROrigin::_notification(int p_what) {
 
 			// check if we have a primary interface
 			Ref<ARVRInterface> arvr_interface = arvr_server->get_primary_interface();
-			if (arvr_interface.is_valid() && tracked_camera != NULL) {
+			if (arvr_interface.is_valid() && tracked_camera != nullptr) {
 				// get our positioning transform for our headset
 				Transform t = arvr_interface->get_transform_for_eye(ARVRInterface::EYE_MONO, Transform());
 
@@ -635,7 +635,7 @@ void ARVROrigin::_notification(int p_what) {
 };
 
 ARVROrigin::ARVROrigin() {
-	tracked_camera = NULL;
+	tracked_camera = nullptr;
 };
 
 ARVROrigin::~ARVROrigin(){

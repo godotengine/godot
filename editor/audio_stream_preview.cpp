@@ -207,7 +207,7 @@ void AudioStreamPreviewGenerator::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("preview_updated", PropertyInfo(Variant::INT, "obj_id")));
 }
 
-AudioStreamPreviewGenerator *AudioStreamPreviewGenerator::singleton = NULL;
+AudioStreamPreviewGenerator *AudioStreamPreviewGenerator::singleton = nullptr;
 
 void AudioStreamPreviewGenerator::_notification(int p_what) {
 	if (p_what == NOTIFICATION_PROCESS) {
@@ -217,7 +217,7 @@ void AudioStreamPreviewGenerator::_notification(int p_what) {
 				if (E->get().thread) {
 					E->get().thread->wait_to_finish();
 					memdelete(E->get().thread);
-					E->get().thread = NULL;
+					E->get().thread = nullptr;
 				}
 				if (!ObjectDB::get_instance(E->key())) { //no longer in use, get rid of preview
 					to_erase.push_back(E->key());

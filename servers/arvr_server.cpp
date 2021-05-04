@@ -33,7 +33,7 @@
 #include "arvr/arvr_positional_tracker.h"
 #include "core/project_settings.h"
 
-ARVRServer *ARVRServer::singleton = NULL;
+ARVRServer *ARVRServer::singleton = nullptr;
 
 ARVRServer *ARVRServer::get_singleton() {
 	return singleton;
@@ -114,7 +114,7 @@ Transform ARVRServer::get_reference_frame() const {
 };
 
 void ARVRServer::center_on_hmd(RotationMode p_rotation_mode, bool p_keep_height) {
-	if (primary_interface != NULL) {
+	if (primary_interface != nullptr) {
 		// clear our current reference frame or we'll end up double adjusting it
 		reference_frame = Transform();
 
@@ -147,7 +147,7 @@ void ARVRServer::center_on_hmd(RotationMode p_rotation_mode, bool p_keep_height)
 
 Transform ARVRServer::get_hmd_transform() {
 	Transform hmd_transform;
-	if (primary_interface != NULL) {
+	if (primary_interface != nullptr) {
 		hmd_transform = primary_interface->get_transform_for_eye(ARVRInterface::EYE_MONO, hmd_transform);
 	};
 	return hmd_transform;
@@ -191,7 +191,7 @@ int ARVRServer::get_interface_count() const {
 };
 
 Ref<ARVRInterface> ARVRServer::get_interface(int p_index) const {
-	ERR_FAIL_INDEX_V(p_index, interfaces.size(), NULL);
+	ERR_FAIL_INDEX_V(p_index, interfaces.size(), nullptr);
 
 	return interfaces[p_index];
 };
@@ -205,7 +205,7 @@ Ref<ARVRInterface> ARVRServer::find_interface(const String &p_name) const {
 		};
 	};
 
-	ERR_FAIL_COND_V(idx == -1, NULL);
+	ERR_FAIL_COND_V(idx == -1, nullptr);
 
 	return interfaces[idx];
 };
@@ -381,5 +381,5 @@ ARVRServer::~ARVRServer() {
 		trackers.remove(0);
 	}
 
-	singleton = NULL;
+	singleton = nullptr;
 };

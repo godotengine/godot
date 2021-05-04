@@ -37,7 +37,7 @@
 #include "gdscript.h"
 #include "gdscript_tokenizer.h"
 
-GDScriptLanguage *script_language_gd = NULL;
+GDScriptLanguage *script_language_gd = nullptr;
 Ref<ResourceFormatLoaderGDScript> resource_loader_gd;
 Ref<ResourceFormatSaverGDScript> resource_saver_gd;
 

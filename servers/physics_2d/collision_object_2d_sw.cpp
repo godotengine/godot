@@ -246,7 +246,7 @@ CollisionObject2DSW::CollisionObject2DSW(Type p_type) :
 		pending_shape_update_list(this) {
 	_static = true;
 	type = p_type;
-	space = NULL;
+	space = nullptr;
 	instance_id = 0;
 	canvas_instance_id = 0;
 	collision_mask = 1;

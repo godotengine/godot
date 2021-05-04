@@ -41,7 +41,7 @@
 #include "editor_resource_preview.h"
 #include "editor_settings.h"
 
-EditorFileSystem *EditorFileSystem::singleton = NULL;
+EditorFileSystem *EditorFileSystem::singleton = nullptr;
 //the name is the version, to keep compatibility with different versions of Godot
 #define CACHE_FILE_NAME "filesystem_cache6"
 
@@ -75,7 +75,7 @@ int EditorFileSystemDirectory::get_subdir_count() const {
 }
 
 EditorFileSystemDirectory *EditorFileSystemDirectory::get_subdir(int p_idx) {
-	ERR_FAIL_INDEX_V(p_idx, subdirs.size(), NULL);
+	ERR_FAIL_INDEX_V(p_idx, subdirs.size(), nullptr);
 	return subdirs[p_idx];
 }
 
@@ -165,7 +165,7 @@ void EditorFileSystemDirectory::_bind_methods() {
 
 EditorFileSystemDirectory::EditorFileSystemDirectory() {
 	modified_time = 0;
-	parent = NULL;
+	parent = nullptr;
 	verified = false;
 }
 
@@ -283,7 +283,7 @@ void EditorFileSystem::_scan_filesystem() {
 	sp.progress = &scan_progress;
 
 	new_filesystem = memnew(EditorFileSystemDirectory);
-	new_filesystem->parent = NULL;
+	new_filesystem->parent = nullptr;
 
 	DirAccess *d = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 	d->change_dir("res://");
@@ -363,7 +363,7 @@ bool EditorFileSystem::_test_for_reimport(const String &p_path, bool p_only_impo
 		next_tag.fields.clear();
 		next_tag.name = String();
 
-		err = VariantParser::parse_tag_assign_eof(&stream, lines, error_text, next_tag, assign, value, NULL, true);
+		err = VariantParser::parse_tag_assign_eof(&stream, lines, error_text, next_tag, assign, value, nullptr, true);
 		if (err == ERR_FILE_EOF) {
 			break;
 		} else if (err != OK) {
@@ -416,7 +416,7 @@ bool EditorFileSystem::_test_for_reimport(const String &p_path, bool p_only_impo
 		next_tag.fields.clear();
 		next_tag.name = String();
 
-		err = VariantParser::parse_tag_assign_eof(&md5_stream, lines, error_text, next_tag, assign, value, NULL, true);
+		err = VariantParser::parse_tag_assign_eof(&md5_stream, lines, error_text, next_tag, assign, value, nullptr, true);
 
 		if (err == ERR_FILE_EOF) {
 			break;
@@ -596,7 +596,7 @@ void EditorFileSystem::scan() {
 			memdelete(filesystem);
 		//file_type_cache.clear();
 		filesystem = new_filesystem;
-		new_filesystem = NULL;
+		new_filesystem = nullptr;
 		_update_scan_actions();
 		scanning = false;
 		emit_signal("filesystem_changed");
@@ -1067,8 +1067,8 @@ void EditorFileSystem::_notification(int p_what) {
 				memdelete(filesystem);
 			if (new_filesystem)
 				memdelete(new_filesystem);
-			filesystem = NULL;
-			new_filesystem = NULL;
+			filesystem = nullptr;
+			new_filesystem = nullptr;
 
 		} break;
 		case NOTIFICATION_PROCESS: {
@@ -1092,7 +1092,7 @@ void EditorFileSystem::_notification(int p_what) {
 					if (filesystem)
 						memdelete(filesystem);
 					filesystem = new_filesystem;
-					new_filesystem = NULL;
+					new_filesystem = nullptr;
 					thread.wait_to_finish();
 					_update_scan_actions();
 					emit_signal("filesystem_changed");
@@ -1219,7 +1219,7 @@ bool EditorFileSystem::_find_file(const String &p_file, EditorFileSystemDirector
 }
 
 String EditorFileSystem::get_file_type(const String &p_file) const {
-	EditorFileSystemDirectory *fs = NULL;
+	EditorFileSystemDirectory *fs = nullptr;
 	int cpos = -1;
 
 	if (!_find_file(p_file, &fs, cpos)) {
@@ -1231,12 +1231,12 @@ String EditorFileSystem::get_file_type(const String &p_file) const {
 
 EditorFileSystemDirectory *EditorFileSystem::find_file(const String &p_file, int *r_index) const {
 	if (!filesystem || scanning)
-		return NULL;
+		return nullptr;
 
-	EditorFileSystemDirectory *fs = NULL;
+	EditorFileSystemDirectory *fs = nullptr;
 	int cpos = -1;
 	if (!_find_file(p_file, &fs, cpos)) {
-		return NULL;
+		return nullptr;
 	}
 
 	if (r_index)
@@ -1247,12 +1247,12 @@ EditorFileSystemDirectory *EditorFileSystem::find_file(const String &p_file, int
 
 EditorFileSystemDirectory *EditorFileSystem::get_filesystem_path(const String &p_path) {
 	if (!filesystem || scanning)
-		return NULL;
+		return nullptr;
 
 	String f = ProjectSettings::get_singleton()->localize_path(p_path);
 
 	if (!f.begins_with("res://"))
-		return NULL;
+		return nullptr;
 
 	f = f.substr(6, f.length());
 	f = f.replace("\\", "/");
@@ -1265,7 +1265,7 @@ EditorFileSystemDirectory *EditorFileSystem::get_filesystem_path(const String &p
 	Vector<String> path = f.split("/");
 
 	if (path.size() == 0)
-		return NULL;
+		return nullptr;
 
 	EditorFileSystemDirectory *fs = filesystem;
 
@@ -1279,7 +1279,7 @@ EditorFileSystemDirectory *EditorFileSystem::get_filesystem_path(const String &p
 		}
 
 		if (idx == -1) {
-			return NULL;
+			return nullptr;
 		} else {
 			fs = fs->get_subdir(idx);
 		}
@@ -1383,7 +1383,7 @@ void EditorFileSystem::_queue_update_script_classes() {
 }
 
 void EditorFileSystem::update_file(const String &p_file) {
-	EditorFileSystemDirectory *fs = NULL;
+	EditorFileSystemDirectory *fs = nullptr;
 	int cpos = -1;
 
 	if (!_find_file(p_file, &fs, cpos)) {
@@ -1585,7 +1585,7 @@ Error EditorFileSystem::_reimport_group(const String &p_group_file, const Vector
 		}
 		md5s->close();
 
-		EditorFileSystemDirectory *fs = NULL;
+		EditorFileSystemDirectory *fs = nullptr;
 		int cpos = -1;
 		bool found = _find_file(file, &fs, cpos);
 		ERR_FAIL_COND_V_MSG(!found, ERR_UNCONFIGURED, "Can't find file '" + file + "'.");
@@ -1616,7 +1616,7 @@ Error EditorFileSystem::_reimport_group(const String &p_group_file, const Vector
 }
 
 void EditorFileSystem::_reimport_file(const String &p_file) {
-	EditorFileSystemDirectory *fs = NULL;
+	EditorFileSystemDirectory *fs = nullptr;
 	int cpos = -1;
 	bool found = _find_file(p_file, &fs, cpos);
 	ERR_FAIL_COND_MSG(!found, "Can't find file '" + p_file + "'.");
@@ -1880,7 +1880,7 @@ void EditorFileSystem::reimport_files(const Vector<String> &p_files) {
 		}
 
 		//group may have changed, so also update group reference
-		EditorFileSystemDirectory *fs = NULL;
+		EditorFileSystemDirectory *fs = nullptr;
 		int cpos = -1;
 		if (_find_file(p_files[i], &fs, cpos)) {
 			fs->files.write[cpos]->import_group_file = group_file;
@@ -2028,12 +2028,12 @@ EditorFileSystem::EditorFileSystem() {
 
 	singleton = this;
 	filesystem = memnew(EditorFileSystemDirectory); //like, empty
-	filesystem->parent = NULL;
+	filesystem->parent = nullptr;
 
 	scanning = false;
 	importing = false;
 	use_threads = true;
-	new_filesystem = NULL;
+	new_filesystem = nullptr;
 
 	abort_scan = false;
 	scanning_changes = false;

@@ -152,14 +152,14 @@ void VideoStreamPlaybackTheora::clear() {
 	if (file) {
 		memdelete(file);
 	}
-	file = NULL;
+	file = nullptr;
 	playing = false;
 };
 
 void VideoStreamPlaybackTheora::set_file(const String &p_file) {
 	ERR_FAIL_COND(playing);
 	ogg_packet op;
-	th_setup_info *ts = NULL;
+	th_setup_info *ts = nullptr;
 
 	file_name = p_file;
 	if (file) {
@@ -638,7 +638,7 @@ void VideoStreamPlaybackTheora::_streaming_thread(void *ud) {
 #endif
 
 VideoStreamPlaybackTheora::VideoStreamPlaybackTheora() {
-	file = NULL;
+	file = nullptr;
 	theora_p = 0;
 	vorbis_p = 0;
 	videobuf_ready = 0;
@@ -649,8 +649,8 @@ VideoStreamPlaybackTheora::VideoStreamPlaybackTheora() {
 
 	buffering = false;
 	texture = Ref<ImageTexture>(memnew(ImageTexture));
-	mix_callback = NULL;
-	mix_udata = NULL;
+	mix_callback = nullptr;
+	mix_udata = nullptr;
 	audio_track = 0;
 	delay_compensation = 0;
 	audio_frames_wrote = 0;

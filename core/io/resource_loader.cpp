@@ -745,7 +745,7 @@ String ResourceLoader::_path_remap(const String &p_path, bool *r_translation_rem
 				next_tag.fields.clear();
 				next_tag.name = String();
 
-				err = VariantParser::parse_tag_assign_eof(&stream, lines, error_text, next_tag, assign, value, NULL, true);
+				err = VariantParser::parse_tag_assign_eof(&stream, lines, error_text, next_tag, assign, value, nullptr, true);
 				if (err == ERR_FILE_EOF) {
 					break;
 				} else if (err != OK) {
@@ -848,7 +848,7 @@ void ResourceLoader::set_load_callback(ResourceLoadedCallback p_callback) {
 	_loaded_callback = p_callback;
 }
 
-ResourceLoadedCallback ResourceLoader::_loaded_callback = NULL;
+ResourceLoadedCallback ResourceLoader::_loaded_callback = nullptr;
 
 Ref<ResourceFormatLoader> ResourceLoader::_find_custom_resource_format_loader(String path) {
 	for (int i = 0; i < loader_count; ++i) {
@@ -874,7 +874,7 @@ bool ResourceLoader::add_custom_resource_format_loader(String script_path) {
 
 	Object *obj = ClassDB::instance(ibt);
 
-	ERR_FAIL_COND_V_MSG(obj == NULL, false, "Cannot instance script as custom resource loader, expected 'ResourceFormatLoader' inheritance, got: " + String(ibt) + ".");
+	ERR_FAIL_COND_V_MSG(obj == nullptr, false, "Cannot instance script as custom resource loader, expected 'ResourceFormatLoader' inheritance, got: " + String(ibt) + ".");
 
 	Ref<ResourceFormatLoader> crl = Object::cast_to<ResourceFormatLoader>(obj);
 	crl->set_script(s.get_ref_ptr());
@@ -926,7 +926,7 @@ HashMap<ResourceLoader::LoadingMapKey, int, ResourceLoader::LoadingMapKeyHasher>
 
 void ResourceLoader::finalize() {
 #ifndef NO_THREADS
-	const LoadingMapKey *K = NULL;
+	const LoadingMapKey *K = nullptr;
 	while ((K = loading_map.next(K))) {
 		ERR_PRINTS("Exited while resource is being loaded: " + K->path);
 	}
@@ -934,11 +934,11 @@ void ResourceLoader::finalize() {
 #endif
 }
 
-ResourceLoadErrorNotify ResourceLoader::err_notify = NULL;
-void *ResourceLoader::err_notify_ud = NULL;
+ResourceLoadErrorNotify ResourceLoader::err_notify = nullptr;
+void *ResourceLoader::err_notify_ud = nullptr;
 
-DependencyErrorNotify ResourceLoader::dep_err_notify = NULL;
-void *ResourceLoader::dep_err_notify_ud = NULL;
+DependencyErrorNotify ResourceLoader::dep_err_notify = nullptr;
+void *ResourceLoader::dep_err_notify_ud = nullptr;
 
 bool ResourceLoader::abort_on_missing_resource = true;
 bool ResourceLoader::timestamp_on_load = false;
@@ -947,4 +947,4 @@ SelfList<Resource>::List ResourceLoader::remapped_list;
 HashMap<String, Vector<String>> ResourceLoader::translation_remaps;
 HashMap<String, String> ResourceLoader::path_remaps;
 
-ResourceLoaderImport ResourceLoader::import = NULL;
+ResourceLoaderImport ResourceLoader::import = nullptr;

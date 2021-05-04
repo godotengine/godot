@@ -167,7 +167,7 @@ Ref<NetworkedMultiplayerPeer> MultiplayerAPI::get_network_peer() const {
 }
 
 void MultiplayerAPI::_process_packet(int p_from, const uint8_t *p_packet, int p_packet_len) {
-	ERR_FAIL_COND_MSG(root_node == NULL, "Multiplayer root node was not initialized. If you are using custom multiplayer, remember to set the root node via MultiplayerAPI.set_root_node before using it.");
+	ERR_FAIL_COND_MSG(root_node == nullptr, "Multiplayer root node was not initialized. If you are using custom multiplayer, remember to set the root node via MultiplayerAPI.set_root_node before using it.");
 	ERR_FAIL_COND_MSG(p_packet_len < 1, "Invalid packet received. Size too small.");
 
 #ifdef DEBUG_ENABLED
@@ -195,7 +195,7 @@ void MultiplayerAPI::_process_packet(int p_from, const uint8_t *p_packet, int p_
 
 			Node *node = _process_get_node(p_from, p_packet, p_packet_len);
 
-			ERR_FAIL_COND_MSG(node == NULL, "Invalid packet received. Requested node was not found.");
+			ERR_FAIL_COND_MSG(node == nullptr, "Invalid packet received. Requested node was not found.");
 
 			// Detect cstring end.
 			int len_end = 5;
@@ -226,14 +226,14 @@ void MultiplayerAPI::_process_packet(int p_from, const uint8_t *p_packet, int p_
 
 Node *MultiplayerAPI::_process_get_node(int p_from, const uint8_t *p_packet, int p_packet_len) {
 	uint32_t target = decode_uint32(&p_packet[1]);
-	Node *node = NULL;
+	Node *node = nullptr;
 
 	if (target & 0x80000000) {
 		// Use full path (not cached yet).
 
 		int ofs = target & 0x7FFFFFFF;
 
-		ERR_FAIL_COND_V_MSG(ofs >= p_packet_len, NULL, "Invalid packet received. Size smaller than declared.");
+		ERR_FAIL_COND_V_MSG(ofs >= p_packet_len, nullptr, "Invalid packet received. Size smaller than declared.");
 
 		String paths;
 		paths.parse_utf8((const char *)&p_packet[ofs], p_packet_len - ofs);
@@ -249,10 +249,10 @@ Node *MultiplayerAPI::_process_get_node(int p_from, const uint8_t *p_packet, int
 		int id = target;
 
 		Map<int, PathGetCache>::Element *E = path_get_cache.find(p_from);
-		ERR_FAIL_COND_V_MSG(!E, NULL, "Invalid packet received. Requests invalid peer cache.");
+		ERR_FAIL_COND_V_MSG(!E, nullptr, "Invalid packet received. Requests invalid peer cache.");
 
 		Map<int, PathGetCache::NodeInfo>::Element *F = E->get().nodes.find(id);
-		ERR_FAIL_COND_V_MSG(!F, NULL, "Invalid packet received. Unabled to find requested cached node.");
+		ERR_FAIL_COND_V_MSG(!F, nullptr, "Invalid packet received. Unabled to find requested cached node.");
 
 		PathGetCache::NodeInfo *ni = &F->get();
 		// Do proper caching later.
@@ -340,7 +340,7 @@ void MultiplayerAPI::_process_rset(Node *p_node, const StringName &p_name, int p
 #endif
 
 	Variant value;
-	Error err = decode_variant(value, &p_packet[p_offset], p_packet_len - p_offset, NULL, allow_object_decoding || network_peer->is_object_decoding_allowed());
+	Error err = decode_variant(value, &p_packet[p_offset], p_packet_len - p_offset, nullptr, allow_object_decoding || network_peer->is_object_decoding_allowed());
 
 	ERR_FAIL_COND_MSG(err != OK, "Invalid packet received. Unable to decode RSET value.");
 
@@ -374,7 +374,7 @@ void MultiplayerAPI::_process_simplify_path(int p_from, const uint8_t *p_packet,
 
 	// Encode path to send ack.
 	CharString pname = String(path).utf8();
-	int len = encode_cstring(pname.get_data(), NULL);
+	int len = encode_cstring(pname.get_data(), nullptr);
 
 	Vector<uint8_t> packet;
 
@@ -432,7 +432,7 @@ bool MultiplayerAPI::_send_confirm_path(NodePath p_path, PathSentCache *psc, int
 	for (List<int>::Element *E = peers_to_add.front(); E; E = E->next()) {
 		// Encode function name.
 		CharString pname = String(p_path).utf8();
-		int len = encode_cstring(pname.get_data(), NULL);
+		int len = encode_cstring(pname.get_data(), nullptr);
 
 		Vector<uint8_t> packet;
 
@@ -498,14 +498,14 @@ void MultiplayerAPI::_send_rpc(Node *p_from, int p_to, bool p_unreliable, bool p
 
 	// Encode function name.
 	CharString name = String(p_name).utf8();
-	int len = encode_cstring(name.get_data(), NULL);
+	int len = encode_cstring(name.get_data(), nullptr);
 	MAKE_ROOM(ofs + len);
 	encode_cstring(name.get_data(), &(packet_cache.write[ofs]));
 	ofs += len;
 
 	if (p_set) {
 		// Set argument.
-		Error err = encode_variant(*p_arg[0], NULL, len, allow_object_decoding || network_peer->is_object_decoding_allowed());
+		Error err = encode_variant(*p_arg[0], nullptr, len, allow_object_decoding || network_peer->is_object_decoding_allowed());
 		ERR_FAIL_COND_MSG(err != OK, "Unable to encode RSET value. THIS IS LIKELY A BUG IN THE ENGINE!");
 		MAKE_ROOM(ofs + len);
 		encode_variant(*p_arg[0], &(packet_cache.write[ofs]), len, allow_object_decoding || network_peer->is_object_decoding_allowed());
@@ -517,7 +517,7 @@ void MultiplayerAPI::_send_rpc(Node *p_from, int p_to, bool p_unreliable, bool p
 		packet_cache.write[ofs] = p_argcount;
 		ofs += 1;
 		for (int i = 0; i < p_argcount; i++) {
-			Error err = encode_variant(*p_arg[i], NULL, len, allow_object_decoding || network_peer->is_object_decoding_allowed());
+			Error err = encode_variant(*p_arg[i], nullptr, len, allow_object_decoding || network_peer->is_object_decoding_allowed());
 			ERR_FAIL_COND_MSG(err != OK, "Unable to encode RPC argument. THIS IS LIKELY A BUG IN THE ENGINE!");
 			MAKE_ROOM(ofs + len);
 			encode_variant(*p_arg[i], &(packet_cache.write[ofs]), len, allow_object_decoding || network_peer->is_object_decoding_allowed());
@@ -548,7 +548,7 @@ void MultiplayerAPI::_send_rpc(Node *p_from, int p_to, bool p_unreliable, bool p
 
 		// Append path at the end, since we will need it for some packets.
 		CharString pname = String(from_path).utf8();
-		int path_len = encode_cstring(pname.get_data(), NULL);
+		int path_len = encode_cstring(pname.get_data(), nullptr);
 		MAKE_ROOM(ofs + path_len);
 		encode_cstring(pname.get_data(), &(packet_cache.write[ofs]));
 
@@ -961,7 +961,7 @@ void MultiplayerAPI::_bind_methods() {
 MultiplayerAPI::MultiplayerAPI() :
 		allow_object_decoding(false) {
 	rpc_sender_id = 0;
-	root_node = NULL;
+	root_node = nullptr;
 #ifdef DEBUG_ENABLED
 	profiling = false;
 #endif

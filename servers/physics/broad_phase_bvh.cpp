@@ -51,7 +51,7 @@ void BroadPhaseBVH::remove(ID p_id) {
 
 CollisionObjectSW *BroadPhaseBVH::get_object(ID p_id) const {
 	CollisionObjectSW *it = bvh.get(p_id - 1);
-	ERR_FAIL_COND_V(!it, NULL);
+	ERR_FAIL_COND_V(!it, nullptr);
 	return it;
 }
 bool BroadPhaseBVH::is_static(ID p_id) const {
@@ -76,7 +76,7 @@ int BroadPhaseBVH::cull_aabb(const AABB &p_aabb, CollisionObjectSW **p_results, 
 void *BroadPhaseBVH::_pair_callback(void *self, uint32_t p_A, CollisionObjectSW *p_object_A, int subindex_A, uint32_t p_B, CollisionObjectSW *p_object_B, int subindex_B) {
 	BroadPhaseBVH *bpo = (BroadPhaseBVH *)(self);
 	if (!bpo->pair_callback)
-		return NULL;
+		return nullptr;
 
 	return bpo->pair_callback(p_object_A, subindex_A, p_object_B, subindex_B, bpo->pair_userdata);
 }
@@ -109,7 +109,7 @@ BroadPhaseSW *BroadPhaseBVH::_create() {
 BroadPhaseBVH::BroadPhaseBVH() {
 	bvh.set_pair_callback(_pair_callback, this);
 	bvh.set_unpair_callback(_unpair_callback, this);
-	pair_callback = NULL;
-	pair_userdata = NULL;
-	unpair_userdata = NULL;
+	pair_callback = nullptr;
+	pair_userdata = nullptr;
+	unpair_userdata = nullptr;
 }

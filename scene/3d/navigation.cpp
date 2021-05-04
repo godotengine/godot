@@ -105,11 +105,11 @@ void Navigation::_navmesh_link(int p_id) {
 				Connection c;
 				c.A = &p;
 				c.A_edge = j;
-				c.B = NULL;
+				c.B = nullptr;
 				c.B_edge = -1;
 				connections[ek] = c;
 			} else {
-				if (C->get().B != NULL) {
+				if (C->get().B != nullptr) {
 					ConnectionPending pending;
 					pending.polygon = &p;
 					pending.edge = j;
@@ -151,20 +151,20 @@ void Navigation::_navmesh_unlink(int p_id) {
 
 			if (edges[i].P) {
 				C->get().pending.erase(edges[i].P);
-				edges[i].P = NULL;
+				edges[i].P = nullptr;
 			} else if (C->get().B) {
 				//disconnect
 
-				C->get().B->edges.write[C->get().B_edge].C = NULL;
+				C->get().B->edges.write[C->get().B_edge].C = nullptr;
 				C->get().B->edges.write[C->get().B_edge].C_edge = -1;
-				C->get().A->edges.write[C->get().A_edge].C = NULL;
+				C->get().A->edges.write[C->get().A_edge].C = nullptr;
 				C->get().A->edges.write[C->get().A_edge].C_edge = -1;
 
 				if (C->get().A == &E->get()) {
 					C->get().A = C->get().B;
 					C->get().A_edge = C->get().B_edge;
 				}
-				C->get().B = NULL;
+				C->get().B = nullptr;
 				C->get().B_edge = -1;
 
 				if (C->get().pending.size()) {
@@ -178,7 +178,7 @@ void Navigation::_navmesh_unlink(int p_id) {
 					C->get().A->edges.write[C->get().A_edge].C_edge = cp.edge;
 					cp.polygon->edges.write[cp.edge].C = C->get().A;
 					cp.polygon->edges.write[cp.edge].C_edge = C->get().A_edge;
-					cp.polygon->edges.write[cp.edge].P = NULL;
+					cp.polygon->edges.write[cp.edge].P = nullptr;
 				}
 
 			} else {
@@ -257,8 +257,8 @@ void Navigation::_clip_path(Vector<Vector3> &path, Polygon *from_poly, const Vec
 }
 
 Vector<Vector3> Navigation::get_simple_path(const Vector3 &p_start, const Vector3 &p_end, bool p_optimize) {
-	Polygon *begin_poly = NULL;
-	Polygon *end_poly = NULL;
+	Polygon *begin_poly = nullptr;
+	Polygon *end_poly = nullptr;
 	Vector3 begin_point;
 	Vector3 end_point;
 	float begin_d = 1e20;
@@ -335,7 +335,7 @@ Vector<Vector3> Navigation::get_simple_path(const Vector3 &p_start, const Vector
 		}
 		//check open list
 
-		List<Polygon *>::Element *least_cost_poly = NULL;
+		List<Polygon *>::Element *least_cost_poly = nullptr;
 		float least_cost = 1e30;
 
 		//this could be faster (cache previous results)
@@ -488,7 +488,7 @@ Vector<Vector3> Navigation::get_simple_path(const Vector3 &p_start, const Vector
 				if (p != begin_poly)
 					p = p->edges[p->prev_edge].C;
 				else
-					p = NULL;
+					p = nullptr;
 			}
 
 			if (path[path.size() - 1] != begin_point)
@@ -625,7 +625,7 @@ Vector3 Navigation::get_closest_point_normal(const Vector3 &p_point) {
 
 Object *Navigation::get_closest_point_owner(const Vector3 &p_point) {
 	Vector3 closest_point;
-	Object *owner = NULL;
+	Object *owner = nullptr;
 	float closest_point_d = 1e20;
 
 	for (Map<int, NavMesh>::Element *E = navmesh_map.front(); E; E = E->next()) {

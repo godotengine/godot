@@ -262,7 +262,7 @@ public:
 				scenario_item(this),
 				update_item(this) {
 			spatial_partition_id = 0;
-			scenario = NULL;
+			scenario = nullptr;
 
 			update_aabb = false;
 			update_materials = false;
@@ -280,9 +280,9 @@ public:
 			last_render_pass = 0;
 			last_frame_pass = 0;
 			version = 1;
-			base_data = NULL;
+			base_data = nullptr;
 
-			custom_aabb = NULL;
+			custom_aabb = nullptr;
 		}
 
 		~Instance() {
@@ -361,9 +361,9 @@ public:
 
 		InstanceLightData() {
 			shadow_dirty = true;
-			D = NULL;
+			D = nullptr;
 			last_version = 0;
-			baked_light = NULL;
+			baked_light = nullptr;
 		}
 	};
 

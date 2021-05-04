@@ -66,10 +66,10 @@ public:
 			valid = false;
 			is_server = false;
 			id = 1;
-			ctx = NULL;
-			obj = NULL;
+			ctx = nullptr;
+			obj = nullptr;
 			closing = false;
-			peer = NULL;
+			peer = nullptr;
 		}
 	};
 

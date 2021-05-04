@@ -53,7 +53,7 @@
 #include "modules/gridmap/grid_map.h"
 #endif
 
-EditorNavigationMeshGenerator *EditorNavigationMeshGenerator::singleton = NULL;
+EditorNavigationMeshGenerator *EditorNavigationMeshGenerator::singleton = nullptr;
 
 void EditorNavigationMeshGenerator::_add_vertex(const Vector3 &p_vec3, Vector<float> &p_verticies) {
 	p_verticies.push_back(p_vec3.x);
@@ -367,7 +367,7 @@ void EditorNavigationMeshGenerator::_build_recast_navigation_mesh(Ref<Navigation
 	ERR_FAIL_COND(!rcBuildCompactHeightfield(&ctx, cfg.walkableHeight, cfg.walkableClimb, *hf, *chf));
 
 	rcFreeHeightField(hf);
-	hf = 0;
+	hf = nullptr;
 
 	ep->step(TTR("Eroding walkable area..."), 6);
 	ERR_FAIL_COND(!rcErodeWalkableArea(&ctx, cfg.walkableRadius, *chf));
@@ -400,18 +400,18 @@ void EditorNavigationMeshGenerator::_build_recast_navigation_mesh(Ref<Navigation
 	ERR_FAIL_COND(!rcBuildPolyMeshDetail(&ctx, *poly_mesh, *chf, cfg.detailSampleDist, cfg.detailSampleMaxError, *detail_mesh));
 
 	rcFreeCompactHeightfield(chf);
-	chf = 0;
+	chf = nullptr;
 	rcFreeContourSet(cset);
-	cset = 0;
+	cset = nullptr;
 
 	ep->step(TTR("Converting to native navigation mesh..."), 10);
 
 	_convert_detail_mesh_to_native_navigation_mesh(detail_mesh, p_nav_mesh);
 
 	rcFreePolyMesh(poly_mesh);
-	poly_mesh = 0;
+	poly_mesh = nullptr;
 	rcFreePolyMeshDetail(detail_mesh);
-	detail_mesh = 0;
+	detail_mesh = nullptr;
 }
 
 EditorNavigationMeshGenerator *EditorNavigationMeshGenerator::get_singleton() {
@@ -456,28 +456,28 @@ void EditorNavigationMeshGenerator::bake(Ref<NavigationMesh> p_nav_mesh, Node *p
 	}
 
 	if (vertices.size() > 0 && indices.size() > 0) {
-		rcHeightfield *hf = NULL;
-		rcCompactHeightfield *chf = NULL;
-		rcContourSet *cset = NULL;
-		rcPolyMesh *poly_mesh = NULL;
-		rcPolyMeshDetail *detail_mesh = NULL;
+		rcHeightfield *hf = nullptr;
+		rcCompactHeightfield *chf = nullptr;
+		rcContourSet *cset = nullptr;
+		rcPolyMesh *poly_mesh = nullptr;
+		rcPolyMeshDetail *detail_mesh = nullptr;
 
 		_build_recast_navigation_mesh(p_nav_mesh, &ep, hf, chf, cset, poly_mesh, detail_mesh, vertices, indices);
 
 		rcFreeHeightField(hf);
-		hf = 0;
+		hf = nullptr;
 
 		rcFreeCompactHeightfield(chf);
-		chf = 0;
+		chf = nullptr;
 
 		rcFreeContourSet(cset);
-		cset = 0;
+		cset = nullptr;
 
 		rcFreePolyMesh(poly_mesh);
-		poly_mesh = 0;
+		poly_mesh = nullptr;
 
 		rcFreePolyMeshDetail(detail_mesh);
-		detail_mesh = 0;
+		detail_mesh = nullptr;
 	}
 	ep.step(TTR("Done!"), 11);
 }

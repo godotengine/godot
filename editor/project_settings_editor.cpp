@@ -41,7 +41,7 @@
 #include "scene/gui/margin_container.h"
 #include "scene/gui/tab_container.h"
 
-ProjectSettingsEditor *ProjectSettingsEditor::singleton = NULL;
+ProjectSettingsEditor *ProjectSettingsEditor::singleton = nullptr;
 
 static const char *_button_names[JOY_BUTTON_MAX] = {
 	"DualShock Cross, Xbox A, Nintendo B",
@@ -810,7 +810,7 @@ void ProjectSettingsEditor::_item_adds(String) {
 void ProjectSettingsEditor::_item_add() {
 	// Initialize the property with the default value for the given type.
 	Variant::CallError ce;
-	const Variant value = Variant::construct(Variant::Type(type->get_selected_id()), NULL, 0, ce);
+	const Variant value = Variant::construct(Variant::Type(type->get_selected_id()), nullptr, 0, ce);
 
 	String name = property->get_text().strip_edges();
 
@@ -1427,7 +1427,7 @@ void ProjectSettingsEditor::_update_translations() {
 	updating_translations = true;
 
 	translation_list->clear();
-	TreeItem *root = translation_list->create_item(NULL);
+	TreeItem *root = translation_list->create_item(nullptr);
 	translation_list->set_hide_root(true);
 	if (ProjectSettings::get_singleton()->has_setting("locale/translations")) {
 		PoolStringArray translations = ProjectSettings::get_singleton()->get("locale/translations");
@@ -1473,7 +1473,7 @@ void ProjectSettingsEditor::_update_translations() {
 	if (!translation_locales_list_created || should_recreate_locales_list) {
 		translation_locales_list_created = true;
 		translation_filter->clear();
-		root = translation_filter->create_item(NULL);
+		root = translation_filter->create_item(nullptr);
 		translation_filter->set_hide_root(true);
 		translation_filter_treeitems.clear();
 		for (int i = 0; i < s; i++) {
@@ -1507,8 +1507,8 @@ void ProjectSettingsEditor::_update_translations() {
 
 	translation_remap->clear();
 	translation_remap_options->clear();
-	root = translation_remap->create_item(NULL);
-	TreeItem *root2 = translation_remap_options->create_item(NULL);
+	root = translation_remap->create_item(nullptr);
+	TreeItem *root2 = translation_remap_options->create_item(nullptr);
 	translation_remap->set_hide_root(true);
 	translation_remap_options->set_hide_root(true);
 	translation_res_option_add_button->set_disabled(true);

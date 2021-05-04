@@ -30,7 +30,7 @@
 
 #include "scene_string_names.h"
 
-SceneStringNames *SceneStringNames::singleton = NULL;
+SceneStringNames *SceneStringNames::singleton = nullptr;
 
 SceneStringNames::SceneStringNames() {
 	_estimate_cost = StaticCString::create("_estimate_cost");

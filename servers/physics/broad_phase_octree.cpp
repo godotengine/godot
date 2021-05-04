@@ -50,7 +50,7 @@ void BroadPhaseOctree::remove(ID p_id) {
 
 CollisionObjectSW *BroadPhaseOctree::get_object(ID p_id) const {
 	CollisionObjectSW *it = octree.get(p_id);
-	ERR_FAIL_COND_V(!it, NULL);
+	ERR_FAIL_COND_V(!it, nullptr);
 	return it;
 }
 bool BroadPhaseOctree::is_static(ID p_id) const {
@@ -75,7 +75,7 @@ int BroadPhaseOctree::cull_aabb(const AABB &p_aabb, CollisionObjectSW **p_result
 void *BroadPhaseOctree::_pair_callback(void *self, OctreeElementID p_A, CollisionObjectSW *p_object_A, int subindex_A, OctreeElementID p_B, CollisionObjectSW *p_object_B, int subindex_B) {
 	BroadPhaseOctree *bpo = (BroadPhaseOctree *)(self);
 	if (!bpo->pair_callback)
-		return NULL;
+		return nullptr;
 
 	return bpo->pair_callback(p_object_A, subindex_A, p_object_B, subindex_B, bpo->pair_userdata);
 }
@@ -108,7 +108,7 @@ BroadPhaseSW *BroadPhaseOctree::_create() {
 BroadPhaseOctree::BroadPhaseOctree() {
 	octree.set_pair_callback(_pair_callback, this);
 	octree.set_unpair_callback(_unpair_callback, this);
-	pair_callback = NULL;
-	pair_userdata = NULL;
-	unpair_userdata = NULL;
+	pair_callback = nullptr;
+	pair_userdata = nullptr;
+	unpair_userdata = nullptr;
 }

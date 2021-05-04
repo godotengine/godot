@@ -51,7 +51,7 @@ Mutex StringName::lock;
 void StringName::setup() {
 	ERR_FAIL_COND(configured);
 	for (int i = 0; i < STRING_TABLE_LEN; i++) {
-		_table[i] = NULL;
+		_table[i] = nullptr;
 	}
 	configured = true;
 }
@@ -104,7 +104,7 @@ void StringName::unref() {
 		lock.unlock();
 	}
 
-	_data = NULL;
+	_data = nullptr;
 }
 
 bool StringName::operator==(const String &p_name) const {
@@ -145,7 +145,7 @@ void StringName::operator=(const StringName &p_name) {
 }
 
 StringName::StringName(const StringName &p_name) {
-	_data = NULL;
+	_data = nullptr;
 
 	ERR_FAIL_COND(!configured);
 
@@ -155,7 +155,7 @@ StringName::StringName(const StringName &p_name) {
 }
 
 StringName::StringName(const char *p_name) {
-	_data = NULL;
+	_data = nullptr;
 
 	ERR_FAIL_COND(!configured);
 
@@ -190,9 +190,9 @@ StringName::StringName(const char *p_name) {
 	_data->refcount.init();
 	_data->hash = hash;
 	_data->idx = idx;
-	_data->cname = NULL;
+	_data->cname = nullptr;
 	_data->next = _table[idx];
-	_data->prev = NULL;
+	_data->prev = nullptr;
 	if (_table[idx])
 		_table[idx]->prev = _data;
 	_table[idx] = _data;
@@ -201,7 +201,7 @@ StringName::StringName(const char *p_name) {
 }
 
 StringName::StringName(const StaticCString &p_static_string) {
-	_data = NULL;
+	_data = nullptr;
 
 	ERR_FAIL_COND(!configured);
 
@@ -237,7 +237,7 @@ StringName::StringName(const StaticCString &p_static_string) {
 	_data->idx = idx;
 	_data->cname = p_static_string.ptr;
 	_data->next = _table[idx];
-	_data->prev = NULL;
+	_data->prev = nullptr;
 	if (_table[idx])
 		_table[idx]->prev = _data;
 	_table[idx] = _data;
@@ -246,7 +246,7 @@ StringName::StringName(const StaticCString &p_static_string) {
 }
 
 StringName::StringName(const String &p_name) {
-	_data = NULL;
+	_data = nullptr;
 
 	ERR_FAIL_COND(!configured);
 
@@ -280,9 +280,9 @@ StringName::StringName(const String &p_name) {
 	_data->refcount.init();
 	_data->hash = hash;
 	_data->idx = idx;
-	_data->cname = NULL;
+	_data->cname = nullptr;
 	_data->next = _table[idx];
-	_data->prev = NULL;
+	_data->prev = nullptr;
 	if (_table[idx])
 		_table[idx]->prev = _data;
 	_table[idx] = _data;
@@ -380,7 +380,7 @@ StringName StringName::search(const String &p_name) {
 }
 
 StringName::StringName() {
-	_data = NULL;
+	_data = nullptr;
 }
 
 StringName::~StringName() {

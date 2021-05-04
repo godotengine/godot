@@ -306,7 +306,7 @@ public:
 
 		virtual DataType get_datatype() const { return TYPE_VOID; }
 		Node(Type t) :
-				next(NULL),
+				next(nullptr),
 				type(t) {}
 		virtual ~Node() {}
 	};
@@ -379,8 +379,8 @@ public:
 		ArrayNode() :
 				Node(TYPE_ARRAY),
 				datatype_cache(TYPE_VOID),
-				index_expression(NULL),
-				call_expression(NULL),
+				index_expression(nullptr),
+				call_expression(nullptr),
 				is_const(false) {}
 	};
 
@@ -453,8 +453,8 @@ public:
 
 		BlockNode() :
 				Node(TYPE_BLOCK),
-				parent_function(NULL),
-				parent_block(NULL),
+				parent_function(nullptr),
+				parent_block(nullptr),
 				block_type(BLOCK_TYPE_STANDART),
 				block_tag(SubClassTag::TAG_GLOBAL),
 				single_statement(false) {}
@@ -482,7 +482,7 @@ public:
 				Node(TYPE_MEMBER),
 				basetype(TYPE_VOID),
 				datatype(TYPE_VOID),
-				owner(NULL) {}
+				owner(nullptr) {}
 	};
 
 	struct FunctionNode : public Node {
@@ -504,7 +504,7 @@ public:
 				Node(TYPE_FUNCTION),
 				return_type(TYPE_VOID),
 				return_precision(PRECISION_DEFAULT),
-				body(NULL),
+				body(nullptr),
 				can_discard(false) {}
 	};
 
@@ -627,7 +627,7 @@ public:
 	static bool is_token_nonvoid_datatype(TokenType p_type);
 	static bool is_token_operator(TokenType p_type);
 
-	static bool convert_constant(ConstantNode *p_constant, DataType p_to_type, ConstantNode::Value *p_value = NULL);
+	static bool convert_constant(ConstantNode *p_constant, DataType p_to_type, ConstantNode::Value *p_value = nullptr);
 	static DataType get_scalar_type(DataType p_type);
 	static int get_cardinality(DataType p_type);
 	static bool is_scalar_type(DataType p_type);
@@ -717,10 +717,10 @@ private:
 		IDENTIFIER_CONSTANT,
 	};
 
-	bool _find_identifier(const BlockNode *p_block, const Map<StringName, BuiltInInfo> &p_builtin_types, const StringName &p_identifier, DataType *r_data_type = NULL, IdentifierType *r_type = NULL, bool *r_is_const = NULL, int *r_array_size = NULL);
+	bool _find_identifier(const BlockNode *p_block, const Map<StringName, BuiltInInfo> &p_builtin_types, const StringName &p_identifier, DataType *r_data_type = nullptr, IdentifierType *r_type = nullptr, bool *r_is_const = nullptr, int *r_array_size = nullptr);
 	bool _is_operator_assign(Operator p_op) const;
-	bool _validate_assign(Node *p_node, const Map<StringName, BuiltInInfo> &p_builtin_types, String *r_message = NULL);
-	bool _validate_operator(OperatorNode *p_op, DataType *r_ret_type = NULL);
+	bool _validate_assign(Node *p_node, const Map<StringName, BuiltInInfo> &p_builtin_types, String *r_message = nullptr);
+	bool _validate_operator(OperatorNode *p_op, DataType *r_ret_type = nullptr);
 
 	struct BuiltinFuncDef {
 		enum { MAX_ARGS = 5 };
@@ -751,7 +751,7 @@ private:
 	Error _validate_datatype(DataType p_type);
 
 	bool _validate_function_call(BlockNode *p_block, OperatorNode *p_func, DataType *r_ret_type);
-	bool _parse_function_arguments(BlockNode *p_block, const Map<StringName, BuiltInInfo> &p_builtin_types, OperatorNode *p_func, int *r_complete_arg = NULL);
+	bool _parse_function_arguments(BlockNode *p_block, const Map<StringName, BuiltInInfo> &p_builtin_types, OperatorNode *p_func, int *r_complete_arg = nullptr);
 
 	Node *_parse_expression(BlockNode *p_block, const Map<StringName, BuiltInInfo> &p_builtin_types);
 	ShaderLanguage::Node *_reduce_expression(BlockNode *p_block, ShaderLanguage::Node *p_node);

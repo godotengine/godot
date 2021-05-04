@@ -667,7 +667,7 @@ InputDefault::InputDefault() {
 	emulate_touch_from_mouse = false;
 	emulate_mouse_from_touch = false;
 	mouse_from_touch_index = -1;
-	main_loop = NULL;
+	main_loop = nullptr;
 	default_shape = CURSOR_ARROW;
 
 	fallback_mapping = -1;

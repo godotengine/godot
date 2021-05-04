@@ -250,7 +250,7 @@ void Camera2D::_notification(int p_what) {
 			}
 			remove_from_group(group_name);
 			remove_from_group(canvas_group_name);
-			viewport = NULL;
+			viewport = nullptr;
 
 		} break;
 #ifdef TOOLS_ENABLED
@@ -409,7 +409,7 @@ void Camera2D::make_current() {
 void Camera2D::clear_current() {
 	current = false;
 	if (is_inside_tree()) {
-		get_tree()->call_group_flags(SceneTree::GROUP_CALL_REALTIME, group_name, "_make_current", (Object *)(NULL));
+		get_tree()->call_group_flags(SceneTree::GROUP_CALL_REALTIME, group_name, "_make_current", (Object *)nullptr);
 	}
 }
 
@@ -746,8 +746,8 @@ Camera2D::Camera2D() {
 	smoothing_active = false;
 	limit_smoothing_enabled = false;
 
-	viewport = NULL;
-	custom_viewport = NULL;
+	viewport = nullptr;
+	custom_viewport = nullptr;
 	custom_viewport_id = 0;
 	process_mode = CAMERA2D_PROCESS_IDLE;
 

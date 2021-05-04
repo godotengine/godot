@@ -55,7 +55,7 @@ class CollisionObject : public Spatial {
 
 		ShapeData() {
 			disabled = false;
-			owner = NULL;
+			owner = nullptr;
 		}
 	};
 

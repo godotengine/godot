@@ -254,7 +254,7 @@ void DocData::generate(bool p_basic_types) {
 
 		List<PropertyInfo>::Element *EO = own_properties.front();
 		for (List<PropertyInfo>::Element *E = properties.front(); E; E = E->next()) {
-			bool inherited = EO == NULL;
+			bool inherited = EO == nullptr;
 			if (EO && EO->get() == E->get()) {
 				inherited = false;
 				EO = EO->next();
@@ -505,7 +505,7 @@ void DocData::generate(bool p_basic_types) {
 		c.name = cname;
 
 		Variant::CallError cerror;
-		Variant v = Variant::construct(Variant::Type(i), NULL, 0, cerror);
+		Variant v = Variant::construct(Variant::Type(i), nullptr, 0, cerror);
 
 		List<MethodInfo> method_list;
 		v.get_method_list(&method_list);

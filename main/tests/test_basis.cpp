@@ -319,7 +319,7 @@ MainLoop *test() {
 	OS::get_singleton()->print("Start euler conversion checks.\n");
 	test_euler_conversion();
 
-	return NULL;
+	return nullptr;
 }
 
 } // namespace TestBasis

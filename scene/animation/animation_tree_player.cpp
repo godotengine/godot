@@ -437,7 +437,7 @@ void AnimationTreePlayer::_notification(int p_what) {
 }
 
 void AnimationTreePlayer::_compute_weights(float *p_fallback_weight, HashMap<NodePath, float> *p_weights, float p_coeff, const HashMap<NodePath, bool> *p_filter, float p_filtered_coeff) {
-	if (p_filter != NULL) {
+	if (p_filter != nullptr) {
 		List<NodePath> key_list;
 		p_filter->get_key_list(&key_list);
 
@@ -459,7 +459,7 @@ void AnimationTreePlayer::_compute_weights(float *p_fallback_weight, HashMap<Nod
 	p_weights->get_key_list(&key_list);
 
 	for (List<NodePath>::Element *E = key_list.front(); E; E = E->next()) {
-		if (p_filter == NULL || !p_filter->has(E->get())) {
+		if (p_filter == nullptr || !p_filter->has(E->get())) {
 			(*p_weights)[E->get()] *= p_coeff;
 		}
 	}
@@ -535,7 +535,7 @@ float AnimationTreePlayer::_process_node(const StringName &p_node, AnimationNode
 			else
 				(*r_prev_anim)->next = an;
 
-			an->next = NULL;
+			an->next = nullptr;
 			*r_prev_anim = an;
 
 			return rem;
@@ -764,8 +764,8 @@ void AnimationTreePlayer::_process_animation(float p_delta) {
 	if (dirty_caches)
 		_recompute_caches();
 
-	active_list = NULL;
-	AnimationNode *prev = NULL;
+	active_list = nullptr;
+	AnimationNode *prev = nullptr;
 
 	if (reset_request) {
 		_process_node(out_name, &prev, 0, true);
@@ -809,7 +809,7 @@ void AnimationTreePlayer::_process_animation(float p_delta) {
 
 			for (List<AnimationNode::TrackRef>::Element *E = anim_list->tref.front(); E; E = E->next()) {
 				AnimationNode::TrackRef &tr = E->get();
-				if (tr.track == NULL || tr.local_track < 0 || tr.weight < CMP_EPSILON || !a->track_is_enabled(tr.local_track))
+				if (tr.track == nullptr || tr.local_track < 0 || tr.weight < CMP_EPSILON || !a->track_is_enabled(tr.local_track))
 					continue;
 
 				switch (a->track_get_type(tr.local_track)) {
@@ -895,7 +895,7 @@ void AnimationTreePlayer::add_node(NodeType p_type, const StringName &p_node) {
 	ERR_FAIL_COND(p_type == NODE_OUTPUT);
 	ERR_FAIL_COND(node_map.has(p_node));
 	ERR_FAIL_INDEX(p_type, NODE_MAX);
-	NodeBase *n = NULL;
+	NodeBase *n = nullptr;
 
 	switch (p_type) {
 		case NODE_ANIMATION: {
@@ -1386,7 +1386,7 @@ void AnimationTreePlayer::get_connection_list(List<Connection> *p_connections) c
 
 AnimationTreePlayer::Track *AnimationTreePlayer::_find_track(const NodePath &p_path) {
 	Node *parent = get_node(base_path);
-	ERR_FAIL_COND_V(!parent, NULL);
+	ERR_FAIL_COND_V(!parent, nullptr);
 
 	RES resource;
 	Vector<StringName> leftover_path;
@@ -1394,7 +1394,7 @@ AnimationTreePlayer::Track *AnimationTreePlayer::_find_track(const NodePath &p_p
 	if (!child) {
 		String err = "Animation track references unknown Node: '" + String(p_path) + "'.";
 		WARN_PRINT(err.ascii().get_data());
-		return NULL;
+		return nullptr;
 	}
 
 	ObjectID id = child->get_instance_id();
@@ -1708,7 +1708,7 @@ void AnimationTreePlayer::_bind_methods() {
 }
 
 AnimationTreePlayer::AnimationTreePlayer() {
-	active_list = NULL;
+	active_list = nullptr;
 	out = memnew(NodeOut);
 	out_name = "out";
 	out->pos = Point2(40, 40);

@@ -39,7 +39,7 @@ int ScriptServer::_language_count = 0;
 bool ScriptServer::scripting_enabled = true;
 bool ScriptServer::reload_scripts_on_save = false;
 bool ScriptServer::languages_finished = false;
-ScriptEditRequestFunction ScriptServer::edit_request_func = NULL;
+ScriptEditRequestFunction ScriptServer::edit_request_func = nullptr;
 
 void Script::_notification(int p_what) {
 	if (p_what == NOTIFICATION_POSTINITIALIZE) {
@@ -127,7 +127,7 @@ bool ScriptServer::is_scripting_enabled() {
 }
 
 ScriptLanguage *ScriptServer::get_language(int p_idx) {
-	ERR_FAIL_INDEX_V(p_idx, _language_count, NULL);
+	ERR_FAIL_INDEX_V(p_idx, _language_count, nullptr);
 
 	return _languages[p_idx];
 }
@@ -239,7 +239,7 @@ StringName ScriptServer::get_global_class_native_base(const String &p_class) {
 	return base;
 }
 void ScriptServer::get_global_class_list(List<StringName> *r_global_classes) {
-	const StringName *K = NULL;
+	const StringName *K = nullptr;
 	List<StringName> classes;
 	while ((K = global_classes.next(K))) {
 		classes.push_back(*K);
@@ -343,7 +343,7 @@ void ScriptInstance::call_multilevel(const StringName &p_method, VARIANT_ARG_DEC
 ScriptInstance::~ScriptInstance() {
 }
 
-ScriptCodeCompletionCache *ScriptCodeCompletionCache::singleton = NULL;
+ScriptCodeCompletionCache *ScriptCodeCompletionCache::singleton = nullptr;
 ScriptCodeCompletionCache::ScriptCodeCompletionCache() {
 	singleton = this;
 }
@@ -351,7 +351,7 @@ ScriptCodeCompletionCache::ScriptCodeCompletionCache() {
 void ScriptLanguage::frame() {
 }
 
-ScriptDebugger *ScriptDebugger::singleton = NULL;
+ScriptDebugger *ScriptDebugger::singleton = nullptr;
 
 void ScriptDebugger::set_lines_left(int p_left) {
 	lines_left = p_left;
@@ -418,7 +418,7 @@ ScriptDebugger::ScriptDebugger() {
 	singleton = this;
 	lines_left = -1;
 	depth = -1;
-	break_lang = NULL;
+	break_lang = nullptr;
 }
 
 bool PlaceHolderScriptInstance::set(const StringName &p_name, const Variant &p_value) {

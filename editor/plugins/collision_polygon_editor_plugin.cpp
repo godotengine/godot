@@ -62,7 +62,7 @@ void Polygon3DEditor::_notification(int p_what) {
 }
 void Polygon3DEditor::_node_removed(Node *p_node) {
 	if (p_node == node) {
-		node = NULL;
+		node = nullptr;
 		if (imgeom->get_parent() == p_node)
 			p_node->remove_child(imgeom);
 		hide();
@@ -470,7 +470,7 @@ void Polygon3DEditor::edit(Node *p_collision_polygon) {
 		prev_depth = -1;
 
 	} else {
-		node = NULL;
+		node = nullptr;
 
 		if (imgeom->get_parent())
 			imgeom->get_parent()->remove_child(imgeom);
@@ -486,7 +486,7 @@ void Polygon3DEditor::_bind_methods() {
 }
 
 Polygon3DEditor::Polygon3DEditor(EditorNode *p_editor) {
-	node = NULL;
+	node = nullptr;
 	editor = p_editor;
 	undo_redo = EditorNode::get_undo_redo();
 
@@ -550,7 +550,7 @@ void Polygon3DEditorPlugin::make_visible(bool p_visible) {
 		collision_polygon_editor->show();
 	} else {
 		collision_polygon_editor->hide();
-		collision_polygon_editor->edit(NULL);
+		collision_polygon_editor->edit(nullptr);
 	}
 }
 

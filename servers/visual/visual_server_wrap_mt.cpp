@@ -146,7 +146,7 @@ void VisualServerWrapMT::set_use_vsync_callback(bool p_enable) {
 	singleton_mt->call_set_use_vsync(p_enable);
 }
 
-VisualServerWrapMT *VisualServerWrapMT::singleton_mt = NULL;
+VisualServerWrapMT *VisualServerWrapMT::singleton_mt = nullptr;
 
 VisualServerWrapMT::VisualServerWrapMT(VisualServer *p_contained, bool p_create_thread) :
 		command_queue(p_create_thread) {

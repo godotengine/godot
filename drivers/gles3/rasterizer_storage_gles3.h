@@ -290,7 +290,7 @@ public:
 		void *detect_normal_ud;
 
 		Texture() :
-				proxy(NULL),
+				proxy(nullptr),
 				flags(0),
 				width(0),
 				height(0),
@@ -308,13 +308,13 @@ public:
 				using_srgb(false),
 				redraw_if_visible(false),
 				stored_cube_sides(0),
-				render_target(NULL),
-				detect_3d(NULL),
-				detect_3d_ud(NULL),
-				detect_srgb(NULL),
-				detect_srgb_ud(NULL),
-				detect_normal(NULL),
-				detect_normal_ud(NULL) {
+				render_target(nullptr),
+				detect_3d(nullptr),
+				detect_3d_ud(nullptr),
+				detect_srgb(nullptr),
+				detect_srgb_ud(nullptr),
+				detect_normal(nullptr),
+				detect_normal_ud(nullptr) {
 		}
 
 		_ALWAYS_INLINE_ Texture *get_ptr() {
@@ -331,7 +331,7 @@ public:
 			}
 
 			for (Set<Texture *>::Element *E = proxy_owners.front(); E; E = E->next()) {
-				E->get()->proxy = NULL;
+				E->get()->proxy = nullptr;
 			}
 
 			if (proxy) {
@@ -520,7 +520,7 @@ public:
 
 		Shader() :
 				dirty_list(this) {
-			shader = NULL;
+			shader = nullptr;
 			ubo_size = 0;
 			valid = false;
 			custom_code_id = 0;
@@ -576,7 +576,7 @@ public:
 		bool is_animated_cache;
 
 		Material() :
-				shader(NULL),
+				shader(nullptr),
 				ubo_id(0),
 				ubo_size(0),
 				list(this),
@@ -685,7 +685,7 @@ public:
 		int total_data_size;
 
 		Surface() :
-				mesh(NULL),
+				mesh(nullptr),
 				format(0),
 				array_id(0),
 				vertex_id(0),
@@ -1511,7 +1511,7 @@ inline void RasterizerStorageGLES3::buffer_orphan_and_upload(unsigned int p_buff
 	// Orphan the buffer to avoid CPU/GPU sync points caused by glBufferSubData
 	// Was previously #ifndef GLES_OVER_GL however this causes stalls on desktop mac also (and possibly other)
 	if (!p_optional_orphan || (config.should_orphan)) {
-		glBufferData(p_target, p_buffer_size, NULL, p_usage);
+		glBufferData(p_target, p_buffer_size, nullptr, p_usage);
 #ifdef RASTERIZER_EXTRA_CHECKS
 		// fill with garbage off the end of the array
 		if (p_buffer_size) {

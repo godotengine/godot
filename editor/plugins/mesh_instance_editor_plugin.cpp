@@ -39,7 +39,7 @@
 
 void MeshInstanceEditor::_node_removed(Node *p_node) {
 	if (p_node == node) {
-		node = NULL;
+		node = nullptr;
 		options->hide();
 	}
 }
@@ -495,7 +495,7 @@ void MeshInstanceEditorPlugin::make_visible(bool p_visible) {
 		mesh_editor->options->show();
 	} else {
 		mesh_editor->options->hide();
-		mesh_editor->edit(NULL);
+		mesh_editor->edit(nullptr);
 	}
 }
 

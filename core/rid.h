@@ -76,12 +76,12 @@ public:
 	_FORCE_INLINE_ bool operator!=(const RID &p_rid) const {
 		return _data != p_rid._data;
 	}
-	_FORCE_INLINE_ bool is_valid() const { return _data != NULL; }
+	_FORCE_INLINE_ bool is_valid() const { return _data != nullptr; }
 
 	_FORCE_INLINE_ uint32_t get_id() const { return _data ? _data->get_id() : 0; }
 
 	_FORCE_INLINE_ RID() {
-		_data = NULL;
+		_data = nullptr;
 	}
 };
 
@@ -136,8 +136,8 @@ public:
 	_FORCE_INLINE_ T *get(const RID &p_rid) {
 #ifdef DEBUG_ENABLED
 
-		ERR_FAIL_COND_V(!p_rid.is_valid(), NULL);
-		ERR_FAIL_COND_V(!id_map.has(p_rid.get_data()), NULL);
+		ERR_FAIL_COND_V(!p_rid.is_valid(), nullptr);
+		ERR_FAIL_COND_V(!id_map.has(p_rid.get_data()), nullptr);
 #endif
 		return static_cast<T *>(p_rid.get_data());
 	}
@@ -146,7 +146,7 @@ public:
 #ifdef DEBUG_ENABLED
 
 		if (p_rid.get_data()) {
-			ERR_FAIL_COND_V(!id_map.has(p_rid.get_data()), NULL);
+			ERR_FAIL_COND_V(!id_map.has(p_rid.get_data()), nullptr);
 		}
 #endif
 		return static_cast<T *>(p_rid.get_data());
@@ -157,7 +157,7 @@ public:
 	}
 
 	_FORCE_INLINE_ bool owns(const RID &p_rid) const {
-		if (p_rid.get_data() == NULL)
+		if (p_rid.get_data() == nullptr)
 			return false;
 #ifdef DEBUG_ENABLED
 		return id_map.has(p_rid.get_data());

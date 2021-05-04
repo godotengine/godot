@@ -63,7 +63,7 @@ void DTLSServerMbedTLS::initialize() {
 }
 
 void DTLSServerMbedTLS::finalize() {
-	_create = NULL;
+	_create = nullptr;
 	available = false;
 }
 

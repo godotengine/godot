@@ -85,7 +85,7 @@ static void _debugger_get_resource_usage(List<ScriptDebuggerRemote::ResourceUsag
 	}
 }
 
-ShaderTypes *shader_types = NULL;
+ShaderTypes *shader_types = nullptr;
 
 PhysicsServer *_createGodotPhysicsCallback() {
 	return memnew(PhysicsServerSW);

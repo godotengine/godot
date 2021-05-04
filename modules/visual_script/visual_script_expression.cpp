@@ -615,12 +615,12 @@ VisualScriptExpression::ENode *VisualScriptExpression::_parse_expression() {
 
 	while (true) {
 		//keep appending stuff to expression
-		ENode *expr = NULL;
+		ENode *expr = nullptr;
 
 		Token tk;
 		_get_token(tk);
 		if (error_set)
-			return NULL;
+			return nullptr;
 
 		switch (tk.type) {
 			case TK_CURLY_BRACKET_OPEN: {
@@ -637,18 +637,18 @@ VisualScriptExpression::ENode *VisualScriptExpression::_parse_expression() {
 					//parse an expression
 					ENode *expr2 = _parse_expression();
 					if (!expr2)
-						return NULL;
+						return nullptr;
 					dn->dict.push_back(expr2);
 
 					_get_token(tk);
 					if (tk.type != TK_COLON) {
 						_set_error("Expected ':'");
-						return NULL;
+						return nullptr;
 					}
 
 					expr2 = _parse_expression();
 					if (!expr2)
-						return NULL;
+						return nullptr;
 
 					dn->dict.push_back(expr2);
 
@@ -680,7 +680,7 @@ VisualScriptExpression::ENode *VisualScriptExpression::_parse_expression() {
 					//parse an expression
 					ENode *expr2 = _parse_expression();
 					if (!expr2)
-						return NULL;
+						return nullptr;
 					an->array.push_back(expr2);
 
 					cofs = str_ofs;
@@ -700,11 +700,11 @@ VisualScriptExpression::ENode *VisualScriptExpression::_parse_expression() {
 				//a suexpression
 				ENode *e = _parse_expression();
 				if (error_set)
-					return NULL;
+					return nullptr;
 				_get_token(tk);
 				if (tk.type != TK_PARENTHESIS_CLOSE) {
 					_set_error("Expected ')'");
-					return NULL;
+					return nullptr;
 				}
 
 				expr = e;
@@ -726,7 +726,7 @@ VisualScriptExpression::ENode *VisualScriptExpression::_parse_expression() {
 					expr = input;
 				} else {
 					_set_error("Invalid input identifier '" + what + "'. For script variables, use self (locals are for inputs)." + what);
-					return NULL;
+					return nullptr;
 				}
 			} break;
 			case TK_SELF: {
@@ -745,7 +745,7 @@ VisualScriptExpression::ENode *VisualScriptExpression::_parse_expression() {
 				_get_token(tk);
 				if (tk.type != TK_PARENTHESIS_OPEN) {
 					_set_error("Expected '('");
-					return NULL;
+					return nullptr;
 				}
 
 				ConstructorNode *constructor = alloc_node<ConstructorNode>();
@@ -761,7 +761,7 @@ VisualScriptExpression::ENode *VisualScriptExpression::_parse_expression() {
 					//parse an expression
 					ENode *expr2 = _parse_expression();
 					if (!expr2)
-						return NULL;
+						return nullptr;
 
 					constructor->arguments.push_back(expr2);
 
@@ -785,7 +785,7 @@ VisualScriptExpression::ENode *VisualScriptExpression::_parse_expression() {
 				_get_token(tk);
 				if (tk.type != TK_PARENTHESIS_OPEN) {
 					_set_error("Expected '('");
-					return NULL;
+					return nullptr;
 				}
 
 				BuiltinFuncNode *bifunc = alloc_node<BuiltinFuncNode>();
@@ -801,7 +801,7 @@ VisualScriptExpression::ENode *VisualScriptExpression::_parse_expression() {
 					//parse an expression
 					ENode *expr2 = _parse_expression();
 					if (!expr2)
-						return NULL;
+						return nullptr;
 
 					bifunc->arguments.push_back(expr2);
 
@@ -841,7 +841,7 @@ VisualScriptExpression::ENode *VisualScriptExpression::_parse_expression() {
 
 			default: {
 				_set_error("Expected expression.");
-				return NULL;
+				return nullptr;
 			} break;
 		}
 
@@ -851,7 +851,7 @@ VisualScriptExpression::ENode *VisualScriptExpression::_parse_expression() {
 			int cofs2 = str_ofs;
 			_get_token(tk);
 			if (error_set)
-				return NULL;
+				return nullptr;
 
 			bool done = false;
 
@@ -864,14 +864,14 @@ VisualScriptExpression::ENode *VisualScriptExpression::_parse_expression() {
 
 					ENode *what = _parse_expression();
 					if (!what)
-						return NULL;
+						return nullptr;
 
 					index->index = what;
 
 					_get_token(tk);
 					if (tk.type != TK_BRACKET_CLOSE) {
 						_set_error("Expected ']' at end of index.");
-						return NULL;
+						return nullptr;
 					}
 					expr = index;
 
@@ -881,7 +881,7 @@ VisualScriptExpression::ENode *VisualScriptExpression::_parse_expression() {
 					_get_token(tk);
 					if (tk.type != TK_IDENTIFIER) {
 						_set_error("Expected identifier after '.'");
-						return NULL;
+						return nullptr;
 					}
 
 					StringName identifier = tk.value;
@@ -904,7 +904,7 @@ VisualScriptExpression::ENode *VisualScriptExpression::_parse_expression() {
 							//parse an expression
 							ENode *expr2 = _parse_expression();
 							if (!expr2)
-								return NULL;
+								return nullptr;
 
 							func_call->arguments.push_back(expr2);
 
@@ -954,7 +954,7 @@ VisualScriptExpression::ENode *VisualScriptExpression::_parse_expression() {
 		int cofs = str_ofs;
 		_get_token(tk);
 		if (error_set)
-			return NULL;
+			return nullptr;
 
 		Variant::Operator op = Variant::OP_MAX;
 
@@ -1137,7 +1137,7 @@ VisualScriptExpression::ENode *VisualScriptExpression::_parse_expression() {
 
 				default: {
 					_set_error("Parser bug, invalid operator in expression: " + itos(expression[i].op));
-					return NULL;
+					return nullptr;
 				}
 			}
 
@@ -1153,7 +1153,7 @@ VisualScriptExpression::ENode *VisualScriptExpression::_parse_expression() {
 
 		if (next_op == -1) {
 			_set_error("Yet another parser bug....");
-			ERR_FAIL_V(NULL);
+			ERR_FAIL_V(nullptr);
 		}
 
 		// OK! create operator..
@@ -1164,7 +1164,7 @@ VisualScriptExpression::ENode *VisualScriptExpression::_parse_expression() {
 				if (expr_pos == expression.size()) {
 					//can happen..
 					_set_error("Unexpected end of expression...");
-					return NULL;
+					return nullptr;
 				}
 			}
 
@@ -1173,7 +1173,7 @@ VisualScriptExpression::ENode *VisualScriptExpression::_parse_expression() {
 				OperatorNode *op = alloc_node<OperatorNode>();
 				op->op = expression[i].op;
 				op->nodes[0] = expression[i + 1].node;
-				op->nodes[1] = NULL;
+				op->nodes[1] = nullptr;
 				expression.write[i].is_op = false;
 				expression.write[i].node = op;
 				expression.remove(i + 1);
@@ -1182,7 +1182,7 @@ VisualScriptExpression::ENode *VisualScriptExpression::_parse_expression() {
 		} else {
 			if (next_op < 1 || next_op >= (expression.size() - 1)) {
 				_set_error("Parser bug...");
-				ERR_FAIL_V(NULL);
+				ERR_FAIL_V(nullptr);
 			}
 
 			OperatorNode *op = alloc_node<OperatorNode>();
@@ -1190,7 +1190,7 @@ VisualScriptExpression::ENode *VisualScriptExpression::_parse_expression() {
 
 			if (expression[next_op - 1].is_op) {
 				_set_error("Parser bug...");
-				ERR_FAIL_V(NULL);
+				ERR_FAIL_V(nullptr);
 			}
 
 			if (expression[next_op + 1].is_op) {
@@ -1200,7 +1200,7 @@ VisualScriptExpression::ENode *VisualScriptExpression::_parse_expression() {
 				// due to how precedence works, unaries will always disappear first
 
 				_set_error("Unexpected two consecutive operators.");
-				return NULL;
+				return nullptr;
 			}
 
 			op->nodes[0] = expression[next_op - 1].node; //expression goes as left
@@ -1222,8 +1222,8 @@ bool VisualScriptExpression::_compile_expression() {
 
 	if (nodes) {
 		memdelete(nodes);
-		nodes = NULL;
-		root = NULL;
+		nodes = nullptr;
+		root = nullptr;
 	}
 
 	error_str = String();
@@ -1233,11 +1233,11 @@ bool VisualScriptExpression::_compile_expression() {
 	root = _parse_expression();
 
 	if (error_set) {
-		root = NULL;
+		root = nullptr;
 		if (nodes) {
 			memdelete(nodes);
 		}
-		nodes = NULL;
+		nodes = nullptr;
 		return true;
 	}
 
@@ -1483,8 +1483,8 @@ VisualScriptExpression::VisualScriptExpression() {
 	output_type = Variant::NIL;
 	expression_dirty = true;
 	error_set = true;
-	root = NULL;
-	nodes = NULL;
+	root = nullptr;
+	nodes = nullptr;
 	sequenced = false;
 }
 

@@ -64,21 +64,21 @@ private:
 
 	_FORCE_INLINE_ SafeNumeric<uint32_t> *_get_refcount() const {
 		if (!_ptr)
-			return NULL;
+			return nullptr;
 
 		return reinterpret_cast<SafeNumeric<uint32_t> *>(_ptr) - 2;
 	}
 
 	_FORCE_INLINE_ uint32_t *_get_size() const {
 		if (!_ptr)
-			return NULL;
+			return nullptr;
 
 		return reinterpret_cast<uint32_t *>(_ptr) - 1;
 	}
 
 	_FORCE_INLINE_ T *_get_data() const {
 		if (!_ptr)
-			return NULL;
+			return nullptr;
 		return reinterpret_cast<T *>(_ptr);
 	}
 
@@ -133,7 +133,7 @@ public:
 	}
 
 	_FORCE_INLINE_ void clear() { resize(0); }
-	_FORCE_INLINE_ bool empty() const { return _ptr == 0; }
+	_FORCE_INLINE_ bool empty() const { return _ptr == nullptr; }
 
 	_FORCE_INLINE_ void set(int p_index, const T &p_elem) {
 		CRASH_BAD_INDEX(p_index, size());
@@ -257,7 +257,7 @@ Error CowData<T>::resize(int p_size) {
 	if (p_size == 0) {
 		// wants to clean up
 		_unref(_ptr);
-		_ptr = NULL;
+		_ptr = nullptr;
 		return OK;
 	}
 
@@ -352,7 +352,7 @@ void CowData<T>::_ref(const CowData &p_from) {
 		return; // self assign, do nothing.
 
 	_unref(_ptr);
-	_ptr = NULL;
+	_ptr = nullptr;
 
 	if (!p_from._ptr)
 		return; //nothing to do
@@ -364,7 +364,7 @@ void CowData<T>::_ref(const CowData &p_from) {
 
 template <class T>
 CowData<T>::CowData() {
-	_ptr = NULL;
+	_ptr = nullptr;
 }
 
 template <class T>

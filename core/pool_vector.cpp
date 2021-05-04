@@ -32,12 +32,12 @@
 
 Mutex pool_vector_lock;
 
-PoolAllocator *MemoryPool::memory_pool = NULL;
-uint8_t *MemoryPool::pool_memory = NULL;
-size_t *MemoryPool::pool_size = NULL;
+PoolAllocator *MemoryPool::memory_pool = nullptr;
+uint8_t *MemoryPool::pool_memory = nullptr;
+size_t *MemoryPool::pool_size = nullptr;
 
-MemoryPool::Alloc *MemoryPool::allocs = NULL;
-MemoryPool::Alloc *MemoryPool::free_list = NULL;
+MemoryPool::Alloc *MemoryPool::allocs = nullptr;
+MemoryPool::Alloc *MemoryPool::free_list = nullptr;
 uint32_t MemoryPool::alloc_count = 0;
 uint32_t MemoryPool::allocs_used = 0;
 Mutex MemoryPool::alloc_mutex;

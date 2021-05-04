@@ -56,10 +56,10 @@ struct MemoryPool {
 
 		Alloc() :
 				lock(0),
-				mem(NULL),
+				mem(nullptr),
 				pool_id(POOL_ALLOCATOR_INVALID_ID),
 				size(0),
-				free_list(NULL) {
+				free_list(nullptr) {
 		}
 	};
 
@@ -165,7 +165,7 @@ class PoolVector {
 				//if some resize
 			} else {
 				memfree(old_alloc->mem);
-				old_alloc->mem = NULL;
+				old_alloc->mem = nullptr;
 				old_alloc->size = 0;
 
 				MemoryPool::alloc_mutex.lock();
@@ -197,7 +197,7 @@ class PoolVector {
 			return;
 
 		if (!alloc->refcount.unref()) {
-			alloc = NULL;
+			alloc = nullptr;
 			return;
 		}
 
@@ -229,7 +229,7 @@ class PoolVector {
 			//if some resize
 		} else {
 			memfree(alloc->mem);
-			alloc->mem = NULL;
+			alloc->mem = nullptr;
 			alloc->size = 0;
 
 			MemoryPool::alloc_mutex.lock();
@@ -239,7 +239,7 @@ class PoolVector {
 			MemoryPool::alloc_mutex.unlock();
 		}
 
-		alloc = NULL;
+		alloc = nullptr;
 	}
 
 public:
@@ -271,14 +271,14 @@ public:
 					}
 				}
 
-				mem = NULL;
-				alloc = NULL;
+				mem = nullptr;
+				alloc = nullptr;
 			}
 		}
 
 		Access() {
-			alloc = NULL;
-			mem = NULL;
+			alloc = nullptr;
+			mem = nullptr;
 		}
 
 	public:
@@ -442,9 +442,9 @@ public:
 	void invert();
 
 	void operator=(const PoolVector &p_pool_vector) { _reference(p_pool_vector); }
-	PoolVector() { alloc = NULL; }
+	PoolVector() { alloc = nullptr; }
 	PoolVector(const PoolVector &p_pool_vector) {
-		alloc = NULL;
+		alloc = nullptr;
 		_reference(p_pool_vector);
 	}
 	~PoolVector() { _unreference(); }
@@ -491,7 +491,7 @@ template <class T>
 Error PoolVector<T>::resize(int p_size) {
 	ERR_FAIL_COND_V_MSG(p_size < 0, ERR_INVALID_PARAMETER, "Size of PoolVector cannot be negative.");
 
-	if (alloc == NULL) {
+	if (alloc == nullptr) {
 		if (p_size == 0)
 			return OK; //nothing to do here
 
@@ -578,7 +578,7 @@ Error PoolVector<T>::resize(int p_size) {
 		} else {
 			if (new_size == 0) {
 				memfree(alloc->mem);
-				alloc->mem = NULL;
+				alloc->mem = nullptr;
 				alloc->size = 0;
 
 				MemoryPool::alloc_mutex.lock();
