@@ -670,6 +670,54 @@ bool Variant::can_convert_strict(Variant::Type p_type_from, Variant::Type p_type
 	return false;
 }
 
+bool Variant::deep_equal(const Variant &p_variant, int recursion_count) const {
+	ERR_FAIL_COND_V_MSG(recursion_count > MAX_RECURSION, true, "Max recursion reached");
+
+	// Containers must be handled with recursivity checks
+	switch (type) {
+		case Variant::Type::DICTIONARY: {
+
+			if (p_variant.type != Variant::Type::DICTIONARY) {
+				return false;
+			}
+
+			const Dictionary v1_as_d = Dictionary(*this);
+			const Dictionary v2_as_d = Dictionary(p_variant);
+
+			if (!v1_as_d.deep_equal(v2_as_d, recursion_count + 1)) {
+				return false;
+			}
+
+		} break;
+		case Variant::Type::ARRAY: {
+
+			if (p_variant.type != Variant::Type::ARRAY) {
+				return false;
+			}
+
+			const Array v1_as_a = Array(*this);
+			const Array v2_as_a = Array(p_variant);
+
+			if (!v1_as_a.deep_equal(v2_as_a, recursion_count + 1)) {
+				return false;
+			}
+
+		} break;
+		default: {
+
+			if (type != p_variant.type) //evaluation of operator== needs to be more strict
+				return false;
+			bool v;
+			Variant r;
+			evaluate(OP_EQUAL, *this, p_variant, r, v);
+			return r;
+
+		} break;
+	}
+
+	return true;
+}
+
 bool Variant::operator==(const Variant &p_variant) const {
 
 	if (type != p_variant.type) //evaluation of operator== needs to be more strict

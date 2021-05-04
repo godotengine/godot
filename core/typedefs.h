@@ -357,4 +357,6 @@ struct _GlobalLock {
 #define FALLTHROUGH
 #endif
 
+#define MAX_RECURSION 1000
+
 #endif // TYPEDEFS_H
