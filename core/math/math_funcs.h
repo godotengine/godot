@@ -218,8 +218,8 @@ public:
 		return value;
 	}
 
-	static _ALWAYS_INLINE_ int posmod(int p_x, int p_y) {
-		int value = p_x % p_y;
+	static _ALWAYS_INLINE_ int64_t posmod(int64_t p_x, int64_t p_y) {
+		int64_t value = p_x % p_y;
 		if ((value < 0 && p_y > 0) || (value > 0 && p_y < 0)) {
 			value += p_y;
 		}
