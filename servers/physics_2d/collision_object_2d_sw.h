@@ -143,8 +143,8 @@ public:
 		return shapes[p_index].metadata;
 	}
 
-	_FORCE_INLINE_ Transform2D get_transform() const { return transform; }
-	_FORCE_INLINE_ Transform2D get_inv_transform() const { return inv_transform; }
+	_FORCE_INLINE_ const Transform2D &get_transform() const { return transform; }
+	_FORCE_INLINE_ const Transform2D &get_inv_transform() const { return inv_transform; }
 	_FORCE_INLINE_ Space2DSW *get_space() const { return space; }
 
 	void set_shape_as_disabled(int p_idx, bool p_disabled);

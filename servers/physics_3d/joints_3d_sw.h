@@ -35,9 +35,14 @@
 #include "constraint_3d_sw.h"
 
 class Joint3DSW : public Constraint3DSW {
+protected:
+	bool dynamic_A = false;
+	bool dynamic_B = false;
+
 public:
-	virtual bool setup(real_t p_step) { return false; }
-	virtual void solve(real_t p_step) {}
+	virtual bool setup(real_t p_step) override { return false; }
+	virtual bool pre_solve(real_t p_step) override { return true; }
+	virtual void solve(real_t p_step) override {}
 
 	void copy_settings_from(Joint3DSW *p_joint) {
 		set_self(p_joint->get_self());

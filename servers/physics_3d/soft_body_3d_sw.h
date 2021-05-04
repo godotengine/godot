@@ -106,6 +106,8 @@ class SoftBody3DSW : public CollisionObject3DSW {
 
 	VSet<RID> exceptions;
 
+	uint64_t island_step = 0;
+
 public:
 	SoftBody3DSW();
 
@@ -123,6 +125,9 @@ public:
 	_FORCE_INLINE_ void remove_exception(const RID &p_exception) { exceptions.erase(p_exception); }
 	_FORCE_INLINE_ bool has_exception(const RID &p_exception) const { return exceptions.has(p_exception); }
 	_FORCE_INLINE_ const VSet<RID> &get_exceptions() const { return exceptions; }
+
+	_FORCE_INLINE_ uint64_t get_island_step() const { return island_step; }
+	_FORCE_INLINE_ void set_island_step(uint64_t p_step) { island_step = p_step; }
 
 	virtual void set_space(Space3DSW *p_space);
 
