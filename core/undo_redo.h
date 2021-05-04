@@ -110,12 +110,15 @@ public:
 	void add_do_reference(Object *p_object);
 	void add_undo_reference(Object *p_object);
 
+	bool has_uncommitted_action() const;
 	bool is_committing_action() const;
-	void commit_action();
+	void commit_action(bool p_apply_redo = true);
 
 	bool redo();
 	bool undo();
 	String get_current_action_name() const;
+	int get_action_count() const;
+	String get_action_name(int p_idx) const;
 	void clear_history(bool p_increase_version = true);
 
 	bool has_undo();
