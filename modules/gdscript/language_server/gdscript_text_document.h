@@ -68,6 +68,8 @@ public:
 	Array definition(const Dictionary &p_params);
 	Variant declaration(const Dictionary &p_params);
 	Variant signatureHelp(const Dictionary &p_params);
+	void cancelRequest(const Dictionary &p_params);
+	void progress(const Dictionary &p_params);
 
 	void initialize();
 

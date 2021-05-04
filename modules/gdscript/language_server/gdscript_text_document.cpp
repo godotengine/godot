@@ -38,6 +38,8 @@
 #include "gdscript_language_protocol.h"
 
 void GDScriptTextDocument::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("cancelRequest"), &GDScriptTextDocument::cancelRequest);
+	ClassDB::bind_method(D_METHOD("progress"), &GDScriptTextDocument::progress);
 	ClassDB::bind_method(D_METHOD("didOpen"), &GDScriptTextDocument::didOpen);
 	ClassDB::bind_method(D_METHOD("didChange"), &GDScriptTextDocument::didChange);
 	ClassDB::bind_method(D_METHOD("nativeSymbol"), &GDScriptTextDocument::nativeSymbol);
@@ -53,6 +55,16 @@ void GDScriptTextDocument::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("declaration"), &GDScriptTextDocument::declaration);
 	ClassDB::bind_method(D_METHOD("signatureHelp"), &GDScriptTextDocument::signatureHelp);
 	ClassDB::bind_method(D_METHOD("show_native_symbol_in_editor"), &GDScriptTextDocument::show_native_symbol_in_editor);
+}
+
+void GDScriptTextDocument::cancelRequest(const Dictionary &p_params) {
+	// IGNORE
+	return;
+}
+
+void GDScriptTextDocument::progress(const Dictionary &p_params) {
+	// IGNORE
+	return;
 }
 
 void GDScriptTextDocument::didOpen(const Variant &p_param) {
