@@ -151,7 +151,13 @@ CSGBrush *CSGShape::_get_brush() {
 		if (brush) {
 			memdelete(brush);
 		}
+
 		brush = NULL;
+
+		if (!is_visible_in_tree()) {
+			dirty = false;
+			return brush;
+		}
 
 		CSGBrush *n = _build_brush();
 
@@ -277,7 +283,14 @@ void CSGShape::_update_shape() {
 	root_mesh.unref(); //byebye root mesh
 
 	CSGBrush *n = _get_brush();
-	ERR_FAIL_COND_MSG(!n, "Cannot get CSGBrush.");
+
+	if (!n || n->faces.size() == 0) { // Empty mesh.
+		if (root_collision_shape.is_valid()) {
+			PhysicsServer::get_singleton()->body_remove_shape(root_collision_instance, 0);
+			root_collision_shape.unref();
+		}
+		return;
+	}
 
 	OAHashMap<Vector3, Vector3> vec_map;
 
@@ -336,7 +349,12 @@ void CSGShape::_update_shape() {
 	}
 
 	// Update collision faces.
-	if (root_collision_shape.is_valid()) {
+	if (use_collision) {
+
+		if (!root_collision_shape.is_valid()) {
+			root_collision_shape.instance();
+			PhysicsServer::get_singleton()->body_add_shape(root_collision_instance, root_collision_shape->get_rid());
+		}
 
 		PoolVector<Vector3> physics_faces;
 		physics_faces.resize(n->faces.size() * 3);
@@ -532,9 +550,7 @@ void CSGShape::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_VISIBILITY_CHANGED) {
 
-		if (parent) {
-			parent->_make_dirty();
-		}
+		_make_dirty();
 	}
 
 	if (p_what == NOTIFICATION_EXIT_TREE) {
