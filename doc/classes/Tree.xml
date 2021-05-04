@@ -378,11 +378,13 @@
 	</members>
 	<signals>
 		<signal name="button_pressed">
-			<argument index="0" name="item" type="TreeItem">
+			<argument index="0" name="button_index" type="int">
 			</argument>
-			<argument index="1" name="column" type="int">
+			<argument index="1" name="item" type="TreeItem">
 			</argument>
-			<argument index="2" name="id" type="int">
+			<argument index="2" name="column" type="int">
+			</argument>
+			<argument index="3" name="id" type="int">
 			</argument>
 			<description>
 				Emitted when a button on the tree was pressed (see [method TreeItem.add_button]).
@@ -407,23 +409,34 @@
 				Emitted when a cell with the [constant TreeItem.CELL_MODE_CUSTOM] is clicked to be edited.
 			</description>
 		</signal>
-		<signal name="empty_rmb">
-			<argument index="0" name="position" type="Vector2">
+		<signal name="empty_click">
+			<argument index="0" name="button_index" type="int">
+			</argument>
+			<argument index="1" name="position" type="Vector2">
 			</argument>
 			<description>
-				Emitted when the right mouse button is pressed in the empty space of the tree.
+                Emitted when a button is pressed in the empty space of the tree.
 			</description>
 		</signal>
-		<signal name="empty_tree_rmb_selected">
-			<argument index="0" name="position" type="Vector2">
+		<signal name="empty_tree_selected">
+			<argument index="0" name="button_index" type="int">
+			</argument>
+			<argument index="1" name="position" type="Vector2">
 			</argument>
 			<description>
-				Emitted when the right mouse button is pressed if right mouse button selection is active and the tree is empty.
+            	Emitted when a button is pressed if the tree is empty.
 			</description>
 		</signal>
 		<signal name="item_activated">
 			<description>
 				Emitted when an item's label is double-clicked.
+			</description>
+		</signal>
+		<signal name="item_click_edited">
+			<argument index="0" name="button_index" type="int">
+			</argument>
+			<description>
+                Emitted when an item is edited by clicking a button. Only tree cells with CELL_MODE_CUSTOM emits this signal.
 			</description>
 		</signal>
 		<signal name="item_collapsed">
@@ -446,11 +459,6 @@
 		<signal name="item_edited">
 			<description>
 				Emitted when an item is edited.
-			</description>
-		</signal>
-		<signal name="item_rmb_edited">
-			<description>
-				Emitted when an item is edited using the right mouse button.
 			</description>
 		</signal>
 		<signal name="item_rmb_selected">
