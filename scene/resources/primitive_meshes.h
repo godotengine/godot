@@ -53,16 +53,13 @@ private:
 	Ref<Material> material;
 	bool flip_faces;
 
-	mutable bool pending_request;
-	void _update() const;
-
 protected:
 	Mesh::PrimitiveType primitive_type;
 
 	static void _bind_methods();
 
 	virtual void _create_mesh_array(Array &p_arr) const = 0;
-	void _request_update();
+	void _update() const;
 
 public:
 	virtual int get_surface_count() const;

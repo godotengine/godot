@@ -87,69 +87,41 @@ void PrimitiveMesh::_update() const {
 	VisualServer::get_singleton()->mesh_add_surface_from_arrays(mesh, (VisualServer::PrimitiveType)primitive_type, arr);
 	VisualServer::get_singleton()->mesh_surface_set_material(mesh, 0, material.is_null() ? RID() : material->get_rid());
 
-	pending_request = false;
+	while (VisualServer::get_singleton()->mesh_get_surface_count(mesh) == 0) {
+		// Spin until VisualServer has finished adding surface.
+	}
 
 	clear_cache();
 
 	const_cast<PrimitiveMesh *>(this)->emit_changed();
 }
 
-void PrimitiveMesh::_request_update() {
-
-	if (pending_request)
-		return;
-	_update();
-}
-
 int PrimitiveMesh::get_surface_count() const {
-	if (pending_request) {
-		_update();
-	}
 	return 1;
 }
 
 int PrimitiveMesh::surface_get_array_len(int p_idx) const {
 	ERR_FAIL_INDEX_V(p_idx, 1, -1);
-	if (pending_request) {
-		_update();
-	}
-
 	return VisualServer::get_singleton()->mesh_surface_get_array_len(mesh, 0);
 }
 
 int PrimitiveMesh::surface_get_array_index_len(int p_idx) const {
 	ERR_FAIL_INDEX_V(p_idx, 1, -1);
-	if (pending_request) {
-		_update();
-	}
-
 	return VisualServer::get_singleton()->mesh_surface_get_array_index_len(mesh, 0);
 }
 
 Array PrimitiveMesh::surface_get_arrays(int p_surface) const {
 	ERR_FAIL_INDEX_V(p_surface, 1, Array());
-	if (pending_request) {
-		_update();
-	}
-
 	return VisualServer::get_singleton()->mesh_surface_get_arrays(mesh, 0);
 }
 
 Array PrimitiveMesh::surface_get_blend_shape_arrays(int p_surface) const {
 	ERR_FAIL_INDEX_V(p_surface, 1, Array());
-	if (pending_request) {
-		_update();
-	}
-
 	return Array();
 }
 
 uint32_t PrimitiveMesh::surface_get_format(int p_idx) const {
 	ERR_FAIL_INDEX_V(p_idx, 1, 0);
-	if (pending_request) {
-		_update();
-	}
-
 	return VisualServer::get_singleton()->mesh_surface_get_format(mesh, 0);
 }
 
@@ -159,13 +131,11 @@ Mesh::PrimitiveType PrimitiveMesh::surface_get_primitive_type(int p_idx) const {
 
 void PrimitiveMesh::surface_set_material(int p_idx, const Ref<Material> &p_material) {
 	ERR_FAIL_INDEX(p_idx, 1);
-
 	set_material(p_material);
 }
 
 Ref<Material> PrimitiveMesh::surface_get_material(int p_idx) const {
 	ERR_FAIL_INDEX_V(p_idx, 1, NULL);
-
 	return material;
 }
 
@@ -181,17 +151,10 @@ void PrimitiveMesh::set_blend_shape_name(int p_index, const StringName &p_name) 
 }
 
 AABB PrimitiveMesh::get_aabb() const {
-	if (pending_request) {
-		_update();
-	}
-
 	return aabb;
 }
 
 RID PrimitiveMesh::get_rid() const {
-	if (pending_request) {
-		_update();
-	}
 	return mesh;
 }
 
@@ -216,12 +179,9 @@ void PrimitiveMesh::_bind_methods() {
 
 void PrimitiveMesh::set_material(const Ref<Material> &p_material) {
 	material = p_material;
-	if (!pending_request) {
-		// just apply it, else it'll happen when _update is called.
-		VisualServer::get_singleton()->mesh_surface_set_material(mesh, 0, material.is_null() ? RID() : material->get_rid());
-		_change_notify();
-		emit_changed();
-	};
+	VisualServer::get_singleton()->mesh_surface_set_material(mesh, 0, material.is_null() ? RID() : material->get_rid());
+	_change_notify();
+	emit_changed();
 }
 
 Ref<Material> PrimitiveMesh::get_material() const {
@@ -246,7 +206,7 @@ AABB PrimitiveMesh::get_custom_aabb() const {
 
 void PrimitiveMesh::set_flip_faces(bool p_enable) {
 	flip_faces = p_enable;
-	_request_update();
+	_update();
 }
 
 bool PrimitiveMesh::get_flip_faces() const {
@@ -261,9 +221,6 @@ PrimitiveMesh::PrimitiveMesh() {
 
 	// assume primitive triangles as the type, correct for all but one and it will change this :)
 	primitive_type = Mesh::PRIMITIVE_TRIANGLES;
-
-	// make sure we do an update after we've finished constructing our object
-	pending_request = true;
 }
 
 PrimitiveMesh::~PrimitiveMesh() {
@@ -439,7 +396,7 @@ void CapsuleMesh::_bind_methods() {
 
 void CapsuleMesh::set_radius(const float p_radius) {
 	radius = p_radius;
-	_request_update();
+	_update();
 }
 
 float CapsuleMesh::get_radius() const {
@@ -448,7 +405,7 @@ float CapsuleMesh::get_radius() const {
 
 void CapsuleMesh::set_mid_height(const float p_mid_height) {
 	mid_height = p_mid_height;
-	_request_update();
+	_update();
 }
 
 float CapsuleMesh::get_mid_height() const {
@@ -457,7 +414,7 @@ float CapsuleMesh::get_mid_height() const {
 
 void CapsuleMesh::set_radial_segments(const int p_segments) {
 	radial_segments = p_segments > 4 ? p_segments : 4;
-	_request_update();
+	_update();
 }
 
 int CapsuleMesh::get_radial_segments() const {
@@ -466,7 +423,7 @@ int CapsuleMesh::get_radial_segments() const {
 
 void CapsuleMesh::set_rings(const int p_rings) {
 	rings = p_rings > 1 ? p_rings : 1;
-	_request_update();
+	_update();
 }
 
 int CapsuleMesh::get_rings() const {
@@ -479,6 +436,7 @@ CapsuleMesh::CapsuleMesh() {
 	mid_height = 1.0;
 	radial_segments = 64;
 	rings = 8;
+	_update();
 }
 
 /**
@@ -696,7 +654,7 @@ void CubeMesh::_bind_methods() {
 
 void CubeMesh::set_size(const Vector3 &p_size) {
 	size = p_size;
-	_request_update();
+	_update();
 }
 
 Vector3 CubeMesh::get_size() const {
@@ -705,7 +663,7 @@ Vector3 CubeMesh::get_size() const {
 
 void CubeMesh::set_subdivide_width(const int p_divisions) {
 	subdivide_w = p_divisions > 0 ? p_divisions : 0;
-	_request_update();
+	_update();
 }
 
 int CubeMesh::get_subdivide_width() const {
@@ -714,7 +672,7 @@ int CubeMesh::get_subdivide_width() const {
 
 void CubeMesh::set_subdivide_height(const int p_divisions) {
 	subdivide_h = p_divisions > 0 ? p_divisions : 0;
-	_request_update();
+	_update();
 }
 
 int CubeMesh::get_subdivide_height() const {
@@ -723,7 +681,7 @@ int CubeMesh::get_subdivide_height() const {
 
 void CubeMesh::set_subdivide_depth(const int p_divisions) {
 	subdivide_d = p_divisions > 0 ? p_divisions : 0;
-	_request_update();
+	_update();
 }
 
 int CubeMesh::get_subdivide_depth() const {
@@ -736,6 +694,7 @@ CubeMesh::CubeMesh() {
 	subdivide_w = 0;
 	subdivide_h = 0;
 	subdivide_d = 0;
+	_update();
 }
 
 /**
@@ -900,7 +859,7 @@ void CylinderMesh::_bind_methods() {
 
 void CylinderMesh::set_top_radius(const float p_radius) {
 	top_radius = p_radius;
-	_request_update();
+	_update();
 }
 
 float CylinderMesh::get_top_radius() const {
@@ -909,7 +868,7 @@ float CylinderMesh::get_top_radius() const {
 
 void CylinderMesh::set_bottom_radius(const float p_radius) {
 	bottom_radius = p_radius;
-	_request_update();
+	_update();
 }
 
 float CylinderMesh::get_bottom_radius() const {
@@ -918,7 +877,7 @@ float CylinderMesh::get_bottom_radius() const {
 
 void CylinderMesh::set_height(const float p_height) {
 	height = p_height;
-	_request_update();
+	_update();
 }
 
 float CylinderMesh::get_height() const {
@@ -927,7 +886,7 @@ float CylinderMesh::get_height() const {
 
 void CylinderMesh::set_radial_segments(const int p_segments) {
 	radial_segments = p_segments > 4 ? p_segments : 4;
-	_request_update();
+	_update();
 }
 
 int CylinderMesh::get_radial_segments() const {
@@ -936,7 +895,7 @@ int CylinderMesh::get_radial_segments() const {
 
 void CylinderMesh::set_rings(const int p_rings) {
 	rings = p_rings > 0 ? p_rings : 0;
-	_request_update();
+	_update();
 }
 
 int CylinderMesh::get_rings() const {
@@ -950,6 +909,7 @@ CylinderMesh::CylinderMesh() {
 	height = 2.0;
 	radial_segments = 64;
 	rings = 4;
+	_update();
 }
 
 /**
@@ -1033,7 +993,7 @@ void PlaneMesh::_bind_methods() {
 
 void PlaneMesh::set_size(const Size2 &p_size) {
 	size = p_size;
-	_request_update();
+	_update();
 }
 
 Size2 PlaneMesh::get_size() const {
@@ -1042,7 +1002,7 @@ Size2 PlaneMesh::get_size() const {
 
 void PlaneMesh::set_subdivide_width(const int p_divisions) {
 	subdivide_w = p_divisions > 0 ? p_divisions : 0;
-	_request_update();
+	_update();
 }
 
 int PlaneMesh::get_subdivide_width() const {
@@ -1051,7 +1011,7 @@ int PlaneMesh::get_subdivide_width() const {
 
 void PlaneMesh::set_subdivide_depth(const int p_divisions) {
 	subdivide_d = p_divisions > 0 ? p_divisions : 0;
-	_request_update();
+	_update();
 }
 
 int PlaneMesh::get_subdivide_depth() const {
@@ -1063,6 +1023,7 @@ PlaneMesh::PlaneMesh() {
 	size = Size2(2.0, 2.0);
 	subdivide_w = 0;
 	subdivide_d = 0;
+	_update();
 }
 
 /**
@@ -1300,7 +1261,7 @@ void PrismMesh::_bind_methods() {
 
 void PrismMesh::set_left_to_right(const float p_left_to_right) {
 	left_to_right = p_left_to_right;
-	_request_update();
+	_update();
 }
 
 float PrismMesh::get_left_to_right() const {
@@ -1309,7 +1270,7 @@ float PrismMesh::get_left_to_right() const {
 
 void PrismMesh::set_size(const Vector3 &p_size) {
 	size = p_size;
-	_request_update();
+	_update();
 }
 
 Vector3 PrismMesh::get_size() const {
@@ -1318,7 +1279,7 @@ Vector3 PrismMesh::get_size() const {
 
 void PrismMesh::set_subdivide_width(const int p_divisions) {
 	subdivide_w = p_divisions > 0 ? p_divisions : 0;
-	_request_update();
+	_update();
 }
 
 int PrismMesh::get_subdivide_width() const {
@@ -1327,7 +1288,7 @@ int PrismMesh::get_subdivide_width() const {
 
 void PrismMesh::set_subdivide_height(const int p_divisions) {
 	subdivide_h = p_divisions > 0 ? p_divisions : 0;
-	_request_update();
+	_update();
 }
 
 int PrismMesh::get_subdivide_height() const {
@@ -1336,7 +1297,7 @@ int PrismMesh::get_subdivide_height() const {
 
 void PrismMesh::set_subdivide_depth(const int p_divisions) {
 	subdivide_d = p_divisions > 0 ? p_divisions : 0;
-	_request_update();
+	_update();
 }
 
 int PrismMesh::get_subdivide_depth() const {
@@ -1350,6 +1311,7 @@ PrismMesh::PrismMesh() {
 	subdivide_w = 0;
 	subdivide_h = 0;
 	subdivide_d = 0;
+	_update();
 }
 
 /**
@@ -1416,11 +1378,12 @@ void QuadMesh::_bind_methods() {
 QuadMesh::QuadMesh() {
 	primitive_type = PRIMITIVE_TRIANGLES;
 	size = Size2(1.0, 1.0);
+	_update();
 }
 
 void QuadMesh::set_size(const Size2 &p_size) {
 	size = p_size;
-	_request_update();
+	_update();
 }
 
 Size2 QuadMesh::get_size() const {
@@ -1524,7 +1487,7 @@ void SphereMesh::_bind_methods() {
 
 void SphereMesh::set_radius(const float p_radius) {
 	radius = p_radius;
-	_request_update();
+	_update();
 }
 
 float SphereMesh::get_radius() const {
@@ -1533,7 +1496,7 @@ float SphereMesh::get_radius() const {
 
 void SphereMesh::set_height(const float p_height) {
 	height = p_height;
-	_request_update();
+	_update();
 }
 
 float SphereMesh::get_height() const {
@@ -1542,7 +1505,7 @@ float SphereMesh::get_height() const {
 
 void SphereMesh::set_radial_segments(const int p_radial_segments) {
 	radial_segments = p_radial_segments > 4 ? p_radial_segments : 4;
-	_request_update();
+	_update();
 }
 
 int SphereMesh::get_radial_segments() const {
@@ -1551,7 +1514,7 @@ int SphereMesh::get_radial_segments() const {
 
 void SphereMesh::set_rings(const int p_rings) {
 	rings = p_rings > 1 ? p_rings : 1;
-	_request_update();
+	_update();
 }
 
 int SphereMesh::get_rings() const {
@@ -1560,7 +1523,7 @@ int SphereMesh::get_rings() const {
 
 void SphereMesh::set_is_hemisphere(const bool p_is_hemisphere) {
 	is_hemisphere = p_is_hemisphere;
-	_request_update();
+	_update();
 }
 
 bool SphereMesh::get_is_hemisphere() const {
@@ -1574,6 +1537,7 @@ SphereMesh::SphereMesh() {
 	radial_segments = 64;
 	rings = 32;
 	is_hemisphere = false;
+	_update();
 }
 
 /**
@@ -1590,4 +1554,5 @@ void PointMesh::_create_mesh_array(Array &p_arr) const {
 
 PointMesh::PointMesh() {
 	primitive_type = PRIMITIVE_POINTS;
+	_update();
 }
