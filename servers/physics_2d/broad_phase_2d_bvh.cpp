@@ -43,7 +43,7 @@ void BroadPhase2DBVH::move(ID p_id, const Rect2 &p_aabb) {
 
 void BroadPhase2DBVH::set_static(ID p_id, bool p_static) {
 	CollisionObject2DSW *it = bvh.get(p_id - 1);
-	bvh.set_pairable(p_id - 1, !p_static, 1 << it->get_type(), p_static ? 0 : 0xFFFFF); // Pair everything, don't care?
+	bvh.set_pairable(p_id - 1, !p_static, 1 << it->get_type(), p_static ? 0 : 0xFFFFF, false); // Pair everything, don't care?
 }
 void BroadPhase2DBVH::remove(ID p_id) {
 	bvh.erase(p_id - 1);

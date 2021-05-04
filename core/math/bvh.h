@@ -153,10 +153,10 @@ public:
 		return deactivate(h);
 	}
 
-	void set_pairable(uint32_t p_handle, bool p_pairable, uint32_t p_pairable_type, uint32_t p_pairable_mask) {
+	void set_pairable(uint32_t p_handle, bool p_pairable, uint32_t p_pairable_type, uint32_t p_pairable_mask, bool p_force_collision_check = true) {
 		BVHHandle h;
 		h.set(p_handle);
-		set_pairable(h, p_pairable, p_pairable_type, p_pairable_mask);
+		set_pairable(h, p_pairable, p_pairable_type, p_pairable_mask, p_force_collision_check);
 	}
 
 	bool is_pairable(uint32_t p_handle) const {
@@ -277,15 +277,16 @@ public:
 	}
 
 	// prefer calling this directly as type safe
-	void set_pairable(const BVHHandle &p_handle, bool p_pairable, uint32_t p_pairable_type, uint32_t p_pairable_mask) {
-		tree.item_set_pairable(p_handle, p_pairable, p_pairable_type, p_pairable_mask);
+	void set_pairable(const BVHHandle &p_handle, bool p_pairable, uint32_t p_pairable_type, uint32_t p_pairable_mask, bool p_force_collision_check = true) {
+		// Returns true if the pairing state has changed.
+		bool state_changed = tree.item_set_pairable(p_handle, p_pairable, p_pairable_type, p_pairable_mask);
 
 		if (USE_PAIRS) {
 			// not sure if absolutely necessary to flush collisions here. It will cost performance to, instead
 			// of waiting for update, so only uncomment this if there are bugs.
 			//_check_for_collisions();
 
-			if (get_active(p_handle)) {
+			if ((p_force_collision_check || state_changed) && get_active(p_handle)) {
 				// when the pairable state changes, we need to force a collision check because newly pairable
 				// items may be in collision, and unpairable items might move out of collision.
 				// We cannot depend on waiting for the next update, because that may come much later.

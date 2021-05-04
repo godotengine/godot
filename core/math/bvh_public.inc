@@ -280,18 +280,19 @@ void item_get_ABB(const BVHHandle &p_handle, BVHABB_CLASS &r_abb) {
 	r_abb = leaf.get_aabb(ref.item_id);
 }
 
-void item_set_pairable(const BVHHandle &p_handle, bool p_pairable, uint32_t p_pairable_type, uint32_t p_pairable_mask) {
+bool item_set_pairable(const BVHHandle &p_handle, bool p_pairable, uint32_t p_pairable_type, uint32_t p_pairable_mask) {
 	// change tree?
 	uint32_t ref_id = p_handle.id();
 
 	ItemExtra &ex = _extra[ref_id];
 	ItemRef &ref = _refs[ref_id];
 
-	ex.pairable_type = p_pairable_type;
-	ex.pairable_mask = p_pairable_mask;
-
 	bool active = ref.is_active();
 	bool pairable_changed = (ex.pairable != 0) != p_pairable;
+	bool state_changed = pairable_changed || (ex.pairable_type != p_pairable_type) || (ex.pairable_mask != p_pairable_mask);
+
+	ex.pairable_type = p_pairable_type;
+	ex.pairable_mask = p_pairable_mask;
 
 	if (active && pairable_changed) {
 		// record abb
@@ -328,6 +329,8 @@ void item_set_pairable(const BVHHandle &p_handle, bool p_pairable, uint32_t p_pa
 		// always keep this up to date
 		ex.pairable = p_pairable;
 	}
+
+	return state_changed;
 }
 
 void incremental_optimize() {
