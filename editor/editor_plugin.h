@@ -225,6 +225,9 @@ public:
 	EditorInterface *get_editor_interface();
 	ScriptCreateDialog *get_script_create_dialog();
 
+	void add_undo_redo_inspector_hook_callback(Callable p_callable);
+	void remove_undo_redo_inspector_hook_callback(Callable p_callable);
+
 	int update_overlays() const;
 
 	void queue_save_layout();

@@ -2266,6 +2266,22 @@ void EditorInspector::_edit_set(const String &p_name, const Variant &p_value, bo
 		undo_redo->add_do_property(object, p_name, p_value);
 		undo_redo->add_undo_property(object, p_name, object->get(p_name));
 
+		Variant v_undo_redo = (Object *)undo_redo;
+		Variant v_object = object;
+		Variant v_name = p_name;
+		for (int i = 0; i < EditorNode::get_singleton()->get_editor_data().get_undo_redo_inspector_hook_callback().size(); i++) {
+			const Callable &callback = EditorNode::get_singleton()->get_editor_data().get_undo_redo_inspector_hook_callback()[i];
+
+			const Variant *p_arguments[] = { &v_undo_redo, &v_object, &v_name, &p_value };
+			Variant return_value;
+			Callable::CallError call_error;
+
+			callback.call(p_arguments, 4, return_value, call_error);
+			if (call_error.error != Callable::CallError::CALL_OK) {
+				ERR_PRINT("Invalid UndoRedo callback.");
+			}
+		}
+
 		if (p_refresh_all) {
 			undo_redo->add_do_method(this, "_edit_request_change", object, "");
 			undo_redo->add_undo_method(this, "_edit_request_change", object, "");
