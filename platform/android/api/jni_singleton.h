@@ -34,6 +34,7 @@
 #include <core/engine.h>
 #include <core/variant.h>
 #ifdef ANDROID_ENABLED
+#include <platform/android/api/java_class_wrapper.h>
 #include <platform/android/jni_utils.h>
 #endif
 
@@ -49,13 +50,15 @@ class JNISingleton : public Object {
 		Vector<Variant::Type> argtypes;
 	};
 
-	jobject instance;
+	Ref<JavaObject> instance;
 	Map<StringName, MethodData> method_map;
 #endif
 
 public:
 	virtual Variant call(const StringName &p_method, const Variant **p_args, int p_argcount, Variant::CallError &r_error) {
 #ifdef ANDROID_ENABLED
+		return instance->call(p_method, p_args, p_argcount, r_error);
+#if 0
 		Map<StringName, MethodData>::Element *E = method_map.find(p_method);
 
 		// Check the method we're looking for is in the JNISingleton map and that
@@ -187,6 +190,7 @@ public:
 		env->PopLocalFrame(NULL);
 
 		return ret;
+#endif
 #else // ANDROID_ENABLED
 
 		// Defaulting to the regular instance calls.
@@ -195,12 +199,12 @@ public:
 	}
 
 #ifdef ANDROID_ENABLED
-	jobject get_instance() const {
+	Ref<JavaObject> get_instance() const {
 
 		return instance;
 	}
 
-	void set_instance(jobject p_instance) {
+	void set_instance(const Ref<JavaObject> &p_instance) {
 
 		instance = p_instance;
 	}
@@ -233,7 +237,7 @@ public:
 
 	JNISingleton() {
 #ifdef ANDROID_ENABLED
-		instance = NULL;
+		//instance = nullptr;
 #endif
 	}
 };
