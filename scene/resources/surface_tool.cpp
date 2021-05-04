@@ -851,7 +851,7 @@ void SurfaceTool::mikktGetTexCoord(const SMikkTSpaceContext *pContext, float fvT
 void SurfaceTool::mikktSetTSpaceDefault(const SMikkTSpaceContext *pContext, const float fvTangent[], const float fvBiTangent[], const float fMagS, const float fMagT,
 		const tbool bIsOrientationPreserving, const int iFace, const int iVert) {
 	TangentGenerationContextUserData &triangle_data = *reinterpret_cast<TangentGenerationContextUserData *>(pContext->m_pUserData);
-	Vertex *vtx = NULL;
+	Vertex *vtx = nullptr;
 	if (triangle_data.indices.size() > 0) {
 		int index = triangle_data.indices[iFace * 3 + iVert]->get();
 		if (index < triangle_data.vertices.size()) {
@@ -861,7 +861,7 @@ void SurfaceTool::mikktSetTSpaceDefault(const SMikkTSpaceContext *pContext, cons
 		vtx = &triangle_data.vertices[iFace * 3 + iVert]->get();
 	}
 
-	if (vtx != NULL) {
+	if (vtx != nullptr) {
 		vtx->tangent = Vector3(fvTangent[0], fvTangent[1], fvTangent[2]);
 		vtx->binormal = Vector3(-fvBiTangent[0], -fvBiTangent[1], -fvBiTangent[2]); // for some reason these are reversed, something with the coordinate system in Godot
 	}
@@ -878,7 +878,7 @@ void SurfaceTool::generate_tangents() {
 	mkif.m_getPosition = mikktGetPosition;
 	mkif.m_getTexCoord = mikktGetTexCoord;
 	mkif.m_setTSpace = mikktSetTSpaceDefault;
-	mkif.m_setTSpaceBasic = NULL;
+	mkif.m_setTSpaceBasic = nullptr;
 
 	SMikkTSpaceContext msc;
 	msc.m_pInterface = &mkif;

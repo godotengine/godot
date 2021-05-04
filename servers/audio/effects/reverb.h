@@ -67,7 +67,7 @@ private:
 
 		Comb() {
 			size = 0;
-			buffer = 0;
+			buffer = nullptr;
 			feedback = 0;
 			damp_h = 0;
 			pos = 0;
@@ -81,7 +81,7 @@ private:
 		int extra_spread_frames;
 		AllPass() {
 			size = 0;
-			buffer = 0;
+			buffer = nullptr;
 			pos = 0;
 		}
 	};

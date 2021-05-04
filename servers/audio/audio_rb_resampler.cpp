@@ -198,17 +198,17 @@ void AudioRBResampler::clear() {
 	//should be stopped at this point but just in case
 	memdelete_arr(rb);
 	memdelete_arr(read_buf);
-	rb = NULL;
+	rb = nullptr;
 	offset = 0;
 	rb_read_pos.set(0);
 	rb_write_pos.set(0);
-	read_buf = NULL;
+	read_buf = nullptr;
 }
 
 AudioRBResampler::AudioRBResampler() {
-	rb = NULL;
+	rb = nullptr;
 	offset = 0;
-	read_buf = NULL;
+	read_buf = nullptr;
 	rb_read_pos.set(0);
 	rb_write_pos.set(0);
 

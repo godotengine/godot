@@ -104,7 +104,7 @@ void ScriptDebuggerRemote::_put_variable(const String &p_name, const Variant &p_
 	}
 
 	int len = 0;
-	Error err = encode_variant(var, NULL, len, true);
+	Error err = encode_variant(var, nullptr, len, true);
 	if (err != OK)
 		ERR_PRINT("Failed to encode variant.");
 
@@ -652,7 +652,7 @@ void ScriptDebuggerRemote::_send_object_id(ObjectID p_id) {
 
 		//only send information that can be sent..
 		int len = 0; //test how big is this to encode
-		encode_variant(var, NULL, len);
+		encode_variant(var, nullptr, len);
 		if (len > packet_peer_stream->get_output_buffer_max_size()) { //limit to max size
 			prop.push_back(PROPERTY_HINT_OBJECT_TOO_BIG);
 			prop.push_back("");
@@ -1158,7 +1158,7 @@ void ScriptDebuggerRemote::set_allow_focus_steal_pid(OS::ProcessID p_pid) {
 	allow_focus_steal_pid = p_pid;
 }
 
-ScriptDebuggerRemote::ResourceUsageFunc ScriptDebuggerRemote::resource_usage_func = NULL;
+ScriptDebuggerRemote::ResourceUsageFunc ScriptDebuggerRemote::resource_usage_func = nullptr;
 
 ScriptDebuggerRemote::ScriptDebuggerRemote() :
 		profiling(false),
@@ -1187,7 +1187,7 @@ ScriptDebuggerRemote::ScriptDebuggerRemote() :
 		allow_focus_steal_pid(0),
 		locking(false),
 		poll_every(0),
-		scene_tree(NULL) {
+		scene_tree(nullptr) {
 	packet_peer_stream->set_stream_peer(tcp_client);
 	packet_peer_stream->set_output_buffer_max_size((1024 * 1024 * 8) - 4); // 8 MiB should be way more than enough, minus 4 bytes for separator.
 

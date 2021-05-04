@@ -33,7 +33,7 @@
 #include "core/print_string.h"
 
 BroadPhaseSW::ID BroadPhaseBasic::create(CollisionObjectSW *p_object, int p_subindex, const AABB &p_aabb) {
-	ERR_FAIL_COND_V(p_object == NULL, 0);
+	ERR_FAIL_COND_V(p_object == nullptr, 0);
 
 	current++;
 
@@ -80,7 +80,7 @@ void BroadPhaseBasic::remove(ID p_id) {
 
 CollisionObjectSW *BroadPhaseBasic::get_object(ID p_id) const {
 	const Map<ID, Element>::Element *E = element_map.find(p_id);
-	ERR_FAIL_COND_V(!E, NULL);
+	ERR_FAIL_COND_V(!E, nullptr);
 	return E->get().owner;
 }
 bool BroadPhaseBasic::is_static(ID p_id) const {
@@ -176,7 +176,7 @@ void BroadPhaseBasic::update() {
 			}
 
 			if (pair_ok && !E) {
-				void *data = NULL;
+				void *data = nullptr;
 				if (pair_callback) {
 					data = pair_callback(elem_A->owner, elem_A->subindex, elem_B->owner, elem_B->subindex, unpair_userdata);
 					if (data) {
@@ -194,8 +194,8 @@ BroadPhaseSW *BroadPhaseBasic::_create() {
 
 BroadPhaseBasic::BroadPhaseBasic() {
 	current = 1;
-	unpair_callback = NULL;
-	unpair_userdata = NULL;
-	pair_callback = NULL;
-	pair_userdata = NULL;
+	unpair_callback = nullptr;
+	unpair_userdata = nullptr;
+	pair_callback = nullptr;
+	pair_userdata = nullptr;
 }

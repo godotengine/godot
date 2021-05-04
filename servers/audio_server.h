@@ -349,7 +349,7 @@ public:
 	virtual double get_time_to_next_mix() const;
 	virtual double get_time_since_last_mix() const;
 
-	void *audio_data_alloc(uint32_t p_data_len, const uint8_t *p_from_data = NULL);
+	void *audio_data_alloc(uint32_t p_data_len, const uint8_t *p_from_data = nullptr);
 	void audio_data_free(void *p_data);
 
 	size_t audio_data_get_total_memory_usage() const;

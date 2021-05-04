@@ -293,7 +293,7 @@ Transform CollisionObject::shape_owner_get_transform(uint32_t p_owner) const {
 }
 
 Object *CollisionObject::shape_owner_get_owner(uint32_t p_owner) const {
-	ERR_FAIL_COND_V(!shapes.has(p_owner), NULL);
+	ERR_FAIL_COND_V(!shapes.has(p_owner), nullptr);
 
 	return shapes[p_owner].owner;
 }

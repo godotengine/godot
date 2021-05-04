@@ -423,8 +423,8 @@ public:
 
 		operator Variant() const;
 		Connection() {
-			source = NULL;
-			target = NULL;
+			source = nullptr;
+			target = nullptr;
 			flags = 0;
 		}
 		Connection(const Variant &p_variant);
@@ -659,10 +659,10 @@ public:
 	//void set(const String& p_name, const Variant& p_value);
 	//Variant get(const String& p_name) const;
 
-	void set(const StringName &p_name, const Variant &p_value, bool *r_valid = NULL);
-	Variant get(const StringName &p_name, bool *r_valid = NULL) const;
-	void set_indexed(const Vector<StringName> &p_names, const Variant &p_value, bool *r_valid = NULL);
-	Variant get_indexed(const Vector<StringName> &p_names, bool *r_valid = NULL) const;
+	void set(const StringName &p_name, const Variant &p_value, bool *r_valid = nullptr);
+	Variant get(const StringName &p_name, bool *r_valid = nullptr) const;
+	void set_indexed(const Vector<StringName> &p_names, const Variant &p_value, bool *r_valid = nullptr);
+	Variant get_indexed(const Vector<StringName> &p_names, bool *r_valid = nullptr) const;
 
 	void get_property_list(List<PropertyInfo> *p_list, bool p_reversed = false) const;
 
@@ -679,8 +679,8 @@ public:
 	virtual String to_string();
 
 	//used mainly by script, get and set all INCLUDING string
-	virtual Variant getvar(const Variant &p_key, bool *r_valid = NULL) const;
-	virtual void setvar(const Variant &p_key, const Variant &p_value, bool *r_valid = NULL);
+	virtual Variant getvar(const Variant &p_key, bool *r_valid = nullptr) const;
+	virtual void setvar(const Variant &p_key, const Variant &p_value, bool *r_valid = nullptr);
 
 	/* SCRIPT */
 
@@ -726,8 +726,8 @@ public:
 	void set_block_signals(bool p_block);
 	bool is_blocking_signals() const;
 
-	Variant::Type get_static_property_type(const StringName &p_property, bool *r_valid = NULL) const;
-	Variant::Type get_static_property_type_indexed(const Vector<StringName> &p_path, bool *r_valid = NULL) const;
+	Variant::Type get_static_property_type(const StringName &p_property, bool *r_valid = nullptr) const;
+	Variant::Type get_static_property_type_indexed(const Vector<StringName> &p_path, bool *r_valid = nullptr) const;
 
 	virtual void get_translatable_strings(List<String> *p_strings) const;
 

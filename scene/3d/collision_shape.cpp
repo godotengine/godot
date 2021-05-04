@@ -94,7 +94,7 @@ void CollisionShape::_notification(int p_what) {
 				parent->remove_shape_owner(owner_id);
 			}
 			owner_id = 0;
-			parent = NULL;
+			parent = nullptr;
 		} break;
 	}
 }
@@ -200,7 +200,7 @@ bool CollisionShape::is_disabled() const {
 CollisionShape::CollisionShape() {
 	//indicator = VisualServer::get_singleton()->mesh_create();
 	disabled = false;
-	parent = NULL;
+	parent = nullptr;
 	owner_id = 0;
 	set_notify_local_transform(true);
 }

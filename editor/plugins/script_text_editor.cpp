@@ -708,7 +708,7 @@ static Vector<Node *> _find_all_node_for_script(Node *p_base, Node *p_current, c
 
 static Node *_find_node_for_script(Node *p_base, Node *p_current, const Ref<Script> &p_script) {
 	if (p_current->get_owner() != p_base && p_base != p_current)
-		return NULL;
+		return nullptr;
 	Ref<Script> c = p_current->get_script();
 	if (c == p_script)
 		return p_current;
@@ -718,7 +718,7 @@ static Node *_find_node_for_script(Node *p_base, Node *p_current, const Ref<Scri
 			return found;
 	}
 
-	return NULL;
+	return nullptr;
 }
 
 static void _find_changed_scripts_for_external_editor(Node *p_base, Node *p_current, Set<Ref<Script>> &r_scripts) {
@@ -954,7 +954,7 @@ String ScriptTextEditor::_get_absolute_path(const String &rel_path) {
 }
 
 void ScriptTextEditor::update_toggle_scripts_button() {
-	if (code_editor != NULL) {
+	if (code_editor != nullptr) {
 		code_editor->update_toggle_scripts_button();
 	}
 }
@@ -1341,7 +1341,7 @@ void ScriptTextEditor::add_syntax_highlighter(SyntaxHighlighter *p_highlighter) 
 void ScriptTextEditor::set_syntax_highlighter(SyntaxHighlighter *p_highlighter) {
 	TextEdit *te = code_editor->get_text_edit();
 	te->_set_syntax_highlighting(p_highlighter);
-	if (p_highlighter != NULL)
+	if (p_highlighter != nullptr)
 		highlighter_menu->set_item_checked(highlighter_menu->get_item_idx_from_text(p_highlighter->get_name()), true);
 	else
 		highlighter_menu->set_item_checked(highlighter_menu->get_item_idx_from_text(TTR("Standard")), true);
@@ -1349,7 +1349,7 @@ void ScriptTextEditor::set_syntax_highlighter(SyntaxHighlighter *p_highlighter) 
 
 void ScriptTextEditor::_change_syntax_highlighter(int p_idx) {
 	Map<String, SyntaxHighlighter *>::Element *el = highlighters.front();
-	while (el != NULL) {
+	while (el != nullptr) {
 		highlighter_menu->set_item_checked(highlighter_menu->get_item_idx_from_text(el->key()), false);
 		el = el->next();
 	}
@@ -1429,7 +1429,7 @@ bool ScriptTextEditor::can_drop_data_fw(const Point2 &p_point, const Variant &p_
 
 static Node *_find_script_node(Node *p_edited_scene, Node *p_current_node, const Ref<Script> &script) {
 	if (p_edited_scene != p_current_node && p_current_node->get_owner() != p_edited_scene)
-		return NULL;
+		return nullptr;
 
 	Ref<Script> scr = p_current_node->get_script();
 
@@ -1442,7 +1442,7 @@ static Node *_find_script_node(Node *p_edited_scene, Node *p_current_node, const
 			return n;
 	}
 
-	return NULL;
+	return nullptr;
 }
 
 void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) {
@@ -1827,7 +1827,7 @@ ScriptTextEditor::ScriptTextEditor() {
 	context_menu = memnew(PopupMenu);
 
 	color_panel = memnew(PopupPanel);
-	color_picker = NULL;
+	color_picker = nullptr;
 
 	edit_hb = memnew(HBoxContainer);
 
@@ -1859,8 +1859,8 @@ ScriptTextEditor::ScriptTextEditor() {
 	breakpoints_menu = memnew(PopupMenu);
 	breakpoints_menu->set_name("Breakpoints");
 
-	quick_open = NULL;
-	goto_line_dialog = NULL;
+	quick_open = nullptr;
+	goto_line_dialog = nullptr;
 
 	connection_info_dialog = memnew(ConnectionInfoDialog);
 
@@ -1896,7 +1896,7 @@ static ScriptEditorBase *create_editor(const RES &p_resource) {
 	if (Object::cast_to<Script>(*p_resource)) {
 		return memnew(ScriptTextEditor);
 	}
-	return NULL;
+	return nullptr;
 }
 
 void ScriptTextEditor::register_editor() {

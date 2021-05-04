@@ -34,7 +34,7 @@
 #include "core/ustring.h"
 #include "os/os.h"
 
-static ErrorHandlerList *error_handler_list = NULL;
+static ErrorHandlerList *error_handler_list = nullptr;
 
 void add_error_handler(ErrorHandlerList *p_handler) {
 	_global_lock();
@@ -46,7 +46,7 @@ void add_error_handler(ErrorHandlerList *p_handler) {
 void remove_error_handler(ErrorHandlerList *p_handler) {
 	_global_lock();
 
-	ErrorHandlerList *prev = NULL;
+	ErrorHandlerList *prev = nullptr;
 	ErrorHandlerList *l = error_handler_list;
 
 	while (l) {

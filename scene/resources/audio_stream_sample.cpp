@@ -462,7 +462,7 @@ void AudioStreamSample::set_data(const PoolVector<uint8_t> &p_data) {
 	AudioServer::get_singleton()->lock();
 	if (data) {
 		AudioServer::get_singleton()->audio_data_free(data);
-		data = NULL;
+		data = nullptr;
 		data_bytes = 0;
 	}
 
@@ -634,14 +634,14 @@ AudioStreamSample::AudioStreamSample() {
 	loop_begin = 0;
 	loop_end = 0;
 	mix_rate = 44100;
-	data = NULL;
+	data = nullptr;
 	data_bytes = 0;
 }
 
 AudioStreamSample::~AudioStreamSample() {
 	if (data) {
 		AudioServer::get_singleton()->audio_data_free(data);
-		data = NULL;
+		data = nullptr;
 		data_bytes = 0;
 	}
 }

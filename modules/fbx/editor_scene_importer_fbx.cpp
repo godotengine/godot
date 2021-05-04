@@ -93,7 +93,7 @@ Node *EditorSceneImporterFBX::import_scene(const String &p_path, uint32_t p_flag
 	Error err;
 	FileAccessRef f = FileAccess::open(p_path, FileAccess::READ, &err);
 
-	ERR_FAIL_COND_V(!f, NULL);
+	ERR_FAIL_COND_V(!f, nullptr);
 
 	{
 		PoolByteArray data;
@@ -104,7 +104,7 @@ Node *EditorSceneImporterFBX::import_scene(const String &p_path, uint32_t p_flag
 		bool is_binary = false;
 		data.resize(f->get_len());
 
-		ERR_FAIL_COND_V(data.size() < 64, NULL);
+		ERR_FAIL_COND_V(data.size() < 64, nullptr);
 
 		f->get_buffer(data.write().ptr(), data.size());
 		PoolByteArray fbx_header;
@@ -369,7 +369,7 @@ Spatial *EditorSceneImporterFBX::_generate_scene(
 	ImportState state;
 	state.is_blender_fbx = p_is_blender_fbx;
 	state.path = p_path;
-	state.animation_player = NULL;
+	state.animation_player = nullptr;
 
 	// create new root node for scene
 	Spatial *scene_root = memnew(Spatial);

@@ -134,7 +134,7 @@ public:
 			layer_mask = 1;
 			baked_light = false;
 			redraw_if_visible = false;
-			lightmap_capture = NULL;
+			lightmap_capture = nullptr;
 			lightmap_slice = -1;
 			lightmap_uv_rect = Rect2(0, 0, 1, 1);
 		}
@@ -675,10 +675,10 @@ public:
 			energy = 1.0;
 			item_shadow_mask = 1;
 			mode = VS::CANVAS_LIGHT_MODE_ADD;
-			texture_cache = NULL;
-			next_ptr = NULL;
-			mask_next_ptr = NULL;
-			filter_next_ptr = NULL;
+			texture_cache = nullptr;
+			next_ptr = nullptr;
+			mask_next_ptr = nullptr;
+			filter_next_ptr = nullptr;
 			shadow_buffer_size = 2048;
 			shadow_gradient_length = 0;
 			shadow_filter = VS::CANVAS_LIGHT_FILTER_NONE;
@@ -1061,23 +1061,23 @@ public:
 			commands.clear();
 			clip = false;
 			rect_dirty = true;
-			final_clip_owner = NULL;
-			material_owner = NULL;
+			final_clip_owner = nullptr;
+			material_owner = nullptr;
 			light_masked = false;
 		}
 		Item() {
 			light_mask = 1;
-			vp_render = NULL;
-			next = NULL;
-			final_clip_owner = NULL;
+			vp_render = nullptr;
+			next = nullptr;
+			final_clip_owner = nullptr;
 			clip = false;
 			final_modulate = Color(1, 1, 1, 1);
 			visible = true;
 			rect_dirty = true;
 			custom_rect = false;
 			behind = false;
-			material_owner = NULL;
-			copy_back_buffer = NULL;
+			material_owner = nullptr;
+			copy_back_buffer = nullptr;
 			distance_field = false;
 			light_masked = false;
 			update_when_visible = false;
@@ -1112,7 +1112,7 @@ public:
 
 		LightOccluderInstance() {
 			enabled = true;
-			next = NULL;
+			next = nullptr;
 			light_mask = 1;
 			cull_cache = VS::CANVAS_OCCLUDER_POLYGON_CULL_DISABLED;
 		}

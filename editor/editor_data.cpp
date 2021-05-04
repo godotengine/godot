@@ -250,7 +250,7 @@ EditorPlugin *EditorData::get_editor(Object *p_object) {
 			return editor_plugins[i];
 	}
 
-	return NULL;
+	return nullptr;
 }
 
 EditorPlugin *EditorData::get_subeditor(Object *p_object) {
@@ -259,7 +259,7 @@ EditorPlugin *EditorData::get_subeditor(Object *p_object) {
 			return editor_plugins[i];
 	}
 
-	return NULL;
+	return nullptr;
 }
 
 Vector<EditorPlugin *> EditorData::get_subeditors(Object *p_object) {
@@ -278,7 +278,7 @@ EditorPlugin *EditorData::get_editor(String p_name) {
 			return editor_plugins[i];
 	}
 
-	return NULL;
+	return nullptr;
 }
 
 void EditorData::copy_object_params(Object *p_object) {
@@ -412,7 +412,7 @@ UndoRedo &EditorData::get_undo_redo() {
 }
 
 void EditorData::remove_editor_plugin(EditorPlugin *p_plugin) {
-	p_plugin->undo_redo = NULL;
+	p_plugin->undo_redo = nullptr;
 	editor_plugins.erase(p_plugin);
 }
 
@@ -425,7 +425,7 @@ int EditorData::get_editor_plugin_count() const {
 	return editor_plugins.size();
 }
 EditorPlugin *EditorData::get_editor_plugin(int p_idx) {
-	ERR_FAIL_INDEX_V(p_idx, editor_plugins.size(), NULL);
+	ERR_FAIL_INDEX_V(p_idx, editor_plugins.size(), nullptr);
 	return editor_plugins[p_idx];
 }
 
@@ -481,7 +481,7 @@ int EditorData::add_edited_scene(int p_at_pos) {
 	if (p_at_pos < 0)
 		p_at_pos = edited_scene.size();
 	EditedScene es;
-	es.root = NULL;
+	es.root = nullptr;
 	es.path = String();
 	es.file_modified_time = 0;
 	es.history_current = -1;
@@ -614,10 +614,10 @@ void EditorData::set_edited_scene(int p_idx) {
 }
 Node *EditorData::get_edited_scene_root(int p_idx) {
 	if (p_idx < 0) {
-		ERR_FAIL_INDEX_V(current_edited_scene, edited_scene.size(), NULL);
+		ERR_FAIL_INDEX_V(current_edited_scene, edited_scene.size(), nullptr);
 		return edited_scene[current_edited_scene].root;
 	} else {
-		ERR_FAIL_INDEX_V(p_idx, edited_scene.size(), NULL);
+		ERR_FAIL_INDEX_V(p_idx, edited_scene.size(), nullptr);
 		return edited_scene[p_idx].root;
 	}
 }
@@ -984,7 +984,7 @@ void EditorSelection::add_node(Node *p_node) {
 
 	changed = true;
 	nl_changed = true;
-	Object *meta = NULL;
+	Object *meta = nullptr;
 	for (List<Object *>::Element *E = editor_plugins.front(); E; E = E->next()) {
 		meta = E->get()->call("_get_editor_data", p_node);
 		if (meta) {

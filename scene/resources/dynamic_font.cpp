@@ -99,7 +99,7 @@ DynamicFontData::DynamicFontData() {
 	antialiased = true;
 	force_autohinter = false;
 	hinting = DynamicFontData::HINTING_NORMAL;
-	font_mem = NULL;
+	font_mem = nullptr;
 	font_mem_size = 0;
 }
 
@@ -113,7 +113,7 @@ Error DynamicFontAtSize::_load() {
 
 	ERR_FAIL_COND_V_MSG(error != 0, ERR_CANT_CREATE, "Error initializing FreeType.");
 
-	if (font->font_mem == NULL && font->font_path != String()) {
+	if (font->font_mem == nullptr && font->font_path != String()) {
 		FileAccess *f = FileAccess::open(font->font_path, FileAccess::READ);
 		if (!f) {
 			FT_Done_FreeType(library);
@@ -988,7 +988,7 @@ void DynamicFont::_bind_methods() {
 
 Mutex DynamicFont::dynamic_font_mutex;
 
-SelfList<DynamicFont>::List *DynamicFont::dynamic_fonts = NULL;
+SelfList<DynamicFont>::List *DynamicFont::dynamic_fonts = nullptr;
 
 DynamicFont::DynamicFont() :
 		font_list(this) {
@@ -1016,7 +1016,7 @@ void DynamicFont::initialize_dynamic_fonts() {
 
 void DynamicFont::finish_dynamic_fonts() {
 	memdelete(dynamic_fonts);
-	dynamic_fonts = NULL;
+	dynamic_fonts = nullptr;
 }
 
 void DynamicFont::update_oversampling() {

@@ -49,7 +49,7 @@ Control *SplitContainer::_getch(int p_idx) const {
 		idx++;
 	}
 
-	return NULL;
+	return nullptr;
 }
 
 void SplitContainer::_resort() {

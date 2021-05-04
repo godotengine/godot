@@ -313,12 +313,12 @@ Error EditorExportPlatform::_save_zip_file(void *p_userdata, const String &p_pat
 
 	zipOpenNewFileInZip(zip,
 			path.utf8().get_data(),
-			NULL,
-			NULL,
+			nullptr,
+			nullptr,
 			0,
-			NULL,
+			nullptr,
 			0,
-			NULL,
+			nullptr,
 			Z_DEFLATED,
 			Z_DEFAULT_COMPRESSION);
 
@@ -869,7 +869,7 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 
 	ProjectSettings::CustomMap custom_map;
 	if (path_remaps.size()) {
-		if (1) { //new remap mode, use always as it's friendlier with multiple .pck exports
+		if (true) { //new remap mode, use always as it's friendlier with multiple .pck exports
 			for (int i = 0; i < path_remaps.size(); i += 2) {
 				String from = path_remaps[i];
 				String to = path_remaps[i + 1];
@@ -1085,7 +1085,7 @@ Error EditorExportPlatform::save_zip(const Ref<EditorExportPreset> &p_preset, co
 
 	FileAccess *src_f;
 	zlib_filefunc_def io = zipio_create_io_from_file(&src_f);
-	zipFile zip = zipOpen2(p_path.utf8().get_data(), APPEND_STATUS_CREATE, NULL, &io);
+	zipFile zip = zipOpen2(p_path.utf8().get_data(), APPEND_STATUS_CREATE, nullptr, &io);
 
 	ZipData zd;
 	zd.ep = &ep;
@@ -1095,7 +1095,7 @@ Error EditorExportPlatform::save_zip(const Ref<EditorExportPreset> &p_preset, co
 	if (err != OK && err != ERR_SKIP)
 		ERR_PRINT("Failed to export project files");
 
-	zipClose(zip, NULL);
+	zipClose(zip, nullptr);
 
 	return OK;
 }
@@ -1162,7 +1162,7 @@ EditorExportPlatform::EditorExportPlatform() {
 
 ////
 
-EditorExport *EditorExport::singleton = NULL;
+EditorExport *EditorExport::singleton = nullptr;
 
 void EditorExport::_save() {
 	Ref<ConfigFile> config;
@@ -1740,7 +1740,7 @@ void EditorExportPlatformPC::set_fixup_embedded_pck_func(FixUpEmbeddedPckFunc p_
 
 EditorExportPlatformPC::EditorExportPlatformPC() {
 	chmod_flags = -1;
-	fixup_embedded_pck_func = NULL;
+	fixup_embedded_pck_func = nullptr;
 }
 
 ///////////////////////

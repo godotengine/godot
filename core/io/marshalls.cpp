@@ -366,7 +366,7 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 					(*r_len) += 8;
 
 				if (val == 0) {
-					r_variant = (Object *)NULL;
+					r_variant = (Object *)nullptr;
 				} else {
 					Ref<EncodedObjectAsID> obj_as_id;
 					obj_as_id.instance();
@@ -384,7 +384,7 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 					return err;
 
 				if (str == String()) {
-					r_variant = (Object *)NULL;
+					r_variant = (Object *)nullptr;
 				} else {
 					Object *obj = ClassDB::instance(str);
 

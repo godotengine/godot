@@ -37,7 +37,7 @@
 
 void NavigationMeshEditor::_node_removed(Node *p_node) {
 	if (p_node == node) {
-		node = NULL;
+		node = nullptr;
 
 		hide();
 	}
@@ -80,7 +80,7 @@ void NavigationMeshEditor::_clear_pressed() {
 }
 
 void NavigationMeshEditor::edit(NavigationMeshInstance *p_nav_mesh_instance) {
-	if (p_nav_mesh_instance == NULL || node == p_nav_mesh_instance) {
+	if (p_nav_mesh_instance == nullptr || node == p_nav_mesh_instance) {
 		return;
 	}
 
@@ -112,7 +112,7 @@ NavigationMeshEditor::NavigationMeshEditor() {
 
 	err_dialog = memnew(AcceptDialog);
 	add_child(err_dialog);
-	node = NULL;
+	node = nullptr;
 }
 
 NavigationMeshEditor::~NavigationMeshEditor() {
@@ -133,7 +133,7 @@ void NavigationMeshEditorPlugin::make_visible(bool p_visible) {
 	} else {
 		navigation_mesh_editor->hide();
 		navigation_mesh_editor->bake_hbox->hide();
-		navigation_mesh_editor->edit(NULL);
+		navigation_mesh_editor->edit(nullptr);
 	}
 }
 

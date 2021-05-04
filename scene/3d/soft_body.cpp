@@ -93,7 +93,7 @@ void SoftBodyVisualServerHandler::set_aabb(const AABB &p_aabb) {
 
 SoftBody::PinnedPoint::PinnedPoint() :
 		point_index(-1),
-		spatial_attachment(NULL) {
+		spatial_attachment(nullptr) {
 }
 
 SoftBody::PinnedPoint::PinnedPoint(const PinnedPoint &obj_tocopy) {
@@ -435,7 +435,7 @@ void SoftBody::prepare_physics_server() {
 		if (get_mesh().is_valid())
 			PhysicsServer::get_singleton()->soft_body_set_mesh(physics_rid, get_mesh());
 		else
-			PhysicsServer::get_singleton()->soft_body_set_mesh(physics_rid, NULL);
+			PhysicsServer::get_singleton()->soft_body_set_mesh(physics_rid, nullptr);
 
 		return;
 	}
@@ -445,7 +445,7 @@ void SoftBody::prepare_physics_server() {
 		PhysicsServer::get_singleton()->soft_body_set_mesh(physics_rid, get_mesh());
 		VS::get_singleton()->connect("frame_pre_draw", this, "_draw_soft_mesh");
 	} else {
-		PhysicsServer::get_singleton()->soft_body_set_mesh(physics_rid, NULL);
+		PhysicsServer::get_singleton()->soft_body_set_mesh(physics_rid, nullptr);
 		if (VS::get_singleton()->is_connected("frame_pre_draw", this, "_draw_soft_mesh")) {
 			VS::get_singleton()->disconnect("frame_pre_draw", this, "_draw_soft_mesh");
 		}
@@ -782,7 +782,7 @@ void SoftBody::_remove_pinned_point(int p_point_index) {
 int SoftBody::_get_pinned_point(int p_point_index, SoftBody::PinnedPoint *&r_point) const {
 	const int id = _has_pinned_point(p_point_index);
 	if (-1 == id) {
-		r_point = NULL;
+		r_point = nullptr;
 		return -1;
 	} else {
 		r_point = const_cast<SoftBody::PinnedPoint *>(&pinned_points.read()[id]);

@@ -225,7 +225,7 @@ public:
 								Variant *ptrs[1] = { &old };
 								args.write[idx] = Variant::construct(t, (const Variant **)ptrs, 1, err);
 							} else {
-								args.write[idx] = Variant::construct(t, NULL, 0, err);
+								args.write[idx] = Variant::construct(t, nullptr, 0, err);
 							}
 							change_notify_deserved = true;
 							d_new["args"] = args;
@@ -639,7 +639,7 @@ public:
 		key_ofs = 0;
 		track = -1;
 		setting = false;
-		root_path = NULL;
+		root_path = nullptr;
 	}
 };
 
@@ -833,7 +833,7 @@ public:
 										Variant *ptrs[1] = { &old };
 										args.write[idx] = Variant::construct(t, (const Variant **)ptrs, 1, err);
 									} else {
-										args.write[idx] = Variant::construct(t, NULL, 0, err);
+										args.write[idx] = Variant::construct(t, nullptr, 0, err);
 									}
 									change_notify_deserved = true;
 									d_new["args"] = args;
@@ -1271,7 +1271,7 @@ public:
 	AnimationMultiTrackKeyEdit() {
 		use_fps = false;
 		setting = false;
-		root_path = NULL;
+		root_path = nullptr;
 	}
 };
 
@@ -1715,7 +1715,7 @@ AnimationTimelineEdit::AnimationTimelineEdit() {
 	use_fps = false;
 	editing = false;
 	name_limit = 150 * EDSCALE;
-	zoom = NULL;
+	zoom = nullptr;
 
 	play_position_pos = 0;
 	play_position = memnew(Control);
@@ -1811,7 +1811,7 @@ void AnimationTrackEdit::_notification(int p_what) {
 			ofs += type_icon->get_width() + hsep;
 
 			NodePath path = animation->track_get_path(track);
-			Node *node = NULL;
+			Node *node = nullptr;
 			if (root && root->has_node(path)) {
 				node = root->get_node(path);
 			}
@@ -2319,7 +2319,7 @@ bool AnimationTrackEdit::_is_value_key_valid(const Variant &p_key_value, Variant
 	Vector<StringName> leftover_path;
 	Node *node = root->get_node_and_resource(animation->track_get_path(track), res, leftover_path);
 
-	Object *obj = NULL;
+	Object *obj = nullptr;
 	if (res.is_valid()) {
 		obj = res.ptr();
 	} else if (node) {
@@ -2900,11 +2900,11 @@ void AnimationTrackEdit::_bind_methods() {
 }
 
 AnimationTrackEdit::AnimationTrackEdit() {
-	undo_redo = NULL;
-	timeline = NULL;
-	root = NULL;
-	path = NULL;
-	menu = NULL;
+	undo_redo = nullptr;
+	timeline = nullptr;
+	root = nullptr;
+	path = nullptr;
+	menu = nullptr;
 	clicking_on_name = false;
 	dropping_at = 0;
 
@@ -2949,21 +2949,21 @@ AnimationTrackEdit *AnimationTrackEditPlugin::create_value_track_edit(Object *p_
 		Variant::CallError ce;
 		return Object::cast_to<AnimationTrackEdit>(get_script_instance()->call("create_value_track_edit", (const Variant **)&argptrs, 6, ce).operator Object *());
 	}
-	return NULL;
+	return nullptr;
 }
 
 AnimationTrackEdit *AnimationTrackEditPlugin::create_audio_track_edit() {
 	if (get_script_instance()) {
 		return Object::cast_to<AnimationTrackEdit>(get_script_instance()->call("create_audio_track_edit").operator Object *());
 	}
-	return NULL;
+	return nullptr;
 }
 
 AnimationTrackEdit *AnimationTrackEditPlugin::create_animation_track_edit(Object *p_object) {
 	if (get_script_instance()) {
 		return Object::cast_to<AnimationTrackEdit>(get_script_instance()->call("create_animation_track_edit", p_object).operator Object *());
 	}
-	return NULL;
+	return nullptr;
 }
 
 ///////////////////////////////////////
@@ -3107,7 +3107,7 @@ Ref<Animation> AnimationTrackEditor::get_current_animation() const {
 }
 
 void AnimationTrackEditor::_root_removed(Node *p_root) {
-	root = NULL;
+	root = nullptr;
 }
 
 void AnimationTrackEditor::set_root(Node *p_root) {
@@ -3678,7 +3678,7 @@ PropertyInfo AnimationTrackEditor::_find_hint_for_track(int p_idx, NodePath &r_b
 	return PropertyInfo();
 }
 
-static Vector<String> _get_bezier_subindices_for_type(Variant::Type p_type, bool *r_valid = NULL) {
+static Vector<String> _get_bezier_subindices_for_type(Variant::Type p_type, bool *r_valid = nullptr) {
 	Vector<String> subindices;
 	if (r_valid) {
 		*r_valid = true;
@@ -3888,7 +3888,7 @@ void AnimationTrackEditor::_update_tracks() {
 	bool use_filter = selected_filter->is_pressed();
 
 	for (int i = 0; i < animation->get_track_count(); i++) {
-		AnimationTrackEdit *track_edit = NULL;
+		AnimationTrackEdit *track_edit = nullptr;
 
 		//find hint and info for plugin
 
@@ -3947,7 +3947,7 @@ void AnimationTrackEditor::_update_tracks() {
 		if (animation->track_get_type(i) == Animation::TYPE_ANIMATION) {
 			NodePath path = animation->track_get_path(i);
 
-			Node *node = NULL;
+			Node *node = nullptr;
 			if (root && root->has_node(path)) {
 				node = root->get_node(path);
 			}
@@ -3962,7 +3962,7 @@ void AnimationTrackEditor::_update_tracks() {
 			}
 		}
 
-		if (track_edit == NULL) {
+		if (track_edit == nullptr) {
 			//no valid plugin_found
 			track_edit = memnew(AnimationTrackEdit);
 		}
@@ -4492,7 +4492,7 @@ void AnimationTrackEditor::_add_method_key(const String &p_method) {
 					params.push_back(arg);
 				} else {
 					Variant::CallError ce;
-					Variant arg = Variant::construct(E->get().arguments[i].type, NULL, 0, ce);
+					Variant arg = Variant::construct(E->get().arguments[i].type, nullptr, 0, ce);
 					params.push_back(arg);
 				}
 			}
@@ -4575,21 +4575,21 @@ void AnimationTrackEditor::_clear_key_edit() {
 	if (key_edit) {
 		//if key edit is the object being inspected, remove it first
 		if (EditorNode::get_singleton()->get_inspector()->get_edited_object() == key_edit) {
-			EditorNode::get_singleton()->push_item(NULL);
+			EditorNode::get_singleton()->push_item(nullptr);
 		}
 
 		//then actually delete it
 		memdelete(key_edit);
-		key_edit = NULL;
+		key_edit = nullptr;
 	}
 
 	if (multi_key_edit) {
 		if (EditorNode::get_singleton()->get_inspector()->get_edited_object() == multi_key_edit) {
-			EditorNode::get_singleton()->push_item(NULL);
+			EditorNode::get_singleton()->push_item(nullptr);
 		}
 
 		memdelete(multi_key_edit);
-		multi_key_edit = NULL;
+		multi_key_edit = nullptr;
 	}
 }
 
@@ -4969,7 +4969,7 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 
 			for (int i = 0; i < animation->get_track_count(); i++) {
 				NodePath path = animation->track_get_path(i);
-				Node *node = NULL;
+				Node *node = nullptr;
 
 				if (root && root->has_node(path)) {
 					node = root->get_node(path);
@@ -5071,7 +5071,7 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 			undo_redo->create_action(TTR("Paste Tracks"));
 			for (int i = 0; i < track_clipboard.size(); i++) {
 				undo_redo->add_do_method(animation.ptr(), "add_track", track_clipboard[i].track_type);
-				Node *exists = NULL;
+				Node *exists = nullptr;
 				NodePath path = track_clipboard[i].base_path;
 
 				if (root) {
@@ -5303,7 +5303,7 @@ void AnimationTrackEditor::_cleanup_animation(Ref<Animation> p_animation) {
 	for (int i = 0; i < p_animation->get_track_count(); i++) {
 		bool prop_exists = false;
 		Variant::Type valid_type = Variant::NIL;
-		Object *obj = NULL;
+		Object *obj = nullptr;
 
 		RES res;
 		Vector<StringName> leftover_path;
@@ -5468,7 +5468,7 @@ void AnimationTrackEditor::_bind_methods() {
 }
 
 AnimationTrackEditor::AnimationTrackEditor() {
-	root = NULL;
+	root = nullptr;
 
 	undo_redo = EditorNode::get_singleton()->get_undo_redo();
 
@@ -5659,9 +5659,9 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	insert_confirm_bezier->set_text(TTR("Use Bezier Curves"));
 	icvb->add_child(insert_confirm_bezier);
 	keying = false;
-	moving_selection = 0;
-	key_edit = NULL;
-	multi_key_edit = NULL;
+	moving_selection = false;
+	key_edit = nullptr;
+	multi_key_edit = nullptr;
 
 	box_selection = memnew(Control);
 	add_child(box_selection);

@@ -279,7 +279,7 @@ void ScrollBar::_notification(int p_what) {
 			drag_node->disconnect("tree_exiting", this, "_drag_node_exit");
 		}
 
-		drag_node = NULL;
+		drag_node = nullptr;
 	}
 
 	if (p_what == NOTIFICATION_INTERNAL_PHYSICS_PROCESS) {
@@ -492,7 +492,7 @@ void ScrollBar::_drag_node_exit() {
 	if (drag_node) {
 		drag_node->disconnect("gui_input", this, "_drag_node_input");
 	}
-	drag_node = NULL;
+	drag_node = nullptr;
 }
 
 void ScrollBar::_drag_node_input(const Ref<InputEvent> &p_input) {
@@ -562,7 +562,7 @@ void ScrollBar::set_drag_node(const NodePath &p_path) {
 		}
 	}
 
-	drag_node = NULL;
+	drag_node = nullptr;
 	drag_node_path = p_path;
 
 	if (is_inside_tree()) {
@@ -610,7 +610,7 @@ ScrollBar::ScrollBar(Orientation p_orientation) {
 	orientation = p_orientation;
 	highlight = HIGHLIGHT_NONE;
 	custom_step = -1;
-	drag_node = NULL;
+	drag_node = nullptr;
 
 	drag.active = false;
 

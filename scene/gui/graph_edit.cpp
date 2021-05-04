@@ -1103,7 +1103,7 @@ void GraphEdit::_gui_input(const Ref<InputEvent> &p_ev) {
 				}
 				gn->set_selected(box_selection_mode_additive);
 			} else {
-				bool select = (previous_selected.find(gn) != NULL);
+				bool select = (previous_selected.find(gn) != nullptr);
 				if (gn->is_selected() && !select) {
 					emit_signal("node_unselected", gn);
 				} else if (!gn->is_selected() && select) {
@@ -1127,7 +1127,7 @@ void GraphEdit::_gui_input(const Ref<InputEvent> &p_ev) {
 					if (!gn)
 						continue;
 
-					bool select = (previous_selected.find(gn) != NULL);
+					bool select = (previous_selected.find(gn) != nullptr);
 					if (gn->is_selected() && !select) {
 						emit_signal("node_unselected", gn);
 					} else if (!gn->is_selected() && select) {
@@ -1187,7 +1187,7 @@ void GraphEdit::_gui_input(const Ref<InputEvent> &p_ev) {
 		}
 
 		if (b->get_button_index() == BUTTON_LEFT && b->is_pressed()) {
-			GraphNode *gn = NULL;
+			GraphNode *gn = nullptr;
 
 			for (int i = get_child_count() - 1; i >= 0; i--) {
 				GraphNode *gn_selected = Object::cast_to<GraphNode>(get_child(i));

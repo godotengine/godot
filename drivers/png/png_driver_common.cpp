@@ -114,11 +114,11 @@ Error png_to_image(const uint8_t *p_source, size_t p_size, bool p_force_linear, 
 	PoolVector<uint8_t>::Write writer = buffer.write();
 
 	// read image data to buffer and release libpng resources
-	success = png_image_finish_read(&png_img, NULL, writer.ptr(), stride, NULL);
+	success = png_image_finish_read(&png_img, nullptr, writer.ptr(), stride, nullptr);
 	ERR_FAIL_COND_V_MSG(check_error(png_img), ERR_FILE_CORRUPT, png_img.message);
 	ERR_FAIL_COND_V(!success, ERR_FILE_CORRUPT);
 
-	p_image->create(png_img.width, png_img.height, 0, dest_format, buffer);
+	p_image->create(png_img.width, png_img.height, false, dest_format, buffer);
 
 	return OK;
 }
@@ -177,7 +177,7 @@ Error image_to_png(const Ref<Image> &p_image, PoolVector<uint8_t> &p_buffer) {
 
 		PoolVector<uint8_t>::Write writer = p_buffer.write();
 		success = png_image_write_to_memory(&png_img, &writer[buffer_offset],
-				&compressed_size, 0, reader.ptr(), 0, NULL);
+				&compressed_size, 0, reader.ptr(), 0, nullptr);
 		ERR_FAIL_COND_V_MSG(check_error(png_img), FAILED, png_img.message);
 	}
 	if (!success) {
@@ -190,7 +190,7 @@ Error image_to_png(const Ref<Image> &p_image, PoolVector<uint8_t> &p_buffer) {
 
 		PoolVector<uint8_t>::Write writer = p_buffer.write();
 		success = png_image_write_to_memory(&png_img, &writer[buffer_offset],
-				&compressed_size, 0, reader.ptr(), 0, NULL);
+				&compressed_size, 0, reader.ptr(), 0, nullptr);
 		ERR_FAIL_COND_V_MSG(check_error(png_img), FAILED, png_img.message);
 		ERR_FAIL_COND_V(!success, FAILED);
 	}

@@ -1263,7 +1263,7 @@ AnimationTrackEdit *AnimationTrackEditDefaultPlugin::create_value_track_edit(Obj
 		return memnew(AnimationTrackEditColor);
 	}
 
-	return NULL;
+	return nullptr;
 }
 
 AnimationTrackEdit *AnimationTrackEditDefaultPlugin::create_audio_track_edit() {

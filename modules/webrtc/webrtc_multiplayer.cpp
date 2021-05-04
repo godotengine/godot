@@ -317,7 +317,7 @@ Error WebRTCMultiplayer::put_packet(const uint8_t *p_buffer, int p_buffer_size) 
 			break;
 	}
 
-	Map<int, Ref<ConnectedPeer>>::Element *E = NULL;
+	Map<int, Ref<ConnectedPeer>>::Element *E = nullptr;
 
 	if (target_peer > 0) {
 		E = peer_map.find(target_peer);

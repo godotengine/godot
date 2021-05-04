@@ -211,7 +211,7 @@ void NavigationPolygon::make_polygons_from_outlines() {
 			PoolVector<Vector2>::Read r2 = ol2.read();
 
 			for (int l = 0; l < olsize2; l++) {
-				if (Geometry::segment_intersects_segment_2d(r[0], outside_point, r2[l], r2[(l + 1) % olsize2], NULL)) {
+				if (Geometry::segment_intersects_segment_2d(r[0], outside_point, r2[l], r2[(l + 1) % olsize2], nullptr)) {
 					interscount++;
 				}
 			}
@@ -368,7 +368,7 @@ void NavigationPolygonInstance::_notification(int p_what) {
 					nav_id = -1;
 				}
 			}
-			navigation = NULL;
+			navigation = nullptr;
 		} break;
 		case NOTIFICATION_DRAW: {
 			if (is_inside_tree() && (Engine::get_singleton()->is_editor_hint() || get_tree()->is_debugging_navigation_hint()) && navpoly.is_valid()) {
@@ -493,7 +493,7 @@ void NavigationPolygonInstance::_bind_methods() {
 }
 
 NavigationPolygonInstance::NavigationPolygonInstance() {
-	navigation = NULL;
+	navigation = nullptr;
 	nav_id = -1;
 	enabled = true;
 	set_notify_transform(true);

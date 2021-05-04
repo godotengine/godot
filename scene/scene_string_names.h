@@ -42,7 +42,7 @@ class SceneStringNames {
 	static void create() { singleton = memnew(SceneStringNames); }
 	static void free() {
 		memdelete(singleton);
-		singleton = NULL;
+		singleton = nullptr;
 	}
 
 	SceneStringNames();

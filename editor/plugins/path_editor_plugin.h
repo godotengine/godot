@@ -49,7 +49,7 @@ public:
 	virtual void commit_handle(int p_idx, const Variant &p_restore, bool p_cancel = false);
 
 	virtual void redraw();
-	PathSpatialGizmo(Path *p_path = NULL);
+	PathSpatialGizmo(Path *p_path = nullptr);
 };
 
 class PathSpatialGizmoPlugin : public EditorSpatialGizmoPlugin {

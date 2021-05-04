@@ -504,7 +504,7 @@ public:
 		}
 	};
 
-	virtual bool body_test_motion(RID p_body, const Transform2D &p_from, const Vector2 &p_motion, bool p_infinite_inertia, float p_margin = 0.001, MotionResult *r_result = NULL, bool p_exclude_raycast_shapes = true) = 0;
+	virtual bool body_test_motion(RID p_body, const Transform2D &p_from, const Vector2 &p_motion, bool p_infinite_inertia, float p_margin = 0.001, MotionResult *r_result = nullptr, bool p_exclude_raycast_shapes = true) = 0;
 
 	struct SeparationResult {
 		float collision_depth;
@@ -633,7 +633,7 @@ class Physics2DServerManager {
 
 		ClassInfo() :
 				name(""),
-				create_callback(NULL) {}
+				create_callback(nullptr) {}
 
 		ClassInfo(String p_name, CreatePhysics2DServerCallback p_create_callback) :
 				name(p_name),

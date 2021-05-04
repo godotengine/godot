@@ -40,7 +40,7 @@
 
 #define CONTRIBUTE_URL "https://docs.godotengine.org/en/latest/community/contributing/updating_the_class_reference.html"
 
-DocData *EditorHelp::doc = NULL;
+DocData *EditorHelp::doc = nullptr;
 
 void EditorHelp::_init_colors() {
 	title_color = get_color("accent_color", "Editor");
@@ -101,7 +101,7 @@ void EditorHelp::_class_desc_select(const String &p_select) {
 		String link = p_select.substr(tag_end + 1, p_select.length()).lstrip(" ");
 
 		String topic;
-		Map<String, int> *table = NULL;
+		Map<String, int> *table = nullptr;
 
 		if (tag == "method") {
 			topic = "class_method";
@@ -494,7 +494,7 @@ void EditorHelp::_update_doc() {
 		class_desc->push_font(doc_code_font);
 		class_desc->push_indent(1);
 		class_desc->push_table(2);
-		class_desc->set_table_column_expand(1, 1);
+		class_desc->set_table_column_expand(1, true);
 
 		for (int i = 0; i < cd.properties.size(); i++) {
 			property_line[cd.properties[i].name] = class_desc->get_line_count() - 2; //gets overridden if description
@@ -596,7 +596,7 @@ void EditorHelp::_update_doc() {
 		class_desc->push_font(doc_code_font);
 		class_desc->push_indent(1);
 		class_desc->push_table(2);
-		class_desc->set_table_column_expand(1, 1);
+		class_desc->set_table_column_expand(1, true);
 
 		bool any_previous = false;
 		for (int pass = 0; pass < 2; pass++) {
@@ -664,7 +664,7 @@ void EditorHelp::_update_doc() {
 
 		class_desc->push_indent(1);
 		class_desc->push_table(2);
-		class_desc->set_table_column_expand(1, 1);
+		class_desc->set_table_column_expand(1, true);
 
 		for (int i = 0; i < cd.theme_properties.size(); i++) {
 			theme_property_line[cd.theme_properties[i].name] = class_desc->get_line_count() - 2; //gets overridden if description
@@ -957,7 +957,7 @@ void EditorHelp::_update_doc() {
 			property_line[cd.properties[i].name] = class_desc->get_line_count() - 2;
 
 			class_desc->push_table(2);
-			class_desc->set_table_column_expand(1, 1);
+			class_desc->set_table_column_expand(1, true);
 
 			class_desc->push_cell();
 			class_desc->push_font(doc_code_font);

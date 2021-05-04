@@ -49,7 +49,7 @@ Control *VisualShaderNodePlugin::create_editor(const Ref<Resource> &p_parent_res
 	if (get_script_instance()) {
 		return get_script_instance()->call("create_editor", p_parent_resource, p_node);
 	}
-	return NULL;
+	return nullptr;
 }
 
 void VisualShaderNodePlugin::_bind_methods() {
@@ -292,8 +292,8 @@ void VisualShaderEditor::_update_options_menu() {
 
 	members->clear();
 	TreeItem *root = members->create_item();
-	TreeItem *category = NULL;
-	TreeItem *sub_category = NULL;
+	TreeItem *category = nullptr;
+	TreeItem *sub_category = nullptr;
 
 	String filter = node_filter->get_text().strip_edges();
 	bool use_filter = !filter.empty();
@@ -318,11 +318,11 @@ void VisualShaderEditor::_update_options_menu() {
 
 	for (int i = 0; i < add_options.size() + 1; i++) {
 		if (i == add_options.size()) {
-			if (sub_category != NULL && item_count2 == 0) {
+			if (sub_category != nullptr && item_count2 == 0) {
 				memdelete(sub_category);
 				--item_count;
 			}
-			if (category != NULL && item_count == 0) {
+			if (category != nullptr && item_count == 0) {
 				memdelete(category);
 			}
 			break;
@@ -333,7 +333,7 @@ void VisualShaderEditor::_update_options_menu() {
 				continue;
 
 			if (prev_category != add_options[i].category) {
-				if (category != NULL && item_count == 0) {
+				if (category != nullptr && item_count == 0) {
 					memdelete(category);
 				}
 
@@ -348,8 +348,8 @@ void VisualShaderEditor::_update_options_menu() {
 
 			if (add_options[i].sub_category != "") {
 				if (prev_sub_category != add_options[i].sub_category) {
-					if (category != NULL) {
-						if (sub_category != NULL && item_count2 == 0) {
+					if (category != nullptr) {
+						if (sub_category != nullptr && item_count2 == 0) {
 							memdelete(sub_category);
 							--item_count;
 						}
@@ -363,20 +363,20 @@ void VisualShaderEditor::_update_options_menu() {
 					}
 				}
 			} else {
-				sub_category = NULL;
+				sub_category = nullptr;
 			}
 
-			TreeItem *p_category = NULL;
+			TreeItem *p_category = nullptr;
 
-			if (sub_category != NULL) {
+			if (sub_category != nullptr) {
 				p_category = sub_category;
 				++item_count2;
-			} else if (category != NULL) {
+			} else if (category != nullptr) {
 				p_category = category;
 				++item_count;
 			}
 
-			if (p_category != NULL) {
+			if (p_category != nullptr) {
 				TreeItem *item = members->create_item(p_category);
 				if (add_options[i].highend && low_driver)
 					item->set_custom_color(0, unsupported_color);
@@ -572,7 +572,7 @@ void VisualShaderEditor::_update_graph() {
 
 		node->connect("dragged", this, "_node_dragged", varray(nodes[n_i]));
 
-		Control *custom_editor = NULL;
+		Control *custom_editor = nullptr;
 		int port_offset = 0;
 
 		if (is_group) {
@@ -611,7 +611,7 @@ void VisualShaderEditor::_update_graph() {
 		} else if (custom_editor) {
 			port_offset++;
 			node->add_child(custom_editor);
-			custom_editor = NULL;
+			custom_editor = nullptr;
 		}
 
 		if (is_group) {
@@ -1094,7 +1094,7 @@ void VisualShaderEditor::_expression_focus_out(Object *text_edit, int p_node) {
 }
 
 void VisualShaderEditor::_rebuild() {
-	if (visual_shader != NULL) {
+	if (visual_shader != nullptr) {
 		EditorNode::get_singleton()->get_log()->clear();
 		visual_shader->rebuild();
 	}
@@ -1117,7 +1117,7 @@ void VisualShaderEditor::_set_node_size(int p_type, int p_node, const Vector2 &p
 
 	group_node->set_size(size);
 
-	GraphNode *gn = NULL;
+	GraphNode *gn = nullptr;
 	if (edit_type->get_selected() == p_type) { // check - otherwise the error will be emitted
 		Node *node2 = graph->get_node(itos(p_node));
 		gn = Object::cast_to<GraphNode>(node2);
@@ -1132,7 +1132,7 @@ void VisualShaderEditor::_set_node_size(int p_type, int p_node, const Vector2 &p
 	if (!expression_node.is_null()) {
 		Control *text_box = expression_node->get_control(0);
 		Size2 box_size = size;
-		if (gn != NULL) {
+		if (gn != nullptr) {
 			if (box_size.x < 150 * EDSCALE || box_size.y < 0) {
 				box_size.x = gn->get_size().x;
 			}
@@ -1280,7 +1280,7 @@ void VisualShaderEditor::_edit_port_default_input(Object *p_button, int p_node, 
 	ERR_FAIL_COND(!button);
 	Variant value = vsn->get_input_port_default_value(p_port);
 	property_editor->set_global_position(button->get_global_position() + Vector2(0, button->get_size().height));
-	property_editor->edit(NULL, "", value.get_type(), value, 0, "");
+	property_editor->edit(nullptr, "", value.get_type(), value, 0, "");
 	property_editor->popup();
 	editing_node = p_node;
 	editing_port = p_port;
@@ -1308,7 +1308,7 @@ void VisualShaderEditor::_add_texture_node(const String &p_path) {
 }
 
 VisualShaderNode *VisualShaderEditor::_add_node(int p_idx, int p_op_idx) {
-	ERR_FAIL_INDEX_V(p_idx, add_options.size(), NULL);
+	ERR_FAIL_INDEX_V(p_idx, add_options.size(), nullptr);
 
 	Ref<VisualShaderNode> vsnode;
 
@@ -1316,7 +1316,7 @@ VisualShaderNode *VisualShaderEditor::_add_node(int p_idx, int p_op_idx) {
 
 	if (!is_custom && add_options[p_idx].type != String()) {
 		VisualShaderNode *vsn = Object::cast_to<VisualShaderNode>(ClassDB::instance(add_options[p_idx].type));
-		ERR_FAIL_COND_V(!vsn, NULL);
+		ERR_FAIL_COND_V(!vsn, nullptr);
 
 		VisualShaderNodeScalarConstant *constant = Object::cast_to<VisualShaderNodeScalarConstant>(vsn);
 
@@ -1401,10 +1401,10 @@ VisualShaderNode *VisualShaderEditor::_add_node(int p_idx, int p_op_idx) {
 
 		vsnode = Ref<VisualShaderNode>(vsn);
 	} else {
-		ERR_FAIL_COND_V(add_options[p_idx].script.is_null(), NULL);
+		ERR_FAIL_COND_V(add_options[p_idx].script.is_null(), nullptr);
 		String base_type = add_options[p_idx].script->get_instance_base_type();
 		VisualShaderNode *vsn = Object::cast_to<VisualShaderNode>(ClassDB::instance(base_type));
-		ERR_FAIL_COND_V(!vsn, NULL);
+		ERR_FAIL_COND_V(!vsn, nullptr);
 		vsnode = Ref<VisualShaderNode>(vsn);
 		vsnode->set_script(add_options[p_idx].script.get_ref_ptr());
 	}
@@ -2050,7 +2050,7 @@ void VisualShaderEditor::_member_filter_changed(const String &p_text) {
 void VisualShaderEditor::_member_selected() {
 	TreeItem *item = members->get_selected();
 
-	if (item != NULL && item->has_meta("id")) {
+	if (item != nullptr && item->has_meta("id")) {
 		members_dialog->get_ok()->set_disabled(false);
 		node_desc->set_text(_get_description(item->get_meta("id")));
 	} else {
@@ -2064,7 +2064,7 @@ void VisualShaderEditor::_member_unselected() {
 
 void VisualShaderEditor::_member_create() {
 	TreeItem *item = members->get_selected();
-	if (item != NULL && item->has_meta("id")) {
+	if (item != nullptr && item->has_meta("id")) {
 		int idx = members->get_selected()->get_meta("id");
 		_add_node(idx, add_options[idx].sub_func);
 		members_dialog->hide();
@@ -2291,7 +2291,7 @@ void VisualShaderEditor::_bind_methods() {
 	ClassDB::bind_method("_member_cancel", &VisualShaderEditor::_member_cancel);
 }
 
-VisualShaderEditor *VisualShaderEditor::singleton = NULL;
+VisualShaderEditor *VisualShaderEditor::singleton = nullptr;
 
 VisualShaderEditor::VisualShaderEditor() {
 	singleton = this;
@@ -3090,7 +3090,7 @@ Control *VisualShaderNodePluginDefault::create_editor(const Ref<Resource> &p_par
 
 	Vector<StringName> properties = p_node->get_editable_properties();
 	if (properties.size() == 0) {
-		return NULL;
+		return nullptr;
 	}
 
 	List<PropertyInfo> props;
@@ -3107,7 +3107,7 @@ Control *VisualShaderNodePluginDefault::create_editor(const Ref<Resource> &p_par
 	}
 
 	if (pinfo.size() == 0)
-		return NULL;
+		return nullptr;
 
 	properties.clear();
 
@@ -3117,7 +3117,7 @@ Control *VisualShaderNodePluginDefault::create_editor(const Ref<Resource> &p_par
 	for (int i = 0; i < pinfo.size(); i++) {
 		EditorProperty *prop = EditorInspector::instantiate_property_editor(node.ptr(), pinfo[i].type, pinfo[i].name, pinfo[i].hint, pinfo[i].hint_string, pinfo[i].usage);
 		if (!prop)
-			return NULL;
+			return nullptr;
 
 		if (Object::cast_to<EditorPropertyResource>(prop)) {
 			Object::cast_to<EditorPropertyResource>(prop)->set_use_sub_inspector(false);

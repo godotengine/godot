@@ -137,7 +137,7 @@ void SkeletonEditor::_notification(int p_what) {
 
 void SkeletonEditor::_node_removed(Node *p_node) {
 	if (p_node == skeleton) {
-		skeleton = NULL;
+		skeleton = nullptr;
 		options->hide();
 	}
 }
@@ -148,7 +148,7 @@ void SkeletonEditor::_bind_methods() {
 }
 
 SkeletonEditor::SkeletonEditor() {
-	skeleton = NULL;
+	skeleton = nullptr;
 	options = memnew(MenuButton);
 	SpatialEditor::get_singleton()->add_control_to_menu_panel(options);
 
@@ -176,7 +176,7 @@ void SkeletonEditorPlugin::make_visible(bool p_visible) {
 		skeleton_editor->options->show();
 	} else {
 		skeleton_editor->options->hide();
-		skeleton_editor->edit(NULL);
+		skeleton_editor->edit(nullptr);
 	}
 }
 

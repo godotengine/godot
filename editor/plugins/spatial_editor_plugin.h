@@ -120,7 +120,7 @@ public:
 	Ref<EditorSpatialGizmoPlugin> get_plugin() const { return gizmo_plugin; }
 	Vector3 get_handle_pos(int p_idx) const;
 	bool intersect_frustum(const Camera *p_camera, const Vector<Plane> &p_frustum);
-	bool intersect_ray(Camera *p_camera, const Point2 &p_point, Vector3 &r_pos, Vector3 &r_normal, int *r_gizmo_handle = NULL, bool p_sec_first = false);
+	bool intersect_ray(Camera *p_camera, const Point2 &p_point, Vector3 &r_pos, Vector3 &r_normal, int *r_gizmo_handle = nullptr, bool p_sec_first = false);
 
 	virtual void clear();
 	virtual void create();
@@ -286,7 +286,7 @@ private:
 	void _clear_selected();
 	void _select_clicked(bool p_append, bool p_single);
 	void _select(Node *p_node, bool p_append, bool p_single);
-	ObjectID _select_ray(const Point2 &p_pos, bool p_append, bool &r_includes_current, int *r_gizmo_handle = NULL, bool p_alt_select = false);
+	ObjectID _select_ray(const Point2 &p_pos, bool p_append, bool &r_includes_current, int *r_gizmo_handle = nullptr, bool p_alt_select = false);
 	void _find_items_at_pos(const Point2 &p_pos, bool &r_includes_current, Vector<_RayResult> &results, bool p_alt_select = false);
 	Vector3 _get_ray_pos(const Vector2 &p_pos) const;
 	Vector3 _get_ray(const Vector2 &p_pos) const;
@@ -480,7 +480,7 @@ public:
 	RID sbox_instance_xray;
 
 	SpatialEditorSelectedItem() {
-		sp = NULL;
+		sp = nullptr;
 		last_xform_dirty = true;
 	}
 	~SpatialEditorSelectedItem();
@@ -755,7 +755,7 @@ public:
 
 	void update_grid();
 	void update_transform_gizmo();
-	void update_all_gizmos(Node *p_node = NULL);
+	void update_all_gizmos(Node *p_node = nullptr);
 	void snap_selected_nodes_to_floor();
 	void select_gizmo_highlight_axis(int p_axis);
 	void set_custom_camera(Node *p_camera) { custom_camera = p_camera; }
@@ -782,7 +782,7 @@ public:
 	void set_can_preview(Camera *p_preview);
 
 	SpatialEditorViewport *get_editor_viewport(int p_idx) {
-		ERR_FAIL_INDEX_V(p_idx, static_cast<int>(VIEWPORTS_COUNT), NULL);
+		ERR_FAIL_INDEX_V(p_idx, static_cast<int>(VIEWPORTS_COUNT), nullptr);
 		return viewports[p_idx];
 	}
 

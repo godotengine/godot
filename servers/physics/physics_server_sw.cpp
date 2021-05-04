@@ -46,7 +46,7 @@
 	ERR_FAIL_COND_MSG(m_object->get_space() && flushing_queries, "Can't change this state while flushing queries. Use call_deferred() or set_deferred() to change monitoring state instead.");
 
 RID PhysicsServerSW::shape_create(ShapeType p_shape) {
-	ShapeSW *shape = NULL;
+	ShapeSW *shape = nullptr;
 	switch (p_shape) {
 		case SHAPE_PLANE: {
 			shape = memnew(PlaneShapeSW);
@@ -174,8 +174,8 @@ real_t PhysicsServerSW::space_get_param(RID p_space, SpaceParameter p_param) con
 
 PhysicsDirectSpaceState *PhysicsServerSW::space_get_direct_state(RID p_space) {
 	SpaceSW *space = space_owner.get(p_space);
-	ERR_FAIL_COND_V(!space, NULL);
-	ERR_FAIL_COND_V_MSG(space->is_locked(), NULL, "Space state is inaccessible right now, wait for iteration or physics process notification.");
+	ERR_FAIL_COND_V(!space, nullptr);
+	ERR_FAIL_COND_V_MSG(space->is_locked(), nullptr, "Space state is inaccessible right now, wait for iteration or physics process notification.");
 
 	return space->get_direct_state();
 }
@@ -209,7 +209,7 @@ void PhysicsServerSW::area_set_space(RID p_area, RID p_space) {
 	AreaSW *area = area_owner.get(p_area);
 	ERR_FAIL_COND(!area);
 
-	SpaceSW *space = NULL;
+	SpaceSW *space = nullptr;
 	if (p_space.is_valid()) {
 		space = space_owner.get(p_space);
 		ERR_FAIL_COND(!space);
@@ -439,7 +439,7 @@ void PhysicsServerSW::body_set_space(RID p_body, RID p_space) {
 	BodySW *body = body_owner.get(p_body);
 	ERR_FAIL_COND(!body);
 
-	SpaceSW *space = NULL;
+	SpaceSW *space = nullptr;
 	if (p_space.is_valid()) {
 		space = space_owner.get(p_space);
 		ERR_FAIL_COND(!space);
@@ -875,8 +875,8 @@ int PhysicsServerSW::body_test_ray_separation(RID p_body, const Transform &p_tra
 
 PhysicsDirectBodyState *PhysicsServerSW::body_get_direct_state(RID p_body) {
 	BodySW *body = body_owner.get(p_body);
-	ERR_FAIL_COND_V(!body, NULL);
-	ERR_FAIL_COND_V_MSG(body->get_space()->is_locked(), NULL, "Body state is inaccessible right now, wait for iteration or physics process notification.");
+	ERR_FAIL_COND_V(!body, nullptr);
+	ERR_FAIL_COND_V_MSG(body->get_space()->is_locked(), nullptr, "Body state is inaccessible right now, wait for iteration or physics process notification.");
 
 	direct_state->body = body;
 	return direct_state;
@@ -1208,7 +1208,7 @@ void PhysicsServerSW::free(RID p_rid) {
 			_clear_query(body->get_direct_state_query());
 		*/
 
-		body->set_space(NULL);
+		body->set_space(nullptr);
 
 		while (body->get_shape_count()) {
 			body->remove_shape(0);
@@ -1225,7 +1225,7 @@ void PhysicsServerSW::free(RID p_rid) {
 			_clear_query(area->get_monitor_query());
 		*/
 
-		area->set_space(NULL);
+		area->set_space(nullptr);
 
 		while (area->get_shape_count()) {
 			area->remove_shape(0);
@@ -1238,7 +1238,7 @@ void PhysicsServerSW::free(RID p_rid) {
 
 		while (space->get_objects().size()) {
 			CollisionObjectSW *co = (CollisionObjectSW *)space->get_objects().front()->get();
-			co->set_space(NULL);
+			co->set_space(nullptr);
 		}
 
 		active_spaces.erase(space);
@@ -1405,7 +1405,7 @@ void PhysicsServerSW::_shape_col_cbk(const Vector3 &p_point_A, const Vector3 &p_
 	}
 }
 
-PhysicsServerSW *PhysicsServerSW::singleton = NULL;
+PhysicsServerSW *PhysicsServerSW::singleton = nullptr;
 PhysicsServerSW::PhysicsServerSW() {
 	singleton = this;
 

@@ -378,7 +378,7 @@ Error ResourceImporterTexture::import(const String &p_source_file, const String 
 
 	Ref<Image> image;
 	image.instance();
-	Error err = ImageLoader::load_image(p_source_file, image, NULL, hdr_as_srgb, scale);
+	Error err = ImageLoader::load_image(p_source_file, image, nullptr, hdr_as_srgb, scale);
 	if (err != OK)
 		return err;
 
@@ -524,7 +524,7 @@ const char *ResourceImporterTexture::compression_formats[] = {
 	"etc",
 	"etc2",
 	"pvrtc",
-	NULL
+	nullptr
 };
 String ResourceImporterTexture::get_import_settings_string() const {
 	String s;
@@ -577,7 +577,7 @@ bool ResourceImporterTexture::are_import_settings_valid(const String &p_path) co
 	return valid;
 }
 
-ResourceImporterTexture *ResourceImporterTexture::singleton = NULL;
+ResourceImporterTexture *ResourceImporterTexture::singleton = nullptr;
 
 ResourceImporterTexture::ResourceImporterTexture() {
 	singleton = this;

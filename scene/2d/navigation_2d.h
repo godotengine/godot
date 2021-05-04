@@ -79,9 +79,9 @@ class Navigation2D : public Node2D {
 			int C_edge;
 			List<ConnectionPending>::Element *P;
 			Edge() {
-				C = NULL;
+				C = nullptr;
 				C_edge = -1;
-				P = NULL;
+				P = nullptr;
 			}
 		};
 
@@ -107,8 +107,8 @@ class Navigation2D : public Node2D {
 		List<ConnectionPending> pending;
 
 		Connection() {
-			A = NULL;
-			B = NULL;
+			A = nullptr;
+			B = nullptr;
 			A_edge = -1;
 			B_edge = -1;
 		}
@@ -151,7 +151,7 @@ protected:
 
 public:
 	//API should be as dynamic as possible
-	int navpoly_add(const Ref<NavigationPolygon> &p_mesh, const Transform2D &p_xform, Object *p_owner = NULL);
+	int navpoly_add(const Ref<NavigationPolygon> &p_mesh, const Transform2D &p_xform, Object *p_owner = nullptr);
 	void navpoly_set_transform(int p_id, const Transform2D &p_xform);
 	void navpoly_remove(int p_id);
 

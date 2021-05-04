@@ -33,7 +33,7 @@
 #include "core/project_settings.h"
 #include "core/script_language.h"
 
-MessageQueue *MessageQueue::singleton = NULL;
+MessageQueue *MessageQueue::singleton = nullptr;
 
 MessageQueue *MessageQueue::get_singleton() {
 	return singleton;
@@ -163,7 +163,7 @@ void MessageQueue::statistics() {
 
 		Object *target = ObjectDB::get_instance(message->instance_id);
 
-		if (target != NULL) {
+		if (target != nullptr) {
 			switch (message->type & FLAG_MASK) {
 				case TYPE_CALL: {
 					if (!call_count.has(message->target))
@@ -221,7 +221,7 @@ int MessageQueue::get_max_buffer_usage() const {
 }
 
 void MessageQueue::_call_function(Object *p_target, const StringName &p_func, const Variant *p_args, int p_argcount, bool p_show_error) {
-	const Variant **argptrs = NULL;
+	const Variant **argptrs = nullptr;
 	if (p_argcount) {
 		argptrs = (const Variant **)alloca(sizeof(Variant *) * p_argcount);
 		for (int i = 0; i < p_argcount; i++) {
@@ -265,7 +265,7 @@ void MessageQueue::flush() {
 
 		Object *target = ObjectDB::get_instance(message->instance_id);
 
-		if (target != NULL) {
+		if (target != nullptr) {
 			switch (message->type & FLAG_MASK) {
 				case TYPE_CALL: {
 					Variant *args = (Variant *)(message + 1);
@@ -311,7 +311,7 @@ bool MessageQueue::is_flushing() const {
 }
 
 MessageQueue::MessageQueue() {
-	ERR_FAIL_COND_MSG(singleton != NULL, "A MessageQueue singleton already exists.");
+	ERR_FAIL_COND_MSG(singleton != nullptr, "A MessageQueue singleton already exists.");
 	singleton = this;
 	flushing = false;
 
@@ -341,6 +341,6 @@ MessageQueue::~MessageQueue() {
 			read_pos += sizeof(Variant) * message->args;
 	}
 
-	singleton = NULL;
+	singleton = nullptr;
 	memdelete_arr(buffer);
 }

@@ -451,7 +451,7 @@ public:
 	virtual real_t get_step() const { return step; }
 	PhysicsDirectBodyStateSW() {
 		singleton = this;
-		body = NULL;
+		body = nullptr;
 	}
 };
 

@@ -67,9 +67,9 @@ struct ErrorHandlerList {
 	ErrorHandlerList *next;
 
 	ErrorHandlerList() {
-		errfunc = 0;
-		next = 0;
-		userdata = 0;
+		errfunc = nullptr;
+		next = nullptr;
+		userdata = nullptr;
 	}
 };
 

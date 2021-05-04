@@ -130,7 +130,7 @@ void Spatial::_notification(int p_what) {
 			if (data.parent)
 				data.C = data.parent->data.children.push_back(this);
 			else
-				data.C = NULL;
+				data.C = nullptr;
 
 			if (data.toplevel && !Engine::get_singleton()->is_editor_hint()) {
 				if (data.parent) {
@@ -152,13 +152,13 @@ void Spatial::_notification(int p_what) {
 				get_tree()->xform_change_list.remove(&xform_change);
 			if (data.C)
 				data.parent->data.children.erase(data.C);
-			data.parent = NULL;
-			data.C = NULL;
+			data.parent = nullptr;
+			data.C = nullptr;
 			data.toplevel_active = false;
 		} break;
 		case NOTIFICATION_ENTER_WORLD: {
 			data.inside_world = true;
-			data.viewport = NULL;
+			data.viewport = nullptr;
 			Node *parent = get_parent();
 			while (parent && !data.viewport) {
 				data.viewport = Object::cast_to<Viewport>(parent);
@@ -168,7 +168,7 @@ void Spatial::_notification(int p_what) {
 			ERR_FAIL_COND(!data.viewport);
 
 			if (get_script_instance()) {
-				get_script_instance()->call_multilevel(SceneStringNames::get_singleton()->_enter_world, NULL, 0);
+				get_script_instance()->call_multilevel(SceneStringNames::get_singleton()->_enter_world, nullptr, 0);
 			}
 #ifdef TOOLS_ENABLED
 			if (Engine::get_singleton()->is_editor_hint() && get_tree()->is_node_being_edited(this)) {
@@ -196,10 +196,10 @@ void Spatial::_notification(int p_what) {
 #endif
 
 			if (get_script_instance()) {
-				get_script_instance()->call_multilevel(SceneStringNames::get_singleton()->_exit_world, NULL, 0);
+				get_script_instance()->call_multilevel(SceneStringNames::get_singleton()->_exit_world, nullptr, 0);
 			}
 
-			data.viewport = NULL;
+			data.viewport = nullptr;
 			data.inside_world = false;
 
 		} break;
@@ -762,7 +762,7 @@ Spatial::Spatial() :
 	data.toplevel = false;
 	data.toplevel_active = false;
 	data.scale = Vector3(1, 1, 1);
-	data.viewport = NULL;
+	data.viewport = nullptr;
 	data.inside_world = false;
 	data.visible = true;
 	data.disable_scale = false;
@@ -775,8 +775,8 @@ Spatial::Spatial() :
 #endif
 	data.notify_local_transform = false;
 	data.notify_transform = false;
-	data.parent = NULL;
-	data.C = NULL;
+	data.parent = nullptr;
+	data.C = nullptr;
 }
 
 Spatial::~Spatial() {

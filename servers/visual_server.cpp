@@ -33,20 +33,20 @@
 #include "core/method_bind_ext.gen.inc"
 #include "core/project_settings.h"
 
-VisualServer *VisualServer::singleton = NULL;
-VisualServer *(*VisualServer::create_func)() = NULL;
+VisualServer *VisualServer::singleton = nullptr;
+VisualServer *(*VisualServer::create_func)() = nullptr;
 
 VisualServer *VisualServer::get_singleton() {
 	return singleton;
 }
 
 VisualServer *VisualServer::create() {
-	ERR_FAIL_COND_V(singleton, NULL);
+	ERR_FAIL_COND_V(singleton, nullptr);
 
 	if (create_func)
 		return create_func();
 
-	return NULL;
+	return nullptr;
 }
 
 RID VisualServer::texture_create_from_image(const Ref<Image> &p_image, uint32_t p_flags) {
@@ -2325,5 +2325,5 @@ VisualServer::VisualServer() {
 }
 
 VisualServer::~VisualServer() {
-	singleton = NULL;
+	singleton = nullptr;
 }

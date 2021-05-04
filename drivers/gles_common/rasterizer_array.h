@@ -63,7 +63,7 @@ public:
 	void free() {
 		if (_list) {
 			memdelete_arr(_list);
-			_list = 0;
+			_list = nullptr;
 		}
 		_size = 0;
 		_max_size = 0;
@@ -115,7 +115,7 @@ template <class T>
 class RasterizerArray {
 public:
 	RasterizerArray() {
-		_list = 0;
+		_list = nullptr;
 		_size = 0;
 		_max_size = 0;
 	}
@@ -127,7 +127,7 @@ public:
 	void free() {
 		if (_list) {
 			memdelete_arr(_list);
-			_list = 0;
+			_list = nullptr;
 		}
 		_size = 0;
 		_max_size = 0;
@@ -158,7 +158,7 @@ public:
 		if (_size < _max_size) {
 			return &_list[_size++];
 		}
-		return 0;
+		return nullptr;
 	}
 
 	// several items at a time
@@ -172,7 +172,7 @@ public:
 
 		// revert
 		_size = old_size;
-		return 0;
+		return nullptr;
 	}
 
 	int size() const { return _size; }
@@ -281,7 +281,7 @@ public:
 	void free() {
 		if (_list) {
 			memdelete_arr(_list);
-			_list = 0;
+			_list = nullptr;
 		}
 		_size = 0;
 		_max_size = 0;

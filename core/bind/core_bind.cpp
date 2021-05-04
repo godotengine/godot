@@ -62,7 +62,7 @@ static const unsigned int MONTH_DAYS_TABLE[2][12] = {
 	{ 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 }
 };
 
-_ResourceLoader *_ResourceLoader::singleton = NULL;
+_ResourceLoader *_ResourceLoader::singleton = nullptr;
 
 Ref<ResourceInteractiveLoader> _ResourceLoader::load_interactive(const String &p_path, const String &p_type_hint) {
 	return ResourceLoader::load_interactive(p_path, p_type_hint);
@@ -152,7 +152,7 @@ PoolVector<String> _ResourceSaver::get_recognized_extensions(const RES &p_resour
 	return ret;
 }
 
-_ResourceSaver *_ResourceSaver::singleton = NULL;
+_ResourceSaver *_ResourceSaver::singleton = nullptr;
 
 void _ResourceSaver::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("save", "path", "resource", "flags"), &_ResourceSaver::save, DEFVAL(0));
@@ -1147,7 +1147,7 @@ void _OS::set_current_tablet_driver(const String &p_driver) {
 	OS::get_singleton()->set_current_tablet_driver(p_driver);
 }
 
-_OS *_OS::singleton = NULL;
+_OS *_OS::singleton = nullptr;
 
 void _OS::_bind_methods() {
 	//ClassDB::bind_method(D_METHOD("get_mouse_position"),&_OS::get_mouse_position);
@@ -1462,7 +1462,7 @@ _OS::_OS() {
 
 ///////////////////// GEOMETRY
 
-_Geometry *_Geometry::singleton = NULL;
+_Geometry *_Geometry::singleton = nullptr;
 
 _Geometry *_Geometry::get_singleton() {
 	return singleton;
@@ -1869,10 +1869,10 @@ void _File::flush() {
 void _File::close() {
 	if (f)
 		memdelete(f);
-	f = NULL;
+	f = nullptr;
 }
 bool _File::is_open() const {
-	return f != NULL;
+	return f != nullptr;
 }
 String _File::get_path() const {
 	ERR_FAIL_COND_V_MSG(!f, "", "File must be opened before use.");
@@ -2101,7 +2101,7 @@ bool _File::file_exists(const String &p_name) const {
 void _File::store_var(const Variant &p_var, bool p_full_objects) {
 	ERR_FAIL_COND_MSG(!f, "File must be opened before use.");
 	int len;
-	Error err = encode_variant(p_var, NULL, len, p_full_objects);
+	Error err = encode_variant(p_var, nullptr, len, p_full_objects);
 	ERR_FAIL_COND_MSG(err != OK, "Error when trying to encode Variant.");
 
 	PoolVector<uint8_t> buff;
@@ -2125,7 +2125,7 @@ Variant _File::get_var(bool p_allow_objects) const {
 	PoolVector<uint8_t>::Read r = buff.read();
 
 	Variant v;
-	Error err = decode_variant(v, &r[0], len, NULL, p_allow_objects);
+	Error err = decode_variant(v, &r[0], len, nullptr, p_allow_objects);
 	ERR_FAIL_COND_V_MSG(err != OK, Variant(), "Error when trying to encode Variant.");
 
 	return v;
@@ -2202,7 +2202,7 @@ void _File::_bind_methods() {
 }
 
 _File::_File() {
-	f = NULL;
+	f = nullptr;
 	eswap = false;
 }
 
@@ -2384,7 +2384,7 @@ _Directory::~_Directory() {
 		memdelete(d);
 }
 
-_Marshalls *_Marshalls::singleton = NULL;
+_Marshalls *_Marshalls::singleton = nullptr;
 
 _Marshalls *_Marshalls::get_singleton() {
 	return singleton;
@@ -2392,7 +2392,7 @@ _Marshalls *_Marshalls::get_singleton() {
 
 String _Marshalls::variant_to_base64(const Variant &p_var, bool p_full_objects) {
 	int len;
-	Error err = encode_variant(p_var, NULL, len, p_full_objects);
+	Error err = encode_variant(p_var, nullptr, len, p_full_objects);
 	ERR_FAIL_COND_V_MSG(err != OK, "", "Error when trying to encode Variant.");
 
 	PoolVector<uint8_t> buff;
@@ -2420,7 +2420,7 @@ Variant _Marshalls::base64_to_variant(const String &p_str, bool p_allow_objects)
 	ERR_FAIL_COND_V(CryptoCore::b64_decode(&w[0], buf.size(), &len, (unsigned char *)cstr.get_data(), strlen) != OK, Variant());
 
 	Variant v;
-	Error err = decode_variant(v, &w[0], len, NULL, p_allow_objects);
+	Error err = decode_variant(v, &w[0], len, nullptr, p_allow_objects);
 	ERR_FAIL_COND_V_MSG(err != OK, Variant(), "Error when trying to decode Variant.");
 
 	return v;
@@ -2589,7 +2589,7 @@ Variant _Thread::wait_to_finish() {
 	thread.wait_to_finish();
 	Variant r = ret;
 	target_method = StringName();
-	target_instance = NULL;
+	target_instance = nullptr;
 	userdata = Variant();
 	active.clear();
 
@@ -2607,7 +2607,7 @@ void _Thread::_bind_methods() {
 	BIND_ENUM_CONSTANT(PRIORITY_HIGH);
 }
 _Thread::_Thread() {
-	target_instance = NULL;
+	target_instance = nullptr;
 }
 
 _Thread::~_Thread() {
@@ -2951,7 +2951,7 @@ void _Engine::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "physics_jitter_fix"), "set_physics_jitter_fix", "get_physics_jitter_fix");
 }
 
-_Engine *_Engine::singleton = NULL;
+_Engine *_Engine::singleton = nullptr;
 
 _Engine::_Engine() {
 	singleton = this;
@@ -3027,7 +3027,7 @@ Ref<JSONParseResult> _JSON::parse(const String &p_json) {
 	return result;
 }
 
-_JSON *_JSON::singleton = NULL;
+_JSON *_JSON::singleton = nullptr;
 
 _JSON::_JSON() {
 	singleton = this;

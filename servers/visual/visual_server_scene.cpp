@@ -287,7 +287,7 @@ void *VisualServerScene::_instance_pair(void *p_self, SpatialPartitionID, Instan
 		return gi_probe->lights.insert(A);
 	}
 
-	return NULL;
+	return nullptr;
 }
 
 void VisualServerScene::_instance_unpair(void *p_self, SpatialPartitionID, Instance *p_A, int, SpatialPartitionID, Instance *p_B, int, void *udata) {
@@ -462,7 +462,7 @@ void VisualServerScene::instance_set_base(RID p_instance, RID p_base) {
 
 				if (instance->scenario && light->D) {
 					instance->scenario->directional_lights.erase(light->D);
-					light->D = NULL;
+					light->D = nullptr;
 				}
 				VSG::scene_render->free(light->instance);
 			} break;
@@ -494,7 +494,7 @@ void VisualServerScene::instance_set_base(RID p_instance, RID p_base) {
 					Instance *capture = (Instance *)instance->lightmap_capture;
 					InstanceLightmapCaptureData *lightmap_capture = static_cast<InstanceLightmapCaptureData *>(capture->base_data);
 					lightmap_capture->users.erase(instance);
-					instance->lightmap_capture = NULL;
+					instance->lightmap_capture = nullptr;
 					instance->lightmap = RID();
 				}
 
@@ -507,7 +507,7 @@ void VisualServerScene::instance_set_base(RID p_instance, RID p_base) {
 
 		if (instance->base_data) {
 			memdelete(instance->base_data);
-			instance->base_data = NULL;
+			instance->base_data = nullptr;
 		}
 
 		instance->blend_values.clear();
@@ -603,7 +603,7 @@ void VisualServerScene::instance_set_scenario(RID p_instance, RID p_scenario) {
 
 				if (light->D) {
 					instance->scenario->directional_lights.erase(light->D);
-					light->D = NULL;
+					light->D = nullptr;
 				}
 			} break;
 			case VS::INSTANCE_REFLECTION_PROBE: {
@@ -620,7 +620,7 @@ void VisualServerScene::instance_set_scenario(RID p_instance, RID p_scenario) {
 			}
 		}
 
-		instance->scenario = NULL;
+		instance->scenario = nullptr;
 	}
 
 	if (p_scenario.is_valid()) {
@@ -808,7 +808,7 @@ void VisualServerScene::instance_set_use_lightmap(RID p_instance, RID p_lightmap
 	if (instance->lightmap_capture) {
 		InstanceLightmapCaptureData *lightmap_capture = static_cast<InstanceLightmapCaptureData *>(((Instance *)instance->lightmap_capture)->base_data);
 		lightmap_capture->users.erase(instance);
-		instance->lightmap_capture = NULL;
+		instance->lightmap_capture = nullptr;
 	}
 
 	if (p_lightmap_instance.is_valid()) {
@@ -833,15 +833,15 @@ void VisualServerScene::instance_set_custom_aabb(RID p_instance, AABB p_aabb) {
 
 	if (p_aabb != AABB()) {
 		// Set custom AABB
-		if (instance->custom_aabb == NULL)
+		if (instance->custom_aabb == nullptr)
 			instance->custom_aabb = memnew(AABB);
 		*instance->custom_aabb = p_aabb;
 
 	} else {
 		// Clear custom AABB
-		if (instance->custom_aabb != NULL) {
+		if (instance->custom_aabb != nullptr) {
 			memdelete(instance->custom_aabb);
-			instance->custom_aabb = NULL;
+			instance->custom_aabb = nullptr;
 		}
 	}
 
@@ -2243,7 +2243,7 @@ void VisualServerScene::render_empty_scene(RID p_scenario, RID p_shadow_atlas) {
 		environment = scenario->environment;
 	else
 		environment = scenario->fallback_environment;
-	VSG::scene_render->render_scene(Transform(), CameraMatrix(), true, NULL, 0, NULL, 0, NULL, 0, environment, p_shadow_atlas, scenario->reflection_atlas, RID(), 0);
+	VSG::scene_render->render_scene(Transform(), CameraMatrix(), true, nullptr, 0, nullptr, 0, nullptr, 0, environment, p_shadow_atlas, scenario->reflection_atlas, RID(), 0);
 #endif
 }
 
@@ -2572,7 +2572,7 @@ void VisualServerScene::_gi_probe_bake_thread() {
 			break;
 		}
 
-		Instance *to_bake = NULL;
+		Instance *to_bake = nullptr;
 
 		probe_bake_mutex.lock();
 
@@ -3471,7 +3471,7 @@ bool VisualServerScene::free(RID p_rid) {
 	return true;
 }
 
-VisualServerScene *VisualServerScene::singleton = NULL;
+VisualServerScene *VisualServerScene::singleton = nullptr;
 
 VisualServerScene::VisualServerScene() {
 	probe_bake_thread.start(_gi_probe_bake_threads, this);

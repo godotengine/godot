@@ -305,7 +305,7 @@ void CreateDialog::_update_search() {
 	String base_icon = has_icon(base_type, "EditorIcons") ? base_type : "Object";
 	root->set_icon(0, get_icon(base_icon, "EditorIcons"));
 
-	TreeItem *to_select = search_box->get_text() == base_type ? root : NULL;
+	TreeItem *to_select = search_box->get_text() == base_type ? root : nullptr;
 
 	for (List<StringName>::Element *I = type_list.front(); I; I = I->next()) {
 		String type = I->get();
@@ -404,7 +404,7 @@ void CreateDialog::_update_search() {
 		favorite->set_pressed(favorite_list.find(to_select->get_text(0)) != -1);
 	}
 
-	get_ok()->set_disabled(root->get_children() == NULL);
+	get_ok()->set_disabled(root->get_children() == nullptr);
 }
 
 void CreateDialog::_confirmed() {

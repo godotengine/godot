@@ -68,12 +68,12 @@ vendor vendormap[] = {
 	{ "Intel", 20 },
 	{ "nouveau", 10 },
 	{ "Mesa Project", 0 },
-	{ NULL, 0 }
+	{ nullptr, 0 }
 };
 
 // Runs inside a child. Exiting will not quit the engine.
 void create_context() {
-	Display *x11_display = XOpenDisplay(NULL);
+	Display *x11_display = XOpenDisplay(nullptr);
 	Window x11_window;
 	GLXContext glx_context;
 
@@ -91,8 +91,8 @@ void create_context() {
 	};
 
 	int fbcount;
-	GLXFBConfig fbconfig = 0;
-	XVisualInfo *vi = NULL;
+	GLXFBConfig fbconfig = nullptr;
+	XVisualInfo *vi = nullptr;
 
 	XSetWindowAttributes swa;
 	swa.event_mask = StructureNotifyMask;
@@ -115,7 +115,7 @@ void create_context() {
 		None
 	};
 
-	glx_context = glXCreateContextAttribsARB(x11_display, fbconfig, NULL, true, context_attribs);
+	glx_context = glXCreateContextAttribsARB(x11_display, fbconfig, nullptr, true, context_attribs);
 
 	swa.colormap = XCreateColormap(x11_display, RootWindow(x11_display, vi->screen), vi->visual, AllocNone);
 	x11_window = XCreateWindow(x11_display, RootWindow(x11_display, vi->screen), 0, 0, 10, 10, 0, vi->depth, InputOutput, vi->visual, valuemask, &swa);

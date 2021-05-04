@@ -919,7 +919,7 @@ void CPUParticles2D::_update_particle_data_buffer() {
 		int pc = particles.size();
 
 		PoolVector<int>::Write ow;
-		int *order = NULL;
+		int *order = nullptr;
 
 		PoolVector<float>::Write w = particle_data.write();
 		PoolVector<Particle>::Read r = particles.read();

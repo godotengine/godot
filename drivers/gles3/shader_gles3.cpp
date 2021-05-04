@@ -49,7 +49,7 @@
 
 #endif
 
-ShaderGLES3 *ShaderGLES3::active = NULL;
+ShaderGLES3 *ShaderGLES3::active = nullptr;
 
 //#define DEBUG_SHADER
 
@@ -132,10 +132,10 @@ bool ShaderGLES3::bind() {
 }
 
 void ShaderGLES3::unbind() {
-	version = NULL;
+	version = nullptr;
 	glUseProgram(0);
 	uniforms_dirty = true;
-	active = NULL;
+	active = nullptr;
 }
 
 static void _display_error_with_code(const String &p_error, const Vector<const char *> &p_code) {
@@ -223,12 +223,12 @@ ShaderGLES3::Version *ShaderGLES3::get_current_version() {
 	CharString code_globals;
 	CharString material_string;
 
-	CustomCode *cc = NULL;
+	CustomCode *cc = nullptr;
 
 	if (conditional_version.code_version > 0) {
 		//do custom code related stuff
 
-		ERR_FAIL_COND_V(!custom_code_map.has(conditional_version.code_version), NULL);
+		ERR_FAIL_COND_V(!custom_code_map.has(conditional_version.code_version), nullptr);
 		cc = &custom_code_map[conditional_version.code_version];
 		v.code_version = cc->version;
 	}
@@ -237,7 +237,7 @@ ShaderGLES3::Version *ShaderGLES3::get_current_version() {
 
 	v.id = glCreateProgram();
 
-	ERR_FAIL_COND_V(v.id == 0, NULL);
+	ERR_FAIL_COND_V(v.id == 0, nullptr);
 
 	/* VERTEX SHADER */
 
@@ -290,7 +290,7 @@ ShaderGLES3::Version *ShaderGLES3::get_current_version() {
 #endif
 
 	v.vert_id = glCreateShader(GL_VERTEX_SHADER);
-	glShaderSource(v.vert_id, strings.size(), &strings[0], NULL);
+	glShaderSource(v.vert_id, strings.size(), &strings[0], nullptr);
 	glCompileShader(v.vert_id);
 
 	GLint status;
@@ -326,7 +326,7 @@ ShaderGLES3::Version *ShaderGLES3::get_current_version() {
 			v.id = 0;
 		}
 
-		ERR_FAIL_V(NULL);
+		ERR_FAIL_V(nullptr);
 	}
 
 	//_display_error_with_code("pepo", strings);
@@ -381,7 +381,7 @@ ShaderGLES3::Version *ShaderGLES3::get_current_version() {
 #endif
 
 	v.frag_id = glCreateShader(GL_FRAGMENT_SHADER);
-	glShaderSource(v.frag_id, strings.size(), &strings[0], NULL);
+	glShaderSource(v.frag_id, strings.size(), &strings[0], nullptr);
 	glCompileShader(v.frag_id);
 
 	glGetShaderiv(v.frag_id, GL_COMPILE_STATUS, &status);
@@ -417,7 +417,7 @@ ShaderGLES3::Version *ShaderGLES3::get_current_version() {
 			v.id = 0;
 		}
 
-		ERR_FAIL_V(NULL);
+		ERR_FAIL_V(nullptr);
 	}
 
 	glAttachShader(v.id, v.frag_id);
@@ -458,7 +458,7 @@ ShaderGLES3::Version *ShaderGLES3::get_current_version() {
 			glDeleteShader(v.vert_id);
 			glDeleteProgram(v.id);
 			v.id = 0;
-			ERR_FAIL_COND_V(iloglen < 0, NULL);
+			ERR_FAIL_COND_V(iloglen < 0, nullptr);
 		}
 
 		if (iloglen == 0) {
@@ -480,7 +480,7 @@ ShaderGLES3::Version *ShaderGLES3::get_current_version() {
 		glDeleteProgram(v.id);
 		v.id = 0;
 
-		ERR_FAIL_V(NULL);
+		ERR_FAIL_V(nullptr);
 	}
 
 	/* UNIFORMS */
@@ -638,7 +638,7 @@ void ShaderGLES3::setup(const char **p_conditional_defines, int p_conditional_co
 }
 
 void ShaderGLES3::finish() {
-	const VersionKey *V = NULL;
+	const VersionKey *V = nullptr;
 	while ((V = version_map.next(V))) {
 		Version &v = version_map[*V];
 		glDeleteShader(v.vert_id);
@@ -649,7 +649,7 @@ void ShaderGLES3::finish() {
 }
 
 void ShaderGLES3::clear_caches() {
-	const VersionKey *V = NULL;
+	const VersionKey *V = nullptr;
 	while ((V = version_map.next(V))) {
 		Version &v = version_map[*V];
 		glDeleteShader(v.vert_id);
@@ -661,7 +661,7 @@ void ShaderGLES3::clear_caches() {
 	version_map.clear();
 
 	custom_code_map.clear();
-	version = NULL;
+	version = nullptr;
 	last_custom_code = 1;
 	uniforms_dirty = true;
 }
@@ -722,7 +722,7 @@ void ShaderGLES3::set_base_material_tex_index(int p_idx) {
 }
 
 ShaderGLES3::ShaderGLES3() {
-	version = NULL;
+	version = nullptr;
 	last_custom_code = 1;
 	uniforms_dirty = true;
 	base_material_tex_index = 0;

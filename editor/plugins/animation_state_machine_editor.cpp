@@ -1051,7 +1051,7 @@ void AnimationNodeStateMachineEditor::_open_editor(const String &p_name) {
 }
 
 void AnimationNodeStateMachineEditor::_removed_from_graph() {
-	EditorNode::get_singleton()->edit_item(NULL);
+	EditorNode::get_singleton()->edit_item(nullptr);
 }
 
 void AnimationNodeStateMachineEditor::_name_edited(const String &p_text) {
@@ -1215,7 +1215,7 @@ void AnimationNodeStateMachineEditor::_bind_methods() {
 	ClassDB::bind_method("_file_opened", &AnimationNodeStateMachineEditor::_file_opened);
 }
 
-AnimationNodeStateMachineEditor *AnimationNodeStateMachineEditor::singleton = NULL;
+AnimationNodeStateMachineEditor *AnimationNodeStateMachineEditor::singleton = nullptr;
 
 AnimationNodeStateMachineEditor::AnimationNodeStateMachineEditor() {
 	singleton = this;

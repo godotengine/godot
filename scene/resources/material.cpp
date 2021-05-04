@@ -39,7 +39,7 @@
 #include "scene/scene_string_names.h"
 
 void Material::set_next_pass(const Ref<Material> &p_pass) {
-	for (Ref<Material> pass_child = p_pass; pass_child != NULL; pass_child = pass_child->get_next_pass()) {
+	for (Ref<Material> pass_child = p_pass; pass_child != nullptr; pass_child = pass_child->get_next_pass()) {
 		ERR_FAIL_COND_MSG(pass_child == this, "Can't set as next_pass one of its parents to prevent crashes due to recursive loop.");
 	}
 
@@ -267,9 +267,9 @@ ShaderMaterial::~ShaderMaterial() {
 /////////////////////////////////
 
 Mutex SpatialMaterial::material_mutex;
-SelfList<SpatialMaterial>::List *SpatialMaterial::dirty_materials = NULL;
+SelfList<SpatialMaterial>::List *SpatialMaterial::dirty_materials = nullptr;
 Map<SpatialMaterial::MaterialKey, SpatialMaterial::ShaderData> SpatialMaterial::shader_map;
-SpatialMaterial::ShaderNames *SpatialMaterial::shader_names = NULL;
+SpatialMaterial::ShaderNames *SpatialMaterial::shader_names = nullptr;
 
 void SpatialMaterial::init_shaders() {
 	dirty_materials = memnew(SelfList<SpatialMaterial>::List);
@@ -350,7 +350,7 @@ void SpatialMaterial::finish_shaders() {
 	}
 
 	memdelete(dirty_materials);
-	dirty_materials = NULL;
+	dirty_materials = nullptr;
 
 	memdelete(shader_names);
 }
@@ -511,12 +511,12 @@ void SpatialMaterial::_update_shader() {
 	code += "uniform float roughness : hint_range(0,1);\n";
 	code += "uniform float point_size : hint_range(0,128);\n";
 
-	if (textures[TEXTURE_METALLIC] != NULL) {
+	if (textures[TEXTURE_METALLIC] != nullptr) {
 		code += "uniform sampler2D texture_metallic : hint_white;\n";
 		code += "uniform vec4 metallic_texture_channel;\n";
 	}
 
-	if (textures[TEXTURE_ROUGHNESS] != NULL) {
+	if (textures[TEXTURE_ROUGHNESS] != nullptr) {
 		code += "uniform sampler2D texture_roughness : hint_white;\n";
 		code += "uniform vec4 roughness_texture_channel;\n";
 	}
@@ -799,7 +799,7 @@ void SpatialMaterial::_update_shader() {
 	}
 	code += "\tALBEDO = albedo.rgb * albedo_tex.rgb;\n";
 
-	if (textures[TEXTURE_METALLIC] != NULL) {
+	if (textures[TEXTURE_METALLIC] != nullptr) {
 		if (flags[FLAG_UV1_USE_TRIPLANAR]) {
 			code += "\tfloat metallic_tex = dot(triplanar_texture(texture_metallic,uv1_power_normal,uv1_triplanar_pos),metallic_texture_channel);\n";
 		} else {
@@ -810,7 +810,7 @@ void SpatialMaterial::_update_shader() {
 		code += "\tMETALLIC = metallic;\n";
 	}
 
-	if (textures[TEXTURE_ROUGHNESS] != NULL) {
+	if (textures[TEXTURE_ROUGHNESS] != nullptr) {
 		if (flags[FLAG_UV1_USE_TRIPLANAR]) {
 			code += "\tfloat roughness_tex = dot(triplanar_texture(texture_roughness,uv1_power_normal,uv1_triplanar_pos),roughness_texture_channel);\n";
 		} else {
@@ -2277,7 +2277,7 @@ SpatialMaterial::SpatialMaterial() :
 	depth_draw_mode = DEPTH_DRAW_OPAQUE_ONLY;
 	cull_mode = CULL_BACK;
 	for (int i = 0; i < FLAG_MAX; i++) {
-		flags[i] = 0;
+		flags[i] = false;
 	}
 	diffuse_mode = DIFFUSE_BURLEY;
 	specular_mode = SPECULAR_SCHLICK_GGX;

@@ -107,7 +107,7 @@ struct GDScriptDataType {
 					return false;
 				}
 
-				Ref<Script> base = obj && obj->get_script_instance() ? obj->get_script_instance()->get_script() : NULL;
+				Ref<Script> base = obj && obj->get_script_instance() ? obj->get_script_instance()->get_script() : nullptr;
 				bool valid = false;
 				while (base.is_valid()) {
 					if (base == script_type) {
@@ -152,7 +152,7 @@ struct GDScriptDataType {
 			has_type(false),
 			kind(UNINITIALIZED),
 			builtin_type(Variant::NIL),
-			script_type(NULL) {}
+			script_type(nullptr) {}
 };
 
 class GDScriptFunction {
@@ -343,7 +343,7 @@ public:
 		return default_arguments[p_idx];
 	}
 
-	Variant call(GDScriptInstance *p_instance, const Variant **p_args, int p_argcount, Variant::CallError &r_err, CallState *p_state = NULL);
+	Variant call(GDScriptInstance *p_instance, const Variant **p_args, int p_argcount, Variant::CallError &r_err, CallState *p_state = nullptr);
 
 	_FORCE_INLINE_ MultiplayerAPI::RPCMode get_rpc_mode() const { return rpc_mode; }
 	GDScriptFunction();

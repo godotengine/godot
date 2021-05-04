@@ -61,7 +61,7 @@ class FabrikInverseKinematic {
 		Vector3 current_ori;
 
 		ChainItem() :
-				parent_item(NULL),
+				parent_item(nullptr),
 				bone(-1),
 				length(0) {}
 
@@ -74,8 +74,8 @@ class FabrikInverseKinematic {
 		const EndEffector *end_effector;
 
 		ChainTip() :
-				chain_item(NULL),
-				end_effector(NULL) {}
+				chain_item(nullptr),
+				end_effector(nullptr) {}
 
 		ChainTip(ChainItem *p_chain_item, const EndEffector *p_end_effector) :
 				chain_item(p_chain_item),
@@ -107,7 +107,7 @@ public:
 		Transform goal_global_transform;
 
 		Task() :
-				skeleton(NULL),
+				skeleton(nullptr),
 				min_distance(0.01),
 				max_iterations(10),
 				root_bone(-1) {}

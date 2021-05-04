@@ -289,7 +289,7 @@ Node *Resource::get_local_scene() const {
 		return _get_local_scene_func();
 	}
 
-	return NULL;
+	return nullptr;
 }
 
 void Resource::setup_local_to_scene() {
@@ -297,7 +297,7 @@ void Resource::setup_local_to_scene() {
 		get_script_instance()->call("_setup_local_to_scene");
 }
 
-Node *(*Resource::_get_local_scene_func)() = NULL;
+Node *(*Resource::_get_local_scene_func)() = nullptr;
 
 void Resource::set_as_translation_remapped(bool p_remapped) {
 	if (remapped_list.in_list() == p_remapped)
@@ -377,7 +377,7 @@ Resource::Resource() :
 
 	subindex = 0;
 	local_to_scene = false;
-	local_scene = NULL;
+	local_scene = nullptr;
 }
 
 Resource::~Resource() {
@@ -434,7 +434,7 @@ Resource *ResourceCache::get(const String &p_path) {
 	lock.read_unlock();
 
 	if (!res) {
-		return NULL;
+		return nullptr;
 	}
 
 	return *res;
@@ -442,7 +442,7 @@ Resource *ResourceCache::get(const String &p_path) {
 
 void ResourceCache::get_cached_resources(List<Ref<Resource>> *p_resources) {
 	lock.read_lock();
-	const String *K = NULL;
+	const String *K = nullptr;
 	while ((K = resources.next(K))) {
 		Resource *r = resources[*K];
 		p_resources->push_back(Ref<Resource>(r));
@@ -464,13 +464,13 @@ void ResourceCache::dump(const char *p_file, bool p_short) {
 
 	Map<String, int> type_count;
 
-	FileAccess *f = NULL;
+	FileAccess *f = nullptr;
 	if (p_file) {
 		f = FileAccess::open(p_file, FileAccess::WRITE);
 		ERR_FAIL_COND_MSG(!f, "Cannot create file at path '" + String(p_file) + "'.");
 	}
 
-	const String *K = NULL;
+	const String *K = nullptr;
 	while ((K = resources.next(K))) {
 		Resource *r = resources[*K];
 

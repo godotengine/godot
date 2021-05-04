@@ -165,7 +165,7 @@ void AnimationTreeEditor::_bind_methods() {
 	ClassDB::bind_method("_path_button_pressed", &AnimationTreeEditor::_path_button_pressed);
 }
 
-AnimationTreeEditor *AnimationTreeEditor::singleton = NULL;
+AnimationTreeEditor *AnimationTreeEditor::singleton = nullptr;
 
 void AnimationTreeEditor::add_plugin(AnimationTreeNodeEditorPlugin *p_editor) {
 	ERR_FAIL_COND(p_editor->get_parent());

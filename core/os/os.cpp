@@ -40,7 +40,7 @@
 
 #include <stdarg.h>
 
-OS *OS::singleton = NULL;
+OS *OS::singleton = nullptr;
 uint64_t OS::target_ticks = 0;
 
 OS *OS::get_singleton() {
@@ -191,7 +191,7 @@ void OS::dump_memory_to_file(const char *p_file) {
 	//Memory::dump_static_mem_to_file(p_file);
 }
 
-static FileAccess *_OSPRF = NULL;
+static FileAccess *_OSPRF = nullptr;
 
 static void _OS_printres(Object *p_obj) {
 	Resource *res = Object::cast_to<Resource>(p_obj);
@@ -235,7 +235,7 @@ void OS::print_all_resources(String p_to_file) {
 		Error err;
 		_OSPRF = FileAccess::open(p_to_file, FileAccess::WRITE, &err);
 		if (err != OK) {
-			_OSPRF = NULL;
+			_OSPRF = nullptr;
 			ERR_FAIL_MSG("Can't print all resources to file: " + String(p_to_file) + ".");
 		}
 	}
@@ -245,12 +245,12 @@ void OS::print_all_resources(String p_to_file) {
 	if (p_to_file != "") {
 		if (_OSPRF)
 			memdelete(_OSPRF);
-		_OSPRF = NULL;
+		_OSPRF = nullptr;
 	}
 }
 
 void OS::print_resources_in_use(bool p_short) {
-	ResourceCache::dump(NULL, p_short);
+	ResourceCache::dump(nullptr, p_short);
 }
 
 void OS::dump_resources_to_file(const char *p_file) {
@@ -534,7 +534,7 @@ String OS::get_joy_guid(int p_device) const {
 void OS::set_context(int p_context) {
 }
 
-OS::SwitchVSyncCallbackInThread OS::switch_vsync_function = NULL;
+OS::SwitchVSyncCallbackInThread OS::switch_vsync_function = nullptr;
 
 void OS::set_use_vsync(bool p_enable) {
 	_use_vsync = p_enable;
@@ -766,9 +766,9 @@ OS::OS() {
 	_allow_layered = false;
 	_stack_bottom = (void *)(&stack_bottom);
 
-	_logger = NULL;
+	_logger = nullptr;
 
-	has_server_feature_callback = NULL;
+	has_server_feature_callback = nullptr;
 
 	Vector<Logger *> loggers;
 	loggers.push_back(memnew(StdLogger));
@@ -777,5 +777,5 @@ OS::OS() {
 
 OS::~OS() {
 	memdelete(_logger);
-	singleton = NULL;
+	singleton = nullptr;
 }

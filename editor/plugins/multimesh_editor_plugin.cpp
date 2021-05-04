@@ -36,7 +36,7 @@
 
 void MultiMeshEditor::_node_removed(Node *p_node) {
 	if (p_node == node) {
-		node = NULL;
+		node = nullptr;
 		hide();
 	}
 }
@@ -354,7 +354,7 @@ MultiMeshEditor::MultiMeshEditor() {
 	populate_dialog->add_child(std);
 	std->connect("selected", this, "_browsed");
 
-	_last_pp_node = NULL;
+	_last_pp_node = nullptr;
 
 	err_dialog = memnew(AcceptDialog);
 	add_child(err_dialog);
@@ -373,7 +373,7 @@ void MultiMeshEditorPlugin::make_visible(bool p_visible) {
 		multimesh_editor->options->show();
 	} else {
 		multimesh_editor->options->hide();
-		multimesh_editor->edit(NULL);
+		multimesh_editor->edit(nullptr);
 	}
 }
 

@@ -41,7 +41,7 @@
 
 void CollisionShape2DEditor::_node_removed(Node *p_node) {
 	if (p_node == node) {
-		node = NULL;
+		node = nullptr;
 	}
 }
 
@@ -543,7 +543,7 @@ void CollisionShape2DEditor::edit(Node *p_node) {
 		edit_handle = -1;
 		shape_type = -1;
 
-		node = NULL;
+		node = nullptr;
 	}
 
 	canvas_item_editor->update_viewport();
@@ -555,8 +555,8 @@ void CollisionShape2DEditor::_bind_methods() {
 }
 
 CollisionShape2DEditor::CollisionShape2DEditor(EditorNode *p_editor) {
-	node = NULL;
-	canvas_item_editor = NULL;
+	node = nullptr;
+	canvas_item_editor = nullptr;
 	editor = p_editor;
 
 	undo_redo = p_editor->get_undo_redo();
@@ -575,7 +575,7 @@ bool CollisionShape2DEditorPlugin::handles(Object *p_obj) const {
 
 void CollisionShape2DEditorPlugin::make_visible(bool visible) {
 	if (!visible) {
-		edit(NULL);
+		edit(nullptr);
 	}
 }
 

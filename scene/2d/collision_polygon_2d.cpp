@@ -128,7 +128,7 @@ void CollisionPolygon2D::_notification(int p_what) {
 				parent->remove_shape_owner(owner_id);
 			}
 			owner_id = 0;
-			parent = NULL;
+			parent = nullptr;
 		} break;
 
 		case NOTIFICATION_DRAW: {
@@ -334,7 +334,7 @@ CollisionPolygon2D::CollisionPolygon2D() {
 	aabb = Rect2(-10, -10, 20, 20);
 	build_mode = BUILD_SOLIDS;
 	set_notify_local_transform(true);
-	parent = NULL;
+	parent = nullptr;
 	owner_id = 0;
 	disabled = false;
 	one_way_collision = false;

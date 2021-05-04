@@ -121,7 +121,7 @@ AudioStreamPlaybackOGGVorbis::~AudioStreamPlaybackOGGVorbis() {
 Ref<AudioStreamPlayback> AudioStreamOGGVorbis::instance_playback() {
 	Ref<AudioStreamPlaybackOGGVorbis> ovs;
 
-	ERR_FAIL_COND_V_MSG(data == NULL, ovs,
+	ERR_FAIL_COND_V_MSG(data == nullptr, ovs,
 			"This AudioStreamOGGVorbis does not have an audio file assigned "
 			"to it. AudioStreamOGGVorbis should not be created from the "
 			"inspector or with `.new()`. Instead, load an audio file.");
@@ -137,7 +137,7 @@ Ref<AudioStreamPlayback> AudioStreamOGGVorbis::instance_playback() {
 	ovs->ogg_stream = stb_vorbis_open_memory((const unsigned char *)data, data_len, &error, &ovs->ogg_alloc);
 	if (!ovs->ogg_stream) {
 		AudioServer::get_singleton()->audio_data_free(ovs->ogg_alloc.alloc_buffer);
-		ovs->ogg_alloc.alloc_buffer = NULL;
+		ovs->ogg_alloc.alloc_buffer = nullptr;
 		ERR_FAIL_COND_V(!ovs->ogg_stream, Ref<AudioStreamPlaybackOGGVorbis>());
 	}
 
@@ -151,7 +151,7 @@ String AudioStreamOGGVorbis::get_stream_name() const {
 void AudioStreamOGGVorbis::clear_data() {
 	if (data) {
 		AudioServer::get_singleton()->audio_data_free(data);
-		data = NULL;
+		data = nullptr;
 		data_len = 0;
 	}
 }
@@ -161,7 +161,7 @@ void AudioStreamOGGVorbis::set_data(const PoolVector<uint8_t> &p_data) {
 	uint32_t alloc_try = 1024;
 	PoolVector<char> alloc_mem;
 	PoolVector<char>::Write w;
-	stb_vorbis *ogg_stream = NULL;
+	stb_vorbis *ogg_stream = nullptr;
 	stb_vorbis_alloc ogg_alloc;
 
 	// Vorbis comments may be up to UINT32_MAX, but that's arguably pretty rare.
@@ -185,7 +185,7 @@ void AudioStreamOGGVorbis::set_data(const PoolVector<uint8_t> &p_data) {
 			alloc_try *= 2;
 		} else {
 			ERR_FAIL_COND(alloc_try == MAX_TEST_MEM);
-			ERR_FAIL_COND(ogg_stream == NULL);
+			ERR_FAIL_COND(ogg_stream == nullptr);
 
 			stb_vorbis_info info = stb_vorbis_get_info(ogg_stream);
 
@@ -261,7 +261,7 @@ void AudioStreamOGGVorbis::_bind_methods() {
 }
 
 AudioStreamOGGVorbis::AudioStreamOGGVorbis() {
-	data = NULL;
+	data = nullptr;
 	data_len = 0;
 	length = 0;
 	sample_rate = 1;

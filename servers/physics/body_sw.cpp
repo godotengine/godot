@@ -539,7 +539,7 @@ void BodySW::integrate_forces(real_t p_step) {
 		_update_shapes_with_motion(motion);
 	}
 
-	def_area = NULL; // clear the area, so it is set in the next frame
+	def_area = nullptr; // clear the area, so it is set in the next frame
 	contact_count = 0;
 }
 
@@ -703,7 +703,7 @@ bool BodySW::sleep_test(real_t p_step) {
 void BodySW::set_force_integration_callback(ObjectID p_id, const StringName &p_method, const Variant &p_udata) {
 	if (fi_callback) {
 		memdelete(fi_callback);
-		fi_callback = NULL;
+		fi_callback = nullptr;
 	}
 
 	if (p_id != 0) {
@@ -736,8 +736,8 @@ BodySW::BodySW() :
 	omit_force_integration = false;
 	//applied_torque=0;
 	island_step = 0;
-	island_next = NULL;
-	island_list_next = NULL;
+	island_next = nullptr;
+	island_list_next = nullptr;
 	first_time_kinematic = false;
 	first_integration = false;
 	_set_static(false);
@@ -752,7 +752,7 @@ BodySW::BodySW() :
 	still_time = 0;
 	continuous_cd = false;
 	can_sleep = true;
-	fi_callback = NULL;
+	fi_callback = nullptr;
 }
 
 BodySW::~BodySW() {
@@ -760,7 +760,7 @@ BodySW::~BodySW() {
 		memdelete(fi_callback);
 }
 
-PhysicsDirectBodyStateSW *PhysicsDirectBodyStateSW::singleton = NULL;
+PhysicsDirectBodyStateSW *PhysicsDirectBodyStateSW::singleton = nullptr;
 
 PhysicsDirectSpaceState *PhysicsDirectBodyStateSW::get_space_state() {
 	return body->get_space()->get_direct_state();

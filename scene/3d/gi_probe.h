@@ -162,7 +162,7 @@ public:
 	void set_compress(bool p_enable);
 	bool is_compressed() const;
 
-	void bake(Node *p_from_node = NULL, bool p_create_visual_debug = false);
+	void bake(Node *p_from_node = nullptr, bool p_create_visual_debug = false);
 
 	virtual AABB get_aabb() const;
 	virtual PoolVector<Face3> get_faces(uint32_t p_usage_flags) const;

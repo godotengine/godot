@@ -34,7 +34,7 @@
 #include "core/print_string.h"
 #include "core/project_settings.h"
 
-PhysicsServer *PhysicsServer::singleton = NULL;
+PhysicsServer *PhysicsServer::singleton = nullptr;
 
 void PhysicsDirectBodyState::integrate_forces() {
 	real_t step = get_step();
@@ -693,12 +693,12 @@ void PhysicsServer::_bind_methods() {
 }
 
 PhysicsServer::PhysicsServer() {
-	ERR_FAIL_COND(singleton != NULL);
+	ERR_FAIL_COND(singleton != nullptr);
 	singleton = this;
 }
 
 PhysicsServer::~PhysicsServer() {
-	singleton = NULL;
+	singleton = nullptr;
 }
 
 Vector<PhysicsServerManager::ClassInfo> PhysicsServerManager::physics_servers;
@@ -749,14 +749,14 @@ String PhysicsServerManager::get_server_name(int p_id) {
 }
 
 PhysicsServer *PhysicsServerManager::new_default_server() {
-	ERR_FAIL_COND_V(default_server_id == -1, NULL);
+	ERR_FAIL_COND_V(default_server_id == -1, nullptr);
 	return physics_servers[default_server_id].create_callback();
 }
 
 PhysicsServer *PhysicsServerManager::new_server(const String &p_name) {
 	int id = find_server_id(p_name);
 	if (id == -1) {
-		return NULL;
+		return nullptr;
 	} else {
 		return physics_servers[id].create_callback();
 	}

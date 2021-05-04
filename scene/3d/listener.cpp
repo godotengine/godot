@@ -120,7 +120,7 @@ void Listener::clear_current() {
 		return;
 
 	if (get_viewport()->get_listener() == this) {
-		get_viewport()->_listener_set(NULL);
+		get_viewport()->_listener_set(nullptr);
 		get_viewport()->_listener_make_next_current(this);
 	}
 }

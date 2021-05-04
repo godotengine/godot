@@ -48,7 +48,7 @@
 	@author AndreaCatania
 */
 
-BulletPhysicsDirectBodyState *BulletPhysicsDirectBodyState::singleton = NULL;
+BulletPhysicsDirectBodyState *BulletPhysicsDirectBodyState::singleton = nullptr;
 
 Vector3 BulletPhysicsDirectBodyState::get_total_gravity() const {
 	Vector3 gVec;
@@ -241,7 +241,7 @@ void RigidBodyBullet::KinematicUtilities::copyAllOwnerShapes() {
 			} break;
 			default:
 				WARN_PRINT("This shape is not supported to be kinematic!");
-				shapes.write[i].shape = NULL;
+				shapes.write[i].shape = nullptr;
 		}
 	}
 }
@@ -257,7 +257,7 @@ void RigidBodyBullet::KinematicUtilities::just_delete_shapes(int new_size) {
 
 RigidBodyBullet::RigidBodyBullet() :
 		RigidCollisionObjectBullet(CollisionObjectBullet::TYPE_RIGID_BODY),
-		kinematic_utilities(NULL),
+		kinematic_utilities(nullptr),
 		locked_axis(0),
 		mass(1),
 		gravity_scale(1),
@@ -274,12 +274,12 @@ RigidBodyBullet::RigidBodyBullet() :
 		countGravityPointSpaces(0),
 		isScratchedSpaceOverrideModificator(false),
 		previousActiveState(true),
-		force_integration_callback(NULL) {
+		force_integration_callback(nullptr) {
 	godotMotionState = bulletnew(GodotMotionState(this));
 
 	// Initial properties
 	const btVector3 localInertia(0, 0, 0);
-	btRigidBody::btRigidBodyConstructionInfo cInfo(mass, godotMotionState, NULL, localInertia);
+	btRigidBody::btRigidBodyConstructionInfo cInfo(mass, godotMotionState, nullptr, localInertia);
 
 	btBody = bulletnew(btRigidBody(cInfo));
 	reload_shapes();
@@ -314,7 +314,7 @@ void RigidBodyBullet::init_kinematic_utilities() {
 void RigidBodyBullet::destroy_kinematic_utilities() {
 	if (kinematic_utilities) {
 		memdelete(kinematic_utilities);
-		kinematic_utilities = NULL;
+		kinematic_utilities = nullptr;
 	}
 }
 
@@ -388,7 +388,7 @@ void RigidBodyBullet::dispatch_callbacks() {
 void RigidBodyBullet::set_force_integration_callback(ObjectID p_id, const StringName &p_method, const Variant &p_udata) {
 	if (force_integration_callback) {
 		memdelete(force_integration_callback);
-		force_integration_callback = NULL;
+		force_integration_callback = nullptr;
 	}
 
 	if (p_id != 0) {

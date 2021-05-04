@@ -105,7 +105,7 @@ void FileAccessNetworkClient::_thread_func() {
 		int response = get_32();
 		DEBUG_PRINT("GET RESPONSE: " + itos(response));
 
-		FileAccessNetwork *fa = NULL;
+		FileAccessNetwork *fa = nullptr;
 
 		if (response != FileAccessNetwork::RESPONSE_DATA) {
 			if (!accesses.has(id)) {
@@ -203,7 +203,7 @@ Error FileAccessNetworkClient::connect(const String &p_host, int p_port, const S
 	return OK;
 }
 
-FileAccessNetworkClient *FileAccessNetworkClient::singleton = NULL;
+FileAccessNetworkClient *FileAccessNetworkClient::singleton = nullptr;
 
 FileAccessNetworkClient::FileAccessNetworkClient() {
 	quit = false;
@@ -271,7 +271,7 @@ Error FileAccessNetwork::_open(const String &p_path, int p_mode_flags) {
 	pos = 0;
 	eof_flag = false;
 	last_page = -1;
-	last_page_buff = NULL;
+	last_page_buff = nullptr;
 
 	//buffers.clear();
 	nc->unlock_mutex();

@@ -342,9 +342,9 @@ void GIProbe::_find_meshes(Node *p_at_node, List<PlotMesh> &plot_meshes) {
 	}
 }
 
-GIProbe::BakeBeginFunc GIProbe::bake_begin_function = NULL;
-GIProbe::BakeStepFunc GIProbe::bake_step_function = NULL;
-GIProbe::BakeEndFunc GIProbe::bake_end_function = NULL;
+GIProbe::BakeBeginFunc GIProbe::bake_begin_function = nullptr;
+GIProbe::BakeStepFunc GIProbe::bake_step_function = nullptr;
+GIProbe::BakeEndFunc GIProbe::bake_end_function = nullptr;
 
 void GIProbe::bake(Node *p_from_node, bool p_create_visual_debug) {
 	static const int subdiv_value[SUBDIV_MAX] = { 7, 8, 9, 10 };
@@ -426,7 +426,7 @@ void GIProbe::bake(Node *p_from_node, bool p_create_visual_debug) {
 }
 
 void GIProbe::_debug_bake() {
-	bake(NULL, true);
+	bake(nullptr, true);
 }
 
 AABB GIProbe::get_aabb() const {

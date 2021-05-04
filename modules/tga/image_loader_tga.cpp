@@ -220,7 +220,7 @@ Error ImageLoaderTGA::convert_to_image(Ref<Image> p_image, const uint8_t *p_buff
 
 	image_data_w.release();
 
-	p_image->create(width, height, 0, Image::FORMAT_RGBA8, image_data);
+	p_image->create(width, height, false, Image::FORMAT_RGBA8, image_data);
 
 	return OK;
 }
@@ -303,7 +303,7 @@ Error ImageLoaderTGA::load_image(Ref<Image> p_image, FileAccess *f, bool p_force
 		PoolVector<uint8_t>::Write uncompressed_buffer_w = uncompressed_buffer.write();
 		PoolVector<uint8_t>::Read uncompressed_buffer_r;
 
-		const uint8_t *buffer = NULL;
+		const uint8_t *buffer = nullptr;
 
 		if (is_encoded) {
 			err = decode_tga_rle(src_image_r.ptr(), pixel_size, uncompressed_buffer_w.ptr(), buffer_size);

@@ -131,18 +131,18 @@ Error MIDIDriverALSAMidi::open() {
 		return ERR_CANT_OPEN;
 
 	int i = 0;
-	for (void **n = hints; *n != NULL; n++) {
+	for (void **n = hints; *n != nullptr; n++) {
 		char *name = snd_device_name_get_hint(*n, "NAME");
 
-		if (name != NULL) {
+		if (name != nullptr) {
 			snd_rawmidi_t *midi_in;
-			int ret = snd_rawmidi_open(&midi_in, NULL, name, SND_RAWMIDI_NONBLOCK);
+			int ret = snd_rawmidi_open(&midi_in, nullptr, name, SND_RAWMIDI_NONBLOCK);
 			if (ret >= 0) {
 				connected_inputs.insert(i++, midi_in);
 			}
 		}
 
-		if (name != NULL)
+		if (name != nullptr)
 			free(name);
 	}
 	snd_device_name_free_hint(hints);

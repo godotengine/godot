@@ -41,7 +41,7 @@
 
 void SpriteEditor::_node_removed(Node *p_node) {
 	if (p_node == node) {
-		node = NULL;
+		node = nullptr;
 		options->hide();
 	}
 }
@@ -576,7 +576,7 @@ void SpriteEditorPlugin::make_visible(bool p_visible) {
 		sprite_editor->options->show();
 	} else {
 		sprite_editor->options->hide();
-		sprite_editor->edit(NULL);
+		sprite_editor->edit(nullptr);
 	}
 }
 

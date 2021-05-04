@@ -106,8 +106,8 @@ void BakedLightmapEditorPlugin::make_visible(bool p_visible) {
 	}
 }
 
-EditorProgress *BakedLightmapEditorPlugin::tmp_progress = NULL;
-EditorProgress *BakedLightmapEditorPlugin::tmp_subprogress = NULL;
+EditorProgress *BakedLightmapEditorPlugin::tmp_progress = nullptr;
+EditorProgress *BakedLightmapEditorPlugin::tmp_subprogress = nullptr;
 
 bool BakedLightmapEditorPlugin::bake_func_step(float p_progress, const String &p_description, void *, bool p_force_refresh) {
 	if (!tmp_progress) {
@@ -158,7 +158,7 @@ BakedLightmapEditorPlugin::BakedLightmapEditorPlugin(EditorNode *p_node) {
 	bake->add_child(file_dialog);
 
 	add_control_to_container(CONTAINER_SPATIAL_EDITOR_MENU, bake);
-	lightmap = NULL;
+	lightmap = nullptr;
 
 	BakedLightmap::bake_step_function = bake_func_step;
 	BakedLightmap::bake_substep_function = bake_func_substep;

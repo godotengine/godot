@@ -464,7 +464,7 @@ public:
 		void reset_flush() {
 			// don't reset members that need to be preserved after flushing
 			// half way through a list of commands
-			curr_batch = 0;
+			curr_batch = nullptr;
 			batch_tex_id = -1;
 			texpixel_size = Vector2(1, 1);
 			contract_uvs = false;
@@ -815,7 +815,7 @@ PREAMBLE(void)::batch_canvas_render_items_end() {
 #endif
 
 	// batching render is deferred until after going through all the z_indices, joining all the items
-	get_this()->canvas_render_items_implementation(0, 0, _render_item_state.item_group_modulate,
+	get_this()->canvas_render_items_implementation(nullptr, 0, _render_item_state.item_group_modulate,
 			_render_item_state.item_group_light,
 			_render_item_state.item_group_base_transform);
 
@@ -2517,7 +2517,7 @@ PREAMBLE(void)::flush_render_batches(RasterizerCanvas::Item *p_first_item, Raste
 }
 
 PREAMBLE(void)::render_joined_item_commands(const BItemJoined &p_bij, RasterizerCanvas::Item *p_current_clip, bool &r_reclip, typename T_STORAGE::Material *p_material, bool p_lit, const RenderItemState &p_ris) {
-	RasterizerCanvas::Item *item = 0;
+	RasterizerCanvas::Item *item = nullptr;
 	RasterizerCanvas::Item *first_item = bdata.item_refs[p_bij.first_item_ref].item;
 
 	// fill_state and bdata have once off setup per joined item, and a smaller reset on flush
@@ -2700,7 +2700,7 @@ PREAMBLE(void)::join_sorted_items() {
 			// but it is stupidly complex to calculate later, which would probably be slower.
 			r->final_modulate = _render_item_state.final_modulate;
 		} else {
-			RAST_DEBUG_ASSERT(_render_item_state.joined_item != 0);
+			RAST_DEBUG_ASSERT(_render_item_state.joined_item != nullptr);
 			_render_item_state.joined_item->num_item_refs += 1;
 			_render_item_state.joined_item->bounding_rect = _render_item_state.joined_item->bounding_rect.merge(ci->global_rect_cache);
 

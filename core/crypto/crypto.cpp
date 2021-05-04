@@ -36,11 +36,11 @@
 
 /// Resources
 
-CryptoKey *(*CryptoKey::_create)() = NULL;
+CryptoKey *(*CryptoKey::_create)() = nullptr;
 CryptoKey *CryptoKey::create() {
 	if (_create)
 		return _create();
-	return NULL;
+	return nullptr;
 }
 
 void CryptoKey::_bind_methods() {
@@ -51,11 +51,11 @@ void CryptoKey::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("load_from_string", "string_key", "public_only"), &CryptoKey::load_from_string, DEFVAL(false));
 }
 
-X509Certificate *(*X509Certificate::_create)() = NULL;
+X509Certificate *(*X509Certificate::_create)() = nullptr;
 X509Certificate *X509Certificate::create() {
 	if (_create)
 		return _create();
-	return NULL;
+	return nullptr;
 }
 
 void X509Certificate::_bind_methods() {
@@ -65,12 +65,12 @@ void X509Certificate::_bind_methods() {
 
 /// Crypto
 
-void (*Crypto::_load_default_certificates)(String p_path) = NULL;
-Crypto *(*Crypto::_create)() = NULL;
+void (*Crypto::_load_default_certificates)(String p_path) = nullptr;
+Crypto *(*Crypto::_create)() = nullptr;
 Crypto *Crypto::create() {
 	if (_create)
 		return _create();
-	ERR_FAIL_V_MSG(NULL, "Crypto is not available when the mbedtls module is disabled.");
+	ERR_FAIL_V_MSG(nullptr, "Crypto is not available when the mbedtls module is disabled.");
 }
 
 void Crypto::load_default_certificates(String p_path) {
@@ -111,7 +111,7 @@ RES ResourceFormatLoaderCrypto::load(const String &p_path, const String &p_origi
 			key->load(p_path, true);
 		return key;
 	}
-	return NULL;
+	return nullptr;
 }
 
 void ResourceFormatLoaderCrypto::get_recognized_extensions(List<String> *p_extensions) const {

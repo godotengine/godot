@@ -111,7 +111,7 @@ void NavigationPolygonEditor::_create_resource() {
 
 NavigationPolygonEditor::NavigationPolygonEditor(EditorNode *p_editor) :
 		AbstractPolygon2DEditor(p_editor) {
-	node = NULL;
+	node = nullptr;
 }
 
 NavigationPolygonEditorPlugin::NavigationPolygonEditorPlugin(EditorNode *p_node) :

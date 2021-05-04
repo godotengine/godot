@@ -91,7 +91,7 @@ private:
 		uint32_t pos = hash % capacity;
 		uint32_t distance = 0;
 
-		while (42) {
+		while (true) {
 			if (hashes[pos] == EMPTY_HASH) {
 				return false;
 			}
@@ -118,7 +118,7 @@ private:
 		TKey key = p_key;
 		TValue value = p_value;
 
-		while (42) {
+		while (true) {
 			if (hashes[pos] == EMPTY_HASH) {
 				_construct(pos, hash, key, value);
 
@@ -305,8 +305,8 @@ public:
 		Iterator it;
 		it.valid = false;
 		it.pos = p_iter.pos;
-		it.key = NULL;
-		it.value = NULL;
+		it.key = nullptr;
+		it.value = nullptr;
 
 		for (uint32_t i = it.pos; i < capacity; i++) {
 			it.pos = i + 1;

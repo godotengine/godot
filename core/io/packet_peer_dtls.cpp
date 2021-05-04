@@ -32,14 +32,14 @@
 #include "core/os/file_access.h"
 #include "core/project_settings.h"
 
-PacketPeerDTLS *(*PacketPeerDTLS::_create)() = NULL;
+PacketPeerDTLS *(*PacketPeerDTLS::_create)() = nullptr;
 bool PacketPeerDTLS::available = false;
 
 PacketPeerDTLS *PacketPeerDTLS::create() {
 	if (_create) {
 		return _create();
 	}
-	return NULL;
+	return nullptr;
 }
 
 bool PacketPeerDTLS::is_available() {

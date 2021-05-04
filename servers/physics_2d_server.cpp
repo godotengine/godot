@@ -34,7 +34,7 @@
 #include "core/print_string.h"
 #include "core/project_settings.h"
 
-Physics2DServer *Physics2DServer::singleton = NULL;
+Physics2DServer *Physics2DServer::singleton = nullptr;
 
 void Physics2DDirectBodyState::integrate_forces() {
 	real_t step = get_step();
@@ -484,7 +484,7 @@ Physics2DTestMotionResult::Physics2DTestMotionResult() {
 ///////////////////////////////////////
 
 bool Physics2DServer::_body_test_motion(RID p_body, const Transform2D &p_from, const Vector2 &p_motion, bool p_infinite_inertia, float p_margin, const Ref<Physics2DTestMotionResult> &p_result) {
-	MotionResult *r = NULL;
+	MotionResult *r = nullptr;
 	if (p_result.is_valid())
 		r = p_result->get_result_ptr();
 	return body_test_motion(p_body, p_from, p_motion, p_infinite_inertia, p_margin, r);
@@ -721,7 +721,7 @@ Physics2DServer::Physics2DServer() {
 }
 
 Physics2DServer::~Physics2DServer() {
-	singleton = NULL;
+	singleton = nullptr;
 }
 
 Vector<Physics2DServerManager::ClassInfo> Physics2DServerManager::physics_2d_servers;
@@ -772,14 +772,14 @@ String Physics2DServerManager::get_server_name(int p_id) {
 }
 
 Physics2DServer *Physics2DServerManager::new_default_server() {
-	ERR_FAIL_COND_V(default_server_id == -1, NULL);
+	ERR_FAIL_COND_V(default_server_id == -1, nullptr);
 	return physics_2d_servers[default_server_id].create_callback();
 }
 
 Physics2DServer *Physics2DServerManager::new_server(const String &p_name) {
 	int id = find_server_id(p_name);
 	if (id == -1) {
-		return NULL;
+		return nullptr;
 	} else {
 		return physics_2d_servers[id].create_callback();
 	}

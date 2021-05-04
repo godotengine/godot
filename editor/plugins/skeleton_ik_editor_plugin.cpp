@@ -86,7 +86,7 @@ SkeletonIKEditorPlugin::SkeletonIKEditorPlugin(EditorNode *p_node) {
 	play_btn->hide();
 	play_btn->connect("pressed", this, "_play");
 	add_control_to_container(CONTAINER_SPATIAL_EDITOR_MENU, play_btn);
-	skeleton_ik = NULL;
+	skeleton_ik = nullptr;
 }
 
 SkeletonIKEditorPlugin::~SkeletonIKEditorPlugin() {}

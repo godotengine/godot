@@ -120,7 +120,7 @@ PFNGLFRAMEBUFFERTEXTURE2DMULTISAMPLEEXTPROC glFramebufferTexture2DMultisampleEXT
 
 void RasterizerStorageGLES2::bind_quad_array() const {
 	glBindBuffer(GL_ARRAY_BUFFER, resources.quadie);
-	glVertexAttribPointer(VS::ARRAY_VERTEX, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 4, 0);
+	glVertexAttribPointer(VS::ARRAY_VERTEX, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 4, nullptr);
 	glVertexAttribPointer(VS::ARRAY_TEX_UV, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 4, CAST_INT_TO_UCHAR_PTR(8));
 
 	glEnableVertexAttribArray(VS::ARRAY_VERTEX);
@@ -602,7 +602,7 @@ void RasterizerStorageGLES2::texture_allocate(RID p_texture, int p_width, int p_
 		glTexParameteri(texture->target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	} else if (p_flags & VS::TEXTURE_FLAG_USED_FOR_STREAMING) {
 		//prealloc if video
-		glTexImage2D(texture->target, 0, internal_format, texture->alloc_width, texture->alloc_height, 0, format, type, NULL);
+		glTexImage2D(texture->target, 0, internal_format, texture->alloc_width, texture->alloc_height, 0, format, type, nullptr);
 	}
 
 	texture->active = true;
@@ -1082,7 +1082,7 @@ void RasterizerStorageGLES2::texture_set_proxy(RID p_texture, RID p_proxy) {
 
 	if (texture->proxy) {
 		texture->proxy->proxy_owners.erase(texture);
-		texture->proxy = NULL;
+		texture->proxy = nullptr;
 	}
 
 	if (p_proxy.is_valid()) {
@@ -1201,7 +1201,7 @@ void RasterizerStorageGLES2::sky_set_texture(RID p_sky, RID p_panorama, int p_ra
 	// Mobile hardware (PowerVR specially) prefers this approach,
 	// the previous approach with manual lod levels kills the game.
 	for (int i = 0; i < 6; i++) {
-		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, internal_format, size, size, 0, format, type, NULL);
+		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, internal_format, size, size, 0, format, type, nullptr);
 	}
 
 	glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
@@ -1229,7 +1229,7 @@ void RasterizerStorageGLES2::sky_set_texture(RID p_sky, RID p_panorama, int p_ra
 		//make framebuffer size the texture size, need to use a separate texture for compatibility
 		glActiveTexture(GL_TEXTURE3);
 		glBindTexture(GL_TEXTURE_2D, resources.mipmap_blur_color);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, size, size, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, size, size, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, resources.mipmap_blur_color, 0);
 
 		if (lod == 1) {
@@ -1369,7 +1369,7 @@ void RasterizerStorageGLES2::_update_shader(Shader *p_shader) const {
 	}
 
 	ShaderCompilerGLES2::GeneratedCode gen_code;
-	ShaderCompilerGLES2::IdentifierActions *actions = NULL;
+	ShaderCompilerGLES2::IdentifierActions *actions = nullptr;
 
 	switch (p_shader->mode) {
 		case VS::SHADER_CANVAS_ITEM: {
@@ -2734,7 +2734,7 @@ AABB RasterizerStorageGLES2::mesh_get_aabb(RID p_mesh, RID p_skeleton) const {
 	if (mesh->custom_aabb != AABB())
 		return mesh->custom_aabb;
 
-	Skeleton *sk = NULL;
+	Skeleton *sk = nullptr;
 	if (p_skeleton.is_valid()) {
 		sk = skeleton_owner.get(p_skeleton);
 	}
@@ -3525,7 +3525,7 @@ void RasterizerStorageGLES2::skeleton_allocate(RID p_skeleton, int p_bones, bool
 		glBindTexture(GL_TEXTURE_2D, skeleton->tex_id);
 
 #ifdef GLES_OVER_GL
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, p_bones * (skeleton->use_2d ? 2 : 3), 1, 0, GL_RGBA, GL_FLOAT, NULL);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, p_bones * (skeleton->use_2d ? 2 : 3), 1, 0, GL_RGBA, GL_FLOAT, nullptr);
 #else
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, p_bones * (skeleton->use_2d ? 2 : 3), 1, 0, GL_RGBA, GL_FLOAT, NULL);
 #endif
@@ -4367,7 +4367,7 @@ void RasterizerStorageGLES2::update_dirty_captures() {
 
 const PoolVector<RasterizerStorage::LightmapCaptureOctree> *RasterizerStorageGLES2::lightmap_capture_get_octree_ptr(RID p_capture) const {
 	const LightmapCapture *capture = lightmap_capture_data_owner.getornull(p_capture);
-	ERR_FAIL_COND_V(!capture, NULL);
+	ERR_FAIL_COND_V(!capture, nullptr);
 	return &capture->octree;
 }
 
@@ -4478,7 +4478,7 @@ void RasterizerStorageGLES2::instance_remove_skeleton(RID p_skeleton, Rasterizer
 }
 
 void RasterizerStorageGLES2::instance_add_dependency(RID p_base, RasterizerScene::InstanceBase *p_instance) {
-	Instantiable *inst = NULL;
+	Instantiable *inst = nullptr;
 	switch (p_instance->base_type) {
 		case VS::INSTANCE_MESH: {
 			inst = mesh_owner.getornull(p_base);
@@ -4521,7 +4521,7 @@ void RasterizerStorageGLES2::instance_add_dependency(RID p_base, RasterizerScene
 }
 
 void RasterizerStorageGLES2::instance_remove_dependency(RID p_base, RasterizerScene::InstanceBase *p_instance) {
-	Instantiable *inst = NULL;
+	Instantiable *inst = nullptr;
 
 	switch (p_instance->base_type) {
 		case VS::INSTANCE_MESH: {
@@ -4623,7 +4623,7 @@ void RasterizerStorageGLES2::_render_target_allocate(RenderTarget *rt) {
 		glGenTextures(1, &rt->color);
 		glBindTexture(GL_TEXTURE_2D, rt->color);
 
-		glTexImage2D(GL_TEXTURE_2D, 0, color_internal_format, rt->width, rt->height, 0, color_format, color_type, NULL);
+		glTexImage2D(GL_TEXTURE_2D, 0, color_internal_format, rt->width, rt->height, 0, color_format, color_type, nullptr);
 
 		if (texture->flags & VS::TEXTURE_FLAG_FILTER) {
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -4643,7 +4643,7 @@ void RasterizerStorageGLES2::_render_target_allocate(RenderTarget *rt) {
 		if (config.support_depth_texture) {
 			glGenTextures(1, &rt->depth);
 			glBindTexture(GL_TEXTURE_2D, rt->depth);
-			glTexImage2D(GL_TEXTURE_2D, 0, config.depth_internalformat, rt->width, rt->height, 0, GL_DEPTH_COMPONENT, config.depth_type, NULL);
+			glTexImage2D(GL_TEXTURE_2D, 0, config.depth_internalformat, rt->width, rt->height, 0, GL_DEPTH_COMPONENT, config.depth_type, nullptr);
 
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -4787,9 +4787,9 @@ void RasterizerStorageGLES2::_render_target_allocate(RenderTarget *rt) {
 		glBindTexture(GL_TEXTURE_2D, rt->copy_screen_effect.color);
 
 		if (rt->flags[RasterizerStorage::RENDER_TARGET_TRANSPARENT]) {
-			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, rt->width, rt->height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, rt->width, rt->height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
 		} else {
-			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, rt->width, rt->height, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, rt->width, rt->height, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
 		}
 
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -4850,7 +4850,7 @@ void RasterizerStorageGLES2::_render_target_allocate(RenderTarget *rt) {
 				glBindTexture(GL_TEXTURE_2D, rt->mip_maps[i].color);
 
 				for (int l = 0; l < level + 1; l++) {
-					glTexImage2D(GL_TEXTURE_2D, l, color_internal_format, width, height, 0, color_format, color_type, NULL);
+					glTexImage2D(GL_TEXTURE_2D, l, color_internal_format, width, height, 0, color_format, color_type, nullptr);
 					width = MAX(1, (width / 2));
 					height = MAX(1, (height / 2));
 				}
@@ -4863,7 +4863,7 @@ void RasterizerStorageGLES2::_render_target_allocate(RenderTarget *rt) {
 				for (int l = 0; l < level + 1; l++) {
 					glGenTextures(1, &rt->mip_maps[i].sizes.write[l].color);
 					glBindTexture(GL_TEXTURE_2D, rt->mip_maps[i].sizes[l].color);
-					glTexImage2D(GL_TEXTURE_2D, 0, color_internal_format, width, height, 0, color_format, color_type, NULL);
+					glTexImage2D(GL_TEXTURE_2D, 0, color_internal_format, width, height, 0, color_format, color_type, nullptr);
 					width = MAX(1, (width / 2));
 					height = MAX(1, (height / 2));
 					glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -5352,10 +5352,10 @@ RID RasterizerStorageGLES2::canvas_light_shadow_buffer_create(int p_width) {
 	glGenTextures(1, &cls->distance);
 	glBindTexture(GL_TEXTURE_2D, cls->distance);
 	if (config.use_rgba_2d_shadows) {
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, cls->size, cls->height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, cls->size, cls->height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
 	} else {
 #ifdef GLES_OVER_GL
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_R32F, cls->size, cls->height, 0, _RED_OES, GL_FLOAT, NULL);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_R32F, cls->size, cls->height, 0, _RED_OES, GL_FLOAT, nullptr);
 #else
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_FLOAT, cls->size, cls->height, 0, _RED_OES, GL_FLOAT, NULL);
 #endif
@@ -5537,7 +5537,7 @@ bool RasterizerStorageGLES2::free(RID p_rid) {
 		while (shader->materials.first()) {
 			Material *m = shader->materials.first()->self();
 
-			m->shader = NULL;
+			m->shader = nullptr;
 			_material_make_dirty(m);
 
 			shader->materials.remove(shader->materials.first());
@@ -5941,7 +5941,7 @@ void RasterizerStorageGLES2::initialize() {
 		GLuint depth;
 		glGenTextures(1, &depth);
 		glBindTexture(GL_TEXTURE_2D, depth);
-		glTexImage2D(GL_TEXTURE_2D, 0, config.depth_internalformat, 32, 32, 0, GL_DEPTH_COMPONENT, config.depth_type, NULL);
+		glTexImage2D(GL_TEXTURE_2D, 0, config.depth_internalformat, 32, 32, 0, GL_DEPTH_COMPONENT, config.depth_type, nullptr);
 
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -5973,7 +5973,7 @@ void RasterizerStorageGLES2::initialize() {
 
 			glGenTextures(1, &depth);
 			glBindTexture(GL_TEXTURE_2D, depth);
-			glTexImage2D(GL_TEXTURE_2D, 0, config.depth_internalformat, 32, 32, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_SHORT, NULL);
+			glTexImage2D(GL_TEXTURE_2D, 0, config.depth_internalformat, 32, 32, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_SHORT, nullptr);
 
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -6001,7 +6001,7 @@ void RasterizerStorageGLES2::initialize() {
 
 	frame.count = 0;
 	frame.delta = 0;
-	frame.current_rt = NULL;
+	frame.current_rt = nullptr;
 	frame.clear_request = false;
 
 	glGetIntegerv(GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS, &config.max_vertex_texture_image_units);

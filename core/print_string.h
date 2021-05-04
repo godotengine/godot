@@ -44,9 +44,9 @@ struct PrintHandlerList {
 	PrintHandlerList *next;
 
 	PrintHandlerList() {
-		printfunc = 0;
-		next = 0;
-		userdata = 0;
+		printfunc = nullptr;
+		next = nullptr;
+		userdata = nullptr;
 	}
 };
 

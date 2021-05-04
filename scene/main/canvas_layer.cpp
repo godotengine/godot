@@ -291,13 +291,13 @@ void CanvasLayer::_bind_methods() {
 }
 
 CanvasLayer::CanvasLayer() {
-	vp = NULL;
+	vp = nullptr;
 	scale = Vector2(1, 1);
 	rot = 0;
 	locrotscale_dirty = false;
 	layer = 1;
 	canvas = VS::get_singleton()->canvas_create();
-	custom_viewport = NULL;
+	custom_viewport = nullptr;
 	custom_viewport_id = 0;
 	sort_index = 0;
 	follow_viewport = false;

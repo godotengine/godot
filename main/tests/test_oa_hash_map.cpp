@@ -212,6 +212,6 @@ MainLoop *test() {
 		}
 	}
 
-	return NULL;
+	return nullptr;
 }
 } // namespace TestOAHashMap

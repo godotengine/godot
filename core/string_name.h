@@ -59,8 +59,8 @@ class StringName {
 		_Data *prev;
 		_Data *next;
 		_Data() {
-			cname = NULL;
-			next = prev = NULL;
+			cname = nullptr;
+			next = prev = nullptr;
 			idx = 0;
 			hash = 0;
 		}
@@ -87,7 +87,7 @@ class StringName {
 	StringName(_Data *p_data) { _data = p_data; }
 
 public:
-	operator const void *() const { return (_data && (_data->cname || !_data->name.empty())) ? (void *)1 : 0; }
+	operator const void *() const { return (_data && (_data->cname || !_data->name.empty())) ? (void *)1 : nullptr; }
 
 	bool operator==(const String &p_name) const;
 	bool operator==(const char *p_name) const;

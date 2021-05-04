@@ -32,14 +32,14 @@
 #include "core/os/file_access.h"
 #include "core/project_settings.h"
 
-DTLSServer *(*DTLSServer::_create)() = NULL;
+DTLSServer *(*DTLSServer::_create)() = nullptr;
 bool DTLSServer::available = false;
 
 DTLSServer *DTLSServer::create() {
 	if (_create) {
 		return _create();
 	}
-	return NULL;
+	return nullptr;
 }
 
 bool DTLSServer::is_available() {

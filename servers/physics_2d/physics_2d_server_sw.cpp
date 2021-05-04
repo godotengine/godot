@@ -41,7 +41,7 @@
 	ERR_FAIL_COND_MSG(m_object->get_space() && flushing_queries, "Can't change this state while flushing queries. Use call_deferred() or set_deferred() to change monitoring state instead.");
 
 RID Physics2DServerSW::_shape_create(ShapeType p_shape) {
-	Shape2DSW *shape = NULL;
+	Shape2DSW *shape = nullptr;
 	switch (p_shape) {
 		case SHAPE_LINE: {
 			shape = memnew(LineShape2DSW);
@@ -192,7 +192,7 @@ bool Physics2DServerSW::shape_collide(RID p_shape_A, const Transform2D &p_xform_
 	ERR_FAIL_COND_V(!shape_B, false);
 
 	if (p_result_max == 0) {
-		return CollisionSolver2DSW::solve(shape_A, p_xform_A, p_motion_A, shape_B, p_xform_B, p_motion_B, NULL, NULL);
+		return CollisionSolver2DSW::solve(shape_A, p_xform_A, p_motion_A, shape_B, p_xform_B, p_motion_B, nullptr, nullptr);
 	}
 
 	CollCbkData cbk;
@@ -269,8 +269,8 @@ int Physics2DServerSW::space_get_contact_count(RID p_space) const {
 
 Physics2DDirectSpaceState *Physics2DServerSW::space_get_direct_state(RID p_space) {
 	Space2DSW *space = space_owner.get(p_space);
-	ERR_FAIL_COND_V(!space, NULL);
-	ERR_FAIL_COND_V_MSG((using_threads && !doing_sync) || space->is_locked(), NULL, "Space state is inaccessible right now, wait for iteration or physics process notification.");
+	ERR_FAIL_COND_V(!space, nullptr);
+	ERR_FAIL_COND_V_MSG((using_threads && !doing_sync) || space->is_locked(), nullptr, "Space state is inaccessible right now, wait for iteration or physics process notification.");
 
 	return space->get_direct_state();
 }
@@ -286,7 +286,7 @@ void Physics2DServerSW::area_set_space(RID p_area, RID p_space) {
 	Area2DSW *area = area_owner.get(p_area);
 	ERR_FAIL_COND(!area);
 
-	Space2DSW *space = NULL;
+	Space2DSW *space = nullptr;
 	if (p_space.is_valid()) {
 		space = space_owner.get(p_space);
 		ERR_FAIL_COND(!space);
@@ -522,7 +522,7 @@ RID Physics2DServerSW::body_create() {
 void Physics2DServerSW::body_set_space(RID p_body, RID p_space) {
 	Body2DSW *body = body_owner.get(p_body);
 	ERR_FAIL_COND(!body);
-	Space2DSW *space = NULL;
+	Space2DSW *space = nullptr;
 	if (p_space.is_valid()) {
 		space = space_owner.get(p_space);
 		ERR_FAIL_COND(!space);
@@ -945,15 +945,15 @@ int Physics2DServerSW::body_test_ray_separation(RID p_body, const Transform2D &p
 }
 
 Physics2DDirectBodyState *Physics2DServerSW::body_get_direct_state(RID p_body) {
-	ERR_FAIL_COND_V_MSG((using_threads && !doing_sync), NULL, "Body state is inaccessible right now, wait for iteration or physics process notification.");
+	ERR_FAIL_COND_V_MSG((using_threads && !doing_sync), nullptr, "Body state is inaccessible right now, wait for iteration or physics process notification.");
 
 	if (!body_owner.owns(p_body))
-		return NULL;
+		return nullptr;
 
 	Body2DSW *body = body_owner.get(p_body);
-	ERR_FAIL_COND_V(!body, NULL);
-	ERR_FAIL_COND_V(!body->get_space(), NULL);
-	ERR_FAIL_COND_V_MSG(body->get_space()->is_locked(), NULL, "Body state is inaccessible right now, wait for iteration or physics process notification.");
+	ERR_FAIL_COND_V(!body, nullptr);
+	ERR_FAIL_COND_V(!body->get_space(), nullptr);
+	ERR_FAIL_COND_V_MSG(body->get_space()->is_locked(), nullptr, "Body state is inaccessible right now, wait for iteration or physics process notification.");
 
 	direct_state->body = body;
 	return direct_state;
@@ -1027,7 +1027,7 @@ bool Physics2DServerSW::joint_is_disabled_collisions_between_bodies(RID p_joint)
 RID Physics2DServerSW::pin_joint_create(const Vector2 &p_pos, RID p_body_a, RID p_body_b) {
 	Body2DSW *A = body_owner.get(p_body_a);
 	ERR_FAIL_COND_V(!A, RID());
-	Body2DSW *B = NULL;
+	Body2DSW *B = nullptr;
 	if (body_owner.owns(p_body_b)) {
 		B = body_owner.get(p_body_b);
 		ERR_FAIL_COND_V(!B, RID());
@@ -1150,7 +1150,7 @@ void Physics2DServerSW::free(RID p_rid) {
 			_clear_query(area->get_monitor_query());
 		*/
 
-		area->set_space(NULL);
+		area->set_space(nullptr);
 
 		while (area->get_shape_count()) {
 			area->remove_shape(0);
@@ -1163,7 +1163,7 @@ void Physics2DServerSW::free(RID p_rid) {
 
 		while (space->get_objects().size()) {
 			CollisionObject2DSW *co = (CollisionObject2DSW *)space->get_objects().front()->get();
-			co->set_space(NULL);
+			co->set_space(nullptr);
 		}
 
 		active_spaces.erase(space);
@@ -1296,7 +1296,7 @@ int Physics2DServerSW::get_process_info(ProcessInfo p_info) {
 	return 0;
 }
 
-Physics2DServerSW *Physics2DServerSW::singletonsw = NULL;
+Physics2DServerSW *Physics2DServerSW::singletonsw = nullptr;
 
 Physics2DServerSW::Physics2DServerSW() {
 	singletonsw = this;

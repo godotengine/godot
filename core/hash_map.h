@@ -75,7 +75,7 @@ public:
 
 		uint32_t hash;
 		Element *next;
-		Element() { next = 0; }
+		Element() { next = nullptr; }
 		Pair pair;
 
 	public:
@@ -105,14 +105,14 @@ private:
 		hash_table_power = MIN_HASH_TABLE_POWER;
 		elements = 0;
 		for (int i = 0; i < (1 << MIN_HASH_TABLE_POWER); i++)
-			hash_table[i] = 0;
+			hash_table[i] = nullptr;
 	}
 
 	void erase_hash_table() {
 		ERR_FAIL_COND_MSG(elements, "Cannot erase hash table if there are still elements inside.");
 
 		memdelete_arr(hash_table);
-		hash_table = 0;
+		hash_table = nullptr;
 		hash_table_power = 0;
 		elements = 0;
 	}
@@ -147,7 +147,7 @@ private:
 		ERR_FAIL_COND_MSG(!new_hash_table, "Out of memory.");
 
 		for (int i = 0; i < (1 << new_hash_table_power); i++) {
-			new_hash_table[i] = 0;
+			new_hash_table[i] = nullptr;
 		}
 
 		if (hash_table) {
@@ -184,13 +184,13 @@ private:
 			e = e->next;
 		}
 
-		return NULL;
+		return nullptr;
 	}
 
 	Element *create_element(const TKey &p_key) {
 		/* if element doesn't exist, create it */
 		Element *e = memnew(Element);
-		ERR_FAIL_COND_V_MSG(!e, NULL, "Out of memory.");
+		ERR_FAIL_COND_V_MSG(!e, nullptr, "Out of memory.");
 		uint32_t hash = Hasher::hash(p_key);
 		uint32_t index = hash & ((1 << hash_table_power) - 1);
 		e->next = hash_table[index];
@@ -218,7 +218,7 @@ private:
 		elements = p_t.elements;
 
 		for (int i = 0; i < (1 << p_t.hash_table_power); i++) {
-			hash_table[i] = NULL;
+			hash_table[i] = nullptr;
 
 			const Element *e = p_t.hash_table[i];
 
@@ -242,7 +242,7 @@ public:
 	}
 
 	Element *set(const Pair &p_pair) {
-		Element *e = NULL;
+		Element *e = nullptr;
 		if (!hash_table)
 			make_hash_table(); // if no table, make one
 		else
@@ -253,7 +253,7 @@ public:
 		if (!e) {
 			e = create_element(p_pair.key);
 			if (!e)
-				return NULL;
+				return nullptr;
 			check_hash_table(); // perform mantenience routine
 		}
 
@@ -262,7 +262,7 @@ public:
 	}
 
 	bool has(const TKey &p_key) const {
-		return getptr(p_key) != NULL;
+		return getptr(p_key) != nullptr;
 	}
 
 	/**
@@ -290,26 +290,26 @@ public:
 
 	_FORCE_INLINE_ TData *getptr(const TKey &p_key) {
 		if (unlikely(!hash_table))
-			return NULL;
+			return nullptr;
 
 		Element *e = const_cast<Element *>(get_element(p_key));
 
 		if (e)
 			return &e->pair.data;
 
-		return NULL;
+		return nullptr;
 	}
 
 	_FORCE_INLINE_ const TData *getptr(const TKey &p_key) const {
 		if (unlikely(!hash_table))
-			return NULL;
+			return nullptr;
 
 		const Element *e = const_cast<Element *>(get_element(p_key));
 
 		if (e)
 			return &e->pair.data;
 
-		return NULL;
+		return nullptr;
 	}
 
 	/**
@@ -320,7 +320,7 @@ public:
 	template <class C>
 	_FORCE_INLINE_ TData *custom_getptr(C p_custom_key, uint32_t p_custom_hash) {
 		if (unlikely(!hash_table))
-			return NULL;
+			return nullptr;
 
 		uint32_t hash = p_custom_hash;
 		uint32_t index = hash & ((1 << hash_table_power) - 1);
@@ -337,7 +337,7 @@ public:
 			e = e->next;
 		}
 
-		return NULL;
+		return nullptr;
 	}
 
 	template <class C>
@@ -375,7 +375,7 @@ public:
 		uint32_t index = hash & ((1 << hash_table_power) - 1);
 
 		Element *e = hash_table[index];
-		Element *p = NULL;
+		Element *p = nullptr;
 		while (e) {
 			/* checking hash first avoids comparing key, which may take longer */
 			if (e->hash == hash && Comparator::compare(e->pair.key, p_key)) {
@@ -409,7 +409,7 @@ public:
 	}
 	inline TData &operator[](const TKey &p_key) { //assignment
 
-		Element *e = NULL;
+		Element *e = nullptr;
 		if (!hash_table)
 			make_hash_table(); // if no table, make one
 		else
@@ -442,7 +442,7 @@ public:
 	*/
 	const TKey *next(const TKey *p_key) const {
 		if (unlikely(!hash_table))
-			return NULL;
+			return nullptr;
 
 		if (!p_key) { /* get the first key */
 
@@ -455,7 +455,7 @@ public:
 		} else { /* get the next key */
 
 			const Element *e = get_element(*p_key);
-			ERR_FAIL_COND_V_MSG(!e, NULL, "Invalid key supplied.");
+			ERR_FAIL_COND_V_MSG(!e, nullptr, "Invalid key supplied.");
 			if (e->next) {
 				/* if there is a "next" in the list, return that */
 				return &e->next->pair.key;
@@ -473,7 +473,7 @@ public:
 			/* nothing found, was at end */
 		}
 
-		return NULL; /* nothing found */
+		return nullptr; /* nothing found */
 	}
 
 	inline unsigned int size() const {
@@ -498,7 +498,7 @@ public:
 			memdelete_arr(hash_table);
 		}
 
-		hash_table = 0;
+		hash_table = nullptr;
 		hash_table_power = 0;
 		elements = 0;
 	}
@@ -508,7 +508,7 @@ public:
 	}
 
 	HashMap() {
-		hash_table = NULL;
+		hash_table = nullptr;
 		elements = 0;
 		hash_table_power = 0;
 	}
@@ -539,7 +539,7 @@ public:
 	}
 
 	HashMap(const HashMap &p_table) {
-		hash_table = NULL;
+		hash_table = nullptr;
 		elements = 0;
 		hash_table_power = 0;
 

@@ -478,7 +478,7 @@ ObjectID SpatialEditorViewport::_select_ray(const Point2 &p_pos, bool p_append, 
 
 	Node *edited_scene = get_tree()->get_edited_scene_root();
 	ObjectID closest = 0;
-	Node *item = NULL;
+	Node *item = nullptr;
 	float closest_dist = 1e20;
 	int selected_handle = -1;
 
@@ -560,7 +560,7 @@ void SpatialEditorViewport::_find_items_at_pos(const Point2 &p_pos, bool &r_incl
 		Vector3 normal;
 
 		int handle = -1;
-		bool inters = seg->intersect_ray(camera, p_pos, point, normal, NULL, p_alt_select);
+		bool inters = seg->intersect_ray(camera, p_pos, point, normal, nullptr, p_alt_select);
 
 		if (!inters)
 			continue;
@@ -2143,7 +2143,7 @@ static bool is_shortcut_pressed(const String &p_path) {
 		return false;
 	}
 	InputEventKey *k = Object::cast_to<InputEventKey>(shortcut->get_shortcut().ptr());
-	if (k == NULL) {
+	if (k == nullptr) {
 		return false;
 	}
 	const Input &input = *Input::get_singleton();
@@ -2262,11 +2262,11 @@ void SpatialEditorViewport::_notification(int p_what) {
 		_update_freelook(delta);
 
 		Node *scene_root = editor->get_scene_tree_dock()->get_editor_data()->get_edited_scene_root();
-		if (previewing_cinema && scene_root != NULL) {
+		if (previewing_cinema && scene_root != nullptr) {
 			Camera *cam = scene_root->get_viewport()->get_camera();
-			if (cam != NULL && cam != previewing) {
+			if (cam != nullptr && cam != previewing) {
 				//then switch the viewport's camera to the scene's viewport camera
-				if (previewing != NULL) {
+				if (previewing != nullptr) {
 					previewing->disconnect("tree_exited", this, "_preview_exited_scene");
 				}
 				previewing = cam;
@@ -2830,7 +2830,7 @@ void SpatialEditorViewport::_menu_option(int p_option) {
 			if (current) {
 				preview_camera->hide();
 			} else {
-				if (previewing != NULL)
+				if (previewing != nullptr)
 					preview_camera->show();
 			}
 		} break;
@@ -2985,7 +2985,7 @@ void SpatialEditorViewport::_toggle_camera_preview(bool p_activate) {
 
 	if (!p_activate) {
 		previewing->disconnect("tree_exiting", this, "_preview_exited_scene");
-		previewing = NULL;
+		previewing = nullptr;
 		VS::get_singleton()->viewport_attach_camera(viewport->get_viewport_rid(), camera->get_camera()); //restore
 		if (!preview)
 			preview_camera->hide();
@@ -3006,10 +3006,10 @@ void SpatialEditorViewport::_toggle_cinema_preview(bool p_activate) {
 	rotation_control->set_visible(!p_activate);
 
 	if (!previewing_cinema) {
-		if (previewing != NULL)
+		if (previewing != nullptr)
 			previewing->disconnect("tree_exited", this, "_preview_exited_scene");
 
-		previewing = NULL;
+		previewing = nullptr;
 		VS::get_singleton()->viewport_attach_camera(viewport->get_viewport_rid(), camera->get_camera()); //restore
 		preview_camera->set_pressed(false);
 		if (!preview) {
@@ -3354,7 +3354,7 @@ Vector3 SpatialEditorViewport::_get_instance_position(const Point2 &p_pos) const
 
 		Vector3 hit_point;
 		Vector3 hit_normal;
-		bool inters = seg->intersect_ray(camera, p_pos, hit_point, hit_normal, NULL, false);
+		bool inters = seg->intersect_ray(camera, p_pos, hit_point, hit_normal, nullptr, false);
 
 		if (!inters)
 			continue;
@@ -3419,8 +3419,8 @@ void SpatialEditorViewport::_create_preview(const Vector<String> &files) const {
 		ERR_CONTINUE(res.is_null());
 		Ref<PackedScene> scene = Ref<PackedScene>(Object::cast_to<PackedScene>(*res));
 		Ref<Mesh> mesh = Ref<Mesh>(Object::cast_to<Mesh>(*res));
-		if (mesh != NULL || scene != NULL) {
-			if (mesh != NULL) {
+		if (mesh != nullptr || scene != nullptr) {
+			if (mesh != nullptr) {
 				MeshInstance *mesh_instance = memnew(MeshInstance);
 				mesh_instance->set_mesh(mesh);
 				preview_node->add_child(mesh_instance);
@@ -3471,10 +3471,10 @@ bool SpatialEditorViewport::_create_instance(Node *parent, String &path, const P
 	Ref<PackedScene> scene = Ref<PackedScene>(Object::cast_to<PackedScene>(*res));
 	Ref<Mesh> mesh = Ref<Mesh>(Object::cast_to<Mesh>(*res));
 
-	Node *instanced_scene = NULL;
+	Node *instanced_scene = nullptr;
 
-	if (mesh != NULL || scene != NULL) {
-		if (mesh != NULL) {
+	if (mesh != nullptr || scene != nullptr) {
+		if (mesh != nullptr) {
 			MeshInstance *mesh_instance = memnew(MeshInstance);
 			mesh_instance->set_mesh(mesh);
 			mesh_instance->set_name(path.get_file().get_basename());
@@ -3488,7 +3488,7 @@ bool SpatialEditorViewport::_create_instance(Node *parent, String &path, const P
 		}
 	}
 
-	if (instanced_scene == NULL) {
+	if (instanced_scene == nullptr) {
 		return false;
 	}
 
@@ -3499,7 +3499,7 @@ bool SpatialEditorViewport::_create_instance(Node *parent, String &path, const P
 		}
 	}
 
-	if (scene != NULL) {
+	if (scene != nullptr) {
 		instanced_scene->set_filename(ProjectSettings::get_singleton()->localize_path(path));
 	}
 
@@ -3545,7 +3545,7 @@ void SpatialEditorViewport::_perform_drop_data() {
 		}
 		Ref<PackedScene> scene = Ref<PackedScene>(Object::cast_to<PackedScene>(*res));
 		Ref<Mesh> mesh = Ref<Mesh>(Object::cast_to<Mesh>(*res));
-		if (mesh != NULL || scene != NULL) {
+		if (mesh != nullptr || scene != nullptr) {
 			bool success = _create_instance(target_node, path, drop_pos);
 			if (!success) {
 				error_files.push_back(path);
@@ -3666,7 +3666,7 @@ SpatialEditorViewport::SpatialEditorViewport(SpatialEditor *p_spatial_editor, Ed
 	_edit.mode = TRANSFORM_NONE;
 	_edit.plane = TRANSFORM_VIEW;
 	_edit.edited_gizmo = 0;
-	_edit.snap = 1;
+	_edit.snap = true;
 	_edit.gizmo_handle = 0;
 
 	index = p_index;
@@ -3791,10 +3791,10 @@ SpatialEditorViewport::SpatialEditorViewport(SpatialEditor *p_spatial_editor, Ed
 	preview_camera->set_h_size_flags(0);
 	preview_camera->hide();
 	preview_camera->connect("toggled", this, "_toggle_camera_preview");
-	previewing = NULL;
+	previewing = nullptr;
 	gizmo_scale = 1.0;
 
-	preview_node = NULL;
+	preview_node = nullptr;
 
 	info_label = memnew(Label);
 	info_label->set_anchor_and_margin(MARGIN_LEFT, ANCHOR_END, -90 * EDSCALE);
@@ -3856,7 +3856,7 @@ SpatialEditorViewport::SpatialEditorViewport(SpatialEditor *p_spatial_editor, Ed
 
 	surface->add_child(top_right_vbox);
 
-	accept = NULL;
+	accept = nullptr;
 
 	freelook_active = false;
 	freelook_speed = EditorSettings::get_singleton()->get("editors/3d/freelook/freelook_base_speed");
@@ -4184,7 +4184,7 @@ SpatialEditorViewportContainer::SpatialEditorViewportContainer() {
 
 ///////////////////////////////////////////////////////////////////
 
-SpatialEditor *SpatialEditor::singleton = NULL;
+SpatialEditor *SpatialEditor::singleton = nullptr;
 
 SpatialEditorSelectedItem::~SpatialEditorSelectedItem() {
 	if (sbox_instance.is_valid()) {
@@ -4273,7 +4273,7 @@ void SpatialEditor::update_all_gizmos(Node *p_node) {
 Object *SpatialEditor::_get_editor_data(Object *p_what) {
 	Spatial *sp = Object::cast_to<Spatial>(p_what);
 	if (!sp)
-		return NULL;
+		return nullptr;
 
 	SpatialEditorSelectedItem *si = memnew(SpatialEditorSelectedItem);
 
@@ -5932,7 +5932,7 @@ void SpatialEditor::_toggle_maximize_view(Object *p_viewport) {
 
 void SpatialEditor::_node_removed(Node *p_node) {
 	if (p_node == selected)
-		selected = NULL;
+		selected = nullptr;
 }
 
 void SpatialEditor::_register_all_gizmos() {
@@ -6015,7 +6015,7 @@ SpatialEditor::SpatialEditor(EditorNode *p_editor) {
 	undo_redo = p_editor->get_undo_redo();
 	VBoxContainer *vbc = this;
 
-	custom_camera = NULL;
+	custom_camera = nullptr;
 	singleton = this;
 	editor = p_editor;
 	editor_selection = editor->get_editor_selection();
@@ -6349,7 +6349,7 @@ SpatialEditor::SpatialEditor(EditorNode *p_editor) {
 
 	scenario_debug = VisualServer::SCENARIO_DEBUG_DISABLED;
 
-	selected = NULL;
+	selected = nullptr;
 
 	set_process_unhandled_key_input(true);
 	add_to_group("_spatial_editor_group");
@@ -6782,8 +6782,8 @@ EditorSpatialGizmoPlugin::EditorSpatialGizmoPlugin() {
 
 EditorSpatialGizmoPlugin::~EditorSpatialGizmoPlugin() {
 	for (int i = 0; i < current_gizmos.size(); ++i) {
-		current_gizmos[i]->set_plugin(NULL);
-		current_gizmos[i]->get_spatial_node()->set_gizmo(NULL);
+		current_gizmos[i]->set_plugin(nullptr);
+		current_gizmos[i]->get_spatial_node()->set_gizmo(nullptr);
 	}
 	if (SpatialEditor::get_singleton()) {
 		SpatialEditor::get_singleton()->update_all_gizmos();

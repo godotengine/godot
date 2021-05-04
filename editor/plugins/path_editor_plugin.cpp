@@ -433,7 +433,7 @@ void PathEditorPlugin::edit(Object *p_object) {
 		}
 	} else {
 		Path *pre = path;
-		path = NULL;
+		path = nullptr;
 		if (pre) {
 			pre->get_curve()->emit_signal("changed");
 		}
@@ -463,7 +463,7 @@ void PathEditorPlugin::make_visible(bool p_visible) {
 
 		{
 			Path *pre = path;
-			path = NULL;
+			path = nullptr;
 			if (pre && pre->get_curve().is_valid()) {
 				pre->get_curve()->emit_signal("changed");
 			}
@@ -520,10 +520,10 @@ void PathEditorPlugin::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_handle_option_pressed"), &PathEditorPlugin::_handle_option_pressed);
 }
 
-PathEditorPlugin *PathEditorPlugin::singleton = NULL;
+PathEditorPlugin *PathEditorPlugin::singleton = nullptr;
 
 PathEditorPlugin::PathEditorPlugin(EditorNode *p_node) {
-	path = NULL;
+	path = nullptr;
 	editor = p_node;
 	singleton = this;
 	mirror_handle_angle = true;

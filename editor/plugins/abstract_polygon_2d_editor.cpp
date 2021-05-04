@@ -192,7 +192,7 @@ void AbstractPolygon2DEditor::_notification(int p_what) {
 
 void AbstractPolygon2DEditor::_node_removed(Node *p_node) {
 	if (p_node == _get_node()) {
-		edit(NULL);
+		edit(nullptr);
 		hide();
 
 		canvas_item_editor->update_viewport();
@@ -604,7 +604,7 @@ void AbstractPolygon2DEditor::edit(Node *p_polygon) {
 		hover_point = Vertex();
 		selected_point = Vertex();
 	} else {
-		_set_node(NULL);
+		_set_node(nullptr);
 	}
 
 	canvas_item_editor->update_viewport();
@@ -709,7 +709,7 @@ AbstractPolygon2DEditor::PosVertex AbstractPolygon2DEditor::closest_edge_point(c
 }
 
 AbstractPolygon2DEditor::AbstractPolygon2DEditor(EditorNode *p_editor, bool p_wip_destructive) {
-	canvas_item_editor = NULL;
+	canvas_item_editor = nullptr;
 	editor = p_editor;
 	undo_redo = EditorNode::get_undo_redo();
 
@@ -757,7 +757,7 @@ void AbstractPolygon2DEditorPlugin::make_visible(bool p_visible) {
 		polygon_editor->show();
 	} else {
 		polygon_editor->hide();
-		polygon_editor->edit(NULL);
+		polygon_editor->edit(nullptr);
 	}
 }
 

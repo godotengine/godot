@@ -724,16 +724,16 @@ EditorSpatialGizmo::EditorSpatialGizmo() {
 	valid = false;
 	billboard_handle = false;
 	hidden = false;
-	base = NULL;
+	base = nullptr;
 	selected = false;
 	instanced = false;
-	spatial_node = NULL;
-	gizmo_plugin = NULL;
+	spatial_node = nullptr;
+	gizmo_plugin = nullptr;
 	selectable_icon_size = -1.0f;
 }
 
 EditorSpatialGizmo::~EditorSpatialGizmo() {
-	if (gizmo_plugin != NULL)
+	if (gizmo_plugin != nullptr)
 		gizmo_plugin->unregister_gizmo(this);
 	clear();
 }
@@ -761,7 +761,7 @@ LightSpatialGizmoPlugin::LightSpatialGizmoPlugin() {
 }
 
 bool LightSpatialGizmoPlugin::has_gizmo(Spatial *p_spatial) {
-	return Object::cast_to<Light>(p_spatial) != NULL;
+	return Object::cast_to<Light>(p_spatial) != nullptr;
 }
 
 String LightSpatialGizmoPlugin::get_name() const {
@@ -1026,7 +1026,7 @@ AudioStreamPlayer3DSpatialGizmoPlugin::AudioStreamPlayer3DSpatialGizmoPlugin() {
 }
 
 bool AudioStreamPlayer3DSpatialGizmoPlugin::has_gizmo(Spatial *p_spatial) {
-	return Object::cast_to<AudioStreamPlayer3D>(p_spatial) != NULL;
+	return Object::cast_to<AudioStreamPlayer3D>(p_spatial) != nullptr;
 }
 
 String AudioStreamPlayer3DSpatialGizmoPlugin::get_name() const {
@@ -1161,7 +1161,7 @@ CameraSpatialGizmoPlugin::CameraSpatialGizmoPlugin() {
 }
 
 bool CameraSpatialGizmoPlugin::has_gizmo(Spatial *p_spatial) {
-	return Object::cast_to<Camera>(p_spatial) != NULL;
+	return Object::cast_to<Camera>(p_spatial) != nullptr;
 }
 
 String CameraSpatialGizmoPlugin::get_name() const {
@@ -1400,7 +1400,7 @@ MeshInstanceSpatialGizmoPlugin::MeshInstanceSpatialGizmoPlugin() {
 }
 
 bool MeshInstanceSpatialGizmoPlugin::has_gizmo(Spatial *p_spatial) {
-	return Object::cast_to<MeshInstance>(p_spatial) != NULL && Object::cast_to<SoftBody>(p_spatial) == NULL;
+	return Object::cast_to<MeshInstance>(p_spatial) != nullptr && Object::cast_to<SoftBody>(p_spatial) == nullptr;
 }
 
 String MeshInstanceSpatialGizmoPlugin::get_name() const {
@@ -1436,7 +1436,7 @@ Sprite3DSpatialGizmoPlugin::Sprite3DSpatialGizmoPlugin() {
 }
 
 bool Sprite3DSpatialGizmoPlugin::has_gizmo(Spatial *p_spatial) {
-	return Object::cast_to<Sprite3D>(p_spatial) != NULL;
+	return Object::cast_to<Sprite3D>(p_spatial) != nullptr;
 }
 
 String Sprite3DSpatialGizmoPlugin::get_name() const {
@@ -1498,7 +1498,7 @@ Position3DSpatialGizmoPlugin::Position3DSpatialGizmoPlugin() {
 }
 
 bool Position3DSpatialGizmoPlugin::has_gizmo(Spatial *p_spatial) {
-	return Object::cast_to<Position3D>(p_spatial) != NULL;
+	return Object::cast_to<Position3D>(p_spatial) != nullptr;
 }
 
 String Position3DSpatialGizmoPlugin::get_name() const {
@@ -1523,7 +1523,7 @@ SkeletonSpatialGizmoPlugin::SkeletonSpatialGizmoPlugin() {
 }
 
 bool SkeletonSpatialGizmoPlugin::has_gizmo(Spatial *p_spatial) {
-	return Object::cast_to<Skeleton>(p_spatial) != NULL;
+	return Object::cast_to<Skeleton>(p_spatial) != nullptr;
 }
 
 String SkeletonSpatialGizmoPlugin::get_name() const {
@@ -1724,7 +1724,7 @@ PhysicalBoneSpatialGizmoPlugin::PhysicalBoneSpatialGizmoPlugin() {
 }
 
 bool PhysicalBoneSpatialGizmoPlugin::has_gizmo(Spatial *p_spatial) {
-	return Object::cast_to<PhysicalBone>(p_spatial) != NULL;
+	return Object::cast_to<PhysicalBone>(p_spatial) != nullptr;
 }
 
 String PhysicalBoneSpatialGizmoPlugin::get_name() const {
@@ -1857,7 +1857,7 @@ RayCastSpatialGizmoPlugin::RayCastSpatialGizmoPlugin() {
 }
 
 bool RayCastSpatialGizmoPlugin::has_gizmo(Spatial *p_spatial) {
-	return Object::cast_to<RayCast>(p_spatial) != NULL;
+	return Object::cast_to<RayCast>(p_spatial) != nullptr;
 }
 
 String RayCastSpatialGizmoPlugin::get_name() const {
@@ -1909,7 +1909,7 @@ SpringArmSpatialGizmoPlugin::SpringArmSpatialGizmoPlugin() {
 }
 
 bool SpringArmSpatialGizmoPlugin::has_gizmo(Spatial *p_spatial) {
-	return Object::cast_to<SpringArm>(p_spatial) != NULL;
+	return Object::cast_to<SpringArm>(p_spatial) != nullptr;
 }
 
 String SpringArmSpatialGizmoPlugin::get_name() const {
@@ -1928,7 +1928,7 @@ VehicleWheelSpatialGizmoPlugin::VehicleWheelSpatialGizmoPlugin() {
 }
 
 bool VehicleWheelSpatialGizmoPlugin::has_gizmo(Spatial *p_spatial) {
-	return Object::cast_to<VehicleWheel>(p_spatial) != NULL;
+	return Object::cast_to<VehicleWheel>(p_spatial) != nullptr;
 }
 
 String VehicleWheelSpatialGizmoPlugin::get_name() const {
@@ -2000,7 +2000,7 @@ SoftBodySpatialGizmoPlugin::SoftBodySpatialGizmoPlugin() {
 }
 
 bool SoftBodySpatialGizmoPlugin::has_gizmo(Spatial *p_spatial) {
-	return Object::cast_to<SoftBody>(p_spatial) != NULL;
+	return Object::cast_to<SoftBody>(p_spatial) != nullptr;
 }
 
 String SoftBodySpatialGizmoPlugin::get_name() const {
@@ -2086,7 +2086,7 @@ VisibilityNotifierGizmoPlugin::VisibilityNotifierGizmoPlugin() {
 }
 
 bool VisibilityNotifierGizmoPlugin::has_gizmo(Spatial *p_spatial) {
-	return Object::cast_to<VisibilityNotifier>(p_spatial) != NULL;
+	return Object::cast_to<VisibilityNotifier>(p_spatial) != nullptr;
 }
 
 String VisibilityNotifierGizmoPlugin::get_name() const {
@@ -2240,7 +2240,7 @@ CPUParticlesGizmoPlugin::CPUParticlesGizmoPlugin() {
 }
 
 bool CPUParticlesGizmoPlugin::has_gizmo(Spatial *p_spatial) {
-	return Object::cast_to<CPUParticles>(p_spatial) != NULL;
+	return Object::cast_to<CPUParticles>(p_spatial) != nullptr;
 }
 
 String CPUParticlesGizmoPlugin::get_name() const {
@@ -2272,7 +2272,7 @@ ParticlesGizmoPlugin::ParticlesGizmoPlugin() {
 }
 
 bool ParticlesGizmoPlugin::has_gizmo(Spatial *p_spatial) {
-	return Object::cast_to<Particles>(p_spatial) != NULL;
+	return Object::cast_to<Particles>(p_spatial) != nullptr;
 }
 
 String ParticlesGizmoPlugin::get_name() const {
@@ -2439,7 +2439,7 @@ ReflectionProbeGizmoPlugin::ReflectionProbeGizmoPlugin() {
 }
 
 bool ReflectionProbeGizmoPlugin::has_gizmo(Spatial *p_spatial) {
-	return Object::cast_to<ReflectionProbe>(p_spatial) != NULL;
+	return Object::cast_to<ReflectionProbe>(p_spatial) != nullptr;
 }
 
 String ReflectionProbeGizmoPlugin::get_name() const {
@@ -2624,7 +2624,7 @@ GIProbeGizmoPlugin::GIProbeGizmoPlugin() {
 }
 
 bool GIProbeGizmoPlugin::has_gizmo(Spatial *p_spatial) {
-	return Object::cast_to<GIProbe>(p_spatial) != NULL;
+	return Object::cast_to<GIProbe>(p_spatial) != nullptr;
 }
 
 String GIProbeGizmoPlugin::get_name() const {
@@ -2860,7 +2860,7 @@ void BakedIndirectLightGizmoPlugin::commit_handle(EditorSpatialGizmo *p_gizmo, i
 }
 
 bool BakedIndirectLightGizmoPlugin::has_gizmo(Spatial *p_spatial) {
-	return Object::cast_to<BakedLightmap>(p_spatial) != NULL;
+	return Object::cast_to<BakedLightmap>(p_spatial) != nullptr;
 }
 
 String BakedIndirectLightGizmoPlugin::get_name() const {
@@ -2973,7 +2973,7 @@ CollisionShapeSpatialGizmoPlugin::CollisionShapeSpatialGizmoPlugin() {
 }
 
 bool CollisionShapeSpatialGizmoPlugin::has_gizmo(Spatial *p_spatial) {
-	return Object::cast_to<CollisionShape>(p_spatial) != NULL;
+	return Object::cast_to<CollisionShape>(p_spatial) != nullptr;
 }
 
 String CollisionShapeSpatialGizmoPlugin::get_name() const {
@@ -3555,7 +3555,7 @@ CollisionPolygonSpatialGizmoPlugin::CollisionPolygonSpatialGizmoPlugin() {
 }
 
 bool CollisionPolygonSpatialGizmoPlugin::has_gizmo(Spatial *p_spatial) {
-	return Object::cast_to<CollisionPolygon>(p_spatial) != NULL;
+	return Object::cast_to<CollisionPolygon>(p_spatial) != nullptr;
 }
 
 String CollisionPolygonSpatialGizmoPlugin::get_name() const {
@@ -3602,7 +3602,7 @@ NavigationMeshSpatialGizmoPlugin::NavigationMeshSpatialGizmoPlugin() {
 }
 
 bool NavigationMeshSpatialGizmoPlugin::has_gizmo(Spatial *p_spatial) {
-	return Object::cast_to<NavigationMeshInstance>(p_spatial) != NULL;
+	return Object::cast_to<NavigationMeshInstance>(p_spatial) != nullptr;
 }
 
 String NavigationMeshSpatialGizmoPlugin::get_name() const {
@@ -3967,7 +3967,7 @@ void JointSpatialGizmoPlugin::incremental_update_gizmos() {
 }
 
 bool JointSpatialGizmoPlugin::has_gizmo(Spatial *p_spatial) {
-	return Object::cast_to<Joint>(p_spatial) != NULL;
+	return Object::cast_to<Joint>(p_spatial) != nullptr;
 }
 
 String JointSpatialGizmoPlugin::get_name() const {
@@ -3983,12 +3983,12 @@ void JointSpatialGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
 
 	p_gizmo->clear();
 
-	Spatial *node_body_a = NULL;
+	Spatial *node_body_a = nullptr;
 	if (!joint->get_node_a().is_empty()) {
 		node_body_a = Object::cast_to<Spatial>(joint->get_node(joint->get_node_a()));
 	}
 
-	Spatial *node_body_b = NULL;
+	Spatial *node_body_b = nullptr;
 	if (!joint->get_node_b().is_empty()) {
 		node_body_b = Object::cast_to<Spatial>(joint->get_node(joint->get_node_b()));
 	}
@@ -4022,8 +4022,8 @@ void JointSpatialGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
 				hinge->get_param(HingeJoint::PARAM_LIMIT_UPPER),
 				hinge->get_flag(HingeJoint::FLAG_USE_LIMIT),
 				points,
-				node_body_a ? &body_a_points : NULL,
-				node_body_b ? &body_b_points : NULL);
+				node_body_a ? &body_a_points : nullptr,
+				node_body_b ? &body_b_points : nullptr);
 
 		p_gizmo->add_collision_segments(points);
 		p_gizmo->add_collision_segments(body_a_points);
@@ -4046,8 +4046,8 @@ void JointSpatialGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
 				slider->get_param(SliderJoint::PARAM_LINEAR_LIMIT_LOWER),
 				slider->get_param(SliderJoint::PARAM_LINEAR_LIMIT_UPPER),
 				points,
-				node_body_a ? &body_a_points : NULL,
-				node_body_b ? &body_b_points : NULL);
+				node_body_a ? &body_a_points : nullptr,
+				node_body_b ? &body_b_points : nullptr);
 
 		p_gizmo->add_collision_segments(points);
 		p_gizmo->add_collision_segments(body_a_points);
@@ -4067,8 +4067,8 @@ void JointSpatialGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
 				node_body_b ? node_body_b->get_global_transform() : Transform(),
 				cone->get_param(ConeTwistJoint::PARAM_SWING_SPAN),
 				cone->get_param(ConeTwistJoint::PARAM_TWIST_SPAN),
-				node_body_a ? &body_a_points : NULL,
-				node_body_b ? &body_b_points : NULL);
+				node_body_a ? &body_a_points : nullptr,
+				node_body_b ? &body_b_points : nullptr);
 
 		p_gizmo->add_collision_segments(body_a_points);
 		p_gizmo->add_collision_segments(body_b_points);
@@ -4107,8 +4107,8 @@ void JointSpatialGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
 				gen->get_flag_z(Generic6DOFJoint::FLAG_ENABLE_LINEAR_LIMIT),
 
 				points,
-				node_body_a ? &body_a_points : NULL,
-				node_body_a ? &body_b_points : NULL);
+				node_body_a ? &body_a_points : nullptr,
+				node_body_a ? &body_b_points : nullptr);
 
 		p_gizmo->add_collision_segments(points);
 		p_gizmo->add_collision_segments(body_a_points);

@@ -140,7 +140,7 @@ CSGBrush *CSGShape::_get_brush() {
 		if (brush) {
 			memdelete(brush);
 		}
-		brush = NULL;
+		brush = nullptr;
 
 		CSGBrush *n = _build_brush();
 
@@ -409,7 +409,7 @@ void CSGShape::_update_shape() {
 			mkif.m_getPosition = mikktGetPosition;
 			mkif.m_getTexCoord = mikktGetTexCoord;
 			mkif.m_setTSpace = mikktSetTSpaceDefault;
-			mkif.m_setTSpaceBasic = NULL;
+			mkif.m_setTSpaceBasic = nullptr;
 
 			SMikkTSpaceContext msc;
 			msc.m_pInterface = &mkif;
@@ -520,7 +520,7 @@ void CSGShape::_notification(int p_what) {
 	if (p_what == NOTIFICATION_EXIT_TREE) {
 		if (parent)
 			parent->_make_dirty();
-		parent = NULL;
+		parent = nullptr;
 
 		if (use_collision && is_root_shape() && root_collision_instance.is_valid()) {
 			PhysicsServer::get_singleton()->free(root_collision_instance);
@@ -617,8 +617,8 @@ void CSGShape::_bind_methods() {
 
 CSGShape::CSGShape() {
 	operation = OPERATION_UNION;
-	parent = NULL;
-	brush = NULL;
+	parent = nullptr;
+	brush = nullptr;
 	dirty = false;
 	snap = 0.001;
 	use_collision = false;
@@ -631,7 +631,7 @@ CSGShape::CSGShape() {
 CSGShape::~CSGShape() {
 	if (brush) {
 		memdelete(brush);
-		brush = NULL;
+		brush = nullptr;
 	}
 }
 //////////////////////////////////
@@ -1727,7 +1727,7 @@ CSGBrush *CSGPolygon::_build_brush() {
 		return memnew(CSGBrush);
 	}
 
-	Path *path = NULL;
+	Path *path = nullptr;
 	Ref<Curve3D> curve;
 
 	// get bounds for our polygon
@@ -1769,7 +1769,7 @@ CSGBrush *CSGPolygon::_build_brush() {
 			if (path_cache) {
 				path_cache->disconnect("tree_exited", this, "_path_exited");
 				path_cache->disconnect("curve_changed", this, "_path_changed");
-				path_cache = NULL;
+				path_cache = nullptr;
 			}
 
 			path_cache = path;
@@ -2184,7 +2184,7 @@ void CSGPolygon::_notification(int p_what) {
 		if (path_cache) {
 			path_cache->disconnect("tree_exited", this, "_path_exited");
 			path_cache->disconnect("curve_changed", this, "_path_changed");
-			path_cache = NULL;
+			path_cache = nullptr;
 		}
 	}
 }
@@ -2209,7 +2209,7 @@ void CSGPolygon::_path_changed() {
 }
 
 void CSGPolygon::_path_exited() {
-	path_cache = NULL;
+	path_cache = nullptr;
 }
 
 void CSGPolygon::_bind_methods() {
@@ -2436,5 +2436,5 @@ CSGPolygon::CSGPolygon() {
 	path_local = false;
 	path_continuous_u = false;
 	path_joined = false;
-	path_cache = NULL;
+	path_cache = nullptr;
 }

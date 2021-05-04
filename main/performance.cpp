@@ -39,7 +39,7 @@
 #include "servers/physics_server.h"
 #include "servers/visual_server.h"
 
-Performance *Performance::singleton = NULL;
+Performance *Performance::singleton = nullptr;
 
 void Performance::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_monitor", "monitor"), &Performance::get_monitor);

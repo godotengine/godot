@@ -61,7 +61,7 @@ inline bool IsLineEnd(char_t c) {
 // Special version of the function, providing higher accuracy and safety
 // It is mainly used by fast_atof to prevent ugly and unwanted integer overflows.
 // ------------------------------------------------------------------------------------
-inline uint64_t strtoul10_64(const char *in, bool &errored, const char **out = 0, unsigned int *max_inout = 0) {
+inline uint64_t strtoul10_64(const char *in, bool &errored, const char **out = nullptr, unsigned int *max_inout = nullptr) {
 	unsigned int cur = 0;
 	uint64_t value = 0;
 

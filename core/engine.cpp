@@ -106,7 +106,7 @@ Dictionary Engine::get_version_info() const {
 
 static Array array_from_info(const char *const *info_list) {
 	Array arr;
-	for (int i = 0; info_list[i] != NULL; i++) {
+	for (int i = 0; info_list[i] != nullptr; i++) {
 		arr.push_back(info_list[i]);
 	}
 	return arr;
@@ -185,7 +185,7 @@ void Engine::add_singleton(const Singleton &p_singleton) {
 
 Object *Engine::get_singleton_object(const String &p_name) const {
 	const Map<StringName, Object *>::Element *E = singleton_ptrs.find(p_name);
-	ERR_FAIL_COND_V_MSG(!E, NULL, "Failed to retrieve non-existent singleton '" + p_name + "'.");
+	ERR_FAIL_COND_V_MSG(!E, nullptr, "Failed to retrieve non-existent singleton '" + p_name + "'.");
 	return E->get();
 };
 
@@ -198,7 +198,7 @@ void Engine::get_singletons(List<Singleton> *p_singletons) {
 		p_singletons->push_back(E->get());
 }
 
-Engine *Engine::singleton = NULL;
+Engine *Engine::singleton = nullptr;
 
 Engine *Engine::get_singleton() {
 	return singleton;

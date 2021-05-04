@@ -182,12 +182,12 @@ private:
 			children_count = 0;
 			parent_index = -1;
 			last_pass = 0;
-			parent = NULL;
+			parent = nullptr;
 #ifdef OCTREE_USE_CACHED_LISTS
 			dirty = true;
 #endif
 			for (int i = 0; i < 8; i++)
-				children[i] = NULL;
+				children[i] = nullptr;
 		}
 
 		~Octant() {
@@ -241,11 +241,11 @@ private:
 			_id = 0;
 			pairable = false;
 			subindex = 0;
-			userdata = 0;
-			octree = 0;
+			userdata = nullptr;
+			octree = nullptr;
 			pairable_mask = 0;
 			pairable_type = 0;
-			common_parent = NULL;
+			common_parent = nullptr;
 		}
 	};
 
@@ -370,17 +370,17 @@ private:
 
 	_FORCE_INLINE_ void _optimize() {
 		while (root && root->children_count < 2 && !root->elements.size() && !(use_pairs && root->pairable_elements.size())) {
-			Octant *new_root = NULL;
+			Octant *new_root = nullptr;
 			if (root->children_count == 1) {
 				for (int i = 0; i < 8; i++) {
 					if (root->children[i]) {
 						new_root = root->children[i];
-						root->children[i] = NULL;
+						root->children[i] = nullptr;
 						break;
 					}
 				}
 				ERR_FAIL_COND(!new_root);
-				new_root->parent = NULL;
+				new_root->parent = nullptr;
 				new_root->parent_index = -1;
 			}
 
@@ -392,7 +392,7 @@ private:
 
 	void _insert_element(Element *p_element, Octant *p_octant);
 	void _ensure_valid_root(const AABB &p_aabb);
-	bool _remove_element_pair_and_remove_empty_octants(Element *p_element, Octant *p_octant, Octant *p_limit = NULL);
+	bool _remove_element_pair_and_remove_empty_octants(Element *p_element, Octant *p_octant, Octant *p_limit = nullptr);
 	void _remove_element(Element *p_element);
 	void _pair_element(Element *p_element, Octant *p_octant);
 	void _unpair_element(Element *p_element, Octant *p_octant);
@@ -441,10 +441,10 @@ public:
 	int get_subindex(OctreeElementID p_id) const;
 
 	int cull_convex(const Vector<Plane> &p_convex, T **p_result_array, int p_result_max, uint32_t p_mask = 0xFFFFFFFF);
-	int cull_aabb(const AABB &p_aabb, T **p_result_array, int p_result_max, int *p_subindex_array = NULL, uint32_t p_mask = 0xFFFFFFFF);
-	int cull_segment(const Vector3 &p_from, const Vector3 &p_to, T **p_result_array, int p_result_max, int *p_subindex_array = NULL, uint32_t p_mask = 0xFFFFFFFF);
+	int cull_aabb(const AABB &p_aabb, T **p_result_array, int p_result_max, int *p_subindex_array = nullptr, uint32_t p_mask = 0xFFFFFFFF);
+	int cull_segment(const Vector3 &p_from, const Vector3 &p_to, T **p_result_array, int p_result_max, int *p_subindex_array = nullptr, uint32_t p_mask = 0xFFFFFFFF);
 
-	int cull_point(const Vector3 &p_point, T **p_result_array, int p_result_max, int *p_subindex_array = NULL, uint32_t p_mask = 0xFFFFFFFF);
+	int cull_point(const Vector3 &p_point, T **p_result_array, int p_result_max, int *p_subindex_array = nullptr, uint32_t p_mask = 0xFFFFFFFF);
 
 	void set_pair_callback(PairCallback p_callback, void *p_userdata);
 	void set_unpair_callback(UnpairCallback p_callback, void *p_userdata);
@@ -476,7 +476,7 @@ public:
 
 OCTREE_FUNC(T *)::get(OctreeElementID p_id) const {
 	const typename ElementMap::Element *E = element_map.find(p_id);
-	ERR_FAIL_COND_V(!E, NULL);
+	ERR_FAIL_COND_V(!E, nullptr);
 	return E->get().userdata;
 }
 
@@ -527,7 +527,7 @@ OCTREE_FUNC(void)::_insert_element(Element *p_element, Octant *p_octant) {
 #endif
 		p_element->octant_owners.push_back(owner);
 
-		if (p_element->common_parent == NULL) {
+		if (p_element->common_parent == nullptr) {
 			p_element->common_parent = p_octant;
 			p_element->container_aabb = p_octant->aabb;
 		} else {
@@ -546,7 +546,7 @@ OCTREE_FUNC(void)::_insert_element(Element *p_element, Octant *p_octant) {
 	} else {
 		/* not big enough, send it to subitems */
 		int splits = 0;
-		bool candidate = p_element->common_parent == NULL;
+		bool candidate = p_element->common_parent == nullptr;
 
 		for (int i = 0; i < 8; i++) {
 			if (p_octant->children[i]) {
@@ -629,7 +629,7 @@ OCTREE_FUNC(void)::_ensure_valid_root(const AABB &p_aabb) {
 
 		root = memnew_allocator(Octant, AL);
 
-		root->parent = NULL;
+		root->parent = nullptr;
 		root->parent_index = -1;
 		root->aabb = base;
 
@@ -705,11 +705,11 @@ OCTREE_FUNC(bool)::_remove_element_pair_and_remove_empty_octants(Element *p_elem
 
 			if (p_octant == root) { // won't have a parent, just erase
 
-				root = NULL;
+				root = nullptr;
 			} else {
 				ERR_FAIL_INDEX_V(p_octant->parent_index, 8, octant_removed);
 
-				parent->children[p_octant->parent_index] = NULL;
+				parent->children[p_octant->parent_index] = nullptr;
 				parent->children_count--;
 			}
 
@@ -899,12 +899,12 @@ OCTREE_FUNC(void)::move(OctreeElementID p_id, const AABB &p_aabb) {
 	if (old_has_surf != new_has_surf) {
 		if (old_has_surf) {
 			_remove_element(&e); // removing
-			e.common_parent = NULL;
+			e.common_parent = nullptr;
 			e.aabb = AABB();
 			_optimize();
 		} else {
 			_ensure_valid_root(p_aabb); // inserting
-			e.common_parent = NULL;
+			e.common_parent = nullptr;
 			e.aabb = p_aabb;
 			_insert_element(&e, root);
 			if (use_pairs)
@@ -933,7 +933,7 @@ OCTREE_FUNC(void)::move(OctreeElementID p_id, const AABB &p_aabb) {
 	combined.merge_with(p_aabb);
 	_ensure_valid_root(combined);
 
-	ERR_FAIL_COND(e.octant_owners.front() == NULL);
+	ERR_FAIL_COND(e.octant_owners.front() == nullptr);
 
 	/* FIND COMMON PARENT */
 
@@ -951,7 +951,7 @@ OCTREE_FUNC(void)::move(OctreeElementID p_id, const AABB &p_aabb) {
 
 	//prepare for reinsert
 	e.octant_owners.clear();
-	e.common_parent = NULL;
+	e.common_parent = nullptr;
 	e.aabb = p_aabb;
 
 	_insert_element(&e, common_parent); // reinsert from this point
@@ -1018,7 +1018,7 @@ OCTREE_FUNC(void)::set_pairable(OctreeElementID p_id, bool p_pairable, uint32_t 
 	e.pairable = p_pairable;
 	e.pairable_type = p_pairable_type;
 	e.pairable_mask = p_pairable_mask;
-	e.common_parent = NULL;
+	e.common_parent = nullptr;
 
 	if (!e.aabb.has_no_surface()) {
 		_ensure_valid_root(e.aabb);
@@ -1577,16 +1577,16 @@ OCTREE_FUNC_CONSTRUCTOR::OCTREE_CLASS_NAME(real_t p_unit_size) {
 	last_element_id = 1;
 	pass = 1;
 	unit_size = p_unit_size;
-	root = NULL;
+	root = nullptr;
 
 	octant_count = 0;
 	pair_count = 0;
 	octant_elements_limit = OCTREE_DEFAULT_OCTANT_LIMIT;
 
-	pair_callback = NULL;
-	unpair_callback = NULL;
-	pair_callback_userdata = NULL;
-	unpair_callback_userdata = NULL;
+	pair_callback = nullptr;
+	unpair_callback = nullptr;
+	pair_callback_userdata = nullptr;
+	unpair_callback_userdata = nullptr;
 }
 
 #ifdef TOOLS_ENABLED
