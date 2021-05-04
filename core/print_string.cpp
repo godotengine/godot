@@ -39,7 +39,6 @@ bool _print_line_enabled = true;
 bool _print_error_enabled = true;
 
 void add_print_handler(PrintHandlerList *p_handler) {
-
 	_global_lock();
 	p_handler->next = print_handler_list;
 	print_handler_list = p_handler;
@@ -47,16 +46,13 @@ void add_print_handler(PrintHandlerList *p_handler) {
 }
 
 void remove_print_handler(PrintHandlerList *p_handler) {
-
 	_global_lock();
 
 	PrintHandlerList *prev = NULL;
 	PrintHandlerList *l = print_handler_list;
 
 	while (l) {
-
 		if (l == p_handler) {
-
 			if (prev)
 				prev->next = l->next;
 			else
@@ -73,7 +69,6 @@ void remove_print_handler(PrintHandlerList *p_handler) {
 }
 
 void print_line(String p_string) {
-
 	if (!_print_line_enabled)
 		return;
 
@@ -82,7 +77,6 @@ void print_line(String p_string) {
 	_global_lock();
 	PrintHandlerList *l = print_handler_list;
 	while (l) {
-
 		l->printfunc(l->userdata, p_string, false);
 		l = l->next;
 	}
@@ -91,7 +85,6 @@ void print_line(String p_string) {
 }
 
 void print_error(String p_string) {
-
 	if (!_print_error_enabled)
 		return;
 
@@ -100,7 +93,6 @@ void print_error(String p_string) {
 	_global_lock();
 	PrintHandlerList *l = print_handler_list;
 	while (l) {
-
 		l->printfunc(l->userdata, p_string, true);
 		l = l->next;
 	}
@@ -109,7 +101,6 @@ void print_error(String p_string) {
 }
 
 void print_verbose(String p_string) {
-
 	if (OS::get_singleton()->is_stdout_verbose()) {
 		print_line(p_string);
 	}

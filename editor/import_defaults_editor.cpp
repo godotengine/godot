@@ -105,10 +105,10 @@ void ImportDefaultsEditor::_save() {
 }
 
 void ImportDefaultsEditor::_update_importer() {
-	List<Ref<ResourceImporter> > importer_list;
+	List<Ref<ResourceImporter>> importer_list;
 	ResourceFormatImporter::get_singleton()->get_importers(&importer_list);
 	Ref<ResourceImporter> importer;
-	for (List<Ref<ResourceImporter> >::Element *E = importer_list.front(); E; E = E->next()) {
+	for (List<Ref<ResourceImporter>>::Element *E = importer_list.front(); E; E = E->next()) {
 		if (E->get()->get_visible_name() == importers->get_item_text(importers->get_selected())) {
 			importer = E->get();
 			break;
@@ -165,10 +165,10 @@ void ImportDefaultsEditor::clear() {
 	importers->add_item("<" + TTR("Select Importer") + ">");
 	importers->set_item_disabled(0, true);
 
-	List<Ref<ResourceImporter> > importer_list;
+	List<Ref<ResourceImporter>> importer_list;
 	ResourceFormatImporter::get_singleton()->get_importers(&importer_list);
 	Vector<String> names;
-	for (List<Ref<ResourceImporter> >::Element *E = importer_list.front(); E; E = E->next()) {
+	for (List<Ref<ResourceImporter>>::Element *E = importer_list.front(); E; E = E->next()) {
 		String vn = E->get()->get_visible_name();
 		names.push_back(vn);
 	}

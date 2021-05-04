@@ -51,7 +51,6 @@
 class EditorAudioBuses;
 
 class EditorAudioBus : public PanelContainer {
-
 	GDCLASS(EditorAudioBus, PanelContainer);
 
 	Ref<Texture> disabled_vu;
@@ -138,7 +137,6 @@ public:
 };
 
 class EditorAudioBusDrop : public Control {
-
 	GDCLASS(EditorAudioBusDrop, Control);
 
 	virtual bool can_drop_data(const Point2 &p_point, const Variant &p_data) const;
@@ -155,7 +153,6 @@ public:
 };
 
 class EditorAudioBuses : public VBoxContainer {
-
 	GDCLASS(EditorAudioBuses, VBoxContainer);
 
 	HBoxContainer *top_hb;
@@ -266,7 +263,6 @@ public:
 };
 
 class AudioBusesEditorPlugin : public EditorPlugin {
-
 	GDCLASS(AudioBusesEditorPlugin, EditorPlugin);
 
 	EditorAudioBuses *audio_bus_editor;

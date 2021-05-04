@@ -34,7 +34,6 @@
 #include "scene/resources/shape.h"
 
 class CylinderShape : public Shape {
-
 	GDCLASS(CylinderShape, Shape);
 	float radius;
 	float height;

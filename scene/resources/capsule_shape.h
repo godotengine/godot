@@ -34,7 +34,6 @@
 #include "scene/resources/shape.h"
 
 class CapsuleShape : public Shape {
-
 	GDCLASS(CapsuleShape, Shape);
 	float radius;
 	float height;

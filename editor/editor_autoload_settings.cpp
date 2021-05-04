@@ -41,9 +41,7 @@
 #define PREVIEW_LIST_MAX_SIZE 10
 
 void EditorAutoloadSettings::_notification(int p_what) {
-
 	if (p_what == NOTIFICATION_ENTER_TREE) {
-
 		List<String> afn;
 		ResourceLoader::get_recognized_extensions_for_type("Script", &afn);
 		ResourceLoader::get_recognized_extensions_for_type("PackedScene", &afn);
@@ -51,7 +49,6 @@ void EditorAutoloadSettings::_notification(int p_what) {
 		EditorFileDialog *file_dialog = autoload_add_path->get_file_dialog();
 
 		for (List<String>::Element *E = afn.front(); E; E = E->next()) {
-
 			file_dialog->add_filter("*." + E->get());
 		}
 
@@ -65,7 +62,6 @@ void EditorAutoloadSettings::_notification(int p_what) {
 }
 
 bool EditorAutoloadSettings::_autoload_name_is_valid(const String &p_name, String *r_error) {
-
 	if (!p_name.is_valid_identifier()) {
 		if (r_error)
 			*r_error = TTR("Invalid name.") + "\n" + TTR("Valid characters:") + " a-z, A-Z, 0-9 or _";
@@ -115,7 +111,6 @@ bool EditorAutoloadSettings::_autoload_name_is_valid(const String &p_name, Strin
 }
 
 void EditorAutoloadSettings::_autoload_add() {
-
 	if (autoload_add(autoload_add_name->get_text(), autoload_add_path->get_line_edit()->get_text()))
 		autoload_add_path->get_line_edit()->set_text("");
 
@@ -124,7 +119,6 @@ void EditorAutoloadSettings::_autoload_add() {
 }
 
 void EditorAutoloadSettings::_autoload_selected() {
-
 	TreeItem *ti = tree->get_selected();
 
 	if (!ti)
@@ -134,7 +128,6 @@ void EditorAutoloadSettings::_autoload_selected() {
 }
 
 void EditorAutoloadSettings::_autoload_edited() {
-
 	if (updating_autoload)
 		return;
 
@@ -226,7 +219,6 @@ void EditorAutoloadSettings::_autoload_edited() {
 }
 
 void EditorAutoloadSettings::_autoload_button_pressed(Object *p_item, int p_column, int p_button) {
-
 	TreeItem *ti = Object::cast_to<TreeItem>(p_item);
 
 	String name = "autoload/" + ti->get_text(0);
@@ -239,7 +231,6 @@ void EditorAutoloadSettings::_autoload_button_pressed(Object *p_item, int p_colu
 		} break;
 		case BUTTON_MOVE_UP:
 		case BUTTON_MOVE_DOWN: {
-
 			TreeItem *swap = NULL;
 
 			if (p_button == BUTTON_MOVE_UP) {
@@ -273,7 +264,6 @@ void EditorAutoloadSettings::_autoload_button_pressed(Object *p_item, int p_colu
 			undo_redo->commit_action();
 		} break;
 		case BUTTON_DELETE: {
-
 			int order = ProjectSettings::get_singleton()->get_order(name);
 
 			undo_redo->create_action(TTR("Remove Autoload"));
@@ -312,7 +302,6 @@ void EditorAutoloadSettings::_autoload_open(const String &fpath) {
 }
 
 void EditorAutoloadSettings::_autoload_file_callback(const String &p_path) {
-
 	// Convert the file name to PascalCase, which is the convention for classes in GDScript.
 	const String class_name = p_path.get_file().get_basename().capitalize().replace(" ", "");
 
@@ -325,20 +314,17 @@ void EditorAutoloadSettings::_autoload_file_callback(const String &p_path) {
 }
 
 void EditorAutoloadSettings::_autoload_text_entered(const String p_name) {
-
 	if (autoload_add_path->get_line_edit()->get_text() != "" && _autoload_name_is_valid(p_name, NULL)) {
 		_autoload_add();
 	}
 }
 
 void EditorAutoloadSettings::_autoload_path_text_changed(const String p_path) {
-
 	add_autoload->set_disabled(
 			p_path == "" || !_autoload_name_is_valid(autoload_add_name->get_text(), NULL));
 }
 
 void EditorAutoloadSettings::_autoload_text_changed(const String p_name) {
-
 	add_autoload->set_disabled(
 			autoload_add_path->get_line_edit()->get_text() == "" || !_autoload_name_is_valid(p_name, NULL));
 }
@@ -370,7 +356,6 @@ Node *EditorAutoloadSettings::_create_autoload(const String &p_path) {
 }
 
 void EditorAutoloadSettings::update_autoload() {
-
 	if (updating_autoload)
 		return;
 
@@ -393,7 +378,6 @@ void EditorAutoloadSettings::update_autoload() {
 	ProjectSettings::get_singleton()->get_property_list(&props);
 
 	for (List<PropertyInfo>::Element *E = props.front(); E; E = E->next()) {
-
 		const PropertyInfo &pi = E->get();
 
 		if (!pi.name.begins_with("autoload/"))
@@ -517,7 +501,6 @@ void EditorAutoloadSettings::update_autoload() {
 }
 
 Variant EditorAutoloadSettings::get_drag_data_fw(const Point2 &p_point, Control *p_control) {
-
 	if (autoload_cache.size() <= 1)
 		return false;
 
@@ -578,7 +561,6 @@ bool EditorAutoloadSettings::can_drop_data_fw(const Point2 &p_point, const Varia
 }
 
 void EditorAutoloadSettings::drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_control) {
-
 	TreeItem *ti = tree->get_item_at_position(p_point);
 
 	if (!ti)
@@ -664,7 +646,6 @@ void EditorAutoloadSettings::drop_data_fw(const Point2 &p_point, const Variant &
 }
 
 bool EditorAutoloadSettings::autoload_add(const String &p_name, const String &p_path) {
-
 	String name = p_name;
 
 	String error;
@@ -710,7 +691,6 @@ bool EditorAutoloadSettings::autoload_add(const String &p_name, const String &p_
 }
 
 void EditorAutoloadSettings::autoload_remove(const String &p_name) {
-
 	String name = "autoload/" + p_name;
 
 	UndoRedo *undo_redo = EditorNode::get_undo_redo();
@@ -735,7 +715,6 @@ void EditorAutoloadSettings::autoload_remove(const String &p_name) {
 }
 
 void EditorAutoloadSettings::_bind_methods() {
-
 	ClassDB::bind_method("_autoload_add", &EditorAutoloadSettings::_autoload_add);
 	ClassDB::bind_method("_autoload_selected", &EditorAutoloadSettings::_autoload_selected);
 	ClassDB::bind_method("_autoload_edited", &EditorAutoloadSettings::_autoload_edited);
@@ -759,12 +738,10 @@ void EditorAutoloadSettings::_bind_methods() {
 }
 
 EditorAutoloadSettings::EditorAutoloadSettings() {
-
 	// Make first cache
 	List<PropertyInfo> props;
 	ProjectSettings::get_singleton()->get_property_list(&props);
 	for (List<PropertyInfo>::Element *E = props.front(); E; E = E->next()) {
-
 		const PropertyInfo &pi = E->get();
 
 		if (!pi.name.begins_with("autoload/"))

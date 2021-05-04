@@ -157,7 +157,6 @@ void ARVRServer::add_interface(const Ref<ARVRInterface> &p_interface) {
 	ERR_FAIL_COND(p_interface.is_null());
 
 	for (int i = 0; i < interfaces.size(); i++) {
-
 		if (interfaces[i] == p_interface) {
 			ERR_PRINT("Interface was already added");
 			return;
@@ -173,9 +172,7 @@ void ARVRServer::remove_interface(const Ref<ARVRInterface> &p_interface) {
 
 	int idx = -1;
 	for (int i = 0; i < interfaces.size(); i++) {
-
 		if (interfaces[i] == p_interface) {
-
 			idx = i;
 			break;
 		};
@@ -202,9 +199,7 @@ Ref<ARVRInterface> ARVRServer::get_interface(int p_index) const {
 Ref<ARVRInterface> ARVRServer::find_interface(const String &p_name) const {
 	int idx = -1;
 	for (int i = 0; i < interfaces.size(); i++) {
-
 		if (interfaces[i]->get_name() == p_name) {
-
 			idx = i;
 			break;
 		};
@@ -282,9 +277,7 @@ void ARVRServer::remove_tracker(Ref<ARVRPositionalTracker> p_tracker) {
 
 	int idx = -1;
 	for (int i = 0; i < trackers.size(); i++) {
-
 		if (trackers[i] == p_tracker) {
-
 			idx = i;
 			break;
 		};

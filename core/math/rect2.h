@@ -36,7 +36,6 @@
 struct Transform2D;
 
 struct Rect2 {
-
 	Point2 position;
 	Size2 size;
 
@@ -72,7 +71,6 @@ struct Rect2 {
 	}
 
 	inline real_t distance_to(const Vector2 &p_point) const {
-
 		real_t dist = 0.0;
 		bool inside = true;
 
@@ -108,14 +106,12 @@ struct Rect2 {
 	bool intersects_segment(const Point2 &p_from, const Point2 &p_to, Point2 *r_pos = NULL, Point2 *r_normal = NULL) const;
 
 	inline bool encloses(const Rect2 &p_rect) const {
-
 		return (p_rect.position.x >= position.x) && (p_rect.position.y >= position.y) &&
 			   ((p_rect.position.x + p_rect.size.x) <= (position.x + size.x)) &&
 			   ((p_rect.position.y + p_rect.size.y) <= (position.y + size.y));
 	}
 
 	_FORCE_INLINE_ bool has_no_area() const {
-
 		return (size.x <= 0 || size.y <= 0);
 	}
 	inline Rect2 clip(const Rect2 &p_rect) const { /// return a clipped rect
@@ -192,7 +188,6 @@ struct Rect2 {
 	}
 
 	inline Rect2 grow_individual(real_t p_left, real_t p_top, real_t p_right, real_t p_bottom) const {
-
 		Rect2 g = *this;
 		g.position.x -= p_left;
 		g.position.y -= p_top;
@@ -203,7 +198,6 @@ struct Rect2 {
 	}
 
 	_FORCE_INLINE_ Rect2 expand(const Vector2 &p_vector) const {
-
 		Rect2 r = *this;
 		r.expand_to(p_vector);
 		return r;
@@ -229,7 +223,6 @@ struct Rect2 {
 	}
 
 	_FORCE_INLINE_ Rect2 abs() const {
-
 		return Rect2(Point2(position.x + MIN(size.x, 0), position.y + MIN(size.y, 0)), size.abs());
 	}
 
@@ -247,7 +240,6 @@ struct Rect2 {
 };
 
 struct Rect2i {
-
 	Point2i position;
 	Size2i size;
 
@@ -272,14 +264,12 @@ struct Rect2i {
 	}
 
 	inline bool encloses(const Rect2i &p_rect) const {
-
 		return (p_rect.position.x >= position.x) && (p_rect.position.y >= position.y) &&
 			   ((p_rect.position.x + p_rect.size.x) < (position.x + size.x)) &&
 			   ((p_rect.position.y + p_rect.size.y) < (position.y + size.y));
 	}
 
 	_FORCE_INLINE_ bool has_no_area() const {
-
 		return (size.x <= 0 || size.y <= 0);
 	}
 	inline Rect2i clip(const Rect2i &p_rect) const { /// return a clipped rect
@@ -333,7 +323,6 @@ struct Rect2i {
 	bool operator!=(const Rect2i &p_rect) const { return position != p_rect.position || size != p_rect.size; }
 
 	Rect2i grow(int p_by) const {
-
 		Rect2i g = *this;
 		g.position.x -= p_by;
 		g.position.y -= p_by;
@@ -352,7 +341,6 @@ struct Rect2i {
 	}
 
 	inline Rect2i grow_individual(int p_left, int p_top, int p_right, int p_bottom) const {
-
 		Rect2i g = *this;
 		g.position.x -= p_left;
 		g.position.y -= p_top;
@@ -363,14 +351,12 @@ struct Rect2i {
 	}
 
 	_FORCE_INLINE_ Rect2i expand(const Vector2i &p_vector) const {
-
 		Rect2i r = *this;
 		r.expand_to(p_vector);
 		return r;
 	}
 
 	inline void expand_to(const Point2i &p_vector) {
-
 		Point2i begin = position;
 		Point2i end = position + size;
 

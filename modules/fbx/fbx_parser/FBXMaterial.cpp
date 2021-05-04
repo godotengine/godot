@@ -123,7 +123,6 @@ Material::Material(uint64_t id, const ElementPtr element, const Document &doc, c
 	// resolve texture links
 	const std::vector<const Connection *> &conns = doc.GetConnectionsByDestinationSequenced(ID());
 	for (const Connection *con : conns) {
-
 		// texture link to properties, not objects
 		if (!con->PropertyName().length()) {
 			continue;

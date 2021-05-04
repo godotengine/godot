@@ -44,7 +44,6 @@ typedef ShaderLanguage SL;
 namespace TestShaderLang {
 
 static String _mktab(int p_level) {
-
 	String tb;
 	for (int i = 0; i < p_level; i++) {
 		tb += "\t";
@@ -54,61 +53,74 @@ static String _mktab(int p_level) {
 }
 
 static String _typestr(SL::DataType p_type) {
-
 	return ShaderLanguage::get_datatype_name(p_type);
 }
 
 static String _prestr(SL::DataPrecision p_pres) {
-
 	switch (p_pres) {
-		case SL::PRECISION_LOWP: return "lowp ";
-		case SL::PRECISION_MEDIUMP: return "mediump ";
-		case SL::PRECISION_HIGHP: return "highp ";
-		case SL::PRECISION_DEFAULT: return "";
+		case SL::PRECISION_LOWP:
+			return "lowp ";
+		case SL::PRECISION_MEDIUMP:
+			return "mediump ";
+		case SL::PRECISION_HIGHP:
+			return "highp ";
+		case SL::PRECISION_DEFAULT:
+			return "";
 	}
 	return "";
 }
 
 static String _opstr(SL::Operator p_op) {
-
 	return ShaderLanguage::get_operator_text(p_op);
 }
 
 static String get_constant_text(SL::DataType p_type, const Vector<SL::ConstantNode::Value> &p_values) {
-
 	switch (p_type) {
-		case SL::TYPE_BOOL: return p_values[0].boolean ? "true" : "false";
-		case SL::TYPE_BVEC2: return String() + "bvec2(" + (p_values[0].boolean ? "true" : "false") + (p_values[1].boolean ? "true" : "false") + ")";
-		case SL::TYPE_BVEC3: return String() + "bvec3(" + (p_values[0].boolean ? "true" : "false") + "," + (p_values[1].boolean ? "true" : "false") + "," + (p_values[2].boolean ? "true" : "false") + ")";
-		case SL::TYPE_BVEC4: return String() + "bvec4(" + (p_values[0].boolean ? "true" : "false") + "," + (p_values[1].boolean ? "true" : "false") + "," + (p_values[2].boolean ? "true" : "false") + "," + (p_values[3].boolean ? "true" : "false") + ")";
-		case SL::TYPE_INT: return rtos(p_values[0].sint);
-		case SL::TYPE_IVEC2: return String() + "ivec2(" + rtos(p_values[0].sint) + "," + rtos(p_values[1].sint) + ")";
-		case SL::TYPE_IVEC3: return String() + "ivec3(" + rtos(p_values[0].sint) + "," + rtos(p_values[1].sint) + "," + rtos(p_values[2].sint) + ")";
-		case SL::TYPE_IVEC4: return String() + "ivec4(" + rtos(p_values[0].sint) + "," + rtos(p_values[1].sint) + "," + rtos(p_values[2].sint) + "," + rtos(p_values[3].sint) + ")";
-		case SL::TYPE_UINT: return rtos(p_values[0].real);
-		case SL::TYPE_UVEC2: return String() + "uvec2(" + rtos(p_values[0].real) + "," + rtos(p_values[1].real) + ")";
-		case SL::TYPE_UVEC3: return String() + "uvec3(" + rtos(p_values[0].real) + "," + rtos(p_values[1].real) + "," + rtos(p_values[2].real) + ")";
-		case SL::TYPE_UVEC4: return String() + "uvec4(" + rtos(p_values[0].real) + "," + rtos(p_values[1].real) + "," + rtos(p_values[2].real) + "," + rtos(p_values[3].real) + ")";
-		case SL::TYPE_FLOAT: return rtos(p_values[0].real);
-		case SL::TYPE_VEC2: return String() + "vec2(" + rtos(p_values[0].real) + "," + rtos(p_values[1].real) + ")";
-		case SL::TYPE_VEC3: return String() + "vec3(" + rtos(p_values[0].real) + "," + rtos(p_values[1].real) + "," + rtos(p_values[2].real) + ")";
-		case SL::TYPE_VEC4: return String() + "vec4(" + rtos(p_values[0].real) + "," + rtos(p_values[1].real) + "," + rtos(p_values[2].real) + "," + rtos(p_values[3].real) + ")";
-		default: ERR_FAIL_V(String());
+		case SL::TYPE_BOOL:
+			return p_values[0].boolean ? "true" : "false";
+		case SL::TYPE_BVEC2:
+			return String() + "bvec2(" + (p_values[0].boolean ? "true" : "false") + (p_values[1].boolean ? "true" : "false") + ")";
+		case SL::TYPE_BVEC3:
+			return String() + "bvec3(" + (p_values[0].boolean ? "true" : "false") + "," + (p_values[1].boolean ? "true" : "false") + "," + (p_values[2].boolean ? "true" : "false") + ")";
+		case SL::TYPE_BVEC4:
+			return String() + "bvec4(" + (p_values[0].boolean ? "true" : "false") + "," + (p_values[1].boolean ? "true" : "false") + "," + (p_values[2].boolean ? "true" : "false") + "," + (p_values[3].boolean ? "true" : "false") + ")";
+		case SL::TYPE_INT:
+			return rtos(p_values[0].sint);
+		case SL::TYPE_IVEC2:
+			return String() + "ivec2(" + rtos(p_values[0].sint) + "," + rtos(p_values[1].sint) + ")";
+		case SL::TYPE_IVEC3:
+			return String() + "ivec3(" + rtos(p_values[0].sint) + "," + rtos(p_values[1].sint) + "," + rtos(p_values[2].sint) + ")";
+		case SL::TYPE_IVEC4:
+			return String() + "ivec4(" + rtos(p_values[0].sint) + "," + rtos(p_values[1].sint) + "," + rtos(p_values[2].sint) + "," + rtos(p_values[3].sint) + ")";
+		case SL::TYPE_UINT:
+			return rtos(p_values[0].real);
+		case SL::TYPE_UVEC2:
+			return String() + "uvec2(" + rtos(p_values[0].real) + "," + rtos(p_values[1].real) + ")";
+		case SL::TYPE_UVEC3:
+			return String() + "uvec3(" + rtos(p_values[0].real) + "," + rtos(p_values[1].real) + "," + rtos(p_values[2].real) + ")";
+		case SL::TYPE_UVEC4:
+			return String() + "uvec4(" + rtos(p_values[0].real) + "," + rtos(p_values[1].real) + "," + rtos(p_values[2].real) + "," + rtos(p_values[3].real) + ")";
+		case SL::TYPE_FLOAT:
+			return rtos(p_values[0].real);
+		case SL::TYPE_VEC2:
+			return String() + "vec2(" + rtos(p_values[0].real) + "," + rtos(p_values[1].real) + ")";
+		case SL::TYPE_VEC3:
+			return String() + "vec3(" + rtos(p_values[0].real) + "," + rtos(p_values[1].real) + "," + rtos(p_values[2].real) + ")";
+		case SL::TYPE_VEC4:
+			return String() + "vec4(" + rtos(p_values[0].real) + "," + rtos(p_values[1].real) + "," + rtos(p_values[2].real) + "," + rtos(p_values[3].real) + ")";
+		default:
+			ERR_FAIL_V(String());
 	}
 }
 
 static String dump_node_code(SL::Node *p_node, int p_level) {
-
 	String code;
 
 	switch (p_node->type) {
-
 		case SL::Node::TYPE_SHADER: {
-
 			SL::ShaderNode *pnode = (SL::ShaderNode *)p_node;
 
 			for (Map<StringName, SL::ShaderNode::Uniform>::Element *E = pnode->uniforms.front(); E; E = E->next()) {
-
 				String ucode = "uniform ";
 				ucode += _prestr(E->get().precision);
 				ucode += _typestr(E->get().type);
@@ -135,7 +147,6 @@ static String dump_node_code(SL::Node *p_node, int p_level) {
 			}
 
 			for (Map<StringName, SL::ShaderNode::Varying>::Element *E = pnode->varyings.front(); E; E = E->next()) {
-
 				String vcode = "varying ";
 				vcode += _prestr(E->get().precision);
 				vcode += _typestr(E->get().type);
@@ -144,13 +155,11 @@ static String dump_node_code(SL::Node *p_node, int p_level) {
 				code += vcode + "\n";
 			}
 			for (int i = 0; i < pnode->functions.size(); i++) {
-
 				SL::FunctionNode *fnode = pnode->functions[i].function;
 
 				String header;
 				header = _typestr(fnode->return_type) + " " + fnode->name + "(";
 				for (int j = 0; j < fnode->arguments.size(); j++) {
-
 					if (j > 0)
 						header += ", ";
 					header += _prestr(fnode->arguments[j].precision) + _typestr(fnode->arguments[j].type) + " " + fnode->arguments[j].name;
@@ -164,7 +173,6 @@ static String dump_node_code(SL::Node *p_node, int p_level) {
 			//code+=dump_node_code(pnode->body,p_level);
 		} break;
 		case SL::Node::TYPE_FUNCTION: {
-
 		} break;
 		case SL::Node::TYPE_BLOCK: {
 			SL::BlockNode *bnode = (SL::BlockNode *)p_node;
@@ -172,12 +180,10 @@ static String dump_node_code(SL::Node *p_node, int p_level) {
 			//variables
 			code += _mktab(p_level - 1) + "{\n";
 			for (Map<StringName, SL::BlockNode::Variable>::Element *E = bnode->variables.front(); E; E = E->next()) {
-
 				code += _mktab(p_level) + _prestr(E->get().precision) + _typestr(E->get().type) + " " + E->key() + ";\n";
 			}
 
 			for (int i = 0; i < bnode->statements.size(); i++) {
-
 				String scode = dump_node_code(bnode->statements[i], p_level);
 
 				if (bnode->statements[i]->type == SL::Node::TYPE_CONTROL_FLOW) {
@@ -213,7 +219,6 @@ static String dump_node_code(SL::Node *p_node, int p_level) {
 			SL::OperatorNode *onode = (SL::OperatorNode *)p_node;
 
 			switch (onode->op) {
-
 				case SL::OP_ASSIGN:
 				case SL::OP_ASSIGN_ADD:
 				case SL::OP_ASSIGN_SUB:
@@ -249,7 +254,6 @@ static String dump_node_code(SL::Node *p_node, int p_level) {
 					code += ")";
 					break;
 				default: {
-
 					code = "(" + dump_node_code(onode->arguments[0], p_level) + _opstr(onode->op) + dump_node_code(onode->arguments[1], p_level) + ")";
 					break;
 				}
@@ -259,17 +263,14 @@ static String dump_node_code(SL::Node *p_node, int p_level) {
 		case SL::Node::TYPE_CONTROL_FLOW: {
 			SL::ControlFlowNode *cfnode = (SL::ControlFlowNode *)p_node;
 			if (cfnode->flow_op == SL::FLOW_OP_IF) {
-
 				code += _mktab(p_level) + "if (" + dump_node_code(cfnode->expressions[0], p_level) + ")\n";
 				code += dump_node_code(cfnode->blocks[0], p_level + 1);
 				if (cfnode->blocks.size() == 2) {
-
 					code += _mktab(p_level) + "else\n";
 					code += dump_node_code(cfnode->blocks[1], p_level + 1);
 				}
 
 			} else if (cfnode->flow_op == SL::FLOW_OP_RETURN) {
-
 				if (cfnode->blocks.size()) {
 					code = "return " + dump_node_code(cfnode->blocks[0], p_level);
 				} else {
@@ -289,7 +290,6 @@ static String dump_node_code(SL::Node *p_node, int p_level) {
 }
 
 static Error recreate_code(void *p_str, SL::ShaderNode *p_program) {
-
 	String *str = (String *)p_str;
 
 	*str = dump_node_code(p_program, 0);
@@ -298,7 +298,6 @@ static Error recreate_code(void *p_str, SL::ShaderNode *p_program) {
 }
 
 MainLoop *test() {
-
 	List<String> cmdlargs = OS::get_singleton()->get_cmdline_args();
 
 	if (cmdlargs.empty()) {
@@ -339,7 +338,6 @@ MainLoop *test() {
 	Error err = sl.compile(code, dt, rm, types);
 
 	if (err) {
-
 		print_line("Error at line: " + rtos(sl.get_error_line()) + ": " + sl.get_error_text());
 		return NULL;
 	} else {

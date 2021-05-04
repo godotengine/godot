@@ -262,7 +262,6 @@ Error HTTPClient::poll() {
 			return ERR_CONNECTION_ERROR;
 
 		case STATUS_REQUESTING: {
-
 #ifdef DEBUG_ENABLED
 			// forcing synchronous requests is not possible on the web
 			if (last_polling_frame == Engine::get_singleton()->get_idle_frames()) {

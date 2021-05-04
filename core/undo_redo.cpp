@@ -33,16 +33,12 @@
 #include "core/os/os.h"
 
 void UndoRedo::_discard_redo() {
-
 	if (current_action == actions.size() - 1)
 		return;
 
 	for (int i = current_action + 1; i < actions.size(); i++) {
-
 		for (List<Operation>::Element *E = actions.write[i].do_ops.front(); E; E = E->next()) {
-
 			if (E->get().type == Operation::TYPE_REFERENCE) {
-
 				Object *obj = ObjectDB::get_instance(E->get().object);
 				if (obj)
 					memdelete(obj);
@@ -55,27 +51,21 @@ void UndoRedo::_discard_redo() {
 }
 
 void UndoRedo::create_action(const String &p_name, MergeMode p_mode) {
-
 	uint32_t ticks = OS::get_singleton()->get_ticks_msec();
 
 	if (action_level == 0) {
-
 		_discard_redo();
 
 		// Check if the merge operation is valid
 		if (p_mode != MERGE_DISABLE && actions.size() && actions[actions.size() - 1].name == p_name && actions[actions.size() - 1].last_tick + 800 > ticks) {
-
 			current_action = actions.size() - 2;
 
 			if (p_mode == MERGE_ENDS) {
-
 				// Clear all do ops from last action, and delete all object references
 				List<Operation>::Element *E = actions.write[current_action + 1].do_ops.front();
 
 				while (E) {
-
 					if (E->get().type == Operation::TYPE_REFERENCE) {
-
 						Object *obj = ObjectDB::get_instance(E->get().object);
 
 						if (obj)
@@ -92,7 +82,6 @@ void UndoRedo::create_action(const String &p_name, MergeMode p_mode) {
 			merge_mode = p_mode;
 			merging = true;
 		} else {
-
 			Action new_action;
 			new_action.name = p_name;
 			new_action.last_tick = ticks;
@@ -106,7 +95,6 @@ void UndoRedo::create_action(const String &p_name, MergeMode p_mode) {
 }
 
 void UndoRedo::add_do_method(Object *p_object, const String &p_method, VARIANT_ARG_DECLARE) {
-
 	VARIANT_ARGPTRS
 	ERR_FAIL_COND(p_object == NULL);
 	ERR_FAIL_COND(action_level <= 0);
@@ -126,7 +114,6 @@ void UndoRedo::add_do_method(Object *p_object, const String &p_method, VARIANT_A
 }
 
 void UndoRedo::add_undo_method(Object *p_object, const String &p_method, VARIANT_ARG_DECLARE) {
-
 	VARIANT_ARGPTRS
 	ERR_FAIL_COND(p_object == NULL);
 	ERR_FAIL_COND(action_level <= 0);
@@ -150,7 +137,6 @@ void UndoRedo::add_undo_method(Object *p_object, const String &p_method, VARIANT
 	actions.write[current_action + 1].undo_ops.push_back(undo_op);
 }
 void UndoRedo::add_do_property(Object *p_object, const String &p_property, const Variant &p_value) {
-
 	ERR_FAIL_COND(p_object == NULL);
 	ERR_FAIL_COND(action_level <= 0);
 	ERR_FAIL_COND((current_action + 1) >= actions.size());
@@ -165,7 +151,6 @@ void UndoRedo::add_do_property(Object *p_object, const String &p_property, const
 	actions.write[current_action + 1].do_ops.push_back(do_op);
 }
 void UndoRedo::add_undo_property(Object *p_object, const String &p_property, const Variant &p_value) {
-
 	ERR_FAIL_COND(p_object == NULL);
 	ERR_FAIL_COND(action_level <= 0);
 	ERR_FAIL_COND((current_action + 1) >= actions.size());
@@ -185,7 +170,6 @@ void UndoRedo::add_undo_property(Object *p_object, const String &p_property, con
 	actions.write[current_action + 1].undo_ops.push_back(undo_op);
 }
 void UndoRedo::add_do_reference(Object *p_object) {
-
 	ERR_FAIL_COND(p_object == NULL);
 	ERR_FAIL_COND(action_level <= 0);
 	ERR_FAIL_COND((current_action + 1) >= actions.size());
@@ -198,7 +182,6 @@ void UndoRedo::add_do_reference(Object *p_object) {
 	actions.write[current_action + 1].do_ops.push_back(do_op);
 }
 void UndoRedo::add_undo_reference(Object *p_object) {
-
 	ERR_FAIL_COND(p_object == NULL);
 	ERR_FAIL_COND(action_level <= 0);
 	ERR_FAIL_COND((current_action + 1) >= actions.size());
@@ -217,16 +200,13 @@ void UndoRedo::add_undo_reference(Object *p_object) {
 }
 
 void UndoRedo::_pop_history_tail() {
-
 	_discard_redo();
 
 	if (!actions.size())
 		return;
 
 	for (List<Operation>::Element *E = actions.write[0].undo_ops.front(); E; E = E->next()) {
-
 		if (E->get().type == Operation::TYPE_REFERENCE) {
-
 			Object *obj = ObjectDB::get_instance(E->get().object);
 			if (obj)
 				memdelete(obj);
@@ -244,7 +224,6 @@ bool UndoRedo::is_committing_action() const {
 }
 
 void UndoRedo::commit_action() {
-
 	ERR_FAIL_COND(action_level <= 0);
 	action_level--;
 	if (action_level > 0)
@@ -264,9 +243,7 @@ void UndoRedo::commit_action() {
 }
 
 void UndoRedo::_process_operation_list(List<Operation>::Element *E) {
-
 	for (; E; E = E->next()) {
-
 		Operation &op = E->get();
 
 		Object *obj = ObjectDB::get_instance(op.object);
@@ -274,9 +251,7 @@ void UndoRedo::_process_operation_list(List<Operation>::Element *E) {
 			continue;
 
 		switch (op.type) {
-
 			case Operation::TYPE_METHOD: {
-
 				Vector<const Variant *> argptrs;
 				argptrs.resize(VARIANT_ARG_MAX);
 				int argc = 0;
@@ -307,7 +282,6 @@ void UndoRedo::_process_operation_list(List<Operation>::Element *E) {
 				}
 			} break;
 			case Operation::TYPE_PROPERTY: {
-
 				obj->set(op.name, op.args[0]);
 #ifdef TOOLS_ENABLED
 				Resource *res = Object::cast_to<Resource>(obj);
@@ -326,7 +300,6 @@ void UndoRedo::_process_operation_list(List<Operation>::Element *E) {
 }
 
 bool UndoRedo::redo() {
-
 	ERR_FAIL_COND_V(action_level > 0, false);
 
 	if ((current_action + 1) >= actions.size())
@@ -342,7 +315,6 @@ bool UndoRedo::redo() {
 }
 
 bool UndoRedo::undo() {
-
 	ERR_FAIL_COND_V(action_level > 0, false);
 	if (current_action < 0)
 		return false; //nothing to redo
@@ -355,7 +327,6 @@ bool UndoRedo::undo() {
 }
 
 void UndoRedo::clear_history(bool p_increase_version) {
-
 	ERR_FAIL_COND(action_level > 0);
 	_discard_redo();
 
@@ -369,7 +340,6 @@ void UndoRedo::clear_history(bool p_increase_version) {
 }
 
 String UndoRedo::get_current_action_name() const {
-
 	ERR_FAIL_COND_V(action_level > 0, "");
 	if (current_action < 0)
 		return "";
@@ -377,40 +347,33 @@ String UndoRedo::get_current_action_name() const {
 }
 
 bool UndoRedo::has_undo() {
-
 	return current_action >= 0;
 }
 
 bool UndoRedo::has_redo() {
-
 	return (current_action + 1) < actions.size();
 }
 
 uint64_t UndoRedo::get_version() const {
-
 	return version;
 }
 
 void UndoRedo::set_commit_notify_callback(CommitNotifyCallback p_callback, void *p_ud) {
-
 	callback = p_callback;
 	callback_ud = p_ud;
 }
 
 void UndoRedo::set_method_notify_callback(MethodNotifyCallback p_method_callback, void *p_ud) {
-
 	method_callback = p_method_callback;
 	method_callbck_ud = p_ud;
 }
 
 void UndoRedo::set_property_notify_callback(PropertyNotifyCallback p_property_callback, void *p_ud) {
-
 	property_callback = p_property_callback;
 	prop_callback_ud = p_ud;
 }
 
 UndoRedo::UndoRedo() {
-
 	committing = 0;
 	version = 1;
 	action_level = 0;
@@ -427,12 +390,10 @@ UndoRedo::UndoRedo() {
 }
 
 UndoRedo::~UndoRedo() {
-
 	clear_history();
 }
 
 Variant UndoRedo::_add_do_method(const Variant **p_args, int p_argcount, Variant::CallError &r_error) {
-
 	if (p_argcount < 2) {
 		r_error.error = Variant::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
 		r_error.argument = 0;
@@ -461,7 +422,6 @@ Variant UndoRedo::_add_do_method(const Variant **p_args, int p_argcount, Variant
 	Variant v[VARIANT_ARG_MAX];
 
 	for (int i = 0; i < MIN(VARIANT_ARG_MAX, p_argcount - 2); ++i) {
-
 		v[i] = *p_args[i + 2];
 	}
 
@@ -470,7 +430,6 @@ Variant UndoRedo::_add_do_method(const Variant **p_args, int p_argcount, Variant
 }
 
 Variant UndoRedo::_add_undo_method(const Variant **p_args, int p_argcount, Variant::CallError &r_error) {
-
 	if (p_argcount < 2) {
 		r_error.error = Variant::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
 		r_error.argument = 0;
@@ -499,7 +458,6 @@ Variant UndoRedo::_add_undo_method(const Variant **p_args, int p_argcount, Varia
 	Variant v[VARIANT_ARG_MAX];
 
 	for (int i = 0; i < MIN(VARIANT_ARG_MAX, p_argcount - 2); ++i) {
-
 		v[i] = *p_args[i + 2];
 	}
 
@@ -508,7 +466,6 @@ Variant UndoRedo::_add_undo_method(const Variant **p_args, int p_argcount, Varia
 }
 
 void UndoRedo::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("create_action", "name", "merge_mode"), &UndoRedo::create_action, DEFVAL(MERGE_DISABLE));
 	ClassDB::bind_method(D_METHOD("commit_action"), &UndoRedo::commit_action);
 	// FIXME: Typo in "commiting", fix in 4.0 when breaking compat.

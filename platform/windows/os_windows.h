@@ -285,7 +285,6 @@ class OS_Windows : public OS {
 #endif
 
 	struct KeyEvent {
-
 		bool alt, shift, control, meta;
 		UINT uMsg;
 		WPARAM wParam;
@@ -348,7 +347,7 @@ class OS_Windows : public OS {
 
 	HCURSOR cursors[CURSOR_MAX] = { NULL };
 	CursorShape cursor_shape;
-	Map<CursorShape, Vector<Variant> > cursors_cache;
+	Map<CursorShape, Vector<Variant>> cursors_cache;
 
 	InputDefault *input;
 	JoypadWindows *joypad;
@@ -396,7 +395,6 @@ protected:
 	String _quote_command_line_argument(const String &p_text) const;
 
 	struct ProcessInfo {
-
 		STARTUPINFO si;
 		PROCESS_INFORMATION pi;
 	};

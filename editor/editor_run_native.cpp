@@ -35,11 +35,8 @@
 #include "editor_scale.h"
 
 void EditorRunNative::_notification(int p_what) {
-
 	if (p_what == NOTIFICATION_ENTER_TREE) {
-
 		for (int i = 0; i < EditorExport::get_singleton()->get_export_platform_count(); i++) {
-
 			Ref<EditorExportPlatform> eep = EditorExport::get_singleton()->get_export_platform(i);
 			if (eep.is_null())
 				continue;
@@ -49,7 +46,6 @@ void EditorRunNative::_notification(int p_what) {
 				im = im->duplicate();
 				im->clear_mipmaps();
 				if (!im->empty()) {
-
 					im->resize(16 * EDSCALE, 16 * EDSCALE);
 					Ref<ImageTexture> small_icon;
 					small_icon.instance();
@@ -66,13 +62,10 @@ void EditorRunNative::_notification(int p_what) {
 	}
 
 	if (p_what == NOTIFICATION_PROCESS) {
-
 		bool changed = EditorExport::get_singleton()->poll_export_platforms() || first;
 
 		if (changed) {
-
 			for (Map<int, MenuButton *>::Element *E = menus.front(); E; E = E->next()) {
-
 				Ref<EditorExportPlatform> eep = EditorExport::get_singleton()->get_export_platform(E->key());
 				MenuButton *mb = E->get();
 				int dc = eep->get_options_count();
@@ -100,7 +93,6 @@ void EditorRunNative::_notification(int p_what) {
 }
 
 void EditorRunNative::_run_native(int p_idx, int p_platform) {
-
 	if (!EditorNode::get_singleton()->ensure_main_scene(true)) {
 		resume_idx = p_idx;
 		resume_platform = p_platform;
@@ -122,7 +114,6 @@ void EditorRunNative::_run_native(int p_idx, int p_platform) {
 	Ref<EditorExportPreset> preset;
 
 	for (int i = 0; i < EditorExport::get_singleton()->get_export_preset_count(); i++) {
-
 		Ref<EditorExportPreset> ep = EditorExport::get_singleton()->get_export_preset(i);
 		if (ep->is_runnable() && ep->get_platform() == eep) {
 			preset = ep;
@@ -155,49 +146,40 @@ void EditorRunNative::resume_run_native() {
 }
 
 void EditorRunNative::_bind_methods() {
-
 	ClassDB::bind_method("_run_native", &EditorRunNative::_run_native);
 
 	ADD_SIGNAL(MethodInfo("native_run"));
 }
 
 void EditorRunNative::set_deploy_dumb(bool p_enabled) {
-
 	deploy_dumb = p_enabled;
 }
 
 bool EditorRunNative::is_deploy_dumb_enabled() const {
-
 	return deploy_dumb;
 }
 
 void EditorRunNative::set_deploy_debug_remote(bool p_enabled) {
-
 	deploy_debug_remote = p_enabled;
 }
 
 bool EditorRunNative::is_deploy_debug_remote_enabled() const {
-
 	return deploy_debug_remote;
 }
 
 void EditorRunNative::set_debug_collisions(bool p_debug) {
-
 	debug_collisions = p_debug;
 }
 
 bool EditorRunNative::get_debug_collisions() const {
-
 	return debug_collisions;
 }
 
 void EditorRunNative::set_debug_navigation(bool p_debug) {
-
 	debug_navigation = p_debug;
 }
 
 bool EditorRunNative::get_debug_navigation() const {
-
 	return debug_navigation;
 }
 

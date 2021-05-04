@@ -68,7 +68,6 @@ public:
 				real_t p_right = 0,
 				TangentMode p_left_mode = TANGENT_FREE,
 				TangentMode p_right_mode = TANGENT_FREE) {
-
 			pos = p_pos;
 			left_tangent = p_left;
 			right_tangent = p_right;
@@ -149,11 +148,9 @@ private:
 VARIANT_ENUM_CAST(Curve::TangentMode)
 
 class Curve2D : public Resource {
-
 	GDCLASS(Curve2D, Resource);
 
 	struct Point {
-
 		Vector2 in;
 		Vector2 out;
 		Vector2 pos;
@@ -162,7 +159,6 @@ class Curve2D : public Resource {
 	Vector<Point> points;
 
 	struct BakedPoint {
-
 		float ofs;
 		Vector2 point;
 	};
@@ -212,11 +208,9 @@ public:
 };
 
 class Curve3D : public Resource {
-
 	GDCLASS(Curve3D, Resource);
 
 	struct Point {
-
 		Vector3 in;
 		Vector3 out;
 		Vector3 pos;
@@ -228,7 +222,6 @@ class Curve3D : public Resource {
 	Vector<Point> points;
 
 	struct BakedPoint {
-
 		float ofs;
 		Vector3 point;
 	};

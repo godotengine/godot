@@ -46,7 +46,6 @@ public:                                                                         
 private:
 
 class Resource : public Reference {
-
 	GDCLASS(Resource, Reference);
 	OBJ_CATEGORY("Resources");
 	RES_BASE_EXTENSION("res");
@@ -104,8 +103,8 @@ public:
 	int get_subindex() const;
 
 	virtual Ref<Resource> duplicate(bool p_subresources = false) const;
-	Ref<Resource> duplicate_for_local_scene(Node *p_for_scene, Map<Ref<Resource>, Ref<Resource> > &remap_cache);
-	void configure_for_local_scene(Node *p_for_scene, Map<Ref<Resource>, Ref<Resource> > &remap_cache);
+	Ref<Resource> duplicate_for_local_scene(Node *p_for_scene, Map<Ref<Resource>, Ref<Resource>> &remap_cache);
+	void configure_for_local_scene(Node *p_for_scene, Map<Ref<Resource>, Ref<Resource>> &remap_cache);
 
 	void set_local_to_scene(bool p_enable);
 	bool is_local_to_scene() const;
@@ -151,7 +150,7 @@ class ResourceCache {
 	static RWLock lock;
 	static HashMap<String, Resource *> resources;
 #ifdef TOOLS_ENABLED
-	static HashMap<String, HashMap<String, int> > resource_path_cache; // each tscn has a set of resource paths and IDs
+	static HashMap<String, HashMap<String, int>> resource_path_cache; // each tscn has a set of resource paths and IDs
 	static RWLock path_cache_lock;
 #endif // TOOLS_ENABLED
 	friend void unregister_core_types();
@@ -163,7 +162,7 @@ public:
 	static bool has(const String &p_path);
 	static Resource *get(const String &p_path);
 	static void dump(const char *p_file = NULL, bool p_short = false);
-	static void get_cached_resources(List<Ref<Resource> > *p_resources);
+	static void get_cached_resources(List<Ref<Resource>> *p_resources);
 	static int get_cached_resource_count();
 };
 

@@ -50,7 +50,6 @@
 #endif
 
 struct NativeScriptDesc {
-
 	struct Method {
 		godot_instance_method method;
 		MethodInfo info;
@@ -185,7 +184,6 @@ public:
 };
 
 class NativeScriptInstance : public ScriptInstance {
-
 	friend class NativeScript;
 
 	Object *owner;
@@ -225,7 +223,6 @@ public:
 class NativeReloadNode;
 
 class NativeScriptLanguage : public ScriptLanguage {
-
 	friend class NativeScript;
 	friend class NativeScriptInstance;
 	friend class NativeReloadNode;
@@ -239,7 +236,7 @@ private:
 #ifndef NO_THREADS
 	Mutex mutex;
 
-	Set<Ref<GDNativeLibrary> > libs_to_init;
+	Set<Ref<GDNativeLibrary>> libs_to_init;
 	Set<NativeScript *> scripts_to_register;
 	SafeFlag has_objects_to_register; // so that we don't lock mutex every frame - it's rarely needed
 	void defer_init_library(Ref<GDNativeLibrary> lib, NativeScript *script);
@@ -251,10 +248,10 @@ private:
 
 	void call_libraries_cb(const StringName &name);
 
-	Vector<Pair<bool, godot_instance_binding_functions> > binding_functions;
+	Vector<Pair<bool, godot_instance_binding_functions>> binding_functions;
 	Set<Vector<void *> *> binding_instances;
 
-	Map<int, HashMap<StringName, const void *> > global_type_tags;
+	Map<int, HashMap<StringName, const void *>> global_type_tags;
 
 	struct ProfileData {
 		StringName signature;
@@ -274,10 +271,10 @@ private:
 
 public:
 	// These two maps must only be touched on the main thread
-	Map<String, Map<StringName, NativeScriptDesc> > library_classes;
-	Map<String, Ref<GDNative> > library_gdnatives;
+	Map<String, Map<StringName, NativeScriptDesc>> library_classes;
+	Map<String, Ref<GDNative>> library_gdnatives;
 
-	Map<String, Set<NativeScript *> > library_script_users;
+	Map<String, Set<NativeScript *>> library_script_users;
 
 	StringName _init_call_type;
 	StringName _init_call_name;
@@ -338,7 +335,7 @@ public:
 	virtual void reload_tool_script(const Ref<Script> &p_script, bool p_soft_reload);
 	virtual void get_recognized_extensions(List<String> *p_extensions) const;
 	virtual void get_public_functions(List<MethodInfo> *p_functions) const;
-	virtual void get_public_constants(List<Pair<String, Variant> > *p_constants) const;
+	virtual void get_public_constants(List<Pair<String, Variant>> *p_constants) const;
 	virtual void profiling_start();
 	virtual void profiling_stop();
 	virtual int profiling_get_accumulated_data(ProfilingInfo *p_info_arr, int p_info_max);

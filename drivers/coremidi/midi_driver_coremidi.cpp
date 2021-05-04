@@ -46,7 +46,6 @@ void MIDIDriverCoreMidi::read(const MIDIPacketList *packet_list, void *read_proc
 }
 
 Error MIDIDriverCoreMidi::open() {
-
 	CFStringRef name = CFStringCreateWithCString(NULL, "Godot", kCFStringEncodingASCII);
 	OSStatus result = MIDIClientCreate(name, NULL, NULL, &client);
 	CFRelease(name);
@@ -63,7 +62,6 @@ Error MIDIDriverCoreMidi::open() {
 
 	int sources = MIDIGetNumberOfSources();
 	for (int i = 0; i < sources; i++) {
-
 		MIDIEndpointRef source = MIDIGetSource(i);
 		if (source) {
 			MIDIPortConnectSource(port_in, source, (void *)this);
@@ -75,7 +73,6 @@ Error MIDIDriverCoreMidi::open() {
 }
 
 void MIDIDriverCoreMidi::close() {
-
 	for (int i = 0; i < connected_sources.size(); i++) {
 		MIDIEndpointRef source = connected_sources[i];
 		MIDIPortDisconnectSource(port_in, source);
@@ -94,7 +91,6 @@ void MIDIDriverCoreMidi::close() {
 }
 
 PoolStringArray MIDIDriverCoreMidi::get_connected_inputs() {
-
 	PoolStringArray list;
 
 	for (int i = 0; i < connected_sources.size(); i++) {

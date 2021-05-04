@@ -38,7 +38,6 @@
 #include "core/os/thread.h"
 
 class EditorFileServer : public Object {
-
 	GDCLASS(EditorFileServer, Object);
 
 	enum Command {

@@ -51,7 +51,6 @@ GDMonoLog *GDMonoLog::singleton = NULL;
 #ifdef GD_MONO_LOG_ENABLED
 
 static int get_log_level_id(const char *p_log_level) {
-
 	const char *valid_log_levels[] = { "error", "critical", "warning", "message", "info", "debug", NULL };
 
 	int i = 0;
@@ -77,7 +76,6 @@ static String make_text(const char *log_domain, const char *log_level, const cha
 }
 
 void GDMonoLog::mono_log_callback(const char *log_domain, const char *log_level, const char *message, mono_bool fatal, void *) {
-
 	FileAccess *f = GDMonoLog::get_singleton()->log_file;
 
 	if (GDMonoLog::get_singleton()->log_level_id >= get_log_level_id(log_level)) {
@@ -101,7 +99,6 @@ void GDMonoLog::mono_log_callback(const char *log_domain, const char *log_level,
 }
 
 bool GDMonoLog::_try_create_logs_dir(const String &p_logs_dir) {
-
 	if (!DirAccess::exists(p_logs_dir)) {
 		DirAccessRef diraccess = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 		ERR_FAIL_COND_V(!diraccess, false);
@@ -113,7 +110,6 @@ bool GDMonoLog::_try_create_logs_dir(const String &p_logs_dir) {
 }
 
 void GDMonoLog::_delete_old_log_files(const String &p_logs_dir) {
-
 	static const uint64_t MAX_SECS = 5 * 86400; // 5 days
 
 	DirAccessRef da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
@@ -142,7 +138,6 @@ void GDMonoLog::_delete_old_log_files(const String &p_logs_dir) {
 }
 
 void GDMonoLog::initialize() {
-
 	CharString log_level = OS::get_singleton()->get_environment("GODOT_MONO_LOG_LEVEL").utf8();
 
 	if (log_level.length() != 0 && get_log_level_id(log_level.get_data()) == -1) {
@@ -190,14 +185,12 @@ void GDMonoLog::initialize() {
 }
 
 GDMonoLog::GDMonoLog() {
-
 	singleton = this;
 
 	log_level_id = -1;
 }
 
 GDMonoLog::~GDMonoLog() {
-
 	singleton = NULL;
 
 	if (log_file) {
@@ -214,12 +207,10 @@ void GDMonoLog::initialize() {
 }
 
 GDMonoLog::GDMonoLog() {
-
 	singleton = this;
 }
 
 GDMonoLog::~GDMonoLog() {
-
 	singleton = NULL;
 }
 

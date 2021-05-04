@@ -35,7 +35,6 @@
 #include "scene/main/scene_tree.h"
 
 class SpatialGizmo : public Reference {
-
 	GDCLASS(SpatialGizmo, Reference);
 
 public:
@@ -50,7 +49,6 @@ public:
 };
 
 class Spatial : public Node {
-
 	GDCLASS(Spatial, Node);
 	OBJ_CATEGORY("3D");
 
@@ -73,7 +71,6 @@ private:
 	mutable SelfList<Node> xform_change;
 
 	struct Data {
-
 		// defined in Spatial::SpatialFlags
 		uint32_t spatial_flags;
 

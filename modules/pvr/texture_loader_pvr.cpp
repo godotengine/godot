@@ -49,7 +49,6 @@ enum PVRFLags {
 };
 
 RES ResourceFormatPVR::load(const String &p_path, const String &p_original_path, Error *r_error) {
-
 	if (r_error)
 		*r_error = ERR_CANT_OPEN;
 
@@ -106,11 +105,14 @@ RES ResourceFormatPVR::load(const String &p_path, const String &p_original_path,
 	Image::Format format = Image::FORMAT_MAX;
 
 	switch (flags & 0xFF) {
-
 		case 0x18:
-		case 0xC: format = (flags & PVR_HAS_ALPHA) ? Image::FORMAT_PVRTC2A : Image::FORMAT_PVRTC2; break;
+		case 0xC:
+			format = (flags & PVR_HAS_ALPHA) ? Image::FORMAT_PVRTC2A : Image::FORMAT_PVRTC2;
+			break;
 		case 0x19:
-		case 0xD: format = (flags & PVR_HAS_ALPHA) ? Image::FORMAT_PVRTC4A : Image::FORMAT_PVRTC4; break;
+		case 0xD:
+			format = (flags & PVR_HAS_ALPHA) ? Image::FORMAT_PVRTC4A : Image::FORMAT_PVRTC4;
+			break;
 		case 0x16:
 			format = Image::FORMAT_L8;
 			break;
@@ -169,22 +171,18 @@ RES ResourceFormatPVR::load(const String &p_path, const String &p_original_path,
 }
 
 void ResourceFormatPVR::get_recognized_extensions(List<String> *p_extensions) const {
-
 	p_extensions->push_back("pvr");
 }
 bool ResourceFormatPVR::handles_type(const String &p_type) const {
-
 	return ClassDB::is_parent_class(p_type, "Texture");
 }
 String ResourceFormatPVR::get_resource_type(const String &p_path) const {
-
 	if (p_path.get_extension().to_lower() == "pvr")
 		return "Texture";
 	return "";
 }
 
 ResourceFormatPVR::ResourceFormatPVR() {
-
 	Image::_image_decompress_pvrtc = _pvrtc_decompress;
 }
 
@@ -215,7 +213,6 @@ struct PVRTCBlock {
 };
 
 _FORCE_INLINE_ bool is_po2(uint32_t p_input) {
-
 	if (p_input == 0)
 		return 0;
 	uint32_t minus1 = p_input - 1;
@@ -223,15 +220,12 @@ _FORCE_INLINE_ bool is_po2(uint32_t p_input) {
 }
 
 static void unpack_5554(const PVRTCBlock *p_block, int p_ab_colors[2][4]) {
-
 	uint32_t raw_bits[2];
 	raw_bits[0] = p_block->data[1] & (0xFFFE);
 	raw_bits[1] = p_block->data[1] >> 16;
 
 	for (int i = 0; i < 2; i++) {
-
 		if (raw_bits[i] & (1 << 15)) {
-
 			p_ab_colors[i][0] = (raw_bits[i] >> 10) & 0x1F;
 			p_ab_colors[i][1] = (raw_bits[i] >> 5) & 0x1F;
 			p_ab_colors[i][2] = raw_bits[i] & 0x1F;
@@ -239,7 +233,6 @@ static void unpack_5554(const PVRTCBlock *p_block, int p_ab_colors[2][4]) {
 				p_ab_colors[0][2] |= p_ab_colors[0][2] >> 4;
 			p_ab_colors[i][3] = 0xF;
 		} else {
-
 			p_ab_colors[i][0] = (raw_bits[i] >> (8 - 1)) & 0x1E;
 			p_ab_colors[i][1] = (raw_bits[i] >> (4 - 1)) & 0x1E;
 
@@ -259,15 +252,12 @@ static void unpack_5554(const PVRTCBlock *p_block, int p_ab_colors[2][4]) {
 }
 
 static void unpack_modulations(const PVRTCBlock *p_block, const int p_2bit, int p_modulation[8][16], int p_modulation_modes[8][16], int p_x, int p_y) {
-
 	int block_mod_mode = p_block->data[1] & 1;
 	uint32_t modulation_bits = p_block->data[0];
 
 	if (p_2bit && block_mod_mode) {
-
 		for (int y = 0; y < BLK_Y_SIZE; y++) {
 			for (int x = 0; x < BLK_X_2BPP; x++) {
-
 				p_modulation_modes[y + p_y][x + p_x] = block_mod_mode;
 
 				if (((x ^ y) & 1) == 0) {
@@ -278,7 +268,6 @@ static void unpack_modulations(const PVRTCBlock *p_block, const int p_2bit, int 
 		}
 
 	} else if (p_2bit) {
-
 		for (int y = 0; y < BLK_Y_SIZE; y++) {
 			for (int x = 0; x < BLK_X_2BPP; x++) {
 				p_modulation_modes[y + p_y][x + p_x] = block_mod_mode;
@@ -419,7 +408,6 @@ static void get_modulation_value(int x, int y, const int p_2bit, const int p_mod
 static int disable_twiddling = 0;
 
 static uint32_t twiddle_uv(uint32_t p_height, uint32_t p_width, uint32_t p_y, uint32_t p_x) {
-
 	uint32_t twiddled;
 
 	uint32_t min_dimension;
@@ -515,7 +503,6 @@ static void decompress_pvrtc(PVRTCBlock *p_comp_img, const int p_2bit, const int
 
 	for (y = 0; y < p_height; y++) {
 		for (x = 0; x < p_width; x++) {
-
 			block_x = (x - x_block_size / 2);
 			blk_y = (y - BLK_Y_SIZE / 2);
 
@@ -593,7 +580,6 @@ static void decompress_pvrtc(PVRTCBlock *p_comp_img, const int p_2bit, const int
 }
 
 static void _pvrtc_decompress(Image *p_img) {
-
 	ERR_FAIL_COND(p_img->get_format() != Image::FORMAT_PVRTC2 && p_img->get_format() != Image::FORMAT_PVRTC2A && p_img->get_format() != Image::FORMAT_PVRTC4 && p_img->get_format() != Image::FORMAT_PVRTC4A);
 
 	bool _2bit = (p_img->get_format() == Image::FORMAT_PVRTC2 || p_img->get_format() == Image::FORMAT_PVRTC2A);

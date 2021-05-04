@@ -38,7 +38,6 @@
 #include "scene/gui/text_edit.h"
 
 class PluginConfigDialog : public ConfirmationDialog {
-
 	GDCLASS(PluginConfigDialog, ConfirmationDialog);
 
 	LineEdit *name_edit;

@@ -34,11 +34,9 @@
 #include "scene/resources/shape.h"
 
 class ConcavePolygonShape : public Shape {
-
 	GDCLASS(ConcavePolygonShape, Shape);
 
 	struct DrawEdge {
-
 		Vector3 a;
 		Vector3 b;
 		bool operator<(const DrawEdge &p_edge) const {

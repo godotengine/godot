@@ -81,7 +81,8 @@ void ShapeBullet::add_owner(ShapeOwnerBullet *p_owner) {
 
 void ShapeBullet::remove_owner(ShapeOwnerBullet *p_owner, bool p_permanentlyFromThisBody) {
 	Map<ShapeOwnerBullet *, int>::Element *E = owners.find(p_owner);
-	if (!E) return;
+	if (!E)
+		return;
 	E->get()--;
 	if (p_permanentlyFromThisBody || 0 >= E->get()) {
 		owners.erase(E);
@@ -89,7 +90,6 @@ void ShapeBullet::remove_owner(ShapeOwnerBullet *p_owner, bool p_permanentlyFrom
 }
 
 bool ShapeBullet::is_owner(ShapeOwnerBullet *p_owner) const {
-
 	return owners.has(p_owner);
 }
 
@@ -395,7 +395,6 @@ void ConcavePolygonShapeBullet::setup(PoolVector<Vector3> p_faces) {
 	}
 	int src_face_count = faces.size();
 	if (0 < src_face_count) {
-
 		// It counts the faces and assert the array contains the correct number of vertices.
 		ERR_FAIL_COND(src_face_count % 3);
 
@@ -517,7 +516,6 @@ void HeightMapShapeBullet::set_data(const Variant &p_data) {
 
 	// Compute min and max heights if not specified.
 	if (!d.has("min_height") && !d.has("max_height")) {
-
 		PoolVector<real_t>::Read r = l_heights.read();
 		int heights_size = l_heights.size();
 
@@ -570,13 +568,11 @@ RayShapeBullet::RayShapeBullet() :
 		slips_on_slope(false) {}
 
 void RayShapeBullet::set_data(const Variant &p_data) {
-
 	Dictionary d = p_data;
 	setup(d["length"], d["slips_on_slope"]);
 }
 
 Variant RayShapeBullet::get_data() const {
-
 	Dictionary d;
 	d["length"] = length;
 	d["slips_on_slope"] = slips_on_slope;

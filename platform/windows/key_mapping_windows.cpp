@@ -33,7 +33,6 @@
 #include <stdio.h>
 
 struct _WinTranslatePair {
-
 	unsigned int keysym;
 	unsigned int keycode;
 };
@@ -239,9 +238,7 @@ VK_OEM_CLEAR (0xFE)
 */
 
 unsigned int KeyMappingWindows::get_keysym(unsigned int p_code) {
-
 	for (int i = 0; _vk_to_keycode[i].keysym != KEY_UNKNOWN; i++) {
-
 		if (_vk_to_keycode[i].keycode == p_code) {
 			//printf("outcode: %x\n",_vk_to_keycode[i].keysym);
 

@@ -43,7 +43,6 @@
 class CanvasItemEditorViewport;
 
 class CanvasItemEditorSelectedItem : public Object {
-
 	GDCLASS(CanvasItemEditorSelectedItem, Object);
 
 public:
@@ -68,7 +67,6 @@ public:
 };
 
 class CanvasItemEditor : public VBoxContainer {
-
 	GDCLASS(CanvasItemEditor, VBoxContainer);
 
 public:
@@ -289,7 +287,6 @@ private:
 	MenuOption last_option;
 
 	struct _SelectResult {
-
 		CanvasItem *item;
 		float z_index;
 		bool has_z;
@@ -300,7 +297,6 @@ private:
 	Vector<_SelectResult> selection_results;
 
 	struct _HoverResult {
-
 		Point2 position;
 		Ref<Texture> icon;
 		String name;
@@ -308,7 +304,6 @@ private:
 	Vector<_HoverResult> hovering_results;
 
 	struct BoneList {
-
 		Transform2D xform;
 		float length;
 		uint64_t last_pass;
@@ -648,7 +643,6 @@ public:
 };
 
 class CanvasItemEditorPlugin : public EditorPlugin {
-
 	GDCLASS(CanvasItemEditorPlugin, EditorPlugin);
 
 	CanvasItemEditor *canvas_item_editor;

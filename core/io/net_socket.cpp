@@ -33,7 +33,6 @@
 NetSocket *(*NetSocket::_create)() = NULL;
 
 NetSocket *NetSocket::create() {
-
 	if (_create)
 		return _create();
 

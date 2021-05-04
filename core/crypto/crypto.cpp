@@ -74,7 +74,6 @@ Crypto *Crypto::create() {
 }
 
 void Crypto::load_default_certificates(String p_path) {
-
 	if (_load_default_certificates)
 		_load_default_certificates(p_path);
 }
@@ -95,7 +94,6 @@ Crypto::Crypto() {
 /// Resource loader/saver
 
 RES ResourceFormatLoaderCrypto::load(const String &p_path, const String &p_original_path, Error *r_error) {
-
 	String el = p_path.get_extension().to_lower();
 	if (el == "crt") {
 		X509Certificate *cert = X509Certificate::create();
@@ -117,19 +115,16 @@ RES ResourceFormatLoaderCrypto::load(const String &p_path, const String &p_origi
 }
 
 void ResourceFormatLoaderCrypto::get_recognized_extensions(List<String> *p_extensions) const {
-
 	p_extensions->push_back("crt");
 	p_extensions->push_back("key");
 	p_extensions->push_back("pub");
 }
 
 bool ResourceFormatLoaderCrypto::handles_type(const String &p_type) const {
-
 	return p_type == "X509Certificate" || p_type == "CryptoKey";
 }
 
 String ResourceFormatLoaderCrypto::get_resource_type(const String &p_path) const {
-
 	String el = p_path.get_extension().to_lower();
 	if (el == "crt")
 		return "X509Certificate";
@@ -139,7 +134,6 @@ String ResourceFormatLoaderCrypto::get_resource_type(const String &p_path) const
 }
 
 Error ResourceFormatSaverCrypto::save(const String &p_path, const RES &p_resource, uint32_t p_flags) {
-
 	Error err;
 	Ref<X509Certificate> cert = p_resource;
 	Ref<CryptoKey> key = p_resource;
@@ -156,7 +150,6 @@ Error ResourceFormatSaverCrypto::save(const String &p_path, const RES &p_resourc
 }
 
 void ResourceFormatSaverCrypto::get_recognized_extensions(const RES &p_resource, List<String> *p_extensions) const {
-
 	const X509Certificate *cert = Object::cast_to<X509Certificate>(*p_resource);
 	const CryptoKey *key = Object::cast_to<CryptoKey>(*p_resource);
 	if (cert) {
@@ -170,6 +163,5 @@ void ResourceFormatSaverCrypto::get_recognized_extensions(const RES &p_resource,
 	}
 }
 bool ResourceFormatSaverCrypto::recognize(const RES &p_resource) const {
-
 	return Object::cast_to<X509Certificate>(*p_resource) || Object::cast_to<CryptoKey>(*p_resource);
 }

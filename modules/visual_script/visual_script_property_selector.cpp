@@ -46,17 +46,14 @@ void VisualScriptPropertySelector::_text_changed(const String &p_newtext) {
 }
 
 void VisualScriptPropertySelector::_sbox_input(const Ref<InputEvent> &p_ie) {
-
 	Ref<InputEventKey> k = p_ie;
 
 	if (k.is_valid()) {
-
 		switch (k->get_scancode()) {
 			case KEY_UP:
 			case KEY_DOWN:
 			case KEY_PAGEUP:
 			case KEY_PAGEDOWN: {
-
 				search_options->call("_gui_input", k);
 				search_box->accept_event();
 
@@ -197,7 +194,6 @@ void VisualScriptPropertySelector::_update_search() {
 				v = Variant::construct(type, NULL, 0, ce);
 				v.get_method_list(&methods);
 			} else {
-
 				Object *obj = ObjectDB::get_instance(script);
 				if (Object::cast_to<Script>(obj)) {
 					Object::cast_to<Script>(obj)->get_script_method_list(&methods);
@@ -207,7 +203,6 @@ void VisualScriptPropertySelector::_update_search() {
 			}
 		}
 		for (List<MethodInfo>::Element *M = methods.front(); M; M = M->next()) {
-
 			String name = M->get().name.get_slice(":", 0);
 			if (name.begins_with("_") && !(M->get().flags & METHOD_FLAG_VIRTUAL))
 				continue;
@@ -223,7 +218,6 @@ void VisualScriptPropertySelector::_update_search() {
 			if (mi.arguments.size() > 0) {
 				desc_arguments = "(";
 				for (int i = 0; i < mi.arguments.size(); i++) {
-
 					if (i > 0) {
 						desc_arguments += ", ";
 					}
@@ -409,7 +403,6 @@ void VisualScriptPropertySelector::get_visual_node_names(const String &root_filt
 }
 
 void VisualScriptPropertySelector::_confirmed() {
-
 	TreeItem *ti = search_options->get_selected();
 	if (!ti)
 		return;
@@ -418,7 +411,6 @@ void VisualScriptPropertySelector::_confirmed() {
 }
 
 void VisualScriptPropertySelector::_item_selected() {
-
 	help_bit->set_text("");
 
 	TreeItem *item = search_options->get_selected();
@@ -440,7 +432,6 @@ void VisualScriptPropertySelector::_item_selected() {
 	String at_class = class_type;
 
 	while (at_class != String()) {
-
 		Map<String, DocData::ClassDoc>::Element *E = dd->class_list.find(at_class);
 		if (E) {
 			for (int i = 0; i < E->get().properties.size(); i++) {
@@ -455,7 +446,6 @@ void VisualScriptPropertySelector::_item_selected() {
 	at_class = class_type;
 
 	while (at_class != String()) {
-
 		Map<String, DocData::ClassDoc>::Element *C = dd->class_list.find(at_class);
 		if (C) {
 			for (int i = 0; i < C->get().methods.size(); i++) {
@@ -517,15 +507,12 @@ void VisualScriptPropertySelector::_item_selected() {
 }
 
 void VisualScriptPropertySelector::_notification(int p_what) {
-
 	if (p_what == NOTIFICATION_ENTER_TREE) {
-
 		connect("confirmed", this, "_confirmed");
 	}
 }
 
 void VisualScriptPropertySelector::select_method_from_base_type(const String &p_base, const String &p_current, const bool p_virtuals_only, const bool p_connecting, bool clear_text) {
-
 	base_type = p_base;
 	selected = p_current;
 	type = Variant::NIL;
@@ -550,7 +537,6 @@ void VisualScriptPropertySelector::set_type_filter(const Vector<Variant::Type> &
 }
 
 void VisualScriptPropertySelector::select_from_base_type(const String &p_base, const String &p_current, bool p_virtuals_only, bool p_seq_connect, const bool p_connecting, bool clear_text) {
-
 	base_type = p_base;
 	selected = p_current;
 	type = Variant::NIL;
@@ -693,7 +679,6 @@ void VisualScriptPropertySelector::show_window(float p_screen_ratio) {
 }
 
 void VisualScriptPropertySelector::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("_text_changed"), &VisualScriptPropertySelector::_text_changed);
 	ClassDB::bind_method(D_METHOD("_confirmed"), &VisualScriptPropertySelector::_confirmed);
 	ClassDB::bind_method(D_METHOD("_sbox_input"), &VisualScriptPropertySelector::_sbox_input);
@@ -703,7 +688,6 @@ void VisualScriptPropertySelector::_bind_methods() {
 }
 
 VisualScriptPropertySelector::VisualScriptPropertySelector() {
-
 	VBoxContainer *vbc = memnew(VBoxContainer);
 	add_child(vbc);
 	//set_child_rect(vbc);

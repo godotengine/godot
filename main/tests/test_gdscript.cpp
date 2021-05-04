@@ -44,7 +44,6 @@
 namespace TestGDScript {
 
 static void _print_indent(int p_ident, const String &p_text) {
-
 	String txt;
 	for (int i = 0; i < p_ident; i++) {
 		txt += '\t';
@@ -54,7 +53,6 @@ static void _print_indent(int p_ident, const String &p_text) {
 }
 
 static String _parser_extends(const GDScriptParser::ClassNode *p_class) {
-
 	String txt = "extends ";
 	if (String(p_class->extends_file) != "") {
 		txt += "\"" + p_class->extends_file + "\"";
@@ -63,7 +61,6 @@ static String _parser_extends(const GDScriptParser::ClassNode *p_class) {
 	}
 
 	for (int i = 0; i < p_class->extends_class.size(); i++) {
-
 		if (i != 0)
 			txt += ".";
 
@@ -74,12 +71,9 @@ static String _parser_extends(const GDScriptParser::ClassNode *p_class) {
 }
 
 static String _parser_expr(const GDScriptParser::Node *p_expr) {
-
 	String txt;
 	switch (p_expr->type) {
-
 		case GDScriptParser::Node::TYPE_IDENTIFIER: {
-
 			const GDScriptParser::IdentifierNode *id_node = static_cast<const GDScriptParser::IdentifierNode *>(p_expr);
 			txt = id_node->name;
 		} break;
@@ -98,7 +92,6 @@ static String _parser_expr(const GDScriptParser::Node *p_expr) {
 			const GDScriptParser::ArrayNode *arr_node = static_cast<const GDScriptParser::ArrayNode *>(p_expr);
 			txt += "[";
 			for (int i = 0; i < arr_node->elements.size(); i++) {
-
 				if (i > 0)
 					txt += ", ";
 				txt += _parser_expr(arr_node->elements[i]);
@@ -109,7 +102,6 @@ static String _parser_expr(const GDScriptParser::Node *p_expr) {
 			const GDScriptParser::DictionaryNode *dict_node = static_cast<const GDScriptParser::DictionaryNode *>(p_expr);
 			txt += "{";
 			for (int i = 0; i < dict_node->elements.size(); i++) {
-
 				if (i > 0)
 					txt += ", ";
 
@@ -121,31 +113,25 @@ static String _parser_expr(const GDScriptParser::Node *p_expr) {
 			txt += "}";
 		} break;
 		case GDScriptParser::Node::TYPE_OPERATOR: {
-
 			const GDScriptParser::OperatorNode *c_node = static_cast<const GDScriptParser::OperatorNode *>(p_expr);
 			switch (c_node->op) {
-
 				case GDScriptParser::OperatorNode::OP_PARENT_CALL:
 					txt += ".";
 					FALLTHROUGH;
 				case GDScriptParser::OperatorNode::OP_CALL: {
-
 					ERR_FAIL_COND_V(c_node->arguments.size() < 1, "");
 					String func_name;
 					const GDScriptParser::Node *nfunc = c_node->arguments[0];
 					int arg_ofs = 0;
 					if (nfunc->type == GDScriptParser::Node::TYPE_BUILT_IN_FUNCTION) {
-
 						const GDScriptParser::BuiltInFunctionNode *bif_node = static_cast<const GDScriptParser::BuiltInFunctionNode *>(nfunc);
 						func_name = GDScriptFunctions::get_func_name(bif_node->function);
 						arg_ofs = 1;
 					} else if (nfunc->type == GDScriptParser::Node::TYPE_TYPE) {
-
 						const GDScriptParser::TypeNode *t_node = static_cast<const GDScriptParser::TypeNode *>(nfunc);
 						func_name = Variant::get_type_name(t_node->vtype);
 						arg_ofs = 1;
 					} else {
-
 						ERR_FAIL_COND_V(c_node->arguments.size() < 2, "");
 						nfunc = c_node->arguments[1];
 						ERR_FAIL_COND_V(nfunc->type != GDScriptParser::Node::TYPE_IDENTIFIER, "");
@@ -160,7 +146,6 @@ static String _parser_expr(const GDScriptParser::Node *p_expr) {
 					txt += func_name + "(";
 
 					for (int i = arg_ofs; i < c_node->arguments.size(); i++) {
-
 						const GDScriptParser::Node *arg = c_node->arguments[i];
 						if (i > arg_ofs)
 							txt += ", ";
@@ -171,7 +156,6 @@ static String _parser_expr(const GDScriptParser::Node *p_expr) {
 
 				} break;
 				case GDScriptParser::OperatorNode::OP_INDEX: {
-
 					ERR_FAIL_COND_V(c_node->arguments.size() != 2, "");
 
 					//index with []
@@ -179,7 +163,6 @@ static String _parser_expr(const GDScriptParser::Node *p_expr) {
 
 				} break;
 				case GDScriptParser::OperatorNode::OP_INDEX_NAMED: {
-
 					ERR_FAIL_COND_V(c_node->arguments.size() != 2, "");
 
 					txt = _parser_expr(c_node->arguments[0]) + "." + _parser_expr(c_node->arguments[1]);
@@ -295,11 +278,9 @@ static String _parser_expr(const GDScriptParser::Node *p_expr) {
 
 		} break;
 		case GDScriptParser::Node::TYPE_NEWLINE: {
-
 			//skippie
 		} break;
 		default: {
-
 			ERR_FAIL_V_MSG("", "Parser bug at " + itos(p_expr->line) + ", invalid expression type: " + itos(p_expr->type));
 		}
 	}
@@ -308,20 +289,14 @@ static String _parser_expr(const GDScriptParser::Node *p_expr) {
 }
 
 static void _parser_show_block(const GDScriptParser::BlockNode *p_block, int p_indent) {
-
 	for (int i = 0; i < p_block->statements.size(); i++) {
-
 		const GDScriptParser::Node *statement = p_block->statements[i];
 
 		switch (statement->type) {
-
 			case GDScriptParser::Node::TYPE_CONTROL_FLOW: {
-
 				const GDScriptParser::ControlFlowNode *cf_node = static_cast<const GDScriptParser::ControlFlowNode *>(statement);
 				switch (cf_node->cf_type) {
-
 					case GDScriptParser::ControlFlowNode::CF_IF: {
-
 						ERR_FAIL_COND(cf_node->arguments.size() != 1);
 						String txt;
 						txt += "if ";
@@ -350,7 +325,6 @@ static void _parser_show_block(const GDScriptParser::BlockNode *p_block, int p_i
 
 					} break;
 					case GDScriptParser::ControlFlowNode::CF_WHILE: {
-
 						ERR_FAIL_COND(cf_node->arguments.size() != 1);
 						String txt;
 						txt += "while ";
@@ -365,15 +339,12 @@ static void _parser_show_block(const GDScriptParser::BlockNode *p_block, int p_i
 						// FIXME: Implement
 					} break;
 					case GDScriptParser::ControlFlowNode::CF_CONTINUE: {
-
 						_print_indent(p_indent, "continue");
 					} break;
 					case GDScriptParser::ControlFlowNode::CF_BREAK: {
-
 						_print_indent(p_indent, "break");
 					} break;
 					case GDScriptParser::ControlFlowNode::CF_RETURN: {
-
 						if (cf_node->arguments.size())
 							_print_indent(p_indent, "return " + _parser_expr(cf_node->arguments[0]));
 						else
@@ -383,7 +354,6 @@ static void _parser_show_block(const GDScriptParser::BlockNode *p_block, int p_i
 
 			} break;
 			case GDScriptParser::Node::TYPE_LOCAL_VAR: {
-
 				const GDScriptParser::LocalVarNode *lv_node = static_cast<const GDScriptParser::LocalVarNode *>(statement);
 				_print_indent(p_indent, "var " + String(lv_node->name));
 			} break;
@@ -396,7 +366,6 @@ static void _parser_show_block(const GDScriptParser::BlockNode *p_block, int p_i
 }
 
 static void _parser_show_function(const GDScriptParser::FunctionNode *p_func, int p_indent, GDScriptParser::BlockNode *p_initializer = NULL) {
-
 	String txt;
 	if (p_func->_static)
 		txt = "static ";
@@ -408,7 +377,6 @@ static void _parser_show_function(const GDScriptParser::FunctionNode *p_func, in
 	txt += "(";
 
 	for (int i = 0; i < p_func->arguments.size(); i++) {
-
 		if (i != 0)
 			txt += ", ";
 		txt += "var " + String(p_func->arguments[i]);
@@ -432,15 +400,12 @@ static void _parser_show_function(const GDScriptParser::FunctionNode *p_func, in
 }
 
 static void _parser_show_class(const GDScriptParser::ClassNode *p_class, int p_indent, const Vector<String> &p_code) {
-
 	if (p_indent == 0 && (String(p_class->extends_file) != "" || p_class->extends_class.size())) {
-
 		_print_indent(p_indent, _parser_extends(p_class));
 		print_line("\n");
 	}
 
 	for (int i = 0; i < p_class->subclasses.size(); i++) {
-
 		const GDScriptParser::ClassNode *subclass = p_class->subclasses[i];
 		String line = "class " + subclass->name;
 		if (String(subclass->extends_file) != "" || subclass->extends_class.size())
@@ -457,7 +422,6 @@ static void _parser_show_class(const GDScriptParser::ClassNode *p_class, int p_i
 	}
 
 	for (int i = 0; i < p_class->variables.size(); i++) {
-
 		const GDScriptParser::ClassNode::Member &m = p_class->variables[i];
 
 		_print_indent(p_indent, "var " + String(m.identifier));
@@ -466,13 +430,11 @@ static void _parser_show_class(const GDScriptParser::ClassNode *p_class, int p_i
 	print_line("\n");
 
 	for (int i = 0; i < p_class->static_functions.size(); i++) {
-
 		_parser_show_function(p_class->static_functions[i], p_indent);
 		print_line("\n");
 	}
 
 	for (int i = 0; i < p_class->functions.size(); i++) {
-
 		if (String(p_class->functions[i]->name) == "_init") {
 			_parser_show_function(p_class->functions[i], p_indent, p_class->initializer);
 		} else
@@ -484,11 +446,9 @@ static void _parser_show_class(const GDScriptParser::ClassNode *p_class, int p_i
 }
 
 static String _disassemble_addr(const Ref<GDScript> &p_script, const GDScriptFunction &func, int p_addr) {
-
 	int addr = p_addr & GDScriptFunction::ADDR_MASK;
 
 	switch (p_addr >> GDScriptFunction::ADDR_BITS) {
-
 		case GDScriptFunction::ADDR_TYPE_SELF: {
 			return "self";
 		} break;
@@ -496,15 +456,12 @@ static String _disassemble_addr(const Ref<GDScript> &p_script, const GDScriptFun
 			return "class";
 		} break;
 		case GDScriptFunction::ADDR_TYPE_MEMBER: {
-
 			return "member(" + p_script->debug_get_member_by_index(addr) + ")";
 		} break;
 		case GDScriptFunction::ADDR_TYPE_CLASS_CONSTANT: {
-
 			return "class_const(" + func.get_global_name(addr) + ")";
 		} break;
 		case GDScriptFunction::ADDR_TYPE_LOCAL_CONSTANT: {
-
 			Variant v = func.get_constant(addr);
 			String txt;
 			if (v.get_type() == Variant::STRING || v.get_type() == Variant::NODE_PATH)
@@ -514,15 +471,12 @@ static String _disassemble_addr(const Ref<GDScript> &p_script, const GDScriptFun
 			return "const(" + txt + ")";
 		} break;
 		case GDScriptFunction::ADDR_TYPE_STACK: {
-
 			return "stack(" + itos(addr) + ")";
 		} break;
 		case GDScriptFunction::ADDR_TYPE_STACK_VARIABLE: {
-
 			return "var_stack(" + itos(addr) + ")";
 		} break;
 		case GDScriptFunction::ADDR_TYPE_GLOBAL: {
-
 			return "global(" + func.get_global_name(addr) + ")";
 		} break;
 		case GDScriptFunction::ADDR_TYPE_NIL: {
@@ -534,11 +488,9 @@ static String _disassemble_addr(const Ref<GDScript> &p_script, const GDScriptFun
 }
 
 static void _disassemble_class(const Ref<GDScript> &p_class, const Vector<String> &p_code) {
-
 	const Map<StringName, GDScriptFunction *> &mf = p_class->debug_get_member_functions();
 
 	for (const Map<StringName, GDScriptFunction *>::Element *E = mf.front(); E; E = E->next()) {
-
 		const GDScriptFunction &func = *E->get();
 		const int *code = func.get_code();
 		int codelen = func.get_code_size();
@@ -546,7 +498,6 @@ static void _disassemble_class(const Ref<GDScript> &p_class, const Vector<String
 		if (func.get_default_argument_count()) {
 			defargs = "defarg at: ";
 			for (int i = 0; i < func.get_default_argument_count(); i++) {
-
 				if (i > 0)
 					defargs += ",";
 				defargs += itos(func.get_default_argument_addr(i));
@@ -558,14 +509,11 @@ static void _disassemble_class(const Ref<GDScript> &p_class, const Vector<String
 #define DADDR(m_ip) (_disassemble_addr(p_class, func, code[ip + m_ip]))
 
 		for (int ip = 0; ip < codelen;) {
-
 			int incr = 0;
 			String txt = itos(ip) + " ";
 
 			switch (code[ip]) {
-
 				case GDScriptFunction::OPCODE_OPERATOR: {
-
 					int op = code[ip + 1];
 					txt += " op ";
 
@@ -580,7 +528,6 @@ static void _disassemble_class(const Ref<GDScript> &p_class, const Vector<String
 
 				} break;
 				case GDScriptFunction::OPCODE_SET: {
-
 					txt += "set ";
 					txt += DADDR(1);
 					txt += "[";
@@ -591,7 +538,6 @@ static void _disassemble_class(const Ref<GDScript> &p_class, const Vector<String
 
 				} break;
 				case GDScriptFunction::OPCODE_GET: {
-
 					txt += " get ";
 					txt += DADDR(3);
 					txt += "=";
@@ -603,7 +549,6 @@ static void _disassemble_class(const Ref<GDScript> &p_class, const Vector<String
 
 				} break;
 				case GDScriptFunction::OPCODE_SET_NAMED: {
-
 					txt += " set_named ";
 					txt += DADDR(1);
 					txt += "[\"";
@@ -614,7 +559,6 @@ static void _disassemble_class(const Ref<GDScript> &p_class, const Vector<String
 
 				} break;
 				case GDScriptFunction::OPCODE_GET_NAMED: {
-
 					txt += " get_named ";
 					txt += DADDR(3);
 					txt += "=";
@@ -626,7 +570,6 @@ static void _disassemble_class(const Ref<GDScript> &p_class, const Vector<String
 
 				} break;
 				case GDScriptFunction::OPCODE_SET_MEMBER: {
-
 					txt += " set_member ";
 					txt += "[\"";
 					txt += func.get_global_name(code[ip + 1]);
@@ -636,7 +579,6 @@ static void _disassemble_class(const Ref<GDScript> &p_class, const Vector<String
 
 				} break;
 				case GDScriptFunction::OPCODE_GET_MEMBER: {
-
 					txt += " get_member ";
 					txt += DADDR(2);
 					txt += "=";
@@ -647,7 +589,6 @@ static void _disassemble_class(const Ref<GDScript> &p_class, const Vector<String
 
 				} break;
 				case GDScriptFunction::OPCODE_ASSIGN: {
-
 					txt += " assign ";
 					txt += DADDR(1);
 					txt += "=";
@@ -656,7 +597,6 @@ static void _disassemble_class(const Ref<GDScript> &p_class, const Vector<String
 
 				} break;
 				case GDScriptFunction::OPCODE_ASSIGN_TRUE: {
-
 					txt += " assign ";
 					txt += DADDR(1);
 					txt += "= true";
@@ -664,7 +604,6 @@ static void _disassemble_class(const Ref<GDScript> &p_class, const Vector<String
 
 				} break;
 				case GDScriptFunction::OPCODE_ASSIGN_FALSE: {
-
 					txt += " assign ";
 					txt += DADDR(1);
 					txt += "= false";
@@ -672,7 +611,6 @@ static void _disassemble_class(const Ref<GDScript> &p_class, const Vector<String
 
 				} break;
 				case GDScriptFunction::OPCODE_ASSIGN_TYPED_BUILTIN: {
-
 					txt += " assign typed builtin (";
 					txt += Variant::get_type_name((Variant::Type)code[ip + 1]);
 					txt += ") ";
@@ -696,7 +634,6 @@ static void _disassemble_class(const Ref<GDScript> &p_class, const Vector<String
 
 				} break;
 				case GDScriptFunction::OPCODE_CAST_TO_SCRIPT: {
-
 					txt += " cast ";
 					txt += DADDR(3);
 					txt += "=";
@@ -707,7 +644,6 @@ static void _disassemble_class(const Ref<GDScript> &p_class, const Vector<String
 
 				} break;
 				case GDScriptFunction::OPCODE_CONSTRUCT: {
-
 					Variant::Type t = Variant::Type(code[ip + 1]);
 					int argc = code[ip + 2];
 
@@ -717,7 +653,6 @@ static void _disassemble_class(const Ref<GDScript> &p_class, const Vector<String
 
 					txt += Variant::get_type_name(t) + "(";
 					for (int i = 0; i < argc; i++) {
-
 						if (i > 0)
 							txt += ", ";
 						txt += DADDR(i + 3);
@@ -728,7 +663,6 @@ static void _disassemble_class(const Ref<GDScript> &p_class, const Vector<String
 
 				} break;
 				case GDScriptFunction::OPCODE_CONSTRUCT_ARRAY: {
-
 					int argc = code[ip + 1];
 					txt += " make_array ";
 					txt += DADDR(2 + argc);
@@ -746,7 +680,6 @@ static void _disassemble_class(const Ref<GDScript> &p_class, const Vector<String
 
 				} break;
 				case GDScriptFunction::OPCODE_CONSTRUCT_DICTIONARY: {
-
 					int argc = code[ip + 1];
 					txt += " make_dict ";
 					txt += DADDR(2 + argc * 2);
@@ -768,7 +701,6 @@ static void _disassemble_class(const Ref<GDScript> &p_class, const Vector<String
 
 				case GDScriptFunction::OPCODE_CALL:
 				case GDScriptFunction::OPCODE_CALL_RETURN: {
-
 					bool ret = code[ip] == GDScriptFunction::OPCODE_CALL_RETURN;
 
 					if (ret)
@@ -796,7 +728,6 @@ static void _disassemble_class(const Ref<GDScript> &p_class, const Vector<String
 
 				} break;
 				case GDScriptFunction::OPCODE_CALL_BUILT_IN: {
-
 					txt += " call-built-in ";
 
 					int argc = code[ip + 2];
@@ -816,7 +747,6 @@ static void _disassemble_class(const Ref<GDScript> &p_class, const Vector<String
 
 				} break;
 				case GDScriptFunction::OPCODE_CALL_SELF_BASE: {
-
 					txt += " call-self-base ";
 
 					int argc = code[ip + 2];
@@ -836,13 +766,11 @@ static void _disassemble_class(const Ref<GDScript> &p_class, const Vector<String
 
 				} break;
 				case GDScriptFunction::OPCODE_YIELD: {
-
 					txt += " yield ";
 					incr = 1;
 
 				} break;
 				case GDScriptFunction::OPCODE_YIELD_SIGNAL: {
-
 					txt += " yield_signal ";
 					txt += DADDR(1);
 					txt += ",";
@@ -850,13 +778,11 @@ static void _disassemble_class(const Ref<GDScript> &p_class, const Vector<String
 					incr = 3;
 				} break;
 				case GDScriptFunction::OPCODE_YIELD_RESUME: {
-
 					txt += " yield resume: ";
 					txt += DADDR(1);
 					incr = 2;
 				} break;
 				case GDScriptFunction::OPCODE_JUMP: {
-
 					txt += " jump ";
 					txt += itos(code[ip + 1]);
 
@@ -864,7 +790,6 @@ static void _disassemble_class(const Ref<GDScript> &p_class, const Vector<String
 
 				} break;
 				case GDScriptFunction::OPCODE_JUMP_IF: {
-
 					txt += " jump-if ";
 					txt += DADDR(1);
 					txt += " to ";
@@ -873,7 +798,6 @@ static void _disassemble_class(const Ref<GDScript> &p_class, const Vector<String
 					incr = 3;
 				} break;
 				case GDScriptFunction::OPCODE_JUMP_IF_NOT: {
-
 					txt += " jump-if-not ";
 					txt += DADDR(1);
 					txt += " to ";
@@ -882,12 +806,10 @@ static void _disassemble_class(const Ref<GDScript> &p_class, const Vector<String
 					incr = 3;
 				} break;
 				case GDScriptFunction::OPCODE_JUMP_TO_DEF_ARGUMENT: {
-
 					txt += " jump-to-default-argument ";
 					incr = 1;
 				} break;
 				case GDScriptFunction::OPCODE_RETURN: {
-
 					txt += " return ";
 					txt += DADDR(1);
 
@@ -895,19 +817,16 @@ static void _disassemble_class(const Ref<GDScript> &p_class, const Vector<String
 
 				} break;
 				case GDScriptFunction::OPCODE_ITERATE_BEGIN: {
-
 					txt += " for-init " + DADDR(4) + " in " + DADDR(2) + " counter " + DADDR(1) + " end " + itos(code[ip + 3]);
 					incr += 5;
 
 				} break;
 				case GDScriptFunction::OPCODE_ITERATE: {
-
 					txt += " for-loop " + DADDR(4) + " in " + DADDR(2) + " counter " + DADDR(1) + " end " + itos(code[ip + 3]);
 					incr += 5;
 
 				} break;
 				case GDScriptFunction::OPCODE_LINE: {
-
 					int line = code[ip + 1] - 1;
 					if (line >= 0 && line < p_code.size())
 						txt = "\n" + itos(line + 1) + ": " + p_code[line] + "\n";
@@ -916,12 +835,10 @@ static void _disassemble_class(const Ref<GDScript> &p_class, const Vector<String
 					incr += 2;
 				} break;
 				case GDScriptFunction::OPCODE_END: {
-
 					txt += " end";
 					incr += 1;
 				} break;
 				case GDScriptFunction::OPCODE_ASSERT: {
-
 					txt += " assert ";
 					txt += DADDR(1);
 					incr += 2;
@@ -930,7 +847,6 @@ static void _disassemble_class(const Ref<GDScript> &p_class, const Vector<String
 			}
 
 			if (incr == 0) {
-
 				ERR_BREAK_MSG(true, "Unhandled opcode: " + itos(code[ip]));
 			}
 
@@ -942,7 +858,6 @@ static void _disassemble_class(const Ref<GDScript> &p_class, const Vector<String
 }
 
 MainLoop *test(TestType p_type) {
-
 	List<String> cmdlargs = OS::get_singleton()->get_cmdline_args();
 
 	if (cmdlargs.empty()) {
@@ -971,21 +886,17 @@ MainLoop *test(TestType p_type) {
 	int last = 0;
 
 	for (int i = 0; i <= code.length(); i++) {
-
 		if (code[i] == '\n' || code[i] == 0) {
-
 			lines.push_back(code.substr(last, i - last));
 			last = i + 1;
 		}
 	}
 
 	if (p_type == TEST_TOKENIZER) {
-
 		GDScriptTokenizerText tk;
 		tk.set_code(code);
 		int line = -1;
 		while (tk.get_token() != GDScriptTokenizer::TK_EOF) {
-
 			String text;
 			if (tk.get_token() == GDScriptTokenizer::TK_IDENTIFIER)
 				text = "'" + tk.get_token_identifier() + "' (identifier)";
@@ -1023,7 +934,6 @@ MainLoop *test(TestType p_type) {
 	}
 
 	if (p_type == TEST_PARSER) {
-
 		GDScriptParser parser;
 		Error err = parser.parse(code);
 		if (err) {
@@ -1040,7 +950,6 @@ MainLoop *test(TestType p_type) {
 	}
 
 	if (p_type == TEST_COMPILER) {
-
 		GDScriptParser parser;
 
 		Error err = parser.parse(code);
@@ -1056,7 +965,6 @@ MainLoop *test(TestType p_type) {
 		GDScriptCompiler gdc;
 		err = gdc.compile(&parser, gds.ptr());
 		if (err) {
-
 			print_line("Compile Error:\n" + itos(gdc.get_error_line()) + ":" + itos(gdc.get_error_column()) + ":" + gdc.get_error());
 			return NULL;
 		}
@@ -1064,7 +972,6 @@ MainLoop *test(TestType p_type) {
 		Ref<GDScript> current = gds;
 
 		while (current.is_valid()) {
-
 			print_line("** CLASS **");
 			_disassemble_class(current, lines);
 
@@ -1072,7 +979,6 @@ MainLoop *test(TestType p_type) {
 		}
 
 	} else if (p_type == TEST_BYTECODE) {
-
 		Vector<uint8_t> buf2 = GDScriptTokenizerBuffer::parse_code_string(code);
 		String dst = test.get_basename() + ".gdc";
 		FileAccess *fw = FileAccess::open(dst, FileAccess::WRITE);
@@ -1091,7 +997,6 @@ MainLoop *test(TestType p_type) {
 namespace TestGDScript {
 
 MainLoop *test(TestType p_type) {
-
 	return NULL;
 }
 } // namespace TestGDScript

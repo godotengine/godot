@@ -36,23 +36,21 @@
 #include "gdscript_parser.h"
 
 class GDScriptCompiler {
-
 	const GDScriptParser *parser;
 	Set<GDScript *> parsed_classes;
 	Set<GDScript *> parsing_classes;
 	GDScript *main_script;
 	struct CodeGen {
-
 		GDScript *script;
 		const GDScriptParser::ClassNode *class_node;
 		const GDScriptParser::FunctionNode *function_node;
 		bool debug_stack;
 
-		List<Map<StringName, int> > stack_id_stack;
+		List<Map<StringName, int>> stack_id_stack;
 		Map<StringName, int> stack_identifiers;
 
 		List<GDScriptFunction::StackDebug> stack_debug;
-		List<Map<StringName, int> > block_identifier_stack;
+		List<Map<StringName, int>> block_identifier_stack;
 		Map<StringName, int> block_identifiers;
 
 		void add_stack_identifier(const StringName &p_id, int p_stackpos) {
@@ -71,7 +69,6 @@ class GDScriptCompiler {
 		void push_stack_identifiers() {
 			stack_id_stack.push_back(stack_identifiers);
 			if (debug_stack) {
-
 				block_identifier_stack.push_back(block_identifiers);
 				block_identifiers.clear();
 			}
@@ -83,7 +80,6 @@ class GDScriptCompiler {
 
 			if (debug_stack) {
 				for (Map<StringName, int>::Element *E = block_identifiers.front(); E; E = E->next()) {
-
 					GDScriptFunction::StackDebug sd;
 					sd.added = false;
 					sd.identifier = E->key();
@@ -123,10 +119,12 @@ class GDScriptCompiler {
 
 		Vector<int> opcodes;
 		void alloc_stack(int p_level) {
-			if (p_level >= stack_max) stack_max = p_level + 1;
+			if (p_level >= stack_max)
+				stack_max = p_level + 1;
 		}
 		void alloc_call(int p_params) {
-			if (p_params >= call_max) call_max = p_params;
+			if (p_params >= call_max)
+				call_max = p_params;
 		}
 
 		int current_line;

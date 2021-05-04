@@ -156,7 +156,6 @@ void diagnose_batches(RasterizerCanvas::Item::Command *const *p_commands) {
 		bdata.frame_string += "\t\t\tbatch ";
 
 		switch (batch.type) {
-
 			case RasterizerStorageCommon::BT_POLY: {
 				bdata.frame_string += "P ";
 				bdata.frame_string += itos(batch.first_command) + "-";

@@ -48,7 +48,6 @@ GDScriptLanguageServer::GDScriptLanguageServer() {
 }
 
 void GDScriptLanguageServer::_notification(int p_what) {
-
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE:
 			start();

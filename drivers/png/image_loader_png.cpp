@@ -37,7 +37,6 @@
 #include <string.h>
 
 Error ImageLoaderPNG::load_image(Ref<Image> p_image, FileAccess *f, bool p_force_linear, float p_scale) {
-
 	const size_t buffer_size = f->get_len();
 	PoolVector<uint8_t> file_buffer;
 	Error err = file_buffer.resize(buffer_size);
@@ -55,12 +54,10 @@ Error ImageLoaderPNG::load_image(Ref<Image> p_image, FileAccess *f, bool p_force
 }
 
 void ImageLoaderPNG::get_recognized_extensions(List<String> *p_extensions) const {
-
 	p_extensions->push_back("png");
 }
 
 Ref<Image> ImageLoaderPNG::load_mem_png(const uint8_t *p_png, int p_size) {
-
 	Ref<Image> img;
 	img.instance();
 
@@ -72,7 +69,6 @@ Ref<Image> ImageLoaderPNG::load_mem_png(const uint8_t *p_png, int p_size) {
 }
 
 Ref<Image> ImageLoaderPNG::lossless_unpack_png(const PoolVector<uint8_t> &p_data) {
-
 	const int len = p_data.size();
 	ERR_FAIL_COND_V(len < 4, Ref<Image>());
 	PoolVector<uint8_t>::Read r = p_data.read();
@@ -81,7 +77,6 @@ Ref<Image> ImageLoaderPNG::lossless_unpack_png(const PoolVector<uint8_t> &p_data
 }
 
 PoolVector<uint8_t> ImageLoaderPNG::lossless_pack_png(const Ref<Image> &p_image) {
-
 	PoolVector<uint8_t> out_buffer;
 
 	// add Godot's own "PNG " prefix
@@ -105,7 +100,6 @@ PoolVector<uint8_t> ImageLoaderPNG::lossless_pack_png(const Ref<Image> &p_image)
 }
 
 ImageLoaderPNG::ImageLoaderPNG() {
-
 	Image::_png_mem_loader_func = load_mem_png;
 	Image::lossless_unpacker = lossless_unpack_png;
 	Image::lossless_packer = lossless_pack_png;

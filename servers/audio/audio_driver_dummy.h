@@ -37,7 +37,6 @@
 #include "core/os/thread.h"
 
 class AudioDriverDummy : public AudioDriver {
-
 	Thread thread;
 	Mutex mutex;
 

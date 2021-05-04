@@ -37,7 +37,6 @@
 #include "servers/visual_server.h"
 
 class Environment : public Resource {
-
 	GDCLASS(Environment, Resource);
 
 public:

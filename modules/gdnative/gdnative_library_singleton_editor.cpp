@@ -35,7 +35,6 @@
 #include "editor/editor_node.h"
 
 Set<String> GDNativeLibrarySingletonEditor::_find_singletons_recursive(EditorFileSystemDirectory *p_dir) {
-
 	Set<String> file_paths;
 
 	// check children
@@ -67,7 +66,6 @@ Set<String> GDNativeLibrarySingletonEditor::_find_singletons_recursive(EditorFil
 }
 
 void GDNativeLibrarySingletonEditor::_discover_singletons() {
-
 	EditorFileSystemDirectory *dir = EditorFileSystem::get_singleton()->get_filesystem();
 
 	Set<String> file_paths = _find_singletons_recursive(dir);
@@ -97,7 +95,6 @@ void GDNativeLibrarySingletonEditor::_discover_singletons() {
 	}
 
 	if (changed) {
-
 		ProjectSettings::get_singleton()->set("gdnative/singletons", files);
 		_update_libraries(); // So singleton options (i.e. disabled) updates too
 		ProjectSettings::get_singleton()->save();
@@ -105,7 +102,6 @@ void GDNativeLibrarySingletonEditor::_discover_singletons() {
 }
 
 void GDNativeLibrarySingletonEditor::_update_libraries() {
-
 	updating = true;
 	libraries->clear();
 	libraries->create_item(); // root item
@@ -182,7 +178,6 @@ void GDNativeLibrarySingletonEditor::_item_edited() {
 }
 
 void GDNativeLibrarySingletonEditor::_notification(int p_what) {
-
 	if (p_what == NOTIFICATION_VISIBILITY_CHANGED) {
 		if (is_visible_in_tree()) {
 			_update_libraries();
@@ -191,7 +186,6 @@ void GDNativeLibrarySingletonEditor::_notification(int p_what) {
 }
 
 void GDNativeLibrarySingletonEditor::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("_item_edited"), &GDNativeLibrarySingletonEditor::_item_edited);
 	ClassDB::bind_method(D_METHOD("_discover_singletons"), &GDNativeLibrarySingletonEditor::_discover_singletons);
 	ClassDB::bind_method(D_METHOD("_update_libraries"), &GDNativeLibrarySingletonEditor::_update_libraries);

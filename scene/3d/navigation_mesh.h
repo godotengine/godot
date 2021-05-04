@@ -37,7 +37,6 @@
 class Mesh;
 
 class NavigationMesh : public Resource {
-
 	GDCLASS(NavigationMesh, Resource);
 
 	PoolVector<Vector3> vertices;
@@ -48,7 +47,6 @@ class NavigationMesh : public Resource {
 	Ref<ArrayMesh> debug_mesh;
 
 	struct _EdgeKey {
-
 		Vector3 from;
 		Vector3 to;
 
@@ -196,7 +194,6 @@ public:
 class Navigation;
 
 class NavigationMeshInstance : public Spatial {
-
 	GDCLASS(NavigationMeshInstance, Spatial);
 
 	bool enabled;

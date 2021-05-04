@@ -63,7 +63,6 @@ private:
 	// internal helpers
 
 	_FORCE_INLINE_ SafeNumeric<uint32_t> *_get_refcount() const {
-
 		if (!_ptr)
 			return NULL;
 
@@ -71,7 +70,6 @@ private:
 	}
 
 	_FORCE_INLINE_ uint32_t *_get_size() const {
-
 		if (!_ptr)
 			return NULL;
 
@@ -79,7 +77,6 @@ private:
 	}
 
 	_FORCE_INLINE_ T *_get_data() const {
-
 		if (!_ptr)
 			return NULL;
 		return reinterpret_cast<T *>(_ptr);
@@ -99,7 +96,8 @@ private:
 			return false;
 		}
 		*out = next_power_of_2(o);
-		if (_add_overflow(o, static_cast<size_t>(32), &p)) return false; //no longer allocated here
+		if (_add_overflow(o, static_cast<size_t>(32), &p))
+			return false; //no longer allocated here
 		return true;
 #else
 		// Speed is more important than correctness here, do the operations unchecked
@@ -138,21 +136,18 @@ public:
 	_FORCE_INLINE_ bool empty() const { return _ptr == 0; }
 
 	_FORCE_INLINE_ void set(int p_index, const T &p_elem) {
-
 		CRASH_BAD_INDEX(p_index, size());
 		_copy_on_write();
 		_get_data()[p_index] = p_elem;
 	}
 
 	_FORCE_INLINE_ T &get_m(int p_index) {
-
 		CRASH_BAD_INDEX(p_index, size());
 		_copy_on_write();
 		return _get_data()[p_index];
 	}
 
 	_FORCE_INLINE_ const T &get(int p_index) const {
-
 		CRASH_BAD_INDEX(p_index, size());
 
 		return _get_data()[p_index];
@@ -161,12 +156,10 @@ public:
 	Error resize(int p_size);
 
 	_FORCE_INLINE_ void remove(int p_index) {
-
 		ERR_FAIL_INDEX(p_index, size());
 		T *p = ptrw();
 		int len = size();
 		for (int i = p_index; i < len - 1; i++) {
-
 			p[i] = p[i + 1];
 		};
 
@@ -174,7 +167,6 @@ public:
 	};
 
 	Error insert(int p_pos, const T &p_val) {
-
 		ERR_FAIL_INDEX_V(p_pos, size() + 1, ERR_INVALID_PARAMETER);
 		resize(size() + 1);
 		for (int i = (size() - 1); i > p_pos; i--)
@@ -193,7 +185,6 @@ public:
 
 template <class T>
 void CowData<T>::_unref(void *p_data) {
-
 	if (!p_data)
 		return;
 
@@ -219,7 +210,6 @@ void CowData<T>::_unref(void *p_data) {
 
 template <class T>
 uint32_t CowData<T>::_copy_on_write() {
-
 	if (!_ptr)
 		return 0;
 
@@ -257,7 +247,6 @@ uint32_t CowData<T>::_copy_on_write() {
 
 template <class T>
 Error CowData<T>::resize(int p_size) {
-
 	ERR_FAIL_COND_V(p_size < 0, ERR_INVALID_PARAMETER);
 
 	int current_size = size();
@@ -280,7 +269,6 @@ Error CowData<T>::resize(int p_size) {
 	ERR_FAIL_COND_V(!_get_alloc_size_checked(p_size, &alloc_size), ERR_OUT_OF_MEMORY);
 
 	if (p_size > current_size) {
-
 		if (alloc_size != current_alloc_size) {
 			if (current_size == 0) {
 				// alloc from scratch
@@ -313,7 +301,6 @@ Error CowData<T>::resize(int p_size) {
 		*_get_size() = p_size;
 
 	} else if (p_size < current_size) {
-
 		if (!__has_trivial_destructor(T)) {
 			// deinitialize no longer needed elements
 			for (uint32_t i = p_size; i < *_get_size(); i++) {
@@ -361,7 +348,6 @@ void CowData<T>::_ref(const CowData *p_from) {
 
 template <class T>
 void CowData<T>::_ref(const CowData &p_from) {
-
 	if (_ptr == p_from._ptr)
 		return; // self assign, do nothing.
 
@@ -378,13 +364,11 @@ void CowData<T>::_ref(const CowData &p_from) {
 
 template <class T>
 CowData<T>::CowData() {
-
 	_ptr = NULL;
 }
 
 template <class T>
 CowData<T>::~CowData() {
-
 	_unref(_ptr);
 }
 

@@ -37,7 +37,6 @@ Error ImageLoaderBMP::convert_to_image(Ref<Image> p_image,
 		const uint8_t *p_color_buffer,
 		const uint32_t color_table_size,
 		const bmp_header_s &p_header) {
-
 	Error err = OK;
 
 	if (p_buffer == NULL)
@@ -206,7 +205,6 @@ Error ImageLoaderBMP::convert_to_image(Ref<Image> p_image,
 
 Error ImageLoaderBMP::load_image(Ref<Image> p_image, FileAccess *f,
 		bool p_force_linear, float p_scale) {
-
 	bmp_header_s bmp_header;
 	Error err = ERR_INVALID_DATA;
 

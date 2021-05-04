@@ -83,7 +83,6 @@ Error ImageLoaderTGA::decode_tga_rle(const uint8_t *p_compressed_buffer, size_t 
 }
 
 Error ImageLoaderTGA::convert_to_image(Ref<Image> p_image, const uint8_t *p_buffer, const tga_header_s &p_header, const uint8_t *p_palette, const bool p_is_monochrome, size_t p_output_size) {
-
 #define TGA_PUT_PIXEL(r, g, b, a)             \
 	int image_data_ofs = ((y * width) + x);   \
 	image_data_w[image_data_ofs * 4 + 0] = r; \
@@ -227,7 +226,6 @@ Error ImageLoaderTGA::convert_to_image(Ref<Image> p_image, const uint8_t *p_buff
 }
 
 Error ImageLoaderTGA::load_image(Ref<Image> p_image, FileAccess *f, bool p_force_linear, float p_scale) {
-
 	PoolVector<uint8_t> src_image;
 	int src_image_len = f->get_len();
 	ERR_FAIL_COND_V(src_image_len == 0, ERR_FILE_CORRUPT);
@@ -308,7 +306,6 @@ Error ImageLoaderTGA::load_image(Ref<Image> p_image, FileAccess *f, bool p_force
 		const uint8_t *buffer = NULL;
 
 		if (is_encoded) {
-
 			err = decode_tga_rle(src_image_r.ptr(), pixel_size, uncompressed_buffer_w.ptr(), buffer_size);
 
 			if (err == OK) {
@@ -331,7 +328,6 @@ Error ImageLoaderTGA::load_image(Ref<Image> p_image, FileAccess *f, bool p_force
 }
 
 void ImageLoaderTGA::get_recognized_extensions(List<String> *p_extensions) const {
-
 	p_extensions->push_back("tga");
 }
 

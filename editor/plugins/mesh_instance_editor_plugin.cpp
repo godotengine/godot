@@ -38,7 +38,6 @@
 #include "spatial_editor_plugin.h"
 
 void MeshInstanceEditor::_node_removed(Node *p_node) {
-
 	if (p_node == node) {
 		node = NULL;
 		options->hide();
@@ -46,12 +45,10 @@ void MeshInstanceEditor::_node_removed(Node *p_node) {
 }
 
 void MeshInstanceEditor::edit(MeshInstance *p_mesh) {
-
 	node = p_mesh;
 }
 
 void MeshInstanceEditor::_menu_option(int p_option) {
-
 	Ref<Mesh> mesh = node->get_mesh();
 	if (mesh.is_null()) {
 		err_dialog->set_text(TTR("Mesh is empty!"));
@@ -61,7 +58,6 @@ void MeshInstanceEditor::_menu_option(int p_option) {
 
 	switch (p_option) {
 		case MENU_OPTION_CREATE_STATIC_TRIMESH_BODY: {
-
 			EditorSelection *editor_selection = EditorNode::get_singleton()->get_editor_selection();
 			UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
 
@@ -95,7 +91,6 @@ void MeshInstanceEditor::_menu_option(int p_option) {
 			ur->create_action(TTR("Create Static Trimesh Body"));
 
 			for (List<Node *>::Element *E = selection.front(); E; E = E->next()) {
-
 				MeshInstance *instance = Object::cast_to<MeshInstance>(E->get());
 				if (!instance)
 					continue;
@@ -127,7 +122,6 @@ void MeshInstanceEditor::_menu_option(int p_option) {
 		} break;
 
 		case MENU_OPTION_CREATE_TRIMESH_COLLISION_SHAPE: {
-
 			if (node == get_tree()->get_edited_scene_root()) {
 				err_dialog->set_text(TTR("This doesn't work on scene root!"));
 				err_dialog->popup_centered_minsize();
@@ -156,7 +150,6 @@ void MeshInstanceEditor::_menu_option(int p_option) {
 			ur->commit_action();
 		} break;
 		case MENU_OPTION_CREATE_SINGLE_CONVEX_COLLISION_SHAPE: {
-
 			if (node == get_tree()->get_edited_scene_root()) {
 				err_dialog->set_text(TTR("Can't create a single convex collision shape for the scene root."));
 				err_dialog->popup_centered_minsize();
@@ -190,14 +183,13 @@ void MeshInstanceEditor::_menu_option(int p_option) {
 
 		} break;
 		case MENU_OPTION_CREATE_MULTIPLE_CONVEX_COLLISION_SHAPES: {
-
 			if (node == get_tree()->get_edited_scene_root()) {
 				err_dialog->set_text(TTR("Can't create multiple convex collision shapes for the scene root."));
 				err_dialog->popup_centered_minsize();
 				return;
 			}
 
-			Vector<Ref<Shape> > shapes = mesh->convex_decompose();
+			Vector<Ref<Shape>> shapes = mesh->convex_decompose();
 
 			if (!shapes.size()) {
 				err_dialog->set_text(TTR("Couldn't create any collision shapes."));
@@ -209,7 +201,6 @@ void MeshInstanceEditor::_menu_option(int p_option) {
 			ur->create_action(TTR("Create Multiple Convex Shapes"));
 
 			for (int i = 0; i < shapes.size(); i++) {
-
 				CollisionShape *cshape = memnew(CollisionShape);
 				cshape->set_shape(shapes[i]);
 				cshape->set_transform(node->get_transform());
@@ -227,7 +218,6 @@ void MeshInstanceEditor::_menu_option(int p_option) {
 		} break;
 
 		case MENU_OPTION_CREATE_NAVMESH: {
-
 			Ref<NavigationMesh> nmesh = memnew(NavigationMesh);
 
 			if (nmesh.is_null())
@@ -251,11 +241,9 @@ void MeshInstanceEditor::_menu_option(int p_option) {
 		} break;
 
 		case MENU_OPTION_CREATE_OUTLINE_MESH: {
-
 			outline_dialog->popup_centered(Vector2(200, 90));
 		} break;
 		case MENU_OPTION_CREATE_UV2: {
-
 			Ref<ArrayMesh> mesh2 = node->get_mesh();
 			if (!mesh2.is_valid()) {
 				err_dialog->set_text(TTR("Contained Mesh is not of type ArrayMesh."));
@@ -293,7 +281,6 @@ void MeshInstanceEditor::_menu_option(int p_option) {
 }
 
 struct MeshInstanceEditorEdgeSort {
-
 	Vector2 a;
 	Vector2 b;
 
@@ -317,7 +304,6 @@ struct MeshInstanceEditorEdgeSort {
 };
 
 void MeshInstanceEditor::_create_uv_lines(int p_layer) {
-
 	Ref<Mesh> mesh = node->get_mesh();
 	ERR_FAIL_COND(!mesh.is_valid());
 
@@ -353,9 +339,7 @@ void MeshInstanceEditor::_create_uv_lines(int p_layer) {
 		}
 
 		for (int j = 0; j < ic; j += 3) {
-
 			for (int k = 0; k < 3; k++) {
-
 				MeshInstanceEditorEdgeSort edge;
 				if (use_indices) {
 					edge.a = r[ri[j + k]];
@@ -379,7 +363,6 @@ void MeshInstanceEditor::_create_uv_lines(int p_layer) {
 }
 
 void MeshInstanceEditor::_debug_uv_draw() {
-
 	if (uv_lines.size() == 0)
 		return;
 
@@ -390,7 +373,6 @@ void MeshInstanceEditor::_debug_uv_draw() {
 }
 
 void MeshInstanceEditor::_create_outline_mesh() {
-
 	Ref<Mesh> mesh = node->get_mesh();
 	if (mesh.is_null()) {
 		err_dialog->set_text(TTR("MeshInstance lacks a Mesh!"));
@@ -436,14 +418,12 @@ void MeshInstanceEditor::_create_outline_mesh() {
 }
 
 void MeshInstanceEditor::_bind_methods() {
-
 	ClassDB::bind_method("_menu_option", &MeshInstanceEditor::_menu_option);
 	ClassDB::bind_method("_create_outline_mesh", &MeshInstanceEditor::_create_outline_mesh);
 	ClassDB::bind_method("_debug_uv_draw", &MeshInstanceEditor::_debug_uv_draw);
 }
 
 MeshInstanceEditor::MeshInstanceEditor() {
-
 	options = memnew(MenuButton);
 	options->set_switch_on_hover(true);
 	SpatialEditor::get_singleton()->add_control_to_menu_panel(options);
@@ -503,28 +483,23 @@ MeshInstanceEditor::MeshInstanceEditor() {
 }
 
 void MeshInstanceEditorPlugin::edit(Object *p_object) {
-
 	mesh_editor->edit(Object::cast_to<MeshInstance>(p_object));
 }
 
 bool MeshInstanceEditorPlugin::handles(Object *p_object) const {
-
 	return p_object->is_class("MeshInstance");
 }
 
 void MeshInstanceEditorPlugin::make_visible(bool p_visible) {
-
 	if (p_visible) {
 		mesh_editor->options->show();
 	} else {
-
 		mesh_editor->options->hide();
 		mesh_editor->edit(NULL);
 	}
 }
 
 MeshInstanceEditorPlugin::MeshInstanceEditorPlugin(EditorNode *p_node) {
-
 	editor = p_node;
 	mesh_editor = memnew(MeshInstanceEditor);
 	editor->get_viewport()->add_child(mesh_editor);

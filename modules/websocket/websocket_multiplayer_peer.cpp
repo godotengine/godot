@@ -33,7 +33,6 @@
 #include "core/os/os.h"
 
 WebSocketMultiplayerPeer::WebSocketMultiplayerPeer() {
-
 	_is_multiplayer = false;
 	_peer_id = 0;
 	_target_peer = 0;
@@ -46,16 +45,13 @@ WebSocketMultiplayerPeer::WebSocketMultiplayerPeer() {
 }
 
 WebSocketMultiplayerPeer::~WebSocketMultiplayerPeer() {
-
 	_clear();
 }
 
 int WebSocketMultiplayerPeer::_gen_unique_id() const {
-
 	uint32_t hash = 0;
 
 	while (hash == 0 || hash == 1) {
-
 		hash = hash_djb2_one_32(
 				(uint32_t)OS::get_singleton()->get_ticks_usec());
 		hash = hash_djb2_one_32(
@@ -72,7 +68,6 @@ int WebSocketMultiplayerPeer::_gen_unique_id() const {
 	return hash;
 }
 void WebSocketMultiplayerPeer::_clear() {
-
 	_peer_map.clear();
 	if (_current_packet.data != NULL)
 		memfree(_current_packet.data);
@@ -86,7 +81,6 @@ void WebSocketMultiplayerPeer::_clear() {
 }
 
 void WebSocketMultiplayerPeer::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("set_buffers", "input_buffer_size_kb", "input_max_packets", "output_buffer_size_kb", "output_max_packets"), &WebSocketMultiplayerPeer::set_buffers);
 	ClassDB::bind_method(D_METHOD("get_peer", "peer_id"), &WebSocketMultiplayerPeer::get_peer);
 
@@ -97,14 +91,12 @@ void WebSocketMultiplayerPeer::_bind_methods() {
 // PacketPeer
 //
 int WebSocketMultiplayerPeer::get_available_packet_count() const {
-
 	ERR_FAIL_COND_V_MSG(!_is_multiplayer, 0, "Please use get_peer(ID).get_available_packet_count to get available packet count from peers when not using the MultiplayerAPI.");
 
 	return _incoming_packets.size();
 }
 
 Error WebSocketMultiplayerPeer::get_packet(const uint8_t **r_buffer, int &r_buffer_size) {
-
 	ERR_FAIL_COND_V_MSG(!_is_multiplayer, ERR_UNCONFIGURED, "Please use get_peer(ID).get_packet/var to communicate with peers when not using the MultiplayerAPI.");
 
 	r_buffer_size = 0;
@@ -126,7 +118,6 @@ Error WebSocketMultiplayerPeer::get_packet(const uint8_t **r_buffer, int &r_buff
 }
 
 Error WebSocketMultiplayerPeer::put_packet(const uint8_t *p_buffer, int p_buffer_size) {
-
 	ERR_FAIL_COND_V_MSG(!_is_multiplayer, ERR_UNCONFIGURED, "Please use get_peer(ID).put_packet/var to communicate with peers when not using the MultiplayerAPI.");
 
 	PoolVector<uint8_t> buffer = _make_pkt(SYS_NONE, get_unique_id(), _target_peer, p_buffer, p_buffer_size);
@@ -142,23 +133,19 @@ Error WebSocketMultiplayerPeer::put_packet(const uint8_t *p_buffer, int p_buffer
 // NetworkedMultiplayerPeer
 //
 void WebSocketMultiplayerPeer::set_transfer_mode(TransferMode p_mode) {
-
 	// Websocket uses TCP, reliable
 }
 
 NetworkedMultiplayerPeer::TransferMode WebSocketMultiplayerPeer::get_transfer_mode() const {
-
 	// Websocket uses TCP, reliable
 	return TRANSFER_MODE_RELIABLE;
 }
 
 void WebSocketMultiplayerPeer::set_target_peer(int p_target_peer) {
-
 	_target_peer = p_target_peer;
 }
 
 int WebSocketMultiplayerPeer::get_packet_peer() const {
-
 	ERR_FAIL_COND_V_MSG(!_is_multiplayer, 1, "This function is not available when not using the MultiplayerAPI.");
 	ERR_FAIL_COND_V(_incoming_packets.size() == 0, 1);
 
@@ -166,22 +153,18 @@ int WebSocketMultiplayerPeer::get_packet_peer() const {
 }
 
 int WebSocketMultiplayerPeer::get_unique_id() const {
-
 	return _peer_id;
 }
 
 void WebSocketMultiplayerPeer::set_refuse_new_connections(bool p_enable) {
-
 	_refusing = p_enable;
 }
 
 bool WebSocketMultiplayerPeer::is_refusing_new_connections() const {
-
 	return _refusing;
 }
 
 void WebSocketMultiplayerPeer::_send_sys(Ref<WebSocketPeer> p_peer, uint8_t p_type, int32_t p_peer_id) {
-
 	ERR_FAIL_COND(!p_peer.is_valid());
 	ERR_FAIL_COND(!p_peer->is_connected_to_host());
 
@@ -190,7 +173,6 @@ void WebSocketMultiplayerPeer::_send_sys(Ref<WebSocketPeer> p_peer, uint8_t p_ty
 }
 
 PoolVector<uint8_t> WebSocketMultiplayerPeer::_make_pkt(uint8_t p_type, int32_t p_from, int32_t p_to, const uint8_t *p_data, uint32_t p_data_size) {
-
 	PoolVector<uint8_t> out;
 	out.resize(PROTO_SIZE + p_data_size);
 
@@ -204,14 +186,13 @@ PoolVector<uint8_t> WebSocketMultiplayerPeer::_make_pkt(uint8_t p_type, int32_t 
 }
 
 void WebSocketMultiplayerPeer::_send_add(int32_t p_peer_id) {
-
 	// First of all, confirm the ID!
 	_send_sys(get_peer(p_peer_id), SYS_ID, p_peer_id);
 
 	// Then send the server peer (which will trigger connection_succeded in client)
 	_send_sys(get_peer(p_peer_id), SYS_ADD, 1);
 
-	for (Map<int, Ref<WebSocketPeer> >::Element *E = _peer_map.front(); E; E = E->next()) {
+	for (Map<int, Ref<WebSocketPeer>>::Element *E = _peer_map.front(); E; E = E->next()) {
 		int32_t id = E->key();
 		if (p_peer_id == id)
 			continue; // Skip the newwly added peer (already confirmed)
@@ -224,7 +205,7 @@ void WebSocketMultiplayerPeer::_send_add(int32_t p_peer_id) {
 }
 
 void WebSocketMultiplayerPeer::_send_del(int32_t p_peer_id) {
-	for (Map<int, Ref<WebSocketPeer> >::Element *E = _peer_map.front(); E; E = E->next()) {
+	for (Map<int, Ref<WebSocketPeer>>::Element *E = _peer_map.front(); E; E = E->next()) {
 		int32_t id = E->key();
 		if (p_peer_id != id)
 			_send_sys(get_peer(id), SYS_DEL, p_peer_id);
@@ -244,27 +225,23 @@ void WebSocketMultiplayerPeer::_store_pkt(int32_t p_source, int32_t p_dest, cons
 
 Error WebSocketMultiplayerPeer::_server_relay(int32_t p_from, int32_t p_to, const uint8_t *p_buffer, uint32_t p_buffer_size) {
 	if (p_to == 1) {
-
 		return OK; // Will not send to self
 
 	} else if (p_to == 0) {
-
-		for (Map<int, Ref<WebSocketPeer> >::Element *E = _peer_map.front(); E; E = E->next()) {
+		for (Map<int, Ref<WebSocketPeer>>::Element *E = _peer_map.front(); E; E = E->next()) {
 			if (E->key() != p_from)
 				E->get()->put_packet(p_buffer, p_buffer_size);
 		}
 		return OK; // Sent to all but sender
 
 	} else if (p_to < 0) {
-
-		for (Map<int, Ref<WebSocketPeer> >::Element *E = _peer_map.front(); E; E = E->next()) {
+		for (Map<int, Ref<WebSocketPeer>>::Element *E = _peer_map.front(); E; E = E->next()) {
 			if (E->key() != p_from && E->key() != -p_to)
 				E->get()->put_packet(p_buffer, p_buffer_size);
 		}
 		return OK; // Sent to all but sender and excluded
 
 	} else {
-
 		ERR_FAIL_COND_V(p_to == p_from, FAILED);
 
 		Ref<WebSocketPeer> peer_to = get_peer(p_to);
@@ -275,7 +252,6 @@ Error WebSocketMultiplayerPeer::_server_relay(int32_t p_from, int32_t p_to, cons
 }
 
 void WebSocketMultiplayerPeer::_process_multiplayer(Ref<WebSocketPeer> p_peer, uint32_t p_peer_id) {
-
 	ERR_FAIL_COND(!p_peer.is_valid());
 
 	const uint8_t *in_buffer;
@@ -306,12 +282,10 @@ void WebSocketMultiplayerPeer::_process_multiplayer(Ref<WebSocketPeer> p_peer, u
 			_store_pkt(from, to, in_buffer, data_size);
 
 		} else if (to == 0) {
-
 			// Broadcast, for us too
 			_store_pkt(from, to, in_buffer, data_size);
 
 		} else if (to < 0) {
-
 			// All but one, for us if not excluded
 			if (_peer_id != -(int32_t)p_peer_id)
 				_store_pkt(from, to, in_buffer, data_size);
@@ -320,7 +294,6 @@ void WebSocketMultiplayerPeer::_process_multiplayer(Ref<WebSocketPeer> p_peer, u
 		_server_relay(from, to, in_buffer, size);
 
 	} else {
-
 		if (type == SYS_NONE) { // Payload message
 
 			_store_pkt(from, to, in_buffer, data_size);
@@ -333,7 +306,6 @@ void WebSocketMultiplayerPeer::_process_multiplayer(Ref<WebSocketPeer> p_peer, u
 		memcpy(&id, &in_buffer[PROTO_SIZE], 4);
 
 		switch (type) {
-
 			case SYS_ADD: // Add peer
 				_peer_map[id] = Ref<WebSocketPeer>();
 				emit_signal("peer_connected", id);

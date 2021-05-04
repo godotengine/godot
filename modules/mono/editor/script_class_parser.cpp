@@ -54,13 +54,11 @@ const char *ScriptClassParser::token_names[ScriptClassParser::TK_MAX] = {
 };
 
 String ScriptClassParser::get_token_name(ScriptClassParser::Token p_token) {
-
 	ERR_FAIL_INDEX_V(p_token, TK_MAX, "<error>");
 	return token_names[p_token];
 }
 
 ScriptClassParser::Token ScriptClassParser::get_token() {
-
 	while (true) {
 		switch (code[idx]) {
 			case '\n': {
@@ -181,14 +179,24 @@ ScriptClassParser::Token ScriptClassParser::get_token() {
 						CharType res = 0;
 
 						switch (next) {
-							case 'b': res = 8; break;
-							case 't': res = 9; break;
-							case 'n': res = 10; break;
-							case 'f': res = 12; break;
+							case 'b':
+								res = 8;
+								break;
+							case 't':
+								res = 9;
+								break;
+							case 'n':
+								res = 10;
+								break;
+							case 'f':
+								res = 12;
+								break;
 							case 'r':
 								res = 13;
 								break;
-							case '\"': res = '\"'; break;
+							case '\"':
+								res = '\"';
+								break;
 							case '\\':
 								res = '\\';
 								break;
@@ -258,7 +266,6 @@ ScriptClassParser::Token ScriptClassParser::get_token() {
 }
 
 Error ScriptClassParser::_skip_generic_type_params() {
-
 	Token tk;
 
 	while (true) {
@@ -327,7 +334,6 @@ Error ScriptClassParser::_skip_generic_type_params() {
 }
 
 Error ScriptClassParser::_parse_type_full_name(String &r_full_name) {
-
 	Token tk = get_token();
 
 	if (tk != TK_IDENTIFIER) {
@@ -360,7 +366,6 @@ Error ScriptClassParser::_parse_type_full_name(String &r_full_name) {
 }
 
 Error ScriptClassParser::_parse_class_base(Vector<String> &r_base) {
-
 	String name;
 
 	Error err = _parse_type_full_name(name);
@@ -460,7 +465,6 @@ Error ScriptClassParser::_parse_type_constraints() {
 }
 
 Error ScriptClassParser::_parse_namespace_name(String &r_name, int &r_curly_stack) {
-
 	Token tk = get_token();
 
 	if (tk == TK_IDENTIFIER) {
@@ -487,7 +491,6 @@ Error ScriptClassParser::_parse_namespace_name(String &r_name, int &r_curly_stac
 }
 
 Error ScriptClassParser::parse(const String &p_code) {
-
 	code = p_code;
 	idx = 0;
 	line = 0;
@@ -643,7 +646,6 @@ static String get_preprocessor_directive(const String &p_line, int p_from) {
 }
 
 static void run_dummy_preprocessor(String &r_source, const String &p_filepath) {
-
 	Vector<String> lines = r_source.split("\n", /* p_allow_empty: */ true);
 
 	bool *include_lines = memnew_arr(bool, lines.size());
@@ -710,7 +712,6 @@ static void run_dummy_preprocessor(String &r_source, const String &p_filepath) {
 }
 
 Error ScriptClassParser::parse_file(const String &p_filepath) {
-
 	String source;
 
 	Error ferr = read_all_file_utf8(p_filepath, source);

@@ -35,7 +35,6 @@
 #include "core/reference.h"
 
 class NetSocket : public Reference {
-
 protected:
 	static NetSocket *(*_create)();
 

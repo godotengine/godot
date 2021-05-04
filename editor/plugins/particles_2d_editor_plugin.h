@@ -39,7 +39,6 @@
 #include "scene/gui/file_dialog.h"
 
 class Particles2DEditorPlugin : public EditorPlugin {
-
 	GDCLASS(Particles2DEditorPlugin, EditorPlugin);
 
 	enum {

@@ -67,12 +67,18 @@ OS::ScreenOrientation _get_screen_orientation() {
 
 int _get_android_orientation_value(OS::ScreenOrientation screen_orientation) {
 	switch (screen_orientation) {
-		case OS::SCREEN_PORTRAIT: return 1;
-		case OS::SCREEN_REVERSE_LANDSCAPE: return 8;
-		case OS::SCREEN_REVERSE_PORTRAIT: return 9;
-		case OS::SCREEN_SENSOR_LANDSCAPE: return 11;
-		case OS::SCREEN_SENSOR_PORTRAIT: return 12;
-		case OS::SCREEN_SENSOR: return 13;
+		case OS::SCREEN_PORTRAIT:
+			return 1;
+		case OS::SCREEN_REVERSE_LANDSCAPE:
+			return 8;
+		case OS::SCREEN_REVERSE_PORTRAIT:
+			return 9;
+		case OS::SCREEN_SENSOR_LANDSCAPE:
+			return 11;
+		case OS::SCREEN_SENSOR_PORTRAIT:
+			return 12;
+		case OS::SCREEN_SENSOR:
+			return 13;
 		case OS::SCREEN_LANDSCAPE:
 		default:
 			return 0;
@@ -81,12 +87,18 @@ int _get_android_orientation_value(OS::ScreenOrientation screen_orientation) {
 
 String _get_android_orientation_label(OS::ScreenOrientation screen_orientation) {
 	switch (screen_orientation) {
-		case OS::SCREEN_PORTRAIT: return "portrait";
-		case OS::SCREEN_REVERSE_LANDSCAPE: return "reverseLandscape";
-		case OS::SCREEN_REVERSE_PORTRAIT: return "reversePortrait";
-		case OS::SCREEN_SENSOR_LANDSCAPE: return "userLandscape";
-		case OS::SCREEN_SENSOR_PORTRAIT: return "userPortrait";
-		case OS::SCREEN_SENSOR: return "fullUser";
+		case OS::SCREEN_PORTRAIT:
+			return "portrait";
+		case OS::SCREEN_REVERSE_LANDSCAPE:
+			return "reverseLandscape";
+		case OS::SCREEN_REVERSE_PORTRAIT:
+			return "reversePortrait";
+		case OS::SCREEN_SENSOR_LANDSCAPE:
+			return "userLandscape";
+		case OS::SCREEN_SENSOR_PORTRAIT:
+			return "userPortrait";
+		case OS::SCREEN_SENSOR:
+			return "fullUser";
 		case OS::SCREEN_LANDSCAPE:
 		default:
 			return "landscape";

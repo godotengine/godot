@@ -33,7 +33,6 @@
 #define USE_ENTRY_POINT
 
 void Navigation2D::_navpoly_link(int p_id) {
-
 	ERR_FAIL_COND(!navpoly_map.has(p_id));
 	NavMesh &nm = navpoly_map[p_id];
 	ERR_FAIL_COND(nm.linked);
@@ -46,7 +45,6 @@ void Navigation2D::_navpoly_link(int p_id) {
 	PoolVector<Vector2>::Read r = vertices.read();
 
 	for (int i = 0; i < nm.navpoly->get_polygon_count(); i++) {
-
 		//build
 
 		List<Polygon>::Element *P = nm.polygons.push_back(Polygon());
@@ -63,7 +61,6 @@ void Navigation2D::_navpoly_link(int p_id) {
 		float sum = 0;
 
 		for (int j = 0; j < plen; j++) {
-
 			int idx = indices[j];
 			if (idx < 0 || idx >= len) {
 				valid = false;
@@ -99,13 +96,11 @@ void Navigation2D::_navpoly_link(int p_id) {
 		//connect
 
 		for (int j = 0; j < plen; j++) {
-
 			int next = (j + 1) % plen;
 			EdgeKey ek(p.edges[j].point, p.edges[next].point);
 
 			Map<EdgeKey, Connection>::Element *C = connections.find(ek);
 			if (!C) {
-
 				Connection c;
 				c.A = &p;
 				c.A_edge = j;
@@ -113,7 +108,6 @@ void Navigation2D::_navpoly_link(int p_id) {
 				c.B_edge = -1;
 				connections[ek] = c;
 			} else {
-
 				if (C->get().B != NULL) {
 					ConnectionPending pending;
 					pending.polygon = &p;
@@ -137,13 +131,11 @@ void Navigation2D::_navpoly_link(int p_id) {
 }
 
 void Navigation2D::_navpoly_unlink(int p_id) {
-
 	ERR_FAIL_COND(!navpoly_map.has(p_id));
 	NavMesh &nm = navpoly_map[p_id];
 	ERR_FAIL_COND(!nm.linked);
 
 	for (List<Polygon>::Element *E = nm.polygons.front(); E; E = E->next()) {
-
 		Polygon &p = E->get();
 
 		int ec = p.edges.size();
@@ -169,7 +161,6 @@ void Navigation2D::_navpoly_unlink(int p_id) {
 				C->get().A->edges.write[C->get().A_edge].C_edge = -1;
 
 				if (C->get().A == &E->get()) {
-
 					C->get().A = C->get().B;
 					C->get().A_edge = C->get().B_edge;
 				}
@@ -203,7 +194,6 @@ void Navigation2D::_navpoly_unlink(int p_id) {
 }
 
 int Navigation2D::navpoly_add(const Ref<NavigationPolygon> &p_mesh, const Transform2D &p_xform, Object *p_owner) {
-
 	ERR_FAIL_COND_V(p_mesh.is_null(), -1);
 
 	int id = last_id++;
@@ -220,7 +210,6 @@ int Navigation2D::navpoly_add(const Ref<NavigationPolygon> &p_mesh, const Transf
 }
 
 void Navigation2D::navpoly_set_transform(int p_id, const Transform2D &p_xform) {
-
 	ERR_FAIL_COND(!navpoly_map.has(p_id));
 	NavMesh &nm = navpoly_map[p_id];
 	if (nm.xform == p_xform)
@@ -230,14 +219,12 @@ void Navigation2D::navpoly_set_transform(int p_id, const Transform2D &p_xform) {
 	_navpoly_link(p_id);
 }
 void Navigation2D::navpoly_remove(int p_id) {
-
 	ERR_FAIL_COND(!navpoly_map.has(p_id));
 	_navpoly_unlink(p_id);
 	navpoly_map.erase(p_id);
 }
 
 Vector<Vector2> Navigation2D::get_simple_path(const Vector2 &p_start, const Vector2 &p_end, bool p_optimize) {
-
 	Polygon *begin_poly = NULL;
 	Polygon *end_poly = NULL;
 	Vector2 begin_point;
@@ -248,19 +235,14 @@ Vector<Vector2> Navigation2D::get_simple_path(const Vector2 &p_start, const Vect
 	//look for point inside triangle
 
 	for (Map<int, NavMesh>::Element *E = navpoly_map.front(); E; E = E->next()) {
-
 		if (!E->get().linked)
 			continue;
 		for (List<Polygon>::Element *F = E->get().polygons.front(); F; F = F->next()) {
-
 			Polygon &p = F->get();
 			if (begin_d || end_d) {
 				for (int i = 2; i < p.edges.size(); i++) {
-
 					if (begin_d > 0) {
-
 						if (Geometry::is_point_in_triangle(p_start, _get_vertex(p.edges[0].point), _get_vertex(p.edges[i - 1].point), _get_vertex(p.edges[i].point))) {
-
 							begin_poly = &p;
 							begin_point = p_start;
 							begin_d = 0;
@@ -270,9 +252,7 @@ Vector<Vector2> Navigation2D::get_simple_path(const Vector2 &p_start, const Vect
 					}
 
 					if (end_d > 0) {
-
 						if (Geometry::is_point_in_triangle(p_end, _get_vertex(p.edges[0].point), _get_vertex(p.edges[i - 1].point), _get_vertex(p.edges[i].point))) {
-
 							end_poly = &p;
 							end_point = p_end;
 							end_d = 0;
@@ -290,15 +270,12 @@ Vector<Vector2> Navigation2D::get_simple_path(const Vector2 &p_start, const Vect
 	//start or end not inside triangle.. look for closest segment :|
 	if (begin_d || end_d) {
 		for (Map<int, NavMesh>::Element *E = navpoly_map.front(); E; E = E->next()) {
-
 			if (!E->get().linked)
 				continue;
 			for (List<Polygon>::Element *F = E->get().polygons.front(); F; F = F->next()) {
-
 				Polygon &p = F->get();
 				int es = p.edges.size();
 				for (int i = 0; i < es; i++) {
-
 					Vector2 edge[2] = {
 						_get_vertex(p.edges[i].point),
 						_get_vertex(p.edges[(i + 1) % es].point)
@@ -329,12 +306,10 @@ Vector<Vector2> Navigation2D::get_simple_path(const Vector2 &p_start, const Vect
 	}
 
 	if (!begin_poly || !end_poly) {
-
 		return Vector<Vector2>(); //no path
 	}
 
 	if (begin_poly == end_poly) {
-
 		Vector<Vector2> path;
 		path.resize(2);
 		path.write[0] = begin_point;
@@ -349,9 +324,7 @@ Vector<Vector2> Navigation2D::get_simple_path(const Vector2 &p_start, const Vect
 	begin_poly->entry = p_start;
 
 	for (int i = 0; i < begin_poly->edges.size(); i++) {
-
 		if (begin_poly->edges[i].C) {
-
 			begin_poly->edges[i].C->prev_edge = begin_poly->edges[i].C_edge;
 #ifdef USE_ENTRY_POINT
 			Vector2 edge[2] = {
@@ -374,7 +347,6 @@ Vector<Vector2> Navigation2D::get_simple_path(const Vector2 &p_start, const Vect
 	}
 
 	while (!found_route) {
-
 		if (open_list.size() == 0) {
 			break;
 		}
@@ -385,7 +357,6 @@ Vector<Vector2> Navigation2D::get_simple_path(const Vector2 &p_start, const Vect
 
 		//this could be faster (cache previous results)
 		for (List<Polygon *>::Element *E = open_list.front(); E; E = E->next()) {
-
 			Polygon *p = E->get();
 
 			float cost = p->distance;
@@ -427,7 +398,6 @@ Vector<Vector2> Navigation2D::get_simple_path(const Vector2 &p_start, const Vect
 		int es = p->edges.size();
 
 		for (int i = 0; i < es; i++) {
-
 			Polygon::Edge &e = p->edges.write[i];
 
 			if (!e.C)
@@ -452,7 +422,6 @@ Vector<Vector2> Navigation2D::get_simple_path(const Vector2 &p_start, const Vect
 				//oh this was visited already, can we win the cost?
 
 				if (e.C->distance > distance) {
-
 					e.C->prev_edge = e.C_edge;
 					e.C->distance = distance;
 #ifdef USE_ENTRY_POINT
@@ -485,7 +454,6 @@ Vector<Vector2> Navigation2D::get_simple_path(const Vector2 &p_start, const Vect
 	}
 
 	if (found_route) {
-
 		Vector<Vector2> path;
 
 		if (p_optimize) {
@@ -499,7 +467,6 @@ Vector<Vector2> Navigation2D::get_simple_path(const Vector2 &p_start, const Vect
 			Polygon *p = end_poly;
 
 			while (p) {
-
 				Vector2 left;
 				Vector2 right;
 
@@ -547,7 +514,6 @@ Vector<Vector2> Navigation2D::get_simple_path(const Vector2 &p_start, const Vect
 						left_poly = p;
 						portal_left = left;
 					} else {
-
 						apex_point = portal_right;
 						p = right_poly;
 						left_poly = p;
@@ -565,7 +531,6 @@ Vector<Vector2> Navigation2D::get_simple_path(const Vector2 &p_start, const Vect
 						right_poly = p;
 						portal_right = right;
 					} else {
-
 						apex_point = portal_left;
 						p = left_poly;
 						right_poly = p;
@@ -618,21 +583,16 @@ Vector<Vector2> Navigation2D::get_simple_path(const Vector2 &p_start, const Vect
 }
 
 Vector2 Navigation2D::get_closest_point(const Vector2 &p_point) {
-
 	Vector2 closest_point = Vector2();
 	float closest_point_d = 1e20;
 
 	for (Map<int, NavMesh>::Element *E = navpoly_map.front(); E; E = E->next()) {
-
 		if (!E->get().linked)
 			continue;
 		for (List<Polygon>::Element *F = E->get().polygons.front(); F; F = F->next()) {
-
 			Polygon &p = F->get();
 			for (int i = 2; i < p.edges.size(); i++) {
-
 				if (Geometry::is_point_in_triangle(p_point, _get_vertex(p.edges[0].point), _get_vertex(p.edges[i - 1].point), _get_vertex(p.edges[i].point))) {
-
 					return p_point; //inside triangle, nothing else to discuss
 				}
 			}
@@ -640,15 +600,12 @@ Vector2 Navigation2D::get_closest_point(const Vector2 &p_point) {
 	}
 
 	for (Map<int, NavMesh>::Element *E = navpoly_map.front(); E; E = E->next()) {
-
 		if (!E->get().linked)
 			continue;
 		for (List<Polygon>::Element *F = E->get().polygons.front(); F; F = F->next()) {
-
 			Polygon &p = F->get();
 			int es = p.edges.size();
 			for (int i = 0; i < es; i++) {
-
 				Vector2 edge[2] = {
 					_get_vertex(p.edges[i].point),
 					_get_vertex(p.edges[(i + 1) % es].point)
@@ -657,7 +614,6 @@ Vector2 Navigation2D::get_closest_point(const Vector2 &p_point) {
 				Vector2 spoint = Geometry::get_closest_point_to_segment_2d(p_point, edge);
 				float d = spoint.distance_squared_to(p_point);
 				if (d < closest_point_d) {
-
 					closest_point = spoint;
 					closest_point_d = d;
 				}
@@ -669,22 +625,17 @@ Vector2 Navigation2D::get_closest_point(const Vector2 &p_point) {
 }
 
 Object *Navigation2D::get_closest_point_owner(const Vector2 &p_point) {
-
 	Object *owner = NULL;
 	Vector2 closest_point = Vector2();
 	float closest_point_d = 1e20;
 
 	for (Map<int, NavMesh>::Element *E = navpoly_map.front(); E; E = E->next()) {
-
 		if (!E->get().linked)
 			continue;
 		for (List<Polygon>::Element *F = E->get().polygons.front(); F; F = F->next()) {
-
 			Polygon &p = F->get();
 			for (int i = 2; i < p.edges.size(); i++) {
-
 				if (Geometry::is_point_in_triangle(p_point, _get_vertex(p.edges[0].point), _get_vertex(p.edges[i - 1].point), _get_vertex(p.edges[i].point))) {
-
 					return E->get().owner;
 				}
 			}
@@ -692,15 +643,12 @@ Object *Navigation2D::get_closest_point_owner(const Vector2 &p_point) {
 	}
 
 	for (Map<int, NavMesh>::Element *E = navpoly_map.front(); E; E = E->next()) {
-
 		if (!E->get().linked)
 			continue;
 		for (List<Polygon>::Element *F = E->get().polygons.front(); F; F = F->next()) {
-
 			Polygon &p = F->get();
 			int es = p.edges.size();
 			for (int i = 0; i < es; i++) {
-
 				Vector2 edge[2] = {
 					_get_vertex(p.edges[i].point),
 					_get_vertex(p.edges[(i + 1) % es].point)
@@ -709,7 +657,6 @@ Object *Navigation2D::get_closest_point_owner(const Vector2 &p_point) {
 				Vector2 spoint = Geometry::get_closest_point_to_segment_2d(p_point, edge);
 				float d = spoint.distance_squared_to(p_point);
 				if (d < closest_point_d) {
-
 					closest_point = spoint;
 					closest_point_d = d;
 					owner = E->get().owner;
@@ -722,7 +669,6 @@ Object *Navigation2D::get_closest_point_owner(const Vector2 &p_point) {
 }
 
 void Navigation2D::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("navpoly_add", "mesh", "xform", "owner"), &Navigation2D::navpoly_add, DEFVAL(Variant()));
 	ClassDB::bind_method(D_METHOD("navpoly_set_transform", "id", "xform"), &Navigation2D::navpoly_set_transform);
 	ClassDB::bind_method(D_METHOD("navpoly_remove", "id"), &Navigation2D::navpoly_remove);
@@ -733,7 +679,6 @@ void Navigation2D::_bind_methods() {
 }
 
 Navigation2D::Navigation2D() {
-
 	ERR_FAIL_COND(sizeof(Point) != 8);
 	cell_size = 1; // one pixel
 	last_id = 1;

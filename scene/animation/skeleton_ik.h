@@ -41,14 +41,12 @@
 #include "scene/3d/skeleton.h"
 
 class FabrikInverseKinematic {
-
 	struct EndEffector {
 		BoneId tip_bone;
 		Transform goal_transform;
 	};
 
 	struct ChainItem {
-
 		Vector<ChainItem> children;
 		ChainItem *parent_item;
 

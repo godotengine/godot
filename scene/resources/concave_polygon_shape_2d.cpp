@@ -34,7 +34,6 @@
 #include "servers/visual_server.h"
 
 bool ConcavePolygonShape2D::_edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const {
-
 	PoolVector<Vector2> s = get_segments();
 	int len = s.size();
 	if (len == 0 || (len % 2) == 1)
@@ -51,18 +50,15 @@ bool ConcavePolygonShape2D::_edit_is_selected_on_click(const Point2 &p_point, do
 }
 
 void ConcavePolygonShape2D::set_segments(const PoolVector<Vector2> &p_segments) {
-
 	Physics2DServer::get_singleton()->shape_set_data(get_rid(), p_segments);
 	emit_changed();
 }
 
 PoolVector<Vector2> ConcavePolygonShape2D::get_segments() const {
-
 	return Physics2DServer::get_singleton()->shape_get_data(get_rid());
 }
 
 void ConcavePolygonShape2D::draw(const RID &p_to_rid, const Color &p_color) {
-
 	PoolVector<Vector2> s = get_segments();
 	int len = s.size();
 	if (len == 0 || (len % 2) == 1)
@@ -75,7 +71,6 @@ void ConcavePolygonShape2D::draw(const RID &p_to_rid, const Color &p_color) {
 }
 
 Rect2 ConcavePolygonShape2D::get_rect() const {
-
 	PoolVector<Vector2> s = get_segments();
 	int len = s.size();
 	if (len == 0)
@@ -95,7 +90,6 @@ Rect2 ConcavePolygonShape2D::get_rect() const {
 }
 
 void ConcavePolygonShape2D::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("set_segments", "segments"), &ConcavePolygonShape2D::set_segments);
 	ClassDB::bind_method(D_METHOD("get_segments"), &ConcavePolygonShape2D::get_segments);
 

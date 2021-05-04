@@ -34,7 +34,6 @@
 #include "scene/resources/shape.h"
 
 class PlaneShape : public Shape {
-
 	GDCLASS(PlaneShape, Shape);
 	Plane plane;
 

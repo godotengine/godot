@@ -45,7 +45,6 @@
 #include "scene/resources/material.h"
 
 struct CSGBrush {
-
 	struct Face {
 		Vector3 vertices[3];
 		Vector2 uvs[3];
@@ -56,17 +55,16 @@ struct CSGBrush {
 	};
 
 	Vector<Face> faces;
-	Vector<Ref<Material> > materials;
+	Vector<Ref<Material>> materials;
 
 	inline void _regen_face_aabbs();
 
 	// Create a brush from faces.
-	void build_from_faces(const PoolVector<Vector3> &p_vertices, const PoolVector<Vector2> &p_uvs, const PoolVector<bool> &p_smooth, const PoolVector<Ref<Material> > &p_materials, const PoolVector<bool> &p_invert_faces);
+	void build_from_faces(const PoolVector<Vector3> &p_vertices, const PoolVector<Vector2> &p_uvs, const PoolVector<bool> &p_smooth, const PoolVector<Ref<Material>> &p_materials, const PoolVector<bool> &p_invert_faces);
 	void copy_from(const CSGBrush &p_brush, const Transform &p_xform);
 };
 
 struct CSGBrushOperation {
-
 	enum Operation {
 		OPERATION_UNION,
 		OPERATION_INTERSECTION,
@@ -76,7 +74,6 @@ struct CSGBrushOperation {
 	void merge_brushes(Operation p_operation, const CSGBrush &p_brush_a, const CSGBrush &p_brush_b, CSGBrush &r_merged_brush, float p_vertex_snap);
 
 	struct MeshMerge {
-
 		struct Face {
 			bool from_b;
 			bool inside;
@@ -157,7 +154,6 @@ struct CSGBrushOperation {
 	};
 
 	struct Build2DFaces {
-
 		struct Vertex2D {
 			Vector2 point;
 			Vector2 uv;

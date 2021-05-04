@@ -52,7 +52,6 @@
 
 template <class T, bool USE_PAIRS = false, int MAX_ITEMS = 32, class Bounds = AABB, class Point = Vector3>
 class BVH_Manager {
-
 public:
 	// note we are using uint32_t instead of BVHHandle, losing type safety, but this
 	// is for compatibility with octree
@@ -89,7 +88,6 @@ public:
 	}
 
 	BVHHandle create(T *p_userdata, bool p_active, const Bounds &p_aabb = Bounds(), int p_subindex = 0, bool p_pairable = false, uint32_t p_pairable_type = 0, uint32_t p_pairable_mask = 1) {
-
 		// not sure if absolutely necessary to flush collisions here. It will cost performance to, instead
 		// of waiting for update, so only uncomment this if there are bugs.
 		if (USE_PAIRS) {
@@ -181,7 +179,6 @@ public:
 	////////////////////////////////////////////////////
 
 	void move(BVHHandle p_handle, const Bounds &p_aabb) {
-
 		if (tree.item_move(p_handle, p_aabb)) {
 			if (USE_PAIRS) {
 				_add_changed_item(p_handle, p_aabb);
@@ -227,7 +224,6 @@ public:
 		// returns success
 		if (tree.item_activate(p_handle, p_aabb)) {
 			if (USE_PAIRS) {
-
 				// in the special case of the render tree, when setting visibility we are using the combination of
 				// activate then set_pairable. This would case 2 sets of collision checks. For efficiency here we allow
 				// deferring to have a single collision check at the set_pairable call.
@@ -285,7 +281,6 @@ public:
 		tree.item_set_pairable(p_handle, p_pairable, p_pairable_type, p_pairable_mask);
 
 		if (USE_PAIRS) {
-
 			// not sure if absolutely necessary to flush collisions here. It will cost performance to, instead
 			// of waiting for update, so only uncomment this if there are bugs.
 			//_check_for_collisions();
@@ -488,7 +483,6 @@ private:
 
 		// callback
 		if (unpair_callback) {
-
 			unpair_callback(pair_callback_userdata, p_from, exa.userdata, exa.subindex, p_to, exb.userdata, exb.subindex, ud_from);
 		}
 	}
@@ -584,7 +578,6 @@ private:
 
 	// if we remove an item, we need to immediately remove the pairs, to prevent reading the pair after deletion
 	void _remove_pairs_containing(BVHHandle p_handle) {
-
 		typename BVHTREE_CLASS::ItemPairs &p_from = tree._pairs[p_handle.id()];
 
 		// remove from pairing list for every partner.
@@ -609,7 +602,6 @@ private:
 	}
 
 	void _add_changed_item(BVHHandle p_handle, const Bounds &aabb, bool p_check_aabb = true) {
-
 		// Note that non pairable items can pair with pairable,
 		// so all types must be added to the list
 
@@ -644,7 +636,6 @@ private:
 	}
 
 	void _remove_changed_item(BVHHandle p_handle) {
-
 		// Care has to be taken here for items that are deleted. The ref ID
 		// could be reused on the same tick for new items. This is probably
 		// rare but should be taken into consideration

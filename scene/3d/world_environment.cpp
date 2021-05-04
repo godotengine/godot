@@ -32,9 +32,7 @@
 #include "scene/main/viewport.h"
 
 void WorldEnvironment::_notification(int p_what) {
-
 	if (p_what == Spatial::NOTIFICATION_ENTER_WORLD || p_what == Spatial::NOTIFICATION_ENTER_TREE) {
-
 		if (environment.is_valid()) {
 			if (get_viewport()->find_world()->get_environment().is_valid()) {
 				WARN_PRINT("World already has an environment (Another WorldEnvironment?), overriding.");
@@ -44,7 +42,6 @@ void WorldEnvironment::_notification(int p_what) {
 		}
 
 	} else if (p_what == Spatial::NOTIFICATION_EXIT_WORLD || p_what == Spatial::NOTIFICATION_EXIT_TREE) {
-
 		if (environment.is_valid() && get_viewport()->find_world()->get_environment() == environment) {
 			get_viewport()->find_world()->set_environment(Ref<Environment>());
 			remove_from_group("_world_environment_" + itos(get_viewport()->find_world()->get_scenario().get_id()));
@@ -53,7 +50,6 @@ void WorldEnvironment::_notification(int p_what) {
 }
 
 void WorldEnvironment::set_environment(const Ref<Environment> &p_environment) {
-
 	if (is_inside_tree() && environment.is_valid() && get_viewport()->find_world()->get_environment() == environment) {
 		get_viewport()->find_world()->set_environment(Ref<Environment>());
 		remove_from_group("_world_environment_" + itos(get_viewport()->find_world()->get_scenario().get_id()));
@@ -73,12 +69,10 @@ void WorldEnvironment::set_environment(const Ref<Environment> &p_environment) {
 }
 
 Ref<Environment> WorldEnvironment::get_environment() const {
-
 	return environment;
 }
 
 String WorldEnvironment::get_configuration_warning() const {
-
 	String warning = Node::get_configuration_warning();
 	if (!environment.is_valid()) {
 		if (warning != String()) {
@@ -110,7 +104,6 @@ String WorldEnvironment::get_configuration_warning() const {
 }
 
 void WorldEnvironment::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("set_environment", "env"), &WorldEnvironment::set_environment);
 	ClassDB::bind_method(D_METHOD("get_environment"), &WorldEnvironment::get_environment);
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "environment", PROPERTY_HINT_RESOURCE_TYPE, "Environment"), "set_environment", "get_environment");

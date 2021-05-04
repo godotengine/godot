@@ -82,7 +82,6 @@ void WindowsTerminalLogger::log_error(const char *p_function, const char *p_file
 		StdLogger::log_error(p_function, p_file, p_line, p_code, p_rationale, p_type);
 #ifndef UWP_ENABLED
 	} else {
-
 		CONSOLE_SCREEN_BUFFER_INFO sbi; //original
 		GetConsoleScreenBufferInfo(hCon, &sbi);
 
@@ -91,22 +90,37 @@ void WindowsTerminalLogger::log_error(const char *p_function, const char *p_file
 
 		uint32_t basecol = 0;
 		switch (p_type) {
-			case ERR_ERROR: basecol = FOREGROUND_RED; break;
-			case ERR_WARNING: basecol = FOREGROUND_RED | FOREGROUND_GREEN; break;
-			case ERR_SCRIPT: basecol = FOREGROUND_RED | FOREGROUND_BLUE; break;
-			case ERR_SHADER: basecol = FOREGROUND_GREEN | FOREGROUND_BLUE; break;
+			case ERR_ERROR:
+				basecol = FOREGROUND_RED;
+				break;
+			case ERR_WARNING:
+				basecol = FOREGROUND_RED | FOREGROUND_GREEN;
+				break;
+			case ERR_SCRIPT:
+				basecol = FOREGROUND_RED | FOREGROUND_BLUE;
+				break;
+			case ERR_SHADER:
+				basecol = FOREGROUND_GREEN | FOREGROUND_BLUE;
+				break;
 		}
 
 		basecol |= current_bg;
 
 		if (p_rationale && p_rationale[0]) {
-
 			SetConsoleTextAttribute(hCon, basecol | FOREGROUND_INTENSITY);
 			switch (p_type) {
-				case ERR_ERROR: logf("ERROR: "); break;
-				case ERR_WARNING: logf("WARNING: "); break;
-				case ERR_SCRIPT: logf("SCRIPT ERROR: "); break;
-				case ERR_SHADER: logf("SHADER ERROR: "); break;
+				case ERR_ERROR:
+					logf("ERROR: ");
+					break;
+				case ERR_WARNING:
+					logf("WARNING: ");
+					break;
+				case ERR_SCRIPT:
+					logf("SCRIPT ERROR: ");
+					break;
+				case ERR_SHADER:
+					logf("SHADER ERROR: ");
+					break;
 			}
 
 			SetConsoleTextAttribute(hCon, current_fg | current_bg | FOREGROUND_INTENSITY);
@@ -114,23 +128,38 @@ void WindowsTerminalLogger::log_error(const char *p_function, const char *p_file
 
 			SetConsoleTextAttribute(hCon, basecol);
 			switch (p_type) {
-				case ERR_ERROR: logf("   At: "); break;
-				case ERR_WARNING: logf("     At: "); break;
-				case ERR_SCRIPT: logf("          At: "); break;
-				case ERR_SHADER: logf("          At: "); break;
+				case ERR_ERROR:
+					logf("   At: ");
+					break;
+				case ERR_WARNING:
+					logf("     At: ");
+					break;
+				case ERR_SCRIPT:
+					logf("          At: ");
+					break;
+				case ERR_SHADER:
+					logf("          At: ");
+					break;
 			}
 
 			SetConsoleTextAttribute(hCon, current_fg | current_bg);
 			logf("%s:%i\n", p_file, p_line);
 
 		} else {
-
 			SetConsoleTextAttribute(hCon, basecol | FOREGROUND_INTENSITY);
 			switch (p_type) {
-				case ERR_ERROR: logf("ERROR: %s: ", p_function); break;
-				case ERR_WARNING: logf("WARNING: %s: ", p_function); break;
-				case ERR_SCRIPT: logf("SCRIPT ERROR: %s: ", p_function); break;
-				case ERR_SHADER: logf("SCRIPT ERROR: %s: ", p_function); break;
+				case ERR_ERROR:
+					logf("ERROR: %s: ", p_function);
+					break;
+				case ERR_WARNING:
+					logf("WARNING: %s: ", p_function);
+					break;
+				case ERR_SCRIPT:
+					logf("SCRIPT ERROR: %s: ", p_function);
+					break;
+				case ERR_SHADER:
+					logf("SCRIPT ERROR: %s: ", p_function);
+					break;
 			}
 
 			SetConsoleTextAttribute(hCon, current_fg | current_bg | FOREGROUND_INTENSITY);
@@ -138,10 +167,18 @@ void WindowsTerminalLogger::log_error(const char *p_function, const char *p_file
 
 			SetConsoleTextAttribute(hCon, basecol);
 			switch (p_type) {
-				case ERR_ERROR: logf("   At: "); break;
-				case ERR_WARNING: logf("     At: "); break;
-				case ERR_SCRIPT: logf("          At: "); break;
-				case ERR_SHADER: logf("          At: "); break;
+				case ERR_ERROR:
+					logf("   At: ");
+					break;
+				case ERR_WARNING:
+					logf("     At: ");
+					break;
+				case ERR_SCRIPT:
+					logf("          At: ");
+					break;
+				case ERR_SHADER:
+					logf("          At: ");
+					break;
 			}
 
 			SetConsoleTextAttribute(hCon, current_fg | current_bg);

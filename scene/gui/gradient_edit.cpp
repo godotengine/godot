@@ -94,11 +94,9 @@ GradientEdit::~GradientEdit() {
 }
 
 void GradientEdit::_gui_input(const Ref<InputEvent> &p_event) {
-
 	Ref<InputEventKey> k = p_event;
 
 	if (k.is_valid() && k->is_pressed() && k->get_scancode() == KEY_DELETE && grabbed != -1) {
-
 		points.remove(grabbed);
 		grabbed = -1;
 		grabbing = false;
@@ -130,7 +128,6 @@ void GradientEdit::_gui_input(const Ref<InputEvent> &p_event) {
 
 	//Hold alt key to duplicate selected color
 	if (mb.is_valid() && mb->get_button_index() == 1 && mb->is_pressed() && mb->get_alt()) {
-
 		int x = mb->get_position().x;
 		grabbed = _get_point_from_pos(x);
 
@@ -155,7 +152,6 @@ void GradientEdit::_gui_input(const Ref<InputEvent> &p_event) {
 
 	//select
 	if (mb.is_valid() && mb->get_button_index() == 1 && mb->is_pressed()) {
-
 		update();
 		int x = mb->get_position().x;
 		int total_w = get_size().width - get_size().height - SPACING;
@@ -188,7 +184,6 @@ void GradientEdit::_gui_input(const Ref<InputEvent> &p_event) {
 		}
 
 		if (pos == -1) {
-
 			prev.color = Color(0, 0, 0);
 			prev.offset = 0;
 			if (points.size()) {
@@ -198,7 +193,6 @@ void GradientEdit::_gui_input(const Ref<InputEvent> &p_event) {
 				next.offset = 1.0;
 			}
 		} else {
-
 			if (pos == points.size() - 1) {
 				next.color = Color(1, 1, 1);
 				next.offset = 1.0;
@@ -223,7 +217,6 @@ void GradientEdit::_gui_input(const Ref<InputEvent> &p_event) {
 	}
 
 	if (mb.is_valid() && mb->get_button_index() == 1 && !mb->is_pressed()) {
-
 		if (grabbing) {
 			grabbing = false;
 			emit_signal("ramp_changed");
@@ -234,7 +227,6 @@ void GradientEdit::_gui_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseMotion> mm = p_event;
 
 	if (mm.is_valid() && grabbing) {
-
 		int total_w = get_size().width - get_size().height - SPACING;
 
 		int x = mm->get_position().x;
@@ -274,7 +266,6 @@ void GradientEdit::_gui_input(const Ref<InputEvent> &p_event) {
 
 		bool valid = true;
 		for (int i = 0; i < points.size(); i++) {
-
 			if (points[i].offset == newofs && i != grabbed) {
 				valid = false;
 				break;
@@ -301,14 +292,12 @@ void GradientEdit::_gui_input(const Ref<InputEvent> &p_event) {
 }
 
 void GradientEdit::_notification(int p_what) {
-
 	if (p_what == NOTIFICATION_ENTER_TREE) {
 		if (!picker->is_connected("color_changed", this, "_color_changed")) {
 			picker->connect("color_changed", this, "_color_changed");
 		}
 	}
 	if (p_what == NOTIFICATION_DRAW) {
-
 		int w = get_size().x;
 		int h = get_size().y;
 
@@ -329,7 +318,6 @@ void GradientEdit::_notification(int p_what) {
 			prev.color = points[0].color; //Extend color of first point to the beginning.
 
 		for (int i = -1; i < points.size(); i++) {
-
 			Gradient::Point next;
 			//If there is no next point
 			if (i + 1 == points.size()) {
@@ -363,7 +351,6 @@ void GradientEdit::_notification(int p_what) {
 
 		//Draw point markers
 		for (int i = 0; i < points.size(); i++) {
-
 			Color col = points[i].color.contrasted();
 			col.a = 0.9;
 
@@ -398,7 +385,6 @@ void GradientEdit::_notification(int p_what) {
 
 		//Draw borders around color ramp if in focus
 		if (has_focus()) {
-
 			draw_line(Vector2(-1, -1), Vector2(total_w + 1, -1), Color(1, 1, 1, 0.6));
 			draw_line(Vector2(total_w + 1, -1), Vector2(total_w + 1, h + 1), Color(1, 1, 1, 0.6));
 			draw_line(Vector2(total_w + 1, h + 1), Vector2(-1, h + 1), Color(1, 1, 1, 0.6));
@@ -407,7 +393,6 @@ void GradientEdit::_notification(int p_what) {
 	}
 
 	if (p_what == NOTIFICATION_VISIBILITY_CHANGED) {
-
 		if (!is_visible()) {
 			grabbing = false;
 		}
@@ -436,12 +421,10 @@ void GradientEdit::_draw_checker(int x, int y, int w, int h) {
 }
 
 Size2 GradientEdit::get_minimum_size() const {
-
 	return Vector2(0, 16);
 }
 
 void GradientEdit::_color_changed(const Color &p_color) {
-
 	if (grabbed == -1)
 		return;
 	points.write[grabbed].color = p_color;
@@ -450,7 +433,6 @@ void GradientEdit::_color_changed(const Color &p_color) {
 }
 
 void GradientEdit::set_ramp(const Vector<float> &p_offsets, const Vector<Color> &p_colors) {
-
 	ERR_FAIL_COND(p_offsets.size() != p_colors.size());
 	points.clear();
 	for (int i = 0; i < p_offsets.size(); i++) {

@@ -68,7 +68,8 @@ public:
 	void remove(int p_index) { _cowdata.remove(p_index); }
 	void erase(const T &p_val) {
 		int idx = find(p_val);
-		if (idx >= 0) remove(idx);
+		if (idx >= 0)
+			remove(idx);
 	};
 	void invert();
 
@@ -90,7 +91,6 @@ public:
 
 	template <class C>
 	void sort_custom() {
-
 		int len = _cowdata.size();
 		if (len == 0)
 			return;
@@ -101,14 +101,12 @@ public:
 	}
 
 	void sort() {
-
-		sort_custom<_DefaultComparator<T> >();
+		sort_custom<_DefaultComparator<T>>();
 	}
 
 	void ordered_insert(const T &p_val) {
 		int i;
 		for (i = 0; i < _cowdata.size(); i++) {
-
 			if (p_val < operator[](i)) {
 				break;
 			};
@@ -128,7 +126,6 @@ public:
 
 template <class T>
 void Vector<T>::invert() {
-
 	for (int i = 0; i < size() / 2; i++) {
 		T *p = ptrw();
 		SWAP(p[i], p[size() - i - 1]);
@@ -148,7 +145,6 @@ void Vector<T>::append_array(Vector<T> p_other) {
 
 template <class T>
 bool Vector<T>::push_back(T p_elem) {
-
 	Error err = resize(size() + 1);
 	ERR_FAIL_COND_V(err, true);
 	set(size() - 1, p_elem);

@@ -40,7 +40,6 @@
 #include "skeleton.h"
 
 bool MeshInstance::_set(const StringName &p_name, const Variant &p_value) {
-
 	//this is not _too_ bad performance wise, really. it only arrives here if the property was not set anywhere else.
 	//add to it that it's probably found on first call to _set anyway.
 
@@ -67,7 +66,6 @@ bool MeshInstance::_set(const StringName &p_name, const Variant &p_value) {
 }
 
 bool MeshInstance::_get(const StringName &p_name, Variant &r_ret) const {
-
 	if (!get_instance().is_valid())
 		return false;
 
@@ -88,10 +86,8 @@ bool MeshInstance::_get(const StringName &p_name, Variant &r_ret) const {
 }
 
 void MeshInstance::_get_property_list(List<PropertyInfo> *p_list) const {
-
 	List<String> ls;
 	for (const Map<StringName, BlendShapeTrack>::Element *E = blend_shape_tracks.front(); E; E = E->next()) {
-
 		ls.push_back(E->key());
 	}
 
@@ -109,7 +105,6 @@ void MeshInstance::_get_property_list(List<PropertyInfo> *p_list) const {
 }
 
 void MeshInstance::set_mesh(const Ref<Mesh> &p_mesh) {
-
 	if (mesh == p_mesh)
 		return;
 
@@ -131,9 +126,7 @@ void MeshInstance::set_mesh(const Ref<Mesh> &p_mesh) {
 
 	blend_shape_tracks.clear();
 	if (mesh.is_valid()) {
-
 		for (int i = 0; i < mesh->get_blend_shape_count(); i++) {
-
 			BlendShapeTrack mt;
 			mt.idx = i;
 			mt.value = 0;
@@ -145,7 +138,6 @@ void MeshInstance::set_mesh(const Ref<Mesh> &p_mesh) {
 
 		_initialize_skinning(false, false);
 	} else {
-
 		set_base(RID());
 	}
 
@@ -154,12 +146,10 @@ void MeshInstance::set_mesh(const Ref<Mesh> &p_mesh) {
 	_change_notify();
 }
 Ref<Mesh> MeshInstance::get_mesh() const {
-
 	return mesh;
 }
 
 void MeshInstance::_resolve_skeleton_path() {
-
 	Ref<SkinReference> new_skin_reference;
 
 	if (!skeleton_path.is_empty()) {
@@ -519,7 +509,6 @@ Ref<Skin> MeshInstance::get_skin() const {
 }
 
 void MeshInstance::set_skeleton_path(const NodePath &p_skeleton) {
-
 	skeleton_path = p_skeleton;
 	if (!is_inside_tree())
 		return;
@@ -531,7 +520,6 @@ NodePath MeshInstance::get_skeleton_path() {
 }
 
 AABB MeshInstance::get_aabb() const {
-
 	if (!mesh.is_null())
 		return mesh->get_aabb();
 
@@ -539,7 +527,6 @@ AABB MeshInstance::get_aabb() const {
 }
 
 PoolVector<Face3> MeshInstance::get_faces(uint32_t p_usage_flags) const {
-
 	if (!(p_usage_flags & (FACES_SOLID | FACES_ENCLOSING)))
 		return PoolVector<Face3>();
 
@@ -550,7 +537,6 @@ PoolVector<Face3> MeshInstance::get_faces(uint32_t p_usage_flags) const {
 }
 
 Node *MeshInstance::create_trimesh_collision_node() {
-
 	if (mesh.is_null())
 		return NULL;
 
@@ -566,7 +552,6 @@ Node *MeshInstance::create_trimesh_collision_node() {
 }
 
 void MeshInstance::create_trimesh_collision() {
-
 	StaticBody *static_body = Object::cast_to<StaticBody>(create_trimesh_collision_node());
 	ERR_FAIL_COND(!static_body);
 	static_body->set_name(String(get_name()) + "_col");
@@ -580,11 +565,10 @@ void MeshInstance::create_trimesh_collision() {
 }
 
 Node *MeshInstance::create_multiple_convex_collisions_node() {
-
 	if (mesh.is_null())
 		return NULL;
 
-	Vector<Ref<Shape> > shapes = mesh->convex_decompose();
+	Vector<Ref<Shape>> shapes = mesh->convex_decompose();
 	if (!shapes.size()) {
 		return NULL;
 	}
@@ -599,7 +583,6 @@ Node *MeshInstance::create_multiple_convex_collisions_node() {
 }
 
 void MeshInstance::create_multiple_convex_collisions() {
-
 	StaticBody *static_body = Object::cast_to<StaticBody>(create_multiple_convex_collisions_node());
 	ERR_FAIL_COND(!static_body);
 	static_body->set_name(String(get_name()) + "_col");
@@ -616,7 +599,6 @@ void MeshInstance::create_multiple_convex_collisions() {
 }
 
 Node *MeshInstance::create_convex_collision_node() {
-
 	if (mesh.is_null())
 		return NULL;
 
@@ -632,7 +614,6 @@ Node *MeshInstance::create_convex_collision_node() {
 }
 
 void MeshInstance::create_convex_collision() {
-
 	StaticBody *static_body = Object::cast_to<StaticBody>(create_convex_collision_node());
 	ERR_FAIL_COND(!static_body);
 	static_body->set_name(String(get_name()) + "_col");
@@ -646,7 +627,6 @@ void MeshInstance::create_convex_collision() {
 }
 
 void MeshInstance::_notification(int p_what) {
-
 	if (p_what == NOTIFICATION_ENTER_TREE) {
 		_resolve_skeleton_path();
 	}
@@ -664,12 +644,10 @@ void MeshInstance::_notification(int p_what) {
 }
 
 int MeshInstance::get_surface_material_count() const {
-
 	return materials.size();
 }
 
 void MeshInstance::set_surface_material(int p_surface, const Ref<Material> &p_material) {
-
 	ERR_FAIL_INDEX(p_surface, materials.size());
 
 	materials.write[p_surface] = p_material;
@@ -685,7 +663,6 @@ void MeshInstance::set_surface_material(int p_surface, const Ref<Material> &p_ma
 }
 
 Ref<Material> MeshInstance::get_surface_material(int p_surface) const {
-
 	ERR_FAIL_INDEX_V(p_surface, materials.size(), Ref<Material>());
 
 	return materials[p_surface];
@@ -752,7 +729,6 @@ void MeshInstance::_mesh_changed() {
 }
 
 void MeshInstance::create_debug_tangents() {
-
 	Vector<Vector3> lines;
 	Vector<Color> colors;
 
@@ -794,7 +770,6 @@ void MeshInstance::create_debug_tangents() {
 	}
 
 	if (lines.size()) {
-
 		Ref<SpatialMaterial> sm;
 		sm.instance();
 
@@ -827,7 +802,6 @@ void MeshInstance::create_debug_tangents() {
 }
 
 void MeshInstance::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("set_mesh", "mesh"), &MeshInstance::set_mesh);
 	ClassDB::bind_method(D_METHOD("get_mesh"), &MeshInstance::get_mesh);
 	ClassDB::bind_method(D_METHOD("set_skeleton_path", "skeleton_path"), &MeshInstance::set_skeleton_path);

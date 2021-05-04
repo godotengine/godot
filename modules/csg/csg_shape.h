@@ -172,7 +172,7 @@ private:
 	bool invert_faces;
 
 protected:
-	CSGBrush *_create_brush_from_arrays(const PoolVector<Vector3> &p_vertices, const PoolVector<Vector2> &p_uv, const PoolVector<bool> &p_smooth, const PoolVector<Ref<Material> > &p_materials);
+	CSGBrush *_create_brush_from_arrays(const PoolVector<Vector3> &p_vertices, const PoolVector<Vector2> &p_uv, const PoolVector<bool> &p_smooth, const PoolVector<Ref<Material>> &p_materials);
 	static void _bind_methods();
 
 public:
@@ -204,7 +204,6 @@ public:
 };
 
 class CSGSphere : public CSGPrimitive {
-
 	GDCLASS(CSGSphere, CSGPrimitive);
 	virtual CSGBrush *_build_brush();
 
@@ -237,7 +236,6 @@ public:
 };
 
 class CSGBox : public CSGPrimitive {
-
 	GDCLASS(CSGBox, CSGPrimitive);
 	virtual CSGBrush *_build_brush();
 
@@ -266,7 +264,6 @@ public:
 };
 
 class CSGCylinder : public CSGPrimitive {
-
 	GDCLASS(CSGCylinder, CSGPrimitive);
 	virtual CSGBrush *_build_brush();
 
@@ -303,7 +300,6 @@ public:
 };
 
 class CSGTorus : public CSGPrimitive {
-
 	GDCLASS(CSGTorus, CSGPrimitive);
 	virtual CSGBrush *_build_brush();
 
@@ -340,7 +336,6 @@ public:
 };
 
 class CSGPolygon : public CSGPrimitive {
-
 	GDCLASS(CSGPolygon, CSGPrimitive);
 
 public:

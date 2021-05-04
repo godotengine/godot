@@ -106,7 +106,6 @@ public:
 	};
 
 	struct Node {
-
 		enum Type {
 			TYPE_CLASS,
 			TYPE_FUNCTION,
@@ -145,7 +144,6 @@ public:
 	struct OperatorNode;
 
 	struct ClassNode : public Node {
-
 		bool tool;
 		StringName name;
 		bool extends_used;
@@ -206,7 +204,6 @@ public:
 	};
 
 	struct FunctionNode : public Node {
-
 		bool _static;
 		MultiplayerAPI::RPCMode rpc_mode;
 		bool has_yield;
@@ -235,7 +232,6 @@ public:
 	};
 
 	struct BlockNode : public Node {
-
 		ClassNode *parent_class;
 		BlockNode *parent_block;
 		List<Node *> statements;
@@ -259,7 +255,6 @@ public:
 	};
 
 	struct TypeNode : public Node {
-
 		Variant::Type vtype;
 		TypeNode() { type = TYPE_TYPE; }
 	};
@@ -269,7 +264,6 @@ public:
 	};
 
 	struct IdentifierNode : public Node {
-
 		StringName name;
 		BlockNode *declared_block; // Simplify lookup by checking if it is declared locally
 		DataType datatype;
@@ -282,7 +276,6 @@ public:
 	};
 
 	struct LocalVarNode : public Node {
-
 		StringName name;
 		Node *assign;
 		OperatorNode *assign_op;
@@ -309,7 +302,6 @@ public:
 	};
 
 	struct ArrayNode : public Node {
-
 		Vector<Node *> elements;
 		DataType datatype;
 		virtual DataType get_datatype() const { return datatype; }
@@ -323,9 +315,7 @@ public:
 	};
 
 	struct DictionaryNode : public Node {
-
 		struct Pair {
-
 			Node *key;
 			Node *value;
 		};
@@ -409,7 +399,6 @@ public:
 	};
 
 	struct PatternNode : public Node {
-
 		enum PatternType {
 			PT_CONSTANT,
 			PT_BIND,
@@ -499,7 +488,6 @@ public:
 	};
 
 	struct Expression {
-
 		bool is_op;
 		union {
 			OperatorNode::Operator op;
@@ -650,12 +638,14 @@ private:
 	void _check_block_types(BlockNode *p_block);
 	_FORCE_INLINE_ void _mark_line_as_safe(int p_line) const {
 #ifdef DEBUG_ENABLED
-		if (safe_lines) safe_lines->insert(p_line);
+		if (safe_lines)
+			safe_lines->insert(p_line);
 #endif // DEBUG_ENABLED
 	}
 	_FORCE_INLINE_ void _mark_line_as_unsafe(int p_line) const {
 #ifdef DEBUG_ENABLED
-		if (safe_lines) safe_lines->erase(p_line);
+		if (safe_lines)
+			safe_lines->erase(p_line);
 #endif // DEBUG_ENABLED
 	}
 

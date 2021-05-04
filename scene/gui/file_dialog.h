@@ -40,7 +40,6 @@
 #include "scene/gui/tree.h"
 
 class FileDialog : public ConfirmationDialog {
-
 	GDCLASS(FileDialog, ConfirmationDialog);
 
 public:
@@ -176,7 +175,6 @@ public:
 };
 
 class LineEditFileChooser : public HBoxContainer {
-
 	GDCLASS(LineEditFileChooser, HBoxContainer);
 	Button *button;
 	LineEdit *line_edit;

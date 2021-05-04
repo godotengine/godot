@@ -434,7 +434,6 @@ bool ReadScope(TokenList &output_tokens, const char *input, const char *&cursor,
 // ------------------------------------------------------------------------------------------------
 // TODO: Test FBX Binary files newer than the 7500 version to check if the 64 bits address behaviour is consistent
 void TokenizeBinary(TokenList &output_tokens, const char *input, size_t length) {
-
 	if (length < 0x1b) {
 		//TokenizeError("file is too short",0);
 	}

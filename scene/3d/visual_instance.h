@@ -37,7 +37,6 @@
 #include "scene/resources/material.h"
 
 class VisualInstance : public Spatial {
-
 	GDCLASS(VisualInstance, Spatial);
 	OBJ_CATEGORY("3D Visual Nodes");
 
@@ -81,7 +80,6 @@ public:
 };
 
 class GeometryInstance : public VisualInstance {
-
 	GDCLASS(GeometryInstance, VisualInstance);
 
 public:

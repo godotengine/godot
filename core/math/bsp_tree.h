@@ -50,7 +50,6 @@ public:
 	};
 
 	struct Node {
-
 		uint16_t plane;
 		uint16_t under;
 		uint16_t over;
@@ -95,7 +94,6 @@ public:
 
 template <class T>
 bool BSP_Tree::_test_convex(const Node *p_nodes, const Plane *p_planes, int p_current, const T &p_convex) const {
-
 	if (p_current == UNDER_LEAF)
 		return true;
 	else if (p_current == OVER_LEAF)
@@ -122,7 +120,6 @@ bool BSP_Tree::_test_convex(const Node *p_nodes, const Plane *p_planes, int p_cu
 
 template <class T>
 bool BSP_Tree::convex_is_inside(const T &p_convex) const {
-
 	int node_count = nodes.size();
 	if (node_count == 0)
 		return false;

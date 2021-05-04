@@ -36,7 +36,6 @@
 @author Juan Linietsky <reduzio@gmail.com>
 */
 class CheckButton : public Button {
-
 	GDCLASS(CheckButton, Button);
 
 protected:

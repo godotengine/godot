@@ -77,7 +77,6 @@ bool PinJointSW::setup(real_t p_step) {
 }
 
 void PinJointSW::solve(real_t p_step) {
-
 	Vector3 pivotAInW = A->get_transform().xform(m_pivotInA);
 	Vector3 pivotBInW = B->get_transform().xform(m_pivotInB);
 
@@ -130,20 +129,27 @@ void PinJointSW::solve(real_t p_step) {
 }
 
 void PinJointSW::set_param(PhysicsServer::PinJointParam p_param, real_t p_value) {
-
 	switch (p_param) {
-		case PhysicsServer::PIN_JOINT_BIAS: m_tau = p_value; break;
-		case PhysicsServer::PIN_JOINT_DAMPING: m_damping = p_value; break;
-		case PhysicsServer::PIN_JOINT_IMPULSE_CLAMP: m_impulseClamp = p_value; break;
+		case PhysicsServer::PIN_JOINT_BIAS:
+			m_tau = p_value;
+			break;
+		case PhysicsServer::PIN_JOINT_DAMPING:
+			m_damping = p_value;
+			break;
+		case PhysicsServer::PIN_JOINT_IMPULSE_CLAMP:
+			m_impulseClamp = p_value;
+			break;
 	}
 }
 
 real_t PinJointSW::get_param(PhysicsServer::PinJointParam p_param) const {
-
 	switch (p_param) {
-		case PhysicsServer::PIN_JOINT_BIAS: return m_tau;
-		case PhysicsServer::PIN_JOINT_DAMPING: return m_damping;
-		case PhysicsServer::PIN_JOINT_IMPULSE_CLAMP: return m_impulseClamp;
+		case PhysicsServer::PIN_JOINT_BIAS:
+			return m_tau;
+		case PhysicsServer::PIN_JOINT_DAMPING:
+			return m_damping;
+		case PhysicsServer::PIN_JOINT_IMPULSE_CLAMP:
+			return m_impulseClamp;
 	}
 
 	return 0;
@@ -151,7 +157,6 @@ real_t PinJointSW::get_param(PhysicsServer::PinJointParam p_param) const {
 
 PinJointSW::PinJointSW(BodySW *p_body_a, const Vector3 &p_pos_a, BodySW *p_body_b, const Vector3 &p_pos_b) :
 		JointSW(_arr, 2) {
-
 	A = p_body_a;
 	B = p_body_b;
 	m_pivotInA = p_pos_a;

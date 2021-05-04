@@ -38,7 +38,6 @@
 #include <CoreServices/CoreServices.h>
 
 bool osx_is_app_bundle_installed(const String &p_bundle_id) {
-
 	CFURLRef app_url = NULL;
 	CFStringRef bundle_id = CFStringCreateWithCString(NULL, p_bundle_id.utf8(), kCFStringEncodingUTF8);
 	OSStatus result = LSFindApplicationForInfo(kLSUnknownCreator, bundle_id, NULL, NULL, &app_url);

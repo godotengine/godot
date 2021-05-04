@@ -40,7 +40,6 @@
 //should scale better with hardware that supports instancing
 
 class GridMap : public Spatial {
-
 	GDCLASS(GridMap, Spatial);
 
 	enum {
@@ -49,7 +48,6 @@ class GridMap : public Spatial {
 	};
 
 	union IndexKey {
-
 		struct {
 			int16_t x;
 			int16_t y;
@@ -58,7 +56,6 @@ class GridMap : public Spatial {
 		uint64_t key;
 
 		_FORCE_INLINE_ bool operator<(const IndexKey &p_key) const {
-
 			return key < p_key.key;
 		}
 
@@ -69,7 +66,6 @@ class GridMap : public Spatial {
 	 * @brief A Cell is a single cell in the cube map space; it is defined by its coordinates and the populating Item, identified by int id.
 	 */
 	union Cell {
-
 		struct {
 			unsigned int item : 16;
 			unsigned int rot : 5;
@@ -89,7 +85,6 @@ class GridMap : public Spatial {
 	 * A GridMap can have multiple Octants.
 	 */
 	struct Octant {
-
 		struct NavMesh {
 			int id;
 			Transform xform;
@@ -118,7 +113,6 @@ class GridMap : public Spatial {
 	};
 
 	union OctantKey {
-
 		struct {
 			int16_t x;
 			int16_t y;
@@ -129,7 +123,6 @@ class GridMap : public Spatial {
 		uint64_t key;
 
 		_FORCE_INLINE_ bool operator<(const OctantKey &p_key) const {
-
 			return key < p_key.key;
 		}
 
@@ -166,7 +159,6 @@ class GridMap : public Spatial {
 	void _recreate_octant_data();
 
 	struct BakeLight {
-
 		VS::LightType type;
 		Vector3 pos;
 		Vector3 dir;
@@ -174,7 +166,6 @@ class GridMap : public Spatial {
 	};
 
 	_FORCE_INLINE_ Vector3 _octant_get_offset(const OctantKey &p_key) const {
-
 		return Vector3(p_key.x, p_key.y, p_key.z) * cell_size * octant_size;
 	}
 

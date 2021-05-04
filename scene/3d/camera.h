@@ -37,7 +37,6 @@
 #include "scene/resources/environment.h"
 
 class Camera : public Spatial {
-
 	GDCLASS(Camera, Spatial);
 
 public:
@@ -180,7 +179,6 @@ VARIANT_ENUM_CAST(Camera::KeepAspect);
 VARIANT_ENUM_CAST(Camera::DopplerTracking);
 
 class ClippedCamera : public Camera {
-
 	GDCLASS(ClippedCamera, Camera);
 
 public:

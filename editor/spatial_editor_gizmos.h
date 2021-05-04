@@ -37,7 +37,6 @@
 class Camera;
 
 class LightSpatialGizmoPlugin : public EditorSpatialGizmoPlugin {
-
 	GDCLASS(LightSpatialGizmoPlugin, EditorSpatialGizmoPlugin);
 
 public:
@@ -55,7 +54,6 @@ public:
 };
 
 class AudioStreamPlayer3DSpatialGizmoPlugin : public EditorSpatialGizmoPlugin {
-
 	GDCLASS(AudioStreamPlayer3DSpatialGizmoPlugin, EditorSpatialGizmoPlugin);
 
 public:
@@ -73,7 +71,6 @@ public:
 };
 
 class CameraSpatialGizmoPlugin : public EditorSpatialGizmoPlugin {
-
 	GDCLASS(CameraSpatialGizmoPlugin, EditorSpatialGizmoPlugin);
 
 public:
@@ -91,7 +88,6 @@ public:
 };
 
 class MeshInstanceSpatialGizmoPlugin : public EditorSpatialGizmoPlugin {
-
 	GDCLASS(MeshInstanceSpatialGizmoPlugin, EditorSpatialGizmoPlugin);
 
 public:
@@ -105,7 +101,6 @@ public:
 };
 
 class Sprite3DSpatialGizmoPlugin : public EditorSpatialGizmoPlugin {
-
 	GDCLASS(Sprite3DSpatialGizmoPlugin, EditorSpatialGizmoPlugin);
 
 public:
@@ -119,7 +114,6 @@ public:
 };
 
 class Position3DSpatialGizmoPlugin : public EditorSpatialGizmoPlugin {
-
 	GDCLASS(Position3DSpatialGizmoPlugin, EditorSpatialGizmoPlugin);
 
 	Ref<ArrayMesh> pos3d_mesh;
@@ -135,7 +129,6 @@ public:
 };
 
 class SkeletonSpatialGizmoPlugin : public EditorSpatialGizmoPlugin {
-
 	GDCLASS(SkeletonSpatialGizmoPlugin, EditorSpatialGizmoPlugin);
 
 public:
@@ -148,7 +141,6 @@ public:
 };
 
 class PhysicalBoneSpatialGizmoPlugin : public EditorSpatialGizmoPlugin {
-
 	GDCLASS(PhysicalBoneSpatialGizmoPlugin, EditorSpatialGizmoPlugin);
 
 public:
@@ -161,7 +153,6 @@ public:
 };
 
 class RayCastSpatialGizmoPlugin : public EditorSpatialGizmoPlugin {
-
 	GDCLASS(RayCastSpatialGizmoPlugin, EditorSpatialGizmoPlugin);
 
 public:
@@ -174,7 +165,6 @@ public:
 };
 
 class SpringArmSpatialGizmoPlugin : public EditorSpatialGizmoPlugin {
-
 	GDCLASS(SpringArmSpatialGizmoPlugin, EditorSpatialGizmoPlugin);
 
 public:
@@ -187,7 +177,6 @@ public:
 };
 
 class VehicleWheelSpatialGizmoPlugin : public EditorSpatialGizmoPlugin {
-
 	GDCLASS(VehicleWheelSpatialGizmoPlugin, EditorSpatialGizmoPlugin);
 
 public:
@@ -200,7 +189,6 @@ public:
 };
 
 class SoftBodySpatialGizmoPlugin : public EditorSpatialGizmoPlugin {
-
 	GDCLASS(SoftBodySpatialGizmoPlugin, EditorSpatialGizmoPlugin);
 
 public:
@@ -219,7 +207,6 @@ public:
 };
 
 class VisibilityNotifierGizmoPlugin : public EditorSpatialGizmoPlugin {
-
 	GDCLASS(VisibilityNotifierGizmoPlugin, EditorSpatialGizmoPlugin);
 
 public:
@@ -249,7 +236,6 @@ public:
 };
 
 class ParticlesGizmoPlugin : public EditorSpatialGizmoPlugin {
-
 	GDCLASS(ParticlesGizmoPlugin, EditorSpatialGizmoPlugin);
 
 public:
@@ -268,7 +254,6 @@ public:
 };
 
 class ReflectionProbeGizmoPlugin : public EditorSpatialGizmoPlugin {
-
 	GDCLASS(ReflectionProbeGizmoPlugin, EditorSpatialGizmoPlugin);
 
 public:
@@ -286,7 +271,6 @@ public:
 };
 
 class GIProbeGizmoPlugin : public EditorSpatialGizmoPlugin {
-
 	GDCLASS(GIProbeGizmoPlugin, EditorSpatialGizmoPlugin);
 
 public:
@@ -304,7 +288,6 @@ public:
 };
 
 class BakedIndirectLightGizmoPlugin : public EditorSpatialGizmoPlugin {
-
 	GDCLASS(BakedIndirectLightGizmoPlugin, EditorSpatialGizmoPlugin);
 
 public:
@@ -322,7 +305,6 @@ public:
 };
 
 class CollisionObjectGizmoPlugin : public EditorSpatialGizmoPlugin {
-
 	GDCLASS(CollisionObjectGizmoPlugin, EditorSpatialGizmoPlugin);
 
 public:
@@ -335,7 +317,6 @@ public:
 };
 
 class CollisionShapeSpatialGizmoPlugin : public EditorSpatialGizmoPlugin {
-
 	GDCLASS(CollisionShapeSpatialGizmoPlugin, EditorSpatialGizmoPlugin);
 
 public:
@@ -364,11 +345,9 @@ public:
 };
 
 class NavigationMeshSpatialGizmoPlugin : public EditorSpatialGizmoPlugin {
-
 	GDCLASS(NavigationMeshSpatialGizmoPlugin, EditorSpatialGizmoPlugin);
 
 	struct _EdgeKey {
-
 		Vector3 from;
 		Vector3 to;
 
@@ -400,7 +379,6 @@ public:
 };
 
 class JointSpatialGizmoPlugin : public EditorSpatialGizmoPlugin {
-
 	GDCLASS(JointSpatialGizmoPlugin, EditorSpatialGizmoPlugin);
 
 	Timer *update_timer;

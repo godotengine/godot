@@ -37,7 +37,6 @@
 #include "scene/resources/material.h"
 
 class BakedLightmapEditorPlugin : public EditorPlugin {
-
 	GDCLASS(BakedLightmapEditorPlugin, EditorPlugin);
 
 	BakedLightmap *lightmap;

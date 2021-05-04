@@ -34,7 +34,6 @@
 #include "core/resource.h"
 
 class Translation : public Resource {
-
 	GDCLASS(Translation, Resource);
 	OBJ_SAVE_TYPE(Translation);
 	RES_BASE_EXTENSION("translation");
@@ -65,13 +64,12 @@ public:
 };
 
 class TranslationServer : public Object {
-
 	GDCLASS(TranslationServer, Object);
 
 	String locale;
 	String fallback;
 
-	Set<Ref<Translation> > translations;
+	Set<Ref<Translation>> translations;
 	Ref<Translation> tool_translation;
 
 	Map<String, String> locale_name_map;

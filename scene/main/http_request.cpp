@@ -34,7 +34,6 @@ void HTTPRequest::_redirect_request(const String &p_new_url) {
 }
 
 Error HTTPRequest::_request() {
-
 	return client->connect_to_host(url, port, use_ssl, validate_ssl);
 }
 
@@ -67,7 +66,6 @@ Error HTTPRequest::_parse_url(const String &p_url) {
 }
 
 Error HTTPRequest::request(const String &p_url, const Vector<String> &p_custom_headers, bool p_ssl_validate_domain, HTTPClient::Method p_method, const String &p_request_data) {
-
 	ERR_FAIL_COND_V(!is_inside_tree(), ERR_UNCONFIGURED);
 	ERR_FAIL_COND_V_MSG(requesting, ERR_BUSY, "HTTPRequest is processing a request. Wait for completion or cancel it before attempting a new one.");
 
@@ -91,7 +89,6 @@ Error HTTPRequest::request(const String &p_url, const Vector<String> &p_custom_h
 	requesting = true;
 
 	if (use_threads.is_set()) {
-
 		thread_done.clear();
 		thread_request_quit.clear();
 		client->set_blocking_mode(true);
@@ -111,7 +108,6 @@ Error HTTPRequest::request(const String &p_url, const Vector<String> &p_custom_h
 }
 
 void HTTPRequest::_thread_func(void *p_userdata) {
-
 	HTTPRequest *hr = (HTTPRequest *)p_userdata;
 
 	Error err = hr->_request();
@@ -120,7 +116,6 @@ void HTTPRequest::_thread_func(void *p_userdata) {
 		hr->call_deferred("_request_done", RESULT_CANT_CONNECT, 0, PoolStringArray(), PoolByteArray());
 	} else {
 		while (!hr->thread_request_quit.is_set()) {
-
 			bool exit = hr->_update_connection();
 			if (exit)
 				break;
@@ -132,7 +127,6 @@ void HTTPRequest::_thread_func(void *p_userdata) {
 }
 
 void HTTPRequest::cancel_request() {
-
 	timer->stop();
 
 	if (!requesting)
@@ -158,7 +152,6 @@ void HTTPRequest::cancel_request() {
 }
 
 bool HTTPRequest::_handle_response(bool *ret_value) {
-
 	if (!client->has_response()) {
 		call_deferred("_request_done", RESULT_NO_RESPONSE, 0, PoolStringArray(), PoolByteArray());
 		*ret_value = true;
@@ -179,7 +172,6 @@ bool HTTPRequest::_handle_response(bool *ret_value) {
 		// Handle redirect
 
 		if (max_redirects >= 0 && redirections >= max_redirects) {
-
 			call_deferred("_request_done", RESULT_REDIRECT_LIMIT_REACHED, response_code, response_headers, PoolByteArray());
 			*ret_value = true;
 			return true;
@@ -223,7 +215,6 @@ bool HTTPRequest::_handle_response(bool *ret_value) {
 }
 
 bool HTTPRequest::_update_connection() {
-
 	switch (client->get_status()) {
 		case HTTPClient::STATUS_DISCONNECTED: {
 			call_deferred("_request_done", RESULT_CANT_CONNECT, 0, PoolStringArray(), PoolByteArray());
@@ -245,17 +236,13 @@ bool HTTPRequest::_update_connection() {
 			return false;
 		} break; // Connecting to IP
 		case HTTPClient::STATUS_CANT_CONNECT: {
-
 			call_deferred("_request_done", RESULT_CANT_CONNECT, 0, PoolStringArray(), PoolByteArray());
 			return true;
 
 		} break;
 		case HTTPClient::STATUS_CONNECTED: {
-
 			if (request_sent) {
-
 				if (!got_response) {
-
 					// No body
 
 					bool ret_value;
@@ -295,16 +282,13 @@ bool HTTPRequest::_update_connection() {
 
 		} break; // Request in progress
 		case HTTPClient::STATUS_BODY: {
-
 			if (!got_response) {
-
 				bool ret_value;
 
 				if (_handle_response(&ret_value))
 					return ret_value;
 
 				if (!client->is_response_chunked() && client->get_response_body_length() == 0) {
-
 					call_deferred("_request_done", RESULT_SUCCESS, response_code, response_headers, PoolByteArray());
 					return true;
 				}
@@ -321,7 +305,6 @@ bool HTTPRequest::_update_connection() {
 				if (download_to_file != String()) {
 					file = FileAccess::open(download_to_file, FileAccess::WRITE);
 					if (!file) {
-
 						call_deferred("_request_done", RESULT_DOWNLOAD_FILE_CANT_OPEN, response_code, response_headers, PoolByteArray());
 						return true;
 					}
@@ -353,7 +336,6 @@ bool HTTPRequest::_update_connection() {
 			}
 
 			if (body_len >= 0) {
-
 				if (downloaded.get() == body_len) {
 					call_deferred("_request_done", RESULT_SUCCESS, response_code, response_headers, body);
 					return true;
@@ -381,20 +363,16 @@ bool HTTPRequest::_update_connection() {
 }
 
 void HTTPRequest::_request_done(int p_status, int p_code, const PoolStringArray &headers, const PoolByteArray &p_data) {
-
 	cancel_request();
 	emit_signal("request_completed", p_status, p_code, headers, p_data);
 }
 
 void HTTPRequest::_notification(int p_what) {
-
 	if (p_what == NOTIFICATION_INTERNAL_PROCESS) {
-
 		if (use_threads.is_set())
 			return;
 		bool done = _update_connection();
 		if (done) {
-
 			set_process_internal(false);
 			// cancel_request(); called from _request done now
 		}
@@ -408,42 +386,35 @@ void HTTPRequest::_notification(int p_what) {
 }
 
 void HTTPRequest::set_use_threads(bool p_use) {
-
 	ERR_FAIL_COND(get_http_client_status() != HTTPClient::STATUS_DISCONNECTED);
 	use_threads.set_to(p_use);
 }
 
 bool HTTPRequest::is_using_threads() const {
-
 	return use_threads.is_set();
 }
 
 void HTTPRequest::set_body_size_limit(int p_bytes) {
-
 	ERR_FAIL_COND(get_http_client_status() != HTTPClient::STATUS_DISCONNECTED);
 
 	body_size_limit = p_bytes;
 }
 
 int HTTPRequest::get_body_size_limit() const {
-
 	return body_size_limit;
 }
 
 void HTTPRequest::set_download_file(const String &p_file) {
-
 	ERR_FAIL_COND(get_http_client_status() != HTTPClient::STATUS_DISCONNECTED);
 
 	download_to_file = p_file;
 }
 
 String HTTPRequest::get_download_file() const {
-
 	return download_to_file;
 }
 
 void HTTPRequest::set_download_chunk_size(int p_chunk_size) {
-
 	ERR_FAIL_COND(get_http_client_status() != HTTPClient::STATUS_DISCONNECTED);
 
 	client->set_read_chunk_size(p_chunk_size);
@@ -458,17 +429,14 @@ HTTPClient::Status HTTPRequest::get_http_client_status() const {
 }
 
 void HTTPRequest::set_max_redirects(int p_max) {
-
 	max_redirects = p_max;
 }
 
 int HTTPRequest::get_max_redirects() const {
-
 	return max_redirects;
 }
 
 int HTTPRequest::get_downloaded_bytes() const {
-
 	return downloaded.get();
 }
 int HTTPRequest::get_body_size() const {
@@ -476,24 +444,20 @@ int HTTPRequest::get_body_size() const {
 }
 
 void HTTPRequest::set_timeout(int p_timeout) {
-
 	ERR_FAIL_COND(p_timeout < 0);
 	timeout = p_timeout;
 }
 
 int HTTPRequest::get_timeout() {
-
 	return timeout;
 }
 
 void HTTPRequest::_timeout() {
-
 	cancel_request();
 	call_deferred("_request_done", RESULT_TIMEOUT, 0, PoolStringArray(), PoolByteArray());
 }
 
 void HTTPRequest::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("request", "url", "custom_headers", "ssl_validate_domain", "method", "request_data"), &HTTPRequest::request, DEFVAL(PoolStringArray()), DEFVAL(true), DEFVAL(HTTPClient::METHOD_GET), DEFVAL(String()));
 	ClassDB::bind_method(D_METHOD("cancel_request"), &HTTPRequest::cancel_request);
 
@@ -551,7 +515,6 @@ void HTTPRequest::_bind_methods() {
 }
 
 HTTPRequest::HTTPRequest() {
-
 	port = 80;
 	redirections = 0;
 	max_redirects = 8;

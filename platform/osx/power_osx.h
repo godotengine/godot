@@ -38,7 +38,6 @@
 #include <CoreFoundation/CoreFoundation.h>
 
 class PowerOSX {
-
 private:
 	int nsecs_left;
 	int percent_left;

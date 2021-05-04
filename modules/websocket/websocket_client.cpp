@@ -33,7 +33,6 @@
 GDCINULL(WebSocketClient);
 
 WebSocketClient::WebSocketClient() {
-
 	verify_ssl = true;
 }
 
@@ -61,33 +60,27 @@ Error WebSocketClient::connect_to_url(String p_url, const Vector<String> p_proto
 }
 
 void WebSocketClient::set_verify_ssl_enabled(bool p_verify_ssl) {
-
 	verify_ssl = p_verify_ssl;
 }
 
 bool WebSocketClient::is_verify_ssl_enabled() const {
-
 	return verify_ssl;
 }
 
 Ref<X509Certificate> WebSocketClient::get_trusted_ssl_certificate() const {
-
 	return ssl_cert;
 }
 
 void WebSocketClient::set_trusted_ssl_certificate(Ref<X509Certificate> p_cert) {
-
 	ERR_FAIL_COND(get_connection_status() != CONNECTION_DISCONNECTED);
 	ssl_cert = p_cert;
 }
 
 bool WebSocketClient::is_server() const {
-
 	return false;
 }
 
 void WebSocketClient::_on_peer_packet() {
-
 	if (_is_multiplayer) {
 		_process_multiplayer(get_peer(1), 1);
 	} else {
@@ -96,7 +89,6 @@ void WebSocketClient::_on_peer_packet() {
 }
 
 void WebSocketClient::_on_connect(String p_protocol) {
-
 	if (_is_multiplayer) {
 		// need to wait for ID confirmation...
 	} else {
@@ -105,12 +97,10 @@ void WebSocketClient::_on_connect(String p_protocol) {
 }
 
 void WebSocketClient::_on_close_request(int p_code, String p_reason) {
-
 	emit_signal("server_close_request", p_code, p_reason);
 }
 
 void WebSocketClient::_on_disconnect(bool p_was_clean) {
-
 	if (_is_multiplayer) {
 		emit_signal("connection_failed");
 	} else {
@@ -119,7 +109,6 @@ void WebSocketClient::_on_disconnect(bool p_was_clean) {
 }
 
 void WebSocketClient::_on_error() {
-
 	if (_is_multiplayer) {
 		emit_signal("connection_failed");
 	} else {

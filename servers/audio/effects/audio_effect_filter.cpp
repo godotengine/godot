@@ -33,7 +33,6 @@
 
 template <int S>
 void AudioEffectFilterInstance::_process_filter(const AudioFrame *p_src_frames, AudioFrame *p_dst_frames, int p_frame_count) {
-
 	for (int i = 0; i < p_frame_count; i++) {
 		float f = p_src_frames[i].l;
 		filter_process[0][0].process_one(f);
@@ -62,7 +61,6 @@ void AudioEffectFilterInstance::_process_filter(const AudioFrame *p_src_frames, 
 }
 
 void AudioEffectFilterInstance::process(const AudioFrame *p_src_frames, AudioFrame *p_dst_frames, int p_frame_count) {
-
 	filter.set_cutoff(base->cutoff);
 	filter.set_gain(base->gain);
 	filter.set_resonance(base->resonance);
@@ -89,7 +87,6 @@ void AudioEffectFilterInstance::process(const AudioFrame *p_src_frames, AudioFra
 }
 
 AudioEffectFilterInstance::AudioEffectFilterInstance() {
-
 	for (int i = 0; i < 2; i++) {
 		for (int j = 0; j < 4; j++) {
 			filter_process[i][j].set_filter(&filter);
@@ -106,30 +103,24 @@ Ref<AudioEffectInstance> AudioEffectFilter::instance() {
 }
 
 void AudioEffectFilter::set_cutoff(float p_freq) {
-
 	cutoff = p_freq;
 }
 
 float AudioEffectFilter::get_cutoff() const {
-
 	return cutoff;
 }
 
 void AudioEffectFilter::set_resonance(float p_amount) {
-
 	resonance = p_amount;
 }
 float AudioEffectFilter::get_resonance() const {
-
 	return resonance;
 }
 
 void AudioEffectFilter::set_gain(float p_amount) {
-
 	gain = p_amount;
 }
 float AudioEffectFilter::get_gain() const {
-
 	return gain;
 }
 
@@ -138,12 +129,10 @@ void AudioEffectFilter::set_db(FilterDB p_db) {
 }
 
 AudioEffectFilter::FilterDB AudioEffectFilter::get_db() const {
-
 	return db;
 }
 
 void AudioEffectFilter::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("set_cutoff", "freq"), &AudioEffectFilter::set_cutoff);
 	ClassDB::bind_method(D_METHOD("get_cutoff"), &AudioEffectFilter::get_cutoff);
 
@@ -168,7 +157,6 @@ void AudioEffectFilter::_bind_methods() {
 }
 
 AudioEffectFilter::AudioEffectFilter(AudioFilterSW::Mode p_mode) {
-
 	mode = p_mode;
 	cutoff = 2000;
 	resonance = 0.5;

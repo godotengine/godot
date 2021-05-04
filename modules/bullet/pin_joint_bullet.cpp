@@ -42,7 +42,6 @@
 PinJointBullet::PinJointBullet(RigidBodyBullet *p_body_a, const Vector3 &p_pos_a, RigidBodyBullet *p_body_b, const Vector3 &p_pos_b) :
 		JointBullet() {
 	if (p_body_b) {
-
 		btVector3 btPivotA;
 		btVector3 btPivotB;
 		G_TO_B(p_pos_a * p_body_a->get_body_scale(), btPivotA);

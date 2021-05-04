@@ -40,7 +40,6 @@
 #include "scene/gui/popup_menu.h"
 
 class ItemListPlugin : public Object {
-
 	GDCLASS(ItemListPlugin, Object);
 
 protected:
@@ -96,7 +95,6 @@ public:
 ///////////////////////////////////////////////////////////////
 
 class ItemListOptionButtonPlugin : public ItemListPlugin {
-
 	GDCLASS(ItemListOptionButtonPlugin, ItemListPlugin);
 
 	OptionButton *ob;
@@ -126,7 +124,6 @@ public:
 };
 
 class ItemListPopupMenuPlugin : public ItemListPlugin {
-
 	GDCLASS(ItemListPopupMenuPlugin, ItemListPlugin);
 
 	PopupMenu *pp;
@@ -169,7 +166,6 @@ public:
 ///////////////////////////////////////////////////////////////
 
 class ItemListItemListPlugin : public ItemListPlugin {
-
 	GDCLASS(ItemListItemListPlugin, ItemListPlugin);
 
 	ItemList *pp;
@@ -198,7 +194,6 @@ public:
 ///////////////////////////////////////////////////////////////
 
 class ItemListEditor : public HBoxContainer {
-
 	GDCLASS(ItemListEditor, HBoxContainer);
 
 	Node *item_list;
@@ -235,7 +230,6 @@ public:
 };
 
 class ItemListEditorPlugin : public EditorPlugin {
-
 	GDCLASS(ItemListEditorPlugin, EditorPlugin);
 
 	ItemListEditor *item_list_editor;

@@ -38,7 +38,6 @@ const char *AudioDriverXAudio2::get_name() const {
 }
 
 Error AudioDriverXAudio2::init() {
-
 	active = false;
 	thread_exited = false;
 	exit_thread = false;
@@ -85,19 +84,15 @@ Error AudioDriverXAudio2::init() {
 }
 
 void AudioDriverXAudio2::thread_func(void *p_udata) {
-
 	AudioDriverXAudio2 *ad = (AudioDriverXAudio2 *)p_udata;
 
 	while (!ad->exit_thread) {
-
 		if (!ad->active) {
-
 			for (int i = 0; i < AUDIO_BUFFERS; i++) {
 				ad->xaudio_buffer[i].Flags = XAUDIO2_END_OF_STREAM;
 			}
 
 		} else {
-
 			ad->lock();
 
 			ad->audio_server_process(ad->buffer_size, ad->samples_in);
@@ -105,7 +100,6 @@ void AudioDriverXAudio2::thread_func(void *p_udata) {
 			ad->unlock();
 
 			for (unsigned int i = 0; i < ad->buffer_size * ad->channels; i++) {
-
 				ad->samples_out[ad->current_buffer][i] = ad->samples_in[i] >> 16;
 			}
 
@@ -128,24 +122,20 @@ void AudioDriverXAudio2::thread_func(void *p_udata) {
 }
 
 void AudioDriverXAudio2::start() {
-
 	active = true;
 	HRESULT hr = source_voice->Start(0);
 	ERR_FAIL_COND_MSG(hr != S_OK, "Error starting XAudio2 driver. Error code: " + itos(hr) + ".");
 }
 
 int AudioDriverXAudio2::get_mix_rate() const {
-
 	return mix_rate;
 }
 
 AudioDriver::SpeakerMode AudioDriverXAudio2::get_speaker_mode() const {
-
 	return speaker_mode;
 }
 
 float AudioDriverXAudio2::get_latency() {
-
 	XAUDIO2_PERFORMANCE_DATA perf_data;
 	xaudio->GetPerformanceData(&perf_data);
 	if (perf_data.CurrentLatencyInSamples) {
@@ -156,16 +146,13 @@ float AudioDriverXAudio2::get_latency() {
 }
 
 void AudioDriverXAudio2::lock() {
-
 	mutex.lock();
 }
 void AudioDriverXAudio2::unlock() {
-
 	mutex.unlock();
 }
 
 void AudioDriverXAudio2::finish() {
-
 	if (!thread.is_started())
 		return;
 

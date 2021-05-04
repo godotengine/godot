@@ -35,7 +35,6 @@
 #include "scene/resources/curve.h"
 
 class Path : public Spatial {
-
 	GDCLASS(Path, Spatial);
 
 	Ref<Curve3D> curve;
@@ -54,7 +53,6 @@ public:
 };
 
 class PathFollow : public Spatial {
-
 	GDCLASS(PathFollow, Spatial);
 
 public:

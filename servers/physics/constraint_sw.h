@@ -34,7 +34,6 @@
 #include "body_sw.h"
 
 class ConstraintSW : public RID_Data {
-
 	BodySW **_body_ptr;
 	int _body_count;
 	uint64_t island_step;

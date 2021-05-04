@@ -40,7 +40,6 @@
 class RID_OwnerBase;
 
 class RID_Data {
-
 	friend class RID_OwnerBase;
 
 #ifndef DEBUG_ENABLED
@@ -63,23 +62,18 @@ public:
 	_FORCE_INLINE_ RID_Data *get_data() const { return _data; }
 
 	_FORCE_INLINE_ bool operator==(const RID &p_rid) const {
-
 		return _data == p_rid._data;
 	}
 	_FORCE_INLINE_ bool operator<(const RID &p_rid) const {
-
 		return _data < p_rid._data;
 	}
 	_FORCE_INLINE_ bool operator<=(const RID &p_rid) const {
-
 		return _data <= p_rid._data;
 	}
 	_FORCE_INLINE_ bool operator>(const RID &p_rid) const {
-
 		return _data > p_rid._data;
 	}
 	_FORCE_INLINE_ bool operator!=(const RID &p_rid) const {
-
 		return _data != p_rid._data;
 	}
 	_FORCE_INLINE_ bool is_valid() const { return _data != NULL; }
@@ -106,12 +100,10 @@ protected:
 #ifndef DEBUG_ENABLED
 
 	_FORCE_INLINE_ bool _is_owner(const RID &p_rid) const {
-
 		return this == p_rid._data->_owner;
 	}
 
 	_FORCE_INLINE_ void _remove_owner(RID &p_rid) {
-
 		p_rid._data->_owner = NULL;
 	}
 #endif
@@ -131,7 +123,6 @@ public:
 #endif
 public:
 	_FORCE_INLINE_ RID make_rid(T *p_data) {
-
 		RID rid;
 		_set_data(rid, p_data);
 
@@ -143,7 +134,6 @@ public:
 	}
 
 	_FORCE_INLINE_ T *get(const RID &p_rid) {
-
 #ifdef DEBUG_ENABLED
 
 		ERR_FAIL_COND_V(!p_rid.is_valid(), NULL);
@@ -153,7 +143,6 @@ public:
 	}
 
 	_FORCE_INLINE_ T *getornull(const RID &p_rid) {
-
 #ifdef DEBUG_ENABLED
 
 		if (p_rid.get_data()) {
@@ -164,12 +153,10 @@ public:
 	}
 
 	_FORCE_INLINE_ T *getptr(const RID &p_rid) {
-
 		return static_cast<T *>(p_rid.get_data());
 	}
 
 	_FORCE_INLINE_ bool owns(const RID &p_rid) const {
-
 		if (p_rid.get_data() == NULL)
 			return false;
 #ifdef DEBUG_ENABLED
@@ -180,7 +167,6 @@ public:
 	}
 
 	void free(RID p_rid) {
-
 #ifdef DEBUG_ENABLED
 		id_map.erase(p_rid.get_data());
 #else
@@ -189,7 +175,6 @@ public:
 	}
 
 	void get_owned_list(List<RID> *p_owned) {
-
 #ifdef DEBUG_ENABLED
 
 		for (typename Set<RID_Data *>::Element *E = id_map.front(); E; E = E->next()) {

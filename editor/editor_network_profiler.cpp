@@ -42,7 +42,6 @@ void EditorNetworkProfiler::_bind_methods() {
 }
 
 void EditorNetworkProfiler::_notification(int p_what) {
-
 	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
 		activate->set_icon(get_icon("Play", "EditorIcons"));
 		clear_button->set_icon(get_icon("Clear", "EditorIcons"));
@@ -56,13 +55,11 @@ void EditorNetworkProfiler::_notification(int p_what) {
 }
 
 void EditorNetworkProfiler::_update_frame() {
-
 	counters_display->clear();
 
 	TreeItem *root = counters_display->create_item();
 
 	for (Map<ObjectID, MultiplayerAPI::ProfilingInfo>::Element *E = nodes_data.front(); E; E = E->next()) {
-
 		TreeItem *node = counters_display->create_item(root);
 
 		for (int j = 0; j < counters_display->get_columns(); ++j) {
@@ -78,7 +75,6 @@ void EditorNetworkProfiler::_update_frame() {
 }
 
 void EditorNetworkProfiler::_activate_pressed() {
-
 	if (activate->is_pressed()) {
 		activate->set_icon(get_icon("Stop", "EditorIcons"));
 		activate->set_text(TTR("Stop"));
@@ -99,7 +95,6 @@ void EditorNetworkProfiler::_clear_pressed() {
 }
 
 void EditorNetworkProfiler::add_node_frame_data(const MultiplayerAPI::ProfilingInfo p_frame) {
-
 	if (!nodes_data.has(p_frame.node)) {
 		nodes_data.insert(p_frame.node, p_frame);
 	} else {
@@ -116,7 +111,6 @@ void EditorNetworkProfiler::add_node_frame_data(const MultiplayerAPI::ProfilingI
 }
 
 void EditorNetworkProfiler::set_bandwidth(int p_incoming, int p_outgoing) {
-
 	incoming_bandwidth_text->set_text(vformat(TTR("%s/s"), String::humanize_size(p_incoming)));
 	outgoing_bandwidth_text->set_text(vformat(TTR("%s/s"), String::humanize_size(p_outgoing)));
 
@@ -134,7 +128,6 @@ bool EditorNetworkProfiler::is_profiling() {
 }
 
 EditorNetworkProfiler::EditorNetworkProfiler() {
-
 	HBoxContainer *hb = memnew(HBoxContainer);
 	hb->add_constant_override("separation", 8 * EDSCALE);
 	add_child(hb);

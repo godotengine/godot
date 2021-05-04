@@ -49,7 +49,6 @@ class BakedLightmapData : public Resource {
 	Transform cell_space_xform;
 
 	struct User {
-
 		NodePath path;
 		struct {
 			Ref<Texture> single;
@@ -150,7 +149,7 @@ public:
 		int32_t subindex;
 		Ref<Mesh> mesh;
 		int32_t lightmap_scale;
-		Vector<Ref<Material> > overrides;
+		Vector<Ref<Material>> overrides;
 		bool cast_shadows;
 		bool generate_lightmap;
 	};
@@ -186,7 +185,7 @@ private:
 	void _assign_lightmaps();
 	void _clear_lightmaps();
 
-	void _get_material_images(const MeshesFound &p_found_mesh, Lightmapper::MeshData &r_mesh_data, Vector<Ref<Texture> > &r_albedo_textures, Vector<Ref<Texture> > &r_emission_textures);
+	void _get_material_images(const MeshesFound &p_found_mesh, Lightmapper::MeshData &r_mesh_data, Vector<Ref<Texture>> &r_albedo_textures, Vector<Ref<Texture>> &r_emission_textures);
 	Ref<Image> _get_irradiance_from_sky(Ref<Sky> p_sky, float p_energy, Vector2i p_size);
 	Ref<Image> _get_irradiance_map(Ref<Environment> p_env, Vector2i p_size);
 	void _find_meshes_and_lights(Node *p_at_node, Vector<MeshesFound> &meshes, Vector<LightsFound> &lights);

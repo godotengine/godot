@@ -39,16 +39,13 @@
 #include "scene/resources/texture.h"
 
 String ResourceImporterLayeredTexture::get_importer_name() const {
-
 	return is_3d ? "texture_3d" : "texture_array";
 }
 
 String ResourceImporterLayeredTexture::get_visible_name() const {
-
 	return is_3d ? "Texture3D" : "TextureArray";
 }
 void ResourceImporterLayeredTexture::get_recognized_extensions(List<String> *p_extensions) const {
-
 	ImageLoader::get_recognized_extensions(p_extensions);
 }
 String ResourceImporterLayeredTexture::get_save_extension() const {
@@ -56,12 +53,10 @@ String ResourceImporterLayeredTexture::get_save_extension() const {
 }
 
 String ResourceImporterLayeredTexture::get_resource_type() const {
-
 	return is_3d ? "Texture3D" : "TextureArray";
 }
 
 bool ResourceImporterLayeredTexture::get_option_visibility(const String &p_option, const Map<StringName, Variant> &p_options) const {
-
 	return true;
 }
 
@@ -69,7 +64,6 @@ int ResourceImporterLayeredTexture::get_preset_count() const {
 	return 3;
 }
 String ResourceImporterLayeredTexture::get_preset_name(int p_idx) const {
-
 	static const char *preset_names[] = {
 		"3D",
 		"2D",
@@ -80,7 +74,6 @@ String ResourceImporterLayeredTexture::get_preset_name(int p_idx) const {
 }
 
 void ResourceImporterLayeredTexture::get_import_options(List<ImportOption> *r_options, int p_preset) const {
-
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "compress/mode", PROPERTY_HINT_ENUM, "Lossless (PNG),Video RAM (S3TC/ETC/BPTC),Uncompressed", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), p_preset == PRESET_3D ? 1 : 0));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "compress/no_bptc_if_rgb"), false));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "flags/repeat", PROPERTY_HINT_ENUM, "Disabled,Enabled,Mirrored"), 0));
@@ -91,8 +84,7 @@ void ResourceImporterLayeredTexture::get_import_options(List<ImportOption> *r_op
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "slices/vertical", PROPERTY_HINT_RANGE, "1,256,1"), p_preset == PRESET_COLOR_CORRECT ? 1 : 8));
 }
 
-void ResourceImporterLayeredTexture::_save_tex(const Vector<Ref<Image> > &p_images, const String &p_to_path, int p_compress_mode, Image::CompressMode p_vram_compression, bool p_mipmaps, int p_texture_flags) {
-
+void ResourceImporterLayeredTexture::_save_tex(const Vector<Ref<Image>> &p_images, const String &p_to_path, int p_compress_mode, Image::CompressMode p_vram_compression, bool p_mipmaps, int p_texture_flags) {
 	FileAccess *f = FileAccess::open(p_to_path, FileAccess::WRITE);
 	f->store_8('G');
 	f->store_8('D');
@@ -119,10 +111,8 @@ void ResourceImporterLayeredTexture::_save_tex(const Vector<Ref<Image> > &p_imag
 	}
 
 	for (int i = 0; i < p_images.size(); i++) {
-
 		switch (p_compress_mode) {
 			case COMPRESS_LOSSLESS: {
-
 				Ref<Image> image = p_images[i]->duplicate();
 				if (p_mipmaps) {
 					image->generate_mipmaps();
@@ -134,7 +124,6 @@ void ResourceImporterLayeredTexture::_save_tex(const Vector<Ref<Image> > &p_imag
 				f->store_32(mmc);
 
 				for (int j = 0; j < mmc; j++) {
-
 					if (j > 0) {
 						image->shrink_x2();
 					}
@@ -149,7 +138,6 @@ void ResourceImporterLayeredTexture::_save_tex(const Vector<Ref<Image> > &p_imag
 
 			} break;
 			case COMPRESS_VIDEO_RAM: {
-
 				Ref<Image> image = p_images[i]->duplicate();
 				image->generate_mipmaps(false);
 
@@ -169,7 +157,6 @@ void ResourceImporterLayeredTexture::_save_tex(const Vector<Ref<Image> > &p_imag
 				f->store_buffer(r.ptr(), dl);
 			} break;
 			case COMPRESS_UNCOMPRESSED: {
-
 				Ref<Image> image = p_images[i]->duplicate();
 
 				if (p_mipmaps) {
@@ -193,7 +180,6 @@ void ResourceImporterLayeredTexture::_save_tex(const Vector<Ref<Image> > &p_imag
 }
 
 Error ResourceImporterLayeredTexture::import(const String &p_source_file, const String &p_save_path, const Map<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {
-
 	int compress_mode = p_options["compress/mode"];
 	int no_bptc_if_rgb = p_options["compress/no_bptc_if_rgb"];
 	int repeat = p_options["flags/repeat"];
@@ -221,7 +207,7 @@ Error ResourceImporterLayeredTexture::import(const String &p_source_file, const 
 	if (srgb == 1)
 		tex_flags |= Texture::FLAG_CONVERT_TO_LINEAR;
 
-	Vector<Ref<Image> > slices;
+	Vector<Ref<Image>> slices;
 
 	int slice_w = image->get_width() / hslices;
 	int slice_h = image->get_height() / vslices;
@@ -263,7 +249,6 @@ Error ResourceImporterLayeredTexture::import(const String &p_source_file, const 
 		bool encode_bptc = false;
 
 		if (ProjectSettings::get_singleton()->get("rendering/vram_compression/import_bptc")) {
-
 			encode_bptc = true;
 
 			if (no_bptc_if_rgb) {
@@ -277,14 +262,12 @@ Error ResourceImporterLayeredTexture::import(const String &p_source_file, const 
 		}
 
 		if (encode_bptc) {
-
 			_save_tex(slices, p_save_path + ".bptc." + extension, compress_mode, Image::COMPRESS_BPTC, mipmaps, tex_flags);
 			r_platform_variants->push_back("bptc");
 			ok_on_pc = true;
 		}
 
 		if (ProjectSettings::get_singleton()->get("rendering/vram_compression/import_s3tc")) {
-
 			_save_tex(slices, p_save_path + ".s3tc." + extension, compress_mode, Image::COMPRESS_S3TC, mipmaps, tex_flags);
 			r_platform_variants->push_back("s3tc");
 			ok_on_pc = true;
@@ -292,7 +275,6 @@ Error ResourceImporterLayeredTexture::import(const String &p_source_file, const 
 		}
 
 		if (ProjectSettings::get_singleton()->get("rendering/vram_compression/import_etc2")) {
-
 			_save_tex(slices, p_save_path + ".etc2." + extension, compress_mode, Image::COMPRESS_ETC2, mipmaps, tex_flags);
 			r_platform_variants->push_back("etc2");
 			formats_imported.push_back("etc2");
@@ -305,7 +287,6 @@ Error ResourceImporterLayeredTexture::import(const String &p_source_file, const 
 		}
 
 		if (ProjectSettings::get_singleton()->get("rendering/vram_compression/import_pvrtc")) {
-
 			_save_tex(slices, p_save_path + ".pvrtc." + extension, compress_mode, Image::COMPRESS_PVRTC4, mipmaps, tex_flags);
 			r_platform_variants->push_back("pvrtc");
 			formats_imported.push_back("pvrtc");
@@ -340,7 +321,6 @@ const char *ResourceImporterLayeredTexture::compression_formats[] = {
 	NULL
 };
 String ResourceImporterLayeredTexture::get_import_settings_string() const {
-
 	String s;
 
 	int index = 0;
@@ -357,7 +337,6 @@ String ResourceImporterLayeredTexture::get_import_settings_string() const {
 }
 
 bool ResourceImporterLayeredTexture::are_import_settings_valid(const String &p_path) const {
-
 	//will become invalid if formats are missing to import
 	Dictionary metadata = ResourceFormatImporter::get_singleton()->get_resource_metadata(p_path);
 
@@ -395,7 +374,6 @@ bool ResourceImporterLayeredTexture::are_import_settings_valid(const String &p_p
 ResourceImporterLayeredTexture *ResourceImporterLayeredTexture::singleton = NULL;
 
 ResourceImporterLayeredTexture::ResourceImporterLayeredTexture() {
-
 	singleton = this;
 	is_3d = true;
 }

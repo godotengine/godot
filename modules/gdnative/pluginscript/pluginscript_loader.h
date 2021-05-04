@@ -39,7 +39,6 @@
 class PluginScriptLanguage;
 
 class ResourceFormatLoaderPluginScript : public ResourceFormatLoader {
-
 	PluginScriptLanguage *_language;
 
 public:
@@ -51,7 +50,6 @@ public:
 };
 
 class ResourceFormatSaverPluginScript : public ResourceFormatSaver {
-
 	PluginScriptLanguage *_language;
 
 public:

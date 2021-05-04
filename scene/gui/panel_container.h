@@ -34,7 +34,6 @@
 #include "scene/gui/container.h"
 
 class PanelContainer : public Container {
-
 	GDCLASS(PanelContainer, Container);
 
 protected:

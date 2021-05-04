@@ -68,7 +68,6 @@ import android.view.MotionEvent;
  *   bit depths). Failure to do so would result in an EGL_BAD_MATCH error.
  */
 public class GodotView extends GLSurfaceView {
-
 	private static String TAG = GodotView.class.getSimpleName();
 
 	private final Godot godot;
@@ -118,11 +117,9 @@ public class GodotView extends GLSurfaceView {
 	}
 
 	private void init(XRMode xrMode, boolean translucent, int depth, int stencil) {
-
 		setPreserveEGLContextOnPause(true);
 		setFocusableInTouchMode(true);
 		switch (xrMode) {
-
 			case OVR:
 				// Replace the default egl config chooser.
 				setEGLConfigChooser(new OvrConfigChooser());

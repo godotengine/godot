@@ -57,7 +57,8 @@ struct GDScriptDataType {
 	Ref<Script> script_type_ref;
 
 	bool is_type(const Variant &p_variant, bool p_allow_implicit_conversion = false) const {
-		if (!has_type) return true; // Can't type check
+		if (!has_type)
+			return true; // Can't type check
 
 		switch (kind) {
 			case UNINITIALIZED:
@@ -216,7 +217,6 @@ public:
 	};
 
 	struct StackDebug {
-
 		int line;
 		int pos;
 		bool added;
@@ -294,7 +294,6 @@ private:
 
 public:
 	struct CallState {
-
 		GDScript *script;
 		GDScriptInstance *instance;
 #ifdef DEBUG_ENABLED
@@ -326,7 +325,7 @@ public:
 	GDScript *get_script() const { return _script; }
 	StringName get_source() const { return source; }
 
-	void debug_get_stack_member_state(int p_line, List<Pair<StringName, int> > *r_stackvars) const;
+	void debug_get_stack_member_state(int p_line, List<Pair<StringName, int>> *r_stackvars) const;
 
 	_FORCE_INLINE_ bool is_empty() const { return _code_size == 0; }
 
@@ -352,7 +351,6 @@ public:
 };
 
 class GDScriptFunctionState : public Reference {
-
 	GDCLASS(GDScriptFunctionState, Reference);
 	friend class GDScriptFunction;
 	GDScriptFunction *function;

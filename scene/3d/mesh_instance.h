@@ -39,7 +39,6 @@
 #include "core/local_vector.h"
 
 class MeshInstance : public GeometryInstance {
-
 	GDCLASS(MeshInstance, GeometryInstance);
 
 protected:
@@ -75,7 +74,6 @@ protected:
 	uint32_t software_skinning_flags;
 
 	struct BlendShapeTrack {
-
 		int idx;
 		float value;
 		BlendShapeTrack() {
@@ -85,7 +83,7 @@ protected:
 	};
 
 	Map<StringName, BlendShapeTrack> blend_shape_tracks;
-	Vector<Ref<Material> > materials;
+	Vector<Ref<Material>> materials;
 
 	void _mesh_changed();
 	void _resolve_skeleton_path();

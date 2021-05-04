@@ -47,7 +47,7 @@ class GDNative;
 class GDNativeLibrary : public Resource {
 	GDCLASS(GDNativeLibrary, Resource);
 
-	static Map<String, Vector<Ref<GDNative> > > loaded_libraries;
+	static Map<String, Vector<Ref<GDNative>>> loaded_libraries;
 
 	friend class GDNativeLibraryResourceLoader;
 	friend class GDNative;

@@ -34,7 +34,6 @@
 #include "scene/resources/shape.h"
 
 class ConvexPolygonShape : public Shape {
-
 	GDCLASS(ConvexPolygonShape, Shape);
 	PoolVector<Vector3> points;
 

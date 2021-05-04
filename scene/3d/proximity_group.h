@@ -34,7 +34,6 @@
 #include "spatial.h"
 
 class ProximityGroup : public Spatial {
-
 	GDCLASS(ProximityGroup, Spatial);
 
 public:

@@ -100,7 +100,6 @@ String OSIPhone::get_unique_id() const {
 };
 
 void OSIPhone::initialize_core() {
-
 	OS_Unix::initialize_core();
 
 	set_data_dir(data_dir);
@@ -121,7 +120,6 @@ void OSIPhone::start() {
 }
 
 Error OSIPhone::initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver) {
-
 	bool use_gl3 = GLOBAL_GET("rendering/quality/driver/driver_name") == "GLES3";
 	bool gl_initialization_error = false;
 
@@ -189,7 +187,6 @@ Error OSIPhone::initialize(const VideoMode &p_desired, int p_video_driver, int p
 };
 
 MainLoop *OSIPhone::get_main_loop() const {
-
 	return main_loop;
 };
 
@@ -287,7 +284,6 @@ void OSIPhone::update_gravity(float p_x, float p_y, float p_z) {
 };
 
 void OSIPhone::update_accelerometer(float p_x, float p_y, float p_z) {
-
 	// Found out the Z should not be negated! Pass as is!
 	input->set_accelerometer(Vector3(p_x / (float)ACCEL_RANGE, p_y / (float)ACCEL_RANGE, p_z / (float)ACCEL_RANGE));
 };
@@ -317,7 +313,6 @@ void OSIPhone::joy_axis(int p_device, int p_axis, const InputDefault::JoyAxis &p
 };
 
 void OSIPhone::delete_main_loop() {
-
 	if (main_loop) {
 		main_loop->finish();
 		memdelete(main_loop);
@@ -327,7 +322,6 @@ void OSIPhone::delete_main_loop() {
 };
 
 void OSIPhone::finalize() {
-
 	delete_main_loop();
 
 	if (joypad_iphone) {
@@ -419,7 +413,6 @@ void OSIPhone::set_video_mode(const VideoMode &p_video_mode, int p_screen) {
 }
 
 OS::VideoMode OSIPhone::get_video_mode(int p_screen) const {
-
 	return video_mode;
 }
 
@@ -428,7 +421,6 @@ void OSIPhone::get_fullscreen_mode_list(List<VideoMode> *p_list, int p_screen) c
 }
 
 bool OSIPhone::can_draw() const {
-
 	if (native_video_is_playing())
 		return false;
 	return true;

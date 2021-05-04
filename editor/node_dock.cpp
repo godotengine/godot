@@ -34,7 +34,6 @@
 #include "editor_scale.h"
 
 void NodeDock::show_groups() {
-
 	groups_button->set_pressed(true);
 	connections_button->set_pressed(false);
 	groups->show();
@@ -42,7 +41,6 @@ void NodeDock::show_groups() {
 }
 
 void NodeDock::show_connections() {
-
 	groups_button->set_pressed(false);
 	connections_button->set_pressed(true);
 	groups->hide();
@@ -50,13 +48,11 @@ void NodeDock::show_connections() {
 }
 
 void NodeDock::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("show_groups"), &NodeDock::show_groups);
 	ClassDB::bind_method(D_METHOD("show_connections"), &NodeDock::show_connections);
 }
 
 void NodeDock::_notification(int p_what) {
-
 	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
 		connections_button->set_icon(get_icon("Signals", "EditorIcons"));
 		groups_button->set_icon(get_icon("Groups", "EditorIcons"));
@@ -66,12 +62,10 @@ void NodeDock::_notification(int p_what) {
 NodeDock *NodeDock::singleton = NULL;
 
 void NodeDock::update_lists() {
-
 	connections->update_tree();
 }
 
 void NodeDock::set_node(Node *p_node) {
-
 	connections->set_node(p_node);
 	groups->set_current(p_node);
 
@@ -92,7 +86,6 @@ void NodeDock::set_node(Node *p_node) {
 }
 
 NodeDock::NodeDock() {
-
 	singleton = this;
 
 	set_name("Node");

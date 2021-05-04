@@ -34,7 +34,6 @@
 #include "core/string_name.h"
 
 class CoreStringNames {
-
 	friend void register_core_types();
 	friend void unregister_core_types();
 

@@ -58,7 +58,6 @@ import java.util.Set;
  * Handles input related events for the {@link GodotView} view.
  */
 public class GodotInputHandler implements InputDeviceListener {
-
 	private final String tag = this.getClass().getSimpleName();
 
 	private final SparseIntArray mJoystickIds = new SparseIntArray(4);

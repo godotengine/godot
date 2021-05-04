@@ -107,7 +107,6 @@ Vector3 Quat::get_euler_yxz() const {
 }
 
 void Quat::operator*=(const Quat &p_q) {
-
 	set(w * p_q.x + x * p_q.w + y * p_q.z - z * p_q.y,
 			w * p_q.y + y * p_q.w + z * p_q.x - x * p_q.z,
 			w * p_q.z + z * p_q.w + x * p_q.y - y * p_q.x,
@@ -115,19 +114,16 @@ void Quat::operator*=(const Quat &p_q) {
 }
 
 Quat Quat::operator*(const Quat &p_q) const {
-
 	Quat r = *this;
 	r *= p_q;
 	return r;
 }
 
 bool Quat::is_equal_approx(const Quat &p_quat) const {
-
 	return Math::is_equal_approx(x, p_quat.x) && Math::is_equal_approx(y, p_quat.y) && Math::is_equal_approx(z, p_quat.z) && Math::is_equal_approx(w, p_quat.w);
 }
 
 real_t Quat::length() const {
-
 	return Math::sqrt(length_squared());
 }
 
@@ -206,7 +202,8 @@ Quat Quat::slerpni(const Quat &p_to, const real_t &p_weight) const {
 
 	real_t dot = from.dot(p_to);
 
-	if (Math::absf(dot) > 0.9999) return from;
+	if (Math::absf(dot) > 0.9999)
+		return from;
 
 	real_t theta = Math::acos(dot),
 		   sinT = 1.0 / Math::sin(theta),
@@ -232,7 +229,6 @@ Quat Quat::cubic_slerp(const Quat &p_b, const Quat &p_pre_a, const Quat &p_post_
 }
 
 Quat::operator String() const {
-
 	return String::num(x) + ", " + String::num(y) + ", " + String::num(z) + ", " + String::num(w);
 }
 

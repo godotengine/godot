@@ -36,7 +36,6 @@
 #include "constraint_sw.h"
 
 class AreaPairSW : public ConstraintSW {
-
 	BodySW *body;
 	AreaSW *area;
 	int body_shape;
@@ -52,7 +51,6 @@ public:
 };
 
 class Area2PairSW : public ConstraintSW {
-
 	AreaSW *area_a;
 	AreaSW *area_b;
 	int shape_a;

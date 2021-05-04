@@ -46,7 +46,6 @@ import androidx.fragment.app.FragmentActivity;
  * within an Android app.
  */
 public abstract class FullScreenGodotApp extends FragmentActivity implements GodotHost {
-
 	@Nullable
 	private Godot godotFragment;
 

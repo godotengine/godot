@@ -60,7 +60,6 @@ void SpringArm::_notification(int p_what) {
 }
 
 void SpringArm::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("get_hit_length"), &SpringArm::get_hit_length);
 
 	ClassDB::bind_method(D_METHOD("set_length", "length"), &SpringArm::set_length);
@@ -163,7 +162,6 @@ void SpringArm::process_spring() {
 	childs_transform.origin = get_global_transform().origin + cast_direction * (spring_length * motion_delta);
 
 	for (int i = get_child_count() - 1; 0 <= i; --i) {
-
 		Spatial *child = Object::cast_to<Spatial>(get_child(i));
 		if (child) {
 			childs_transform.basis = child->get_global_transform().basis;

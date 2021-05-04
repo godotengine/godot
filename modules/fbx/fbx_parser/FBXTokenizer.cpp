@@ -223,7 +223,6 @@ void Tokenize(TokenList &output_tokens, const char *input, size_t length) {
 		}
 
 		if (IsSpaceOrNewLine(c)) {
-
 			if (token_begin) {
 				// peek ahead and check if the next token is a colon in which
 				// case this counts as KEY token.

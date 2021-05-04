@@ -49,7 +49,6 @@
  * EditorAbout is also used from the project manager where EditorNode isn't initialized.
  */
 class EditorAbout : public AcceptDialog {
-
 	GDCLASS(EditorAbout, AcceptDialog);
 
 private:

@@ -225,7 +225,6 @@ static Ref<ResourceFormatSaverShader> resource_saver_shader;
 static Ref<ResourceFormatLoaderShader> resource_loader_shader;
 
 void register_scene_types() {
-
 	SceneStringNames::create();
 
 	OS::get_singleton()->yield(); //may take time to init
@@ -774,7 +773,6 @@ void register_scene_types() {
 }
 
 void unregister_scene_types() {
-
 	clear_default_theme();
 
 	ResourceLoader::remove_resource_format_loader(resource_loader_dynamic_font);

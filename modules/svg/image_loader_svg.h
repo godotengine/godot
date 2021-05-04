@@ -42,7 +42,6 @@
 */
 
 class SVGRasterizer {
-
 	NSVGrasterizer *rasterizer;
 
 public:

@@ -132,7 +132,6 @@ String sformat(const String &p_text, const Variant &p1, const Variant &p2, const
 
 #ifdef TOOLS_ENABLED
 bool is_csharp_keyword(const String &p_name) {
-
 	// Reserved keywords
 
 	return p_name == "abstract" || p_name == "as" || p_name == "base" || p_name == "bool" ||

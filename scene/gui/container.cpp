@@ -33,7 +33,6 @@
 #include "scene/scene_string_names.h"
 
 void Container::_child_minsize_changed() {
-
 	//Size2 ms = get_combined_minimum_size();
 	//if (ms.width > get_size().width || ms.height > get_size().height) {
 	minimum_size_changed();
@@ -41,7 +40,6 @@ void Container::_child_minsize_changed() {
 }
 
 void Container::add_child_notify(Node *p_child) {
-
 	Control::add_child_notify(p_child);
 
 	Control *control = Object::cast_to<Control>(p_child);
@@ -57,7 +55,6 @@ void Container::add_child_notify(Node *p_child) {
 }
 
 void Container::move_child_notify(Node *p_child) {
-
 	Control::move_child_notify(p_child);
 
 	if (!Object::cast_to<Control>(p_child))
@@ -68,7 +65,6 @@ void Container::move_child_notify(Node *p_child) {
 }
 
 void Container::remove_child_notify(Node *p_child) {
-
 	Control::remove_child_notify(p_child);
 
 	Control *control = Object::cast_to<Control>(p_child);
@@ -84,7 +80,6 @@ void Container::remove_child_notify(Node *p_child) {
 }
 
 void Container::_sort_children() {
-
 	if (!is_inside_tree())
 		return;
 
@@ -94,7 +89,6 @@ void Container::_sort_children() {
 }
 
 void Container::fit_child_in_rect(Control *p_child, const Rect2 &p_rect) {
-
 	ERR_FAIL_COND(!p_child);
 	ERR_FAIL_COND(p_child->get_parent() != this);
 
@@ -133,7 +127,6 @@ void Container::fit_child_in_rect(Control *p_child, const Rect2 &p_rect) {
 }
 
 void Container::queue_sort() {
-
 	if (!is_inside_tree())
 		return;
 
@@ -145,23 +138,18 @@ void Container::queue_sort() {
 }
 
 void Container::_notification(int p_what) {
-
 	switch (p_what) {
-
 		case NOTIFICATION_ENTER_TREE: {
 			pending_sort = false;
 			queue_sort();
 		} break;
 		case NOTIFICATION_RESIZED: {
-
 			queue_sort();
 		} break;
 		case NOTIFICATION_THEME_CHANGED: {
-
 			queue_sort();
 		} break;
 		case NOTIFICATION_VISIBILITY_CHANGED: {
-
 			if (is_visible_in_tree()) {
 				queue_sort();
 			}
@@ -170,7 +158,6 @@ void Container::_notification(int p_what) {
 }
 
 String Container::get_configuration_warning() const {
-
 	String warning = Control::get_configuration_warning();
 
 	if (get_class() == "Container" && get_script().is_null()) {
@@ -183,7 +170,6 @@ String Container::get_configuration_warning() const {
 }
 
 void Container::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("_sort_children"), &Container::_sort_children);
 	ClassDB::bind_method(D_METHOD("_child_minsize_changed"), &Container::_child_minsize_changed);
 
@@ -195,6 +181,5 @@ void Container::_bind_methods() {
 }
 
 Container::Container() {
-
 	pending_sort = false;
 }

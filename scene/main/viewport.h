@@ -50,7 +50,6 @@ class Viewport;
 class CollisionObject;
 
 class ViewportTexture : public Texture {
-
 	GDCLASS(ViewportTexture, Texture);
 
 	NodePath path;
@@ -87,7 +86,6 @@ public:
 };
 
 class Viewport : public Node {
-
 	GDCLASS(Viewport, Node);
 
 public:
@@ -224,7 +222,7 @@ private:
 	bool snap_controls_to_pixels;
 
 	bool physics_object_picking;
-	List<Ref<InputEvent> > physics_picking_events;
+	List<Ref<InputEvent>> physics_picking_events;
 	ObjectID physics_object_capture;
 	ObjectID physics_object_over;
 	Transform physics_last_object_transform;
@@ -233,7 +231,6 @@ private:
 	bool physics_has_last_mousepos;
 	Vector2 physics_last_mousepos;
 	struct {
-
 		bool alt;
 		bool control;
 		bool shift;

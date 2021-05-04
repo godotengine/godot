@@ -116,7 +116,6 @@ import java.util.Locale;
 import javax.microedition.khronos.opengles.GL10;
 
 public class Godot extends Fragment implements SensorEventListener, IDownloaderClient {
-
 	static final int MAX_SINGLETONS = 64;
 	private IStub mDownloaderClientStub;
 	private TextView mStatusText;
@@ -171,9 +170,7 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 	}
 
 	static public class SingletonBase {
-
 		protected void registerClass(String p_name, String[] p_methods) {
-
 			GodotPlugin.nativeRegisterSingleton(p_name, this);
 
 			Class clazz = getClass();
@@ -297,7 +294,6 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 		}
 
 		for (int i = 0; i < singleton_count; i++) {
-
 			singletons[i].onMainActivityResult(requestCode, resultCode, data);
 		}
 		for (GodotPlugin plugin : pluginRegistry.getAllPlugins()) {
@@ -533,7 +529,6 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 			for (int i = 0; i < argc; i++) {
 				r = is.read(len);
 				if (r < 4) {
-
 					return new String[0];
 				}
 				int strlen = ((int)(len[3] & 0xFF) << 24) | ((int)(len[2] & 0xFF) << 16) | ((int)(len[1] & 0xFF) << 8) | ((int)(len[0] & 0xFF));
@@ -581,9 +576,7 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 	String expansion_pack_path;
 
 	private void initializeGodot() {
-
 		if (expansion_pack_path != null) {
-
 			String[] new_cmdline;
 			int cll = 0;
 			if (command_line != null) {
@@ -648,7 +641,6 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 		List<String> new_args = new LinkedList<String>();
 
 		for (int i = 0; i < command_line.length; i++) {
-
 			boolean has_extra = i < command_line.length - 1;
 			if (command_line[i].equals(XRMode.REGULAR.cmdLineArg)) {
 				xrMode = XRMode.REGULAR;
@@ -693,7 +685,6 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 		if (new_args.isEmpty()) {
 			command_line = null;
 		} else {
-
 			command_line = new_args.toArray(new String[new_args.size()]);
 		}
 		if (use_apk_expansion && main_pack_md5 != null && main_pack_key != null) {
@@ -715,7 +706,6 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 			boolean pack_valid = true;
 
 			if (!f.exists()) {
-
 				pack_valid = false;
 
 			} else if (obbIsCorrupted(expansion_pack_path, main_pack_md5)) {
@@ -727,7 +717,6 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 			}
 
 			if (!pack_valid) {
-
 				Intent notifierIntent = new Intent(activity, activity.getClass());
 				notifierIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK |
 										Intent.FLAG_ACTIVITY_CLEAR_TOP);
@@ -785,7 +774,6 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 
 	@Override
 	public void onDestroy() {
-
 		for (int i = 0; i < singleton_count; i++) {
 			singletons[i].onMainDestroy();
 		}
@@ -826,7 +814,6 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 	}
 
 	public String getClipboard() {
-
 		String copiedText = "";
 
 		if (mClipboard.getPrimaryClip() != null) {
@@ -838,7 +825,6 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 	}
 
 	public void setClipboard(String p_text) {
-
 		ClipData clip = ClipData.newPlainText("myLabel", p_text);
 		mClipboard.setPrimaryClip(clip);
 	}
@@ -873,7 +859,6 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 		}
 
 		for (int i = 0; i < singleton_count; i++) {
-
 			singletons[i].onMainResume();
 		}
 		for (GodotPlugin plugin : pluginRegistry.getAllPlugins()) {
@@ -1013,9 +998,7 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 	}
 
 	private boolean obbIsCorrupted(String f, String main_pack_md5) {
-
 		try {
-
 			InputStream fis = new FileInputStream(f);
 
 			// Create MD5 Hash
@@ -1064,7 +1047,8 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 		int cnt = 0;
 		for (int i = cc.length; --i >= 0; cnt += cc[i] != 0 ? 1 : 0)
 			;
-		if (cnt == 0) return false;
+		if (cnt == 0)
+			return false;
 		mView.queueEvent(new Runnable() {
 			// This method will be called on the rendering thread:
 			public void run() {

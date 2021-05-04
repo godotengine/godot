@@ -50,7 +50,6 @@ subject to the following restrictions:
 #include "hinge_joint_sw.h"
 
 static void plane_space(const Vector3 &n, Vector3 &p, Vector3 &q) {
-
 	if (Math::abs(n.z) > Math_SQRT12) {
 		// choose p in y-z plane
 		real_t a = n[1] * n[1] + n[2] * n[2];
@@ -70,7 +69,6 @@ static void plane_space(const Vector3 &n, Vector3 &p, Vector3 &q) {
 
 HingeJointSW::HingeJointSW(BodySW *rbA, BodySW *rbB, const Transform &frameA, const Transform &frameB) :
 		JointSW(_arr, 2) {
-
 	A = rbA;
 	B = rbB;
 
@@ -103,7 +101,6 @@ HingeJointSW::HingeJointSW(BodySW *rbA, BodySW *rbB, const Transform &frameA, co
 HingeJointSW::HingeJointSW(BodySW *rbA, BodySW *rbB, const Vector3 &pivotInA, const Vector3 &pivotInB,
 		const Vector3 &axisInA, const Vector3 &axisInB) :
 		JointSW(_arr, 2) {
-
 	A = rbA;
 	B = rbB;
 
@@ -257,7 +254,6 @@ bool HingeJointSW::setup(real_t p_step) {
 }
 
 void HingeJointSW::solve(real_t p_step) {
-
 	Vector3 pivotAInW = A->get_transform().xform(m_rbAFrame.origin);
 	Vector3 pivotBInW = B->get_transform().xform(m_rbBFrame.origin);
 
@@ -400,53 +396,81 @@ real_t HingeJointSW::get_hinge_angle() {
 }
 
 void HingeJointSW::set_param(PhysicsServer::HingeJointParam p_param, real_t p_value) {
-
 	switch (p_param) {
-
-		case PhysicsServer::HINGE_JOINT_BIAS: tau = p_value; break;
-		case PhysicsServer::HINGE_JOINT_LIMIT_UPPER: m_upperLimit = p_value; break;
-		case PhysicsServer::HINGE_JOINT_LIMIT_LOWER: m_lowerLimit = p_value; break;
-		case PhysicsServer::HINGE_JOINT_LIMIT_BIAS: m_biasFactor = p_value; break;
-		case PhysicsServer::HINGE_JOINT_LIMIT_SOFTNESS: m_limitSoftness = p_value; break;
-		case PhysicsServer::HINGE_JOINT_LIMIT_RELAXATION: m_relaxationFactor = p_value; break;
-		case PhysicsServer::HINGE_JOINT_MOTOR_TARGET_VELOCITY: m_motorTargetVelocity = p_value; break;
-		case PhysicsServer::HINGE_JOINT_MOTOR_MAX_IMPULSE: m_maxMotorImpulse = p_value; break;
-		case PhysicsServer::HINGE_JOINT_MAX: break; // Can't happen, but silences warning
+		case PhysicsServer::HINGE_JOINT_BIAS:
+			tau = p_value;
+			break;
+		case PhysicsServer::HINGE_JOINT_LIMIT_UPPER:
+			m_upperLimit = p_value;
+			break;
+		case PhysicsServer::HINGE_JOINT_LIMIT_LOWER:
+			m_lowerLimit = p_value;
+			break;
+		case PhysicsServer::HINGE_JOINT_LIMIT_BIAS:
+			m_biasFactor = p_value;
+			break;
+		case PhysicsServer::HINGE_JOINT_LIMIT_SOFTNESS:
+			m_limitSoftness = p_value;
+			break;
+		case PhysicsServer::HINGE_JOINT_LIMIT_RELAXATION:
+			m_relaxationFactor = p_value;
+			break;
+		case PhysicsServer::HINGE_JOINT_MOTOR_TARGET_VELOCITY:
+			m_motorTargetVelocity = p_value;
+			break;
+		case PhysicsServer::HINGE_JOINT_MOTOR_MAX_IMPULSE:
+			m_maxMotorImpulse = p_value;
+			break;
+		case PhysicsServer::HINGE_JOINT_MAX:
+			break; // Can't happen, but silences warning
 	}
 }
 
 real_t HingeJointSW::get_param(PhysicsServer::HingeJointParam p_param) const {
-
 	switch (p_param) {
-
-		case PhysicsServer::HINGE_JOINT_BIAS: return tau;
-		case PhysicsServer::HINGE_JOINT_LIMIT_UPPER: return m_upperLimit;
-		case PhysicsServer::HINGE_JOINT_LIMIT_LOWER: return m_lowerLimit;
-		case PhysicsServer::HINGE_JOINT_LIMIT_BIAS: return m_biasFactor;
-		case PhysicsServer::HINGE_JOINT_LIMIT_SOFTNESS: return m_limitSoftness;
-		case PhysicsServer::HINGE_JOINT_LIMIT_RELAXATION: return m_relaxationFactor;
-		case PhysicsServer::HINGE_JOINT_MOTOR_TARGET_VELOCITY: return m_motorTargetVelocity;
-		case PhysicsServer::HINGE_JOINT_MOTOR_MAX_IMPULSE: return m_maxMotorImpulse;
-		case PhysicsServer::HINGE_JOINT_MAX: break; // Can't happen, but silences warning
+		case PhysicsServer::HINGE_JOINT_BIAS:
+			return tau;
+		case PhysicsServer::HINGE_JOINT_LIMIT_UPPER:
+			return m_upperLimit;
+		case PhysicsServer::HINGE_JOINT_LIMIT_LOWER:
+			return m_lowerLimit;
+		case PhysicsServer::HINGE_JOINT_LIMIT_BIAS:
+			return m_biasFactor;
+		case PhysicsServer::HINGE_JOINT_LIMIT_SOFTNESS:
+			return m_limitSoftness;
+		case PhysicsServer::HINGE_JOINT_LIMIT_RELAXATION:
+			return m_relaxationFactor;
+		case PhysicsServer::HINGE_JOINT_MOTOR_TARGET_VELOCITY:
+			return m_motorTargetVelocity;
+		case PhysicsServer::HINGE_JOINT_MOTOR_MAX_IMPULSE:
+			return m_maxMotorImpulse;
+		case PhysicsServer::HINGE_JOINT_MAX:
+			break; // Can't happen, but silences warning
 	}
 
 	return 0;
 }
 
 void HingeJointSW::set_flag(PhysicsServer::HingeJointFlag p_flag, bool p_value) {
-
 	switch (p_flag) {
-		case PhysicsServer::HINGE_JOINT_FLAG_USE_LIMIT: m_useLimit = p_value; break;
-		case PhysicsServer::HINGE_JOINT_FLAG_ENABLE_MOTOR: m_enableAngularMotor = p_value; break;
-		case PhysicsServer::HINGE_JOINT_FLAG_MAX: break; // Can't happen, but silences warning
+		case PhysicsServer::HINGE_JOINT_FLAG_USE_LIMIT:
+			m_useLimit = p_value;
+			break;
+		case PhysicsServer::HINGE_JOINT_FLAG_ENABLE_MOTOR:
+			m_enableAngularMotor = p_value;
+			break;
+		case PhysicsServer::HINGE_JOINT_FLAG_MAX:
+			break; // Can't happen, but silences warning
 	}
 }
 bool HingeJointSW::get_flag(PhysicsServer::HingeJointFlag p_flag) const {
-
 	switch (p_flag) {
-		case PhysicsServer::HINGE_JOINT_FLAG_USE_LIMIT: return m_useLimit;
-		case PhysicsServer::HINGE_JOINT_FLAG_ENABLE_MOTOR: return m_enableAngularMotor;
-		case PhysicsServer::HINGE_JOINT_FLAG_MAX: break; // Can't happen, but silences warning
+		case PhysicsServer::HINGE_JOINT_FLAG_USE_LIMIT:
+			return m_useLimit;
+		case PhysicsServer::HINGE_JOINT_FLAG_ENABLE_MOTOR:
+			return m_enableAngularMotor;
+		case PhysicsServer::HINGE_JOINT_FLAG_MAX:
+			break; // Can't happen, but silences warning
 	}
 
 	return false;

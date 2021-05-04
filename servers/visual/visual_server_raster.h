@@ -40,7 +40,6 @@
 #include "visual_server_viewport.h"
 
 class VisualServerRaster : public VisualServer {
-
 	enum {
 
 		MAX_INSTANCE_CULL = 8192,
@@ -61,7 +60,6 @@ class VisualServerRaster : public VisualServer {
 	RID black_image[4];
 
 	struct FrameDrawnCallbacks {
-
 		ObjectID object;
 		StringName method;
 		Variant param;
@@ -213,7 +211,7 @@ public:
 
 	BIND0R(RID, mesh_create)
 
-	BIND10(mesh_add_surface, RID, uint32_t, PrimitiveType, const PoolVector<uint8_t> &, int, const PoolVector<uint8_t> &, int, const AABB &, const Vector<PoolVector<uint8_t> > &, const Vector<AABB> &)
+	BIND10(mesh_add_surface, RID, uint32_t, PrimitiveType, const PoolVector<uint8_t> &, int, const PoolVector<uint8_t> &, int, const AABB &, const Vector<PoolVector<uint8_t>> &, const Vector<AABB> &)
 
 	BIND2(mesh_set_blend_shape_count, RID, int)
 	BIND1RC(int, mesh_get_blend_shape_count, RID)
@@ -236,7 +234,7 @@ public:
 	BIND2RC(PrimitiveType, mesh_surface_get_primitive_type, RID, int)
 
 	BIND2RC(AABB, mesh_surface_get_aabb, RID, int)
-	BIND2RC(Vector<PoolVector<uint8_t> >, mesh_surface_get_blend_shapes, RID, int)
+	BIND2RC(Vector<PoolVector<uint8_t>>, mesh_surface_get_blend_shapes, RID, int)
 	BIND2RC(Vector<AABB>, mesh_surface_get_skeleton_aabb, RID, int)
 
 	BIND2(mesh_remove_surface, RID, int)

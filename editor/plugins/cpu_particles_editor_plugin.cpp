@@ -33,7 +33,6 @@
 #include "editor/plugins/spatial_editor_plugin.h"
 
 void CPUParticlesEditor::_node_removed(Node *p_node) {
-
 	if (p_node == node) {
 		node = NULL;
 		hide();
@@ -41,30 +40,24 @@ void CPUParticlesEditor::_node_removed(Node *p_node) {
 }
 
 void CPUParticlesEditor::_notification(int p_notification) {
-
 	if (p_notification == NOTIFICATION_ENTER_TREE) {
 		options->set_icon(options->get_popup()->get_icon("CPUParticles", "EditorIcons"));
 	}
 }
 
 void CPUParticlesEditor::_menu_option(int p_option) {
-
 	switch (p_option) {
-
 		case MENU_OPTION_CREATE_EMISSION_VOLUME_FROM_MESH: {
-
 			emission_file_dialog->popup_centered_ratio();
 
 		} break;
 
 		case MENU_OPTION_CREATE_EMISSION_VOLUME_FROM_NODE: {
-
 			emission_tree_dialog->popup_centered_ratio();
 
 		} break;
 
 		case MENU_OPTION_RESTART: {
-
 			node->restart();
 
 		} break;
@@ -72,13 +65,11 @@ void CPUParticlesEditor::_menu_option(int p_option) {
 }
 
 void CPUParticlesEditor::edit(CPUParticles *p_particles) {
-
 	base_node = p_particles;
 	node = p_particles;
 }
 
 void CPUParticlesEditor::_generate_emission_points() {
-
 	/// hacer codigo aca
 	PoolVector<Vector3> points;
 	PoolVector<Vector3> normals;
@@ -98,12 +89,10 @@ void CPUParticlesEditor::_generate_emission_points() {
 }
 
 void CPUParticlesEditor::_bind_methods() {
-
 	ClassDB::bind_method("_menu_option", &CPUParticlesEditor::_menu_option);
 }
 
 CPUParticlesEditor::CPUParticlesEditor() {
-
 	particles_editor_hb = memnew(HBoxContainer);
 	SpatialEditor::get_singleton()->add_control_to_menu_panel(particles_editor_hb);
 	options = memnew(MenuButton);
@@ -120,17 +109,14 @@ CPUParticlesEditor::CPUParticlesEditor() {
 }
 
 void CPUParticlesEditorPlugin::edit(Object *p_object) {
-
 	particles_editor->edit(Object::cast_to<CPUParticles>(p_object));
 }
 
 bool CPUParticlesEditorPlugin::handles(Object *p_object) const {
-
 	return p_object->is_class("CPUParticles");
 }
 
 void CPUParticlesEditorPlugin::make_visible(bool p_visible) {
-
 	if (p_visible) {
 		particles_editor->show();
 		particles_editor->particles_editor_hb->show();
@@ -142,7 +128,6 @@ void CPUParticlesEditorPlugin::make_visible(bool p_visible) {
 }
 
 CPUParticlesEditorPlugin::CPUParticlesEditorPlugin(EditorNode *p_node) {
-
 	editor = p_node;
 	particles_editor = memnew(CPUParticlesEditor);
 	editor->get_viewport()->add_child(particles_editor);

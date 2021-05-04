@@ -38,7 +38,6 @@
 #include <winuser.h>
 
 class KeyMappingWindows {
-
 	KeyMappingWindows(){};
 
 public:

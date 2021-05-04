@@ -39,7 +39,6 @@
 #include "scene/gui/tree.h"
 
 class VersionControlEditorPlugin : public EditorPlugin {
-
 	GDCLASS(VersionControlEditorPlugin, EditorPlugin)
 
 public:

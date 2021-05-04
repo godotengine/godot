@@ -54,12 +54,10 @@ Ref<ResourceFormatSaverGDScript> resource_saver_gd;
 #endif // !GDSCRIPT_NO_LSP
 
 class EditorExportGDScript : public EditorExportPlugin {
-
 	GDCLASS(EditorExportGDScript, EditorExportPlugin);
 
 public:
 	virtual void _export_file(const String &p_path, const String &p_type, const Set<String> &p_features) {
-
 		int script_mode = EditorExportPreset::MODE_SCRIPT_COMPILED;
 		String script_key;
 
@@ -82,9 +80,7 @@ public:
 		file = GDScriptTokenizerBuffer::parse_code_string(txt);
 
 		if (!file.empty()) {
-
 			if (script_mode == EditorExportPreset::MODE_SCRIPT_ENCRYPTED) {
-
 				String tmp_path = EditorSettings::get_singleton()->get_cache_dir().plus_file("script.gde");
 				FileAccess *fa = FileAccess::open(tmp_path, FileAccess::WRITE);
 
@@ -127,7 +123,6 @@ public:
 				DirAccess::remove_file_or_error(tmp_path);
 
 			} else {
-
 				add_file(p_path.get_basename() + ".gdc", file, true);
 			}
 		}
@@ -135,7 +130,6 @@ public:
 };
 
 static void _editor_init() {
-
 	Ref<EditorExportGDScript> gd_export;
 	gd_export.instance();
 	EditorExport::get_singleton()->add_export_plugin(gd_export);
@@ -151,7 +145,6 @@ static void _editor_init() {
 #endif // TOOLS_ENABLED
 
 void register_gdscript_types() {
-
 	ClassDB::register_class<GDScript>();
 	ClassDB::register_virtual_class<GDScriptFunctionState>();
 
@@ -171,7 +164,6 @@ void register_gdscript_types() {
 }
 
 void unregister_gdscript_types() {
-
 	ScriptServer::unregister_language(script_language_gd);
 
 	if (script_language_gd)

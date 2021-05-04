@@ -47,7 +47,6 @@ static _VisualScriptEditor *vs_editor_singleton = NULL;
 #endif
 
 void register_visual_script_types() {
-
 	visual_script_language = memnew(VisualScriptLanguage);
 	//script_language_gd->init();
 	ScriptServer::register_language(visual_script_language);
@@ -125,7 +124,6 @@ void register_visual_script_types() {
 }
 
 void unregister_visual_script_types() {
-
 	unregister_visual_script_nodes();
 
 	ScriptServer::unregister_language(visual_script_language);

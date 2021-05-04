@@ -34,7 +34,6 @@
 #include "scene/main/node.h"
 
 class Timer : public Node {
-
 	GDCLASS(Timer, Node);
 
 	float wait_time;

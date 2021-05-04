@@ -37,7 +37,6 @@
 #include <string.h>
 
 Error jpeg_load_image_from_buffer(Image *p_image, const uint8_t *p_buffer, int p_buffer_len) {
-
 	jpgd::jpeg_decoder_mem_stream mem_stream(p_buffer, p_buffer_len);
 
 	jpgd::jpeg_decoder decoder(&mem_stream);
@@ -103,7 +102,6 @@ Error jpeg_load_image_from_buffer(Image *p_image, const uint8_t *p_buffer, int p
 }
 
 Error ImageLoaderJPG::load_image(Ref<Image> p_image, FileAccess *f, bool p_force_linear, float p_scale) {
-
 	PoolVector<uint8_t> src_image;
 	int src_image_len = f->get_len();
 	ERR_FAIL_COND_V(src_image_len == 0, ERR_FILE_CORRUPT);
@@ -121,13 +119,11 @@ Error ImageLoaderJPG::load_image(Ref<Image> p_image, FileAccess *f, bool p_force
 }
 
 void ImageLoaderJPG::get_recognized_extensions(List<String> *p_extensions) const {
-
 	p_extensions->push_back("jpg");
 	p_extensions->push_back("jpeg");
 }
 
 static Ref<Image> _jpegd_mem_loader_func(const uint8_t *p_png, int p_size) {
-
 	Ref<Image> img;
 	img.instance();
 	Error err = jpeg_load_image_from_buffer(img.ptr(), p_png, p_size);
@@ -136,6 +132,5 @@ static Ref<Image> _jpegd_mem_loader_func(const uint8_t *p_png, int p_size) {
 }
 
 ImageLoaderJPG::ImageLoaderJPG() {
-
 	Image::_jpg_mem_loader_func = _jpegd_mem_loader_func;
 }

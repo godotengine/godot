@@ -34,7 +34,6 @@
 #include "scene/main/node.h"
 
 class MultiNodeEdit : public Reference {
-
 	GDCLASS(MultiNodeEdit, Reference);
 
 	List<NodePath> nodes;

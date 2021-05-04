@@ -41,7 +41,6 @@
 	}
 
 Variant fieldwise_assign(const Variant &p_target, const Variant &p_source, const String &p_field) {
-
 	ERR_FAIL_COND_V(p_target.get_type() != p_source.get_type(), p_target);
 
 	/* clang-format makes a mess of this macro usage */

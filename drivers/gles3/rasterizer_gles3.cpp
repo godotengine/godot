@@ -34,17 +34,14 @@
 #include "core/project_settings.h"
 
 RasterizerStorage *RasterizerGLES3::get_storage() {
-
 	return storage;
 }
 
 RasterizerCanvas *RasterizerGLES3::get_canvas() {
-
 	return canvas;
 }
 
 RasterizerScene *RasterizerGLES3::get_scene() {
-
 	return scene;
 }
 
@@ -79,7 +76,6 @@ RasterizerScene *RasterizerGLES3::get_scene() {
 #ifdef GLAD_ENABLED
 // Restricting to GLAD as only used in initialize() with GLAD_GL_ARB_debug_output
 static void GLAPIENTRY _gl_debug_print(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar *message, const GLvoid *userParam) {
-
 	if (type == _EXT_DEBUG_TYPE_OTHER_ARB)
 		return;
 
@@ -135,7 +131,6 @@ typedef void (*DEBUGPROCARB)(GLenum source,
 typedef void (*DebugMessageCallbackARB)(DEBUGPROCARB callback, const void *userParam);
 
 Error RasterizerGLES3::is_viable() {
-
 #ifdef GLAD_ENABLED
 	if (!gladLoadGL()) {
 		ERR_PRINT("Error initializing GLAD");
@@ -156,7 +151,6 @@ Error RasterizerGLES3::is_viable() {
 }
 
 void RasterizerGLES3::initialize() {
-
 	print_verbose("Using GLES3 video driver");
 
 #ifdef GLAD_ENABLED
@@ -193,7 +187,6 @@ void RasterizerGLES3::initialize() {
 }
 
 void RasterizerGLES3::begin_frame(double frame_step) {
-
 	time_total += frame_step * time_scale;
 
 	if (frame_step == 0) {
@@ -220,7 +213,6 @@ void RasterizerGLES3::begin_frame(double frame_step) {
 }
 
 void RasterizerGLES3::set_current_render_target(RID p_render_target) {
-
 	if (!p_render_target.is_valid() && storage->frame.current_rt && storage->frame.clear_request) {
 		//handle pending clear request, if the framebuffer was not cleared
 		glBindFramebuffer(GL_FRAMEBUFFER, storage->frame.current_rt->fbo);
@@ -251,7 +243,6 @@ void RasterizerGLES3::set_current_render_target(RID p_render_target) {
 }
 
 void RasterizerGLES3::restore_render_target(bool p_3d_was_drawn) {
-
 	ERR_FAIL_COND(storage->frame.current_rt == NULL);
 	RasterizerStorageGLES3::RenderTarget *rt = storage->frame.current_rt;
 	if (p_3d_was_drawn && rt->external.fbo != 0) {
@@ -264,7 +255,6 @@ void RasterizerGLES3::restore_render_target(bool p_3d_was_drawn) {
 }
 
 void RasterizerGLES3::clear_render_target(const Color &p_color) {
-
 	ERR_FAIL_COND(!storage->frame.current_rt);
 
 	storage->frame.clear_request = true;
@@ -272,7 +262,6 @@ void RasterizerGLES3::clear_render_target(const Color &p_color) {
 }
 
 void RasterizerGLES3::set_boot_image(const Ref<Image> &p_image, const Color &p_color, bool p_scale, bool p_use_filter) {
-
 	if (p_image.is_null() || p_image->empty())
 		return;
 
@@ -300,7 +289,6 @@ void RasterizerGLES3::set_boot_image(const Ref<Image> &p_image, const Color &p_c
 	Rect2 imgrect(0, 0, p_image->get_width(), p_image->get_height());
 	Rect2 screenrect;
 	if (p_scale) {
-
 		if (window_w > window_h) {
 			//scale horizontally
 			screenrect.size.y = window_h;
@@ -314,7 +302,6 @@ void RasterizerGLES3::set_boot_image(const Ref<Image> &p_image, const Color &p_c
 			screenrect.position.y = (window_h - screenrect.size.y) / 2;
 		}
 	} else {
-
 		screenrect = imgrect;
 		screenrect.position += ((Size2(window_w, window_h) - screenrect.size) / 2.0).floor();
 	}
@@ -332,12 +319,10 @@ void RasterizerGLES3::set_boot_image(const Ref<Image> &p_image, const Color &p_c
 }
 
 void RasterizerGLES3::set_shader_time_scale(float p_scale) {
-
 	time_scale = p_scale;
 }
 
 void RasterizerGLES3::blit_render_target_to_screen(RID p_render_target, const Rect2 &p_screen_rect, int p_screen) {
-
 	ERR_FAIL_COND(storage->frame.current_rt);
 
 	RasterizerStorageGLES3::RenderTarget *rt = storage->render_target_owner.getornull(p_render_target);
@@ -375,7 +360,6 @@ void RasterizerGLES3::output_lens_distorted_to_screen(RID p_render_target, const
 }
 
 void RasterizerGLES3::end_frame(bool p_swap_buffers) {
-
 	if (OS::get_singleton()->is_layered_allowed()) {
 		if (!OS::get_singleton()->get_window_per_pixel_transparency_enabled()) {
 			//clear alpha
@@ -393,13 +377,11 @@ void RasterizerGLES3::end_frame(bool p_swap_buffers) {
 }
 
 void RasterizerGLES3::finalize() {
-
 	storage->finalize();
 	canvas->finalize();
 }
 
 Rasterizer *RasterizerGLES3::_create_current() {
-
 	return memnew(RasterizerGLES3);
 }
 
@@ -447,7 +429,6 @@ const char *RasterizerGLES3::gl_check_for_error(bool p_print_error) {
 }
 
 RasterizerGLES3::RasterizerGLES3() {
-
 	storage = memnew(RasterizerStorageGLES3);
 	canvas = memnew(RasterizerCanvasGLES3);
 	scene = memnew(RasterizerSceneGLES3);
@@ -462,7 +443,6 @@ RasterizerGLES3::RasterizerGLES3() {
 }
 
 RasterizerGLES3::~RasterizerGLES3() {
-
 	memdelete(storage);
 	memdelete(canvas);
 	memdelete(scene);

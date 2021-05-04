@@ -37,7 +37,6 @@
 #include "modules/raycast/lightmap_raycaster.h"
 
 Error LightmapperCPU::_layout_atlas(int p_max_size, Vector2i *r_atlas_size, int *r_atlas_slices) {
-
 	Vector2i atlas_size;
 	for (unsigned int i = 0; i < mesh_instances.size(); i++) {
 		if (mesh_instances[i].generate_lightmap) {
@@ -77,7 +76,6 @@ Error LightmapperCPU::_layout_atlas(int p_max_size, Vector2i *r_atlas_size, int 
 
 		atlas_size = Vector2i(max, max);
 		while (atlas_size.x <= p_max_size && atlas_size.y <= p_max_size) {
-
 			if (recovery_percent != 0) {
 				// Find out how much memory is not recoverable (because of lightmaps that can't grow),
 				// to compute a greater recovery scale for those that can.
@@ -138,7 +136,6 @@ Error LightmapperCPU::_layout_atlas(int p_max_size, Vector2i *r_atlas_size, int 
 			int slices = 0;
 
 			while (source_sizes.size() > 0) {
-
 				Vector<Geometry::PackRectsResult> offsets = Geometry::partial_pack_rects(source_sizes, atlas_size);
 				Vector<int> new_indices;
 				Vector<Vector2i> new_sources;
@@ -212,7 +209,6 @@ void LightmapperCPU::_thread_func_callback(void *p_thread_data) {
 }
 
 void LightmapperCPU::_thread_func_wrapper(uint32_t p_idx, ThreadData *p_thread_data) {
-
 	if (thread_cancelled) {
 		return;
 	}
@@ -223,7 +219,6 @@ void LightmapperCPU::_thread_func_wrapper(uint32_t p_idx, ThreadData *p_thread_d
 }
 
 bool LightmapperCPU::_parallel_run(int p_count, const String &p_description, BakeThreadFunc p_thread_func, void *p_userdata, BakeStepFunc p_substep_func) {
-
 	bool cancelled = false;
 	if (p_substep_func) {
 		cancelled = p_substep_func(0.0f, vformat("%s (%d/%d)", p_description, 0, p_count), nullptr, false);
@@ -273,7 +268,6 @@ bool LightmapperCPU::_parallel_run(int p_count, const String &p_description, Bak
 }
 
 void LightmapperCPU::_generate_buffer(uint32_t p_idx, void *p_unused) {
-
 	const Size2i &size = mesh_instances[p_idx].size;
 
 	int buffer_size = size.x * size.y;
@@ -289,8 +283,8 @@ void LightmapperCPU::_generate_buffer(uint32_t p_idx, void *p_unused) {
 
 	MeshData &md = mesh_instances[p_idx].data;
 
-	LocalVector<Ref<Image> > albedo_images;
-	LocalVector<Ref<Image> > emission_images;
+	LocalVector<Ref<Image>> albedo_images;
+	LocalVector<Ref<Image>> emission_images;
 
 	for (int surface_id = 0; surface_id < md.albedo.size(); surface_id++) {
 		albedo_images.push_back(_init_bake_texture(md.albedo[surface_id], albedo_textures, Image::FORMAT_RGBA8));
@@ -305,7 +299,6 @@ void LightmapperCPU::_generate_buffer(uint32_t p_idx, void *p_unused) {
 	const Vector2 *uv2s_ptr = md.uv2.ptr();
 
 	for (int i = 0; i < md.points.size() / 3; i++) {
-
 		Ref<Image> albedo = albedo_images[surface_id];
 		Ref<Image> emission = emission_images[surface_id];
 
@@ -323,7 +316,7 @@ void LightmapperCPU::_generate_buffer(uint32_t p_idx, void *p_unused) {
 	}
 }
 
-Ref<Image> LightmapperCPU::_init_bake_texture(const MeshData::TextureDef &p_texture_def, const Map<RID, Ref<Image> > &p_tex_cache, Image::Format p_default_format) {
+Ref<Image> LightmapperCPU::_init_bake_texture(const MeshData::TextureDef &p_texture_def, const Map<RID, Ref<Image>> &p_tex_cache, Image::Format p_default_format) {
 	Ref<Image> ret;
 	if (p_texture_def.tex_rid.is_valid()) {
 		ret = p_tex_cache[p_texture_def.tex_rid]->duplicate();
@@ -343,7 +336,6 @@ Ref<Image> LightmapperCPU::_init_bake_texture(const MeshData::TextureDef &p_text
 }
 
 Color LightmapperCPU::_bilinear_sample(const Ref<Image> &p_img, const Vector2 &p_uv, bool p_clamp_x, bool p_clamp_y) {
-
 	int width = p_img->get_width();
 	int height = p_img->get_height();
 
@@ -379,7 +371,6 @@ Color LightmapperCPU::_bilinear_sample(const Ref<Image> &p_img, const Vector2 &p
 }
 
 Vector3 LightmapperCPU::_fix_sample_position(const Vector3 &p_position, const Vector3 &p_texel_center, const Vector3 &p_normal, const Vector3 &p_tangent, const Vector3 &p_bitangent, const Vector2 &p_texel_size) {
-
 	Basis tangent_basis(p_tangent, p_bitangent, p_normal);
 	tangent_basis.orthonormalize();
 	Vector2 half_size = p_texel_size / 2.0f;
@@ -387,7 +378,8 @@ Vector3 LightmapperCPU::_fix_sample_position(const Vector3 &p_position, const Ve
 
 	for (int i = -1; i <= 1; i += 1) {
 		for (int j = -1; j <= 1; j += 1) {
-			if (i == 0 && j == 0) continue;
+			if (i == 0 && j == 0)
+				continue;
 			Vector3 offset = Vector3(half_size.x * i, half_size.y * j, 0.0);
 			Vector3 rotated_offset = tangent_basis.xform_inv(offset);
 			Vector3 target = p_texel_center + rotated_offset;
@@ -493,7 +485,6 @@ void LightmapperCPU::_plot_triangle(const Vector2 *p_vertices, const Vector3 *p_
 
 	for (uint32_t j = min_y; j <= max_y; ++j) {
 		for (uint32_t i = min_x; i <= max_x; i++) {
-
 			int ofs = j * p_size.x + i;
 			int texel_idx = r_lightmap_indices[ofs];
 
@@ -517,7 +508,6 @@ void LightmapperCPU::_plot_triangle(const Vector2 *p_vertices, const Vector3 *p_
 				intersected = true;
 				barycentric_coords = Vector3(1, 0, 0);
 			} else if (v0eqv1 || v1eqv2 || v2eqv0) {
-
 				Vector<Vector2> segment;
 				segment.resize(2);
 				if (v0eqv1) {
@@ -531,7 +521,7 @@ void LightmapperCPU::_plot_triangle(const Vector2 *p_vertices, const Vector3 *p_
 					segment.write[1] = v1;
 				}
 
-				Vector<Vector<Vector2> > intersected_segments = Geometry::intersect_polyline_with_polygon_2d(segment, pixel_polygon);
+				Vector<Vector<Vector2>> intersected_segments = Geometry::intersect_polyline_with_polygon_2d(segment, pixel_polygon);
 				ERR_FAIL_COND_MSG(intersected_segments.size() > 1, "[Lightmapper] Itersecting a segment and a convex polygon should give at most one segment.");
 				if (!intersected_segments.empty()) {
 					const Vector<Vector2> &intersected_segment = intersected_segments[0];
@@ -571,7 +561,7 @@ void LightmapperCPU::_plot_triangle(const Vector2 *p_vertices, const Vector3 *p_
 					middle_vertex = 2;
 				}
 
-				Vector<Vector<Vector2> > intersected_lines = Geometry::intersect_polyline_with_polygon_2d(line, pixel_polygon);
+				Vector<Vector<Vector2>> intersected_lines = Geometry::intersect_polyline_with_polygon_2d(line, pixel_polygon);
 
 				ERR_FAIL_COND_MSG(intersected_lines.size() > 1, "[Lightmapper] Itersecting a line and a convex polygon should give at most one line.");
 
@@ -592,8 +582,7 @@ void LightmapperCPU::_plot_triangle(const Vector2 *p_vertices, const Vector3 *p_
 					}
 				}
 			} else {
-
-				Vector<Vector<Vector2> > intersected_polygons = Geometry::intersect_polygons_2d(pixel_polygon, triangle_polygon);
+				Vector<Vector<Vector2>> intersected_polygons = Geometry::intersect_polygons_2d(pixel_polygon, triangle_polygon);
 
 				ERR_FAIL_COND_MSG(intersected_polygons.size() > 1, "[Lightmapper] Itersecting two convex polygons should give at most one polygon.");
 
@@ -696,10 +685,8 @@ void LightmapperCPU::_plot_triangle(const Vector2 *p_vertices, const Vector3 *p_
 }
 
 void LightmapperCPU::_compute_direct_light(uint32_t p_idx, void *r_lightmap) {
-
 	LightmapTexel *lightmap = (LightmapTexel *)r_lightmap;
 	for (unsigned int i = 0; i < lights.size(); ++i) {
-
 		const Light &light = lights[i];
 		Vector3 normal = lightmap[p_idx].normal;
 		Vector3 position = lightmap[p_idx].pos;
@@ -725,7 +712,6 @@ void LightmapperCPU::_compute_direct_light(uint32_t p_idx, void *r_lightmap) {
 		}
 
 		if (light.type == LIGHT_TYPE_SPOT) {
-
 			Vector3 light_direction = (position - light.position).normalized();
 			if (normal.dot(light_direction) >= 0.0) {
 				continue;
@@ -788,7 +774,6 @@ _ALWAYS_INLINE_ float uniform_rand() {
 }
 
 void LightmapperCPU::_compute_indirect_light(uint32_t p_idx, void *r_lightmap) {
-
 	LightmapTexel *lightmap = (LightmapTexel *)r_lightmap;
 	LightmapTexel &texel = lightmap[p_idx];
 
@@ -798,7 +783,6 @@ void LightmapperCPU::_compute_indirect_light(uint32_t p_idx, void *r_lightmap) {
 	const Vector3 const_up = Vector3(0, 1, 0);
 
 	for (int i = 0; i < parameters.samples; i++) {
-
 		Vector3 color;
 		Vector3 throughput = Vector3(1.0f, 1.0f, 1.0f);
 
@@ -807,7 +791,6 @@ void LightmapperCPU::_compute_indirect_light(uint32_t p_idx, void *r_lightmap) {
 		Vector3 direction;
 
 		for (int depth = 0; depth < parameters.bounces; depth++) {
-
 			Vector3 tangent = const_forward.cross(normal);
 			if (unlikely(tangent.length_squared() < 0.005f)) {
 				tangent = const_up.cross(normal);
@@ -895,7 +878,6 @@ void LightmapperCPU::_compute_indirect_light(uint32_t p_idx, void *r_lightmap) {
 }
 
 void LightmapperCPU::_post_process(uint32_t p_idx, void *r_output) {
-
 	const MeshInstance &mesh = mesh_instances[p_idx];
 
 	if (!mesh.generate_lightmap) {
@@ -922,7 +904,6 @@ void LightmapperCPU::_post_process(uint32_t p_idx, void *r_output) {
 
 			for (int y = i - margin; y <= i + margin; y++) {
 				for (int x = j - margin; x <= j + margin; x++) {
-
 					if (x == j && y == i)
 						continue;
 					if (x < 0 || x >= size.x)
@@ -1089,7 +1070,6 @@ void LightmapperCPU::_fix_seams(const LocalVector<UVSeam> &p_seams, Vector3 *r_l
 }
 
 void LightmapperCPU::_fix_seam(const Vector2 &p_pos0, const Vector2 &p_pos1, const Vector2 &p_uv0, const Vector2 &p_uv1, const Vector3 *p_read_buffer, Vector3 *r_write_buffer, const Vector2i &p_size) {
-
 	Vector2 line[2];
 	line[0] = p_pos0 * p_size;
 	line[1] = p_pos1 * p_size;
@@ -1131,7 +1111,6 @@ void LightmapperCPU::_fix_seam(const Vector2 &p_pos0, const Vector2 &p_pos1, con
 	}
 
 	while (start_p.distance_to(pixel) < line_length + 1.0f) {
-
 		Vector2 current_point = Vector2(pixel) + Vector2(0.5f, 0.5f);
 		current_point = Geometry::get_closest_point_to_segment_2d(current_point, line);
 		float t = line[0].distance_to(current_point) / line_length;
@@ -1171,7 +1150,6 @@ void LightmapperCPU::_dilate_lightmap(Vector3 *r_lightmap, const LocalVector<int
 
 			for (int y = i - margin; y <= i + margin; y++) {
 				for (int x = j - margin; x <= j + margin; x++) {
-
 					if (x == j && y == i)
 						continue;
 					if (x < 0 || x >= p_size.x)
@@ -1234,7 +1212,6 @@ void LightmapperCPU::_blit_lightmap(const Vector<Vector3> &p_src, const Vector2i
 }
 
 LightmapperCPU::BakeError LightmapperCPU::bake(BakeQuality p_quality, bool p_use_denoiser, int p_bounces, float p_bias, bool p_generate_atlas, int p_max_texture_size, const Ref<Image> &p_environment_panorama, const Basis &p_environment_transform, BakeStepFunc p_step_function, void *p_bake_userdata, BakeStepFunc p_substep_function) {
-
 	if (p_step_function) {
 		bool cancelled = p_step_function(0.0, TTR("Begin Bake"), p_bake_userdata, true);
 		if (cancelled) {
@@ -1371,7 +1348,6 @@ LightmapperCPU::BakeError LightmapperCPU::bake(BakeQuality p_quality, bool p_use
 	}
 
 	for (unsigned int i = 0; i < mesh_instances.size(); i++) {
-
 		if (!mesh_instances[i].generate_lightmap) {
 			continue;
 		}
@@ -1397,7 +1373,7 @@ LightmapperCPU::BakeError LightmapperCPU::bake(BakeQuality p_quality, bool p_use
 
 	raycaster.unref(); // Not needed anymore, free some memory.
 
-	LocalVector<LocalVector<Vector3> > lightmaps_data;
+	LocalVector<LocalVector<Vector3>> lightmaps_data;
 	lightmaps_data.resize(mesh_instances.size());
 
 	for (unsigned int i = 0; i < mesh_instances.size(); i++) {

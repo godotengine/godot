@@ -37,7 +37,6 @@
 #include "websocket_peer.h"
 
 class WebSocketMultiplayerPeer : public NetworkedMultiplayerPeer {
-
 	GDCLASS(WebSocketMultiplayerPeer, NetworkedMultiplayerPeer);
 
 private:
@@ -63,7 +62,7 @@ protected:
 	};
 
 	List<Packet> _incoming_packets;
-	Map<int, Ref<WebSocketPeer> > _peer_map;
+	Map<int, Ref<WebSocketPeer>> _peer_map;
 	Packet _current_packet;
 
 	bool _is_multiplayer;

@@ -36,7 +36,6 @@
 #include "core/os/file_access.h"
 
 class ResourceInteractiveLoaderBinary : public ResourceInteractiveLoader {
-
 	bool translation_remapped;
 	String local_path;
 	String res_path;
@@ -111,7 +110,6 @@ public:
 };
 
 class ResourceFormatSaverBinaryInstance {
-
 	String local_path;
 	String path;
 
@@ -144,7 +142,6 @@ class ResourceFormatSaverBinaryInstance {
 	};
 
 	struct ResourceData {
-
 		String type;
 		List<Property> properties;
 	};

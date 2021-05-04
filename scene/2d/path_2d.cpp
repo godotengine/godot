@@ -39,16 +39,13 @@
 
 #ifdef TOOLS_ENABLED
 Rect2 Path2D::_edit_get_rect() const {
-
 	if (!curve.is_valid() || curve->get_point_count() == 0)
 		return Rect2(0, 0, 0, 0);
 
 	Rect2 aabb = Rect2(curve->get_point_position(0), Vector2(0, 0));
 
 	for (int i = 0; i < curve->get_point_count(); i++) {
-
 		for (int j = 0; j <= 8; j++) {
-
 			real_t frac = j / 8.0;
 			Vector2 p = curve->interpolate(i, frac);
 			aabb.expand_to(p);
@@ -63,7 +60,6 @@ bool Path2D::_edit_use_rect() const {
 }
 
 bool Path2D::_edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const {
-
 	if (curve.is_null()) {
 		return false;
 	}
@@ -89,7 +85,6 @@ bool Path2D::_edit_is_selected_on_click(const Point2 &p_point, double p_toleranc
 #endif
 
 void Path2D::_notification(int p_what) {
-
 	if (p_what == NOTIFICATION_DRAW && curve.is_valid()) {
 		//draw the curve!!
 
@@ -105,11 +100,9 @@ void Path2D::_notification(int p_what) {
 		const Color color = Color(1.0, 1.0, 1.0, 1.0);
 
 		for (int i = 0; i < curve->get_point_count(); i++) {
-
 			Vector2 prev_p = curve->get_point_position(i);
 
 			for (int j = 1; j <= 8; j++) {
-
 				real_t frac = j / 8.0;
 				Vector2 p = curve->interpolate(i, frac);
 				draw_line(prev_p, p, color, line_width, true);
@@ -132,7 +125,6 @@ void Path2D::_curve_changed() {
 }
 
 void Path2D::set_curve(const Ref<Curve2D> &p_curve) {
-
 	if (curve.is_valid()) {
 		curve->disconnect("changed", this, "_curve_changed");
 	}
@@ -147,12 +139,10 @@ void Path2D::set_curve(const Ref<Curve2D> &p_curve) {
 }
 
 Ref<Curve2D> Path2D::get_curve() const {
-
 	return curve;
 }
 
 void Path2D::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("set_curve", "curve"), &Path2D::set_curve);
 	ClassDB::bind_method(D_METHOD("get_curve"), &Path2D::get_curve);
 	ClassDB::bind_method(D_METHOD("_curve_changed"), &Path2D::_curve_changed);
@@ -161,7 +151,6 @@ void Path2D::_bind_methods() {
 }
 
 Path2D::Path2D() {
-
 	set_curve(Ref<Curve2D>(memnew(Curve2D))); //create one by default
 	set_self_modulate(Color(0.5, 0.6, 1.0, 0.7));
 }
@@ -169,7 +158,6 @@ Path2D::Path2D() {
 /////////////////////////////////////////////////////////////////////////////////
 
 void PathFollow2D::_update_transform() {
-
 	if (!path)
 		return;
 
@@ -221,7 +209,6 @@ void PathFollow2D::_update_transform() {
 		set_rotation(tangent_to_curve.angle());
 
 	} else {
-
 		pos.x += h_offset;
 		pos.y += v_offset;
 	}
@@ -230,11 +217,8 @@ void PathFollow2D::_update_transform() {
 }
 
 void PathFollow2D::_notification(int p_what) {
-
 	switch (p_what) {
-
 		case NOTIFICATION_ENTER_TREE: {
-
 			path = Object::cast_to<Path2D>(get_parent());
 			if (path) {
 				_update_transform();
@@ -242,26 +226,21 @@ void PathFollow2D::_notification(int p_what) {
 
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
-
 			path = NULL;
 		} break;
 	}
 }
 
 void PathFollow2D::set_cubic_interpolation(bool p_enable) {
-
 	cubic = p_enable;
 }
 
 bool PathFollow2D::get_cubic_interpolation() const {
-
 	return cubic;
 }
 
 void PathFollow2D::_validate_property(PropertyInfo &property) const {
-
 	if (property.name == "offset") {
-
 		float max = 10000;
 		if (path && path->get_curve().is_valid())
 			max = path->get_curve()->get_baked_length();
@@ -271,7 +250,6 @@ void PathFollow2D::_validate_property(PropertyInfo &property) const {
 }
 
 String PathFollow2D::get_configuration_warning() const {
-
 	if (!is_visible_in_tree() || !is_inside_tree())
 		return String();
 
@@ -287,7 +265,6 @@ String PathFollow2D::get_configuration_warning() const {
 }
 
 void PathFollow2D::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("set_offset", "offset"), &PathFollow2D::set_offset);
 	ClassDB::bind_method(D_METHOD("get_offset"), &PathFollow2D::get_offset);
 
@@ -323,7 +300,6 @@ void PathFollow2D::_bind_methods() {
 }
 
 void PathFollow2D::set_offset(float p_offset) {
-
 	offset = p_offset;
 	if (path) {
 		if (path->get_curve().is_valid()) {
@@ -346,42 +322,35 @@ void PathFollow2D::set_offset(float p_offset) {
 }
 
 void PathFollow2D::set_h_offset(float p_h_offset) {
-
 	h_offset = p_h_offset;
 	if (path)
 		_update_transform();
 }
 
 float PathFollow2D::get_h_offset() const {
-
 	return h_offset;
 }
 
 void PathFollow2D::set_v_offset(float p_v_offset) {
-
 	v_offset = p_v_offset;
 	if (path)
 		_update_transform();
 }
 
 float PathFollow2D::get_v_offset() const {
-
 	return v_offset;
 }
 
 float PathFollow2D::get_offset() const {
-
 	return offset;
 }
 
 void PathFollow2D::set_unit_offset(float p_unit_offset) {
-
 	if (path && path->get_curve().is_valid() && path->get_curve()->get_baked_length())
 		set_offset(p_unit_offset * path->get_curve()->get_baked_length());
 }
 
 float PathFollow2D::get_unit_offset() const {
-
 	if (path && path->get_curve().is_valid() && path->get_curve()->get_baked_length())
 		return get_offset() / path->get_curve()->get_baked_length();
 	else
@@ -389,38 +358,31 @@ float PathFollow2D::get_unit_offset() const {
 }
 
 void PathFollow2D::set_lookahead(float p_lookahead) {
-
 	lookahead = p_lookahead;
 }
 
 float PathFollow2D::get_lookahead() const {
-
 	return lookahead;
 }
 
 void PathFollow2D::set_rotate(bool p_rotate) {
-
 	rotate = p_rotate;
 	_update_transform();
 }
 
 bool PathFollow2D::is_rotating() const {
-
 	return rotate;
 }
 
 void PathFollow2D::set_loop(bool p_loop) {
-
 	loop = p_loop;
 }
 
 bool PathFollow2D::has_loop() const {
-
 	return loop;
 }
 
 PathFollow2D::PathFollow2D() {
-
 	offset = 0;
 	h_offset = 0;
 	v_offset = 0;

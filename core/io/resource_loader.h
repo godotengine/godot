@@ -35,7 +35,6 @@
 #include "core/resource.h"
 
 class ResourceInteractiveLoader : public Reference {
-
 	GDCLASS(ResourceInteractiveLoader, Reference);
 	friend class ResourceLoader;
 	String path_loading;
@@ -58,7 +57,6 @@ public:
 };
 
 class ResourceFormatLoader : public Reference {
-
 	GDCLASS(ResourceFormatLoader, Reference);
 
 protected:
@@ -90,7 +88,6 @@ typedef Error (*ResourceLoaderImport)(const String &p_path);
 typedef void (*ResourceLoadedCallback)(RES p_resource, const String &p_path);
 
 class ResourceLoader {
-
 	enum {
 		MAX_LOADERS = 64
 	};
@@ -104,7 +101,7 @@ class ResourceLoader {
 	static void *dep_err_notify_ud;
 	static DependencyErrorNotify dep_err_notify;
 	static bool abort_on_missing_resource;
-	static HashMap<String, Vector<String> > translation_remaps;
+	static HashMap<String, Vector<String>> translation_remaps;
 	static HashMap<String, String> path_remaps;
 
 	static String _path_remap(const String &p_path, bool *r_translation_remapped = NULL);
@@ -131,7 +128,6 @@ class ResourceLoader {
 		}
 	};
 	struct LoadingMapKeyHasher {
-
 		static _FORCE_INLINE_ uint32_t hash(const LoadingMapKey &p_key) { return p_key.path.hash() + HashMapHasherDefault::hash(p_key.thread); }
 	};
 
@@ -161,7 +157,8 @@ public:
 	static bool get_timestamp_on_load() { return timestamp_on_load; }
 
 	static void notify_load_error(const String &p_err) {
-		if (err_notify) err_notify(err_notify_ud, p_err);
+		if (err_notify)
+			err_notify(err_notify_ud, p_err);
 	}
 	static void set_error_notify_func(void *p_ud, ResourceLoadErrorNotify p_err_notify) {
 		err_notify = p_err_notify;
@@ -169,7 +166,8 @@ public:
 	}
 
 	static void notify_dependency_error(const String &p_path, const String &p_dependency, const String &p_type) {
-		if (dep_err_notify) dep_err_notify(dep_err_notify_ud, p_path, p_dependency, p_type);
+		if (dep_err_notify)
+			dep_err_notify(dep_err_notify_ud, p_path, p_dependency, p_type);
 	}
 	static void set_dependency_error_notify_func(void *p_ud, DependencyErrorNotify p_err_notify) {
 		dep_err_notify = p_err_notify;

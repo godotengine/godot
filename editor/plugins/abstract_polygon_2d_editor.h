@@ -39,7 +39,6 @@
 class CanvasItemEditor;
 
 class AbstractPolygon2DEditor : public HBoxContainer {
-
 	GDCLASS(AbstractPolygon2DEditor, HBoxContainer);
 
 	ToolButton *button_create;
@@ -144,7 +143,6 @@ public:
 };
 
 class AbstractPolygon2DEditorPlugin : public EditorPlugin {
-
 	GDCLASS(AbstractPolygon2DEditorPlugin, EditorPlugin);
 
 	AbstractPolygon2DEditor *polygon_editor;

@@ -31,34 +31,29 @@
 #include "audio_filter_sw.h"
 
 void AudioFilterSW::set_mode(Mode p_mode) {
-
 	mode = p_mode;
 }
 void AudioFilterSW::set_cutoff(float p_cutoff) {
-
 	cutoff = p_cutoff;
 }
 void AudioFilterSW::set_resonance(float p_resonance) {
-
 	resonance = p_resonance;
 }
 
 void AudioFilterSW::set_gain(float p_gain) {
-
 	gain = p_gain;
 }
 
 void AudioFilterSW::set_sampling_rate(float p_srate) {
-
 	sampling_rate = p_srate;
 }
 
 void AudioFilterSW::prepare_coefficients(Coeffs *p_coeffs) {
-
 	int sr_limit = (sampling_rate / 2) + 512;
 
 	double final_cutoff = (cutoff > sr_limit) ? sr_limit : cutoff;
-	if (final_cutoff < 1) final_cutoff = 1; //don't allow less than this
+	if (final_cutoff < 1)
+		final_cutoff = 1; //don't allow less than this
 
 	double omega = 2.0 * Math_PI * final_cutoff / sampling_rate;
 
@@ -81,7 +76,6 @@ void AudioFilterSW::prepare_coefficients(Coeffs *p_coeffs) {
 		tmpgain = 0.001;
 
 	if (stages > 1) {
-
 		Q = (Q > 1.0 ? Math::pow(Q, 1.0 / stages) : Q);
 		tmpgain = Math::pow(tmpgain, 1.0 / (stages + 1));
 	}
@@ -90,9 +84,7 @@ void AudioFilterSW::prepare_coefficients(Coeffs *p_coeffs) {
 	double a0 = 1.0 + alpha;
 
 	switch (mode) {
-
 		case LOWPASS: {
-
 			p_coeffs->b0 = (1.0 - cos_v) / 2.0;
 			p_coeffs->b1 = 1.0 - cos_v;
 			p_coeffs->b2 = (1.0 - cos_v) / 2.0;
@@ -101,7 +93,6 @@ void AudioFilterSW::prepare_coefficients(Coeffs *p_coeffs) {
 		} break;
 
 		case HIGHPASS: {
-
 			p_coeffs->b0 = (1.0 + cos_v) / 2.0;
 			p_coeffs->b1 = -(1.0 + cos_v);
 			p_coeffs->b2 = (1.0 + cos_v) / 2.0;
@@ -110,7 +101,6 @@ void AudioFilterSW::prepare_coefficients(Coeffs *p_coeffs) {
 		} break;
 
 		case BANDPASS: {
-
 			p_coeffs->b0 = alpha * sqrt(Q + 1);
 			p_coeffs->b1 = 0.0;
 			p_coeffs->b2 = -alpha * sqrt(Q + 1);
@@ -119,7 +109,6 @@ void AudioFilterSW::prepare_coefficients(Coeffs *p_coeffs) {
 		} break;
 
 		case NOTCH: {
-
 			p_coeffs->b0 = 1.0;
 			p_coeffs->b1 = -2.0 * cos_v;
 			p_coeffs->b2 = 1.0;
@@ -150,7 +139,6 @@ void AudioFilterSW::prepare_coefficients(Coeffs *p_coeffs) {
 
 		} break;
 		case LOWSHELF: {
-
 			double tmpq = Math::sqrt(Q);
 			if (tmpq <= 0)
 				tmpq = 0.001;
@@ -202,7 +190,6 @@ void AudioFilterSW::set_stages(int p_stages) { //adjust for multiple stages
 /* Fouriertransform kernel to obtain response */
 
 float AudioFilterSW::get_response(float p_freq, Coeffs *p_coeffs) {
-
 	float freq = p_freq / sampling_rate * Math_PI * 2.0f;
 
 	float cx = p_coeffs->b0, cy = 0.0;
@@ -226,7 +213,6 @@ float AudioFilterSW::get_response(float p_freq, Coeffs *p_coeffs) {
 }
 
 AudioFilterSW::AudioFilterSW() {
-
 	sampling_rate = 44100;
 	resonance = 0.5;
 	cutoff = 5000;
@@ -236,12 +222,10 @@ AudioFilterSW::AudioFilterSW() {
 }
 
 AudioFilterSW::Processor::Processor() {
-
 	set_filter(NULL);
 }
 
 void AudioFilterSW::Processor::set_filter(AudioFilterSW *p_filter, bool p_clear_history) {
-
 	if (p_clear_history) {
 		ha1 = ha2 = hb1 = hb2 = 0;
 	}
@@ -249,7 +233,6 @@ void AudioFilterSW::Processor::set_filter(AudioFilterSW *p_filter, bool p_clear_
 }
 
 void AudioFilterSW::Processor::update_coeffs(int p_interp_buffer_len) {
-
 	if (!filter)
 		return;
 
@@ -268,19 +251,16 @@ void AudioFilterSW::Processor::update_coeffs(int p_interp_buffer_len) {
 }
 
 void AudioFilterSW::Processor::process(float *p_samples, int p_amount, int p_stride, bool p_interpolate) {
-
 	if (!filter)
 		return;
 
 	if (p_interpolate) {
 		for (int i = 0; i < p_amount; i++) {
-
 			process_one_interp(*p_samples);
 			p_samples += p_stride;
 		}
 	} else {
 		for (int i = 0; i < p_amount; i++) {
-
 			process_one(*p_samples);
 			p_samples += p_stride;
 		}

@@ -45,7 +45,6 @@
 class DependencyRemoveDialog;
 
 class EditorFileDialog : public ConfirmationDialog {
-
 	GDCLASS(EditorFileDialog, ConfirmationDialog);
 
 public:
@@ -245,7 +244,6 @@ public:
 };
 
 class EditorLineEditFileChooser : public HBoxContainer {
-
 	GDCLASS(EditorLineEditFileChooser, HBoxContainer);
 	Button *button;
 	LineEdit *line_edit;

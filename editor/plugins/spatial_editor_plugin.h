@@ -46,7 +46,6 @@ class ViewportContainer;
 class SpatialEditorViewport;
 
 class EditorSpatialGizmo : public SpatialGizmo {
-
 	GDCLASS(EditorSpatialGizmo, SpatialGizmo);
 
 	bool selected;
@@ -57,7 +56,6 @@ public:
 	bool is_selected() const { return selected; }
 
 	struct Instance {
-
 		RID instance;
 		Ref<ArrayMesh> mesh;
 		Ref<Material> material;
@@ -68,7 +66,6 @@ public:
 		bool can_intersect;
 		bool extra_margin;
 		Instance() {
-
 			billboard = false;
 			unscaled = false;
 			can_intersect = false;
@@ -179,7 +176,6 @@ public:
 };
 
 class SpatialEditorViewport : public Control {
-
 	GDCLASS(SpatialEditorViewport, Control);
 	friend class SpatialEditor;
 	friend class ViewportRotationControl;
@@ -279,7 +275,6 @@ private:
 	Label *fps_label;
 
 	struct _RayResult {
-
 		Spatial *item;
 		float depth;
 		int handle;
@@ -369,7 +364,6 @@ private:
 	} _edit;
 
 	struct Cursor {
-
 		Vector3 pos;
 		float x_rot, y_rot, distance;
 		Vector3 eye_pos; // Used in freelook mode
@@ -473,7 +467,6 @@ public:
 };
 
 class SpatialEditorSelectedItem : public Object {
-
 	GDCLASS(SpatialEditorSelectedItem, Object);
 
 public:
@@ -494,7 +487,6 @@ public:
 };
 
 class SpatialEditorViewportContainer : public Container {
-
 	GDCLASS(SpatialEditorViewportContainer, Container);
 
 public:
@@ -535,7 +527,6 @@ public:
 };
 
 class SpatialEditor : public VBoxContainer {
-
 	GDCLASS(SpatialEditor, VBoxContainer);
 
 public:
@@ -616,7 +607,6 @@ private:
 	AABB preview_bounds;
 
 	struct Gizmo {
-
 		bool visible;
 		float scale;
 		Transform transform;
@@ -719,8 +709,8 @@ private:
 	static SpatialEditor *singleton;
 
 	void _node_removed(Node *p_node);
-	Vector<Ref<EditorSpatialGizmoPlugin> > gizmo_plugins_by_priority;
-	Vector<Ref<EditorSpatialGizmoPlugin> > gizmo_plugins_by_name;
+	Vector<Ref<EditorSpatialGizmoPlugin>> gizmo_plugins_by_priority;
+	Vector<Ref<EditorSpatialGizmoPlugin>> gizmo_plugins_by_name;
 
 	void _register_all_gizmos();
 
@@ -807,7 +797,6 @@ public:
 };
 
 class SpatialEditorPlugin : public EditorPlugin {
-
 	GDCLASS(SpatialEditorPlugin, EditorPlugin);
 
 	SpatialEditor *spatial_editor;
@@ -837,7 +826,6 @@ public:
 };
 
 class EditorSpatialGizmoPlugin : public Resource {
-
 	GDCLASS(EditorSpatialGizmoPlugin, Resource);
 
 public:
@@ -848,7 +836,7 @@ public:
 protected:
 	int current_state;
 	List<EditorSpatialGizmo *> current_gizmos;
-	HashMap<String, Vector<Ref<SpatialMaterial> > > materials;
+	HashMap<String, Vector<Ref<SpatialMaterial>>> materials;
 
 	static void _bind_methods();
 	virtual bool has_gizmo(Spatial *p_spatial);

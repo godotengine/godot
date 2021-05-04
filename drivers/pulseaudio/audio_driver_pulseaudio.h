@@ -40,7 +40,6 @@
 #include "pulse-so_wrap.h"
 
 class AudioDriverPulseAudio : public AudioDriver {
-
 	Thread thread;
 	Mutex mutex;
 

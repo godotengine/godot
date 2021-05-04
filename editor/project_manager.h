@@ -44,7 +44,6 @@ class ProjectList;
 class ProjectListFilter;
 
 class ProjectManager : public Control {
-
 	GDCLASS(ProjectManager, Control);
 
 	Button *erase_btn;
@@ -132,7 +131,6 @@ public:
 };
 
 class ProjectListFilter : public HBoxContainer {
-
 	GDCLASS(ProjectListFilter, HBoxContainer);
 
 public:

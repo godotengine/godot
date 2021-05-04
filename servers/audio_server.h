@@ -42,7 +42,6 @@ class AudioStream;
 class AudioStreamSample;
 
 class AudioDriver {
-
 	static AudioDriver *singleton;
 	uint64_t _last_mix_time;
 	uint64_t _last_mix_frames;
@@ -122,7 +121,6 @@ public:
 };
 
 class AudioDriverManager {
-
 	enum {
 
 		MAX_DRIVERS = 10
@@ -146,7 +144,6 @@ public:
 class AudioBusLayout;
 
 class AudioServer : public Object {
-
 	GDCLASS(AudioServer, Object);
 
 public:
@@ -184,7 +181,6 @@ private:
 	float global_rate_scale;
 
 	struct Bus {
-
 		StringName name;
 		bool solo;
 		bool mute;
@@ -198,7 +194,7 @@ private:
 			bool active;
 			AudioFrame peak_volume;
 			Vector<AudioFrame> buffer;
-			Vector<Ref<AudioEffectInstance> > effect_instances;
+			Vector<Ref<AudioEffectInstance>> effect_instances;
 			uint64_t last_mix_with_audio;
 			Channel() {
 				last_mix_with_audio = 0;
@@ -224,7 +220,7 @@ private:
 		int index_cache;
 	};
 
-	Vector<Vector<AudioFrame> > temp_buffer; //temp_buffer for each level
+	Vector<Vector<AudioFrame>> temp_buffer; //temp_buffer for each level
 	Vector<Bus *> buses;
 	Map<StringName, Bus *> bus_map;
 
@@ -245,7 +241,6 @@ private:
 	void _mix_step();
 
 	struct CallbackItem {
-
 		AudioCallback callback;
 		void *userdata;
 
@@ -266,10 +261,14 @@ protected:
 public:
 	_FORCE_INLINE_ int get_channel_count() const {
 		switch (get_speaker_mode()) {
-			case SPEAKER_MODE_STEREO: return 1;
-			case SPEAKER_SURROUND_31: return 2;
-			case SPEAKER_SURROUND_51: return 3;
-			case SPEAKER_SURROUND_71: return 4;
+			case SPEAKER_MODE_STEREO:
+				return 1;
+			case SPEAKER_SURROUND_31:
+				return 2;
+			case SPEAKER_SURROUND_51:
+				return 3;
+			case SPEAKER_SURROUND_71:
+				return 4;
 		}
 		ERR_FAIL_V(1);
 	}
@@ -380,13 +379,11 @@ public:
 VARIANT_ENUM_CAST(AudioServer::SpeakerMode)
 
 class AudioBusLayout : public Resource {
-
 	GDCLASS(AudioBusLayout, Resource);
 
 	friend class AudioServer;
 
 	struct Bus {
-
 		StringName name;
 		bool solo;
 		bool mute;

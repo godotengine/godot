@@ -41,7 +41,6 @@
 #include "script_editor_debugger.h"
 
 void EditorSettingsDialog::ok_pressed() {
-
 	if (!EditorSettings::get_singleton())
 		return;
 
@@ -50,12 +49,10 @@ void EditorSettingsDialog::ok_pressed() {
 }
 
 void EditorSettingsDialog::_settings_changed() {
-
 	timer->start();
 }
 
 void EditorSettingsDialog::_settings_property_edited(const String &p_name) {
-
 	String full_name = inspector->get_full_item_path(p_name);
 
 	if (full_name == "interface/theme/accent_color" || full_name == "interface/theme/base_color" || full_name == "interface/theme/contrast") {
@@ -66,13 +63,11 @@ void EditorSettingsDialog::_settings_property_edited(const String &p_name) {
 }
 
 void EditorSettingsDialog::_settings_save() {
-
 	EditorSettings::get_singleton()->notify_changes();
 	EditorSettings::get_singleton()->save();
 }
 
 void EditorSettingsDialog::cancel_pressed() {
-
 	if (!EditorSettings::get_singleton())
 		return;
 
@@ -80,7 +75,6 @@ void EditorSettingsDialog::cancel_pressed() {
 }
 
 void EditorSettingsDialog::popup_edit_settings() {
-
 	if (!EditorSettings::get_singleton())
 		return;
 
@@ -116,7 +110,6 @@ void EditorSettingsDialog::_undo_redo_callback(void *p_self, const String &p_nam
 }
 
 void EditorSettingsDialog::_notification(int p_what) {
-
 	switch (p_what) {
 		case NOTIFICATION_READY: {
 			ScriptEditorDebugger *sed = ScriptEditor::get_singleton()->get_debugger();
@@ -141,11 +134,9 @@ void EditorSettingsDialog::_notification(int p_what) {
 }
 
 void EditorSettingsDialog::_unhandled_input(const Ref<InputEvent> &p_event) {
-
 	const Ref<InputEventKey> k = p_event;
 
 	if (k.is_valid() && is_window_modal_on_top() && k->is_pressed()) {
-
 		bool handled = false;
 
 		if (ED_IS_SHORTCUT("editor/undo", p_event)) {
@@ -176,7 +167,6 @@ void EditorSettingsDialog::_unhandled_input(const Ref<InputEvent> &p_event) {
 }
 
 void EditorSettingsDialog::_update_icons() {
-
 	search_box->set_right_icon(get_icon("Search", "EditorIcons"));
 	search_box->set_clear_button_enabled(true);
 	shortcut_search_box->set_right_icon(get_icon("Search", "EditorIcons"));
@@ -189,7 +179,6 @@ void EditorSettingsDialog::_update_icons() {
 }
 
 void EditorSettingsDialog::_update_shortcuts() {
-
 	Map<String, bool> collapsed;
 
 	if (shortcuts->get_root() && shortcuts->get_root()->get_children()) {
@@ -207,7 +196,6 @@ void EditorSettingsDialog::_update_shortcuts() {
 	Map<String, TreeItem *> sections;
 
 	for (List<String>::Element *E = slist.front(); E; E = E->next()) {
-
 		Ref<ShortCut> sc = EditorSettings::get_singleton()->get_shortcut(E->get());
 		if (!sc->has_meta("original"))
 			continue;
@@ -269,7 +257,6 @@ void EditorSettingsDialog::_update_shortcuts() {
 }
 
 void EditorSettingsDialog::_shortcut_button_pressed(Object *p_item, int p_column, int p_idx) {
-
 	TreeItem *ti = Object::cast_to<TreeItem>(p_item);
 	ERR_FAIL_COND(!ti);
 
@@ -315,11 +302,9 @@ void EditorSettingsDialog::_shortcut_button_pressed(Object *p_item, int p_column
 }
 
 void EditorSettingsDialog::_wait_for_key(const Ref<InputEvent> &p_event) {
-
 	Ref<InputEventKey> k = p_event;
 
 	if (k.is_valid() && k->is_pressed() && k->get_scancode() != 0) {
-
 		last_wait_for_key = k;
 		const String str = keycode_get_string(k->get_scancode_with_modifiers());
 
@@ -329,7 +314,6 @@ void EditorSettingsDialog::_wait_for_key(const Ref<InputEvent> &p_event) {
 }
 
 void EditorSettingsDialog::_press_a_key_confirm() {
-
 	if (last_wait_for_key.is_null())
 		return;
 
@@ -354,12 +338,10 @@ void EditorSettingsDialog::_press_a_key_confirm() {
 }
 
 void EditorSettingsDialog::_tabs_tab_changed(int p_tab) {
-
 	_focus_current_search_box();
 }
 
 void EditorSettingsDialog::_focus_current_search_box() {
-
 	Control *tab = tabs->get_current_tab_control();
 	LineEdit *current_search_box = NULL;
 	if (tab == tab_general)
@@ -387,7 +369,6 @@ void EditorSettingsDialog::_editor_restart_close() {
 }
 
 void EditorSettingsDialog::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("_unhandled_input"), &EditorSettingsDialog::_unhandled_input);
 	ClassDB::bind_method(D_METHOD("_settings_save"), &EditorSettingsDialog::_settings_save);
 	ClassDB::bind_method(D_METHOD("_settings_changed"), &EditorSettingsDialog::_settings_changed);
@@ -405,7 +386,6 @@ void EditorSettingsDialog::_bind_methods() {
 }
 
 EditorSettingsDialog::EditorSettingsDialog() {
-
 	set_title(TTR("Editor Settings"));
 	set_resizable(true);
 	undo_redo = memnew(UndoRedo);

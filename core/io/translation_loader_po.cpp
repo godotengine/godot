@@ -57,13 +57,11 @@ RES TranslationLoaderPO::load_translation(FileAccess *f, Error *r_error) {
 	const String path = f->get_path();
 
 	while (!is_eof) {
-
 		String l = f->get_line().strip_edges();
 		is_eof = f->eof_reached();
 
 		// If we reached last line and it's not a content line, break, otherwise let processing that last loop
 		if (is_eof && l.empty()) {
-
 			if (status == STATUS_READING_ID) {
 				memdelete(f);
 				ERR_FAIL_V_MSG(RES(), "Unexpected EOF while reading 'msgid' at: " + path + ":" + itos(line));
@@ -73,7 +71,6 @@ RES TranslationLoaderPO::load_translation(FileAccess *f, Error *r_error) {
 		}
 
 		if (l.begins_with("msgid")) {
-
 			if (status == STATUS_READING_ID) {
 				memdelete(f);
 				ERR_FAIL_V_MSG(RES(), "Unexpected 'msgid', was expecting 'msgstr' while parsing: " + path + ":" + itos(line));
@@ -94,7 +91,6 @@ RES TranslationLoaderPO::load_translation(FileAccess *f, Error *r_error) {
 		}
 
 		if (l.begins_with("msgstr")) {
-
 			if (status != STATUS_READING_ID) {
 				memdelete(f);
 				ERR_FAIL_V_MSG(RES(), "Unexpected 'msgstr', was expecting 'msgid' while parsing: " + path + ":" + itos(line));
@@ -121,7 +117,6 @@ RES TranslationLoaderPO::load_translation(FileAccess *f, Error *r_error) {
 		//find final quote
 		int end_pos = -1;
 		for (int i = 0; i < l.length(); i++) {
-
 			if (l[i] == '"' && (i == 0 || l[i - 1] != '\\')) {
 				end_pos = i;
 				break;
@@ -147,7 +142,6 @@ RES TranslationLoaderPO::load_translation(FileAccess *f, Error *r_error) {
 	memdelete(f);
 
 	if (status == STATUS_READING_STRING) {
-
 		if (msg_id != "") {
 			if (!skip_this)
 				translation->add_message(msg_id, msg_str);
@@ -159,7 +153,6 @@ RES TranslationLoaderPO::load_translation(FileAccess *f, Error *r_error) {
 
 	Vector<String> configs = config.split("\n");
 	for (int i = 0; i < configs.size(); i++) {
-
 		String c = configs[i].strip_edges();
 		int p = c.find(":");
 		if (p == -1)
@@ -179,7 +172,6 @@ RES TranslationLoaderPO::load_translation(FileAccess *f, Error *r_error) {
 }
 
 RES TranslationLoaderPO::load(const String &p_path, const String &p_original_path, Error *r_error) {
-
 	if (r_error)
 		*r_error = ERR_CANT_OPEN;
 
@@ -190,16 +182,13 @@ RES TranslationLoaderPO::load(const String &p_path, const String &p_original_pat
 }
 
 void TranslationLoaderPO::get_recognized_extensions(List<String> *p_extensions) const {
-
 	p_extensions->push_back("po");
 }
 bool TranslationLoaderPO::handles_type(const String &p_type) const {
-
 	return (p_type == "Translation");
 }
 
 String TranslationLoaderPO::get_resource_type(const String &p_path) const {
-
 	if (p_path.get_extension().to_lower() == "po")
 		return "Translation";
 	return "";

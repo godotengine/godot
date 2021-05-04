@@ -35,7 +35,6 @@
 #include "constraint_2d_sw.h"
 
 class Joint2DSW : public Constraint2DSW {
-
 	real_t max_force;
 	real_t bias;
 	real_t max_bias;
@@ -59,7 +58,6 @@ public:
 };
 
 class PinJoint2DSW : public Joint2DSW {
-
 	union {
 		struct {
 			Body2DSW *A;
@@ -91,7 +89,6 @@ public:
 };
 
 class GrooveJoint2DSW : public Joint2DSW {
-
 	union {
 		struct {
 			Body2DSW *A;
@@ -126,7 +123,6 @@ public:
 };
 
 class DampedSpringJoint2DSW : public Joint2DSW {
-
 	union {
 		struct {
 			Body2DSW *A;

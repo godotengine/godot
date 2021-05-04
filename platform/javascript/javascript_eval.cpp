@@ -44,7 +44,6 @@ extern int godot_js_eval(const char *p_js, int p_use_global_ctx, union js_eval_r
 }
 
 void *resize_poolbytearray_and_open_write(void *p_arr, void *r_write, int p_len) {
-
 	PoolByteArray *arr = (PoolByteArray *)p_arr;
 	PoolByteArray::Write *write = (PoolByteArray::Write *)r_write;
 	arr->resize(p_len);
@@ -53,7 +52,6 @@ void *resize_poolbytearray_and_open_write(void *p_arr, void *r_write, int p_len)
 }
 
 Variant JavaScript::eval(const String &p_code, bool p_use_global_exec_context) {
-
 	PoolByteArray arr;
 	PoolByteArray::Write arr_write;
 	union js_eval_ret js_data;

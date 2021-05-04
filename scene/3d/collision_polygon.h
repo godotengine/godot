@@ -36,7 +36,6 @@
 
 class CollisionObject;
 class CollisionPolygon : public Spatial {
-
 	GDCLASS(CollisionPolygon, Spatial);
 	real_t margin = 0.04;
 

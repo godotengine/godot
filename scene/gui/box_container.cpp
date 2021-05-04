@@ -33,14 +33,12 @@
 #include "margin_container.h"
 
 struct _MinSizeCache {
-
 	int min_size;
 	bool will_stretch;
 	int final_size;
 };
 
 void BoxContainer::_resort() {
-
 	/** First pass, determine minimum size AND amount of stretchable elements */
 
 	Size2i new_size = get_size();
@@ -106,7 +104,6 @@ void BoxContainer::_resort() {
 		float error = 0; // Keep track of accumulated error in pixels
 
 		for (int i = 0; i < get_child_count(); i++) {
-
 			Control *c = Object::cast_to<Control>(get_child(i));
 			if (!c || !c->is_visible_in_tree())
 				continue;
@@ -165,7 +162,6 @@ void BoxContainer::_resort() {
 	int idx = 0;
 
 	for (int i = 0; i < get_child_count(); i++) {
-
 		Control *c = Object::cast_to<Control>(get_child(i));
 		if (!c || !c->is_visible_in_tree())
 			continue;
@@ -194,10 +190,8 @@ void BoxContainer::_resort() {
 		Rect2 rect;
 
 		if (vertical) {
-
 			rect = Rect2(0, from, new_size.width, size);
 		} else {
-
 			rect = Rect2(from, 0, size, new_size.height);
 		}
 
@@ -209,7 +203,6 @@ void BoxContainer::_resort() {
 }
 
 Size2 BoxContainer::get_minimum_size() const {
-
 	/* Calculate MINIMUM SIZE */
 
 	Size2i minimum;
@@ -254,15 +247,11 @@ Size2 BoxContainer::get_minimum_size() const {
 }
 
 void BoxContainer::_notification(int p_what) {
-
 	switch (p_what) {
-
 		case NOTIFICATION_SORT_CHILDREN: {
-
 			_resort();
 		} break;
 		case NOTIFICATION_THEME_CHANGED: {
-
 			minimum_size_changed();
 		} break;
 	}
@@ -278,7 +267,6 @@ BoxContainer::AlignMode BoxContainer::get_alignment() const {
 }
 
 void BoxContainer::add_spacer(bool p_begin) {
-
 	Control *c = memnew(Control);
 	c->set_mouse_filter(MOUSE_FILTER_PASS); //allow spacer to pass mouse events
 
@@ -293,7 +281,6 @@ void BoxContainer::add_spacer(bool p_begin) {
 }
 
 BoxContainer::BoxContainer(bool p_vertical) {
-
 	vertical = p_vertical;
 	align = ALIGN_BEGIN;
 	//set_ignore_mouse(true);
@@ -301,7 +288,6 @@ BoxContainer::BoxContainer(bool p_vertical) {
 }
 
 void BoxContainer::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("add_spacer", "begin"), &BoxContainer::add_spacer);
 	ClassDB::bind_method(D_METHOD("get_alignment"), &BoxContainer::get_alignment);
 	ClassDB::bind_method(D_METHOD("set_alignment", "alignment"), &BoxContainer::set_alignment);
@@ -314,7 +300,6 @@ void BoxContainer::_bind_methods() {
 }
 
 MarginContainer *VBoxContainer::add_margin_child(const String &p_label, Control *p_control, bool p_expand) {
-
 	Label *l = memnew(Label);
 	l->set_text(p_label);
 	add_child(l);

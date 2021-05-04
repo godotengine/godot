@@ -35,11 +35,9 @@
 #include "core/reference.h"
 
 class TriangleMesh : public Reference {
-
 	GDCLASS(TriangleMesh, Reference);
 
 	struct Triangle {
-
 		Vector3 normal;
 		int indices[3];
 	};
@@ -48,7 +46,6 @@ class TriangleMesh : public Reference {
 	PoolVector<Vector3> vertices;
 
 	struct BVH {
-
 		AABB aabb;
 		Vector3 center; //used for sorting
 		int left;
@@ -58,24 +55,18 @@ class TriangleMesh : public Reference {
 	};
 
 	struct BVHCmpX {
-
 		bool operator()(const BVH *p_left, const BVH *p_right) const {
-
 			return p_left->center.x < p_right->center.x;
 		}
 	};
 
 	struct BVHCmpY {
-
 		bool operator()(const BVH *p_left, const BVH *p_right) const {
-
 			return p_left->center.y < p_right->center.y;
 		}
 	};
 	struct BVHCmpZ {
-
 		bool operator()(const BVH *p_left, const BVH *p_right) const {
-
 			return p_left->center.z < p_right->center.z;
 		}
 	};

@@ -43,7 +43,6 @@
 #include "scene/main/viewport.h"
 
 bool AnimationNodeBlendSpace2DEditor::can_edit(const Ref<AnimationNode> &p_node) {
-
 	Ref<AnimationNodeBlendSpace2D> bs2d = p_node;
 	return bs2d.is_valid();
 }
@@ -53,7 +52,6 @@ void AnimationNodeBlendSpace2DEditor::_blend_space_changed() {
 }
 
 void AnimationNodeBlendSpace2DEditor::edit(const Ref<AnimationNode> &p_node) {
-
 	if (blend_space.is_valid()) {
 		blend_space->disconnect("triangles_updated", this, "_blend_space_changed");
 	}
@@ -71,7 +69,6 @@ StringName AnimationNodeBlendSpace2DEditor::get_blend_position_path() const {
 }
 
 void AnimationNodeBlendSpace2DEditor::_blend_space_gui_input(const Ref<InputEvent> &p_event) {
-
 	Ref<InputEventKey> k = p_event;
 	if (tool_select->is_pressed() && k.is_valid() && k->is_pressed() && k->get_scancode() == KEY_DELETE && !k->is_echo()) {
 		if (selected_point != -1 || selected_triangle != -1) {
@@ -107,7 +104,6 @@ void AnimationNodeBlendSpace2DEditor::_blend_space_gui_input(const Ref<InputEven
 		}
 
 		for (List<StringName>::Element *E = classes.front(); E; E = E->next()) {
-
 			String name = String(E->get()).replace_first("AnimationNode", "");
 			if (name == "Animation")
 				continue; // nope
@@ -138,7 +134,6 @@ void AnimationNodeBlendSpace2DEditor::_blend_space_gui_input(const Ref<InputEven
 	}
 
 	if (mb.is_valid() && mb->is_pressed() && tool_select->is_pressed() && mb->get_button_index() == BUTTON_LEFT) {
-
 		blend_space_draw->update(); //update anyway
 		//try to see if a point can be selected
 		selected_point = -1;
@@ -146,7 +141,6 @@ void AnimationNodeBlendSpace2DEditor::_blend_space_gui_input(const Ref<InputEven
 		_update_tool_erase();
 
 		for (int i = 0; i < points.size(); i++) {
-
 			if (points[i].distance_to(mb->get_position()) < 10 * EDSCALE) {
 				selected_point = i;
 				Ref<AnimationNode> node = blend_space->get_blend_point_node(i);
@@ -180,13 +174,11 @@ void AnimationNodeBlendSpace2DEditor::_blend_space_gui_input(const Ref<InputEven
 	}
 
 	if (mb.is_valid() && mb->is_pressed() && tool_triangle->is_pressed() && mb->get_button_index() == BUTTON_LEFT) {
-
 		blend_space_draw->update(); //update anyway
 		//try to see if a point can be selected
 		selected_point = -1;
 
 		for (int i = 0; i < points.size(); i++) {
-
 			if (making_triangle.find(i) != -1)
 				continue;
 
@@ -243,7 +235,6 @@ void AnimationNodeBlendSpace2DEditor::_blend_space_gui_input(const Ref<InputEven
 	}
 
 	if (mb.is_valid() && mb->is_pressed() && tool_blend->is_pressed() && mb->get_button_index() == BUTTON_LEFT) {
-
 		Vector2 blend_pos = (mb->get_position() / blend_space_draw->get_size());
 		blend_pos.y = 1.0 - blend_pos.y;
 		blend_pos *= (blend_space->get_max_space() - blend_space->get_min_space());
@@ -278,7 +269,6 @@ void AnimationNodeBlendSpace2DEditor::_blend_space_gui_input(const Ref<InputEven
 	}
 
 	if (mm.is_valid() && tool_blend->is_pressed() && mm->get_button_mask() & BUTTON_MASK_LEFT) {
-
 		Vector2 blend_pos = (mm->get_position() / blend_space_draw->get_size());
 		blend_pos.y = 1.0 - blend_pos.y;
 		blend_pos *= (blend_space->get_max_space() - blend_space->get_min_space());
@@ -291,7 +281,6 @@ void AnimationNodeBlendSpace2DEditor::_blend_space_gui_input(const Ref<InputEven
 }
 
 void AnimationNodeBlendSpace2DEditor::_file_opened(const String &p_file) {
-
 	file_loaded = ResourceLoader::load(p_file);
 	if (file_loaded.is_valid()) {
 		_add_menu_type(MENU_LOAD_FILE_CONFIRM);
@@ -299,10 +288,8 @@ void AnimationNodeBlendSpace2DEditor::_file_opened(const String &p_file) {
 }
 
 void AnimationNodeBlendSpace2DEditor::_add_menu_type(int p_index) {
-
 	Ref<AnimationRootNode> node;
 	if (p_index == MENU_LOAD_FILE) {
-
 		open_file->clear_filters();
 		List<String> filters;
 		ResourceLoader::get_recognized_extensions_for_type("AnimationRootNode", &filters);
@@ -315,7 +302,6 @@ void AnimationNodeBlendSpace2DEditor::_add_menu_type(int p_index) {
 		node = file_loaded;
 		file_loaded.unref();
 	} else if (p_index == MENU_PASTE) {
-
 		node = EditorSettings::get_singleton()->get_resource_clipboard();
 	} else {
 		String type = menu->get_item_metadata(p_index);
@@ -346,7 +332,6 @@ void AnimationNodeBlendSpace2DEditor::_add_menu_type(int p_index) {
 }
 
 void AnimationNodeBlendSpace2DEditor::_add_animation_type(int p_index) {
-
 	Ref<AnimationNodeAnimation> anim;
 	anim.instance();
 
@@ -405,7 +390,6 @@ void AnimationNodeBlendSpace2DEditor::_tool_switch(int p_tool) {
 }
 
 void AnimationNodeBlendSpace2DEditor::_blend_space_draw() {
-
 	Color linecolor = get_color("font_color", "Label");
 	Color linecolor_soft = linecolor;
 	linecolor_soft.a *= 0.5;
@@ -438,14 +422,11 @@ void AnimationNodeBlendSpace2DEditor::_blend_space_draw() {
 	}
 
 	if (snap->is_pressed()) {
-
 		linecolor_soft.a = linecolor.a * 0.1;
 
 		if (blend_space->get_snap().x > 0) {
-
 			int prev_idx = 0;
 			for (int i = 0; i < s.x; i++) {
-
 				float v = blend_space->get_min_space().x + i * (blend_space->get_max_space().x - blend_space->get_min_space().x) / s.x;
 				int idx = int(v / blend_space->get_snap().x);
 
@@ -458,10 +439,8 @@ void AnimationNodeBlendSpace2DEditor::_blend_space_draw() {
 		}
 
 		if (blend_space->get_snap().y > 0) {
-
 			int prev_idx = 0;
 			for (int i = 0; i < s.y; i++) {
-
 				float v = blend_space->get_max_space().y - i * (blend_space->get_max_space().y - blend_space->get_min_space().y) / s.y;
 				int idx = int(v / blend_space->get_snap().y);
 
@@ -476,7 +455,6 @@ void AnimationNodeBlendSpace2DEditor::_blend_space_draw() {
 
 	//triangles first
 	for (int i = 0; i < blend_space->get_triangle_count(); i++) {
-
 		Vector<Vector2> points;
 		points.resize(3);
 
@@ -518,7 +496,6 @@ void AnimationNodeBlendSpace2DEditor::_blend_space_draw() {
 
 	points.clear();
 	for (int i = 0; i < blend_space->get_blend_point_count(); i++) {
-
 		Vector2 point = blend_space->get_blend_point_position(i);
 		if (dragging_selected && selected_point == i) {
 			point += drag_ofs;
@@ -597,12 +574,10 @@ void AnimationNodeBlendSpace2DEditor::_blend_space_draw() {
 }
 
 void AnimationNodeBlendSpace2DEditor::_snap_toggled() {
-
 	blend_space_draw->update();
 }
 
 void AnimationNodeBlendSpace2DEditor::_update_space() {
-
 	if (updating)
 		return;
 
@@ -674,9 +649,7 @@ void AnimationNodeBlendSpace2DEditor::_labels_changed(String) {
 }
 
 void AnimationNodeBlendSpace2DEditor::_erase_selected() {
-
 	if (selected_point != -1) {
-
 		updating = true;
 		undo_redo->create_action(TTR("Remove BlendSpace2D Point"));
 		undo_redo->add_do_method(blend_space.ptr(), "remove_blend_point", selected_point);
@@ -699,7 +672,6 @@ void AnimationNodeBlendSpace2DEditor::_erase_selected() {
 
 		blend_space_draw->update();
 	} else if (selected_triangle != -1) {
-
 		updating = true;
 		undo_redo->create_action(TTR("Remove BlendSpace2D Triangle"));
 		undo_redo->add_do_method(blend_space.ptr(), "remove_triangle", selected_triangle);
@@ -752,7 +724,6 @@ void AnimationNodeBlendSpace2DEditor::_edit_point_pos(double) {
 }
 
 void AnimationNodeBlendSpace2DEditor::_notification(int p_what) {
-
 	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
 		error_panel->add_style_override("panel", get_stylebox("bg", "Tree"));
 		error_label->add_color_override("font_color", get_color("error_color", "Editor"));
@@ -772,7 +743,6 @@ void AnimationNodeBlendSpace2DEditor::_notification(int p_what) {
 	}
 
 	if (p_what == NOTIFICATION_PROCESS) {
-
 		String error;
 
 		if (!AnimationTreeEditor::get_singleton()->get_tree()) {
@@ -801,7 +771,6 @@ void AnimationNodeBlendSpace2DEditor::_notification(int p_what) {
 }
 
 void AnimationNodeBlendSpace2DEditor::_open_editor() {
-
 	if (selected_point >= 0 && selected_point < blend_space->get_blend_point_count()) {
 		Ref<AnimationNode> an = blend_space->get_blend_point_node(selected_point);
 		ERR_FAIL_COND(an.is_null());
@@ -814,7 +783,6 @@ void AnimationNodeBlendSpace2DEditor::_removed_from_graph() {
 }
 
 void AnimationNodeBlendSpace2DEditor::_auto_triangles_toggled() {
-
 	undo_redo->create_action(TTR("Toggle Auto Triangles"));
 	undo_redo->add_do_method(blend_space.ptr(), "set_auto_triangles", auto_triangles->is_pressed());
 	undo_redo->add_undo_method(blend_space.ptr(), "set_auto_triangles", blend_space->get_auto_triangles());
@@ -824,7 +792,6 @@ void AnimationNodeBlendSpace2DEditor::_auto_triangles_toggled() {
 }
 
 void AnimationNodeBlendSpace2DEditor::_bind_methods() {
-
 	ClassDB::bind_method("_blend_space_gui_input", &AnimationNodeBlendSpace2DEditor::_blend_space_gui_input);
 	ClassDB::bind_method("_blend_space_draw", &AnimationNodeBlendSpace2DEditor::_blend_space_draw);
 	ClassDB::bind_method("_config_changed", &AnimationNodeBlendSpace2DEditor::_config_changed);
@@ -854,7 +821,6 @@ void AnimationNodeBlendSpace2DEditor::_bind_methods() {
 AnimationNodeBlendSpace2DEditor *AnimationNodeBlendSpace2DEditor::singleton = NULL;
 
 AnimationNodeBlendSpace2DEditor::AnimationNodeBlendSpace2DEditor() {
-
 	singleton = this;
 	updating = false;
 

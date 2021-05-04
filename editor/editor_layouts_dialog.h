@@ -37,7 +37,6 @@ class LineEdit;
 class ItemList;
 
 class EditorLayoutsDialog : public ConfirmationDialog {
-
 	GDCLASS(EditorLayoutsDialog, ConfirmationDialog);
 
 	LineEdit *name;

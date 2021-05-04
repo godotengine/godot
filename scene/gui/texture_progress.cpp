@@ -33,19 +33,16 @@
 #include "core/engine.h"
 
 void TextureProgress::set_under_texture(const Ref<Texture> &p_texture) {
-
 	under = p_texture;
 	update();
 	minimum_size_changed();
 }
 
 Ref<Texture> TextureProgress::get_under_texture() const {
-
 	return under;
 }
 
 void TextureProgress::set_over_texture(const Ref<Texture> &p_texture) {
-
 	over = p_texture;
 	update();
 	if (under.is_null()) {
@@ -54,7 +51,6 @@ void TextureProgress::set_over_texture(const Ref<Texture> &p_texture) {
 }
 
 Ref<Texture> TextureProgress::get_over_texture() const {
-
 	return over;
 }
 
@@ -81,7 +77,6 @@ bool TextureProgress::get_nine_patch_stretch() const {
 }
 
 Size2 TextureProgress::get_minimum_size() const {
-
 	if (nine_patch_stretch)
 		return Size2(stretch_margin[MARGIN_LEFT] + stretch_margin[MARGIN_RIGHT], stretch_margin[MARGIN_TOP] + stretch_margin[MARGIN_BOTTOM]);
 	else if (under.is_valid())
@@ -95,14 +90,12 @@ Size2 TextureProgress::get_minimum_size() const {
 }
 
 void TextureProgress::set_progress_texture(const Ref<Texture> &p_texture) {
-
 	progress = p_texture;
 	update();
 	minimum_size_changed();
 }
 
 Ref<Texture> TextureProgress::get_progress_texture() const {
-
 	return progress;
 }
 
@@ -306,9 +299,7 @@ void TextureProgress::draw_nine_patch_stretched(const Ref<Texture> &p_texture, F
 void TextureProgress::_notification(int p_what) {
 	const float corners[12] = { -0.125, -0.375, -0.625, -0.875, 0.125, 0.375, 0.625, 0.875, 1.125, 1.375, 1.625, 1.875 };
 	switch (p_what) {
-
 		case NOTIFICATION_DRAW: {
-
 			if (nine_patch_stretch && (mode == FILL_LEFT_TO_RIGHT || mode == FILL_RIGHT_TO_LEFT || mode == FILL_TOP_TO_BOTTOM || mode == FILL_BOTTOM_TO_TOP)) {
 				if (under.is_valid()) {
 					draw_nine_patch_stretched(under, FILL_LEFT_TO_RIGHT, 1.0, tint_under);
@@ -463,7 +454,6 @@ Point2 TextureProgress::get_radial_center_offset() {
 }
 
 void TextureProgress::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("set_under_texture", "tex"), &TextureProgress::set_under_texture);
 	ClassDB::bind_method(D_METHOD("get_under_texture"), &TextureProgress::get_under_texture);
 

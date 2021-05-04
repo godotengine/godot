@@ -38,7 +38,6 @@
 class VariantParser {
 public:
 	struct Stream {
-
 		virtual CharType get_char() = 0;
 		virtual bool is_utf8() const = 0;
 		virtual bool is_eof() const = 0;
@@ -51,7 +50,6 @@ public:
 	};
 
 	struct StreamFile : public Stream {
-
 		FileAccess *f;
 
 		virtual CharType get_char();
@@ -62,7 +60,6 @@ public:
 	};
 
 	struct StreamString : public Stream {
-
 		String s;
 		int pos;
 
@@ -76,7 +73,6 @@ public:
 	typedef Error (*ParseResourceFunc)(void *p_self, Stream *p_stream, Ref<Resource> &r_res, int &line, String &r_err_str);
 
 	struct ResourceParser {
-
 		void *userdata;
 		ParseResourceFunc func;
 		ParseResourceFunc ext_func;
@@ -112,13 +108,11 @@ public:
 	};
 
 	struct Token {
-
 		TokenType type;
 		Variant value;
 	};
 
 	struct Tag {
-
 		String name;
 		Map<String, Variant> fields;
 	};

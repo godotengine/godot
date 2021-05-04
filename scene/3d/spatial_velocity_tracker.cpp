@@ -32,16 +32,13 @@
 #include "core/engine.h"
 
 void SpatialVelocityTracker::set_track_physics_step(bool p_track_physics_step) {
-
 	physics_step = p_track_physics_step;
 }
 
 bool SpatialVelocityTracker::is_tracking_physics_step() const {
-
 	return physics_step;
 }
 void SpatialVelocityTracker::update_position(const Vector3 &p_position) {
-
 	PositionHistory ph;
 	ph.position = p_position;
 	if (physics_step) {
@@ -60,7 +57,6 @@ void SpatialVelocityTracker::update_position(const Vector3 &p_position) {
 	position_history.write[0] = ph;
 }
 Vector3 SpatialVelocityTracker::get_tracked_linear_velocity() const {
-
 	Vector3 linear_velocity;
 
 	float max_time = 1 / 5.0; //maximum time to interpolate a velocity
@@ -105,7 +101,6 @@ Vector3 SpatialVelocityTracker::get_tracked_linear_velocity() const {
 }
 
 void SpatialVelocityTracker::reset(const Vector3 &p_new_pos) {
-
 	PositionHistory ph;
 	ph.position = p_new_pos;
 	if (physics_step) {
@@ -119,7 +114,6 @@ void SpatialVelocityTracker::reset(const Vector3 &p_new_pos) {
 }
 
 void SpatialVelocityTracker::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("set_track_physics_step", "enable"), &SpatialVelocityTracker::set_track_physics_step);
 	ClassDB::bind_method(D_METHOD("is_tracking_physics_step"), &SpatialVelocityTracker::is_tracking_physics_step);
 	ClassDB::bind_method(D_METHOD("update_position", "position"), &SpatialVelocityTracker::update_position);

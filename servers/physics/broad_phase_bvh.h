@@ -35,7 +35,6 @@
 #include "core/math/bvh.h"
 
 class BroadPhaseBVH : public BroadPhaseSW {
-
 	BVH_Manager<CollisionObjectSW, true, 128> bvh;
 
 	static void *_pair_callback(void *, uint32_t, CollisionObjectSW *, int, uint32_t, CollisionObjectSW *, int);

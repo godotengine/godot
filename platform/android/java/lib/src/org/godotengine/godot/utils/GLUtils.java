@@ -40,7 +40,6 @@ import javax.microedition.khronos.egl.EGLDisplay;
  * Contains GL utilities methods.
  */
 public class GLUtils {
-
 	private static final String TAG = GLUtils.class.getSimpleName();
 
 	public static final boolean DEBUG = false;

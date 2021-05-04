@@ -399,7 +399,6 @@ VARIANT_ENUM_CAST(_OS::ScreenOrientation);
 VARIANT_ENUM_CAST(_OS::HandleType);
 
 class _Geometry : public Object {
-
 	GDCLASS(_Geometry, Object);
 
 	static _Geometry *singleton;
@@ -480,7 +479,6 @@ VARIANT_ENUM_CAST(_Geometry::PolyJoinType);
 VARIANT_ENUM_CAST(_Geometry::PolyEndType);
 
 class _File : public Reference {
-
 	GDCLASS(_File, Reference);
 	FileAccess *f;
 	bool eswap;
@@ -583,7 +581,6 @@ VARIANT_ENUM_CAST(_File::ModeFlags);
 VARIANT_ENUM_CAST(_File::CompressionMode);
 
 class _Directory : public Reference {
-
 	GDCLASS(_Directory, Reference);
 	DirAccess *d;
 
@@ -627,7 +624,6 @@ private:
 };
 
 class _Marshalls : public Object {
-
 	GDCLASS(_Marshalls, Object);
 
 	static _Marshalls *singleton;
@@ -652,7 +648,6 @@ public:
 };
 
 class _Mutex : public Reference {
-
 	GDCLASS(_Mutex, Reference);
 	Mutex mutex;
 
@@ -665,7 +660,6 @@ public:
 };
 
 class _Semaphore : public Reference {
-
 	GDCLASS(_Semaphore, Reference);
 	Semaphore semaphore;
 
@@ -677,7 +671,6 @@ public:
 };
 
 class _Thread : public Reference {
-
 	GDCLASS(_Thread, Reference);
 
 protected:
@@ -711,7 +704,6 @@ public:
 VARIANT_ENUM_CAST(_Thread::Priority);
 
 class _ClassDB : public Object {
-
 	GDCLASS(_ClassDB, Object);
 
 protected:

@@ -36,7 +36,6 @@ PacketPeerDTLS *(*PacketPeerDTLS::_create)() = NULL;
 bool PacketPeerDTLS::available = false;
 
 PacketPeerDTLS *PacketPeerDTLS::create() {
-
 	if (_create) {
 		return _create();
 	}
@@ -48,7 +47,6 @@ bool PacketPeerDTLS::is_available() {
 }
 
 void PacketPeerDTLS::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("poll"), &PacketPeerDTLS::poll);
 	ClassDB::bind_method(D_METHOD("connect_to_peer", "packet_peer", "validate_certs", "for_hostname", "valid_certificate"), &PacketPeerDTLS::connect_to_peer, DEFVAL(true), DEFVAL(String()), DEFVAL(Ref<X509Certificate>()));
 	ClassDB::bind_method(D_METHOD("get_status"), &PacketPeerDTLS::get_status);

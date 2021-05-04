@@ -284,7 +284,6 @@ void SMBPitchShift::smbFft(float *fftBuffer, long fftFrameSize, long sign)
 /* clang-format on */
 
 void AudioEffectPitchShiftInstance::process(const AudioFrame *p_src_frames, AudioFrame *p_dst_frames, int p_frame_count) {
-
 	float sample_rate = AudioServer::get_singleton()->get_mix_rate();
 
 	float *in_l = (float *)p_src_frames;
@@ -313,7 +312,6 @@ void AudioEffectPitchShift::set_pitch_scale(float p_pitch_scale) {
 }
 
 float AudioEffectPitchShift::get_pitch_scale() const {
-
 	return pitch_scale;
 }
 
@@ -323,7 +321,6 @@ void AudioEffectPitchShift::set_oversampling(int p_oversampling) {
 }
 
 int AudioEffectPitchShift::get_oversampling() const {
-
 	return oversampling;
 }
 
@@ -337,7 +334,6 @@ AudioEffectPitchShift::FFT_Size AudioEffectPitchShift::get_fft_size() const {
 }
 
 void AudioEffectPitchShift::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("set_pitch_scale", "rate"), &AudioEffectPitchShift::set_pitch_scale);
 	ClassDB::bind_method(D_METHOD("get_pitch_scale"), &AudioEffectPitchShift::get_pitch_scale);
 

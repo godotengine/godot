@@ -93,7 +93,6 @@ public:
 };
 
 class StreamPeerBuffer : public StreamPeer {
-
 	GDCLASS(StreamPeerBuffer, StreamPeer);
 
 	PoolVector<uint8_t> data;

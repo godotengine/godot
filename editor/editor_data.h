@@ -39,14 +39,12 @@
 #include "scene/resources/texture.h"
 
 class EditorHistory {
-
 	enum {
 
 		HISTORY_MAX = 64
 	};
 
 	struct Obj {
-
 		REF ref;
 		ObjectID object;
 		String property;
@@ -54,7 +52,6 @@ class EditorHistory {
 	};
 
 	struct History {
-
 		Vector<Obj> path;
 		int level;
 	};
@@ -66,7 +63,6 @@ class EditorHistory {
 	//Vector<EditorPlugin*> editor_plugins;
 
 	struct PropertyData {
-
 		String name;
 		Variant value;
 	};
@@ -106,10 +102,8 @@ public:
 class EditorSelection;
 
 class EditorData {
-
 public:
 	struct CustomType {
-
 		String name;
 		Ref<Script> script;
 		Ref<Texture> icon;
@@ -132,11 +126,10 @@ private:
 	Vector<EditorPlugin *> editor_plugins;
 
 	struct PropertyData {
-
 		String name;
 		Variant value;
 	};
-	Map<String, Vector<CustomType> > custom_types;
+	Map<String, Vector<CustomType>> custom_types;
 
 	List<PropertyData> clipboard;
 	UndoRedo undo_redo;
@@ -182,7 +175,7 @@ public:
 	void add_custom_type(const String &p_type, const String &p_inherits, const Ref<Script> &p_script, const Ref<Texture> &p_icon);
 	Variant instance_custom_type(const String &p_type, const String &p_inherits);
 	void remove_custom_type(const String &p_type);
-	const Map<String, Vector<CustomType> > &get_custom_types() const { return custom_types; }
+	const Map<String, Vector<CustomType>> &get_custom_types() const { return custom_types; }
 
 	int add_edited_scene(int p_at_pos);
 	void move_edited_scene_index(int p_idx, int p_to_idx);
@@ -237,7 +230,6 @@ public:
 };
 
 class EditorSelection : public Object {
-
 	GDCLASS(EditorSelection, Object);
 
 private:

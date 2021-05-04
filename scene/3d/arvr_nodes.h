@@ -44,7 +44,6 @@
 	ARVRCamera is a subclass of camera which will register itself with its parent ARVROrigin and as a result is automatically positioned
 */
 class ARVRCamera : public Camera {
-
 	GDCLASS(ARVRCamera, Camera);
 
 protected:
@@ -69,7 +68,6 @@ public:
 */
 
 class ARVRController : public Spatial {
-
 	GDCLASS(ARVRController, Spatial);
 
 private:
@@ -150,7 +148,6 @@ public:
 	This node will automatically locate any camera child nodes and update its position while our ARVRController node will handle tracked controllers.
 */
 class ARVROrigin : public Spatial {
-
 	GDCLASS(ARVROrigin, Spatial);
 
 private:

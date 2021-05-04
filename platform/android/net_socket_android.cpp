@@ -38,7 +38,6 @@ jmethodID NetSocketAndroid::_multicast_lock_acquire = 0;
 jmethodID NetSocketAndroid::_multicast_lock_release = 0;
 
 void NetSocketAndroid::setup(jobject p_net_utils) {
-
 	JNIEnv *env = get_jni_env();
 
 	net_utils = env->NewGlobalRef(p_net_utils);

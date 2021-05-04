@@ -36,7 +36,6 @@
 #include "scene/main/timer.h"
 
 class SpinBox : public Range {
-
 	GDCLASS(SpinBox, Range);
 
 	LineEdit *line_edit;

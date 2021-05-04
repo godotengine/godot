@@ -35,7 +35,6 @@
 #include "core/reference.h"
 
 class MultiplayerAPI : public Reference {
-
 	GDCLASS(MultiplayerAPI, Reference);
 
 public:

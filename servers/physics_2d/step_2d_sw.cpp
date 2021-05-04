@@ -32,13 +32,11 @@
 #include "core/os/os.h"
 
 void Step2DSW::_populate_island(Body2DSW *p_body, Body2DSW **p_island, Constraint2DSW **p_constraint_island) {
-
 	p_body->set_island_step(_step);
 	p_body->set_island_next(*p_island);
 	*p_island = p_body;
 
 	for (Map<Constraint2DSW *, int>::Element *E = p_body->get_constraint_map().front(); E; E = E->next()) {
-
 		Constraint2DSW *c = (Constraint2DSW *)E->key();
 		if (c->get_island_step() == _step)
 			continue; //already processed
@@ -58,7 +56,6 @@ void Step2DSW::_populate_island(Body2DSW *p_body, Body2DSW **p_island, Constrain
 }
 
 bool Step2DSW::_setup_island(Constraint2DSW *p_island, real_t p_delta) {
-
 	Constraint2DSW *ci = p_island;
 	Constraint2DSW *prev_ci = NULL;
 	bool removed_root = false;
@@ -83,9 +80,7 @@ bool Step2DSW::_setup_island(Constraint2DSW *p_island, real_t p_delta) {
 }
 
 void Step2DSW::_solve_island(Constraint2DSW *p_island, int p_iterations, real_t p_delta) {
-
 	for (int i = 0; i < p_iterations; i++) {
-
 		Constraint2DSW *ci = p_island;
 		while (ci) {
 			ci->solve(p_delta);
@@ -95,12 +90,10 @@ void Step2DSW::_solve_island(Constraint2DSW *p_island, int p_iterations, real_t 
 }
 
 void Step2DSW::_check_suspend(Body2DSW *p_island, real_t p_delta) {
-
 	bool can_sleep = true;
 
 	Body2DSW *b = p_island;
 	while (b) {
-
 		if (b->get_mode() == Physics2DServer::BODY_MODE_STATIC || b->get_mode() == Physics2DServer::BODY_MODE_KINEMATIC) {
 			b = b->get_island_next();
 			continue; //ignore for static
@@ -116,7 +109,6 @@ void Step2DSW::_check_suspend(Body2DSW *p_island, real_t p_delta) {
 
 	b = p_island;
 	while (b) {
-
 		if (b->get_mode() == Physics2DServer::BODY_MODE_STATIC || b->get_mode() == Physics2DServer::BODY_MODE_KINEMATIC) {
 			b = b->get_island_next();
 			continue; //ignore for static
@@ -132,7 +124,6 @@ void Step2DSW::_check_suspend(Body2DSW *p_island, real_t p_delta) {
 }
 
 void Step2DSW::step(Space2DSW *p_space, real_t p_delta, int p_iterations) {
-
 	p_space->lock(); // can't access space during this
 
 	p_space->setup(); //update inertias, etc
@@ -148,7 +139,6 @@ void Step2DSW::step(Space2DSW *p_space, real_t p_delta, int p_iterations) {
 
 	const SelfList<Body2DSW> *b = body_list->first();
 	while (b) {
-
 		b->self()->integrate_forces(p_delta);
 		b = b->next();
 		active_count++;
@@ -174,7 +164,6 @@ void Step2DSW::step(Space2DSW *p_space, real_t p_delta, int p_iterations) {
 		Body2DSW *body = b->self();
 
 		if (body->get_island_step() != _step) {
-
 			Body2DSW *island = NULL;
 			Constraint2DSW *constraint_island = NULL;
 			_populate_island(body, &island, &constraint_island);
@@ -197,7 +186,6 @@ void Step2DSW::step(Space2DSW *p_space, real_t p_delta, int p_iterations) {
 
 	while (aml.first()) {
 		for (const Set<Constraint2DSW *>::Element *E = aml.first()->self()->get_constraints().front(); E; E = E->next()) {
-
 			Constraint2DSW *c = E->get();
 			if (c->get_island_step() == _step)
 				continue;
@@ -221,9 +209,7 @@ void Step2DSW::step(Space2DSW *p_space, real_t p_delta, int p_iterations) {
 		Constraint2DSW *ci = constraint_island_list;
 		Constraint2DSW *prev_ci = NULL;
 		while (ci) {
-
 			if (_setup_island(ci, p_delta)) {
-
 				//removed the root from the island graph because it is not to be processed
 
 				Constraint2DSW *next = ci->get_island_next();
@@ -238,7 +224,6 @@ void Step2DSW::step(Space2DSW *p_space, real_t p_delta, int p_iterations) {
 					}
 					prev_ci = next;
 				} else {
-
 					//list is empty, just skip
 					if (prev_ci) {
 						prev_ci->set_island_list_next(ci->get_island_list_next());
@@ -282,7 +267,6 @@ void Step2DSW::step(Space2DSW *p_space, real_t p_delta, int p_iterations) {
 
 	b = body_list->first();
 	while (b) {
-
 		const SelfList<Body2DSW> *n = b->next();
 		b->self()->integrate_velocities(p_delta);
 		b = n; // in case it shuts itself down
@@ -293,7 +277,6 @@ void Step2DSW::step(Space2DSW *p_space, real_t p_delta, int p_iterations) {
 	{
 		Body2DSW *bi = island_list;
 		while (bi) {
-
 			_check_suspend(bi, p_delta);
 			bi = bi->get_island_list_next();
 		}
@@ -311,6 +294,5 @@ void Step2DSW::step(Space2DSW *p_space, real_t p_delta, int p_iterations) {
 }
 
 Step2DSW::Step2DSW() {
-
 	_step = 1;
 }

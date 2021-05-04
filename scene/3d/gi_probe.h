@@ -35,7 +35,6 @@
 #include "scene/3d/visual_instance.h"
 
 class GIProbeData : public Resource {
-
 	GDCLASS(GIProbeData, Resource);
 
 	RID probe;
@@ -117,7 +116,7 @@ private:
 
 	struct PlotMesh {
 		Ref<Material> override_material;
-		Vector<Ref<Material> > instance_materials;
+		Vector<Ref<Material>> instance_materials;
 		Ref<Mesh> mesh;
 		Transform local_xform;
 	};

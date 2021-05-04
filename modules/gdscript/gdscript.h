@@ -37,7 +37,6 @@
 #include "gdscript_function.h"
 
 class GDScriptNativeClass : public Reference {
-
 	GDCLASS(GDScriptNativeClass, Reference);
 
 	StringName name;
@@ -54,7 +53,6 @@ public:
 };
 
 class GDScript : public Script {
-
 	GDCLASS(GDScript, Script);
 	bool tool;
 	bool valid;
@@ -82,8 +80,8 @@ class GDScript : public Script {
 	Map<StringName, Variant> constants;
 	Map<StringName, GDScriptFunction *> member_functions;
 	Map<StringName, MemberInfo> member_indices; //members are just indices to the instanced script.
-	Map<StringName, Ref<GDScript> > subclasses;
-	Map<StringName, Vector<StringName> > _signals;
+	Map<StringName, Ref<GDScript>> subclasses;
+	Map<StringName, Vector<StringName>> _signals;
 
 #ifdef TOOLS_ENABLED
 
@@ -127,7 +125,7 @@ class GDScript : public Script {
 
 #ifdef DEBUG_ENABLED
 
-	Map<ObjectID, List<Pair<StringName, Variant> > > pending_reload_state;
+	Map<ObjectID, List<Pair<StringName, Variant>>> pending_reload_state;
 
 #endif
 
@@ -148,7 +146,7 @@ protected:
 public:
 	virtual bool is_valid() const { return valid; }
 
-	const Map<StringName, Ref<GDScript> > &get_subclasses() const { return subclasses; }
+	const Map<StringName, Ref<GDScript>> &get_subclasses() const { return subclasses; }
 	const Map<StringName, Variant> &get_constants() const { return constants; }
 	const Set<StringName> &get_members() const { return members; }
 	const GDScriptDataType &get_member_type(const StringName &p_member) const {
@@ -321,7 +319,6 @@ struct GDScriptWarning {
 #endif // DEBUG_ENABLED
 
 class GDScriptLanguage : public ScriptLanguage {
-
 	friend class GDScriptFunctionState;
 
 	static GDScriptLanguage *singleton;
@@ -332,7 +329,6 @@ class GDScriptLanguage : public ScriptLanguage {
 	Map<StringName, Variant> named_globals;
 
 	struct CallLevel {
-
 		Variant *stack;
 		GDScriptFunction *function;
 		GDScriptInstance *instance;
@@ -371,7 +367,6 @@ public:
 	bool debug_break_parse(const String &p_file, int p_line, const String &p_error);
 
 	_FORCE_INLINE_ void enter_function(GDScriptInstance *p_instance, GDScriptFunction *p_function, Variant *p_stack, int *p_ip, int *p_line) {
-
 		if (Thread::get_main_id() != Thread::get_caller_id())
 			return; //no support for other threads than main for now
 
@@ -394,7 +389,6 @@ public:
 	}
 
 	_FORCE_INLINE_ void exit_function() {
-
 		if (Thread::get_main_id() != Thread::get_caller_id())
 			return; //no support for other threads than main for now
 
@@ -402,7 +396,6 @@ public:
 			ScriptDebugger::get_singleton()->set_depth(ScriptDebugger::get_singleton()->get_depth() - 1);
 
 		if (_debug_call_stack_pos == 0) {
-
 			_debug_error = "Stack Underflow (Engine Bug)";
 			ScriptDebugger::get_singleton()->debug(this);
 			return;
@@ -428,7 +421,6 @@ public:
 	}
 
 	struct {
-
 		StringName _init;
 		StringName _notification;
 		StringName _set;
@@ -498,7 +490,7 @@ public:
 	virtual void frame();
 
 	virtual void get_public_functions(List<MethodInfo> *p_functions) const;
-	virtual void get_public_constants(List<Pair<String, Variant> > *p_constants) const;
+	virtual void get_public_constants(List<Pair<String, Variant>> *p_constants) const;
 
 	virtual void profiling_start();
 	virtual void profiling_stop();

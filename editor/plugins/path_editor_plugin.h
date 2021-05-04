@@ -35,7 +35,6 @@
 #include "scene/3d/path.h"
 
 class PathSpatialGizmo : public EditorSpatialGizmo {
-
 	GDCLASS(PathSpatialGizmo, EditorSpatialGizmo);
 
 	Path *path;
@@ -54,7 +53,6 @@ public:
 };
 
 class PathSpatialGizmoPlugin : public EditorSpatialGizmoPlugin {
-
 	GDCLASS(PathSpatialGizmoPlugin, EditorSpatialGizmoPlugin);
 
 protected:
@@ -67,7 +65,6 @@ public:
 };
 
 class PathEditorPlugin : public EditorPlugin {
-
 	GDCLASS(PathEditorPlugin, EditorPlugin);
 
 	Separator *sep;

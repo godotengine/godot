@@ -34,7 +34,6 @@
 #include "servers/audio_server.h"
 
 int AudioRBResampler::get_channel_count() const {
-
 	if (!rb)
 		return 0;
 
@@ -46,11 +45,9 @@ int AudioRBResampler::get_channel_count() const {
 // but it wasn't obvious to integrate that with VideoPlayer
 template <int C>
 uint32_t AudioRBResampler::_resample(AudioFrame *p_dest, int p_todo, int32_t p_increment) {
-
 	uint32_t read = offset & MIX_FRAC_MASK;
 
 	for (int i = 0; i < p_todo; i++) {
-
 		offset = (offset + p_increment) & (((1 << (rb_bits + MIX_FRAC_BITS)) - 1));
 		read += p_increment;
 		uint32_t pos = offset >> MIX_FRAC_BITS;
@@ -60,7 +57,6 @@ uint32_t AudioRBResampler::_resample(AudioFrame *p_dest, int p_todo, int32_t p_i
 
 		// since this is a template with a known compile time value (C), conditionals go away when compiling.
 		if (C == 1) {
-
 			float v0 = rb[pos];
 			float v0n = rb[pos_next];
 			v0 += (v0n - v0) * frac;
@@ -68,7 +64,6 @@ uint32_t AudioRBResampler::_resample(AudioFrame *p_dest, int p_todo, int32_t p_i
 		}
 
 		if (C == 2) {
-
 			float v0 = rb[(pos << 1) + 0];
 			float v1 = rb[(pos << 1) + 1];
 			float v0n = rb[(pos_next << 1) + 0];
@@ -81,7 +76,6 @@ uint32_t AudioRBResampler::_resample(AudioFrame *p_dest, int p_todo, int32_t p_i
 
 		// This will probably never be used, but added anyway
 		if (C == 4) {
-
 			float v0 = rb[(pos << 2) + 0];
 			float v1 = rb[(pos << 2) + 1];
 			float v0n = rb[(pos_next << 2) + 0];
@@ -92,7 +86,6 @@ uint32_t AudioRBResampler::_resample(AudioFrame *p_dest, int p_todo, int32_t p_i
 		}
 
 		if (C == 6) {
-
 			float v0 = rb[(pos * 6) + 0];
 			float v1 = rb[(pos * 6) + 1];
 			float v0n = rb[(pos_next * 6) + 0];
@@ -108,7 +101,6 @@ uint32_t AudioRBResampler::_resample(AudioFrame *p_dest, int p_todo, int32_t p_i
 }
 
 bool AudioRBResampler::mix(AudioFrame *p_dest, int p_frames) {
-
 	if (!rb)
 		return false;
 
@@ -119,10 +111,18 @@ bool AudioRBResampler::mix(AudioFrame *p_dest, int p_frames) {
 	{
 		int src_read = 0;
 		switch (channels) {
-			case 1: src_read = _resample<1>(p_dest, target_todo, increment); break;
-			case 2: src_read = _resample<2>(p_dest, target_todo, increment); break;
-			case 4: src_read = _resample<4>(p_dest, target_todo, increment); break;
-			case 6: src_read = _resample<6>(p_dest, target_todo, increment); break;
+			case 1:
+				src_read = _resample<1>(p_dest, target_todo, increment);
+				break;
+			case 2:
+				src_read = _resample<2>(p_dest, target_todo, increment);
+				break;
+			case 4:
+				src_read = _resample<4>(p_dest, target_todo, increment);
+				break;
+			case 6:
+				src_read = _resample<6>(p_dest, target_todo, increment);
+				break;
 		}
 
 		if (src_read > read_space)
@@ -155,7 +155,6 @@ int AudioRBResampler::get_num_of_ready_frames() {
 }
 
 Error AudioRBResampler::setup(int p_channels, int p_src_mix_rate, int p_target_mix_rate, int p_buffer_msec, int p_minbuff_needed) {
-
 	ERR_FAIL_COND_V(p_channels != 1 && p_channels != 2 && p_channels != 4 && p_channels != 6, ERR_INVALID_PARAMETER);
 
 	int desired_rb_bits = nearest_shift(MAX((p_buffer_msec / 1000.0) * p_src_mix_rate, p_minbuff_needed));
@@ -163,14 +162,12 @@ Error AudioRBResampler::setup(int p_channels, int p_src_mix_rate, int p_target_m
 	bool recreate = !rb;
 
 	if (rb && (uint32_t(desired_rb_bits) != rb_bits || channels != uint32_t(p_channels))) {
-
 		memdelete_arr(rb);
 		memdelete_arr(read_buf);
 		recreate = true;
 	}
 
 	if (recreate) {
-
 		channels = p_channels;
 		rb_bits = desired_rb_bits;
 		rb_len = (1 << rb_bits);
@@ -187,7 +184,6 @@ Error AudioRBResampler::setup(int p_channels, int p_src_mix_rate, int p_target_m
 
 	//avoid maybe strange noises upon load
 	for (unsigned int i = 0; i < (rb_len * channels); i++) {
-
 		rb[i] = 0;
 		read_buf[i] = 0;
 	}
@@ -196,7 +192,6 @@ Error AudioRBResampler::setup(int p_channels, int p_src_mix_rate, int p_target_m
 }
 
 void AudioRBResampler::clear() {
-
 	if (!rb)
 		return;
 
@@ -211,7 +206,6 @@ void AudioRBResampler::clear() {
 }
 
 AudioRBResampler::AudioRBResampler() {
-
 	rb = NULL;
 	offset = 0;
 	read_buf = NULL;
@@ -228,7 +222,6 @@ AudioRBResampler::AudioRBResampler() {
 }
 
 AudioRBResampler::~AudioRBResampler() {
-
 	if (rb) {
 		memdelete_arr(rb);
 		memdelete_arr(read_buf);

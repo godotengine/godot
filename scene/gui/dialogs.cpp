@@ -42,12 +42,10 @@
 // WindowDialog
 
 void WindowDialog::_post_popup() {
-
 	drag_type = DRAG_NONE; // just in case
 }
 
 void WindowDialog::_fix_size() {
-
 	// Perhaps this should be called when the viewport resizes as well or windows go out of bounds...
 
 	// Ensure the whole window is visible.
@@ -88,7 +86,6 @@ void WindowDialog::_fix_size() {
 }
 
 bool WindowDialog::has_point(const Point2 &p_point) const {
-
 	Rect2 r(Point2(), get_size());
 
 	// Enlarge upwards for title bar.
@@ -109,11 +106,9 @@ bool WindowDialog::has_point(const Point2 &p_point) const {
 }
 
 void WindowDialog::_gui_input(const Ref<InputEvent> &p_event) {
-
 	Ref<InputEventMouseButton> mb = p_event;
 
 	if (mb.is_valid() && mb->get_button_index() == BUTTON_LEFT) {
-
 		if (mb->is_pressed()) {
 			// Begin a possible dragging operation.
 			drag_type = _drag_hit_test(Point2(mb->get_position().x, mb->get_position().y));
@@ -129,7 +124,6 @@ void WindowDialog::_gui_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseMotion> mm = p_event;
 
 	if (mm.is_valid()) {
-
 		if (drag_type == DRAG_NONE) {
 			// Update the cursor while moving along the borders.
 			CursorShape cursor = CURSOR_ARROW;
@@ -192,7 +186,6 @@ void WindowDialog::_gui_input(const Ref<InputEvent> &p_event) {
 }
 
 void WindowDialog::_notification(int p_what) {
-
 	switch (p_what) {
 		case NOTIFICATION_DRAW: {
 			RID canvas = get_canvas_item();
@@ -257,7 +250,6 @@ void WindowDialog::_notification(int p_what) {
 }
 
 void WindowDialog::_closed() {
-
 	_close_pressed();
 	hide();
 }
@@ -288,7 +280,6 @@ int WindowDialog::_drag_hit_test(const Point2 &pos) const {
 }
 
 void WindowDialog::set_title(const String &p_title) {
-
 	if (title != p_title) {
 		title = p_title;
 		xl_title = tr(p_title);
@@ -297,7 +288,6 @@ void WindowDialog::set_title(const String &p_title) {
 	}
 }
 String WindowDialog::get_title() const {
-
 	return title;
 }
 
@@ -309,7 +299,6 @@ bool WindowDialog::get_resizable() const {
 }
 
 Size2 WindowDialog::get_minimum_size() const {
-
 	Ref<Font> font = get_font("title_font", "WindowDialog");
 
 	const int button_width = close_button->get_combined_minimum_size().x;
@@ -325,12 +314,10 @@ Size2 WindowDialog::get_minimum_size() const {
 }
 
 TextureButton *WindowDialog::get_close_button() {
-
 	return close_button;
 }
 
 void WindowDialog::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("_gui_input"), &WindowDialog::_gui_input);
 	ClassDB::bind_method(D_METHOD("set_title", "title"), &WindowDialog::set_title);
 	ClassDB::bind_method(D_METHOD("get_title"), &WindowDialog::get_title);
@@ -344,7 +331,6 @@ void WindowDialog::_bind_methods() {
 }
 
 WindowDialog::WindowDialog() {
-
 	drag_type = DRAG_NONE;
 	resizable = false;
 	close_button = memnew(TextureButton);
@@ -362,7 +348,6 @@ WindowDialog::~WindowDialog() {
 // PopupDialog
 
 void PopupDialog::_notification(int p_what) {
-
 	if (p_what == NOTIFICATION_DRAW) {
 		RID ci = get_canvas_item();
 		get_stylebox("panel")->draw(ci, Rect2(Point2(), get_size()));
@@ -378,13 +363,11 @@ PopupDialog::~PopupDialog() {
 // AcceptDialog
 
 void AcceptDialog::_post_popup() {
-
 	WindowDialog::_post_popup();
 	get_ok()->grab_focus();
 }
 
 void AcceptDialog::_notification(int p_what) {
-
 	switch (p_what) {
 		case NOTIFICATION_MODAL_CLOSE: {
 			cancel_pressed();
@@ -398,53 +381,43 @@ void AcceptDialog::_notification(int p_what) {
 }
 
 void AcceptDialog::_builtin_text_entered(const String &p_text) {
-
 	_ok_pressed();
 }
 
 void AcceptDialog::_ok_pressed() {
-
 	if (hide_on_ok)
 		hide();
 	ok_pressed();
 	emit_signal("confirmed");
 }
 void AcceptDialog::_close_pressed() {
-
 	cancel_pressed();
 }
 
 String AcceptDialog::get_text() const {
-
 	return label->get_text();
 }
 void AcceptDialog::set_text(String p_text) {
-
 	label->set_text(p_text);
 	minimum_size_changed();
 	_update_child_rects();
 }
 
 void AcceptDialog::set_hide_on_ok(bool p_hide) {
-
 	hide_on_ok = p_hide;
 }
 bool AcceptDialog::get_hide_on_ok() const {
-
 	return hide_on_ok;
 }
 
 void AcceptDialog::set_autowrap(bool p_autowrap) {
-
 	label->set_autowrap(p_autowrap);
 }
 bool AcceptDialog::has_autowrap() {
-
 	return label->has_autowrap();
 }
 
 void AcceptDialog::register_text_enter(Node *p_line_edit) {
-
 	ERR_FAIL_NULL(p_line_edit);
 	LineEdit *line_edit = Object::cast_to<LineEdit>(p_line_edit);
 	if (line_edit)
@@ -452,7 +425,6 @@ void AcceptDialog::register_text_enter(Node *p_line_edit) {
 }
 
 void AcceptDialog::_update_child_rects() {
-
 	Size2 label_size = label->get_minimum_size();
 	if (label->get_text().empty()) {
 		label_size.height = 0;
@@ -484,7 +456,6 @@ void AcceptDialog::_update_child_rects() {
 }
 
 Size2 AcceptDialog::get_minimum_size() const {
-
 	int margin = get_constant("margin", "Dialogs");
 	Size2 minsize = label->get_combined_minimum_size();
 
@@ -513,20 +484,17 @@ Size2 AcceptDialog::get_minimum_size() const {
 }
 
 void AcceptDialog::_custom_action(const String &p_action) {
-
 	emit_signal("custom_action", p_action);
 	custom_action(p_action);
 }
 
 Button *AcceptDialog::add_button(const String &p_text, bool p_right, const String &p_action) {
-
 	Button *button = memnew(Button);
 	button->set_text(p_text);
 	if (p_right) {
 		hbc->add_child(button);
 		hbc->add_spacer();
 	} else {
-
 		hbc->add_child(button);
 		hbc->move_child(button, 0);
 		hbc->add_spacer(true);
@@ -540,7 +508,6 @@ Button *AcceptDialog::add_button(const String &p_text, bool p_right, const Strin
 }
 
 Button *AcceptDialog::add_cancel(const String &p_cancel) {
-
 	String c = p_cancel;
 	if (p_cancel == "")
 		c = RTR("Cancel");
@@ -550,7 +517,6 @@ Button *AcceptDialog::add_cancel(const String &p_cancel) {
 }
 
 void AcceptDialog::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("_ok"), &AcceptDialog::_ok_pressed);
 	ClassDB::bind_method(D_METHOD("get_ok"), &AcceptDialog::get_ok);
 	ClassDB::bind_method(D_METHOD("get_label"), &AcceptDialog::get_label);
@@ -577,12 +543,10 @@ void AcceptDialog::_bind_methods() {
 
 bool AcceptDialog::swap_ok_cancel = false;
 void AcceptDialog::set_swap_ok_cancel(bool p_swap) {
-
 	swap_ok_cancel = p_swap;
 }
 
 AcceptDialog::AcceptDialog() {
-
 	int margin = get_constant("margin", "Dialogs");
 	int button_margin = get_constant("button_margin", "Dialogs");
 
@@ -615,17 +579,14 @@ AcceptDialog::~AcceptDialog() {
 // ConfirmationDialog
 
 void ConfirmationDialog::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("get_cancel"), &ConfirmationDialog::get_cancel);
 }
 
 Button *ConfirmationDialog::get_cancel() {
-
 	return cancel;
 }
 
 ConfirmationDialog::ConfirmationDialog() {
-
 	set_title(RTR("Please Confirm..."));
 #ifdef TOOLS_ENABLED
 	set_custom_minimum_size(Size2(200, 70) * EDSCALE);

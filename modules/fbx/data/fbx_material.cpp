@@ -248,7 +248,6 @@ T extract_from_prop(FBXDocParser::PropertyPtr prop, const T &p_default, const st
 }
 
 Ref<SpatialMaterial> FBXMaterial::import_material(ImportState &state) {
-
 	ERR_FAIL_COND_V(material == nullptr, nullptr);
 
 	const String p_fbx_current_directory = state.path;
@@ -501,7 +500,6 @@ Ref<SpatialMaterial> FBXMaterial::import_material(ImportState &state) {
 
 				const String extension = mapping.name.get_extension().to_upper();
 				if (extension == "PNG") {
-
 					// The stored file is a PNG.
 					image = Image::_png_mem_loader_func(mapping.texture->Media()->Content(), mapping.texture->Media()->ContentLength());
 					ERR_CONTINUE_MSG(image.is_valid() == false, "FBX Embedded PNG image load fail.");
@@ -509,19 +507,16 @@ Ref<SpatialMaterial> FBXMaterial::import_material(ImportState &state) {
 				} else if (
 						extension == "JPEG" ||
 						extension == "JPG") {
-
 					// The stored file is a JPEG.
 					image = Image::_jpg_mem_loader_func(mapping.texture->Media()->Content(), mapping.texture->Media()->ContentLength());
 					ERR_CONTINUE_MSG(image.is_valid() == false, "FBX Embedded JPEG image load fail.");
 
 				} else if (extension == "TGA") {
-
 					// The stored file is a TGA.
 					image = Image::_tga_mem_loader_func(mapping.texture->Media()->Content(), mapping.texture->Media()->ContentLength());
 					ERR_CONTINUE_MSG(image.is_valid() == false, "FBX Embedded TGA image load fail.");
 
 				} else if (extension == "WEBP") {
-
 					// The stored file is a WEBP.
 					image = Image::_webp_mem_loader_func(mapping.texture->Media()->Content(), mapping.texture->Media()->ContentLength());
 					ERR_CONTINUE_MSG(image.is_valid() == false, "FBX Embedded WEBP image load fail.");

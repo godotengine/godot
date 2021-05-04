@@ -34,7 +34,6 @@
 #include "core/os/input.h"
 
 class InputDefault : public Input {
-
 	GDCLASS(InputDefault, Input);
 	_THREAD_SAFE_CLASS_
 
@@ -66,7 +65,6 @@ class InputDefault : public Input {
 	int mouse_from_touch_index;
 
 	struct SpeedTrack {
-
 		uint64_t last_tick;
 		Vector2 speed;
 		Vector2 accum;
@@ -91,11 +89,9 @@ class InputDefault : public Input {
 
 		Joypad() {
 			for (int i = 0; i < JOY_AXIS_MAX; i++) {
-
 				last_axis[i] = 0.0f;
 			}
 			for (int i = 0; i < JOY_BUTTON_MAX + 13; i++) {
-
 				last_buttons[i] = false;
 			}
 			connected = false;
@@ -207,7 +203,7 @@ private:
 
 	void _parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_emulated);
 
-	List<Ref<InputEvent> > accumulated_events;
+	List<Ref<InputEvent>> accumulated_events;
 	bool use_accumulated_input;
 
 protected:

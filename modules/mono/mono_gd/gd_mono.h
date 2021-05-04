@@ -79,7 +79,6 @@ String to_string(Type p_type);
 } // namespace ApiAssemblyInfo
 
 class GDMono {
-
 public:
 	enum UnhandledExceptionPolicy {
 		POLICY_TERMINATE_APP,
@@ -105,7 +104,7 @@ private:
 	MonoDomain *root_domain;
 	MonoDomain *scripts_domain;
 
-	HashMap<uint32_t, HashMap<String, GDMonoAssembly *> > assemblies;
+	HashMap<uint32_t, HashMap<String, GDMonoAssembly *>> assemblies;
 
 	GDMonoAssembly *corlib_assembly;
 	GDMonoAssembly *project_assembly;
@@ -256,7 +255,6 @@ public:
 namespace gdmono {
 
 class ScopeDomain {
-
 	MonoDomain *prev_domain;
 
 public:

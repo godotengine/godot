@@ -69,7 +69,6 @@ void WebRTCDataChannelJS::_on_error(void *p_obj) {
 }
 
 void WebRTCDataChannelJS::_on_message(void *p_obj, const uint8_t *p_data, int p_size, int p_is_string) {
-
 	WebRTCDataChannelJS *peer = static_cast<WebRTCDataChannelJS *>(p_obj);
 	RingBuffer<uint8_t> &in_buffer = peer->in_buffer;
 

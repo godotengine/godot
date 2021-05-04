@@ -35,7 +35,6 @@
 #include "scene/resources/convex_polygon_shape.h"
 
 void CollisionPolygon::_build_polygon() {
-
 	if (!parent)
 		return;
 
@@ -44,7 +43,7 @@ void CollisionPolygon::_build_polygon() {
 	if (polygon.size() == 0)
 		return;
 
-	Vector<Vector<Vector2> > decomp = Geometry::decompose_polygon_in_convex(polygon);
+	Vector<Vector<Vector2>> decomp = Geometry::decompose_polygon_in_convex(polygon);
 	if (decomp.size() == 0)
 		return;
 
@@ -60,7 +59,6 @@ void CollisionPolygon::_build_polygon() {
 			PoolVector<Vector3>::Write w = cp.write();
 			int idx = 0;
 			for (int j = 0; j < cs; j++) {
-
 				Vector2 d = decomp[i][j];
 				w[idx++] = Vector3(d.x, d.y, depth * 0.5);
 				w[idx++] = Vector3(d.x, d.y, -depth * 0.5);
@@ -75,7 +73,6 @@ void CollisionPolygon::_build_polygon() {
 }
 
 void CollisionPolygon::_update_in_shape_owner(bool p_xform_only) {
-
 	parent->shape_owner_set_transform(owner_id, get_transform());
 	if (p_xform_only)
 		return;
@@ -83,9 +80,7 @@ void CollisionPolygon::_update_in_shape_owner(bool p_xform_only) {
 }
 
 void CollisionPolygon::_notification(int p_what) {
-
 	switch (p_what) {
-
 		case NOTIFICATION_PARENTED: {
 			parent = Object::cast_to<CollisionObject>(get_parent());
 			if (parent) {
@@ -95,14 +90,12 @@ void CollisionPolygon::_notification(int p_what) {
 			}
 		} break;
 		case NOTIFICATION_ENTER_TREE: {
-
 			if (parent) {
 				_update_in_shape_owner();
 			}
 
 		} break;
 		case NOTIFICATION_LOCAL_TRANSFORM_CHANGED: {
-
 			if (parent) {
 				_update_in_shape_owner(true);
 			}
@@ -119,7 +112,6 @@ void CollisionPolygon::_notification(int p_what) {
 }
 
 void CollisionPolygon::set_polygon(const Vector<Point2> &p_polygon) {
-
 	polygon = p_polygon;
 	if (parent) {
 		_build_polygon();
@@ -129,24 +121,20 @@ void CollisionPolygon::set_polygon(const Vector<Point2> &p_polygon) {
 }
 
 Vector<Point2> CollisionPolygon::get_polygon() const {
-
 	return polygon;
 }
 
 AABB CollisionPolygon::get_item_rect() const {
-
 	return aabb;
 }
 
 void CollisionPolygon::set_depth(float p_depth) {
-
 	depth = p_depth;
 	_build_polygon();
 	update_gizmo();
 }
 
 float CollisionPolygon::get_depth() const {
-
 	return depth;
 }
 
@@ -175,7 +163,6 @@ void CollisionPolygon::set_margin(real_t p_margin) {
 }
 
 String CollisionPolygon::get_configuration_warning() const {
-
 	String warning = Spatial::get_configuration_warning();
 	if (!Object::cast_to<CollisionObject>(get_parent())) {
 		if (warning != String()) {
@@ -198,7 +185,6 @@ bool CollisionPolygon::_is_editable_3d_polygon() const {
 	return true;
 }
 void CollisionPolygon::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("set_depth", "depth"), &CollisionPolygon::set_depth);
 	ClassDB::bind_method(D_METHOD("get_depth"), &CollisionPolygon::get_depth);
 
@@ -220,7 +206,6 @@ void CollisionPolygon::_bind_methods() {
 }
 
 CollisionPolygon::CollisionPolygon() {
-
 	aabb = AABB(Vector3(-1, -1, -1), Vector3(2, 2, 2));
 	depth = 1.0;
 	set_notify_local_transform(true);

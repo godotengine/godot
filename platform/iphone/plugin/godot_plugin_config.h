@@ -52,7 +52,6 @@ The `plist` section are optional.
  */
 
 struct PluginConfigIOS {
-
 	static const char *PLUGIN_CONFIG_EXT;
 
 	static const char *CONFIG_SECTION;

@@ -34,21 +34,17 @@
 #include "core/os/os.h"
 
 void NetworkedMultiplayerENet::set_transfer_mode(TransferMode p_mode) {
-
 	transfer_mode = p_mode;
 }
 NetworkedMultiplayerPeer::TransferMode NetworkedMultiplayerENet::get_transfer_mode() const {
-
 	return transfer_mode;
 }
 
 void NetworkedMultiplayerENet::set_target_peer(int p_peer) {
-
 	target_peer = p_peer;
 }
 
 int NetworkedMultiplayerENet::get_packet_peer() const {
-
 	ERR_FAIL_COND_V_MSG(!active, 1, "The multiplayer instance isn't currently active.");
 	ERR_FAIL_COND_V(incoming_packets.size() == 0, 1);
 
@@ -56,7 +52,6 @@ int NetworkedMultiplayerENet::get_packet_peer() const {
 }
 
 int NetworkedMultiplayerENet::get_packet_channel() const {
-
 	ERR_FAIL_COND_V_MSG(!active, -1, "The multiplayer instance isn't currently active.");
 	ERR_FAIL_COND_V(incoming_packets.size() == 0, -1);
 
@@ -64,7 +59,6 @@ int NetworkedMultiplayerENet::get_packet_channel() const {
 }
 
 int NetworkedMultiplayerENet::get_last_packet_channel() const {
-
 	ERR_FAIL_COND_V_MSG(!active, -1, "The multiplayer instance isn't currently active.");
 	ERR_FAIL_COND_V(!current_packet.packet, -1);
 
@@ -72,7 +66,6 @@ int NetworkedMultiplayerENet::get_last_packet_channel() const {
 }
 
 Error NetworkedMultiplayerENet::create_server(int p_port, int p_max_clients, int p_in_bandwidth, int p_out_bandwidth) {
-
 	ERR_FAIL_COND_V_MSG(active, ERR_ALREADY_IN_USE, "The multiplayer instance is already active.");
 	ERR_FAIL_COND_V_MSG(p_port < 0 || p_port > 65535, ERR_INVALID_PARAMETER, "The port number must be set between 0 and 65535 (inclusive).");
 	ERR_FAIL_COND_V_MSG(p_max_clients < 1 || p_max_clients > 4095, ERR_INVALID_PARAMETER, "The number of clients must be set between 1 and 4095 (inclusive).");
@@ -122,7 +115,6 @@ Error NetworkedMultiplayerENet::create_server(int p_port, int p_max_clients, int
 	return OK;
 }
 Error NetworkedMultiplayerENet::create_client(const String &p_address, int p_port, int p_in_bandwidth, int p_out_bandwidth, int p_client_port) {
-
 	ERR_FAIL_COND_V_MSG(active, ERR_ALREADY_IN_USE, "The multiplayer instance is already active.");
 	ERR_FAIL_COND_V_MSG(p_port < 0 || p_port > 65535, ERR_INVALID_PARAMETER, "The server port number must be set between 0 and 65535 (inclusive).");
 	ERR_FAIL_COND_V_MSG(p_client_port < 0 || p_client_port > 65535, ERR_INVALID_PARAMETER, "The client port number must be set between 0 and 65535 (inclusive).");
@@ -215,7 +207,6 @@ Error NetworkedMultiplayerENet::create_client(const String &p_address, int p_por
 }
 
 void NetworkedMultiplayerENet::poll() {
-
 	ERR_FAIL_COND_MSG(!active, "The multiplayer instance isn't currently active.");
 
 	_pop_current_packet();
@@ -223,7 +214,6 @@ void NetworkedMultiplayerENet::poll() {
 	ENetEvent event;
 	/* Keep servicing until there are no available events left in queue. */
 	while (true) {
-
 		if (!host || !active) // Might have been disconnected while emitting a notification
 			return;
 
@@ -274,7 +264,6 @@ void NetworkedMultiplayerENet::poll() {
 
 					// Someone connected, notify all the peers available
 					for (Map<int, ENetPeer *>::Element *E = peer_map.front(); E; E = E->next()) {
-
 						if (E->key() == *new_id)
 							continue;
 						// Send existing peers to new peer
@@ -289,13 +278,11 @@ void NetworkedMultiplayerENet::poll() {
 						enet_peer_send(E->get(), SYSCH_CONFIG, packet);
 					}
 				} else {
-
 					emit_signal("connection_succeeded");
 				}
 
 			} break;
 			case ENET_EVENT_TYPE_DISCONNECT: {
-
 				// Reset the peer's client information.
 
 				int *id = (int *)event.peer->data;
@@ -309,16 +296,13 @@ void NetworkedMultiplayerENet::poll() {
 				}
 
 				if (!server) {
-
 					// Client just disconnected from server.
 					emit_signal("server_disconnected");
 					close_connection();
 					return;
 				} else if (server_relay) {
-
 					// Server just received a client disconnect and is in relay mode, notify everyone else.
 					for (Map<int, ENetPeer *>::Element *E = peer_map.front(); E; E = E->next()) {
-
 						if (E->key() == *id)
 							continue;
 
@@ -334,7 +318,6 @@ void NetworkedMultiplayerENet::poll() {
 				memdelete(id);
 			} break;
 			case ENET_EVENT_TYPE_RECEIVE: {
-
 				if (event.channelID == SYSCH_CONFIG) {
 					// Some config message
 					ERR_CONTINUE(event.packet->dataLength < 8);
@@ -347,13 +330,11 @@ void NetworkedMultiplayerENet::poll() {
 
 					switch (msg) {
 						case SYSMSG_ADD_PEER: {
-
 							peer_map[id] = NULL;
 							emit_signal("peer_connected", id);
 
 						} break;
 						case SYSMSG_REMOVE_PEER: {
-
 							peer_map.erase(id);
 							emit_signal("peer_disconnected", id);
 						} break;
@@ -361,7 +342,6 @@ void NetworkedMultiplayerENet::poll() {
 
 					enet_packet_destroy(event.packet);
 				} else if (event.channelID < channel_count) {
-
 					Packet packet;
 					packet.packet = event.packet;
 
@@ -393,7 +373,6 @@ void NetworkedMultiplayerENet::poll() {
 							incoming_packets.push_back(packet);
 							// And make copies for sending
 							for (Map<int, ENetPeer *>::Element *E = peer_map.front(); E; E = E->next()) {
-
 								if (uint32_t(E->key()) == source) // Do not resend to self
 									continue;
 
@@ -407,7 +386,6 @@ void NetworkedMultiplayerENet::poll() {
 
 							// And make copies for sending
 							for (Map<int, ENetPeer *>::Element *E = peer_map.front(); E; E = E->next()) {
-
 								if (uint32_t(E->key()) == source || E->key() == -target) // Do not resend to self, also do not send to excluded
 									continue;
 
@@ -430,7 +408,6 @@ void NetworkedMultiplayerENet::poll() {
 							enet_peer_send(peer_map[target], event.channelID, packet.packet);
 						}
 					} else {
-
 						incoming_packets.push_back(packet);
 					}
 
@@ -454,7 +431,6 @@ bool NetworkedMultiplayerENet::is_server() const {
 }
 
 void NetworkedMultiplayerENet::close_connection(uint32_t wait_usec) {
-
 	ERR_FAIL_COND_MSG(!active, "The multiplayer instance isn't currently active.");
 
 	_pop_current_packet();
@@ -486,7 +462,6 @@ void NetworkedMultiplayerENet::close_connection(uint32_t wait_usec) {
 }
 
 void NetworkedMultiplayerENet::disconnect_peer(int p_peer, bool now) {
-
 	ERR_FAIL_COND_MSG(!active, "The multiplayer instance isn't currently active.");
 	ERR_FAIL_COND_MSG(!is_server(), "Can't disconnect a peer when not acting as a server.");
 	ERR_FAIL_COND_MSG(!peer_map.has(p_peer), vformat("Peer ID %d not found in the list of peers.", p_peer));
@@ -499,7 +474,6 @@ void NetworkedMultiplayerENet::disconnect_peer(int p_peer, bool now) {
 		// notify everyone else, send disconnect signal & remove from peer_map like in poll()
 		if (server_relay) {
 			for (Map<int, ENetPeer *>::Element *E = peer_map.front(); E; E = E->next()) {
-
 				if (E->key() == p_peer) {
 					continue;
 				}
@@ -522,12 +496,10 @@ void NetworkedMultiplayerENet::disconnect_peer(int p_peer, bool now) {
 }
 
 int NetworkedMultiplayerENet::get_available_packet_count() const {
-
 	return incoming_packets.size();
 }
 
 Error NetworkedMultiplayerENet::get_packet(const uint8_t **r_buffer, int &r_buffer_size) {
-
 	ERR_FAIL_COND_V_MSG(incoming_packets.size() == 0, ERR_UNAVAILABLE, "No incoming packets available.");
 
 	_pop_current_packet();
@@ -542,7 +514,6 @@ Error NetworkedMultiplayerENet::get_packet(const uint8_t **r_buffer, int &r_buff
 }
 
 Error NetworkedMultiplayerENet::put_packet(const uint8_t *p_buffer, int p_buffer_size) {
-
 	ERR_FAIL_COND_V_MSG(!active, ERR_UNCONFIGURED, "The multiplayer instance isn't currently active.");
 	ERR_FAIL_COND_V_MSG(connection_status != CONNECTION_CONNECTED, ERR_UNCONFIGURED, "The multiplayer instance isn't currently connected to any server or client.");
 
@@ -573,7 +544,6 @@ Error NetworkedMultiplayerENet::put_packet(const uint8_t *p_buffer, int p_buffer
 	Map<int, ENetPeer *>::Element *E = NULL;
 
 	if (target_peer != 0) {
-
 		E = peer_map.find(ABS(target_peer));
 		ERR_FAIL_COND_V_MSG(!E, ERR_INVALID_PARAMETER, vformat("Invalid target peer: %d", target_peer));
 	}
@@ -584,7 +554,6 @@ Error NetworkedMultiplayerENet::put_packet(const uint8_t *p_buffer, int p_buffer
 	memcpy(&packet->data[8], p_buffer, p_buffer_size);
 
 	if (server) {
-
 		if (target_peer == 0) {
 			enet_host_broadcast(host, channel, packet);
 		} else if (target_peer < 0) {
@@ -594,7 +563,6 @@ Error NetworkedMultiplayerENet::put_packet(const uint8_t *p_buffer, int p_buffer
 			int exclude = -target_peer;
 
 			for (Map<int, ENetPeer *>::Element *F = peer_map.front(); F; F = F->next()) {
-
 				if (F->key() == exclude) // Exclude packet
 					continue;
 
@@ -608,7 +576,6 @@ Error NetworkedMultiplayerENet::put_packet(const uint8_t *p_buffer, int p_buffer
 			enet_peer_send(E->get(), channel, packet);
 		}
 	} else {
-
 		ERR_FAIL_COND_V(!peer_map.has(1), ERR_BUG);
 		enet_peer_send(peer_map[1], channel, packet); // Send to server for broadcast
 	}
@@ -619,12 +586,10 @@ Error NetworkedMultiplayerENet::put_packet(const uint8_t *p_buffer, int p_buffer
 }
 
 int NetworkedMultiplayerENet::get_max_packet_size() const {
-
 	return 1 << 24; // Anything is good
 }
 
 void NetworkedMultiplayerENet::_pop_current_packet() {
-
 	if (current_packet.packet) {
 		enet_packet_destroy(current_packet.packet);
 		current_packet.packet = NULL;
@@ -634,16 +599,13 @@ void NetworkedMultiplayerENet::_pop_current_packet() {
 }
 
 NetworkedMultiplayerPeer::ConnectionStatus NetworkedMultiplayerENet::get_connection_status() const {
-
 	return connection_status;
 }
 
 uint32_t NetworkedMultiplayerENet::_gen_unique_id() const {
-
 	uint32_t hash = 0;
 
 	while (hash == 0 || hash == 1) {
-
 		hash = hash_djb2_one_32(
 				(uint32_t)OS::get_singleton()->get_ticks_usec());
 		hash = hash_djb2_one_32(
@@ -662,13 +624,11 @@ uint32_t NetworkedMultiplayerENet::_gen_unique_id() const {
 }
 
 int NetworkedMultiplayerENet::get_unique_id() const {
-
 	ERR_FAIL_COND_V_MSG(!active, 0, "The multiplayer instance isn't currently active.");
 	return unique_id;
 }
 
 void NetworkedMultiplayerENet::set_refuse_new_connections(bool p_enable) {
-
 	refuse_connections = p_enable;
 #ifdef GODOT_ENET
 	if (active) {
@@ -678,22 +638,18 @@ void NetworkedMultiplayerENet::set_refuse_new_connections(bool p_enable) {
 }
 
 bool NetworkedMultiplayerENet::is_refusing_new_connections() const {
-
 	return refuse_connections;
 }
 
 void NetworkedMultiplayerENet::set_compression_mode(CompressionMode p_mode) {
-
 	compression_mode = p_mode;
 }
 
 NetworkedMultiplayerENet::CompressionMode NetworkedMultiplayerENet::get_compression_mode() const {
-
 	return compression_mode;
 }
 
 size_t NetworkedMultiplayerENet::enet_compress(void *context, const ENetBuffer *inBuffers, size_t inBufferCount, size_t inLimit, enet_uint8 *outData, size_t outLimit) {
-
 	NetworkedMultiplayerENet *enet = (NetworkedMultiplayerENet *)(context);
 
 	if (size_t(enet->src_compressor_mem.size()) < inLimit) {
@@ -746,20 +702,16 @@ size_t NetworkedMultiplayerENet::enet_compress(void *context, const ENetBuffer *
 }
 
 size_t NetworkedMultiplayerENet::enet_decompress(void *context, const enet_uint8 *inData, size_t inLimit, enet_uint8 *outData, size_t outLimit) {
-
 	NetworkedMultiplayerENet *enet = (NetworkedMultiplayerENet *)(context);
 	int ret = -1;
 	switch (enet->compression_mode) {
 		case COMPRESS_FASTLZ: {
-
 			ret = Compression::decompress(outData, outLimit, inData, inLimit, Compression::MODE_FASTLZ);
 		} break;
 		case COMPRESS_ZLIB: {
-
 			ret = Compression::decompress(outData, outLimit, inData, inLimit, Compression::MODE_DEFLATE);
 		} break;
 		case COMPRESS_ZSTD: {
-
 			ret = Compression::decompress(outData, outLimit, inData, inLimit, Compression::MODE_ZSTD);
 		} break;
 		default: {
@@ -773,11 +725,8 @@ size_t NetworkedMultiplayerENet::enet_decompress(void *context, const enet_uint8
 }
 
 void NetworkedMultiplayerENet::_setup_compressor() {
-
 	switch (compression_mode) {
-
 		case COMPRESS_NONE: {
-
 			enet_host_compress(host, NULL);
 		} break;
 		case COMPRESS_RANGE_CODER: {
@@ -786,19 +735,16 @@ void NetworkedMultiplayerENet::_setup_compressor() {
 		case COMPRESS_FASTLZ:
 		case COMPRESS_ZLIB:
 		case COMPRESS_ZSTD: {
-
 			enet_host_compress(host, &enet_compressor);
 		} break;
 	}
 }
 
 void NetworkedMultiplayerENet::enet_compressor_destroy(void *context) {
-
 	// Nothing to do
 }
 
 IP_Address NetworkedMultiplayerENet::get_peer_address(int p_peer_id) const {
-
 	ERR_FAIL_COND_V_MSG(!peer_map.has(p_peer_id), IP_Address(), vformat("Peer ID %d not found in the list of peers.", p_peer_id));
 	ERR_FAIL_COND_V_MSG(!is_server() && p_peer_id != 1, IP_Address(), "Can't get the address of peers other than the server (ID -1) when acting as a client.");
 	ERR_FAIL_COND_V_MSG(peer_map[p_peer_id] == NULL, IP_Address(), vformat("Peer ID %d found in the list of peers, but is null.", p_peer_id));
@@ -814,7 +760,6 @@ IP_Address NetworkedMultiplayerENet::get_peer_address(int p_peer_id) const {
 }
 
 int NetworkedMultiplayerENet::get_peer_port(int p_peer_id) const {
-
 	ERR_FAIL_COND_V_MSG(!peer_map.has(p_peer_id), 0, vformat("Peer ID %d not found in the list of peers.", p_peer_id));
 	ERR_FAIL_COND_V_MSG(!is_server() && p_peer_id != 1, 0, "Can't get the address of peers other than the server (ID -1) when acting as a client.");
 	ERR_FAIL_COND_V_MSG(peer_map[p_peer_id] == NULL, 0, vformat("Peer ID %d found in the list of peers, but is null.", p_peer_id));
@@ -834,7 +779,6 @@ void NetworkedMultiplayerENet::set_peer_timeout(int p_peer_id, int p_timeout_lim
 }
 
 void NetworkedMultiplayerENet::set_transfer_channel(int p_channel) {
-
 	ERR_FAIL_COND_MSG(p_channel < -1 || p_channel >= channel_count, vformat("The transfer channel must be set between 0 and %d, inclusive (got %d).", channel_count - 1, p_channel));
 	ERR_FAIL_COND_MSG(p_channel == SYSCH_CONFIG, vformat("The channel %d is reserved.", SYSCH_CONFIG));
 	transfer_channel = p_channel;
@@ -845,7 +789,6 @@ int NetworkedMultiplayerENet::get_transfer_channel() const {
 }
 
 void NetworkedMultiplayerENet::set_channel_count(int p_channel) {
-
 	ERR_FAIL_COND_MSG(active, "The channel count can't be set while the multiplayer instance is active.");
 	ERR_FAIL_COND_MSG(p_channel < SYSCH_MAX, vformat("The channel count must be greater than or equal to %d to account for reserved channels (got %d).", SYSCH_MAX, p_channel));
 	channel_count = p_channel;
@@ -874,7 +817,6 @@ bool NetworkedMultiplayerENet::is_server_relay_enabled() const {
 }
 
 void NetworkedMultiplayerENet::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("create_server", "port", "max_clients", "in_bandwidth", "out_bandwidth"), &NetworkedMultiplayerENet::create_server, DEFVAL(32), DEFVAL(0), DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("create_client", "address", "port", "in_bandwidth", "out_bandwidth", "client_port"), &NetworkedMultiplayerENet::create_client, DEFVAL(0), DEFVAL(0), DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("close_connection", "wait_usec"), &NetworkedMultiplayerENet::close_connection, DEFVAL(100));
@@ -919,7 +861,6 @@ void NetworkedMultiplayerENet::_bind_methods() {
 }
 
 NetworkedMultiplayerENet::NetworkedMultiplayerENet() {
-
 	active = false;
 	server = false;
 	refuse_connections = false;
@@ -945,7 +886,6 @@ NetworkedMultiplayerENet::NetworkedMultiplayerENet() {
 }
 
 NetworkedMultiplayerENet::~NetworkedMultiplayerENet() {
-
 	if (active) {
 		close_connection();
 	}

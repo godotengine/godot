@@ -46,7 +46,6 @@
 #ifdef DEBUG_METHODS_ENABLED
 
 struct MethodDefinition {
-
 	StringName name;
 	Vector<StringName> args;
 	MethodDefinition() {}
@@ -101,7 +100,6 @@ public:
 
 public:
 	struct PropertySetGet {
-
 		int index;
 		StringName setter;
 		StringName getter;
@@ -111,13 +109,12 @@ public:
 	};
 
 	struct ClassInfo {
-
 		APIType api;
 		ClassInfo *inherits_ptr;
 		void *class_ptr;
 		HashMap<StringName, MethodBind *> method_map;
 		HashMap<StringName, int> constant_map;
-		HashMap<StringName, List<StringName> > enum_map;
+		HashMap<StringName, List<StringName>> enum_map;
 		HashMap<StringName, MethodInfo> signal_map;
 		List<PropertyInfo> property_list;
 #ifdef DEBUG_METHODS_ENABLED
@@ -158,7 +155,7 @@ public:
 
 	static void _add_class2(const StringName &p_class, const StringName &p_inherits);
 
-	static HashMap<StringName, HashMap<StringName, Variant> > default_values;
+	static HashMap<StringName, HashMap<StringName, Variant>> default_values;
 	static Set<StringName> default_values_cached;
 
 private:
@@ -170,13 +167,11 @@ public:
 	// DO NOT USE THIS!!!!!! NEEDS TO BE PUBLIC BUT DO NOT USE NO MATTER WHAT!!!
 	template <class T>
 	static void _add_class() {
-
 		_add_class2(T::get_class_static(), T::get_parent_class_static());
 	}
 
 	template <class T>
 	static void register_class() {
-
 		GLOBAL_LOCK_FUNCTION;
 		T::initialize_class();
 		ClassInfo *t = classes.getptr(T::get_class_static());
@@ -189,7 +184,6 @@ public:
 
 	template <class T>
 	static void register_virtual_class() {
-
 		GLOBAL_LOCK_FUNCTION;
 		T::initialize_class();
 		ClassInfo *t = classes.getptr(T::get_class_static());
@@ -201,13 +195,11 @@ public:
 
 	template <class T>
 	static Object *_create_ptr_func() {
-
 		return T::create();
 	}
 
 	template <class T>
 	static void register_custom_instance_class() {
-
 		GLOBAL_LOCK_FUNCTION;
 		T::initialize_class();
 		ClassInfo *t = classes.getptr(T::get_class_static());
@@ -233,7 +225,6 @@ public:
 
 	template <class N, class M>
 	static MethodBind *bind_method(N p_method_name, M p_method) {
-
 		MethodBind *bind = create_method_bind(p_method);
 
 		return bind_methodfi(METHOD_FLAGS_DEFAULT, bind, p_method_name, NULL, 0); //use static function, much smaller binary usage
@@ -241,7 +232,6 @@ public:
 
 	template <class N, class M>
 	static MethodBind *bind_method(N p_method_name, M p_method, const Variant &p_def1) {
-
 		MethodBind *bind = create_method_bind(p_method);
 		const Variant *ptr[1] = { &p_def1 };
 
@@ -250,7 +240,6 @@ public:
 
 	template <class N, class M>
 	static MethodBind *bind_method(N p_method_name, M p_method, const Variant &p_def1, const Variant &p_def2) {
-
 		MethodBind *bind = create_method_bind(p_method);
 		const Variant *ptr[2] = { &p_def1, &p_def2 };
 
@@ -259,7 +248,6 @@ public:
 
 	template <class N, class M>
 	static MethodBind *bind_method(N p_method_name, M p_method, const Variant &p_def1, const Variant &p_def2, const Variant &p_def3) {
-
 		MethodBind *bind = create_method_bind(p_method);
 		const Variant *ptr[3] = { &p_def1, &p_def2, &p_def3 };
 
@@ -268,7 +256,6 @@ public:
 
 	template <class N, class M>
 	static MethodBind *bind_method(N p_method_name, M p_method, const Variant &p_def1, const Variant &p_def2, const Variant &p_def3, const Variant &p_def4) {
-
 		MethodBind *bind = create_method_bind(p_method);
 		const Variant *ptr[4] = { &p_def1, &p_def2, &p_def3, &p_def4 };
 
@@ -277,7 +264,6 @@ public:
 
 	template <class N, class M>
 	static MethodBind *bind_method(N p_method_name, M p_method, const Variant &p_def1, const Variant &p_def2, const Variant &p_def3, const Variant &p_def4, const Variant &p_def5) {
-
 		MethodBind *bind = create_method_bind(p_method);
 		const Variant *ptr[5] = { &p_def1, &p_def2, &p_def3, &p_def4, &p_def5 };
 
@@ -286,7 +272,6 @@ public:
 
 	template <class N, class M>
 	static MethodBind *bind_method(N p_method_name, M p_method, const Variant &p_def1, const Variant &p_def2, const Variant &p_def3, const Variant &p_def4, const Variant &p_def5, const Variant &p_def6) {
-
 		MethodBind *bind = create_method_bind(p_method);
 		const Variant *ptr[6] = { &p_def1, &p_def2, &p_def3, &p_def4, &p_def5, &p_def6 };
 
@@ -295,7 +280,6 @@ public:
 
 	template <class N, class M>
 	static MethodBind *bind_method(N p_method_name, M p_method, const Variant &p_def1, const Variant &p_def2, const Variant &p_def3, const Variant &p_def4, const Variant &p_def5, const Variant &p_def6, const Variant &p_def7) {
-
 		MethodBind *bind = create_method_bind(p_method);
 		const Variant *ptr[7] = { &p_def1, &p_def2, &p_def3, &p_def4, &p_def5, &p_def6, &p_def7 };
 
@@ -304,7 +288,6 @@ public:
 
 	template <class N, class M>
 	static MethodBind *bind_method(N p_method_name, M p_method, const Variant &p_def1, const Variant &p_def2, const Variant &p_def3, const Variant &p_def4, const Variant &p_def5, const Variant &p_def6, const Variant &p_def7, const Variant &p_def8) {
-
 		MethodBind *bind = create_method_bind(p_method);
 		const Variant *ptr[8] = { &p_def1, &p_def2, &p_def3, &p_def4, &p_def5, &p_def6, &p_def7, &p_def8 };
 
@@ -313,7 +296,6 @@ public:
 
 	template <class M>
 	static MethodBind *bind_vararg_method(uint32_t p_flags, StringName p_name, M p_method, const MethodInfo &p_info = MethodInfo(), const Vector<Variant> &p_default_args = Vector<Variant>(), bool p_return_nil_is_variant = true) {
-
 		GLOBAL_LOCK_FUNCTION;
 
 		MethodBind *bind = create_vararg_method_bind(p_method, p_info, p_return_nil_is_variant);

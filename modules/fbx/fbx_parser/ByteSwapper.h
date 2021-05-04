@@ -271,7 +271,6 @@ struct Getter {
 
 template <bool SwapEndianess, typename T>
 struct Getter<SwapEndianess, T, false> {
-
 	void operator()(T *inout, bool /*le*/) {
 		// static branch
 		ByteSwapper<T, (SwapEndianess && sizeof(T) > 1)>()(inout);

@@ -37,11 +37,9 @@
 #include "servers/audio_server.h"
 
 class VideoPlayer : public Control {
-
 	GDCLASS(VideoPlayer, Control);
 
 	struct Output {
-
 		AudioFrame vol;
 		int bus_index;
 		Viewport *viewport; //pointer only used for reference to previous mix

@@ -36,7 +36,6 @@
 #include "core/script_language.h"
 
 class MainLoop : public Object {
-
 	GDCLASS(MainLoop, Object);
 	OBJ_CATEGORY("Main Loop");
 

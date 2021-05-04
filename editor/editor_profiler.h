@@ -41,12 +41,10 @@
 #include "scene/gui/tree.h"
 
 class EditorProfiler : public VBoxContainer {
-
 	GDCLASS(EditorProfiler, VBoxContainer);
 
 public:
 	struct Metric {
-
 		bool valid;
 
 		int frame_number;
@@ -56,13 +54,11 @@ public:
 		float physics_frame_time;
 
 		struct Category {
-
 			StringName signature;
 			String name;
 			float total_time; //total for category
 
 			struct Item {
-
 				StringName signature;
 				String name;
 				String script;
@@ -169,7 +165,7 @@ public:
 
 	void clear();
 
-	Vector<Vector<String> > get_data_as_csv() const;
+	Vector<Vector<String>> get_data_as_csv() const;
 
 	EditorProfiler();
 };

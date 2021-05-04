@@ -40,7 +40,6 @@
 #include "scene/gui/tree.h"
 
 class AnimationTreePlayerEditor : public Control {
-
 	GDCLASS(AnimationTreePlayerEditor, Control);
 
 	static const char *_node_type_names[];
@@ -163,7 +162,6 @@ public:
 };
 
 class AnimationTreePlayerEditorPlugin : public EditorPlugin {
-
 	GDCLASS(AnimationTreePlayerEditorPlugin, EditorPlugin);
 
 	AnimationTreePlayerEditor *anim_tree_editor;

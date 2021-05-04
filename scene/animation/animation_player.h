@@ -85,7 +85,6 @@ private:
 	};
 
 	struct TrackNodeCache {
-
 		NodePath path;
 		uint32_t id;
 		RES resource;
@@ -108,7 +107,6 @@ private:
 		bool animation_playing;
 
 		struct PropertyAnim {
-
 			TrackNodeCache *owner;
 			SpecialProperty special; //small optimization
 			Vector<StringName> subpath;
@@ -127,7 +125,6 @@ private:
 		Map<StringName, PropertyAnim> property_anim;
 
 		struct BezierAnim {
-
 			Vector<StringName> bezier_property;
 			TrackNodeCache *owner;
 			float bezier_accum;
@@ -158,12 +155,10 @@ private:
 	};
 
 	struct TrackNodeCacheKey {
-
 		uint32_t id;
 		int bone_idx;
 
 		inline bool operator<(const TrackNodeCacheKey &p_right) const {
-
 			if (id < p_right.id)
 				return true;
 			else if (id > p_right.id)
@@ -196,7 +191,6 @@ private:
 
 	Map<StringName, AnimationData> animation_set;
 	struct BlendKey {
-
 		StringName from;
 		StringName to;
 		bool operator<(const BlendKey &bk) const { return from == bk.from ? String(to) < String(bk.to) : String(from) < String(bk.from); }
@@ -205,13 +199,11 @@ private:
 	Map<BlendKey, float> blend_times;
 
 	struct PlaybackData {
-
 		AnimationData *from;
 		float pos;
 		float speed_scale;
 
 		PlaybackData() {
-
 			pos = 0;
 			speed_scale = 1.0;
 			from = NULL;
@@ -219,21 +211,18 @@ private:
 	};
 
 	struct Blend {
-
 		PlaybackData data;
 
 		float blend_time;
 		float blend_left;
 
 		Blend() {
-
 			blend_left = 0;
 			blend_time = 0;
 		}
 	};
 
 	struct Playback {
-
 		List<Blend> blend;
 		PlaybackData current;
 		StringName assigned;
@@ -267,12 +256,10 @@ private:
 
 	// bind helpers
 	PoolVector<String> _get_animation_list() const {
-
 		List<StringName> animations;
 		get_animation_list(&animations);
 		PoolVector<String> ret;
 		while (animations.size()) {
-
 			ret.push_back(animations.front()->get());
 			animations.pop_front();
 		}

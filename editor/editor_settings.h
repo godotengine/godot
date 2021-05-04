@@ -42,7 +42,6 @@
 class EditorPlugin;
 
 class EditorSettings : public Resource {
-
 	GDCLASS(EditorSettings, Resource);
 
 private:
@@ -50,7 +49,6 @@ private:
 
 public:
 	struct Plugin {
-
 		EditorPlugin *instance;
 		String path;
 		String name;
@@ -95,7 +93,7 @@ private:
 	int last_order;
 
 	Ref<Resource> clipboard;
-	Map<String, Ref<ShortCut> > shortcuts;
+	Map<String, Ref<ShortCut>> shortcuts;
 
 	String resource_path;
 	String settings_dir;

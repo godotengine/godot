@@ -86,7 +86,6 @@
 
 #ifdef CAN_DEBUG
 static void GLAPIENTRY _gl_debug_print(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar *message, const GLvoid *userParam) {
-
 	if (type == _EXT_DEBUG_TYPE_OTHER_ARB)
 		return;
 
@@ -145,22 +144,18 @@ typedef void (*DEBUGPROCARB)(GLenum source,
 typedef void (*DebugMessageCallbackARB)(DEBUGPROCARB callback, const void *userParam);
 
 RasterizerStorage *RasterizerGLES2::get_storage() {
-
 	return storage;
 }
 
 RasterizerCanvas *RasterizerGLES2::get_canvas() {
-
 	return canvas;
 }
 
 RasterizerScene *RasterizerGLES2::get_scene() {
-
 	return scene;
 }
 
 Error RasterizerGLES2::is_viable() {
-
 #ifdef GLAD_ENABLED
 	if (!gladLoadGL()) {
 		ERR_PRINT("Error initializing GLAD");
@@ -214,7 +209,6 @@ Error RasterizerGLES2::is_viable() {
 }
 
 void RasterizerGLES2::initialize() {
-
 	print_verbose("Using GLES2 video driver");
 
 #ifdef GLAD_ENABLED
@@ -253,7 +247,6 @@ void RasterizerGLES2::initialize() {
 		}
 
 		if (callback) {
-
 			print_line("godot: ENABLING GL DEBUG");
 			glEnable(_EXT_DEBUG_OUTPUT_SYNCHRONOUS_ARB);
 			callback(_gl_debug_print, NULL);
@@ -296,7 +289,6 @@ void RasterizerGLES2::begin_frame(double frame_step) {
 }
 
 void RasterizerGLES2::set_current_render_target(RID p_render_target) {
-
 	if (!p_render_target.is_valid() && storage->frame.current_rt && storage->frame.clear_request) {
 		// pending clear request. Do that first.
 		glBindFramebuffer(GL_FRAMEBUFFER, storage->frame.current_rt->fbo);
@@ -337,7 +329,6 @@ void RasterizerGLES2::clear_render_target(const Color &p_color) {
 }
 
 void RasterizerGLES2::set_boot_image(const Ref<Image> &p_image, const Color &p_color, bool p_scale, bool p_use_filter) {
-
 	if (p_image.is_null() || p_image->empty())
 		return;
 
@@ -364,7 +355,6 @@ void RasterizerGLES2::set_boot_image(const Ref<Image> &p_image, const Color &p_c
 	Rect2 imgrect(0, 0, p_image->get_width(), p_image->get_height());
 	Rect2 screenrect;
 	if (p_scale) {
-
 		if (window_w > window_h) {
 			//scale horizontally
 			screenrect.size.y = window_h;
@@ -378,7 +368,6 @@ void RasterizerGLES2::set_boot_image(const Ref<Image> &p_image, const Color &p_c
 			screenrect.position.y = (window_h - screenrect.size.y) / 2;
 		}
 	} else {
-
 		screenrect = imgrect;
 		screenrect.position += ((Size2(window_w, window_h) - screenrect.size) / 2.0).floor();
 	}
@@ -396,12 +385,10 @@ void RasterizerGLES2::set_boot_image(const Ref<Image> &p_image, const Color &p_c
 }
 
 void RasterizerGLES2::set_shader_time_scale(float p_scale) {
-
 	time_scale = p_scale;
 }
 
 void RasterizerGLES2::blit_render_target_to_screen(RID p_render_target, const Rect2 &p_screen_rect, int p_screen) {
-
 	ERR_FAIL_COND(storage->frame.current_rt);
 
 	RasterizerStorageGLES2::RenderTarget *rt = storage->render_target_owner.getornull(p_render_target);
@@ -451,7 +438,6 @@ void RasterizerGLES2::output_lens_distorted_to_screen(RID p_render_target, const
 }
 
 void RasterizerGLES2::end_frame(bool p_swap_buffers) {
-
 	if (OS::get_singleton()->is_layered_allowed()) {
 		if (!OS::get_singleton()->get_window_per_pixel_transparency_enabled()) {
 			//clear alpha
@@ -472,7 +458,6 @@ void RasterizerGLES2::finalize() {
 }
 
 Rasterizer *RasterizerGLES2::_create_current() {
-
 	return memnew(RasterizerGLES2);
 }
 
@@ -520,7 +505,6 @@ const char *RasterizerGLES2::gl_check_for_error(bool p_print_error) {
 }
 
 RasterizerGLES2::RasterizerGLES2() {
-
 	storage = memnew(RasterizerStorageGLES2);
 	canvas = memnew(RasterizerCanvasGLES2);
 	scene = memnew(RasterizerSceneGLES2);
@@ -535,7 +519,6 @@ RasterizerGLES2::RasterizerGLES2() {
 }
 
 RasterizerGLES2::~RasterizerGLES2() {
-
 	memdelete(storage);
 	memdelete(canvas);
 }

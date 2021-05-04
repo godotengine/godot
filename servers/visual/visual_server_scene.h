@@ -61,7 +61,6 @@ public:
 	/* CAMERA API */
 
 	struct Camera : public RID_Data {
-
 		enum Type {
 			PERSPECTIVE,
 			ORTHOGONAL,
@@ -79,7 +78,6 @@ public:
 		Transform transform;
 
 		Camera() {
-
 			visible_layers = 0xFFFFFFFF;
 			fov = 70;
 			type = PERSPECTIVE;
@@ -185,7 +183,6 @@ public:
 	};
 
 	struct Scenario : RID_Data {
-
 		VS::ScenarioDebugMode debug;
 		RID self;
 
@@ -218,12 +215,10 @@ public:
 	/* INSTANCING API */
 
 	struct InstanceBaseData {
-
 		virtual ~InstanceBaseData() {}
 	};
 
 	struct Instance : RasterizerScene::InstanceBase {
-
 		RID self;
 		//scenario stuff
 		SpatialPartitionID spatial_partition_id;
@@ -256,19 +251,16 @@ public:
 		InstanceBaseData *base_data;
 
 		virtual void base_removed() {
-
 			singleton->instance_set_base(self, RID());
 		}
 
 		virtual void base_changed(bool p_aabb, bool p_materials) {
-
 			singleton->_instance_queue_update(this, p_aabb, p_materials);
 		}
 
 		Instance() :
 				scenario_item(this),
 				update_item(this) {
-
 			spatial_partition_id = 0;
 			scenario = NULL;
 
@@ -294,7 +286,6 @@ public:
 		}
 
 		~Instance() {
-
 			if (base_data)
 				memdelete(base_data);
 			if (custom_aabb)
@@ -306,7 +297,6 @@ public:
 	void _instance_queue_update(Instance *p_instance, bool p_update_aabb, bool p_update_materials = false);
 
 	struct InstanceGeometryData : public InstanceBaseData {
-
 		List<Instance *> lighting;
 		bool lighting_dirty;
 		bool can_cast_shadows;
@@ -321,7 +311,6 @@ public:
 		List<Instance *> lightmap_captures;
 
 		InstanceGeometryData() {
-
 			lighting_dirty = false;
 			reflection_dirty = true;
 			can_cast_shadows = true;
@@ -331,7 +320,6 @@ public:
 	};
 
 	struct InstanceReflectionProbeData : public InstanceBaseData {
-
 		Instance *owner;
 
 		struct PairInfo {
@@ -348,7 +336,6 @@ public:
 
 		InstanceReflectionProbeData() :
 				update_list(this) {
-
 			reflection_dirty = true;
 			render_step = -1;
 		}
@@ -357,7 +344,6 @@ public:
 	SelfList<InstanceReflectionProbeData>::List reflection_probe_render_list;
 
 	struct InstanceLightData : public InstanceBaseData {
-
 		struct PairInfo {
 			List<Instance *>::Element *L; //light iterator in geometry
 			Instance *geometry;
@@ -374,7 +360,6 @@ public:
 		Instance *baked_light;
 
 		InstanceLightData() {
-
 			shadow_dirty = true;
 			D = NULL;
 			last_version = 0;
@@ -383,7 +368,6 @@ public:
 	};
 
 	struct InstanceGIProbeData : public InstanceBaseData {
-
 		Instance *owner;
 
 		struct PairInfo {
@@ -396,7 +380,6 @@ public:
 		Set<Instance *> lights;
 
 		struct LightCache {
-
 			VS::LightType type;
 			Transform transform;
 			Color color;
@@ -408,7 +391,6 @@ public:
 			bool visible;
 
 			bool operator==(const LightCache &p_cache) {
-
 				return (type == p_cache.type &&
 						transform == p_cache.transform &&
 						color == p_cache.color &&
@@ -421,12 +403,10 @@ public:
 			}
 
 			bool operator!=(const LightCache &p_cache) {
-
 				return !operator==(p_cache);
 			}
 
 			LightCache() {
-
 				type = VS::LIGHT_DIRECTIONAL;
 				energy = 1.0;
 				radius = 1.0;
@@ -450,19 +430,18 @@ public:
 		};
 
 		struct Dynamic {
-
 			Map<RID, LightCache> light_cache;
 			Map<RID, LightCache> light_cache_changes;
 			PoolVector<int> light_data;
 			PoolVector<LocalData> local_data;
-			Vector<Vector<uint32_t> > level_cell_lists;
+			Vector<Vector<uint32_t>> level_cell_lists;
 			RID probe_data;
 			bool enabled;
 			int bake_dynamic_range;
 			RasterizerStorage::GIProbeCompression compression;
 
-			Vector<PoolVector<uint8_t> > mipmaps_3d;
-			Vector<PoolVector<CompBlockS3TC> > mipmaps_s3tc; //for s3tc
+			Vector<PoolVector<uint8_t>> mipmaps_3d;
+			Vector<PoolVector<CompBlockS3TC>> mipmaps_s3tc; //for s3tc
 
 			int updating_stage;
 			float propagate;
@@ -491,7 +470,6 @@ public:
 	SelfList<InstanceGIProbeData>::List gi_probe_update_list;
 
 	struct InstanceLightmapCaptureData : public InstanceBaseData {
-
 		struct PairInfo {
 			List<Instance *>::Element *L; //iterator in geometry
 			Instance *geometry;
@@ -564,7 +542,6 @@ public:
 
 	//probes
 	struct GIProbeDataHeader {
-
 		uint32_t version;
 		uint32_t cell_subdiv;
 		uint32_t width;
@@ -575,7 +552,6 @@ public:
 	};
 
 	struct GIProbeDataCell {
-
 		uint32_t children[8];
 		uint32_t albedo;
 		uint32_t emission;

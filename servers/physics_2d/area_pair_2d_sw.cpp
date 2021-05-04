@@ -32,7 +32,6 @@
 #include "collision_solver_2d_sw.h"
 
 bool AreaPair2DSW::setup(real_t p_step) {
-
 	bool result = false;
 
 	if (area->is_shape_set_as_disabled(area_shape) || body->is_shape_set_as_disabled(body_shape)) {
@@ -42,16 +41,13 @@ bool AreaPair2DSW::setup(real_t p_step) {
 	}
 
 	if (result != colliding) {
-
 		if (result) {
-
 			if (area->get_space_override_mode() != Physics2DServer::AREA_SPACE_OVERRIDE_DISABLED)
 				body->add_area(area);
 			if (area->has_monitor_callback())
 				area->add_body_to_query(body, body_shape, area_shape);
 
 		} else {
-
 			if (area->get_space_override_mode() != Physics2DServer::AREA_SPACE_OVERRIDE_DISABLED)
 				body->remove_area(area);
 			if (area->has_monitor_callback())
@@ -68,7 +64,6 @@ void AreaPair2DSW::solve(real_t p_step) {
 }
 
 AreaPair2DSW::AreaPair2DSW(Body2DSW *p_body, int p_body_shape, Area2DSW *p_area, int p_area_shape) {
-
 	body = p_body;
 	area = p_area;
 	body_shape = p_body_shape;
@@ -81,9 +76,7 @@ AreaPair2DSW::AreaPair2DSW(Body2DSW *p_body, int p_body_shape, Area2DSW *p_area,
 }
 
 AreaPair2DSW::~AreaPair2DSW() {
-
 	if (colliding) {
-
 		if (area->get_space_override_mode() != Physics2DServer::AREA_SPACE_OVERRIDE_DISABLED)
 			body->remove_area(area);
 		if (area->has_monitor_callback())
@@ -96,7 +89,6 @@ AreaPair2DSW::~AreaPair2DSW() {
 //////////////////////////////////
 
 bool Area2Pair2DSW::setup(real_t p_step) {
-
 	bool result = false;
 	if (area_a->is_shape_set_as_disabled(shape_a) || area_b->is_shape_set_as_disabled(shape_b)) {
 		result = false;
@@ -105,9 +97,7 @@ bool Area2Pair2DSW::setup(real_t p_step) {
 	}
 
 	if (result != colliding) {
-
 		if (result) {
-
 			if (area_b->has_area_monitor_callback() && area_a->is_monitorable())
 				area_b->add_area_to_query(area_a, shape_a, shape_b);
 
@@ -115,7 +105,6 @@ bool Area2Pair2DSW::setup(real_t p_step) {
 				area_a->add_area_to_query(area_b, shape_b, shape_a);
 
 		} else {
-
 			if (area_b->has_area_monitor_callback() && area_a->is_monitorable())
 				area_b->remove_area_from_query(area_a, shape_a, shape_b);
 
@@ -133,7 +122,6 @@ void Area2Pair2DSW::solve(real_t p_step) {
 }
 
 Area2Pair2DSW::Area2Pair2DSW(Area2DSW *p_area_a, int p_shape_a, Area2DSW *p_area_b, int p_shape_b) {
-
 	area_a = p_area_a;
 	area_b = p_area_b;
 	shape_a = p_shape_a;
@@ -144,9 +132,7 @@ Area2Pair2DSW::Area2Pair2DSW(Area2DSW *p_area_a, int p_shape_a, Area2DSW *p_area
 }
 
 Area2Pair2DSW::~Area2Pair2DSW() {
-
 	if (colliding) {
-
 		if (area_b->has_area_monitor_callback())
 			area_b->remove_area_from_query(area_a, shape_a, shape_b);
 

@@ -87,7 +87,6 @@ void EditorNavigationMeshGenerator::_add_mesh(const Ref<Mesh> &p_mesh, const Tra
 		PoolVector<Vector3>::Read vr = mesh_vertices.read();
 
 		if (p_mesh->surface_get_format(i) & Mesh::ARRAY_FORMAT_INDEX) {
-
 			PoolVector<int> mesh_indices = a[Mesh::ARRAY_INDEX];
 			PoolVector<int>::Read ir = mesh_indices.read();
 
@@ -132,9 +131,7 @@ void EditorNavigationMeshGenerator::_add_faces(const PoolVector3Array &p_faces, 
 }
 
 void EditorNavigationMeshGenerator::_parse_geometry(Transform p_accumulated_transform, Node *p_node, Vector<float> &p_verticies, Vector<int> &p_indices, int p_generate_from, uint32_t p_collision_mask, bool p_recurse_children) {
-
 	if (Object::cast_to<MeshInstance>(p_node) && p_generate_from != NavigationMesh::PARSED_GEOMETRY_STATIC_COLLIDERS) {
-
 		MeshInstance *mesh_instance = Object::cast_to<MeshInstance>(p_node);
 		Ref<Mesh> mesh = mesh_instance->get_mesh();
 		if (mesh.is_valid()) {
@@ -144,7 +141,6 @@ void EditorNavigationMeshGenerator::_parse_geometry(Transform p_accumulated_tran
 
 #ifdef MODULE_CSG_ENABLED
 	if (Object::cast_to<CSGShape>(p_node) && p_generate_from != NavigationMesh::PARSED_GEOMETRY_STATIC_COLLIDERS) {
-
 		CSGShape *csg_shape = Object::cast_to<CSGShape>(p_node);
 		Array meshes = csg_shape->get_meshes();
 		if (!meshes.empty()) {
@@ -160,7 +156,6 @@ void EditorNavigationMeshGenerator::_parse_geometry(Transform p_accumulated_tran
 		StaticBody *static_body = Object::cast_to<StaticBody>(p_node);
 
 		if (static_body->get_collision_layer() & p_collision_mask) {
-
 			for (int i = 0; i < p_node->get_child_count(); ++i) {
 				Node *child = p_node->get_child(i);
 				if (Object::cast_to<CollisionShape>(child)) {
@@ -271,7 +266,6 @@ void EditorNavigationMeshGenerator::_parse_geometry(Transform p_accumulated_tran
 }
 
 void EditorNavigationMeshGenerator::_convert_detail_mesh_to_native_navigation_mesh(const rcPolyMeshDetail *p_detail_mesh, Ref<NavigationMesh> p_nav_mesh) {
-
 	PoolVector<Vector3> nav_vertices;
 
 	for (int i = 0; i < p_detail_mesh->nverts; i++) {
@@ -432,7 +426,6 @@ EditorNavigationMeshGenerator::~EditorNavigationMeshGenerator() {
 }
 
 void EditorNavigationMeshGenerator::bake(Ref<NavigationMesh> p_nav_mesh, Node *p_node) {
-
 	if (!Engine::get_singleton()->is_editor_hint()) {
 		ERR_PRINTS("Invoking EditorNavigationMeshGenerator::bake(...) in-game is not supported in Godot 3.2 or below. Aborting bake...");
 		return;
@@ -463,7 +456,6 @@ void EditorNavigationMeshGenerator::bake(Ref<NavigationMesh> p_nav_mesh, Node *p
 	}
 
 	if (vertices.size() > 0 && indices.size() > 0) {
-
 		rcHeightfield *hf = NULL;
 		rcCompactHeightfield *chf = NULL;
 		rcContourSet *cset = NULL;

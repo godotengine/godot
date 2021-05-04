@@ -40,7 +40,6 @@
 #include <stdio.h>
 
 class MIDIDriverCoreMidi : public MIDIDriver {
-
 	MIDIClientRef client;
 	MIDIPortRef port_in;
 

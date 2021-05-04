@@ -36,7 +36,6 @@
 #include "constraint_2d_sw.h"
 
 class AreaPair2DSW : public Constraint2DSW {
-
 	Body2DSW *body;
 	Area2DSW *area;
 	int body_shape;
@@ -52,7 +51,6 @@ public:
 };
 
 class Area2Pair2DSW : public Constraint2DSW {
-
 	Area2DSW *area_a;
 	Area2DSW *area_b;
 	int shape_a;

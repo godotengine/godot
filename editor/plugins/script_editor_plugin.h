@@ -49,7 +49,6 @@
 #include "scene/resources/text_file.h"
 
 class ScriptEditorQuickOpen : public ConfirmationDialog {
-
 	GDCLASS(ScriptEditorQuickOpen, ConfirmationDialog);
 
 	LineEdit *search_box;
@@ -76,7 +75,6 @@ public:
 class ScriptEditorDebugger;
 
 class ScriptEditorBase : public VBoxContainer {
-
 	GDCLASS(ScriptEditorBase, VBoxContainer);
 
 protected:
@@ -132,7 +130,6 @@ class FindInFilesDialog;
 class FindInFilesPanel;
 
 class ScriptEditor : public PanelContainer {
-
 	GDCLASS(ScriptEditor, PanelContainer);
 
 	EditorNode *editor;
@@ -257,7 +254,6 @@ class ScriptEditor : public PanelContainer {
 	static CreateSyntaxHighlighterFunc syntax_highlighters_funcs[SYNTAX_HIGHLIGHTER_FUNC_MAX];
 
 	struct ScriptHistory {
-
 		Control *control;
 		Variant state;
 	};
@@ -360,7 +356,7 @@ class ScriptEditor : public PanelContainer {
 	void _update_help_overview();
 	void _help_overview_selected(int p_idx);
 
-	void _find_scripts(Node *p_base, Node *p_current, Set<Ref<Script> > &used);
+	void _find_scripts(Node *p_base, Node *p_current, Set<Ref<Script>> &used);
 
 	void _tree_changed();
 
@@ -437,7 +433,7 @@ public:
 	void get_window_layout(Ref<ConfigFile> p_layout);
 
 	void set_scene_root_script(Ref<Script> p_script);
-	Vector<Ref<Script> > get_open_scripts() const;
+	Vector<Ref<Script>> get_open_scripts() const;
 
 	bool script_goto_method(Ref<Script> p_script, const String &p_method);
 
@@ -465,7 +461,6 @@ public:
 };
 
 class ScriptEditorPlugin : public EditorPlugin {
-
 	GDCLASS(ScriptEditorPlugin, EditorPlugin);
 
 	ScriptEditor *script_editor;

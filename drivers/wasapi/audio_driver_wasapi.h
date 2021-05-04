@@ -42,7 +42,6 @@
 #include <windows.h>
 
 class AudioDriverWASAPI : public AudioDriver {
-
 	class AudioDeviceWASAPI {
 	public:
 		IAudioClient *audio_client;

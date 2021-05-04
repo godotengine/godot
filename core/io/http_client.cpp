@@ -47,7 +47,6 @@ const char *HTTPClient::_methods[METHOD_MAX] = {
 
 #ifndef JAVASCRIPT_ENABLED
 Error HTTPClient::connect_to_host(const String &p_host, int p_port, bool p_ssl, bool p_verify_host) {
-
 	close();
 
 	conn_port = p_port;
@@ -58,10 +57,8 @@ Error HTTPClient::connect_to_host(const String &p_host, int p_port, bool p_ssl, 
 
 	String host_lower = conn_host.to_lower();
 	if (host_lower.begins_with("http://")) {
-
 		conn_host = conn_host.substr(7, conn_host.length() - 7);
 	} else if (host_lower.begins_with("https://")) {
-
 		ssl = true;
 		conn_host = conn_host.substr(8, conn_host.length() - 8);
 	}
@@ -97,7 +94,6 @@ Error HTTPClient::connect_to_host(const String &p_host, int p_port, bool p_ssl, 
 }
 
 void HTTPClient::set_connection(const Ref<StreamPeer> &p_connection) {
-
 	ERR_FAIL_COND_MSG(p_connection.is_null(), "Connection is not a reference to a valid StreamPeer object.");
 
 	if (ssl) {
@@ -115,7 +111,6 @@ void HTTPClient::set_connection(const Ref<StreamPeer> &p_connection) {
 }
 
 Ref<StreamPeer> HTTPClient::get_connection() const {
-
 	return connection;
 }
 
@@ -212,7 +207,6 @@ Error HTTPClient::request_raw(Method p_method, const String &p_url, const Vector
 }
 
 Error HTTPClient::request(Method p_method, const String &p_url, const Vector<String> &p_headers, const String &p_body) {
-
 	ERR_FAIL_INDEX_V(p_method, METHOD_MAX, ERR_INVALID_PARAMETER);
 	ERR_FAIL_COND_V(!_check_request_url(p_method, p_url), ERR_INVALID_PARAMETER);
 	ERR_FAIL_COND_V(status != STATUS_CONNECTED, ERR_INVALID_PARAMETER);
@@ -274,27 +268,22 @@ Error HTTPClient::request(Method p_method, const String &p_url, const Vector<Str
 }
 
 bool HTTPClient::has_response() const {
-
 	return response_headers.size() != 0;
 }
 
 bool HTTPClient::is_response_chunked() const {
-
 	return chunked;
 }
 
 int HTTPClient::get_response_code() const {
-
 	return response_num;
 }
 
 Error HTTPClient::get_response_headers(List<String> *r_response) {
-
 	if (!response_headers.size())
 		return ERR_INVALID_PARAMETER;
 
 	for (int i = 0; i < response_headers.size(); i++) {
-
 		r_response->push_back(response_headers[i]);
 	}
 
@@ -304,7 +293,6 @@ Error HTTPClient::get_response_headers(List<String> *r_response) {
 }
 
 void HTTPClient::close() {
-
 	if (tcp_connection->get_status() != StreamPeerTCP::STATUS_NONE)
 		tcp_connection->disconnect_from_host();
 
@@ -312,7 +300,6 @@ void HTTPClient::close() {
 	status = STATUS_DISCONNECTED;
 	head_request = false;
 	if (resolving != IP::RESOLVER_INVALID_ID) {
-
 		IP::get_singleton()->erase_resolve_item(resolving);
 		resolving = IP::RESOLVER_INVALID_ID;
 	}
@@ -329,9 +316,7 @@ void HTTPClient::close() {
 }
 
 Error HTTPClient::poll() {
-
 	switch (status) {
-
 		case STATUS_RESOLVING: {
 			ERR_FAIL_COND_V(resolving == IP::RESOLVER_INVALID_ID, ERR_BUG);
 
@@ -341,7 +326,6 @@ Error HTTPClient::poll() {
 					return OK; // Still resolving
 
 				case IP::RESOLVER_STATUS_DONE: {
-
 					IP_Address host = IP::get_singleton()->get_resolve_item_address(resolving);
 					Error err = tcp_connection->connect_to_host(host, conn_port);
 					IP::get_singleton()->erase_resolve_item(resolving);
@@ -355,7 +339,6 @@ Error HTTPClient::poll() {
 				} break;
 				case IP::RESOLVER_STATUS_NONE:
 				case IP::RESOLVER_STATUS_ERROR: {
-
 					IP::get_singleton()->erase_resolve_item(resolving);
 					resolving = IP::RESOLVER_INVALID_ID;
 					close();
@@ -365,10 +348,8 @@ Error HTTPClient::poll() {
 			}
 		} break;
 		case STATUS_CONNECTING: {
-
 			StreamPeerTCP::Status s = tcp_connection->get_status();
 			switch (s) {
-
 				case StreamPeerTCP::STATUS_CONNECTING: {
 					return OK;
 				} break;
@@ -389,7 +370,7 @@ Error HTTPClient::poll() {
 							handshaking = true;
 						} else {
 							// We are already handshaking, which means we can use your already active SSL connection
-							ssl = static_cast<Ref<StreamPeerSSL> >(connection);
+							ssl = static_cast<Ref<StreamPeerSSL>>(connection);
 							if (ssl.is_null()) {
 								close();
 								status = STATUS_SSL_HANDSHAKE_ERROR;
@@ -418,7 +399,6 @@ Error HTTPClient::poll() {
 				} break;
 				case StreamPeerTCP::STATUS_ERROR:
 				case StreamPeerTCP::STATUS_NONE: {
-
 					close();
 					status = STATUS_CANT_CONNECT;
 					return ERR_CANT_CONNECT;
@@ -443,7 +423,6 @@ Error HTTPClient::poll() {
 			return OK;
 		} break;
 		case STATUS_REQUESTING: {
-
 			while (true) {
 				uint8_t byte;
 				int rec = 0;
@@ -462,7 +441,6 @@ Error HTTPClient::poll() {
 				if (
 						(rs >= 2 && response_str[rs - 2] == '\n' && response_str[rs - 1] == '\n') ||
 						(rs >= 4 && response_str[rs - 4] == '\r' && response_str[rs - 3] == '\n' && response_str[rs - 2] == '\r' && response_str[rs - 1] == '\n')) {
-
 					// End of response, parse.
 					response_str.push_back(0);
 					String response;
@@ -484,7 +462,6 @@ Error HTTPClient::poll() {
 					bool keep_alive = true;
 
 					for (int i = 0; i < responses.size(); i++) {
-
 						String header = responses[i].strip_edges();
 						String s = header.to_lower();
 						if (s.length() == 0)
@@ -503,11 +480,9 @@ Error HTTPClient::poll() {
 						}
 
 						if (i == 0 && responses[i].begins_with("HTTP")) {
-
 							String num = responses[i].get_slicec(' ', 1);
 							response_num = num.to_int();
 						} else {
-
 							response_headers.push_back(header);
 						}
 					}
@@ -519,14 +494,11 @@ Error HTTPClient::poll() {
 					}
 
 					if (body_size != -1 || chunked) {
-
 						status = STATUS_BODY;
 					} else if (!keep_alive) {
-
 						read_until_eof = true;
 						status = STATUS_BODY;
 					} else {
-
 						status = STATUS_CONNECTED;
 					}
 					return OK;
@@ -552,21 +524,17 @@ Error HTTPClient::poll() {
 }
 
 int HTTPClient::get_response_body_length() const {
-
 	return body_size;
 }
 
 PoolByteArray HTTPClient::read_response_body_chunk() {
-
 	ERR_FAIL_COND_V(status != STATUS_BODY, PoolByteArray());
 
 	PoolByteArray ret;
 	Error err = OK;
 
 	if (chunked) {
-
 		while (true) {
-
 			if (chunk_trailer_part) {
 				// We need to consume the trailer part too or keep-alive will break
 				uint8_t b;
@@ -608,7 +576,6 @@ PoolByteArray HTTPClient::read_response_body_chunk() {
 				}
 
 				if (chunk.size() > 2 && chunk[chunk.size() - 2] == '\r' && chunk[chunk.size() - 1] == '\n') {
-
 					int len = 0;
 					for (int i = 0; i < chunk.size() - 2; i++) {
 						char c = chunk[i];
@@ -644,7 +611,6 @@ PoolByteArray HTTPClient::read_response_body_chunk() {
 					chunk.resize(chunk_left);
 				}
 			} else {
-
 				int rec = 0;
 				err = _get_http_data(&chunk.write[chunk.size() - chunk_left], chunk_left, rec);
 				if (rec == 0) {
@@ -653,7 +619,6 @@ PoolByteArray HTTPClient::read_response_body_chunk() {
 				chunk_left -= rec;
 
 				if (chunk_left == 0) {
-
 					if (chunk[chunk.size() - 2] != '\r' || chunk[chunk.size() - 1] != '\n') {
 						ERR_PRINT("HTTP Invalid chunk terminator (not \\r\\n)");
 						status = STATUS_CONNECTION_ERROR;
@@ -671,7 +636,6 @@ PoolByteArray HTTPClient::read_response_body_chunk() {
 		}
 
 	} else {
-
 		int to_read = !read_until_eof ? MIN(body_left, read_chunk_size) : read_chunk_size;
 		ret.resize(to_read);
 		int _offset = 0;
@@ -697,18 +661,14 @@ PoolByteArray HTTPClient::read_response_body_chunk() {
 	}
 
 	if (err != OK) {
-
 		close();
 
 		if (err == ERR_FILE_EOF) {
-
 			status = STATUS_DISCONNECTED; // Server disconnected
 		} else {
-
 			status = STATUS_CONNECTION_ERROR;
 		}
 	} else if (body_left == 0 && !chunked && !read_until_eof) {
-
 		status = STATUS_CONNECTED;
 	}
 
@@ -716,24 +676,19 @@ PoolByteArray HTTPClient::read_response_body_chunk() {
 }
 
 HTTPClient::Status HTTPClient::get_status() const {
-
 	return status;
 }
 
 void HTTPClient::set_blocking_mode(bool p_enable) {
-
 	blocking = p_enable;
 }
 
 bool HTTPClient::is_blocking_mode_enabled() const {
-
 	return blocking;
 }
 
 Error HTTPClient::_get_http_data(uint8_t *p_buffer, int p_bytes, int &r_received) {
-
 	if (blocking) {
-
 		// We can't use StreamPeer.get_data, since when reaching EOF we will get an
 		// error without knowing how many bytes we received.
 		Error err = ERR_FILE_EOF;
@@ -768,7 +723,6 @@ int HTTPClient::get_read_chunk_size() const {
 }
 
 HTTPClient::HTTPClient() {
-
 	tcp_connection.instance();
 	resolving = IP::RESOLVER_INVALID_ID;
 	status = STATUS_DISCONNECTED;
@@ -824,7 +778,6 @@ String HTTPClient::query_string_from_dict(const Dictionary &p_dict) {
 }
 
 Dictionary HTTPClient::_get_response_headers_as_dictionary() {
-
 	List<String> rh;
 	get_response_headers(&rh);
 	Dictionary ret;
@@ -842,7 +795,6 @@ Dictionary HTTPClient::_get_response_headers_as_dictionary() {
 }
 
 PoolStringArray HTTPClient::_get_response_headers() {
-
 	List<String> rh;
 	get_response_headers(&rh);
 	PoolStringArray ret;
@@ -856,7 +808,6 @@ PoolStringArray HTTPClient::_get_response_headers() {
 }
 
 void HTTPClient::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("connect_to_host", "host", "port", "use_ssl", "verify_host"), &HTTPClient::connect_to_host, DEFVAL(-1), DEFVAL(false), DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("set_connection", "connection"), &HTTPClient::set_connection);
 	ClassDB::bind_method(D_METHOD("get_connection"), &HTTPClient::get_connection);

@@ -193,7 +193,6 @@ int32_t _logic_balance(int32_t iA) {
 
 // either choose an existing node to add item to, or create a new node and return this
 uint32_t _logic_choose_item_add_node(uint32_t p_node_id, const BVHABB_CLASS &p_aabb) {
-
 	while (true) {
 		BVH_ASSERT(p_node_id != BVHCommon::INVALID);
 		TNode &tnode = _nodes[p_node_id];

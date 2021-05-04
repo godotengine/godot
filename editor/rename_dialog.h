@@ -44,7 +44,6 @@
 */
 
 class RenameDialog : public ConfirmationDialog {
-
 	GDCLASS(RenameDialog, ConfirmationDialog);
 
 	virtual void ok_pressed() { rename(); };
@@ -96,7 +95,7 @@ class RenameDialog : public ConfirmationDialog {
 	Label *lbl_preview_title;
 	Label *lbl_preview;
 
-	List<Pair<NodePath, String> > to_rename;
+	List<Pair<NodePath, String>> to_rename;
 	Node *preview_node;
 	bool lock_preview_update;
 	ErrorHandlerList eh;

@@ -33,25 +33,21 @@
 #include "core/os/os.h"
 
 void Physics2DServerWrapMT::thread_exit() {
-
 	exit.set();
 }
 
 void Physics2DServerWrapMT::thread_step(real_t p_delta) {
-
 	physics_2d_server->step(p_delta);
 	step_sem.post();
 }
 
 void Physics2DServerWrapMT::_thread_callback(void *_instance) {
-
 	Physics2DServerWrapMT *vsmt = reinterpret_cast<Physics2DServerWrapMT *>(_instance);
 
 	vsmt->thread_loop();
 }
 
 void Physics2DServerWrapMT::thread_loop() {
-
 	server_thread = Thread::get_caller_id();
 
 	physics_2d_server->init();
@@ -71,19 +67,15 @@ void Physics2DServerWrapMT::thread_loop() {
 /* EVENT QUEUING */
 
 void Physics2DServerWrapMT::step(real_t p_step) {
-
 	if (create_thread) {
-
 		command_queue.push(this, &Physics2DServerWrapMT::thread_step, p_step);
 	} else {
-
 		command_queue.flush_all(); //flush all pending from other threads
 		physics_2d_server->step(p_step);
 	}
 }
 
 void Physics2DServerWrapMT::sync() {
-
 	if (create_thread) {
 		if (first_frame)
 			first_frame = false;
@@ -95,34 +87,27 @@ void Physics2DServerWrapMT::sync() {
 }
 
 void Physics2DServerWrapMT::flush_queries() {
-
 	physics_2d_server->flush_queries();
 }
 
 void Physics2DServerWrapMT::end_sync() {
-
 	physics_2d_server->end_sync();
 }
 
 void Physics2DServerWrapMT::init() {
-
 	if (create_thread) {
-
 		//OS::get_singleton()->release_rendering_thread();
 		thread.start(_thread_callback, this);
 		while (!step_thread_up.is_set()) {
 			OS::get_singleton()->delay_usec(1000);
 		}
 	} else {
-
 		physics_2d_server->init();
 	}
 }
 
 void Physics2DServerWrapMT::finish() {
-
 	if (create_thread) {
-
 		command_queue.push(this, &Physics2DServerWrapMT::thread_exit);
 		thread.wait_to_finish();
 	} else {
@@ -145,7 +130,6 @@ void Physics2DServerWrapMT::finish() {
 
 Physics2DServerWrapMT::Physics2DServerWrapMT(Physics2DServer *p_contained, bool p_create_thread) :
 		command_queue(p_create_thread) {
-
 	physics_2d_server = p_contained;
 	create_thread = p_create_thread;
 	step_pending = 0;
@@ -163,7 +147,6 @@ Physics2DServerWrapMT::Physics2DServerWrapMT(Physics2DServer *p_contained, bool 
 }
 
 Physics2DServerWrapMT::~Physics2DServerWrapMT() {
-
 	memdelete(physics_2d_server);
 	//finish();
 }

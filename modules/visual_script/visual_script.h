@@ -87,7 +87,6 @@ public:
 	virtual VisualScriptNodeInstance *instance(VisualScriptInstance *p_instance) = 0;
 
 	struct TypeGuess {
-
 		Variant::Type type;
 		StringName gdclass;
 		Ref<Script> script;
@@ -164,16 +163,13 @@ public:
 };
 
 class VisualScript : public Script {
-
 	GDCLASS(VisualScript, Script);
 
 	RES_BASE_EXTENSION("vs");
 
 public:
 	struct SequenceConnection {
-
 		union {
-
 			struct {
 				uint64_t from_node : 24;
 				uint64_t from_output : 16;
@@ -183,15 +179,12 @@ public:
 		};
 
 		bool operator<(const SequenceConnection &p_connection) const {
-
 			return id < p_connection.id;
 		}
 	};
 
 	struct DataConnection {
-
 		union {
-
 			struct {
 				uint64_t from_node : 24;
 				uint64_t from_port : 8;
@@ -202,7 +195,6 @@ public:
 		};
 
 		bool operator<(const DataConnection &p_connection) const {
-
 			return id < p_connection.id;
 		}
 	};
@@ -244,7 +236,7 @@ private:
 
 	Map<StringName, Function> functions;
 	Map<StringName, Variable> variables;
-	Map<StringName, Vector<Argument> > custom_signals;
+	Map<StringName, Vector<Argument>> custom_signals;
 
 	Map<Object *, VisualScriptInstance *> instances;
 
@@ -413,7 +405,6 @@ public:
 	String to_string(bool *r_valid);
 
 	bool set_variable(const StringName &p_variable, const Variant &p_value) {
-
 		Map<StringName, Variant>::Element *E = variables.find(p_variable);
 		if (!E)
 			return false;
@@ -423,7 +414,6 @@ public:
 	}
 
 	bool get_variable(const StringName &p_variable, Variant *r_variable) const {
-
 		const Map<StringName, Variant>::Element *E = variables.find(p_variable);
 		if (!E)
 			return false;
@@ -449,7 +439,6 @@ public:
 };
 
 class VisualScriptFunctionState : public Reference {
-
 	GDCLASS(VisualScriptFunctionState, Reference);
 	friend class VisualScriptInstance;
 
@@ -480,11 +469,9 @@ public:
 typedef Ref<VisualScriptNode> (*VisualScriptNodeRegisterFunc)(const String &p_type);
 
 class VisualScriptLanguage : public ScriptLanguage {
-
 	Map<String, VisualScriptNodeRegisterFunc> register_funcs;
 
 	struct CallLevel {
-
 		Variant *stack;
 		Variant **work_mem;
 		const StringName *function;
@@ -513,7 +500,6 @@ public:
 	bool debug_break_parse(const String &p_file, int p_node, const String &p_error);
 
 	_FORCE_INLINE_ void enter_function(VisualScriptInstance *p_instance, const StringName *p_function, Variant *p_stack, Variant **p_work_mem, int *current_id) {
-
 		if (Thread::get_main_id() != Thread::get_caller_id())
 			return; //no support for other threads than main for now
 
@@ -536,7 +522,6 @@ public:
 	}
 
 	_FORCE_INLINE_ void exit_function() {
-
 		if (Thread::get_main_id() != Thread::get_caller_id())
 			return; //no support for other threads than main for now
 
@@ -544,7 +529,6 @@ public:
 			ScriptDebugger::get_singleton()->set_depth(ScriptDebugger::get_singleton()->get_depth() - 1);
 
 		if (_debug_call_stack_pos == 0) {
-
 			_debug_error = "Stack Underflow (Engine Bug)";
 			ScriptDebugger::get_singleton()->debug(this);
 			return;
@@ -598,7 +582,7 @@ public:
 
 	virtual void get_recognized_extensions(List<String> *p_extensions) const;
 	virtual void get_public_functions(List<MethodInfo> *p_functions) const;
-	virtual void get_public_constants(List<Pair<String, Variant> > *p_constants) const;
+	virtual void get_public_constants(List<Pair<String, Variant>> *p_constants) const;
 
 	virtual void profiling_start();
 	virtual void profiling_stop();
@@ -618,7 +602,6 @@ public:
 //aid for registering
 template <class T>
 static Ref<VisualScriptNode> create_node_generic(const String &p_name) {
-
 	Ref<T> node;
 	node.instance();
 	return node;

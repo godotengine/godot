@@ -38,12 +38,9 @@
 #include "core/version_hash.gen.h"
 
 void EditorAbout::_notification(int p_what) {
-
 	switch (p_what) {
-
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
-
 			Ref<Font> font = get_font("source", "EditorFonts");
 			_tpl_text->add_font_override("normal_font", font);
 			_tpl_text->add_constant_override("line_separation", 6 * EDSCALE);
@@ -55,24 +52,20 @@ void EditorAbout::_notification(int p_what) {
 }
 
 void EditorAbout::_license_tree_selected() {
-
 	TreeItem *selected = _tpl_tree->get_selected();
 	_tpl_text->scroll_to_line(0);
 	_tpl_text->set_text(selected->get_metadata(0));
 }
 
 void EditorAbout::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("_license_tree_selected"), &EditorAbout::_license_tree_selected);
 }
 
 TextureRect *EditorAbout::get_logo() const {
-
 	return _logo;
 }
 
 ScrollContainer *EditorAbout::_populate_list(const String &p_name, const List<String> &p_sections, const char *const *const p_src[], const int p_flag_single_column) {
-
 	ScrollContainer *sc = memnew(ScrollContainer);
 	sc->set_name(p_name);
 	sc->set_v_size_flags(Control::SIZE_EXPAND);
@@ -82,11 +75,9 @@ ScrollContainer *EditorAbout::_populate_list(const String &p_name, const List<St
 	sc->add_child(vbc);
 
 	for (int i = 0; i < p_sections.size(); i++) {
-
 		bool single_column = p_flag_single_column & 1 << i;
 		const char *const *names_ptr = p_src[i];
 		if (*names_ptr) {
-
 			Label *lbl = memnew(Label);
 			lbl->set_text(p_sections[i]);
 			vbc->add_child(lbl);
@@ -113,7 +104,6 @@ ScrollContainer *EditorAbout::_populate_list(const String &p_name, const List<St
 }
 
 EditorAbout::EditorAbout() {
-
 	set_title(TTR("Thanks from the Godot community!"));
 	set_hide_on_ok(true);
 	set_resizable(true);
@@ -217,7 +207,6 @@ EditorAbout::EditorAbout() {
 	tpl_ti_lc->set_selectable(0, false);
 	String long_text = "";
 	for (int component_index = 0; component_index < COPYRIGHT_INFO_COUNT; component_index++) {
-
 		const ComponentCopyright &component = COPYRIGHT_INFO[component_index];
 		TreeItem *ti = _tpl_tree->create_item(tpl_ti_tp);
 		String component_name = component.name;
@@ -243,7 +232,6 @@ EditorAbout::EditorAbout() {
 		ti->set_metadata(0, text);
 	}
 	for (int i = 0; i < LICENSE_COUNT; i++) {
-
 		TreeItem *ti = _tpl_tree->create_item(tpl_ti_lc);
 		String licensename = String(LICENSE_NAMES[i]);
 		ti->set_text(0, licensename);

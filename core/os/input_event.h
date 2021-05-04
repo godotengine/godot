@@ -264,7 +264,6 @@ public:
 };
 
 class InputEventKey : public InputEventWithModifiers {
-
 	GDCLASS(InputEventKey, InputEventWithModifiers);
 
 	bool pressed; /// otherwise release
@@ -303,7 +302,6 @@ public:
 };
 
 class InputEventMouse : public InputEventWithModifiers {
-
 	GDCLASS(InputEventMouse, InputEventWithModifiers);
 
 	int button_mask;
@@ -328,7 +326,6 @@ public:
 };
 
 class InputEventMouseButton : public InputEventMouse {
-
 	GDCLASS(InputEventMouseButton, InputEventMouse);
 
 	float factor;
@@ -362,7 +359,6 @@ public:
 };
 
 class InputEventMouseMotion : public InputEventMouse {
-
 	GDCLASS(InputEventMouseMotion, InputEventMouse);
 
 	Vector2 tilt;
@@ -395,7 +391,6 @@ public:
 };
 
 class InputEventJoypadMotion : public InputEvent {
-
 	GDCLASS(InputEventJoypadMotion, InputEvent);
 	int axis; ///< Joypad axis
 	float axis_value; ///< -1 to 1
@@ -474,7 +469,6 @@ public:
 };
 
 class InputEventScreenDrag : public InputEvent {
-
 	GDCLASS(InputEventScreenDrag, InputEvent);
 	int index;
 	Vector2 pos;
@@ -504,7 +498,6 @@ public:
 };
 
 class InputEventAction : public InputEvent {
-
 	GDCLASS(InputEventAction, InputEvent);
 
 	StringName action;
@@ -536,7 +529,6 @@ public:
 };
 
 class InputEventGesture : public InputEventWithModifiers {
-
 	GDCLASS(InputEventGesture, InputEventWithModifiers);
 
 	Vector2 pos;
@@ -550,7 +542,6 @@ public:
 };
 
 class InputEventMagnifyGesture : public InputEventGesture {
-
 	GDCLASS(InputEventMagnifyGesture, InputEventGesture);
 	real_t factor;
 
@@ -568,7 +559,6 @@ public:
 };
 
 class InputEventPanGesture : public InputEventGesture {
-
 	GDCLASS(InputEventPanGesture, InputEventGesture);
 	Vector2 delta;
 

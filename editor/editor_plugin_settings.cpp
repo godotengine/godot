@@ -39,7 +39,6 @@
 #include "scene/gui/margin_container.h"
 
 void EditorPluginSettings::_notification(int p_what) {
-
 	if (p_what == MainLoop::NOTIFICATION_WM_FOCUS_IN) {
 		update_plugins();
 	} else if (p_what == Node::NOTIFICATION_READY) {
@@ -49,7 +48,6 @@ void EditorPluginSettings::_notification(int p_what) {
 }
 
 void EditorPluginSettings::update_plugins() {
-
 	plugin_list->clear();
 	updating = true;
 	TreeItem *root = plugin_list->create_item();
@@ -58,7 +56,6 @@ void EditorPluginSettings::update_plugins() {
 	plugins.sort();
 
 	for (int i = 0; i < plugins.size(); i++) {
-
 		Ref<ConfigFile> cf;
 		cf.instance();
 		const String path = plugins[i];
@@ -120,7 +117,6 @@ void EditorPluginSettings::update_plugins() {
 }
 
 void EditorPluginSettings::_plugin_activity_changed() {
-
 	if (updating)
 		return;
 
@@ -186,7 +182,6 @@ Vector<String> EditorPluginSettings::_get_plugins(const String &p_dir) {
 }
 
 void EditorPluginSettings::_bind_methods() {
-
 	ClassDB::bind_method("update_plugins", &EditorPluginSettings::update_plugins);
 	ClassDB::bind_method("_create_clicked", &EditorPluginSettings::_create_clicked);
 	ClassDB::bind_method("_plugin_activity_changed", &EditorPluginSettings::_plugin_activity_changed);
@@ -194,7 +189,6 @@ void EditorPluginSettings::_bind_methods() {
 }
 
 EditorPluginSettings::EditorPluginSettings() {
-
 	plugin_config_dialog = memnew(PluginConfigDialog);
 	plugin_config_dialog->config("");
 	add_child(plugin_config_dialog);

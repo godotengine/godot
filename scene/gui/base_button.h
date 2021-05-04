@@ -36,7 +36,6 @@
 class ButtonGroup;
 
 class BaseButton : public Control {
-
 	GDCLASS(BaseButton, Control);
 
 public:
@@ -55,7 +54,6 @@ private:
 
 	ActionMode action_mode;
 	struct Status {
-
 		bool pressed;
 		bool hovering;
 		bool press_attempt;
@@ -136,7 +134,6 @@ VARIANT_ENUM_CAST(BaseButton::DrawMode)
 VARIANT_ENUM_CAST(BaseButton::ActionMode)
 
 class ButtonGroup : public Resource {
-
 	GDCLASS(ButtonGroup, Resource);
 	friend class BaseButton;
 	Set<BaseButton *> buttons;

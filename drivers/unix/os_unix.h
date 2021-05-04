@@ -37,7 +37,6 @@
 #include "drivers/unix/ip_unix.h"
 
 class OS_Unix : public OS {
-
 protected:
 	// UNIX only handles the core functions.
 	// inheriting platforms under unix (eg. X11) should handle the rest

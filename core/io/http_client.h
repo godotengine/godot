@@ -37,7 +37,6 @@
 #include "core/reference.h"
 
 class HTTPClient : public Reference {
-
 	GDCLASS(HTTPClient, Reference);
 
 public:

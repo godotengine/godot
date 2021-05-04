@@ -46,13 +46,11 @@ AreaSW::BodyKey::BodyKey(AreaSW *p_body, uint32_t p_body_shape, uint32_t p_area_
 }
 
 void AreaSW::_shapes_changed() {
-
 	if (!moved_list.in_list() && get_space())
 		get_space()->area_add_to_moved_list(&moved_list);
 }
 
 void AreaSW::set_transform(const Transform &p_transform) {
-
 	if (!moved_list.in_list() && get_space())
 		get_space()->area_add_to_moved_list(&moved_list);
 
@@ -61,7 +59,6 @@ void AreaSW::set_transform(const Transform &p_transform) {
 }
 
 void AreaSW::set_space(SpaceSW *p_space) {
-
 	if (get_space()) {
 		if (monitor_query_list.in_list())
 			get_space()->area_remove_from_monitor_query_list(&monitor_query_list);
@@ -76,7 +73,6 @@ void AreaSW::set_space(SpaceSW *p_space) {
 }
 
 void AreaSW::set_monitor_callback(ObjectID p_id, const StringName &p_method) {
-
 	if (p_id == monitor_callback_id) {
 		monitor_callback_method = p_method;
 		return;
@@ -97,7 +93,6 @@ void AreaSW::set_monitor_callback(ObjectID p_id, const StringName &p_method) {
 }
 
 void AreaSW::set_area_monitor_callback(ObjectID p_id, const StringName &p_method) {
-
 	if (p_id == area_monitor_callback_id) {
 		area_monitor_callback_method = p_method;
 		return;
@@ -127,37 +122,58 @@ void AreaSW::set_space_override_mode(PhysicsServer::AreaSpaceOverrideMode p_mode
 }
 
 void AreaSW::set_param(PhysicsServer::AreaParameter p_param, const Variant &p_value) {
-
 	switch (p_param) {
-		case PhysicsServer::AREA_PARAM_GRAVITY: gravity = p_value; break;
-		case PhysicsServer::AREA_PARAM_GRAVITY_VECTOR: gravity_vector = p_value; break;
-		case PhysicsServer::AREA_PARAM_GRAVITY_IS_POINT: gravity_is_point = p_value; break;
-		case PhysicsServer::AREA_PARAM_GRAVITY_DISTANCE_SCALE: gravity_distance_scale = p_value; break;
-		case PhysicsServer::AREA_PARAM_GRAVITY_POINT_ATTENUATION: point_attenuation = p_value; break;
-		case PhysicsServer::AREA_PARAM_LINEAR_DAMP: linear_damp = p_value; break;
-		case PhysicsServer::AREA_PARAM_ANGULAR_DAMP: angular_damp = p_value; break;
-		case PhysicsServer::AREA_PARAM_PRIORITY: priority = p_value; break;
+		case PhysicsServer::AREA_PARAM_GRAVITY:
+			gravity = p_value;
+			break;
+		case PhysicsServer::AREA_PARAM_GRAVITY_VECTOR:
+			gravity_vector = p_value;
+			break;
+		case PhysicsServer::AREA_PARAM_GRAVITY_IS_POINT:
+			gravity_is_point = p_value;
+			break;
+		case PhysicsServer::AREA_PARAM_GRAVITY_DISTANCE_SCALE:
+			gravity_distance_scale = p_value;
+			break;
+		case PhysicsServer::AREA_PARAM_GRAVITY_POINT_ATTENUATION:
+			point_attenuation = p_value;
+			break;
+		case PhysicsServer::AREA_PARAM_LINEAR_DAMP:
+			linear_damp = p_value;
+			break;
+		case PhysicsServer::AREA_PARAM_ANGULAR_DAMP:
+			angular_damp = p_value;
+			break;
+		case PhysicsServer::AREA_PARAM_PRIORITY:
+			priority = p_value;
+			break;
 	}
 }
 
 Variant AreaSW::get_param(PhysicsServer::AreaParameter p_param) const {
-
 	switch (p_param) {
-		case PhysicsServer::AREA_PARAM_GRAVITY: return gravity;
-		case PhysicsServer::AREA_PARAM_GRAVITY_VECTOR: return gravity_vector;
-		case PhysicsServer::AREA_PARAM_GRAVITY_IS_POINT: return gravity_is_point;
-		case PhysicsServer::AREA_PARAM_GRAVITY_DISTANCE_SCALE: return gravity_distance_scale;
-		case PhysicsServer::AREA_PARAM_GRAVITY_POINT_ATTENUATION: return point_attenuation;
-		case PhysicsServer::AREA_PARAM_LINEAR_DAMP: return linear_damp;
-		case PhysicsServer::AREA_PARAM_ANGULAR_DAMP: return angular_damp;
-		case PhysicsServer::AREA_PARAM_PRIORITY: return priority;
+		case PhysicsServer::AREA_PARAM_GRAVITY:
+			return gravity;
+		case PhysicsServer::AREA_PARAM_GRAVITY_VECTOR:
+			return gravity_vector;
+		case PhysicsServer::AREA_PARAM_GRAVITY_IS_POINT:
+			return gravity_is_point;
+		case PhysicsServer::AREA_PARAM_GRAVITY_DISTANCE_SCALE:
+			return gravity_distance_scale;
+		case PhysicsServer::AREA_PARAM_GRAVITY_POINT_ATTENUATION:
+			return point_attenuation;
+		case PhysicsServer::AREA_PARAM_LINEAR_DAMP:
+			return linear_damp;
+		case PhysicsServer::AREA_PARAM_ANGULAR_DAMP:
+			return angular_damp;
+		case PhysicsServer::AREA_PARAM_PRIORITY:
+			return priority;
 	}
 
 	return Variant();
 }
 
 void AreaSW::_queue_monitor_update() {
-
 	ERR_FAIL_COND(!get_space());
 
 	if (!monitor_query_list.in_list())
@@ -165,7 +181,6 @@ void AreaSW::_queue_monitor_update() {
 }
 
 void AreaSW::set_monitorable(bool p_monitorable) {
-
 	if (monitorable == p_monitorable)
 		return;
 
@@ -174,9 +189,7 @@ void AreaSW::set_monitorable(bool p_monitorable) {
 }
 
 void AreaSW::call_queries() {
-
 	if (monitor_callback_id && !monitored_bodies.empty()) {
-
 		Variant res[5];
 		Variant *resptr[5];
 		for (int i = 0; i < 5; i++)
@@ -190,7 +203,6 @@ void AreaSW::call_queries() {
 		}
 
 		for (Map<BodyKey, BodyState>::Element *E = monitored_bodies.front(); E;) {
-
 			if (E->get().state == 0) { // Nothing happened
 				Map<BodyKey, BodyState>::Element *next = E->next();
 				monitored_bodies.erase(E);
@@ -214,7 +226,6 @@ void AreaSW::call_queries() {
 	}
 
 	if (area_monitor_callback_id && !monitored_areas.empty()) {
-
 		Variant res[5];
 		Variant *resptr[5];
 		for (int i = 0; i < 5; i++)
@@ -228,7 +239,6 @@ void AreaSW::call_queries() {
 		}
 
 		for (Map<BodyKey, BodyState>::Element *E = monitored_areas.front(); E;) {
-
 			if (E->get().state == 0) { // Nothing happened
 				Map<BodyKey, BodyState>::Element *next = E->next();
 				monitored_areas.erase(E);
@@ -256,7 +266,6 @@ AreaSW::AreaSW() :
 		CollisionObjectSW(TYPE_AREA),
 		monitor_query_list(this),
 		moved_list(this) {
-
 	_set_static(true); //areas are never active
 	space_override_mode = PhysicsServer::AREA_SPACE_OVERRIDE_DISABLED;
 	gravity = 9.80665;

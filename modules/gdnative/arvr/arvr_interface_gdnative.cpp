@@ -80,7 +80,6 @@ void ARVRInterfaceGDNative::set_interface(const godot_arvr_interface_gdnative *p
 }
 
 StringName ARVRInterfaceGDNative::get_name() const {
-
 	ERR_FAIL_COND_V(interface == NULL, StringName());
 
 	godot_string result = interface->get_name(data);
@@ -103,21 +102,18 @@ int ARVRInterfaceGDNative::get_capabilities() const {
 }
 
 bool ARVRInterfaceGDNative::get_anchor_detection_is_enabled() const {
-
 	ERR_FAIL_COND_V(interface == NULL, false);
 
 	return interface->get_anchor_detection_is_enabled(data);
 }
 
 void ARVRInterfaceGDNative::set_anchor_detection_is_enabled(bool p_enable) {
-
 	ERR_FAIL_COND(interface == NULL);
 
 	interface->set_anchor_detection_is_enabled(data, p_enable);
 }
 
 int ARVRInterfaceGDNative::get_camera_feed_id() {
-
 	ERR_FAIL_COND_V(interface == NULL, 0);
 
 	if ((interface->version.major > 1) || ((interface->version.major) == 1 && (interface->version.minor >= 1))) {
@@ -138,7 +134,6 @@ bool ARVRInterfaceGDNative::is_stereo() {
 }
 
 bool ARVRInterfaceGDNative::is_initialized() const {
-
 	ERR_FAIL_COND_V(interface == NULL, false);
 
 	return interface->is_initialized(data);
@@ -174,7 +169,6 @@ void ARVRInterfaceGDNative::uninitialize() {
 }
 
 Size2 ARVRInterfaceGDNative::get_render_targetsize() {
-
 	ERR_FAIL_COND_V(interface == NULL, Size2());
 
 	godot_vector2 result = interface->get_render_targetsize(data);
@@ -206,7 +200,6 @@ CameraMatrix ARVRInterfaceGDNative::get_projection_for_eye(ARVRInterface::Eyes p
 }
 
 unsigned int ARVRInterfaceGDNative::get_external_texture_for_eye(ARVRInterface::Eyes p_eye) {
-
 	ERR_FAIL_COND_V(interface == NULL, 0);
 
 	if ((interface->version.major > 1) || ((interface->version.major) == 1 && (interface->version.minor >= 1))) {
@@ -217,7 +210,6 @@ unsigned int ARVRInterfaceGDNative::get_external_texture_for_eye(ARVRInterface::
 }
 
 unsigned int ARVRInterfaceGDNative::get_external_depth_for_eye(ARVRInterface::Eyes p_eye) {
-
 	ERR_FAIL_COND_V(interface == NULL, 0);
 
 	if ((interface->version.major > 1) || ((interface->version.major) == 1 && (interface->version.minor >= 2))) {
@@ -228,7 +220,6 @@ unsigned int ARVRInterfaceGDNative::get_external_depth_for_eye(ARVRInterface::Ey
 }
 
 void ARVRInterfaceGDNative::commit_for_eye(ARVRInterface::Eyes p_eye, RID p_render_target, const Rect2 &p_screen_rect) {
-
 	ERR_FAIL_COND(interface == NULL);
 
 	interface->commit_for_eye(data, (godot_int)p_eye, (godot_rid *)&p_render_target, (godot_rect2 *)&p_screen_rect);

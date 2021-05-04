@@ -67,7 +67,6 @@ public:
 };
 
 class SceneTree : public MainLoop {
-
 	_THREAD_SAFE_CLASS_
 
 	GDCLASS(SceneTree, MainLoop);
@@ -93,7 +92,6 @@ public:
 
 private:
 	struct Group {
-
 		Vector<Node *> nodes;
 		//uint64_t last_tree_version;
 		bool changed;
@@ -135,7 +133,6 @@ private:
 	Node *edited_scene_root;
 #endif
 	struct UGCall {
-
 		StringName group;
 		StringName call;
 
@@ -156,7 +153,7 @@ private:
 
 	List<ObjectID> delete_queue;
 
-	Map<UGCall, Vector<Variant> > unique_group_calls;
+	Map<UGCall, Vector<Variant>> unique_group_calls;
 	bool ugc_locked;
 	void _flush_ugc();
 
@@ -180,7 +177,7 @@ private:
 	void _change_scene(Node *p_to);
 	//void _call_group(uint32_t p_call_flags,const StringName& p_group,const StringName& p_function,const Variant& p_arg1,const Variant& p_arg2);
 
-	List<Ref<SceneTreeTimer> > timers;
+	List<Ref<SceneTreeTimer>> timers;
 
 	///network///
 
@@ -228,8 +225,8 @@ private:
 	NodePath live_edit_root;
 	String live_edit_scene;
 
-	Map<String, Set<Node *> > live_scene_edit_cache;
-	Map<Node *, Map<ObjectID, Node *> > live_edit_remove_list;
+	Map<String, Set<Node *>> live_scene_edit_cache;
+	Map<Node *, Map<ObjectID, Node *>> live_edit_remove_list;
 
 	void _debugger_request_tree();
 

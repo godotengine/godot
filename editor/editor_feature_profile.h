@@ -58,7 +58,7 @@ public:
 private:
 	Set<StringName> disabled_classes;
 	Set<StringName> disabled_editors;
-	Map<StringName, Set<StringName> > disabled_properties;
+	Map<StringName, Set<StringName>> disabled_properties;
 
 	bool features_disabled[FEATURE_MAX];
 	static const char *feature_names[FEATURE_MAX];
@@ -94,7 +94,6 @@ public:
 VARIANT_ENUM_CAST(EditorFeatureProfile::Feature)
 
 class EditorFeatureProfileManager : public AcceptDialog {
-
 	GDCLASS(EditorFeatureProfileManager, AcceptDialog);
 
 	enum Action {

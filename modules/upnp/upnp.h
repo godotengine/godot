@@ -38,7 +38,6 @@
 #include <miniupnpc/miniupnpc.h>
 
 class UPNP : public Reference {
-
 	GDCLASS(UPNP, Reference);
 
 private:
@@ -46,7 +45,7 @@ private:
 	int discover_local_port;
 	bool discover_ipv6;
 
-	Vector<Ref<UPNPDevice> > devices;
+	Vector<Ref<UPNPDevice>> devices;
 
 	bool is_common_device(const String &dev) const;
 	void add_device_to_list(UPNPDev *dev, UPNPDev *devlist);

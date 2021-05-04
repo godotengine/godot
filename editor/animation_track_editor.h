@@ -121,7 +121,6 @@ public:
 class AnimationTrackEditor;
 
 class AnimationTrackEdit : public Control {
-
 	GDCLASS(AnimationTrackEdit, Control);
 
 	enum {
@@ -353,7 +352,6 @@ class AnimationTrackEditor : public VBoxContainer {
 	bool keying;
 
 	struct InsertData {
-
 		Animation::TrackType type;
 		NodePath path;
 		int track_idx;
@@ -394,14 +392,12 @@ class AnimationTrackEditor : public VBoxContainer {
 	//selection
 
 	struct SelectedKey {
-
 		int track;
 		int key;
 		bool operator<(const SelectedKey &p_key) const { return track == p_key.track ? key < p_key.key : track < p_key.track; };
 	};
 
 	struct KeyInfo {
-
 		float pos;
 	};
 
@@ -430,7 +426,7 @@ class AnimationTrackEditor : public VBoxContainer {
 	Rect2 box_select_rect;
 	void _scroll_input(const Ref<InputEvent> &p_event);
 
-	Vector<Ref<AnimationTrackEditPlugin> > track_edit_plugins;
+	Vector<Ref<AnimationTrackEditPlugin>> track_edit_plugins;
 
 	void _cancel_bezier_edit();
 	void _bezier_edit(int p_for_track);

@@ -46,7 +46,6 @@
 #include <sys/stat.h>
 
 class EditorExportPlatformOSX : public EditorExportPlatform {
-
 	GDCLASS(EditorExportPlatformOSX, EditorExportPlatform);
 
 	int version_code;
@@ -90,7 +89,6 @@ public:
 	virtual bool can_export(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates) const;
 
 	virtual void get_platform_features(List<String> *r_features) {
-
 		r_features->push_back("pc");
 		r_features->push_back("s3tc");
 		r_features->push_back("OSX");
@@ -118,7 +116,6 @@ void EditorExportPlatformOSX::get_preset_features(const Ref<EditorExportPreset> 
 }
 
 void EditorExportPlatformOSX::get_export_options(List<ExportOption> *r_options) {
-
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_template/debug", PROPERTY_HINT_GLOBAL_FILE, "*.zip"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_template/release", PROPERTY_HINT_GLOBAL_FILE, "*.zip"), ""));
 
@@ -173,7 +170,6 @@ void EditorExportPlatformOSX::get_export_options(List<ExportOption> *r_options) 
 }
 
 void _rgba8_to_packbits_encode(int p_ch, int p_size, PoolVector<uint8_t> &p_source, Vector<uint8_t> &p_dest) {
-
 	int src_len = p_size * p_size;
 
 	Vector<uint8_t> result;
@@ -188,7 +184,6 @@ void _rgba8_to_packbits_encode(int p_ch, int p_size, PoolVector<uint8_t> &p_sour
 		uint8_t cur = p_source.read()[i * 4 + p_ch];
 
 		if (i < src_len - 2) {
-
 			if ((p_source.read()[(i + 1) * 4 + p_ch] == cur) && (p_source.read()[(i + 2) * 4 + p_ch] == cur)) {
 				if (buf_size > 0) {
 					result.write[res_size++] = (uint8_t)(buf_size - 1);
@@ -240,7 +235,6 @@ void _rgba8_to_packbits_encode(int p_ch, int p_size, PoolVector<uint8_t> &p_sour
 }
 
 void EditorExportPlatformOSX::_make_icon(const Ref<Image> &p_icon, Vector<uint8_t> &p_data) {
-
 	Ref<ImageTexture> it = memnew(ImageTexture);
 
 	Vector<uint8_t> data;
@@ -345,7 +339,6 @@ void EditorExportPlatformOSX::_make_icon(const Ref<Image> &p_icon, Vector<uint8_
 }
 
 void EditorExportPlatformOSX::_fix_plist(const Ref<EditorExportPreset> &p_preset, Vector<uint8_t> &plist, const String &p_binary) {
-
 	String str;
 	String strnew;
 	str.parse_utf8((const char *)plist.ptr(), plist.size());
@@ -519,7 +512,6 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 
 	unzFile src_pkg_zip = unzOpen2(src_pkg_name.utf8().get_data(), &io);
 	if (!src_pkg_zip) {
-
 		EditorNode::add_io_error("Could not find template app to export:\n" + src_pkg_name);
 		return ERR_FILE_NOT_FOUND;
 	}
@@ -637,7 +629,6 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 		}
 
 		if (data.size() > 0) {
-
 			if (file.find("/data.mono.osx.64.release_debug/") != -1) {
 				if (!p_debug) {
 					ret = unzGoToNextFile(src_pkg_zip);
@@ -956,7 +947,6 @@ void EditorExportPlatformOSX::_zip_folder_recursive(zipFile &p_zip, const String
 }
 
 bool EditorExportPlatformOSX::can_export(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates) const {
-
 	String err;
 	bool valid = false;
 
@@ -987,7 +977,6 @@ bool EditorExportPlatformOSX::can_export(const Ref<EditorExportPreset> &p_preset
 }
 
 EditorExportPlatformOSX::EditorExportPlatformOSX() {
-
 	Ref<Image> img = memnew(Image(_osx_logo));
 	logo.instance();
 	logo->create_from_image(img);
@@ -997,7 +986,6 @@ EditorExportPlatformOSX::~EditorExportPlatformOSX() {
 }
 
 void register_osx_exporter() {
-
 	Ref<EditorExportPlatformOSX> platform;
 	platform.instance();
 

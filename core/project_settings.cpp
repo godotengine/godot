@@ -46,17 +46,14 @@
 ProjectSettings *ProjectSettings::singleton = NULL;
 
 ProjectSettings *ProjectSettings::get_singleton() {
-
 	return singleton;
 }
 
 String ProjectSettings::get_resource_path() const {
-
 	return resource_path;
 };
 
 String ProjectSettings::localize_path(const String &p_path) const {
-
 	if (resource_path == "")
 		return p_path; //not initialized yet
 
@@ -69,7 +66,6 @@ String ProjectSettings::localize_path(const String &p_path) const {
 	String path = p_path.replace("\\", "/").simplify_path();
 
 	if (dir->change_dir(path) == OK) {
-
 		String cwd = dir->get_current_dir();
 		cwd = cwd.replace("\\", "/");
 
@@ -93,7 +89,6 @@ String ProjectSettings::localize_path(const String &p_path) const {
 
 		return cwd.replace_first(res_path, "res://");
 	} else {
-
 		memdelete(dir);
 
 		int sep = path.find_last("/");
@@ -116,30 +111,23 @@ String ProjectSettings::localize_path(const String &p_path) const {
 }
 
 void ProjectSettings::set_initial_value(const String &p_name, const Variant &p_value) {
-
 	ERR_FAIL_COND_MSG(!props.has(p_name), "Request for nonexistent project setting: " + p_name + ".");
 	props[p_name].initial = p_value;
 }
 void ProjectSettings::set_restart_if_changed(const String &p_name, bool p_restart) {
-
 	ERR_FAIL_COND_MSG(!props.has(p_name), "Request for nonexistent project setting: " + p_name + ".");
 	props[p_name].restart_if_changed = p_restart;
 }
 
 String ProjectSettings::globalize_path(const String &p_path) const {
-
 	if (p_path.begins_with("res://")) {
-
 		if (resource_path != "") {
-
 			return p_path.replace("res:/", resource_path);
 		};
 		return p_path.replace("res://", "");
 	} else if (p_path.begins_with("user://")) {
-
 		String data_dir = OS::get_singleton()->get_user_data_dir();
 		if (data_dir != "") {
-
 			return p_path.replace("user:/", data_dir);
 		};
 		return p_path.replace("user://", "");
@@ -149,17 +137,14 @@ String ProjectSettings::globalize_path(const String &p_path) const {
 }
 
 bool ProjectSettings::_set(const StringName &p_name, const Variant &p_value) {
-
 	_THREAD_SAFE_METHOD_
 
 	if (p_value.get_type() == Variant::NIL)
 		props.erase(p_name);
 	else {
-
 		if (p_name == CoreStringNames::get_singleton()->_custom_features) {
 			Vector<String> custom_feature_array = String(p_value).split(",");
 			for (int i = 0; i < custom_feature_array.size(); i++) {
-
 				custom_features.insert(custom_feature_array[i]);
 			}
 			return true;
@@ -180,7 +165,6 @@ bool ProjectSettings::_set(const StringName &p_name, const Variant &p_value) {
 				}
 
 				if (override_valid) {
-
 					feature_overrides[s[0]] = p_name;
 				}
 			}
@@ -198,7 +182,6 @@ bool ProjectSettings::_set(const StringName &p_name, const Variant &p_value) {
 	return true;
 }
 bool ProjectSettings::_get(const StringName &p_name, Variant &r_ret) const {
-
 	_THREAD_SAFE_METHOD_
 
 	StringName name = p_name;
@@ -214,7 +197,6 @@ bool ProjectSettings::_get(const StringName &p_name, Variant &r_ret) const {
 }
 
 struct _VCSort {
-
 	String name;
 	Variant::Type type;
 	int order;
@@ -224,13 +206,11 @@ struct _VCSort {
 };
 
 void ProjectSettings::_get_property_list(List<PropertyInfo> *p_list) const {
-
 	_THREAD_SAFE_METHOD_
 
 	Set<_VCSort> vclist;
 
 	for (Map<StringName, VariantContainer>::Element *E = props.front(); E; E = E->next()) {
-
 		const VariantContainer *v = &E->get();
 
 		if (v->hide_from_editor)
@@ -252,7 +232,6 @@ void ProjectSettings::_get_property_list(List<PropertyInfo> *p_list) const {
 	}
 
 	for (Set<_VCSort>::Element *E = vclist.front(); E; E = E->next()) {
-
 		String prop_info_name = E->get().name;
 		int dot = prop_info_name.find(".");
 		if (dot != -1)
@@ -269,7 +248,6 @@ void ProjectSettings::_get_property_list(List<PropertyInfo> *p_list) const {
 }
 
 bool ProjectSettings::_load_resource_pack(const String &p_pack, bool p_replace_files, int p_offset) {
-
 	if (PackedData::get_singleton()->is_disabled())
 		return false;
 
@@ -286,7 +264,6 @@ bool ProjectSettings::_load_resource_pack(const String &p_pack, bool p_replace_f
 }
 
 void ProjectSettings::_convert_to_last_version(int p_from_version) {
-
 	if (p_from_version <= 3) {
 		// Converts the actions from array to dictionary (array of events to dictionary with deadzone + events)
 		for (Map<StringName, ProjectSettings::VariantContainer>::Element *E = props.front(); E; E = E->next()) {
@@ -328,11 +305,9 @@ void ProjectSettings::_convert_to_last_version(int p_from_version) {
  *    If nothing was found, error out.
  */
 Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, bool p_upwards) {
-
 	// If looking for files in a network client, use it directly
 
 	if (FileAccessNetworkClient::get_singleton()) {
-
 		Error err = _load_settings_text_or_binary("res://project.godot", "res://project.binary");
 		if (err == OK) {
 			// Optional, we don't mind if it fails
@@ -344,7 +319,6 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 	// Attempt with a user-defined main pack first
 
 	if (p_main_pack != "") {
-
 		bool ok = _load_resource_pack(p_main_pack);
 		ERR_FAIL_COND_V_MSG(!ok, ERR_CANT_OPEN, "Cannot open resource pack '" + p_main_pack + "'.");
 
@@ -495,19 +469,16 @@ Error ProjectSettings::setup(const String &p_path, const String &p_main_pack, bo
 }
 
 bool ProjectSettings::has_setting(String p_var) const {
-
 	_THREAD_SAFE_METHOD_
 
 	return props.has(p_var);
 }
 
 void ProjectSettings::set_registering_order(bool p_enable) {
-
 	registering_order = p_enable;
 }
 
 Error ProjectSettings::_load_settings_binary(const String &p_path) {
-
 	Error err;
 	FileAccess *f = FileAccess::open(p_path, FileAccess::READ, &err);
 	if (err != OK) {
@@ -517,7 +488,6 @@ Error ProjectSettings::_load_settings_binary(const String &p_path) {
 	uint8_t hdr[4];
 	f->get_buffer(hdr, 4);
 	if (hdr[0] != 'E' || hdr[1] != 'C' || hdr[2] != 'F' || hdr[3] != 'G') {
-
 		memdelete(f);
 		ERR_FAIL_V_MSG(ERR_FILE_CORRUPT, "Corrupted header in binary project.binary (not ECFG).");
 	}
@@ -525,7 +495,6 @@ Error ProjectSettings::_load_settings_binary(const String &p_path) {
 	uint32_t count = f->get_32();
 
 	for (uint32_t i = 0; i < count; i++) {
-
 		uint32_t slen = f->get_32();
 		CharString cs;
 		cs.resize(slen + 1);
@@ -550,7 +519,6 @@ Error ProjectSettings::_load_settings_binary(const String &p_path) {
 }
 
 Error ProjectSettings::_load_settings_text(const String &p_path) {
-
 	Error err;
 	FileAccess *f = FileAccess::open(p_path, FileAccess::READ, &err);
 
@@ -573,7 +541,6 @@ Error ProjectSettings::_load_settings_text(const String &p_path) {
 	int config_version = 0;
 
 	while (true) {
-
 		assign = Variant();
 		next_tag.fields.clear();
 		next_tag.name = String();
@@ -634,19 +601,16 @@ Error ProjectSettings::_load_settings_text_or_binary(const String &p_text_path, 
 }
 
 int ProjectSettings::get_order(const String &p_name) const {
-
 	ERR_FAIL_COND_V_MSG(!props.has(p_name), -1, "Request for nonexistent project setting: " + p_name + ".");
 	return props[p_name].order;
 }
 
 void ProjectSettings::set_order(const String &p_name, int p_order) {
-
 	ERR_FAIL_COND_MSG(!props.has(p_name), "Request for nonexistent project setting: " + p_name + ".");
 	props[p_name].order = p_order;
 }
 
 void ProjectSettings::set_builtin_order(const String &p_name) {
-
 	ERR_FAIL_COND_MSG(!props.has(p_name), "Request for nonexistent project setting: " + p_name + ".");
 	if (props[p_name].order >= NO_BUILTIN_ORDER_BASE) {
 		props[p_name].order = last_builtin_order++;
@@ -654,7 +618,6 @@ void ProjectSettings::set_builtin_order(const String &p_name) {
 }
 
 void ProjectSettings::clear(const String &p_name) {
-
 	ERR_FAIL_COND_MSG(!props.has(p_name), "Request for nonexistent project setting: " + p_name + ".");
 	props.erase(p_name);
 }
@@ -667,8 +630,7 @@ Error ProjectSettings::save() {
 	return error;
 }
 
-Error ProjectSettings::_save_settings_binary(const String &p_file, const Map<String, List<String> > &props, const CustomMap &p_custom, const String &p_custom_features) {
-
+Error ProjectSettings::_save_settings_binary(const String &p_file, const Map<String, List<String>> &props, const CustomMap &p_custom, const String &p_custom_features) {
 	Error err;
 	FileAccess *file = FileAccess::open(p_file, FileAccess::WRITE, &err);
 	ERR_FAIL_COND_V_MSG(err != OK, err, "Couldn't save project.binary at " + p_file + ".");
@@ -678,10 +640,8 @@ Error ProjectSettings::_save_settings_binary(const String &p_file, const Map<Str
 
 	int count = 0;
 
-	for (Map<String, List<String> >::Element *E = props.front(); E; E = E->next()) {
-
+	for (Map<String, List<String>>::Element *E = props.front(); E; E = E->next()) {
 		for (List<String>::Element *F = E->get().front(); F; F = F->next()) {
-
 			count++;
 		}
 	}
@@ -715,10 +675,8 @@ Error ProjectSettings::_save_settings_binary(const String &p_file, const Map<Str
 		file->store_32(count); //store how many properties are saved
 	}
 
-	for (Map<String, List<String> >::Element *E = props.front(); E; E = E->next()) {
-
+	for (Map<String, List<String>>::Element *E = props.front(); E; E = E->next()) {
 		for (List<String>::Element *F = E->get().front(); F; F = F->next()) {
-
 			String key = F->get();
 			if (E->key() != "")
 				key = E->key() + "/" + key;
@@ -755,8 +713,7 @@ Error ProjectSettings::_save_settings_binary(const String &p_file, const Map<Str
 	return OK;
 }
 
-Error ProjectSettings::_save_settings_text(const String &p_file, const Map<String, List<String> > &props, const CustomMap &p_custom, const String &p_custom_features) {
-
+Error ProjectSettings::_save_settings_text(const String &p_file, const Map<String, List<String>> &props, const CustomMap &p_custom, const String &p_custom_features) {
 	Error err;
 	FileAccess *file = FileAccess::open(p_file, FileAccess::WRITE, &err);
 
@@ -776,15 +733,13 @@ Error ProjectSettings::_save_settings_text(const String &p_file, const Map<Strin
 		file->store_string("custom_features=\"" + p_custom_features + "\"\n");
 	file->store_string("\n");
 
-	for (Map<String, List<String> >::Element *E = props.front(); E; E = E->next()) {
-
+	for (Map<String, List<String>>::Element *E = props.front(); E; E = E->next()) {
 		if (E != props.front())
 			file->store_string("\n");
 
 		if (E->key() != "")
 			file->store_string("[" + E->key() + "]\n\n");
 		for (List<String>::Element *F = E->get().front(); F; F = F->next()) {
-
 			String key = F->get();
 			if (E->key() != "")
 				key = E->key() + "/" + key;
@@ -812,14 +767,12 @@ Error ProjectSettings::_save_custom_bnd(const String &p_file) { // add other par
 };
 
 Error ProjectSettings::save_custom(const String &p_path, const CustomMap &p_custom, const Vector<String> &p_custom_features, bool p_merge_with_current) {
-
 	ERR_FAIL_COND_V_MSG(p_path == "", ERR_INVALID_PARAMETER, "Project settings save path cannot be empty.");
 
 	Set<_VCSort> vclist;
 
 	if (p_merge_with_current) {
 		for (Map<StringName, VariantContainer>::Element *G = props.front(); G; G = G->next()) {
-
 			const VariantContainer *v = &G->get();
 
 			if (v->hide_from_editor)
@@ -841,7 +794,6 @@ Error ProjectSettings::save_custom(const String &p_path, const CustomMap &p_cust
 	}
 
 	for (const Map<String, Variant>::Element *E = p_custom.front(); E; E = E->next()) {
-
 		// Lookup global prop to store in the same order
 		Map<StringName, VariantContainer>::Element *global_prop = props.find(E->key());
 
@@ -853,10 +805,9 @@ Error ProjectSettings::save_custom(const String &p_path, const CustomMap &p_cust
 		vclist.insert(vc);
 	}
 
-	Map<String, List<String> > props;
+	Map<String, List<String>> props;
 
 	for (Set<_VCSort>::Element *E = vclist.front(); E; E = E->next()) {
-
 		String category = E->get().name;
 		String name = E->get().name;
 
@@ -865,7 +816,6 @@ Error ProjectSettings::save_custom(const String &p_path, const CustomMap &p_cust
 		if (div < 0)
 			category = "";
 		else {
-
 			category = category.substr(0, div);
 			name = name.substr(div + 1, name.size());
 		}
@@ -887,7 +837,6 @@ Error ProjectSettings::save_custom(const String &p_path, const CustomMap &p_cust
 	} else if (p_path.ends_with(".binary")) {
 		return _save_settings_binary(p_path, props, p_custom, custom_features);
 	} else {
-
 		ERR_FAIL_V_MSG(ERR_FILE_UNRECOGNIZED, "Unknown config file format: " + p_path + ".");
 	}
 }
@@ -895,9 +844,7 @@ Error ProjectSettings::save_custom(const String &p_path, const CustomMap &p_cust
 Variant _GLOBAL_DEF_ALIAS(const String &p_var, const String &p_old_name, const Variant &p_default, bool p_restart_if_changed) {
 	// if the new name setting isn't present, try the old one
 	if (!ProjectSettings::get_singleton()->has_setting(p_var)) {
-
 		if (ProjectSettings::get_singleton()->has_setting(p_old_name)) {
-
 			// if the old setting is present, get the value and set it in the new setting
 			Variant value = ProjectSettings::get_singleton()->get(p_old_name);
 			ProjectSettings::get_singleton()->set(p_var, value);
@@ -908,7 +855,6 @@ Variant _GLOBAL_DEF_ALIAS(const String &p_var, const String &p_old_name, const V
 }
 
 Variant _GLOBAL_DEF(const String &p_var, const Variant &p_default, bool p_restart_if_changed) {
-
 	Variant ret;
 	if (!ProjectSettings::get_singleton()->has_setting(p_var)) {
 		ProjectSettings::get_singleton()->set(p_var, p_default);
@@ -922,13 +868,11 @@ Variant _GLOBAL_DEF(const String &p_var, const Variant &p_default, bool p_restar
 }
 
 Vector<String> ProjectSettings::get_optimizer_presets() const {
-
 	List<PropertyInfo> pi;
 	ProjectSettings::get_singleton()->get_property_list(&pi);
 	Vector<String> names;
 
 	for (List<PropertyInfo>::Element *E = pi.front(); E; E = E->next()) {
-
 		if (!E->get().name.begins_with("optimizer_presets/"))
 			continue;
 		names.push_back(E->get().name.get_slicec('/', 1));
@@ -940,7 +884,6 @@ Vector<String> ProjectSettings::get_optimizer_presets() const {
 }
 
 void ProjectSettings::_add_property_info_bind(const Dictionary &p_info) {
-
 	ERR_FAIL_COND(!p_info.has("name"));
 	ERR_FAIL_COND(!p_info.has("type"));
 
@@ -959,7 +902,6 @@ void ProjectSettings::_add_property_info_bind(const Dictionary &p_info) {
 }
 
 void ProjectSettings::set_custom_property_info(const String &p_prop, const PropertyInfo &p_info) {
-
 	ERR_FAIL_COND(!props.has(p_prop));
 	custom_prop_info[p_prop] = p_info;
 	custom_prop_info[p_prop].name = p_prop;
@@ -970,17 +912,14 @@ const Map<StringName, PropertyInfo> &ProjectSettings::get_custom_property_info()
 }
 
 void ProjectSettings::set_disable_feature_overrides(bool p_disable) {
-
 	disable_feature_overrides = p_disable;
 }
 
 bool ProjectSettings::is_using_datapack() const {
-
 	return using_datapack;
 }
 
 bool ProjectSettings::property_can_revert(const String &p_name) {
-
 	if (!props.has(p_name))
 		return false;
 
@@ -988,7 +927,6 @@ bool ProjectSettings::property_can_revert(const String &p_name) {
 }
 
 Variant ProjectSettings::property_get_revert(const String &p_name) {
-
 	if (!props.has(p_name))
 		return Variant();
 
@@ -1008,7 +946,6 @@ bool ProjectSettings::has_custom_feature(const String &p_feature) const {
 }
 
 void ProjectSettings::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("has_setting", "name"), &ProjectSettings::has_setting);
 	ClassDB::bind_method(D_METHOD("set_setting", "name", "value"), &ProjectSettings::set_setting);
 	ClassDB::bind_method(D_METHOD("get_setting", "name"), &ProjectSettings::get_setting);
@@ -1253,6 +1190,5 @@ ProjectSettings::ProjectSettings() {
 }
 
 ProjectSettings::~ProjectSettings() {
-
 	singleton = NULL;
 }

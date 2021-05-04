@@ -43,7 +43,6 @@
 namespace TestRender {
 
 class TestMainLoop : public MainLoop {
-
 	RID test_cube;
 	RID instance;
 	RID camera;
@@ -52,7 +51,6 @@ class TestMainLoop : public MainLoop {
 	RID scenario;
 
 	struct InstanceInfo {
-
 		RID instance;
 		Transform base;
 		Vector3 rot_axis;
@@ -66,13 +64,11 @@ class TestMainLoop : public MainLoop {
 protected:
 public:
 	virtual void input_event(const Ref<InputEvent> &p_event) {
-
 		if (p_event->is_pressed())
 			quit = true;
 	}
 
 	virtual void init() {
-
 		print_line("INITIALIZING TEST RENDER");
 		VisualServer *vs = VisualServer::get_singleton();
 		test_cube = vs->get_test_cube();
@@ -143,7 +139,6 @@ public:
 		};
 
 		for (int i = 0; i < object_count; i++) {
-
 			InstanceInfo ii;
 
 			ii.instance = vs->instance_create2(test_cube, scenario);
@@ -204,7 +199,6 @@ public:
 		quit = false;
 	}
 	virtual bool iteration(float p_time) {
-
 		VisualServer *vs = VisualServer::get_singleton();
 		//Transform t;
 		//t.rotate(Vector3(0, 1, 0), ofs);
@@ -216,7 +210,6 @@ public:
 		//return quit;
 
 		for (List<InstanceInfo>::Element *E = instances.front(); E; E = E->next()) {
-
 			Transform pre(Basis(E->get().rot_axis, ofs), Vector3());
 			vs->instance_set_transform(E->get().instance, pre * E->get().base);
 			/*
@@ -239,7 +232,6 @@ public:
 };
 
 MainLoop *test() {
-
 	return memnew(TestMainLoop);
 }
 } // namespace TestRender

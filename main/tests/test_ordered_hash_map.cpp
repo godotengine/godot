@@ -86,7 +86,7 @@ bool test_iteration() {
 	map.insert(123485, 1238888);
 	map.insert(123, 111111);
 
-	Vector<Pair<int, int> > expected;
+	Vector<Pair<int, int>> expected;
 	expected.push_back(Pair<int, int>(42, 84));
 	expected.push_back(Pair<int, int>(123, 111111));
 	expected.push_back(Pair<int, int>(0, 12934));
@@ -103,7 +103,7 @@ bool test_iteration() {
 }
 
 bool test_const_iteration(const OrderedHashMap<int, int> &map) {
-	Vector<Pair<int, int> > expected;
+	Vector<Pair<int, int>> expected;
 	expected.push_back(Pair<int, int>(42, 84));
 	expected.push_back(Pair<int, int>(123, 111111));
 	expected.push_back(Pair<int, int>(0, 12934));
@@ -146,7 +146,6 @@ TestFunc test_funcs[] = {
 };
 
 MainLoop *test() {
-
 	int count = 0;
 	int passed = 0;
 

@@ -36,7 +36,6 @@
 #include "core/reference.h"
 
 class MonoGCHandle : public Reference {
-
 	GDCLASS(MonoGCHandle, Reference);
 
 	bool released;

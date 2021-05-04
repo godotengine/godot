@@ -392,7 +392,6 @@ void Document::ReadObjects() {
 
 	const ScopePtr sobjects = eobjects->Compound();
 	for (const ElementMap::value_type &iter : sobjects->Elements()) {
-
 		// extract ID
 		const TokenList &tok = iter.second->Tokens();
 

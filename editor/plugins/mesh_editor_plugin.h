@@ -40,7 +40,6 @@
 #include "scene/resources/material.h"
 
 class MeshEditor : public ViewportContainer {
-
 	GDCLASS(MeshEditor, ViewportContainer);
 
 	float rot_x;
@@ -82,7 +81,6 @@ public:
 };
 
 class MeshEditorPlugin : public EditorPlugin {
-
 	GDCLASS(MeshEditorPlugin, EditorPlugin);
 
 public:
