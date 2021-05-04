@@ -15,9 +15,9 @@ struct CullParams {
 
 	// optional components for different tests
 	Vector3 point;
-	BVH_ABB abb;
-	typename BVH_ABB::ConvexHull hull;
-	typename BVH_ABB::Segment segment;
+	BVHABB_CLASS abb;
+	typename BVHABB_CLASS::ConvexHull hull;
+	typename BVHABB_CLASS::Segment segment;
 
 	// when collision testing, non pairable moving items
 	// only need to be tested against the pairable tree.
@@ -200,7 +200,7 @@ bool _cull_segment_iterative(uint32_t p_node_id, CullParams &r_params) {
 
 			// test children individually
 			for (int n = 0; n < leaf.num_items; n++) {
-				const BVH_ABB &aabb = leaf.get_aabb(n);
+				const BVHABB_CLASS &aabb = leaf.get_aabb(n);
 
 				if (aabb.intersects_segment(r_params.segment)) {
 					uint32_t child_id = leaf.get_item_ref_id(n);
@@ -214,7 +214,7 @@ bool _cull_segment_iterative(uint32_t p_node_id, CullParams &r_params) {
 			for (int n = 0; n < tnode.num_children; n++) {
 
 				uint32_t child_id = tnode.children[n];
-				const BVH_ABB &child_abb = _nodes[child_id].aabb;
+				const BVHABB_CLASS &child_abb = _nodes[child_id].aabb;
 
 				if (child_abb.intersects_segment(r_params.segment)) {
 
@@ -339,7 +339,7 @@ bool _cull_aabb_iterative(uint32_t p_node_id, CullParams &r_params, bool p_fully
 				}
 			} else {
 				for (int n = 0; n < leaf.num_items; n++) {
-					const BVH_ABB &aabb = leaf.get_aabb(n);
+					const BVHABB_CLASS &aabb = leaf.get_aabb(n);
 
 					if (aabb.intersects(r_params.abb)) {
 						uint32_t child_id = leaf.get_item_ref_id(n);
@@ -355,7 +355,7 @@ bool _cull_aabb_iterative(uint32_t p_node_id, CullParams &r_params, bool p_fully
 				for (int n = 0; n < tnode.num_children; n++) {
 
 					uint32_t child_id = tnode.children[n];
-					const BVH_ABB &child_abb = _nodes[child_id].aabb;
+					const BVHABB_CLASS &child_abb = _nodes[child_id].aabb;
 
 					if (child_abb.intersects(r_params.abb)) {
 						// is the node totally within the aabb?
@@ -421,15 +421,15 @@ bool _cull_convex_iterative(uint32_t p_node_id, CullParams &r_params, bool p_ful
 
 		if (!ccp.fully_within) {
 
-			typename BVH_ABB::IntersectResult res = tnode.aabb.intersects_convex(r_params.hull);
+			typename BVHABB_CLASS::IntersectResult res = tnode.aabb.intersects_convex(r_params.hull);
 
 			switch (res) {
 				default: {
 					continue; // miss, just move on to the next node in the stack
 				} break;
-				case BVH_ABB::IR_PARTIAL: {
+				case BVHABB_CLASS::IR_PARTIAL: {
 				} break;
-				case BVH_ABB::IR_FULL: {
+				case BVHABB_CLASS::IR_FULL: {
 					ccp.fully_within = true;
 				} break;
 			}
@@ -478,7 +478,7 @@ bool _cull_convex_iterative(uint32_t p_node_id, CullParams &r_params, bool p_ful
 				// test children individually
 				for (int n = 0; n < leaf.num_items; n++) {
 					//const Item &item = leaf.get_item(n);
-					const BVH_ABB &aabb = leaf.get_aabb(n);
+					const BVHABB_CLASS &aabb = leaf.get_aabb(n);
 
 					if (aabb.intersects_convex_optimized(r_params.hull, plane_ids, num_planes)) {
 						uint32_t child_id = leaf.get_item_ref_id(n);
@@ -496,7 +496,7 @@ bool _cull_convex_iterative(uint32_t p_node_id, CullParams &r_params, bool p_ful
 				uint32_t test_count = 0;
 
 				for (int n = 0; n < leaf.num_items; n++) {
-					const BVH_ABB &aabb = leaf.get_aabb(n);
+					const BVHABB_CLASS &aabb = leaf.get_aabb(n);
 
 					if (aabb.intersects_convex_partial(r_params.hull)) {
 						uint32_t child_id = leaf.get_item_ref_id(n);
@@ -511,7 +511,7 @@ bool _cull_convex_iterative(uint32_t p_node_id, CullParams &r_params, bool p_ful
 				// not BVH_CONVEX_CULL_OPTIMIZED
 				// test children individually
 				for (int n = 0; n < leaf.num_items; n++) {
-					const BVH_ABB &aabb = leaf.get_aabb(n);
+					const BVHABB_CLASS &aabb = leaf.get_aabb(n);
 
 					if (aabb.intersects_convex_partial(r_params.hull)) {
 						uint32_t child_id = leaf.get_item_ref_id(n);

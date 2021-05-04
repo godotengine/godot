@@ -30,7 +30,7 @@
 
 #include "broad_phase_2d_basic.h"
 
-BroadPhase2DBasic::ID BroadPhase2DBasic::create(CollisionObject2DSW *p_object_, int p_subindex) {
+BroadPhase2DBasic::ID BroadPhase2DBasic::create(CollisionObject2DSW *p_object_, int p_subindex, const Rect2 &p_aabb, bool p_static) {
 
 	current++;
 

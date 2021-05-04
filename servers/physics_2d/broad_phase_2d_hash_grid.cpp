@@ -307,7 +307,7 @@ void BroadPhase2DHashGrid::_exit_grid(Element *p_elem, const Rect2 &p_rect, bool
 	}
 }
 
-BroadPhase2DHashGrid::ID BroadPhase2DHashGrid::create(CollisionObject2DSW *p_object, int p_subindex) {
+BroadPhase2DHashGrid::ID BroadPhase2DHashGrid::create(CollisionObject2DSW *p_object, int p_subindex, const Rect2 &p_aabb, bool p_static) {
 
 	current++;
 
@@ -637,15 +637,15 @@ BroadPhase2DSW *BroadPhase2DHashGrid::_create() {
 
 BroadPhase2DHashGrid::BroadPhase2DHashGrid() {
 
-	hash_table_size = GLOBAL_DEF("physics/2d/bp_hash_table_size", 4096);
+	hash_table_size = GLOBAL_GET("physics/2d/bp_hash_table_size");
 	ProjectSettings::get_singleton()->set_custom_property_info("physics/2d/bp_hash_table_size", PropertyInfo(Variant::INT, "physics/2d/bp_hash_table_size", PROPERTY_HINT_RANGE, "0,8192,1,or_greater"));
 	hash_table_size = Math::larger_prime(hash_table_size);
 	hash_table = memnew_arr(PosBin *, hash_table_size);
 
-	cell_size = GLOBAL_DEF("physics/2d/cell_size", 128);
+	cell_size = GLOBAL_GET("physics/2d/cell_size");
 	ProjectSettings::get_singleton()->set_custom_property_info("physics/2d/cell_size", PropertyInfo(Variant::INT, "physics/2d/cell_size", PROPERTY_HINT_RANGE, "0,512,1,or_greater"));
 
-	large_object_min_surface = GLOBAL_DEF("physics/2d/large_object_surface_threshold_in_cells", 512);
+	large_object_min_surface = GLOBAL_GET("physics/2d/large_object_surface_threshold_in_cells");
 	ProjectSettings::get_singleton()->set_custom_property_info("physics/2d/large_object_surface_threshold_in_cells", PropertyInfo(Variant::INT, "physics/2d/large_object_surface_threshold_in_cells", PROPERTY_HINT_RANGE, "0,1024,1,or_greater"));
 
 	for (uint32_t i = 0; i < hash_table_size; i++)

@@ -21,7 +21,7 @@ void _logic_item_remove_and_reinsert(uint32_t p_ref_id) {
 	_current_tree = _handle_get_tree_id(temp_handle);
 
 	// remove and reinsert
-	BVH_ABB abb;
+	BVHABB_CLASS abb;
 	node_remove_item(p_ref_id, &abb);
 
 	// we must choose where to add to tree
@@ -32,8 +32,8 @@ void _logic_item_remove_and_reinsert(uint32_t p_ref_id) {
 }
 
 // from randy gaul balance function
-BVH_ABB _logic_abb_merge(const BVH_ABB &a, const BVH_ABB &b) {
-	BVH_ABB c = a;
+BVHABB_CLASS _logic_abb_merge(const BVHABB_CLASS &a, const BVHABB_CLASS &b) {
+	BVHABB_CLASS c = a;
 	c.merge(b);
 	return c;
 }
@@ -192,7 +192,7 @@ int32_t _logic_balance(int32_t iA) {
 }
 
 // either choose an existing node to add item to, or create a new node and return this
-uint32_t _logic_choose_item_add_node(uint32_t p_node_id, const BVH_ABB &p_aabb) {
+uint32_t _logic_choose_item_add_node(uint32_t p_node_id, const BVHABB_CLASS &p_aabb) {
 
 	while (true) {
 		BVH_ASSERT(p_node_id != BVHCommon::INVALID);

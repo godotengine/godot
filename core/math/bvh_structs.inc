@@ -31,7 +31,7 @@ struct ItemExtra {
 
 // this is an item OR a child node depending on whether a leaf node
 struct Item {
-	BVH_ABB aabb;
+	BVHABB_CLASS aabb;
 	uint32_t item_ref_id;
 };
 
@@ -43,12 +43,12 @@ private:
 	uint16_t dirty;
 	// separate data orientated lists for faster SIMD traversal
 	uint32_t item_ref_ids[MAX_ITEMS];
-	BVH_ABB aabbs[MAX_ITEMS];
+	BVHABB_CLASS aabbs[MAX_ITEMS];
 
 public:
 	// accessors
-	BVH_ABB &get_aabb(uint32_t p_id) { return aabbs[p_id]; }
-	const BVH_ABB &get_aabb(uint32_t p_id) const { return aabbs[p_id]; }
+	BVHABB_CLASS &get_aabb(uint32_t p_id) { return aabbs[p_id]; }
+	const BVHABB_CLASS &get_aabb(uint32_t p_id) const { return aabbs[p_id]; }
 
 	uint32_t &get_item_ref_id(uint32_t p_id) { return item_ref_ids[p_id]; }
 	const uint32_t &get_item_ref_id(uint32_t p_id) const { return item_ref_ids[p_id]; }
@@ -81,7 +81,7 @@ public:
 
 // tree node
 struct TNode {
-	BVH_ABB aabb;
+	BVHABB_CLASS aabb;
 	// either number of children if positive
 	// or leaf id if negative (leaf id 0 is disallowed)
 	union {
