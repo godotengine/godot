@@ -521,7 +521,7 @@ struct DollController : public Controller {
 	void receive_batch(const Vector<uint8_t> &p_data);
 	uint32_t receive_epoch(const Vector<uint8_t> &p_data);
 
-	uint32_t next_epoch(real_t p_delta);
+	uint32_t next_epoch();
 	void pause(uint32_t p_epoch);
 };
 

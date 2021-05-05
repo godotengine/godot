@@ -1365,7 +1365,7 @@ void DollController::ready() {
 }
 
 void DollController::process(real_t p_delta) {
-	const uint32_t frame_epoch = next_epoch(p_delta);
+	const uint32_t frame_epoch = next_epoch();
 
 	if (unlikely(frame_epoch == UINT32_MAX)) {
 		// Nothing to do.
@@ -1485,7 +1485,7 @@ uint32_t DollController::receive_epoch(const Vector<uint8_t> &p_data) {
 	return epoch;
 }
 
-uint32_t DollController::next_epoch(real_t p_delta) {
+uint32_t DollController::next_epoch() {
 	// TODO re-describe.
 	// This function regulates the epoch ID to process.
 	// The epoch is not simply increased by one because we need to make sure
