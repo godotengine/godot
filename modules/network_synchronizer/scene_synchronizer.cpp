@@ -833,7 +833,6 @@ void SceneSynchronizer::set_peer_networking_enable(int p_peer, bool p_enable) {
 }
 
 bool SceneSynchronizer::is_peer_networking_enable(int p_peer) const {
-
 	if (synchronizer_type == SYNCHRONIZER_TYPE_SERVER) {
 		if (p_peer == 1) {
 			// Server is always enabled.
@@ -1001,7 +1000,6 @@ void SceneSynchronizer::update_peers() {
 	for (OAHashMap<int, NetUtility::PeerData>::Iterator it = peer_data.iter();
 			it.valid;
 			it = peer_data.next_iter(it)) {
-
 		// Validate the peer.
 		if (it.value->controller_id != UINT32_MAX) {
 			NetUtility::NodeData *nd = get_node_data(it.value->controller_id);
@@ -2349,7 +2347,6 @@ void ClientSynchronizer::process_controllers_recovery(real_t p_delta) {
 		NET_DEBUG_PRINT("Recover input: " + itos(checkable_input_id) + " - Last input: " + itos(player_controller->get_stored_input_id(-1)));
 
 		if (recover_controller) {
-
 			// Put the controlled and the controllers_node_data into the nodes to
 			// rewind.
 			// Note, the controller stuffs are added here to ensure that if the
@@ -2851,7 +2848,7 @@ void ClientSynchronizer::set_enabled(bool p_enabled) {
 	if (enabled == p_enabled) {
 		// Nothing to do.
 		return;
-       }
+	}
 
 	if (p_enabled) {
 		// Postpone enabling when the next server snapshot is received.
@@ -2865,15 +2862,14 @@ void ClientSynchronizer::set_enabled(bool p_enabled) {
 }
 
 bool ClientSynchronizer::parse_snapshot(Variant p_snapshot) {
-
 	if (want_to_enable) {
 		if (enabled) {
 			NET_DEBUG_ERR("At this point the client is supposed to be disabled. This is a bug that must be solved.");
 		}
 		// The netwroking is disabled and we can re-enable it.
-               	enabled = true;
-               	want_to_enable = false;
-               	scene_synchronizer->emit_signal("sync_started");
+		enabled = true;
+		want_to_enable = false;
+		scene_synchronizer->emit_signal("sync_started");
 	}
 
 	need_full_snapshot_notified = false;

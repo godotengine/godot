@@ -138,7 +138,7 @@ private:
 	OAHashMap<int, NetUtility::PeerData> peer_data;
 
 	bool generate_id = false;
-	
+
 	// All possible registered nodes.
 	LocalVector<NetUtility::NodeData *> node_data;
 
@@ -281,7 +281,7 @@ private:
 	void reset_controller(NetUtility::NodeData *p_controller);
 
 	void process();
-	
+
 #ifdef DEBUG_ENABLED
 	void validate_nodes();
 #endif
