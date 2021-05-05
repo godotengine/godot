@@ -75,6 +75,8 @@ void EditorLog::_notification(int p_what) {
 		collapse_button->set_icon(get_theme_icon("CombineLines", "EditorIcons"));
 		show_search_button->set_icon(get_theme_icon("Search", "EditorIcons"));
 
+		_load_state();
+
 	} else if (p_what == NOTIFICATION_THEME_CHANGED) {
 		Ref<Font> df_output_code = get_theme_font("output_source", "EditorFonts");
 		if (df_output_code.is_valid()) {
@@ -89,7 +91,54 @@ void EditorLog::_notification(int p_what) {
 
 void EditorLog::_set_collapse(bool p_collapse) {
 	collapse = p_collapse;
+	_start_state_save_timer();
 	_rebuild_log();
+}
+
+void EditorLog::_start_state_save_timer() {
+	if (!is_loading_state) {
+		save_state_timer->start();
+	}
+}
+
+void EditorLog::_save_state() {
+	Ref<ConfigFile> config;
+	config.instance();
+	// Load and amend existing config if it exists.
+	config->load(EditorSettings::get_singleton()->get_project_settings_dir().plus_file("editor_layout.cfg"));
+
+	const String section = "editor_log";
+	for (Map<MessageType, LogFilter *>::Element *E = type_filter_map.front(); E; E = E->next()) {
+		config->set_value(section, "log_filter_" + itos(E->key()), E->get()->is_active());
+	}
+
+	config->set_value(section, "collapse", collapse);
+	config->set_value(section, "show_search", search_box->is_visible());
+
+	config->save(EditorSettings::get_singleton()->get_project_settings_dir().plus_file("editor_layout.cfg"));
+}
+
+void EditorLog::_load_state() {
+	is_loading_state = true;
+
+	Ref<ConfigFile> config;
+	config.instance();
+	Error err = config->load(EditorSettings::get_singleton()->get_project_settings_dir().plus_file("editor_layout.cfg"));
+
+	if (err == OK) {
+		const String section = "editor_log";
+		for (Map<MessageType, LogFilter *>::Element *E = type_filter_map.front(); E; E = E->next()) {
+			E->get()->set_active(config->get_value(section, "log_filter_" + itos(E->key()), false));
+		}
+
+		collapse = config->get_value(section, "collapse", false);
+		collapse_button->set_pressed(collapse);
+		bool show_search = config->get_value(section, "show_search", true);
+		search_box->set_visible(show_search);
+		show_search_button->set_pressed(show_search);
+	}
+
+	is_loading_state = false;
 }
 
 void EditorLog::_clear_request() {
@@ -175,7 +224,7 @@ void EditorLog::_rebuild_log() {
 
 void EditorLog::_add_log_line(LogMessage &p_message, bool p_replace_previous) {
 	// Only add the message to the log if it passes the filters.
-	bool filter_active = type_filter_map[p_message.type]->active;
+	bool filter_active = type_filter_map[p_message.type]->is_active();
 	String search_text = search_box->get_text();
 	bool search_match = search_text == String() || p_message.text.findn(search_text) > -1;
 
@@ -231,7 +280,8 @@ void EditorLog::_add_log_line(LogMessage &p_message, bool p_replace_previous) {
 }
 
 void EditorLog::_set_filter_active(bool p_active, MessageType p_message_type) {
-	type_filter_map[p_message_type]->active = p_active;
+	type_filter_map[p_message_type]->set_active(p_active);
+	_start_state_save_timer();
 	_rebuild_log();
 }
 
@@ -240,6 +290,7 @@ void EditorLog::_set_search_visible(bool p_visible) {
 	if (p_visible) {
 		search_box->grab_focus();
 	}
+	_start_state_save_timer();
 }
 
 void EditorLog::_search_changed(const String &p_text) {
@@ -258,6 +309,12 @@ void EditorLog::_bind_methods() {
 }
 
 EditorLog::EditorLog() {
+	save_state_timer = memnew(Timer);
+	save_state_timer->set_wait_time(2);
+	save_state_timer->set_one_shot(true);
+	save_state_timer->connect("timeout", callable_mp(this, &EditorLog::_save_state));
+	add_child(save_state_timer);
+
 	HBoxContainer *hb = this;
 
 	VBoxContainer *vb_left = memnew(VBoxContainer);

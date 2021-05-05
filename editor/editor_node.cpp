@@ -4362,6 +4362,8 @@ void EditorNode::_save_docks() {
 	}
 	Ref<ConfigFile> config;
 	config.instance();
+	// Load and amend existing config if it exists.
+	config->load(EditorSettings::get_singleton()->get_project_settings_dir().plus_file("editor_layout.cfg"));
 
 	_save_docks_to_config(config, "docks");
 	_save_open_scenes_to_config(config, "EditorNode");

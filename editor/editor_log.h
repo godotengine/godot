@@ -72,11 +72,11 @@ private:
 	private:
 		// Force usage of set method since it has functionality built-in.
 		int message_count = 0;
+		bool active = true;
 
 	public:
 		MessageType type;
 		Button *toggle_button = nullptr;
-		bool active = true;
 
 		void initialize_button(const String &p_tooltip, Callable p_toggled_callback) {
 			toggle_button = memnew(Button);
@@ -98,6 +98,15 @@ private:
 		void set_message_count(int p_count) {
 			message_count = p_count;
 			toggle_button->set_text(itos(message_count));
+		}
+
+		bool is_active() {
+			return active;
+		}
+
+		void set_active(bool p_active) {
+			toggle_button->set_pressed(p_active);
+			active = p_active;
 		}
 
 		LogFilter(MessageType p_type) :
@@ -124,6 +133,9 @@ private:
 	// Warnings or Errors are encounetered.
 	Button *tool_button;
 
+	bool is_loading_state = false; // Used to disable saving requests while loading (some signals from buttons will try trigger a save, which happens during loading).
+	Timer *save_state_timer;
+
 	static void _error_handler(void *p_self, const char *p_func, const char *p_file, int p_line, const char *p_error, const char *p_errorexp, ErrorHandlerType p_type);
 
 	ErrorHandlerList eh;
@@ -146,6 +158,10 @@ private:
 	void _reset_message_counts();
 
 	void _set_collapse(bool p_collapse);
+
+	void _start_state_save_timer();
+	void _save_state();
+	void _load_state();
 
 protected:
 	static void _bind_methods();
