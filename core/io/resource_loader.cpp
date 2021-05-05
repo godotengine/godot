@@ -138,18 +138,6 @@ public:
 	ResourceInteractiveLoaderDefault() {}
 };
 
-Ref<ResourceInteractiveLoader> ResourceFormatLoader::load_interactive(const String &p_path, const String &p_original_path, Error *r_error) {
-
-	//either this
-	Ref<Resource> res = load(p_path, p_original_path, r_error);
-	if (res.is_null())
-		return Ref<ResourceInteractiveLoader>();
-
-	Ref<ResourceInteractiveLoaderDefault> ril = Ref<ResourceInteractiveLoaderDefault>(memnew(ResourceInteractiveLoaderDefault));
-	ril->resource = res;
-	return ril;
-}
-
 bool ResourceFormatLoader::exists(const String &p_path) const {
 	return FileAccess::exists(p_path); //by default just check file
 }
@@ -168,25 +156,41 @@ void ResourceFormatLoader::get_recognized_extensions(List<String> *p_extensions)
 	}
 }
 
-RES ResourceFormatLoader::load(const String &p_path, const String &p_original_path, Error *r_error) {
+// Warning: Derived classes must override either `load` or `load_interactive`. The base code
+// here can trigger an infinite recursion otherwise, since `load` calls `load_interactive`
+// vice versa.
 
+Ref<ResourceInteractiveLoader> ResourceFormatLoader::load_interactive(const String &p_path, const String &p_original_path, Error *r_error) {
+	// Warning: See previous note about the risk of infinite recursion.
+	Ref<Resource> res = load(p_path, p_original_path, r_error);
+	if (res.is_null()) {
+		return Ref<ResourceInteractiveLoader>();
+	}
+
+	Ref<ResourceInteractiveLoaderDefault> ril = Ref<ResourceInteractiveLoaderDefault>(memnew(ResourceInteractiveLoaderDefault));
+	ril->resource = res;
+	return ril;
+}
+
+RES ResourceFormatLoader::load(const String &p_path, const String &p_original_path, Error *r_error) {
+	// Check user-defined loader if there's any. Hard fail if it returns an error.
 	if (get_script_instance() && get_script_instance()->has_method("load")) {
 		Variant res = get_script_instance()->call("load", p_path, p_original_path);
 
-		if (res.get_type() == Variant::INT) {
-
-			if (r_error)
+		if (res.get_type() == Variant::INT) { // Error code, abort.
+			if (r_error) {
 				*r_error = (Error)res.operator int64_t();
-
-		} else {
-
-			if (r_error)
+			}
+			return RES();
+		} else { // Success, pass on result.
+			if (r_error) {
 				*r_error = OK;
+			}
 			return res;
 		}
 	}
 
-	//or this must be implemented
+	// Warning: See previous note about the risk of infinite recursion.
 	Ref<ResourceInteractiveLoader> ril = load_interactive(p_path, p_original_path, r_error);
 	if (!ril.is_valid())
 		return RES();
