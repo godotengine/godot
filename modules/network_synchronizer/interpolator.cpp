@@ -58,8 +58,6 @@ void Interpolator::_bind_methods() {
 	BIND_ENUM_CONSTANT(FALLBACK_OLD_OR_NEAREST);
 }
 
-Interpolator::Interpolator() {}
-
 void Interpolator::clear() {
 	epochs.clear();
 	buffer.clear();

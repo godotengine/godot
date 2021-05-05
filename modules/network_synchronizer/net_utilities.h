@@ -275,7 +275,7 @@ struct VarData {
 	bool enabled = false;
 	Vector<uint32_t> change_listeners;
 
-	VarData();
+	VarData() {}
 	VarData(StringName p_name);
 	VarData(NetVarId p_id, StringName p_name, Variant p_val, bool p_skip_rewinding, bool p_enabled);
 
@@ -306,7 +306,7 @@ struct NodeData {
 	// This is valid to use only inside the process function.
 	Node *node = nullptr;
 
-	NodeData();
+	NodeData() {}
 
 	void process(const real_t p_delta) const;
 };

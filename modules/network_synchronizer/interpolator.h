@@ -73,7 +73,7 @@ private:
 	static void _bind_methods();
 
 public:
-	Interpolator();
+	Interpolator() {}
 
 	void clear();
 	void reset();

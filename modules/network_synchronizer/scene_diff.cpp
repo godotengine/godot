@@ -40,9 +40,6 @@
 void SceneDiff::_bind_methods() {
 }
 
-SceneDiff::SceneDiff() {
-}
-
 void SceneDiff::start_tracking_scene_changes(
 		const LocalVector<NetUtility::NodeData *> &p_nodes) {
 	start_tracking_count += 1;

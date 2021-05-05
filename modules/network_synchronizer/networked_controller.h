@@ -512,7 +512,6 @@ struct DollController : public Controller {
 	NetUtility::StatisticalRingBuffer<uint32_t> network_watcher;
 
 	DollController(NetworkedController *p_node);
-	~DollController();
 
 	virtual void ready() override;
 	void process(real_t p_delta);

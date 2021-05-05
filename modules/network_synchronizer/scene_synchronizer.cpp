@@ -1625,9 +1625,6 @@ Synchronizer::Synchronizer(SceneSynchronizer *p_node) :
 		scene_synchronizer(p_node) {
 }
 
-Synchronizer::~Synchronizer() {
-}
-
 NoNetSynchronizer::NoNetSynchronizer(SceneSynchronizer *p_node) :
 		Synchronizer(p_node) {}
 

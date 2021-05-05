@@ -1354,9 +1354,6 @@ DollController::DollController(NetworkedController *p_node) :
 		network_watcher(node->get_doll_connection_stats_frame_span(), 0) {
 }
 
-DollController::~DollController() {
-}
-
 void DollController::ready() {
 	interpolator.reset();
 	node->call(

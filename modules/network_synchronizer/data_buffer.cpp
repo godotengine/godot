@@ -126,9 +126,6 @@ void DataBuffer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("dry"), &DataBuffer::dry);
 }
 
-DataBuffer::DataBuffer() :
-		Object() {}
-
 DataBuffer::DataBuffer(const DataBuffer &p_other) :
 		Object(),
 		metadata_size(p_other.metadata_size),

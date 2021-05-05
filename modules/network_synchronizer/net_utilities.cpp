@@ -40,8 +40,6 @@ bool NetUtility::ChangeListener::operator==(const ChangeListener &p_other) const
 	return object_id == p_other.object_id && method == p_other.method;
 }
 
-NetUtility::VarData::VarData() {}
-
 NetUtility::VarData::VarData(StringName p_name) {
 	var.name = p_name;
 }
@@ -61,8 +59,6 @@ bool NetUtility::VarData::operator==(const NetUtility::VarData &p_other) const {
 bool NetUtility::VarData::operator<(const VarData &p_other) const {
 	return id < p_other.id;
 }
-
-NetUtility::NodeData::NodeData() {}
 
 void NetUtility::NodeData::process(const real_t p_delta) const {
 	const Variant var_delta = p_delta;
