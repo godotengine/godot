@@ -48,7 +48,8 @@
 #include "servers/rendering/renderer_scene_render.h"
 #include "servers/rendering/rendering_device.h"
 
-// Forward declare RendererSceneRenderRD so we can pass it into some of our methods, these classes are pretty tightly bound
+// Forward declare RenderDataRD and RendererSceneRenderRD so we can pass it into some of our methods, these classes are pretty tightly bound
+struct RenderDataRD;
 class RendererSceneRenderRD;
 
 class RendererSceneGIRD {
@@ -529,7 +530,7 @@ public:
 		void debug_draw(const CameraMatrix &p_projection, const Transform &p_transform, int p_width, int p_height, RID p_render_target, RID p_texture);
 		void debug_probes(RD::DrawListID p_draw_list, RID p_framebuffer, const CameraMatrix &p_camera_with_transform);
 
-		void pre_process_gi(const Transform &p_transform, RendererSceneRenderRD *p_scene_render);
+		void pre_process_gi(const Transform &p_transform, RenderDataRD *p_render_data, RendererSceneRenderRD *p_scene_render);
 		void render_region(RID p_render_buffers, int p_region, const PagedArray<RendererSceneRender::GeometryInstance *> &p_instances, RendererSceneRenderRD *p_scene_render);
 		void render_static_lights(RID p_render_buffers, uint32_t p_cascade_count, const uint32_t *p_cascade_indices, const PagedArray<RID> *p_positional_light_cull_result, RendererSceneRenderRD *p_scene_render);
 	};
