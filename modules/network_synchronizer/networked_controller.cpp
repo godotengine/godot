@@ -492,8 +492,9 @@ void NetworkedController::__on_sync_paused() {
 void NetworkedController::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
-			if (Engine::get_singleton()->is_editor_hint())
+			if (Engine::get_singleton()->is_editor_hint()) {
 				return;
+			}
 
 #ifdef DEBUG_ENABLED
 			// This can't happen, since only the doll are processed here.
@@ -504,8 +505,9 @@ void NetworkedController::_notification(int p_what) {
 		} break;
 #ifdef DEBUG_ENABLED
 		case NOTIFICATION_READY: {
-			if (Engine::get_singleton()->is_editor_hint())
+			if (Engine::get_singleton()->is_editor_hint()) {
 				return;
+			}
 
 			ERR_FAIL_COND_MSG(has_method("collect_inputs") == false, "In your script you must inherit the virtual method `collect_inputs` to correctly use the `NetworkedController`.");
 			ERR_FAIL_COND_MSG(has_method("controller_process") == false, "In your script you must inherit the virtual method `controller_process` to correctly use the `NetworkedController`.");
