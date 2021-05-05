@@ -136,8 +136,6 @@ DataBuffer::DataBuffer(const DataBuffer &p_other) :
 
 DataBuffer::DataBuffer(const BitArray &p_buffer) :
 		Object(),
-		metadata_size(0),
-		bit_offset(0),
 		bit_size(p_buffer.size_in_bits()),
 		is_reading(true),
 		buffer(p_buffer) {}
