@@ -36,9 +36,7 @@
 
 #include "core/config/engine.h"
 #include "core/io/marshalls.h"
-#include "core/os/os.h"
 #include "scene_synchronizer.h"
-#include <stdint.h>
 #include <algorithm>
 
 #define METADATA_SIZE 1

@@ -34,8 +34,6 @@
 
 #include "scene/main/node.h"
 
-#include "core/math/transform.h"
-#include "core/string/node_path.h"
 #include "data_buffer.h"
 #include "interpolator.h"
 #include "net_utilities.h"

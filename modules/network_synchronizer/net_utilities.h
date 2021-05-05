@@ -35,12 +35,9 @@
 #ifndef NET_UTILITIES_H
 #define NET_UTILITIES_H
 
-#include "core/math/math_defs.h"
 #include "core/math/math_funcs.h"
-#include "core/object/reference.h"
 #include "core/templates/local_vector.h"
-#include "core/templates/oa_hash_map.h"
-#include "core/typedefs.h"
+#include "core/variant/variant.h"
 
 #ifdef DEBUG_ENABLED
 #define NET_DEBUG_PRINT(msg) \

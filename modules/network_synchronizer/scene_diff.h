@@ -35,9 +35,7 @@
 #ifndef SCENE_DIFF_H
 #define SCENE_DIFF_H
 
-#include "core/object/object.h"
-#include "core/templates/local_vector.h"
-#include "core/templates/oa_hash_map.h"
+#include "core/object/class_db.h"
 #include "net_utilities.h"
 
 class SceneSynchronizer;

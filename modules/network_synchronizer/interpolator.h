@@ -36,7 +36,6 @@
 #define INTERPOLATOR_H
 
 #include "core/object/class_db.h"
-#include "core/object/object.h"
 #include "core/templates/local_vector.h"
 
 class Interpolator : public Object {

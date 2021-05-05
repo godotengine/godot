@@ -34,7 +34,6 @@
 
 #include "net_utilities.h"
 
-#include "core/variant/variant.h"
 #include "scene/main/node.h"
 
 bool NetUtility::ChangeListener::operator==(const ChangeListener &p_other) const {
