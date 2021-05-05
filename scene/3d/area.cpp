@@ -204,6 +204,9 @@ void Area::_clear_monitoring() {
 				continue;
 			//ERR_CONTINUE(!node);
 
+			node->disconnect(SceneStringNames::get_singleton()->tree_entered, this, SceneStringNames::get_singleton()->_body_enter_tree);
+			node->disconnect(SceneStringNames::get_singleton()->tree_exiting, this, SceneStringNames::get_singleton()->_body_exit_tree);
+
 			if (!E->get().in_tree)
 				continue;
 
@@ -212,9 +215,6 @@ void Area::_clear_monitoring() {
 			}
 
 			emit_signal(SceneStringNames::get_singleton()->body_exited, node);
-
-			node->disconnect(SceneStringNames::get_singleton()->tree_entered, this, SceneStringNames::get_singleton()->_body_enter_tree);
-			node->disconnect(SceneStringNames::get_singleton()->tree_exiting, this, SceneStringNames::get_singleton()->_body_exit_tree);
 		}
 	}
 
@@ -231,6 +231,9 @@ void Area::_clear_monitoring() {
 				continue;
 			//ERR_CONTINUE(!node);
 
+			node->disconnect(SceneStringNames::get_singleton()->tree_entered, this, SceneStringNames::get_singleton()->_area_enter_tree);
+			node->disconnect(SceneStringNames::get_singleton()->tree_exiting, this, SceneStringNames::get_singleton()->_area_exit_tree);
+
 			if (!E->get().in_tree)
 				continue;
 
@@ -239,9 +242,6 @@ void Area::_clear_monitoring() {
 			}
 
 			emit_signal(SceneStringNames::get_singleton()->area_exited, obj);
-
-			node->disconnect(SceneStringNames::get_singleton()->tree_entered, this, SceneStringNames::get_singleton()->_area_enter_tree);
-			node->disconnect(SceneStringNames::get_singleton()->tree_exiting, this, SceneStringNames::get_singleton()->_area_exit_tree);
 		}
 	}
 }
