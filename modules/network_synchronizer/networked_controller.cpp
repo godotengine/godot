@@ -34,7 +34,7 @@
 
 #include "networked_controller.h"
 
-#include "core/engine.h"
+#include "core/config/engine.h"
 #include "core/io/marshalls.h"
 #include "core/os/os.h"
 #include "scene_synchronizer.h"
@@ -657,7 +657,7 @@ void ServerController::receive_inputs(Vector<uint8_t> p_data) {
 	pir.get_buffer_mut().get_bytes_mut() = p_data;
 	// TODO this is for 3.2
 	//pir.get_buffer_mut().resize_in_bytes(data_len);
-	//copymem(pir.get_buffer_mut().get_bytes_mut().ptrw(), p_data.ptr(), data_len);
+	//memcpy(pir.get_buffer_mut().get_bytes_mut().ptrw(), p_data.ptr(), data_len);
 
 	while (ofs < data_len) {
 		ERR_FAIL_COND_MSG(ofs + 1 > data_len, "The arrived packet size doesn't meet the expected size.");
@@ -700,7 +700,7 @@ void ServerController::receive_inputs(Vector<uint8_t> p_data) {
 			if (found == false) {
 				rfs.buffer_size_bit = input_size_in_bits;
 				rfs.inputs_buffer.get_bytes_mut().resize(input_size_padded);
-				copymem(
+				memcpy(
 						rfs.inputs_buffer.get_bytes_mut().ptrw(),
 						p_data.ptr() + ofs,
 						input_size_padded);
@@ -1313,7 +1313,7 @@ void PlayerController::send_frame_input_buffer_to_server() {
 			// Write the inputs
 			const int buffer_size = frames_snapshot[i].inputs_buffer.get_bytes().size();
 			MAKE_ROOM(buffer_size);
-			copymem(
+			memcpy(
 					cached_packet_data.ptr() + ofs,
 					frames_snapshot[i].inputs_buffer.get_bytes().ptr(),
 					buffer_size);
@@ -1336,7 +1336,7 @@ void PlayerController::send_frame_input_buffer_to_server() {
 	Vector<uint8_t> packet_data;
 	packet_data.resize(ofs);
 
-	copymem(
+	memcpy(
 			packet_data.ptrw(),
 			cached_packet_data.ptr(),
 			ofs);

@@ -32,7 +32,8 @@
 	@author AndreaCatania
 */
 
-#include "core/object.h"
+#include "core/object/object.h"
+#include "core/object/class_db.h"
 
 #include "bit_array.h"
 

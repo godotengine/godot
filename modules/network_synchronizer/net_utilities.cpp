@@ -34,7 +34,7 @@
 
 #include "net_utilities.h"
 
-#include "core/variant.h"
+#include "core/variant/variant.h"
 #include "scene/main/node.h"
 
 bool NetUtility::ChangeListener::operator==(const ChangeListener &p_other) const {
@@ -81,7 +81,7 @@ NetUtility::Snapshot::operator String() const {
 
 	for (int net_node_id = 0; net_node_id < node_vars.size(); net_node_id += 1) {
 		s += "\nNode Data: " + itos(net_node_id);
-		for (int i = 0; i < it.value->size(); i += 1) {
+		for (int i = 0; i < node_vars[net_node_id].size(); i += 1) {
 			s += "\n|- Variable: ";
 			s += node_vars[net_node_id][i].name;
 			s += " = ";

@@ -35,8 +35,9 @@
 #ifndef INTERPOLATOR_H
 #define INTERPOLATOR_H
 
-#include "core/local_vector.h"
-#include "core/object.h"
+#include "core/templates/local_vector.h"
+#include "core/object/object.h"
+#include "core/object/class_db.h"
 
 class Interpolator : public Object {
 	GDCLASS(Interpolator, Object);

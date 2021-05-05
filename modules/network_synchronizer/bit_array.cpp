@@ -35,7 +35,7 @@
 #include "bit_array.h"
 
 #include "core/math/math_funcs.h"
-#include "core/ustring.h"
+#include "core/string/ustring.h"
 
 BitArray::BitArray(uint32_t p_initial_size_in_bit) {
 	resize_in_bits(p_initial_size_in_bit);

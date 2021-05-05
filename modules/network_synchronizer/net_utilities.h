@@ -35,11 +35,11 @@
 #ifndef NET_UTILITIES_H
 #define NET_UTILITIES_H
 
-#include "core/local_vector.h"
+#include "core/templates/local_vector.h"
 #include "core/math/math_defs.h"
 #include "core/math/math_funcs.h"
-#include "core/oa_hash_map.h"
-#include "core/reference.h"
+#include "core/templates/oa_hash_map.h"
+#include "core/object/reference.h"
 #include "core/typedefs.h"
 
 #ifdef DEBUG_ENABLED

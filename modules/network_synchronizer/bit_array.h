@@ -32,7 +32,7 @@
 	@author AndreaCatania
 */
 
-#include "core/vector.h"
+#include "core/templates/vector.h"
 
 #ifndef BITARRAY_H
 #define BITARRAY_H

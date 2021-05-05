@@ -36,7 +36,7 @@
 
 #include "interpolator.h"
 
-#include "core/ustring.h"
+#include "core/string/ustring.h"
 
 void Interpolator::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("register_variable", "default", "fallback"), &Interpolator::register_variable);

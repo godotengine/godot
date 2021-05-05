@@ -263,7 +263,7 @@ uint32_t SceneSynchronizer::register_node_gdscript(Node *p_node) {
 }
 
 void SceneSynchronizer::unregister_node(Node *p_node) {
-	ERR_FAIL_COND(p_node == nullptr)
+	ERR_FAIL_COND(p_node == nullptr);
 
 	NetUtility::NodeData *nd = find_node_data(p_node);
 	if (unlikely(nd == nullptr)) {
@@ -1147,7 +1147,7 @@ void SceneSynchronizer::change_events_flush() {
 			vars_ptr[v] = vars.ptr() + v;
 		}
 
-		Variant::CallError e;
+		Callable::CallError e;
 		obj->call(listener.method, vars_ptr.ptr(), vars_ptr.size(), e);
 	}
 
@@ -1463,6 +1463,7 @@ void SceneSynchronizer::validate_nodes() {
 		}
 	}
 }
+#endif
 
 void SceneSynchronizer::purge_node_dependencies() {
 	if (is_client() == false) {
@@ -1767,7 +1768,7 @@ void ServerSynchronizer::on_variable_changed(NetUtility::NodeData *p_node_data, 
 }
 
 void ServerSynchronizer::process_snapshot_notificator(real_t p_delta) {
-	if (scene_synchronizer->peer_data.empty()) {
+	if (scene_synchronizer->peer_data.is_empty()) {
 		// No one is listening.
 		return;
 	}
@@ -1913,7 +1914,7 @@ void ServerSynchronizer::generate_snapshot_node_data(
 		snap_node_data = p_node_data->id;
 	}
 
-	const bool node_has_changes = p_force_full_snapshot || (change != nullptr && change->vars.empty() == false);
+	const bool node_has_changes = p_force_full_snapshot || (change != nullptr && change->vars.is_empty() == false);
 
 	if (p_node_data->is_controller) {
 		NetworkedController *controller = static_cast<NetworkedController *>(p_node_data->node);
@@ -2305,7 +2306,6 @@ void ClientSynchronizer::process_controllers_recovery(real_t p_delta) {
 		}
 
 		bool recover_this_node = false;
-		const Vector<NetUtility::VarData> *c_vars = client_snapshots.front().node_vars.lookup_ptr(*s_snap_it.key);
 		if (net_node_id >= uint32_t(client_snapshots.front().node_vars.size())) {
 			NET_DEBUG_PRINT("Rewind is needed because the client snapshot doesn't contain this node: " + rew_node_data->node->get_path());
 			recover_this_node = true;
