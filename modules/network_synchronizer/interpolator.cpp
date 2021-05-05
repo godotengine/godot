@@ -88,7 +88,7 @@ void Interpolator::set_variable_default(int p_var_id, const Variant &p_default) 
 	variables[p_var_id].default_value = p_default;
 }
 
-void Interpolator::set_variable_custom_interpolator(int p_var_id, Object *p_object, StringName p_function_name) {
+void Interpolator::set_variable_custom_interpolator(int p_var_id, Object *p_object, const StringName &p_function_name) {
 	ERR_FAIL_COND_MSG(init_phase == false, "You cannot add another variable at this point.");
 	ERR_FAIL_INDEX_MSG(p_var_id, int(variables.size()), "The variable_id passed is unknown.");
 	variables[p_var_id].fallback = FALLBACK_CUSTOM_INTERPOLATOR;
@@ -151,7 +151,7 @@ void Interpolator::begin_write(uint32_t p_epoch) {
 	}
 }
 
-void Interpolator::epoch_insert(int p_var_id, Variant p_value) {
+void Interpolator::epoch_insert(int p_var_id, const Variant &p_value) {
 	ERR_FAIL_COND_MSG(write_position == UINT32_MAX, "Please call `begin_write` before.");
 	ERR_FAIL_INDEX_MSG(p_var_id, int(variables.size()), "The variable_id passed is unknown.");
 	const uint32_t var_id(p_var_id);

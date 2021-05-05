@@ -537,7 +537,7 @@ Vector3 DataBuffer::read_normalized_vector3(CompressionLevel p_compression_level
 	return Vector3(decompressed_x_axis, decompressed_y_axis, decompressed_z_axis);
 }
 
-Variant DataBuffer::add_variant(Variant p_input) {
+Variant DataBuffer::add_variant(const Variant &p_input) {
 	// TODO consider to use a method similar to `_encode_and_compress_variant`
 	// to compress the encoded data a bit.
 

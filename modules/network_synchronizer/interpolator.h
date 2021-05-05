@@ -80,13 +80,13 @@ public:
 
 	int register_variable(const Variant &p_default, Fallback p_fallback);
 	void set_variable_default(int p_var_id, const Variant &p_default);
-	void set_variable_custom_interpolator(int p_var_id, Object *p_object, StringName p_function_name);
+	void set_variable_custom_interpolator(int p_var_id, Object *p_object, const StringName &p_function_name);
 	void terminate_init();
 
 	/// Returns the epochs stored.
 	uint32_t known_epochs_count() const;
 	void begin_write(uint32_t p_epoch);
-	void epoch_insert(int p_var_id, Variant p_value);
+	void epoch_insert(int p_var_id, const Variant &p_value);
 	void end_write();
 
 	Vector<Variant> pop_epoch(uint32_t p_epoch, real_t p_fraction);

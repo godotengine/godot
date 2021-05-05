@@ -445,12 +445,12 @@ bool NetworkedController::has_scene_synchronizer() const {
 	return scene_synchronizer;
 }
 
-void NetworkedController::_rpc_server_send_inputs(Vector<uint8_t> p_data) {
+void NetworkedController::_rpc_server_send_inputs(const Vector<uint8_t> &p_data) {
 	ERR_FAIL_COND(is_server_controller() == false);
 	static_cast<ServerController *>(controller)->receive_inputs(p_data);
 }
 
-void NetworkedController::_rpc_send_tick_additional_speed(Vector<uint8_t> p_data) {
+void NetworkedController::_rpc_send_tick_additional_speed(const Vector<uint8_t> &p_data) {
 	ERR_FAIL_COND(is_player_controller() == false);
 	ERR_FAIL_COND(p_data.size() != 1);
 
@@ -467,7 +467,7 @@ void NetworkedController::_rpc_doll_notify_sync_pause(uint32_t p_epoch) {
 	static_cast<DollController *>(controller)->pause(p_epoch);
 }
 
-void NetworkedController::_rpc_doll_send_epoch_batch(Vector<uint8_t> p_data) {
+void NetworkedController::_rpc_doll_send_epoch_batch(const Vector<uint8_t> &p_data) {
 	ERR_FAIL_COND_MSG(is_doll_controller() == false, "Only dolls are supposed to receive this function call.");
 	ERR_FAIL_COND_MSG(p_data.size() <= 0, "It's not supposed to receive a 0 size data.");
 
@@ -624,7 +624,7 @@ void ServerController::deactivate_peer(int p_peer) {
 	}
 }
 
-void ServerController::receive_inputs(Vector<uint8_t> p_data) {
+void ServerController::receive_inputs(const Vector<uint8_t> &p_data) {
 	// The packet is composed as follow:
 	// |- The following four bytes for the first input ID.
 	// \- Array of inputs:
@@ -1381,7 +1381,7 @@ uint32_t DollController::get_current_input_id() const {
 	return current_epoch;
 }
 
-void DollController::receive_batch(Vector<uint8_t> p_data) {
+void DollController::receive_batch(const Vector<uint8_t> &p_data) {
 	if (unlikely(node->get_scene_synchronizer()->is_enabled() == false)) {
 		// The sync is disabled, nothing to do.
 		return;
@@ -1465,7 +1465,7 @@ void DollController::receive_batch(Vector<uint8_t> p_data) {
 #endif
 }
 
-uint32_t DollController::receive_epoch(Vector<uint8_t> p_data) {
+uint32_t DollController::receive_epoch(const Vector<uint8_t> &p_data) {
 	DataBuffer buffer(p_data);
 	buffer.begin_read();
 	const uint32_t epoch = buffer.read_int(DataBuffer::COMPRESSION_LEVEL_1);

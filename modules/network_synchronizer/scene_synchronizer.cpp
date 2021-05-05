@@ -287,7 +287,7 @@ Node *SceneSynchronizer::get_node_from_id(uint32_t p_id) {
 	return nd->node;
 }
 
-void SceneSynchronizer::register_variable(Node *p_node, StringName p_variable, StringName p_on_change_notify, NetEventFlag p_flags) {
+void SceneSynchronizer::register_variable(Node *p_node, const StringName &p_variable, const StringName &p_on_change_notify, NetEventFlag p_flags) {
 	ERR_FAIL_COND(p_node == nullptr);
 	ERR_FAIL_COND(p_variable == StringName());
 
@@ -327,7 +327,7 @@ void SceneSynchronizer::register_variable(Node *p_node, StringName p_variable, S
 	}
 }
 
-void SceneSynchronizer::unregister_variable(Node *p_node, StringName p_variable) {
+void SceneSynchronizer::unregister_variable(Node *p_node, const StringName &p_variable) {
 	ERR_FAIL_COND(p_node == nullptr);
 	ERR_FAIL_COND(p_variable == StringName());
 
@@ -384,7 +384,7 @@ bool SceneSynchronizer::is_node_sync(const Node *p_node) const {
 	return nd->sync_enabled;
 }
 
-uint32_t SceneSynchronizer::get_variable_id(Node *p_node, StringName p_variable) {
+uint32_t SceneSynchronizer::get_variable_id(Node *p_node, const StringName &p_variable) {
 	ERR_FAIL_COND_V(p_node == nullptr, UINT32_MAX);
 	ERR_FAIL_COND_V(p_variable == StringName(), UINT32_MAX);
 
@@ -397,7 +397,7 @@ uint32_t SceneSynchronizer::get_variable_id(Node *p_node, StringName p_variable)
 	return uint32_t(index);
 }
 
-void SceneSynchronizer::set_skip_rewinding(Node *p_node, StringName p_variable, bool p_skip_rewinding) {
+void SceneSynchronizer::set_skip_rewinding(Node *p_node, const StringName &p_variable, bool p_skip_rewinding) {
 	ERR_FAIL_COND(p_node == nullptr);
 	ERR_FAIL_COND(p_variable == StringName());
 
@@ -410,7 +410,7 @@ void SceneSynchronizer::set_skip_rewinding(Node *p_node, StringName p_variable, 
 	nd->vars[index].skip_rewinding = p_skip_rewinding;
 }
 
-void SceneSynchronizer::track_variable_changes(Node *p_node, StringName p_variable, Object *p_object, StringName p_method, NetEventFlag p_flags) {
+void SceneSynchronizer::track_variable_changes(Node *p_node, const StringName &p_variable, Object *p_object, const StringName &p_method, NetEventFlag p_flags) {
 	ERR_FAIL_COND(p_node == nullptr);
 	ERR_FAIL_COND(p_variable == StringName());
 	ERR_FAIL_COND(p_method == StringName());
@@ -470,7 +470,7 @@ void SceneSynchronizer::track_variable_changes(Node *p_node, StringName p_variab
 	nd->vars[var_id].change_listeners.push_back(index);
 }
 
-void SceneSynchronizer::untrack_variable_changes(Node *p_node, StringName p_variable, Object *p_object, StringName p_method) {
+void SceneSynchronizer::untrack_variable_changes(Node *p_node, const StringName &p_variable, Object *p_object, const StringName &p_method) {
 	ERR_FAIL_COND(p_node == nullptr);
 	ERR_FAIL_COND(p_variable == StringName());
 	ERR_FAIL_COND(p_method == StringName());
@@ -618,7 +618,7 @@ Node *SceneSynchronizer::controller_get_dependency(Node *p_controller, int p_ind
 	return controller_nd->dependency_nodes[p_index]->node;
 }
 
-void SceneSynchronizer::register_process(Node *p_node, StringName p_function) {
+void SceneSynchronizer::register_process(Node *p_node, const StringName &p_function) {
 	ERR_FAIL_COND(p_node == nullptr);
 	ERR_FAIL_COND(p_function == StringName());
 	NetUtility::NodeData *node_data = register_node(p_node);
@@ -629,7 +629,7 @@ void SceneSynchronizer::register_process(Node *p_node, StringName p_function) {
 	}
 }
 
-void SceneSynchronizer::unregister_process(Node *p_node, StringName p_function) {
+void SceneSynchronizer::unregister_process(Node *p_node, const StringName &p_function) {
 	ERR_FAIL_COND(p_node == nullptr);
 	ERR_FAIL_COND(p_function == StringName());
 	NetUtility::NodeData *node_data = register_node(p_node);
@@ -703,7 +703,7 @@ Variant SceneSynchronizer::pop_scene_changes(Object *p_diff_handle) const {
 	return ret.size() > 0 ? Variant(ret) : Variant();
 }
 
-void SceneSynchronizer::apply_scene_changes(Variant p_sync_data) {
+void SceneSynchronizer::apply_scene_changes(const Variant &p_sync_data) {
 	ERR_FAIL_COND_MSG(is_client() == false, "This function is not supposed to be called on server.");
 
 	ClientSynchronizer *client_sync = static_cast<ClientSynchronizer *>(synchronizer);
@@ -959,7 +959,7 @@ void SceneSynchronizer::clear() {
 	}
 }
 
-void SceneSynchronizer::_rpc_send_state(Variant p_snapshot) {
+void SceneSynchronizer::_rpc_send_state(const Variant &p_snapshot) {
 	ERR_FAIL_COND_MSG(is_client() == false, "Only clients are suposed to receive the server snapshot.");
 	static_cast<ClientSynchronizer *>(synchronizer)->receive_snapshot(p_snapshot);
 }
@@ -1731,7 +1731,7 @@ void ServerSynchronizer::on_node_added(NetUtility::NodeData *p_node_data) {
 	changes[p_node_data->id].not_known_before = true;
 }
 
-void ServerSynchronizer::on_variable_added(NetUtility::NodeData *p_node_data, StringName p_var_name) {
+void ServerSynchronizer::on_variable_added(NetUtility::NodeData *p_node_data, const StringName &p_var_name) {
 #ifdef DEBUG_ENABLED
 	// Can't happen on server
 	CRASH_COND(scene_synchronizer->is_recovered());
@@ -1747,7 +1747,7 @@ void ServerSynchronizer::on_variable_added(NetUtility::NodeData *p_node_data, St
 	changes[p_node_data->id].uknown_vars.insert(p_var_name);
 }
 
-void ServerSynchronizer::on_variable_changed(NetUtility::NodeData *p_node_data, NetVarId p_var_id, Variant p_old_value, int p_flag) {
+void ServerSynchronizer::on_variable_changed(NetUtility::NodeData *p_node_data, NetVarId p_var_id, const Variant &p_old_value, int p_flag) {
 #ifdef DEBUG_ENABLED
 	// Can't happen on server
 	CRASH_COND(scene_synchronizer->is_recovered());
@@ -2095,7 +2095,7 @@ void ClientSynchronizer::on_node_removed(NetUtility::NodeData *p_node_data) {
 	}
 }
 
-void ClientSynchronizer::on_variable_changed(NetUtility::NodeData *p_node_data, NetVarId p_var_id, Variant p_old_value, int p_flag) {
+void ClientSynchronizer::on_variable_changed(NetUtility::NodeData *p_node_data, NetVarId p_var_id, const Variant &p_old_value, int p_flag) {
 	if (p_flag & NetEventFlag::SYNC) {
 		sync_end_events.insert(
 				EndSyncEvent{

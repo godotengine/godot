@@ -41,7 +41,7 @@ BitArray::BitArray(uint32_t p_initial_size_in_bit) {
 	resize_in_bits(p_initial_size_in_bit);
 }
 
-BitArray::BitArray(Vector<uint8_t> p_bytes) :
+BitArray::BitArray(const Vector<uint8_t> &p_bytes) :
 		bytes(p_bytes) {
 }
 

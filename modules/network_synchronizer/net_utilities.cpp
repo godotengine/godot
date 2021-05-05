@@ -40,11 +40,11 @@ bool NetUtility::ChangeListener::operator==(const ChangeListener &p_other) const
 	return object_id == p_other.object_id && method == p_other.method;
 }
 
-NetUtility::VarData::VarData(StringName p_name) {
+NetUtility::VarData::VarData(const StringName &p_name) {
 	var.name = p_name;
 }
 
-NetUtility::VarData::VarData(NetVarId p_id, StringName p_name, Variant p_val, bool p_skip_rewinding, bool p_enabled) :
+NetUtility::VarData::VarData(NetVarId p_id, const StringName &p_name, const Variant &p_val, bool p_skip_rewinding, bool p_enabled) :
 		id(p_id),
 		skip_rewinding(p_skip_rewinding),
 		enabled(p_enabled) {

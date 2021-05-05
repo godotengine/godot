@@ -317,7 +317,7 @@ public:
 	Vector3 read_normalized_vector3(CompressionLevel p_compression_level);
 
 	/// Add a variant. This is the only supported dynamic sized value.
-	Variant add_variant(Variant p_input);
+	Variant add_variant(const Variant &p_input);
 
 	/// Parse the next data as Variant and returns it.
 	Variant read_variant();

@@ -276,8 +276,8 @@ struct VarData {
 	Vector<uint32_t> change_listeners;
 
 	VarData() {}
-	VarData(StringName p_name);
-	VarData(NetVarId p_id, StringName p_name, Variant p_val, bool p_skip_rewinding, bool p_enabled);
+	VarData(const StringName &p_name);
+	VarData(NetVarId p_id, const StringName &p_name, const Variant &p_val, bool p_skip_rewinding, bool p_enabled);
 
 	bool operator==(const VarData &p_other) const;
 	bool operator<(const VarData &p_other) const;

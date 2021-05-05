@@ -185,8 +185,8 @@ public:
 	uint32_t get_node_id(Node *p_node);
 	Node *get_node_from_id(uint32_t p_id);
 
-	void register_variable(Node *p_node, StringName p_variable, StringName p_on_change_notify_to = StringName(), NetEventFlag p_flags = NetEventFlag::DEFAULT);
-	void unregister_variable(Node *p_node, StringName p_variable);
+	void register_variable(Node *p_node, const StringName &p_variable, const StringName &p_on_change_notify_to = StringName(), NetEventFlag p_flags = NetEventFlag::DEFAULT);
+	void unregister_variable(Node *p_node, const StringName &p_variable);
 
 	/// Start local node sync.
 	void start_node_sync(const Node *p_node);
@@ -199,12 +199,12 @@ public:
 	/// - The node is not registered.
 	/// - The variable is not registered.
 	/// - The client doesn't know the ID yet.
-	uint32_t get_variable_id(Node *p_node, StringName p_variable);
+	uint32_t get_variable_id(Node *p_node, const StringName &p_variable);
 
-	void set_skip_rewinding(Node *p_node, StringName p_variable, bool p_skip_rewinding);
+	void set_skip_rewinding(Node *p_node, const StringName &p_variable, bool p_skip_rewinding);
 
-	void track_variable_changes(Node *p_node, StringName p_variable, Object *p_object, StringName p_method, NetEventFlag p_flags = NetEventFlag::DEFAULT);
-	void untrack_variable_changes(Node *p_node, StringName p_variable, Object *p_object, StringName p_method);
+	void track_variable_changes(Node *p_node, const StringName &p_variable, Object *p_object, const StringName &p_method, NetEventFlag p_flags = NetEventFlag::DEFAULT);
+	void untrack_variable_changes(Node *p_node, const StringName &p_variable, Object *p_object, const StringName &p_method);
 
 	void set_node_as_controlled_by(Node *p_node, Node *p_controller);
 
@@ -217,13 +217,13 @@ public:
 	int controller_get_dependency_count(Node *p_controller) const;
 	Node *controller_get_dependency(Node *p_controller, int p_index);
 
-	void register_process(Node *p_node, StringName p_function);
-	void unregister_process(Node *p_node, StringName p_function);
+	void register_process(Node *p_node, const StringName &p_function);
+	void unregister_process(Node *p_node, const StringName &p_function);
 
 	void start_tracking_scene_changes(Object *p_diff_handle) const;
 	void stop_tracking_scene_changes(Object *p_diff_handle) const;
 	Variant pop_scene_changes(Object *p_diff_handle) const;
-	void apply_scene_changes(Variant p_sync_data);
+	void apply_scene_changes(const Variant &p_sync_data);
 
 	bool is_recovered() const;
 	bool is_resetted() const;
@@ -249,7 +249,7 @@ public:
 	void reset_synchronizer_mode();
 	void clear();
 
-	void _rpc_send_state(Variant p_snapshot);
+	void _rpc_send_state(const Variant &p_snapshot);
 	void _rpc_notify_need_full_snapshot();
 	void _rpc_set_network_enabled(bool p_enabled);
 	void _rpc_notify_peer_status(bool p_enabled);
@@ -331,8 +331,8 @@ public:
 	virtual void process() = 0;
 	virtual void on_node_added(NetUtility::NodeData *p_node_data) {}
 	virtual void on_node_removed(NetUtility::NodeData *p_node_data) {}
-	virtual void on_variable_added(NetUtility::NodeData *p_node_data, StringName p_var_name) {}
-	virtual void on_variable_changed(NetUtility::NodeData *p_node_data, NetVarId p_var_id, Variant p_old_value, int p_flag) {}
+	virtual void on_variable_added(NetUtility::NodeData *p_node_data, const StringName &p_var_name) {}
+	virtual void on_variable_changed(NetUtility::NodeData *p_node_data, NetVarId p_var_id, const Variant &p_old_value, int p_flag) {}
 	virtual void on_controller_reset(NetUtility::NodeData *p_node_data) {}
 };
 
@@ -371,8 +371,8 @@ public:
 	virtual void clear() override;
 	virtual void process() override;
 	virtual void on_node_added(NetUtility::NodeData *p_node_data) override;
-	virtual void on_variable_added(NetUtility::NodeData *p_node_data, StringName p_var_name) override;
-	virtual void on_variable_changed(NetUtility::NodeData *p_node_data, NetVarId p_var_id, Variant p_old_value, int p_flag) override;
+	virtual void on_variable_added(NetUtility::NodeData *p_node_data, const StringName &p_var_name) override;
+	virtual void on_variable_changed(NetUtility::NodeData *p_node_data, NetVarId p_var_id, const Variant &p_old_value, int p_flag) override;
 
 	void process_snapshot_notificator(real_t p_delta);
 	Vector<Variant> global_nodes_generate_snapshot(bool p_force_full_snapshot) const;
@@ -419,7 +419,7 @@ public:
 	virtual void process() override;
 	virtual void on_node_added(NetUtility::NodeData *p_node_data) override;
 	virtual void on_node_removed(NetUtility::NodeData *p_node_data) override;
-	virtual void on_variable_changed(NetUtility::NodeData *p_node_data, NetVarId p_var_id, Variant p_old_value, int p_flag) override;
+	virtual void on_variable_changed(NetUtility::NodeData *p_node_data, NetVarId p_var_id, const Variant &p_old_value, int p_flag) override;
 	virtual void on_controller_reset(NetUtility::NodeData *p_node_data) override;
 
 	void receive_snapshot(Variant p_snapshot);
