@@ -51,12 +51,14 @@ FileAccess *FileAccess::create(AccessType p_access) {
 }
 
 bool FileAccess::exists(const String &p_name) {
-	if (PackedData::get_singleton() && !PackedData::get_singleton()->is_disabled() && PackedData::get_singleton()->has_path(p_name))
+	if (PackedData::get_singleton() && !PackedData::get_singleton()->is_disabled() && PackedData::get_singleton()->has_path(p_name)) {
 		return true;
+	}
 
 	FileAccess *f = open(p_name, READ);
-	if (!f)
+	if (!f) {
 		return false;
+	}
 	memdelete(f);
 	return true;
 }
@@ -90,8 +92,9 @@ FileAccess *FileAccess::open(const String &p_path, int p_mode_flags, Error *r_er
 	if (!(p_mode_flags & WRITE) && PackedData::get_singleton() && !PackedData::get_singleton()->is_disabled()) {
 		ret = PackedData::get_singleton()->try_open_path(p_path);
 		if (ret) {
-			if (r_error)
+			if (r_error) {
 				*r_error = OK;
+			}
 			return ret;
 		}
 	}
@@ -99,8 +102,9 @@ FileAccess *FileAccess::open(const String &p_path, int p_mode_flags, Error *r_er
 	ret = create_for_path(p_path);
 	Error err = ret->_open(p_path, p_mode_flags);
 
-	if (r_error)
+	if (r_error) {
 		*r_error = err;
+	}
 	if (err != OK) {
 		memdelete(ret);
 		ret = nullptr;
@@ -212,10 +216,11 @@ float FileAccess::get_float() const {
 };
 
 real_t FileAccess::get_real() const {
-	if (real_is_double)
+	if (real_is_double) {
 		return get_double();
-	else
+	} else {
 		return get_float();
+	}
 }
 
 double FileAccess::get_double() const {
@@ -231,8 +236,9 @@ String FileAccess::get_token() const {
 
 	while (!eof_reached()) {
 		if (c <= ' ') {
-			if (token.length())
+			if (token.length()) {
 				break;
+			}
 		} else {
 			token += c;
 		}
@@ -298,8 +304,9 @@ String FileAccess::get_line() const {
 		if (c == '\n' || c == '\0') {
 			line.push_back(0);
 			return String::utf8(line.get_data());
-		} else if (c != '\r')
+		} else if (c != '\r') {
 			line.push_back(c);
+		}
 
 		c = get_8();
 	}
@@ -313,14 +320,16 @@ Vector<String> FileAccess::get_csv_line(const String &p_delim) const {
 	String l;
 	int qc = 0;
 	do {
-		if (eof_reached())
+		if (eof_reached()) {
 			break;
+		}
 
 		l += get_line() + "\n";
 		qc = 0;
 		for (int i = 0; i < l.length(); i++) {
-			if (l[i] == '"')
+			if (l[i] == '"') {
 				qc++;
+			}
 		}
 
 	} while (qc % 2);
@@ -361,8 +370,9 @@ int FileAccess::get_buffer(uint8_t *p_dst, int p_length) const {
 	ERR_FAIL_COND_V(!p_dst && p_length > 0, -1);
 	ERR_FAIL_COND_V(p_length < 0, -1);
 	int i = 0;
-	for (i = 0; i < p_length && !eof_reached(); i++)
+	for (i = 0; i < p_length && !eof_reached(); i++) {
 		p_dst[i] = get_8();
+	}
 
 	return i;
 }
@@ -425,10 +435,11 @@ void FileAccess::store_64(uint64_t p_dest) {
 }
 
 void FileAccess::store_real(real_t p_real) {
-	if (sizeof(real_t) == 4)
+	if (sizeof(real_t) == 4) {
 		store_float(p_real);
-	else
+	} else {
 		store_double(p_real);
+	}
 }
 
 void FileAccess::store_float(float p_dest) {
@@ -444,8 +455,9 @@ void FileAccess::store_double(double p_dest) {
 };
 
 uint64_t FileAccess::get_modified_time(const String &p_file) {
-	if (PackedData::get_singleton() && !PackedData::get_singleton()->is_disabled() && (PackedData::get_singleton()->has_path(p_file) || PackedData::get_singleton()->has_directory(p_file)))
+	if (PackedData::get_singleton() && !PackedData::get_singleton()->is_disabled() && (PackedData::get_singleton()->has_path(p_file) || PackedData::get_singleton()->has_directory(p_file))) {
 		return 0;
+	}
 
 	FileAccess *fa = create_for_path(p_file);
 	ERR_FAIL_COND_V_MSG(!fa, 0, "Cannot create FileAccess for path '" + p_file + "'.");
@@ -456,8 +468,9 @@ uint64_t FileAccess::get_modified_time(const String &p_file) {
 }
 
 uint32_t FileAccess::get_unix_permissions(const String &p_file) {
-	if (PackedData::get_singleton() && !PackedData::get_singleton()->is_disabled() && (PackedData::get_singleton()->has_path(p_file) || PackedData::get_singleton()->has_directory(p_file)))
+	if (PackedData::get_singleton() && !PackedData::get_singleton()->is_disabled() && (PackedData::get_singleton()->has_path(p_file) || PackedData::get_singleton()->has_directory(p_file))) {
 		return 0;
+	}
 
 	FileAccess *fa = create_for_path(p_file);
 	ERR_FAIL_COND_V_MSG(!fa, 0, "Cannot create FileAccess for path '" + p_file + "'.");
@@ -468,8 +481,9 @@ uint32_t FileAccess::get_unix_permissions(const String &p_file) {
 }
 
 Error FileAccess::set_unix_permissions(const String &p_file, uint32_t p_permissions) {
-	if (PackedData::get_singleton() && !PackedData::get_singleton()->is_disabled() && (PackedData::get_singleton()->has_path(p_file) || PackedData::get_singleton()->has_directory(p_file)))
+	if (PackedData::get_singleton() && !PackedData::get_singleton()->is_disabled() && (PackedData::get_singleton()->has_path(p_file) || PackedData::get_singleton()->has_directory(p_file))) {
 		return ERR_UNAVAILABLE;
+	}
 
 	FileAccess *fa = create_for_path(p_file);
 	ERR_FAIL_COND_V_MSG(!fa, ERR_CANT_CREATE, "Cannot create FileAccess for path '" + p_file + "'.");
@@ -480,8 +494,9 @@ Error FileAccess::set_unix_permissions(const String &p_file, uint32_t p_permissi
 }
 
 void FileAccess::store_string(const String &p_string) {
-	if (p_string.length() == 0)
+	if (p_string.length() == 0) {
 		return;
+	}
 
 	CharString cs = p_string.utf8();
 	store_buffer((uint8_t *)&cs[0], cs.length());
@@ -533,8 +548,9 @@ void FileAccess::store_csv_line(const Vector<String> &p_values, const String &p_
 }
 
 void FileAccess::store_buffer(const uint8_t *p_src, int p_length) {
-	for (int i = 0; i < p_length; i++)
+	for (int i = 0; i < p_length; i++) {
 		store_8(p_src[i]);
+	}
 }
 
 Vector<uint8_t> FileAccess::get_file_as_array(const String &p_path, Error *r_error) {
@@ -572,8 +588,9 @@ String FileAccess::get_file_as_string(const String &p_path, Error *r_error) {
 
 String FileAccess::get_md5(const String &p_file) {
 	FileAccess *f = FileAccess::open(p_file, READ);
-	if (!f)
+	if (!f) {
 		return String();
+	}
 
 	CryptoCore::MD5Context ctx;
 	ctx.start();
@@ -585,8 +602,9 @@ String FileAccess::get_md5(const String &p_file) {
 		if (br > 0) {
 			ctx.update(step, br);
 		}
-		if (br < 4096)
+		if (br < 4096) {
 			break;
+		}
 	}
 
 	unsigned char hash[16];
@@ -612,8 +630,9 @@ String FileAccess::get_multiple_md5(const Vector<String> &p_file) {
 			if (br > 0) {
 				ctx.update(step, br);
 			}
-			if (br < 4096)
+			if (br < 4096) {
 				break;
+			}
 		}
 		memdelete(f);
 	}
@@ -626,8 +645,9 @@ String FileAccess::get_multiple_md5(const Vector<String> &p_file) {
 
 String FileAccess::get_sha256(const String &p_file) {
 	FileAccess *f = FileAccess::open(p_file, READ);
-	if (!f)
+	if (!f) {
 		return String();
+	}
 
 	CryptoCore::SHA256Context ctx;
 	ctx.start();
@@ -639,8 +659,9 @@ String FileAccess::get_sha256(const String &p_file) {
 		if (br > 0) {
 			ctx.update(step, br);
 		}
-		if (br < 4096)
+		if (br < 4096) {
 			break;
+		}
 	}
 
 	unsigned char hash[32];

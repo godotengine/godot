@@ -207,8 +207,9 @@ void EditorAudioBus::update_send() {
 }
 
 void EditorAudioBus::update_bus() {
-	if (updating_bus)
+	if (updating_bus) {
 		return;
+	}
 
 	updating_bus = true;
 
@@ -217,8 +218,9 @@ void EditorAudioBus::update_bus() {
 	float db_value = AudioServer::get_singleton()->get_bus_volume_db(index);
 	slider->set_value(_scaled_db_to_normalized_volume(db_value));
 	track_name->set_text(AudioServer::get_singleton()->get_bus_name(index));
-	if (is_master)
+	if (is_master) {
 		track_name->set_editable(false);
+	}
 
 	solo->set_pressed(AudioServer::get_singleton()->is_bus_solo(index));
 	mute->set_pressed(AudioServer::get_singleton()->is_bus_mute(index));
@@ -250,8 +252,9 @@ void EditorAudioBus::update_bus() {
 }
 
 void EditorAudioBus::_name_changed(const String &p_new_name) {
-	if (p_new_name == AudioServer::get_singleton()->get_bus_name(get_index()))
+	if (p_new_name == AudioServer::get_singleton()->get_bus_name(get_index())) {
 		return;
+	}
 
 	String attempt = p_new_name;
 	int attempts = 1;
@@ -301,8 +304,9 @@ void EditorAudioBus::_name_changed(const String &p_new_name) {
 }
 
 void EditorAudioBus::_volume_changed(float p_normalized) {
-	if (updating_bus)
+	if (updating_bus) {
 		return;
+	}
 
 	updating_bus = true;
 
@@ -452,8 +456,9 @@ void EditorAudioBus::_send_selected(int p_which) {
 
 void EditorAudioBus::_effect_selected() {
 	TreeItem *effect = effects->get_selected();
-	if (!effect)
+	if (!effect) {
 		return;
+	}
 	updating_bus = true;
 
 	if (effect->get_metadata(0) != Variant()) {
@@ -468,12 +473,14 @@ void EditorAudioBus::_effect_selected() {
 }
 
 void EditorAudioBus::_effect_edited() {
-	if (updating_bus)
+	if (updating_bus) {
 		return;
+	}
 
 	TreeItem *effect = effects->get_edited();
-	if (!effect)
+	if (!effect) {
 		return;
+	}
 
 	if (effect->get_metadata(0) == Variant()) {
 		Rect2 area = effects->get_item_rect(effect);
@@ -498,8 +505,9 @@ void EditorAudioBus::_effect_edited() {
 }
 
 void EditorAudioBus::_effect_add(int p_which) {
-	if (updating_bus)
+	if (updating_bus) {
 		return;
+	}
 
 	StringName name = effect_options->get_item_metadata(p_which);
 
@@ -626,12 +634,14 @@ Variant EditorAudioBus::get_drag_data_fw(const Point2 &p_point, Control *p_from)
 
 bool EditorAudioBus::can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const {
 	Dictionary d = p_data;
-	if (!d.has("type") || String(d["type"]) != "audio_bus_effect")
+	if (!d.has("type") || String(d["type"]) != "audio_bus_effect") {
 		return false;
+	}
 
 	TreeItem *item = effects->get_item_at_position(p_point);
-	if (!item)
+	if (!item) {
 		return false;
+	}
 
 	effects->set_drop_mode_flags(Tree::DROP_MODE_INBETWEEN);
 
@@ -642,8 +652,9 @@ void EditorAudioBus::drop_data_fw(const Point2 &p_point, const Variant &p_data, 
 	Dictionary d = p_data;
 
 	TreeItem *item = effects->get_item_at_position(p_point);
-	if (!item)
+	if (!item) {
 		return;
+	}
 	int pos = effects->get_drop_section_at_position(p_point);
 	Variant md = item->get_metadata(0);
 
@@ -653,8 +664,9 @@ void EditorAudioBus::drop_data_fw(const Point2 &p_point, const Variant &p_data, 
 
 	if (md.get_type() == Variant::INT) {
 		paste_at = md;
-		if (pos > 0)
+		if (pos > 0) {
 			paste_at++;
+		}
 
 		if (bus == get_index() && paste_at > effect) {
 			paste_at--;
@@ -697,11 +709,13 @@ void EditorAudioBus::drop_data_fw(const Point2 &p_point, const Variant &p_data, 
 
 void EditorAudioBus::_delete_effect_pressed(int p_option) {
 	TreeItem *item = effects->get_selected();
-	if (!item)
+	if (!item) {
 		return;
+	}
 
-	if (item->get_metadata(0).get_type() != Variant::INT)
+	if (item->get_metadata(0).get_type() != Variant::INT) {
 		return;
+	}
 
 	int index = item->get_metadata(0);
 
@@ -717,11 +731,13 @@ void EditorAudioBus::_delete_effect_pressed(int p_option) {
 
 void EditorAudioBus::_effect_rmb(const Vector2 &p_pos) {
 	TreeItem *item = effects->get_selected();
-	if (!item)
+	if (!item) {
 		return;
+	}
 
-	if (item->get_metadata(0).get_type() != Variant::INT)
+	if (item->get_metadata(0).get_type() != Variant::INT) {
 		return;
+	}
 
 	delete_effect_popup->set_position(get_global_mouse_position());
 	delete_effect_popup->popup();
@@ -916,8 +932,9 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses, bool p_is_master) {
 	ClassDB::get_inheriters_from_class("AudioEffect", &effects);
 	effects.sort_custom<StringName::AlphCompare>();
 	for (List<StringName>::Element *E = effects.front(); E; E = E->next()) {
-		if (!ClassDB::can_instance(E->get()))
+		if (!ClassDB::can_instance(E->get())) {
 			continue;
+		}
 
 		Ref<Texture> icon = EditorNode::get_singleton()->get_class_icon(E->get());
 		String name = E->get().operator String().replace("AudioEffect", "");
@@ -1058,8 +1075,9 @@ void EditorAudioBuses::_add_bus() {
 }
 
 void EditorAudioBuses::_update_bus(int p_index) {
-	if (p_index >= bus_hb->get_child_count())
+	if (p_index >= bus_hb->get_child_count()) {
 		return;
+	}
 
 	bus_hb->get_child(p_index)->call("update_bus");
 }

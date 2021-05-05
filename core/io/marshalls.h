@@ -108,8 +108,9 @@ static inline int encode_cstring(const char *p_string, uint8_t *p_data) {
 		len++;
 	};
 
-	if (p_data)
+	if (p_data) {
 		*p_data = 0;
+	}
 	return len + 1;
 }
 

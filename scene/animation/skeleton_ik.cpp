@@ -110,8 +110,9 @@ bool FabrikInverseKinematic::build_chain(Task *p_task, bool p_force_simple_chain
 			}
 		}
 
-		if (!middle_chain_item_id)
+		if (!middle_chain_item_id) {
 			chain.middle_chain_item = nullptr;
+		}
 
 		// Initialize current tip
 		chain.tips.write[x].chain_item = sub_chain;
@@ -230,8 +231,9 @@ FabrikInverseKinematic::Task *FabrikInverseKinematic::create_simple_task(Skeleto
 }
 
 void FabrikInverseKinematic::free_task(Task *p_task) {
-	if (p_task)
+	if (p_task) {
 		memdelete(p_task);
+	}
 }
 
 void FabrikInverseKinematic::set_goal(Task *p_task, const Transform &p_goal) {
@@ -333,10 +335,11 @@ void FabrikInverseKinematic::solve(Task *p_task, real_t blending_delta, bool ove
 
 			} else {
 				// Set target orientation to tip
-				if (override_tip_basis)
+				if (override_tip_basis) {
 					new_bone_pose.basis = p_task->chain.tips[0].end_effector->goal_transform.basis;
-				else
+				} else {
 					new_bone_pose.basis = new_bone_pose.basis * p_task->chain.tips[0].end_effector->goal_transform.basis;
+				}
 			}
 		}
 
@@ -346,10 +349,11 @@ void FabrikInverseKinematic::solve(Task *p_task, real_t blending_delta, bool ove
 
 		p_task->skeleton->set_bone_global_pose_override(ci->bone, new_bone_pose, 1.0, true);
 
-		if (!ci->children.empty())
+		if (!ci->children.empty()) {
 			ci = &ci->children.write[0];
-		else
+		} else {
 			ci = nullptr;
+		}
 	}
 }
 
@@ -372,8 +376,9 @@ void SkeletonIK::_validate_property(PropertyInfo &property) const {
 		if (skeleton) {
 			String names("--,");
 			for (int i = 0; i < skeleton->get_bone_count(); i++) {
-				if (i > 0)
+				if (i > 0) {
 					names += ",";
+				}
 				names += skeleton->get_bone_name(i);
 			}
 
@@ -443,8 +448,9 @@ void SkeletonIK::_notification(int p_what) {
 			reload_chain();
 		} break;
 		case NOTIFICATION_INTERNAL_PROCESS: {
-			if (target_node_override)
+			if (target_node_override) {
 				reload_goal();
+			}
 
 			_solve_chain();
 
@@ -574,21 +580,24 @@ void SkeletonIK::stop() {
 }
 
 Transform SkeletonIK::_get_target_transform() {
-	if (!target_node_override && !target_node_path_override.is_empty())
+	if (!target_node_override && !target_node_path_override.is_empty()) {
 		target_node_override = Object::cast_to<Spatial>(get_node(target_node_path_override));
+	}
 
-	if (target_node_override)
+	if (target_node_override) {
 		return target_node_override->get_global_transform();
-	else
+	} else {
 		return target;
+	}
 }
 
 void SkeletonIK::reload_chain() {
 	FabrikInverseKinematic::free_task(task);
 	task = nullptr;
 
-	if (!skeleton)
+	if (!skeleton) {
 		return;
+	}
 
 	task = FabrikInverseKinematic::create_simple_task(skeleton, skeleton->find_bone(root_bone), skeleton->find_bone(tip_bone), _get_target_transform());
 	if (task) {
@@ -598,15 +607,17 @@ void SkeletonIK::reload_chain() {
 }
 
 void SkeletonIK::reload_goal() {
-	if (!task)
+	if (!task) {
 		return;
+	}
 
 	FabrikInverseKinematic::set_goal(task, _get_target_transform());
 }
 
 void SkeletonIK::_solve_chain() {
-	if (!task)
+	if (!task) {
 		return;
+	}
 	FabrikInverseKinematic::solve(task, interpolation, override_tip_basis, use_magnet, magnet_position);
 }
 

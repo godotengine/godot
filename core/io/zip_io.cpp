@@ -42,8 +42,9 @@ void *zipio_open(void *data, const char *p_fname, int mode) {
 		f = FileAccess::open(fname, FileAccess::READ);
 	}
 
-	if (!f)
+	if (!f) {
 		return nullptr;
+	}
 
 	return data;
 }

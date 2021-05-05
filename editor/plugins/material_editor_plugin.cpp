@@ -203,8 +203,9 @@ MaterialEditor::MaterialEditor() {
 
 bool EditorInspectorPluginMaterial::can_handle(Object *p_object) {
 	Material *material = Object::cast_to<Material>(p_object);
-	if (!material)
+	if (!material) {
 		return false;
+	}
 
 	return material->get_shader_mode() == Shader::MODE_SPATIAL;
 }

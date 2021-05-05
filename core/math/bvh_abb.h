@@ -129,12 +129,14 @@ struct BVH_ABB {
 				(p_p.normal.z < 0) ? -half_extents.z : half_extents.z);
 		Vector3 point = point_offset + ofs;
 
-		if (!p_p.is_point_over(point))
+		if (!p_p.is_point_over(point)) {
 			return false;
+		}
 
 		point = -point_offset + ofs;
-		if (p_p.is_point_over(point))
+		if (p_p.is_point_over(point)) {
 			return false;
+		}
 
 		return true;
 	}
@@ -151,8 +153,9 @@ struct BVH_ABB {
 					(p.normal.y > 0) ? -half_extents.y : half_extents.y,
 					(p.normal.z > 0) ? -half_extents.z : half_extents.z);
 			point += ofs;
-			if (p.is_point_over(point))
+			if (p.is_point_over(point)) {
 				return false;
+			}
 		}
 
 		return true;
@@ -186,8 +189,9 @@ struct BVH_ABB {
 
 	bool is_point_within_hull(const ConvexHull &p_hull, const Vector3 &p_pt) const {
 		for (int n = 0; n < p_hull.num_planes; n++) {
-			if (p_hull.planes[n].distance_to(p_pt) > 0.0f)
+			if (p_hull.planes[n].distance_to(p_pt) > 0.0f) {
 				return false;
+			}
 		}
 		return true;
 	}
@@ -199,26 +203,32 @@ struct BVH_ABB {
 	}
 
 	bool intersects_point(const Point &p_pt) const {
-		if (_any_lessthan(-p_pt, neg_max))
+		if (_any_lessthan(-p_pt, neg_max)) {
 			return false;
-		if (_any_lessthan(p_pt, min))
+		}
+		if (_any_lessthan(p_pt, min)) {
 			return false;
+		}
 		return true;
 	}
 
 	bool intersects(const BVH_ABB &p_o) const {
-		if (_any_morethan(p_o.min, -neg_max))
+		if (_any_morethan(p_o.min, -neg_max)) {
 			return false;
-		if (_any_morethan(min, -p_o.neg_max))
+		}
+		if (_any_morethan(min, -p_o.neg_max)) {
 			return false;
+		}
 		return true;
 	}
 
 	bool is_other_within(const BVH_ABB &p_o) const {
-		if (_any_lessthan(p_o.neg_max, neg_max))
+		if (_any_lessthan(p_o.neg_max, neg_max)) {
 			return false;
-		if (_any_lessthan(p_o.min, min))
+		}
+		if (_any_lessthan(p_o.min, min)) {
 			return false;
+		}
 		return true;
 	}
 

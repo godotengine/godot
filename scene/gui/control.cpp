@@ -165,8 +165,9 @@ Size2 Control::_edit_get_minimum_size() const {
 #endif
 
 void Control::set_custom_minimum_size(const Size2 &p_custom) {
-	if (p_custom == data.custom_minimum_size)
+	if (p_custom == data.custom_minimum_size) {
 		return;
+	}
 	data.custom_minimum_size = p_custom;
 	minimum_size_changed();
 }
@@ -181,14 +182,16 @@ void Control::_update_minimum_size_cache() {
 	minsize.y = MAX(minsize.y, data.custom_minimum_size.y);
 
 	bool size_changed = false;
-	if (data.minimum_size_cache != minsize)
+	if (data.minimum_size_cache != minsize) {
 		size_changed = true;
+	}
 
 	data.minimum_size_cache = minsize;
 	data.minimum_size_valid = true;
 
-	if (size_changed)
+	if (size_changed) {
 		minimum_size_changed();
+	}
 }
 
 Size2 Control::get_combined_minimum_size() const {
@@ -250,8 +253,9 @@ bool Control::_set(const StringName &p_name, const Variant &p_value) {
 			String dname = name.get_slicec('/', 1);
 			data.constant_override.erase(dname);
 			notification(NOTIFICATION_THEME_CHANGED);
-		} else
+		} else {
 			return false;
+		}
 
 	} else {
 		if (name.begins_with("custom_icons/")) {
@@ -272,15 +276,17 @@ bool Control::_set(const StringName &p_name, const Variant &p_value) {
 		} else if (name.begins_with("custom_constants/")) {
 			String dname = name.get_slicec('/', 1);
 			add_constant_override(dname, p_value);
-		} else
+		} else {
 			return false;
+		}
 	}
 	return true;
 }
 
 void Control::_update_minimum_size() {
-	if (!is_inside_tree())
+	if (!is_inside_tree()) {
 		return;
+	}
 
 	Size2 minsize = get_combined_minimum_size();
 	data.updating_last_minimum_size = false;
@@ -322,8 +328,9 @@ bool Control::_get(const StringName &p_name, Variant &r_ret) const {
 		String name = sname.get_slicec('/', 1);
 
 		r_ret = data.constant_override.has(name) ? Variant(data.constant_override[name]) : Variant();
-	} else
+	} else {
 		return false;
+	}
 
 	return true;
 }
@@ -343,8 +350,9 @@ void Control::_get_property_list(List<PropertyInfo> *p_list) const {
 		theme->get_icon_list(get_class_name(), &names);
 		for (List<StringName>::Element *E = names.front(); E; E = E->next()) {
 			uint32_t hint = PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_CHECKABLE;
-			if (data.icon_override.has(E->get()))
+			if (data.icon_override.has(E->get())) {
 				hint |= PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_CHECKED;
+			}
 
 			p_list->push_back(PropertyInfo(Variant::OBJECT, "custom_icons/" + E->get(), PROPERTY_HINT_RESOURCE_TYPE, "Texture", hint));
 		}
@@ -354,8 +362,9 @@ void Control::_get_property_list(List<PropertyInfo> *p_list) const {
 		theme->get_shader_list(get_class_name(), &names);
 		for (List<StringName>::Element *E = names.front(); E; E = E->next()) {
 			uint32_t hint = PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_CHECKABLE;
-			if (data.shader_override.has(E->get()))
+			if (data.shader_override.has(E->get())) {
 				hint |= PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_CHECKED;
+			}
 
 			p_list->push_back(PropertyInfo(Variant::OBJECT, "custom_shaders/" + E->get(), PROPERTY_HINT_RESOURCE_TYPE, "Shader,VisualShader", hint));
 		}
@@ -365,8 +374,9 @@ void Control::_get_property_list(List<PropertyInfo> *p_list) const {
 		theme->get_stylebox_list(get_class_name(), &names);
 		for (List<StringName>::Element *E = names.front(); E; E = E->next()) {
 			uint32_t hint = PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_CHECKABLE;
-			if (data.style_override.has(E->get()))
+			if (data.style_override.has(E->get())) {
 				hint |= PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_CHECKED;
+			}
 
 			p_list->push_back(PropertyInfo(Variant::OBJECT, "custom_styles/" + E->get(), PROPERTY_HINT_RESOURCE_TYPE, "StyleBox", hint));
 		}
@@ -376,8 +386,9 @@ void Control::_get_property_list(List<PropertyInfo> *p_list) const {
 		theme->get_font_list(get_class_name(), &names);
 		for (List<StringName>::Element *E = names.front(); E; E = E->next()) {
 			uint32_t hint = PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_CHECKABLE;
-			if (data.font_override.has(E->get()))
+			if (data.font_override.has(E->get())) {
 				hint |= PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_CHECKED;
+			}
 
 			p_list->push_back(PropertyInfo(Variant::OBJECT, "custom_fonts/" + E->get(), PROPERTY_HINT_RESOURCE_TYPE, "Font", hint));
 		}
@@ -387,8 +398,9 @@ void Control::_get_property_list(List<PropertyInfo> *p_list) const {
 		theme->get_color_list(get_class_name(), &names);
 		for (List<StringName>::Element *E = names.front(); E; E = E->next()) {
 			uint32_t hint = PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_CHECKABLE;
-			if (data.color_override.has(E->get()))
+			if (data.color_override.has(E->get())) {
 				hint |= PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_CHECKED;
+			}
 
 			p_list->push_back(PropertyInfo(Variant::COLOR, "custom_colors/" + E->get(), PROPERTY_HINT_NONE, "", hint));
 		}
@@ -398,8 +410,9 @@ void Control::_get_property_list(List<PropertyInfo> *p_list) const {
 		theme->get_constant_list(get_class_name(), &names);
 		for (List<StringName>::Element *E = names.front(); E; E = E->next()) {
 			uint32_t hint = PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_CHECKABLE;
-			if (data.constant_override.has(E->get()))
+			if (data.constant_override.has(E->get())) {
 				hint |= PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_CHECKED;
+			}
 
 			p_list->push_back(PropertyInfo(Variant::INT, "custom_constants/" + E->get(), PROPERTY_HINT_RANGE, "-16384,16384", hint));
 		}
@@ -418,8 +431,9 @@ void Control::_resize(const Size2 &p_size) {
 
 void Control::add_child_notify(Node *p_child) {
 	Control *child_c = Object::cast_to<Control>(p_child);
-	if (!child_c)
+	if (!child_c) {
 		return;
+	}
 
 	if (child_c->data.theme.is_null() && data.theme_owner) {
 		_propagate_theme_changed(child_c, data.theme_owner); //need to propagate here, since many controls may require setting up stuff
@@ -428,8 +442,9 @@ void Control::add_child_notify(Node *p_child) {
 
 void Control::remove_child_notify(Node *p_child) {
 	Control *child_c = Object::cast_to<Control>(p_child);
-	if (!child_c)
+	if (!child_c) {
 		return;
+	}
 
 	if (child_c->data.theme_owner && child_c->data.theme.is_null()) {
 		_propagate_theme_changed(child_c, nullptr);
@@ -480,8 +495,9 @@ void Control::_notification(int p_notification) {
 				while (parent) {
 					parent = parent->get_parent();
 
-					if (!parent)
+					if (!parent) {
 						break;
+					}
 
 					CanvasItem *ci = Object::cast_to<CanvasItem>(parent);
 					if (ci && ci->is_set_as_toplevel()) {
@@ -568,8 +584,9 @@ void Control::_notification(int p_notification) {
 		case NOTIFICATION_MOVED_IN_PARENT: {
 			// some parents need to know the order of the childrens to draw (like TabContainer)
 			// update if necessary
-			if (data.parent)
+			if (data.parent) {
 				data.parent->update();
+			}
 			update();
 
 			if (data.SI) {
@@ -614,8 +631,9 @@ void Control::_notification(int p_notification) {
 		} break;
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			if (!is_visible_in_tree()) {
-				if (get_viewport() != nullptr)
+				if (get_viewport() != nullptr) {
 					get_viewport()->_gui_hid_control(this);
+				}
 
 				if (is_inside_tree()) {
 					_modal_stack_remove();
@@ -660,10 +678,11 @@ bool Control::has_point(const Point2 &p_point) const {
 }
 
 void Control::set_drag_forwarding(Control *p_target) {
-	if (p_target)
+	if (p_target) {
 		data.drag_owner = p_target->get_instance_id();
-	else
+	} else {
 		data.drag_owner = 0;
+	}
 }
 
 Variant Control::get_drag_data(const Point2 &p_point) {
@@ -680,8 +699,9 @@ Variant Control::get_drag_data(const Point2 &p_point) {
 		const Variant *p = &v;
 		Variant::CallError ce;
 		Variant ret = get_script_instance()->call(SceneStringNames::get_singleton()->get_drag_data, &p, 1, ce);
-		if (ce.error == Variant::CallError::CALL_OK)
+		if (ce.error == Variant::CallError::CALL_OK) {
 			return ret;
+		}
 	}
 
 	return Variant();
@@ -701,8 +721,9 @@ bool Control::can_drop_data(const Point2 &p_point, const Variant &p_data) const 
 		const Variant *p[2] = { &v, &p_data };
 		Variant::CallError ce;
 		Variant ret = get_script_instance()->call(SceneStringNames::get_singleton()->can_drop_data, p, 2, ce);
-		if (ce.error == Variant::CallError::CALL_OK)
+		if (ce.error == Variant::CallError::CALL_OK) {
 			return ret;
+		}
 	}
 
 	return false;
@@ -722,8 +743,9 @@ void Control::drop_data(const Point2 &p_point, const Variant &p_data) {
 		const Variant *p[2] = { &v, &p_data };
 		Variant::CallError ce;
 		Variant ret = get_script_instance()->call(SceneStringNames::get_singleton()->drop_data, p, 2, ce);
-		if (ce.error == Variant::CallError::CALL_OK)
+		if (ce.error == Variant::CallError::CALL_OK) {
 			return;
+		}
 	}
 }
 
@@ -741,8 +763,9 @@ void Control::set_drag_preview(Control *p_control) {
 }
 
 bool Control::is_window_modal_on_top() const {
-	if (!is_inside_tree())
+	if (!is_inside_tree()) {
 		return false;
+	}
 
 	return get_viewport()->_gui_is_modal_on_top(this);
 }
@@ -756,8 +779,9 @@ Size2 Control::get_minimum_size() const {
 	if (si) {
 		Variant::CallError ce;
 		Variant s = si->call(SceneStringNames::get_singleton()->_get_minimum_size, nullptr, 0, ce);
-		if (ce.error == Variant::CallError::CALL_OK)
+		if (ce.error == Variant::CallError::CALL_OK) {
 			return s;
+		}
 	}
 	return Size2();
 }
@@ -765,8 +789,9 @@ Size2 Control::get_minimum_size() const {
 Ref<Texture> Control::get_icon(const StringName &p_name, const StringName &p_node_type) const {
 	if (p_node_type == StringName() || p_node_type == get_class_name()) {
 		const Ref<Texture> *tex = data.icon_override.getptr(p_name);
-		if (tex)
+		if (tex) {
 			return *tex;
+		}
 	}
 
 	StringName type = p_node_type ? p_node_type : get_class_name();
@@ -787,10 +812,11 @@ Ref<Texture> Control::get_icon(const StringName &p_name, const StringName &p_nod
 
 		Control *parent = Object::cast_to<Control>(theme_owner->get_parent());
 
-		if (parent)
+		if (parent) {
 			theme_owner = parent->data.theme_owner;
-		else
+		} else {
 			theme_owner = nullptr;
+		}
 	}
 
 	if (Theme::get_project_default().is_valid()) {
@@ -805,8 +831,9 @@ Ref<Texture> Control::get_icon(const StringName &p_name, const StringName &p_nod
 Ref<Shader> Control::get_shader(const StringName &p_name, const StringName &p_node_type) const {
 	if (p_node_type == StringName() || p_node_type == get_class_name()) {
 		const Ref<Shader> *sdr = data.shader_override.getptr(p_name);
-		if (sdr)
+		if (sdr) {
 			return *sdr;
+		}
 	}
 
 	StringName type = p_node_type ? p_node_type : get_class_name();
@@ -827,10 +854,11 @@ Ref<Shader> Control::get_shader(const StringName &p_name, const StringName &p_no
 
 		Control *parent = Object::cast_to<Control>(theme_owner->get_parent());
 
-		if (parent)
+		if (parent) {
 			theme_owner = parent->data.theme_owner;
-		else
+		} else {
 			theme_owner = nullptr;
+		}
 	}
 
 	if (Theme::get_project_default().is_valid()) {
@@ -845,8 +873,9 @@ Ref<Shader> Control::get_shader(const StringName &p_name, const StringName &p_no
 Ref<StyleBox> Control::get_stylebox(const StringName &p_name, const StringName &p_node_type) const {
 	if (p_node_type == StringName() || p_node_type == get_class_name()) {
 		const Ref<StyleBox> *style = data.style_override.getptr(p_name);
-		if (style)
+		if (style) {
 			return *style;
+		}
 	}
 
 	StringName type = p_node_type ? p_node_type : get_class_name();
@@ -869,18 +898,21 @@ Ref<StyleBox> Control::get_stylebox(const StringName &p_name, const StringName &
 
 		Control *parent = Object::cast_to<Control>(theme_owner->get_parent());
 
-		if (parent)
+		if (parent) {
 			theme_owner = parent->data.theme_owner;
-		else
+		} else {
 			theme_owner = nullptr;
+		}
 	}
 
 	while (class_name != StringName()) {
-		if (Theme::get_project_default().is_valid() && Theme::get_project_default()->has_stylebox(p_name, type))
+		if (Theme::get_project_default().is_valid() && Theme::get_project_default()->has_stylebox(p_name, type)) {
 			return Theme::get_project_default()->get_stylebox(p_name, type);
+		}
 
-		if (Theme::get_default()->has_stylebox(p_name, class_name))
+		if (Theme::get_default()->has_stylebox(p_name, class_name)) {
 			return Theme::get_default()->get_stylebox(p_name, class_name);
+		}
 
 		class_name = ClassDB::get_parent_class_nocheck(class_name);
 	}
@@ -889,8 +921,9 @@ Ref<StyleBox> Control::get_stylebox(const StringName &p_name, const StringName &
 Ref<Font> Control::get_font(const StringName &p_name, const StringName &p_node_type) const {
 	if (p_node_type == StringName() || p_node_type == get_class_name()) {
 		const Ref<Font> *font = data.font_override.getptr(p_name);
-		if (font)
+		if (font) {
 			return *font;
+		}
 	}
 
 	StringName type = p_node_type ? p_node_type : get_class_name();
@@ -909,14 +942,16 @@ Ref<Font> Control::get_font(const StringName &p_name, const StringName &p_node_t
 			class_name = ClassDB::get_parent_class_nocheck(class_name);
 		}
 
-		if (theme_owner->data.theme->get_default_theme_font().is_valid())
+		if (theme_owner->data.theme->get_default_theme_font().is_valid()) {
 			return theme_owner->data.theme->get_default_theme_font();
+		}
 		Control *parent = Object::cast_to<Control>(theme_owner->get_parent());
 
-		if (parent)
+		if (parent) {
 			theme_owner = parent->data.theme_owner;
-		else
+		} else {
 			theme_owner = nullptr;
+		}
 	}
 
 	return Theme::get_default()->get_font(p_name, type);
@@ -924,8 +959,9 @@ Ref<Font> Control::get_font(const StringName &p_name, const StringName &p_node_t
 Color Control::get_color(const StringName &p_name, const StringName &p_node_type) const {
 	if (p_node_type == StringName() || p_node_type == get_class_name()) {
 		const Color *color = data.color_override.getptr(p_name);
-		if (color)
+		if (color) {
 			return *color;
+		}
 	}
 
 	StringName type = p_node_type ? p_node_type : get_class_name();
@@ -945,10 +981,11 @@ Color Control::get_color(const StringName &p_name, const StringName &p_node_type
 
 		Control *parent = Object::cast_to<Control>(theme_owner->get_parent());
 
-		if (parent)
+		if (parent) {
 			theme_owner = parent->data.theme_owner;
-		else
+		} else {
 			theme_owner = nullptr;
+		}
 	}
 
 	if (Theme::get_project_default().is_valid()) {
@@ -962,8 +999,9 @@ Color Control::get_color(const StringName &p_name, const StringName &p_node_type
 int Control::get_constant(const StringName &p_name, const StringName &p_node_type) const {
 	if (p_node_type == StringName() || p_node_type == get_class_name()) {
 		const int *constant = data.constant_override.getptr(p_name);
-		if (constant)
+		if (constant) {
 			return *constant;
+		}
 	}
 
 	StringName type = p_node_type ? p_node_type : get_class_name();
@@ -983,10 +1021,11 @@ int Control::get_constant(const StringName &p_name, const StringName &p_node_typ
 
 		Control *parent = Object::cast_to<Control>(theme_owner->get_parent());
 
-		if (parent)
+		if (parent) {
 			theme_owner = parent->data.theme_owner;
-		else
+		} else {
 			theme_owner = nullptr;
+		}
 	}
 
 	if (Theme::get_project_default().is_valid()) {
@@ -1029,8 +1068,9 @@ bool Control::has_constant_override(const StringName &p_name) const {
 
 bool Control::has_icon(const StringName &p_name, const StringName &p_node_type) const {
 	if (p_node_type == StringName() || p_node_type == get_class_name()) {
-		if (has_icon_override(p_name))
+		if (has_icon_override(p_name)) {
 			return true;
+		}
 	}
 
 	StringName type = p_node_type ? p_node_type : get_class_name();
@@ -1050,10 +1090,11 @@ bool Control::has_icon(const StringName &p_name, const StringName &p_node_type) 
 
 		Control *parent = Object::cast_to<Control>(theme_owner->get_parent());
 
-		if (parent)
+		if (parent) {
 			theme_owner = parent->data.theme_owner;
-		else
+		} else {
 			theme_owner = nullptr;
+		}
 	}
 
 	if (Theme::get_project_default().is_valid()) {
@@ -1066,8 +1107,9 @@ bool Control::has_icon(const StringName &p_name, const StringName &p_node_type) 
 
 bool Control::has_shader(const StringName &p_name, const StringName &p_node_type) const {
 	if (p_node_type == StringName() || p_node_type == get_class_name()) {
-		if (has_shader_override(p_name))
+		if (has_shader_override(p_name)) {
 			return true;
+		}
 	}
 
 	StringName type = p_node_type ? p_node_type : get_class_name();
@@ -1087,10 +1129,11 @@ bool Control::has_shader(const StringName &p_name, const StringName &p_node_type
 
 		Control *parent = Object::cast_to<Control>(theme_owner->get_parent());
 
-		if (parent)
+		if (parent) {
 			theme_owner = parent->data.theme_owner;
-		else
+		} else {
 			theme_owner = nullptr;
+		}
 	}
 
 	if (Theme::get_project_default().is_valid()) {
@@ -1102,8 +1145,9 @@ bool Control::has_shader(const StringName &p_name, const StringName &p_node_type
 }
 bool Control::has_stylebox(const StringName &p_name, const StringName &p_node_type) const {
 	if (p_node_type == StringName() || p_node_type == get_class_name()) {
-		if (has_stylebox_override(p_name))
+		if (has_stylebox_override(p_name)) {
 			return true;
+		}
 	}
 
 	StringName type = p_node_type ? p_node_type : get_class_name();
@@ -1123,10 +1167,11 @@ bool Control::has_stylebox(const StringName &p_name, const StringName &p_node_ty
 
 		Control *parent = Object::cast_to<Control>(theme_owner->get_parent());
 
-		if (parent)
+		if (parent) {
 			theme_owner = parent->data.theme_owner;
-		else
+		} else {
 			theme_owner = nullptr;
+		}
 	}
 
 	if (Theme::get_project_default().is_valid()) {
@@ -1138,8 +1183,9 @@ bool Control::has_stylebox(const StringName &p_name, const StringName &p_node_ty
 }
 bool Control::has_font(const StringName &p_name, const StringName &p_node_type) const {
 	if (p_node_type == StringName() || p_node_type == get_class_name()) {
-		if (has_font_override(p_name))
+		if (has_font_override(p_name)) {
 			return true;
+		}
 	}
 
 	StringName type = p_node_type ? p_node_type : get_class_name();
@@ -1159,10 +1205,11 @@ bool Control::has_font(const StringName &p_name, const StringName &p_node_type) 
 
 		Control *parent = Object::cast_to<Control>(theme_owner->get_parent());
 
-		if (parent)
+		if (parent) {
 			theme_owner = parent->data.theme_owner;
-		else
+		} else {
 			theme_owner = nullptr;
+		}
 	}
 
 	if (Theme::get_project_default().is_valid()) {
@@ -1175,8 +1222,9 @@ bool Control::has_font(const StringName &p_name, const StringName &p_node_type) 
 
 bool Control::has_color(const StringName &p_name, const StringName &p_node_type) const {
 	if (p_node_type == StringName() || p_node_type == get_class_name()) {
-		if (has_color_override(p_name))
+		if (has_color_override(p_name)) {
 			return true;
+		}
 	}
 
 	StringName type = p_node_type ? p_node_type : get_class_name();
@@ -1196,10 +1244,11 @@ bool Control::has_color(const StringName &p_name, const StringName &p_node_type)
 
 		Control *parent = Object::cast_to<Control>(theme_owner->get_parent());
 
-		if (parent)
+		if (parent) {
 			theme_owner = parent->data.theme_owner;
-		else
+		} else {
 			theme_owner = nullptr;
+		}
 	}
 
 	if (Theme::get_project_default().is_valid()) {
@@ -1212,8 +1261,9 @@ bool Control::has_color(const StringName &p_name, const StringName &p_node_type)
 
 bool Control::has_constant(const StringName &p_name, const StringName &p_node_type) const {
 	if (p_node_type == StringName() || p_node_type == get_class_name()) {
-		if (has_constant_override(p_name))
+		if (has_constant_override(p_name)) {
 			return true;
+		}
 	}
 
 	StringName type = p_node_type ? p_node_type : get_class_name();
@@ -1233,10 +1283,11 @@ bool Control::has_constant(const StringName &p_name, const StringName &p_node_ty
 
 		Control *parent = Object::cast_to<Control>(theme_owner->get_parent());
 
-		if (parent)
+		if (parent) {
 			theme_owner = parent->data.theme_owner;
-		else
+		} else {
 			theme_owner = nullptr;
+		}
 	}
 
 	if (Theme::get_project_default().is_valid()) {
@@ -1248,8 +1299,9 @@ bool Control::has_constant(const StringName &p_name, const StringName &p_node_ty
 }
 
 Rect2 Control::get_parent_anchorable_rect() const {
-	if (!is_inside_tree())
+	if (!is_inside_tree()) {
 		return Rect2();
+	}
 
 	Rect2 parent_rect;
 	if (data.parent_canvas_item) {
@@ -1728,10 +1780,12 @@ void Control::_set_size(const Size2 &p_size) {
 void Control::set_size(const Size2 &p_size, bool p_keep_margins) {
 	Size2 new_size = p_size;
 	Size2 min = get_combined_minimum_size();
-	if (new_size.x < min.x)
+	if (new_size.x < min.x) {
 		new_size.x = min.x;
-	if (new_size.y < min.y)
+	}
+	if (new_size.y < min.y) {
 		new_size.y = min.y;
+	}
 
 	if (p_keep_margins) {
 		_compute_anchors(Rect2(data.pos_cache, new_size), data.margin, data.anchor);
@@ -1850,15 +1904,17 @@ void Control::add_constant_override(const StringName &p_name, int p_constant) {
 void Control::set_focus_mode(FocusMode p_focus_mode) {
 	ERR_FAIL_INDEX((int)p_focus_mode, 3);
 
-	if (is_inside_tree() && p_focus_mode == FOCUS_NONE && data.focus_mode != FOCUS_NONE && has_focus())
+	if (is_inside_tree() && p_focus_mode == FOCUS_NONE && data.focus_mode != FOCUS_NONE && has_focus()) {
 		release_focus();
+	}
 
 	data.focus_mode = p_focus_mode;
 }
 
 static Control *_next_control(Control *p_from) {
-	if (p_from->is_set_as_toplevel())
+	if (p_from->is_set_as_toplevel()) {
 		return nullptr; // can't go above
+	}
 
 	Control *parent = Object::cast_to<Control>(p_from->get_parent());
 
@@ -1870,8 +1926,9 @@ static Control *_next_control(Control *p_from) {
 	ERR_FAIL_INDEX_V(next, parent->get_child_count(), nullptr);
 	for (int i = (next + 1); i < parent->get_child_count(); i++) {
 		Control *c = Object::cast_to<Control>(parent->get_child(i));
-		if (!c || !c->is_visible_in_tree() || c->is_set_as_toplevel())
+		if (!c || !c->is_visible_in_tree() || c->is_set_as_toplevel()) {
 			continue;
+		}
 
 		return c;
 	}
@@ -1895,8 +1952,9 @@ Control *Control::find_next_valid_focus() const {
 			} else {
 				return nullptr;
 			}
-			if (c->is_visible() && c->get_focus_mode() != FOCUS_NONE)
+			if (c->is_visible() && c->get_focus_mode() != FOCUS_NONE) {
 				return c;
+			}
 		}
 
 		// find next child
@@ -1924,22 +1982,26 @@ Control *Control::find_next_valid_focus() const {
 				if (!next_child) {
 					next_child = const_cast<Control *>(this);
 					while (next_child) {
-						if (next_child->data.SI || next_child->data.RI)
+						if (next_child->data.SI || next_child->data.RI) {
 							break;
+						}
 						next_child = next_child->get_parent_control();
 					}
 				}
 			}
 		}
 
-		if (next_child == this) // no next control->
+		if (next_child == this) { // no next control->
 			return (get_focus_mode() == FOCUS_ALL) ? next_child : nullptr;
+		}
 		if (next_child) {
-			if (next_child->get_focus_mode() == FOCUS_ALL)
+			if (next_child->get_focus_mode() == FOCUS_ALL) {
 				return next_child;
+			}
 			from = next_child;
-		} else
+		} else {
 			break;
+		}
 	}
 
 	return nullptr;
@@ -1949,15 +2011,17 @@ static Control *_prev_control(Control *p_from) {
 	Control *child = nullptr;
 	for (int i = p_from->get_child_count() - 1; i >= 0; i--) {
 		Control *c = Object::cast_to<Control>(p_from->get_child(i));
-		if (!c || !c->is_visible_in_tree() || c->is_set_as_toplevel())
+		if (!c || !c->is_visible_in_tree() || c->is_set_as_toplevel()) {
 			continue;
+		}
 
 		child = c;
 		break;
 	}
 
-	if (!child)
+	if (!child) {
 		return p_from;
+	}
 
 	//no prev in parent, try the same in parent
 	return _prev_control(child);
@@ -1978,8 +2042,9 @@ Control *Control::find_prev_valid_focus() const {
 			} else {
 				return nullptr;
 			}
-			if (c->is_visible() && c->get_focus_mode() != FOCUS_NONE)
+			if (c->is_visible() && c->get_focus_mode() != FOCUS_NONE) {
 				return c;
+			}
 		}
 
 		// find prev child
@@ -2010,11 +2075,13 @@ Control *Control::find_prev_valid_focus() const {
 			}
 		}
 
-		if (prev_child == this) // no prev control->
+		if (prev_child == this) { // no prev control->
 			return (get_focus_mode() == FOCUS_ALL) ? prev_child : nullptr;
+		}
 
-		if (prev_child->get_focus_mode() == FOCUS_ALL)
+		if (prev_child->get_focus_mode() == FOCUS_ALL) {
 			return prev_child;
+		}
 
 		from = prev_child;
 	}
@@ -2043,8 +2110,9 @@ void Control::grab_focus() {
 void Control::release_focus() {
 	ERR_FAIL_COND(!is_inside_tree());
 
-	if (!has_focus())
+	if (!has_focus()) {
 		return;
+	}
 
 	get_viewport()->_gui_remove_focus();
 	update();
@@ -2058,8 +2126,9 @@ void Control::show_modal(bool p_exclusive) {
 	ERR_FAIL_COND(!is_inside_tree());
 	ERR_FAIL_COND(!data.SI);
 
-	if (is_visible_in_tree())
+	if (is_visible_in_tree()) {
 		hide();
+	}
 
 	ERR_FAIL_COND(data.MI != nullptr);
 	show();
@@ -2076,8 +2145,9 @@ void Control::_modal_set_prev_focus_owner(ObjectID p_prev) {
 void Control::_modal_stack_remove() {
 	ERR_FAIL_COND(!is_inside_tree());
 
-	if (!data.MI)
+	if (!data.MI) {
 		return;
+	}
 
 	List<Control *>::Element *element = data.MI;
 	data.MI = nullptr;
@@ -2090,8 +2160,9 @@ void Control::_modal_stack_remove() {
 void Control::_propagate_theme_changed(CanvasItem *p_at, Control *p_owner, bool p_assign) {
 	Control *c = Object::cast_to<Control>(p_at);
 
-	if (c && c != p_owner && c->data.theme.is_valid()) // has a theme, this can't be propagated
+	if (c && c != p_owner && c->data.theme.is_valid()) { // has a theme, this can't be propagated
 		return;
+	}
 
 	for (int i = 0; i < p_at->get_child_count(); i++) {
 		CanvasItem *child = Object::cast_to<CanvasItem>(p_at->get_child(i));
@@ -2113,8 +2184,9 @@ void Control::_theme_changed() {
 }
 
 void Control::set_theme(const Ref<Theme> &p_theme) {
-	if (data.theme == p_theme)
+	if (data.theme == p_theme) {
 		return;
+	}
 
 	if (data.theme.is_valid()) {
 		data.theme->disconnect("changed", this, "_theme_changed");
@@ -2139,8 +2211,9 @@ void Control::set_theme(const Ref<Theme> &p_theme) {
 }
 
 void Control::accept_event() {
-	if (is_inside_tree())
+	if (is_inside_tree()) {
 		get_viewport()->_gui_accept_event();
+	}
 }
 
 Ref<Theme> Control::get_theme() const {
@@ -2216,8 +2289,9 @@ NodePath Control::get_focus_previous() const {
 Control *Control::_get_focus_neighbour(Margin p_margin, int p_count) {
 	ERR_FAIL_INDEX_V((int)p_margin, 4, nullptr);
 
-	if (p_count >= MAX_NEIGHBOUR_SEARCH_COUNT)
+	if (p_count >= MAX_NEIGHBOUR_SEARCH_COUNT) {
 		return nullptr;
+	}
 	if (!data.focus_neighbour[p_margin].is_empty()) {
 		Control *c = nullptr;
 		Node *n = get_node(data.focus_neighbour[p_margin]);
@@ -2228,12 +2302,15 @@ Control *Control::_get_focus_neighbour(Margin p_margin, int p_count) {
 			return nullptr;
 		}
 		bool valid = true;
-		if (!c->is_visible())
+		if (!c->is_visible()) {
 			valid = false;
-		if (c->get_focus_mode() == FOCUS_NONE)
+		}
+		if (c->get_focus_mode() == FOCUS_NONE) {
 			valid = false;
-		if (valid)
+		}
+		if (valid) {
 			return c;
+		}
 
 		c = c->_get_focus_neighbour(p_margin, p_count + 1);
 		return c;
@@ -2264,8 +2341,9 @@ Control *Control::_get_focus_neighbour(Margin p_margin, int p_count) {
 
 	for (int i = 0; i < 4; i++) {
 		float d = vdir.dot(points[i]);
-		if (d > maxd)
+		if (d > maxd) {
 			maxd = d;
+		}
 	}
 
 	Node *base = this;
@@ -2273,16 +2351,19 @@ Control *Control::_get_focus_neighbour(Margin p_margin, int p_count) {
 	while (base) {
 		Control *c = Object::cast_to<Control>(base);
 		if (c) {
-			if (c->data.SI)
+			if (c->data.SI) {
 				break;
-			if (c->data.RI)
+			}
+			if (c->data.RI) {
 				break;
+			}
 		}
 		base = base->get_parent();
 	}
 
-	if (!base)
+	if (!base) {
 		return nullptr;
+	}
 
 	_window_find_focus_neighbour(vdir, base, points, maxd, dist, &result);
 
@@ -2290,8 +2371,9 @@ Control *Control::_get_focus_neighbour(Margin p_margin, int p_count) {
 }
 
 void Control::_window_find_focus_neighbour(const Vector2 &p_dir, Node *p_at, const Point2 *p_points, float p_min, float &r_closest_dist, Control **r_closest) {
-	if (Object::cast_to<Viewport>(p_at))
+	if (Object::cast_to<Viewport>(p_at)) {
 		return; //bye
+	}
 
 	Control *c = Object::cast_to<Control>(p_at);
 
@@ -2309,8 +2391,9 @@ void Control::_window_find_focus_neighbour(const Vector2 &p_dir, Node *p_at, con
 
 		for (int i = 0; i < 4; i++) {
 			float d = p_dir.dot(points[i]);
-			if (d < min)
+			if (d < min) {
 				min = d;
+			}
 		}
 
 		if (min > (p_min - CMP_EPSILON)) {
@@ -2337,15 +2420,17 @@ void Control::_window_find_focus_neighbour(const Vector2 &p_dir, Node *p_at, con
 	for (int i = 0; i < p_at->get_child_count(); i++) {
 		Node *child = p_at->get_child(i);
 		Control *childc = Object::cast_to<Control>(child);
-		if (childc && childc->data.SI)
+		if (childc && childc->data.SI) {
 			continue; //subwindow, ignore
+		}
 		_window_find_focus_neighbour(p_dir, p_at->get_child(i), p_points, p_min, r_closest_dist, r_closest);
 	}
 }
 
 void Control::set_h_size_flags(int p_flags) {
-	if (data.h_size_flags == p_flags)
+	if (data.h_size_flags == p_flags) {
 		return;
+	}
 	data.h_size_flags = p_flags;
 	emit_signal(SceneStringNames::get_singleton()->size_flags_changed);
 }
@@ -2354,15 +2439,17 @@ int Control::get_h_size_flags() const {
 	return data.h_size_flags;
 }
 void Control::set_v_size_flags(int p_flags) {
-	if (data.v_size_flags == p_flags)
+	if (data.v_size_flags == p_flags) {
 		return;
+	}
 	data.v_size_flags = p_flags;
 	emit_signal(SceneStringNames::get_singleton()->size_flags_changed);
 }
 
 void Control::set_stretch_ratio(float p_ratio) {
-	if (data.expand == p_ratio)
+	if (data.expand == p_ratio) {
 		return;
+	}
 
 	data.expand = p_ratio;
 	emit_signal(SceneStringNames::get_singleton()->size_flags_changed);
@@ -2379,24 +2466,28 @@ void Control::grab_click_focus() {
 }
 
 void Control::minimum_size_changed() {
-	if (!is_inside_tree() || data.block_minimum_size_adjust)
+	if (!is_inside_tree() || data.block_minimum_size_adjust) {
 		return;
+	}
 
 	Control *invalidate = this;
 
 	//invalidate cache upwards
 	while (invalidate && invalidate->data.minimum_size_valid) {
 		invalidate->data.minimum_size_valid = false;
-		if (invalidate->is_set_as_toplevel())
+		if (invalidate->is_set_as_toplevel()) {
 			break; // do not go further up
+		}
 		invalidate = invalidate->data.parent;
 	}
 
-	if (!is_visible_in_tree())
+	if (!is_visible_in_tree()) {
 		return;
+	}
 
-	if (data.updating_last_minimum_size)
+	if (data.updating_last_minimum_size) {
 		return;
+	}
 
 	data.updating_last_minimum_size = true;
 
@@ -2487,10 +2578,12 @@ Vector2 Control::get_pivot_offset() const {
 void Control::set_scale(const Vector2 &p_scale) {
 	data.scale = p_scale;
 	// Avoid having 0 scale values, can lead to errors in physics and rendering.
-	if (data.scale.x == 0)
+	if (data.scale.x == 0) {
 		data.scale.x = CMP_EPSILON;
-	if (data.scale.y == 0)
+	}
+	if (data.scale.y == 0) {
 		data.scale.y = CMP_EPSILON;
+	}
 	update();
 	_notify_transform();
 }
@@ -2507,8 +2600,9 @@ Control *Control::get_root_parent_control() const {
 		if (c) {
 			root = c;
 
-			if (c->data.RI || c->data.MI || c->is_toplevel_control())
+			if (c->data.RI || c->data.MI || c->is_toplevel_control()) {
 				break;
+			}
 		}
 
 		ci = ci->get_parent_item();

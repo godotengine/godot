@@ -39,8 +39,9 @@
 
 void EditorLog::_error_handler(void *p_self, const char *p_func, const char *p_file, int p_line, const char *p_error, const char *p_errorexp, ErrorHandlerType p_type) {
 	EditorLog *self = (EditorLog *)p_self;
-	if (self->current != Thread::get_caller_id())
+	if (self->current != Thread::get_caller_id()) {
 		return;
+	}
 
 	String err_str;
 	if (p_errorexp && p_errorexp[0]) {
@@ -125,8 +126,9 @@ void EditorLog::add_message(const String &p_msg, MessageType p_type) {
 	log->add_text(p_msg);
 	log->add_newline();
 
-	if (restore)
+	if (restore) {
 		log->pop();
+	}
 }
 
 void EditorLog::set_tool_button(ToolButton *p_tool_button) {

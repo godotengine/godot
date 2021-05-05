@@ -157,8 +157,9 @@ public:
 	}
 
 	_FORCE_INLINE_ bool owns(const RID &p_rid) const {
-		if (p_rid.get_data() == nullptr)
+		if (p_rid.get_data() == nullptr) {
 			return false;
+		}
 #ifdef DEBUG_ENABLED
 		return id_map.has(p_rid.get_data());
 #else

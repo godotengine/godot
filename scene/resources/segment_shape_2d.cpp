@@ -111,8 +111,9 @@ void RayShape2D::draw(const RID &p_to_rid, const Color &p_color) {
 	pts.push_back(tip + Vector2(Math_SQRT12 * tsize, 0));
 	pts.push_back(tip + Vector2(-Math_SQRT12 * tsize, 0));
 	Vector<Color> cols;
-	for (int i = 0; i < 3; i++)
+	for (int i = 0; i < 3; i++) {
 		cols.push_back(p_color);
+	}
 
 	VS::get_singleton()->canvas_item_add_primitive(p_to_rid, pts, cols, Vector<Point2>(), RID());
 }

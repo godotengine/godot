@@ -378,8 +378,9 @@ Vector3 LightmapperCPU::_fix_sample_position(const Vector3 &p_position, const Ve
 
 	for (int i = -1; i <= 1; i += 1) {
 		for (int j = -1; j <= 1; j += 1) {
-			if (i == 0 && j == 0)
+			if (i == 0 && j == 0) {
 				continue;
+			}
 			Vector3 offset = Vector3(half_size.x * i, half_size.y * j, 0.0);
 			Vector3 rotated_offset = tangent_basis.xform_inv(offset);
 			Vector3 target = p_texel_center + rotated_offset;
@@ -904,12 +905,15 @@ void LightmapperCPU::_post_process(uint32_t p_idx, void *r_output) {
 
 			for (int y = i - margin; y <= i + margin; y++) {
 				for (int x = j - margin; x <= j + margin; x++) {
-					if (x == j && y == i)
+					if (x == j && y == i) {
 						continue;
-					if (x < 0 || x >= size.x)
+					}
+					if (x < 0 || x >= size.x) {
 						continue;
-					if (y < 0 || y >= size.y)
+					}
+					if (y < 0 || y >= size.y) {
 						continue;
+					}
 					int cell_idx = indices[y * size.x + x];
 					if (cell_idx < 0) {
 						continue; //also ensures that blitted stuff is not reused
@@ -1150,12 +1154,15 @@ void LightmapperCPU::_dilate_lightmap(Vector3 *r_lightmap, const LocalVector<int
 
 			for (int y = i - margin; y <= i + margin; y++) {
 				for (int x = j - margin; x <= j + margin; x++) {
-					if (x == j && y == i)
+					if (x == j && y == i) {
 						continue;
-					if (x < 0 || x >= p_size.x)
+					}
+					if (x < 0 || x >= p_size.x) {
 						continue;
-					if (y < 0 || y >= p_size.y)
+					}
+					if (y < 0 || y >= p_size.y) {
 						continue;
+					}
 					int cell_idx = p_indices[y * p_size.x + x];
 					if (cell_idx < 0) {
 						continue; //also ensures that blitted stuff is not reused
@@ -1423,8 +1430,9 @@ LightmapperCPU::BakeError LightmapperCPU::bake(BakeQuality p_quality, bool p_use
 				String base = mesh_name;
 				while (true) {
 					mesh_name = base + itos(idx);
-					if (!used_mesh_names.has(mesh_name))
+					if (!used_mesh_names.has(mesh_name)) {
 						break;
+					}
 					idx++;
 				}
 			}

@@ -45,15 +45,17 @@ void Physics2DDirectBodyState::integrate_forces() {
 
 	float damp = 1.0 - step * get_total_linear_damp();
 
-	if (damp < 0) // reached zero in the given time
+	if (damp < 0) { // reached zero in the given time
 		damp = 0;
+	}
 
 	lv *= damp;
 
 	damp = 1.0 - step * get_total_angular_damp();
 
-	if (damp < 0) // reached zero in the given time
+	if (damp < 0) { // reached zero in the given time
 		damp = 0;
+	}
 
 	av *= damp;
 
@@ -173,8 +175,9 @@ int Physics2DShapeQueryParameters::get_collision_mask() const {
 
 void Physics2DShapeQueryParameters::set_exclude(const Vector<RID> &p_exclude) {
 	exclude.clear();
-	for (int i = 0; i < p_exclude.size(); i++)
+	for (int i = 0; i < p_exclude.size(); i++) {
 		exclude.insert(p_exclude[i]);
+	}
 }
 
 Vector<RID> Physics2DShapeQueryParameters::get_exclude() const {
@@ -250,13 +253,15 @@ Physics2DShapeQueryParameters::Physics2DShapeQueryParameters() {
 Dictionary Physics2DDirectSpaceState::_intersect_ray(const Vector2 &p_from, const Vector2 &p_to, const Vector<RID> &p_exclude, uint32_t p_layers, bool p_collide_with_bodies, bool p_collide_with_areas) {
 	RayResult inters;
 	Set<RID> exclude;
-	for (int i = 0; i < p_exclude.size(); i++)
+	for (int i = 0; i < p_exclude.size(); i++) {
 		exclude.insert(p_exclude[i]);
+	}
 
 	bool res = intersect_ray(p_from, p_to, inters, exclude, p_layers, p_collide_with_bodies, p_collide_with_areas);
 
-	if (!res)
+	if (!res) {
 		return Dictionary();
+	}
 
 	Dictionary d;
 	d["position"] = inters.position;
@@ -296,8 +301,9 @@ Array Physics2DDirectSpaceState::_cast_motion(const Ref<Physics2DShapeQueryParam
 
 	float closest_safe, closest_unsafe;
 	bool res = cast_motion(p_shape_query->shape, p_shape_query->transform, p_shape_query->motion, p_shape_query->margin, closest_safe, closest_unsafe, p_shape_query->exclude, p_shape_query->collision_mask, p_shape_query->collide_with_bodies, p_shape_query->collide_with_areas);
-	if (!res)
+	if (!res) {
 		return Array();
+	}
 	Array ret;
 	ret.resize(2);
 	ret[0] = closest_safe;
@@ -307,20 +313,23 @@ Array Physics2DDirectSpaceState::_cast_motion(const Ref<Physics2DShapeQueryParam
 
 Array Physics2DDirectSpaceState::_intersect_point_impl(const Vector2 &p_point, int p_max_results, const Vector<RID> &p_exclude, uint32_t p_layers, bool p_collide_with_bodies, bool p_collide_with_areas, bool p_filter_by_canvas, ObjectID p_canvas_instance_id) {
 	Set<RID> exclude;
-	for (int i = 0; i < p_exclude.size(); i++)
+	for (int i = 0; i < p_exclude.size(); i++) {
 		exclude.insert(p_exclude[i]);
+	}
 
 	Vector<ShapeResult> ret;
 	ret.resize(p_max_results);
 
 	int rc;
-	if (p_filter_by_canvas)
+	if (p_filter_by_canvas) {
 		rc = intersect_point(p_point, ret.ptrw(), ret.size(), exclude, p_layers, p_collide_with_bodies, p_collide_with_areas);
-	else
+	} else {
 		rc = intersect_point_on_canvas(p_point, p_canvas_instance_id, ret.ptrw(), ret.size(), exclude, p_layers, p_collide_with_bodies, p_collide_with_areas);
+	}
 
-	if (rc == 0)
+	if (rc == 0) {
 		return Array();
+	}
 
 	Array r;
 	r.resize(rc);
@@ -351,12 +360,14 @@ Array Physics2DDirectSpaceState::_collide_shape(const Ref<Physics2DShapeQueryPar
 	ret.resize(p_max_results * 2);
 	int rc = 0;
 	bool res = collide_shape(p_shape_query->shape, p_shape_query->transform, p_shape_query->motion, p_shape_query->margin, ret.ptrw(), p_max_results, rc, p_shape_query->exclude, p_shape_query->collision_mask, p_shape_query->collide_with_bodies, p_shape_query->collide_with_areas);
-	if (!res)
+	if (!res) {
 		return Array();
+	}
 	Array r;
 	r.resize(rc * 2);
-	for (int i = 0; i < rc * 2; i++)
+	for (int i = 0; i < rc * 2; i++) {
 		r[i] = ret[i];
+	}
 	return r;
 }
 Dictionary Physics2DDirectSpaceState::_get_rest_info(const Ref<Physics2DShapeQueryParameters> &p_shape_query) {
@@ -366,8 +377,9 @@ Dictionary Physics2DDirectSpaceState::_get_rest_info(const Ref<Physics2DShapeQue
 
 	bool res = rest_info(p_shape_query->shape, p_shape_query->transform, p_shape_query->motion, p_shape_query->margin, &sri, p_shape_query->exclude, p_shape_query->collision_mask, p_shape_query->collide_with_bodies, p_shape_query->collide_with_areas);
 	Dictionary r;
-	if (!res)
+	if (!res) {
 		return r;
+	}
 
 	r["point"] = sri.point;
 	r["normal"] = sri.normal;
@@ -485,8 +497,9 @@ Physics2DTestMotionResult::Physics2DTestMotionResult() {
 
 bool Physics2DServer::_body_test_motion(RID p_body, const Transform2D &p_from, const Vector2 &p_motion, bool p_infinite_inertia, float p_margin, const Ref<Physics2DTestMotionResult> &p_result) {
 	MotionResult *r = nullptr;
-	if (p_result.is_valid())
+	if (p_result.is_valid()) {
 		r = p_result->get_result_ptr();
+	}
 	return body_test_motion(p_body, p_from, p_motion, p_infinite_inertia, p_margin, r);
 }
 

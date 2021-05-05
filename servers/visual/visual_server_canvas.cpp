@@ -43,8 +43,9 @@ void VisualServerCanvas::_render_canvas_item_tree(Item *p_canvas_item, const Tra
 
 	VSG::canvas_render->canvas_render_items_begin(p_modulate, p_lights, p_transform);
 	for (int i = 0; i < z_range; i++) {
-		if (!z_list[i])
+		if (!z_list[i]) {
 			continue;
+		}
 		VSG::canvas_render->canvas_render_items(z_list[i], VS::CANVAS_ITEM_Z_MIN + i, p_modulate, p_lights, p_transform);
 	}
 	VSG::canvas_render->canvas_render_items_end();
@@ -66,12 +67,13 @@ void _collect_ysort_children(VisualServerCanvas::Item *p_canvas_item, Transform2
 
 			r_index++;
 
-			if (child_items[i]->sort_y)
+			if (child_items[i]->sort_y) {
 				_collect_ysort_children(child_items[i],
 						p_transform * child_items[i]->xform,
 						child_items[i]->use_parent_material ? p_material_owner : child_items[i],
 						p_modulate * child_items[i]->modulate,
 						r_items, r_index);
+			}
 		}
 	}
 }
@@ -86,8 +88,9 @@ void _mark_ysort_dirty(VisualServerCanvas::Item *ysort_owner, RID_Owner<VisualSe
 void VisualServerCanvas::_render_canvas_item(Item *p_canvas_item, const Transform2D &p_transform, const Rect2 &p_clip_rect, const Color &p_modulate, int p_z, RasterizerCanvas::Item **z_list, RasterizerCanvas::Item **z_last_list, Item *p_canvas_clip, Item *p_material_owner) {
 	Item *ci = p_canvas_item;
 
-	if (!ci->visible)
+	if (!ci->visible) {
 		return;
+	}
 
 	if (ci->children_order_dirty) {
 		ci->child_items.sort_custom<ItemIndexSort>();
@@ -101,17 +104,18 @@ void VisualServerCanvas::_render_canvas_item(Item *p_canvas_item, const Transfor
 	Rect2 global_rect = xform.xform(rect);
 	global_rect.position += p_clip_rect.position;
 
-	if (ci->use_parent_material && p_material_owner)
+	if (ci->use_parent_material && p_material_owner) {
 		ci->material_owner = p_material_owner;
-	else {
+	} else {
 		p_material_owner = ci;
 		ci->material_owner = nullptr;
 	}
 
 	Color modulate(ci->modulate.r * p_modulate.r, ci->modulate.g * p_modulate.g, ci->modulate.b * p_modulate.b, ci->modulate.a * p_modulate.a);
 
-	if (modulate.a < 0.007)
+	if (modulate.a < 0.007) {
 		return;
+	}
 
 	int child_item_count = ci->child_items.size();
 	Item **child_items = ci->child_items.ptrw();
@@ -146,14 +150,16 @@ void VisualServerCanvas::_render_canvas_item(Item *p_canvas_item, const Transfor
 		sorter.sort(child_items, child_item_count);
 	}
 
-	if (ci->z_relative)
+	if (ci->z_relative) {
 		p_z = CLAMP(p_z + ci->z_index, VS::CANVAS_ITEM_Z_MIN, VS::CANVAS_ITEM_Z_MAX);
-	else
+	} else {
 		p_z = ci->z_index;
+	}
 
 	for (int i = 0; i < child_item_count; i++) {
-		if (!child_items[i]->behind || (ci->sort_y && child_items[i]->sort_y))
+		if (!child_items[i]->behind || (ci->sort_y && child_items[i]->sort_y)) {
 			continue;
+		}
 		if (ci->sort_y) {
 			_render_canvas_item(child_items[i], xform * child_items[i]->ysort_xform, p_clip_rect, modulate * child_items[i]->ysort_modulate, p_z, z_list, z_last_list, (Item *)ci->final_clip_owner, (Item *)child_items[i]->material_owner);
 		} else {
@@ -192,8 +198,9 @@ void VisualServerCanvas::_render_canvas_item(Item *p_canvas_item, const Transfor
 	}
 
 	for (int i = 0; i < child_item_count; i++) {
-		if (child_items[i]->behind || (ci->sort_y && child_items[i]->sort_y))
+		if (child_items[i]->behind || (ci->sort_y && child_items[i]->sort_y)) {
 			continue;
+		}
 		if (ci->sort_y) {
 			_render_canvas_item(child_items[i], xform * child_items[i]->ysort_xform, p_clip_rect, modulate * child_items[i]->ysort_modulate, p_z, z_list, z_last_list, (Item *)ci->final_clip_owner, (Item *)child_items[i]->material_owner);
 		} else {
@@ -252,8 +259,9 @@ void VisualServerCanvas::render_canvas(Canvas *p_canvas, const Transform2D &p_tr
 
 		VSG::canvas_render->canvas_render_items_begin(p_canvas->modulate, p_lights, p_transform);
 		for (int i = 0; i < z_range; i++) {
-			if (!z_list[i])
+			if (!z_list[i]) {
 				continue;
+			}
 
 			if (p_masked_lights) {
 				_light_mask_canvas_items(VS::CANVAS_ITEM_Z_MIN + i, z_list[i], p_masked_lights, p_canvas_layer_id);
@@ -749,12 +757,14 @@ void VisualServerCanvas::canvas_item_add_triangle_array(RID p_item, const Vector
 
 	if (indices.empty()) {
 		ERR_FAIL_COND(vertex_count % 3 != 0);
-		if (p_count == -1)
+		if (p_count == -1) {
 			count = vertex_count;
+		}
 	} else {
 		ERR_FAIL_COND(indices.size() % 3 != 0);
-		if (p_count == -1)
+		if (p_count == -1) {
 			count = indices.size();
+		}
 	}
 
 	Item::CommandPolygon *polygon = memnew(Item::CommandPolygon);
@@ -942,8 +952,9 @@ void VisualServerCanvas::canvas_light_attach_to_canvas(RID p_light, RID p_canvas
 		canvas->lights.erase(clight);
 	}
 
-	if (!canvas_owner.owns(p_canvas))
+	if (!canvas_owner.owns(p_canvas)) {
 		p_canvas = RID();
+	}
 
 	clight->canvas = p_canvas;
 
@@ -1038,8 +1049,9 @@ void VisualServerCanvas::canvas_light_set_shadow_enabled(RID p_light, bool p_ena
 	RasterizerCanvas::Light *clight = canvas_light_owner.get(p_light);
 	ERR_FAIL_COND(!clight);
 
-	if (clight->shadow_buffer.is_valid() == p_enabled)
+	if (clight->shadow_buffer.is_valid() == p_enabled) {
 		return;
+	}
 	if (p_enabled) {
 		clight->shadow_buffer = VSG::storage->canvas_light_shadow_buffer_create(clight->shadow_buffer_size);
 	} else {
@@ -1054,8 +1066,9 @@ void VisualServerCanvas::canvas_light_set_shadow_buffer_size(RID p_light, int p_
 	ERR_FAIL_COND(!clight);
 
 	int new_size = next_power_of_2(p_size);
-	if (new_size == clight->shadow_buffer_size)
+	if (new_size == clight->shadow_buffer_size) {
 		return;
+	}
 
 	clight->shadow_buffer_size = next_power_of_2(p_size);
 
@@ -1106,8 +1119,9 @@ void VisualServerCanvas::canvas_light_occluder_attach_to_canvas(RID p_occluder, 
 		canvas->occluders.erase(occluder);
 	}
 
-	if (!canvas_owner.owns(p_canvas))
+	if (!canvas_owner.owns(p_canvas)) {
 		p_canvas = RID();
+	}
 
 	occluder->canvas = p_canvas;
 
@@ -1205,10 +1219,11 @@ void VisualServerCanvas::canvas_occluder_polygon_set_shape_as_lines(RID p_occlud
 	{
 		PoolVector<Vector2>::Read r = p_shape.read();
 		for (int i = 0; i < lc; i++) {
-			if (i == 0)
+			if (i == 0) {
 				occluder_poly->aabb.position = r[i];
-			else
+			} else {
 				occluder_poly->aabb.expand_to(r[i]);
+			}
 		}
 	}
 
@@ -1297,12 +1312,14 @@ bool VisualServerCanvas::free(RID p_rid) {
 
 		if (canvas_light->canvas.is_valid()) {
 			Canvas *canvas = canvas_owner.get(canvas_light->canvas);
-			if (canvas)
+			if (canvas) {
 				canvas->lights.erase(canvas_light);
+			}
 		}
 
-		if (canvas_light->shadow_buffer.is_valid())
+		if (canvas_light->shadow_buffer.is_valid()) {
 			VSG::storage->free(canvas_light->shadow_buffer);
+		}
 
 		VSG::canvas_render->light_internal_free(canvas_light->light_internal);
 

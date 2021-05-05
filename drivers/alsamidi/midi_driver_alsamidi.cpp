@@ -127,8 +127,9 @@ void MIDIDriverALSAMidi::thread_func(void *p_udata) {
 Error MIDIDriverALSAMidi::open() {
 	void **hints;
 
-	if (snd_device_name_hint(-1, "rawmidi", &hints) < 0)
+	if (snd_device_name_hint(-1, "rawmidi", &hints) < 0) {
 		return ERR_CANT_OPEN;
+	}
 
 	int i = 0;
 	for (void **n = hints; *n != nullptr; n++) {
@@ -142,8 +143,9 @@ Error MIDIDriverALSAMidi::open() {
 			}
 		}
 
-		if (name != nullptr)
+		if (name != nullptr) {
 			free(name);
+		}
 	}
 	snd_device_name_free_hint(hints);
 

@@ -110,8 +110,9 @@ void PHashTranslation::generate(const Ref<Translation> &p_from) {
 		const Vector<Pair<int, CharString>> &b = buckets[i];
 		Map<uint32_t, int> &t = table.write[i];
 
-		if (b.size() == 0)
+		if (b.size() == 0) {
 			continue;
+		}
 
 		int d = 1;
 		int item = 0;
@@ -190,22 +191,24 @@ bool PHashTranslation::_set(const StringName &p_name, const Variant &p_value) {
 		strings = p_value;
 	} else if (name == "load_from") {
 		generate(p_value);
-	} else
+	} else {
 		return false;
+	}
 
 	return true;
 }
 
 bool PHashTranslation::_get(const StringName &p_name, Variant &r_ret) const {
 	String name = p_name.operator String();
-	if (name == "hash_table")
+	if (name == "hash_table") {
 		r_ret = hash_table;
-	else if (name == "bucket_table")
+	} else if (name == "bucket_table") {
 		r_ret = bucket_table;
-	else if (name == "strings")
+	} else if (name == "strings") {
 		r_ret = strings;
-	else
+	} else {
 		return false;
+	}
 
 	return true;
 }
@@ -213,8 +216,9 @@ bool PHashTranslation::_get(const StringName &p_name, Variant &r_ret) const {
 StringName PHashTranslation::get_message(const StringName &p_src_text) const {
 	int htsize = hash_table.size();
 
-	if (htsize == 0)
+	if (htsize == 0) {
 		return StringName();
+	}
 
 	CharString str = p_src_text.operator String().utf8();
 	uint32_t h = hash(0, str.get_data());

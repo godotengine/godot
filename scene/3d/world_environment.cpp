@@ -82,8 +82,9 @@ String WorldEnvironment::get_configuration_warning() const {
 		return warning;
 	}
 
-	if (/*!is_visible_in_tree() ||*/ !is_inside_tree())
+	if (/*!is_visible_in_tree() ||*/ !is_inside_tree()) {
 		return String();
+	}
 
 	List<Node *> nodes;
 	get_tree()->get_nodes_in_group("_world_environment_" + itos(get_viewport()->find_world()->get_scenario().get_id()), &nodes);

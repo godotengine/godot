@@ -103,8 +103,9 @@ int BroadPhaseBasic::cull_point(const Vector3 &p_point, CollisionObjectSW **p_re
 			p_results[rc] = E->get().owner;
 			p_result_indices[rc] = E->get().subindex;
 			rc++;
-			if (rc >= p_max_results)
+			if (rc >= p_max_results) {
 				break;
+			}
 		}
 	}
 
@@ -120,8 +121,9 @@ int BroadPhaseBasic::cull_segment(const Vector3 &p_from, const Vector3 &p_to, Co
 			p_results[rc] = E->get().owner;
 			p_result_indices[rc] = E->get().subindex;
 			rc++;
-			if (rc >= p_max_results)
+			if (rc >= p_max_results) {
 				break;
+			}
 		}
 	}
 
@@ -136,8 +138,9 @@ int BroadPhaseBasic::cull_aabb(const AABB &p_aabb, CollisionObjectSW **p_results
 			p_results[rc] = E->get().owner;
 			p_result_indices[rc] = E->get().subindex;
 			rc++;
-			if (rc >= p_max_results)
+			if (rc >= p_max_results) {
 				break;
+			}
 		}
 	}
 
@@ -160,8 +163,9 @@ void BroadPhaseBasic::update() {
 			Element *elem_A = &I->get();
 			Element *elem_B = &J->get();
 
-			if (elem_A->owner == elem_B->owner)
+			if (elem_A->owner == elem_B->owner) {
 				continue;
+			}
 
 			bool pair_ok = elem_A->aabb.intersects(elem_B->aabb) && (!elem_A->_static || !elem_B->_static);
 
@@ -170,8 +174,9 @@ void BroadPhaseBasic::update() {
 			Map<PairKey, void *>::Element *E = pair_map.find(key);
 
 			if (!pair_ok && E) {
-				if (unpair_callback)
+				if (unpair_callback) {
 					unpair_callback(elem_A->owner, elem_A->subindex, elem_B->owner, elem_B->subindex, E->get(), unpair_userdata);
+				}
 				pair_map.erase(key);
 			}
 

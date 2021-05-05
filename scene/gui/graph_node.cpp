@@ -33,30 +33,33 @@
 #include "core/method_bind_ext.gen.inc"
 
 bool GraphNode::_set(const StringName &p_name, const Variant &p_value) {
-	if (!p_name.operator String().begins_with("slot/"))
+	if (!p_name.operator String().begins_with("slot/")) {
 		return false;
+	}
 
 	int idx = p_name.operator String().get_slice("/", 1).to_int();
 	String what = p_name.operator String().get_slice("/", 2);
 
 	Slot si;
-	if (slot_info.has(idx))
+	if (slot_info.has(idx)) {
 		si = slot_info[idx];
+	}
 
-	if (what == "left_enabled")
+	if (what == "left_enabled") {
 		si.enable_left = p_value;
-	else if (what == "left_type")
+	} else if (what == "left_type") {
 		si.type_left = p_value;
-	else if (what == "left_color")
+	} else if (what == "left_color") {
 		si.color_left = p_value;
-	else if (what == "right_enabled")
+	} else if (what == "right_enabled") {
 		si.enable_right = p_value;
-	else if (what == "right_type")
+	} else if (what == "right_type") {
 		si.type_right = p_value;
-	else if (what == "right_color")
+	} else if (what == "right_color") {
 		si.color_right = p_value;
-	else
+	} else {
 		return false;
+	}
 
 	set_slot(idx, si.enable_left, si.type_left, si.color_left, si.enable_right, si.type_right, si.color_right);
 	update();
@@ -72,23 +75,25 @@ bool GraphNode::_get(const StringName &p_name, Variant &r_ret) const {
 	String what = p_name.operator String().get_slice("/", 2);
 
 	Slot si;
-	if (slot_info.has(idx))
+	if (slot_info.has(idx)) {
 		si = slot_info[idx];
+	}
 
-	if (what == "left_enabled")
+	if (what == "left_enabled") {
 		r_ret = si.enable_left;
-	else if (what == "left_type")
+	} else if (what == "left_type") {
 		r_ret = si.type_left;
-	else if (what == "left_color")
+	} else if (what == "left_color") {
 		r_ret = si.color_left;
-	else if (what == "right_enabled")
+	} else if (what == "right_enabled") {
 		r_ret = si.enable_right;
-	else if (what == "right_type")
+	} else if (what == "right_type") {
 		r_ret = si.type_right;
-	else if (what == "right_color")
+	} else if (what == "right_color") {
 		r_ret = si.color_right;
-	else
+	} else {
 		return false;
+	}
 
 	return true;
 }
@@ -96,8 +101,9 @@ void GraphNode::_get_property_list(List<PropertyInfo> *p_list) const {
 	int idx = 0;
 	for (int i = 0; i < get_child_count(); i++) {
 		Control *c = Object::cast_to<Control>(get_child(i));
-		if (!c || c->is_set_as_toplevel())
+		if (!c || c->is_set_as_toplevel()) {
 			continue;
+		}
 
 		String base = "slot/" + itos(idx) + "/";
 
@@ -121,20 +127,23 @@ void GraphNode::_resort() {
 
 	for (int i = 0; i < get_child_count(); i++) {
 		Control *c = Object::cast_to<Control>(get_child(i));
-		if (!c)
+		if (!c) {
 			continue;
-		if (c->is_set_as_toplevel())
+		}
+		if (c->is_set_as_toplevel()) {
 			continue;
+		}
 
 		Size2i size = c->get_combined_minimum_size();
 
 		minsize.y += size.y;
 		minsize.x = MAX(minsize.x, size.x);
 
-		if (first)
+		if (first) {
 			first = false;
-		else
+		} else {
 			minsize.y += sep;
+		}
 	}
 
 	int vofs = 0;
@@ -143,10 +152,12 @@ void GraphNode::_resort() {
 	cache_y.clear();
 	for (int i = 0; i < get_child_count(); i++) {
 		Control *c = Object::cast_to<Control>(get_child(i));
-		if (!c)
+		if (!c) {
 			continue;
-		if (c->is_set_as_toplevel())
+		}
+		if (c->is_set_as_toplevel()) {
 			continue;
+		}
 
 		Size2i size = c->get_combined_minimum_size();
 
@@ -227,8 +238,9 @@ void GraphNode::_notification(int p_what) {
 
 			int w = get_size().width - sb->get_minimum_size().x;
 
-			if (show_close)
+			if (show_close) {
 				w -= close->get_width();
+			}
 
 			draw_string(title_font, Point2(sb->get_margin(MARGIN_LEFT) + title_h_offset, -title_font->get_height() + title_font->get_ascent() + title_offset), title, title_color, w);
 			if (show_close) {
@@ -241,10 +253,12 @@ void GraphNode::_notification(int p_what) {
 			}
 
 			for (Map<int, Slot>::Element *E = slot_info.front(); E; E = E->next()) {
-				if (E->key() < 0 || E->key() >= cache_y.size())
+				if (E->key() < 0 || E->key() >= cache_y.size()) {
 					continue;
-				if (!slot_info.has(E->key()))
+				}
+				if (!slot_info.has(E->key())) {
 					continue;
+				}
 				const Slot &s = slot_info[E->key()];
 				//left
 				if (s.enable_left) {
@@ -313,38 +327,44 @@ void GraphNode::clear_all_slots() {
 	connpos_dirty = true;
 }
 bool GraphNode::is_slot_enabled_left(int p_idx) const {
-	if (!slot_info.has(p_idx))
+	if (!slot_info.has(p_idx)) {
 		return false;
+	}
 	return slot_info[p_idx].enable_left;
 }
 
 int GraphNode::get_slot_type_left(int p_idx) const {
-	if (!slot_info.has(p_idx))
+	if (!slot_info.has(p_idx)) {
 		return 0;
+	}
 	return slot_info[p_idx].type_left;
 }
 
 Color GraphNode::get_slot_color_left(int p_idx) const {
-	if (!slot_info.has(p_idx))
+	if (!slot_info.has(p_idx)) {
 		return Color(1, 1, 1, 1);
+	}
 	return slot_info[p_idx].color_left;
 }
 
 bool GraphNode::is_slot_enabled_right(int p_idx) const {
-	if (!slot_info.has(p_idx))
+	if (!slot_info.has(p_idx)) {
 		return false;
+	}
 	return slot_info[p_idx].enable_right;
 }
 
 int GraphNode::get_slot_type_right(int p_idx) const {
-	if (!slot_info.has(p_idx))
+	if (!slot_info.has(p_idx)) {
 		return 0;
+	}
 	return slot_info[p_idx].type_right;
 }
 
 Color GraphNode::get_slot_color_right(int p_idx) const {
-	if (!slot_info.has(p_idx))
+	if (!slot_info.has(p_idx)) {
 		return Color(1, 1, 1, 1);
+	}
 	return slot_info[p_idx].color_right;
 }
 
@@ -364,28 +384,32 @@ Size2 GraphNode::get_minimum_size() const {
 
 	for (int i = 0; i < get_child_count(); i++) {
 		Control *c = Object::cast_to<Control>(get_child(i));
-		if (!c)
+		if (!c) {
 			continue;
-		if (c->is_set_as_toplevel())
+		}
+		if (c->is_set_as_toplevel()) {
 			continue;
+		}
 
 		Size2i size = c->get_combined_minimum_size();
 
 		minsize.y += size.y;
 		minsize.x = MAX(minsize.x, size.x);
 
-		if (first)
+		if (first) {
 			first = false;
-		else
+		} else {
 			minsize.y += sep;
+		}
 	}
 
 	return minsize + sb->get_minimum_size();
 }
 
 void GraphNode::set_title(const String &p_title) {
-	if (title == p_title)
+	if (title == p_title) {
 		return;
+	}
 	title = p_title;
 	update();
 	_change_notify("title");
@@ -416,10 +440,11 @@ bool GraphNode::is_selected() {
 }
 
 void GraphNode::set_drag(bool p_drag) {
-	if (p_drag)
+	if (p_drag) {
 		drag_from = get_offset();
-	else
+	} else {
 		emit_signal("dragged", drag_from, get_offset()); //useful for undo/redo
+	}
 }
 
 Vector2 GraphNode::get_drag_from() {
@@ -447,10 +472,12 @@ void GraphNode::_connpos_update() {
 
 	for (int i = 0; i < get_child_count(); i++) {
 		Control *c = Object::cast_to<Control>(get_child(i));
-		if (!c)
+		if (!c) {
 			continue;
-		if (c->is_set_as_toplevel())
+		}
+		if (c->is_set_as_toplevel()) {
 			continue;
+		}
 
 		Size2i size = c->get_combined_minimum_size();
 
@@ -483,21 +510,24 @@ void GraphNode::_connpos_update() {
 }
 
 int GraphNode::get_connection_input_count() {
-	if (connpos_dirty)
+	if (connpos_dirty) {
 		_connpos_update();
+	}
 
 	return conn_input_cache.size();
 }
 int GraphNode::get_connection_output_count() {
-	if (connpos_dirty)
+	if (connpos_dirty) {
 		_connpos_update();
+	}
 
 	return conn_output_cache.size();
 }
 
 Vector2 GraphNode::get_connection_input_position(int p_idx) {
-	if (connpos_dirty)
+	if (connpos_dirty) {
 		_connpos_update();
+	}
 
 	ERR_FAIL_INDEX_V(p_idx, conn_input_cache.size(), Vector2());
 	Vector2 pos = conn_input_cache[p_idx].pos;
@@ -507,24 +537,27 @@ Vector2 GraphNode::get_connection_input_position(int p_idx) {
 }
 
 int GraphNode::get_connection_input_type(int p_idx) {
-	if (connpos_dirty)
+	if (connpos_dirty) {
 		_connpos_update();
+	}
 
 	ERR_FAIL_INDEX_V(p_idx, conn_input_cache.size(), 0);
 	return conn_input_cache[p_idx].type;
 }
 
 Color GraphNode::get_connection_input_color(int p_idx) {
-	if (connpos_dirty)
+	if (connpos_dirty) {
 		_connpos_update();
+	}
 
 	ERR_FAIL_INDEX_V(p_idx, conn_input_cache.size(), Color());
 	return conn_input_cache[p_idx].color;
 }
 
 Vector2 GraphNode::get_connection_output_position(int p_idx) {
-	if (connpos_dirty)
+	if (connpos_dirty) {
 		_connpos_update();
+	}
 
 	ERR_FAIL_INDEX_V(p_idx, conn_output_cache.size(), Vector2());
 	Vector2 pos = conn_output_cache[p_idx].pos;
@@ -534,16 +567,18 @@ Vector2 GraphNode::get_connection_output_position(int p_idx) {
 }
 
 int GraphNode::get_connection_output_type(int p_idx) {
-	if (connpos_dirty)
+	if (connpos_dirty) {
 		_connpos_update();
+	}
 
 	ERR_FAIL_INDEX_V(p_idx, conn_output_cache.size(), 0);
 	return conn_output_cache[p_idx].type;
 }
 
 Color GraphNode::get_connection_output_color(int p_idx) {
-	if (connpos_dirty)
+	if (connpos_dirty) {
 		_connpos_update();
+	}
 
 	ERR_FAIL_INDEX_V(p_idx, conn_output_cache.size(), Color());
 	return conn_output_cache[p_idx].color;

@@ -38,8 +38,9 @@ void GIProbeEditorPlugin::_bake() {
 
 void GIProbeEditorPlugin::edit(Object *p_object) {
 	GIProbe *s = Object::cast_to<GIProbe>(p_object);
-	if (!s)
+	if (!s) {
 		return;
+	}
 
 	gi_probe = s;
 }

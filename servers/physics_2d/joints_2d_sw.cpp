@@ -76,10 +76,11 @@ static inline real_t k_scalar(Body2DSW *a, Body2DSW *b, const Vector2 &rA, const
 static inline Vector2
 relative_velocity(Body2DSW *a, Body2DSW *b, Vector2 rA, Vector2 rB) {
 	Vector2 sum = a->get_linear_velocity() - rA.tangent() * a->get_angular_velocity();
-	if (b)
+	if (b) {
 		return (b->get_linear_velocity() - rB.tangent() * b->get_angular_velocity()) - sum;
-	else
+	} else {
 		return -sum;
+	}
 }
 
 static inline real_t
@@ -141,8 +142,9 @@ bool PinJoint2DSW::setup(real_t p_step) {
 
 	// apply accumulated impulse
 	A->apply_impulse(rA, -P);
-	if (B)
+	if (B) {
 		B->apply_impulse(rB, P);
+	}
 
 	return true;
 }
@@ -156,28 +158,32 @@ void PinJoint2DSW::solve(real_t p_step) {
 	Vector2 vA = A->get_linear_velocity() - custom_cross(rA, A->get_angular_velocity());
 
 	Vector2 rel_vel;
-	if (B)
+	if (B) {
 		rel_vel = B->get_linear_velocity() - custom_cross(rB, B->get_angular_velocity()) - vA;
-	else
+	} else {
 		rel_vel = -vA;
+	}
 
 	Vector2 impulse = M.basis_xform(bias - rel_vel - Vector2(softness, softness) * P);
 
 	A->apply_impulse(rA, -impulse);
-	if (B)
+	if (B) {
 		B->apply_impulse(rB, impulse);
+	}
 
 	P += impulse;
 }
 
 void PinJoint2DSW::set_param(Physics2DServer::PinJointParam p_param, real_t p_value) {
-	if (p_param == Physics2DServer::PIN_JOINT_SOFTNESS)
+	if (p_param == Physics2DServer::PIN_JOINT_SOFTNESS) {
 		softness = p_value;
+	}
 }
 
 real_t PinJoint2DSW::get_param(Physics2DServer::PinJointParam p_param) const {
-	if (p_param == Physics2DServer::PIN_JOINT_SOFTNESS)
+	if (p_param == Physics2DServer::PIN_JOINT_SOFTNESS) {
 		return softness;
+	}
 	ERR_FAIL_V(0);
 }
 
@@ -191,15 +197,18 @@ PinJoint2DSW::PinJoint2DSW(const Vector2 &p_pos, Body2DSW *p_body_a, Body2DSW *p
 	softness = 0;
 
 	p_body_a->add_constraint(this, 0);
-	if (p_body_b)
+	if (p_body_b) {
 		p_body_b->add_constraint(this, 1);
+	}
 }
 
 PinJoint2DSW::~PinJoint2DSW() {
-	if (A)
+	if (A) {
 		A->remove_constraint(this);
-	if (B)
+	}
+	if (B) {
 		B->remove_constraint(this);
+	}
 }
 
 //////////////////////////////////////////////
@@ -358,10 +367,11 @@ bool DampedSpringJoint2DSW::setup(real_t p_step) {
 	Vector2 delta = (B->get_transform().get_origin() + rB) - (A->get_transform().get_origin() + rA);
 	real_t dist = delta.length();
 
-	if (dist)
+	if (dist) {
 		n = delta / dist;
-	else
+	} else {
 		n = Vector2();
+	}
 
 	real_t k = k_scalar(A, B, rA, rB, n);
 	n_mass = 1.0f / k;

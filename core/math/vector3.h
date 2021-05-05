@@ -323,10 +323,11 @@ bool Vector3::operator!=(const Vector3 &p_v) const {
 
 bool Vector3::operator<(const Vector3 &p_v) const {
 	if (x == p_v.x) {
-		if (y == p_v.y)
+		if (y == p_v.y) {
 			return z < p_v.z;
-		else
+		} else {
 			return y < p_v.y;
+		}
 	} else {
 		return x < p_v.x;
 	}
@@ -334,10 +335,11 @@ bool Vector3::operator<(const Vector3 &p_v) const {
 
 bool Vector3::operator>(const Vector3 &p_v) const {
 	if (x == p_v.x) {
-		if (y == p_v.y)
+		if (y == p_v.y) {
 			return z > p_v.z;
-		else
+		} else {
 			return y > p_v.y;
+		}
 	} else {
 		return x > p_v.x;
 	}
@@ -345,10 +347,11 @@ bool Vector3::operator>(const Vector3 &p_v) const {
 
 bool Vector3::operator<=(const Vector3 &p_v) const {
 	if (x == p_v.x) {
-		if (y == p_v.y)
+		if (y == p_v.y) {
 			return z <= p_v.z;
-		else
+		} else {
 			return y < p_v.y;
+		}
 	} else {
 		return x < p_v.x;
 	}
@@ -356,10 +359,11 @@ bool Vector3::operator<=(const Vector3 &p_v) const {
 
 bool Vector3::operator>=(const Vector3 &p_v) const {
 	if (x == p_v.x) {
-		if (y == p_v.y)
+		if (y == p_v.y) {
 			return z >= p_v.z;
-		else
+		} else {
 			return y > p_v.y;
+		}
 	} else {
 		return x > p_v.x;
 	}

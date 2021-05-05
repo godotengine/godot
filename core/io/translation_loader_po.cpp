@@ -46,8 +46,9 @@ RES TranslationLoaderPO::load_translation(FileAccess *f, Error *r_error) {
 	String msg_str;
 	String config;
 
-	if (r_error)
+	if (r_error) {
 		*r_error = ERR_FILE_CORRUPT;
+	}
 
 	Ref<Translation> translation = Ref<Translation>(memnew(Translation));
 	int line = 1;
@@ -77,10 +78,12 @@ RES TranslationLoaderPO::load_translation(FileAccess *f, Error *r_error) {
 			}
 
 			if (msg_id != "") {
-				if (!skip_this)
+				if (!skip_this) {
 					translation->add_message(msg_id, msg_str);
-			} else if (config == "")
+				}
+			} else if (config == "") {
 				config = msg_str;
+			}
 
 			l = l.substr(5, l.length()).strip_edges();
 			status = STATUS_READING_ID;
@@ -131,10 +134,11 @@ RES TranslationLoaderPO::load_translation(FileAccess *f, Error *r_error) {
 		l = l.substr(0, end_pos);
 		l = l.c_unescape();
 
-		if (status == STATUS_READING_ID)
+		if (status == STATUS_READING_ID) {
 			msg_id += l;
-		else
+		} else {
 			msg_str += l;
+		}
 
 		line++;
 	}
@@ -143,10 +147,12 @@ RES TranslationLoaderPO::load_translation(FileAccess *f, Error *r_error) {
 
 	if (status == STATUS_READING_STRING) {
 		if (msg_id != "") {
-			if (!skip_this)
+			if (!skip_this) {
 				translation->add_message(msg_id, msg_str);
-		} else if (config == "")
+			}
+		} else if (config == "") {
 			config = msg_str;
+		}
 	}
 
 	ERR_FAIL_COND_V_MSG(config == "", RES(), "No config found in file: " + path + ".");
@@ -155,8 +161,9 @@ RES TranslationLoaderPO::load_translation(FileAccess *f, Error *r_error) {
 	for (int i = 0; i < configs.size(); i++) {
 		String c = configs[i].strip_edges();
 		int p = c.find(":");
-		if (p == -1)
+		if (p == -1) {
 			continue;
+		}
 		String prop = c.substr(0, p).strip_edges();
 		String value = c.substr(p + 1, c.length()).strip_edges();
 
@@ -165,15 +172,17 @@ RES TranslationLoaderPO::load_translation(FileAccess *f, Error *r_error) {
 		}
 	}
 
-	if (r_error)
+	if (r_error) {
 		*r_error = OK;
+	}
 
 	return translation;
 }
 
 RES TranslationLoaderPO::load(const String &p_path, const String &p_original_path, Error *r_error) {
-	if (r_error)
+	if (r_error) {
 		*r_error = ERR_CANT_OPEN;
+	}
 
 	FileAccess *f = FileAccess::open(p_path, FileAccess::READ);
 	ERR_FAIL_COND_V_MSG(!f, RES(), "Cannot open file '" + p_path + "'.");
@@ -189,8 +198,9 @@ bool TranslationLoaderPO::handles_type(const String &p_type) const {
 }
 
 String TranslationLoaderPO::get_resource_type(const String &p_path) const {
-	if (p_path.get_extension().to_lower() == "po")
+	if (p_path.get_extension().to_lower() == "po") {
 		return "Translation";
+	}
 	return "";
 }
 

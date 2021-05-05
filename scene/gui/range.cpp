@@ -53,8 +53,9 @@ void Range::_value_changed_notify() {
 void Range::Shared::emit_value_changed() {
 	for (Set<Range *>::Element *E = owners.front(); E; E = E->next()) {
 		Range *r = E->get();
-		if (!r->is_inside_tree())
+		if (!r->is_inside_tree()) {
 			continue;
+		}
 		r->_value_changed_notify();
 	}
 }
@@ -68,27 +69,33 @@ void Range::_changed_notify(const char *p_what) {
 void Range::Shared::emit_changed(const char *p_what) {
 	for (Set<Range *>::Element *E = owners.front(); E; E = E->next()) {
 		Range *r = E->get();
-		if (!r->is_inside_tree())
+		if (!r->is_inside_tree()) {
 			continue;
+		}
 		r->_changed_notify(p_what);
 	}
 }
 
 void Range::set_value(double p_val) {
-	if (shared->step > 0)
+	if (shared->step > 0) {
 		p_val = Math::round(p_val / shared->step) * shared->step;
+	}
 
-	if (_rounded_values)
+	if (_rounded_values) {
 		p_val = Math::round(p_val);
+	}
 
-	if (!shared->allow_greater && p_val > shared->max - shared->page)
+	if (!shared->allow_greater && p_val > shared->max - shared->page) {
 		p_val = shared->max - shared->page;
+	}
 
-	if (!shared->allow_lesser && p_val < shared->min)
+	if (!shared->allow_lesser && p_val < shared->min) {
 		p_val = shared->min;
+	}
 
-	if (shared->val == p_val)
+	if (shared->val == p_val) {
 		return;
+	}
 
 	shared->val = p_val;
 
@@ -203,8 +210,9 @@ void Range::unshare() {
 }
 
 void Range::_ref_shared(Shared *p_shared) {
-	if (shared && p_shared == shared)
+	if (shared && p_shared == shared) {
 		return;
+	}
 
 	_unref_shared();
 	shared = p_shared;

@@ -87,13 +87,15 @@ void CollisionObject2DSW::set_shape_as_disabled(int p_idx, bool p_disabled) {
 	ERR_FAIL_INDEX(p_idx, shapes.size());
 
 	CollisionObject2DSW::Shape &shape = shapes.write[p_idx];
-	if (shape.disabled == p_disabled)
+	if (shape.disabled == p_disabled) {
 		return;
+	}
 
 	shape.disabled = p_disabled;
 
-	if (!space)
+	if (!space) {
 		return;
+	}
 
 	if (p_disabled && shape.bpid != 0) {
 		space->get_broadphase()->remove(shape.bpid);
@@ -124,8 +126,9 @@ void CollisionObject2DSW::remove_shape(int p_index) {
 	//remove anything from shape to be erased to end, so subindices don't change
 	ERR_FAIL_INDEX(p_index, shapes.size());
 	for (int i = p_index; i < shapes.size(); i++) {
-		if (shapes[i].bpid == 0)
+		if (shapes[i].bpid == 0) {
 			continue;
+		}
 		//should never get here with a null owner
 		space->get_broadphase()->remove(shapes[i].bpid);
 		shapes.write[i].bpid = 0;
@@ -141,12 +144,14 @@ void CollisionObject2DSW::remove_shape(int p_index) {
 }
 
 void CollisionObject2DSW::_set_static(bool p_static) {
-	if (_static == p_static)
+	if (_static == p_static) {
 		return;
+	}
 	_static = p_static;
 
-	if (!space)
+	if (!space) {
 		return;
+	}
 	for (int i = 0; i < get_shape_count(); i++) {
 		const Shape &s = shapes[i];
 		if (s.bpid > 0) {
@@ -166,14 +171,16 @@ void CollisionObject2DSW::_unregister_shapes() {
 }
 
 void CollisionObject2DSW::_update_shapes() {
-	if (!space)
+	if (!space) {
 		return;
+	}
 
 	for (int i = 0; i < shapes.size(); i++) {
 		Shape &s = shapes.write[i];
 
-		if (s.disabled)
+		if (s.disabled) {
 			continue;
+		}
 
 		//not quite correct, should compute the next matrix..
 		Rect2 shape_aabb = s.shape->get_aabb();
@@ -192,13 +199,15 @@ void CollisionObject2DSW::_update_shapes() {
 }
 
 void CollisionObject2DSW::_update_shapes_with_motion(const Vector2 &p_motion) {
-	if (!space)
+	if (!space) {
 		return;
+	}
 
 	for (int i = 0; i < shapes.size(); i++) {
 		Shape &s = shapes.write[i];
-		if (s.disabled)
+		if (s.disabled) {
 			continue;
+		}
 
 		//not quite correct, should compute the next matrix..
 		Rect2 shape_aabb = s.shape->get_aabb();

@@ -94,7 +94,8 @@ void SMBPitchShift::PitchShift(float pitchShift, long numSampsToProcess, long ff
 	freqPerBin = sampleRate/(double)fftFrameSize;
 	expct = 2.*Math_PI*(double)stepSize/(double)fftFrameSize;
 	inFifoLatency = fftFrameSize-stepSize;
-	if (gRover == 0) gRover = inFifoLatency;
+	if (gRover == 0) { gRover = inFifoLatency;
+}
 
 	/* initialize our static arrays */
 
@@ -142,8 +143,9 @@ void SMBPitchShift::PitchShift(float pitchShift, long numSampsToProcess, long ff
 
 				/* map delta phase into +/- Pi interval */
 				qpd = tmp/Math_PI;
-				if (qpd >= 0) qpd += qpd&1;
-				else qpd -= qpd&1;
+				if (qpd >= 0) { qpd += qpd&1;
+				} else { qpd -= qpd&1;
+}
 				tmp -= Math_PI*(double)qpd;
 
 				/* get deviation from bin frequency from the +/- Pi interval */
@@ -200,7 +202,8 @@ void SMBPitchShift::PitchShift(float pitchShift, long numSampsToProcess, long ff
 			}
 
 			/* zero negative frequencies */
-			for (k = fftFrameSize+2; k < 2*fftFrameSize; k++) gFFTworksp[k] = 0.;
+			for (k = fftFrameSize+2; k < 2*fftFrameSize; k++) { gFFTworksp[k] = 0.;
+}
 
 			/* do inverse transform */
 			smbFft(gFFTworksp, fftFrameSize, 1);
@@ -210,13 +213,15 @@ void SMBPitchShift::PitchShift(float pitchShift, long numSampsToProcess, long ff
 				window = -.5*cos(2.*Math_PI*(double)k/(double)fftFrameSize)+.5;
 				gOutputAccum[k] += 2.*window*gFFTworksp[2*k]/(fftFrameSize2*osamp);
 			}
-			for (k = 0; k < stepSize; k++) gOutFIFO[k] = gOutputAccum[k];
+			for (k = 0; k < stepSize; k++) { gOutFIFO[k] = gOutputAccum[k];
+}
 
 			/* shift accumulator */
 			memmove(gOutputAccum, gOutputAccum+stepSize, fftFrameSize*sizeof(float));
 
 			/* move input FIFO */
-			for (k = 0; k < inFifoLatency; k++) gInFIFO[k] = gInFIFO[k+stepSize];
+			for (k = 0; k < inFifoLatency; k++) { gInFIFO[k] = gInFIFO[k+stepSize];
+}
 		}
 	}
 
@@ -244,7 +249,8 @@ void SMBPitchShift::smbFft(float *fftBuffer, long fftFrameSize, long sign)
 
 	for (i = 2; i < 2*fftFrameSize-2; i += 2) {
 		for (bitm = 2, j = 0; bitm < 2*fftFrameSize; bitm <<= 1) {
-			if (i & bitm) j++;
+			if (i & bitm) { j++;
+}
 			j <<= 1;
 		}
 		if (i < j) {

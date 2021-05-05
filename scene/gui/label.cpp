@@ -66,8 +66,9 @@ int Label::get_line_height() const {
 void Label::_notification(int p_what) {
 	if (p_what == NOTIFICATION_TRANSLATION_CHANGED) {
 		String new_text = tr(text);
-		if (new_text == xl_text)
+		if (new_text == xl_text) {
 			return; //nothing new
+		}
 		xl_text = new_text;
 
 		regenerate_word_cache();
@@ -79,8 +80,9 @@ void Label::_notification(int p_what) {
 			VisualServer::get_singleton()->canvas_item_set_clip(get_canvas_item(), true);
 		}
 
-		if (word_cache_dirty)
+		if (word_cache_dirty) {
 			regenerate_word_cache();
+		}
 
 		RID ci = get_canvas_item();
 
@@ -144,21 +146,25 @@ void Label::_notification(int p_what) {
 		}
 
 		WordCache *wc = word_cache;
-		if (!wc)
+		if (!wc) {
 			return;
+		}
 
 		int line = 0;
 		int line_to = lines_skipped + (lines_visible > 0 ? lines_visible : 1);
 		FontDrawer drawer(font, font_outline_modulate);
 		while (wc) {
 			/* handle lines not meant to be drawn quickly */
-			if (line >= line_to)
+			if (line >= line_to) {
 				break;
+			}
 			if (line < lines_skipped) {
-				while (wc && wc->char_pos >= 0)
+				while (wc && wc->char_pos >= 0) {
 					wc = wc->next;
-				if (wc)
+				}
+				if (wc) {
 					wc = wc->next;
+				}
 				line++;
 				continue;
 			}
@@ -282,12 +288,13 @@ Size2 Label::get_minimum_size() const {
 		const_cast<Label *>(this)->regenerate_word_cache();
 	}
 
-	if (autowrap)
+	if (autowrap) {
 		return Size2(1, clip ? 1 : minsize.height) + min_style;
-	else {
+	} else {
 		Size2 ms = minsize;
-		if (clip)
+		if (clip) {
 			ms.width = 1;
+		}
 		return ms + min_style;
 	}
 }
@@ -299,13 +306,15 @@ int Label::get_longest_line_width() const {
 
 	for (int i = 0; i < xl_text.size(); i++) {
 		CharType current = xl_text[i];
-		if (uppercase)
+		if (uppercase) {
 			current = String::char_uppercase(current);
+		}
 
 		if (current < 32) {
 			if (current == '\n') {
-				if (line_width > max_line_width)
+				if (line_width > max_line_width) {
 					max_line_width = line_width;
+				}
 				line_width = 0;
 			}
 		} else {
@@ -314,18 +323,21 @@ int Label::get_longest_line_width() const {
 		}
 	}
 
-	if (line_width > max_line_width)
+	if (line_width > max_line_width) {
 		max_line_width = line_width;
+	}
 
 	// ceiling to ensure autowrapping does not cut text
 	return Math::ceil(max_line_width);
 }
 
 int Label::get_line_count() const {
-	if (!is_inside_tree())
+	if (!is_inside_tree()) {
 		return 1;
-	if (word_cache_dirty)
+	}
+	if (word_cache_dirty) {
 		const_cast<Label *>(this)->regenerate_word_cache();
+	}
 
 	return line_count;
 }
@@ -335,11 +347,13 @@ int Label::get_visible_line_count() const {
 	int font_h = get_font("font")->get_height() + line_spacing;
 	int lines_visible = (get_size().height - get_stylebox("normal")->get_minimum_size().height + line_spacing) / font_h;
 
-	if (lines_visible > line_count)
+	if (lines_visible > line_count) {
 		lines_visible = line_count;
+	}
 
-	if (max_lines_visible >= 0 && lines_visible > max_lines_visible)
+	if (max_lines_visible >= 0 && lines_visible > max_lines_visible) {
 		lines_visible = max_lines_visible;
+	}
 
 	return lines_visible;
 }
@@ -375,8 +389,9 @@ void Label::regenerate_word_cache() {
 	for (int i = 0; i <= xl_text.length(); i++) {
 		CharType current = i < xl_text.length() ? xl_text[i] : L' '; //always a space at the end, so the algo works
 
-		if (uppercase)
+		if (uppercase) {
 			current = String::char_uppercase(current);
+		}
 
 		// ranges taken from http://www.unicodemap.org/
 		// if your language is not well supported, consider helping improve
@@ -488,8 +503,9 @@ void Label::regenerate_word_cache() {
 		}
 	}
 
-	if (!autowrap)
+	if (!autowrap) {
 		minsize.width = width;
+	}
 
 	if (max_lines_visible > 0 && line_count > max_lines_visible) {
 		minsize.height = (font->get_height() * max_lines_visible) + (line_spacing * (max_lines_visible - 1));
@@ -525,13 +541,15 @@ Label::VAlign Label::get_valign() const {
 }
 
 void Label::set_text(const String &p_string) {
-	if (text == p_string)
+	if (text == p_string) {
 		return;
+	}
 	text = p_string;
 	xl_text = tr(p_string);
 	word_cache_dirty = true;
-	if (percent_visible < 1)
+	if (percent_visible < 1) {
 		visible_chars = get_total_character_count() * percent_visible;
+	}
 	update();
 }
 
@@ -599,8 +617,9 @@ int Label::get_max_lines_visible() const {
 }
 
 int Label::get_total_character_count() const {
-	if (word_cache_dirty)
+	if (word_cache_dirty) {
 		const_cast<Label *>(this)->regenerate_word_cache();
+	}
 
 	return total_char_cache;
 }

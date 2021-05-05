@@ -265,8 +265,9 @@ void ItemList::unselect(int p_idx) {
 }
 
 void ItemList::unselect_all() {
-	if (items.size() < 1)
+	if (items.size() < 1) {
 		return;
+	}
 
 	for (int i = 0; i < items.size(); i++) {
 		items.write[i].selected = false;
@@ -284,9 +285,9 @@ bool ItemList::is_selected(int p_idx) const {
 void ItemList::set_current(int p_current) {
 	ERR_FAIL_INDEX(p_current, items.size());
 
-	if (select_mode == SELECT_SINGLE)
+	if (select_mode == SELECT_SINGLE) {
 		select(p_current, true);
-	else {
+	} else {
 		current = p_current;
 		update();
 	}
@@ -401,12 +402,14 @@ Size2 ItemList::get_fixed_icon_size() const {
 	return fixed_icon_size;
 }
 Size2 ItemList::Item::get_icon_size() const {
-	if (icon.is_null())
+	if (icon.is_null()) {
 		return Size2();
+	}
 
 	Size2 size_result = Size2(icon_region.size).abs();
-	if (icon_region.size.x == 0 || icon_region.size.y == 0)
+	if (icon_region.size.x == 0 || icon_region.size.y == 0) {
 		size_result = icon->get_size();
+	}
 
 	if (icon_transposed) {
 		Size2 size_tmp = size_result;
@@ -475,8 +478,9 @@ void ItemList::_gui_input(const Ref<InputEvent> &p_event) {
 				for (int j = from; j <= to; j++) {
 					bool selected = !items[j].selected;
 					select(j, false);
-					if (selected)
+					if (selected) {
 						emit_signal("multi_selected", j, true);
+					}
 				}
 
 				if (mb->get_button_index() == BUTTON_RIGHT) {
@@ -498,8 +502,9 @@ void ItemList::_gui_input(const Ref<InputEvent> &p_event) {
 					if (!selected || allow_reselect) {
 						if (select_mode == SELECT_SINGLE) {
 							emit_signal("item_selected", i);
-						} else
+						} else {
 							emit_signal("multi_selected", i, true);
+						}
 					}
 
 					if (mb->get_button_index() == BUTTON_RIGHT) {
@@ -670,19 +675,22 @@ void ItemList::_gui_input(const Ref<InputEvent> &p_event) {
 					search_string = "";
 				}
 
-				if (String::chr(k->get_unicode()) != search_string)
+				if (String::chr(k->get_unicode()) != search_string) {
 					search_string += String::chr(k->get_unicode());
+				}
 
 				for (int i = current + 1; i <= items.size(); i++) {
 					if (i == items.size()) {
-						if (current == 0 || current == -1)
+						if (current == 0 || current == -1) {
 							break;
-						else
+						} else {
 							i = 0;
+						}
 					}
 
-					if (i == current)
+					if (i == current) {
 						break;
+					}
 
 					if (items[i].text.findn(search_string) == 0) {
 						set_current(i);
@@ -702,8 +710,9 @@ void ItemList::_gui_input(const Ref<InputEvent> &p_event) {
 		scroll_bar->set_value(scroll_bar->get_value() + scroll_bar->get_page() * pan_gesture->get_delta().y / 8);
 	}
 
-	if (scroll_bar->get_value() != prev_scroll)
+	if (scroll_bar->get_value() != prev_scroll) {
 		accept_event(); //accept event if scroll changed
+	}
 }
 
 void ItemList::ensure_current_is_visible() {
@@ -818,8 +827,9 @@ void ItemList::_notification(int p_what) {
 					}
 				}
 
-				if (fixed_column_width > 0)
+				if (fixed_column_width > 0) {
 					minsize.x = fixed_column_width;
+				}
 				max_column_width = MAX(max_column_width, minsize.x);
 
 				// elements need to adapt to the selected size
@@ -833,8 +843,9 @@ void ItemList::_notification(int p_what) {
 
 			//2-attempt best fit
 			current_columns = 0x7FFFFFFF;
-			if (max_columns > 0)
+			if (max_columns > 0) {
 				current_columns = max_columns;
+			}
 
 			while (true) {
 				//repeat until all fits
@@ -851,15 +862,17 @@ void ItemList::_notification(int p_what) {
 						break;
 					}
 
-					if (same_column_width)
+					if (same_column_width) {
 						items.write[i].rect_cache.size.x = max_column_width;
+					}
 					items.write[i].rect_cache.position = ofs;
 					max_h = MAX(max_h, items[i].rect_cache.size.y);
 					ofs.x += items[i].rect_cache.size.x + hseparation;
 					col++;
 					if (col == current_columns) {
-						if (i < items.size() - 1)
+						if (i < items.size() - 1) {
 							separators.push_back(ofs.y + max_h + vseparation / 2);
+						}
 
 						for (int j = i; j >= 0 && col > 0; j--, col--) {
 							items.write[j].rect_cache.size.y = max_h;
@@ -879,8 +892,9 @@ void ItemList::_notification(int p_what) {
 				if (all_fit) {
 					float page = MAX(0, size.height - bg->get_minimum_size().height);
 					float max = MAX(page, ofs.y + max_h);
-					if (auto_height)
+					if (auto_height) {
 						auto_height_value = ofs.y + max_h + bg->get_minimum_size().height;
+					}
 					scroll_bar->set_max(max);
 					scroll_bar->set_page(page);
 					if (max <= page) {
@@ -889,8 +903,9 @@ void ItemList::_notification(int p_what) {
 					} else {
 						scroll_bar->show();
 
-						if (do_autoscroll_to_bottom)
+						if (do_autoscroll_to_bottom) {
 							scroll_bar->set_value(max);
+						}
 					}
 					break;
 				}
@@ -944,11 +959,13 @@ void ItemList::_notification(int p_what) {
 		for (int i = first_item_visible; i < items.size(); i++) {
 			Rect2 rcache = items[i].rect_cache;
 
-			if (rcache.position.y > clip.position.y + clip.size.y)
+			if (rcache.position.y > clip.position.y + clip.size.y) {
 				break; // done
+			}
 
-			if (!clip.intersects(rcache))
+			if (!clip.intersects(rcache)) {
 				continue;
+			}
 
 			if (current_columns == 1) {
 				rcache.size.width = width - rcache.position.x;
@@ -1013,8 +1030,9 @@ void ItemList::_notification(int p_what) {
 				}
 
 				Color modulate = items[i].icon_modulate;
-				if (items[i].disabled)
+				if (items[i].disabled) {
 					modulate.a *= 0.5;
+				}
 
 				// If the icon is transposed, we have to switch the size so that it is drawn correctly
 				if (items[i].icon_transposed) {
@@ -1035,16 +1053,18 @@ void ItemList::_notification(int p_what) {
 				int max_len = -1;
 
 				Vector2 size2 = font->get_string_size(items[i].text);
-				if (fixed_column_width)
+				if (fixed_column_width) {
 					max_len = fixed_column_width;
-				else if (same_column_width)
+				} else if (same_column_width) {
 					max_len = items[i].rect_cache.size.x;
-				else
+				} else {
 					max_len = size2.x;
+				}
 
 				Color modulate = items[i].selected ? font_color_selected : (items[i].custom_fg != Color() ? items[i].custom_fg : font_color);
-				if (items[i].disabled)
+				if (items[i].disabled) {
 					modulate.a *= 0.5;
+				}
 
 				if (icon_mode == ICON_MODE_TOP && max_text_lines > 0) {
 					int ss = items[i].text.length();
@@ -1057,8 +1077,9 @@ void ItemList::_notification(int p_what) {
 							line_size_cache.write[line] = ofs;
 							line++;
 							ofs = 0;
-							if (line >= max_text_lines)
+							if (line >= max_text_lines) {
 								break;
+							}
 						} else {
 							ofs += cs;
 						}
@@ -1077,16 +1098,18 @@ void ItemList::_notification(int p_what) {
 						if (j == line_limit_cache[line]) {
 							line++;
 							ofs = 0;
-							if (line >= max_text_lines)
+							if (line >= max_text_lines) {
 								break;
+							}
 						}
 						ofs += drawer.draw_char(get_canvas_item(), text_ofs + Vector2(ofs + (max_len - line_size_cache[line]) / 2, line * (font_height + line_separation)).floor(), items[i].text[j], items[i].text[j + 1], modulate);
 					}
 
 					//special multiline mode
 				} else {
-					if (fixed_column_width > 0)
+					if (fixed_column_width > 0) {
 						size2.x = MIN(size2.x, fixed_column_width);
+					}
 
 					if (icon_mode == ICON_MODE_TOP) {
 						text_ofs.x += (items[i].rect_cache.size.width - size2.x) / 2;
@@ -1131,8 +1154,9 @@ void ItemList::_notification(int p_what) {
 		}
 
 		for (int i = first_visible_separator; i < separators.size(); i++) {
-			if (separators[i] > clip.position.y + clip.size.y)
+			if (separators[i] > clip.position.y + clip.size.y) {
 				break; // done
+			}
 
 			const int y = base_ofs.y + separators[i];
 			draw_line(Vector2(bg->get_margin(MARGIN_LEFT), y), Vector2(width, y), guide_color);
@@ -1175,8 +1199,9 @@ int ItemList::get_item_at_position(const Point2 &p_pos, bool p_exact) const {
 }
 
 bool ItemList::is_pos_at_end_of_items(const Point2 &p_pos) const {
-	if (items.empty())
+	if (items.empty()) {
 		return true;
+	}
 
 	Vector2 pos = p_pos;
 	Ref<StyleBox> bg = get_stylebox("bg");
@@ -1269,8 +1294,9 @@ Vector<int> ItemList::get_selected_items() {
 
 bool ItemList::is_anything_selected() {
 	for (int i = 0; i < items.size(); i++) {
-		if (items[i].selected)
+		if (items[i].selected) {
 			return true;
+		}
 	}
 
 	return false;

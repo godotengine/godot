@@ -32,8 +32,9 @@
 
 void ImmediateGeometry::begin(Mesh::PrimitiveType p_primitive, const Ref<Texture> &p_texture) {
 	VS::get_singleton()->immediate_begin(im, (VS::PrimitiveType)p_primitive, p_texture.is_valid() ? p_texture->get_rid() : RID());
-	if (p_texture.is_valid())
+	if (p_texture.is_valid()) {
 		cached_textures.push_back(p_texture);
+	}
 }
 
 void ImmediateGeometry::set_normal(const Vector3 &p_normal) {

@@ -38,10 +38,11 @@ Size2 Slider::get_minimum_size() const {
 	Ref<Texture> grabber = get_icon("grabber");
 	Size2i rs = grabber->get_size();
 
-	if (orientation == HORIZONTAL)
+	if (orientation == HORIZONTAL) {
 		return Size2i(ss.width, MAX(ss.height, rs.height));
-	else
+	} else {
 		return Size2i(MAX(ss.width, rs.width), ss.height);
+	}
 }
 
 void Slider::_gui_input(Ref<InputEvent> p_event) {
@@ -60,10 +61,11 @@ void Slider::_gui_input(Ref<InputEvent> p_event) {
 				double grab_width = (double)grabber->get_size().width;
 				double grab_height = (double)grabber->get_size().height;
 				double max = orientation == VERTICAL ? get_size().height - grab_height : get_size().width - grab_width;
-				if (orientation == VERTICAL)
+				if (orientation == VERTICAL) {
 					set_as_ratio(1 - (((double)grab.pos - (grab_height / 2.0)) / max));
-				else
+				} else {
 					set_as_ratio(((double)grab.pos - (grab_width / 2.0)) / max);
+				}
 				grab.active = true;
 				grab.uvalue = get_as_ratio();
 			} else {
@@ -87,11 +89,13 @@ void Slider::_gui_input(Ref<InputEvent> p_event) {
 			Size2i size = get_size();
 			Ref<Texture> grabber = get_icon("grabber");
 			float motion = (orientation == VERTICAL ? mm->get_position().y : mm->get_position().x) - grab.pos;
-			if (orientation == VERTICAL)
+			if (orientation == VERTICAL) {
 				motion = -motion;
+			}
 			float areasize = orientation == VERTICAL ? size.height - grabber->get_size().height : size.width - grabber->get_size().width;
-			if (areasize <= 0)
+			if (areasize <= 0) {
 				return;
+			}
 			float umotion = motion / float(areasize);
 			set_as_ratio(grab.uvalue + umotion);
 		}
@@ -99,24 +103,28 @@ void Slider::_gui_input(Ref<InputEvent> p_event) {
 
 	if (!mm.is_valid() && !mb.is_valid()) {
 		if (p_event->is_action_pressed("ui_left", true)) {
-			if (orientation != HORIZONTAL)
+			if (orientation != HORIZONTAL) {
 				return;
+			}
 			set_value(get_value() - (custom_step >= 0 ? custom_step : get_step()));
 			accept_event();
 		} else if (p_event->is_action_pressed("ui_right", true)) {
-			if (orientation != HORIZONTAL)
+			if (orientation != HORIZONTAL) {
 				return;
+			}
 			set_value(get_value() + (custom_step >= 0 ? custom_step : get_step()));
 			accept_event();
 		} else if (p_event->is_action_pressed("ui_up", true)) {
-			if (orientation != VERTICAL)
+			if (orientation != VERTICAL) {
 				return;
+			}
 
 			set_value(get_value() + (custom_step >= 0 ? custom_step : get_step()));
 			accept_event();
 		} else if (p_event->is_action_pressed("ui_down", true)) {
-			if (orientation != VERTICAL)
+			if (orientation != VERTICAL) {
 				return;
+			}
 			set_value(get_value() - (custom_step >= 0 ? custom_step : get_step()));
 			accept_event();
 		} else if (p_event->is_action("ui_home") && p_event->is_pressed()) {
@@ -167,8 +175,9 @@ void Slider::_notification(int p_what) {
 				if (ticks > 1) {
 					int grabber_offset = (grabber->get_size().height / 2 - tick->get_height() / 2);
 					for (int i = 0; i < ticks; i++) {
-						if (!ticks_on_borders && (i == 0 || i + 1 == ticks))
+						if (!ticks_on_borders && (i == 0 || i + 1 == ticks)) {
 							continue;
+						}
 						int ofs = (i * areasize / (ticks - 1)) + grabber_offset;
 						tick->draw(ci, Point2i((size.width - widget_width) / 2, ofs));
 					}
@@ -184,8 +193,9 @@ void Slider::_notification(int p_what) {
 				if (ticks > 1) {
 					int grabber_offset = (grabber->get_size().width / 2 - tick->get_width() / 2);
 					for (int i = 0; i < ticks; i++) {
-						if ((!ticks_on_borders) && ((i == 0) || ((i + 1) == ticks)))
+						if ((!ticks_on_borders) && ((i == 0) || ((i + 1) == ticks))) {
 							continue;
+						}
 						int ofs = (i * areasize / (ticks - 1)) + grabber_offset;
 						tick->draw(ci, Point2i(ofs, (size.height - widget_height) / 2));
 					}

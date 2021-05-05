@@ -65,16 +65,21 @@ void VisualServerRaster::_draw_margins() {
 /* FREE */
 
 void VisualServerRaster::free(RID p_rid) {
-	if (VSG::storage->free(p_rid))
+	if (VSG::storage->free(p_rid)) {
 		return;
-	if (VSG::canvas->free(p_rid))
+	}
+	if (VSG::canvas->free(p_rid)) {
 		return;
-	if (VSG::viewport->free(p_rid))
+	}
+	if (VSG::viewport->free(p_rid)) {
 		return;
-	if (VSG::scene->free(p_rid))
+	}
+	if (VSG::scene->free(p_rid)) {
 		return;
-	if (VSG::scene_render->free(p_rid))
+	}
+	if (VSG::scene_render->free(p_rid)) {
 		return;
+	}
 }
 
 /* EVENT QUEUING */

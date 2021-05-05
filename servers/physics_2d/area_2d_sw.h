@@ -71,10 +71,12 @@ class Area2DSW : public CollisionObject2DSW {
 			if (rid == p_key.rid) {
 				if (body_shape == p_key.body_shape) {
 					return area_shape < p_key.area_shape;
-				} else
+				} else {
 					return body_shape < p_key.body_shape;
-			} else
+				}
+			} else {
 				return rid < p_key.rid;
+			}
 		}
 
 		_FORCE_INLINE_ BodyKey() {}
@@ -166,27 +168,31 @@ public:
 void Area2DSW::add_body_to_query(Body2DSW *p_body, uint32_t p_body_shape, uint32_t p_area_shape) {
 	BodyKey bk(p_body, p_body_shape, p_area_shape);
 	monitored_bodies[bk].inc();
-	if (!monitor_query_list.in_list())
+	if (!monitor_query_list.in_list()) {
 		_queue_monitor_update();
+	}
 }
 void Area2DSW::remove_body_from_query(Body2DSW *p_body, uint32_t p_body_shape, uint32_t p_area_shape) {
 	BodyKey bk(p_body, p_body_shape, p_area_shape);
 	monitored_bodies[bk].dec();
-	if (!monitor_query_list.in_list())
+	if (!monitor_query_list.in_list()) {
 		_queue_monitor_update();
+	}
 }
 
 void Area2DSW::add_area_to_query(Area2DSW *p_area, uint32_t p_area_shape, uint32_t p_self_shape) {
 	BodyKey bk(p_area, p_area_shape, p_self_shape);
 	monitored_areas[bk].inc();
-	if (!monitor_query_list.in_list())
+	if (!monitor_query_list.in_list()) {
 		_queue_monitor_update();
+	}
 }
 void Area2DSW::remove_area_from_query(Area2DSW *p_area, uint32_t p_area_shape, uint32_t p_self_shape) {
 	BodyKey bk(p_area, p_area_shape, p_self_shape);
 	monitored_areas[bk].dec();
-	if (!monitor_query_list.in_list())
+	if (!monitor_query_list.in_list()) {
 		_queue_monitor_update();
+	}
 }
 
 #endif // AREA_2D_SW_H

@@ -40,14 +40,16 @@ void EditorLayoutsDialog::_line_gui_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventKey> k = p_event;
 
 	if (k.is_valid()) {
-		if (!k->is_pressed())
+		if (!k->is_pressed()) {
 			return;
+		}
 
 		switch (k->get_scancode()) {
 			case KEY_KP_ENTER:
 			case KEY_ENTER: {
-				if (get_hide_on_ok())
+				if (get_hide_on_ok()) {
 					hide();
+				}
 				ok_pressed();
 				accept_event();
 			} break;

@@ -151,8 +151,9 @@ private:
 		int local_shape;
 		bool tagged;
 		bool operator<(const ShapePair &p_sp) const {
-			if (body_shape == p_sp.body_shape)
+			if (body_shape == p_sp.body_shape) {
 				return local_shape < p_sp.local_shape;
+			}
 
 			return body_shape < p_sp.body_shape;
 		}

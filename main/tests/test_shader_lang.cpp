@@ -140,8 +140,9 @@ static String dump_node_code(SL::Node *p_node, int p_level) {
 					"white"
 				};
 
-				if (E->get().hint)
+				if (E->get().hint) {
 					ucode += " : " + String(hint_name[E->get().hint]);
+				}
 
 				code += ucode + "\n";
 			}
@@ -160,8 +161,9 @@ static String dump_node_code(SL::Node *p_node, int p_level) {
 				String header;
 				header = _typestr(fnode->return_type) + " " + fnode->name + "(";
 				for (int j = 0; j < fnode->arguments.size(); j++) {
-					if (j > 0)
+					if (j > 0) {
 						header += ", ";
+					}
 					header += _prestr(fnode->arguments[j].precision) + _typestr(fnode->arguments[j].type) + " " + fnode->arguments[j].name;
 				}
 
@@ -247,8 +249,9 @@ static String dump_node_code(SL::Node *p_node, int p_level) {
 				case SL::OP_CONSTRUCT:
 					code = dump_node_code(onode->arguments[0], p_level) + "(";
 					for (int i = 1; i < onode->arguments.size(); i++) {
-						if (i > 1)
+						if (i > 1) {
 							code += ", ";
+						}
 						code += dump_node_code(onode->arguments[i], p_level);
 					}
 					code += ")";
@@ -318,8 +321,9 @@ MainLoop *test() {
 
 	while (true) {
 		CharType c = fa->get_8();
-		if (fa->eof_reached())
+		if (fa->eof_reached()) {
 			break;
+		}
 		code += c;
 	}
 

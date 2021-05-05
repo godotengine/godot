@@ -54,12 +54,14 @@ String ProjectSettings::get_resource_path() const {
 };
 
 String ProjectSettings::localize_path(const String &p_path) const {
-	if (resource_path == "")
+	if (resource_path == "") {
 		return p_path; //not initialized yet
+	}
 
 	if (p_path.begins_with("res://") || p_path.begins_with("user://") ||
-			(p_path.is_abs_path() && !p_path.begins_with(resource_path)))
+			(p_path.is_abs_path() && !p_path.begins_with(resource_path))) {
 		return p_path.simplify_path();
+	}
 
 	DirAccess *dir = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 
@@ -139,9 +141,9 @@ String ProjectSettings::globalize_path(const String &p_path) const {
 bool ProjectSettings::_set(const StringName &p_name, const Variant &p_value) {
 	_THREAD_SAFE_METHOD_
 
-	if (p_value.get_type() == Variant::NIL)
+	if (p_value.get_type() == Variant::NIL) {
 		props.erase(p_name);
-	else {
+	} else {
 		if (p_name == CoreStringNames::get_singleton()->_custom_features) {
 			Vector<String> custom_feature_array = String(p_value).split(",");
 			for (int i = 0; i < custom_feature_array.size(); i++) {
@@ -171,8 +173,9 @@ bool ProjectSettings::_set(const StringName &p_name, const Variant &p_value) {
 		}
 
 		if (props.has(p_name)) {
-			if (!props[p_name].overridden)
+			if (!props[p_name].overridden) {
 				props[p_name].variant = p_value;
+			}
 
 		} else {
 			props[p_name] = VariantContainer(p_value, last_order++);
@@ -213,17 +216,19 @@ void ProjectSettings::_get_property_list(List<PropertyInfo> *p_list) const {
 	for (Map<StringName, VariantContainer>::Element *E = props.front(); E; E = E->next()) {
 		const VariantContainer *v = &E->get();
 
-		if (v->hide_from_editor)
+		if (v->hide_from_editor) {
 			continue;
+		}
 
 		_VCSort vc;
 		vc.name = E->key();
 		vc.order = v->order;
 		vc.type = v->variant.get_type();
-		if (vc.name.begins_with("input/") || vc.name.begins_with("import/") || vc.name.begins_with("export/") || vc.name.begins_with("/remap") || vc.name.begins_with("/locale") || vc.name.begins_with("/autoload"))
+		if (vc.name.begins_with("input/") || vc.name.begins_with("import/") || vc.name.begins_with("export/") || vc.name.begins_with("/remap") || vc.name.begins_with("/locale") || vc.name.begins_with("/autoload")) {
 			vc.flags = PROPERTY_USAGE_STORAGE;
-		else
+		} else {
 			vc.flags = PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_STORAGE;
+		}
 
 		if (v->restart_if_changed) {
 			vc.flags |= PROPERTY_USAGE_RESTART_IF_CHANGED;
@@ -234,27 +239,31 @@ void ProjectSettings::_get_property_list(List<PropertyInfo> *p_list) const {
 	for (Set<_VCSort>::Element *E = vclist.front(); E; E = E->next()) {
 		String prop_info_name = E->get().name;
 		int dot = prop_info_name.find(".");
-		if (dot != -1)
+		if (dot != -1) {
 			prop_info_name = prop_info_name.substr(0, dot);
+		}
 
 		if (custom_prop_info.has(prop_info_name)) {
 			PropertyInfo pi = custom_prop_info[prop_info_name];
 			pi.name = E->get().name;
 			pi.usage = E->get().flags;
 			p_list->push_back(pi);
-		} else
+		} else {
 			p_list->push_back(PropertyInfo(E->get().type, E->get().name, PROPERTY_HINT_NONE, "", E->get().flags));
+		}
 	}
 }
 
 bool ProjectSettings::_load_resource_pack(const String &p_pack, bool p_replace_files, int p_offset) {
-	if (PackedData::get_singleton()->is_disabled())
+	if (PackedData::get_singleton()->is_disabled()) {
 		return false;
+	}
 
 	bool ok = PackedData::get_singleton()->add_pack(p_pack, p_replace_files, p_offset) == OK;
 
-	if (!ok)
+	if (!ok) {
 		return false;
+	}
 
 	//if data.pck is found, all directory access will be from here
 	DirAccess::make_default<DirAccessPack>(DirAccess::ACCESS_RESOURCES);
@@ -426,8 +435,9 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 		if (p_upwards) {
 			// Try to load settings ascending through parent directories
 			d->change_dir("..");
-			if (d->get_current_dir() == current_dir)
+			if (d->get_current_dir() == current_dir) {
 				break; // not doing anything useful
+			}
 			current_dir = d->get_current_dir();
 		} else {
 			break;
@@ -438,8 +448,9 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 	resource_path = resource_path.replace("\\", "/"); // Windows path to Unix path just in case.
 	memdelete(d);
 
-	if (!found)
+	if (!found) {
 		return err;
+	}
 
 	if (resource_path.length() && resource_path[resource_path.length() - 1] == '/') {
 		resource_path = resource_path.substr(0, resource_path.length() - 1); // Chop end.
@@ -678,29 +689,33 @@ Error ProjectSettings::_save_settings_binary(const String &p_file, const Map<Str
 	for (Map<String, List<String>>::Element *E = props.front(); E; E = E->next()) {
 		for (List<String>::Element *F = E->get().front(); F; F = F->next()) {
 			String key = F->get();
-			if (E->key() != "")
+			if (E->key() != "") {
 				key = E->key() + "/" + key;
+			}
 			Variant value;
-			if (p_custom.has(key))
+			if (p_custom.has(key)) {
 				value = p_custom[key];
-			else
+			} else {
 				value = get(key);
+			}
 
 			file->store_32(key.length());
 			file->store_string(key);
 
 			int len;
 			err = encode_variant(value, nullptr, len, true);
-			if (err != OK)
+			if (err != OK) {
 				memdelete(file);
+			}
 			ERR_FAIL_COND_V_MSG(err != OK, ERR_INVALID_DATA, "Error when trying to encode Variant.");
 
 			Vector<uint8_t> buff;
 			buff.resize(len);
 
 			err = encode_variant(value, buff.ptrw(), len, true);
-			if (err != OK)
+			if (err != OK) {
 				memdelete(file);
+			}
 			ERR_FAIL_COND_V_MSG(err != OK, ERR_INVALID_DATA, "Error when trying to encode Variant.");
 			file->store_32(len);
 			file->store_buffer(buff.ptr(), buff.size());
@@ -729,25 +744,30 @@ Error ProjectSettings::_save_settings_text(const String &p_file, const Map<Strin
 	file->store_line("");
 
 	file->store_string("config_version=" + itos(CONFIG_VERSION) + "\n");
-	if (p_custom_features != String())
+	if (p_custom_features != String()) {
 		file->store_string("custom_features=\"" + p_custom_features + "\"\n");
+	}
 	file->store_string("\n");
 
 	for (Map<String, List<String>>::Element *E = props.front(); E; E = E->next()) {
-		if (E != props.front())
+		if (E != props.front()) {
 			file->store_string("\n");
+		}
 
-		if (E->key() != "")
+		if (E->key() != "") {
 			file->store_string("[" + E->key() + "]\n\n");
+		}
 		for (List<String>::Element *F = E->get().front(); F; F = F->next()) {
 			String key = F->get();
-			if (E->key() != "")
+			if (E->key() != "") {
 				key = E->key() + "/" + key;
+			}
 			Variant value;
-			if (p_custom.has(key))
+			if (p_custom.has(key)) {
 				value = p_custom[key];
-			else
+			} else {
 				value = get(key);
+			}
 
 			String vstr;
 			VariantWriter::write_to_string(value, vstr);
@@ -775,19 +795,22 @@ Error ProjectSettings::save_custom(const String &p_path, const CustomMap &p_cust
 		for (Map<StringName, VariantContainer>::Element *G = props.front(); G; G = G->next()) {
 			const VariantContainer *v = &G->get();
 
-			if (v->hide_from_editor)
+			if (v->hide_from_editor) {
 				continue;
+			}
 
-			if (p_custom.has(G->key()))
+			if (p_custom.has(G->key())) {
 				continue;
+			}
 
 			_VCSort vc;
 			vc.name = G->key(); //*k;
 			vc.order = v->order;
 			vc.type = v->variant.get_type();
 			vc.flags = PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_STORAGE;
-			if (v->variant == v->initial)
+			if (v->variant == v->initial) {
 				continue;
+			}
 
 			vclist.insert(vc);
 		}
@@ -813,9 +836,9 @@ Error ProjectSettings::save_custom(const String &p_path, const CustomMap &p_cust
 
 		int div = category.find("/");
 
-		if (div < 0)
+		if (div < 0) {
 			category = "";
-		else {
+		} else {
 			category = category.substr(0, div);
 			name = name.substr(div + 1, name.size());
 		}
@@ -825,8 +848,9 @@ Error ProjectSettings::save_custom(const String &p_path, const CustomMap &p_cust
 	String custom_features;
 
 	for (int i = 0; i < p_custom_features.size(); i++) {
-		if (i > 0)
+		if (i > 0) {
 			custom_features += ",";
+		}
 
 		String f = p_custom_features[i].strip_edges().replace("\"", "");
 		custom_features += f;
@@ -873,8 +897,9 @@ Vector<String> ProjectSettings::get_optimizer_presets() const {
 	Vector<String> names;
 
 	for (List<PropertyInfo>::Element *E = pi.front(); E; E = E->next()) {
-		if (!E->get().name.begins_with("optimizer_presets/"))
+		if (!E->get().name.begins_with("optimizer_presets/")) {
 			continue;
+		}
 		names.push_back(E->get().name.get_slicec('/', 1));
 	}
 
@@ -893,10 +918,12 @@ void ProjectSettings::_add_property_info_bind(const Dictionary &p_info) {
 	pinfo.type = Variant::Type(p_info["type"].operator int());
 	ERR_FAIL_INDEX(pinfo.type, Variant::VARIANT_MAX);
 
-	if (p_info.has("hint"))
+	if (p_info.has("hint")) {
 		pinfo.hint = PropertyHint(p_info["hint"].operator int());
-	if (p_info.has("hint_string"))
+	}
+	if (p_info.has("hint_string")) {
 		pinfo.hint_string = p_info["hint_string"];
+	}
 
 	set_custom_property_info(pinfo.name, pinfo);
 }
@@ -920,15 +947,17 @@ bool ProjectSettings::is_using_datapack() const {
 }
 
 bool ProjectSettings::property_can_revert(const String &p_name) {
-	if (!props.has(p_name))
+	if (!props.has(p_name)) {
 		return false;
+	}
 
 	return props[p_name].initial != props[p_name].variant;
 }
 
 Variant ProjectSettings::property_get_revert(const String &p_name) {
-	if (!props.has(p_name))
+	if (!props.has(p_name)) {
 		return Variant();
+	}
 
 	return props[p_name].initial;
 }
@@ -994,8 +1023,9 @@ ProjectSettings::ProjectSettings() {
 
 	PoolStringArray extensions = PoolStringArray();
 	extensions.push_back("gd");
-	if (Engine::get_singleton()->has_singleton("GodotSharp"))
+	if (Engine::get_singleton()->has_singleton("GodotSharp")) {
 		extensions.push_back("cs");
+	}
 	extensions.push_back("shader");
 
 	GLOBAL_DEF("editor/search_in_file_extensions", extensions);

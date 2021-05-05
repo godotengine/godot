@@ -219,10 +219,12 @@ VideoStreamPlaybackGDNative::~VideoStreamPlaybackGDNative() {
 }
 
 void VideoStreamPlaybackGDNative::cleanup() {
-	if (data_struct)
+	if (data_struct) {
 		interface->destructor(data_struct);
-	if (pcm)
+	}
+	if (pcm) {
 		memfree(pcm);
+	}
 	if (file) {
 		file->close();
 		memdelete(file);
@@ -273,8 +275,9 @@ void VideoStreamPlaybackGDNative::stop() {
 void VideoStreamPlaybackGDNative::seek(float p_time) {
 	ERR_FAIL_COND(interface == nullptr);
 	interface->seek(data_struct, p_time);
-	if (p_time < time)
+	if (p_time < time) {
 		seek_backward = true;
+	}
 	time = p_time;
 	// reset audio buffers
 	memset(pcm, 0, num_channels * AUX_BUFFER_SIZE * sizeof(float));
@@ -336,12 +339,14 @@ int VideoStreamPlaybackGDNative::get_mix_rate() const {
 Ref<VideoStreamPlayback> VideoStreamGDNative::instance_playback() {
 	Ref<VideoStreamPlaybackGDNative> pb = memnew(VideoStreamPlaybackGDNative);
 	VideoDecoderGDNative *decoder = decoder_server.get_decoder(file.get_extension().to_lower());
-	if (decoder == nullptr)
+	if (decoder == nullptr) {
 		return nullptr;
+	}
 	pb->set_interface(decoder->interface);
 	pb->set_audio_track(audio_track);
-	if (pb->open_file(file))
+	if (pb->open_file(file)) {
 		return pb;
+	}
 	return nullptr;
 }
 
@@ -398,7 +403,8 @@ bool ResourceFormatLoaderVideoStreamGDNative::handles_type(const String &p_type)
 
 String ResourceFormatLoaderVideoStreamGDNative::get_resource_type(const String &p_path) const {
 	String el = p_path.get_extension().to_lower();
-	if (VideoDecoderServer::get_instance()->get_extensions().has(el))
+	if (VideoDecoderServer::get_instance()->get_extensions().has(el)) {
 		return "VideoStreamGDNative";
+	}
 	return "";
 }

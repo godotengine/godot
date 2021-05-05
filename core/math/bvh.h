@@ -359,12 +359,14 @@ public:
 	}
 
 	int cull_convex(const Vector<Plane> &p_convex, T **p_result_array, int p_result_max, uint32_t p_mask = 0xFFFFFFFF) {
-		if (!p_convex.size())
+		if (!p_convex.size()) {
 			return 0;
+		}
 
 		Vector<Vector3> convex_points = Geometry::compute_convex_mesh_points(&p_convex[0], p_convex.size());
-		if (convex_points.size() == 0)
+		if (convex_points.size() == 0) {
 			return 0;
+		}
 
 		typename BVHTREE_CLASS::CullParams params;
 		params.result_count_overall = 0;
@@ -431,8 +433,9 @@ private:
 				uint32_t ref_id = tree._cull_hits[i];
 
 				// don't collide against ourself
-				if (ref_id == changed_item_ref_id)
+				if (ref_id == changed_item_ref_id) {
 					continue;
+				}
 
 #ifdef BVH_CHECKS
 				// if neither are pairable, they should ignore each other
@@ -558,11 +561,13 @@ private:
 		// does this pair exist already?
 		// or only check the one with lower number of pairs for greater speed
 		if (p_from.num_pairs <= p_to.num_pairs) {
-			if (p_from.contains_pair_to(p_hb))
+			if (p_from.contains_pair_to(p_hb)) {
 				return;
+			}
 		} else {
-			if (p_to.contains_pair_to(p_ha))
+			if (p_to.contains_pair_to(p_ha)) {
 				return;
+			}
 		}
 
 		// callback
@@ -614,8 +619,9 @@ private:
 		// passing p_check_aabb false disables the optimization which prevents collision checks if
 		// the aabb hasn't changed. This is needed where set_pairable has been called, but the position
 		// has not changed.
-		if (p_check_aabb && expanded_aabb.encloses(aabb))
+		if (p_check_aabb && expanded_aabb.encloses(aabb)) {
 			return;
+		}
 
 		// ALWAYS update the new expanded aabb, even if already changed once
 		// this tick, because it is vital that the AABB is kept up to date
@@ -626,8 +632,9 @@ private:
 		// collision checking them multiple times is not needed, and repeats the same thing
 		uint32_t &last_updated_tick = tree._extra[p_handle.id()].last_updated_tick;
 
-		if (last_updated_tick == _tick)
+		if (last_updated_tick == _tick) {
 			return; // already on changed list
+		}
 
 		// mark as on list
 		last_updated_tick = _tick;

@@ -183,8 +183,9 @@ private:
 	int max_image_units;
 
 	_FORCE_INLINE_ void _set_uniform_variant(GLint p_uniform, const Variant &p_value) {
-		if (p_uniform < 0)
+		if (p_uniform < 0) {
 			return; // do none
+		}
 		switch (p_value.get_type()) {
 			case Variant::BOOL:
 			case Variant::INT: {
@@ -364,10 +365,11 @@ int ShaderGLES3::_get_uniform(int p_which) const {
 
 void ShaderGLES3::_set_conditional(int p_which, bool p_value) {
 	ERR_FAIL_INDEX(p_which, conditional_count);
-	if (p_value)
+	if (p_value) {
 		new_conditional_version.version |= (1 << p_which);
-	else
+	} else {
 		new_conditional_version.version &= ~(1 << p_which);
+	}
 }
 
 #endif

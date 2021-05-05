@@ -162,8 +162,9 @@ static void _compress_etc(Image *p_img, float p_lossy_quality, bool force_etc1_f
 
 	Ref<Image> img = p_img->duplicate();
 
-	if (img->get_format() != Image::FORMAT_RGBA8)
+	if (img->get_format() != Image::FORMAT_RGBA8) {
 		img->convert(Image::FORMAT_RGBA8); //still uses RGBA to convert
+	}
 
 	if (img->has_mipmaps()) {
 		if (next_power_of_2(imgw) != imgw || next_power_of_2(imgh) != imgh) {
@@ -201,12 +202,13 @@ static void _compress_etc(Image *p_img, float p_lossy_quality, bool force_etc1_f
 
 	float effort = 0.0; //default, reasonable time
 
-	if (p_lossy_quality > 0.95)
+	if (p_lossy_quality > 0.95) {
 		effort = 80;
-	else if (p_lossy_quality > 0.85)
+	} else if (p_lossy_quality > 0.85) {
 		effort = 60;
-	else if (p_lossy_quality > 0.75)
+	} else if (p_lossy_quality > 0.75) {
 		effort = 40;
+	}
 
 	Etc::ErrorMetric error_metric = Etc::ErrorMetric::RGBX; // NOTE: we can experiment with other error metrics
 	Etc::Image::Format etc2comp_etc_format = _image_format_to_etc2comp_format(etc_format);

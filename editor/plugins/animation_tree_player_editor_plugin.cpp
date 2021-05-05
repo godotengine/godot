@@ -68,10 +68,12 @@ Size2 AnimationTreePlayerEditor::_get_maximum_size() {
 			pos += click_motion - click_pos;
 		}
 		pos += get_node_size(E->get());
-		if (pos.x > max.x)
+		if (pos.x > max.x) {
 			max.x = pos.x;
-		if (pos.y > max.y)
+		}
+		if (pos.y > max.y) {
 			max.y = pos.y;
+		}
 	}
 
 	return max;
@@ -133,14 +135,16 @@ void AnimationTreePlayerEditor::_edit_dialog_changedf(float) {
 }
 
 void AnimationTreePlayerEditor::_edit_dialog_changed() {
-	if (updating_edit)
+	if (updating_edit) {
 		return;
+	}
 
 	if (renaming_edit) {
 		if (anim_tree->node_rename(edited_node, edit_line[0]->get_text()) == OK) {
 			for (List<StringName>::Element *E = order.front(); E; E = E->next()) {
-				if (E->get() == edited_node)
+				if (E->get() == edited_node) {
 					E->get() = edit_line[0]->get_text();
+				}
 			}
 			edited_node = edit_line[0]->get_text();
 		}
@@ -185,8 +189,9 @@ void AnimationTreePlayerEditor::_edit_dialog_changed() {
 
 		case AnimationTreePlayer::NODE_TRANSITION: {
 			anim_tree->transition_node_set_xfade_time(edited_node, edit_line[0]->get_text().to_double());
-			if (anim_tree->transition_node_get_current(edited_node) != edit_option->get_selected())
+			if (anim_tree->transition_node_get_current(edited_node) != edit_option->get_selected()) {
 				anim_tree->transition_node_set_current(edited_node, edit_option->get_selected());
+			}
 		} break;
 		default: {
 		}
@@ -214,9 +219,9 @@ void AnimationTreePlayerEditor::_play_toggled() {
 }
 
 void AnimationTreePlayerEditor::_master_anim_menu_item(int p_item) {
-	if (p_item == 0)
+	if (p_item == 0) {
 		_edit_filters();
-	else {
+	} else {
 		String str = master_anim_popup->get_item_text(p_item);
 		anim_tree->animation_node_set_master_animation(edited_node, str);
 	}
@@ -226,8 +231,9 @@ void AnimationTreePlayerEditor::_master_anim_menu_item(int p_item) {
 void AnimationTreePlayerEditor::_popup_edit_dialog() {
 	updating_edit = true;
 
-	for (int i = 0; i < 2; i++)
+	for (int i = 0; i < 2; i++) {
 		edit_scroll[i]->hide();
+	}
 
 	for (int i = 0; i < 4; i++) {
 		edit_line[i]->hide();
@@ -459,10 +465,12 @@ void AnimationTreePlayerEditor::_draw_node(const StringName &p_node) {
 	Point2 pos = anim_tree->node_get_position(p_node);
 	if (click_type == CLICK_NODE && click_node == p_node) {
 		pos += click_motion - click_pos;
-		if (pos.x < 5)
+		if (pos.x < 5) {
 			pos.x = 5;
-		if (pos.y < 5)
+		}
+		if (pos.y < 5) {
 			pos.y = 5;
+		}
 	}
 
 	pos -= Point2(h_scroll->get_value(), v_scroll->get_value());
@@ -488,8 +496,9 @@ void AnimationTreePlayerEditor::_draw_node(const StringName &p_node) {
 
 	float icon_h_ofs = Math::floor((font->get_height() - slot_icon->get_height()) / 2.0) + 1;
 
-	if (type != AnimationTreePlayer::NODE_OUTPUT)
+	if (type != AnimationTreePlayer::NODE_OUTPUT) {
 		slot_icon->draw(ci, ofs + Point2(w, icon_h_ofs)); //output
+	}
 
 	if (inputs) {
 		for (int i = 0; i < inputs; i++) {
@@ -545,8 +554,9 @@ void AnimationTreePlayerEditor::_draw_node(const StringName &p_node) {
 
 				case AnimationTreePlayer::NODE_TRANSITION:
 					text = itos(i);
-					if (anim_tree->transition_node_has_input_auto_advance(p_node, i))
+					if (anim_tree->transition_node_has_input_auto_advance(p_node, i)) {
 						text += "->";
+					}
 
 					break;
 				default: {
@@ -569,12 +579,13 @@ void AnimationTreePlayerEditor::_draw_node(const StringName &p_node) {
 		case AnimationTreePlayer::NODE_ANIMATION: {
 			Ref<Animation> anim = anim_tree->animation_node_get_animation(p_node);
 			String text;
-			if (anim_tree->animation_node_get_master_animation(p_node) != "")
+			if (anim_tree->animation_node_get_master_animation(p_node) != "") {
 				text = anim_tree->animation_node_get_master_animation(p_node);
-			else if (anim.is_null())
+			} else if (anim.is_null()) {
 				text = "load...";
-			else
+			} else {
 				text = anim->get_name();
+			}
 
 			font->draw_halign(ci, ofs + ascofs, HALIGN_CENTER, w, text, font_color_title);
 
@@ -615,18 +626,21 @@ AnimationTreePlayerEditor::ClickType AnimationTreePlayerEditor::_locate_click(co
 
 		pos -= Point2(h_scroll->get_value(), v_scroll->get_value());
 
-		if (!Rect2(pos, size).has_point(p_click))
+		if (!Rect2(pos, size).has_point(p_click)) {
 			continue;
+		}
 
-		if (p_node_id)
+		if (p_node_id) {
 			*p_node_id = node;
+		}
 
 		pos = p_click - pos;
 
 		float y = pos.y - style->get_offset().height;
 
-		if (y < 2 * h)
+		if (y < 2 * h) {
 			return CLICK_NODE;
+		}
 		y -= 2 * h;
 
 		int inputs = anim_tree->node_get_input_count(node);
@@ -634,16 +648,18 @@ AnimationTreePlayerEditor::ClickType AnimationTreePlayerEditor::_locate_click(co
 
 		if (inputs == 0 || (pos.x > size.width / 2 && type != AnimationTreePlayer::NODE_OUTPUT)) {
 			if (y < count * h) {
-				if (p_slot_index)
+				if (p_slot_index) {
 					*p_slot_index = 0;
+				}
 				return CLICK_OUTPUT_SLOT;
 			}
 		}
 
 		for (int i = 0; i < count; i++) {
 			if (y < h) {
-				if (p_slot_index)
+				if (p_slot_index) {
 					*p_slot_index = i;
+				}
 				return CLICK_INPUT_SLOT;
 			}
 			y -= h;
@@ -666,10 +682,12 @@ Point2 AnimationTreePlayerEditor::_get_slot_pos(const StringName &p_node_id, boo
 
 	if (click_type == CLICK_NODE && click_node == p_node_id) {
 		pos += click_motion - click_pos;
-		if (pos.x < 5)
+		if (pos.x < 5) {
 			pos.x = 5;
-		if (pos.y < 5)
+		}
+		if (pos.y < 5) {
 			pos.y = 5;
+		}
 	}
 
 	pos -= Point2(h_scroll->get_value(), v_scroll->get_value());
@@ -741,10 +759,11 @@ void AnimationTreePlayerEditor::_gui_input(Ref<InputEvent> p_event) {
 						if (anim_tree->node_get_type(rclick_node) == AnimationTreePlayer::NODE_TRANSITION) {
 							node_popup->add_item(TTR("Add Input"), NODE_ADD_INPUT);
 							if (rclick_type == CLICK_INPUT_SLOT) {
-								if (anim_tree->transition_node_has_input_auto_advance(rclick_node, rclick_slot))
+								if (anim_tree->transition_node_has_input_auto_advance(rclick_node, rclick_slot)) {
 									node_popup->add_item(TTR("Clear Auto-Advance"), NODE_CLEAR_AUTOADVANCE);
-								else
+								} else {
 									node_popup->add_item(TTR("Set Auto-Advance"), NODE_SET_AUTOADVANCE);
+								}
 								node_popup->add_item(TTR("Delete Input"), NODE_DELETE_INPUT);
 							}
 						}
@@ -758,8 +777,9 @@ void AnimationTreePlayerEditor::_gui_input(Ref<InputEvent> p_event) {
 						node_popup->set_size(Size2(1, 1));
 						node_popup->add_item(TTR("Rename"), NODE_RENAME);
 						node_popup->add_item(TTR("Remove"), NODE_ERASE);
-						if (anim_tree->node_get_type(rclick_node) == AnimationTreePlayer::NODE_TRANSITION)
+						if (anim_tree->node_get_type(rclick_node) == AnimationTreePlayer::NODE_TRANSITION) {
 							node_popup->add_item(TTR("Add Input"), NODE_ADD_INPUT);
+						}
 						node_popup->set_position(rclick_pos + get_global_position());
 						node_popup->popup();
 					}
@@ -785,10 +805,12 @@ void AnimationTreePlayerEditor::_gui_input(Ref<InputEvent> p_event) {
 					} break;
 					case CLICK_NODE: {
 						Point2 new_pos = anim_tree->node_get_position(click_node) + (click_motion - click_pos);
-						if (new_pos.x < 5)
+						if (new_pos.x < 5) {
 							new_pos.x = 5;
-						if (new_pos.y < 5)
+						}
+						if (new_pos.y < 5) {
 							new_pos.y = 5;
+						}
 						anim_tree->node_set_position(click_node, new_pos);
 
 					} break;
@@ -830,8 +852,9 @@ void AnimationTreePlayerEditor::_draw_cos_line(const Vector2 &p_from, const Vect
 	for (int i = 0; i <= steps; i++) {
 		float d = i / float(steps);
 		float c = -Math::cos(d * Math_PI) * 0.5 + 0.5;
-		if (flip)
+		if (flip) {
 			c = 1.0 - c;
+		}
 		Vector2 p = r.position + Vector2(d * r.size.width, c * r.size.height);
 
 		if (i > 0) {
@@ -987,8 +1010,9 @@ void AnimationTreePlayerEditor::_node_menu_item(int p_item) {
 		} break;
 
 		case NODE_ERASE: {
-			if (rclick_node == "out")
+			if (rclick_node == "out") {
 				break;
+			}
 			order.erase(rclick_node);
 			anim_tree->remove_node(rclick_node);
 			update();
@@ -1015,12 +1039,14 @@ StringName AnimationTreePlayerEditor::_add_node(int p_item) {
 
 	while (true) {
 		name = bname[p_item];
-		if (idx > 1)
+		if (idx > 1) {
 			name += " " + itos(idx);
-		if (anim_tree->node_exists(name))
+		}
+		if (anim_tree->node_exists(name)) {
 			idx++;
-		else
+		} else {
 			break;
+		}
 	}
 
 	anim_tree->add_node((AnimationTreePlayer::NodeType)p_item, name);
@@ -1076,8 +1102,9 @@ void AnimationTreePlayerEditor::_find_paths_for_filter(const StringName &p_node,
 
 	for (int i = 0; i < anim_tree->node_get_input_count(p_node); i++) {
 		StringName port = anim_tree->node_get_input_source(p_node, i);
-		if (port == StringName())
+		if (port == StringName()) {
 			continue;
+		}
 		_find_paths_for_filter(port, paths);
 	}
 
@@ -1093,8 +1120,9 @@ void AnimationTreePlayerEditor::_find_paths_for_filter(const StringName &p_node,
 
 void AnimationTreePlayerEditor::_filter_edited() {
 	TreeItem *ed = filter->get_edited();
-	if (!ed)
+	if (!ed) {
 		return;
+	}
 
 	if (anim_tree->node_get_type(edited_node) == AnimationTreePlayer::NODE_ONESHOT) {
 		anim_tree->oneshot_node_set_filter_path(edited_node, ed->get_metadata(0), ed->is_checked(0));
@@ -1341,8 +1369,9 @@ void AnimationTreePlayerEditorPlugin::make_visible(bool p_visible) {
 		editor->make_bottom_panel_item_visible(anim_tree_editor);
 		anim_tree_editor->set_physics_process(true);
 	} else {
-		if (anim_tree_editor->is_visible_in_tree())
+		if (anim_tree_editor->is_visible_in_tree()) {
 			editor->hide_bottom_panel();
+		}
 		button->hide();
 		anim_tree_editor->set_physics_process(false);
 	}

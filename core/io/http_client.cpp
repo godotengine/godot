@@ -280,8 +280,9 @@ int HTTPClient::get_response_code() const {
 }
 
 Error HTTPClient::get_response_headers(List<String> *r_response) {
-	if (!response_headers.size())
+	if (!response_headers.size()) {
 		return ERR_INVALID_PARAMETER;
+	}
 
 	for (int i = 0; i < response_headers.size(); i++) {
 		r_response->push_back(response_headers[i]);
@@ -293,8 +294,9 @@ Error HTTPClient::get_response_headers(List<String> *r_response) {
 }
 
 void HTTPClient::close() {
-	if (tcp_connection->get_status() != StreamPeerTCP::STATUS_NONE)
+	if (tcp_connection->get_status() != StreamPeerTCP::STATUS_NONE) {
 		tcp_connection->disconnect_from_host();
+	}
 
 	connection.unref();
 	status = STATUS_DISCONNECTED;
@@ -433,8 +435,9 @@ Error HTTPClient::poll() {
 					return ERR_CONNECTION_ERROR;
 				}
 
-				if (rec == 0)
+				if (rec == 0) {
 					return OK; // Still requesting, keep trying!
+				}
 
 				response_str.push_back(byte);
 				int rs = response_str.size();
@@ -464,8 +467,9 @@ Error HTTPClient::poll() {
 					for (int i = 0; i < responses.size(); i++) {
 						String header = responses[i].strip_edges();
 						String s = header.to_lower();
-						if (s.length() == 0)
+						if (s.length() == 0) {
 							continue;
+						}
 						if (s.begins_with("content-length:")) {
 							body_size = s.substr(s.find(":") + 1, s.length()).strip_edges().to_int();
 							body_left = body_size;
@@ -541,8 +545,9 @@ PoolByteArray HTTPClient::read_response_body_chunk() {
 				int rec = 0;
 				err = _get_http_data(&b, 1, rec);
 
-				if (rec == 0)
+				if (rec == 0) {
 					break;
+				}
 
 				chunk.push_back(b);
 				int cs = chunk.size();
@@ -564,8 +569,9 @@ PoolByteArray HTTPClient::read_response_body_chunk() {
 				int rec = 0;
 				err = _get_http_data(&b, 1, rec);
 
-				if (rec == 0)
+				if (rec == 0) {
 					break;
+				}
 
 				chunk.push_back(b);
 
@@ -580,13 +586,13 @@ PoolByteArray HTTPClient::read_response_body_chunk() {
 					for (int i = 0; i < chunk.size() - 2; i++) {
 						char c = chunk[i];
 						int v = 0;
-						if (c >= '0' && c <= '9')
+						if (c >= '0' && c <= '9') {
 							v = c - '0';
-						else if (c >= 'a' && c <= 'f')
+						} else if (c >= 'a' && c <= 'f') {
 							v = c - 'a' + 10;
-						else if (c >= 'A' && c <= 'F')
+						} else if (c >= 'A' && c <= 'F') {
 							v = c - 'A' + 10;
-						else {
+						} else {
 							ERR_PRINT("HTTP Chunk len not in hex!!");
 							status = STATUS_CONNECTION_ERROR;
 							break;
@@ -655,8 +661,9 @@ PoolByteArray HTTPClient::read_response_body_chunk() {
 					body_left -= rec;
 				}
 			}
-			if (err != OK)
+			if (err != OK) {
 				break;
+			}
 		}
 	}
 
@@ -784,8 +791,9 @@ Dictionary HTTPClient::_get_response_headers_as_dictionary() {
 	for (const List<String>::Element *E = rh.front(); E; E = E->next()) {
 		const String &s = E->get();
 		int sp = s.find(":");
-		if (sp == -1)
+		if (sp == -1) {
 			continue;
+		}
 		String key = s.substr(0, sp).strip_edges();
 		String value = s.substr(sp + 1, s.length()).strip_edges();
 		ret[key] = value;

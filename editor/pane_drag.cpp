@@ -41,8 +41,9 @@ void PaneDrag::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_DRAW: {
 			Ref<Texture> icon = mouse_over ? get_icon("PaneDragHover", "EditorIcons") : get_icon("PaneDrag", "EditorIcons");
-			if (!icon.is_null())
+			if (!icon.is_null()) {
 				icon->draw(get_canvas_item(), Point2(0, 0));
+			}
 
 		} break;
 		case NOTIFICATION_MOUSE_ENTER:
@@ -57,8 +58,9 @@ void PaneDrag::_notification(int p_what) {
 }
 Size2 PaneDrag::get_minimum_size() const {
 	Ref<Texture> icon = get_icon("PaneDrag", "EditorIcons");
-	if (!icon.is_null())
+	if (!icon.is_null()) {
 		return icon->get_size();
+	}
 	return Size2();
 }
 

@@ -45,8 +45,9 @@ Rect2 NavigationPolygon::_edit_get_rect() const {
 		for (int i = 0; i < outlines.size(); i++) {
 			const PoolVector<Vector2> &outline = outlines[i];
 			const int outline_size = outline.size();
-			if (outline_size < 3)
+			if (outline_size < 3) {
 				continue;
+			}
 			PoolVector<Vector2>::Read p = outline.read();
 			for (int j = 0; j < outline_size; j++) {
 				if (first) {
@@ -67,10 +68,12 @@ bool NavigationPolygon::_edit_is_selected_on_click(const Point2 &p_point, double
 	for (int i = 0; i < outlines.size(); i++) {
 		const PoolVector<Vector2> &outline = outlines[i];
 		const int outline_size = outline.size();
-		if (outline_size < 3)
+		if (outline_size < 3) {
 			continue;
-		if (Geometry::is_point_in_polygon(p_point, Variant(outline)))
+		}
+		if (Geometry::is_point_in_polygon(p_point, Variant(outline))) {
 			return true;
+		}
 	}
 	return false;
 }
@@ -180,8 +183,9 @@ void NavigationPolygon::make_polygons_from_outlines() {
 	for (int i = 0; i < outlines.size(); i++) {
 		PoolVector<Vector2> ol = outlines[i];
 		int olsize = ol.size();
-		if (olsize < 3)
+		if (olsize < 3) {
 			continue;
+		}
 		PoolVector<Vector2>::Read r = ol.read();
 		for (int j = 0; j < olsize; j++) {
 			outside_point.x = MAX(r[j].x, outside_point.x);
@@ -194,20 +198,23 @@ void NavigationPolygon::make_polygons_from_outlines() {
 	for (int i = 0; i < outlines.size(); i++) {
 		PoolVector<Vector2> ol = outlines[i];
 		int olsize = ol.size();
-		if (olsize < 3)
+		if (olsize < 3) {
 			continue;
+		}
 		PoolVector<Vector2>::Read r = ol.read();
 
 		int interscount = 0;
 		//test if this is an outer outline
 		for (int k = 0; k < outlines.size(); k++) {
-			if (i == k)
+			if (i == k) {
 				continue; //no self intersect
+			}
 
 			PoolVector<Vector2> ol2 = outlines[k];
 			int olsize2 = ol2.size();
-			if (olsize2 < 3)
+			if (olsize2 < 3) {
 				continue;
+			}
 			PoolVector<Vector2>::Read r2 = ol2.read();
 
 			for (int l = 0; l < olsize2; l++) {
@@ -225,9 +232,9 @@ void NavigationPolygon::make_polygons_from_outlines() {
 			tp[j] = r[j];
 		}
 
-		if (outer)
+		if (outer) {
 			tp.SetOrientation(TRIANGULATOR_CCW);
-		else {
+		} else {
 			tp.SetOrientation(TRIANGULATOR_CW);
 			tp.SetHole(true);
 		}
@@ -299,12 +306,14 @@ NavigationPolygon::NavigationPolygon() :
 }
 
 void NavigationPolygonInstance::set_enabled(bool p_enabled) {
-	if (enabled == p_enabled)
+	if (enabled == p_enabled) {
 		return;
+	}
 	enabled = p_enabled;
 
-	if (!is_inside_tree())
+	if (!is_inside_tree()) {
 		return;
+	}
 
 	if (!enabled) {
 		if (nav_id != -1) {
@@ -319,8 +328,9 @@ void NavigationPolygonInstance::set_enabled(bool p_enabled) {
 		}
 	}
 
-	if (Engine::get_singleton()->is_editor_hint() || get_tree()->is_debugging_navigation_hint())
+	if (Engine::get_singleton()->is_editor_hint() || get_tree()->is_debugging_navigation_hint()) {
 		update();
+	}
 }
 
 bool NavigationPolygonInstance::is_enabled() const {
@@ -374,8 +384,9 @@ void NavigationPolygonInstance::_notification(int p_what) {
 			if (is_inside_tree() && (Engine::get_singleton()->is_editor_hint() || get_tree()->is_debugging_navigation_hint()) && navpoly.is_valid()) {
 				PoolVector<Vector2> verts = navpoly->get_vertices();
 				int vsize = verts.size();
-				if (vsize < 3)
+				if (vsize < 3) {
 					return;
+				}
 
 				Color color;
 				if (enabled) {
@@ -447,13 +458,15 @@ Ref<NavigationPolygon> NavigationPolygonInstance::get_navigation_polygon() const
 }
 
 void NavigationPolygonInstance::_navpoly_changed() {
-	if (is_inside_tree() && (Engine::get_singleton()->is_editor_hint() || get_tree()->is_debugging_navigation_hint()))
+	if (is_inside_tree() && (Engine::get_singleton()->is_editor_hint() || get_tree()->is_debugging_navigation_hint())) {
 		update();
+	}
 }
 
 String NavigationPolygonInstance::get_configuration_warning() const {
-	if (!is_visible_in_tree() || !is_inside_tree())
+	if (!is_visible_in_tree() || !is_inside_tree()) {
 		return String();
+	}
 
 	String warning = Node2D::get_configuration_warning();
 	if (!navpoly.is_valid()) {

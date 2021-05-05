@@ -37,8 +37,9 @@ void Timer::_notification(int p_what) {
 		case NOTIFICATION_READY: {
 			if (autostart) {
 #ifdef TOOLS_ENABLED
-				if (Engine::get_singleton()->is_editor_hint() && get_tree()->get_edited_scene_root() && (get_tree()->get_edited_scene_root() == this || get_tree()->get_edited_scene_root()->is_a_parent_of(this)))
+				if (Engine::get_singleton()->is_editor_hint() && get_tree()->get_edited_scene_root() && (get_tree()->get_edited_scene_root() == this || get_tree()->get_edited_scene_root()->is_a_parent_of(this))) {
 					break;
+				}
 #endif
 				start();
 				autostart = false;
@@ -51,10 +52,11 @@ void Timer::_notification(int p_what) {
 			time_left -= get_process_delta_time();
 
 			if (time_left < 0) {
-				if (!one_shot)
+				if (!one_shot) {
 					time_left += wait_time;
-				else
+				} else {
 					stop();
+				}
 
 				emit_signal("timeout");
 			}
@@ -67,10 +69,11 @@ void Timer::_notification(int p_what) {
 			time_left -= get_physics_process_delta_time();
 
 			if (time_left < 0) {
-				if (!one_shot)
+				if (!one_shot) {
 					time_left += wait_time;
-				else
+				} else {
 					stop();
+				}
 				emit_signal("timeout");
 			}
 
@@ -117,8 +120,9 @@ void Timer::stop() {
 }
 
 void Timer::set_paused(bool p_paused) {
-	if (paused == p_paused)
+	if (paused == p_paused) {
 		return;
+	}
 
 	paused = p_paused;
 	_set_process(processing);
@@ -137,8 +141,9 @@ float Timer::get_time_left() const {
 }
 
 void Timer::set_timer_process_mode(TimerProcessMode p_mode) {
-	if (timer_process_mode == p_mode)
+	if (timer_process_mode == p_mode) {
 		return;
+	}
 
 	switch (timer_process_mode) {
 		case TIMER_PROCESS_PHYSICS:

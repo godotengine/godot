@@ -195,14 +195,16 @@ static FileAccess *_OSPRF = nullptr;
 
 static void _OS_printres(Object *p_obj) {
 	Resource *res = Object::cast_to<Resource>(p_obj);
-	if (!res)
+	if (!res) {
 		return;
+	}
 
 	String str = itos(res->get_instance_id()) + String(res->get_class()) + ":" + String(res->get_name()) + " - " + res->get_path();
-	if (_OSPRF)
+	if (_OSPRF) {
 		_OSPRF->store_line(str);
-	else
+	} else {
 		print_line(str);
+	}
 }
 
 bool OS::has_virtual_keyboard() const {
@@ -243,8 +245,9 @@ void OS::print_all_resources(String p_to_file) {
 	ObjectDB::debug_objects(_OS_printres);
 
 	if (p_to_file != "") {
-		if (_OSPRF)
+		if (_OSPRF) {
 			memdelete(_OSPRF);
+		}
 		_OSPRF = nullptr;
 	}
 }
@@ -350,19 +353,23 @@ Error OS::dialog_show(String p_title, String p_description, Vector<String> p_but
 	while (true) {
 		print("%ls\n--------\n%ls\n", p_title.c_str(), p_description.c_str());
 		for (int i = 0; i < p_buttons.size(); i++) {
-			if (i > 0)
+			if (i > 0) {
 				print(", ");
+			}
 			print("%i=%ls", i + 1, p_buttons[i].c_str());
 		};
 		print("\n");
 		String res = get_stdin_string().strip_edges();
-		if (!res.is_numeric())
+		if (!res.is_numeric()) {
 			continue;
+		}
 		int n = res.to_int();
-		if (n < 0 || n >= p_buttons.size())
+		if (n < 0 || n >= p_buttons.size()) {
 			continue;
-		if (p_obj && p_callback != "")
+		}
+		if (p_obj && p_callback != "") {
 			p_obj->call_deferred(p_callback, n);
+		}
 		break;
 	};
 	return OK;
@@ -572,21 +579,26 @@ void OS::set_has_server_feature_callback(HasServerFeatureCallback p_callback) {
 }
 
 bool OS::has_feature(const String &p_feature) {
-	if (p_feature == get_name())
+	if (p_feature == get_name()) {
 		return true;
+	}
 #ifdef DEBUG_ENABLED
-	if (p_feature == "debug")
+	if (p_feature == "debug") {
 		return true;
+	}
 #else
-	if (p_feature == "release")
+	if (p_feature == "release") {
 		return true;
+	}
 #endif
 #ifdef TOOLS_ENABLED
-	if (p_feature == "editor")
+	if (p_feature == "editor") {
 		return true;
+	}
 #else
-	if (p_feature == "standalone")
+	if (p_feature == "standalone") {
 		return true;
+	}
 #endif
 
 	if (sizeof(void *) == 8 && p_feature == "64") {
@@ -623,22 +635,25 @@ bool OS::has_feature(const String &p_feature) {
 	}
 #endif
 
-	if (_check_internal_feature_support(p_feature))
+	if (_check_internal_feature_support(p_feature)) {
 		return true;
+	}
 
 	if (has_server_feature_callback && has_server_feature_callback(p_feature)) {
 		return true;
 	}
 
-	if (ProjectSettings::get_singleton()->has_custom_feature(p_feature))
+	if (ProjectSettings::get_singleton()->has_custom_feature(p_feature)) {
 		return true;
+	}
 
 	return false;
 }
 
 void OS::center_window() {
-	if (is_window_fullscreen())
+	if (is_window_fullscreen()) {
 		return;
+	}
 
 	Point2 sp = get_screen_position(get_current_screen());
 	Size2 scr = get_screen_size(get_current_screen());
@@ -688,8 +703,9 @@ List<String> OS::get_restart_on_exit_arguments() const {
 }
 
 PoolStringArray OS::get_connected_midi_inputs() {
-	if (MIDIDriver::get_singleton())
+	if (MIDIDriver::get_singleton()) {
 		return MIDIDriver::get_singleton()->get_connected_inputs();
+	}
 
 	PoolStringArray list;
 	ERR_FAIL_V_MSG(list, vformat("MIDI input isn't supported on %s.", OS::get_singleton()->get_name()));

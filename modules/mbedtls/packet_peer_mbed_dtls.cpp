@@ -35,8 +35,9 @@
 #include "core/os/file_access.h"
 
 int PacketPeerMbedDTLS::bio_send(void *ctx, const unsigned char *buf, size_t len) {
-	if (buf == nullptr || len <= 0)
+	if (buf == nullptr || len <= 0) {
 		return 0;
+	}
 
 	PacketPeerMbedDTLS *sp = (PacketPeerMbedDTLS *)ctx;
 
@@ -52,8 +53,9 @@ int PacketPeerMbedDTLS::bio_send(void *ctx, const unsigned char *buf, size_t len
 }
 
 int PacketPeerMbedDTLS::bio_recv(void *ctx, unsigned char *buf, size_t len) {
-	if (buf == nullptr || len <= 0)
+	if (buf == nullptr || len <= 0) {
 		return 0;
+	}
 
 	PacketPeerMbedDTLS *sp = (PacketPeerMbedDTLS *)ctx;
 
@@ -167,8 +169,9 @@ Error PacketPeerMbedDTLS::accept_peer(Ref<PacketPeerUDP> p_base, Ref<CryptoKey> 
 Error PacketPeerMbedDTLS::put_packet(const uint8_t *p_buffer, int p_bytes) {
 	ERR_FAIL_COND_V(status != STATUS_CONNECTED, ERR_UNCONFIGURED);
 
-	if (p_bytes == 0)
+	if (p_bytes == 0) {
 		return OK;
+	}
 
 	int ret = mbedtls_ssl_write(ssl_ctx->get_context(), p_buffer, p_bytes);
 	if (ret == MBEDTLS_ERR_SSL_WANT_READ || ret == MBEDTLS_ERR_SSL_WANT_WRITE) {
@@ -251,15 +254,16 @@ PacketPeerMbedDTLS::~PacketPeerMbedDTLS() {
 }
 
 void PacketPeerMbedDTLS::disconnect_from_peer() {
-	if (status != STATUS_CONNECTED && status != STATUS_HANDSHAKING)
+	if (status != STATUS_CONNECTED && status != STATUS_HANDSHAKING) {
 		return;
+	}
 
 	if (status == STATUS_CONNECTED) {
 		int ret = 0;
 		// Send SSL close notification, blocking, but ignore other errors.
-		do
+		do {
 			ret = mbedtls_ssl_close_notify(ssl_ctx->get_context());
-		while (ret == MBEDTLS_ERR_SSL_WANT_WRITE);
+		} while (ret == MBEDTLS_ERR_SSL_WANT_WRITE);
 	}
 
 	_cleanup();

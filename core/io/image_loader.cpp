@@ -36,8 +36,9 @@ bool ImageFormatLoader::recognize(const String &p_extension) const {
 	List<String> extensions;
 	get_recognized_extensions(&extensions);
 	for (List<String>::Element *E = extensions.front(); E; E = E->next()) {
-		if (E->get().nocasecmp_to(p_extension) == 0)
+		if (E->get().nocasecmp_to(p_extension) == 0) {
 			return true;
+		}
 	}
 
 	return false;
@@ -59,23 +60,26 @@ Error ImageLoader::load_image(String p_file, Ref<Image> p_image, FileAccess *p_c
 	String extension = p_file.get_extension();
 
 	for (int i = 0; i < loader.size(); i++) {
-		if (!loader[i]->recognize(extension))
+		if (!loader[i]->recognize(extension)) {
 			continue;
+		}
 		Error err = loader[i]->load_image(p_image, f, p_force_linear, p_scale);
 		if (err != OK) {
 			ERR_PRINTS("Error loading image: " + p_file);
 		}
 
 		if (err != ERR_FILE_UNRECOGNIZED) {
-			if (!p_custom)
+			if (!p_custom) {
 				memdelete(f);
+			}
 
 			return err;
 		}
 	}
 
-	if (!p_custom)
+	if (!p_custom) {
 		memdelete(f);
+	}
 
 	return ERR_FILE_UNRECOGNIZED;
 }
@@ -88,8 +92,9 @@ void ImageLoader::get_recognized_extensions(List<String> *p_extensions) {
 
 ImageFormatLoader *ImageLoader::recognize(const String &p_extension) {
 	for (int i = 0; i < loader.size(); i++) {
-		if (loader[i]->recognize(p_extension))
+		if (loader[i]->recognize(p_extension)) {
 			return loader[i];
+		}
 	}
 
 	return nullptr;

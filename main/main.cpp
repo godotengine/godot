@@ -162,8 +162,9 @@ static String unescape_cmdline(const String &p_str) {
 
 static String get_full_version_string() {
 	String hash = String(VERSION_HASH);
-	if (hash.length() != 0)
+	if (hash.length() != 0) {
 		hash = "." + hash.left(9);
+	}
 	return String(VERSION_FULL_BUILD) + hash;
 }
 
@@ -238,15 +239,17 @@ void Main::print_help(const char *p_binary) {
 	OS::get_singleton()->print("  --remote-fs-password <password>  Password for remote filesystem.\n");
 	OS::get_singleton()->print("  --audio-driver <driver>          Audio driver (");
 	for (int i = 0; i < OS::get_singleton()->get_audio_driver_count(); i++) {
-		if (i != 0)
+		if (i != 0) {
 			OS::get_singleton()->print(", ");
+		}
 		OS::get_singleton()->print("'%s'", OS::get_singleton()->get_audio_driver_name(i));
 	}
 	OS::get_singleton()->print(").\n");
 	OS::get_singleton()->print("  --video-driver <driver>          Video driver (");
 	for (int i = 0; i < OS::get_singleton()->get_video_driver_count(); i++) {
-		if (i != 0)
+		if (i != 0) {
 			OS::get_singleton()->print(", ");
+		}
 		OS::get_singleton()->print("'%s'", OS::get_singleton()->get_video_driver_name(i));
 	}
 	OS::get_singleton()->print(").\n");
@@ -266,8 +269,9 @@ void Main::print_help(const char *p_binary) {
 	OS::get_singleton()->print("  --disable-vsync-via-compositor   Disable vsync via the OS' window compositor (Windows only).\n");
 	OS::get_singleton()->print("  --tablet-driver                  Tablet input driver (");
 	for (int i = 0; i < OS::get_singleton()->get_tablet_driver_count(); i++) {
-		if (i != 0)
+		if (i != 0) {
 			OS::get_singleton()->print(", ");
+		}
 		OS::get_singleton()->print("'%s'", OS::get_singleton()->get_tablet_driver_name(i).utf8().get_data());
 	}
 	OS::get_singleton()->print(") (Windows only).\n");
@@ -418,8 +422,9 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 #endif
 
 	packed_data = PackedData::get_singleton();
-	if (!packed_data)
+	if (!packed_data) {
 		packed_data = memnew(PackedData);
+	}
 
 #ifdef MINIZIP_ENABLED
 
@@ -668,12 +673,13 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		} else if (I->get() == "--render-thread") { // render thread mode
 
 			if (I->next()) {
-				if (I->next()->get() == "safe")
+				if (I->next()->get() == "safe") {
 					rtm = OS::RENDER_THREAD_SAFE;
-				else if (I->next()->get() == "unsafe")
+				} else if (I->next()->get() == "unsafe") {
 					rtm = OS::RENDER_THREAD_UNSAFE;
-				else if (I->next()->get() == "separate")
+				} else if (I->next()->get() == "separate") {
 					rtm = OS::RENDER_SEPARATE_THREAD;
+				}
 
 				N = I->next()->next();
 			} else {
@@ -726,9 +732,9 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			String path;
 			String file = I->get();
 			int sep = MAX(file.find_last("/"), file.find_last("\\"));
-			if (sep == -1)
+			if (sep == -1) {
 				path = ".";
-			else {
+			} else {
 				path = file.substr(0, sep);
 			}
 			if (OS::get_singleton()->set_cwd(path) == OK) {
@@ -997,8 +1003,9 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		_print_error_enabled = false;
 	};
 
-	if (quiet_stdout)
+	if (quiet_stdout) {
 		_print_line_enabled = false;
+	}
 
 	Logger::set_flush_stdout_on_print(ProjectSettings::get_singleton()->get("application/run/flush_stdout_on_print"));
 
@@ -1144,20 +1151,21 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	{
 		String orientation = GLOBAL_DEF("display/window/handheld/orientation", "landscape");
 
-		if (orientation == "portrait")
+		if (orientation == "portrait") {
 			OS::get_singleton()->set_screen_orientation(OS::SCREEN_PORTRAIT);
-		else if (orientation == "reverse_landscape")
+		} else if (orientation == "reverse_landscape") {
 			OS::get_singleton()->set_screen_orientation(OS::SCREEN_REVERSE_LANDSCAPE);
-		else if (orientation == "reverse_portrait")
+		} else if (orientation == "reverse_portrait") {
 			OS::get_singleton()->set_screen_orientation(OS::SCREEN_REVERSE_PORTRAIT);
-		else if (orientation == "sensor_landscape")
+		} else if (orientation == "sensor_landscape") {
 			OS::get_singleton()->set_screen_orientation(OS::SCREEN_SENSOR_LANDSCAPE);
-		else if (orientation == "sensor_portrait")
+		} else if (orientation == "sensor_portrait") {
 			OS::get_singleton()->set_screen_orientation(OS::SCREEN_SENSOR_PORTRAIT);
-		else if (orientation == "sensor")
+		} else if (orientation == "sensor") {
 			OS::get_singleton()->set_screen_orientation(OS::SCREEN_SENSOR);
-		else
+		} else {
 			OS::get_singleton()->set_screen_orientation(OS::SCREEN_LANDSCAPE);
+		}
 	}
 
 	Engine::get_singleton()->set_iterations_per_second(GLOBAL_DEF("physics/common/physics_fps", 60));
@@ -1190,8 +1198,9 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 	message_queue = memnew(MessageQueue);
 
-	if (p_second_phase)
+	if (p_second_phase) {
 		return setup2();
+	}
 
 	return OK;
 
@@ -1205,33 +1214,43 @@ error:
 	args.clear();
 	main_args.clear();
 
-	if (show_help)
+	if (show_help) {
 		print_help(execpath);
+	}
 
-	if (performance)
+	if (performance) {
 		memdelete(performance);
-	if (input_map)
+	}
+	if (input_map) {
 		memdelete(input_map);
-	if (translation_server)
+	}
+	if (translation_server) {
 		memdelete(translation_server);
-	if (globals)
+	}
+	if (globals) {
 		memdelete(globals);
-	if (engine)
+	}
+	if (engine) {
 		memdelete(engine);
-	if (script_debugger)
+	}
+	if (script_debugger) {
 		memdelete(script_debugger);
-	if (packed_data)
+	}
+	if (packed_data) {
 		memdelete(packed_data);
-	if (file_access_network_client)
+	}
+	if (file_access_network_client) {
 		memdelete(file_access_network_client);
+	}
 
 	unregister_core_driver_types();
 	unregister_core_types();
 
 	OS::get_singleton()->_cmdline.clear();
 
-	if (message_queue)
+	if (message_queue) {
 		memdelete(message_queue);
+	}
 	OS::get_singleton()->finalize_core();
 	locale = String();
 
@@ -1614,8 +1633,9 @@ bool Main::start() {
 #ifdef TOOLS_ENABLED
 		main_loop = test_main(test, args);
 
-		if (!main_loop)
+		if (!main_loop) {
 			return false;
+		}
 #endif
 
 	} else if (script != "") {
@@ -1634,8 +1654,9 @@ bool Main::start() {
 			Object *obj = ClassDB::instance(instance_type);
 			MainLoop *script_loop = Object::cast_to<MainLoop>(obj);
 			if (!script_loop) {
-				if (obj)
+				if (obj) {
 					memdelete(obj);
+				}
 				ERR_FAIL_V_MSG(false, vformat("Can't load the script \"%s\" as it doesn't inherit from SceneTree or MainLoop.", script));
 			}
 
@@ -1649,8 +1670,9 @@ bool Main::start() {
 		main_loop_type = GLOBAL_DEF("application/run/main_loop_type", "");
 	}
 
-	if (!main_loop && main_loop_type == "")
+	if (!main_loop && main_loop_type == "") {
 		main_loop_type = "SceneTree";
+	}
 
 	if (!main_loop) {
 		if (!ClassDB::class_exists(main_loop_type)) {
@@ -1698,8 +1720,9 @@ bool Main::start() {
 				//first pass, add the constants so they exist before any script is loaded
 				for (List<PropertyInfo>::Element *E = props.front(); E; E = E->next()) {
 					String s = E->get().name;
-					if (!s.begins_with("autoload/"))
+					if (!s.begins_with("autoload/")) {
 						continue;
+					}
 					String name = s.get_slicec('/', 1);
 					String path = ProjectSettings::get_singleton()->get(s);
 					bool global_var = false;
@@ -1718,8 +1741,9 @@ bool Main::start() {
 				List<Node *> to_add;
 				for (List<PropertyInfo>::Element *E = props.front(); E; E = E->next()) {
 					String s = E->get().name;
-					if (!s.begins_with("autoload/"))
+					if (!s.begins_with("autoload/")) {
 						continue;
+					}
 					String name = s.get_slicec('/', 1);
 					String path = ProjectSettings::get_singleton()->get(s);
 					bool global_var = false;
@@ -1789,20 +1813,22 @@ bool Main::start() {
 			real_t stretch_shrink = GLOBAL_DEF("display/window/stretch/shrink", 1.0);
 
 			SceneTree::StretchMode sml_sm = SceneTree::STRETCH_MODE_DISABLED;
-			if (stretch_mode == "2d")
+			if (stretch_mode == "2d") {
 				sml_sm = SceneTree::STRETCH_MODE_2D;
-			else if (stretch_mode == "viewport")
+			} else if (stretch_mode == "viewport") {
 				sml_sm = SceneTree::STRETCH_MODE_VIEWPORT;
+			}
 
 			SceneTree::StretchAspect sml_aspect = SceneTree::STRETCH_ASPECT_IGNORE;
-			if (stretch_aspect == "keep")
+			if (stretch_aspect == "keep") {
 				sml_aspect = SceneTree::STRETCH_ASPECT_KEEP;
-			else if (stretch_aspect == "keep_width")
+			} else if (stretch_aspect == "keep_width") {
 				sml_aspect = SceneTree::STRETCH_ASPECT_KEEP_WIDTH;
-			else if (stretch_aspect == "keep_height")
+			} else if (stretch_aspect == "keep_height") {
 				sml_aspect = SceneTree::STRETCH_ASPECT_KEEP_HEIGHT;
-			else if (stretch_aspect == "expand")
+			} else if (stretch_aspect == "expand") {
 				sml_aspect = SceneTree::STRETCH_ASPECT_EXPAND;
+			}
 
 			sml->set_screen_stretch(sml_sm, sml_aspect, stretch_size, stretch_shrink);
 
@@ -1906,8 +1932,9 @@ bool Main::start() {
 			if (game_path != "") {
 				Node *scene = nullptr;
 				Ref<PackedScene> scenedata = ResourceLoader::load(local_game_path);
-				if (scenedata.is_valid())
+				if (scenedata.is_valid()) {
 					scene = scenedata->instance();
+				}
 
 				ERR_FAIL_COND_V_MSG(!scene, false, "Failed loading scene: " + local_game_path);
 				sml->add_current_scene(scene);
@@ -2129,8 +2156,9 @@ bool Main::iteration() {
 
 	iterating--;
 
-	if (fixed_fps != -1)
+	if (fixed_fps != -1) {
 		return exit;
+	}
 
 	OS::get_singleton()->add_frame_delay(OS::get_singleton()->can_draw());
 
@@ -2227,20 +2255,27 @@ void Main::cleanup(bool p_force) {
 	OS::get_singleton()->finalize();
 	finalize_physics();
 
-	if (packed_data)
+	if (packed_data) {
 		memdelete(packed_data);
-	if (file_access_network_client)
+	}
+	if (file_access_network_client) {
 		memdelete(file_access_network_client);
-	if (performance)
+	}
+	if (performance) {
 		memdelete(performance);
-	if (input_map)
+	}
+	if (input_map) {
 		memdelete(input_map);
-	if (translation_server)
+	}
+	if (translation_server) {
 		memdelete(translation_server);
-	if (globals)
+	}
+	if (globals) {
 		memdelete(globals);
-	if (engine)
+	}
+	if (engine) {
 		memdelete(engine);
+	}
 
 	if (OS::get_singleton()->is_restart_on_exit_set()) {
 		//attempt to restart with arguments

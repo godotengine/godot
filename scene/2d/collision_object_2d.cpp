@@ -38,16 +38,18 @@ void CollisionObject2D::_notification(int p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			Transform2D global_transform = get_global_transform();
 
-			if (area)
+			if (area) {
 				Physics2DServer::get_singleton()->area_set_transform(rid, global_transform);
-			else
+			} else {
 				Physics2DServer::get_singleton()->body_set_state(rid, Physics2DServer::BODY_STATE_TRANSFORM, global_transform);
+			}
 
 			RID space = get_world_2d()->get_space();
 			if (area) {
 				Physics2DServer::get_singleton()->area_set_space(rid, space);
-			} else
+			} else {
 				Physics2DServer::get_singleton()->body_set_space(rid, space);
+			}
 
 			_update_pickable();
 
@@ -55,10 +57,11 @@ void CollisionObject2D::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_ENTER_CANVAS: {
-			if (area)
+			if (area) {
 				Physics2DServer::get_singleton()->area_attach_canvas_instance_id(rid, get_canvas_layer_instance_id());
-			else
+			} else {
 				Physics2DServer::get_singleton()->body_attach_canvas_instance_id(rid, get_canvas_layer_instance_id());
+			}
 		} break;
 
 		case NOTIFICATION_VISIBILITY_CHANGED: {
@@ -71,25 +74,28 @@ void CollisionObject2D::_notification(int p_what) {
 
 			Transform2D global_transform = get_global_transform();
 
-			if (area)
+			if (area) {
 				Physics2DServer::get_singleton()->area_set_transform(rid, global_transform);
-			else
+			} else {
 				Physics2DServer::get_singleton()->body_set_state(rid, Physics2DServer::BODY_STATE_TRANSFORM, global_transform);
+			}
 
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
 			if (area) {
 				Physics2DServer::get_singleton()->area_set_space(rid, RID());
-			} else
+			} else {
 				Physics2DServer::get_singleton()->body_set_space(rid, RID());
+			}
 
 		} break;
 
 		case NOTIFICATION_EXIT_CANVAS: {
-			if (area)
+			if (area) {
 				Physics2DServer::get_singleton()->area_attach_canvas_instance_id(rid, 0);
-			else
+			} else {
 				Physics2DServer::get_singleton()->body_attach_canvas_instance_id(rid, 0);
+			}
 		} break;
 	}
 }
@@ -140,8 +146,9 @@ bool CollisionObject2D::is_shape_owner_disabled(uint32_t p_owner) const {
 }
 
 void CollisionObject2D::shape_owner_set_one_way_collision(uint32_t p_owner, bool p_enable) {
-	if (area)
+	if (area) {
 		return; //not for areas
+	}
 
 	ERR_FAIL_COND(!shapes.has(p_owner));
 
@@ -159,8 +166,9 @@ bool CollisionObject2D::is_shape_owner_one_way_collision_enabled(uint32_t p_owne
 }
 
 void CollisionObject2D::shape_owner_set_one_way_collision_margin(uint32_t p_owner, float p_margin) {
-	if (area)
+	if (area) {
 		return; //not for areas
+	}
 
 	ERR_FAIL_COND(!shapes.has(p_owner));
 
@@ -301,8 +309,9 @@ uint32_t CollisionObject2D::shape_find_owner(int p_shape_index) const {
 }
 
 void CollisionObject2D::set_pickable(bool p_enabled) {
-	if (pickable == p_enabled)
+	if (pickable == p_enabled) {
 		return;
+	}
 
 	pickable = p_enabled;
 	_update_pickable();
@@ -338,14 +347,16 @@ void CollisionObject2D::set_only_update_transform_changes(bool p_enable) {
 }
 
 void CollisionObject2D::_update_pickable() {
-	if (!is_inside_tree())
+	if (!is_inside_tree()) {
 		return;
+	}
 
 	bool is_pickable = pickable && is_visible_in_tree();
-	if (area)
+	if (area) {
 		Physics2DServer::get_singleton()->area_set_pickable(rid, is_pickable);
-	else
+	} else {
 		Physics2DServer::get_singleton()->body_set_pickable(rid, is_pickable);
+	}
 }
 
 String CollisionObject2D::get_configuration_warning() const {

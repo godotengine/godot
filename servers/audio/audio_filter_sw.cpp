@@ -52,8 +52,9 @@ void AudioFilterSW::prepare_coefficients(Coeffs *p_coeffs) {
 	int sr_limit = (sampling_rate / 2) + 512;
 
 	double final_cutoff = (cutoff > sr_limit) ? sr_limit : cutoff;
-	if (final_cutoff < 1)
+	if (final_cutoff < 1) {
 		final_cutoff = 1; //don't allow less than this
+	}
 
 	double omega = 2.0 * Math_PI * final_cutoff / sampling_rate;
 
@@ -65,15 +66,17 @@ void AudioFilterSW::prepare_coefficients(Coeffs *p_coeffs) {
 		Q = 0.0001;
 	}
 
-	if (mode == BANDPASS)
+	if (mode == BANDPASS) {
 		Q *= 2.0;
-	else if (mode == PEAK)
+	} else if (mode == PEAK) {
 		Q *= 3.0;
+	}
 
 	double tmpgain = gain;
 
-	if (tmpgain < 0.001)
+	if (tmpgain < 0.001) {
 		tmpgain = 0.001;
+	}
 
 	if (stages > 1) {
 		Q = (Q > 1.0 ? Math::pow(Q, 1.0 / stages) : Q);
@@ -140,8 +143,9 @@ void AudioFilterSW::prepare_coefficients(Coeffs *p_coeffs) {
 		} break;
 		case LOWSHELF: {
 			double tmpq = Math::sqrt(Q);
-			if (tmpq <= 0)
+			if (tmpq <= 0) {
 				tmpq = 0.001;
+			}
 			double beta = Math::sqrt(tmpgain) / tmpq;
 
 			a0 = (tmpgain + 1.0) + (tmpgain - 1.0) * cos_v + beta * sin_v;
@@ -154,8 +158,9 @@ void AudioFilterSW::prepare_coefficients(Coeffs *p_coeffs) {
 		} break;
 		case HIGHSHELF: {
 			double tmpq = Math::sqrt(Q);
-			if (tmpq <= 0)
+			if (tmpq <= 0) {
 				tmpq = 0.001;
+			}
 			double beta = Math::sqrt(tmpgain) / tmpq;
 
 			a0 = (tmpgain + 1.0) - (tmpgain - 1.0) * cos_v + beta * sin_v;
@@ -233,8 +238,9 @@ void AudioFilterSW::Processor::set_filter(AudioFilterSW *p_filter, bool p_clear_
 }
 
 void AudioFilterSW::Processor::update_coeffs(int p_interp_buffer_len) {
-	if (!filter)
+	if (!filter) {
 		return;
+	}
 
 	if (p_interp_buffer_len) { //interpolate
 		Coeffs old_coeffs = coeffs;
@@ -251,8 +257,9 @@ void AudioFilterSW::Processor::update_coeffs(int p_interp_buffer_len) {
 }
 
 void AudioFilterSW::Processor::process(float *p_samples, int p_amount, int p_stride, bool p_interpolate) {
-	if (!filter)
+	if (!filter) {
 		return;
+	}
 
 	if (p_interpolate) {
 		for (int i = 0; i < p_amount; i++) {

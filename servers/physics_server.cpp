@@ -45,13 +45,15 @@ void PhysicsDirectBodyState::integrate_forces() {
 
 	float linear_damp = 1.0 - step * get_total_linear_damp();
 
-	if (linear_damp < 0) // reached zero in the given time
+	if (linear_damp < 0) { // reached zero in the given time
 		linear_damp = 0;
+	}
 
 	float angular_damp = 1.0 - step * get_total_angular_damp();
 
-	if (angular_damp < 0) // reached zero in the given time
+	if (angular_damp < 0) { // reached zero in the given time
 		angular_damp = 0;
+	}
 
 	lv *= linear_damp;
 	av *= angular_damp;
@@ -171,8 +173,9 @@ int PhysicsShapeQueryParameters::get_collision_mask() const {
 
 void PhysicsShapeQueryParameters::set_exclude(const Vector<RID> &p_exclude) {
 	exclude.clear();
-	for (int i = 0; i < p_exclude.size(); i++)
+	for (int i = 0; i < p_exclude.size(); i++) {
 		exclude.insert(p_exclude[i]);
+	}
 }
 
 Vector<RID> PhysicsShapeQueryParameters::get_exclude() const {
@@ -246,13 +249,15 @@ PhysicsShapeQueryParameters::PhysicsShapeQueryParameters() {
 Dictionary PhysicsDirectSpaceState::_intersect_ray(const Vector3 &p_from, const Vector3 &p_to, const Vector<RID> &p_exclude, uint32_t p_collision_mask, bool p_collide_with_bodies, bool p_collide_with_areas) {
 	RayResult inters;
 	Set<RID> exclude;
-	for (int i = 0; i < p_exclude.size(); i++)
+	for (int i = 0; i < p_exclude.size(); i++) {
 		exclude.insert(p_exclude[i]);
+	}
 
 	bool res = intersect_ray(p_from, p_to, inters, exclude, p_collision_mask, p_collide_with_bodies, p_collide_with_areas);
 
-	if (!res)
+	if (!res) {
 		return Dictionary();
+	}
 
 	Dictionary d;
 	d["position"] = inters.position;
@@ -290,8 +295,9 @@ Array PhysicsDirectSpaceState::_cast_motion(const Ref<PhysicsShapeQueryParameter
 
 	float closest_safe = 1.0f, closest_unsafe = 1.0f;
 	bool res = cast_motion(p_shape_query->shape, p_shape_query->transform, p_motion, p_shape_query->margin, closest_safe, closest_unsafe, p_shape_query->exclude, p_shape_query->collision_mask, p_shape_query->collide_with_bodies, p_shape_query->collide_with_areas);
-	if (!res)
+	if (!res) {
 		return Array();
+	}
 	Array ret;
 	ret.resize(2);
 	ret[0] = closest_safe;
@@ -305,12 +311,14 @@ Array PhysicsDirectSpaceState::_collide_shape(const Ref<PhysicsShapeQueryParamet
 	ret.resize(p_max_results * 2);
 	int rc = 0;
 	bool res = collide_shape(p_shape_query->shape, p_shape_query->transform, p_shape_query->margin, ret.ptrw(), p_max_results, rc, p_shape_query->exclude, p_shape_query->collision_mask, p_shape_query->collide_with_bodies, p_shape_query->collide_with_areas);
-	if (!res)
+	if (!res) {
 		return Array();
+	}
 	Array r;
 	r.resize(rc * 2);
-	for (int i = 0; i < rc * 2; i++)
+	for (int i = 0; i < rc * 2; i++) {
 		r[i] = ret[i];
+	}
 	return r;
 }
 Dictionary PhysicsDirectSpaceState::_get_rest_info(const Ref<PhysicsShapeQueryParameters> &p_shape_query) {
@@ -320,8 +328,9 @@ Dictionary PhysicsDirectSpaceState::_get_rest_info(const Ref<PhysicsShapeQueryPa
 
 	bool res = rest_info(p_shape_query->shape, p_shape_query->transform, p_shape_query->margin, &sri, p_shape_query->exclude, p_shape_query->collision_mask, p_shape_query->collide_with_bodies, p_shape_query->collide_with_areas);
 	Dictionary r;
-	if (!res)
+	if (!res) {
 		return r;
+	}
 
 	r["point"] = sri.point;
 	r["normal"] = sri.normal;

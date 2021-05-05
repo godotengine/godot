@@ -34,8 +34,9 @@
 #include "servers/audio_server.h"
 
 int AudioRBResampler::get_channel_count() const {
-	if (!rb)
+	if (!rb) {
 		return 0;
+	}
 
 	return channels;
 }
@@ -101,8 +102,9 @@ uint32_t AudioRBResampler::_resample(AudioFrame *p_dest, int p_todo, int32_t p_i
 }
 
 bool AudioRBResampler::mix(AudioFrame *p_dest, int p_frames) {
-	if (!rb)
+	if (!rb) {
 		return false;
+	}
 
 	int32_t increment = (src_mix_rate * MIX_FRAC_LEN) / target_mix_rate;
 	int read_space = get_reader_space();
@@ -125,8 +127,9 @@ bool AudioRBResampler::mix(AudioFrame *p_dest, int p_frames) {
 				break;
 		}
 
-		if (src_read > read_space)
+		if (src_read > read_space) {
 			src_read = read_space;
+		}
 
 		rb_read_pos.set((rb_read_pos.get() + src_read) & rb_mask);
 
@@ -147,8 +150,9 @@ bool AudioRBResampler::mix(AudioFrame *p_dest, int p_frames) {
 }
 
 int AudioRBResampler::get_num_of_ready_frames() {
-	if (!is_ready())
+	if (!is_ready()) {
 		return 0;
+	}
 	int32_t increment = (src_mix_rate * MIX_FRAC_LEN) / target_mix_rate;
 	int read_space = get_reader_space();
 	return (int64_t(read_space) << MIX_FRAC_BITS) / increment;
@@ -192,8 +196,9 @@ Error AudioRBResampler::setup(int p_channels, int p_src_mix_rate, int p_target_m
 }
 
 void AudioRBResampler::clear() {
-	if (!rb)
+	if (!rb) {
 		return;
+	}
 
 	//should be stopped at this point but just in case
 	memdelete_arr(rb);

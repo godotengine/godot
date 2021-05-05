@@ -47,10 +47,11 @@ void RunSettingsDialog::_bind_methods() {
 }
 
 void RunSettingsDialog::_run_mode_changed(int idx) {
-	if (idx == 0)
+	if (idx == 0) {
 		arguments->set_editable(false);
-	else
+	} else {
 		arguments->set_editable(true);
+	}
 }
 
 int RunSettingsDialog::get_run_mode() const {

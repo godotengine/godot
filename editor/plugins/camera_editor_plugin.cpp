@@ -56,10 +56,11 @@ void CameraEditor::edit(Node *p_camera) {
 		preview->set_pressed(false);
 		SpatialEditor::get_singleton()->set_custom_camera(nullptr);
 	} else {
-		if (preview->is_pressed())
+		if (preview->is_pressed()) {
 			SpatialEditor::get_singleton()->set_custom_camera(p_camera);
-		else
+		} else {
 			SpatialEditor::get_singleton()->set_custom_camera(nullptr);
+		}
 	}
 }
 

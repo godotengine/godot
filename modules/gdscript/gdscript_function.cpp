@@ -136,10 +136,11 @@ static String _get_var_type(const Variant *p_var) {
 			basestr = "null instance";
 		} else {
 			if (ObjectDB::instance_validate(bobj)) {
-				if (bobj->get_script_instance())
+				if (bobj->get_script_instance()) {
 					basestr = bobj->get_class() + " (" + bobj->get_script_instance()->get_script()->get_path().get_file() + ")";
-				else
+				} else {
 					basestr = bobj->get_class();
+				}
 			} else {
 				basestr = "previously freed instance";
 			}
@@ -369,8 +370,9 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 
 #ifdef DEBUG_ENABLED
 
-	if (ScriptDebugger::get_singleton())
+	if (ScriptDebugger::get_singleton()) {
 		GDScriptLanguage::get_singleton()->enter_function(p_instance, this, stack, &ip, &line);
+	}
 
 #define GD_ERR_BREAK(m_cond)                                                                                           \
 	{                                                                                                                  \
@@ -1148,8 +1150,9 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				while (gds->base.ptr()) {
 					gds = gds->base.ptr();
 					E = gds->member_functions.find(*methodname);
-					if (E)
+					if (E) {
 						break;
+					}
 				}
 
 				Variant::CallError err;
@@ -1466,14 +1469,17 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					bool do_break = false;
 
 					if (ScriptDebugger::get_singleton()->get_lines_left() > 0) {
-						if (ScriptDebugger::get_singleton()->get_depth() <= 0)
+						if (ScriptDebugger::get_singleton()->get_depth() <= 0) {
 							ScriptDebugger::get_singleton()->set_lines_left(ScriptDebugger::get_singleton()->get_lines_left() - 1);
-						if (ScriptDebugger::get_singleton()->get_lines_left() <= 0)
+						}
+						if (ScriptDebugger::get_singleton()->get_lines_left() <= 0) {
 							do_break = true;
+						}
 					}
 
-					if (ScriptDebugger::get_singleton()->is_breakpoint(line, source))
+					if (ScriptDebugger::get_singleton()->is_breakpoint(line, source)) {
 						do_break = true;
+					}
 
 					if (do_break) {
 						GDScriptLanguage::get_singleton()->debug_break("Breakpoint", true);
@@ -1501,20 +1507,24 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 
 		OPCODES_END
 #ifdef DEBUG_ENABLED
-		if (exit_ok)
+		if (exit_ok) {
 			OPCODE_OUT;
+		}
 		//error
 		// function, file, line, error, explanation
 		String err_file;
-		if (p_instance && ObjectDB::instance_validate(p_instance->owner) && p_instance->script->is_valid() && p_instance->script->path != "")
+		if (p_instance && ObjectDB::instance_validate(p_instance->owner) && p_instance->script->is_valid() && p_instance->script->path != "") {
 			err_file = p_instance->script->path;
-		else if (script)
+		} else if (script) {
 			err_file = script->path;
-		if (err_file == "")
+		}
+		if (err_file == "") {
 			err_file = "<built-in>";
+		}
 		String err_func = name;
-		if (p_instance && ObjectDB::instance_validate(p_instance->owner) && p_instance->script->is_valid() && p_instance->script->name != "")
+		if (p_instance && ObjectDB::instance_validate(p_instance->owner) && p_instance->script->is_valid() && p_instance->script->name != "") {
 			err_func = p_instance->script->name + "." + err_func;
+		}
 		int err_line = line;
 		if (err_text == "") {
 			err_text = "Internal Script Error! - opcode #" + itos(last_opcode) + " (report please).";
@@ -1546,14 +1556,16 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 	// When it's the last resume it will postpone the exit from stack,
 	// so the debugger knows which function triggered the resume of the next function (if any)
 	if (!p_state || yielded) {
-		if (ScriptDebugger::get_singleton())
+		if (ScriptDebugger::get_singleton()) {
 			GDScriptLanguage::get_singleton()->exit_function();
+		}
 #endif
 
 		if (_stack_size) {
 			//free stack
-			for (int i = 0; i < _stack_size; i++)
+			for (int i = 0; i < _stack_size; i++) {
 				stack[i].~Variant();
+			}
 		}
 
 #ifdef DEBUG_ENABLED
@@ -1625,8 +1637,9 @@ void GDScriptFunction::debug_get_stack_member_state(int p_line, List<Pair<String
 	Map<StringName, _GDFKC> sdmap;
 	for (const List<StackDebug>::Element *E = stack_debug.front(); E; E = E->next()) {
 		const StackDebug &sd = E->get();
-		if (sd.line > p_line)
+		if (sd.line > p_line) {
 			break;
+		}
 
 		if (sd.added) {
 			if (!sdmap.has(sd.identifier)) {
@@ -1642,8 +1655,9 @@ void GDScriptFunction::debug_get_stack_member_state(int p_line, List<Pair<String
 			ERR_CONTINUE(!sdmap.has(sd.identifier));
 
 			sdmap[sd.identifier].pos.pop_back();
-			if (sdmap[sd.identifier].pos.empty())
+			if (sdmap[sd.identifier].pos.empty()) {
 				sdmap.erase(sd.identifier);
+			}
 		}
 	}
 
@@ -1735,8 +1749,9 @@ Variant GDScriptFunctionState::_signal_callback(const Variant **p_args, int p_ar
 }
 
 bool GDScriptFunctionState::is_valid(bool p_extended_check) const {
-	if (function == nullptr)
+	if (function == nullptr) {
 		return false;
+	}
 
 	if (p_extended_check) {
 #ifndef NO_THREADS
@@ -1807,8 +1822,9 @@ Variant GDScriptFunctionState::resume(const Variant &p_arg) {
 		}
 
 #ifdef DEBUG_ENABLED
-		if (ScriptDebugger::get_singleton())
+		if (ScriptDebugger::get_singleton()) {
 			GDScriptLanguage::get_singleton()->exit_function();
+		}
 #endif
 	}
 
@@ -1818,8 +1834,9 @@ Variant GDScriptFunctionState::resume(const Variant &p_arg) {
 void GDScriptFunctionState::_clear_stack() {
 	if (state.stack_size) {
 		Variant *stack = (Variant *)state.stack.ptr();
-		for (int i = 0; i < state.stack_size; i++)
+		for (int i = 0; i < state.stack_size; i++) {
 			stack[i].~Variant();
+		}
 		state.stack_size = 0;
 	}
 }

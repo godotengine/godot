@@ -38,26 +38,29 @@
 void CollisionObject::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_WORLD: {
-			if (area)
+			if (area) {
 				PhysicsServer::get_singleton()->area_set_transform(rid, get_global_transform());
-			else
+			} else {
 				PhysicsServer::get_singleton()->body_set_state(rid, PhysicsServer::BODY_STATE_TRANSFORM, get_global_transform());
+			}
 
 			RID space = get_world()->get_space();
 			if (area) {
 				PhysicsServer::get_singleton()->area_set_space(rid, space);
-			} else
+			} else {
 				PhysicsServer::get_singleton()->body_set_space(rid, space);
+			}
 
 			_update_pickable();
 			//get space
 		} break;
 
 		case NOTIFICATION_TRANSFORM_CHANGED: {
-			if (area)
+			if (area) {
 				PhysicsServer::get_singleton()->area_set_transform(rid, get_global_transform());
-			else
+			} else {
 				PhysicsServer::get_singleton()->body_set_state(rid, PhysicsServer::BODY_STATE_TRANSFORM, get_global_transform());
+			}
 
 		} break;
 		case NOTIFICATION_VISIBILITY_CHANGED: {
@@ -67,8 +70,9 @@ void CollisionObject::_notification(int p_what) {
 		case NOTIFICATION_EXIT_WORLD: {
 			if (area) {
 				PhysicsServer::get_singleton()->area_set_space(rid, RID());
-			} else
+			} else {
 				PhysicsServer::get_singleton()->body_set_space(rid, RID());
+			}
 
 		} break;
 		case NOTIFICATION_PREDELETE: {
@@ -101,14 +105,16 @@ void CollisionObject::_mouse_exit() {
 }
 
 void CollisionObject::_update_pickable() {
-	if (!is_inside_tree())
+	if (!is_inside_tree()) {
 		return;
+	}
 
 	bool pickable = ray_pickable && is_visible_in_tree();
-	if (area)
+	if (area) {
 		PhysicsServer::get_singleton()->area_set_ray_pickable(rid, pickable);
-	else
+	} else {
 		PhysicsServer::get_singleton()->body_set_ray_pickable(rid, pickable);
+	}
 }
 
 void CollisionObject::_update_debug_shapes() {

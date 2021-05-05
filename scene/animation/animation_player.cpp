@@ -83,8 +83,9 @@ bool AnimationPlayer::_set(const StringName &p_name, const Variant &p_value) {
 			set_blend_time(from, to, time);
 		}
 
-	} else
+	} else {
 		return false;
+	}
 
 	return true;
 }
@@ -119,8 +120,9 @@ bool AnimationPlayer::_get(const StringName &p_name, Variant &r_ret) const {
 		}
 
 		r_ret = array;
-	} else
+	} else {
 		return false;
+	}
 
 	return true;
 }
@@ -136,8 +138,9 @@ void AnimationPlayer::_validate_property(PropertyInfo &property) const {
 		names.push_front("[stop]");
 		String hint;
 		for (List<String>::Element *E = names.front(); E; E = E->next()) {
-			if (E != names.front())
+			if (E != names.front()) {
 				hint += ",";
+			}
 			hint += E->get();
 		}
 
@@ -150,8 +153,9 @@ void AnimationPlayer::_get_property_list(List<PropertyInfo> *p_list) const {
 
 	for (Map<StringName, AnimationData>::Element *E = animation_set.front(); E; E = E->next()) {
 		anim_names.push_back(PropertyInfo(Variant::OBJECT, "anims/" + String(E->key()), PROPERTY_HINT_RESOURCE_TYPE, "Animation", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL | PROPERTY_USAGE_DO_NOT_SHARE_ON_DUPLICATE));
-		if (E->get().next != StringName())
+		if (E->get().next != StringName()) {
 			anim_names.push_back(PropertyInfo(Variant::STRING, "next/" + String(E->key()), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL));
+		}
 	}
 
 	anim_names.sort();
@@ -186,18 +190,22 @@ void AnimationPlayer::_notification(int p_what) {
 			}
 		} break;
 		case NOTIFICATION_INTERNAL_PROCESS: {
-			if (animation_process_mode == ANIMATION_PROCESS_PHYSICS)
+			if (animation_process_mode == ANIMATION_PROCESS_PHYSICS) {
 				break;
+			}
 
-			if (processing)
+			if (processing) {
 				_animation_process(get_process_delta_time());
+			}
 		} break;
 		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
-			if (animation_process_mode == ANIMATION_PROCESS_IDLE)
+			if (animation_process_mode == ANIMATION_PROCESS_IDLE) {
 				break;
+			}
 
-			if (processing)
+			if (processing) {
 				_animation_process(get_physics_process_delta_time());
+			}
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
 			clear_caches();
@@ -207,8 +215,9 @@ void AnimationPlayer::_notification(int p_what) {
 
 void AnimationPlayer::_ensure_node_caches(AnimationData *p_anim) {
 	// Already cached?
-	if (p_anim->node_cache.size() == p_anim->animation->get_track_count())
+	if (p_anim->node_cache.size() == p_anim->animation->get_track_count()) {
 		return;
+	}
 
 	Node *parent = get_node(root);
 
@@ -236,16 +245,18 @@ void AnimationPlayer::_ensure_node_caches(AnimationData *p_anim) {
 		}
 
 		{
-			if (!child->is_connected("tree_exiting", this, "_node_removed"))
+			if (!child->is_connected("tree_exiting", this, "_node_removed")) {
 				child->connect("tree_exiting", this, "_node_removed", make_binds(child), CONNECT_ONESHOT);
+			}
 		}
 
 		TrackNodeCacheKey key;
 		key.id = id;
 		key.bone_idx = bone_idx;
 
-		if (!node_cache_map.has(key))
+		if (!node_cache_map.has(key)) {
 			node_cache_map[key] = TrackNodeCache();
+		}
 
 		p_anim->node_cache.write[i] = &node_cache_map[key];
 		p_anim->node_cache[i]->path = a->track_get_path(i);
@@ -285,12 +296,13 @@ void AnimationPlayer::_ensure_node_caches(AnimationData *p_anim) {
 				pa.special = SP_NONE;
 				pa.owner = p_anim->node_cache[i];
 				if (false && p_anim->node_cache[i]->node_2d) {
-					if (leftover_path.size() == 1 && leftover_path[0] == SceneStringNames::get_singleton()->transform_pos)
+					if (leftover_path.size() == 1 && leftover_path[0] == SceneStringNames::get_singleton()->transform_pos) {
 						pa.special = SP_NODE2D_POS;
-					else if (leftover_path.size() == 1 && leftover_path[0] == SceneStringNames::get_singleton()->transform_rot)
+					} else if (leftover_path.size() == 1 && leftover_path[0] == SceneStringNames::get_singleton()->transform_rot) {
 						pa.special = SP_NODE2D_ROT;
-					else if (leftover_path.size() == 1 && leftover_path[0] == SceneStringNames::get_singleton()->transform_scale)
+					} else if (leftover_path.size() == 1 && leftover_path[0] == SceneStringNames::get_singleton()->transform_scale) {
 						pa.special = SP_NODE2D_SCALE;
+					}
 				}
 				p_anim->node_cache[i]->property_anim[a->track_get_path(i).get_concatenated_subnames()] = pa;
 			}
@@ -325,19 +337,23 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, float 
 
 		TrackNodeCache *nc = p_anim->node_cache[i];
 
-		if (!nc)
+		if (!nc) {
 			continue; // no node cache for this track, skip it
+		}
 
-		if (!a->track_is_enabled(i))
+		if (!a->track_is_enabled(i)) {
 			continue; // do nothing if the track is disabled
+		}
 
-		if (a->track_get_key_count(i) == 0)
+		if (a->track_get_key_count(i) == 0) {
 			continue; // do nothing if track is empty
+		}
 
 		switch (a->track_get_type(i)) {
 			case Animation::TYPE_TRANSFORM: {
-				if (!nc->spatial)
+				if (!nc->spatial) {
 					continue;
+				}
 
 				Vector3 loc;
 				Quat rot;
@@ -346,8 +362,9 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, float 
 				Error err = a->transform_track_interpolate(i, p_time, &loc, &rot, &scale);
 				//ERR_CONTINUE(err!=OK); //used for testing, should be removed
 
-				if (err != OK)
+				if (err != OK) {
 					continue;
+				}
 
 				if (nc->accum_pass != accum_pass) {
 					ERR_CONTINUE(cache_update_size >= NODE_CACHE_UPDATE_MAX);
@@ -365,8 +382,9 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, float 
 
 			} break;
 			case Animation::TYPE_VALUE: {
-				if (!nc->node)
+				if (!nc->node) {
 					continue;
+				}
 
 				//StringName property=a->track_get_path(i).get_property();
 
@@ -383,8 +401,9 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, float 
 					}
 
 					int key_count = a->track_get_key_count(i);
-					if (key_count == 0)
+					if (key_count == 0) {
 						continue; //eeh not worth it
+					}
 
 					float first_key_time = a->track_get_key_time(i, 0);
 					float transition = 1.0;
@@ -392,8 +411,9 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, float 
 
 					if (first_key_time == 0.0) {
 						//ignore, use for transition
-						if (key_count == 1)
+						if (key_count == 1) {
 							continue; //with one key we can't do anything
+						}
 						transition = a->track_get_key_transition(i, 0);
 						first_key_time = a->track_get_key_time(i, 1);
 						first_key = 1;
@@ -422,8 +442,9 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, float 
 
 					Variant value = a->value_track_interpolate(i, p_time);
 
-					if (value == Variant())
+					if (value == Variant()) {
 						continue;
+					}
 
 					//thanks to trigger mode, this should be solved now..
 					/*
@@ -488,13 +509,15 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, float 
 
 			} break;
 			case Animation::TYPE_METHOD: {
-				if (!nc->node)
+				if (!nc->node) {
 					continue;
+				}
 				if (p_delta == 0) {
 					continue;
 				}
-				if (!p_is_current)
+				if (!p_is_current) {
 					break;
+				}
 
 				List<int> indices;
 
@@ -537,8 +560,9 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, float 
 
 			} break;
 			case Animation::TYPE_BEZIER: {
-				if (!nc->node)
+				if (!nc->node) {
 					continue;
+				}
 
 				Map<StringName, TrackNodeCache::BezierAnim>::Element *E = nc->bezier_anim.find(a->track_get_path(i).get_concatenated_subnames());
 				ERR_CONTINUE(!E); //should it continue, or create a new one?
@@ -557,8 +581,9 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, float 
 
 			} break;
 			case Animation::TYPE_AUDIO: {
-				if (!nc->node)
+				if (!nc->node) {
 					continue;
+				}
 				if (p_delta == 0) {
 					continue;
 				}
@@ -566,8 +591,9 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, float 
 				if (p_seeked) {
 					//find whathever should be playing
 					int idx = a->track_find_key(i, p_time);
-					if (idx < 0)
+					if (idx < 0) {
 						continue;
+					}
 
 					Ref<AudioStream> stream = a->audio_track_get_key_stream(i, idx);
 					if (!stream.is_valid()) {
@@ -658,20 +684,23 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, float 
 			} break;
 			case Animation::TYPE_ANIMATION: {
 				AnimationPlayer *player = Object::cast_to<AnimationPlayer>(nc->node);
-				if (!player)
+				if (!player) {
 					continue;
+				}
 
 				if (p_delta == 0 || p_seeked) {
 					//seek
 					int idx = a->track_find_key(i, p_time);
-					if (idx < 0)
+					if (idx < 0) {
 						continue;
+					}
 
 					float pos = a->track_get_key_time(i, idx);
 
 					StringName anim_name = a->animation_track_get_key_animation(i, idx);
-					if (String(anim_name) == "[stop]" || !player->has_animation(anim_name))
+					if (String(anim_name) == "[stop]" || !player->has_animation(anim_name)) {
 						continue;
+					}
 
 					Ref<Animation> anim = player->get_animation(anim_name);
 
@@ -727,10 +756,11 @@ void AnimationPlayer::_animation_process_data(PlaybackData &cd, float p_delta, f
 	bool loop = cd.from->animation->has_loop();
 
 	if (!loop) {
-		if (next_pos < 0)
+		if (next_pos < 0) {
 			next_pos = 0;
-		else if (next_pos > len)
+		} else if (next_pos > len) {
 			next_pos = len;
+		}
 
 		bool backwards = signbit(delta); // Negative zero means playing backwards too
 		delta = next_pos - cd.pos; // Fix delta (after determination of backwards because negative zero is lost here)
@@ -884,14 +914,16 @@ void AnimationPlayer::_animation_process(float p_delta) {
 				play(queued.front()->get());
 				String new_name = playback.assigned;
 				queued.pop_front();
-				if (end_notify)
+				if (end_notify) {
 					emit_signal(SceneStringNames::get_singleton()->animation_changed, old, new_name);
+				}
 			} else {
 				//stop();
 				playing = false;
 				_set_process(false);
-				if (end_notify)
+				if (end_notify) {
 					emit_signal(SceneStringNames::get_singleton()->animation_finished, playback.assigned);
+				}
 			}
 			end_reached = false;
 		}
@@ -985,8 +1017,9 @@ void AnimationPlayer::rename_animation(const StringName &p_name, const StringNam
 		to_insert.erase(to_insert.front());
 	}
 
-	if (autoplay == p_name)
+	if (autoplay == p_name) {
 		autoplay = p_new_name;
+	}
 
 	clear_caches();
 	_change_notify();
@@ -1024,10 +1057,11 @@ void AnimationPlayer::set_blend_time(const StringName &p_animation1, const Strin
 	BlendKey bk;
 	bk.from = p_animation1;
 	bk.to = p_animation2;
-	if (p_time == 0)
+	if (p_time == 0) {
 		blend_times.erase(bk);
-	else
+	} else {
 		blend_times[bk] = p_time;
+	}
 }
 
 float AnimationPlayer::get_blend_time(const StringName &p_animation1, const StringName &p_animation2) const {
@@ -1035,17 +1069,19 @@ float AnimationPlayer::get_blend_time(const StringName &p_animation1, const Stri
 	bk.from = p_animation1;
 	bk.to = p_animation2;
 
-	if (blend_times.has(bk))
+	if (blend_times.has(bk)) {
 		return blend_times[bk];
-	else
+	} else {
 		return 0;
+	}
 }
 
 void AnimationPlayer::queue(const StringName &p_name) {
-	if (!is_playing())
+	if (!is_playing()) {
 		play(p_name);
-	else
+	} else {
 		queued.push_back(p_name);
+	}
 }
 
 PoolVector<String> AnimationPlayer::get_queue() {
@@ -1068,8 +1104,9 @@ void AnimationPlayer::play_backwards(const StringName &p_name, float p_custom_bl
 void AnimationPlayer::play(const StringName &p_name, float p_custom_blend, float p_custom_scale, bool p_from_end) {
 	StringName name = p_name;
 
-	if (String(name) == "")
+	if (String(name) == "") {
 		name = playback.assigned;
+	}
 
 	ERR_FAIL_COND_MSG(!animation_set.has(name), "Animation not found: " + name + ".");
 
@@ -1100,8 +1137,9 @@ void AnimationPlayer::play(const StringName &p_name, float p_custom_blend, float
 			}
 		}
 
-		if (p_custom_blend < 0 && blend_time == 0 && default_blend_time)
+		if (p_custom_blend < 0 && blend_time == 0 && default_blend_time) {
 			blend_time = default_blend_time;
+		}
 		if (blend_time > 0) {
 			Blend b;
 			b.data = c.current;
@@ -1133,15 +1171,17 @@ void AnimationPlayer::play(const StringName &p_name, float p_custom_blend, float
 	c.seeked = false;
 	c.started = true;
 
-	if (!end_reached)
+	if (!end_reached) {
 		queued.clear();
+	}
 	_set_process(true); // always process when starting an animation
 	playing = true;
 
 	emit_signal(SceneStringNames::get_singleton()->animation_started, c.assigned);
 
-	if (is_inside_tree() && Engine::get_singleton()->is_editor_hint())
+	if (is_inside_tree() && Engine::get_singleton()->is_editor_hint()) {
 		return; // no next in this case
+	}
 
 	StringName next = animation_get_next(p_name);
 	if (next != StringName() && animation_set.has(next)) {
@@ -1248,8 +1288,9 @@ void AnimationPlayer::seek_delta(float p_time, float p_delta) {
 	}
 
 	playback.current.pos = p_time - p_delta;
-	if (speed_scale != 0.0)
+	if (speed_scale != 0.0) {
 		p_delta /= speed_scale;
+	}
 	_animation_process(p_delta);
 	//playback.current.pos=p_time;
 }
@@ -1283,8 +1324,9 @@ void AnimationPlayer::_stop_playing_caches() {
 		}
 		if (E->get()->node && E->get()->animation_playing) {
 			AnimationPlayer *player = Object::cast_to<AnimationPlayer>(E->get()->node);
-			if (!player)
+			if (!player) {
 				continue;
+			}
 			player->stop();
 		}
 	}
@@ -1311,8 +1353,9 @@ void AnimationPlayer::clear_caches() {
 }
 
 void AnimationPlayer::set_active(bool p_active) {
-	if (active == p_active)
+	if (active == p_active) {
 		return;
+	}
 
 	active = p_active;
 	_set_process(processing, true);
@@ -1324,8 +1367,9 @@ bool AnimationPlayer::is_active() const {
 
 StringName AnimationPlayer::find_animation(const Ref<Animation> &p_animation) const {
 	for (Map<StringName, AnimationData>::Element *E = animation_set.front(); E; E = E->next()) {
-		if (E->get().animation == p_animation)
+		if (E->get().animation == p_animation) {
 			return E->key();
+		}
 	}
 
 	return "";
@@ -1343,15 +1387,18 @@ String AnimationPlayer::get_autoplay() const {
 }
 
 void AnimationPlayer::set_animation_process_mode(AnimationProcessMode p_mode) {
-	if (animation_process_mode == p_mode)
+	if (animation_process_mode == p_mode) {
 		return;
+	}
 
 	bool pr = processing;
-	if (pr)
+	if (pr) {
 		_set_process(false);
+	}
 	animation_process_mode = p_mode;
-	if (pr)
+	if (pr) {
 		_set_process(true);
+	}
 }
 
 AnimationPlayer::AnimationProcessMode AnimationPlayer::get_animation_process_mode() const {
@@ -1367,8 +1414,9 @@ AnimationPlayer::AnimationMethodCallMode AnimationPlayer::get_method_call_mode()
 }
 
 void AnimationPlayer::_set_process(bool p_process, bool p_force) {
-	if (processing == p_process && !p_force)
+	if (processing == p_process && !p_force) {
 		return;
+	}
 
 	switch (animation_process_mode) {
 		case ANIMATION_PROCESS_PHYSICS:
@@ -1390,8 +1438,9 @@ void AnimationPlayer::animation_set_next(const StringName &p_animation, const St
 }
 
 StringName AnimationPlayer::animation_get_next(const StringName &p_animation) const {
-	if (!animation_set.has(p_animation))
+	if (!animation_set.has(p_animation)) {
 		return StringName();
+	}
 	return animation_set[p_animation].next;
 }
 
@@ -1432,8 +1481,9 @@ void AnimationPlayer::get_argument_options(const StringName &p_function, int p_i
 
 #ifdef TOOLS_ENABLED
 AnimatedValuesBackup AnimationPlayer::backup_animated_values() {
-	if (!playback.current.from)
+	if (!playback.current.from) {
 		return AnimatedValuesBackup();
+	}
 
 	_ensure_node_caches(playback.current.from);
 
@@ -1441,12 +1491,14 @@ AnimatedValuesBackup AnimationPlayer::backup_animated_values() {
 
 	for (int i = 0; i < playback.current.from->node_cache.size(); i++) {
 		TrackNodeCache *nc = playback.current.from->node_cache[i];
-		if (!nc)
+		if (!nc) {
 			continue;
+		}
 
 		if (nc->skeleton) {
-			if (nc->bone_idx == -1)
+			if (nc->bone_idx == -1) {
 				continue;
+			}
 
 			AnimatedValuesBackup::Entry entry;
 			entry.object = nc->skeleton;
@@ -1469,8 +1521,9 @@ AnimatedValuesBackup AnimationPlayer::backup_animated_values() {
 					bool valid;
 					entry.value = E->value().object->get_indexed(E->value().subpath, &valid);
 					entry.bone_idx = -1;
-					if (valid)
+					if (valid) {
 						backup.entries.push_back(entry);
+					}
 				}
 			}
 		}

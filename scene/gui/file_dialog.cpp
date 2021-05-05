@@ -99,8 +99,9 @@ void FileDialog::_unhandled_input(const Ref<InputEvent> &p_event) {
 				}
 			}
 
-			if (handled)
+			if (handled) {
 				accept_event();
+			}
 		}
 	}
 }
@@ -154,10 +155,11 @@ void FileDialog::_post_popup() {
 		update_file_list();
 		invalidated = false;
 	}
-	if (mode == MODE_SAVE_FILE)
+	if (mode == MODE_SAVE_FILE) {
 		file->grab_focus();
-	else
+	} else {
 		tree->grab_focus();
+	}
 
 	set_process_unhandled_input(true);
 
@@ -226,13 +228,15 @@ void FileDialog::_action_pressed() {
 						break;
 					}
 				}
-				if (valid)
+				if (valid) {
 					break;
+				}
 			}
 		} else {
 			int idx = filter->get_selected();
-			if (filters.size() > 1)
+			if (filters.size() > 1) {
 				idx--;
+			}
 			if (idx >= 0 && idx < filters.size()) {
 				String flt = filters[idx].get_slice(";", 0);
 				int filterSliceCount = flt.get_slice_count(",");
@@ -277,19 +281,22 @@ void FileDialog::_cancel_pressed() {
 }
 
 bool FileDialog::_is_open_should_be_disabled() {
-	if (mode == MODE_OPEN_ANY || mode == MODE_SAVE_FILE)
+	if (mode == MODE_OPEN_ANY || mode == MODE_SAVE_FILE) {
 		return false;
+	}
 
 	TreeItem *ti = tree->get_next_selected(tree->get_root());
 	while (ti) {
 		TreeItem *prev_ti = ti;
 		ti = tree->get_next_selected(tree->get_root());
-		if (ti == prev_ti)
+		if (ti == prev_ti) {
 			break;
+		}
 	}
 	// We have something that we can't select?
-	if (!ti)
+	if (!ti) {
 		return mode != MODE_OPEN_DIR; // In "Open folder" mode, having nothing selected picks the current folder.
+	}
 
 	Dictionary d = ti->get_metadata(0);
 
@@ -334,8 +341,9 @@ void FileDialog::_tree_multi_selected(Object *p_object, int p_cell, bool p_selec
 
 void FileDialog::_tree_selected() {
 	TreeItem *ti = tree->get_selected();
-	if (!ti)
+	if (!ti) {
 		return;
+	}
 	Dictionary d = ti->get_metadata(0);
 
 	if (!d["dir"]) {
@@ -349,15 +357,17 @@ void FileDialog::_tree_selected() {
 
 void FileDialog::_tree_item_activated() {
 	TreeItem *ti = tree->get_selected();
-	if (!ti)
+	if (!ti) {
 		return;
+	}
 
 	Dictionary d = ti->get_metadata(0);
 
 	if (d["dir"]) {
 		dir_access->change_dir(d["name"]);
-		if (mode == MODE_OPEN_FILE || mode == MODE_OPEN_FILES || mode == MODE_OPEN_DIR || mode == MODE_OPEN_ANY)
+		if (mode == MODE_OPEN_FILE || mode == MODE_OPEN_FILES || mode == MODE_OPEN_DIR || mode == MODE_OPEN_ANY) {
 			file->set_text("");
+		}
 		call_deferred("_update_file_list");
 		call_deferred("_update_dir");
 	} else {
@@ -368,8 +378,9 @@ void FileDialog::_tree_item_activated() {
 void FileDialog::update_file_name() {
 	int idx = filter->get_selected() - 1;
 	if ((idx == -1 && filter->get_item_count() == 2) || (filter->get_item_count() > 2 && idx >= 0 && idx < filter->get_item_count() - 2)) {
-		if (idx == -1)
+		if (idx == -1) {
 			idx += 1;
+		}
 		String filter_str = filters[idx];
 		String file_str = file->get_text();
 		String base_name = file_str.get_basename();
@@ -398,16 +409,18 @@ void FileDialog::update_file_list() {
 	String item;
 
 	while ((item = dir_access->get_next()) != "") {
-		if (item == "." || item == "..")
+		if (item == "." || item == "..") {
 			continue;
+		}
 
 		is_hidden = dir_access->current_is_hidden();
 
 		if (show_hidden_files || !is_hidden) {
-			if (!dir_access->current_is_dir())
+			if (!dir_access->current_is_dir()) {
 				files.push_back(item);
-			else
+			} else {
 				dirs.push_back(item);
+			}
 		}
 	}
 
@@ -444,8 +457,9 @@ void FileDialog::update_file_list() {
 		}
 	} else {
 		int idx = filter->get_selected();
-		if (filters.size() > 1)
+		if (filters.size() > 1) {
 			idx--;
+		}
 
 		if (idx >= 0 && idx < filters.size()) {
 			String f = filters[idx].get_slice(";", 0);
@@ -490,15 +504,17 @@ void FileDialog::update_file_list() {
 			d["dir"] = false;
 			ti->set_metadata(0, d);
 
-			if (file->get_text() == files.front()->get() || match_str == files.front()->get())
+			if (file->get_text() == files.front()->get() || match_str == files.front()->get()) {
 				ti->select(0);
+			}
 		}
 
 		files.pop_front();
 	}
 
-	if (tree->get_root() && tree->get_root()->get_children() && tree->get_selected() == nullptr)
+	if (tree->get_root() && tree->get_root()->get_children() && tree->get_selected() == nullptr) {
 		tree->get_root()->get_children()->select(0);
+	}
 }
 
 void FileDialog::_filter_selected(int) {
@@ -516,23 +532,26 @@ void FileDialog::update_filters() {
 
 		for (int i = 0; i < MIN(max_filters, filters.size()); i++) {
 			String flt = filters[i].get_slice(";", 0).strip_edges();
-			if (i > 0)
+			if (i > 0) {
 				all_filters += ", ";
+			}
 			all_filters += flt;
 		}
 
-		if (max_filters < filters.size())
+		if (max_filters < filters.size()) {
 			all_filters += ", ...";
+		}
 
 		filter->add_item(RTR("All Recognized") + " (" + all_filters + ")");
 	}
 	for (int i = 0; i < filters.size(); i++) {
 		String flt = filters[i].get_slice(";", 0).strip_edges();
 		String desc = filters[i].get_slice(";", 1).strip_edges();
-		if (desc.length())
+		if (desc.length()) {
 			filter->add_item(String(tr(desc)) + " (" + flt + ")");
-		else
+		} else {
 			filter->add_item("(" + flt + ")");
+		}
 	}
 
 	filter->add_item(RTR("All Files (*)"));
@@ -580,13 +599,15 @@ void FileDialog::set_current_file(const String &p_file) {
 	int lp = p_file.find_last(".");
 	if (lp != -1) {
 		file->select(0, lp);
-		if (file->is_inside_tree() && !get_tree()->is_node_being_edited(file))
+		if (file->is_inside_tree() && !get_tree()->is_node_being_edited(file)) {
 			file->grab_focus();
+		}
 	}
 }
 void FileDialog::set_current_path(const String &p_path) {
-	if (!p_path.size())
+	if (!p_path.size()) {
 		return;
+	}
 	int pos = MAX(p_path.find_last("/"), p_path.find_last("\\"));
 	if (pos == -1) {
 		set_current_file(p_path);
@@ -613,32 +634,37 @@ void FileDialog::set_mode(Mode p_mode) {
 	switch (mode) {
 		case MODE_OPEN_FILE:
 			get_ok()->set_text(RTR("Open"));
-			if (mode_overrides_title)
+			if (mode_overrides_title) {
 				set_title(RTR("Open a File"));
+			}
 			makedir->hide();
 			break;
 		case MODE_OPEN_FILES:
 			get_ok()->set_text(RTR("Open"));
-			if (mode_overrides_title)
+			if (mode_overrides_title) {
 				set_title(RTR("Open File(s)"));
+			}
 			makedir->hide();
 			break;
 		case MODE_OPEN_DIR:
 			get_ok()->set_text(RTR("Select Current Folder"));
-			if (mode_overrides_title)
+			if (mode_overrides_title) {
 				set_title(RTR("Open a Directory"));
+			}
 			makedir->show();
 			break;
 		case MODE_OPEN_ANY:
 			get_ok()->set_text(RTR("Open"));
-			if (mode_overrides_title)
+			if (mode_overrides_title) {
 				set_title(RTR("Open a File or Directory"));
+			}
 			makedir->show();
 			break;
 		case MODE_SAVE_FILE:
 			get_ok()->set_text(RTR("Save"));
-			if (mode_overrides_title)
+			if (mode_overrides_title) {
 				set_title(RTR("Save a File"));
+			}
 			makedir->show();
 			break;
 	}
@@ -656,8 +682,9 @@ FileDialog::Mode FileDialog::get_mode() const {
 
 void FileDialog::set_access(Access p_access) {
 	ERR_FAIL_INDEX(p_access, 3);
-	if (access == p_access)
+	if (access == p_access) {
 		return;
+	}
 	memdelete(dir_access);
 	switch (p_access) {
 		case ACCESS_FILESYSTEM: {
@@ -934,13 +961,15 @@ FileDialog::FileDialog() {
 	vbox = vbc;
 
 	invalidated = true;
-	if (register_func)
+	if (register_func) {
 		register_func(this);
+	}
 }
 
 FileDialog::~FileDialog() {
-	if (unregister_func)
+	if (unregister_func) {
 		unregister_func(this);
+	}
 	memdelete(dir_access);
 }
 

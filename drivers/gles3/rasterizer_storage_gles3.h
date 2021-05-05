@@ -1498,8 +1498,9 @@ inline bool RasterizerStorageGLES3::safe_buffer_sub_data(unsigned int p_total_bu
 	r_offset_after = p_offset + p_data_size;
 #ifdef DEBUG_ENABLED
 	// we are trying to write across the edge of the buffer
-	if (r_offset_after > p_total_buffer_size)
+	if (r_offset_after > p_total_buffer_size) {
 		return false;
+	}
 #endif
 	glBufferSubData(p_target, p_offset, p_data_size, p_data);
 	return true;

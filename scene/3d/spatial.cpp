@@ -102,8 +102,9 @@ void Spatial::_propagate_transform_changed(Spatial *p_origin) {
 	data.children_lock++;
 
 	for (List<Spatial *>::Element *E = data.children.front(); E; E = E->next()) {
-		if (E->get()->data.toplevel_active)
+		if (E->get()->data.toplevel_active) {
 			continue; //don't propagate to a toplevel
+		}
 		E->get()->_propagate_transform_changed(p_origin);
 	}
 #ifdef TOOLS_ENABLED
@@ -124,13 +125,15 @@ void Spatial::_notification(int p_what) {
 			ERR_FAIL_COND(!get_tree());
 
 			Node *p = get_parent();
-			if (p)
+			if (p) {
 				data.parent = Object::cast_to<Spatial>(p);
+			}
 
-			if (data.parent)
+			if (data.parent) {
 				data.C = data.parent->data.children.push_back(this);
-			else
+			} else {
 				data.C = nullptr;
+			}
 
 			if (data.toplevel && !Engine::get_singleton()->is_editor_hint()) {
 				if (data.parent) {
@@ -148,10 +151,12 @@ void Spatial::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
 			notification(NOTIFICATION_EXIT_WORLD, true);
-			if (xform_change.in_list())
+			if (xform_change.in_list()) {
 				get_tree()->xform_change_list.remove(&xform_change);
-			if (data.C)
+			}
+			if (data.C) {
 				data.parent->data.children.erase(data.C);
+			}
 			data.parent = nullptr;
 			data.C = nullptr;
 			data.toplevel_active = false;
@@ -282,15 +287,17 @@ Spatial *Spatial::get_parent_spatial() const {
 }
 
 Transform Spatial::get_relative_transform(const Node *p_parent) const {
-	if (p_parent == this)
+	if (p_parent == this) {
 		return Transform();
+	}
 
 	ERR_FAIL_COND_V(!data.parent, Transform());
 
-	if (p_parent == data.parent)
+	if (p_parent == data.parent) {
 		return get_transform();
-	else
+	} else {
 		return data.parent->get_relative_transform(p_parent) * get_transform();
+	}
 }
 
 void Spatial::set_translation(const Vector3 &p_translation) {
@@ -368,14 +375,18 @@ Vector3 Spatial::get_scale() const {
 
 void Spatial::update_gizmo() {
 #ifdef TOOLS_ENABLED
-	if (!is_inside_world())
+	if (!is_inside_world()) {
 		return;
-	if (!data.gizmo.is_valid())
+	}
+	if (!data.gizmo.is_valid()) {
 		get_tree()->call_group_flags(SceneTree::GROUP_CALL_REALTIME, SceneStringNames::get_singleton()->_spatial_editor_group, SceneStringNames::get_singleton()->_request_gizmo, this);
-	if (!data.gizmo.is_valid())
+	}
+	if (!data.gizmo.is_valid()) {
 		return;
-	if (data.gizmo_dirty)
+	}
+	if (data.gizmo_dirty) {
 		return;
+	}
 	data.gizmo_dirty = true;
 	MessageQueue::get_singleton()->push_call(this, "_update_gizmo");
 #endif
@@ -384,10 +395,12 @@ void Spatial::update_gizmo() {
 void Spatial::set_gizmo(const Ref<SpatialGizmo> &p_gizmo) {
 #ifdef TOOLS_ENABLED
 
-	if (data.gizmo_disabled)
+	if (data.gizmo_disabled) {
 		return;
-	if (data.gizmo.is_valid() && is_inside_world())
+	}
+	if (data.gizmo.is_valid() && is_inside_world()) {
 		data.gizmo->free();
+	}
 	data.gizmo = p_gizmo;
 	if (data.gizmo.is_valid() && is_inside_world()) {
 		data.gizmo->create();
@@ -412,14 +425,16 @@ Ref<SpatialGizmo> Spatial::get_gizmo() const {
 
 void Spatial::_update_gizmo() {
 #ifdef TOOLS_ENABLED
-	if (!is_inside_world())
+	if (!is_inside_world()) {
 		return;
+	}
 	data.gizmo_dirty = false;
 	if (data.gizmo.is_valid()) {
-		if (is_visible_in_tree())
+		if (is_visible_in_tree()) {
 			data.gizmo->redraw();
-		else
+		} else {
 			data.gizmo->clear();
+		}
 	}
 #endif
 }
@@ -427,8 +442,9 @@ void Spatial::_update_gizmo() {
 #ifdef TOOLS_ENABLED
 void Spatial::set_disable_gizmo(bool p_enabled) {
 	data.gizmo_disabled = p_enabled;
-	if (!p_enabled && data.gizmo.is_valid())
+	if (!p_enabled && data.gizmo.is_valid()) {
 		data.gizmo = Ref<SpatialGizmo>();
+	}
 }
 
 #endif
@@ -442,13 +458,15 @@ bool Spatial::is_scale_disabled() const {
 }
 
 void Spatial::set_as_toplevel(bool p_enabled) {
-	if (data.toplevel == p_enabled)
+	if (data.toplevel == p_enabled) {
 		return;
+	}
 	if (is_inside_tree() && !Engine::get_singleton()->is_editor_hint()) {
-		if (p_enabled)
+		if (p_enabled) {
 			set_transform(get_global_transform());
-		else if (data.parent)
+		} else if (data.parent) {
 			set_transform(data.parent->get_global_transform().affine_inverse() * get_global_transform());
+		}
 
 		data.toplevel = p_enabled;
 		data.toplevel_active = p_enabled;
@@ -474,21 +492,24 @@ void Spatial::_propagate_visibility_changed() {
 	emit_signal(SceneStringNames::get_singleton()->visibility_changed);
 	_change_notify("visible");
 #ifdef TOOLS_ENABLED
-	if (data.gizmo.is_valid())
+	if (data.gizmo.is_valid()) {
 		_update_gizmo();
+	}
 #endif
 
 	for (List<Spatial *>::Element *E = data.children.front(); E; E = E->next()) {
 		Spatial *c = E->get();
-		if (!c || !c->data.visible)
+		if (!c || !c->data.visible) {
 			continue;
+		}
 		c->_propagate_visibility_changed();
 	}
 }
 
 void Spatial::show() {
-	if (data.visible)
+	if (data.visible) {
 		return;
+	}
 
 	data.visible = true;
 
@@ -500,8 +521,9 @@ void Spatial::show() {
 }
 
 void Spatial::hide() {
-	if (!data.visible)
+	if (!data.visible) {
 		return;
+	}
 
 	data.visible = false;
 
@@ -526,10 +548,11 @@ bool Spatial::is_visible_in_tree() const {
 }
 
 void Spatial::set_visible(bool p_visible) {
-	if (p_visible)
+	if (p_visible) {
 		show();
-	else
+	} else {
 		hide();
+	}
 }
 
 bool Spatial::is_visible() const {

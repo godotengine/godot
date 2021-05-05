@@ -46,8 +46,9 @@ void CollisionShape2D::_shape_changed() {
 
 void CollisionShape2D::_update_in_shape_owner(bool p_xform_only) {
 	parent->shape_owner_set_transform(owner_id, get_transform());
-	if (p_xform_only)
+	if (p_xform_only) {
 		return;
+	}
 	parent->shape_owner_set_disabled(owner_id, disabled);
 	parent->shape_owner_set_one_way_collision(owner_id, one_way_collision);
 	parent->shape_owner_set_one_way_collision_margin(owner_id, one_way_collision_margin);
@@ -130,8 +131,9 @@ void CollisionShape2D::_notification(int p_what) {
 				pts.push_back(line_to + (Vector2(Math_SQRT12 * tsize, 0)));
 				pts.push_back(line_to + (Vector2(-Math_SQRT12 * tsize, 0)));
 				Vector<Color> cols;
-				for (int i = 0; i < 3; i++)
+				for (int i = 0; i < 3; i++) {
 					cols.push_back(draw_col);
+				}
 
 				draw_primitive(pts, cols, Vector<Vector2>());
 			}
@@ -143,8 +145,9 @@ void CollisionShape2D::set_shape(const Ref<Shape2D> &p_shape) {
 	if (p_shape == shape) {
 		return;
 	}
-	if (shape.is_valid())
+	if (shape.is_valid()) {
 		shape->disconnect("changed", this, "_shape_changed");
+	}
 	shape = p_shape;
 	update();
 	if (parent) {
@@ -155,8 +158,9 @@ void CollisionShape2D::set_shape(const Ref<Shape2D> &p_shape) {
 		_update_in_shape_owner();
 	}
 
-	if (shape.is_valid())
+	if (shape.is_valid()) {
 		shape->connect("changed", this, "_shape_changed");
+	}
 
 	update_configuration_warning();
 }
@@ -166,8 +170,9 @@ Ref<Shape2D> CollisionShape2D::get_shape() const {
 }
 
 bool CollisionShape2D::_edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const {
-	if (!shape.is_valid())
+	if (!shape.is_valid()) {
 		return false;
+	}
 
 	return shape->_edit_is_selected_on_click(p_point, p_tolerance);
 }

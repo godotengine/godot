@@ -111,8 +111,9 @@ void ParticlesMaterial::_update_shader() {
 	dirty_materials->remove(&element);
 
 	MaterialKey mk = _compute_key();
-	if (mk.key == current_key.key)
+	if (mk.key == current_key.key) {
 		return; //no update required in the end
+	}
 
 	if (shader_map.has(current_key)) {
 		shader_map[current_key].users--;
@@ -197,33 +198,46 @@ void ParticlesMaterial::_update_shader() {
 
 	code += "uniform vec3 gravity;\n";
 
-	if (color_ramp.is_valid())
+	if (color_ramp.is_valid()) {
 		code += "uniform sampler2D color_ramp;\n";
+	}
 
-	if (tex_parameters[PARAM_INITIAL_LINEAR_VELOCITY].is_valid())
+	if (tex_parameters[PARAM_INITIAL_LINEAR_VELOCITY].is_valid()) {
 		code += "uniform sampler2D linear_velocity_texture;\n";
-	if (tex_parameters[PARAM_ORBIT_VELOCITY].is_valid())
+	}
+	if (tex_parameters[PARAM_ORBIT_VELOCITY].is_valid()) {
 		code += "uniform sampler2D orbit_velocity_texture;\n";
-	if (tex_parameters[PARAM_ANGULAR_VELOCITY].is_valid())
+	}
+	if (tex_parameters[PARAM_ANGULAR_VELOCITY].is_valid()) {
 		code += "uniform sampler2D angular_velocity_texture;\n";
-	if (tex_parameters[PARAM_LINEAR_ACCEL].is_valid())
+	}
+	if (tex_parameters[PARAM_LINEAR_ACCEL].is_valid()) {
 		code += "uniform sampler2D linear_accel_texture;\n";
-	if (tex_parameters[PARAM_RADIAL_ACCEL].is_valid())
+	}
+	if (tex_parameters[PARAM_RADIAL_ACCEL].is_valid()) {
 		code += "uniform sampler2D radial_accel_texture;\n";
-	if (tex_parameters[PARAM_TANGENTIAL_ACCEL].is_valid())
+	}
+	if (tex_parameters[PARAM_TANGENTIAL_ACCEL].is_valid()) {
 		code += "uniform sampler2D tangent_accel_texture;\n";
-	if (tex_parameters[PARAM_DAMPING].is_valid())
+	}
+	if (tex_parameters[PARAM_DAMPING].is_valid()) {
 		code += "uniform sampler2D damping_texture;\n";
-	if (tex_parameters[PARAM_ANGLE].is_valid())
+	}
+	if (tex_parameters[PARAM_ANGLE].is_valid()) {
 		code += "uniform sampler2D angle_texture;\n";
-	if (tex_parameters[PARAM_SCALE].is_valid())
+	}
+	if (tex_parameters[PARAM_SCALE].is_valid()) {
 		code += "uniform sampler2D scale_texture;\n";
-	if (tex_parameters[PARAM_HUE_VARIATION].is_valid())
+	}
+	if (tex_parameters[PARAM_HUE_VARIATION].is_valid()) {
 		code += "uniform sampler2D hue_variation_texture;\n";
-	if (tex_parameters[PARAM_ANIM_SPEED].is_valid())
+	}
+	if (tex_parameters[PARAM_ANIM_SPEED].is_valid()) {
 		code += "uniform sampler2D anim_speed_texture;\n";
-	if (tex_parameters[PARAM_ANIM_OFFSET].is_valid())
+	}
+	if (tex_parameters[PARAM_ANIM_OFFSET].is_valid()) {
 		code += "uniform sampler2D anim_offset_texture;\n";
+	}
 
 	if (trail_size_modifier.is_valid()) {
 		code += "uniform sampler2D trail_size_modifier;\n";
@@ -287,20 +301,23 @@ void ParticlesMaterial::_update_shader() {
 	code += "	}\n\n";
 	code += "	if (RESTART || restart) {\n";
 
-	if (tex_parameters[PARAM_INITIAL_LINEAR_VELOCITY].is_valid())
+	if (tex_parameters[PARAM_INITIAL_LINEAR_VELOCITY].is_valid()) {
 		code += "		float tex_linear_velocity = textureLod(linear_velocity_texture, vec2(0.0, 0.0), 0.0).r;\n";
-	else
+	} else {
 		code += "		float tex_linear_velocity = 0.0;\n";
+	}
 
-	if (tex_parameters[PARAM_ANGLE].is_valid())
+	if (tex_parameters[PARAM_ANGLE].is_valid()) {
 		code += "		float tex_angle = textureLod(angle_texture, vec2(0.0, 0.0), 0.0).r;\n";
-	else
+	} else {
 		code += "		float tex_angle = 0.0;\n";
+	}
 
-	if (tex_parameters[PARAM_ANIM_OFFSET].is_valid())
+	if (tex_parameters[PARAM_ANIM_OFFSET].is_valid()) {
 		code += "		float tex_anim_offset = textureLod(anim_offset_texture, vec2(0.0, 0.0), 0.0).r;\n";
-	else
+	} else {
 		code += "		float tex_anim_offset = 0.0;\n";
+	}
 
 	code += "		float spread_rad = spread * degree_to_rad;\n";
 
@@ -377,57 +394,67 @@ void ParticlesMaterial::_update_shader() {
 
 	code += "		CUSTOM.y += DELTA / LIFETIME;\n";
 	code += "		tv = CUSTOM.y / CUSTOM.w;\n";
-	if (tex_parameters[PARAM_INITIAL_LINEAR_VELOCITY].is_valid())
+	if (tex_parameters[PARAM_INITIAL_LINEAR_VELOCITY].is_valid()) {
 		code += "		float tex_linear_velocity = textureLod(linear_velocity_texture, vec2(tv, 0.0), 0.0).r;\n";
-	else
+	} else {
 		code += "		float tex_linear_velocity = 0.0;\n";
-
-	if (flags[FLAG_DISABLE_Z]) {
-		if (tex_parameters[PARAM_ORBIT_VELOCITY].is_valid())
-			code += "		float tex_orbit_velocity = textureLod(orbit_velocity_texture, vec2(tv, 0.0), 0.0).r;\n";
-		else
-			code += "		float tex_orbit_velocity = 0.0;\n";
 	}
 
-	if (tex_parameters[PARAM_ANGULAR_VELOCITY].is_valid())
+	if (flags[FLAG_DISABLE_Z]) {
+		if (tex_parameters[PARAM_ORBIT_VELOCITY].is_valid()) {
+			code += "		float tex_orbit_velocity = textureLod(orbit_velocity_texture, vec2(tv, 0.0), 0.0).r;\n";
+		} else {
+			code += "		float tex_orbit_velocity = 0.0;\n";
+		}
+	}
+
+	if (tex_parameters[PARAM_ANGULAR_VELOCITY].is_valid()) {
 		code += "		float tex_angular_velocity = textureLod(angular_velocity_texture, vec2(tv, 0.0), 0.0).r;\n";
-	else
+	} else {
 		code += "		float tex_angular_velocity = 0.0;\n";
+	}
 
-	if (tex_parameters[PARAM_LINEAR_ACCEL].is_valid())
+	if (tex_parameters[PARAM_LINEAR_ACCEL].is_valid()) {
 		code += "		float tex_linear_accel = textureLod(linear_accel_texture, vec2(tv, 0.0), 0.0).r;\n";
-	else
+	} else {
 		code += "		float tex_linear_accel = 0.0;\n";
+	}
 
-	if (tex_parameters[PARAM_RADIAL_ACCEL].is_valid())
+	if (tex_parameters[PARAM_RADIAL_ACCEL].is_valid()) {
 		code += "		float tex_radial_accel = textureLod(radial_accel_texture, vec2(tv, 0.0), 0.0).r;\n";
-	else
+	} else {
 		code += "		float tex_radial_accel = 0.0;\n";
+	}
 
-	if (tex_parameters[PARAM_TANGENTIAL_ACCEL].is_valid())
+	if (tex_parameters[PARAM_TANGENTIAL_ACCEL].is_valid()) {
 		code += "		float tex_tangent_accel = textureLod(tangent_accel_texture, vec2(tv, 0.0), 0.0).r;\n";
-	else
+	} else {
 		code += "		float tex_tangent_accel = 0.0;\n";
+	}
 
-	if (tex_parameters[PARAM_DAMPING].is_valid())
+	if (tex_parameters[PARAM_DAMPING].is_valid()) {
 		code += "		float tex_damping = textureLod(damping_texture, vec2(tv, 0.0), 0.0).r;\n";
-	else
+	} else {
 		code += "		float tex_damping = 0.0;\n";
+	}
 
-	if (tex_parameters[PARAM_ANGLE].is_valid())
+	if (tex_parameters[PARAM_ANGLE].is_valid()) {
 		code += "		float tex_angle = textureLod(angle_texture, vec2(tv, 0.0), 0.0).r;\n";
-	else
+	} else {
 		code += "		float tex_angle = 0.0;\n";
+	}
 
-	if (tex_parameters[PARAM_ANIM_SPEED].is_valid())
+	if (tex_parameters[PARAM_ANIM_SPEED].is_valid()) {
 		code += "		float tex_anim_speed = textureLod(anim_speed_texture, vec2(tv, 0.0), 0.0).r;\n";
-	else
+	} else {
 		code += "		float tex_anim_speed = 0.0;\n";
+	}
 
-	if (tex_parameters[PARAM_ANIM_OFFSET].is_valid())
+	if (tex_parameters[PARAM_ANIM_OFFSET].is_valid()) {
 		code += "		float tex_anim_offset = textureLod(anim_offset_texture, vec2(tv, 0.0), 0.0).r;\n";
-	else
+	} else {
 		code += "		float tex_anim_offset = 0.0;\n";
+	}
 
 	code += "		vec3 force = gravity;\n";
 	code += "		vec3 pos = TRANSFORM[3].xyz;\n";
@@ -481,15 +508,17 @@ void ParticlesMaterial::_update_shader() {
 	code += "	}\n";
 	// apply color
 	// apply hue rotation
-	if (tex_parameters[PARAM_SCALE].is_valid())
+	if (tex_parameters[PARAM_SCALE].is_valid()) {
 		code += "	float tex_scale = textureLod(scale_texture, vec2(tv, 0.0), 0.0).r;\n";
-	else
+	} else {
 		code += "	float tex_scale = 1.0;\n";
+	}
 
-	if (tex_parameters[PARAM_HUE_VARIATION].is_valid())
+	if (tex_parameters[PARAM_HUE_VARIATION].is_valid()) {
 		code += "	float tex_hue_variation = textureLod(hue_variation_texture, vec2(tv, 0.0), 0.0).r;\n";
-	else
+	} else {
 		code += "	float tex_hue_variation = 0.0;\n";
+	}
 
 	code += "	float hue_rot_angle = (hue_variation + tex_hue_variation) * pi * 2.0 * mix(1.0, hue_rot_rand * 2.0 - 1.0, hue_variation_random);\n";
 	code += "	float hue_rot_c = cos(hue_rot_angle);\n";
@@ -760,8 +789,9 @@ float ParticlesMaterial::get_param_randomness(Parameter p_param) const {
 
 static void _adjust_curve_range(const Ref<Texture> &p_texture, float p_min, float p_max) {
 	Ref<CurveTexture> curve_tex = p_texture;
-	if (!curve_tex.is_valid())
+	if (!curve_tex.is_valid()) {
 		return;
+	}
 
 	curve_tex->ensure_default_setup(p_min, p_max);
 }

@@ -52,10 +52,11 @@ float StyleBox::get_default_margin(Margin p_margin) const {
 float StyleBox::get_margin(Margin p_margin) const {
 	ERR_FAIL_INDEX_V((int)p_margin, 4, 0.0);
 
-	if (margin[p_margin] < 0)
+	if (margin[p_margin] < 0) {
 		return get_style_margin(p_margin);
-	else
+	} else {
 		return margin[p_margin];
+	}
 }
 
 CanvasItem *StyleBox::get_current_item_drawn() const {
@@ -109,8 +110,9 @@ StyleBox::StyleBox() {
 }
 
 void StyleBoxTexture::set_texture(Ref<Texture> p_texture) {
-	if (texture == p_texture)
+	if (texture == p_texture) {
 		return;
+	}
 	texture = p_texture;
 	if (p_texture.is_null()) {
 		region_rect = Rect2(0, 0, 0, 0);
@@ -127,8 +129,9 @@ Ref<Texture> StyleBoxTexture::get_texture() const {
 }
 
 void StyleBoxTexture::set_normal_map(Ref<Texture> p_normal_map) {
-	if (normal_map == p_normal_map)
+	if (normal_map == p_normal_map) {
 		return;
+	}
 	normal_map = p_normal_map;
 	emit_changed();
 }
@@ -167,8 +170,9 @@ Rect2 StyleBoxTexture::get_draw_rect(const Rect2 &p_rect) const {
 }
 
 void StyleBoxTexture::draw(RID p_canvas_item, const Rect2 &p_rect) const {
-	if (texture.is_null())
+	if (texture.is_null()) {
 		return;
+	}
 
 	Rect2 rect = p_rect;
 	Rect2 src_rect = region_rect;
@@ -181,8 +185,9 @@ void StyleBoxTexture::draw(RID p_canvas_item, const Rect2 &p_rect) const {
 	rect.size.y += expand_margin[MARGIN_TOP] + expand_margin[MARGIN_BOTTOM];
 
 	RID normal_rid;
-	if (normal_map.is_valid())
+	if (normal_map.is_valid()) {
 		normal_rid = normal_map->get_rid();
+	}
 
 	VisualServer::get_singleton()->canvas_item_add_nine_patch(p_canvas_item, rect, src_rect, texture->get_rid(), Vector2(margin[MARGIN_LEFT], margin[MARGIN_TOP]), Vector2(margin[MARGIN_RIGHT], margin[MARGIN_BOTTOM]), VS::NinePatchAxisMode(axis_h), VS::NinePatchAxisMode(axis_v), draw_center, modulate, normal_rid);
 }
@@ -197,8 +202,9 @@ bool StyleBoxTexture::is_draw_center_enabled() const {
 }
 
 Size2 StyleBoxTexture::get_center_size() const {
-	if (texture.is_null())
+	if (texture.is_null()) {
 		return Size2();
+	}
 
 	return region_rect.size - get_minimum_size();
 }
@@ -230,8 +236,9 @@ float StyleBoxTexture::get_expand_margin_size(Margin p_expand_margin) const {
 }
 
 void StyleBoxTexture::set_region_rect(const Rect2 &p_region_rect) {
-	if (region_rect == p_region_rect)
+	if (region_rect == p_region_rect) {
 		return;
+	}
 
 	region_rect = p_region_rect;
 	emit_changed();
@@ -263,8 +270,9 @@ StyleBoxTexture::AxisStretchMode StyleBoxTexture::get_v_axis_stretch_mode() cons
 }
 
 void StyleBoxTexture::set_modulate(const Color &p_modulate) {
-	if (modulate == p_modulate)
+	if (modulate == p_modulate) {
 		return;
+	}
 	modulate = p_modulate;
 	emit_changed();
 }

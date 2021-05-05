@@ -30,8 +30,9 @@ void _cull_translate_hits(CullParams &p) {
 	int num_hits = _cull_hits.size();
 	int left = p.result_max - p.result_count_overall;
 
-	if (num_hits > left)
+	if (num_hits > left) {
 		num_hits = left;
+	}
 
 	int out_n = p.result_count_overall;
 
@@ -41,8 +42,9 @@ void _cull_translate_hits(CullParams &p) {
 		const ItemExtra &ex = _extra[ref_id];
 		p.result_array[out_n] = ex.userdata;
 
-		if (p.subindex_array)
+		if (p.subindex_array) {
 			p.subindex_array[out_n] = ex.subindex;
+		}
 
 		out_n++;
 	}
@@ -57,14 +59,16 @@ int cull_convex(CullParams &r_params, bool p_translate_hits = true) {
 	r_params.result_count = 0;
 
 	for (int n = 0; n < NUM_TREES; n++) {
-		if (_root_node_id[n] == BVHCommon::INVALID)
+		if (_root_node_id[n] == BVHCommon::INVALID) {
 			continue;
+		}
 
 		_cull_convex_iterative(_root_node_id[n], r_params);
 	}
 
-	if (p_translate_hits)
+	if (p_translate_hits) {
 		_cull_translate_hits(r_params);
+	}
 
 	return r_params.result_count;
 }
@@ -74,14 +78,16 @@ int cull_segment(CullParams &r_params, bool p_translate_hits = true) {
 	r_params.result_count = 0;
 
 	for (int n = 0; n < NUM_TREES; n++) {
-		if (_root_node_id[n] == BVHCommon::INVALID)
+		if (_root_node_id[n] == BVHCommon::INVALID) {
 			continue;
+		}
 
 		_cull_segment_iterative(_root_node_id[n], r_params);
 	}
 
-	if (p_translate_hits)
+	if (p_translate_hits) {
 		_cull_translate_hits(r_params);
+	}
 
 	return r_params.result_count;
 }
@@ -91,14 +97,16 @@ int cull_point(CullParams &r_params, bool p_translate_hits = true) {
 	r_params.result_count = 0;
 
 	for (int n = 0; n < NUM_TREES; n++) {
-		if (_root_node_id[n] == BVHCommon::INVALID)
+		if (_root_node_id[n] == BVHCommon::INVALID) {
 			continue;
+		}
 
 		_cull_point_iterative(_root_node_id[n], r_params);
 	}
 
-	if (p_translate_hits)
+	if (p_translate_hits) {
 		_cull_translate_hits(r_params);
+	}
 
 	return r_params.result_count;
 }
@@ -108,17 +116,20 @@ int cull_aabb(CullParams &r_params, bool p_translate_hits = true) {
 	r_params.result_count = 0;
 
 	for (int n = 0; n < NUM_TREES; n++) {
-		if (_root_node_id[n] == BVHCommon::INVALID)
+		if (_root_node_id[n] == BVHCommon::INVALID) {
 			continue;
+		}
 
-		if ((n == 0) && r_params.test_pairable_only)
+		if ((n == 0) && r_params.test_pairable_only) {
 			continue;
+		}
 
 		_cull_aabb_iterative(_root_node_id[n], r_params);
 	}
 
-	if (p_translate_hits)
+	if (p_translate_hits) {
 		_cull_translate_hits(r_params);
+	}
 
 	return r_params.result_count;
 }
@@ -245,8 +256,9 @@ bool _cull_point_iterative(uint32_t p_node_id, CullParams &r_params) {
 	while (ii.pop(cpp)) {
 		TNode &tnode = _nodes[cpp.node_id];
 		// no hit with this node?
-		if (!tnode.aabb.intersects_point(r_params.point))
+		if (!tnode.aabb.intersects_point(r_params.point)) {
 			continue;
+		}
 
 		if (tnode.is_leaf()) {
 			// lazy check for hits full up condition

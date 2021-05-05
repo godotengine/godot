@@ -215,8 +215,9 @@ Array EditorInterface::get_open_scenes() const {
 
 	int scns_amount = scenes.size();
 	for (int idx_scn = 0; idx_scn < scns_amount; idx_scn++) {
-		if (scenes[idx_scn].root == nullptr)
+		if (scenes[idx_scn].root == nullptr) {
 			continue;
+		}
 		ret.push_back(scenes[idx_scn].root->get_filename());
 	}
 	return ret;
@@ -283,10 +284,12 @@ EditorInspector *EditorInterface::get_inspector() const {
 }
 
 Error EditorInterface::save_scene() {
-	if (!get_edited_scene_root())
+	if (!get_edited_scene_root()) {
 		return ERR_CANT_CREATE;
-	if (get_edited_scene_root()->get_filename() == String())
+	}
+	if (get_edited_scene_root()->get_filename() == String()) {
 		return ERR_CANT_CREATE;
+	}
 
 	save_scene_as(get_edited_scene_root()->get_filename());
 	return OK;
@@ -529,8 +532,9 @@ void EditorPlugin::notify_scene_changed(const Node *scn_root) {
 }
 
 void EditorPlugin::notify_main_screen_changed(const String &screen_name) {
-	if (screen_name == last_main_screen_name)
+	if (screen_name == last_main_screen_name) {
 		return;
+	}
 
 	emit_signal("main_screen_changed", screen_name);
 	last_main_screen_name = screen_name;
@@ -682,8 +686,9 @@ void EditorPlugin::apply_changes() {
 void EditorPlugin::get_breakpoints(List<String> *p_breakpoints) {
 	if (get_script_instance() && get_script_instance()->has_method("get_breakpoints")) {
 		PoolStringArray arr = get_script_instance()->call("get_breakpoints");
-		for (int i = 0; i < arr.size(); i++)
+		for (int i = 0; i < arr.size(); i++) {
 			p_breakpoints->push_back(arr[i]);
+		}
 	}
 }
 bool EditorPlugin::get_remove_list(List<Node *> *p_list) {

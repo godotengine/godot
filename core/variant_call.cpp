@@ -60,14 +60,16 @@ struct _VariantCall {
 		VariantFunc func;
 
 		_FORCE_INLINE_ bool verify_arguments(const Variant **p_args, Variant::CallError &r_error) {
-			if (arg_count == 0)
+			if (arg_count == 0) {
 				return true;
+			}
 
 			const Variant::Type *tptr = &arg_types[0];
 
 			for (int i = 0; i < arg_count; i++) {
-				if (tptr[i] == Variant::NIL || tptr[i] == p_args[i]->type)
+				if (tptr[i] == Variant::NIL || tptr[i] == p_args[i]->type) {
 					continue; // all good
+				}
 				if (!Variant::can_convert(p_args[i]->type, tptr[i])) {
 					r_error.error = Variant::CallError::CALL_ERROR_INVALID_ARGUMENT;
 					r_error.argument = i;
@@ -98,21 +100,25 @@ struct _VariantCall {
 #endif
 				ERR_FAIL_COND(p_argcount > VARIANT_ARG_MAX);
 				const Variant *newargs[VARIANT_ARG_MAX];
-				for (int i = 0; i < p_argcount; i++)
+				for (int i = 0; i < p_argcount; i++) {
 					newargs[i] = p_args[i];
+				}
 				// fill in any remaining parameters with defaults
 				int first_default_arg = arg_count - def_argcount;
-				for (int i = p_argcount; i < arg_count; i++)
+				for (int i = p_argcount; i < arg_count; i++) {
 					newargs[i] = &default_args[i - first_default_arg];
+				}
 #ifdef DEBUG_ENABLED
-				if (!verify_arguments(newargs, r_error))
+				if (!verify_arguments(newargs, r_error)) {
 					return;
+				}
 #endif
 				func(r_ret, p_self, newargs);
 			} else {
 #ifdef DEBUG_ENABLED
-				if (!verify_arguments(p_args, r_error))
+				if (!verify_arguments(p_args, r_error)) {
 					return;
+				}
 #endif
 				func(r_ret, p_self, p_args);
 			}
@@ -157,8 +163,9 @@ struct _VariantCall {
 			funcdata.arg_names.push_back(p_argtype1.name);
 #endif
 
-		} else
+		} else {
 			goto end;
+		}
 
 		if (p_argtype2.name) {
 			funcdata.arg_types.push_back(p_argtype2.type);
@@ -166,8 +173,9 @@ struct _VariantCall {
 			funcdata.arg_names.push_back(p_argtype2.name);
 #endif
 
-		} else
+		} else {
 			goto end;
+		}
 
 		if (p_argtype3.name) {
 			funcdata.arg_types.push_back(p_argtype3.type);
@@ -175,24 +183,27 @@ struct _VariantCall {
 			funcdata.arg_names.push_back(p_argtype3.name);
 #endif
 
-		} else
+		} else {
 			goto end;
+		}
 
 		if (p_argtype4.name) {
 			funcdata.arg_types.push_back(p_argtype4.type);
 #ifdef DEBUG_ENABLED
 			funcdata.arg_names.push_back(p_argtype4.name);
 #endif
-		} else
+		} else {
 			goto end;
+		}
 
 		if (p_argtype5.name) {
 			funcdata.arg_types.push_back(p_argtype5.type);
 #ifdef DEBUG_ENABLED
 			funcdata.arg_names.push_back(p_argtype5.name);
 #endif
-		} else
+		} else {
 			goto end;
+		}
 
 	end:
 
@@ -455,26 +466,29 @@ struct _VariantCall {
 	//return vector3 if intersected, nil if not
 	static void _call_Plane_intersect_3(Variant &r_ret, Variant &p_self, const Variant **p_args) {
 		Vector3 result;
-		if (reinterpret_cast<Plane *>(p_self._data._mem)->intersect_3(*p_args[0], *p_args[1], &result))
+		if (reinterpret_cast<Plane *>(p_self._data._mem)->intersect_3(*p_args[0], *p_args[1], &result)) {
 			r_ret = result;
-		else
+		} else {
 			r_ret = Variant();
+		}
 	}
 
 	static void _call_Plane_intersects_ray(Variant &r_ret, Variant &p_self, const Variant **p_args) {
 		Vector3 result;
-		if (reinterpret_cast<Plane *>(p_self._data._mem)->intersects_ray(*p_args[0], *p_args[1], &result))
+		if (reinterpret_cast<Plane *>(p_self._data._mem)->intersects_ray(*p_args[0], *p_args[1], &result)) {
 			r_ret = result;
-		else
+		} else {
 			r_ret = Variant();
+		}
 	}
 
 	static void _call_Plane_intersects_segment(Variant &r_ret, Variant &p_self, const Variant **p_args) {
 		Vector3 result;
-		if (reinterpret_cast<Plane *>(p_self._data._mem)->intersects_segment(*p_args[0], *p_args[1], &result))
+		if (reinterpret_cast<Plane *>(p_self._data._mem)->intersects_segment(*p_args[0], *p_args[1], &result)) {
 			r_ret = result;
-		else
+		} else {
 			r_ret = Variant();
+		}
 	}
 
 	VCALL_LOCALMEM0R(Quat, length);
@@ -1045,26 +1059,30 @@ struct _VariantCall {
 		cd.func = p_func;
 		cd.arg_count = 0;
 
-		if (p_name1 == "")
+		if (p_name1 == "") {
 			goto end;
+		}
 		cd.arg_count++;
 		cd.arg_names.push_back(p_name1);
 		cd.arg_types.push_back(p_type1);
 
-		if (p_name2 == "")
+		if (p_name2 == "") {
 			goto end;
+		}
 		cd.arg_count++;
 		cd.arg_names.push_back(p_name2);
 		cd.arg_types.push_back(p_type2);
 
-		if (p_name3 == "")
+		if (p_name3 == "") {
 			goto end;
+		}
 		cd.arg_count++;
 		cd.arg_names.push_back(p_name3);
 		cd.arg_types.push_back(p_type3);
 
-		if (p_name4 == "")
+		if (p_name4 == "") {
 			goto end;
+		}
 		cd.arg_count++;
 		cd.arg_names.push_back(p_name4);
 		cd.arg_types.push_back(p_type4);
@@ -1146,8 +1164,9 @@ void Variant::call_ptr(const StringName &p_method, const Variant **p_args, int p
 		funcdata.call(ret, *this, p_args, p_argcount, r_error);
 	}
 
-	if (r_error.error == Variant::CallError::CALL_OK && r_ret)
+	if (r_error.error == Variant::CallError::CALL_OK && r_ret) {
 		*r_ret = ret;
+	}
 }
 
 #define VCALL(m_type, m_method) _VariantCall::_call_##m_type##_##m_method
@@ -1303,8 +1322,9 @@ Variant Variant::construct(const Variant::Type p_type, const Variant **p_args, i
 		for (List<_VariantCall::ConstructData>::Element *E = c.constructors.front(); E; E = E->next()) {
 			const _VariantCall::ConstructData &cd = E->get();
 
-			if (cd.arg_count != p_argcount)
+			if (cd.arg_count != p_argcount) {
 				continue;
+			}
 
 			//validate parameters
 			for (int i = 0; i < cd.arg_count; i++) {
@@ -1347,8 +1367,9 @@ Vector<Variant::Type> Variant::get_method_argument_types(Variant::Type p_type, c
 	const _VariantCall::TypeFunc &tf = _VariantCall::type_funcs[p_type];
 
 	const Map<StringName, _VariantCall::FuncData>::Element *E = tf.functions.find(p_method);
-	if (!E)
+	if (!E) {
 		return Vector<Variant::Type>();
+	}
 
 	return E->get().arg_types;
 }
@@ -1357,8 +1378,9 @@ bool Variant::is_method_const(Variant::Type p_type, const StringName &p_method) 
 	const _VariantCall::TypeFunc &tf = _VariantCall::type_funcs[p_type];
 
 	const Map<StringName, _VariantCall::FuncData>::Element *E = tf.functions.find(p_method);
-	if (!E)
+	if (!E) {
 		return false;
+	}
 
 	return E->get()._const;
 }
@@ -1367,8 +1389,9 @@ Vector<StringName> Variant::get_method_argument_names(Variant::Type p_type, cons
 	const _VariantCall::TypeFunc &tf = _VariantCall::type_funcs[p_type];
 
 	const Map<StringName, _VariantCall::FuncData>::Element *E = tf.functions.find(p_method);
-	if (!E)
+	if (!E) {
 		return Vector<StringName>();
+	}
 
 	return E->get().arg_names;
 }
@@ -1377,11 +1400,13 @@ Variant::Type Variant::get_method_return_type(Variant::Type p_type, const String
 	const _VariantCall::TypeFunc &tf = _VariantCall::type_funcs[p_type];
 
 	const Map<StringName, _VariantCall::FuncData>::Element *E = tf.functions.find(p_method);
-	if (!E)
+	if (!E) {
 		return Variant::NIL;
+	}
 
-	if (r_has_return)
+	if (r_has_return) {
 		*r_has_return = E->get().returns;
+	}
 
 	return E->get().return_type;
 }
@@ -1390,8 +1415,9 @@ Vector<Variant> Variant::get_method_default_arguments(Variant::Type p_type, cons
 	const _VariantCall::TypeFunc &tf = _VariantCall::type_funcs[p_type];
 
 	const Map<StringName, _VariantCall::FuncData>::Element *E = tf.functions.find(p_method);
-	if (!E)
+	if (!E) {
 		return Vector<Variant>();
+	}
 
 	return E->get().default_args;
 }
@@ -1422,8 +1448,9 @@ void Variant::get_method_list(List<MethodInfo> *p_list) const {
 		PropertyInfo ret;
 #ifdef DEBUG_ENABLED
 		ret.type = fd.return_type;
-		if (fd.returns)
+		if (fd.returns) {
 			ret.name = "ret";
+		}
 		mi.return_val = ret;
 #endif
 
@@ -1450,10 +1477,12 @@ void Variant::get_constructor_list(Variant::Type p_type, List<MethodInfo> *p_lis
 	}
 	//default constructors
 	for (int i = 0; i < VARIANT_MAX; i++) {
-		if (i == p_type)
+		if (i == p_type) {
 			continue;
-		if (!Variant::can_convert(Variant::Type(i), p_type))
+		}
+		if (!Variant::can_convert(Variant::Type(i), p_type)) {
 			continue;
+		}
 
 		MethodInfo mi;
 		mi.name = Variant::get_type_name(p_type);
@@ -1497,8 +1526,9 @@ bool Variant::has_constant(Variant::Type p_type, const StringName &p_value) {
 }
 
 Variant Variant::get_constant_value(Variant::Type p_type, const StringName &p_value, bool *r_valid) {
-	if (r_valid)
+	if (r_valid) {
 		*r_valid = false;
+	}
 
 	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, 0);
 	_VariantCall::ConstantData &cd = _VariantCall::constant_data[p_type];
@@ -1507,15 +1537,17 @@ Variant Variant::get_constant_value(Variant::Type p_type, const StringName &p_va
 	if (!E) {
 		Map<StringName, Variant>::Element *F = cd.variant_value.find(p_value);
 		if (F) {
-			if (r_valid)
+			if (r_valid) {
 				*r_valid = true;
+			}
 			return F->get();
 		} else {
 			return -1;
 		}
 	}
-	if (r_valid)
+	if (r_valid) {
 		*r_valid = true;
+	}
 
 	return E->get();
 }

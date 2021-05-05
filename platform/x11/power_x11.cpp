@@ -154,8 +154,9 @@ void PowerX11::check_proc_acpi_battery(const char *node, bool *have_battery, boo
 	if (!read_power_file(base, node, "state", state, sizeof(state))) {
 		return;
 	} else {
-		if (!read_power_file(base, node, "info", info, sizeof(info)))
+		if (!read_power_file(base, node, "info", info, sizeof(info))) {
 			return;
+		}
 	}
 
 	ptr = &state[0];
@@ -308,11 +309,13 @@ bool PowerX11::next_string(char **_ptr, char **_str) {
 	}
 
 	str = ptr;
-	while ((*ptr != ' ') && (*ptr != '\n') && (*ptr != '\0'))
+	while ((*ptr != ' ') && (*ptr != '\n') && (*ptr != '\0')) {
 		ptr++;
+	}
 
-	if (*ptr != '\0')
+	if (*ptr != '\0') {
 		*(ptr++) = '\0';
+	}
 
 	*_str = str;
 	*_ptr = ptr;

@@ -181,8 +181,9 @@ public:
 
 	bool copy_from(const RasterizerArray<T> &o) {
 		// no resizing done here, it should be done manually
-		if (o.size() > _max_size)
+		if (o.size() > _max_size) {
 			return false;
+		}
 
 		// pod types only please!
 		memcpy(_list, o.get_data(), o.size() * sizeof(T));
@@ -194,8 +195,9 @@ public:
 	// to ensure there is no data to copy
 	void grow() {
 		unsigned int new_max_size = _max_size * 2;
-		if (!new_max_size)
+		if (!new_max_size) {
 			new_max_size = 1;
+		}
 
 		T *new_list = memnew_arr(T, new_max_size);
 
@@ -250,8 +252,9 @@ public:
 private:
 	void grow() {
 		unsigned int new_max_size = _list.size() * 2;
-		if (!new_max_size)
+		if (!new_max_size) {
 			new_max_size = 1;
+		}
 		_list.resize(new_max_size);
 	}
 

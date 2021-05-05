@@ -114,8 +114,9 @@ void FileAccessNetworkClient::_thread_func() {
 			}
 		}
 
-		if (accesses.has(id))
+		if (accesses.has(id)) {
 			fa = accesses[id];
+		}
 
 		switch (response) {
 			case FileAccessNetwork::RESPONSE_OPEN: {
@@ -139,8 +140,9 @@ void FileAccessNetworkClient::_thread_func() {
 				block.resize(len);
 				client->get_data(block.ptrw(), len);
 
-				if (fa) //may have been queued
+				if (fa) { //may have been queued
 					fa->_set_block(offset, block);
+				}
 
 			} break;
 			case FileAccessNetwork::RESPONSE_FILE_EXISTS: {
@@ -244,8 +246,9 @@ void FileAccessNetwork::_set_block(int p_offset, const Vector<uint8_t> &p_block)
 void FileAccessNetwork::_respond(size_t p_len, Error p_status) {
 	DEBUG_PRINT("GOT RESPONSE - len: " + itos(p_len) + " status: " + itos(p_status));
 	response = p_status;
-	if (response != OK)
+	if (response != OK) {
 		return;
+	}
 	opened = true;
 	total_size = p_len;
 	int pc = ((total_size - 1) / page_size) + 1;
@@ -254,8 +257,9 @@ void FileAccessNetwork::_respond(size_t p_len, Error p_status) {
 
 Error FileAccessNetwork::_open(const String &p_path, int p_mode_flags) {
 	ERR_FAIL_COND_V(p_mode_flags != READ, ERR_UNAVAILABLE);
-	if (opened)
+	if (opened) {
 		close();
+	}
 	FileAccessNetworkClient *nc = FileAccessNetworkClient::singleton;
 	DEBUG_PRINT("open: " + p_path);
 
@@ -287,8 +291,9 @@ Error FileAccessNetwork::_open(const String &p_path, int p_mode_flags) {
 }
 
 void FileAccessNetwork::close() {
-	if (!opened)
+	if (!opened) {
 		return;
+	}
 
 	FileAccessNetworkClient *nc = FileAccessNetworkClient::singleton;
 
@@ -339,8 +344,9 @@ uint8_t FileAccessNetwork::get_8() const {
 }
 
 void FileAccessNetwork::_queue_page(int p_page) const {
-	if (p_page >= pages.size())
+	if (p_page >= pages.size()) {
 		return;
+	}
 	if (pages[p_page].buffer.empty() && !pages[p_page].queued) {
 		FileAccessNetworkClient *nc = FileAccessNetworkClient::singleton;
 

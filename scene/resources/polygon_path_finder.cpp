@@ -92,21 +92,24 @@ void PolygonPathFinder::setup(const Vector<Vector2> &p_points, const Vector<int>
 
 	for (int i = 0; i < point_count; i++) {
 		for (int j = i + 1; j < point_count; j++) {
-			if (edges.has(Edge(i, j)))
+			if (edges.has(Edge(i, j))) {
 				continue; //if in edge ignore
+			}
 
 			Vector2 from = points[i].pos;
 			Vector2 to = points[j].pos;
 
-			if (!_is_point_inside(from * 0.5 + to * 0.5)) //connection between points in inside space
+			if (!_is_point_inside(from * 0.5 + to * 0.5)) { //connection between points in inside space
 				continue;
+			}
 
 			bool valid = true;
 
 			for (Set<Edge>::Element *E = edges.front(); E; E = E->next()) {
 				const Edge &e = E->get();
-				if (e.points[0] == i || e.points[1] == i || e.points[0] == j || e.points[1] == j)
+				if (e.points[0] == i || e.points[1] == i || e.points[0] == j || e.points[1] == j) {
 					continue;
+				}
 
 				Vector2 a = points[e.points[0]].pos;
 				Vector2 b = points[e.points[1]].pos;
@@ -187,10 +190,12 @@ Vector<Vector2> PolygonPathFinder::find_path(const Vector2 &p_from, const Vector
 
 		for (Set<Edge>::Element *E = edges.front(); E; E = E->next()) {
 			const Edge &e = E->get();
-			if (e.points[0] == ignore_from_edge.points[0] && e.points[1] == ignore_from_edge.points[1])
+			if (e.points[0] == ignore_from_edge.points[0] && e.points[1] == ignore_from_edge.points[1]) {
 				continue;
-			if (e.points[0] == ignore_to_edge.points[0] && e.points[1] == ignore_to_edge.points[1])
+			}
+			if (e.points[0] == ignore_to_edge.points[0] && e.points[1] == ignore_to_edge.points[1]) {
 				continue;
+			}
 
 			Vector2 a = points[e.points[0]].pos;
 			Vector2 b = points[e.points[1]].pos;
@@ -238,8 +243,9 @@ Vector<Vector2> PolygonPathFinder::find_path(const Vector2 &p_from, const Vector
 		for (Set<Edge>::Element *E = edges.front(); E; E = E->next()) {
 			const Edge &e = E->get();
 
-			if (e.points[0] == i || e.points[1] == i)
+			if (e.points[0] == i || e.points[1] == i) {
 				continue;
+			}
 
 			Vector2 a = points[e.points[0]].pos;
 			Vector2 b = points[e.points[1]].pos;
@@ -266,8 +272,9 @@ Vector<Vector2> PolygonPathFinder::find_path(const Vector2 &p_from, const Vector
 				}
 			}
 
-			if (!valid_a && !valid_b)
+			if (!valid_a && !valid_b) {
 				break;
+			}
 		}
 
 		if (valid_a) {
@@ -346,8 +353,9 @@ Vector<Vector2> PolygonPathFinder::find_path(const Vector2 &p_from, const Vector
 			}
 		}
 
-		if (found_route)
+		if (found_route) {
 			break;
+		}
 
 		open_list.erase(least_cost_point);
 	}
@@ -390,8 +398,9 @@ void PolygonPathFinder::_set_data(const Dictionary &p_data) {
 	Array c = p_data["connections"];
 
 	ERR_FAIL_COND(c.size() != p.size());
-	if (c.size())
+	if (c.size()) {
 		return;
+	}
 
 	int pc = p.size();
 	points.resize(pc + 2);

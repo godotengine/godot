@@ -85,8 +85,9 @@ int TriangleMesh::_create_bvh(BVH *p_bvh, BVH **p_bb, int p_from, int p_size, in
 }
 
 void TriangleMesh::get_indices(PoolVector<int> *r_triangles_indices) const {
-	if (!valid)
+	if (!valid) {
 		return;
+	}
 
 	const int triangles_num = triangles.size();
 
@@ -139,10 +140,11 @@ void TriangleMesh::create(const PoolVector<Vector3> &p_faces) {
 				}
 
 				f.indices[j] = vidx;
-				if (j == 0)
+				if (j == 0) {
 					bw[i].aabb.position = vs;
-				else
+				} else {
 					bw[i].aabb.expand_to(vs);
+				}
 			}
 
 			f.normal = Face3(r[i * 3 + 0], r[i * 3 + 1], r[i * 3 + 2]).get_plane().get_normal();
@@ -246,18 +248,21 @@ Vector3 TriangleMesh::get_area_normal(const AABB &p_aabb) const {
 				if (level == 0) {
 					done = true;
 					break;
-				} else
+				} else {
 					level--;
+				}
 				continue;
 			}
 		}
 
-		if (done)
+		if (done) {
 			break;
+		}
 	}
 
-	if (n_count > 0)
+	if (n_count > 0) {
 		n /= n_count;
+	}
 
 	return n;
 }
@@ -346,19 +351,22 @@ bool TriangleMesh::intersect_segment(const Vector3 &p_begin, const Vector3 &p_en
 				if (level == 0) {
 					done = true;
 					break;
-				} else
+				} else {
 					level--;
+				}
 				continue;
 			}
 		}
 
-		if (done)
+		if (done) {
 			break;
+		}
 	}
 
 	if (inters) {
-		if (n.dot(r_normal) > 0)
+		if (n.dot(r_normal) > 0) {
 			r_normal = -r_normal;
+		}
 	}
 
 	return inters;
@@ -446,19 +454,22 @@ bool TriangleMesh::intersect_ray(const Vector3 &p_begin, const Vector3 &p_dir, V
 				if (level == 0) {
 					done = true;
 					break;
-				} else
+				} else {
 					level--;
+				}
 				continue;
 			}
 		}
 
-		if (done)
+		if (done) {
 			break;
+		}
 	}
 
 	if (inters) {
-		if (n.dot(r_normal) > 0)
+		if (n.dot(r_normal) > 0) {
 			r_normal = -r_normal;
+		}
 	}
 
 	return inters;
@@ -518,16 +529,18 @@ bool TriangleMesh::intersect_convex_shape(const Plane *p_planes, int p_plane_cou
 								if (p.intersects_segment(point, next_point, &res)) {
 									bool inisde = true;
 									for (int k = 0; k < p_plane_count; k++) {
-										if (k == i)
+										if (k == i) {
 											continue;
+										}
 										const Plane &pp = p_planes[k];
 										if (pp.is_point_over(res)) {
 											inisde = false;
 											break;
 										}
 									}
-									if (inisde)
+									if (inisde) {
 										return true;
+									}
 								}
 
 								if (p.is_point_over(point)) {
@@ -535,8 +548,9 @@ bool TriangleMesh::intersect_convex_shape(const Plane *p_planes, int p_plane_cou
 									break;
 								}
 							}
-							if (over)
+							if (over) {
 								return true;
+							}
 						}
 
 						stack[level] = (VISIT_DONE_BIT << VISITED_BIT_SHIFT) | node;
@@ -563,14 +577,16 @@ bool TriangleMesh::intersect_convex_shape(const Plane *p_planes, int p_plane_cou
 				if (level == 0) {
 					done = true;
 					break;
-				} else
+				} else {
 					level--;
+				}
 				continue;
 			}
 		}
 
-		if (done)
+		if (done) {
 			break;
+		}
 	}
 
 	return false;
@@ -612,8 +628,9 @@ bool TriangleMesh::inside_convex_shape(const Plane *p_planes, int p_plane_count,
 		switch (stack[level] >> VISITED_BIT_SHIFT) {
 			case TEST_AABB_BIT: {
 				bool intersects = scale.xform(b.aabb).intersects_convex_shape(p_planes, p_plane_count, p_points, p_point_count);
-				if (!intersects)
+				if (!intersects) {
 					return false;
+				}
 
 				bool inside = scale.xform(b.aabb).inside_convex_shape(p_planes, p_plane_count);
 				if (inside) {
@@ -626,8 +643,9 @@ bool TriangleMesh::inside_convex_shape(const Plane *p_planes, int p_plane_count,
 							Vector3 point = scale.xform(vertexptr[s.indices[j]]);
 							for (int i = 0; i < p_plane_count; i++) {
 								const Plane &p = p_planes[i];
-								if (p.is_point_over(point))
+								if (p.is_point_over(point)) {
 									return false;
+								}
 							}
 						}
 
@@ -655,14 +673,16 @@ bool TriangleMesh::inside_convex_shape(const Plane *p_planes, int p_plane_count,
 				if (level == 0) {
 					done = true;
 					break;
-				} else
+				} else {
 					level--;
+				}
 				continue;
 			}
 		}
 
-		if (done)
+		if (done) {
 			break;
+		}
 	}
 
 	return true;
@@ -673,8 +693,9 @@ bool TriangleMesh::is_valid() const {
 }
 
 PoolVector<Face3> TriangleMesh::get_faces() const {
-	if (!valid)
+	if (!valid) {
 		return PoolVector<Face3>();
+	}
 
 	PoolVector<Face3> faces;
 	int ts = triangles.size();

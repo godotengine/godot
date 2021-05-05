@@ -109,10 +109,11 @@ Plane::Plane(const Vector3 &p_point, const Vector3 &p_normal) :
 }
 
 Plane::Plane(const Vector3 &p_point1, const Vector3 &p_point2, const Vector3 &p_point3, ClockDirection p_dir) {
-	if (p_dir == CLOCKWISE)
+	if (p_dir == CLOCKWISE) {
 		normal = (p_point1 - p_point3).cross(p_point1 - p_point2);
-	else
+	} else {
 		normal = (p_point1 - p_point2).cross(p_point1 - p_point3);
+	}
 
 	normal.normalize();
 	d = normal.dot(p_point1);

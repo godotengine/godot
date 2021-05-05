@@ -36,8 +36,9 @@
 Variant PackedDataContainer::getvar(const Variant &p_key, bool *r_valid) const {
 	bool err = false;
 	Variant ret = _key_at_ofs(0, p_key, err);
-	if (r_valid)
+	if (r_valid) {
 		*r_valid = !err;
+	}
 	return ret;
 }
 
@@ -48,9 +49,9 @@ int PackedDataContainer::size() const {
 Variant PackedDataContainer::_iter_init_ofs(const Array &p_iter, uint32_t p_offset) {
 	Array ref = p_iter;
 	uint32_t size = _size(p_offset);
-	if (size == 0 || ref.size() != 1)
+	if (size == 0 || ref.size() != 1) {
 		return false;
-	else {
+	} else {
 		ref[0] = 0;
 		return true;
 	}
@@ -59,11 +60,13 @@ Variant PackedDataContainer::_iter_init_ofs(const Array &p_iter, uint32_t p_offs
 Variant PackedDataContainer::_iter_next_ofs(const Array &p_iter, uint32_t p_offset) {
 	Array ref = p_iter;
 	int size = _size(p_offset);
-	if (ref.size() != 1)
+	if (ref.size() != 1) {
 		return false;
+	}
 	int pos = ref[0];
-	if (pos < 0 || pos >= size)
+	if (pos < 0 || pos >= size) {
 		return false;
+	}
 	pos += 1;
 	ref[0] = pos;
 	return pos != size;
@@ -72,8 +75,9 @@ Variant PackedDataContainer::_iter_next_ofs(const Array &p_iter, uint32_t p_offs
 Variant PackedDataContainer::_iter_get_ofs(const Variant &p_iter, uint32_t p_offset) {
 	int size = _size(p_offset);
 	int pos = p_iter;
-	if (pos < 0 || pos >= size)
+	if (pos < 0 || pos >= size) {
 		return Variant();
+	}
 
 	PoolVector<uint8_t>::Read rd = data.read();
 	const uint8_t *r = &rd[p_offset];
@@ -170,16 +174,18 @@ Variant PackedDataContainer::_key_at_ofs(uint32_t p_ofs, const Variant &p_key, b
 			uint32_t khash = decode_uint32(r + 8 + i * 12 + 0);
 			if (khash == hash) {
 				Variant key = _get_at_ofs(decode_uint32(r + 8 + i * 12 + 4), rd.ptr(), err);
-				if (err)
+				if (err) {
 					return Variant();
+				}
 				if (key == p_key) {
 					//key matches, return value
 					return _get_at_ofs(decode_uint32(r + 8 + i * 12 + 8), rd.ptr(), err);
 				}
 				found = true;
 			} else {
-				if (found)
+				if (found) {
 					break;
+				}
 			}
 		}
 
@@ -374,8 +380,9 @@ void PackedDataContainerRef::_bind_methods() {
 Variant PackedDataContainerRef::getvar(const Variant &p_key, bool *r_valid) const {
 	bool err = false;
 	Variant ret = from->_key_at_ofs(offset, p_key, err);
-	if (r_valid)
+	if (r_valid) {
 		*r_valid = !err;
+	}
 	return ret;
 }
 

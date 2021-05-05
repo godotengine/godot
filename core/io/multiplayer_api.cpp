@@ -46,8 +46,9 @@ _FORCE_INLINE_ bool _should_call_local(MultiplayerAPI::RPCMode mode, bool is_mas
 			// Do nothing also. Remote cannot produce a local call.
 		} break;
 		case MultiplayerAPI::RPC_MODE_MASTERSYNC: {
-			if (is_master)
+			if (is_master) {
 				r_skip_rpc = true; // I am the master, so skip remote call.
+			}
 			FALLTHROUGH;
 		}
 		case MultiplayerAPI::RPC_MODE_REMOTESYNC:
@@ -56,8 +57,9 @@ _FORCE_INLINE_ bool _should_call_local(MultiplayerAPI::RPCMode mode, bool is_mas
 			return true;
 		} break;
 		case MultiplayerAPI::RPC_MODE_MASTER: {
-			if (is_master)
+			if (is_master) {
 				r_skip_rpc = true; // I am the master, so skip remote call.
+			}
 			return is_master;
 		} break;
 		case MultiplayerAPI::RPC_MODE_PUPPET: {
@@ -90,13 +92,15 @@ _FORCE_INLINE_ bool _can_call_mode(Node *p_node, MultiplayerAPI::RPCMode mode, i
 }
 
 void MultiplayerAPI::poll() {
-	if (!network_peer.is_valid() || network_peer->get_connection_status() == NetworkedMultiplayerPeer::CONNECTION_DISCONNECTED)
+	if (!network_peer.is_valid() || network_peer->get_connection_status() == NetworkedMultiplayerPeer::CONNECTION_DISCONNECTED) {
 		return;
+	}
 
 	network_peer->poll();
 
-	if (!network_peer.is_valid()) // It's possible that polling might have resulted in a disconnection, so check here.
+	if (!network_peer.is_valid()) { // It's possible that polling might have resulted in a disconnection, so check here.
 		return;
+	}
 
 	while (network_peer->get_available_packet_count()) {
 		int sender = network_peer->get_packet_peer();
@@ -136,8 +140,9 @@ Node *MultiplayerAPI::get_root_node() {
 }
 
 void MultiplayerAPI::set_network_peer(const Ref<NetworkedMultiplayerPeer> &p_peer) {
-	if (p_peer == network_peer)
+	if (p_peer == network_peer) {
 		return; // Nothing to do
+	}
 
 	ERR_FAIL_COND_MSG(p_peer.is_valid() && p_peer->get_connection_status() == NetworkedMultiplayerPeer::CONNECTION_DISCONNECTED,
 			"Supplied NetworkedMultiplayerPeer must be connecting or connected.");
@@ -408,11 +413,13 @@ bool MultiplayerAPI::_send_confirm_path(NodePath p_path, PathSentCache *psc, int
 	List<int> peers_to_add; // If one is missing, take note to add it.
 
 	for (Set<int>::Element *E = connected_peers.front(); E; E = E->next()) {
-		if (p_target < 0 && E->get() == -p_target)
+		if (p_target < 0 && E->get() == -p_target) {
 			continue; // Continue, excluded.
+		}
 
-		if (p_target > 0 && E->get() != p_target)
+		if (p_target > 0 && E->get() != p_target) {
 			continue; // Continue, not for this peer.
+		}
 
 		Map<int, bool>::Element *F = psc->confirmed_peers.find(E->get());
 
@@ -553,11 +560,13 @@ void MultiplayerAPI::_send_rpc(Node *p_from, int p_to, bool p_unreliable, bool p
 		encode_cstring(pname.get_data(), &(packet_cache.write[ofs]));
 
 		for (Set<int>::Element *E = connected_peers.front(); E; E = E->next()) {
-			if (p_to < 0 && E->get() == -p_to)
+			if (p_to < 0 && E->get() == -p_to) {
 				continue; // Continue, excluded.
+			}
 
-			if (p_to > 0 && E->get() != p_to)
+			if (p_to > 0 && E->get() != p_to) {
 				continue; // Continue, not for this peer.
+			}
 
 			Map<int, bool>::Element *F = psc->confirmed_peers.find(E->get());
 			ERR_CONTINUE(!F); // Should never happen.
@@ -898,8 +907,9 @@ int MultiplayerAPI::_get_bandwidth_usage(const Vector<BandwidthFrame> &p_buffer,
 }
 
 void MultiplayerAPI::_init_node_profile(ObjectID p_node) {
-	if (profiler_frame_data.has(p_node))
+	if (profiler_frame_data.has(p_node)) {
 		return;
+	}
 	profiler_frame_data.insert(p_node, ProfilingInfo());
 	profiler_frame_data[p_node].node = p_node;
 	profiler_frame_data[p_node].node_path = Object::cast_to<Node>(ObjectDB::get_instance(p_node))->get_path();

@@ -603,8 +603,9 @@ String EditorExportPlatformIOS::_get_linker_flags() {
 	String result;
 	for (int i = 0; i < export_plugins.size(); ++i) {
 		String flags = export_plugins[i]->get_ios_linker_flags();
-		if (flags.length() == 0)
+		if (flags.length() == 0) {
 			continue;
+		}
 		if (result.length() > 0) {
 			result += ' ';
 		}
@@ -1172,8 +1173,9 @@ Error EditorExportPlatformIOS::_export_additional_assets(const String &p_out_dir
 		ERR_FAIL_COND_V(err, err);
 
 		Vector<String> project_static_libs = export_plugins[i]->get_ios_project_static_libs();
-		for (int j = 0; j < project_static_libs.size(); j++)
+		for (int j = 0; j < project_static_libs.size(); j++) {
 			project_static_libs.write[j] = project_static_libs[j].get_file(); // Only the file name as it's copied to the project
+		}
 		err = _export_additional_assets(p_out_dir, project_static_libs, true, true, r_exported_assets);
 		ERR_FAIL_COND_V(err, err);
 
@@ -1410,10 +1412,11 @@ Error EditorExportPlatformIOS::export_project(const Ref<EditorExportPreset> &p_p
 	String team_id = p_preset->get("application/app_store_team_id");
 	ERR_FAIL_COND_V_MSG(team_id.length() == 0, ERR_CANT_OPEN, "App Store Team ID not specified - cannot configure the project.");
 
-	if (p_debug)
+	if (p_debug) {
 		src_pkg_name = p_preset->get("custom_template/debug");
-	else
+	} else {
 		src_pkg_name = p_preset->get("custom_template/release");
+	}
 
 	if (src_pkg_name == "") {
 		String err;
@@ -1459,8 +1462,9 @@ Error EditorExportPlatformIOS::export_project(const Ref<EditorExportPreset> &p_p
 	String pack_path = dest_dir + binary_name + ".pck";
 	Vector<SharedObject> libraries;
 	Error err = save_pack(p_preset, pack_path, &libraries);
-	if (err)
+	if (err) {
 		return err;
+	}
 
 	if (ep.step("Extracting and configuring Xcode project", 1)) {
 		return ERR_SKIP;
@@ -1470,12 +1474,13 @@ Error EditorExportPlatformIOS::export_project(const Ref<EditorExportPreset> &p_p
 
 	print_line("Static library: " + library_to_use);
 	String pkg_name;
-	if (p_preset->get("application/name") != "")
+	if (p_preset->get("application/name") != "") {
 		pkg_name = p_preset->get("application/name"); // app_name
-	else if (String(ProjectSettings::get_singleton()->get("application/config/name")) != "")
+	} else if (String(ProjectSettings::get_singleton()->get("application/config/name")) != "") {
 		pkg_name = String(ProjectSettings::get_singleton()->get("application/config/name"));
-	else
+	} else {
 		pkg_name = "Unnamed";
+	}
 
 	bool found_library = false;
 	int total_size = 0;
@@ -1646,12 +1651,14 @@ Error EditorExportPlatformIOS::export_project(const Ref<EditorExportPreset> &p_p
 		err = tmp_app_path->make_dir_recursive(iconset_dir);
 	}
 	memdelete(tmp_app_path);
-	if (err)
+	if (err) {
 		return err;
+	}
 
 	err = _export_icons(p_preset, iconset_dir);
-	if (err)
+	if (err) {
 		return err;
+	}
 
 	bool use_storyboard = p_preset->get("storyboard/use_launch_screen_storyboard");
 
@@ -1818,8 +1825,9 @@ bool EditorExportPlatformIOS::can_export(const Ref<EditorExportPreset> &p_preset
 		err += etc_error;
 	}
 
-	if (!err.empty())
+	if (!err.empty()) {
 		r_error = err;
+	}
 
 	return valid;
 }

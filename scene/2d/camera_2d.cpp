@@ -36,16 +36,18 @@
 #include "servers/visual_server.h"
 
 void Camera2D::_update_scroll() {
-	if (!is_inside_tree())
+	if (!is_inside_tree()) {
 		return;
+	}
 
 	if (Engine::get_singleton()->is_editor_hint()) {
 		update(); //will just be drawn
 		return;
 	}
 
-	if (!viewport)
+	if (!viewport) {
 		return;
+	}
 
 	if (current) {
 		ERR_FAIL_COND(custom_viewport && !ObjectDB::get_instance(custom_viewport_id));
@@ -108,8 +110,9 @@ Vector2 Camera2D::get_zoom() const {
 };
 
 Transform2D Camera2D::get_camera_transform() {
-	if (!get_tree() || !viewport)
+	if (!get_tree() || !viewport) {
 		return Transform2D();
+	}
 
 	ERR_FAIL_COND_V(custom_viewport && !ObjectDB::get_instance(custom_viewport_id), Transform2D());
 
@@ -155,17 +158,21 @@ Transform2D Camera2D::get_camera_transform() {
 		Rect2 screen_rect(-screen_offset + camera_pos, screen_size * zoom);
 
 		if (limit_smoothing_enabled) {
-			if (screen_rect.position.x < limit[MARGIN_LEFT])
+			if (screen_rect.position.x < limit[MARGIN_LEFT]) {
 				camera_pos.x -= screen_rect.position.x - limit[MARGIN_LEFT];
+			}
 
-			if (screen_rect.position.x + screen_rect.size.x > limit[MARGIN_RIGHT])
+			if (screen_rect.position.x + screen_rect.size.x > limit[MARGIN_RIGHT]) {
 				camera_pos.x -= screen_rect.position.x + screen_rect.size.x - limit[MARGIN_RIGHT];
+			}
 
-			if (screen_rect.position.y + screen_rect.size.y > limit[MARGIN_BOTTOM])
+			if (screen_rect.position.y + screen_rect.size.y > limit[MARGIN_BOTTOM]) {
 				camera_pos.y -= screen_rect.position.y + screen_rect.size.y - limit[MARGIN_BOTTOM];
+			}
 
-			if (screen_rect.position.y < limit[MARGIN_TOP])
+			if (screen_rect.position.y < limit[MARGIN_TOP]) {
 				camera_pos.y -= screen_rect.position.y - limit[MARGIN_TOP];
+			}
 		}
 
 		if (smoothing_active) {
@@ -189,20 +196,25 @@ Transform2D Camera2D::get_camera_transform() {
 	}
 
 	Rect2 screen_rect(-screen_offset + ret_camera_pos, screen_size * zoom);
-	if (screen_rect.position.x < limit[MARGIN_LEFT])
+	if (screen_rect.position.x < limit[MARGIN_LEFT]) {
 		screen_rect.position.x = limit[MARGIN_LEFT];
+	}
 
-	if (screen_rect.position.x + screen_rect.size.x > limit[MARGIN_RIGHT])
+	if (screen_rect.position.x + screen_rect.size.x > limit[MARGIN_RIGHT]) {
 		screen_rect.position.x = limit[MARGIN_RIGHT] - screen_rect.size.x;
+	}
 
-	if (screen_rect.position.y + screen_rect.size.y > limit[MARGIN_BOTTOM])
+	if (screen_rect.position.y + screen_rect.size.y > limit[MARGIN_BOTTOM]) {
 		screen_rect.position.y = limit[MARGIN_BOTTOM] - screen_rect.size.y;
+	}
 
-	if (screen_rect.position.y < limit[MARGIN_TOP])
+	if (screen_rect.position.y < limit[MARGIN_TOP]) {
 		screen_rect.position.y = limit[MARGIN_TOP];
+	}
 
-	if (offset != Vector2())
+	if (offset != Vector2()) {
 		screen_rect.position += offset;
+	}
 
 	camera_screen_center = screen_rect.position + screen_rect.size * 0.5;
 
@@ -255,8 +267,9 @@ void Camera2D::_notification(int p_what) {
 		} break;
 #ifdef TOOLS_ENABLED
 		case NOTIFICATION_DRAW: {
-			if (!is_inside_tree() || !Engine::get_singleton()->is_editor_hint())
+			if (!is_inside_tree() || !Engine::get_singleton()->is_editor_hint()) {
 				break;
+			}
 
 			if (screen_drawing_enabled) {
 				Color area_axis_color(0.5, 0.42, 0.87, 0.63);
@@ -366,8 +379,9 @@ bool Camera2D::is_rotating() const {
 }
 
 void Camera2D::set_process_mode(Camera2DProcessMode p_mode) {
-	if (process_mode == p_mode)
+	if (process_mode == p_mode) {
 		return;
+	}
 
 	process_mode = p_mode;
 	_update_process_mode();
@@ -386,8 +400,9 @@ void Camera2D::_make_current(Object *p_which) {
 }
 
 void Camera2D::_set_current(bool p_current) {
-	if (p_current)
+	if (p_current) {
 		make_current();
+	}
 
 	current = p_current;
 	update();

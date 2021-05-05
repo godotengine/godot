@@ -94,13 +94,15 @@ Error UDPServer::listen(uint16_t p_port, const IP_Address &p_bind_address) {
 	Error err;
 	IP::Type ip_type = IP::TYPE_ANY;
 
-	if (p_bind_address.is_valid())
+	if (p_bind_address.is_valid()) {
 		ip_type = p_bind_address.is_ipv4() ? IP::TYPE_IPV4 : IP::TYPE_IPV6;
+	}
 
 	err = _sock->open(NetSocket::TYPE_UDP, ip_type);
 
-	if (err != OK)
+	if (err != OK) {
 		return ERR_CANT_CREATE;
+	}
 
 	_sock->set_blocking_enabled(false);
 	_sock->set_reuse_address_enabled(true);
@@ -124,8 +126,9 @@ bool UDPServer::is_listening() const {
 bool UDPServer::is_connection_available() const {
 	ERR_FAIL_COND_V(!_sock.is_valid(), false);
 
-	if (!_sock->is_open())
+	if (!_sock->is_open()) {
 		return false;
+	}
 
 	return pending.size() > 0;
 }

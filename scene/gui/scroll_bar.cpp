@@ -63,8 +63,9 @@ void ScrollBar::_gui_input(Ref<InputEvent> p_event) {
 			accept_event();
 		}
 
-		if (b->get_button_index() != BUTTON_LEFT)
+		if (b->get_button_index() != BUTTON_LEFT) {
 			return;
+		}
 
 		if (b->is_pressed()) {
 			double ofs = orientation == VERTICAL ? b->get_position().y : b->get_position().x;
@@ -176,24 +177,28 @@ void ScrollBar::_gui_input(Ref<InputEvent> p_event) {
 
 	if (p_event->is_pressed()) {
 		if (p_event->is_action("ui_left")) {
-			if (orientation != HORIZONTAL)
+			if (orientation != HORIZONTAL) {
 				return;
+			}
 			set_value(get_value() - (custom_step >= 0 ? custom_step : get_step()));
 
 		} else if (p_event->is_action("ui_right")) {
-			if (orientation != HORIZONTAL)
+			if (orientation != HORIZONTAL) {
 				return;
+			}
 			set_value(get_value() + (custom_step >= 0 ? custom_step : get_step()));
 
 		} else if (p_event->is_action("ui_up")) {
-			if (orientation != VERTICAL)
+			if (orientation != VERTICAL) {
 				return;
+			}
 
 			set_value(get_value() - (custom_step >= 0 ? custom_step : get_step()));
 
 		} else if (p_event->is_action("ui_down")) {
-			if (orientation != VERTICAL)
+			if (orientation != VERTICAL) {
 				return;
+			}
 			set_value(get_value() + (custom_step >= 0 ? custom_step : get_step()));
 
 		} else if (p_event->is_action("ui_home")) {
@@ -214,35 +219,39 @@ void ScrollBar::_notification(int p_what) {
 		Ref<StyleBox> bg = has_focus() ? get_stylebox("scroll_focus") : get_stylebox("scroll");
 
 		Ref<StyleBox> grabber;
-		if (drag.active)
+		if (drag.active) {
 			grabber = get_stylebox("grabber_pressed");
-		else if (highlight == HIGHLIGHT_RANGE)
+		} else if (highlight == HIGHLIGHT_RANGE) {
 			grabber = get_stylebox("grabber_highlight");
-		else
+		} else {
 			grabber = get_stylebox("grabber");
+		}
 
 		Point2 ofs;
 
 		decr->draw(ci, Point2());
 
-		if (orientation == HORIZONTAL)
+		if (orientation == HORIZONTAL) {
 			ofs.x += decr->get_width();
-		else
+		} else {
 			ofs.y += decr->get_height();
+		}
 
 		Size2 area = get_size();
 
-		if (orientation == HORIZONTAL)
+		if (orientation == HORIZONTAL) {
 			area.width -= incr->get_width() + decr->get_width();
-		else
+		} else {
 			area.height -= incr->get_height() + decr->get_height();
+		}
 
 		bg->draw(ci, Rect2(ofs, area));
 
-		if (orientation == HORIZONTAL)
+		if (orientation == HORIZONTAL) {
 			ofs.width += area.width;
-		else
+		} else {
 			ofs.height += area.height;
+		}
 
 		incr->draw(ci, ofs);
 		Rect2 grabber_rect;
@@ -386,8 +395,9 @@ double ScrollBar::get_grabber_min_size() const {
 
 double ScrollBar::get_grabber_size() const {
 	float range = get_max() - get_min();
-	if (range <= 0)
+	if (range <= 0) {
 		return 0;
+	}
 
 	float page = (get_page() > 0) ? get_page() : 0;
 	/*
@@ -445,10 +455,11 @@ double ScrollBar::get_click_pos(const Point2 &p_pos) const {
 	pos -= get_area_offset();
 
 	float area = get_area_size();
-	if (area == 0)
+	if (area == 0) {
 		return 0;
-	else
+	} else {
 		return pos / area;
+	}
 }
 
 double ScrollBar::get_grabber_offset() const {
@@ -503,8 +514,9 @@ void ScrollBar::_drag_node_input(const Ref<InputEvent> &p_input) {
 	Ref<InputEventMouseButton> mb = p_input;
 
 	if (mb.is_valid()) {
-		if (mb->get_button_index() != 1)
+		if (mb->get_button_index() != 1) {
 			return;
+		}
 
 		if (mb->is_pressed()) {
 			drag_node_speed = Vector2();
@@ -543,11 +555,13 @@ void ScrollBar::_drag_node_input(const Ref<InputEvent> &p_input) {
 			drag_node_accum -= motion;
 			Vector2 diff = drag_node_from + drag_node_accum;
 
-			if (orientation == HORIZONTAL)
+			if (orientation == HORIZONTAL) {
 				set_value(diff.x);
+			}
 
-			if (orientation == VERTICAL)
+			if (orientation == VERTICAL) {
 				set_value(diff.y);
+			}
 
 			time_since_motion = 0;
 		}
@@ -623,8 +637,9 @@ ScrollBar::ScrollBar(Orientation p_orientation) {
 	target_scroll = 0;
 	smooth_scroll_enabled = false;
 
-	if (focus_by_default)
+	if (focus_by_default) {
 		set_focus_mode(FOCUS_ALL);
+	}
 	set_step(0);
 }
 

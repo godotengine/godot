@@ -72,8 +72,9 @@ SkinReference::~SkinReference() {
 bool Skeleton::_set(const StringName &p_path, const Variant &p_value) {
 	String path = p_path;
 
-	if (!path.begins_with("bones/"))
+	if (!path.begins_with("bones/")) {
 		return false;
+	}
 
 	int which = path.get_slicec('/', 1).to_int();
 	String what = path.get_slicec('/', 2);
@@ -85,15 +86,15 @@ bool Skeleton::_set(const StringName &p_path, const Variant &p_value) {
 
 	ERR_FAIL_INDEX_V(which, bones.size(), false);
 
-	if (what == "parent")
+	if (what == "parent") {
 		set_bone_parent(which, p_value);
-	else if (what == "rest")
+	} else if (what == "rest") {
 		set_bone_rest(which, p_value);
-	else if (what == "enabled")
+	} else if (what == "enabled") {
 		set_bone_enabled(which, p_value);
-	else if (what == "pose")
+	} else if (what == "pose") {
 		set_bone_pose(which, p_value);
-	else if (what == "bound_children") {
+	} else if (what == "bound_children") {
 		Array children = p_value;
 
 		if (is_inside_tree()) {
@@ -117,25 +118,26 @@ bool Skeleton::_set(const StringName &p_path, const Variant &p_value) {
 bool Skeleton::_get(const StringName &p_path, Variant &r_ret) const {
 	String path = p_path;
 
-	if (!path.begins_with("bones/"))
+	if (!path.begins_with("bones/")) {
 		return false;
+	}
 
 	int which = path.get_slicec('/', 1).to_int();
 	String what = path.get_slicec('/', 2);
 
 	ERR_FAIL_INDEX_V(which, bones.size(), false);
 
-	if (what == "name")
+	if (what == "name") {
 		r_ret = get_bone_name(which);
-	else if (what == "parent")
+	} else if (what == "parent") {
 		r_ret = get_bone_parent(which);
-	else if (what == "rest")
+	} else if (what == "rest") {
 		r_ret = get_bone_rest(which);
-	else if (what == "enabled")
+	} else if (what == "enabled") {
 		r_ret = is_bone_enabled(which);
-	else if (what == "pose")
+	} else if (what == "pose") {
 		r_ret = get_bone_pose(which);
-	else if (what == "bound_children") {
+	} else if (what == "bound_children") {
 		Array children;
 
 		for (const List<uint32_t>::Element *E = bones[which].nodes_bound.front(); E; E = E->next()) {
@@ -148,8 +150,9 @@ bool Skeleton::_get(const StringName &p_path, Variant &r_ret) const {
 		}
 
 		r_ret = children;
-	} else
+	} else {
 		return false;
+	}
 
 	return true;
 }
@@ -166,8 +169,9 @@ void Skeleton::_get_property_list(List<PropertyInfo> *p_list) const {
 }
 
 void Skeleton::_update_process_order() {
-	if (!process_order_dirty)
+	if (!process_order_dirty) {
 		return;
+	}
 
 	Bone *bonesptr = bones.ptrw();
 	int len = bones.size();
@@ -191,8 +195,9 @@ void Skeleton::_update_process_order() {
 		bool swapped = false;
 		for (int i = 0; i < len; i++) {
 			int parent_idx = bonesptr[order[i]].parent;
-			if (parent_idx < 0)
+			if (parent_idx < 0) {
 				continue; //do nothing because it has no parent
+			}
 			//swap indices
 			int parent_order = bonesptr[parent_idx].sort_index;
 			if (parent_order > i) {
@@ -204,8 +209,9 @@ void Skeleton::_update_process_order() {
 			}
 		}
 
-		if (!swapped)
+		if (!swapped) {
 			break;
+		}
 		pass_count++;
 	}
 
@@ -370,8 +376,9 @@ void Skeleton::set_bone_global_pose_override(int p_bone, const Transform &p_pose
 
 Transform Skeleton::get_bone_global_pose(int p_bone) const {
 	ERR_FAIL_INDEX_V(p_bone, bones.size(), Transform());
-	if (dirty)
+	if (dirty) {
 		const_cast<Skeleton *>(this)->notification(NOTIFICATION_UPDATE_SKELETON);
+	}
 	return bones[p_bone].pose_global;
 }
 
@@ -393,8 +400,9 @@ void Skeleton::add_bone(const String &p_name) {
 }
 int Skeleton::find_bone(const String &p_name) const {
 	for (int i = 0; i < bones.size(); i++) {
-		if (bones[i].name == p_name)
+		if (bones[i].name == p_name) {
 			return i;
+		}
 	}
 
 	return -1;
@@ -420,11 +428,13 @@ void Skeleton::set_bone_name(int p_bone, const String &p_name) {
 bool Skeleton::is_bone_parent_of(int p_bone, int p_parent_bone_id) const {
 	int parent_of_bone = get_bone_parent(p_bone);
 
-	if (-1 == parent_of_bone)
+	if (-1 == parent_of_bone) {
 		return false;
+	}
 
-	if (parent_of_bone == p_parent_bone_id)
+	if (parent_of_bone == p_parent_bone_id) {
 		return true;
+	}
 
 	return is_bone_parent_of(parent_of_bone, p_parent_bone_id);
 }
@@ -505,8 +515,9 @@ void Skeleton::bind_child_node_to_bone(int p_bone, Node *p_node) {
 	uint32_t id = p_node->get_instance_id();
 
 	for (const List<uint32_t>::Element *E = bones[p_bone].nodes_bound.front(); E; E = E->next()) {
-		if (E->get() == id)
+		if (E->get() == id) {
 			return; // already here
+		}
 	}
 
 	bones.write[p_bone].nodes_bound.push_back(id);
@@ -566,8 +577,9 @@ Transform Skeleton::get_bone_custom_pose(int p_bone) const {
 }
 
 void Skeleton::_make_dirty() {
-	if (dirty)
+	if (dirty) {
 		return;
+	}
 
 	MessageQueue::get_singleton()->push_notification(this, NOTIFICATION_UPDATE_SKELETON);
 	dirty = true;
@@ -646,8 +658,9 @@ void Skeleton::_rebuild_physical_bones_cache() {
 		PhysicalBone *parent_pb = _get_physical_bone_parent(i);
 		if (parent_pb != bones[i].physical_bone) {
 			bones.write[i].cache_parent_physical_bone = parent_pb;
-			if (bones[i].physical_bone)
+			if (bones[i].physical_bone) {
 				bones[i].physical_bone->_on_bone_parent_changed();
+			}
 		}
 	}
 }
@@ -702,8 +715,9 @@ void Skeleton::physical_bones_start_simulation_on(const Array &p_bones) {
 		for (int i = sim_bones.size() - 1; 0 <= i; --i) {
 			if (Variant::STRING == p_bones.get(i).get_type()) {
 				int bone_id = find_bone(p_bones.get(i));
-				if (bone_id != -1)
+				if (bone_id != -1) {
 					sim_bones.write[c++] = bone_id;
+				}
 			}
 		}
 		sim_bones.resize(c);

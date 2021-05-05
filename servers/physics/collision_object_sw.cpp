@@ -94,8 +94,9 @@ void CollisionObjectSW::remove_shape(int p_index) {
 	//remove anything from shape to be erased to end, so subindices don't change
 	ERR_FAIL_INDEX(p_index, shapes.size());
 	for (int i = p_index; i < shapes.size(); i++) {
-		if (shapes[i].bpid == 0)
+		if (shapes[i].bpid == 0) {
 			continue;
+		}
 		//should never get here with a null owner
 		space->get_broadphase()->remove(shapes[i].bpid);
 		shapes.write[i].bpid = 0;
@@ -111,12 +112,14 @@ void CollisionObjectSW::remove_shape(int p_index) {
 }
 
 void CollisionObjectSW::_set_static(bool p_static) {
-	if (_static == p_static)
+	if (_static == p_static) {
 		return;
+	}
 	_static = p_static;
 
-	if (!space)
+	if (!space) {
 		return;
+	}
 	for (int i = 0; i < get_shape_count(); i++) {
 		const Shape &s = shapes[i];
 		if (s.bpid > 0) {
@@ -136,8 +139,9 @@ void CollisionObjectSW::_unregister_shapes() {
 }
 
 void CollisionObjectSW::_update_shapes() {
-	if (!space)
+	if (!space) {
 		return;
+	}
 
 	for (int i = 0; i < shapes.size(); i++) {
 		Shape &s = shapes.write[i];
@@ -162,8 +166,9 @@ void CollisionObjectSW::_update_shapes() {
 }
 
 void CollisionObjectSW::_update_shapes_with_motion(const Vector3 &p_motion) {
-	if (!space)
+	if (!space) {
 		return;
+	}
 
 	for (int i = 0; i < shapes.size(); i++) {
 		Shape &s = shapes.write[i];

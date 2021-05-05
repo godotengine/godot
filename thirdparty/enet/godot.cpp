@@ -95,8 +95,9 @@ public:
 
 	Error recvfrom(uint8_t *p_buffer, int p_len, int &r_read, IP_Address &r_ip, uint16_t &r_port) {
 		Error err = sock->poll(NetSocket::POLL_TYPE_IN, 0);
-		if (err != OK)
+		if (err != OK) {
 			return err;
+}
 		return sock->recvfrom(p_buffer, p_len, r_read, r_ip, r_port);
 	}
 
@@ -186,25 +187,29 @@ public:
 			connected = true;
 		}
 		dtls->poll();
-		if (dtls->get_status() == PacketPeerDTLS::STATUS_HANDSHAKING)
+		if (dtls->get_status() == PacketPeerDTLS::STATUS_HANDSHAKING) {
 			return ERR_BUSY;
-		else if (dtls->get_status() != PacketPeerDTLS::STATUS_CONNECTED)
+		} else if (dtls->get_status() != PacketPeerDTLS::STATUS_CONNECTED) {
 			return FAILED;
+}
 		r_sent = p_len;
 		return dtls->put_packet(p_buffer, p_len);
 	}
 
 	Error recvfrom(uint8_t *p_buffer, int p_len, int &r_read, IP_Address &r_ip, uint16_t &r_port) {
 		dtls->poll();
-		if (dtls->get_status() == PacketPeerDTLS::STATUS_HANDSHAKING)
+		if (dtls->get_status() == PacketPeerDTLS::STATUS_HANDSHAKING) {
 			return ERR_BUSY;
-		if (dtls->get_status() != PacketPeerDTLS::STATUS_CONNECTED)
+}
+		if (dtls->get_status() != PacketPeerDTLS::STATUS_CONNECTED) {
 			return FAILED;
+}
 		int pc = dtls->get_available_packet_count();
-		if (pc == 0)
+		if (pc == 0) {
 			return ERR_BUSY;
-		else if (pc < 0)
+		} else if (pc < 0) {
 			return FAILED;
+}
 
 		const uint8_t *buffer;
 		Error err = dtls->get_packet(&buffer, r_read);
@@ -264,12 +269,13 @@ public:
 		ERR_FAIL_COND_V(!peers.has(key), ERR_UNAVAILABLE);
 		Ref<PacketPeerDTLS> peer = peers[key];
 		Error err = peer->put_packet(p_buffer, p_len);
-		if (err == OK)
+		if (err == OK) {
 			r_sent = p_len;
-		else if (err == ERR_BUSY)
+		} else if (err == ERR_BUSY) {
 			r_sent = 0;
-		else
+		} else {
 			r_sent = -1;
+}
 		return err;
 	}
 
@@ -295,9 +301,9 @@ public:
 			Ref<PacketPeerDTLS> peer = E->get();
 			peer->poll();
 
-			if (peer->get_status() == PacketPeerDTLS::STATUS_HANDSHAKING)
+			if (peer->get_status() == PacketPeerDTLS::STATUS_HANDSHAKING) {
 				continue;
-			else if (peer->get_status() != PacketPeerDTLS::STATUS_CONNECTED) {
+			} else if (peer->get_status() != PacketPeerDTLS::STATUS_CONNECTED) {
 				// Peer disconnected, removing it.
 				remove.push_back(E->key());
 				continue;
@@ -494,11 +500,13 @@ int enet_socket_receive(ENetSocket socket, ENetAddress *address, ENetBuffer *buf
 	IP_Address ip;
 
 	Error err = sock->recvfrom((uint8_t *)buffers[0].data, buffers[0].dataLength, read, ip, address->port);
-	if (err == ERR_BUSY)
+	if (err == ERR_BUSY) {
 		return 0;
+}
 
-	if (err != OK)
+	if (err != OK) {
 		return -1;
+}
 
 	enet_address_set_ip(address, ip.get_ipv6(), 16);
 

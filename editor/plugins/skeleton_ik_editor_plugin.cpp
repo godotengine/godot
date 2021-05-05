@@ -33,11 +33,13 @@
 #include "scene/animation/skeleton_ik.h"
 
 void SkeletonIKEditorPlugin::_play() {
-	if (!skeleton_ik)
+	if (!skeleton_ik) {
 		return;
+	}
 
-	if (!skeleton_ik->get_parent_skeleton())
+	if (!skeleton_ik->get_parent_skeleton()) {
 		return;
+	}
 
 	if (play_btn->is_pressed()) {
 		skeleton_ik->start();
@@ -56,8 +58,9 @@ void SkeletonIKEditorPlugin::edit(Object *p_object) {
 	}
 
 	SkeletonIK *s = Object::cast_to<SkeletonIK>(p_object);
-	if (!s)
+	if (!s) {
 		return;
+	}
 
 	skeleton_ik = s;
 }
@@ -67,10 +70,11 @@ bool SkeletonIKEditorPlugin::handles(Object *p_object) const {
 }
 
 void SkeletonIKEditorPlugin::make_visible(bool p_visible) {
-	if (p_visible)
+	if (p_visible) {
 		play_btn->show();
-	else
+	} else {
 		play_btn->hide();
+	}
 }
 
 void SkeletonIKEditorPlugin::_bind_methods() {

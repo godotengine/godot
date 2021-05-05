@@ -817,8 +817,9 @@ void RasterizerCanvasBaseGLES2::canvas_light_shadow_buffer_update(RID p_buffer, 
 		state.canvas_shadow_shader.set_uniform(CanvasShadowShaderGLES2::LIGHT_MATRIX, light);
 		state.canvas_shadow_shader.set_uniform(CanvasShadowShaderGLES2::DISTANCE_NORM, 1.0 / p_far);
 
-		if (i == 0)
+		if (i == 0) {
 			*p_xform_cache = projection;
+		}
 
 		glViewport(0, (cls->height / 4) * i, cls->size, cls->height / 4);
 

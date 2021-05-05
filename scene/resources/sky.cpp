@@ -110,8 +110,9 @@ PanoramaSky::~PanoramaSky() {
 //////////////////////////////////
 
 void ProceduralSky::_radiance_changed() {
-	if (update_queued)
+	if (update_queued) {
 		return; //do nothing yet
+	}
 
 	static const int size[RADIANCE_SIZE_MAX] = {
 		32, 64, 128, 256, 512, 1024, 2048
@@ -379,8 +380,9 @@ void ProceduralSky::_update_sky() {
 }
 
 void ProceduralSky::_queue_update() {
-	if (update_queued)
+	if (update_queued) {
 		return;
+	}
 
 	update_queued = true;
 	call_deferred("_update_sky");

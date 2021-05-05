@@ -37,8 +37,9 @@ Ref<WebRTCPeerConnection> WebRTCPeerConnection::create_ref() {
 }
 
 WebRTCPeerConnection *WebRTCPeerConnection::create() {
-	if (!_create)
+	if (!_create) {
 		return nullptr;
+	}
 	return _create();
 }
 

@@ -97,8 +97,9 @@ void AudioStreamEditor::_preview_changed(ObjectID p_which) {
 }
 
 void AudioStreamEditor::_changed_callback(Object *p_changed, const char *p_prop) {
-	if (!is_visible())
+	if (!is_visible()) {
 		return;
+	}
 	update();
 }
 
@@ -175,8 +176,9 @@ void AudioStreamEditor::_seek_to(real_t p_x) {
 }
 
 void AudioStreamEditor::edit(Ref<AudioStream> p_stream) {
-	if (!stream.is_null())
+	if (!stream.is_null()) {
 		stream->remove_change_receptor(this);
+	}
 
 	stream = p_stream;
 	_player->set_stream(stream);
@@ -252,8 +254,9 @@ AudioStreamEditor::AudioStreamEditor() {
 
 void AudioStreamEditorPlugin::edit(Object *p_object) {
 	AudioStream *s = Object::cast_to<AudioStream>(p_object);
-	if (!s)
+	if (!s) {
 		return;
+	}
 
 	audio_editor->edit(Ref<AudioStream>(s));
 }

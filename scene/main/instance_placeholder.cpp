@@ -74,20 +74,24 @@ Node *InstancePlaceholder::create_instance(bool p_replace, const Ref<PackedScene
 	ERR_FAIL_COND_V(!is_inside_tree(), nullptr);
 
 	Node *base = get_parent();
-	if (!base)
+	if (!base) {
 		return nullptr;
+	}
 
 	Ref<PackedScene> ps;
-	if (p_custom_scene.is_valid())
+	if (p_custom_scene.is_valid()) {
 		ps = p_custom_scene;
-	else
+	} else {
 		ps = ResourceLoader::load(path, "PackedScene");
+	}
 
-	if (!ps.is_valid())
+	if (!ps.is_valid()) {
 		return nullptr;
+	}
 	Node *scene = ps->instance();
-	if (!scene)
+	if (!scene) {
 		return nullptr;
+	}
 	scene->set_name(get_name());
 	int pos = get_position_in_parent();
 
@@ -117,12 +121,14 @@ Dictionary InstancePlaceholder::get_stored_values(bool p_with_order) {
 
 	for (List<PropSet>::Element *E = stored_values.front(); E; E = E->next()) {
 		ret[E->get().name] = E->get().value;
-		if (p_with_order)
+		if (p_with_order) {
 			order.push_back(E->get().name);
+		}
 	};
 
-	if (p_with_order)
+	if (p_with_order) {
 		ret[".order"] = order;
+	}
 
 	return ret;
 };

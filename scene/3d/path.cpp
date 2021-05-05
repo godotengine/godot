@@ -37,8 +37,9 @@ void Path::_notification(int p_what) {
 }
 
 void Path::_curve_changed() {
-	if (is_inside_tree() && Engine::get_singleton()->is_editor_hint())
+	if (is_inside_tree() && Engine::get_singleton()->is_editor_hint()) {
 		update_gizmo();
+	}
 	if (is_inside_tree()) {
 		emit_signal("curve_changed");
 	}
@@ -89,12 +90,14 @@ Path::Path() {
 //////////////
 
 void PathFollow::_update_transform(bool p_update_xyz_rot) {
-	if (!path)
+	if (!path) {
 		return;
+	}
 
 	Ref<Curve3D> c = path->get_curve();
-	if (!c.is_valid())
+	if (!c.is_valid()) {
 		return;
+	}
 
 	float bl = c->get_baked_length();
 	if (bl == 0.0) {
@@ -117,10 +120,11 @@ void PathFollow::_update_transform(bool p_update_xyz_rot) {
 	if (rotation_mode == ROTATION_ORIENTED) {
 		Vector3 forward = c->interpolate_baked(o_next, cubic) - pos;
 
-		if (forward.length_squared() < CMP_EPSILON2)
+		if (forward.length_squared() < CMP_EPSILON2) {
 			forward = Vector3(0, 0, 1);
-		else
+		} else {
 			forward.normalize();
+		}
 
 		Vector3 up = c->interpolate_baked_up_vector(offset, true);
 
@@ -128,10 +132,11 @@ void PathFollow::_update_transform(bool p_update_xyz_rot) {
 			Vector3 up1 = c->interpolate_baked_up_vector(o_next, true);
 			Vector3 axis = up.cross(up1);
 
-			if (axis.length_squared() < CMP_EPSILON2)
+			if (axis.length_squared() < CMP_EPSILON2) {
 				axis = forward;
-			else
+			} else {
 				axis.normalize();
+			}
 
 			up.rotate(axis, up.angle_to(up1) * 0.5f);
 		}
@@ -233,16 +238,18 @@ bool PathFollow::get_cubic_interpolation() const {
 void PathFollow::_validate_property(PropertyInfo &property) const {
 	if (property.name == "offset") {
 		float max = 10000;
-		if (path && path->get_curve().is_valid())
+		if (path && path->get_curve().is_valid()) {
 			max = path->get_curve()->get_baked_length();
+		}
 
 		property.hint_string = "0," + rtos(max) + ",0.01,or_lesser,or_greater";
 	}
 }
 
 String PathFollow::get_configuration_warning() const {
-	if (!is_visible_in_tree() || !is_inside_tree())
+	if (!is_visible_in_tree() || !is_inside_tree()) {
 		return String();
+	}
 
 	String warning = Spatial::get_configuration_warning();
 	if (!Object::cast_to<Path>(get_parent())) {
@@ -326,8 +333,9 @@ void PathFollow::set_offset(float p_offset) {
 
 void PathFollow::set_h_offset(float p_h_offset) {
 	h_offset = p_h_offset;
-	if (path)
+	if (path) {
 		_update_transform();
+	}
 }
 
 float PathFollow::get_h_offset() const {
@@ -336,8 +344,9 @@ float PathFollow::get_h_offset() const {
 
 void PathFollow::set_v_offset(float p_v_offset) {
 	v_offset = p_v_offset;
-	if (path)
+	if (path) {
 		_update_transform();
+	}
 }
 
 float PathFollow::get_v_offset() const {
@@ -349,15 +358,17 @@ float PathFollow::get_offset() const {
 }
 
 void PathFollow::set_unit_offset(float p_unit_offset) {
-	if (path && path->get_curve().is_valid() && path->get_curve()->get_baked_length())
+	if (path && path->get_curve().is_valid() && path->get_curve()->get_baked_length()) {
 		set_offset(p_unit_offset * path->get_curve()->get_baked_length());
+	}
 }
 
 float PathFollow::get_unit_offset() const {
-	if (path && path->get_curve().is_valid() && path->get_curve()->get_baked_length())
+	if (path && path->get_curve().is_valid() && path->get_curve()->get_baked_length()) {
 		return get_offset() / path->get_curve()->get_baked_length();
-	else
+	} else {
 		return 0;
+	}
 }
 
 void PathFollow::set_rotation_mode(RotationMode p_rotation_mode) {

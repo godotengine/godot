@@ -880,8 +880,9 @@ public:
 		Rect2 global_rect_cache;
 
 		const Rect2 &get_rect() const {
-			if (custom_rect || (!rect_dirty && !update_when_visible))
+			if (custom_rect || (!rect_dirty && !update_when_visible)) {
 				return rect;
+			}
 
 			//must update rect
 			int s = commands.size();
@@ -970,8 +971,9 @@ public:
 									for (int k = 0; k < 4; k++) {
 										int idx = polygon->bones[j * 4 + k];
 										float w = polygon->weights[j * 4 + k];
-										if (w == 0)
+										if (w == 0) {
 											continue;
+										}
 
 										if (bptr[idx].size.x < 0) {
 											//first
@@ -1047,8 +1049,9 @@ public:
 				if (first) {
 					rect = r;
 					first = false;
-				} else
+				} else {
 					rect = rect.merge(r);
+				}
 			}
 
 			rect_dirty = false;
@@ -1056,8 +1059,9 @@ public:
 		}
 
 		void clear() {
-			for (int i = 0; i < commands.size(); i++)
+			for (int i = 0; i < commands.size(); i++) {
 				memdelete(commands[i]);
+			}
 			commands.clear();
 			clip = false;
 			rect_dirty = true;
@@ -1084,8 +1088,9 @@ public:
 		}
 		virtual ~Item() {
 			clear();
-			if (copy_back_buffer)
+			if (copy_back_buffer) {
 				memdelete(copy_back_buffer);
+			}
 		}
 	};
 

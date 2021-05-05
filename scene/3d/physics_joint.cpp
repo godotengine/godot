@@ -35,13 +35,15 @@
 void Joint::_disconnect_signals() {
 	Node *node_a = get_node_or_null(a);
 	PhysicsBody *body_a = Object::cast_to<PhysicsBody>(node_a);
-	if (body_a)
+	if (body_a) {
 		body_a->disconnect(SceneStringNames::get_singleton()->tree_exiting, this, SceneStringNames::get_singleton()->_body_exit_tree);
+	}
 
 	Node *node_b = get_node_or_null(b);
 	PhysicsBody *body_b = Object::cast_to<PhysicsBody>(node_b);
-	if (body_b)
+	if (body_b) {
 		body_b->disconnect(SceneStringNames::get_singleton()->tree_exiting, this, SceneStringNames::get_singleton()->_body_exit_tree);
+	}
 }
 
 void Joint::_body_exit_tree() {
@@ -106,10 +108,11 @@ void Joint::_update_joint(bool p_only_free) {
 	warning = String();
 	update_configuration_warning();
 
-	if (body_a)
+	if (body_a) {
 		joint = _configure_joint(body_a, body_b);
-	else if (body_b)
+	} else if (body_b) {
 		joint = _configure_joint(body_b, nullptr);
+	}
 
 	ERR_FAIL_COND_MSG(!joint.is_valid(), "Failed to configure the joint.");
 
@@ -129,11 +132,13 @@ void Joint::_update_joint(bool p_only_free) {
 }
 
 void Joint::set_node_a(const NodePath &p_node_a) {
-	if (a == p_node_a)
+	if (a == p_node_a) {
 		return;
+	}
 
-	if (joint.is_valid())
+	if (joint.is_valid()) {
 		_disconnect_signals();
+	}
 
 	a = p_node_a;
 	_update_joint();
@@ -144,11 +149,13 @@ NodePath Joint::get_node_a() const {
 }
 
 void Joint::set_node_b(const NodePath &p_node_b) {
-	if (b == p_node_b)
+	if (b == p_node_b) {
 		return;
+	}
 
-	if (joint.is_valid())
+	if (joint.is_valid()) {
 		_disconnect_signals();
+	}
 
 	b = p_node_b;
 	_update_joint();
@@ -160,8 +167,9 @@ NodePath Joint::get_node_b() const {
 
 void Joint::set_solver_priority(int p_priority) {
 	solver_priority = p_priority;
-	if (joint.is_valid())
+	if (joint.is_valid()) {
 		PhysicsServer::get_singleton()->joint_set_solver_priority(joint, solver_priority);
+	}
 }
 
 int Joint::get_solver_priority() const {
@@ -183,8 +191,9 @@ void Joint::_notification(int p_what) {
 }
 
 void Joint::set_exclude_nodes_from_collision(bool p_enable) {
-	if (exclude_from_collision == p_enable)
+	if (exclude_from_collision == p_enable) {
 		return;
+	}
 	exclude_from_collision = p_enable;
 	_update_joint();
 }
@@ -252,8 +261,9 @@ void PinJoint::_bind_methods() {
 void PinJoint::set_param(Param p_param, float p_value) {
 	ERR_FAIL_INDEX(p_param, 3);
 	params[p_param] = p_value;
-	if (get_joint().is_valid())
+	if (get_joint().is_valid()) {
 		PhysicsServer::get_singleton()->pin_joint_set_param(get_joint(), PhysicsServer::PinJointParam(p_param), p_value);
+	}
 }
 float PinJoint::get_param(Param p_param) const {
 	ERR_FAIL_INDEX_V(p_param, 3, 0);
@@ -265,10 +275,11 @@ RID PinJoint::_configure_joint(PhysicsBody *body_a, PhysicsBody *body_b) {
 	Vector3 local_a = body_a->get_global_transform().affine_inverse().xform(pinpos);
 	Vector3 local_b;
 
-	if (body_b)
+	if (body_b) {
 		local_b = body_b->get_global_transform().affine_inverse().xform(pinpos);
-	else
+	} else {
 		local_b = pinpos;
+	}
 
 	RID j = PhysicsServer::get_singleton()->joint_create_pin(body_a->get_rid(), local_a, body_b ? body_b->get_rid() : RID(), local_b);
 	for (int i = 0; i < 3; i++) {
@@ -347,8 +358,9 @@ void HingeJoint::_bind_methods() {
 void HingeJoint::set_param(Param p_param, float p_value) {
 	ERR_FAIL_INDEX(p_param, PARAM_MAX);
 	params[p_param] = p_value;
-	if (get_joint().is_valid())
+	if (get_joint().is_valid()) {
 		PhysicsServer::get_singleton()->hinge_joint_set_param(get_joint(), PhysicsServer::HingeJointParam(p_param), p_value);
+	}
 
 	update_gizmo();
 }
@@ -360,8 +372,9 @@ float HingeJoint::get_param(Param p_param) const {
 void HingeJoint::set_flag(Flag p_flag, bool p_value) {
 	ERR_FAIL_INDEX(p_flag, FLAG_MAX);
 	flags[p_flag] = p_value;
-	if (get_joint().is_valid())
+	if (get_joint().is_valid()) {
 		PhysicsServer::get_singleton()->hinge_joint_set_flag(get_joint(), PhysicsServer::HingeJointFlag(p_flag), p_value);
+	}
 
 	update_gizmo();
 }
@@ -494,8 +507,9 @@ void SliderJoint::_bind_methods() {
 void SliderJoint::set_param(Param p_param, float p_value) {
 	ERR_FAIL_INDEX(p_param, PARAM_MAX);
 	params[p_param] = p_value;
-	if (get_joint().is_valid())
+	if (get_joint().is_valid()) {
 		PhysicsServer::get_singleton()->slider_joint_set_param(get_joint(), PhysicsServer::SliderJointParam(p_param), p_value);
+	}
 	update_gizmo();
 }
 float SliderJoint::get_param(Param p_param) const {
@@ -598,8 +612,9 @@ void ConeTwistJoint::_bind_methods() {
 void ConeTwistJoint::set_param(Param p_param, float p_value) {
 	ERR_FAIL_INDEX(p_param, PARAM_MAX);
 	params[p_param] = p_value;
-	if (get_joint().is_valid())
+	if (get_joint().is_valid()) {
 		PhysicsServer::get_singleton()->cone_twist_joint_set_param(get_joint(), PhysicsServer::ConeTwistJointParam(p_param), p_value);
+	}
 
 	update_gizmo();
 }
@@ -853,8 +868,9 @@ void Generic6DOFJoint::_bind_methods() {
 void Generic6DOFJoint::set_param_x(Param p_param, float p_value) {
 	ERR_FAIL_INDEX(p_param, PARAM_MAX);
 	params_x[p_param] = p_value;
-	if (get_joint().is_valid())
+	if (get_joint().is_valid()) {
 		PhysicsServer::get_singleton()->generic_6dof_joint_set_param(get_joint(), Vector3::AXIS_X, PhysicsServer::G6DOFJointAxisParam(p_param), p_value);
+	}
 
 	update_gizmo();
 }
@@ -866,8 +882,9 @@ float Generic6DOFJoint::get_param_x(Param p_param) const {
 void Generic6DOFJoint::set_param_y(Param p_param, float p_value) {
 	ERR_FAIL_INDEX(p_param, PARAM_MAX);
 	params_y[p_param] = p_value;
-	if (get_joint().is_valid())
+	if (get_joint().is_valid()) {
 		PhysicsServer::get_singleton()->generic_6dof_joint_set_param(get_joint(), Vector3::AXIS_Y, PhysicsServer::G6DOFJointAxisParam(p_param), p_value);
+	}
 	update_gizmo();
 }
 float Generic6DOFJoint::get_param_y(Param p_param) const {
@@ -878,8 +895,9 @@ float Generic6DOFJoint::get_param_y(Param p_param) const {
 void Generic6DOFJoint::set_param_z(Param p_param, float p_value) {
 	ERR_FAIL_INDEX(p_param, PARAM_MAX);
 	params_z[p_param] = p_value;
-	if (get_joint().is_valid())
+	if (get_joint().is_valid()) {
 		PhysicsServer::get_singleton()->generic_6dof_joint_set_param(get_joint(), Vector3::AXIS_Z, PhysicsServer::G6DOFJointAxisParam(p_param), p_value);
+	}
 	update_gizmo();
 }
 float Generic6DOFJoint::get_param_z(Param p_param) const {
@@ -890,8 +908,9 @@ float Generic6DOFJoint::get_param_z(Param p_param) const {
 void Generic6DOFJoint::set_flag_x(Flag p_flag, bool p_enabled) {
 	ERR_FAIL_INDEX(p_flag, FLAG_MAX);
 	flags_x[p_flag] = p_enabled;
-	if (get_joint().is_valid())
+	if (get_joint().is_valid()) {
 		PhysicsServer::get_singleton()->generic_6dof_joint_set_flag(get_joint(), Vector3::AXIS_X, PhysicsServer::G6DOFJointAxisFlag(p_flag), p_enabled);
+	}
 	update_gizmo();
 }
 bool Generic6DOFJoint::get_flag_x(Flag p_flag) const {
@@ -902,8 +921,9 @@ bool Generic6DOFJoint::get_flag_x(Flag p_flag) const {
 void Generic6DOFJoint::set_flag_y(Flag p_flag, bool p_enabled) {
 	ERR_FAIL_INDEX(p_flag, FLAG_MAX);
 	flags_y[p_flag] = p_enabled;
-	if (get_joint().is_valid())
+	if (get_joint().is_valid()) {
 		PhysicsServer::get_singleton()->generic_6dof_joint_set_flag(get_joint(), Vector3::AXIS_Y, PhysicsServer::G6DOFJointAxisFlag(p_flag), p_enabled);
+	}
 	update_gizmo();
 }
 bool Generic6DOFJoint::get_flag_y(Flag p_flag) const {
@@ -914,8 +934,9 @@ bool Generic6DOFJoint::get_flag_y(Flag p_flag) const {
 void Generic6DOFJoint::set_flag_z(Flag p_flag, bool p_enabled) {
 	ERR_FAIL_INDEX(p_flag, FLAG_MAX);
 	flags_z[p_flag] = p_enabled;
-	if (get_joint().is_valid())
+	if (get_joint().is_valid()) {
 		PhysicsServer::get_singleton()->generic_6dof_joint_set_flag(get_joint(), Vector3::AXIS_Z, PhysicsServer::G6DOFJointAxisFlag(p_flag), p_enabled);
+	}
 	update_gizmo();
 }
 bool Generic6DOFJoint::get_flag_z(Flag p_flag) const {

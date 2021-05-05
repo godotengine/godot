@@ -42,8 +42,9 @@
 
 void MeshLibraryEditor::edit(const Ref<MeshLibrary> &p_mesh_library) {
 	mesh_library = p_mesh_library;
-	if (mesh_library.is_valid())
+	if (mesh_library.is_valid()) {
 		menu->get_popup()->set_item_disabled(menu->get_popup()->get_item_index(MENU_OPTION_UPDATE_FROM_SCENE), !mesh_library->has_meta("_editor_source_scene"));
+	}
 }
 
 void MeshLibraryEditor::_menu_confirm() {
@@ -63,8 +64,9 @@ void MeshLibraryEditor::_menu_confirm() {
 }
 
 void MeshLibraryEditor::_import_scene(Node *p_scene, Ref<MeshLibrary> p_library, bool p_merge) {
-	if (!p_merge)
+	if (!p_merge) {
 		p_library->clear();
+	}
 
 	Map<int, MeshInstance *> mesh_instances;
 
@@ -78,14 +80,16 @@ void MeshLibraryEditor::_import_scene(Node *p_scene, Ref<MeshLibrary> p_library,
 					continue;
 				}
 
-			} else
+			} else {
 				continue;
+			}
 		}
 
 		MeshInstance *mi = Object::cast_to<MeshInstance>(child);
 		Ref<Mesh> mesh = mi->get_mesh();
-		if (mesh.is_null())
+		if (mesh.is_null()) {
 			continue;
+		}
 
 		mesh = mesh->duplicate();
 		for (int j = 0; j < mesh->get_surface_count(); ++j) {
@@ -110,16 +114,18 @@ void MeshLibraryEditor::_import_scene(Node *p_scene, Ref<MeshLibrary> p_library,
 
 		for (int j = 0; j < mi->get_child_count(); j++) {
 			Node *child2 = mi->get_child(j);
-			if (!Object::cast_to<StaticBody>(child2))
+			if (!Object::cast_to<StaticBody>(child2)) {
 				continue;
+			}
 
 			StaticBody *sb = Object::cast_to<StaticBody>(child2);
 			List<uint32_t> shapes;
 			sb->get_shape_owners(&shapes);
 
 			for (List<uint32_t>::Element *E = shapes.front(); E; E = E->next()) {
-				if (sb->is_shape_owner_disabled(E->get()))
+				if (sb->is_shape_owner_disabled(E->get())) {
 					continue;
+				}
 
 				//Transform shape_transform = sb->shape_owner_get_transform(E->get());
 
@@ -127,8 +133,9 @@ void MeshLibraryEditor::_import_scene(Node *p_scene, Ref<MeshLibrary> p_library,
 
 				for (int k = 0; k < sb->shape_owner_get_shape_count(E->get()); k++) {
 					Ref<Shape> collision = sb->shape_owner_get_shape(E->get(), k);
-					if (!collision.is_valid())
+					if (!collision.is_valid()) {
 						continue;
+					}
 					MeshLibrary::ShapeData shape_data;
 					shape_data.shape = collision;
 					shape_data.local_transform = sb->get_transform() * sb->shape_owner_get_transform(E->get());
@@ -143,13 +150,15 @@ void MeshLibraryEditor::_import_scene(Node *p_scene, Ref<MeshLibrary> p_library,
 		Transform navmesh_transform;
 		for (int j = 0; j < mi->get_child_count(); j++) {
 			Node *child2 = mi->get_child(j);
-			if (!Object::cast_to<NavigationMeshInstance>(child2))
+			if (!Object::cast_to<NavigationMeshInstance>(child2)) {
 				continue;
+			}
 			NavigationMeshInstance *sb = Object::cast_to<NavigationMeshInstance>(child2);
 			navmesh = sb->get_navigation_mesh();
 			navmesh_transform = sb->get_transform();
-			if (!navmesh.is_null())
+			if (!navmesh.is_null()) {
 				break;
+			}
 		}
 		if (!navmesh.is_null()) {
 			p_library->set_item_navmesh(id, navmesh);
@@ -268,8 +277,9 @@ void MeshLibraryEditorPlugin::edit(Object *p_node) {
 	if (Object::cast_to<MeshLibrary>(p_node)) {
 		mesh_library_editor->edit(Object::cast_to<MeshLibrary>(p_node));
 		mesh_library_editor->show();
-	} else
+	} else {
 		mesh_library_editor->hide();
+	}
 }
 
 bool MeshLibraryEditorPlugin::handles(Object *p_node) const {

@@ -81,8 +81,9 @@ void ShapeBullet::add_owner(ShapeOwnerBullet *p_owner) {
 
 void ShapeBullet::remove_owner(ShapeOwnerBullet *p_owner, bool p_permanentlyFromThisBody) {
 	Map<ShapeOwnerBullet *, int>::Element *E = owners.find(p_owner);
-	if (!E)
+	if (!E) {
 		return;
+	}
 	E->get()--;
 	if (p_permanentlyFromThisBody || 0 >= E->get()) {
 		owners.erase(E);
@@ -151,8 +152,9 @@ btHeightfieldTerrainShape *ShapeBullet::create_shape_height_field(PoolVector<rea
 	btHeightfieldTerrainShape *heightfield = bulletnew(btHeightfieldTerrainShape(p_width, p_depth, heightsPtr, ignoredHeightScale, p_min_height, p_max_height, YAxis, PHY_FLOAT, flipQuadEdges));
 
 	// The shape can be created without params when you do PhysicsServer.shape_create(PhysicsServer.SHAPE_HEIGHTMAP)
-	if (heightsPtr)
+	if (heightsPtr) {
 		heightfield->buildAccelerator(16);
+	}
 
 	return heightfield;
 }
@@ -349,9 +351,10 @@ void ConvexPolygonShapeBullet::setup(const Vector<Vector3> &p_vertices) {
 }
 
 btCollisionShape *ConvexPolygonShapeBullet::create_bt_shape(const btVector3 &p_implicit_scale, real_t p_extra_edge) {
-	if (!vertices.size())
+	if (!vertices.size()) {
 		// This is necessary since 0 vertices
 		return prepare(ShapeBullet::create_shape_empty());
+	}
 	btCollisionShape *cs(ShapeBullet::create_shape_convex(vertices));
 	cs->setLocalScaling(p_implicit_scale);
 	prepare(cs);
@@ -432,9 +435,10 @@ void ConcavePolygonShapeBullet::setup(PoolVector<Vector3> p_faces) {
 
 btCollisionShape *ConcavePolygonShapeBullet::create_bt_shape(const btVector3 &p_implicit_scale, real_t p_extra_edge) {
 	btCollisionShape *cs = ShapeBullet::create_shape_concave(meshShape);
-	if (!cs)
+	if (!cs) {
 		// This is necessary since if 0 faces the creation of concave return NULL
 		cs = ShapeBullet::create_shape_empty();
+	}
 	cs->setLocalScaling(p_implicit_scale);
 	prepare(cs);
 	cs->setMargin(0);
@@ -457,10 +461,12 @@ void HeightMapShapeBullet::set_data(const Variant &p_data) {
 	real_t l_max_height = 0.0;
 
 	// If specified, min and max height will be used as precomputed values
-	if (d.has("min_height"))
+	if (d.has("min_height")) {
 		l_min_height = d["min_height"];
-	if (d.has("max_height"))
+	}
+	if (d.has("max_height")) {
 		l_max_height = d["max_height"];
+	}
 
 	ERR_FAIL_COND(l_min_height > l_max_height);
 
