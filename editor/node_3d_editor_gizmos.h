@@ -53,8 +53,8 @@ public:
 	Light3DGizmoPlugin();
 };
 
-class AudioStreamPlayer3DGizmoPlugin : public EditorNode3DGizmoPlugin {
-	GDCLASS(AudioStreamPlayer3DGizmoPlugin, EditorNode3DGizmoPlugin);
+class AudioPlayer3DGizmoPlugin : public EditorNode3DGizmoPlugin {
+	GDCLASS(AudioPlayer3DGizmoPlugin, EditorNode3DGizmoPlugin);
 
 public:
 	bool has_gizmo(Node3D *p_spatial) override;
@@ -67,7 +67,7 @@ public:
 	void commit_handle(EditorNode3DGizmo *p_gizmo, int p_idx, const Variant &p_restore, bool p_cancel = false) override;
 	void redraw(EditorNode3DGizmo *p_gizmo) override;
 
-	AudioStreamPlayer3DGizmoPlugin();
+	AudioPlayer3DGizmoPlugin();
 };
 
 class Camera3DGizmoPlugin : public EditorNode3DGizmoPlugin {

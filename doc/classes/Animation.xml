@@ -737,7 +737,7 @@
 			Bezier tracks are used to interpolate a value using custom curves. They can also be used to animate sub-properties of vectors and colors (e.g. alpha value of a [Color]).
 		</constant>
 		<constant name="TYPE_AUDIO" value="4" enum="TrackType">
-			Audio tracks are used to play an audio stream with either type of [AudioStreamPlayer]. The stream can be trimmed and previewed in the animation.
+			Audio tracks are used to play an audio stream with either type of [AudioPlayer]. The stream can be trimmed and previewed in the animation.
 		</constant>
 		<constant name="TYPE_ANIMATION" value="5" enum="TrackType">
 			Animation tracks play animations in other [AnimationPlayer] nodes.

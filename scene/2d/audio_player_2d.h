@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  audio_stream_player_2d.h                                             */
+/*  audio_player_2d.h                                                    */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,16 +28,16 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef AUDIO_STREAM_PLAYER_2D_H
-#define AUDIO_STREAM_PLAYER_2D_H
+#ifndef AUDIO_PLAYER_2D_H
+#define AUDIO_PLAYER_2D_H
 
 #include "core/templates/safe_refcount.h"
 #include "scene/2d/node_2d.h"
 #include "servers/audio/audio_stream.h"
 #include "servers/audio_server.h"
 
-class AudioStreamPlayer2D : public Node2D {
-	GDCLASS(AudioStreamPlayer2D, Node2D);
+class AudioPlayer2D : public Node2D {
+	GDCLASS(AudioPlayer2D, Node2D);
 
 private:
 	enum {
@@ -77,7 +77,7 @@ private:
 	StringName bus;
 
 	void _mix_audio();
-	static void _mix_audios(void *self) { reinterpret_cast<AudioStreamPlayer2D *>(self)->_mix_audio(); }
+	static void _mix_audios(void *self) { reinterpret_cast<AudioPlayer2D *>(self)->_mix_audio(); }
 
 	void _set_playing(bool p_enable);
 	bool _is_active() const;
@@ -130,8 +130,8 @@ public:
 
 	Ref<AudioStreamPlayback> get_stream_playback();
 
-	AudioStreamPlayer2D();
-	~AudioStreamPlayer2D();
+	AudioPlayer2D();
+	~AudioPlayer2D();
 };
 
-#endif
+#endif // AUDIO_PLAYER_2D_H

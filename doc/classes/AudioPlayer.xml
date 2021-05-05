@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="AudioStreamPlayer" inherits="Node" version="4.0">
+<class name="AudioPlayer" inherits="Node" version="4.0">
 	<brief_description>
 		Plays back audio non-positionally.
 	</brief_description>
@@ -26,7 +26,7 @@
 			<return type="AudioStreamPlayback">
 			</return>
 			<description>
-				Returns the [AudioStreamPlayback] object associated with this [AudioStreamPlayer].
+				Returns the [AudioStreamPlayback] object associated with this [AudioPlayer].
 			</description>
 		</method>
 		<method name="play">
@@ -62,7 +62,7 @@
 		<member name="bus" type="StringName" setter="set_bus" getter="get_bus" default="@&quot;Master&quot;">
 			Bus on which this audio is playing.
 		</member>
-		<member name="mix_target" type="int" setter="set_mix_target" getter="get_mix_target" enum="AudioStreamPlayer.MixTarget" default="0">
+		<member name="mix_target" type="int" setter="set_mix_target" getter="get_mix_target" enum="AudioPlayer.MixTarget" default="0">
 			If the audio configuration has more than two speakers, this sets the target channels. See [enum MixTarget] constants.
 		</member>
 		<member name="pitch_scale" type="float" setter="set_pitch_scale" getter="get_pitch_scale" default="1.0">
