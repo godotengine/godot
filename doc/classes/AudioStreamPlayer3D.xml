@@ -1,11 +1,13 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="AudioStreamPlayer3D" inherits="Node3D" version="4.0">
 	<brief_description>
-		Plays 3D sound in 3D space.
+		Plays positional sound in 3D space.
 	</brief_description>
 	<description>
 		Plays a sound effect with directed sound effects, dampens with distance if needed, generates effect of hearable position in space. For greater realism, a low-pass filter is automatically applied to distant sounds. This can be disabled by setting [member attenuation_filter_cutoff_hz] to [code]20500[/code].
 		By default, audio is heard from the camera position. This can be changed by adding a [Listener3D] node to the scene and enabling it by calling [method Listener3D.make_current] on it.
+		See also [AudioStreamPlayer] to play a sound non-positionally.
+		[b]Note:[/b] Hiding an [AudioStreamPlayer3D] node does not disable its audio output. To temporarily disable an [AudioStreamPlayer3D]'s audio output, set [member unit_db] to a very low value like [code]-100[/code] (which isn't audible to human hearing).
 	</description>
 	<tutorials>
 		<link title="Audio streams">https://docs.godotengine.org/en/latest/tutorials/audio/audio_streams.html</link>

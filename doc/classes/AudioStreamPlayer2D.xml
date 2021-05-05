@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="AudioStreamPlayer2D" inherits="Node2D" version="4.0">
 	<brief_description>
-		Plays audio in 2D.
+		Plays positional sound in 2D space.
 	</brief_description>
 	<description>
 		Plays audio that dampens with distance from screen center.
+		See also [AudioStreamPlayer] to play a sound non-positionally.
+		[b]Note:[/b] Hiding an [AudioStreamPlayer2D] node does not disable its audio output. To temporarily disable an [AudioStreamPlayer2D]'s audio output, set [member volume_db] to a very low value like [code]-100[/code] (which isn't audible to human hearing).
 	</description>
 	<tutorials>
 		<link title="Audio streams">https://docs.godotengine.org/en/latest/tutorials/audio/audio_streams.html</link>

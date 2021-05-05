@@ -5,6 +5,7 @@
 	</brief_description>
 	<description>
 		Plays an audio stream non-positionally.
+		To play audio positionally, use [AudioStreamPlayer2D] or [AudioStreamPlayer3D] instead of [AudioStreamPlayer].
 	</description>
 	<tutorials>
 		<link title="Audio streams">https://docs.godotengine.org/en/latest/tutorials/audio/audio_streams.html</link>
