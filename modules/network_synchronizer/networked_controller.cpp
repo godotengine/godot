@@ -637,7 +637,7 @@ void ServerController::receive_inputs(Vector<uint8_t> p_data) {
 
 	const uint32_t now = OS::get_singleton()->get_ticks_msec();
 	// If negative the timer was disabled, so just assume 0.
-	network_watcher.push(MAX(0, now - input_arrival_time));
+	network_watcher.push(now > input_arrival_time ? now - input_arrival_time : 0);
 	input_arrival_time = now;
 
 	const int data_len = p_data.size();
@@ -1437,7 +1437,7 @@ void DollController::receive_batch(Vector<uint8_t> p_data) {
 	// always the same time to arrive.
 	const uint32_t now = OS::get_singleton()->get_ticks_msec();
 	// If negative the timer was disabled, so just assume 0.
-	network_watcher.push(MAX(0, now - batch_receiver_timer));
+	network_watcher.push(now > batch_receiver_timer ? now - batch_receiver_timer : 0);
 	batch_receiver_timer = now;
 
 	const uint32_t avg_receive_time = network_watcher.average();

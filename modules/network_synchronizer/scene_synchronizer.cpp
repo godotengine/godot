@@ -1518,12 +1518,12 @@ const NetUtility::NodeData *SceneSynchronizer::find_node_data(const Node *p_node
 }
 
 NetUtility::NodeData *SceneSynchronizer::get_node_data(NetNodeId p_id) {
-	ERR_FAIL_INDEX_V(p_id, organized_node_data.size(), nullptr);
+	ERR_FAIL_UNSIGNED_INDEX_V(p_id, organized_node_data.size(), nullptr);
 	return organized_node_data[p_id];
 }
 
 const NetUtility::NodeData *SceneSynchronizer::get_node_data(NetNodeId p_id) const {
-	ERR_FAIL_INDEX_V(p_id, organized_node_data.size(), nullptr);
+	ERR_FAIL_UNSIGNED_INDEX_V(p_id, organized_node_data.size(), nullptr);
 	return organized_node_data[p_id];
 }
 
