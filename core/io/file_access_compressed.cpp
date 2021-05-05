@@ -34,11 +34,12 @@
 
 void FileAccessCompressed::configure(const String &p_magic, Compression::Mode p_mode, int p_block_size) {
 	magic = p_magic.ascii().get_data();
-	if (magic.length() > 4)
+	if (magic.length() > 4) {
 		magic = magic.substr(0, 4);
-	else {
-		while (magic.length() < 4)
+	} else {
+		while (magic.length() < 4) {
 			magic += " ";
+		}
 	}
 
 	cmode = p_mode;
@@ -97,8 +98,9 @@ Error FileAccessCompressed::open_after_magic(FileAccess *p_base) {
 Error FileAccessCompressed::_open(const String &p_path, int p_mode_flags) {
 	ERR_FAIL_COND_V(p_mode_flags == READ_WRITE, ERR_UNAVAILABLE);
 
-	if (f)
+	if (f) {
 		close();
+	}
 
 	Error err;
 	f = FileAccess::open(p_path, p_mode_flags, &err);
@@ -133,8 +135,9 @@ Error FileAccessCompressed::_open(const String &p_path, int p_mode_flags) {
 	return OK;
 }
 void FileAccessCompressed::close() {
-	if (!f)
+	if (!f) {
 		return;
+	}
 
 	if (writing) {
 		//save block table and all compressed blocks
@@ -164,8 +167,9 @@ void FileAccessCompressed::close() {
 		}
 
 		f->seek(16); //ok write block sizes
-		for (int i = 0; i < bc; i++)
+		for (int i = 0; i < bc; i++) {
 			f->store_32(block_sizes[i]);
+		}
 		f->seek_end();
 		f->store_buffer((const uint8_t *)mgc.get_data(), mgc.length()); //magic at the end too
 
@@ -304,8 +308,9 @@ int FileAccessCompressed::get_buffer(uint8_t *p_dst, int p_length) const {
 			} else {
 				read_block--;
 				at_end = true;
-				if (i < p_length - 1)
+				if (i < p_length - 1) {
 					read_eof = true;
+				}
 				return i;
 			}
 		}
@@ -335,22 +340,25 @@ void FileAccessCompressed::store_8(uint8_t p_dest) {
 
 bool FileAccessCompressed::file_exists(const String &p_name) {
 	FileAccess *fa = FileAccess::open(p_name, FileAccess::READ);
-	if (!fa)
+	if (!fa) {
 		return false;
+	}
 	memdelete(fa);
 	return true;
 }
 
 uint64_t FileAccessCompressed::_get_modified_time(const String &p_file) {
-	if (f)
+	if (f) {
 		return f->get_modified_time(p_file);
-	else
+	} else {
 		return 0;
+	}
 }
 
 uint32_t FileAccessCompressed::_get_unix_permissions(const String &p_file) {
-	if (f)
+	if (f) {
 		return f->_get_unix_permissions(p_file);
+	}
 	return 0;
 }
 
@@ -381,6 +389,7 @@ FileAccessCompressed::FileAccessCompressed() :
 }
 
 FileAccessCompressed::~FileAccessCompressed() {
-	if (f)
+	if (f) {
 		close();
+	}
 }

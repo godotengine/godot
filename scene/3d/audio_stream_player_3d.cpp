@@ -212,8 +212,9 @@ void AudioStreamPlayer3D::_mix_audio() {
 			AudioFrame vol_inc = (target_volume - vol_prev) / float(buffer_size);
 			AudioFrame vol = vol_prev;
 
-			if (!AudioServer::get_singleton()->thread_has_channel_mix_buffer(current.bus_index, k))
+			if (!AudioServer::get_singleton()->thread_has_channel_mix_buffer(current.bus_index, k)) {
 				continue; //may have been deleted, will be updated on process
+			}
 
 			AudioFrame *target = AudioServer::get_singleton()->thread_get_channel_mix_buffer(current.bus_index, k);
 			current.filter.set_mode(AudioFilterSW::HIGHSHELF);
@@ -257,8 +258,9 @@ void AudioStreamPlayer3D::_mix_audio() {
 			}
 
 			if (current.reverb_bus_index >= 0) {
-				if (!AudioServer::get_singleton()->thread_has_channel_mix_buffer(current.reverb_bus_index, k))
+				if (!AudioServer::get_singleton()->thread_has_channel_mix_buffer(current.reverb_bus_index, k)) {
 					continue; //may have been deleted, will be updated on process
+				}
 
 				AudioFrame *rtarget = AudioServer::get_singleton()->thread_get_channel_mix_buffer(current.reverb_bus_index, k);
 
@@ -387,15 +389,18 @@ void AudioStreamPlayer3D::_notification(int p_what) {
 			Area *area = nullptr;
 
 			for (int i = 0; i < areas; i++) {
-				if (!sr[i].collider)
+				if (!sr[i].collider) {
 					continue;
+				}
 
 				Area *tarea = Object::cast_to<Area>(sr[i].collider);
-				if (!tarea)
+				if (!tarea) {
 					continue;
+				}
 
-				if (!tarea->is_overriding_audio_bus() && !tarea->is_using_reverb_bus())
+				if (!tarea->is_overriding_audio_bus() && !tarea->is_using_reverb_bus()) {
 					continue;
+				}
 
 				area = tarea;
 				break;
@@ -407,8 +412,9 @@ void AudioStreamPlayer3D::_notification(int p_what) {
 			for (List<Camera *>::Element *E = cameras.front(); E; E = E->next()) {
 				Camera *camera = E->get();
 				Viewport *vp = camera->get_viewport();
-				if (!vp->is_audio_listener())
+				if (!vp->is_audio_listener()) {
 					continue;
+				}
 
 				bool listener_is_camera = true;
 				Spatial *listener_node = camera;
@@ -458,8 +464,9 @@ void AudioStreamPlayer3D::_notification(int p_what) {
 					Vector3 listenertopos = global_pos - listener_node->get_global_transform().origin;
 					float c = listenertopos.normalized().dot(get_global_transform().basis.get_axis(2).normalized()); //it's z negative
 					float angle = Math::rad2deg(Math::acos(c));
-					if (angle > emission_angle)
+					if (angle > emission_angle) {
 						db_att -= -emission_angle_filter_attenuation_db;
+					}
 				}
 
 				output.filter_gain = Math::db2linear(db_att);
@@ -586,8 +593,9 @@ void AudioStreamPlayer3D::_notification(int p_what) {
 
 				outputs[new_output_count] = output;
 				new_output_count++;
-				if (new_output_count == MAX_OUTPUTS)
+				if (new_output_count == MAX_OUTPUTS) {
 					break;
+				}
 			}
 
 			output_count.set(new_output_count);
@@ -740,10 +748,11 @@ bool AudioStreamPlayer3D::is_autoplay_enabled() {
 }
 
 void AudioStreamPlayer3D::_set_playing(bool p_enable) {
-	if (p_enable)
+	if (p_enable) {
 		play();
-	else
+	} else {
 		stop();
+	}
 }
 bool AudioStreamPlayer3D::_is_active() const {
 	return active.is_set();
@@ -753,8 +762,9 @@ void AudioStreamPlayer3D::_validate_property(PropertyInfo &property) const {
 	if (property.name == "bus") {
 		String options;
 		for (int i = 0; i < AudioServer::get_singleton()->get_bus_count(); i++) {
-			if (i > 0)
+			if (i > 0) {
 				options += ",";
+			}
 			String name = AudioServer::get_singleton()->get_bus_name(i);
 			options += name;
 		}
@@ -845,8 +855,9 @@ AudioStreamPlayer3D::OutOfRangeMode AudioStreamPlayer3D::get_out_of_range_mode()
 }
 
 void AudioStreamPlayer3D::set_doppler_tracking(DopplerTracking p_tracking) {
-	if (doppler_tracking == p_tracking)
+	if (doppler_tracking == p_tracking) {
 		return;
+	}
 
 	doppler_tracking = p_tracking;
 

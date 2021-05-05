@@ -257,8 +257,9 @@ bool ClassDB::_is_parent_class(const StringName &p_class, const StringName &p_in
 	StringName inherits = p_class;
 
 	while (inherits.operator String().length()) {
-		if (inherits == p_inherits)
+		if (inherits == p_inherits) {
 			return true;
+		}
 		inherits = _get_parent_class(inherits);
 	}
 
@@ -289,8 +290,9 @@ void ClassDB::get_inheriters_from_class(const StringName &p_class, List<StringNa
 	const StringName *k = nullptr;
 
 	while ((k = classes.next(k))) {
-		if (*k != p_class && _is_parent_class(*k, p_class))
+		if (*k != p_class && _is_parent_class(*k, p_class)) {
 			p_classes->push_back(*k);
+		}
 	}
 }
 
@@ -300,8 +302,9 @@ void ClassDB::get_direct_inheriters_from_class(const StringName &p_class, List<S
 	const StringName *k = nullptr;
 
 	while ((k = classes.next(k))) {
-		if (*k != p_class && _get_parent_class(*k) == p_class)
+		if (*k != p_class && _get_parent_class(*k) == p_class) {
 			p_classes->push_back(*k);
+		}
 	}
 }
 
@@ -309,8 +312,9 @@ StringName ClassDB::get_parent_class_nocheck(const StringName &p_class) {
 	OBJTYPE_RLOCK;
 
 	ClassInfo *ti = classes.getptr(p_class);
-	if (!ti)
+	if (!ti) {
 		return StringName();
+	}
 	return ti->inherits;
 }
 
@@ -354,8 +358,9 @@ uint64_t ClassDB::get_api_hash(APIType p_api) {
 	for (List<StringName>::Element *E = names.front(); E; E = E->next()) {
 		ClassInfo *t = classes.getptr(E->get());
 		ERR_FAIL_COND_V_MSG(!t, 0, "Cannot get class '" + String(E->get()) + "'.");
-		if (t->api != p_api || !t->exposed)
+		if (t->api != p_api || !t->exposed) {
 			continue;
+		}
 		hash = hash_djb2_one_64(t->name.hash(), hash);
 		hash = hash_djb2_one_64(t->inherits.hash(), hash);
 
@@ -370,8 +375,9 @@ uint64_t ClassDB::get_api_hash(APIType p_api) {
 
 				ERR_CONTINUE(name.empty());
 
-				if (name[0] == '_')
+				if (name[0] == '_') {
 					continue; // Ignore non-virtual methods that start with an underscore
+				}
 
 				snames.push_back(*k);
 			}
@@ -555,8 +561,9 @@ void ClassDB::get_method_list(StringName p_class, List<MethodInfo> *p_methods, b
 
 	while (type) {
 		if (type->disabled) {
-			if (p_no_inheritance)
+			if (p_no_inheritance) {
 				break;
+			}
 
 			type = type->inherits_ptr;
 			continue;
@@ -574,8 +581,9 @@ void ClassDB::get_method_list(StringName p_class, List<MethodInfo> *p_methods, b
 			minfo.name = E->get();
 			minfo.id = method->get_method_id();
 
-			if (p_exclude_from_properties && type->methods_in_properties.has(minfo.name))
+			if (p_exclude_from_properties && type->methods_in_properties.has(minfo.name)) {
 				continue;
+			}
 
 			for (int i = 0; i < method->get_argument_count(); i++) {
 				//Variant::Type t=method->get_argument_type(i);
@@ -587,8 +595,9 @@ void ClassDB::get_method_list(StringName p_class, List<MethodInfo> *p_methods, b
 			minfo.flags = method->get_hint_flags();
 
 			for (int i = 0; i < method->get_argument_count(); i++) {
-				if (method->has_default_argument(i))
+				if (method->has_default_argument(i)) {
 					minfo.default_arguments.push_back(method->get_default_argument(i));
+				}
 			}
 
 			p_methods->push_back(minfo);
@@ -607,8 +616,9 @@ void ClassDB::get_method_list(StringName p_class, List<MethodInfo> *p_methods, b
 
 #endif
 
-		if (p_no_inheritance)
+		if (p_no_inheritance) {
 			break;
+		}
 
 		type = type->inherits_ptr;
 	}
@@ -621,8 +631,9 @@ MethodBind *ClassDB::get_method(StringName p_class, StringName p_name) {
 
 	while (type) {
 		MethodBind **method = type->method_map.getptr(p_name);
-		if (method && *method)
+		if (method && *method) {
 			return *method;
+		}
 		type = type->inherits_ptr;
 	}
 	return nullptr;
@@ -670,8 +681,9 @@ void ClassDB::get_integer_constant_list(const StringName &p_class, List<String> 
 
 	while (type) {
 #ifdef DEBUG_METHODS_ENABLED
-		for (List<StringName>::Element *E = type->constant_order.front(); E; E = E->next())
+		for (List<StringName>::Element *E = type->constant_order.front(); E; E = E->next()) {
 			p_constants->push_back(E->get());
+		}
 #else
 		const StringName *K = NULL;
 
@@ -680,8 +692,9 @@ void ClassDB::get_integer_constant_list(const StringName &p_class, List<String> 
 		}
 
 #endif
-		if (p_no_inheritance)
+		if (p_no_inheritance) {
 			break;
+		}
 
 		type = type->inherits_ptr;
 	}
@@ -695,16 +708,18 @@ int ClassDB::get_integer_constant(const StringName &p_class, const StringName &p
 	while (type) {
 		int *constant = type->constant_map.getptr(p_name);
 		if (constant) {
-			if (p_success)
+			if (p_success) {
 				*p_success = true;
+			}
 			return *constant;
 		}
 
 		type = type->inherits_ptr;
 	}
 
-	if (p_success)
+	if (p_success) {
 		*p_success = false;
+	}
 
 	return 0;
 }
@@ -719,12 +734,14 @@ StringName ClassDB::get_integer_constant_enum(const StringName &p_class, const S
 		while ((k = type->enum_map.next(k))) {
 			List<StringName> &constants_list = type->enum_map.get(*k);
 			const List<StringName>::Element *found = constants_list.find(p_name);
-			if (found)
+			if (found) {
 				return *k;
+			}
 		}
 
-		if (p_no_inheritance)
+		if (p_no_inheritance) {
 			break;
+		}
 
 		type = type->inherits_ptr;
 	}
@@ -743,8 +760,9 @@ void ClassDB::get_enum_list(const StringName &p_class, List<StringName> *p_enums
 			p_enums->push_back(*k);
 		}
 
-		if (p_no_inheritance)
+		if (p_no_inheritance) {
 			break;
+		}
 
 		type = type->inherits_ptr;
 	}
@@ -764,8 +782,9 @@ void ClassDB::get_enum_constants(const StringName &p_class, const StringName &p_
 			}
 		}
 
-		if (p_no_inheritance)
+		if (p_no_inheritance) {
 			break;
+		}
 
 		type = type->inherits_ptr;
 	}
@@ -804,8 +823,9 @@ void ClassDB::get_signal_list(StringName p_class, List<MethodInfo> *p_signals, b
 			p_signals->push_back(check->signal_map[*S]);
 		}
 
-		if (p_no_inheritance)
+		if (p_no_inheritance) {
 			return;
+		}
 
 		check = check->inherits_ptr;
 	}
@@ -816,8 +836,9 @@ bool ClassDB::has_signal(StringName p_class, StringName p_signal) {
 	ClassInfo *type = classes.getptr(p_class);
 	ClassInfo *check = type;
 	while (check) {
-		if (check->signal_map.has(p_signal))
+		if (check->signal_map.has(p_signal)) {
 			return true;
+		}
 		check = check->inherits_ptr;
 	}
 
@@ -929,8 +950,9 @@ void ClassDB::get_property_list(StringName p_class, List<PropertyInfo> *p_list, 
 			}
 		}
 
-		if (p_no_inheritance)
+		if (p_no_inheritance) {
 			return;
+		}
 		check = check->inherits_ptr;
 	}
 }
@@ -943,8 +965,9 @@ bool ClassDB::set_property(Object *p_object, const StringName &p_property, const
 		const PropertySetGet *psg = check->property_setget.getptr(p_property);
 		if (psg) {
 			if (!psg->setter) {
-				if (r_valid)
+				if (r_valid) {
 					*r_valid = false;
+				}
 				return true; //return true but do nothing
 			}
 
@@ -969,8 +992,9 @@ bool ClassDB::set_property(Object *p_object, const StringName &p_property, const
 				}
 			}
 
-			if (r_valid)
+			if (r_valid) {
 				*r_valid = ce.error == Variant::CallError::CALL_OK;
+			}
 
 			return true;
 		}
@@ -988,8 +1012,9 @@ bool ClassDB::get_property(Object *p_object, const StringName &p_property, Varia
 	while (check) {
 		const PropertySetGet *psg = check->property_setget.getptr(p_property);
 		if (psg) {
-			if (!psg->getter)
+			if (!psg->getter) {
 				return true; //return true but do nothing
+			}
 
 			if (psg->index >= 0) {
 				Variant index = psg->index;
@@ -1026,16 +1051,18 @@ int ClassDB::get_property_index(const StringName &p_class, const StringName &p_p
 	while (check) {
 		const PropertySetGet *psg = check->property_setget.getptr(p_property);
 		if (psg) {
-			if (r_is_valid)
+			if (r_is_valid) {
 				*r_is_valid = true;
+			}
 
 			return psg->index;
 		}
 
 		check = check->inherits_ptr;
 	}
-	if (r_is_valid)
+	if (r_is_valid) {
 		*r_is_valid = false;
+	}
 
 	return -1;
 }
@@ -1046,16 +1073,18 @@ Variant::Type ClassDB::get_property_type(const StringName &p_class, const String
 	while (check) {
 		const PropertySetGet *psg = check->property_setget.getptr(p_property);
 		if (psg) {
-			if (r_is_valid)
+			if (r_is_valid) {
 				*r_is_valid = true;
+			}
 
 			return psg->type;
 		}
 
 		check = check->inherits_ptr;
 	}
-	if (r_is_valid)
+	if (r_is_valid) {
 		*r_is_valid = false;
+	}
 
 	return Variant::NIL;
 }
@@ -1094,11 +1123,13 @@ bool ClassDB::has_property(const StringName &p_class, const StringName &p_proper
 	ClassInfo *type = classes.getptr(p_class);
 	ClassInfo *check = type;
 	while (check) {
-		if (check->property_setget.has(p_property))
+		if (check->property_setget.has(p_property)) {
 			return true;
+		}
 
-		if (p_no_inheritance)
+		if (p_no_inheritance) {
 			break;
+		}
 		check = check->inherits_ptr;
 	}
 
@@ -1118,10 +1149,12 @@ bool ClassDB::has_method(StringName p_class, StringName p_method, bool p_no_inhe
 	ClassInfo *type = classes.getptr(p_class);
 	ClassInfo *check = type;
 	while (check) {
-		if (check->method_map.has(p_method))
+		if (check->method_map.has(p_method)) {
 			return true;
-		if (p_no_inheritance)
+		}
+		if (p_no_inheritance) {
 			return false;
+		}
 		check = check->inherits_ptr;
 	}
 
@@ -1192,8 +1225,9 @@ void ClassDB::add_virtual_method(const StringName &p_class, const MethodInfo &p_
 
 #ifdef DEBUG_METHODS_ENABLED
 	MethodInfo mi = p_method;
-	if (p_virtual)
+	if (p_virtual) {
 		mi.flags |= METHOD_FLAG_VIRTUAL;
+	}
 	classes[p_class].virtual_methods.push_back(mi);
 
 #endif
@@ -1211,8 +1245,9 @@ void ClassDB::get_virtual_methods(const StringName &p_class, List<MethodInfo> *p
 			p_methods->push_back(E->get());
 		}
 
-		if (p_no_inheritance)
+		if (p_no_inheritance) {
 			return;
+		}
 		check = check->inherits_ptr;
 	}
 
@@ -1258,8 +1293,9 @@ StringName ClassDB::get_category(const StringName &p_node) {
 }
 
 void ClassDB::add_resource_base_extension(const StringName &p_extension, const StringName &p_class) {
-	if (resource_base_extensions.has(p_extension))
+	if (resource_base_extensions.has(p_extension)) {
 		return;
+	}
 
 	resource_base_extensions[p_extension] = p_class;
 }
@@ -1277,8 +1313,9 @@ void ClassDB::get_extensions_for_type(const StringName &p_class, List<String> *p
 
 	while ((K = resource_base_extensions.next(K))) {
 		StringName cmp = resource_base_extensions[*K];
-		if (is_parent_class(p_class, cmp) || is_parent_class(cmp, p_class))
+		if (is_parent_class(p_class, cmp) || is_parent_class(cmp, p_class)) {
 			p_extensions->push_back(*K);
+		}
 	}
 }
 
@@ -1323,19 +1360,22 @@ Variant ClassDB::class_get_default_property_value(const StringName &p_class, con
 	}
 
 	if (!default_values.has(p_class)) {
-		if (r_valid != nullptr)
+		if (r_valid != nullptr) {
 			*r_valid = false;
+		}
 		return Variant();
 	}
 
 	if (!default_values[p_class].has(p_property)) {
-		if (r_valid != nullptr)
+		if (r_valid != nullptr) {
 			*r_valid = false;
+		}
 		return Variant();
 	}
 
-	if (r_valid != nullptr)
+	if (r_valid != nullptr) {
 		*r_valid = true;
+	}
 	return default_values[p_class][p_property];
 }
 

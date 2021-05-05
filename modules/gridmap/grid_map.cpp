@@ -117,8 +117,9 @@ bool GridMap::_get(const StringName &p_name, Variant &r_ret) const {
 		}
 		r_ret = ret;
 
-	} else
+	} else {
 		return false;
+	}
 
 	return true;
 }
@@ -151,10 +152,11 @@ uint32_t GridMap::get_collision_mask() const {
 
 void GridMap::set_collision_mask_bit(int p_bit, bool p_value) {
 	uint32_t mask = get_collision_mask();
-	if (p_value)
+	if (p_value) {
 		mask |= 1 << p_bit;
-	else
+	} else {
 		mask &= ~(1 << p_bit);
+	}
 	set_collision_mask(mask);
 }
 
@@ -164,10 +166,11 @@ bool GridMap::get_collision_mask_bit(int p_bit) const {
 
 void GridMap::set_collision_layer_bit(int p_bit, bool p_value) {
 	uint32_t mask = get_collision_layer();
-	if (p_value)
+	if (p_value) {
 		mask |= 1 << p_bit;
-	else
+	} else {
 		mask &= ~(1 << p_bit);
+	}
 	set_collision_layer(mask);
 }
 
@@ -176,11 +179,13 @@ bool GridMap::get_collision_layer_bit(int p_bit) const {
 }
 
 void GridMap::set_mesh_library(const Ref<MeshLibrary> &p_mesh_library) {
-	if (!mesh_library.is_null())
+	if (!mesh_library.is_null()) {
 		mesh_library->unregister_owner(this);
+	}
 	mesh_library = p_mesh_library;
-	if (!mesh_library.is_null())
+	if (!mesh_library.is_null()) {
 		mesh_library->register_owner(this);
+	}
 
 	_recreate_octant_data();
 	_change_notify("mesh_library");
@@ -328,8 +333,9 @@ int GridMap::get_cell_item(int p_x, int p_y, int p_z) const {
 	key.y = p_y;
 	key.z = p_z;
 
-	if (!cell_map.has(key))
+	if (!cell_map.has(key)) {
 		return INVALID_CELL_ITEM;
+	}
 	return cell_map[key].item;
 }
 
@@ -343,8 +349,9 @@ int GridMap::get_cell_item_orientation(int p_x, int p_y, int p_z) const {
 	key.y = p_y;
 	key.z = p_z;
 
-	if (!cell_map.has(key))
+	if (!cell_map.has(key)) {
 		return -1;
+	}
 	return cell_map[key].rot;
 }
 
@@ -382,8 +389,9 @@ void GridMap::_octant_transform(const OctantKey &p_key) {
 bool GridMap::_octant_update(const OctantKey &p_key) {
 	ERR_FAIL_COND_V(!octant_map.has(p_key), false);
 	Octant &g = *octant_map[p_key];
-	if (!g.dirty)
+	if (!g.dirty) {
 		return false;
+	}
 
 	//erase body shapes
 	PhysicsServer::get_singleton()->body_clear_shapes(g.static_body);
@@ -429,8 +437,9 @@ bool GridMap::_octant_update(const OctantKey &p_key) {
 		ERR_CONTINUE(!cell_map.has(E->get()));
 		const Cell &c = cell_map[E->get()];
 
-		if (!mesh_library.is_valid() || !mesh_library->has_item(c.item))
+		if (!mesh_library.is_valid() || !mesh_library->has_item(c.item)) {
 			continue;
+		}
 
 		Vector3 cellpos = Vector3(E->get().x, E->get().y, E->get().z);
 		Vector3 ofs = _get_offset();
@@ -457,8 +466,9 @@ bool GridMap::_octant_update(const OctantKey &p_key) {
 		// add the item's shape at given xform to octant's static_body
 		for (int i = 0; i < shapes.size(); i++) {
 			// add the item's shape
-			if (!shapes[i].shape.is_valid())
+			if (!shapes[i].shape.is_valid()) {
 				continue;
+			}
 			PhysicsServer::get_singleton()->body_add_shape(g.static_body, shapes[i].shape->get_rid(), xform * shapes[i].local_transform);
 			if (g.collision_debug.is_valid()) {
 				shapes.write[i].shape->add_vertices_to_array(col_debug, xform * shapes[i].local_transform);
@@ -599,10 +609,12 @@ void GridMap::_octant_clean_up(const OctantKey &p_key) {
 	ERR_FAIL_COND(!octant_map.has(p_key));
 	Octant &g = *octant_map[p_key];
 
-	if (g.collision_debug.is_valid())
+	if (g.collision_debug.is_valid()) {
 		VS::get_singleton()->free(g.collision_debug);
-	if (g.collision_debug_instance.is_valid())
+	}
+	if (g.collision_debug_instance.is_valid()) {
 		VS::get_singleton()->free(g.collision_debug_instance);
+	}
 
 	PhysicsServer::get_singleton()->free(g.static_body);
 
@@ -650,8 +662,9 @@ void GridMap::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_TRANSFORM_CHANGED: {
 			Transform new_xform = get_global_transform();
-			if (new_xform == last_transform)
+			if (new_xform == last_transform) {
 				break;
+			}
 			//update run
 			for (Map<OctantKey, Octant *>::Element *E = octant_map.front(); E; E = E->next()) {
 				_octant_transform(E->key());
@@ -686,8 +699,9 @@ void GridMap::_notification(int p_what) {
 }
 
 void GridMap::_update_visibility() {
-	if (!is_inside_tree())
+	if (!is_inside_tree()) {
 		return;
+	}
 
 	_change_notify("visible");
 
@@ -705,8 +719,9 @@ void GridMap::_update_visibility() {
 }
 
 void GridMap::_queue_octants_dirty() {
-	if (awaiting_update)
+	if (awaiting_update) {
 		return;
+	}
 
 	MessageQueue::get_singleton()->push_call(this, "_update_octants_callback");
 	awaiting_update = true;
@@ -724,8 +739,9 @@ void GridMap::_recreate_octant_data() {
 
 void GridMap::_clear_internal() {
 	for (Map<OctantKey, Octant *>::Element *E = octant_map.front(); E; E = E->next()) {
-		if (is_inside_world())
+		if (is_inside_world()) {
 			_octant_exit_world(E->key());
+		}
 
 		_octant_clean_up(E->key());
 		memdelete(E->get());
@@ -745,8 +761,9 @@ void GridMap::resource_changed(const RES &p_res) {
 }
 
 void GridMap::_update_octants_callback() {
-	if (!awaiting_update)
+	if (!awaiting_update) {
 		return;
+	}
 
 	List<OctantKey> to_delete;
 	for (Map<OctantKey, Octant *>::Element *E = octant_map.front(); E; E = E->next()) {
@@ -841,10 +858,12 @@ void GridMap::_bind_methods() {
 }
 
 void GridMap::set_clip(bool p_enabled, bool p_clip_above, int p_floor, Vector3::Axis p_axis) {
-	if (!p_enabled && !clip)
+	if (!p_enabled && !clip) {
 		return;
-	if (clip && p_enabled && clip_floor == p_floor && p_clip_above == clip_above && p_axis == clip_axis)
+	}
+	if (clip && p_enabled && clip_floor == p_floor && p_clip_above == clip_above && p_axis == clip_axis) {
 		return;
+	}
 
 	clip = p_enabled;
 	clip_floor = p_floor;
@@ -882,19 +901,22 @@ Array GridMap::get_used_cells() const {
 }
 
 Array GridMap::get_meshes() {
-	if (mesh_library.is_null())
+	if (mesh_library.is_null()) {
 		return Array();
+	}
 
 	Vector3 ofs = _get_offset();
 	Array meshes;
 
 	for (Map<IndexKey, Cell>::Element *E = cell_map.front(); E; E = E->next()) {
 		int id = E->get().item;
-		if (!mesh_library->has_item(id))
+		if (!mesh_library->has_item(id)) {
 			continue;
+		}
 		Ref<Mesh> mesh = mesh_library->get_item_mesh(id);
-		if (mesh.is_null())
+		if (mesh.is_null()) {
 			continue;
+		}
 
 		IndexKey ik = E->key();
 
@@ -931,8 +953,9 @@ void GridMap::clear_baked_meshes() {
 }
 
 void GridMap::make_baked_meshes(bool p_gen_lightmap_uv, float p_lightmap_uv_texel_size) {
-	if (!mesh_library.is_valid())
+	if (!mesh_library.is_valid()) {
 		return;
+	}
 
 	//generate
 	Map<OctantKey, Map<Ref<Material>, Ref<SurfaceTool>>> surface_map;
@@ -941,12 +964,14 @@ void GridMap::make_baked_meshes(bool p_gen_lightmap_uv, float p_lightmap_uv_texe
 		IndexKey key = E->key();
 
 		int item = E->get().item;
-		if (!mesh_library->has_item(item))
+		if (!mesh_library->has_item(item)) {
 			continue;
+		}
 
 		Ref<Mesh> mesh = mesh_library->get_item_mesh(item);
-		if (!mesh.is_valid())
+		if (!mesh.is_valid()) {
 			continue;
+		}
 
 		Vector3 cellpos = Vector3(key.x, key.y, key.z);
 		Vector3 ofs = _get_offset();
@@ -969,8 +994,9 @@ void GridMap::make_baked_meshes(bool p_gen_lightmap_uv, float p_lightmap_uv_texe
 		Map<Ref<Material>, Ref<SurfaceTool>> &mat_map = surface_map[ok];
 
 		for (int i = 0; i < mesh->get_surface_count(); i++) {
-			if (mesh->surface_get_primitive_type(i) != Mesh::PRIMITIVE_TRIANGLES)
+			if (mesh->surface_get_primitive_type(i) != Mesh::PRIMITIVE_TRIANGLES) {
 				continue;
+			}
 
 			Ref<Material> surf_mat = mesh->surface_get_material(i);
 			if (!mat_map.has(surf_mat)) {
@@ -1060,8 +1086,9 @@ GridMap::GridMap() {
 }
 
 GridMap::~GridMap() {
-	if (!mesh_library.is_null())
+	if (!mesh_library.is_null()) {
 		mesh_library->unregister_owner(this);
+	}
 
 	clear();
 }

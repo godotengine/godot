@@ -124,8 +124,9 @@ void CSGShapeSpatialGizmoPlugin::set_handle(EditorSpatialGizmo *p_gizmo, int p_i
 			d = Math::stepify(d, SpatialEditor::get_singleton()->get_translate_snap());
 		}
 
-		if (d < 0.001)
+		if (d < 0.001) {
 			d = 0.001;
+		}
 
 		s->set_radius(d);
 	}
@@ -142,8 +143,9 @@ void CSGShapeSpatialGizmoPlugin::set_handle(EditorSpatialGizmo *p_gizmo, int p_i
 			d = Math::stepify(d, SpatialEditor::get_singleton()->get_translate_snap());
 		}
 
-		if (d < 0.001)
+		if (d < 0.001) {
 			d = 0.001;
+		}
 
 		switch (p_idx) {
 			case 0:
@@ -170,13 +172,15 @@ void CSGShapeSpatialGizmoPlugin::set_handle(EditorSpatialGizmo *p_gizmo, int p_i
 			d = Math::stepify(d, SpatialEditor::get_singleton()->get_translate_snap());
 		}
 
-		if (d < 0.001)
+		if (d < 0.001) {
 			d = 0.001;
+		}
 
-		if (p_idx == 0)
+		if (p_idx == 0) {
 			s->set_radius(d);
-		else if (p_idx == 1)
+		} else if (p_idx == 1) {
 			s->set_height(d * 2.0);
+		}
 	}
 
 	if (Object::cast_to<CSGTorus>(cs)) {
@@ -191,13 +195,15 @@ void CSGShapeSpatialGizmoPlugin::set_handle(EditorSpatialGizmo *p_gizmo, int p_i
 			d = Math::stepify(d, SpatialEditor::get_singleton()->get_translate_snap());
 		}
 
-		if (d < 0.001)
+		if (d < 0.001) {
 			d = 0.001;
+		}
 
-		if (p_idx == 0)
+		if (p_idx == 0) {
 			s->set_inner_radius(d);
-		else if (p_idx == 1)
+		} else if (p_idx == 1) {
 			s->set_outer_radius(d);
+		}
 	}
 }
 void CSGShapeSpatialGizmoPlugin::commit_handle(EditorSpatialGizmo *p_gizmo, int p_idx, const Variant &p_restore, bool p_cancel) {
@@ -258,10 +264,11 @@ void CSGShapeSpatialGizmoPlugin::commit_handle(EditorSpatialGizmo *p_gizmo, int 
 	if (Object::cast_to<CSGCylinder>(cs)) {
 		CSGCylinder *s = Object::cast_to<CSGCylinder>(cs);
 		if (p_cancel) {
-			if (p_idx == 0)
+			if (p_idx == 0) {
 				s->set_radius(p_restore);
-			else
+			} else {
 				s->set_height(p_restore);
+			}
 			return;
 		}
 
@@ -282,10 +289,11 @@ void CSGShapeSpatialGizmoPlugin::commit_handle(EditorSpatialGizmo *p_gizmo, int 
 	if (Object::cast_to<CSGTorus>(cs)) {
 		CSGTorus *s = Object::cast_to<CSGTorus>(cs);
 		if (p_cancel) {
-			if (p_idx == 0)
+			if (p_idx == 0) {
 				s->set_inner_radius(p_restore);
-			else
+			} else {
 				s->set_outer_radius(p_restore);
+			}
 			return;
 		}
 

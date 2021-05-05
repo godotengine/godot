@@ -474,10 +474,11 @@ public:
 		if (p_step != 0) {
 			float a = Math::stepify(p_target - p_offset, p_step + p_separation) + p_offset;
 			float b = a;
-			if (p_target >= 0)
+			if (p_target >= 0) {
 				b -= p_separation;
-			else
+			} else {
 				b += p_step;
+			}
 			return (Math::abs(p_target - a) < Math::abs(p_target - b)) ? a : b;
 		}
 		return p_target;

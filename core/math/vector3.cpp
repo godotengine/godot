@@ -75,10 +75,12 @@ Vector3 Vector3::cubic_interpolaten(const Vector3 &p_b, const Vector3 &p_pre_a, 
 		real_t bc = p1.distance_to(p2);
 		real_t cd = p2.distance_to(p3);
 
-		if (ab > 0)
+		if (ab > 0) {
 			p0 = p1 + (p0 - p1) * (bc / ab);
-		if (cd > 0)
+		}
+		if (cd > 0) {
 			p3 = p2 + (p3 - p2) * (bc / cd);
+		}
 	}
 
 	real_t t = p_weight;

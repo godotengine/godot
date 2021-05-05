@@ -127,15 +127,17 @@ public:
 
 		int find_item(Item *p_item) {
 			for (int i = 0; i < child_items.size(); i++) {
-				if (child_items[i].item == p_item)
+				if (child_items[i].item == p_item) {
 					return i;
+				}
 			}
 			return -1;
 		}
 		void erase_item(Item *p_item) {
 			int idx = find_item(p_item);
-			if (idx >= 0)
+			if (idx >= 0) {
 				child_items.remove(idx);
+			}
 		}
 
 		Canvas() {

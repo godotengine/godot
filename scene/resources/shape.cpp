@@ -58,8 +58,9 @@ void Shape::set_margin(real_t p_margin) {
 }
 
 Ref<ArrayMesh> Shape::get_debug_mesh() {
-	if (debug_mesh_cache.is_valid())
+	if (debug_mesh_cache.is_valid()) {
 		return debug_mesh_cache;
+	}
 
 	Vector<Vector3> lines = get_debug_mesh_lines();
 

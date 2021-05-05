@@ -134,30 +134,35 @@ void CreateDialog::_sbox_input(const Ref<InputEvent> &p_ie) {
 }
 
 void CreateDialog::add_type(const String &p_type, HashMap<String, TreeItem *> &p_types, TreeItem *p_root, TreeItem **to_select) {
-	if (p_types.has(p_type))
+	if (p_types.has(p_type)) {
 		return;
+	}
 
 	bool cpp_type = ClassDB::class_exists(p_type);
 	EditorData &ed = EditorNode::get_editor_data();
 
-	if (p_type == base_type)
+	if (p_type == base_type) {
 		return;
+	}
 
 	if (cpp_type) {
-		if (!ClassDB::is_parent_class(p_type, base_type))
+		if (!ClassDB::is_parent_class(p_type, base_type)) {
 			return;
+		}
 	} else {
 		if (!search_loaded_scripts.has(p_type)) {
 			search_loaded_scripts[p_type] = ed.script_class_load_script(p_type);
 		}
 
-		if (!ScriptServer::is_global_class(p_type) || !ed.script_class_is_parent(p_type, base_type))
+		if (!ScriptServer::is_global_class(p_type) || !ed.script_class_is_parent(p_type, base_type)) {
 			return;
+		}
 
 		String script_path = ScriptServer::get_global_class_path(p_type);
 		if (script_path.find("res://addons/", 0) != -1) {
-			if (!EditorNode::get_singleton()->is_addon_plugin_enabled(script_path.get_slicec('/', 3)))
+			if (!EditorNode::get_singleton()->is_addon_plugin_enabled(script_path.get_slicec('/', 3))) {
 				return;
+			}
 		}
 	}
 
@@ -170,10 +175,11 @@ void CreateDialog::add_type(const String &p_type, HashMap<String, TreeItem *> &p
 			add_type(inherits, p_types, p_root, to_select);
 		}
 
-		if (p_types.has(inherits))
+		if (p_types.has(inherits)) {
 			parent = p_types[inherits];
-		else if (ScriptServer::is_global_class(inherits))
+		} else if (ScriptServer::is_global_class(inherits)) {
 			return;
+		}
 	}
 
 	bool can_instance = (cpp_type && ClassDB::can_instance(p_type)) || ScriptServer::is_global_class(p_type);
@@ -315,21 +321,25 @@ void CreateDialog::_update_search() {
 		}
 		bool cpp_type = ClassDB::class_exists(type);
 
-		if (base_type == "Node" && type.begins_with("Editor"))
+		if (base_type == "Node" && type.begins_with("Editor")) {
 			continue; // do not show editor nodes
+		}
 
-		if (cpp_type && !ClassDB::can_instance(type))
+		if (cpp_type && !ClassDB::can_instance(type)) {
 			continue; // can't create what can't be instanced
+		}
 
 		if (cpp_type) {
 			bool skip = false;
 
 			for (Set<StringName>::Element *E = type_blacklist.front(); E && !skip; E = E->next()) {
-				if (ClassDB::is_parent_class(type, E->get()))
+				if (ClassDB::is_parent_class(type, E->get())) {
 					skip = true;
+				}
 			}
-			if (skip)
+			if (skip) {
 				continue;
+			}
 		}
 
 		if (search_box->get_text() == "") {
@@ -369,17 +379,20 @@ void CreateDialog::_update_search() {
 			for (int i = 0; i < ct.size(); i++) {
 				bool show = search_box->get_text().is_subsequence_ofi(ct[i].name);
 
-				if (!show)
+				if (!show) {
 					continue;
+				}
 
-				if (!search_options_types.has(type))
+				if (!search_options_types.has(type)) {
 					add_type(type, search_options_types, root, &to_select);
+				}
 
 				TreeItem *ti;
-				if (search_options_types.has(type))
+				if (search_options_types.has(type)) {
 					ti = search_options_types[type];
-				else
+				} else {
 					ti = search_options->get_root();
+				}
 
 				TreeItem *item = search_options->create_item(ti);
 				item->set_metadata(0, type);
@@ -409,16 +422,18 @@ void CreateDialog::_update_search() {
 
 void CreateDialog::_confirmed() {
 	TreeItem *ti = search_options->get_selected();
-	if (!ti)
+	if (!ti) {
 		return;
+	}
 
 	FileAccess *f = FileAccess::open(EditorSettings::get_singleton()->get_project_settings_dir().plus_file("create_recent." + base_type), FileAccess::WRITE);
 
 	if (f) {
 		f->store_line(get_selected_type());
 		TreeItem *t = recent->get_root();
-		if (t)
+		if (t) {
 			t = t->get_children();
+		}
 		int count = 0;
 		while (t) {
 			if (t->get_text(0) != get_selected_type()) {
@@ -466,10 +481,11 @@ void CreateDialog::_notification(int p_what) {
 
 void CreateDialog::set_base_type(const String &p_base) {
 	base_type = p_base;
-	if (is_replace_mode)
+	if (is_replace_mode) {
 		set_title(vformat(TTR("Change %s Type"), p_base));
-	else
+	} else {
 		set_title(vformat(TTR("Create New %s"), p_base));
+	}
 
 	_update_search();
 }
@@ -487,10 +503,11 @@ String CreateDialog::get_preferred_search_result_type() {
 }
 String CreateDialog::get_selected_type() {
 	TreeItem *selected = search_options->get_selected();
-	if (selected)
+	if (selected) {
 		return selected->get_text(0);
-	else
+	} else {
 		return String();
+	}
 }
 
 Variant CreateDialog::instance_selected() {
@@ -500,15 +517,17 @@ Variant CreateDialog::instance_selected() {
 		Variant md = selected->get_metadata(0);
 
 		String custom;
-		if (md.get_type() != Variant::NIL)
+		if (md.get_type() != Variant::NIL) {
 			custom = md;
+		}
 
 		if (custom != String()) {
 			if (ScriptServer::is_global_class(custom)) {
 				Variant obj = EditorNode::get_editor_data().script_class_instance(custom);
 				Node *n = Object::cast_to<Node>(obj);
-				if (n)
+				if (n) {
 					n->set_name(custom);
+				}
 				return obj;
 			}
 			return EditorNode::get_editor_data().instance_custom_type(selected->get_text(0), custom);
@@ -522,16 +541,18 @@ Variant CreateDialog::instance_selected() {
 
 void CreateDialog::_item_selected() {
 	TreeItem *item = search_options->get_selected();
-	if (!item)
+	if (!item) {
 		return;
+	}
 
 	String name = item->get_text(0);
 
 	favorite->set_disabled(false);
 	favorite->set_pressed(favorite_list.find(name) != -1);
 
-	if (!EditorHelp::get_doc_data()->class_list.has(name))
+	if (!EditorHelp::get_doc_data()->class_list.has(name)) {
 		return;
+	}
 
 	help_bit->set_text(EditorHelp::get_doc_data()->class_list[name].brief_description);
 
@@ -540,8 +561,9 @@ void CreateDialog::_item_selected() {
 
 void CreateDialog::_favorite_toggled() {
 	TreeItem *item = search_options->get_selected();
-	if (!item)
+	if (!item) {
 		return;
+	}
 
 	String name = item->get_text(0);
 
@@ -563,8 +585,9 @@ void CreateDialog::_save_favorite_list() {
 		for (int i = 0; i < favorite_list.size(); i++) {
 			String l = favorite_list[i];
 			String name = l.split(" ")[0];
-			if (!(ClassDB::class_exists(name) || ScriptServer::is_global_class(name)))
+			if (!(ClassDB::class_exists(name) || ScriptServer::is_global_class(name))) {
 				continue;
+			}
 			f->store_line(l);
 		}
 		memdelete(f);
@@ -581,8 +604,9 @@ void CreateDialog::_update_favorite_list() {
 	for (int i = 0; i < favorite_list.size(); i++) {
 		String l = favorite_list[i];
 		String name = l.split(" ")[0];
-		if (!((ClassDB::class_exists(name) || ScriptServer::is_global_class(name)) && !_is_class_disabled_by_feature_profile(name)))
+		if (!((ClassDB::class_exists(name) || ScriptServer::is_global_class(name)) && !_is_class_disabled_by_feature_profile(name))) {
 			continue;
+		}
 
 		TreeItem *ti = favorites->create_item(root);
 		ti->set_text(0, l);
@@ -593,8 +617,9 @@ void CreateDialog::_update_favorite_list() {
 
 void CreateDialog::_history_selected() {
 	TreeItem *item = recent->get_selected();
-	if (!item)
+	if (!item) {
 		return;
+	}
 
 	search_box->set_text(item->get_text(0).get_slicec(' ', 0));
 	favorites->deselect_all();
@@ -603,8 +628,9 @@ void CreateDialog::_history_selected() {
 
 void CreateDialog::_favorite_selected() {
 	TreeItem *item = favorites->get_selected();
-	if (!item)
+	if (!item) {
 		return;
+	}
 
 	search_box->set_text(item->get_text(0).get_slicec(' ', 0));
 	recent->deselect_all();
@@ -652,21 +678,24 @@ void CreateDialog::drop_data_fw(const Point2 &p_point, const Variant &p_data, Co
 	Dictionary d = p_data;
 
 	TreeItem *ti = favorites->get_item_at_position(p_point);
-	if (!ti)
+	if (!ti) {
 		return;
+	}
 
 	String drop_at = ti->get_text(0);
 	int ds = favorites->get_drop_section_at_position(p_point);
 
 	int drop_idx = favorite_list.find(drop_at);
-	if (drop_idx < 0)
+	if (drop_idx < 0) {
 		return;
+	}
 
 	String type = d["class"];
 
 	int from_idx = favorite_list.find(type);
-	if (from_idx < 0)
+	if (from_idx < 0) {
 		return;
+	}
 
 	if (drop_idx == from_idx) {
 		ds = -1; //cause it will be gone

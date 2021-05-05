@@ -86,8 +86,9 @@ Vector3 SpatialVelocityTracker::get_tracked_linear_velocity() const {
 			delta = double(diff) / 1000000.0;
 		}
 
-		if (base_time + time_accum + delta > max_time)
+		if (base_time + time_accum + delta > max_time) {
 			break;
+		}
 
 		distance_accum += distance;
 		time_accum += delta;

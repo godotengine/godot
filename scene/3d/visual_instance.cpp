@@ -230,8 +230,9 @@ void GeometryInstance::_notification(int p_what) {
 
 void GeometryInstance::set_flag(Flags p_flag, bool p_value) {
 	ERR_FAIL_INDEX(p_flag, FLAG_MAX);
-	if (flags[p_flag] == p_value)
+	if (flags[p_flag] == p_value) {
 		return;
+	}
 
 	flags[p_flag] = p_value;
 	VS::get_singleton()->instance_geometry_set_flag(get_instance(), (VS::InstanceFlags)p_flag, p_value);

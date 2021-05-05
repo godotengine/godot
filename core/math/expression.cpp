@@ -112,8 +112,9 @@ const char *Expression::func_name[Expression::FUNC_MAX] = {
 
 Expression::BuiltinFunc Expression::find_function(const String &p_string) {
 	for (int i = 0; i < FUNC_MAX; i++) {
-		if (p_string == func_name[i])
+		if (p_string == func_name[i]) {
 			return BuiltinFunc(i);
+		}
 	}
 
 	return FUNC_MAX;
@@ -1050,8 +1051,9 @@ Error Expression::_get_token(Token &r_token) {
 									exp_beg = true;
 
 								} else if ((c == '-' || c == '+') && !exp_sign && !exp_beg) {
-									if (c == '-')
+									if (c == '-') {
 										is_float = true;
+									}
 									exp_sign = true;
 
 								} else {
@@ -1060,8 +1062,9 @@ Error Expression::_get_token(Token &r_token) {
 							} break;
 						}
 
-						if (reading == READING_DONE)
+						if (reading == READING_DONE) {
 							break;
+						}
 						num += String::chr(c);
 						c = GET_CHAR();
 					}
@@ -1070,10 +1073,11 @@ Error Expression::_get_token(Token &r_token) {
 
 					r_token.type = TK_CONSTANT;
 
-					if (is_float)
+					if (is_float) {
 						r_token.value = num.to_double();
-					else
+					} else {
 						r_token.value = num.to_int64();
+					}
 					return OK;
 
 				} else if ((cchar >= 'A' && cchar <= 'Z') || (cchar >= 'a' && cchar <= 'z') || cchar == '_') {
@@ -1210,8 +1214,9 @@ Expression::ENode *Expression::_parse_expression() {
 
 		Token tk;
 		_get_token(tk);
-		if (error_set)
+		if (error_set) {
 			return nullptr;
+		}
 
 		switch (tk.type) {
 			case TK_CURLY_BRACKET_OPEN: {
@@ -1227,8 +1232,9 @@ Expression::ENode *Expression::_parse_expression() {
 					str_ofs = cofs; //revert
 					//parse an expression
 					ENode *subexpr = _parse_expression();
-					if (!subexpr)
+					if (!subexpr) {
 						return nullptr;
+					}
 					dn->dict.push_back(subexpr);
 
 					_get_token(tk);
@@ -1238,8 +1244,9 @@ Expression::ENode *Expression::_parse_expression() {
 					}
 
 					subexpr = _parse_expression();
-					if (!subexpr)
+					if (!subexpr) {
 						return nullptr;
+					}
 
 					dn->dict.push_back(subexpr);
 
@@ -1270,8 +1277,9 @@ Expression::ENode *Expression::_parse_expression() {
 					str_ofs = cofs; //revert
 					//parse an expression
 					ENode *subexpr = _parse_expression();
-					if (!subexpr)
+					if (!subexpr) {
 						return nullptr;
+					}
 					an->array.push_back(subexpr);
 
 					cofs = str_ofs;
@@ -1290,8 +1298,9 @@ Expression::ENode *Expression::_parse_expression() {
 			case TK_PARENTHESIS_OPEN: {
 				//a suexpression
 				ENode *e = _parse_expression();
-				if (error_set)
+				if (error_set) {
 					return nullptr;
+				}
 				_get_token(tk);
 				if (tk.type != TK_PARENTHESIS_CLOSE) {
 					_set_error("Expected ')'");
@@ -1322,8 +1331,9 @@ Expression::ENode *Expression::_parse_expression() {
 						str_ofs = cofs2; //revert
 						//parse an expression
 						ENode *subexpr = _parse_expression();
-						if (!subexpr)
+						if (!subexpr) {
 							return nullptr;
+						}
 
 						func_call->arguments.push_back(subexpr);
 
@@ -1400,8 +1410,9 @@ Expression::ENode *Expression::_parse_expression() {
 					str_ofs = cofs; //revert
 					//parse an expression
 					ENode *subexpr = _parse_expression();
-					if (!subexpr)
+					if (!subexpr) {
 						return nullptr;
+					}
 
 					constructor->arguments.push_back(subexpr);
 
@@ -1440,8 +1451,9 @@ Expression::ENode *Expression::_parse_expression() {
 					str_ofs = cofs; //revert
 					//parse an expression
 					ENode *subexpr = _parse_expression();
-					if (!subexpr)
+					if (!subexpr) {
 						return nullptr;
+					}
 
 					bifunc->arguments.push_back(subexpr);
 
@@ -1490,8 +1502,9 @@ Expression::ENode *Expression::_parse_expression() {
 		while (true) {
 			int cofs2 = str_ofs;
 			_get_token(tk);
-			if (error_set)
+			if (error_set) {
 				return nullptr;
+			}
 
 			bool done = false;
 
@@ -1503,8 +1516,9 @@ Expression::ENode *Expression::_parse_expression() {
 					index->base = expr;
 
 					ENode *what = _parse_expression();
-					if (!what)
+					if (!what) {
 						return nullptr;
+					}
 
 					index->index = what;
 
@@ -1543,8 +1557,9 @@ Expression::ENode *Expression::_parse_expression() {
 							str_ofs = cofs3; //revert
 							//parse an expression
 							ENode *subexpr = _parse_expression();
-							if (!subexpr)
+							if (!subexpr) {
 								return nullptr;
+							}
 
 							func_call->arguments.push_back(subexpr);
 
@@ -1577,8 +1592,9 @@ Expression::ENode *Expression::_parse_expression() {
 				} break;
 			}
 
-			if (done)
+			if (done) {
 				break;
+			}
 		}
 
 		//push expression
@@ -1593,8 +1609,9 @@ Expression::ENode *Expression::_parse_expression() {
 
 		int cofs = str_ofs;
 		_get_token(tk);
-		if (error_set)
+		if (error_set) {
 			return nullptr;
+		}
 
 		Variant::Operator op = Variant::OP_MAX;
 
@@ -1857,8 +1874,9 @@ Expression::ENode *Expression::_parse_expression() {
 }
 
 bool Expression::_compile_expression() {
-	if (!expression_dirty)
+	if (!expression_dirty) {
 		return error_set;
+	}
 
 	if (nodes) {
 		memdelete(nodes);
@@ -1912,15 +1930,17 @@ bool Expression::_execute(const Array &p_inputs, Object *p_instance, Expression:
 
 			Variant a;
 			bool ret = _execute(p_inputs, p_instance, op->nodes[0], a, r_error_str);
-			if (ret)
+			if (ret) {
 				return true;
+			}
 
 			Variant b;
 
 			if (op->nodes[1]) {
 				ret = _execute(p_inputs, p_instance, op->nodes[1], b, r_error_str);
-				if (ret)
+				if (ret) {
 					return true;
+				}
 			}
 
 			bool valid = true;
@@ -1936,14 +1956,16 @@ bool Expression::_execute(const Array &p_inputs, Object *p_instance, Expression:
 
 			Variant base;
 			bool ret = _execute(p_inputs, p_instance, index->base, base, r_error_str);
-			if (ret)
+			if (ret) {
 				return true;
+			}
 
 			Variant idx;
 
 			ret = _execute(p_inputs, p_instance, index->index, idx, r_error_str);
-			if (ret)
+			if (ret) {
 				return true;
+			}
 
 			bool valid;
 			r_ret = base.get(idx, &valid);
@@ -1958,8 +1980,9 @@ bool Expression::_execute(const Array &p_inputs, Object *p_instance, Expression:
 
 			Variant base;
 			bool ret = _execute(p_inputs, p_instance, index->base, base, r_error_str);
-			if (ret)
+			if (ret) {
 				return true;
+			}
 
 			bool valid;
 			r_ret = base.get_named(index->name, &valid);
@@ -1978,8 +2001,9 @@ bool Expression::_execute(const Array &p_inputs, Object *p_instance, Expression:
 				Variant value;
 				bool ret = _execute(p_inputs, p_instance, array->array[i], value, r_error_str);
 
-				if (ret)
+				if (ret) {
 					return true;
+				}
 				arr[i] = value;
 			}
 
@@ -1994,13 +2018,15 @@ bool Expression::_execute(const Array &p_inputs, Object *p_instance, Expression:
 				Variant key;
 				bool ret = _execute(p_inputs, p_instance, dictionary->dict[i + 0], key, r_error_str);
 
-				if (ret)
+				if (ret) {
 					return true;
+				}
 
 				Variant value;
 				ret = _execute(p_inputs, p_instance, dictionary->dict[i + 1], value, r_error_str);
-				if (ret)
+				if (ret) {
 					return true;
+				}
 
 				d[key] = value;
 			}
@@ -2019,8 +2045,9 @@ bool Expression::_execute(const Array &p_inputs, Object *p_instance, Expression:
 				Variant value;
 				bool ret = _execute(p_inputs, p_instance, constructor->arguments[i], value, r_error_str);
 
-				if (ret)
+				if (ret) {
 					return true;
+				}
 				arr.write[i] = value;
 				argp.write[i] = &arr[i];
 			}
@@ -2045,8 +2072,9 @@ bool Expression::_execute(const Array &p_inputs, Object *p_instance, Expression:
 			for (int i = 0; i < bifunc->arguments.size(); i++) {
 				Variant value;
 				bool ret = _execute(p_inputs, p_instance, bifunc->arguments[i], value, r_error_str);
-				if (ret)
+				if (ret) {
 					return true;
+				}
 				arr.write[i] = value;
 				argp.write[i] = &arr[i];
 			}
@@ -2066,8 +2094,9 @@ bool Expression::_execute(const Array &p_inputs, Object *p_instance, Expression:
 			Variant base;
 			bool ret = _execute(p_inputs, p_instance, call->base, base, r_error_str);
 
-			if (ret)
+			if (ret) {
 				return true;
+			}
 
 			Vector<Variant> arr;
 			Vector<const Variant *> argp;
@@ -2078,8 +2107,9 @@ bool Expression::_execute(const Array &p_inputs, Object *p_instance, Expression:
 				Variant value;
 				ret = _execute(p_inputs, p_instance, call->arguments[i], value, r_error_str);
 
-				if (ret)
+				if (ret) {
 					return true;
+				}
 				arr.write[i] = value;
 				argp.write[i] = &arr[i];
 			}

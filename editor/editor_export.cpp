@@ -224,8 +224,9 @@ void EditorExportPlatform::gen_debug_flags(Vector<String> &r_flags, int p_flags)
 	String host = EditorSettings::get_singleton()->get("network/debug/remote_host");
 	int remote_port = (int)EditorSettings::get_singleton()->get("network/debug/remote_port");
 
-	if (p_flags & DEBUG_FLAG_REMOTE_DEBUG_LOCALHOST)
+	if (p_flags & DEBUG_FLAG_REMOTE_DEBUG_LOCALHOST) {
 		host = "localhost";
+	}
 
 	if (p_flags & DEBUG_FLAG_DUMB_CLIENT) {
 		int port = EditorSettings::get_singleton()->get("filesystem/file_server/port");
@@ -251,8 +252,9 @@ void EditorExportPlatform::gen_debug_flags(Vector<String> &r_flags, int p_flags)
 			String bpoints;
 			for (const List<String>::Element *E = breakpoints.front(); E; E = E->next()) {
 				bpoints += E->get().replace(" ", "%20");
-				if (E->next())
+				if (E->next()) {
 					bpoints += ",";
+				}
 			}
 
 			r_flags.push_back(bpoints);
@@ -384,16 +386,18 @@ void EditorExportPlatform::_export_find_resources(EditorFileSystemDirectory *p_d
 }
 
 void EditorExportPlatform::_export_find_dependencies(const String &p_path, Set<String> &p_paths) {
-	if (p_paths.has(p_path))
+	if (p_paths.has(p_path)) {
 		return;
+	}
 
 	p_paths.insert(p_path);
 
 	EditorFileSystemDirectory *dir;
 	int file_idx;
 	dir = EditorFileSystem::get_singleton()->find_file(p_path, &file_idx);
-	if (!dir)
+	if (!dir) {
 		return;
+	}
 
 	Vector<String> deps = dir->get_file_deps(file_idx);
 
@@ -405,16 +409,17 @@ void EditorExportPlatform::_export_find_dependencies(const String &p_path, Set<S
 void EditorExportPlatform::_edit_files_with_filter(DirAccess *da, const Vector<String> &p_filters, Set<String> &r_list, bool exclude) {
 	da->list_dir_begin();
 	String cur_dir = da->get_current_dir().replace("\\", "/");
-	if (!cur_dir.ends_with("/"))
+	if (!cur_dir.ends_with("/")) {
 		cur_dir += "/";
+	}
 	String cur_dir_no_prefix = cur_dir.replace("res://", "");
 
 	Vector<String> dirs;
 	String f;
 	while ((f = da->get_next()) != "") {
-		if (da->current_is_dir())
+		if (da->current_is_dir()) {
 			dirs.push_back(f);
-		else {
+		} else {
 			String fullpath = cur_dir + f;
 			// Test also against path without res:// so that filters like `file.txt` can work.
 			String fullpath_no_prefix = cur_dir_no_prefix + f;
@@ -434,11 +439,13 @@ void EditorExportPlatform::_edit_files_with_filter(DirAccess *da, const Vector<S
 
 	for (int i = 0; i < dirs.size(); ++i) {
 		String dir = dirs[i];
-		if (dir.begins_with("."))
+		if (dir.begins_with(".")) {
 			continue;
+		}
 
-		if (EditorFileSystem::_should_skip_directory(cur_dir + dir))
+		if (EditorFileSystem::_should_skip_directory(cur_dir + dir)) {
 			continue;
+		}
 
 		da->change_dir(dir);
 		_edit_files_with_filter(da, p_filters, r_list, exclude);
@@ -447,14 +454,16 @@ void EditorExportPlatform::_edit_files_with_filter(DirAccess *da, const Vector<S
 }
 
 void EditorExportPlatform::_edit_filter_list(Set<String> &r_list, const String &p_filter, bool exclude) {
-	if (p_filter == "")
+	if (p_filter == "") {
 		return;
+	}
 	Vector<String> split = p_filter.split(",");
 	Vector<String> filters;
 	for (int i = 0; i < split.size(); i++) {
 		String f = split[i].strip_edges();
-		if (f.empty())
+		if (f.empty()) {
 			continue;
+		}
 		filters.push_back(f);
 	}
 
@@ -657,8 +666,9 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 
 		Vector<String> files = p_preset->get_files_to_export();
 		for (int i = 0; i < files.size(); i++) {
-			if (scenes_only && ResourceLoader::get_resource_type(files[i]) != "PackedScene")
+			if (scenes_only && ResourceLoader::get_resource_type(files[i]) != "PackedScene") {
 				continue;
+			}
 
 			_export_find_dependencies(files[i], paths);
 		}
@@ -836,8 +846,9 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 				}
 				export_plugins.write[i]->_clear();
 
-				if (!do_export)
+				if (!do_export) {
 					break; //apologies, not exporting
+				}
 			}
 			//just store it as it comes
 			if (do_export) {
@@ -1050,8 +1061,9 @@ Error EditorExportPlatform::save_pack(const Ref<EditorExportPreset> &p_preset, c
 
 	while (true) {
 		int got = ftmp->get_buffer(buf, bufsize);
-		if (got <= 0)
+		if (got <= 0) {
 			break;
+		}
 		f->store_buffer(buf, got);
 	}
 
@@ -1114,8 +1126,9 @@ void EditorExportPlatform::gen_export_flags(Vector<String> &r_flags, int p_flags
 	String host = EditorSettings::get_singleton()->get("network/debug/remote_host");
 	int remote_port = (int)EditorSettings::get_singleton()->get("network/debug/remote_port");
 
-	if (p_flags & DEBUG_FLAG_REMOTE_DEBUG_LOCALHOST)
+	if (p_flags & DEBUG_FLAG_REMOTE_DEBUG_LOCALHOST) {
 		host = "localhost";
+	}
 
 	if (p_flags & DEBUG_FLAG_DUMB_CLIENT) {
 		int port = EditorSettings::get_singleton()->get("filesystem/file_server/port");
@@ -1141,8 +1154,9 @@ void EditorExportPlatform::gen_export_flags(Vector<String> &r_flags, int p_flags
 			String bpoints;
 			for (const List<String>::Element *E = breakpoints.front(); E; E = E->next()) {
 				bpoints += E->get().replace(" ", "%20");
-				if (E->next())
+				if (E->next()) {
 					bpoints += ",";
+				}
 			}
 
 			r_flags.push_back(bpoints);
@@ -1212,8 +1226,9 @@ void EditorExport::_save() {
 }
 
 void EditorExport::save_presets() {
-	if (block_save)
+	if (block_save) {
 		return;
+	}
 	save_timer->start();
 }
 
@@ -1238,10 +1253,11 @@ Ref<EditorExportPlatform> EditorExport::get_export_platform(int p_idx) {
 }
 
 void EditorExport::add_export_preset(const Ref<EditorExportPreset> &p_preset, int p_at_pos) {
-	if (p_at_pos < 0)
+	if (p_at_pos < 0) {
 		export_presets.push_back(p_preset);
-	else
+	} else {
 		export_presets.insert(p_at_pos, p_preset);
+	}
 }
 
 String EditorExportPlatform::test_etc2() const {
@@ -1258,8 +1274,9 @@ String EditorExportPlatform::test_etc2() const {
 			err += TTR("Target platform requires 'ETC2' texture compression for GLES3. Enable 'Import Etc 2' in Project Settings.");
 		}
 		if (driver_fallback && !etc_supported) {
-			if (err != String())
+			if (err != String()) {
 				err += "\n";
+			}
 			err += TTR("Target platform requires 'ETC' texture compression for the driver fallback to GLES2.\nEnable 'Import Etc' in Project Settings, or disable 'Driver Fallback Enabled'.");
 		}
 		return err;
@@ -1281,8 +1298,9 @@ String EditorExportPlatform::test_etc2_or_pvrtc() const {
 			err += TTR("Target platform requires 'ETC2' or 'PVRTC' texture compression for GLES3. Enable 'Import Etc 2' or 'Import Pvrtc' in Project Settings.");
 		}
 		if (driver_fallback && !pvrtc_supported) {
-			if (err != String())
+			if (err != String()) {
 				err += "\n";
+			}
 			err += TTR("Target platform requires 'PVRTC' texture compression for the driver fallback to GLES2.\nEnable 'Import Pvrtc' in Project Settings, or disable 'Driver Fallback Enabled'.");
 		}
 		return err;
@@ -1333,16 +1351,18 @@ void EditorExport::load_config() {
 	Ref<ConfigFile> config;
 	config.instance();
 	Error err = config->load("res://export_presets.cfg");
-	if (err != OK)
+	if (err != OK) {
 		return;
+	}
 
 	block_save = true;
 
 	int index = 0;
 	while (true) {
 		String section = "preset." + itos(index);
-		if (!config->has_section(section))
+		if (!config->has_section(section)) {
 			break;
+		}
 
 		String platform = config->get_value(section, "platform");
 
@@ -1565,8 +1585,9 @@ bool EditorExportPlatformPC::can_export(const Ref<EditorExportPreset> &p_preset,
 	valid = dvalid || rvalid;
 	r_missing_templates = !valid;
 
-	if (!err.empty())
+	if (!err.empty()) {
 		r_error = err;
+	}
 	return valid;
 }
 
@@ -1752,8 +1773,9 @@ void EditorExportTextSceneToBinaryPlugin::_export_file(const String &p_path, con
 	}
 
 	bool convert = GLOBAL_GET("editor/convert_text_resources_to_binary_on_export");
-	if (!convert)
+	if (!convert) {
 		return;
+	}
 	String tmp_path = EditorSettings::get_singleton()->get_cache_dir().plus_file("tmpfile.res");
 	Error err = ResourceFormatLoaderText::convert_file_to_binary(p_path, tmp_path);
 	if (err != OK) {

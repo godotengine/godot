@@ -54,8 +54,9 @@ int GotoLineDialog::get_line() const {
 }
 
 void GotoLineDialog::ok_pressed() {
-	if (get_line() < 1 || get_line() > text_editor->get_line_count())
+	if (get_line() < 1 || get_line() > text_editor->get_line_count()) {
 		return;
+	}
 	text_editor->unfold_line(get_line() - 1);
 	text_editor->cursor_set_line(get_line() - 1);
 	hide();
@@ -315,14 +316,16 @@ void FindReplaceBar::_get_search_from(int &r_line, int &r_col) {
 }
 
 void FindReplaceBar::_update_results_count() {
-	if (results_count != -1)
+	if (results_count != -1) {
 		return;
+	}
 
 	results_count = 0;
 
 	String searched = get_search_text();
-	if (searched.empty())
+	if (searched.empty()) {
 		return;
+	}
 
 	String full_text = text_edit->get_text();
 
@@ -330,16 +333,19 @@ void FindReplaceBar::_update_results_count() {
 
 	while (true) {
 		int pos = is_case_sensitive() ? full_text.find(searched, from_pos) : full_text.findn(searched, from_pos);
-		if (pos == -1)
+		if (pos == -1) {
 			break;
+		}
 
 		int pos_subsequent = pos + searched.length();
 		if (is_whole_words()) {
 			from_pos = pos + 1; // Making sure we won't hit the same match next time, if we get out via a continue.
-			if (pos > 0 && !(is_symbol(full_text[pos - 1]) || full_text[pos - 1] == '\n'))
+			if (pos > 0 && !(is_symbol(full_text[pos - 1]) || full_text[pos - 1] == '\n')) {
 				continue;
-			if (pos_subsequent < full_text.length() && !(is_symbol(full_text[pos_subsequent]) || full_text[pos_subsequent] == '\n'))
+			}
+			if (pos_subsequent < full_text.length() && !(is_symbol(full_text[pos_subsequent]) || full_text[pos_subsequent] == '\n')) {
 				continue;
+			}
 		}
 
 		results_count++;
@@ -361,10 +367,12 @@ void FindReplaceBar::_update_matches_label() {
 bool FindReplaceBar::search_current() {
 	uint32_t flags = 0;
 
-	if (is_whole_words())
+	if (is_whole_words()) {
 		flags |= TextEdit::SEARCH_WHOLE_WORDS;
-	if (is_case_sensitive())
+	}
+	if (is_case_sensitive()) {
 		flags |= TextEdit::SEARCH_MATCH_CASE;
+	}
 
 	int line, col;
 	_get_search_from(line, col);
@@ -373,29 +381,34 @@ bool FindReplaceBar::search_current() {
 }
 
 bool FindReplaceBar::search_prev() {
-	if (!is_visible())
+	if (!is_visible()) {
 		popup_search(true);
+	}
 
 	uint32_t flags = 0;
 	String text = get_search_text();
 
-	if (is_whole_words())
+	if (is_whole_words()) {
 		flags |= TextEdit::SEARCH_WHOLE_WORDS;
-	if (is_case_sensitive())
+	}
+	if (is_case_sensitive()) {
 		flags |= TextEdit::SEARCH_MATCH_CASE;
+	}
 
 	flags |= TextEdit::SEARCH_BACKWARDS;
 
 	int line, col;
 	_get_search_from(line, col);
-	if (text_edit->is_selection_active())
+	if (text_edit->is_selection_active()) {
 		col--; // Skip currently selected word.
+	}
 
 	col -= text.length();
 	if (col < 0) {
 		line -= 1;
-		if (line < 0)
+		if (line < 0) {
 			line = text_edit->get_line_count() - 1;
+		}
 		col = text_edit->get_line(line).length();
 	}
 
@@ -403,20 +416,24 @@ bool FindReplaceBar::search_prev() {
 }
 
 bool FindReplaceBar::search_next() {
-	if (!is_visible())
+	if (!is_visible()) {
 		popup_search(true);
+	}
 
 	uint32_t flags = 0;
 	String text;
-	if (replace_all_mode)
+	if (replace_all_mode) {
 		text = get_replace_text();
-	else
+	} else {
 		text = get_search_text();
+	}
 
-	if (is_whole_words())
+	if (is_whole_words()) {
 		flags |= TextEdit::SEARCH_WHOLE_WORDS;
-	if (is_case_sensitive())
+	}
+	if (is_case_sensitive()) {
 		flags |= TextEdit::SEARCH_MATCH_CASE;
+	}
 
 	int line, col;
 	_get_search_from(line, col);
@@ -425,8 +442,9 @@ bool FindReplaceBar::search_next() {
 		col += text.length();
 		if (col > text_edit->get_line(line).length()) {
 			line += 1;
-			if (line >= text_edit->get_line_count())
+			if (line >= text_edit->get_line_count()) {
 				line = 0;
+			}
 			col = 0;
 		}
 	}
@@ -435,8 +453,9 @@ bool FindReplaceBar::search_next() {
 }
 
 void FindReplaceBar::_hide_bar() {
-	if (replace_text->has_focus() || search_text->has_focus())
+	if (replace_text->has_focus() || search_text->has_focus()) {
 		text_edit->grab_focus();
+	}
 
 	text_edit->set_search_text("");
 	result_line = -1;
@@ -446,8 +465,9 @@ void FindReplaceBar::_hide_bar() {
 
 void FindReplaceBar::_show_search(bool p_focus_replace, bool p_show_only) {
 	show();
-	if (p_show_only)
+	if (p_show_only) {
 		return;
+	}
 
 	if (p_focus_replace) {
 		search_text->deselect();
@@ -673,8 +693,9 @@ FindReplaceBar::FindReplaceBar() {
 // be handled too late if they weren't handled here.
 void CodeTextEditor::_input(const Ref<InputEvent> &event) {
 	const Ref<InputEventKey> key_event = event;
-	if (!key_event.is_valid() || !key_event->is_pressed())
+	if (!key_event.is_valid() || !key_event->is_pressed()) {
 		return;
+	}
 
 	if (ED_IS_SHORTCUT("script_text_editor/move_up", key_event)) {
 		move_lines_up();
@@ -755,8 +776,9 @@ void CodeTextEditor::_zoom_out() {
 }
 
 void CodeTextEditor::_zoom_changed() {
-	if (font_resize_timer->get_time_left() == 0)
+	if (font_resize_timer->get_time_left() == 0) {
 		font_resize_timer->start();
+	}
 }
 
 void CodeTextEditor::_reset_zoom() {
@@ -799,8 +821,9 @@ void CodeTextEditor::_text_changed() {
 }
 
 void CodeTextEditor::_code_complete_timer_timeout() {
-	if (!is_visible_in_tree())
+	if (!is_visible_in_tree()) {
 		return;
+	}
 	text_editor->query_code_comple();
 }
 
@@ -812,8 +835,9 @@ void CodeTextEditor::_complete_request() {
 	if (code_complete_func) {
 		code_complete_func(code_complete_ud, ctext, &entries, forced);
 	}
-	if (entries.size() == 0)
+	if (entries.size() == 0) {
 		return;
+	}
 
 	for (List<ScriptCodeCompletionOption>::Element *E = entries.front(); E; E = E->next()) {
 		E->get().icon = _get_completion_icon(E->get());
@@ -1070,10 +1094,12 @@ void CodeTextEditor::convert_case(CaseStyle p_case) {
 
 	for (int i = begin; i <= end; i++) {
 		int len = text_editor->get_line(i).length();
-		if (i == end)
+		if (i == end) {
 			len = end_col;
-		if (i == begin)
+		}
+		if (i == begin) {
 			len -= begin_col;
+		}
 		String new_line = text_editor->get_line(i).substr(i == begin ? begin_col : 0, len);
 
 		switch (p_case) {
@@ -1112,8 +1138,9 @@ void CodeTextEditor::move_lines_up() {
 			int line_id = i;
 			int next_id = i - 1;
 
-			if (line_id == 0 || next_id < 0)
+			if (line_id == 0 || next_id < 0) {
 				return;
+			}
 
 			text_editor->unfold_line(line_id);
 			text_editor->unfold_line(next_id);
@@ -1130,8 +1157,9 @@ void CodeTextEditor::move_lines_up() {
 		int line_id = text_editor->cursor_get_line();
 		int next_id = line_id - 1;
 
-		if (line_id == 0 || next_id < 0)
+		if (line_id == 0 || next_id < 0) {
 			return;
+		}
 
 		text_editor->unfold_line(line_id);
 		text_editor->unfold_line(next_id);
@@ -1156,8 +1184,9 @@ void CodeTextEditor::move_lines_down() {
 			int line_id = i;
 			int next_id = i + 1;
 
-			if (line_id == text_editor->get_line_count() - 1 || next_id > text_editor->get_line_count())
+			if (line_id == text_editor->get_line_count() - 1 || next_id > text_editor->get_line_count()) {
 				return;
+			}
 
 			text_editor->unfold_line(line_id);
 			text_editor->unfold_line(next_id);
@@ -1174,8 +1203,9 @@ void CodeTextEditor::move_lines_down() {
 		int line_id = text_editor->cursor_get_line();
 		int next_id = line_id + 1;
 
-		if (line_id == text_editor->get_line_count() - 1 || next_id > text_editor->get_line_count())
+		if (line_id == text_editor->get_line_count() - 1 || next_id > text_editor->get_line_count()) {
 			return;
+		}
 
 		text_editor->unfold_line(line_id);
 		text_editor->unfold_line(next_id);
@@ -1269,8 +1299,9 @@ void CodeTextEditor::toggle_inline_comment(const String &delimiter) {
 		int end = text_editor->get_selection_to_line();
 
 		// End of selection ends on the first column of the last line, ignore it.
-		if (text_editor->get_selection_to_column() == 0)
+		if (text_editor->get_selection_to_column() == 0) {
 			end -= 1;
+		}
 
 		int col_to = text_editor->get_selection_to_column();
 		int cursor_pos = text_editor->cursor_get_column();
@@ -1302,14 +1333,17 @@ void CodeTextEditor::toggle_inline_comment(const String &delimiter) {
 		int offset = (is_commented ? -1 : 1) * delimiter.length();
 		int col_from = text_editor->get_selection_from_column() > 0 ? text_editor->get_selection_from_column() + offset : 0;
 
-		if (is_commented && text_editor->cursor_get_column() == text_editor->get_line(text_editor->cursor_get_line()).length() + 1)
+		if (is_commented && text_editor->cursor_get_column() == text_editor->get_line(text_editor->cursor_get_line()).length() + 1) {
 			cursor_pos += 1;
+		}
 
-		if (text_editor->get_selection_to_column() != 0 && col_to != text_editor->get_line(text_editor->get_selection_to_line()).length() + 1)
+		if (text_editor->get_selection_to_column() != 0 && col_to != text_editor->get_line(text_editor->get_selection_to_line()).length() + 1) {
 			col_to += offset;
+		}
 
-		if (text_editor->cursor_get_column() != 0)
+		if (text_editor->cursor_get_column() != 0) {
 			cursor_pos += offset;
+		}
 
 		text_editor->select(begin, col_from, text_editor->get_selection_to_line(), col_to);
 		text_editor->cursor_set_column(cursor_pos);
@@ -1458,8 +1492,9 @@ void CodeTextEditor::_update_font() {
 	int count = status_bar->get_child_count();
 	for (int i = 0; i < count; i++) {
 		Control *n = Object::cast_to<Control>(status_bar->get_child(i));
-		if (n)
+		if (n) {
 			n->add_font_override("font", status_bar_font);
+		}
 	}
 }
 
@@ -1550,8 +1585,9 @@ void CodeTextEditor::set_warning_nb(int p_warning_nb) {
 	warning_count_label->set_text(itos(p_warning_nb));
 	warning_count_label->set_visible(p_warning_nb > 0);
 	warning_button->set_visible(p_warning_nb > 0);
-	if (!p_warning_nb)
+	if (!p_warning_nb) {
 		_set_show_warnings_panel(false);
+	}
 }
 
 void CodeTextEditor::toggle_bookmark() {

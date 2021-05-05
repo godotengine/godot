@@ -34,8 +34,9 @@
 
 void NinePatchRect::_notification(int p_what) {
 	if (p_what == NOTIFICATION_DRAW) {
-		if (texture.is_null())
+		if (texture.is_null()) {
 			return;
+		}
 
 		Rect2 rect = Rect2(Point2(), get_size());
 		Rect2 src_rect = region_rect;
@@ -85,8 +86,9 @@ void NinePatchRect::_bind_methods() {
 }
 
 void NinePatchRect::set_texture(const Ref<Texture> &p_tex) {
-	if (texture == p_tex)
+	if (texture == p_tex) {
 		return;
+	}
 	texture = p_tex;
 	update();
 	/*
@@ -129,8 +131,9 @@ int NinePatchRect::get_patch_margin(Margin p_margin) const {
 }
 
 void NinePatchRect::set_region_rect(const Rect2 &p_region_rect) {
-	if (region_rect == p_region_rect)
+	if (region_rect == p_region_rect) {
 		return;
+	}
 
 	region_rect = p_region_rect;
 

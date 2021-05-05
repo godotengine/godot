@@ -66,17 +66,17 @@ bool Animation::_set(const StringName &p_name, const Variant &p_value) {
 
 		ERR_FAIL_INDEX_V(track, tracks.size(), false);
 
-		if (what == "path")
+		if (what == "path") {
 			track_set_path(track, p_value);
-		else if (what == "interp")
+		} else if (what == "interp") {
 			track_set_interpolation_type(track, InterpolationType(p_value.operator int()));
-		else if (what == "loop_wrap")
+		} else if (what == "loop_wrap") {
 			track_set_interpolation_loop_wrap(track, p_value);
-		else if (what == "imported")
+		} else if (what == "imported") {
 			track_set_imported(track, p_value);
-		else if (what == "enabled")
+		} else if (what == "enabled") {
 			track_set_enabled(track, p_value);
-		else if (what == "keys" || what == "key_values") {
+		} else if (what == "keys" || what == "key_values") {
 			if (track_get_type(track) == TYPE_TRANSFORM) {
 				TransformTrack *tt = static_cast<TransformTrack *>(tracks[track]);
 				PoolVector<float> values = p_value;
@@ -119,10 +119,11 @@ bool Animation::_set(const StringName &p_name, const Variant &p_value) {
 
 				if (d.has("update")) {
 					int um = d["update"];
-					if (um < 0)
+					if (um < 0) {
 						um = 0;
-					else if (um > 3)
+					} else if (um > 3) {
 						um = 3;
+					}
 					vt->update_mode = UpdateMode(um);
 				}
 
@@ -158,8 +159,9 @@ bool Animation::_set(const StringName &p_name, const Variant &p_value) {
 				return true;
 
 			} else if (track_get_type(track) == TYPE_METHOD) {
-				while (track_get_key_count(track))
+				while (track_get_key_count(track)) {
 					track_remove_key(track, 0); //well shouldn't be set anyway
+				}
 
 				Dictionary d = p_value;
 				ERR_FAIL_COND_V(!d.has("times"), false);
@@ -241,12 +243,15 @@ bool Animation::_set(const StringName &p_name, const Variant &p_value) {
 
 					for (int i = 0; i < valcount; i++) {
 						Dictionary d2 = clips[i];
-						if (!d2.has("start_offset"))
+						if (!d2.has("start_offset")) {
 							continue;
-						if (!d2.has("end_offset"))
+						}
+						if (!d2.has("end_offset")) {
 							continue;
-						if (!d2.has("stream"))
+						}
+						if (!d2.has("stream")) {
 							continue;
+						}
 
 						TKey<AudioKey> ak;
 						ak.time = rt[i];
@@ -290,10 +295,12 @@ bool Animation::_set(const StringName &p_name, const Variant &p_value) {
 			} else {
 				return false;
 			}
-		} else
+		} else {
 			return false;
-	} else
+		}
+	} else {
 		return false;
+	}
 
 	return true;
 }
@@ -301,13 +308,13 @@ bool Animation::_set(const StringName &p_name, const Variant &p_value) {
 bool Animation::_get(const StringName &p_name, Variant &r_ret) const {
 	String name = p_name;
 
-	if (name == "length")
+	if (name == "length") {
 		r_ret = length;
-	else if (name == "loop")
+	} else if (name == "loop") {
 		r_ret = loop;
-	else if (name == "step")
+	} else if (name == "step") {
 		r_ret = step;
-	else if (name.begins_with("tracks/")) {
+	} else if (name.begins_with("tracks/")) {
 		int track = name.get_slicec('/', 1).to_int();
 		String what = name.get_slicec('/', 2);
 		ERR_FAIL_INDEX_V(track, tracks.size(), false);
@@ -335,17 +342,17 @@ bool Animation::_get(const StringName &p_name, Variant &r_ret) const {
 
 			return true;
 
-		} else if (what == "path")
+		} else if (what == "path") {
 			r_ret = track_get_path(track);
-		else if (what == "interp")
+		} else if (what == "interp") {
 			r_ret = track_get_interpolation_type(track);
-		else if (what == "loop_wrap")
+		} else if (what == "loop_wrap") {
 			r_ret = track_get_interpolation_loop_wrap(track);
-		else if (what == "imported")
+		} else if (what == "imported") {
 			r_ret = track_is_imported(track);
-		else if (what == "enabled")
+		} else if (what == "enabled") {
 			r_ret = track_is_enabled(track);
-		else if (what == "keys") {
+		} else if (what == "keys") {
 			if (track_get_type(track) == TYPE_TRANSFORM) {
 				PoolVector<real_t> keys;
 				int kk = track_get_key_count(track);
@@ -568,10 +575,12 @@ bool Animation::_get(const StringName &p_name, Variant &r_ret) const {
 
 				return true;
 			}
-		} else
+		} else {
 			return false;
-	} else
+		}
+	} else {
 		return false;
+	}
 
 	return true;
 }
@@ -589,8 +598,9 @@ void Animation::_get_property_list(List<PropertyInfo> *p_list) const {
 }
 
 int Animation::add_track(TrackType p_type, int p_at_pos) {
-	if (p_at_pos < 0 || p_at_pos >= tracks.size())
+	if (p_at_pos < 0 || p_at_pos >= tracks.size()) {
 		p_at_pos = tracks.size();
+	}
 
 	switch (p_type) {
 		case TYPE_TRANSFORM: {
@@ -692,8 +702,9 @@ NodePath Animation::track_get_path(int p_track) const {
 
 int Animation::find_track(const NodePath &p_path) const {
 	for (int i = 0; i < tracks.size(); i++) {
-		if (tracks[i]->path == p_path)
+		if (tracks[i]->path == p_path) {
 			return i;
+		}
 	};
 	return -1;
 };
@@ -785,12 +796,15 @@ Error Animation::transform_track_get_key(int p_track, int p_key, Vector3 *r_loc,
 	ERR_FAIL_COND_V(t->type != TYPE_TRANSFORM, ERR_INVALID_PARAMETER);
 	ERR_FAIL_INDEX_V(p_key, tt->transforms.size(), ERR_INVALID_PARAMETER);
 
-	if (r_loc)
+	if (r_loc) {
 		*r_loc = tt->transforms[p_key].value.loc;
-	if (r_rot)
+	}
+	if (r_rot) {
 		*r_rot = tt->transforms[p_key].value.rot;
-	if (r_scale)
+	}
+	if (r_scale) {
 		*r_scale = tt->transforms[p_key].value.scale;
+	}
 
 	return OK;
 }
@@ -873,60 +887,72 @@ int Animation::track_find_key(int p_track, float p_time, bool p_exact) const {
 		case TYPE_TRANSFORM: {
 			TransformTrack *tt = static_cast<TransformTrack *>(t);
 			int k = _find(tt->transforms, p_time);
-			if (k < 0 || k >= tt->transforms.size())
+			if (k < 0 || k >= tt->transforms.size()) {
 				return -1;
-			if (tt->transforms[k].time != p_time && p_exact)
+			}
+			if (tt->transforms[k].time != p_time && p_exact) {
 				return -1;
+			}
 			return k;
 
 		} break;
 		case TYPE_VALUE: {
 			ValueTrack *vt = static_cast<ValueTrack *>(t);
 			int k = _find(vt->values, p_time);
-			if (k < 0 || k >= vt->values.size())
+			if (k < 0 || k >= vt->values.size()) {
 				return -1;
-			if (vt->values[k].time != p_time && p_exact)
+			}
+			if (vt->values[k].time != p_time && p_exact) {
 				return -1;
+			}
 			return k;
 
 		} break;
 		case TYPE_METHOD: {
 			MethodTrack *mt = static_cast<MethodTrack *>(t);
 			int k = _find(mt->methods, p_time);
-			if (k < 0 || k >= mt->methods.size())
+			if (k < 0 || k >= mt->methods.size()) {
 				return -1;
-			if (mt->methods[k].time != p_time && p_exact)
+			}
+			if (mt->methods[k].time != p_time && p_exact) {
 				return -1;
+			}
 			return k;
 
 		} break;
 		case TYPE_BEZIER: {
 			BezierTrack *bt = static_cast<BezierTrack *>(t);
 			int k = _find(bt->values, p_time);
-			if (k < 0 || k >= bt->values.size())
+			if (k < 0 || k >= bt->values.size()) {
 				return -1;
-			if (bt->values[k].time != p_time && p_exact)
+			}
+			if (bt->values[k].time != p_time && p_exact) {
 				return -1;
+			}
 			return k;
 
 		} break;
 		case TYPE_AUDIO: {
 			AudioTrack *at = static_cast<AudioTrack *>(t);
 			int k = _find(at->values, p_time);
-			if (k < 0 || k >= at->values.size())
+			if (k < 0 || k >= at->values.size()) {
 				return -1;
-			if (at->values[k].time != p_time && p_exact)
+			}
+			if (at->values[k].time != p_time && p_exact) {
 				return -1;
+			}
 			return k;
 
 		} break;
 		case TYPE_ANIMATION: {
 			AnimationTrack *at = static_cast<AnimationTrack *>(t);
 			int k = _find(at->values, p_time);
-			if (k < 0 || k >= at->values.size())
+			if (k < 0 || k >= at->values.size()) {
 				return -1;
-			if (at->values[k].time != p_time && p_exact)
+			}
+			if (at->values[k].time != p_time && p_exact) {
 				return -1;
+			}
 			return k;
 
 		} break;
@@ -943,16 +969,19 @@ void Animation::track_insert_key(int p_track, float p_time, const Variant &p_key
 		case TYPE_TRANSFORM: {
 			Dictionary d = p_key;
 			Vector3 loc;
-			if (d.has("location"))
+			if (d.has("location")) {
 				loc = d["location"];
+			}
 
 			Quat rot;
-			if (d.has("rotation"))
+			if (d.has("rotation")) {
 				rot = d["rotation"];
+			}
 
 			Vector3 scale;
-			if (d.has("scale"))
+			if (d.has("scale")) {
 				scale = d["scale"];
+			}
 
 			int idx = transform_track_insert_key(p_track, p_time, loc, rot, scale);
 			track_set_key_transition(p_track, idx, p_transition);
@@ -1293,12 +1322,15 @@ void Animation::track_set_key_value(int p_track, int p_key_idx, const Variant &p
 
 			Dictionary d = p_value;
 
-			if (d.has("location"))
+			if (d.has("location")) {
 				tt->transforms.write[p_key_idx].value.loc = d["location"];
-			if (d.has("rotation"))
+			}
+			if (d.has("rotation")) {
 				tt->transforms.write[p_key_idx].value.rot = d["rotation"];
-			if (d.has("scale"))
+			}
+			if (d.has("scale")) {
 				tt->transforms.write[p_key_idx].value.scale = d["scale"];
+			}
 
 		} break;
 		case TYPE_VALUE: {
@@ -1314,10 +1346,12 @@ void Animation::track_set_key_value(int p_track, int p_key_idx, const Variant &p
 
 			Dictionary d = p_value;
 
-			if (d.has("method"))
+			if (d.has("method")) {
 				mt->methods.write[p_key_idx].method = d["method"];
-			if (d.has("args"))
+			}
+			if (d.has("args")) {
 				mt->methods.write[p_key_idx].params = d["args"];
+			}
 
 		} break;
 		case TYPE_BEZIER: {
@@ -1395,8 +1429,9 @@ void Animation::track_set_key_transition(int p_track, int p_key_idx, float p_tra
 template <class K>
 int Animation::_find(const Vector<K> &p_keys, float p_time) const {
 	int len = p_keys.size();
-	if (len == 0)
+	if (len == 0) {
 		return -2;
+	}
 
 	int low = 0;
 	int high = len - 1;
@@ -1414,14 +1449,16 @@ int Animation::_find(const Vector<K> &p_keys, float p_time) const {
 
 		if (Math::is_equal_approx(p_time, keys[middle].time)) { //match
 			return middle;
-		} else if (p_time < keys[middle].time)
+		} else if (p_time < keys[middle].time) {
 			high = middle - 1; //search low end of array
-		else
+		} else {
 			low = middle + 1; //search high end of array
+		}
 	}
 
-	if (keys[middle].time > p_time)
+	if (keys[middle].time > p_time) {
 		middle--;
+	}
 
 	return middle;
 }
@@ -1561,13 +1598,15 @@ T Animation::_interpolate(const Vector<TKey<T>> &p_keys, float p_time, Interpola
 	if (len <= 0) {
 		// (-1 or -2 returned originally) (plus one above)
 		// meaning no keys, or only key time is larger than length
-		if (p_ok)
+		if (p_ok) {
 			*p_ok = false;
+		}
 		return T();
 	} else if (len == 1) { // one key found (0+1), return it
 
-		if (p_ok)
+		if (p_ok) {
 			*p_ok = true;
+		}
 		return p_keys[0].value;
 	}
 
@@ -1588,20 +1627,22 @@ T Animation::_interpolate(const Vector<TKey<T>> &p_keys, float p_time, Interpola
 				float delta = p_keys[next].time - p_keys[idx].time;
 				float from = p_time - p_keys[idx].time;
 
-				if (Math::is_zero_approx(delta))
+				if (Math::is_zero_approx(delta)) {
 					c = 0;
-				else
+				} else {
 					c = from / delta;
+				}
 
 			} else {
 				next = 0;
 				float delta = (length - p_keys[idx].time) + p_keys[next].time;
 				float from = p_time - p_keys[idx].time;
 
-				if (Math::is_zero_approx(delta))
+				if (Math::is_zero_approx(delta)) {
 					c = 0;
-				else
+				} else {
 					c = from / delta;
+				}
 			}
 
 		} else {
@@ -1609,15 +1650,17 @@ T Animation::_interpolate(const Vector<TKey<T>> &p_keys, float p_time, Interpola
 			idx = len - 1;
 			next = 0;
 			float endtime = (length - p_keys[idx].time);
-			if (endtime < 0) // may be keys past the end
+			if (endtime < 0) { // may be keys past the end
 				endtime = 0;
+			}
 			float delta = endtime + p_keys[next].time;
 			float from = endtime + p_time;
 
-			if (Math::is_zero_approx(delta))
+			if (Math::is_zero_approx(delta)) {
 				c = 0;
-			else
+			} else {
 				c = from / delta;
+			}
 		}
 
 	} else { // no loop
@@ -1628,10 +1671,11 @@ T Animation::_interpolate(const Vector<TKey<T>> &p_keys, float p_time, Interpola
 				float delta = p_keys[next].time - p_keys[idx].time;
 				float from = p_time - p_keys[idx].time;
 
-				if (Math::is_zero_approx(delta))
+				if (Math::is_zero_approx(delta)) {
 					c = 0;
-				else
+				} else {
 					c = from / delta;
+				}
 
 			} else {
 				next = idx;
@@ -1639,17 +1683,20 @@ T Animation::_interpolate(const Vector<TKey<T>> &p_keys, float p_time, Interpola
 
 		} else {
 			// only allow extending first key to anim start if looping
-			if (loop)
+			if (loop) {
 				idx = next = 0;
-			else
+			} else {
 				result = false;
+			}
 		}
 	}
 
-	if (p_ok)
+	if (p_ok) {
 		*p_ok = result;
-	if (!result)
+	}
+	if (!result) {
 		return T();
+	}
 
 	float tr = p_keys[idx].transition;
 
@@ -1671,11 +1718,13 @@ T Animation::_interpolate(const Vector<TKey<T>> &p_keys, float p_time, Interpola
 		} break;
 		case INTERPOLATION_CUBIC: {
 			int pre = idx - 1;
-			if (pre < 0)
+			if (pre < 0) {
 				pre = 0;
+			}
 			int post = next + 1;
-			if (post >= len)
+			if (post >= len) {
 				post = next;
+			}
 
 			return _cubic_interpolate(p_keys[pre].value, p_keys[idx].value, p_keys[next].value, p_keys[post].value, c);
 
@@ -1698,17 +1747,21 @@ Error Animation::transform_track_interpolate(int p_track, float p_time, Vector3 
 
 	TransformKey tk = _interpolate(tt->transforms, p_time, tt->interpolation, tt->loop_wrap, &ok);
 
-	if (!ok)
+	if (!ok) {
 		return ERR_UNAVAILABLE;
+	}
 
-	if (r_loc)
+	if (r_loc) {
 		*r_loc = tk.loc;
+	}
 
-	if (r_rot)
+	if (r_rot) {
 		*r_rot = tk.rot;
+	}
 
-	if (r_scale)
+	if (r_scale) {
 		*r_scale = tk.scale;
+	}
 
 	return OK;
 }
@@ -1731,8 +1784,9 @@ Variant Animation::value_track_interpolate(int p_track, float p_time) const {
 }
 
 void Animation::_value_track_get_key_indices_in_range(const ValueTrack *vt, float from_time, float to_time, List<int> *p_indices) const {
-	if (from_time != length && to_time == length)
+	if (from_time != length && to_time == length) {
 		to_time = length * 1.001; //include a little more if at the end
+	}
 	int to = _find(vt->values, to_time);
 
 	if (to >= 0 && from_time == to_time && vt->values[to].time == from_time) {
@@ -1743,17 +1797,20 @@ void Animation::_value_track_get_key_indices_in_range(const ValueTrack *vt, floa
 	// can't really send the events == time, will be sent in the next frame.
 	// if event>=len then it will probably never be requested by the anim player.
 
-	if (to >= 0 && vt->values[to].time >= to_time)
+	if (to >= 0 && vt->values[to].time >= to_time) {
 		to--;
+	}
 
-	if (to < 0)
+	if (to < 0) {
 		return; // not bother
+	}
 
 	int from = _find(vt->values, from_time);
 
 	// position in the right first event.+
-	if (from < 0 || vt->values[from].time < from_time)
+	if (from < 0 || vt->values[from].time < from_time) {
 		from++;
+	}
 
 	int max = vt->values.size();
 
@@ -1773,8 +1830,9 @@ void Animation::value_track_get_key_indices(int p_track, float p_time, float p_d
 	float from_time = p_time - p_delta;
 	float to_time = p_time;
 
-	if (from_time > to_time)
+	if (from_time > to_time) {
 		SWAP(from_time, to_time);
+	}
 
 	if (loop) {
 		from_time = Math::fposmod(from_time, length);
@@ -1787,15 +1845,19 @@ void Animation::value_track_get_key_indices(int p_track, float p_time, float p_d
 			return;
 		}
 	} else {
-		if (from_time < 0)
+		if (from_time < 0) {
 			from_time = 0;
-		if (from_time > length)
+		}
+		if (from_time > length) {
 			from_time = length;
+		}
 
-		if (to_time < 0)
+		if (to_time < 0) {
 			to_time = 0;
-		if (to_time > length)
+		}
+		if (to_time > length) {
 			to_time = length;
+		}
 	}
 
 	_value_track_get_key_indices_in_range(vt, from_time, to_time, p_indices);
@@ -1822,25 +1884,29 @@ Animation::UpdateMode Animation::value_track_get_update_mode(int p_track) const 
 
 template <class T>
 void Animation::_track_get_key_indices_in_range(const Vector<T> &p_array, float from_time, float to_time, List<int> *p_indices) const {
-	if (from_time != length && to_time == length)
+	if (from_time != length && to_time == length) {
 		to_time = length * 1.01; //include a little more if at the end
+	}
 
 	int to = _find(p_array, to_time);
 
 	// can't really send the events == time, will be sent in the next frame.
 	// if event>=len then it will probably never be requested by the anim player.
 
-	if (to >= 0 && p_array[to].time >= to_time)
+	if (to >= 0 && p_array[to].time >= to_time) {
 		to--;
+	}
 
-	if (to < 0)
+	if (to < 0) {
 		return; // not bother
+	}
 
 	int from = _find(p_array, from_time);
 
 	// position in the right first event.+
-	if (from < 0 || p_array[from].time < from_time)
+	if (from < 0 || p_array[from].time < from_time) {
 		from++;
+	}
 
 	int max = p_array.size();
 
@@ -1857,15 +1923,18 @@ void Animation::track_get_key_indices_in_range(int p_track, float p_time, float 
 	float from_time = p_time - p_delta;
 	float to_time = p_time;
 
-	if (from_time > to_time)
+	if (from_time > to_time) {
 		SWAP(from_time, to_time);
+	}
 
 	if (loop) {
-		if (from_time > length || from_time < 0)
+		if (from_time > length || from_time < 0) {
 			from_time = Math::fposmod(from_time, length);
+		}
 
-		if (to_time > length || to_time < 0)
+		if (to_time > length || to_time < 0) {
 			to_time = Math::fposmod(to_time, length);
+		}
 
 		if (from_time > to_time) {
 			// handle loop by splitting
@@ -1911,15 +1980,19 @@ void Animation::track_get_key_indices_in_range(int p_track, float p_time, float 
 			return;
 		}
 	} else {
-		if (from_time < 0)
+		if (from_time < 0) {
 			from_time = 0;
-		if (from_time > length)
+		}
+		if (from_time > length) {
 			from_time = length;
+		}
 
-		if (to_time < 0)
+		if (to_time < 0) {
 			to_time = 0;
-		if (to_time > length)
+		}
+		if (to_time > length) {
 			to_time = length;
+		}
 	}
 
 	switch (t->type) {
@@ -1957,25 +2030,29 @@ void Animation::track_get_key_indices_in_range(int p_track, float p_time, float 
 }
 
 void Animation::_method_track_get_key_indices_in_range(const MethodTrack *mt, float from_time, float to_time, List<int> *p_indices) const {
-	if (from_time != length && to_time == length)
+	if (from_time != length && to_time == length) {
 		to_time = length * 1.01; //include a little more if at the end
+	}
 
 	int to = _find(mt->methods, to_time);
 
 	// can't really send the events == time, will be sent in the next frame.
 	// if event>=len then it will probably never be requested by the anim player.
 
-	if (to >= 0 && mt->methods[to].time >= to_time)
+	if (to >= 0 && mt->methods[to].time >= to_time) {
 		to--;
+	}
 
-	if (to < 0)
+	if (to < 0) {
 		return; // not bother
+	}
 
 	int from = _find(mt->methods, from_time);
 
 	// position in the right first event.+
-	if (from < 0 || mt->methods[from].time < from_time)
+	if (from < 0 || mt->methods[from].time < from_time) {
 		from++;
+	}
 
 	int max = mt->methods.size();
 
@@ -1995,15 +2072,18 @@ void Animation::method_track_get_key_indices(int p_track, float p_time, float p_
 	float from_time = p_time - p_delta;
 	float to_time = p_time;
 
-	if (from_time > to_time)
+	if (from_time > to_time) {
 		SWAP(from_time, to_time);
+	}
 
 	if (loop) {
-		if (from_time > length || from_time < 0)
+		if (from_time > length || from_time < 0) {
 			from_time = Math::fposmod(from_time, length);
+		}
 
-		if (to_time > length || to_time < 0)
+		if (to_time > length || to_time < 0) {
 			to_time = Math::fposmod(to_time, length);
+		}
 
 		if (from_time > to_time) {
 			// handle loop by splitting
@@ -2012,15 +2092,19 @@ void Animation::method_track_get_key_indices(int p_track, float p_time, float p_
 			return;
 		}
 	} else {
-		if (from_time < 0)
+		if (from_time < 0) {
 			from_time = 0;
-		if (from_time > length)
+		}
+		if (from_time > length) {
 			from_time = length;
+		}
 
-		if (to_time < 0)
+		if (to_time < 0) {
 			to_time = 0;
-		if (to_time > length)
+		}
+		if (to_time > length) {
 			to_time = length;
+		}
 	}
 
 	_method_track_get_key_indices_in_range(mt, from_time, to_time, p_indices);
@@ -2241,11 +2325,13 @@ int Animation::audio_track_insert_key(int p_track, float p_time, const RES &p_st
 	k.time = p_time;
 	k.value.stream = p_stream;
 	k.value.start_offset = p_start_offset;
-	if (k.value.start_offset < 0)
+	if (k.value.start_offset < 0) {
 		k.value.start_offset = 0;
+	}
 	k.value.end_offset = p_end_offset;
-	if (k.value.end_offset < 0)
+	if (k.value.end_offset < 0) {
 		k.value.end_offset = 0;
+	}
 
 	int key = _insert(p_time, at->values, k);
 
@@ -2277,8 +2363,9 @@ void Animation::audio_track_set_key_start_offset(int p_track, int p_key, float p
 
 	ERR_FAIL_INDEX(p_key, at->values.size());
 
-	if (p_offset < 0)
+	if (p_offset < 0) {
 		p_offset = 0;
+	}
 
 	at->values.write[p_key].value.start_offset = p_offset;
 
@@ -2294,8 +2381,9 @@ void Animation::audio_track_set_key_end_offset(int p_track, int p_key, float p_o
 
 	ERR_FAIL_INDEX(p_key, at->values.size());
 
-	if (p_offset < 0)
+	if (p_offset < 0) {
 		p_offset = 0;
+	}
 
 	at->values.write[p_key].value.end_offset = p_offset;
 
@@ -2443,8 +2531,9 @@ void Animation::track_move_down(int p_track) {
 void Animation::track_move_to(int p_track, int p_to_index) {
 	ERR_FAIL_INDEX(p_track, tracks.size());
 	ERR_FAIL_INDEX(p_to_index, tracks.size() + 1);
-	if (p_track == p_to_index || p_track == p_to_index - 1)
+	if (p_track == p_to_index || p_track == p_to_index - 1) {
 		return;
+	}
 
 	Track *track = tracks.get(p_track);
 	tracks.remove(p_track);
@@ -2458,8 +2547,9 @@ void Animation::track_move_to(int p_track, int p_to_index) {
 void Animation::track_swap(int p_track, int p_with_track) {
 	ERR_FAIL_INDEX(p_track, tracks.size());
 	ERR_FAIL_INDEX(p_with_track, tracks.size());
-	if (p_track == p_with_track)
+	if (p_track == p_with_track) {
 		return;
+	}
 	SWAP(tracks.write[p_track], tracks.write[p_with_track]);
 
 	emit_changed();
@@ -2606,8 +2696,9 @@ void Animation::_bind_methods() {
 }
 
 void Animation::clear() {
-	for (int i = 0; i < tracks.size(); i++)
+	for (int i = 0; i < tracks.size(); i++) {
 		memdelete(tracks[i]);
+	}
 	tracks.clear();
 	loop = false;
 	length = 1;
@@ -2648,8 +2739,9 @@ bool Animation::_transform_track_optimize_key(const TKey<TransformKey> &t0, cons
 				return false; //beyond allowed error for colinearity
 			}
 
-			if (p_norm != Vector3() && Math::acos(pd.normalized().dot(p_norm)) > p_alowed_angular_err)
+			if (p_norm != Vector3() && Math::acos(pd.normalized().dot(p_norm)) > p_alowed_angular_err) {
 				return false;
+			}
 
 			t[0] = (d1 - d0) / (d2 - d0);
 		}
@@ -2664,8 +2756,9 @@ bool Animation::_transform_track_optimize_key(const TKey<TransformKey> &t0, cons
 		//localize both to rotation from q0
 
 		if (q0.is_equal_approx(q2)) {
-			if (!q0.is_equal_approx(q1))
+			if (!q0.is_equal_approx(q1)) {
 				return false;
+			}
 
 		} else {
 			Quat r02 = (q0.inverse() * q2).normalized();
@@ -2677,8 +2770,9 @@ bool Animation::_transform_track_optimize_key(const TKey<TransformKey> &t0, cons
 			r02.get_axis_angle(v02, a02);
 			r01.get_axis_angle(v01, a01);
 
-			if (Math::abs(a02) > p_max_optimizable_angle)
+			if (Math::abs(a02) > p_max_optimizable_angle) {
 				return false;
+			}
 
 			if (v01.dot(v02) < 0) {
 				//make sure both rotations go the same way to compare
@@ -2698,8 +2792,9 @@ bool Animation::_transform_track_optimize_key(const TKey<TransformKey> &t0, cons
 			}
 
 			real_t tr = a01 / a02;
-			if (tr < 0 || tr > 1)
+			if (tr < 0 || tr > 1) {
 				return false; //rotating too much or too less
+			}
 
 			t[1] = tr;
 		}
@@ -2750,8 +2845,9 @@ bool Animation::_transform_track_optimize_key(const TKey<TransformKey> &t0, cons
 				lt = t[j]; //official t
 				//validate rest
 				for (int k = j + 1; k < 3; k++) {
-					if (t[k] == -1)
+					if (t[k] == -1) {
 						continue;
+					}
 
 					if (Math::abs(lt - t[k]) > p_alowed_linear_err) {
 						erase = false;
@@ -2819,8 +2915,9 @@ void Animation::_transform_track_optimize(int p_idx, float p_allowed_linear_err,
 
 void Animation::optimize(float p_allowed_linear_err, float p_allowed_angular_err, float p_max_optimizable_angle) {
 	for (int i = 0; i < tracks.size(); i++) {
-		if (tracks[i]->type == TYPE_TRANSFORM)
+		if (tracks[i]->type == TYPE_TRANSFORM) {
 			_transform_track_optimize(i, p_allowed_linear_err, p_allowed_angular_err, p_max_optimizable_angle);
+		}
 	}
 }
 
@@ -2831,6 +2928,7 @@ Animation::Animation() {
 }
 
 Animation::~Animation() {
-	for (int i = 0; i < tracks.size(); i++)
+	for (int i = 0; i < tracks.size(); i++) {
 		memdelete(tracks[i]);
+	}
 }

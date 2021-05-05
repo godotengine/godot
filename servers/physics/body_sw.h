@@ -163,16 +163,18 @@ public:
 		int index = areas.find(AreaCMP(p_area));
 		if (index > -1) {
 			areas.write[index].refCount -= 1;
-			if (areas[index].refCount < 1)
+			if (areas[index].refCount < 1) {
 				areas.remove(index);
+			}
 		}
 	}
 
 	_FORCE_INLINE_ void set_max_contacts_reported(int p_size) {
 		contacts.resize(p_size);
 		contact_count = 0;
-		if (mode == PhysicsServer::BODY_MODE_KINEMATIC && p_size)
+		if (mode == PhysicsServer::BODY_MODE_KINEMATIC && p_size) {
 			set_active(true);
+		}
 	}
 	_FORCE_INLINE_ int get_max_contacts_reported() const { return contacts.size(); }
 
@@ -259,8 +261,9 @@ public:
 	_FORCE_INLINE_ bool is_active() const { return active; }
 
 	_FORCE_INLINE_ void wakeup() {
-		if ((!get_space()) || mode == PhysicsServer::BODY_MODE_STATIC || mode == PhysicsServer::BODY_MODE_KINEMATIC)
+		if ((!get_space()) || mode == PhysicsServer::BODY_MODE_STATIC || mode == PhysicsServer::BODY_MODE_KINEMATIC) {
 			return;
+		}
 		set_active(true);
 	}
 
@@ -332,8 +335,9 @@ public:
 void BodySW::add_contact(const Vector3 &p_local_pos, const Vector3 &p_local_normal, real_t p_depth, int p_local_shape, const Vector3 &p_collider_pos, int p_collider_shape, ObjectID p_collider_instance_id, const RID &p_collider, const Vector3 &p_collider_velocity_at_pos) {
 	int c_max = contacts.size();
 
-	if (c_max == 0)
+	if (c_max == 0) {
 		return;
+	}
 
 	Contact *c = contacts.ptrw();
 
@@ -354,8 +358,9 @@ void BodySW::add_contact(const Vector3 &p_local_pos, const Vector3 &p_local_norm
 		if (least_deep >= 0 && least_depth < p_depth) {
 			idx = least_deep;
 		}
-		if (idx == -1)
+		if (idx == -1) {
 			return; //none least deepe than this
+		}
 	}
 
 	c[idx].local_pos = p_local_pos;

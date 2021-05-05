@@ -99,8 +99,9 @@ void AnimationNodeBlendTreeEditor::_property_changed(const StringName &p_propert
 }
 
 void AnimationNodeBlendTreeEditor::_update_graph() {
-	if (updating)
+	if (updating) {
 		return;
+	}
 
 	visible_properties.clear();
 
@@ -418,8 +419,9 @@ void AnimationNodeBlendTreeEditor::_delete_nodes_request() {
 		}
 	}
 
-	if (to_erase.empty())
+	if (to_erase.empty()) {
 		return;
+	}
 
 	undo_redo->create_action(TTR("Delete Node(s)"));
 
@@ -485,8 +487,9 @@ void AnimationNodeBlendTreeEditor::_filter_edited() {
 }
 
 bool AnimationNodeBlendTreeEditor::_update_filters(const Ref<AnimationNode> &anode) {
-	if (updating || _filter_edit != anode)
+	if (updating || _filter_edit != anode) {
 		return false;
+	}
 
 	NodePath player_path = AnimationTreeEditor::get_singleton()->get_tree()->get_animation_player();
 
@@ -585,8 +588,9 @@ bool AnimationNodeBlendTreeEditor::_update_filters(const Ref<AnimationNode> &ano
 		if (base->has_node(accum)) {
 			node = base->get_node(accum);
 		}
-		if (!node)
+		if (!node) {
 			continue; //no node, can't edit
+		}
 
 		if (path.get_subname_count()) {
 			String concat = path.get_concatenated_subnames();
@@ -673,8 +677,9 @@ void AnimationNodeBlendTreeEditor::_edit_filters(const String &p_which) {
 	ERR_FAIL_COND(!anode.is_valid());
 
 	_filter_edit = anode;
-	if (!_update_filters(anode))
+	if (!_update_filters(anode)) {
 		return;
+	}
 
 	filter_dialog->popup_centered_minsize(Size2(500, 500) * EDSCALE);
 }
@@ -690,8 +695,9 @@ void AnimationNodeBlendTreeEditor::_notification(int p_what) {
 		error_panel->add_style_override("panel", get_stylebox("bg", "Tree"));
 		error_label->add_color_override("font_color", get_color("error_color", "Editor"));
 
-		if (p_what == NOTIFICATION_THEME_CHANGED && is_visible_in_tree())
+		if (p_what == NOTIFICATION_THEME_CHANGED && is_visible_in_tree()) {
 			_update_graph();
+		}
 	}
 
 	if (p_what == NOTIFICATION_PROCESS) {
@@ -757,8 +763,9 @@ void AnimationNodeBlendTreeEditor::_notification(int p_what) {
 }
 
 void AnimationNodeBlendTreeEditor::_scroll_changed(const Vector2 &p_scroll) {
-	if (updating)
+	if (updating) {
 		return;
+	}
 	updating = true;
 	blend_tree->set_graph_offset(p_scroll / EDSCALE);
 	updating = false;

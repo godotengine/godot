@@ -91,8 +91,9 @@ void AudioStreamPlayer2D::_mix_audio() {
 		int cc = AudioServer::get_singleton()->get_channel_count();
 
 		if (cc == 1) {
-			if (!AudioServer::get_singleton()->thread_has_channel_mix_buffer(current.bus_index, 0))
+			if (!AudioServer::get_singleton()->thread_has_channel_mix_buffer(current.bus_index, 0)) {
 				continue; //may have been removed
+			}
 
 			AudioFrame *target = AudioServer::get_singleton()->thread_get_channel_mix_buffer(current.bus_index, 0);
 
@@ -114,8 +115,9 @@ void AudioStreamPlayer2D::_mix_audio() {
 				targets[k] = AudioServer::get_singleton()->thread_get_channel_mix_buffer(current.bus_index, k);
 			}
 
-			if (!valid)
+			if (!valid) {
 				continue;
+			}
 
 			for (int j = 0; j < buffer_size; j++) {
 				AudioFrame frame = buffer[j] * vol;
@@ -188,11 +190,13 @@ void AudioStreamPlayer2D::_notification(int p_what) {
 
 			for (int i = 0; i < areas; i++) {
 				Area2D *area2d = Object::cast_to<Area2D>(sr[i].collider);
-				if (!area2d)
+				if (!area2d) {
 					continue;
+				}
 
-				if (!area2d->is_overriding_audio_bus())
+				if (!area2d->is_overriding_audio_bus()) {
 					continue;
+				}
 
 				StringName bus_name = area2d->get_audio_bus_name();
 				bus_index = AudioServer::get_singleton()->thread_find_bus_index(bus_name);
@@ -212,8 +216,9 @@ void AudioStreamPlayer2D::_notification(int p_what) {
 
 					float dist = global_pos.distance_to(screen_in_global); //distance to screen center
 
-					if (dist > max_distance)
+					if (dist > max_distance) {
 						continue; //can't hear this sound in this viewport
+					}
 
 					float multiplier = Math::pow(1.0f - dist / max_distance, attenuation);
 					multiplier *= Math::db2linear(volume_db); //also apply player volume!
@@ -230,8 +235,9 @@ void AudioStreamPlayer2D::_notification(int p_what) {
 					outputs[new_output_count].bus_index = bus_index;
 					outputs[new_output_count].viewport = vp; //keep pointer only for reference
 					new_output_count++;
-					if (new_output_count == MAX_OUTPUTS)
+					if (new_output_count == MAX_OUTPUTS) {
 						break;
+					}
 				}
 			}
 
@@ -371,10 +377,11 @@ bool AudioStreamPlayer2D::is_autoplay_enabled() {
 }
 
 void AudioStreamPlayer2D::_set_playing(bool p_enable) {
-	if (p_enable)
+	if (p_enable) {
 		play();
-	else
+	} else {
 		stop();
+	}
 }
 bool AudioStreamPlayer2D::_is_active() const {
 	return active.is_set();
@@ -384,8 +391,9 @@ void AudioStreamPlayer2D::_validate_property(PropertyInfo &property) const {
 	if (property.name == "bus") {
 		String options;
 		for (int i = 0; i < AudioServer::get_singleton()->get_bus_count(); i++) {
-			if (i > 0)
+			if (i > 0) {
 				options += ",";
+			}
 			String name = AudioServer::get_singleton()->get_bus_name(i);
 			options += name;
 		}

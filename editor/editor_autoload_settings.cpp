@@ -63,23 +63,26 @@ void EditorAutoloadSettings::_notification(int p_what) {
 
 bool EditorAutoloadSettings::_autoload_name_is_valid(const String &p_name, String *r_error) {
 	if (!p_name.is_valid_identifier()) {
-		if (r_error)
+		if (r_error) {
 			*r_error = TTR("Invalid name.") + "\n" + TTR("Valid characters:") + " a-z, A-Z, 0-9 or _";
+		}
 
 		return false;
 	}
 
 	if (ClassDB::class_exists(p_name)) {
-		if (r_error)
+		if (r_error) {
 			*r_error = TTR("Invalid name.") + "\n" + TTR("Must not collide with an existing engine class name.");
+		}
 
 		return false;
 	}
 
 	for (int i = 0; i < Variant::VARIANT_MAX; i++) {
 		if (Variant::get_type_name(Variant::Type(i)) == p_name) {
-			if (r_error)
+			if (r_error) {
 				*r_error = TTR("Invalid name.") + "\n" + TTR("Must not collide with an existing built-in type name.");
+			}
 
 			return false;
 		}
@@ -87,8 +90,9 @@ bool EditorAutoloadSettings::_autoload_name_is_valid(const String &p_name, Strin
 
 	for (int i = 0; i < GlobalConstants::get_global_constant_count(); i++) {
 		if (GlobalConstants::get_global_constant_name(i) == p_name) {
-			if (r_error)
+			if (r_error) {
 				*r_error = TTR("Invalid name.") + "\n" + TTR("Must not collide with an existing global constant name.");
+			}
 
 			return false;
 		}
@@ -99,8 +103,9 @@ bool EditorAutoloadSettings::_autoload_name_is_valid(const String &p_name, Strin
 		ScriptServer::get_language(i)->get_reserved_words(&keywords);
 		for (List<String>::Element *E = keywords.front(); E; E = E->next()) {
 			if (E->get() == p_name) {
-				if (r_error)
+				if (r_error) {
 					*r_error = TTR("Invalid name.") + "\n" + TTR("Keyword cannot be used as an autoload name.");
+				}
 
 				return false;
 			}
@@ -111,8 +116,9 @@ bool EditorAutoloadSettings::_autoload_name_is_valid(const String &p_name, Strin
 }
 
 void EditorAutoloadSettings::_autoload_add() {
-	if (autoload_add(autoload_add_name->get_text(), autoload_add_path->get_line_edit()->get_text()))
+	if (autoload_add(autoload_add_name->get_text(), autoload_add_path->get_line_edit()->get_text())) {
 		autoload_add_path->get_line_edit()->set_text("");
+	}
 
 	autoload_add_name->set_text("");
 	add_autoload->set_disabled(true);
@@ -121,15 +127,17 @@ void EditorAutoloadSettings::_autoload_add() {
 void EditorAutoloadSettings::_autoload_selected() {
 	TreeItem *ti = tree->get_selected();
 
-	if (!ti)
+	if (!ti) {
 		return;
+	}
 
 	selected_autoload = "autoload/" + ti->get_text(0);
 }
 
 void EditorAutoloadSettings::_autoload_edited() {
-	if (updating_autoload)
+	if (updating_autoload) {
 		return;
+	}
 
 	TreeItem *ti = tree->get_edited();
 	int column = tree->get_edited_column();
@@ -140,8 +148,9 @@ void EditorAutoloadSettings::_autoload_edited() {
 		String name = ti->get_text(0);
 		String old_name = selected_autoload.get_slice("/", 1);
 
-		if (name == old_name)
+		if (name == old_name) {
 			return;
+		}
 
 		String error;
 		if (!_autoload_name_is_valid(name, &error)) {
@@ -191,12 +200,14 @@ void EditorAutoloadSettings::_autoload_edited() {
 		int order = ProjectSettings::get_singleton()->get_order(base);
 		String path = ProjectSettings::get_singleton()->get(base);
 
-		if (path.begins_with("*"))
+		if (path.begins_with("*")) {
 			path = path.substr(1, path.length());
+		}
 
 		// Singleton autoloads are represented with a leading "*" in their path.
-		if (checked)
+		if (checked) {
 			path = "*" + path;
+		}
 
 		undo_redo->create_action(TTR("Toggle AutoLoad Globals"));
 
@@ -239,8 +250,9 @@ void EditorAutoloadSettings::_autoload_button_pressed(Object *p_item, int p_colu
 				swap = ti->get_next();
 			}
 
-			if (!swap)
+			if (!swap) {
 				return;
+			}
 
 			String swap_name = "autoload/" + swap->get_text(0);
 
@@ -287,8 +299,9 @@ void EditorAutoloadSettings::_autoload_button_pressed(Object *p_item, int p_colu
 
 void EditorAutoloadSettings::_autoload_activated() {
 	TreeItem *ti = tree->get_selected();
-	if (!ti)
+	if (!ti) {
 		return;
+	}
 	_autoload_open(ti->get_text(1));
 }
 
@@ -356,8 +369,9 @@ Node *EditorAutoloadSettings::_create_autoload(const String &p_path) {
 }
 
 void EditorAutoloadSettings::update_autoload() {
-	if (updating_autoload)
+	if (updating_autoload) {
 		return;
+	}
 
 	updating_autoload = true;
 
@@ -380,14 +394,16 @@ void EditorAutoloadSettings::update_autoload() {
 	for (List<PropertyInfo>::Element *E = props.front(); E; E = E->next()) {
 		const PropertyInfo &pi = E->get();
 
-		if (!pi.name.begins_with("autoload/"))
+		if (!pi.name.begins_with("autoload/")) {
 			continue;
+		}
 
 		String name = pi.name.get_slice("/", 1);
 		String path = ProjectSettings::get_singleton()->get(pi.name);
 
-		if (name.empty())
+		if (name.empty()) {
 			continue;
+		}
 
 		AutoLoadInfo info;
 		info.is_singleton = path.begins_with("*");
@@ -501,8 +517,9 @@ void EditorAutoloadSettings::update_autoload() {
 }
 
 Variant EditorAutoloadSettings::get_drag_data_fw(const Point2 &p_point, Control *p_control) {
-	if (autoload_cache.size() <= 1)
+	if (autoload_cache.size() <= 1) {
 		return false;
+	}
 
 	PoolStringArray autoloads;
 
@@ -513,8 +530,9 @@ Variant EditorAutoloadSettings::get_drag_data_fw(const Point2 &p_point, Control 
 		next = tree->get_next_selected(next);
 	}
 
-	if (autoloads.size() == 0 || autoloads.size() == autoload_cache.size())
+	if (autoloads.size() == 0 || autoloads.size() == autoload_cache.size()) {
 		return Variant();
+	}
 
 	VBoxContainer *preview = memnew(VBoxContainer);
 
@@ -538,19 +556,22 @@ Variant EditorAutoloadSettings::get_drag_data_fw(const Point2 &p_point, Control 
 }
 
 bool EditorAutoloadSettings::can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_control) const {
-	if (updating_autoload)
+	if (updating_autoload) {
 		return false;
+	}
 
 	Dictionary drop_data = p_data;
 
-	if (!drop_data.has("type"))
+	if (!drop_data.has("type")) {
 		return false;
+	}
 
 	if (drop_data.has("type")) {
 		TreeItem *ti = tree->get_item_at_position(p_point);
 
-		if (!ti)
+		if (!ti) {
 			return false;
+		}
 
 		int section = tree->get_drop_section_at_position(p_point);
 
@@ -563,13 +584,15 @@ bool EditorAutoloadSettings::can_drop_data_fw(const Point2 &p_point, const Varia
 void EditorAutoloadSettings::drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_control) {
 	TreeItem *ti = tree->get_item_at_position(p_point);
 
-	if (!ti)
+	if (!ti) {
 		return;
+	}
 
 	int section = tree->get_drop_section_at_position(p_point);
 
-	if (section < -1)
+	if (section < -1) {
 		return;
+	}
 
 	String name;
 	bool move_to_back = false;
@@ -744,14 +767,16 @@ EditorAutoloadSettings::EditorAutoloadSettings() {
 	for (List<PropertyInfo>::Element *E = props.front(); E; E = E->next()) {
 		const PropertyInfo &pi = E->get();
 
-		if (!pi.name.begins_with("autoload/"))
+		if (!pi.name.begins_with("autoload/")) {
 			continue;
+		}
 
 		String name = pi.name.get_slice("/", 1);
 		String path = ProjectSettings::get_singleton()->get(pi.name);
 
-		if (name.empty())
+		if (name.empty()) {
 			continue;
+		}
 
 		AutoLoadInfo info;
 		info.is_singleton = path.begins_with("*");

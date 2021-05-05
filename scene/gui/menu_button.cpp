@@ -35,17 +35,20 @@
 void MenuButton::_unhandled_key_input(Ref<InputEvent> p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
-	if (disable_shortcuts)
+	if (disable_shortcuts) {
 		return;
+	}
 
 	if (p_event->is_pressed() && !p_event->is_echo() && (Object::cast_to<InputEventKey>(p_event.ptr()) || Object::cast_to<InputEventJoypadButton>(p_event.ptr()) || Object::cast_to<InputEventAction>(*p_event))) {
-		if (!get_parent() || !is_visible_in_tree() || is_disabled())
+		if (!get_parent() || !is_visible_in_tree() || is_disabled()) {
 			return;
+		}
 
 		bool global_only = (get_viewport()->get_modal_stack_top() && !get_viewport()->get_modal_stack_top()->is_a_parent_of(this));
 
-		if (popup->activate_item_by_event(p_event, global_only))
+		if (popup->activate_item_by_event(p_event, global_only)) {
 			accept_event();
+		}
 	}
 }
 

@@ -113,12 +113,15 @@ bool Basis::is_rotation() const {
 }
 
 bool Basis::is_symmetric() const {
-	if (!Math::is_equal_approx_ratio(elements[0][1], elements[1][0], UNIT_EPSILON))
+	if (!Math::is_equal_approx_ratio(elements[0][1], elements[1][0], UNIT_EPSILON)) {
 		return false;
-	if (!Math::is_equal_approx_ratio(elements[0][2], elements[2][0], UNIT_EPSILON))
+	}
+	if (!Math::is_equal_approx_ratio(elements[0][2], elements[2][0], UNIT_EPSILON)) {
 		return false;
-	if (!Math::is_equal_approx_ratio(elements[1][2], elements[2][1], UNIT_EPSILON))
+	}
+	if (!Math::is_equal_approx_ratio(elements[1][2], elements[2][1], UNIT_EPSILON)) {
 		return false;
+	}
 
 	return true;
 }
@@ -723,8 +726,9 @@ bool Basis::is_equal_approx(const Basis &p_basis) const {
 bool Basis::is_equal_approx_ratio(const Basis &a, const Basis &b, real_t p_epsilon) const {
 	for (int i = 0; i < 3; i++) {
 		for (int j = 0; j < 3; j++) {
-			if (!Math::is_equal_approx_ratio(a.elements[i][j], b.elements[i][j], p_epsilon))
+			if (!Math::is_equal_approx_ratio(a.elements[i][j], b.elements[i][j], p_epsilon)) {
 				return false;
+			}
 		}
 	}
 
@@ -734,8 +738,9 @@ bool Basis::is_equal_approx_ratio(const Basis &a, const Basis &b, real_t p_epsil
 bool Basis::operator==(const Basis &p_matrix) const {
 	for (int i = 0; i < 3; i++) {
 		for (int j = 0; j < 3; j++) {
-			if (elements[i][j] != p_matrix.elements[i][j])
+			if (elements[i][j] != p_matrix.elements[i][j]) {
 				return false;
+			}
 		}
 	}
 
@@ -750,8 +755,9 @@ Basis::operator String() const {
 	String mtx;
 	for (int i = 0; i < 3; i++) {
 		for (int j = 0; j < 3; j++) {
-			if (i != 0 || j != 0)
+			if (i != 0 || j != 0) {
 				mtx += ", ";
+			}
 
 			mtx += rtos(elements[i][j]);
 		}
@@ -829,20 +835,22 @@ int Basis::get_orthogonal_index() const {
 	for (int i = 0; i < 3; i++) {
 		for (int j = 0; j < 3; j++) {
 			real_t v = orth[i][j];
-			if (v > 0.5)
+			if (v > 0.5) {
 				v = 1.0;
-			else if (v < -0.5)
+			} else if (v < -0.5) {
 				v = -1.0;
-			else
+			} else {
 				v = 0;
+			}
 
 			orth[i][j] = v;
 		}
 	}
 
 	for (int i = 0; i < 24; i++) {
-		if (_ortho_bases[i] == orth)
+		if (_ortho_bases[i] == orth) {
 			return i;
+		}
 	}
 
 	return 0;
@@ -922,8 +930,9 @@ void Basis::get_axis_angle(Vector3 &r_axis, real_t &r_angle) const {
 	real_t s = Math::sqrt((elements[1][2] - elements[2][1]) * (elements[1][2] - elements[2][1]) + (elements[2][0] - elements[0][2]) * (elements[2][0] - elements[0][2]) + (elements[0][1] - elements[1][0]) * (elements[0][1] - elements[1][0])); // s=|axis||sin(angle)|, used to normalise
 
 	angle = Math::acos((elements[0][0] + elements[1][1] + elements[2][2] - 1) / 2);
-	if (angle < 0)
+	if (angle < 0) {
 		s = -s;
+	}
 	x = (elements[2][1] - elements[1][2]) / s;
 	y = (elements[0][2] - elements[2][0]) / s;
 	z = (elements[1][0] - elements[0][1]) / s;

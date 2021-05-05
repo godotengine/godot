@@ -56,8 +56,9 @@ void AudioStreamPlayer::_mix_to_bus(const AudioFrame *p_frames, int p_amount) {
 	}
 
 	for (int c = 0; c < 4; c++) {
-		if (!targets[c])
+		if (!targets[c]) {
 			break;
+		}
 		for (int i = 0; i < p_amount; i++) {
 			targets[c][i] += p_frames[i];
 		}
@@ -305,10 +306,11 @@ AudioStreamPlayer::MixTarget AudioStreamPlayer::get_mix_target() const {
 }
 
 void AudioStreamPlayer::_set_playing(bool p_enable) {
-	if (p_enable)
+	if (p_enable) {
 		play();
-	else
+	} else {
 		stop();
+	}
 }
 bool AudioStreamPlayer::_is_active() const {
 	return active.is_set();
@@ -329,8 +331,9 @@ void AudioStreamPlayer::_validate_property(PropertyInfo &property) const {
 	if (property.name == "bus") {
 		String options;
 		for (int i = 0; i < AudioServer::get_singleton()->get_bus_count(); i++) {
-			if (i > 0)
+			if (i > 0) {
 				options += ",";
+			}
 			String name = AudioServer::get_singleton()->get_bus_name(i);
 			options += name;
 		}

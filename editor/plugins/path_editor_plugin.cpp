@@ -36,8 +36,9 @@
 
 String PathSpatialGizmo::get_handle_name(int p_idx) const {
 	Ref<Curve3D> c = path->get_curve();
-	if (c.is_null())
+	if (c.is_null()) {
 		return "";
+	}
 
 	if (p_idx < c->get_point_count()) {
 		return TTR("Curve Point #") + itos(p_idx);
@@ -48,17 +49,19 @@ String PathSpatialGizmo::get_handle_name(int p_idx) const {
 	int idx = p_idx / 2;
 	int t = p_idx % 2;
 	String n = TTR("Curve Point #") + itos(idx);
-	if (t == 0)
+	if (t == 0) {
 		n += " In";
-	else
+	} else {
 		n += " Out";
+	}
 
 	return n;
 }
 Variant PathSpatialGizmo::get_handle_value(int p_idx) {
 	Ref<Curve3D> c = path->get_curve();
-	if (c.is_null())
+	if (c.is_null()) {
 		return Variant();
+	}
 
 	if (p_idx < c->get_point_count()) {
 		original = c->get_point_position(p_idx);
@@ -71,10 +74,11 @@ Variant PathSpatialGizmo::get_handle_value(int p_idx) {
 	int t = p_idx % 2;
 
 	Vector3 ofs;
-	if (t == 0)
+	if (t == 0) {
 		ofs = c->get_point_in(idx);
-	else
+	} else {
 		ofs = c->get_point_out(idx);
+	}
 
 	original = ofs + c->get_point_position(idx);
 
@@ -82,8 +86,9 @@ Variant PathSpatialGizmo::get_handle_value(int p_idx) {
 }
 void PathSpatialGizmo::set_handle(int p_idx, Camera *p_camera, const Point2 &p_point) {
 	Ref<Curve3D> c = path->get_curve();
-	if (c.is_null())
+	if (c.is_null()) {
 		return;
+	}
 
 	Transform gt = path->get_global_transform();
 	Transform gi = gt.affine_inverse();
@@ -136,20 +141,23 @@ void PathSpatialGizmo::set_handle(int p_idx, Camera *p_camera, const Point2 &p_p
 
 		if (t == 0) {
 			c->set_point_in(idx, local);
-			if (PathEditorPlugin::singleton->mirror_angle_enabled())
+			if (PathEditorPlugin::singleton->mirror_angle_enabled()) {
 				c->set_point_out(idx, PathEditorPlugin::singleton->mirror_length_enabled() ? -local : (-local.normalized() * orig_out_length));
+			}
 		} else {
 			c->set_point_out(idx, local);
-			if (PathEditorPlugin::singleton->mirror_angle_enabled())
+			if (PathEditorPlugin::singleton->mirror_angle_enabled()) {
 				c->set_point_in(idx, PathEditorPlugin::singleton->mirror_length_enabled() ? -local : (-local.normalized() * orig_in_length));
+			}
 		}
 	}
 }
 
 void PathSpatialGizmo::commit_handle(int p_idx, const Variant &p_restore, bool p_cancel) {
 	Ref<Curve3D> c = path->get_curve();
-	if (c.is_null())
+	if (c.is_null()) {
 		return;
+	}
 
 	UndoRedo *ur = SpatialEditor::get_singleton()->get_undo_redo();
 
@@ -214,15 +222,17 @@ void PathSpatialGizmo::redraw() {
 	Ref<SpatialMaterial> handles_material = gizmo_plugin->get_material("handles");
 
 	Ref<Curve3D> c = path->get_curve();
-	if (c.is_null())
+	if (c.is_null()) {
 		return;
+	}
 
 	PoolVector<Vector3> v3a = c->tessellate();
 	//PoolVector<Vector3> v3a=c->get_baked_points();
 
 	int v3s = v3a.size();
-	if (v3s == 0)
+	if (v3s == 0) {
 		return;
+	}
 	Vector<Vector3> v3p;
 	PoolVector<Vector3>::Read r = v3a.read();
 
@@ -278,11 +288,13 @@ PathSpatialGizmo::PathSpatialGizmo(Path *p_path) {
 }
 
 bool PathEditorPlugin::forward_spatial_gui_input(Camera *p_camera, const Ref<InputEvent> &p_event) {
-	if (!path)
+	if (!path) {
 		return false;
+	}
 	Ref<Curve3D> c = path->get_curve();
-	if (c.is_null())
+	if (c.is_null()) {
 		return false;
+	}
 	Transform gt = path->get_global_transform();
 	Transform it = gt.affine_inverse();
 
@@ -293,8 +305,9 @@ bool PathEditorPlugin::forward_spatial_gui_input(Camera *p_camera, const Ref<Inp
 	if (mb.is_valid()) {
 		Point2 mbpos(mb->get_position().x, mb->get_position().y);
 
-		if (!mb->is_pressed())
+		if (!mb->is_pressed()) {
 			set_handle_clicked(false);
+		}
 
 		if (mb->is_pressed() && mb->get_button_index() == BUTTON_LEFT && (curve_create->is_pressed() || (curve_edit->is_pressed() && mb->get_control()))) {
 			//click into curve, break it down
@@ -308,14 +321,16 @@ bool PathEditorPlugin::forward_spatial_gui_input(Camera *p_camera, const Ref<Inp
 			if (rc >= 2) {
 				PoolVector<Vector3>::Read r = v3a.read();
 
-				if (p_camera->unproject_position(gt.xform(c->get_point_position(0))).distance_to(mbpos) < click_dist)
+				if (p_camera->unproject_position(gt.xform(c->get_point_position(0))).distance_to(mbpos) < click_dist) {
 					return false; //nope, existing
+				}
 
 				for (int i = 0; i < c->get_point_count() - 1; i++) {
 					//find the offset and point index of the place to break up
 					int j = idx;
-					if (p_camera->unproject_position(gt.xform(c->get_point_position(i + 1))).distance_to(mbpos) < click_dist)
+					if (p_camera->unproject_position(gt.xform(c->get_point_position(i + 1))).distance_to(mbpos) < click_dist) {
 						return false; //nope, existing
+					}
 
 					while (j < rc && c->get_point_position(i + 1) != r[j]) {
 						Vector3 from = r[j];
@@ -344,13 +359,15 @@ bool PathEditorPlugin::forward_spatial_gui_input(Camera *p_camera, const Ref<Inp
 						}
 						j++;
 					}
-					if (idx == j)
+					if (idx == j) {
 						idx++; //force next
-					else
+					} else {
 						idx = j; //swap
+					}
 
-					if (j == rc)
+					if (j == rc) {
 						break;
+					}
 				}
 			}
 
@@ -366,10 +383,11 @@ bool PathEditorPlugin::forward_spatial_gui_input(Camera *p_camera, const Ref<Inp
 
 			} else {
 				Vector3 org;
-				if (c->get_point_count() == 0)
+				if (c->get_point_count() == 0) {
 					org = path->get_transform().get_origin();
-				else
+				} else {
 					org = gt.xform(c->get_point_position(c->get_point_count() - 1));
+				}
 				Plane p(org, p_camera->get_transform().basis.get_axis(2));
 				Vector3 ray_from = p_camera->project_ray_origin(mbpos);
 				Vector3 ray_dir = p_camera->project_ray_normal(mbpos);
@@ -479,10 +497,12 @@ void PathEditorPlugin::_mode_changed(int p_idx) {
 
 void PathEditorPlugin::_close_curve() {
 	Ref<Curve3D> c = path->get_curve();
-	if (c.is_null())
+	if (c.is_null()) {
 		return;
-	if (c->get_point_count() < 2)
+	}
+	if (c->get_point_count() < 2) {
 		return;
+	}
 	c->add_point(c->get_point_position(0), c->get_point_in(0), c->get_point_out(0));
 }
 
@@ -597,8 +617,9 @@ Ref<EditorSpatialGizmo> PathSpatialGizmoPlugin::create_gizmo(Spatial *p_spatial)
 	Ref<PathSpatialGizmo> ref;
 
 	Path *path = Object::cast_to<Path>(p_spatial);
-	if (path)
+	if (path) {
 		ref = Ref<PathSpatialGizmo>(memnew(PathSpatialGizmo(path)));
+	}
 
 	return ref;
 }

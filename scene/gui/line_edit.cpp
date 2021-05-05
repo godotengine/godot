@@ -60,8 +60,9 @@ void LineEdit::_gui_input(Ref<InputEvent> p_event) {
 			return;
 		}
 
-		if (b->get_button_index() != BUTTON_LEFT)
+		if (b->get_button_index() != BUTTON_LEFT) {
 			return;
+		}
 
 		_reset_caret_blink_timer();
 		if (b->is_pressed()) {
@@ -169,8 +170,9 @@ void LineEdit::_gui_input(Ref<InputEvent> p_event) {
 	Ref<InputEventKey> k = p_event;
 
 	if (k.is_valid()) {
-		if (!k->is_pressed())
+		if (!k->is_pressed()) {
 			return;
+		}
 
 #ifdef APPLE_STYLE_KEYS
 		if (k->get_control() && !k->get_shift() && !k->get_alt() && !k->get_command()) {
@@ -319,14 +321,16 @@ void LineEdit::_gui_input(Ref<InputEvent> p_event) {
 				case KEY_KP_ENTER:
 				case KEY_ENTER: {
 					emit_signal("text_entered", text);
-					if (OS::get_singleton()->has_virtual_keyboard() && virtual_keyboard_enabled)
+					if (OS::get_singleton()->has_virtual_keyboard() && virtual_keyboard_enabled) {
 						OS::get_singleton()->hide_virtual_keyboard();
+					}
 
 				} break;
 
 				case KEY_BACKSPACE: {
-					if (!editable)
+					if (!editable) {
 						break;
+					}
 
 					if (selection.enabled) {
 						selection_delete();
@@ -347,8 +351,9 @@ void LineEdit::_gui_input(Ref<InputEvent> p_event) {
 						while (cc > 0) {
 							bool ischar = _is_text_char(text[cc - 1]);
 
-							if (prev_char && !ischar)
+							if (prev_char && !ischar) {
 								break;
+							}
 
 							prev_char = ischar;
 							cc--;
@@ -371,10 +376,13 @@ void LineEdit::_gui_input(Ref<InputEvent> p_event) {
 					FALLTHROUGH;
 				}
 				case KEY_LEFT: {
-#ifndef APPLE_STYLE_KEYS
-					if (!k->get_alt())
-#endif
+#ifdef APPLE_STYLE_KEYS
+					shift_selection_check_pre(k->get_shift());
+#else
+					if (!k->get_alt()) {
 						shift_selection_check_pre(k->get_shift());
+					}
+#endif
 
 #ifdef APPLE_STYLE_KEYS
 					if (k->get_command()) {
@@ -392,8 +400,9 @@ void LineEdit::_gui_input(Ref<InputEvent> p_event) {
 						while (cc > 0) {
 							bool ischar = _is_text_char(text[cc - 1]);
 
-							if (prev_char && !ischar)
+							if (prev_char && !ischar) {
 								break;
+							}
 
 							prev_char = ischar;
 							cc--;
@@ -434,8 +443,9 @@ void LineEdit::_gui_input(Ref<InputEvent> p_event) {
 						while (cc < text.length()) {
 							bool ischar = _is_text_char(text[cc]);
 
-							if (prev_char && !ischar)
+							if (prev_char && !ischar) {
 								break;
+							}
 
 							prev_char = ischar;
 							cc++;
@@ -452,21 +462,24 @@ void LineEdit::_gui_input(Ref<InputEvent> p_event) {
 				} break;
 				case KEY_UP: {
 					shift_selection_check_pre(k->get_shift());
-					if (get_cursor_position() == 0)
+					if (get_cursor_position() == 0) {
 						handled = false;
+					}
 					set_cursor_position(0);
 					shift_selection_check_post(k->get_shift());
 				} break;
 				case KEY_DOWN: {
 					shift_selection_check_pre(k->get_shift());
-					if (get_cursor_position() == text.length())
+					if (get_cursor_position() == text.length()) {
 						handled = false;
+					}
 					set_cursor_position(text.length());
 					shift_selection_check_post(k->get_shift());
 				} break;
 				case KEY_DELETE: {
-					if (!editable)
+					if (!editable) {
 						break;
+					}
 
 					if (k->get_shift() && !k->get_command() && !k->get_alt()) {
 						cut_text();
@@ -480,8 +493,9 @@ void LineEdit::_gui_input(Ref<InputEvent> p_event) {
 
 					int text_len = text.length();
 
-					if (cursor_pos == text_len)
+					if (cursor_pos == text_len) {
 						break; // Nothing to do.
+					}
 
 #ifdef APPLE_STYLE_KEYS
 					if (k->get_alt()) {
@@ -498,8 +512,9 @@ void LineEdit::_gui_input(Ref<InputEvent> p_event) {
 						while (cc < text.length()) {
 							bool ischar = _is_text_char(text[cc]);
 
-							if (prev_char && !ischar)
+							if (prev_char && !ischar) {
 								break;
+							}
 							prev_char = ischar;
 							cc++;
 						}
@@ -619,8 +634,9 @@ void LineEdit::drop_data(const Point2 &p_point, const Variant &p_data) {
 
 		Ref<Font> font = get_font("font");
 		if (font != nullptr) {
-			for (int i = selection.begin; i < selection.end; i++)
+			for (int i = selection.begin; i < selection.end; i++) {
 				cached_width -= font->get_char_size(pass ? secret_character[0] : text[i]).width;
+			}
 		}
 
 		text.erase(selection.begin, selected);
@@ -718,10 +734,11 @@ void LineEdit::_notification(int p_what) {
 					x_ofs = style->get_offset().x;
 				} break;
 				case ALIGN_CENTER: {
-					if (scroll_offset != 0)
+					if (scroll_offset != 0) {
 						x_ofs = style->get_offset().x;
-					else
+					} else {
 						x_ofs = MAX(style->get_margin(MARGIN_LEFT), int(size.width - (cached_text_width)) / 2);
+					}
 				} break;
 				case ALIGN_RIGHT: {
 					x_ofs = MAX(style->get_margin(MARGIN_LEFT), int(size.width - style->get_margin(MARGIN_RIGHT) - (cached_text_width)));
@@ -743,8 +760,9 @@ void LineEdit::_notification(int p_what) {
 
 			const String &t = using_placeholder ? placeholder_translated : text;
 			// Draw placeholder color.
-			if (using_placeholder)
+			if (using_placeholder) {
 				font_color.a *= placeholder_alpha;
+			}
 
 			bool display_clear_icon = !using_placeholder && is_editable() && clear_button_enabled;
 			if (right_icon.is_valid() || display_clear_icon) {
@@ -775,22 +793,25 @@ void LineEdit::_notification(int p_what) {
 			FontDrawer drawer(font, Color(1, 1, 1));
 			while (true) {
 				// End of string, break.
-				if (char_ofs >= t.length())
+				if (char_ofs >= t.length()) {
 					break;
+				}
 
 				if (char_ofs == cursor_pos) {
 					if (ime_text.length() > 0) {
 						int ofs = 0;
 						while (true) {
-							if (ofs >= ime_text.length())
+							if (ofs >= ime_text.length()) {
 								break;
+							}
 
 							CharType cchar = (pass && !text.empty()) ? secret_character[0] : ime_text[ofs];
 							CharType next = (pass && !text.empty()) ? secret_character[0] : ime_text[ofs + 1];
 							int im_char_width = font->get_char_size(cchar, next).width;
 
-							if ((x_ofs + im_char_width) > ofs_max)
+							if ((x_ofs + im_char_width) > ofs_max) {
 								break;
+							}
 
 							bool selected = ofs >= ime_selection.x && ofs < ime_selection.x + ime_selection.y;
 							if (selected) {
@@ -812,13 +833,15 @@ void LineEdit::_notification(int p_what) {
 				int char_width = font->get_char_size(cchar, next).width;
 
 				// End of widget, break.
-				if ((x_ofs + char_width) > ofs_max)
+				if ((x_ofs + char_width) > ofs_max) {
 					break;
+				}
 
 				bool selected = selection.enabled && char_ofs >= selection.begin && char_ofs < selection.end;
 
-				if (selected)
+				if (selected) {
 					VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(Point2(x_ofs, y_ofs), Size2(char_width, caret_height)), selection_color);
+				}
 
 				int yofs = y_ofs + (caret_height - font->get_height()) / 2;
 				drawer.draw_char(ci, Point2(x_ofs, yofs + font_ascent), cchar, next, selected ? font_color_selected : font_color);
@@ -841,15 +864,17 @@ void LineEdit::_notification(int p_what) {
 				if (ime_text.length() > 0) {
 					int ofs = 0;
 					while (true) {
-						if (ofs >= ime_text.length())
+						if (ofs >= ime_text.length()) {
 							break;
+						}
 
 						CharType cchar = (pass && !text.empty()) ? secret_character[0] : ime_text[ofs];
 						CharType next = (pass && !text.empty()) ? secret_character[0] : ime_text[ofs + 1];
 						int im_char_width = font->get_char_size(cchar, next).width;
 
-						if ((x_ofs + im_char_width) > ofs_max)
+						if ((x_ofs + im_char_width) > ofs_max) {
 							break;
+						}
 
 						bool selected = ofs >= ime_selection.x && ofs < ime_selection.x + ime_selection.y;
 						if (selected) {
@@ -921,8 +946,9 @@ void LineEdit::_notification(int p_what) {
 			ime_text = "";
 			ime_selection = Point2();
 
-			if (OS::get_singleton()->has_virtual_keyboard() && virtual_keyboard_enabled)
+			if (OS::get_singleton()->has_virtual_keyboard() && virtual_keyboard_enabled) {
 				OS::get_singleton()->hide_virtual_keyboard();
+			}
 
 		} break;
 		case MainLoop::NOTIFICATION_OS_IME_UPDATE: {
@@ -954,8 +980,9 @@ void LineEdit::paste_text() {
 
 	if (paste_buffer != "") {
 		int prev_len = text.length();
-		if (selection.enabled)
+		if (selection.enabled) {
 			selection_delete();
+		}
 		append_at_cursor(paste_buffer);
 
 		if (!text_changed_dirty) {
@@ -983,8 +1010,9 @@ void LineEdit::undo() {
 	scroll_offset = op.scroll_offset;
 	set_cursor_position(op.cursor_pos);
 
-	if (expand_to_text_length)
+	if (expand_to_text_length) {
 		minimum_size_changed();
+	}
 
 	_emit_text_change();
 }
@@ -1003,8 +1031,9 @@ void LineEdit::redo() {
 	scroll_offset = op.scroll_offset;
 	set_cursor_position(op.cursor_pos);
 
-	if (expand_to_text_length)
+	if (expand_to_text_length) {
 		minimum_size_changed();
+	}
 
 	_emit_text_change();
 }
@@ -1013,13 +1042,15 @@ void LineEdit::shift_selection_check_pre(bool p_shift) {
 	if (!selection.enabled && p_shift) {
 		selection.cursor_start = cursor_pos;
 	}
-	if (!p_shift)
+	if (!p_shift) {
 		deselect();
+	}
 }
 
 void LineEdit::shift_selection_check_post(bool p_shift) {
-	if (p_shift)
+	if (p_shift) {
 		selection_fill_at_cursor();
+	}
 }
 
 void LineEdit::set_cursor_at_pixel_pos(int p_x) {
@@ -1037,19 +1068,22 @@ void LineEdit::set_cursor_at_pixel_pos(int p_x) {
 			pixel_ofs = int(style->get_offset().x);
 		} break;
 		case ALIGN_CENTER: {
-			if (scroll_offset != 0)
+			if (scroll_offset != 0) {
 				pixel_ofs = int(style->get_offset().x);
-			else
+			} else {
 				pixel_ofs = int(size.width - (cached_width)) / 2;
+			}
 
-			if (display_clear_icon)
+			if (display_clear_icon) {
 				pixel_ofs -= int(r_icon_width / 2 + style->get_margin(MARGIN_RIGHT));
+			}
 		} break;
 		case ALIGN_RIGHT: {
 			pixel_ofs = int(size.width - style->get_margin(MARGIN_RIGHT) - (cached_width));
 
-			if (display_clear_icon)
+			if (display_clear_icon) {
 				pixel_ofs -= int(r_icon_width + style->get_margin(MARGIN_RIGHT));
+			}
 		} break;
 	}
 
@@ -1085,19 +1119,22 @@ int LineEdit::get_cursor_pixel_pos() {
 			pixel_ofs = int(style->get_offset().x);
 		} break;
 		case ALIGN_CENTER: {
-			if (scroll_offset != 0)
+			if (scroll_offset != 0) {
 				pixel_ofs = int(style->get_offset().x);
-			else
+			} else {
 				pixel_ofs = int(size.width - (cached_width)) / 2;
+			}
 
-			if (display_clear_icon)
+			if (display_clear_icon) {
 				pixel_ofs -= int(r_icon_width / 2 + style->get_margin(MARGIN_RIGHT));
+			}
 		} break;
 		case ALIGN_RIGHT: {
 			pixel_ofs = int(size.width - style->get_margin(MARGIN_RIGHT) - (cached_width));
 
-			if (display_clear_icon)
+			if (display_clear_icon) {
 				pixel_ofs -= int(r_icon_width + style->get_margin(MARGIN_RIGHT));
+			}
 		} break;
 	}
 
@@ -1157,8 +1194,9 @@ void LineEdit::_toggle_draw_caret() {
 }
 
 void LineEdit::delete_char() {
-	if ((text.length() <= 0) || (cursor_pos == 0))
+	if ((text.length() <= 0) || (cursor_pos == 0)) {
 		return;
+	}
 
 	Ref<Font> font = get_font("font");
 	if (font != nullptr) {
@@ -1182,8 +1220,9 @@ void LineEdit::delete_text(int p_from_column, int p_to_column) {
 	if (text.size() > 0) {
 		Ref<Font> font = get_font("font");
 		if (font != nullptr) {
-			for (int i = p_from_column; i < p_to_column; i++)
+			for (int i = p_from_column; i < p_to_column; i++) {
 				cached_width -= font->get_char_size(pass ? secret_character[0] : text[i]).width;
+			}
 		}
 	} else {
 		cached_width = 0;
@@ -1270,11 +1309,13 @@ float LineEdit::get_placeholder_alpha() const {
 }
 
 void LineEdit::set_cursor_position(int p_pos) {
-	if (p_pos > (int)text.length())
+	if (p_pos > (int)text.length()) {
 		p_pos = text.length();
+	}
 
-	if (p_pos < 0)
+	if (p_pos < 0) {
 		p_pos = 0;
+	}
 
 	cursor_pos = p_pos;
 
@@ -1298,8 +1339,9 @@ void LineEdit::set_cursor_position(int p_pos) {
 			window_width -= r_icon->get_width();
 		}
 
-		if (window_width < 0)
+		if (window_width < 0) {
 			return;
+		}
 		int wp = scroll_offset;
 
 		if (font.is_valid()) {
@@ -1316,8 +1358,9 @@ void LineEdit::set_cursor_position(int p_pos) {
 						accum_width += font->get_char_size(text[i], i + 1 < text.length() ? text[i + 1] : 0).width; // Anything should do.
 					}
 				}
-				if (accum_width > window_width)
+				if (accum_width > window_width) {
 					break;
+				}
 
 				wp = i;
 			}
@@ -1409,8 +1452,9 @@ void LineEdit::deselect() {
 }
 
 void LineEdit::selection_delete() {
-	if (selection.enabled)
+	if (selection.enabled) {
 		delete_text(selection.begin, selection.end);
+	}
 
 	deselect();
 }
@@ -1426,8 +1470,9 @@ int LineEdit::get_max_length() const {
 }
 
 void LineEdit::selection_fill_at_cursor() {
-	if (!selecting_enabled)
+	if (!selecting_enabled) {
 		return;
+	}
 
 	selection.begin = cursor_pos;
 	selection.end = selection.cursor_start;
@@ -1442,11 +1487,13 @@ void LineEdit::selection_fill_at_cursor() {
 }
 
 void LineEdit::select_all() {
-	if (!selecting_enabled)
+	if (!selecting_enabled) {
 		return;
+	}
 
-	if (!text.length())
+	if (!text.length()) {
 		return;
+	}
 
 	selection.begin = 0;
 	selection.end = text.length();
@@ -1455,8 +1502,9 @@ void LineEdit::select_all() {
 }
 
 void LineEdit::set_editable(bool p_editable) {
-	if (editable == p_editable)
+	if (editable == p_editable) {
 		return;
+	}
 
 	editable = p_editable;
 	_generate_context_menu();
@@ -1494,8 +1542,9 @@ String LineEdit::get_secret_character() const {
 }
 
 void LineEdit::select(int p_from, int p_to) {
-	if (!selecting_enabled)
+	if (!selecting_enabled) {
 		return;
+	}
 
 	if (p_from == 0 && p_to == 0) {
 		deselect();
@@ -1503,15 +1552,19 @@ void LineEdit::select(int p_from, int p_to) {
 	}
 
 	int len = text.length();
-	if (p_from < 0)
+	if (p_from < 0) {
 		p_from = 0;
-	if (p_from > len)
+	}
+	if (p_from > len) {
 		p_from = len;
-	if (p_to < 0 || p_to > len)
+	}
+	if (p_to < 0 || p_to > len) {
 		p_to = len;
+	}
 
-	if (p_from >= p_to)
+	if (p_from >= p_to) {
 		return;
+	}
 
 	selection.enabled = true;
 	selection.begin = p_from;
@@ -1624,8 +1677,9 @@ bool LineEdit::is_virtual_keyboard_enabled() const {
 void LineEdit::set_selecting_enabled(bool p_enabled) {
 	selecting_enabled = p_enabled;
 
-	if (!selecting_enabled)
+	if (!selecting_enabled) {
 		deselect();
+	}
 
 	_generate_context_menu();
 }
@@ -1648,8 +1702,9 @@ Ref<Texture> LineEdit::get_right_icon() {
 }
 
 void LineEdit::_text_changed() {
-	if (expand_to_text_length)
+	if (expand_to_text_length) {
 		minimum_size_changed();
+	}
 
 	_emit_text_change();
 	_clear_redo();
@@ -1715,14 +1770,17 @@ void LineEdit::_create_undo_state() {
 void LineEdit::_generate_context_menu() {
 	// Reorganize context menu.
 	menu->clear();
-	if (editable)
+	if (editable) {
 		menu->add_item(RTR("Cut"), MENU_CUT, is_shortcut_keys_enabled() ? KEY_MASK_CMD | KEY_X : 0);
+	}
 	menu->add_item(RTR("Copy"), MENU_COPY, is_shortcut_keys_enabled() ? KEY_MASK_CMD | KEY_C : 0);
-	if (editable)
+	if (editable) {
 		menu->add_item(RTR("Paste"), MENU_PASTE, is_shortcut_keys_enabled() ? KEY_MASK_CMD | KEY_V : 0);
+	}
 	menu->add_separator();
-	if (is_selecting_enabled())
+	if (is_selecting_enabled()) {
 		menu->add_item(RTR("Select All"), MENU_SELECT_ALL, is_shortcut_keys_enabled() ? KEY_MASK_CMD | KEY_A : 0);
+	}
 	if (editable) {
 		menu->add_item(RTR("Clear"), MENU_CLEAR);
 		menu->add_separator();

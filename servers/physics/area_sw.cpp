@@ -46,13 +46,15 @@ AreaSW::BodyKey::BodyKey(AreaSW *p_body, uint32_t p_body_shape, uint32_t p_area_
 }
 
 void AreaSW::_shapes_changed() {
-	if (!moved_list.in_list() && get_space())
+	if (!moved_list.in_list() && get_space()) {
 		get_space()->area_add_to_moved_list(&moved_list);
+	}
 }
 
 void AreaSW::set_transform(const Transform &p_transform) {
-	if (!moved_list.in_list() && get_space())
+	if (!moved_list.in_list() && get_space()) {
 		get_space()->area_add_to_moved_list(&moved_list);
+	}
 
 	_set_transform(p_transform);
 	_set_inv_transform(p_transform.affine_inverse());
@@ -60,10 +62,12 @@ void AreaSW::set_transform(const Transform &p_transform) {
 
 void AreaSW::set_space(SpaceSW *p_space) {
 	if (get_space()) {
-		if (monitor_query_list.in_list())
+		if (monitor_query_list.in_list()) {
 			get_space()->area_remove_from_monitor_query_list(&monitor_query_list);
-		if (moved_list.in_list())
+		}
+		if (moved_list.in_list()) {
 			get_space()->area_remove_from_moved_list(&moved_list);
+		}
 	}
 
 	monitored_bodies.clear();
@@ -88,8 +92,9 @@ void AreaSW::set_monitor_callback(ObjectID p_id, const StringName &p_method) {
 
 	_shape_changed();
 
-	if (!moved_list.in_list() && get_space())
+	if (!moved_list.in_list() && get_space()) {
 		get_space()->area_add_to_moved_list(&moved_list);
+	}
 }
 
 void AreaSW::set_area_monitor_callback(ObjectID p_id, const StringName &p_method) {
@@ -108,14 +113,16 @@ void AreaSW::set_area_monitor_callback(ObjectID p_id, const StringName &p_method
 
 	_shape_changed();
 
-	if (!moved_list.in_list() && get_space())
+	if (!moved_list.in_list() && get_space()) {
 		get_space()->area_add_to_moved_list(&moved_list);
+	}
 }
 
 void AreaSW::set_space_override_mode(PhysicsServer::AreaSpaceOverrideMode p_mode) {
 	bool do_override = p_mode != PhysicsServer::AREA_SPACE_OVERRIDE_DISABLED;
-	if (do_override == (space_override_mode != PhysicsServer::AREA_SPACE_OVERRIDE_DISABLED))
+	if (do_override == (space_override_mode != PhysicsServer::AREA_SPACE_OVERRIDE_DISABLED)) {
 		return;
+	}
 	_unregister_shapes();
 	space_override_mode = p_mode;
 	_shape_changed();
@@ -176,13 +183,15 @@ Variant AreaSW::get_param(PhysicsServer::AreaParameter p_param) const {
 void AreaSW::_queue_monitor_update() {
 	ERR_FAIL_COND(!get_space());
 
-	if (!monitor_query_list.in_list())
+	if (!monitor_query_list.in_list()) {
 		get_space()->area_add_to_monitor_query_list(&monitor_query_list);
+	}
 }
 
 void AreaSW::set_monitorable(bool p_monitorable) {
-	if (monitorable == p_monitorable)
+	if (monitorable == p_monitorable) {
 		return;
+	}
 
 	monitorable = p_monitorable;
 	_set_static(!monitorable);
@@ -192,8 +201,9 @@ void AreaSW::call_queries() {
 	if (monitor_callback_id && !monitored_bodies.empty()) {
 		Variant res[5];
 		Variant *resptr[5];
-		for (int i = 0; i < 5; i++)
+		for (int i = 0; i < 5; i++) {
 			resptr[i] = &res[i];
+		}
 
 		Object *obj = ObjectDB::get_instance(monitor_callback_id);
 		if (!obj) {
@@ -228,8 +238,9 @@ void AreaSW::call_queries() {
 	if (area_monitor_callback_id && !monitored_areas.empty()) {
 		Variant res[5];
 		Variant *resptr[5];
-		for (int i = 0; i < 5; i++)
+		for (int i = 0; i < 5; i++) {
 			resptr[i] = &res[i];
+		}
 
 		Object *obj = ObjectDB::get_instance(area_monitor_callback_id);
 		if (!obj) {

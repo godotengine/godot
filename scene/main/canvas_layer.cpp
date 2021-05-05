@@ -33,8 +33,9 @@
 
 void CanvasLayer::set_layer(int p_xform) {
 	layer = p_xform;
-	if (viewport.is_valid())
+	if (viewport.is_valid()) {
 		VisualServer::get_singleton()->viewport_set_canvas_stacking(viewport, canvas, layer, get_position_in_parent());
+	}
 }
 
 int CanvasLayer::get_layer() const {
@@ -44,8 +45,9 @@ int CanvasLayer::get_layer() const {
 void CanvasLayer::set_transform(const Transform2D &p_xform) {
 	transform = p_xform;
 	locrotscale_dirty = true;
-	if (viewport.is_valid())
+	if (viewport.is_valid()) {
 		VisualServer::get_singleton()->viewport_set_canvas_transform(viewport, canvas, transform);
+	}
 }
 
 Transform2D CanvasLayer::get_transform() const {
@@ -55,8 +57,9 @@ Transform2D CanvasLayer::get_transform() const {
 void CanvasLayer::_update_xform() {
 	transform.set_rotation_and_scale(rot, scale);
 	transform.set_origin(ofs);
-	if (viewport.is_valid())
+	if (viewport.is_valid()) {
 		VisualServer::get_singleton()->viewport_set_canvas_transform(viewport, canvas, transform);
+	}
 }
 
 void CanvasLayer::_update_locrotscale() {
@@ -67,31 +70,35 @@ void CanvasLayer::_update_locrotscale() {
 }
 
 void CanvasLayer::set_offset(const Vector2 &p_offset) {
-	if (locrotscale_dirty)
+	if (locrotscale_dirty) {
 		_update_locrotscale();
+	}
 
 	ofs = p_offset;
 	_update_xform();
 }
 
 Vector2 CanvasLayer::get_offset() const {
-	if (locrotscale_dirty)
+	if (locrotscale_dirty) {
 		const_cast<CanvasLayer *>(this)->_update_locrotscale();
+	}
 
 	return ofs;
 }
 
 void CanvasLayer::set_rotation(real_t p_radians) {
-	if (locrotscale_dirty)
+	if (locrotscale_dirty) {
 		_update_locrotscale();
+	}
 
 	rot = p_radians;
 	_update_xform();
 }
 
 real_t CanvasLayer::get_rotation() const {
-	if (locrotscale_dirty)
+	if (locrotscale_dirty) {
 		const_cast<CanvasLayer *>(this)->_update_locrotscale();
+	}
 
 	return rot;
 }
@@ -105,16 +112,18 @@ real_t CanvasLayer::get_rotation_degrees() const {
 }
 
 void CanvasLayer::set_scale(const Vector2 &p_scale) {
-	if (locrotscale_dirty)
+	if (locrotscale_dirty) {
 		_update_locrotscale();
+	}
 
 	scale = p_scale;
 	_update_xform();
 }
 
 Vector2 CanvasLayer::get_scale() const {
-	if (locrotscale_dirty)
+	if (locrotscale_dirty) {
 		const_cast<CanvasLayer *>(this)->_update_locrotscale();
+	}
 
 	return scale;
 }
@@ -146,16 +155,18 @@ void CanvasLayer::_notification(int p_what) {
 
 		} break;
 		case NOTIFICATION_MOVED_IN_PARENT: {
-			if (is_inside_tree())
+			if (is_inside_tree()) {
 				VisualServer::get_singleton()->viewport_set_canvas_stacking(viewport, canvas, layer, get_position_in_parent());
+			}
 
 		} break;
 	}
 }
 
 Size2 CanvasLayer::get_viewport_size() const {
-	if (!is_inside_tree())
+	if (!is_inside_tree()) {
 		return Size2(1, 1);
+	}
 
 	Rect2 r = vp->get_visible_rect();
 	return r.size;
@@ -182,10 +193,11 @@ void CanvasLayer::set_custom_viewport(Node *p_viewport) {
 	}
 
 	if (is_inside_tree()) {
-		if (custom_viewport)
+		if (custom_viewport) {
 			vp = custom_viewport;
-		else
+		} else {
 			vp = Node::get_viewport();
+		}
 
 		vp->_canvas_layer_add(this);
 		viewport = vp->get_viewport_rid();

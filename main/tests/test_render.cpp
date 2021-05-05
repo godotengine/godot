@@ -64,8 +64,9 @@ class TestMainLoop : public MainLoop {
 protected:
 public:
 	virtual void input_event(const Ref<InputEvent> &p_event) {
-		if (p_event->is_pressed())
+		if (p_event->is_pressed()) {
 			quit = true;
+		}
 	}
 
 	virtual void init() {

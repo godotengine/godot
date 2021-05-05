@@ -36,14 +36,16 @@
 bool ConcavePolygonShape2D::_edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const {
 	PoolVector<Vector2> s = get_segments();
 	int len = s.size();
-	if (len == 0 || (len % 2) == 1)
+	if (len == 0 || (len % 2) == 1) {
 		return false;
+	}
 
 	PoolVector<Vector2>::Read r = s.read();
 	for (int i = 0; i < len; i += 2) {
 		Vector2 closest = Geometry::get_closest_point_to_segment_2d(p_point, &r[i]);
-		if (p_point.distance_to(closest) < p_tolerance)
+		if (p_point.distance_to(closest) < p_tolerance) {
 			return true;
+		}
 	}
 
 	return false;
@@ -61,8 +63,9 @@ PoolVector<Vector2> ConcavePolygonShape2D::get_segments() const {
 void ConcavePolygonShape2D::draw(const RID &p_to_rid, const Color &p_color) {
 	PoolVector<Vector2> s = get_segments();
 	int len = s.size();
-	if (len == 0 || (len % 2) == 1)
+	if (len == 0 || (len % 2) == 1) {
 		return;
+	}
 
 	PoolVector<Vector2>::Read r = s.read();
 	for (int i = 0; i < len; i += 2) {
@@ -73,17 +76,19 @@ void ConcavePolygonShape2D::draw(const RID &p_to_rid, const Color &p_color) {
 Rect2 ConcavePolygonShape2D::get_rect() const {
 	PoolVector<Vector2> s = get_segments();
 	int len = s.size();
-	if (len == 0)
+	if (len == 0) {
 		return Rect2();
+	}
 
 	Rect2 rect;
 
 	PoolVector<Vector2>::Read r = s.read();
 	for (int i = 0; i < len; i++) {
-		if (i == 0)
+		if (i == 0) {
 			rect.position = r[i];
-		else
+		} else {
 			rect.expand_to(r[i]);
+		}
 	}
 
 	return rect;

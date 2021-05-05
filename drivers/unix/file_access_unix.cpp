@@ -71,8 +71,9 @@ void FileAccessUnix::check_errors() const {
 }
 
 Error FileAccessUnix::_open(const String &p_path, int p_mode_flags) {
-	if (f)
+	if (f) {
 		fclose(f);
+	}
 	f = nullptr;
 
 	path_src = p_path;
@@ -82,16 +83,17 @@ Error FileAccessUnix::_open(const String &p_path, int p_mode_flags) {
 	ERR_FAIL_COND_V_MSG(f, ERR_ALREADY_IN_USE, "File is already in use.");
 	const char *mode_string;
 
-	if (p_mode_flags == READ)
+	if (p_mode_flags == READ) {
 		mode_string = "rb";
-	else if (p_mode_flags == WRITE)
+	} else if (p_mode_flags == WRITE) {
 		mode_string = "wb";
-	else if (p_mode_flags == READ_WRITE)
+	} else if (p_mode_flags == READ_WRITE) {
 		mode_string = "rb+";
-	else if (p_mode_flags == WRITE_READ)
+	} else if (p_mode_flags == WRITE_READ) {
 		mode_string = "wb+";
-	else
+	} else {
 		return ERR_INVALID_PARAMETER;
+	}
 
 	/* pretty much every implementation that uses fopen as primary
 	   backend (unix-compatible mostly) supports utf8 encoding */
@@ -147,8 +149,9 @@ Error FileAccessUnix::_open(const String &p_path, int p_mode_flags) {
 }
 
 void FileAccessUnix::close() {
-	if (!f)
+	if (!f) {
 		return;
+	}
 
 	fclose(f);
 	f = nullptr;
@@ -185,15 +188,17 @@ void FileAccessUnix::seek(size_t p_position) {
 	ERR_FAIL_COND_MSG(!f, "File must be opened before use.");
 
 	last_error = OK;
-	if (fseek(f, p_position, SEEK_SET))
+	if (fseek(f, p_position, SEEK_SET)) {
 		check_errors();
+	}
 }
 
 void FileAccessUnix::seek_end(int64_t p_position) {
 	ERR_FAIL_COND_MSG(!f, "File must be opened before use.");
 
-	if (fseek(f, p_position, SEEK_END))
+	if (fseek(f, p_position, SEEK_END)) {
 		check_errors();
+	}
 }
 
 size_t FileAccessUnix::get_position() const {
@@ -270,13 +275,15 @@ bool FileAccessUnix::file_exists(const String &p_path) {
 
 	// Does the name exist at all?
 	err = stat(filename.utf8().get_data(), &st);
-	if (err)
+	if (err) {
 		return false;
+	}
 
 #ifdef UNIX_ENABLED
 	// See if we have access to the file
-	if (access(filename.utf8().get_data(), F_OK))
+	if (access(filename.utf8().get_data(), F_OK)) {
 		return false;
+	}
 #else
 	if (_access(filename.utf8().get_data(), 4) == -1)
 		return false;

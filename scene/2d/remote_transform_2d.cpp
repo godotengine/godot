@@ -44,18 +44,22 @@ void RemoteTransform2D::_update_cache() {
 }
 
 void RemoteTransform2D::_update_remote() {
-	if (!is_inside_tree())
+	if (!is_inside_tree()) {
 		return;
+	}
 
-	if (!cache)
+	if (!cache) {
 		return;
+	}
 
 	Node2D *n = Object::cast_to<Node2D>(ObjectDB::get_instance(cache));
-	if (!n)
+	if (!n) {
 		return;
+	}
 
-	if (!n->is_inside_tree())
+	if (!n->is_inside_tree()) {
 		return;
+	}
 
 	//todo make faster
 	if (use_global_coordinates) {
@@ -66,17 +70,20 @@ void RemoteTransform2D::_update_remote() {
 			Transform2D our_trans = get_global_transform();
 			Vector2 n_scale = n->get_scale();
 
-			if (!update_remote_position)
+			if (!update_remote_position) {
 				our_trans.set_origin(n_trans.get_origin());
-			if (!update_remote_rotation)
+			}
+			if (!update_remote_rotation) {
 				our_trans.set_rotation(n_trans.get_rotation());
+			}
 
 			n->set_global_transform(our_trans);
 
-			if (update_remote_scale)
+			if (update_remote_scale) {
 				n->set_scale(get_global_scale());
-			else
+			} else {
 				n->set_scale(n_scale);
+			}
 		}
 
 	} else {
@@ -87,17 +94,20 @@ void RemoteTransform2D::_update_remote() {
 			Transform2D our_trans = get_transform();
 			Vector2 n_scale = n->get_scale();
 
-			if (!update_remote_position)
+			if (!update_remote_position) {
 				our_trans.set_origin(n_trans.get_origin());
-			if (!update_remote_rotation)
+			}
+			if (!update_remote_rotation) {
 				our_trans.set_rotation(n_trans.get_rotation());
+			}
 
 			n->set_transform(our_trans);
 
-			if (update_remote_scale)
+			if (update_remote_scale) {
 				n->set_scale(get_scale());
-			else
+			} else {
 				n->set_scale(n_scale);
+			}
 		}
 	}
 }
@@ -109,8 +119,9 @@ void RemoteTransform2D::_notification(int p_what) {
 
 		} break;
 		case NOTIFICATION_TRANSFORM_CHANGED: {
-			if (!is_inside_tree())
+			if (!is_inside_tree()) {
 				break;
+			}
 
 			if (cache) {
 				_update_remote();

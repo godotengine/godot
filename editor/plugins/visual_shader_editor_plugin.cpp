@@ -95,8 +95,9 @@ void VisualShaderEditor::edit(VisualShader *p_visual_shader) {
 }
 
 void VisualShaderEditor::add_plugin(const Ref<VisualShaderNodePlugin> &p_plugin) {
-	if (plugins.find(p_plugin) != -1)
+	if (plugins.find(p_plugin) != -1) {
 		return;
+	}
 	plugins.push_back(p_plugin);
 }
 
@@ -119,8 +120,9 @@ void VisualShaderEditor::add_custom_type(const String &p_name, const Ref<Script>
 
 	for (int i = 0; i < add_options.size(); i++) {
 		if (add_options[i].is_custom) {
-			if (add_options[i].script == p_script)
+			if (add_options[i].script == p_script) {
 				return;
+			}
 		}
 	}
 
@@ -329,8 +331,9 @@ void VisualShaderEditor::_update_options_menu() {
 		}
 
 		if (!use_filter || add_options[i].name.findn(filter) != -1) {
-			if ((add_options[i].func != current_func && add_options[i].func != -1) || !_is_available(add_options[i].mode))
+			if ((add_options[i].func != current_func && add_options[i].func != -1) || !_is_available(add_options[i].mode)) {
 				continue;
+			}
 
 			if (prev_category != add_options[i].category) {
 				if (category != nullptr && item_count == 0) {
@@ -342,8 +345,9 @@ void VisualShaderEditor::_update_options_menu() {
 				category = members->create_item(root);
 				category->set_text(0, add_options[i].category);
 				category->set_selectable(0, false);
-				if (!use_filter)
+				if (!use_filter) {
 					category->set_collapsed(true);
+				}
 			}
 
 			if (add_options[i].sub_category != "") {
@@ -358,8 +362,9 @@ void VisualShaderEditor::_update_options_menu() {
 						sub_category = members->create_item(category);
 						sub_category->set_text(0, add_options[i].sub_category);
 						sub_category->set_selectable(0, false);
-						if (!use_filter)
+						if (!use_filter) {
 							sub_category->set_collapsed(true);
+						}
 					}
 				}
 			} else {
@@ -378,10 +383,11 @@ void VisualShaderEditor::_update_options_menu() {
 
 			if (p_category != nullptr) {
 				TreeItem *item = members->create_item(p_category);
-				if (add_options[i].highend && low_driver)
+				if (add_options[i].highend && low_driver) {
 					item->set_custom_color(0, unsupported_color);
-				else if (add_options[i].highend)
+				} else if (add_options[i].highend) {
 					item->set_custom_color(0, supported_color);
+				}
 				item->set_text(0, add_options[i].name);
 				if (is_first_item && use_filter) {
 					item->select(0);
@@ -422,8 +428,9 @@ Size2 VisualShaderEditor::get_minimum_size() const {
 
 void VisualShaderEditor::_draw_color_over_button(Object *obj, Color p_color) {
 	Button *button = Object::cast_to<Button>(obj);
-	if (!button)
+	if (!button) {
 		return;
+	}
 
 	Ref<StyleBox> normal = get_stylebox("normal", "Button");
 	button->draw_rect(Rect2(normal->get_offset(), button->get_size() - normal->get_minimum_size()), p_color);
@@ -454,11 +461,13 @@ void VisualShaderEditor::_update_created_node(GraphNode *node) {
 }
 
 void VisualShaderEditor::_update_graph() {
-	if (updating)
+	if (updating) {
 		return;
+	}
 
-	if (visual_shader.is_null())
+	if (visual_shader.is_null()) {
 		return;
+	}
 
 	graph->set_scroll_ofs(visual_shader->get_graph_offset() * EDSCALE);
 
@@ -873,8 +882,9 @@ void VisualShaderEditor::_update_graph() {
 		if (!uniform.is_valid()) {
 			graph->add_child(node);
 			_update_created_node(node);
-			if (is_group)
+			if (is_group) {
 				call_deferred("_set_node_size", (int)type, nodes[n_i], size);
+			}
 		}
 	}
 
@@ -1082,8 +1092,9 @@ void VisualShaderEditor::_expression_focus_out(Object *text_edit, int p_node) {
 
 	TextEdit *expression_box = Object::cast_to<TextEdit>(text_edit);
 
-	if (node->get_expression() == expression_box->get_text())
+	if (node->get_expression() == expression_box->get_text()) {
 		return;
+	}
 
 	undo_redo->create_action(TTR("Set expression"));
 	undo_redo->add_do_method(node.ptr(), "set_expression", expression_box->get_text());
@@ -1121,8 +1132,9 @@ void VisualShaderEditor::_set_node_size(int p_type, int p_node, const Vector2 &p
 	if (edit_type->get_selected() == p_type) { // check - otherwise the error will be emitted
 		Node *node2 = graph->get_node(itos(p_node));
 		gn = Object::cast_to<GraphNode>(node2);
-		if (!gn)
+		if (!gn) {
 			return;
+		}
 
 		gn->set_custom_minimum_size(size);
 		gn->set_size(Size2(1, 1));
@@ -1211,24 +1223,28 @@ void VisualShaderEditor::_port_name_focus_out(Object *line_edit, int p_node_id, 
 	String text = Object::cast_to<LineEdit>(line_edit)->get_text();
 
 	if (!p_output) {
-		if (node->get_input_port_name(p_port_id) == text)
+		if (node->get_input_port_name(p_port_id) == text) {
 			return;
+		}
 	} else {
-		if (node->get_output_port_name(p_port_id) == text)
+		if (node->get_output_port_name(p_port_id) == text) {
 			return;
+		}
 	}
 
 	List<String> input_names;
 	List<String> output_names;
 
 	for (int i = 0; i < node->get_input_port_count(); i++) {
-		if (!p_output && i == p_port_id)
+		if (!p_output && i == p_port_id) {
 			continue;
+		}
 		input_names.push_back(node->get_input_port_name(i));
 	}
 	for (int i = 0; i < node->get_output_port_count(); i++) {
-		if (p_output && i == p_port_id)
+		if (p_output && i == p_port_id) {
 			continue;
+		}
 		output_names.push_back(node->get_output_port_name(i));
 	}
 
@@ -1321,8 +1337,9 @@ VisualShaderNode *VisualShaderEditor::_add_node(int p_idx, int p_op_idx) {
 		VisualShaderNodeScalarConstant *constant = Object::cast_to<VisualShaderNodeScalarConstant>(vsn);
 
 		if (constant) {
-			if ((int)add_options[p_idx].value != -1)
+			if ((int)add_options[p_idx].value != -1) {
 				constant->set_constant(add_options[p_idx].value);
+			}
 		}
 
 		if (p_op_idx != -1) {
@@ -1603,8 +1620,9 @@ void VisualShaderEditor::_node_selected(Object *p_node) {
 void VisualShaderEditor::_graph_gui_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseButton> mb = p_event;
 
-	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == BUTTON_RIGHT)
+	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == BUTTON_RIGHT) {
 		_show_members_dialog(true);
+	}
 }
 
 void VisualShaderEditor::_show_members_dialog(bool at_mouse_pos) {
@@ -1708,22 +1726,25 @@ void VisualShaderEditor::_notification(int p_what) {
 
 		tools->set_icon(EditorNode::get_singleton()->get_gui_base()->get_icon("Tools", "EditorIcons"));
 
-		if (p_what == NOTIFICATION_THEME_CHANGED && is_visible_in_tree())
+		if (p_what == NOTIFICATION_THEME_CHANGED && is_visible_in_tree()) {
 			_update_graph();
+		}
 	}
 }
 
 void VisualShaderEditor::_scroll_changed(const Vector2 &p_scroll) {
-	if (updating)
+	if (updating) {
 		return;
+	}
 	updating = true;
 	visual_shader->set_graph_offset(p_scroll / EDSCALE);
 	updating = false;
 }
 
 void VisualShaderEditor::_node_changed(int p_id) {
-	if (updating)
+	if (updating) {
 		return;
+	}
 
 	if (is_visible_in_tree()) {
 		_update_graph();
@@ -1870,8 +1891,9 @@ void VisualShaderEditor::_duplicate_nodes() {
 
 	_dup_copy_nodes(type, nodes, excluded);
 
-	if (nodes.empty())
+	if (nodes.empty()) {
 		return;
+	}
 
 	undo_redo->create_action(TTR("Duplicate Nodes"));
 
@@ -1887,8 +1909,9 @@ void VisualShaderEditor::_copy_nodes() {
 }
 
 void VisualShaderEditor::_paste_nodes() {
-	if (copy_nodes_buffer.empty())
+	if (copy_nodes_buffer.empty()) {
 		return;
+	}
 
 	int type = edit_type->get_selected();
 
@@ -1914,8 +1937,9 @@ void VisualShaderEditor::_on_nodes_delete() {
 		}
 	}
 
-	if (to_erase.empty())
+	if (to_erase.empty()) {
 		return;
+	}
 
 	undo_redo->create_action(TTR("Delete Nodes"));
 
@@ -1978,8 +2002,9 @@ void VisualShaderEditor::_mode_selected(int p_id) {
 void VisualShaderEditor::_input_select_item(Ref<VisualShaderNodeInput> input, String name) {
 	String prev_name = input->get_input_name();
 
-	if (name == prev_name)
+	if (name == prev_name) {
 		return;
+	}
 
 	bool type_changed = input->get_input_type_by_name(name) != input->get_input_type_by_name(prev_name);
 
@@ -2117,10 +2142,12 @@ void VisualShaderEditor::_tools_menu_option(int p_idx) {
 Variant VisualShaderEditor::get_drag_data_fw(const Point2 &p_point, Control *p_from) {
 	if (p_from == members) {
 		TreeItem *it = members->get_item_at_position(p_point);
-		if (!it)
+		if (!it) {
 			return Variant();
-		if (!it->has_meta("id"))
+		}
+		if (!it->has_meta("id")) {
 			return Variant();
+		}
 
 		int id = it->get_meta("id");
 		AddOption op = add_options[id];
@@ -2859,8 +2886,9 @@ void VisualShaderEditorPlugin::make_visible(bool p_visible) {
 		visual_shader_editor->set_process_input(true);
 		//visual_shader_editor->set_process(true);
 	} else {
-		if (visual_shader_editor->is_visible_in_tree())
+		if (visual_shader_editor->is_visible_in_tree()) {
 			editor->hide_bottom_panel();
+		}
 		button->hide();
 		visual_shader_editor->set_process_input(false);
 		//visual_shader_editor->set_process(false);
@@ -2985,8 +3013,9 @@ class VisualShaderNodePluginDefaultEditor : public VBoxContainer {
 
 public:
 	void _property_changed(const String &prop, const Variant &p_value, const String &p_field, bool p_changing = false) {
-		if (p_changing)
+		if (p_changing) {
 			return;
+		}
 
 		UndoRedo *undo_redo = EditorNode::get_singleton()->get_undo_redo();
 
@@ -3018,8 +3047,9 @@ public:
 	}
 
 	void _node_changed() {
-		if (updating)
+		if (updating) {
 			return;
+		}
 		for (int i = 0; i < properties.size(); i++) {
 			properties[i]->update_property();
 		}
@@ -3106,8 +3136,9 @@ Control *VisualShaderNodePluginDefault::create_editor(const Ref<Resource> &p_par
 		}
 	}
 
-	if (pinfo.size() == 0)
+	if (pinfo.size() == 0) {
 		return nullptr;
+	}
 
 	properties.clear();
 
@@ -3116,8 +3147,9 @@ Control *VisualShaderNodePluginDefault::create_editor(const Ref<Resource> &p_par
 
 	for (int i = 0; i < pinfo.size(); i++) {
 		EditorProperty *prop = EditorInspector::instantiate_property_editor(node.ptr(), pinfo[i].type, pinfo[i].name, pinfo[i].hint, pinfo[i].hint_string, pinfo[i].usage);
-		if (!prop)
+		if (!prop) {
 			return nullptr;
+		}
 
 		if (Object::cast_to<EditorPropertyResource>(prop)) {
 			Object::cast_to<EditorPropertyResource>(prop)->set_use_sub_inspector(false);
@@ -3145,8 +3177,9 @@ void EditorPropertyShaderMode::_option_selected(int p_which) {
 
 	Ref<VisualShader> visual_shader(Object::cast_to<VisualShader>(get_edited_object()));
 
-	if (visual_shader->get_mode() == p_which)
+	if (visual_shader->get_mode() == p_which) {
 		return;
+	}
 
 	UndoRedo *undo_redo = EditorNode::get_singleton()->get_undo_redo();
 	undo_redo->create_action(TTR("Visual Shader Mode Changed"));
@@ -3277,8 +3310,9 @@ void VisualShaderNodePortPreview::_shader_changed() {
 	for (int i = EditorNode::get_singleton()->get_editor_history()->get_path_size() - 1; i >= 0; i--) {
 		Object *object = ObjectDB::get_instance(EditorNode::get_singleton()->get_editor_history()->get_path_object(i));
 		ShaderMaterial *src_mat;
-		if (!object)
+		if (!object) {
 			continue;
+		}
 		if (object->has_method("get_material_override")) { // trying getting material from MeshInstance
 			src_mat = Object::cast_to<ShaderMaterial>(object->call("get_material_override"));
 		} else if (object->has_method("get_material")) { // from CanvasItem/Node2D

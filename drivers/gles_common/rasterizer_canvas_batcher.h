@@ -752,10 +752,11 @@ PREAMBLE(void)::batch_canvas_end() {
 PREAMBLE(void)::batch_canvas_render_items_begin(const Color &p_modulate, RasterizerCanvas::Light *p_light, const Transform2D &p_base_transform) {
 	// if we are debugging, flash each frame between batching renderer and old version to compare for regressions
 	if (bdata.settings_flash_batching) {
-		if ((Engine::get_singleton()->get_frames_drawn() % 2) == 0)
+		if ((Engine::get_singleton()->get_frames_drawn() % 2) == 0) {
 			bdata.settings_use_batching = true;
-		else
+		} else {
 			bdata.settings_use_batching = false;
+		}
 	}
 
 	if (!bdata.settings_use_batching) {
@@ -930,9 +931,10 @@ PREAMBLE(int)::_batch_find_or_create_tex(const RID &p_texture, const RID &p_norm
 			// tiling mode must also match
 			bool tiles = batch_texture.tile_mode != BatchTex::TILE_OFF;
 
-			if (tiles == p_tile)
+			if (tiles == p_tile) {
 				// match!
 				return p_previous_match;
+			}
 		}
 	}
 
@@ -945,9 +947,10 @@ PREAMBLE(int)::_batch_find_or_create_tex(const RID &p_texture, const RID &p_norm
 			// tiling mode must also match
 			bool tiles = batch_texture.tile_mode != BatchTex::TILE_OFF;
 
-			if (tiles == p_tile)
+			if (tiles == p_tile) {
 				// match!
 				return n;
+			}
 		}
 	}
 
@@ -1235,8 +1238,9 @@ PREAMBLE(bool)::_light_scissor_begin(const Rect2 &p_item_rect, const Transform2D
 	int y = rh - (cliprect.position.y + cliprect.size.y);
 	y += 1; // off by 1 boost before flipping
 
-	if (get_storage()->frame.current_rt->flags[RasterizerStorage::RENDER_TARGET_VFLIP])
+	if (get_storage()->frame.current_rt->flags[RasterizerStorage::RENDER_TARGET_VFLIP]) {
 		y = cliprect.position.y;
+	}
 
 	get_this()->gl_enable_scissor(cliprect.position.x - 1, y, cliprect.size.width + 2, cliprect.size.height + 2);
 
@@ -1261,8 +1265,9 @@ PREAMBLE(bool)::_light_find_intersection(const Rect2 &p_item_rect, const Transfo
 
 	// intersection between the 2 rects
 	// they should probably always intersect, because of earlier check, but just in case...
-	if (!p_item_rect.intersects(lrect))
+	if (!p_item_rect.intersects(lrect)) {
 		return false;
+	}
 
 	// note this does almost the same as Rect2.clip but slightly more efficient for our use case
 	r_cliprect.position.x = MAX(p_item_rect.position.x, lrect.position.x);
@@ -1336,8 +1341,9 @@ PREAMBLE(bool)::_prefill_line(RasterizerCanvas::Item::CommandLine *p_line, FillS
 
 	// if the color has changed we need a new batch
 	// (only single color line batches supported so far)
-	if (r_fill_state.curr_batch->color != bcol)
+	if (r_fill_state.curr_batch->color != bcol) {
 		change_batch = true;
+	}
 
 	// not sure if needed
 	r_fill_state.batch_tex_id = -1;
@@ -1560,9 +1566,9 @@ bool C_PREAMBLE::_prefill_ninepatch(RasterizerCanvas::Item::CommandNinePatch *p_
 		src.size = Vector2(u[1] - u[0], v[line + 1] - v[line]);
 		_prefill_rect<SEND_LIGHT_ANGLES>(&trect, r_fill_state, r_command_start, command_num, command_count, nullptr, p_item, multiply_final_modulate);
 
-		if ((line == 1) && (!p_np->draw_center))
+		if ((line == 1) && (!p_np->draw_center)) {
 			;
-		else {
+		} else {
 			rt.position.x = x[1];
 			rt.size.x = x[2] - x[1];
 			src.position.x = u[1];
@@ -1712,11 +1718,12 @@ bool C_PREAMBLE::_prefill_polygon(RasterizerCanvas::Item::CommandPolygon *p_poly
 
 	// in special cases, only 1 color is specified by convention, so we want to preset this
 	// to use in all verts.
-	if (p_poly->colors.size())
+	if (p_poly->colors.size()) {
 		vcol.set(p_poly->colors[0] * modulate);
-	else
+	} else {
 		// color is undefined, use modulate color straight
 		vcol.set(modulate);
+	}
 
 	BatchColor *precalced_colors = (BatchColor *)alloca(num_verts * sizeof(BatchColor));
 
@@ -1799,8 +1806,9 @@ bool C_PREAMBLE::_prefill_polygon(RasterizerCanvas::Item::CommandPolygon *p_poly
 
 PREAMBLE(bool)::_software_skin_poly(RasterizerCanvas::Item::CommandPolygon *p_poly, RasterizerCanvas::Item *p_item, BatchVertex *bvs, BatchColor *vertex_colors, const FillState &p_fill_state, const BatchColor *p_precalced_colors) {
 	//	alternatively could check get_this()->state.using_skeleton
-	if (p_item->skeleton == RID())
+	if (p_item->skeleton == RID()) {
 		return false;
+	}
 
 	int num_inds = p_poly->indices.size();
 	int num_verts = p_poly->points.size();
@@ -1847,8 +1855,9 @@ PREAMBLE(bool)::_software_skin_poly(RasterizerCanvas::Item::CommandPolygon *p_po
 			for (int k = 0; k < 4; k++) {
 				int bone_id = p_poly->bones[n * 4 + k];
 				float weight = p_poly->weights[n * 4 + k];
-				if (weight == 0.0f)
+				if (weight == 0.0f) {
 					continue;
+				}
 
 				total_weight += weight;
 
@@ -1862,9 +1871,9 @@ PREAMBLE(bool)::_software_skin_poly(RasterizerCanvas::Item::CommandPolygon *p_po
 
 			// this is some unexplained weirdness with verts with no weights,
 			// but it seemed to work for the example project ... watch for regressions
-			if (total_weight < 0.01f)
+			if (total_weight < 0.01f) {
 				dst_pos = src_pos;
-			else {
+			} else {
 				dst_pos /= total_weight;
 
 				// retransform back from the poly offset space
@@ -2202,8 +2211,9 @@ bool C_PREAMBLE::_prefill_rect(RasterizerCanvas::Item::CommandRect *rect, FillSt
 
 			// we don't want negative angles, as negative is used to encode flips.
 			// This moves range from -PI to PI to 0 to TWO_PI
-			if (angle < 0.0f)
+			if (angle < 0.0f) {
 				angle += TWO_PI;
+			}
 
 		} // if transform needed
 
@@ -2219,8 +2229,9 @@ bool C_PREAMBLE::_prefill_rect(RasterizerCanvas::Item::CommandRect *rect, FillSt
 		angle += 1.0f;
 
 		// flip if necessary to indicate a vertical flip in the shader
-		if (flip_v)
+		if (flip_v) {
 			angle *= -1.0f;
+		}
 
 		// light angle must be sent for each vert, instead as a single uniform in the uniform draw method
 		// this has the benefit of enabling batching with light angles.
@@ -2323,8 +2334,9 @@ PREAMBLE(bool)::prefill_joined_item(FillState &r_fill_state, int &r_command_star
 					buffer_full = _prefill_rect<false>(rect, r_fill_state, r_command_start, command_num, command_count, commands, p_item, multiply_final_modulate);
 				}
 
-				if (buffer_full)
+				if (buffer_full) {
 					return true;
+				}
 
 			} break;
 			case RasterizerCanvas::Item::Command::TYPE_NINEPATCH: {
@@ -2341,13 +2353,15 @@ PREAMBLE(bool)::prefill_joined_item(FillState &r_fill_state, int &r_command_star
 
 				bool buffer_full = false;
 
-				if (send_light_angles)
+				if (send_light_angles) {
 					buffer_full = _prefill_ninepatch<true>(np, r_fill_state, r_command_start, command_num, command_count, p_item, multiply_final_modulate);
-				else
+				} else {
 					buffer_full = _prefill_ninepatch<false>(np, r_fill_state, r_command_start, command_num, command_count, p_item, multiply_final_modulate);
+				}
 
-				if (buffer_full)
+				if (buffer_full) {
 					return true;
+				}
 
 			} break;
 
@@ -2357,8 +2371,9 @@ PREAMBLE(bool)::prefill_joined_item(FillState &r_fill_state, int &r_command_star
 				if (line->width <= 1) {
 					bool buffer_full = _prefill_line(line, r_fill_state, r_command_start, command_num, command_count, p_item, multiply_final_modulate);
 
-					if (buffer_full)
+					if (buffer_full) {
 						return true;
+					}
 				} else {
 					// not accelerated
 					_prefill_default_batch(r_fill_state, command_num, *p_item);
@@ -2398,11 +2413,13 @@ PREAMBLE(bool)::prefill_joined_item(FillState &r_fill_state, int &r_command_star
 							// polygon with light angles is not yet implemented
 							// for batching .. this means software skinned with light angles won't work
 							_prefill_default_batch(r_fill_state, command_num, *p_item);
-						} else
+						} else {
 							buffer_full = _prefill_polygon<false>(polygon, r_fill_state, r_command_start, command_num, command_count, p_item, multiply_final_modulate);
+						}
 
-						if (buffer_full)
+						if (buffer_full) {
 							return true;
+						}
 					} // if not using hardware skinning path
 #ifdef GLES_OVER_GL
 				} // if not anti-aliased poly
@@ -2477,11 +2494,12 @@ PREAMBLE(void)::flush_render_batches(RasterizerCanvas::Item *p_first_item, Raste
 			break;
 		case RasterizerStorageCommon::FVF_COLOR: {
 			// special case, where vertex colors are used (polys)
-			if (!bdata.vertex_colors.size())
+			if (!bdata.vertex_colors.size()) {
 				_translate_batches_to_larger_FVF<BatchVertexColored, false, false, false>(p_sequence_batch_type_flags);
-			else
+			} else {
 				// normal, reduce number of batches by baking batch colors
 				_translate_batches_to_vertex_colored_FVF();
+			}
 		} break;
 		case RasterizerStorageCommon::FVF_LIGHT_ANGLE:
 			_translate_batches_to_larger_FVF<BatchVertexLightAngled, true, false, false>(p_sequence_batch_type_flags);
@@ -2733,16 +2751,18 @@ PREAMBLE(bool)::_sort_items_match(const BSortItem &p_a, const BSortItem &p_b) co
 	const RasterizerCanvas::Item *a = p_a.item;
 	const RasterizerCanvas::Item *b = p_b.item;
 
-	if (b->commands.size() != 1)
+	if (b->commands.size() != 1) {
 		return false;
+	}
 
 	// tested outside function
 	//	if (a->commands.size() != 1)
 	//		return false;
 
 	const RasterizerCanvas::Item::Command &cb = *b->commands[0];
-	if (cb.type != RasterizerCanvas::Item::Command::TYPE_RECT)
+	if (cb.type != RasterizerCanvas::Item::Command::TYPE_RECT) {
 		return false;
+	}
 
 	const RasterizerCanvas::Item::Command &ca = *a->commands[0];
 	// tested outside function
@@ -2752,8 +2772,9 @@ PREAMBLE(bool)::_sort_items_match(const BSortItem &p_a, const BSortItem &p_b) co
 	const RasterizerCanvas::Item::CommandRect *rect_a = static_cast<const RasterizerCanvas::Item::CommandRect *>(&ca);
 	const RasterizerCanvas::Item::CommandRect *rect_b = static_cast<const RasterizerCanvas::Item::CommandRect *>(&cb);
 
-	if (rect_a->texture != rect_b->texture)
+	if (rect_a->texture != rect_b->texture) {
 		return false;
+	}
 
 	/* ALTERNATIVE APPROACH NOT LIMITED TO RECTS
 const RasterizerCanvas::Item::Command &ca = *a->commands[0];
@@ -2994,10 +3015,11 @@ void C_PREAMBLE::_translate_batches_to_larger_FVF(uint32_t p_sequence_batch_type
 								// this is required to allow compilation with non light angle vertex.
 								// it should be compiled out.
 								BatchVertexLightAngled *lv = (BatchVertexLightAngled *)cv;
-								if (source_batch_uses_light_angles)
+								if (source_batch_uses_light_angles) {
 									lv->light_angle = *source_light_angles++;
-								else
+								} else {
 									lv->light_angle = 0.0f; // dummy, unused in vertex shader (could possibly be left uninitialized, but probably bad idea)
+								}
 							} // if including light angles
 
 							if (INCLUDE_MODULATE) {
@@ -3060,10 +3082,11 @@ void C_PREAMBLE::_translate_batches_to_larger_FVF(uint32_t p_sequence_batch_type
 						// this is required to allow compilation with non light angle vertex.
 						// it should be compiled out.
 						BatchVertexLightAngled *lv = (BatchVertexLightAngled *)cv;
-						if (source_batch_uses_light_angles)
+						if (source_batch_uses_light_angles) {
 							lv->light_angle = *source_light_angles++;
-						else
+						} else {
 							lv->light_angle = 0.0f; // dummy, unused in vertex shader (could possibly be left uninitialized, but probably bad idea)
+						}
 					} // if using light angles
 
 					if (INCLUDE_MODULATE) {
@@ -3091,8 +3114,9 @@ PREAMBLE(bool)::_disallow_item_join_if_batch_types_too_different(RenderItemState
 
 	bool disallow = false;
 
-	if (r_ris.joined_item_batch_type_flags_prev & (~btf_allowed))
+	if (r_ris.joined_item_batch_type_flags_prev & (~btf_allowed)) {
 		disallow = true;
+	}
 
 	return disallow;
 }
@@ -3160,16 +3184,19 @@ PREAMBLE(bool)::_detect_item_batch_break(RenderItemState &r_ris, RasterizerCanva
 
 #ifdef GLES_OVER_GL
 					// anti aliasing not accelerated
-					if (poly->antialiased)
+					if (poly->antialiased) {
 						return true;
+					}
 #endif
 
 					// light angles not yet implemented, treat as default
-					if (poly->normal_map != RID())
+					if (poly->normal_map != RID()) {
 						return true;
+					}
 
-					if (!get_this()->bdata.settings_use_software_skinning && poly->bones.size())
+					if (!get_this()->bdata.settings_use_software_skinning && poly->bones.size()) {
 						return true;
+					}
 
 					if (_disallow_item_join_if_batch_types_too_different(r_ris, RasterizerStorageCommon::BTF_POLY)) {
 						//r_batch_break = true;
@@ -3177,17 +3204,20 @@ PREAMBLE(bool)::_detect_item_batch_break(RenderItemState &r_ris, RasterizerCanva
 					}
 				} break;
 				case RasterizerCanvas::Item::Command::TYPE_RECT: {
-					if (_disallow_item_join_if_batch_types_too_different(r_ris, RasterizerStorageCommon::BTF_RECT))
+					if (_disallow_item_join_if_batch_types_too_different(r_ris, RasterizerStorageCommon::BTF_RECT)) {
 						return true;
+					}
 				} break;
 				case RasterizerCanvas::Item::Command::TYPE_NINEPATCH: {
 					// do not handle tiled ninepatches, these can't be batched and need to use legacy method
 					RasterizerCanvas::Item::CommandNinePatch *np = static_cast<RasterizerCanvas::Item::CommandNinePatch *>(command);
-					if ((np->axis_x != VisualServer::NINE_PATCH_STRETCH) || (np->axis_y != VisualServer::NINE_PATCH_STRETCH))
+					if ((np->axis_x != VisualServer::NINE_PATCH_STRETCH) || (np->axis_y != VisualServer::NINE_PATCH_STRETCH)) {
 						return true;
+					}
 
-					if (_disallow_item_join_if_batch_types_too_different(r_ris, RasterizerStorageCommon::BTF_RECT))
+					if (_disallow_item_join_if_batch_types_too_different(r_ris, RasterizerStorageCommon::BTF_RECT)) {
 						return true;
+					}
 				} break;
 				case RasterizerCanvas::Item::Command::TYPE_TRANSFORM: {
 					// compatible with all types

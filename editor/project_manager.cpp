@@ -306,8 +306,9 @@ private:
 				if (lidx != -1) {
 					sp = sp.substr(lidx + 1, sp.length()).capitalize();
 				}
-				if (sp == "" && mode == MODE_IMPORT)
+				if (sp == "" && mode == MODE_IMPORT) {
 					sp = TTR("Imported Project");
+				}
 
 				project_name->set_text(sp);
 				_text_changed(sp);
@@ -411,13 +412,15 @@ private:
 	}
 
 	void _text_changed(const String &p_text) {
-		if (mode != MODE_NEW)
+		if (mode != MODE_NEW) {
 			return;
+		}
 
 		_test_path();
 
-		if (p_text.strip_edges() == "")
+		if (p_text.strip_edges() == "") {
 			set_message(TTR("It would be a good idea to name your project."), MESSAGE_ERROR);
+		}
 	}
 
 	void ok_pressed() {
@@ -576,8 +579,9 @@ private:
 			}
 
 			dir = dir.replace("\\", "/");
-			if (dir.ends_with("/"))
+			if (dir.ends_with("/")) {
 				dir = dir.substr(0, dir.length() - 1);
+			}
 			String proj = get_project_key_from_path(dir);
 			EditorSettings::get_singleton()->set("projects/" + proj, dir);
 			EditorSettings::get_singleton()->save();
@@ -606,16 +610,19 @@ private:
 		project_name->clear();
 		_text_changed("");
 
-		if (status_rect->get_texture() == get_icon("StatusError", "EditorIcons"))
+		if (status_rect->get_texture() == get_icon("StatusError", "EditorIcons")) {
 			msg->show();
+		}
 
-		if (install_status_rect->get_texture() == get_icon("StatusError", "EditorIcons"))
+		if (install_status_rect->get_texture() == get_icon("StatusError", "EditorIcons")) {
 			msg->show();
+		}
 	}
 
 	void _notification(int p_what) {
-		if (p_what == MainLoop::NOTIFICATION_WM_QUIT_REQUEST)
+		if (p_what == MainLoop::NOTIFICATION_WM_QUIT_REQUEST) {
 			_remove_created_folder();
+		}
 	}
 
 protected:
@@ -1138,8 +1145,9 @@ void ProjectList::load_project_data(const String &p_property_key, Item &p_item, 
 	String project_name = TTR("Unnamed Project");
 	if (cf_err == OK) {
 		String cf_project_name = static_cast<String>(cf->get_value("application", "config/name", ""));
-		if (cf_project_name != "")
+		if (cf_project_name != "") {
 			project_name = cf_project_name.xml_unescape();
+		}
 		config_version = (int)cf->get_value("", "config_version", 0);
 	}
 
@@ -1159,8 +1167,9 @@ void ProjectList::load_project_data(const String &p_property_key, Item &p_item, 
 		String fscache = path.plus_file(".fscache");
 		if (FileAccess::exists(fscache)) {
 			uint64_t cache_modified = FileAccess::get_modified_time(fscache);
-			if (cache_modified > last_modified)
+			if (cache_modified > last_modified) {
 				last_modified = cache_modified;
+			}
 		}
 	} else {
 		grayed = true;
@@ -1206,8 +1215,9 @@ void ProjectList::load_projects() {
 	for (List<PropertyInfo>::Element *E = properties.front(); E; E = E->next()) {
 		// This is actually something like "projects/C:::Documents::Godot::Projects::MyGame"
 		String property_key = E->get().name;
-		if (!property_key.begins_with("projects/"))
+		if (!property_key.begins_with("projects/")) {
 			continue;
+		}
 
 		String project_key = property_key.get_slice("/", 1);
 		bool favorite = favorites.has("favorite_projects/" + project_key);
@@ -1299,8 +1309,9 @@ void ProjectList::create_project_item_control(int p_index) {
 	hb->icon = tf;
 
 	VBoxContainer *vb = memnew(VBoxContainer);
-	if (item.grayed)
+	if (item.grayed) {
 		vb->set_modulate(Color(1, 1, 1, 0.5));
+	}
 	vb->set_h_size_flags(SIZE_EXPAND_FILL);
 	hb->add_child(vb);
 	Control *ec = memnew(Control);
@@ -1751,8 +1762,9 @@ void ProjectManager::_notification(int p_what) {
 			}
 		} break;
 		case NOTIFICATION_READY: {
-			if (_project_list->get_project_count() == 0 && StreamPeerSSL::is_available())
+			if (_project_list->get_project_count() == 0 && StreamPeerSSL::is_available()) {
 				open_templates->popup_centered_minsize();
+			}
 
 			if (_project_list->get_project_count() >= 1) {
 				// Focus on the search box immediately to allow the user
@@ -1821,8 +1833,9 @@ void ProjectManager::_unhandled_input(const Ref<InputEvent> &p_ev) {
 		}
 #endif
 
-		if (tabs->get_current_tab() != 0)
+		if (tabs->get_current_tab() != 0) {
 			return;
+		}
 
 		bool scancode_handled = true;
 
@@ -1848,8 +1861,9 @@ void ProjectManager::_unhandled_input(const Ref<InputEvent> &p_ev) {
 
 			} break;
 			case KEY_UP: {
-				if (k->get_shift())
+				if (k->get_shift()) {
 					break;
+				}
 
 				int index = _project_list->get_single_selected_index();
 				if (index > 0) {
@@ -1861,8 +1875,9 @@ void ProjectManager::_unhandled_input(const Ref<InputEvent> &p_ev) {
 				break;
 			}
 			case KEY_DOWN: {
-				if (k->get_shift())
+				if (k->get_shift()) {
 					break;
+				}
 
 				int index = _project_list->get_single_selected_index();
 				if (index + 1 < _project_list->get_project_count()) {
@@ -1873,10 +1888,11 @@ void ProjectManager::_unhandled_input(const Ref<InputEvent> &p_ev) {
 
 			} break;
 			case KEY_F: {
-				if (k->get_command())
+				if (k->get_command()) {
 					this->project_filter->search_box->grab_focus();
-				else
+				} else {
 					scancode_handled = false;
+				}
 			} break;
 			default: {
 				scancode_handled = false;
@@ -2173,8 +2189,9 @@ void ProjectManager::_erase_missing_projects_confirm() {
 void ProjectManager::_erase_project() {
 	const Set<String> &selected_list = _project_list->get_selected_project_keys();
 
-	if (selected_list.size() == 0)
+	if (selected_list.size() == 0) {
 		return;
+	}
 
 	String confirm_message;
 	if (selected_list.size() >= 2) {
@@ -2330,8 +2347,9 @@ void ProjectManager::_version_button_pressed() {
 
 ProjectManager::ProjectManager() {
 	// load settings
-	if (!EditorSettings::get_singleton())
+	if (!EditorSettings::get_singleton()) {
 		EditorSettings::create();
+	}
 
 	EditorSettings::get_singleton()->set_optimize_save(false); //just write settings as they came
 
@@ -2713,14 +2731,16 @@ ProjectManager::ProjectManager() {
 }
 
 ProjectManager::~ProjectManager() {
-	if (EditorSettings::get_singleton())
+	if (EditorSettings::get_singleton()) {
 		EditorSettings::destroy();
+	}
 }
 
 void ProjectListFilter::_setup_filters(Vector<String> options) {
 	filter_option->clear();
-	for (int i = 0; i < options.size(); i++)
+	for (int i = 0; i < options.size(); i++) {
 		filter_option->add_item(options[i]);
+	}
 }
 
 void ProjectListFilter::_search_text_changed(const String &p_newtext) {

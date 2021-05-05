@@ -109,7 +109,8 @@ MethodBind::MethodBind() {
 
 MethodBind::~MethodBind() {
 #ifdef DEBUG_METHODS_ENABLED
-	if (argument_types)
+	if (argument_types) {
 		memdelete_arr(argument_types);
+	}
 #endif
 }

@@ -156,8 +156,9 @@ void _split_leaf_sort_groups(int &num_a, int &num_b, uint16_t *group_a, uint16_t
 
 		// find aabb of all the rest
 		for (int rest = 0; rest < num_a; rest++) {
-			if (rest == check)
+			if (rest == check) {
 				continue;
+			}
 
 			int which = group_a[rest];
 			rest_aabb.merge(temp_bounds[which]);

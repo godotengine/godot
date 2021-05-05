@@ -121,8 +121,9 @@ struct TNode {
 		BVH_ASSERT(!is_leaf());
 
 		for (int n = 0; n < num_children; n++) {
-			if (children[n] == p_child_node_id)
+			if (children[n] == p_child_node_id) {
 				return n;
+			}
 		}
 
 		// not found

@@ -54,8 +54,9 @@ private:
 
 	_FORCE_INLINE_ int _find(const T &p_val, bool &r_exact) const {
 		r_exact = false;
-		if (_cowdata.empty())
+		if (_cowdata.empty()) {
 			return 0;
+		}
 
 		int low = 0;
 		int high = _cowdata.size() - 1;
@@ -80,14 +81,16 @@ private:
 		}
 
 		//return the position where this would be inserted
-		if (a[middle].key < p_val)
+		if (a[middle].key < p_val) {
 			middle++;
+		}
 		return middle;
 	}
 
 	_FORCE_INLINE_ int _find_exact(const T &p_val) const {
-		if (_cowdata.empty())
+		if (_cowdata.empty()) {
 			return -1;
+		}
 
 		int low = 0;
 		int high = _cowdata.size() - 1;
@@ -127,8 +130,9 @@ public:
 
 	void erase(const T &p_val) {
 		int pos = _find_exact(p_val);
-		if (pos < 0)
+		if (pos < 0) {
 			return;
+		}
 		_cowdata.remove(pos);
 	}
 

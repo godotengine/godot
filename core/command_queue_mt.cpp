@@ -115,7 +115,8 @@ CommandQueueMT::CommandQueueMT(bool p_sync) {
 }
 
 CommandQueueMT::~CommandQueueMT() {
-	if (sync)
+	if (sync) {
 		memdelete(sync);
+	}
 	memfree(command_mem);
 }

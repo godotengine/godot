@@ -159,8 +159,9 @@ bool Theme::_set(const StringName &p_name, const Variant &p_value) {
 			set_color(name, node_type, p_value);
 		} else if (type == "constants") {
 			set_constant(name, node_type, p_value);
-		} else
+		} else {
 			return false;
+		}
 
 		return true;
 	}
@@ -177,26 +178,30 @@ bool Theme::_get(const StringName &p_name, Variant &r_ret) const {
 		String name = sname.get_slicec('/', 2);
 
 		if (type == "icons") {
-			if (!has_icon(name, node_type))
+			if (!has_icon(name, node_type)) {
 				r_ret = Ref<Texture>();
-			else
+			} else {
 				r_ret = get_icon(name, node_type);
+			}
 		} else if (type == "styles") {
-			if (!has_stylebox(name, node_type))
+			if (!has_stylebox(name, node_type)) {
 				r_ret = Ref<StyleBox>();
-			else
+			} else {
 				r_ret = get_stylebox(name, node_type);
+			}
 		} else if (type == "fonts") {
-			if (!has_font(name, node_type))
+			if (!has_font(name, node_type)) {
 				r_ret = Ref<Font>();
-			else
+			} else {
 				r_ret = get_font(name, node_type);
+			}
 		} else if (type == "colors") {
 			r_ret = get_color(name, node_type);
 		} else if (type == "constants") {
 			r_ret = get_constant(name, node_type);
-		} else
+		} else {
 			return false;
+		}
 
 		return true;
 	}
@@ -264,8 +269,9 @@ void Theme::_get_property_list(List<PropertyInfo> *p_list) const {
 }
 
 void Theme::set_default_theme_font(const Ref<Font> &p_default_font) {
-	if (default_theme_font == p_default_font)
+	if (default_theme_font == p_default_font) {
 		return;
+	}
 
 	if (default_theme_font.is_valid()) {
 		default_theme_font->disconnect("changed", this, "_emit_theme_changed");
@@ -366,8 +372,9 @@ void Theme::clear_icon(const StringName &p_name, const StringName &p_node_type) 
 void Theme::get_icon_list(StringName p_node_type, List<StringName> *p_list) const {
 	ERR_FAIL_NULL(p_list);
 
-	if (!icon_map.has(p_node_type))
+	if (!icon_map.has(p_node_type)) {
 		return;
+	}
 
 	const StringName *key = nullptr;
 
@@ -411,8 +418,9 @@ void Theme::clear_shader(const StringName &p_name, const StringName &p_node_type
 void Theme::get_shader_list(const StringName &p_node_type, List<StringName> *p_list) const {
 	ERR_FAIL_NULL(p_list);
 
-	if (!shader_map.has(p_node_type))
+	if (!shader_map.has(p_node_type)) {
 		return;
+	}
 
 	const StringName *key = nullptr;
 
@@ -436,8 +444,9 @@ void Theme::set_stylebox(const StringName &p_name, const StringName &p_node_type
 		style_map[p_node_type][p_name]->connect("changed", this, "_emit_theme_changed", varray(), CONNECT_REFERENCE_COUNTED);
 	}
 
-	if (new_value)
+	if (new_value) {
 		_change_notify();
+	}
 	emit_changed();
 }
 
@@ -470,8 +479,9 @@ void Theme::clear_stylebox(const StringName &p_name, const StringName &p_node_ty
 void Theme::get_stylebox_list(StringName p_node_type, List<StringName> *p_list) const {
 	ERR_FAIL_NULL(p_list);
 
-	if (!style_map.has(p_node_type))
+	if (!style_map.has(p_node_type)) {
 		return;
+	}
 
 	const StringName *key = nullptr;
 
@@ -510,12 +520,13 @@ void Theme::set_font(const StringName &p_name, const StringName &p_node_type, co
 	}
 }
 Ref<Font> Theme::get_font(const StringName &p_name, const StringName &p_node_type) const {
-	if (font_map.has(p_node_type) && font_map[p_node_type].has(p_name) && font_map[p_node_type][p_name].is_valid())
+	if (font_map.has(p_node_type) && font_map[p_node_type].has(p_name) && font_map[p_node_type][p_name].is_valid()) {
 		return font_map[p_node_type][p_name];
-	else if (default_theme_font.is_valid())
+	} else if (default_theme_font.is_valid()) {
 		return default_theme_font;
-	else
+	} else {
 		return default_font;
+	}
 }
 
 bool Theme::has_font(const StringName &p_name, const StringName &p_node_type) const {
@@ -538,8 +549,9 @@ void Theme::clear_font(const StringName &p_name, const StringName &p_node_type) 
 void Theme::get_font_list(StringName p_node_type, List<StringName> *p_list) const {
 	ERR_FAIL_NULL(p_list);
 
-	if (!font_map.has(p_node_type))
+	if (!font_map.has(p_node_type)) {
 		return;
+	}
 
 	const StringName *key = nullptr;
 
@@ -560,10 +572,11 @@ void Theme::set_color(const StringName &p_name, const StringName &p_node_type, c
 }
 
 Color Theme::get_color(const StringName &p_name, const StringName &p_node_type) const {
-	if (color_map.has(p_node_type) && color_map[p_node_type].has(p_name))
+	if (color_map.has(p_node_type) && color_map[p_node_type].has(p_name)) {
 		return color_map[p_node_type][p_name];
-	else
+	} else {
 		return Color();
+	}
 }
 
 bool Theme::has_color(const StringName &p_name, const StringName &p_node_type) const {
@@ -582,8 +595,9 @@ void Theme::clear_color(const StringName &p_name, const StringName &p_node_type)
 void Theme::get_color_list(StringName p_node_type, List<StringName> *p_list) const {
 	ERR_FAIL_NULL(p_list);
 
-	if (!color_map.has(p_node_type))
+	if (!color_map.has(p_node_type)) {
 		return;
+	}
 
 	const StringName *key = nullptr;
 
@@ -603,9 +617,9 @@ void Theme::set_constant(const StringName &p_name, const StringName &p_node_type
 }
 
 int Theme::get_constant(const StringName &p_name, const StringName &p_node_type) const {
-	if (constant_map.has(p_node_type) && constant_map[p_node_type].has(p_name))
+	if (constant_map.has(p_node_type) && constant_map[p_node_type].has(p_name)) {
 		return constant_map[p_node_type][p_name];
-	else {
+	} else {
 		return 0;
 	}
 }
@@ -626,8 +640,9 @@ void Theme::clear_constant(const StringName &p_name, const StringName &p_node_ty
 void Theme::get_constant_list(StringName p_node_type, List<StringName> *p_list) const {
 	ERR_FAIL_NULL(p_list);
 
-	if (!constant_map.has(p_node_type))
+	if (!constant_map.has(p_node_type)) {
 		return;
+	}
 
 	const StringName *key = nullptr;
 

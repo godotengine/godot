@@ -69,12 +69,14 @@ void Particles::set_one_shot(bool p_one_shot) {
 
 	if (is_emitting()) {
 		set_process_internal(true);
-		if (!one_shot)
+		if (!one_shot) {
 			VisualServer::get_singleton()->particles_restart(particles);
+		}
 	}
 
-	if (!one_shot)
+	if (!one_shot) {
 		set_process_internal(false);
+	}
 }
 
 void Particles::set_pre_process_time(float p_time) {
@@ -102,8 +104,9 @@ void Particles::set_use_local_coordinates(bool p_enable) {
 void Particles::set_process_material(const Ref<Material> &p_material) {
 	process_material = p_material;
 	RID material_rid;
-	if (process_material.is_valid())
+	if (process_material.is_valid()) {
 		material_rid = process_material->get_rid();
+	}
 	VS::get_singleton()->particles_set_process_material(particles, material_rid);
 
 	update_configuration_warning();
@@ -175,8 +178,9 @@ void Particles::set_draw_pass_mesh(int p_pass, const Ref<Mesh> &p_mesh) {
 	draw_passes.write[p_pass] = p_mesh;
 
 	RID mesh_rid;
-	if (p_mesh.is_valid())
+	if (p_mesh.is_valid()) {
 		mesh_rid = p_mesh->get_rid();
+	}
 
 	VS::get_singleton()->particles_set_draw_pass_mesh(particles, p_pass, mesh_rid);
 
@@ -225,8 +229,9 @@ String Particles::get_configuration_warning() const {
 				SpatialMaterial *spat = Object::cast_to<SpatialMaterial>(draw_passes[i]->surface_get_material(j).ptr());
 				anim_material_found = anim_material_found || (spat && spat->get_billboard_mode() == SpatialMaterial::BILLBOARD_PARTICLES);
 			}
-			if (anim_material_found)
+			if (anim_material_found) {
 				break;
+			}
 		}
 	}
 
@@ -235,22 +240,25 @@ String Particles::get_configuration_warning() const {
 	anim_material_found = anim_material_found || (spat && spat->get_billboard_mode() == SpatialMaterial::BILLBOARD_PARTICLES);
 
 	if (!meshes_found) {
-		if (warnings != String())
+		if (warnings != String()) {
 			warnings += "\n\n";
+		}
 		warnings += "- " + TTR("Nothing is visible because meshes have not been assigned to draw passes.");
 	}
 
 	if (process_material.is_null()) {
-		if (warnings != String())
+		if (warnings != String()) {
 			warnings += "\n";
+		}
 		warnings += "- " + TTR("A material to process the particles is not assigned, so no behavior is imprinted.");
 	} else {
 		const ParticlesMaterial *process = Object::cast_to<ParticlesMaterial>(process_material.ptr());
 		if (!anim_material_found && process &&
 				(process->get_param(ParticlesMaterial::PARAM_ANIM_SPEED) != 0.0 || process->get_param(ParticlesMaterial::PARAM_ANIM_OFFSET) != 0.0 ||
 						process->get_param_texture(ParticlesMaterial::PARAM_ANIM_SPEED).is_valid() || process->get_param_texture(ParticlesMaterial::PARAM_ANIM_OFFSET).is_valid())) {
-			if (warnings != String())
+			if (warnings != String()) {
 				warnings += "\n";
+			}
 			warnings += "- " + TTR("Particles animation requires the usage of a SpatialMaterial whose Billboard Mode is set to \"Particle Billboard\".");
 		}
 	}

@@ -280,8 +280,9 @@ struct Command {
 		Dictionary dict;
 		dict["title"] = title;
 		dict["command"] = command;
-		if (arguments.size())
+		if (arguments.size()) {
 			dict["arguments"] = arguments;
+		}
 		return dict;
 	}
 };
@@ -945,20 +946,24 @@ struct CompletionItem {
 			dict["preselect"] = preselect;
 			dict["sortText"] = sortText;
 			dict["filterText"] = filterText;
-			if (commitCharacters.size())
+			if (commitCharacters.size()) {
 				dict["commitCharacters"] = commitCharacters;
+			}
 			dict["command"] = command.to_json();
 		}
 		return dict;
 	}
 
 	void load(const Dictionary &p_dict) {
-		if (p_dict.has("label"))
+		if (p_dict.has("label")) {
 			label = p_dict["label"];
-		if (p_dict.has("kind"))
+		}
+		if (p_dict.has("kind")) {
 			kind = p_dict["kind"];
-		if (p_dict.has("detail"))
+		}
+		if (p_dict.has("detail")) {
 			detail = p_dict["detail"];
+		}
 		if (p_dict.has("documentation")) {
 			Variant doc = p_dict["documentation"];
 			if (doc.get_type() == Variant::STRING) {
@@ -968,18 +973,24 @@ struct CompletionItem {
 				documentation.value = v["value"];
 			}
 		}
-		if (p_dict.has("deprecated"))
+		if (p_dict.has("deprecated")) {
 			deprecated = p_dict["deprecated"];
-		if (p_dict.has("preselect"))
+		}
+		if (p_dict.has("preselect")) {
 			preselect = p_dict["preselect"];
-		if (p_dict.has("sortText"))
+		}
+		if (p_dict.has("sortText")) {
 			sortText = p_dict["sortText"];
-		if (p_dict.has("filterText"))
+		}
+		if (p_dict.has("filterText")) {
 			filterText = p_dict["filterText"];
-		if (p_dict.has("insertText"))
+		}
+		if (p_dict.has("insertText")) {
 			insertText = p_dict["insertText"];
-		if (p_dict.has("data"))
+		}
+		if (p_dict.has("data")) {
 			data = p_dict["data"];
+		}
 	}
 };
 

@@ -74,8 +74,9 @@ void image_decompress_squish(Image *p_image) {
 }
 
 void image_compress_squish(Image *p_image, float p_lossy_quality, Image::CompressSource p_source) {
-	if (p_image->get_format() >= Image::FORMAT_DXT1)
+	if (p_image->get_format() >= Image::FORMAT_DXT1) {
 		return; //do not compress, already compressed
+	}
 
 	int w = p_image->get_width();
 	int h = p_image->get_height();
@@ -83,10 +84,11 @@ void image_compress_squish(Image *p_image, float p_lossy_quality, Image::Compres
 	if (p_image->get_format() <= Image::FORMAT_RGBA8) {
 		int squish_comp = squish::kColourRangeFit;
 
-		if (p_lossy_quality > 0.85)
+		if (p_lossy_quality > 0.85) {
 			squish_comp = squish::kColourIterativeClusterFit;
-		else if (p_lossy_quality > 0.75)
+		} else if (p_lossy_quality > 0.75) {
 			squish_comp = squish::kColourClusterFit;
+		}
 
 		Image::Format target_format = Image::FORMAT_RGBA8;
 

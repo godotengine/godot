@@ -60,9 +60,9 @@ void ScriptDebuggerLocal::debug(ScriptLanguage *p_script, bool p_can_continue, b
 			print_line("\nDebugger Break, Reason: '" + p_script->debug_get_error() + "'");
 			print_line("*Frame " + itos(current_frame) + " - " + p_script->debug_get_stack_level_source(current_frame) + ":" + itos(p_script->debug_get_stack_level_line(current_frame)) + " in function '" + p_script->debug_get_stack_level_function(current_frame) + "'");
 			print_line("Enter \"help\" for assistance.");
-		} else if (line == "c" || line == "continue")
+		} else if (line == "c" || line == "continue") {
 			break;
-		else if (line == "bt" || line == "breakpoint") {
+		} else if (line == "bt" || line == "breakpoint") {
 			for (int i = 0; i < total_frames; i++) {
 				String cfi = (current_frame == i) ? "*" : " "; //current frame indicator
 				print_line(cfi + "Frame " + itos(i) + " - " + p_script->debug_get_stack_level_source(i) + ":" + itos(p_script->debug_get_stack_level_line(i)) + " in function '" + p_script->debug_get_stack_level_function(i) + "'");
@@ -176,8 +176,9 @@ void ScriptDebuggerLocal::debug(ScriptLanguage *p_script, bool p_can_continue, b
 				String source = breakpoint.first;
 				int linenr = breakpoint.second;
 
-				if (source.empty())
+				if (source.empty()) {
 					continue;
+				}
 
 				insert_breakpoint(linenr, source);
 
@@ -201,8 +202,9 @@ void ScriptDebuggerLocal::debug(ScriptLanguage *p_script, bool p_can_continue, b
 				String source = breakpoint.first;
 				int linenr = breakpoint.second;
 
-				if (source.empty())
+				if (source.empty()) {
 					continue;
+				}
 
 				remove_breakpoint(linenr, source);
 
@@ -282,13 +284,15 @@ void ScriptDebuggerLocal::profiling_set_frame_times(float p_frame_time, float p_
 }
 
 void ScriptDebuggerLocal::idle_poll() {
-	if (!profiling)
+	if (!profiling) {
 		return;
+	}
 
 	uint64_t diff = OS::get_singleton()->get_ticks_usec() - idle_accum;
 
-	if (diff < 1000000) //show every one second
+	if (diff < 1000000) { //show every one second
 		return;
+	}
 
 	idle_accum = OS::get_singleton()->get_ticks_usec();
 

@@ -77,8 +77,9 @@ Error HTTPRequest::request(const String &p_url, const Vector<String> &p_custom_h
 	method = p_method;
 
 	Error err = _parse_url(p_url);
-	if (err)
+	if (err) {
 		return err;
+	}
 
 	validate_ssl = p_ssl_validate_domain;
 
@@ -117,8 +118,9 @@ void HTTPRequest::_thread_func(void *p_userdata) {
 	} else {
 		while (!hr->thread_request_quit.is_set()) {
 			bool exit = hr->_update_connection();
-			if (exit)
+			if (exit) {
 				break;
+			}
 			OS::get_singleton()->delay_usec(1);
 		}
 	}
@@ -129,8 +131,9 @@ void HTTPRequest::_thread_func(void *p_userdata) {
 void HTTPRequest::cancel_request() {
 	timer->stop();
 
-	if (!requesting)
+	if (!requesting) {
 		return;
+	}
 
 	if (!use_threads.is_set()) {
 		set_process_internal(false);
@@ -247,8 +250,9 @@ bool HTTPRequest::_update_connection() {
 
 					bool ret_value;
 
-					if (_handle_response(&ret_value))
+					if (_handle_response(&ret_value)) {
 						return ret_value;
+					}
 
 					call_deferred("_request_done", RESULT_SUCCESS, response_code, response_headers, PoolByteArray());
 					return true;
@@ -285,8 +289,9 @@ bool HTTPRequest::_update_connection() {
 			if (!got_response) {
 				bool ret_value;
 
-				if (_handle_response(&ret_value))
+				if (_handle_response(&ret_value)) {
 					return ret_value;
+				}
 
 				if (!client->is_response_chunked() && client->get_response_body_length() == 0) {
 					call_deferred("_request_done", RESULT_SUCCESS, response_code, response_headers, PoolByteArray());
@@ -369,8 +374,9 @@ void HTTPRequest::_request_done(int p_status, int p_code, const PoolStringArray 
 
 void HTTPRequest::_notification(int p_what) {
 	if (p_what == NOTIFICATION_INTERNAL_PROCESS) {
-		if (use_threads.is_set())
+		if (use_threads.is_set()) {
 			return;
+		}
 		bool done = _update_connection();
 		if (done) {
 			set_process_internal(false);
@@ -537,6 +543,7 @@ HTTPRequest::HTTPRequest() {
 }
 
 HTTPRequest::~HTTPRequest() {
-	if (file)
+	if (file) {
 		memdelete(file);
+	}
 }

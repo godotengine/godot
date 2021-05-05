@@ -43,16 +43,18 @@ PoolVector<Face3> CPUParticles::get_faces(uint32_t p_usage_flags) const {
 }
 
 void CPUParticles::set_emitting(bool p_emitting) {
-	if (emitting == p_emitting)
+	if (emitting == p_emitting) {
 		return;
+	}
 
 	emitting = p_emitting;
 	if (emitting) {
 		set_process_internal(true);
 
 		// first update before rendering to avoid one frame delay after emitting starts
-		if (time == 0)
+		if (time == 0) {
 			_update_internal();
+		}
 	}
 }
 
@@ -194,15 +196,17 @@ String CPUParticles::get_configuration_warning() const {
 	anim_material_found = anim_material_found || (spat && spat->get_billboard_mode() == SpatialMaterial::BILLBOARD_PARTICLES);
 
 	if (!mesh_found) {
-		if (warnings != String())
+		if (warnings != String()) {
 			warnings += "\n";
+		}
 		warnings += "- " + TTR("Nothing is visible because no mesh has been assigned.");
 	}
 
 	if (!anim_material_found && (get_param(PARAM_ANIM_SPEED) != 0.0 || get_param(PARAM_ANIM_OFFSET) != 0.0 ||
 										get_param_curve(PARAM_ANIM_SPEED).is_valid() || get_param_curve(PARAM_ANIM_OFFSET).is_valid())) {
-		if (warnings != String())
+		if (warnings != String()) {
 			warnings += "\n";
+		}
 		warnings += "- " + TTR("CPUParticles animation requires the usage of a SpatialMaterial whose Billboard Mode is set to \"Particle Billboard\".");
 	}
 
@@ -275,8 +279,9 @@ float CPUParticles::get_param_randomness(Parameter p_param) const {
 
 static void _adjust_curve_range(const Ref<Curve> &p_curve, float p_min, float p_max) {
 	Ref<Curve> curve = p_curve;
-	if (!curve.is_valid())
+	if (!curve.is_valid()) {
 		return;
+	}
 
 	curve->ensure_default_setup(p_min, p_max);
 }
@@ -449,12 +454,14 @@ static uint32_t idhash(uint32_t x) {
 static float rand_from_seed(uint32_t &seed) {
 	int k;
 	int s = int(seed);
-	if (s == 0)
+	if (s == 0) {
 		s = 305420679;
+	}
 	k = s / 127773;
 	s = 16807 * (s - k * 127773) - 2836 * k;
-	if (s < 0)
+	if (s < 0) {
 		s += 2147483647;
+	}
 	seed = uint32_t(s);
 	return float(seed % uint32_t(65536)) / 65535.0;
 }
@@ -488,10 +495,11 @@ void CPUParticles::_update_internal() {
 
 	if (time == 0 && pre_process_time > 0.0) {
 		float frame_time;
-		if (fixed_fps > 0)
+		if (fixed_fps > 0) {
 			frame_time = 1.0 / fixed_fps;
-		else
+		} else {
 			frame_time = 1.0 / 30.0;
+		}
 
 		float todo = pre_process_time;
 
@@ -563,8 +571,9 @@ void CPUParticles::_particles_process(float p_delta) {
 	for (int i = 0; i < pcount; i++) {
 		Particle &p = parray[i];
 
-		if (!emitting && !p.active)
+		if (!emitting && !p.active) {
 			continue;
+		}
 
 		float local_delta = p_delta;
 
@@ -689,8 +698,9 @@ void CPUParticles::_particles_process(float p_delta) {
 				case EMISSION_SHAPE_POINTS:
 				case EMISSION_SHAPE_DIRECTED_POINTS: {
 					int pc = emission_points.size();
-					if (pc == 0)
+					if (pc == 0) {
 						break;
+					}
 
 					int random_idx = Math::rand() % pc;
 
@@ -941,8 +951,9 @@ void CPUParticles::_particles_process(float p_delta) {
 
 		//scale by scale
 		float base_scale = tex_scale * Math::lerp(parameters[PARAM_SCALE], 1.0f, p.scale_rand * randomness[PARAM_SCALE]);
-		if (base_scale < 0.000001)
+		if (base_scale < 0.000001) {
 			base_scale = 0.000001;
+		}
 
 		p.transform.basis.scale(Vector3(1, 1, 1) * base_scale);
 
@@ -1049,8 +1060,9 @@ void CPUParticles::_update_particle_data_buffer() {
 }
 
 void CPUParticles::_set_redraw(bool p_redraw) {
-	if (redraw == p_redraw)
+	if (redraw == p_redraw) {
 		return;
+	}
 	redraw = p_redraw;
 	update_mutex.lock();
 	if (redraw) {
@@ -1083,8 +1095,9 @@ void CPUParticles::_notification(int p_what) {
 		set_process_internal(emitting);
 
 		// first update before rendering to avoid one frame delay after emitting starts
-		if (emitting && (time == 0))
+		if (emitting && (time == 0)) {
 			_update_internal();
+		}
 	}
 
 	if (p_what == NOTIFICATION_EXIT_TREE) {
@@ -1093,8 +1106,9 @@ void CPUParticles::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_VISIBILITY_CHANGED) {
 		// first update before rendering to avoid one frame delay after emitting starts
-		if (emitting && (time == 0))
+		if (emitting && (time == 0)) {
 			_update_internal();
+		}
 	}
 
 	if (p_what == NOTIFICATION_INTERNAL_PROCESS) {
@@ -1158,8 +1172,9 @@ void CPUParticles::convert_from_particles(Node *p_particles) {
 	set_mesh(particles->get_draw_pass_mesh(0));
 
 	Ref<ParticlesMaterial> material = particles->get_process_material();
-	if (material.is_null())
+	if (material.is_null()) {
 		return;
+	}
 
 	set_direction(material->get_direction());
 	set_spread(material->get_spread());

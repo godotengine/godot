@@ -99,12 +99,13 @@ void GodotRayWorldAlgorithm::processCollision(const btCollisionObjectWrapper *bo
 	if (btResult.hasHit()) {
 		btScalar depth(ray_shape->getScaledLength() * (btResult.m_closestHitFraction - 1));
 
-		if (depth > -RAY_PENETRATION_DEPTH_EPSILON)
+		if (depth > -RAY_PENETRATION_DEPTH_EPSILON) {
 			depth = 0.0;
+		}
 
-		if (ray_shape->getSlipsOnSlope())
+		if (ray_shape->getSlipsOnSlope()) {
 			resultOut->addContactPoint(btResult.m_hitNormalWorld, btResult.m_hitPointWorld, depth);
-		else {
+		} else {
 			resultOut->addContactPoint((ray_transform.getOrigin() - to.getOrigin()).normalize(), btResult.m_hitPointWorld, depth);
 		}
 	}

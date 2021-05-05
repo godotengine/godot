@@ -158,8 +158,9 @@ void Area2D::_body_inout(int p_status, const RID &p_body, int p_instance, int p_
 			}
 		}
 		E->get().rc++;
-		if (node)
+		if (node) {
 			E->get().shapes.insert(ShapePair(p_body_shape, p_area_shape));
+		}
 
 		if (!node || E->get().in_tree) {
 			emit_signal(SceneStringNames::get_singleton()->body_shape_entered, objid, node, p_body_shape, p_area_shape);
@@ -168,8 +169,9 @@ void Area2D::_body_inout(int p_status, const RID &p_body, int p_instance, int p_
 	} else {
 		E->get().rc--;
 
-		if (node)
+		if (node) {
 			E->get().shapes.erase(ShapePair(p_body_shape, p_area_shape));
+		}
 
 		bool in_tree = E->get().in_tree;
 		if (E->get().rc == 0) {
@@ -177,8 +179,9 @@ void Area2D::_body_inout(int p_status, const RID &p_body, int p_instance, int p_
 			if (node) {
 				node->disconnect(SceneStringNames::get_singleton()->tree_entered, this, SceneStringNames::get_singleton()->_body_enter_tree);
 				node->disconnect(SceneStringNames::get_singleton()->tree_exiting, this, SceneStringNames::get_singleton()->_body_exit_tree);
-				if (in_tree)
+				if (in_tree) {
 					emit_signal(SceneStringNames::get_singleton()->body_exited, obj);
+				}
 			}
 		}
 		if (!node || in_tree) {
@@ -247,8 +250,9 @@ void Area2D::_area_inout(int p_status, const RID &p_area, int p_instance, int p_
 			}
 		}
 		E->get().rc++;
-		if (node)
+		if (node) {
 			E->get().shapes.insert(AreaShapePair(p_area_shape, p_self_shape));
+		}
 
 		if (!node || E->get().in_tree) {
 			emit_signal(SceneStringNames::get_singleton()->area_shape_entered, objid, node, p_area_shape, p_self_shape);
@@ -257,8 +261,9 @@ void Area2D::_area_inout(int p_status, const RID &p_area, int p_instance, int p_
 	} else {
 		E->get().rc--;
 
-		if (node)
+		if (node) {
 			E->get().shapes.erase(AreaShapePair(p_area_shape, p_self_shape));
+		}
 
 		bool in_tree = E->get().in_tree;
 		if (E->get().rc == 0) {
@@ -266,8 +271,9 @@ void Area2D::_area_inout(int p_status, const RID &p_area, int p_instance, int p_
 			if (node) {
 				node->disconnect(SceneStringNames::get_singleton()->tree_entered, this, SceneStringNames::get_singleton()->_area_enter_tree);
 				node->disconnect(SceneStringNames::get_singleton()->tree_exiting, this, SceneStringNames::get_singleton()->_area_exit_tree);
-				if (in_tree)
+				if (in_tree) {
 					emit_signal(SceneStringNames::get_singleton()->area_exited, obj);
+				}
 			}
 		}
 		if (!node || in_tree) {
@@ -290,15 +296,17 @@ void Area2D::_clear_monitoring() {
 			Object *obj = ObjectDB::get_instance(E->key());
 			Node *node = Object::cast_to<Node>(obj);
 
-			if (!node) //node may have been deleted in previous frame or at other legiminate point
+			if (!node) { //node may have been deleted in previous frame or at other legiminate point
 				continue;
+			}
 			//ERR_CONTINUE(!node);
 
 			node->disconnect(SceneStringNames::get_singleton()->tree_entered, this, SceneStringNames::get_singleton()->_body_enter_tree);
 			node->disconnect(SceneStringNames::get_singleton()->tree_exiting, this, SceneStringNames::get_singleton()->_body_exit_tree);
 
-			if (!E->get().in_tree)
+			if (!E->get().in_tree) {
 				continue;
+			}
 
 			for (int i = 0; i < E->get().shapes.size(); i++) {
 				emit_signal(SceneStringNames::get_singleton()->body_shape_exited, E->key(), node, E->get().shapes[i].body_shape, E->get().shapes[i].area_shape);
@@ -317,15 +325,17 @@ void Area2D::_clear_monitoring() {
 			Object *obj = ObjectDB::get_instance(E->key());
 			Node *node = Object::cast_to<Node>(obj);
 
-			if (!node) //node may have been deleted in previous frame or at other legiminate point
+			if (!node) { //node may have been deleted in previous frame or at other legiminate point
 				continue;
+			}
 			//ERR_CONTINUE(!node);
 
 			node->disconnect(SceneStringNames::get_singleton()->tree_entered, this, SceneStringNames::get_singleton()->_area_enter_tree);
 			node->disconnect(SceneStringNames::get_singleton()->tree_exiting, this, SceneStringNames::get_singleton()->_area_exit_tree);
 
-			if (!E->get().in_tree)
+			if (!E->get().in_tree) {
 				continue;
+			}
 
 			for (int i = 0; i < E->get().shapes.size(); i++) {
 				emit_signal(SceneStringNames::get_singleton()->area_shape_exited, E->key(), node, E->get().shapes[i].area_shape, E->get().shapes[i].self_shape);
@@ -345,8 +355,9 @@ void Area2D::_notification(int p_what) {
 }
 
 void Area2D::set_monitoring(bool p_enable) {
-	if (p_enable == monitoring)
+	if (p_enable == monitoring) {
 		return;
+	}
 	ERR_FAIL_COND_MSG(locked, "Function blocked during in/out signal. Use set_deferred(\"monitoring\", true/false).");
 
 	monitoring = p_enable;
@@ -369,8 +380,9 @@ bool Area2D::is_monitoring() const {
 void Area2D::set_monitorable(bool p_enable) {
 	ERR_FAIL_COND_MSG(locked || (is_inside_tree() && Physics2DServer::get_singleton()->is_flushing_queries()), "Function blocked during in/out signal. Use set_deferred(\"monitorable\", true/false).");
 
-	if (p_enable == monitorable)
+	if (p_enable == monitorable) {
 		return;
+	}
 
 	monitorable = p_enable;
 
@@ -418,16 +430,18 @@ Array Area2D::get_overlapping_areas() const {
 bool Area2D::overlaps_area(Node *p_area) const {
 	ERR_FAIL_NULL_V(p_area, false);
 	const Map<ObjectID, AreaState>::Element *E = area_map.find(p_area->get_instance_id());
-	if (!E)
+	if (!E) {
 		return false;
+	}
 	return E->get().in_tree;
 }
 
 bool Area2D::overlaps_body(Node *p_body) const {
 	ERR_FAIL_NULL_V(p_body, false);
 	const Map<ObjectID, BodyState>::Element *E = body_map.find(p_body->get_instance_id());
-	if (!E)
+	if (!E) {
 		return false;
+	}
 	return E->get().in_tree;
 }
 
@@ -451,10 +465,11 @@ uint32_t Area2D::get_collision_layer() const {
 
 void Area2D::set_collision_mask_bit(int p_bit, bool p_value) {
 	uint32_t mask = get_collision_mask();
-	if (p_value)
+	if (p_value) {
 		mask |= 1 << p_bit;
-	else
+	} else {
 		mask &= ~(1 << p_bit);
+	}
 	set_collision_mask(mask);
 }
 
@@ -464,10 +479,11 @@ bool Area2D::get_collision_mask_bit(int p_bit) const {
 
 void Area2D::set_collision_layer_bit(int p_bit, bool p_value) {
 	uint32_t layer = get_collision_layer();
-	if (p_value)
+	if (p_value) {
 		layer |= 1 << p_bit;
-	else
+	} else {
 		layer &= ~(1 << p_bit);
+	}
 	set_collision_layer(layer);
 }
 
@@ -500,8 +516,9 @@ void Area2D::_validate_property(PropertyInfo &property) const {
 	if (property.name == "audio_bus_name") {
 		String options;
 		for (int i = 0; i < AudioServer::get_singleton()->get_bus_count(); i++) {
-			if (i > 0)
+			if (i > 0) {
 				options += ",";
+			}
 			String name = AudioServer::get_singleton()->get_bus_name(i);
 			options += name;
 		}

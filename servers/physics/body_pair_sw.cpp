@@ -162,8 +162,9 @@ void BodyPairSW::validate_contacts() {
 bool BodyPairSW::_test_ccd(real_t p_step, BodySW *p_A, int p_shape_A, const Transform &p_xform_A, BodySW *p_B, int p_shape_B, const Transform &p_xform_B) {
 	Vector3 motion = p_A->get_linear_velocity() * p_step;
 	real_t mlen = motion.length();
-	if (mlen < CMP_EPSILON)
+	if (mlen < CMP_EPSILON) {
 		return false;
+	}
 
 	Vector3 mnormal = motion / mlen;
 
@@ -257,12 +258,13 @@ bool BodyPairSW::setup(real_t p_step) {
 	real_t bias = (real_t)0.3;
 
 	if (shape_A_ptr->get_custom_bias() || shape_B_ptr->get_custom_bias()) {
-		if (shape_A_ptr->get_custom_bias() == 0)
+		if (shape_A_ptr->get_custom_bias() == 0) {
 			bias = shape_B_ptr->get_custom_bias();
-		else if (shape_B_ptr->get_custom_bias() == 0)
+		} else if (shape_B_ptr->get_custom_bias() == 0) {
 			bias = shape_A_ptr->get_custom_bias();
-		else
+		} else {
 			bias = (shape_B_ptr->get_custom_bias() + shape_A_ptr->get_custom_bias()) * 0.5;
+		}
 	}
 
 	real_t inv_dt = 1.0 / p_step;
@@ -338,13 +340,15 @@ bool BodyPairSW::setup(real_t p_step) {
 }
 
 void BodyPairSW::solve(real_t p_step) {
-	if (!collided)
+	if (!collided) {
 		return;
+	}
 
 	for (int i = 0; i < contact_count; i++) {
 		Contact &c = contacts[i];
-		if (!c.active)
+		if (!c.active) {
 			continue;
+		}
 
 		c.active = false; //try to deactivate, will activate itself if still needed
 

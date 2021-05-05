@@ -79,43 +79,51 @@ MainLoop::~MainLoop() {
 }
 
 void MainLoop::input_text(const String &p_text) {
-	if (get_script_instance())
+	if (get_script_instance()) {
 		get_script_instance()->call("_input_text", p_text);
+	}
 }
 
 void MainLoop::input_event(const Ref<InputEvent> &p_event) {
-	if (get_script_instance())
+	if (get_script_instance()) {
 		get_script_instance()->call("_input_event", p_event);
+	}
 }
 
 void MainLoop::init() {
-	if (init_script.is_valid())
+	if (init_script.is_valid()) {
 		set_script(init_script.get_ref_ptr());
+	}
 
-	if (get_script_instance())
+	if (get_script_instance()) {
 		get_script_instance()->call("_initialize");
+	}
 }
 bool MainLoop::iteration(float p_time) {
-	if (get_script_instance())
+	if (get_script_instance()) {
 		return get_script_instance()->call("_iteration", p_time);
+	}
 
 	return false;
 }
 bool MainLoop::idle(float p_time) {
-	if (get_script_instance())
+	if (get_script_instance()) {
 		return get_script_instance()->call("_idle", p_time);
+	}
 
 	return false;
 }
 
 void MainLoop::drop_files(const Vector<String> &p_files, int p_from_screen) {
-	if (get_script_instance())
+	if (get_script_instance()) {
 		get_script_instance()->call("_drop_files", p_files, p_from_screen);
+	}
 }
 
 void MainLoop::global_menu_action(const Variant &p_id, const Variant &p_meta) {
-	if (get_script_instance())
+	if (get_script_instance()) {
 		get_script_instance()->call("_global_menu_action", p_id, p_meta);
+	}
 }
 
 void MainLoop::finish() {

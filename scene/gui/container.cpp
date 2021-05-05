@@ -43,8 +43,9 @@ void Container::add_child_notify(Node *p_child) {
 	Control::add_child_notify(p_child);
 
 	Control *control = Object::cast_to<Control>(p_child);
-	if (!control)
+	if (!control) {
 		return;
+	}
 
 	control->connect("size_flags_changed", this, "queue_sort");
 	control->connect("minimum_size_changed", this, "_child_minsize_changed");
@@ -57,8 +58,9 @@ void Container::add_child_notify(Node *p_child) {
 void Container::move_child_notify(Node *p_child) {
 	Control::move_child_notify(p_child);
 
-	if (!Object::cast_to<Control>(p_child))
+	if (!Object::cast_to<Control>(p_child)) {
 		return;
+	}
 
 	minimum_size_changed();
 	queue_sort();
@@ -68,8 +70,9 @@ void Container::remove_child_notify(Node *p_child) {
 	Control::remove_child_notify(p_child);
 
 	Control *control = Object::cast_to<Control>(p_child);
-	if (!control)
+	if (!control) {
 		return;
+	}
 
 	control->disconnect("size_flags_changed", this, "queue_sort");
 	control->disconnect("minimum_size_changed", this, "_child_minsize_changed");
@@ -80,8 +83,9 @@ void Container::remove_child_notify(Node *p_child) {
 }
 
 void Container::_sort_children() {
-	if (!is_inside_tree())
+	if (!is_inside_tree()) {
 		return;
+	}
 
 	notification(NOTIFICATION_SORT_CHILDREN);
 	emit_signal(SceneStringNames::get_singleton()->sort_children);
@@ -117,8 +121,9 @@ void Container::fit_child_in_rect(Control *p_child, const Rect2 &p_rect) {
 		}
 	}
 
-	for (int i = 0; i < 4; i++)
+	for (int i = 0; i < 4; i++) {
 		p_child->set_anchor(Margin(i), ANCHOR_BEGIN);
+	}
 
 	p_child->set_position(r.position);
 	p_child->set_size(r.size);
@@ -127,11 +132,13 @@ void Container::fit_child_in_rect(Control *p_child, const Rect2 &p_rect) {
 }
 
 void Container::queue_sort() {
-	if (!is_inside_tree())
+	if (!is_inside_tree()) {
 		return;
+	}
 
-	if (pending_sort)
+	if (pending_sort) {
 		return;
+	}
 
 	MessageQueue::get_singleton()->push_call(this, "_sort_children");
 	pending_sort = true;

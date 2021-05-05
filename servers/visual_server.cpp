@@ -43,8 +43,9 @@ VisualServer *VisualServer::get_singleton() {
 VisualServer *VisualServer::create() {
 	ERR_FAIL_COND_V(singleton, nullptr);
 
-	if (create_func)
+	if (create_func) {
 		return create_func();
+	}
 
 	return nullptr;
 }
@@ -159,12 +160,15 @@ RID VisualServer::get_test_texture() {
 }
 
 void VisualServer::_free_internal_rids() {
-	if (test_texture.is_valid())
+	if (test_texture.is_valid()) {
 		free(test_texture);
-	if (white_texture.is_valid())
+	}
+	if (white_texture.is_valid()) {
 		free(white_texture);
-	if (test_material.is_valid())
+	}
+	if (test_material.is_valid()) {
 		free(test_material);
+	}
 }
 
 RID VisualServer::_make_test_cube() {
@@ -194,10 +198,11 @@ RID VisualServer::_make_test_cube() {
 			v[2] = v[1] * (1 - 2 * (j & 1));
 
 			for (int k = 0; k < 3; k++) {
-				if (i < 3)
+				if (i < 3) {
 					face_points[j][(i + k) % 3] = v[k];
-				else
+				} else {
 					face_points[3 - j][(i + k) % 3] = -v[k];
+				}
 			}
 			normal_points[j] = Vector3();
 			normal_points[j][i % 3] = (i >= 3 ? -1 : 1);
@@ -224,8 +229,9 @@ RID VisualServer::_make_test_cube() {
 
 	PoolVector<int> indices;
 	indices.resize(vertices.size());
-	for (int i = 0; i < vertices.size(); i++)
+	for (int i = 0; i < vertices.size(); i++) {
 		indices.set(i, i);
+	}
 	d[VisualServer::ARRAY_INDEX] = indices;
 
 	mesh_add_surface_from_arrays(test_cube, PRIMITIVE_TRIANGLES, d);
@@ -301,15 +307,17 @@ RID VisualServer::make_sphere_mesh(int p_lats, int p_lons, float p_radius) {
 }
 
 RID VisualServer::get_white_texture() {
-	if (white_texture.is_valid())
+	if (white_texture.is_valid()) {
 		return white_texture;
+	}
 
 	PoolVector<uint8_t> wt;
 	wt.resize(16 * 3);
 	{
 		PoolVector<uint8_t>::Write w = wt.write();
-		for (int i = 0; i < 16 * 3; i++)
+		for (int i = 0; i < 16 * 3; i++) {
 			w[i] = 255;
+		}
 	}
 	Ref<Image> white = memnew(Image(4, 4, 0, Image::FORMAT_RGB8, wt));
 	white_texture = texture_create();
@@ -332,8 +340,9 @@ Error VisualServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint32_
 	int max_bone = 0;
 
 	for (int ai = 0; ai < VS::ARRAY_MAX; ai++) {
-		if (!(p_format & (1 << ai))) // no array
+		if (!(p_format & (1 << ai))) { // no array
 			continue;
+		}
 
 		switch (ai) {
 			case VS::ARRAY_VERTEX: {
@@ -695,8 +704,9 @@ Error VisualServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint32_
 				for (int j = 0; j < 4; j++) {
 					int idx = rb[i * 4 + j];
 					float w = rw[i * 4 + j];
-					if (w == 0)
+					if (w == 0) {
 						continue; //break;
+					}
 					ERR_FAIL_INDEX_V(idx, total_bones, ERR_INVALID_DATA);
 
 					if (bptr[idx].size.x < 0) {
@@ -734,8 +744,9 @@ uint32_t VisualServer::mesh_surface_make_offsets_from_format(uint32_t p_format, 
 	for (int i = 0; i < VS::ARRAY_MAX; i++) {
 		r_offsets[i] = 0; //reset
 
-		if (!(p_format & (1 << i))) // no array
+		if (!(p_format & (1 << i))) { // no array
 			continue;
+		}
 
 		int elem_size = 0;
 
@@ -852,8 +863,9 @@ void VisualServer::mesh_add_surface_from_arrays(RID p_mesh, PrimitiveType p_prim
 	int array_len = 0;
 
 	for (int i = 0; i < p_arrays.size(); i++) {
-		if (p_arrays[i].get_type() == Variant::NIL)
+		if (p_arrays[i].get_type() == Variant::NIL) {
 			continue;
+		}
 
 		format |= (1 << i);
 
@@ -886,8 +898,9 @@ void VisualServer::mesh_add_surface_from_arrays(RID p_mesh, PrimitiveType p_prim
 			uint32_t bsformat = 0;
 			Array arr = p_blend_shapes[i];
 			for (int j = 0; j < arr.size(); j++) {
-				if (arr[j].get_type() != Variant::NIL)
+				if (arr[j].get_type() != Variant::NIL) {
 					bsformat |= (1 << j);
+				}
 			}
 
 			ERR_FAIL_COND((bsformat) != (format & (VS::ARRAY_FORMAT_INDEX - 1)));
@@ -901,8 +914,9 @@ void VisualServer::mesh_add_surface_from_arrays(RID p_mesh, PrimitiveType p_prim
 	for (int i = 0; i < VS::ARRAY_MAX; i++) {
 		offsets[i] = 0; //reset
 
-		if (!(format & (1 << i))) // no array
+		if (!(format & (1 << i))) { // no array
 			continue;
+		}
 
 		int elem_size = 0;
 
@@ -1070,8 +1084,9 @@ Array VisualServer::_get_array_from_surface(uint32_t p_format, PoolVector<uint8_
 	for (int i = 0; i < VS::ARRAY_MAX; i++) {
 		offsets[i] = 0; //reset
 
-		if (!(p_format & (1 << i))) // no array
+		if (!(p_format & (1 << i))) { // no array
 			continue;
+		}
 
 		int elem_size = 0;
 
@@ -1181,8 +1196,9 @@ Array VisualServer::_get_array_from_surface(uint32_t p_format, PoolVector<uint8_
 	PoolVector<uint8_t>::Read r = p_vertex_data.read();
 
 	for (int i = 0; i < VS::ARRAY_MAX; i++) {
-		if (!(p_format & (1 << i)))
+		if (!(p_format & (1 << i))) {
 			continue;
+		}
 
 		switch (i) {
 			case VS::ARRAY_VERTEX: {

@@ -65,10 +65,11 @@ Rect2 Polygon2D::_edit_get_rect() const {
 		item_rect = Rect2();
 		for (int i = 0; i < l; i++) {
 			Vector2 pos = r[i] + offset;
-			if (i == 0)
+			if (i == 0) {
 				item_rect.position = pos;
-			else
+			} else {
 				item_rect.expand_to(pos);
+			}
 		}
 		rect_cache_dirty = false;
 	}
@@ -96,8 +97,9 @@ void Polygon2D::_skeleton_bone_setup_changed() {
 void Polygon2D::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_DRAW: {
-			if (polygon.size() < 3)
+			if (polygon.size() < 3) {
 				return;
+			}
 
 			Skeleton2D *skeleton_node = nullptr;
 			if (has_node(skeleton)) {
@@ -156,10 +158,11 @@ void Polygon2D::_notification(int p_what) {
 				float sum = 0;
 
 				for (int i = 0; i < len; i++) {
-					if (i == 0)
+					if (i == 0) {
 						bounds.position = points[i];
-					else
+					} else {
 						bounds.expand_to(points[i]);
+					}
 					if (points[i].y > highest_y) {
 						highest_idx = i;
 						highest_y = points[i].y;
@@ -249,8 +252,9 @@ void Polygon2D::_notification(int p_what) {
 					int bone_index = bone->get_index_in_skeleton();
 					PoolVector<float>::Read r = bone_weights[i].weights.read();
 					for (int j = 0; j < vc; j++) {
-						if (r[j] == 0.0)
+						if (r[j] == 0.0) {
 							continue; //weight is unpainted, skip
+						}
 						//find an index with a weight
 						for (int k = 0; k < 4; k++) {
 							if (weightsw[j * 4 + k] < r[j]) {
@@ -273,8 +277,9 @@ void Polygon2D::_notification(int p_what) {
 					for (int j = 0; j < 4; j++) {
 						tw += weightsw[i * 4 + j];
 					}
-					if (tw == 0)
+					if (tw == 0) {
 						continue; //unpainted, do nothing
+					}
 
 					//normalize
 					for (int j = 0; j < 4; j++) {
@@ -308,8 +313,9 @@ void Polygon2D::_notification(int p_what) {
 				for (int i = 0; i < polygons.size(); i++) {
 					PoolVector<int> src_indices = polygons[i];
 					int ic = src_indices.size();
-					if (ic < 3)
+					if (ic < 3) {
 						continue;
+					}
 					PoolVector<int>::Read r = src_indices.read();
 
 					Vector<Vector2> tmp_points;
@@ -531,8 +537,9 @@ void Polygon2D::_set_bones(const Array &p_bones) {
 }
 
 void Polygon2D::set_skeleton(const NodePath &p_skeleton) {
-	if (skeleton == p_skeleton)
+	if (skeleton == p_skeleton) {
 		return;
+	}
 	skeleton = p_skeleton;
 	update();
 }

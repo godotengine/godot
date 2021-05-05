@@ -94,17 +94,21 @@ void Node2D::_edit_set_rect(const Rect2 &p_edit_rect) {
 	Rect2 r = _edit_get_rect();
 
 	Vector2 zero_offset;
-	if (r.size.x != 0)
+	if (r.size.x != 0) {
 		zero_offset.x = -r.position.x / r.size.x;
-	if (r.size.y != 0)
+	}
+	if (r.size.y != 0) {
 		zero_offset.y = -r.position.y / r.size.y;
+	}
 
 	Size2 new_scale(1, 1);
 
-	if (r.size.x != 0)
+	if (r.size.x != 0) {
 		new_scale.x = p_edit_rect.size.x / r.size.x;
-	if (r.size.y != 0)
+	}
+	if (r.size.y != 0) {
 		new_scale.y = p_edit_rect.size.y / r.size.y;
+	}
 
 	Point2 new_pos = p_edit_rect.position + p_edit_rect.size * zero_offset;
 
@@ -134,23 +138,26 @@ void Node2D::_update_transform() {
 
 	VisualServer::get_singleton()->canvas_item_set_transform(get_canvas_item(), _mat);
 
-	if (!is_inside_tree())
+	if (!is_inside_tree()) {
 		return;
+	}
 
 	_notify_transform();
 }
 
 void Node2D::set_position(const Point2 &p_pos) {
-	if (_xform_dirty)
+	if (_xform_dirty) {
 		((Node2D *)this)->_update_xform_values();
+	}
 	pos = p_pos;
 	_update_transform();
 	_change_notify("position");
 }
 
 void Node2D::set_rotation(float p_radians) {
-	if (_xform_dirty)
+	if (_xform_dirty) {
 		((Node2D *)this)->_update_xform_values();
+	}
 	angle = p_radians;
 	_update_transform();
 	_change_notify("rotation");
@@ -162,27 +169,32 @@ void Node2D::set_rotation_degrees(float p_degrees) {
 }
 
 void Node2D::set_scale(const Size2 &p_scale) {
-	if (_xform_dirty)
+	if (_xform_dirty) {
 		((Node2D *)this)->_update_xform_values();
+	}
 	_scale = p_scale;
 	// Avoid having 0 scale values, can lead to errors in physics and rendering.
-	if (_scale.x == 0)
+	if (_scale.x == 0) {
 		_scale.x = CMP_EPSILON;
-	if (_scale.y == 0)
+	}
+	if (_scale.y == 0) {
 		_scale.y = CMP_EPSILON;
+	}
 	_update_transform();
 	_change_notify("scale");
 }
 
 Point2 Node2D::get_position() const {
-	if (_xform_dirty)
+	if (_xform_dirty) {
 		((Node2D *)this)->_update_xform_values();
+	}
 	return pos;
 }
 
 float Node2D::get_rotation() const {
-	if (_xform_dirty)
+	if (_xform_dirty) {
 		((Node2D *)this)->_update_xform_values();
+	}
 
 	return angle;
 }
@@ -192,8 +204,9 @@ float Node2D::get_rotation_degrees() const {
 }
 
 Size2 Node2D::get_scale() const {
-	if (_xform_dirty)
+	if (_xform_dirty) {
 		((Node2D *)this)->_update_xform_values();
+	}
 
 	return _scale;
 }
@@ -221,16 +234,18 @@ void Node2D::apply_scale(const Size2 &p_amount) {
 void Node2D::move_x(float p_delta, bool p_scaled) {
 	Transform2D t = get_transform();
 	Vector2 m = t[0];
-	if (!p_scaled)
+	if (!p_scaled) {
 		m.normalize();
+	}
 	set_position(t[2] + m * p_delta);
 }
 
 void Node2D::move_y(float p_delta, bool p_scaled) {
 	Transform2D t = get_transform();
 	Vector2 m = t[1];
-	if (!p_scaled)
+	if (!p_scaled) {
 		m.normalize();
+	}
 	set_position(t[2] + m * p_delta);
 }
 
@@ -291,18 +306,20 @@ void Node2D::set_transform(const Transform2D &p_transform) {
 
 	VisualServer::get_singleton()->canvas_item_set_transform(get_canvas_item(), _mat);
 
-	if (!is_inside_tree())
+	if (!is_inside_tree()) {
 		return;
+	}
 
 	_notify_transform();
 }
 
 void Node2D::set_global_transform(const Transform2D &p_transform) {
 	CanvasItem *pi = get_parent_item();
-	if (pi)
+	if (pi) {
 		set_transform(pi->get_global_transform().affine_inverse() * p_transform);
-	else
+	} else {
 		set_transform(p_transform);
+	}
 }
 
 void Node2D::set_z_index(int p_z) {
@@ -314,8 +331,9 @@ void Node2D::set_z_index(int p_z) {
 }
 
 void Node2D::set_z_as_relative(bool p_enabled) {
-	if (z_relative == p_enabled)
+	if (z_relative == p_enabled) {
 		return;
+	}
 	z_relative = p_enabled;
 	VS::get_singleton()->canvas_item_set_z_as_relative_to_parent(get_canvas_item(), p_enabled);
 }
@@ -329,16 +347,18 @@ int Node2D::get_z_index() const {
 }
 
 Transform2D Node2D::get_relative_transform_to_parent(const Node *p_parent) const {
-	if (p_parent == this)
+	if (p_parent == this) {
 		return Transform2D();
+	}
 
 	Node2D *parent_2d = Object::cast_to<Node2D>(get_parent());
 
 	ERR_FAIL_COND_V(!parent_2d, Transform2D());
-	if (p_parent == parent_2d)
+	if (p_parent == parent_2d) {
 		return get_transform();
-	else
+	} else {
 		return parent_2d->get_relative_transform_to_parent(p_parent) * get_transform();
+	}
 }
 
 void Node2D::look_at(const Vector2 &p_pos) {

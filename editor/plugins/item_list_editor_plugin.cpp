@@ -38,11 +38,11 @@ bool ItemListPlugin::_set(const StringName &p_name, const Variant &p_value) {
 	int idx = name.get_slice("/", 0).to_int();
 	String what = name.get_slice("/", 1);
 
-	if (what == "text")
+	if (what == "text") {
 		set_item_text(idx, p_value);
-	else if (what == "icon")
+	} else if (what == "icon") {
 		set_item_icon(idx, p_value);
-	else if (what == "checkable") {
+	} else if (what == "checkable") {
 		// This keeps compatibility to/from versions where this property was a boolean, before radio buttons
 		switch ((int)p_value) {
 			case 0:
@@ -53,16 +53,17 @@ bool ItemListPlugin::_set(const StringName &p_name, const Variant &p_value) {
 				set_item_radio_checkable(idx, true);
 				break;
 		}
-	} else if (what == "checked")
+	} else if (what == "checked") {
 		set_item_checked(idx, p_value);
-	else if (what == "id")
+	} else if (what == "id") {
 		set_item_id(idx, p_value);
-	else if (what == "enabled")
+	} else if (what == "enabled") {
 		set_item_enabled(idx, p_value);
-	else if (what == "separator")
+	} else if (what == "separator") {
 		set_item_separator(idx, p_value);
-	else
+	} else {
 		return false;
+	}
 
 	return true;
 }
@@ -72,27 +73,28 @@ bool ItemListPlugin::_get(const StringName &p_name, Variant &r_ret) const {
 	int idx = name.get_slice("/", 0).to_int();
 	String what = name.get_slice("/", 1);
 
-	if (what == "text")
+	if (what == "text") {
 		r_ret = get_item_text(idx);
-	else if (what == "icon")
+	} else if (what == "icon") {
 		r_ret = get_item_icon(idx);
-	else if (what == "checkable") {
+	} else if (what == "checkable") {
 		// This keeps compatibility to/from versions where this property was a boolean, before radio buttons
 		if (!is_item_checkable(idx)) {
 			r_ret = 0;
 		} else {
 			r_ret = is_item_radio_checkable(idx) ? 2 : 1;
 		}
-	} else if (what == "checked")
+	} else if (what == "checked") {
 		r_ret = is_item_checked(idx);
-	else if (what == "id")
+	} else if (what == "id") {
 		r_ret = get_item_id(idx);
-	else if (what == "enabled")
+	} else if (what == "enabled") {
 		r_ret = is_item_enabled(idx);
-	else if (what == "separator")
+	} else if (what == "separator") {
 		r_ret = is_item_separator(idx);
-	else
+	} else {
 		return false;
+	}
 
 	return true;
 }
@@ -110,14 +112,17 @@ void ItemListPlugin::_get_property_list(List<PropertyInfo> *p_list) const {
 			p_list->push_back(PropertyInfo(Variant::BOOL, base + "checked"));
 		}
 
-		if (flags & FLAG_ID)
+		if (flags & FLAG_ID) {
 			p_list->push_back(PropertyInfo(Variant::INT, base + "id", PROPERTY_HINT_RANGE, "-1,4096"));
+		}
 
-		if (flags & FLAG_ENABLE)
+		if (flags & FLAG_ENABLE) {
 			p_list->push_back(PropertyInfo(Variant::BOOL, base + "enabled"));
+		}
 
-		if (flags & FLAG_SEPARATOR)
+		if (flags & FLAG_SEPARATOR) {
 			p_list->push_back(PropertyInfo(Variant::BOOL, base + "separator"));
+		}
 	}
 }
 
@@ -158,10 +163,11 @@ ItemListOptionButtonPlugin::ItemListOptionButtonPlugin() {
 ///////////////////////////////////////////////////////////////
 
 void ItemListPopupMenuPlugin::set_object(Object *p_object) {
-	if (p_object->is_class("MenuButton"))
+	if (p_object->is_class("MenuButton")) {
 		pp = Object::cast_to<MenuButton>(p_object)->get_popup();
-	else
+	} else {
 		pp = Object::cast_to<PopupMenu>(p_object);
+	}
 }
 
 bool ItemListPopupMenuPlugin::handles(Object *p_object) const {
@@ -244,20 +250,23 @@ void ItemListEditor::_notification(int p_notification) {
 }
 
 void ItemListEditor::_add_pressed() {
-	if (selected_idx == -1)
+	if (selected_idx == -1) {
 		return;
+	}
 
 	item_plugins[selected_idx]->add_item();
 }
 
 void ItemListEditor::_delete_pressed() {
-	if (selected_idx == -1)
+	if (selected_idx == -1) {
 		return;
+	}
 
 	String current_selected = (String)property_editor->get_selected_path();
 
-	if (current_selected == "")
+	if (current_selected == "") {
 		return;
+	}
 
 	// FIXME: Currently relying on selecting a *property* to derive what item to delete
 	// e.g. you select "1/enabled" to delete item 1.
@@ -354,8 +363,9 @@ ItemListEditor::ItemListEditor() {
 }
 
 ItemListEditor::~ItemListEditor() {
-	for (int i = 0; i < item_plugins.size(); i++)
+	for (int i = 0; i < item_plugins.size(); i++) {
 		memdelete(item_plugins[i]);
+	}
 }
 
 void ItemListEditorPlugin::edit(Object *p_object) {

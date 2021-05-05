@@ -107,8 +107,9 @@ static String get_constant_text(SL::DataType p_type, const Vector<SL::ConstantNo
 			text += "(";
 
 			for (int i = 0; i < p_values.size(); i++) {
-				if (i > 0)
+				if (i > 0) {
 					text += ",";
+				}
 
 				text += p_values[i].boolean ? "true" : "false";
 			}
@@ -129,8 +130,9 @@ static String get_constant_text(SL::DataType p_type, const Vector<SL::ConstantNo
 			text += "(";
 
 			for (int i = 0; i < p_values.size(); i++) {
-				if (i > 0)
+				if (i > 0) {
 					text += ",";
+				}
 
 				text += itos(p_values[i].uint);
 			}
@@ -151,8 +153,9 @@ static String get_constant_text(SL::DataType p_type, const Vector<SL::ConstantNo
 			text += "(";
 
 			for (int i = 0; i < p_values.size(); i++) {
-				if (i > 0)
+				if (i > 0) {
 					text += ",";
+				}
 
 				text += itos(p_values[i].sint);
 			}
@@ -172,8 +175,9 @@ static String get_constant_text(SL::DataType p_type, const Vector<SL::ConstantNo
 			text += "(";
 
 			for (int i = 0; i < p_values.size(); i++) {
-				if (i > 0)
+				if (i > 0) {
 					text += ",";
+				}
 
 				text += f2sp0(p_values[i].real);
 			}
@@ -191,8 +195,9 @@ static String get_constant_text(SL::DataType p_type, const Vector<SL::ConstantNo
 			text += "(";
 
 			for (int i = 0; i < p_values.size(); i++) {
-				if (i > 0)
+				if (i > 0) {
 					text += ",";
+				}
 
 				text += f2sp0(p_values[i].real);
 			}
@@ -245,8 +250,9 @@ void ShaderCompilerGLES2::_dump_function_deps(SL::ShaderNode *p_node, const Stri
 		header += "(";
 
 		for (int i = 0; i < fnode->arguments.size(); i++) {
-			if (i > 0)
+			if (i > 0) {
 				header += ", ";
+			}
 
 			header += _qualstr(fnode->arguments[i].qualifier);
 			header += _prestr(fnode->arguments[i].precision);
@@ -290,10 +296,11 @@ String ShaderCompilerGLES2::_dump_node_code(SL::Node *p_node, int p_level, Gener
 			int max_uniforms = 0;
 
 			for (Map<StringName, SL::ShaderNode::Uniform>::Element *E = snode->uniforms.front(); E; E = E->next()) {
-				if (SL::is_sampler_type(E->get().type))
+				if (SL::is_sampler_type(E->get().type)) {
 					max_texture_uniforms++;
-				else
+				} else {
 					max_uniforms++;
+				}
 			}
 
 			r_gen_code.texture_uniforms.resize(max_texture_uniforms);

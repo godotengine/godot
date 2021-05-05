@@ -69,12 +69,14 @@ StringName FuncRef::get_function() {
 }
 
 bool FuncRef::is_valid() const {
-	if (id == 0)
+	if (id == 0) {
 		return false;
+	}
 
 	Object *obj = ObjectDB::get_instance(id);
-	if (!obj)
+	if (!obj) {
 		return false;
+	}
 
 	return obj->has_method(function);
 }

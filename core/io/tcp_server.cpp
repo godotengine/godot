@@ -47,8 +47,9 @@ Error TCP_Server::listen(uint16_t p_port, const IP_Address &p_bind_address) {
 	IP::Type ip_type = IP::TYPE_ANY;
 
 	// If the bind address is valid use its type as the socket type
-	if (p_bind_address.is_valid())
+	if (p_bind_address.is_valid()) {
 		ip_type = p_bind_address.is_ipv4() ? IP::TYPE_IPV4 : IP::TYPE_IPV6;
+	}
 
 	err = _sock->open(NetSocket::TYPE_TCP, ip_type);
 
@@ -82,8 +83,9 @@ bool TCP_Server::is_listening() const {
 bool TCP_Server::is_connection_available() const {
 	ERR_FAIL_COND_V(!_sock.is_valid(), false);
 
-	if (!_sock->is_open())
+	if (!_sock->is_open()) {
 		return false;
+	}
 
 	Error err = _sock->poll(NetSocket::POLL_TYPE_IN, 0);
 	return (err == OK);
@@ -99,8 +101,9 @@ Ref<StreamPeerTCP> TCP_Server::take_connection() {
 	IP_Address ip;
 	uint16_t port = 0;
 	ns = _sock->accept(ip, port);
-	if (!ns.is_valid())
+	if (!ns.is_valid()) {
 		return conn;
+	}
 
 	conn = Ref<StreamPeerTCP>(memnew(StreamPeerTCP));
 	conn->accept_socket(ns, ip, port);

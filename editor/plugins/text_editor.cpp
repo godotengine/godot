@@ -559,8 +559,9 @@ void TextEditor::_make_context_menu(bool p_selection, bool p_can_fold, bool p_is
 		context_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/convert_to_uppercase"), EDIT_TO_UPPERCASE);
 		context_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/convert_to_lowercase"), EDIT_TO_LOWERCASE);
 	}
-	if (p_can_fold || p_is_folded)
+	if (p_can_fold || p_is_folded) {
 		context_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/toggle_fold_line"), EDIT_TOGGLE_FOLD_LINE);
+	}
 
 	context_menu->set_position(get_global_transform().xform(p_position));
 	context_menu->set_size(Vector2(1, 1));

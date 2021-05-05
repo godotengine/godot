@@ -44,8 +44,9 @@ bool ParticlesEditorBase::_generate(PoolVector<Vector3> &points, PoolVector<Vect
 
 		for (int i = 0; i < geometry.size(); i++) {
 			float area = geometry[i].get_area();
-			if (area < CMP_EPSILON)
+			if (area < CMP_EPSILON) {
 				continue;
+			}
 			triangle_area_map[area_accum] = i;
 			area_accum += area;
 		}
@@ -92,10 +93,11 @@ bool ParticlesEditorBase::_generate(PoolVector<Vector3> &points, PoolVector<Vect
 
 		for (int i = 0; i < gcount; i++) {
 			for (int j = 0; j < 3; j++) {
-				if (i == 0 && j == 0)
+				if (i == 0 && j == 0) {
 					aabb.position = r[i].vertex[j];
-				else
+				} else {
 					aabb.expand_to(r[i].vertex[j]);
+				}
 			}
 		}
 
@@ -125,15 +127,18 @@ bool ParticlesEditorBase::_generate(PoolVector<Vector3> &points, PoolVector<Vect
 						res -= ofs;
 						float d = dir.dot(res);
 
-						if (d < min)
+						if (d < min) {
 							min = d;
-						if (d > max)
+						}
+						if (d > max) {
 							max = d;
+						}
 					}
 				}
 
-				if (max < min)
+				if (max < min) {
 					continue; //lost attempt
+				}
 
 				float val = min + (max - min) * Math::randf();
 
@@ -150,8 +155,9 @@ bool ParticlesEditorBase::_generate(PoolVector<Vector3> &points, PoolVector<Vect
 
 void ParticlesEditorBase::_node_selected(const NodePath &p_path) {
 	Node *sel = get_node(p_path);
-	if (!sel)
+	if (!sel) {
 		return;
+	}
 
 	if (!sel->is_class("Spatial")) {
 		EditorNode::get_singleton()->show_warning(vformat(TTR("\"%s\" doesn't inherit from Spatial."), sel->get_name()));
@@ -251,10 +257,11 @@ void ParticlesEditor::_menu_option(int p_option) {
 		case MENU_OPTION_GENERATE_AABB: {
 			float gen_time = node->get_lifetime();
 
-			if (gen_time < 1.0)
+			if (gen_time < 1.0) {
 				generate_seconds->set_value(1.0);
-			else
+			} else {
 				generate_seconds->set_value(trunc(gen_time) + 1.0);
+			}
 			generate_aabb->popup_centered_minsize();
 		} break;
 		case MENU_OPTION_CREATE_EMISSION_VOLUME_FROM_MESH: {
@@ -322,10 +329,11 @@ void ParticlesEditor::_generate_aabb() {
 		OS::get_singleton()->delay_usec(1000);
 
 		AABB capture = node->capture_aabb();
-		if (rect == AABB())
+		if (rect == AABB()) {
 			rect = capture;
-		else
+		} else {
 			rect.merge_with(capture);
+		}
 
 		running += (OS::get_singleton()->get_ticks_usec() - ticks) / 1000000.0;
 	}

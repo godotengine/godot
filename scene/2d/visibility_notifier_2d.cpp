@@ -52,8 +52,9 @@ void VisibilityNotifier2D::_enter_viewport(Viewport *p_viewport) {
 	ERR_FAIL_COND(viewports.has(p_viewport));
 	viewports.insert(p_viewport);
 
-	if (is_inside_tree() && Engine::get_singleton()->is_editor_hint())
+	if (is_inside_tree() && Engine::get_singleton()->is_editor_hint()) {
 		return;
+	}
 
 	if (viewports.size() == 1) {
 		emit_signal(SceneStringNames::get_singleton()->screen_entered);
@@ -67,8 +68,9 @@ void VisibilityNotifier2D::_exit_viewport(Viewport *p_viewport) {
 	ERR_FAIL_COND(!viewports.has(p_viewport));
 	viewports.erase(p_viewport);
 
-	if (is_inside_tree() && Engine::get_singleton()->is_editor_hint())
+	if (is_inside_tree() && Engine::get_singleton()->is_editor_hint()) {
 		return;
+	}
 
 	emit_signal(SceneStringNames::get_singleton()->viewport_exited, p_viewport);
 	if (viewports.size() == 0) {
@@ -145,10 +147,12 @@ void VisibilityEnabler2D::_screen_enter() {
 		_change_node_state(E->key(), true);
 	}
 
-	if (enabler[ENABLER_PARENT_PHYSICS_PROCESS] && get_parent())
+	if (enabler[ENABLER_PARENT_PHYSICS_PROCESS] && get_parent()) {
 		get_parent()->set_physics_process(true);
-	if (enabler[ENABLER_PARENT_PROCESS] && get_parent())
+	}
+	if (enabler[ENABLER_PARENT_PROCESS] && get_parent()) {
 		get_parent()->set_process(true);
+	}
 
 	visible = true;
 }
@@ -158,10 +162,12 @@ void VisibilityEnabler2D::_screen_exit() {
 		_change_node_state(E->key(), false);
 	}
 
-	if (enabler[ENABLER_PARENT_PHYSICS_PROCESS] && get_parent())
+	if (enabler[ENABLER_PARENT_PHYSICS_PROCESS] && get_parent()) {
 		get_parent()->set_physics_process(false);
-	if (enabler[ENABLER_PARENT_PROCESS] && get_parent())
+	}
+	if (enabler[ENABLER_PARENT_PROCESS] && get_parent()) {
 		get_parent()->set_process(false);
+	}
 
 	visible = false;
 }
@@ -207,8 +213,9 @@ void VisibilityEnabler2D::_find_nodes(Node *p_node) {
 
 	for (int i = 0; i < p_node->get_child_count(); i++) {
 		Node *c = p_node->get_child(i);
-		if (c->get_filename() != String())
+		if (c->get_filename() != String()) {
 			continue; //skip, instance
+		}
 
 		_find_nodes(c);
 	}
@@ -216,13 +223,15 @@ void VisibilityEnabler2D::_find_nodes(Node *p_node) {
 
 void VisibilityEnabler2D::_notification(int p_what) {
 	if (p_what == NOTIFICATION_ENTER_TREE) {
-		if (Engine::get_singleton()->is_editor_hint())
+		if (Engine::get_singleton()->is_editor_hint()) {
 			return;
+		}
 
 		Node *from = this;
 		//find where current scene starts
-		while (from->get_parent() && from->get_filename() == String())
+		while (from->get_parent() && from->get_filename() == String()) {
 			from = from->get_parent();
+		}
 
 		_find_nodes(from);
 
@@ -242,12 +251,14 @@ void VisibilityEnabler2D::_notification(int p_what) {
 	}
 
 	if (p_what == NOTIFICATION_EXIT_TREE) {
-		if (Engine::get_singleton()->is_editor_hint())
+		if (Engine::get_singleton()->is_editor_hint()) {
 			return;
+		}
 
 		for (Map<Node *, Variant>::Element *E = nodes.front(); E; E = E->next()) {
-			if (!visible)
+			if (!visible) {
 				_change_node_state(E->key(), true);
+			}
 			E->key()->disconnect(SceneStringNames::get_singleton()->tree_exiting, this, "_node_removed");
 		}
 
@@ -277,10 +288,11 @@ void VisibilityEnabler2D::_change_node_state(Node *p_node, bool p_enabled) {
 		AnimatedSprite *as = Object::cast_to<AnimatedSprite>(p_node);
 
 		if (as) {
-			if (p_enabled)
+			if (p_enabled) {
 				as->play();
-			else
+			} else {
 				as->stop();
+			}
 		}
 	}
 
@@ -294,8 +306,9 @@ void VisibilityEnabler2D::_change_node_state(Node *p_node, bool p_enabled) {
 }
 
 void VisibilityEnabler2D::_node_removed(Node *p_node) {
-	if (!visible)
+	if (!visible) {
 		_change_node_state(p_node, true);
+	}
 	nodes.erase(p_node);
 }
 
@@ -343,8 +356,9 @@ bool VisibilityEnabler2D::is_enabler_enabled(Enabler p_enabler) const {
 }
 
 VisibilityEnabler2D::VisibilityEnabler2D() {
-	for (int i = 0; i < ENABLER_MAX; i++)
+	for (int i = 0; i < ENABLER_MAX; i++) {
 		enabler[i] = true;
+	}
 	enabler[ENABLER_PARENT_PROCESS] = false;
 	enabler[ENABLER_PARENT_PHYSICS_PROCESS] = false;
 

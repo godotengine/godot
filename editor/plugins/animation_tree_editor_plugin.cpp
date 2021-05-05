@@ -48,8 +48,9 @@
 #include "scene/scene_string_names.h"
 
 void AnimationTreeEditor::edit(AnimationTree *p_tree) {
-	if (tree == p_tree)
+	if (tree == p_tree) {
 		return;
+	}
 
 	tree = p_tree;
 
@@ -205,13 +206,15 @@ Vector<String> AnimationTreeEditor::get_animation_list() {
 	}
 
 	AnimationTree *tree = singleton->tree;
-	if (!tree || !tree->has_node(tree->get_animation_player()))
+	if (!tree || !tree->has_node(tree->get_animation_player())) {
 		return Vector<String>();
+	}
 
 	AnimationPlayer *ap = Object::cast_to<AnimationPlayer>(tree->get_node(tree->get_animation_player()));
 
-	if (!ap)
+	if (!ap) {
 		return Vector<String>();
+	}
 
 	List<StringName> anims;
 	ap->get_animation_list(&anims);
@@ -263,8 +266,9 @@ void AnimationTreeEditorPlugin::make_visible(bool p_visible) {
 		editor->make_bottom_panel_item_visible(anim_tree_editor);
 		anim_tree_editor->set_process(true);
 	} else {
-		if (anim_tree_editor->is_visible_in_tree())
+		if (anim_tree_editor->is_visible_in_tree()) {
 			editor->hide_bottom_panel();
+		}
 		button->hide();
 		anim_tree_editor->set_process(false);
 	}

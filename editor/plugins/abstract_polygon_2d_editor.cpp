@@ -79,16 +79,18 @@ AbstractPolygon2DEditor::PosVertex::PosVertex(int p_polygon, int p_vertex, const
 }
 
 bool AbstractPolygon2DEditor::_is_empty() const {
-	if (!_get_node())
+	if (!_get_node()) {
 		return true;
+	}
 
 	const int n = _get_polygon_count();
 
 	for (int i = 0; i < n; i++) {
 		Vector<Vector2> vertices = _get_polygon(i);
 
-		if (vertices.size() != 0)
+		if (vertices.size() != 0) {
 			return false;
+		}
 	}
 
 	return true;
@@ -217,8 +219,9 @@ void AbstractPolygon2DEditor::_wip_cancel() {
 }
 
 void AbstractPolygon2DEditor::_wip_close() {
-	if (!wip_active)
+	if (!wip_active) {
 		return;
+	}
 
 	if (_is_line()) {
 		_set_polygon(0, wip);
@@ -266,8 +269,9 @@ void AbstractPolygon2DEditor::disable_polygon_editing(bool p_disable, String p_r
 }
 
 bool AbstractPolygon2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
-	if (!_get_node() || !_polygon_editing_enabled)
+	if (!_get_node() || !_polygon_editing_enabled) {
 		return false;
+	}
 
 	Ref<InputEventMouseButton> mb = p_event;
 
@@ -280,8 +284,9 @@ bool AbstractPolygon2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) 
 	}
 
 	CanvasItemEditor::Tool tool = CanvasItemEditor::get_singleton()->get_current_tool();
-	if (tool != CanvasItemEditor::TOOL_SELECT)
+	if (tool != CanvasItemEditor::TOOL_SELECT) {
 		return false;
+	}
 
 	if (mb.is_valid()) {
 		Transform2D xform = canvas_item_editor->get_canvas_transform() * _get_node()->get_global_transform();
@@ -292,8 +297,9 @@ bool AbstractPolygon2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) 
 		if (mode == MODE_EDIT || (_is_line() && mode == MODE_CREATE)) {
 			if (mb->get_button_index() == BUTTON_LEFT) {
 				if (mb->is_pressed()) {
-					if (mb->get_control() || mb->get_shift() || mb->get_alt())
+					if (mb->get_control() || mb->get_shift() || mb->get_alt()) {
 						return false;
+					}
 
 					const PosVertex insert = closest_edge_point(gpoint);
 
@@ -496,8 +502,9 @@ bool AbstractPolygon2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) 
 }
 
 void AbstractPolygon2DEditor::forward_canvas_draw_over_viewport(Control *p_overlay) {
-	if (!_get_node())
+	if (!_get_node()) {
 		return;
+	}
 
 	Transform2D xform = canvas_item_editor->get_canvas_transform() * _get_node()->get_global_transform();
 	// All polygon points are sharp, so use the sharp handle icon
@@ -508,8 +515,9 @@ void AbstractPolygon2DEditor::forward_canvas_draw_over_viewport(Control *p_overl
 	const bool is_closed = !_is_line();
 
 	for (int j = -1; j < n_polygons; j++) {
-		if (wip_active && wip_destructive && j != -1)
+		if (wip_active && wip_destructive && j != -1) {
 			continue;
+		}
 
 		PoolVector<Vector2> points;
 		Vector2 offset;
@@ -518,8 +526,9 @@ void AbstractPolygon2DEditor::forward_canvas_draw_over_viewport(Control *p_overl
 			points = Variant(wip);
 			offset = Vector2(0, 0);
 		} else {
-			if (j == -1)
+			if (j == -1) {
 				continue;
+			}
 			points = _get_polygon(j);
 			offset = _get_offset(j);
 		}
@@ -551,10 +560,11 @@ void AbstractPolygon2DEditor::forward_canvas_draw_over_viewport(Control *p_overl
 			if (is_closed || i < n_points - 1) {
 				Vector2 p2;
 				if (j == edited_point.polygon &&
-						((wip_active && i == n_points - 1) || (((i + 1) % n_points) == edited_point.vertex)))
+						((wip_active && i == n_points - 1) || (((i + 1) % n_points) == edited_point.vertex))) {
 					p2 = edited_point.pos;
-				else
+				} else {
 					p2 = points[(i + 1) % n_points] + offset;
+				}
 
 				const Vector2 next_point = xform.xform(p2);
 				p_overlay->draw_line(point, next_point, col, Math::round(2 * EDSCALE), true);
@@ -586,17 +596,19 @@ void AbstractPolygon2DEditor::forward_canvas_draw_over_viewport(Control *p_overl
 }
 
 void AbstractPolygon2DEditor::edit(Node *p_polygon) {
-	if (!canvas_item_editor)
+	if (!canvas_item_editor) {
 		canvas_item_editor = CanvasItemEditor::get_singleton();
+	}
 
 	if (p_polygon) {
 		_set_node(p_polygon);
 
 		// Enable the pencil tool if the polygon is empty.
-		if (_is_empty())
+		if (_is_empty()) {
 			_menu_option(MODE_CREATE);
-		else
+		} else {
 			_menu_option(MODE_EDIT);
+		}
 
 		wip.clear();
 		wip_active = false;
@@ -631,12 +643,14 @@ void AbstractPolygon2DEditor::remove_point(const Vertex &p_vertex) {
 		_commit_action();
 	}
 
-	if (_is_empty())
+	if (_is_empty()) {
 		_menu_option(MODE_CREATE);
+	}
 
 	hover_point = Vertex();
-	if (selected_point == p_vertex)
+	if (selected_point == p_vertex) {
 		selected_point = Vertex();
+	}
 }
 
 AbstractPolygon2DEditor::Vertex AbstractPolygon2DEditor::get_active_point() const {
@@ -694,8 +708,9 @@ AbstractPolygon2DEditor::PosVertex AbstractPolygon2DEditor::closest_edge_point(c
 
 			Vector2 cp = Geometry::get_closest_point_to_segment_2d(p_pos, segment);
 
-			if (cp.distance_squared_to(segment[0]) < eps2 || cp.distance_squared_to(segment[1]) < eps2)
+			if (cp.distance_squared_to(segment[0]) < eps2 || cp.distance_squared_to(segment[1]) < eps2) {
 				continue; //not valid to reuse point
+			}
 
 			real_t d = cp.distance_to(p_pos);
 			if (d < closest_dist && d < grab_threshold) {

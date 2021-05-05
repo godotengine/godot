@@ -95,8 +95,9 @@ int BSP_Tree::_get_points_inside(int p_node, const Vector3 *p_points, int *p_ind
 				// kind of slow (but cache friendly), should try something else,
 				// but this is a corner case most of the time
 
-				for (int j = index; j < p_indices_count - 1; j++)
+				for (int j = index; j < p_indices_count - 1; j++) {
 					p_indices[j] = p_indices[j + 1];
+				}
 
 				p_indices[p_indices_count - 1] = index;
 
@@ -142,8 +143,9 @@ int BSP_Tree::_get_points_inside(int p_node, const Vector3 *p_points, int *p_ind
 }
 
 int BSP_Tree::get_points_inside(const Vector3 *p_points, int p_point_count) const {
-	if (nodes.size() == 0)
+	if (nodes.size() == 0) {
 		return 0;
+	}
 
 #if 1
 	//this version is easier to debug, and and MUCH faster in real world cases
@@ -153,8 +155,9 @@ int BSP_Tree::get_points_inside(const Vector3 *p_points, int p_point_count) cons
 	const Plane *planesptr = &planes[0];
 	int node_count = nodes.size();
 
-	if (node_count == 0) // no nodes!
+	if (node_count == 0) { // no nodes!
 		return 0;
+	}
 
 	for (int i = 0; i < p_point_count; i++) {
 		const Vector3 &point = p_points[i];
@@ -189,8 +192,9 @@ int BSP_Tree::get_points_inside(const Vector3 *p_points, int p_point_count) cons
 #endif
 		}
 
-		if (pass)
+		if (pass) {
 			pass_count++;
+		}
 	}
 
 	return pass_count;
@@ -221,8 +225,9 @@ bool BSP_Tree::point_is_inside(const Vector3 &p_point) const {
 
 	int node_count = nodes.size();
 
-	if (node_count == 0) // no nodes!
+	if (node_count == 0) { // no nodes!
 		return false;
+	}
 
 	const Node *nodesptr = &nodes[0];
 	const Plane *planesptr = &planes[0];
@@ -269,8 +274,9 @@ static int _bsp_find_best_half_plane(const Face3 *p_faces, const Vector<int> &p_
 		int num_over = 0, num_under = 0, num_spanning = 0;
 
 		for (int j = 0; j < ic; j++) {
-			if (i == j)
+			if (i == j) {
 				continue;
+			}
 
 			const Face3 &g = p_faces[indices[j]];
 			int over = 0, under = 0;
@@ -279,19 +285,21 @@ static int _bsp_find_best_half_plane(const Face3 *p_faces, const Vector<int> &p_
 				real_t d = p.distance_to(g.vertex[j]);
 
 				if (Math::abs(d) > p_tolerance) {
-					if (d > 0)
+					if (d > 0) {
 						over++;
-					else
+					} else {
 						under++;
+					}
 				}
 			}
 
-			if (over && under)
+			if (over && under) {
 				num_spanning++;
-			else if (over)
+			} else if (over) {
 				num_over++;
-			else
+			} else {
 				num_under++;
+			}
 		}
 
 		//real_t split_cost = num_spanning / (real_t) face_count;
@@ -332,8 +340,9 @@ static int _bsp_create_node(const Face3 *p_faces, const Vector<int> &p_indices, 
 	Plane divisor_plane = p_faces[indices[divisor_idx]].get_plane();
 
 	for (int i = 0; i < ic; i++) {
-		if (i == divisor_idx)
+		if (i == divisor_idx) {
 			continue;
+		}
 
 		const Face3 &f = p_faces[indices[i]];
 
@@ -348,17 +357,20 @@ static int _bsp_create_node(const Face3 *p_faces, const Vector<int> &p_indices, 
 		for (int j = 0; j < 3; j++) {
 			real_t d = divisor_plane.distance_to(f.vertex[j]);
 			if (Math::abs(d) > p_tolerance) {
-				if (d > 0)
+				if (d > 0) {
 					over_count++;
-				else
+				} else {
 					under_count++;
+				}
 			}
 		}
 
-		if (over_count)
+		if (over_count) {
 			faces_over.push_back(indices[i]);
-		if (under_count)
+		}
+		if (under_count) {
 			faces_under.push_back(indices[i]);
+		}
 	}
 
 	uint16_t over_idx = BSP_Tree::OVER_LEAF, under_idx = BSP_Tree::UNDER_LEAF;
@@ -366,15 +378,17 @@ static int _bsp_create_node(const Face3 *p_faces, const Vector<int> &p_indices, 
 	if (faces_over.size() > 0) { //have facess above?
 
 		int idx = _bsp_create_node(p_faces, faces_over, p_planes, p_nodes, p_tolerance);
-		if (idx >= 0)
+		if (idx >= 0) {
 			over_idx = idx;
+		}
 	}
 
 	if (faces_under.size() > 0) { //have facess above?
 
 		int idx = _bsp_create_node(p_faces, faces_under, p_planes, p_nodes, p_tolerance);
-		if (idx >= 0)
+		if (idx >= 0) {
 			under_idx = idx;
+		}
 	}
 
 	/* Create the node */
@@ -498,8 +512,9 @@ BSP_Tree::BSP_Tree(const PoolVector<Face3> &p_faces, real_t p_error_radius) {
 	for (int i = 0; i < face_count; i++) {
 		const Face3 &f = facesptr[i];
 
-		if (f.is_degenerate())
+		if (f.is_degenerate()) {
 			continue;
+		}
 
 		for (int j = 0; j < 3; j++) {
 			if (first) {

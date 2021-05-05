@@ -172,8 +172,9 @@ inline void __swap_tmpl(T &x, T &y) {
 /** Function to find the next power of 2 to an integer */
 
 static _FORCE_INLINE_ unsigned int next_power_of_2(unsigned int x) {
-	if (x == 0)
+	if (x == 0) {
 		return 0;
+	}
 
 	--x;
 	x |= x >> 1;
@@ -214,8 +215,9 @@ static _FORCE_INLINE_ T nearest_power_of_2_templated(T x) {
 
 	// If the compiler is smart, it unrolls this loop
 	// If its dumb, this is a bit slow.
-	for (size_t i = 0; i < num; i++)
+	for (size_t i = 0; i < num; i++) {
 		x |= x >> (1 << i);
+	}
 
 	return ++x;
 }
@@ -224,8 +226,9 @@ static _FORCE_INLINE_ T nearest_power_of_2_templated(T x) {
 
 static inline unsigned int nearest_shift(unsigned int p_number) {
 	for (int i = 30; i >= 0; i--) {
-		if (p_number & (1 << i))
+		if (p_number & (1 << i)) {
 			return i + 1;
+		}
 	}
 
 	return 0;
@@ -236,8 +239,9 @@ static inline int get_shift_from_power_of_2(unsigned int p_pixel) {
 	// return a GL_TEXTURE_SIZE_ENUM
 
 	for (unsigned int i = 0; i < 32; i++) {
-		if (p_pixel == (unsigned int)(1 << i))
+		if (p_pixel == (unsigned int)(1 << i)) {
 			return i;
+		}
 	}
 
 	return -1;

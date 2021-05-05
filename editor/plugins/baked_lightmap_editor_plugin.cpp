@@ -88,8 +88,9 @@ void BakedLightmapEditorPlugin::_bake() {
 
 void BakedLightmapEditorPlugin::edit(Object *p_object) {
 	BakedLightmap *s = Object::cast_to<BakedLightmap>(p_object);
-	if (!s)
+	if (!s) {
 		return;
+	}
 
 	lightmap = s;
 }

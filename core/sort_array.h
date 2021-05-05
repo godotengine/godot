@@ -62,25 +62,28 @@ public:
 	Comparator compare;
 
 	inline const T &median_of_3(const T &a, const T &b, const T &c) const {
-		if (compare(a, b))
-			if (compare(b, c))
+		if (compare(a, b)) {
+			if (compare(b, c)) {
 				return b;
-			else if (compare(a, c))
+			} else if (compare(a, c)) {
 				return c;
-			else
+			} else {
 				return a;
-		else if (compare(a, c))
+			}
+		} else if (compare(a, c)) {
 			return a;
-		else if (compare(b, c))
+		} else if (compare(b, c)) {
 			return c;
-		else
+		} else {
 			return b;
+		}
 	}
 
 	inline int bitlog(int n) const {
 		int k;
-		for (k = 0; n != 1; n >>= 1)
+		for (k = 0; n != 1; n >>= 1) {
 			++k;
+		}
 		return k;
 	}
 
@@ -109,8 +112,9 @@ public:
 		int second_child = 2 * p_hole_idx + 2;
 
 		while (second_child < p_len) {
-			if (compare(p_array[p_first + second_child], p_array[p_first + (second_child - 1)]))
+			if (compare(p_array[p_first + second_child], p_array[p_first + (second_child - 1)])) {
 				second_child--;
+			}
 
 			p_array[p_first + p_hole_idx] = p_array[p_first + second_child];
 			p_hole_idx = second_child;
@@ -131,32 +135,38 @@ public:
 	}
 
 	inline void make_heap(int p_first, int p_last, T *p_array) const {
-		if (p_last - p_first < 2)
+		if (p_last - p_first < 2) {
 			return;
+		}
 		int len = p_last - p_first;
 		int parent = (len - 2) / 2;
 
 		while (true) {
 			adjust_heap(p_first, parent, len, p_array[p_first + parent], p_array);
-			if (parent == 0)
+			if (parent == 0) {
 				return;
+			}
 			parent--;
 		}
 	}
 
 	inline void partial_sort(int p_first, int p_last, int p_middle, T *p_array) const {
 		make_heap(p_first, p_middle, p_array);
-		for (int i = p_middle; i < p_last; i++)
-			if (compare(p_array[i], p_array[p_first]))
+		for (int i = p_middle; i < p_last; i++) {
+			if (compare(p_array[i], p_array[p_first])) {
 				pop_heap(p_first, p_middle, i, p_array[i], p_array);
+			}
+		}
 		sort_heap(p_first, p_middle, p_array);
 	}
 
 	inline void partial_select(int p_first, int p_last, int p_middle, T *p_array) const {
 		make_heap(p_first, p_middle, p_array);
-		for (int i = p_middle; i < p_last; i++)
-			if (compare(p_array[i], p_array[p_first]))
+		for (int i = p_middle; i < p_last; i++) {
+			if (compare(p_array[i], p_array[p_first])) {
 				pop_heap(p_first, p_middle, i, p_array[i], p_array);
+			}
+		}
 	}
 
 	inline int partitioner(int p_first, int p_last, T p_pivot, T *p_array) const {
@@ -178,8 +188,9 @@ public:
 				p_last--;
 			}
 
-			if (!(p_first < p_last))
+			if (!(p_first < p_last)) {
 				return p_first;
+			}
 
 			SWAP(p_array[p_first], p_array[p_last]);
 			p_first++;
@@ -228,10 +239,11 @@ public:
 							p_array[p_last - 1]),
 					p_array);
 
-			if (cut <= p_nth)
+			if (cut <= p_nth) {
 				p_first = cut;
-			else
+			} else {
 				p_last = cut;
+			}
 		}
 
 		insertion_sort(p_first, p_last, p_array);
@@ -253,24 +265,29 @@ public:
 	inline void linear_insert(int p_first, int p_last, T *p_array) const {
 		T val = p_array[p_last];
 		if (compare(val, p_array[p_first])) {
-			for (int i = p_last; i > p_first; i--)
+			for (int i = p_last; i > p_first; i--) {
 				p_array[i] = p_array[i - 1];
+			}
 
 			p_array[p_first] = val;
-		} else
+		} else {
 			unguarded_linear_insert(p_last, val, p_array);
+		}
 	}
 
 	inline void insertion_sort(int p_first, int p_last, T *p_array) const {
-		if (p_first == p_last)
+		if (p_first == p_last) {
 			return;
-		for (int i = p_first + 1; i != p_last; i++)
+		}
+		for (int i = p_first + 1; i != p_last; i++) {
 			linear_insert(p_first, i, p_array);
+		}
 	}
 
 	inline void unguarded_insertion_sort(int p_first, int p_last, T *p_array) const {
-		for (int i = p_first; i != p_last; i++)
+		for (int i = p_first; i != p_last; i++) {
 			unguarded_linear_insert(i, p_array[i], p_array);
+		}
 	}
 
 	inline void final_insertion_sort(int p_first, int p_last, T *p_array) const {
@@ -294,8 +311,9 @@ public:
 	}
 
 	inline void nth_element(int p_first, int p_last, int p_nth, T *p_array) const {
-		if (p_first == p_last || p_nth == p_last)
+		if (p_first == p_last || p_nth == p_last) {
 			return;
+		}
 		introselect(p_first, p_nth, p_last, p_array, bitlog(p_last - p_first) * 2);
 	}
 };

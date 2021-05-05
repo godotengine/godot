@@ -416,8 +416,9 @@ private:
 
 	_FORCE_INLINE_ bool _is_valid() const {
 		for (int i = 0; i < 6; i++) {
-			if (valid[i])
+			if (valid[i]) {
 				return true;
+			}
 		}
 		return false;
 	}

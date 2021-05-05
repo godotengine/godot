@@ -113,8 +113,9 @@ Error FileAccessEncrypted::_open(const String &p_path, int p_mode_flags) {
 	return OK;
 }
 void FileAccessEncrypted::close() {
-	if (!file)
+	if (!file) {
 		return;
+	}
 
 	if (writing) {
 		Vector<uint8_t> compressed;
@@ -164,22 +165,25 @@ bool FileAccessEncrypted::is_open() const {
 }
 
 String FileAccessEncrypted::get_path() const {
-	if (file)
+	if (file) {
 		return file->get_path();
-	else
+	} else {
 		return "";
+	}
 }
 
 String FileAccessEncrypted::get_path_absolute() const {
-	if (file)
+	if (file) {
 		return file->get_path_absolute();
-	else
+	} else {
 		return "";
+	}
 }
 
 void FileAccessEncrypted::seek(size_t p_position) {
-	if (p_position > (size_t)data.size())
+	if (p_position > (size_t)data.size()) {
 		p_position = data.size();
+	}
 
 	pos = p_position;
 	eofed = false;
@@ -268,8 +272,9 @@ void FileAccessEncrypted::store_8(uint8_t p_dest) {
 
 bool FileAccessEncrypted::file_exists(const String &p_name) {
 	FileAccess *fa = FileAccess::open(p_name, FileAccess::READ);
-	if (!fa)
+	if (!fa) {
 		return false;
+	}
 	memdelete(fa);
 	return true;
 }
@@ -296,6 +301,7 @@ FileAccessEncrypted::FileAccessEncrypted() {
 }
 
 FileAccessEncrypted::~FileAccessEncrypted() {
-	if (file)
+	if (file) {
 		close();
+	}
 }

@@ -418,8 +418,9 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 							}
 
 							d.name = vendor + " " + device;
-							if (device == String())
+							if (device == String()) {
 								continue;
+							}
 						}
 
 						ndevices.push_back(d);
@@ -437,8 +438,9 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 			uint64_t time = OS::get_singleton()->get_ticks_usec();
 			while (OS::get_singleton()->get_ticks_usec() - time < wait) {
 				OS::get_singleton()->delay_usec(1000 * sleep);
-				if (ea->quit_request.is_set())
+				if (ea->quit_request.is_set()) {
 					break;
+				}
 			}
 		}
 
@@ -486,8 +488,9 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 				first = false;
 			}
 		}
-		if (name == "")
+		if (name == "") {
 			name = "noname";
+		}
 
 		pname = pname.replace("$genname", name);
 
@@ -953,8 +956,9 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 						if (tname == "manifest" && attrname == "versionName") {
 							if (attr_value == 0xFFFFFFFF) {
 								WARN_PRINT("Version name in a resource, should be plain text");
-							} else
+							} else {
 								string_table.write[attr_value] = version_name;
+							}
 						}
 
 						if (tname == "application" && attrname == "requestLegacyExternalStorage") {
@@ -1299,18 +1303,21 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 		}
 
 		//pad
-		while (ret.size() % 4)
+		while (ret.size() % 4) {
 			ret.push_back(0);
+		}
 
 		uint32_t new_stable_end = ret.size();
 
 		uint32_t extra = (p_manifest.size() - string_table_ends);
 		ret.resize(new_stable_end + extra);
-		for (uint32_t i = 0; i < extra; i++)
+		for (uint32_t i = 0; i < extra; i++) {
 			ret.write[new_stable_end + i] = p_manifest[string_table_ends + i];
+		}
 
-		while (ret.size() % 4)
+		while (ret.size() % 4) {
 			ret.push_back(0);
+		}
 		encode_uint32(ret.size(), &ret.write[4]); //update new file size
 
 		encode_uint32(new_stable_end - 8, &ret.write[12]); //update new string table size
@@ -1326,10 +1333,11 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 
 		if (p_utf8) {
 			uint8_t byte = p_bytes[offset];
-			if (byte & 0x80)
+			if (byte & 0x80) {
 				offset += 2;
-			else
+			} else {
 				offset += 1;
+			}
 			byte = p_bytes[offset];
 			offset++;
 			if (byte & 0x80) {
@@ -1363,8 +1371,9 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 			String str;
 			for (uint32_t i = 0; i < len; i++) {
 				CharType c = decode_uint16(&p_bytes[offset + i * 2]);
-				if (c == 0)
+				if (c == 0) {
 					break;
+				}
 				str += String::chr(c);
 			}
 			return str;
@@ -1437,8 +1446,9 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 		}
 
 		//pad
-		while (ret.size() % 4)
+		while (ret.size() % 4) {
 			ret.push_back(0);
+		}
 
 		//change flags to not use utf8
 		encode_uint32(string_flags & ~0x100, &ret.write[28]);
@@ -1832,8 +1842,9 @@ public:
 		const bool use_remote = (p_debug_flags & DEBUG_FLAG_REMOTE_DEBUG) || (p_debug_flags & DEBUG_FLAG_DUMB_CLIENT);
 		const bool use_reverse = devices[p_device].api_level >= 21;
 
-		if (use_reverse)
+		if (use_reverse) {
 			p_debug_flags |= DEBUG_FLAG_REMOTE_DEBUG_LOCALHOST;
+		}
 
 		String tmp_export_path = EditorSettings::get_singleton()->get_cache_dir().plus_file("tmpexport." + uitos(OS::get_singleton()->get_unix_time()) + ".apk");
 
@@ -2597,8 +2608,9 @@ public:
 				CharString command_line_argument = command_line_strings[i].utf8();
 				int base = r_command_line_flags.size();
 				int length = command_line_argument.length();
-				if (length == 0)
+				if (length == 0) {
 					continue;
+				}
 				r_command_line_flags.resize(base + 4 + length);
 				encode_uint32(length, &r_command_line_flags.write[base]);
 				memcpy(&r_command_line_flags.write[base + 4], command_line_argument.ptr(), length);
@@ -2955,10 +2967,11 @@ public:
 		}
 		// This is the start of the Legacy build system
 		print_verbose("Starting legacy build system..");
-		if (p_debug)
+		if (p_debug) {
 			src_apk = p_preset->get("custom_template/debug");
-		else
+		} else {
 			src_apk = p_preset->get("custom_template/release");
+		}
 
 		src_apk = src_apk.strip_edges();
 		if (src_apk == "") {

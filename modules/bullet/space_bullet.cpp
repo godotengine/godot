@@ -63,8 +63,9 @@ BulletPhysicsDirectSpaceState::BulletPhysicsDirectSpaceState(SpaceBullet *p_spac
 		space(p_space) {}
 
 int BulletPhysicsDirectSpaceState::intersect_point(const Vector3 &p_point, ShapeResult *r_results, int p_result_max, const Set<RID> &p_exclude, uint32_t p_collision_mask, bool p_collide_with_bodies, bool p_collide_with_areas) {
-	if (p_result_max <= 0)
+	if (p_result_max <= 0) {
 		return 0;
+	}
 
 	btVector3 bt_point;
 	G_TO_B(p_point, bt_point);
@@ -117,8 +118,9 @@ bool BulletPhysicsDirectSpaceState::intersect_ray(const Vector3 &p_from, const V
 }
 
 int BulletPhysicsDirectSpaceState::intersect_shape(const RID &p_shape, const Transform &p_xform, float p_margin, ShapeResult *r_results, int p_result_max, const Set<RID> &p_exclude, uint32_t p_collision_mask, bool p_collide_with_bodies, bool p_collide_with_areas) {
-	if (p_result_max <= 0)
+	if (p_result_max <= 0) {
 		return 0;
+	}
 
 	ShapeBullet *shape = space->get_physics_server()->get_shape_owner()->get(p_shape);
 	ERR_FAIL_COND_V(!shape, 0);
@@ -214,8 +216,9 @@ bool BulletPhysicsDirectSpaceState::cast_motion(const RID &p_shape, const Transf
 
 /// Returns the list of contacts pairs in this order: Local contact, other body contact
 bool BulletPhysicsDirectSpaceState::collide_shape(RID p_shape, const Transform &p_shape_xform, float p_margin, Vector3 *r_results, int p_result_max, int &r_result_count, const Set<RID> &p_exclude, uint32_t p_collision_mask, bool p_collide_with_bodies, bool p_collide_with_areas) {
-	if (p_result_max <= 0)
+	if (p_result_max <= 0) {
 		return false;
+	}
 
 	ShapeBullet *shape = space->get_physics_server()->get_shape_owner()->get(p_shape);
 	ERR_FAIL_COND_V(!shape, false);
@@ -692,8 +695,9 @@ void SpaceBullet::check_ghost_overlaps() {
 
 		btVector3 area_scale(area->get_bt_body_scale());
 
-		if (!area->is_monitoring())
+		if (!area->is_monitoring()) {
 			continue;
+		}
 
 		/// 1. Reset all states
 		for (i = area->overlappingObjects.size() - 1; 0 <= i; --i) {
@@ -722,15 +726,18 @@ void SpaceBullet::check_ghost_overlaps() {
 			}
 
 			if (overlapped_bt_co->getUserIndex() == CollisionObjectBullet::TYPE_AREA) {
-				if (!static_cast<AreaBullet *>(overlapped_bt_co->getUserPointer())->is_monitorable())
+				if (!static_cast<AreaBullet *>(overlapped_bt_co->getUserPointer())->is_monitorable()) {
 					continue;
-			} else if (overlapped_bt_co->getUserIndex() != CollisionObjectBullet::TYPE_RIGID_BODY)
+				}
+			} else if (overlapped_bt_co->getUserIndex() != CollisionObjectBullet::TYPE_RIGID_BODY) {
 				continue;
+			}
 
 			// For each area shape
 			for (y = area->get_shape_count() - 1; 0 <= y; --y) {
-				if (!area->get_bt_shape(y)->isConvex())
+				if (!area->get_bt_shape(y)->isConvex()) {
 					continue;
+				}
 
 				btTransform area_shape_treansform(area->get_bt_shape_transform(y));
 				area_shape_treansform.getOrigin() *= area_scale;
@@ -772,8 +779,9 @@ void SpaceBullet::check_ghost_overlaps() {
 
 						btCollisionAlgorithm *algorithm = dispatcher->findAlgorithm(&obA, &obB, nullptr, BT_CONTACT_POINT_ALGORITHMS);
 
-						if (!algorithm)
+						if (!algorithm) {
 							continue;
+						}
 
 						GodotDeepPenetrationContactResultCallback contactPointResult(&obA, &obB);
 						algorithm->processCollision(&obA, &obB, dynamicsWorld->getDispatchInfo(), &contactPointResult);
@@ -791,8 +799,9 @@ void SpaceBullet::check_ghost_overlaps() {
 			} // ~For each area shape
 
 		collision_found:
-			if (!hasOverlap)
+			if (!hasOverlap) {
 				continue;
+			}
 
 			indexOverlap = area->find_overlapping_object(otherObject);
 			if (-1 == indexOverlap) {
@@ -1258,8 +1267,9 @@ bool SpaceBullet::recover_from_penetration(RigidBodyBullet *p_body, const btTran
 			if (p_infinite_inertia && !otherObject->isStaticOrKinematicObject()) {
 				otherObject->activate(); // Force activation of hitten rigid, soft body
 				continue;
-			} else if (!p_body->get_bt_collision_object()->checkCollideWith(otherObject) || !otherObject->checkCollideWith(p_body->get_bt_collision_object()))
+			} else if (!p_body->get_bt_collision_object()->checkCollideWith(otherObject) || !otherObject->checkCollideWith(p_body->get_bt_collision_object())) {
 				continue;
+			}
 
 			if (otherObject->getCollisionShape()->isCompound()) {
 				const btCompoundShape *cs = static_cast<const btCompoundShape *>(otherObject->getCollisionShape());
@@ -1447,8 +1457,9 @@ int SpaceBullet::recover_from_penetration_ray(RigidBodyBullet *p_body, const btT
 			if (p_infinite_inertia && !otherObject->isStaticOrKinematicObject()) {
 				otherObject->activate(); // Force activation of hitten rigid, soft body
 				continue;
-			} else if (!p_body->get_bt_collision_object()->checkCollideWith(otherObject) || !otherObject->checkCollideWith(p_body->get_bt_collision_object()))
+			} else if (!p_body->get_bt_collision_object()->checkCollideWith(otherObject) || !otherObject->checkCollideWith(p_body->get_bt_collision_object())) {
 				continue;
+			}
 
 			if (otherObject->getCollisionShape()->isCompound()) {
 				const btCompoundShape *cs = static_cast<const btCompoundShape *>(otherObject->getCollisionShape());

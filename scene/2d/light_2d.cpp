@@ -59,8 +59,9 @@ bool Light2D::_edit_use_pivot() const {
 }
 
 Rect2 Light2D::_edit_get_rect() const {
-	if (texture.is_null())
+	if (texture.is_null()) {
 		return Rect2();
+	}
 
 	Size2 s = texture->get_size() * _scale;
 	return Rect2(texture_offset - s / 2.0, s);
@@ -72,16 +73,18 @@ bool Light2D::_edit_use_rect() const {
 #endif
 
 Rect2 Light2D::get_anchorable_rect() const {
-	if (texture.is_null())
+	if (texture.is_null()) {
 		return Rect2();
+	}
 
 	Size2 s = texture->get_size() * _scale;
 	return Rect2(texture_offset - s / 2.0, s);
 }
 
 void Light2D::_update_light_visibility() {
-	if (!is_inside_tree())
+	if (!is_inside_tree()) {
 		return;
+	}
 
 	bool editor_ok = true;
 
@@ -122,10 +125,11 @@ bool Light2D::is_editor_only() const {
 
 void Light2D::set_texture(const Ref<Texture> &p_texture) {
 	texture = p_texture;
-	if (texture.is_valid())
+	if (texture.is_valid()) {
 		VS::get_singleton()->canvas_light_set_texture(canvas_light, texture->get_rid());
-	else
+	} else {
 		VS::get_singleton()->canvas_light_set_texture(canvas_light, RID());
+	}
 
 	update_configuration_warning();
 }

@@ -67,8 +67,9 @@ void EditorNavigationMeshGenerator::_add_mesh(const Ref<Mesh> &p_mesh, const Tra
 	for (int i = 0; i < p_mesh->get_surface_count(); i++) {
 		current_vertex_count = p_verticies.size() / 3;
 
-		if (p_mesh->surface_get_primitive_type(i) != Mesh::PRIMITIVE_TRIANGLES)
+		if (p_mesh->surface_get_primitive_type(i) != Mesh::PRIMITIVE_TRIANGLES) {
 			continue;
+		}
 
 		int index_count = 0;
 		if (p_mesh->surface_get_format(i) & Mesh::ARRAY_FORMAT_INDEX) {
@@ -352,12 +353,15 @@ void EditorNavigationMeshGenerator::_build_recast_navigation_mesh(Ref<Navigation
 		ERR_FAIL_COND(!rcRasterizeTriangles(&ctx, verts, nverts, tris, tri_areas.ptr(), ntris, *hf, cfg.walkableClimb));
 	}
 
-	if (p_nav_mesh->get_filter_low_hanging_obstacles())
+	if (p_nav_mesh->get_filter_low_hanging_obstacles()) {
 		rcFilterLowHangingWalkableObstacles(&ctx, cfg.walkableClimb, *hf);
-	if (p_nav_mesh->get_filter_ledge_spans())
+	}
+	if (p_nav_mesh->get_filter_ledge_spans()) {
 		rcFilterLedgeSpans(&ctx, cfg.walkableHeight, cfg.walkableClimb, *hf);
-	if (p_nav_mesh->get_filter_walkable_low_height_spans())
+	}
+	if (p_nav_mesh->get_filter_walkable_low_height_spans()) {
 		rcFilterWalkableLowHeightSpans(&ctx, cfg.walkableHeight, *hf);
+	}
 
 	ep->step(TTR("Constructing compact heightfield..."), 5);
 

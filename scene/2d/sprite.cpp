@@ -95,8 +95,9 @@ void Sprite::_get_rects(Rect2 &r_src_rect, Rect2 &r_dst_rect, bool &r_filter_cli
 	r_src_rect.position = base_rect.position + frame_offset;
 
 	Point2 dest_offset = offset;
-	if (centered)
+	if (centered) {
 		dest_offset -= frame_size / 2;
+	}
 
 	if (Engine::get_singleton()->get_use_gpu_pixel_snap()) {
 		dest_offset = dest_offset.floor();
@@ -104,17 +105,20 @@ void Sprite::_get_rects(Rect2 &r_src_rect, Rect2 &r_dst_rect, bool &r_filter_cli
 
 	r_dst_rect = Rect2(dest_offset, frame_size);
 
-	if (hflip)
+	if (hflip) {
 		r_dst_rect.size.x = -r_dst_rect.size.x;
-	if (vflip)
+	}
+	if (vflip) {
 		r_dst_rect.size.y = -r_dst_rect.size.y;
+	}
 }
 
 void Sprite::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_DRAW: {
-			if (texture.is_null())
+			if (texture.is_null()) {
 				return;
+			}
 
 			RID ci = get_canvas_item();
 
@@ -133,16 +137,19 @@ void Sprite::_notification(int p_what) {
 }
 
 void Sprite::set_texture(const Ref<Texture> &p_texture) {
-	if (p_texture == texture)
+	if (p_texture == texture) {
 		return;
+	}
 
-	if (texture.is_valid())
+	if (texture.is_valid()) {
 		texture->disconnect(CoreStringNames::get_singleton()->changed, this, "_texture_changed");
+	}
 
 	texture = p_texture;
 
-	if (texture.is_valid())
+	if (texture.is_valid()) {
 		texture->connect(CoreStringNames::get_singleton()->changed, this, "_texture_changed");
+	}
 
 	update();
 	emit_signal("texture_changed");
@@ -200,8 +207,9 @@ bool Sprite::is_flipped_v() const {
 }
 
 void Sprite::set_region(bool p_region) {
-	if (p_region == region)
+	if (p_region == region) {
 		return;
+	}
 
 	region = p_region;
 	update();
@@ -212,13 +220,15 @@ bool Sprite::is_region() const {
 }
 
 void Sprite::set_region_rect(const Rect2 &p_region_rect) {
-	if (region_rect == p_region_rect)
+	if (region_rect == p_region_rect) {
 		return;
+	}
 
 	region_rect = p_region_rect;
 
-	if (region)
+	if (region) {
 		item_rect_changed();
+	}
 
 	_change_notify("region_rect");
 }
@@ -239,8 +249,9 @@ bool Sprite::is_region_filter_clip_enabled() const {
 void Sprite::set_frame(int p_frame) {
 	ERR_FAIL_INDEX(p_frame, vframes * hframes);
 
-	if (frame != p_frame)
+	if (frame != p_frame) {
 		item_rect_changed();
+	}
 
 	frame = p_frame;
 
@@ -287,25 +298,30 @@ int Sprite::get_hframes() const {
 }
 
 bool Sprite::is_pixel_opaque(const Point2 &p_point) const {
-	if (texture.is_null())
+	if (texture.is_null()) {
 		return false;
+	}
 
-	if (texture->get_size().width == 0 || texture->get_size().height == 0)
+	if (texture->get_size().width == 0 || texture->get_size().height == 0) {
 		return false;
+	}
 
 	Rect2 src_rect, dst_rect;
 	bool filter_clip;
 	_get_rects(src_rect, dst_rect, filter_clip);
 	dst_rect.size = dst_rect.size.abs();
 
-	if (!dst_rect.has_point(p_point))
+	if (!dst_rect.has_point(p_point)) {
 		return false;
+	}
 
 	Vector2 q = (p_point - dst_rect.position) / dst_rect.size;
-	if (hflip)
+	if (hflip) {
 		q.x = 1.0f - q.x;
-	if (vflip)
+	}
+	if (vflip) {
 		q.y = 1.0f - q.y;
+	}
 	q = q * src_rect.size + src_rect.position;
 
 	bool is_repeat = texture->get_flags() & Texture::FLAG_REPEAT;
@@ -334,8 +350,9 @@ bool Sprite::is_pixel_opaque(const Point2 &p_point) const {
 }
 
 Rect2 Sprite::get_rect() const {
-	if (texture.is_null())
+	if (texture.is_null()) {
 		return Rect2(0, 0, 1, 1);
+	}
 
 	Size2i s;
 
@@ -348,14 +365,16 @@ Rect2 Sprite::get_rect() const {
 	s = s / Point2(hframes, vframes);
 
 	Point2 ofs = offset;
-	if (centered)
+	if (centered) {
 		ofs -= Size2(s) / 2;
+	}
 	if (Engine::get_singleton()->get_use_gpu_pixel_snap()) {
 		ofs = ofs.floor();
 	}
 
-	if (s == Size2(0, 0))
+	if (s == Size2(0, 0)) {
 		s = Size2(1, 1);
+	}
 
 	return Rect2(ofs, s);
 }

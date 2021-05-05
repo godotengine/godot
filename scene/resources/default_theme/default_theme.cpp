@@ -810,8 +810,9 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	// TooltipPanel
 
 	Ref<StyleBoxTexture> style_tt = make_stylebox(tooltip_bg_png, 4, 4, 4, 4);
-	for (int i = 0; i < 4; i++)
+	for (int i = 0; i < 4; i++) {
 		style_tt->set_expand_margin_size((Margin)i, 4 * scale);
+	}
 
 	theme->set_stylebox("panel", "TooltipPanel", style_tt);
 

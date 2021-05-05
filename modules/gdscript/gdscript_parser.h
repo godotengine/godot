@@ -638,14 +638,16 @@ private:
 	void _check_block_types(BlockNode *p_block);
 	_FORCE_INLINE_ void _mark_line_as_safe(int p_line) const {
 #ifdef DEBUG_ENABLED
-		if (safe_lines)
+		if (safe_lines) {
 			safe_lines->insert(p_line);
+		}
 #endif // DEBUG_ENABLED
 	}
 	_FORCE_INLINE_ void _mark_line_as_unsafe(int p_line) const {
 #ifdef DEBUG_ENABLED
-		if (safe_lines)
+		if (safe_lines) {
 			safe_lines->erase(p_line);
+		}
 #endif // DEBUG_ENABLED
 	}
 

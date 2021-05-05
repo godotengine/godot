@@ -32,14 +32,16 @@
 #include "servers/visual_server.h"
 
 void MultiMesh::_set_transform_array(const PoolVector<Vector3> &p_array) {
-	if (transform_format != TRANSFORM_3D)
+	if (transform_format != TRANSFORM_3D) {
 		return;
+	}
 
 	const PoolVector<Vector3> &xforms = p_array;
 	int len = xforms.size();
 	ERR_FAIL_COND((len / 4) != instance_count);
-	if (len == 0)
+	if (len == 0) {
 		return;
+	}
 
 	PoolVector<Vector3>::Read r = xforms.read();
 
@@ -55,11 +57,13 @@ void MultiMesh::_set_transform_array(const PoolVector<Vector3> &p_array) {
 }
 
 PoolVector<Vector3> MultiMesh::_get_transform_array() const {
-	if (transform_format != TRANSFORM_3D)
+	if (transform_format != TRANSFORM_3D) {
 		return PoolVector<Vector3>();
+	}
 
-	if (instance_count == 0)
+	if (instance_count == 0) {
 		return PoolVector<Vector3>();
+	}
 
 	PoolVector<Vector3> xforms;
 	xforms.resize(instance_count * 4);
@@ -78,14 +82,16 @@ PoolVector<Vector3> MultiMesh::_get_transform_array() const {
 }
 
 void MultiMesh::_set_transform_2d_array(const PoolVector<Vector2> &p_array) {
-	if (transform_format != TRANSFORM_2D)
+	if (transform_format != TRANSFORM_2D) {
 		return;
+	}
 
 	const PoolVector<Vector2> &xforms = p_array;
 	int len = xforms.size();
 	ERR_FAIL_COND((len / 3) != instance_count);
-	if (len == 0)
+	if (len == 0) {
 		return;
+	}
 
 	PoolVector<Vector2>::Read r = xforms.read();
 
@@ -100,11 +106,13 @@ void MultiMesh::_set_transform_2d_array(const PoolVector<Vector2> &p_array) {
 }
 
 PoolVector<Vector2> MultiMesh::_get_transform_2d_array() const {
-	if (transform_format != TRANSFORM_2D)
+	if (transform_format != TRANSFORM_2D) {
 		return PoolVector<Vector2>();
+	}
 
-	if (instance_count == 0)
+	if (instance_count == 0) {
 		return PoolVector<Vector2>();
+	}
 
 	PoolVector<Vector2> xforms;
 	xforms.resize(instance_count * 3);
@@ -124,8 +132,9 @@ PoolVector<Vector2> MultiMesh::_get_transform_2d_array() const {
 void MultiMesh::_set_color_array(const PoolVector<Color> &p_array) {
 	const PoolVector<Color> &colors = p_array;
 	int len = colors.size();
-	if (len == 0)
+	if (len == 0) {
 		return;
+	}
 	ERR_FAIL_COND(len != instance_count);
 
 	PoolVector<Color>::Read r = colors.read();
@@ -136,8 +145,9 @@ void MultiMesh::_set_color_array(const PoolVector<Color> &p_array) {
 }
 
 PoolVector<Color> MultiMesh::_get_color_array() const {
-	if (instance_count == 0 || color_format == COLOR_NONE)
+	if (instance_count == 0 || color_format == COLOR_NONE) {
 		return PoolVector<Color>();
+	}
 
 	PoolVector<Color> colors;
 	colors.resize(instance_count);
@@ -152,8 +162,9 @@ PoolVector<Color> MultiMesh::_get_color_array() const {
 void MultiMesh::_set_custom_data_array(const PoolVector<Color> &p_array) {
 	const PoolVector<Color> &custom_datas = p_array;
 	int len = custom_datas.size();
-	if (len == 0)
+	if (len == 0) {
 		return;
+	}
 	ERR_FAIL_COND(len != instance_count);
 
 	PoolVector<Color>::Read r = custom_datas.read();
@@ -164,8 +175,9 @@ void MultiMesh::_set_custom_data_array(const PoolVector<Color> &p_array) {
 }
 
 PoolVector<Color> MultiMesh::_get_custom_data_array() const {
-	if (instance_count == 0 || custom_data_format == CUSTOM_DATA_NONE)
+	if (instance_count == 0 || custom_data_format == CUSTOM_DATA_NONE) {
 		return PoolVector<Color>();
+	}
 
 	PoolVector<Color> custom_datas;
 	custom_datas.resize(instance_count);
@@ -178,10 +190,11 @@ PoolVector<Color> MultiMesh::_get_custom_data_array() const {
 }
 void MultiMesh::set_mesh(const Ref<Mesh> &p_mesh) {
 	mesh = p_mesh;
-	if (!mesh.is_null())
+	if (!mesh.is_null()) {
 		VisualServer::get_singleton()->multimesh_set_mesh(multimesh, mesh->get_rid());
-	else
+	} else {
 		VisualServer::get_singleton()->multimesh_set_mesh(multimesh, RID());
+	}
 }
 
 Ref<Mesh> MultiMesh::get_mesh() const {

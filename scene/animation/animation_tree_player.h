@@ -84,10 +84,12 @@ private:
 			if (id == p_right.id) {
 				if (bone_idx == p_right.bone_idx) {
 					return subpath_concatenated < p_right.subpath_concatenated;
-				} else
+				} else {
 					return bone_idx < p_right.bone_idx;
-			} else
+				}
+			} else {
 				return id < p_right.id;
+			}
 		}
 	};
 

@@ -80,8 +80,9 @@ public:
 			int64_t stacking;
 			RID canvas;
 			bool operator<(const CanvasKey &p_canvas) const {
-				if (stacking == p_canvas.stacking)
+				if (stacking == p_canvas.stacking) {
 					return canvas < p_canvas.canvas;
+				}
 				return stacking < p_canvas.stacking;
 			}
 			CanvasKey() {

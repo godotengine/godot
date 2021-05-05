@@ -58,8 +58,9 @@ void ProximityGroup::_clear_groups() {
 }
 
 void ProximityGroup::_update_groups() {
-	if (grid_radius == Vector3(0, 0, 0))
+	if (grid_radius == Vector3(0, 0, 0)) {
 		return;
+	}
 
 	++group_version;
 

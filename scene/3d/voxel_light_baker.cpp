@@ -58,10 +58,12 @@ static bool planeBoxOverlap(Vector3 normal, float d, Vector3 maxbox) {
 			vmax[q] = -maxbox[q];
 		}
 	}
-	if (normal.dot(vmin) + d > 0.0f)
+	if (normal.dot(vmin) + d > 0.0f) {
 		return false;
-	if (normal.dot(vmax) + d >= 0.0f)
+	}
+	if (normal.dot(vmax) + d >= 0.0f) {
 		return true;
+	}
 
 	return false;
 }
@@ -209,18 +211,21 @@ static bool fast_tri_box_overlap(const Vector3 &boxcenter, const Vector3 boxhalf
 
 	/* test in X-direction */
 	FINDMINMAX(v0.x, v1.x, v2.x, min, max);
-	if (min > boxhalfsize.x || max < -boxhalfsize.x)
+	if (min > boxhalfsize.x || max < -boxhalfsize.x) {
 		return false;
+	}
 
 	/* test in Y-direction */
 	FINDMINMAX(v0.y, v1.y, v2.y, min, max);
-	if (min > boxhalfsize.y || max < -boxhalfsize.y)
+	if (min > boxhalfsize.y || max < -boxhalfsize.y) {
 		return false;
+	}
 
 	/* test in Z-direction */
 	FINDMINMAX(v0.z, v1.z, v2.z, min, max);
-	if (min > boxhalfsize.z || max < -boxhalfsize.z)
+	if (min > boxhalfsize.z || max < -boxhalfsize.z) {
 		return false;
+	}
 
 	/* Bullet 2: */
 	/*  test if the box intersects the plane of the triangle */
@@ -346,8 +351,9 @@ void VoxelLightBaker::_plot_face(int p_idx, int p_level, int p_x, int p_y, int p
 				Vector2 uv;
 				Vector3 lnormal;
 				get_uv_and_normal(intersection, p_vtx, p_uv, p_normal, uv, lnormal);
-				if (lnormal == Vector3()) //just in case normal as nor provided
+				if (lnormal == Vector3()) { //just in case normal as nor provided
 					lnormal = normal;
+				}
 
 				int uv_x = CLAMP(int(Math::fposmod(uv.x, 1.0f) * bake_texture_size), 0, bake_texture_size - 1);
 				int uv_y = CLAMP(int(Math::fposmod(uv.y, 1.0f) * bake_texture_size), 0, bake_texture_size - 1);
@@ -377,8 +383,9 @@ void VoxelLightBaker::_plot_face(int p_idx, int p_level, int p_x, int p_y, int p
 			Vector3 lnormal;
 			Vector2 uv;
 			get_uv_and_normal(inters, p_vtx, p_uv, p_normal, uv, normal);
-			if (lnormal == Vector3()) //just in case normal as nor provided
+			if (lnormal == Vector3()) { //just in case normal as nor provided
 				lnormal = normal;
+			}
 
 			int uv_x = CLAMP(Math::fposmod(uv.x, 1.0f) * bake_texture_size, 0, bake_texture_size - 1);
 			int uv_y = CLAMP(Math::fposmod(uv.y, 1.0f) * bake_texture_size, 0, bake_texture_size - 1);
@@ -451,8 +458,9 @@ void VoxelLightBaker::_plot_face(int p_idx, int p_level, int p_x, int p_y, int p
 				nz += half;
 			}
 			//make sure to not plot beyond limits
-			if (nx < 0 || nx >= axis_cell_size[0] || ny < 0 || ny >= axis_cell_size[1] || nz < 0 || nz >= axis_cell_size[2])
+			if (nx < 0 || nx >= axis_cell_size[0] || ny < 0 || ny >= axis_cell_size[1] || nz < 0 || nz >= axis_cell_size[2]) {
 				continue;
+			}
 
 			{
 				AABB test_aabb = aabb;
@@ -569,8 +577,9 @@ VoxelLightBaker::MaterialCache VoxelLightBaker::_get_material_cache(Ref<Material
 
 void VoxelLightBaker::plot_mesh(const Transform &p_xform, Ref<Mesh> &p_mesh, const Vector<Ref<Material>> &p_materials, const Ref<Material> &p_override_material) {
 	for (int i = 0; i < p_mesh->get_surface_count(); i++) {
-		if (p_mesh->surface_get_primitive_type(i) != Mesh::PRIMITIVE_TRIANGLES)
+		if (p_mesh->surface_get_primitive_type(i) != Mesh::PRIMITIVE_TRIANGLES) {
 			continue; //only triangles
+		}
 
 		Ref<Material> src_material;
 
@@ -632,8 +641,9 @@ void VoxelLightBaker::plot_mesh(const Transform &p_xform, Ref<Mesh> &p_mesh, con
 				}
 
 				//test against original bounds
-				if (!fast_tri_box_overlap(original_bounds.position + original_bounds.size * 0.5, original_bounds.size * 0.5, vtxs))
+				if (!fast_tri_box_overlap(original_bounds.position + original_bounds.size * 0.5, original_bounds.size * 0.5, vtxs)) {
 					continue;
+				}
 				//plot
 				_plot_face(0, 0, 0, 0, 0, vtxs, normal, uvs, material, po2_bounds);
 			}
@@ -663,8 +673,9 @@ void VoxelLightBaker::plot_mesh(const Transform &p_xform, Ref<Mesh> &p_mesh, con
 				}
 
 				//test against original bounds
-				if (!fast_tri_box_overlap(original_bounds.position + original_bounds.size * 0.5, original_bounds.size * 0.5, vtxs))
+				if (!fast_tri_box_overlap(original_bounds.position + original_bounds.size * 0.5, original_bounds.size * 0.5, vtxs)) {
 					continue;
+				}
 				//plot face
 				_plot_face(0, 0, 0, 0, 0, vtxs, normal, uvs, material, po2_bounds);
 			}
@@ -688,19 +699,23 @@ void VoxelLightBaker::_init_light_plot(int p_idx, int p_level, int p_x, int p_y,
 		for (int i = 0; i < 8; i++) {
 			uint32_t child = bake_cells[p_idx].children[i];
 
-			if (child == CHILD_EMPTY)
+			if (child == CHILD_EMPTY) {
 				continue;
+			}
 
 			int nx = p_x;
 			int ny = p_y;
 			int nz = p_z;
 
-			if (i & 1)
+			if (i & 1) {
 				nx += half;
-			if (i & 2)
+			}
+			if (i & 2) {
 				ny += half;
-			if (i & 4)
+			}
+			if (i & 4) {
 				nz += half;
+			}
 
 			_init_light_plot(child, p_level + 1, nx, ny, nz, p_idx);
 		}
@@ -765,12 +780,15 @@ uint32_t VoxelLightBaker::_find_cell_at_pos(const Cell *cells, int x, int y, int
 	int size = 1 << (cell_subdiv - 1);
 	int half = size / 2;
 
-	if (x < 0 || x >= size)
+	if (x < 0 || x >= size) {
 		return -1;
-	if (y < 0 || y >= size)
+	}
+	if (y < 0 || y >= size) {
 		return -1;
-	if (z < 0 || z >= size)
+	}
+	if (z < 0 || z >= size) {
 		return -1;
+	}
 
 	for (int i = 0; i < cell_subdiv - 1; i++) {
 		const Cell *bc = &cells[cell];
@@ -790,8 +808,9 @@ uint32_t VoxelLightBaker::_find_cell_at_pos(const Cell *cells, int x, int y, int
 		}
 
 		cell = bc->children[child];
-		if (cell == CHILD_EMPTY)
+		if (cell == CHILD_EMPTY) {
 			return CHILD_EMPTY;
+		}
 
 		half >>= 1;
 	}
@@ -803,8 +822,9 @@ void VoxelLightBaker::plot_light_directional(const Vector3 &p_direction, const C
 
 	float max_len = Vector3(axis_cell_size[0], axis_cell_size[1], axis_cell_size[2]).length() * 1.1;
 
-	if (p_direct)
+	if (p_direct) {
 		direct_lights_baked = true;
+	}
 
 	Vector3 light_axis = p_direction;
 	Plane clip[3];
@@ -814,8 +834,9 @@ void VoxelLightBaker::plot_light_directional(const Vector3 &p_direction, const C
 	const Cell *cells = bake_cells.ptr();
 
 	for (int i = 0; i < 3; i++) {
-		if (Math::is_zero_approx(light_axis[i]))
+		if (Math::is_zero_approx(light_axis[i])) {
 			continue;
+		}
 		clip[clip_planes].normal[i] = 1.0;
 
 		if (light_axis[i] < 0) {
@@ -901,8 +922,9 @@ void VoxelLightBaker::plot_light_directional(const Vector3 &p_direction, const C
 void VoxelLightBaker::plot_light_omni(const Vector3 &p_pos, const Color &p_color, float p_energy, float p_indirect_energy, float p_radius, float p_attenutation, bool p_direct) {
 	_check_init_light();
 
-	if (p_direct)
+	if (p_direct) {
 		direct_lights_baked = true;
+	}
 
 	Plane clip[3];
 	int clip_planes = 0;
@@ -950,8 +972,9 @@ void VoxelLightBaker::plot_light_omni(const Vector3 &p_pos, const Color &p_color
 		clip_planes = 0;
 
 		for (int c = 0; c < 3; c++) {
-			if (Math::is_zero_approx(light_axis[c]))
+			if (Math::is_zero_approx(light_axis[c])) {
 				continue;
+			}
 			clip[clip_planes].normal[c] = 1.0;
 
 			if (light_axis[c] < 0) {
@@ -1024,8 +1047,9 @@ void VoxelLightBaker::plot_light_omni(const Vector3 &p_pos, const Color &p_color
 void VoxelLightBaker::plot_light_spot(const Vector3 &p_pos, const Vector3 &p_axis, const Color &p_color, float p_energy, float p_indirect_energy, float p_radius, float p_attenutation, float p_spot_angle, float p_spot_attenuation, bool p_direct) {
 	_check_init_light();
 
-	if (p_direct)
+	if (p_direct) {
 		direct_lights_baked = true;
+	}
 
 	Plane clip[3];
 	int clip_planes = 0;
@@ -1079,8 +1103,9 @@ void VoxelLightBaker::plot_light_spot(const Vector3 &p_pos, const Vector3 &p_axi
 		clip_planes = 0;
 
 		for (int c = 0; c < 3; c++) {
-			if (Math::is_zero_approx(light_axis[c]))
+			if (Math::is_zero_approx(light_axis[c])) {
 				continue;
+			}
 			clip[clip_planes].normal[c] = 1.0;
 
 			if (light_axis[c] < 0) {
@@ -1214,8 +1239,9 @@ void VoxelLightBaker::_fixup_plot(int p_idx, int p_level) {
 		for (int i = 0; i < 8; i++) {
 			uint32_t child = bake_cells[p_idx].children[i];
 
-			if (child == CHILD_EMPTY)
+			if (child == CHILD_EMPTY) {
 				continue;
+			}
 
 			_fixup_plot(child, p_level + 1);
 			alpha_average += bake_cells[child].alpha;
@@ -1262,8 +1288,9 @@ void VoxelLightBaker::begin_bake(int p_subdiv, const AABB &p_bounds) {
 	leaf_voxel_count = 0;
 
 	for (int i = 0; i < 3; i++) {
-		if (i == longest_axis)
+		if (i == longest_axis) {
 			continue;
+		}
 
 		axis_cell_size[i] = axis_cell_size[longest_axis];
 		float axis_size = po2_bounds.size[longest_axis];
@@ -1399,18 +1426,22 @@ void VoxelLightBaker::_debug_mesh(int p_idx, int p_level, const AABB &p_aabb, Re
 		for (int i = 0; i < 8; i++) {
 			uint32_t child = bake_cells[p_idx].children[i];
 
-			if (child == CHILD_EMPTY || child >= (uint32_t)max_original_cells)
+			if (child == CHILD_EMPTY || child >= (uint32_t)max_original_cells) {
 				continue;
+			}
 
 			AABB aabb = p_aabb;
 			aabb.size *= 0.5;
 
-			if (i & 1)
+			if (i & 1) {
 				aabb.position.x += aabb.size.x;
-			if (i & 2)
+			}
+			if (i & 2) {
 				aabb.position.y += aabb.size.y;
-			if (i & 4)
+			}
+			if (i & 4) {
 				aabb.position.z += aabb.size.z;
+			}
 
 			_debug_mesh(bake_cells[p_idx].children[i], p_level + 1, aabb, p_multimesh, idx, p_mode);
 		}
@@ -1451,10 +1482,11 @@ Ref<MultiMesh> VoxelLightBaker::create_debug_multimesh(DebugMode p_mode) {
 				v[2] = v[1] * (1 - 2 * (j & 1));
 
 				for (int k = 0; k < 3; k++) {
-					if (i < 3)
+					if (i < 3) {
 						face_points[j][(i + k) % 3] = v[k];
-					else
+					} else {
 						face_points[3 - j][(i + k) % 3] = -v[k];
+					}
 				}
 			}
 

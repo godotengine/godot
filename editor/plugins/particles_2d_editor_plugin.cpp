@@ -61,10 +61,11 @@ void Particles2DEditorPlugin::_menu_callback(int p_idx) {
 	switch (p_idx) {
 		case MENU_GENERATE_VISIBILITY_RECT: {
 			float gen_time = particles->get_lifetime();
-			if (gen_time < 1.0)
+			if (gen_time < 1.0) {
 				generate_seconds->set_value(1.0);
-			else
+			} else {
 				generate_seconds->set_value(trunc(gen_time) + 1.0);
+			}
 			generate_visibility_rect->popup_centered_minsize();
 		} break;
 		case MENU_LOAD_EMISSION_MASK: {
@@ -118,10 +119,11 @@ void Particles2DEditorPlugin::_generate_visibility_rect() {
 		OS::get_singleton()->delay_usec(1000);
 
 		Rect2 capture = particles->capture_rect();
-		if (rect == Rect2())
+		if (rect == Rect2()) {
 			rect = capture;
-		else
+		} else {
 			rect = rect.merge(capture);
+		}
 
 		running += (OS::get_singleton()->get_ticks_usec() - ticks) / 1000000.0;
 	}
@@ -204,8 +206,9 @@ void Particles2DEditorPlugin::_generate_emission_mask() {
 								}
 							}
 
-							if (on_border)
+							if (on_border) {
 								break;
+							}
 						}
 
 						if (on_border) {
@@ -215,8 +218,9 @@ void Particles2DEditorPlugin::_generate_emission_mask() {
 								Vector2 normal;
 								for (int x = i - 2; x <= i + 2; x++) {
 									for (int y = j - 2; y <= j + 2; y++) {
-										if (x == i && y == j)
+										if (x == i && y == j) {
 											continue;
+										}
 
 										if (x < 0 || y < 0 || x >= s.width || y >= s.height || r[(y * s.width + x) * 4 + 3] <= 128) {
 											normal += Vector2(x - i, y - j).normalized();

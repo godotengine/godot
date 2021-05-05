@@ -170,8 +170,9 @@ Error EditorRun::run(const String &p_scene, const String &p_custom_args, const L
 		String bpoints;
 		for (const List<String>::Element *E = p_breakpoints.front(); E; E = E->next()) {
 			bpoints += E->get().replace(" ", "%20");
-			if (E->next())
+			if (E->next()) {
 				bpoints += ",";
+			}
 		}
 
 		args.push_back(bpoints);

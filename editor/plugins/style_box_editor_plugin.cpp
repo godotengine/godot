@@ -50,8 +50,9 @@ void EditorInspectorPluginStyleBox::parse_end() {
 }
 
 void StyleBoxPreview::edit(const Ref<StyleBox> &p_stylebox) {
-	if (stylebox.is_valid())
+	if (stylebox.is_valid()) {
 		stylebox->disconnect("changed", this, "_sb_changed");
+	}
 	stylebox = p_stylebox;
 	if (p_stylebox.is_valid()) {
 		preview->add_style_override("panel", stylebox);

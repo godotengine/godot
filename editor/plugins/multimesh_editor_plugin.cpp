@@ -42,8 +42,9 @@ void MultiMeshEditor::_node_removed(Node *p_node) {
 }
 
 void MultiMeshEditor::_populate() {
-	if (!node)
+	if (!node) {
 		return;
+	}
 
 	Ref<Mesh> mesh;
 
@@ -143,8 +144,9 @@ void MultiMeshEditor::_populate() {
 	Map<float, int> triangle_area_map;
 	for (int i = 0; i < facecount; i++) {
 		float area = r[i].get_area();
-		if (area < CMP_EPSILON)
+		if (area < CMP_EPSILON) {
 			continue;
+		}
 		triangle_area_map[area_accum] = i;
 		area_accum += area;
 	}
@@ -216,10 +218,11 @@ void MultiMeshEditor::_populate() {
 void MultiMeshEditor::_browsed(const NodePath &p_path) {
 	NodePath path = node->get_path_to(get_node(p_path));
 
-	if (browsing_source)
+	if (browsing_source) {
 		mesh_source->set_text(path);
-	else
+	} else {
 		surface_source->set_text(path);
+	}
 }
 
 void MultiMeshEditor::_menu_option(int p_option) {
@@ -251,10 +254,11 @@ void MultiMeshEditor::_browse(bool p_source) {
 	browsing_source = p_source;
 	std->get_scene_tree()->set_marked(node, false);
 	std->popup_centered_ratio();
-	if (p_source)
+	if (p_source) {
 		std->set_title(TTR("Select a Source Mesh:"));
-	else
+	} else {
 		std->set_title(TTR("Select a Target Surface:"));
+	}
 }
 
 void MultiMeshEditor::_bind_methods() {

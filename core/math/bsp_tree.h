@@ -94,10 +94,11 @@ public:
 
 template <class T>
 bool BSP_Tree::_test_convex(const Node *p_nodes, const Plane *p_planes, int p_current, const T &p_convex) const {
-	if (p_current == UNDER_LEAF)
+	if (p_current == UNDER_LEAF) {
 		return true;
-	else if (p_current == OVER_LEAF)
+	} else if (p_current == OVER_LEAF) {
 		return false;
+	}
 
 	bool collided = false;
 	const Node &n = p_nodes[p_current];
@@ -110,10 +111,12 @@ bool BSP_Tree::_test_convex(const Node *p_nodes, const Plane *p_planes, int p_cu
 	bool go_under = min < p.d;
 	bool go_over = max >= p.d;
 
-	if (go_under && _test_convex(p_nodes, p_planes, n.under, p_convex))
+	if (go_under && _test_convex(p_nodes, p_planes, n.under, p_convex)) {
 		collided = true;
-	if (go_over && _test_convex(p_nodes, p_planes, n.over, p_convex))
+	}
+	if (go_over && _test_convex(p_nodes, p_planes, n.over, p_convex)) {
 		collided = true;
+	}
 
 	return collided;
 }
@@ -121,8 +124,9 @@ bool BSP_Tree::_test_convex(const Node *p_nodes, const Plane *p_planes, int p_cu
 template <class T>
 bool BSP_Tree::convex_is_inside(const T &p_convex) const {
 	int node_count = nodes.size();
-	if (node_count == 0)
+	if (node_count == 0) {
 		return false;
+	}
 	const Node *nodes = &this->nodes[0];
 	const Plane *planes = &this->planes[0];
 

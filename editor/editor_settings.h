@@ -146,10 +146,11 @@ public:
 	void set_initial_value(const StringName &p_setting, const Variant &p_value, bool p_update_current = false);
 	void set_restart_if_changed(const StringName &p_setting, bool p_restart);
 	void set_manually(const StringName &p_setting, const Variant &p_value, bool p_emit_signal = false) {
-		if (p_emit_signal)
+		if (p_emit_signal) {
 			_set(p_setting, p_value);
-		else
+		} else {
 			_set_only(p_setting, p_value);
+		}
 	}
 	bool property_can_revert(const String &p_setting);
 	Variant property_get_revert(const String &p_setting);

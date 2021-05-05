@@ -126,8 +126,9 @@ Vector3 PlaneShapeSW::get_support(const Vector3 &p_normal) const {
 
 bool PlaneShapeSW::intersect_segment(const Vector3 &p_begin, const Vector3 &p_end, Vector3 &r_result, Vector3 &r_normal) const {
 	bool inters = plane.intersects_segment(p_begin, p_end, &r_result);
-	if (inters)
+	if (inters) {
 		r_normal = plane.normal;
+	}
 	return inters;
 }
 
@@ -180,10 +181,11 @@ void RayShapeSW::project_range(const Vector3 &p_normal, const Transform &p_trans
 }
 
 Vector3 RayShapeSW::get_support(const Vector3 &p_normal) const {
-	if (p_normal.z > 0)
+	if (p_normal.z > 0) {
 		return Vector3(0, 0, length);
-	else
+	} else {
 		return Vector3(0, 0, 0);
+	}
 }
 
 void RayShapeSW::get_supports(const Vector3 &p_normal, int p_max, Vector3 *r_supports, int &r_amount, FeatureType &r_type) const {
@@ -285,8 +287,9 @@ bool SphereShapeSW::intersect_point(const Vector3 &p_point) const {
 Vector3 SphereShapeSW::get_closest_point_to(const Vector3 &p_point) const {
 	Vector3 p = p_point;
 	float l = p.length();
-	if (l < radius)
+	if (l < radius) {
 		return p_point;
+	}
 	return (p / l) * radius;
 }
 
@@ -446,11 +449,13 @@ Vector3 BoxShapeSW::get_closest_point_to(const Vector3 &p_point) const {
 		}
 	}
 
-	if (!outside)
+	if (!outside) {
 		return p_point; //it's inside, don't do anything else
+	}
 
-	if (outside == 1) //if only above one plane, this plane clearly wins
+	if (outside == 1) { //if only above one plane, this plane clearly wins
 		return min_point;
+	}
 
 	//check segments
 	float min_distance = 1e20;
@@ -627,8 +632,9 @@ Vector3 CapsuleShapeSW::get_closest_point_to(const Vector3 &p_point) const {
 
 	Vector3 p = Geometry::get_closest_point_to_segment(p_point, s);
 
-	if (p.distance_to(p_point) < radius)
+	if (p.distance_to(p_point) < radius) {
 		return p_point;
+	}
 
 	return p + (p_point - p).normalized() * radius;
 }
@@ -851,18 +857,21 @@ CylinderShapeSW::CylinderShapeSW() {
 
 void ConvexPolygonShapeSW::project_range(const Vector3 &p_normal, const Transform &p_transform, real_t &r_min, real_t &r_max) const {
 	int vertex_count = mesh.vertices.size();
-	if (vertex_count == 0)
+	if (vertex_count == 0) {
 		return;
+	}
 
 	const Vector3 *vrts = &mesh.vertices[0];
 
 	for (int i = 0; i < vertex_count; i++) {
 		real_t d = p_normal.dot(p_transform.xform(vrts[i]));
 
-		if (i == 0 || d > r_max)
+		if (i == 0 || d > r_max) {
 			r_max = d;
-		if (i == 0 || d < r_min)
+		}
+		if (i == 0 || d < r_min) {
 			r_min = d;
+		}
 	}
 }
 
@@ -873,8 +882,9 @@ Vector3 ConvexPolygonShapeSW::get_support(const Vector3 &p_normal) const {
 	real_t support_max = 0;
 
 	int vertex_count = mesh.vertices.size();
-	if (vertex_count == 0)
+	if (vertex_count == 0) {
 		return Vector3();
+	}
 
 	const Vector3 *vrts = &mesh.vertices[0];
 
@@ -929,8 +939,9 @@ void ConvexPolygonShapeSW::get_supports(const Vector3 &p_normal, int p_max, Vect
 				}
 			}
 
-			if (!valid)
+			if (!valid) {
 				continue;
+			}
 
 			int m = MIN(p_max, ic);
 			for (int j = 0; j < m; j++) {
@@ -970,8 +981,9 @@ bool ConvexPolygonShapeSW::intersect_segment(const Vector3 &p_begin, const Vecto
 	bool col = false;
 
 	for (int i = 0; i < fc; i++) {
-		if (faces[i].plane.normal.dot(n) > 0)
+		if (faces[i].plane.normal.dot(n) > 0) {
 			continue; //opposing face
+		}
 
 		int ic = faces[i].indices.size();
 		const int *ind = faces[i].indices.ptr();
@@ -1001,8 +1013,9 @@ bool ConvexPolygonShapeSW::intersect_point(const Vector3 &p_point) const {
 	int fc = mesh.faces.size();
 
 	for (int i = 0; i < fc; i++) {
-		if (faces[i].plane.distance_to(p_point) >= 0)
+		if (faces[i].plane.distance_to(p_point) >= 0) {
 			return false;
+		}
 	}
 
 	return true;
@@ -1015,8 +1028,9 @@ Vector3 ConvexPolygonShapeSW::get_closest_point_to(const Vector3 &p_point) const
 
 	bool all_inside = true;
 	for (int i = 0; i < fc; i++) {
-		if (!faces[i].plane.is_point_over(p_point))
+		if (!faces[i].plane.is_point_over(p_point)) {
 			continue;
+		}
 
 		all_inside = false;
 		bool is_inside = true;
@@ -1083,10 +1097,11 @@ void ConvexPolygonShapeSW::_setup(const Vector<Vector3> &p_vertices) {
 	AABB _aabb;
 
 	for (int i = 0; i < mesh.vertices.size(); i++) {
-		if (i == 0)
+		if (i == 0) {
 			_aabb.position = mesh.vertices[i];
-		else
+		} else {
 			_aabb.expand_to(mesh.vertices[i]);
+		}
 	}
 
 	configure(_aabb);
@@ -1110,11 +1125,13 @@ void FaceShapeSW::project_range(const Vector3 &p_normal, const Transform &p_tran
 		Vector3 v = p_transform.xform(vertex[i]);
 		real_t d = p_normal.dot(v);
 
-		if (i == 0 || d > r_max)
+		if (i == 0 || d > r_max) {
 			r_max = d;
+		}
 
-		if (i == 0 || d < r_min)
+		if (i == 0 || d < r_min) {
 			r_min = d;
+		}
 	}
 }
 
@@ -1165,8 +1182,9 @@ void FaceShapeSW::get_supports(const Vector3 &p_normal, int p_max, Vector3 *r_su
 
 	for (int i = 0; i < 3; i++) {
 		int nx = (i + 1) % 3;
-		if (i != vert_support_idx && nx != vert_support_idx)
+		if (i != vert_support_idx && nx != vert_support_idx) {
 			continue;
+		}
 
 		// check if edge is valid as a support
 		real_t dot = (vertex[i] - vertex[nx]).normalized().dot(n);
@@ -1241,17 +1259,20 @@ void ConcavePolygonShapeSW::project_range(const Vector3 &p_normal, const Transfo
 	for (int i = 0; i < count; i++) {
 		real_t d = p_normal.dot(p_transform.xform(vptr[i]));
 
-		if (i == 0 || d > r_max)
+		if (i == 0 || d > r_max) {
 			r_max = d;
-		if (i == 0 || d < r_min)
+		}
+		if (i == 0 || d < r_min) {
 			r_min = d;
+		}
 	}
 }
 
 Vector3 ConcavePolygonShapeSW::get_support(const Vector3 &p_normal) const {
 	int count = vertices.size();
-	if (count == 0)
+	if (count == 0) {
 		return Vector3();
+	}
 
 	PoolVector<Vector3>::Read r = vertices.read();
 	const Vector3 *vptr = r.ptr();
@@ -1312,16 +1333,19 @@ void ConcavePolygonShapeSW::_cull_segment(int p_idx, _SegmentCullParams *p_param
 		}
 
 	} else {
-		if (bvh->left >= 0)
+		if (bvh->left >= 0) {
 			_cull_segment(bvh->left, p_params);
-		if (bvh->right >= 0)
+		}
+		if (bvh->right >= 0) {
 			_cull_segment(bvh->right, p_params);
+		}
 	}
 }
 
 bool ConcavePolygonShapeSW::intersect_segment(const Vector3 &p_begin, const Vector3 &p_end, Vector3 &r_result, Vector3 &r_normal) const {
-	if (faces.size() == 0)
+	if (faces.size() == 0) {
 		return false;
+	}
 
 	// unlock data
 	PoolVector<Face>::Read fr = faces.read();
@@ -1362,8 +1386,9 @@ Vector3 ConcavePolygonShapeSW::get_closest_point_to(const Vector3 &p_point) cons
 void ConcavePolygonShapeSW::_cull(int p_idx, _CullParams *p_params) const {
 	const BVH *bvh = &p_params->bvh[p_idx];
 
-	if (!p_params->aabb.intersects(bvh->aabb))
+	if (!p_params->aabb.intersects(bvh->aabb)) {
 		return;
+	}
 
 	if (bvh->face_index >= 0) {
 		const Face *f = &p_params->faces[bvh->face_index];
@@ -1387,8 +1412,9 @@ void ConcavePolygonShapeSW::_cull(int p_idx, _CullParams *p_params) const {
 
 void ConcavePolygonShapeSW::cull(const AABB &p_local_aabb, Callback p_callback, void *p_userdata) const {
 	// make matrix local to concave
-	if (faces.size() == 0)
+	if (faces.size() == 0) {
 		return;
+	}
 
 	AABB local_aabb = p_local_aabb;
 
@@ -1471,10 +1497,11 @@ _VolumeSW_BVH *_volume_sw_build_bvh(_VolumeSW_BVH_Element *p_elements, int p_siz
 
 	AABB aabb;
 	for (int i = 0; i < p_size; i++) {
-		if (i == 0)
+		if (i == 0) {
 			aabb = p_elements[i].aabb;
-		else
+		} else {
 			aabb.merge_with(p_elements[i].aabb);
+		}
 	}
 	bvh->aabb = aabb;
 	switch (aabb.get_longest_axis_index()) {
@@ -1570,10 +1597,11 @@ void ConcavePolygonShapeSW::_setup(PoolVector<Vector3> p_faces) {
 		verticesw[i * 3 + 0] = face.vertex[0];
 		verticesw[i * 3 + 1] = face.vertex[1];
 		verticesw[i * 3 + 2] = face.vertex[2];
-		if (i == 0)
+		if (i == 0) {
 			_aabb = bvh_arrayw[i].aabb;
-		else
+		} else {
 			_aabb.merge_with(bvh_arrayw[i].aabb);
+		}
 	}
 
 	w.release();

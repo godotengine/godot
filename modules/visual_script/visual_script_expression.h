@@ -104,8 +104,9 @@ class VisualScriptExpression : public VisualScriptNode {
 	};
 
 	void _set_error(const String &p_err) {
-		if (error_set)
+		if (error_set) {
 			return;
+		}
 		error_str = p_err;
 		error_set = true;
 	}

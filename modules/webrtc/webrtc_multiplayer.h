@@ -56,8 +56,9 @@ private:
 
 		ConnectedPeer() {
 			connected = false;
-			for (int i = 0; i < CH_RESERVED_MAX; i++)
+			for (int i = 0; i < CH_RESERVED_MAX; i++) {
 				channels.push_front(Ref<WebRTCDataChannel>());
+			}
 		}
 	};
 

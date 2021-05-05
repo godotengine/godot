@@ -213,8 +213,9 @@ class GetClassAndNamespace {
 							tk_string += res;
 
 						} else {
-							if (code[idx] == '\n')
+							if (code[idx] == '\n') {
 								line++;
+							}
 							tk_string += code[idx];
 						}
 						idx++;
@@ -338,8 +339,9 @@ public:
 			tk = get_token();
 		}
 
-		if (error)
+		if (error) {
 			return ERR_PARSE_ERROR;
+		}
 
 		return OK;
 	}
@@ -530,8 +532,9 @@ MainLoop *test() {
 					break;
 				}
 			}
-			if (success)
+			if (success) {
 				break;
+			}
 		}
 
 		print_line("DONE");

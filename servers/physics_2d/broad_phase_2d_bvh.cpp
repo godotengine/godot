@@ -71,16 +71,18 @@ int BroadPhase2DBVH::cull_aabb(const Rect2 &p_aabb, CollisionObject2DSW **p_resu
 
 void *BroadPhase2DBVH::_pair_callback(void *self, uint32_t p_A, CollisionObject2DSW *p_object_A, int subindex_A, uint32_t p_B, CollisionObject2DSW *p_object_B, int subindex_B) {
 	BroadPhase2DBVH *bpo = (BroadPhase2DBVH *)(self);
-	if (!bpo->pair_callback)
+	if (!bpo->pair_callback) {
 		return nullptr;
+	}
 
 	return bpo->pair_callback(p_object_A, subindex_A, p_object_B, subindex_B, bpo->pair_userdata);
 }
 
 void BroadPhase2DBVH::_unpair_callback(void *self, uint32_t p_A, CollisionObject2DSW *p_object_A, int subindex_A, uint32_t p_B, CollisionObject2DSW *p_object_B, int subindex_B, void *pairdata) {
 	BroadPhase2DBVH *bpo = (BroadPhase2DBVH *)(self);
-	if (!bpo->unpair_callback)
+	if (!bpo->unpair_callback) {
 		return;
+	}
 
 	bpo->unpair_callback(p_object_A, subindex_A, p_object_B, subindex_B, pairdata, bpo->unpair_userdata);
 }

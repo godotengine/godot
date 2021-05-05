@@ -179,8 +179,9 @@ bool AnimationNodeStateMachinePlayback::_travel(AnimationNodeStateMachine *p_sta
 
 	path.clear(); //a new one will be needed
 
-	if (current == p_travel)
+	if (current == p_travel) {
 		return true; //nothing to do
+	}
 
 	loops_current = 0; // reset loops, so fade does not happen immediately
 
@@ -687,16 +688,18 @@ void AnimationNodeStateMachine::get_node_list(List<StringName> *r_nodes) const {
 
 bool AnimationNodeStateMachine::has_transition(const StringName &p_from, const StringName &p_to) const {
 	for (int i = 0; i < transitions.size(); i++) {
-		if (transitions[i].from == p_from && transitions[i].to == p_to)
+		if (transitions[i].from == p_from && transitions[i].to == p_to) {
 			return true;
+		}
 	}
 	return false;
 }
 
 int AnimationNodeStateMachine::find_transition(const StringName &p_from, const StringName &p_to) const {
 	for (int i = 0; i < transitions.size(); i++) {
-		if (transitions[i].from == p_from && transitions[i].to == p_to)
+		if (transitions[i].from == p_from && transitions[i].to == p_to) {
 			return i;
+		}
 	}
 	return -1;
 }

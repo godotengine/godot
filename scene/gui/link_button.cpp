@@ -68,10 +68,11 @@ void LinkButton::_notification(int p_what) {
 				} break;
 				case DRAW_HOVER_PRESSED:
 				case DRAW_PRESSED: {
-					if (has_color("font_color_pressed"))
+					if (has_color("font_color_pressed")) {
 						color = get_color("font_color_pressed");
-					else
+					} else {
 						color = get_color("font_color");
+					}
 
 					do_underline = underline_mode != UNDERLINE_MODE_NEVER;
 

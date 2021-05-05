@@ -39,8 +39,9 @@
 
 #ifdef TOOLS_ENABLED
 Rect2 Path2D::_edit_get_rect() const {
-	if (!curve.is_valid() || curve->get_point_count() == 0)
+	if (!curve.is_valid() || curve->get_point_count() == 0) {
 		return Rect2(0, 0, 0, 0);
+	}
 
 	Rect2 aabb = Rect2(curve->get_point_position(0), Vector2(0, 0));
 
@@ -73,8 +74,9 @@ bool Path2D::_edit_is_selected_on_click(const Point2 &p_point, double p_toleranc
 			s[1] = curve->interpolate(i, frac);
 
 			Vector2 p = Geometry::get_closest_point_to_segment_2d(p_point, s);
-			if (p.distance_to(p_point) <= p_tolerance)
+			if (p.distance_to(p_point) <= p_tolerance) {
 				return true;
+			}
 
 			s[0] = s[1];
 		}
@@ -158,12 +160,14 @@ Path2D::Path2D() {
 /////////////////////////////////////////////////////////////////////////////////
 
 void PathFollow2D::_update_transform() {
-	if (!path)
+	if (!path) {
 		return;
+	}
 
 	Ref<Curve2D> c = path->get_curve();
-	if (!c.is_valid())
+	if (!c.is_valid()) {
 		return;
+	}
 
 	float path_length = c->get_baked_length();
 	if (path_length == 0) {
@@ -242,16 +246,18 @@ bool PathFollow2D::get_cubic_interpolation() const {
 void PathFollow2D::_validate_property(PropertyInfo &property) const {
 	if (property.name == "offset") {
 		float max = 10000;
-		if (path && path->get_curve().is_valid())
+		if (path && path->get_curve().is_valid()) {
 			max = path->get_curve()->get_baked_length();
+		}
 
 		property.hint_string = "0," + rtos(max) + ",0.01,or_lesser,or_greater";
 	}
 }
 
 String PathFollow2D::get_configuration_warning() const {
-	if (!is_visible_in_tree() || !is_inside_tree())
+	if (!is_visible_in_tree() || !is_inside_tree()) {
 		return String();
+	}
 
 	String warning = Node2D::get_configuration_warning();
 	if (!Object::cast_to<Path2D>(get_parent())) {
@@ -323,8 +329,9 @@ void PathFollow2D::set_offset(float p_offset) {
 
 void PathFollow2D::set_h_offset(float p_h_offset) {
 	h_offset = p_h_offset;
-	if (path)
+	if (path) {
 		_update_transform();
+	}
 }
 
 float PathFollow2D::get_h_offset() const {
@@ -333,8 +340,9 @@ float PathFollow2D::get_h_offset() const {
 
 void PathFollow2D::set_v_offset(float p_v_offset) {
 	v_offset = p_v_offset;
-	if (path)
+	if (path) {
 		_update_transform();
+	}
 }
 
 float PathFollow2D::get_v_offset() const {
@@ -346,15 +354,17 @@ float PathFollow2D::get_offset() const {
 }
 
 void PathFollow2D::set_unit_offset(float p_unit_offset) {
-	if (path && path->get_curve().is_valid() && path->get_curve()->get_baked_length())
+	if (path && path->get_curve().is_valid() && path->get_curve()->get_baked_length()) {
 		set_offset(p_unit_offset * path->get_curve()->get_baked_length());
+	}
 }
 
 float PathFollow2D::get_unit_offset() const {
-	if (path && path->get_curve().is_valid() && path->get_curve()->get_baked_length())
+	if (path && path->get_curve().is_valid() && path->get_curve()->get_baked_length()) {
 		return get_offset() / path->get_curve()->get_baked_length();
-	else
+	} else {
 		return 0;
+	}
 }
 
 void PathFollow2D::set_lookahead(float p_lookahead) {

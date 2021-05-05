@@ -679,10 +679,11 @@ void GDScriptFunctions::call(Function p_func, const Variant **p_args, int p_arg_
 			for (int i = 0; i < p_arg_count; i++) {
 				String os = p_args[i]->operator String();
 
-				if (i == 0)
+				if (i == 0) {
 					str = os;
-				else
+				} else {
 					str += os;
+				}
 			}
 
 			r_ret = str;
@@ -701,8 +702,9 @@ void GDScriptFunctions::call(Function p_func, const Variant **p_args, int p_arg_
 		case TEXT_PRINT_TABBED: {
 			String str;
 			for (int i = 0; i < p_arg_count; i++) {
-				if (i)
+				if (i) {
 					str += "\t";
+				}
 				str += p_args[i]->operator String();
 			}
 
@@ -713,8 +715,9 @@ void GDScriptFunctions::call(Function p_func, const Variant **p_args, int p_arg_
 		case TEXT_PRINT_SPACED: {
 			String str;
 			for (int i = 0; i < p_arg_count; i++) {
-				if (i)
+				if (i) {
 					str += " ";
+				}
 				str += p_args[i]->operator String();
 			}
 
@@ -943,8 +946,9 @@ void GDScriptFunctions::call(Function p_func, const Variant **p_args, int p_arg_
 						r_ret = Variant();
 						return;
 					}
-					for (int i = from; i < to; i++)
+					for (int i = from; i < to; i++) {
 						arr[i - from] = i;
+					}
 					r_ret = arr;
 				} break;
 				case 3: {

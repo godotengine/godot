@@ -61,10 +61,11 @@ Vector3 Plane::get_any_perpendicular_normal() const {
 	static const Vector3 p2 = Vector3(0, 1, 0);
 	Vector3 p;
 
-	if (ABS(normal.dot(p1)) > 0.99) // if too similar to p1
+	if (ABS(normal.dot(p1)) > 0.99) { // if too similar to p1
 		p = p2; // use p2
-	else
+	} else {
 		p = p1; // use p1
+	}
 
 	p -= normal * normal.dot(p);
 	p.normalize();
@@ -82,8 +83,9 @@ bool Plane::intersect_3(const Plane &p_plane1, const Plane &p_plane2, Vector3 *r
 
 	real_t denom = vec3_cross(normal0, normal1).dot(normal2);
 
-	if (Math::is_zero_approx(denom))
+	if (Math::is_zero_approx(denom)) {
 		return false;
+	}
 
 	if (r_result) {
 		*r_result = ((vec3_cross(normal1, normal2) * p_plane0.d) +

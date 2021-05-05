@@ -111,8 +111,9 @@ const char *VisualScriptBuiltinFunc::func_name[VisualScriptBuiltinFunc::FUNC_MAX
 
 VisualScriptBuiltinFunc::BuiltinFunc VisualScriptBuiltinFunc::find_function(const String &p_string) {
 	for (int i = 0; i < FUNC_MAX; i++) {
-		if (p_string == func_name[i])
+		if (p_string == func_name[i]) {
 			return BuiltinFunc(i);
+		}
 	}
 
 	return FUNC_MAX;
@@ -268,95 +269,106 @@ PropertyInfo VisualScriptBuiltinFunc::get_input_value_port_info(int p_idx) const
 			return PropertyInfo(Variant::REAL, "s");
 		} break;
 		case MATH_ATAN2: {
-			if (p_idx == 0)
+			if (p_idx == 0) {
 				return PropertyInfo(Variant::REAL, "y");
-			else
+			} else {
 				return PropertyInfo(Variant::REAL, "x");
+			}
 		} break;
 		case MATH_FMOD:
 		case MATH_FPOSMOD:
 		case LOGIC_MAX:
 		case LOGIC_MIN: {
-			if (p_idx == 0)
+			if (p_idx == 0) {
 				return PropertyInfo(Variant::REAL, "a");
-			else
+			} else {
 				return PropertyInfo(Variant::REAL, "b");
+			}
 		} break;
 		case MATH_POSMOD: {
-			if (p_idx == 0)
+			if (p_idx == 0) {
 				return PropertyInfo(Variant::INT, "a");
-			else
+			} else {
 				return PropertyInfo(Variant::INT, "b");
+			}
 		} break;
 		case MATH_POW: {
-			if (p_idx == 0)
+			if (p_idx == 0) {
 				return PropertyInfo(Variant::REAL, "base");
-			else
+			} else {
 				return PropertyInfo(Variant::REAL, "exp");
+			}
 		} break;
 		case MATH_EASE: {
-			if (p_idx == 0)
+			if (p_idx == 0) {
 				return PropertyInfo(Variant::REAL, "s");
-			else
+			} else {
 				return PropertyInfo(Variant::REAL, "curve");
+			}
 		} break;
 		case MATH_DECIMALS: {
 			return PropertyInfo(Variant::REAL, "step");
 		} break;
 		case MATH_STEPIFY: {
-			if (p_idx == 0)
+			if (p_idx == 0) {
 				return PropertyInfo(Variant::REAL, "s");
-			else
+			} else {
 				return PropertyInfo(Variant::REAL, "steps");
+			}
 		} break;
 		case MATH_LERP:
 		case MATH_LERP_ANGLE:
 		case MATH_INVERSE_LERP:
 		case MATH_SMOOTHSTEP: {
-			if (p_idx == 0)
+			if (p_idx == 0) {
 				return PropertyInfo(Variant::REAL, "from");
-			else if (p_idx == 1)
+			} else if (p_idx == 1) {
 				return PropertyInfo(Variant::REAL, "to");
-			else
+			} else {
 				return PropertyInfo(Variant::REAL, "weight");
+			}
 		} break;
 		case MATH_RANGE_LERP: {
-			if (p_idx == 0)
+			if (p_idx == 0) {
 				return PropertyInfo(Variant::REAL, "value");
-			else if (p_idx == 1)
+			} else if (p_idx == 1) {
 				return PropertyInfo(Variant::REAL, "istart");
-			else if (p_idx == 2)
+			} else if (p_idx == 2) {
 				return PropertyInfo(Variant::REAL, "istop");
-			else if (p_idx == 3)
+			} else if (p_idx == 3) {
 				return PropertyInfo(Variant::REAL, "ostart");
-			else
+			} else {
 				return PropertyInfo(Variant::REAL, "ostop");
+			}
 		} break;
 		case MATH_MOVE_TOWARD: {
-			if (p_idx == 0)
+			if (p_idx == 0) {
 				return PropertyInfo(Variant::REAL, "from");
-			else if (p_idx == 1)
+			} else if (p_idx == 1) {
 				return PropertyInfo(Variant::REAL, "to");
-			else
+			} else {
 				return PropertyInfo(Variant::REAL, "delta");
+			}
 		} break;
 		case MATH_DECTIME: {
-			if (p_idx == 0)
+			if (p_idx == 0) {
 				return PropertyInfo(Variant::REAL, "value");
-			else if (p_idx == 1)
+			} else if (p_idx == 1) {
 				return PropertyInfo(Variant::REAL, "amount");
-			else
+			} else {
 				return PropertyInfo(Variant::REAL, "step");
+			}
 		} break;
 		case MATH_RANDOMIZE:
 		case MATH_RAND:
 		case MATH_RANDF: {
 		} break;
 		case MATH_RANDOM: {
-			if (p_idx == 0)
+			if (p_idx == 0) {
 				return PropertyInfo(Variant::REAL, "from");
-			else
+			} else {
 				return PropertyInfo(Variant::REAL, "to");
+			}
 		} break;
 		case MATH_SEED:
 		case MATH_RANDSEED: {
@@ -375,33 +387,37 @@ PropertyInfo VisualScriptBuiltinFunc::get_input_value_port_info(int p_idx) const
 			return PropertyInfo(Variant::REAL, "db");
 		} break;
 		case MATH_POLAR2CARTESIAN: {
-			if (p_idx == 0)
+			if (p_idx == 0) {
 				return PropertyInfo(Variant::REAL, "r");
-			else
+			} else {
 				return PropertyInfo(Variant::REAL, "th");
+			}
 		} break;
 		case MATH_CARTESIAN2POLAR: {
-			if (p_idx == 0)
+			if (p_idx == 0) {
 				return PropertyInfo(Variant::REAL, "x");
-			else
+			} else {
 				return PropertyInfo(Variant::REAL, "y");
+			}
 		} break;
 		case MATH_WRAP: {
-			if (p_idx == 0)
+			if (p_idx == 0) {
 				return PropertyInfo(Variant::INT, "value");
-			else if (p_idx == 1)
+			} else if (p_idx == 1) {
 				return PropertyInfo(Variant::INT, "min");
-			else
+			} else {
 				return PropertyInfo(Variant::INT, "max");
+			}
 		} break;
 		case MATH_WRAPF:
 		case LOGIC_CLAMP: {
-			if (p_idx == 0)
+			if (p_idx == 0) {
 				return PropertyInfo(Variant::REAL, "value");
-			else if (p_idx == 1)
+			} else if (p_idx == 1) {
 				return PropertyInfo(Variant::REAL, "min");
-			else
+			} else {
 				return PropertyInfo(Variant::REAL, "max");
+			}
 		} break;
 		case LOGIC_NEAREST_PO2: {
 			return PropertyInfo(Variant::INT, "value");
@@ -410,16 +426,18 @@ PropertyInfo VisualScriptBuiltinFunc::get_input_value_port_info(int p_idx) const
 			return PropertyInfo(Variant::OBJECT, "source");
 		} break;
 		case FUNC_FUNCREF: {
-			if (p_idx == 0)
+			if (p_idx == 0) {
 				return PropertyInfo(Variant::OBJECT, "instance");
-			else
+			} else {
 				return PropertyInfo(Variant::STRING, "funcname");
+			}
 		} break;
 		case TYPE_CONVERT: {
-			if (p_idx == 0)
+			if (p_idx == 0) {
 				return PropertyInfo(Variant::NIL, "what");
-			else
+			} else {
 				return PropertyInfo(Variant::STRING, "type");
+			}
 		} break;
 		case TYPE_OF: {
 			return PropertyInfo(Variant::NIL, "what");
@@ -444,23 +462,26 @@ PropertyInfo VisualScriptBuiltinFunc::get_input_value_port_info(int p_idx) const
 		} break;
 		case VAR_TO_STR:
 		case VAR_TO_BYTES: {
-			if (p_idx == 0)
+			if (p_idx == 0) {
 				return PropertyInfo(Variant::NIL, "var");
-			else
+			} else {
 				return PropertyInfo(Variant::BOOL, "full_objects");
+			}
 
 		} break;
 		case BYTES_TO_VAR: {
-			if (p_idx == 0)
+			if (p_idx == 0) {
 				return PropertyInfo(Variant::POOL_BYTE_ARRAY, "bytes");
-			else
+			} else {
 				return PropertyInfo(Variant::BOOL, "allow_objects");
+			}
 		} break;
 		case COLORN: {
-			if (p_idx == 0)
+			if (p_idx == 0) {
 				return PropertyInfo(Variant::STRING, "name");
-			else
+			} else {
 				return PropertyInfo(Variant::REAL, "alpha");
+			}
 		} break;
 		case FUNC_MAX: {
 		}
@@ -539,10 +560,11 @@ PropertyInfo VisualScriptBuiltinFunc::get_output_value_port_info(int p_idx) cons
 		case MATH_SEED: {
 		} break;
 		case MATH_RANDSEED: {
-			if (p_idx == 0)
+			if (p_idx == 0) {
 				return PropertyInfo(Variant::INT, "rnd");
-			else
+			} else {
 				return PropertyInfo(Variant::INT, "seed");
+			}
 		} break;
 		case MATH_DEG2RAD:
 		case MATH_RAD2DEG:
@@ -602,15 +624,17 @@ PropertyInfo VisualScriptBuiltinFunc::get_output_value_port_info(int p_idx) cons
 		case STR_TO_VAR: {
 		} break;
 		case VAR_TO_BYTES: {
-			if (p_idx == 0)
+			if (p_idx == 0) {
 				t = Variant::POOL_BYTE_ARRAY;
-			else
+			} else {
 				t = Variant::BOOL;
+			}
 
 		} break;
 		case BYTES_TO_VAR: {
-			if (p_idx == 1)
+			if (p_idx == 1) {
 				t = Variant::BOOL;
+			}
 		} break;
 		case COLORN: {
 			t = Variant::COLOR;
@@ -1218,8 +1242,9 @@ void VisualScriptBuiltinFunc::_bind_methods() {
 	String cc;
 
 	for (int i = 0; i < FUNC_MAX; i++) {
-		if (i > 0)
+		if (i > 0) {
 			cc += ",";
+		}
 		cc += func_name[i];
 	}
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "function", PROPERTY_HINT_ENUM, cc), "set_func", "get_func");

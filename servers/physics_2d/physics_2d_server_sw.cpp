@@ -140,8 +140,9 @@ real_t Physics2DServerSW::shape_get_custom_solver_bias(RID p_shape) const {
 void Physics2DServerSW::_shape_col_cbk(const Vector2 &p_point_A, const Vector2 &p_point_B, void *p_userdata) {
 	CollCbkData *cbk = (CollCbkData *)p_userdata;
 
-	if (cbk->max == 0)
+	if (cbk->max == 0) {
 		return;
+	}
 
 	Vector2 rel_dir = (p_point_A - p_point_B);
 	real_t rel_length2 = rel_dir.length_squared();
@@ -171,8 +172,9 @@ void Physics2DServerSW::_shape_col_cbk(const Vector2 &p_point_A, const Vector2 &
 			}
 		}
 
-		if (rel_length2 < min_depth)
+		if (rel_length2 < min_depth) {
 			return;
+		}
 		cbk->ptr[min_depth_idx * 2 + 0] = p_point_A;
 		cbk->ptr[min_depth_idx * 2 + 1] = p_point_B;
 		cbk->passed++;
@@ -223,10 +225,11 @@ RID Physics2DServerSW::space_create() {
 void Physics2DServerSW::space_set_active(RID p_space, bool p_active) {
 	Space2DSW *space = space_owner.get(p_space);
 	ERR_FAIL_COND(!space);
-	if (p_active)
+	if (p_active) {
 		active_spaces.insert(space);
-	else
+	} else {
 		active_spaces.erase(space);
+	}
 }
 
 bool Physics2DServerSW::space_is_active(RID p_space) const {
@@ -292,8 +295,9 @@ void Physics2DServerSW::area_set_space(RID p_area, RID p_space) {
 		ERR_FAIL_COND(!space);
 	}
 
-	if (area->get_space() == space)
+	if (area->get_space() == space) {
 		return; //pointless
+	}
 
 	area->clear_constraints();
 	area->set_space(space);
@@ -304,8 +308,9 @@ RID Physics2DServerSW::area_get_space(RID p_area) const {
 	ERR_FAIL_COND_V(!area, RID());
 
 	Space2DSW *space = area->get_space();
-	if (!space)
+	if (!space) {
 		return RID();
+	}
 	return space->get_self();
 };
 
@@ -392,8 +397,9 @@ void Physics2DServerSW::area_clear_shapes(RID p_area) {
 	Area2DSW *area = area_owner.get(p_area);
 	ERR_FAIL_COND(!area);
 
-	while (area->get_shape_count())
+	while (area->get_shape_count()) {
 		area->remove_shape(0);
+	}
 }
 
 void Physics2DServerSW::area_attach_object_instance_id(RID p_area, ObjectID p_id) {
@@ -528,8 +534,9 @@ void Physics2DServerSW::body_set_space(RID p_body, RID p_space) {
 		ERR_FAIL_COND(!space);
 	}
 
-	if (body->get_space() == space)
+	if (body->get_space() == space) {
 		return; //pointless
+	}
 
 	body->clear_constraint_map();
 	body->set_space(space);
@@ -540,8 +547,9 @@ RID Physics2DServerSW::body_get_space(RID p_body) const {
 	ERR_FAIL_COND_V(!body, RID());
 
 	Space2DSW *space = body->get_space();
-	if (!space)
+	if (!space) {
 		return RID();
+	}
 	return space->get_self();
 };
 
@@ -632,8 +640,9 @@ void Physics2DServerSW::body_clear_shapes(RID p_body) {
 	Body2DSW *body = body_owner.get(p_body);
 	ERR_FAIL_COND(!body);
 
-	while (body->get_shape_count())
+	while (body->get_shape_count()) {
 		body->remove_shape(0);
+	}
 }
 
 void Physics2DServerSW::body_set_shape_disabled(RID p_body, int p_shape_idx, bool p_disabled) {
@@ -947,8 +956,9 @@ int Physics2DServerSW::body_test_ray_separation(RID p_body, const Transform2D &p
 Physics2DDirectBodyState *Physics2DServerSW::body_get_direct_state(RID p_body) {
 	ERR_FAIL_COND_V_MSG((using_threads && !doing_sync), nullptr, "Body state is inaccessible right now, wait for iteration or physics process notification.");
 
-	if (!body_owner.owns(p_body))
+	if (!body_owner.owns(p_body)) {
 		return nullptr;
+	}
 
 	Body2DSW *body = body_owner.get(p_body);
 	ERR_FAIL_COND_V(!body, nullptr);
@@ -1194,8 +1204,9 @@ void Physics2DServerSW::init() {
 };
 
 void Physics2DServerSW::step(real_t p_step) {
-	if (!active)
+	if (!active) {
 		return;
+	}
 
 	_update_shapes();
 
@@ -1217,8 +1228,9 @@ void Physics2DServerSW::sync() {
 };
 
 void Physics2DServerSW::flush_queries() {
-	if (!active)
+	if (!active) {
 		return;
+	}
 
 	flushing_queries = true;
 

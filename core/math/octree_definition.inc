@@ -186,8 +186,9 @@ private:
 #ifdef OCTREE_USE_CACHED_LISTS
 			dirty = true;
 #endif
-			for (int i = 0; i < 8; i++)
+			for (int i = 0; i < 8; i++) {
 				children[i] = nullptr;
+			}
 		}
 
 		~Octant() {
@@ -297,12 +298,14 @@ private:
 	}
 
 	_FORCE_INLINE_ void _pair_reference(Element *p_A, Element *p_B) {
-		if (p_A == p_B || (p_A->userdata == p_B->userdata && p_A->userdata))
+		if (p_A == p_B || (p_A->userdata == p_B->userdata && p_A->userdata)) {
 			return;
+		}
 
 		if (!(p_A->pairable_type & p_B->pairable_mask) &&
-				!(p_B->pairable_type & p_A->pairable_mask))
+				!(p_B->pairable_type & p_A->pairable_mask)) {
 			return; // none can pair with none
+		}
 
 		PairKey key(p_A->_id, p_B->_id);
 		typename PairMap::Element *E = pair_map.find(key);
@@ -327,8 +330,9 @@ private:
 	}
 
 	_FORCE_INLINE_ void _pair_unreference(Element *p_A, Element *p_B) {
-		if (p_A == p_B)
+		if (p_A == p_B) {
 			return;
+		}
 
 		PairKey key(p_A->_id, p_B->_id);
 		typename PairMap::Element *E = pair_map.find(key);
@@ -414,12 +418,14 @@ private:
 	void _cull_point(Octant *p_octant, const Vector3 &p_point, T **p_result_array, int *p_result_idx, int p_result_max, int *p_subindex_array, uint32_t p_mask);
 
 	void _remove_tree(Octant *p_octant) {
-		if (!p_octant)
+		if (!p_octant) {
 			return;
+		}
 
 		for (int i = 0; i < 8; i++) {
-			if (p_octant->children[i])
+			if (p_octant->children[i]) {
 				_remove_tree(p_octant->children[i]);
+			}
 		}
 
 		memdelete_allocator<Octant, AL>(p_octant);
@@ -503,11 +509,13 @@ OCTREE_FUNC(void)::_insert_element(Element *p_element, Octant *p_octant) {
 	bool can_split = true;
 
 	if (p_element->pairable) {
-		if (p_octant->pairable_elements.size() < octant_elements_limit)
+		if (p_octant->pairable_elements.size() < octant_elements_limit) {
 			can_split = false;
+		}
 	} else {
-		if (p_octant->elements.size() < octant_elements_limit)
+		if (p_octant->elements.size() < octant_elements_limit) {
 			can_split = false;
+		}
 	}
 
 	if (!can_split || (element_size > (p_octant->aabb.size.x / OCTREE_DIVISOR))) {
@@ -561,12 +569,15 @@ OCTREE_FUNC(void)::_insert_element(Element *p_element, Octant *p_octant) {
 				AABB aabb = p_octant->aabb;
 				aabb.size *= 0.5;
 
-				if (i & 1)
+				if (i & 1) {
 					aabb.position.x += aabb.size.x;
-				if (i & 2)
+				}
+				if (i & 2) {
 					aabb.position.y += aabb.size.y;
-				if (i & 4)
+				}
+				if (i & 4) {
 					aabb.position.z += aabb.size.z;
+				}
 
 				if (aabb.intersects_inclusive(p_element->aabb)) {
 					/* if actually intersects, create the child */
@@ -671,8 +682,9 @@ OCTREE_FUNC(bool)::_remove_element_pair_and_remove_empty_octants(Element *p_elem
 	while (true) {
 		// check all exit conditions
 
-		if (p_octant == p_limit) // reached limit, nothing to erase, exit
+		if (p_octant == p_limit) { // reached limit, nothing to erase, exit
 			return octant_removed;
+		}
 
 		bool unpaired = false;
 
@@ -719,8 +731,9 @@ OCTREE_FUNC(bool)::_remove_element_pair_and_remove_empty_octants(Element *p_elem
 			octant_removed = true;
 		}
 
-		if (!removed && !unpaired)
+		if (!removed && !unpaired) {
 			return octant_removed; // no reason to keep going up anymore! was already visited and was not removed
+		}
 
 		p_octant = parent;
 	}
@@ -753,12 +766,14 @@ OCTREE_FUNC(void)::_unpair_element(Element *p_element, Octant *p_octant) {
 
 	p_octant->last_pass = pass;
 
-	if (p_octant->children_count == 0)
+	if (p_octant->children_count == 0) {
 		return; // small optimization for leafs
+	}
 
 	for (int i = 0; i < 8; i++) {
-		if (p_octant->children[i])
+		if (p_octant->children[i]) {
 			_unpair_element(p_element, p_octant->children[i]);
+		}
 	}
 }
 
@@ -788,12 +803,14 @@ OCTREE_FUNC(void)::_pair_element(Element *p_element, Octant *p_octant) {
 	}
 	p_octant->last_pass = pass;
 
-	if (p_octant->children_count == 0)
+	if (p_octant->children_count == 0) {
 		return; // small optimization for leafs
+	}
 
 	for (int i = 0; i < 8; i++) {
-		if (p_octant->children[i])
+		if (p_octant->children[i]) {
 			_pair_element(p_element, p_octant->children[i]);
+		}
 	}
 }
 
@@ -869,8 +886,9 @@ OCTREE_FUNC(OctreeElementID)::create(T *p_userdata, const AABB &p_aabb, int p_su
 	if (!e.aabb.has_no_surface()) {
 		_ensure_valid_root(p_aabb);
 		_insert_element(&e, root);
-		if (use_pairs)
+		if (use_pairs) {
 			_element_check_pairs(&e);
+		}
 	}
 
 	return last_element_id - 1;
@@ -907,21 +925,24 @@ OCTREE_FUNC(void)::move(OctreeElementID p_id, const AABB &p_aabb) {
 			e.common_parent = nullptr;
 			e.aabb = p_aabb;
 			_insert_element(&e, root);
-			if (use_pairs)
+			if (use_pairs) {
 				_element_check_pairs(&e);
+			}
 		}
 
 		return;
 	}
 
-	if (!old_has_surf) // doing nothing
+	if (!old_has_surf) { // doing nothing
 		return;
+	}
 
 	// it still is enclosed in the same AABB it was assigned to
 	if (e.container_aabb.encloses(p_aabb)) {
 		e.aabb = p_aabb;
-		if (use_pairs)
+		if (use_pairs) {
 			_element_check_pairs(&e); // must check pairs anyway
+		}
 
 #ifdef OCTREE_USE_CACHED_LISTS
 		e.moving();
@@ -944,8 +965,9 @@ OCTREE_FUNC(void)::move(OctreeElementID p_id, const AABB &p_aabb) {
 	//src is now the place towards where insertion is going to happen
 	pass++;
 
-	while (common_parent && !common_parent->aabb.encloses(p_aabb))
+	while (common_parent && !common_parent->aabb.encloses(p_aabb)) {
 		common_parent = common_parent->parent;
+	}
 
 	ERR_FAIL_COND(!common_parent);
 
@@ -967,10 +989,11 @@ OCTREE_FUNC(void)::move(OctreeElementID p_id, const AABB &p_aabb) {
 			o->elements.erase( F->get().E );
 		*/
 
-		if (use_pairs && e.pairable)
+		if (use_pairs && e.pairable) {
 			o->pairable_elements.erase(F->get().E);
-		else
+		} else {
 			o->elements.erase(F->get().E);
+		}
 
 #ifdef OCTREE_USE_CACHED_LISTS
 		o->dirty = true;
@@ -991,8 +1014,9 @@ OCTREE_FUNC(void)::move(OctreeElementID p_id, const AABB &p_aabb) {
 			// erase children pairs, unref ONCE
 			pass++;
 			for (int i = 0; i < 8; i++) {
-				if (o->children[i])
+				if (o->children[i]) {
 					_unpair_element(&e, o->children[i]);
+				}
 			}
 		}
 
@@ -1008,8 +1032,9 @@ OCTREE_FUNC(void)::set_pairable(OctreeElementID p_id, bool p_pairable, uint32_t 
 
 	Element &e = E->get();
 
-	if (p_pairable == e.pairable && e.pairable_type == p_pairable_type && e.pairable_mask == p_pairable_mask)
+	if (p_pairable == e.pairable && e.pairable_type == p_pairable_type && e.pairable_mask == p_pairable_mask) {
 		return; // no changes, return
+	}
 
 	if (!e.aabb.has_no_surface()) {
 		_remove_element(&e);
@@ -1023,8 +1048,9 @@ OCTREE_FUNC(void)::set_pairable(OctreeElementID p_id, bool p_pairable, uint32_t 
 	if (!e.aabb.has_no_surface()) {
 		_ensure_valid_root(e.aabb);
 		_insert_element(&e, root);
-		if (use_pairs)
+		if (use_pairs) {
 			_element_check_pairs(&e);
+		}
 	}
 }
 
@@ -1043,8 +1069,9 @@ OCTREE_FUNC(void)::erase(OctreeElementID p_id) {
 }
 
 OCTREE_FUNC(void)::_cull_convex(Octant *p_octant, _CullConvexData *p_cull) {
-	if (*p_cull->result_idx == p_cull->result_max)
+	if (*p_cull->result_idx == p_cull->result_max) {
 		return; //pointless
+	}
 
 	if (!p_octant->elements.empty()) {
 #ifdef OCTREE_USE_CACHED_LISTS
@@ -1060,8 +1087,9 @@ OCTREE_FUNC(void)::_cull_convex(Octant *p_octant, _CullConvexData *p_cull) {
 			// The reason is that the later checks are more expensive because they are not in cache, and many of the AABB
 			// tests will fail so we can avoid these cache misses.
 			if (aabb.intersects_convex_shape(p_cull->planes, p_cull->plane_count, p_cull->points, p_cull->point_count)) {
-				if (e->last_pass == pass || (use_pairs && !(e->pairable_type & p_cull->mask)))
+				if (e->last_pass == pass || (use_pairs && !(e->pairable_type & p_cull->mask))) {
 					continue;
+				}
 				e->last_pass = pass;
 
 				if (*p_cull->result_idx < p_cull->result_max) {
@@ -1080,8 +1108,9 @@ OCTREE_FUNC(void)::_cull_convex(Octant *p_octant, _CullConvexData *p_cull) {
 			Element *e = I->get();
 			const AABB &aabb = e->aabb;
 
-			if (e->last_pass == pass || (use_pairs && !(e->pairable_type & p_cull->mask)))
+			if (e->last_pass == pass || (use_pairs && !(e->pairable_type & p_cull->mask))) {
 				continue;
+			}
 			e->last_pass = pass;
 
 			if (aabb.intersects_convex_shape(p_cull->planes, p_cull->plane_count, p_cull->points, p_cull->point_count)) {
@@ -1107,8 +1136,9 @@ OCTREE_FUNC(void)::_cull_convex(Octant *p_octant, _CullConvexData *p_cull) {
 			Element *e = p_octant->clist_pairable.elements[n];
 
 			if (aabb.intersects_convex_shape(p_cull->planes, p_cull->plane_count, p_cull->points, p_cull->point_count)) {
-				if (e->last_pass == pass || (use_pairs && !(e->pairable_type & p_cull->mask)))
+				if (e->last_pass == pass || (use_pairs && !(e->pairable_type & p_cull->mask))) {
 					continue;
+				}
 				e->last_pass = pass;
 
 				if (*p_cull->result_idx < p_cull->result_max) {
@@ -1128,8 +1158,9 @@ OCTREE_FUNC(void)::_cull_convex(Octant *p_octant, _CullConvexData *p_cull) {
 			Element *e = I->get();
 			const AABB &aabb = e->aabb;
 
-			if (e->last_pass == pass || (use_pairs && !(e->pairable_type & p_cull->mask)))
+			if (e->last_pass == pass || (use_pairs && !(e->pairable_type & p_cull->mask))) {
 				continue;
+			}
 			e->last_pass = pass;
 
 			if (aabb.intersects_convex_shape(p_cull->planes, p_cull->plane_count, p_cull->points, p_cull->point_count)) {
@@ -1152,8 +1183,9 @@ OCTREE_FUNC(void)::_cull_convex(Octant *p_octant, _CullConvexData *p_cull) {
 }
 
 OCTREE_FUNC(void)::_cull_aabb(Octant *p_octant, const AABB &p_aabb, T **p_result_array, int *p_result_idx, int p_result_max, int *p_subindex_array, uint32_t p_mask) {
-	if (*p_result_idx == p_result_max)
+	if (*p_result_idx == p_result_max) {
 		return; //pointless
+	}
 
 	if (!p_octant->elements.empty()) {
 #ifdef OCTREE_USE_CACHED_LISTS
@@ -1166,14 +1198,16 @@ OCTREE_FUNC(void)::_cull_aabb(Octant *p_octant, const AABB &p_aabb, T **p_result
 			Element *e = p_octant->clist.elements[n];
 
 			if (p_aabb.intersects_inclusive(aabb)) {
-				if (e->last_pass == pass || (use_pairs && !(e->pairable_type & p_mask)))
+				if (e->last_pass == pass || (use_pairs && !(e->pairable_type & p_mask))) {
 					continue;
+				}
 				e->last_pass = pass;
 
 				if (*p_result_idx < p_result_max) {
 					p_result_array[*p_result_idx] = e->userdata;
-					if (p_subindex_array)
+					if (p_subindex_array) {
 						p_subindex_array[*p_result_idx] = e->subindex;
+					}
 
 					(*p_result_idx)++;
 				} else {
@@ -1189,14 +1223,16 @@ OCTREE_FUNC(void)::_cull_aabb(Octant *p_octant, const AABB &p_aabb, T **p_result
 			const AABB &aabb = e->aabb;
 
 			if (p_aabb.intersects_inclusive(aabb)) {
-				if (e->last_pass == pass || (use_pairs && !(e->pairable_type & p_mask)))
+				if (e->last_pass == pass || (use_pairs && !(e->pairable_type & p_mask))) {
 					continue;
+				}
 				e->last_pass = pass;
 
 				if (*p_result_idx < p_result_max) {
 					p_result_array[*p_result_idx] = e->userdata;
-					if (p_subindex_array)
+					if (p_subindex_array) {
 						p_subindex_array[*p_result_idx] = e->subindex;
+					}
 
 					(*p_result_idx)++;
 				} else {
@@ -1218,14 +1254,16 @@ OCTREE_FUNC(void)::_cull_aabb(Octant *p_octant, const AABB &p_aabb, T **p_result
 			Element *e = p_octant->clist_pairable.elements[n];
 
 			if (p_aabb.intersects_inclusive(aabb)) {
-				if (e->last_pass == pass || (use_pairs && !(e->pairable_type & p_mask)))
+				if (e->last_pass == pass || (use_pairs && !(e->pairable_type & p_mask))) {
 					continue;
+				}
 				e->last_pass = pass;
 
 				if (*p_result_idx < p_result_max) {
 					p_result_array[*p_result_idx] = e->userdata;
-					if (p_subindex_array)
+					if (p_subindex_array) {
 						p_subindex_array[*p_result_idx] = e->subindex;
+					}
 					(*p_result_idx)++;
 				} else {
 					return; // pointless to continue
@@ -1240,15 +1278,17 @@ OCTREE_FUNC(void)::_cull_aabb(Octant *p_octant, const AABB &p_aabb, T **p_result
 			Element *e = I->get();
 			const AABB &aabb = e->aabb;
 
-			if (e->last_pass == pass || (use_pairs && !(e->pairable_type & p_mask)))
+			if (e->last_pass == pass || (use_pairs && !(e->pairable_type & p_mask))) {
 				continue;
+			}
 			e->last_pass = pass;
 
 			if (p_aabb.intersects_inclusive(aabb)) {
 				if (*p_result_idx < p_result_max) {
 					p_result_array[*p_result_idx] = e->userdata;
-					if (p_subindex_array)
+					if (p_subindex_array) {
 						p_subindex_array[*p_result_idx] = e->subindex;
+					}
 					(*p_result_idx)++;
 				} else {
 					return; // pointless to continue
@@ -1266,8 +1306,9 @@ OCTREE_FUNC(void)::_cull_aabb(Octant *p_octant, const AABB &p_aabb, T **p_result
 }
 
 OCTREE_FUNC(void)::_cull_segment(Octant *p_octant, const Vector3 &p_from, const Vector3 &p_to, T **p_result_array, int *p_result_idx, int p_result_max, int *p_subindex_array, uint32_t p_mask) {
-	if (*p_result_idx == p_result_max)
+	if (*p_result_idx == p_result_max) {
 		return; //pointless
+	}
 
 	if (!p_octant->elements.empty()) {
 #ifdef OCTREE_USE_CACHED_LISTS
@@ -1279,15 +1320,17 @@ OCTREE_FUNC(void)::_cull_segment(Octant *p_octant, const Vector3 &p_from, const 
 			const AABB &aabb = p_octant->clist.aabbs[n];
 			Element *e = p_octant->clist.elements[n];
 
-			if (e->last_pass == pass || (use_pairs && !(e->pairable_type & p_mask)))
+			if (e->last_pass == pass || (use_pairs && !(e->pairable_type & p_mask))) {
 				continue;
+			}
 			e->last_pass = pass;
 
 			if (aabb.intersects_segment(p_from, p_to)) {
 				if (*p_result_idx < p_result_max) {
 					p_result_array[*p_result_idx] = e->userdata;
-					if (p_subindex_array)
+					if (p_subindex_array) {
 						p_subindex_array[*p_result_idx] = e->subindex;
+					}
 					(*p_result_idx)++;
 
 				} else {
@@ -1303,15 +1346,17 @@ OCTREE_FUNC(void)::_cull_segment(Octant *p_octant, const Vector3 &p_from, const 
 			Element *e = I->get();
 			const AABB &aabb = e->aabb;
 
-			if (e->last_pass == pass || (use_pairs && !(e->pairable_type & p_mask)))
+			if (e->last_pass == pass || (use_pairs && !(e->pairable_type & p_mask))) {
 				continue;
+			}
 			e->last_pass = pass;
 
 			if (aabb.intersects_segment(p_from, p_to)) {
 				if (*p_result_idx < p_result_max) {
 					p_result_array[*p_result_idx] = e->userdata;
-					if (p_subindex_array)
+					if (p_subindex_array) {
 						p_subindex_array[*p_result_idx] = e->subindex;
+					}
 					(*p_result_idx)++;
 
 				} else {
@@ -1332,16 +1377,18 @@ OCTREE_FUNC(void)::_cull_segment(Octant *p_octant, const Vector3 &p_from, const 
 			const AABB &aabb = p_octant->clist_pairable.aabbs[n];
 			Element *e = p_octant->clist_pairable.elements[n];
 
-			if (e->last_pass == pass || (use_pairs && !(e->pairable_type & p_mask)))
+			if (e->last_pass == pass || (use_pairs && !(e->pairable_type & p_mask))) {
 				continue;
+			}
 
 			e->last_pass = pass;
 
 			if (aabb.intersects_segment(p_from, p_to)) {
 				if (*p_result_idx < p_result_max) {
 					p_result_array[*p_result_idx] = e->userdata;
-					if (p_subindex_array)
+					if (p_subindex_array) {
 						p_subindex_array[*p_result_idx] = e->subindex;
+					}
 
 					(*p_result_idx)++;
 
@@ -1357,16 +1404,18 @@ OCTREE_FUNC(void)::_cull_segment(Octant *p_octant, const Vector3 &p_from, const 
 			Element *e = I->get();
 			const AABB &aabb = e->aabb;
 
-			if (e->last_pass == pass || (use_pairs && !(e->pairable_type & p_mask)))
+			if (e->last_pass == pass || (use_pairs && !(e->pairable_type & p_mask))) {
 				continue;
+			}
 
 			e->last_pass = pass;
 
 			if (aabb.intersects_segment(p_from, p_to)) {
 				if (*p_result_idx < p_result_max) {
 					p_result_array[*p_result_idx] = e->userdata;
-					if (p_subindex_array)
+					if (p_subindex_array) {
 						p_subindex_array[*p_result_idx] = e->subindex;
+					}
 
 					(*p_result_idx)++;
 
@@ -1386,8 +1435,9 @@ OCTREE_FUNC(void)::_cull_segment(Octant *p_octant, const Vector3 &p_from, const 
 }
 
 OCTREE_FUNC(void)::_cull_point(Octant *p_octant, const Vector3 &p_point, T **p_result_array, int *p_result_idx, int p_result_max, int *p_subindex_array, uint32_t p_mask) {
-	if (*p_result_idx == p_result_max)
+	if (*p_result_idx == p_result_max) {
 		return; //pointless
+	}
 
 	if (!p_octant->elements.empty()) {
 #ifdef OCTREE_USE_CACHED_LISTS
@@ -1400,14 +1450,16 @@ OCTREE_FUNC(void)::_cull_point(Octant *p_octant, const Vector3 &p_point, T **p_r
 			Element *e = p_octant->clist.elements[n];
 
 			if (aabb.has_point(p_point)) {
-				if (e->last_pass == pass || (use_pairs && !(e->pairable_type & p_mask)))
+				if (e->last_pass == pass || (use_pairs && !(e->pairable_type & p_mask))) {
 					continue;
+				}
 				e->last_pass = pass;
 
 				if (*p_result_idx < p_result_max) {
 					p_result_array[*p_result_idx] = e->userdata;
-					if (p_subindex_array)
+					if (p_subindex_array) {
 						p_subindex_array[*p_result_idx] = e->subindex;
+					}
 					(*p_result_idx)++;
 
 				} else {
@@ -1422,15 +1474,17 @@ OCTREE_FUNC(void)::_cull_point(Octant *p_octant, const Vector3 &p_point, T **p_r
 			Element *e = I->get();
 			const AABB &aabb = e->aabb;
 
-			if (e->last_pass == pass || (use_pairs && !(e->pairable_type & p_mask)))
+			if (e->last_pass == pass || (use_pairs && !(e->pairable_type & p_mask))) {
 				continue;
+			}
 			e->last_pass = pass;
 
 			if (aabb.has_point(p_point)) {
 				if (*p_result_idx < p_result_max) {
 					p_result_array[*p_result_idx] = e->userdata;
-					if (p_subindex_array)
+					if (p_subindex_array) {
 						p_subindex_array[*p_result_idx] = e->subindex;
+					}
 					(*p_result_idx)++;
 
 				} else {
@@ -1452,15 +1506,17 @@ OCTREE_FUNC(void)::_cull_point(Octant *p_octant, const Vector3 &p_point, T **p_r
 			Element *e = p_octant->clist_pairable.elements[n];
 
 			if (aabb.has_point(p_point)) {
-				if (e->last_pass == pass || (use_pairs && !(e->pairable_type & p_mask)))
+				if (e->last_pass == pass || (use_pairs && !(e->pairable_type & p_mask))) {
 					continue;
+				}
 
 				e->last_pass = pass;
 
 				if (*p_result_idx < p_result_max) {
 					p_result_array[*p_result_idx] = e->userdata;
-					if (p_subindex_array)
+					if (p_subindex_array) {
 						p_subindex_array[*p_result_idx] = e->subindex;
+					}
 
 					(*p_result_idx)++;
 
@@ -1476,16 +1532,18 @@ OCTREE_FUNC(void)::_cull_point(Octant *p_octant, const Vector3 &p_point, T **p_r
 			Element *e = I->get();
 			const AABB &aabb = e->aabb;
 
-			if (e->last_pass == pass || (use_pairs && !(e->pairable_type & p_mask)))
+			if (e->last_pass == pass || (use_pairs && !(e->pairable_type & p_mask))) {
 				continue;
+			}
 
 			e->last_pass = pass;
 
 			if (aabb.has_point(p_point)) {
 				if (*p_result_idx < p_result_max) {
 					p_result_array[*p_result_idx] = e->userdata;
-					if (p_subindex_array)
+					if (p_subindex_array) {
 						p_subindex_array[*p_result_idx] = e->subindex;
+					}
 
 					(*p_result_idx)++;
 
@@ -1506,12 +1564,14 @@ OCTREE_FUNC(void)::_cull_point(Octant *p_octant, const Vector3 &p_point, T **p_r
 }
 
 OCTREE_FUNC(int)::cull_convex(const Vector<Plane> &p_convex, T **p_result_array, int p_result_max, uint32_t p_mask) {
-	if (!root || p_convex.size() == 0)
+	if (!root || p_convex.size() == 0) {
 		return 0;
+	}
 
 	Vector<Vector3> convex_points = Geometry::compute_convex_mesh_points(&p_convex[0], p_convex.size());
-	if (convex_points.size() == 0)
+	if (convex_points.size() == 0) {
 		return 0;
+	}
 
 	int result_count = 0;
 	pass++;
@@ -1531,8 +1591,9 @@ OCTREE_FUNC(int)::cull_convex(const Vector<Plane> &p_convex, T **p_result_array,
 }
 
 OCTREE_FUNC(int)::cull_aabb(const AABB &p_aabb, T **p_result_array, int p_result_max, int *p_subindex_array, uint32_t p_mask) {
-	if (!root)
+	if (!root) {
 		return 0;
+	}
 
 	int result_count = 0;
 	pass++;
@@ -1542,8 +1603,9 @@ OCTREE_FUNC(int)::cull_aabb(const AABB &p_aabb, T **p_result_array, int p_result
 }
 
 OCTREE_FUNC(int)::cull_segment(const Vector3 &p_from, const Vector3 &p_to, T **p_result_array, int p_result_max, int *p_subindex_array, uint32_t p_mask) {
-	if (!root)
+	if (!root) {
 		return 0;
+	}
 
 	int result_count = 0;
 	pass++;
@@ -1553,8 +1615,9 @@ OCTREE_FUNC(int)::cull_segment(const Vector3 &p_from, const Vector3 &p_to, T **p
 }
 
 OCTREE_FUNC(int)::cull_point(const Vector3 &p_point, T **p_result_array, int p_result_max, int *p_subindex_array, uint32_t p_mask) {
-	if (!root)
+	if (!root) {
 		return 0;
+	}
 
 	int result_count = 0;
 	pass++;
@@ -1600,14 +1663,16 @@ OCTREE_FUNC(String)::debug_aabb_to_string(const AABB &aabb) const {
 }
 
 OCTREE_FUNC(void)::debug_octants() {
-	if (root)
+	if (root) {
 		debug_octant(*root);
+	}
 }
 
 OCTREE_FUNC(void)::debug_octant(const Octant &oct, int depth) {
 	String sz = "";
-	for (int d = 0; d < depth; d++)
+	for (int d = 0; d < depth; d++) {
 		sz += "\t";
+	}
 
 	sz += "Octant " + debug_aabb_to_string(oct.aabb);
 	sz += "\tnum_children " + itos(oct.children_count);

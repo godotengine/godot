@@ -217,8 +217,9 @@ void AppxPackager::make_block_map(const String &p_path) {
 
 		for (int j = 0; j < file.hashes.size(); j++) {
 			tmp_file->store_string("<Block Hash=\"" + file.hashes[j].base64_hash + "\" ");
-			if (file.compressed)
+			if (file.compressed) {
 				tmp_file->store_string("Size=\"" + itos(file.hashes[j].compressed_size) + "\" ");
+			}
 			tmp_file->store_string("/>");
 		}
 
@@ -232,16 +233,17 @@ void AppxPackager::make_block_map(const String &p_path) {
 }
 
 String AppxPackager::content_type(String p_extension) {
-	if (p_extension == "png")
+	if (p_extension == "png") {
 		return "image/png";
-	else if (p_extension == "jpg")
+	} else if (p_extension == "jpg") {
 		return "image/jpg";
-	else if (p_extension == "xml")
+	} else if (p_extension == "xml") {
 		return "application/xml";
-	else if (p_extension == "exe" || p_extension == "dll")
+	} else if (p_extension == "exe" || p_extension == "dll") {
 		return "application/x-msdownload";
-	else
+	} else {
 		return "application/octet-stream";
+	}
 }
 
 void AppxPackager::make_content_types(const String &p_path) {
@@ -255,8 +257,9 @@ void AppxPackager::make_content_types(const String &p_path) {
 	for (int i = 0; i < file_metadata.size(); i++) {
 		String ext = file_metadata[i].name.get_extension().to_lower();
 
-		if (types.has(ext))
+		if (types.has(ext)) {
 			continue;
+		}
 
 		types[ext] = content_type(ext);
 
@@ -507,15 +510,17 @@ Error AppxPackager::add_file(String p_file_name, const uint8_t *p_buffer, size_t
 			//package->store_buffer(strm_out.ptr(), strm.total_out - total_out_before);
 			int start = file_buffer.size();
 			file_buffer.resize(file_buffer.size() + bh.compressed_size);
-			for (uint64_t i = 0; i < bh.compressed_size; i++)
+			for (uint64_t i = 0; i < bh.compressed_size; i++) {
 				file_buffer.write[start + i] = strm_out[i];
+			}
 		} else {
 			bh.compressed_size = block_size;
 			//package->store_buffer(strm_in.ptr(), block_size);
 			int start = file_buffer.size();
 			file_buffer.resize(file_buffer.size() + block_size);
-			for (uint64_t i = 0; i < bh.compressed_size; i++)
+			for (uint64_t i = 0; i < bh.compressed_size; i++) {
 				file_buffer.write[start + i] = strm_in[i];
+			}
 		}
 
 		meta.hashes.push_back(bh);
@@ -536,8 +541,9 @@ Error AppxPackager::add_file(String p_file_name, const uint8_t *p_buffer, size_t
 		//package->store_buffer(strm_out.ptr(), strm.total_out - total_out_before);
 		int start = file_buffer.size();
 		file_buffer.resize(file_buffer.size() + (strm.total_out - total_out_before));
-		for (uint64_t i = 0; i < (strm.total_out - total_out_before); i++)
+		for (uint64_t i = 0; i < (strm.total_out - total_out_before); i++) {
 			file_buffer.write[start + i] = strm_out[i];
+		}
 
 		deflateEnd(&strm);
 		meta.compressed_size = strm.total_out;
@@ -642,10 +648,12 @@ class EditorExportPlatformUWP : public EditorExportPlatform {
 	};
 
 	bool _valid_resource_name(const String &p_name) const {
-		if (p_name.empty())
+		if (p_name.empty()) {
 			return false;
-		if (p_name.ends_with("."))
+		}
+		if (p_name.ends_with(".")) {
 			return false;
+		}
 
 		static const char *invalid_names[] = {
 			"CON", "PRN", "AUX", "NUL", "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7",
@@ -655,8 +663,9 @@ class EditorExportPlatformUWP : public EditorExportPlatform {
 
 		const char **t = invalid_names;
 		while (*t) {
-			if (p_name == *t)
+			if (p_name == *t) {
 				return false;
+			}
 			t++;
 		}
 
@@ -666,24 +675,31 @@ class EditorExportPlatformUWP : public EditorExportPlatform {
 	bool _valid_guid(const String &p_guid) const {
 		Vector<String> parts = p_guid.split("-");
 
-		if (parts.size() != 5)
+		if (parts.size() != 5) {
 			return false;
-		if (parts[0].length() != 8)
+		}
+		if (parts[0].length() != 8) {
 			return false;
-		for (int i = 1; i < 4; i++)
-			if (parts[i].length() != 4)
+		}
+		for (int i = 1; i < 4; i++) {
+			if (parts[i].length() != 4) {
 				return false;
-		if (parts[4].length() != 12)
+			}
+		}
+		if (parts[4].length() != 12) {
 			return false;
+		}
 
 		return true;
 	}
 
 	bool _valid_bgcolor(const String &p_color) const {
-		if (p_color.empty())
+		if (p_color.empty()) {
 			return true;
-		if (p_color.begins_with("#") && p_color.is_valid_html_color())
+		}
+		if (p_color.begins_with("#") && p_color.is_valid_html_color()) {
 			return true;
+		}
 
 		// Colors from https://msdn.microsoft.com/en-us/library/windows/apps/dn934817.aspx
 		static const char *valid_colors[] = {
@@ -717,8 +733,9 @@ class EditorExportPlatformUWP : public EditorExportPlatform {
 		const char **color = valid_colors;
 
 		while (*color) {
-			if (p_color == *color)
+			if (p_color == *color) {
 				return true;
+			}
 			color++;
 		}
 
@@ -836,8 +853,9 @@ class EditorExportPlatformUWP : public EditorExportPlatform {
 		Vector<uint8_t> r_ret;
 		r_ret.resize(result.length());
 
-		for (int i = 0; i < result.length(); i++)
+		for (int i = 0; i < result.length(); i++) {
 			r_ret.write[i] = result.utf8().get(i);
+		}
 
 		return r_ret;
 	}
@@ -864,8 +882,9 @@ class EditorExportPlatformUWP : public EditorExportPlatform {
 			ERR_PRINT("Unable to load logo");
 		}
 
-		if (!image)
+		if (!image) {
 			return data;
+		}
 
 		String tmp_path = EditorSettings::get_singleton()->get_cache_dir().plus_file("uwp_tmp_logo.png");
 
@@ -1171,10 +1190,11 @@ public:
 
 		EditorProgress ep("export", "Exporting for UWP", 7, true);
 
-		if (p_debug)
+		if (p_debug) {
 			src_appx = p_preset->get("custom_template/debug");
-		else
+		} else {
 			src_appx = p_preset->get("custom_template/release");
+		}
 
 		src_appx = src_appx.strip_edges();
 
@@ -1263,8 +1283,9 @@ public:
 				path = path.replace(".scale-100", "");
 
 				data = _get_image_data(p_preset, path);
-				if (data.size() > 0)
+				if (data.size() > 0) {
 					do_read = false;
+				}
 			}
 
 			//read

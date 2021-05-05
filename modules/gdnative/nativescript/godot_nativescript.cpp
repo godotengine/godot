@@ -176,8 +176,9 @@ void GDAPI godot_nativescript_register_signal(void *p_gdnative_handle, const cha
 
 void GDAPI *godot_nativescript_get_userdata(godot_object *p_instance) {
 	Object *instance = (Object *)p_instance;
-	if (!instance)
+	if (!instance) {
 		return nullptr;
+	}
 	if (instance->get_script_instance() && instance->get_script_instance()->get_language() == NativeScriptLanguage::get_singleton()) {
 		return ((NativeScriptInstance *)instance->get_script_instance())->userdata;
 	}
@@ -292,8 +293,9 @@ const void GDAPI *godot_nativescript_get_type_tag(const godot_object *p_object) 
 			return nullptr;
 		}
 
-		if (script->get_script_desc())
+		if (script->get_script_desc()) {
 			return script->get_script_desc()->type_tag;
+		}
 	}
 
 	return nullptr;

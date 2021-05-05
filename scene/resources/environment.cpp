@@ -48,8 +48,9 @@ void Environment::set_sky(const Ref<Sky> &p_sky) {
 	bg_sky = p_sky;
 
 	RID sb_rid;
-	if (bg_sky.is_valid())
+	if (bg_sky.is_valid()) {
 		sb_rid = bg_sky->get_rid();
+	}
 
 	VS::get_singleton()->environment_set_sky(environment, sb_rid);
 }
@@ -499,10 +500,11 @@ bool Environment::is_glow_enabled() const {
 void Environment::set_glow_level(int p_level, bool p_enabled) {
 	ERR_FAIL_INDEX(p_level, VS::MAX_GLOW_LEVELS);
 
-	if (p_enabled)
+	if (p_enabled) {
 		glow_levels |= (1 << p_level);
-	else
+	} else {
 		glow_levels &= ~(1 << p_level);
+	}
 
 	VS::get_singleton()->environment_set_glow(environment, glow_enabled, glow_levels, glow_intensity, glow_strength, glow_bloom, VS::EnvironmentGlowBlendMode(glow_blend_mode), glow_hdr_bleed_threshold, glow_hdr_bleed_scale, glow_hdr_luminance_cap, glow_bicubic_upscale);
 }

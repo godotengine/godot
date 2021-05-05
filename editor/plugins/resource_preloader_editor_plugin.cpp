@@ -90,8 +90,9 @@ void ResourcePreloaderEditor::_load_pressed() {
 	file->clear_filters();
 	List<String> extensions;
 	ResourceLoader::get_recognized_extensions_for_type("", &extensions);
-	for (int i = 0; i < extensions.size(); i++)
+	for (int i = 0; i < extensions.size(); i++) {
 		file->add_filter("*." + extensions[i]);
+	}
 
 	file->set_mode(EditorFileDialog::MODE_OPEN_FILES);
 
@@ -99,8 +100,9 @@ void ResourcePreloaderEditor::_load_pressed() {
 }
 
 void ResourcePreloaderEditor::_item_edited() {
-	if (!tree->get_selected())
+	if (!tree->get_selected()) {
 		return;
+	}
 
 	TreeItem *s = tree->get_selected();
 
@@ -108,8 +110,9 @@ void ResourcePreloaderEditor::_item_edited() {
 		// renamed
 		String old_name = s->get_metadata(0);
 		String new_name = s->get_text(0);
-		if (old_name == new_name)
+		if (old_name == new_name) {
 			return;
+		}
 
 		if (new_name == "" || new_name.find("\\") != -1 || new_name.find("/") != -1 || preloader->has_resource(new_name)) {
 			s->set_text(0, old_name);
@@ -148,10 +151,12 @@ void ResourcePreloaderEditor::_paste_pressed() {
 	}
 
 	String name = r->get_name();
-	if (name == "")
+	if (name == "") {
 		name = r->get_path().get_file();
-	if (name == "")
+	}
+	if (name == "") {
 		name = r->get_class();
+	}
 
 	String basename = name;
 	int counter = 1;
@@ -244,14 +249,16 @@ void ResourcePreloaderEditor::edit(ResourcePreloader *p_preloader) {
 
 Variant ResourcePreloaderEditor::get_drag_data_fw(const Point2 &p_point, Control *p_from) {
 	TreeItem *ti = tree->get_item_at_position(p_point);
-	if (!ti)
+	if (!ti) {
 		return Variant();
+	}
 
 	String name = ti->get_metadata(0);
 
 	RES res = preloader->get_resource(name);
-	if (!res.is_valid())
+	if (!res.is_valid()) {
 		return Variant();
+	}
 
 	return EditorNode::get_singleton()->drag_resource(res, p_from);
 }
@@ -259,11 +266,13 @@ Variant ResourcePreloaderEditor::get_drag_data_fw(const Point2 &p_point, Control
 bool ResourcePreloaderEditor::can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const {
 	Dictionary d = p_data;
 
-	if (!d.has("type"))
+	if (!d.has("type")) {
 		return false;
+	}
 
-	if (d.has("from") && (Object *)(d["from"]) == tree)
+	if (d.has("from") && (Object *)(d["from"]) == tree) {
 		return false;
+	}
 
 	if (String(d["type"]) == "resource" && d.has("resource")) {
 		RES r = d["resource"];
@@ -280,13 +289,15 @@ bool ResourcePreloaderEditor::can_drop_data_fw(const Point2 &p_point, const Vari
 }
 
 void ResourcePreloaderEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) {
-	if (!can_drop_data_fw(p_point, p_data, p_from))
+	if (!can_drop_data_fw(p_point, p_data, p_from)) {
 		return;
+	}
 
 	Dictionary d = p_data;
 
-	if (!d.has("type"))
+	if (!d.has("type")) {
 		return;
+	}
 
 	if (String(d["type"]) == "resource" && d.has("resource")) {
 		RES r = d["resource"];
@@ -384,8 +395,9 @@ ResourcePreloaderEditor::ResourcePreloaderEditor() {
 void ResourcePreloaderEditorPlugin::edit(Object *p_object) {
 	preloader_editor->set_undo_redo(&get_undo_redo());
 	ResourcePreloader *s = Object::cast_to<ResourcePreloader>(p_object);
-	if (!s)
+	if (!s) {
 		return;
+	}
 
 	preloader_editor->edit(s);
 }
@@ -401,8 +413,9 @@ void ResourcePreloaderEditorPlugin::make_visible(bool p_visible) {
 		editor->make_bottom_panel_item_visible(preloader_editor);
 		//preloader_editor->set_process(true);
 	} else {
-		if (preloader_editor->is_visible_in_tree())
+		if (preloader_editor->is_visible_in_tree()) {
 			editor->hide_bottom_panel();
+		}
 		button->hide();
 		//preloader_editor->hide();
 		//preloader_editor->set_process(false);

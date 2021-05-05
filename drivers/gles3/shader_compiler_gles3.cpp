@@ -247,8 +247,9 @@ static String get_constant_text(SL::DataType p_type, const Vector<SL::ConstantNo
 		case SL::TYPE_BVEC4: {
 			String text = "bvec" + itos(p_type - SL::TYPE_BOOL + 1) + "(";
 			for (int i = 0; i < p_values.size(); i++) {
-				if (i > 0)
+				if (i > 0) {
 					text += ",";
+				}
 
 				text += p_values[i].boolean ? "true" : "false";
 			}
@@ -263,8 +264,9 @@ static String get_constant_text(SL::DataType p_type, const Vector<SL::ConstantNo
 		case SL::TYPE_IVEC4: {
 			String text = "ivec" + itos(p_type - SL::TYPE_INT + 1) + "(";
 			for (int i = 0; i < p_values.size(); i++) {
-				if (i > 0)
+				if (i > 0) {
 					text += ",";
+				}
 
 				text += itos(p_values[i].sint);
 			}
@@ -279,8 +281,9 @@ static String get_constant_text(SL::DataType p_type, const Vector<SL::ConstantNo
 		case SL::TYPE_UVEC4: {
 			String text = "uvec" + itos(p_type - SL::TYPE_UINT + 1) + "(";
 			for (int i = 0; i < p_values.size(); i++) {
-				if (i > 0)
+				if (i > 0) {
 					text += ",";
+				}
 
 				text += itos(p_values[i].uint) + "u";
 			}
@@ -294,8 +297,9 @@ static String get_constant_text(SL::DataType p_type, const Vector<SL::ConstantNo
 		case SL::TYPE_VEC4: {
 			String text = "vec" + itos(p_type - SL::TYPE_FLOAT + 1) + "(";
 			for (int i = 0; i < p_values.size(); i++) {
-				if (i > 0)
+				if (i > 0) {
 					text += ",";
+				}
 
 				text += f2sp0(p_values[i].real);
 			}
@@ -308,8 +312,9 @@ static String get_constant_text(SL::DataType p_type, const Vector<SL::ConstantNo
 		case SL::TYPE_MAT4: {
 			String text = "mat" + itos(p_type - SL::TYPE_MAT2 + 2) + "(";
 			for (int i = 0; i < p_values.size(); i++) {
-				if (i > 0)
+				if (i > 0) {
 					text += ",";
+				}
 
 				text += f2sp0(p_values[i].real);
 			}
@@ -357,8 +362,9 @@ void ShaderCompilerGLES3::_dump_function_deps(SL::ShaderNode *p_node, const Stri
 		String header;
 		header = _typestr(fnode->return_type) + " " + _mkid(fnode->name) + "(";
 		for (int i = 0; i < fnode->arguments.size(); i++) {
-			if (i > 0)
+			if (i > 0) {
 				header += ", ";
+			}
 			header += _qualstr(fnode->arguments[i].qualifier) + _prestr(fnode->arguments[i].precision) + _typestr(fnode->arguments[i].type) + " " + _mkid(fnode->arguments[i].name);
 		}
 
@@ -397,10 +403,11 @@ String ShaderCompilerGLES3::_dump_node_code(SL::Node *p_node, int p_level, Gener
 			int max_uniforms = 0;
 
 			for (Map<StringName, SL::ShaderNode::Uniform>::Element *E = pnode->uniforms.front(); E; E = E->next()) {
-				if (SL::is_sampler_type(E->get().type))
+				if (SL::is_sampler_type(E->get().type)) {
 					max_texture_uniforms++;
-				else
+				} else {
 					max_uniforms++;
+				}
 			}
 
 			r_gen_code.texture_uniforms.resize(max_texture_uniforms);
@@ -603,10 +610,11 @@ String ShaderCompilerGLES3::_dump_node_code(SL::Node *p_node, int p_level, Gener
 				used_flag_pointers.insert(vnode->name);
 			}
 
-			if (p_default_actions.renames.has(vnode->name))
+			if (p_default_actions.renames.has(vnode->name)) {
 				code = p_default_actions.renames[vnode->name];
-			else
+			} else {
 				code = _mkid(vnode->name);
+			}
 
 			if (vnode->name == time_name) {
 				if (current_func_name == vertex_name) {
@@ -678,10 +686,11 @@ String ShaderCompilerGLES3::_dump_node_code(SL::Node *p_node, int p_level, Gener
 				used_flag_pointers.insert(anode->name);
 			}
 
-			if (p_default_actions.renames.has(anode->name))
+			if (p_default_actions.renames.has(anode->name)) {
 				code = p_default_actions.renames[anode->name];
-			else
+			} else {
 				code = _mkid(anode->name);
+			}
 
 			if (anode->call_expression != nullptr) {
 				code += ".";
@@ -758,8 +767,9 @@ String ShaderCompilerGLES3::_dump_node_code(SL::Node *p_node, int p_level, Gener
 					code += "(";
 
 					for (int i = 1; i < onode->arguments.size(); i++) {
-						if (i > 1)
+						if (i > 1) {
 							code += ", ";
+						}
 						code += _dump_node_code(onode->arguments[i], p_level, r_gen_code, p_actions, p_default_actions, p_assigning);
 					}
 					code += ")";

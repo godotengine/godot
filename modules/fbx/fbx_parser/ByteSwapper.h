@@ -264,8 +264,9 @@ struct Getter {
 		le = !le;
 		if (le) {
 			ByteSwapper<T, (sizeof(T) > 1 ? true : false)>()(inout);
-		} else
+		} else {
 			ByteSwapper<T, false>()(inout);
+		}
 	}
 };
 

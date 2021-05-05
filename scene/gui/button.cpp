@@ -35,21 +35,24 @@
 
 Size2 Button::get_minimum_size() const {
 	Size2 minsize = get_font("font")->get_string_size(xl_text);
-	if (clip_text)
+	if (clip_text) {
 		minsize.width = 0;
+	}
 
 	if (!expand_icon) {
 		Ref<Texture> _icon;
-		if (icon.is_null() && has_icon("icon"))
+		if (icon.is_null() && has_icon("icon")) {
 			_icon = Control::get_icon("icon");
-		else
+		} else {
 			_icon = icon;
+		}
 
 		if (!_icon.is_null()) {
 			minsize.height = MAX(minsize.height, _icon->get_height());
 			minsize.width += _icon->get_width();
-			if (xl_text != "")
+			if (xl_text != "") {
 				minsize.width += get_constant("hseparation");
+			}
 		}
 	}
 
@@ -78,23 +81,28 @@ void Button::_notification(int p_what) {
 			switch (get_draw_mode()) {
 				case DRAW_NORMAL: {
 					style = get_stylebox("normal");
-					if (!flat)
+					if (!flat) {
 						style->draw(ci, Rect2(Point2(0, 0), size));
+					}
 					color = get_color("font_color");
-					if (has_color("icon_color_normal"))
+					if (has_color("icon_color_normal")) {
 						color_icon = get_color("icon_color_normal");
+					}
 				} break;
 				case DRAW_HOVER_PRESSED: {
 					if (has_stylebox("hover_pressed") && has_stylebox_override("hover_pressed")) {
 						style = get_stylebox("hover_pressed");
-						if (!flat)
+						if (!flat) {
 							style->draw(ci, Rect2(Point2(0, 0), size));
-						if (has_color("font_color_hover_pressed"))
+						}
+						if (has_color("font_color_hover_pressed")) {
 							color = get_color("font_color_hover_pressed");
-						else
+						} else {
 							color = get_color("font_color");
-						if (has_color("icon_color_hover_pressed"))
+						}
+						if (has_color("icon_color_hover_pressed")) {
 							color_icon = get_color("icon_color_hover_pressed");
+						}
 
 						break;
 					}
@@ -102,32 +110,39 @@ void Button::_notification(int p_what) {
 				}
 				case DRAW_PRESSED: {
 					style = get_stylebox("pressed");
-					if (!flat)
+					if (!flat) {
 						style->draw(ci, Rect2(Point2(0, 0), size));
-					if (has_color("font_color_pressed"))
+					}
+					if (has_color("font_color_pressed")) {
 						color = get_color("font_color_pressed");
-					else
+					} else {
 						color = get_color("font_color");
-					if (has_color("icon_color_pressed"))
+					}
+					if (has_color("icon_color_pressed")) {
 						color_icon = get_color("icon_color_pressed");
+					}
 
 				} break;
 				case DRAW_HOVER: {
 					style = get_stylebox("hover");
-					if (!flat)
+					if (!flat) {
 						style->draw(ci, Rect2(Point2(0, 0), size));
+					}
 					color = get_color("font_color_hover");
-					if (has_color("icon_color_hover"))
+					if (has_color("icon_color_hover")) {
 						color_icon = get_color("icon_color_hover");
+					}
 
 				} break;
 				case DRAW_DISABLED: {
 					style = get_stylebox("disabled");
-					if (!flat)
+					if (!flat) {
 						style->draw(ci, Rect2(Point2(0, 0), size));
+					}
 					color = get_color("font_color_disabled");
-					if (has_color("icon_color_disabled"))
+					if (has_color("icon_color_disabled")) {
 						color_icon = get_color("icon_color_disabled");
+					}
 
 				} break;
 			}
@@ -139,10 +154,11 @@ void Button::_notification(int p_what) {
 
 			Ref<Font> font = get_font("font");
 			Ref<Texture> _icon;
-			if (icon.is_null() && has_icon("icon"))
+			if (icon.is_null() && has_icon("icon")) {
 				_icon = Control::get_icon("icon");
-			else
+			} else {
 				_icon = icon;
+			}
 
 			Rect2 icon_region = Rect2();
 			if (!_icon.is_null()) {
@@ -159,8 +175,9 @@ void Button::_notification(int p_what) {
 				if (expand_icon) {
 					Size2 _size = get_size() - style->get_offset() * 2;
 					_size.width -= get_constant("hseparation") + icon_ofs_region;
-					if (!clip_text)
+					if (!clip_text) {
 						_size.width -= get_font("font")->get_string_size(xl_text).width;
+					}
 					float icon_width = _icon->get_width() * _size.height / _icon->get_height();
 					float icon_height = _size.height;
 
@@ -196,8 +213,9 @@ void Button::_notification(int p_what) {
 					text_ofs.y += style->get_offset().y;
 				} break;
 				case ALIGN_CENTER: {
-					if (text_ofs.x < 0)
+					if (text_ofs.x < 0) {
 						text_ofs.x = 0;
+					}
 					text_ofs += icon_ofs;
 					text_ofs += style->get_offset();
 				} break;
@@ -222,8 +240,9 @@ void Button::_notification(int p_what) {
 }
 
 void Button::set_text(const String &p_text) {
-	if (text == p_text)
+	if (text == p_text) {
 		return;
+	}
 	text = p_text;
 	xl_text = tr(p_text);
 	update();
@@ -235,8 +254,9 @@ String Button::get_text() const {
 }
 
 void Button::set_icon(const Ref<Texture> &p_icon) {
-	if (icon == p_icon)
+	if (icon == p_icon) {
 		return;
+	}
 	icon = p_icon;
 	update();
 	_change_notify("icon");

@@ -115,10 +115,11 @@ void RasterizerCanvasBaseGLES3::light_internal_update(RID p_rid, Light *p_light)
 	li->ubo_data.shadowpixel_size = (1.0 / p_light->shadow_buffer_size) * (1.0 + p_light->shadow_smooth);
 	li->ubo_data.light_outside_alpha = p_light->mode == VS::CANVAS_LIGHT_MODE_MASK ? 1.0 : 0.0;
 	li->ubo_data.light_height = p_light->height;
-	if (p_light->radius_cache == 0)
+	if (p_light->radius_cache == 0) {
 		li->ubo_data.shadow_gradient = 0;
-	else
+	} else {
 		li->ubo_data.shadow_gradient = p_light->shadow_gradient_length / (p_light->radius_cache * 1.1);
+	}
 
 	li->ubo_data.shadow_distance_mult = (p_light->radius_cache * 1.1);
 
@@ -230,8 +231,9 @@ RasterizerStorageGLES3::Texture *RasterizerCanvasBaseGLES3::_bind_canvas_texture
 
 			texture = texture->get_ptr();
 
-			if (texture->render_target)
+			if (texture->render_target) {
 				texture->render_target->used_in_frame = true;
+			}
 
 			glActiveTexture(GL_TEXTURE0);
 			glBindTexture(GL_TEXTURE_2D, texture->tex_id);
@@ -286,8 +288,9 @@ RasterizerStorageGLES3::Texture *RasterizerCanvasBaseGLES3::_bind_canvas_texture
 
 void RasterizerCanvasBaseGLES3::_set_texture_rect_mode(bool p_enable, bool p_ninepatch, bool p_light_angle, bool p_modulate, bool p_large_vertex) {
 	// this state check could be done individually
-	if (state.using_texture_rect == p_enable && state.using_ninepatch == p_ninepatch && state.using_light_angle == p_light_angle && state.using_modulate == p_modulate && state.using_large_vertex == p_large_vertex)
+	if (state.using_texture_rect == p_enable && state.using_ninepatch == p_ninepatch && state.using_light_angle == p_light_angle && state.using_modulate == p_modulate && state.using_large_vertex == p_large_vertex) {
 		return;
+	}
 
 	if (p_enable) {
 		glBindVertexArray(data.canvas_quad_array);
@@ -671,15 +674,17 @@ void RasterizerCanvasBaseGLES3::render_rect_nvidia_workaround(const Item::Comman
 
 			// if horizontal flip, angle is 180
 			float angle = 0.0f;
-			if (flip_h)
+			if (flip_h) {
 				angle = Math_PI;
+			}
 
 			// add 1 (to take care of zero floating point error with sign)
 			angle += 1.0f;
 
 			// flip if necessary
-			if (flip_v)
+			if (flip_v) {
 				angle *= -1.0f;
+			}
 
 			// light angle must be sent for each vert, instead as a single uniform in the uniform draw method
 			// this has the benefit of enabling batching with light angles.
@@ -871,8 +876,9 @@ void RasterizerCanvasBaseGLES3::canvas_light_shadow_buffer_update(RID p_buffer, 
 		state.canvas_shadow_shader.set_uniform(CanvasShadowShaderGLES3::LIGHT_MATRIX, light);
 		state.canvas_shadow_shader.set_uniform(CanvasShadowShaderGLES3::DISTANCE_NORM, 1.0 / p_far);
 
-		if (i == 0)
+		if (i == 0) {
 			*p_xform_cache = projection;
+		}
 
 		glViewport(0, (cls->height / 4) * i, cls->size, cls->height / 4);
 

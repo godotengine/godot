@@ -217,12 +217,15 @@ bool Color::operator<(const Color &p_color) const {
 		if (g == p_color.g) {
 			if (b == p_color.b) {
 				return (a < p_color.a);
-			} else
+			} else {
 				return (b < p_color.b);
-		} else
+			}
+		} else {
 			return g < p_color.g;
-	} else
+		}
+	} else {
 		return r < p_color.r;
+	}
 }
 
 #endif

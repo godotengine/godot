@@ -58,10 +58,11 @@ int Curve::add_point(Vector2 p_pos, real_t left_tangent, real_t right_tangent, T
 	// Add a point and preserve order
 
 	// Curve bounds is in 0..1
-	if (p_pos.x > MAX_X)
+	if (p_pos.x > MAX_X) {
 		p_pos.x = MAX_X;
-	else if (p_pos.x < MIN_X)
+	} else if (p_pos.x < MIN_X) {
 		p_pos.x = MIN_X;
+	}
 
 	int ret = -1;
 
@@ -128,8 +129,9 @@ int Curve::get_index(real_t offset) const {
 	}
 
 	// Will happen if the offset is out of bounds
-	if (offset > _points[imax].pos.x)
+	if (offset > _points[imax].pos.x) {
 		return imax;
+	}
 	return imin;
 }
 
@@ -145,8 +147,9 @@ void Curve::clean_dupes() {
 		}
 	}
 
-	if (dirty)
+	if (dirty) {
 		mark_dirty();
+	}
 }
 
 void Curve::set_point_left_tangent(int i, real_t tangent) {
@@ -234,8 +237,9 @@ int Curve::set_point_offset(int p_index, float offset) {
 	_points.write[i].right_tangent = p.right_tangent;
 	_points.write[i].left_mode = p.left_mode;
 	_points.write[i].right_mode = p.right_mode;
-	if (p_index != i)
+	if (p_index != i) {
 		update_auto_tangents(p_index);
+	}
 	update_auto_tangents(i);
 	return i;
 }
@@ -301,20 +305,24 @@ void Curve::set_max_value(float p_max) {
 }
 
 real_t Curve::interpolate(real_t offset) const {
-	if (_points.size() == 0)
+	if (_points.size() == 0) {
 		return 0;
-	if (_points.size() == 1)
+	}
+	if (_points.size() == 1) {
 		return _points[0].pos.y;
+	}
 
 	int i = get_index(offset);
 
-	if (i == _points.size() - 1)
+	if (i == _points.size() - 1) {
 		return _points[i].pos.y;
+	}
 
 	real_t local = offset - _points[i].pos.x;
 
-	if (i == 0 && local <= 0)
+	if (i == 0 && local <= 0) {
 		return _points[0].pos.y;
+	}
 
 	return interpolate_local_nocheck(i, local);
 }
@@ -339,8 +347,9 @@ real_t Curve::interpolate_local_nocheck(int index, real_t local_offset) const {
 
 	// Control points are chosen at equal distances
 	real_t d = b.pos.x - a.pos.x;
-	if (Math::abs(d) <= CMP_EPSILON)
+	if (Math::abs(d) <= CMP_EPSILON) {
 		return b.pos.y;
+	}
 	local_offset /= d;
 	d /= 3.0;
 	real_t yac = a.pos.y + d * a.right_tangent;
@@ -449,8 +458,9 @@ real_t Curve::interpolate_baked(real_t offset) {
 
 	// Special cases if the cache is too small
 	if (_baked_cache.size() == 0) {
-		if (_points.size() == 0)
+		if (_points.size() == 0) {
 			return 0;
+		}
 		return _points[0].pos.y;
 	} else if (_baked_cache.size() == 1) {
 		return _baked_cache[0];
@@ -534,10 +544,11 @@ void Curve2D::add_point(const Vector2 &p_pos, const Vector2 &p_in, const Vector2
 	n.pos = p_pos;
 	n.in = p_in;
 	n.out = p_out;
-	if (p_atpos >= 0 && p_atpos < points.size())
+	if (p_atpos >= 0 && p_atpos < points.size()) {
 		points.insert(p_atpos, n);
-	else
+	} else {
 		points.push_back(n);
+	}
 
 	baked_cache_dirty = true;
 	emit_signal(CoreStringNames::get_singleton()->changed);
@@ -599,10 +610,11 @@ Vector2 Curve2D::interpolate(int p_index, float p_offset) const {
 	int pc = points.size();
 	ERR_FAIL_COND_V(pc == 0, Vector2());
 
-	if (p_index >= pc - 1)
+	if (p_index >= pc - 1) {
 		return points[pc - 1].pos;
-	else if (p_index < 0)
+	} else if (p_index < 0) {
 		return points[0].pos;
+	}
 
 	Vector2 p0 = points[p_index].pos;
 	Vector2 p1 = p0 + points[p_index].out;
@@ -613,10 +625,11 @@ Vector2 Curve2D::interpolate(int p_index, float p_offset) const {
 }
 
 Vector2 Curve2D::interpolatef(real_t p_findex) const {
-	if (p_findex < 0)
+	if (p_findex < 0) {
 		p_findex = 0;
-	else if (p_findex >= points.size())
+	} else if (p_findex >= points.size()) {
 		p_findex = points.size();
+	}
 
 	return interpolate((int)p_findex, Math::fmod(p_findex, (real_t)1.0));
 }
@@ -642,8 +655,9 @@ void Curve2D::_bake_segment2d(Map<float, Vector2> &r_bake, float p_begin, float 
 }
 
 void Curve2D::_bake() const {
-	if (!baked_cache_dirty)
+	if (!baked_cache_dirty) {
 		return;
+	}
 
 	baked_max_ofs = 0;
 	baked_cache_dirty = false;
@@ -670,8 +684,9 @@ void Curve2D::_bake() const {
 
 		while (p < 1.0) {
 			float np = p + step;
-			if (np > 1.0)
+			if (np > 1.0) {
 				np = 1.0;
+			}
 
 			Vector2 npp = _bezier_interp(np, points[i].pos, points[i].pos + points[i].out, points[i + 1].pos + points[i + 1].in, points[i + 1].pos);
 			float d = pos.distance_to(npp);
@@ -689,10 +704,11 @@ void Curve2D::_bake() const {
 					npp = _bezier_interp(mid, points[i].pos, points[i].pos + points[i].out, points[i + 1].pos + points[i + 1].in, points[i + 1].pos);
 					d = pos.distance_to(npp);
 
-					if (bake_interval < d)
+					if (bake_interval < d) {
 						hi = mid;
-					else
+					} else {
 						low = mid;
+					}
 					mid = low + (hi - low) * 0.5;
 				}
 
@@ -722,29 +738,34 @@ void Curve2D::_bake() const {
 }
 
 float Curve2D::get_baked_length() const {
-	if (baked_cache_dirty)
+	if (baked_cache_dirty) {
 		_bake();
+	}
 
 	return baked_max_ofs;
 }
 Vector2 Curve2D::interpolate_baked(float p_offset, bool p_cubic) const {
-	if (baked_cache_dirty)
+	if (baked_cache_dirty) {
 		_bake();
+	}
 
 	//validate//
 	int pc = baked_point_cache.size();
 	ERR_FAIL_COND_V_MSG(pc == 0, Vector2(), "No points in Curve2D.");
 
-	if (pc == 1)
+	if (pc == 1) {
 		return baked_point_cache.get(0);
+	}
 
 	int bpc = baked_point_cache.size();
 	PoolVector2Array::Read r = baked_point_cache.read();
 
-	if (p_offset < 0)
+	if (p_offset < 0) {
 		return r[0];
-	if (p_offset >= baked_max_ofs)
+	}
+	if (p_offset >= baked_max_ofs) {
 		return r[bpc - 1];
+	}
 
 	int idx = Math::floor((double)p_offset / (double)bake_interval);
 	float frac = Math::fmod(p_offset, (float)bake_interval);
@@ -752,8 +773,9 @@ Vector2 Curve2D::interpolate_baked(float p_offset, bool p_cubic) const {
 	if (idx >= bpc - 1) {
 		return r[bpc - 1];
 	} else if (idx == bpc - 2) {
-		if (frac > 0)
+		if (frac > 0) {
 			frac /= Math::fmod(baked_max_ofs, bake_interval);
+		}
 	} else {
 		frac /= bake_interval;
 	}
@@ -768,8 +790,9 @@ Vector2 Curve2D::interpolate_baked(float p_offset, bool p_cubic) const {
 }
 
 PoolVector2Array Curve2D::get_baked_points() const {
-	if (baked_cache_dirty)
+	if (baked_cache_dirty) {
 		_bake();
+	}
 
 	return baked_point_cache;
 }
@@ -787,15 +810,17 @@ float Curve2D::get_bake_interval() const {
 Vector2 Curve2D::get_closest_point(const Vector2 &p_to_point) const {
 	// Brute force method
 
-	if (baked_cache_dirty)
+	if (baked_cache_dirty) {
 		_bake();
+	}
 
 	//validate//
 	int pc = baked_point_cache.size();
 	ERR_FAIL_COND_V_MSG(pc == 0, Vector2(), "No points in Curve2D.");
 
-	if (pc == 1)
+	if (pc == 1) {
 		return baked_point_cache.get(0);
+	}
 
 	PoolVector2Array::Read r = baked_point_cache.read();
 
@@ -823,15 +848,17 @@ Vector2 Curve2D::get_closest_point(const Vector2 &p_to_point) const {
 float Curve2D::get_closest_offset(const Vector2 &p_to_point) const {
 	// Brute force method
 
-	if (baked_cache_dirty)
+	if (baked_cache_dirty) {
 		_bake();
+	}
 
 	//validate//
 	int pc = baked_point_cache.size();
 	ERR_FAIL_COND_V_MSG(pc == 0, 0.0f, "No points in Curve2D.");
 
-	if (pc == 1)
+	if (pc == 1) {
 		return 0.0f;
+	}
 
 	PoolVector2Array::Read r = baked_point_cache.read();
 
@@ -988,10 +1015,11 @@ void Curve3D::add_point(const Vector3 &p_pos, const Vector3 &p_in, const Vector3
 	n.pos = p_pos;
 	n.in = p_in;
 	n.out = p_out;
-	if (p_atpos >= 0 && p_atpos < points.size())
+	if (p_atpos >= 0 && p_atpos < points.size()) {
 		points.insert(p_atpos, n);
-	else
+	} else {
 		points.push_back(n);
+	}
 
 	baked_cache_dirty = true;
 	emit_signal(CoreStringNames::get_singleton()->changed);
@@ -1064,10 +1092,11 @@ Vector3 Curve3D::interpolate(int p_index, float p_offset) const {
 	int pc = points.size();
 	ERR_FAIL_COND_V(pc == 0, Vector3());
 
-	if (p_index >= pc - 1)
+	if (p_index >= pc - 1) {
 		return points[pc - 1].pos;
-	else if (p_index < 0)
+	} else if (p_index < 0) {
 		return points[0].pos;
+	}
 
 	Vector3 p0 = points[p_index].pos;
 	Vector3 p1 = p0 + points[p_index].out;
@@ -1078,10 +1107,11 @@ Vector3 Curve3D::interpolate(int p_index, float p_offset) const {
 }
 
 Vector3 Curve3D::interpolatef(real_t p_findex) const {
-	if (p_findex < 0)
+	if (p_findex < 0) {
 		p_findex = 0;
-	else if (p_findex >= points.size())
+	} else if (p_findex >= points.size()) {
 		p_findex = points.size();
+	}
 
 	return interpolate((int)p_findex, Math::fmod(p_findex, (real_t)1.0));
 }
@@ -1106,8 +1136,9 @@ void Curve3D::_bake_segment3d(Map<float, Vector3> &r_bake, float p_begin, float 
 }
 
 void Curve3D::_bake() const {
-	if (!baked_cache_dirty)
+	if (!baked_cache_dirty) {
 		return;
+	}
 
 	baked_max_ofs = 0;
 	baked_cache_dirty = false;
@@ -1128,8 +1159,9 @@ void Curve3D::_bake() const {
 		if (up_vector_enabled) {
 			baked_up_vector_cache.resize(1);
 			baked_up_vector_cache.set(0, Vector3(0, 1, 0));
-		} else
+		} else {
 			baked_up_vector_cache.resize(0);
+		}
 
 		return;
 	}
@@ -1144,8 +1176,9 @@ void Curve3D::_bake() const {
 
 		while (p < 1.0) {
 			float np = p + step;
-			if (np > 1.0)
+			if (np > 1.0) {
 				np = 1.0;
+			}
 
 			Vector3 npp = _bezier_interp(np, points[i].pos, points[i].pos + points[i].out, points[i + 1].pos + points[i + 1].in, points[i + 1].pos);
 			float d = pos.distance_to(npp);
@@ -1163,10 +1196,11 @@ void Curve3D::_bake() const {
 					npp = _bezier_interp(mid, points[i].pos, points[i].pos + points[i].out, points[i + 1].pos + points[i + 1].in, points[i + 1].pos);
 					d = pos.distance_to(npp);
 
-					if (bake_interval < d)
+					if (bake_interval < d) {
 						hi = mid;
-					else
+					} else {
 						low = mid;
+					}
 					mid = low + (hi - low) * 0.5;
 				}
 
@@ -1231,8 +1265,9 @@ void Curve3D::_bake() const {
 			up = forward.cross(sideways).normalized();
 		}
 
-		if (idx == 1)
+		if (idx == 1) {
 			up_write[0] = up;
+		}
 
 		up_write[idx] = up;
 
@@ -1245,29 +1280,34 @@ void Curve3D::_bake() const {
 }
 
 float Curve3D::get_baked_length() const {
-	if (baked_cache_dirty)
+	if (baked_cache_dirty) {
 		_bake();
+	}
 
 	return baked_max_ofs;
 }
 Vector3 Curve3D::interpolate_baked(float p_offset, bool p_cubic) const {
-	if (baked_cache_dirty)
+	if (baked_cache_dirty) {
 		_bake();
+	}
 
 	//validate//
 	int pc = baked_point_cache.size();
 	ERR_FAIL_COND_V_MSG(pc == 0, Vector3(), "No points in Curve3D.");
 
-	if (pc == 1)
+	if (pc == 1) {
 		return baked_point_cache.get(0);
+	}
 
 	int bpc = baked_point_cache.size();
 	PoolVector3Array::Read r = baked_point_cache.read();
 
-	if (p_offset < 0)
+	if (p_offset < 0) {
 		return r[0];
-	if (p_offset >= baked_max_ofs)
+	}
+	if (p_offset >= baked_max_ofs) {
 		return r[bpc - 1];
+	}
 
 	int idx = Math::floor((double)p_offset / (double)bake_interval);
 	float frac = Math::fmod(p_offset, bake_interval);
@@ -1275,8 +1315,9 @@ Vector3 Curve3D::interpolate_baked(float p_offset, bool p_cubic) const {
 	if (idx >= bpc - 1) {
 		return r[bpc - 1];
 	} else if (idx == bpc - 2) {
-		if (frac > 0)
+		if (frac > 0) {
 			frac /= Math::fmod(baked_max_ofs, bake_interval);
+		}
 	} else {
 		frac /= bake_interval;
 	}
@@ -1291,23 +1332,27 @@ Vector3 Curve3D::interpolate_baked(float p_offset, bool p_cubic) const {
 }
 
 float Curve3D::interpolate_baked_tilt(float p_offset) const {
-	if (baked_cache_dirty)
+	if (baked_cache_dirty) {
 		_bake();
+	}
 
 	//validate//
 	int pc = baked_tilt_cache.size();
 	ERR_FAIL_COND_V_MSG(pc == 0, 0, "No tilts in Curve3D.");
 
-	if (pc == 1)
+	if (pc == 1) {
 		return baked_tilt_cache.get(0);
+	}
 
 	int bpc = baked_tilt_cache.size();
 	PoolRealArray::Read r = baked_tilt_cache.read();
 
-	if (p_offset < 0)
+	if (p_offset < 0) {
 		return r[0];
-	if (p_offset >= baked_max_ofs)
+	}
+	if (p_offset >= baked_max_ofs) {
 		return r[bpc - 1];
+	}
 
 	int idx = Math::floor((double)p_offset / (double)bake_interval);
 	float frac = Math::fmod(p_offset, bake_interval);
@@ -1315,8 +1360,9 @@ float Curve3D::interpolate_baked_tilt(float p_offset) const {
 	if (idx >= bpc - 1) {
 		return r[bpc - 1];
 	} else if (idx == bpc - 2) {
-		if (frac > 0)
+		if (frac > 0) {
 			frac /= Math::fmod(baked_max_ofs, bake_interval);
+		}
 	} else {
 		frac /= bake_interval;
 	}
@@ -1325,16 +1371,18 @@ float Curve3D::interpolate_baked_tilt(float p_offset) const {
 }
 
 Vector3 Curve3D::interpolate_baked_up_vector(float p_offset, bool p_apply_tilt) const {
-	if (baked_cache_dirty)
+	if (baked_cache_dirty) {
 		_bake();
+	}
 
 	//validate//
 	// curve may not have baked up vectors
 	int count = baked_up_vector_cache.size();
 	ERR_FAIL_COND_V_MSG(count == 0, Vector3(0, 1, 0), "No up vectors in Curve3D.");
 
-	if (count == 1)
+	if (count == 1) {
 		return baked_up_vector_cache.get(0);
+	}
 
 	PoolVector3Array::Read r = baked_up_vector_cache.read();
 	PoolVector3Array::Read rp = baked_point_cache.read();
@@ -1345,8 +1393,9 @@ Vector3 Curve3D::interpolate_baked_up_vector(float p_offset, bool p_apply_tilt) 
 	int idx = Math::floor((double)offset / (double)bake_interval);
 	float frac = Math::fmod(offset, bake_interval) / bake_interval;
 
-	if (idx == count - 1)
+	if (idx == count - 1) {
 		return p_apply_tilt ? r[idx].rotated((rp[idx] - rp[idx - 1]).normalized(), rt[idx]) : r[idx];
+	}
 
 	Vector3 forward = (rp[idx + 1] - rp[idx]).normalized();
 	Vector3 up = r[idx];
@@ -1359,31 +1408,35 @@ Vector3 Curve3D::interpolate_baked_up_vector(float p_offset, bool p_apply_tilt) 
 
 	Vector3 axis = up.cross(up1);
 
-	if (axis.length_squared() < CMP_EPSILON2)
+	if (axis.length_squared() < CMP_EPSILON2) {
 		axis = forward;
-	else
+	} else {
 		axis.normalize();
+	}
 
 	return up.rotated(axis, up.angle_to(up1) * frac);
 }
 
 PoolVector3Array Curve3D::get_baked_points() const {
-	if (baked_cache_dirty)
+	if (baked_cache_dirty) {
 		_bake();
+	}
 
 	return baked_point_cache;
 }
 
 PoolRealArray Curve3D::get_baked_tilts() const {
-	if (baked_cache_dirty)
+	if (baked_cache_dirty) {
 		_bake();
+	}
 
 	return baked_tilt_cache;
 }
 
 PoolVector3Array Curve3D::get_baked_up_vectors() const {
-	if (baked_cache_dirty)
+	if (baked_cache_dirty) {
 		_bake();
+	}
 
 	return baked_up_vector_cache;
 }
@@ -1391,15 +1444,17 @@ PoolVector3Array Curve3D::get_baked_up_vectors() const {
 Vector3 Curve3D::get_closest_point(const Vector3 &p_to_point) const {
 	// Brute force method
 
-	if (baked_cache_dirty)
+	if (baked_cache_dirty) {
 		_bake();
+	}
 
 	//validate//
 	int pc = baked_point_cache.size();
 	ERR_FAIL_COND_V_MSG(pc == 0, Vector3(), "No points in Curve3D.");
 
-	if (pc == 1)
+	if (pc == 1) {
 		return baked_point_cache.get(0);
+	}
 
 	PoolVector3Array::Read r = baked_point_cache.read();
 
@@ -1427,15 +1482,17 @@ Vector3 Curve3D::get_closest_point(const Vector3 &p_to_point) const {
 float Curve3D::get_closest_offset(const Vector3 &p_to_point) const {
 	// Brute force method
 
-	if (baked_cache_dirty)
+	if (baked_cache_dirty) {
 		_bake();
+	}
 
 	//validate//
 	int pc = baked_point_cache.size();
 	ERR_FAIL_COND_V_MSG(pc == 0, 0.0f, "No points in Curve3D.");
 
-	if (pc == 1)
+	if (pc == 1) {
 		return 0.0f;
+	}
 
 	PoolVector3Array::Read r = baked_point_cache.read();
 

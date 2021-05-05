@@ -163,15 +163,17 @@ ShaderGLES3::Version *ShaderGLES3::get_current_version() {
 		if (conditional_version.code_version != 0) {
 			CustomCode *cc = custom_code_map.getptr(conditional_version.code_version);
 			ERR_FAIL_COND_V(!cc, _v);
-			if (cc->version == _v->code_version)
+			if (cc->version == _v->code_version) {
 				return _v;
+			}
 		} else {
 			return _v;
 		}
 	}
 
-	if (!_v)
+	if (!_v) {
 		version_map[conditional_version] = Version();
+	}
 
 	Version &v = version_map[conditional_version];
 
@@ -508,8 +510,9 @@ ShaderGLES3::Version *ShaderGLES3::get_current_version() {
 	// assign uniform block bind points
 	for (int i = 0; i < ubo_count; i++) {
 		GLint loc = glGetUniformBlockIndex(v.id, ubo_pairs[i].name);
-		if (loc >= 0)
+		if (loc >= 0) {
 			glUniformBlockBinding(v.id, loc, ubo_pairs[i].index);
+		}
 	}
 
 	if (cc) {

@@ -48,23 +48,31 @@ struct Rect2 {
 
 	inline bool intersects(const Rect2 &p_rect, const bool p_include_borders = false) const {
 		if (p_include_borders) {
-			if (position.x > (p_rect.position.x + p_rect.size.width))
+			if (position.x > (p_rect.position.x + p_rect.size.width)) {
 				return false;
-			if ((position.x + size.width) < p_rect.position.x)
+			}
+			if ((position.x + size.width) < p_rect.position.x) {
 				return false;
-			if (position.y > (p_rect.position.y + p_rect.size.height))
+			}
+			if (position.y > (p_rect.position.y + p_rect.size.height)) {
 				return false;
-			if ((position.y + size.height) < p_rect.position.y)
+			}
+			if ((position.y + size.height) < p_rect.position.y) {
 				return false;
+			}
 		} else {
-			if (position.x >= (p_rect.position.x + p_rect.size.width))
+			if (position.x >= (p_rect.position.x + p_rect.size.width)) {
 				return false;
-			if ((position.x + size.width) <= p_rect.position.x)
+			}
+			if ((position.x + size.width) <= p_rect.position.x) {
 				return false;
-			if (position.y >= (p_rect.position.y + p_rect.size.height))
+			}
+			if (position.y >= (p_rect.position.y + p_rect.size.height)) {
 				return false;
-			if ((position.y + size.height) <= p_rect.position.y)
+			}
+			if ((position.y + size.height) <= p_rect.position.y) {
 				return false;
+			}
 		}
 
 		return true;
@@ -95,10 +103,11 @@ struct Rect2 {
 			inside = false;
 		}
 
-		if (inside)
+		if (inside) {
 			return 0;
-		else
+		} else {
 			return dist;
+		}
 	}
 
 	bool intersects_transformed(const Transform2D &p_xform, const Rect2 &p_rect) const;
@@ -118,8 +127,9 @@ struct Rect2 {
 
 		Rect2 new_rect = p_rect;
 
-		if (!intersects(new_rect))
+		if (!intersects(new_rect)) {
 			return Rect2();
+		}
 
 		new_rect.position.x = MAX(p_rect.position.x, position.x);
 		new_rect.position.y = MAX(p_rect.position.y, position.y);
@@ -148,15 +158,19 @@ struct Rect2 {
 		return new_rect;
 	};
 	inline bool has_point(const Point2 &p_point) const {
-		if (p_point.x < position.x)
+		if (p_point.x < position.x) {
 			return false;
-		if (p_point.y < position.y)
+		}
+		if (p_point.y < position.y) {
 			return false;
+		}
 
-		if (p_point.x >= (position.x + size.x))
+		if (p_point.x >= (position.x + size.x)) {
 			return false;
-		if (p_point.y >= (position.y + size.y))
+		}
+		if (p_point.y >= (position.y + size.y)) {
 			return false;
+		}
 
 		return true;
 	}
@@ -208,15 +222,19 @@ struct Rect2 {
 		Vector2 begin = position;
 		Vector2 end = position + size;
 
-		if (p_vector.x < begin.x)
+		if (p_vector.x < begin.x) {
 			begin.x = p_vector.x;
-		if (p_vector.y < begin.y)
+		}
+		if (p_vector.y < begin.y) {
 			begin.y = p_vector.y;
+		}
 
-		if (p_vector.x > end.x)
+		if (p_vector.x > end.x) {
 			end.x = p_vector.x;
-		if (p_vector.y > end.y)
+		}
+		if (p_vector.y > end.y) {
 			end.y = p_vector.y;
+		}
 
 		position = begin;
 		size = end - begin;
@@ -251,14 +269,18 @@ struct Rect2i {
 	int get_area() const { return size.width * size.height; }
 
 	inline bool intersects(const Rect2i &p_rect) const {
-		if (position.x > (p_rect.position.x + p_rect.size.width))
+		if (position.x > (p_rect.position.x + p_rect.size.width)) {
 			return false;
-		if ((position.x + size.width) < p_rect.position.x)
+		}
+		if ((position.x + size.width) < p_rect.position.x) {
 			return false;
-		if (position.y > (p_rect.position.y + p_rect.size.height))
+		}
+		if (position.y > (p_rect.position.y + p_rect.size.height)) {
 			return false;
-		if ((position.y + size.height) < p_rect.position.y)
+		}
+		if ((position.y + size.height) < p_rect.position.y) {
 			return false;
+		}
 
 		return true;
 	}
@@ -276,8 +298,9 @@ struct Rect2i {
 
 		Rect2i new_rect = p_rect;
 
-		if (!intersects(new_rect))
+		if (!intersects(new_rect)) {
 			return Rect2i();
+		}
 
 		new_rect.position.x = MAX(p_rect.position.x, position.x);
 		new_rect.position.y = MAX(p_rect.position.y, position.y);
@@ -306,15 +329,19 @@ struct Rect2i {
 		return new_rect;
 	};
 	bool has_point(const Point2 &p_point) const {
-		if (p_point.x < position.x)
+		if (p_point.x < position.x) {
 			return false;
-		if (p_point.y < position.y)
+		}
+		if (p_point.y < position.y) {
 			return false;
+		}
 
-		if (p_point.x >= (position.x + size.x))
+		if (p_point.x >= (position.x + size.x)) {
 			return false;
-		if (p_point.y >= (position.y + size.y))
+		}
+		if (p_point.y >= (position.y + size.y)) {
 			return false;
+		}
 
 		return true;
 	}
@@ -360,15 +387,19 @@ struct Rect2i {
 		Point2i begin = position;
 		Point2i end = position + size;
 
-		if (p_vector.x < begin.x)
+		if (p_vector.x < begin.x) {
 			begin.x = p_vector.x;
-		if (p_vector.y < begin.y)
+		}
+		if (p_vector.y < begin.y) {
 			begin.y = p_vector.y;
+		}
 
-		if (p_vector.x > end.x)
+		if (p_vector.x > end.x) {
 			end.x = p_vector.x;
-		if (p_vector.y > end.y)
+		}
+		if (p_vector.y > end.y) {
 			end.y = p_vector.y;
+		}
 
 		position = begin;
 		size = end - begin;

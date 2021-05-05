@@ -214,8 +214,9 @@ void NetworkedMultiplayerENet::poll() {
 	ENetEvent event;
 	/* Keep servicing until there are no available events left in queue. */
 	while (true) {
-		if (!host || !active) // Might have been disconnected while emitting a notification
+		if (!host || !active) { // Might have been disconnected while emitting a notification
 			return;
+		}
 
 		int ret = enet_host_service(host, &event, 0);
 
@@ -259,13 +260,15 @@ void NetworkedMultiplayerENet::poll() {
 
 				if (server) {
 					// Do not notify other peers when server_relay is disabled.
-					if (!server_relay)
+					if (!server_relay) {
 						break;
+					}
 
 					// Someone connected, notify all the peers available
 					for (Map<int, ENetPeer *>::Element *E = peer_map.front(); E; E = E->next()) {
-						if (E->key() == *new_id)
+						if (E->key() == *new_id) {
 							continue;
+						}
 						// Send existing peers to new peer
 						ENetPacket *packet = enet_packet_create(nullptr, 8, ENET_PACKET_FLAG_RELIABLE);
 						encode_uint32(SYSMSG_ADD_PEER, &packet->data[0]);
@@ -303,8 +306,9 @@ void NetworkedMultiplayerENet::poll() {
 				} else if (server_relay) {
 					// Server just received a client disconnect and is in relay mode, notify everyone else.
 					for (Map<int, ENetPeer *>::Element *E = peer_map.front(); E; E = E->next()) {
-						if (E->key() == *id)
+						if (E->key() == *id) {
 							continue;
+						}
 
 						ENetPacket *packet = enet_packet_create(nullptr, 8, ENET_PACKET_FLAG_RELIABLE);
 						encode_uint32(SYSMSG_REMOVE_PEER, &packet->data[0]);
@@ -373,8 +377,9 @@ void NetworkedMultiplayerENet::poll() {
 							incoming_packets.push_back(packet);
 							// And make copies for sending
 							for (Map<int, ENetPeer *>::Element *E = peer_map.front(); E; E = E->next()) {
-								if (uint32_t(E->key()) == source) // Do not resend to self
+								if (uint32_t(E->key()) == source) { // Do not resend to self
 									continue;
+								}
 
 								ENetPacket *packet2 = enet_packet_create(packet.packet->data, packet.packet->dataLength, packet.packet->flags);
 
@@ -386,8 +391,9 @@ void NetworkedMultiplayerENet::poll() {
 
 							// And make copies for sending
 							for (Map<int, ENetPeer *>::Element *E = peer_map.front(); E; E = E->next()) {
-								if (uint32_t(E->key()) == source || E->key() == -target) // Do not resend to self, also do not send to excluded
+								if (uint32_t(E->key()) == source || E->key() == -target) { // Do not resend to self, also do not send to excluded
 									continue;
+								}
 
 								ENetPacket *packet2 = enet_packet_create(packet.packet->data, packet.packet->dataLength, packet.packet->flags);
 
@@ -485,8 +491,9 @@ void NetworkedMultiplayerENet::disconnect_peer(int p_peer, bool now) {
 			}
 		}
 
-		if (id)
+		if (id) {
 			memdelete(id);
+		}
 
 		emit_signal("peer_disconnected", p_peer);
 		peer_map.erase(p_peer);
@@ -522,10 +529,11 @@ Error NetworkedMultiplayerENet::put_packet(const uint8_t *p_buffer, int p_buffer
 
 	switch (transfer_mode) {
 		case TRANSFER_MODE_UNRELIABLE: {
-			if (always_ordered)
+			if (always_ordered) {
 				packet_flags = 0;
-			else
+			} else {
 				packet_flags = ENET_PACKET_FLAG_UNSEQUENCED;
+			}
 			channel = SYSCH_UNRELIABLE;
 		} break;
 		case TRANSFER_MODE_UNRELIABLE_ORDERED: {
@@ -538,8 +546,9 @@ Error NetworkedMultiplayerENet::put_packet(const uint8_t *p_buffer, int p_buffer
 		} break;
 	}
 
-	if (transfer_channel > SYSCH_CONFIG)
+	if (transfer_channel > SYSCH_CONFIG) {
 		channel = transfer_channel;
+	}
 
 	Map<int, ENetPeer *>::Element *E = nullptr;
 
@@ -563,8 +572,9 @@ Error NetworkedMultiplayerENet::put_packet(const uint8_t *p_buffer, int p_buffer
 			int exclude = -target_peer;
 
 			for (Map<int, ENetPeer *>::Element *F = peer_map.front(); F; F = F->next()) {
-				if (F->key() == exclude) // Exclude packet
+				if (F->key() == exclude) { // Exclude packet
 					continue;
+				}
 
 				ENetPacket *packet2 = enet_packet_create(packet->data, packet->dataLength, packet_flags);
 
@@ -690,11 +700,13 @@ size_t NetworkedMultiplayerENet::enet_compress(void *context, const ENetBuffer *
 	}
 	int ret = Compression::compress(enet->dst_compressor_mem.ptrw(), enet->src_compressor_mem.ptr(), ofs, mode);
 
-	if (ret < 0)
+	if (ret < 0) {
 		return 0;
+	}
 
-	if (ret > int(outLimit))
+	if (ret > int(outLimit)) {
 		return 0; // Do not bother
+	}
 
 	memcpy(outData, enet->dst_compressor_mem.ptr(), ret);
 

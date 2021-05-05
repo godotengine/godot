@@ -138,15 +138,17 @@ ShaderGLES2::Version *ShaderGLES2::get_current_version() {
 		if (conditional_version.code_version != 0) {
 			CustomCode *cc = custom_code_map.getptr(conditional_version.code_version);
 			ERR_FAIL_COND_V(!cc, _v);
-			if (cc->version == _v->code_version)
+			if (cc->version == _v->code_version) {
 				return _v;
+			}
 		} else {
 			return _v;
 		}
 	}
 
-	if (!_v)
+	if (!_v) {
 		version_map[conditional_version] = Version();
+	}
 
 	Version &v = version_map[conditional_version];
 
@@ -664,12 +666,14 @@ void ShaderGLES2::use_material(void *p_material) {
 
 	// bind uniforms
 	for (Map<StringName, ShaderLanguage::ShaderNode::Uniform>::Element *E = material->shader->uniforms.front(); E; E = E->next()) {
-		if (E->get().texture_order >= 0)
+		if (E->get().texture_order >= 0) {
 			continue; // this is a texture, doesn't go here
+		}
 
 		Map<StringName, GLint>::Element *L = v->custom_uniform_locations.find(E->key());
-		if (!L || L->get() < 0)
+		if (!L || L->get() < 0) {
 			continue; //uniform not valid
+		}
 
 		GLuint location = L->get();
 

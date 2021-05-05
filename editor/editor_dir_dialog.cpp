@@ -105,19 +105,22 @@ void EditorDirDialog::_notification(int p_what) {
 void EditorDirDialog::_item_collapsed(Object *p_item) {
 	TreeItem *item = Object::cast_to<TreeItem>(p_item);
 
-	if (updating)
+	if (updating) {
 		return;
+	}
 
-	if (item->is_collapsed())
+	if (item->is_collapsed()) {
 		opened_paths.erase(item->get_metadata(0));
-	else
+	} else {
 		opened_paths.insert(item->get_metadata(0));
+	}
 }
 
 void EditorDirDialog::ok_pressed() {
 	TreeItem *ti = tree->get_selected();
-	if (!ti)
+	if (!ti) {
 		return;
+	}
 
 	String dir = ti->get_metadata(0);
 	emit_signal("dir_selected", dir);
@@ -138,8 +141,9 @@ void EditorDirDialog::_make_dir() {
 
 void EditorDirDialog::_make_dir_confirm() {
 	TreeItem *ti = tree->get_selected();
-	if (!ti)
+	if (!ti) {
 		return;
+	}
 
 	String dir = ti->get_metadata(0);
 

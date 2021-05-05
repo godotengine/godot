@@ -66,8 +66,9 @@ void ParallaxBackground::set_scroll_offset(const Point2 &p_ofs) {
 }
 
 void ParallaxBackground::_update_scroll() {
-	if (!is_inside_tree())
+	if (!is_inside_tree()) {
 		return;
+	}
 
 	Vector2 ofs = base_offset + offset * base_scale;
 
@@ -75,17 +76,19 @@ void ParallaxBackground::_update_scroll() {
 
 	ofs = -ofs;
 	if (limit_begin.x < limit_end.x) {
-		if (ofs.x < limit_begin.x)
+		if (ofs.x < limit_begin.x) {
 			ofs.x = limit_begin.x;
-		else if (ofs.x + vps.x > limit_end.x)
+		} else if (ofs.x + vps.x > limit_end.x) {
 			ofs.x = limit_end.x - vps.x;
+		}
 	}
 
 	if (limit_begin.y < limit_end.y) {
-		if (ofs.y < limit_begin.y)
+		if (ofs.y < limit_begin.y) {
 			ofs.y = limit_begin.y;
-		else if (ofs.y + vps.y > limit_end.y)
+		} else if (ofs.y + vps.y > limit_end.y) {
 			ofs.y = limit_end.y - vps.y;
+		}
 	}
 	ofs = -ofs;
 
@@ -93,13 +96,15 @@ void ParallaxBackground::_update_scroll() {
 
 	for (int i = 0; i < get_child_count(); i++) {
 		ParallaxLayer *l = Object::cast_to<ParallaxLayer>(get_child(i));
-		if (!l)
+		if (!l) {
 			continue;
+		}
 
-		if (ignore_camera_zoom)
+		if (ignore_camera_zoom) {
 			l->set_base_offset_and_scale((ofs + screen_offset * (scale - 1)) / scale, 1.0, screen_offset);
-		else
+		} else {
 			l->set_base_offset_and_scale(ofs, scale, screen_offset);
+		}
 	}
 }
 

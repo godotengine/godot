@@ -148,8 +148,9 @@ Light::BakeMode Light::get_bake_mode() const {
 }
 
 void Light::_update_visibility() {
-	if (!is_inside_tree())
+	if (!is_inside_tree()) {
 		return;
+	}
 
 	bool editor_ok = true;
 
@@ -317,8 +318,9 @@ Light::Light() {
 Light::~Light() {
 	VS::get_singleton()->instance_set_base(get_instance(), RID());
 
-	if (light.is_valid())
+	if (light.is_valid()) {
 		VisualServer::get_singleton()->free(light);
+	}
 }
 /////////////////////////////////////////
 

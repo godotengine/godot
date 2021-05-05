@@ -70,10 +70,11 @@ void NodeDock::set_node(Node *p_node) {
 	groups->set_current(p_node);
 
 	if (p_node) {
-		if (connections_button->is_pressed())
+		if (connections_button->is_pressed()) {
 			connections->show();
-		else
+		} else {
 			groups->show();
+		}
 
 		mode_hb->show();
 		select_a_node->hide();

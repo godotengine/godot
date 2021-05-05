@@ -36,12 +36,14 @@
 #include "servers/visual_server.h"
 
 void CPUParticles2D::set_emitting(bool p_emitting) {
-	if (emitting == p_emitting)
+	if (emitting == p_emitting) {
 		return;
+	}
 
 	emitting = p_emitting;
-	if (emitting)
+	if (emitting) {
 		set_process_internal(true);
+	}
 }
 
 void CPUParticles2D::set_amount(int p_amount) {
@@ -187,16 +189,19 @@ void CPUParticles2D::_update_mesh_texture() {
 }
 
 void CPUParticles2D::set_texture(const Ref<Texture> &p_texture) {
-	if (p_texture == texture)
+	if (p_texture == texture) {
 		return;
+	}
 
-	if (texture.is_valid())
+	if (texture.is_valid()) {
 		texture->disconnect(CoreStringNames::get_singleton()->changed, this, "_texture_changed");
+	}
 
 	texture = p_texture;
 
-	if (texture.is_valid())
+	if (texture.is_valid()) {
 		texture->connect(CoreStringNames::get_singleton()->changed, this, "_texture_changed");
+	}
 
 	update();
 	_update_mesh_texture();
@@ -246,8 +251,9 @@ String CPUParticles2D::get_configuration_warning() const {
 	if (get_material().is_null() || (mat && !mat->get_particles_animation())) {
 		if (get_param(PARAM_ANIM_SPEED) != 0.0 || get_param(PARAM_ANIM_OFFSET) != 0.0 ||
 				get_param_curve(PARAM_ANIM_SPEED).is_valid() || get_param_curve(PARAM_ANIM_OFFSET).is_valid()) {
-			if (warnings != String())
+			if (warnings != String()) {
 				warnings += "\n\n";
+			}
 			warnings += "- " + TTR("CPUParticles2D animation requires the usage of a CanvasItemMaterial with \"Particles Animation\" enabled.");
 		}
 	}
@@ -314,8 +320,9 @@ float CPUParticles2D::get_param_randomness(Parameter p_param) const {
 
 static void _adjust_curve_range(const Ref<Curve> &p_curve, float p_min, float p_max) {
 	Ref<Curve> curve = p_curve;
-	if (!curve.is_valid())
+	if (!curve.is_valid()) {
 		return;
+	}
 
 	curve->ensure_default_setup(p_min, p_max);
 }
@@ -490,12 +497,14 @@ static uint32_t idhash(uint32_t x) {
 static float rand_from_seed(uint32_t &seed) {
 	int k;
 	int s = int(seed);
-	if (s == 0)
+	if (s == 0) {
 		s = 305420679;
+	}
 	k = s / 127773;
 	s = 16807 * (s - k * 127773) - 2836 * k;
-	if (s < 0)
+	if (s < 0) {
 		s += 2147483647;
+	}
 	seed = uint32_t(s);
 	return float(seed % uint32_t(65536)) / 65535.0;
 }
@@ -527,10 +536,11 @@ void CPUParticles2D::_update_internal() {
 
 	if (time == 0 && pre_process_time > 0.0) {
 		float frame_time;
-		if (fixed_fps > 0)
+		if (fixed_fps > 0) {
 			frame_time = 1.0 / fixed_fps;
-		else
+		} else {
 			frame_time = 1.0 / 30.0;
+		}
 
 		float todo = pre_process_time;
 
@@ -598,8 +608,9 @@ void CPUParticles2D::_particles_process(float p_delta) {
 	for (int i = 0; i < pcount; i++) {
 		Particle &p = parray[i];
 
-		if (!emitting && !p.active)
+		if (!emitting && !p.active) {
 			continue;
+		}
 
 		float local_delta = p_delta;
 
@@ -714,8 +725,9 @@ void CPUParticles2D::_particles_process(float p_delta) {
 				case EMISSION_SHAPE_POINTS:
 				case EMISSION_SHAPE_DIRECTED_POINTS: {
 					int pc = emission_points.size();
-					if (pc == 0)
+					if (pc == 0) {
 						break;
+					}
 
 					int random_idx = Math::rand() % pc;
 
@@ -902,8 +914,9 @@ void CPUParticles2D::_particles_process(float p_delta) {
 
 		//scale by scale
 		float base_scale = tex_scale * Math::lerp(parameters[PARAM_SCALE], 1.0f, p.scale_rand * randomness[PARAM_SCALE]);
-		if (base_scale < 0.000001)
+		if (base_scale < 0.000001) {
 			base_scale = 0.000001;
+		}
 
 		p.transform.elements[0] *= base_scale;
 		p.transform.elements[1] *= base_scale;
@@ -982,8 +995,9 @@ void CPUParticles2D::_update_particle_data_buffer() {
 }
 
 void CPUParticles2D::_set_redraw(bool p_redraw) {
-	if (redraw == p_redraw)
+	if (redraw == p_redraw) {
 		return;
+	}
 	redraw = p_redraw;
 	update_mutex.lock();
 	if (redraw) {
@@ -1020,11 +1034,13 @@ void CPUParticles2D::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_DRAW) {
 		// first update before rendering to avoid one frame delay after emitting starts
-		if (emitting && (time == 0))
+		if (emitting && (time == 0)) {
 			_update_internal();
+		}
 
-		if (!redraw)
+		if (!redraw) {
 			return; // don't add to render list
+		}
 
 		RID texrid;
 		if (texture.is_valid()) {
@@ -1100,8 +1116,9 @@ void CPUParticles2D::convert_from_particles(Node *p_particles) {
 	}
 
 	Ref<ParticlesMaterial> material = particles->get_process_material();
-	if (material.is_null())
+	if (material.is_null()) {
 		return;
+	}
 
 	Vector3 dir = material->get_direction();
 	set_direction(Vector2(dir.x, dir.y));

@@ -38,10 +38,11 @@ void MultiMeshInstance::_bind_methods() {
 
 void MultiMeshInstance::set_multimesh(const Ref<MultiMesh> &p_multimesh) {
 	multimesh = p_multimesh;
-	if (multimesh.is_valid())
+	if (multimesh.is_valid()) {
 		set_base(multimesh->get_rid());
-	else
+	} else {
 		set_base(RID());
+	}
 }
 
 Ref<MultiMesh> MultiMeshInstance::get_multimesh() const {
@@ -53,10 +54,11 @@ PoolVector<Face3> MultiMeshInstance::get_faces(uint32_t p_usage_flags) const {
 }
 
 AABB MultiMeshInstance::get_aabb() const {
-	if (multimesh.is_null())
+	if (multimesh.is_null()) {
 		return AABB();
-	else
+	} else {
 		return multimesh->get_aabb();
+	}
 }
 
 MultiMeshInstance::MultiMeshInstance() {

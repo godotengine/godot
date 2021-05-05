@@ -687,8 +687,9 @@ public:
 		// element adding and stuff
 
 		_FORCE_INLINE_ Element *add_element() {
-			if (element_count + alpha_element_count >= max_elements)
+			if (element_count + alpha_element_count >= max_elements) {
 				return nullptr;
+			}
 
 			elements[element_count] = &base_elements[element_count];
 			return elements[element_count++];

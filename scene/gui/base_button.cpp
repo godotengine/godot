@@ -35,16 +35,18 @@
 #include "scene/scene_string_names.h"
 
 void BaseButton::_unpress_group() {
-	if (!button_group.is_valid())
+	if (!button_group.is_valid()) {
 		return;
+	}
 
 	if (toggle_mode) {
 		status.pressed = true;
 	}
 
 	for (Set<BaseButton *>::Element *E = button_group->buttons.front(); E; E = E->next()) {
-		if (E->get() == this)
+		if (E->get() == this) {
 			continue;
+		}
 
 		E->get()->set_pressed(false);
 	}
@@ -53,8 +55,9 @@ void BaseButton::_unpress_group() {
 void BaseButton::_gui_input(Ref<InputEvent> p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
-	if (status.disabled) // no interaction with disabled button
+	if (status.disabled) { // no interaction with disabled button
 		return;
+	}
 
 	Ref<InputEventMouseButton> mouse_button = p_event;
 	bool ui_accept = p_event->is_action("ui_accept") && !p_event->is_echo();
@@ -185,8 +188,9 @@ void BaseButton::toggled(bool p_pressed) {
 }
 
 void BaseButton::set_disabled(bool p_disabled) {
-	if (status.disabled == p_disabled)
+	if (status.disabled == p_disabled) {
 		return;
+	}
 
 	status.disabled = p_disabled;
 	if (p_disabled) {
@@ -205,10 +209,12 @@ bool BaseButton::is_disabled() const {
 }
 
 void BaseButton::set_pressed(bool p_pressed) {
-	if (!toggle_mode)
+	if (!toggle_mode) {
 		return;
-	if (status.pressed == p_pressed)
+	}
+	if (status.pressed == p_pressed) {
 		return;
+	}
 	_change_notify("pressed");
 	status.pressed = p_pressed;
 
@@ -238,8 +244,9 @@ BaseButton::DrawMode BaseButton::get_draw_mode() const {
 	};
 
 	if (!status.press_attempt && status.hovering) {
-		if (status.pressed)
+		if (status.pressed) {
 			return DRAW_HOVER_PRESSED;
+		}
 
 		return DRAW_HOVER;
 	} else {
@@ -248,16 +255,18 @@ BaseButton::DrawMode BaseButton::get_draw_mode() const {
 		bool pressing;
 		if (status.press_attempt) {
 			pressing = (status.pressing_inside || keep_pressed_outside);
-			if (status.pressed)
+			if (status.pressed) {
 				pressing = !pressing;
+			}
 		} else {
 			pressing = status.pressed;
 		}
 
-		if (pressing)
+		if (pressing) {
 			return DRAW_PRESSED;
-		else
+		} else {
 			return DRAW_NORMAL;
+		}
 	}
 
 	return DRAW_NORMAL;
@@ -328,8 +337,9 @@ void BaseButton::_unhandled_input(Ref<InputEvent> p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
 	if (!is_disabled() && is_visible_in_tree() && !p_event->is_echo() && shortcut.is_valid() && shortcut->is_shortcut(p_event)) {
-		if (get_viewport()->get_modal_stack_top() && !get_viewport()->get_modal_stack_top()->is_a_parent_of(this))
+		if (get_viewport()->get_modal_stack_top() && !get_viewport()->get_modal_stack_top()->is_a_parent_of(this)) {
 			return; //ignore because of modal window
+		}
 
 		on_action_event(p_event);
 	}
@@ -459,8 +469,9 @@ Array ButtonGroup::_get_buttons() {
 
 BaseButton *ButtonGroup::get_pressed_button() {
 	for (Set<BaseButton *>::Element *E = buttons.front(); E; E = E->next()) {
-		if (E->get()->is_pressed())
+		if (E->get()->is_pressed()) {
 			return E->get();
+		}
 	}
 
 	return nullptr;

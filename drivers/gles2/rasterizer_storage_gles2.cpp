@@ -154,8 +154,9 @@ Ref<Image> RasterizerStorageGLES2::_get_gl_image_and_format(const Ref<Image> &p_
 		} break;
 		case Image::FORMAT_RG8: {
 			ERR_PRINT("RG texture not supported, converting to RGB8.");
-			if (image.is_valid())
+			if (image.is_valid()) {
 				image->convert(Image::FORMAT_RGB8);
+			}
 			r_real_format = Image::FORMAT_RGB8;
 			r_gl_internal_format = GL_RGB;
 			r_gl_format = GL_RGB;
@@ -189,8 +190,9 @@ Ref<Image> RasterizerStorageGLES2::_get_gl_image_and_format(const Ref<Image> &p_
 		case Image::FORMAT_RF: {
 			if (!config.float_texture_supported) {
 				ERR_PRINT("R float texture not supported, converting to RGB8.");
-				if (image.is_valid())
+				if (image.is_valid()) {
 					image->convert(Image::FORMAT_RGB8);
+				}
 				r_real_format = Image::FORMAT_RGB8;
 				r_gl_internal_format = GL_RGB;
 				r_gl_format = GL_RGB;
@@ -203,8 +205,9 @@ Ref<Image> RasterizerStorageGLES2::_get_gl_image_and_format(const Ref<Image> &p_
 		} break;
 		case Image::FORMAT_RGF: {
 			ERR_PRINT("RG float texture not supported, converting to RGB8.");
-			if (image.is_valid())
+			if (image.is_valid()) {
 				image->convert(Image::FORMAT_RGB8);
+			}
 			r_real_format = Image::FORMAT_RGB8;
 			r_gl_internal_format = GL_RGB;
 			r_gl_format = GL_RGB;
@@ -213,8 +216,9 @@ Ref<Image> RasterizerStorageGLES2::_get_gl_image_and_format(const Ref<Image> &p_
 		case Image::FORMAT_RGBF: {
 			if (!config.float_texture_supported) {
 				ERR_PRINT("RGB float texture not supported, converting to RGB8.");
-				if (image.is_valid())
+				if (image.is_valid()) {
 					image->convert(Image::FORMAT_RGB8);
+				}
 				r_real_format = Image::FORMAT_RGB8;
 				r_gl_internal_format = GL_RGB;
 				r_gl_format = GL_RGB;
@@ -228,8 +232,9 @@ Ref<Image> RasterizerStorageGLES2::_get_gl_image_and_format(const Ref<Image> &p_
 		case Image::FORMAT_RGBAF: {
 			if (!config.float_texture_supported) {
 				ERR_PRINT("RGBA float texture not supported, converting to RGBA8.");
-				if (image.is_valid())
+				if (image.is_valid()) {
 					image->convert(Image::FORMAT_RGBA8);
+				}
 				r_real_format = Image::FORMAT_RGBA8;
 				r_gl_internal_format = GL_RGBA;
 				r_gl_format = GL_RGBA;
@@ -257,9 +262,9 @@ Ref<Image> RasterizerStorageGLES2::_get_gl_image_and_format(const Ref<Image> &p_
 			r_gl_format = GL_RGB;
 			r_gl_type = GL_UNSIGNED_BYTE;
 
-			if (image.is_valid())
-
+			if (image.is_valid()) {
 				image = image->rgbe_to_srgb();
+			}
 
 			return image;
 
@@ -667,13 +672,13 @@ void RasterizerStorageGLES2::texture_set_data(RID p_texture, const Ref<Image> &p
 
 	texture->ignore_mipmaps = compressed && !img->has_mipmaps();
 
-	if ((texture->flags & VS::TEXTURE_FLAG_MIPMAPS) && !texture->ignore_mipmaps)
+	if ((texture->flags & VS::TEXTURE_FLAG_MIPMAPS) && !texture->ignore_mipmaps) {
 		if (texture->flags & VS::TEXTURE_FLAG_FILTER) {
 			glTexParameteri(texture->target, GL_TEXTURE_MIN_FILTER, config.use_fast_texture_filter ? GL_LINEAR_MIPMAP_NEAREST : GL_LINEAR_MIPMAP_LINEAR);
 		} else {
 			glTexParameteri(texture->target, GL_TEXTURE_MIN_FILTER, config.use_fast_texture_filter ? GL_NEAREST_MIPMAP_NEAREST : GL_NEAREST_MIPMAP_LINEAR);
 		}
-	else {
+	} else {
 		if (texture->flags & VS::TEXTURE_FLAG_FILTER) {
 			glTexParameteri(texture->target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		} else {
@@ -1044,8 +1049,9 @@ void RasterizerStorageGLES2::texture_debug_usage(List<VS::TextureInfo> *r_info) 
 
 	for (List<RID>::Element *E = textures.front(); E; E = E->next()) {
 		Texture *t = texture_owner.getornull(E->get());
-		if (!t)
+		if (!t) {
 			continue;
+		}
 		VS::TextureInfo tinfo;
 		tinfo.texture = E->get();
 		tinfo.path = t->path;
@@ -1304,8 +1310,9 @@ RID RasterizerStorageGLES2::shader_create() {
 }
 
 void RasterizerStorageGLES2::_shader_make_dirty(Shader *p_shader) {
-	if (p_shader->dirty_list.in_list())
+	if (p_shader->dirty_list.in_list()) {
 		return;
+	}
 
 	_shader_dirty_list.add(&p_shader->dirty_list);
 }
@@ -1319,12 +1326,13 @@ void RasterizerStorageGLES2::shader_set_code(RID p_shader, const String &p_code)
 	String mode_string = ShaderLanguage::get_shader_type(p_code);
 	VS::ShaderMode mode;
 
-	if (mode_string == "canvas_item")
+	if (mode_string == "canvas_item") {
 		mode = VS::SHADER_CANVAS_ITEM;
-	else if (mode_string == "particles")
+	} else if (mode_string == "particles") {
 		mode = VS::SHADER_PARTICLES;
-	else
+	} else {
 		mode = VS::SHADER_SPATIAL;
+	}
 
 	if (shader->custom_code_id && mode != shader->mode) {
 		shader->shader->free_custom_shader(shader->custom_code_id);
@@ -1728,8 +1736,9 @@ void RasterizerStorageGLES2::shader_remove_custom_define(RID p_shader, const Str
 /* COMMON MATERIAL API */
 
 void RasterizerStorageGLES2::_material_make_dirty(Material *p_material) const {
-	if (p_material->dirty_list.in_list())
+	if (p_material->dirty_list.in_list()) {
 		return;
+	}
 
 	_material_dirty_list.add(&p_material->dirty_list);
 }
@@ -1971,8 +1980,9 @@ void RasterizerStorageGLES2::_update_material(Material *p_material) {
 		p_material->textures.resize(p_material->shader->texture_count);
 
 		for (Map<StringName, ShaderLanguage::ShaderNode::Uniform>::Element *E = p_material->shader->uniforms.front(); E; E = E->next()) {
-			if (E->get().texture_order < 0)
+			if (E->get().texture_order < 0) {
 				continue; // not a texture, does not go here
+			}
 
 			RID texture;
 
@@ -2574,8 +2584,9 @@ void RasterizerStorageGLES2::mesh_surface_set_material(RID p_mesh, int p_surface
 	ERR_FAIL_COND(!mesh);
 	ERR_FAIL_INDEX(p_surface, mesh->surfaces.size());
 
-	if (mesh->surfaces[p_surface]->material == p_material)
+	if (mesh->surfaces[p_surface]->material == p_material) {
 		return;
+	}
 
 	if (mesh->surfaces[p_surface]->material.is_valid()) {
 		_material_remove_geometry(mesh->surfaces[p_surface]->material, mesh->surfaces[p_surface]);
@@ -2731,8 +2742,9 @@ AABB RasterizerStorageGLES2::mesh_get_aabb(RID p_mesh, RID p_skeleton) const {
 	Mesh *mesh = mesh_owner.get(p_mesh);
 	ERR_FAIL_COND_V(!mesh, AABB());
 
-	if (mesh->custom_aabb != AABB())
+	if (mesh->custom_aabb != AABB()) {
 		return mesh->custom_aabb;
+	}
 
 	Skeleton *sk = nullptr;
 	if (p_skeleton.is_valid()) {
@@ -2756,8 +2768,9 @@ AABB RasterizerStorageGLES2::mesh_get_aabb(RID p_mesh, RID p_skeleton) const {
 				bool first = true;
 				if (sk->use_2d) {
 					for (int j = 0; j < bs; j++) {
-						if (!skused[j])
+						if (!skused[j]) {
 							continue;
+						}
 
 						int base_ofs = j * 2 * 4;
 
@@ -2782,8 +2795,9 @@ AABB RasterizerStorageGLES2::mesh_get_aabb(RID p_mesh, RID p_skeleton) const {
 					}
 				} else {
 					for (int j = 0; j < bs; j++) {
-						if (!skused[j])
+						if (!skused[j]) {
 							continue;
+						}
 
 						int base_ofs = j * 3 * 4;
 
@@ -2818,17 +2832,19 @@ AABB RasterizerStorageGLES2::mesh_get_aabb(RID p_mesh, RID p_skeleton) const {
 				laabb = mesh->surfaces[i]->aabb;
 			}
 
-			if (i == 0)
+			if (i == 0) {
 				aabb = laabb;
-			else
+			} else {
 				aabb.merge_with(laabb);
+			}
 		}
 	} else {
 		for (int i = 0; i < mesh->surfaces.size(); i++) {
-			if (i == 0)
+			if (i == 0) {
 				aabb = mesh->surfaces[i]->aabb;
-			else
+			} else {
 				aabb.merge_with(mesh->surfaces[i]->aabb);
+			}
 		}
 	}
 
@@ -3401,16 +3417,21 @@ void RasterizerStorageGLES2::immediate_vertex(RID p_immediate, const Vector3 &p_
 		im->aabb.expand_to(p_vertex);
 	}
 
-	if (im->mask & VS::ARRAY_FORMAT_NORMAL)
+	if (im->mask & VS::ARRAY_FORMAT_NORMAL) {
 		c->normals.push_back(chunk_normal);
-	if (im->mask & VS::ARRAY_FORMAT_TANGENT)
+	}
+	if (im->mask & VS::ARRAY_FORMAT_TANGENT) {
 		c->tangents.push_back(chunk_tangent);
-	if (im->mask & VS::ARRAY_FORMAT_COLOR)
+	}
+	if (im->mask & VS::ARRAY_FORMAT_COLOR) {
 		c->colors.push_back(chunk_color);
-	if (im->mask & VS::ARRAY_FORMAT_TEX_UV)
+	}
+	if (im->mask & VS::ARRAY_FORMAT_TEX_UV) {
 		c->uvs.push_back(chunk_uv);
-	if (im->mask & VS::ARRAY_FORMAT_TEX_UV2)
+	}
+	if (im->mask & VS::ARRAY_FORMAT_TEX_UV2) {
 		c->uv2s.push_back(chunk_uv2);
+	}
 	im->mask |= VS::ARRAY_FORMAT_VERTEX;
 	c->vertices.push_back(p_vertex);
 }
@@ -3687,8 +3708,9 @@ void RasterizerStorageGLES2::_update_skeleton_transform_buffer(const PoolVector<
 }
 
 void RasterizerStorageGLES2::update_dirty_skeletons() {
-	if (config.use_skeleton_software)
+	if (config.use_skeleton_software) {
 		return;
+	}
 
 	glActiveTexture(GL_TEXTURE0);
 
@@ -4287,8 +4309,9 @@ PoolVector<uint8_t> RasterizerStorageGLES2::lightmap_capture_get_octree(RID p_ca
 	const LightmapCapture *capture = lightmap_capture_data_owner.getornull(p_capture);
 	ERR_FAIL_COND_V(!capture, PoolVector<uint8_t>());
 
-	if (capture->octree.size() == 0)
+	if (capture->octree.size() == 0) {
 		return PoolVector<uint8_t>();
+	}
 
 	PoolVector<uint8_t> ret;
 	ret.resize(capture->octree.size() * sizeof(LightmapCaptureOctree));
@@ -4568,8 +4591,9 @@ void RasterizerStorageGLES2::instance_remove_dependency(RID p_base, RasterizerSc
 
 void RasterizerStorageGLES2::_render_target_allocate(RenderTarget *rt) {
 	// do not allocate a render target with no size
-	if (rt->width <= 0 || rt->height <= 0)
+	if (rt->width <= 0 || rt->height <= 0) {
 		return;
+	}
 
 	// do not allocate a render target that is attached to the screen
 	if (rt->flags[RENDER_TARGET_DIRECT_TO_SCREEN]) {
@@ -4836,8 +4860,9 @@ void RasterizerStorageGLES2::_render_target_allocate(RenderTarget *rt) {
 				w >>= 1;
 				h >>= 1;
 
-				if (w < 2 || h < 2)
+				if (w < 2 || h < 2) {
 					break;
+				}
 
 				level++;
 			}
@@ -4932,8 +4957,9 @@ void RasterizerStorageGLES2::_render_target_allocate(RenderTarget *rt) {
 
 void RasterizerStorageGLES2::_render_target_clear(RenderTarget *rt) {
 	// there is nothing to clear when DIRECT_TO_SCREEN is used
-	if (rt->flags[RENDER_TARGET_DIRECT_TO_SCREEN])
+	if (rt->flags[RENDER_TARGET_DIRECT_TO_SCREEN]) {
 		return;
+	}
 
 	if (rt->fbo) {
 		glDeleteFramebuffers(1, &rt->fbo);
@@ -5061,8 +5087,9 @@ void RasterizerStorageGLES2::render_target_set_size(RID p_render_target, int p_w
 	RenderTarget *rt = render_target_owner.getornull(p_render_target);
 	ERR_FAIL_COND(!rt);
 
-	if (p_width == rt->width && p_height == rt->height)
+	if (p_width == rt->width && p_height == rt->height) {
 		return;
+	}
 
 	_render_target_clear(rt);
 
@@ -5297,8 +5324,9 @@ void RasterizerStorageGLES2::render_target_set_msaa(RID p_render_target, VS::Vie
 	RenderTarget *rt = render_target_owner.getornull(p_render_target);
 	ERR_FAIL_COND(!rt);
 
-	if (rt->msaa == p_msaa)
+	if (rt->msaa == p_msaa) {
 		return;
+	}
 
 	if (!config.multisample_supported) {
 		ERR_PRINT("MSAA not supported on this hardware.");
@@ -5333,8 +5361,9 @@ void RasterizerStorageGLES2::render_target_set_use_debanding(RID p_render_target
 RID RasterizerStorageGLES2::canvas_light_shadow_buffer_create(int p_width) {
 	CanvasLightShadow *cls = memnew(CanvasLightShadow);
 
-	if (p_width > config.max_texture_size)
+	if (p_width > config.max_texture_size) {
 		p_width = config.max_texture_size;
+	}
 
 	cls->size = p_width;
 	cls->height = 16;
@@ -5397,10 +5426,12 @@ void RasterizerStorageGLES2::canvas_light_occluder_set_polylines(RID p_occluder,
 	co->lines = p_lines;
 
 	if (p_lines.size() != co->len) {
-		if (co->index_id)
+		if (co->index_id) {
 			glDeleteBuffers(1, &co->index_id);
-		if (co->vertex_id)
+		}
+		if (co->vertex_id) {
 			glDeleteBuffers(1, &co->vertex_id);
+		}
 
 		co->index_id = 0;
 		co->vertex_id = 0;
@@ -5675,10 +5706,12 @@ bool RasterizerStorageGLES2::free(RID p_rid) {
 
 	} else if (canvas_occluder_owner.owns(p_rid)) {
 		CanvasOccluder *co = canvas_occluder_owner.get(p_rid);
-		if (co->index_id)
+		if (co->index_id) {
 			glDeleteBuffers(1, &co->index_id);
-		if (co->vertex_id)
+		}
+		if (co->vertex_id) {
 			glDeleteBuffers(1, &co->vertex_id);
+		}
 
 		canvas_occluder_owner.free(p_rid);
 		memdelete(co);
@@ -5700,17 +5733,21 @@ bool RasterizerStorageGLES2::free(RID p_rid) {
 }
 
 bool RasterizerStorageGLES2::has_os_feature(const String &p_feature) const {
-	if (p_feature == "pvrtc")
+	if (p_feature == "pvrtc") {
 		return config.pvrtc_supported;
+	}
 
-	if (p_feature == "s3tc")
+	if (p_feature == "s3tc") {
 		return config.s3tc_supported;
+	}
 
-	if (p_feature == "etc")
+	if (p_feature == "etc") {
 		return config.etc1_supported;
+	}
 
-	if (p_feature == "skinning_fallback")
+	if (p_feature == "skinning_fallback") {
 		return config.use_skeleton_software;
+	}
 
 	return false;
 }

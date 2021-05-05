@@ -290,23 +290,26 @@ static Error _parse_obj(const String &p_path, List<Ref<Mesh>> &r_meshes, bool p_
 
 					if (face[idx].size() == 3) {
 						int norm = face[idx][2].to_int() - 1;
-						if (norm < 0)
+						if (norm < 0) {
 							norm += normals.size() + 1;
+						}
 						ERR_FAIL_INDEX_V(norm, normals.size(), ERR_FILE_CORRUPT);
 						surf_tool->add_normal(normals[norm]);
 					}
 
 					if (face[idx].size() >= 2 && face[idx][1] != String()) {
 						int uv = face[idx][1].to_int() - 1;
-						if (uv < 0)
+						if (uv < 0) {
 							uv += uvs.size() + 1;
+						}
 						ERR_FAIL_INDEX_V(uv, uvs.size(), ERR_FILE_CORRUPT);
 						surf_tool->add_uv(uvs[uv]);
 					}
 
 					int vtx = face[idx][0].to_int() - 1;
-					if (vtx < 0)
+					if (vtx < 0) {
 						vtx += vertices.size() + 1;
+					}
 					ERR_FAIL_INDEX_V(vtx, vertices.size(), ERR_FILE_CORRUPT);
 
 					Vector3 vertex = vertices[vtx];
@@ -319,10 +322,11 @@ static Error _parse_obj(const String &p_path, List<Ref<Mesh>> &r_meshes, bool p_
 			}
 		} else if (l.begins_with("s ")) { //smoothing
 			String what = l.substr(2, l.length()).strip_edges();
-			if (what == "off")
+			if (what == "off") {
 				surf_tool->add_smooth_group(false);
-			else
+			} else {
 				surf_tool->add_smooth_group(true);
+			}
 		} else if (/*l.begins_with("g ") ||*/ l.begins_with("usemtl ") || (l.begins_with("o ") || f->eof_reached())) { //commit group to mesh
 			//groups are too annoying
 			if (surf_tool->get_vertex_array().size()) {

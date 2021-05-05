@@ -40,18 +40,21 @@ void StepSW::_populate_island(BodySW *p_body, BodySW **p_island, ConstraintSW **
 
 	for (Map<ConstraintSW *, int>::Element *E = p_body->get_constraint_map().front(); E; E = E->next()) {
 		ConstraintSW *c = (ConstraintSW *)E->key();
-		if (c->get_island_step() == _step)
+		if (c->get_island_step() == _step) {
 			continue; //already processed
+		}
 		c->set_island_step(_step);
 		c->set_island_next(*p_constraint_island);
 		*p_constraint_island = c;
 
 		for (int i = 0; i < c->get_body_count(); i++) {
-			if (i == E->get())
+			if (i == E->get()) {
 				continue;
+			}
 			BodySW *b = c->get_body_ptr()[i];
-			if (b->get_island_step() == _step || b->get_mode() == PhysicsServer::BODY_MODE_STATIC || b->get_mode() == PhysicsServer::BODY_MODE_KINEMATIC)
+			if (b->get_island_step() == _step || b->get_mode() == PhysicsServer::BODY_MODE_STATIC || b->get_mode() == PhysicsServer::BODY_MODE_KINEMATIC) {
 				continue; //no go
+			}
 			_populate_island(c->get_body_ptr()[i], p_island, p_constraint_island);
 		}
 	}
@@ -110,8 +113,9 @@ void StepSW::_check_suspend(BodySW *p_island, real_t p_delta) {
 			continue; //ignore for static
 		}
 
-		if (!b->sleep_test(p_delta))
+		if (!b->sleep_test(p_delta)) {
 			can_sleep = false;
+		}
 
 		b = b->get_island_next();
 	}
@@ -127,8 +131,9 @@ void StepSW::_check_suspend(BodySW *p_island, real_t p_delta) {
 
 		bool active = b->is_active();
 
-		if (active == can_sleep)
+		if (active == can_sleep) {
 			b->set_active(!can_sleep);
+		}
 
 		b = b->get_island_next();
 	}
@@ -198,8 +203,9 @@ void StepSW::step(SpaceSW *p_space, real_t p_delta, int p_iterations) {
 	while (aml.first()) {
 		for (const Set<ConstraintSW *>::Element *E = aml.first()->self()->get_constraints().front(); E; E = E->next()) {
 			ConstraintSW *c = E->get();
-			if (c->get_island_step() == _step)
+			if (c->get_island_step() == _step) {
 				continue;
+			}
 			c->set_island_step(_step);
 			c->set_island_next(nullptr);
 			c->set_island_list_next(constraint_island_list);

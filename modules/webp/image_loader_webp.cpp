@@ -42,10 +42,11 @@ static PoolVector<uint8_t> _webp_lossy_pack(const Ref<Image> &p_image, float p_q
 	ERR_FAIL_COND_V(p_image.is_null() || p_image->empty(), PoolVector<uint8_t>());
 
 	Ref<Image> img = p_image->duplicate();
-	if (img->detect_alpha())
+	if (img->detect_alpha()) {
 		img->convert(Image::FORMAT_RGBA8);
-	else
+	} else {
 		img->convert(Image::FORMAT_RGB8);
+	}
 
 	Size2 s(img->get_width(), img->get_height());
 	PoolVector<uint8_t> data = img->get_data();

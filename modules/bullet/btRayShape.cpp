@@ -67,10 +67,11 @@ btVector3 btRayShape::localGetSupportingVertex(const btVector3 &vec) const {
 }
 
 btVector3 btRayShape::localGetSupportingVertexWithoutMargin(const btVector3 &vec) const {
-	if (vec.z() > 0)
+	if (vec.z() > 0) {
 		return m_shapeAxis * m_cacheScaledLength;
-	else
+	} else {
 		return btVector3(0, 0, 0);
+	}
 }
 
 void btRayShape::batchedUnitVectorGetSupportingVertexWithoutMargin(const btVector3 *vectors, btVector3 *supportVerticesOut, int numVectors) const {

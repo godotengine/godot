@@ -61,8 +61,9 @@ class PHashTranslation : public Translation {
 	};
 
 	_FORCE_INLINE_ uint32_t hash(uint32_t d, const char *p_str) const {
-		if (d == 0)
+		if (d == 0) {
 			d = 0x1000193;
+		}
 		while (*p_str) {
 			d = (d * 0x1000193) ^ uint32_t(*p_str);
 			p_str++;

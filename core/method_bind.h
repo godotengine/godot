@@ -230,19 +230,21 @@ public:
 	_FORCE_INLINE_ Variant has_default_argument(int p_arg) const {
 		int idx = argument_count - p_arg - 1;
 
-		if (idx < 0 || idx >= default_arguments.size())
+		if (idx < 0 || idx >= default_arguments.size()) {
 			return false;
-		else
+		} else {
 			return true;
+		}
 	}
 
 	_FORCE_INLINE_ Variant get_default_argument(int p_arg) const {
 		int idx = argument_count - p_arg - 1;
 
-		if (idx < 0 || idx >= default_arguments.size())
+		if (idx < 0 || idx >= default_arguments.size()) {
 			return Variant();
-		else
+		} else {
 			return default_arguments[idx];
+		}
 	}
 
 #ifdef DEBUG_METHODS_ENABLED

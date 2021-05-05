@@ -54,12 +54,14 @@ void PackedData::add_path(const String &pkg_path, const String &path, uint64_t o
 	pf.pack = pkg_path;
 	pf.offset = ofs;
 	pf.size = size;
-	for (int i = 0; i < 16; i++)
+	for (int i = 0; i < 16; i++) {
 		pf.md5[i] = p_md5[i];
+	}
 	pf.src = p_src;
 
-	if (!exists || p_replace_files)
+	if (!exists || p_replace_files) {
 		files[pmd5] = pf;
+	}
 
 	if (!exists) {
 		//search for dir
@@ -108,8 +110,9 @@ PackedData::PackedData() {
 }
 
 void PackedData::_free_packed_dirs(PackedDir *p_dir) {
-	for (Map<String, PackedDir *>::Element *E = p_dir->subdirs.front(); E; E = E->next())
+	for (Map<String, PackedDir *>::Element *E = p_dir->subdirs.front(); E; E = E->next()) {
 		_free_packed_dirs(E->get());
+	}
 	memdelete(p_dir);
 }
 
@@ -124,8 +127,9 @@ PackedData::~PackedData() {
 
 bool PackedSourcePCK::try_open_pack(const String &p_path, bool p_replace_files, size_t p_offset) {
 	FileAccess *f = FileAccess::open(p_path, FileAccess::READ);
-	if (!f)
+	if (!f) {
 		return false;
+	}
 
 	f->seek(p_offset);
 
@@ -263,8 +267,9 @@ int FileAccessPack::get_buffer(uint8_t *p_dst, int p_length) const {
 	ERR_FAIL_COND_V(!p_dst && p_length > 0, -1);
 	ERR_FAIL_COND_V(p_length < 0, -1);
 
-	if (eof)
+	if (eof) {
 		return 0;
+	}
 
 	uint64_t to_read = p_length;
 	if (to_read + pos > pf.size) {
@@ -274,8 +279,9 @@ int FileAccessPack::get_buffer(uint8_t *p_dst, int p_length) const {
 
 	pos += p_length;
 
-	if (to_read <= 0)
+	if (to_read <= 0) {
 		return 0;
+	}
 	f->get_buffer(p_dst, to_read);
 
 	return to_read;
@@ -287,8 +293,9 @@ void FileAccessPack::set_endian_swap(bool p_swap) {
 }
 
 Error FileAccessPack::get_error() const {
-	if (eof)
+	if (eof) {
 		return ERR_FILE_EOF;
+	}
 	return OK;
 }
 
@@ -319,8 +326,9 @@ FileAccessPack::FileAccessPack(const String &p_path, const PackedData::PackedFil
 }
 
 FileAccessPack::~FileAccessPack() {
-	if (f)
+	if (f) {
 		memdelete(f);
+	}
 }
 
 //////////////////////////////////////////////////////////////////////////////////
@@ -391,8 +399,9 @@ PackedData::PackedDir *DirAccessPack::_find_dir(String p_dir) {
 
 	nd = nd.simplify_path();
 
-	if (nd == "")
+	if (nd == "") {
 		nd = ".";
+	}
 
 	if (nd.begins_with("/")) {
 		nd = nd.replace_first("/", "");
@@ -403,10 +412,11 @@ PackedData::PackedDir *DirAccessPack::_find_dir(String p_dir) {
 
 	PackedData::PackedDir *pd;
 
-	if (absolute)
+	if (absolute) {
 		pd = PackedData::get_singleton()->root;
-	else
+	} else {
 		pd = current;
+	}
 
 	for (int i = 0; i < paths.size(); i++) {
 		String p = paths[i];

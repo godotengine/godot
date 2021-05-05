@@ -35,17 +35,20 @@
 void InterpolatedCamera::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
-			if (Engine::get_singleton()->is_editor_hint() && enabled)
+			if (Engine::get_singleton()->is_editor_hint() && enabled) {
 				set_process_internal(false);
+			}
 
 		} break;
 		case NOTIFICATION_INTERNAL_PROCESS: {
-			if (!enabled)
+			if (!enabled) {
 				break;
+			}
 			if (has_node(target)) {
 				Spatial *node = Object::cast_to<Spatial>(get_node(target));
-				if (!node)
+				if (!node) {
 					break;
+				}
 
 				float delta = speed * get_process_delta_time();
 				Transform target_xform = node->get_global_transform();
@@ -92,15 +95,18 @@ NodePath InterpolatedCamera::get_target_path() const {
 }
 
 void InterpolatedCamera::set_interpolation_enabled(bool p_enable) {
-	if (enabled == p_enable)
+	if (enabled == p_enable) {
 		return;
+	}
 	enabled = p_enable;
 	if (p_enable) {
-		if (is_inside_tree() && Engine::get_singleton()->is_editor_hint())
+		if (is_inside_tree() && Engine::get_singleton()->is_editor_hint()) {
 			return;
+		}
 		set_process_internal(true);
-	} else
+	} else {
 		set_process_internal(false);
+	}
 }
 
 bool InterpolatedCamera::is_interpolation_enabled() const {

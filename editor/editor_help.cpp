@@ -57,8 +57,9 @@ void EditorHelp::_init_colors() {
 }
 
 void EditorHelp::_unhandled_key_input(const Ref<InputEvent> &p_ev) {
-	if (!is_visible_in_tree())
+	if (!is_visible_in_tree()) {
 		return;
+	}
 
 	Ref<InputEventKey> k = p_ev;
 
@@ -69,10 +70,11 @@ void EditorHelp::_unhandled_key_input(const Ref<InputEvent> &p_ev) {
 }
 
 void EditorHelp::_search(bool p_search_previous) {
-	if (p_search_previous)
+	if (p_search_previous) {
 		find_bar->search_prev();
-	else
+	} else {
 		find_bar->search_next();
+	}
 }
 
 void EditorHelp::_class_list_select(const String &p_select) {
@@ -177,8 +179,9 @@ void EditorHelp::_class_desc_resized() {
 
 void EditorHelp::_add_type(const String &p_type, const String &p_enum) {
 	String t = p_type;
-	if (t.empty())
+	if (t.empty()) {
 		t = "void";
+	}
 	bool can_ref = (t != "void") || !p_enum.empty();
 
 	if (!p_enum.empty()) {
@@ -199,8 +202,9 @@ void EditorHelp::_add_type(const String &p_type, const String &p_enum) {
 		}
 	}
 	class_desc->add_text(t);
-	if (can_ref)
+	if (can_ref) {
 		class_desc->pop();
+	}
 	class_desc->pop();
 }
 
@@ -258,8 +262,9 @@ void EditorHelp::_add_method(const DocData::MethodDoc &p_method, bool p_overview
 
 	for (int j = 0; j < p_method.arguments.size(); j++) {
 		class_desc->push_color(text_color);
-		if (j > 0)
+		if (j > 0) {
 			class_desc->add_text(", ");
+		}
 
 		_add_text(p_method.arguments[j].name);
 		class_desc->add_text(": ");
@@ -278,8 +283,9 @@ void EditorHelp::_add_method(const DocData::MethodDoc &p_method, bool p_overview
 
 	if (is_vararg) {
 		class_desc->push_color(text_color);
-		if (p_method.arguments.size())
+		if (p_method.arguments.size()) {
 			class_desc->add_text(", ");
+		}
 		class_desc->push_color(symbol_color);
 		class_desc->add_text("...");
 		class_desc->pop();
@@ -296,13 +302,15 @@ void EditorHelp::_add_method(const DocData::MethodDoc &p_method, bool p_overview
 		class_desc->pop();
 	}
 
-	if (p_overview)
+	if (p_overview) {
 		class_desc->pop(); //cell
+	}
 }
 
 Error EditorHelp::_goto_desc(const String &p_class, int p_vscr) {
-	if (!doc->class_list.has(p_class))
+	if (!doc->class_list.has(p_class)) {
 		return ERR_DOES_NOT_EXIST;
+	}
 
 	select_locked = true;
 
@@ -310,8 +318,9 @@ Error EditorHelp::_goto_desc(const String &p_class, int p_vscr) {
 
 	description_line = 0;
 
-	if (p_class == edited_class)
+	if (p_class == edited_class) {
 		return OK; //already there
+	}
 
 	edited_class = p_class;
 	_update_doc();
@@ -319,8 +328,9 @@ Error EditorHelp::_goto_desc(const String &p_class, int p_vscr) {
 }
 
 void EditorHelp::_update_doc() {
-	if (!doc->class_list.has(edited_class))
+	if (!doc->class_list.has(edited_class)) {
 		return;
+	}
 
 	scroll_locked = true;
 
@@ -582,8 +592,9 @@ void EditorHelp::_update_doc() {
 	}
 
 	if (methods.size()) {
-		if (sort_methods)
+		if (sort_methods) {
 			methods.sort();
+		}
 
 		section_line.push_back(Pair<String, int>(TTR("Methods"), class_desc->get_line_count() - 2));
 		class_desc->push_color(title_color);
@@ -743,8 +754,9 @@ void EditorHelp::_update_doc() {
 			class_desc->pop();
 			for (int j = 0; j < cd.signals[i].arguments.size(); j++) {
 				class_desc->push_color(text_color);
-				if (j > 0)
+				if (j > 0) {
 					class_desc->add_text(", ");
+				}
 
 				_add_text(cd.signals[i].arguments[j].name);
 				class_desc->add_text(": ");
@@ -837,8 +849,9 @@ void EditorHelp::_update_doc() {
 				int enumStartingLine = enum_line[E->key()];
 
 				for (int i = 0; i < enum_list.size(); i++) {
-					if (cd.name == "@GlobalScope")
+					if (cd.name == "@GlobalScope") {
 						enumValuesContainer[enum_list[i].name] = enumStartingLine;
+					}
 
 					// Add the enum constant line to the constant_line map so we can locate it as a constant
 					constant_line[enum_list[i].name] = class_desc->get_line_count() - 2;
@@ -869,8 +882,9 @@ void EditorHelp::_update_doc() {
 					class_desc->add_newline();
 				}
 
-				if (cd.name == "@GlobalScope")
+				if (cd.name == "@GlobalScope") {
 					enum_values_line[E->key()] = enumValuesContainer;
+				}
 
 				class_desc->pop();
 
@@ -951,8 +965,9 @@ void EditorHelp::_update_doc() {
 		class_desc->add_newline();
 
 		for (int i = 0; i < cd.properties.size(); i++) {
-			if (cd.properties[i].overridden)
+			if (cd.properties[i].overridden) {
 				continue;
+			}
 
 			property_line[cd.properties[i].name] = class_desc->get_line_count() - 2;
 
@@ -1135,8 +1150,9 @@ void EditorHelp::_help_callback(const String &p_topic) {
 	String what = p_topic.get_slice(":", 0);
 	String clss = p_topic.get_slice(":", 1);
 	String name;
-	if (p_topic.get_slice_count(":") == 3)
+	if (p_topic.get_slice_count(":") == 3) {
 		name = p_topic.get_slice(":", 2);
+	}
 
 	_request_help(clss); //first go to class
 
@@ -1145,36 +1161,43 @@ void EditorHelp::_help_callback(const String &p_topic) {
 	if (what == "class_desc") {
 		line = description_line;
 	} else if (what == "class_signal") {
-		if (signal_line.has(name))
+		if (signal_line.has(name)) {
 			line = signal_line[name];
+		}
 	} else if (what == "class_method" || what == "class_method_desc") {
-		if (method_line.has(name))
+		if (method_line.has(name)) {
 			line = method_line[name];
+		}
 	} else if (what == "class_property") {
-		if (property_line.has(name))
+		if (property_line.has(name)) {
 			line = property_line[name];
+		}
 	} else if (what == "class_enum") {
-		if (enum_line.has(name))
+		if (enum_line.has(name)) {
 			line = enum_line[name];
+		}
 	} else if (what == "class_theme_item") {
-		if (theme_property_line.has(name))
+		if (theme_property_line.has(name)) {
 			line = theme_property_line[name];
+		}
 	} else if (what == "class_constant") {
-		if (constant_line.has(name))
+		if (constant_line.has(name)) {
 			line = constant_line[name];
+		}
 	} else if (what == "class_global") {
-		if (constant_line.has(name))
+		if (constant_line.has(name)) {
 			line = constant_line[name];
-		else {
+		} else {
 			Map<String, Map<String, int>>::Element *iter = enum_values_line.front();
 			while (true) {
 				if (iter->value().has(name)) {
 					line = iter->value()[name];
 					break;
-				} else if (iter == enum_values_line.back())
+				} else if (iter == enum_values_line.back()) {
 					break;
-				else
+				} else {
 					iter = iter->next();
+				}
 			}
 		}
 	}
@@ -1208,25 +1231,29 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt) {
 	while (pos < bbcode.length()) {
 		int brk_pos = bbcode.find("[", pos);
 
-		if (brk_pos < 0)
+		if (brk_pos < 0) {
 			brk_pos = bbcode.length();
+		}
 
 		if (brk_pos > pos) {
 			String text = bbcode.substr(pos, brk_pos - pos);
-			if (!code_tag)
+			if (!code_tag) {
 				text = text.replace("\n", "\n\n");
+			}
 			p_rt->add_text(text);
 		}
 
-		if (brk_pos == bbcode.length())
+		if (brk_pos == bbcode.length()) {
 			break; //nothing else to add
+		}
 
 		int brk_end = bbcode.find("]", brk_pos + 1);
 
 		if (brk_end == -1) {
 			String text = bbcode.substr(brk_pos, bbcode.length() - brk_pos);
-			if (!code_tag)
+			if (!code_tag) {
 				text = text.replace("\n", "\n\n");
+			}
 			p_rt->add_text(text);
 
 			break;
@@ -1317,8 +1344,9 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt) {
 
 		} else if (tag == "url") {
 			int end = bbcode.find("[", brk_end);
-			if (end == -1)
+			if (end == -1) {
 				end = bbcode.length();
+			}
 			String url = bbcode.substr(brk_end + 1, end - brk_end - 1);
 			p_rt->push_meta(url);
 
@@ -1331,13 +1359,15 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt) {
 			tag_stack.push_front("url");
 		} else if (tag == "img") {
 			int end = bbcode.find("[", brk_end);
-			if (end == -1)
+			if (end == -1) {
 				end = bbcode.length();
+			}
 			String image = bbcode.substr(brk_end + 1, end - brk_end - 1);
 
 			Ref<Texture> texture = ResourceLoader::load(base_path.plus_file(image), "Texture");
-			if (texture.is_valid())
+			if (texture.is_valid()) {
 				p_rt->add_image(texture);
+			}
 
 			pos = end;
 			tag_stack.push_front(tag);
@@ -1345,42 +1375,43 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt) {
 			String col = tag.substr(6, tag.length());
 			Color color;
 
-			if (col.begins_with("#"))
+			if (col.begins_with("#")) {
 				color = Color::html(col);
-			else if (col == "aqua")
+			} else if (col == "aqua") {
 				color = Color(0, 1, 1);
-			else if (col == "black")
+			} else if (col == "black") {
 				color = Color(0, 0, 0);
-			else if (col == "blue")
+			} else if (col == "blue") {
 				color = Color(0, 0, 1);
-			else if (col == "fuchsia")
+			} else if (col == "fuchsia") {
 				color = Color(1, 0, 1);
-			else if (col == "gray" || col == "grey")
+			} else if (col == "gray" || col == "grey") {
 				color = Color(0.5, 0.5, 0.5);
-			else if (col == "green")
+			} else if (col == "green") {
 				color = Color(0, 0.5, 0);
-			else if (col == "lime")
+			} else if (col == "lime") {
 				color = Color(0, 1, 0);
-			else if (col == "maroon")
+			} else if (col == "maroon") {
 				color = Color(0.5, 0, 0);
-			else if (col == "navy")
+			} else if (col == "navy") {
 				color = Color(0, 0, 0.5);
-			else if (col == "olive")
+			} else if (col == "olive") {
 				color = Color(0.5, 0.5, 0);
-			else if (col == "purple")
+			} else if (col == "purple") {
 				color = Color(0.5, 0, 0.5);
-			else if (col == "red")
+			} else if (col == "red") {
 				color = Color(1, 0, 0);
-			else if (col == "silver")
+			} else if (col == "silver") {
 				color = Color(0.75, 0.75, 0.75);
-			else if (col == "teal")
+			} else if (col == "teal") {
 				color = Color(0, 0.5, 0.5);
-			else if (col == "white")
+			} else if (col == "white") {
 				color = Color(1, 1, 1);
-			else if (col == "yellow")
+			} else if (col == "yellow") {
 				color = Color(1, 1, 0);
-			else
+			} else {
 				color = Color(0, 0, 0); //base_color;
+			}
 
 			p_rt->push_color(color);
 			pos = brk_end + 1;
@@ -1390,9 +1421,9 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt) {
 			String fnt = tag.substr(5, tag.length());
 
 			Ref<Font> font = ResourceLoader::load(base_path.plus_file(fnt), "Font");
-			if (font.is_valid())
+			if (font.is_valid()) {
 				p_rt->push_font(font);
-			else {
+			} else {
 				p_rt->push_font(doc_font);
 			}
 
@@ -1543,8 +1574,9 @@ void EditorHelpBit::_meta_clicked(String p_select) {
 	} else if (p_select.begins_with("@")) {
 		String m = p_select.substr(1, p_select.length());
 
-		if (m.find(".") != -1)
+		if (m.find(".") != -1) {
 			_go_to_help("class_method:" + m.get_slice(".", 0) + ":" + m.get_slice(".", 0)); //must go somewhere else
+		}
 	}
 }
 
@@ -1696,8 +1728,9 @@ void FindBar::_update_results_count() {
 	results_count = 0;
 
 	String searched = search_text->get_text();
-	if (searched.empty())
+	if (searched.empty()) {
 		return;
+	}
 
 	String full_text = rich_text_label->get_text();
 
@@ -1705,8 +1738,9 @@ void FindBar::_update_results_count() {
 
 	while (true) {
 		int pos = full_text.find(searched, from_pos);
-		if (pos == -1)
+		if (pos == -1) {
 			break;
+		}
 
 		results_count++;
 		from_pos = pos + searched.length();
@@ -1725,8 +1759,9 @@ void FindBar::_update_matches_label() {
 }
 
 void FindBar::_hide_bar() {
-	if (search_text->has_focus())
+	if (search_text->has_focus()) {
 		rich_text_label->grab_focus();
+	}
 
 	hide();
 }

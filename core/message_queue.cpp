@@ -46,8 +46,9 @@ Error MessageQueue::push_call(ObjectID p_id, const StringName &p_method, const V
 
 	if ((buffer_end + room_needed) >= buffer_size) {
 		String type;
-		if (ObjectDB::get_instance(p_id))
+		if (ObjectDB::get_instance(p_id)) {
 			type = ObjectDB::get_instance(p_id)->get_class();
+		}
 		print_line("Failed method: " + type + ":" + p_method + " target ID: " + itos(p_id));
 		statistics();
 		ERR_FAIL_V_MSG(ERR_OUT_OF_MEMORY, "Message queue out of memory. Try increasing 'memory/limits/message_queue/max_size_kb' in project settings.");
@@ -58,8 +59,9 @@ Error MessageQueue::push_call(ObjectID p_id, const StringName &p_method, const V
 	msg->instance_id = p_id;
 	msg->target = p_method;
 	msg->type = TYPE_CALL;
-	if (p_show_error)
+	if (p_show_error) {
 		msg->type |= FLAG_SHOW_ERROR;
+	}
 
 	buffer_end += sizeof(Message);
 
@@ -78,8 +80,9 @@ Error MessageQueue::push_call(ObjectID p_id, const StringName &p_method, VARIANT
 	int argc = 0;
 
 	for (int i = 0; i < VARIANT_ARG_MAX; i++) {
-		if (argptr[i]->get_type() == Variant::NIL)
+		if (argptr[i]->get_type() == Variant::NIL) {
 			break;
+		}
 		argc++;
 	}
 
@@ -93,8 +96,9 @@ Error MessageQueue::push_set(ObjectID p_id, const StringName &p_prop, const Vari
 
 	if ((buffer_end + room_needed) >= buffer_size) {
 		String type;
-		if (ObjectDB::get_instance(p_id))
+		if (ObjectDB::get_instance(p_id)) {
 			type = ObjectDB::get_instance(p_id)->get_class();
+		}
 		print_line("Failed set: " + type + ":" + p_prop + " target ID: " + itos(p_id));
 		statistics();
 		ERR_FAIL_V_MSG(ERR_OUT_OF_MEMORY, "Message queue out of memory. Try increasing 'memory/limits/message_queue/max_size_kb' in project settings.");
@@ -166,22 +170,25 @@ void MessageQueue::statistics() {
 		if (target != nullptr) {
 			switch (message->type & FLAG_MASK) {
 				case TYPE_CALL: {
-					if (!call_count.has(message->target))
+					if (!call_count.has(message->target)) {
 						call_count[message->target] = 0;
+					}
 
 					call_count[message->target]++;
 
 				} break;
 				case TYPE_NOTIFICATION: {
-					if (!notify_count.has(message->notification))
+					if (!notify_count.has(message->notification)) {
 						notify_count[message->notification] = 0;
+					}
 
 					notify_count[message->notification]++;
 
 				} break;
 				case TYPE_SET: {
-					if (!set_count.has(message->target))
+					if (!set_count.has(message->target)) {
 						set_count[message->target] = 0;
+					}
 
 					set_count[message->target]++;
 
@@ -196,8 +203,9 @@ void MessageQueue::statistics() {
 		}
 
 		read_pos += sizeof(Message);
-		if ((message->type & FLAG_MASK) != TYPE_NOTIFICATION)
+		if ((message->type & FLAG_MASK) != TYPE_NOTIFICATION) {
 			read_pos += sizeof(Variant) * message->args;
+		}
 	}
 
 	print_line("TOTAL BYTES: " + itos(buffer_end));
@@ -255,8 +263,9 @@ void MessageQueue::flush() {
 		Message *message = (Message *)&buffer[read_pos];
 
 		uint32_t advance = sizeof(Message);
-		if ((message->type & FLAG_MASK) != TYPE_NOTIFICATION)
+		if ((message->type & FLAG_MASK) != TYPE_NOTIFICATION) {
 			advance += sizeof(Variant) * message->args;
+		}
 
 		//pre-advance so this function is reentrant
 		read_pos += advance;
@@ -331,14 +340,16 @@ MessageQueue::~MessageQueue() {
 		Variant *args = (Variant *)(message + 1);
 		int argc = message->args;
 		if ((message->type & FLAG_MASK) != TYPE_NOTIFICATION) {
-			for (int i = 0; i < argc; i++)
+			for (int i = 0; i < argc; i++) {
 				args[i].~Variant();
+			}
 		}
 		message->~Message();
 
 		read_pos += sizeof(Message);
-		if ((message->type & FLAG_MASK) != TYPE_NOTIFICATION)
+		if ((message->type & FLAG_MASK) != TYPE_NOTIFICATION) {
 			read_pos += sizeof(Variant) * message->args;
+		}
 	}
 
 	singleton = nullptr;

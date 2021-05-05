@@ -175,10 +175,11 @@ static void _plot_triangle(Vector2 *vertices, const Vector2 &p_offset, bool p_tr
 			}
 		}
 		xf += dx_far;
-		if (yi < y[1])
+		if (yi < y[1]) {
 			xt += dx_upper;
-		else
+		} else {
 			xt += dx_low;
+		}
 	}
 }
 

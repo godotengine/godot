@@ -190,10 +190,11 @@ void JoypadLinux::monitor_joypads(udev *p_udev) {
 				if (devnode) {
 					String devnode_str = devnode;
 					if (devnode_str.find(ignore_str) == -1) {
-						if (action == "add")
+						if (action == "add") {
 							open_joypad(devnode);
-						else if (String(action) == "remove")
+						} else if (String(action) == "remove") {
 							close_joypad(get_joy_from_path(devnode));
+						}
 					}
 				}
 
@@ -248,8 +249,9 @@ void JoypadLinux::close_joypad(int p_id) {
 			close_joypad(i);
 		};
 		return;
-	} else if (p_id < 0)
+	} else if (p_id < 0) {
 		return;
+	}
 
 	Joypad &joy = joypads[p_id];
 
@@ -463,8 +465,9 @@ void JoypadLinux::process_joypads() {
 		return;
 	}
 	for (int i = 0; i < JOYPADS_MAX; i++) {
-		if (joypads[i].fd == -1)
+		if (joypads[i].fd == -1) {
 			continue;
+		}
 
 		input_event events[32];
 		Joypad *joy = &joypads[i];
@@ -478,8 +481,9 @@ void JoypadLinux::process_joypads() {
 
 				// ev may be tainted and out of MAX_KEY range, which will cause
 				// joy->key_map[ev.code] to crash
-				if (ev.code >= MAX_KEY)
+				if (ev.code >= MAX_KEY) {
 					return;
+				}
 
 				switch (ev.type) {
 					case EV_KEY:
@@ -518,8 +522,9 @@ void JoypadLinux::process_joypads() {
 								break;
 
 							default:
-								if (ev.code >= MAX_ABS)
+								if (ev.code >= MAX_ABS) {
 									return;
+								}
 								if (joy->abs_map[ev.code] != -1 && joy->abs_info[ev.code]) {
 									InputDefault::JoyAxis value = axis_correct(joy->abs_info[ev.code], ev.value);
 									joy->curr_axis[joy->abs_map[ev.code]] = value;

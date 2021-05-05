@@ -232,16 +232,21 @@ void ResourceImporterTexture::_save_stex(const Ref<Image> &p_image, const String
 
 	uint32_t format = 0;
 
-	if (p_streamable)
+	if (p_streamable) {
 		format |= StreamTexture::FORMAT_BIT_STREAM;
-	if (p_mipmaps)
+	}
+	if (p_mipmaps) {
 		format |= StreamTexture::FORMAT_BIT_HAS_MIPMAPS; //mipmaps bit
-	if (p_detect_3d)
+	}
+	if (p_detect_3d) {
 		format |= StreamTexture::FORMAT_BIT_DETECT_3D;
-	if (p_detect_srgb)
+	}
+	if (p_detect_srgb) {
 		format |= StreamTexture::FORMAT_BIT_DETECT_SRGB;
-	if (p_detect_normal)
+	}
+	if (p_detect_normal) {
 		format |= StreamTexture::FORMAT_BIT_DETECT_NORMAL;
+	}
 
 	if ((p_compress_mode == COMPRESS_LOSSLESS || p_compress_mode == COMPRESS_LOSSY) && p_image->get_format() > Image::FORMAT_RGBA8) {
 		p_compress_mode = COMPRESS_UNCOMPRESSED; //these can't go as lossy
@@ -379,24 +384,31 @@ Error ResourceImporterTexture::import(const String &p_source_file, const String 
 	Ref<Image> image;
 	image.instance();
 	Error err = ImageLoader::load_image(p_source_file, image, nullptr, hdr_as_srgb, scale);
-	if (err != OK)
+	if (err != OK) {
 		return err;
+	}
 
 	Array formats_imported;
 
 	int tex_flags = 0;
-	if (repeat > 0)
+	if (repeat > 0) {
 		tex_flags |= Texture::FLAG_REPEAT;
-	if (repeat == 2)
+	}
+	if (repeat == 2) {
 		tex_flags |= Texture::FLAG_MIRRORED_REPEAT;
-	if (filter)
+	}
+	if (filter) {
 		tex_flags |= Texture::FLAG_FILTER;
-	if (mipmaps || compress_mode == COMPRESS_VIDEO_RAM)
+	}
+	if (mipmaps || compress_mode == COMPRESS_VIDEO_RAM) {
 		tex_flags |= Texture::FLAG_MIPMAPS;
-	if (anisotropic)
+	}
+	if (anisotropic) {
 		tex_flags |= Texture::FLAG_ANISOTROPIC_FILTER;
-	if (srgb == 1)
+	}
+	if (srgb == 1) {
 		tex_flags |= Texture::FLAG_CONVERT_TO_LINEAR;
+	}
 
 	if (size_limit > 0 && (image->get_width() > size_limit || image->get_height() > size_limit)) {
 		//limit size

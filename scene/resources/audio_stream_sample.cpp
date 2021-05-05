@@ -71,8 +71,9 @@ float AudioStreamPlaybackSample::get_playback_position() const {
 	return float(offset >> MIX_FRAC_BITS) / base->mix_rate;
 }
 void AudioStreamPlaybackSample::seek(float p_time) {
-	if (base->format == AudioStreamSample::FORMAT_IMA_ADPCM)
+	if (base->format == AudioStreamSample::FORMAT_IMA_ADPCM) {
 		return; //no seeking in ima-adpcm
+	}
 
 	float max = base->get_length();
 	if (p_time < 0) {
@@ -92,8 +93,9 @@ void AudioStreamPlaybackSample::do_resample(const Depth *p_src, AudioFrame *p_ds
 	while (amount) {
 		amount--;
 		int64_t pos = offset >> MIX_FRAC_BITS;
-		if (is_stereo && !is_ima_adpcm)
+		if (is_stereo && !is_ima_adpcm) {
 			pos <<= 1;
+		}
 
 		if (is_ima_adpcm) {
 			int64_t sample_pos = pos + ima_adpcm[0].window_ofs;
@@ -128,26 +130,33 @@ void AudioStreamPlaybackSample::do_resample(const Depth *p_src, AudioFrame *p_ds
 					step = _ima_adpcm_step_table[ima_adpcm[i].step_index];
 
 					ima_adpcm[i].step_index += _ima_adpcm_index_table[nibble];
-					if (ima_adpcm[i].step_index < 0)
+					if (ima_adpcm[i].step_index < 0) {
 						ima_adpcm[i].step_index = 0;
-					if (ima_adpcm[i].step_index > 88)
+					}
+					if (ima_adpcm[i].step_index > 88) {
 						ima_adpcm[i].step_index = 88;
+					}
 
 					diff = step >> 3;
-					if (nibble & 1)
+					if (nibble & 1) {
 						diff += step >> 2;
-					if (nibble & 2)
+					}
+					if (nibble & 2) {
 						diff += step >> 1;
-					if (nibble & 4)
+					}
+					if (nibble & 4) {
 						diff += step;
-					if (nibble & 8)
+					}
+					if (nibble & 8) {
 						diff = -diff;
+					}
 
 					ima_adpcm[i].predictor += diff;
-					if (ima_adpcm[i].predictor < -0x8000)
+					if (ima_adpcm[i].predictor < -0x8000) {
 						ima_adpcm[i].predictor = -0x8000;
-					else if (ima_adpcm[i].predictor > 0x7FFF)
+					} else if (ima_adpcm[i].predictor > 0x7FFF) {
 						ima_adpcm[i].predictor = 0x7FFF;
+					}
 
 					/* store loop if there */
 					if (ima_adpcm[i].last_nibble == ima_adpcm[i].loop_pos) {
@@ -166,13 +175,15 @@ void AudioStreamPlaybackSample::do_resample(const Depth *p_src, AudioFrame *p_ds
 
 		} else {
 			final = p_src[pos];
-			if (is_stereo)
+			if (is_stereo) {
 				final_r = p_src[pos + 1];
+			}
 
 			if (sizeof(Depth) == 1) { /* conditions will not exist anymore when compiled! */
 				final <<= 8;
-				if (is_stereo)
+				if (is_stereo) {
 					final_r <<= 8;
+				}
 			}
 
 			if (is_stereo) {
@@ -184,15 +195,17 @@ void AudioStreamPlaybackSample::do_resample(const Depth *p_src, AudioFrame *p_ds
 
 			if (sizeof(Depth) == 1) {
 				next <<= 8;
-				if (is_stereo)
+				if (is_stereo) {
 					next_r <<= 8;
+				}
 			}
 
 			int32_t frac = int64_t(offset & MIX_FRAC_MASK);
 
 			final = final + ((next - final) * frac >> MIX_FRAC_BITS);
-			if (is_stereo)
+			if (is_stereo) {
 				final_r = final_r + ((next_r - final_r) * frac >> MIX_FRAC_BITS);
+			}
 		}
 
 		if (!is_stereo) {
@@ -353,23 +366,26 @@ void AudioStreamPlaybackSample::mix(AudioFrame *p_buffer, float p_rate_scale, in
 
 		switch (base->format) {
 			case AudioStreamSample::FORMAT_8_BITS: {
-				if (is_stereo)
+				if (is_stereo) {
 					do_resample<int8_t, true, false>((int8_t *)data, dst_buff, offset, increment, target, ima_adpcm);
-				else
+				} else {
 					do_resample<int8_t, false, false>((int8_t *)data, dst_buff, offset, increment, target, ima_adpcm);
+				}
 			} break;
 			case AudioStreamSample::FORMAT_16_BITS: {
-				if (is_stereo)
+				if (is_stereo) {
 					do_resample<int16_t, true, false>((int16_t *)data, dst_buff, offset, increment, target, ima_adpcm);
-				else
+				} else {
 					do_resample<int16_t, false, false>((int16_t *)data, dst_buff, offset, increment, target, ima_adpcm);
+				}
 
 			} break;
 			case AudioStreamSample::FORMAT_IMA_ADPCM: {
-				if (is_stereo)
+				if (is_stereo) {
 					do_resample<int8_t, true, true>((int8_t *)data, dst_buff, offset, increment, target, ima_adpcm);
-				else
+				} else {
 					do_resample<int8_t, false, true>((int8_t *)data, dst_buff, offset, increment, target, ima_adpcm);
+				}
 
 			} break;
 		}

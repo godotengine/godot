@@ -296,8 +296,9 @@ void unregister_core_types() {
 	ResourceLoader::remove_resource_format_loader(resource_format_loader_crypto);
 	resource_format_loader_crypto.unref();
 
-	if (ip)
+	if (ip) {
 		memdelete(ip);
+	}
 
 	ResourceLoader::finalize();
 

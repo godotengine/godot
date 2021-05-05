@@ -210,8 +210,9 @@ float AnimationNode::_blend_node(const StringName &p_subpath, const Vector<Strin
 			case FILTER_PASS: {
 				//values filtered pass, the rest don't
 				for (int i = 0; i < blend_count; i++) {
-					if (blendw[i] == 0) //not filtered, does not pass
+					if (blendw[i] == 0) { //not filtered, does not pass
 						continue;
+					}
 
 					blendw[i] = blendr[i] * p_blend;
 					if (blendw[i] > CMP_EPSILON) {
@@ -224,8 +225,9 @@ float AnimationNode::_blend_node(const StringName &p_subpath, const Vector<Strin
 				//values filtered don't pass, the rest are blended
 
 				for (int i = 0; i < blend_count; i++) {
-					if (blendw[i] > 0) //filtered, does not pass
+					if (blendw[i] > 0) { //filtered, does not pass
 						continue;
+					}
 
 					blendw[i] = blendr[i] * p_blend;
 					if (blendw[i] > CMP_EPSILON) {
@@ -268,8 +270,9 @@ float AnimationNode::_blend_node(const StringName &p_subpath, const Vector<Strin
 		}
 	}
 
-	if (!p_seek && p_optimize && !any_valid) //pointless to go on, all are zero
+	if (!p_seek && p_optimize && !any_valid) { //pointless to go on, all are zero
 		return 0;
+	}
 
 	String new_path;
 	AnimationNode *new_parent;
@@ -465,8 +468,9 @@ Ref<AnimationNode> AnimationTree::get_tree_root() const {
 }
 
 void AnimationTree::set_active(bool p_active) {
-	if (active == p_active)
+	if (active == p_active) {
 		return;
+	}
 
 	active = p_active;
 	started = active;
@@ -493,8 +497,9 @@ bool AnimationTree::is_active() const {
 }
 
 void AnimationTree::set_process_mode(AnimationProcessMode p_mode) {
-	if (process_mode == p_mode)
+	if (process_mode == p_mode) {
 		return;
+	}
 
 	bool was_active = is_active();
 	if (was_active) {
@@ -836,8 +841,9 @@ void AnimationTree::_process_graph(float p_delta) {
 
 				float blend = (*as.track_blends)[blend_idx] * weight;
 
-				if (blend < CMP_EPSILON)
+				if (blend < CMP_EPSILON) {
 					continue; //nothing to blend
+				}
 
 				switch (track->type) {
 					case Animation::TYPE_TRANSFORM: {
@@ -911,8 +917,9 @@ void AnimationTree::_process_graph(float p_delta) {
 								t->scale = scale;
 							}
 
-							if (err != OK)
+							if (err != OK) {
 								continue;
+							}
 
 							t->loc = t->loc.linear_interpolate(loc, blend);
 							if (t->rot_blend_accum == 0) {
@@ -936,8 +943,9 @@ void AnimationTree::_process_graph(float p_delta) {
 
 							Variant value = a->value_track_interpolate(i, time);
 
-							if (value == Variant())
+							if (value == Variant()) {
 								continue;
+							}
 
 							if (t->process_pass != process_pass) {
 								t->value = value;
@@ -1005,8 +1013,9 @@ void AnimationTree::_process_graph(float p_delta) {
 						if (seeked) {
 							//find whathever should be playing
 							int idx = a->track_find_key(i, time);
-							if (idx < 0)
+							if (idx < 0) {
 								continue;
+							}
 
 							Ref<AudioStream> stream = a->audio_track_get_key_stream(i, idx);
 							if (!stream.is_valid()) {
@@ -1106,20 +1115,23 @@ void AnimationTree::_process_graph(float p_delta) {
 
 						AnimationPlayer *player2 = Object::cast_to<AnimationPlayer>(t->object);
 
-						if (!player2)
+						if (!player2) {
 							continue;
+						}
 
 						if (delta == 0 || seeked) {
 							//seek
 							int idx = a->track_find_key(i, time);
-							if (idx < 0)
+							if (idx < 0) {
 								continue;
+							}
 
 							float pos = a->track_get_key_time(i, idx);
 
 							StringName anim_name = a->animation_track_get_key_animation(i, idx);
-							if (String(anim_name) == "[stop]" || !player2->has_animation(anim_name))
+							if (String(anim_name) == "[stop]" || !player2->has_animation(anim_name)) {
 								continue;
+							}
 
 							Ref<Animation> anim = player2->get_animation(anim_name);
 
@@ -1173,8 +1185,9 @@ void AnimationTree::_process_graph(float p_delta) {
 		const NodePath *K = nullptr;
 		while ((K = track_cache.next(K))) {
 			TrackCache *track = track_cache[*K];
-			if (track->process_pass != process_pass)
+			if (track->process_pass != process_pass) {
 				continue; //not processed, ignore
+			}
 
 			switch (track->type) {
 				case Animation::TYPE_TRANSFORM: {

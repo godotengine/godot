@@ -202,11 +202,11 @@ public:
 
 	virtual int get_member_line(const StringName &p_member) const {
 #ifdef TOOLS_ENABLED
-		if (member_lines.has(p_member))
+		if (member_lines.has(p_member)) {
 			return member_lines[p_member];
-		else
+		}
 #endif
-			return -1;
+		return -1;
 	}
 
 	virtual void get_constants(Map<StringName, Variant> *p_constants);
@@ -367,11 +367,13 @@ public:
 	bool debug_break_parse(const String &p_file, int p_line, const String &p_error);
 
 	_FORCE_INLINE_ void enter_function(GDScriptInstance *p_instance, GDScriptFunction *p_function, Variant *p_stack, int *p_ip, int *p_line) {
-		if (Thread::get_main_id() != Thread::get_caller_id())
+		if (Thread::get_main_id() != Thread::get_caller_id()) {
 			return; //no support for other threads than main for now
+		}
 
-		if (ScriptDebugger::get_singleton()->get_lines_left() > 0 && ScriptDebugger::get_singleton()->get_depth() >= 0)
+		if (ScriptDebugger::get_singleton()->get_lines_left() > 0 && ScriptDebugger::get_singleton()->get_depth() >= 0) {
 			ScriptDebugger::get_singleton()->set_depth(ScriptDebugger::get_singleton()->get_depth() + 1);
+		}
 
 		if (_debug_call_stack_pos >= _debug_max_call_stack) {
 			//stack overflow
@@ -389,11 +391,13 @@ public:
 	}
 
 	_FORCE_INLINE_ void exit_function() {
-		if (Thread::get_main_id() != Thread::get_caller_id())
+		if (Thread::get_main_id() != Thread::get_caller_id()) {
 			return; //no support for other threads than main for now
+		}
 
-		if (ScriptDebugger::get_singleton()->get_lines_left() > 0 && ScriptDebugger::get_singleton()->get_depth() >= 0)
+		if (ScriptDebugger::get_singleton()->get_lines_left() > 0 && ScriptDebugger::get_singleton()->get_depth() >= 0) {
 			ScriptDebugger::get_singleton()->set_depth(ScriptDebugger::get_singleton()->get_depth() - 1);
+		}
 
 		if (_debug_call_stack_pos == 0) {
 			_debug_error = "Stack Underflow (Engine Bug)";
@@ -405,8 +409,9 @@ public:
 	}
 
 	virtual Vector<StackInfo> debug_get_current_stack_info() {
-		if (Thread::get_main_id() != Thread::get_caller_id())
+		if (Thread::get_main_id() != Thread::get_caller_id()) {
 			return Vector<StackInfo>();
+		}
 
 		Vector<StackInfo> csi;
 		csi.resize(_debug_call_stack_pos);

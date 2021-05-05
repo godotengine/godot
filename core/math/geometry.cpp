@@ -89,8 +89,9 @@ void Geometry::MeshData::optimize_vertices() {
 	new_vertices.resize(vtx_remap.size());
 
 	for (int i = 0; i < vertices.size(); i++) {
-		if (vtx_remap.has(i))
+		if (vtx_remap.has(i)) {
 			new_vertices.write[vtx_remap[i]] = vertices[i];
+		}
 	}
 	vertices = new_vertices;
 }
@@ -131,11 +132,13 @@ static bool _connect_faces(_FaceClassify *p_faces, int len, int p_group) {
 	}
 
 	for (int i = 0; i < len; i++) {
-		if (p_faces[i].group != p_group)
+		if (p_faces[i].group != p_group) {
 			continue;
+		}
 		for (int j = i + 1; j < len; j++) {
-			if (p_faces[j].group != p_group)
+			if (p_faces[j].group != p_group) {
 				continue;
+			}
 
 			for (int k = 0; k < 3; k++) {
 				Vector3 vi1 = p_faces[i].face.vertex[k];
@@ -164,29 +167,34 @@ static bool _connect_faces(_FaceClassify *p_faces, int len, int p_group) {
 						p_faces[j].links[l].edge = k;
 					}
 				}
-				if (error)
+				if (error) {
 					break;
+				}
 			}
-			if (error)
+			if (error) {
 				break;
+			}
 		}
-		if (error)
+		if (error) {
 			break;
+		}
 	}
 
 	for (int i = 0; i < len; i++) {
 		p_faces[i].valid = true;
 		for (int j = 0; j < 3; j++) {
-			if (p_faces[i].links[j].face == -1)
+			if (p_faces[i].links[j].face == -1) {
 				p_faces[i].valid = false;
+			}
 		}
 	}
 	return error;
 }
 
 static bool _group_face(_FaceClassify *p_faces, int len, int p_index, int p_group) {
-	if (p_faces[p_index].group >= 0)
+	if (p_faces[p_index].group >= 0) {
 		return false;
+	}
 
 	p_faces[p_index].group = p_group;
 
@@ -227,8 +235,9 @@ PoolVector<PoolVector<Face3>> Geometry::separate_objects(PoolVector<Face3> p_arr
 
 	int group = 0;
 	for (int i = 0; i < len; i++) {
-		if (!_fcptr[i].valid)
+		if (!_fcptr[i].valid) {
 			continue;
+		}
 		if (_group_face(_fcptr, len, i, group)) {
 			group++;
 		}
@@ -246,8 +255,9 @@ PoolVector<PoolVector<Face3>> Geometry::separate_objects(PoolVector<Face3> p_arr
 		PoolVector<Face3> *group_faces = obw.ptr();
 
 		for (int i = 0; i < len; i++) {
-			if (!_fcptr[i].valid)
+			if (!_fcptr[i].valid) {
 				continue;
+			}
 			if (_fcptr[i].group >= 0 && _fcptr[i].group < group) {
 				group_faces[_fcptr[i].group].push_back(_fcptr[i].face);
 			}
@@ -289,8 +299,9 @@ static inline void _plot_face(uint8_t ***p_cell_status, int x, int y, int z, int
 	aabb.position = aabb.position * voxelsize;
 	aabb.size = aabb.size * voxelsize;
 
-	if (!p_face.intersects_aabb(aabb))
+	if (!p_face.intersects_aabb(aabb)) {
 		return;
+	}
 
 	if (len_x == 1 && len_y == 1 && len_z == 1) {
 		p_cell_status[x][y][z] = _CELL_SOLID;
@@ -336,8 +347,9 @@ static inline void _plot_face(uint8_t ***p_cell_status, int x, int y, int z, int
 }
 
 static inline void _mark_outside(uint8_t ***p_cell_status, int x, int y, int z, int len_x, int len_y, int len_z) {
-	if (p_cell_status[x][y][z] & 3)
+	if (p_cell_status[x][y][z] & 3) {
 		return; // Nothing to do, already used and/or visited.
+	}
 
 	p_cell_status[x][y][z] = _CELL_PREV_FIRST;
 
@@ -423,15 +435,19 @@ static inline void _mark_outside(uint8_t ***p_cell_status, int x, int y, int z, 
 				ERR_FAIL();
 		}
 
-		if (next_x < 0 || next_x >= len_x)
+		if (next_x < 0 || next_x >= len_x) {
 			continue;
-		if (next_y < 0 || next_y >= len_y)
+		}
+		if (next_y < 0 || next_y >= len_y) {
 			continue;
-		if (next_z < 0 || next_z >= len_z)
+		}
+		if (next_z < 0 || next_z >= len_z) {
 			continue;
+		}
 
-		if (p_cell_status[next_x][next_y][next_z] & 3)
+		if (p_cell_status[next_x][next_y][next_z] & 3) {
 			continue;
+		}
 
 		x = next_x;
 		y = next_y;
@@ -445,8 +461,9 @@ static inline void _build_faces(uint8_t ***p_cell_status, int x, int y, int z, i
 	ERR_FAIL_INDEX(y, len_y);
 	ERR_FAIL_INDEX(z, len_z);
 
-	if (p_cell_status[x][y][z] & _CELL_EXTERIOR)
+	if (p_cell_status[x][y][z] & _CELL_EXTERIOR) {
 		return;
+	}
 
 #define vert(m_idx) Vector3(((m_idx)&4) >> 2, ((m_idx)&2) >> 1, (m_idx)&1)
 
@@ -468,21 +485,27 @@ static inline void _build_faces(uint8_t ***p_cell_status, int x, int y, int z, i
 
 		bool plot = false;
 
-		if (disp_x < 0 || disp_x >= len_x)
+		if (disp_x < 0 || disp_x >= len_x) {
 			plot = true;
-		if (disp_y < 0 || disp_y >= len_y)
+		}
+		if (disp_y < 0 || disp_y >= len_y) {
 			plot = true;
-		if (disp_z < 0 || disp_z >= len_z)
+		}
+		if (disp_z < 0 || disp_z >= len_z) {
 			plot = true;
+		}
 
-		if (!plot && (p_cell_status[disp_x][disp_y][disp_z] & _CELL_EXTERIOR))
+		if (!plot && (p_cell_status[disp_x][disp_y][disp_z] & _CELL_EXTERIOR)) {
 			plot = true;
+		}
 
-		if (!plot)
+		if (!plot) {
 			continue;
+		}
 
-		for (int j = 0; j < 4; j++)
+		for (int j = 0; j < 4; j++) {
 			face_points[j] = vert(indices[i][j]) + Vector3(x, y, z);
+		}
 
 		p_faces.push_back(
 				Face3(
@@ -521,20 +544,23 @@ PoolVector<Face3> Geometry::wrap_geometry(PoolVector<Face3> p_array, real_t *p_e
 	// Determine amount of cells in grid axis.
 	int div_x, div_y, div_z;
 
-	if (global_aabb.size.x / _MIN_SIZE < _MAX_LENGTH)
+	if (global_aabb.size.x / _MIN_SIZE < _MAX_LENGTH) {
 		div_x = (int)(global_aabb.size.x / _MIN_SIZE) + 1;
-	else
+	} else {
 		div_x = _MAX_LENGTH;
+	}
 
-	if (global_aabb.size.y / _MIN_SIZE < _MAX_LENGTH)
+	if (global_aabb.size.y / _MIN_SIZE < _MAX_LENGTH) {
 		div_y = (int)(global_aabb.size.y / _MIN_SIZE) + 1;
-	else
+	} else {
 		div_y = _MAX_LENGTH;
+	}
 
-	if (global_aabb.size.z / _MIN_SIZE < _MAX_LENGTH)
+	if (global_aabb.size.z / _MIN_SIZE < _MAX_LENGTH) {
 		div_z = (int)(global_aabb.size.z / _MIN_SIZE) + 1;
-	else
+	} else {
 		div_z = _MAX_LENGTH;
+	}
 
 	Vector3 voxelsize = global_aabb.size;
 	voxelsize.x /= div_x;
@@ -626,8 +652,9 @@ PoolVector<Face3> Geometry::wrap_geometry(PoolVector<Face3> p_array, real_t *p_e
 	}
 
 	memdelete_arr(cell_status);
-	if (p_error)
+	if (p_error) {
 		*p_error = voxelsize.length();
+	}
 
 	return wrapped_faces;
 }
@@ -677,8 +704,9 @@ Geometry::MeshData Geometry::build_convex_mesh(const PoolVector<Plane> &p_planes
 
 		Vector3 ref = Vector3(0.0, 1.0, 0.0);
 
-		if (ABS(p.normal.dot(ref)) > 0.95)
+		if (ABS(p.normal.dot(ref)) > 0.95) {
 			ref = Vector3(0.0, 0.0, 1.0); // Change axis.
+		}
 
 		Vector3 right = p.normal.cross(ref).normalized();
 		Vector3 up = p.normal.cross(right).normalized();
@@ -693,17 +721,20 @@ Geometry::MeshData Geometry::build_convex_mesh(const PoolVector<Plane> &p_planes
 		vertices.push_back(center + up * subplane_size + right * subplane_size);
 
 		for (int j = 0; j < p_planes.size(); j++) {
-			if (j == i)
+			if (j == i) {
 				continue;
+			}
 
 			Vector<Vector3> new_vertices;
 			Plane clip = p_planes[j];
 
-			if (clip.normal.dot(p.normal) > 0.95)
+			if (clip.normal.dot(p.normal) > 0.95) {
 				continue;
+			}
 
-			if (vertices.size() < 3)
+			if (vertices.size() < 3) {
 				break;
+			}
 
 			for (int k = 0; k < vertices.size(); k++) {
 				int k_n = (k + 1) % vertices.size();
@@ -725,8 +756,9 @@ Geometry::MeshData Geometry::build_convex_mesh(const PoolVector<Plane> &p_planes
 					Vector3 rel = edge1_A - edge0_A;
 
 					real_t den = clip.normal.dot(rel);
-					if (Math::is_zero_approx(den))
+					if (Math::is_zero_approx(den)) {
 						continue; // Point too short.
+					}
 
 					real_t dist = -(clip.normal.dot(edge0_A) - clip.d) / den;
 					Vector3 inters = edge0_A + rel * dist;
@@ -737,8 +769,9 @@ Geometry::MeshData Geometry::build_convex_mesh(const PoolVector<Plane> &p_planes
 			vertices = new_vertices;
 		}
 
-		if (vertices.size() < 3)
+		if (vertices.size() < 3) {
 			continue;
+		}
 
 		// Result is a clockwise face.
 
@@ -782,8 +815,9 @@ Geometry::MeshData Geometry::build_convex_mesh(const PoolVector<Plane> &p_planes
 				}
 			}
 
-			if (found)
+			if (found) {
 				continue;
+			}
 			MeshData::Edge edge;
 			edge.a = a;
 			edge.b = b;
@@ -935,13 +969,15 @@ void Geometry::make_atlas(const Vector<Size2i> &p_rects, Vector<Point2i> &r_resu
 		int w = 1 << i;
 		int max_h = 0;
 		int max_w = 0;
-		if (w < widest)
+		if (w < widest) {
 			continue;
+		}
 
 		Vector<int> hmax;
 		hmax.resize(w);
-		for (int j = 0; j < w; j++)
+		for (int j = 0; j < w; j++) {
 			hmax.write[j] = 0;
+		}
 
 		// Place them.
 		int ofs = 0;
@@ -953,29 +989,34 @@ void Geometry::make_atlas(const Vector<Size2i> &p_rects, Vector<Point2i> &r_resu
 
 			int from_y = 0;
 			for (int k = 0; k < wrects[j].s.width; k++) {
-				if (hmax[ofs + k] > from_y)
+				if (hmax[ofs + k] > from_y) {
 					from_y = hmax[ofs + k];
+				}
 			}
 
 			wrects.write[j].p.x = ofs;
 			wrects.write[j].p.y = from_y;
 			int end_h = from_y + wrects[j].s.height;
 			int end_w = ofs + wrects[j].s.width;
-			if (ofs == 0)
+			if (ofs == 0) {
 				limit_h = end_h;
+			}
 
 			for (int k = 0; k < wrects[j].s.width; k++) {
 				hmax.write[ofs + k] = end_h;
 			}
 
-			if (end_h > max_h)
+			if (end_h > max_h) {
 				max_h = end_h;
+			}
 
-			if (end_w > max_w)
+			if (end_w > max_w) {
 				max_w = end_w;
+			}
 
-			if (ofs == 0 || end_h > limit_h) // While h limit not reached, keep stacking.
+			if (ofs == 0 || end_h > limit_h) { // While h limit not reached, keep stacking.
 				ofs += wrects[j].s.width;
+			}
 		}
 
 		_AtlasWorkRectResult result;

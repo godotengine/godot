@@ -66,8 +66,9 @@ public:
 	}
 	void _get_property_list(List<PropertyInfo> *p_list) const {
 		for (const List<PropertyInfo>::Element *E = properties.front(); E; E = E->next()) {
-			if (!importer->get_option_visibility(E->get().name, values))
+			if (!importer->get_option_visibility(E->get().name, values)) {
 				continue;
+			}
 			PropertyInfo pi = E->get();
 			if (checking) {
 				pi.usage |= PROPERTY_USAGE_CHECKABLE;
@@ -391,8 +392,9 @@ void ImportDock::clear() {
 }
 
 static bool _find_owners(EditorFileSystemDirectory *efsd, const String &p_path) {
-	if (!efsd)
+	if (!efsd) {
 		return false;
+	}
 
 	for (int i = 0; i < efsd->get_subdir_count(); i++) {
 		if (_find_owners(efsd->get_subdir(i), p_path)) {
@@ -402,8 +404,9 @@ static bool _find_owners(EditorFileSystemDirectory *efsd, const String &p_path) 
 
 	for (int i = 0; i < efsd->get_file_count(); i++) {
 		Vector<String> deps = efsd->get_file_deps(i);
-		if (deps.find(p_path) != -1)
+		if (deps.find(p_path) != -1) {
 			return true;
+		}
 	}
 
 	return false;

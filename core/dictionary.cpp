@@ -40,8 +40,9 @@ struct DictionaryPrivate {
 };
 
 void Dictionary::get_key_list(List<Variant> *p_keys) const {
-	if (_p->variant_map.empty())
+	if (_p->variant_map.empty()) {
 		return;
+	}
 
 	for (OrderedHashMap<Variant, Variant, VariantHasher, VariantComparator>::Element E = _p->variant_map.front(); E; E = E.next()) {
 		p_keys->push_back(E.key());
@@ -82,24 +83,27 @@ const Variant &Dictionary::operator[](const Variant &p_key) const {
 const Variant *Dictionary::getptr(const Variant &p_key) const {
 	OrderedHashMap<Variant, Variant, VariantHasher, VariantComparator>::ConstElement E = ((const OrderedHashMap<Variant, Variant, VariantHasher, VariantComparator> *)&_p->variant_map)->find(p_key);
 
-	if (!E)
+	if (!E) {
 		return nullptr;
+	}
 	return &E.get();
 }
 
 Variant *Dictionary::getptr(const Variant &p_key) {
 	OrderedHashMap<Variant, Variant, VariantHasher, VariantComparator>::Element E = _p->variant_map.find(p_key);
 
-	if (!E)
+	if (!E) {
 		return nullptr;
+	}
 	return &E.get();
 }
 
 Variant Dictionary::get_valid(const Variant &p_key) const {
 	OrderedHashMap<Variant, Variant, VariantHasher, VariantComparator>::ConstElement E = ((const OrderedHashMap<Variant, Variant, VariantHasher, VariantComparator> *)&_p->variant_map)->find(p_key);
 
-	if (!E)
+	if (!E) {
 		return Variant();
+	}
 	return E.get();
 }
 
@@ -146,16 +150,18 @@ bool Dictionary::operator!=(const Dictionary &p_dictionary) const {
 
 void Dictionary::_ref(const Dictionary &p_from) const {
 	//make a copy first (thread safe)
-	if (!p_from._p->refcount.ref())
+	if (!p_from._p->refcount.ref()) {
 		return; // couldn't copy
+	}
 
 	//if this is the same, unreference the other one
 	if (p_from._p == _p) {
 		_p->refcount.unref();
 		return;
 	}
-	if (_p)
+	if (_p) {
 		_unref();
+	}
 	_p = p_from._p;
 }
 
@@ -183,8 +189,9 @@ uint32_t Dictionary::hash() const {
 
 Array Dictionary::keys() const {
 	Array varr;
-	if (_p->variant_map.empty())
+	if (_p->variant_map.empty()) {
 		return varr;
+	}
 
 	varr.resize(size());
 
@@ -199,8 +206,9 @@ Array Dictionary::keys() const {
 
 Array Dictionary::values() const {
 	Array varr;
-	if (_p->variant_map.empty())
+	if (_p->variant_map.empty()) {
 		return varr;
+	}
 
 	varr.resize(size());
 
@@ -216,14 +224,16 @@ Array Dictionary::values() const {
 const Variant *Dictionary::next(const Variant *p_key) const {
 	if (p_key == nullptr) {
 		// caller wants to get the first element
-		if (_p->variant_map.front())
+		if (_p->variant_map.front()) {
 			return &_p->variant_map.front().key();
+		}
 		return nullptr;
 	}
 	OrderedHashMap<Variant, Variant, VariantHasher, VariantComparator>::Element E = _p->variant_map.find(*p_key);
 
-	if (E && E.next())
+	if (E && E.next()) {
 		return &E.next().key();
+	}
 	return nullptr;
 }
 

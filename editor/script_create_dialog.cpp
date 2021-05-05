@@ -124,32 +124,37 @@ void ScriptCreateDialog::set_inheritance_base_type(const String &p_base) {
 }
 
 bool ScriptCreateDialog::_validate_parent(const String &p_string) {
-	if (p_string.length() == 0)
+	if (p_string.length() == 0) {
 		return false;
+	}
 
 	if (can_inherit_from_file && p_string.is_quoted()) {
 		String p = p_string.substr(1, p_string.length() - 2);
-		if (_validate_path(p, true) == "")
+		if (_validate_path(p, true) == "") {
 			return true;
+		}
 	}
 
 	return ClassDB::class_exists(p_string) || ScriptServer::is_global_class(p_string);
 }
 
 bool ScriptCreateDialog::_validate_class(const String &p_string) {
-	if (p_string.length() == 0)
+	if (p_string.length() == 0) {
 		return false;
+	}
 
 	for (int i = 0; i < p_string.length(); i++) {
 		if (i == 0) {
-			if (p_string[0] >= '0' && p_string[0] <= '9')
+			if (p_string[0] >= '0' && p_string[0] <= '9') {
 				return false; // no start with number plz
+			}
 		}
 
 		bool valid_char = (p_string[i] >= '0' && p_string[i] <= '9') || (p_string[i] >= 'a' && p_string[i] <= 'z') || (p_string[i] >= 'A' && p_string[i] <= 'Z') || p_string[i] == '_' || p_string[i] == '.';
 
-		if (!valid_char)
+		if (!valid_char) {
 			return false;
+		}
 	}
 
 	return true;
@@ -158,14 +163,17 @@ bool ScriptCreateDialog::_validate_class(const String &p_string) {
 String ScriptCreateDialog::_validate_path(const String &p_path, bool p_file_must_exist) {
 	String p = p_path.strip_edges();
 
-	if (p == "")
+	if (p == "") {
 		return TTR("Path is empty.");
-	if (p.get_file().get_basename() == "")
+	}
+	if (p.get_file().get_basename() == "") {
 		return TTR("Filename is empty.");
+	}
 
 	p = ProjectSettings::get_singleton()->localize_path(p);
-	if (!p.begins_with("res://"))
+	if (!p.begins_with("res://")) {
 		return TTR("Path is not local.");
+	}
 
 	DirAccess *d = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 	if (d->change_dir(p.get_base_dir()) != OK) {
@@ -210,15 +218,18 @@ String ScriptCreateDialog::_validate_path(const String &p_path, bool p_file_must
 		index++;
 	}
 
-	if (!found)
+	if (!found) {
 		return TTR("Invalid extension.");
-	if (!match)
+	}
+	if (!match) {
 		return TTR("Wrong extension chosen.");
+	}
 
 	/* Let ScriptLanguage do custom validation */
 	String path_error = ScriptServer::get_language(language_menu->get_selected())->validate_path(p);
-	if (path_error != "")
+	if (path_error != "") {
 		return path_error;
+	}
 
 	/* All checks passed */
 	return "";
@@ -299,8 +310,9 @@ void ScriptCreateDialog::_create_new() {
 
 	if (has_named_classes) {
 		String cname = class_name->get_text();
-		if (cname.length())
+		if (cname.length()) {
 			scr->set_name(cname);
+		}
 	}
 
 	if (!is_built_in) {
@@ -337,8 +349,9 @@ void ScriptCreateDialog::_lang_changed(int l) {
 	has_named_classes = language->has_named_classes();
 	can_inherit_from_file = language->can_inherit_from_file();
 	supports_built_in = language->supports_builtin_mode();
-	if (!supports_built_in)
+	if (!supports_built_in) {
 		is_built_in = false;
+	}
 
 	String selected_ext = "." + language->get_extension();
 	String path = file_path->get_text();

@@ -377,8 +377,9 @@ void RenameDialog::_update_preview_int(int new_value) {
 }
 
 void RenameDialog::_update_preview(String new_text) {
-	if (lock_preview_update || preview_node == nullptr)
+	if (lock_preview_update || preview_node == nullptr) {
 		return;
+	}
 
 	has_errors = false;
 	add_error_handler(&eh);
@@ -468,8 +469,9 @@ void RenameDialog::_error_handler(void *p_self, const char *p_func, const char *
 	String source_file(p_file);
 
 	// Only show first error that is related to "regex"
-	if (self->has_errors || source_file.find("regex") < 0)
+	if (self->has_errors || source_file.find("regex") < 0) {
 		return;
+	}
 
 	String err_str;
 	if (p_errorexp && p_errorexp[0]) {
@@ -537,8 +539,9 @@ String RenameDialog::_postprocess(const String &subject) {
 }
 
 void RenameDialog::_iterate_scene(const Node *node, const Array &selection, int *counter) {
-	if (!node)
+	if (!node) {
 		return;
+	}
 
 	if (selection.has(node)) {
 		String new_name = _apply_rename(node, *counter);

@@ -41,8 +41,9 @@
 #include "script_editor_debugger.h"
 
 void EditorSettingsDialog::ok_pressed() {
-	if (!EditorSettings::get_singleton())
+	if (!EditorSettings::get_singleton()) {
 		return;
+	}
 
 	_settings_save();
 	timer->stop();
@@ -68,15 +69,17 @@ void EditorSettingsDialog::_settings_save() {
 }
 
 void EditorSettingsDialog::cancel_pressed() {
-	if (!EditorSettings::get_singleton())
+	if (!EditorSettings::get_singleton()) {
 		return;
+	}
 
 	EditorSettings::get_singleton()->notify_changes();
 }
 
 void EditorSettingsDialog::popup_edit_settings() {
-	if (!EditorSettings::get_singleton())
+	if (!EditorSettings::get_singleton()) {
 		return;
+	}
 
 	EditorSettings::get_singleton()->list_text_editor_themes(); // make sure we have an up to date list of themes
 
@@ -141,8 +144,9 @@ void EditorSettingsDialog::_unhandled_input(const Ref<InputEvent> &p_event) {
 
 		if (ED_IS_SHORTCUT("editor/undo", p_event)) {
 			String action = undo_redo->get_current_action_name();
-			if (action != "")
+			if (action != "") {
 				EditorNode::get_log()->add_message("Undo: " + action, EditorLog::MSG_TYPE_EDITOR);
+			}
 			undo_redo->undo();
 			handled = true;
 		}
@@ -150,8 +154,9 @@ void EditorSettingsDialog::_unhandled_input(const Ref<InputEvent> &p_event) {
 		if (ED_IS_SHORTCUT("editor/redo", p_event)) {
 			undo_redo->redo();
 			String action = undo_redo->get_current_action_name();
-			if (action != "")
+			if (action != "") {
 				EditorNode::get_log()->add_message("Redo: " + action, EditorLog::MSG_TYPE_EDITOR);
+			}
 			handled = true;
 		}
 
@@ -197,8 +202,9 @@ void EditorSettingsDialog::_update_shortcuts() {
 
 	for (List<String>::Element *E = slist.front(); E; E = E->next()) {
 		Ref<ShortCut> sc = EditorSettings::get_singleton()->get_shortcut(E->get());
-		if (!sc->has_meta("original"))
+		if (!sc->has_meta("original")) {
 			continue;
+		}
 
 		Ref<InputEvent> original = sc->get_meta("original");
 
@@ -273,8 +279,9 @@ void EditorSettingsDialog::_shortcut_button_pressed(Object *p_item, int p_column
 		shortcut_configured = item;
 
 	} else if (p_idx == 1) { //erase
-		if (!sc.is_valid())
+		if (!sc.is_valid()) {
 			return; //pointless, there is nothing
+		}
 
 		undo_redo->create_action(TTR("Erase Shortcut"));
 		undo_redo->add_do_method(sc.ptr(), "set_shortcut", Ref<InputEvent>());
@@ -285,8 +292,9 @@ void EditorSettingsDialog::_shortcut_button_pressed(Object *p_item, int p_column
 		undo_redo->add_undo_method(this, "_settings_changed");
 		undo_redo->commit_action();
 	} else if (p_idx == 2) { //revert to original
-		if (!sc.is_valid())
+		if (!sc.is_valid()) {
 			return; //pointless, there is nothing
+		}
 
 		Ref<InputEvent> original = sc->get_meta("original");
 
@@ -314,8 +322,9 @@ void EditorSettingsDialog::_wait_for_key(const Ref<InputEvent> &p_event) {
 }
 
 void EditorSettingsDialog::_press_a_key_confirm() {
-	if (last_wait_for_key.is_null())
+	if (last_wait_for_key.is_null()) {
 		return;
+	}
 
 	Ref<InputEventKey> ie;
 	ie.instance();
@@ -344,10 +353,11 @@ void EditorSettingsDialog::_tabs_tab_changed(int p_tab) {
 void EditorSettingsDialog::_focus_current_search_box() {
 	Control *tab = tabs->get_current_tab_control();
 	LineEdit *current_search_box = nullptr;
-	if (tab == tab_general)
+	if (tab == tab_general) {
 		current_search_box = search_box;
-	else if (tab == tab_shortcuts)
+	} else if (tab == tab_shortcuts) {
 		current_search_box = shortcut_search_box;
+	}
 
 	if (current_search_box) {
 		current_search_box->grab_focus();

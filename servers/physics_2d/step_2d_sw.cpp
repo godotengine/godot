@@ -38,18 +38,21 @@ void Step2DSW::_populate_island(Body2DSW *p_body, Body2DSW **p_island, Constrain
 
 	for (Map<Constraint2DSW *, int>::Element *E = p_body->get_constraint_map().front(); E; E = E->next()) {
 		Constraint2DSW *c = (Constraint2DSW *)E->key();
-		if (c->get_island_step() == _step)
+		if (c->get_island_step() == _step) {
 			continue; //already processed
+		}
 		c->set_island_step(_step);
 		c->set_island_next(*p_constraint_island);
 		*p_constraint_island = c;
 
 		for (int i = 0; i < c->get_body_count(); i++) {
-			if (i == E->get())
+			if (i == E->get()) {
 				continue;
+			}
 			Body2DSW *b = c->get_body_ptr()[i];
-			if (b->get_island_step() == _step || b->get_mode() == Physics2DServer::BODY_MODE_STATIC || b->get_mode() == Physics2DServer::BODY_MODE_KINEMATIC)
+			if (b->get_island_step() == _step || b->get_mode() == Physics2DServer::BODY_MODE_STATIC || b->get_mode() == Physics2DServer::BODY_MODE_KINEMATIC) {
 				continue; //no go
+			}
 			_populate_island(c->get_body_ptr()[i], p_island, p_constraint_island);
 		}
 	}
@@ -99,8 +102,9 @@ void Step2DSW::_check_suspend(Body2DSW *p_island, real_t p_delta) {
 			continue; //ignore for static
 		}
 
-		if (!b->sleep_test(p_delta))
+		if (!b->sleep_test(p_delta)) {
 			can_sleep = false;
+		}
 
 		b = b->get_island_next();
 	}
@@ -116,8 +120,9 @@ void Step2DSW::_check_suspend(Body2DSW *p_island, real_t p_delta) {
 
 		bool active = b->is_active();
 
-		if (active == can_sleep)
+		if (active == can_sleep) {
 			b->set_active(!can_sleep);
+		}
 
 		b = b->get_island_next();
 	}
@@ -187,8 +192,9 @@ void Step2DSW::step(Space2DSW *p_space, real_t p_delta, int p_iterations) {
 	while (aml.first()) {
 		for (const Set<Constraint2DSW *>::Element *E = aml.first()->self()->get_constraints().front(); E; E = E->next()) {
 			Constraint2DSW *c = E->get();
-			if (c->get_island_step() == _step)
+			if (c->get_island_step() == _step) {
 				continue;
+			}
 			c->set_island_step(_step);
 			c->set_island_next(nullptr);
 			c->set_island_list_next(constraint_island_list);

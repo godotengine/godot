@@ -117,10 +117,11 @@ bool WSLClient::_verify_headers(String &r_protocol) {
 		ERR_FAIL_COND_V_MSG(header.size() != 2, false, "Invalid header -> " + psa[i] + ".");
 		String name = header[0].to_lower();
 		String value = header[1].strip_edges();
-		if (headers.has(name))
+		if (headers.has(name)) {
 			headers[name] += "," + value;
-		else
+		} else {
 			headers[name] = value;
+		}
 	}
 
 #define _WSL_CHECK(NAME, VALUE)                                                         \
@@ -142,13 +143,15 @@ bool WSLClient::_verify_headers(String &r_protocol) {
 		r_protocol = headers["sec-websocket-protocol"];
 		bool valid = false;
 		for (int i = 0; i < _protocols.size(); i++) {
-			if (_protocols[i] != r_protocol)
+			if (_protocols[i] != r_protocol) {
 				continue;
+			}
 			valid = true;
 			break;
 		}
-		if (!valid)
+		if (!valid) {
 			return false;
+		}
 	}
 	return true;
 }
@@ -199,8 +202,9 @@ Error WSLClient::connect_to_host(String p_host, String p_path, uint16_t p_port, 
 	if (p_protocols.size() > 0) {
 		request += "Sec-WebSocket-Protocol: ";
 		for (int i = 0; i < p_protocols.size(); i++) {
-			if (i != 0)
+			if (i != 0) {
 				request += ",";
+			}
 			request += p_protocols[i];
 		}
 		request += "\r\n";
@@ -228,8 +232,9 @@ void WSLClient::poll() {
 		return;
 	}
 
-	if (_connection.is_null())
+	if (_connection.is_null()) {
 		return; // Not connected.
+	}
 
 	switch (_tcp->get_status()) {
 		case StreamPeerTCP::STATUS_NONE:
@@ -256,9 +261,9 @@ void WSLClient::poll() {
 					ERR_FAIL_COND(ssl.is_null()); // Bug?
 					ssl->poll();
 				}
-				if (ssl->get_status() == StreamPeerSSL::STATUS_HANDSHAKING)
+				if (ssl->get_status() == StreamPeerSSL::STATUS_HANDSHAKING) {
 					return; // Need more polling.
-				else if (ssl->get_status() != StreamPeerSSL::STATUS_CONNECTED) {
+				} else if (ssl->get_status() != StreamPeerSSL::STATUS_CONNECTED) {
 					disconnect_from_host();
 					_on_error();
 					return; // Error.
@@ -283,11 +288,13 @@ Ref<WebSocketPeer> WSLClient::get_peer(int p_peer_id) const {
 }
 
 NetworkedMultiplayerPeer::ConnectionStatus WSLClient::get_connection_status() const {
-	if (_peer->is_connected_to_host())
+	if (_peer->is_connected_to_host()) {
 		return CONNECTION_CONNECTED;
+	}
 
-	if (_tcp->is_connected_to_host())
+	if (_tcp->is_connected_to_host()) {
 		return CONNECTION_CONNECTING;
+	}
 
 	return CONNECTION_DISCONNECTED;
 }

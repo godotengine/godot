@@ -63,8 +63,9 @@ PoolStringArray ConfigFile::_get_section_keys(const String &p_section) const {
 void ConfigFile::set_value(const String &p_section, const String &p_key, const Variant &p_value) {
 	if (p_value.get_type() == Variant::NIL) {
 		//erase
-		if (!values.has(p_section))
+		if (!values.has(p_section)) {
 			return; // ?
+		}
 		values[p_section].erase(p_key);
 		if (values[p_section].empty()) {
 			values.erase(p_section);
@@ -91,8 +92,9 @@ bool ConfigFile::has_section(const String &p_section) const {
 	return values.has(p_section);
 }
 bool ConfigFile::has_section_key(const String &p_section, const String &p_key) const {
-	if (!values.has(p_section))
+	if (!values.has(p_section)) {
 		return false;
+	}
 	return values[p_section].has(p_key);
 }
 
@@ -126,8 +128,9 @@ Error ConfigFile::save(const String &p_path) {
 	FileAccess *file = FileAccess::open(p_path, FileAccess::WRITE, &err);
 
 	if (err) {
-		if (file)
+		if (file) {
 			memdelete(file);
+		}
 		return err;
 	}
 
@@ -138,8 +141,9 @@ Error ConfigFile::save_encrypted(const String &p_path, const Vector<uint8_t> &p_
 	Error err;
 	FileAccess *f = FileAccess::open(p_path, FileAccess::WRITE, &err);
 
-	if (err)
+	if (err) {
 		return err;
+	}
 
 	FileAccessEncrypted *fae = memnew(FileAccessEncrypted);
 	err = fae->open_and_parse(f, p_key, FileAccessEncrypted::MODE_WRITE_AES256);
@@ -155,8 +159,9 @@ Error ConfigFile::save_encrypted_pass(const String &p_path, const String &p_pass
 	Error err;
 	FileAccess *f = FileAccess::open(p_path, FileAccess::WRITE, &err);
 
-	if (err)
+	if (err) {
 		return err;
+	}
 
 	FileAccessEncrypted *fae = memnew(FileAccessEncrypted);
 	err = fae->open_and_parse_password(f, p_pass, FileAccessEncrypted::MODE_WRITE_AES256);
@@ -171,8 +176,9 @@ Error ConfigFile::save_encrypted_pass(const String &p_path, const String &p_pass
 
 Error ConfigFile::_internal_save(FileAccess *file) {
 	for (OrderedHashMap<String, OrderedHashMap<String, Variant>>::Element E = values.front(); E; E = E.next()) {
-		if (E != values.front())
+		if (E != values.front()) {
 			file->store_string("\n");
+		}
 		file->store_string("[" + E.key() + "]\n\n");
 
 		for (OrderedHashMap<String, Variant>::Element F = E.get().front(); F; F = F.next()) {
@@ -191,8 +197,9 @@ Error ConfigFile::load(const String &p_path) {
 	Error err;
 	FileAccess *f = FileAccess::open(p_path, FileAccess::READ, &err);
 
-	if (!f)
+	if (!f) {
 		return err;
+	}
 
 	return _internal_load(p_path, f);
 }
@@ -201,8 +208,9 @@ Error ConfigFile::load_encrypted(const String &p_path, const Vector<uint8_t> &p_
 	Error err;
 	FileAccess *f = FileAccess::open(p_path, FileAccess::READ, &err);
 
-	if (err)
+	if (err) {
 		return err;
+	}
 
 	FileAccessEncrypted *fae = memnew(FileAccessEncrypted);
 	err = fae->open_and_parse(f, p_key, FileAccessEncrypted::MODE_READ);
@@ -218,8 +226,9 @@ Error ConfigFile::load_encrypted_pass(const String &p_path, const String &p_pass
 	Error err;
 	FileAccess *f = FileAccess::open(p_path, FileAccess::READ, &err);
 
-	if (err)
+	if (err) {
 		return err;
+	}
 
 	FileAccessEncrypted *fae = memnew(FileAccessEncrypted);
 	err = fae->open_and_parse_password(f, p_pass, FileAccessEncrypted::MODE_READ);

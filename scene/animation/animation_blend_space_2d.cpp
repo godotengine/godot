@@ -165,8 +165,9 @@ bool AnimationNodeBlendSpace2D::has_triangle(int p_x, int p_y, int p_z) const {
 				break;
 			}
 		}
-		if (all_equal)
+		if (all_equal) {
 			return true;
+		}
 	}
 
 	return false;
@@ -277,8 +278,9 @@ void AnimationNodeBlendSpace2D::_add_blend_point(int p_index, const Ref<Animatio
 }
 
 void AnimationNodeBlendSpace2D::_set_triangles(const Vector<int> &p_triangles) {
-	if (auto_triangles)
+	if (auto_triangles) {
 		return;
+	}
 	ERR_FAIL_COND(p_triangles.size() % 3 != 0);
 	for (int i = 0; i < p_triangles.size(); i += 3) {
 		add_triangle(p_triangles[i + 0], p_triangles[i + 1], p_triangles[i + 2]);
@@ -287,8 +289,9 @@ void AnimationNodeBlendSpace2D::_set_triangles(const Vector<int> &p_triangles) {
 
 Vector<int> AnimationNodeBlendSpace2D::_get_triangles() const {
 	Vector<int> t;
-	if (auto_triangles && trianges_dirty)
+	if (auto_triangles && trianges_dirty) {
 		return t;
+	}
 
 	t.resize(triangles.size() * 3);
 	for (int i = 0; i < triangles.size(); i++) {
@@ -309,8 +312,9 @@ void AnimationNodeBlendSpace2D::_queue_auto_triangles() {
 }
 
 void AnimationNodeBlendSpace2D::_update_triangles() {
-	if (!auto_triangles || !trianges_dirty)
+	if (!auto_triangles || !trianges_dirty) {
 		return;
+	}
 
 	trianges_dirty = false;
 	triangles.clear();
@@ -336,8 +340,9 @@ void AnimationNodeBlendSpace2D::_update_triangles() {
 Vector2 AnimationNodeBlendSpace2D::get_closest_point(const Vector2 &p_point) {
 	_update_triangles();
 
-	if (triangles.size() == 0)
+	if (triangles.size() == 0) {
 		return Vector2();
+	}
 
 	Vector2 best_point;
 	bool first = true;
@@ -422,8 +427,9 @@ float AnimationNodeBlendSpace2D::process(float p_time, bool p_seek) {
 	float mind = 0; //time of min distance point
 
 	if (blend_mode == BLEND_MODE_INTERPOLATED) {
-		if (triangles.size() == 0)
+		if (triangles.size() == 0) {
 			return 0;
+		}
 
 		Vector2 best_point;
 		bool first = true;

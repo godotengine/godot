@@ -126,8 +126,9 @@ Error png_to_image(const uint8_t *p_source, size_t p_size, bool p_force_linear, 
 Error image_to_png(const Ref<Image> &p_image, PoolVector<uint8_t> &p_buffer) {
 	Ref<Image> source_image = p_image->duplicate();
 
-	if (source_image->is_compressed())
+	if (source_image->is_compressed()) {
 		source_image->decompress();
+	}
 
 	ERR_FAIL_COND_V(source_image->is_compressed(), FAILED);
 

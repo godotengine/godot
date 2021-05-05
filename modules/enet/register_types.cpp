@@ -45,6 +45,7 @@ void register_enet_types() {
 }
 
 void unregister_enet_types() {
-	if (enet_ok)
+	if (enet_ok) {
 		enet_deinitialize();
+	}
 }

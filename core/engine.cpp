@@ -45,8 +45,9 @@ int Engine::get_iterations_per_second() const {
 }
 
 void Engine::set_physics_jitter_fix(float p_threshold) {
-	if (p_threshold < 0)
+	if (p_threshold < 0) {
 		p_threshold = 0;
+	}
 	physics_jitter_fix = p_threshold;
 }
 
@@ -96,8 +97,9 @@ Dictionary Engine::get_version_info() const {
 	dict["hash"] = hash.length() == 0 ? String("unknown") : hash;
 
 	String stringver = String(dict["major"]) + "." + String(dict["minor"]);
-	if ((int)dict["patch"] != 0)
+	if ((int)dict["patch"] != 0) {
 		stringver += "." + String(dict["patch"]);
+	}
 	stringver += "-" + String(dict["status"]) + " (" + String(dict["build"]) + ")";
 	dict["string"] = stringver;
 
@@ -194,8 +196,9 @@ bool Engine::has_singleton(const String &p_name) const {
 };
 
 void Engine::get_singletons(List<Singleton> *p_singletons) {
-	for (List<Singleton>::Element *E = singletons.front(); E; E = E->next())
+	for (List<Singleton>::Element *E = singletons.front(); E; E = E->next()) {
 		p_singletons->push_back(E->get());
+	}
 }
 
 Engine *Engine::singleton = nullptr;

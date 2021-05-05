@@ -68,13 +68,15 @@ int VideoStreamPlaybackTheora::buffer_data() {
 int VideoStreamPlaybackTheora::queue_page(ogg_page *page) {
 	if (theora_p) {
 		ogg_stream_pagein(&to, page);
-		if (to.e_o_s)
+		if (to.e_o_s) {
 			theora_eos = true;
+		}
 	}
 	if (vorbis_p) {
 		ogg_stream_pagein(&vo, page);
-		if (vo.e_o_s)
+		if (vo.e_o_s) {
 			vorbis_eos = true;
+		}
 	}
 	return 0;
 }
@@ -112,8 +114,9 @@ void VideoStreamPlaybackTheora::video_write() {
 }
 
 void VideoStreamPlaybackTheora::clear() {
-	if (!file)
+	if (!file) {
 		return;
+	}
 
 	if (vorbis_p) {
 		ogg_stream_clear(&vo);
@@ -201,8 +204,9 @@ void VideoStreamPlaybackTheora::set_file(const String &p_file) {
 
 	while (!stateflag) {
 		int ret = buffer_data();
-		if (ret == 0)
+		if (ret == 0) {
 			break;
+		}
 		while (ogg_sync_pageout(&oy, &og) > 0) {
 			ogg_stream_state test;
 
@@ -278,8 +282,9 @@ void VideoStreamPlaybackTheora::set_file(const String &p_file) {
 				return;
 			}
 			vorbis_p++;
-			if (vorbis_p == 3)
+			if (vorbis_p == 3) {
 				break;
+			}
 		}
 
 		/* The header pages/packets will arrive before anything else we
@@ -367,8 +372,9 @@ Ref<Texture> VideoStreamPlaybackTheora::get_texture() const {
 }
 
 void VideoStreamPlaybackTheora::update(float p_delta) {
-	if (!file)
+	if (!file) {
 		return;
+	}
 
 	if (!playing || paused) {
 		//printf("not playing\n");
@@ -446,8 +452,9 @@ void VideoStreamPlaybackTheora::update(float p_delta) {
 
 			audio_done = videobuf_time < (audio_frames_wrote / float(vi.rate));
 
-			if (buffer_full)
+			if (buffer_full) {
 				break;
+			}
 		}
 
 		while (theora_p && !frame_done) {
@@ -538,9 +545,9 @@ void VideoStreamPlaybackTheora::update(float p_delta) {
 };
 
 void VideoStreamPlaybackTheora::play() {
-	if (!playing)
+	if (!playing) {
 		time = 0;
-	else {
+	} else {
 		stop();
 	}
 
@@ -668,8 +675,9 @@ VideoStreamPlaybackTheora::VideoStreamPlaybackTheora() {
 VideoStreamPlaybackTheora::~VideoStreamPlaybackTheora() {
 	clear();
 
-	if (file)
+	if (file) {
 		memdelete(file);
+	}
 };
 
 void VideoStreamTheora::_bind_methods() {
@@ -714,7 +722,8 @@ bool ResourceFormatLoaderTheora::handles_type(const String &p_type) const {
 
 String ResourceFormatLoaderTheora::get_resource_type(const String &p_path) const {
 	String el = p_path.get_extension().to_lower();
-	if (el == "ogv")
+	if (el == "ogv") {
 		return "VideoStreamTheora";
+	}
 	return "";
 }

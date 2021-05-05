@@ -122,8 +122,9 @@ StringBuffer<SHORT_BUFFER_SIZE> &StringBuffer<SHORT_BUFFER_SIZE>::append(const C
 
 template <int SHORT_BUFFER_SIZE>
 StringBuffer<SHORT_BUFFER_SIZE> &StringBuffer<SHORT_BUFFER_SIZE>::reserve(int p_size) {
-	if (p_size < SHORT_BUFFER_SIZE || p_size < buffer.size())
+	if (p_size < SHORT_BUFFER_SIZE || p_size < buffer.size()) {
 		return *this;
+	}
 
 	bool need_copy = string_length > 0 && buffer.empty();
 	buffer.resize(next_power_of_2(p_size));

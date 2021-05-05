@@ -606,8 +606,9 @@ void AudioDriverPulseAudio::finish_device() {
 }
 
 void AudioDriverPulseAudio::finish() {
-	if (!thread.is_started())
+	if (!thread.is_started()) {
 		return;
+	}
 
 	exit_thread = true;
 	thread.wait_to_finish();

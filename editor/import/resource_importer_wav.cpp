@@ -257,8 +257,9 @@ Error ResourceImporterWAV::import(const String &p_source_file, const String &p_s
 			*		22:38 06.07.2017 GMT
 			**/
 
-			for (int i = 0; i < 10; i++)
+			for (int i = 0; i < 10; i++) {
 				file->get_32(); // i wish to know why should i do this... no doc!
+			}
 
 			// only read 0x00 (loop forward), 0x01 (loop ping-pong) and 0x02 (loop backward)
 			// Skip anything else because it's not supported, reserved for future uses or sampler specific
@@ -358,8 +359,9 @@ Error ResourceImporterWAV::import(const String &p_source_file, const String &p_s
 		float max = 0;
 		for (int i = 0; i < data.size(); i++) {
 			float amp = Math::abs(data[i]);
-			if (amp > max)
+			if (amp > max) {
 				max = amp;
+			}
 		}
 
 		if (max > 0) {

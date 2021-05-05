@@ -128,8 +128,9 @@ bool EditorSettings::_get(const StringName &p_name, Variant &r_ret) const {
 				}
 
 				Ref<InputEvent> original = sc->get_meta("original");
-				if (sc->is_shortcut(original) || (original.is_null() && sc->get_shortcut().is_null()))
+				if (sc->is_shortcut(original) || (original.is_null() && sc->get_shortcut().is_null())) {
 					continue; //not changed from default, don't save
+				}
 			}
 
 			arr.push_back(E->key());
@@ -173,8 +174,9 @@ void EditorSettings::_get_property_list(List<PropertyInfo> *p_list) const {
 	while ((k = props.next(k))) {
 		const VariantContainer *v = props.getptr(*k);
 
-		if (v->hide_from_editor)
+		if (v->hide_from_editor) {
 			continue;
+		}
 
 		_EVCSort vc;
 		vc.name = *k;
@@ -205,8 +207,9 @@ void EditorSettings::_get_property_list(List<PropertyInfo> *p_list) const {
 
 		PropertyInfo pi(E->get().type, E->get().name);
 		pi.usage = pinfo;
-		if (hints.has(E->get().name))
+		if (hints.has(E->get().name)) {
 			pi = hints[E->get().name];
+		}
 
 		if (E->get().restart_if_changed) {
 			pi.usage |= PROPERTY_USAGE_RESTART_IF_CHANGED;
@@ -228,10 +231,12 @@ void EditorSettings::_add_property_info_bind(const Dictionary &p_info) {
 	pinfo.type = Variant::Type(p_info["type"].operator int());
 	ERR_FAIL_INDEX(pinfo.type, Variant::VARIANT_MAX);
 
-	if (p_info.has("hint"))
+	if (p_info.has("hint")) {
 		pinfo.hint = PropertyHint(p_info["hint"].operator int());
-	if (p_info.has("hint_string"))
+	}
+	if (p_info.has("hint_string")) {
 		pinfo.hint_string = p_info["hint_string"];
+	}
 
 	add_property_hint(pinfo);
 }
@@ -240,8 +245,9 @@ void EditorSettings::_add_property_info_bind(const Dictionary &p_info) {
 bool EditorSettings::has_default_value(const String &p_setting) const {
 	_THREAD_SAFE_METHOD_
 
-	if (!props.has(p_setting))
+	if (!props.has(p_setting)) {
 		return false;
+	}
 	return props[p_setting].has_default_value;
 }
 
@@ -801,8 +807,9 @@ EditorSettings *EditorSettings::get_singleton() {
 }
 
 void EditorSettings::create() {
-	if (singleton.ptr())
+	if (singleton.ptr()) {
 		return; //pointless
+	}
 
 	DirAccess *dir = nullptr;
 
@@ -933,8 +940,9 @@ void EditorSettings::create() {
 
 		dir->change_dir("projects");
 		String project_config_dir = ProjectSettings::get_singleton()->get_resource_path();
-		if (project_config_dir.ends_with("/"))
+		if (project_config_dir.ends_with("/")) {
 			project_config_dir = config_path.substr(0, project_config_dir.size() - 1);
+		}
 		project_config_dir = project_config_dir.get_file() + "-" + project_config_dir.md5_text();
 
 		if (dir->change_dir(project_config_dir) != OK) {
@@ -1004,8 +1012,9 @@ fail:
 
 void EditorSettings::setup_language() {
 	String lang = get("interface/editor/editor_language");
-	if (lang == "en")
+	if (lang == "en") {
 		return; //none to do
+	}
 
 	EditorTranslationList *etl = _editor_translations;
 
@@ -1043,16 +1052,20 @@ void EditorSettings::setup_network() {
 		String ip = E->get();
 
 		// link-local IPv6 addresses don't work, skipping them
-		if (ip.begins_with("fe80:0:0:0:")) // fe80::/64
+		if (ip.begins_with("fe80:0:0:0:")) { // fe80::/64
 			continue;
+		}
 		// Same goes for IPv4 link-local (APIPA) addresses.
-		if (ip.begins_with("169.254.")) // 169.254.0.0/16
+		if (ip.begins_with("169.254.")) { // 169.254.0.0/16
 			continue;
+		}
 		// Select current IP (found)
-		if (ip == current)
+		if (ip == current) {
 			selected = ip;
-		if (hint != "")
+		}
+		if (hint != "") {
 			hint += ",";
+		}
 		hint += ip;
 	}
 
@@ -1065,8 +1078,9 @@ void EditorSettings::setup_network() {
 void EditorSettings::save() {
 	//_THREAD_SAFE_METHOD_
 
-	if (!singleton.ptr())
+	if (!singleton.ptr()) {
 		return;
+	}
 
 	if (singleton->config_file_path == "") {
 		ERR_PRINT("Cannot save EditorSettings config, no valid path");
@@ -1083,8 +1097,9 @@ void EditorSettings::save() {
 }
 
 void EditorSettings::destroy() {
-	if (!singleton.ptr())
+	if (!singleton.ptr()) {
 		return;
+	}
 	save();
 	singleton = Ref<EditorSettings>();
 }
@@ -1127,16 +1142,18 @@ void EditorSettings::raise_order(const String &p_setting) {
 void EditorSettings::set_restart_if_changed(const StringName &p_setting, bool p_restart) {
 	_THREAD_SAFE_METHOD_
 
-	if (!props.has(p_setting))
+	if (!props.has(p_setting)) {
 		return;
+	}
 	props[p_setting].restart_if_changed = p_restart;
 }
 
 void EditorSettings::set_initial_value(const StringName &p_setting, const Variant &p_value, bool p_update_current) {
 	_THREAD_SAFE_METHOD_
 
-	if (!props.has(p_setting))
+	if (!props.has(p_setting)) {
 		return;
+	}
 	props[p_setting].initial = p_value;
 	props[p_setting].has_default_value = true;
 	if (p_update_current) {
@@ -1166,18 +1183,21 @@ Variant _EDITOR_GET(const String &p_setting) {
 }
 
 bool EditorSettings::property_can_revert(const String &p_setting) {
-	if (!props.has(p_setting))
+	if (!props.has(p_setting)) {
 		return false;
+	}
 
-	if (!props[p_setting].has_default_value)
+	if (!props[p_setting].has_default_value) {
 		return false;
+	}
 
 	return props[p_setting].initial != props[p_setting].variant;
 }
 
 Variant EditorSettings::property_get_revert(const String &p_setting) {
-	if (!props.has(p_setting) || !props[p_setting].has_default_value)
+	if (!props.has(p_setting) || !props[p_setting].has_default_value) {
 		return Variant();
+	}
 
 	return props[p_setting].initial;
 }
@@ -1257,8 +1277,9 @@ void EditorSettings::set_favorites(const Vector<String> &p_favorites) {
 	favorites = p_favorites;
 	FileAccess *f = FileAccess::open(get_project_settings_dir().plus_file("favorites"), FileAccess::WRITE);
 	if (f) {
-		for (int i = 0; i < favorites.size(); i++)
+		for (int i = 0; i < favorites.size(); i++) {
 			f->store_line(favorites[i]);
+		}
 		memdelete(f);
 	}
 }
@@ -1271,8 +1292,9 @@ void EditorSettings::set_recent_dirs(const Vector<String> &p_recent_dirs) {
 	recent_dirs = p_recent_dirs;
 	FileAccess *f = FileAccess::open(get_project_settings_dir().plus_file("recent_dirs"), FileAccess::WRITE);
 	if (f) {
-		for (int i = 0; i < recent_dirs.size(); i++)
+		for (int i = 0; i < recent_dirs.size(); i++) {
 			f->store_line(recent_dirs[i]);
+		}
 		memdelete(f);
 	}
 }
@@ -1470,8 +1492,9 @@ bool EditorSettings::is_shortcut(const String &p_name, const Ref<InputEvent> &p_
 
 Ref<ShortCut> EditorSettings::get_shortcut(const String &p_name) const {
 	const Map<String, Ref<ShortCut>>::Element *E = shortcuts.find(p_name);
-	if (!E)
+	if (!E) {
 		return Ref<ShortCut>();
+	}
 
 	return E->get();
 }

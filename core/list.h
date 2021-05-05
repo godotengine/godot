@@ -153,14 +153,17 @@ private:
 				first = p_I->next_ptr;
 			};
 
-			if (last == p_I)
+			if (last == p_I) {
 				last = p_I->prev_ptr;
+			}
 
-			if (p_I->prev_ptr)
+			if (p_I->prev_ptr) {
 				p_I->prev_ptr->next_ptr = p_I->next_ptr;
+			}
 
-			if (p_I->next_ptr)
+			if (p_I->next_ptr) {
 				p_I->next_ptr->prev_ptr = p_I->prev_ptr;
+			}
 
 			memdelete_allocator<Element, A>(const_cast<Element *>(p_I));
 			size_cache--;
@@ -224,8 +227,9 @@ public:
 
 		_data->last = n;
 
-		if (!_data->first)
+		if (!_data->first) {
 			_data->first = n;
+		}
 
 		_data->size_cache++;
 
@@ -233,8 +237,9 @@ public:
 	};
 
 	void pop_back() {
-		if (_data && _data->last)
+		if (_data && _data->last) {
 			erase(_data->last);
+		}
 	}
 
 	/**
@@ -260,8 +265,9 @@ public:
 
 		_data->first = n;
 
-		if (!_data->last)
+		if (!_data->last) {
 			_data->last = n;
+		}
 
 		_data->size_cache++;
 
@@ -269,8 +275,9 @@ public:
 	};
 
 	void pop_front() {
-		if (_data && _data->first)
+		if (_data && _data->first) {
 			erase(_data->first);
+		}
 	}
 
 	Element *insert_after(Element *p_element, const T &p_value) {
@@ -332,8 +339,9 @@ public:
 	Element *find(const T_v &p_val) {
 		Element *it = front();
 		while (it) {
-			if (it->value == p_val)
+			if (it->value == p_val) {
 				return it;
+			}
 			it = it->next();
 		};
 
@@ -470,18 +478,21 @@ public:
 
 	void move_to_back(Element *p_I) {
 		ERR_FAIL_COND(p_I->data != _data);
-		if (!p_I->next_ptr)
+		if (!p_I->next_ptr) {
 			return;
+		}
 
 		if (_data->first == p_I) {
 			_data->first = p_I->next_ptr;
 		};
 
-		if (_data->last == p_I)
+		if (_data->last == p_I) {
 			_data->last = p_I->prev_ptr;
+		}
 
-		if (p_I->prev_ptr)
+		if (p_I->prev_ptr) {
 			p_I->prev_ptr->next_ptr = p_I->next_ptr;
+		}
 
 		p_I->next_ptr->prev_ptr = p_I->prev_ptr;
 
@@ -504,20 +515,23 @@ public:
 
 	void move_to_front(Element *p_I) {
 		ERR_FAIL_COND(p_I->data != _data);
-		if (!p_I->prev_ptr)
+		if (!p_I->prev_ptr) {
 			return;
+		}
 
 		if (_data->first == p_I) {
 			_data->first = p_I->next_ptr;
 		};
 
-		if (_data->last == p_I)
+		if (_data->last == p_I) {
 			_data->last = p_I->prev_ptr;
+		}
 
 		p_I->prev_ptr->next_ptr = p_I->next_ptr;
 
-		if (p_I->next_ptr)
+		if (p_I->next_ptr) {
 			p_I->next_ptr->prev_ptr = p_I->prev_ptr;
+		}
 
 		_data->first->prev_ptr = p_I;
 		p_I->next_ptr = _data->first;
@@ -565,8 +579,9 @@ public:
 
 	template <class C>
 	void sort_custom_inplace() {
-		if (size() < 2)
+		if (size() < 2) {
 			return;
+		}
 
 		Element *from = front();
 		Element *current = from;
@@ -587,15 +602,17 @@ public:
 					find = find->next_ptr;
 				}
 
-				if (current->prev_ptr)
+				if (current->prev_ptr) {
 					current->prev_ptr->next_ptr = current;
-				else
+				} else {
 					from = current;
+				}
 
-				if (current->next_ptr)
+				if (current->next_ptr) {
 					current->next_ptr->prev_ptr = current;
-				else
+				} else {
 					to = current;
+				}
 			} else {
 				current->prev_ptr = NULL;
 				current->next_ptr = NULL;
@@ -621,8 +638,9 @@ public:
 		//if you don't want to use auxiliary memory, use the in_place version
 
 		int s = size();
-		if (s < 2)
+		if (s < 2) {
 			return;
+		}
 
 		Element **aux_buffer = memnew_arr(Element *, s);
 

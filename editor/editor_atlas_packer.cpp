@@ -73,10 +73,11 @@ void EditorAtlasPacker::_plot_triangle(Ref<BitMap> p_bitmap, Vector2i *vertices)
 			}
 		}
 		xf += dx_far;
-		if (yi < y[1])
+		if (yi < y[1]) {
 			xt += dx_upper;
-		else
+		} else {
 			xt += dx_low;
+		}
 	}
 }
 void EditorAtlasPacker::chart_pack(Vector<Chart> &charts, int &r_width, int &r_height, int p_atlas_max_size, int p_cell_resolution) {
@@ -157,11 +158,13 @@ void EditorAtlasPacker::chart_pack(Vector<Chart> &charts, int &r_width, int &r_h
 				for (int lx = x - 1; lx < x + 2 && !found_pixel; lx++) {
 					for (int ly = y - 1; ly < y + 2 && !found_pixel; ly++) {
 						int px = lx - 1;
-						if (px < 0 || px >= w)
+						if (px < 0 || px >= w) {
 							continue;
+						}
 						int py = ly - 1;
-						if (py < 0 || py >= h)
+						if (py < 0 || py >= h) {
 							continue;
+						}
 
 						if (src_bitmap->get_bit(Vector2(px, py))) {
 							found_pixel = true;

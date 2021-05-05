@@ -60,8 +60,9 @@ String WSLPeer::compute_key_response(String p_key) {
 }
 
 void WSLPeer::_wsl_destroy(struct PeerData **p_data) {
-	if (!p_data || !(*p_data))
+	if (!p_data || !(*p_data)) {
 		return;
+	}
 	struct PeerData *data = *p_data;
 	if (data->polling) {
 		data->destroy = true;
@@ -147,8 +148,9 @@ void wsl_msg_recv_callback(wslay_event_context_ptr ctx, const struct wslay_event
 	}
 	WSLPeer *peer = (WSLPeer *)peer_data->peer;
 
-	if (peer->parse_message(arg) != OK)
+	if (peer->parse_message(arg) != OK) {
 		return;
+	}
 
 	if (peer_data->is_server) {
 		WSLServer *helper = (WSLServer *)peer_data->obj;
@@ -209,10 +211,11 @@ void WSLPeer::make_context(PeerData *p_data, unsigned int p_in_buf_size, unsigne
 	_data->peer = this;
 	_data->valid = true;
 
-	if (_data->is_server)
+	if (_data->is_server) {
 		wslay_event_context_server_init(&(_data->ctx), &wsl_callbacks, _data);
-	else
+	} else {
 		wslay_event_context_client_init(&(_data->ctx), &wsl_callbacks, _data);
+	}
 	wslay_event_config_set_max_recv_msg_length(_data->ctx, (1ULL << p_in_buf_size));
 }
 
@@ -225,8 +228,9 @@ WSLPeer::WriteMode WSLPeer::get_write_mode() const {
 }
 
 void WSLPeer::poll() {
-	if (!_data)
+	if (!_data) {
 		return;
+	}
 
 	if (_wsl_poll(_data)) {
 		_data = nullptr;
@@ -254,8 +258,9 @@ Error WSLPeer::get_packet(const uint8_t **r_buffer, int &r_buffer_size) {
 
 	ERR_FAIL_COND_V(!is_connected_to_host(), FAILED);
 
-	if (_in_buffer.packets_left() == 0)
+	if (_in_buffer.packets_left() == 0) {
 		return ERR_UNAVAILABLE;
+	}
 
 	int read = 0;
 	PoolVector<uint8_t>::Write rw = _packet_buffer.write();
@@ -268,8 +273,9 @@ Error WSLPeer::get_packet(const uint8_t **r_buffer, int &r_buffer_size) {
 }
 
 int WSLPeer::get_available_packet_count() const {
-	if (!is_connected_to_host())
+	if (!is_connected_to_host()) {
 		return 0;
+	}
 
 	return _in_buffer.packets_left();
 }
@@ -317,8 +323,9 @@ void WSLPeer::set_no_delay(bool p_enabled) {
 }
 
 void WSLPeer::invalidate() {
-	if (_data)
+	if (_data) {
 		_data->valid = false;
+	}
 }
 
 WSLPeer::WSLPeer() {

@@ -280,11 +280,14 @@ public:
 				//cap to 4 and make weights add up 1
 				weights.resize(4);
 				float total = 0;
-				for (int i = 0; i < 4; i++)
+				for (int i = 0; i < 4; i++) {
 					total += weights[i].weight;
-				if (total)
-					for (int i = 0; i < 4; i++)
+				}
+				if (total) {
+					for (int i = 0; i < 4; i++) {
 						weights.write[i].weight /= total;
+					}
+				}
 			}
 		}
 
@@ -299,11 +302,13 @@ public:
 								if (!weights.empty() || !p_vert.weights.empty()) {
 									if (weights.size() == p_vert.weights.size()) {
 										for (int i = 0; i < weights.size(); i++) {
-											if (weights[i].bone_idx != p_vert.weights[i].bone_idx)
+											if (weights[i].bone_idx != p_vert.weights[i].bone_idx) {
 												return weights[i].bone_idx < p_vert.weights[i].bone_idx;
+											}
 
-											if (weights[i].weight != p_vert.weights[i].weight)
+											if (weights[i].weight != p_vert.weights[i].weight) {
 												return weights[i].weight < p_vert.weights[i].weight;
+											}
 										}
 									} else {
 										return weights.size() < p_vert.weights.size();
@@ -311,16 +316,21 @@ public:
 								}
 
 								return (color < p_vert.color);
-							} else
+							} else {
 								return (uv2 < p_vert.uv2);
-						} else
+							}
+						} else {
 							return (uv < p_vert.uv);
-					} else
+						}
+					} else {
 						return (normal < p_vert.normal);
-				} else
+					}
+				} else {
 					return vertex < p_vert.vertex;
-			} else
+				}
+			} else {
 				return uid < p_vert.uid;
+			}
 		}
 
 		Vertex() {
@@ -379,8 +389,9 @@ public:
 			ignore_anim = false;
 		}
 		virtual ~Node() {
-			for (int i = 0; i < children.size(); i++)
+			for (int i = 0; i < children.size(); i++) {
 				memdelete(children[i]);
+			}
 		};
 	};
 
@@ -428,8 +439,9 @@ public:
 		Vector<Node *> root_nodes;
 
 		~VisualScene() {
-			for (int i = 0; i < root_nodes.size(); i++)
+			for (int i = 0; i < root_nodes.size(); i++) {
 				memdelete(root_nodes[i]);
+			}
 		}
 	};
 

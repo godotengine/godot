@@ -74,16 +74,18 @@ int BroadPhaseOctree::cull_aabb(const AABB &p_aabb, CollisionObjectSW **p_result
 
 void *BroadPhaseOctree::_pair_callback(void *self, OctreeElementID p_A, CollisionObjectSW *p_object_A, int subindex_A, OctreeElementID p_B, CollisionObjectSW *p_object_B, int subindex_B) {
 	BroadPhaseOctree *bpo = (BroadPhaseOctree *)(self);
-	if (!bpo->pair_callback)
+	if (!bpo->pair_callback) {
 		return nullptr;
+	}
 
 	return bpo->pair_callback(p_object_A, subindex_A, p_object_B, subindex_B, bpo->pair_userdata);
 }
 
 void BroadPhaseOctree::_unpair_callback(void *self, OctreeElementID p_A, CollisionObjectSW *p_object_A, int subindex_A, OctreeElementID p_B, CollisionObjectSW *p_object_B, int subindex_B, void *pairdata) {
 	BroadPhaseOctree *bpo = (BroadPhaseOctree *)(self);
-	if (!bpo->unpair_callback)
+	if (!bpo->unpair_callback) {
 		return;
+	}
 
 	bpo->unpair_callback(p_object_A, subindex_A, p_object_B, subindex_B, pairdata, bpo->unpair_userdata);
 }

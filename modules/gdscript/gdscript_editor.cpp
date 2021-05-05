@@ -232,14 +232,16 @@ String GDScriptLanguage::debug_get_error() const {
 }
 
 int GDScriptLanguage::debug_get_stack_level_count() const {
-	if (_debug_parse_err_line >= 0)
+	if (_debug_parse_err_line >= 0) {
 		return 1;
+	}
 
 	return _debug_call_stack_pos;
 }
 int GDScriptLanguage::debug_get_stack_level_line(int p_level) const {
-	if (_debug_parse_err_line >= 0)
+	if (_debug_parse_err_line >= 0) {
 		return _debug_parse_err_line;
+	}
 
 	ERR_FAIL_INDEX_V(p_level, _debug_call_stack_pos, -1);
 
@@ -248,24 +250,27 @@ int GDScriptLanguage::debug_get_stack_level_line(int p_level) const {
 	return *(_call_stack[l].line);
 }
 String GDScriptLanguage::debug_get_stack_level_function(int p_level) const {
-	if (_debug_parse_err_line >= 0)
+	if (_debug_parse_err_line >= 0) {
 		return "";
+	}
 
 	ERR_FAIL_INDEX_V(p_level, _debug_call_stack_pos, "");
 	int l = _debug_call_stack_pos - p_level - 1;
 	return _call_stack[l].function->get_name();
 }
 String GDScriptLanguage::debug_get_stack_level_source(int p_level) const {
-	if (_debug_parse_err_line >= 0)
+	if (_debug_parse_err_line >= 0) {
 		return _debug_parse_err_file;
+	}
 
 	ERR_FAIL_INDEX_V(p_level, _debug_call_stack_pos, "");
 	int l = _debug_call_stack_pos - p_level - 1;
 	return _call_stack[l].function->get_source();
 }
 void GDScriptLanguage::debug_get_stack_level_locals(int p_level, List<String> *p_locals, List<Variant> *p_values, int p_max_subitems, int p_max_depth) {
-	if (_debug_parse_err_line >= 0)
+	if (_debug_parse_err_line >= 0) {
 		return;
+	}
 
 	ERR_FAIL_INDEX(p_level, _debug_call_stack_pos);
 	int l = _debug_call_stack_pos - p_level - 1;
@@ -281,16 +286,18 @@ void GDScriptLanguage::debug_get_stack_level_locals(int p_level, List<String> *p
 	}
 }
 void GDScriptLanguage::debug_get_stack_level_members(int p_level, List<String> *p_members, List<Variant> *p_values, int p_max_subitems, int p_max_depth) {
-	if (_debug_parse_err_line >= 0)
+	if (_debug_parse_err_line >= 0) {
 		return;
+	}
 
 	ERR_FAIL_INDEX(p_level, _debug_call_stack_pos);
 	int l = _debug_call_stack_pos - p_level - 1;
 
 	GDScriptInstance *instance = _call_stack[l].instance;
 
-	if (!instance)
+	if (!instance) {
 		return;
+	}
 
 	Ref<GDScript> script = instance->get_script();
 	ERR_FAIL_COND(script.is_null());
@@ -304,8 +311,9 @@ void GDScriptLanguage::debug_get_stack_level_members(int p_level, List<String> *
 }
 
 ScriptInstance *GDScriptLanguage::debug_get_stack_level_instance(int p_level) {
-	if (_debug_parse_err_line >= 0)
+	if (_debug_parse_err_line >= 0) {
 		return nullptr;
+	}
 
 	ERR_FAIL_INDEX_V(p_level, _debug_call_stack_pos, nullptr);
 
@@ -323,8 +331,9 @@ void GDScriptLanguage::debug_get_globals(List<String> *p_globals, List<Variant> 
 	get_public_constants(&cinfo);
 
 	for (const Map<StringName, int>::Element *E = name_idx.front(); E; E = E->next()) {
-		if (ClassDB::class_exists(E->key()) || Engine::get_singleton()->has_singleton(E->key()))
+		if (ClassDB::class_exists(E->key()) || Engine::get_singleton()->has_singleton(E->key())) {
 			continue;
+		}
 
 		bool is_script_constant = false;
 		for (List<Pair<String, Variant>>::Element *CE = cinfo.front(); CE; CE = CE->next()) {
@@ -333,13 +342,15 @@ void GDScriptLanguage::debug_get_globals(List<String> *p_globals, List<Variant> 
 				break;
 			}
 		}
-		if (is_script_constant)
+		if (is_script_constant) {
 			continue;
+		}
 
 		const Variant &var = globals[E->value()];
 		if (Object *obj = var) {
-			if (Object::cast_to<GDScriptNativeClass>(obj))
+			if (Object::cast_to<GDScriptNativeClass>(obj)) {
 				continue;
+			}
 		}
 
 		bool skip = false;
@@ -349,8 +360,9 @@ void GDScriptLanguage::debug_get_globals(List<String> *p_globals, List<Variant> 
 				break;
 			}
 		}
-		if (skip)
+		if (skip) {
 			continue;
+		}
 
 		p_globals->push_back(E->key());
 		p_values->push_back(var);
@@ -431,8 +443,9 @@ String GDScriptLanguage::make_function(const String &p_class, const String &p_na
 	String s = "func " + p_name + "(";
 	if (p_args.size()) {
 		for (int i = 0; i < p_args.size(); i++) {
-			if (i > 0)
+			if (i > 0) {
 				s += ", ";
+			}
 			s += p_args[i].get_slice(":", 0);
 			if (th) {
 				String type = p_args[i].get_slice(":", 1);
@@ -3047,8 +3060,9 @@ void GDScriptLanguage::auto_indent_code(String &p_code, int p_from_line, int p_t
 		}
 
 		String st = l.substr(tc, l.length()).strip_edges();
-		if (st == "" || st.begins_with("#"))
+		if (st == "" || st.begins_with("#")) {
 			continue; //ignore!
+		}
 
 		int ilevel = 0;
 		if (indent_stack.size()) {
@@ -3062,8 +3076,9 @@ void GDScriptLanguage::auto_indent_code(String &p_code, int p_from_line, int p_t
 				indent_stack.pop_back();
 			}
 
-			if (indent_stack.size() && indent_stack.back()->get() != tc)
+			if (indent_stack.size() && indent_stack.back()->get() != tc) {
 				indent_stack.push_back(tc); //this is not right but gets the job done
+			}
 		}
 
 		if (i >= p_from_line) {
@@ -3082,8 +3097,9 @@ void GDScriptLanguage::auto_indent_code(String &p_code, int p_from_line, int p_t
 
 	p_code = "";
 	for (int i = 0; i < lines.size(); i++) {
-		if (i > 0)
+		if (i > 0) {
 			p_code += "\n";
+		}
 		p_code += lines[i];
 	}
 }
@@ -3410,8 +3426,9 @@ Error GDScriptLanguage::lookup_code(const String &p_code, const String &p_symbol
 
 				for (List<PropertyInfo>::Element *E = props.front(); E; E = E->next()) {
 					String s = E->get().name;
-					if (!s.begins_with("autoload/"))
+					if (!s.begins_with("autoload/")) {
 						continue;
+					}
 					String name = s.get_slice("/", 1);
 					if (name == String(p_symbol)) {
 						String path = ProjectSettings::get_singleton()->get(s);

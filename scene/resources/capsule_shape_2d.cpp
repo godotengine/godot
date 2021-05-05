@@ -39,8 +39,9 @@ Vector<Vector2> CapsuleShape2D::_get_points() const {
 		Vector2 ofs = Vector2(0, (i > 6 && i <= 18) ? -get_height() * 0.5 : get_height() * 0.5);
 
 		points.push_back(Vector2(Math::sin(i * Math_PI * 2 / 24.0), Math::cos(i * Math_PI * 2 / 24.0)) * get_radius() + ofs);
-		if (i == 6 || i == 18)
+		if (i == 6 || i == 18) {
 			points.push_back(Vector2(Math::sin(i * Math_PI * 2 / 24.0), Math::cos(i * Math_PI * 2 / 24.0)) * get_radius() - ofs);
+		}
 	}
 
 	return points;
@@ -66,8 +67,9 @@ real_t CapsuleShape2D::get_radius() const {
 
 void CapsuleShape2D::set_height(real_t p_height) {
 	height = p_height;
-	if (height < 0)
+	if (height < 0) {
 		height = 0;
+	}
 
 	_update_shape();
 }

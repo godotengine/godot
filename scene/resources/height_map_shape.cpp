@@ -155,11 +155,13 @@ void HeightMapShape::set_map_data(PoolRealArray p_new) {
 			min_height = val;
 			max_height = val;
 		} else {
-			if (min_height > val)
+			if (min_height > val) {
 				min_height = val;
+			}
 
-			if (max_height < val)
+			if (max_height < val) {
 				max_height = val;
+			}
 		}
 	}
 

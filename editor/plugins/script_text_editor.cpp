@@ -126,8 +126,9 @@ Vector<String> ScriptTextEditor::get_functions() {
 }
 
 void ScriptTextEditor::apply_code() {
-	if (script.is_null())
+	if (script.is_null()) {
 		return;
+	}
 	script->set_source_code(code_editor->get_text_edit()->get_text());
 	script->update_exports();
 	_update_member_keywords();
@@ -171,17 +172,20 @@ void ScriptTextEditor::_update_member_keywords() {
 
 	StringName instance_base = script->get_instance_base_type();
 
-	if (instance_base == StringName())
+	if (instance_base == StringName()) {
 		return;
+	}
 	List<PropertyInfo> plist;
 	ClassDB::get_property_list(instance_base, &plist);
 
 	for (List<PropertyInfo>::Element *E = plist.front(); E; E = E->next()) {
 		String name = E->get().name;
-		if (E->get().usage & PROPERTY_USAGE_CATEGORY || E->get().usage & PROPERTY_USAGE_GROUP)
+		if (E->get().usage & PROPERTY_USAGE_CATEGORY || E->get().usage & PROPERTY_USAGE_GROUP) {
 			continue;
-		if (name.find("/") != -1)
+		}
+		if (name.find("/") != -1) {
 			continue;
+		}
 
 		code_editor->get_text_edit()->add_member_keyword(name, member_variable_color);
 	}
@@ -274,13 +278,15 @@ void ScriptTextEditor::_load_theme_settings() {
 	colors_cache.string_color = string_color;
 
 	theme_loaded = true;
-	if (!script.is_null())
+	if (!script.is_null()) {
 		_set_theme_for_script();
+	}
 }
 
 void ScriptTextEditor::_set_theme_for_script() {
-	if (!theme_loaded)
+	if (!theme_loaded) {
 		return;
+	}
 
 	TextEdit *text_edit = code_editor->get_text_edit();
 
@@ -323,8 +329,9 @@ void ScriptTextEditor::_set_theme_for_script() {
 
 	for (List<StringName>::Element *E = types.front(); E; E = E->next()) {
 		String n = E->get();
-		if (n.begins_with("_"))
+		if (n.begins_with("_")) {
 			n = n.substr(1, n.length());
+		}
 
 		text_edit->add_keyword_color(n, colors_cache.type_color);
 	}
@@ -514,10 +521,11 @@ String ScriptTextEditor::get_name() {
 		if (is_unsaved()) {
 			name += "(*)";
 		}
-	} else if (script->get_name() != "")
+	} else if (script->get_name() != "") {
 		name = script->get_name();
-	else
+	} else {
 		name = script->get_class() + "(" + itos(script->get_instance_id()) + ")";
+	}
 
 	return name;
 }
@@ -707,27 +715,32 @@ static Vector<Node *> _find_all_node_for_script(Node *p_base, Node *p_current, c
 }
 
 static Node *_find_node_for_script(Node *p_base, Node *p_current, const Ref<Script> &p_script) {
-	if (p_current->get_owner() != p_base && p_base != p_current)
+	if (p_current->get_owner() != p_base && p_base != p_current) {
 		return nullptr;
+	}
 	Ref<Script> c = p_current->get_script();
-	if (c == p_script)
+	if (c == p_script) {
 		return p_current;
+	}
 	for (int i = 0; i < p_current->get_child_count(); i++) {
 		Node *found = _find_node_for_script(p_base, p_current->get_child(i), p_script);
-		if (found)
+		if (found) {
 			return found;
+		}
 	}
 
 	return nullptr;
 }
 
 static void _find_changed_scripts_for_external_editor(Node *p_base, Node *p_current, Set<Ref<Script>> &r_scripts) {
-	if (p_current->get_owner() != p_base && p_base != p_current)
+	if (p_current->get_owner() != p_base && p_base != p_current) {
 		return;
+	}
 	Ref<Script> c = p_current->get_script();
 
-	if (c.is_valid())
+	if (c.is_valid()) {
 		r_scripts.insert(c);
+	}
 
 	for (int i = 0; i < p_current->get_child_count(); i++) {
 		_find_changed_scripts_for_external_editor(p_base, p_current->get_child(i), r_scripts);
@@ -735,8 +748,9 @@ static void _find_changed_scripts_for_external_editor(Node *p_base, Node *p_curr
 }
 
 void ScriptEditor::_update_modified_scripts_for_external_editor(Ref<Script> p_for_script) {
-	if (!bool(EditorSettings::get_singleton()->get("text_editor/external/use_external_editor")))
+	if (!bool(EditorSettings::get_singleton()->get("text_editor/external/use_external_editor"))) {
 		return;
+	}
 
 	ERR_FAIL_COND(!get_tree());
 
@@ -750,8 +764,9 @@ void ScriptEditor::_update_modified_scripts_for_external_editor(Ref<Script> p_fo
 	for (Set<Ref<Script>>::Element *E = scripts.front(); E; E = E->next()) {
 		Ref<Script> script = E->get();
 
-		if (p_for_script.is_valid() && p_for_script != script)
+		if (p_for_script.is_valid() && p_for_script != script) {
 			continue;
+		}
 
 		if (script->get_path() == "" || script->get_path().find("local://") != -1 || script->get_path().find("::") != -1) {
 			continue; //internal script, who cares, though weird
@@ -776,8 +791,9 @@ void ScriptTextEditor::_code_complete_scripts(void *p_ud, const String &p_code, 
 }
 
 void ScriptTextEditor::_code_complete_script(const String &p_code, List<ScriptCodeCompletionOption> *r_options, bool &r_force) {
-	if (color_panel->is_visible_in_tree())
+	if (color_panel->is_visible_in_tree()) {
 		return;
+	}
 	Node *base = get_tree()->get_edited_scene_root();
 	if (base) {
 		base = _find_node_for_script(base, base, script);
@@ -1078,15 +1094,17 @@ void ScriptTextEditor::_edit_option(int p_op) {
 		} break;
 		case EDIT_INDENT_LEFT: {
 			Ref<Script> scr = script;
-			if (scr.is_null())
+			if (scr.is_null()) {
 				return;
+			}
 
 			tx->indent_left();
 		} break;
 		case EDIT_INDENT_RIGHT: {
 			Ref<Script> scr = script;
-			if (scr.is_null())
+			if (scr.is_null()) {
 				return;
+			}
 
 			tx->indent_right();
 		} break;
@@ -1117,8 +1135,9 @@ void ScriptTextEditor::_edit_option(int p_op) {
 		case EDIT_AUTO_INDENT: {
 			String text = tx->get_text();
 			Ref<Script> scr = script;
-			if (scr.is_null())
+			if (scr.is_null()) {
 				return;
+			}
 
 			tx->begin_complex_operation();
 			int begin, end;
@@ -1297,16 +1316,18 @@ void ScriptTextEditor::_edit_option(int p_op) {
 		} break;
 		case HELP_CONTEXTUAL: {
 			String text = tx->get_selection_text();
-			if (text == "")
+			if (text == "") {
 				text = tx->get_word_under_cursor();
+			}
 			if (text != "") {
 				emit_signal("request_help", text);
 			}
 		} break;
 		case LOOKUP_SYMBOL: {
 			String text = tx->get_word_under_cursor();
-			if (text == "")
+			if (text == "") {
 				text = tx->get_selection_text();
+			}
 			if (text != "") {
 				_lookup_symbol(text, tx->cursor_get_line(), tx->cursor_get_column());
 			}
@@ -1315,8 +1336,9 @@ void ScriptTextEditor::_edit_option(int p_op) {
 }
 
 void ScriptTextEditor::_edit_option_toggle_inline_comment() {
-	if (script.is_null())
+	if (script.is_null()) {
 		return;
+	}
 
 	String delimiter = "#";
 	List<String> comment_delimiters;
@@ -1341,10 +1363,11 @@ void ScriptTextEditor::add_syntax_highlighter(SyntaxHighlighter *p_highlighter) 
 void ScriptTextEditor::set_syntax_highlighter(SyntaxHighlighter *p_highlighter) {
 	TextEdit *te = code_editor->get_text_edit();
 	te->_set_syntax_highlighting(p_highlighter);
-	if (p_highlighter != nullptr)
+	if (p_highlighter != nullptr) {
 		highlighter_menu->set_item_checked(highlighter_menu->get_item_idx_from_text(p_highlighter->get_name()), true);
-	else
+	} else {
 		highlighter_menu->set_item_checked(highlighter_menu->get_item_idx_from_text(TTR("Standard")), true);
+	}
 }
 
 void ScriptTextEditor::_change_syntax_highlighter(int p_idx) {
@@ -1392,8 +1415,9 @@ void ScriptTextEditor::clear_edit_menu() {
 void ScriptTextEditor::reload(bool p_soft) {
 	TextEdit *te = code_editor->get_text_edit();
 	Ref<Script> scr = script;
-	if (scr.is_null())
+	if (scr.is_null()) {
 		return;
+	}
 	scr->set_source_code(te->get_text());
 	bool soft = p_soft || scr->get_instance_base_type() == "EditorPlugin"; //always soft-reload editor plugins
 
@@ -1428,18 +1452,21 @@ bool ScriptTextEditor::can_drop_data_fw(const Point2 &p_point, const Variant &p_
 }
 
 static Node *_find_script_node(Node *p_edited_scene, Node *p_current_node, const Ref<Script> &script) {
-	if (p_edited_scene != p_current_node && p_current_node->get_owner() != p_edited_scene)
+	if (p_edited_scene != p_current_node && p_current_node->get_owner() != p_edited_scene) {
 		return nullptr;
+	}
 
 	Ref<Script> scr = p_current_node->get_script();
 
-	if (scr.is_valid() && scr == script)
+	if (scr.is_valid() && scr == script) {
 		return p_current_node;
+	}
 
 	for (int i = 0; i < p_current_node->get_child_count(); i++) {
 		Node *n = _find_script_node(p_edited_scene, p_current_node->get_child(i), script);
-		if (n)
+		if (n) {
 			return n;
+		}
 	}
 
 	return nullptr;
@@ -1473,8 +1500,9 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 
 		String text_to_drop;
 		for (int i = 0; i < files.size(); i++) {
-			if (i > 0)
+			if (i > 0) {
 				text_to_drop += ",";
+			}
 			text_to_drop += "\"" + String(files[i]).c_escape() + "\"";
 		}
 
@@ -1494,8 +1522,9 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 		Array nodes = d["nodes"];
 		String text_to_drop;
 		for (int i = 0; i < nodes.size(); i++) {
-			if (i > 0)
+			if (i > 0) {
 				text_to_drop += ",";
+			}
 
 			NodePath np = nodes[i];
 			Node *node = get_node(np);
@@ -1552,10 +1581,12 @@ void ScriptTextEditor::_text_edit_gui_input(const Ref<InputEvent> &ev) {
 		}
 
 		String word_at_pos = tx->get_word_at_pos(local_pos);
-		if (word_at_pos == "")
+		if (word_at_pos == "") {
 			word_at_pos = tx->get_word_under_cursor();
-		if (word_at_pos == "")
+		}
+		if (word_at_pos == "") {
 			word_at_pos = tx->get_selection_text();
+		}
 
 		bool has_color = (word_at_pos == "Color");
 		bool foldable = tx->can_fold(row) || tx->is_folded(row);
@@ -1656,15 +1687,18 @@ void ScriptTextEditor::_make_context_menu(bool p_selection, bool p_color, bool p
 		context_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/convert_to_lowercase"), EDIT_TO_LOWERCASE);
 		context_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/evaluate_selection"), EDIT_EVALUATE);
 	}
-	if (p_foldable)
+	if (p_foldable) {
 		context_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/toggle_fold_line"), EDIT_TOGGLE_FOLD_LINE);
+	}
 
 	if (p_color || p_open_docs || p_goto_definition) {
 		context_menu->add_separator();
-		if (p_open_docs)
+		if (p_open_docs) {
 			context_menu->add_item(TTR("Lookup Symbol"), LOOKUP_SYMBOL);
-		if (p_color)
+		}
+		if (p_color) {
 			context_menu->add_item(TTR("Pick Color"), EDIT_PICK_COLOR);
+		}
 	}
 
 	context_menu->set_position(get_global_transform().xform(p_pos));
@@ -1709,10 +1743,11 @@ void ScriptTextEditor::_enable_code_editor() {
 
 	// get default color picker mode from editor settings
 	int default_color_mode = EDITOR_GET("interface/inspector/default_color_picker_mode");
-	if (default_color_mode == 1)
+	if (default_color_mode == 1) {
 		color_picker->set_hsv_mode(true);
-	else if (default_color_mode == 2)
+	} else if (default_color_mode == 2) {
 		color_picker->set_raw_mode(true);
+	}
 
 	quick_open = memnew(ScriptEditorQuickOpen);
 	quick_open->connect("goto_line", this, "_goto_line");

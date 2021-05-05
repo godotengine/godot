@@ -65,8 +65,9 @@ Ref<Mesh> MeshInstance2D::get_mesh() const {
 }
 
 void MeshInstance2D::set_texture(const Ref<Texture> &p_texture) {
-	if (p_texture == texture)
+	if (p_texture == texture) {
 		return;
+	}
 	texture = p_texture;
 	update();
 	emit_signal("texture_changed");

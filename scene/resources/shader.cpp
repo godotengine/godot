@@ -78,8 +78,9 @@ void Shader::get_param_list(List<PropertyInfo> *p_params) const {
 		params_cache[pi.name] = E->get().name;
 		if (p_params) {
 			//small little hack
-			if (pi.type == Variant::_RID)
+			if (pi.type == Variant::_RID) {
 				pi.type = Variant::OBJECT;
+			}
 			p_params->push_back(pi);
 		}
 	}
@@ -104,10 +105,11 @@ void Shader::set_default_texture_param(const StringName &p_param, const Ref<Text
 }
 
 Ref<Texture> Shader::get_default_texture_param(const StringName &p_param) const {
-	if (default_textures.has(p_param))
+	if (default_textures.has(p_param)) {
 		return default_textures[p_param];
-	else
+	} else {
 		return Ref<Texture>();
+	}
 }
 
 void Shader::get_default_texture_param_list(List<StringName> *r_textures) const {
@@ -180,8 +182,9 @@ Shader::~Shader() {
 ////////////
 
 RES ResourceFormatLoaderShader::load(const String &p_path, const String &p_original_path, Error *r_error) {
-	if (r_error)
+	if (r_error) {
 		*r_error = ERR_FILE_CANT_OPEN;
+	}
 
 	Ref<Shader> shader;
 	shader.instance();
@@ -193,8 +196,9 @@ RES ResourceFormatLoaderShader::load(const String &p_path, const String &p_origi
 
 	shader->set_code(str);
 
-	if (r_error)
+	if (r_error) {
 		*r_error = OK;
+	}
 
 	return shader;
 }
@@ -209,8 +213,9 @@ bool ResourceFormatLoaderShader::handles_type(const String &p_type) const {
 
 String ResourceFormatLoaderShader::get_resource_type(const String &p_path) const {
 	String el = p_path.get_extension().to_lower();
-	if (el == "shader")
+	if (el == "shader") {
 		return "Shader";
+	}
 	return "";
 }
 

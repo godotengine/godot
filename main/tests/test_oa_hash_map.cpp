@@ -105,8 +105,9 @@ MainLoop *test() {
 		uint32_t num_elems = 0;
 		for (int i = 0; i < 500; i++) {
 			int tmp;
-			if (map.lookup(i, tmp) && tmp == i * 2)
+			if (map.lookup(i, tmp) && tmp == i * 2) {
 				num_elems++;
+			}
 		}
 
 		OS::get_singleton()->print("elements %d == %d.\n", map.get_num_elements(), num_elems);
@@ -139,8 +140,9 @@ MainLoop *test() {
 			keys[i] = Math::rand();
 			map.set(keys[i], dummy);
 
-			if (!map.lookup(keys[i], dummy))
+			if (!map.lookup(keys[i], dummy)) {
 				OS::get_singleton()->print("could not find 0x%X despite it was just inserted!\n", unsigned(keys[i]));
+			}
 		}
 
 		// check whether the keys are still present

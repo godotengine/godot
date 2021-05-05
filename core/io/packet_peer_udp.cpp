@@ -40,8 +40,9 @@ void PacketPeerUDP::set_blocking_mode(bool p_enable) {
 void PacketPeerUDP::set_broadcast_enabled(bool p_enabled) {
 	ERR_FAIL_COND(udp_server);
 	broadcast = p_enabled;
-	if (_sock.is_valid() && _sock->is_open())
+	if (_sock.is_valid() && _sock->is_open()) {
 		_sock->set_broadcasting_enabled(p_enabled);
+	}
 }
 
 Error PacketPeerUDP::join_multicast_group(IP_Address p_multi_address, String p_if_name) {
@@ -76,8 +77,9 @@ Error PacketPeerUDP::_set_dest_address(const String &p_address, int p_port) {
 		ip = p_address;
 	} else {
 		ip = IP::get_singleton()->resolve_hostname(p_address);
-		if (!ip.is_valid())
+		if (!ip.is_valid()) {
 			return ERR_CANT_RESOLVE;
+		}
 	}
 
 	set_dest_address(ip, p_port);
@@ -87,18 +89,21 @@ Error PacketPeerUDP::_set_dest_address(const String &p_address, int p_port) {
 int PacketPeerUDP::get_available_packet_count() const {
 	// TODO we should deprecate this, and expose poll instead!
 	Error err = const_cast<PacketPeerUDP *>(this)->_poll();
-	if (err != OK)
+	if (err != OK) {
 		return -1;
+	}
 
 	return queue_count;
 }
 
 Error PacketPeerUDP::get_packet(const uint8_t **r_buffer, int &r_buffer_size) {
 	Error err = _poll();
-	if (err != OK)
+	if (err != OK) {
 		return err;
-	if (queue_count == 0)
+	}
+	if (queue_count == 0) {
 		return ERR_UNAVAILABLE;
+	}
 
 	uint32_t size = 0;
 	uint8_t ipv6[16];
@@ -135,10 +140,11 @@ Error PacketPeerUDP::put_packet(const uint8_t *p_buffer, int p_buffer_size) {
 			err = _sock->sendto(p_buffer, p_buffer_size, sent, peer_addr, peer_port);
 		}
 		if (err != OK) {
-			if (err != ERR_BUSY)
+			if (err != ERR_BUSY) {
 				return FAILED;
-			else if (!blocking)
+			} else if (!blocking) {
 				return ERR_BUSY;
+			}
 			// Keep trying to send full packet
 			continue;
 		}
@@ -161,13 +167,15 @@ Error PacketPeerUDP::listen(int p_port, const IP_Address &p_bind_address, int p_
 	Error err;
 	IP::Type ip_type = IP::TYPE_ANY;
 
-	if (p_bind_address.is_valid())
+	if (p_bind_address.is_valid()) {
 		ip_type = p_bind_address.is_ipv4() ? IP::TYPE_IPV4 : IP::TYPE_IPV6;
+	}
 
 	err = _sock->open(NetSocket::TYPE_UDP, ip_type);
 
-	if (err != OK)
+	if (err != OK) {
 		return ERR_CANT_CREATE;
+	}
 
 	_sock->set_blocking_enabled(false);
 	_sock->set_broadcasting_enabled(broadcast);
@@ -279,8 +287,9 @@ Error PacketPeerUDP::_poll() {
 		}
 
 		if (err != OK) {
-			if (err == ERR_BUSY)
+			if (err == ERR_BUSY) {
 				break;
+			}
 			return FAILED;
 		}
 

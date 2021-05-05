@@ -66,11 +66,13 @@ void AudioEffectCompressorInstance::process(const AudioFrame *p_src_frames, Audi
 
 		float overdb = 2.08136898f * Math::linear2db(peak / threshold);
 
-		if (overdb < 0.0) //we only care about what goes over to compress
+		if (overdb < 0.0) { //we only care about what goes over to compress
 			overdb = 0.0;
+		}
 
-		if (overdb - rundb > 5) // diffeence is too large
+		if (overdb - rundb > 5) { // diffeence is too large
 			averatio = 4;
+		}
 
 		if (overdb > rundb) {
 			rundb = overdb + atcoef * (rundb - overdb);
@@ -101,8 +103,9 @@ void AudioEffectCompressorInstance::process(const AudioFrame *p_src_frames, Audi
 			gr_meter = grv;
 		} else {
 			gr_meter *= gr_meter_decay;
-			if (gr_meter > 1)
+			if (gr_meter > 1) {
 				gr_meter = 1;
+			}
 		}
 
 		p_dst_frames[i] = p_src_frames[i] * grv * makeup * mix + p_src_frames[i] * (1.0 - mix);

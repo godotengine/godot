@@ -43,8 +43,9 @@
 #include "servers/audio/audio_stream.h"
 
 void post_process_preview(Ref<Image> p_image) {
-	if (p_image->get_format() != Image::FORMAT_RGBA8)
+	if (p_image->get_format() != Image::FORMAT_RGBA8) {
 		p_image->convert(Image::FORMAT_RGBA8);
+	}
 
 	p_image->lock();
 
@@ -109,14 +110,16 @@ Ref<Texture> EditorTexturePreviewPlugin::generate(const RES &p_from, const Size2
 		}
 	}
 
-	if (img.is_null() || img->empty())
+	if (img.is_null() || img->empty()) {
 		return Ref<Texture>();
+	}
 
 	img->clear_mipmaps();
 
 	if (img->is_compressed()) {
-		if (img->decompress() != OK)
+		if (img->decompress() != OK) {
 			return Ref<Texture>();
+		}
 	} else if (img->get_format() != Image::FORMAT_RGB8 && img->get_format() != Image::FORMAT_RGBA8) {
 		img->convert(Image::FORMAT_RGBA8);
 	}
@@ -151,15 +154,17 @@ bool EditorImagePreviewPlugin::handles(const String &p_type) const {
 Ref<Texture> EditorImagePreviewPlugin::generate(const RES &p_from, const Size2 &p_size) const {
 	Ref<Image> img = p_from;
 
-	if (img.is_null() || img->empty())
+	if (img.is_null() || img->empty()) {
 		return Ref<Image>();
+	}
 
 	img = img->duplicate();
 	img->clear_mipmaps();
 
 	if (img->is_compressed()) {
-		if (img->decompress() != OK)
+		if (img->decompress() != OK) {
 			return Ref<Image>();
+		}
 	} else if (img->get_format() != Image::FORMAT_RGB8 && img->get_format() != Image::FORMAT_RGBA8) {
 		img->convert(Image::FORMAT_RGBA8);
 	}
@@ -224,8 +229,9 @@ Ref<Texture> EditorBitmapPreviewPlugin::generate(const RES &p_from, const Size2 
 	img->create(bm->get_size().width, bm->get_size().height, false, Image::FORMAT_L8, data);
 
 	if (img->is_compressed()) {
-		if (img->decompress() != OK)
+		if (img->decompress() != OK) {
 			return Ref<Texture>();
+		}
 	} else if (img->get_format() != Image::FORMAT_RGB8 && img->get_format() != Image::FORMAT_RGBA8) {
 		img->convert(Image::FORMAT_RGBA8);
 	}
@@ -272,8 +278,9 @@ Ref<Texture> EditorPackedScenePreviewPlugin::generate_from_path(const String &p_
 
 	String path = cache_base + ".png";
 
-	if (!FileAccess::exists(path))
+	if (!FileAccess::exists(path)) {
 		return Ref<Texture>();
+	}
 
 	Ref<Image> img;
 	img.instance();
@@ -472,12 +479,14 @@ bool EditorScriptPreviewPlugin::handles(const String &p_type) const {
 
 Ref<Texture> EditorScriptPreviewPlugin::generate(const RES &p_from, const Size2 &p_size) const {
 	Ref<Script> scr = p_from;
-	if (scr.is_null())
+	if (scr.is_null()) {
 		return Ref<Texture>();
+	}
 
 	String code = scr->get_source_code().strip_edges();
-	if (code == "")
+	if (code == "") {
 		return Ref<Texture>();
+	}
 
 	List<String> kwors;
 	scr->get_language()->get_reserved_words(&kwors);
@@ -503,8 +512,9 @@ Ref<Texture> EditorScriptPreviewPlugin::generate(const RES &p_from, const Size2 
 
 	img->lock();
 
-	if (bg_color.a == 0)
+	if (bg_color.a == 0) {
 		bg_color = Color(0, 0, 0, 0);
+	}
 	bg_color.a = MAX(bg_color.a, 0.2); // some background
 
 	for (int i = 0; i < thumbnail_size; i++) {
@@ -575,8 +585,9 @@ Ref<Texture> EditorScriptPreviewPlugin::generate(const RES &p_from, const Size2 
 
 				col = x0;
 				line++;
-				if (line >= available_height / 2)
+				if (line >= available_height / 2) {
 					break;
+				}
 			} else if (c == '\t') {
 				col += 3;
 			} else {
@@ -709,8 +720,9 @@ Ref<Texture> EditorMeshPreviewPlugin::generate(const RES &p_from, const Size2 &p
 	xform.basis = Basis().rotated(Vector3(1, 0, 0), Math_PI * 0.125) * xform.basis;
 	AABB rot_aabb = xform.xform(aabb);
 	float m = MAX(rot_aabb.size.x, rot_aabb.size.y) * 0.5;
-	if (m == 0)
+	if (m == 0) {
 		return Ref<Texture>();
+	}
 	m = 1.0 / m;
 	m *= 0.5;
 	xform.basis.scale(Vector3(m, m, m));

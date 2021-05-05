@@ -32,13 +32,15 @@
 #include "scene/3d/path.h"
 
 void CSGShape::set_use_collision(bool p_enable) {
-	if (use_collision == p_enable)
+	if (use_collision == p_enable) {
 		return;
+	}
 
 	use_collision = p_enable;
 
-	if (!is_inside_tree() || !is_root_shape())
+	if (!is_inside_tree() || !is_root_shape()) {
 		return;
+	}
 
 	if (use_collision) {
 		root_collision_shape.instance();
@@ -86,10 +88,11 @@ uint32_t CSGShape::get_collision_mask() const {
 
 void CSGShape::set_collision_mask_bit(int p_bit, bool p_value) {
 	uint32_t mask = get_collision_mask();
-	if (p_value)
+	if (p_value) {
 		mask |= 1 << p_bit;
-	else
+	} else {
 		mask &= ~(1 << p_bit);
+	}
 	set_collision_mask(mask);
 }
 
@@ -99,10 +102,11 @@ bool CSGShape::get_collision_mask_bit(int p_bit) const {
 
 void CSGShape::set_collision_layer_bit(int p_bit, bool p_value) {
 	uint32_t mask = get_collision_layer();
-	if (p_value)
+	if (p_value) {
 		mask |= 1 << p_bit;
-	else
+	} else {
 		mask &= ~(1 << p_bit);
+	}
 	set_collision_layer(mask);
 }
 
@@ -123,8 +127,9 @@ float CSGShape::get_snap() const {
 }
 
 void CSGShape::_make_dirty() {
-	if (!is_inside_tree())
+	if (!is_inside_tree()) {
 		return;
+	}
 
 	if (parent) {
 		parent->_make_dirty();
@@ -146,14 +151,17 @@ CSGBrush *CSGShape::_get_brush() {
 
 		for (int i = 0; i < get_child_count(); i++) {
 			CSGShape *child = Object::cast_to<CSGShape>(get_child(i));
-			if (!child)
+			if (!child) {
 				continue;
-			if (!child->is_visible_in_tree())
+			}
+			if (!child->is_visible_in_tree()) {
 				continue;
+			}
 
 			CSGBrush *n2 = child->_get_brush();
-			if (!n2)
+			if (!n2) {
 				continue;
+			}
 			if (!n) {
 				n = memnew(CSGBrush);
 
@@ -187,10 +195,11 @@ CSGBrush *CSGShape::_get_brush() {
 			AABB aabb;
 			for (int i = 0; i < n->faces.size(); i++) {
 				for (int j = 0; j < 3; j++) {
-					if (i == 0 && j == 0)
+					if (i == 0 && j == 0) {
 						aabb.position = n->faces[i].vertices[j];
-					else
+					} else {
 						aabb.expand_to(n->faces[i].vertices[j]);
+					}
 				}
 			}
 			node_aabb = aabb;
@@ -261,8 +270,9 @@ void CSGShape::mikktSetTSpaceDefault(const SMikkTSpaceContext *pContext, const f
 }
 
 void CSGShape::_update_shape() {
-	if (parent)
+	if (parent) {
 		return;
+	}
 
 	set_base(RID());
 	root_mesh.unref(); //byebye root mesh
@@ -423,8 +433,9 @@ void CSGShape::_update_shape() {
 		surfaces.write[i].uvsw.release();
 		surfaces.write[i].tansw.release();
 
-		if (surfaces[i].last_added == 0)
+		if (surfaces[i].last_added == 0) {
 			continue;
+		}
 
 		// and convert to surface array
 		Array array;
@@ -518,8 +529,9 @@ void CSGShape::_notification(int p_what) {
 	}
 
 	if (p_what == NOTIFICATION_EXIT_TREE) {
-		if (parent)
+		if (parent) {
 			parent->_make_dirty();
+		}
 		parent = nullptr;
 
 		if (use_collision && is_root_shape() && root_collision_instance.is_valid()) {
@@ -670,8 +682,9 @@ void CSGPrimitive::_bind_methods() {
 }
 
 void CSGPrimitive::set_invert_faces(bool p_invert) {
-	if (invert_faces == p_invert)
+	if (invert_faces == p_invert) {
 		return;
+	}
 
 	invert_faces = p_invert;
 
@@ -712,8 +725,9 @@ CSGBrush *CSGMesh::_build_brush() {
 		}
 
 		PoolVector<Vector3> avertices = arrays[Mesh::ARRAY_VERTEX];
-		if (avertices.size() == 0)
+		if (avertices.size() == 0) {
 			continue;
+		}
 
 		PoolVector<Vector3>::Read vr = avertices.read();
 
@@ -844,8 +858,9 @@ void CSGMesh::_mesh_changed() {
 }
 
 void CSGMesh::set_material(const Ref<Material> &p_material) {
-	if (material == p_material)
+	if (material == p_material) {
 		return;
+	}
 	material = p_material;
 	_make_dirty();
 }
@@ -868,8 +883,9 @@ void CSGMesh::_bind_methods() {
 }
 
 void CSGMesh::set_mesh(const Ref<Mesh> &p_mesh) {
-	if (mesh == p_mesh)
+	if (mesh == p_mesh) {
 		return;
+	}
 	if (mesh.is_valid()) {
 		mesh->disconnect("changed", this, "_mesh_changed");
 	}
@@ -1131,10 +1147,11 @@ CSGBrush *CSGBox::_build_brush() {
 					v[2] = v[1] * (1 - 2 * (j & 1));
 
 					for (int k = 0; k < 3; k++) {
-						if (i < 3)
+						if (i < 3) {
 							face_points[j][(i + k) % 3] = v[k];
-						else
+						} else {
 							face_points[3 - j][(i + k) % 3] = -v[k];
+						}
 					}
 				}
 
@@ -1739,15 +1756,19 @@ CSGBrush *CSGPolygon::_build_brush() {
 			final_polygon_min = p;
 			final_polygon_max = final_polygon_min;
 		} else {
-			if (p.x < final_polygon_min.x)
+			if (p.x < final_polygon_min.x) {
 				final_polygon_min.x = p.x;
-			if (p.y < final_polygon_min.y)
+			}
+			if (p.y < final_polygon_min.y) {
 				final_polygon_min.y = p.y;
+			}
 
-			if (p.x > final_polygon_max.x)
+			if (p.x > final_polygon_max.x) {
 				final_polygon_max.x = p.x;
-			if (p.y > final_polygon_max.y)
+			}
+			if (p.y > final_polygon_max.y) {
 				final_polygon_max.y = p.y;
+			}
 		}
 	}
 	Vector2 final_polygon_size = final_polygon_max - final_polygon_min;

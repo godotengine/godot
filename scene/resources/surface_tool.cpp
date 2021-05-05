@@ -36,35 +36,44 @@
 #define EQ_VERTEX_DIST 0.00001
 
 bool SurfaceTool::Vertex::operator==(const Vertex &p_vertex) const {
-	if (vertex != p_vertex.vertex)
+	if (vertex != p_vertex.vertex) {
 		return false;
+	}
 
-	if (uv != p_vertex.uv)
+	if (uv != p_vertex.uv) {
 		return false;
+	}
 
-	if (uv2 != p_vertex.uv2)
+	if (uv2 != p_vertex.uv2) {
 		return false;
+	}
 
-	if (normal != p_vertex.normal)
+	if (normal != p_vertex.normal) {
 		return false;
+	}
 
-	if (binormal != p_vertex.binormal)
+	if (binormal != p_vertex.binormal) {
 		return false;
+	}
 
-	if (color != p_vertex.color)
+	if (color != p_vertex.color) {
 		return false;
+	}
 
-	if (bones.size() != p_vertex.bones.size())
+	if (bones.size() != p_vertex.bones.size()) {
 		return false;
+	}
 
 	for (int i = 0; i < bones.size(); i++) {
-		if (bones[i] != p_vertex.bones[i])
+		if (bones[i] != p_vertex.bones[i]) {
 			return false;
+		}
 	}
 
 	for (int i = 0; i < weights.size(); i++) {
-		if (weights[i] != p_vertex.weights[i])
+		if (weights[i] != p_vertex.weights[i]) {
 			return false;
+		}
 	}
 
 	return true;
@@ -265,8 +274,9 @@ Array SurfaceTool::commit_to_arrays() {
 	a.resize(Mesh::ARRAY_MAX);
 
 	for (int i = 0; i < Mesh::ARRAY_MAX; i++) {
-		if (!(format & (1 << i)))
+		if (!(format & (1 << i))) {
 			continue; //not in format
+		}
 
 		switch (i) {
 			case Mesh::ARRAY_VERTEX:
@@ -419,15 +429,17 @@ Array SurfaceTool::commit_to_arrays() {
 
 Ref<ArrayMesh> SurfaceTool::commit(const Ref<ArrayMesh> &p_existing, uint32_t p_flags) {
 	Ref<ArrayMesh> mesh;
-	if (p_existing.is_valid())
+	if (p_existing.is_valid()) {
 		mesh = p_existing;
-	else
+	} else {
 		mesh.instance();
+	}
 
 	int varr_len = vertex_array.size();
 
-	if (varr_len == 0)
+	if (varr_len == 0) {
 		return mesh;
+	}
 
 	int surface = mesh->get_surface_count();
 
@@ -435,15 +447,17 @@ Ref<ArrayMesh> SurfaceTool::commit(const Ref<ArrayMesh> &p_existing, uint32_t p_
 
 	mesh->add_surface_from_arrays(primitive, a, Array(), p_flags);
 
-	if (material.is_valid())
+	if (material.is_valid()) {
 		mesh->surface_set_material(surface, material);
+	}
 
 	return mesh;
 }
 
 void SurfaceTool::index() {
-	if (index_array.size())
+	if (index_array.size()) {
 		return; //already indexed
+	}
 
 	HashMap<Vertex, int, VertexHasher> indices;
 	List<Vertex> new_vertices;
@@ -469,8 +483,9 @@ void SurfaceTool::index() {
 }
 
 void SurfaceTool::deindex() {
-	if (index_array.size() == 0)
+	if (index_array.size() == 0) {
 		return; //nothing to deindex
+	}
 	Vector<Vertex> varr;
 	varr.resize(vertex_array.size());
 	int idx = 0;
@@ -506,8 +521,9 @@ Vector<SurfaceTool::Vertex> SurfaceTool::create_vertex_array_from_triangle_array
 
 	int vc = varr.size();
 
-	if (vc == 0)
+	if (vc == 0) {
 		return ret;
+	}
 	int lformat = 0;
 
 	PoolVector<Vector3>::Read rv;
@@ -557,21 +573,26 @@ Vector<SurfaceTool::Vertex> SurfaceTool::create_vertex_array_from_triangle_array
 
 	for (int i = 0; i < vc; i++) {
 		Vertex v;
-		if (lformat & VS::ARRAY_FORMAT_VERTEX)
+		if (lformat & VS::ARRAY_FORMAT_VERTEX) {
 			v.vertex = varr[i];
-		if (lformat & VS::ARRAY_FORMAT_NORMAL)
+		}
+		if (lformat & VS::ARRAY_FORMAT_NORMAL) {
 			v.normal = narr[i];
+		}
 		if (lformat & VS::ARRAY_FORMAT_TANGENT) {
 			Plane p(tarr[i * 4 + 0], tarr[i * 4 + 1], tarr[i * 4 + 2], tarr[i * 4 + 3]);
 			v.tangent = p.normal;
 			v.binormal = p.normal.cross(v.tangent).normalized() * p.d;
 		}
-		if (lformat & VS::ARRAY_FORMAT_COLOR)
+		if (lformat & VS::ARRAY_FORMAT_COLOR) {
 			v.color = carr[i];
-		if (lformat & VS::ARRAY_FORMAT_TEX_UV)
+		}
+		if (lformat & VS::ARRAY_FORMAT_TEX_UV) {
 			v.uv = uvarr[i];
-		if (lformat & VS::ARRAY_FORMAT_TEX_UV2)
+		}
+		if (lformat & VS::ARRAY_FORMAT_TEX_UV2) {
 			v.uv2 = uv2arr[i];
+		}
 		if (lformat & VS::ARRAY_FORMAT_BONES) {
 			Vector<int> b;
 			b.resize(4);
@@ -609,8 +630,9 @@ void SurfaceTool::_create_list_from_arrays(Array arr, List<Vertex> *r_vertex, Li
 
 	int vc = varr.size();
 
-	if (vc == 0)
+	if (vc == 0) {
 		return;
+	}
 	lformat = 0;
 
 	PoolVector<Vector3>::Read rv;
@@ -660,21 +682,26 @@ void SurfaceTool::_create_list_from_arrays(Array arr, List<Vertex> *r_vertex, Li
 
 	for (int i = 0; i < vc; i++) {
 		Vertex v;
-		if (lformat & VS::ARRAY_FORMAT_VERTEX)
+		if (lformat & VS::ARRAY_FORMAT_VERTEX) {
 			v.vertex = varr[i];
-		if (lformat & VS::ARRAY_FORMAT_NORMAL)
+		}
+		if (lformat & VS::ARRAY_FORMAT_NORMAL) {
 			v.normal = narr[i];
+		}
 		if (lformat & VS::ARRAY_FORMAT_TANGENT) {
 			Plane p(tarr[i * 4 + 0], tarr[i * 4 + 1], tarr[i * 4 + 2], tarr[i * 4 + 3]);
 			v.tangent = p.normal;
 			v.binormal = p.normal.cross(v.tangent).normalized() * p.d;
 		}
-		if (lformat & VS::ARRAY_FORMAT_COLOR)
+		if (lformat & VS::ARRAY_FORMAT_COLOR) {
 			v.color = carr[i];
-		if (lformat & VS::ARRAY_FORMAT_TEX_UV)
+		}
+		if (lformat & VS::ARRAY_FORMAT_TEX_UV) {
 			v.uv = uvarr[i];
-		if (lformat & VS::ARRAY_FORMAT_TEX_UV2)
+		}
+		if (lformat & VS::ARRAY_FORMAT_TEX_UV2) {
 			v.uv2 = uv2arr[i];
+		}
 		if (lformat & VS::ARRAY_FORMAT_BONES) {
 			Vector<int> b;
 			b.resize(4);
@@ -915,8 +942,9 @@ void SurfaceTool::generate_normals(bool p_flip) {
 
 	int count = 0;
 	bool smooth = false;
-	if (smooth_groups.has(0))
+	if (smooth_groups.has(0)) {
 		smooth = smooth_groups[0];
+	}
 
 	List<Vertex>::Element *B = vertex_array.front();
 	for (List<Vertex>::Element *E = B; E;) {
@@ -929,10 +957,11 @@ void SurfaceTool::generate_normals(bool p_flip) {
 		E = v[2]->next();
 
 		Vector3 normal;
-		if (!p_flip)
+		if (!p_flip) {
 			normal = Plane(v[0]->get().vertex, v[1]->get().vertex, v[2]->get().vertex).normal;
-		else
+		} else {
 			normal = Plane(v[2]->get().vertex, v[1]->get().vertex, v[0]->get().vertex).normal;
+		}
 
 		if (smooth) {
 			for (int i = 0; i < 3; i++) {

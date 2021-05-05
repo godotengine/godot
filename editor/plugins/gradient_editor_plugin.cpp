@@ -38,8 +38,9 @@ Size2 GradientEditor::get_minimum_size() const {
 	return Size2(0, 60) * EDSCALE;
 }
 void GradientEditor::_gradient_changed() {
-	if (editing)
+	if (editing) {
 		return;
+	}
 
 	editing = true;
 	Vector<Gradient::Point> points = gradient->get_points();

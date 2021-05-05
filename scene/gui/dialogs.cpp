@@ -112,8 +112,9 @@ void WindowDialog::_gui_input(const Ref<InputEvent> &p_event) {
 		if (mb->is_pressed()) {
 			// Begin a possible dragging operation.
 			drag_type = _drag_hit_test(Point2(mb->get_position().x, mb->get_position().y));
-			if (drag_type != DRAG_NONE)
+			if (drag_type != DRAG_NONE) {
 				drag_offset = get_global_mouse_position() - get_position();
+			}
 			drag_offset_far = get_position() + get_size() - get_global_mouse_position();
 		} else if (drag_type != DRAG_NONE && !mb->is_pressed()) {
 			// End a dragging operation.
@@ -148,8 +149,9 @@ void WindowDialog::_gui_input(const Ref<InputEvent> &p_event) {
 						break;
 				}
 			}
-			if (get_cursor_shape() != cursor)
+			if (get_cursor_shape() != cursor) {
 				set_default_cursor_shape(cursor);
+			}
 		} else {
 			// Update while in a dragging operation.
 			Point2 global_pos = get_global_mouse_position();
@@ -226,8 +228,9 @@ void WindowDialog::_notification(int p_what) {
 		case NOTIFICATION_MOUSE_EXIT: {
 			// Reset the mouse cursor when leaving the resizable window border.
 			if (resizable && !drag_type) {
-				if (get_default_cursor_shape() != CURSOR_ARROW)
+				if (get_default_cursor_shape() != CURSOR_ARROW) {
 					set_default_cursor_shape(CURSOR_ARROW);
+				}
 			}
 		} break;
 
@@ -263,18 +266,21 @@ int WindowDialog::_drag_hit_test(const Point2 &pos) const {
 
 		Rect2 rect = get_rect();
 
-		if (pos.y < (-title_height + scaleborder_size))
+		if (pos.y < (-title_height + scaleborder_size)) {
 			drag_type = DRAG_RESIZE_TOP;
-		else if (pos.y >= (rect.size.height - scaleborder_size))
+		} else if (pos.y >= (rect.size.height - scaleborder_size)) {
 			drag_type = DRAG_RESIZE_BOTTOM;
-		if (pos.x < scaleborder_size)
+		}
+		if (pos.x < scaleborder_size) {
 			drag_type |= DRAG_RESIZE_LEFT;
-		else if (pos.x >= (rect.size.width - scaleborder_size))
+		} else if (pos.x >= (rect.size.width - scaleborder_size)) {
 			drag_type |= DRAG_RESIZE_RIGHT;
+		}
 	}
 
-	if (drag_type == DRAG_NONE && pos.y < 0)
+	if (drag_type == DRAG_NONE && pos.y < 0) {
 		drag_type = DRAG_MOVE;
+	}
 
 	return drag_type;
 }
@@ -385,8 +391,9 @@ void AcceptDialog::_builtin_text_entered(const String &p_text) {
 }
 
 void AcceptDialog::_ok_pressed() {
-	if (hide_on_ok)
+	if (hide_on_ok) {
 		hide();
+	}
 	ok_pressed();
 	emit_signal("confirmed");
 }
@@ -420,8 +427,9 @@ bool AcceptDialog::has_autowrap() {
 void AcceptDialog::register_text_enter(Node *p_line_edit) {
 	ERR_FAIL_NULL(p_line_edit);
 	LineEdit *line_edit = Object::cast_to<LineEdit>(p_line_edit);
-	if (line_edit)
+	if (line_edit) {
 		line_edit->connect("text_entered", this, "_builtin_text_entered");
+	}
 }
 
 void AcceptDialog::_update_child_rects() {
@@ -438,11 +446,13 @@ void AcceptDialog::_update_child_rects() {
 
 	for (int i = 0; i < get_child_count(); i++) {
 		Control *c = Object::cast_to<Control>(get_child(i));
-		if (!c)
+		if (!c) {
 			continue;
+		}
 
-		if (c == hbc || c == label || c == get_close_button() || c->is_set_as_toplevel())
+		if (c == hbc || c == label || c == get_close_button() || c->is_set_as_toplevel()) {
 			continue;
+		}
 
 		c->set_position(cpos);
 		c->set_size(csize);
@@ -461,11 +471,13 @@ Size2 AcceptDialog::get_minimum_size() const {
 
 	for (int i = 0; i < get_child_count(); i++) {
 		Control *c = Object::cast_to<Control>(get_child(i));
-		if (!c)
+		if (!c) {
 			continue;
+		}
 
-		if (c == hbc || c == label || c == const_cast<AcceptDialog *>(this)->get_close_button() || c->is_set_as_toplevel())
+		if (c == hbc || c == label || c == const_cast<AcceptDialog *>(this)->get_close_button() || c->is_set_as_toplevel()) {
 			continue;
+		}
 
 		Size2 cminsize = c->get_combined_minimum_size();
 		minsize.x = MAX(cminsize.x, minsize.x);
@@ -509,8 +521,9 @@ Button *AcceptDialog::add_button(const String &p_text, bool p_right, const Strin
 
 Button *AcceptDialog::add_cancel(const String &p_cancel) {
 	String c = p_cancel;
-	if (p_cancel == "")
+	if (p_cancel == "") {
 		c = RTR("Cancel");
+	}
 	Button *b = swap_ok_cancel ? add_button(c, true) : add_button(c);
 	b->connect("pressed", this, "_closed");
 	return b;

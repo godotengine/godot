@@ -100,8 +100,9 @@ void InputMap::erase_action(const StringName &p_action) {
 Array InputMap::_get_actions() {
 	Array ret;
 	List<StringName> actions = get_actions();
-	if (actions.empty())
+	if (actions.empty()) {
 		return ret;
+	}
 
 	for (const List<StringName>::Element *E = actions.front(); E; E = E->next()) {
 		ret.push_back(E->get());
@@ -157,8 +158,9 @@ void InputMap::action_add_event(const StringName &p_action, const Ref<InputEvent
 	ERR_FAIL_COND_MSG(p_event.is_null(), "It's not a reference to a valid InputEvent object.");
 	ERR_FAIL_COND_MSG(!input_map.has(p_action), _suggest_actions(p_action));
 
-	if (_find_event(input_map[p_action], p_event))
+	if (_find_event(input_map[p_action], p_event)) {
 		return; //already gots
+	}
 
 	input_map[p_action].inputs.push_back(p_event);
 }
@@ -201,8 +203,9 @@ Array InputMap::_get_action_list(const StringName &p_action) {
 
 const List<Ref<InputEvent>> *InputMap::get_action_list(const StringName &p_action) {
 	const Map<StringName, Action>::Element *E = input_map.find(p_action);
-	if (!E)
+	if (!E) {
 		return nullptr;
+	}
 
 	return &E->get().inputs;
 }
@@ -217,10 +220,12 @@ bool InputMap::event_get_action_status(const Ref<InputEvent> &p_event, const Str
 
 	Ref<InputEventAction> input_event_action = p_event;
 	if (input_event_action.is_valid()) {
-		if (p_pressed != nullptr)
+		if (p_pressed != nullptr) {
 			*p_pressed = input_event_action->is_pressed();
-		if (p_strength != nullptr)
+		}
+		if (p_strength != nullptr) {
 			*p_strength = (p_pressed != nullptr && *p_pressed) ? input_event_action->get_strength() : 0.0f;
+		}
 		return input_event_action->get_action() == p_action;
 	}
 
@@ -228,10 +233,12 @@ bool InputMap::event_get_action_status(const Ref<InputEvent> &p_event, const Str
 	float strength;
 	List<Ref<InputEvent>>::Element *event = _find_event(E->get(), p_event, &pressed, &strength);
 	if (event != nullptr) {
-		if (p_pressed != nullptr)
+		if (p_pressed != nullptr) {
 			*p_pressed = pressed;
-		if (p_strength != nullptr)
+		}
+		if (p_strength != nullptr) {
 			*p_strength = strength;
+		}
 		return true;
 	} else {
 		return false;
@@ -251,8 +258,9 @@ void InputMap::load_from_globals() {
 	for (List<PropertyInfo>::Element *E = pinfo.front(); E; E = E->next()) {
 		const PropertyInfo &pi = E->get();
 
-		if (!pi.name.begins_with("input/"))
+		if (!pi.name.begins_with("input/")) {
 			continue;
+		}
 
 		String name = pi.name.substr(pi.name.find("/") + 1, pi.name.length());
 
@@ -263,8 +271,9 @@ void InputMap::load_from_globals() {
 		add_action(name, deadzone);
 		for (int i = 0; i < events.size(); i++) {
 			Ref<InputEvent> event = events[i];
-			if (event.is_null())
+			if (event.is_null()) {
 				continue;
+			}
 			action_add_event(name, event);
 		}
 	}

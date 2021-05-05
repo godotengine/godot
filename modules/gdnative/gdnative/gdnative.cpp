@@ -91,8 +91,9 @@ godot_variant GDAPI godot_method_bind_call(godot_method_bind *p_method_bind, god
 
 godot_class_constructor GDAPI godot_get_class_constructor(const char *p_classname) {
 	ClassDB::ClassInfo *class_info = ClassDB::classes.getptr(StringName(p_classname));
-	if (class_info)
+	if (class_info) {
 		return (godot_class_constructor)class_info->creation_func;
+	}
 	return nullptr;
 }
 
@@ -179,8 +180,9 @@ void *godot_get_class_tag(const godot_string_name *p_class) {
 }
 
 godot_object *godot_object_cast_to(const godot_object *p_object, void *p_class_tag) {
-	if (!p_object)
+	if (!p_object) {
 		return nullptr;
+	}
 	Object *o = (Object *)p_object;
 
 	return o->is_class_ptr(p_class_tag) ? (godot_object *)o : nullptr;

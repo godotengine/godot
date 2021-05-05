@@ -44,8 +44,9 @@
 
 void CollisionShape::make_convex_from_brothers() {
 	Node *p = get_parent();
-	if (!p)
+	if (!p) {
 		return;
+	}
 
 	for (int i = 0; i < p->get_child_count(); i++) {
 		Node *n = p->get_child(i);
@@ -62,8 +63,9 @@ void CollisionShape::make_convex_from_brothers() {
 
 void CollisionShape::_update_in_shape_owner(bool p_xform_only) {
 	parent->shape_owner_set_transform(owner_id, get_transform());
-	if (p_xform_only)
+	if (p_xform_only) {
 		return;
+	}
 	parent->shape_owner_set_disabled(owner_id, disabled);
 }
 
@@ -176,8 +178,9 @@ void CollisionShape::set_shape(const Ref<Shape> &p_shape) {
 		}
 	}
 
-	if (is_inside_tree())
+	if (is_inside_tree()) {
 		_shape_changed();
+	}
 	update_configuration_warning();
 }
 
@@ -206,8 +209,9 @@ CollisionShape::CollisionShape() {
 }
 
 CollisionShape::~CollisionShape() {
-	if (!shape.is_null())
+	if (!shape.is_null()) {
 		shape->unregister_owner(this);
+	}
 	//VisualServer::get_singleton()->free(indicator);
 }
 

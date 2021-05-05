@@ -82,8 +82,9 @@ public:
 	Vector<Color> get_colors() const;
 
 	_FORCE_INLINE_ Color get_color_at_offset(float p_offset) {
-		if (points.empty())
+		if (points.empty()) {
 			return Color(0, 0, 0, 1);
+		}
 
 		_update_sorting();
 
@@ -115,10 +116,12 @@ public:
 		}
 		int first = middle;
 		int second = middle + 1;
-		if (second >= points.size())
+		if (second >= points.size()) {
 			return points[points.size() - 1].color;
-		if (first < 0)
+		}
+		if (first < 0) {
 			return points[0].color;
+		}
 		const Point &pointFirst = points[first];
 		const Point &pointSecond = points[second];
 		return pointFirst.color.linear_interpolate(pointSecond.color, (p_offset - pointFirst.offset) / (pointSecond.offset - pointFirst.offset));

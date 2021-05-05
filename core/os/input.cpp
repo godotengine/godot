@@ -135,8 +135,9 @@ void Input::get_argument_options(const StringName &p_function, int p_idx, List<S
 		for (List<PropertyInfo>::Element *E = pinfo.front(); E; E = E->next()) {
 			const PropertyInfo &pi = E->get();
 
-			if (!pi.name.begins_with("input/"))
+			if (!pi.name.begins_with("input/")) {
 				continue;
+			}
 
 			String name = pi.name.substr(pi.name.find("/") + 1, pi.name.length());
 			r_options->push_back(quote_style + name + quote_style);
