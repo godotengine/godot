@@ -55,16 +55,19 @@ public:
 		ERR_FAIL_COND_MSG(!file, "Failed loading resource: '" + p_file + "'.");
 	}
 	~MkvReader() {
-		if (file)
+		if (file) {
 			memdelete(file);
+		}
 	}
 
 	virtual int Read(long long pos, long len, unsigned char *buf) {
 		if (file) {
-			if (file->get_position() != (size_t)pos)
+			if (file->get_position() != (size_t)pos) {
 				file->seek(pos);
-			if (file->get_buffer(buf, len) == len)
+			}
+			if (file->get_buffer(buf, len) == len) {
 				return 0;
+			}
 		}
 		return -1;
 	}
@@ -72,10 +75,12 @@ public:
 	virtual int Length(long long *total, long long *available) {
 		if (file) {
 			const size_t len = file->get_len();
-			if (total)
+			if (total) {
 				*total = len;
-			if (available)
+			}
+			if (available) {
 				*available = len;
+			}
 			return 0;
 		}
 		return -1;
@@ -190,8 +195,9 @@ bool VideoStreamPlaybackWebm::has_loop() const {
 }
 
 float VideoStreamPlaybackWebm::get_length() const {
-	if (webm)
+	if (webm) {
 		return webm->getLength();
+	}
 	return 0.0f;
 }
 
@@ -211,8 +217,9 @@ Ref<Texture> VideoStreamPlaybackWebm::get_texture() const {
 }
 
 void VideoStreamPlaybackWebm::update(float p_delta) {
-	if ((!playing || paused) || !video)
+	if ((!playing || paused) || !video) {
 		return;
+	}
 
 	time += p_delta;
 
@@ -255,11 +262,13 @@ void VideoStreamPlaybackWebm::update(float p_delta) {
 		}
 		video_frame = video_frames[video_frames_pos];
 
-		if (!webm->readFrame(video_frame, audio_frame)) //This will invalidate frames
+		if (!webm->readFrame(video_frame, audio_frame)) { //This will invalidate frames
 			break; //Can't demux, EOS?
+		}
 
-		if (video_frame->isValid())
+		if (video_frame->isValid()) {
 			++video_frames_pos;
+		}
 	};
 
 	bool video_frame_done = false;
@@ -326,8 +335,9 @@ void VideoStreamPlaybackWebm::update(float p_delta) {
 		video_frames[video_frames_pos] = video_frame;
 	}
 
-	if (video_frames_pos == 0 && webm->isEOS())
+	if (video_frames_pos == 0 && webm->isEOS()) {
 		stop();
+	}
 }
 
 void VideoStreamPlaybackWebm::set_mix_callback(VideoStreamPlayback::AudioMixCallback p_callback, void *p_userdata) {
@@ -335,13 +345,15 @@ void VideoStreamPlaybackWebm::set_mix_callback(VideoStreamPlayback::AudioMixCall
 	mix_udata = p_userdata;
 }
 int VideoStreamPlaybackWebm::get_channels() const {
-	if (audio)
+	if (audio) {
 		return webm->getChannels();
+	}
 	return 0;
 }
 int VideoStreamPlaybackWebm::get_mix_rate() const {
-	if (audio)
+	if (audio) {
 		return webm->getSampleRate();
+	}
 	return 0;
 }
 
@@ -366,24 +378,30 @@ bool VideoStreamPlaybackWebm::should_process(WebMFrame &video_frame) {
 }
 
 void VideoStreamPlaybackWebm::delete_pointers() {
-	if (pcm)
+	if (pcm) {
 		memfree(pcm);
+	}
 
-	if (audio_frame)
+	if (audio_frame) {
 		memdelete(audio_frame);
+	}
 	if (video_frames) {
-		for (int i = 0; i < video_frames_capacity; ++i)
+		for (int i = 0; i < video_frames_capacity; ++i) {
 			memdelete(video_frames[i]);
+		}
 		memfree(video_frames);
 	}
 
-	if (video)
+	if (video) {
 		memdelete(video);
-	if (audio)
+	}
+	if (audio) {
 		memdelete(audio);
+	}
 
-	if (webm)
+	if (webm) {
 		memdelete(webm);
+	}
 }
 
 /**/
@@ -394,8 +412,9 @@ VideoStreamWebm::VideoStreamWebm() :
 Ref<VideoStreamPlayback> VideoStreamWebm::instance_playback() {
 	Ref<VideoStreamPlaybackWebm> pb = memnew(VideoStreamPlaybackWebm);
 	pb->set_audio_track(audio_track);
-	if (pb->open_file(file))
+	if (pb->open_file(file)) {
 		return pb;
+	}
 	return nullptr;
 }
 
@@ -452,7 +471,8 @@ bool ResourceFormatLoaderWebm::handles_type(const String &p_type) const {
 
 String ResourceFormatLoaderWebm::get_resource_type(const String &p_path) const {
 	String el = p_path.get_extension().to_lower();
-	if (el == "webm")
+	if (el == "webm") {
 		return "VideoStreamWebm";
+	}
 	return "";
 }

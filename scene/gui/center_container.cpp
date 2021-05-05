@@ -31,17 +31,21 @@
 #include "center_container.h"
 
 Size2 CenterContainer::get_minimum_size() const {
-	if (use_top_left)
+	if (use_top_left) {
 		return Size2();
+	}
 	Size2 ms;
 	for (int i = 0; i < get_child_count(); i++) {
 		Control *c = Object::cast_to<Control>(get_child(i));
-		if (!c)
+		if (!c) {
 			continue;
-		if (c->is_set_as_toplevel())
+		}
+		if (c->is_set_as_toplevel()) {
 			continue;
-		if (!c->is_visible())
+		}
+		if (!c->is_visible()) {
 			continue;
+		}
 		Size2 minsize = c->get_combined_minimum_size();
 		ms.width = MAX(ms.width, minsize.width);
 		ms.height = MAX(ms.height, minsize.height);
@@ -70,10 +74,12 @@ void CenterContainer::_notification(int p_what) {
 		Size2 size = get_size();
 		for (int i = 0; i < get_child_count(); i++) {
 			Control *c = Object::cast_to<Control>(get_child(i));
-			if (!c)
+			if (!c) {
 				continue;
-			if (c->is_set_as_toplevel())
+			}
+			if (c->is_set_as_toplevel()) {
 				continue;
+			}
 
 			Size2 minsize = c->get_combined_minimum_size();
 			Point2 ofs = use_top_left ? (-minsize * 0.5).floor() : ((size - minsize) / 2.0).floor();

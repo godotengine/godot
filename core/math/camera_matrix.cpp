@@ -424,23 +424,26 @@ void CameraMatrix::invert() {
 
 		/** Divide column by minus pivot value **/
 		for (i = 0; i < 4; i++) {
-			if (i != k)
+			if (i != k) {
 				matrix[i][k] /= (-pvt_val);
+			}
 		}
 
 		/** Reduce the matrix **/
 		for (i = 0; i < 4; i++) {
 			hold = matrix[i][k];
 			for (j = 0; j < 4; j++) {
-				if (i != k && j != k)
+				if (i != k && j != k) {
 					matrix[i][j] += hold * matrix[k][j];
+				}
 			}
 		}
 
 		/** Divide row by pivot **/
 		for (j = 0; j < 4; j++) {
-			if (j != k)
+			if (j != k) {
 				matrix[k][j] /= pvt_val;
+			}
 		}
 
 		/** Replace pivot by reciprocal (at last we can touch it). **/
@@ -460,12 +463,13 @@ void CameraMatrix::invert() {
 		}
 
 		j = pvt_i[k]; /* Columns to swap correspond to pivot ROW */
-		if (j != k) /* If columns are different */
+		if (j != k) { /* If columns are different */
 			for (i = 0; i < 4; i++) {
 				hold = matrix[i][k];
 				matrix[i][k] = -matrix[i][j];
 				matrix[i][j] = hold;
 			}
+		}
 	}
 }
 
@@ -479,8 +483,9 @@ CameraMatrix CameraMatrix::operator*(const CameraMatrix &p_matrix) const {
 	for (int j = 0; j < 4; j++) {
 		for (int i = 0; i < 4; i++) {
 			real_t ab = 0;
-			for (int k = 0; k < 4; k++)
+			for (int k = 0; k < 4; k++) {
 				ab += matrix[k][i] * p_matrix.matrix[j][k];
+			}
 			new_matrix.matrix[j][i] = ab;
 		}
 	}
@@ -532,9 +537,11 @@ void CameraMatrix::set_light_atlas_rect(const Rect2 &p_rect) {
 
 CameraMatrix::operator String() const {
 	String str;
-	for (int i = 0; i < 4; i++)
-		for (int j = 0; j < 4; j++)
+	for (int i = 0; i < 4; i++) {
+		for (int j = 0; j < 4; j++) {
 			str += String((j > 0) ? ", " : "\n") + rtos(matrix[i][j]);
+		}
+	}
 
 	return str;
 }

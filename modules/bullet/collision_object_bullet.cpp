@@ -80,10 +80,11 @@ btTransform CollisionObjectBullet::ShapeWrapper::get_adjusted_transform() const 
 
 void CollisionObjectBullet::ShapeWrapper::claim_bt_shape(const btVector3 &body_scale) {
 	if (!bt_shape) {
-		if (active)
+		if (active) {
 			bt_shape = shape->create_bt_shape(scale * body_scale);
-		else
+		} else {
 			bt_shape = ShapeBullet::create_shape_empty();
+		}
 	}
 }
 
@@ -147,11 +148,13 @@ void CollisionObjectBullet::setupBulletCollisionObject(btCollisionObject *p_coll
 
 void CollisionObjectBullet::add_collision_exception(const CollisionObjectBullet *p_ignoreCollisionObject) {
 	exceptions.insert(p_ignoreCollisionObject->get_self());
-	if (!bt_collision_object)
+	if (!bt_collision_object) {
 		return;
+	}
 	bt_collision_object->setIgnoreCollisionCheck(p_ignoreCollisionObject->bt_collision_object, true);
-	if (space)
+	if (space) {
 		space->get_broadphase()->getOverlappingPairCache()->cleanProxyFromPairs(bt_collision_object->getBroadphaseHandle(), space->get_dispatcher());
+	}
 }
 
 void CollisionObjectBullet::remove_collision_exception(const CollisionObjectBullet *p_ignoreCollisionObject) {
@@ -160,8 +163,9 @@ void CollisionObjectBullet::remove_collision_exception(const CollisionObjectBull
 		return;
 	}
 	bt_collision_object->setIgnoreCollisionCheck(p_ignoreCollisionObject->bt_collision_object, false);
-	if (space)
+	if (space) {
 		space->get_broadphase()->getOverlappingPairCache()->cleanProxyFromPairs(bt_collision_object->getBroadphaseHandle(), space->get_dispatcher());
+	}
 }
 
 bool CollisionObjectBullet::has_collision_exception(const CollisionObjectBullet *p_otherCollisionObject) const {
@@ -271,8 +275,9 @@ btCollisionShape *RigidCollisionObjectBullet::get_bt_shape(int p_index) const {
 int RigidCollisionObjectBullet::find_shape(ShapeBullet *p_shape) const {
 	const int size = shapes.size();
 	for (int i = 0; i < size; ++i) {
-		if (shapes[i].shape == p_shape)
+		if (shapes[i].shape == p_shape) {
 			return i;
+		}
 	}
 	return -1;
 }
@@ -302,8 +307,9 @@ void RigidCollisionObjectBullet::remove_all_shapes(bool p_permanentlyFromThisBod
 		internal_shape_destroy(i, p_permanentlyFromThisBody);
 	}
 	shapes.clear();
-	if (!p_force_not_reload)
+	if (!p_force_not_reload) {
 		reload_shapes();
+	}
 }
 
 void RigidCollisionObjectBullet::set_shape_transform(int p_index, const Transform &p_transform) {
@@ -324,8 +330,9 @@ Transform RigidCollisionObjectBullet::get_shape_transform(int p_index) const {
 }
 
 void RigidCollisionObjectBullet::set_shape_disabled(int p_index, bool p_disabled) {
-	if (shapes[p_index].active != p_disabled)
+	if (shapes[p_index].active != p_disabled) {
 		return;
+	}
 	shapes.write[p_index].active = !p_disabled;
 	shape_changed(p_index);
 }

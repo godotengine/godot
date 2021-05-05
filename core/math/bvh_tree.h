@@ -170,8 +170,9 @@ public:
 private:
 	bool node_add_child(uint32_t p_node_id, uint32_t p_child_node_id) {
 		TNode &tnode = _nodes[p_node_id];
-		if (tnode.is_full_of_children())
+		if (tnode.is_full_of_children()) {
 			return false;
+		}
 
 		tnode.children[tnode.num_children] = p_child_node_id;
 		tnode.num_children += 1;
@@ -278,8 +279,9 @@ private:
 
 		// debug draw special
 		// This may not be needed
-		if (owner_node_id == BVHCommon::INVALID)
+		if (owner_node_id == BVHCommon::INVALID) {
 			return;
+		}
 
 		TNode &tnode = _nodes[owner_node_id];
 		CRASH_COND(!tnode.is_leaf());

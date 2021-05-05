@@ -51,10 +51,11 @@ void remove_error_handler(ErrorHandlerList *p_handler) {
 
 	while (l) {
 		if (l == p_handler) {
-			if (prev)
+			if (prev) {
 				prev->next = l->next;
-			else
+			} else {
 				error_handler_list = l->next;
+			}
 			break;
 		}
 		prev = l;

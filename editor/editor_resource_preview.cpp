@@ -61,8 +61,9 @@ Ref<Texture> EditorResourcePreviewGenerator::generate_from_path(const String &p_
 	}
 
 	RES res = ResourceLoader::load(p_path);
-	if (!res.is_valid())
+	if (!res.is_valid()) {
 		return res;
+	}
 	return generate(res, p_size);
 }
 
@@ -131,10 +132,11 @@ void EditorResourcePreview::_preview_ready(const String &p_str, const Ref<Textur
 void EditorResourcePreview::_generate_preview(Ref<ImageTexture> &r_texture, Ref<ImageTexture> &r_small_texture, const QueueItem &p_item, const String &cache_base) {
 	String type;
 
-	if (p_item.resource.is_valid())
+	if (p_item.resource.is_valid()) {
 		type = p_item.resource->get_class();
-	else
+	} else {
 		type = ResourceLoader::get_resource_type(p_item.path);
+	}
 
 	if (type == "") {
 		r_texture = Ref<ImageTexture>();
@@ -149,8 +151,9 @@ void EditorResourcePreview::_generate_preview(Ref<ImageTexture> &r_texture, Ref<
 	r_small_texture = Ref<ImageTexture>();
 
 	for (int i = 0; i < preview_generators.size(); i++) {
-		if (!preview_generators[i]->handles(type))
+		if (!preview_generators[i]->handles(type)) {
 			continue;
+		}
 
 		Ref<Texture> generated;
 		if (p_item.resource.is_valid()) {
@@ -160,8 +163,9 @@ void EditorResourcePreview::_generate_preview(Ref<ImageTexture> &r_texture, Ref<
 		}
 		r_texture = generated;
 
-		if (!EditorNode::get_singleton()->get_theme_base())
+		if (!EditorNode::get_singleton()->get_theme_base()) {
 			return;
+		}
 
 		int small_thumbnail_size = EditorNode::get_singleton()->get_theme_base()->get_icon("Object", "EditorIcons")->get_width(); // Kind of a workaround to retrieve the default icon size
 

@@ -161,8 +161,9 @@ void BodyPair2DSW::_validate_contacts() {
 bool BodyPair2DSW::_test_ccd(real_t p_step, Body2DSW *p_A, int p_shape_A, const Transform2D &p_xform_A, Body2DSW *p_B, int p_shape_B, const Transform2D &p_xform_B, bool p_swap_result) {
 	Vector2 motion = p_A->get_linear_velocity() * p_step;
 	real_t mlen = motion.length();
-	if (mlen < CMP_EPSILON)
+	if (mlen < CMP_EPSILON) {
 		return false;
+	}
 
 	Vector2 mnormal = motion / mlen;
 
@@ -188,8 +189,9 @@ bool BodyPair2DSW::_test_ccd(real_t p_step, Body2DSW *p_A, int p_shape_A, const 
 	Vector2 local_to = from_inv.xform(to);
 
 	Vector2 rpos, rnorm;
-	if (!p_B->get_shape(p_shape_B)->intersect_segment(local_from, local_to, rpos, rnorm))
+	if (!p_B->get_shape(p_shape_B)->intersect_segment(local_from, local_to, rpos, rnorm)) {
 		return false;
+	}
 
 	//ray hit something
 
@@ -200,10 +202,11 @@ bool BodyPair2DSW::_test_ccd(real_t p_step, Body2DSW *p_A, int p_shape_A, const 
 
 	//create a contact
 
-	if (p_swap_result)
+	if (p_swap_result) {
 		_contact_added_callback(contact_B, contact_A);
-	else
+	} else {
 		_contact_added_callback(contact_A, contact_B);
+	}
 
 	return true;
 }
@@ -260,13 +263,15 @@ bool BodyPair2DSW::setup(real_t p_step) {
 		//test ccd (currently just a raycast)
 
 		if (A->get_continuous_collision_detection_mode() == Physics2DServer::CCD_MODE_CAST_RAY && A->get_mode() > Physics2DServer::BODY_MODE_KINEMATIC) {
-			if (_test_ccd(p_step, A, shape_A, xform_A, B, shape_B, xform_B))
+			if (_test_ccd(p_step, A, shape_A, xform_A, B, shape_B, xform_B)) {
 				collided = true;
+			}
 		}
 
 		if (B->get_continuous_collision_detection_mode() == Physics2DServer::CCD_MODE_CAST_RAY && B->get_mode() > Physics2DServer::BODY_MODE_KINEMATIC) {
-			if (_test_ccd(p_step, B, shape_B, xform_B, A, shape_A, xform_A, true))
+			if (_test_ccd(p_step, B, shape_B, xform_B, A, shape_A, xform_A, true)) {
 				collided = true;
+			}
 		}
 
 		if (!collided) {
@@ -275,8 +280,9 @@ bool BodyPair2DSW::setup(real_t p_step) {
 		}
 	}
 
-	if (oneway_disabled)
+	if (oneway_disabled) {
 		return false;
+	}
 
 	if (!prev_collided) {
 		if (A->is_shape_set_as_one_way_collision(shape_A)) {
@@ -284,10 +290,12 @@ bool BodyPair2DSW::setup(real_t p_step) {
 			bool valid = false;
 			for (int i = 0; i < contact_count; i++) {
 				Contact &c = contacts[i];
-				if (!c.reused)
+				if (!c.reused) {
 					continue;
-				if (c.normal.dot(direction) > -CMP_EPSILON) //greater (normal inverted)
+				}
+				if (c.normal.dot(direction) > -CMP_EPSILON) { //greater (normal inverted)
 					continue;
+				}
 				valid = true;
 				break;
 			}
@@ -303,10 +311,12 @@ bool BodyPair2DSW::setup(real_t p_step) {
 			bool valid = false;
 			for (int i = 0; i < contact_count; i++) {
 				Contact &c = contacts[i];
-				if (!c.reused)
+				if (!c.reused) {
 					continue;
-				if (c.normal.dot(direction) < CMP_EPSILON) //less (normal ok)
+				}
+				if (c.normal.dot(direction) < CMP_EPSILON) { //less (normal ok)
 					continue;
+				}
 				valid = true;
 				break;
 			}
@@ -322,12 +332,13 @@ bool BodyPair2DSW::setup(real_t p_step) {
 
 	real_t bias = 0.3;
 	if (shape_A_ptr->get_custom_bias() || shape_B_ptr->get_custom_bias()) {
-		if (shape_A_ptr->get_custom_bias() == 0)
+		if (shape_A_ptr->get_custom_bias() == 0) {
 			bias = shape_B_ptr->get_custom_bias();
-		else if (shape_B_ptr->get_custom_bias() == 0)
+		} else if (shape_B_ptr->get_custom_bias() == 0) {
 			bias = shape_A_ptr->get_custom_bias();
-		else
+		} else {
 			bias = (shape_B_ptr->get_custom_bias() + shape_A_ptr->get_custom_bias()) * 0.5;
+		}
 	}
 
 	cc = 0;
@@ -428,15 +439,17 @@ bool BodyPair2DSW::setup(real_t p_step) {
 }
 
 void BodyPair2DSW::solve(real_t p_step) {
-	if (!collided)
+	if (!collided) {
 		return;
+	}
 
 	for (int i = 0; i < contact_count; ++i) {
 		Contact &c = contacts[i];
 		cc++;
 
-		if (!c.active)
+		if (!c.active) {
 			continue;
+		}
 
 		// Relative velocity at contact
 

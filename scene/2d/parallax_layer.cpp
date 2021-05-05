@@ -64,8 +64,9 @@ Size2 ParallaxLayer::get_motion_offset() const {
 }
 
 void ParallaxLayer::_update_mirroring() {
-	if (!is_inside_tree())
+	if (!is_inside_tree()) {
 		return;
+	}
 
 	ParallaxBackground *pb = Object::cast_to<ParallaxBackground>(get_parent());
 	if (pb) {
@@ -78,10 +79,12 @@ void ParallaxLayer::_update_mirroring() {
 
 void ParallaxLayer::set_mirroring(const Size2 &p_mirroring) {
 	mirroring = p_mirroring;
-	if (mirroring.x < 0)
+	if (mirroring.x < 0) {
 		mirroring.x = 0;
-	if (mirroring.y < 0)
+	}
+	if (mirroring.y < 0) {
 		mirroring.y = 0;
+	}
 
 	_update_mirroring();
 }
@@ -107,10 +110,12 @@ void ParallaxLayer::_notification(int p_what) {
 void ParallaxLayer::set_base_offset_and_scale(const Point2 &p_offset, float p_scale, const Point2 &p_screen_offset) {
 	screen_offset = p_screen_offset;
 
-	if (!is_inside_tree())
+	if (!is_inside_tree()) {
 		return;
-	if (Engine::get_singleton()->is_editor_hint())
+	}
+	if (Engine::get_singleton()->is_editor_hint()) {
 		return;
+	}
 
 	Point2 new_ofs = (screen_offset + (p_offset - screen_offset) * motion_scale) + motion_offset * p_scale + orig_offset * p_scale;
 

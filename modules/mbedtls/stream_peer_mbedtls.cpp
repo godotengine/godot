@@ -34,8 +34,9 @@
 #include "core/os/file_access.h"
 
 int StreamPeerMbedTLS::bio_send(void *ctx, const unsigned char *buf, size_t len) {
-	if (buf == nullptr || len <= 0)
+	if (buf == nullptr || len <= 0) {
 		return 0;
+	}
 
 	StreamPeerMbedTLS *sp = (StreamPeerMbedTLS *)ctx;
 
@@ -53,8 +54,9 @@ int StreamPeerMbedTLS::bio_send(void *ctx, const unsigned char *buf, size_t len)
 }
 
 int StreamPeerMbedTLS::bio_recv(void *ctx, unsigned char *buf, size_t len) {
-	if (buf == nullptr || len <= 0)
+	if (buf == nullptr || len <= 0) {
 		return 0;
+	}
 
 	StreamPeerMbedTLS *sp = (StreamPeerMbedTLS *)ctx;
 
@@ -166,8 +168,9 @@ Error StreamPeerMbedTLS::put_partial_data(const uint8_t *p_data, int p_bytes, in
 
 	r_sent = 0;
 
-	if (p_bytes == 0)
+	if (p_bytes == 0) {
 		return OK;
+	}
 
 	int ret = mbedtls_ssl_write(ssl_ctx->get_context(), p_data, p_bytes);
 	if (ret == MBEDTLS_ERR_SSL_WANT_READ || ret == MBEDTLS_ERR_SSL_WANT_WRITE) {
@@ -277,8 +280,9 @@ StreamPeerMbedTLS::~StreamPeerMbedTLS() {
 }
 
 void StreamPeerMbedTLS::disconnect_from_stream() {
-	if (status != STATUS_CONNECTED && status != STATUS_HANDSHAKING)
+	if (status != STATUS_CONNECTED && status != STATUS_HANDSHAKING) {
 		return;
+	}
 
 	Ref<StreamPeerTCP> tcp = base;
 	if (tcp.is_valid() && tcp->get_status() == StreamPeerTCP::STATUS_CONNECTED) {

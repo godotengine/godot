@@ -48,11 +48,13 @@ Error jpeg_load_image_from_buffer(Image *p_image, const uint8_t *p_buffer, int p
 	const int image_width = decoder.get_width();
 	const int image_height = decoder.get_height();
 	const int comps = decoder.get_num_components();
-	if (comps != 1 && comps != 3)
+	if (comps != 1 && comps != 3) {
 		return ERR_FILE_CORRUPT;
+	}
 
-	if (decoder.begin_decoding() != jpgd::JPGD_SUCCESS)
+	if (decoder.begin_decoding() != jpgd::JPGD_SUCCESS) {
 		return ERR_FILE_CORRUPT;
+	}
 
 	const int dst_bpl = image_width * comps;
 
@@ -90,10 +92,11 @@ Error jpeg_load_image_from_buffer(Image *p_image, const uint8_t *p_buffer, int p
 	//all good
 
 	Image::Format fmt;
-	if (comps == 1)
+	if (comps == 1) {
 		fmt = Image::FORMAT_L8;
-	else
+	} else {
 		fmt = Image::FORMAT_RGB8;
+	}
 
 	dw.release();
 	p_image->create(image_width, image_height, false, fmt, data);

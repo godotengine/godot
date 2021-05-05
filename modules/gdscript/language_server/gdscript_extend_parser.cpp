@@ -145,8 +145,9 @@ void ExtendGDScriptParser::parse_class_symbol(const GDScriptParser::ClassNode *p
 	r_symbol.script_path = path;
 	r_symbol.children.clear();
 	r_symbol.name = p_class->name;
-	if (r_symbol.name.empty())
+	if (r_symbol.name.empty()) {
 		r_symbol.name = path.get_file();
+	}
 	r_symbol.kind = lsp::SymbolKind::Class;
 	r_symbol.deprecated = false;
 	r_symbol.range.start.line = LINE_NUMBER_TO_INDEX(p_class->line);
@@ -395,8 +396,9 @@ String ExtendGDScriptParser::parse_documentation(int p_line, bool p_docs_down) {
 	int step = p_docs_down ? 1 : -1;
 	int start_line = p_docs_down ? p_line : p_line - 1;
 	for (int i = start_line; true; i += step) {
-		if (i < 0 || i >= lines.size())
+		if (i < 0 || i >= lines.size()) {
 			break;
+		}
 
 		String line_comment = lines[i].strip_edges(true, false);
 		if (line_comment.begins_with("#")) {
@@ -430,8 +432,9 @@ String ExtendGDScriptParser::get_text_for_completion(const lsp::Position &p_curs
 			longthing += lines[i];
 		}
 
-		if (i != len - 1)
+		if (i != len - 1) {
 			longthing += "\n";
+		}
 	}
 
 	return longthing;
@@ -467,8 +470,9 @@ String ExtendGDScriptParser::get_text_for_lookup_symbol(const lsp::Position &p_c
 			longthing += lines[i];
 		}
 
-		if (i != len - 1)
+		if (i != len - 1) {
 			longthing += "\n";
+		}
 	}
 
 	return longthing;

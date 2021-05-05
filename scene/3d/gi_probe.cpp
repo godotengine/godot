@@ -319,8 +319,9 @@ void GIProbe::_find_meshes(Node *p_at_node, List<PlotMesh> &plot_meshes) {
 			for (int i = 0; i < meshes.size(); i += 2) {
 				Transform mxf = meshes[i];
 				Ref<Mesh> mesh = meshes[i + 1];
-				if (!mesh.is_valid())
+				if (!mesh.is_valid()) {
 					continue;
+				}
 
 				AABB aabb = mesh->get_aabb();
 
@@ -402,8 +403,9 @@ void GIProbe::bake(Node *p_from_node, bool p_create_visual_debug) {
 	} else {
 		Ref<GIProbeData> probe_data = get_probe_data();
 
-		if (probe_data.is_null())
+		if (probe_data.is_null()) {
 			probe_data.instance();
+		}
 
 		probe_data->set_bounds(AABB(-extents, extents * 2.0));
 		probe_data->set_cell_size(baker.get_cell_size());

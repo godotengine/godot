@@ -42,10 +42,11 @@ Rect2 OccluderPolygon2D::_edit_get_rect() const {
 			item_rect = Rect2();
 			for (int i = 0; i < polygon.size(); i++) {
 				Vector2 pos = r[i];
-				if (i == 0)
+				if (i == 0) {
 					item_rect.position = pos;
-				else
+				} else {
 					item_rect.expand_to(pos);
+				}
 			}
 			rect_cache_dirty = false;
 		} else {
@@ -73,8 +74,9 @@ bool OccluderPolygon2D::_edit_is_selected_on_click(const Point2 &p_point, double
 		PoolVector<Vector2>::Read points = polygon.read();
 		for (int i = 0; i < polygon.size() - 1; i++) {
 			Vector2 p = Geometry::get_closest_point_to_segment_2d(p_point, &points[i]);
-			if (p.distance_to(p_point) <= d)
+			if (p.distance_to(p_point) <= d) {
 				return true;
+			}
 		}
 
 		return false;
@@ -94,11 +96,13 @@ PoolVector<Vector2> OccluderPolygon2D::get_polygon() const {
 }
 
 void OccluderPolygon2D::set_closed(bool p_closed) {
-	if (closed == p_closed)
+	if (closed == p_closed) {
 		return;
+	}
 	closed = p_closed;
-	if (polygon.size())
+	if (polygon.size()) {
 		VS::get_singleton()->canvas_occluder_polygon_set_shape(occ_polygon, polygon, closed);
+	}
 	emit_changed();
 }
 
@@ -207,19 +211,22 @@ bool LightOccluder2D::_edit_is_selected_on_click(const Point2 &p_point, double p
 
 void LightOccluder2D::set_occluder_polygon(const Ref<OccluderPolygon2D> &p_polygon) {
 #ifdef DEBUG_ENABLED
-	if (occluder_polygon.is_valid())
+	if (occluder_polygon.is_valid()) {
 		occluder_polygon->disconnect("changed", this, "_poly_changed");
+	}
 #endif
 	occluder_polygon = p_polygon;
 
-	if (occluder_polygon.is_valid())
+	if (occluder_polygon.is_valid()) {
 		VS::get_singleton()->canvas_light_occluder_set_polygon(occluder, occluder_polygon->get_rid());
-	else
+	} else {
 		VS::get_singleton()->canvas_light_occluder_set_polygon(occluder, RID());
+	}
 
 #ifdef DEBUG_ENABLED
-	if (occluder_polygon.is_valid())
+	if (occluder_polygon.is_valid()) {
 		occluder_polygon->connect("changed", this, "_poly_changed");
+	}
 	update();
 #endif
 }

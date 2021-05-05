@@ -47,8 +47,9 @@ void ThemeEditor::_propagate_redraw(Control *p_at) {
 	p_at->update();
 	for (int i = 0; i < p_at->get_child_count(); i++) {
 		Control *a = Object::cast_to<Control>(p_at->get_child(i));
-		if (a)
+		if (a) {
 			_propagate_redraw(a);
+		}
 	}
 }
 
@@ -258,44 +259,50 @@ void ThemeEditor::_save_template_cbk(String fname) {
 		_TECategory &tc = E->get();
 
 		String underline = "; ";
-		for (int i = 0; i < E->key().length(); i++)
+		for (int i = 0; i < E->key().length(); i++) {
 			underline += "*";
+		}
 
 		file->store_line("");
 		file->store_line(underline);
 		file->store_line("; " + E->key());
 		file->store_line(underline);
 
-		if (tc.stylebox_items.size())
+		if (tc.stylebox_items.size()) {
 			file->store_line("\n; StyleBox Items:\n");
+		}
 
 		for (Set<_TECategory::RefItem<StyleBox>>::Element *F = tc.stylebox_items.front(); F; F = F->next()) {
 			file->store_line(E->key() + "." + F->get().name + " = default");
 		}
 
-		if (tc.font_items.size())
+		if (tc.font_items.size()) {
 			file->store_line("\n; Font Items:\n");
+		}
 
 		for (Set<_TECategory::RefItem<Font>>::Element *F = tc.font_items.front(); F; F = F->next()) {
 			file->store_line(E->key() + "." + F->get().name + " = default");
 		}
 
-		if (tc.icon_items.size())
+		if (tc.icon_items.size()) {
 			file->store_line("\n; Icon Items:\n");
+		}
 
 		for (Set<_TECategory::RefItem<Texture>>::Element *F = tc.icon_items.front(); F; F = F->next()) {
 			file->store_line(E->key() + "." + F->get().name + " = default");
 		}
 
-		if (tc.color_items.size())
+		if (tc.color_items.size()) {
 			file->store_line("\n; Color Items:\n");
+		}
 
 		for (Set<_TECategory::Item<Color>>::Element *F = tc.color_items.front(); F; F = F->next()) {
 			file->store_line(E->key() + "." + F->get().name + " = default");
 		}
 
-		if (tc.constant_items.size())
+		if (tc.constant_items.size()) {
 			file->store_line("\n; Constant Items:\n");
+		}
 
 		for (Set<_TECategory::Item<int>>::Element *F = tc.constant_items.front(); F; F = F->next()) {
 			file->store_line(E->key() + "." + F->get().name + " = default");
@@ -566,8 +573,9 @@ void ThemeEditor::_theme_menu_cbk(int p_option) {
 				}
 			}
 
-			if (!found)
+			if (!found) {
 				types.push_back(F->get());
+			}
 		}
 	}
 
@@ -889,8 +897,9 @@ void ThemeEditorPlugin::make_visible(bool p_visible) {
 		editor->make_bottom_panel_item_visible(theme_editor);
 	} else {
 		theme_editor->set_process(false);
-		if (theme_editor->is_visible_in_tree())
+		if (theme_editor->is_visible_in_tree()) {
 			editor->hide_bottom_panel();
+		}
 
 		button->hide();
 	}

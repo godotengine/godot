@@ -125,8 +125,9 @@ Error ContextGL_X11::initialize() {
 
 		for (int i = 0; i < fbcount; i++) {
 			vi = (XVisualInfo *)glXGetVisualFromFBConfig(x11_display, fbc[i]);
-			if (!vi)
+			if (!vi) {
 				continue;
+			}
 
 			XRenderPictFormat *pict_format = XRenderFindVisualFormat(x11_display, vi->visual);
 			if (!pict_format) {
@@ -235,12 +236,15 @@ void ContextGL_X11::set_use_vsync(bool p_use) {
 	if (!setup) {
 		setup = true;
 		String extensions = glXQueryExtensionsString(x11_display, DefaultScreen(x11_display));
-		if (extensions.find("GLX_EXT_swap_control") != -1)
+		if (extensions.find("GLX_EXT_swap_control") != -1) {
 			glXSwapIntervalEXT = (PFNGLXSWAPINTERVALEXTPROC)glXGetProcAddressARB((const GLubyte *)"glXSwapIntervalEXT");
-		if (extensions.find("GLX_MESA_swap_control") != -1)
+		}
+		if (extensions.find("GLX_MESA_swap_control") != -1) {
 			glXSwapIntervalMESA = (PFNGLXSWAPINTERVALSGIPROC)glXGetProcAddressARB((const GLubyte *)"glXSwapIntervalMESA");
-		if (extensions.find("GLX_SGI_swap_control") != -1)
+		}
+		if (extensions.find("GLX_SGI_swap_control") != -1) {
 			glXSwapIntervalSGI = (PFNGLXSWAPINTERVALSGIPROC)glXGetProcAddressARB((const GLubyte *)"glXSwapIntervalSGI");
+		}
 	}
 	int val = p_use ? 1 : 0;
 	if (glXSwapIntervalMESA) {
@@ -250,8 +254,9 @@ void ContextGL_X11::set_use_vsync(bool p_use) {
 	} else if (glXSwapIntervalEXT) {
 		GLXDrawable drawable = glXGetCurrentDrawable();
 		glXSwapIntervalEXT(x11_display, drawable, val);
-	} else
+	} else {
 		return;
+	}
 	use_vsync = p_use;
 }
 bool ContextGL_X11::is_using_vsync() const {

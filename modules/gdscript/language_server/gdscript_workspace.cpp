@@ -196,8 +196,9 @@ Array GDScriptWorkspace::symbol(const Dictionary &p_params) {
 }
 
 Error GDScriptWorkspace::initialize() {
-	if (initialized)
+	if (initialized) {
 		return OK;
+	}
 
 	DocData *doc = EditorHelp::get_doc_data();
 	for (Map<String, DocData::ClassDoc>::Element *E = doc->class_list.front(); E; E = E->next()) {
@@ -386,8 +387,9 @@ void GDScriptWorkspace::publish_diagnostics(const String &p_path) {
 }
 
 void GDScriptWorkspace::_get_owners(EditorFileSystemDirectory *efsd, String p_path, List<String> &owners) {
-	if (!efsd)
+	if (!efsd) {
 		return;
+	}
 
 	for (int i = 0; i < efsd->get_subdir_count(); i++) {
 		_get_owners(efsd->get_subdir(i), p_path, owners);
@@ -402,8 +404,9 @@ void GDScriptWorkspace::_get_owners(EditorFileSystemDirectory *efsd, String p_pa
 				break;
 			}
 		}
-		if (!found)
+		if (!found) {
 			continue;
+		}
 
 		owners.push_back(efsd->get_file_path(i));
 	}

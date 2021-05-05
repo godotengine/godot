@@ -182,10 +182,12 @@ public:
 FileAccess *PackedData::try_open_path(const String &p_path) {
 	PathMD5 pmd5(p_path.md5_buffer());
 	Map<PathMD5, PackedFile>::Element *E = files.find(pmd5);
-	if (!E)
+	if (!E) {
 		return nullptr; //not found
-	if (E->get().offset == 0)
+	}
+	if (E->get().offset == 0) {
 		return nullptr; //was erased
+	}
 
 	return E->get().src->get_file(p_path, &E->get());
 }

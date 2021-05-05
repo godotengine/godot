@@ -71,8 +71,9 @@ struct SpatialIndexer {
 	void _notifier_update(VisibilityNotifier *p_notifier, const AABB &p_rect) {
 		Map<VisibilityNotifier *, NotifierData>::Element *E = notifiers.find(p_notifier);
 		ERR_FAIL_COND(!E);
-		if (E->get().aabb == p_rect)
+		if (E->get().aabb == p_rect) {
 			return;
+		}
 
 		E->get().aabb = p_rect;
 		octree.move(E->get().id, E->get().aabb);
@@ -133,12 +134,14 @@ struct SpatialIndexer {
 	}
 
 	void _update(uint64_t p_frame) {
-		if (p_frame == last_frame)
+		if (p_frame == last_frame) {
 			return;
+		}
 		last_frame = p_frame;
 
-		if (!changed)
+		if (!changed) {
 			return;
+		}
 
 		for (Map<Camera *, CameraData>::Element *E = cameras.front(); E; E = E->next()) {
 			pass++;
@@ -167,8 +170,9 @@ struct SpatialIndexer {
 			}
 
 			for (Map<VisibilityNotifier *, uint64_t>::Element *F = E->get().notifiers.front(); F; F = F->next()) {
-				if (F->get() != pass)
+				if (F->get() != pass) {
 					removed.push_back(F->key());
+				}
 			}
 
 			while (!added.empty()) {
@@ -247,10 +251,11 @@ void World::set_environment(const Ref<Environment> &p_environment) {
 	}
 
 	environment = p_environment;
-	if (environment.is_valid())
+	if (environment.is_valid()) {
 		VS::get_singleton()->scenario_set_environment(scenario, environment->get_rid());
-	else
+	} else {
 		VS::get_singleton()->scenario_set_environment(scenario, RID());
+	}
 
 	emit_changed();
 }
@@ -265,10 +270,11 @@ void World::set_fallback_environment(const Ref<Environment> &p_environment) {
 	}
 
 	fallback_environment = p_environment;
-	if (fallback_environment.is_valid())
+	if (fallback_environment.is_valid()) {
 		VS::get_singleton()->scenario_set_fallback_environment(scenario, p_environment->get_rid());
-	else
+	} else {
 		VS::get_singleton()->scenario_set_fallback_environment(scenario, RID());
+	}
 
 	emit_changed();
 }

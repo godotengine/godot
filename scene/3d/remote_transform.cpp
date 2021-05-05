@@ -43,18 +43,22 @@ void RemoteTransform::_update_cache() {
 }
 
 void RemoteTransform::_update_remote() {
-	if (!is_inside_tree())
+	if (!is_inside_tree()) {
 		return;
+	}
 
-	if (!cache)
+	if (!cache) {
 		return;
+	}
 
 	Spatial *n = Object::cast_to<Spatial>(ObjectDB::get_instance(cache));
-	if (!n)
+	if (!n) {
 		return;
+	}
 
-	if (!n->is_inside_tree())
+	if (!n->is_inside_tree()) {
 		return;
+	}
 
 	//todo make faster
 	if (use_global_coordinates) {
@@ -63,11 +67,13 @@ void RemoteTransform::_update_remote() {
 		} else {
 			Transform our_trans = get_global_transform();
 
-			if (update_remote_rotation)
+			if (update_remote_rotation) {
 				n->set_rotation(our_trans.basis.get_rotation());
+			}
 
-			if (update_remote_scale)
+			if (update_remote_scale) {
 				n->set_scale(our_trans.basis.get_scale());
+			}
 
 			if (update_remote_position) {
 				Transform n_trans = n->get_global_transform();
@@ -83,11 +89,13 @@ void RemoteTransform::_update_remote() {
 		} else {
 			Transform our_trans = get_transform();
 
-			if (update_remote_rotation)
+			if (update_remote_rotation) {
 				n->set_rotation(our_trans.basis.get_rotation());
+			}
 
-			if (update_remote_scale)
+			if (update_remote_scale) {
 				n->set_scale(our_trans.basis.get_scale());
+			}
 
 			if (update_remote_position) {
 				Transform n_trans = n->get_transform();
@@ -106,8 +114,9 @@ void RemoteTransform::_notification(int p_what) {
 
 		} break;
 		case NOTIFICATION_TRANSFORM_CHANGED: {
-			if (!is_inside_tree())
+			if (!is_inside_tree()) {
 				break;
+			}
 
 			if (cache) {
 				_update_remote();

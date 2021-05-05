@@ -66,8 +66,9 @@ void CanvasItemMaterial::_update_shader() {
 	dirty_materials->remove(&element);
 
 	MaterialKey mk = _compute_key();
-	if (mk.key == current_key.key)
+	if (mk.key == current_key.key) {
 		return; //no update required in the end
+	}
 
 	if (shader_map.has(current_key)) {
 		shader_map[current_key].users--;
@@ -344,14 +345,16 @@ Transform2D CanvasItem::_edit_get_transform() const {
 #endif
 
 bool CanvasItem::is_visible_in_tree() const {
-	if (!is_inside_tree())
+	if (!is_inside_tree()) {
 		return false;
+	}
 
 	const CanvasItem *p = this;
 
 	while (p) {
-		if (!p->visible)
+		if (!p->visible) {
 			return false;
+		}
 		p = p->get_parent_item();
 	}
 
@@ -364,45 +367,51 @@ void CanvasItem::_propagate_visibility_changed(bool p_visible) {
 	}
 	notification(NOTIFICATION_VISIBILITY_CHANGED);
 
-	if (p_visible)
+	if (p_visible) {
 		update(); //todo optimize
-	else
+	} else {
 		emit_signal(SceneStringNames::get_singleton()->hide);
+	}
 	_block();
 
 	for (int i = 0; i < get_child_count(); i++) {
 		CanvasItem *c = Object::cast_to<CanvasItem>(get_child(i));
 
-		if (c && c->visible) //should the toplevels stop propagation? i think so but..
+		if (c && c->visible) { //should the toplevels stop propagation? i think so but..
 			c->_propagate_visibility_changed(p_visible);
+		}
 	}
 
 	_unblock();
 }
 
 void CanvasItem::show() {
-	if (visible)
+	if (visible) {
 		return;
+	}
 
 	visible = true;
 	VisualServer::get_singleton()->canvas_item_set_visible(canvas_item, true);
 
-	if (!is_inside_tree())
+	if (!is_inside_tree()) {
 		return;
+	}
 
 	_propagate_visibility_changed(true);
 	_change_notify("visible");
 }
 
 void CanvasItem::hide() {
-	if (!visible)
+	if (!visible) {
 		return;
+	}
 
 	visible = false;
 	VisualServer::get_singleton()->canvas_item_set_visible(canvas_item, false);
 
-	if (!is_inside_tree())
+	if (!is_inside_tree()) {
 		return;
+	}
 
 	_propagate_visibility_changed(false);
 	_change_notify("visible");
@@ -441,12 +450,13 @@ void CanvasItem::_update_callback() {
 }
 
 Transform2D CanvasItem::get_global_transform_with_canvas() const {
-	if (canvas_layer)
+	if (canvas_layer) {
 		return canvas_layer->get_transform() * get_global_transform();
-	else if (is_inside_tree())
+	} else if (is_inside_tree()) {
 		return get_viewport()->get_canvas_transform() * get_global_transform();
-	else
+	} else {
 		return get_global_transform();
+	}
 }
 
 Transform2D CanvasItem::get_global_transform() const {
@@ -455,10 +465,11 @@ Transform2D CanvasItem::get_global_transform() const {
 #endif
 	if (global_invalid) {
 		const CanvasItem *pi = get_parent_item();
-		if (pi)
+		if (pi) {
 			global_transform = pi->get_global_transform() * get_transform();
-		else
+		} else {
 			global_transform = get_transform();
+		}
 
 		global_invalid = false;
 	}
@@ -467,13 +478,15 @@ Transform2D CanvasItem::get_global_transform() const {
 }
 
 void CanvasItem::_toplevel_raise_self() {
-	if (!is_inside_tree())
+	if (!is_inside_tree()) {
 		return;
+	}
 
-	if (canvas_layer)
+	if (canvas_layer) {
 		VisualServer::get_singleton()->canvas_item_set_draw_index(canvas_item, canvas_layer->get_sort_index());
-	else
+	} else {
 		VisualServer::get_singleton()->canvas_item_set_draw_index(canvas_item, get_viewport()->gui_get_canvas_sort_index());
+	}
 }
 
 void CanvasItem::_enter_canvas() {
@@ -494,20 +507,22 @@ void CanvasItem::_enter_canvas() {
 		}
 
 		RID canvas;
-		if (canvas_layer)
+		if (canvas_layer) {
 			canvas = canvas_layer->get_canvas();
-		else
+		} else {
 			canvas = get_viewport()->find_world_2d()->get_canvas();
+		}
 
 		VisualServer::get_singleton()->canvas_item_set_parent(canvas_item, canvas);
 
 		group = "root_canvas" + itos(canvas.get_id());
 
 		add_to_group(group);
-		if (canvas_layer)
+		if (canvas_layer) {
 			canvas_layer->reset_sort_index();
-		else
+		} else {
 			get_viewport()->gui_reset_canvas_sort_index();
+		}
 
 		get_tree()->call_group_flags(SceneTree::GROUP_CALL_UNIQUE, group, "_toplevel_raise_self");
 
@@ -537,8 +552,9 @@ void CanvasItem::_notification(int p_what) {
 			first_draw = true;
 			if (get_parent()) {
 				CanvasItem *ci = Object::cast_to<CanvasItem>(get_parent());
-				if (ci)
+				if (ci) {
 					C = ci->children_items.push_back(this);
+				}
 			}
 			_enter_canvas();
 			if (!block_transform_notify && !xform_change.in_list()) {
@@ -546,8 +562,9 @@ void CanvasItem::_notification(int p_what) {
 			}
 		} break;
 		case NOTIFICATION_MOVED_IN_PARENT: {
-			if (!is_inside_tree())
+			if (!is_inside_tree()) {
 				break;
+			}
 
 			if (group != "") {
 				get_tree()->call_group_flags(SceneTree::GROUP_CALL_UNIQUE, group, "_toplevel_raise_self");
@@ -559,8 +576,9 @@ void CanvasItem::_notification(int p_what) {
 
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
-			if (xform_change.in_list())
+			if (xform_change.in_list()) {
 				get_tree()->xform_change_list.remove(&xform_change);
+			}
 			_exit_canvas();
 			if (C) {
 				Object::cast_to<CanvasItem>(get_parent())->children_items.erase(C);
@@ -578,20 +596,23 @@ void CanvasItem::_notification(int p_what) {
 }
 
 void CanvasItem::set_visible(bool p_visible) {
-	if (p_visible)
+	if (p_visible) {
 		show();
-	else
+	} else {
 		hide();
+	}
 }
 bool CanvasItem::is_visible() const {
 	return visible;
 }
 
 void CanvasItem::update() {
-	if (!is_inside_tree())
+	if (!is_inside_tree()) {
 		return;
-	if (pending_update)
+	}
+	if (pending_update) {
 		return;
+	}
 
 	pending_update = true;
 
@@ -599,8 +620,9 @@ void CanvasItem::update() {
 }
 
 void CanvasItem::set_modulate(const Color &p_modulate) {
-	if (modulate == p_modulate)
+	if (modulate == p_modulate) {
 		return;
+	}
 
 	modulate = p_modulate;
 	VisualServer::get_singleton()->canvas_item_set_modulate(canvas_item, modulate);
@@ -610,8 +632,9 @@ Color CanvasItem::get_modulate() const {
 }
 
 void CanvasItem::set_as_toplevel(bool p_toplevel) {
-	if (toplevel == p_toplevel)
+	if (toplevel == p_toplevel) {
 		return;
+	}
 
 	if (!is_inside_tree()) {
 		toplevel = p_toplevel;
@@ -630,15 +653,17 @@ bool CanvasItem::is_set_as_toplevel() const {
 }
 
 CanvasItem *CanvasItem::get_parent_item() const {
-	if (toplevel)
+	if (toplevel) {
 		return nullptr;
+	}
 
 	return Object::cast_to<CanvasItem>(get_parent());
 }
 
 void CanvasItem::set_self_modulate(const Color &p_self_modulate) {
-	if (self_modulate == p_self_modulate)
+	if (self_modulate == p_self_modulate) {
 		return;
+	}
 
 	self_modulate = p_self_modulate;
 	VisualServer::get_singleton()->canvas_item_set_self_modulate(canvas_item, self_modulate);
@@ -648,8 +673,9 @@ Color CanvasItem::get_self_modulate() const {
 }
 
 void CanvasItem::set_light_mask(int p_light_mask) {
-	if (light_mask == p_light_mask)
+	if (light_mask == p_light_mask) {
 		return;
+	}
 
 	light_mask = p_light_mask;
 	VS::get_singleton()->canvas_item_set_light_mask(canvas_item, p_light_mask);
@@ -660,8 +686,9 @@ int CanvasItem::get_light_mask() const {
 }
 
 void CanvasItem::item_rect_changed(bool p_size_changed) {
-	if (p_size_changed)
+	if (p_size_changed) {
 		update();
+	}
 	emit_signal(SceneStringNames::get_singleton()->item_rect_changed);
 }
 
@@ -888,15 +915,17 @@ void CanvasItem::_notify_transform(CanvasItem *p_node) {
 
 	if (p_node->notify_transform && !p_node->xform_change.in_list()) {
 		if (!p_node->block_transform_notify) {
-			if (p_node->is_inside_tree())
+			if (p_node->is_inside_tree()) {
 				get_tree()->xform_change_list.add(&p_node->xform_change);
+			}
 		}
 	}
 
 	for (List<CanvasItem *>::Element *E = p_node->children_items.front(); E; E = E->next()) {
 		CanvasItem *ci = E->get();
-		if (ci->toplevel)
+		if (ci->toplevel) {
 			continue;
+		}
 		_notify_transform(ci);
 	}
 }
@@ -909,10 +938,11 @@ Rect2 CanvasItem::get_viewport_rect() const {
 RID CanvasItem::get_canvas() const {
 	ERR_FAIL_COND_V(!is_inside_tree(), RID());
 
-	if (canvas_layer)
+	if (canvas_layer) {
 		return canvas_layer->get_canvas();
-	else
+	} else {
 		return get_viewport()->find_world_2d()->get_canvas();
+	}
 }
 
 ObjectID CanvasItem::get_canvas_layer_instance_id() const {
@@ -958,8 +988,9 @@ bool CanvasItem::is_block_transform_notify_enabled() const {
 }
 
 void CanvasItem::set_draw_behind_parent(bool p_enable) {
-	if (behind == p_enable)
+	if (behind == p_enable) {
 		return;
+	}
 	behind = p_enable;
 	VisualServer::get_singleton()->canvas_item_set_draw_behind_parent(canvas_item, behind);
 }
@@ -971,8 +1002,9 @@ bool CanvasItem::is_draw_behind_parent_enabled() const {
 void CanvasItem::set_material(const Ref<Material> &p_material) {
 	material = p_material;
 	RID rid;
-	if (material.is_valid())
+	if (material.is_valid()) {
 		rid = material->get_rid();
+	}
 	VS::get_singleton()->canvas_item_set_material(canvas_item, rid);
 	_change_notify(); //properties for material exposed
 }
@@ -1168,12 +1200,13 @@ void CanvasItem::_bind_methods() {
 Transform2D CanvasItem::get_canvas_transform() const {
 	ERR_FAIL_COND_V(!is_inside_tree(), Transform2D());
 
-	if (canvas_layer)
+	if (canvas_layer) {
 		return canvas_layer->get_transform();
-	else if (Object::cast_to<CanvasItem>(get_parent()))
+	} else if (Object::cast_to<CanvasItem>(get_parent())) {
 		return Object::cast_to<CanvasItem>(get_parent())->get_canvas_transform();
-	else
+	} else {
 		return get_viewport()->get_canvas_transform();
+	}
 }
 
 Transform2D CanvasItem::get_viewport_transform() const {
@@ -1200,8 +1233,9 @@ bool CanvasItem::is_local_transform_notification_enabled() const {
 }
 
 void CanvasItem::set_notify_transform(bool p_enable) {
-	if (notify_transform == p_enable)
+	if (notify_transform == p_enable) {
 		return;
+	}
 
 	notify_transform = p_enable;
 
@@ -1216,10 +1250,11 @@ bool CanvasItem::is_transform_notification_enabled() const {
 }
 
 int CanvasItem::get_canvas_layer() const {
-	if (canvas_layer)
+	if (canvas_layer) {
 		return canvas_layer->get_layer();
-	else
+	} else {
 		return 0;
+	}
 }
 
 CanvasItem::CanvasItem() :

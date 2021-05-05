@@ -57,14 +57,17 @@ void Path2DEditor::_node_removed(Node *p_node) {
 }
 
 bool Path2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
-	if (!node)
+	if (!node) {
 		return false;
+	}
 
-	if (!node->is_visible_in_tree())
+	if (!node->is_visible_in_tree()) {
 		return false;
+	}
 
-	if (!node->get_curve().is_valid())
+	if (!node->get_curve().is_valid()) {
 		return false;
+	}
 
 	real_t grab_threshold = EDITOR_GET("editors/poly_editor/point_grab_radius");
 
@@ -175,11 +178,13 @@ bool Path2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 			int len = curve->get_point_count();
 			for (int i = 0; i < len - 1; i++) {
 				float compareLength = curve->get_closest_offset(curve->get_point_position(i + 1));
-				if (mbLength >= curve->get_closest_offset(curve->get_point_position(i)) && mbLength <= compareLength)
+				if (mbLength >= curve->get_closest_offset(curve->get_point_position(i)) && mbLength <= compareLength) {
 					insertion_point = i;
+				}
 			}
-			if (insertion_point == -1)
+			if (insertion_point == -1) {
 				insertion_point = curve->get_point_count() - 2;
+			}
 
 			undo_redo->create_action(TTR("Split Curve"));
 			undo_redo->add_do_method(curve.ptr(), "add_point", xform.affine_inverse().xform(gpoint2), Vector2(0, 0), Vector2(0, 0), insertion_point + 1);
@@ -268,10 +273,12 @@ bool Path2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 			Vector2 gpoint = mm->get_position();
 
 			Ref<Curve2D> curve = node->get_curve();
-			if (curve == nullptr)
+			if (curve == nullptr) {
 				return true;
-			if (curve->get_point_count() < 2)
+			}
+			if (curve->get_point_count() < 2) {
 				return true;
+			}
 
 			// Find edge
 			edge_point = xform.xform(curve->get_closest_point(xform.affine_inverse().xform(mm->get_position())));
@@ -327,15 +334,17 @@ bool Path2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 				case ACTION_MOVING_IN: {
 					curve->set_point_in(action_point, new_pos);
 
-					if (mirror_handle_angle)
+					if (mirror_handle_angle) {
 						curve->set_point_out(action_point, mirror_handle_length ? -new_pos : (-new_pos.normalized() * orig_out_length));
+					}
 				} break;
 
 				case ACTION_MOVING_OUT: {
 					curve->set_point_out(action_point, new_pos);
 
-					if (mirror_handle_angle)
+					if (mirror_handle_angle) {
 						curve->set_point_in(action_point, mirror_handle_length ? -new_pos : (-new_pos.normalized() * orig_in_length));
+					}
 				} break;
 			}
 
@@ -348,8 +357,9 @@ bool Path2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 }
 
 void Path2DEditor::forward_canvas_draw_over_viewport(Control *p_overlay) {
-	if (!node || !node->is_visible_in_tree() || !node->get_curve().is_valid())
+	if (!node || !node->is_visible_in_tree() || !node->get_curve().is_valid()) {
 		return;
+	}
 
 	Transform2D xform = canvas_item_editor->get_canvas_transform() * node->get_global_transform();
 
@@ -406,8 +416,9 @@ void Path2DEditor::forward_canvas_draw_over_viewport(Control *p_overlay) {
 }
 
 void Path2DEditor::_node_visibility_changed() {
-	if (!node)
+	if (!node) {
 		return;
+	}
 
 	canvas_item_editor->update_viewport();
 }
@@ -419,13 +430,15 @@ void Path2DEditor::edit(Node *p_path2d) {
 
 	if (p_path2d) {
 		node = Object::cast_to<Path2D>(p_path2d);
-		if (!node->is_connected("visibility_changed", this, "_node_visibility_changed"))
+		if (!node->is_connected("visibility_changed", this, "_node_visibility_changed")) {
 			node->connect("visibility_changed", this, "_node_visibility_changed");
+		}
 
 	} else {
 		// node may have been deleted at this point
-		if (node && node->is_connected("visibility_changed", this, "_node_visibility_changed"))
+		if (node && node->is_connected("visibility_changed", this, "_node_visibility_changed")) {
 			node->disconnect("visibility_changed", this, "_node_visibility_changed");
+		}
 		node = nullptr;
 	}
 }
@@ -461,15 +474,18 @@ void Path2DEditor::_mode_selected(int p_mode) {
 	} else if (p_mode == ACTION_CLOSE) {
 		//?
 
-		if (!node->get_curve().is_valid())
+		if (!node->get_curve().is_valid()) {
 			return;
-		if (node->get_curve()->get_point_count() < 3)
+		}
+		if (node->get_curve()->get_point_count() < 3) {
 			return;
+		}
 
 		Vector2 begin = node->get_curve()->get_point_position(0);
 		Vector2 end = node->get_curve()->get_point_position(node->get_curve()->get_point_count() - 1);
-		if (begin.distance_to(end) < CMP_EPSILON)
+		if (begin.distance_to(end) < CMP_EPSILON) {
 			return;
+		}
 
 		undo_redo->create_action(TTR("Remove Point from Curve"));
 		undo_redo->add_do_method(node->get_curve().ptr(), "add_point", begin);

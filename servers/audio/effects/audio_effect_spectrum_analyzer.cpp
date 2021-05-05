@@ -50,8 +50,9 @@ static void smbFft(float *fftBuffer, long fftFrameSize, long sign)
 
 	for (i = 2; i < 2 * fftFrameSize - 2; i += 2) {
 		for (bitm = 2, j = 0; bitm < 2 * fftFrameSize; bitm <<= 1) {
-			if (i & bitm)
+			if (i & bitm) {
 				j++;
+			}
 			j <<= 1;
 		}
 		if (i < j) {

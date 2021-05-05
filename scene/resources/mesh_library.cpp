@@ -35,14 +35,15 @@ bool MeshLibrary::_set(const StringName &p_name, const Variant &p_value) {
 	if (name.begins_with("item/")) {
 		int idx = name.get_slicec('/', 1).to_int();
 		String what = name.get_slicec('/', 2);
-		if (!item_map.has(idx))
+		if (!item_map.has(idx)) {
 			create_item(idx);
+		}
 
-		if (what == "name")
+		if (what == "name") {
 			set_item_name(idx, p_value);
-		else if (what == "mesh")
+		} else if (what == "mesh") {
 			set_item_mesh(idx, p_value);
-		else if (what == "shape") {
+		} else if (what == "shape") {
 			Vector<ShapeData> shapes;
 			ShapeData sd;
 			sd.shape = p_value;
@@ -50,14 +51,15 @@ bool MeshLibrary::_set(const StringName &p_name, const Variant &p_value) {
 			set_item_shapes(idx, shapes);
 		} else if (what == "shapes") {
 			_set_item_shapes(idx, p_value);
-		} else if (what == "preview")
+		} else if (what == "preview") {
 			set_item_preview(idx, p_value);
-		else if (what == "navmesh")
+		} else if (what == "navmesh") {
 			set_item_navmesh(idx, p_value);
-		else if (what == "navmesh_transform")
+		} else if (what == "navmesh_transform") {
 			set_item_navmesh_transform(idx, p_value);
-		else
+		} else {
 			return false;
+		}
 
 		return true;
 	}
@@ -71,20 +73,21 @@ bool MeshLibrary::_get(const StringName &p_name, Variant &r_ret) const {
 	ERR_FAIL_COND_V(!item_map.has(idx), false);
 	String what = name.get_slicec('/', 2);
 
-	if (what == "name")
+	if (what == "name") {
 		r_ret = get_item_name(idx);
-	else if (what == "mesh")
+	} else if (what == "mesh") {
 		r_ret = get_item_mesh(idx);
-	else if (what == "shapes")
+	} else if (what == "shapes") {
 		r_ret = _get_item_shapes(idx);
-	else if (what == "navmesh")
+	} else if (what == "navmesh") {
 		r_ret = get_item_navmesh(idx);
-	else if (what == "navmesh_transform")
+	} else if (what == "navmesh_transform") {
 		r_ret = get_item_navmesh_transform(idx);
-	else if (what == "preview")
+	} else if (what == "preview") {
 		r_ret = get_item_preview(idx);
-	else
+	} else {
 		return false;
+	}
 
 	return true;
 }
@@ -218,17 +221,19 @@ Vector<int> MeshLibrary::get_item_list() const {
 
 int MeshLibrary::find_item_by_name(const String &p_name) const {
 	for (Map<int, Item>::Element *E = item_map.front(); E; E = E->next()) {
-		if (E->get().name == p_name)
+		if (E->get().name == p_name) {
 			return E->key();
+		}
 	}
 	return -1;
 }
 
 int MeshLibrary::get_last_unused_item_id() const {
-	if (!item_map.size())
+	if (!item_map.size()) {
 		return 0;
-	else
+	} else {
 		return item_map.back()->key() + 1;
+	}
 }
 
 void MeshLibrary::_set_item_shapes(int p_item, const Array &p_shapes) {

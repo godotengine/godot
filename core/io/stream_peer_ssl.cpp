@@ -35,8 +35,9 @@
 StreamPeerSSL *(*StreamPeerSSL::_create)() = nullptr;
 
 StreamPeerSSL *StreamPeerSSL::create() {
-	if (_create)
+	if (_create) {
 		return _create();
+	}
 	return nullptr;
 }
 

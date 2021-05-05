@@ -192,20 +192,26 @@ Error ResourceImporterLayeredTexture::import(const String &p_source_file, const 
 	Ref<Image> image;
 	image.instance();
 	Error err = ImageLoader::load_image(p_source_file, image, nullptr, false, 1.0);
-	if (err != OK)
+	if (err != OK) {
 		return err;
+	}
 
 	int tex_flags = 0;
-	if (repeat > 0)
+	if (repeat > 0) {
 		tex_flags |= Texture::FLAG_REPEAT;
-	if (repeat == 2)
+	}
+	if (repeat == 2) {
 		tex_flags |= Texture::FLAG_MIRRORED_REPEAT;
-	if (filter)
+	}
+	if (filter) {
 		tex_flags |= Texture::FLAG_FILTER;
-	if (mipmaps || compress_mode == COMPRESS_VIDEO_RAM)
+	}
+	if (mipmaps || compress_mode == COMPRESS_VIDEO_RAM) {
 		tex_flags |= Texture::FLAG_MIPMAPS;
-	if (srgb == 1)
+	}
+	if (srgb == 1) {
 		tex_flags |= Texture::FLAG_CONVERT_TO_LINEAR;
+	}
 
 	Vector<Ref<Image>> slices;
 

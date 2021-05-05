@@ -40,8 +40,9 @@ void Navigation::_navmesh_link(int p_id) {
 
 	PoolVector<Vector3> vertices = nm.navmesh->get_vertices();
 	int len = vertices.size();
-	if (len == 0)
+	if (len == 0) {
 		return;
+	}
 
 	PoolVector<Vector3>::Read r = vertices.read();
 
@@ -210,8 +211,9 @@ int Navigation::navmesh_add(const Ref<NavigationMesh> &p_mesh, const Transform &
 void Navigation::navmesh_set_transform(int p_id, const Transform &p_xform) {
 	ERR_FAIL_COND(!navmesh_map.has(p_id));
 	NavMesh &nm = navmesh_map[p_id];
-	if (nm.xform == p_xform)
+	if (nm.xform == p_xform) {
 		return; //bleh
+	}
 	_navmesh_unlink(p_id);
 	nm.xform = p_xform;
 	_navmesh_link(p_id);
@@ -225,12 +227,14 @@ void Navigation::navmesh_remove(int p_id) {
 void Navigation::_clip_path(Vector<Vector3> &path, Polygon *from_poly, const Vector3 &p_to_point, Polygon *p_to_poly) {
 	Vector3 from = path[path.size() - 1];
 
-	if (from.distance_to(p_to_point) < CMP_EPSILON)
+	if (from.distance_to(p_to_point) < CMP_EPSILON) {
 		return;
+	}
 	Plane cut_plane;
 	cut_plane.normal = (from - p_to_point).cross(up);
-	if (cut_plane.normal == Vector3())
+	if (cut_plane.normal == Vector3()) {
 		return;
+	}
 	cut_plane.normal.normalize();
 	cut_plane.d = cut_plane.normal.dot(from);
 
@@ -265,8 +269,9 @@ Vector<Vector3> Navigation::get_simple_path(const Vector3 &p_start, const Vector
 	float end_d = 1e20;
 
 	for (Map<int, NavMesh>::Element *E = navmesh_map.front(); E; E = E->next()) {
-		if (!E->get().linked)
+		if (!E->get().linked) {
 			continue;
+		}
 		for (List<Polygon>::Element *F = E->get().polygons.front(); F; F = F->next()) {
 			Polygon &p = F->get();
 			for (int i = 2; i < p.edges.size(); i++) {
@@ -367,8 +372,9 @@ Vector<Vector3> Navigation::get_simple_path(const Vector3 &p_start, const Vector
 		for (int i = 0; i < edge_count; i++) {
 			Polygon::Edge &e = p->edges.write[i];
 
-			if (!e.C)
+			if (!e.C) {
 				continue;
+			}
 
 #ifdef USE_ENTRY_POINT
 			int next = (i + 1) % edge_count;
@@ -485,14 +491,16 @@ Vector<Vector3> Navigation::get_simple_path(const Vector3 &p_start, const Vector
 					}
 				}
 
-				if (p != begin_poly)
+				if (p != begin_poly) {
 					p = p->edges[p->prev_edge].C;
-				else
+				} else {
 					p = nullptr;
+				}
 			}
 
-			if (path[path.size() - 1] != begin_point)
+			if (path[path.size() - 1] != begin_point) {
 				path.push_back(begin_point);
+			}
 
 			path.invert();
 
@@ -513,8 +521,9 @@ Vector<Vector3> Navigation::get_simple_path(const Vector3 &p_start, const Vector
 #endif
 				path.push_back(point);
 				p = p->edges[prev].C;
-				if (p == begin_poly)
+				if (p == begin_poly) {
 					break;
+				}
 			}
 
 			path.push_back(begin_point);
@@ -534,8 +543,9 @@ Vector3 Navigation::get_closest_point_to_segment(const Vector3 &p_from, const Ve
 	float closest_point_d = 1e20;
 
 	for (Map<int, NavMesh>::Element *E = navmesh_map.front(); E; E = E->next()) {
-		if (!E->get().linked)
+		if (!E->get().linked) {
 			continue;
+		}
 		for (List<Polygon>::Element *F = E->get().polygons.front(); F; F = F->next()) {
 			Polygon &p = F->get();
 			for (int i = 2; i < p.edges.size(); i++) {
@@ -578,8 +588,9 @@ Vector3 Navigation::get_closest_point(const Vector3 &p_point) {
 	float closest_point_d = 1e20;
 
 	for (Map<int, NavMesh>::Element *E = navmesh_map.front(); E; E = E->next()) {
-		if (!E->get().linked)
+		if (!E->get().linked) {
 			continue;
+		}
 		for (List<Polygon>::Element *F = E->get().polygons.front(); F; F = F->next()) {
 			Polygon &p = F->get();
 			for (int i = 2; i < p.edges.size(); i++) {
@@ -603,8 +614,9 @@ Vector3 Navigation::get_closest_point_normal(const Vector3 &p_point) {
 	float closest_point_d = 1e20;
 
 	for (Map<int, NavMesh>::Element *E = navmesh_map.front(); E; E = E->next()) {
-		if (!E->get().linked)
+		if (!E->get().linked) {
 			continue;
+		}
 		for (List<Polygon>::Element *F = E->get().polygons.front(); F; F = F->next()) {
 			Polygon &p = F->get();
 			for (int i = 2; i < p.edges.size(); i++) {
@@ -629,8 +641,9 @@ Object *Navigation::get_closest_point_owner(const Vector3 &p_point) {
 	float closest_point_d = 1e20;
 
 	for (Map<int, NavMesh>::Element *E = navmesh_map.front(); E; E = E->next()) {
-		if (!E->get().linked)
+		if (!E->get().linked) {
 			continue;
+		}
 		for (List<Polygon>::Element *F = E->get().polygons.front(); F; F = F->next()) {
 			Polygon &p = F->get();
 			for (int i = 2; i < p.edges.size(); i++) {

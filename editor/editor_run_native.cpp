@@ -38,8 +38,9 @@ void EditorRunNative::_notification(int p_what) {
 	if (p_what == NOTIFICATION_ENTER_TREE) {
 		for (int i = 0; i < EditorExport::get_singleton()->get_export_platform_count(); i++) {
 			Ref<EditorExportPlatform> eep = EditorExport::get_singleton()->get_export_platform(i);
-			if (eep.is_null())
+			if (eep.is_null()) {
 				continue;
+			}
 			Ref<ImageTexture> icon = eep->get_run_icon();
 			if (!icon.is_null()) {
 				Ref<Image> im = icon->get_data();
@@ -129,14 +130,18 @@ void EditorRunNative::_run_native(int p_idx, int p_platform) {
 	emit_signal("native_run");
 
 	int flags = 0;
-	if (deploy_debug_remote)
+	if (deploy_debug_remote) {
 		flags |= EditorExportPlatform::DEBUG_FLAG_REMOTE_DEBUG;
-	if (deploy_dumb)
+	}
+	if (deploy_dumb) {
 		flags |= EditorExportPlatform::DEBUG_FLAG_DUMB_CLIENT;
-	if (debug_collisions)
+	}
+	if (debug_collisions) {
 		flags |= EditorExportPlatform::DEBUG_FLAG_VIEW_COLLISONS;
-	if (debug_navigation)
+	}
+	if (debug_navigation) {
 		flags |= EditorExportPlatform::DEBUG_FLAG_VIEW_NAVIGATION;
+	}
 
 	eep->run(preset, p_idx, flags);
 }

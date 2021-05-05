@@ -47,8 +47,9 @@ void Resource::_resource_path_changed() {
 }
 
 void Resource::set_path(const String &p_path, bool p_take_over) {
-	if (path_cache == p_path)
+	if (path_cache == p_path) {
 		return;
+	}
 
 	if (path_cache != "") {
 		ResourceCache::lock.write_lock();
@@ -116,22 +117,26 @@ bool Resource::editor_can_reload_from_file() {
 
 void Resource::reload_from_file() {
 	String path = get_path();
-	if (!path.is_resource_file())
+	if (!path.is_resource_file()) {
 		return;
+	}
 
 	Ref<Resource> s = ResourceLoader::load(ResourceLoader::path_remap(path), get_class(), true);
 
-	if (!s.is_valid())
+	if (!s.is_valid()) {
 		return;
+	}
 
 	List<PropertyInfo> pi;
 	s->get_property_list(&pi);
 
 	for (List<PropertyInfo>::Element *E = pi.front(); E; E = E->next()) {
-		if (!(E->get().usage & PROPERTY_USAGE_STORAGE))
+		if (!(E->get().usage & PROPERTY_USAGE_STORAGE)) {
 			continue;
-		if (E->get().name == "resource_path")
+		}
+		if (E->get().name == "resource_path") {
 			continue; //do not change path
+		}
 
 		set(E->get().name, s->get(E->get().name));
 	}
@@ -147,8 +152,9 @@ Ref<Resource> Resource::duplicate_for_local_scene(Node *p_for_scene, Map<Ref<Res
 	r->local_scene = p_for_scene;
 
 	for (List<PropertyInfo>::Element *E = plist.front(); E; E = E->next()) {
-		if (!(E->get().usage & PROPERTY_USAGE_STORAGE))
+		if (!(E->get().usage & PROPERTY_USAGE_STORAGE)) {
 			continue;
+		}
 		Variant p = get(E->get().name);
 		if (p.get_type() == Variant::OBJECT) {
 			RES sr = p;
@@ -178,8 +184,9 @@ void Resource::configure_for_local_scene(Node *p_for_scene, Map<Ref<Resource>, R
 	local_scene = p_for_scene;
 
 	for (List<PropertyInfo>::Element *E = plist.front(); E; E = E->next()) {
-		if (!(E->get().usage & PROPERTY_USAGE_STORAGE))
+		if (!(E->get().usage & PROPERTY_USAGE_STORAGE)) {
 			continue;
+		}
 		Variant p = get(E->get().name);
 		if (p.get_type() == Variant::OBJECT) {
 			RES sr = p;
@@ -203,8 +210,9 @@ Ref<Resource> Resource::duplicate(bool p_subresources) const {
 	ERR_FAIL_COND_V(r.is_null(), Ref<Resource>());
 
 	for (List<PropertyInfo>::Element *E = plist.front(); E; E = E->next()) {
-		if (!(E->get().usage & PROPERTY_USAGE_STORAGE))
+		if (!(E->get().usage & PROPERTY_USAGE_STORAGE)) {
 			continue;
+		}
 		Variant p = get(E->get().name);
 
 		if ((p.get_type() == Variant::DICTIONARY || p.get_type() == Variant::ARRAY)) {
@@ -282,8 +290,9 @@ bool Resource::is_local_to_scene() const {
 }
 
 Node *Resource::get_local_scene() const {
-	if (local_scene)
+	if (local_scene) {
 		return local_scene;
+	}
 
 	if (_get_local_scene_func) {
 		return _get_local_scene_func();
@@ -293,15 +302,17 @@ Node *Resource::get_local_scene() const {
 }
 
 void Resource::setup_local_to_scene() {
-	if (get_script_instance())
+	if (get_script_instance()) {
 		get_script_instance()->call("_setup_local_to_scene");
+	}
 }
 
 Node *(*Resource::_get_local_scene_func)() = nullptr;
 
 void Resource::set_as_translation_remapped(bool p_remapped) {
-	if (remapped_list.in_list() == p_remapped)
+	if (remapped_list.in_list() == p_remapped) {
 		return;
+	}
 
 	ResourceCache::lock.write_lock();
 
@@ -481,14 +492,16 @@ void ResourceCache::dump(const char *p_file, bool p_short) {
 		type_count[r->get_class()]++;
 
 		if (!p_short) {
-			if (f)
+			if (f) {
 				f->store_line(r->get_class() + ": " + r->get_path());
+			}
 		}
 	}
 
 	for (Map<String, int>::Element *E = type_count.front(); E; E = E->next()) {
-		if (f)
+		if (f) {
 			f->store_line(E->key() + " count: " + itos(E->get()));
+		}
 	}
 	if (f) {
 		f->close();

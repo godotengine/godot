@@ -64,24 +64,28 @@ Error PacketPeer::get_packet_buffer(PoolVector<uint8_t> &r_buffer) {
 	const uint8_t *buffer;
 	int buffer_size;
 	Error err = get_packet(&buffer, buffer_size);
-	if (err)
+	if (err) {
 		return err;
+	}
 
 	r_buffer.resize(buffer_size);
-	if (buffer_size == 0)
+	if (buffer_size == 0) {
 		return OK;
+	}
 
 	PoolVector<uint8_t>::Write w = r_buffer.write();
-	for (int i = 0; i < buffer_size; i++)
+	for (int i = 0; i < buffer_size; i++) {
 		w[i] = buffer[i];
+	}
 
 	return OK;
 }
 
 Error PacketPeer::put_packet_buffer(const PoolVector<uint8_t> &p_buffer) {
 	int len = p_buffer.size();
-	if (len == 0)
+	if (len == 0) {
 		return OK;
+	}
 
 	PoolVector<uint8_t>::Read r = p_buffer.read();
 	return put_packet(&r[0], len);
@@ -91,8 +95,9 @@ Error PacketPeer::get_var(Variant &r_variant, bool p_allow_objects) {
 	const uint8_t *buffer;
 	int buffer_size;
 	Error err = get_packet(&buffer, buffer_size);
-	if (err)
+	if (err) {
 		return err;
+	}
 
 	return decode_variant(r_variant, buffer, buffer_size, nullptr, p_allow_objects || allow_object_decoding);
 }
@@ -100,11 +105,13 @@ Error PacketPeer::get_var(Variant &r_variant, bool p_allow_objects) {
 Error PacketPeer::put_var(const Variant &p_packet, bool p_full_objects) {
 	int len;
 	Error err = encode_variant(p_packet, nullptr, len, p_full_objects || allow_object_decoding); // compute len first
-	if (err)
+	if (err) {
 		return err;
+	}
 
-	if (len == 0)
+	if (len == 0) {
 		return OK;
+	}
 
 	ERR_FAIL_COND_V_MSG(len > encode_buffer_max_size, ERR_OUT_OF_MEMORY, "Failed to encode variant, encode size is bigger then encode_buffer_max_size. Consider raising it via 'set_encode_buffer_max_size'.");
 
@@ -184,10 +191,12 @@ Error PacketPeerStream::_poll_buffer() const {
 	int read = 0;
 	ERR_FAIL_COND_V(input_buffer.size() < ring_buffer.space_left(), ERR_UNAVAILABLE);
 	Error err = peer->get_partial_data(input_buffer.ptrw(), ring_buffer.space_left(), read);
-	if (err)
+	if (err) {
 		return err;
-	if (read == 0)
+	}
+	if (read == 0) {
 		return OK;
+	}
 
 	int w = ring_buffer.write(&input_buffer[0], read);
 	ERR_FAIL_COND_V(w != read, ERR_BUG);
@@ -209,8 +218,9 @@ int PacketPeerStream::get_available_packet_count() const {
 		uint32_t len = decode_uint32(lbuf);
 		remaining -= 4;
 		ofs += 4;
-		if (len > remaining)
+		if (len > remaining) {
 			break;
+		}
 		remaining -= len;
 		ofs += len;
 		count++;
@@ -244,19 +254,22 @@ Error PacketPeerStream::put_packet(const uint8_t *p_buffer, int p_buffer_size) {
 	ERR_FAIL_COND_V(peer.is_null(), ERR_UNCONFIGURED);
 	Error err = _poll_buffer(); //won't hurt to poll here too
 
-	if (err)
+	if (err) {
 		return err;
+	}
 
-	if (p_buffer_size == 0)
+	if (p_buffer_size == 0) {
 		return OK;
+	}
 
 	ERR_FAIL_COND_V(p_buffer_size < 0, ERR_INVALID_PARAMETER);
 	ERR_FAIL_COND_V(p_buffer_size + 4 > output_buffer.size(), ERR_INVALID_PARAMETER);
 
 	encode_uint32(p_buffer_size, output_buffer.ptrw());
 	uint8_t *dst = &output_buffer.write[4];
-	for (int i = 0; i < p_buffer_size; i++)
+	for (int i = 0; i < p_buffer_size; i++) {
 		dst[i] = p_buffer[i];
+	}
 
 	return peer->put_data(&output_buffer[0], p_buffer_size + 4);
 }

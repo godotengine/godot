@@ -34,8 +34,9 @@
 
 Error StreamPeer::_put_data(const PoolVector<uint8_t> &p_data) {
 	int len = p_data.size();
-	if (len == 0)
+	if (len == 0) {
 		return OK;
+	}
 	PoolVector<uint8_t>::Read r = p_data.read();
 	return put_data(&r[0], len);
 }
@@ -299,8 +300,9 @@ double StreamPeer::get_double() {
 	return decode_double(buf);
 }
 String StreamPeer::get_string(int p_bytes) {
-	if (p_bytes < 0)
+	if (p_bytes < 0) {
 		p_bytes = get_u32();
+	}
 	ERR_FAIL_COND_V(p_bytes < 0, String());
 
 	Vector<char> buf;
@@ -312,8 +314,9 @@ String StreamPeer::get_string(int p_bytes) {
 	return buf.ptr();
 }
 String StreamPeer::get_utf8_string(int p_bytes) {
-	if (p_bytes < 0)
+	if (p_bytes < 0) {
 		p_bytes = get_u32();
+	}
 	ERR_FAIL_COND_V(p_bytes < 0, String());
 
 	Vector<uint8_t> buf;
@@ -399,8 +402,9 @@ void StreamPeerBuffer::_bind_methods() {
 }
 
 Error StreamPeerBuffer::put_data(const uint8_t *p_data, int p_bytes) {
-	if (p_bytes <= 0)
+	if (p_bytes <= 0) {
 		return OK;
+	}
 
 	if (pointer + p_bytes > data.size()) {
 		data.resize(pointer + p_bytes);
@@ -421,8 +425,9 @@ Error StreamPeerBuffer::put_partial_data(const uint8_t *p_data, int p_bytes, int
 Error StreamPeerBuffer::get_data(uint8_t *p_buffer, int p_bytes) {
 	int recv;
 	get_partial_data(p_buffer, p_bytes, recv);
-	if (recv != p_bytes)
+	if (recv != p_bytes) {
 		return ERR_INVALID_PARAMETER;
+	}
 
 	return OK;
 }

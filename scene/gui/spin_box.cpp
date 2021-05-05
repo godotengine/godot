@@ -40,10 +40,12 @@ Size2 SpinBox::get_minimum_size() const {
 
 void SpinBox::_value_changed(double) {
 	String value = String::num(get_value(), Math::range_step_decimals(get_step()));
-	if (prefix != "")
+	if (prefix != "") {
 		value = prefix + " " + value;
-	if (suffix != "")
+	}
+	if (suffix != "") {
 		value += " " + suffix;
+	}
 	line_edit->set_text(value);
 }
 
@@ -161,8 +163,9 @@ void SpinBox::_gui_input(const Ref<InputEvent> &p_event) {
 
 void SpinBox::_line_edit_focus_exit() {
 	// discontinue because the focus_exit was caused by right-click context menu
-	if (line_edit->get_menu()->is_visible())
+	if (line_edit->get_menu()->is_visible()) {
 		return;
+	}
 
 	_text_entered(line_edit->get_text());
 }

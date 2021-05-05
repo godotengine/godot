@@ -42,22 +42,25 @@ static int solve_quadratic(double a, double b, double c, double *r1, double *r2)
 	//solves quadractic and returns number of roots
 
 	double base = 2 * a;
-	if (base == 0.0f)
+	if (base == 0.0f) {
 		return 0;
+	}
 
 	double squared = b * b - 4 * a * c;
-	if (squared < 0.0)
+	if (squared < 0.0) {
 		return 0;
+	}
 
 	squared = sqrt(squared);
 
 	*r1 = (-b + squared) / base;
 	*r2 = (-b - squared) / base;
 
-	if (*r1 == *r2)
+	if (*r1 == *r2) {
 		return 1;
-	else
+	} else {
 		return 2;
+	}
 }
 
 EQ::BandProcess::BandProcess() {

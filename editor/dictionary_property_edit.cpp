@@ -47,19 +47,22 @@ void DictionaryPropertyEdit::_set_value(const Variant &p_key, const Variant &p_v
 	Dictionary dict = get_dictionary();
 	dict[p_key] = p_value;
 	Object *o = ObjectDB::get_instance(obj);
-	if (!o)
+	if (!o) {
 		return;
+	}
 
 	o->set(property, dict);
 }
 
 Variant DictionaryPropertyEdit::get_dictionary() const {
 	Object *o = ObjectDB::get_instance(obj);
-	if (!o)
+	if (!o) {
 		return Dictionary();
+	}
 	Variant dict = o->get(property);
-	if (dict.get_type() != Variant::DICTIONARY)
+	if (dict.get_type() != Variant::DICTIONARY) {
 		return Dictionary();
+	}
 	return dict;
 }
 
@@ -89,8 +92,9 @@ void DictionaryPropertyEdit::edit(Object *p_obj, const StringName &p_prop) {
 
 Node *DictionaryPropertyEdit::get_node() {
 	Object *o = ObjectDB::get_instance(obj);
-	if (!o)
+	if (!o) {
 		return nullptr;
+	}
 
 	return cast_to<Node>(o);
 }

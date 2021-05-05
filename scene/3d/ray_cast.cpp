@@ -37,10 +37,12 @@
 
 void RayCast::set_cast_to(const Vector3 &p_point) {
 	cast_to = p_point;
-	if (is_inside_tree() && (Engine::get_singleton()->is_editor_hint() || get_tree()->is_debugging_collisions_hint()))
+	if (is_inside_tree() && (Engine::get_singleton()->is_editor_hint() || get_tree()->is_debugging_collisions_hint())) {
 		update_gizmo();
-	if (is_inside_tree() && get_tree()->is_debugging_collisions_hint())
+	}
+	if (is_inside_tree() && get_tree()->is_debugging_collisions_hint()) {
 		_update_debug_shape();
+	}
 }
 
 Vector3 RayCast::get_cast_to() const {
@@ -57,10 +59,11 @@ uint32_t RayCast::get_collision_mask() const {
 
 void RayCast::set_collision_mask_bit(int p_bit, bool p_value) {
 	uint32_t mask = get_collision_mask();
-	if (p_value)
+	if (p_value) {
 		mask |= 1 << p_bit;
-	else
+	} else {
 		mask &= ~(1 << p_bit);
+	}
 	set_collision_mask(mask);
 }
 
@@ -72,8 +75,9 @@ bool RayCast::is_colliding() const {
 	return collided;
 }
 Object *RayCast::get_collider() const {
-	if (against == 0)
+	if (against == 0) {
 		return nullptr;
+	}
 
 	return ObjectDB::get_instance(against);
 }
@@ -92,16 +96,19 @@ void RayCast::set_enabled(bool p_enabled) {
 	enabled = p_enabled;
 	update_gizmo();
 
-	if (is_inside_tree() && !Engine::get_singleton()->is_editor_hint())
+	if (is_inside_tree() && !Engine::get_singleton()->is_editor_hint()) {
 		set_physics_process_internal(p_enabled);
-	if (!p_enabled)
+	}
+	if (!p_enabled) {
 		collided = false;
+	}
 
 	if (is_inside_tree() && get_tree()->is_debugging_collisions_hint()) {
-		if (p_enabled)
+		if (p_enabled) {
 			_update_debug_shape();
-		else
+		} else {
 			_clear_debug_shape();
+		}
 	}
 }
 
@@ -110,19 +117,22 @@ bool RayCast::is_enabled() const {
 }
 
 void RayCast::set_exclude_parent_body(bool p_exclude_parent_body) {
-	if (exclude_parent_body == p_exclude_parent_body)
+	if (exclude_parent_body == p_exclude_parent_body) {
 		return;
+	}
 
 	exclude_parent_body = p_exclude_parent_body;
 
-	if (!is_inside_tree())
+	if (!is_inside_tree()) {
 		return;
+	}
 
 	if (Object::cast_to<CollisionObject>(get_parent())) {
-		if (exclude_parent_body)
+		if (exclude_parent_body) {
 			exclude.insert(Object::cast_to<CollisionObject>(get_parent())->get_rid());
-		else
+		} else {
 			exclude.erase(Object::cast_to<CollisionObject>(get_parent())->get_rid());
+		}
 	}
 }
 
@@ -144,10 +154,11 @@ void RayCast::_notification(int p_what) {
 			}
 
 			if (Object::cast_to<CollisionObject>(get_parent())) {
-				if (exclude_parent_body)
+				if (exclude_parent_body) {
 					exclude.insert(Object::cast_to<CollisionObject>(get_parent())->get_rid());
-				else
+				} else {
 					exclude.erase(Object::cast_to<CollisionObject>(get_parent())->get_rid());
+				}
 			}
 
 		} break;
@@ -156,13 +167,15 @@ void RayCast::_notification(int p_what) {
 				set_physics_process_internal(false);
 			}
 
-			if (debug_shape)
+			if (debug_shape) {
 				_clear_debug_shape();
+			}
 
 		} break;
 		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
-			if (!enabled)
+			if (!enabled) {
 				break;
+			}
 
 			bool prev_collision_state = collided;
 			_update_raycast_state();
@@ -187,8 +200,9 @@ void RayCast::_update_raycast_state() {
 	Transform gt = get_global_transform();
 
 	Vector3 to = cast_to;
-	if (to == Vector3())
+	if (to == Vector3()) {
 		to = Vector3(0, 0.01, 0);
+	}
 
 	PhysicsDirectSpaceState::RayResult rr;
 
@@ -216,8 +230,9 @@ void RayCast::add_exception_rid(const RID &p_rid) {
 void RayCast::add_exception(const Object *p_object) {
 	ERR_FAIL_NULL(p_object);
 	const CollisionObject *co = Object::cast_to<CollisionObject>(p_object);
-	if (!co)
+	if (!co) {
 		return;
+	}
 	add_exception_rid(co->get_rid());
 }
 
@@ -228,8 +243,9 @@ void RayCast::remove_exception_rid(const RID &p_rid) {
 void RayCast::remove_exception(const Object *p_object) {
 	ERR_FAIL_NULL(p_object);
 	const CollisionObject *co = Object::cast_to<CollisionObject>(p_object);
-	if (!co)
+	if (!co) {
 		return;
+	}
 	remove_exception_rid(co->get_rid());
 }
 
@@ -321,16 +337,19 @@ void RayCast::_create_debug_shape() {
 }
 
 void RayCast::_update_debug_shape() {
-	if (!enabled)
+	if (!enabled) {
 		return;
+	}
 
-	if (!debug_shape)
+	if (!debug_shape) {
 		_create_debug_shape();
+	}
 
 	MeshInstance *mi = static_cast<MeshInstance *>(debug_shape);
 	Ref<ArrayMesh> mesh = mi->get_mesh();
-	if (!mesh.is_valid())
+	if (!mesh.is_valid()) {
 		return;
+	}
 
 	Vector<Vector3> verts;
 	verts.push_back(Vector3());
@@ -357,14 +376,16 @@ void RayCast::_update_debug_shape() {
 }
 
 void RayCast::_clear_debug_shape() {
-	if (!debug_shape)
+	if (!debug_shape) {
 		return;
+	}
 
 	MeshInstance *mi = static_cast<MeshInstance *>(debug_shape);
-	if (mi->is_inside_tree())
+	if (mi->is_inside_tree()) {
 		mi->queue_delete();
-	else
+	} else {
 		memdelete(mi);
+	}
 
 	debug_shape = nullptr;
 }

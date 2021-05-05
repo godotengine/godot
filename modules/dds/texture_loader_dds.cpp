@@ -95,17 +95,20 @@ static const DDSFormatInfo dds_format_info[DDS_MAX] = {
 };
 
 RES ResourceFormatDDS::load(const String &p_path, const String &p_original_path, Error *r_error) {
-	if (r_error)
+	if (r_error) {
 		*r_error = ERR_CANT_OPEN;
+	}
 
 	Error err;
 	FileAccess *f = FileAccess::open(p_path, FileAccess::READ, &err);
-	if (!f)
+	if (!f) {
 		return RES();
+	}
 
 	FileAccessRef fref(f);
-	if (r_error)
+	if (r_error) {
 		*r_error = ERR_FILE_CORRUPT;
+	}
 
 	ERR_FAIL_COND_V_MSG(err != OK, RES(), "Unable to open DDS texture file '" + p_path + "'.");
 
@@ -119,8 +122,9 @@ RES ResourceFormatDDS::load(const String &p_path, const String &p_original_path,
 	uint32_t mipmaps = f->get_32();
 
 	//skip 11
-	for (int i = 0; i < 11; i++)
+	for (int i = 0; i < 11; i++) {
 		f->get_32();
+	}
 
 	//validate
 
@@ -157,8 +161,9 @@ RES ResourceFormatDDS::load(const String &p_path, const String &p_original_path,
 	*/
 
 	//must avoid this later
-	while (f->get_position() < 128)
+	while (f->get_position() < 128) {
 		f->get_8();
+	}
 
 	DDSFormat dds_format;
 
@@ -202,8 +207,9 @@ RES ResourceFormatDDS::load(const String &p_path, const String &p_original_path,
 		ERR_FAIL_V_MSG(RES(), "Unrecognized or unsupported color layout in DDS '" + p_path + "'.");
 	}
 
-	if (!(flags & DDSD_MIPMAPCOUNT))
+	if (!(flags & DDSD_MIPMAPCOUNT)) {
 		mipmaps = 1;
+	}
 
 	PoolVector<uint8_t> src_data;
 
@@ -243,8 +249,9 @@ RES ResourceFormatDDS::load(const String &p_path, const String &p_original_path,
 
 		int colsize = 3;
 		for (int i = 0; i < 256; i++) {
-			if (palette[i * 4 + 3] < 255)
+			if (palette[i * 4 + 3] < 255) {
 				colsize = 4;
+			}
 		}
 
 		int w2 = width;
@@ -266,8 +273,9 @@ RES ResourceFormatDDS::load(const String &p_path, const String &p_original_path,
 			wb[dst_ofs + 0] = palette[src_ofs + 2];
 			wb[dst_ofs + 1] = palette[src_ofs + 1];
 			wb[dst_ofs + 2] = palette[src_ofs + 0];
-			if (colsize == 4)
+			if (colsize == 4) {
 				wb[dst_ofs + 3] = palette[src_ofs + 3];
+			}
 		}
 	} else {
 		//uncompressed generic...
@@ -280,10 +288,11 @@ RES ResourceFormatDDS::load(const String &p_path, const String &p_original_path,
 			size += w * h * info.block_size;
 		}
 
-		if (dds_format == DDS_BGR565)
+		if (dds_format == DDS_BGR565) {
 			size = size * 3 / 2;
-		else if (dds_format == DDS_BGR5A1)
+		} else if (dds_format == DDS_BGR5A1) {
 			size = size * 2;
+		}
 
 		src_data.resize(size);
 		PoolVector<uint8_t>::Write wb = src_data.write();
@@ -406,8 +415,9 @@ RES ResourceFormatDDS::load(const String &p_path, const String &p_original_path,
 	Ref<ImageTexture> texture = memnew(ImageTexture);
 	texture->create_from_image(img);
 
-	if (r_error)
+	if (r_error) {
 		*r_error = OK;
+	}
 
 	return texture;
 }
@@ -421,7 +431,8 @@ bool ResourceFormatDDS::handles_type(const String &p_type) const {
 }
 
 String ResourceFormatDDS::get_resource_type(const String &p_path) const {
-	if (p_path.get_extension().to_lower() == "dds")
+	if (p_path.get_extension().to_lower() == "dds") {
 		return "ImageTexture";
+	}
 	return "";
 }

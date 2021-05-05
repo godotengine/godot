@@ -77,8 +77,9 @@ void SoftBodyBullet::on_enter_area(AreaBullet *p_area) {}
 void SoftBodyBullet::on_exit_area(AreaBullet *p_area) {}
 
 void SoftBodyBullet::update_visual_server(SoftBodyVisualServerHandler *p_visual_server_handler) {
-	if (!bt_soft_body)
+	if (!bt_soft_body) {
 		return;
+	}
 
 	/// Update visual server vertices
 	const btSoftBody::tNodeArray &nodes(bt_soft_body->m_nodes);
@@ -116,10 +117,11 @@ void SoftBodyBullet::update_visual_server(SoftBodyVisualServerHandler *p_visual_
 }
 
 void SoftBodyBullet::set_soft_mesh(const Ref<Mesh> &p_mesh) {
-	if (p_mesh.is_null())
+	if (p_mesh.is_null()) {
 		soft_mesh.unref();
-	else
+	} else {
 		soft_mesh = p_mesh;
+	}
 
 	if (soft_mesh.is_null()) {
 		destroy_soft_body();
@@ -132,8 +134,9 @@ void SoftBodyBullet::set_soft_mesh(const Ref<Mesh> &p_mesh) {
 }
 
 void SoftBodyBullet::destroy_soft_body() {
-	if (!bt_soft_body)
+	if (!bt_soft_body) {
 		return;
+	}
 
 	if (space) {
 		/// Remove from world before deletion
@@ -150,8 +153,9 @@ void SoftBodyBullet::set_soft_transform(const Transform &p_transform) {
 }
 
 void SoftBodyBullet::move_all_nodes(const Transform &p_transform) {
-	if (!bt_soft_body)
+	if (!bt_soft_body) {
 		return;
+	}
 	btTransform bt_transf;
 	G_TO_B(p_transform, bt_transf);
 	bt_soft_body->transform(bt_transf);
@@ -177,8 +181,9 @@ void SoftBodyBullet::get_node_position(int p_node_index, Vector3 &r_position) co
 }
 
 void SoftBodyBullet::get_node_offset(int p_node_index, Vector3 &r_offset) const {
-	if (soft_mesh.is_null())
+	if (soft_mesh.is_null()) {
 		return;
+	}
 
 	Array arrays = soft_mesh->surface_get_arrays(0);
 	PoolVector<Vector3> vertices(arrays[VS::ARRAY_VERTEX]);
@@ -223,8 +228,9 @@ void SoftBodyBullet::reset_all_node_mass() {
 }
 
 void SoftBodyBullet::reset_all_node_positions() {
-	if (soft_mesh.is_null())
+	if (soft_mesh.is_null()) {
 		return;
+	}
 
 	Array arrays = soft_mesh->surface_get_arrays(0);
 	PoolVector<Vector3> vs_vertices(arrays[VS::ARRAY_VERTEX]);
@@ -393,8 +399,9 @@ void SoftBodyBullet::set_trimesh_body_shape(PoolVector<int> p_indices, PoolVecto
 }
 
 void SoftBodyBullet::setup_soft_body() {
-	if (!bt_soft_body)
+	if (!bt_soft_body) {
 		return;
+	}
 
 	// Soft body setup
 	setupBulletCollisionObject(bt_soft_body);

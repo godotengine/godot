@@ -210,13 +210,15 @@ void ShaderTextEditor::_validate_script() {
 		String error_text = "error(" + itos(sl.get_error_line()) + "): " + sl.get_error_text();
 		set_error(error_text);
 		set_error_pos(sl.get_error_line() - 1, 0);
-		for (int i = 0; i < get_text_edit()->get_line_count(); i++)
+		for (int i = 0; i < get_text_edit()->get_line_count(); i++) {
 			get_text_edit()->set_line_as_marked(i, false);
+		}
 		get_text_edit()->set_line_as_marked(sl.get_error_line() - 1, true);
 
 	} else {
-		for (int i = 0; i < get_text_edit()->get_line_count(); i++)
+		for (int i = 0; i < get_text_edit()->get_line_count(); i++) {
 			get_text_edit()->set_line_as_marked(i, false);
+		}
 		set_error("");
 	}
 
@@ -258,16 +260,18 @@ void ShaderEditor::_menu_option(int p_option) {
 			shader_editor->move_lines_down();
 		} break;
 		case EDIT_INDENT_LEFT: {
-			if (shader.is_null())
+			if (shader.is_null()) {
 				return;
+			}
 
 			TextEdit *tx = shader_editor->get_text_edit();
 			tx->indent_left();
 
 		} break;
 		case EDIT_INDENT_RIGHT: {
-			if (shader.is_null())
+			if (shader.is_null()) {
 				return;
+			}
 
 			TextEdit *tx = shader_editor->get_text_edit();
 			tx->indent_right();
@@ -280,8 +284,9 @@ void ShaderEditor::_menu_option(int p_option) {
 			shader_editor->clone_lines_down();
 		} break;
 		case EDIT_TOGGLE_COMMENT: {
-			if (shader.is_null())
+			if (shader.is_null()) {
 				return;
+			}
 
 			shader_editor->toggle_inline_comment("//");
 
@@ -420,11 +425,13 @@ void ShaderEditor::_reload_shader_from_disk() {
 }
 
 void ShaderEditor::edit(const Ref<Shader> &p_shader) {
-	if (p_shader.is_null() || !p_shader->is_text_shader())
+	if (p_shader.is_null() || !p_shader->is_text_shader()) {
 		return;
+	}
 
-	if (shader == p_shader)
+	if (shader == p_shader) {
 		return;
+	}
 
 	shader = p_shader;
 
@@ -690,8 +697,9 @@ void ShaderEditorPlugin::make_visible(bool p_visible) {
 
 	} else {
 		button->hide();
-		if (shader_editor->is_visible_in_tree())
+		if (shader_editor->is_visible_in_tree()) {
 			editor->hide_bottom_panel();
+		}
 		shader_editor->apply_shaders();
 	}
 }

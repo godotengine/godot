@@ -117,8 +117,9 @@ Error StreamPeerTCP::write(const uint8_t *p_data, int p_bytes, int &r_sent, bool
 		}
 	}
 
-	if (!_sock->is_open())
+	if (!_sock->is_open()) {
 		return FAILED;
+	}
 
 	Error err;
 	int data_to_send = p_bytes;
@@ -257,8 +258,9 @@ StreamPeerTCP::Status StreamPeerTCP::get_status() {
 }
 
 void StreamPeerTCP::disconnect_from_host() {
-	if (_sock.is_valid() && _sock->is_open())
+	if (_sock.is_valid() && _sock->is_open()) {
 		_sock->close();
+	}
 
 	timeout = 0;
 	status = STATUS_NONE;
@@ -303,8 +305,9 @@ Error StreamPeerTCP::_connect(const String &p_address, int p_port) {
 		ip = p_address;
 	} else {
 		ip = IP::get_singleton()->resolve_hostname(p_address);
-		if (!ip.is_valid())
+		if (!ip.is_valid()) {
 			return ERR_CANT_RESOLVE;
+		}
 	}
 
 	return connect_to_host(ip, p_port);

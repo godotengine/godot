@@ -210,10 +210,11 @@ void GDNativeLibraryEditor::_on_create_new_entry() {
 }
 
 void GDNativeLibraryEditor::_set_target_value(const String &section, const String &target, Variant file) {
-	if (section == "entry")
+	if (section == "entry") {
 		entry_configs[target].library = file;
-	else if (section == "dependencies")
+	} else if (section == "dependencies") {
 		entry_configs[target].dependencies = file;
+	}
 	_translate_to_config_file();
 	_update_tree();
 }
@@ -255,8 +256,9 @@ void GDNativeLibraryEditor::_translate_to_config_file() {
 		for (Map<String, NativePlatformConfig>::Element *E = platforms.front(); E; E = E->next()) {
 			for (List<String>::Element *it = E->value().entries.front(); it; it = it->next()) {
 				String target = E->key() + "." + it->get();
-				if (entry_configs[target].library.empty() && entry_configs[target].dependencies.empty())
+				if (entry_configs[target].library.empty() && entry_configs[target].dependencies.empty()) {
 					continue;
+				}
 
 				config->set_value("entry", target, entry_configs[target].library);
 				config->set_value("dependencies", target, entry_configs[target].dependencies);
@@ -393,8 +395,9 @@ GDNativeLibraryEditor::GDNativeLibraryEditor() {
 
 void GDNativeLibraryEditorPlugin::edit(Object *p_node) {
 	Ref<GDNativeLibrary> new_library = Object::cast_to<GDNativeLibrary>(p_node);
-	if (new_library.is_valid())
+	if (new_library.is_valid()) {
 		library_editor->edit(new_library);
+	}
 }
 
 bool GDNativeLibraryEditorPlugin::handles(Object *p_node) const {
@@ -407,8 +410,9 @@ void GDNativeLibraryEditorPlugin::make_visible(bool p_visible) {
 		EditorNode::get_singleton()->make_bottom_panel_item_visible(library_editor);
 
 	} else {
-		if (library_editor->is_visible_in_tree())
+		if (library_editor->is_visible_in_tree()) {
 			EditorNode::get_singleton()->hide_bottom_panel();
+		}
 		button->hide();
 	}
 }

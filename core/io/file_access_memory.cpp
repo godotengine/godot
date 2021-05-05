@@ -42,18 +42,20 @@ void FileAccessMemory::register_file(String p_name, Vector<uint8_t> p_data) {
 	}
 
 	String name;
-	if (ProjectSettings::get_singleton())
+	if (ProjectSettings::get_singleton()) {
 		name = ProjectSettings::get_singleton()->globalize_path(p_name);
-	else
+	} else {
 		name = p_name;
+	}
 	//name = DirAccess::normalize_path(name);
 
 	(*files)[name] = p_data;
 }
 
 void FileAccessMemory::cleanup() {
-	if (!files)
+	if (!files) {
 		return;
+	}
 
 	memdelete(files);
 }

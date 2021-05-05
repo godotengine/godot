@@ -33,13 +33,15 @@
 #include "scene/scene_string_names.h"
 
 Color SpriteBase3D::_get_color_accum() {
-	if (!color_dirty)
+	if (!color_dirty) {
 		return color_accum;
+	}
 
-	if (parent_sprite)
+	if (parent_sprite) {
 		color_accum = parent_sprite->_get_color_accum();
-	else
+	} else {
 		color_accum = Color(1, 1, 1, 1);
+	}
 
 	color_accum.r *= modulate.r;
 	color_accum.g *= modulate.g;
@@ -50,8 +52,9 @@ Color SpriteBase3D::_get_color_accum() {
 }
 
 void SpriteBase3D::_propagate_color_changed() {
-	if (color_dirty)
+	if (color_dirty) {
 		return;
+	}
 
 	color_dirty = true;
 	_queue_update();
@@ -63,8 +66,9 @@ void SpriteBase3D::_propagate_color_changed() {
 
 void SpriteBase3D::_notification(int p_what) {
 	if (p_what == NOTIFICATION_ENTER_TREE) {
-		if (!pending_update)
+		if (!pending_update) {
 			_im_update();
+		}
 
 		parent_sprite = Object::cast_to<SpriteBase3D>(get_parent());
 		if (parent_sprite) {
@@ -158,8 +162,9 @@ void SpriteBase3D::_im_update() {
 }
 
 void SpriteBase3D::_queue_update() {
-	if (pending_update)
+	if (pending_update) {
 		return;
+	}
 
 	triangle_mesh.unref();
 	update_gizmo();
@@ -176,8 +181,9 @@ PoolVector<Face3> SpriteBase3D::get_faces(uint32_t p_usage_flags) const {
 }
 
 Ref<TriangleMesh> SpriteBase3D::generate_triangle_mesh() const {
-	if (triangle_mesh.is_valid())
+	if (triangle_mesh.is_valid()) {
 		return triangle_mesh;
+	}
 
 	PoolVector<Vector3> faces;
 	faces.resize(6);
@@ -185,8 +191,9 @@ Ref<TriangleMesh> SpriteBase3D::generate_triangle_mesh() const {
 
 	Rect2 final_rect = get_item_rect();
 
-	if (final_rect.size.x == 0 || final_rect.size.y == 0)
+	if (final_rect.size.x == 0 || final_rect.size.y == 0) {
 		return Ref<TriangleMesh>();
+	}
 
 	float pixel_size = get_pixel_size();
 
@@ -339,8 +346,9 @@ SpriteBase3D::SpriteBase3D() {
 	parent_sprite = nullptr;
 	pI = nullptr;
 
-	for (int i = 0; i < FLAG_MAX; i++)
+	for (int i = 0; i < FLAG_MAX; i++) {
 		flags[i] = i == FLAG_TRANSPARENT || i == FLAG_DOUBLE_SIDED;
+	}
 
 	alpha_cut = ALPHA_CUT_DISABLED;
 	billboard_mode = SpatialMaterial::BILLBOARD_DISABLED;
@@ -415,35 +423,41 @@ SpriteBase3D::~SpriteBase3D() {
 void Sprite3D::_draw() {
 	set_base(RID());
 
-	if (!texture.is_valid())
+	if (!texture.is_valid()) {
 		return;
+	}
 	Vector2 tsize = texture->get_size();
-	if (tsize.x == 0 || tsize.y == 0)
+	if (tsize.x == 0 || tsize.y == 0) {
 		return;
+	}
 
 	Rect2 base_rect;
-	if (region)
+	if (region) {
 		base_rect = region_rect;
-	else
+	} else {
 		base_rect = Rect2(0, 0, texture->get_width(), texture->get_height());
+	}
 
 	Size2 frame_size = base_rect.size / Size2(hframes, vframes);
 	Point2 frame_offset = Point2(frame % hframes, frame / hframes);
 	frame_offset *= frame_size;
 
 	Point2 dest_offset = get_offset();
-	if (is_centered())
+	if (is_centered()) {
 		dest_offset -= frame_size / 2;
+	}
 
 	Rect2 src_rect(base_rect.position + frame_offset, frame_size);
 	Rect2 final_dst_rect(dest_offset, frame_size);
 	Rect2 final_rect;
 	Rect2 final_src_rect;
-	if (!texture->get_rect_region(final_dst_rect, src_rect, final_rect, final_src_rect))
+	if (!texture->get_rect_region(final_dst_rect, src_rect, final_rect, final_src_rect)) {
 		return;
+	}
 
-	if (final_rect.size.x == 0 || final_rect.size.y == 0)
+	if (final_rect.size.x == 0 || final_rect.size.y == 0) {
 		return;
+	}
 
 	Color color = _get_color_accum();
 	color.a *= get_opacity();
@@ -576,8 +590,9 @@ void Sprite3D::_draw() {
 }
 
 void Sprite3D::set_texture(const Ref<Texture> &p_texture) {
-	if (p_texture == texture)
+	if (p_texture == texture) {
 		return;
+	}
 	if (texture.is_valid()) {
 		texture->disconnect(CoreStringNames::get_singleton()->changed, this, SceneStringNames::get_singleton()->_queue_update);
 	}
@@ -594,8 +609,9 @@ Ref<Texture> Sprite3D::get_texture() const {
 }
 
 void Sprite3D::set_region(bool p_region) {
-	if (p_region == region)
+	if (p_region == region) {
 		return;
+	}
 
 	region = p_region;
 	_queue_update();
@@ -665,8 +681,9 @@ int Sprite3D::get_hframes() const {
 }
 
 Rect2 Sprite3D::get_item_rect() const {
-	if (texture.is_null())
+	if (texture.is_null()) {
 		return Rect2(0, 0, 1, 1);
+	}
 	/*
 	if (texture.is_null())
 		return CanvasItem::get_item_rect();
@@ -682,11 +699,13 @@ Rect2 Sprite3D::get_item_rect() const {
 	}
 
 	Point2 ofs = get_offset();
-	if (is_centered())
+	if (is_centered()) {
 		ofs -= s / 2;
+	}
 
-	if (s == Size2(0, 0))
+	if (s == Size2(0, 0)) {
 		s = Size2(1, 1);
+	}
 
 	return Rect2(ofs, s);
 }
@@ -763,11 +782,13 @@ void AnimatedSprite3D::_draw() {
 	}
 
 	Ref<Texture> texture = frames->get_frame(animation, frame);
-	if (!texture.is_valid())
+	if (!texture.is_valid()) {
 		return; //no texuture no life
+	}
 	Vector2 tsize = texture->get_size();
-	if (tsize.x == 0 || tsize.y == 0)
+	if (tsize.x == 0 || tsize.y == 0) {
 		return;
+	}
 
 	Size2i s = tsize;
 	Rect2 src_rect;
@@ -775,18 +796,21 @@ void AnimatedSprite3D::_draw() {
 	src_rect.size = s;
 
 	Point2 ofs = get_offset();
-	if (is_centered())
+	if (is_centered()) {
 		ofs -= s / 2;
+	}
 
 	Rect2 dst_rect(ofs, s);
 
 	Rect2 final_rect;
 	Rect2 final_src_rect;
-	if (!texture->get_rect_region(dst_rect, src_rect, final_rect, final_src_rect))
+	if (!texture->get_rect_region(dst_rect, src_rect, final_rect, final_src_rect)) {
 		return;
+	}
 
-	if (final_rect.size.x == 0 || final_rect.size.y == 0)
+	if (final_rect.size.x == 0 || final_rect.size.y == 0) {
 		return;
+	}
 
 	Color color = _get_color_accum();
 	color.a *= get_opacity();
@@ -919,8 +943,9 @@ void AnimatedSprite3D::_draw() {
 }
 
 void AnimatedSprite3D::_validate_property(PropertyInfo &property) const {
-	if (!frames.is_valid())
+	if (!frames.is_valid()) {
 		return;
+	}
 	if (property.name == "animation") {
 		property.hint = PROPERTY_HINT_ENUM;
 		List<StringName> names;
@@ -961,16 +986,20 @@ void AnimatedSprite3D::_validate_property(PropertyInfo &property) const {
 void AnimatedSprite3D::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_INTERNAL_PROCESS: {
-			if (frames.is_null())
+			if (frames.is_null()) {
 				return;
-			if (!frames->has_animation(animation))
+			}
+			if (!frames->has_animation(animation)) {
 				return;
-			if (frame < 0)
+			}
+			if (frame < 0) {
 				return;
+			}
 
 			float speed = frames->get_animation_speed(animation);
-			if (speed == 0)
+			if (speed == 0) {
 				return; //do nothing
+			}
 
 			float remaining = get_process_delta_time();
 
@@ -1004,11 +1033,13 @@ void AnimatedSprite3D::_notification(int p_what) {
 }
 
 void AnimatedSprite3D::set_sprite_frames(const Ref<SpriteFrames> &p_frames) {
-	if (frames.is_valid())
+	if (frames.is_valid()) {
 		frames->disconnect("changed", this, "_res_changed");
+	}
 	frames = p_frames;
-	if (frames.is_valid())
+	if (frames.is_valid()) {
 		frames->connect("changed", this, "_res_changed");
+	}
 
 	if (!frames.is_valid()) {
 		frame = 0;
@@ -1033,15 +1064,18 @@ void AnimatedSprite3D::set_frame(int p_frame) {
 
 	if (frames->has_animation(animation)) {
 		int limit = frames->get_frame_count(animation);
-		if (p_frame >= limit)
+		if (p_frame >= limit) {
 			p_frame = limit - 1;
+		}
 	}
 
-	if (p_frame < 0)
+	if (p_frame < 0) {
 		p_frame = 0;
+	}
 
-	if (frame == p_frame)
+	if (frame == p_frame) {
 		return;
+	}
 
 	frame = p_frame;
 	_reset_timeout();
@@ -1059,18 +1093,22 @@ Rect2 AnimatedSprite3D::get_item_rect() const {
 	}
 
 	Ref<Texture> t;
-	if (animation)
+	if (animation) {
 		t = frames->get_frame(animation, frame);
-	if (t.is_null())
+	}
+	if (t.is_null()) {
 		return Rect2(0, 0, 1, 1);
+	}
 	Size2i s = t->get_size();
 
 	Point2 ofs = get_offset();
-	if (centered)
+	if (centered) {
 		ofs -= s / 2;
+	}
 
-	if (s == Size2(0, 0))
+	if (s == Size2(0, 0)) {
 		s = Size2(1, 1);
+	}
 
 	return Rect2(ofs, s);
 }
@@ -1083,8 +1121,9 @@ void AnimatedSprite3D::_res_changed() {
 }
 
 void AnimatedSprite3D::_set_playing(bool p_playing) {
-	if (playing == p_playing)
+	if (playing == p_playing) {
 		return;
+	}
 	playing = p_playing;
 	_reset_timeout();
 	set_process_internal(playing);
@@ -1095,8 +1134,9 @@ bool AnimatedSprite3D::_is_playing() const {
 }
 
 void AnimatedSprite3D::play(const StringName &p_animation) {
-	if (p_animation)
+	if (p_animation) {
 		set_animation(p_animation);
+	}
 	_set_playing(true);
 }
 
@@ -1109,8 +1149,9 @@ bool AnimatedSprite3D::is_playing() const {
 }
 
 void AnimatedSprite3D::_reset_timeout() {
-	if (!playing)
+	if (!playing) {
 		return;
+	}
 
 	if (frames.is_valid() && frames->has_animation(animation)) {
 		float speed = frames->get_animation_speed(animation);
@@ -1125,8 +1166,9 @@ void AnimatedSprite3D::_reset_timeout() {
 }
 
 void AnimatedSprite3D::set_animation(const StringName &p_animation) {
-	if (animation == p_animation)
+	if (animation == p_animation) {
 		return;
+	}
 
 	animation = p_animation;
 	_reset_timeout();

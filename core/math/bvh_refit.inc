@@ -21,8 +21,9 @@ void node_update_aabb(TNode &tnode) {
 			tnode.aabb.merge(tchild.aabb);
 
 			// do heights at the same time
-			if (tchild.height > tnode.height)
+			if (tchild.height > tnode.height) {
 				tnode.height = tchild.height;
+			}
 		}
 
 		// the height of a non leaf is always 1 bigger than the biggest child

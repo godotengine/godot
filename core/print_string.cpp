@@ -53,10 +53,11 @@ void remove_print_handler(PrintHandlerList *p_handler) {
 
 	while (l) {
 		if (l == p_handler) {
-			if (prev)
+			if (prev) {
 				prev->next = l->next;
-			else
+			} else {
 				print_handler_list = l->next;
+			}
 			break;
 		}
 		prev = l;
@@ -69,8 +70,9 @@ void remove_print_handler(PrintHandlerList *p_handler) {
 }
 
 void print_line(String p_string) {
-	if (!_print_line_enabled)
+	if (!_print_line_enabled) {
 		return;
+	}
 
 	OS::get_singleton()->print("%s\n", p_string.utf8().get_data());
 
@@ -85,8 +87,9 @@ void print_line(String p_string) {
 }
 
 void print_error(String p_string) {
-	if (!_print_error_enabled)
+	if (!_print_error_enabled) {
 		return;
+	}
 
 	OS::get_singleton()->printerr("%s\n", p_string.utf8().get_data());
 

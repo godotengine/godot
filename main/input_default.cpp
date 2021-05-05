@@ -45,8 +45,9 @@ void InputDefault::SpeedTrack::update(const Vector2 &p_delta_p) {
 	accum += p_delta_p;
 	accum_t += delta_t;
 
-	if (accum_t > max_ref_frame * 10)
+	if (accum_t > max_ref_frame * 10) {
 		accum_t = max_ref_frame * 10;
+	}
 
 	while (accum_t >= min_ref_frame) {
 		float slice_t = min_ref_frame / accum_t;
@@ -103,8 +104,9 @@ bool InputDefault::is_action_just_pressed(const StringName &p_action) const {
 	ERR_FAIL_COND_V_MSG(!has_action, false, "Request for nonexistent InputMap action '" + String(p_action) + "'.");
 #endif
 	const Map<StringName, Action>::Element *E = action_state.find(p_action);
-	if (!E)
+	if (!E) {
 		return false;
+	}
 
 	if (Engine::get_singleton()->is_in_physics_frame()) {
 		return E->get().pressed && E->get().physics_frame == Engine::get_singleton()->get_physics_frames();
@@ -119,8 +121,9 @@ bool InputDefault::is_action_just_released(const StringName &p_action) const {
 	ERR_FAIL_COND_V_MSG(!has_action, false, "Request for nonexistent InputMap action '" + String(p_action) + "'.");
 #endif
 	const Map<StringName, Action>::Element *E = action_state.find(p_action);
-	if (!E)
+	if (!E) {
 		return false;
+	}
 
 	if (Engine::get_singleton()->is_in_physics_frame()) {
 		return !E->get().pressed && E->get().physics_frame == Engine::get_singleton()->get_physics_frames();
@@ -135,8 +138,9 @@ float InputDefault::get_action_strength(const StringName &p_action) const {
 	ERR_FAIL_COND_V_MSG(!has_action, false, "Request for nonexistent InputMap action '" + String(p_action) + "'.");
 #endif
 	const Map<StringName, Action>::Element *E = action_state.find(p_action);
-	if (!E)
+	if (!E) {
 		return 0.0f;
+	}
 
 	return E->get().strength;
 }
@@ -218,8 +222,9 @@ void InputDefault::joy_connection_changed(int p_idx, bool p_connected, String p_
 	} else {
 		js.connected = false;
 		for (int i = 0; i < JOY_BUTTON_MAX; i++) {
-			if (i < JOY_AXIS_MAX)
+			if (i < JOY_AXIS_MAX) {
 				set_joy_axis(p_idx, i, 0.0f);
+			}
 
 			int c = _combine_device(i, p_idx);
 			joy_buttons_pressed.erase(c);
@@ -266,10 +271,11 @@ void InputDefault::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool 
 
 	Ref<InputEventKey> k = p_event;
 	if (k.is_valid() && !k->is_echo() && k->get_scancode() != 0) {
-		if (k->is_pressed())
+		if (k->is_pressed()) {
 			keys_pressed.insert(k->get_scancode());
-		else
+		} else {
 			keys_pressed.erase(k->get_scancode());
+		}
 	}
 
 	Ref<InputEventMouseButton> mb = p_event;
@@ -389,10 +395,11 @@ void InputDefault::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool 
 	if (jb.is_valid()) {
 		int c = _combine_device(jb->get_button_index(), jb->get_device());
 
-		if (jb->is_pressed())
+		if (jb->is_pressed()) {
 			joy_buttons_pressed.insert(c);
-		else
+		} else {
 			joy_buttons_pressed.erase(c);
+		}
 	}
 
 	Ref<InputEventJoypadMotion> jm = p_event;
@@ -424,8 +431,9 @@ void InputDefault::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool 
 		}
 	}
 
-	if (main_loop)
+	if (main_loop) {
 		main_loop->input_event(p_event);
+	}
 }
 
 void InputDefault::set_joy_axis(int p_device, int p_axis, float p_value) {
@@ -600,8 +608,9 @@ Input::CursorShape InputDefault::get_default_cursor_shape() const {
 }
 
 void InputDefault::set_default_cursor_shape(CursorShape p_shape) {
-	if (default_shape == p_shape)
+	if (default_shape == p_shape) {
 		return;
+	}
 
 	default_shape = p_shape;
 	// The default shape is set in Viewport::_gui_input_event. To instantly
@@ -618,8 +627,9 @@ Input::CursorShape InputDefault::get_current_cursor_shape() const {
 }
 
 void InputDefault::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot) {
-	if (Engine::get_singleton()->is_editor_hint())
+	if (Engine::get_singleton()->is_editor_hint()) {
 		return;
+	}
 
 	OS::get_singleton()->set_custom_mouse_cursor(p_cursor, (OS::CursorShape)p_shape, p_hotspot);
 }
@@ -656,8 +666,9 @@ void InputDefault::release_pressed_events() {
 	_joy_axis.clear();
 
 	for (Map<StringName, InputDefault::Action>::Element *E = action_state.front(); E; E = E->next()) {
-		if (E->get().pressed)
+		if (E->get().pressed) {
 			action_release(E->key());
+		}
 	}
 }
 
@@ -685,8 +696,9 @@ InputDefault::InputDefault() {
 	if (env_mapping != "") {
 		Vector<String> entries = env_mapping.split("\n");
 		for (int i = 0; i < entries.size(); i++) {
-			if (entries[i] == "")
+			if (entries[i] == "") {
 				continue;
+			}
 			parse_mapping(entries[i]);
 		}
 	}
@@ -916,8 +928,9 @@ InputDefault::JoyEvent InputDefault::_get_mapped_axis_event(const JoyDeviceMappi
 		const JoyBinding binding = mapping.bindings[i];
 		if (binding.inputType == TYPE_AXIS && binding.input.axis.axis == p_axis) {
 			float value = p_value;
-			if (binding.input.axis.invert)
+			if (binding.input.axis.invert) {
 				value = -value;
+			}
 			if (binding.input.axis.range == FULL_AXIS ||
 					(binding.input.axis.range == POSITIVE_HALF_AXIS && value > 0) ||
 					(binding.input.axis.range == NEGATIVE_HALF_AXIS && value < 0)) {
@@ -1034,16 +1047,18 @@ static const char *_joy_axes[] = { "leftx", "lefty", "rightx", "righty", nullptr
 
 JoystickList InputDefault::_get_output_button(String output) {
 	for (int i = 0; _joy_buttons[i]; i++) {
-		if (output == _joy_buttons[i])
+		if (output == _joy_buttons[i]) {
 			return JoystickList(i);
+		}
 	}
 	return JoystickList::JOY_INVALID_OPTION;
 }
 
 JoystickList InputDefault::_get_output_axis(String output) {
 	for (int i = 0; _joy_axes[i]; i++) {
-		if (output == _joy_axes[i])
+		if (output == _joy_axes[i]) {
 			return JoystickList(i);
+		}
 	}
 	return JoystickList::JOY_INVALID_OPTION;
 }
@@ -1065,24 +1080,27 @@ void InputDefault::parse_mapping(String p_mapping) {
 
 	int idx = 1;
 	while (++idx < entry.size()) {
-		if (entry[idx] == "")
+		if (entry[idx] == "") {
 			continue;
+		}
 
 		String output = entry[idx].get_slice(":", 0).replace(" ", "");
 		String input = entry[idx].get_slice(":", 1).replace(" ", "");
 		ERR_CONTINUE_MSG(output.length() < 1 || input.length() < 2,
 				String(entry[idx] + "\nInvalid device mapping entry: " + entry[idx]));
 
-		if (output == "platform" || output == "hint")
+		if (output == "platform" || output == "hint") {
 			continue;
+		}
 
 		JoyAxisRange output_range = FULL_AXIS;
 		if (output[0] == '+' || output[0] == '-') {
 			ERR_CONTINUE_MSG(output.length() < 2, String(entry[idx] + "\nInvalid output: " + entry[idx]));
-			if (output[0] == '+')
+			if (output[0] == '+') {
 				output_range = POSITIVE_HALF_AXIS;
-			else if (output[0] == '-')
+			} else if (output[0] == '-') {
 				output_range = NEGATIVE_HALF_AXIS;
+			}
 			output = output.right(1);
 		}
 

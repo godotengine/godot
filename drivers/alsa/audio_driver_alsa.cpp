@@ -273,8 +273,9 @@ Array AudioDriverALSA::get_device_list() {
 
 	void **hints;
 
-	if (snd_device_name_hint(-1, "pcm", &hints) < 0)
+	if (snd_device_name_hint(-1, "pcm", &hints) < 0) {
 		return list;
+	}
 
 	for (void **n = hints; *n != nullptr; n++) {
 		char *name = snd_device_name_get_hint(*n, "NAME");
@@ -288,10 +289,12 @@ Array AudioDriverALSA::get_device_list() {
 			}
 		}
 
-		if (desc != nullptr)
+		if (desc != nullptr) {
 			free(desc);
-		if (name != nullptr)
+		}
+		if (name != nullptr) {
 			free(name);
+		}
 	}
 	snd_device_name_free_hint(hints);
 

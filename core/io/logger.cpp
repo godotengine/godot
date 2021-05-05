@@ -85,10 +85,11 @@ void Logger::log_error(const char *p_function, const char *p_file, int p_line, c
 	}
 
 	const char *err_details;
-	if (p_rationale && *p_rationale)
+	if (p_rationale && *p_rationale) {
 		err_details = p_rationale;
-	else
+	} else {
 		err_details = p_code;
+	}
 
 	logf_error("%s: %s\n", err_type, err_details);
 	logf_error("   At: %s:%i:%s() - %s\n", p_file, p_line, p_function, p_code);

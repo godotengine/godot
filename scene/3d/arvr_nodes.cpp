@@ -55,8 +55,9 @@ void ARVRCamera::_notification(int p_what) {
 };
 
 String ARVRCamera::get_configuration_warning() const {
-	if (!is_visible() || !is_inside_tree())
+	if (!is_visible() || !is_inside_tree()) {
 		return String();
+	}
 
 	String warning = Camera::get_configuration_warning();
 	// must be child node of ARVROrigin!
@@ -368,8 +369,9 @@ ARVRPositionalTracker::TrackerHand ARVRController::get_hand() const {
 };
 
 String ARVRController::get_configuration_warning() const {
-	if (!is_visible() || !is_inside_tree())
+	if (!is_visible() || !is_inside_tree()) {
 		return String();
+	}
 
 	String warning = Spatial::get_configuration_warning();
 	// must be child node of ARVROrigin!
@@ -501,8 +503,9 @@ bool ARVRAnchor::get_is_active() const {
 };
 
 String ARVRAnchor::get_configuration_warning() const {
-	if (!is_visible() || !is_inside_tree())
+	if (!is_visible() || !is_inside_tree()) {
 		return String();
+	}
 
 	String warning = Spatial::get_configuration_warning();
 	// must be child node of ARVROrigin!
@@ -549,8 +552,9 @@ ARVRAnchor::~ARVRAnchor(){
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 String ARVROrigin::get_configuration_warning() const {
-	if (!is_visible() || !is_inside_tree())
+	if (!is_visible() || !is_inside_tree()) {
 		return String();
+	}
 
 	String warning = Spatial::get_configuration_warning();
 	if (tracked_camera == nullptr) {

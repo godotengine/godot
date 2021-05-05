@@ -52,8 +52,9 @@ void PoolAllocator::mt_unlock() const {
 }
 
 bool PoolAllocator::get_free_entry(EntryArrayPos *p_pos) {
-	if (entry_count == entry_max)
+	if (entry_count == entry_max) {
 		return false;
+	}
 
 	for (int i = 0; i < entry_max; i++) {
 		if (entry_array[i].len == 0) {
@@ -108,8 +109,9 @@ bool PoolAllocator::find_hole(EntryArrayPos *p_pos, int p_for_size) {
 void PoolAllocator::compact(int p_up_to) {
 	uint32_t prev_entry_end_pos = 0;
 
-	if (p_up_to < 0)
+	if (p_up_to < 0) {
 		p_up_to = entry_count;
+	}
 	for (int i = 0; i < p_up_to; i++) {
 		Entry &entry = entry_array[entry_indices[i]];
 
@@ -157,8 +159,9 @@ bool PoolAllocator::find_entry_index(EntryIndicesPos *p_map_pos, Entry *p_entry)
 		}
 	}
 
-	if (entry_pos == entry_max)
+	if (entry_pos == entry_max) {
 		return false;
+	}
 
 	*p_map_pos = entry_pos;
 	return true;
@@ -167,8 +170,9 @@ bool PoolAllocator::find_entry_index(EntryIndicesPos *p_map_pos, Entry *p_entry)
 PoolAllocator::ID PoolAllocator::alloc(int p_size) {
 	ERR_FAIL_COND_V(p_size < 1, POOL_ALLOCATOR_INVALID_ID);
 #ifdef DEBUG_ENABLED
-	if (p_size > free_mem)
+	if (p_size > free_mem) {
 		OS::get_singleton()->debug_break();
+	}
 #endif
 	ERR_FAIL_COND_V(p_size > free_mem, POOL_ALLOCATOR_INVALID_ID);
 
@@ -220,8 +224,9 @@ PoolAllocator::ID PoolAllocator::alloc(int p_size) {
 	entry.lock = 0;
 	entry.check = (check_count++) & CHECK_MASK;
 	free_mem -= size_to_alloc;
-	if (free_mem < free_mem_peak)
+	if (free_mem < free_mem_peak) {
 		free_mem_peak = free_mem;
+	}
 
 	ID retval = (entry_indices[new_entry_indices_pos] << CHECK_BITS) | entry.check;
 	mt_unlock();
@@ -371,8 +376,9 @@ Error PoolAllocator::resize(ID p_mem, int p_new_size) {
 		e->len = p_new_size;
 		free_mem -= alloc_size;
 		mt_unlock();
-		if (free_mem < free_mem_peak)
+		if (free_mem < free_mem_peak) {
 			free_mem_peak = free_mem;
+		}
 		return OK;
 	}
 
@@ -386,8 +392,9 @@ Error PoolAllocator::resize(ID p_mem, int p_new_size) {
 		e->len = p_new_size;
 		free_mem -= alloc_size;
 		mt_unlock();
-		if (free_mem < free_mem_peak)
+		if (free_mem < free_mem_peak) {
 			free_mem_peak = free_mem;
+		}
 		return OK;
 	}
 
@@ -396,8 +403,9 @@ Error PoolAllocator::resize(ID p_mem, int p_new_size) {
 }
 
 Error PoolAllocator::lock(ID p_mem) {
-	if (!needs_locking)
+	if (!needs_locking) {
 		return OK;
+	}
 	mt_lock();
 	Entry *e = get_entry(p_mem);
 	if (!e) {
@@ -411,8 +419,9 @@ Error PoolAllocator::lock(ID p_mem) {
 }
 
 bool PoolAllocator::is_locked(ID p_mem) const {
-	if (!needs_locking)
+	if (!needs_locking) {
 		return false;
+	}
 
 	mt_lock();
 	const Entry *e = ((PoolAllocator *)(this))->get_entry(p_mem);
@@ -491,8 +500,9 @@ void *PoolAllocator::get(ID p_mem) {
 	return ptr;
 }
 void PoolAllocator::unlock(ID p_mem) {
-	if (!needs_locking)
+	if (!needs_locking) {
 		return;
+	}
 	mt_lock();
 	Entry *e = get_entry(p_mem);
 	if (!e) {
@@ -566,16 +576,18 @@ PoolAllocator::PoolAllocator(int p_align, int p_size, bool p_needs_locking, int 
 	mem_ptr = Memory::alloc_static(p_size + p_align, true);
 	uint8_t *mem8 = (uint8_t *)mem_ptr;
 	uint64_t ofs = (uint64_t)mem8;
-	if (ofs % p_align)
+	if (ofs % p_align) {
 		mem8 += p_align - (ofs % p_align);
+	}
 	create_pool(mem8, p_size, p_max_entries);
 	needs_locking = p_needs_locking;
 	align = p_align;
 }
 
 PoolAllocator::~PoolAllocator() {
-	if (mem_ptr)
+	if (mem_ptr) {
 		memfree(mem_ptr);
+	}
 
 	memdelete_arr(entry_array);
 	memdelete_arr(entry_indices);

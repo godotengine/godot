@@ -182,8 +182,9 @@ void VisualServerViewport::_draw_viewport(Viewport *p_viewport, ARVRInterface::E
 				Transform2D xf = _canvas_get_transform(p_viewport, canvas, &E->get(), clip_rect.size);
 
 				for (Set<RasterizerCanvas::LightOccluderInstance *>::Element *F = canvas->occluders.front(); F; F = F->next()) {
-					if (!F->get()->enabled)
+					if (!F->get()->enabled) {
 						continue;
+					}
 					F->get()->xform_cache = xf * F->get()->xform;
 					if (shadow_rect.intersects_transformed(F->get()->xform_cache, F->get()->aabb_cache)) {
 						F->get()->next = occluders;
@@ -277,16 +278,18 @@ void VisualServerViewport::draw_viewports() {
 	for (int i = 0; i < active_viewports.size(); i++) {
 		Viewport *vp = active_viewports[i];
 
-		if (vp->update_mode == VS::VIEWPORT_UPDATE_DISABLED)
+		if (vp->update_mode == VS::VIEWPORT_UPDATE_DISABLED) {
 			continue;
+		}
 
 		ERR_CONTINUE(!vp->render_target.is_valid());
 
 		bool visible = vp->viewport_to_screen_rect != Rect2() || vp->update_mode == VS::VIEWPORT_UPDATE_ALWAYS || vp->update_mode == VS::VIEWPORT_UPDATE_ONCE || (vp->update_mode == VS::VIEWPORT_UPDATE_WHEN_VISIBLE && VSG::storage->render_target_was_used(vp->render_target));
 		visible = visible && vp->size.x > 1 && vp->size.y > 1;
 
-		if (!visible)
+		if (!visible) {
 			continue;
+		}
 
 		VSG::storage->render_target_clear_used(vp->render_target);
 
@@ -433,8 +436,9 @@ void VisualServerViewport::viewport_set_render_direct_to_screen(RID p_viewport, 
 	Viewport *viewport = viewport_owner.getornull(p_viewport);
 	ERR_FAIL_COND(!viewport);
 
-	if (p_enable == viewport->viewport_render_direct_to_screen)
+	if (p_enable == viewport->viewport_render_direct_to_screen) {
 		return;
+	}
 
 	// if disabled, reset render_target size and position
 	if (!p_enable) {
@@ -670,8 +674,9 @@ int VisualServerViewport::viewport_get_render_info(RID p_viewport, VS::ViewportR
 	ERR_FAIL_INDEX_V(p_info, VS::VIEWPORT_RENDER_INFO_MAX, -1);
 
 	Viewport *viewport = viewport_owner.getornull(p_viewport);
-	if (!viewport)
+	if (!viewport) {
 		return 0; //there should be a lock here..
+	}
 
 	return viewport->render_info[p_info];
 }

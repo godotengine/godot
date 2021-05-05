@@ -114,8 +114,9 @@ void GDNativeLibrary::_get_property_list(List<PropertyInfo> *p_list) const {
 	// set entries
 	List<String> entry_key_list;
 
-	if (config_file->has_section("entry"))
+	if (config_file->has_section("entry")) {
 		config_file->get_section_keys("entry", &entry_key_list);
+	}
 
 	for (List<String>::Element *E = entry_key_list.front(); E; E = E->next()) {
 		String key = E->get();
@@ -131,8 +132,9 @@ void GDNativeLibrary::_get_property_list(List<PropertyInfo> *p_list) const {
 	// set dependencies
 	List<String> dependency_key_list;
 
-	if (config_file->has_section("dependencies"))
+	if (config_file->has_section("dependencies")) {
 		config_file->get_section_keys("dependencies", &dependency_key_list);
+	}
 
 	for (List<String>::Element *E = dependency_key_list.front(); E; E = E->next()) {
 		String key = E->get();
@@ -158,8 +160,9 @@ void GDNativeLibrary::set_config_file(Ref<ConfigFile> p_config_file) {
 	{
 		List<String> entry_keys;
 
-		if (p_config_file->has_section("entry"))
+		if (p_config_file->has_section("entry")) {
 			p_config_file->get_section_keys("entry", &entry_keys);
+		}
 
 		for (List<String>::Element *E = entry_keys.front(); E; E = E->next()) {
 			String key = E->get();
@@ -189,8 +192,9 @@ void GDNativeLibrary::set_config_file(Ref<ConfigFile> p_config_file) {
 	{
 		List<String> dependency_keys;
 
-		if (p_config_file->has_section("dependencies"))
+		if (p_config_file->has_section("dependencies")) {
 			p_config_file->get_section_keys("dependencies", &dependency_keys);
+		}
 
 		for (List<String>::Element *E = dependency_keys.front(); E; E = E->next()) {
 			String key = E->get();
@@ -533,8 +537,9 @@ bool GDNativeLibraryResourceLoader::handles_type(const String &p_type) const {
 
 String GDNativeLibraryResourceLoader::get_resource_type(const String &p_path) const {
 	String el = p_path.get_extension().to_lower();
-	if (el == "gdnlib")
+	if (el == "gdnlib") {
 		return "GDNativeLibrary";
+	}
 	return "";
 }
 

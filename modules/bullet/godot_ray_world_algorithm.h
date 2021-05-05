@@ -56,8 +56,9 @@ public:
 
 	virtual void getAllContactManifolds(btManifoldArray &manifoldArray) {
 		///should we use m_ownManifold to avoid adding duplicates?
-		if (m_manifoldPtr && m_ownManifold)
+		if (m_manifoldPtr && m_ownManifold) {
 			manifoldArray.push_back(m_manifoldPtr);
+		}
 	}
 	struct CreateFunc : public btCollisionAlgorithmCreateFunc {
 		const btDiscreteDynamicsWorld *m_world;

@@ -98,8 +98,9 @@ Texture::Texture() {
 
 void ImageTexture::reload_from_file() {
 	String path = ResourceLoader::path_remap(get_path());
-	if (!path.is_resource_file())
+	if (!path.is_resource_file()) {
 		return;
+	}
 
 	uint32_t flags = get_flags();
 	Ref<Image> img;
@@ -115,36 +116,39 @@ void ImageTexture::reload_from_file() {
 }
 
 bool ImageTexture::_set(const StringName &p_name, const Variant &p_value) {
-	if (p_name == "image")
+	if (p_name == "image") {
 		create_from_image(p_value, flags);
-	else if (p_name == "flags")
-		if (w * h == 0)
+	} else if (p_name == "flags") {
+		if (w * h == 0) {
 			flags = p_value;
-		else
+		} else {
 			set_flags(p_value);
-	else if (p_name == "size") {
+		}
+	} else if (p_name == "size") {
 		Size2 s = p_value;
 		w = s.width;
 		h = s.height;
 		VisualServer::get_singleton()->texture_set_size_override(texture, w, h, 0);
 	} else if (p_name == "_data") {
 		_set_data(p_value);
-	} else
+	} else {
 		return false;
+	}
 
 	return true;
 }
 
 bool ImageTexture::_get(const StringName &p_name, Variant &r_ret) const {
 	if (p_name == "image_data") {
-	} else if (p_name == "image")
+	} else if (p_name == "image") {
 		r_ret = get_data();
-	else if (p_name == "flags")
+	} else if (p_name == "flags") {
 		r_ret = flags;
-	else if (p_name == "size")
+	} else if (p_name == "size") {
 		r_ret = Size2(w, h);
-	else
+	} else {
 		return false;
+	}
 
 	return true;
 }
@@ -157,8 +161,9 @@ void ImageTexture::_get_property_list(List<PropertyInfo> *p_list) const {
 
 void ImageTexture::_reload_hook(const RID &p_hook) {
 	String path = get_path();
-	if (!path.is_resource_file())
+	if (!path.is_resource_file()) {
 		return;
+	}
 
 	Ref<Image> img;
 	img.instance();
@@ -197,8 +202,9 @@ void ImageTexture::create_from_image(const Ref<Image> &p_image, uint32_t p_flags
 }
 
 void ImageTexture::set_flags(uint32_t p_flags) {
-	if (flags == p_flags)
+	if (flags == p_flags) {
 		return;
+	}
 
 	flags = p_flags;
 	if (w == 0 || h == 0) {
@@ -269,20 +275,23 @@ bool ImageTexture::has_alpha() const {
 }
 
 void ImageTexture::draw(RID p_canvas_item, const Point2 &p_pos, const Color &p_modulate, bool p_transpose, const Ref<Texture> &p_normal_map) const {
-	if ((w | h) == 0)
+	if ((w | h) == 0) {
 		return;
+	}
 	RID normal_rid = p_normal_map.is_valid() ? p_normal_map->get_rid() : RID();
 	VisualServer::get_singleton()->canvas_item_add_texture_rect(p_canvas_item, Rect2(p_pos, Size2(w, h)), texture, false, p_modulate, p_transpose, normal_rid);
 }
 void ImageTexture::draw_rect(RID p_canvas_item, const Rect2 &p_rect, bool p_tile, const Color &p_modulate, bool p_transpose, const Ref<Texture> &p_normal_map) const {
-	if ((w | h) == 0)
+	if ((w | h) == 0) {
 		return;
+	}
 	RID normal_rid = p_normal_map.is_valid() ? p_normal_map->get_rid() : RID();
 	VisualServer::get_singleton()->canvas_item_add_texture_rect(p_canvas_item, p_rect, texture, p_tile, p_modulate, p_transpose, normal_rid);
 }
 void ImageTexture::draw_rect_region(RID p_canvas_item, const Rect2 &p_rect, const Rect2 &p_src_rect, const Color &p_modulate, bool p_transpose, const Ref<Texture> &p_normal_map, bool p_clip_uv) const {
-	if ((w | h) == 0)
+	if ((w | h) == 0) {
 		return;
+	}
 	RID normal_rid = p_normal_map.is_valid() ? p_normal_map->get_rid() : RID();
 	VisualServer::get_singleton()->canvas_item_add_texture_rect_region(p_canvas_item, p_rect, texture, p_src_rect, p_modulate, p_transpose, normal_rid, p_clip_uv);
 }
@@ -322,10 +331,12 @@ bool ImageTexture::is_pixel_opaque(int p_x, int p_y) const {
 
 void ImageTexture::set_size_override(const Size2 &p_size) {
 	Size2 s = p_size;
-	if (s.x != 0)
+	if (s.x != 0) {
 		w = s.x;
-	if (s.y != 0)
+	}
+	if (s.y != 0) {
 		h = s.y;
+	}
 	VisualServer::get_singleton()->texture_set_size_override(texture, w, h, 0);
 }
 
@@ -665,8 +676,9 @@ Error StreamTexture::load(const String &p_path) {
 	Ref<Image> image;
 	image.instance();
 	Error err = _load_data(p_path, lw, lh, lwc, lhc, lflags, image);
-	if (err)
+	if (err) {
 		return err;
+	}
 
 	if (get_path() == String()) {
 		//temporarily set path if no path set for resource, helps find errors
@@ -704,20 +716,23 @@ RID StreamTexture::get_rid() const {
 }
 
 void StreamTexture::draw(RID p_canvas_item, const Point2 &p_pos, const Color &p_modulate, bool p_transpose, const Ref<Texture> &p_normal_map) const {
-	if ((w | h) == 0)
+	if ((w | h) == 0) {
 		return;
+	}
 	RID normal_rid = p_normal_map.is_valid() ? p_normal_map->get_rid() : RID();
 	VisualServer::get_singleton()->canvas_item_add_texture_rect(p_canvas_item, Rect2(p_pos, Size2(w, h)), texture, false, p_modulate, p_transpose, normal_rid);
 }
 void StreamTexture::draw_rect(RID p_canvas_item, const Rect2 &p_rect, bool p_tile, const Color &p_modulate, bool p_transpose, const Ref<Texture> &p_normal_map) const {
-	if ((w | h) == 0)
+	if ((w | h) == 0) {
 		return;
+	}
 	RID normal_rid = p_normal_map.is_valid() ? p_normal_map->get_rid() : RID();
 	VisualServer::get_singleton()->canvas_item_add_texture_rect(p_canvas_item, p_rect, texture, p_tile, p_modulate, p_transpose, normal_rid);
 }
 void StreamTexture::draw_rect_region(RID p_canvas_item, const Rect2 &p_rect, const Rect2 &p_src_rect, const Color &p_modulate, bool p_transpose, const Ref<Texture> &p_normal_map, bool p_clip_uv) const {
-	if ((w | h) == 0)
+	if ((w | h) == 0) {
 		return;
+	}
 	RID normal_rid = p_normal_map.is_valid() ? p_normal_map->get_rid() : RID();
 	VisualServer::get_singleton()->canvas_item_add_texture_rect_region(p_canvas_item, p_rect, texture, p_src_rect, p_modulate, p_transpose, normal_rid, p_clip_uv);
 }
@@ -772,13 +787,15 @@ void StreamTexture::set_flags(uint32_t p_flags) {
 
 void StreamTexture::reload_from_file() {
 	String path = get_path();
-	if (!path.is_resource_file())
+	if (!path.is_resource_file()) {
 		return;
+	}
 
 	path = ResourceLoader::path_remap(path); //remap for translation
 	path = ResourceLoader::import_remap(path); //remap for import
-	if (!path.is_resource_file())
+	if (!path.is_resource_file()) {
 		return;
+	}
 
 	load(path);
 }
@@ -813,10 +830,12 @@ RES ResourceFormatLoaderStreamTexture::load(const String &p_path, const String &
 	Ref<StreamTexture> st;
 	st.instance();
 	Error err = st->load(p_path);
-	if (r_error)
+	if (r_error) {
 		*r_error = err;
-	if (err != OK)
+	}
+	if (err != OK) {
 		return RES();
+	}
 
 	return st;
 }
@@ -828,8 +847,9 @@ bool ResourceFormatLoaderStreamTexture::handles_type(const String &p_type) const
 	return p_type == "StreamTexture";
 }
 String ResourceFormatLoaderStreamTexture::get_resource_type(const String &p_path) const {
-	if (p_path.get_extension().to_lower() == "stex")
+	if (p_path.get_extension().to_lower() == "stex") {
 		return "StreamTexture";
+	}
 	return "";
 }
 
@@ -837,8 +857,9 @@ String ResourceFormatLoaderStreamTexture::get_resource_type(const String &p_path
 
 int AtlasTexture::get_width() const {
 	if (region.size.width == 0) {
-		if (atlas.is_valid())
+		if (atlas.is_valid()) {
 			return atlas->get_width();
+		}
 		return 1;
 	} else {
 		return region.size.width + margin.size.width;
@@ -846,43 +867,49 @@ int AtlasTexture::get_width() const {
 }
 int AtlasTexture::get_height() const {
 	if (region.size.height == 0) {
-		if (atlas.is_valid())
+		if (atlas.is_valid()) {
 			return atlas->get_height();
+		}
 		return 1;
 	} else {
 		return region.size.height + margin.size.height;
 	}
 }
 RID AtlasTexture::get_rid() const {
-	if (atlas.is_valid())
+	if (atlas.is_valid()) {
 		return atlas->get_rid();
+	}
 
 	return RID();
 }
 
 bool AtlasTexture::has_alpha() const {
-	if (atlas.is_valid())
+	if (atlas.is_valid()) {
 		return atlas->has_alpha();
+	}
 
 	return false;
 }
 
 void AtlasTexture::set_flags(uint32_t p_flags) {
-	if (atlas.is_valid())
+	if (atlas.is_valid()) {
 		atlas->set_flags(p_flags);
+	}
 }
 
 uint32_t AtlasTexture::get_flags() const {
-	if (atlas.is_valid())
+	if (atlas.is_valid()) {
 		return atlas->get_flags();
+	}
 
 	return 0;
 }
 
 void AtlasTexture::set_atlas(const Ref<Texture> &p_atlas) {
 	ERR_FAIL_COND(p_atlas == this);
-	if (atlas == p_atlas)
+	if (atlas == p_atlas) {
 		return;
+	}
 	atlas = p_atlas;
 	emit_changed();
 	_change_notify("atlas");
@@ -892,8 +919,9 @@ Ref<Texture> AtlasTexture::get_atlas() const {
 }
 
 void AtlasTexture::set_region(const Rect2 &p_region) {
-	if (region == p_region)
+	if (region == p_region) {
 		return;
+	}
 	region = p_region;
 	emit_changed();
 	_change_notify("region");
@@ -904,8 +932,9 @@ Rect2 AtlasTexture::get_region() const {
 }
 
 void AtlasTexture::set_margin(const Rect2 &p_margin) {
-	if (margin == p_margin)
+	if (margin == p_margin) {
 		return;
+	}
 	margin = p_margin;
 	emit_changed();
 	_change_notify("margin");
@@ -945,8 +974,9 @@ void AtlasTexture::_bind_methods() {
 }
 
 void AtlasTexture::draw(RID p_canvas_item, const Point2 &p_pos, const Color &p_modulate, bool p_transpose, const Ref<Texture> &p_normal_map) const {
-	if (!atlas.is_valid())
+	if (!atlas.is_valid()) {
 		return;
+	}
 
 	Rect2 rc = region;
 
@@ -963,8 +993,9 @@ void AtlasTexture::draw(RID p_canvas_item, const Point2 &p_pos, const Color &p_m
 }
 
 void AtlasTexture::draw_rect(RID p_canvas_item, const Rect2 &p_rect, bool p_tile, const Color &p_modulate, bool p_transpose, const Ref<Texture> &p_normal_map) const {
-	if (!atlas.is_valid())
+	if (!atlas.is_valid()) {
 		return;
+	}
 
 	Rect2 rc = region;
 
@@ -984,8 +1015,9 @@ void AtlasTexture::draw_rect(RID p_canvas_item, const Rect2 &p_rect, bool p_tile
 }
 void AtlasTexture::draw_rect_region(RID p_canvas_item, const Rect2 &p_rect, const Rect2 &p_src_rect, const Color &p_modulate, bool p_transpose, const Ref<Texture> &p_normal_map, bool p_clip_uv) const {
 	//this might not necessarily work well if using a rect, needs to be fixed properly
-	if (!atlas.is_valid())
+	if (!atlas.is_valid()) {
 		return;
+	}
 
 	Rect2 dr;
 	Rect2 src_c;
@@ -996,8 +1028,9 @@ void AtlasTexture::draw_rect_region(RID p_canvas_item, const Rect2 &p_rect, cons
 }
 
 bool AtlasTexture::get_rect_region(const Rect2 &p_rect, const Rect2 &p_src_rect, Rect2 &r_rect, Rect2 &r_src_rect) const {
-	if (!atlas.is_valid())
+	if (!atlas.is_valid()) {
 		return false;
+	}
 
 	Rect2 rc = region;
 
@@ -1009,8 +1042,9 @@ bool AtlasTexture::get_rect_region(const Rect2 &p_rect, const Rect2 &p_src_rect,
 
 	src.position += (rc.position - margin.position);
 	Rect2 src_c = rc.clip(src);
-	if (src_c.size == Size2())
+	if (src_c.size == Size2()) {
 		return false;
+	}
 	Vector2 ofs = (src_c.position - src.position);
 
 	if (scale.x < 0) {
@@ -1031,17 +1065,20 @@ bool AtlasTexture::get_rect_region(const Rect2 &p_rect, const Rect2 &p_src_rect,
 }
 
 bool AtlasTexture::is_pixel_opaque(int p_x, int p_y) const {
-	if (!atlas.is_valid())
+	if (!atlas.is_valid()) {
 		return true;
+	}
 
 	int x = p_x + region.position.x - margin.position.x;
 	int y = p_y + region.position.y - margin.position.y;
 
 	// margin edge may outside of atlas
-	if (x < 0 || x >= atlas->get_width())
+	if (x < 0 || x >= atlas->get_width()) {
 		return false;
-	if (y < 0 || y >= atlas->get_height())
+	}
+	if (y < 0 || y >= atlas->get_height()) {
 		return false;
+	}
 
 	return atlas->is_pixel_opaque(x, y);
 }
@@ -1193,8 +1230,9 @@ RID LargeTexture::get_rid() const {
 
 bool LargeTexture::has_alpha() const {
 	for (int i = 0; i < pieces.size(); i++) {
-		if (pieces[i].texture->has_alpha())
+		if (pieces[i].texture->has_alpha()) {
 			return true;
+		}
 	}
 
 	return false;
@@ -1207,8 +1245,9 @@ void LargeTexture::set_flags(uint32_t p_flags) {
 }
 
 uint32_t LargeTexture::get_flags() const {
-	if (pieces.size())
+	if (pieces.size()) {
 		return pieces[0].texture->get_flags();
+	}
 
 	return 0;
 }
@@ -1309,8 +1348,9 @@ void LargeTexture::draw(RID p_canvas_item, const Point2 &p_pos, const Color &p_m
 
 void LargeTexture::draw_rect(RID p_canvas_item, const Rect2 &p_rect, bool p_tile, const Color &p_modulate, bool p_transpose, const Ref<Texture> &p_normal_map) const {
 	//tiling not supported for this
-	if (size.x == 0 || size.y == 0)
+	if (size.x == 0 || size.y == 0) {
 		return;
+	}
 
 	Size2 scale = p_rect.size / size;
 
@@ -1321,16 +1361,18 @@ void LargeTexture::draw_rect(RID p_canvas_item, const Rect2 &p_rect, bool p_tile
 }
 void LargeTexture::draw_rect_region(RID p_canvas_item, const Rect2 &p_rect, const Rect2 &p_src_rect, const Color &p_modulate, bool p_transpose, const Ref<Texture> &p_normal_map, bool p_clip_uv) const {
 	//tiling not supported for this
-	if (p_src_rect.size.x == 0 || p_src_rect.size.y == 0)
+	if (p_src_rect.size.x == 0 || p_src_rect.size.y == 0) {
 		return;
+	}
 
 	Size2 scale = p_rect.size / p_src_rect.size;
 
 	for (int i = 0; i < pieces.size(); i++) {
 		// TODO
 		Rect2 rect(pieces[i].offset, pieces[i].texture->get_size());
-		if (!p_src_rect.intersects(rect))
+		if (!p_src_rect.intersects(rect)) {
 			continue;
+		}
 		Rect2 local = p_src_rect.clip(rect);
 		Rect2 target = local;
 		target.size *= scale;
@@ -1343,8 +1385,9 @@ void LargeTexture::draw_rect_region(RID p_canvas_item, const Rect2 &p_rect, cons
 bool LargeTexture::is_pixel_opaque(int p_x, int p_y) const {
 	for (int i = 0; i < pieces.size(); i++) {
 		// TODO
-		if (!pieces[i].texture.is_valid())
+		if (!pieces[i].texture.is_valid()) {
 			continue;
+		}
 
 		Rect2 rect(pieces[i].offset, pieces[i].texture->get_size());
 		if (rect.has_point(Point2(p_x, p_y))) {
@@ -1362,8 +1405,9 @@ LargeTexture::LargeTexture() {
 
 void CubeMap::set_flags(uint32_t p_flags) {
 	flags = p_flags;
-	if (_is_valid())
+	if (_is_valid()) {
 		VS::get_singleton()->texture_set_flags(cubemap, flags);
+	}
 }
 
 uint32_t CubeMap::get_flags() const {
@@ -1388,8 +1432,9 @@ void CubeMap::set_side(Side p_side, const Ref<Image> &p_image) {
 
 Ref<Image> CubeMap::get_side(Side p_side) const {
 	ERR_FAIL_INDEX_V(p_side, 6, Ref<Image>());
-	if (!valid[p_side])
+	if (!valid[p_side]) {
 		return Ref<Image>();
+	}
 	return VS::get_singleton()->texture_get_data(cubemap, VS::CubeMapSide(p_side));
 }
 
@@ -1448,8 +1493,9 @@ bool CubeMap::_set(const StringName &p_name, const Variant &p_value) {
 		storage = Storage(p_value.operator int());
 	} else if (p_name == "lossy_quality") {
 		lossy_storage_quality = p_value;
-	} else
+	} else {
 		return false;
+	}
 
 	return true;
 }
@@ -1471,8 +1517,9 @@ bool CubeMap::_get(const StringName &p_name, Variant &r_ret) const {
 		r_ret = storage;
 	} else if (p_name == "lossy_quality") {
 		r_ret = lossy_storage_quality;
-	} else
+	} else {
 		return false;
+	}
 
 	return true;
 }
@@ -1522,8 +1569,9 @@ void CubeMap::_bind_methods() {
 CubeMap::CubeMap() {
 	w = h = 0;
 	flags = FLAGS_DEFAULT;
-	for (int i = 0; i < 6; i++)
+	for (int i = 0; i < 6; i++) {
 		valid[i] = false;
+	}
 	cubemap = VisualServer::get_singleton()->texture_create();
 	storage = STORAGE_RAW;
 	lossy_storage_quality = 0.7;
@@ -1671,8 +1719,9 @@ void GradientTexture::_bind_methods() {
 }
 
 void GradientTexture::set_gradient(Ref<Gradient> p_gradient) {
-	if (p_gradient == gradient)
+	if (p_gradient == gradient) {
 		return;
+	}
 	if (gradient.is_valid()) {
 		gradient->disconnect(CoreStringNames::get_singleton()->changed, this, "_update");
 	}
@@ -1689,8 +1738,9 @@ Ref<Gradient> GradientTexture::get_gradient() const {
 }
 
 void GradientTexture::_queue_update() {
-	if (update_pending)
+	if (update_pending) {
 		return;
+	}
 
 	update_pending = true;
 	call_deferred("_update");
@@ -1699,8 +1749,9 @@ void GradientTexture::_queue_update() {
 void GradientTexture::_update() {
 	update_pending = false;
 
-	if (gradient.is_null())
+	if (gradient.is_null()) {
 		return;
+	}
 
 	PoolVector<uint8_t> data;
 	data.resize(width * 4);
@@ -1763,13 +1814,15 @@ Ref<Texture> ProxyTexture::get_base() const {
 }
 
 int ProxyTexture::get_width() const {
-	if (base.is_valid())
+	if (base.is_valid()) {
 		return base->get_width();
+	}
 	return 1;
 }
 int ProxyTexture::get_height() const {
-	if (base.is_valid())
+	if (base.is_valid()) {
 		return base->get_height();
+	}
 	return 1;
 }
 RID ProxyTexture::get_rid() const {
@@ -1777,8 +1830,9 @@ RID ProxyTexture::get_rid() const {
 }
 
 bool ProxyTexture::has_alpha() const {
-	if (base.is_valid())
+	if (base.is_valid()) {
 		return base->has_alpha();
+	}
 	return false;
 }
 
@@ -1786,8 +1840,9 @@ void ProxyTexture::set_flags(uint32_t p_flags) {
 }
 
 uint32_t ProxyTexture::get_flags() const {
-	if (base.is_valid())
+	if (base.is_valid()) {
 		return base->get_flags();
+	}
 	return 0;
 }
 
@@ -2216,13 +2271,15 @@ uint32_t TextureLayered::get_depth() const {
 
 void TextureLayered::reload_from_file() {
 	String path = get_path();
-	if (!path.is_resource_file())
+	if (!path.is_resource_file()) {
 		return;
+	}
 
 	path = ResourceLoader::path_remap(path); //remap for translation
 	path = ResourceLoader::import_remap(path); //remap for import
-	if (!path.is_resource_file())
+	if (!path.is_resource_file()) {
 		return;
+	}
 
 	load(path);
 }
@@ -2374,10 +2431,12 @@ RES ResourceFormatLoaderTextureLayered::load(const String &p_path, const String 
 	}
 
 	Error err = lt->load(p_path);
-	if (r_error)
+	if (r_error) {
 		*r_error = OK;
-	if (err != OK)
+	}
+	if (err != OK) {
 		return RES();
+	}
 
 	return lt;
 }
@@ -2390,10 +2449,12 @@ bool ResourceFormatLoaderTextureLayered::handles_type(const String &p_type) cons
 	return p_type == "Texture3D" || p_type == "TextureArray";
 }
 String ResourceFormatLoaderTextureLayered::get_resource_type(const String &p_path) const {
-	if (p_path.get_extension().to_lower() == "tex3d")
+	if (p_path.get_extension().to_lower() == "tex3d") {
 		return "Texture3D";
-	if (p_path.get_extension().to_lower() == "texarr")
+	}
+	if (p_path.get_extension().to_lower() == "texarr") {
 		return "TextureArray";
+	}
 	return "";
 }
 

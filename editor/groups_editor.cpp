@@ -299,8 +299,9 @@ void GroupDialog::_load_groups(Node *p_current) {
 
 void GroupDialog::_delete_group_pressed(Object *p_item, int p_column, int p_id) {
 	TreeItem *ti = Object::cast_to<TreeItem>(p_item);
-	if (!ti)
+	if (!ti) {
 		return;
+	}
 
 	String name = ti->get_text(0);
 
@@ -548,15 +549,18 @@ GroupDialog::GroupDialog() {
 ////////////////////////////////////////////////////////////////////////////////
 
 void GroupsEditor::_add_group(const String &p_group) {
-	if (!node)
+	if (!node) {
 		return;
+	}
 
 	const String name = group_name->get_text().strip_edges();
-	if (name.empty())
+	if (name.empty()) {
 		return;
+	}
 
-	if (node->is_in_group(name))
+	if (node->is_in_group(name)) {
 		return;
+	}
 
 	undo_redo->create_action(TTR("Add to Group"));
 
@@ -575,12 +579,14 @@ void GroupsEditor::_add_group(const String &p_group) {
 }
 
 void GroupsEditor::_remove_group(Object *p_item, int p_column, int p_id) {
-	if (!node)
+	if (!node) {
 		return;
+	}
 
 	TreeItem *ti = Object::cast_to<TreeItem>(p_item);
-	if (!ti)
+	if (!ti) {
 		return;
+	}
 
 	String name = ti->get_text(0);
 
@@ -607,8 +613,9 @@ struct _GroupInfoComparator {
 void GroupsEditor::update_tree() {
 	tree->clear();
 
-	if (!node)
+	if (!node) {
 		return;
+	}
 
 	List<Node::GroupInfo> groups;
 	node->get_groups(&groups);
@@ -618,8 +625,9 @@ void GroupsEditor::update_tree() {
 
 	for (List<GroupInfo>::Element *E = groups.front(); E; E = E->next()) {
 		Node::GroupInfo gi = E->get();
-		if (!gi.persistent)
+		if (!gi.persistent) {
 			continue;
+		}
 
 		Node *n = node;
 		bool can_be_deleted = true;

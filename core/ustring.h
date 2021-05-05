@@ -51,8 +51,9 @@ class CharProxy {
 
 public:
 	_FORCE_INLINE_ operator T() const {
-		if (unlikely(_index == _cowdata.size()))
+		if (unlikely(_index == _cowdata.size())) {
 			return _null;
+		}
 
 		return _cowdata.get(_index);
 	}
@@ -83,8 +84,9 @@ public:
 	_FORCE_INLINE_ char get(int p_index) const { return _cowdata.get(p_index); }
 	_FORCE_INLINE_ void set(int p_index, const char &p_elem) { _cowdata.set(p_index, p_elem); }
 	_FORCE_INLINE_ const char &operator[](int p_index) const {
-		if (unlikely(p_index == _cowdata.size()))
+		if (unlikely(p_index == _cowdata.size())) {
 			return _null;
+		}
 
 		return _cowdata.get(p_index);
 	}
@@ -151,8 +153,9 @@ public:
 	Error resize(int p_size) { return _cowdata.resize(p_size); }
 
 	_FORCE_INLINE_ const CharType &operator[](int p_index) const {
-		if (unlikely(p_index == _cowdata.size()))
+		if (unlikely(p_index == _cowdata.size())) {
 			return _null;
+		}
 
 		return _cowdata.get(p_index);
 	}
@@ -392,16 +395,17 @@ struct NaturalNoCaseComparator {
 template <typename L, typename R>
 _FORCE_INLINE_ bool is_str_less(const L *l_ptr, const R *r_ptr) {
 	while (true) {
-		if (*l_ptr == 0 && *r_ptr == 0)
+		if (*l_ptr == 0 && *r_ptr == 0) {
 			return false;
-		else if (*l_ptr == 0)
+		} else if (*l_ptr == 0) {
 			return true;
-		else if (*r_ptr == 0)
+		} else if (*r_ptr == 0) {
 			return false;
-		else if (*l_ptr < *r_ptr)
+		} else if (*l_ptr < *r_ptr) {
 			return true;
-		else if (*l_ptr > *r_ptr)
+		} else if (*l_ptr > *r_ptr) {
 			return false;
+		}
 
 		l_ptr++;
 		r_ptr++;

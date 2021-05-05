@@ -75,8 +75,9 @@ void Camera::_validate_property(PropertyInfo &p_property) const {
 }
 
 void Camera::_update_camera() {
-	if (!is_inside_tree())
+	if (!is_inside_tree()) {
 		return;
+	}
 
 	VisualServer::get_singleton()->camera_set_transform(camera, get_camera_transform());
 
@@ -86,8 +87,9 @@ void Camera::_update_camera() {
 		get_viewport()->_camera_transform_changed_notify();
 	*/
 
-	if (get_tree()->is_node_being_edited(this) || !is_current())
+	if (get_tree()->is_node_being_edited(this) || !is_current()) {
 		return;
+	}
 
 	get_viewport()->_camera_transform_changed_notify();
 
@@ -106,8 +108,9 @@ void Camera::_notification(int p_what) {
 			ERR_FAIL_COND(!viewport);
 
 			bool first_camera = viewport->_camera_add(this);
-			if (current || first_camera)
+			if (current || first_camera) {
 				viewport->_camera_set(this);
+			}
 
 		} break;
 		case NOTIFICATION_TRANSFORM_CHANGED: {
@@ -154,8 +157,9 @@ Transform Camera::get_camera_transform() const {
 }
 
 void Camera::set_perspective(float p_fovy_degrees, float p_z_near, float p_z_far) {
-	if (!force_change && fov == p_fovy_degrees && p_z_near == near && p_z_far == far && mode == PROJECTION_PERSPECTIVE)
+	if (!force_change && fov == p_fovy_degrees && p_z_near == near && p_z_far == far && mode == PROJECTION_PERSPECTIVE) {
 		return;
+	}
 
 	fov = p_fovy_degrees;
 	near = p_z_near;
@@ -167,8 +171,9 @@ void Camera::set_perspective(float p_fovy_degrees, float p_z_near, float p_z_far
 	force_change = false;
 }
 void Camera::set_orthogonal(float p_size, float p_z_near, float p_z_far) {
-	if (!force_change && size == p_size && p_z_near == near && p_z_far == far && mode == PROJECTION_ORTHOGONAL)
+	if (!force_change && size == p_size && p_z_near == near && p_z_far == far && mode == PROJECTION_ORTHOGONAL) {
 		return;
+	}
 
 	size = p_size;
 
@@ -182,8 +187,9 @@ void Camera::set_orthogonal(float p_size, float p_z_near, float p_z_far) {
 }
 
 void Camera::set_frustum(float p_size, Vector2 p_offset, float p_z_near, float p_z_far) {
-	if (!force_change && size == p_size && frustum_offset == p_offset && p_z_near == near && p_z_far == far && mode == PROJECTION_FRUSTUM)
+	if (!force_change && size == p_size && frustum_offset == p_offset && p_z_near == near && p_z_far == far && mode == PROJECTION_FRUSTUM) {
 		return;
+	}
 
 	size = p_size;
 	frustum_offset = p_offset;
@@ -212,8 +218,9 @@ RID Camera::get_camera() const {
 void Camera::make_current() {
 	current = true;
 
-	if (!is_inside_tree())
+	if (!is_inside_tree()) {
 		return;
+	}
 
 	get_viewport()->_camera_set(this);
 
@@ -222,8 +229,9 @@ void Camera::make_current() {
 
 void Camera::clear_current(bool p_enable_next) {
 	current = false;
-	if (!is_inside_tree())
+	if (!is_inside_tree()) {
 		return;
+	}
 
 	if (get_viewport()->get_camera() == this) {
 		get_viewport()->_camera_set(nullptr);
@@ -245,8 +253,9 @@ void Camera::set_current(bool p_current) {
 bool Camera::is_current() const {
 	if (is_inside_tree() && !get_tree()->is_node_being_edited(this)) {
 		return get_viewport()->get_camera() == this;
-	} else
+	} else {
 		return current;
+	}
 }
 
 bool Camera::_can_gizmo_scale() const {
@@ -319,10 +328,11 @@ Vector<Vector3> Camera::get_near_plane_points() const {
 
 	CameraMatrix cm;
 
-	if (mode == PROJECTION_ORTHOGONAL)
+	if (mode == PROJECTION_ORTHOGONAL) {
 		cm.set_orthogonal(size, viewport_size.aspect(), near, far, keep_aspect == KEEP_WIDTH);
-	else
+	} else {
 		cm.set_perspective(fov, viewport_size.aspect(), near, far, keep_aspect == KEEP_WIDTH);
+	}
 
 	Vector3 endpoints[8];
 	cm.get_endpoints(Transform(), endpoints);
@@ -342,10 +352,11 @@ Point2 Camera::unproject_position(const Vector3 &p_pos) const {
 
 	CameraMatrix cm;
 
-	if (mode == PROJECTION_ORTHOGONAL)
+	if (mode == PROJECTION_ORTHOGONAL) {
 		cm.set_orthogonal(size, viewport_size.aspect(), near, far, keep_aspect == KEEP_WIDTH);
-	else
+	} else {
 		cm.set_perspective(fov, viewport_size.aspect(), near, far, keep_aspect == KEEP_WIDTH);
+	}
 
 	Plane p(get_camera_transform().xform_inv(p_pos), 1.0);
 
@@ -369,10 +380,11 @@ Vector3 Camera::project_position(const Point2 &p_point, float p_z_depth) const {
 
 	CameraMatrix cm;
 
-	if (mode == PROJECTION_ORTHOGONAL)
+	if (mode == PROJECTION_ORTHOGONAL) {
 		cm.set_orthogonal(size, viewport_size.aspect(), p_z_depth, far, keep_aspect == KEEP_WIDTH);
-	else
+	} else {
 		cm.set_perspective(fov, viewport_size.aspect(), p_z_depth, far, keep_aspect == KEEP_WIDTH);
+	}
 
 	Vector2 vp_he = cm.get_viewport_half_extents();
 
@@ -405,10 +417,11 @@ void Camera::_camera_make_current(Node *p_camera) {
 
 void Camera::set_environment(const Ref<Environment> &p_environment) {
 	environment = p_environment;
-	if (environment.is_valid())
+	if (environment.is_valid()) {
 		VS::get_singleton()->camera_set_environment(camera, environment->get_rid());
-	else
+	} else {
 		VS::get_singleton()->camera_set_environment(camera, RID());
+	}
 	_update_camera_mode();
 }
 
@@ -428,8 +441,9 @@ Camera::KeepAspect Camera::get_keep_aspect_mode() const {
 }
 
 void Camera::set_doppler_tracking(DopplerTracking p_tracking) {
-	if (doppler_tracking == p_tracking)
+	if (doppler_tracking == p_tracking) {
 		return;
+	}
 
 	doppler_tracking = p_tracking;
 	if (p_tracking != DOPPLER_TRACKING_DISABLED) {
@@ -600,10 +614,11 @@ Vector<Plane> Camera::get_frustum() const {
 
 	Size2 viewport_size = get_viewport()->get_visible_rect().size;
 	CameraMatrix cm;
-	if (mode == PROJECTION_PERSPECTIVE)
+	if (mode == PROJECTION_PERSPECTIVE) {
 		cm.set_perspective(fov, viewport_size.aspect(), near, far, keep_aspect == KEEP_WIDTH);
-	else
+	} else {
 		cm.set_orthogonal(size, viewport_size.aspect(), near, far, keep_aspect == KEEP_WIDTH);
+	}
 
 	return cm.get_projection_planes(get_camera_transform());
 }
@@ -757,10 +772,11 @@ uint32_t ClippedCamera::get_collision_mask() const {
 
 void ClippedCamera::set_collision_mask_bit(int p_bit, bool p_value) {
 	uint32_t mask = get_collision_mask();
-	if (p_value)
+	if (p_value) {
 		mask |= 1 << p_bit;
-	else
+	} else {
 		mask &= ~(1 << p_bit);
+	}
 	set_collision_mask(mask);
 }
 
@@ -775,8 +791,9 @@ void ClippedCamera::add_exception_rid(const RID &p_rid) {
 void ClippedCamera::add_exception(const Object *p_object) {
 	ERR_FAIL_NULL(p_object);
 	const CollisionObject *co = Object::cast_to<CollisionObject>(p_object);
-	if (!co)
+	if (!co) {
 		return;
+	}
 	add_exception_rid(co->get_rid());
 }
 
@@ -787,8 +804,9 @@ void ClippedCamera::remove_exception_rid(const RID &p_rid) {
 void ClippedCamera::remove_exception(const Object *p_object) {
 	ERR_FAIL_NULL(p_object);
 	const CollisionObject *co = Object::cast_to<CollisionObject>(p_object);
-	if (!co)
+	if (!co) {
 		return;
+	}
 	remove_exception_rid(co->get_rid());
 }
 

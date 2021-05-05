@@ -45,8 +45,9 @@ void EditorProfiler::_make_metric_ptrs(Metric &m) {
 
 void EditorProfiler::add_frame_metric(const Metric &p_metric, bool p_final) {
 	++last_metric;
-	if (last_metric >= frame_metrics.size())
+	if (last_metric >= frame_metrics.size()) {
 		last_metric = 0;
+	}
 
 	frame_metrics.write[last_metric] = p_metric;
 	_make_metric_ptrs(frame_metrics.write[last_metric]);
@@ -134,19 +135,22 @@ Color EditorProfiler::_get_color_from_signature(const StringName &p_signature) c
 }
 
 void EditorProfiler::_item_edited() {
-	if (updating_frame)
+	if (updating_frame) {
 		return;
+	}
 
 	TreeItem *item = variables->get_edited();
-	if (!item)
+	if (!item) {
 		return;
+	}
 	StringName signature = item->get_metadata(0);
 	bool checked = item->is_checked(0);
 
-	if (checked)
+	if (checked) {
 		plot_sigs.insert(signature);
-	else
+	} else {
 		plot_sigs.erase(signature);
+	}
 
 	if (!frame_delay->is_processing()) {
 		frame_delay->set_wait_time(0.1);
@@ -185,8 +189,9 @@ void EditorProfiler::_update_plot() {
 
 	for (int i = 0; i < frame_metrics.size(); i++) {
 		const Metric &m = frame_metrics[i];
-		if (!m.valid)
+		if (!m.valid) {
 			continue;
+		}
 
 		for (Set<StringName>::Element *E = plot_sigs.front(); E; E = E->next()) {
 			const Map<StringName, Metric::Category *>::Element *F = m.category_ptrs.find(E->get());
@@ -228,8 +233,9 @@ void EditorProfiler::_update_plot() {
 			if (next > frame_metrics.size()) {
 				next = frame_metrics.size();
 			}
-			if (next == current)
+			if (next == current) {
 				next = current + 1; //just because for loop must work
+			}
 
 			for (Set<StringName>::Element *E = plot_sigs.front(); E; E = E->next()) {
 				int plot_pos = -1;
@@ -243,8 +249,9 @@ void EditorProfiler::_update_plot() {
 
 					//get
 					const Metric &m = frame_metrics[idx];
-					if (!m.valid)
+					if (!m.valid) {
 						continue; //skip because invalid
+					}
 
 					float value = 0;
 
@@ -425,13 +432,15 @@ void EditorProfiler::_notification(int p_what) {
 }
 
 void EditorProfiler::_graph_tex_draw() {
-	if (last_metric < 0)
+	if (last_metric < 0) {
 		return;
+	}
 	if (seeking) {
 		int max_frames = frame_metrics.size();
 		int frame = cursor_metric_edit->get_value() - (frame_metrics[last_metric].frame_number - max_frames + 1);
-		if (frame < 0)
+		if (frame < 0) {
 			frame = 0;
+		}
 
 		int cur_x = frame * graph->get_size().x / max_frames;
 
@@ -441,8 +450,9 @@ void EditorProfiler::_graph_tex_draw() {
 	if (hover_metric != -1 && frame_metrics[hover_metric].valid) {
 		int max_frames = frame_metrics.size();
 		int frame = frame_metrics[hover_metric].frame_number - (frame_metrics[last_metric].frame_number - max_frames + 1);
-		if (frame < 0)
+		if (frame < 0) {
 			frame = 0;
+		}
 
 		int cur_x = frame * graph->get_size().x / max_frames;
 
@@ -456,16 +466,18 @@ void EditorProfiler::_graph_tex_mouse_exit() {
 }
 
 void EditorProfiler::_cursor_metric_changed(double) {
-	if (updating_frame)
+	if (updating_frame) {
 		return;
+	}
 
 	graph->update();
 	_update_frame();
 }
 
 void EditorProfiler::_graph_tex_input(const Ref<InputEvent> &p_ev) {
-	if (last_metric < 0)
+	if (last_metric < 0) {
 		return;
+	}
 
 	Ref<InputEventMouse> me = p_ev;
 	Ref<InputEventMouseButton> mb = p_ev;
@@ -513,12 +525,14 @@ void EditorProfiler::_graph_tex_input(const Ref<InputEvent> &p_ev) {
 				}
 
 				metric++;
-				if (metric >= frame_metrics.size())
+				if (metric >= frame_metrics.size()) {
 					metric = 0;
+				}
 			}
 
-			if (valid)
+			if (valid) {
 				cursor_metric_edit->set_value(frame_metrics[metric].frame_number);
+			}
 
 			updating_frame = false;
 
@@ -541,10 +555,12 @@ void EditorProfiler::_graph_tex_input(const Ref<InputEvent> &p_ev) {
 }
 
 int EditorProfiler::_get_cursor_index() const {
-	if (last_metric < 0)
+	if (last_metric < 0) {
 		return 0;
-	if (!frame_metrics[last_metric].valid)
+	}
+	if (!frame_metrics[last_metric].valid) {
 		return 0;
+	}
 
 	int diff = (frame_metrics[last_metric].frame_number - cursor_metric_edit->get_value());
 

@@ -47,20 +47,21 @@ const String godot_project_name_xml_string = R"(<?xml version="1.0" encoding="ut
 OS::ScreenOrientation _get_screen_orientation() {
 	String orientation_settings = ProjectSettings::get_singleton()->get("display/window/handheld/orientation");
 	OS::ScreenOrientation screen_orientation;
-	if (orientation_settings == "portrait")
+	if (orientation_settings == "portrait") {
 		screen_orientation = OS::SCREEN_PORTRAIT;
-	else if (orientation_settings == "reverse_landscape")
+	} else if (orientation_settings == "reverse_landscape") {
 		screen_orientation = OS::SCREEN_REVERSE_LANDSCAPE;
-	else if (orientation_settings == "reverse_portrait")
+	} else if (orientation_settings == "reverse_portrait") {
 		screen_orientation = OS::SCREEN_REVERSE_PORTRAIT;
-	else if (orientation_settings == "sensor_landscape")
+	} else if (orientation_settings == "sensor_landscape") {
 		screen_orientation = OS::SCREEN_SENSOR_LANDSCAPE;
-	else if (orientation_settings == "sensor_portrait")
+	} else if (orientation_settings == "sensor_portrait") {
 		screen_orientation = OS::SCREEN_SENSOR_PORTRAIT;
-	else if (orientation_settings == "sensor")
+	} else if (orientation_settings == "sensor") {
 		screen_orientation = OS::SCREEN_SENSOR;
-	else
+	} else {
 		screen_orientation = OS::SCREEN_LANDSCAPE;
+	}
 
 	return screen_orientation;
 }

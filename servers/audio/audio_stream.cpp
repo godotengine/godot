@@ -244,8 +244,9 @@ Ref<AudioStream> AudioStreamRandomPitch::get_audio_stream() const {
 }
 
 void AudioStreamRandomPitch::set_random_pitch(float p_pitch) {
-	if (p_pitch < 1)
+	if (p_pitch < 1) {
 		p_pitch = 1;
+	}
 	random_pitch = p_pitch;
 }
 
@@ -256,8 +257,9 @@ float AudioStreamRandomPitch::get_random_pitch() const {
 Ref<AudioStreamPlayback> AudioStreamRandomPitch::instance_playback() {
 	Ref<AudioStreamPlaybackRandomPitch> playback;
 	playback.instance();
-	if (audio_stream.is_valid())
+	if (audio_stream.is_valid()) {
 		playback->playback = audio_stream->instance_playback();
+	}
 
 	playbacks.insert(playback.ptr());
 	playback->random_pitch = Ref<AudioStreamRandomPitch>((AudioStreamRandomPitch *)this);

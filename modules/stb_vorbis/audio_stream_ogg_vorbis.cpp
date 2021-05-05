@@ -100,8 +100,9 @@ float AudioStreamPlaybackOGGVorbis::get_playback_position() const {
 	return float(frames_mixed) / vorbis_stream->sample_rate;
 }
 void AudioStreamPlaybackOGGVorbis::seek(float p_time) {
-	if (!active)
+	if (!active) {
 		return;
+	}
 
 	if (p_time >= vorbis_stream->get_length()) {
 		p_time = 0;

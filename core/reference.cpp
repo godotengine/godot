@@ -105,12 +105,14 @@ Reference::~Reference() {
 }
 
 Variant WeakRef::get_ref() const {
-	if (ref == 0)
+	if (ref == 0) {
 		return Variant();
+	}
 
 	Object *obj = ObjectDB::get_instance(ref);
-	if (!obj)
+	if (!obj) {
 		return Variant();
+	}
 	Reference *r = cast_to<Reference>(obj);
 	if (r) {
 		return REF(r);

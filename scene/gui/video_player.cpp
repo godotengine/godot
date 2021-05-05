@@ -93,8 +93,9 @@ void VideoPlayer::_mix_audio() {
 	int buffer_size = mix_buffer.size();
 
 	// Resample
-	if (!mix(buffer, buffer_size))
+	if (!mix(buffer, buffer_size)) {
 		return;
+	}
 
 	AudioFrame vol = AudioFrame(volume, volume);
 
@@ -144,16 +145,18 @@ void VideoPlayer::_notification(int p_notification) {
 		case NOTIFICATION_INTERNAL_PROCESS: {
 			bus_index = AudioServer::get_singleton()->thread_find_bus_index(bus);
 
-			if (stream.is_null() || paused || playback.is_null() || !playback->is_playing())
+			if (stream.is_null() || paused || playback.is_null() || !playback->is_playing()) {
 				return;
+			}
 
 			double audio_time = USEC_TO_SEC(OS::get_singleton()->get_ticks_usec());
 
 			double delta = last_audio_time == 0 ? 0 : audio_time - last_audio_time;
 			last_audio_time = audio_time;
 
-			if (delta == 0)
+			if (delta == 0) {
 				return;
+			}
 
 			playback->update(delta); // playback->is_playing() returns false in the last video frame
 
@@ -164,10 +167,12 @@ void VideoPlayer::_notification(int p_notification) {
 		} break;
 
 		case NOTIFICATION_DRAW: {
-			if (texture.is_null())
+			if (texture.is_null()) {
 				return;
-			if (texture->get_width() == 0)
+			}
+			if (texture->get_width() == 0) {
 				return;
+			}
 
 			Size2 s = expand ? get_size() : texture->get_size();
 			draw_texture_rect(texture, Rect2(Point2(), s), false);
@@ -177,10 +182,11 @@ void VideoPlayer::_notification(int p_notification) {
 };
 
 Size2 VideoPlayer::get_minimum_size() const {
-	if (!expand && !texture.is_null())
+	if (!expand && !texture.is_null()) {
 		return texture->get_size();
-	else
+	} else {
 		return Size2();
+	}
 }
 
 void VideoPlayer::set_expand(bool p_expand) {
@@ -215,14 +221,16 @@ void VideoPlayer::set_stream(const Ref<VideoStream> &p_stream) {
 		const int channels = playback->get_channels();
 
 		AudioServer::get_singleton()->lock();
-		if (channels > 0)
+		if (channels > 0) {
 			resampler.setup(channels, playback->get_mix_rate(), AudioServer::get_singleton()->get_mix_rate(), buffering_ms, 0);
-		else
+		} else {
 			resampler.clear();
+		}
 		AudioServer::get_singleton()->unlock();
 
-		if (channels > 0)
+		if (channels > 0) {
 			playback->set_mix_callback(_audio_mix_callback, this);
+		}
 
 	} else {
 		texture.unref();
@@ -244,8 +252,9 @@ Ref<VideoStream> VideoPlayer::get_stream() const {
 
 void VideoPlayer::play() {
 	ERR_FAIL_COND(!is_inside_tree());
-	if (playback.is_null())
+	if (playback.is_null()) {
 		return;
+	}
 	playback->stop();
 	playback->play();
 	set_process_internal(true);
@@ -255,10 +264,12 @@ void VideoPlayer::play() {
 };
 
 void VideoPlayer::stop() {
-	if (!is_inside_tree())
+	if (!is_inside_tree()) {
 		return;
-	if (playback.is_null())
+	}
+	if (playback.is_null()) {
 		return;
+	}
 
 	playback->stop();
 	//	AudioServer::get_singleton()->stream_set_active(stream_rid,false);
@@ -268,8 +279,9 @@ void VideoPlayer::stop() {
 };
 
 bool VideoPlayer::is_playing() const {
-	if (playback.is_null())
+	if (playback.is_null()) {
 		return false;
+	}
 
 	return playback->is_playing();
 };
@@ -312,39 +324,45 @@ float VideoPlayer::get_volume() const {
 };
 
 void VideoPlayer::set_volume_db(float p_db) {
-	if (p_db < -79)
+	if (p_db < -79) {
 		set_volume(0);
-	else
+	} else {
 		set_volume(Math::db2linear(p_db));
+	}
 };
 
 float VideoPlayer::get_volume_db() const {
-	if (volume == 0)
+	if (volume == 0) {
 		return -80;
-	else
+	} else {
 		return Math::linear2db(volume);
+	}
 };
 
 String VideoPlayer::get_stream_name() const {
-	if (stream.is_null())
+	if (stream.is_null()) {
 		return "<No Stream>";
+	}
 	return stream->get_name();
 };
 
 float VideoPlayer::get_stream_position() const {
-	if (playback.is_null())
+	if (playback.is_null()) {
 		return 0;
+	}
 	return playback->get_playback_position();
 };
 
 void VideoPlayer::set_stream_position(float p_position) {
-	if (playback.is_valid())
+	if (playback.is_valid()) {
 		playback->seek(p_position);
+	}
 }
 
 Ref<Texture> VideoPlayer::get_video_texture() const {
-	if (playback.is_valid())
+	if (playback.is_valid()) {
 		return playback->get_texture();
+	}
 
 	return Ref<Texture>();
 }
@@ -377,8 +395,9 @@ void VideoPlayer::_validate_property(PropertyInfo &p_property) const {
 	if (p_property.name == "bus") {
 		String options;
 		for (int i = 0; i < AudioServer::get_singleton()->get_bus_count(); i++) {
-			if (i > 0)
+			if (i > 0) {
 				options += ",";
+			}
 			String name = AudioServer::get_singleton()->get_bus_name(i);
 			options += name;
 		}

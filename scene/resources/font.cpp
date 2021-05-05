@@ -67,8 +67,9 @@ void Font::draw(RID p_canvas_item, const Point2 &p_pos, const String &p_text, co
 	for (int i = 0; i < p_text.length(); i++) {
 		int width = get_char_size(p_text[i]).width;
 
-		if (p_clip_w >= 0 && (ofs.x + width) > p_clip_w)
+		if (p_clip_w >= 0 && (ofs.x + width) > p_clip_w) {
 			break; //clip
+		}
 
 		ofs.x += draw_char(p_canvas_item, p_pos + ofs, p_text[i], p_text[i + 1], with_outline ? p_outline_modulate : p_modulate, with_outline);
 		++chars_drawn;
@@ -109,8 +110,9 @@ void BitmapFont::_set_chars(const PoolVector<int> &p_chars) {
 	int len = p_chars.size();
 	//char 1 charsize 1 texture, 4 rect, 2 align, advance 1
 	ERR_FAIL_COND(len % 9);
-	if (!len)
+	if (!len) {
 		return; //none to do
+	}
 	int chars = len / 9;
 
 	PoolVector<int>::Read r = p_chars.read();
@@ -146,8 +148,9 @@ PoolVector<int> BitmapFont::_get_chars() const {
 void BitmapFont::_set_kernings(const PoolVector<int> &p_kernings) {
 	int len = p_kernings.size();
 	ERR_FAIL_COND(len % 3);
-	if (!len)
+	if (!len) {
 		return;
+	}
 	PoolVector<int>::Read r = p_kernings.read();
 
 	for (int i = 0; i < len / 3; i++) {
@@ -179,8 +182,9 @@ void BitmapFont::_set_textures(const Vector<Variant> &p_textures) {
 
 Vector<Variant> BitmapFont::_get_textures() const {
 	Vector<Variant> rtextures;
-	for (int i = 0; i < textures.size(); i++)
+	for (int i = 0; i < textures.size(); i++) {
 		rtextures.push_back(textures[i].get_ref_ptr());
+	}
 	return rtextures;
 }
 
@@ -202,51 +206,59 @@ Error BitmapFont::create_from_fnt(const String &p_file) {
 		int pos = delimiter + 1;
 		Map<String, String> keys;
 
-		while (pos < line.size() && line[pos] == ' ')
+		while (pos < line.size() && line[pos] == ' ') {
 			pos++;
+		}
 
 		while (pos < line.size()) {
 			int eq = line.find("=", pos);
-			if (eq == -1)
+			if (eq == -1) {
 				break;
+			}
 			String key = line.substr(pos, eq - pos);
 			int end = -1;
 			String value;
 			if (line[eq + 1] == '"') {
 				end = line.find("\"", eq + 2);
-				if (end == -1)
+				if (end == -1) {
 					break;
+				}
 				value = line.substr(eq + 2, end - 1 - eq - 1);
 				pos = end + 1;
 			} else {
 				end = line.find(" ", eq + 1);
-				if (end == -1)
+				if (end == -1) {
 					end = line.size();
+				}
 
 				value = line.substr(eq + 1, end - eq);
 
 				pos = end;
 			}
 
-			while (pos < line.size() && line[pos] == ' ')
+			while (pos < line.size() && line[pos] == ' ') {
 				pos++;
+			}
 
 			keys[key] = value;
 		}
 
 		if (type == "info") {
-			if (keys.has("face"))
+			if (keys.has("face")) {
 				set_name(keys["face"]);
+			}
 			/*
 			if (keys.has("size"))
 				font->set_height(keys["size"].to_int());
 			*/
 
 		} else if (type == "common") {
-			if (keys.has("lineHeight"))
+			if (keys.has("lineHeight")) {
 				set_height(keys["lineHeight"].to_int());
-			if (keys.has("base"))
+			}
+			if (keys.has("base")) {
 				set_ascent(keys["base"].to_int());
+			}
 
 		} else if (type == "page") {
 			if (keys.has("file")) {
@@ -261,33 +273,42 @@ Error BitmapFont::create_from_fnt(const String &p_file) {
 			}
 		} else if (type == "char") {
 			CharType idx = 0;
-			if (keys.has("id"))
+			if (keys.has("id")) {
 				idx = keys["id"].to_int();
+			}
 
 			Rect2 rect;
 
-			if (keys.has("x"))
+			if (keys.has("x")) {
 				rect.position.x = keys["x"].to_int();
-			if (keys.has("y"))
+			}
+			if (keys.has("y")) {
 				rect.position.y = keys["y"].to_int();
-			if (keys.has("width"))
+			}
+			if (keys.has("width")) {
 				rect.size.width = keys["width"].to_int();
-			if (keys.has("height"))
+			}
+			if (keys.has("height")) {
 				rect.size.height = keys["height"].to_int();
+			}
 
 			Point2 ofs;
 
-			if (keys.has("xoffset"))
+			if (keys.has("xoffset")) {
 				ofs.x = keys["xoffset"].to_int();
-			if (keys.has("yoffset"))
+			}
+			if (keys.has("yoffset")) {
 				ofs.y = keys["yoffset"].to_int();
+			}
 
 			int texture = 0;
-			if (keys.has("page"))
+			if (keys.has("page")) {
 				texture = keys["page"].to_int();
+			}
 			int advance = -1;
-			if (keys.has("xadvance"))
+			if (keys.has("xadvance")) {
 				advance = keys["xadvance"].to_int();
+			}
 
 			add_char(idx, texture, rect, ofs, advance);
 
@@ -295,18 +316,22 @@ Error BitmapFont::create_from_fnt(const String &p_file) {
 			CharType first = 0, second = 0;
 			int k = 0;
 
-			if (keys.has("first"))
+			if (keys.has("first")) {
 				first = keys["first"].to_int();
-			if (keys.has("second"))
+			}
+			if (keys.has("second")) {
 				second = keys["second"].to_int();
-			if (keys.has("amount"))
+			}
+			if (keys.has("amount")) {
 				k = keys["amount"].to_int();
+			}
 
 			add_kerning_pair(first, second, -k);
 		}
 
-		if (f->eof_reached())
+		if (f->eof_reached()) {
 			break;
+		}
 	}
 
 	memdelete(f);
@@ -370,8 +395,9 @@ BitmapFont::Character BitmapFont::get_character(CharType p_char) const {
 };
 
 void BitmapFont::add_char(CharType p_char, int p_texture_idx, const Rect2 &p_rect, const Size2 &p_align, float p_advance) {
-	if (p_advance < 0)
+	if (p_advance < 0) {
 		p_advance = p_rect.size.width;
+	}
 
 	Character c;
 	c.rect = p_rect;
@@ -413,8 +439,9 @@ int BitmapFont::get_kerning_pair(CharType p_A, CharType p_B) const {
 	kpk.B = p_B;
 
 	const Map<KerningPairKey, int>::Element *E = kerning_map.find(kpk);
-	if (E)
+	if (E) {
 		return E->get();
+	}
 
 	return 0;
 }
@@ -441,8 +468,9 @@ Size2 Font::get_string_size(const String &p_string) const {
 	float w = 0;
 
 	int l = p_string.length();
-	if (l == 0)
+	if (l == 0) {
 		return Size2(0, get_height());
+	}
 	const CharType *sptr = &p_string[0];
 
 	for (int i = 0; i < l; i++) {
@@ -456,8 +484,9 @@ Size2 Font::get_wordwrap_string_size(const String &p_string, float p_width) cons
 	ERR_FAIL_COND_V(p_width <= 0, Vector2(0, get_height()));
 
 	int l = p_string.length();
-	if (l == 0)
+	if (l == 0) {
 		return Size2(p_width, get_height());
+	}
 
 	float line_w = 0;
 	float h = 0;
@@ -498,8 +527,9 @@ float BitmapFont::draw_char(RID p_canvas_item, const Point2 &p_pos, CharType p_c
 	const Character *c = char_map.getptr(p_char);
 
 	if (!c) {
-		if (fallback.is_valid())
+		if (fallback.is_valid()) {
 			return fallback->draw_char(p_canvas_item, p_pos, p_char, p_next, p_modulate, p_outline);
+		}
 		return 0;
 	}
 
@@ -519,8 +549,9 @@ Size2 BitmapFont::get_char_size(CharType p_char, CharType p_next) const {
 	const Character *c = char_map.getptr(p_char);
 
 	if (!c) {
-		if (fallback.is_valid())
+		if (fallback.is_valid()) {
 			return fallback->get_char_size(p_char, p_next);
+		}
 		return Size2();
 	}
 
@@ -592,8 +623,9 @@ BitmapFont::~BitmapFont() {
 ////////////
 
 RES ResourceFormatLoaderBMFont::load(const String &p_path, const String &p_original_path, Error *r_error) {
-	if (r_error)
+	if (r_error) {
 		*r_error = ERR_FILE_CANT_OPEN;
+	}
 
 	Ref<BitmapFont> font;
 	font.instance();
@@ -601,8 +633,9 @@ RES ResourceFormatLoaderBMFont::load(const String &p_path, const String &p_origi
 	Error err = font->create_from_fnt(p_path);
 
 	if (err) {
-		if (r_error)
+		if (r_error) {
 			*r_error = err;
+		}
 		return RES();
 	}
 
@@ -619,7 +652,8 @@ bool ResourceFormatLoaderBMFont::handles_type(const String &p_type) const {
 
 String ResourceFormatLoaderBMFont::get_resource_type(const String &p_path) const {
 	String el = p_path.get_extension().to_lower();
-	if (el == "fnt")
+	if (el == "fnt") {
 		return "BitmapFont";
+	}
 	return "";
 }

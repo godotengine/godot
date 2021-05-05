@@ -54,8 +54,9 @@ BVHHandle item_add(T *p_userdata, bool p_active, const Bounds &p_aabb, int32_t p
 	handle.set_id(ref_id);
 
 	_current_tree = 0;
-	if (p_pairable)
+	if (p_pairable) {
 		_current_tree = 1;
+	}
 
 	create_root_node(_current_tree);
 
@@ -68,8 +69,9 @@ BVHHandle item_add(T *p_userdata, bool p_active, const Bounds &p_aabb, int32_t p
 		if (refit) {
 			// only need to refit from the parent
 			const TNode &add_node = _nodes[ref->tnode_id];
-			if (add_node.parent_id != BVHCommon::INVALID)
+			if (add_node.parent_id != BVHCommon::INVALID) {
 				refit_upward_and_balance(add_node.parent_id);
+			}
 		}
 	} else {
 		ref->set_inactive();
@@ -152,9 +154,10 @@ bool item_move(BVHHandle p_handle, const Bounds &p_aabb) {
 	if (needs_refit) {
 		// only need to refit from the parent
 		const TNode &add_node = _nodes[ref.tnode_id];
-		if (add_node.parent_id != BVHCommon::INVALID)
+		if (add_node.parent_id != BVHCommon::INVALID) {
 			// not sure we need to rebalance all the time, this can be done less often
 			refit_upward(add_node.parent_id);
+		}
 		//refit_upward_and_balance(add_node.parent_id);
 	}
 
@@ -322,8 +325,9 @@ bool item_set_pairable(const BVHHandle &p_handle, bool p_pairable, uint32_t p_pa
 		if (needs_refit) {
 			// only need to refit from the parent
 			const TNode &add_node = _nodes[ref.tnode_id];
-			if (add_node.parent_id != BVHCommon::INVALID)
+			if (add_node.parent_id != BVHCommon::INVALID) {
 				refit_upward_and_balance(add_node.parent_id);
+			}
 		}
 	} else {
 		// always keep this up to date
@@ -338,8 +342,9 @@ void incremental_optimize() {
 	// this is cheaper than doing it on each move as each leaf may get touched multiple times
 	// in a frame.
 	for (int n = 0; n < NUM_TREES; n++) {
-		if (_root_node_id[n] != BVHCommon::INVALID)
+		if (_root_node_id[n] != BVHCommon::INVALID) {
 			refit_branch(_root_node_id[n]);
+		}
 	}
 
 	// now do small section reinserting to get things moving
@@ -349,8 +354,9 @@ void incremental_optimize() {
 	}
 
 	// special case
-	if (!_active_refs.size())
+	if (!_active_refs.size()) {
 		return;
+	}
 
 	uint32_t ref_id = _active_refs[_current_active_ref++];
 

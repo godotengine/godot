@@ -87,8 +87,9 @@ Vector<Vector<Vector2>> CollisionPolygon2D::_decompose_in_convex() {
 
 void CollisionPolygon2D::_update_in_shape_owner(bool p_xform_only) {
 	parent->shape_owner_set_transform(owner_id, get_transform());
-	if (p_xform_only)
+	if (p_xform_only) {
 		return;
+	}
 	parent->shape_owner_set_disabled(owner_id, disabled);
 	parent->shape_owner_set_one_way_collision(owner_id, one_way_collision);
 	parent->shape_owner_set_one_way_collision_margin(owner_id, one_way_collision_margin);
@@ -170,8 +171,9 @@ void CollisionPolygon2D::_notification(int p_what) {
 				pts.push_back(line_to + (Vector2(Math_SQRT12 * tsize, 0)));
 				pts.push_back(line_to + (Vector2(-Math_SQRT12 * tsize, 0)));
 				Vector<Color> cols;
-				for (int i = 0; i < 3; i++)
+				for (int i = 0; i < 3; i++) {
 					cols.push_back(dcol);
+				}
 
 				draw_primitive(pts, cols, Vector<Vector2>()); //small arrow
 			}
@@ -184,10 +186,11 @@ void CollisionPolygon2D::set_polygon(const Vector<Point2> &p_polygon) {
 
 	{
 		for (int i = 0; i < polygon.size(); i++) {
-			if (i == 0)
+			if (i == 0) {
 				aabb = Rect2(polygon[i], Size2());
-			else
+			} else {
 				aabb.expand_to(polygon[i]);
+			}
 		}
 		if (aabb == Rect2()) {
 			aabb = Rect2(-10, -10, 20, 20);

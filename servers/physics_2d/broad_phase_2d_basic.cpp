@@ -83,8 +83,9 @@ int BroadPhase2DBasic::cull_segment(const Vector2 &p_from, const Vector2 &p_to, 
 			p_results[rc] = E->get().owner;
 			p_result_indices[rc] = E->get().subindex;
 			rc++;
-			if (rc >= p_max_results)
+			if (rc >= p_max_results) {
 				break;
+			}
 		}
 	}
 
@@ -99,8 +100,9 @@ int BroadPhase2DBasic::cull_aabb(const Rect2 &p_aabb, CollisionObject2DSW **p_re
 			p_results[rc] = E->get().owner;
 			p_result_indices[rc] = E->get().subindex;
 			rc++;
-			if (rc >= p_max_results)
+			if (rc >= p_max_results) {
 				break;
+			}
 		}
 	}
 
@@ -123,8 +125,9 @@ void BroadPhase2DBasic::update() {
 			Element *elem_A = &I->get();
 			Element *elem_B = &J->get();
 
-			if (elem_A->owner == elem_B->owner)
+			if (elem_A->owner == elem_B->owner) {
 				continue;
+			}
 
 			bool pair_ok = elem_A->aabb.intersects(elem_B->aabb) && (!elem_A->_static || !elem_B->_static);
 
@@ -133,8 +136,9 @@ void BroadPhase2DBasic::update() {
 			Map<PairKey, void *>::Element *E = pair_map.find(key);
 
 			if (!pair_ok && E) {
-				if (unpair_callback)
+				if (unpair_callback) {
 					unpair_callback(elem_A->owner, elem_A->subindex, elem_B->owner, elem_B->subindex, E->get(), unpair_userdata);
+				}
 				pair_map.erase(key);
 			}
 

@@ -77,23 +77,23 @@ AABB AABB::intersection(const AABB &p_aabb) const {
 
 	Vector3 min, max;
 
-	if (src_min.x > dst_max.x || src_max.x < dst_min.x)
+	if (src_min.x > dst_max.x || src_max.x < dst_min.x) {
 		return AABB();
-	else {
+	} else {
 		min.x = (src_min.x > dst_min.x) ? src_min.x : dst_min.x;
 		max.x = (src_max.x < dst_max.x) ? src_max.x : dst_max.x;
 	}
 
-	if (src_min.y > dst_max.y || src_max.y < dst_min.y)
+	if (src_min.y > dst_max.y || src_max.y < dst_min.y) {
 		return AABB();
-	else {
+	} else {
 		min.y = (src_min.y > dst_min.y) ? src_min.y : dst_min.y;
 		max.y = (src_max.y < dst_max.y) ? src_max.y : dst_max.y;
 	}
 
-	if (src_min.z > dst_max.z || src_max.z < dst_min.z)
+	if (src_min.z > dst_max.z || src_max.z < dst_min.z) {
 		return AABB();
-	else {
+	} else {
 		min.z = (src_min.z > dst_min.z) ? src_min.z : dst_min.z;
 		max.z = (src_max.z < dst_max.z) ? src_max.z : dst_max.z;
 	}
@@ -133,8 +133,9 @@ bool AABB::intersects_ray(const Vector3 &p_from, const Vector3 &p_dir, Vector3 *
 		}
 	}
 
-	if (r_clip)
+	if (r_clip) {
 		*r_clip = c1;
+	}
 	if (r_normal) {
 		*r_normal = Vector3();
 		(*r_normal)[axis] = p_dir[axis] ? -1 : 1;
@@ -157,16 +158,18 @@ bool AABB::intersects_segment(const Vector3 &p_from, const Vector3 &p_to, Vector
 		real_t csign;
 
 		if (seg_from < seg_to) {
-			if (seg_from > box_end || seg_to < box_begin)
+			if (seg_from > box_end || seg_to < box_begin) {
 				return false;
+			}
 			real_t length = seg_to - seg_from;
 			cmin = (seg_from < box_begin) ? ((box_begin - seg_from) / length) : 0;
 			cmax = (seg_to > box_end) ? ((box_end - seg_from) / length) : 1;
 			csign = -1.0;
 
 		} else {
-			if (seg_to > box_end || seg_from < box_begin)
+			if (seg_to > box_end || seg_from < box_begin) {
 				return false;
+			}
 			real_t length = seg_to - seg_from;
 			cmin = (seg_from > box_end) ? (box_end - seg_from) / length : 0;
 			cmax = (seg_to < box_begin) ? (box_begin - seg_from) / length : 1;
@@ -178,10 +181,12 @@ bool AABB::intersects_segment(const Vector3 &p_from, const Vector3 &p_to, Vector
 			axis = i;
 			sign = csign;
 		}
-		if (cmax < max)
+		if (cmax < max) {
 			max = cmax;
-		if (max < min)
+		}
+		if (max < min) {
 			return false;
+		}
 	}
 
 	Vector3 rel = p_to - p_from;
@@ -192,8 +197,9 @@ bool AABB::intersects_segment(const Vector3 &p_from, const Vector3 &p_to, Vector
 		*r_normal = normal;
 	}
 
-	if (r_clip)
+	if (r_clip) {
 		*r_clip = p_from + rel * min;
+	}
 
 	return true;
 }
@@ -214,10 +220,11 @@ bool AABB::intersects_plane(const Plane &p_plane) const {
 	bool under = false;
 
 	for (int i = 0; i < 8; i++) {
-		if (p_plane.distance_to(points[i]) > 0)
+		if (p_plane.distance_to(points[i]) > 0) {
 			over = true;
-		else
+		} else {
 			under = true;
+		}
 	}
 
 	return under && over;

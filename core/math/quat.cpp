@@ -202,8 +202,9 @@ Quat Quat::slerpni(const Quat &p_to, const real_t &p_weight) const {
 
 	real_t dot = from.dot(p_to);
 
-	if (Math::absf(dot) > 0.9999)
+	if (Math::absf(dot) > 0.9999) {
 		return from;
+	}
 
 	real_t theta = Math::acos(dot),
 		   sinT = 1.0 / Math::sin(theta),
@@ -237,9 +238,9 @@ void Quat::set_axis_angle(const Vector3 &axis, const real_t &angle) {
 	ERR_FAIL_COND_MSG(!axis.is_normalized(), "The axis Vector3 must be normalized.");
 #endif
 	real_t d = axis.length();
-	if (d == 0)
+	if (d == 0) {
 		set(0, 0, 0, 0);
-	else {
+	} else {
 		real_t sin_angle = Math::sin(angle * 0.5);
 		real_t cos_angle = Math::cos(angle * 0.5);
 		real_t s = sin_angle / d;

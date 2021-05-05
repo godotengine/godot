@@ -303,8 +303,9 @@ protected:
 
 		vs->canvas_item_clear(ray);
 		vs->canvas_item_add_line(ray, ray_from, ray_end, p_rid.is_valid() ? Color(0, 1, 0.4) : Color(1, 0.4, 0), 2);
-		if (p_rid.is_valid())
+		if (p_rid.is_valid()) {
 			vs->canvas_item_add_line(ray, ray_end, ray_end + p_normal * 20, p_rid.is_valid() ? Color(0, 1, 0.4) : Color(1, 0.4, 0), 2);
+		}
 	}
 
 	static void _bind_methods() {

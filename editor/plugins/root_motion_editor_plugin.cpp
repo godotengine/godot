@@ -34,8 +34,9 @@
 
 void EditorPropertyRootMotion::_confirmed() {
 	TreeItem *ti = filters->get_selected();
-	if (!ti)
+	if (!ti) {
 		return;
+	}
 
 	NodePath path = ti->get_metadata(0);
 	emit_changed(get_edited_property(), path);
@@ -117,8 +118,9 @@ void EditorPropertyRootMotion::_node_assign() {
 		if (base->has_node(accum)) {
 			node = base->get_node(accum);
 		}
-		if (!node)
+		if (!node) {
 			continue; //no node, can't edit
+		}
 
 		if (path.get_subname_count()) {
 			String concat = path.get_concatenated_subnames();

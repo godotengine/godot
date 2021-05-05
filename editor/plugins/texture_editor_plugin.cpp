@@ -57,10 +57,12 @@ void TextureEditor::_notification(int p_what) {
 		}
 
 		// Prevent the texture from being unpreviewable after the rescale, so that we can still see something
-		if (tex_height <= 0)
+		if (tex_height <= 0) {
 			tex_height = 1;
-		if (tex_width <= 0)
+		}
+		if (tex_width <= 0) {
 			tex_width = 1;
+		}
 
 		int ofs_x = (size.width - tex_width) / 2;
 		int ofs_y = (size.height - tex_height) / 2;
@@ -91,8 +93,9 @@ void TextureEditor::_notification(int p_what) {
 		Size2 rect = font->get_string_size(text);
 
 		Vector2 draw_from = size - rect + Size2(-2, font->get_ascent() - 2);
-		if (draw_from.x < 0)
+		if (draw_from.x < 0) {
 			draw_from.x = 0;
+		}
 
 		draw_string(font, draw_from + Vector2(2, 2), text, Color(0, 0, 0, 0.5), size.width);
 		draw_string(font, draw_from - Vector2(2, 2), text, Color(0, 0, 0, 0.5), size.width);
@@ -101,14 +104,16 @@ void TextureEditor::_notification(int p_what) {
 }
 
 void TextureEditor::_changed_callback(Object *p_changed, const char *p_prop) {
-	if (!is_visible())
+	if (!is_visible()) {
 		return;
+	}
 	update();
 }
 
 void TextureEditor::edit(Ref<Texture> p_texture) {
-	if (!texture.is_null())
+	if (!texture.is_null()) {
 		texture->remove_change_receptor(this);
+	}
 
 	texture = p_texture;
 

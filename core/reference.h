@@ -61,21 +61,24 @@ class Ref {
 	T *reference;
 
 	void ref(const Ref &p_from) {
-		if (p_from.reference == reference)
+		if (p_from.reference == reference) {
 			return;
+		}
 
 		unref();
 
 		reference = p_from.reference;
-		if (reference)
+		if (reference) {
 			reference->reference();
+		}
 	}
 
 	void ref_pointer(T *p_ref) {
 		ERR_FAIL_COND(!p_ref);
 
-		if (p_ref->init_ref())
+		if (p_ref->init_ref()) {
 			reference = p_ref;
+		}
 	}
 
 	//virtual Reference * get_reference() const { return reference; }
@@ -209,8 +212,9 @@ public:
 
 	Ref(T *p_reference) {
 		reference = nullptr;
-		if (p_reference)
+		if (p_reference) {
 			ref_pointer(p_reference);
+		}
 	}
 
 	Ref(const Variant &p_variant) {

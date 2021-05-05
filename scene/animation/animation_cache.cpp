@@ -38,8 +38,9 @@ void AnimationCache::_node_exit_tree(Node *p_node) {
 	connected_nodes.erase(p_node);
 
 	for (int i = 0; i < path_cache.size(); i++) {
-		if (path_cache[i].node != p_node)
+		if (path_cache[i].node != p_node) {
 			continue;
+		}
 
 		path_cache.write[i].valid = false; //invalidate path cache
 	}
@@ -167,14 +168,16 @@ void AnimationCache::_update_cache() {
 }
 
 void AnimationCache::set_track_transform(int p_idx, const Transform &p_transform) {
-	if (cache_dirty)
+	if (cache_dirty) {
 		_update_cache();
+	}
 
 	ERR_FAIL_COND(!cache_valid);
 	ERR_FAIL_INDEX(p_idx, path_cache.size());
 	Path &p = path_cache.write[p_idx];
-	if (!p.valid)
+	if (!p.valid) {
 		return;
+	}
 
 	ERR_FAIL_COND(!p.node);
 	ERR_FAIL_COND(!p.spatial);
@@ -187,36 +190,41 @@ void AnimationCache::set_track_transform(int p_idx, const Transform &p_transform
 }
 
 void AnimationCache::set_track_value(int p_idx, const Variant &p_value) {
-	if (cache_dirty)
+	if (cache_dirty) {
 		_update_cache();
+	}
 
 	ERR_FAIL_COND(!cache_valid);
 	ERR_FAIL_INDEX(p_idx, path_cache.size());
 	Path &p = path_cache.write[p_idx];
-	if (!p.valid)
+	if (!p.valid) {
 		return;
+	}
 
 	ERR_FAIL_COND(!p.object);
 	p.object->set_indexed(p.subpath, p_value);
 }
 
 void AnimationCache::call_track(int p_idx, const StringName &p_method, const Variant **p_args, int p_argcount, Variant::CallError &r_error) {
-	if (cache_dirty)
+	if (cache_dirty) {
 		_update_cache();
+	}
 
 	ERR_FAIL_COND(!cache_valid);
 	ERR_FAIL_INDEX(p_idx, path_cache.size());
 	Path &p = path_cache.write[p_idx];
-	if (!p.valid)
+	if (!p.valid) {
 		return;
+	}
 
 	ERR_FAIL_COND(!p.object);
 	p.object->call(p_method, p_args, p_argcount, r_error);
 }
 
 void AnimationCache::set_all(float p_time, float p_delta) {
-	if (cache_dirty)
+	if (cache_dirty) {
 		_update_cache();
+	}
 
 	ERR_FAIL_COND(!cache_valid);
 
@@ -280,13 +288,15 @@ void AnimationCache::set_all(float p_time, float p_delta) {
 void AnimationCache::set_animation(const Ref<Animation> &p_animation) {
 	_clear_cache();
 
-	if (animation.is_valid())
+	if (animation.is_valid()) {
 		animation->disconnect("changed", this, "_animation_changed");
+	}
 
 	animation = p_animation;
 
-	if (animation.is_valid())
+	if (animation.is_valid()) {
 		animation->connect("changed", this, "_animation_changed");
+	}
 }
 
 void AnimationCache::_bind_methods() {

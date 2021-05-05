@@ -102,8 +102,9 @@ void RasterizerSceneGLES3::shadow_atlas_set_size(RID p_atlas, int p_size) {
 
 	p_size = next_power_of_2(p_size);
 
-	if (p_size == shadow_atlas->size)
+	if (p_size == shadow_atlas->size) {
 		return;
+	}
 
 	// erasing atlas
 	if (shadow_atlas->fbo) {
@@ -173,8 +174,9 @@ void RasterizerSceneGLES3::shadow_atlas_set_quadrant_subdivision(RID p_atlas, in
 
 	//obtain the number that will be x*x
 
-	if (shadow_atlas->quadrants[p_quadrant].subdivision == subdiv)
+	if (shadow_atlas->quadrants[p_quadrant].subdivision == subdiv) {
 		return;
+	}
 
 	//erase all data from quadrant
 	for (int i = 0; i < shadow_atlas->quadrants[p_quadrant].shadows.size(); i++) {
@@ -246,8 +248,9 @@ bool RasterizerSceneGLES3::_shadow_atlas_find_shadow(ShadowAtlas *shadow_atlas, 
 
 			if (sli->last_scene_pass != scene_pass) {
 				//was just allocated, don't kill it so soon, wait a bit..
-				if (p_tick - sarr[j].alloc_tick < shadow_atlas_realloc_tolerance_msec)
+				if (p_tick - sarr[j].alloc_tick < shadow_atlas_realloc_tolerance_msec) {
 					continue;
+				}
 
 				if (found_used_idx == -1 || sli->last_scene_pass < min_pass) {
 					found_used_idx = j;
@@ -256,8 +259,9 @@ bool RasterizerSceneGLES3::_shadow_atlas_find_shadow(ShadowAtlas *shadow_atlas, 
 			}
 		}
 
-		if (found_free_idx == -1 && found_used_idx == -1)
+		if (found_free_idx == -1 && found_used_idx == -1) {
 			continue; //nothing found
+		}
 
 		if (found_free_idx == -1 && found_used_idx != -1) {
 			found_free_idx = found_used_idx;
@@ -295,13 +299,15 @@ bool RasterizerSceneGLES3::shadow_atlas_update_light(RID p_atlas, RID p_light_in
 	for (int i = 0; i < 4; i++) {
 		int q = shadow_atlas->size_order[i];
 		int sd = shadow_atlas->quadrants[q].subdivision;
-		if (sd == 0)
+		if (sd == 0) {
 			continue; //unused
+		}
 
 		int max_fit = quad_size / sd;
 
-		if (best_size != -1 && max_fit > best_size)
+		if (best_size != -1 && max_fit > best_size) {
 			break; //too large
+		}
 
 		valid_quadrants[valid_quadrant_count++] = q;
 		best_subdiv = sd;
@@ -455,8 +461,9 @@ void RasterizerSceneGLES3::reflection_atlas_set_size(RID p_ref_atlas, int p_size
 
 	int size = next_power_of_2(p_size);
 
-	if (size == reflection_atlas->size)
+	if (size == reflection_atlas->size) {
 		return;
+	}
 	if (reflection_atlas->size) {
 		for (int i = 0; i < 6; i++) {
 			glDeleteFramebuffers(1, &reflection_atlas->fbo[i]);
@@ -533,8 +540,9 @@ void RasterizerSceneGLES3::reflection_atlas_set_subdivision(RID p_ref_atlas, int
 
 	subdiv = int(Math::sqrt((float)subdiv));
 
-	if (reflection_atlas->subdiv == subdiv)
+	if (reflection_atlas->subdiv == subdiv) {
 		return;
+	}
 
 	if (subdiv) {
 		for (int i = 0; i < reflection_atlas->reflections.size(); i++) {
@@ -583,8 +591,9 @@ void RasterizerSceneGLES3::reflection_probe_instance_set_transform(RID p_instanc
 void RasterizerSceneGLES3::reflection_probe_release_atlas_index(RID p_instance) {
 	ReflectionProbeInstance *rpi = reflection_probe_instance_owner.getornull(p_instance);
 	ERR_FAIL_COND(!rpi);
-	if (rpi->reflection_atlas_index == -1)
+	if (rpi->reflection_atlas_index == -1) {
 		return;
+	}
 
 	ReflectionAtlas *reflection_atlas = reflection_atlas_owner.getornull(rpi->atlas);
 	ERR_FAIL_COND(!reflection_atlas);
@@ -690,8 +699,9 @@ bool RasterizerSceneGLES3::reflection_probe_instance_postprocess_step(RID p_inst
 
 	for (int i = reflection_cubemaps.size() - 1; i >= 0; i--) {
 		//find appropriate cubemap to render to
-		if (reflection_cubemaps[i].size > target_size * 2)
+		if (reflection_cubemaps[i].size > target_size * 2) {
 			break;
+		}
 
 		cubemap_index = i;
 	}
@@ -1134,8 +1144,9 @@ bool RasterizerSceneGLES3::_setup_material(RasterizerStorageGLES3::Material *p_m
 				t->detect_normal(t->detect_normal_ud);
 			}
 #endif
-			if (t->render_target)
+			if (t->render_target) {
 				t->render_target->used_in_frame = true;
+			}
 
 			target = t->target;
 			tex = t->tex_id;
@@ -1616,8 +1627,9 @@ void RasterizerSceneGLES3::_render_geometry(RenderList::Element *e) {
 			RasterizerStorageGLES3::Particles *particles = static_cast<RasterizerStorageGLES3::Particles *>(e->owner);
 			RasterizerStorageGLES3::Surface *s = static_cast<RasterizerStorageGLES3::Surface *>(e->geometry);
 
-			if (!particles->use_local_coords) //not using local coordinates? then clear transform..
+			if (!particles->use_local_coords) { //not using local coordinates? then clear transform..
 				state.scene_shader.set_uniform(SceneShaderGLES3::WORLD_TRANSFORM, Transform());
+			}
 
 			int amount = particles->amount;
 
@@ -1782,8 +1794,9 @@ void RasterizerSceneGLES3::_setup_light(RenderList::Element *e, const Transform 
 
 		for (int i = 0; i < rc; i++) {
 			ReflectionProbeInstance *rpi = reflection_probe_instance_owner.getptr(reflections[i]);
-			if (rpi->last_pass != render_pass) //not visible
+			if (rpi->last_pass != render_pass) { //not visible
 				continue;
+			}
 
 			if (reflection_count < maxobj) {
 				reflection_indices[reflection_count++] = rpi->reflection_index;
@@ -1855,14 +1868,16 @@ void RasterizerSceneGLES3::_setup_light(RenderList::Element *e, const Transform 
 
 void RasterizerSceneGLES3::_set_cull(bool p_front, bool p_disabled, bool p_reverse_cull) {
 	bool front = p_front;
-	if (p_reverse_cull)
+	if (p_reverse_cull) {
 		front = !front;
+	}
 
 	if (p_disabled != state.cull_disabled) {
-		if (p_disabled)
+		if (p_disabled) {
 			glDisable(GL_CULL_FACE);
-		else
+		} else {
 			glEnable(GL_CULL_FACE);
+		}
 
 		state.cull_disabled = p_disabled;
 	}
@@ -2187,8 +2202,9 @@ void RasterizerSceneGLES3::_add_geometry(RasterizerStorageGLES3::Geometry *p_geo
 
 	while (m->next_pass.is_valid()) {
 		m = storage->material_owner.getornull(m->next_pass);
-		if (!m || !m->shader || !m->shader->valid)
+		if (!m || !m->shader || !m->shader->valid) {
 			break;
+		}
 		_add_geometry_with_material(p_geometry, p_instance, p_owner, m, p_depth_pass, p_shadow_pass);
 	}
 }
@@ -2221,8 +2237,9 @@ void RasterizerSceneGLES3::_add_geometry_with_material(RasterizerStorageGLES3::G
 	}
 
 	if (p_depth_pass) {
-		if (has_blend_alpha || p_material->shader->spatial.uses_depth_texture || ((has_base_alpha || p_instance->cast_shadows == VS::SHADOW_CASTING_SETTING_OFF) && p_material->shader->spatial.depth_draw_mode != RasterizerStorageGLES3::Shader::Spatial::DEPTH_DRAW_ALPHA_PREPASS) || p_material->shader->spatial.depth_draw_mode == RasterizerStorageGLES3::Shader::Spatial::DEPTH_DRAW_NEVER || p_material->shader->spatial.no_depth_test)
+		if (has_blend_alpha || p_material->shader->spatial.uses_depth_texture || ((has_base_alpha || p_instance->cast_shadows == VS::SHADOW_CASTING_SETTING_OFF) && p_material->shader->spatial.depth_draw_mode != RasterizerStorageGLES3::Shader::Spatial::DEPTH_DRAW_ALPHA_PREPASS) || p_material->shader->spatial.depth_draw_mode == RasterizerStorageGLES3::Shader::Spatial::DEPTH_DRAW_NEVER || p_material->shader->spatial.no_depth_test) {
 			return; //bye
+		}
 
 		if (!p_material->shader->spatial.uses_alpha_scissor && !p_material->shader->spatial.writes_modelview_or_projection && !p_material->shader->spatial.uses_vertex && !p_material->shader->spatial.uses_discard && p_material->shader->spatial.depth_draw_mode != RasterizerStorageGLES3::Shader::Spatial::DEPTH_DRAW_ALPHA_PREPASS) {
 			//shader does not use discard and does not write a vertex position, use generic material
@@ -2240,8 +2257,9 @@ void RasterizerSceneGLES3::_add_geometry_with_material(RasterizerStorageGLES3::G
 
 	RenderList::Element *e = (has_alpha || p_material->shader->spatial.no_depth_test) ? render_list.add_alpha_element() : render_list.add_element();
 
-	if (!e)
+	if (!e) {
 		return;
+	}
 
 	e->geometry = p_geometry;
 	e->material = p_material;
@@ -2891,8 +2909,9 @@ void RasterizerSceneGLES3::_setup_reflections(RID *p_reflection_probe_cull_resul
 
 		ERR_CONTINUE(rpi->reflection_atlas_index < 0);
 
-		if (state.reflection_probe_count >= state.max_ubo_reflections)
+		if (state.reflection_probe_count >= state.max_ubo_reflections) {
 			break;
+		}
 
 		rpi->last_pass = render_pass;
 
@@ -3036,12 +3055,14 @@ void RasterizerSceneGLES3::_fill_render_list(InstanceBase **p_cull_result, int p
 				RasterizerStorageGLES3::MultiMesh *multi_mesh = storage->multimesh_owner.getptr(inst->base);
 				ERR_CONTINUE(!multi_mesh);
 
-				if (multi_mesh->size == 0 || multi_mesh->visible_instances == 0)
+				if (multi_mesh->size == 0 || multi_mesh->visible_instances == 0) {
 					continue;
+				}
 
 				RasterizerStorageGLES3::Mesh *mesh = storage->mesh_owner.getptr(multi_mesh->mesh);
-				if (!mesh)
+				if (!mesh) {
 					continue; //mesh not assigned
+				}
 
 				int ssize = mesh->surfaces.size();
 
@@ -3064,11 +3085,13 @@ void RasterizerSceneGLES3::_fill_render_list(InstanceBase **p_cull_result, int p
 
 				for (int j = 0; j < particles->draw_passes.size(); j++) {
 					RID pmesh = particles->draw_passes[j];
-					if (!pmesh.is_valid())
+					if (!pmesh.is_valid()) {
 						continue;
+					}
 					RasterizerStorageGLES3::Mesh *mesh = storage->mesh_owner.get(pmesh);
-					if (!mesh)
+					if (!mesh) {
 						continue; //mesh not assigned
+					}
 
 					int ssize = mesh->surfaces.size();
 
@@ -4112,8 +4135,9 @@ void RasterizerSceneGLES3::render_scene(const Transform &p_cam_transform, const 
 
 		for (int i = reflection_cubemaps.size() - 1; i >= 0; i--) {
 			//find appropriate cubemap to render to
-			if (reflection_cubemaps[i].size > target_size * 2)
+			if (reflection_cubemaps[i].size > target_size * 2) {
 				break;
+			}
 
 			cubemap_index = i;
 		}
@@ -4370,8 +4394,9 @@ void RasterizerSceneGLES3::render_scene(const Transform &p_cam_transform, const 
 			glBindFramebuffer(GL_FRAMEBUFFER,storage->frame.current_rt->buffers.fbo); //switch to alpha fbo for sky, only diffuse/ambient matters
 		*/
 
-		if (sky && sky->panorama.is_valid())
+		if (sky && sky->panorama.is_valid()) {
 			_draw_sky(sky, p_cam_projection, p_cam_transform, false, env->sky_custom_fov, env->bg_energy, env->sky_orientation);
+		}
 	}
 
 	//_render_list_forward(&alpha_render_list,camera_transform,camera_transform_inverse,camera_projection,false,fragment_lighting,true);
@@ -4479,8 +4504,9 @@ void RasterizerSceneGLES3::render_scene(const Transform &p_cam_transform, const 
 		return;
 	}
 
-	if (env && (env->dof_blur_far_enabled || env->dof_blur_near_enabled) && storage->frame.current_rt && storage->frame.current_rt->buffers.active)
+	if (env && (env->dof_blur_far_enabled || env->dof_blur_near_enabled) && storage->frame.current_rt && storage->frame.current_rt->buffers.active) {
 		_prepare_depth_texture();
+	}
 	_post_process(env, p_cam_projection);
 	// Needed only for debugging
 	/*	if (shadow_atlas && storage->frame.current_rt) {
@@ -4659,8 +4685,9 @@ void RasterizerSceneGLES3::render_shadow(RID p_light, RID p_shadow_atlas, int p_
 
 				for (int i = shadow_cubemaps.size() - 1; i >= 0; i--) {
 					//find appropriate cubemap to render to
-					if (shadow_cubemaps[i].size > shadow_size)
+					if (shadow_cubemaps[i].size > shadow_size) {
 						break;
+					}
 
 					cubemap_index = i;
 				}

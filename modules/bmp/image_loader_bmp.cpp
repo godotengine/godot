@@ -39,8 +39,9 @@ Error ImageLoaderBMP::convert_to_image(Ref<Image> p_image,
 		const bmp_header_s &p_header) {
 	Error err = OK;
 
-	if (p_buffer == nullptr)
+	if (p_buffer == nullptr) {
 		err = FAILED;
+	}
 
 	if (err == OK) {
 		size_t index = 0;

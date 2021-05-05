@@ -147,13 +147,15 @@ private:
 	inline void _rotate_left(Element *p_node) {
 		Element *r = p_node->right;
 		p_node->right = r->left;
-		if (r->left != _data._nil)
+		if (r->left != _data._nil) {
 			r->left->parent = p_node;
+		}
 		r->parent = p_node->parent;
-		if (p_node == p_node->parent->left)
+		if (p_node == p_node->parent->left) {
 			p_node->parent->left = r;
-		else
+		} else {
 			p_node->parent->right = r;
+		}
 
 		r->left = p_node;
 		p_node->parent = r;
@@ -162,13 +164,15 @@ private:
 	inline void _rotate_right(Element *p_node) {
 		Element *l = p_node->left;
 		p_node->left = l->right;
-		if (l->right != _data._nil)
+		if (l->right != _data._nil) {
 			l->right->parent = p_node;
+		}
 		l->parent = p_node->parent;
-		if (p_node == p_node->parent->right)
+		if (p_node == p_node->parent->right) {
 			p_node->parent->right = l;
-		else
+		} else {
 			p_node->parent->left = l;
+		}
 
 		l->right = p_node;
 		p_node->parent = l;
@@ -188,8 +192,9 @@ private:
 				node = node->parent;
 			}
 
-			if (node->parent == _data._root)
+			if (node->parent == _data._root) {
 				return nullptr; // No successor, as p_node = last node
+			}
 			return node->parent;
 		}
 	}
@@ -208,8 +213,9 @@ private:
 				node = node->parent;
 			}
 
-			if (node == _data._root)
+			if (node == _data._root) {
 				return nullptr; // No predecessor, as p_node = first node
+			}
 			return node->parent;
 		}
 	}
@@ -219,12 +225,13 @@ private:
 		C less;
 
 		while (node != _data._nil) {
-			if (less(p_key, node->_key))
+			if (less(p_key, node->_key)) {
 				node = node->left;
-			else if (less(node->_key, p_key))
+			} else if (less(node->_key, p_key)) {
 				node = node->right;
-			else
+			} else {
 				return node; // found
+			}
 		}
 
 		return nullptr;
@@ -238,19 +245,22 @@ private:
 		while (node != _data._nil) {
 			prev = node;
 
-			if (less(p_key, node->_key))
+			if (less(p_key, node->_key)) {
 				node = node->left;
-			else if (less(node->_key, p_key))
+			} else if (less(node->_key, p_key)) {
 				node = node->right;
-			else
+			} else {
 				return node; // found
+			}
 		}
 
-		if (prev == nullptr)
+		if (prev == nullptr) {
 			return nullptr; // tree empty
+		}
 
-		if (less(p_key, prev->_key))
+		if (less(p_key, prev->_key)) {
 			prev = prev->_prev;
+		}
 
 		return prev;
 	}
@@ -311,11 +321,11 @@ private:
 		while (node != _data._nil) {
 			new_parent = node;
 
-			if (less(p_key, node->_key))
+			if (less(p_key, node->_key)) {
 				node = node->left;
-			else if (less(node->_key, p_key))
+			} else if (less(node->_key, p_key)) {
 				node = node->right;
-			else {
+			} else {
 				node->_value = p_value;
 				return node; // Return existing node with new value
 			}
@@ -337,10 +347,12 @@ private:
 
 		new_node->_next = _successor(new_node);
 		new_node->_prev = _predecessor(new_node);
-		if (new_node->_next)
+		if (new_node->_next) {
 			new_node->_next->_prev = new_node;
-		if (new_node->_prev)
+		}
+		if (new_node->_prev) {
 			new_node->_prev->_next = new_node;
+		}
 
 		_data.size_cache++;
 		_insert_rb_fix(new_node);
@@ -435,10 +447,12 @@ private:
 			rp->right = p_node->right;
 			rp->parent = p_node->parent;
 			rp->color = p_node->color;
-			if (p_node->left != _data._nil)
+			if (p_node->left != _data._nil) {
 				p_node->left->parent = rp;
-			if (p_node->right != _data._nil)
+			}
+			if (p_node->right != _data._nil) {
 				p_node->right->parent = rp;
+			}
 
 			if (p_node == p_node->parent->left) {
 				p_node->parent->left = rp;
@@ -447,10 +461,12 @@ private:
 			}
 		}
 
-		if (p_node->_next)
+		if (p_node->_next) {
 			p_node->_next->_prev = p_node->_prev;
-		if (p_node->_prev)
+		}
+		if (p_node->_prev) {
 			p_node->_prev->_next = p_node->_next;
+		}
 
 		memdelete_allocator<Element, A>(p_node);
 		_data.size_cache--;
@@ -458,19 +474,22 @@ private:
 	}
 
 	void _calculate_depth(Element *p_element, int &max_d, int d) const {
-		if (p_element == _data._nil)
+		if (p_element == _data._nil) {
 			return;
+		}
 
 		_calculate_depth(p_element->left, max_d, d + 1);
 		_calculate_depth(p_element->right, max_d, d + 1);
 
-		if (d > max_d)
+		if (d > max_d) {
 			max_d = d;
+		}
 	}
 
 	void _cleanup_tree(Element *p_element) {
-		if (p_element == _data._nil)
+		if (p_element == _data._nil) {
 			return;
+		}
 
 		_cleanup_tree(p_element->left);
 		_cleanup_tree(p_element->right);
@@ -487,32 +506,36 @@ private:
 
 public:
 	const Element *find(const K &p_key) const {
-		if (!_data._root)
+		if (!_data._root) {
 			return nullptr;
+		}
 
 		const Element *res = _find(p_key);
 		return res;
 	}
 
 	Element *find(const K &p_key) {
-		if (!_data._root)
+		if (!_data._root) {
 			return nullptr;
+		}
 
 		Element *res = _find(p_key);
 		return res;
 	}
 
 	const Element *find_closest(const K &p_key) const {
-		if (!_data._root)
+		if (!_data._root) {
 			return NULL;
+		}
 
 		const Element *res = _find_closest(p_key);
 		return res;
 	}
 
 	Element *find_closest(const K &p_key) {
-		if (!_data._root)
+		if (!_data._root) {
 			return nullptr;
+		}
 
 		Element *res = _find_closest(p_key);
 		return res;
@@ -523,31 +546,37 @@ public:
 	}
 
 	Element *insert(const K &p_key, const V &p_value) {
-		if (!_data._root)
+		if (!_data._root) {
 			_data._create_root();
+		}
 		return _insert(p_key, p_value);
 	}
 
 	void erase(Element *p_element) {
-		if (!_data._root || !p_element)
+		if (!_data._root || !p_element) {
 			return;
+		}
 
 		_erase(p_element);
-		if (_data.size_cache == 0 && _data._root)
+		if (_data.size_cache == 0 && _data._root) {
 			_data._free_root();
+		}
 	}
 
 	bool erase(const K &p_key) {
-		if (!_data._root)
+		if (!_data._root) {
 			return false;
+		}
 
 		Element *e = find(p_key);
-		if (!e)
+		if (!e) {
 			return false;
+		}
 
 		_erase(e);
-		if (_data.size_cache == 0 && _data._root)
+		if (_data.size_cache == 0 && _data._root) {
 			_data._free_root();
+		}
 		return true;
 	}
 
@@ -559,40 +588,48 @@ public:
 	}
 
 	V &operator[](const K &p_key) {
-		if (!_data._root)
+		if (!_data._root) {
 			_data._create_root();
+		}
 
 		Element *e = find(p_key);
-		if (!e)
+		if (!e) {
 			e = insert(p_key, V());
+		}
 
 		return e->_value;
 	}
 
 	Element *front() const {
-		if (!_data._root)
+		if (!_data._root) {
 			return nullptr;
+		}
 
 		Element *e = _data._root->left;
-		if (e == _data._nil)
+		if (e == _data._nil) {
 			return nullptr;
+		}
 
-		while (e->left != _data._nil)
+		while (e->left != _data._nil) {
 			e = e->left;
+		}
 
 		return e;
 	}
 
 	Element *back() const {
-		if (!_data._root)
+		if (!_data._root) {
 			return nullptr;
+		}
 
 		Element *e = _data._root->left;
-		if (e == _data._nil)
+		if (e == _data._nil) {
 			return nullptr;
+		}
 
-		while (e->right != _data._nil)
+		while (e->right != _data._nil) {
 			e = e->right;
+		}
 
 		return e;
 	}
@@ -602,8 +639,9 @@ public:
 
 	int calculate_depth() const {
 		// used for debug mostly
-		if (!_data._root)
+		if (!_data._root) {
 			return 0;
+		}
 
 		int max_d = 0;
 		_calculate_depth(_data._root->left, max_d, 0);
@@ -611,8 +649,9 @@ public:
 	}
 
 	void clear() {
-		if (!_data._root)
+		if (!_data._root) {
 			return;
+		}
 
 		_cleanup_tree(_data._root->left);
 		_data._root->left = _data._nil;

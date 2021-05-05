@@ -60,8 +60,9 @@ int DirAccess::get_current_drive() {
 	String path = get_current_dir().to_lower();
 	for (int i = 0; i < get_drive_count(); i++) {
 		String d = get_drive(i).to_lower();
-		if (path.begins_with(d))
+		if (path.begins_with(d)) {
 			return i;
+		}
 	}
 
 	return 0;
@@ -83,10 +84,11 @@ static Error _erase_recursive(DirAccess *da) {
 	String n = da->get_next();
 	while (n != String()) {
 		if (n != "." && n != "..") {
-			if (da->current_is_dir())
+			if (da->current_is_dir()) {
 				dirs.push_back(n);
-			else
+			} else {
 				files.push_back(n);
+			}
 		}
 
 		n = da->get_next();
@@ -150,13 +152,13 @@ Error DirAccess::make_dir_recursive(String p_dir) {
 
 	String base;
 
-	if (full_dir.begins_with("res://"))
+	if (full_dir.begins_with("res://")) {
 		base = "res://";
-	else if (full_dir.begins_with("user://"))
+	} else if (full_dir.begins_with("user://")) {
 		base = "user://";
-	else if (full_dir.begins_with("/"))
+	} else if (full_dir.begins_with("/")) {
 		base = "/";
-	else if (full_dir.find(":/") != -1) {
+	} else if (full_dir.find(":/") != -1) {
 		base = full_dir.substr(0, full_dir.find(":/") + 2);
 	} else {
 		ERR_FAIL_V(ERR_INVALID_PARAMETER);
@@ -232,8 +234,9 @@ DirAccess *DirAccess::open(const String &p_path, Error *r_error) {
 
 	ERR_FAIL_COND_V_MSG(!da, nullptr, "Cannot create DirAccess for path '" + p_path + "'.");
 	Error err = da->change_dir(p_path);
-	if (r_error)
+	if (r_error) {
 		*r_error = err;
+	}
 	if (err != OK) {
 		memdelete(da);
 		return nullptr;
@@ -253,8 +256,9 @@ DirAccess *DirAccess::create(AccessType p_access) {
 
 String DirAccess::get_full_path(const String &p_path, AccessType p_access) {
 	DirAccess *d = DirAccess::create(p_access);
-	if (!d)
+	if (!d) {
 		return p_path;
+	}
 
 	d->change_dir(p_path);
 	String full = d->get_current_dir();
@@ -301,8 +305,9 @@ Error DirAccess::copy(String p_from, String p_to, int p_chmod_flags) {
 		fdst->close();
 		err = FileAccess::set_unix_permissions(p_to, p_chmod_flags);
 		// If running on a platform with no chmod support (i.e., Windows), don't fail
-		if (err == ERR_UNAVAILABLE)
+		if (err == ERR_UNAVAILABLE) {
 			err = OK;
+		}
 	}
 
 	memdelete(fsrc);
@@ -337,9 +342,9 @@ Error DirAccess::_copy_dir(DirAccess *p_target_da, String p_to, int p_chmod_flag
 	String n = get_next();
 	while (n != String()) {
 		if (n != "." && n != "..") {
-			if (current_is_dir())
+			if (current_is_dir()) {
 				dirs.push_back(n);
-			else {
+			} else {
 				const String &rel_path = n;
 				if (!n.is_rel_path()) {
 					list_dir_end();

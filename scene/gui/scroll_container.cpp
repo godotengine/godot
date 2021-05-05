@@ -42,12 +42,15 @@ Size2 ScrollContainer::get_minimum_size() const {
 
 	for (int i = 0; i < get_child_count(); i++) {
 		Control *c = Object::cast_to<Control>(get_child(i));
-		if (!c)
+		if (!c) {
 			continue;
-		if (c->is_set_as_toplevel())
+		}
+		if (c->is_set_as_toplevel()) {
 			continue;
-		if (c == h_scroll || c == v_scroll)
+		}
+		if (c == h_scroll || c == v_scroll) {
 			continue;
+		}
 		Size2 minsize = c->get_combined_minimum_size();
 
 		if (!scroll_h) {
@@ -121,14 +124,17 @@ void ScrollContainer::_gui_input(const Ref<InputEvent> &p_gui_input) {
 			}
 		}
 
-		if (v_scroll->get_value() != prev_v_scroll || h_scroll->get_value() != prev_h_scroll)
+		if (v_scroll->get_value() != prev_v_scroll || h_scroll->get_value() != prev_h_scroll) {
 			accept_event(); //accept event if scroll changed
+		}
 
-		if (!OS::get_singleton()->has_touchscreen_ui_hint())
+		if (!OS::get_singleton()->has_touchscreen_ui_hint()) {
 			return;
+		}
 
-		if (mb->get_button_index() != BUTTON_LEFT)
+		if (mb->get_button_index() != BUTTON_LEFT) {
 			return;
+		}
 
 		if (mb->is_pressed()) {
 			if (drag_touching) {
@@ -176,14 +182,16 @@ void ScrollContainer::_gui_input(const Ref<InputEvent> &p_gui_input) {
 					drag_accum = -motion;
 				}
 				Vector2 diff = drag_from + drag_accum;
-				if (scroll_h)
+				if (scroll_h) {
 					h_scroll->set_value(diff.x);
-				else
+				} else {
 					drag_accum.x = 0;
-				if (scroll_v)
+				}
+				if (scroll_v) {
 					v_scroll->set_value(diff.y);
-				else
+				} else {
 					drag_accum.y = 0;
+				}
 				time_since_motion = 0;
 			}
 		}
@@ -199,8 +207,9 @@ void ScrollContainer::_gui_input(const Ref<InputEvent> &p_gui_input) {
 		}
 	}
 
-	if (v_scroll->get_value() != prev_v_scroll || h_scroll->get_value() != prev_h_scroll)
+	if (v_scroll->get_value() != prev_v_scroll || h_scroll->get_value() != prev_h_scroll) {
 		accept_event(); //accept event if scroll changed
+	}
 }
 
 void ScrollContainer::_update_scrollbar_position() {
@@ -263,20 +272,25 @@ void ScrollContainer::_notification(int p_what) {
 		size -= sb->get_minimum_size();
 		ofs += sb->get_offset();
 
-		if (h_scroll->is_visible_in_tree() && h_scroll->get_parent() == this) //scrolls may have been moved out for reasons
+		if (h_scroll->is_visible_in_tree() && h_scroll->get_parent() == this) { //scrolls may have been moved out for reasons
 			size.y -= h_scroll->get_minimum_size().y;
+		}
 
-		if (v_scroll->is_visible_in_tree() && v_scroll->get_parent() == this) //scrolls may have been moved out for reasons
+		if (v_scroll->is_visible_in_tree() && v_scroll->get_parent() == this) { //scrolls may have been moved out for reasons
 			size.x -= v_scroll->get_minimum_size().x;
+		}
 
 		for (int i = 0; i < get_child_count(); i++) {
 			Control *c = Object::cast_to<Control>(get_child(i));
-			if (!c)
+			if (!c) {
 				continue;
-			if (c->is_set_as_toplevel())
+			}
+			if (c->is_set_as_toplevel()) {
 				continue;
-			if (c == h_scroll || c == v_scroll)
+			}
+			if (c == h_scroll || c == v_scroll) {
 				continue;
+			}
 			Size2 minsize = c->get_combined_minimum_size();
 			child_max_size.x = MAX(child_max_size.x, minsize.x);
 			child_max_size.y = MAX(child_max_size.y, minsize.y);
@@ -284,17 +298,19 @@ void ScrollContainer::_notification(int p_what) {
 			Rect2 r = Rect2(-scroll, minsize);
 			if (!scroll_h || (!h_scroll->is_visible_in_tree() && c->get_h_size_flags() & SIZE_EXPAND)) {
 				r.position.x = 0;
-				if (c->get_h_size_flags() & SIZE_EXPAND)
+				if (c->get_h_size_flags() & SIZE_EXPAND) {
 					r.size.width = MAX(size.width, minsize.width);
-				else
+				} else {
 					r.size.width = minsize.width;
+				}
 			}
 			if (!scroll_v || (!v_scroll->is_visible_in_tree() && c->get_v_size_flags() & SIZE_EXPAND)) {
 				r.position.y = 0;
-				if (c->get_v_size_flags() & SIZE_EXPAND)
+				if (c->get_v_size_flags() & SIZE_EXPAND) {
 					r.size.height = MAX(size.height, minsize.height);
-				else
+				} else {
 					r.size.height = minsize.height;
+				}
 			}
 			r.position += ofs;
 			fit_child_in_rect(c, r);
@@ -337,10 +353,12 @@ void ScrollContainer::_notification(int p_what) {
 					turnoff_v = true;
 				}
 
-				if (scroll_h)
+				if (scroll_h) {
 					h_scroll->set_value(pos.x);
-				if (scroll_v)
+				}
+				if (scroll_v) {
 					v_scroll->set_value(pos.y);
+				}
 
 				float sgn_x = drag_speed.x < 0 ? -1 : 1;
 				float val_x = Math::abs(drag_speed.x);
@@ -508,12 +526,15 @@ String ScrollContainer::get_configuration_warning() const {
 
 	for (int i = 0; i < get_child_count(); i++) {
 		Control *c = Object::cast_to<Control>(get_child(i));
-		if (!c)
+		if (!c) {
 			continue;
-		if (c->is_set_as_toplevel())
+		}
+		if (c->is_set_as_toplevel()) {
 			continue;
-		if (c == h_scroll || c == v_scroll)
+		}
+		if (c == h_scroll || c == v_scroll) {
 			continue;
+		}
 
 		found++;
 	}

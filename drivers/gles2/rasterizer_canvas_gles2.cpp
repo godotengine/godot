@@ -48,8 +48,9 @@ static const GLenum gl_primitive[] = {
 
 void RasterizerCanvasGLES2::_batch_upload_buffers() {
 	// noop?
-	if (!bdata.vertices.size())
+	if (!bdata.vertices.size()) {
 		return;
+	}
 
 	glBindBuffer(GL_ARRAY_BUFFER, bdata.gl_vertex_buffer);
 
@@ -102,8 +103,9 @@ void RasterizerCanvasGLES2::_batch_render_lines(const Batch &p_batch, Rasterizer
 	glVertexAttrib4fv(VS::ARRAY_COLOR, (float *)&p_batch.color);
 
 #ifdef GLES_OVER_GL
-	if (p_anti_alias)
+	if (p_anti_alias) {
 		glEnable(GL_LINE_SMOOTH);
+	}
 #endif
 
 	int sizeof_vert = sizeof(BatchVertex);
@@ -129,8 +131,9 @@ void RasterizerCanvasGLES2::_batch_render_lines(const Batch &p_batch, Rasterizer
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
 #ifdef GLES_OVER_GL
-	if (p_anti_alias)
+	if (p_anti_alias) {
 		glDisable(GL_LINE_SMOOTH);
+	}
 #endif
 }
 
@@ -346,14 +349,16 @@ void RasterizerCanvasGLES2::render_batches(Item *p_current_clip, bool &r_reclip,
 								};
 
 #ifdef GLES_OVER_GL
-								if (line->antialiased)
+								if (line->antialiased) {
 									glEnable(GL_LINE_SMOOTH);
+								}
 #endif
 								_draw_gui_primitive(2, verts, nullptr, nullptr);
 
 #ifdef GLES_OVER_GL
-								if (line->antialiased)
+								if (line->antialiased) {
 									glDisable(GL_LINE_SMOOTH);
+								}
 #endif
 							} else {
 								Vector2 t = (line->from - line->to).normalized().tangent() * line->width * 0.5;
@@ -495,15 +500,17 @@ void RasterizerCanvasGLES2::render_batches(Item *p_current_clip, bool &r_reclip,
 
 										// if horizontal flip, angle is 180
 										float angle = 0.0f;
-										if (flip_h)
+										if (flip_h) {
 											angle = Math_PI;
+										}
 
 										// add 1 (to take care of zero floating point error with sign)
 										angle += 1.0f;
 
 										// flip if necessary
-										if (flip_v)
+										if (flip_v) {
 											angle *= -1.0f;
+										}
 
 										// light angle must be sent for each vert, instead as a single uniform in the uniform draw method
 										// this has the benefit of enabling batching with light angles.
@@ -917,13 +924,15 @@ void RasterizerCanvasGLES2::render_batches(Item *p_current_clip, bool &r_reclip,
 
 							RasterizerStorageGLES2::MultiMesh *multi_mesh = storage->multimesh_owner.getornull(mmesh->multimesh);
 
-							if (!multi_mesh)
+							if (!multi_mesh) {
 								break;
+							}
 
 							RasterizerStorageGLES2::Mesh *mesh_data = storage->mesh_owner.getornull(multi_mesh->mesh);
 
-							if (!mesh_data)
+							if (!mesh_data) {
 								break;
+							}
 
 							state.canvas_shader.set_conditional(CanvasShaderGLES2::USE_INSTANCE_CUSTOM, multi_mesh->custom_data_format != VS::MULTIMESH_CUSTOM_DATA_NONE);
 							state.canvas_shader.set_conditional(CanvasShaderGLES2::USE_INSTANCING, true);
@@ -1063,8 +1072,9 @@ void RasterizerCanvasGLES2::render_batches(Item *p_current_clip, bool &r_reclip,
 #endif
 							} else {
 #ifdef GLES_OVER_GL
-								if (pline->antialiased)
+								if (pline->antialiased) {
 									glEnable(GL_LINE_SMOOTH);
+								}
 #endif
 
 								if (pline->multiline) {
@@ -1083,8 +1093,9 @@ void RasterizerCanvasGLES2::render_batches(Item *p_current_clip, bool &r_reclip,
 								}
 
 #ifdef GLES_OVER_GL
-								if (pline->antialiased)
+								if (pline->antialiased) {
 									glDisable(GL_LINE_SMOOTH);
+								}
 #endif
 							}
 						} break;
@@ -1154,8 +1165,9 @@ void RasterizerCanvasGLES2::render_batches(Item *p_current_clip, bool &r_reclip,
 										int w = p_current_clip->final_clip_rect.size.x;
 										int h = p_current_clip->final_clip_rect.size.y;
 
-										if (storage->frame.current_rt->flags[RasterizerStorage::RENDER_TARGET_VFLIP])
+										if (storage->frame.current_rt->flags[RasterizerStorage::RENDER_TARGET_VFLIP]) {
 											y = p_current_clip->final_clip_rect.position.y;
+										}
 
 										glScissor(x, y, w, h);
 
@@ -1296,8 +1308,9 @@ bool RasterizerCanvasGLES2::try_join_item(Item *p_ci, RenderItemState &r_ris, bo
 
 		bool use_skeleton = skeleton != nullptr;
 		if (r_ris.prev_use_skeleton != use_skeleton) {
-			if (!bdata.settings_use_software_skinning)
+			if (!bdata.settings_use_software_skinning) {
 				r_ris.rebind_shader = true;
+			}
 
 			r_ris.prev_use_skeleton = use_skeleton;
 			//			join = false;
@@ -1313,8 +1326,9 @@ bool RasterizerCanvasGLES2::try_join_item(Item *p_ci, RenderItemState &r_ris, bo
 		}
 
 		if (skeleton_prevent_join) {
-			if (!bdata.settings_use_software_skinning)
+			if (!bdata.settings_use_software_skinning) {
 				join = false;
+			}
 		}
 	}
 
@@ -1560,8 +1574,9 @@ void RasterizerCanvasGLES2::_legacy_canvas_render_item(Item *p_ci, RenderItemSta
 		if (r_ris.current_clip) {
 			glEnable(GL_SCISSOR_TEST);
 			int y = storage->frame.current_rt->height - (r_ris.current_clip->final_clip_rect.position.y + r_ris.current_clip->final_clip_rect.size.y);
-			if (storage->frame.current_rt->flags[RasterizerStorage::RENDER_TARGET_VFLIP])
+			if (storage->frame.current_rt->flags[RasterizerStorage::RENDER_TARGET_VFLIP]) {
 				y = r_ris.current_clip->final_clip_rect.position.y;
+			}
 			glScissor(r_ris.current_clip->final_clip_rect.position.x, y, r_ris.current_clip->final_clip_rect.size.width, r_ris.current_clip->final_clip_rect.size.height);
 		} else {
 			glDisable(GL_SCISSOR_TEST);
@@ -1691,8 +1706,9 @@ void RasterizerCanvasGLES2::_legacy_canvas_render_item(Item *p_ci, RenderItemSta
 					t->detect_normal(t->detect_normal_ud);
 				}
 #endif
-				if (t->render_target)
+				if (t->render_target) {
 					t->render_target->used_in_frame = true;
+				}
 
 				glBindTexture(t->target, t->tex_id);
 			}
@@ -1768,8 +1784,9 @@ void RasterizerCanvasGLES2::_legacy_canvas_render_item(Item *p_ci, RenderItemSta
 
 	_set_uniforms();
 
-	if (unshaded || (state.uniforms.final_modulate.a > 0.001 && (!r_ris.shader_cache || r_ris.shader_cache->canvas_item.light_mode != RasterizerStorageGLES2::Shader::CanvasItem::LIGHT_MODE_LIGHT_ONLY) && !p_ci->light_masked))
+	if (unshaded || (state.uniforms.final_modulate.a > 0.001 && (!r_ris.shader_cache || r_ris.shader_cache->canvas_item.light_mode != RasterizerStorageGLES2::Shader::CanvasItem::LIGHT_MODE_LIGHT_ONLY) && !p_ci->light_masked)) {
 		_legacy_canvas_item_render_commands(p_ci, nullptr, reclip, material_ptr);
+	}
 
 	r_ris.rebind_shader = true; // hacked in for now.
 
@@ -1893,8 +1910,9 @@ void RasterizerCanvasGLES2::_legacy_canvas_render_item(Item *p_ci, RenderItemSta
 	if (reclip) {
 		glEnable(GL_SCISSOR_TEST);
 		int y = storage->frame.current_rt->height - (r_ris.current_clip->final_clip_rect.position.y + r_ris.current_clip->final_clip_rect.size.y);
-		if (storage->frame.current_rt->flags[RasterizerStorage::RENDER_TARGET_VFLIP])
+		if (storage->frame.current_rt->flags[RasterizerStorage::RENDER_TARGET_VFLIP]) {
 			y = r_ris.current_clip->final_clip_rect.position.y;
+		}
 		glScissor(r_ris.current_clip->final_clip_rect.position.x, y, r_ris.current_clip->final_clip_rect.size.width, r_ris.current_clip->final_clip_rect.size.height);
 	}
 }
@@ -1917,8 +1935,9 @@ void RasterizerCanvasGLES2::render_joined_item(const BItemJoined &p_bij, RenderI
 		if (r_ris.current_clip) {
 			glEnable(GL_SCISSOR_TEST);
 			int y = storage->frame.current_rt->height - (r_ris.current_clip->final_clip_rect.position.y + r_ris.current_clip->final_clip_rect.size.y);
-			if (storage->frame.current_rt->flags[RasterizerStorage::RENDER_TARGET_VFLIP])
+			if (storage->frame.current_rt->flags[RasterizerStorage::RENDER_TARGET_VFLIP]) {
 				y = r_ris.current_clip->final_clip_rect.position.y;
+			}
 			glScissor(r_ris.current_clip->final_clip_rect.position.x, y, r_ris.current_clip->final_clip_rect.size.width, r_ris.current_clip->final_clip_rect.size.height);
 		} else {
 			glDisable(GL_SCISSOR_TEST);
@@ -2049,8 +2068,9 @@ void RasterizerCanvasGLES2::render_joined_item(const BItemJoined &p_bij, RenderI
 					t->detect_normal(t->detect_normal_ud);
 				}
 #endif
-				if (t->render_target)
+				if (t->render_target) {
 					t->render_target->used_in_frame = true;
+				}
 
 				glBindTexture(t->target, t->tex_id);
 			}
@@ -2135,8 +2155,9 @@ void RasterizerCanvasGLES2::render_joined_item(const BItemJoined &p_bij, RenderI
 
 	_set_uniforms();
 
-	if (unshaded || (state.uniforms.final_modulate.a > 0.001 && (!r_ris.shader_cache || r_ris.shader_cache->canvas_item.light_mode != RasterizerStorageGLES2::Shader::CanvasItem::LIGHT_MODE_LIGHT_ONLY) && !ci->light_masked))
+	if (unshaded || (state.uniforms.final_modulate.a > 0.001 && (!r_ris.shader_cache || r_ris.shader_cache->canvas_item.light_mode != RasterizerStorageGLES2::Shader::CanvasItem::LIGHT_MODE_LIGHT_ONLY) && !ci->light_masked)) {
 		render_joined_item_commands(p_bij, nullptr, reclip, material_ptr, false, r_ris);
+	}
 
 	r_ris.rebind_shader = true; // hacked in for now.
 
@@ -2282,8 +2303,9 @@ void RasterizerCanvasGLES2::render_joined_item(const BItemJoined &p_bij, RenderI
 	if (reclip) {
 		glEnable(GL_SCISSOR_TEST);
 		int y = storage->frame.current_rt->height - (r_ris.current_clip->final_clip_rect.position.y + r_ris.current_clip->final_clip_rect.size.y);
-		if (storage->frame.current_rt->flags[RasterizerStorage::RENDER_TARGET_VFLIP])
+		if (storage->frame.current_rt->flags[RasterizerStorage::RENDER_TARGET_VFLIP]) {
 			y = r_ris.current_clip->final_clip_rect.position.y;
+		}
 		glScissor(r_ris.current_clip->final_clip_rect.position.x, y, r_ris.current_clip->final_clip_rect.size.width, r_ris.current_clip->final_clip_rect.size.height);
 	}
 }

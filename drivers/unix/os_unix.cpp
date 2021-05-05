@@ -92,8 +92,9 @@ void OS_Unix::debug_break() {
 };
 
 static void handle_interrupt(int sig) {
-	if (ScriptDebugger::get_singleton() == nullptr)
+	if (ScriptDebugger::get_singleton() == nullptr) {
 		return;
+	}
 
 	ScriptDebugger::get_singleton()->set_depth(-1);
 	ScriptDebugger::get_singleton()->set_lines_left(1);
@@ -227,10 +228,11 @@ OS::TimeZoneInfo OS_Unix::get_time_zone_info() const {
 	// convert from ISO 8601 (1 minute=1, 1 hour=100) to minutes
 	int hour = (int)bias / 100;
 	int minutes = bias % 100;
-	if (bias < 0)
+	if (bias < 0) {
 		ret.bias = hour * 60 - minutes;
-	else
+	} else {
 		ret.bias = hour * 60 + minutes;
+	}
 
 	return ret;
 }
@@ -293,8 +295,9 @@ Error OS_Unix::execute(const String &p_path, const List<String> &p_arguments, bo
 			}
 		}
 		int rv = pclose(f);
-		if (r_exitcode)
+		if (r_exitcode) {
 			*r_exitcode = WEXITSTATUS(rv);
+		}
 
 		return OK;
 	}
@@ -313,12 +316,14 @@ Error OS_Unix::execute(const String &p_path, const List<String> &p_arguments, bo
 
 		Vector<CharString> cs;
 		cs.push_back(p_path.utf8());
-		for (int i = 0; i < p_arguments.size(); i++)
+		for (int i = 0; i < p_arguments.size(); i++) {
 			cs.push_back(p_arguments[i].utf8());
+		}
 
 		Vector<char *> args;
-		for (int i = 0; i < cs.size(); i++)
+		for (int i = 0; i < cs.size(); i++) {
 			args.push_back((char *)cs[i].get_data());
+		}
 		args.push_back(0);
 
 		execvp(p_path.utf8().get_data(), &args[0]);
@@ -330,12 +335,14 @@ Error OS_Unix::execute(const String &p_path, const List<String> &p_arguments, bo
 	if (p_blocking) {
 		int status;
 		waitpid(pid, &status, 0);
-		if (r_exitcode)
+		if (r_exitcode) {
 			*r_exitcode = WIFEXITED(status) ? WEXITSTATUS(status) : status;
+		}
 
 	} else {
-		if (r_child_id)
+		if (r_child_id) {
 			*r_child_id = pid;
+		}
 	}
 
 	return OK;
@@ -361,13 +368,15 @@ bool OS_Unix::has_environment(const String &p_var) const {
 }
 
 String OS_Unix::get_locale() const {
-	if (!has_environment("LANG"))
+	if (!has_environment("LANG")) {
 		return "en";
+	}
 
 	String locale = get_environment("LANG");
 	int tp = locale.find(".");
-	if (tp != -1)
+	if (tp != -1) {
 		locale = locale.substr(0, tp);
+	}
 	return locale;
 }
 
@@ -418,15 +427,17 @@ Error OS_Unix::get_dynamic_library_symbol_handle(void *p_library_handle, const S
 }
 
 Error OS_Unix::set_cwd(const String &p_cwd) {
-	if (chdir(p_cwd.utf8().get_data()) != 0)
+	if (chdir(p_cwd.utf8().get_data()) != 0) {
 		return ERR_CANT_OPEN;
+	}
 
 	return OK;
 }
 
 String OS_Unix::get_environment(const String &p_var) const {
-	if (getenv(p_var.utf8().get_data()))
+	if (getenv(p_var.utf8().get_data())) {
 		return getenv(p_var.utf8().get_data());
+	}
 	return "";
 }
 
@@ -514,10 +525,11 @@ void UnixTerminalLogger::log_error(const char *p_function, const char *p_file, i
 	}
 
 	const char *err_details;
-	if (p_rationale && p_rationale[0])
+	if (p_rationale && p_rationale[0]) {
 		err_details = p_rationale;
-	else
+	} else {
 		err_details = p_code;
+	}
 
 	// Disable color codes if stdout is not a TTY.
 	// This prevents Godot from writing ANSI escape codes when redirecting

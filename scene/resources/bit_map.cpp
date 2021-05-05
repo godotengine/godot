@@ -74,10 +74,11 @@ void BitMap::set_bit_rect(const Rect2 &p_rect, bool p_value) {
 
 			uint8_t b = data[bbyte];
 
-			if (p_value)
+			if (p_value) {
 				b |= (1 << bbit);
-			else
+			} else {
 				b &= ~(1 << bbit);
+			}
 
 			data[bbyte] = b;
 		}
@@ -118,10 +119,11 @@ void BitMap::set_bit(const Point2 &p_pos, bool p_value) {
 
 	uint8_t b = bitmask[bbyte];
 
-	if (p_value)
+	if (p_value) {
 		b |= (1 << bbit);
-	else
+	} else {
 		b &= ~(1 << bbit);
+	}
 
 	bitmask.write[bbyte] = b;
 }
@@ -339,8 +341,9 @@ static float perpendicular_distance(const Vector2 &i, const Vector2 &start, cons
 }
 
 static Vector<Vector2> rdp(const Vector<Vector2> &v, float optimization) {
-	if (v.size() < 3)
+	if (v.size() < 3) {
 		return v;
+	}
 
 	int index = -1;
 	float dist = 0;
@@ -436,15 +439,17 @@ static void fill_bits(const BitMap *p_src, Ref<BitMap> &p_map, const Point2i &p_
 					continue;
 				}
 
-				if (i < rect.position.x || i >= rect.position.x + rect.size.x)
+				if (i < rect.position.x || i >= rect.position.x + rect.size.x) {
 					continue;
-				if (j < rect.position.y || j >= rect.position.y + rect.size.y)
+				}
+				if (j < rect.position.y || j >= rect.position.y + rect.size.y) {
+					continue;
+				}
+
+				if (p_map->get_bit(Vector2(i, j))) {
 					continue;
 
-				if (p_map->get_bit(Vector2(i, j)))
-					continue;
-
-				else if (p_src->get_bit(Vector2(i, j))) {
+				} else if (p_src->get_bit(Vector2(i, j))) {
 					p_map->set_bit(Vector2(i, j), true);
 
 					FillBitsStackEntry se = { pos, i, j };
@@ -526,8 +531,9 @@ void BitMap::grow_mask(int p_pixels, const Rect2 &p_rect) {
 
 	for (int i = r.position.y; i < r.position.y + r.size.height; i++) {
 		for (int j = r.position.x; j < r.position.x + r.size.width; j++) {
-			if (bit_value == get_bit(Point2(j, i)))
+			if (bit_value == get_bit(Point2(j, i))) {
 				continue;
+			}
 
 			bool found = false;
 
@@ -537,23 +543,26 @@ void BitMap::grow_mask(int p_pixels, const Rect2 &p_rect) {
 
 					if ((x < p_rect.position.x) || (x >= p_rect.position.x + p_rect.size.x) || (y < p_rect.position.y) || (y >= p_rect.position.y + p_rect.size.y)) {
 						// outside of rectangle counts as bit not set
-						if (!bit_value)
+						if (!bit_value) {
 							outside = true;
-						else
+						} else {
 							continue;
+						}
 					}
 
 					float d = Point2(j, i).distance_to(Point2(x, y)) - CMP_EPSILON;
-					if (d > p_pixels)
+					if (d > p_pixels) {
 						continue;
+					}
 
 					if (outside || (bit_value == copy->get_bit(Point2(x, y)))) {
 						found = true;
 						break;
 					}
 				}
-				if (found)
+				if (found) {
 					break;
+				}
 			}
 
 			if (found) {
@@ -635,10 +644,12 @@ void BitMap::blit(const Vector2 &p_pos, const Ref<BitMap> &p_bitmap) {
 		for (int j = 0; j < h; j++) {
 			int px = x + i;
 			int py = y + j;
-			if (px < 0 || px >= width)
+			if (px < 0 || px >= width) {
 				continue;
-			if (py < 0 || py >= height)
+			}
+			if (py < 0 || py >= height) {
 				continue;
+			}
 			if (p_bitmap->get_bit(Vector2(i, j))) {
 				set_bit(Vector2(x, y), true);
 			}

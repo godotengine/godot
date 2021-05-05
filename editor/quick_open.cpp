@@ -37,10 +37,11 @@ void EditorQuickOpen::popup_dialog(const StringName &p_base, bool p_enable_multi
 	search_options->set_select_mode(p_enable_multi ? Tree::SELECT_MULTI : Tree::SELECT_SINGLE);
 	popup_centered_ratio(0.4);
 
-	if (p_dontclear)
+	if (p_dontclear) {
 		search_box->select_all();
-	else
+	} else {
 		search_box->clear();
+	}
 
 	search_box->grab_focus();
 	_update_search();
@@ -48,8 +49,9 @@ void EditorQuickOpen::popup_dialog(const StringName &p_base, bool p_enable_multi
 
 String EditorQuickOpen::get_selected() const {
 	TreeItem *ti = search_options->get_selected();
-	if (!ti)
+	if (!ti) {
 		return String();
+	}
 
 	return "res://" + ti->get_text(0);
 }
@@ -83,8 +85,9 @@ void EditorQuickOpen::_sbox_input(const Ref<InputEvent> &p_ie) {
 				search_box->accept_event();
 
 				TreeItem *root = search_options->get_root();
-				if (!root->get_children())
+				if (!root->get_children()) {
 					break;
+				}
 
 				TreeItem *current = search_options->get_selected();
 
@@ -142,13 +145,15 @@ Vector<Pair<String, Ref<Texture>>> EditorQuickOpen::_sort_fs(Vector<Pair<String,
 	String search_text = search_box->get_text();
 	Vector<Pair<String, Ref<Texture>>> sorted_list;
 
-	if (search_text == String() || list.size() == 0)
+	if (search_text == String() || list.size() == 0) {
 		return list;
+	}
 
 	Vector<float> scores;
 	scores.resize(list.size());
-	for (int i = 0; i < list.size(); i++)
+	for (int i = 0; i < list.size(); i++) {
 		scores.write[i] = _path_cmp(search_text, list[i].first);
+	}
 
 	while (list.size() > 0) {
 		float best_score = 0.0f;
@@ -197,8 +202,9 @@ void EditorQuickOpen::_update_search() {
 
 void EditorQuickOpen::_confirmed() {
 	TreeItem *ti = search_options->get_selected();
-	if (!ti)
+	if (!ti) {
 		return;
+	}
 	emit_signal("quick_open");
 	hide();
 }

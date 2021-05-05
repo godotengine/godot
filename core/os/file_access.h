@@ -187,8 +187,9 @@ struct FileAccessRef {
 	operator FileAccess *() { return f; }
 	FileAccessRef(FileAccess *fa) { f = fa; }
 	~FileAccessRef() {
-		if (f)
+		if (f) {
 			memdelete(f);
+		}
 	}
 };
 

@@ -553,8 +553,9 @@ protected:
 	Variant _call_deferred_bind(const Variant **p_args, int p_argcount, Variant::CallError &r_error);
 
 	virtual const StringName *_get_class_namev() const {
-		if (!_class_name)
+		if (!_class_name) {
 			_class_name = get_class_static();
+		}
 		return &_class_name;
 	}
 
@@ -577,8 +578,9 @@ public:
 #ifdef TOOLS_ENABLED
 	_FORCE_INLINE_ void _change_notify(const char *p_property = "") {
 		_edited = true;
-		for (Set<Object *>::Element *E = change_receptors.front(); E; E = E->next())
+		for (Set<Object *>::Element *E = change_receptors.front(); E; E = E->next()) {
 			((Object *)(E->get()))->_changed_callback(this, p_property);
+		}
 	}
 #else
 	_FORCE_INLINE_ void _change_notify(const char *p_what = "") {}

@@ -261,10 +261,11 @@ int ShaderGLES2::_get_uniform(int p_which) const {
 
 void ShaderGLES2::_set_conditional(int p_which, bool p_value) {
 	ERR_FAIL_INDEX(p_which, conditional_count);
-	if (p_value)
+	if (p_value) {
 		new_conditional_version.version |= (1 << p_which);
-	else
+	} else {
 		new_conditional_version.version &= ~(1 << p_which);
+	}
 }
 
 #endif

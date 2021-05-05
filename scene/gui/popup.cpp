@@ -74,17 +74,22 @@ void Popup::_fix_size() {
 	Size2 size = get_size() * get_scale();
 	Point2 window_size = get_viewport_rect().size - get_viewport_transform().get_origin();
 
-	if (pos.x + size.width > window_size.width)
+	if (pos.x + size.width > window_size.width) {
 		pos.x = window_size.width - size.width;
-	if (pos.x < 0)
+	}
+	if (pos.x < 0) {
 		pos.x = 0;
+	}
 
-	if (pos.y + size.height > window_size.height)
+	if (pos.y + size.height > window_size.height) {
 		pos.y = window_size.height - size.height;
-	if (pos.y < 0)
+	}
+	if (pos.y < 0) {
 		pos.y = 0;
-	if (pos != get_position())
+	}
+	if (pos != get_position()) {
 		set_global_position(pos);
+	}
 }
 
 void Popup::set_as_minsize() {
@@ -92,10 +97,12 @@ void Popup::set_as_minsize() {
 
 	for (int i = 0; i < get_child_count(); i++) {
 		Control *c = Object::cast_to<Control>(get_child(i));
-		if (!c)
+		if (!c) {
 			continue;
-		if (!c->is_visible())
+		}
+		if (!c->is_visible()) {
 			continue;
+		}
 
 		Size2 minsize = c->get_combined_minimum_size();
 
@@ -176,8 +183,9 @@ void Popup::_popup(const Rect2 &p_bounds, const bool p_centered) {
 
 	Control *focusable = find_next_valid_focus();
 
-	if (focusable)
+	if (focusable) {
 		focusable->grab_focus();
+	}
 
 	_post_popup();
 	notification(NOTIFICATION_POST_POPUP);
@@ -239,11 +247,13 @@ Size2 PopupPanel::get_minimum_size() const {
 
 	for (int i = 0; i < get_child_count(); i++) {
 		Control *c = Object::cast_to<Control>(get_child(i));
-		if (!c)
+		if (!c) {
 			continue;
+		}
 
-		if (c->is_set_as_toplevel())
+		if (c->is_set_as_toplevel()) {
 			continue;
+		}
 
 		Size2 cms = c->get_combined_minimum_size();
 		ms.x = MAX(cms.x, ms.x);
@@ -261,11 +271,13 @@ void PopupPanel::_update_child_rects() {
 
 	for (int i = 0; i < get_child_count(); i++) {
 		Control *c = Object::cast_to<Control>(get_child(i));
-		if (!c)
+		if (!c) {
 			continue;
+		}
 
-		if (c->is_set_as_toplevel())
+		if (c->is_set_as_toplevel()) {
 			continue;
+		}
 
 		c->set_position(cpos);
 		c->set_size(csize);

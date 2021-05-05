@@ -36,8 +36,9 @@
 
 bool CollisionSolver2DSW::solve_static_line(const Shape2DSW *p_shape_A, const Transform2D &p_transform_A, const Shape2DSW *p_shape_B, const Transform2D &p_transform_B, CallbackResult p_result_callback, void *p_userdata, bool p_swap_result) {
 	const LineShape2DSW *line = static_cast<const LineShape2DSW *>(p_shape_A);
-	if (p_shape_B->get_type() == Physics2DServer::SHAPE_LINE)
+	if (p_shape_B->get_type() == Physics2DServer::SHAPE_LINE) {
 		return false;
+	}
 
 	Vector2 n = p_transform_A.basis_xform(line->get_normal()).normalized();
 	Vector2 p = p_transform_A.xform(line->get_normal() * line->get_d());
@@ -53,17 +54,19 @@ bool CollisionSolver2DSW::solve_static_line(const Shape2DSW *p_shape_A, const Tr
 	for (int i = 0; i < support_count; i++) {
 		supports[i] = p_transform_B.xform(supports[i]);
 		real_t pd = n.dot(supports[i]);
-		if (pd >= d)
+		if (pd >= d) {
 			continue;
+		}
 		found = true;
 
 		Vector2 support_A = supports[i] - n * (pd - d);
 
 		if (p_result_callback) {
-			if (p_swap_result)
+			if (p_swap_result) {
 				p_result_callback(supports[i], support_A, p_userdata);
-			else
+			} else {
 				p_result_callback(support_A, supports[i], p_userdata);
+			}
 		}
 	}
 
@@ -72,8 +75,9 @@ bool CollisionSolver2DSW::solve_static_line(const Shape2DSW *p_shape_A, const Tr
 
 bool CollisionSolver2DSW::solve_raycast(const Shape2DSW *p_shape_A, const Vector2 &p_motion_A, const Transform2D &p_transform_A, const Shape2DSW *p_shape_B, const Transform2D &p_transform_B, CallbackResult p_result_callback, void *p_userdata, bool p_swap_result, Vector2 *sep_axis) {
 	const RayShape2DSW *ray = static_cast<const RayShape2DSW *>(p_shape_A);
-	if (p_shape_B->get_type() == Physics2DServer::SHAPE_RAY)
+	if (p_shape_B->get_type() == Physics2DServer::SHAPE_RAY) {
 		return false;
+	}
 
 	Vector2 from = p_transform_A.get_origin();
 	Vector2 to = from + p_transform_A[1] * ray->get_length();
@@ -90,8 +94,9 @@ bool CollisionSolver2DSW::solve_raycast(const Shape2DSW *p_shape_A, const Vector
 
 	Vector2 p, n;
 	if (!p_shape_B->intersect_segment(from, to, p, n)) {
-		if (sep_axis)
+		if (sep_axis) {
 			*sep_axis = p_transform_A[1].normalized();
+		}
 		return false;
 	}
 
@@ -102,10 +107,11 @@ bool CollisionSolver2DSW::solve_raycast(const Shape2DSW *p_shape_A, const Vector
 	}
 
 	if (p_result_callback) {
-		if (p_swap_result)
+		if (p_swap_result) {
 			p_result_callback(support_B, support_A, p_userdata);
-		else
+		} else {
 			p_result_callback(support_A, support_B, p_userdata);
+		}
 	}
 	return true;
 }
@@ -130,12 +136,14 @@ struct _ConcaveCollisionInfo2D {
 void CollisionSolver2DSW::concave_callback(void *p_userdata, Shape2DSW *p_convex) {
 	_ConcaveCollisionInfo2D &cinfo = *(_ConcaveCollisionInfo2D *)(p_userdata);
 	cinfo.aabb_tests++;
-	if (!cinfo.result_callback && cinfo.collided)
+	if (!cinfo.result_callback && cinfo.collided) {
 		return; //already collided and no contacts requested, don't test anymore
+	}
 
 	bool collided = collision_solver(cinfo.shape_A, *cinfo.transform_A, cinfo.motion_A, p_convex, *cinfo.transform_B, cinfo.motion_B, cinfo.result_callback, cinfo.userdata, cinfo.swap_result, cinfo.sep_axis, cinfo.margin_A, cinfo.margin_B);
-	if (!collided)
+	if (!collided) {
 		return;
+	}
 
 	cinfo.collided = true;
 	cinfo.collisions++;
@@ -224,13 +232,15 @@ bool CollisionSolver2DSW::solve(const Shape2DSW *p_shape_A, const Transform2D &p
 		}
 
 	} else if (concave_B) {
-		if (concave_A)
+		if (concave_A) {
 			return false;
+		}
 
-		if (!swap)
+		if (!swap) {
 			return solve_concave(p_shape_A, p_transform_A, p_motion_A, p_shape_B, p_transform_B, p_motion_B, p_result_callback, p_userdata, false, sep_axis, margin_A, margin_B);
-		else
+		} else {
 			return solve_concave(p_shape_B, p_transform_B, p_motion_B, p_shape_A, p_transform_A, p_motion_A, p_result_callback, p_userdata, true, sep_axis, margin_A, margin_B);
+		}
 
 	} else {
 		return collision_solver(p_shape_A, p_transform_A, p_motion_A, p_shape_B, p_transform_B, p_motion_B, p_result_callback, p_userdata, false, sep_axis, margin_A, margin_B);

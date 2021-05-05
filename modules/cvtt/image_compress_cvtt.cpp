@@ -138,8 +138,9 @@ static void _digest_job_queue(void *p_job_queue) {
 }
 
 void image_compress_cvtt(Image *p_image, float p_lossy_quality, Image::CompressSource p_source) {
-	if (p_image->get_format() >= Image::FORMAT_BPTC_RGBA)
+	if (p_image->get_format() >= Image::FORMAT_BPTC_RGBA) {
 		return; //do not compress, already compressed
+	}
 
 	int w = p_image->get_width();
 	int h = p_image->get_height();
@@ -154,16 +155,17 @@ void image_compress_cvtt(Image *p_image, float p_lossy_quality, Image::CompressS
 	cvtt::Options options;
 	uint32_t flags = cvtt::Flags::Fastest;
 
-	if (p_lossy_quality > 0.85)
+	if (p_lossy_quality > 0.85) {
 		flags = cvtt::Flags::Ultra;
-	else if (p_lossy_quality > 0.75)
+	} else if (p_lossy_quality > 0.75) {
 		flags = cvtt::Flags::Better;
-	else if (p_lossy_quality > 0.55)
+	} else if (p_lossy_quality > 0.55) {
 		flags = cvtt::Flags::Default;
-	else if (p_lossy_quality > 0.35)
+	} else if (p_lossy_quality > 0.35) {
 		flags = cvtt::Flags::Fast;
-	else if (p_lossy_quality > 0.15)
+	} else if (p_lossy_quality > 0.15) {
 		flags = cvtt::Flags::Faster;
+	}
 
 	flags |= cvtt::Flags::BC7_RespectPunchThrough;
 

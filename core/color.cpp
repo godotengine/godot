@@ -115,20 +115,23 @@ float Color::get_h() const {
 
 	float delta = max - min;
 
-	if (delta == 0)
+	if (delta == 0) {
 		return 0;
+	}
 
 	float h;
-	if (r == max)
+	if (r == max) {
 		h = (g - b) / delta; // between yellow & magenta
-	else if (g == max)
+	} else if (g == max) {
 		h = 2 + (b - r) / delta; // between cyan & yellow
-	else
+	} else {
 		h = 4 + (r - g) / delta; // between magenta & cyan
+	}
 
 	h /= 6.0;
-	if (h < 0)
+	if (h < 0) {
 		h += 1.0;
+	}
 
 	return h;
 }
@@ -276,10 +279,11 @@ static float _parse_col(const String &p_str, int p_ofs) {
 			return -1;
 		}
 
-		if (i == 0)
+		if (i == 0) {
 			ig += v * 16;
-		else
+		} else {
 			ig += v;
+		}
 	}
 
 	return ig;
@@ -299,10 +303,12 @@ Color Color::contrasted() const {
 
 Color Color::html(const String &p_color) {
 	String color = p_color;
-	if (color.length() == 0)
+	if (color.length() == 0) {
 		return Color();
-	if (color[0] == '#')
+	}
+	if (color[0] == '#') {
 		color = color.substr(1, color.length() - 1);
+	}
 	if (color.length() == 3 || color.length() == 4) {
 		String exp_color;
 		for (int i = 0; i < color.length(); i++) {
@@ -343,10 +349,12 @@ Color Color::html(const String &p_color) {
 bool Color::html_is_valid(const String &p_color) {
 	String color = p_color;
 
-	if (color.length() == 0)
+	if (color.length() == 0) {
 		return false;
-	if (color[0] == '#')
+	}
+	if (color[0] == '#') {
 		color = color.substr(1, color.length() - 1);
+	}
 
 	bool alpha = false;
 
@@ -384,8 +392,9 @@ bool Color::html_is_valid(const String &p_color) {
 }
 
 Color Color::named(const String &p_name) {
-	if (_named_colors.empty())
+	if (_named_colors.empty()) {
 		_populate_named_colors(); // from color_names.inc
+	}
 	String name = p_name;
 	// Normalize name
 	name = name.replace(" ", "");
@@ -408,10 +417,11 @@ String _to_hex(float p_val) {
 	for (int i = 0; i < 2; i++) {
 		CharType c[2] = { 0, 0 };
 		int lv = v & 0xF;
-		if (lv < 10)
+		if (lv < 10) {
 			c[0] = '0' + lv;
-		else
+		} else {
 			c[0] = 'a' + lv - 10;
+		}
 
 		v >>= 4;
 		String cs = (const CharType *)c;
@@ -426,8 +436,9 @@ String Color::to_html(bool p_alpha) const {
 	txt += _to_hex(r);
 	txt += _to_hex(g);
 	txt += _to_hex(b);
-	if (p_alpha)
+	if (p_alpha) {
 		txt = _to_hex(a) + txt;
+	}
 	return txt;
 }
 

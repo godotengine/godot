@@ -92,16 +92,19 @@ void MeshInstanceEditor::_menu_option(int p_option) {
 
 			for (List<Node *>::Element *E = selection.front(); E; E = E->next()) {
 				MeshInstance *instance = Object::cast_to<MeshInstance>(E->get());
-				if (!instance)
+				if (!instance) {
 					continue;
+				}
 
 				Ref<Mesh> m = instance->get_mesh();
-				if (m.is_null())
+				if (m.is_null()) {
 					continue;
+				}
 
 				Ref<Shape> shape = m->create_trimesh_shape();
-				if (shape.is_null())
+				if (shape.is_null()) {
 					continue;
+				}
 
 				CollisionShape *cshape = memnew(CollisionShape);
 				cshape->set_shape(shape);
@@ -129,8 +132,9 @@ void MeshInstanceEditor::_menu_option(int p_option) {
 			}
 
 			Ref<Shape> shape = mesh->create_trimesh_shape();
-			if (shape.is_null())
+			if (shape.is_null()) {
 				return;
+			}
 
 			CollisionShape *cshape = memnew(CollisionShape);
 			cshape->set_shape(shape);
@@ -220,8 +224,9 @@ void MeshInstanceEditor::_menu_option(int p_option) {
 		case MENU_OPTION_CREATE_NAVMESH: {
 			Ref<NavigationMesh> nmesh = memnew(NavigationMesh);
 
-			if (nmesh.is_null())
+			if (nmesh.is_null()) {
 				return;
+			}
 
 			nmesh->create_from_mesh(mesh);
 			NavigationMeshInstance *nmi = memnew(NavigationMeshInstance);
@@ -285,10 +290,11 @@ struct MeshInstanceEditorEdgeSort {
 	Vector2 b;
 
 	bool operator<(const MeshInstanceEditorEdgeSort &p_b) const {
-		if (a == p_b.a)
+		if (a == p_b.a) {
 			return b < p_b.b;
-		else
+		} else {
 			return a < p_b.a;
+		}
 	}
 
 	MeshInstanceEditorEdgeSort() {}
@@ -310,8 +316,9 @@ void MeshInstanceEditor::_create_uv_lines(int p_layer) {
 	Set<MeshInstanceEditorEdgeSort> edges;
 	uv_lines.clear();
 	for (int i = 0; i < mesh->get_surface_count(); i++) {
-		if (mesh->surface_get_primitive_type(i) != Mesh::PRIMITIVE_TRIANGLES)
+		if (mesh->surface_get_primitive_type(i) != Mesh::PRIMITIVE_TRIANGLES) {
 			continue;
+		}
 		Array a = mesh->surface_get_arrays(i);
 
 		PoolVector<Vector2> uv = a[p_layer == 0 ? Mesh::ARRAY_TEX_UV : Mesh::ARRAY_TEX_UV2];
@@ -349,8 +356,9 @@ void MeshInstanceEditor::_create_uv_lines(int p_layer) {
 					edge.b = r[j + ((k + 1) % 3)];
 				}
 
-				if (edges.has(edge))
+				if (edges.has(edge)) {
 					continue;
+				}
 
 				uv_lines.push_back(edge.a);
 				uv_lines.push_back(edge.b);
@@ -363,8 +371,9 @@ void MeshInstanceEditor::_create_uv_lines(int p_layer) {
 }
 
 void MeshInstanceEditor::_debug_uv_draw() {
-	if (uv_lines.size() == 0)
+	if (uv_lines.size() == 0) {
 		return;
+	}
 
 	debug_uv->set_clip_contents(true);
 	debug_uv->draw_rect(Rect2(Vector2(), debug_uv->get_size()), Color(0.2, 0.2, 0.0));

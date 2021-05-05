@@ -113,10 +113,12 @@ void PinJointSW::solve(real_t p_step) {
 
 		real_t impulseClamp = m_impulseClamp;
 		if (impulseClamp > 0) {
-			if (impulse < -impulseClamp)
+			if (impulse < -impulseClamp) {
 				impulse = -impulseClamp;
-			if (impulse > impulseClamp)
+			}
+			if (impulse > impulseClamp) {
 				impulse = impulseClamp;
+			}
 		}
 
 		m_appliedImpulse += impulse;

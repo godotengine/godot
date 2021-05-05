@@ -40,10 +40,11 @@ class ConcavePolygonShape : public Shape {
 		Vector3 a;
 		Vector3 b;
 		bool operator<(const DrawEdge &p_edge) const {
-			if (a == p_edge.a)
+			if (a == p_edge.a) {
 				return b < p_edge.b;
-			else
+			} else {
 				return a < p_edge.a;
+			}
 		}
 
 		DrawEdge(const Vector3 &p_a = Vector3(), const Vector3 &p_b = Vector3()) {

@@ -6,12 +6,14 @@ void _logic_item_remove_and_reinsert(uint32_t p_ref_id) {
 	ItemRef &ref = _refs[p_ref_id];
 
 	// no need to optimize inactive items
-	if (!ref.is_active())
+	if (!ref.is_active()) {
 		return;
+	}
 
 	// special case of debug draw
-	if (ref.item_id == BVHCommon::INVALID)
+	if (ref.item_id == BVHCommon::INVALID) {
 		return;
+	}
 
 	BVH_ASSERT(ref.tnode_id != BVHCommon::INVALID);
 
@@ -69,8 +71,9 @@ int32_t _logic_balance(int32_t iA) {
 
 	TNode *A = &_nodes[iA];
 
-	if (A->is_leaf() || A->height == 1)
+	if (A->is_leaf() || A->height == 1) {
 		return iA;
+	}
 
 	/*      A
 	      /   \
@@ -96,11 +99,12 @@ int32_t _logic_balance(int32_t iA) {
 
 		// grandParent point to C
 		if (A->parent_id != BVHCommon::INVALID) {
-			if (_nodes[A->parent_id].children[0] == iA)
+			if (_nodes[A->parent_id].children[0] == iA) {
 				_nodes[A->parent_id].children[0] = iC;
 
-			else
+			} else {
 				_nodes[A->parent_id].children[1] = iC;
+			}
 		} else {
 			// check this .. seems dodgy
 			change_root_node(iC);
@@ -146,10 +150,11 @@ int32_t _logic_balance(int32_t iA) {
 
 		// grandParent point to B
 		if (A->parent_id != BVHCommon::INVALID) {
-			if (_nodes[A->parent_id].children[0] == iA)
+			if (_nodes[A->parent_id].children[0] == iA) {
 				_nodes[A->parent_id].children[0] = iB;
-			else
+			} else {
 				_nodes[A->parent_id].children[1] = iB;
+			}
 		}
 
 		else {
@@ -199,8 +204,9 @@ uint32_t _logic_choose_item_add_node(uint32_t p_node_id, const BVHABB_CLASS &p_a
 
 		if (tnode.is_leaf()) {
 			// if a leaf, and non full, use this to add to
-			if (!node_is_leaf_full(tnode))
+			if (!node_is_leaf_full(tnode)) {
 				return p_node_id;
+			}
 
 			// else split the leaf, and use one of the children to add to
 			return split_leaf(p_node_id, p_aabb);

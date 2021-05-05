@@ -69,8 +69,9 @@ int WebSocketMultiplayerPeer::_gen_unique_id() const {
 }
 void WebSocketMultiplayerPeer::_clear() {
 	_peer_map.clear();
-	if (_current_packet.data != nullptr)
+	if (_current_packet.data != nullptr) {
 		memfree(_current_packet.data);
+	}
 
 	for (List<Packet>::Element *E = _incoming_packets.front(); E; E = E->next()) {
 		memfree(E->get().data);
@@ -194,8 +195,9 @@ void WebSocketMultiplayerPeer::_send_add(int32_t p_peer_id) {
 
 	for (Map<int, Ref<WebSocketPeer>>::Element *E = _peer_map.front(); E; E = E->next()) {
 		int32_t id = E->key();
-		if (p_peer_id == id)
+		if (p_peer_id == id) {
 			continue; // Skip the newwly added peer (already confirmed)
+		}
 
 		// Send new peer to others
 		_send_sys(get_peer(id), SYS_ADD, p_peer_id);
@@ -207,8 +209,9 @@ void WebSocketMultiplayerPeer::_send_add(int32_t p_peer_id) {
 void WebSocketMultiplayerPeer::_send_del(int32_t p_peer_id) {
 	for (Map<int, Ref<WebSocketPeer>>::Element *E = _peer_map.front(); E; E = E->next()) {
 		int32_t id = E->key();
-		if (p_peer_id != id)
+		if (p_peer_id != id) {
 			_send_sys(get_peer(id), SYS_DEL, p_peer_id);
+		}
 	}
 }
 
@@ -229,15 +232,17 @@ Error WebSocketMultiplayerPeer::_server_relay(int32_t p_from, int32_t p_to, cons
 
 	} else if (p_to == 0) {
 		for (Map<int, Ref<WebSocketPeer>>::Element *E = _peer_map.front(); E; E = E->next()) {
-			if (E->key() != p_from)
+			if (E->key() != p_from) {
 				E->get()->put_packet(p_buffer, p_buffer_size);
+			}
 		}
 		return OK; // Sent to all but sender
 
 	} else if (p_to < 0) {
 		for (Map<int, Ref<WebSocketPeer>>::Element *E = _peer_map.front(); E; E = E->next()) {
-			if (E->key() != p_from && E->key() != -p_to)
+			if (E->key() != p_from && E->key() != -p_to) {
 				E->get()->put_packet(p_buffer, p_buffer_size);
+			}
 		}
 		return OK; // Sent to all but sender and excluded
 
@@ -287,8 +292,9 @@ void WebSocketMultiplayerPeer::_process_multiplayer(Ref<WebSocketPeer> p_peer, u
 
 		} else if (to < 0) {
 			// All but one, for us if not excluded
-			if (_peer_id != -(int32_t)p_peer_id)
+			if (_peer_id != -(int32_t)p_peer_id) {
 				_store_pkt(from, to, in_buffer, data_size);
+			}
 		}
 		// Relay if needed (i.e. "to" includes a peer that is not the server)
 		_server_relay(from, to, in_buffer, size);
@@ -309,8 +315,9 @@ void WebSocketMultiplayerPeer::_process_multiplayer(Ref<WebSocketPeer> p_peer, u
 			case SYS_ADD: // Add peer
 				_peer_map[id] = Ref<WebSocketPeer>();
 				emit_signal("peer_connected", id);
-				if (id == 1) // We just connected to the server
+				if (id == 1) { // We just connected to the server
 					emit_signal("connection_succeeded");
+				}
 				break;
 
 			case SYS_DEL: // Remove peer

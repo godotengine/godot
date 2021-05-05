@@ -228,8 +228,9 @@ float AnimationNodeOneShot::process(float p_time, bool p_seek) {
 
 	bool os_seek = p_seek;
 
-	if (p_seek)
+	if (p_seek) {
 		time = p_time;
+	}
 	bool do_start = !prev_active;
 
 	if (do_start) {
@@ -241,18 +242,21 @@ float AnimationNodeOneShot::process(float p_time, bool p_seek) {
 	float blend;
 
 	if (time < fade_in) {
-		if (fade_in > 0)
+		if (fade_in > 0) {
 			blend = time / fade_in;
-		else
+		} else {
 			blend = 0; //wtf
+		}
 
 	} else if (!do_start && remaining < fade_out) {
-		if (fade_out)
+		if (fade_out) {
 			blend = (remaining / fade_out);
-		else
+		} else {
 			blend = 1.0;
-	} else
+		}
+	} else {
 		blend = 1.0;
+	}
 
 	float main_rem;
 	if (mix == MIX_MODE_ADD) {
@@ -708,10 +712,11 @@ float AnimationNodeTransition::process(float p_time, bool p_seek) {
 
 		rem = blend_input(current, p_time, p_seek, 1.0, FILTER_IGNORE, false);
 
-		if (p_seek)
+		if (p_seek) {
 			time = p_time;
-		else
+		} else {
 			time += p_time;
+		}
 
 		if (inputs[current].auto_advance && rem <= xfade) {
 			set_parameter(this->current, (current + 1) % enabled_inputs);

@@ -328,8 +328,9 @@ void BulletPhysicsServer::area_clear_shapes(RID p_area) {
 	AreaBullet *area = area_owner.get(p_area);
 	ERR_FAIL_COND(!area);
 
-	for (int i = area->get_shape_count(); 0 < i; --i)
+	for (int i = area->get_shape_count(); 0 < i; --i) {
 		area->remove_shape_full(0);
+	}
 }
 
 void BulletPhysicsServer::area_set_shape_disabled(RID p_area, int p_shape_idx, bool p_disabled) {
@@ -445,8 +446,9 @@ RID BulletPhysicsServer::body_create(BodyMode p_mode, bool p_init_sleeping) {
 	body->set_mode(p_mode);
 	body->set_collision_layer(1);
 	body->set_collision_mask(1);
-	if (p_init_sleeping)
+	if (p_init_sleeping) {
 		body->set_state(BODY_STATE_SLEEPING, p_init_sleeping);
+	}
 	CreateThenReturnRID(rigid_body_owner, body);
 }
 
@@ -460,8 +462,9 @@ void BulletPhysicsServer::body_set_space(RID p_body, RID p_space) {
 		ERR_FAIL_COND(!space);
 	}
 
-	if (body->get_space() == space)
+	if (body->get_space() == space) {
 		return; //pointles
+	}
 
 	body->set_space(space);
 }
@@ -471,8 +474,9 @@ RID BulletPhysicsServer::body_get_space(RID p_body) const {
 	ERR_FAIL_COND_V(!body, RID());
 
 	SpaceBullet *space = body->get_space();
-	if (!space)
+	if (!space) {
 		return RID();
+	}
 	return space->get_self();
 }
 
@@ -872,8 +876,9 @@ RID BulletPhysicsServer::soft_body_create(bool p_init_sleeping) {
 	SoftBodyBullet *body = bulletnew(SoftBodyBullet);
 	body->set_collision_layer(1);
 	body->set_collision_mask(1);
-	if (p_init_sleeping)
+	if (p_init_sleeping) {
 		body->set_activation_state(false);
+	}
 	CreateThenReturnRID(soft_body_owner, body);
 }
 
@@ -894,8 +899,9 @@ void BulletPhysicsServer::soft_body_set_space(RID p_body, RID p_space) {
 		ERR_FAIL_COND(!space);
 	}
 
-	if (body->get_space() == space)
+	if (body->get_space() == space) {
 		return; //pointles
+	}
 
 	body->set_space(space);
 }
@@ -905,8 +911,9 @@ RID BulletPhysicsServer::soft_body_get_space(RID p_body) const {
 	ERR_FAIL_COND_V(!body, RID());
 
 	SpaceBullet *space = body->get_space();
-	if (!space)
+	if (!space) {
 		return RID();
+	}
 	return space->get_self();
 }
 
@@ -1521,8 +1528,9 @@ void BulletPhysicsServer::init() {
 }
 
 void BulletPhysicsServer::step(float p_deltaTime) {
-	if (!active)
+	if (!active) {
 		return;
+	}
 
 	BulletPhysicsDirectBodyState::singleton_setDeltaTime(p_deltaTime);
 

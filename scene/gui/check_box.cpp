@@ -41,14 +41,18 @@ Size2 CheckBox::get_icon_size() const {
 	Ref<Texture> radio_unchecked = Control::get_icon("radio_unchecked");
 
 	Size2 tex_size = Size2(0, 0);
-	if (!checked.is_null())
+	if (!checked.is_null()) {
 		tex_size = Size2(checked->get_width(), checked->get_height());
-	if (!unchecked.is_null())
+	}
+	if (!unchecked.is_null()) {
 		tex_size = Size2(MAX(tex_size.width, unchecked->get_width()), MAX(tex_size.height, unchecked->get_height()));
-	if (!radio_checked.is_null())
+	}
+	if (!radio_checked.is_null()) {
 		tex_size = Size2(MAX(tex_size.width, radio_checked->get_width()), MAX(tex_size.height, radio_checked->get_height()));
-	if (!radio_unchecked.is_null())
+	}
+	if (!radio_unchecked.is_null()) {
 		tex_size = Size2(MAX(tex_size.width, radio_unchecked->get_width()), MAX(tex_size.height, radio_unchecked->get_height()));
+	}
 	return tex_size;
 }
 
@@ -79,10 +83,11 @@ void CheckBox::_notification(int p_what) {
 		ofs.x = sb->get_margin(MARGIN_LEFT);
 		ofs.y = int((get_size().height - get_icon_size().height) / 2) + get_constant("check_vadjust");
 
-		if (is_pressed())
+		if (is_pressed()) {
 			on->draw(ci, ofs);
-		else
+		} else {
 			off->draw(ci, ofs);
+		}
 	}
 }
 

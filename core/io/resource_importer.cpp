@@ -120,8 +120,9 @@ RES ResourceFormatImporter::load(const String &p_path, const String &p_original_
 	Error err = _get_path_and_type(p_path, pat);
 
 	if (err != OK) {
-		if (r_error)
+		if (r_error) {
 			*r_error = err;
+		}
 
 		return RES();
 	}
@@ -163,11 +164,13 @@ void ResourceFormatImporter::get_recognized_extensions_for_type(const String &p_
 
 	for (int i = 0; i < importers.size(); i++) {
 		String res_type = importers[i]->get_resource_type();
-		if (res_type == String())
+		if (res_type == String()) {
 			continue;
+		}
 
-		if (!ClassDB::is_parent_class(res_type, p_type))
+		if (!ClassDB::is_parent_class(res_type, p_type)) {
 			continue;
+		}
 
 		List<String> local_exts;
 		importers[i]->get_recognized_extensions(&local_exts);
@@ -206,8 +209,9 @@ int ResourceFormatImporter::get_import_order(const String &p_path) const {
 		importer = get_importer_by_extension(p_path.get_extension().to_lower());
 	}
 
-	if (importer.is_valid())
+	if (importer.is_valid()) {
 		return importer->get_import_order();
+	}
 
 	return 0;
 }
@@ -215,10 +219,12 @@ int ResourceFormatImporter::get_import_order(const String &p_path) const {
 bool ResourceFormatImporter::handles_type(const String &p_type) const {
 	for (int i = 0; i < importers.size(); i++) {
 		String res_type = importers[i]->get_resource_type();
-		if (res_type == String())
+		if (res_type == String()) {
 			continue;
-		if (ClassDB::is_parent_class(res_type, p_type))
+		}
+		if (ClassDB::is_parent_class(res_type, p_type)) {
 			return true;
+		}
 	}
 
 	return true;
@@ -239,8 +245,9 @@ void ResourceFormatImporter::get_internal_resource_path_list(const String &p_pat
 	Error err;
 	FileAccess *f = FileAccess::open(p_path + ".import", FileAccess::READ, &err);
 
-	if (!f)
+	if (!f) {
 		return;
+	}
 
 	VariantParser::StreamFile stream;
 	stream.f = f;

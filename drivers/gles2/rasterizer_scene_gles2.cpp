@@ -88,8 +88,9 @@ void RasterizerSceneGLES2::shadow_atlas_set_size(RID p_atlas, int p_size) {
 
 	p_size = next_power_of_2(p_size);
 
-	if (p_size == shadow_atlas->size)
+	if (p_size == shadow_atlas->size) {
 		return;
+	}
 
 	// erase the old atlast
 	if (shadow_atlas->fbo) {
@@ -184,8 +185,9 @@ void RasterizerSceneGLES2::shadow_atlas_set_quadrant_subdivision(RID p_atlas, in
 
 	subdiv = int(Math::sqrt((float)subdiv));
 
-	if (shadow_atlas->quadrants[p_quadrant].shadows.size() == (int)subdiv)
+	if (shadow_atlas->quadrants[p_quadrant].shadows.size() == (int)subdiv) {
 		return;
+	}
 
 	// erase all data from the quadrant
 	for (int i = 0; i < shadow_atlas->quadrants[p_quadrant].shadows.size(); i++) {
@@ -999,8 +1001,9 @@ void RasterizerSceneGLES2::_add_geometry_with_material(RasterizerStorageGLES2::G
 	}
 
 	if (p_depth_pass) {
-		if (has_blend_alpha || p_material->shader->spatial.uses_depth_texture || (has_base_alpha && p_material->shader->spatial.depth_draw_mode != RasterizerStorageGLES2::Shader::Spatial::DEPTH_DRAW_ALPHA_PREPASS))
+		if (has_blend_alpha || p_material->shader->spatial.uses_depth_texture || (has_base_alpha && p_material->shader->spatial.depth_draw_mode != RasterizerStorageGLES2::Shader::Spatial::DEPTH_DRAW_ALPHA_PREPASS)) {
 			return; //bye
+		}
 
 		if (!p_material->shader->spatial.uses_alpha_scissor && !p_material->shader->spatial.writes_modelview_or_projection && !p_material->shader->spatial.uses_vertex && !p_material->shader->spatial.uses_discard && p_material->shader->spatial.depth_draw_mode != RasterizerStorageGLES2::Shader::Spatial::DEPTH_DRAW_ALPHA_PREPASS) {
 			//shader does not use discard and does not write a vertex position, use generic material
@@ -1218,12 +1221,14 @@ void RasterizerSceneGLES2::_fill_render_list(InstanceBase **p_cull_result, int p
 				RasterizerStorageGLES2::MultiMesh *multi_mesh = storage->multimesh_owner.getptr(instance->base);
 				ERR_CONTINUE(!multi_mesh);
 
-				if (multi_mesh->size == 0 || multi_mesh->visible_instances == 0)
+				if (multi_mesh->size == 0 || multi_mesh->visible_instances == 0) {
 					continue;
+				}
 
 				RasterizerStorageGLES2::Mesh *mesh = storage->mesh_owner.getptr(multi_mesh->mesh);
-				if (!mesh)
+				if (!mesh) {
 					continue;
+				}
 
 				int ssize = mesh->surfaces.size();
 
@@ -1259,14 +1264,16 @@ static const GLenum gl_primitive[] = {
 
 void RasterizerSceneGLES2::_set_cull(bool p_front, bool p_disabled, bool p_reverse_cull) {
 	bool front = p_front;
-	if (p_reverse_cull)
+	if (p_reverse_cull) {
 		front = !front;
+	}
 
 	if (p_disabled != state.cull_disabled) {
-		if (p_disabled)
+		if (p_disabled) {
 			glDisable(GL_CULL_FACE);
-		else
+		} else {
 			glEnable(GL_CULL_FACE);
+		}
 
 		state.cull_disabled = p_disabled;
 	}
@@ -1364,8 +1371,9 @@ bool RasterizerSceneGLES2::_setup_material(RasterizerStorageGLES2::Material *p_m
 			t->detect_normal(t->detect_normal_ud);
 		}
 #endif
-		if (t->render_target)
+		if (t->render_target) {
 			t->render_target->used_in_frame = true;
+		}
 
 		glBindTexture(t->target, t->tex_id);
 		if (i == 0) {
