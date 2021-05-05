@@ -1367,7 +1367,7 @@ void RendererSceneGIRD::SDFGI::debug_probes(RD::DrawListID p_draw_list, RID p_fr
 	}
 }
 
-void RendererSceneGIRD::SDFGI::pre_process_gi(const Transform &p_transform, RendererSceneRenderRD *p_scene_render) {
+void RendererSceneGIRD::SDFGI::pre_process_gi(const Transform &p_transform, RenderDataRD *p_render_data, RendererSceneRenderRD *p_scene_render) {
 	/* Update general SDFGI Buffer */
 
 	SDFGIData sdfgi_data;
