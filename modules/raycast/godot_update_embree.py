@@ -74,17 +74,18 @@ cpp_files = [
 
 os.chdir("../../thirdparty")
 
-if os.path.exists("embree"):
-    shutil.rmtree("embree")
+dir_name = "embree"
+if os.path.exists(dir_name):
+    shutil.rmtree(dir_name)
 
-subprocess.run(["git", "clone", "https://github.com/embree/embree.git", "embree-tmp"])
+subprocess.run(["git", "clone", "https://github.com/lighttransport/embree-aarch64.git", "embree-tmp"])
 os.chdir("embree-tmp")
 
 commit_hash = str(subprocess.check_output(["git", "rev-parse", "HEAD"], universal_newlines=True)).strip()
 
-dest_dir = "../embree"
 all_files = set(cpp_files)
 
+dest_dir = os.path.join("..", dir_name)
 for include_dir in include_dirs:
     headers = glob.iglob(os.path.join(include_dir, "*.h"))
     all_files.update(headers)

@@ -6,7 +6,7 @@
 #include "../math/math.h"
 
 /* include SSE wrapper classes */
-#if defined(__SSE__)
+#if defined(__SSE__) || defined(__ARM_NEON)
 #  include "sse.h"
 #endif
 

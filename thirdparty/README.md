@@ -41,19 +41,19 @@ Files extracted from upstream source:
 
 ## embree
 
-- Upstream: https://github.com/embree/embree
-- Version: 3.12.1 (69bd4c272f1ed608494f233ecfff3feec516880b, 2020)
+- Upstream: https://github.com/lighttransport/embree-aarch64
+- Version: 3.12.1 (6ef362f99af80c9dfe8dd2bfc582d9067897edc6, 2020)
 - License: Apache 2.0
 
 Files extracted from upstream:
 
-- All cpp files listed in `modules/raytrace/godot_update_embree.py`
-- All header files in the directories listed in `modules/raytrace/godot_update_embree.py`
+- All cpp files listed in `modules/raycast/godot_update_embree.py`
+- All header files in the directories listed in `modules/raycast/godot_update_embree.py`
 
-The `modules/raytrace/godot_update_embree.py`script can be used to pull the 
-relevant files from the latest Embree release and apply some automatic changes.
+The `modules/raycast/godot_update_embree.py`script can be used to pull the 
+relevant files from the latest Embree-aarch64 release and apply some automatic changes.
 
-Some minor changes have been made in order to fix build errors.
+Some changes have been made in order to remove exceptions and fix minor build errors.
 They are marked with `// -- GODOT start --` and `// -- GODOT end --`
 comments. Apply the patches in the `patches/` folder when syncing on newer upstream
 commits.

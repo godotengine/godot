@@ -221,6 +221,9 @@ namespace embree
 #if defined(TASKING_INTERNAL)
     std::cout << "internal_tasking_system ";
 #endif
+#if defined(TASKING_GCD) && defined(BUILD_IOS)
+    std::cout << "GCD tasking system ";
+#endif
 #if defined(TASKING_PPL)
 	std::cout << "PPL ";
 #endif
@@ -502,6 +505,10 @@ namespace embree
 
 #if defined(TASKING_PPL)
     case RTC_DEVICE_PROPERTY_TASKING_SYSTEM: return 2;
+#endif
+            
+#if defined(TASKING_GCD) && defined(BUILD_IOS)
+    case RTC_DEVICE_PROPERTY_TASKING_SYSTEM: return 3;
 #endif
 
 #if defined(EMBREE_GEOMETRY_TRIANGLE)

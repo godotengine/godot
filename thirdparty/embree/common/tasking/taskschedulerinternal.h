@@ -123,7 +123,10 @@ namespace embree
       {
         size_t ofs = bytes + ((align - stackPtr) & (align-1));
         if (stackPtr + ofs > CLOSURE_STACK_SIZE)
-          throw std::runtime_error("closure stack overflow");
+          // -- GODOT start --
+          // throw std::runtime_error("closure stack overflow");
+          abort();
+          // -- GODOT end --
         stackPtr += ofs;
         return &stack[stackPtr-bytes];
       }
@@ -132,12 +135,16 @@ namespace embree
       __forceinline void push_right(Thread& thread, const size_t size, const Closure& closure)
       {
         if (right >= TASK_STACK_SIZE)
-          throw std::runtime_error("task stack overflow");
+          // -- GODOT start --
+          // throw std::runtime_error("task stack overflow");
+          abort();
+          // -- GODOT end --
 
 	/* allocate new task on right side of stack */
         size_t oldStackPtr = stackPtr;
         TaskFunction* func = new (alloc(sizeof(ClosureTaskFunction<Closure>))) ClosureTaskFunction<Closure>(closure);
-        new (&tasks[right]) Task(func,thread.task,oldStackPtr,size);
+        /* gcc 8 or later fails to compile without explicit .load() */
+        new (&(tasks[right.load()])) Task(func,thread.task,oldStackPtr,size);
         right++;
 
 	/* also move left pointer */
@@ -238,7 +245,10 @@ namespace embree
     void wait_for_threads(size_t threadCount);
 
     /*! thread loop for all worker threads */
-    std::exception_ptr thread_loop(size_t threadIndex);
+    // -- GODOT start --
+    // std::exception_ptr thread_loop(size_t threadIndex);
+    void thread_loop(size_t threadIndex);
+    // -- GODOT end --
 
     /*! steals a task from a different thread */
     bool steal_from_other_threads(Thread& thread);

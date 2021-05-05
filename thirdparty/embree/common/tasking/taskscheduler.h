@@ -5,6 +5,8 @@
 
 #if defined(TASKING_INTERNAL)
 #  include "taskschedulerinternal.h"
+#elif defined(TASKING_GCD) && defined(BUILD_IOS)
+#  include "taskschedulergcd.h"
 #elif defined(TASKING_TBB)
 #  include "taskschedulertbb.h"
 #elif defined(TASKING_PPL)
