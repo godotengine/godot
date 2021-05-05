@@ -187,8 +187,6 @@ void EditorLog::_add_log_line(LogMessage &p_message, bool p_replace_previous) {
 		// Remove last line if replacing, as it will be replace by the next added line.
 		log->remove_line(log->get_line_count() - 1);
 		log->increment_line_count();
-	} else {
-		log->add_newline();
 	}
 
 	switch (p_message.type) {
@@ -222,6 +220,7 @@ void EditorLog::_add_log_line(LogMessage &p_message, bool p_replace_previous) {
 	}
 
 	log->add_text(p_message.text);
+	log->add_newline();
 
 	// Need to use pop() to exit out of the RichTextLabels current "push" stack.
 	// We only "push" in the above switch when message type != STD, so only pop when that is the case.
