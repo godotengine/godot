@@ -10,6 +10,7 @@ env_modules = env.Clone()
 Export("env_modules")
 
 # Header with MODULE_*_ENABLED defines.
+env.Depends("modules_enabled.gen.h", Value(env.module_list))
 env.CommandNoCache(
     "modules_enabled.gen.h",
     Value(env.module_list),
@@ -23,6 +24,7 @@ env.CommandNoCache(
 
 # Header to be included in `tests/test_main.cpp` to run module-specific tests.
 if env["tests"]:
+    env.Depends("modules_tests.gen.h", Value(env.module_list))
     env.CommandNoCache(
         "modules_tests.gen.h",
         Value(env.module_list),
