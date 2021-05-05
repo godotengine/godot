@@ -105,6 +105,8 @@ layout(std140) uniform SceneData { // ubo:0
 	highp float fog_height_min;
 	highp float fog_height_max;
 	highp float fog_height_curve;
+
+	int view_index;
 };
 
 uniform highp mat4 world_transform;
@@ -740,6 +742,8 @@ layout(std140) uniform SceneData {
 	highp float fog_height_min;
 	highp float fog_height_max;
 	highp float fog_height_curve;
+
+	int view_index;
 };
 
 	//directional light data

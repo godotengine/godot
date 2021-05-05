@@ -947,6 +947,10 @@ ShaderCompilerGLES2::ShaderCompilerGLES2() {
 	actions[VS::SHADER_SPATIAL].renames["INV_PROJECTION_MATRIX"] = "projection_inverse_matrix";
 	actions[VS::SHADER_SPATIAL].renames["MODELVIEW_MATRIX"] = "modelview";
 
+	actions[VS::SHADER_SPATIAL].renames["VIEW_INDEX"] = "view_index";
+	actions[VS::SHADER_SPATIAL].renames["VIEW_MONO_LEFT"] = "0";
+	actions[VS::SHADER_SPATIAL].renames["VIEW_RIGHT"] = "1";
+
 	actions[VS::SHADER_SPATIAL].renames["VERTEX"] = "vertex.xyz";
 	actions[VS::SHADER_SPATIAL].renames["NORMAL"] = "normal";
 	actions[VS::SHADER_SPATIAL].renames["TANGENT"] = "tangent";
