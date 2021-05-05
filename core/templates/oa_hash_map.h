@@ -47,11 +47,7 @@
  *
  * Only used keys and values are constructed. For free positions there's space
  * in the arrays for each, but that memory is kept uninitialized.
-<<<<<<< HEAD:core/templates/oa_hash_map.h
  *
-=======
- * 
->>>>>>> a34e6eaf20 (removed HashMaps):core/oa_hash_map.h
  * The assignment operator copy the pairs from one map to the other.
  */
 template <class TKey, class TValue,
@@ -358,10 +354,6 @@ public:
 	}
 
 	OAHashMap(const OAHashMap &p_other) {
-<<<<<<< HEAD:core/templates/oa_hash_map.h
-=======
-		capacity = 0;
->>>>>>> a34e6eaf20 (removed HashMaps):core/oa_hash_map.h
 		(*this) = p_other;
 	}
 
@@ -369,11 +361,6 @@ public:
 		if (capacity != 0) {
 			clear();
 		}
-<<<<<<< HEAD:core/templates/oa_hash_map.h
-=======
-
-		_resize_and_rehash(p_other.capacity);
->>>>>>> a34e6eaf20 (removed HashMaps):core/oa_hash_map.h
 
 		_resize_and_rehash(p_other.capacity);
 
