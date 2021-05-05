@@ -649,8 +649,6 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	action_map->connect("action_removed", callable_mp(this, &ProjectSettingsEditor::_action_removed));
 	action_map->connect("action_renamed", callable_mp(this, &ProjectSettingsEditor::_action_renamed));
 	action_map->connect("action_reordered", callable_mp(this, &ProjectSettingsEditor::_action_reordered));
-	action_map->set_toggle_editable_label(TTR("Show Built-in Actions"));
-	action_map->set_show_uneditable(false);
 	tab_container->add_child(action_map);
 
 	localization_editor = memnew(LocalizationEditor);
