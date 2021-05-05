@@ -381,6 +381,38 @@ public:
 					setting = false;
 					return true;
 				}
+
+				if (name == "start_offset") {
+					float value = p_value;
+
+					setting = true;
+					undo_redo->create_action(TTR("Anim Change Keyframe Value"), UndoRedo::MERGE_ENDS);
+					float prev = animation->animation_track_get_key_start_offset(track, key);
+					undo_redo->add_do_method(animation.ptr(), "animation_track_set_key_start_offset", track, key, value);
+					undo_redo->add_undo_method(animation.ptr(), "animation_track_set_key_start_offset", track, key, prev);
+					undo_redo->add_do_method(this, "_update_obj", animation);
+					undo_redo->add_undo_method(this, "_update_obj", animation);
+					undo_redo->commit_action();
+
+					setting = false;
+					return true;
+				}
+
+				if (name == "end_offset") {
+					float value = p_value;
+
+					setting = true;
+					undo_redo->create_action(TTR("Anim Change Keyframe Value"), UndoRedo::MERGE_ENDS);
+					float prev = animation->animation_track_get_key_end_offset(track, key);
+					undo_redo->add_do_method(animation.ptr(), "animation_track_set_key_end_offset", track, key, value);
+					undo_redo->add_undo_method(animation.ptr(), "animation_track_set_key_end_offset", track, key, prev);
+					undo_redo->add_do_method(this, "_update_obj", animation);
+					undo_redo->add_undo_method(this, "_update_obj", animation);
+					undo_redo->commit_action();
+
+					setting = false;
+					return true;
+				}
 			} break;
 		}
 
@@ -500,6 +532,14 @@ public:
 					r_ret = animation->animation_track_get_key_animation(track, key);
 					return true;
 				}
+				if (name == "start_offset") {
+					r_ret = animation->animation_track_get_key_start_offset(track, key);
+					return true;
+				}
+				if (name == "end_offset") {
+					r_ret = animation->animation_track_get_key_end_offset(track, key);
+					return true;
+				}
 
 			} break;
 		}
@@ -614,6 +654,8 @@ public:
 				animations += "[stop]";
 
 				p_list->push_back(PropertyInfo(Variant::STRING_NAME, "animation", PROPERTY_HINT_ENUM, animations));
+				p_list->push_back(PropertyInfo(Variant::FLOAT, "start_offset", PROPERTY_HINT_RANGE, "0,3600,0.01,or_greater"));
+				p_list->push_back(PropertyInfo(Variant::FLOAT, "end_offset", PROPERTY_HINT_RANGE, "0,3600,0.01,or_greater"));
 
 			} break;
 		}
@@ -2514,6 +2556,11 @@ String AnimationTrackEdit::get_tooltip(const Point2 &p_pos) const {
 				case Animation::TYPE_ANIMATION: {
 					String name = animation->animation_track_get_key_animation(track, key_idx);
 					text += "Animation Clip: " + name + "\n";
+					text += "Animation: " + name + "\n";
+					float so = animation->animation_track_get_key_start_offset(track, key_idx);
+					text += "Start (s): " + rtos(so) + "\n";
+					float eo = animation->animation_track_get_key_end_offset(track, key_idx);
+					text += "End (s): " + rtos(eo) + "\n";
 				} break;
 			}
 			return text;
@@ -4627,10 +4674,13 @@ void AnimationTrackEditor::_insert_key_from_track(float p_ofs, int p_track) {
 			undo_redo->commit_action();
 		} break;
 		case Animation::TYPE_ANIMATION: {
-			StringName anim = "[stop]";
+			Dictionary ak;
+			ak["animation"] = "[stop]";
+			ak["start_offset"] = 0;
+			ak["end_offset"] = 0;
 
 			undo_redo->create_action(TTR("Add Track Key"));
-			undo_redo->add_do_method(animation.ptr(), "track_insert_key", p_track, p_ofs, anim);
+			undo_redo->add_do_method(animation.ptr(), "track_insert_key", p_track, p_ofs, ak);
 			undo_redo->add_undo_method(animation.ptr(), "track_remove_key_at_position", p_track, p_ofs);
 			undo_redo->commit_action();
 		} break;

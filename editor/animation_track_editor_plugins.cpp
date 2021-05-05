@@ -1164,7 +1164,16 @@ Rect2 AnimationTrackEditTypeAnimation::get_key_rect(int p_index, float p_pixels_
 	String anim = get_animation()->animation_track_get_key_animation(get_track(), p_index);
 
 	if (anim != "[stop]" && ap->has_animation(anim)) {
+		float start_ofs = get_animation()->animation_track_get_key_start_offset(get_track(), p_index);
+		float end_ofs = get_animation()->animation_track_get_key_end_offset(get_track(), p_index);
+
 		float len = ap->get_animation(anim)->get_length();
+
+		len -= end_ofs;
+		len -= start_ofs;
+		if (len <= 0.001) {
+			len = 0.001;
+		}
 
 		if (get_animation()->track_get_key_count(get_track()) > p_index + 1) {
 			len = MIN(len, get_animation()->track_get_key_time(get_track(), p_index + 1) - get_animation()->track_get_key_time(get_track(), p_index));
@@ -1203,8 +1212,27 @@ void AnimationTrackEditTypeAnimation::draw_key(int p_index, float p_pixels_sec, 
 	if (anim != "[stop]" && ap->has_animation(anim)) {
 		float len = ap->get_animation(anim)->get_length();
 
-		if (get_animation()->track_get_key_count(get_track()) > p_index + 1) {
-			len = MIN(len, get_animation()->track_get_key_time(get_track(), p_index + 1) - get_animation()->track_get_key_time(get_track(), p_index));
+		float start_ofs = get_animation()->animation_track_get_key_start_offset(get_track(), p_index);
+		float end_ofs = get_animation()->animation_track_get_key_end_offset(get_track(), p_index);
+
+		if (len_resizing && p_index == len_resizing_index) {
+			float ofs_local = -len_resizing_rel / get_timeline()->get_zoom_scale();
+			if (len_resizing_start) {
+				start_ofs += ofs_local;
+				if (start_ofs < 0)
+					start_ofs = 0;
+			} else {
+				end_ofs += ofs_local;
+				if (end_ofs < 0)
+					end_ofs = 0;
+			}
+		}
+
+		len -= end_ofs;
+		len -= start_ofs;
+
+		if (len <= 0.001) {
+			len = 0.001;
 		}
 
 		int pixel_len = len * p_pixels_sec;
@@ -1223,15 +1251,22 @@ void AnimationTrackEditTypeAnimation::draw_key(int p_index, float p_pixels_sec, 
 		int from_x = MAX(pixel_begin, p_clip_left);
 		int to_x = MIN(pixel_end, p_clip_right);
 
+		if (get_animation()->track_get_key_count(get_track()) > p_index + 1) {
+			float limit = MIN(len, get_animation()->track_get_key_time(get_track(), p_index + 1) - get_animation()->track_get_key_time(get_track(), p_index));
+			int limit_x = pixel_begin + limit * p_pixels_sec;
+			to_x = MIN(limit_x, to_x);
+		}
+
 		if (to_x <= from_x) {
-			return;
+			to_x = from_x + 1;
 		}
 
 		Ref<Font> font = get_theme_font("font", "Label");
 		int font_size = get_theme_font_size("font_size", "Label");
 		int fh = font->get_height(font_size) * 1.5;
 
-		Rect2 rect(from_x, int(get_size().height - fh) / 2, to_x - from_x, fh);
+		int sh = get_size().height;
+		Rect2 rect = Rect2(from_x, (sh - fh) / 2, to_x - from_x, fh);
 
 		Color color = get_theme_color("font_color", "Label");
 		Color bg = color;
@@ -1275,6 +1310,15 @@ void AnimationTrackEditTypeAnimation::draw_key(int p_index, float p_pixels_sec, 
 			draw_string(font, Point2(from_x + 2, int(get_size().height - font->get_height(font_size)) / 2 + font->get_ascent(font_size)), anim, HALIGN_LEFT, -1, font_size, color);
 		}
 
+		Color cut_color = get_theme_color("accent_color", "Editor");
+		cut_color.a = 0.7;
+		if (start_ofs > 0 && pixel_begin > p_clip_left) {
+			draw_rect(Rect2(pixel_begin, rect.position.y, 1, rect.size.y), cut_color);
+		}
+		if (end_ofs > 0 && pixel_end < p_clip_right) {
+			draw_rect(Rect2(pixel_end, rect.position.y, 1, rect.size.y), cut_color);
+		}
+
 		if (p_selected) {
 			Color accent = get_theme_color("accent_color", "Editor");
 			draw_rect(rect, accent, false);
@@ -1293,6 +1337,101 @@ void AnimationTrackEditTypeAnimation::draw_key(int p_index, float p_pixels_sec, 
 			draw_rect(rect, accent, false);
 		}
 	}
+}
+
+void AnimationTrackEditTypeAnimation::_gui_input(const Ref<InputEvent> &p_event) {
+	Ref<InputEventMouseMotion> mm = p_event;
+	if (!len_resizing && mm.is_valid()) {
+		bool use_hsize_cursor = false;
+		for (int i = 0; i < get_animation()->track_get_key_count(get_track()); i++) {
+			Object *object = ObjectDB::get_instance(id);
+
+			AnimationPlayer *ap = Object::cast_to<AnimationPlayer>(object);
+
+			String anim = get_animation()->animation_track_get_key_animation(get_track(), i);
+
+			float start_ofs = get_animation()->animation_track_get_key_start_offset(get_track(), i);
+			float end_ofs = get_animation()->animation_track_get_key_end_offset(get_track(), i);
+			float len = 0;
+			if (anim != "[stop]" && ap->has_animation(anim)) {
+				len = ap->get_animation(anim)->get_length();
+			}
+
+			len -= end_ofs;
+			len -= start_ofs;
+			if (len <= 0.001) {
+				len = 0.001;
+			}
+
+			if (get_animation()->track_get_key_count(get_track()) > i + 1) {
+				len = MIN(len, get_animation()->track_get_key_time(get_track(), i + 1) - get_animation()->track_get_key_time(get_track(), i));
+			}
+
+			float ofs = get_animation()->track_get_key_time(get_track(), i);
+
+			ofs -= get_timeline()->get_value();
+			ofs *= get_timeline()->get_zoom_scale();
+			ofs += get_timeline()->get_name_limit();
+
+			int end = ofs + len * get_timeline()->get_zoom_scale();
+
+			if (end >= get_timeline()->get_name_limit() && end <= get_size().width - get_timeline()->get_buttons_width() && ABS(mm->get_position().x - end) < 5 * EDSCALE) {
+				use_hsize_cursor = true;
+				len_resizing_index = i;
+			}
+		}
+
+		if (use_hsize_cursor) {
+			set_default_cursor_shape(CURSOR_HSIZE);
+		} else {
+			set_default_cursor_shape(CURSOR_ARROW);
+		}
+	}
+
+	if (len_resizing && mm.is_valid()) {
+		len_resizing_rel += mm->get_relative().x;
+		len_resizing_start = mm->get_shift();
+		update();
+		accept_event();
+		return;
+	}
+
+	Ref<InputEventMouseButton> mb = p_event;
+	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == BUTTON_LEFT && get_default_cursor_shape() == CURSOR_HSIZE) {
+		len_resizing = true;
+		len_resizing_start = mb->get_shift();
+		len_resizing_from_px = mb->get_position().x;
+		len_resizing_rel = 0;
+		update();
+		accept_event();
+		return;
+	}
+
+	if (len_resizing && mb.is_valid() && !mb->is_pressed() && mb->get_button_index() == BUTTON_LEFT) {
+		float ofs_local = -len_resizing_rel / get_timeline()->get_zoom_scale();
+		if (len_resizing_start) {
+			float prev_ofs = get_animation()->animation_track_get_key_start_offset(get_track(), len_resizing_index);
+			get_undo_redo()->create_action(TTR("Change Animation Track Clip Start Offset"));
+			get_undo_redo()->add_do_method(get_animation().ptr(), "animation_track_set_key_start_offset", get_track(), len_resizing_index, prev_ofs + ofs_local);
+			get_undo_redo()->add_undo_method(get_animation().ptr(), "animation_track_set_key_start_offset", get_track(), len_resizing_index, prev_ofs);
+			get_undo_redo()->commit_action();
+
+		} else {
+			float prev_ofs = get_animation()->animation_track_get_key_end_offset(get_track(), len_resizing_index);
+			get_undo_redo()->create_action(TTR("Change Animation Track Clip End Offset"));
+			get_undo_redo()->add_do_method(get_animation().ptr(), "animation_track_set_key_end_offset", get_track(), len_resizing_index, prev_ofs + ofs_local);
+			get_undo_redo()->add_undo_method(get_animation().ptr(), "animation_track_set_key_end_offset", get_track(), len_resizing_index, prev_ofs);
+			get_undo_redo()->commit_action();
+		}
+
+		len_resizing = false;
+		len_resizing_index = -1;
+		update();
+		accept_event();
+		return;
+	}
+
+	AnimationTrackEdit::_gui_input(p_event);
 }
 
 void AnimationTrackEditTypeAnimation::set_node(Object *p_object) {
