@@ -32,6 +32,8 @@
 #define COLLISION_OBJECT_SW_H
 
 #include "broad_phase_3d_sw.h"
+#include "constraint_3d_sw.h"
+#include "core/templates/map.h"
 #include "core/templates/self_list.h"
 #include "servers/physics_server_3d.h"
 #include "shape_3d_sw.h"
@@ -51,6 +53,8 @@ public:
 		TYPE_BODY,
 		TYPE_SOFT_BODY,
 	};
+
+	typedef Map<uint32_t, Constraint3DSW *> T_ConstraintMap;
 
 private:
 	Type type;
@@ -76,6 +80,8 @@ private:
 	Transform transform;
 	Transform inv_transform;
 	bool _static;
+
+	T_ConstraintMap constraint_map;
 
 	SelfList<CollisionObject3DSW> pending_shape_update_list;
 
@@ -161,6 +167,11 @@ public:
 
 	void remove_shape(Shape3DSW *p_shape);
 	void remove_shape(int p_index);
+
+	_FORCE_INLINE_ void add_constraint(Constraint3DSW *p_constraint) { constraint_map.insert(p_constraint->get_constraint_id(), p_constraint); }
+	_FORCE_INLINE_ void remove_constraint(Constraint3DSW *p_constraint) { constraint_map.erase(p_constraint->get_constraint_id()); }
+	const T_ConstraintMap &get_constraint_map() const { return constraint_map; }
+	_FORCE_INLINE_ void clear_constraint_map() { constraint_map.clear(); }
 
 	virtual void set_space(Space3DSW *p_space) = 0;
 

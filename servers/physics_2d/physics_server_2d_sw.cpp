@@ -304,7 +304,7 @@ void PhysicsServer2DSW::area_set_space(RID p_area, RID p_space) {
 		return; //pointless
 	}
 
-	area->clear_constraints();
+	area->clear_constraint_map();
 	area->set_space(space);
 };
 
@@ -548,7 +548,7 @@ void PhysicsServer2DSW::body_set_space(RID p_body, RID p_space) {
 		return; //pointless
 	}
 
-	body->clear_constraint_list();
+	body->clear_constraint_map();
 	body->set_space(space);
 };
 

@@ -234,7 +234,7 @@ void PhysicsServer3DSW::area_set_space(RID p_area, RID p_space) {
 		return; //pointless
 	}
 
-	area->clear_constraints();
+	area->clear_constraint_map();
 	area->set_space(space);
 };
 

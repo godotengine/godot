@@ -517,8 +517,8 @@ BodyPair3DSW::BodyPair3DSW(Body3DSW *p_A, int p_shape_A, Body3DSW *p_B, int p_sh
 	shape_A = p_shape_A;
 	shape_B = p_shape_B;
 	space = A->get_space();
-	A->add_constraint(this, 0);
-	B->add_constraint(this, 1);
+	A->add_constraint(this);
+	B->add_constraint(this);
 }
 
 BodyPair3DSW::~BodyPair3DSW() {
@@ -849,7 +849,7 @@ BodySoftBodyPair3DSW::BodySoftBodyPair3DSW(Body3DSW *p_A, int p_shape_A, SoftBod
 	soft_body = p_B;
 	body_shape = p_shape_A;
 	space = p_A->get_space();
-	body->add_constraint(this, 0);
+	body->add_constraint(this);
 	soft_body->add_constraint(this);
 }
 

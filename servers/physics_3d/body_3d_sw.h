@@ -35,8 +35,6 @@
 #include "collision_object_3d_sw.h"
 #include "core/templates/vset.h"
 
-class Constraint3DSW;
-
 class Body3DSW : public CollisionObject3DSW {
 	PhysicsServer3D::BodyMode mode;
 
@@ -94,8 +92,6 @@ class Body3DSW : public CollisionObject3DSW {
 	void _update_inertia();
 	virtual void _shapes_changed();
 	Transform new_transform;
-
-	Map<Constraint3DSW *, int> constraint_map;
 
 	struct AreaCMP {
 		Area3DSW *area;
@@ -185,11 +181,6 @@ public:
 
 	_FORCE_INLINE_ uint64_t get_island_step() const { return island_step; }
 	_FORCE_INLINE_ void set_island_step(uint64_t p_step) { island_step = p_step; }
-
-	_FORCE_INLINE_ void add_constraint(Constraint3DSW *p_constraint, int p_pos) { constraint_map[p_constraint] = p_pos; }
-	_FORCE_INLINE_ void remove_constraint(Constraint3DSW *p_constraint) { constraint_map.erase(p_constraint); }
-	const Map<Constraint3DSW *, int> &get_constraint_map() const { return constraint_map; }
-	_FORCE_INLINE_ void clear_constraint_map() { constraint_map.clear(); }
 
 	_FORCE_INLINE_ void set_omit_force_integration(bool p_omit_force_integration) { omit_force_integration = p_omit_force_integration; }
 	_FORCE_INLINE_ bool get_omit_force_integration() const { return omit_force_integration; }

@@ -118,8 +118,8 @@ SliderJoint3DSW::SliderJoint3DSW(Body3DSW *rbA, Body3DSW *rbB, const Transform &
 	A = rbA;
 	B = rbB;
 
-	A->add_constraint(this, 0);
-	B->add_constraint(this, 1);
+	A->add_constraint(this);
+	B->add_constraint(this);
 
 	initParams();
 } // SliderJointSW::SliderJointSW()

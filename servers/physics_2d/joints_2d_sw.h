@@ -70,7 +70,7 @@ public:
 		for (int i = 0; i < get_body_count(); i++) {
 			Body2DSW *body = get_body_ptr()[i];
 			if (body) {
-				body->remove_constraint(this, i);
+				body->remove_constraint(this);
 			}
 		}
 	};

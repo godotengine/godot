@@ -89,7 +89,7 @@ AreaPair3DSW::AreaPair3DSW(Body3DSW *p_body, int p_body_shape, Area3DSW *p_area,
 	area = p_area;
 	body_shape = p_body_shape;
 	area_shape = p_area_shape;
-	body->add_constraint(this, 0);
+	body->add_constraint(this);
 	area->add_constraint(this);
 	if (p_body->get_mode() == PhysicsServer3D::BODY_MODE_KINEMATIC) {
 		p_body->set_active(true);

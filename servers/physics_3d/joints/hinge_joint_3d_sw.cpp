@@ -94,8 +94,8 @@ HingeJoint3DSW::HingeJoint3DSW(Body3DSW *rbA, Body3DSW *rbB, const Transform &fr
 	m_angularOnly = false;
 	m_enableAngularMotor = false;
 
-	A->add_constraint(this, 0);
-	B->add_constraint(this, 1);
+	A->add_constraint(this);
+	B->add_constraint(this);
 }
 
 HingeJoint3DSW::HingeJoint3DSW(Body3DSW *rbA, Body3DSW *rbB, const Vector3 &pivotInA, const Vector3 &pivotInB,
@@ -150,8 +150,8 @@ HingeJoint3DSW::HingeJoint3DSW(Body3DSW *rbA, Body3DSW *rbB, const Vector3 &pivo
 	m_angularOnly = false;
 	m_enableAngularMotor = false;
 
-	A->add_constraint(this, 0);
-	B->add_constraint(this, 1);
+	A->add_constraint(this);
+	B->add_constraint(this);
 }
 
 bool HingeJoint3DSW::setup(real_t p_step) {

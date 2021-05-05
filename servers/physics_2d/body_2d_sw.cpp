@@ -541,22 +541,24 @@ void Body2DSW::integrate_velocities(real_t p_step) {
 }
 
 void Body2DSW::wakeup_neighbours() {
-	for (List<Pair<Constraint2DSW *, int>>::Element *E = constraint_list.front(); E; E = E->next()) {
-		const Constraint2DSW *c = E->get().first;
-		Body2DSW **n = c->get_body_ptr();
-		int bc = c->get_body_count();
+	for (const CollisionObject2DSW::T_ConstraintMap::Element *E = get_constraint_map().front(); E; E = E->next()) {
+		const Constraint2DSW *constraint = E->get();
 
-		for (int i = 0; i < bc; i++) {
-			if (i == E->get().second) {
-				continue;
-			}
-			Body2DSW *b = n[i];
-			if (b->mode != PhysicsServer2D::BODY_MODE_RIGID) {
+		Body2DSW **bodies = constraint->get_body_ptr();
+		int body_count = constraint->get_body_count();
+		for (int i = 0; i < body_count; i++) {
+			Body2DSW *body = bodies[i];
+
+			if (body == this) {
 				continue;
 			}
 
-			if (!b->is_active()) {
-				b->set_active(true);
+			if (body->mode != PhysicsServer2D::BODY_MODE_RIGID) {
+				continue;
+			}
+
+			if (!body->is_active()) {
+				body->set_active(true);
 			}
 		}
 	}

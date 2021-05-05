@@ -33,11 +33,7 @@
 
 #include "area_2d_sw.h"
 #include "collision_object_2d_sw.h"
-#include "core/templates/list.h"
-#include "core/templates/pair.h"
 #include "core/templates/vset.h"
-
-class Constraint2DSW;
 
 class Body2DSW : public CollisionObject2DSW {
 	PhysicsServer2D::BodyMode mode;
@@ -84,8 +80,6 @@ class Body2DSW : public CollisionObject2DSW {
 	void _update_inertia();
 	virtual void _shapes_changed();
 	Transform2D new_transform;
-
-	List<Pair<Constraint2DSW *, int>> constraint_list;
 
 	struct AreaCMP {
 		Area2DSW *area;
@@ -171,11 +165,6 @@ public:
 
 	_FORCE_INLINE_ uint64_t get_island_step() const { return island_step; }
 	_FORCE_INLINE_ void set_island_step(uint64_t p_step) { island_step = p_step; }
-
-	_FORCE_INLINE_ void add_constraint(Constraint2DSW *p_constraint, int p_pos) { constraint_list.push_back({ p_constraint, p_pos }); }
-	_FORCE_INLINE_ void remove_constraint(Constraint2DSW *p_constraint, int p_pos) { constraint_list.erase({ p_constraint, p_pos }); }
-	const List<Pair<Constraint2DSW *, int>> &get_constraint_list() const { return constraint_list; }
-	_FORCE_INLINE_ void clear_constraint_list() { constraint_list.clear(); }
 
 	_FORCE_INLINE_ void set_omit_force_integration(bool p_omit_force_integration) { omit_force_integration = p_omit_force_integration; }
 	_FORCE_INLINE_ bool get_omit_force_integration() const { return omit_force_integration; }

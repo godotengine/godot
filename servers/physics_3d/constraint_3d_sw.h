@@ -31,6 +31,10 @@
 #ifndef CONSTRAINT_SW_H
 #define CONSTRAINT_SW_H
 
+#include "core/math/math_defs.h"
+#include "core/templates/rid.h"
+#include "core/templates/safe_refcount.h"
+
 class Body3DSW;
 class SoftBody3DSW;
 
@@ -43,6 +47,9 @@ class Constraint3DSW {
 
 	RID self;
 
+	static SafeNumeric<uint32_t> constraint_id_counter;
+	uint32_t constraint_id = 0;
+
 protected:
 	Constraint3DSW(Body3DSW **p_body_ptr = nullptr, int p_body_count = 0) {
 		_body_ptr = p_body_ptr;
@@ -50,11 +57,14 @@ protected:
 		island_step = 0;
 		priority = 1;
 		disabled_collisions_between_bodies = true;
+		constraint_id = constraint_id_counter.increment();
 	}
 
 public:
 	_FORCE_INLINE_ void set_self(const RID &p_self) { self = p_self; }
 	_FORCE_INLINE_ RID get_self() const { return self; }
+
+	_FORCE_INLINE_ uint32_t get_constraint_id() const { return constraint_id; }
 
 	_FORCE_INLINE_ uint64_t get_island_step() const { return island_step; }
 	_FORCE_INLINE_ void set_island_step(uint64_t p_step) { island_step = p_step; }

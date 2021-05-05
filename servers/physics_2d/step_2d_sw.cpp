@@ -46,26 +46,30 @@ void Step2DSW::_populate_island(Body2DSW *p_body, LocalVector<Body2DSW *> &p_bod
 		p_body_island.push_back(p_body);
 	}
 
-	for (const List<Pair<Constraint2DSW *, int>>::Element *E = p_body->get_constraint_list().front(); E; E = E->next()) {
-		Constraint2DSW *constraint = (Constraint2DSW *)E->get().first;
+	for (const CollisionObject2DSW::T_ConstraintMap::Element *E = p_body->get_constraint_map().front(); E; E = E->next()) {
+		Constraint2DSW *constraint = E->get();
 		if (constraint->get_island_step() == _step) {
 			continue; // Already processed.
 		}
 		constraint->set_island_step(_step);
 		p_constraint_island.push_back(constraint);
+
 		all_constraints.push_back(constraint);
 
-		for (int i = 0; i < constraint->get_body_count(); i++) {
-			if (i == E->get().second) {
-				continue;
-			}
-			Body2DSW *other_body = constraint->get_body_ptr()[i];
+		// Find connected rigid bodies.
+		Body2DSW **bodies = constraint->get_body_ptr();
+		int body_count = constraint->get_body_count();
+		for (int i = 0; i < body_count; i++) {
+			Body2DSW *other_body = bodies[i];
+
 			if (other_body->get_island_step() == _step) {
-				continue; // Already processed.
+				continue; // Already processed (can be this body).
 			}
+
 			if (other_body->get_mode() == PhysicsServer2D::BODY_MODE_STATIC) {
 				continue; // Static bodies don't connect islands.
 			}
+
 			_populate_island(other_body, p_body_island, p_constraint_island);
 		}
 	}
@@ -163,7 +167,7 @@ void Step2DSW::step(Space2DSW *p_space, real_t p_delta, int p_iterations) {
 	const SelfList<Area2DSW>::List &aml = p_space->get_moved_area_list();
 
 	while (aml.first()) {
-		for (const Set<Constraint2DSW *>::Element *E = aml.first()->self()->get_constraints().front(); E; E = E->next()) {
+		for (const CollisionObject2DSW::T_ConstraintMap::Element *E = aml.first()->self()->get_constraint_map().front(); E; E = E->next()) {
 			Constraint2DSW *constraint = E->get();
 			if (constraint->get_island_step() == _step) {
 				continue;

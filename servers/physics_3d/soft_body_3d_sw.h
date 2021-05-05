@@ -37,11 +37,8 @@
 #include "core/math/dynamic_bvh.h"
 #include "core/math/vector3.h"
 #include "core/templates/local_vector.h"
-#include "core/templates/set.h"
 #include "core/templates/vset.h"
 #include "scene/resources/mesh.h"
-
-class Constraint3DSW;
 
 class SoftBody3DSW : public CollisionObject3DSW {
 	Ref<Mesh> soft_mesh;
@@ -102,8 +99,6 @@ class SoftBody3DSW : public CollisionObject3DSW {
 
 	SelfList<SoftBody3DSW> active_list;
 
-	Set<Constraint3DSW *> constraints;
-
 	VSet<RID> exceptions;
 
 	uint64_t island_step = 0;
@@ -115,11 +110,6 @@ public:
 
 	void set_state(PhysicsServer3D::BodyState p_state, const Variant &p_variant);
 	Variant get_state(PhysicsServer3D::BodyState p_state) const;
-
-	_FORCE_INLINE_ void add_constraint(Constraint3DSW *p_constraint) { constraints.insert(p_constraint); }
-	_FORCE_INLINE_ void remove_constraint(Constraint3DSW *p_constraint) { constraints.erase(p_constraint); }
-	_FORCE_INLINE_ const Set<Constraint3DSW *> &get_constraints() const { return constraints; }
-	_FORCE_INLINE_ void clear_constraints() { constraints.clear(); }
 
 	_FORCE_INLINE_ void add_exception(const RID &p_exception) { exceptions.insert(p_exception); }
 	_FORCE_INLINE_ void remove_exception(const RID &p_exception) { exceptions.erase(p_exception); }
