@@ -104,7 +104,7 @@ void CollisionShape2D::_notification(int p_what) {
 
 			rect = Rect2();
 
-			Color draw_col = get_tree()->get_debug_collisions_color();
+			Color draw_col = debug_color;
 			if (disabled) {
 				float g = draw_col.get_v();
 				draw_col.r = g;
@@ -119,7 +119,7 @@ void CollisionShape2D::_notification(int p_what) {
 
 			if (one_way_collision) {
 				// Draw an arrow indicating the one-way collision direction
-				draw_col = get_tree()->get_debug_collisions_color().inverted();
+				draw_col = debug_color.inverted();
 				if (disabled) {
 					draw_col = draw_col.darkened(0.25);
 				}
@@ -231,6 +231,15 @@ real_t CollisionShape2D::get_one_way_collision_margin() const {
 	return one_way_collision_margin;
 }
 
+void CollisionShape2D::set_debug_color(const Color &p_color) {
+	debug_color = p_color;
+	update();
+}
+
+Color CollisionShape2D::get_debug_color() const {
+	return debug_color;
+}
+
 void CollisionShape2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_shape", "shape"), &CollisionShape2D::set_shape);
 	ClassDB::bind_method(D_METHOD("get_shape"), &CollisionShape2D::get_shape);
@@ -240,13 +249,17 @@ void CollisionShape2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_one_way_collision_enabled"), &CollisionShape2D::is_one_way_collision_enabled);
 	ClassDB::bind_method(D_METHOD("set_one_way_collision_margin", "margin"), &CollisionShape2D::set_one_way_collision_margin);
 	ClassDB::bind_method(D_METHOD("get_one_way_collision_margin"), &CollisionShape2D::get_one_way_collision_margin);
+	ClassDB::bind_method(D_METHOD("set_debug_color", "color"), &CollisionShape2D::set_debug_color);
+	ClassDB::bind_method(D_METHOD("get_debug_color"), &CollisionShape2D::get_debug_color);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "shape", PROPERTY_HINT_RESOURCE_TYPE, "Shape2D"), "set_shape", "get_shape");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "disabled"), "set_disabled", "is_disabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "one_way_collision"), "set_one_way_collision", "is_one_way_collision_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "one_way_collision_margin", PROPERTY_HINT_RANGE, "0,128,0.1"), "set_one_way_collision_margin", "get_one_way_collision_margin");
+	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "debug_color"), "set_debug_color", "get_debug_color");
 }
 
 CollisionShape2D::CollisionShape2D() {
 	set_notify_local_transform(true);
+	debug_color = SceneTree::get_singleton()->get_debug_collisions_color();
 }
