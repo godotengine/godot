@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -41,7 +41,6 @@
 #include "scene_synchronizer.h"
 
 void register_network_synchronizer_types() {
-
 	NetworkedController::sn_rpc_server_send_inputs = "_rpc_server_send_inputs";
 	NetworkedController::sn_rpc_send_tick_additional_speed = "_rpc_send_tick_additional_speed";
 	NetworkedController::sn_rpc_doll_notify_sync_pause = "_rpc_doll_notify_sync_pause";

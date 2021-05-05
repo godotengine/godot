@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -45,7 +45,6 @@ SceneDiff::SceneDiff() {
 
 void SceneDiff::start_tracking_scene_changes(
 		const LocalVector<NetUtility::NodeData *> &p_nodes) {
-
 	start_tracking_count += 1;
 	if (start_tracking_count > 1) {
 		// Nothing to do, the tracking is already started.
@@ -155,7 +154,6 @@ void SceneDiff::stop_tracking_scene_changes(const SceneSynchronizer *p_synchroni
 			if (p_synchronizer->synchronizer_variant_evaluation(
 						tracking[i][v],
 						current_value) == false) {
-
 				diff[i][v].is_different = true;
 				diff[i][v].value = current_value;
 			}
