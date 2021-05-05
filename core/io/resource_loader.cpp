@@ -114,25 +114,24 @@ void ResourceFormatLoader::get_recognized_extensions(List<String> *p_extensions)
 }
 
 RES ResourceFormatLoader::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, CacheMode p_cache_mode) {
+	// Check user-defined loader if there's any. Hard fail if it returns an error.
 	if (get_script_instance() && get_script_instance()->has_method("load")) {
 		Variant res = get_script_instance()->call("load", p_path, p_original_path, p_use_sub_threads, p_cache_mode);
 
-		if (res.get_type() == Variant::INT) {
+		if (res.get_type() == Variant::INT) { // Error code, abort.
 			if (r_error) {
 				*r_error = (Error)res.operator int64_t();
 			}
-
-		} else {
+			return RES();
+		} else { // Success, pass on result.
 			if (r_error) {
 				*r_error = OK;
 			}
 			return res;
 		}
-
-		return res;
 	}
 
-	ERR_FAIL_V_MSG(RES(), "Failed to load resource '" + p_path + "', ResourceFormatLoader::load was not implemented for this resource type.");
+	ERR_FAIL_V_MSG(RES(), "Failed to load resource '" + p_path + "'. ResourceFormatLoader::load was not implemented for this resource type.");
 }
 
 void ResourceFormatLoader::get_dependencies(const String &p_path, List<String> *p_dependencies, bool p_add_types) {
