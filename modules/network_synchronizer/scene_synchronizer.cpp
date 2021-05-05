@@ -154,7 +154,7 @@ void SceneSynchronizer::_notification(int p_what) {
 			reset_controllers();
 
 			// Init the peers already connected.
-			{
+			if (get_tree()->get_network_peer().is_valid()) {
 				const Vector<int> peer_ids = get_tree()->get_network_connected_peers();
 				const int *peer_ids_ptr = peer_ids.ptr();
 				for (int i = 0; i < peer_ids.size(); i += 1) {
