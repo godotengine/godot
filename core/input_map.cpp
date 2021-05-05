@@ -171,7 +171,7 @@ bool InputMap::action_has_event(const StringName &p_action, const Ref<InputEvent
 void InputMap::action_erase_event(const StringName &p_action, const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND_MSG(!input_map.has(p_action), _suggest_actions(p_action));
 
-	List<Ref<InputEvent> >::Element *E = _find_event(input_map[p_action], p_event, nullptr, nullptr, true);
+	List<Ref<InputEvent>>::Element *E = _find_event(input_map[p_action], p_event, nullptr, nullptr, true);
 	if (E) {
 		input_map[p_action].inputs.erase(E);
 		if (Input::get_singleton()->is_action_pressed(p_action)) {

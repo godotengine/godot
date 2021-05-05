@@ -668,11 +668,11 @@ bool InputEventJoypadMotion::action_match(const Ref<InputEvent> &p_event, bool *
 	bool match = (axis == jm->axis); // Matches even if not in the same direction, but returns a "not pressed" event.
 	if (match) {
 		bool same_direction = (((axis_value < 0) == (jm->axis_value < 0)) || jm->axis_value == 0);
-		bool pressed = same_direction ? Math::abs(jm->get_axis_value()) >= p_deadzone : false;
-		if (p_pressed != nullptr)
 		if (match_direction && !same_direction) {
 			return false;
 		}
+		bool pressed = same_direction ? Math::abs(jm->get_axis_value()) >= p_deadzone : false;
+		if (p_pressed != nullptr)
 			*p_pressed = pressed;
 		if (p_strength != nullptr) {
 			if (pressed) {
