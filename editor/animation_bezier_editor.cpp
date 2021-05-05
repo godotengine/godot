@@ -762,7 +762,7 @@ void AnimationBezierTrackEdit::_gui_input(const Ref<InputEvent> &p_event) {
 
 			undo_redo->create_action(TTR("Add Bezier Point"));
 			undo_redo->add_do_method(animation.ptr(), "track_insert_key", track, time, new_point);
-			undo_redo->add_undo_method(animation.ptr(), "track_remove_key_at_position", track, time);
+			undo_redo->add_undo_method(animation.ptr(), "track_remove_key_at_time", track, time);
 			undo_redo->commit_action();
 
 			//then attempt to move
@@ -857,7 +857,7 @@ void AnimationBezierTrackEdit::_gui_input(const Ref<InputEvent> &p_event) {
 					continue; //already in selection, don't save
 				}
 
-				undo_redo->add_do_method(animation.ptr(), "track_remove_key_at_position", track, newtime);
+				undo_redo->add_do_method(animation.ptr(), "track_remove_key_at_time", track, newtime);
 				AnimMoveRestore amr;
 
 				amr.key = animation->track_get_key_value(track, idx);
@@ -888,7 +888,7 @@ void AnimationBezierTrackEdit::_gui_input(const Ref<InputEvent> &p_event) {
 				if (newpos<0)
 					continue; //no remove what no inserted
 				*/
-				undo_redo->add_undo_method(animation.ptr(), "track_remove_key_at_position", track, newpos);
+				undo_redo->add_undo_method(animation.ptr(), "track_remove_key_at_time", track, newpos);
 			}
 
 			// 5-(undo) reinsert keys
@@ -1038,7 +1038,7 @@ void AnimationBezierTrackEdit::_menu_selected(int p_index) {
 
 			undo_redo->create_action(TTR("Add Bezier Point"));
 			undo_redo->add_do_method(animation.ptr(), "track_insert_key", track, time, new_point);
-			undo_redo->add_undo_method(animation.ptr(), "track_remove_key_at_position", track, time);
+			undo_redo->add_undo_method(animation.ptr(), "track_remove_key_at_time", track, time);
 			undo_redo->commit_action();
 
 		} break;
@@ -1074,7 +1074,7 @@ void AnimationBezierTrackEdit::duplicate_selection() {
 		int existing_idx = animation->track_find_key(track, dst_time, true);
 
 		undo_redo->add_do_method(animation.ptr(), "track_insert_key", track, dst_time, animation->track_get_key_value(track, E->get()), animation->track_get_key_transition(track, E->get()));
-		undo_redo->add_undo_method(animation.ptr(), "track_remove_key_at_position", track, dst_time);
+		undo_redo->add_undo_method(animation.ptr(), "track_remove_key_at_time", track, dst_time);
 
 		Pair<int, float> p;
 		p.first = track;
