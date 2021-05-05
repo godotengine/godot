@@ -28,12 +28,15 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef NAVIGATION_MESH_GENERATOR_PLUGIN_H
-#define NAVIGATION_MESH_GENERATOR_PLUGIN_H
+#ifndef NAVIGATION_MESH_EDITOR_PLUGIN_H
+#define NAVIGATION_MESH_EDITOR_PLUGIN_H
+
+#ifdef TOOLS_ENABLED
 
 #include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
-#include "navigation_mesh_generator.h"
+
+class NavigationMeshInstance;
 
 class NavigationMeshEditor : public Control {
 	friend class NavigationMeshEditorPlugin;
@@ -80,4 +83,6 @@ public:
 	~NavigationMeshEditorPlugin();
 };
 
-#endif // NAVIGATION_MESH_GENERATOR_PLUGIN_H
+#endif
+
+#endif

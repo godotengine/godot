@@ -477,6 +477,20 @@ Files extracted from upstream source:
 - License.txt
 
 
+## Rvo2-3D
+
+- Upstream: http://gamma.cs.unc.edu/RVO2/
+- version: 1.0.1
+- License: Apache 2.0
+
+Files extracted from upstream source:
+
+- All .cpp and .h files in the `src/` folder except for RVOSimulator.cpp and RVOSimulator.h
+- LICENSE
+- README
+
+Important: Some files have Godot-made changes; so to enrich the features originally proposed by this library and better integrate this library with Godot. Please check the file to know what's new.
+
 ## squish
 
 - Upstream: https://sourceforge.net/projects/libsquish

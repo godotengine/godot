@@ -28,16 +28,18 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
+#ifdef TOOLS_ENABLED
 #include "navigation_mesh_editor_plugin.h"
 
 #include "core/io/marshalls.h"
 #include "core/io/resource_saver.h"
+#include "navigation_mesh_generator.h"
 #include "scene/3d/mesh_instance.h"
 #include "scene/gui/box_container.h"
 
 void NavigationMeshEditor::_node_removed(Node *p_node) {
 	if (p_node == node) {
-		node = nullptr;
+		node = NULL;
 
 		hide();
 	}
@@ -54,22 +56,21 @@ void NavigationMeshEditor::_bake_pressed() {
 	button_bake->set_pressed(false);
 
 	ERR_FAIL_COND(!node);
-	const String conf_warning = node->get_configuration_warning();
-	if (!conf_warning.empty()) {
-		err_dialog->set_text(conf_warning);
+	if (!node->get_navigation_mesh().is_valid()) {
+		err_dialog->set_text(TTR("A NavigationMesh resource must be set or created for this node to work."));
 		err_dialog->popup_centered_minsize();
 		return;
 	}
 
-	EditorNavigationMeshGenerator::get_singleton()->clear(node->get_navigation_mesh());
-	EditorNavigationMeshGenerator::get_singleton()->bake(node->get_navigation_mesh(), node);
+	NavigationMeshGenerator::get_singleton()->clear(node->get_navigation_mesh());
+	NavigationMeshGenerator::get_singleton()->bake(node->get_navigation_mesh(), node);
 
 	node->update_gizmo();
 }
 
 void NavigationMeshEditor::_clear_pressed() {
 	if (node)
-		EditorNavigationMeshGenerator::get_singleton()->clear(node->get_navigation_mesh());
+		NavigationMeshGenerator::get_singleton()->clear(node->get_navigation_mesh());
 
 	button_bake->set_pressed(false);
 	bake_info->set_text("");
@@ -80,7 +81,7 @@ void NavigationMeshEditor::_clear_pressed() {
 }
 
 void NavigationMeshEditor::edit(NavigationMeshInstance *p_nav_mesh_instance) {
-	if (p_nav_mesh_instance == nullptr || node == p_nav_mesh_instance) {
+	if (p_nav_mesh_instance == NULL || node == p_nav_mesh_instance) {
 		return;
 	}
 
@@ -112,7 +113,7 @@ NavigationMeshEditor::NavigationMeshEditor() {
 
 	err_dialog = memnew(AcceptDialog);
 	add_child(err_dialog);
-	node = nullptr;
+	node = NULL;
 }
 
 NavigationMeshEditor::~NavigationMeshEditor() {
@@ -133,7 +134,7 @@ void NavigationMeshEditorPlugin::make_visible(bool p_visible) {
 	} else {
 		navigation_mesh_editor->hide();
 		navigation_mesh_editor->bake_hbox->hide();
-		navigation_mesh_editor->edit(nullptr);
+		navigation_mesh_editor->edit(NULL);
 	}
 }
 
@@ -148,3 +149,5 @@ NavigationMeshEditorPlugin::NavigationMeshEditorPlugin(EditorNode *p_node) {
 
 NavigationMeshEditorPlugin::~NavigationMeshEditorPlugin() {
 }
+
+#endif

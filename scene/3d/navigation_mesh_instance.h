@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  navigation_mesh_generator.h                                          */
+/*  navigation_mesh_instance.h                                           */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,40 +28,47 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef NAVIGATION_MESH_GENERATOR_H
-#define NAVIGATION_MESH_GENERATOR_H
+#ifndef NAVIGATION_MESH_INSTANCE_H
+#define NAVIGATION_MESH_INSTANCE_H
 
-#include "editor/editor_node.h"
-#include "scene/3d/navigation_mesh.h"
+#include "scene/3d/spatial.h"
+#include "scene/resources/mesh.h"
+#include "scene/resources/navigation_mesh.h"
 
-#include <Recast.h>
+class Navigation;
 
-class EditorNavigationMeshGenerator : public Object {
-	GDCLASS(EditorNavigationMeshGenerator, Object);
+class NavigationMeshInstance : public Spatial {
+	GDCLASS(NavigationMeshInstance, Spatial);
 
-	static EditorNavigationMeshGenerator *singleton;
+	bool enabled;
+	RID region;
+	Ref<NavigationMesh> navmesh;
+
+	Navigation *navigation = nullptr;
+	Node *debug_view = nullptr;
+	Thread bake_thread;
 
 protected:
+	void _notification(int p_what);
 	static void _bind_methods();
-
-	static void _add_vertex(const Vector3 &p_vec3, Vector<float> &p_verticies);
-	static void _add_mesh(const Ref<Mesh> &p_mesh, const Transform &p_xform, Vector<float> &p_verticies, Vector<int> &p_indices);
-	static void _add_faces(const PoolVector3Array &p_faces, const Transform &p_xform, Vector<float> &p_verticies, Vector<int> &p_indices);
-	static void _parse_geometry(Transform p_accumulated_transform, Node *p_node, Vector<float> &p_verticies, Vector<int> &p_indices, int p_generate_from, uint32_t p_collision_mask, bool p_recurse_children);
-
-	static void _convert_detail_mesh_to_native_navigation_mesh(const rcPolyMeshDetail *p_detail_mesh, Ref<NavigationMesh> p_nav_mesh);
-	static void _build_recast_navigation_mesh(Ref<NavigationMesh> p_nav_mesh, EditorProgress *ep,
-			rcHeightfield *hf, rcCompactHeightfield *chf, rcContourSet *cset, rcPolyMesh *poly_mesh,
-			rcPolyMeshDetail *detail_mesh, Vector<float> &vertices, Vector<int> &indices);
+	void _changed_callback(Object *p_changed, const char *p_prop);
 
 public:
-	static EditorNavigationMeshGenerator *get_singleton();
+	void set_enabled(bool p_enabled);
+	bool is_enabled() const;
 
-	EditorNavigationMeshGenerator();
-	~EditorNavigationMeshGenerator();
+	void set_navigation_mesh(const Ref<NavigationMesh> &p_navmesh);
+	Ref<NavigationMesh> get_navigation_mesh() const;
 
-	void bake(Ref<NavigationMesh> p_nav_mesh, Node *p_node);
-	void clear(Ref<NavigationMesh> p_nav_mesh);
+	/// Bakes the navigation mesh in a dedicated thread; once done, automatically
+	/// sets the new navigation mesh and emits a signal
+	void bake_navigation_mesh();
+	void _bake_finished(Ref<NavigationMesh> p_nav_mesh);
+
+	String get_configuration_warning() const;
+
+	NavigationMeshInstance();
+	~NavigationMeshInstance();
 };
 
-#endif // NAVIGATION_MESH_GENERATOR_H
+#endif // NAVIGATION_MESH_INSTANCE_H

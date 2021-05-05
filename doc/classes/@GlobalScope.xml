@@ -53,8 +53,12 @@
 		<member name="Marshalls" type="Marshalls" setter="" getter="">
 			The [Marshalls] singleton.
 		</member>
-		<member name="NavigationMeshGenerator" type="EditorNavigationMeshGenerator" setter="" getter="">
+		<member name="Navigation2DServer" type="Navigation2DServer" setter="" getter="">
+		</member>
+		<member name="NavigationMeshGenerator" type="NavigationMeshGenerator" setter="" getter="">
 			The [EditorNavigationMeshGenerator] singleton.
+		</member>
+		<member name="NavigationServer" type="NavigationServer" setter="" getter="">
 		</member>
 		<member name="OS" type="OS" setter="" getter="">
 			The [OS] singleton.

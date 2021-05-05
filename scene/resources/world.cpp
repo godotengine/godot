@@ -237,6 +237,7 @@ void World::_update(uint64_t p_frame) {
 RID World::get_space() const {
 	return space;
 }
+
 RID World::get_scenario() const {
 	return scenario;
 }

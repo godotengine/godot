@@ -72,6 +72,10 @@ Rect2 RectangleShape2D::get_rect() const {
 	return Rect2(-extents, extents * 2.0);
 }
 
+real_t RectangleShape2D::get_enclosing_radius() const {
+	return extents.length();
+}
+
 void RectangleShape2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_extents", "extents"), &RectangleShape2D::set_extents);
 	ClassDB::bind_method(D_METHOD("get_extents"), &RectangleShape2D::get_extents);

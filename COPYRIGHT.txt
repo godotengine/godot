@@ -352,6 +352,11 @@ Comment: Recast
 Copyright: 2009, Mikko Mononen
 License: Zlib
 
+Files: ./thirdparty/rvo2/
+Comment: RVO2
+Copyright: 2016, University of North Carolina at Chapel Hill
+License: Apache 2.0
+
 Files: ./thirdparty/squish/
 Comment: libSquish
 Copyright: 2006, Simon Brown
