@@ -96,9 +96,11 @@ private:
 		FOLDER_COLLAPSE_ALL,
 	};
 
+	bool is_lower_dock;
+
 	VBoxContainer *scanning_vb;
 	ProgressBar *scanning_progress;
-	VSplitContainer *split_box;
+	SplitContainer *split_box;
 	VBoxContainer *file_list_vb;
 
 	EditorNode *editor;
@@ -304,7 +306,7 @@ public:
 	void set_file_list_display_mode(FileListDisplayMode p_mode);
 	FileListDisplayMode get_file_list_display_mode() { return file_list_display_mode; };
 
-	FileSystemDock(EditorNode *p_editor);
+	FileSystemDock(EditorNode *p_editor, bool dock_lower = false);
 	~FileSystemDock();
 };
 

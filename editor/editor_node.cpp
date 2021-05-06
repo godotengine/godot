@@ -6375,7 +6375,7 @@ EditorNode::EditorNode() {
 	import_dock = memnew(ImportDock);
 	node_dock = memnew(NodeDock);
 
-	filesystem_dock = memnew(FileSystemDock(this));
+	filesystem_dock = memnew(FileSystemDock(this, false));
 	filesystem_dock->connect("inherit", this, "_inherit_request");
 	filesystem_dock->connect("instance", this, "_instance_request");
 	filesystem_dock->connect("display_mode_changed", this, "_save_docks");
@@ -6485,6 +6485,13 @@ EditorNode::EditorNode() {
 	bottom_panel_raise->hide();
 	bottom_panel_raise->set_toggle_mode(true);
 	bottom_panel_raise->connect("toggled", this, "_bottom_panel_raise_toggled");
+
+	FileSystemDock* fs_d = memnew(FileSystemDock(this, true));
+	fs_d->connect("inherit", this, "_inherit_request");
+	fs_d->connect("instance", this, "_instance_request");
+	fs_d->connect("display_mode_changed", this, "_save_docks");
+
+	add_bottom_panel_item(TTR("File System"), fs_d);
 
 	log = memnew(EditorLog);
 	ToolButton *output_button = add_bottom_panel_item(TTR("Output"), log);

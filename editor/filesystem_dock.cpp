@@ -267,7 +267,9 @@ void FileSystemDock::set_display_mode(DisplayMode p_display_mode) {
 void FileSystemDock::_update_display_mode(bool p_force) {
 	// Compute the new display mode.
 	if (p_force || old_display_mode != display_mode) {
-		button_toggle_display_mode->set_pressed(display_mode == DISPLAY_MODE_SPLIT);
+		if (!is_lower_dock) {
+			button_toggle_display_mode->set_pressed(display_mode == DISPLAY_MODE_SPLIT);
+		}
 		switch (display_mode) {
 			case DISPLAY_MODE_TREE_ONLY:
 				tree->show();
@@ -310,7 +312,9 @@ void FileSystemDock::_notification(int p_what) {
 
 			String ei = "EditorIcons";
 			button_reload->set_icon(get_icon("Reload", ei));
-			button_toggle_display_mode->set_icon(get_icon("Panels2", ei));
+			if (!is_lower_dock) {
+				button_toggle_display_mode->set_icon(get_icon("Panels2", ei));
+			}
 			button_file_list_display_mode->connect("pressed", this, "_toggle_file_display");
 
 			files->connect("item_activated", this, "_file_list_activate_file");
@@ -373,7 +377,10 @@ void FileSystemDock::_notification(int p_what) {
 			// Update icons.
 			String ei = "EditorIcons";
 			button_reload->set_icon(get_icon("Reload", ei));
+			if (!is_lower_dock) {
+			
 			button_toggle_display_mode->set_icon(get_icon("Panels2", ei));
+			}
 			button_hist_next->set_icon(get_icon("Forward", ei));
 			button_hist_prev->set_icon(get_icon("Back", ei));
 			if (file_list_display_mode == FILE_LIST_DISPLAY_LIST) {
@@ -2592,7 +2599,9 @@ void FileSystemDock::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("display_mode_changed"));
 }
 
-FileSystemDock::FileSystemDock(EditorNode *p_editor) {
+FileSystemDock::FileSystemDock(EditorNode *p_editor, bool dock_lower) {
+	is_lower_dock = dock_lower;
+
 	set_name("FileSystem");
 	editor = p_editor;
 	path = "res://";
@@ -2635,13 +2644,15 @@ FileSystemDock::FileSystemDock(EditorNode *p_editor) {
 	button_reload->hide();
 	toolbar_hbc->add_child(button_reload);
 
-	button_toggle_display_mode = memnew(Button);
-	button_toggle_display_mode->set_flat(true);
-	button_toggle_display_mode->set_toggle_mode(true);
-	button_toggle_display_mode->connect("toggled", this, "_toggle_split_mode");
-	button_toggle_display_mode->set_focus_mode(FOCUS_NONE);
-	button_toggle_display_mode->set_tooltip(TTR("Toggle Split Mode"));
-	toolbar_hbc->add_child(button_toggle_display_mode);
+	if (!is_lower_dock) {
+		button_toggle_display_mode = memnew(Button);
+		button_toggle_display_mode->set_flat(true);
+		button_toggle_display_mode->set_toggle_mode(true);
+		button_toggle_display_mode->connect("toggled", this, "_toggle_split_mode");
+		button_toggle_display_mode->set_focus_mode(FOCUS_NONE);
+		button_toggle_display_mode->set_tooltip(TTR("Toggle Split Mode"));
+		toolbar_hbc->add_child(button_toggle_display_mode);
+	}
 
 	HBoxContainer *toolbar2_hbc = memnew(HBoxContainer);
 	toolbar2_hbc->add_constant_override("separation", 0);
@@ -2661,7 +2672,14 @@ FileSystemDock::FileSystemDock(EditorNode *p_editor) {
 	tree_popup->set_hide_on_window_lose_focus(true);
 	add_child(tree_popup);
 
-	split_box = memnew(VSplitContainer);
+	if (dock_lower) {
+		split_box = memnew(HSplitContainer);
+		split_box->set_split_offset(175);
+	}
+	else {
+		split_box = memnew(VSplitContainer);
+		
+	}
 	split_box->set_v_size_flags(SIZE_EXPAND_FILL);
 	add_child(split_box);
 
@@ -2806,12 +2824,17 @@ FileSystemDock::FileSystemDock(EditorNode *p_editor) {
 	history_pos = 0;
 	history_max_size = 20;
 	history.push_back("res://");
-
-	display_mode = DISPLAY_MODE_TREE_ONLY;
+	if (is_lower_dock) {
+		display_mode = DISPLAY_MODE_SPLIT;
+	} else {
+		display_mode = DISPLAY_MODE_TREE_ONLY;
+	}
 	old_display_mode = DISPLAY_MODE_TREE_ONLY;
 	file_list_display_mode = FILE_LIST_DISPLAY_THUMBNAILS;
 
 	always_show_folders = false;
+
+	_set_file_display(is_lower_dock);
 }
 
 FileSystemDock::~FileSystemDock() {
