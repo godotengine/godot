@@ -636,7 +636,7 @@ void ServerController::receive_inputs(const Vector<uint8_t> &p_data) {
 	// Let's decode it!
 
 	const uint32_t now = OS::get_singleton()->get_ticks_msec();
-	// If negative the timer was disabled, so just assume 0.
+	// If now is bigger, then the timer has been disabled, so we assume 0.
 	network_watcher.push(now > input_arrival_time ? now - input_arrival_time : 0);
 	input_arrival_time = now;
 
@@ -1433,7 +1433,7 @@ void DollController::receive_batch(const Vector<uint8_t> &p_data) {
 	// Establish the connection quality by checking if the batch takes
 	// always the same time to arrive.
 	const uint32_t now = OS::get_singleton()->get_ticks_msec();
-	// If negative the timer was disabled, so just assume 0.
+	// If now is bigger, then the timer has been disabled, so we assume 0.
 	network_watcher.push(now > batch_receiver_timer ? now - batch_receiver_timer : 0);
 	batch_receiver_timer = now;
 

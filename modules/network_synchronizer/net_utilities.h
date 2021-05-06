@@ -196,7 +196,8 @@ T StatisticalRingBuffer<T>::average() const {
 	}
 	a = a / T(data.size());
 	T b = avg_sum / T(data.size());
-	ERR_FAIL_COND_V_MSG(a - b > (CMP_EPSILON * 4.0), b, "The `avg_sum` accumulated a sensible precision loss: " + rtos(a - b));
+	const T difference = a > b ? a - b : b - a;
+	ERR_FAIL_COND_V_MSG(difference > (CMP_EPSILON * 4.0), b, "The `avg_sum` accumulated a sensible precision loss: " + rtos(difference));
 	return b;
 #else
 	// Divide it by the buffer size is wrong when the buffer is not yet fully
