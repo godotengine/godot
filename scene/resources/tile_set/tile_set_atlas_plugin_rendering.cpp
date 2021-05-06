@@ -91,7 +91,7 @@ void TileSetAtlasPluginRendering::draw_tile(RID p_canvas_item, Vector2i p_positi
 
 		// Compute the offset
 		Rect2i source_rect = atlas_source->get_tile_texture_region(p_atlas_coords);
-		Vector2i tile_offset = p_tile_set->get_tile_effective_texture_offset(p_atlas_source_id, p_atlas_coords, p_alternative_tile);
+		Vector2i tile_offset = atlas_source->get_tile_effective_texture_offset(p_atlas_coords, p_alternative_tile);
 
 		// Compute the destination rectangle in the CanvasItem.
 		Rect2 dest_rect;

@@ -88,7 +88,6 @@ void TileSetAtlasSourceEditor::TileSetAtlasSourceProxyObject::_get_property_list
 	p_list->push_back(PropertyInfo(Variant::VECTOR2I, "margins", PROPERTY_HINT_NONE, ""));
 	p_list->push_back(PropertyInfo(Variant::VECTOR2I, "separation", PROPERTY_HINT_NONE, ""));
 	p_list->push_back(PropertyInfo(Variant::VECTOR2I, "tile_size", PROPERTY_HINT_NONE, ""));
-	p_list->push_back(PropertyInfo(Variant::VECTOR2I, "base_texture_offset", PROPERTY_HINT_NONE, ""));
 }
 
 void TileSetAtlasSourceEditor::TileSetAtlasSourceProxyObject::_bind_methods() {
@@ -1315,7 +1314,7 @@ void TileSetAtlasSourceEditor::_tile_atlas_control_unscaled_draw() {
 		for (int i = 0; i < tile_set_atlas_source->get_tiles_count(); i++) {
 			Vector2i coords = tile_set_atlas_source->get_tile_id(i);
 			Rect2i texture_region = tile_set_atlas_source->get_tile_texture_region(coords);
-			Vector2i position = (texture_region.position + texture_region.get_end()) / 2 + tile_set->get_tile_effective_texture_offset(tile_set_atlas_source_id, coords, 0);
+			Vector2i position = (texture_region.position + texture_region.get_end()) / 2 + tile_set_atlas_source->get_tile_effective_texture_offset(coords, 0);
 
 			Transform2D xform = tile_atlas_control->get_parent_control()->get_transform();
 			xform.translate(position);

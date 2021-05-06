@@ -753,7 +753,7 @@ void TileMapEditorTilesPlugin::forward_canvas_draw_over_viewport(Control *p_over
 
 							// Compute the offset
 							Rect2i source_rect = atlas_source->get_tile_texture_region(E->get().get_atlas_coords());
-							Vector2i tile_offset = tile_set->get_tile_effective_texture_offset(E->get().source_id, E->get().get_atlas_coords(), E->get().alternative_tile);
+							Vector2i tile_offset = atlas_source->get_tile_effective_texture_offset(E->get().get_atlas_coords(), E->get().alternative_tile);
 
 							// Compute the destination rectangle in the CanvasItem.
 							Rect2 dest_rect;

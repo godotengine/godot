@@ -321,7 +321,6 @@ public:
 
 	// Helpers
 	void draw_tile_shape(CanvasItem *p_canvas_item, Rect2 p_region, Color p_color, bool p_filled = false, Ref<Texture2D> p_texture = Ref<Texture2D>());
-	Vector2i get_tile_effective_texture_offset(int p_atlas_source_id, Vector2i p_atlas_coords, int p_alternative_tile) const;
 
 	virtual void reset_state() override;
 
@@ -373,9 +372,6 @@ private:
 	Vector2i separation;
 	Size2i texture_region_size = Size2i(16, 16);
 
-	// TODO: maybe move to plugin structures ?
-	Vector2i base_texture_offset;
-
 	Map<Vector2i, TileAlternativesData> tiles;
 	Vector<Vector2i> tiles_ids;
 	Map<Vector2i, Vector2i> _coords_mapping_cache; // Maps any coordinate to the including tile
@@ -407,8 +403,6 @@ public:
 	Vector2i get_separation() const;
 	void set_texture_region_size(Vector2i p_tile_size);
 	Vector2i get_texture_region_size() const;
-	void set_base_texture_offset(Vector2i p_base_texture_offset);
-	Vector2i get_base_texture_offset() const;
 
 	// Base tiles.
 	void create_tile(const Vector2i p_atlas_coords, const Vector2i p_size = Vector2i(1, 1)); // Create a tile if it does not exists, or add alternative tile if it does.
@@ -441,6 +435,7 @@ public:
 	bool has_tiles_outside_texture();
 	void clear_tiles_outside_texture();
 	Rect2i get_tile_texture_region(Vector2i p_atlas_coords) const;
+	Vector2i get_tile_effective_texture_offset(Vector2i p_atlas_coords, int p_alternative_tile) const;
 
 	~TileSetAtlasSource();
 };

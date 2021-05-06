@@ -246,7 +246,7 @@ void TileAtlasView::_draw_base_tiles() {
 			Vector2i atlas_coords = tile_set_atlas_source->get_tile_id(i);
 
 			// Update the y to max value.
-			Vector2i offset_pos = (margins + (atlas_coords * texture_region_size) + tile_set_atlas_source->get_tile_texture_region(atlas_coords).size / 2 + tile_set->get_tile_effective_texture_offset(source_id, atlas_coords, 0));
+			Vector2i offset_pos = (margins + (atlas_coords * texture_region_size) + tile_set_atlas_source->get_tile_texture_region(atlas_coords).size / 2 + tile_set_atlas_source->get_tile_effective_texture_offset(atlas_coords, 0));
 
 			// Draw the tile.
 			TileSetAtlasPluginRendering::draw_tile(base_tiles_draw->get_canvas_item(), offset_pos, tile_set, source_id, atlas_coords, 0);
@@ -313,7 +313,7 @@ void TileAtlasView::_draw_base_tiles_shape_grid() {
 	Vector2i tile_shape_size = tile_set->get_tile_size();
 	for (int i = 0; i < tile_set_atlas_source->get_tiles_count(); i++) {
 		Vector2i tile_id = tile_set_atlas_source->get_tile_id(i);
-		Vector2 in_tile_base_offset = tile_set->get_tile_effective_texture_offset(source_id, tile_id, 0);
+		Vector2 in_tile_base_offset = tile_set_atlas_source->get_tile_effective_texture_offset(tile_id, 0);
 		Rect2i texture_region = tile_set_atlas_source->get_tile_texture_region(tile_id);
 		Vector2 origin = texture_region.position + (texture_region.size - tile_shape_size) / 2 + in_tile_base_offset;
 
@@ -356,10 +356,10 @@ void TileAtlasView::_draw_alternatives() {
 				// Update the y to max value.
 				Vector2i offset_pos = current_pos;
 				if (transposed) {
-					offset_pos = (current_pos + Vector2(texture_region.size.y, texture_region.size.x) / 2 + tile_set->get_tile_effective_texture_offset(source_id, atlas_coords, alternative_id));
+					offset_pos = (current_pos + Vector2(texture_region.size.y, texture_region.size.x) / 2 + tile_set_atlas_source->get_tile_effective_texture_offset(atlas_coords, alternative_id));
 					y_increment = MAX(y_increment, texture_region.size.x);
 				} else {
-					offset_pos = (current_pos + texture_region.size / 2 + tile_set->get_tile_effective_texture_offset(source_id, atlas_coords, alternative_id));
+					offset_pos = (current_pos + texture_region.size / 2 + tile_set_atlas_source->get_tile_effective_texture_offset(atlas_coords, alternative_id));
 					y_increment = MAX(y_increment, texture_region.size.y);
 				}
 

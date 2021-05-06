@@ -310,24 +310,6 @@ void TileSet::draw_tile_shape(CanvasItem *p_canvas_item, Rect2 p_region, Color p
 	}
 }
 
-Vector2i TileSet::get_tile_effective_texture_offset(int p_atlas_source_id, Vector2i p_atlas_coords, int p_alternative_tile) const {
-	ERR_FAIL_COND_V_MSG(!sources.has(p_atlas_source_id), Vector2i(), vformat("The TileSet has no source with id %d", p_atlas_source_id));
-	const TileSetAtlasSource *atlas_source = Object::cast_to<TileSetAtlasSource>(*(sources[p_atlas_source_id]));
-	ERR_FAIL_COND_V_MSG(!atlas_source, Vector2i(), vformat("The TileSet source with %d is not a TileAtlasSource", p_atlas_source_id));
-	ERR_FAIL_COND_V_MSG(!atlas_source->has_tile(p_atlas_coords), Vector2i(), vformat("The TileSet atlas source with id %d has no tile at %s.", p_atlas_source_id, String(p_atlas_coords)));
-	ERR_FAIL_COND_V_MSG(!atlas_source->has_alternative_tile(p_atlas_coords, p_alternative_tile), Vector2i(), vformat("The TileSet atlas source with id %d has no alternative tile with id %d at %s.", p_atlas_source_id, p_alternative_tile, String(p_atlas_coords)));
-
-	Vector2 margin = (atlas_source->get_tile_texture_region(p_atlas_coords).size - get_tile_size()) / 2;
-	margin = Vector2i(MAX(0, margin.x), MAX(0, margin.y));
-	Vector2i effective_texture_offset = atlas_source->get_base_texture_offset() + Object::cast_to<TileData>(atlas_source->get_tile_data(p_atlas_coords, p_alternative_tile))->get_texture_offset();
-	if (ABS(effective_texture_offset.x) > margin.x || ABS(effective_texture_offset.y) > margin.y) {
-		effective_texture_offset.x = CLAMP(effective_texture_offset.x, -margin.x, margin.x);
-		effective_texture_offset.y = CLAMP(effective_texture_offset.y, -margin.y, margin.y);
-	}
-
-	return effective_texture_offset;
-}
-
 // Physics
 void TileSet::set_physics_layers_count(int p_physics_layers_count) {
 	ERR_FAIL_COND(p_physics_layers_count < 0);
@@ -1516,15 +1498,6 @@ Vector2i TileSetAtlasSource::get_texture_region_size() const {
 	return texture_region_size;
 }
 
-void TileSetAtlasSource::set_base_texture_offset(Vector2i p_base_texture_offset) {
-	base_texture_offset = p_base_texture_offset;
-
-	emit_changed();
-}
-Vector2i TileSetAtlasSource::get_base_texture_offset() const {
-	return base_texture_offset;
-}
-
 Vector2i TileSetAtlasSource::get_atlas_grid_size() const {
 	Ref<Texture2D> texture = get_texture();
 	if (!texture.is_valid()) {
@@ -1780,6 +1753,22 @@ Rect2i TileSetAtlasSource::get_tile_texture_region(Vector2i p_atlas_coords) cons
 	;
 }
 
+Vector2i TileSetAtlasSource::get_tile_effective_texture_offset(Vector2i p_atlas_coords, int p_alternative_tile) const {
+	ERR_FAIL_COND_V_MSG(!tiles.has(p_atlas_coords), Vector2i(), vformat("TileSetAtlasSource has no tile at %s.", Vector2i(p_atlas_coords)));
+	ERR_FAIL_COND_V_MSG(!has_alternative_tile(p_atlas_coords, p_alternative_tile), Vector2i(), vformat("TileSetAtlasSource has no alternative tile with id %d at %s.", p_alternative_tile, String(p_atlas_coords)));
+	ERR_FAIL_COND_V(!tile_set, Vector2i());
+
+	Vector2 margin = (get_tile_texture_region(p_atlas_coords).size - tile_set->get_tile_size()) / 2;
+	margin = Vector2i(MAX(0, margin.x), MAX(0, margin.y));
+	Vector2i effective_texture_offset = Object::cast_to<TileData>(get_tile_data(p_atlas_coords, p_alternative_tile))->get_texture_offset();
+	if (ABS(effective_texture_offset.x) > margin.x || ABS(effective_texture_offset.y) > margin.y) {
+		effective_texture_offset.x = CLAMP(effective_texture_offset.x, -margin.x, margin.x);
+		effective_texture_offset.y = CLAMP(effective_texture_offset.y, -margin.y, margin.y);
+	}
+
+	return effective_texture_offset;
+}
+
 bool TileSetAtlasSource::can_move_tile_in_atlas(Vector2i p_atlas_coords, Vector2i p_new_atlas_coords, Vector2i p_new_size) const {
 	ERR_FAIL_COND_V_MSG(!tiles.has(p_atlas_coords), false, vformat("TileSetAtlasSource has no tile at %s.", String(p_atlas_coords)));
 
@@ -1968,14 +1957,11 @@ void TileSetAtlasSource::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_separation"), &TileSetAtlasSource::get_separation);
 	ClassDB::bind_method(D_METHOD("set_texture_region_size", "texture_region_size"), &TileSetAtlasSource::set_texture_region_size);
 	ClassDB::bind_method(D_METHOD("get_texture_region_size"), &TileSetAtlasSource::get_texture_region_size);
-	ClassDB::bind_method(D_METHOD("set_base_texture_offset", "base_texture_offset"), &TileSetAtlasSource::set_base_texture_offset);
-	ClassDB::bind_method(D_METHOD("get_base_texture_offset"), &TileSetAtlasSource::get_base_texture_offset);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D", PROPERTY_USAGE_NOEDITOR), "set_texture", "get_texture");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "margins", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "set_margins", "get_margins");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "separation", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "set_separation", "get_separation");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "tile_size", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "set_texture_region_size", "get_texture_region_size");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "base_texture_offset", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "set_base_texture_offset", "get_base_texture_offset");
 
 	// Base tiles
 	ClassDB::bind_method(D_METHOD("create_tile", "atlas_coords", "size"), &TileSetAtlasSource::create_tile, DEFVAL(Vector2i(1, 1)));
