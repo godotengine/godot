@@ -2624,7 +2624,7 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 			}
 		}
 
-		if (add_separator) {
+		if (add_separator && profile_allow_editing) {
 			menu->add_separator();
 		}
 	}
