@@ -28,6 +28,15 @@
 	<members>
 		<member name="resource_local_to_scene" type="bool" setter="set_local_to_scene" getter="is_local_to_scene" override="true" default="true" />
 	</members>
+	<signals>
+		<signal name="pressed">
+			<argument index="0" name="button" type="Object">
+			</argument>
+			<description>
+				Emitted when one of the buttons of the group is pressed.
+			</description>
+		</signal>
+	</signals>
 	<constants>
 	</constants>
 </class>
