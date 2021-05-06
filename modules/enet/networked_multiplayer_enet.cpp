@@ -157,7 +157,7 @@ Error NetworkedMultiplayerENet::create_client(const String &p_address, int p_por
 
 	_setup_compressor();
 
-	IP_Address ip;
+	IPAddress ip;
 	if (p_address.is_valid_ip_address()) {
 		ip = p_address;
 	} else {
@@ -749,12 +749,12 @@ void NetworkedMultiplayerENet::enet_compressor_destroy(void *context) {
 	// Nothing to do
 }
 
-IP_Address NetworkedMultiplayerENet::get_peer_address(int p_peer_id) const {
-	ERR_FAIL_COND_V_MSG(!peer_map.has(p_peer_id), IP_Address(), vformat("Peer ID %d not found in the list of peers.", p_peer_id));
-	ERR_FAIL_COND_V_MSG(!is_server() && p_peer_id != 1, IP_Address(), "Can't get the address of peers other than the server (ID -1) when acting as a client.");
-	ERR_FAIL_COND_V_MSG(peer_map[p_peer_id] == nullptr, IP_Address(), vformat("Peer ID %d found in the list of peers, but is null.", p_peer_id));
+IPAddress NetworkedMultiplayerENet::get_peer_address(int p_peer_id) const {
+	ERR_FAIL_COND_V_MSG(!peer_map.has(p_peer_id), IPAddress(), vformat("Peer ID %d not found in the list of peers.", p_peer_id));
+	ERR_FAIL_COND_V_MSG(!is_server() && p_peer_id != 1, IPAddress(), "Can't get the address of peers other than the server (ID -1) when acting as a client.");
+	ERR_FAIL_COND_V_MSG(peer_map[p_peer_id] == nullptr, IPAddress(), vformat("Peer ID %d found in the list of peers, but is null.", p_peer_id));
 
-	IP_Address out;
+	IPAddress out;
 #ifdef GODOT_ENET
 	out.set_ipv6((uint8_t *)&(peer_map[p_peer_id]->address.host));
 #else
@@ -877,7 +877,7 @@ NetworkedMultiplayerENet::NetworkedMultiplayerENet() {
 	enet_compressor.decompress = enet_decompress;
 	enet_compressor.destroy = enet_compressor_destroy;
 
-	bind_ip = IP_Address("*");
+	bind_ip = IPAddress("*");
 }
 
 NetworkedMultiplayerENet::~NetworkedMultiplayerENet() {
@@ -888,7 +888,7 @@ NetworkedMultiplayerENet::~NetworkedMultiplayerENet() {
 
 // Sets IP for ENet to bind when using create_server or create_client
 // if no IP is set, then ENet bind to ENET_HOST_ANY
-void NetworkedMultiplayerENet::set_bind_ip(const IP_Address &p_ip) {
+void NetworkedMultiplayerENet::set_bind_ip(const IPAddress &p_ip) {
 	ERR_FAIL_COND_MSG(!p_ip.is_valid() && !p_ip.is_wildcard(), vformat("Invalid bind IP address: %s", String(p_ip)));
 
 	bind_ip = p_ip;

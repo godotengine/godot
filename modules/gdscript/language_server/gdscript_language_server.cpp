@@ -78,7 +78,7 @@ void GDScriptLanguageServer::thread_main(void *p_userdata) {
 void GDScriptLanguageServer::start() {
 	port = (int)_EDITOR_GET("network/language_server/remote_port");
 	use_thread = (bool)_EDITOR_GET("network/language_server/use_thread");
-	if (protocol.start(port, IP_Address("127.0.0.1")) == OK) {
+	if (protocol.start(port, IPAddress("127.0.0.1")) == OK) {
 		EditorNode::get_log()->add_message("--- GDScript language server started ---", EditorLog::MSG_TYPE_EDITOR);
 		if (use_thread) {
 			thread_running = true;

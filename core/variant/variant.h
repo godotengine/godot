@@ -359,7 +359,7 @@ public:
 	operator Side() const;
 	operator Orientation() const;
 
-	operator IP_Address() const;
+	operator IPAddress() const;
 
 	Object *get_validated_object() const;
 	Object *get_validated_object_with_check(bool &r_previously_freed) const;
@@ -421,7 +421,7 @@ public:
 	Variant(const Vector<::RID> &p_array); // helper
 	Variant(const Vector<Vector2> &p_array); // helper
 
-	Variant(const IP_Address &p_address);
+	Variant(const IPAddress &p_address);
 
 	// If this changes the table in variant_op must be updated
 	enum Operator {
