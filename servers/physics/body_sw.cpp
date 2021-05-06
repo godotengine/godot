@@ -665,22 +665,24 @@ void BodySW::simulate_motion(const Transform& p_xform,real_t p_step) {
 */
 
 void BodySW::wakeup_neighbours() {
-	for (Map<ConstraintSW *, int>::Element *E = constraint_map.front(); E; E = E->next()) {
-		const ConstraintSW *c = E->key();
-		BodySW **n = c->get_body_ptr();
-		int bc = c->get_body_count();
+	for (const CollisionObjectSW::T_ConstraintMap::Element *E = get_constraint_map().front(); E; E = E->next()) {
+		ConstraintSW *constraint = E->get();
 
-		for (int i = 0; i < bc; i++) {
-			if (i == E->get()) {
-				continue;
-			}
-			BodySW *b = n[i];
-			if (b->mode != PhysicsServer::BODY_MODE_RIGID) {
+		BodySW **bodies = constraint->get_body_ptr();
+		int body_count = constraint->get_body_count();
+		for (int i = 0; i < body_count; i++) {
+			BodySW *body = bodies[i];
+
+			if (body == this) {
 				continue;
 			}
 
-			if (!b->is_active()) {
-				b->set_active(true);
+			if (body->mode != PhysicsServer::BODY_MODE_RIGID) {
+				continue;
+			}
+
+			if (!body->is_active()) {
+				body->set_active(true);
 			}
 		}
 	}

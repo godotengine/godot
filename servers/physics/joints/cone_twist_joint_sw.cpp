@@ -102,8 +102,8 @@ ConeTwistJointSW::ConeTwistJointSW(BodySW *rbA, BodySW *rbB, const Transform &rb
 	m_solveTwistLimit = false;
 	m_solveSwingLimit = false;
 
-	A->add_constraint(this, 0);
-	B->add_constraint(this, 1);
+	A->add_constraint(this);
+	B->add_constraint(this);
 
 	m_appliedImpulse = 0;
 }

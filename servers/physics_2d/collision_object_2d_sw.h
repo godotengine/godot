@@ -32,6 +32,8 @@
 #define COLLISION_OBJECT_2D_SW_H
 
 #include "broad_phase_2d_sw.h"
+#include "constraint_2d_sw.h"
+#include "core/map.h"
 #include "core/self_list.h"
 #include "servers/physics_2d_server.h"
 #include "shape_2d_sw.h"
@@ -44,6 +46,8 @@ public:
 		TYPE_AREA,
 		TYPE_BODY
 	};
+
+	typedef Map<uint32_t, Constraint2DSW *> T_ConstraintMap;
 
 private:
 	Type type;
@@ -76,6 +80,8 @@ private:
 	uint32_t collision_mask;
 	uint32_t collision_layer;
 	bool _static;
+
+	T_ConstraintMap constraint_map;
 
 	SelfList<CollisionObject2DSW> pending_shape_update_list;
 
@@ -182,6 +188,11 @@ public:
 
 	void remove_shape(Shape2DSW *p_shape);
 	void remove_shape(int p_index);
+
+	_FORCE_INLINE_ void add_constraint(Constraint2DSW *p_constraint) { constraint_map.insert(p_constraint->get_constraint_id(), p_constraint); }
+	_FORCE_INLINE_ void remove_constraint(Constraint2DSW *p_constraint) { constraint_map.erase(p_constraint->get_constraint_id()); }
+	const T_ConstraintMap &get_constraint_map() const { return constraint_map; }
+	_FORCE_INLINE_ void clear_constraint_map() { constraint_map.clear(); }
 
 	virtual void set_space(Space2DSW *p_space) = 0;
 

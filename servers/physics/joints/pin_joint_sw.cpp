@@ -169,8 +169,8 @@ PinJointSW::PinJointSW(BodySW *p_body_a, const Vector3 &p_pos_a, BodySW *p_body_
 	m_impulseClamp = 0;
 	m_appliedImpulse = 0;
 
-	A->add_constraint(this, 0);
-	B->add_constraint(this, 1);
+	A->add_constraint(this);
+	B->add_constraint(this);
 }
 
 PinJointSW::~PinJointSW() {

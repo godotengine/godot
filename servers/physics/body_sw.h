@@ -35,8 +35,6 @@
 #include "collision_object_sw.h"
 #include "core/vset.h"
 
-class ConstraintSW;
-
 class BodySW : public CollisionObjectSW {
 	PhysicsServer::BodyMode mode;
 
@@ -94,8 +92,6 @@ class BodySW : public CollisionObjectSW {
 	void _update_inertia();
 	virtual void _shapes_changed();
 	Transform new_transform;
-
-	Map<ConstraintSW *, int> constraint_map;
 
 	struct AreaCMP {
 		AreaSW *area;
@@ -194,11 +190,6 @@ public:
 
 	_FORCE_INLINE_ BodySW *get_island_list_next() const { return island_list_next; }
 	_FORCE_INLINE_ void set_island_list_next(BodySW *p_next) { island_list_next = p_next; }
-
-	_FORCE_INLINE_ void add_constraint(ConstraintSW *p_constraint, int p_pos) { constraint_map[p_constraint] = p_pos; }
-	_FORCE_INLINE_ void remove_constraint(ConstraintSW *p_constraint) { constraint_map.erase(p_constraint); }
-	const Map<ConstraintSW *, int> &get_constraint_map() const { return constraint_map; }
-	_FORCE_INLINE_ void clear_constraint_map() { constraint_map.clear(); }
 
 	_FORCE_INLINE_ void set_omit_force_integration(bool p_omit_force_integration) { omit_force_integration = p_omit_force_integration; }
 	_FORCE_INLINE_ bool get_omit_force_integration() const { return omit_force_integration; }
