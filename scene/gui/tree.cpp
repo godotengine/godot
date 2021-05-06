@@ -3013,6 +3013,10 @@ bool Tree::edit_selected() {
 	return false;
 }
 
+bool Tree::is_editing() {
+	return popup_editor->is_visible();
+}
+
 Size2 Tree::get_internal_min_size() const {
 	Size2i size = cache.bg->get_offset();
 	if (root) {
