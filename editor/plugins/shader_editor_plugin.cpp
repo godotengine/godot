@@ -144,23 +144,31 @@ void ShaderTextEditor::_load_theme_settings() {
 	List<String> keywords;
 	ShaderLanguage::get_keyword_list(&keywords);
 
-	if (shader.is_valid()) {
-		for (const Map<StringName, ShaderLanguage::FunctionInfo>::Element *E = ShaderTypes::get_singleton()->get_functions(VisualServer::ShaderMode(shader->get_mode())).front(); E; E = E->next()) {
-			for (const Map<StringName, ShaderLanguage::BuiltInInfo>::Element *F = E->get().built_ins.front(); F; F = F->next()) {
-				keywords.push_back(F->key());
-			}
-		}
-
-		for (int i = 0; i < ShaderTypes::get_singleton()->get_modes(VisualServer::ShaderMode(shader->get_mode())).size(); i++) {
-			keywords.push_back(ShaderTypes::get_singleton()->get_modes(VisualServer::ShaderMode(shader->get_mode()))[i]);
-		}
-	}
-
 	for (List<String>::Element *E = keywords.front(); E; E = E->next()) {
 		get_text_edit()->add_keyword_color(E->get(), keyword_color);
 	}
 
-	//colorize comments
+	// Colorize built-ins like `COLOR` differently to make them easier
+	// to distinguish from keywords at a quick glance.
+
+	List<String> built_ins;
+	if (shader.is_valid()) {
+		for (const Map<StringName, ShaderLanguage::FunctionInfo>::Element *E = ShaderTypes::get_singleton()->get_functions(VisualServer::ShaderMode(shader->get_mode())).front(); E; E = E->next()) {
+			for (const Map<StringName, ShaderLanguage::BuiltInInfo>::Element *F = E->get().built_ins.front(); F; F = F->next()) {
+				built_ins.push_back(F->key());
+			}
+		}
+
+		for (int i = 0; i < ShaderTypes::get_singleton()->get_modes(VisualServer::ShaderMode(shader->get_mode())).size(); i++) {
+			built_ins.push_back(ShaderTypes::get_singleton()->get_modes(VisualServer::ShaderMode(shader->get_mode()))[i]);
+		}
+	}
+
+	for (List<String>::Element *E = built_ins.front(); E; E = E->next()) {
+		get_text_edit()->add_keyword_color(E->get(), member_variable_color);
+	}
+
+	// Colorize comments.
 	get_text_edit()->add_color_region("/*", "*/", comment_color, false);
 	get_text_edit()->add_color_region("//", "", comment_color, false);
 }
