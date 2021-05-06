@@ -34,6 +34,7 @@
 #include "core/object/reference.h"
 #include "core/os/file_access.h"
 #include "editor/editor_file_dialog.h"
+#include "editor_help.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/option_button.h"
 #include "scene/gui/separator.h"
@@ -64,6 +65,7 @@ private:
 
 	bool features_disabled[FEATURE_MAX];
 	static const char *feature_names[FEATURE_MAX];
+	static const char *feature_descriptions[FEATURE_MAX];
 	static const char *feature_identifiers[FEATURE_MAX];
 
 	String _get_feature_name(Feature p_feature) { return get_feature_name(p_feature); }
@@ -92,6 +94,7 @@ public:
 	Error load_from_file(const String &p_path);
 
 	static String get_feature_name(Feature p_feature);
+	static String get_feature_description(Feature p_feature);
 
 	EditorFeatureProfile();
 };
@@ -129,6 +132,7 @@ class EditorFeatureProfileManager : public AcceptDialog {
 	Tree *class_list;
 	VBoxContainer *property_list_vbc;
 	Tree *property_list;
+	EditorHelpBit *description_bit;
 	Label *no_profile_selected_help;
 
 	EditorFileDialog *import_profiles;
