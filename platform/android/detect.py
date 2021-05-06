@@ -13,7 +13,7 @@ def get_name():
 
 
 def can_build():
-    return ("ANDROID_NDK_ROOT" in os.environ) or ("ANDROID_SDK_ROOT" in os.environ) or ("ANDROID_HOME" in os.environ)
+    return ("ANDROID_SDK_ROOT" in os.environ) or ("ANDROID_HOME" in os.environ)
 
 
 def get_platform(platform):
@@ -43,15 +43,12 @@ def get_android_sdk_root():
 
 
 # Return the ANDROID_NDK_ROOT environment variable.
-# If the env variable is already defined, we use it with the expectation that
-# the user knows what they're doing (e.g: testing a new NDK version).
-# Otherwise, we generate one for this build using the ANDROID_SDK_ROOT env
+# We generate one for this build using the ANDROID_SDK_ROOT env
 # variable and the project ndk version.
+# If the env variable is already defined, we override it with
+# our own to match what the project expects.
 def get_android_ndk_root():
-    if "ANDROID_NDK_ROOT" in os.environ:
-        return os.environ.get("ANDROID_NDK_ROOT", 0)
-    else:
-        return get_android_sdk_root() + "/ndk/" + get_project_ndk_version()
+    return get_android_sdk_root() + "/ndk/" + get_project_ndk_version()
 
 
 def get_flags():
@@ -200,12 +197,11 @@ def configure(env):
         if env["optimize"] == "speed":  # optimize for speed (default)
             env.Append(LINKFLAGS=["-O2"])
             env.Append(CCFLAGS=["-O2", "-fomit-frame-pointer"])
-            env.Append(CPPDEFINES=["NDEBUG"])
-        else:  # optimize for size
+        elif env["optimize"] == "size":  # optimize for size
             env.Append(CCFLAGS=["-Os"])
-            env.Append(CPPDEFINES=["NDEBUG"])
             env.Append(LINKFLAGS=["-Os"])
 
+        env.Append(CPPDEFINES=["NDEBUG"])
         if can_vectorize:
             env.Append(CCFLAGS=["-ftree-vectorize"])
         if env["target"] == "release_debug":
@@ -262,8 +258,10 @@ def configure(env):
     env.Append(CPPFLAGS=["-isystem", env["ANDROID_NDK_ROOT"] + "/sources/cxx-stl/llvm-libc++abi/include"])
 
     # Disable exceptions and rtti on non-tools (template) builds
-    if env["tools"] or env["builtin_icu"]:
+    if env["tools"]:
         env.Append(CXXFLAGS=["-frtti"])
+    elif env["builtin_icu"]:
+        env.Append(CXXFLAGS=["-frtti", "-fno-exceptions"])
     else:
         env.Append(CXXFLAGS=["-fno-rtti", "-fno-exceptions"])
         # Don't use dynamic_cast, necessary with no-rtti.
@@ -373,7 +371,7 @@ def configure(env):
 # Return the project NDK version.
 # This is kept in sync with the value in 'platform/android/java/app/config.gradle'.
 def get_project_ndk_version():
-    return "21.3.6528147"
+    return "21.4.7075529"
 
 
 # Return NDK version string in source.properties (adapted from the Chromium project).

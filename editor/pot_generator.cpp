@@ -39,7 +39,7 @@ POTGenerator *POTGenerator::singleton = nullptr;
 
 #ifdef DEBUG_POT
 void POTGenerator::_print_all_translation_strings() {
-	for (auto E = all_translation_strings.front(); E; E = E.next()) {
+	for (OrderedHashMap<String, Vector<POTGenerator::MsgidData>>::Element E = all_translation_strings.front(); E; E = E.next()) {
 		Vector<MsgidData> v_md = all_translation_strings[E.key()];
 		for (int i = 0; i < v_md.size(); i++) {
 			print_line("++++++");
@@ -55,7 +55,7 @@ void POTGenerator::_print_all_translation_strings() {
 #endif
 
 void POTGenerator::generate_pot(const String &p_file) {
-	if (!ProjectSettings::get_singleton()->has_setting("locale/translations_pot_files")) {
+	if (!ProjectSettings::get_singleton()->has_setting("internationalization/locale/translations_pot_files")) {
 		WARN_PRINT("No files selected for POT generation.");
 		return;
 	}
@@ -63,7 +63,7 @@ void POTGenerator::generate_pot(const String &p_file) {
 	// Clear all_translation_strings of the previous round.
 	all_translation_strings.clear();
 
-	Vector<String> files = ProjectSettings::get_singleton()->get("locale/translations_pot_files");
+	Vector<String> files = ProjectSettings::get_singleton()->get("internationalization/locale/translations_pot_files");
 
 	// Collect all translatable strings according to files order in "POT Generation" setting.
 	for (int i = 0; i < files.size(); i++) {
@@ -100,7 +100,7 @@ void POTGenerator::_write_to_pot(const String &p_file) {
 	}
 
 	String project_name = ProjectSettings::get_singleton()->get("application/config/name");
-	Vector<String> files = ProjectSettings::get_singleton()->get("locale/translations_pot_files");
+	Vector<String> files = ProjectSettings::get_singleton()->get("internationalization/locale/translations_pot_files");
 	String extracted_files = "";
 	for (int i = 0; i < files.size(); i++) {
 		extracted_files += "# " + files[i] + "\n";

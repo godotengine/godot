@@ -5,7 +5,7 @@ on: [push, pull_request]
 # SCONS_CACHE for windows must be set in the build environment
 env:
   GODOT_BASE_BRANCH: master
-  SCONSFLAGS: platform=windows verbose=yes warnings=all werror=yes --jobs=2 module_text_server_fb_enabled=yes
+  SCONSFLAGS: platform=windows verbose=yes warnings=all werror=yes debug_symbols=no --jobs=2 module_text_server_fb_enabled=yes
   SCONS_CACHE_MSVC_CONFIG: true
   SCONS_CACHE_LIMIT: 3072
 
@@ -24,7 +24,7 @@ jobs:
       # Editing this is pretty dangerous for Windows since it can break and needs to be properly tested with a fresh cache.
     - name: Load .scons_cache directory
       id: windows-editor-cache
-      uses: RevoluPowered/cache@v2.1
+      uses: actions/cache@v2
       with:
         path: /.scons_cache/
         key: ${{github.job}}-${{env.GODOT_BASE_BRANCH}}-${{github.ref}}-${{github.sha}}
@@ -110,7 +110,7 @@ jobs:
       env:
         SCONS_CACHE: /.scons_cache/
       run: |
-        scons target=release tools=no debug_symbols=no
+        scons target=release tools=no
         ls -l bin/
 
     - uses: actions/upload-artifact@v2

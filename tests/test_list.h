@@ -260,7 +260,7 @@ TEST_CASE("[List] Invert") {
 	List<int>::Element *n[4];
 	populate_integers(list, n, 4);
 
-	list.invert();
+	list.reverse();
 
 	CHECK(list.front()->get() == 3);
 	CHECK(list.front()->next()->get() == 2);

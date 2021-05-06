@@ -81,9 +81,9 @@ void NoiseTexture::_validate_property(PropertyInfo &property) const {
 	}
 }
 
-void NoiseTexture::_set_texture_data(const Ref<Image> &p_image) {
-	data = p_image;
-	if (data.is_valid()) {
+void NoiseTexture::_set_texture_image(const Ref<Image> &p_image) {
+	image = p_image;
+	if (image.is_valid()) {
 		if (texture.is_valid()) {
 			RID new_texture = RS::get_singleton()->texture_2d_create(p_image);
 			RS::get_singleton()->texture_replace(texture, new_texture);
@@ -95,7 +95,7 @@ void NoiseTexture::_set_texture_data(const Ref<Image> &p_image) {
 }
 
 void NoiseTexture::_thread_done(const Ref<Image> &p_image) {
-	_set_texture_data(p_image);
+	_set_texture_image(p_image);
 	noise_thread.wait_to_finish();
 	if (regen_queued) {
 		noise_thread.start(_thread_function, this);
@@ -159,7 +159,7 @@ void NoiseTexture::_update_texture() {
 
 	} else {
 		Ref<Image> image = _generate_texture();
-		_set_texture_data(image);
+		_set_texture_image(image);
 	}
 	update_queued = false;
 }
@@ -216,7 +216,7 @@ void NoiseTexture::set_as_normal_map(bool p_as_normal_map) {
 	}
 	as_normal_map = p_as_normal_map;
 	_queue_update();
-	_change_notify();
+	notify_property_list_changed();
 }
 
 bool NoiseTexture::is_normal_map() {
@@ -253,6 +253,6 @@ RID NoiseTexture::get_rid() const {
 	return texture;
 }
 
-Ref<Image> NoiseTexture::get_data() const {
-	return data;
+Ref<Image> NoiseTexture::get_image() const {
+	return image;
 }

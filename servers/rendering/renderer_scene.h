@@ -36,7 +36,8 @@
 
 class RendererScene {
 public:
-	virtual RID camera_create() = 0;
+	virtual RID camera_allocate() = 0;
+	virtual void camera_initialize(RID p_rid) = 0;
 
 	virtual void camera_set_perspective(RID p_camera, float p_fovy_degrees, float p_z_near, float p_z_far) = 0;
 	virtual void camera_set_orthogonal(RID p_camera, float p_size, float p_z_near, float p_z_far) = 0;
@@ -48,7 +49,12 @@ public:
 	virtual void camera_set_use_vertical_aspect(RID p_camera, bool p_enable) = 0;
 	virtual bool is_camera(RID p_camera) const = 0;
 
-	virtual RID scenario_create() = 0;
+	virtual RID occluder_allocate() = 0;
+	virtual void occluder_initialize(RID p_occluder) = 0;
+	virtual void occluder_set_mesh(RID p_occluder, const PackedVector3Array &p_vertices, const PackedInt32Array &p_indices) = 0;
+
+	virtual RID scenario_allocate() = 0;
+	virtual void scenario_initialize(RID p_rid) = 0;
 
 	virtual void scenario_set_debug(RID p_scenario, RS::ScenarioDebugMode p_debug_mode) = 0;
 	virtual void scenario_set_environment(RID p_scenario, RID p_environment) = 0;
@@ -58,7 +64,8 @@ public:
 	virtual bool is_scenario(RID p_scenario) const = 0;
 	virtual RID scenario_get_environment(RID p_scenario) = 0;
 
-	virtual RID instance_create() = 0;
+	virtual RID instance_allocate() = 0;
+	virtual void instance_initialize(RID p_rid) = 0;
 
 	virtual void instance_set_base(RID p_instance, RID p_base) = 0;
 	virtual void instance_set_scenario(RID p_instance, RID p_scenario) = 0;
@@ -66,7 +73,7 @@ public:
 	virtual void instance_set_transform(RID p_instance, const Transform &p_transform) = 0;
 	virtual void instance_attach_object_instance_id(RID p_instance, ObjectID p_id) = 0;
 	virtual void instance_set_blend_shape_weight(RID p_instance, int p_shape, float p_weight) = 0;
-	virtual void instance_set_surface_material(RID p_instance, int p_surface, RID p_material) = 0;
+	virtual void instance_set_surface_override_material(RID p_instance, int p_surface, RID p_material) = 0;
 	virtual void instance_set_visible(RID p_instance, bool p_visible) = 0;
 
 	virtual void instance_set_custom_aabb(RID p_instance, AABB p_aabb) = 0;
@@ -99,7 +106,9 @@ public:
 
 	/* SKY API */
 
-	virtual RID sky_create() = 0;
+	virtual RID sky_allocate() = 0;
+	virtual void sky_initialize(RID p_rid) = 0;
+
 	virtual void sky_set_radiance_size(RID p_sky, int p_radiance_size) = 0;
 	virtual void sky_set_mode(RID p_sky, RS::SkyMode p_samples) = 0;
 	virtual void sky_set_material(RID p_sky, RID p_material) = 0;
@@ -107,7 +116,8 @@ public:
 
 	/* ENVIRONMENT API */
 
-	virtual RID environment_create() = 0;
+	virtual RID environment_allocate() = 0;
+	virtual void environment_initialize(RID p_rid) = 0;
 
 	virtual void environment_set_background(RID p_env, RS::EnvironmentBG p_bg) = 0;
 	virtual void environment_set_sky(RID p_env, RID p_sky) = 0;
@@ -134,7 +144,7 @@ public:
 
 	virtual void environment_set_ssao_quality(RS::EnvironmentSSAOQuality p_quality, bool p_half_size, float p_adaptive_target, int p_blur_passes, float p_fadeout_from, float p_fadeout_to) = 0;
 
-	virtual void environment_set_sdfgi(RID p_env, bool p_enable, RS::EnvironmentSDFGICascades p_cascades, float p_min_cell_size, RS::EnvironmentSDFGIYScale p_y_scale, bool p_use_occlusion, bool p_use_multibounce, bool p_read_sky, float p_energy, float p_normal_bias, float p_probe_bias) = 0;
+	virtual void environment_set_sdfgi(RID p_env, bool p_enable, RS::EnvironmentSDFGICascades p_cascades, float p_min_cell_size, RS::EnvironmentSDFGIYScale p_y_scale, bool p_use_occlusion, float p_bounce_feedback, bool p_read_sky, float p_energy, float p_normal_bias, float p_probe_bias) = 0;
 
 	virtual void environment_set_sdfgi_ray_count(RS::EnvironmentSDFGIRayCount p_ray_count) = 0;
 	virtual void environment_set_sdfgi_frames_to_converge(RS::EnvironmentSDFGIFramesToConverge p_frames) = 0;
@@ -159,7 +169,8 @@ public:
 
 	/* Camera Effects */
 
-	virtual RID camera_effects_create() = 0;
+	virtual RID camera_effects_allocate() = 0;
+	virtual void camera_effects_initialize(RID p_rid) = 0;
 
 	virtual void camera_effects_set_dof_blur_quality(RS::DOFBlurQuality p_quality, bool p_use_jitter) = 0;
 	virtual void camera_effects_set_dof_blur_bokeh_shape(RS::DOFBokehShape p_shape) = 0;
@@ -177,6 +188,7 @@ public:
 	/* Render Buffers */
 
 	virtual RID render_buffers_create() = 0;
+
 	virtual void render_buffers_configure(RID p_render_buffers, RID p_render_target, int p_width, int p_height, RS::ViewportMSAA p_msaa, RS::ViewportScreenSpaceAA p_screen_space_aa, bool p_use_debanding) = 0;
 
 	virtual void gi_set_use_half_resolution(bool p_enable) = 0;
@@ -189,8 +201,8 @@ public:
 	virtual void sdfgi_set_debug_probe_select(const Vector3 &p_position, const Vector3 &p_dir) = 0;
 
 	virtual void render_empty_scene(RID p_render_buffers, RID p_scenario, RID p_shadow_atlas) = 0;
-	virtual void render_camera(RID p_render_buffers, RID p_camera, RID p_scenario, Size2 p_viewport_size, float p_lod_threshold, RID p_shadow_atlas) = 0;
-	virtual void render_camera(RID p_render_buffers, Ref<XRInterface> &p_interface, XRInterface::Eyes p_eye, RID p_camera, RID p_scenario, Size2 p_viewport_size, float p_lod_threshold, RID p_shadow_atlas) = 0;
+	virtual void render_camera(RID p_render_buffers, RID p_camera, RID p_scenario, RID p_viewport, Size2 p_viewport_size, float p_lod_threshold, RID p_shadow_atlas) = 0;
+	virtual void render_camera(RID p_render_buffers, Ref<XRInterface> &p_interface, XRInterface::Eyes p_eye, RID p_camera, RID p_scenario, RID p_viewport, Size2 p_viewport_size, float p_lod_threshold, RID p_shadow_atlas) = 0;
 
 	virtual void update() = 0;
 	virtual void render_probes() = 0;

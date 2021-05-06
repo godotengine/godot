@@ -78,6 +78,7 @@ void BakedLightmapData::clear_users() {
 }
 
 void BakedLightmapData::_set_user_data(const Array &p_data) {
+	ERR_FAIL_COND(p_data.size() <= 0);
 	ERR_FAIL_COND((p_data.size() % 4) != 0);
 
 	for (int i = 0; i < p_data.size(); i += 4) {
@@ -195,7 +196,7 @@ void BakedLightmapData::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_uses_spherical_harmonics", "uses_spherical_harmonics"), &BakedLightmapData::set_uses_spherical_harmonics);
 	ClassDB::bind_method(D_METHOD("is_using_spherical_harmonics"), &BakedLightmapData::is_using_spherical_harmonics);
 
-	ClassDB::bind_method(D_METHOD("add_user", "path", "lightmap", "offset"), &BakedLightmapData::add_user);
+	ClassDB::bind_method(D_METHOD("add_user", "path", "uv_scale", "slice_index", "sub_instance"), &BakedLightmapData::add_user);
 	ClassDB::bind_method(D_METHOD("get_user_count"), &BakedLightmapData::get_user_count);
 	ClassDB::bind_method(D_METHOD("get_user_path", "user_idx"), &BakedLightmapData::get_user_path);
 	ClassDB::bind_method(D_METHOD("clear_users"), &BakedLightmapData::clear_users);
@@ -258,7 +259,7 @@ void BakedLightmap::_find_meshes_and_lights(Node *p_at_node, Vector<MeshesFound>
 					if (all_override.is_valid()) {
 						mf.overrides.push_back(all_override);
 					} else {
-						mf.overrides.push_back(mi->get_surface_material(i));
+						mf.overrides.push_back(mi->get_surface_override_material(i));
 					}
 				}
 
@@ -448,7 +449,7 @@ int32_t BakedLightmap::_compute_bsp_tree(const Vector<Vector3> &p_points, const 
 		ERR_FAIL_COND_V(p_simplex_indices.size() <= 1, 0); //should not happen, this is a bug
 
 		// Failed to separate the tetrahedrons using planes
-		// this means Delaunay borked at some point.
+		// this means Delaunay broke at some point.
 		// Luckily, because we are using tetrahedrons, we can resort to
 		// less precise but still working ways to generate the separating plane
 		// this will most likely look bad when interpolating, but at least it will not crash.
@@ -510,7 +511,7 @@ int32_t BakedLightmap::_compute_bsp_tree(const Vector<Vector3> &p_points, const 
 	node.plane = best_plane;
 
 	if (indices_under.size() == 0) {
-		//noting to do here
+		//nothing to do here
 		node.under = BSPNode::EMPTY_LEAF;
 	} else if (indices_under.size() == 1) {
 		node.under = -(indices_under[0] + 1);
@@ -519,7 +520,7 @@ int32_t BakedLightmap::_compute_bsp_tree(const Vector<Vector3> &p_points, const 
 	}
 
 	if (indices_over.size() == 0) {
-		//noting to do here
+		//nothing to do here
 		node.over = BSPNode::EMPTY_LEAF;
 	} else if (indices_over.size() == 1) {
 		node.over = -(indices_over[0] + 1);
@@ -618,10 +619,6 @@ void BakedLightmap::_gen_new_positions_from_octree(const GenProbesOctree *p_cell
 }
 
 BakedLightmap::BakeError BakedLightmap::bake(Node *p_from_node, String p_image_data_path, Lightmapper::BakeStepFunc p_bake_step, void *p_bake_userdata) {
-	if (p_image_data_path == "" && (get_light_data().is_null() || !get_light_data()->get_path().is_resource_file())) {
-		return BAKE_ERROR_NO_SAVE_PATH;
-	}
-
 	if (p_image_data_path == "") {
 		if (get_light_data().is_null()) {
 			return BAKE_ERROR_NO_SAVE_PATH;
@@ -659,7 +656,7 @@ BakedLightmap::BakeError BakedLightmap::bake(Node *p_from_node, String p_image_d
 		}
 		// create mesh data for insert
 
-		//get the base material textures, help compute altlas size and bounds
+		//get the base material textures, help compute atlas size and bounds
 		for (int m_i = 0; m_i < meshes_found.size(); m_i++) {
 			if (p_bake_step) {
 				float p = (float)(m_i) / meshes_found.size();
@@ -973,7 +970,7 @@ BakedLightmap::BakeError BakedLightmap::bake(Node *p_from_node, String p_image_d
 		for (int i = 0; i < lightmapper->get_bake_texture_count(); i++) {
 			images.push_back(lightmapper->get_bake_texture(i));
 		}
-		//we assume they are all the same, so lets create a large one for saving
+		//we assume they are all the same, so let's create a large one for saving
 		Ref<Image> large_image;
 		large_image.instance();
 
@@ -1302,7 +1299,7 @@ bool BakedLightmap::is_interior() const {
 
 void BakedLightmap::set_environment_mode(EnvironmentMode p_mode) {
 	environment_mode = p_mode;
-	_change_notify();
+	notify_property_list_changed();
 }
 
 BakedLightmap::EnvironmentMode BakedLightmap::get_environment_mode() const {

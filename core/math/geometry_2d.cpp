@@ -87,13 +87,17 @@ struct _AtlasWorkRectResult {
 void Geometry2D::make_atlas(const Vector<Size2i> &p_rects, Vector<Point2i> &r_result, Size2i &r_size) {
 	// Super simple, almost brute force scanline stacking fitter.
 	// It's pretty basic for now, but it tries to make sure that the aspect ratio of the
-	// resulting atlas is somehow square. This is necessary because video cards have limits.
-	// On texture size (usually 2048 or 4096), so the more square a texture, the more chances.
-	// It will work in every hardware.
+	// resulting atlas is somehow square. This is necessary because video cards have limits
+	// on texture size (usually 2048 or 4096), so the squarer a texture, the more the chances
+	// that it will work in every hardware.
 	// For example, it will prioritize a 1024x1024 atlas (works everywhere) instead of a
 	// 256x8192 atlas (won't work anywhere).
 
 	ERR_FAIL_COND(p_rects.size() == 0);
+	for (int i = 0; i < p_rects.size(); i++) {
+		ERR_FAIL_COND(p_rects[i].width <= 0);
+		ERR_FAIL_COND(p_rects[i].height <= 0);
+	}
 
 	Vector<_AtlasWorkRect> wrects;
 	wrects.resize(p_rects.size());
@@ -354,7 +358,7 @@ Vector<Point2i> Geometry2D::pack_rects(const Vector<Size2i> &p_sizes, const Size
 Vector<Vector3i> Geometry2D::partial_pack_rects(const Vector<Vector2i> &p_sizes, const Size2i &p_atlas_size) {
 	Vector<stbrp_node> nodes;
 	nodes.resize(p_atlas_size.width);
-	zeromem(nodes.ptrw(), sizeof(stbrp_node) * nodes.size());
+	memset(nodes.ptrw(), 0, sizeof(stbrp_node) * nodes.size());
 
 	stbrp_context context;
 	stbrp_init_target(&context, p_atlas_size.width, p_atlas_size.height, nodes.ptrw(), p_atlas_size.width);

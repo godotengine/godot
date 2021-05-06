@@ -502,6 +502,7 @@ Variant CapsuleShape2DSW::get_data() const {
 void ConvexPolygonShape2DSW::get_supports(const Vector2 &p_normal, Vector2 *r_supports, int &r_amount) const {
 	int support_idx = -1;
 	real_t d = -1e10;
+	r_amount = 0;
 
 	for (int i = 0; i < point_count; i++) {
 		//test point
@@ -520,7 +521,7 @@ void ConvexPolygonShape2DSW::get_supports(const Vector2 &p_normal, Vector2 *r_su
 		}
 	}
 
-	ERR_FAIL_COND(support_idx == -1);
+	ERR_FAIL_COND_MSG(support_idx == -1, "Convex polygon shape support not found.");
 
 	r_amount = 1;
 	r_supports[0] = points[support_idx].pos;
@@ -580,6 +581,7 @@ bool ConvexPolygonShape2DSW::intersect_segment(const Vector2 &p_begin, const Vec
 }
 
 real_t ConvexPolygonShape2DSW::get_moment_of_inertia(real_t p_mass, const Size2 &p_scale) const {
+	ERR_FAIL_COND_V_MSG(point_count == 0, 0, "Convex polygon shape has no points.");
 	Rect2 aabb;
 	aabb.position = points[0].pos * p_scale;
 	for (int i = 0; i < point_count; i++) {
@@ -691,6 +693,10 @@ bool ConcavePolygonShape2DSW::contains_point(const Vector2 &p_point) const {
 }
 
 bool ConcavePolygonShape2DSW::intersect_segment(const Vector2 &p_begin, const Vector2 &p_end, Vector2 &r_point, Vector2 &r_normal) const {
+	if (segments.size() == 0 || points.size() == 0) {
+		return false;
+	}
+
 	uint32_t *stack = (uint32_t *)alloca(sizeof(int) * bvh_depth);
 
 	enum {

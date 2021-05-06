@@ -107,10 +107,12 @@ RID TextServerFallback::create_font_system(const String &p_name, int p_base_size
 RID TextServerFallback::create_font_resource(const String &p_filename, int p_base_size) {
 	_THREAD_SAFE_METHOD_
 	FontDataFallback *fd = nullptr;
-	if (p_filename.get_extension() == "ttf" || p_filename.get_extension() == "otf" || p_filename.get_extension() == "woff") {
-		fd = memnew(DynamicFontDataFallback);
-	} else if (p_filename.get_extension() == "fnt" || p_filename.get_extension() == "font") {
+	if (p_filename.get_extension() == "fnt" || p_filename.get_extension() == "font") {
 		fd = memnew(BitmapFontDataFallback);
+#ifdef MODULE_FREETYPE_ENABLED
+	} else if (p_filename.get_extension() == "ttf" || p_filename.get_extension() == "otf" || p_filename.get_extension() == "woff") {
+		fd = memnew(DynamicFontDataFallback);
+#endif
 	} else {
 		return RID();
 	}
@@ -127,10 +129,12 @@ RID TextServerFallback::create_font_resource(const String &p_filename, int p_bas
 RID TextServerFallback::create_font_memory(const uint8_t *p_data, size_t p_size, const String &p_type, int p_base_size) {
 	_THREAD_SAFE_METHOD_
 	FontDataFallback *fd = nullptr;
-	if (p_type == "ttf" || p_type == "otf" || p_type == "woff") {
-		fd = memnew(DynamicFontDataFallback);
-	} else if (p_type == "fnt" || p_type == "font") {
+	if (p_type == "fnt" || p_type == "font") {
 		fd = memnew(BitmapFontDataFallback);
+#ifdef MODULE_FREETYPE_ENABLED
+	} else if (p_type == "ttf" || p_type == "otf" || p_type == "woff") {
+		fd = memnew(DynamicFontDataFallback);
+#endif
 	} else {
 		return RID();
 	}
@@ -142,6 +146,39 @@ RID TextServerFallback::create_font_memory(const uint8_t *p_data, size_t p_size,
 	}
 
 	return font_owner.make_rid(fd);
+}
+
+RID TextServerFallback::create_font_bitmap(float p_height, float p_ascent, int p_base_size) {
+	_THREAD_SAFE_METHOD_
+	FontDataFallback *fd = memnew(BitmapFontDataFallback);
+	Error err = fd->bitmap_new(p_height, p_ascent, p_base_size);
+	if (err != OK) {
+		memdelete(fd);
+		return RID();
+	}
+
+	return font_owner.make_rid(fd);
+}
+
+void TextServerFallback::font_bitmap_add_texture(RID p_font, const Ref<Texture> &p_texture) {
+	_THREAD_SAFE_METHOD_
+	FontDataFallback *fd = font_owner.getornull(p_font);
+	ERR_FAIL_COND(!fd);
+	fd->bitmap_add_texture(p_texture);
+}
+
+void TextServerFallback::font_bitmap_add_char(RID p_font, char32_t p_char, int p_texture_idx, const Rect2 &p_rect, const Size2 &p_align, float p_advance) {
+	_THREAD_SAFE_METHOD_
+	FontDataFallback *fd = font_owner.getornull(p_font);
+	ERR_FAIL_COND(!fd);
+	fd->bitmap_add_char(p_char, p_texture_idx, p_rect, p_align, p_advance);
+}
+
+void TextServerFallback::font_bitmap_add_kerning_pair(RID p_font, char32_t p_A, char32_t p_B, int p_kerning) {
+	_THREAD_SAFE_METHOD_
+	FontDataFallback *fd = font_owner.getornull(p_font);
+	ERR_FAIL_COND(!fd);
+	fd->bitmap_add_kerning_pair(p_A, p_B, p_kerning);
 }
 
 float TextServerFallback::font_get_height(RID p_font, int p_size) const {
@@ -177,6 +214,34 @@ float TextServerFallback::font_get_underline_thickness(RID p_font, int p_size) c
 	const FontDataFallback *fd = font_owner.getornull(p_font);
 	ERR_FAIL_COND_V(!fd, 0.f);
 	return fd->get_underline_thickness(p_size);
+}
+
+int TextServerFallback::font_get_spacing_space(RID p_font) const {
+	_THREAD_SAFE_METHOD_
+	const FontDataFallback *fd = font_owner.getornull(p_font);
+	ERR_FAIL_COND_V(!fd, 0);
+	return fd->get_spacing_space();
+}
+
+void TextServerFallback::font_set_spacing_space(RID p_font, int p_value) {
+	_THREAD_SAFE_METHOD_
+	FontDataFallback *fd = font_owner.getornull(p_font);
+	ERR_FAIL_COND(!fd);
+	fd->set_spacing_space(p_value);
+}
+
+int TextServerFallback::font_get_spacing_glyph(RID p_font) const {
+	_THREAD_SAFE_METHOD_
+	const FontDataFallback *fd = font_owner.getornull(p_font);
+	ERR_FAIL_COND_V(!fd, 0);
+	return fd->get_spacing_glyph();
+}
+
+void TextServerFallback::font_set_spacing_glyph(RID p_font, int p_value) {
+	_THREAD_SAFE_METHOD_
+	FontDataFallback *fd = font_owner.getornull(p_font);
+	ERR_FAIL_COND(!fd);
+	fd->set_spacing_glyph(p_value);
 }
 
 void TextServerFallback::font_set_antialiased(RID p_font, bool p_antialiased) {
@@ -385,6 +450,13 @@ Vector2 TextServerFallback::font_draw_glyph_outline(RID p_font, RID p_canvas, in
 	const FontDataFallback *fd = font_owner.getornull(p_font);
 	ERR_FAIL_COND_V(!fd, Vector2());
 	return fd->draw_glyph_outline(p_canvas, p_size, p_outline_size, p_pos, p_index, p_color);
+}
+
+bool TextServerFallback::font_get_glyph_contours(RID p_font, int p_size, uint32_t p_index, Vector<Vector3> &r_points, Vector<int32_t> &r_contours, bool &r_orientation) const {
+	_THREAD_SAFE_METHOD_
+	const FontDataFallback *fd = font_owner.getornull(p_font);
+	ERR_FAIL_COND_V(!fd, false);
+	return fd->get_glyph_contours(p_size, p_index, r_points, r_contours, r_orientation);
 }
 
 float TextServerFallback::font_get_oversampling() const {
@@ -1026,7 +1098,7 @@ bool TextServerFallback::shaped_text_update_breaks(RID p_shaped) {
 	}
 
 	if (sd->line_breaks_valid) {
-		return true; // Noting to do.
+		return true; // Nothing to do.
 	}
 
 	int sd_size = sd->glyphs.size();
@@ -1183,6 +1255,11 @@ bool TextServerFallback::shaped_text_shape(RID p_shaped) {
 							sd->ascent = MAX(sd->ascent, Math::round(fd->get_advance(gl.index, gl.font_size).x * 0.5));
 							sd->descent = MAX(sd->descent, Math::round(fd->get_advance(gl.index, gl.font_size).x * 0.5));
 						}
+					}
+					if (fd->get_spacing_space() && is_whitespace(sd->text[j])) {
+						gl.advance += fd->get_spacing_space();
+					} else {
+						gl.advance += fd->get_spacing_glyph();
 					}
 					sd->upos = MAX(sd->upos, fd->get_underline_position(gl.font_size));
 					sd->uthk = MAX(sd->uthk, fd->get_underline_thickness(gl.font_size));

@@ -194,7 +194,7 @@ RES TranslationLoaderPO::load_translation(FileAccess *f, Error *r_error) {
 		l = l.substr(1, l.length());
 		// Find final quote, ignoring escaped ones (\").
 		// The escape_next logic is necessary to properly parse things like \\"
-		// where the blackslash is the one being escaped, not the quote.
+		// where the backslash is the one being escaped, not the quote.
 		int end_pos = -1;
 		bool escape_next = false;
 		for (int i = 0; i < l.length(); i++) {
@@ -277,7 +277,7 @@ RES TranslationLoaderPO::load_translation(FileAccess *f, Error *r_error) {
 	return translation;
 }
 
-RES TranslationLoaderPO::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, bool p_no_cache) {
+RES TranslationLoaderPO::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, CacheMode p_cache_mode) {
 	if (r_error) {
 		*r_error = ERR_CANT_OPEN;
 	}

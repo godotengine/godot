@@ -63,18 +63,22 @@ private:
 
 	HashMap<uint32_t, Character> char_map;
 	Map<KerningPairKey, int> kerning_map;
-	Map<float, hb_font_t *> cache;
+	hb_font_t *hb_handle = nullptr;
 
 	float height = 0.f;
 	float ascent = 0.f;
-	float base_size = 0.f;
+	int base_size = 0;
 	bool distance_field_hint = false;
 
 public:
 	virtual void clear_cache() override{};
 
 	virtual Error load_from_file(const String &p_filename, int p_base_size) override;
-	virtual Error load_from_memory(const uint8_t *p_data, size_t p_size, int p_base_size) override;
+	virtual Error bitmap_new(float p_height, float p_ascent, int p_base_size) override;
+
+	virtual void bitmap_add_texture(const Ref<Texture> &p_texture) override;
+	virtual void bitmap_add_char(char32_t p_char, int p_texture_idx, const Rect2 &p_rect, const Size2 &p_align, float p_advance) override;
+	virtual void bitmap_add_kerning_pair(char32_t p_A, char32_t p_B, int p_kerning) override;
 
 	virtual float get_height(int p_size) const override;
 	virtual float get_ascent(int p_size) const override;
@@ -97,6 +101,7 @@ public:
 
 	virtual bool has_outline() const override { return false; };
 	virtual float get_base_size() const override;
+	virtual float get_font_scale(int p_size) const override;
 
 	virtual hb_font_t *get_hb_handle(int p_size) override;
 

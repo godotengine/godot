@@ -49,12 +49,12 @@
 #define MIN_VELOCITY 0.0001
 #define MAX_BIAS_ROTATION (Math_PI / 8)
 
-void BodyPair3DSW::_contact_added_callback(const Vector3 &p_point_A, const Vector3 &p_point_B, void *p_userdata) {
+void BodyPair3DSW::_contact_added_callback(const Vector3 &p_point_A, int p_index_A, const Vector3 &p_point_B, int p_index_B, void *p_userdata) {
 	BodyPair3DSW *pair = (BodyPair3DSW *)p_userdata;
-	pair->contact_added_callback(p_point_A, p_point_B);
+	pair->contact_added_callback(p_point_A, p_index_A, p_point_B, p_index_B);
 }
 
-void BodyPair3DSW::contact_added_callback(const Vector3 &p_point_A, const Vector3 &p_point_B) {
+void BodyPair3DSW::contact_added_callback(const Vector3 &p_point_A, int p_index_A, const Vector3 &p_point_B, int p_index_B) {
 	// check if we already have the contact
 
 	//Vector3 local_A = A->get_inv_transform().xform(p_point_A);
@@ -73,6 +73,8 @@ void BodyPair3DSW::contact_added_callback(const Vector3 &p_point_A, const Vector
 	contact.acc_bias_impulse = 0;
 	contact.acc_bias_impulse_center_of_mass = 0;
 	contact.acc_tangent_impulse = Vector3();
+	contact.index_A = p_index_A;
+	contact.index_B = p_index_B;
 	contact.local_A = local_A;
 	contact.local_B = local_B;
 	contact.normal = (p_point_A - p_point_B).normalized();
@@ -210,10 +212,22 @@ real_t combine_friction(Body3DSW *A, Body3DSW *B) {
 }
 
 bool BodyPair3DSW::setup(real_t p_step) {
-	//cannot collide
-	if (!A->test_collision_mask(B) || A->has_exception(B->get_self()) || B->has_exception(A->get_self()) || (A->get_mode() <= PhysicsServer3D::BODY_MODE_KINEMATIC && B->get_mode() <= PhysicsServer3D::BODY_MODE_KINEMATIC && A->get_max_contacts_reported() == 0 && B->get_max_contacts_reported() == 0)) {
+	dynamic_A = (A->get_mode() > PhysicsServer3D::BODY_MODE_KINEMATIC);
+	dynamic_B = (B->get_mode() > PhysicsServer3D::BODY_MODE_KINEMATIC);
+
+	if (!A->test_collision_mask(B) || A->has_exception(B->get_self()) || B->has_exception(A->get_self())) {
 		collided = false;
 		return false;
+	}
+
+	report_contacts_only = false;
+	if (!dynamic_A && !dynamic_B) {
+		if ((A->get_max_contacts_reported() > 0) || (B->get_max_contacts_reported() > 0)) {
+			report_contacts_only = true;
+		} else {
+			collided = false;
+			return false;
+		}
 	}
 
 	if (A->is_shape_set_as_disabled(shape_A) || B->is_shape_set_as_disabled(shape_B)) {
@@ -225,7 +239,7 @@ bool BodyPair3DSW::setup(real_t p_step) {
 
 	validate_contacts();
 
-	Vector3 offset_A = A->get_transform().get_origin();
+	const Vector3 &offset_A = A->get_transform().get_origin();
 	Transform xform_Au = Transform(A->get_transform().basis, Vector3());
 	Transform xform_A = xform_Au * A->get_shape_transform(shape_A);
 
@@ -236,26 +250,36 @@ bool BodyPair3DSW::setup(real_t p_step) {
 	Shape3DSW *shape_A_ptr = A->get_shape(shape_A);
 	Shape3DSW *shape_B_ptr = B->get_shape(shape_B);
 
-	bool collided = CollisionSolver3DSW::solve_static(shape_A_ptr, xform_A, shape_B_ptr, xform_B, _contact_added_callback, this, &sep_axis);
-	this->collided = collided;
+	collided = CollisionSolver3DSW::solve_static(shape_A_ptr, xform_A, shape_B_ptr, xform_B, _contact_added_callback, this, &sep_axis);
 
 	if (!collided) {
 		//test ccd (currently just a raycast)
 
-		if (A->is_continuous_collision_detection_enabled() && A->get_mode() > PhysicsServer3D::BODY_MODE_KINEMATIC && B->get_mode() <= PhysicsServer3D::BODY_MODE_KINEMATIC) {
+		if (A->is_continuous_collision_detection_enabled() && dynamic_A && !dynamic_B) {
 			_test_ccd(p_step, A, shape_A, xform_A, B, shape_B, xform_B);
 		}
 
-		if (B->is_continuous_collision_detection_enabled() && B->get_mode() > PhysicsServer3D::BODY_MODE_KINEMATIC && A->get_mode() <= PhysicsServer3D::BODY_MODE_KINEMATIC) {
+		if (B->is_continuous_collision_detection_enabled() && dynamic_B && !dynamic_A) {
 			_test_ccd(p_step, B, shape_B, xform_B, A, shape_A, xform_A);
 		}
 
 		return false;
 	}
 
+	return true;
+}
+
+bool BodyPair3DSW::pre_solve(real_t p_step) {
+	if (!collided) {
+		return false;
+	}
+
 	real_t max_penetration = space->get_contact_max_allowed_penetration();
 
 	real_t bias = (real_t)0.3;
+
+	Shape3DSW *shape_A_ptr = A->get_shape(shape_A);
+	Shape3DSW *shape_B_ptr = B->get_shape(shape_B);
 
 	if (shape_A_ptr->get_custom_bias() || shape_B_ptr->get_custom_bias()) {
 		if (shape_A_ptr->get_custom_bias() == 0) {
@@ -269,25 +293,28 @@ bool BodyPair3DSW::setup(real_t p_step) {
 
 	real_t inv_dt = 1.0 / p_step;
 
+	bool do_process = false;
+
+	const Basis &basis_A = A->get_transform().basis;
+	const Basis &basis_B = B->get_transform().basis;
+
 	for (int i = 0; i < contact_count; i++) {
 		Contact &c = contacts[i];
 		c.active = false;
 
-		Vector3 global_A = xform_Au.xform(c.local_A);
-		Vector3 global_B = xform_Bu.xform(c.local_B);
+		Vector3 global_A = basis_A.xform(c.local_A);
+		Vector3 global_B = basis_B.xform(c.local_B) + offset_B;
 
-		real_t depth = c.normal.dot(global_A - global_B);
+		Vector3 axis = global_A - global_B;
+		real_t depth = axis.dot(c.normal);
 
 		if (depth <= 0) {
-			c.active = false;
 			continue;
 		}
 
-		c.active = true;
-
 #ifdef DEBUG_ENABLED
-
 		if (space->is_debugging_contacts()) {
+			const Vector3 &offset_A = A->get_transform().get_origin();
 			space->add_debug_contact(global_A + offset_A);
 			space->add_debug_contact(global_B + offset_A);
 		}
@@ -308,7 +335,13 @@ bool BodyPair3DSW::setup(real_t p_step) {
 			B->add_contact(global_B, c.normal, depth, shape_B, global_A, shape_A, A->get_instance_id(), A->get_self(), crB);
 		}
 
+		if (report_contacts_only) {
+			collided = false;
+			continue;
+		}
+
 		c.active = true;
+		do_process = true;
 
 		// Precompute normal mass, tangent mass, and bias.
 		Vector3 inertia_A = A->get_inv_inertia_tensor().xform(c.rA.cross(c.normal));
@@ -321,8 +354,12 @@ bool BodyPair3DSW::setup(real_t p_step) {
 		c.depth = depth;
 
 		Vector3 j_vec = c.normal * c.acc_normal_impulse + c.acc_tangent_impulse;
-		A->apply_impulse(-j_vec, c.rA + A->get_center_of_mass());
-		B->apply_impulse(j_vec, c.rB + B->get_center_of_mass());
+		if (dynamic_A) {
+			A->apply_impulse(-j_vec, c.rA + A->get_center_of_mass());
+		}
+		if (dynamic_B) {
+			B->apply_impulse(j_vec, c.rB + B->get_center_of_mass());
+		}
 		c.acc_bias_impulse = 0;
 		c.acc_bias_impulse_center_of_mass = 0;
 
@@ -336,13 +373,15 @@ bool BodyPair3DSW::setup(real_t p_step) {
 		}
 	}
 
-	return true;
+	return do_process;
 }
 
 void BodyPair3DSW::solve(real_t p_step) {
 	if (!collided) {
 		return;
 	}
+
+	const real_t max_bias_av = MAX_BIAS_ROTATION / p_step;
 
 	for (int i = 0; i < contact_count; i++) {
 		Contact &c = contacts[i];
@@ -367,8 +406,12 @@ void BodyPair3DSW::solve(real_t p_step) {
 
 			Vector3 jb = c.normal * (c.acc_bias_impulse - jbnOld);
 
-			A->apply_bias_impulse(-jb, c.rA + A->get_center_of_mass(), MAX_BIAS_ROTATION / p_step);
-			B->apply_bias_impulse(jb, c.rB + B->get_center_of_mass(), MAX_BIAS_ROTATION / p_step);
+			if (dynamic_A) {
+				A->apply_bias_impulse(-jb, c.rA + A->get_center_of_mass(), max_bias_av);
+			}
+			if (dynamic_B) {
+				B->apply_bias_impulse(jb, c.rB + B->get_center_of_mass(), max_bias_av);
+			}
 
 			crbA = A->get_biased_angular_velocity().cross(c.rA);
 			crbB = B->get_biased_angular_velocity().cross(c.rB);
@@ -383,8 +426,12 @@ void BodyPair3DSW::solve(real_t p_step) {
 
 				Vector3 jb_com = c.normal * (c.acc_bias_impulse_center_of_mass - jbnOld_com);
 
-				A->apply_bias_impulse(-jb_com, A->get_center_of_mass(), 0.0f);
-				B->apply_bias_impulse(jb_com, B->get_center_of_mass(), 0.0f);
+				if (dynamic_A) {
+					A->apply_bias_impulse(-jb_com, A->get_center_of_mass(), 0.0f);
+				}
+				if (dynamic_B) {
+					B->apply_bias_impulse(jb_com, B->get_center_of_mass(), 0.0f);
+				}
 			}
 
 			c.active = true;
@@ -404,8 +451,12 @@ void BodyPair3DSW::solve(real_t p_step) {
 
 			Vector3 j = c.normal * (c.acc_normal_impulse - jnOld);
 
-			A->apply_impulse(-j, c.rA + A->get_center_of_mass());
-			B->apply_impulse(j, c.rB + B->get_center_of_mass());
+			if (dynamic_A) {
+				A->apply_impulse(-j, c.rA + A->get_center_of_mass());
+			}
+			if (dynamic_B) {
+				B->apply_impulse(j, c.rB + B->get_center_of_mass());
+			}
 
 			c.active = true;
 		}
@@ -447,8 +498,12 @@ void BodyPair3DSW::solve(real_t p_step) {
 
 			jt = c.acc_tangent_impulse - jtOld;
 
-			A->apply_impulse(-jt, c.rA + A->get_center_of_mass());
-			B->apply_impulse(jt, c.rB + B->get_center_of_mass());
+			if (dynamic_A) {
+				A->apply_impulse(-jt, c.rA + A->get_center_of_mass());
+			}
+			if (dynamic_B) {
+				B->apply_impulse(jt, c.rB + B->get_center_of_mass());
+			}
 
 			c.active = true;
 		}
@@ -456,7 +511,7 @@ void BodyPair3DSW::solve(real_t p_step) {
 }
 
 BodyPair3DSW::BodyPair3DSW(Body3DSW *p_A, int p_shape_A, Body3DSW *p_B, int p_shape_B) :
-		Constraint3DSW(_arr, 2) {
+		BodyContact3DSW(_arr, 2) {
 	A = p_A;
 	B = p_B;
 	shape_A = p_shape_A;
@@ -464,11 +519,341 @@ BodyPair3DSW::BodyPair3DSW(Body3DSW *p_A, int p_shape_A, Body3DSW *p_B, int p_sh
 	space = A->get_space();
 	A->add_constraint(this, 0);
 	B->add_constraint(this, 1);
-	contact_count = 0;
-	collided = false;
 }
 
 BodyPair3DSW::~BodyPair3DSW() {
 	A->remove_constraint(this);
 	B->remove_constraint(this);
+}
+
+void BodySoftBodyPair3DSW::_contact_added_callback(const Vector3 &p_point_A, int p_index_A, const Vector3 &p_point_B, int p_index_B, void *p_userdata) {
+	BodySoftBodyPair3DSW *pair = (BodySoftBodyPair3DSW *)p_userdata;
+	pair->contact_added_callback(p_point_A, p_index_A, p_point_B, p_index_B);
+}
+
+void BodySoftBodyPair3DSW::contact_added_callback(const Vector3 &p_point_A, int p_index_A, const Vector3 &p_point_B, int p_index_B) {
+	Vector3 local_A = body->get_inv_transform().xform(p_point_A);
+	Vector3 local_B = p_point_B - soft_body->get_node_position(p_index_B);
+
+	Contact contact;
+	contact.index_A = p_index_A;
+	contact.index_B = p_index_B;
+	contact.acc_normal_impulse = 0;
+	contact.acc_bias_impulse = 0;
+	contact.acc_bias_impulse_center_of_mass = 0;
+	contact.acc_tangent_impulse = Vector3();
+	contact.local_A = local_A;
+	contact.local_B = local_B;
+	contact.normal = (p_point_A - p_point_B).normalized();
+	contact.mass_normal = 0;
+
+	// Attempt to determine if the contact will be reused.
+	real_t contact_recycle_radius = space->get_contact_recycle_radius();
+
+	uint32_t contact_count = contacts.size();
+	for (uint32_t contact_index = 0; contact_index < contact_count; ++contact_index) {
+		Contact &c = contacts[contact_index];
+		if (c.index_B == p_index_B) {
+			if (c.local_A.distance_squared_to(local_A) < (contact_recycle_radius * contact_recycle_radius) &&
+					c.local_B.distance_squared_to(local_B) < (contact_recycle_radius * contact_recycle_radius)) {
+				contact.acc_normal_impulse = c.acc_normal_impulse;
+				contact.acc_bias_impulse = c.acc_bias_impulse;
+				contact.acc_bias_impulse_center_of_mass = c.acc_bias_impulse_center_of_mass;
+				contact.acc_tangent_impulse = c.acc_tangent_impulse;
+			}
+			c = contact;
+			return;
+		}
+	}
+
+	contacts.push_back(contact);
+}
+
+void BodySoftBodyPair3DSW::validate_contacts() {
+	// Make sure to erase contacts that are no longer valid.
+	const Transform &transform_A = body->get_transform();
+
+	real_t contact_max_separation = space->get_contact_max_separation();
+
+	uint32_t contact_count = contacts.size();
+	for (uint32_t contact_index = 0; contact_index < contact_count; ++contact_index) {
+		Contact &c = contacts[contact_index];
+
+		Vector3 global_A = transform_A.xform(c.local_A);
+		Vector3 global_B = soft_body->get_node_position(c.index_B) + c.local_B;
+		Vector3 axis = global_A - global_B;
+		real_t depth = axis.dot(c.normal);
+
+		if (depth < -contact_max_separation || (global_B + c.normal * depth - global_A).length() > contact_max_separation) {
+			// Contact no longer needed, remove.
+			if ((contact_index + 1) < contact_count) {
+				// Swap with the last one.
+				SWAP(c, contacts[contact_count - 1]);
+			}
+
+			contact_index--;
+			contact_count--;
+		}
+	}
+
+	contacts.resize(contact_count);
+}
+
+bool BodySoftBodyPair3DSW::setup(real_t p_step) {
+	body_dynamic = (body->get_mode() > PhysicsServer3D::BODY_MODE_KINEMATIC);
+
+	if (!body->test_collision_mask(soft_body) || body->has_exception(soft_body->get_self()) || soft_body->has_exception(body->get_self())) {
+		collided = false;
+		return false;
+	}
+
+	if (body->is_shape_set_as_disabled(body_shape)) {
+		collided = false;
+		return false;
+	}
+
+	const Transform &xform_Au = body->get_transform();
+	Transform xform_A = xform_Au * body->get_shape_transform(body_shape);
+
+	Transform xform_Bu = soft_body->get_transform();
+	Transform xform_B = xform_Bu * soft_body->get_shape_transform(0);
+
+	validate_contacts();
+
+	Shape3DSW *shape_A_ptr = body->get_shape(body_shape);
+	Shape3DSW *shape_B_ptr = soft_body->get_shape(0);
+
+	collided = CollisionSolver3DSW::solve_static(shape_A_ptr, xform_A, shape_B_ptr, xform_B, _contact_added_callback, this, &sep_axis);
+
+	return collided;
+}
+
+bool BodySoftBodyPair3DSW::pre_solve(real_t p_step) {
+	if (!collided) {
+		return false;
+	}
+
+	real_t max_penetration = space->get_contact_max_allowed_penetration();
+
+	real_t bias = (real_t)0.3;
+
+	Shape3DSW *shape_A_ptr = body->get_shape(body_shape);
+
+	if (shape_A_ptr->get_custom_bias()) {
+		bias = shape_A_ptr->get_custom_bias();
+	}
+
+	real_t inv_dt = 1.0 / p_step;
+
+	bool do_process = false;
+
+	const Transform &transform_A = body->get_transform();
+
+	uint32_t contact_count = contacts.size();
+	for (uint32_t contact_index = 0; contact_index < contact_count; ++contact_index) {
+		Contact &c = contacts[contact_index];
+		c.active = false;
+
+		real_t node_inv_mass = soft_body->get_node_inv_mass(c.index_B);
+		if (node_inv_mass == 0.0) {
+			continue;
+		}
+
+		Vector3 global_A = transform_A.xform(c.local_A);
+		Vector3 global_B = soft_body->get_node_position(c.index_B) + c.local_B;
+		Vector3 axis = global_A - global_B;
+		real_t depth = axis.dot(c.normal);
+
+		if (depth <= 0) {
+			continue;
+		}
+
+		c.active = true;
+		do_process = true;
+
+#ifdef DEBUG_ENABLED
+
+		if (space->is_debugging_contacts()) {
+			space->add_debug_contact(global_A);
+			space->add_debug_contact(global_B);
+		}
+#endif
+
+		c.rA = global_A - transform_A.origin - body->get_center_of_mass();
+		c.rB = global_B;
+
+		if (body->can_report_contacts()) {
+			Vector3 crA = body->get_angular_velocity().cross(c.rA) + body->get_linear_velocity();
+			body->add_contact(global_A, -c.normal, depth, body_shape, global_B, 0, soft_body->get_instance_id(), soft_body->get_self(), crA);
+		}
+
+		if (body_dynamic) {
+			body->set_active(true);
+		}
+
+		// Precompute normal mass, tangent mass, and bias.
+		Vector3 inertia_A = body->get_inv_inertia_tensor().xform(c.rA.cross(c.normal));
+		real_t kNormal = body->get_inv_mass() + node_inv_mass;
+		kNormal += c.normal.dot(inertia_A.cross(c.rA));
+		c.mass_normal = 1.0f / kNormal;
+
+		c.bias = -bias * inv_dt * MIN(0.0f, -depth + max_penetration);
+		c.depth = depth;
+
+		Vector3 j_vec = c.normal * c.acc_normal_impulse + c.acc_tangent_impulse;
+		if (body_dynamic) {
+			body->apply_impulse(-j_vec, c.rA + body->get_center_of_mass());
+		}
+		soft_body->apply_node_impulse(c.index_B, j_vec);
+		c.acc_bias_impulse = 0;
+		c.acc_bias_impulse_center_of_mass = 0;
+
+		c.bounce = body->get_bounce();
+
+		if (c.bounce) {
+			Vector3 crA = body->get_angular_velocity().cross(c.rA);
+			Vector3 dv = soft_body->get_node_velocity(c.index_B) - body->get_linear_velocity() - crA;
+
+			// Normal impulse.
+			c.bounce = c.bounce * dv.dot(c.normal);
+		}
+	}
+
+	return do_process;
+}
+
+void BodySoftBodyPair3DSW::solve(real_t p_step) {
+	if (!collided) {
+		return;
+	}
+
+	const real_t max_bias_av = MAX_BIAS_ROTATION / p_step;
+
+	uint32_t contact_count = contacts.size();
+	for (uint32_t contact_index = 0; contact_index < contact_count; ++contact_index) {
+		Contact &c = contacts[contact_index];
+		if (!c.active) {
+			continue;
+		}
+
+		c.active = false;
+
+		// Bias impulse.
+		Vector3 crbA = body->get_biased_angular_velocity().cross(c.rA);
+		Vector3 dbv = soft_body->get_node_biased_velocity(c.index_B) - body->get_biased_linear_velocity() - crbA;
+
+		real_t vbn = dbv.dot(c.normal);
+
+		if (Math::abs(-vbn + c.bias) > MIN_VELOCITY) {
+			real_t jbn = (-vbn + c.bias) * c.mass_normal;
+			real_t jbnOld = c.acc_bias_impulse;
+			c.acc_bias_impulse = MAX(jbnOld + jbn, 0.0f);
+
+			Vector3 jb = c.normal * (c.acc_bias_impulse - jbnOld);
+
+			if (body_dynamic) {
+				body->apply_bias_impulse(-jb, c.rA + body->get_center_of_mass(), max_bias_av);
+			}
+			soft_body->apply_node_bias_impulse(c.index_B, jb);
+
+			crbA = body->get_biased_angular_velocity().cross(c.rA);
+			dbv = soft_body->get_node_biased_velocity(c.index_B) - body->get_biased_linear_velocity() - crbA;
+
+			vbn = dbv.dot(c.normal);
+
+			if (Math::abs(-vbn + c.bias) > MIN_VELOCITY) {
+				real_t jbn_com = (-vbn + c.bias) / (body->get_inv_mass() + soft_body->get_node_inv_mass(c.index_B));
+				real_t jbnOld_com = c.acc_bias_impulse_center_of_mass;
+				c.acc_bias_impulse_center_of_mass = MAX(jbnOld_com + jbn_com, 0.0f);
+
+				Vector3 jb_com = c.normal * (c.acc_bias_impulse_center_of_mass - jbnOld_com);
+
+				if (body_dynamic) {
+					body->apply_bias_impulse(-jb_com, body->get_center_of_mass(), 0.0f);
+				}
+				soft_body->apply_node_bias_impulse(c.index_B, jb_com);
+			}
+
+			c.active = true;
+		}
+
+		Vector3 crA = body->get_angular_velocity().cross(c.rA);
+		Vector3 dv = soft_body->get_node_velocity(c.index_B) - body->get_linear_velocity() - crA;
+
+		// Normal impulse.
+		real_t vn = dv.dot(c.normal);
+
+		if (Math::abs(vn) > MIN_VELOCITY) {
+			real_t jn = -(c.bounce + vn) * c.mass_normal;
+			real_t jnOld = c.acc_normal_impulse;
+			c.acc_normal_impulse = MAX(jnOld + jn, 0.0f);
+
+			Vector3 j = c.normal * (c.acc_normal_impulse - jnOld);
+
+			if (body_dynamic) {
+				body->apply_impulse(-j, c.rA + body->get_center_of_mass());
+			}
+			soft_body->apply_node_impulse(c.index_B, j);
+
+			c.active = true;
+		}
+
+		// Friction impulse.
+		real_t friction = body->get_friction();
+
+		Vector3 lvA = body->get_linear_velocity() + body->get_angular_velocity().cross(c.rA);
+		Vector3 lvB = soft_body->get_node_velocity(c.index_B);
+		Vector3 dtv = lvB - lvA;
+
+		real_t tn = c.normal.dot(dtv);
+
+		// Tangential velocity.
+		Vector3 tv = dtv - c.normal * tn;
+		real_t tvl = tv.length();
+
+		if (tvl > MIN_VELOCITY) {
+			tv /= tvl;
+
+			Vector3 temp1 = body->get_inv_inertia_tensor().xform(c.rA.cross(tv));
+
+			real_t t = -tvl /
+					   (body->get_inv_mass() + soft_body->get_node_inv_mass(c.index_B) + tv.dot(temp1.cross(c.rA)));
+
+			Vector3 jt = t * tv;
+
+			Vector3 jtOld = c.acc_tangent_impulse;
+			c.acc_tangent_impulse += jt;
+
+			real_t fi_len = c.acc_tangent_impulse.length();
+			real_t jtMax = c.acc_normal_impulse * friction;
+
+			if (fi_len > CMP_EPSILON && fi_len > jtMax) {
+				c.acc_tangent_impulse *= jtMax / fi_len;
+			}
+
+			jt = c.acc_tangent_impulse - jtOld;
+
+			if (body_dynamic) {
+				body->apply_impulse(-jt, c.rA + body->get_center_of_mass());
+			}
+			soft_body->apply_node_impulse(c.index_B, jt);
+
+			c.active = true;
+		}
+	}
+}
+
+BodySoftBodyPair3DSW::BodySoftBodyPair3DSW(Body3DSW *p_A, int p_shape_A, SoftBody3DSW *p_B) :
+		BodyContact3DSW(&body, 1) {
+	body = p_A;
+	soft_body = p_B;
+	body_shape = p_shape_A;
+	space = p_A->get_space();
+	body->add_constraint(this, 0);
+	soft_body->add_constraint(this);
+}
+
+BodySoftBodyPair3DSW::~BodySoftBodyPair3DSW() {
+	body->remove_constraint(this);
+	soft_body->remove_constraint(this);
 }

@@ -36,7 +36,7 @@ class Separator : public Control {
 	GDCLASS(Separator, Control);
 
 protected:
-	Orientation orientation;
+	Orientation orientation = Orientation::HORIZONTAL;
 	void _notification(int p_what);
 
 public:

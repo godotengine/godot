@@ -415,8 +415,7 @@ GD_PINVOKE_EXPORT int32_t monodroid_get_system_property(const char *p_name, char
 	if (r_value) {
 		if (len >= 0) {
 			*r_value = (char *)malloc(len + 1);
-			if (!*r_value)
-				return -1;
+			ERR_FAIL_NULL_V_MSG(*r_value, -1, "Out of memory.");
 			memcpy(*r_value, prop_value_str, len);
 			(*r_value)[len] = '\0';
 		} else {
@@ -637,6 +636,7 @@ GD_PINVOKE_EXPORT int32_t _monodroid_get_dns_servers(void **r_dns_servers_array)
 	if (dns_servers_count > 0) {
 		size_t ret_size = sizeof(char *) * (size_t)dns_servers_count;
 		*r_dns_servers_array = malloc(ret_size); // freed by the BCL
+		ERR_FAIL_NULL_V_MSG(*r_dns_servers_array, -1, "Out of memory.");
 		memcpy(*r_dns_servers_array, dns_servers, ret_size);
 	}
 

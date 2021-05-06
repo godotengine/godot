@@ -100,9 +100,9 @@ public:
 	virtual ~CameraFeed();
 
 	FeedDataType get_datatype() const;
-	void set_RGB_img(Ref<Image> p_rgb_img);
-	void set_YCbCr_img(Ref<Image> p_ycbcr_img);
-	void set_YCbCr_imgs(Ref<Image> p_y_img, Ref<Image> p_cbcr_img);
+	void set_RGB_img(const Ref<Image> &p_rgb_img);
+	void set_YCbCr_img(const Ref<Image> &p_ycbcr_img);
+	void set_YCbCr_imgs(const Ref<Image> &p_y_img, const Ref<Image> &p_cbcr_img);
 // FIXME: Disabled during Vulkan refactoring, should be ported.
 #if 0
 	void allocate_texture(int p_width, int p_height, Image::Format p_format, RenderingServer::TextureType p_texture_type, FeedDataType p_data_type);

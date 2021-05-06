@@ -34,6 +34,7 @@
 		[/codeblocks]
 		Buttons (like all Control nodes) can also be created in the editor, but some situations may require creating them from code.
 		See also [BaseButton] which contains common properties and methods associated with this node.
+		[b]Note:[/b] Buttons do not interpret touch input and therefore don't support multitouch, since mouse emulation can only press one button at a given time. Use [TouchScreenButton] for buttons that trigger gameplay movement or actions, as [TouchScreenButton] supports multitouch.
 	</description>
 	<tutorials>
 		<link title="2D Dodge The Creeps Demo">https://godotengine.org/asset-library/asset/515</link>
@@ -128,7 +129,7 @@
 			Text [Color] used when the [Button] is being hovered and pressed.
 		</theme_item>
 		<theme_item name="font_outline_color" type="Color" default="Color( 1, 1, 1, 1 )">
-			Text outline [Color] of the [Button].
+			The tint of text outline of the [Button].
 		</theme_item>
 		<theme_item name="font_pressed_color" type="Color" default="Color( 1, 1, 1, 1 )">
 			Text [Color] used when the [Button] is being pressed.
@@ -161,7 +162,7 @@
 			Default [StyleBox] for the [Button].
 		</theme_item>
 		<theme_item name="outline_size" type="int" default="0">
-			Size of the [Button]'s text outline.
+			The size of the text outline.
 		</theme_item>
 		<theme_item name="pressed" type="StyleBox">
 			[StyleBox] used when the [Button] is being pressed.

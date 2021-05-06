@@ -263,7 +263,7 @@ void GPUParticles3DEditor::_menu_option(int p_option) {
 			cpu_particles->set_name(node->get_name());
 			cpu_particles->set_transform(node->get_transform());
 			cpu_particles->set_visible(node->is_visible());
-			cpu_particles->set_pause_mode(node->get_pause_mode());
+			cpu_particles->set_process_mode(node->get_process_mode());
 
 			UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
 			ur->create_action(TTR("Convert to CPUParticles3D"));
@@ -346,7 +346,7 @@ void GPUParticles3DEditor::_generate_emission_points() {
 
 	{
 		uint8_t *iw = point_img.ptrw();
-		zeromem(iw, w * h * 3 * sizeof(float));
+		memset(iw, 0, w * h * 3 * sizeof(float));
 		const Vector3 *r = points.ptr();
 		float *wf = (float *)iw;
 		for (int i = 0; i < point_count; i++) {
@@ -374,7 +374,7 @@ void GPUParticles3DEditor::_generate_emission_points() {
 
 		{
 			uint8_t *iw = point_img2.ptrw();
-			zeromem(iw, w * h * 3 * sizeof(float));
+			memset(iw, 0, w * h * 3 * sizeof(float));
 			const Vector3 *r = normals.ptr();
 			float *wf = (float *)iw;
 			for (int i = 0; i < point_count; i++) {

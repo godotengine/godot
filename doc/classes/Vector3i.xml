@@ -52,20 +52,20 @@
 				Returns a [Vector3i] with the given components.
 			</description>
 		</method>
-		<method name="abs">
+		<method name="abs" qualifiers="const">
 			<return type="Vector3i">
 			</return>
 			<description>
 			</description>
 		</method>
-		<method name="max_axis">
+		<method name="max_axis" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
 				Returns the axis of the vector's largest value. See [code]AXIS_*[/code] constants. If all components are equal, this method returns [constant AXIS_X].
 			</description>
 		</method>
-		<method name="min_axis">
+		<method name="min_axis" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
@@ -220,7 +220,7 @@
 			<description>
 			</description>
 		</method>
-		<method name="sign">
+		<method name="sign" qualifiers="const">
 			<return type="Vector3i">
 			</return>
 			<description>

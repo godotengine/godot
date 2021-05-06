@@ -234,6 +234,52 @@ Error JSON::_get_token(const char32_t *p_str, int &index, int p_len, Token &r_to
 								}
 								index += 4; //will add at the end anyway
 
+								if ((res & 0xfffffc00) == 0xd800) {
+									if (p_str[index + 1] != '\\' || p_str[index + 2] != 'u') {
+										r_err_str = "Invalid UTF-16 sequence in string, unpaired lead surrogate";
+										return ERR_PARSE_ERROR;
+									}
+									index += 2;
+									char32_t trail = 0;
+									for (int j = 0; j < 4; j++) {
+										char32_t c = p_str[index + j + 1];
+										if (c == 0) {
+											r_err_str = "Unterminated String";
+											return ERR_PARSE_ERROR;
+										}
+										if (!((c >= '0' && c <= '9') || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F'))) {
+											r_err_str = "Malformed hex constant in string";
+											return ERR_PARSE_ERROR;
+										}
+										char32_t v;
+										if (c >= '0' && c <= '9') {
+											v = c - '0';
+										} else if (c >= 'a' && c <= 'f') {
+											v = c - 'a';
+											v += 10;
+										} else if (c >= 'A' && c <= 'F') {
+											v = c - 'A';
+											v += 10;
+										} else {
+											ERR_PRINT("Bug parsing hex constant.");
+											v = 0;
+										}
+
+										trail <<= 4;
+										trail |= v;
+									}
+									if ((trail & 0xfffffc00) == 0xdc00) {
+										res = (res << 10UL) + trail - ((0xd800 << 10UL) + 0xdc00 - 0x10000);
+										index += 4; //will add at the end anyway
+									} else {
+										r_err_str = "Invalid UTF-16 sequence in string, unpaired lead surrogate";
+										return ERR_PARSE_ERROR;
+									}
+								} else if ((res & 0xfffffc00) == 0xdc00) {
+									r_err_str = "Invalid UTF-16 sequence in string, unpaired trail surrogate";
+									return ERR_PARSE_ERROR;
+								}
+
 							} break;
 							default: {
 								res = next;
@@ -301,7 +347,6 @@ Error JSON::_parse_value(Variant &value, Token &token, const char32_t *p_str, in
 			return err;
 		}
 		value = d;
-		return OK;
 	} else if (token.type == TK_BRACKET_OPEN) {
 		Array a;
 		Error err = _parse_array(a, p_str, index, p_len, line, r_err_str);
@@ -309,8 +354,6 @@ Error JSON::_parse_value(Variant &value, Token &token, const char32_t *p_str, in
 			return err;
 		}
 		value = a;
-		return OK;
-
 	} else if (token.type == TK_IDENTIFIER) {
 		String id = token.value;
 		if (id == "true") {
@@ -323,18 +366,16 @@ Error JSON::_parse_value(Variant &value, Token &token, const char32_t *p_str, in
 			r_err_str = "Expected 'true','false' or 'null', got '" + id + "'.";
 			return ERR_PARSE_ERROR;
 		}
-		return OK;
-
 	} else if (token.type == TK_NUMBER) {
 		value = token.value;
-		return OK;
 	} else if (token.type == TK_STRING) {
 		value = token.value;
-		return OK;
 	} else {
 		r_err_str = "Expected value, got " + String(tk_name[token.type]) + ".";
 		return ERR_PARSE_ERROR;
 	}
+
+	return OK;
 }
 
 Error JSON::_parse_array(Array &array, const char32_t *p_str, int &index, int p_len, int &line, String &r_err_str) {
@@ -452,6 +493,19 @@ Error JSON::parse(const String &p_json, Variant &r_ret, String &r_err_str, int &
 	}
 
 	err = _parse_value(r_ret, token, str, idx, len, r_err_line, r_err_str);
+
+	// Check if EOF is reached
+	// or it's a type of the next token.
+	if (err == OK && idx < len) {
+		err = _get_token(str, idx, len, token, r_err_line, r_err_str);
+
+		if (err || token.type != TK_EOF) {
+			r_err_str = "Expected 'EOF'";
+			// Reset return value to empty `Variant`
+			r_ret = Variant();
+			return ERR_PARSE_ERROR;
+		}
+	}
 
 	return err;
 }

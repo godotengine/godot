@@ -31,6 +31,7 @@
 #ifndef AUDIO_STREAM_PLAYER_2D_H
 #define AUDIO_STREAM_PLAYER_2D_H
 
+#include "core/templates/safe_refcount.h"
 #include "scene/2d/node_2d.h"
 #include "servers/audio/audio_stream.h"
 #include "servers/audio_server.h"
@@ -52,8 +53,8 @@ private:
 	};
 
 	Output outputs[MAX_OUTPUTS];
-	volatile int output_count = 0;
-	volatile bool output_ready = false;
+	SafeNumeric<int> output_count;
+	SafeFlag output_ready;
 
 	//these are used by audio thread to have a reference of previous volumes (for ramping volume and avoiding clicks)
 	Output prev_outputs[MAX_OUTPUTS];
@@ -63,9 +64,9 @@ private:
 	Ref<AudioStream> stream;
 	Vector<AudioFrame> mix_buffer;
 
-	volatile float setseek = -1.0;
-	volatile bool active = false;
-	volatile float setplay = -1.0;
+	SafeNumeric<float> setseek{ -1.0 };
+	SafeFlag active;
+	SafeNumeric<float> setplay{ -1.0 };
 
 	float volume_db = 0.0;
 	float pitch_scale = 1.0;

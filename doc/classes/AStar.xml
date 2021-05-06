@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="AStar" inherits="Reference" version="4.0">
 	<brief_description>
-		An implementation of A* to find shortest paths among connected points in space.
+		An implementation of A* to find the shortest paths among connected points in space.
 	</brief_description>
 	<description>
 		A* (A star) is a computer algorithm that is widely used in pathfinding and graph traversal, the process of plotting short paths among vertices (points), passing through a given set of edges (segments). It enjoys widespread use due to its performance and accuracy. Godot's A* implementation uses points in three-dimensional space and Euclidean distances by default.
@@ -289,6 +289,7 @@
 			</argument>
 			<description>
 				Returns an array with the points that are in the path found by AStar between the given points. The array is ordered from the starting point to the ending point of the path.
+				[b]Note:[/b] This method is not thread-safe. If called from a [Thread], it will return an empty [PackedVector3Array] and will print an error message.
 			</description>
 		</method>
 		<method name="get_point_position" qualifiers="const">

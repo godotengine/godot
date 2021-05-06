@@ -37,11 +37,14 @@ class Range : public Control {
 	GDCLASS(Range, Control);
 
 	struct Shared {
-		double val, min, max;
-		double step, page;
-		bool exp_ratio;
-		bool allow_greater;
-		bool allow_lesser;
+		double val = 0.0;
+		double min = 0.0;
+		double max = 100.0;
+		double step = 1.0;
+		double page = 0.0;
+		bool exp_ratio = false;
+		bool allow_greater = false;
+		bool allow_lesser = false;
 		Set<Range *> owners;
 		void emit_value_changed();
 		void emit_changed(const char *p_what = "");
@@ -62,7 +65,7 @@ protected:
 
 	static void _bind_methods();
 
-	bool _rounded_values;
+	bool _rounded_values = false;
 
 public:
 	void set_value(double p_val);
@@ -94,7 +97,7 @@ public:
 	void share(Range *p_range);
 	void unshare();
 
-	virtual String get_configuration_warning() const override;
+	TypedArray<String> get_configuration_warnings() const override;
 
 	Range();
 	~Range();

@@ -33,7 +33,7 @@
 #include "core/os/os.h"
 
 void PhysicsServer2DWrapMT::thread_exit() {
-	exit = true;
+	exit.set();
 }
 
 void PhysicsServer2DWrapMT::thread_step(real_t p_delta) {
@@ -52,9 +52,9 @@ void PhysicsServer2DWrapMT::thread_loop() {
 
 	physics_2d_server->init();
 
-	exit = false;
-	step_thread_up = true;
-	while (!exit) {
+	exit.clear();
+	step_thread_up.set();
+	while (!exit.is_set()) {
 		// flush commands one by one, until exit is requested
 		command_queue.wait_and_flush_one();
 	}
@@ -98,7 +98,7 @@ void PhysicsServer2DWrapMT::init() {
 	if (create_thread) {
 		//OS::get_singleton()->release_rendering_thread();
 		thread.start(_thread_callback, this);
-		while (!step_thread_up) {
+		while (!step_thread_up.is_set()) {
 			OS::get_singleton()->delay_usec(1000);
 		}
 	} else {
@@ -113,19 +113,6 @@ void PhysicsServer2DWrapMT::finish() {
 	} else {
 		physics_2d_server->finish();
 	}
-
-	line_shape_free_cached_ids();
-	ray_shape_free_cached_ids();
-	segment_shape_free_cached_ids();
-	circle_shape_free_cached_ids();
-	rectangle_shape_free_cached_ids();
-	capsule_shape_free_cached_ids();
-	convex_polygon_shape_free_cached_ids();
-	concave_polygon_shape_free_cached_ids();
-
-	space_free_cached_ids();
-	area_free_cached_ids();
-	body_free_cached_ids();
 }
 
 PhysicsServer2DWrapMT::PhysicsServer2DWrapMT(PhysicsServer2D *p_contained, bool p_create_thread) :
@@ -133,7 +120,6 @@ PhysicsServer2DWrapMT::PhysicsServer2DWrapMT(PhysicsServer2D *p_contained, bool 
 	physics_2d_server = p_contained;
 	create_thread = p_create_thread;
 	step_pending = 0;
-	step_thread_up = false;
 
 	pool_max_size = GLOBAL_GET("memory/limits/multithreaded_server/rid_pool_prealloc");
 

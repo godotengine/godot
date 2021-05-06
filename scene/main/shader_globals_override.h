@@ -43,7 +43,7 @@ class ShaderGlobalsOverride : public Node {
 
 	StringName *_remap(const StringName &p_name) const;
 
-	bool active;
+	bool active = false;
 	mutable HashMap<StringName, Override> overrides;
 	mutable HashMap<StringName, StringName> param_remaps;
 
@@ -58,7 +58,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	String get_configuration_warning() const override;
+	TypedArray<String> get_configuration_warnings() const override;
 
 	ShaderGlobalsOverride();
 };

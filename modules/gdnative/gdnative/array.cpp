@@ -43,8 +43,22 @@ void GDAPI godot_array_new(godot_array *p_self) {
 	memnew_placement(p_self, Array);
 }
 
+void GDAPI godot_array_new_copy(godot_array *r_dest, const godot_array *p_src) {
+	memnew_placement(r_dest, Array(*(Array *)p_src));
+}
+
 void GDAPI godot_array_destroy(godot_array *p_self) {
 	((Array *)p_self)->~Array();
+}
+
+godot_variant GDAPI *godot_array_operator_index(godot_array *p_self, godot_int p_index) {
+	Array *self = (Array *)p_self;
+	return (godot_variant *)&self->operator[](p_index);
+}
+
+const godot_variant GDAPI *godot_array_operator_index_const(const godot_array *p_self, godot_int p_index) {
+	const Array *self = (const Array *)p_self;
+	return (const godot_variant *)&self->operator[](p_index);
 }
 
 #ifdef __cplusplus

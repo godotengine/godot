@@ -58,6 +58,7 @@ protected:
 	struct VariantContainer {
 		int order = 0;
 		bool persist = false;
+		bool basic = false;
 		Variant variant;
 		Variant initial;
 		bool hide_from_editor = false;
@@ -78,6 +79,8 @@ protected:
 
 	int last_order = NO_BUILTIN_ORDER_BASE;
 	int last_builtin_order = 0;
+	uint64_t last_save_time = 0;
+
 	Map<StringName, VariantContainer> props;
 	String resource_path;
 	Map<StringName, PropertyInfo> custom_prop_info;
@@ -113,6 +116,8 @@ protected:
 
 	Error _setup(const String &p_path, const String &p_main_pack, bool p_upwards = false);
 
+	void _add_builtin_input_map();
+
 protected:
 	static void _bind_methods();
 
@@ -127,6 +132,7 @@ public:
 	String globalize_path(const String &p_path) const;
 
 	void set_initial_value(const String &p_name, const Variant &p_value);
+	void set_as_basic(const String &p_name, bool p_basic);
 	void set_restart_if_changed(const String &p_name, bool p_restart);
 	void set_ignore_value_in_docs(const String &p_name, bool p_ignore);
 	bool get_ignore_value_in_docs(const String &p_name) const;
@@ -150,6 +156,7 @@ public:
 	Error save();
 	void set_custom_property_info(const String &p_prop, const PropertyInfo &p_info);
 	const Map<StringName, PropertyInfo> &get_custom_property_info() const;
+	uint64_t get_last_saved_time() { return last_save_time; }
 
 	Vector<String> get_optimizer_presets() const;
 
@@ -172,11 +179,16 @@ public:
 };
 
 //not a macro any longer
-Variant _GLOBAL_DEF(const String &p_var, const Variant &p_default, bool p_restart_if_changed = false, bool p_ignore_value_in_docs = false);
+Variant _GLOBAL_DEF(const String &p_var, const Variant &p_default, bool p_restart_if_changed = false, bool p_ignore_value_in_docs = false, bool p_basic = false);
 #define GLOBAL_DEF(m_var, m_value) _GLOBAL_DEF(m_var, m_value)
 #define GLOBAL_DEF_RST(m_var, m_value) _GLOBAL_DEF(m_var, m_value, true)
 #define GLOBAL_DEF_NOVAL(m_var, m_value) _GLOBAL_DEF(m_var, m_value, false, true)
 #define GLOBAL_DEF_RST_NOVAL(m_var, m_value) _GLOBAL_DEF(m_var, m_value, true, true)
 #define GLOBAL_GET(m_var) ProjectSettings::get_singleton()->get(m_var)
+
+#define GLOBAL_DEF_BASIC(m_var, m_value) _GLOBAL_DEF(m_var, m_value, false, false, true)
+#define GLOBAL_DEF_RST_BASIC(m_var, m_value) _GLOBAL_DEF(m_var, m_value, true, false, true)
+#define GLOBAL_DEF_NOVAL_BASIC(m_var, m_value) _GLOBAL_DEF(m_var, m_value, false, true, true)
+#define GLOBAL_DEF_RST_NOVAL_BASIC(m_var, m_value) _GLOBAL_DEF(m_var, m_value, true, true, true)
 
 #endif // PROJECT_SETTINGS_H

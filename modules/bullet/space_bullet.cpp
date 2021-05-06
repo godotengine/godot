@@ -81,7 +81,7 @@ int BulletPhysicsDirectSpaceState::intersect_point(const Vector3 &p_point, Shape
 	btResult.m_collisionFilterMask = p_collision_mask;
 	space->dynamicsWorld->contactTest(&collision_object_point, btResult);
 
-	// The results is already populated by GodotAllConvexResultCallback
+	// The results are already populated by GodotAllConvexResultCallback
 	return btResult.m_count;
 }
 
@@ -1232,6 +1232,10 @@ bool SpaceBullet::recover_from_penetration(RigidBodyBullet *p_body, const btTran
 
 		if (kin_shape.shape->getShapeType() == CUSTOM_CONVEX_SHAPE_TYPE) {
 			// Skip rayshape in order to implement custom separation process
+			continue;
+		}
+
+		if (kin_shape.shape->getShapeType() == EMPTY_SHAPE_PROXYTYPE) {
 			continue;
 		}
 

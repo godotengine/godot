@@ -44,14 +44,15 @@ class Skin : public Resource {
 
 	Vector<Bind> binds;
 
-	Bind *binds_ptr;
-	int bind_count;
+	Bind *binds_ptr = nullptr;
+	int bind_count = 0;
 
 protected:
 	bool _set(const StringName &p_name, const Variant &p_value);
 	bool _get(const StringName &p_name, Variant &r_ret) const;
 	void _get_property_list(List<PropertyInfo> *p_list) const;
 
+	virtual void reset_state() override;
 	static void _bind_methods();
 
 public:

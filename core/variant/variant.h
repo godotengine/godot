@@ -359,7 +359,7 @@ public:
 	operator Side() const;
 	operator Orientation() const;
 
-	operator IP_Address() const;
+	operator IPAddress() const;
 
 	Object *get_validated_object() const;
 	Object *get_validated_object_with_check(bool &r_previously_freed) const;
@@ -421,7 +421,7 @@ public:
 	Variant(const Vector<::RID> &p_array); // helper
 	Variant(const Vector<Vector2> &p_array); // helper
 
-	Variant(const IP_Address &p_address);
+	Variant(const IPAddress &p_address);
 
 	// If this changes the table in variant_op must be updated
 	enum Operator {
@@ -495,12 +495,15 @@ public:
 	static bool has_builtin_method_return_value(Variant::Type p_type, const StringName &p_method);
 	static Variant::Type get_builtin_method_return_type(Variant::Type p_type, const StringName &p_method);
 	static bool is_builtin_method_const(Variant::Type p_type, const StringName &p_method);
+	static bool is_builtin_method_static(Variant::Type p_type, const StringName &p_method);
 	static bool is_builtin_method_vararg(Variant::Type p_type, const StringName &p_method);
 	static void get_builtin_method_list(Variant::Type p_type, List<StringName> *p_list);
 	static int get_builtin_method_count(Variant::Type p_type);
 
 	void call(const StringName &p_method, const Variant **p_args, int p_argcount, Variant &r_ret, Callable::CallError &r_error);
 	Variant call(const StringName &p_method, const Variant &p_arg1 = Variant(), const Variant &p_arg2 = Variant(), const Variant &p_arg3 = Variant(), const Variant &p_arg4 = Variant(), const Variant &p_arg5 = Variant());
+
+	static void call_static(Variant::Type p_type, const StringName &p_method, const Variant **p_args, int p_argcount, Variant &r_ret, Callable::CallError &r_error);
 
 	static String get_call_error_text(const StringName &p_method, const Variant **p_argptrs, int p_argcount, const Callable::CallError &ce);
 	static String get_call_error_text(Object *p_base, const StringName &p_method, const Variant **p_argptrs, int p_argcount, const Callable::CallError &ce);

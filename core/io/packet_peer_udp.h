@@ -48,11 +48,11 @@ protected:
 	RingBuffer<uint8_t> rb;
 	uint8_t recv_buffer[PACKET_BUFFER_SIZE];
 	uint8_t packet_buffer[PACKET_BUFFER_SIZE];
-	IP_Address packet_ip;
+	IPAddress packet_ip;
 	int packet_port = 0;
 	int queue_count = 0;
 
-	IP_Address peer_addr;
+	IPAddress peer_addr;
 	int peer_port = 0;
 	bool connected = false;
 	bool blocking = true;
@@ -70,28 +70,29 @@ protected:
 public:
 	void set_blocking_mode(bool p_enable);
 
-	Error listen(int p_port, const IP_Address &p_bind_address = IP_Address("*"), int p_recv_buffer_size = 65536);
+	Error bind(int p_port, const IPAddress &p_bind_address = IPAddress("*"), int p_recv_buffer_size = 65536);
 	void close();
 	Error wait();
-	bool is_listening() const;
+	bool is_bound() const;
 
-	Error connect_shared_socket(Ref<NetSocket> p_sock, IP_Address p_ip, uint16_t p_port, UDPServer *ref); // Used by UDPServer
+	Error connect_shared_socket(Ref<NetSocket> p_sock, IPAddress p_ip, uint16_t p_port, UDPServer *ref); // Used by UDPServer
 	void disconnect_shared_socket(); // Used by UDPServer
-	Error store_packet(IP_Address p_ip, uint32_t p_port, uint8_t *p_buf, int p_buf_size); // Used internally and by UDPServer
-	Error connect_to_host(const IP_Address &p_host, int p_port);
+	Error store_packet(IPAddress p_ip, uint32_t p_port, uint8_t *p_buf, int p_buf_size); // Used internally and by UDPServer
+	Error connect_to_host(const IPAddress &p_host, int p_port);
 	bool is_connected_to_host() const;
 
-	IP_Address get_packet_address() const;
+	IPAddress get_packet_address() const;
 	int get_packet_port() const;
-	void set_dest_address(const IP_Address &p_address, int p_port);
+	int get_local_port() const;
+	void set_dest_address(const IPAddress &p_address, int p_port);
 
 	Error put_packet(const uint8_t *p_buffer, int p_buffer_size) override;
 	Error get_packet(const uint8_t **r_buffer, int &r_buffer_size) override;
 	int get_available_packet_count() const override;
 	int get_max_packet_size() const override;
 	void set_broadcast_enabled(bool p_enabled);
-	Error join_multicast_group(IP_Address p_multi_address, String p_if_name);
-	Error leave_multicast_group(IP_Address p_multi_address, String p_if_name);
+	Error join_multicast_group(IPAddress p_multi_address, String p_if_name);
+	Error leave_multicast_group(IPAddress p_multi_address, String p_if_name);
 
 	PacketPeerUDP();
 	~PacketPeerUDP();

@@ -22,7 +22,7 @@
  * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
  */
 
-#ifndef HB_OT_H_IN
+#if !defined(HB_OT_H_IN) && !defined(HB_NO_SINGLE_HEADER_ERROR)
 #error "Include <hb-ot.h> instead."
 #endif
 
@@ -66,7 +66,8 @@ HB_BEGIN_DECLS
  * @HB_OT_METRICS_TAG_UNDERLINE_SIZE: underline size.
  * @HB_OT_METRICS_TAG_UNDERLINE_OFFSET: underline offset.
  *
- * From https://docs.microsoft.com/en-us/typography/opentype/spec/mvar#value-tags
+ * Metric tags corresponding to [MVAR Value
+ * Tags](https://docs.microsoft.com/en-us/typography/opentype/spec/mvar#value-tags)
  *
  * Since: 2.6.0
  **/
@@ -100,6 +101,7 @@ typedef enum {
   HB_OT_METRICS_TAG_UNDERLINE_SIZE		= HB_TAG ('u','n','d','s'),
   HB_OT_METRICS_TAG_UNDERLINE_OFFSET		= HB_TAG ('u','n','d','o'),
 
+  /*< private >*/
   _HB_OT_METRICS_TAG_MAX_VALUE = HB_TAG_MAX_SIGNED /*< skip >*/
 } hb_ot_metrics_tag_t;
 

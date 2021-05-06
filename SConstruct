@@ -55,17 +55,21 @@ custom_tools = ["default"]
 
 platform_arg = ARGUMENTS.get("platform", ARGUMENTS.get("p", False))
 
-if os.name == "nt" and (platform_arg == "android" or ARGUMENTS.get("use_mingw", False)):
+if os.name == "nt" and (platform_arg == "android" or methods.get_cmdline_bool("use_mingw", False)):
     custom_tools = ["mingw"]
 elif platform_arg == "javascript":
     # Use generic POSIX build toolchain for Emscripten.
     custom_tools = ["cc", "c++", "ar", "link", "textfile", "zip"]
 
+# We let SCons build its default ENV as it includes OS-specific things which we don't
+# want to have to pull in manually.
+# Then we prepend PATH to make it take precedence, while preserving SCons' own entries.
 env_base = Environment(tools=custom_tools)
-if "TERM" in os.environ:
+env_base.PrependENVPath("PATH", os.getenv("PATH"))
+env_base.PrependENVPath("PKG_CONFIG_PATH", os.getenv("PKG_CONFIG_PATH"))
+if "TERM" in os.environ:  # Used for colored output.
     env_base["ENV"]["TERM"] = os.environ["TERM"]
-env_base.AppendENVPath("PATH", os.getenv("PATH"))
-env_base.AppendENVPath("PKG_CONFIG_PATH", os.getenv("PKG_CONFIG_PATH"))
+
 env_base.disabled_modules = []
 env_base.module_version_string = ""
 env_base.msvc = False
@@ -95,7 +99,7 @@ env_base.SConsignFile(".sconsign{0}.dblite".format(pickle.HIGHEST_PROTOCOL))
 
 customs = ["custom.py"]
 
-profile = ARGUMENTS.get("profile", False)
+profile = ARGUMENTS.get("profile", "")
 if profile:
     if os.path.isfile(profile):
         customs.append(profile)
@@ -111,7 +115,7 @@ opts.Add(BoolVariable("tools", "Build the tools (a.k.a. the Godot editor)", True
 opts.Add(EnumVariable("target", "Compilation target", "debug", ("debug", "release_debug", "release")))
 opts.Add("arch", "Platform-dependent architecture (arm/arm64/x86/x64/mips/...)", "")
 opts.Add(EnumVariable("bits", "Target platform bits", "default", ("default", "32", "64")))
-opts.Add(EnumVariable("optimize", "Optimization type", "speed", ("speed", "size")))
+opts.Add(EnumVariable("optimize", "Optimization type", "speed", ("speed", "size", "none")))
 opts.Add(BoolVariable("production", "Set defaults to build Godot for use in production", False))
 opts.Add(BoolVariable("use_lto", "Use link-time optimization", False))
 
@@ -133,6 +137,7 @@ opts.Add("extra_suffix", "Custom extra suffix added to the base filename of all 
 opts.Add(BoolVariable("vsproj", "Generate a Visual Studio solution", False))
 opts.Add(BoolVariable("disable_3d", "Disable 3D nodes for a smaller executable", False))
 opts.Add(BoolVariable("disable_advanced_gui", "Disable advanced GUI nodes and behaviors", False))
+opts.Add(BoolVariable("modules_enabled_by_default", "If no, disable all modules except ones explicitly enabled", True))
 opts.Add(BoolVariable("no_editor_splash", "Don't use the custom splash screen for the editor", False))
 opts.Add("system_certs_path", "Use this path as SSL certificates default for editor (for package maintainers)", "")
 opts.Add(BoolVariable("use_precise_math_checks", "Math checks use very precise epsilon (debug option)", False))
@@ -140,6 +145,7 @@ opts.Add(BoolVariable("use_precise_math_checks", "Math checks use very precise e
 # Thirdparty libraries
 opts.Add(BoolVariable("builtin_bullet", "Use the built-in Bullet library", True))
 opts.Add(BoolVariable("builtin_certs", "Use the built-in SSL certificates bundles", True))
+opts.Add(BoolVariable("builtin_embree", "Use the built-in Embree library", True))
 opts.Add(BoolVariable("builtin_enet", "Use the built-in ENet library", True))
 opts.Add(BoolVariable("builtin_freetype", "Use the built-in FreeType library", True))
 opts.Add(BoolVariable("builtin_glslang", "Use the built-in glslang library", True))
@@ -242,26 +248,34 @@ for path in module_search_paths:
         # Built-in modules don't have nested modules,
         # so save the time it takes to parse directories.
         modules = methods.detect_modules(path, recursive=False)
-    else:  # External.
+    else:  # Custom.
         modules = methods.detect_modules(path, env_base["custom_modules_recursive"])
+        # Provide default include path for both the custom module search `path`
+        # and the base directory containing custom modules, as it may be different
+        # from the built-in "modules" name (e.g. "custom_modules/summator/summator.h"),
+        # so it can be referenced simply as `#include "summator/summator.h"`
+        # independently of where a module is located on user's filesystem.
+        env_base.Prepend(CPPPATH=[path, os.path.dirname(path)])
     # Note: custom modules can override built-in ones.
     modules_detected.update(modules)
-    include_path = os.path.dirname(path)
-    if include_path:
-        env_base.Prepend(CPPPATH=[include_path])
 
 # Add module options.
 for name, path in modules_detected.items():
-    enabled = True
-    sys.path.insert(0, path)
-    import config
+    if env_base["modules_enabled_by_default"]:
+        enabled = True
 
-    try:
-        enabled = config.is_enabled()
-    except AttributeError:
-        pass
-    sys.path.remove(path)
-    sys.modules.pop("config")
+        sys.path.insert(0, path)
+        import config
+
+        try:
+            enabled = config.is_enabled()
+        except AttributeError:
+            pass
+        sys.path.remove(path)
+        sys.modules.pop("config")
+    else:
+        enabled = False
+
     opts.Add(BoolVariable("module_" + name + "_enabled", "Enable module '%s'" % (name,), enabled))
 
 methods.write_modules(modules_detected)
@@ -295,10 +309,6 @@ if env_base["target"] == "debug":
     # http://scons.org/doc/production/HTML/scons-user/ch06s04.html
     env_base.SetOption("implicit_cache", 1)
 
-if not env_base["tools"]:
-    # Export templates can't run unit test tool.
-    env_base["tests"] = False
-
 if env_base["no_editor_splash"]:
     env_base.Append(CPPDEFINES=["NO_EDITOR_SPLASH"])
 
@@ -325,17 +335,17 @@ if selected_platform in platform_list:
         env.Alias("compiledb", env.CompilationDatabase())
 
     # 'dev' and 'production' are aliases to set default options if they haven't been set
-    # manually by the user. We use `ARGUMENTS.get()` to check if they were manually set.
+    # manually by the user.
     if env["dev"]:
-        env["verbose"] = ARGUMENTS.get("verbose", True)
+        env["verbose"] = methods.get_cmdline_bool("verbose", True)
         env["warnings"] = ARGUMENTS.get("warnings", "extra")
-        env["werror"] = ARGUMENTS.get("werror", True)
+        env["werror"] = methods.get_cmdline_bool("werror", True)
         if env["tools"]:
-            env["tests"] = ARGUMENTS.get("tests", True)
+            env["tests"] = methods.get_cmdline_bool("tests", True)
     if env["production"]:
-        env["use_static_cpp"] = ARGUMENTS.get("use_static_cpp", True)
-        env["use_lto"] = ARGUMENTS.get("use_lto", True)
-        env["debug_symbols"] = ARGUMENTS.get("debug_symbols", False)
+        env["use_static_cpp"] = methods.get_cmdline_bool("use_static_cpp", True)
+        env["use_lto"] = methods.get_cmdline_bool("use_lto", True)
+        env["debug_symbols"] = methods.get_cmdline_bool("debug_symbols", False)
         if not env["tools"] and env["target"] == "debug":
             print(
                 "WARNING: Requested `production` build with `tools=no target=debug`, "
@@ -381,7 +391,7 @@ if selected_platform in platform_list:
         if not (f[0] in ARGUMENTS):  # allow command line to override platform flags
             env[f[0]] = f[1]
 
-    # Must happen after the flags definition, so that they can be used by platform detect
+    # Must happen after the flags' definition, so that they can be used by platform detect
     detect.configure(env)
 
     # Set our C and C++ standard requirements.
@@ -617,7 +627,7 @@ if selected_platform in platform_list:
     if env["minizip"]:
         env.Append(CPPDEFINES=["MINIZIP_ENABLED"])
 
-    editor_module_list = ["regex"]
+    editor_module_list = ["freetype", "regex"]
     if env["tools"] and not env.module_check_dependencies("tools", editor_module_list):
         print(
             "Build option 'module_"

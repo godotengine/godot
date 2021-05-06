@@ -68,7 +68,7 @@ int NetworkedMultiplayerENet::get_last_packet_channel() const {
 
 Error NetworkedMultiplayerENet::create_server(int p_port, int p_max_clients, int p_in_bandwidth, int p_out_bandwidth) {
 	ERR_FAIL_COND_V_MSG(active, ERR_ALREADY_IN_USE, "The multiplayer instance is already active.");
-	ERR_FAIL_COND_V_MSG(p_port < 0 || p_port > 65535, ERR_INVALID_PARAMETER, "The port number must be set between 0 and 65535 (inclusive).");
+	ERR_FAIL_COND_V_MSG(p_port < 0 || p_port > 65535, ERR_INVALID_PARAMETER, "The local port number must be between 0 and 65535 (inclusive).");
 	ERR_FAIL_COND_V_MSG(p_max_clients < 1 || p_max_clients > 4095, ERR_INVALID_PARAMETER, "The number of clients must be set between 1 and 4095 (inclusive).");
 	ERR_FAIL_COND_V_MSG(p_in_bandwidth < 0, ERR_INVALID_PARAMETER, "The incoming bandwidth limit must be greater than or equal to 0 (0 disables the limit).");
 	ERR_FAIL_COND_V_MSG(p_out_bandwidth < 0, ERR_INVALID_PARAMETER, "The outgoing bandwidth limit must be greater than or equal to 0 (0 disables the limit).");
@@ -115,46 +115,37 @@ Error NetworkedMultiplayerENet::create_server(int p_port, int p_max_clients, int
 	connection_status = CONNECTION_CONNECTED;
 	return OK;
 }
-
-Error NetworkedMultiplayerENet::create_client(const String &p_address, int p_port, int p_in_bandwidth, int p_out_bandwidth, int p_client_port) {
+Error NetworkedMultiplayerENet::create_client(const String &p_address, int p_port, int p_in_bandwidth, int p_out_bandwidth, int p_local_port) {
 	ERR_FAIL_COND_V_MSG(active, ERR_ALREADY_IN_USE, "The multiplayer instance is already active.");
-	ERR_FAIL_COND_V_MSG(p_port < 0 || p_port > 65535, ERR_INVALID_PARAMETER, "The server port number must be set between 0 and 65535 (inclusive).");
-	ERR_FAIL_COND_V_MSG(p_client_port < 0 || p_client_port > 65535, ERR_INVALID_PARAMETER, "The client port number must be set between 0 and 65535 (inclusive).");
+	ERR_FAIL_COND_V_MSG(p_port < 1 || p_port > 65535, ERR_INVALID_PARAMETER, "The remote port number must be between 1 and 65535 (inclusive).");
+	ERR_FAIL_COND_V_MSG(p_local_port < 0 || p_local_port > 65535, ERR_INVALID_PARAMETER, "The local port number must be between 0 and 65535 (inclusive).");
 	ERR_FAIL_COND_V_MSG(p_in_bandwidth < 0, ERR_INVALID_PARAMETER, "The incoming bandwidth limit must be greater than or equal to 0 (0 disables the limit).");
 	ERR_FAIL_COND_V_MSG(p_out_bandwidth < 0, ERR_INVALID_PARAMETER, "The outgoing bandwidth limit must be greater than or equal to 0 (0 disables the limit).");
 
-	if (p_client_port != 0) {
-		ENetAddress c_client;
+	ENetAddress c_client;
 
 #ifdef GODOT_ENET
-		if (bind_ip.is_wildcard()) {
-			c_client.wildcard = 1;
-		} else {
-			enet_address_set_ip(&c_client, bind_ip.get_ipv6(), 16);
-		}
+	if (bind_ip.is_wildcard()) {
+		c_client.wildcard = 1;
+	} else {
+		enet_address_set_ip(&c_client, bind_ip.get_ipv6(), 16);
+	}
 #else
-		if (bind_ip.is_wildcard()) {
-			c_client.host = 0;
-		} else {
-			ERR_FAIL_COND_V_MSG(!bind_ip.is_ipv4(), ERR_INVALID_PARAMETER, "Wildcard IP addresses are only permitted in IPv4, not IPv6.");
-			c_client.host = *(uint32_t *)bind_ip.get_ipv4();
-		}
+	if (bind_ip.is_wildcard()) {
+		c_client.host = 0;
+	} else {
+		ERR_FAIL_COND_V_MSG(!bind_ip.is_ipv4(), ERR_INVALID_PARAMETER, "Wildcard IP addresses are only permitted in IPv4, not IPv6.");
+		c_client.host = *(uint32_t *)bind_ip.get_ipv4();
+	}
 #endif
 
-		c_client.port = p_client_port;
+	c_client.port = p_local_port;
 
-		host = enet_host_create(&c_client /* create a client host */,
-				1 /* only allow 1 outgoing connection */,
-				channel_count /* allow up to channel_count to be used */,
-				p_in_bandwidth /* limit incoming bandwidth if > 0 */,
-				p_out_bandwidth /* limit outgoing bandwidth if > 0 */);
-	} else {
-		host = enet_host_create(nullptr /* create a client host */,
-				1 /* only allow 1 outgoing connection */,
-				channel_count /* allow up to channel_count to be used */,
-				p_in_bandwidth /* limit incoming bandwidth if > 0 */,
-				p_out_bandwidth /* limit outgoing bandwidth if > 0 */);
-	}
+	host = enet_host_create(&c_client /* create a client host */,
+			1 /* only allow 1 outgoing connection */,
+			channel_count /* allow up to channel_count to be used */,
+			p_in_bandwidth /* limit incoming bandwidth if > 0 */,
+			p_out_bandwidth /* limit outgoing bandwidth if > 0 */);
 
 	ERR_FAIL_COND_V_MSG(!host, ERR_CANT_CREATE, "Couldn't create the ENet client host.");
 #ifdef GODOT_ENET
@@ -166,7 +157,7 @@ Error NetworkedMultiplayerENet::create_client(const String &p_address, int p_por
 
 	_setup_compressor();
 
-	IP_Address ip;
+	IPAddress ip;
 	if (p_address.is_valid_ip_address()) {
 		ip = p_address;
 	} else {
@@ -248,7 +239,7 @@ void NetworkedMultiplayerENet::poll() {
 				int *new_id = memnew(int);
 				*new_id = event.data;
 
-				if (*new_id == 0) { // Data zero is sent by server (enet won't let you configure this). Server is always 1.
+				if (*new_id == 0) { // Data zero is sent by server (ENet won't let you configure this). Server is always 1.
 					*new_id = 1;
 				}
 
@@ -562,7 +553,7 @@ Error NetworkedMultiplayerENet::put_packet(const uint8_t *p_buffer, int p_buffer
 	ENetPacket *packet = enet_packet_create(nullptr, p_buffer_size + 8, packet_flags);
 	encode_uint32(unique_id, &packet->data[0]); // Source ID
 	encode_uint32(target_peer, &packet->data[4]); // Dest ID
-	copymem(&packet->data[8], p_buffer, p_buffer_size);
+	memcpy(&packet->data[8], p_buffer, p_buffer_size);
 
 	if (server) {
 		if (target_peer == 0) {
@@ -673,7 +664,7 @@ size_t NetworkedMultiplayerENet::enet_compress(void *context, const ENetBuffer *
 	while (total) {
 		for (size_t i = 0; i < inBufferCount; i++) {
 			int to_copy = MIN(total, int(inBuffers[i].dataLength));
-			copymem(&enet->src_compressor_mem.write[ofs], inBuffers[i].data, to_copy);
+			memcpy(&enet->src_compressor_mem.write[ofs], inBuffers[i].data, to_copy);
 			ofs += to_copy;
 			total -= to_copy;
 		}
@@ -710,7 +701,7 @@ size_t NetworkedMultiplayerENet::enet_compress(void *context, const ENetBuffer *
 		return 0; // Do not bother
 	}
 
-	copymem(outData, enet->dst_compressor_mem.ptr(), ret);
+	memcpy(outData, enet->dst_compressor_mem.ptr(), ret);
 
 	return ret;
 }
@@ -758,12 +749,12 @@ void NetworkedMultiplayerENet::enet_compressor_destroy(void *context) {
 	// Nothing to do
 }
 
-IP_Address NetworkedMultiplayerENet::get_peer_address(int p_peer_id) const {
-	ERR_FAIL_COND_V_MSG(!peer_map.has(p_peer_id), IP_Address(), vformat("Peer ID %d not found in the list of peers.", p_peer_id));
-	ERR_FAIL_COND_V_MSG(!is_server() && p_peer_id != 1, IP_Address(), "Can't get the address of peers other than the server (ID -1) when acting as a client.");
-	ERR_FAIL_COND_V_MSG(peer_map[p_peer_id] == nullptr, IP_Address(), vformat("Peer ID %d found in the list of peers, but is null.", p_peer_id));
+IPAddress NetworkedMultiplayerENet::get_peer_address(int p_peer_id) const {
+	ERR_FAIL_COND_V_MSG(!peer_map.has(p_peer_id), IPAddress(), vformat("Peer ID %d not found in the list of peers.", p_peer_id));
+	ERR_FAIL_COND_V_MSG(!is_server() && p_peer_id != 1, IPAddress(), "Can't get the address of peers other than the server (ID -1) when acting as a client.");
+	ERR_FAIL_COND_V_MSG(peer_map[p_peer_id] == nullptr, IPAddress(), vformat("Peer ID %d found in the list of peers, but is null.", p_peer_id));
 
-	IP_Address out;
+	IPAddress out;
 #ifdef GODOT_ENET
 	out.set_ipv6((uint8_t *)&(peer_map[p_peer_id]->address.host));
 #else
@@ -782,6 +773,19 @@ int NetworkedMultiplayerENet::get_peer_port(int p_peer_id) const {
 #else
 	return peer_map[p_peer_id]->address.port;
 #endif
+}
+
+int NetworkedMultiplayerENet::get_local_port() const {
+	ERR_FAIL_COND_V_MSG(!active || !host, 0, "The multiplayer instance isn't currently active.");
+	return host->address.port;
+}
+
+void NetworkedMultiplayerENet::set_peer_timeout(int p_peer_id, int p_timeout_limit, int p_timeout_min, int p_timeout_max) {
+	ERR_FAIL_COND_MSG(!peer_map.has(p_peer_id), vformat("Peer ID %d not found in the list of peers.", p_peer_id));
+	ERR_FAIL_COND_MSG(!is_server() && p_peer_id != 1, "Can't change the timeout of peers other then the server when acting as a client.");
+	ERR_FAIL_COND_MSG(peer_map[p_peer_id] == nullptr, vformat("Peer ID %d found in the list of peers, but is null.", p_peer_id));
+	ERR_FAIL_COND_MSG(p_timeout_limit > p_timeout_min || p_timeout_min > p_timeout_max, "Timeout limit must be less than minimum timeout, which itself must be less then maximum timeout");
+	enet_peer_timeout(peer_map[p_peer_id], p_timeout_limit, p_timeout_min, p_timeout_max);
 }
 
 void NetworkedMultiplayerENet::set_transfer_channel(int p_channel) {
@@ -824,7 +828,7 @@ bool NetworkedMultiplayerENet::is_server_relay_enabled() const {
 
 void NetworkedMultiplayerENet::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("create_server", "port", "max_clients", "in_bandwidth", "out_bandwidth"), &NetworkedMultiplayerENet::create_server, DEFVAL(32), DEFVAL(0), DEFVAL(0));
-	ClassDB::bind_method(D_METHOD("create_client", "address", "port", "in_bandwidth", "out_bandwidth", "client_port"), &NetworkedMultiplayerENet::create_client, DEFVAL(0), DEFVAL(0), DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("create_client", "address", "port", "in_bandwidth", "out_bandwidth", "local_port"), &NetworkedMultiplayerENet::create_client, DEFVAL(0), DEFVAL(0), DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("close_connection", "wait_usec"), &NetworkedMultiplayerENet::close_connection, DEFVAL(100));
 	ClassDB::bind_method(D_METHOD("disconnect_peer", "id", "now"), &NetworkedMultiplayerENet::disconnect_peer, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("set_compression_mode", "mode"), &NetworkedMultiplayerENet::set_compression_mode);
@@ -838,6 +842,8 @@ void NetworkedMultiplayerENet::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_dtls_verify_enabled"), &NetworkedMultiplayerENet::is_dtls_verify_enabled);
 	ClassDB::bind_method(D_METHOD("get_peer_address", "id"), &NetworkedMultiplayerENet::get_peer_address);
 	ClassDB::bind_method(D_METHOD("get_peer_port", "id"), &NetworkedMultiplayerENet::get_peer_port);
+	ClassDB::bind_method(D_METHOD("get_local_port"), &NetworkedMultiplayerENet::get_local_port);
+	ClassDB::bind_method(D_METHOD("set_peer_timeout", "id", "timeout_limit", "timeout_min", "timeout_max"), &NetworkedMultiplayerENet::set_peer_timeout);
 
 	ClassDB::bind_method(D_METHOD("get_packet_channel"), &NetworkedMultiplayerENet::get_packet_channel);
 	ClassDB::bind_method(D_METHOD("get_last_packet_channel"), &NetworkedMultiplayerENet::get_last_packet_channel);
@@ -871,7 +877,7 @@ NetworkedMultiplayerENet::NetworkedMultiplayerENet() {
 	enet_compressor.decompress = enet_decompress;
 	enet_compressor.destroy = enet_compressor_destroy;
 
-	bind_ip = IP_Address("*");
+	bind_ip = IPAddress("*");
 }
 
 NetworkedMultiplayerENet::~NetworkedMultiplayerENet() {
@@ -882,7 +888,7 @@ NetworkedMultiplayerENet::~NetworkedMultiplayerENet() {
 
 // Sets IP for ENet to bind when using create_server or create_client
 // if no IP is set, then ENet bind to ENET_HOST_ANY
-void NetworkedMultiplayerENet::set_bind_ip(const IP_Address &p_ip) {
+void NetworkedMultiplayerENet::set_bind_ip(const IPAddress &p_ip) {
 	ERR_FAIL_COND_MSG(!p_ip.is_valid() && !p_ip.is_wildcard(), vformat("Invalid bind IP address: %s", String(p_ip)));
 
 	bind_ip = p_ip;

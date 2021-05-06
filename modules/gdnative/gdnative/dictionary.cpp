@@ -31,6 +31,7 @@
 #include "gdnative/dictionary.h"
 
 #include "core/variant/dictionary.h"
+#include "core/variant/variant.h"
 
 static_assert(sizeof(godot_dictionary) == sizeof(Dictionary), "Dictionary size mismatch");
 
@@ -42,9 +43,23 @@ void GDAPI godot_dictionary_new(godot_dictionary *p_self) {
 	memnew_placement(p_self, Dictionary);
 }
 
+void GDAPI godot_dictionary_new_copy(godot_dictionary *r_dest, const godot_dictionary *p_src) {
+	memnew_placement(r_dest, Dictionary(*(Dictionary *)p_src));
+}
+
 void GDAPI godot_dictionary_destroy(godot_dictionary *p_self) {
 	Dictionary *self = (Dictionary *)p_self;
 	self->~Dictionary();
+}
+
+godot_variant GDAPI *godot_dictionary_operator_index(godot_dictionary *p_self, const godot_variant *p_key) {
+	Dictionary *self = (Dictionary *)p_self;
+	return (godot_variant *)&self->operator[](*((const Variant *)p_key));
+}
+
+const godot_variant GDAPI *godot_dictionary_operator_index_const(const godot_dictionary *p_self, const godot_variant *p_key) {
+	const Dictionary *self = (const Dictionary *)p_self;
+	return (const godot_variant *)&self->operator[](*((const Variant *)p_key));
 }
 
 #ifdef __cplusplus

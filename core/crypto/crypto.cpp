@@ -100,7 +100,7 @@ void Crypto::load_default_certificates(String p_path) {
 
 PackedByteArray Crypto::hmac_digest(HashingContext::HashType p_hash_type, PackedByteArray p_key, PackedByteArray p_msg) {
 	Ref<HMACContext> ctx = Ref<HMACContext>(HMACContext::create());
-	ERR_FAIL_COND_V_MSG(ctx.is_null(), PackedByteArray(), "HMAC is not available witout mbedtls module.");
+	ERR_FAIL_COND_V_MSG(ctx.is_null(), PackedByteArray(), "HMAC is not available without mbedtls module.");
 	Error err = ctx->start(p_hash_type, p_key);
 	ERR_FAIL_COND_V(err != OK, PackedByteArray());
 	err = ctx->update(p_msg);
@@ -108,7 +108,7 @@ PackedByteArray Crypto::hmac_digest(HashingContext::HashType p_hash_type, Packed
 	return ctx->finish();
 }
 
-// Compares two HMACS for equality without leaking timing information in order to prevent timing attakcs.
+// Compares two HMACS for equality without leaking timing information in order to prevent timing attacks.
 // @see: https://paragonie.com/blog/2015/11/preventing-timing-attacks-on-string-comparison-with-double-hmac-strategy
 bool Crypto::constant_time_compare(PackedByteArray p_trusted, PackedByteArray p_received) {
 	const uint8_t *t = p_trusted.ptr();
@@ -141,7 +141,7 @@ void Crypto::_bind_methods() {
 
 /// Resource loader/saver
 
-RES ResourceFormatLoaderCrypto::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, bool p_no_cache) {
+RES ResourceFormatLoaderCrypto::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, CacheMode p_cache_mode) {
 	String el = p_path.get_extension().to_lower();
 	if (el == "crt") {
 		X509Certificate *cert = X509Certificate::create();
@@ -157,8 +157,9 @@ RES ResourceFormatLoaderCrypto::load(const String &p_path, const String &p_origi
 		return key;
 	} else if (el == "pub") {
 		CryptoKey *key = CryptoKey::create();
-		if (key)
+		if (key) {
 			key->load(p_path, true);
+		}
 		return key;
 	}
 	return nullptr;

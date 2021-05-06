@@ -34,7 +34,6 @@
 
 void AnimationNodeAnimation::set_animation(const StringName &p_name) {
 	animation = p_name;
-	_change_notify("animation");
 }
 
 StringName AnimationNodeAnimation::get_animation() const {
@@ -583,7 +582,6 @@ float AnimationNodeTimeSeek::process(float p_time, bool p_seek) {
 	} else if (seek_pos >= 0) {
 		float ret = blend_input(0, seek_pos, true, 1.0, FILTER_IGNORE, false);
 		set_parameter(this->seek_pos, -1.0); //reset
-		_change_notify("seek_pos");
 		return ret;
 	} else {
 		return blend_input(0, p_time, false, 1.0, FILTER_IGNORE, false);
@@ -702,7 +700,7 @@ float AnimationNodeTransition::process(float p_time, bool p_seek) {
 		return 0;
 	}
 
-	float rem = 0;
+	float rem = 0.0;
 
 	if (prev < 0) { // process current animation, check for transition
 
@@ -1121,6 +1119,13 @@ void AnimationNodeBlendTree::_get_property_list(List<PropertyInfo> *p_list) cons
 	}
 
 	p_list->push_back(PropertyInfo(Variant::ARRAY, "node_connections", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR));
+}
+
+void AnimationNodeBlendTree::reset_state() {
+	graph_offset = Vector2();
+	nodes.clear();
+	emit_changed();
+	emit_signal("tree_changed");
 }
 
 void AnimationNodeBlendTree::_tree_changed() {

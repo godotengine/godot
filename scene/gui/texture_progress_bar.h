@@ -98,13 +98,15 @@ public:
 	TextureProgressBar();
 
 private:
-	FillMode mode;
-	float rad_init_angle;
-	float rad_max_degrees;
+	FillMode mode = FILL_LEFT_TO_RIGHT;
+	float rad_init_angle = 0.0;
+	float rad_max_degrees = 360.0;
 	Point2 rad_center_off;
-	bool nine_patch_stretch;
-	int stretch_margin[4];
-	Color tint_under, tint_progress, tint_over;
+	bool nine_patch_stretch = false;
+	int stretch_margin[4] = {};
+	Color tint_under = Color(1, 1, 1);
+	Color tint_progress = Color(1, 1, 1);
+	Color tint_over = Color(1, 1, 1);
 
 	Point2 unit_val_to_uv(float val);
 	Point2 get_relative_center();

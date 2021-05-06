@@ -79,6 +79,7 @@
 	</methods>
 	<members>
 		<member name="agent/height" type="float" setter="set_agent_height" getter="get_agent_height" default="2.0">
+			The minimum Y space needed for navigation to be generated.
 		</member>
 		<member name="agent/max_climb" type="float" setter="set_agent_max_climb" getter="get_agent_max_climb" default="0.9">
 			The maximum height difference between two areas for navigation to be generated between them.
@@ -87,8 +88,10 @@
 			The maximum angle a slope can be at for navigation to be generated on it.
 		</member>
 		<member name="agent/radius" type="float" setter="set_agent_radius" getter="get_agent_radius" default="0.6">
+			Determines where the edge of a navigation mesh is. This way an agent will not overlap with another mesh or stand over nothing.
 		</member>
 		<member name="cell/height" type="float" setter="set_cell_height" getter="get_cell_height" default="0.2">
+			The height of a cell.
 		</member>
 		<member name="cell/size" type="float" setter="set_cell_size" getter="get_cell_size" default="0.3">
 			The size of cells in the [NavigationMesh].
@@ -111,7 +114,7 @@
 			The physics layers used to generate the [NavigationMesh].
 		</member>
 		<member name="geometry/parsed_geometry_type" type="int" setter="set_parsed_geometry_type" getter="get_parsed_geometry_type" default="0">
-			What kind of geomerty is used to generate the [NavigationMesh].
+			What kind of geometry is used to generate the [NavigationMesh].
 		</member>
 		<member name="geometry/source_geometry_mode" type="int" setter="set_source_geometry_mode" getter="get_source_geometry_mode" default="0">
 			Which geometry is used to generate the [NavigationMesh].

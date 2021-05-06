@@ -73,24 +73,6 @@ typedef CRITICAL_SECTION hb_mutex_impl_t;
 #define hb_mutex_impl_finish(M)	DeleteCriticalSection (M)
 
 
-#elif !defined(HB_NO_MT) && defined(HAVE_INTEL_ATOMIC_PRIMITIVES)
-
-#if defined(HAVE_SCHED_H) && defined(HAVE_SCHED_YIELD)
-# include <sched.h>
-# define HB_SCHED_YIELD() sched_yield ()
-#else
-# define HB_SCHED_YIELD() HB_STMT_START {} HB_STMT_END
-#endif
-
-/* This actually is not a totally awful implementation. */
-typedef volatile int hb_mutex_impl_t;
-#define HB_MUTEX_IMPL_INIT	0
-#define hb_mutex_impl_init(M)	*(M) = 0
-#define hb_mutex_impl_lock(M)	HB_STMT_START { while (__sync_lock_test_and_set((M), 1)) HB_SCHED_YIELD (); } HB_STMT_END
-#define hb_mutex_impl_unlock(M)	__sync_lock_release (M)
-#define hb_mutex_impl_finish(M)	HB_STMT_START {} HB_STMT_END
-
-
 #elif defined(HB_NO_MT)
 
 typedef int hb_mutex_impl_t;

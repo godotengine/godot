@@ -118,8 +118,6 @@ Material::Material(uint64_t id, const ElementPtr element, const Document &doc, c
 		DOMWarning("shading mode not recognized: " + shading, element);
 	}
 
-	props = GetPropertyTable(doc, templateName, element, sc);
-
 	// resolve texture links
 	const std::vector<const Connection *> &conns = doc.GetConnectionsByDestinationSequenced(ID());
 	for (const Connection *con : conns) {
@@ -163,15 +161,11 @@ Material::Material(uint64_t id, const ElementPtr element, const Document &doc, c
 
 // ------------------------------------------------------------------------------------------------
 Material::~Material() {
-	if (props != nullptr) {
-		delete props;
-		props = nullptr;
-	}
 }
 
 // ------------------------------------------------------------------------------------------------
 Texture::Texture(uint64_t id, const ElementPtr element, const Document &doc, const std::string &name) :
-		Object(id, element, name), uvScaling(1.0f, 1.0f), media(nullptr) {
+		Object(id, element, name), uvScaling(1.0f, 1.0f) {
 	const ScopePtr sc = GetRequiredScope(element);
 
 	const ElementPtr Type = sc->GetElement("Type");
@@ -219,17 +213,15 @@ Texture::Texture(uint64_t id, const ElementPtr element, const Document &doc, con
 		alphaSource = ParseTokenAsString(GetRequiredToken(Texture_Alpha_Source, 0));
 	}
 
-	props = GetPropertyTable(doc, "Texture.FbxFileTexture", element, sc);
-
 	// 3DS Max and FBX SDK use "Scaling" and "Translation" instead of "ModelUVScaling" and "ModelUVTranslation". Use these properties if available.
-	bool ok;
-	const Vector3 &scaling = PropertyGet<Vector3>(props, "Scaling", ok);
+	bool ok = true;
+	const Vector3 &scaling = PropertyGet<Vector3>(this, "Scaling", ok);
 	if (ok) {
 		uvScaling.x = scaling.x;
 		uvScaling.y = scaling.y;
 	}
 
-	const Vector3 &trans = PropertyGet<Vector3>(props, "Translation", ok);
+	const Vector3 &trans = PropertyGet<Vector3>(this, "Translation", ok);
 	if (ok) {
 		uvTrans.x = trans.x;
 		uvTrans.y = trans.y;
@@ -254,10 +246,6 @@ Texture::Texture(uint64_t id, const ElementPtr element, const Document &doc, con
 }
 
 Texture::~Texture() {
-	if (props != nullptr) {
-		delete props;
-		props = nullptr;
-	}
 }
 
 LayeredTexture::LayeredTexture(uint64_t id, const ElementPtr element, const Document & /*doc*/, const std::string &name) :
@@ -267,10 +255,10 @@ LayeredTexture::LayeredTexture(uint64_t id, const ElementPtr element, const Docu
 	ElementPtr BlendModes = sc->GetElement("BlendModes");
 	ElementPtr Alphas = sc->GetElement("Alphas");
 
-	if (BlendModes != 0) {
+	if (BlendModes != nullptr) {
 		blendMode = (BlendMode)ParseTokenAsInt(GetRequiredToken(BlendModes, 0));
 	}
-	if (Alphas != 0) {
+	if (Alphas != nullptr) {
 		alpha = ParseTokenAsFloat(GetRequiredToken(Alphas, 0));
 	}
 }
@@ -297,7 +285,7 @@ void LayeredTexture::fillTexture(const Document &doc) {
 
 // ------------------------------------------------------------------------------------------------
 Video::Video(uint64_t id, const ElementPtr element, const Document &doc, const std::string &name) :
-		Object(id, element, name), contentLength(0), content(0) {
+		Object(id, element, name) {
 	const ScopePtr sc = GetRequiredScope(element);
 
 	const ElementPtr Type = sc->GetElement("Type");
@@ -337,7 +325,7 @@ Video::Video(uint64_t id, const ElementPtr element, const Document &doc, const s
 					DOMError("embedded content is not surrounded by quotation marks", element);
 				} else {
 					size_t targetLength = 0;
-					auto numTokens = Content->Tokens().size();
+					const size_t numTokens = Content->Tokens().size();
 					// First time compute size (it could be large like 64Gb and it is good to allocate it once)
 					for (uint32_t tokenIdx = 0; tokenIdx < numTokens; ++tokenIdx) {
 						const Token *dataToken = GetRequiredToken(Content, tokenIdx);
@@ -390,18 +378,11 @@ Video::Video(uint64_t id, const ElementPtr element, const Document &doc, const s
 			//									   runtimeError.what());
 		}
 	}
-
-	props = GetPropertyTable(doc, "Video.FbxVideo", element, sc);
 }
 
 Video::~Video() {
 	if (content) {
 		delete[] content;
-	}
-
-	if (props != nullptr) {
-		delete props;
-		props = nullptr;
 	}
 }
 } // namespace FBXDocParser

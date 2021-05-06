@@ -41,6 +41,9 @@ class WorldEnvironment : public Node {
 	Ref<Environment> environment;
 	Ref<CameraEffects> camera_effects;
 
+	void _update_current_environment();
+	void _update_current_camera_effects();
+
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
@@ -52,7 +55,7 @@ public:
 	void set_camera_effects(const Ref<CameraEffects> &p_camera_effects);
 	Ref<CameraEffects> get_camera_effects() const;
 
-	String get_configuration_warning() const override;
+	TypedArray<String> get_configuration_warnings() const override;
 
 	WorldEnvironment();
 };

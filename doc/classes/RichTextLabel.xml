@@ -80,6 +80,27 @@
 				Returns the total number of paragraphs (newlines or [code]p[/code] tags in the tag stack's text tags). Considers wrapped text as one paragraph.
 			</description>
 		</method>
+		<method name="get_selected_text" qualifiers="const">
+			<return type="String">
+			</return>
+			<description>
+				Returns the current selection text. Does not include BBCodes.
+			</description>
+		</method>
+		<method name="get_selection_from" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Returns the current selection first character index if a selection is active, [code]-1[/code] otherwise. Does not include BBCodes.
+			</description>
+		</method>
+		<method name="get_selection_to" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Returns the current selection last character index if a selection is active, [code]-1[/code] otherwise. Does not include BBCodes.
+			</description>
+		</method>
 		<method name="get_total_character_count" qualifiers="const">
 			<return type="int">
 			</return>
@@ -597,6 +618,9 @@
 		<theme_item name="focus" type="StyleBox">
 			The background The background used when the [RichTextLabel] is focused.
 		</theme_item>
+		<theme_item name="font_outline_color" type="Color" default="Color( 1, 1, 1, 1 )">
+			The default tint of text outline.
+		</theme_item>
 		<theme_item name="font_selected_color" type="Color" default="Color( 0, 0, 0, 1 )">
 			The color of selected text, used when [member selection_enabled] is [code]true[/code].
 		</theme_item>
@@ -626,6 +650,9 @@
 		</theme_item>
 		<theme_item name="normal_font_size" type="int">
 			The default text font size.
+		</theme_item>
+		<theme_item name="outline_size" type="int" default="0">
+			The size of the text outline.
 		</theme_item>
 		<theme_item name="selection_color" type="Color" default="Color( 0.1, 0.1, 1, 0.8 )">
 			The color of the selection box.

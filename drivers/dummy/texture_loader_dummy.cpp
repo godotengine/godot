@@ -35,7 +35,7 @@
 
 #include <string.h>
 
-RES ResourceFormatDummyTexture::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, bool p_no_cache) {
+RES ResourceFormatDummyTexture::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, CacheMode p_cache_mode) {
 	unsigned int width = 8;
 	unsigned int height = 8;
 

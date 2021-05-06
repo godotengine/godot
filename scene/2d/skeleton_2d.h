@@ -46,7 +46,7 @@ class Bone2D : public Node2D {
 	Bone2D *parent_bone = nullptr;
 	Skeleton2D *skeleton = nullptr;
 	Transform2D rest;
-	float default_length = 16.0;
+	real_t default_length = 16.0;
 
 	int skeleton_index = -1;
 
@@ -60,10 +60,10 @@ public:
 	void apply_rest();
 	Transform2D get_skeleton_rest() const;
 
-	String get_configuration_warning() const override;
+	TypedArray<String> get_configuration_warnings() const override;
 
-	void set_default_length(float p_length);
-	float get_default_length() const;
+	void set_default_length(real_t p_length);
+	real_t get_default_length() const;
 
 	int get_index_in_skeleton() const;
 

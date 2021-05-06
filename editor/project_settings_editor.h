@@ -32,10 +32,11 @@
 #define PROJECT_SETTINGS_EDITOR_H
 
 #include "core/object/undo_redo.h"
+#include "editor/action_map_editor.h"
 #include "editor/editor_data.h"
 #include "editor/editor_plugin_settings.h"
 #include "editor/editor_sectioned_inspector.h"
-#include "editor/input_map_editor.h"
+#include "editor/import_defaults_editor.h"
 #include "editor/localization_editor.h"
 #include "editor/shader_globals_editor.h"
 #include "editor_autoload_settings.h"
@@ -44,38 +45,29 @@
 class ProjectSettingsEditor : public AcceptDialog {
 	GDCLASS(ProjectSettingsEditor, AcceptDialog);
 
-	enum InputType {
-		INPUT_KEY,
-		INPUT_KEY_PHYSICAL,
-		INPUT_JOY_BUTTON,
-		INPUT_JOY_MOTION,
-		INPUT_MOUSE_BUTTON
-	};
-
 	static ProjectSettingsEditor *singleton;
 	ProjectSettings *ps;
 	Timer *timer;
 
 	TabContainer *tab_container;
 	SectionedInspector *inspector;
-	InputMapEditor *inputmap_editor;
 	LocalizationEditor *localization_editor;
 	EditorAutoloadSettings *autoload_settings;
 	ShaderGlobalsEditor *shaders_global_variables_editor;
 	EditorPluginSettings *plugin_settings;
 
+	ActionMapEditor *action_map;
 	HBoxContainer *search_bar;
 	LineEdit *search_box;
 	CheckButton *advanced;
 
-	VBoxContainer *advanced_bar;
+	HBoxContainer *advanced_bar;
 	LineEdit *category_box;
 	LineEdit *property_box;
 	Button *add_button;
 	Button *del_button;
 	OptionButton *type;
 	OptionButton *feature_override;
-	Label *error_label;
 
 	ConfirmationDialog *del_confirmation;
 
@@ -84,6 +76,7 @@ class ProjectSettingsEditor : public AcceptDialog {
 	PanelContainer *restart_container;
 	Button *restart_close_button;
 
+	ImportDefaultsEditor *import_defaults_editor;
 	EditorData *data;
 	UndoRedo *undo_redo;
 
@@ -103,6 +96,14 @@ class ProjectSettingsEditor : public AcceptDialog {
 	void _editor_restart_close();
 
 	void _add_feature_overrides();
+
+	void _action_added(const String &p_name);
+	void _action_edited(const String &p_name, const Dictionary &p_action);
+	void _action_removed(const String &p_name);
+	void _action_renamed(const String &p_old_name, const String &p_new_name);
+	void _action_reordered(const String &p_action_name, const String &p_relative_to, bool p_before);
+	void _update_action_map_editor();
+
 	ProjectSettingsEditor();
 
 protected:

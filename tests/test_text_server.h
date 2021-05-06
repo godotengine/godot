@@ -28,6 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
+#ifdef TOOLS_ENABLED
+
 #ifndef TEST_TEXT_SERVER_H
 #define TEST_TEXT_SERVER_H
 
@@ -247,3 +249,4 @@ TEST_SUITE("[[TextServer]") {
 }; // namespace TestTextServer
 
 #endif // TEST_TEXT_SERVER_H
+#endif // TOOLS_ENABLED

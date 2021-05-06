@@ -41,10 +41,12 @@ class AreaPair2DSW : public Constraint2DSW {
 	int body_shape = 0;
 	int area_shape = 0;
 	bool colliding = false;
+	bool process_collision = false;
 
 public:
-	bool setup(real_t p_step);
-	void solve(real_t p_step);
+	virtual bool setup(real_t p_step) override;
+	virtual bool pre_solve(real_t p_step) override;
+	virtual void solve(real_t p_step) override;
 
 	AreaPair2DSW(Body2DSW *p_body, int p_body_shape, Area2DSW *p_area, int p_area_shape);
 	~AreaPair2DSW();
@@ -56,10 +58,12 @@ class Area2Pair2DSW : public Constraint2DSW {
 	int shape_a = 0;
 	int shape_b = 0;
 	bool colliding = false;
+	bool process_collision = false;
 
 public:
-	bool setup(real_t p_step);
-	void solve(real_t p_step);
+	virtual bool setup(real_t p_step) override;
+	virtual bool pre_solve(real_t p_step) override;
+	virtual void solve(real_t p_step) override;
 
 	Area2Pair2DSW(Area2DSW *p_area_a, int p_shape_a, Area2DSW *p_area_b, int p_shape_b);
 	~Area2Pair2DSW();

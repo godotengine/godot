@@ -32,10 +32,11 @@
 #define SOFT_PHYSICS_BODY_H
 
 #include "scene/3d/mesh_instance_3d.h"
+#include "servers/physics_server_3d.h"
 
 class SoftBody3D;
 
-class SoftBodyRenderingServerHandler {
+class SoftBodyRenderingServerHandler : public RenderingServerHandler {
 	friend class SoftBody3D;
 
 	RID mesh;
@@ -57,9 +58,9 @@ private:
 	void commit_changes();
 
 public:
-	void set_vertex(int p_vertex_id, const void *p_vector3);
-	void set_normal(int p_vertex_id, const void *p_vector3);
-	void set_aabb(const AABB &p_aabb);
+	void set_vertex(int p_vertex_id, const void *p_vector3) override;
+	void set_normal(int p_vertex_id, const void *p_vector3) override;
+	void set_aabb(const AABB &p_aabb) override;
 };
 
 class SoftBody3D : public MeshInstance3D {
@@ -98,6 +99,8 @@ private:
 
 	void _update_pickable();
 
+	void _softbody_changed();
+
 protected:
 	bool _set(const StringName &p_name, const Variant &p_value);
 	bool _get(const StringName &p_name, Variant &r_ret) const;
@@ -107,12 +110,10 @@ protected:
 	bool _set_property_pinned_points_attachment(int p_item, const String &p_what, const Variant &p_value);
 	bool _get_property_pinned_points(int p_item, const String &p_what, Variant &r_ret) const;
 
-	virtual void _changed_callback(Object *p_changed, const char *p_prop) override;
-
 	void _notification(int p_what);
 	static void _bind_methods();
 
-	virtual String get_configuration_warning() const override;
+	TypedArray<String> get_configuration_warnings() const override;
 
 protected:
 	void _update_physics_server();
@@ -121,6 +122,8 @@ protected:
 public:
 	void prepare_physics_server();
 	void become_mesh_owner();
+
+	RID get_physics_rid() const { return physics_rid; }
 
 	void set_collision_mask(uint32_t p_mask);
 	uint32_t get_collision_mask() const;
@@ -149,17 +152,8 @@ public:
 	void set_linear_stiffness(real_t p_linear_stiffness);
 	real_t get_linear_stiffness();
 
-	void set_areaAngular_stiffness(real_t p_areaAngular_stiffness);
-	real_t get_areaAngular_stiffness();
-
-	void set_volume_stiffness(real_t p_volume_stiffness);
-	real_t get_volume_stiffness();
-
 	void set_pressure_coefficient(real_t p_pressure_coefficient);
 	real_t get_pressure_coefficient();
-
-	void set_pose_matching_coefficient(real_t p_pose_matching_coefficient);
-	real_t get_pose_matching_coefficient();
 
 	void set_damping_coefficient(real_t p_damping_coefficient);
 	real_t get_damping_coefficient();

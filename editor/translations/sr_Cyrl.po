@@ -720,7 +720,7 @@ msgstr "Постави прелаз на:"
 #: editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp editor/property_editor.cpp
-#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
+#: editor/scene_tree_dock.cpp scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Copy"
 msgstr "Копирај"
 
@@ -2030,8 +2030,8 @@ msgid "Open a File or Directory"
 msgstr "Отвори датотеку или директоријум"
 
 #: editor/editor_file_dialog.cpp editor/editor_node.cpp
-#: editor/editor_properties.cpp editor/inspector_dock.cpp
-#: editor/plugins/animation_player_editor_plugin.cpp
+#: editor/editor_properties.cpp editor/import_defaults_editor.cpp
+#: editor/inspector_dock.cpp editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/script_editor_plugin.cpp scene/gui/file_dialog.cpp
 msgid "Save"
 msgstr "Сачувај"
@@ -2752,7 +2752,8 @@ msgid "Unable to enable addon plugin at: '%s' parsing of config failed."
 msgstr "Неуспех при прикључивању додатка због конфигурационе датотеке: '%s'."
 
 #: editor/editor_node.cpp
-msgid "Unable to find script field for addon plugin at: 'res://addons/%s'."
+#, fuzzy
+msgid "Unable to find script field for addon plugin at: '%s'."
 msgstr "Неуспех при налажењу поља за скриптицу у додатку „res://addons/%s“."
 
 #: editor/editor_node.cpp
@@ -3213,14 +3214,6 @@ msgid "Help"
 msgstr "Помоћ"
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/script_text_editor.cpp
-#: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
-#: editor/plugins/visual_shader_editor_plugin.cpp editor/project_manager.cpp
-#: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
-msgid "Search"
-msgstr "Тражи"
-
-#: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/shader_editor_plugin.cpp
 msgid "Online Docs"
 msgstr "Онлајн документација"
@@ -3398,6 +3391,25 @@ msgstr "Споји са постојећим"
 #: editor/editor_node.cpp
 msgid "Open & Run a Script"
 msgstr "Отвори и покрени скриптицу"
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid ""
+"The following files are newer on disk.\n"
+"What action should be taken?"
+msgstr ""
+"Следеће датотеке су нове на диску.\n"
+"Која акција се треба предузети?:"
+
+#: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/shader_editor_plugin.cpp
+msgid "Reload"
+msgstr "Освежи"
+
+#: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/shader_editor_plugin.cpp
+msgid "Resave"
+msgstr "Поново сачувај"
 
 #: editor/editor_node.cpp
 msgid "New Inherited"
@@ -3631,7 +3643,7 @@ msgstr "Учини Јединственим"
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 #: editor/plugins/tile_map_editor_plugin.cpp editor/property_editor.cpp
-#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
+#: editor/scene_tree_dock.cpp scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Paste"
 msgstr "Налепи"
 
@@ -3970,6 +3982,11 @@ msgstr ""
 "\n"
 "Статус: Увоз датотеке неуспео. Молим, исправите датотеку и поново је увезите "
 "сами."
+
+#: editor/filesystem_dock.cpp
+msgid ""
+"Importing has been disabled for this file, so it can't be opened for editing."
+msgstr ""
 
 #: editor/filesystem_dock.cpp
 msgid "Cannot move/rename resources root."
@@ -4402,6 +4419,25 @@ msgstr ""
 #: editor/import/resource_importer_scene.cpp
 msgid "Saving..."
 msgstr "Чување..."
+
+#: editor/import_defaults_editor.cpp
+#, fuzzy
+msgid "Select Importer"
+msgstr "Одабери режим"
+
+#: editor/import_defaults_editor.cpp
+#, fuzzy
+msgid "Importer:"
+msgstr "Увоз"
+
+#: editor/import_defaults_editor.cpp
+#, fuzzy
+msgid "Reset to Defaults"
+msgstr "Учитај уобичајено"
+
+#: editor/import_dock.cpp
+msgid "Keep File (No Import)"
+msgstr ""
 
 #: editor/import_dock.cpp
 #, fuzzy
@@ -5480,7 +5516,8 @@ msgid "Got:"
 msgstr "Добијено:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-msgid "Failed sha256 hash check"
+#, fuzzy
+msgid "Failed SHA-256 hash check"
 msgstr "Неуспела провера sha256 суме"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
@@ -5599,7 +5636,6 @@ msgid "Sort:"
 msgstr "Сортирање:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#: editor/project_settings_editor.cpp
 msgid "Category:"
 msgstr "Категорија:"
 
@@ -7619,6 +7655,14 @@ msgstr "Затвори документацију"
 msgid "Run"
 msgstr "Покрени"
 
+#: editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/script_text_editor.cpp
+#: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
+#: editor/plugins/visual_shader_editor_plugin.cpp editor/project_manager.cpp
+#: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
+msgid "Search"
+msgstr "Тражи"
+
 #: editor/plugins/script_editor_plugin.cpp editor/script_editor_debugger.cpp
 msgid "Step Into"
 msgstr "Корак у"
@@ -7673,16 +7717,6 @@ msgid ""
 msgstr ""
 "Следеће датотеке су нове на диску.\n"
 "Која акција се треба предузети?:"
-
-#: editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/shader_editor_plugin.cpp
-msgid "Reload"
-msgstr "Освежи"
-
-#: editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/shader_editor_plugin.cpp
-msgid "Resave"
-msgstr "Поново сачувај"
 
 #: editor/plugins/script_editor_plugin.cpp editor/script_editor_debugger.cpp
 msgid "Debugger"
@@ -7791,8 +7825,8 @@ msgstr "Тачке прекида"
 msgid "Go To"
 msgstr "Иди На"
 
-#: editor/plugins/script_text_editor.cpp scene/gui/line_edit.cpp
-#: scene/gui/text_edit.cpp
+#: editor/plugins/script_text_editor.cpp editor/scene_tree_dock.cpp
+#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Cut"
 msgstr "Исеци"
 
@@ -8233,6 +8267,11 @@ msgstr "Брзина слободног погледа"
 #, fuzzy
 msgid "View Rotation Locked"
 msgstr "Прикажи информације"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid ""
+"To zoom further, change the camera's clipping planes (View -> Settings...)"
+msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
 #, fuzzy
@@ -11147,6 +11186,11 @@ msgstr "Пројекти"
 
 #: editor/project_manager.cpp
 #, fuzzy
+msgid "Loading, please wait..."
+msgstr "Прихватам одредишта, молим сачекајте..."
+
+#: editor/project_manager.cpp
+#, fuzzy
 msgid "Last Modified"
 msgstr "Задњи Измењен"
 
@@ -11601,6 +11645,11 @@ msgstr "Ауто-Учитавање"
 msgid "Plugins"
 msgstr "Прикључци"
 
+#: editor/project_settings_editor.cpp
+#, fuzzy
+msgid "Import Defaults"
+msgstr "Учитај уобичајено"
+
 #: editor/property_editor.cpp
 msgid "Preset..."
 msgstr "Поставке..."
@@ -11907,6 +11956,16 @@ msgstr "Инстанца Сцена Дете"
 
 #: editor/scene_tree_dock.cpp
 #, fuzzy
+msgid "Can't paste root node into the same scene."
+msgstr "Немогуће оперисати на чвору из стране сцене!"
+
+#: editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Paste Node(s)"
+msgstr "Налепи Чворове"
+
+#: editor/scene_tree_dock.cpp
+#, fuzzy
 msgid "Detach Script"
 msgstr "Припој Скрипту"
 
@@ -12062,6 +12121,11 @@ msgstr "Припој Скрипту"
 
 #: editor/scene_tree_dock.cpp
 #, fuzzy
+msgid "Cut Node(s)"
+msgstr "Направи чвор"
+
+#: editor/scene_tree_dock.cpp
+#, fuzzy
 msgid "Remove Node(s)"
 msgstr "Уклони Чвор/ове"
 
@@ -12192,6 +12256,13 @@ msgstr "Очисти скрипту за одабрани чвор."
 #: editor/scene_tree_dock.cpp
 msgid "Remote"
 msgstr "Удаљени уређај"
+
+#: editor/scene_tree_dock.cpp
+msgid ""
+"If selected, the Remote scene tree dock will cause the project to stutter "
+"every time it updates.\n"
+"Switch back to the Local scene tree dock to improve performance."
+msgstr ""
 
 #: editor/scene_tree_dock.cpp
 #, fuzzy
@@ -13982,6 +14053,14 @@ msgstr ""
 msgid "An empty CollisionPolygon2D has no effect on collision."
 msgstr "Непријатењ СударниМногоугао2Д нема утицаја на судар."
 
+#: scene/2d/collision_polygon_2d.cpp
+msgid "Invalid polygon. At least 3 points are needed in 'Solids' build mode."
+msgstr ""
+
+#: scene/2d/collision_polygon_2d.cpp
+msgid "Invalid polygon. At least 2 points are needed in 'Segments' build mode."
+msgstr ""
+
 #: scene/2d/collision_shape_2d.cpp
 #, fuzzy
 msgid ""
@@ -14335,11 +14414,6 @@ msgstr ""
 "СондеГлобалногОсветљења нису подржане од стране GLES2 видео управљача.\n"
 " \n"
 "Као замену користи ИспеченеСенкеМапу."
-
-#: scene/3d/interpolated_camera.cpp
-msgid ""
-"InterpolatedCamera has been deprecated and will be removed in Godot 4.0."
-msgstr ""
 
 #: scene/3d/light.cpp
 #, fuzzy
@@ -15090,10 +15164,6 @@ msgstr "Константе није могуће мењати."
 #, fuzzy
 #~ msgid "CheckBox Radio2"
 #~ msgstr "CheckBox Radio2"
-
-#, fuzzy
-#~ msgid "Custom Node"
-#~ msgstr "Направи чвор"
 
 #, fuzzy
 #~ msgid "Snap (s): "

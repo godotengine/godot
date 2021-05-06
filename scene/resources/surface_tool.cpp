@@ -160,7 +160,7 @@ void SurfaceTool::add_vertex(const Vector3 &p_vertex) {
 			//cap
 			weights.resize(expected_vertices);
 			//renormalize
-			float total = 0;
+			float total = 0.0;
 			for (int i = 0; i < expected_vertices; i++) {
 				total += weights[i].weight;
 			}
@@ -299,6 +299,7 @@ void SurfaceTool::add_triangle_fan(const Vector<Vector3> &p_vertices, const Vect
 
 void SurfaceTool::add_index(int p_index) {
 	ERR_FAIL_COND(!begun);
+	ERR_FAIL_COND(p_index < 0);
 
 	format |= Mesh::ARRAY_FORMAT_INDEX;
 	index_array.push_back(p_index);
@@ -1058,6 +1059,10 @@ void SurfaceTool::set_material(const Ref<Material> &p_material) {
 	material = p_material;
 }
 
+Ref<Material> SurfaceTool::get_material() const {
+	return material;
+}
+
 void SurfaceTool::clear() {
 	begun = false;
 	primitive = Mesh::PRIMITIVE_LINES;
@@ -1087,6 +1092,10 @@ void SurfaceTool::set_custom_format(int p_index, CustomFormat p_format) {
 	ERR_FAIL_COND(begun);
 	last_custom_format[p_index] = p_format;
 }
+
+Mesh::PrimitiveType SurfaceTool::get_primitive() const {
+	return primitive;
+}
 SurfaceTool::CustomFormat SurfaceTool::get_custom_format(int p_index) const {
 	ERR_FAIL_INDEX_V(p_index, RS::ARRAY_CUSTOM_COUNT, CUSTOM_MAX);
 	return last_custom_format[p_index];
@@ -1096,7 +1105,7 @@ void SurfaceTool::optimize_indices_for_cache() {
 	ERR_FAIL_COND(index_array.size() == 0);
 
 	LocalVector old_index_array = index_array;
-	zeromem(index_array.ptr(), index_array.size() * sizeof(int));
+	memset(index_array.ptr(), 0, index_array.size() * sizeof(int));
 	optimize_vertex_cache_func((unsigned int *)index_array.ptr(), (unsigned int *)old_index_array.ptr(), old_index_array.size(), vertex_array.size());
 }
 
@@ -1173,6 +1182,7 @@ void SurfaceTool::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("generate_lod", "nd_threshold", "target_index_count"), &SurfaceTool::generate_lod, DEFVAL(3));
 
 	ClassDB::bind_method(D_METHOD("set_material", "material"), &SurfaceTool::set_material);
+	ClassDB::bind_method(D_METHOD("get_primitive"), &SurfaceTool::get_primitive);
 
 	ClassDB::bind_method(D_METHOD("clear"), &SurfaceTool::clear);
 
@@ -1196,12 +1206,7 @@ void SurfaceTool::_bind_methods() {
 }
 
 SurfaceTool::SurfaceTool() {
-	first = false;
-	begun = false;
 	for (int i = 0; i < RS::ARRAY_CUSTOM_COUNT; i++) {
 		last_custom_format[i] = CUSTOM_MAX;
 	}
-	primitive = Mesh::PRIMITIVE_LINES;
-	skin_weights = SKIN_4_WEIGHTS;
-	format = 0;
 }

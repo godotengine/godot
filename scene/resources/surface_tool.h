@@ -89,17 +89,17 @@ private:
 	};
 
 	struct WeightSort {
-		int index;
-		float weight;
+		int index = 0;
+		float weight = 0.0;
 		bool operator<(const WeightSort &p_right) const {
 			return weight < p_right.weight;
 		}
 	};
 
-	bool begun;
-	bool first;
-	Mesh::PrimitiveType primitive;
-	uint32_t format;
+	bool begun = false;
+	bool first = false;
+	Mesh::PrimitiveType primitive = Mesh::PRIMITIVE_LINES;
+	uint32_t format = 0;
 	Ref<Material> material;
 	//arrays
 	LocalVector<Vertex> vertex_array;
@@ -115,7 +115,7 @@ private:
 	Plane last_tangent;
 	uint32_t last_smooth_group = 0;
 
-	SkinWeightCount skin_weights;
+	SkinWeightCount skin_weights = SKIN_4_WEIGHTS;
 
 	Color last_custom[RS::ARRAY_CUSTOM_COUNT];
 
@@ -142,6 +142,8 @@ public:
 
 	void set_custom_format(int p_index, CustomFormat p_format);
 	CustomFormat get_custom_format(int p_index) const;
+
+	Mesh::PrimitiveType get_primitive() const;
 
 	void begin(Mesh::PrimitiveType p_primitive);
 
@@ -171,6 +173,7 @@ public:
 	Vector<int> generate_lod(float p_threshold, int p_target_index_count = 3);
 
 	void set_material(const Ref<Material> &p_material);
+	Ref<Material> get_material() const;
 
 	void clear();
 

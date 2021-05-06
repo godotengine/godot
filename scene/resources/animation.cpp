@@ -580,6 +580,10 @@ void Animation::_get_property_list(List<PropertyInfo> *p_list) const {
 	}
 }
 
+void Animation::reset_state() {
+	clear();
+}
+
 int Animation::add_track(TrackType p_type, int p_at_pos) {
 	if (p_at_pos < 0 || p_at_pos >= tracks.size()) {
 		p_at_pos = tracks.size();
@@ -1604,7 +1608,7 @@ T Animation::_interpolate(const Vector<TKey<T>> &p_keys, float p_time, Interpola
 
 	bool result = true;
 	int next = 0;
-	float c = 0;
+	float c = 0.0;
 	// prepare for all cases of interpolation
 
 	if (loop && p_loop_wrap) {
@@ -2278,8 +2282,8 @@ float Animation::bezier_track_interpolate(int p_track, float p_time) const {
 	int iterations = 10;
 
 	float duration = bt->values[idx + 1].time - bt->values[idx].time; // time duration between our two keyframes
-	float low = 0; // 0% of the current animation segment
-	float high = 1; // 100% of the current animation segment
+	float low = 0.0; // 0% of the current animation segment
+	float high = 1.0; // 100% of the current animation segment
 	float middle;
 
 	Vector2 start(0, bt->values[idx].value.value);
@@ -2734,7 +2738,7 @@ bool Animation::_transform_track_optimize_key(const TKey<TransformKey> &t0, cons
 			real_t d = Geometry3D::get_closest_point_to_segment(v1, s).distance_to(v1);
 
 			if (d > pd.length() * p_alowed_linear_err) {
-				return false; //beyond allowed error for colinearity
+				return false; //beyond allowed error for collinearity
 			}
 
 			if (p_norm != Vector3() && Math::acos(pd.normalized().dot(p_norm)) > p_alowed_angular_err) {
@@ -2824,7 +2828,7 @@ bool Animation::_transform_track_optimize_key(const TKey<TransformKey> &t0, cons
 			real_t d = Geometry3D::get_closest_point_to_segment(v1, s).distance_to(v1);
 
 			if (d > pd.length() * p_alowed_linear_err) {
-				return false; //beyond allowed error for colinearity
+				return false; //beyond allowed error for collinearity
 			}
 
 			t[2] = (d1 - d0) / (d2 - d0);
@@ -2836,7 +2840,7 @@ bool Animation::_transform_track_optimize_key(const TKey<TransformKey> &t0, cons
 		erase = true;
 	} else {
 		erase = true;
-		real_t lt = -1;
+		real_t lt = -1.0;
 		for (int j = 0; j < 3; j++) {
 			//search for t on first, one must be it
 			if (t[j] != -1) {
@@ -2919,11 +2923,7 @@ void Animation::optimize(float p_allowed_linear_err, float p_allowed_angular_err
 	}
 }
 
-Animation::Animation() {
-	step = 0.1;
-	loop = false;
-	length = 1;
-}
+Animation::Animation() {}
 
 Animation::~Animation() {
 	for (int i = 0; i < tracks.size(); i++) {

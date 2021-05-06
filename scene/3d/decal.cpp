@@ -34,7 +34,6 @@ void Decal::set_extents(const Vector3 &p_extents) {
 	extents = p_extents;
 	RS::get_singleton()->decal_set_extents(decal, p_extents);
 	update_gizmo();
-	_change_notify("extents");
 }
 
 Vector3 Decal::get_extents() const {
@@ -110,6 +109,7 @@ Color Decal::get_modulate() const {
 void Decal::set_enable_distance_fade(bool p_enable) {
 	distance_fade_enabled = p_enable;
 	RS::get_singleton()->decal_set_distance_fade(decal, distance_fade_enabled, distance_fade_begin, distance_fade_length);
+	notify_property_list_changed();
 }
 
 bool Decal::is_distance_fade_enabled() const {
@@ -152,6 +152,12 @@ AABB Decal::get_aabb() const {
 
 Vector<Face3> Decal::get_faces(uint32_t p_usage_flags) const {
 	return Vector<Face3>();
+}
+
+void Decal::_validate_property(PropertyInfo &property) const {
+	if (!distance_fade_enabled && (property.name == "distance_fade_begin" || property.name == "distance_fade_length")) {
+		property.usage = PROPERTY_USAGE_NOEDITOR;
+	}
 }
 
 void Decal::_bind_methods() {

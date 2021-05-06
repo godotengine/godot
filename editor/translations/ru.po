@@ -91,11 +91,13 @@
 # Roman Tolkachyov <roman@tolkachyov.name>, 2020.
 # Igor Grachev <igorecha.9999@gmail.com>, 2020.
 # Dmytro Meleshko <dmytro.meleshko@gmail.com>, 2021.
+# narrnika <narr13niki@gmail.com>, 2021.
+# nec-trou <darya.bilyalova@gmail.com>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-02-01 20:54+0000\n"
+"PO-Revision-Date: 2021-04-19 22:33+0000\n"
 "Last-Translator: Danil Alexeev <danil@alexeev.xyz>\n"
 "Language-Team: Russian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ru/>\n"
@@ -105,7 +107,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
 "%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 4.5-dev\n"
+"X-Generator: Weblate 4.7-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -733,7 +735,7 @@ msgstr "Выбрать треки для копирования"
 #: editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp editor/property_editor.cpp
-#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
+#: editor/scene_tree_dock.cpp scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Copy"
 msgstr "Копировать"
 
@@ -1938,8 +1940,8 @@ msgid "Open a File or Directory"
 msgstr "Открыть каталог или файл"
 
 #: editor/editor_file_dialog.cpp editor/editor_node.cpp
-#: editor/editor_properties.cpp editor/inspector_dock.cpp
-#: editor/plugins/animation_player_editor_plugin.cpp
+#: editor/editor_properties.cpp editor/import_defaults_editor.cpp
+#: editor/inspector_dock.cpp editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/script_editor_plugin.cpp scene/gui/file_dialog.cpp
 msgid "Save"
 msgstr "Сохранить"
@@ -2077,7 +2079,7 @@ msgstr "Свойства"
 
 #: editor/editor_help.cpp
 msgid "override:"
-msgstr "Переопределить:"
+msgstr "переопределено:"
 
 #: editor/editor_help.cpp
 msgid "default:"
@@ -2614,8 +2616,8 @@ msgstr ""
 "конфигурации."
 
 #: editor/editor_node.cpp
-msgid "Unable to find script field for addon plugin at: 'res://addons/%s'."
-msgstr "Не удаётся найти поле script для плагина: «res://addons/%s»."
+msgid "Unable to find script field for addon plugin at: '%s'."
+msgstr "Не удаётся найти поле script для плагина: «%s»."
 
 #: editor/editor_node.cpp
 msgid "Unable to load addon script from path: '%s'."
@@ -3045,14 +3047,6 @@ msgid "Help"
 msgstr "Справка"
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/script_text_editor.cpp
-#: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
-#: editor/plugins/visual_shader_editor_plugin.cpp editor/project_manager.cpp
-#: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
-msgid "Search"
-msgstr "Поиск"
-
-#: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/shader_editor_plugin.cpp
 msgid "Online Docs"
 msgstr "Онлайн документация"
@@ -3217,6 +3211,24 @@ msgstr "Объединить с существующей"
 #: editor/editor_node.cpp
 msgid "Open & Run a Script"
 msgstr "Открыть и запустить скрипт"
+
+#: editor/editor_node.cpp
+msgid ""
+"The following files are newer on disk.\n"
+"What action should be taken?"
+msgstr ""
+"Следующие файлы изменены на диске.\n"
+"Какое действие следует выполнить?"
+
+#: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/shader_editor_plugin.cpp
+msgid "Reload"
+msgstr "Перезагрузить"
+
+#: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/shader_editor_plugin.cpp
+msgid "Resave"
+msgstr "Пересохранить"
 
 #: editor/editor_node.cpp
 msgid "New Inherited"
@@ -3429,7 +3441,7 @@ msgstr "Сделать уникальным"
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 #: editor/plugins/tile_map_editor_plugin.cpp editor/property_editor.cpp
-#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
+#: editor/scene_tree_dock.cpp scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Paste"
 msgstr "Вставить"
 
@@ -3553,7 +3565,7 @@ msgstr "(Текущий)"
 
 #: editor/export_template_manager.cpp
 msgid "Retrieving mirrors, please wait..."
-msgstr "Получение зеркал, пожалуйста подождите..."
+msgstr "Получение зеркал, пожалуйста, ждите..."
 
 #: editor/export_template_manager.cpp
 msgid "Remove template version '%s'?"
@@ -3745,6 +3757,13 @@ msgstr ""
 "переимпортируйте вручную."
 
 #: editor/filesystem_dock.cpp
+msgid ""
+"Importing has been disabled for this file, so it can't be opened for editing."
+msgstr ""
+"Импорт был отключён для этого файла, поэтому его нельзя открыть для "
+"редактирования."
+
+#: editor/filesystem_dock.cpp
 msgid "Cannot move/rename resources root."
 msgstr "Нельзя переместить/переименовать корень."
 
@@ -3908,7 +3927,7 @@ msgid ""
 "Please Wait..."
 msgstr ""
 "Сканирование файлов,\n"
-"пожалуйста, подождите..."
+"пожалуйста, ждите..."
 
 #: editor/filesystem_dock.cpp
 msgid "Move"
@@ -4131,6 +4150,22 @@ msgstr "Вы вернули производный от Node объект в м�
 #: editor/import/resource_importer_scene.cpp
 msgid "Saving..."
 msgstr "Сохранение..."
+
+#: editor/import_defaults_editor.cpp
+msgid "Select Importer"
+msgstr "Выберите импортёр"
+
+#: editor/import_defaults_editor.cpp
+msgid "Importer:"
+msgstr "Импортёр:"
+
+#: editor/import_defaults_editor.cpp
+msgid "Reset to Defaults"
+msgstr "Сбросить настройки"
+
+#: editor/import_dock.cpp
+msgid "Keep File (No Import)"
+msgstr "Сохранить файл (без импорта)"
 
 #: editor/import_dock.cpp
 msgid "%d Files"
@@ -5088,7 +5123,7 @@ msgstr "Время ожидания."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Bad download hash, assuming file has been tampered with."
-msgstr "Несовпадение хэша загрузки, возможно файл был изменён."
+msgstr "Несовпадение хеша загрузки, возможно файл был изменён."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Expected:"
@@ -5099,8 +5134,8 @@ msgid "Got:"
 msgstr "Получено:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-msgid "Failed sha256 hash check"
-msgstr "Не удалось проверить sha256 хэш"
+msgid "Failed SHA-256 hash check"
+msgstr "Не удалось проверить хеш SHA-256"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Asset Download Error:"
@@ -5203,7 +5238,6 @@ msgid "Sort:"
 msgstr "Сортировка:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#: editor/project_settings_editor.cpp
 msgid "Category:"
 msgstr "Категория:"
 
@@ -7025,6 +7059,14 @@ msgstr "Закрыть документацию"
 msgid "Run"
 msgstr "Запустить"
 
+#: editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/script_text_editor.cpp
+#: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
+#: editor/plugins/visual_shader_editor_plugin.cpp editor/project_manager.cpp
+#: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
+msgid "Search"
+msgstr "Поиск"
+
 #: editor/plugins/script_editor_plugin.cpp editor/script_editor_debugger.cpp
 msgid "Step Into"
 msgstr "Шаг в"
@@ -7077,16 +7119,6 @@ msgid ""
 msgstr ""
 "Следующие файлы новее на диске.\n"
 "Какие меры должны быть приняты?:"
-
-#: editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/shader_editor_plugin.cpp
-msgid "Reload"
-msgstr "Перезагрузить"
-
-#: editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/shader_editor_plugin.cpp
-msgid "Resave"
-msgstr "Пересохранить"
 
 #: editor/plugins/script_editor_plugin.cpp editor/script_editor_debugger.cpp
 msgid "Debugger"
@@ -7184,8 +7216,8 @@ msgstr "Точки останова"
 msgid "Go To"
 msgstr "Перейти к"
 
-#: editor/plugins/script_text_editor.cpp scene/gui/line_edit.cpp
-#: scene/gui/text_edit.cpp
+#: editor/plugins/script_text_editor.cpp editor/scene_tree_dock.cpp
+#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Cut"
 msgstr "Вырезать"
 
@@ -7408,13 +7440,12 @@ msgid "Yaw"
 msgstr "Рыскание"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Size"
-msgstr "Размер: "
+msgstr "Размер"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Objects Drawn"
-msgstr "Нарисовано обьектов"
+msgstr "Нарисовано объектов"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Material Changes"
@@ -7591,6 +7622,11 @@ msgstr "Модификатор замедления свободного вид�
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "View Rotation Locked"
 msgstr "Блокировать вращение камеры"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid ""
+"To zoom further, change the camera's clipping planes (View -> Settings...)"
+msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid ""
@@ -10096,6 +10132,10 @@ msgid "Projects"
 msgstr "Проекты"
 
 #: editor/project_manager.cpp
+msgid "Loading, please wait..."
+msgstr "Загрузка, пожалуйста, ждите..."
+
+#: editor/project_manager.cpp
 msgid "Last Modified"
 msgstr "Последнее изменение"
 
@@ -10465,6 +10505,10 @@ msgstr "Автозагрузка"
 msgid "Plugins"
 msgstr "Плагины"
 
+#: editor/project_settings_editor.cpp
+msgid "Import Defaults"
+msgstr "Шаблоны импорта"
+
 #: editor/property_editor.cpp
 msgid "Preset..."
 msgstr "Предустановка..."
@@ -10716,6 +10760,14 @@ msgid "Instance Child Scene"
 msgstr "Добавить дочернюю сцену"
 
 #: editor/scene_tree_dock.cpp
+msgid "Can't paste root node into the same scene."
+msgstr "Невозможно вставить корневой узел в ту же сцену."
+
+#: editor/scene_tree_dock.cpp
+msgid "Paste Node(s)"
+msgstr "Вставить узел(узлы)"
+
+#: editor/scene_tree_dock.cpp
 msgid "Detach Script"
 msgstr "Открепить скрипт"
 
@@ -10843,6 +10895,10 @@ msgid "Attach Script"
 msgstr "Прикрепить скрипт"
 
 #: editor/scene_tree_dock.cpp
+msgid "Cut Node(s)"
+msgstr "Вырезать узел(узлы)"
+
+#: editor/scene_tree_dock.cpp
 msgid "Remove Node(s)"
 msgstr "Удалить узел(узлы)"
 
@@ -10955,6 +11011,13 @@ msgstr "Убрать скрипт у выбранного узла."
 #: editor/scene_tree_dock.cpp
 msgid "Remote"
 msgstr "Удаленный"
+
+#: editor/scene_tree_dock.cpp
+msgid ""
+"If selected, the Remote scene tree dock will cause the project to stutter "
+"every time it updates.\n"
+"Switch back to the Local scene tree dock to improve performance."
+msgstr ""
 
 #: editor/scene_tree_dock.cpp
 msgid "Local"
@@ -12497,6 +12560,16 @@ msgstr ""
 msgid "An empty CollisionPolygon2D has no effect on collision."
 msgstr "Пустой CollisionPolygon2D не влияет на столкновения."
 
+#: scene/2d/collision_polygon_2d.cpp
+msgid "Invalid polygon. At least 3 points are needed in 'Solids' build mode."
+msgstr ""
+"Недопустимый полигон. В режиме «Solids» необходимо по крайней мере 3 точки."
+
+#: scene/2d/collision_polygon_2d.cpp
+msgid "Invalid polygon. At least 2 points are needed in 'Segments' build mode."
+msgstr ""
+"Недопустимый полигон. В режиме «Segments» необходимо по крайней мере 2 точки."
+
 #: scene/2d/collision_shape_2d.cpp
 msgid ""
 "CollisionShape2D only serves to provide a collision shape to a "
@@ -12818,11 +12891,6 @@ msgid ""
 msgstr ""
 "GIProbes не поддерживаются видеодрайвером GLES2.\n"
 "Вместо этого используйте BakedLightmap."
-
-#: scene/3d/interpolated_camera.cpp
-msgid ""
-"InterpolatedCamera has been deprecated and will be removed in Godot 4.0."
-msgstr "InterpolatedCamera устарела и будет удалена в Godot 4.0."
 
 #: scene/3d/light.cpp
 msgid "A SpotLight with an angle wider than 90 degrees cannot cast shadows."
@@ -13163,6 +13231,10 @@ msgstr "Изменения могут быть назначены только �
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Константы не могут быть изменены."
+
+#~ msgid ""
+#~ "InterpolatedCamera has been deprecated and will be removed in Godot 4.0."
+#~ msgstr "InterpolatedCamera устарела и будет удалена в Godot 4.0."
 
 #~ msgid "No"
 #~ msgstr "Нет"
@@ -14826,9 +14898,6 @@ msgstr "Константы не могут быть изменены."
 
 #~ msgid "Use Default Light"
 #~ msgstr "Использовать стандартный свет"
-
-#~ msgid "Use Default sRGB"
-#~ msgstr "Использовать sRGB"
 
 #~ msgid "Default Light Normal:"
 #~ msgstr "Образец стандартного освещения:"

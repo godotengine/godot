@@ -81,7 +81,9 @@ public:
 	};
 
 protected:
+	void _notification(int p_what);
 	static void _bind_methods();
+	void _validate_property(PropertyInfo &property) const override;
 
 private:
 	struct Item;
@@ -147,9 +149,9 @@ private:
 	struct ItemDropcap : public Item {
 		String text;
 		Ref<Font> font;
-		int font_size;
+		int font_size = 0;
 		Color color;
-		int ol_size;
+		int ol_size = 0;
 		Color ol_color;
 		Rect2 dropcap_margins;
 		ItemDropcap() { type = ITEM_DROPCAP; }
@@ -232,11 +234,11 @@ private:
 
 	struct ItemTable : public Item {
 		struct Column {
-			bool expand;
-			int expand_ratio;
-			int min_width;
-			int max_width;
-			int width;
+			bool expand = false;
+			int expand_ratio = 0;
+			int min_width = 0;
+			int max_width = 0;
+			int width = 0;
 		};
 
 		Vector<Column> columns;
@@ -322,31 +324,31 @@ private:
 		}
 	};
 
-	ItemFrame *main;
-	Item *current;
-	ItemFrame *current_frame;
+	ItemFrame *main = nullptr;
+	Item *current = nullptr;
+	ItemFrame *current_frame = nullptr;
 
-	VScrollBar *vscroll;
+	VScrollBar *vscroll = nullptr;
 
-	bool scroll_visible;
-	bool scroll_follow;
-	bool scroll_following;
-	bool scroll_active;
-	int scroll_w;
-	bool scroll_updated;
-	bool updating_scroll;
+	bool scroll_visible = false;
+	bool scroll_follow = false;
+	bool scroll_following = false;
+	bool scroll_active = true;
+	int scroll_w = 0;
+	bool scroll_updated = false;
+	bool updating_scroll = false;
 	int current_idx = 1;
 	int current_char_ofs = 0;
-	int visible_paragraph_count;
-	int visible_line_count;
+	int visible_paragraph_count = 0;
+	int visible_line_count = 0;
 
-	int tab_size;
-	bool underline_meta;
-	bool override_selected_font_color;
+	int tab_size = 4;
+	bool underline_meta = true;
+	bool override_selected_font_color = false;
 
-	Align default_align;
+	Align default_align = ALIGN_LEFT;
 
-	ItemMeta *meta_hovering;
+	ItemMeta *meta_hovering = nullptr;
 	Variant current_meta;
 
 	Vector<Ref<RichTextEffect>> custom_effects;
@@ -363,33 +365,33 @@ private:
 	Array st_args;
 
 	struct Selection {
-		ItemFrame *click_frame;
-		int click_line;
-		Item *click_item;
-		int click_char;
+		ItemFrame *click_frame = nullptr;
+		int click_line = 0;
+		Item *click_item = nullptr;
+		int click_char = 0;
 
-		ItemFrame *from_frame;
-		int from_line;
-		Item *from_item;
-		int from_char;
+		ItemFrame *from_frame = nullptr;
+		int from_line = 0;
+		Item *from_item = nullptr;
+		int from_char = 0;
 
-		ItemFrame *to_frame;
-		int to_line;
-		Item *to_item;
-		int to_char;
+		ItemFrame *to_frame = nullptr;
+		int to_line = 0;
+		Item *to_item = nullptr;
+		int to_char = 0;
 
-		bool active; // anything selected? i.e. from, to, etc. valid?
-		bool enabled; // allow selections?
+		bool active = false; // anything selected? i.e. from, to, etc. valid?
+		bool enabled = false; // allow selections?
 	};
 
 	Selection selection;
 
-	int visible_characters;
-	float percent_visible;
+	int visible_characters = -1;
+	float percent_visible = 1.0;
 
 	void _find_click(ItemFrame *p_frame, const Point2i &p_click, ItemFrame **r_click_frame = nullptr, int *r_click_line = nullptr, Item **r_click_item = nullptr, int *r_click_char = nullptr, bool *r_outside = nullptr);
 
-	String _get_line_text(ItemFrame *p_frame, int p_line, Selection p_sel);
+	String _get_line_text(ItemFrame *p_frame, int p_line, Selection p_sel) const;
 	bool _search_line(ItemFrame *p_frame, int p_line, const String &p_string, Item *p_from, Item *p_to);
 
 	void _shape_line(ItemFrame *p_frame, int p_line, const Ref<Font> &p_base_font, int p_base_font_size, int p_width, int *r_char_offset);
@@ -405,7 +407,7 @@ private:
 	Ref<Font> _find_font(Item *p_item);
 	int _find_font_size(Item *p_item);
 	Dictionary _find_font_features(Item *p_item);
-	int _find_outline_size(Item *p_item);
+	int _find_outline_size(Item *p_item, int p_default);
 	ItemList *_find_list_item(Item *p_item);
 	ItemDropcap *_find_dc_item(Item *p_item);
 	int _find_list(Item *p_item, Vector<int> &r_index, Vector<ItemList *> &r_list);
@@ -427,22 +429,19 @@ private:
 	void _scroll_changed(double);
 
 	void _gui_input(Ref<InputEvent> p_event);
-	Item *_get_next_item(Item *p_item, bool p_free = false);
-	Item *_get_prev_item(Item *p_item, bool p_free = false);
+	Item *_get_next_item(Item *p_item, bool p_free = false) const;
+	Item *_get_prev_item(Item *p_item, bool p_free = false) const;
 
 	Rect2 _get_text_rect();
 	Ref<RichTextEffect> _get_custom_effect_by_code(String p_bbcode_identifier);
 	virtual Dictionary parse_expressions_for_values(Vector<String> p_expressions);
 
-	bool use_bbcode;
+	bool use_bbcode = false;
 	String bbcode;
 
-	int fixed_width;
+	int fixed_width = -1;
 
-	bool fit_content_height;
-
-protected:
-	void _notification(int p_what);
+	bool fit_content_height = false;
 
 public:
 	String get_text();
@@ -484,6 +483,8 @@ public:
 	void push_cell();
 	void pop();
 
+	void increment_line_count();
+
 	void clear();
 
 	void set_offset(int p_pixel);
@@ -524,7 +525,9 @@ public:
 
 	void set_selection_enabled(bool p_enabled);
 	bool is_selection_enabled() const;
-	String get_selected_text();
+	int get_selection_from() const;
+	int get_selection_to() const;
+	String get_selected_text() const;
 	void selection_copy();
 
 	Error parse_bbcode(const String &p_bbcode);

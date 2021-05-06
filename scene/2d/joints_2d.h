@@ -46,20 +46,23 @@ class Joint2D : public Node2D {
 	real_t bias = 0.0;
 
 	bool exclude_from_collision = true;
+	bool configured = false;
 	String warning;
 
 protected:
 	void _disconnect_signals();
-	void _body_exit_tree(const ObjectID &p_body_id);
+	void _body_exit_tree();
 	void _update_joint(bool p_only_free = false);
 
 	void _notification(int p_what);
-	virtual RID _configure_joint(PhysicsBody2D *body_a, PhysicsBody2D *body_b) = 0;
+	virtual void _configure_joint(RID p_joint, PhysicsBody2D *body_a, PhysicsBody2D *body_b) = 0;
 
 	static void _bind_methods();
 
+	_FORCE_INLINE_ bool is_configured() const { return configured; }
+
 public:
-	virtual String get_configuration_warning() const override;
+	virtual TypedArray<String> get_configuration_warnings() const override;
 
 	void set_node_a(const NodePath &p_node_a);
 	NodePath get_node_a() const;
@@ -75,6 +78,7 @@ public:
 
 	RID get_joint() const { return joint; }
 	Joint2D();
+	~Joint2D();
 };
 
 class PinJoint2D : public Joint2D {
@@ -84,7 +88,7 @@ class PinJoint2D : public Joint2D {
 
 protected:
 	void _notification(int p_what);
-	virtual RID _configure_joint(PhysicsBody2D *body_a, PhysicsBody2D *body_b) override;
+	virtual void _configure_joint(RID p_joint, PhysicsBody2D *body_a, PhysicsBody2D *body_b) override;
 	static void _bind_methods();
 
 public:
@@ -102,7 +106,7 @@ class GrooveJoint2D : public Joint2D {
 
 protected:
 	void _notification(int p_what);
-	virtual RID _configure_joint(PhysicsBody2D *body_a, PhysicsBody2D *body_b) override;
+	virtual void _configure_joint(RID p_joint, PhysicsBody2D *body_a, PhysicsBody2D *body_b) override;
 	static void _bind_methods();
 
 public:
@@ -125,7 +129,7 @@ class DampedSpringJoint2D : public Joint2D {
 
 protected:
 	void _notification(int p_what);
-	virtual RID _configure_joint(PhysicsBody2D *body_a, PhysicsBody2D *body_b) override;
+	virtual void _configure_joint(RID p_joint, PhysicsBody2D *body_a, PhysicsBody2D *body_b) override;
 	static void _bind_methods();
 
 public:

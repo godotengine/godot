@@ -72,11 +72,13 @@ int TabContainer::_get_top_margin() const {
 }
 
 void TabContainer::_gui_input(const Ref<InputEvent> &p_event) {
+	ERR_FAIL_COND(p_event.is_null());
+
 	Ref<InputEventMouseButton> mb = p_event;
 
 	Popup *popup = get_popup();
 
-	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == BUTTON_LEFT) {
+	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MOUSE_BUTTON_LEFT) {
 		Point2 pos(mb->get_position().x, mb->get_position().y);
 		Size2 size = get_size();
 
@@ -535,6 +537,8 @@ void TabContainer::_draw_tab(Ref<StyleBox> &p_tab_style, Color &p_font_color, in
 	Vector<Control *> tabs = _get_tabs();
 	RID canvas = get_canvas_item();
 	Ref<Font> font = get_theme_font("font");
+	Color font_outline_color = get_theme_color("font_outline_color");
+	int outline_size = get_theme_constant("outline_size");
 	int icon_text_distance = get_theme_constant("icon_separation");
 	int tab_width = _get_tab_width(p_index);
 	int header_height = _get_top_margin();
@@ -565,6 +569,9 @@ void TabContainer::_draw_tab(Ref<StyleBox> &p_tab_style, Color &p_font_color, in
 
 	// Draw the tab text.
 	Point2i text_pos(x_content, y_center - text_buf[p_index]->get_size().y / 2);
+	if (outline_size > 0 && font_outline_color.a > 0) {
+		text_buf[p_index]->draw_outline(canvas, text_pos, outline_size, font_outline_color);
+	}
 	text_buf[p_index]->draw(canvas, text_pos, p_font_color);
 }
 
@@ -640,7 +647,7 @@ int TabContainer::_get_tab_width(int p_index) const {
 	// Get the width of the text displayed on the tab.
 	Ref<Font> font = get_theme_font("font");
 	int font_size = get_theme_font_size("font_size");
-	String text = control->has_meta("_tab_name") ? String(tr(String(control->get_meta("_tab_name")))) : String(control->get_name());
+	String text = control->has_meta("_tab_name") ? String(tr(String(control->get_meta("_tab_name")))) : String(tr(control->get_name()));
 	int width = font->get_string_size(text, font_size).width;
 
 	// Add space for a tab icon.
@@ -746,8 +753,6 @@ void TabContainer::set_current_tab(int p_current) {
 	current = p_current;
 
 	_repaint();
-
-	_change_notify("current_tab");
 
 	if (pending_previous == current) {
 		emit_signal("tab_selected", current);
@@ -967,8 +972,6 @@ void TabContainer::set_tab_align(TabAlign p_align) {
 	ERR_FAIL_INDEX(p_align, 3);
 	align = p_align;
 	update();
-
-	_change_notify("tab_align");
 }
 
 TabContainer::TabAlign TabContainer::get_tab_align() const {
@@ -1022,6 +1025,7 @@ void TabContainer::set_tab_title(int p_tab, const String &p_title) {
 	Control *child = _get_tab(p_tab);
 	ERR_FAIL_COND(!child);
 	child->set_meta("_tab_name", p_title);
+	_refresh_texts();
 	update();
 }
 
@@ -1243,20 +1247,5 @@ void TabContainer::_bind_methods() {
 }
 
 TabContainer::TabContainer() {
-	first_tab_cache = 0;
-	last_tab_cache = 0;
-	buttons_visible_cache = false;
-	menu_hovered = false;
-	highlight_arrow = -1;
-	tabs_ofs_cache = 0;
-	current = 0;
-	previous = 0;
-	align = ALIGN_CENTER;
-	tabs_visible = true;
-	all_tabs_in_front = false;
-	drag_to_rearrange_enabled = false;
-	tabs_rearrange_group = -1;
-	use_hidden_tabs_for_min_size = false;
-
 	connect("mouse_exited", callable_mp(this, &TabContainer::_on_mouse_exited));
 }

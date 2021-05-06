@@ -4,7 +4,7 @@
 		Button for touch screen devices for gameplay use.
 	</brief_description>
 	<description>
-		TouchScreenButton allows you to create on-screen buttons for touch devices. It's intended for gameplay use, such as a unit you have to touch to move.
+		TouchScreenButton allows you to create on-screen buttons for touch devices. It's intended for gameplay use, such as a unit you have to touch to move. Unlike [Button], TouchScreenButton supports multitouch out of the box. Several TouchScreenButtons can be pressed at the same time with touch input.
 		This node inherits from [Node2D]. Unlike with [Control] nodes, you cannot set anchors on it. If you want to create menus or user interfaces, you may want to use [Button] nodes instead. To make button nodes react to touch events, you can enable the Emulate Mouse option in the Project Settings.
 		You can configure TouchScreenButton to be visible only on touch devices, helping you develop your game both for desktop and mobile devices.
 	</description>
@@ -30,7 +30,8 @@
 			The button's texture for the normal state.
 		</member>
 		<member name="passby_press" type="bool" setter="set_passby_press" getter="is_passby_press_enabled" default="false">
-			If [code]true[/code], pass-by presses are enabled.
+			If [code]true[/code], the [signal pressed] and [signal released] signals are emitted whenever a pressed finger goes in and out of the button, even if the pressure started outside the active area of the button.
+			[b]Note:[/b] this is a "pass-by" (not "bypass") press mode.
 		</member>
 		<member name="pressed" type="Texture2D" setter="set_texture_pressed" getter="get_texture_pressed">
 			The button's texture for the pressed state.
@@ -42,7 +43,7 @@
 			If [code]true[/code], the button's shape is centered in the provided texture. If no texture is used, this property has no effect.
 		</member>
 		<member name="shape_visible" type="bool" setter="set_shape_visible" getter="is_shape_visible" default="true">
-			If [code]true[/code], the button's shape is visible.
+			If [code]true[/code], the button's shape is visible in the editor.
 		</member>
 		<member name="visibility_mode" type="int" setter="set_visibility_mode" getter="get_visibility_mode" enum="TouchScreenButton.VisibilityMode" default="0">
 			The button's visibility mode. See [enum VisibilityMode] for possible values.

@@ -84,7 +84,8 @@ private:
 	int last_order;
 
 	Ref<Resource> clipboard;
-	Map<String, Ref<Shortcut>> shortcuts;
+	mutable Map<String, Ref<Shortcut>> shortcuts;
+	Map<String, List<Ref<InputEvent>>> builtin_action_overrides;
 
 	String resource_path;
 	String settings_dir;
@@ -185,6 +186,9 @@ public:
 	bool is_shortcut(const String &p_name, const Ref<InputEvent> &p_event) const;
 	Ref<Shortcut> get_shortcut(const String &p_name) const;
 	void get_shortcut_list(List<String> *r_shortcuts);
+
+	void set_builtin_action_override(const String &p_name, const Array &p_events);
+	const Array get_builtin_action_overrides(const String &p_name) const;
 
 	void notify_changes();
 

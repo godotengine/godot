@@ -44,7 +44,7 @@
 #include <typeinfo>
 
 class RID_AllocBase {
-	static volatile uint64_t base_id;
+	static SafeNumeric<uint64_t> base_id;
 
 protected:
 	static RID _make_from_id(uint64_t p_id) {
@@ -54,7 +54,7 @@ protected:
 	}
 
 	static uint64_t _gen_id() {
-		return atomic_increment(&base_id);
+		return base_id.increment();
 	}
 
 	static RID _gen_rid() {
@@ -79,8 +79,7 @@ class RID_Alloc : public RID_AllocBase {
 
 	SpinLock spin_lock;
 
-public:
-	RID make_rid(const T &p_value) {
+	_FORCE_INLINE_ RID _allocate_rid(const T *p_initializer) {
 		if (THREAD_SAFE) {
 			spin_lock.lock();
 		}
@@ -115,15 +114,22 @@ public:
 		uint32_t free_chunk = free_index / elements_in_chunk;
 		uint32_t free_element = free_index % elements_in_chunk;
 
-		T *ptr = &chunks[free_chunk][free_element];
-		memnew_placement(ptr, T(p_value));
+		if (p_initializer) {
+			T *ptr = &chunks[free_chunk][free_element];
+			memnew_placement(ptr, T(*p_initializer));
+		}
 
-		uint32_t validator = (uint32_t)(_gen_id() & 0xFFFFFFFF);
+		uint32_t validator = (uint32_t)(_gen_id() & 0x7FFFFFFF);
 		uint64_t id = validator;
 		id <<= 32;
 		id |= free_index;
 
 		validator_chunks[free_chunk][free_element] = validator;
+
+		if (!p_initializer) {
+			validator_chunks[free_chunk][free_element] |= 0x80000000; //mark uninitialized bit
+		}
+
 		alloc_count++;
 
 		if (THREAD_SAFE) {
@@ -133,7 +139,20 @@ public:
 		return _make_from_id(id);
 	}
 
-	_FORCE_INLINE_ T *getornull(const RID &p_rid) {
+public:
+	RID make_rid(const T &p_value) {
+		return _allocate_rid(&p_value);
+	}
+
+	//allocate but don't initialize, use initialize_rid afterwards
+	RID allocate_rid() {
+		return _allocate_rid(nullptr);
+	}
+
+	_FORCE_INLINE_ T *getornull(const RID &p_rid, bool p_initialize = false) {
+		if (p_rid == RID()) {
+			return nullptr;
+		}
 		if (THREAD_SAFE) {
 			spin_lock.lock();
 		}
@@ -151,9 +170,31 @@ public:
 		uint32_t idx_element = idx % elements_in_chunk;
 
 		uint32_t validator = uint32_t(id >> 32);
-		if (unlikely(validator_chunks[idx_chunk][idx_element] != validator)) {
+
+		if (unlikely(p_initialize)) {
+			if (unlikely(!(validator_chunks[idx_chunk][idx_element] & 0x80000000))) {
+				if (THREAD_SAFE) {
+					spin_lock.unlock();
+				}
+				ERR_FAIL_V_MSG(nullptr, "Initializing already initialized RID");
+			}
+
+			if (unlikely((validator_chunks[idx_chunk][idx_element] & 0x7FFFFFFF) != validator)) {
+				if (THREAD_SAFE) {
+					spin_lock.unlock();
+				}
+				ERR_FAIL_V_MSG(nullptr, "Attempting to initialize the wrong RID");
+				return nullptr;
+			}
+
+			validator_chunks[idx_chunk][idx_element] &= 0x7FFFFFFF; //initialized
+
+		} else if (unlikely(validator_chunks[idx_chunk][idx_element] != validator)) {
 			if (THREAD_SAFE) {
 				spin_lock.unlock();
+			}
+			if (validator_chunks[idx_chunk][idx_element] & 0x80000000) {
+				ERR_FAIL_V_MSG(nullptr, "Attempting to use an uninitialized RID");
 			}
 			return nullptr;
 		}
@@ -165,6 +206,11 @@ public:
 		}
 
 		return ptr;
+	}
+	void initialize_rid(RID p_rid, const T &p_value) {
+		T *mem = getornull(p_rid, true);
+		ERR_FAIL_COND(!mem);
+		memnew_placement(mem, T(p_value));
 	}
 
 	_FORCE_INLINE_ bool owns(const RID &p_rid) {
@@ -186,7 +232,7 @@ public:
 
 		uint32_t validator = uint32_t(id >> 32);
 
-		bool owned = validator_chunks[idx_chunk][idx_element] == validator;
+		bool owned = (validator_chunks[idx_chunk][idx_element] & 0x7FFFFFFF) == validator;
 
 		if (THREAD_SAFE) {
 			spin_lock.unlock();
@@ -213,7 +259,12 @@ public:
 		uint32_t idx_element = idx % elements_in_chunk;
 
 		uint32_t validator = uint32_t(id >> 32);
-		if (unlikely(validator_chunks[idx_chunk][idx_element] != validator)) {
+		if (unlikely(validator_chunks[idx_chunk][idx_element] & 0x80000000)) {
+			if (THREAD_SAFE) {
+				spin_lock.unlock();
+			}
+			ERR_FAIL_MSG("Attempted to free an uninitialized or invalid RID");
+		} else if (unlikely(validator_chunks[idx_chunk][idx_element] != validator)) {
 			if (THREAD_SAFE) {
 				spin_lock.unlock();
 			}
@@ -330,12 +381,26 @@ public:
 		return alloc.make_rid(p_ptr);
 	}
 
+	_FORCE_INLINE_ RID allocate_rid() {
+		return alloc.allocate_rid();
+	}
+
+	_FORCE_INLINE_ void initialize_rid(RID p_rid, T *p_ptr) {
+		alloc.initialize_rid(p_rid, p_ptr);
+	}
+
 	_FORCE_INLINE_ T *getornull(const RID &p_rid) {
 		T **ptr = alloc.getornull(p_rid);
 		if (unlikely(!ptr)) {
 			return nullptr;
 		}
 		return *ptr;
+	}
+
+	_FORCE_INLINE_ void replace(const RID &p_rid, T *p_new_ptr) {
+		T **ptr = alloc.getornull(p_rid);
+		ERR_FAIL_COND(!ptr);
+		*ptr = p_new_ptr;
 	}
 
 	_FORCE_INLINE_ bool owns(const RID &p_rid) {
@@ -377,6 +442,14 @@ class RID_Owner {
 public:
 	_FORCE_INLINE_ RID make_rid(const T &p_ptr) {
 		return alloc.make_rid(p_ptr);
+	}
+
+	_FORCE_INLINE_ RID allocate_rid() {
+		return alloc.allocate_rid();
+	}
+
+	_FORCE_INLINE_ void initialize_rid(RID p_rid, const T &p_ptr) {
+		alloc.initialize_rid(p_rid, p_ptr);
 	}
 
 	_FORCE_INLINE_ T *getornull(const RID &p_rid) {

@@ -87,7 +87,6 @@ void Resource::set_path(const String &p_path, bool p_take_over) {
 		ResourceCache::lock.write_unlock();
 	}
 
-	_change_notify("resource_path");
 	_resource_path_changed();
 }
 
@@ -105,31 +104,34 @@ int Resource::get_subindex() const {
 
 void Resource::set_name(const String &p_name) {
 	name = p_name;
-	_change_notify("resource_name");
 }
 
 String Resource::get_name() const {
 	return name;
 }
 
+void Resource::update_configuration_warning() {
+	if (_update_configuration_warning) {
+		_update_configuration_warning();
+	}
+}
+
 bool Resource::editor_can_reload_from_file() {
 	return true; //by default yes
 }
 
-void Resource::reload_from_file() {
-	String path = get_path();
-	if (!path.is_resource_file()) {
-		return;
+void Resource::reset_state() {
+}
+Error Resource::copy_from(const Ref<Resource> &p_resource) {
+	ERR_FAIL_COND_V(p_resource.is_null(), ERR_INVALID_PARAMETER);
+	if (get_class() != p_resource->get_class()) {
+		return ERR_INVALID_PARAMETER;
 	}
 
-	Ref<Resource> s = ResourceLoader::load(ResourceLoader::path_remap(path), get_class(), true);
-
-	if (!s.is_valid()) {
-		return;
-	}
+	reset_state(); //may want to reset state
 
 	List<PropertyInfo> pi;
-	s->get_property_list(&pi);
+	p_resource->get_property_list(&pi);
 
 	for (List<PropertyInfo>::Element *E = pi.front(); E; E = E->next()) {
 		if (!(E->get().usage & PROPERTY_USAGE_STORAGE)) {
@@ -139,8 +141,23 @@ void Resource::reload_from_file() {
 			continue; //do not change path
 		}
 
-		set(E->get().name, s->get(E->get().name));
+		set(E->get().name, p_resource->get(E->get().name));
 	}
+	return OK;
+}
+void Resource::reload_from_file() {
+	String path = get_path();
+	if (!path.is_resource_file()) {
+		return;
+	}
+
+	Ref<Resource> s = ResourceLoader::load(ResourceLoader::path_remap(path), get_class(), ResourceFormatLoader::CACHE_MODE_IGNORE);
+
+	if (!s.is_valid()) {
+		return;
+	}
+
+	copy_from(s);
 }
 
 Ref<Resource> Resource::duplicate_for_local_scene(Node *p_for_scene, Map<Ref<Resource>, Ref<Resource>> &remap_cache) {
@@ -309,6 +326,7 @@ void Resource::setup_local_to_scene() {
 }
 
 Node *(*Resource::_get_local_scene_func)() = nullptr;
+void (*Resource::_update_configuration_warning)() = nullptr;
 
 void Resource::set_as_translation_remapped(bool p_remapped) {
 	if (remapped_list.in_list() == p_remapped) {

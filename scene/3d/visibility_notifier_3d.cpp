@@ -69,7 +69,6 @@ void VisibilityNotifier3D::set_aabb(const AABB &p_aabb) {
 		get_world_3d()->_update_notifier(this, get_global_transform().xform(aabb));
 	}
 
-	_change_notify("aabb");
 	update_gizmo();
 }
 

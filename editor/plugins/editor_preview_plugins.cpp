@@ -81,25 +81,22 @@ bool EditorTexturePreviewPlugin::generate_small_preview_automatically() const {
 Ref<Texture2D> EditorTexturePreviewPlugin::generate(const RES &p_from, const Size2 &p_size) const {
 	Ref<Image> img;
 	Ref<AtlasTexture> atex = p_from;
-	Ref<LargeTexture> ltex = p_from;
 	if (atex.is_valid()) {
 		Ref<Texture2D> tex = atex->get_atlas();
 		if (!tex.is_valid()) {
 			return Ref<Texture2D>();
 		}
 
-		Ref<Image> atlas = tex->get_data();
+		Ref<Image> atlas = tex->get_image();
 		if (!atlas.is_valid()) {
 			return Ref<Texture2D>();
 		}
 
 		img = atlas->get_rect(atex->get_region());
-	} else if (ltex.is_valid()) {
-		img = ltex->to_image();
 	} else {
 		Ref<Texture2D> tex = p_from;
 		if (tex.is_valid()) {
-			img = tex->get_data();
+			img = tex->get_image();
 			if (img.is_valid()) {
 				img = img->duplicate();
 			}
@@ -301,7 +298,7 @@ EditorPackedScenePreviewPlugin::EditorPackedScenePreviewPlugin() {
 //////////////////////////////////////////////////////////////////
 
 void EditorMaterialPreviewPlugin::_preview_done(const Variant &p_udata) {
-	preview_done = true;
+	preview_done.set();
 }
 
 void EditorMaterialPreviewPlugin::_bind_methods() {
@@ -325,10 +322,10 @@ Ref<Texture2D> EditorMaterialPreviewPlugin::generate(const RES &p_from, const Si
 
 		RS::get_singleton()->viewport_set_update_mode(viewport, RS::VIEWPORT_UPDATE_ONCE); //once used for capture
 
-		preview_done = false;
+		preview_done.clear();
 		RS::get_singleton()->request_frame_drawn_callback(const_cast<EditorMaterialPreviewPlugin *>(this), "_preview_done", Variant());
 
-		while (!preview_done) {
+		while (!preview_done.is_set()) {
 			OS::get_singleton()->delay_usec(10);
 		}
 
@@ -507,6 +504,7 @@ Ref<Texture2D> EditorScriptPreviewPlugin::generate(const RES &p_from, const Size
 	Color keyword_color = EditorSettings::get_singleton()->get("text_editor/highlighting/keyword_color");
 	Color text_color = EditorSettings::get_singleton()->get("text_editor/highlighting/text_color");
 	Color symbol_color = EditorSettings::get_singleton()->get("text_editor/highlighting/symbol_color");
+	Color comment_color = EditorSettings::get_singleton()->get("text_editor/highlighting/comment_color");
 
 	if (bg_color.a == 0) {
 		bg_color = Color(0, 0, 0, 0);
@@ -526,33 +524,42 @@ Ref<Texture2D> EditorScriptPreviewPlugin::generate(const RES &p_from, const Size
 
 	bool prev_is_text = false;
 	bool in_keyword = false;
+	bool in_comment = false;
 	for (int i = 0; i < code.length(); i++) {
 		char32_t c = code[i];
 		if (c > 32) {
 			if (col < thumbnail_size) {
 				Color color = text_color;
 
-				if (c != '_' && ((c >= '!' && c <= '/') || (c >= ':' && c <= '@') || (c >= '[' && c <= '`') || (c >= '{' && c <= '~') || c == '\t')) {
-					//make symbol a little visible
-					color = symbol_color;
-					in_keyword = false;
-				} else if (!prev_is_text && _is_text_char(c)) {
-					int pos = i;
-
-					while (_is_text_char(code[pos])) {
-						pos++;
-					}
-					String word = code.substr(i, pos - i);
-					if (keywords.has(word)) {
-						in_keyword = true;
-					}
-
-				} else if (!_is_text_char(c)) {
-					in_keyword = false;
+				if (c == '#') {
+					in_comment = true;
 				}
 
-				if (in_keyword) {
-					color = keyword_color;
+				if (in_comment) {
+					color = comment_color;
+				} else {
+					if (c != '_' && ((c >= '!' && c <= '/') || (c >= ':' && c <= '@') || (c >= '[' && c <= '`') || (c >= '{' && c <= '~') || c == '\t')) {
+						//make symbol a little visible
+						color = symbol_color;
+						in_keyword = false;
+					} else if (!prev_is_text && _is_text_char(c)) {
+						int pos = i;
+
+						while (_is_text_char(code[pos])) {
+							pos++;
+						}
+						String word = code.substr(i, pos - i);
+						if (keywords.has(word)) {
+							in_keyword = true;
+						}
+
+					} else if (!_is_text_char(c)) {
+						in_keyword = false;
+					}
+
+					if (in_keyword) {
+						color = keyword_color;
+					}
 				}
 
 				Color ul = color;
@@ -562,11 +569,14 @@ Ref<Texture2D> EditorScriptPreviewPlugin::generate(const RES &p_from, const Size
 
 				prev_is_text = _is_text_char(c);
 			}
+			col++;
 		} else {
 			prev_is_text = false;
 			in_keyword = false;
 
 			if (c == '\n') {
+				in_comment = false;
+
 				col = x0;
 				line++;
 				if (line >= available_height / 2) {
@@ -574,9 +584,10 @@ Ref<Texture2D> EditorScriptPreviewPlugin::generate(const RES &p_from, const Size
 				}
 			} else if (c == '\t') {
 				col += 3;
+			} else {
+				col++;
 			}
 		}
-		col++;
 	}
 
 	post_process_preview(img);
@@ -677,7 +688,7 @@ EditorAudioStreamPreviewPlugin::EditorAudioStreamPreviewPlugin() {
 ///////////////////////////////////////////////////////////////////////////
 
 void EditorMeshPreviewPlugin::_preview_done(const Variant &p_udata) {
-	preview_done = true;
+	preview_done.set();
 }
 
 void EditorMeshPreviewPlugin::_bind_methods() {
@@ -714,10 +725,10 @@ Ref<Texture2D> EditorMeshPreviewPlugin::generate(const RES &p_from, const Size2 
 
 	RS::get_singleton()->viewport_set_update_mode(viewport, RS::VIEWPORT_UPDATE_ONCE); //once used for capture
 
-	preview_done = false;
+	preview_done.clear();
 	RS::get_singleton()->request_frame_drawn_callback(const_cast<EditorMeshPreviewPlugin *>(this), "_preview_done", Variant());
 
-	while (!preview_done) {
+	while (!preview_done.is_set()) {
 		OS::get_singleton()->delay_usec(10);
 	}
 
@@ -792,7 +803,7 @@ EditorMeshPreviewPlugin::~EditorMeshPreviewPlugin() {
 ///////////////////////////////////////////////////////////////////////////
 
 void EditorFontPreviewPlugin::_preview_done(const Variant &p_udata) {
-	preview_done = true;
+	preview_done.set();
 }
 
 void EditorFontPreviewPlugin::_bind_methods() {
@@ -883,11 +894,11 @@ Ref<Texture2D> EditorFontPreviewPlugin::generate_from_path(const String &p_path,
 
 	font->draw_string(canvas_item, pos, sample, HALIGN_LEFT, -1.f, 50, Color(1, 1, 1));
 
-	preview_done = false;
+	preview_done.clear();
 	RS::get_singleton()->viewport_set_update_mode(viewport, RS::VIEWPORT_UPDATE_ONCE); //once used for capture
 	RS::get_singleton()->request_frame_drawn_callback(const_cast<EditorFontPreviewPlugin *>(this), "_preview_done", Variant());
 
-	while (!preview_done) {
+	while (!preview_done.is_set()) {
 		OS::get_singleton()->delay_usec(10);
 	}
 

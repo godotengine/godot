@@ -41,17 +41,20 @@ class AudioStreamEditor : public ColorRect {
 	GDCLASS(AudioStreamEditor, ColorRect);
 
 	Ref<AudioStream> stream;
-	AudioStreamPlayer *_player;
-	ColorRect *_preview;
-	Control *_indicator;
-	Label *_current_label;
-	Label *_duration_label;
+	AudioStreamPlayer *_player = nullptr;
+	ColorRect *_preview = nullptr;
+	Control *_indicator = nullptr;
+	Label *_current_label = nullptr;
+	Label *_duration_label = nullptr;
 
-	Button *_play_button;
-	Button *_stop_button;
+	Button *_play_button = nullptr;
+	Button *_stop_button = nullptr;
 
-	float _current;
-	bool _dragging;
+	float _current = 0;
+	bool _dragging = false;
+	bool _pausing = false;
+
+	void _audio_changed();
 
 protected:
 	void _notification(int p_what);
@@ -63,7 +66,6 @@ protected:
 	void _draw_indicator();
 	void _on_input_indicator(Ref<InputEvent> p_event);
 	void _seek_to(real_t p_x);
-	void _changed_callback(Object *p_changed, const char *p_prop) override;
 	static void _bind_methods();
 
 public:

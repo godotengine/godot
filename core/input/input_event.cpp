@@ -44,31 +44,31 @@ int InputEvent::get_device() const {
 	return device;
 }
 
-bool InputEvent::is_action(const StringName &p_action) const {
-	return InputMap::get_singleton()->event_is_action(Ref<InputEvent>((InputEvent *)this), p_action);
+bool InputEvent::is_action(const StringName &p_action, bool p_exact_match) const {
+	return InputMap::get_singleton()->event_is_action(Ref<InputEvent>((InputEvent *)this), p_action, p_exact_match);
 }
 
-bool InputEvent::is_action_pressed(const StringName &p_action, bool p_allow_echo) const {
+bool InputEvent::is_action_pressed(const StringName &p_action, bool p_allow_echo, bool p_exact_match) const {
 	bool pressed;
-	bool valid = InputMap::get_singleton()->event_get_action_status(Ref<InputEvent>((InputEvent *)this), p_action, &pressed);
+	bool valid = InputMap::get_singleton()->event_get_action_status(Ref<InputEvent>((InputEvent *)this), p_action, p_exact_match, &pressed, nullptr, nullptr);
 	return valid && pressed && (p_allow_echo || !is_echo());
 }
 
-bool InputEvent::is_action_released(const StringName &p_action) const {
+bool InputEvent::is_action_released(const StringName &p_action, bool p_exact_match) const {
 	bool pressed;
-	bool valid = InputMap::get_singleton()->event_get_action_status(Ref<InputEvent>((InputEvent *)this), p_action, &pressed);
+	bool valid = InputMap::get_singleton()->event_get_action_status(Ref<InputEvent>((InputEvent *)this), p_action, p_exact_match, &pressed, nullptr, nullptr);
 	return valid && !pressed;
 }
 
-float InputEvent::get_action_strength(const StringName &p_action) const {
+float InputEvent::get_action_strength(const StringName &p_action, bool p_exact_match) const {
 	float strength;
-	bool valid = InputMap::get_singleton()->event_get_action_status(Ref<InputEvent>((InputEvent *)this), p_action, nullptr, &strength);
+	bool valid = InputMap::get_singleton()->event_get_action_status(Ref<InputEvent>((InputEvent *)this), p_action, p_exact_match, nullptr, &strength, nullptr);
 	return valid ? strength : 0.0f;
 }
 
-float InputEvent::get_action_raw_strength(const StringName &p_action) const {
+float InputEvent::get_action_raw_strength(const StringName &p_action, bool p_exact_match) const {
 	float raw_strength;
-	bool valid = InputMap::get_singleton()->event_get_action_status(Ref<InputEvent>((InputEvent *)this), p_action, nullptr, nullptr, &raw_strength);
+	bool valid = InputMap::get_singleton()->event_get_action_status(Ref<InputEvent>((InputEvent *)this), p_action, p_exact_match, nullptr, nullptr, &raw_strength);
 	return valid ? raw_strength : 0.0f;
 }
 
@@ -100,10 +100,10 @@ void InputEvent::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_device", "device"), &InputEvent::set_device);
 	ClassDB::bind_method(D_METHOD("get_device"), &InputEvent::get_device);
 
-	ClassDB::bind_method(D_METHOD("is_action", "action"), &InputEvent::is_action);
-	ClassDB::bind_method(D_METHOD("is_action_pressed", "action", "allow_echo"), &InputEvent::is_action_pressed, DEFVAL(false));
-	ClassDB::bind_method(D_METHOD("is_action_released", "action"), &InputEvent::is_action_released);
-	ClassDB::bind_method(D_METHOD("get_action_strength", "action"), &InputEvent::get_action_strength);
+	ClassDB::bind_method(D_METHOD("is_action", "action", "exact_match"), &InputEvent::is_action, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("is_action_pressed", "action", "allow_echo", "exact_match"), &InputEvent::is_action_pressed, DEFVAL(false), DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("is_action_released", "action", "exact_match"), &InputEvent::is_action_released, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("get_action_strength", "action", "exact_match"), &InputEvent::get_action_strength, DEFVAL(false));
 
 	ClassDB::bind_method(D_METHOD("is_pressed"), &InputEvent::is_pressed);
 	ClassDB::bind_method(D_METHOD("is_echo"), &InputEvent::is_echo);
@@ -384,6 +384,31 @@ String InputEventKey::to_string() {
 	return vformat("InputEventKey: keycode=%s mods=%s physical=%s pressed=%s echo=%s", kc, mods, physical, p, e);
 }
 
+Ref<InputEventKey> InputEventKey::create_reference(uint32_t p_keycode) {
+	Ref<InputEventKey> ie;
+	ie.instance();
+	ie->set_keycode(p_keycode & KEY_CODE_MASK);
+	ie->set_unicode(p_keycode & KEY_CODE_MASK);
+
+	if (p_keycode & KEY_MASK_SHIFT) {
+		ie->set_shift(true);
+	}
+	if (p_keycode & KEY_MASK_ALT) {
+		ie->set_alt(true);
+	}
+	if (p_keycode & KEY_MASK_CTRL) {
+		ie->set_control(true);
+	}
+	if (p_keycode & KEY_MASK_CMD) {
+		ie->set_command(true);
+	}
+	if (p_keycode & KEY_MASK_META) {
+		ie->set_metakey(true);
+	}
+
+	return ie;
+}
+
 bool InputEventKey::action_match(const Ref<InputEvent> &p_event, bool *p_pressed, float *p_strength, float *p_raw_strength, float p_deadzone) const {
 	Ref<InputEventKey> key = p_event;
 	if (key.is_null()) {
@@ -520,12 +545,12 @@ bool InputEventMouseButton::is_pressed() const {
 	return pressed;
 }
 
-void InputEventMouseButton::set_doubleclick(bool p_doubleclick) {
-	doubleclick = p_doubleclick;
+void InputEventMouseButton::set_double_click(bool p_double_click) {
+	double_click = p_double_click;
 }
 
-bool InputEventMouseButton::is_doubleclick() const {
-	return doubleclick;
+bool InputEventMouseButton::is_double_click() const {
+	return double_click;
 }
 
 Ref<InputEvent> InputEventMouseButton::xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs) const {
@@ -544,7 +569,7 @@ Ref<InputEvent> InputEventMouseButton::xformed_by(const Transform2D &p_xform, co
 
 	mb->set_button_mask(get_button_mask());
 	mb->set_pressed(pressed);
-	mb->set_doubleclick(doubleclick);
+	mb->set_double_click(double_click);
 	mb->set_factor(factor);
 	mb->set_button_index(button_index);
 
@@ -594,15 +619,15 @@ String InputEventMouseButton::as_text() const {
 	// Button
 	int idx = get_button_index();
 	switch (idx) {
-		case BUTTON_LEFT:
-		case BUTTON_RIGHT:
-		case BUTTON_MIDDLE:
-		case BUTTON_WHEEL_UP:
-		case BUTTON_WHEEL_DOWN:
-		case BUTTON_WHEEL_LEFT:
-		case BUTTON_WHEEL_RIGHT:
-		case BUTTON_XBUTTON1:
-		case BUTTON_XBUTTON2:
+		case MOUSE_BUTTON_LEFT:
+		case MOUSE_BUTTON_RIGHT:
+		case MOUSE_BUTTON_MIDDLE:
+		case MOUSE_BUTTON_WHEEL_UP:
+		case MOUSE_BUTTON_WHEEL_DOWN:
+		case MOUSE_BUTTON_WHEEL_LEFT:
+		case MOUSE_BUTTON_WHEEL_RIGHT:
+		case MOUSE_BUTTON_XBUTTON1:
+		case MOUSE_BUTTON_XBUTTON2:
 			full_string += RTR(_mouse_button_descriptions[idx - 1]); // button index starts from 1, array index starts from 0, so subtract 1
 			break;
 		default:
@@ -611,7 +636,7 @@ String InputEventMouseButton::as_text() const {
 	}
 
 	// Double Click
-	if (doubleclick) {
+	if (double_click) {
 		full_string += " (" + RTR("Double Click") + ")";
 	}
 
@@ -620,21 +645,21 @@ String InputEventMouseButton::as_text() const {
 
 String InputEventMouseButton::to_string() {
 	String p = is_pressed() ? "true" : "false";
-	String d = doubleclick ? "true" : "false";
+	String d = double_click ? "true" : "false";
 
 	int idx = get_button_index();
 	String button_string = itos(idx);
 
 	switch (idx) {
-		case BUTTON_LEFT:
-		case BUTTON_RIGHT:
-		case BUTTON_MIDDLE:
-		case BUTTON_WHEEL_UP:
-		case BUTTON_WHEEL_DOWN:
-		case BUTTON_WHEEL_LEFT:
-		case BUTTON_WHEEL_RIGHT:
-		case BUTTON_XBUTTON1:
-		case BUTTON_XBUTTON2:
+		case MOUSE_BUTTON_LEFT:
+		case MOUSE_BUTTON_RIGHT:
+		case MOUSE_BUTTON_MIDDLE:
+		case MOUSE_BUTTON_WHEEL_UP:
+		case MOUSE_BUTTON_WHEEL_DOWN:
+		case MOUSE_BUTTON_WHEEL_LEFT:
+		case MOUSE_BUTTON_WHEEL_RIGHT:
+		case MOUSE_BUTTON_XBUTTON1:
+		case MOUSE_BUTTON_XBUTTON2:
 			button_string += " (" + RTR(_mouse_button_descriptions[idx - 1]) + ")"; // button index starts from 1, array index starts from 0, so subtract 1
 			break;
 		default:
@@ -646,7 +671,7 @@ String InputEventMouseButton::to_string() {
 
 	// Work around the fact vformat can only take 5 substitutions but 6 need to be passed.
 	String index_and_mods = vformat("button_index=%s mods=%s", button_index, mods);
-	return vformat("InputEventMouseButton: %s pressed=%s position=(%s) button_mask=%s doubleclick=%s", index_and_mods, p, String(get_position()), itos(get_button_mask()), d);
+	return vformat("InputEventMouseButton: %s pressed=%s position=(%s) button_mask=%s double_click=%s", index_and_mods, p, String(get_position()), itos(get_button_mask()), d);
 }
 
 void InputEventMouseButton::_bind_methods() {
@@ -659,13 +684,13 @@ void InputEventMouseButton::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_pressed", "pressed"), &InputEventMouseButton::set_pressed);
 	//	ClassDB::bind_method(D_METHOD("is_pressed"), &InputEventMouseButton::is_pressed);
 
-	ClassDB::bind_method(D_METHOD("set_doubleclick", "doubleclick"), &InputEventMouseButton::set_doubleclick);
-	ClassDB::bind_method(D_METHOD("is_doubleclick"), &InputEventMouseButton::is_doubleclick);
+	ClassDB::bind_method(D_METHOD("set_double_click", "double_click"), &InputEventMouseButton::set_double_click);
+	ClassDB::bind_method(D_METHOD("is_double_click"), &InputEventMouseButton::is_double_click);
 
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "factor"), "set_factor", "get_factor");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "button_index"), "set_button_index", "get_button_index");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "pressed"), "set_pressed", "is_pressed");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "doubleclick"), "set_doubleclick", "is_doubleclick");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "double_click"), "set_double_click", "is_double_click");
 }
 
 ///////////////////////////////////
@@ -736,20 +761,20 @@ String InputEventMouseMotion::to_string() {
 	int button_mask = get_button_mask();
 	String button_mask_string = itos(button_mask);
 	switch (get_button_mask()) {
-		case BUTTON_MASK_LEFT:
-			button_mask_string += " (" + RTR(_mouse_button_descriptions[BUTTON_LEFT - 1]) + ")";
+		case MOUSE_BUTTON_MASK_LEFT:
+			button_mask_string += " (" + RTR(_mouse_button_descriptions[MOUSE_BUTTON_LEFT - 1]) + ")";
 			break;
-		case BUTTON_MASK_MIDDLE:
-			button_mask_string += " (" + RTR(_mouse_button_descriptions[BUTTON_MIDDLE - 1]) + ")";
+		case MOUSE_BUTTON_MASK_MIDDLE:
+			button_mask_string += " (" + RTR(_mouse_button_descriptions[MOUSE_BUTTON_MIDDLE - 1]) + ")";
 			break;
-		case BUTTON_MASK_RIGHT:
-			button_mask_string += " (" + RTR(_mouse_button_descriptions[BUTTON_RIGHT - 1]) + ")";
+		case MOUSE_BUTTON_MASK_RIGHT:
+			button_mask_string += " (" + RTR(_mouse_button_descriptions[MOUSE_BUTTON_RIGHT - 1]) + ")";
 			break;
-		case BUTTON_MASK_XBUTTON1:
-			button_mask_string += " (" + RTR(_mouse_button_descriptions[BUTTON_XBUTTON1 - 1]) + ")";
+		case MOUSE_BUTTON_MASK_XBUTTON1:
+			button_mask_string += " (" + RTR(_mouse_button_descriptions[MOUSE_BUTTON_XBUTTON1 - 1]) + ")";
 			break;
-		case BUTTON_MASK_XBUTTON2:
-			button_mask_string += " (" + RTR(_mouse_button_descriptions[BUTTON_XBUTTON2 - 1]) + ")";
+		case MOUSE_BUTTON_MASK_XBUTTON2:
+			button_mask_string += " (" + RTR(_mouse_button_descriptions[MOUSE_BUTTON_XBUTTON2 - 1]) + ")";
 			break;
 		default:
 			break;
@@ -1009,6 +1034,14 @@ String InputEventJoypadButton::as_text() const {
 
 String InputEventJoypadButton::to_string() {
 	return "InputEventJoypadButton : button_index=" + itos(button_index) + ", pressed=" + (pressed ? "true" : "false") + ", pressure=" + String(Variant(pressure));
+}
+
+Ref<InputEventJoypadButton> InputEventJoypadButton::create_reference(int p_btn_index) {
+	Ref<InputEventJoypadButton> ie;
+	ie.instance();
+	ie->set_button_index(p_btn_index);
+
+	return ie;
 }
 
 void InputEventJoypadButton::_bind_methods() {

@@ -100,6 +100,18 @@ public:
 	MeshInstance3DGizmoPlugin();
 };
 
+class OccluderInstance3DGizmoPlugin : public EditorNode3DGizmoPlugin {
+	GDCLASS(OccluderInstance3DGizmoPlugin, EditorNode3DGizmoPlugin);
+
+public:
+	bool has_gizmo(Node3D *p_spatial) override;
+	String get_gizmo_name() const override;
+	int get_priority() const override;
+	void redraw(EditorNode3DGizmo *p_gizmo) override;
+
+	OccluderInstance3DGizmoPlugin();
+};
+
 class Sprite3DGizmoPlugin : public EditorNode3DGizmoPlugin {
 	GDCLASS(Sprite3DGizmoPlugin, EditorNode3DGizmoPlugin);
 
@@ -353,6 +365,18 @@ public:
 	void commit_handle(EditorNode3DGizmo *p_gizmo, int p_idx, const Variant &p_restore, bool p_cancel = false) override;
 
 	LightmapProbeGizmoPlugin();
+};
+
+class CollisionObject3DGizmoPlugin : public EditorNode3DGizmoPlugin {
+	GDCLASS(CollisionObject3DGizmoPlugin, EditorNode3DGizmoPlugin);
+
+public:
+	bool has_gizmo(Node3D *p_spatial) override;
+	String get_gizmo_name() const override;
+	int get_priority() const override;
+	void redraw(EditorNode3DGizmo *p_gizmo) override;
+
+	CollisionObject3DGizmoPlugin();
 };
 
 class CollisionShape3DGizmoPlugin : public EditorNode3DGizmoPlugin {

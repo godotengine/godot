@@ -27,6 +27,13 @@
 				This helper creates a [MeshInstance3D] child node with gizmos at every vertex calculated from the mesh geometry. It's mainly used for testing.
 			</description>
 		</method>
+		<method name="create_multiple_convex_collisions">
+			<return type="void">
+			</return>
+			<description>
+				This helper creates a [StaticBody3D] child node with multiple [ConvexPolygonShape3D] collision shapes calculated from the mesh geometry via convex decomposition. It's mainly used for testing.
+			</description>
+		</method>
 		<method name="create_trimesh_collision">
 			<return type="void">
 			</return>
@@ -43,7 +50,7 @@
 				Returns the [Material] that will be used by the [Mesh] when drawing. This can return the [member GeometryInstance3D.material_override], the surface override [Material] defined in this [MeshInstance3D], or the surface [Material] defined in the [Mesh]. For example, if [member GeometryInstance3D.material_override] is used, all surfaces will return the override material.
 			</description>
 		</method>
-		<method name="get_surface_material" qualifiers="const">
+		<method name="get_surface_override_material" qualifiers="const">
 			<return type="Material">
 			</return>
 			<argument index="0" name="surface" type="int">
@@ -52,14 +59,14 @@
 				Returns the override [Material] for the specified surface of the [Mesh] resource.
 			</description>
 		</method>
-		<method name="get_surface_material_count" qualifiers="const">
+		<method name="get_surface_override_material_count" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
-				Returns the number of surface materials.
+				Returns the number of surface override materials. This is equivalent to [method Mesh.get_surface_count].
 			</description>
 		</method>
-		<method name="set_surface_material">
+		<method name="set_surface_override_material">
 			<return type="void">
 			</return>
 			<argument index="0" name="surface" type="int">

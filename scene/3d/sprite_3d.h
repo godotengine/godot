@@ -31,8 +31,8 @@
 #ifndef SPRITE_3D_H
 #define SPRITE_3D_H
 
-#include "scene/2d/animated_sprite_2d.h"
 #include "scene/3d/visual_instance_3d.h"
+#include "scene/resources/sprite_frames.h"
 
 class SpriteBase3D : public GeometryInstance3D {
 	GDCLASS(SpriteBase3D, GeometryInstance3D);
@@ -107,8 +107,8 @@ public:
 	void set_flip_v(bool p_flip);
 	bool is_flipped_v() const;
 
-	void set_region(bool p_region);
-	bool is_region() const;
+	void set_region_enabled(bool p_region_enabled);
+	bool is_region_enabled() const;
 
 	void set_region_rect(const Rect2 &p_region_rect);
 	Rect2 get_region_rect() const;
@@ -147,7 +147,7 @@ class Sprite3D : public SpriteBase3D {
 	GDCLASS(Sprite3D, SpriteBase3D);
 	Ref<Texture2D> texture;
 
-	bool region;
+	bool region_enabled;
 	Rect2 region_rect;
 
 	int frame;
@@ -167,8 +167,8 @@ public:
 	void set_texture(const Ref<Texture2D> &p_texture);
 	Ref<Texture2D> get_texture() const;
 
-	void set_region(bool p_region);
-	bool is_region() const;
+	void set_region_enabled(bool p_region_enabled);
+	bool is_region_enabled() const;
 
 	void set_region_rect(const Rect2 &p_region_rect);
 	Rect2 get_region_rect() const;
@@ -203,8 +203,8 @@ class AnimatedSprite3D : public SpriteBase3D {
 
 	float timeout = 0.0;
 
-	bool hflip = 1;
-	bool vflip = 1;
+	bool hflip = true;
+	bool vflip = true;
 
 	Color modulate;
 
@@ -236,7 +236,7 @@ public:
 
 	virtual Rect2 get_item_rect() const override;
 
-	virtual String get_configuration_warning() const override;
+	TypedArray<String> get_configuration_warnings() const override;
 	AnimatedSprite3D();
 };
 

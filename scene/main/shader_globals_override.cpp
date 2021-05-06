@@ -232,7 +232,7 @@ void ShaderGlobalsOverride::_activate() {
 			}
 		}
 
-		update_configuration_warning(); //may have activated
+		update_configuration_warnings(); //may have activated
 	}
 }
 
@@ -260,23 +260,18 @@ void ShaderGlobalsOverride::_notification(int p_what) {
 	}
 }
 
-String ShaderGlobalsOverride::get_configuration_warning() const {
-	String warning = Node::get_configuration_warning();
+TypedArray<String> ShaderGlobalsOverride::get_configuration_warnings() const {
+	TypedArray<String> warnings = Node::get_configuration_warnings();
 
 	if (!active) {
-		if (!warning.is_empty()) {
-			warning += "\n\n";
-		}
-		warning += TTR("ShaderGlobalsOverride is not active because another node of the same type is in the scene.");
+		warnings.push_back(TTR("ShaderGlobalsOverride is not active because another node of the same type is in the scene."));
 	}
 
-	return warning;
+	return warnings;
 }
 
 void ShaderGlobalsOverride::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_activate"), &ShaderGlobalsOverride::_activate);
 }
 
-ShaderGlobalsOverride::ShaderGlobalsOverride() {
-	active = false;
-}
+ShaderGlobalsOverride::ShaderGlobalsOverride() {}

@@ -463,7 +463,7 @@ void FindInFilesDialog::_notification(int p_what) {
 			for (int i = 0; i < _filters_container->get_child_count(); i++) {
 				_filters_container->get_child(i)->queue_delete();
 			}
-			Array exts = ProjectSettings::get_singleton()->get("editor/search_in_file_extensions");
+			Array exts = ProjectSettings::get_singleton()->get("editor/script/search_in_file_extensions");
 			for (int i = 0; i < exts.size(); ++i) {
 				CheckBox *cb = memnew(CheckBox);
 				cb->set_text(exts[i]);
@@ -687,6 +687,9 @@ void FindInFilesPanel::stop_search() {
 void FindInFilesPanel::_notification(int p_what) {
 	if (p_what == NOTIFICATION_PROCESS) {
 		_progress_bar->set_as_ratio(_finder->get_progress());
+	} else if (p_what == NOTIFICATION_THEME_CHANGED) {
+		_search_text_label->add_theme_font_override("font", get_theme_font("source", "EditorFonts"));
+		_results_display->add_theme_font_override("font", get_theme_font("source", "EditorFonts"));
 	}
 }
 

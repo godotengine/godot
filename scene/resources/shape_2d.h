@@ -38,7 +38,7 @@ class Shape2D : public Resource {
 	OBJ_SAVE_TYPE(Shape2D);
 
 	RID shape;
-	real_t custom_bias;
+	real_t custom_bias = 0.0;
 
 protected:
 	static void _bind_methods();
@@ -61,6 +61,9 @@ public:
 	/// Returns the radius of a circle that fully enclose this shape
 	virtual real_t get_enclosing_radius() const = 0;
 	virtual RID get_rid() const override;
+
+	static bool is_collision_outline_enabled();
+
 	Shape2D();
 	~Shape2D();
 };

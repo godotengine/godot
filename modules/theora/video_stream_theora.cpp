@@ -225,7 +225,7 @@ void VideoStreamPlaybackTheora::set_file(const String &p_file) {
 			/* identify the codec: try theora */
 			if (!theora_p && th_decode_headerin(&ti, &tc, &ts, &op) >= 0) {
 				/* it is theora */
-				copymem(&to, &test, sizeof(test));
+				memcpy(&to, &test, sizeof(test));
 				theora_p = 1;
 			} else if (!vorbis_p && vorbis_synthesis_headerin(&vi, &vc, &op) >= 0) {
 				/* it is vorbis */
@@ -238,7 +238,7 @@ void VideoStreamPlaybackTheora::set_file(const String &p_file) {
 
 					audio_track_skip--;
 				} else {
-					copymem(&vo, &test, sizeof(test));
+					memcpy(&vo, &test, sizeof(test));
 					vorbis_p = 1;
 				}
 			} else {
@@ -554,7 +554,7 @@ void VideoStreamPlaybackTheora::play() {
 	}
 
 	playing = true;
-	delay_compensation = ProjectSettings::get_singleton()->get("audio/video_delay_compensation_ms");
+	delay_compensation = ProjectSettings::get_singleton()->get("audio/video/video_delay_compensation_ms");
 	delay_compensation /= 1000.0;
 };
 
@@ -603,6 +603,7 @@ float VideoStreamPlaybackTheora::get_playback_position() const {
 };
 
 void VideoStreamPlaybackTheora::seek(float p_time) {
+	WARN_PRINT_ONCE("Seeking in Theora and WebM videos is not implemented yet (it's only supported for GDNative-provided video streams).");
 }
 
 void VideoStreamPlaybackTheora::set_mix_callback(AudioMixCallback p_callback, void *p_userdata) {
@@ -677,7 +678,7 @@ void VideoStreamTheora::_bind_methods() {
 
 ////////////
 
-RES ResourceFormatLoaderTheora::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, bool p_no_cache) {
+RES ResourceFormatLoaderTheora::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, CacheMode p_cache_mode) {
 	FileAccess *f = FileAccess::open(p_path, FileAccess::READ);
 	if (!f) {
 		if (r_error) {

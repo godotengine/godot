@@ -87,14 +87,16 @@ private:
 		_FORCE_INLINE_ Volume merge(const Volume &b) const {
 			Volume r;
 			for (int i = 0; i < 3; ++i) {
-				if (min[i] < b.min[i])
+				if (min[i] < b.min[i]) {
 					r.min[i] = min[i];
-				else
+				} else {
 					r.min[i] = b.min[i];
-				if (max[i] > b.max[i])
+				}
+				if (max[i] > b.max[i]) {
 					r.max[i] = max[i];
-				else
+				} else {
 					r.max[i] = b.max[i];
+				}
 			}
 			return r;
 		}
@@ -202,10 +204,11 @@ private:
 
 		//
 		int count_leaves() const {
-			if (is_internal())
+			if (is_internal()) {
 				return childs[0]->count_leaves() + childs[1]->count_leaves();
-			else
+			} else {
 				return (1);
+			}
 		}
 
 		bool is_left_of_axis(const Vector3 &org, const Vector3 &axis) const {
@@ -254,31 +257,37 @@ private:
 		tymin = (bounds[raySign[1]].y - rayFrom.y) * rayInvDirection.y;
 		tymax = (bounds[1 - raySign[1]].y - rayFrom.y) * rayInvDirection.y;
 
-		if ((tmin > tymax) || (tymin > tmax))
+		if ((tmin > tymax) || (tymin > tmax)) {
 			return false;
+		}
 
-		if (tymin > tmin)
+		if (tymin > tmin) {
 			tmin = tymin;
+		}
 
-		if (tymax < tmax)
+		if (tymax < tmax) {
 			tmax = tymax;
+		}
 
 		tzmin = (bounds[raySign[2]].z - rayFrom.z) * rayInvDirection.z;
 		tzmax = (bounds[1 - raySign[2]].z - rayFrom.z) * rayInvDirection.z;
 
-		if ((tmin > tzmax) || (tzmin > tmax))
+		if ((tmin > tzmax) || (tzmin > tmax)) {
 			return false;
-		if (tzmin > tmin)
+		}
+		if (tzmin > tmin) {
 			tmin = tzmin;
-		if (tzmax < tmax)
+		}
+		if (tzmax < tmax) {
 			tmax = tzmax;
+		}
 		return ((tmin < lambda_max) && (tmax > lambda_min));
 	}
 
 public:
 	// Methods
 	void clear();
-	bool is_empty() const { return (0 == bvh_root); }
+	bool is_empty() const { return (nullptr == bvh_root); }
 	void optimize_bottom_up();
 	void optimize_top_down(int bu_threshold = 128);
 	void optimize_incremental(int passes);
@@ -334,7 +343,7 @@ void DynamicBVH::aabb_query(const AABB &p_box, QueryResult &r_result) {
 				if (depth > threshold) {
 					if (aux_stack.is_empty()) {
 						aux_stack.resize(ALLOCA_STACK_SIZE * 2);
-						copymem(aux_stack.ptr(), stack, ALLOCA_STACK_SIZE * sizeof(const Node *));
+						memcpy(aux_stack.ptr(), stack, ALLOCA_STACK_SIZE * sizeof(const Node *));
 					} else {
 						aux_stack.resize(aux_stack.size() * 2);
 					}
@@ -390,7 +399,7 @@ void DynamicBVH::convex_query(const Plane *p_planes, int p_plane_count, const Ve
 				if (depth > threshold) {
 					if (aux_stack.is_empty()) {
 						aux_stack.resize(ALLOCA_STACK_SIZE * 2);
-						copymem(aux_stack.ptr(), stack, ALLOCA_STACK_SIZE * sizeof(const Node *));
+						memcpy(aux_stack.ptr(), stack, ALLOCA_STACK_SIZE * sizeof(const Node *));
 					} else {
 						aux_stack.resize(aux_stack.size() * 2);
 					}
@@ -447,7 +456,7 @@ void DynamicBVH::ray_query(const Vector3 &p_from, const Vector3 &p_to, QueryResu
 				if (depth > threshold) {
 					if (aux_stack.is_empty()) {
 						aux_stack.resize(ALLOCA_STACK_SIZE * 2);
-						copymem(aux_stack.ptr(), stack, ALLOCA_STACK_SIZE * sizeof(const Node *));
+						memcpy(aux_stack.ptr(), stack, ALLOCA_STACK_SIZE * sizeof(const Node *));
 					} else {
 						aux_stack.resize(aux_stack.size() * 2);
 					}

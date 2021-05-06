@@ -74,7 +74,13 @@ void ProgressBar::_notification(int p_what) {
 		if (percent_visible) {
 			String txt = TS->format_number(itos(int(get_as_ratio() * 100))) + TS->percent_sign();
 			TextLine tl = TextLine(txt, font, font_size);
-			tl.draw(get_canvas_item(), (Point2(get_size().width - tl.get_size().x, get_size().height - tl.get_size().y) / 2).round(), font_color);
+			Vector2 text_pos = (Point2(get_size().width - tl.get_size().x, get_size().height - tl.get_size().y) / 2).round();
+			Color font_outline_color = get_theme_color("font_outline_color");
+			int outline_size = get_theme_constant("outline_size");
+			if (outline_size > 0 && font_outline_color.a > 0) {
+				tl.draw_outline(get_canvas_item(), text_pos, outline_size, font_outline_color);
+			}
+			tl.draw(get_canvas_item(), text_pos, font_color);
 		}
 	}
 }
@@ -98,5 +104,4 @@ void ProgressBar::_bind_methods() {
 ProgressBar::ProgressBar() {
 	set_v_size_flags(0);
 	set_step(0.01);
-	percent_visible = true;
 }

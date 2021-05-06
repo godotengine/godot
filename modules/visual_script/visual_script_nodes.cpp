@@ -57,7 +57,7 @@ bool VisualScriptFunction::_set(const StringName &p_name, const Variant &p_value
 			arguments.write[i].type = Variant::NIL;
 		}
 		ports_changed_notify();
-		_change_notify();
+		notify_property_list_changed();
 		return true;
 	}
 	if (String(p_name).begins_with("argument_")) {
@@ -303,6 +303,14 @@ VisualScriptNodeInstance *VisualScriptFunction::instance(VisualScriptInstance *p
 	return instance;
 }
 
+void VisualScriptFunction::reset_state() {
+	arguments.clear();
+	stack_size = 256;
+	stack_less = false;
+	sequenced = true;
+	rpc_mode = MultiplayerAPI::RPC_MODE_DISABLED;
+}
+
 VisualScriptFunction::VisualScriptFunction() {
 	stack_size = 256;
 	stack_less = false;
@@ -312,7 +320,7 @@ VisualScriptFunction::VisualScriptFunction() {
 
 void VisualScriptFunction::set_stack_less(bool p_enable) {
 	stack_less = p_enable;
-	_change_notify();
+	notify_property_list_changed();
 }
 
 bool VisualScriptFunction::is_stack_less() const {
@@ -421,7 +429,7 @@ bool VisualScriptLists::_set(const StringName &p_name, const Variant &p_value) {
 			inputports.write[i].type = Variant::NIL;
 		}
 		ports_changed_notify();
-		_change_notify();
+		notify_property_list_changed();
 		return true;
 	}
 	if (String(p_name).begins_with("input_") && is_input_port_editable()) {
@@ -457,7 +465,7 @@ bool VisualScriptLists::_set(const StringName &p_name, const Variant &p_value) {
 			outputports.write[i].type = Variant::NIL;
 		}
 		ports_changed_notify();
-		_change_notify();
+		notify_property_list_changed();
 		return true;
 	}
 	if (String(p_name).begins_with("output_") && is_output_port_editable()) {
@@ -578,7 +586,7 @@ void VisualScriptLists::add_input_data_port(Variant::Type p_type, const String &
 	}
 
 	ports_changed_notify();
-	_change_notify();
+	notify_property_list_changed();
 }
 
 void VisualScriptLists::set_input_data_port_type(int p_idx, Variant::Type p_type) {
@@ -590,7 +598,7 @@ void VisualScriptLists::set_input_data_port_type(int p_idx, Variant::Type p_type
 
 	inputports.write[p_idx].type = p_type;
 	ports_changed_notify();
-	_change_notify();
+	notify_property_list_changed();
 }
 
 void VisualScriptLists::set_input_data_port_name(int p_idx, const String &p_name) {
@@ -602,7 +610,7 @@ void VisualScriptLists::set_input_data_port_name(int p_idx, const String &p_name
 
 	inputports.write[p_idx].name = p_name;
 	ports_changed_notify();
-	_change_notify();
+	notify_property_list_changed();
 }
 
 void VisualScriptLists::remove_input_data_port(int p_argidx) {
@@ -615,7 +623,7 @@ void VisualScriptLists::remove_input_data_port(int p_argidx) {
 	inputports.remove(p_argidx);
 
 	ports_changed_notify();
-	_change_notify();
+	notify_property_list_changed();
 }
 
 // output data port interaction
@@ -634,7 +642,7 @@ void VisualScriptLists::add_output_data_port(Variant::Type p_type, const String 
 	}
 
 	ports_changed_notify();
-	_change_notify();
+	notify_property_list_changed();
 }
 
 void VisualScriptLists::set_output_data_port_type(int p_idx, Variant::Type p_type) {
@@ -646,7 +654,7 @@ void VisualScriptLists::set_output_data_port_type(int p_idx, Variant::Type p_typ
 
 	outputports.write[p_idx].type = p_type;
 	ports_changed_notify();
-	_change_notify();
+	notify_property_list_changed();
 }
 
 void VisualScriptLists::set_output_data_port_name(int p_idx, const String &p_name) {
@@ -658,7 +666,7 @@ void VisualScriptLists::set_output_data_port_name(int p_idx, const String &p_nam
 
 	outputports.write[p_idx].name = p_name;
 	ports_changed_notify();
-	_change_notify();
+	notify_property_list_changed();
 }
 
 void VisualScriptLists::remove_output_data_port(int p_argidx) {
@@ -671,7 +679,7 @@ void VisualScriptLists::remove_output_data_port(int p_argidx) {
 	outputports.remove(p_argidx);
 
 	ports_changed_notify();
-	_change_notify();
+	notify_property_list_changed();
 }
 
 // sequences
@@ -685,6 +693,13 @@ void VisualScriptLists::set_sequenced(bool p_enable) {
 
 bool VisualScriptLists::is_sequenced() const {
 	return sequenced;
+}
+
+void VisualScriptLists::reset_state() {
+	inputports.clear();
+	outputports.clear();
+	sequenced = false;
+	flags = 0;
 }
 
 VisualScriptLists::VisualScriptLists() {
@@ -1433,7 +1448,7 @@ void VisualScriptConstant::set_constant_type(Variant::Type p_type) {
 	Callable::CallError ce;
 	Variant::construct(type, value, nullptr, 0, ce);
 	ports_changed_notify();
-	_change_notify();
+	notify_property_list_changed();
 }
 
 Variant::Type VisualScriptConstant::get_constant_type() const {
@@ -1764,7 +1779,7 @@ String VisualScriptGlobalConstant::get_caption() const {
 
 void VisualScriptGlobalConstant::set_global_constant(int p_which) {
 	index = p_which;
-	_change_notify();
+	notify_property_list_changed();
 	ports_changed_notify();
 }
 
@@ -1850,7 +1865,7 @@ String VisualScriptClassConstant::get_caption() const {
 
 void VisualScriptClassConstant::set_class_constant(const StringName &p_which) {
 	name = p_which;
-	_change_notify();
+	notify_property_list_changed();
 	ports_changed_notify();
 }
 
@@ -1876,7 +1891,7 @@ void VisualScriptClassConstant::set_base_type(const StringName &p_which) {
 	} else {
 		name = "";
 	}
-	_change_notify();
+	notify_property_list_changed();
 	ports_changed_notify();
 }
 
@@ -1983,7 +1998,7 @@ String VisualScriptBasicTypeConstant::get_text() const {
 
 void VisualScriptBasicTypeConstant::set_basic_type_constant(const StringName &p_which) {
 	name = p_which;
-	_change_notify();
+	notify_property_list_changed();
 	ports_changed_notify();
 }
 
@@ -2010,7 +2025,7 @@ void VisualScriptBasicTypeConstant::set_basic_type(Variant::Type p_which) {
 	} else {
 		name = "";
 	}
-	_change_notify();
+	notify_property_list_changed();
 	ports_changed_notify();
 }
 
@@ -2140,7 +2155,7 @@ String VisualScriptMathConstant::get_caption() const {
 
 void VisualScriptMathConstant::set_math_constant(MathConstant p_which) {
 	constant = p_which;
-	_change_notify();
+	notify_property_list_changed();
 	ports_changed_notify();
 }
 
@@ -2233,7 +2248,7 @@ String VisualScriptEngineSingleton::get_caption() const {
 void VisualScriptEngineSingleton::set_singleton(const String &p_string) {
 	singleton = p_string;
 
-	_change_notify();
+	notify_property_list_changed();
 	ports_changed_notify();
 }
 
@@ -2342,7 +2357,7 @@ String VisualScriptSceneNode::get_caption() const {
 
 void VisualScriptSceneNode::set_node_path(const NodePath &p_path) {
 	path = p_path;
-	_change_notify();
+	notify_property_list_changed();
 	ports_changed_notify();
 }
 
@@ -2620,7 +2635,7 @@ String VisualScriptResourcePath::get_caption() const {
 
 void VisualScriptResourcePath::set_resource_path(const String &p_path) {
 	path = p_path;
-	_change_notify();
+	notify_property_list_changed();
 	ports_changed_notify();
 }
 
@@ -3748,7 +3763,7 @@ void VisualScriptDeconstruct::set_deconstruct_type(Variant::Type p_type) {
 	type = p_type;
 	_update_elements();
 	ports_changed_notify();
-	_change_notify(); //to make input appear/disappear
+	notify_property_list_changed(); //to make input appear/disappear
 }
 
 Variant::Type VisualScriptDeconstruct::get_deconstruct_type() const {

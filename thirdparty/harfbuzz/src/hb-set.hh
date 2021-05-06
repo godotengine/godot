@@ -244,7 +244,7 @@ struct hb_set_t
 
   bool resize (unsigned int count)
   {
-    if (unlikely (!successful)) return false;
+    if (unlikely (count > pages.length && !successful)) return false;
     if (!pages.resize (count) || !page_map.resize (count))
     {
       pages.resize (page_map.length);
@@ -256,19 +256,14 @@ struct hb_set_t
 
   void reset ()
   {
-    if (unlikely (hb_object_is_immutable (this)))
-      return;
-    clear ();
     successful = true;
+    clear ();
   }
 
   void clear ()
   {
-    if (unlikely (hb_object_is_immutable (this)))
-      return;
-    population = 0;
-    page_map.resize (0);
-    pages.resize (0);
+    if (resize (0))
+      population = 0;
   }
   bool is_empty () const
   {
@@ -278,6 +273,7 @@ struct hb_set_t
 	return false;
     return true;
   }
+  explicit operator bool () const { return !is_empty (); }
 
   void dirty () { population = UINT_MAX; }
 
@@ -389,6 +385,11 @@ struct hb_set_t
   {
     if (ds <= de)
     {
+      // Pre-allocate the workspace that compact() will need so we can bail on allocation failure
+      // before attempting to rewrite the page map.
+      hb_vector_t<unsigned> compact_workspace;
+      if (unlikely (!allocate_compact_workspace (compact_workspace))) return;
+
       unsigned int write_index = 0;
       for (unsigned int i = 0; i < page_map.length; i++)
       {
@@ -396,10 +397,11 @@ struct hb_set_t
 	if (m < ds || de < m)
 	  page_map[write_index++] = page_map[i];
       }
-      compact (write_index);
+      compact (compact_workspace, write_index);
       resize (write_index);
     }
   }
+
 
   public:
   void del_range (hb_codepoint_t a, hb_codepoint_t b)
@@ -512,20 +514,37 @@ struct hb_set_t
     return true;
   }
 
-  void compact (unsigned int length)
+  bool allocate_compact_workspace(hb_vector_t<unsigned>& workspace)
   {
-    hb_vector_t<uint32_t> old_index_to_page_map_index;
-    old_index_to_page_map_index.resize(pages.length);
-    for (uint32_t i = 0; i < old_index_to_page_map_index.length; i++)
-      old_index_to_page_map_index[i] = 0xFFFFFFFF;
+    if (unlikely(!workspace.resize (pages.length)))
+    {
+      successful = false;
+      return false;
+    }
 
-    for (uint32_t i = 0; i < length; i++)
+    return true;
+  }
+
+
+  /*
+   * workspace should be a pre-sized vector allocated to hold at exactly pages.length
+   * elements.
+   */
+  void compact (hb_vector_t<unsigned>& workspace,
+                unsigned int length)
+  {
+    assert(workspace.length == pages.length);
+    hb_vector_t<unsigned>& old_index_to_page_map_index = workspace;
+
+    hb_fill (old_index_to_page_map_index.writer(), 0xFFFFFFFF);
+    /* TODO(iter) Rewrite as dagger? */
+    for (unsigned i = 0; i < length; i++)
       old_index_to_page_map_index[page_map[i].index] =  i;
 
     compact_pages (old_index_to_page_map_index);
   }
 
-  void compact_pages (const hb_vector_t<uint32_t>& old_index_to_page_map_index)
+  void compact_pages (const hb_vector_t<unsigned>& old_index_to_page_map_index)
   {
     unsigned int write_index = 0;
     for (unsigned int i = 0; i < pages.length; i++)
@@ -543,6 +562,9 @@ struct hb_set_t
   template <typename Op>
   void process (const Op& op, const hb_set_t *other)
   {
+    const bool passthru_left = op (1, 0);
+    const bool passthru_right = op (0, 1);
+
     if (unlikely (!successful)) return;
 
     dirty ();
@@ -554,11 +576,17 @@ struct hb_set_t
     unsigned int count = 0, newCount = 0;
     unsigned int a = 0, b = 0;
     unsigned int write_index = 0;
+
+    // Pre-allocate the workspace that compact() will need so we can bail on allocation failure
+    // before attempting to rewrite the page map.
+    hb_vector_t<unsigned> compact_workspace;
+    if (!passthru_left && unlikely (!allocate_compact_workspace (compact_workspace))) return;
+
     for (; a < na && b < nb; )
     {
       if (page_map[a].major == other->page_map[b].major)
       {
-	if (!Op::passthru_left)
+	if (!passthru_left)
 	{
 	  // Move page_map entries that we're keeping from the left side set
 	  // to the front of the page_map vector. This isn't necessary if
@@ -575,27 +603,27 @@ struct hb_set_t
       }
       else if (page_map[a].major < other->page_map[b].major)
       {
-	if (Op::passthru_left)
+	if (passthru_left)
 	  count++;
 	a++;
       }
       else
       {
-	if (Op::passthru_right)
+	if (passthru_right)
 	  count++;
 	b++;
       }
     }
-    if (Op::passthru_left)
+    if (passthru_left)
       count += na - a;
-    if (Op::passthru_right)
+    if (passthru_right)
       count += nb - b;
 
-    if (!Op::passthru_left)
+    if (!passthru_left)
     {
       na  = write_index;
       next_page = write_index;
-      compact (write_index);
+      compact (compact_workspace, write_index);
     }
 
     if (!resize (count))
@@ -619,7 +647,7 @@ struct hb_set_t
       else if (page_map[a - 1].major > other->page_map[b - 1].major)
       {
 	a--;
-	if (Op::passthru_left)
+	if (passthru_left)
 	{
 	  count--;
 	  page_map[count] = page_map[a];
@@ -628,7 +656,7 @@ struct hb_set_t
       else
       {
 	b--;
-	if (Op::passthru_right)
+	if (passthru_right)
 	{
 	  count--;
 	  page_map[count].major = other->page_map[b].major;
@@ -637,14 +665,14 @@ struct hb_set_t
 	}
       }
     }
-    if (Op::passthru_left)
+    if (passthru_left)
       while (a)
       {
 	a--;
 	count--;
 	page_map[count] = page_map [a];
       }
-    if (Op::passthru_right)
+    if (passthru_right)
       while (b)
       {
 	b--;
@@ -655,6 +683,9 @@ struct hb_set_t
       }
     assert (!count);
     if (pages.length > newCount)
+      // This resize() doesn't need to be checked because we can't get here
+      // if the set is currently in_error() and this only resizes downwards
+      // which will always succeed if the set is not in_error().
       resize (newCount);
   }
 

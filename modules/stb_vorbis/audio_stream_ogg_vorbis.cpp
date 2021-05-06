@@ -47,7 +47,7 @@ void AudioStreamPlaybackOGGVorbis::_mix_internal(AudioFrame *p_buffer, int p_fra
 		int mixed = stb_vorbis_get_samples_float_interleaved(ogg_stream, 2, buffer, todo * 2);
 		if (vorbis_stream->channels == 1 && mixed > 0) {
 			//mix mono to stereo
-			for (int i = start_buffer; i < mixed; i++) {
+			for (int i = start_buffer; i < start_buffer + mixed; i++) {
 				p_buffer[i].r = p_buffer[i].l;
 			}
 		}
@@ -204,7 +204,7 @@ void AudioStreamOGGVorbis::set_data(const Vector<uint8_t> &p_data) {
 			clear_data();
 
 			data = memalloc(src_data_len);
-			copymem(data, src_datar, src_data_len);
+			memcpy(data, src_datar, src_data_len);
 			data_len = src_data_len;
 
 			break;
@@ -221,7 +221,7 @@ Vector<uint8_t> AudioStreamOGGVorbis::get_data() const {
 		vdata.resize(data_len);
 		{
 			uint8_t *w = vdata.ptrw();
-			copymem(w, data, data_len);
+			memcpy(w, data, data_len);
 		}
 	}
 

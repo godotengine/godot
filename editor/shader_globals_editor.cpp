@@ -427,7 +427,7 @@ void ShaderGlobalsEditor::_variable_deleted(const String &p_variable) {
 void ShaderGlobalsEditor::_changed() {
 	emit_signal("globals_changed");
 	if (!interface->block_update) {
-		interface->_change_notify();
+		interface->notify_property_list_changed();
 	}
 }
 
@@ -483,8 +483,5 @@ ShaderGlobalsEditor::ShaderGlobalsEditor() {
 }
 
 ShaderGlobalsEditor::~ShaderGlobalsEditor() {
-	if (is_visible_in_tree()) {
-		inspector->edit(nullptr);
-	}
 	memdelete(interface);
 }

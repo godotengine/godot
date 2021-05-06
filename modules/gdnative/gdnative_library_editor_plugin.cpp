@@ -257,7 +257,7 @@ void GDNativeLibraryEditor::_translate_to_config_file() {
 			}
 		}
 
-		library->_change_notify();
+		library->notify_property_list_changed();
 	}
 }
 

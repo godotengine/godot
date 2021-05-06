@@ -44,7 +44,6 @@
 #include "platform/windows/windows_terminal_logger.h"
 #include "servers/audio_server.h"
 #include "servers/rendering/rendering_server_default.h"
-#include "servers/rendering/rendering_server_wrap_mt.h"
 
 #include <ppltasks.h>
 #include <wrl.h>
@@ -62,6 +61,8 @@ using namespace Windows::Devices::Input;
 using namespace Windows::Devices::Sensors;
 using namespace Windows::ApplicationModel::DataTransfer;
 using namespace concurrency;
+
+static const float earth_gravity = 9.80665;
 
 int OS_UWP::get_video_driver_count() const {
 	return 2;
@@ -146,7 +147,7 @@ void OS_UWP::initialize_core() {
 	ticks_start = 0;
 	ticks_start = get_ticks_usec();
 
-	IP_Unix::make_default();
+	IPUnix::make_default();
 
 	cursor_shape = CURSOR_ARROW;
 }
@@ -373,9 +374,9 @@ void OS_UWP::ManagedType::on_accelerometer_reading_changed(Accelerometer ^ sende
 	AccelerometerReading ^ reading = args->Reading;
 
 	os->input->set_accelerometer(Vector3(
-			reading->AccelerationX,
-			reading->AccelerationY,
-			reading->AccelerationZ));
+			reading->AccelerationX * earth_gravity,
+			reading->AccelerationY * earth_gravity,
+			reading->AccelerationZ * earth_gravity));
 }
 
 void OS_UWP::ManagedType::on_magnetometer_reading_changed(Magnetometer ^ sender, MagnetometerReadingChangedEventArgs ^ args) {

@@ -655,7 +655,7 @@ msgstr "Seleccioneu les Pistes a Copiar"
 #: editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp editor/property_editor.cpp
-#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
+#: editor/scene_tree_dock.cpp scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Copy"
 msgstr "Copiar"
 
@@ -1871,8 +1871,8 @@ msgid "Open a File or Directory"
 msgstr "Obre un Fitxer o Directori"
 
 #: editor/editor_file_dialog.cpp editor/editor_node.cpp
-#: editor/editor_properties.cpp editor/inspector_dock.cpp
-#: editor/plugins/animation_player_editor_plugin.cpp
+#: editor/editor_properties.cpp editor/import_defaults_editor.cpp
+#: editor/inspector_dock.cpp editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/script_editor_plugin.cpp scene/gui/file_dialog.cpp
 msgid "Save"
 msgstr "Desa"
@@ -2547,7 +2547,8 @@ msgstr ""
 "configuració."
 
 #: editor/editor_node.cpp
-msgid "Unable to find script field for addon plugin at: 'res://addons/%s'."
+#, fuzzy
+msgid "Unable to find script field for addon plugin at: '%s'."
 msgstr ""
 "No s'ha pogut trobar el camp d'Script per al complement a: 'res: // addons /"
 "%s'."
@@ -2987,14 +2988,6 @@ msgid "Help"
 msgstr "Ajuda"
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/script_text_editor.cpp
-#: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
-#: editor/plugins/visual_shader_editor_plugin.cpp editor/project_manager.cpp
-#: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
-msgid "Search"
-msgstr "Cerca"
-
-#: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/shader_editor_plugin.cpp
 msgid "Online Docs"
 msgstr "Documentació en línia"
@@ -3164,6 +3157,25 @@ msgstr "Combina amb Existents"
 #: editor/editor_node.cpp
 msgid "Open & Run a Script"
 msgstr "Obre i Executa un Script"
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid ""
+"The following files are newer on disk.\n"
+"What action should be taken?"
+msgstr ""
+"El disc conté versions més recents dels fitxer següents. \n"
+"Quina acció voleu seguir?:"
+
+#: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/shader_editor_plugin.cpp
+msgid "Reload"
+msgstr "Torna a Carregar"
+
+#: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/shader_editor_plugin.cpp
+msgid "Resave"
+msgstr "Torna a Desar"
 
 #: editor/editor_node.cpp
 msgid "New Inherited"
@@ -3379,7 +3391,7 @@ msgstr "Fes-lo Únic"
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 #: editor/plugins/tile_map_editor_plugin.cpp editor/property_editor.cpp
-#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
+#: editor/scene_tree_dock.cpp scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Paste"
 msgstr "Enganxa"
 
@@ -3700,6 +3712,11 @@ msgstr "Preferits"
 #: editor/filesystem_dock.cpp
 msgid "Status: Import of file failed. Please fix file and reimport manually."
 msgstr "Estat: No s'ha pogut importar. Corregiu el fitxer i torneu a importar."
+
+#: editor/filesystem_dock.cpp
+msgid ""
+"Importing has been disabled for this file, so it can't be opened for editing."
+msgstr ""
 
 #: editor/filesystem_dock.cpp
 msgid "Cannot move/rename resources root."
@@ -4092,6 +4109,25 @@ msgstr ""
 #: editor/import/resource_importer_scene.cpp
 msgid "Saving..."
 msgstr "Desant..."
+
+#: editor/import_defaults_editor.cpp
+#, fuzzy
+msgid "Select Importer"
+msgstr "Mode de selecció"
+
+#: editor/import_defaults_editor.cpp
+#, fuzzy
+msgid "Importer:"
+msgstr "Importa"
+
+#: editor/import_defaults_editor.cpp
+#, fuzzy
+msgid "Reset to Defaults"
+msgstr "Carrega Valors predeterminats"
+
+#: editor/import_dock.cpp
+msgid "Keep File (No Import)"
+msgstr ""
 
 #: editor/import_dock.cpp
 msgid "%d Files"
@@ -5075,7 +5111,8 @@ msgid "Got:"
 msgstr "Rebut:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-msgid "Failed sha256 hash check"
+#, fuzzy
+msgid "Failed SHA-256 hash check"
 msgstr "Ha fallat la comprovació del hash sha256"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
@@ -5184,7 +5221,6 @@ msgid "Sort:"
 msgstr "Ordena:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#: editor/project_settings_editor.cpp
 msgid "Category:"
 msgstr "Categoria:"
 
@@ -7071,6 +7107,14 @@ msgstr "Tanca la Documentació"
 msgid "Run"
 msgstr "Executar"
 
+#: editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/script_text_editor.cpp
+#: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
+#: editor/plugins/visual_shader_editor_plugin.cpp editor/project_manager.cpp
+#: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
+msgid "Search"
+msgstr "Cerca"
+
 #: editor/plugins/script_editor_plugin.cpp editor/script_editor_debugger.cpp
 msgid "Step Into"
 msgstr "Pas a Pas (per instruccions)"
@@ -7123,16 +7167,6 @@ msgid ""
 msgstr ""
 "El disc conté versions més recents dels fitxer següents. \n"
 "Quina acció voleu seguir?:"
-
-#: editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/shader_editor_plugin.cpp
-msgid "Reload"
-msgstr "Torna a Carregar"
-
-#: editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/shader_editor_plugin.cpp
-msgid "Resave"
-msgstr "Torna a Desar"
 
 #: editor/plugins/script_editor_plugin.cpp editor/script_editor_debugger.cpp
 msgid "Debugger"
@@ -7232,8 +7266,8 @@ msgstr "Punts d’interrupció"
 msgid "Go To"
 msgstr "Anar a"
 
-#: editor/plugins/script_text_editor.cpp scene/gui/line_edit.cpp
-#: scene/gui/text_edit.cpp
+#: editor/plugins/script_text_editor.cpp editor/scene_tree_dock.cpp
+#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Cut"
 msgstr "Talla"
 
@@ -7655,6 +7689,11 @@ msgstr "Modificador de la Velocitat de la Vista Lliure"
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "View Rotation Locked"
 msgstr "Rotació de la Vista Bloquejada"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid ""
+"To zoom further, change the camera's clipping planes (View -> Settings...)"
+msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
 #, fuzzy
@@ -10297,6 +10336,11 @@ msgstr "Projecte"
 
 #: editor/project_manager.cpp
 #, fuzzy
+msgid "Loading, please wait..."
+msgstr "S'estan buscant rèpliques..."
+
+#: editor/project_manager.cpp
+#, fuzzy
 msgid "Last Modified"
 msgstr "Última modificació"
 
@@ -10669,6 +10713,11 @@ msgstr "Càrrega Automàtica"
 msgid "Plugins"
 msgstr "Connectors"
 
+#: editor/project_settings_editor.cpp
+#, fuzzy
+msgid "Import Defaults"
+msgstr "Carrega Valors predeterminats"
+
 #: editor/property_editor.cpp
 msgid "Preset..."
 msgstr "Configuració..."
@@ -10930,6 +10979,16 @@ msgstr "Instancia una Escena Filla"
 
 #: editor/scene_tree_dock.cpp
 #, fuzzy
+msgid "Can't paste root node into the same scene."
+msgstr "No es pot operar en Nodes d'una escena externa!"
+
+#: editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Paste Node(s)"
+msgstr "Enganxa els Nodes"
+
+#: editor/scene_tree_dock.cpp
+#, fuzzy
 msgid "Detach Script"
 msgstr "Adjunta-li un Script"
 
@@ -11064,6 +11123,11 @@ msgid "Attach Script"
 msgstr "Adjunta-li un Script"
 
 #: editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Cut Node(s)"
+msgstr "Talla els Nodes"
+
+#: editor/scene_tree_dock.cpp
 msgid "Remove Node(s)"
 msgstr "Elimina els Nodes"
 
@@ -11180,6 +11244,13 @@ msgstr "Reestableix un Script per al node Seleccionat."
 #: editor/scene_tree_dock.cpp
 msgid "Remote"
 msgstr "Remot"
+
+#: editor/scene_tree_dock.cpp
+msgid ""
+"If selected, the Remote scene tree dock will cause the project to stutter "
+"every time it updates.\n"
+"Switch back to the Local scene tree dock to improve performance."
+msgstr ""
 
 #: editor/scene_tree_dock.cpp
 msgid "Local"
@@ -12796,6 +12867,14 @@ msgstr ""
 msgid "An empty CollisionPolygon2D has no effect on collision."
 msgstr "Un CollisionPolygon2D buit no té cap efecte en la col·lisió."
 
+#: scene/2d/collision_polygon_2d.cpp
+msgid "Invalid polygon. At least 3 points are needed in 'Solids' build mode."
+msgstr ""
+
+#: scene/2d/collision_polygon_2d.cpp
+msgid "Invalid polygon. At least 2 points are needed in 'Segments' build mode."
+msgstr ""
+
 #: scene/2d/collision_shape_2d.cpp
 msgid ""
 "CollisionShape2D only serves to provide a collision shape to a "
@@ -13116,11 +13195,6 @@ msgid ""
 msgstr ""
 "Les GIProbes no estan suportades pel controlador de vídeo GLES2.\n"
 "Utilitzeu un BakedLightmap en el seu lloc."
-
-#: scene/3d/interpolated_camera.cpp
-msgid ""
-"InterpolatedCamera has been deprecated and will be removed in Godot 4.0."
-msgstr ""
 
 #: scene/3d/light.cpp
 #, fuzzy

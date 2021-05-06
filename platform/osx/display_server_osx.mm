@@ -829,8 +829,8 @@ static void _mouseDownEvent(DisplayServer::WindowID window_id, NSEvent *event, i
 	mb->set_position(pos);
 	mb->set_global_position(pos);
 	mb->set_button_mask(DS_OSX->last_button_state);
-	if (index == BUTTON_LEFT && pressed) {
-		mb->set_doubleclick([event clickCount] == 2);
+	if (index == MOUSE_BUTTON_LEFT && pressed) {
+		mb->set_double_click([event clickCount] == 2);
 	}
 
 	Input::get_singleton()->accumulate_input_event(mb);
@@ -842,10 +842,10 @@ static void _mouseDownEvent(DisplayServer::WindowID window_id, NSEvent *event, i
 
 	if (([event modifierFlags] & NSEventModifierFlagControl)) {
 		wd.mouse_down_control = true;
-		_mouseDownEvent(window_id, event, BUTTON_RIGHT, BUTTON_MASK_RIGHT, true);
+		_mouseDownEvent(window_id, event, MOUSE_BUTTON_RIGHT, MOUSE_BUTTON_MASK_RIGHT, true);
 	} else {
 		wd.mouse_down_control = false;
-		_mouseDownEvent(window_id, event, BUTTON_LEFT, BUTTON_MASK_LEFT, true);
+		_mouseDownEvent(window_id, event, MOUSE_BUTTON_LEFT, MOUSE_BUTTON_MASK_LEFT, true);
 	}
 }
 
@@ -858,9 +858,9 @@ static void _mouseDownEvent(DisplayServer::WindowID window_id, NSEvent *event, i
 	DisplayServerOSX::WindowData &wd = DS_OSX->windows[window_id];
 
 	if (wd.mouse_down_control) {
-		_mouseDownEvent(window_id, event, BUTTON_RIGHT, BUTTON_MASK_RIGHT, false);
+		_mouseDownEvent(window_id, event, MOUSE_BUTTON_RIGHT, MOUSE_BUTTON_MASK_RIGHT, false);
 	} else {
-		_mouseDownEvent(window_id, event, BUTTON_LEFT, BUTTON_MASK_LEFT, false);
+		_mouseDownEvent(window_id, event, MOUSE_BUTTON_LEFT, MOUSE_BUTTON_MASK_LEFT, false);
 	}
 }
 
@@ -870,6 +870,15 @@ static void _mouseDownEvent(DisplayServer::WindowID window_id, NSEvent *event, i
 
 	NSPoint delta = NSMakePoint([event deltaX], [event deltaY]);
 	NSPoint mpos = [event locationInWindow];
+
+	if (DS_OSX->ignore_warp) {
+		// Discard late events, before warp
+		if (([event timestamp]) < DS_OSX->last_warp) {
+			return;
+		}
+		DS_OSX->ignore_warp = false;
+		return;
+	}
 
 	if (DS_OSX->mouse_mode == DisplayServer::MOUSE_MODE_CONFINED) {
 		// Discard late events
@@ -937,7 +946,7 @@ static void _mouseDownEvent(DisplayServer::WindowID window_id, NSEvent *event, i
 }
 
 - (void)rightMouseDown:(NSEvent *)event {
-	_mouseDownEvent(window_id, event, BUTTON_RIGHT, BUTTON_MASK_RIGHT, true);
+	_mouseDownEvent(window_id, event, MOUSE_BUTTON_RIGHT, MOUSE_BUTTON_MASK_RIGHT, true);
 }
 
 - (void)rightMouseDragged:(NSEvent *)event {
@@ -945,16 +954,16 @@ static void _mouseDownEvent(DisplayServer::WindowID window_id, NSEvent *event, i
 }
 
 - (void)rightMouseUp:(NSEvent *)event {
-	_mouseDownEvent(window_id, event, BUTTON_RIGHT, BUTTON_MASK_RIGHT, false);
+	_mouseDownEvent(window_id, event, MOUSE_BUTTON_RIGHT, MOUSE_BUTTON_MASK_RIGHT, false);
 }
 
 - (void)otherMouseDown:(NSEvent *)event {
 	if ((int)[event buttonNumber] == 2) {
-		_mouseDownEvent(window_id, event, BUTTON_MIDDLE, BUTTON_MASK_MIDDLE, true);
+		_mouseDownEvent(window_id, event, MOUSE_BUTTON_MIDDLE, MOUSE_BUTTON_MASK_MIDDLE, true);
 	} else if ((int)[event buttonNumber] == 3) {
-		_mouseDownEvent(window_id, event, BUTTON_XBUTTON1, BUTTON_MASK_XBUTTON1, true);
+		_mouseDownEvent(window_id, event, MOUSE_BUTTON_XBUTTON1, MOUSE_BUTTON_MASK_XBUTTON1, true);
 	} else if ((int)[event buttonNumber] == 4) {
-		_mouseDownEvent(window_id, event, BUTTON_XBUTTON2, BUTTON_MASK_XBUTTON2, true);
+		_mouseDownEvent(window_id, event, MOUSE_BUTTON_XBUTTON2, MOUSE_BUTTON_MASK_XBUTTON2, true);
 	} else {
 		return;
 	}
@@ -966,11 +975,11 @@ static void _mouseDownEvent(DisplayServer::WindowID window_id, NSEvent *event, i
 
 - (void)otherMouseUp:(NSEvent *)event {
 	if ((int)[event buttonNumber] == 2) {
-		_mouseDownEvent(window_id, event, BUTTON_MIDDLE, BUTTON_MASK_MIDDLE, false);
+		_mouseDownEvent(window_id, event, MOUSE_BUTTON_MIDDLE, MOUSE_BUTTON_MASK_MIDDLE, false);
 	} else if ((int)[event buttonNumber] == 3) {
-		_mouseDownEvent(window_id, event, BUTTON_XBUTTON1, BUTTON_MASK_XBUTTON1, false);
+		_mouseDownEvent(window_id, event, MOUSE_BUTTON_XBUTTON1, MOUSE_BUTTON_MASK_XBUTTON1, false);
 	} else if ((int)[event buttonNumber] == 4) {
-		_mouseDownEvent(window_id, event, BUTTON_XBUTTON2, BUTTON_MASK_XBUTTON2, false);
+		_mouseDownEvent(window_id, event, MOUSE_BUTTON_XBUTTON2, MOUSE_BUTTON_MASK_XBUTTON2, false);
 	} else {
 		return;
 	}
@@ -1549,10 +1558,10 @@ inline void sendPanEvent(DisplayServer::WindowID window_id, double dx, double dy
 		sendPanEvent(window_id, deltaX, deltaY, [event modifierFlags]);
 	} else {
 		if (fabs(deltaX)) {
-			sendScrollEvent(window_id, 0 > deltaX ? BUTTON_WHEEL_RIGHT : BUTTON_WHEEL_LEFT, fabs(deltaX * 0.3), [event modifierFlags]);
+			sendScrollEvent(window_id, 0 > deltaX ? MOUSE_BUTTON_WHEEL_RIGHT : MOUSE_BUTTON_WHEEL_LEFT, fabs(deltaX * 0.3), [event modifierFlags]);
 		}
 		if (fabs(deltaY)) {
-			sendScrollEvent(window_id, 0 < deltaY ? BUTTON_WHEEL_UP : BUTTON_WHEEL_DOWN, fabs(deltaY * 0.3), [event modifierFlags]);
+			sendScrollEvent(window_id, 0 < deltaY ? MOUSE_BUTTON_WHEEL_UP : MOUSE_BUTTON_WHEEL_DOWN, fabs(deltaY * 0.3), [event modifierFlags]);
 		}
 	}
 }
@@ -1631,7 +1640,7 @@ String DisplayServerOSX::get_name() const {
 }
 
 const NSMenu *DisplayServerOSX::_get_menu_root(const String &p_menu_root) const {
-	const NSMenu *menu = NULL;
+	const NSMenu *menu = nullptr;
 	if (p_menu_root == "") {
 		// Main menu.x
 		menu = [NSApp mainMenu];
@@ -1646,13 +1655,13 @@ const NSMenu *DisplayServerOSX::_get_menu_root(const String &p_menu_root) const 
 	}
 	if (menu == apple_menu) {
 		// Do not allow to change Apple menu.
-		return NULL;
+		return nullptr;
 	}
 	return menu;
 }
 
 NSMenu *DisplayServerOSX::_get_menu_root(const String &p_menu_root) {
-	NSMenu *menu = NULL;
+	NSMenu *menu = nullptr;
 	if (p_menu_root == "") {
 		// Main menu.
 		menu = [NSApp mainMenu];
@@ -1669,7 +1678,7 @@ NSMenu *DisplayServerOSX::_get_menu_root(const String &p_menu_root) {
 	}
 	if (menu == apple_menu) {
 		// Do not allow to change Apple menu.
-		return NULL;
+		return nullptr;
 	}
 	return menu;
 }
@@ -2098,6 +2107,8 @@ void DisplayServerOSX::mouse_set_mode(MouseMode p_mode) {
 		CGAssociateMouseAndMouseCursorPosition(true);
 	}
 
+	last_warp = [[NSProcessInfo processInfo] systemUptime];
+	ignore_warp = true;
 	warp_events.clear();
 	mouse_mode = p_mode;
 }
@@ -3018,7 +3029,7 @@ void DisplayServerOSX::cursor_set_shape(CursorShape p_shape) {
 		return;
 	}
 
-	if (cursors[p_shape] != NULL) {
+	if (cursors[p_shape] != nullptr) {
 		[cursors[p_shape] set];
 	} else {
 		switch (p_shape) {
@@ -3106,7 +3117,7 @@ void DisplayServerOSX::cursor_set_custom_image(const RES &p_cursor, CursorShape 
 		Rect2 atlas_rect;
 
 		if (texture.is_valid()) {
-			image = texture->get_data();
+			image = texture->get_image();
 		}
 
 		if (!image.is_valid() && atlas_texture.is_valid()) {
@@ -3129,7 +3140,7 @@ void DisplayServerOSX::cursor_set_custom_image(const RES &p_cursor, CursorShape 
 		ERR_FAIL_COND(texture_size.width > 256 || texture_size.height > 256);
 		ERR_FAIL_COND(p_hotspot.x > texture_size.width || p_hotspot.y > texture_size.height);
 
-		image = texture->get_data();
+		image = texture->get_image();
 
 		ERR_FAIL_COND(!image.is_valid());
 
@@ -3191,9 +3202,9 @@ void DisplayServerOSX::cursor_set_custom_image(const RES &p_cursor, CursorShape 
 		[nsimage release];
 	} else {
 		// Reset to default system cursor
-		if (cursors[p_shape] != NULL) {
+		if (cursors[p_shape] != nullptr) {
 			[cursors[p_shape] release];
-			cursors[p_shape] = NULL;
+			cursors[p_shape] = nullptr;
 		}
 
 		CursorShape c = cursor_shape;
@@ -3748,12 +3759,12 @@ DisplayServerOSX::DisplayServerOSX(const String &p_rendering_driver, WindowMode 
 
 	// Register to be notified on keyboard layout changes
 	CFNotificationCenterAddObserver(CFNotificationCenterGetDistributedCenter(),
-			NULL, keyboard_layout_changed,
-			kTISNotifySelectedKeyboardInputSourceChanged, NULL,
+			nullptr, keyboard_layout_changed,
+			kTISNotifySelectedKeyboardInputSourceChanged, nullptr,
 			CFNotificationSuspensionBehaviorDeliverImmediately);
 
 	// Register to be notified on displays arrangement changes
-	CGDisplayRegisterReconfigurationCallback(displays_arrangement_changed, NULL);
+	CGDisplayRegisterReconfigurationCallback(displays_arrangement_changed, nullptr);
 
 	// Menu bar setup must go between sharedApplication above and
 	// finishLaunching below, in order to properly emulate the behavior
@@ -3843,7 +3854,7 @@ DisplayServerOSX::DisplayServerOSX(const String &p_rendering_driver, WindowMode 
 		context_vulkan = memnew(VulkanContextOSX);
 		if (context_vulkan->initialize() != OK) {
 			memdelete(context_vulkan);
-			context_vulkan = NULL;
+			context_vulkan = nullptr;
 			r_error = ERR_CANT_CREATE;
 			ERR_FAIL_MSG("Could not initialize Vulkan");
 		}
@@ -3915,8 +3926,8 @@ DisplayServerOSX::~DisplayServerOSX() {
 	}
 #endif
 
-	CFNotificationCenterRemoveObserver(CFNotificationCenterGetDistributedCenter(), NULL, kTISNotifySelectedKeyboardInputSourceChanged, NULL);
-	CGDisplayRemoveReconfigurationCallback(displays_arrangement_changed, NULL);
+	CFNotificationCenterRemoveObserver(CFNotificationCenterGetDistributedCenter(), nullptr, kTISNotifySelectedKeyboardInputSourceChanged, nullptr);
+	CGDisplayRemoveReconfigurationCallback(displays_arrangement_changed, nullptr);
 
 	cursors_cache.clear();
 }

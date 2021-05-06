@@ -34,6 +34,8 @@
 #include "scene/main/window.h"
 
 void MenuButton::_unhandled_key_input(Ref<InputEvent> p_event) {
+	ERR_FAIL_COND(p_event.is_null());
+
 	if (!_is_focus_owner_in_shorcut_context()) {
 		return;
 	}
@@ -118,7 +120,6 @@ void MenuButton::set_disable_shortcuts(bool p_disabled) {
 }
 
 MenuButton::MenuButton() {
-	switch_on_hover = false;
 	set_flat(true);
 	set_toggle_mode(true);
 	set_disable_shortcuts(false);

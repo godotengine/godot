@@ -91,7 +91,7 @@ Dictionary GIProbeData::_get_data() const {
 }
 
 void GIProbeData::allocate(const Transform &p_to_cell_xform, const AABB &p_aabb, const Vector3 &p_octree_size, const Vector<uint8_t> &p_octree_cells, const Vector<uint8_t> &p_data_cells, const Vector<uint8_t> &p_distance_field, const Vector<int> &p_level_counts) {
-	RS::get_singleton()->gi_probe_allocate(probe, p_to_cell_xform, p_aabb, p_octree_size, p_octree_cells, p_data_cells, p_distance_field, p_level_counts);
+	RS::get_singleton()->gi_probe_allocate_data(probe, p_to_cell_xform, p_aabb, p_octree_size, p_octree_cells, p_data_cells, p_distance_field, p_level_counts);
 	bounds = p_aabb;
 	to_cell_xform = p_to_cell_xform;
 	octree_size = p_octree_size;
@@ -221,7 +221,7 @@ RID GIProbeData::get_rid() const {
 
 void GIProbeData::_validate_property(PropertyInfo &property) const {
 	if (property.name == "anisotropy_strength") {
-		bool anisotropy_enabled = ProjectSettings::get_singleton()->get("rendering/quality/gi_probes/anisotropic");
+		bool anisotropy_enabled = ProjectSettings::get_singleton()->get("rendering/global_illumination/gi_probes/anisotropic");
 		if (!anisotropy_enabled) {
 			property.usage = PROPERTY_USAGE_NOEDITOR;
 		}
@@ -323,7 +323,6 @@ GIProbe::Subdiv GIProbe::get_subdiv() const {
 void GIProbe::set_extents(const Vector3 &p_extents) {
 	extents = p_extents;
 	update_gizmo();
-	_change_notify("extents");
 }
 
 Vector3 GIProbe::get_extents() const {
@@ -344,7 +343,7 @@ void GIProbe::_find_meshes(Node *p_at_node, List<PlotMesh> &plot_meshes) {
 				pm.local_xform = xf;
 				pm.mesh = mesh;
 				for (int i = 0; i < mesh->get_surface_count(); i++) {
-					pm.instance_materials.push_back(mi->get_surface_material(i));
+					pm.instance_materials.push_back(mi->get_surface_override_material(i));
 				}
 				pm.override_material = mi->get_material_override();
 				plot_meshes.push_back(pm);
@@ -416,13 +415,16 @@ Vector3i GIProbe::get_estimated_cell_size() const {
 void GIProbe::bake(Node *p_from_node, bool p_create_visual_debug) {
 	static const int subdiv_value[SUBDIV_MAX] = { 6, 7, 8, 9 };
 
+	p_from_node = p_from_node ? p_from_node : get_parent();
+	ERR_FAIL_NULL(p_from_node);
+
 	Voxelizer baker;
 
 	baker.begin_bake(subdiv_value[subdiv], AABB(-extents, extents * 2.0));
 
 	List<PlotMesh> mesh_list;
 
-	_find_meshes(p_from_node ? p_from_node : get_parent(), mesh_list);
+	_find_meshes(p_from_node, mesh_list);
 
 	if (bake_begin_function) {
 		bake_begin_function(mesh_list.size() + 1);
@@ -486,7 +488,7 @@ void GIProbe::bake(Node *p_from_node, bool p_create_visual_debug) {
 		bake_end_function();
 	}
 
-	_change_notify(); //bake property may have changed
+	notify_property_list_changed(); //bake property may have changed
 }
 
 void GIProbe::_debug_bake() {
@@ -501,19 +503,15 @@ Vector<Face3> GIProbe::get_faces(uint32_t p_usage_flags) const {
 	return Vector<Face3>();
 }
 
-String GIProbe::get_configuration_warning() const {
-	String warning = VisualInstance3D::get_configuration_warning();
+TypedArray<String> GIProbe::get_configuration_warnings() const {
+	TypedArray<String> warnings = Node::get_configuration_warnings();
 
 	if (RenderingServer::get_singleton()->is_low_end()) {
-		if (!warning.is_empty()) {
-			warning += "\n\n";
-		}
-		warning += TTR("GIProbes are not supported by the GLES2 video driver.\nUse a BakedLightmap instead.");
+		warnings.push_back(TTR("GIProbes are not supported by the GLES2 video driver.\nUse a BakedLightmap instead."));
 	} else if (probe_data.is_null()) {
-		warning += TTR("No GIProbe data set, so this node is disabled. Bake static objects to enable GI.");
+		warnings.push_back(TTR("No GIProbe data set, so this node is disabled. Bake static objects to enable GI."));
 	}
-
-	return warning;
+	return warnings;
 }
 
 void GIProbe::_bind_methods() {

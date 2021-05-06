@@ -3,8 +3,8 @@ module.exports = {
 		"./.eslintrc.js",
 	],
 	"globals": {
+		"InternalConfig": true,
 		"Godot": true,
 		"Preloader": true,
-		"Utils": true,
 	},
 };

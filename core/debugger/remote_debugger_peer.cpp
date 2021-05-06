@@ -152,7 +152,7 @@ void RemoteDebuggerPeerTCP::_read_in() {
 }
 
 Error RemoteDebuggerPeerTCP::connect_to_host(const String &p_host, uint16_t p_port) {
-	IP_Address ip;
+	IPAddress ip;
 	if (p_host.is_valid_ip_address()) {
 		ip = p_host;
 	} else {
@@ -190,13 +190,18 @@ Error RemoteDebuggerPeerTCP::connect_to_host(const String &p_host, uint16_t p_po
 }
 
 void RemoteDebuggerPeerTCP::_thread_func(void *p_ud) {
+	const uint64_t min_tick = 100;
 	RemoteDebuggerPeerTCP *peer = (RemoteDebuggerPeerTCP *)p_ud;
 	while (peer->running && peer->is_peer_connected()) {
+		uint64_t ticks_usec = OS::get_singleton()->get_ticks_usec();
 		peer->_poll();
 		if (!peer->is_peer_connected()) {
 			break;
 		}
-		peer->tcp_client->poll(NetSocket::POLL_TYPE_IN_OUT, 1);
+		ticks_usec = OS::get_singleton()->get_ticks_usec() - ticks_usec;
+		if (ticks_usec < min_tick) {
+			OS::get_singleton()->delay_usec(min_tick - ticks_usec);
+		}
 	}
 }
 

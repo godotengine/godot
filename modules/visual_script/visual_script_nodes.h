@@ -99,6 +99,8 @@ public:
 
 	virtual VisualScriptNodeInstance *instance(VisualScriptInstance *p_instance) override;
 
+	virtual void reset_state() override;
+
 	VisualScriptFunction();
 };
 
@@ -134,6 +136,8 @@ protected:
 	static void _bind_methods();
 
 public:
+	virtual void reset_state() override;
+
 	virtual bool is_output_port_editable() const;
 	virtual bool is_output_port_name_editable() const;
 	virtual bool is_output_port_type_editable() const;

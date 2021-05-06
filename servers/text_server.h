@@ -99,6 +99,12 @@ public:
 		FEATURE_USE_SUPPORT_DATA = 1 << 7
 	};
 
+	enum ContourPointTag {
+		CONTOUR_CURVE_TAG_ON = 0x01,
+		CONTOUR_CURVE_TAG_OFF_CONIC = 0x00,
+		CONTOUR_CURVE_TAG_OFF_CUBIC = 0x02
+	};
+
 	struct Glyph {
 		int start = -1; // Start offset in the source string.
 		int end = -1; // End offset in the source string.
@@ -192,18 +198,6 @@ public:
 		Vector<TextServer::Glyph> glyphs_logical;
 	};
 
-	struct BitmapFontData {
-		int height = 0;
-		int ascent = 0;
-		int charcount = 0;
-		const int *char_rects = nullptr;
-		int kerning_count = 0;
-		const int *kernings = nullptr;
-		int w = 0;
-		int h = 0;
-		const unsigned char *img = nullptr;
-	};
-
 protected:
 	static void _bind_methods();
 
@@ -236,10 +230,21 @@ public:
 	virtual RID create_font_system(const String &p_name, int p_base_size = 16) = 0;
 	virtual RID create_font_resource(const String &p_filename, int p_base_size = 16) = 0;
 	virtual RID create_font_memory(const uint8_t *p_data, size_t p_size, const String &p_type, int p_base_size = 16) = 0;
+	virtual RID create_font_bitmap(float p_height, float p_ascent, int p_base_size = 16) = 0;
+
+	virtual void font_bitmap_add_texture(RID p_font, const Ref<Texture> &p_texture) = 0;
+	virtual void font_bitmap_add_char(RID p_font, char32_t p_char, int p_texture_idx, const Rect2 &p_rect, const Size2 &p_align, float p_advance) = 0;
+	virtual void font_bitmap_add_kerning_pair(RID p_font, char32_t p_A, char32_t p_B, int p_kerning) = 0;
 
 	virtual float font_get_height(RID p_font, int p_size) const = 0;
 	virtual float font_get_ascent(RID p_font, int p_size) const = 0;
 	virtual float font_get_descent(RID p_font, int p_size) const = 0;
+
+	virtual int font_get_spacing_space(RID p_font) const = 0;
+	virtual void font_set_spacing_space(RID p_font, int p_value) = 0;
+
+	virtual int font_get_spacing_glyph(RID p_font) const = 0;
+	virtual void font_set_spacing_glyph(RID p_font, int p_value) = 0;
 
 	virtual float font_get_underline_position(RID p_font, int p_size) const = 0;
 	virtual float font_get_underline_thickness(RID p_font, int p_size) const = 0;
@@ -286,6 +291,8 @@ public:
 
 	virtual Vector2 font_draw_glyph(RID p_font, RID p_canvas, int p_size, const Vector2 &p_pos, uint32_t p_index, const Color &p_color = Color(1, 1, 1)) const = 0;
 	virtual Vector2 font_draw_glyph_outline(RID p_font, RID p_canvas, int p_size, int p_outline_size, const Vector2 &p_pos, uint32_t p_index, const Color &p_color = Color(1, 1, 1)) const = 0;
+
+	virtual bool font_get_glyph_contours(RID p_font, int p_size, uint32_t p_index, Vector<Vector3> &r_points, Vector<int32_t> &r_contours, bool &r_orientation) const = 0;
 
 	virtual float font_get_oversampling() const = 0;
 	virtual void font_set_oversampling(float p_oversampling) = 0;
@@ -373,6 +380,8 @@ public:
 	/* GDScript wrappers */
 	RID _create_font_memory(const PackedByteArray &p_data, const String &p_type, int p_base_size = 16);
 
+	Dictionary _font_get_glyph_contours(RID p_font, int p_size, uint32_t p_index) const;
+
 	Array _shaped_text_get_glyphs(RID p_shaped) const;
 	Dictionary _shaped_text_get_carets(RID p_shaped, int p_position) const;
 
@@ -455,5 +464,6 @@ VARIANT_ENUM_CAST(TextServer::LineBreakFlag);
 VARIANT_ENUM_CAST(TextServer::GraphemeFlag);
 VARIANT_ENUM_CAST(TextServer::Hinting);
 VARIANT_ENUM_CAST(TextServer::Feature);
+VARIANT_ENUM_CAST(TextServer::ContourPointTag);
 
 #endif // TEXT_SERVER_H

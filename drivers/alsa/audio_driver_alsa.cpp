@@ -37,8 +37,14 @@
 
 #include <errno.h>
 
+#ifdef PULSEAUDIO_ENABLED
+extern "C" {
+extern int initialize_pulse(int verbose);
+}
+#endif
+
 Error AudioDriverALSA::init_device() {
-	mix_rate = GLOBAL_GET("audio/mix_rate");
+	mix_rate = GLOBAL_GET("audio/driver/mix_rate");
 	speaker_mode = SPEAKER_MODE_STEREO;
 	channels = 2;
 
@@ -104,7 +110,7 @@ Error AudioDriverALSA::init_device() {
 	// In ALSA the period size seems to be the one that will determine the actual latency
 	// Ref: https://www.alsa-project.org/main/index.php/FramesPeriods
 	unsigned int periods = 2;
-	int latency = GLOBAL_GET("audio/output_latency");
+	int latency = GLOBAL_GET("audio/driver/output_latency");
 	buffer_frames = closest_power_of_2(latency * mix_rate / 1000);
 	buffer_size = buffer_frames * periods;
 	period_size = buffer_frames;
@@ -147,6 +153,21 @@ Error AudioDriverALSA::init_device() {
 }
 
 Error AudioDriverALSA::init() {
+#ifdef DEBUG_ENABLED
+	int dylibloader_verbose = 1;
+#else
+	int dylibloader_verbose = 0;
+#endif
+#ifdef PULSEAUDIO_ENABLED
+	// On pulse enabled systems Alsa will silently use pulse.
+	// It doesn't matter if this fails as that likely means there is no pulse
+	initialize_pulse(dylibloader_verbose);
+#endif
+
+	if (initialize_asound(dylibloader_verbose)) {
+		return ERR_CANT_OPEN;
+	}
+
 	active = false;
 	thread_exited = false;
 	exit_thread = false;

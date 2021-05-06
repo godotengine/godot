@@ -116,13 +116,14 @@ void ExportTemplateManager::_update_template_list() {
 	}
 
 	for (Set<String>::Element *E = templates.back(); E; E = E->prev()) {
+		String text = E->get();
+		if (text == current_version) {
+			continue;
+		}
+
 		HBoxContainer *hbc = memnew(HBoxContainer);
 		Label *version = memnew(Label);
 		version->set_modulate(current->get_theme_color("disabled_font_color", "Editor"));
-		String text = E->get();
-		if (text == current_version) {
-			text += " " + TTR("(Current)");
-		}
 		version->set_text(text);
 		version->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 		hbc->add_child(version);
@@ -653,7 +654,7 @@ ExportTemplateManager::ExportTemplateManager() {
 	main_vb->add_margin_child(TTR("Current Version:"), current_hb, false);
 
 	installed_scroll = memnew(ScrollContainer);
-	main_vb->add_margin_child(TTR("Installed Versions:"), installed_scroll, true);
+	main_vb->add_margin_child(TTR("Other Installed Versions:"), installed_scroll, true);
 
 	installed_vb = memnew(VBoxContainer);
 	installed_scroll->add_child(installed_vb);

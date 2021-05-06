@@ -45,7 +45,8 @@ void CSGShape3D::set_use_collision(bool p_enable) {
 
 	if (use_collision) {
 		root_collision_shape.instance();
-		root_collision_instance = PhysicsServer3D::get_singleton()->body_create(PhysicsServer3D::BODY_MODE_STATIC);
+		root_collision_instance = PhysicsServer3D::get_singleton()->body_create();
+		PhysicsServer3D::get_singleton()->body_set_mode(root_collision_instance, PhysicsServer3D::BODY_MODE_STATIC);
 		PhysicsServer3D::get_singleton()->body_set_state(root_collision_instance, PhysicsServer3D::BODY_STATE_TRANSFORM, get_global_transform());
 		PhysicsServer3D::get_singleton()->body_add_shape(root_collision_instance, root_collision_shape->get_rid());
 		PhysicsServer3D::get_singleton()->body_set_space(root_collision_instance, get_world_3d()->get_space());
@@ -58,7 +59,7 @@ void CSGShape3D::set_use_collision(bool p_enable) {
 		root_collision_instance = RID();
 		root_collision_shape.unref();
 	}
-	_change_notify();
+	notify_property_list_changed();
 }
 
 bool CSGShape3D::is_using_collision() const {
@@ -88,6 +89,7 @@ uint32_t CSGShape3D::get_collision_mask() const {
 }
 
 void CSGShape3D::set_collision_mask_bit(int p_bit, bool p_value) {
+	ERR_FAIL_INDEX_MSG(p_bit, 32, "Collision mask bit must be between 0 and 31 inclusive.");
 	uint32_t mask = get_collision_mask();
 	if (p_value) {
 		mask |= 1 << p_bit;
@@ -98,20 +100,23 @@ void CSGShape3D::set_collision_mask_bit(int p_bit, bool p_value) {
 }
 
 bool CSGShape3D::get_collision_mask_bit(int p_bit) const {
+	ERR_FAIL_INDEX_V_MSG(p_bit, 32, false, "Collision mask bit must be between 0 and 31 inclusive.");
 	return get_collision_mask() & (1 << p_bit);
 }
 
 void CSGShape3D::set_collision_layer_bit(int p_bit, bool p_value) {
-	uint32_t mask = get_collision_layer();
+	ERR_FAIL_INDEX_MSG(p_bit, 32, "Collision layer bit must be between 0 and 31 inclusive.");
+	uint32_t layer = get_collision_layer();
 	if (p_value) {
-		mask |= 1 << p_bit;
+		layer |= 1 << p_bit;
 	} else {
-		mask &= ~(1 << p_bit);
+		layer &= ~(1 << p_bit);
 	}
-	set_collision_layer(mask);
+	set_collision_layer(layer);
 }
 
 bool CSGShape3D::get_collision_layer_bit(int p_bit) const {
+	ERR_FAIL_INDEX_V_MSG(p_bit, 32, false, "Collision layer bit must be between 0 and 31 inclusive.");
 	return get_collision_layer() & (1 << p_bit);
 }
 
@@ -494,7 +499,8 @@ void CSGShape3D::_notification(int p_what) {
 
 		if (use_collision && is_root_shape()) {
 			root_collision_shape.instance();
-			root_collision_instance = PhysicsServer3D::get_singleton()->body_create(PhysicsServer3D::BODY_MODE_STATIC);
+			root_collision_instance = PhysicsServer3D::get_singleton()->body_create();
+			PhysicsServer3D::get_singleton()->body_set_mode(root_collision_instance, PhysicsServer3D::BODY_MODE_STATIC);
 			PhysicsServer3D::get_singleton()->body_set_state(root_collision_instance, PhysicsServer3D::BODY_STATE_TRANSFORM, get_global_transform());
 			PhysicsServer3D::get_singleton()->body_add_shape(root_collision_instance, root_collision_shape->get_rid());
 			PhysicsServer3D::get_singleton()->body_set_space(root_collision_instance, get_world_3d()->get_space());
@@ -878,7 +884,7 @@ void CSGMesh3D::set_mesh(const Ref<Mesh> &p_mesh) {
 		mesh->connect("changed", callable_mp(this, &CSGMesh3D::_mesh_changed));
 	}
 
-	_make_dirty();
+	_mesh_changed();
 }
 
 Ref<Mesh> CSGMesh3D::get_mesh() {
@@ -1031,7 +1037,6 @@ void CSGSphere3D::set_radius(const float p_radius) {
 	radius = p_radius;
 	_make_dirty();
 	update_gizmo();
-	_change_notify("radius");
 }
 
 float CSGSphere3D::get_radius() const {
@@ -1159,7 +1164,7 @@ CSGBrush *CSGBox3D::_build_brush() {
 				materialsw[face] = material;
 
 				face++;
-				//face 1
+				//face 2
 				facesw[face * 3 + 0] = face_points[2] * vertex_mul;
 				facesw[face * 3 + 1] = face_points[3] * vertex_mul;
 				facesw[face * 3 + 2] = face_points[0] * vertex_mul;
@@ -1201,7 +1206,6 @@ void CSGBox3D::set_size(const Vector3 &p_size) {
 	size = p_size;
 	_make_dirty();
 	update_gizmo();
-	_change_notify("size");
 }
 
 Vector3 CSGBox3D::get_size() const {
@@ -1383,7 +1387,6 @@ void CSGCylinder3D::set_radius(const float p_radius) {
 	radius = p_radius;
 	_make_dirty();
 	update_gizmo();
-	_change_notify("radius");
 }
 
 float CSGCylinder3D::get_radius() const {
@@ -1394,7 +1397,6 @@ void CSGCylinder3D::set_height(const float p_height) {
 	height = p_height;
 	_make_dirty();
 	update_gizmo();
-	_change_notify("height");
 }
 
 float CSGCylinder3D::get_height() const {
@@ -1604,7 +1606,6 @@ void CSGTorus3D::set_inner_radius(const float p_inner_radius) {
 	inner_radius = p_inner_radius;
 	_make_dirty();
 	update_gizmo();
-	_change_notify("inner_radius");
 }
 
 float CSGTorus3D::get_inner_radius() const {
@@ -1615,7 +1616,6 @@ void CSGTorus3D::set_outer_radius(const float p_outer_radius) {
 	outer_radius = p_outer_radius;
 	_make_dirty();
 	update_gizmo();
-	_change_notify("outer_radius");
 }
 
 float CSGTorus3D::get_outer_radius() const {
@@ -1683,7 +1683,7 @@ CSGBrush *CSGPolygon3D::_build_brush() {
 	Vector<Point2> final_polygon = polygon;
 
 	if (Triangulate::get_area(final_polygon) > 0) {
-		final_polygon.invert();
+		final_polygon.reverse();
 	}
 
 	Vector<int> triangles = Geometry2D::triangulate_polygon(final_polygon);
@@ -1745,7 +1745,6 @@ CSGBrush *CSGPolygon3D::_build_brush() {
 
 			path_cache->connect("tree_exited", callable_mp(this, &CSGPolygon3D::_path_exited));
 			path_cache->connect("curve_changed", callable_mp(this, &CSGPolygon3D::_path_changed));
-			path_cache = nullptr;
 		}
 		curve = path->get_curve();
 		if (curve.is_null()) {
@@ -2230,7 +2229,7 @@ void CSGPolygon3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "depth", PROPERTY_HINT_EXP_RANGE, "0.001,1000.0,0.001,or_greater"), "set_depth", "get_depth");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "spin_degrees", PROPERTY_HINT_RANGE, "1,360,0.1"), "set_spin_degrees", "get_spin_degrees");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "spin_sides", PROPERTY_HINT_RANGE, "3,64,1"), "set_spin_sides", "get_spin_sides");
-	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "path_node", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "Path"), "set_path_node", "get_path_node");
+	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "path_node", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "Path3D"), "set_path_node", "get_path_node");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "path_interval", PROPERTY_HINT_EXP_RANGE, "0.001,1000.0,0.001,or_greater"), "set_path_interval", "get_path_interval");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "path_rotation", PROPERTY_HINT_ENUM, "Polygon,Path,PathFollow"), "set_path_rotation", "get_path_rotation");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "path_local"), "set_path_local", "is_path_local");
@@ -2262,7 +2261,7 @@ void CSGPolygon3D::set_mode(Mode p_mode) {
 	mode = p_mode;
 	_make_dirty();
 	update_gizmo();
-	_change_notify();
+	notify_property_list_changed();
 }
 
 CSGPolygon3D::Mode CSGPolygon3D::get_mode() const {

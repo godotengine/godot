@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="Object" version="4.0">
 	<brief_description>
-		Base class for all non built-in types.
+		Base class for all non-built-in types.
 	</brief_description>
 	<description>
 		Every class which is not a built-in type inherits from this class.
@@ -179,7 +179,7 @@
 			</argument>
 			<description>
 				Connects a [code]signal[/code] to a [code]callable[/code]. Pass optional [code]binds[/code] to the call as an [Array] of parameters. These parameters will be passed to the [Callable]'s method after any parameter used in the call to [method emit_signal]. Use [code]flags[/code] to set deferred or one-shot connections. See [enum ConnectFlags] constants.
-				[b]Note:[/b] This method is the legacy implementation for connecting signals. The recommend modern approach is to use [method Signal.connect] and to use [method Callable.bind] to add and validate parameter binds. Both syntaxes are shown below.
+				[b]Note:[/b] This method is the legacy implementation for connecting signals. The recommended modern approach is to use [method Signal.connect] and to use [method Callable.bind] to add and validate parameter binds. Both syntaxes are shown below.
 				A signal can only be connected once to a [Callable]. It will throw an error if already connected, unless the signal was connected with [constant CONNECT_REFERENCE_COUNTED]. To avoid this, first, use [method is_connected] to check for existing connections.
 				If the callable's target is destroyed in the game's lifecycle, the connection will be lost.
 				[b]Examples with recommended syntax:[/b]
@@ -533,11 +533,11 @@
 				If [code]reversed[/code] is [code]true[/code], [method _notification] is called first on the object's own class, and then up to its successive parent classes. If [code]reversed[/code] is [code]false[/code], [method _notification] is called first on the highest ancestor ([Object] itself), and then down to its successive inheriting classes.
 			</description>
 		</method>
-		<method name="property_list_changed_notify">
+		<method name="notify_property_list_changed">
 			<return type="void">
 			</return>
 			<description>
-				Notify the editor that the property list has changed, so that editor plugins can take the new values into account. Does nothing on export builds.
+				Notify the editor that the property list has changed by emitting the [signal property_list_changed] signal, so that editor plugins can take the new values into account.
 			</description>
 		</method>
 		<method name="remove_meta">
@@ -680,6 +680,10 @@
 		</method>
 	</methods>
 	<signals>
+		<signal name="property_list_changed">
+			<description>
+			</description>
+		</signal>
 		<signal name="script_changed">
 			<description>
 				Emitted whenever the object's script is changed.

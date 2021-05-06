@@ -71,7 +71,7 @@ public:
 	virtual void draw_rect_region(RID p_canvas_item, const Rect2 &p_rect, const Rect2 &p_src_rect, const Color &p_modulate = Color(1, 1, 1), bool p_transpose = false, bool p_clip_uv = true) const;
 	virtual bool get_rect_region(const Rect2 &p_rect, const Rect2 &p_src_rect, Rect2 &r_rect, Rect2 &r_src_rect) const;
 
-	virtual Ref<Image> get_data() const { return Ref<Image>(); }
+	virtual Ref<Image> get_image() const { return Ref<Image>(); }
 
 	Texture2D();
 };
@@ -83,12 +83,13 @@ class ImageTexture : public Texture2D {
 	RES_BASE_EXTENSION("tex");
 
 	mutable RID texture;
-	Image::Format format;
-	bool mipmaps;
-	int w, h;
+	Image::Format format = Image::FORMAT_L8;
+	bool mipmaps = false;
+	int w = 0;
+	int h = 0;
 	Size2 size_override;
 	mutable Ref<BitMap> alpha_cache;
-	bool image_stored;
+	bool image_stored = false;
 
 protected:
 	virtual void reload_from_file() override;
@@ -107,7 +108,7 @@ public:
 	Image::Format get_format() const;
 
 	void update(const Ref<Image> &p_image, bool p_immediate = false);
-	Ref<Image> get_data() const override;
+	Ref<Image> get_image() const override;
 
 	int get_width() const override;
 	int get_height() const override;
@@ -160,8 +161,9 @@ private:
 	Error _load_data(const String &p_path, int &tw, int &th, int &tw_custom, int &th_custom, Ref<Image> &image, bool &r_request_3d, bool &r_request_normal, bool &r_request_roughness, int &mipmap_limit, int p_size_limit = 0);
 	String path_to_file;
 	mutable RID texture;
-	Image::Format format;
-	int w, h;
+	Image::Format format = Image::FORMAT_MAX;
+	int w = 0;
+	int h = 0;
 	mutable Ref<BitMap> alpha_cache;
 
 	virtual void reload_from_file() override;
@@ -201,7 +203,7 @@ public:
 	virtual bool has_alpha() const override;
 	bool is_pixel_opaque(int p_x, int p_y) const override;
 
-	virtual Ref<Image> get_data() const override;
+	virtual Ref<Image> get_image() const override;
 
 	StreamTexture2D();
 	~StreamTexture2D();
@@ -209,7 +211,7 @@ public:
 
 class ResourceFormatLoaderStreamTexture2D : public ResourceFormatLoader {
 public:
-	virtual RES load(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr, bool p_use_sub_threads = false, float *r_progress = nullptr, bool p_no_cache = false);
+	virtual RES load(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr, bool p_use_sub_threads = false, float *r_progress = nullptr, CacheMode p_cache_mode = CACHE_MODE_REUSE);
 	virtual void get_recognized_extensions(List<String> *p_extensions) const;
 	virtual bool handles_type(const String &p_type) const;
 	virtual String get_resource_type(const String &p_path) const;
@@ -223,7 +225,7 @@ protected:
 	Ref<Texture2D> atlas;
 	Rect2 region;
 	Rect2 margin;
-	bool filter_clip;
+	bool filter_clip = false;
 
 	static void _bind_methods();
 
@@ -295,51 +297,6 @@ public:
 	MeshTexture();
 };
 
-class LargeTexture : public Texture2D {
-	GDCLASS(LargeTexture, Texture2D);
-	RES_BASE_EXTENSION("largetex");
-
-protected:
-	struct Piece {
-		Point2 offset;
-		Ref<Texture2D> texture;
-	};
-
-	Vector<Piece> pieces;
-	Size2i size;
-
-	Array _get_data() const;
-	void _set_data(const Array &p_array);
-	static void _bind_methods();
-
-public:
-	virtual int get_width() const override;
-	virtual int get_height() const override;
-	virtual RID get_rid() const override;
-
-	virtual bool has_alpha() const override;
-
-	int add_piece(const Point2 &p_offset, const Ref<Texture2D> &p_texture);
-	void set_piece_offset(int p_idx, const Point2 &p_offset);
-	void set_piece_texture(int p_idx, const Ref<Texture2D> &p_texture);
-
-	void set_size(const Size2 &p_size);
-	void clear();
-
-	int get_piece_count() const;
-	Vector2 get_piece_offset(int p_idx) const;
-	Ref<Texture2D> get_piece_texture(int p_idx) const;
-	Ref<Image> to_image() const;
-
-	virtual void draw(RID p_canvas_item, const Point2 &p_pos, const Color &p_modulate = Color(1, 1, 1), bool p_transpose = false) const override;
-	virtual void draw_rect(RID p_canvas_item, const Rect2 &p_rect, bool p_tile = false, const Color &p_modulate = Color(1, 1, 1), bool p_transpose = false) const override;
-	virtual void draw_rect_region(RID p_canvas_item, const Rect2 &p_rect, const Rect2 &p_src_rect, const Color &p_modulate = Color(1, 1, 1), bool p_transpose = false, bool p_clip_uv = true) const override;
-
-	bool is_pixel_opaque(int p_x, int p_y) const override;
-
-	LargeTexture();
-};
-
 class TextureLayered : public Texture {
 	GDCLASS(TextureLayered, Texture);
 
@@ -370,12 +327,12 @@ class ImageTextureLayered : public TextureLayered {
 	LayeredType layered_type;
 
 	mutable RID texture;
-	Image::Format format;
+	Image::Format format = Image::FORMAT_MAX;
 
-	int width;
-	int height;
-	int layers;
-	bool mipmaps;
+	int width = 0;
+	int height = 0;
+	int layers = 0;
+	bool mipmaps = false;
 
 	Error _create_from_images(const Array &p_images);
 
@@ -453,10 +410,12 @@ private:
 	Error _load_data(const String &p_path, Vector<Ref<Image>> &images, int &mipmap_limit, int p_size_limit = 0);
 	String path_to_file;
 	mutable RID texture;
-	Image::Format format;
-	int w, h, layers;
-	bool mipmaps;
-	LayeredType layered_type;
+	Image::Format format = Image::FORMAT_MAX;
+	int w = 0;
+	int h = 0;
+	int layers = 0;
+	bool mipmaps = false;
+	LayeredType layered_type = LayeredType::LAYERED_TYPE_2D_ARRAY;
 
 	virtual void reload_from_file() override;
 
@@ -509,7 +468,7 @@ public:
 
 class ResourceFormatLoaderStreamTextureLayered : public ResourceFormatLoader {
 public:
-	virtual RES load(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr, bool p_use_sub_threads = false, float *r_progress = nullptr, bool p_no_cache = false);
+	virtual RES load(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr, bool p_use_sub_threads = false, float *r_progress = nullptr, CacheMode p_cache_mode = CACHE_MODE_REUSE);
 	virtual void get_recognized_extensions(List<String> *p_extensions) const;
 	virtual bool handles_type(const String &p_type) const;
 	virtual String get_resource_type(const String &p_path) const;
@@ -594,9 +553,11 @@ private:
 	Error _load_data(const String &p_path, Vector<Ref<Image>> &r_data, Image::Format &r_format, int &r_width, int &r_height, int &r_depth, bool &r_mipmaps);
 	String path_to_file;
 	mutable RID texture;
-	Image::Format format;
-	int w, h, d;
-	bool mipmaps;
+	Image::Format format = Image::FORMAT_MAX;
+	int w = 0;
+	int h = 0;
+	int d = 0;
+	bool mipmaps = false;
 
 	virtual void reload_from_file() override;
 
@@ -625,7 +586,7 @@ public:
 
 class ResourceFormatLoaderStreamTexture3D : public ResourceFormatLoader {
 public:
-	virtual RES load(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr, bool p_use_sub_threads = false, float *r_progress = nullptr, bool p_no_cache = false);
+	virtual RES load(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr, bool p_use_sub_threads = false, float *r_progress = nullptr, CacheMode p_cache_mode = CACHE_MODE_REUSE);
 	virtual void get_recognized_extensions(List<String> *p_extensions) const;
 	virtual bool handles_type(const String &p_type) const;
 	virtual String get_resource_type(const String &p_path) const;
@@ -638,7 +599,7 @@ class CurveTexture : public Texture2D {
 private:
 	mutable RID _texture;
 	Ref<Curve> _curve;
-	int _width;
+	int _width = 2048;
 
 	void _update();
 
@@ -680,7 +641,7 @@ class GradientTexture : public Texture2D {
 
 public:
 	struct Point {
-		float offset;
+		float offset = 0.0;
 		Color color;
 		bool operator<(const Point &p_ponit) const {
 			return offset < p_ponit.offset;
@@ -689,9 +650,9 @@ public:
 
 private:
 	Ref<Gradient> gradient;
-	bool update_pending;
+	bool update_pending = false;
 	RID texture;
-	int width;
+	int width = 2048;
 
 	void _queue_update();
 	void _update();
@@ -710,7 +671,7 @@ public:
 	virtual int get_height() const override { return 1; }
 	virtual bool has_alpha() const override { return true; }
 
-	virtual Ref<Image> get_data() const override;
+	virtual Ref<Image> get_image() const override;
 
 	GradientTexture();
 	virtual ~GradientTexture();
@@ -758,23 +719,19 @@ private:
 
 	struct Frame {
 		Ref<Texture2D> texture;
-		float delay_sec;
-
-		Frame() {
-			delay_sec = 0;
-		}
+		float delay_sec = 0.0;
 	};
 
 	Frame frames[MAX_FRAMES];
-	int frame_count;
-	int current_frame;
-	bool pause;
-	bool oneshot;
-	float fps;
+	int frame_count = 1.0;
+	int current_frame = 0;
+	bool pause = false;
+	bool oneshot = false;
+	float fps = 4.0;
 
-	float time;
+	float time = 0.0;
 
-	uint64_t prev_ticks;
+	uint64_t prev_ticks = 0;
 
 	void _update_proxy();
 
@@ -810,7 +767,7 @@ public:
 
 	virtual bool has_alpha() const override;
 
-	virtual Ref<Image> get_data() const override;
+	virtual Ref<Image> get_image() const override;
 
 	bool is_pixel_opaque(int p_x, int p_y) const override;
 
@@ -822,8 +779,8 @@ class CameraTexture : public Texture2D {
 	GDCLASS(CameraTexture, Texture2D);
 
 private:
-	int camera_feed_id;
-	CameraServer::FeedImage which_feed;
+	int camera_feed_id = 0;
+	CameraServer::FeedImage which_feed = CameraServer::FEED_RGBA_IMAGE;
 
 protected:
 	static void _bind_methods();
@@ -837,7 +794,7 @@ public:
 	virtual void set_flags(uint32_t p_flags);
 	virtual uint32_t get_flags() const;
 
-	virtual Ref<Image> get_data() const override;
+	virtual Ref<Image> get_image() const override;
 
 	void set_camera_feed_id(int p_new_id);
 	int get_camera_feed_id() const;

@@ -113,6 +113,28 @@ RID TextServerGDNative::create_font_memory(const uint8_t *p_data, size_t p_size,
 	return rid;
 }
 
+RID TextServerGDNative::create_font_bitmap(float p_height, float p_ascent, int p_base_size) {
+	ERR_FAIL_COND_V(interface == nullptr, RID());
+	godot_rid result = interface->create_font_bitmap(data, p_height, p_ascent, p_base_size);
+	RID rid = *(RID *)&result;
+	return rid;
+}
+
+void TextServerGDNative::font_bitmap_add_texture(RID p_font, const Ref<Texture> &p_texture) {
+	ERR_FAIL_COND(interface == nullptr);
+	interface->font_bitmap_add_texture(data, (godot_rid *)&p_font, (const godot_object *)p_texture.ptr());
+}
+
+void TextServerGDNative::font_bitmap_add_char(RID p_font, char32_t p_char, int p_texture_idx, const Rect2 &p_rect, const Size2 &p_align, float p_advance) {
+	ERR_FAIL_COND(interface == nullptr);
+	interface->font_bitmap_add_char(data, (godot_rid *)&p_font, p_char, p_texture_idx, (const godot_rect2 *)&p_rect, (const godot_vector2 *)&p_align, p_advance);
+}
+
+void TextServerGDNative::font_bitmap_add_kerning_pair(RID p_font, char32_t p_A, char32_t p_B, int p_kerning) {
+	ERR_FAIL_COND(interface == nullptr);
+	interface->font_bitmap_add_kerning_pair(data, (godot_rid *)&p_font, p_A, p_B, p_kerning);
+}
+
 float TextServerGDNative::font_get_height(RID p_font, int p_size) const {
 	ERR_FAIL_COND_V(interface == nullptr, 0.f);
 	return interface->font_get_height(data, (godot_rid *)&p_font, p_size);
@@ -136,6 +158,26 @@ float TextServerGDNative::font_get_underline_position(RID p_font, int p_size) co
 float TextServerGDNative::font_get_underline_thickness(RID p_font, int p_size) const {
 	ERR_FAIL_COND_V(interface == nullptr, 0.f);
 	return interface->font_get_underline_thickness(data, (godot_rid *)&p_font, p_size);
+}
+
+int TextServerGDNative::font_get_spacing_space(RID p_font) const {
+	ERR_FAIL_COND_V(interface == nullptr, 0);
+	return interface->font_get_spacing_space(data, (godot_rid *)&p_font);
+}
+
+void TextServerGDNative::font_set_spacing_space(RID p_font, int p_value) {
+	ERR_FAIL_COND(interface == nullptr);
+	interface->font_set_spacing_space(data, (godot_rid *)&p_font, p_value);
+}
+
+int TextServerGDNative::font_get_spacing_glyph(RID p_font) const {
+	ERR_FAIL_COND_V(interface == nullptr, 0);
+	return interface->font_get_spacing_glyph(data, (godot_rid *)&p_font);
+}
+
+void TextServerGDNative::font_set_spacing_glyph(RID p_font, int p_value) {
+	ERR_FAIL_COND(interface == nullptr);
+	interface->font_set_spacing_glyph(data, (godot_rid *)&p_font, p_value);
 }
 
 void TextServerGDNative::font_set_antialiased(RID p_font, bool p_antialiased) {
@@ -315,6 +357,12 @@ Vector2 TextServerGDNative::font_draw_glyph_outline(RID p_font, RID p_canvas, in
 	godot_vector2 result = interface->font_draw_glyph_outline(data, (godot_rid *)&p_font, (godot_rid *)&p_canvas, p_size, p_outline_size, (const godot_vector2 *)&p_pos, p_index, (const godot_color *)&p_color);
 	Vector2 advance = *(Vector2 *)&result;
 	return advance;
+}
+
+bool TextServerGDNative::font_get_glyph_contours(RID p_font, int p_size, uint32_t p_index, Vector<Vector3> &r_points, Vector<int32_t> &r_contours, bool &r_orientation) const {
+	ERR_FAIL_COND_V(interface == nullptr, false);
+	ERR_FAIL_COND_V(interface->font_get_glyph_contours == nullptr, false);
+	return interface->font_get_glyph_contours(data, (godot_rid *)&p_font, p_size, p_index, (godot_packed_vector3_array *)&r_points, (godot_packed_int32_array *)&r_contours, (bool *)&r_orientation);
 }
 
 float TextServerGDNative::font_get_oversampling() const {
@@ -799,9 +847,9 @@ void GDAPI godot_packed_glyph_array_sort(godot_packed_glyph_array *p_self) {
 	self->sort();
 }
 
-void GDAPI godot_packed_glyph_array_invert(godot_packed_glyph_array *p_self) {
+void GDAPI godot_packed_glyph_array_reverse(godot_packed_glyph_array *p_self) {
 	Vector<TextServer::Glyph> *self = (Vector<TextServer::Glyph> *)p_self;
-	self->invert();
+	self->reverse();
 }
 
 void GDAPI godot_packed_glyph_array_push_back(godot_packed_glyph_array *p_self, const godot_glyph *p_data) {

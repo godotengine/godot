@@ -254,6 +254,9 @@
 		</method>
 	</methods>
 	<members>
+		<member name="clip_tabs" type="bool" setter="set_clip_tabs" getter="get_clip_tabs" default="true">
+			If [code]true[/code], tabs overflowing this node's width will be hidden, displaying two navigation buttons instead. Otherwise, this node's minimum size is updated so that all tabs are visible.
+		</member>
 		<member name="current_tab" type="int" setter="set_current_tab" getter="get_current_tab" default="0">
 			Select tab at index [code]tab_idx[/code].
 		</member>
@@ -261,7 +264,7 @@
 			If [code]true[/code], tabs can be rearranged with mouse drag.
 		</member>
 		<member name="scrolling_enabled" type="bool" setter="set_scrolling_enabled" getter="get_scrolling_enabled" default="true">
-			if [code]true[/code], the mouse's scroll wheel cab be used to navigate the scroll view.
+			if [code]true[/code], the mouse's scroll wheel can be used to navigate the scroll view.
 		</member>
 		<member name="tab_align" type="int" setter="set_tab_align" getter="get_tab_align" enum="Tabs.TabAlign" default="1">
 			The alignment of all tabs. See [enum TabAlign] for details.
@@ -362,6 +365,9 @@
 		<theme_item name="font_disabled_color" type="Color" default="Color( 0.9, 0.9, 0.9, 0.2 )">
 			Font color of disabled tabs.
 		</theme_item>
+		<theme_item name="font_outline_color" type="Color" default="Color( 1, 1, 1, 1 )">
+			The tint of text outline of the tab name.
+		</theme_item>
 		<theme_item name="font_selected_color" type="Color" default="Color( 0.94, 0.94, 0.94, 1 )">
 			Font color of the currently selected tab.
 		</theme_item>
@@ -380,7 +386,8 @@
 		<theme_item name="increment_highlight" type="Texture2D">
 			Icon for the right arrow button that appears when there are too many tabs to fit in the container width. Used when the button is being hovered with the cursor.
 		</theme_item>
-		<theme_item name="panel" type="StyleBox">
+		<theme_item name="outline_size" type="int" default="0">
+			The size of the tab text outline.
 		</theme_item>
 		<theme_item name="tab_disabled" type="StyleBox">
 			The style of disabled tabs.

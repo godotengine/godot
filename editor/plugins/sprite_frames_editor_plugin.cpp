@@ -105,7 +105,7 @@ void SpriteFramesEditor::_sheet_preview_draw() {
 void SpriteFramesEditor::_sheet_preview_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseButton> mb = p_event;
 
-	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == BUTTON_LEFT) {
+	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MOUSE_BUTTON_LEFT) {
 		Size2i size = split_sheet_preview->get_size();
 		int h = split_sheet_h->get_value();
 		int v = split_sheet_v->get_value();
@@ -150,11 +150,11 @@ void SpriteFramesEditor::_sheet_scroll_input(const Ref<InputEvent> &p_event) {
 		// Zoom in/out using Ctrl + mouse wheel. This is done on the ScrollContainer
 		// to allow performing this action anywhere, even if the cursor isn't
 		// hovering the texture in the workspace.
-		if (mb->get_button_index() == BUTTON_WHEEL_UP && mb->is_pressed() && mb->get_control()) {
+		if (mb->get_button_index() == MOUSE_BUTTON_WHEEL_UP && mb->is_pressed() && mb->get_control()) {
 			_sheet_zoom_in();
 			// Don't scroll up after zooming in.
 			accept_event();
-		} else if (mb->get_button_index() == BUTTON_WHEEL_DOWN && mb->is_pressed() && mb->get_control()) {
+		} else if (mb->get_button_index() == MOUSE_BUTTON_WHEEL_DOWN && mb->is_pressed() && mb->get_control()) {
 			_sheet_zoom_out();
 			// Don't scroll down after zooming out.
 			accept_event();
@@ -219,7 +219,8 @@ void SpriteFramesEditor::_sheet_zoom_out() {
 }
 
 void SpriteFramesEditor::_sheet_zoom_reset() {
-	sheet_zoom = 1.f;
+	// Default the zoom to match the editor scale, but don't dezoom on editor scales below 100% to prevent pixel art from looking bad.
+	sheet_zoom = MAX(1.0, EDSCALE);
 	Size2 texture_size = split_sheet_preview->get_texture()->get_size();
 	split_sheet_preview->set_custom_minimum_size(texture_size * sheet_zoom);
 }
@@ -693,11 +694,11 @@ void SpriteFramesEditor::_tree_input(const Ref<InputEvent> &p_event) {
 	const Ref<InputEventMouseButton> mb = p_event;
 
 	if (mb.is_valid()) {
-		if (mb->get_button_index() == BUTTON_WHEEL_UP && mb->is_pressed() && mb->get_control()) {
+		if (mb->get_button_index() == MOUSE_BUTTON_WHEEL_UP && mb->is_pressed() && mb->get_control()) {
 			_zoom_in();
 			// Don't scroll up after zooming in.
 			accept_event();
-		} else if (mb->get_button_index() == BUTTON_WHEEL_DOWN && mb->is_pressed() && mb->get_control()) {
+		} else if (mb->get_button_index() == MOUSE_BUTTON_WHEEL_DOWN && mb->is_pressed() && mb->get_control()) {
 			_zoom_out();
 			// Don't scroll down after zooming out.
 			accept_event();
@@ -732,7 +733,7 @@ void SpriteFramesEditor::_zoom_out() {
 }
 
 void SpriteFramesEditor::_zoom_reset() {
-	thumbnail_zoom = 1.0f;
+	thumbnail_zoom = MAX(1.0, EDSCALE);
 	tree->set_fixed_column_width(thumbnail_default_size * 3 / 2);
 	tree->set_fixed_icon_size(Size2(thumbnail_default_size, thumbnail_default_size));
 }
@@ -1229,13 +1230,14 @@ SpriteFramesEditor::SpriteFramesEditor() {
 
 	// Config scale.
 	scale_ratio = 1.2f;
-	thumbnail_default_size = 96;
-	thumbnail_zoom = 1.0f;
-	max_thumbnail_zoom = 8.0f;
-	min_thumbnail_zoom = 0.1f;
-	sheet_zoom = 1.0f;
-	max_sheet_zoom = 16.0f;
-	min_sheet_zoom = 0.01f;
+	thumbnail_default_size = 96 * MAX(1.0, EDSCALE);
+	thumbnail_zoom = MAX(1.0, EDSCALE);
+	max_thumbnail_zoom = 8.0f * MAX(1.0, EDSCALE);
+	min_thumbnail_zoom = 0.1f * MAX(1.0, EDSCALE);
+	// Default the zoom to match the editor scale, but don't dezoom on editor scales below 100% to prevent pixel art from looking bad.
+	sheet_zoom = MAX(1.0, EDSCALE);
+	max_sheet_zoom = 16.0f * MAX(1.0, EDSCALE);
+	min_sheet_zoom = 0.01f * MAX(1.0, EDSCALE);
 	_zoom_reset();
 }
 

@@ -128,11 +128,9 @@ AnimationCurve::~AnimationCurve() {
 
 // ------------------------------------------------------------------------------------------------
 AnimationCurveNode::AnimationCurveNode(uint64_t id, const ElementPtr element, const std::string &name,
-		const Document &doc, const char *const *target_prop_whitelist /*= NULL*/,
+		const Document &doc, const char *const *target_prop_whitelist /*= nullptr*/,
 		size_t whitelist_size /*= 0*/) :
 		Object(id, element, name), target(), doc(doc) {
-	const ScopePtr sc = GetRequiredScope(element);
-
 	// find target node
 	const char *whitelist[] = { "Model", "NodeAttribute", "Deformer" };
 	const std::vector<const Connection *> &conns = doc.GetConnectionsBySourceSequenced(ID(), whitelist, 3);
@@ -154,8 +152,6 @@ AnimationCurveNode::AnimationCurveNode(uint64_t id, const ElementPtr element, co
 		prop = con->PropertyName();
 		break;
 	}
-
-	props = GetPropertyTable(doc, "AnimationCurveNode.FbxAnimCurveNode", element, sc, false);
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -187,10 +183,6 @@ const AnimationMap &AnimationCurveNode::Curves() const {
 // ------------------------------------------------------------------------------------------------
 AnimationLayer::AnimationLayer(uint64_t id, const ElementPtr element, const std::string &name, const Document &doc) :
 		Object(id, element, name), doc(doc) {
-	const ScopePtr sc = GetRequiredScope(element);
-
-	// note: the props table here bears little importance and is usually absent
-	props = GetPropertyTable(doc, "AnimationLayer.FbxAnimLayer", element, sc, true);
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -248,11 +240,6 @@ const AnimationCurveNodeList AnimationLayer::Nodes(const char *const *target_pro
 // ------------------------------------------------------------------------------------------------
 AnimationStack::AnimationStack(uint64_t id, const ElementPtr element, const std::string &name, const Document &doc) :
 		Object(id, element, name) {
-	const ScopePtr sc = GetRequiredScope(element);
-
-	// note: we don't currently use any of these properties so we shouldn't bother if it is missing
-	props = GetPropertyTable(doc, "AnimationStack.FbxAnimStack", element, sc, true);
-
 	// resolve attached animation layers
 	const std::vector<const Connection *> &conns = doc.GetConnectionsByDestinationSequenced(ID(), "AnimationLayer");
 	layers.reserve(conns.size());
@@ -282,9 +269,5 @@ AnimationStack::AnimationStack(uint64_t id, const ElementPtr element, const std:
 
 // ------------------------------------------------------------------------------------------------
 AnimationStack::~AnimationStack() {
-	if (props != nullptr) {
-		delete props;
-		props = nullptr;
-	}
 }
 } // namespace FBXDocParser

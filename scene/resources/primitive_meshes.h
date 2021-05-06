@@ -49,17 +49,19 @@ private:
 	mutable AABB aabb;
 	AABB custom_aabb;
 
-	mutable int array_len;
-	mutable int index_array_len;
+	mutable int array_len = 0;
+	mutable int index_array_len = 0;
 
 	Ref<Material> material;
-	bool flip_faces;
+	bool flip_faces = false;
 
-	mutable bool pending_request;
+	// make sure we do an update after we've finished constructing our object
+	mutable bool pending_request = true;
 	void _update() const;
 
 protected:
-	Mesh::PrimitiveType primitive_type;
+	// assume primitive triangles as the type, correct for all but one and it will change this :)
+	Mesh::PrimitiveType primitive_type = Mesh::PRIMITIVE_TRIANGLES;
 
 	static void _bind_methods();
 
@@ -79,6 +81,7 @@ public:
 	virtual Ref<Material> surface_get_material(int p_idx) const override;
 	virtual int get_blend_shape_count() const override;
 	virtual StringName get_blend_shape_name(int p_index) const override;
+	virtual void set_blend_shape_name(int p_index, const StringName &p_name) override;
 	virtual AABB get_aabb() const override;
 	virtual RID get_rid() const override;
 
@@ -104,10 +107,10 @@ class CapsuleMesh : public PrimitiveMesh {
 	GDCLASS(CapsuleMesh, PrimitiveMesh);
 
 private:
-	float radius;
-	float mid_height;
-	int radial_segments;
-	int rings;
+	float radius = 1.0;
+	float mid_height = 1.0;
+	int radial_segments = 64;
+	int rings = 8;
 
 protected:
 	static void _bind_methods();
@@ -136,10 +139,10 @@ class BoxMesh : public PrimitiveMesh {
 	GDCLASS(BoxMesh, PrimitiveMesh);
 
 private:
-	Vector3 size;
-	int subdivide_w;
-	int subdivide_h;
-	int subdivide_d;
+	Vector3 size = Vector3(2.0, 2.0, 2.0);
+	int subdivide_w = 0;
+	int subdivide_h = 0;
+	int subdivide_d = 0;
 
 protected:
 	static void _bind_methods();
@@ -169,11 +172,11 @@ class CylinderMesh : public PrimitiveMesh {
 	GDCLASS(CylinderMesh, PrimitiveMesh);
 
 private:
-	float top_radius;
-	float bottom_radius;
-	float height;
-	int radial_segments;
-	int rings;
+	float top_radius = 1.0;
+	float bottom_radius = 1.0;
+	float height = 2.0;
+	int radial_segments = 64;
+	int rings = 4;
 
 protected:
 	static void _bind_methods();
@@ -205,9 +208,9 @@ class PlaneMesh : public PrimitiveMesh {
 	GDCLASS(PlaneMesh, PrimitiveMesh);
 
 private:
-	Size2 size;
-	int subdivide_w;
-	int subdivide_d;
+	Size2 size = Size2(2.0, 2.0);
+	int subdivide_w = 0;
+	int subdivide_d = 0;
 
 protected:
 	static void _bind_methods();
@@ -233,11 +236,11 @@ class PrismMesh : public PrimitiveMesh {
 	GDCLASS(PrismMesh, PrimitiveMesh);
 
 private:
-	float left_to_right;
-	Vector3 size;
-	int subdivide_w;
-	int subdivide_h;
-	int subdivide_d;
+	float left_to_right = 0.5;
+	Vector3 size = Vector3(2.0, 2.0, 2.0);
+	int subdivide_w = 0;
+	int subdivide_h = 0;
+	int subdivide_d = 0;
 
 protected:
 	static void _bind_methods();
@@ -270,7 +273,7 @@ class QuadMesh : public PrimitiveMesh {
 	GDCLASS(QuadMesh, PrimitiveMesh);
 
 private:
-	Size2 size;
+	Size2 size = Size2(1.0, 1.0);
 
 protected:
 	static void _bind_methods();
@@ -290,11 +293,11 @@ class SphereMesh : public PrimitiveMesh {
 	GDCLASS(SphereMesh, PrimitiveMesh);
 
 private:
-	float radius;
-	float height;
-	int radial_segments;
-	int rings;
-	bool is_hemisphere;
+	float radius = 1.0;
+	float height = 2.0;
+	int radial_segments = 64;
+	int rings = 32;
+	bool is_hemisphere = false;
 
 protected:
 	static void _bind_methods();
@@ -333,4 +336,98 @@ public:
 	PointMesh();
 };
 
+class TubeTrailMesh : public PrimitiveMesh {
+	GDCLASS(TubeTrailMesh, PrimitiveMesh);
+
+private:
+	float radius = 1.0;
+	int radial_steps = 8;
+	int sections = 5;
+	float section_length = 0.2;
+	int section_rings = 3;
+
+	Ref<Curve> curve;
+
+	void _curve_changed();
+
+protected:
+	static void _bind_methods();
+	virtual void _create_mesh_array(Array &p_arr) const override;
+
+public:
+	void set_radius(const float p_radius);
+	float get_radius() const;
+
+	void set_radial_steps(const int p_radial_steps);
+	int get_radial_steps() const;
+
+	void set_sections(const int p_sections);
+	int get_sections() const;
+
+	void set_section_length(float p_sectionlength);
+	float get_section_length() const;
+
+	void set_section_rings(const int p_section_rings);
+	int get_section_rings() const;
+
+	void set_curve(const Ref<Curve> &p_curve);
+	Ref<Curve> get_curve() const;
+
+	virtual int get_builtin_bind_pose_count() const override;
+	virtual Transform get_builtin_bind_pose(int p_index) const override;
+
+	TubeTrailMesh();
+};
+
+class RibbonTrailMesh : public PrimitiveMesh {
+	GDCLASS(RibbonTrailMesh, PrimitiveMesh);
+
+public:
+	enum Shape {
+		SHAPE_FLAT,
+		SHAPE_CROSS
+	};
+
+private:
+	float size = 1.0;
+	int sections = 5;
+	float section_length = 0.2;
+	int section_segments = 3;
+
+	Shape shape = SHAPE_CROSS;
+
+	Ref<Curve> curve;
+
+	void _curve_changed();
+
+protected:
+	static void _bind_methods();
+	virtual void _create_mesh_array(Array &p_arr) const override;
+
+public:
+	void set_shape(Shape p_shape);
+	Shape get_shape() const;
+
+	void set_size(const float p_size);
+	float get_size() const;
+
+	void set_sections(const int p_sections);
+	int get_sections() const;
+
+	void set_section_length(float p_sectionlength);
+	float get_section_length() const;
+
+	void set_section_segments(const int p_section_segments);
+	int get_section_segments() const;
+
+	void set_curve(const Ref<Curve> &p_curve);
+	Ref<Curve> get_curve() const;
+
+	virtual int get_builtin_bind_pose_count() const override;
+	virtual Transform get_builtin_bind_pose(int p_index) const override;
+
+	RibbonTrailMesh();
+};
+
+VARIANT_ENUM_CAST(RibbonTrailMesh::Shape)
 #endif

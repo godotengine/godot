@@ -43,7 +43,7 @@
 # Song DongHui <14729626293@163.com>, 2019.
 # simano clio <sim2cle@gmail.com>, 2019.
 # ByonkoGalilei <byonko@qq.com>, 2019.
-# qjyqjyqjyqjy <qjyqjyqjyqjy@sina.com.cn>, 2019.
+# qjyqjyqjyqjy <qjyqjyqjyqjy@sina.com.cn>, 2019, 2021.
 # liushuyu011 <liushuyu011@gmail.com>, 2019.
 # DS <dseqrasd@126.com>, 2019.
 # ZeroAurora <zeroaurora@qq.com>, 2019.
@@ -71,15 +71,18 @@
 # MintSoda <lionlxh@qq.com>, 2020.
 # Gardner Belgrade <hapenia@sina.com>, 2020.
 # godhidden <z2zz2zz@yahoo.com>, 2020.
-# BinotaLIU <me@binota.org>, 2020.
+# BinotaLIU <me@binota.org>, 2020, 2021.
 # TakWolf <takwolf@foxmail.com>, 2020.
 # twoBornottwoB <305766341@qq.com>, 2021.
 # Magian <magian1127@gmail.com>, 2021.
+# Weiduo Xie <xwditfr@gmail.com>, 2021.
+# suplife <2634557184@qq.com>, 2021.
+# luoji <564144019@qq.com>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: Chinese (Simplified) (Godot Engine)\n"
 "POT-Creation-Date: 2018-01-20 12:15+0200\n"
-"PO-Revision-Date: 2021-01-27 23:21+0000\n"
+"PO-Revision-Date: 2021-04-19 22:33+0000\n"
 "Last-Translator: Haoyu Qiu <timothyqiu32@gmail.com>\n"
 "Language-Team: Chinese (Simplified) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/zh_Hans/>\n"
@@ -88,7 +91,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.5-dev\n"
+"X-Generator: Weblate 4.7-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -97,13 +100,13 @@ msgstr "convert() 的参数类型无效，请使用 TYPE_* 常量。"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 msgid "Expected a string of length 1 (a character)."
-msgstr "应为长度 1 的字符串（1 字符）。"
+msgstr "应为长度为 1 的字符串（1 字符）。"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/mono/glue/gd_glue.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
 msgid "Not enough bytes for decoding bytes, or invalid format."
-msgstr "没有足够的字节可解码或格式无效。"
+msgstr "解码字节数不够，或格式无效。"
 
 #: core/math/expression.cpp
 msgid "Invalid input %i (not passed) in expression"
@@ -709,7 +712,7 @@ msgstr "选择要复制的轨道"
 #: editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp editor/property_editor.cpp
-#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
+#: editor/scene_tree_dock.cpp scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Copy"
 msgstr "复制"
 
@@ -788,7 +791,7 @@ msgstr "标准"
 
 #: editor/code_editor.cpp editor/plugins/script_editor_plugin.cpp
 msgid "Toggle Scripts Panel"
-msgstr "开启／关闭脚本面板"
+msgstr "切换脚本面板"
 
 #: editor/code_editor.cpp editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/texture_region_editor_plugin.cpp
@@ -1374,7 +1377,7 @@ msgstr "总线选项"
 #: editor/editor_audio_buses.cpp editor/filesystem_dock.cpp
 #: editor/plugins/animation_player_editor_plugin.cpp editor/scene_tree_dock.cpp
 msgid "Duplicate"
-msgstr "拷贝"
+msgstr "制作副本"
 
 #: editor/editor_audio_buses.cpp
 msgid "Reset Volume"
@@ -1897,8 +1900,8 @@ msgid "Open a File or Directory"
 msgstr "打开文件或目录"
 
 #: editor/editor_file_dialog.cpp editor/editor_node.cpp
-#: editor/editor_properties.cpp editor/inspector_dock.cpp
-#: editor/plugins/animation_player_editor_plugin.cpp
+#: editor/editor_properties.cpp editor/import_defaults_editor.cpp
+#: editor/inspector_dock.cpp editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/script_editor_plugin.cpp scene/gui/file_dialog.cpp
 msgid "Save"
 msgstr "保存"
@@ -2553,8 +2556,8 @@ msgid "Unable to enable addon plugin at: '%s' parsing of config failed."
 msgstr "无法在 “%s” 上启用加载项插件：配置解析失败。"
 
 #: editor/editor_node.cpp
-msgid "Unable to find script field for addon plugin at: 'res://addons/%s'."
-msgstr "无法在 “res://addons/%s” 中找到加载项插件的脚本字段。"
+msgid "Unable to find script field for addon plugin at: '%s'."
+msgstr "无法在 “%s” 上找到加载项的 script 字段。"
 
 #: editor/editor_node.cpp
 msgid "Unable to load addon script from path: '%s'."
@@ -2694,7 +2697,7 @@ msgstr "专注模式"
 
 #: editor/editor_node.cpp
 msgid "Toggle distraction-free mode."
-msgstr "进入／离开专注模式。"
+msgstr "切换专注模式。"
 
 #: editor/editor_node.cpp
 msgid "Add a new scene."
@@ -2934,7 +2937,7 @@ msgstr "截图将保存在编辑器数据或设置文件夹中。"
 
 #: editor/editor_node.cpp
 msgid "Toggle Fullscreen"
-msgstr "进入／离开全屏模式"
+msgstr "切换全屏模式"
 
 #: editor/editor_node.cpp
 msgid "Toggle System Console"
@@ -2963,14 +2966,6 @@ msgstr "管理导出模板..."
 #: editor/editor_node.cpp editor/plugins/shader_editor_plugin.cpp
 msgid "Help"
 msgstr "帮助"
-
-#: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/script_text_editor.cpp
-#: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
-#: editor/plugins/visual_shader_editor_plugin.cpp editor/project_manager.cpp
-#: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
-msgid "Search"
-msgstr "搜索"
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/shader_editor_plugin.cpp
@@ -3132,6 +3127,24 @@ msgstr "与现有合并"
 #: editor/editor_node.cpp
 msgid "Open & Run a Script"
 msgstr "打开并运行脚本"
+
+#: editor/editor_node.cpp
+msgid ""
+"The following files are newer on disk.\n"
+"What action should be taken?"
+msgstr ""
+"磁盘中的下列文件较新。\n"
+"应该执行什么操作？"
+
+#: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/shader_editor_plugin.cpp
+msgid "Reload"
+msgstr "重新加载"
+
+#: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/shader_editor_plugin.cpp
+msgid "Resave"
+msgstr "重新保存"
 
 #: editor/editor_node.cpp
 msgid "New Inherited"
@@ -3340,7 +3353,7 @@ msgstr "唯一化"
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 #: editor/plugins/tile_map_editor_plugin.cpp editor/property_editor.cpp
-#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
+#: editor/scene_tree_dock.cpp scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Paste"
 msgstr "粘贴"
 
@@ -3646,6 +3659,11 @@ msgstr "收藏"
 #: editor/filesystem_dock.cpp
 msgid "Status: Import of file failed. Please fix file and reimport manually."
 msgstr "状态：导入文件失败。请手动修复文件后重新导入。"
+
+#: editor/filesystem_dock.cpp
+msgid ""
+"Importing has been disabled for this file, so it can't be opened for editing."
+msgstr "该文件的导入已被禁用，因此不能打开进行编辑。"
 
 #: editor/filesystem_dock.cpp
 msgid "Cannot move/rename resources root."
@@ -4031,6 +4049,22 @@ msgstr "有在 `post_import()` 方法中返回继承了 Node 的对象吗？"
 #: editor/import/resource_importer_scene.cpp
 msgid "Saving..."
 msgstr "保存中..."
+
+#: editor/import_defaults_editor.cpp
+msgid "Select Importer"
+msgstr "选择导入器"
+
+#: editor/import_defaults_editor.cpp
+msgid "Importer:"
+msgstr "导入器："
+
+#: editor/import_defaults_editor.cpp
+msgid "Reset to Defaults"
+msgstr "重置为默认值"
+
+#: editor/import_dock.cpp
+msgid "Keep File (No Import)"
+msgstr "保留文件（不导入）"
 
 #: editor/import_dock.cpp
 msgid "%d Files"
@@ -4692,7 +4726,7 @@ msgstr "过渡已存在！"
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Add Transition"
-msgstr "添加转换"
+msgstr "添加过渡"
 
 #: editor/plugins/animation_state_machine_editor.cpp
 #: modules/visual_script/visual_script_editor.cpp
@@ -4733,7 +4767,7 @@ msgstr "节点已移除"
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Transition Removed"
-msgstr "转换已移除"
+msgstr "过渡已移除"
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Set Start Node (Autoplay)"
@@ -4956,7 +4990,7 @@ msgstr "无法将响应保存到："
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Write error."
-msgstr "写错误。"
+msgstr "写入错误。"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Request failed, too many redirects"
@@ -4987,7 +5021,7 @@ msgid "Got:"
 msgstr "获得:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-msgid "Failed sha256 hash check"
+msgid "Failed SHA-256 hash check"
 msgstr "SHA-256 哈希值校验失败"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
@@ -5091,7 +5125,6 @@ msgid "Sort:"
 msgstr "排序："
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#: editor/project_settings_editor.cpp
 msgid "Category:"
 msgstr "分类："
 
@@ -5159,7 +5192,7 @@ msgstr "烘焙光照贴图"
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid "Select lightmap bake file:"
-msgstr "选择光照贴图烘焙文件:"
+msgstr "选择光照贴图烘焙文件："
 
 #: editor/plugins/camera_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -5172,11 +5205,11 @@ msgstr "设置吸附"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Grid Offset:"
-msgstr "网格偏移量:"
+msgstr "网格偏移："
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Grid Step:"
-msgstr "网格大小:"
+msgstr "网格步长："
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Primary Line Every:"
@@ -5188,11 +5221,11 @@ msgstr "步"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Rotation Offset:"
-msgstr "旋转偏移量:"
+msgstr "旋转偏移："
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Rotation Step:"
-msgstr "旋转步长:"
+msgstr "旋转步长："
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Scale Step:"
@@ -5812,7 +5845,7 @@ msgstr "发射色彩"
 
 #: editor/plugins/cpu_particles_editor_plugin.cpp
 msgid "CPUParticles"
-msgstr "CPUParticles"
+msgstr "CPU粒子"
 
 #: editor/plugins/cpu_particles_editor_plugin.cpp
 #: editor/plugins/particles_editor_plugin.cpp
@@ -5826,11 +5859,11 @@ msgstr "从节点创建发射点"
 
 #: editor/plugins/curve_editor_plugin.cpp
 msgid "Flat 0"
-msgstr "Flat 0"
+msgstr "平面 0"
 
 #: editor/plugins/curve_editor_plugin.cpp
 msgid "Flat 1"
-msgstr "Flat 1"
+msgstr "平面 1"
 
 #: editor/plugins/curve_editor_plugin.cpp editor/property_editor.cpp
 msgid "Ease In"
@@ -5894,7 +5927,7 @@ msgstr "鼠标右键添加点"
 
 #: editor/plugins/gi_probe_editor_plugin.cpp
 msgid "Bake GI Probe"
-msgstr "烘培 GI 探针"
+msgstr "烘焙 GI 探针"
 
 #: editor/plugins/gradient_editor_plugin.cpp
 msgid "Gradient Edited"
@@ -5990,7 +6023,7 @@ msgstr "网格没有可用来创建轮廓的表面！"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Mesh primitive type is not PRIMITIVE_TRIANGLES!"
-msgstr "Mesh 原始类型不是 PRIMITIVE_TRIANGLES！"
+msgstr "网格的原始类型不是 PRIMITIVE_TRIANGLES！"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Could not create outline!"
@@ -6154,7 +6187,7 @@ msgstr "表面的源无效（路径无效）。"
 
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "Surface source is invalid (no geometry)."
-msgstr "表面的源无效（无几何）。"
+msgstr "表面的源无效（无几何体）。"
 
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "Surface source is invalid (no faces)."
@@ -6194,7 +6227,7 @@ msgstr "Y 轴"
 
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "Z-Axis"
-msgstr "Z轴"
+msgstr "Z 轴"
 
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "Mesh Up Axis:"
@@ -6240,7 +6273,7 @@ msgstr "只可设为指向 ParticlesMaterial 处理材料"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Convert to CPUParticles2D"
-msgstr "转换为CPUParticles2D"
+msgstr "转换为 CPUParticles2D"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_editor_plugin.cpp
@@ -6269,7 +6302,7 @@ msgstr "“%s” 不包含面几何体。"
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Create Emitter"
-msgstr "创建发射器 (Emitter)"
+msgstr "创建发射器"
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Emission Points:"
@@ -6886,6 +6919,14 @@ msgstr "关闭文档"
 msgid "Run"
 msgstr "运行"
 
+#: editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/script_text_editor.cpp
+#: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
+#: editor/plugins/visual_shader_editor_plugin.cpp editor/project_manager.cpp
+#: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
+msgid "Search"
+msgstr "搜索"
+
 #: editor/plugins/script_editor_plugin.cpp editor/script_editor_debugger.cpp
 msgid "Step Into"
 msgstr "单步进入"
@@ -6938,16 +6979,6 @@ msgid ""
 msgstr ""
 "磁盘中的下列文件已更新。\n"
 "请选择执行哪项操作？："
-
-#: editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/shader_editor_plugin.cpp
-msgid "Reload"
-msgstr "重新加载"
-
-#: editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/shader_editor_plugin.cpp
-msgid "Resave"
-msgstr "重新保存"
 
 #: editor/plugins/script_editor_plugin.cpp editor/script_editor_debugger.cpp
 msgid "Debugger"
@@ -7041,8 +7072,8 @@ msgstr "断点"
 msgid "Go To"
 msgstr "转到"
 
-#: editor/plugins/script_text_editor.cpp scene/gui/line_edit.cpp
-#: scene/gui/text_edit.cpp
+#: editor/plugins/script_text_editor.cpp editor/scene_tree_dock.cpp
+#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Cut"
 msgstr "剪切"
 
@@ -7265,9 +7296,8 @@ msgid "Yaw"
 msgstr "偏航角"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Size"
-msgstr "大小： "
+msgstr "大小"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Objects Drawn"
@@ -7451,6 +7481,11 @@ msgstr "锁定视角旋转"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid ""
+"To zoom further, change the camera's clipping planes (View -> Settings...)"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid ""
 "Note: The FPS value displayed is the editor's framerate.\n"
 "It cannot be used as a reliable indication of in-game performance."
 msgstr ""
@@ -7473,7 +7508,7 @@ msgstr ""
 "\n"
 "睁眼：Gizmo 可见。\n"
 "闭眼：Gizmo 隐藏。\n"
-"半睁眼：Gizmo 也可穿过不透明的表面可见（“X-Ray - X 光”）。"
+"半睁眼：Gizmo 也可穿过不透明的表面可见（“X 光”）。"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Snap Nodes To Floor"
@@ -7637,7 +7672,7 @@ msgstr "修改变换"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Translate:"
-msgstr "移动:"
+msgstr "移动："
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Rotate (deg.):"
@@ -7902,7 +7937,7 @@ msgstr "自动裁剪"
 
 #: editor/plugins/texture_region_editor_plugin.cpp
 msgid "Offset:"
-msgstr "偏移量："
+msgstr "偏移："
 
 #: editor/plugins/texture_region_editor_plugin.cpp
 msgid "Step:"
@@ -8599,7 +8634,7 @@ msgstr "标量"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Vector"
-msgstr "矢量"
+msgstr "向量"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Boolean"
@@ -9159,11 +9194,11 @@ msgid ""
 "whose number of rows is the number of components in 'c' and whose number of "
 "columns is the number of components in 'r'."
 msgstr ""
-"计算一对矢量的外积。\n"
+"计算一对向量的外积。\n"
 "\n"
-"OuterProduct 将第一个参数 “c” 视为列矢量（包含一列的矩阵），将第二个参数 “r” "
-"视为行矢量（具有一行的矩阵），并执行线性代数矩阵乘以 “c * r”，生成行数为 “c” "
-"中的组件，其列数是 “r” 中的组件数。"
+"OuterProduct 将第一个参数 “c” 视为列向量（只有一列的矩阵），将第二个参数 “r” "
+"视为行向量（只有一行的矩阵），并执行线性代数矩阵乘法 “c * r”。所生成的矩阵"
+"中，行数为 “c” 中元素的数量，列数为 “r” 中元素的数量。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Composes transform from four vectors."
@@ -9203,7 +9238,7 @@ msgstr "变换统一。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Vector function."
-msgstr "向量功能。"
+msgstr "向量函数。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Vector operator."
@@ -9219,7 +9254,7 @@ msgstr "将向量分解为三个标量。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Calculates the cross product of two vectors."
-msgstr "计算两个向量的叉乘。"
+msgstr "计算两个向量的叉积。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Returns the distance between two points."
@@ -9227,7 +9262,7 @@ msgstr "返回两点之间的距离。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Calculates the dot product of two vectors."
-msgstr "计算两个向量的点乘。"
+msgstr "计算两个向量的点积。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
@@ -9237,7 +9272,7 @@ msgid ""
 "Nref is smaller than zero the return value is N. Otherwise -N is returned."
 msgstr ""
 "返回指向与参考向量相同方向的向量。该函数有三个向量参数：N，方向向量；I，入射"
-"向量；Nref，参考向量。如果 I 和 Nref 的点乘小于零，返回值为 N，否则返回 -N。"
+"向量；Nref，参考向量。如果 I 和 Nref 的点积小于零，返回值为 N，否则返回 -N。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Calculates the length of a vector."
@@ -9249,7 +9284,7 @@ msgstr "两个向量之间的线性插值。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Linear interpolation between two vectors using scalar."
-msgstr "使用标量的两个矢量之间的线性插值。"
+msgstr "使用标量在两个向量之间进行线性插值。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Calculates the normalize product of vector."
@@ -9271,7 +9306,7 @@ msgstr "返回指向反射方向的向量（a：入射向量，b：法向量）�
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Returns the vector that points in the direction of refraction."
-msgstr "返回指向折射方向的矢量。"
+msgstr "返回指向折射方向的向量。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
@@ -9382,13 +9417,13 @@ msgstr "（仅限片段/光照模式）标量导数函数。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "(Fragment/Light mode only) Vector derivative function."
-msgstr "（仅限片段/灯光模式）矢量导数功能。"
+msgstr "（仅限片段/光照模式）向量导数函数。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
 "(Fragment/Light mode only) (Vector) Derivative in 'x' using local "
 "differencing."
-msgstr "（仅限片段/光照模式）（矢量）使用局部差分的 “x” 中的导数。"
+msgstr "（仅限片段/光照模式）（向量）使用局部差分的 “x” 中的导数。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
@@ -9400,7 +9435,7 @@ msgstr "（仅限片段/光照模式）（标量）使用本地差分的“ x”
 msgid ""
 "(Fragment/Light mode only) (Vector) Derivative in 'y' using local "
 "differencing."
-msgstr "（仅适用于片段/光照模式）（矢量）使用局部差分的'y'导数。"
+msgstr "（仅适用于片段/光照模式）（向量）使用局部差分的'y'导数。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
@@ -9895,6 +9930,10 @@ msgid "Projects"
 msgstr "项目"
 
 #: editor/project_manager.cpp
+msgid "Loading, please wait..."
+msgstr "正在加载，请稍候..."
+
+#: editor/project_manager.cpp
 msgid "Last Modified"
 msgstr "修改时间"
 
@@ -10260,6 +10299,10 @@ msgstr "自动加载"
 msgid "Plugins"
 msgstr "插件"
 
+#: editor/project_settings_editor.cpp
+msgid "Import Defaults"
+msgstr "默认导入设置"
+
 #: editor/property_editor.cpp
 msgid "Preset..."
 msgstr "预设..."
@@ -10507,6 +10550,14 @@ msgid "Instance Child Scene"
 msgstr "实例化子场景"
 
 #: editor/scene_tree_dock.cpp
+msgid "Can't paste root node into the same scene."
+msgstr "不能将根节点粘贴进相同场景。"
+
+#: editor/scene_tree_dock.cpp
+msgid "Paste Node(s)"
+msgstr "粘贴节点"
+
+#: editor/scene_tree_dock.cpp
 msgid "Detach Script"
 msgstr "分离脚本"
 
@@ -10629,6 +10680,10 @@ msgid "Attach Script"
 msgstr "添加脚本"
 
 #: editor/scene_tree_dock.cpp
+msgid "Cut Node(s)"
+msgstr "剪切节点"
+
+#: editor/scene_tree_dock.cpp
 msgid "Remove Node(s)"
 msgstr "移除节点"
 
@@ -10736,6 +10791,13 @@ msgstr "从选中节点分离脚本。"
 #: editor/scene_tree_dock.cpp
 msgid "Remote"
 msgstr "远程"
+
+#: editor/scene_tree_dock.cpp
+msgid ""
+"If selected, the Remote scene tree dock will cause the project to stutter "
+"every time it updates.\n"
+"Switch back to the Local scene tree dock to improve performance."
+msgstr ""
 
 #: editor/scene_tree_dock.cpp
 msgid "Local"
@@ -11465,7 +11527,7 @@ msgstr "内部异常堆栈追朔结束"
 
 #: modules/recast/navigation_mesh_editor_plugin.cpp
 msgid "Bake NavMesh"
-msgstr "烘焙导航网"
+msgstr "烘焙导航网格"
 
 #: modules/recast/navigation_mesh_editor_plugin.cpp
 msgid "Clear the navigation mesh."
@@ -12240,6 +12302,14 @@ msgstr ""
 msgid "An empty CollisionPolygon2D has no effect on collision."
 msgstr "空的 CollisionPolygon2D 不起任何碰撞检测作用。"
 
+#: scene/2d/collision_polygon_2d.cpp
+msgid "Invalid polygon. At least 3 points are needed in 'Solids' build mode."
+msgstr "多边形无效。“Solids”构建模式需要至少三个点。"
+
+#: scene/2d/collision_polygon_2d.cpp
+msgid "Invalid polygon. At least 2 points are needed in 'Segments' build mode."
+msgstr "多边形无效。“Segments”构建模式需要至少两个点。"
+
 #: scene/2d/collision_shape_2d.cpp
 msgid ""
 "CollisionShape2D only serves to provide a collision shape to a "
@@ -12525,11 +12595,6 @@ msgid ""
 msgstr ""
 "GLES2 视频驱动程序不支持 GIProbes。\n"
 "请改用 BakedLightmap。"
-
-#: scene/3d/interpolated_camera.cpp
-msgid ""
-"InterpolatedCamera has been deprecated and will be removed in Godot 4.0."
-msgstr "InterpolatedCamera 已废弃，将在 Godot 4.0 中删除。"
 
 #: scene/3d/light.cpp
 msgid "A SpotLight with an angle wider than 90 degrees cannot cast shadows."
@@ -12854,6 +12919,10 @@ msgstr "变量只能在顶点函数中指定。"
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "不允许修改常量。"
+
+#~ msgid ""
+#~ "InterpolatedCamera has been deprecated and will be removed in Godot 4.0."
+#~ msgstr "InterpolatedCamera 已废弃，将在 Godot 4.0 中删除。"
 
 #~ msgid "No"
 #~ msgstr "否"
@@ -14501,9 +14570,6 @@ msgstr "不允许修改常量。"
 
 #~ msgid "Use Default Light"
 #~ msgstr "使用默认光照"
-
-#~ msgid "Use Default sRGB"
-#~ msgstr "使用默认sRGB"
 
 #~ msgid "Default Light Normal:"
 #~ msgstr "默认光照法线:"

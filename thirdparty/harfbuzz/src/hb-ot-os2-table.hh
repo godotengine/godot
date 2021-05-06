@@ -177,15 +177,14 @@ struct OS2
     if (!c->plan->glyphs_requested->is_empty ())
     {
       hb_map_t unicode_glyphid_map;
-      
+
       OT::cmap::accelerator_t cmap;
       cmap.init (c->plan->source);
       cmap.collect_mapping (&unicodes, &unicode_glyphid_map);
       cmap.fini ();
-      
-      if (c->plan->unicodes->is_empty ()) unicodes.clear ();
-      else hb_set_set (&unicodes, c->plan->unicodes);
-  
+
+      hb_set_set (&unicodes, c->plan->unicodes);
+
       + unicode_glyphid_map.iter ()
       | hb_filter (c->plan->glyphs_requested, hb_second)
       | hb_map (hb_first)

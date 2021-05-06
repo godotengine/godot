@@ -31,10 +31,11 @@
 #include "navigation_agent_3d.h"
 
 #include "core/config/engine.h"
-#include "scene/3d/navigation_3d.h"
 #include "servers/navigation_server_3d.h"
 
 void NavigationAgent3D::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("get_rid"), &NavigationAgent3D::get_rid);
+
 	ClassDB::bind_method(D_METHOD("set_target_desired_distance", "desired_distance"), &NavigationAgent3D::set_target_desired_distance);
 	ClassDB::bind_method(D_METHOD("get_target_desired_distance"), &NavigationAgent3D::get_target_desired_distance);
 
@@ -46,9 +47,6 @@ void NavigationAgent3D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_ignore_y", "ignore"), &NavigationAgent3D::set_ignore_y);
 	ClassDB::bind_method(D_METHOD("get_ignore_y"), &NavigationAgent3D::get_ignore_y);
-
-	ClassDB::bind_method(D_METHOD("set_navigation", "navigation"), &NavigationAgent3D::set_navigation_node);
-	ClassDB::bind_method(D_METHOD("get_navigation"), &NavigationAgent3D::get_navigation_node);
 
 	ClassDB::bind_method(D_METHOD("set_neighbor_dist", "neighbor_dist"), &NavigationAgent3D::set_neighbor_dist);
 	ClassDB::bind_method(D_METHOD("get_neighbor_dist"), &NavigationAgent3D::get_neighbor_dist);
@@ -99,41 +97,21 @@ void NavigationAgent3D::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_READY: {
 			agent_parent = Object::cast_to<Node3D>(get_parent());
-
-			NavigationServer3D::get_singleton()->agent_set_callback(agent, this, "_avoidance_done");
-
-			// Search the navigation node and set it
-			{
-				Navigation3D *nav = nullptr;
-				Node *p = get_parent();
-				while (p != nullptr) {
-					nav = Object::cast_to<Navigation3D>(p);
-					if (nav != nullptr) {
-						p = nullptr;
-					} else {
-						p = p->get_parent();
-					}
-				}
-
-				set_navigation(nav);
+			if (agent_parent != nullptr) {
+				// place agent on navigation map first or else the RVO agent callback creation fails silently later
+				NavigationServer3D::get_singleton()->agent_set_map(get_rid(), agent_parent->get_world_3d()->get_navigation_map());
+				NavigationServer3D::get_singleton()->agent_set_callback(agent, this, "_avoidance_done");
 			}
-
 			set_physics_process_internal(true);
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
 			agent_parent = nullptr;
-			set_navigation(nullptr);
 			set_physics_process_internal(false);
 		} break;
 		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
 			if (agent_parent) {
 				NavigationServer3D::get_singleton()->agent_set_position(agent, agent_parent->get_global_transform().origin);
-				if (!target_reached) {
-					if (distance_to_target() < target_desired_distance) {
-						emit_signal("target_reached");
-						target_reached = true;
-					}
-				}
+				_check_distance_to_target();
 			}
 		} break;
 	}
@@ -152,25 +130,6 @@ NavigationAgent3D::NavigationAgent3D() {
 NavigationAgent3D::~NavigationAgent3D() {
 	NavigationServer3D::get_singleton()->free(agent);
 	agent = RID(); // Pointless
-}
-
-void NavigationAgent3D::set_navigation(Navigation3D *p_nav) {
-	if (navigation == p_nav) {
-		return; // Pointless
-	}
-
-	navigation = p_nav;
-	NavigationServer3D::get_singleton()->agent_set_map(agent, navigation == nullptr ? RID() : navigation->get_rid());
-}
-
-void NavigationAgent3D::set_navigation_node(Node *p_nav) {
-	Navigation3D *nav = Object::cast_to<Navigation3D>(p_nav);
-	ERR_FAIL_COND(nav == nullptr);
-	set_navigation(nav);
-}
-
-Node *NavigationAgent3D::get_navigation_node() const {
-	return Object::cast_to<Node>(navigation);
 }
 
 void NavigationAgent3D::set_target_desired_distance(real_t p_dd) {
@@ -286,24 +245,21 @@ void NavigationAgent3D::_avoidance_done(Vector3 p_new_velocity) {
 	emit_signal("velocity_computed", p_new_velocity);
 }
 
-String NavigationAgent3D::get_configuration_warning() const {
-	String warning = Node::get_configuration_warning();
+TypedArray<String> NavigationAgent3D::get_configuration_warnings() const {
+	TypedArray<String> warnings = Node::get_configuration_warnings();
 
 	if (!Object::cast_to<Node3D>(get_parent())) {
-		if (!warning.is_empty()) {
-			warning += "\n\n";
-		}
-		warning += TTR("The NavigationAgent3D can be used only under a spatial node.");
+		warnings.push_back(TTR("The NavigationAgent3D can be used only under a spatial node."));
 	}
 
-	return warning;
+	return warnings;
 }
 
 void NavigationAgent3D::update_navigation() {
 	if (agent_parent == nullptr) {
 		return;
 	}
-	if (navigation == nullptr) {
+	if (!agent_parent->is_inside_tree()) {
 		return;
 	}
 	if (update_frame_id == Engine::get_singleton()->get_physics_frames()) {
@@ -337,7 +293,7 @@ void NavigationAgent3D::update_navigation() {
 	}
 
 	if (reload_path) {
-		navigation_path = NavigationServer3D::get_singleton()->map_get_path(navigation->get_rid(), o, target_location, true);
+		navigation_path = NavigationServer3D::get_singleton()->map_get_path(agent_parent->get_world_3d()->get_navigation_map(), o, target_location, true);
 		navigation_finished = false;
 		nav_path_index = 0;
 		emit_signal("path_changed");
@@ -353,11 +309,21 @@ void NavigationAgent3D::update_navigation() {
 		while (o.distance_to(navigation_path[nav_path_index] - Vector3(0, navigation_height_offset, 0)) < target_desired_distance) {
 			nav_path_index += 1;
 			if (nav_path_index == navigation_path.size()) {
+				_check_distance_to_target();
 				nav_path_index -= 1;
 				navigation_finished = true;
 				emit_signal("navigation_finished");
 				break;
 			}
+		}
+	}
+}
+
+void NavigationAgent3D::_check_distance_to_target() {
+	if (!target_reached) {
+		if (distance_to_target() < target_desired_distance) {
+			emit_signal("target_reached");
+			target_reached = true;
 		}
 	}
 }

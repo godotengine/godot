@@ -94,7 +94,7 @@ Property::~Property() {
 namespace {
 
 // ------------------------------------------------------------------------------------------------
-// read a typed property out of a FBX element. The return value is NULL if the property cannot be read.
+// read a typed property out of a FBX element. The return value is nullptr if the property cannot be read.
 PropertyPtr ReadTypedProperty(const ElementPtr element) {
 	//ai_assert(element.KeyToken().StringContents() == "P");
 
@@ -146,14 +146,32 @@ std::string PeekPropertyName(const Element &element) {
 
 // ------------------------------------------------------------------------------------------------
 PropertyTable::PropertyTable() :
-		templateProps(), element() {
+		element(nullptr) {
+}
+
+// Is used when dealing with FBX Objects not metadata.
+PropertyTable::PropertyTable(const ElementPtr element) :
+		element(element) {
+	Setup(element);
 }
 
 // ------------------------------------------------------------------------------------------------
-PropertyTable::PropertyTable(const ElementPtr element, const PropertyTable *templateProps) :
-		templateProps(templateProps), element(element) {
-	const ScopePtr scope = GetRequiredScope(element);
-	ERR_FAIL_COND(!scope);
+PropertyTable::~PropertyTable() {
+	for (PropertyMap::value_type &v : props) {
+		delete v.second;
+	}
+}
+
+void PropertyTable::Setup(ElementPtr ptr) {
+	const ScopePtr sc = GetRequiredScope(ptr);
+	const ElementPtr Properties70 = sc->GetElement("Properties70");
+	const ScopePtr scope = GetOptionalScope(Properties70);
+
+	// no scope, no care.
+	if (!scope) {
+		return; // NOTE: this is not an error this is actually a Object, without properties, here we will nullptr it.
+	}
+
 	for (const ElementMap::value_type &v : scope->Elements()) {
 		if (v.first != "P") {
 			DOMWarning("expected only P elements in property table", v.second);
@@ -178,13 +196,6 @@ PropertyTable::PropertyTable(const ElementPtr element, const PropertyTable *temp
 }
 
 // ------------------------------------------------------------------------------------------------
-PropertyTable::~PropertyTable() {
-	for (PropertyMap::value_type &v : props) {
-		delete v.second;
-	}
-}
-
-// ------------------------------------------------------------------------------------------------
 PropertyPtr PropertyTable::Get(const std::string &name) const {
 	PropertyMap::const_iterator it = props.find(name);
 	if (it == props.end()) {
@@ -199,10 +210,6 @@ PropertyPtr PropertyTable::Get(const std::string &name) const {
 
 		if (it == props.end()) {
 			// check property template
-			if (templateProps) {
-				return templateProps->Get(name);
-			}
-
 			return nullptr;
 		}
 	}
@@ -216,8 +223,9 @@ DirectPropertyMap PropertyTable::GetUnparsedProperties() const {
 	// Loop through all the lazy properties (which is all the properties)
 	for (const LazyPropertyMap::value_type &element : lazyProps) {
 		// Skip parsed properties
-		if (props.end() != props.find(element.first))
+		if (props.end() != props.find(element.first)) {
 			continue;
+		}
 
 		// Read the element's value.
 		// Wrap the naked pointer (since the call site is required to acquire ownership)
@@ -225,8 +233,9 @@ DirectPropertyMap PropertyTable::GetUnparsedProperties() const {
 		Property *prop = ReadTypedProperty(element.second);
 
 		// Element could not be read. Skip it.
-		if (!prop)
+		if (!prop) {
 			continue;
+		}
 
 		// Add to result
 		result[element.first] = prop;

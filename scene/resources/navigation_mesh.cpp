@@ -31,6 +31,8 @@
 #include "navigation_mesh.h"
 
 void NavigationMesh::create_from_mesh(const Ref<Mesh> &p_mesh) {
+	ERR_FAIL_COND(p_mesh.is_null());
+
 	vertices = Vector<Vector3>();
 	clear_polygons();
 
@@ -74,7 +76,7 @@ int NavigationMesh::get_sample_partition_type() const {
 void NavigationMesh::set_parsed_geometry_type(int p_value) {
 	ERR_FAIL_COND(p_value >= PARSED_GEOMETRY_MAX);
 	parsed_geometry_type = static_cast<ParsedGeometryType>(p_value);
-	_change_notify();
+	notify_property_list_changed();
 }
 
 int NavigationMesh::get_parsed_geometry_type() const {
@@ -90,6 +92,7 @@ uint32_t NavigationMesh::get_collision_mask() const {
 }
 
 void NavigationMesh::set_collision_mask_bit(int p_bit, bool p_value) {
+	ERR_FAIL_INDEX_MSG(p_bit, 32, "Collision mask bit must be between 0 and 31 inclusive.");
 	uint32_t mask = get_collision_mask();
 	if (p_value) {
 		mask |= 1 << p_bit;
@@ -100,13 +103,14 @@ void NavigationMesh::set_collision_mask_bit(int p_bit, bool p_value) {
 }
 
 bool NavigationMesh::get_collision_mask_bit(int p_bit) const {
+	ERR_FAIL_INDEX_V_MSG(p_bit, 32, false, "Collision mask bit must be between 0 and 31 inclusive.");
 	return get_collision_mask() & (1 << p_bit);
 }
 
 void NavigationMesh::set_source_geometry_mode(int p_geometry_mode) {
 	ERR_FAIL_INDEX(p_geometry_mode, SOURCE_GEOMETRY_MAX);
 	source_geometry_mode = static_cast<SourceGeometryMode>(p_geometry_mode);
-	_change_notify();
+	notify_property_list_changed();
 }
 
 int NavigationMesh::get_source_geometry_mode() const {
@@ -251,7 +255,7 @@ bool NavigationMesh::get_filter_walkable_low_height_spans() const {
 
 void NavigationMesh::set_vertices(const Vector<Vector3> &p_vertices) {
 	vertices = p_vertices;
-	_change_notify();
+	notify_property_list_changed();
 }
 
 Vector<Vector3> NavigationMesh::get_vertices() const {
@@ -263,7 +267,7 @@ void NavigationMesh::_set_polygons(const Array &p_array) {
 	for (int i = 0; i < p_array.size(); i++) {
 		polygons.write[i].indices = p_array[i];
 	}
-	_change_notify();
+	notify_property_list_changed();
 }
 
 Array NavigationMesh::_get_polygons() const {
@@ -280,7 +284,7 @@ void NavigationMesh::add_polygon(const Vector<int> &p_polygon) {
 	Polygon polygon;
 	polygon.indices = p_polygon;
 	polygons.push_back(polygon);
-	_change_notify();
+	notify_property_list_changed();
 }
 
 int NavigationMesh::get_polygon_count() const {
@@ -510,27 +514,4 @@ void NavigationMesh::_validate_property(PropertyInfo &property) const {
 	}
 }
 
-NavigationMesh::NavigationMesh() {
-	cell_size = 0.3f;
-	cell_height = 0.2f;
-	agent_height = 2.0f;
-	agent_radius = 0.6f;
-	agent_max_climb = 0.9f;
-	agent_max_slope = 45.0f;
-	region_min_size = 8.0f;
-	region_merge_size = 20.0f;
-	edge_max_length = 12.0f;
-	edge_max_error = 1.3f;
-	verts_per_poly = 6.0f;
-	detail_sample_distance = 6.0f;
-	detail_sample_max_error = 1.0f;
-
-	partition_type = SAMPLE_PARTITION_WATERSHED;
-	parsed_geometry_type = PARSED_GEOMETRY_MESH_INSTANCES;
-	collision_mask = 0xFFFFFFFF;
-	source_geometry_mode = SOURCE_GEOMETRY_NAVMESH_CHILDREN;
-	source_group_name = "navmesh";
-	filter_low_hanging_obstacles = false;
-	filter_ledge_spans = false;
-	filter_walkable_low_height_spans = false;
-}
+NavigationMesh::NavigationMesh() {}

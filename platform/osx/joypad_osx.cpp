@@ -433,8 +433,8 @@ void JoypadOSX::poll_joypads() const {
 	}
 }
 
-static const Input::JoyAxis axis_correct(int p_value, int p_min, int p_max) {
-	Input::JoyAxis jx;
+static const Input::JoyAxisValue axis_correct(int p_value, int p_min, int p_max) {
+	Input::JoyAxisValue jx;
 	if (p_min < 0) {
 		jx.min = -1;
 		if (p_value < 0) {

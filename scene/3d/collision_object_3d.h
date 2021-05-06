@@ -37,6 +37,9 @@
 class CollisionObject3D : public Node3D {
 	GDCLASS(CollisionObject3D, Node3D);
 
+	uint32_t collision_layer = 1;
+	uint32_t collision_mask = 1;
+
 	bool area = false;
 
 	RID rid;
@@ -45,6 +48,7 @@ class CollisionObject3D : public Node3D {
 		Object *owner = nullptr;
 		Transform xform;
 		struct ShapeBase {
+			Node *debug_shape = nullptr;
 			Ref<Shape3D> shape;
 			int index = 0;
 		};
@@ -60,7 +64,12 @@ class CollisionObject3D : public Node3D {
 	bool capture_input_on_drag = false;
 	bool ray_pickable = true;
 
+	Set<uint32_t> debug_shapes_to_update;
+	int debug_shape_count = 0;
+
 	void _update_pickable();
+
+	void _update_shape_data(uint32_t p_owner);
 
 protected:
 	CollisionObject3D(RID p_rid, bool p_area);
@@ -72,7 +81,22 @@ protected:
 	virtual void _mouse_enter();
 	virtual void _mouse_exit();
 
+	void _update_debug_shapes();
+	void _clear_debug_shapes();
+
 public:
+	void set_collision_layer(uint32_t p_layer);
+	uint32_t get_collision_layer() const;
+
+	void set_collision_mask(uint32_t p_mask);
+	uint32_t get_collision_mask() const;
+
+	void set_collision_layer_bit(int p_bit, bool p_value);
+	bool get_collision_layer_bit(int p_bit) const;
+
+	void set_collision_mask_bit(int p_bit, bool p_value);
+	bool get_collision_mask_bit(int p_bit) const;
+
 	uint32_t create_shape_owner(Object *p_owner);
 	void remove_shape_owner(uint32_t owner);
 	void get_shape_owners(List<uint32_t> *r_owners);
@@ -103,7 +127,7 @@ public:
 
 	_FORCE_INLINE_ RID get_rid() const { return rid; }
 
-	virtual String get_configuration_warning() const override;
+	TypedArray<String> get_configuration_warnings() const override;
 
 	CollisionObject3D();
 	~CollisionObject3D();

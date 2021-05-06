@@ -29,15 +29,13 @@
 
 #include "hb.hh"
 
-#include "hb-ot-shape-complex.hh"
+#include "hb-ot-shape-complex-syllabic.hh"
 
 
 /* buffer var allocations */
-#define indic_category() complex_var_u8_0() /* indic_category_t */
-#define indic_position() complex_var_u8_1() /* indic_position_t */
+#define indic_category() complex_var_u8_category() /* indic_category_t */
+#define indic_position() complex_var_u8_auxiliary() /* indic_position_t */
 
-
-#define INDIC_TABLE_ELEMENT_TYPE uint16_t
 
 /* Cateories used in the OpenType spec:
  * https://docs.microsoft.com/en-us/typography/script-development/devanagari
@@ -177,7 +175,7 @@ enum indic_matra_category_t {
 
 #define INDIC_COMBINE_CATEGORIES(S,M) \
   ( \
-    ASSERT_STATIC_EXPR_ZERO (S < 255 && M < 255) + \
+    static_assert_expr (S < 255 && M < 255) + \
     ( S | \
      ( \
       ( \
@@ -194,7 +192,7 @@ enum indic_matra_category_t {
     ) \
    )
 
-HB_INTERNAL INDIC_TABLE_ELEMENT_TYPE
+HB_INTERNAL uint16_t
 hb_indic_get_categories (hb_codepoint_t u);
 
 
@@ -307,17 +305,12 @@ static const hb_codepoint_t ra_chars[] = {
   0x0D30u, /* Malayalam */	/* No Reph, Logical Repha */
 
   0x0DBBu, /* Sinhala */	/* Reph formed only with ZWJ */
-
-  0x179Au, /* Khmer */
 };
 
 static inline bool
 is_ra (hb_codepoint_t u)
 {
-  for (unsigned int i = 0; i < ARRAY_LENGTH (ra_chars); i++)
-    if (u == ra_chars[i])
-      return true;
-  return false;
+  return hb_array (ra_chars).lfind (u);
 }
 
 static inline void
@@ -325,7 +318,7 @@ set_indic_properties (hb_glyph_info_t &info)
 {
   hb_codepoint_t u = info.codepoint;
   unsigned int type = hb_indic_get_categories (u);
-  indic_category_t cat = (indic_category_t) (type & 0x7Fu);
+  indic_category_t cat = (indic_category_t) (type & 0xFFu);
   indic_position_t pos = (indic_position_t) (type >> 8);
 
 
@@ -370,6 +363,7 @@ set_indic_properties (hb_glyph_info_t &info)
   else if (unlikely (u == 0x1133Bu || u == 0x1133Cu)) cat = OT_N;
 
   else if (unlikely (u == 0x0AFBu)) cat = OT_N; /* https://github.com/harfbuzz/harfbuzz/issues/552 */
+  else if (unlikely (u == 0x0B55u)) cat = OT_N; /* https://github.com/harfbuzz/harfbuzz/issues/2849 */
 
   else if (unlikely (u == 0x0980u)) cat = OT_PLACEHOLDER; /* https://github.com/harfbuzz/harfbuzz/issues/538 */
   else if (unlikely (u == 0x09FCu)) cat = OT_PLACEHOLDER; /* https://github.com/harfbuzz/harfbuzz/pull/1613 */

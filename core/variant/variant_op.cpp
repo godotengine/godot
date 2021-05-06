@@ -257,6 +257,14 @@ public:
 	static void evaluate(const Variant &p_left, const Variant &p_right, Variant *r_ret, bool &r_valid) {
 		const A &a = *VariantGetInternalPtr<A>::get_ptr(&p_left);
 		const B &b = *VariantGetInternalPtr<B>::get_ptr(&p_right);
+
+#if defined(DEBUG_ENABLED)
+		if (b < 0 || a < 0) {
+			*r_ret = "Invalid operands for bit shifting. Only positive operands are supported.";
+			r_valid = false;
+			return;
+		}
+#endif
 		*r_ret = a << b;
 		r_valid = true;
 	}
@@ -276,6 +284,14 @@ public:
 	static void evaluate(const Variant &p_left, const Variant &p_right, Variant *r_ret, bool &r_valid) {
 		const A &a = *VariantGetInternalPtr<A>::get_ptr(&p_left);
 		const B &b = *VariantGetInternalPtr<B>::get_ptr(&p_right);
+
+#if defined(DEBUG_ENABLED)
+		if (b < 0 || a < 0) {
+			*r_ret = "Invalid operands for bit shifting. Only positive operands are supported.";
+			r_valid = false;
+			return;
+		}
+#endif
 		*r_ret = a >> b;
 		r_valid = true;
 	}
@@ -1365,10 +1381,10 @@ void register_op(Variant::Operator p_op, Variant::Type p_type_a, Variant::Type p
 }
 
 void Variant::_register_variant_operators() {
-	zeromem(operator_return_type_table, sizeof(operator_return_type_table));
-	zeromem(operator_evaluator_table, sizeof(operator_evaluator_table));
-	zeromem(validated_operator_evaluator_table, sizeof(validated_operator_evaluator_table));
-	zeromem(ptr_operator_evaluator_table, sizeof(ptr_operator_evaluator_table));
+	memset(operator_return_type_table, 0, sizeof(operator_return_type_table));
+	memset(operator_evaluator_table, 0, sizeof(operator_evaluator_table));
+	memset(validated_operator_evaluator_table, 0, sizeof(validated_operator_evaluator_table));
+	memset(ptr_operator_evaluator_table, 0, sizeof(ptr_operator_evaluator_table));
 
 	register_op<OperatorEvaluatorAdd<int64_t, int64_t, int64_t>>(Variant::OP_ADD, Variant::INT, Variant::INT);
 	register_op<OperatorEvaluatorAdd<double, int64_t, double>>(Variant::OP_ADD, Variant::INT, Variant::FLOAT);

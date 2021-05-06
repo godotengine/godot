@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="GLTFSkeleton" inherits="Resource" version="4.0">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_bone_attachment">
+			<return type="BoneAttachment3D">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_bone_attachment_count">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_godot_bone_node">
+			<return type="Dictionary">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_godot_skeleton">
+			<return type="Skeleton3D">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_unique_names">
+			<return type="Array">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_godot_bone_node">
+			<return type="void">
+			</return>
+			<argument index="0" name="godot_bone_node" type="Dictionary">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_unique_names">
+			<return type="void">
+			</return>
+			<argument index="0" name="unique_names" type="Array">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="joints" type="PackedInt32Array" setter="set_joints" getter="get_joints" default="PackedInt32Array(  )">
+		</member>
+		<member name="roots" type="PackedInt32Array" setter="set_roots" getter="get_roots" default="PackedInt32Array(  )">
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

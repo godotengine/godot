@@ -44,7 +44,7 @@ class SceneState : public Reference {
 	mutable HashMap<NodePath, int> node_path_cache;
 	mutable Map<int, int> base_scene_node_remap;
 
-	int base_scene_idx;
+	int base_scene_idx = -1;
 
 	enum {
 		NO_PARENT_SAVED = 0x7FFFFFFF,
@@ -53,16 +53,16 @@ class SceneState : public Reference {
 	};
 
 	struct NodeData {
-		int parent;
-		int owner;
-		int type;
-		int name;
-		int instance;
-		int index;
+		int parent = 0;
+		int owner = 0;
+		int type = 0;
+		int name = 0;
+		int instance = 0;
+		int index = 0;
 
 		struct Property {
-			int name;
-			int value;
+			int name = 0;
+			int value = 0;
 		};
 
 		Vector<Property> properties;
@@ -71,18 +71,17 @@ class SceneState : public Reference {
 
 	struct PackState {
 		Ref<SceneState> state;
-		int node;
-		PackState() { node = -1; }
+		int node = -1;
 	};
 
 	Vector<NodeData> nodes;
 
 	struct ConnectionData {
-		int from;
-		int to;
-		int signal;
-		int method;
-		int flags;
+		int from = 0;
+		int to = 0;
+		int signal = 0;
+		int method = 0;
+		int flags = 0;
 		Vector<int> binds;
 	};
 
@@ -93,7 +92,7 @@ class SceneState : public Reference {
 
 	String path;
 
-	uint64_t last_modified_time;
+	uint64_t last_modified_time = 0;
 
 	_FORCE_INLINE_ Ref<SceneState> _get_base_scene_state() const;
 
@@ -201,6 +200,7 @@ class PackedScene : public Resource {
 protected:
 	virtual bool editor_can_reload_from_file() override { return false; } // this is handled by editor better
 	static void _bind_methods();
+	virtual void reset_state() override;
 
 public:
 	enum GenEditState {

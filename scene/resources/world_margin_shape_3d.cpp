@@ -69,7 +69,6 @@ void WorldMarginShape3D::set_plane(Plane p_plane) {
 	plane = p_plane;
 	_update_shape();
 	notify_change_to_owners();
-	_change_notify("plane");
 }
 
 Plane WorldMarginShape3D::get_plane() const {

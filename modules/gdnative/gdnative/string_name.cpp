@@ -44,9 +44,7 @@ void GDAPI godot_string_name_new(godot_string_name *r_dest) {
 }
 
 void GDAPI godot_string_name_new_copy(godot_string_name *r_dest, const godot_string_name *p_src) {
-	StringName *dest = (StringName *)r_dest;
-	const StringName *src = (const StringName *)p_src;
-	memnew_placement(dest, StringName(*src));
+	memnew_placement(r_dest, StringName(*(StringName *)p_src));
 }
 
 void GDAPI godot_string_name_new_with_latin1_chars(godot_string_name *r_dest, const char *p_contents) {

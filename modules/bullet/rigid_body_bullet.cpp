@@ -346,16 +346,17 @@ void RigidBodyBullet::dispatch_callbacks() {
 
 		Variant variantBodyDirect = bodyDirect;
 
-		Object *obj = ObjectDB::get_instance(force_integration_callback->id);
+		Object *obj = force_integration_callback->callable.get_object();
 		if (!obj) {
 			// Remove integration callback
-			set_force_integration_callback(ObjectID(), StringName());
+			set_force_integration_callback(Callable());
 		} else {
 			const Variant *vp[2] = { &variantBodyDirect, &force_integration_callback->udata };
 
 			Callable::CallError responseCallError;
 			int argc = (force_integration_callback->udata.get_type() == Variant::NIL) ? 1 : 2;
-			obj->call(force_integration_callback->method, vp, argc, responseCallError);
+			Variant rv;
+			force_integration_callback->callable.call(vp, argc, rv, responseCallError);
 		}
 	}
 
@@ -371,16 +372,15 @@ void RigidBodyBullet::dispatch_callbacks() {
 	previousActiveState = btBody->isActive();
 }
 
-void RigidBodyBullet::set_force_integration_callback(ObjectID p_id, const StringName &p_method, const Variant &p_udata) {
+void RigidBodyBullet::set_force_integration_callback(const Callable &p_callable, const Variant &p_udata) {
 	if (force_integration_callback) {
 		memdelete(force_integration_callback);
 		force_integration_callback = nullptr;
 	}
 
-	if (p_id.is_valid()) {
+	if (p_callable.get_object()) {
 		force_integration_callback = memnew(ForceIntegrationCallback);
-		force_integration_callback->id = p_id;
-		force_integration_callback->method = p_method;
+		force_integration_callback->callable = p_callable;
 		force_integration_callback->udata = p_udata;
 	}
 }
@@ -515,7 +515,7 @@ real_t RigidBodyBullet::get_param(PhysicsServer3D::BodyParameter p_param) const 
 }
 
 void RigidBodyBullet::set_mode(PhysicsServer3D::BodyMode p_mode) {
-	// This is necessary to block force_integration untile next move
+	// This is necessary to block force_integration until next move
 	can_integrate_forces = false;
 	destroy_kinematic_utilities();
 	// The mode change is relevant to its mass
@@ -725,7 +725,7 @@ void RigidBodyBullet::set_continuous_collision_detection(bool p_enable) {
 		// 1 meter in one simulation frame
 		btBody->setCcdMotionThreshold(1e-7);
 
-		/// Calculate using the rule writte below the CCD swept sphere radius
+		/// Calculate using the rule write below the CCD swept sphere radius
 		///     CCD works on an embedded sphere of radius, make sure this radius
 		///     is embedded inside the convex objects, preferably smaller:
 		///     for an object of dimensions 1 meter, try 0.2

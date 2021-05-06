@@ -127,9 +127,11 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_setup(JNIEnv *env, jc
 	if (p_cmdline) {
 		cmdlen = env->GetArrayLength(p_cmdline);
 		if (cmdlen) {
-			cmdline = (const char **)malloc((cmdlen + 1) * sizeof(const char *));
+			cmdline = (const char **)memalloc((cmdlen + 1) * sizeof(const char *));
+			ERR_FAIL_NULL_MSG(cmdline, "Out of memory.");
 			cmdline[cmdlen] = nullptr;
-			j_cmdline = (jstring *)malloc(cmdlen * sizeof(jstring));
+			j_cmdline = (jstring *)memalloc(cmdlen * sizeof(jstring));
+			ERR_FAIL_NULL_MSG(j_cmdline, "Out of memory.");
 
 			for (int i = 0; i < cmdlen; i++) {
 				jstring string = (jstring)env->GetObjectArrayElement(p_cmdline, i);
@@ -147,13 +149,13 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_setup(JNIEnv *env, jc
 			for (int i = 0; i < cmdlen; ++i) {
 				env->ReleaseStringUTFChars(j_cmdline[i], cmdline[i]);
 			}
-			free(j_cmdline);
+			memfree(j_cmdline);
 		}
-		free(cmdline);
+		memfree(cmdline);
 	}
 
 	if (err != OK) {
-		return; //should exit instead and print the error
+		return; // should exit instead and print the error
 	}
 
 	java_class_wrapper = memnew(JavaClassWrapper(godot_java->get_activity()));
@@ -215,9 +217,10 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_step(JNIEnv *env, jcl
 
 	if (step == 1) {
 		if (!Main::start()) {
-			return; //should exit instead and print the error
+			return; // should exit instead and print the error
 		}
 
+		godot_java->on_godot_setup_completed(env);
 		os_android->main_loop_begin();
 		godot_java->on_godot_main_loop_started(env);
 		++step;

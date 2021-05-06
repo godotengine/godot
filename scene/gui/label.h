@@ -72,7 +72,7 @@ private:
 	Control::StructuredTextParser st_parser = STRUCTURED_TEXT_DEFAULT;
 	Array st_args;
 
-	float percent_visible = 1;
+	float percent_visible = 1.0;
 
 	int visible_chars = -1;
 	int lines_skipped = 0;

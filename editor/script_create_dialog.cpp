@@ -87,8 +87,8 @@ void ScriptCreateDialog::_path_hbox_sorted() {
 
 		// First set cursor to the end of line to scroll LineEdit view
 		// to the right and then set the actual cursor position.
-		file_path->set_cursor_position(file_path->get_text().length());
-		file_path->set_cursor_position(filename_start_pos);
+		file_path->set_caret_column(file_path->get_text().length());
+		file_path->set_caret_column(filename_start_pos);
 
 		file_path->grab_focus();
 	}
@@ -238,6 +238,14 @@ String ScriptCreateDialog::_validate_path(const String &p_path, bool p_file_must
 	return "";
 }
 
+String ScriptCreateDialog::_get_class_name() const {
+	if (has_named_classes) {
+		return class_name->get_text();
+	} else {
+		return ProjectSettings::get_singleton()->localize_path(file_path->get_text()).get_file().get_basename();
+	}
+}
+
 void ScriptCreateDialog::_class_name_changed(const String &p_name) {
 	if (_validate_class(class_name->get_text())) {
 		is_class_name_valid = true;
@@ -287,13 +295,7 @@ void ScriptCreateDialog::ok_pressed() {
 }
 
 void ScriptCreateDialog::_create_new() {
-	String cname_param;
-
-	if (has_named_classes) {
-		cname_param = class_name->get_text();
-	} else {
-		cname_param = ProjectSettings::get_singleton()->localize_path(file_path->get_text()).get_file().get_basename();
-	}
+	String cname_param = _get_class_name();
 
 	Ref<Script> scr;
 	if (script_template != "") {
@@ -555,7 +557,7 @@ void ScriptCreateDialog::_file_selected(const String &p_file) {
 		String filename = p.get_file().get_basename();
 		int select_start = p.rfind(filename);
 		file_path->select(select_start, select_start + filename.length());
-		file_path->set_cursor_position(select_start + filename.length());
+		file_path->set_caret_column(select_start + filename.length());
 		file_path->grab_focus();
 	}
 }
@@ -687,6 +689,10 @@ void ScriptCreateDialog::_update_dialog() {
 
 	builtin_warning_label->set_visible(is_built_in);
 
+	// Check if the script name is the same as the parent class.
+	// This warning isn't relevant if the script is built-in.
+	script_name_warning_label->set_visible(!is_built_in && _get_class_name() == parent_name->get_text());
+
 	if (is_built_in) {
 		get_ok_button()->set_text(TTR("Create"));
 		parent_name->set_editable(true);
@@ -767,6 +773,14 @@ ScriptCreateDialog::ScriptCreateDialog() {
 	vb->add_child(builtin_warning_label);
 	builtin_warning_label->set_autowrap(true);
 	builtin_warning_label->hide();
+
+	script_name_warning_label = memnew(Label);
+	script_name_warning_label->set_text(
+			TTR("Warning: Having the script name be the same as a built-in type is usually not desired."));
+	vb->add_child(script_name_warning_label);
+	script_name_warning_label->add_theme_color_override("font_color", Color(1, 0.85, 0.4));
+	script_name_warning_label->set_autowrap(true);
+	script_name_warning_label->hide();
 
 	status_panel = memnew(PanelContainer);
 	status_panel->set_h_size_flags(Control::SIZE_FILL);

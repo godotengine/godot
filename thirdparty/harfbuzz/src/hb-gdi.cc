@@ -70,6 +70,8 @@ fail:
  * hb_gdi_face_create:
  * @hfont: a HFONT object.
  *
+ * Constructs a new face object from the specified GDI HFONT.
+ *
  * Return value: #hb_face_t object corresponding to the given input
  *
  * Since: 2.6.0

@@ -417,7 +417,12 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 				updating = false;
 				return false;
 
-			} else if (hint == PROPERTY_HINT_LAYERS_2D_PHYSICS || hint == PROPERTY_HINT_LAYERS_2D_RENDER || hint == PROPERTY_HINT_LAYERS_3D_PHYSICS || hint == PROPERTY_HINT_LAYERS_3D_RENDER) {
+			} else if (hint == PROPERTY_HINT_LAYERS_2D_PHYSICS ||
+					   hint == PROPERTY_HINT_LAYERS_2D_RENDER ||
+					   hint == PROPERTY_HINT_LAYERS_2D_NAVIGATION ||
+					   hint == PROPERTY_HINT_LAYERS_3D_PHYSICS ||
+					   hint == PROPERTY_HINT_LAYERS_3D_RENDER ||
+					   hint == PROPERTY_HINT_LAYERS_3D_NAVIGATION) {
 				String basename;
 				switch (hint) {
 					case PROPERTY_HINT_LAYERS_2D_RENDER:
@@ -426,11 +431,17 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 					case PROPERTY_HINT_LAYERS_2D_PHYSICS:
 						basename = "layer_names/2d_physics";
 						break;
+					case PROPERTY_HINT_LAYERS_2D_NAVIGATION:
+						basename = "layer_names/2d_navigation";
+						break;
 					case PROPERTY_HINT_LAYERS_3D_RENDER:
 						basename = "layer_names/3d_render";
 						break;
 					case PROPERTY_HINT_LAYERS_3D_PHYSICS:
 						basename = "layer_names/3d_physics";
+						break;
+					case PROPERTY_HINT_LAYERS_3D_NAVIGATION:
+						basename = "layer_names/3d_navigation";
 						break;
 				}
 
@@ -821,6 +832,9 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 				} else if (default_color_mode == 2) {
 					color_picker->set_raw_mode(true);
 				}
+
+				int picker_shape = EDITOR_GET("interface/inspector/default_color_picker_shape");
+				color_picker->set_picker_shape((ColorPicker::PickerShapeType)picker_shape);
 			}
 
 			color_picker->show();
@@ -1153,7 +1167,12 @@ void CustomPropertyEditor::_action_pressed(int p_which) {
 			emit_signal("variant_changed");
 		} break;
 		case Variant::INT: {
-			if (hint == PROPERTY_HINT_LAYERS_2D_PHYSICS || hint == PROPERTY_HINT_LAYERS_2D_RENDER || hint == PROPERTY_HINT_LAYERS_3D_PHYSICS || hint == PROPERTY_HINT_LAYERS_3D_RENDER) {
+			if (hint == PROPERTY_HINT_LAYERS_2D_PHYSICS ||
+					hint == PROPERTY_HINT_LAYERS_2D_RENDER ||
+					hint == PROPERTY_HINT_LAYERS_2D_NAVIGATION ||
+					hint == PROPERTY_HINT_LAYERS_3D_PHYSICS ||
+					hint == PROPERTY_HINT_LAYERS_3D_RENDER ||
+					hint == PROPERTY_HINT_LAYERS_3D_NAVIGATION) {
 				uint32_t f = v;
 				if (checks20[p_which]->is_pressed()) {
 					f |= (1 << p_which);
@@ -1337,7 +1356,7 @@ void CustomPropertyEditor::_action_pressed(int p_which) {
 void CustomPropertyEditor::_drag_easing(const Ref<InputEvent> &p_ev) {
 	Ref<InputEventMouseMotion> mm = p_ev;
 
-	if (mm.is_valid() && mm->get_button_mask() & BUTTON_MASK_LEFT) {
+	if (mm.is_valid() && mm->get_button_mask() & MOUSE_BUTTON_MASK_LEFT) {
 		float rel = mm->get_relative().x;
 		if (rel == 0) {
 			return;

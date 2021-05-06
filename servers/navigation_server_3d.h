@@ -55,7 +55,7 @@ protected:
 
 public:
 	/// Thread safe, can be used across many threads.
-	static const NavigationServer3D *get_singleton();
+	static NavigationServer3D *get_singleton();
 
 	/// MUST be used in single thread!
 	static NavigationServer3D *get_singleton_mut();
@@ -88,7 +88,7 @@ public:
 	virtual real_t map_get_edge_connection_margin(RID p_map) const = 0;
 
 	/// Returns the navigation path to reach the destination from the origin.
-	virtual Vector<Vector3> map_get_path(RID p_map, Vector3 p_origin, Vector3 p_destination, bool p_optimize) const = 0;
+	virtual Vector<Vector3> map_get_path(RID p_map, Vector3 p_origin, Vector3 p_destination, bool p_optimize, uint32_t p_navigable_layers = 1) const = 0;
 
 	virtual Vector3 map_get_closest_point_to_segment(RID p_map, const Vector3 &p_from, const Vector3 &p_to, const bool p_use_collision = false) const = 0;
 	virtual Vector3 map_get_closest_point(RID p_map, const Vector3 &p_point) const = 0;
@@ -101,14 +101,23 @@ public:
 	/// Set the map of this region.
 	virtual void region_set_map(RID p_region, RID p_map) const = 0;
 
+	/// Set the region's layers
+	virtual void region_set_layers(RID p_region, uint32_t p_layers) const = 0;
+	virtual uint32_t region_get_layers(RID p_region) const = 0;
+
 	/// Set the global transformation of this region.
 	virtual void region_set_transform(RID p_region, Transform p_transform) const = 0;
 
 	/// Set the navigation mesh of this region.
 	virtual void region_set_navmesh(RID p_region, Ref<NavigationMesh> p_nav_mesh) const = 0;
 
-	/// Bake the navigation mesh
+	/// Bake the navigation mesh.
 	virtual void region_bake_navmesh(Ref<NavigationMesh> r_mesh, Node *p_node) const = 0;
+
+	/// Get a list of a region's connection to other regions.
+	virtual int region_get_connections_count(RID p_region) const = 0;
+	virtual Vector3 region_get_connection_pathway_start(RID p_region, int p_connection_id) const = 0;
+	virtual Vector3 region_get_connection_pathway_end(RID p_region, int p_connection_id) const = 0;
 
 	/// Creates the agent.
 	virtual RID agent_create() const = 0;

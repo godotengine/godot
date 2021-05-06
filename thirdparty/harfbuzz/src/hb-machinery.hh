@@ -80,6 +80,11 @@ static inline Type& StructAfter(TObject &X)
  * Size checking
  */
 
+/* Size signifying variable-sized array */
+#ifndef HB_VAR_ARRAY
+#define HB_VAR_ARRAY 1
+#endif
+
 /* Check _assertion in a method environment */
 #define _DEFINE_INSTANCE_ASSERTION1(_line, _assertion) \
   void _instance_assertion_on_line_##_line () const \

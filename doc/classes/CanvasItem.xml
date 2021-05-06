@@ -318,7 +318,7 @@
 			<argument index="9" name="flags" type="int" default="3">
 			</argument>
 			<description>
-				Draws [code]text[/code] using the specified [code]font[/code] at the [code]position[/code] (top-left corner). The text will have its color multiplied by [code]modulate[/code]. If [code]clip_w[/code] is greater than or equal to 0, the text will be clipped if it exceeds the specified width.
+				Draws [code]text[/code] using the specified [code]font[/code] at the [code]position[/code] (bottom-left corner using the baseline of the font). The text will have its color multiplied by [code]modulate[/code]. If [code]clip_w[/code] is greater than or equal to 0, the text will be clipped if it exceeds the specified width.
 				[b]Example using the default project font:[/b]
 				[codeblocks]
 				[gdscript]

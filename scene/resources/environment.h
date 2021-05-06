@@ -103,7 +103,7 @@ private:
 	// Background
 	BGMode bg_mode = BG_CLEAR_COLOR;
 	Ref<Sky> bg_sky;
-	float bg_sky_custom_fov = 0;
+	float bg_sky_custom_fov = 0.0;
 	Vector3 bg_sky_rotation;
 	Color bg_color;
 	float bg_energy = 1.0;
@@ -125,7 +125,7 @@ private:
 	float tonemap_white = 1.0;
 	bool tonemap_auto_exposure_enabled = false;
 	float tonemap_auto_exposure_min = 0.05;
-	float tonemap_auto_exposure_max = 8;
+	float tonemap_auto_exposure_max = 8.0;
 	float tonemap_auto_exposure_speed = 0.5;
 	float tonemap_auto_exposure_grey = 0.4;
 	void _update_tonemap();
@@ -156,7 +156,7 @@ private:
 	float sdfgi_min_cell_size = 0.2;
 	SDFGIYScale sdfgi_y_scale = SDFGI_Y_SCALE_DISABLED;
 	bool sdfgi_use_occlusion = false;
-	bool sdfgi_use_multibounce = false;
+	float sdfgi_bounce_feedback = 0.0;
 	bool sdfgi_read_sky_light = false;
 	float sdfgi_energy = 1.0;
 	float sdfgi_normal_bias = 1.1;
@@ -318,8 +318,8 @@ public:
 	SDFGIYScale get_sdfgi_y_scale() const;
 	void set_sdfgi_use_occlusion(bool p_enabled);
 	bool is_sdfgi_using_occlusion() const;
-	void set_sdfgi_use_multi_bounce(bool p_enabled);
-	bool is_sdfgi_using_multi_bounce() const;
+	void set_sdfgi_bounce_feedback(float p_amount);
+	float get_sdfgi_bounce_feedback() const;
 	void set_sdfgi_read_sky_light(bool p_enabled);
 	bool is_sdfgi_reading_sky_light() const;
 	void set_sdfgi_energy(float p_energy);

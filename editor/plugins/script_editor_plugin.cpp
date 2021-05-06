@@ -698,7 +698,7 @@ void ScriptEditor::_close_tab(int p_idx, bool p_save, bool p_history_back) {
 			// Do not try to save internal scripts, but prompt to save in-memory
 			// scripts which are not saved to disk yet (have empty path).
 			if (script->get_path().find("local://") == -1 && script->get_path().find("::") == -1) {
-				_menu_option(FILE_SAVE);
+				_save_current_script();
 			}
 		}
 		if (script.is_valid()) {
@@ -755,8 +755,8 @@ void ScriptEditor::_close_tab(int p_idx, bool p_save, bool p_history_back) {
 	_save_layout();
 }
 
-void ScriptEditor::_close_current_tab() {
-	_close_tab(tab_container->get_current_tab());
+void ScriptEditor::_close_current_tab(bool p_save) {
+	_close_tab(tab_container->get_current_tab(), p_save);
 }
 
 void ScriptEditor::_close_discard_current_tab(const String &p_str) {
@@ -802,7 +802,7 @@ void ScriptEditor::_close_other_tabs() {
 			}
 		}
 
-		_close_current_tab();
+		_close_current_tab(false);
 	}
 }
 
@@ -820,7 +820,7 @@ void ScriptEditor::_close_all_tabs() {
 			}
 		}
 
-		_close_current_tab();
+		_close_current_tab(false);
 	}
 }
 
@@ -894,7 +894,7 @@ void ScriptEditor::_reload_scripts() {
 
 		Ref<Script> script = edited_res;
 		if (script != nullptr) {
-			Ref<Script> rel_script = ResourceLoader::load(script->get_path(), script->get_class(), true);
+			Ref<Script> rel_script = ResourceLoader::load(script->get_path(), script->get_class(), ResourceFormatLoader::CACHE_MODE_IGNORE);
 			ERR_CONTINUE(!rel_script.is_valid());
 			script->set_source_code(rel_script->get_source_code());
 			script->set_last_modified_time(rel_script->get_last_modified_time());
@@ -1096,6 +1096,59 @@ bool ScriptEditor::is_scripts_panel_toggled() {
 	return list_split->is_visible();
 }
 
+void ScriptEditor::_save_current_script() {
+	ScriptEditorBase *current = _get_current_editor();
+
+	if (_test_script_times_on_disk()) {
+		return;
+	}
+
+	if (trim_trailing_whitespace_on_save) {
+		current->trim_trailing_whitespace();
+	}
+
+	current->insert_final_newline();
+
+	if (convert_indent_on_save) {
+		if (use_space_indentation) {
+			current->convert_indent_to_spaces();
+		} else {
+			current->convert_indent_to_tabs();
+		}
+	}
+
+	RES resource = current->get_edited_resource();
+	Ref<TextFile> text_file = resource;
+	Ref<Script> script = resource;
+
+	if (text_file != nullptr) {
+		current->apply_code();
+		_save_text_file(text_file, text_file->get_path());
+		return;
+	}
+
+	if (script != nullptr) {
+		const Vector<DocData::ClassDoc> &documentations = script->get_documentation();
+		for (int j = 0; j < documentations.size(); j++) {
+			const DocData::ClassDoc &doc = documentations.get(j);
+			if (EditorHelp::get_doc_data()->has_doc(doc.name)) {
+				EditorHelp::get_doc_data()->remove_doc(doc.name);
+			}
+		}
+	}
+
+	editor->save_resource(resource);
+
+	if (script != nullptr) {
+		const Vector<DocData::ClassDoc> &documentations = script->get_documentation();
+		for (int j = 0; j < documentations.size(); j++) {
+			const DocData::ClassDoc &doc = documentations.get(j);
+			EditorHelp::get_doc_data()->add_doc(doc);
+			update_doc(doc.name);
+		}
+	}
+}
+
 void ScriptEditor::_menu_option(int p_option) {
 	ScriptEditorBase *current = _get_current_editor();
 	switch (p_option) {
@@ -1224,55 +1277,7 @@ void ScriptEditor::_menu_option(int p_option) {
 	if (current) {
 		switch (p_option) {
 			case FILE_SAVE: {
-				if (_test_script_times_on_disk()) {
-					return;
-				}
-
-				if (trim_trailing_whitespace_on_save) {
-					current->trim_trailing_whitespace();
-				}
-
-				current->insert_final_newline();
-
-				if (convert_indent_on_save) {
-					if (use_space_indentation) {
-						current->convert_indent_to_spaces();
-					} else {
-						current->convert_indent_to_tabs();
-					}
-				}
-
-				RES resource = current->get_edited_resource();
-				Ref<TextFile> text_file = resource;
-				Ref<Script> script = resource;
-
-				if (text_file != nullptr) {
-					current->apply_code();
-					_save_text_file(text_file, text_file->get_path());
-					break;
-				}
-
-				if (script != nullptr) {
-					const Vector<DocData::ClassDoc> &documentations = script->get_documentation();
-					for (int j = 0; j < documentations.size(); j++) {
-						const DocData::ClassDoc &doc = documentations.get(j);
-						if (EditorHelp::get_doc_data()->has_doc(doc.name)) {
-							EditorHelp::get_doc_data()->remove_doc(doc.name);
-						}
-					}
-				}
-
-				editor->save_resource(resource);
-
-				if (script != nullptr) {
-					const Vector<DocData::ClassDoc> &documentations = script->get_documentation();
-					for (int j = 0; j < documentations.size(); j++) {
-						const DocData::ClassDoc &doc = documentations.get(j);
-						EditorHelp::get_doc_data()->add_doc(doc);
-						update_doc(doc.name);
-					}
-				}
-
+				_save_current_script();
 			} break;
 			case FILE_SAVE_AS: {
 				if (trim_trailing_whitespace_on_save) {
@@ -1372,7 +1377,7 @@ void ScriptEditor::_menu_option(int p_option) {
 				if (current->is_unsaved()) {
 					_ask_close_current_unsaved_tab(current);
 				} else {
-					_close_current_tab();
+					_close_current_tab(false);
 				}
 			} break;
 			case FILE_COPY_PATH: {
@@ -2439,6 +2444,9 @@ void ScriptEditor::_add_callback(Object *p_obj, const String &p_function, const 
 
 		script_list->select(script_list->find_metadata(i));
 
+		// Save the current script so the changes can be picked up by an external editor.
+		_save_current_script();
+
 		break;
 	}
 }
@@ -2706,6 +2714,8 @@ void ScriptEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data, Co
 }
 
 void ScriptEditor::_unhandled_key_input(const Ref<InputEvent> &p_event) {
+	ERR_FAIL_COND(p_event.is_null());
+
 	if (!is_visible_in_tree() || !p_event->is_pressed() || p_event->is_echo()) {
 		return;
 	}
@@ -2737,7 +2747,7 @@ void ScriptEditor::_script_list_gui_input(const Ref<InputEvent> &ev) {
 	Ref<InputEventMouseButton> mb = ev;
 	if (mb.is_valid() && mb->is_pressed()) {
 		switch (mb->get_button_index()) {
-			case BUTTON_MIDDLE: {
+			case MOUSE_BUTTON_MIDDLE: {
 				// Right-click selects automatically; middle-click does not.
 				int idx = script_list->get_item_at_position(mb->get_position(), true);
 				if (idx >= 0) {
@@ -2747,7 +2757,7 @@ void ScriptEditor::_script_list_gui_input(const Ref<InputEvent> &ev) {
 				}
 			} break;
 
-			case BUTTON_RIGHT: {
+			case MOUSE_BUTTON_RIGHT: {
 				_make_script_list_context_menu();
 			} break;
 		}
@@ -3497,7 +3507,7 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	erase_tab_confirm = memnew(ConfirmationDialog);
 	erase_tab_confirm->get_ok_button()->set_text(TTR("Save"));
 	erase_tab_confirm->add_button(TTR("Discard"), DisplayServer::get_singleton()->get_swap_cancel_ok(), "discard");
-	erase_tab_confirm->connect("confirmed", callable_mp(this, &ScriptEditor::_close_current_tab));
+	erase_tab_confirm->connect("confirmed", callable_mp(this, &ScriptEditor::_close_current_tab), varray(true));
 	erase_tab_confirm->connect("custom_action", callable_mp(this, &ScriptEditor::_close_discard_current_tab));
 	add_child(erase_tab_confirm);
 

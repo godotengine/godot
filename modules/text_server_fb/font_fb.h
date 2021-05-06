@@ -37,11 +37,18 @@ struct FontDataFallback {
 	Map<String, bool> lang_support_overrides;
 	Map<String, bool> script_support_overrides;
 	bool valid = false;
+	int spacing_space = 0;
+	int spacing_glyph = 0;
 
 	virtual void clear_cache() = 0;
 
-	virtual Error load_from_file(const String &p_filename, int p_base_size) = 0;
-	virtual Error load_from_memory(const uint8_t *p_data, size_t p_size, int p_base_size) = 0;
+	virtual Error load_from_file(const String &p_filename, int p_base_size) { return ERR_CANT_CREATE; };
+	virtual Error load_from_memory(const uint8_t *p_data, size_t p_size, int p_base_size) { return ERR_CANT_CREATE; };
+	virtual Error bitmap_new(float p_height, float p_ascent, int p_base_size) { return ERR_CANT_CREATE; };
+
+	virtual void bitmap_add_texture(const Ref<Texture> &p_texture) { ERR_FAIL_MSG("Not supported."); };
+	virtual void bitmap_add_char(char32_t p_char, int p_texture_idx, const Rect2 &p_rect, const Size2 &p_align, float p_advance) { ERR_FAIL_MSG("Not supported."); };
+	virtual void bitmap_add_kerning_pair(char32_t p_A, char32_t p_B, int p_kerning) { ERR_FAIL_MSG("Not supported."); };
 
 	virtual float get_height(int p_size) const = 0;
 	virtual float get_ascent(int p_size) const = 0;
@@ -49,6 +56,18 @@ struct FontDataFallback {
 
 	virtual float get_underline_position(int p_size) const = 0;
 	virtual float get_underline_thickness(int p_size) const = 0;
+
+	virtual int get_spacing_space() const { return spacing_space; };
+	virtual void set_spacing_space(int p_value) {
+		spacing_space = p_value;
+		clear_cache();
+	};
+
+	virtual int get_spacing_glyph() const { return spacing_glyph; };
+	virtual void set_spacing_glyph(int p_value) {
+		spacing_glyph = p_value;
+		clear_cache();
+	};
 
 	virtual void set_antialiased(bool p_antialiased) = 0;
 	virtual bool get_antialiased() const = 0;
@@ -73,6 +92,8 @@ struct FontDataFallback {
 
 	virtual Vector2 draw_glyph(RID p_canvas, int p_size, const Vector2 &p_pos, uint32_t p_index, const Color &p_color) const = 0;
 	virtual Vector2 draw_glyph_outline(RID p_canvas, int p_size, int p_outline_size, const Vector2 &p_pos, uint32_t p_index, const Color &p_color) const = 0;
+
+	virtual bool get_glyph_contours(int p_size, uint32_t p_index, Vector<Vector3> &r_points, Vector<int32_t> &r_contours, bool &r_orientation) const { return false; };
 
 	virtual ~FontDataFallback(){};
 };

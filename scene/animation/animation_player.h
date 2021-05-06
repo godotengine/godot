@@ -64,7 +64,7 @@ class AnimationPlayer : public Node {
 	OBJ_CATEGORY("Animation Nodes");
 
 public:
-	enum AnimationProcessMode {
+	enum AnimationProcessCallback {
 		ANIMATION_PROCESS_PHYSICS,
 		ANIMATION_PROCESS_IDLE,
 		ANIMATION_PROCESS_MANUAL,
@@ -206,7 +206,7 @@ private:
 
 	String autoplay;
 	bool reset_on_save = true;
-	AnimationProcessMode animation_process_mode = ANIMATION_PROCESS_IDLE;
+	AnimationProcessCallback process_callback = ANIMATION_PROCESS_IDLE;
 	AnimationMethodCallMode method_call_mode = ANIMATION_METHOD_CALL_DEFERRED;
 	bool processing = false;
 	bool active = true;
@@ -215,7 +215,7 @@ private:
 
 	void _animation_process_animation(AnimationData *p_anim, float p_time, float p_delta, float p_interp, bool p_is_current = true, bool p_seeked = false, bool p_started = false);
 
-	void _ensure_node_caches(AnimationData *p_anim);
+	void _ensure_node_caches(AnimationData *p_anim, Node *p_root_override = nullptr);
 	void _animation_process_data(PlaybackData &cd, float p_delta, float p_blend, bool p_seeked, bool p_started);
 	void _animation_process2(float p_delta, bool p_started);
 	void _animation_update_transforms();
@@ -298,8 +298,8 @@ public:
 	void set_reset_on_save_enabled(bool p_enabled);
 	bool is_reset_on_save_enabled() const;
 
-	void set_animation_process_mode(AnimationProcessMode p_mode);
-	AnimationProcessMode get_animation_process_mode() const;
+	void set_process_callback(AnimationProcessCallback p_mode);
+	AnimationProcessCallback get_process_callback() const;
 
 	void set_method_call_mode(AnimationMethodCallMode p_mode);
 	AnimationMethodCallMode get_method_call_mode() const;
@@ -319,7 +319,7 @@ public:
 	void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const override;
 
 #ifdef TOOLS_ENABLED
-	Ref<AnimatedValuesBackup> backup_animated_values();
+	Ref<AnimatedValuesBackup> backup_animated_values(Node *p_root_override = nullptr);
 	Ref<AnimatedValuesBackup> apply_reset(bool p_user_initiated = false);
 	bool can_apply_reset() const;
 #endif
@@ -328,7 +328,7 @@ public:
 	~AnimationPlayer();
 };
 
-VARIANT_ENUM_CAST(AnimationPlayer::AnimationProcessMode);
+VARIANT_ENUM_CAST(AnimationPlayer::AnimationProcessCallback);
 VARIANT_ENUM_CAST(AnimationPlayer::AnimationMethodCallMode);
 
 #endif

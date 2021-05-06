@@ -91,7 +91,7 @@ public:
 		JOYPADS_MAX = 16,
 	};
 
-	struct JoyAxis {
+	struct JoyAxisValue {
 		int min;
 		float value;
 	};
@@ -116,6 +116,7 @@ private:
 		uint64_t physics_frame;
 		uint64_t process_frame;
 		bool pressed;
+		bool exact;
 		float strength;
 		float raw_strength;
 	};
@@ -198,10 +199,10 @@ private:
 
 		JoyType outputType;
 		union {
-			JoyButtonList button;
+			JoyButton button;
 
 			struct {
-				JoyAxisList axis;
+				JoyAxis axis;
 				JoyAxisRange range;
 			} axis;
 
@@ -219,8 +220,8 @@ private:
 	JoyEvent _get_mapped_button_event(const JoyDeviceMapping &mapping, int p_button);
 	JoyEvent _get_mapped_axis_event(const JoyDeviceMapping &mapping, int p_axis, float p_value);
 	void _get_mapped_hat_events(const JoyDeviceMapping &mapping, int p_hat, JoyEvent r_events[HAT_MAX]);
-	JoyButtonList _get_output_button(String output);
-	JoyAxisList _get_output_axis(String output);
+	JoyButton _get_output_button(String output);
+	JoyAxis _get_output_axis(String output);
 	void _button_event(int p_device, int p_index, bool p_pressed);
 	void _axis_event(int p_device, int p_axis, float p_value);
 
@@ -261,11 +262,11 @@ public:
 	bool is_key_pressed(int p_keycode) const;
 	bool is_mouse_button_pressed(int p_button) const;
 	bool is_joy_button_pressed(int p_device, int p_button) const;
-	bool is_action_pressed(const StringName &p_action) const;
-	bool is_action_just_pressed(const StringName &p_action) const;
-	bool is_action_just_released(const StringName &p_action) const;
-	float get_action_strength(const StringName &p_action) const;
-	float get_action_raw_strength(const StringName &p_action) const;
+	bool is_action_pressed(const StringName &p_action, bool p_exact = false) const;
+	bool is_action_just_pressed(const StringName &p_action, bool p_exact = false) const;
+	bool is_action_just_released(const StringName &p_action, bool p_exact = false) const;
+	float get_action_strength(const StringName &p_action, bool p_exact = false) const;
+	float get_action_raw_strength(const StringName &p_action, bool p_exact = false) const;
 
 	float get_axis(const StringName &p_negative_action, const StringName &p_positive_action) const;
 	Vector2 get_vector(const StringName &p_negative_x, const StringName &p_positive_x, const StringName &p_negative_y, const StringName &p_positive_y, float p_deadzone = -1.0f) const;
@@ -324,7 +325,7 @@ public:
 
 	void parse_mapping(String p_mapping);
 	void joy_button(int p_device, int p_button, bool p_pressed);
-	void joy_axis(int p_device, int p_axis, const JoyAxis &p_value);
+	void joy_axis(int p_device, int p_axis, const JoyAxisValue &p_value);
 	void joy_hat(int p_device, int p_val);
 
 	void add_joy_mapping(String p_mapping, bool p_update_existing = false);

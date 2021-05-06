@@ -136,10 +136,10 @@ void AnimationNodeBlendTreeEditor::_update_graph() {
 		if (String(E->get()) != "output") {
 			LineEdit *name = memnew(LineEdit);
 			name->set_text(E->get());
-			name->set_expand_to_text_length(true);
+			name->set_expand_to_text_length_enabled(true);
 			node->add_child(name);
 			node->set_slot(0, false, 0, Color(), true, 0, get_theme_color("font_color", "Label"));
-			name->connect("text_entered", callable_mp(this, &AnimationNodeBlendTreeEditor::_node_renamed), varray(agnode));
+			name->connect("text_entered", callable_mp(this, &AnimationNodeBlendTreeEditor::_node_renamed), varray(agnode), CONNECT_DEFERRED);
 			name->connect("focus_exited", callable_mp(this, &AnimationNodeBlendTreeEditor::_node_renamed_focus_out), varray(name, agnode), CONNECT_DEFERRED);
 			base = 1;
 			node->set_show_close_button(true);

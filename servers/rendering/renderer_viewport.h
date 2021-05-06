@@ -31,9 +31,9 @@
 #ifndef VISUALSERVERVIEWPORT_H
 #define VISUALSERVERVIEWPORT_H
 
+#include "core/templates/local_vector.h"
 #include "core/templates/rid_owner.h"
 #include "core/templates/self_list.h"
-#include "renderer_compositor.h"
 #include "servers/rendering_server.h"
 #include "servers/xr/xr_interface.h"
 
@@ -61,7 +61,10 @@ public:
 		RS::ViewportScreenSpaceAA screen_space_aa = RS::VIEWPORT_SCREEN_SPACE_AA_DISABLED;
 		bool use_debanding = false;
 
-		DisplayServer::WindowID viewport_to_screen = DisplayServer::INVALID_WINDOW_ID;
+		bool use_occlusion_culling;
+		bool occlusion_buffer_dirty;
+
+		DisplayServer::WindowID viewport_to_screen;
 		Rect2 viewport_to_screen_rect;
 		bool viewport_render_direct_to_screen = false;
 
@@ -129,6 +132,24 @@ public:
 		Map<RID, CanvasData> canvas_map;
 
 		Viewport() {
+			update_mode = RS::VIEWPORT_UPDATE_WHEN_VISIBLE;
+			clear_mode = RS::VIEWPORT_CLEAR_ALWAYS;
+			transparent_bg = false;
+			disable_environment = false;
+			viewport_to_screen = DisplayServer::INVALID_WINDOW_ID;
+			shadow_atlas_size = 0;
+			measure_render_time = false;
+
+			debug_draw = RS::VIEWPORT_DEBUG_DRAW_DISABLED;
+			msaa = RS::VIEWPORT_MSAA_DISABLED;
+			screen_space_aa = RS::VIEWPORT_SCREEN_SPACE_AA_DISABLED;
+			use_debanding = false;
+			use_occlusion_culling = false;
+			occlusion_buffer_dirty = true;
+
+			snap_2d_transforms_to_pixel = false;
+			snap_2d_vertices_to_pixel = false;
+
 			for (int i = 0; i < RS::VIEWPORT_RENDER_INFO_MAX; i++) {
 				render_info[i] = 0;
 			}
@@ -139,7 +160,7 @@ public:
 
 	uint64_t draw_viewports_pass = 0;
 
-	mutable RID_PtrOwner<Viewport> viewport_owner;
+	mutable RID_PtrOwner<Viewport, true> viewport_owner;
 
 	struct ViewportSort {
 		_FORCE_INLINE_ bool operator()(const Viewport *p_left, const Viewport *p_right) const {
@@ -159,8 +180,13 @@ private:
 	void _draw_3d(Viewport *p_viewport, XRInterface::Eyes p_eye);
 	void _draw_viewport(Viewport *p_viewport, XRInterface::Eyes p_eye = XRInterface::EYE_MONO);
 
+	int occlusion_rays_per_thread = 512;
+
+	void _resize_occlusion_culling_buffer(const Size2i &p_size);
+
 public:
-	RID viewport_create();
+	RID viewport_allocate();
+	void viewport_initialize(RID p_rid);
 
 	void viewport_set_use_xr(RID p_viewport, bool p_use_xr);
 
@@ -177,6 +203,7 @@ public:
 	void viewport_set_clear_mode(RID p_viewport, RS::ViewportClearMode p_clear_mode);
 
 	RID viewport_get_texture(RID p_viewport) const;
+	RID viewport_get_occluder_debug_texture(RID p_viewport) const;
 
 	void viewport_set_hide_scenario(RID p_viewport, bool p_hide);
 	void viewport_set_hide_canvas(RID p_viewport, bool p_hide);
@@ -198,7 +225,9 @@ public:
 	void viewport_set_msaa(RID p_viewport, RS::ViewportMSAA p_msaa);
 	void viewport_set_screen_space_aa(RID p_viewport, RS::ViewportScreenSpaceAA p_mode);
 	void viewport_set_use_debanding(RID p_viewport, bool p_use_debanding);
-
+	void viewport_set_use_occlusion_culling(RID p_viewport, bool p_use_occlusion_culling);
+	void viewport_set_occlusion_rays_per_thread(int p_rays_per_thread);
+	void viewport_set_occlusion_culling_build_quality(RS::ViewportOcclusionCullingBuildQuality p_quality);
 	void viewport_set_lod_threshold(RID p_viewport, float p_pixels);
 
 	virtual int viewport_get_render_info(RID p_viewport, RS::ViewportRenderInfo p_info);
@@ -222,6 +251,9 @@ public:
 	void draw_viewports();
 
 	bool free(RID p_rid);
+
+	//workaround for setting this on thread
+	void call_set_use_vsync(bool p_enable);
 
 	RendererViewport();
 	virtual ~RendererViewport() {}

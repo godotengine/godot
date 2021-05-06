@@ -68,8 +68,6 @@ private:
 	char *data = nullptr;
 	char *P = nullptr;
 	uint64_t length = 0;
-	void unescape(String &p_str);
-	Vector<String> special_characters;
 	String node_name;
 	bool node_empty = false;
 	NodeType node_type = NODE_NONE;

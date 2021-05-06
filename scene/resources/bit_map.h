@@ -40,8 +40,8 @@ class BitMap : public Resource {
 	OBJ_SAVE_TYPE(BitMap);
 
 	Vector<uint8_t> bitmask;
-	int width;
-	int height;
+	int width = 0;
+	int height = 0;
 
 	Vector<Vector2> _march_square(const Rect2i &rect, const Point2i &start) const;
 

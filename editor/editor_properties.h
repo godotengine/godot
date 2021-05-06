@@ -239,8 +239,10 @@ public:
 	enum LayerType {
 		LAYER_PHYSICS_2D,
 		LAYER_RENDER_2D,
+		LAYER_NAVIGATION_2D,
 		LAYER_PHYSICS_3D,
 		LAYER_RENDER_3D,
+		LAYER_NAVIGATION_3D,
 	};
 
 private:
@@ -653,6 +655,9 @@ class EditorPropertyResource : public EditorProperty {
 	void _fold_other_editors(Object *p_self);
 
 	bool opened_editor;
+
+	bool updating_theme = false;
+	void _update_property_bg();
 
 protected:
 	static void _bind_methods();

@@ -4,7 +4,7 @@
 		3D Agent used in navigation for collision avoidance.
 	</brief_description>
 	<description>
-		3D Agent that is used in navigation to reach a location while avoiding static and dynamic obstacles. The dynamic obstacles are avoided using RVO collision avoidance. The agent needs navigation data to work correctly. This can be done by having the agent as a child of a [Navigation3D] node, or using [method set_navigation]. [NavigationAgent3D] is physics safe.
+		3D Agent that is used in navigation to reach a location while avoiding static and dynamic obstacles. The dynamic obstacles are avoided using RVO collision avoidance. The agent needs navigation data to work correctly. [NavigationAgent3D] is physics safe.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -37,18 +37,17 @@
 				Returns which index the agent is currently on in the navigation path's [PackedVector3Array].
 			</description>
 		</method>
-		<method name="get_navigation" qualifiers="const">
-			<return type="Node">
-			</return>
-			<description>
-				Returns the [Navigation3D] node that the agent is using for its navigation system.
-			</description>
-		</method>
 		<method name="get_next_location">
 			<return type="Vector3">
 			</return>
 			<description>
 				Returns a [Vector3] in global coordinates, that can be moved to, making sure that there are no static objects in the way. If the agent does not have a navigation path, it will return the origin of the agent's parent.
+			</description>
+		</method>
+		<method name="get_rid" qualifiers="const">
+			<return type="RID">
+			</return>
+			<description>
 			</description>
 		</method>
 		<method name="get_target_location" qualifiers="const">
@@ -77,15 +76,6 @@
 			</return>
 			<description>
 				Returns true if the target location is reached. The target location is set using [method set_target_location]. It may not always be possible to reach the target location. It should always be possible to reach the final location though. See [method get_final_location].
-			</description>
-		</method>
-		<method name="set_navigation">
-			<return type="void">
-			</return>
-			<argument index="0" name="navigation" type="Node">
-			</argument>
-			<description>
-				Sets the [Navigation3D] node used by the agent. Useful when you don't want to make the agent a child of a [Navigation3D] node.
 			</description>
 		</method>
 		<method name="set_target_location">
@@ -133,7 +123,7 @@
 			The distance threshold before a target is considered to be reached. This will allow an agent to not have to hit a point on the path exactly, but in the area.
 		</member>
 		<member name="time_horizon" type="float" setter="set_time_horizon" getter="get_time_horizon" default="5.0">
-			The minimal amount of time for which this agent's velocities, that are computed with the collision avoidance algorithim, are safe with respect to other agents. The larger the number, the sooner the agent will respond to other agents, but less freedom in choosing its velocities. Must be positive.
+			The minimal amount of time for which this agent's velocities, that are computed with the collision avoidance algorithm, are safe with respect to other agents. The larger the number, the sooner the agent will respond to other agents, but less freedom in choosing its velocities. Must be positive.
 		</member>
 	</members>
 	<signals>

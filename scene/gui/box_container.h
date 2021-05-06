@@ -44,8 +44,8 @@ public:
 	};
 
 private:
-	bool vertical;
-	AlignMode align;
+	bool vertical = false;
+	AlignMode align = ALIGN_BEGIN;
 
 	void _resort();
 
@@ -55,7 +55,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	void add_spacer(bool p_begin = false);
+	Control *add_spacer(bool p_begin = false);
 
 	void set_alignment(AlignMode p_align);
 	AlignMode get_alignment() const;

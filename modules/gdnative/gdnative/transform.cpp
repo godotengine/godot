@@ -42,6 +42,10 @@ void GDAPI godot_transform_new(godot_transform *p_self) {
 	memnew_placement(p_self, Transform);
 }
 
+void GDAPI godot_transform_new_copy(godot_transform *r_dest, const godot_transform *p_src) {
+	memnew_placement(r_dest, Transform(*(Transform *)p_src));
+}
+
 #ifdef __cplusplus
 }
 #endif

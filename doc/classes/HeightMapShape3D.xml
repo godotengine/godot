@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="HeightMapShape3D" inherits="Shape3D" version="4.0">
 	<brief_description>
-		Height map shape for 3D physics (Bullet only).
+		Height map shape for 3D physics.
 	</brief_description>
 	<description>
 		Height map shape resource, which can be added to a [PhysicsBody3D] or [Area3D].

@@ -267,7 +267,7 @@ public:
 	  */
 	// static void set_texture_mapping_mode(aiTextureMapMode *map_mode, Ref<ImageTexture> texture) {
 	// 	ERR_FAIL_COND(texture.is_null());
-	// 	ERR_FAIL_COND(map_mode == NULL);
+	// 	ERR_FAIL_COND(map_mode == nullptr);
 	// 	aiTextureMapMode tex_mode = map_mode[0];
 
 	// 	int32_t flags = Texture::FLAGS_DEFAULT;
@@ -339,7 +339,7 @@ public:
 	// } else {
 	// 	Ref<Texture> texture = ResourceLoader::load(p_path);
 	// 	ERR_FAIL_COND_V(texture.is_null(), Ref<Image>());
-	// 	Ref<Image> image = texture->get_data();
+	// 	Ref<Image> image = texture->get_image();
 	// 	ERR_FAIL_COND_V(image.is_null(), Ref<Image>());
 	// 	state.path_to_image_cache.insert(p_path, image);
 	// 	return image;
@@ -382,7 +382,7 @@ public:
 	// 		String &path,
 	// 		AssimpImageData &image_state) {
 	// 	aiString ai_filename = aiString();
-	// 	if (AI_SUCCESS == ai_material->GetTexture(texture_type, 0, &ai_filename, NULL, NULL, NULL, NULL, image_state.map_mode)) {
+	// 	if (AI_SUCCESS == ai_material->GetTexture(texture_type, 0, &ai_filename, nullptr, nullptr, nullptr, nullptr, image_state.map_mode)) {
 	// 		return CreateAssimpTexture(state, ai_filename, filename, path, image_state);
 	// 	}
 

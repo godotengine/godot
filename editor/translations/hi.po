@@ -649,7 +649,7 @@ msgstr "कॉपी करने के लिए ट्रैक का चय
 #: editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp editor/property_editor.cpp
-#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
+#: editor/scene_tree_dock.cpp scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Copy"
 msgstr "कॉपी"
 
@@ -1852,8 +1852,8 @@ msgid "Open a File or Directory"
 msgstr "फ़ाइल या डायरेक्टरी खोलिये"
 
 #: editor/editor_file_dialog.cpp editor/editor_node.cpp
-#: editor/editor_properties.cpp editor/inspector_dock.cpp
-#: editor/plugins/animation_player_editor_plugin.cpp
+#: editor/editor_properties.cpp editor/import_defaults_editor.cpp
+#: editor/inspector_dock.cpp editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/script_editor_plugin.cpp scene/gui/file_dialog.cpp
 msgid "Save"
 msgstr "सेव कीजिये"
@@ -2518,7 +2518,8 @@ msgid "Unable to enable addon plugin at: '%s' parsing of config failed."
 msgstr "ऐडऑन प्लगइन को सक्षम करने में असमर्थ: '%' कॉन्फिग का पार्सिंग विफल रहा।"
 
 #: editor/editor_node.cpp
-msgid "Unable to find script field for addon plugin at: 'res://addons/%s'."
+#, fuzzy
+msgid "Unable to find script field for addon plugin at: '%s'."
 msgstr "ऐडऑन प्लगइन के लिए स्क्रिप्ट फ़ील्ड खोजने में असमर्थ: 'res://addons/% s'।"
 
 #: editor/editor_node.cpp
@@ -2946,14 +2947,6 @@ msgid "Help"
 msgstr "मदद"
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/script_text_editor.cpp
-#: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
-#: editor/plugins/visual_shader_editor_plugin.cpp editor/project_manager.cpp
-#: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
-msgid "Search"
-msgstr "ढूंढें"
-
-#: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/shader_editor_plugin.cpp
 msgid "Online Docs"
 msgstr "ऑनलाइन डॉक्स"
@@ -3115,6 +3108,23 @@ msgstr "मौजूदा के साथ विलय"
 #: editor/editor_node.cpp
 msgid "Open & Run a Script"
 msgstr "ओपन एंड रन एक स्क्रिप्ट"
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid ""
+"The following files are newer on disk.\n"
+"What action should be taken?"
+msgstr "निम्न फ़ाइलों का निस्सारण नहीं हो पाया:"
+
+#: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/shader_editor_plugin.cpp
+msgid "Reload"
+msgstr ""
+
+#: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/shader_editor_plugin.cpp
+msgid "Resave"
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "New Inherited"
@@ -3324,7 +3334,7 @@ msgstr "अद्वितीय बनाओ"
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 #: editor/plugins/tile_map_editor_plugin.cpp editor/property_editor.cpp
-#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
+#: editor/scene_tree_dock.cpp scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Paste"
 msgstr "चिपकाएँ"
 
@@ -3634,6 +3644,11 @@ msgstr "पसंद"
 msgid "Status: Import of file failed. Please fix file and reimport manually."
 msgstr ""
 "स्थिति: फाइल का आयात विफल रहा। कृपया फाइल को ठीक करें और मैन्युअल रूप से पुनर्आयात करें।"
+
+#: editor/filesystem_dock.cpp
+msgid ""
+"Importing has been disabled for this file, so it can't be opened for editing."
+msgstr ""
 
 #: editor/filesystem_dock.cpp
 msgid "Cannot move/rename resources root."
@@ -4023,6 +4038,25 @@ msgstr ""
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Saving..."
+msgstr ""
+
+#: editor/import_defaults_editor.cpp
+#, fuzzy
+msgid "Select Importer"
+msgstr "आयात करने के लिए नोड (एस) का चयन करें"
+
+#: editor/import_defaults_editor.cpp
+#, fuzzy
+msgid "Importer:"
+msgstr "इंपोर्ट"
+
+#: editor/import_defaults_editor.cpp
+#, fuzzy
+msgid "Reset to Defaults"
+msgstr "प्रायिक लोड कीजिये"
+
+#: editor/import_dock.cpp
+msgid "Keep File (No Import)"
 msgstr ""
 
 #: editor/import_dock.cpp
@@ -4972,7 +5006,7 @@ msgid "Got:"
 msgstr ""
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-msgid "Failed sha256 hash check"
+msgid "Failed SHA-256 hash check"
 msgstr ""
 
 #: editor/plugins/asset_library_editor_plugin.cpp
@@ -5076,7 +5110,6 @@ msgid "Sort:"
 msgstr ""
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#: editor/project_settings_editor.cpp
 msgid "Category:"
 msgstr ""
 
@@ -6863,6 +6896,14 @@ msgstr ""
 msgid "Run"
 msgstr ""
 
+#: editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/script_text_editor.cpp
+#: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
+#: editor/plugins/visual_shader_editor_plugin.cpp editor/project_manager.cpp
+#: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
+msgid "Search"
+msgstr "ढूंढें"
+
 #: editor/plugins/script_editor_plugin.cpp editor/script_editor_debugger.cpp
 msgid "Step Into"
 msgstr ""
@@ -6912,16 +6953,6 @@ msgstr ""
 msgid ""
 "The following files are newer on disk.\n"
 "What action should be taken?:"
-msgstr ""
-
-#: editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/shader_editor_plugin.cpp
-msgid "Reload"
-msgstr ""
-
-#: editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/shader_editor_plugin.cpp
-msgid "Resave"
 msgstr ""
 
 #: editor/plugins/script_editor_plugin.cpp editor/script_editor_debugger.cpp
@@ -7020,8 +7051,8 @@ msgstr "एक नया बनाएं"
 msgid "Go To"
 msgstr ""
 
-#: editor/plugins/script_text_editor.cpp scene/gui/line_edit.cpp
-#: scene/gui/text_edit.cpp
+#: editor/plugins/script_text_editor.cpp editor/scene_tree_dock.cpp
+#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Cut"
 msgstr ""
 
@@ -7426,6 +7457,11 @@ msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "View Rotation Locked"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid ""
+"To zoom further, change the camera's clipping planes (View -> Settings...)"
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -9839,6 +9875,11 @@ msgid "Projects"
 msgstr "परियोजना के संस्थापक"
 
 #: editor/project_manager.cpp
+#, fuzzy
+msgid "Loading, please wait..."
+msgstr "दर्पण को पुनः प्राप्त करना, कृपया प्रतीक्षा करें ..."
+
+#: editor/project_manager.cpp
 msgid "Last Modified"
 msgstr ""
 
@@ -10201,6 +10242,11 @@ msgstr ""
 msgid "Plugins"
 msgstr "प्लगइन्स"
 
+#: editor/project_settings_editor.cpp
+#, fuzzy
+msgid "Import Defaults"
+msgstr "प्रायिक लोड कीजिये"
+
 #: editor/property_editor.cpp
 msgid "Preset..."
 msgstr ""
@@ -10446,6 +10492,15 @@ msgid "Instance Child Scene"
 msgstr ""
 
 #: editor/scene_tree_dock.cpp
+msgid "Can't paste root node into the same scene."
+msgstr ""
+
+#: editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Paste Node(s)"
+msgstr "प्रतिलिपि"
+
+#: editor/scene_tree_dock.cpp
 #, fuzzy
 msgid "Detach Script"
 msgstr "नई स्क्रिप्ट"
@@ -10572,6 +10627,11 @@ msgid "Attach Script"
 msgstr ""
 
 #: editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Cut Node(s)"
+msgstr "प्रतिलिपि"
+
+#: editor/scene_tree_dock.cpp
 msgid "Remove Node(s)"
 msgstr ""
 
@@ -10679,6 +10739,13 @@ msgstr ""
 
 #: editor/scene_tree_dock.cpp
 msgid "Remote"
+msgstr ""
+
+#: editor/scene_tree_dock.cpp
+msgid ""
+"If selected, the Remote scene tree dock will cause the project to stutter "
+"every time it updates.\n"
+"Switch back to the Local scene tree dock to improve performance."
 msgstr ""
 
 #: editor/scene_tree_dock.cpp
@@ -12190,6 +12257,14 @@ msgstr ""
 msgid "An empty CollisionPolygon2D has no effect on collision."
 msgstr ""
 
+#: scene/2d/collision_polygon_2d.cpp
+msgid "Invalid polygon. At least 3 points are needed in 'Solids' build mode."
+msgstr ""
+
+#: scene/2d/collision_polygon_2d.cpp
+msgid "Invalid polygon. At least 2 points are needed in 'Segments' build mode."
+msgstr ""
+
 #: scene/2d/collision_shape_2d.cpp
 msgid ""
 "CollisionShape2D only serves to provide a collision shape to a "
@@ -12445,11 +12520,6 @@ msgstr ""
 msgid ""
 "GIProbes are not supported by the GLES2 video driver.\n"
 "Use a BakedLightmap instead."
-msgstr ""
-
-#: scene/3d/interpolated_camera.cpp
-msgid ""
-"InterpolatedCamera has been deprecated and will be removed in Godot 4.0."
 msgstr ""
 
 #: scene/3d/light.cpp

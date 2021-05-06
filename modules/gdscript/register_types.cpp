@@ -85,7 +85,7 @@ public:
 			return;
 		}
 
-		// TODO: Readd compiled GDScript on export.
+		// TODO: Re-add compiled GDScript on export.
 		return;
 	}
 };
@@ -158,25 +158,24 @@ void unregister_gdscript_types() {
 #endif // TOOLS_ENABLED
 
 	GDScriptParser::cleanup();
-	GDScriptAnalyzer::cleanup();
 	GDScriptUtilityFunctions::unregister_functions();
 }
 
 #ifdef TESTS_ENABLED
 void test_tokenizer() {
-	TestGDScript::test(TestGDScript::TestType::TEST_TOKENIZER);
+	GDScriptTests::test(GDScriptTests::TestType::TEST_TOKENIZER);
 }
 
 void test_parser() {
-	TestGDScript::test(TestGDScript::TestType::TEST_PARSER);
+	GDScriptTests::test(GDScriptTests::TestType::TEST_PARSER);
 }
 
 void test_compiler() {
-	TestGDScript::test(TestGDScript::TestType::TEST_COMPILER);
+	GDScriptTests::test(GDScriptTests::TestType::TEST_COMPILER);
 }
 
 void test_bytecode() {
-	TestGDScript::test(TestGDScript::TestType::TEST_BYTECODE);
+	GDScriptTests::test(GDScriptTests::TestType::TEST_BYTECODE);
 }
 
 REGISTER_TEST_COMMAND("gdscript-tokenizer", &test_tokenizer);

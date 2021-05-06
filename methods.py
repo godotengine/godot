@@ -6,9 +6,11 @@ from collections import OrderedDict
 
 # We need to define our own `Action` method to control the verbosity of output
 # and whenever we need to run those commands in a subprocess on some platforms.
-from SCons.Script import Action
 from SCons import Node
+from SCons.Script import Action
+from SCons.Script import ARGUMENTS
 from SCons.Script import Glob
+from SCons.Variables.BoolVariable import _text2bool
 from platform_methods import run_in_subprocess
 
 
@@ -145,6 +147,17 @@ def parse_cg_file(fname, uniforms, sizes, conditionals):
     fs.close()
 
 
+def get_cmdline_bool(option, default):
+    """We use `ARGUMENTS.get()` to check if options were manually overridden on the command line,
+    and SCons' _text2bool helper to convert them to booleans, otherwise they're handled as strings.
+    """
+    cmdline_val = ARGUMENTS.get(option)
+    if cmdline_val is not None:
+        return _text2bool(cmdline_val)
+    else:
+        return default
+
+
 def detect_modules(search_path, recursive=False):
     """Detects and collects a list of C++ modules at specified path
 
@@ -174,9 +187,7 @@ def detect_modules(search_path, recursive=False):
         version_path = os.path.join(path, "version.py")
         if os.path.exists(version_path):
             with open(version_path) as f:
-                version = {}
-                exec(f.read(), version)
-                if version.get("short_name") == "godot":
+                if 'short_name = "godot"' in f.read():
                     return True
         return False
 
@@ -323,7 +334,7 @@ def use_windows_spawn_fix(self, platform=None):
     # On Windows, due to the limited command line length, when creating a static library
     # from a very high number of objects SCons will invoke "ar" once per object file;
     # that makes object files with same names to be overwritten so the last wins and
-    # the library looses symbols defined by overwritten objects.
+    # the library loses symbols defined by overwritten objects.
     # By enabling quick append instead of the default mode (replacing), libraries will
     # got built correctly regardless the invocation strategy.
     # Furthermore, since SCons will rebuild the library from scratch when an object file
@@ -467,7 +478,7 @@ def detect_visual_c_compiler_version(tools_env):
     # and not scons setup environment (env)... so make sure you call the right environment on it or it will fail to detect
     # the proper vc version that will be called
 
-    # There is no flag to give to visual c compilers to set the architecture, ie scons bits argument (32,64,ARM etc)
+    # There is no flag to give to visual c compilers to set the architecture, i.e. scons bits argument (32,64,ARM etc)
     # There are many different cl.exe files that are run, and each one compiles & links to a different architecture
     # As far as I know, the only way to figure out what compiler will be run when Scons calls cl.exe via Program()
     # is to check the PATH variable and figure out which one will be called first. Code below does that and returns:
@@ -622,7 +633,7 @@ def generate_vs_project(env, num_jobs):
                 'call "' + batch_file + '" !plat!',
             ]
 
-            # windows allows us to have spaces in paths, so we need
+            # Windows allows us to have spaces in paths, so we need
             # to double quote off the directory. However, the path ends
             # in a backslash, so we need to remove this, lest it escape the
             # last double quote off, confusing MSBuild
@@ -634,6 +645,9 @@ def generate_vs_project(env, num_jobs):
                 "tools=!tools!",
                 "-j%s" % num_jobs,
             ]
+
+            if env["tests"]:
+                common_build_postfix.append("tests=yes")
 
             if env["custom_modules"]:
                 common_build_postfix.append("custom_modules=%s" % env["custom_modules"])
@@ -647,6 +661,8 @@ def generate_vs_project(env, num_jobs):
         add_to_vs_project(env, env.modules_sources)
         add_to_vs_project(env, env.scene_sources)
         add_to_vs_project(env, env.servers_sources)
+        if env["tests"]:
+            add_to_vs_project(env, env.tests_sources)
         add_to_vs_project(env, env.editor_sources)
 
         for header in glob_recursive("**/*.h"):

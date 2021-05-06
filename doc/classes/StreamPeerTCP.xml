@@ -9,6 +9,18 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="bind">
+			<return type="int" enum="Error">
+			</return>
+			<argument index="0" name="port" type="int">
+			</argument>
+			<argument index="1" name="host" type="String" default="&quot;*&quot;">
+			</argument>
+			<description>
+				Opens the TCP socket, and binds it to the specified local address.
+				This method is generally not needed, and only used to force the subsequent call to [method connect_to_host] to use the specified [code]host[/code] and [code]port[/code] as source address. This can be desired in some NAT punchthrough techniques, or when forcing the source network interface.
+			</description>
+		</method>
 		<method name="connect_to_host">
 			<return type="int" enum="Error">
 			</return>
@@ -17,7 +29,7 @@
 			<argument index="1" name="port" type="int">
 			</argument>
 			<description>
-				Connects to the specified [code]host:port[/code] pair. A hostname will be resolved if valid. Returns [constant OK] on success or [constant FAILED] on failure.
+				Connects to the specified [code]host:port[/code] pair. A hostname will be resolved if valid. Returns [constant OK] on success.
 			</description>
 		</method>
 		<method name="disconnect_from_host">
@@ -41,6 +53,13 @@
 				Returns the port of this peer.
 			</description>
 		</method>
+		<method name="get_local_port" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Returns the local port to which this peer is bound.
+			</description>
+		</method>
 		<method name="get_status">
 			<return type="int" enum="StreamPeerTCP.Status">
 			</return>
@@ -61,8 +80,8 @@
 			<argument index="0" name="enabled" type="bool">
 			</argument>
 			<description>
-				Disables Nagle's algorithm to improve latency for small packets.
-				[b]Note:[/b] For applications that send large packets or need to transfer a lot of data, this can decrease the total available bandwidth.
+				If [code]enabled[/code] is [code]true[/code], packets will be sent immediately. If [code]enabled[/code] is [code]false[/code] (the default), packet transfers will be delayed and combined using [url=https://en.wikipedia.org/wiki/Nagle%27s_algorithm]Nagle's algorithm[/url].
+				[b]Note:[/b] It's recommended to leave this disabled for applications that send large packets or need to transfer a lot of data, as enabling this can decrease the total available bandwidth.
 			</description>
 		</method>
 	</methods>

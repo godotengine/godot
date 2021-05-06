@@ -78,7 +78,6 @@ void AnimationPlayerEditor::_notification(int p_what) {
 				}
 				frame->set_value(player->get_current_animation_position());
 				track_editor->set_anim_pos(player->get_current_animation_position());
-				EditorNode::get_singleton()->get_inspector()->refresh();
 
 			} else if (!player->is_valid()) {
 				// Reset timeline when the player has been stopped externally
@@ -118,8 +117,8 @@ void AnimationPlayerEditor::_notification(int p_what) {
 			autoplay_icon = get_theme_icon("AutoPlay", "EditorIcons");
 			reset_icon = get_theme_icon("Reload", "EditorIcons");
 			{
-				Ref<Image> autoplay_img = autoplay_icon->get_data();
-				Ref<Image> reset_img = reset_icon->get_data();
+				Ref<Image> autoplay_img = autoplay_icon->get_image();
+				Ref<Image> reset_img = reset_icon->get_image();
 				Ref<Image> autoplay_reset_img;
 				Size2 icon_size = Size2(autoplay_img->get_width(), autoplay_img->get_height());
 				autoplay_reset_img.instance();
@@ -1072,8 +1071,6 @@ void AnimationPlayerEditor::_animation_key_editor_seek(float p_pos, bool p_drag)
 	frame->set_value(Math::snapped(p_pos, _get_editor_step()));
 	updating = false;
 	_seek_value_changed(p_pos, !p_drag);
-
-	EditorNode::get_singleton()->get_inspector()->refresh();
 }
 
 void AnimationPlayerEditor::_animation_tool_menu(int p_option) {
@@ -1222,6 +1219,8 @@ void AnimationPlayerEditor::_onion_skinning_menu(int p_option) {
 }
 
 void AnimationPlayerEditor::_unhandled_key_input(const Ref<InputEvent> &p_ev) {
+	ERR_FAIL_COND(p_ev.is_null());
+
 	Ref<InputEventKey> k = p_ev;
 	if (is_visible_in_tree() && k.is_valid() && k->is_pressed() && !k->is_echo() && !k->get_alt() && !k->get_control() && !k->get_metakey()) {
 		switch (k->get_keycode()) {
@@ -1400,7 +1399,7 @@ void AnimationPlayerEditor::_prepare_onion_layers_2() {
 	// Render every past/future step with the capture shader.
 
 	RS::get_singleton()->canvas_item_set_material(onion.capture.canvas_item, onion.capture.material->get_rid());
-	onion.capture.material->set_shader_param("bkg_color", GLOBAL_GET("rendering/environment/default_clear_color"));
+	onion.capture.material->set_shader_param("bkg_color", GLOBAL_GET("rendering/environment/defaults/default_clear_color"));
 	onion.capture.material->set_shader_param("differences_only", onion.differences_only);
 	onion.capture.material->set_shader_param("present", onion.differences_only ? RS::get_singleton()->viewport_get_texture(present_rid) : RID());
 

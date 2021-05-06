@@ -50,6 +50,13 @@ subject to the following restrictions:
 #include "pin_joint_3d_sw.h"
 
 bool PinJoint3DSW::setup(real_t p_step) {
+	dynamic_A = (A->get_mode() > PhysicsServer3D::BODY_MODE_KINEMATIC);
+	dynamic_B = (B->get_mode() > PhysicsServer3D::BODY_MODE_KINEMATIC);
+
+	if (!dynamic_A && !dynamic_B) {
+		return false;
+	}
+
 	m_appliedImpulse = real_t(0.);
 
 	Vector3 normal(0, 0, 0);
@@ -119,8 +126,12 @@ void PinJoint3DSW::solve(real_t p_step) {
 
 		m_appliedImpulse += impulse;
 		Vector3 impulse_vector = normal * impulse;
-		A->apply_impulse(impulse_vector, pivotAInW - A->get_transform().origin);
-		B->apply_impulse(-impulse_vector, pivotBInW - B->get_transform().origin);
+		if (dynamic_A) {
+			A->apply_impulse(impulse_vector, pivotAInW - A->get_transform().origin);
+		}
+		if (dynamic_B) {
+			B->apply_impulse(-impulse_vector, pivotBInW - B->get_transform().origin);
+		}
 
 		normal[i] = 0;
 	}

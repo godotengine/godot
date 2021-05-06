@@ -54,7 +54,7 @@
 			<argument index="0" name="msec" type="int">
 			</argument>
 			<description>
-				Delay execution of the current thread by [code]msec[/code] milliseconds.
+				Delay execution of the current thread by [code]msec[/code] milliseconds. [code]usec[/code] must be greater than or equal to [code]0[/code]. Otherwise, [method delay_msec] will do nothing and will print an error message.
 			</description>
 		</method>
 		<method name="delay_usec" qualifiers="const">
@@ -63,7 +63,7 @@
 			<argument index="0" name="usec" type="int">
 			</argument>
 			<description>
-				Delay execution of the current thread by [code]usec[/code] microseconds.
+				Delay execution of the current thread by [code]usec[/code] microseconds. [code]usec[/code] must be greater than or equal to [code]0[/code]. Otherwise, [method delay_usec] will do nothing and will print an error message.
 			</description>
 		</method>
 		<method name="dump_memory_to_file">
@@ -207,10 +207,11 @@
 		<method name="get_environment" qualifiers="const">
 			<return type="String">
 			</return>
-			<argument index="0" name="environment" type="String">
+			<argument index="0" name="variable" type="String">
 			</argument>
 			<description>
-				Returns an environment variable.
+				Returns the value of an environment variable. Returns an empty string if the environment variable doesn't exist.
+				[b]Note:[/b] Double-check the casing of [code]variable[/code]. Environment variable names are case-sensitive on all platforms except Windows.
 			</description>
 		</method>
 		<method name="get_executable_path" qualifiers="const">
@@ -243,9 +244,9 @@
 			</return>
 			<description>
 				Returns the host OS locale as a string of the form [code]language_Script_COUNTRY_VARIANT@extra[/code].
-				[code]language[/code] - 2 or 3 letter [url=https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes]language code[/url], in lower case.
-				[code]Script[/code] - optional, 4 letter [url=https://en.wikipedia.org/wiki/ISO_15924]script code[/url], in title case.
-				[code]COUNTRY[/code] - optional, 2 or 3 letter [url=https://en.wikipedia.org/wiki/ISO_3166-1]country code[/url], in upper case.
+				[code]language[/code] - 2 or 3-letter [url=https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes]language code[/url], in lower case.
+				[code]Script[/code] - optional, 4-letter [url=https://en.wikipedia.org/wiki/ISO_15924]script code[/url], in title case.
+				[code]COUNTRY[/code] - optional, 2 or 3-letter [url=https://en.wikipedia.org/wiki/ISO_3166-1]country code[/url], in upper case.
 				[code]VARIANT[/code] - optional, language variant, region and sort order. Variant can have any number of underscored key words.
 				[code]extra[/code] - optional, semicolon separated list of additional key words. Currency, calendar, sort order and numbering system information.
 			</description>
@@ -304,24 +305,6 @@
 				[b]Note:[/b] This method is implemented on Android, Linux, macOS and Windows.
 			</description>
 		</method>
-		<method name="get_tablet_driver_count" qualifiers="const">
-			<return type="int">
-			</return>
-			<description>
-				Returns the total number of available tablet drivers.
-				[b]Note:[/b] This method is implemented on Windows.
-			</description>
-		</method>
-		<method name="get_tablet_driver_name" qualifiers="const">
-			<return type="String">
-			</return>
-			<argument index="0" name="idx" type="int">
-			</argument>
-			<description>
-				Returns the tablet driver name for the given index.
-				[b]Note:[/b] This method is implemented on Windows.
-			</description>
-		</method>
 		<method name="get_thread_caller_id" qualifiers="const">
 			<return type="int">
 			</return>
@@ -372,7 +355,7 @@
 			<return type="float">
 			</return>
 			<description>
-				Returns the current UNIX epoch timestamp.
+				Returns the current UNIX epoch timestamp in seconds.
 				[b]Important:[/b] This is the system clock that the user can manully set. [b]Never use[/b] this method for precise time calculation since its results are also subject to automatic adjustments by the operating system. [b]Always use[/b] [method get_ticks_usec] or [method get_ticks_msec] for precise time calculation instead, since they are guaranteed to be monotonic (i.e. never decrease).
 			</description>
 		</method>
@@ -384,6 +367,7 @@
 			<description>
 				Gets an epoch time value from a dictionary of time values.
 				[code]datetime[/code] must be populated with the following keys: [code]year[/code], [code]month[/code], [code]day[/code], [code]hour[/code], [code]minute[/code], [code]second[/code].
+				If the dictionary is empty [code]0[/code] is returned.
 				You can pass the output from [method get_datetime_from_unix_time] directly into this function. Daylight Savings Time ([code]dst[/code]), if present, is ignored.
 			</description>
 		</method>
@@ -401,10 +385,11 @@
 		<method name="has_environment" qualifiers="const">
 			<return type="bool">
 			</return>
-			<argument index="0" name="environment" type="String">
+			<argument index="0" name="variable" type="String">
 			</argument>
 			<description>
-				Returns [code]true[/code] if an environment variable exists.
+				Returns [code]true[/code] if the environment variable with the name [code]variable[/code] exists.
+				[b]Note:[/b] Double-check the casing of [code]variable[/code]. Environment variable names are case-sensitive on all platforms except Windows.
 			</description>
 		</method>
 		<method name="has_feature" qualifiers="const">
@@ -519,6 +504,18 @@
 				[b]Note:[/b] This method is implemented on Android.
 			</description>
 		</method>
+		<method name="set_environment" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="variable" type="String">
+			</argument>
+			<argument index="1" name="value" type="String">
+			</argument>
+			<description>
+				Sets the value of the environment variable [code]variable[/code] to [code]value[/code]. The environment variable will be set for the Godot process and any process executed with [method execute] after running [method set_environment]. The environment variable will [i]not[/i] persist to processes run after the Godot process was terminated.
+				[b]Note:[/b] Double-check the casing of [code]variable[/code]. Environment variable names are case-sensitive on all platforms except Windows.
+			</description>
+		</method>
 		<method name="set_thread_name">
 			<return type="int" enum="Error">
 			</return>
@@ -553,18 +550,11 @@
 		</method>
 	</methods>
 	<members>
-		<member name="exit_code" type="int" setter="set_exit_code" getter="get_exit_code" default="0">
-			The exit code passed to the OS when the main loop exits. By convention, an exit code of [code]0[/code] indicates success whereas a non-zero exit code indicates an error. For portability reasons, the exit code should be set between 0 and 125 (inclusive).
-			[b]Note:[/b] This value will be ignored if using [method SceneTree.quit] with an [code]exit_code[/code] argument passed.
-		</member>
 		<member name="low_processor_usage_mode" type="bool" setter="set_low_processor_usage_mode" getter="is_in_low_processor_usage_mode" default="false">
 			If [code]true[/code], the engine optimizes for low processor usage by only refreshing the screen if needed. Can improve battery consumption on mobile.
 		</member>
 		<member name="low_processor_usage_mode_sleep_usec" type="int" setter="set_low_processor_usage_mode_sleep_usec" getter="get_low_processor_usage_mode_sleep_usec" default="6900">
 			The amount of sleeping between frames when the low-processor usage mode is enabled (in microseconds). Higher values will result in lower CPU usage.
-		</member>
-		<member name="tablet_driver" type="String" setter="set_current_tablet_driver" getter="get_current_tablet_driver" default="&quot;&quot;">
-			The current tablet driver in use.
 		</member>
 	</members>
 	<constants>

@@ -1574,6 +1574,7 @@ public:
 	float get_default_value() const;
 
 	bool is_qualifier_supported(Qualifier p_qual) const override;
+	bool is_convertible_to_constant() const override;
 
 	virtual Vector<StringName> get_editable_properties() const override;
 
@@ -1639,6 +1640,7 @@ public:
 	int get_default_value() const;
 
 	bool is_qualifier_supported(Qualifier p_qual) const override;
+	bool is_convertible_to_constant() const override;
 
 	virtual Vector<StringName> get_editable_properties() const override;
 
@@ -1683,6 +1685,7 @@ public:
 	bool get_default_value() const;
 
 	bool is_qualifier_supported(Qualifier p_qual) const override;
+	bool is_convertible_to_constant() const override;
 
 	virtual Vector<StringName> get_editable_properties() const override;
 
@@ -1724,6 +1727,7 @@ public:
 	Color get_default_value() const;
 
 	bool is_qualifier_supported(Qualifier p_qual) const override;
+	bool is_convertible_to_constant() const override;
 
 	virtual Vector<StringName> get_editable_properties() const override;
 
@@ -1766,6 +1770,7 @@ public:
 	Vector3 get_default_value() const;
 
 	bool is_qualifier_supported(Qualifier p_qual) const override;
+	bool is_convertible_to_constant() const override;
 
 	virtual Vector<StringName> get_editable_properties() const override;
 
@@ -1808,6 +1813,7 @@ public:
 	Transform get_default_value() const;
 
 	bool is_qualifier_supported(Qualifier p_qual) const override;
+	bool is_convertible_to_constant() const override;
 
 	virtual Vector<StringName> get_editable_properties() const override;
 
@@ -1865,6 +1871,7 @@ public:
 	ColorDefault get_color_default() const;
 
 	bool is_qualifier_supported(Qualifier p_qual) const override;
+	bool is_convertible_to_constant() const override;
 
 	VisualShaderNodeTextureUniform();
 };

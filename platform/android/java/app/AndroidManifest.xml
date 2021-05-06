@@ -22,18 +22,13 @@
         tools:ignore="GoogleAppIndexingWarning"
         android:icon="@mipmap/icon" >
 
+        <!-- Records the version of the Godot editor used for building -->
+        <meta-data
+            android:name="org.godotengine.editor.version"
+            android:value="${godotEditorVersion}" />
+
         <!-- The following metadata values are replaced when Godot exports, modifying them here has no effect. -->
         <!-- Do these changes in the export preset. Adding new ones is fine. -->
-
-        <!-- XR mode metadata. This is modified by the exporter based on the selected xr mode. DO NOT CHANGE the values here. -->
-        <meta-data
-            android:name="xr_mode_metadata_name"
-            android:value="xr_mode_metadata_value" />
-
-        <!-- Metadata populated at export time and used by Godot to figure out which plugins must be enabled. -->
-        <meta-data
-            android:name="plugins"
-            android:value="plugins_value"/>
 
         <activity
             android:name=".GodotApp"
@@ -45,8 +40,8 @@
             android:resizeableActivity="false"
             tools:ignore="UnusedAttribute" >
 
-            <!-- Focus awareness metadata is updated at export time if the user enables it in the 'Xr Features' section. -->
-            <meta-data android:name="com.oculus.vr.focusaware" android:value="false" />
+            <!-- Focus awareness metadata is removed at export time if the xr mode is not VR. -->
+            <meta-data android:name="com.oculus.vr.focusaware" android:value="true" />
 
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

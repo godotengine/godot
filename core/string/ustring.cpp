@@ -240,6 +240,71 @@ String String::word_wrap(int p_chars_per_line) const {
 	return ret;
 }
 
+Error String::parse_url(String &r_scheme, String &r_host, int &r_port, String &r_path) const {
+	// Splits the URL into scheme, host, port, path. Strip credentials when present.
+	String base = *this;
+	r_scheme = "";
+	r_host = "";
+	r_port = 0;
+	r_path = "";
+	int pos = base.find("://");
+	// Scheme
+	if (pos != -1) {
+		r_scheme = base.substr(0, pos + 3).to_lower();
+		base = base.substr(pos + 3, base.length() - pos - 3);
+	}
+	pos = base.find("/");
+	// Path
+	if (pos != -1) {
+		r_path = base.substr(pos, base.length() - pos);
+		base = base.substr(0, pos);
+	}
+	// Host
+	pos = base.find("@");
+	if (pos != -1) {
+		// Strip credentials
+		base = base.substr(pos + 1, base.length() - pos - 1);
+	}
+	if (base.begins_with("[")) {
+		// Literal IPv6
+		pos = base.rfind("]");
+		if (pos == -1) {
+			return ERR_INVALID_PARAMETER;
+		}
+		r_host = base.substr(1, pos - 1);
+		base = base.substr(pos + 1, base.length() - pos - 1);
+	} else {
+		// Anything else
+		if (base.get_slice_count(":") > 1) {
+			return ERR_INVALID_PARAMETER;
+		}
+		pos = base.rfind(":");
+		if (pos == -1) {
+			r_host = base;
+			base = "";
+		} else {
+			r_host = base.substr(0, pos);
+			base = base.substr(pos, base.length() - pos);
+		}
+	}
+	if (r_host.is_empty()) {
+		return ERR_INVALID_PARAMETER;
+	}
+	r_host = r_host.to_lower();
+	// Port
+	if (base.begins_with(":")) {
+		base = base.substr(1, base.length() - 1);
+		if (!base.is_valid_integer()) {
+			return ERR_INVALID_PARAMETER;
+		}
+		r_port = base.to_int();
+		if (r_port < 1 || r_port > 65535) {
+			return ERR_INVALID_PARAMETER;
+		}
+	}
+	return OK;
+}
+
 void String::copy_from(const char *p_cstr) {
 	// copy Latin-1 encoded c-string directly
 	if (!p_cstr) {
@@ -1138,7 +1203,7 @@ Vector<String> String::rsplit(const String &p_splitter, bool p_allow_empty, int 
 		remaining_len = left_edge;
 	}
 
-	ret.invert();
+	ret.reverse();
 	return ret;
 }
 
@@ -1764,7 +1829,7 @@ bool String::parse_utf8(const char *p_utf8, int p_len) {
 
 		if (skip) {
 			_UNICERROR("no space left");
-			return true; //not enough spac
+			return true; //not enough space
 		}
 	}
 
@@ -3772,9 +3837,9 @@ String String::uri_encode() const {
 		} else {
 			char h_Val[3];
 #if defined(__GNUC__) || defined(_MSC_VER)
-			snprintf(h_Val, 3, "%hhX", ord);
+			snprintf(h_Val, 3, "%02hhX", ord);
 #else
-			sprintf(h_Val, "%hhX", ord);
+			sprintf(h_Val, "%02hhX", ord);
 #endif
 			res += "%";
 			res += h_Val;
@@ -3784,27 +3849,28 @@ String String::uri_encode() const {
 }
 
 String String::uri_decode() const {
-	String res;
-	for (int i = 0; i < length(); ++i) {
-		if (unicode_at(i) == '%' && i + 2 < length()) {
-			char32_t ord1 = unicode_at(i + 1);
+	CharString src = utf8();
+	CharString res;
+	for (int i = 0; i < src.length(); ++i) {
+		if (src[i] == '%' && i + 2 < src.length()) {
+			char ord1 = src[i + 1];
 			if ((ord1 >= '0' && ord1 <= '9') || (ord1 >= 'A' && ord1 <= 'Z')) {
-				char32_t ord2 = unicode_at(i + 2);
+				char ord2 = src[i + 2];
 				if ((ord2 >= '0' && ord2 <= '9') || (ord2 >= 'A' && ord2 <= 'Z')) {
 					char bytes[3] = { (char)ord1, (char)ord2, 0 };
 					res += (char)strtol(bytes, nullptr, 16);
 					i += 2;
 				}
 			} else {
-				res += unicode_at(i);
+				res += src[i];
 			}
-		} else if (unicode_at(i) == '+') {
+		} else if (src[i] == '+') {
 			res += ' ';
 		} else {
-			res += unicode_at(i);
+			res += src[i];
 		}
 	}
-	return String::utf8(res.ascii());
+	return String::utf8(res);
 }
 
 String String::c_unescape() const {
@@ -3888,25 +3954,55 @@ static _FORCE_INLINE_ int _xml_unescape(const char32_t *p_src, int p_src_len, ch
 
 			if (p_src_len >= 4 && p_src[1] == '#') {
 				char32_t c = 0;
-
-				for (int i = 2; i < p_src_len; i++) {
-					eat = i + 1;
-					char32_t ct = p_src[i];
-					if (ct == ';') {
-						break;
-					} else if (ct >= '0' && ct <= '9') {
-						ct = ct - '0';
-					} else if (ct >= 'a' && ct <= 'f') {
-						ct = (ct - 'a') + 10;
-					} else if (ct >= 'A' && ct <= 'F') {
-						ct = (ct - 'A') + 10;
-					} else {
-						continue;
+				bool overflow = false;
+				if (p_src[2] == 'x') {
+					// Hex entity &#x<num>;
+					for (int i = 3; i < p_src_len; i++) {
+						eat = i + 1;
+						char32_t ct = p_src[i];
+						if (ct == ';') {
+							break;
+						} else if (ct >= '0' && ct <= '9') {
+							ct = ct - '0';
+						} else if (ct >= 'a' && ct <= 'f') {
+							ct = (ct - 'a') + 10;
+						} else if (ct >= 'A' && ct <= 'F') {
+							ct = (ct - 'A') + 10;
+						} else {
+							break;
+						}
+						if (c > (UINT32_MAX >> 4)) {
+							overflow = true;
+							break;
+						}
+						c <<= 4;
+						c |= ct;
 					}
-					c <<= 4;
-					c |= ct;
+				} else {
+					// Decimal entity &#<num>;
+					for (int i = 2; i < p_src_len; i++) {
+						eat = i + 1;
+						char32_t ct = p_src[i];
+						if (ct == ';' || ct < '0' || ct > '9') {
+							break;
+						}
+					}
+					if (p_src[eat - 1] == ';') {
+						int64_t val = String::to_int(p_src + 2, eat - 3);
+						if (val > 0 && val <= UINT32_MAX) {
+							c = (char32_t)val;
+						} else {
+							overflow = true;
+						}
+					}
 				}
 
+				// Value must be non-zero, in the range of char32_t,
+				// actually end with ';'. If invalid, leave the entity as-is
+				if (c == '\0' || overflow || p_src[eat - 1] != ';') {
+					eat = 1;
+					c = *p_src;
+				}
 				if (p_dst) {
 					*p_dst = c;
 				}
@@ -4364,6 +4460,18 @@ String String::property_name_encode() const {
 	return *this;
 }
 
+// Changes made to the set of invalid characters must also be reflected in the String documentation.
+const String String::invalid_node_name_characters = ". : @ / \"";
+
+String String::validate_node_name() const {
+	Vector<String> chars = String::invalid_node_name_characters.split(" ");
+	String name = this->replace(chars[0], "");
+	for (int i = 1; i < chars.size(); i++) {
+		name = name.replace(chars[i], "");
+	}
+	return name;
+}
+
 String String::get_basename() const {
 	int pos = rfind(".");
 	if (pos < 0 || pos < MAX(rfind("/"), rfind("\\"))) {
@@ -4438,7 +4546,7 @@ String String::sprintf(const Array &values, bool *error) const {
 	for (; *self; self++) {
 		const char32_t c = *self;
 
-		if (in_format) { // We have % - lets see what else we get.
+		if (in_format) { // We have % - let's see what else we get.
 			switch (c) {
 				case '%': { // Replace %% with %
 					formatted += chr(c);
@@ -4723,7 +4831,7 @@ Vector<uint8_t> String::to_ascii_buffer() const {
 	size_t len = charstr.length();
 	retval.resize(len);
 	uint8_t *w = retval.ptrw();
-	copymem(w, charstr.ptr(), len);
+	memcpy(w, charstr.ptr(), len);
 
 	return retval;
 }
@@ -4739,7 +4847,7 @@ Vector<uint8_t> String::to_utf8_buffer() const {
 	size_t len = charstr.length();
 	retval.resize(len);
 	uint8_t *w = retval.ptrw();
-	copymem(w, charstr.ptr(), len);
+	memcpy(w, charstr.ptr(), len);
 
 	return retval;
 }
@@ -4755,7 +4863,7 @@ Vector<uint8_t> String::to_utf16_buffer() const {
 	size_t len = charstr.length() * sizeof(char16_t);
 	retval.resize(len);
 	uint8_t *w = retval.ptrw();
-	copymem(w, (const void *)charstr.ptr(), len);
+	memcpy(w, (const void *)charstr.ptr(), len);
 
 	return retval;
 }
@@ -4770,7 +4878,7 @@ Vector<uint8_t> String::to_utf32_buffer() const {
 	size_t len = s->length() * sizeof(char32_t);
 	retval.resize(len);
 	uint8_t *w = retval.ptrw();
-	copymem(w, (const void *)s->ptr(), len);
+	memcpy(w, (const void *)s->ptr(), len);
 
 	return retval;
 }

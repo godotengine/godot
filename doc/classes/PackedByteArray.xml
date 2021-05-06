@@ -52,7 +52,7 @@
 				Appends a [PackedByteArray] at the end of this array.
 			</description>
 		</method>
-		<method name="compress">
+		<method name="compress" qualifiers="const">
 			<return type="PackedByteArray">
 			</return>
 			<argument index="0" name="compression_mode" type="int" default="0">
@@ -61,7 +61,115 @@
 				Returns a new [PackedByteArray] with the data compressed. Set the compression mode using one of [enum File.CompressionMode]'s constants.
 			</description>
 		</method>
-		<method name="decompress">
+		<method name="decode_double" qualifiers="const">
+			<return type="float">
+			</return>
+			<argument index="0" name="byte_offset" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="decode_float" qualifiers="const">
+			<return type="float">
+			</return>
+			<argument index="0" name="byte_offset" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="decode_half" qualifiers="const">
+			<return type="float">
+			</return>
+			<argument index="0" name="byte_offset" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="decode_s16" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="byte_offset" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="decode_s32" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="byte_offset" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="decode_s64" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="byte_offset" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="decode_s8" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="byte_offset" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="decode_u16" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="byte_offset" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="decode_u32" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="byte_offset" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="decode_u64" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="byte_offset" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="decode_u8" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="byte_offset" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="decode_var" qualifiers="const">
+			<return type="Variant">
+			</return>
+			<argument index="0" name="byte_offset" type="int">
+			</argument>
+			<argument index="1" name="allow_objects" type="bool" default="false">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="decode_var_size" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="byte_offset" type="int">
+			</argument>
+			<argument index="1" name="allow_objects" type="bool" default="false">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="decompress" qualifiers="const">
 			<return type="PackedByteArray">
 			</return>
 			<argument index="0" name="buffer_size" type="int">
@@ -72,7 +180,7 @@
 				Returns a new [PackedByteArray] with the data decompressed. Set [code]buffer_size[/code] to the size of the uncompressed data. Set the compression mode using one of [enum File.CompressionMode]'s constants.
 			</description>
 		</method>
-		<method name="decompress_dynamic">
+		<method name="decompress_dynamic" qualifiers="const">
 			<return type="PackedByteArray">
 			</return>
 			<argument index="0" name="max_output_size" type="int">
@@ -81,7 +189,7 @@
 			</argument>
 			<description>
 				Returns a new [PackedByteArray] with the data decompressed. Set the compression mode using one of [enum File.CompressionMode]'s constants. [b]This method only accepts gzip and deflate compression modes.[/b]
-				This method is potentially slower than [code]decompress[/code], as it may have to re-allocate it's output buffer multiple times while decompressing, where as [code]decompress[/code] knows it's output buffer size from the beginning.
+				This method is potentially slower than [code]decompress[/code], as it may have to re-allocate its output buffer multiple times while decompressing, whereas [code]decompress[/code] knows it's output buffer size from the beginning.
 				GZIP has a maximal compression ratio of 1032:1, meaning it's very possible for a small compressed payload to decompress to a potentially very large output. To guard against this, you may provide a maximum size this function is allowed to allocate in bytes via [code]max_output_size[/code]. Passing -1 will allow for unbounded output. If any positive value is passed, and the decompression exceeds that amount in bytes, then an error will be returned.
 			</description>
 		</method>
@@ -92,28 +200,159 @@
 				Creates a copy of the array, and returns it.
 			</description>
 		</method>
-		<method name="get_string_from_ascii">
+		<method name="encode_double">
+			<return type="void">
+			</return>
+			<argument index="0" name="byte_offset" type="int">
+			</argument>
+			<argument index="1" name="value" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="encode_float">
+			<return type="void">
+			</return>
+			<argument index="0" name="byte_offset" type="int">
+			</argument>
+			<argument index="1" name="value" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="encode_half">
+			<return type="void">
+			</return>
+			<argument index="0" name="byte_offset" type="int">
+			</argument>
+			<argument index="1" name="value" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="encode_s16">
+			<return type="void">
+			</return>
+			<argument index="0" name="byte_offset" type="int">
+			</argument>
+			<argument index="1" name="value" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="encode_s32">
+			<return type="void">
+			</return>
+			<argument index="0" name="byte_offset" type="int">
+			</argument>
+			<argument index="1" name="value" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="encode_s64">
+			<return type="void">
+			</return>
+			<argument index="0" name="byte_offset" type="int">
+			</argument>
+			<argument index="1" name="value" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="encode_s8">
+			<return type="void">
+			</return>
+			<argument index="0" name="byte_offset" type="int">
+			</argument>
+			<argument index="1" name="value" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="encode_u16">
+			<return type="void">
+			</return>
+			<argument index="0" name="byte_offset" type="int">
+			</argument>
+			<argument index="1" name="value" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="encode_u32">
+			<return type="void">
+			</return>
+			<argument index="0" name="byte_offset" type="int">
+			</argument>
+			<argument index="1" name="value" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="encode_u64">
+			<return type="void">
+			</return>
+			<argument index="0" name="byte_offset" type="int">
+			</argument>
+			<argument index="1" name="value" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="encode_u8">
+			<return type="void">
+			</return>
+			<argument index="0" name="byte_offset" type="int">
+			</argument>
+			<argument index="1" name="value" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="encode_var">
+			<return type="int">
+			</return>
+			<argument index="0" name="byte_offset" type="int">
+			</argument>
+			<argument index="1" name="value" type="Variant">
+			</argument>
+			<argument index="2" name="allow_objects" type="bool" default="false">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="fill">
+			<return type="void">
+			</return>
+			<argument index="0" name="value" type="int">
+			</argument>
+			<description>
+				Assigns the given value to all elements in the array. This can typically be used together with [method resize] to create an array with a given size and initialized elements.
+			</description>
+		</method>
+		<method name="get_string_from_ascii" qualifiers="const">
 			<return type="String">
 			</return>
 			<description>
 				Converts ASCII/Latin-1 encoded array to [String]. Fast alternative to [method get_string_from_utf8] if the content is ASCII/Latin-1 only. Unlike the UTF-8 function this function maps every byte to a character in the array. Multibyte sequences will not be interpreted correctly. For parsing user input always use [method get_string_from_utf8].
 			</description>
 		</method>
-		<method name="get_string_from_utf16">
+		<method name="get_string_from_utf16" qualifiers="const">
 			<return type="String">
 			</return>
 			<description>
 				Converts UTF-16 encoded array to [String]. If the BOM is missing, system endianness is assumed. Returns empty string if source array is not valid UTF-16 string.
 			</description>
 		</method>
-		<method name="get_string_from_utf32">
+		<method name="get_string_from_utf32" qualifiers="const">
 			<return type="String">
 			</return>
 			<description>
 				Converts UTF-32 encoded array to [String]. System endianness is assumed. Returns empty string if source array is not valid UTF-32 string.
 			</description>
 		</method>
-		<method name="get_string_from_utf8">
+		<method name="get_string_from_utf8" qualifiers="const">
 			<return type="String">
 			</return>
 			<description>
@@ -129,7 +368,17 @@
 				Returns [code]true[/code] if the array contains [code]value[/code].
 			</description>
 		</method>
-		<method name="hex_encode">
+		<method name="has_encoded_var" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="byte_offset" type="int">
+			</argument>
+			<argument index="1" name="allow_objects" type="bool" default="false">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="hex_encode" qualifiers="const">
 			<return type="String">
 			</return>
 			<description>
@@ -157,14 +406,7 @@
 				Inserts a new element at a given position in the array. The position must be valid, or at the end of the array ([code]idx == size()[/code]).
 			</description>
 		</method>
-		<method name="invert">
-			<return type="void">
-			</return>
-			<description>
-				Reverses the order of the elements in the array.
-			</description>
-		</method>
-		<method name="is_empty">
+		<method name="is_empty" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
@@ -230,6 +472,13 @@
 				Sets the size of the array. If the array is grown, reserves elements at the end of the array. If the array is shrunk, truncates the array to the new size.
 			</description>
 		</method>
+		<method name="reverse">
+			<return type="void">
+			</return>
+			<description>
+				Reverses the order of the elements in the array.
+			</description>
+		</method>
 		<method name="set">
 			<return type="void">
 			</return>
@@ -241,7 +490,7 @@
 				Changes the byte at the given index.
 			</description>
 		</method>
-		<method name="size">
+		<method name="size" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
@@ -255,7 +504,7 @@
 				Sorts the elements of the array in ascending order.
 			</description>
 		</method>
-		<method name="subarray">
+		<method name="subarray" qualifiers="const">
 			<return type="PackedByteArray">
 			</return>
 			<argument index="0" name="from" type="int">

@@ -87,10 +87,13 @@ void BodyPair2DSW::_contact_added_callback(const Vector2 &p_point_A, const Vecto
 		int least_deep = -1;
 		real_t min_depth = 1e10;
 
+		const Transform2D &transform_A = A->get_transform();
+		const Transform2D &transform_B = B->get_transform();
+
 		for (int i = 0; i <= contact_count; i++) {
 			Contact &c = (i == contact_count) ? contact : contacts[i];
-			Vector2 global_A = A->get_transform().basis_xform(c.local_A);
-			Vector2 global_B = B->get_transform().basis_xform(c.local_B) + offset_B;
+			Vector2 global_A = transform_A.basis_xform(c.local_A);
+			Vector2 global_B = transform_B.basis_xform(c.local_B) + offset_B;
 
 			Vector2 axis = global_A - global_B;
 			real_t depth = axis.dot(c.normal);
@@ -124,6 +127,9 @@ void BodyPair2DSW::_validate_contacts() {
 	real_t max_separation = space->get_contact_max_separation();
 	real_t max_separation2 = max_separation * max_separation;
 
+	const Transform2D &transform_A = A->get_transform();
+	const Transform2D &transform_B = B->get_transform();
+
 	for (int i = 0; i < contact_count; i++) {
 		Contact &c = contacts[i];
 
@@ -134,8 +140,8 @@ void BodyPair2DSW::_validate_contacts() {
 		} else {
 			c.reused = false;
 
-			Vector2 global_A = A->get_transform().basis_xform(c.local_A);
-			Vector2 global_B = B->get_transform().basis_xform(c.local_B) + offset_B;
+			Vector2 global_A = transform_A.basis_xform(c.local_A);
+			Vector2 global_B = transform_B.basis_xform(c.local_B) + offset_B;
 			Vector2 axis = global_A - global_B;
 			real_t depth = axis.dot(c.normal);
 
@@ -220,10 +226,22 @@ real_t combine_friction(Body2DSW *A, Body2DSW *B) {
 }
 
 bool BodyPair2DSW::setup(real_t p_step) {
-	//cannot collide
-	if (!A->test_collision_mask(B) || A->has_exception(B->get_self()) || B->has_exception(A->get_self()) || (A->get_mode() <= PhysicsServer2D::BODY_MODE_KINEMATIC && B->get_mode() <= PhysicsServer2D::BODY_MODE_KINEMATIC && A->get_max_contacts_reported() == 0 && B->get_max_contacts_reported() == 0)) {
+	dynamic_A = (A->get_mode() > PhysicsServer2D::BODY_MODE_KINEMATIC);
+	dynamic_B = (B->get_mode() > PhysicsServer2D::BODY_MODE_KINEMATIC);
+
+	if (!A->test_collision_mask(B) || A->has_exception(B->get_self()) || B->has_exception(A->get_self())) {
 		collided = false;
 		return false;
+	}
+
+	report_contacts_only = false;
+	if (!dynamic_A && !dynamic_B) {
+		if ((A->get_max_contacts_reported() > 0) || (B->get_max_contacts_reported() > 0)) {
+			report_contacts_only = true;
+		} else {
+			collided = false;
+			return false;
+		}
 	}
 
 	if (A->is_shape_set_as_disabled(shape_A) || B->is_shape_set_as_disabled(shape_B)) {
@@ -236,12 +254,12 @@ bool BodyPair2DSW::setup(real_t p_step) {
 
 	_validate_contacts();
 
-	Vector2 offset_A = A->get_transform().get_origin();
+	const Vector2 &offset_A = A->get_transform().get_origin();
 	Transform2D xform_Au = A->get_transform().untranslated();
 	Transform2D xform_A = xform_Au * A->get_shape_transform(shape_A);
 
 	Transform2D xform_Bu = B->get_transform();
-	xform_Bu.elements[2] -= A->get_transform().get_origin();
+	xform_Bu.elements[2] -= offset_A;
 	Transform2D xform_B = xform_Bu * B->get_shape_transform(shape_B);
 
 	Shape2DSW *shape_A_ptr = A->get_shape(shape_A);
@@ -262,13 +280,13 @@ bool BodyPair2DSW::setup(real_t p_step) {
 	if (!collided) {
 		//test ccd (currently just a raycast)
 
-		if (A->get_continuous_collision_detection_mode() == PhysicsServer2D::CCD_MODE_CAST_RAY && A->get_mode() > PhysicsServer2D::BODY_MODE_KINEMATIC) {
+		if (A->get_continuous_collision_detection_mode() == PhysicsServer2D::CCD_MODE_CAST_RAY && dynamic_A) {
 			if (_test_ccd(p_step, A, shape_A, xform_A, B, shape_B, xform_B)) {
 				collided = true;
 			}
 		}
 
-		if (B->get_continuous_collision_detection_mode() == PhysicsServer2D::CCD_MODE_CAST_RAY && B->get_mode() > PhysicsServer2D::BODY_MODE_KINEMATIC) {
+		if (B->get_continuous_collision_detection_mode() == PhysicsServer2D::CCD_MODE_CAST_RAY && dynamic_B) {
 			if (_test_ccd(p_step, B, shape_B, xform_B, A, shape_A, xform_A, true)) {
 				collided = true;
 			}
@@ -328,9 +346,21 @@ bool BodyPair2DSW::setup(real_t p_step) {
 		}
 	}
 
+	return true;
+}
+
+bool BodyPair2DSW::pre_solve(real_t p_step) {
+	if (!collided || oneway_disabled) {
+		return false;
+	}
+
 	real_t max_penetration = space->get_contact_max_allowed_penetration();
 
 	real_t bias = 0.3;
+
+	Shape2DSW *shape_A_ptr = A->get_shape(shape_A);
+	Shape2DSW *shape_B_ptr = B->get_shape(shape_B);
+
 	if (shape_A_ptr->get_custom_bias() || shape_B_ptr->get_custom_bias()) {
 		if (shape_A_ptr->get_custom_bias() == 0) {
 			bias = shape_B_ptr->get_custom_bias();
@@ -341,56 +371,49 @@ bool BodyPair2DSW::setup(real_t p_step) {
 		}
 	}
 
-	cc = 0;
-
 	real_t inv_dt = 1.0 / p_step;
 
 	bool do_process = false;
 
+	const Vector2 &offset_A = A->get_transform().get_origin();
+	const Transform2D &transform_A = A->get_transform();
+	const Transform2D &transform_B = B->get_transform();
+
 	for (int i = 0; i < contact_count; i++) {
 		Contact &c = contacts[i];
+		c.active = false;
 
-		Vector2 global_A = xform_Au.xform(c.local_A);
-		Vector2 global_B = xform_Bu.xform(c.local_B);
+		Vector2 global_A = transform_A.basis_xform(c.local_A);
+		Vector2 global_B = transform_B.basis_xform(c.local_B) + offset_B;
 
-		real_t depth = c.normal.dot(global_A - global_B);
+		Vector2 axis = global_A - global_B;
+		real_t depth = axis.dot(c.normal);
 
 		if (depth <= 0 || !c.reused) {
-			c.active = false;
 			continue;
 		}
 
-		c.active = true;
 #ifdef DEBUG_ENABLED
 		if (space->is_debugging_contacts()) {
 			space->add_debug_contact(global_A + offset_A);
 			space->add_debug_contact(global_B + offset_A);
 		}
 #endif
-		int gather_A = A->can_report_contacts();
-		int gather_B = B->can_report_contacts();
 
 		c.rA = global_A;
 		c.rB = global_B - offset_B;
 
-		if (gather_A | gather_B) {
-			//Vector2 crB( -B->get_angular_velocity() * c.rB.y, B->get_angular_velocity() * c.rB.x );
-
-			global_A += offset_A;
-			global_B += offset_A;
-
-			if (gather_A) {
-				Vector2 crB(-B->get_angular_velocity() * c.rB.y, B->get_angular_velocity() * c.rB.x);
-				A->add_contact(global_A, -c.normal, depth, shape_A, global_B, shape_B, B->get_instance_id(), B->get_self(), crB + B->get_linear_velocity());
-			}
-			if (gather_B) {
-				Vector2 crA(-A->get_angular_velocity() * c.rA.y, A->get_angular_velocity() * c.rA.x);
-				B->add_contact(global_B, c.normal, depth, shape_B, global_A, shape_A, A->get_instance_id(), A->get_self(), crA + A->get_linear_velocity());
-			}
+		if (A->can_report_contacts()) {
+			Vector2 crB(-B->get_angular_velocity() * c.rB.y, B->get_angular_velocity() * c.rB.x);
+			A->add_contact(global_A + offset_A, -c.normal, depth, shape_A, global_B + offset_A, shape_B, B->get_instance_id(), B->get_self(), crB + B->get_linear_velocity());
 		}
 
-		if ((A->get_mode() <= PhysicsServer2D::BODY_MODE_KINEMATIC && B->get_mode() <= PhysicsServer2D::BODY_MODE_KINEMATIC)) {
-			c.active = false;
+		if (B->can_report_contacts()) {
+			Vector2 crA(-A->get_angular_velocity() * c.rA.y, A->get_angular_velocity() * c.rA.x);
+			B->add_contact(global_B + offset_A, c.normal, depth, shape_B, global_A + offset_A, shape_A, A->get_instance_id(), A->get_self(), crA + A->get_linear_velocity());
+		}
+
+		if (report_contacts_only) {
 			collided = false;
 			continue;
 		}
@@ -418,8 +441,12 @@ bool BodyPair2DSW::setup(real_t p_step) {
 			// Apply normal + friction impulse
 			Vector2 P = c.acc_normal_impulse * c.normal + c.acc_tangent_impulse * tangent;
 
-			A->apply_impulse(-P, c.rA);
-			B->apply_impulse(P, c.rB);
+			if (dynamic_A) {
+				A->apply_impulse(-P, c.rA);
+			}
+			if (dynamic_B) {
+				B->apply_impulse(P, c.rB);
+			}
 		}
 #endif
 
@@ -431,6 +458,7 @@ bool BodyPair2DSW::setup(real_t p_step) {
 			c.bounce = c.bounce * dv.dot(c.normal);
 		}
 
+		c.active = true;
 		do_process = true;
 	}
 
@@ -438,13 +466,12 @@ bool BodyPair2DSW::setup(real_t p_step) {
 }
 
 void BodyPair2DSW::solve(real_t p_step) {
-	if (!collided) {
+	if (!collided || oneway_disabled) {
 		return;
 	}
 
 	for (int i = 0; i < contact_count; ++i) {
 		Contact &c = contacts[i];
-		cc++;
 
 		if (!c.active) {
 			continue;
@@ -471,8 +498,12 @@ void BodyPair2DSW::solve(real_t p_step) {
 
 		Vector2 jb = c.normal * (c.acc_bias_impulse - jbnOld);
 
-		A->apply_bias_impulse(-jb, c.rA);
-		B->apply_bias_impulse(jb, c.rB);
+		if (dynamic_A) {
+			A->apply_bias_impulse(-jb, c.rA);
+		}
+		if (dynamic_B) {
+			B->apply_bias_impulse(jb, c.rB);
+		}
 
 		real_t jn = -(c.bounce + vn) * c.mass_normal;
 		real_t jnOld = c.acc_normal_impulse;
@@ -487,8 +518,12 @@ void BodyPair2DSW::solve(real_t p_step) {
 
 		Vector2 j = c.normal * (c.acc_normal_impulse - jnOld) + tangent * (c.acc_tangent_impulse - jtOld);
 
-		A->apply_impulse(-j, c.rA);
-		B->apply_impulse(j, c.rB);
+		if (dynamic_A) {
+			A->apply_impulse(-j, c.rA);
+		}
+		if (dynamic_B) {
+			B->apply_impulse(j, c.rB);
+		}
 	}
 }
 
@@ -501,9 +536,6 @@ BodyPair2DSW::BodyPair2DSW(Body2DSW *p_A, int p_shape_A, Body2DSW *p_B, int p_sh
 	space = A->get_space();
 	A->add_constraint(this, 0);
 	B->add_constraint(this, 1);
-	contact_count = 0;
-	collided = false;
-	oneway_disabled = false;
 }
 
 BodyPair2DSW::~BodyPair2DSW() {

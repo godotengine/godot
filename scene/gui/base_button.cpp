@@ -53,6 +53,8 @@ void BaseButton::_unpress_group() {
 }
 
 void BaseButton::_gui_input(Ref<InputEvent> p_event) {
+	ERR_FAIL_COND(p_event.is_null());
+
 	if (status.disabled) { // no interaction with disabled button
 		return;
 	}
@@ -199,7 +201,6 @@ void BaseButton::set_disabled(bool p_disabled) {
 		status.pressing_inside = false;
 	}
 	update();
-	_change_notify("disabled");
 }
 
 bool BaseButton::is_disabled() const {
@@ -213,7 +214,6 @@ void BaseButton::set_pressed(bool p_pressed) {
 	if (status.pressed == p_pressed) {
 		return;
 	}
-	_change_notify("pressed");
 	status.pressed = p_pressed;
 
 	if (p_pressed) {
@@ -325,6 +325,8 @@ Ref<Shortcut> BaseButton::get_shortcut() const {
 }
 
 void BaseButton::_unhandled_key_input(Ref<InputEvent> p_event) {
+	ERR_FAIL_COND(p_event.is_null());
+
 	if (!_is_focus_owner_in_shorcut_context()) {
 		return;
 	}
@@ -448,18 +450,7 @@ void BaseButton::_bind_methods() {
 }
 
 BaseButton::BaseButton() {
-	toggle_mode = false;
-	shortcut_in_tooltip = true;
-	keep_pressed_outside = false;
-	status.pressed = false;
-	status.press_attempt = false;
-	status.hovering = false;
-	status.pressing_inside = false;
-	status.disabled = false;
 	set_focus_mode(FOCUS_ALL);
-	action_mode = ACTION_MODE_BUTTON_RELEASE;
-	button_mask = BUTTON_MASK_LEFT;
-	shortcut_context = ObjectID();
 }
 
 BaseButton::~BaseButton() {

@@ -377,13 +377,4 @@ bool TextureButton::is_flipped_v() const {
 	return vflip;
 }
 
-TextureButton::TextureButton() {
-	expand = false;
-	stretch_mode = STRETCH_SCALE;
-	hflip = false;
-	vflip = false;
-
-	_texture_region = Rect2();
-	_position_rect = Rect2();
-	_tile = false;
-}
+TextureButton::TextureButton() {}

@@ -375,7 +375,7 @@ void LineBuilder::build() {
 			}
 
 			if (intersection_result != SEGMENT_INTERSECT) {
-				// In this case the joint is too corrputed to be re-used,
+				// In this case the joint is too corrupted to be re-used,
 				// start again the strip with fallback points
 				strip_begin(pos_up0, pos_down0, color1, uvx1);
 			}
@@ -485,7 +485,7 @@ void LineBuilder::strip_add_tri(Vector2 up, Orientation orientation) {
 
 	if (texture_mode != Line2D::LINE_TEXTURE_NONE) {
 		// UVs are just one slice of the texture all along
-		// (otherwise we can't share the bottom vertice)
+		// (otherwise we can't share the bottom vertex)
 		uvs.push_back(uvs[_last_index[opposite_orientation]]);
 	}
 
@@ -520,7 +520,7 @@ void LineBuilder::strip_add_arc(Vector2 center, float angle_delta, Orientation o
 		strip_add_tri(rpos, orientation);
 	}
 
-	// Last arc vertice
+	// Last arc vertex
 	rpos = center + Vector2(Math::cos(end_angle), Math::sin(end_angle)) * radius;
 	strip_add_tri(rpos, orientation);
 }
@@ -569,7 +569,7 @@ void LineBuilder::new_arc(Vector2 center, Vector2 vbegin, float angle_delta, Col
 		}
 	}
 
-	// Last arc vertice
+	// Last arc vertex
 	Vector2 sc = Vector2(Math::cos(end_angle), Math::sin(end_angle));
 	rpos = center + sc * radius;
 	vertices.push_back(rpos);

@@ -51,21 +51,17 @@ public:
 
 	struct Point {
 		Vector2 pos;
-		real_t left_tangent;
-		real_t right_tangent;
-		TangentMode left_mode;
-		TangentMode right_mode;
+		real_t left_tangent = 0.0;
+		real_t right_tangent = 0.0;
+		TangentMode left_mode = TANGENT_FREE;
+		TangentMode right_mode = TANGENT_FREE;
 
 		Point() {
-			left_tangent = 0;
-			right_tangent = 0;
-			left_mode = TANGENT_FREE;
-			right_mode = TANGENT_FREE;
 		}
 
 		Point(Vector2 p_pos,
-				real_t p_left = 0,
-				real_t p_right = 0,
+				real_t p_left = 0.0,
+				real_t p_right = 0.0,
 				TangentMode p_left_mode = TANGENT_FREE,
 				TangentMode p_right_mode = TANGENT_FREE) {
 			pos = p_pos;
@@ -126,7 +122,7 @@ public:
 	void bake();
 	int get_bake_resolution() const { return _bake_resolution; }
 	void set_bake_resolution(int p_resolution);
-	real_t interpolate_baked(real_t offset);
+	real_t interpolate_baked(real_t offset) const;
 
 	void ensure_default_setup(float p_min, float p_max);
 
@@ -137,12 +133,12 @@ private:
 	void mark_dirty();
 
 	Vector<Point> _points;
-	bool _baked_cache_dirty;
+	bool _baked_cache_dirty = false;
 	Vector<real_t> _baked_cache;
-	int _bake_resolution;
-	float _min_value;
-	float _max_value;
-	int _minmax_set_once; // Encodes whether min and max have been set a first time, first bit for min and second for max.
+	int _bake_resolution = 100;
+	float _min_value = 0.0;
+	float _max_value = 1.0;
+	int _minmax_set_once = 0b00; // Encodes whether min and max have been set a first time, first bit for min and second for max.
 };
 
 VARIANT_ENUM_CAST(Curve::TangentMode)
@@ -159,17 +155,17 @@ class Curve2D : public Resource {
 	Vector<Point> points;
 
 	struct BakedPoint {
-		float ofs;
+		float ofs = 0.0;
 		Vector2 point;
 	};
 
-	mutable bool baked_cache_dirty;
+	mutable bool baked_cache_dirty = false;
 	mutable PackedVector2Array baked_point_cache;
-	mutable float baked_max_ofs;
+	mutable float baked_max_ofs = 0.0;
 
 	void _bake() const;
 
-	float bake_interval;
+	float bake_interval = 5.0;
 
 	void _bake_segment2d(Map<float, Vector2> &r_bake, float p_begin, float p_end, const Vector2 &p_a, const Vector2 &p_out, const Vector2 &p_b, const Vector2 &p_in, int p_depth, int p_max_depth, float p_tol) const;
 	Dictionary _get_data() const;
@@ -214,28 +210,26 @@ class Curve3D : public Resource {
 		Vector3 in;
 		Vector3 out;
 		Vector3 pos;
-		float tilt;
-
-		Point() { tilt = 0; }
+		float tilt = 0.0;
 	};
 
 	Vector<Point> points;
 
 	struct BakedPoint {
-		float ofs;
+		float ofs = 0.0;
 		Vector3 point;
 	};
 
-	mutable bool baked_cache_dirty;
+	mutable bool baked_cache_dirty = false;
 	mutable PackedVector3Array baked_point_cache;
 	mutable PackedFloat32Array baked_tilt_cache;
 	mutable PackedVector3Array baked_up_vector_cache;
-	mutable float baked_max_ofs;
+	mutable float baked_max_ofs = 0.0;
 
 	void _bake() const;
 
-	float bake_interval;
-	bool up_vector_enabled;
+	float bake_interval = 0.2;
+	bool up_vector_enabled = true;
 
 	void _bake_segment3d(Map<float, Vector3> &r_bake, float p_begin, float p_end, const Vector3 &p_a, const Vector3 &p_out, const Vector3 &p_b, const Vector3 &p_in, int p_depth, int p_max_depth, float p_tol) const;
 	Dictionary _get_data() const;

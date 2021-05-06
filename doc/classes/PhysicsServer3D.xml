@@ -129,15 +129,6 @@
 				Returns the transform matrix for an area.
 			</description>
 		</method>
-		<method name="area_is_ray_pickable" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="area" type="RID">
-			</argument>
-			<description>
-				If [code]true[/code], area collides with rays.
-			</description>
-		</method>
 		<method name="area_remove_shape">
 			<return type="void">
 			</return>
@@ -421,12 +412,7 @@
 		<method name="body_create">
 			<return type="RID">
 			</return>
-			<argument index="0" name="mode" type="int" enum="PhysicsServer3D.BodyMode" default="2">
-			</argument>
-			<argument index="1" name="init_sleeping" type="bool" default="false">
-			</argument>
 			<description>
-				Creates a physics body. The first parameter can be any value from [enum BodyMode] constants, for the type of body created. Additionally, the body can be created in sleeping state to save processing time.
 			</description>
 		</method>
 		<method name="body_get_collision_layer" qualifiers="const">
@@ -582,15 +568,6 @@
 				Returns whether a body uses a callback function to calculate its own physics (see [method body_set_force_integration_callback]).
 			</description>
 		</method>
-		<method name="body_is_ray_pickable" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="body" type="RID">
-			</argument>
-			<description>
-				If [code]true[/code], the body can be detected by rays.
-			</description>
-		</method>
 		<method name="body_remove_collision_exception">
 			<return type="void">
 			</return>
@@ -676,11 +653,9 @@
 			</return>
 			<argument index="0" name="body" type="RID">
 			</argument>
-			<argument index="1" name="receiver" type="Object">
+			<argument index="1" name="callable" type="Callable">
 			</argument>
-			<argument index="2" name="method" type="StringName">
-			</argument>
-			<argument index="3" name="userdata" type="Variant" default="null">
+			<argument index="2" name="userdata" type="Variant" default="null">
 			</argument>
 			<description>
 				Sets the function used to calculate physics for an object, if that object allows it (see [method body_set_omit_force_integration]).
@@ -815,6 +790,24 @@
 				Sets a body state (see [enum BodyState] constants).
 			</description>
 		</method>
+		<method name="box_shape_create">
+			<return type="RID">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="capsule_shape_create">
+			<return type="RID">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="concave_polygon_shape_create">
+			<return type="RID">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="cone_twist_joint_get_param" qualifiers="const">
 			<return type="float">
 			</return>
@@ -839,6 +832,24 @@
 				Sets a cone_twist_joint parameter (see [enum ConeTwistJointParam] constants).
 			</description>
 		</method>
+		<method name="convex_polygon_shape_create">
+			<return type="RID">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="custom_shape_create">
+			<return type="RID">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="cylinder_shape_create">
+			<return type="RID">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="free_rid">
 			<return type="void">
 			</return>
@@ -848,7 +859,7 @@
 				Destroys any of the objects created by PhysicsServer3D. If the [RID] passed is not one of the objects that can be created by PhysicsServer3D, an error will be sent to the console.
 			</description>
 		</method>
-		<method name="generic_6dof_joint_get_flag">
+		<method name="generic_6dof_joint_get_flag" qualifiers="const">
 			<return type="bool">
 			</return>
 			<argument index="0" name="joint" type="RID">
@@ -861,7 +872,7 @@
 				Gets a generic_6_DOF_joint flag (see [enum G6DOFJointAxisFlag] constants).
 			</description>
 		</method>
-		<method name="generic_6dof_joint_get_param">
+		<method name="generic_6dof_joint_get_param" qualifiers="const">
 			<return type="float">
 			</return>
 			<argument index="0" name="joint" type="RID">
@@ -913,6 +924,12 @@
 				Returns an Info defined by the [enum ProcessInfo] input given.
 			</description>
 		</method>
+		<method name="heightmap_shape_create">
+			<return type="RID">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="hinge_joint_get_flag" qualifiers="const">
 			<return type="bool">
 			</return>
@@ -961,79 +978,18 @@
 				Sets a hinge_joint parameter (see [enum HingeJointParam] constants).
 			</description>
 		</method>
-		<method name="joint_create_cone_twist">
-			<return type="RID">
+		<method name="joint_clear">
+			<return type="void">
 			</return>
-			<argument index="0" name="body_A" type="RID">
-			</argument>
-			<argument index="1" name="local_ref_A" type="Transform">
-			</argument>
-			<argument index="2" name="body_B" type="RID">
-			</argument>
-			<argument index="3" name="local_ref_B" type="Transform">
+			<argument index="0" name="joint" type="RID">
 			</argument>
 			<description>
-				Creates a [ConeTwistJoint3D].
 			</description>
 		</method>
-		<method name="joint_create_generic_6dof">
+		<method name="joint_create">
 			<return type="RID">
 			</return>
-			<argument index="0" name="body_A" type="RID">
-			</argument>
-			<argument index="1" name="local_ref_A" type="Transform">
-			</argument>
-			<argument index="2" name="body_B" type="RID">
-			</argument>
-			<argument index="3" name="local_ref_B" type="Transform">
-			</argument>
 			<description>
-				Creates a [Generic6DOFJoint3D].
-			</description>
-		</method>
-		<method name="joint_create_hinge">
-			<return type="RID">
-			</return>
-			<argument index="0" name="body_A" type="RID">
-			</argument>
-			<argument index="1" name="hinge_A" type="Transform">
-			</argument>
-			<argument index="2" name="body_B" type="RID">
-			</argument>
-			<argument index="3" name="hinge_B" type="Transform">
-			</argument>
-			<description>
-				Creates a [HingeJoint3D].
-			</description>
-		</method>
-		<method name="joint_create_pin">
-			<return type="RID">
-			</return>
-			<argument index="0" name="body_A" type="RID">
-			</argument>
-			<argument index="1" name="local_A" type="Vector3">
-			</argument>
-			<argument index="2" name="body_B" type="RID">
-			</argument>
-			<argument index="3" name="local_B" type="Vector3">
-			</argument>
-			<description>
-				Creates a [PinJoint3D].
-			</description>
-		</method>
-		<method name="joint_create_slider">
-			<return type="RID">
-			</return>
-			<argument index="0" name="body_A" type="RID">
-			</argument>
-			<argument index="1" name="local_ref_A" type="Transform">
-			</argument>
-			<argument index="2" name="body_B" type="RID">
-			</argument>
-			<argument index="3" name="local_ref_B" type="Transform">
-			</argument>
-			<description>
-				Creates a [SliderJoint3D].
 			</description>
 		</method>
 		<method name="joint_get_solver_priority" qualifiers="const">
@@ -1052,6 +1008,86 @@
 			</argument>
 			<description>
 				Returns the type of the Joint3D.
+			</description>
+		</method>
+		<method name="joint_make_cone_twist">
+			<return type="void">
+			</return>
+			<argument index="0" name="joint" type="RID">
+			</argument>
+			<argument index="1" name="body_A" type="RID">
+			</argument>
+			<argument index="2" name="local_ref_A" type="Transform">
+			</argument>
+			<argument index="3" name="body_B" type="RID">
+			</argument>
+			<argument index="4" name="local_ref_B" type="Transform">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="joint_make_generic_6dof">
+			<return type="void">
+			</return>
+			<argument index="0" name="joint" type="RID">
+			</argument>
+			<argument index="1" name="body_A" type="RID">
+			</argument>
+			<argument index="2" name="local_ref_A" type="Transform">
+			</argument>
+			<argument index="3" name="body_B" type="RID">
+			</argument>
+			<argument index="4" name="local_ref_B" type="Transform">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="joint_make_hinge">
+			<return type="void">
+			</return>
+			<argument index="0" name="joint" type="RID">
+			</argument>
+			<argument index="1" name="body_A" type="RID">
+			</argument>
+			<argument index="2" name="hinge_A" type="Transform">
+			</argument>
+			<argument index="3" name="body_B" type="RID">
+			</argument>
+			<argument index="4" name="hinge_B" type="Transform">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="joint_make_pin">
+			<return type="void">
+			</return>
+			<argument index="0" name="joint" type="RID">
+			</argument>
+			<argument index="1" name="body_A" type="RID">
+			</argument>
+			<argument index="2" name="local_A" type="Vector3">
+			</argument>
+			<argument index="3" name="body_B" type="RID">
+			</argument>
+			<argument index="4" name="local_B" type="Vector3">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="joint_make_slider">
+			<return type="void">
+			</return>
+			<argument index="0" name="joint" type="RID">
+			</argument>
+			<argument index="1" name="body_A" type="RID">
+			</argument>
+			<argument index="2" name="local_ref_A" type="Transform">
+			</argument>
+			<argument index="3" name="body_B" type="RID">
+			</argument>
+			<argument index="4" name="local_ref_B" type="Transform">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="joint_set_solver_priority">
@@ -1129,6 +1165,18 @@
 				Sets a pin_joint parameter (see [enum PinJointParam] constants).
 			</description>
 		</method>
+		<method name="plane_shape_create">
+			<return type="RID">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="ray_shape_create">
+			<return type="RID">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="set_active">
 			<return type="void">
 			</return>
@@ -1136,15 +1184,6 @@
 			</argument>
 			<description>
 				Activates or deactivates the 3D physics engine.
-			</description>
-		</method>
-		<method name="shape_create">
-			<return type="RID">
-			</return>
-			<argument index="0" name="type" type="int" enum="PhysicsServer3D.ShapeType">
-			</argument>
-			<description>
-				Creates a shape of a type from [enum ShapeType]. Does not assign it to a body or an area. To do so, you must use [method area_set_shape] or [method body_set_shape].
 			</description>
 		</method>
 		<method name="shape_get_data" qualifiers="const">
@@ -1198,6 +1237,14 @@
 			</argument>
 			<description>
 				Gets a slider_joint parameter (see [enum SliderJointParam] constants).
+			</description>
+		</method>
+		<method name="soft_body_get_bounds" qualifiers="const">
+			<return type="AABB">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="space_create">
@@ -1260,22 +1307,31 @@
 				Sets the value for a space parameter. A list of available parameters is on the [enum SpaceParameter] constants.
 			</description>
 		</method>
+		<method name="sphere_shape_create">
+			<return type="RID">
+			</return>
+			<description>
+			</description>
+		</method>
 	</methods>
 	<constants>
-		<constant name="JOINT_PIN" value="0" enum="JointType">
+		<constant name="JOINT_TYPE_PIN" value="0" enum="JointType">
 			The [Joint3D] is a [PinJoint3D].
 		</constant>
-		<constant name="JOINT_HINGE" value="1" enum="JointType">
+		<constant name="JOINT_TYPE_HINGE" value="1" enum="JointType">
 			The [Joint3D] is a [HingeJoint3D].
 		</constant>
-		<constant name="JOINT_SLIDER" value="2" enum="JointType">
+		<constant name="JOINT_TYPE_SLIDER" value="2" enum="JointType">
 			The [Joint3D] is a [SliderJoint3D].
 		</constant>
-		<constant name="JOINT_CONE_TWIST" value="3" enum="JointType">
+		<constant name="JOINT_TYPE_CONE_TWIST" value="3" enum="JointType">
 			The [Joint3D] is a [ConeTwistJoint3D].
 		</constant>
-		<constant name="JOINT_6DOF" value="4" enum="JointType">
+		<constant name="JOINT_TYPE_6DOF" value="4" enum="JointType">
 			The [Joint3D] is a [Generic6DOFJoint3D].
+		</constant>
+		<constant name="JOINT_TYPE_MAX" value="5" enum="JointType">
+			Represents the size of the [enum JointType] enum.
 		</constant>
 		<constant name="PIN_JOINT_BIAS" value="0" enum="PinJointParam">
 			The strength with which the pinned objects try to stay in positional relation to each other.
@@ -1493,7 +1549,10 @@
 		<constant name="SHAPE_HEIGHTMAP" value="8" enum="ShapeType">
 			The [Shape3D] is a [HeightMapShape3D].
 		</constant>
-		<constant name="SHAPE_CUSTOM" value="9" enum="ShapeType">
+		<constant name="SHAPE_SOFT_BODY" value="9" enum="ShapeType">
+			The [Shape3D] is a [SoftBody3D].
+		</constant>
+		<constant name="SHAPE_CUSTOM" value="10" enum="ShapeType">
 			This constant is used internally by the engine. Any attempt to create this kind of shape results in an error.
 		</constant>
 		<constant name="AREA_PARAM_GRAVITY" value="0" enum="AreaParameter">

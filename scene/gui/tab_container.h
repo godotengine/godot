@@ -46,23 +46,23 @@ public:
 	};
 
 private:
-	int first_tab_cache;
-	int tabs_ofs_cache;
-	int last_tab_cache;
-	int current;
-	int previous;
-	bool tabs_visible;
-	bool all_tabs_in_front;
-	bool buttons_visible_cache;
-	bool menu_hovered;
-	int highlight_arrow;
-	TabAlign align;
+	int first_tab_cache = 0;
+	int tabs_ofs_cache = 0;
+	int last_tab_cache = 0;
+	int current = 0;
+	int previous = 0;
+	bool tabs_visible = true;
+	bool all_tabs_in_front = false;
+	bool buttons_visible_cache = false;
+	bool menu_hovered = false;
+	int highlight_arrow = -1;
+	TabAlign align = ALIGN_CENTER;
 	Control *_get_tab(int p_idx) const;
 	int _get_top_margin() const;
 	mutable ObjectID popup_obj_id;
-	bool drag_to_rearrange_enabled;
-	bool use_hidden_tabs_for_min_size;
-	int tabs_rearrange_group;
+	bool drag_to_rearrange_enabled = false;
+	bool use_hidden_tabs_for_min_size = false;
+	int tabs_rearrange_group = -1;
 
 	Vector<Ref<TextLine>> text_buf;
 	Vector<Control *> _get_tabs() const;

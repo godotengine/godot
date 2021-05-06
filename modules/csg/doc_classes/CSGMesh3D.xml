@@ -4,7 +4,7 @@
 		A CSG Mesh shape that uses a mesh resource.
 	</brief_description>
 	<description>
-		This CSG node allows you to use any mesh resource as a CSG shape, provided it is closed, does not self-intersect, does not contain internal faces and has no edges that connect to more then two faces.
+		This CSG node allows you to use any mesh resource as a CSG shape, provided it is closed, does not self-intersect, does not contain internal faces and has no edges that connect to more than two faces.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -16,6 +16,7 @@
 		</member>
 		<member name="mesh" type="Mesh" setter="set_mesh" getter="get_mesh">
 			The [Mesh] resource to use as a CSG shape.
+			[b]Note:[/b] When using an [ArrayMesh], avoid meshes with vertex normals unless a flat shader is required. By default, CSGMesh will ignore the mesh's vertex normals and use a smooth shader calculated using the faces' normals. If a flat shader is required, ensure that all faces' vertex normals are parallel.
 		</member>
 	</members>
 	<constants>

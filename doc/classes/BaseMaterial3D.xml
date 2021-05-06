@@ -82,7 +82,7 @@
 			Texture to multiply by [member albedo_color]. Used for basic texturing of objects.
 		</member>
 		<member name="alpha_antialiasing_edge" type="float" setter="set_alpha_antialiasing_edge" getter="get_alpha_antialiasing_edge">
-			Threshold at which antialiasing will by applied on the alpha channel.
+			Threshold at which antialiasing will be applied on the alpha channel.
 		</member>
 		<member name="alpha_antialiasing_mode" type="int" setter="set_alpha_antialiasing" getter="get_alpha_antialiasing" enum="BaseMaterial3D.AlphaAntiAliasing">
 			The type of alpha antialiasing to apply. See [enum AlphaAntiAliasing].
@@ -93,7 +93,7 @@
 		<member name="alpha_scissor_threshold" type="float" setter="set_alpha_scissor_threshold" getter="get_alpha_scissor_threshold">
 			Threshold at which the alpha scissor will discard values.
 		</member>
-		<member name="anisotropy" type="float" setter="set_anisotropy" getter="get_anisotropy">
+		<member name="anisotropy" type="float" setter="set_anisotropy" getter="get_anisotropy" default="0.0">
 			The strength of the anisotropy effect.
 		</member>
 		<member name="anisotropy_enabled" type="bool" setter="set_feature" getter="get_feature" default="false">
@@ -105,19 +105,19 @@
 		<member name="ao_enabled" type="bool" setter="set_feature" getter="get_feature" default="false">
 			If [code]true[/code], ambient occlusion is enabled. Ambient occlusion darkens areas based on the [member ao_texture].
 		</member>
-		<member name="ao_light_affect" type="float" setter="set_ao_light_affect" getter="get_ao_light_affect">
+		<member name="ao_light_affect" type="float" setter="set_ao_light_affect" getter="get_ao_light_affect" default="0.0">
 			Amount that ambient occlusion affects lighting from lights. If [code]0[/code], ambient occlusion only affects ambient light. If [code]1[/code], ambient occlusion affects lights just as much as it affects ambient light. This can be used to impact the strength of the ambient occlusion effect, but typically looks unrealistic.
 		</member>
-		<member name="ao_on_uv2" type="bool" setter="set_flag" getter="get_flag">
+		<member name="ao_on_uv2" type="bool" setter="set_flag" getter="get_flag" default="false">
 			If [code]true[/code], use [code]UV2[/code] coordinates to look up from the [member ao_texture].
 		</member>
 		<member name="ao_texture" type="Texture2D" setter="set_texture" getter="get_texture">
 			Texture that defines the amount of ambient occlusion for a given point on the object.
 		</member>
-		<member name="ao_texture_channel" type="int" setter="set_ao_texture_channel" getter="get_ao_texture_channel" enum="BaseMaterial3D.TextureChannel">
+		<member name="ao_texture_channel" type="int" setter="set_ao_texture_channel" getter="get_ao_texture_channel" enum="BaseMaterial3D.TextureChannel" default="0">
 			Specifies the channel of the [member ao_texture] in which the ambient occlusion information is stored. This is useful when you store the information for multiple effects in a single texture. For example if you stored metallic in the red channel, roughness in the blue, and ambient occlusion in the green you could reduce the number of textures you use.
 		</member>
-		<member name="backlight" type="Color" setter="set_backlight" getter="get_backlight">
+		<member name="backlight" type="Color" setter="set_backlight" getter="get_backlight" default="Color( 0, 0, 0, 1 )">
 			The color used by the backlight effect. Represents the light passing through an object.
 		</member>
 		<member name="backlight_enabled" type="bool" setter="set_feature" getter="get_feature" default="false">
@@ -127,7 +127,7 @@
 			Texture used to control the backlight effect per-pixel. Added to [member backlight].
 		</member>
 		<member name="billboard_keep_scale" type="bool" setter="set_flag" getter="get_flag" default="false">
-			If [code]true[/code], the shader will keep the scale set for the mesh. Otherwise the scale is lost when billboarding. Only applies when [member billboard_mode] is [constant BILLBOARD_ENABLED].
+			If [code]true[/code], the shader will keep the scale set for the mesh. Otherwise, the scale is lost when billboarding. Only applies when [member billboard_mode] is [constant BILLBOARD_ENABLED].
 		</member>
 		<member name="billboard_mode" type="int" setter="set_billboard_mode" getter="get_billboard_mode" enum="BaseMaterial3D.BillboardMode" default="0">
 			Controls how the object faces the camera. See [enum BillboardMode].
@@ -137,13 +137,14 @@
 			The material's blend mode.
 			[b]Note:[/b] Values other than [code]Mix[/code] force the object into the transparent pipeline. See [enum BlendMode].
 		</member>
-		<member name="clearcoat" type="float" setter="set_clearcoat" getter="get_clearcoat">
+		<member name="clearcoat" type="float" setter="set_clearcoat" getter="get_clearcoat" default="1.0">
 			Sets the strength of the clearcoat effect. Setting to [code]0[/code] looks the same as disabling the clearcoat effect.
 		</member>
 		<member name="clearcoat_enabled" type="bool" setter="set_feature" getter="get_feature" default="false">
 			If [code]true[/code], clearcoat rendering is enabled. Adds a secondary transparent pass to the lighting calculation resulting in an added specular blob. This makes materials appear as if they have a clear layer on them that can be either glossy or rough.
+			[b]Note:[/b] Clearcoat rendering is not visible if the material's [member shading_mode] is [constant SHADING_MODE_UNSHADED].
 		</member>
-		<member name="clearcoat_gloss" type="float" setter="set_clearcoat_gloss" getter="get_clearcoat_gloss">
+		<member name="clearcoat_gloss" type="float" setter="set_clearcoat_gloss" getter="get_clearcoat_gloss" default="0.5">
 			Sets the roughness of the clearcoat pass. A higher value results in a smoother clearcoat while a lower value results in a rougher clearcoat.
 		</member>
 		<member name="clearcoat_texture" type="Texture2D" setter="set_texture" getter="get_texture">
@@ -158,7 +159,7 @@
 		<member name="detail_albedo" type="Texture2D" setter="set_texture" getter="get_texture">
 			Texture that specifies the color of the detail overlay.
 		</member>
-		<member name="detail_blend_mode" type="int" setter="set_detail_blend_mode" getter="get_detail_blend_mode" enum="BaseMaterial3D.BlendMode">
+		<member name="detail_blend_mode" type="int" setter="set_detail_blend_mode" getter="get_detail_blend_mode" enum="BaseMaterial3D.BlendMode" default="0">
 			Specifies how the [member detail_albedo] should blend with the current [code]ALBEDO[/code]. See [enum BlendMode] for options.
 		</member>
 		<member name="detail_enabled" type="bool" setter="set_feature" getter="get_feature" default="false">
@@ -171,7 +172,7 @@
 			Texture that specifies the per-pixel normal of the detail overlay.
 			[b]Note:[/b] Godot expects the normal map to use X+, Y-, and Z+ coordinates. See [url=http://wiki.polycount.com/wiki/Normal_Map_Technical_Details#Common_Swizzle_Coordinates]this page[/url] for a comparison of normal map coordinates expected by popular engines.
 		</member>
-		<member name="detail_uv_layer" type="int" setter="set_detail_uv" getter="get_detail_uv" enum="BaseMaterial3D.DetailUV">
+		<member name="detail_uv_layer" type="int" setter="set_detail_uv" getter="get_detail_uv" enum="BaseMaterial3D.DetailUV" default="0">
 			Specifies whether to use [code]UV[/code] or [code]UV2[/code] for the detail layer. See [enum DetailUV] for options.
 		</member>
 		<member name="diffuse_mode" type="int" setter="set_diffuse_mode" getter="get_diffuse_mode" enum="BaseMaterial3D.DiffuseMode" default="0">
@@ -183,30 +184,30 @@
 		<member name="disable_receive_shadows" type="bool" setter="set_flag" getter="get_flag" default="false">
 			If [code]true[/code], the object receives no shadow that would otherwise be cast onto it.
 		</member>
-		<member name="distance_fade_max_distance" type="float" setter="set_distance_fade_max_distance" getter="get_distance_fade_max_distance">
+		<member name="distance_fade_max_distance" type="float" setter="set_distance_fade_max_distance" getter="get_distance_fade_max_distance" default="10.0">
 			Distance at which the object appears fully opaque.
 			[b]Note:[/b] If [code]distance_fade_max_distance[/code] is less than [code]distance_fade_min_distance[/code], the behavior will be reversed. The object will start to fade away at [code]distance_fade_max_distance[/code] and will fully disappear once it reaches [code]distance_fade_min_distance[/code].
 		</member>
-		<member name="distance_fade_min_distance" type="float" setter="set_distance_fade_min_distance" getter="get_distance_fade_min_distance">
+		<member name="distance_fade_min_distance" type="float" setter="set_distance_fade_min_distance" getter="get_distance_fade_min_distance" default="0.0">
 			Distance at which the object starts to become visible. If the object is less than this distance away, it will be invisible.
 			[b]Note:[/b] If [code]distance_fade_min_distance[/code] is greater than [code]distance_fade_max_distance[/code], the behavior will be reversed. The object will start to fade away at [code]distance_fade_max_distance[/code] and will fully disappear once it reaches [code]distance_fade_min_distance[/code].
 		</member>
 		<member name="distance_fade_mode" type="int" setter="set_distance_fade" getter="get_distance_fade" enum="BaseMaterial3D.DistanceFadeMode" default="0">
 			Specifies which type of fade to use. Can be any of the [enum DistanceFadeMode]s.
 		</member>
-		<member name="emission" type="Color" setter="set_emission" getter="get_emission">
+		<member name="emission" type="Color" setter="set_emission" getter="get_emission" default="Color( 0, 0, 0, 1 )">
 			The emitted light's color. See [member emission_enabled].
 		</member>
 		<member name="emission_enabled" type="bool" setter="set_feature" getter="get_feature" default="false">
 			If [code]true[/code], the body emits light. Emitting light makes the object appear brighter. The object can also cast light on other objects if a [GIProbe] is used and this object is used in baked lighting.
 		</member>
-		<member name="emission_energy" type="float" setter="set_emission_energy" getter="get_emission_energy">
+		<member name="emission_energy" type="float" setter="set_emission_energy" getter="get_emission_energy" default="1.0">
 			The emitted light's strength. See [member emission_enabled].
 		</member>
-		<member name="emission_on_uv2" type="bool" setter="set_flag" getter="get_flag">
+		<member name="emission_on_uv2" type="bool" setter="set_flag" getter="get_flag" default="false">
 			Use [code]UV2[/code] to read from the [member emission_texture].
 		</member>
-		<member name="emission_operator" type="int" setter="set_emission_operator" getter="get_emission_operator" enum="BaseMaterial3D.EmissionOperator">
+		<member name="emission_operator" type="int" setter="set_emission_operator" getter="get_emission_operator" enum="BaseMaterial3D.EmissionOperator" default="0">
 			Sets how [member emission] interacts with [member emission_texture]. Can either add or multiply. See [enum EmissionOperator] for options.
 		</member>
 		<member name="emission_texture" type="Texture2D" setter="set_texture" getter="get_texture">
@@ -221,21 +222,23 @@
 		<member name="grow_amount" type="float" setter="set_grow" getter="get_grow" default="0.0">
 			Grows object vertices in the direction of their normals.
 		</member>
-		<member name="heightmap_deep_parallax" type="bool" setter="set_heightmap_deep_parallax" getter="is_heightmap_deep_parallax_enabled">
+		<member name="heightmap_deep_parallax" type="bool" setter="set_heightmap_deep_parallax" getter="is_heightmap_deep_parallax_enabled" default="false">
 		</member>
 		<member name="heightmap_enabled" type="bool" setter="set_feature" getter="get_feature" default="false">
+			If [code]true[/code], height mapping is enabled (also called "parallax mapping" or "depth mapping"). See also [member normal_enabled].
+			[b]Note:[/b] Height mapping is not supported if triplanar mapping is used on the same material. The value of [member heightmap_enabled] will be ignored if [member uv1_triplanar] is enabled.
 		</member>
-		<member name="heightmap_flip_binormal" type="bool" setter="set_heightmap_deep_parallax_flip_binormal" getter="get_heightmap_deep_parallax_flip_binormal">
+		<member name="heightmap_flip_binormal" type="bool" setter="set_heightmap_deep_parallax_flip_binormal" getter="get_heightmap_deep_parallax_flip_binormal" default="false">
 		</member>
-		<member name="heightmap_flip_tangent" type="bool" setter="set_heightmap_deep_parallax_flip_tangent" getter="get_heightmap_deep_parallax_flip_tangent">
+		<member name="heightmap_flip_tangent" type="bool" setter="set_heightmap_deep_parallax_flip_tangent" getter="get_heightmap_deep_parallax_flip_tangent" default="false">
 		</member>
-		<member name="heightmap_flip_texture" type="bool" setter="set_flag" getter="get_flag">
+		<member name="heightmap_flip_texture" type="bool" setter="set_flag" getter="get_flag" default="false">
 		</member>
 		<member name="heightmap_max_layers" type="int" setter="set_heightmap_deep_parallax_max_layers" getter="get_heightmap_deep_parallax_max_layers">
 		</member>
 		<member name="heightmap_min_layers" type="int" setter="set_heightmap_deep_parallax_min_layers" getter="get_heightmap_deep_parallax_min_layers">
 		</member>
-		<member name="heightmap_scale" type="float" setter="set_heightmap_scale" getter="get_heightmap_scale">
+		<member name="heightmap_scale" type="float" setter="set_heightmap_scale" getter="get_heightmap_scale" default="0.05">
 		</member>
 		<member name="heightmap_texture" type="Texture2D" setter="set_texture" getter="get_texture">
 		</member>
@@ -258,7 +261,7 @@
 		<member name="normal_enabled" type="bool" setter="set_feature" getter="get_feature" default="false">
 			If [code]true[/code], normal mapping is enabled.
 		</member>
-		<member name="normal_scale" type="float" setter="set_normal_scale" getter="get_normal_scale">
+		<member name="normal_scale" type="float" setter="set_normal_scale" getter="get_normal_scale" default="1.0">
 			The strength of the normal map's effect.
 		</member>
 		<member name="normal_texture" type="Texture2D" setter="set_texture" getter="get_texture">
@@ -279,7 +282,7 @@
 		<member name="point_size" type="float" setter="set_point_size" getter="get_point_size" default="1.0">
 			The point size in pixels. See [member use_point_size].
 		</member>
-		<member name="proximity_fade_distance" type="float" setter="set_proximity_fade_distance" getter="get_proximity_fade_distance">
+		<member name="proximity_fade_distance" type="float" setter="set_proximity_fade_distance" getter="get_proximity_fade_distance" default="1.0">
 			Distance over which the fade effect takes place. The larger the distance the longer it takes for an object to fade.
 		</member>
 		<member name="proximity_fade_enable" type="bool" setter="set_proximity_fade" getter="is_proximity_fade_enabled" default="false">
@@ -288,25 +291,26 @@
 		<member name="refraction_enabled" type="bool" setter="set_feature" getter="get_feature" default="false">
 			If [code]true[/code], the refraction effect is enabled. Distorts transparency based on light from behind the object.
 		</member>
-		<member name="refraction_scale" type="float" setter="set_refraction" getter="get_refraction">
+		<member name="refraction_scale" type="float" setter="set_refraction" getter="get_refraction" default="0.05">
 			The strength of the refraction effect.
 		</member>
 		<member name="refraction_texture" type="Texture2D" setter="set_texture" getter="get_texture">
 			Texture that controls the strength of the refraction per-pixel. Multiplied by [member refraction_scale].
 		</member>
-		<member name="refraction_texture_channel" type="int" setter="set_refraction_texture_channel" getter="get_refraction_texture_channel" enum="BaseMaterial3D.TextureChannel">
+		<member name="refraction_texture_channel" type="int" setter="set_refraction_texture_channel" getter="get_refraction_texture_channel" enum="BaseMaterial3D.TextureChannel" default="0">
 			Specifies the channel of the [member ao_texture] in which the ambient occlusion information is stored. This is useful when you store the information for multiple effects in a single texture. For example if you stored metallic in the red channel, roughness in the blue, and ambient occlusion in the green you could reduce the number of textures you use.
 		</member>
-		<member name="rim" type="float" setter="set_rim" getter="get_rim">
+		<member name="rim" type="float" setter="set_rim" getter="get_rim" default="1.0">
 			Sets the strength of the rim lighting effect.
 		</member>
 		<member name="rim_enabled" type="bool" setter="set_feature" getter="get_feature" default="false">
 			If [code]true[/code], rim effect is enabled. Rim lighting increases the brightness at glancing angles on an object.
+			[b]Note:[/b] Rim lighting is not visible if the material's [member shading_mode] is [constant SHADING_MODE_UNSHADED].
 		</member>
 		<member name="rim_texture" type="Texture2D" setter="set_texture" getter="get_texture">
 			Texture used to set the strength of the rim lighting effect per-pixel. Multiplied by [member rim].
 		</member>
-		<member name="rim_tint" type="float" setter="set_rim_tint" getter="get_rim_tint">
+		<member name="rim_tint" type="float" setter="set_rim_tint" getter="get_rim_tint" default="0.5">
 			The amount of to blend light and albedo color when rendering rim effect. If [code]0[/code] the light color is used, while [code]1[/code] means albedo color is used. An intermediate value generally works best.
 		</member>
 		<member name="roughness" type="float" setter="set_roughness" getter="get_roughness" default="1.0">
@@ -330,24 +334,24 @@
 		<member name="subsurf_scatter_enabled" type="bool" setter="set_feature" getter="get_feature" default="false">
 			If [code]true[/code], subsurface scattering is enabled. Emulates light that penetrates an object's surface, is scattered, and then emerges.
 		</member>
-		<member name="subsurf_scatter_skin_mode" type="bool" setter="set_flag" getter="get_flag">
+		<member name="subsurf_scatter_skin_mode" type="bool" setter="set_flag" getter="get_flag" default="false">
 			If [code]true[/code], subsurface scattering will use a special mode optimized for the color and density of human skin.
 		</member>
-		<member name="subsurf_scatter_strength" type="float" setter="set_subsurface_scattering_strength" getter="get_subsurface_scattering_strength">
+		<member name="subsurf_scatter_strength" type="float" setter="set_subsurface_scattering_strength" getter="get_subsurface_scattering_strength" default="0.0">
 			The strength of the subsurface scattering effect.
 		</member>
 		<member name="subsurf_scatter_texture" type="Texture2D" setter="set_texture" getter="get_texture">
 			Texture used to control the subsurface scattering strength. Stored in the red texture channel. Multiplied by [member subsurf_scatter_strength].
 		</member>
-		<member name="subsurf_scatter_transmittance_boost" type="float" setter="set_transmittance_boost" getter="get_transmittance_boost">
+		<member name="subsurf_scatter_transmittance_boost" type="float" setter="set_transmittance_boost" getter="get_transmittance_boost" default="0.0">
 		</member>
-		<member name="subsurf_scatter_transmittance_color" type="Color" setter="set_transmittance_color" getter="get_transmittance_color">
+		<member name="subsurf_scatter_transmittance_color" type="Color" setter="set_transmittance_color" getter="get_transmittance_color" default="Color( 1, 1, 1, 1 )">
 		</member>
-		<member name="subsurf_scatter_transmittance_curve" type="float" setter="set_transmittance_curve" getter="get_transmittance_curve">
+		<member name="subsurf_scatter_transmittance_curve" type="float" setter="set_transmittance_curve" getter="get_transmittance_curve" default="1.0">
 		</member>
-		<member name="subsurf_scatter_transmittance_depth" type="float" setter="set_transmittance_depth" getter="get_transmittance_depth">
+		<member name="subsurf_scatter_transmittance_depth" type="float" setter="set_transmittance_depth" getter="get_transmittance_depth" default="0.1">
 		</member>
-		<member name="subsurf_scatter_transmittance_enabled" type="bool" setter="set_feature" getter="get_feature">
+		<member name="subsurf_scatter_transmittance_enabled" type="bool" setter="set_feature" getter="get_feature" default="false">
 		</member>
 		<member name="subsurf_scatter_transmittance_texture" type="Texture2D" setter="set_texture" getter="get_texture">
 		</member>
@@ -359,6 +363,8 @@
 		</member>
 		<member name="transparency" type="int" setter="set_transparency" getter="get_transparency" enum="BaseMaterial3D.Transparency" default="0">
 			If [code]true[/code], transparency is enabled on the body. See also [member blend_mode].
+		</member>
+		<member name="use_particle_trails" type="bool" setter="set_flag" getter="get_flag" default="false">
 		</member>
 		<member name="use_point_size" type="bool" setter="set_flag" getter="get_flag" default="false">
 			If [code]true[/code], render point size can be changed.
@@ -651,7 +657,9 @@
 		<constant name="FLAG_SUBSURFACE_MODE_SKIN" value="18" enum="Flags">
 			Enables the skin mode for subsurface scattering which is used to improve the look of subsurface scattering when used for human skin.
 		</constant>
-		<constant name="FLAG_MAX" value="19" enum="Flags">
+		<constant name="FLAG_PARTICLE_TRAILS_MODE" value="19" enum="Flags">
+		</constant>
+		<constant name="FLAG_MAX" value="20" enum="Flags">
 			Represents the size of the [enum Flags] enum.
 		</constant>
 		<constant name="DIFFUSE_BURLEY" value="0" enum="DiffuseMode">

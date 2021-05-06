@@ -88,13 +88,15 @@ void ScrollContainer::_cancel_drag() {
 }
 
 void ScrollContainer::_gui_input(const Ref<InputEvent> &p_gui_input) {
+	ERR_FAIL_COND(p_gui_input.is_null());
+
 	double prev_v_scroll = v_scroll->get_value();
 	double prev_h_scroll = h_scroll->get_value();
 
 	Ref<InputEventMouseButton> mb = p_gui_input;
 
 	if (mb.is_valid()) {
-		if (mb->get_button_index() == BUTTON_WHEEL_UP && mb->is_pressed()) {
+		if (mb->get_button_index() == MOUSE_BUTTON_WHEEL_UP && mb->is_pressed()) {
 			// only horizontal is enabled, scroll horizontally
 			if (h_scroll->is_visible() && (!v_scroll->is_visible() || mb->get_shift())) {
 				h_scroll->set_value(h_scroll->get_value() - h_scroll->get_page() / 8 * mb->get_factor());
@@ -103,7 +105,7 @@ void ScrollContainer::_gui_input(const Ref<InputEvent> &p_gui_input) {
 			}
 		}
 
-		if (mb->get_button_index() == BUTTON_WHEEL_DOWN && mb->is_pressed()) {
+		if (mb->get_button_index() == MOUSE_BUTTON_WHEEL_DOWN && mb->is_pressed()) {
 			// only horizontal is enabled, scroll horizontally
 			if (h_scroll->is_visible() && (!v_scroll->is_visible() || mb->get_shift())) {
 				h_scroll->set_value(h_scroll->get_value() + h_scroll->get_page() / 8 * mb->get_factor());
@@ -112,13 +114,13 @@ void ScrollContainer::_gui_input(const Ref<InputEvent> &p_gui_input) {
 			}
 		}
 
-		if (mb->get_button_index() == BUTTON_WHEEL_LEFT && mb->is_pressed()) {
+		if (mb->get_button_index() == MOUSE_BUTTON_WHEEL_LEFT && mb->is_pressed()) {
 			if (h_scroll->is_visible_in_tree()) {
 				h_scroll->set_value(h_scroll->get_value() - h_scroll->get_page() * mb->get_factor() / 8);
 			}
 		}
 
-		if (mb->get_button_index() == BUTTON_WHEEL_RIGHT && mb->is_pressed()) {
+		if (mb->get_button_index() == MOUSE_BUTTON_WHEEL_RIGHT && mb->is_pressed()) {
 			if (h_scroll->is_visible_in_tree()) {
 				h_scroll->set_value(h_scroll->get_value() + h_scroll->get_page() * mb->get_factor() / 8);
 			}
@@ -132,7 +134,7 @@ void ScrollContainer::_gui_input(const Ref<InputEvent> &p_gui_input) {
 			return;
 		}
 
-		if (mb->get_button_index() != BUTTON_LEFT) {
+		if (mb->get_button_index() != MOUSE_BUTTON_LEFT) {
 			return;
 		}
 
@@ -244,11 +246,11 @@ void ScrollContainer::_ensure_focused_visible(Control *p_control) {
 	if (is_a_parent_of(p_control)) {
 		Rect2 global_rect = get_global_rect();
 		Rect2 other_rect = p_control->get_global_rect();
-		float right_margin = 0;
+		float right_margin = 0.0;
 		if (v_scroll->is_visible()) {
 			right_margin += v_scroll->get_size().x;
 		}
-		float bottom_margin = 0;
+		float bottom_margin = 0.0;
 		if (h_scroll->is_visible()) {
 			bottom_margin += h_scroll->get_size().y;
 		}
@@ -297,7 +299,7 @@ void ScrollContainer::_update_dimensions() {
 		child_max_size.x = MAX(child_max_size.x, minsize.x);
 		child_max_size.y = MAX(child_max_size.y, minsize.y);
 
-		Rect2 r = Rect2(-scroll, minsize);
+		Rect2 r = Rect2(-Size2(get_h_scroll(), get_v_scroll()), minsize);
 		if (!scroll_h || (!h_scroll->is_visible_in_tree() && c->get_h_size_flags() & SIZE_EXPAND)) {
 			r.position.x = 0;
 			if (c->get_h_size_flags() & SIZE_EXPAND) {
@@ -432,40 +434,16 @@ void ScrollContainer::update_scrollbars() {
 
 	Size2 min = child_max_size;
 
-	bool hide_scroll_v = !scroll_v || min.height <= size.height;
-	bool hide_scroll_h = !scroll_h || min.width <= size.width;
-
-	v_scroll->set_max(min.height);
-	if (hide_scroll_v) {
-		v_scroll->set_page(size.height);
-		v_scroll->hide();
-		scroll.y = 0;
-	} else {
-		v_scroll->show();
-		if (hide_scroll_h) {
-			v_scroll->set_page(size.height);
-		} else {
-			v_scroll->set_page(size.height - hmin.height);
-		}
-
-		scroll.y = v_scroll->get_value();
-	}
+	bool hide_scroll_h = !scroll_h || min.width <= size.width || !h_scroll_visible;
+	bool hide_scroll_v = !scroll_v || min.height <= size.height || !v_scroll_visible;
 
 	h_scroll->set_max(min.width);
-	if (hide_scroll_h) {
-		h_scroll->set_page(size.width);
-		h_scroll->hide();
-		scroll.x = 0;
-	} else {
-		h_scroll->show();
-		if (hide_scroll_v) {
-			h_scroll->set_page(size.width);
-		} else {
-			h_scroll->set_page(size.width - vmin.width);
-		}
+	h_scroll->set_page(size.width - (hide_scroll_v ? 0 : vmin.width));
+	h_scroll->set_visible(!hide_scroll_h);
 
-		scroll.x = h_scroll->get_value();
-	}
+	v_scroll->set_max(min.height);
+	v_scroll->set_page(size.height - (hide_scroll_h ? 0 : hmin.height));
+	v_scroll->set_visible(!hide_scroll_v);
 
 	// Avoid scrollbar overlapping.
 	h_scroll->set_anchor_and_offset(SIDE_RIGHT, ANCHOR_END, hide_scroll_v ? 0 : -vmin.width);
@@ -473,12 +451,27 @@ void ScrollContainer::update_scrollbars() {
 }
 
 void ScrollContainer::_scroll_moved(float) {
-	scroll.x = h_scroll->get_value();
-	scroll.y = v_scroll->get_value();
 	queue_sort();
-
 	update();
 };
+
+void ScrollContainer::set_h_scroll(int p_pos) {
+	h_scroll->set_value(p_pos);
+	_cancel_drag();
+}
+
+int ScrollContainer::get_h_scroll() const {
+	return h_scroll->get_value();
+}
+
+void ScrollContainer::set_v_scroll(int p_pos) {
+	v_scroll->set_value(p_pos);
+	_cancel_drag();
+}
+
+int ScrollContainer::get_v_scroll() const {
+	return v_scroll->get_value();
+}
 
 void ScrollContainer::set_enable_h_scroll(bool p_enable) {
 	if (scroll_h == p_enable) {
@@ -508,22 +501,30 @@ bool ScrollContainer::is_v_scroll_enabled() const {
 	return scroll_v;
 }
 
-int ScrollContainer::get_v_scroll() const {
-	return v_scroll->get_value();
+void ScrollContainer::set_h_scroll_visible(bool p_visible) {
+	if (h_scroll_visible == p_visible) {
+		return;
+	}
+
+	h_scroll_visible = p_visible;
+	update_scrollbars();
 }
 
-void ScrollContainer::set_v_scroll(int p_pos) {
-	v_scroll->set_value(p_pos);
-	_cancel_drag();
+bool ScrollContainer::is_h_scroll_visible() const {
+	return h_scroll_visible;
 }
 
-int ScrollContainer::get_h_scroll() const {
-	return h_scroll->get_value();
+void ScrollContainer::set_v_scroll_visible(bool p_visible) {
+	if (v_scroll_visible == p_visible) {
+		return;
+	}
+
+	v_scroll_visible = p_visible;
+	update_scrollbars();
 }
 
-void ScrollContainer::set_h_scroll(int p_pos) {
-	h_scroll->set_value(p_pos);
-	_cancel_drag();
+bool ScrollContainer::is_v_scroll_visible() const {
+	return v_scroll_visible;
 }
 
 int ScrollContainer::get_deadzone() const {
@@ -542,8 +543,8 @@ void ScrollContainer::set_follow_focus(bool p_follow) {
 	follow_focus = p_follow;
 }
 
-String ScrollContainer::get_configuration_warning() const {
-	String warning = Container::get_configuration_warning();
+TypedArray<String> ScrollContainer::get_configuration_warnings() const {
+	TypedArray<String> warnings = Container::get_configuration_warnings();
 
 	int found = 0;
 
@@ -563,12 +564,10 @@ String ScrollContainer::get_configuration_warning() const {
 	}
 
 	if (found != 1) {
-		if (!warning.is_empty()) {
-			warning += "\n\n";
-		}
-		warning += TTR("ScrollContainer is intended to work with a single child control.\nUse a container as child (VBox, HBox, etc.), or a Control and set the custom minimum size manually.");
+		warnings.push_back(TTR("ScrollContainer is intended to work with a single child control.\nUse a container as child (VBox, HBox, etc.), or a Control and set the custom minimum size manually."));
 	}
-	return warning;
+
+	return warnings;
 }
 
 HScrollBar *ScrollContainer::get_h_scrollbar() {
@@ -581,17 +580,29 @@ VScrollBar *ScrollContainer::get_v_scrollbar() {
 
 void ScrollContainer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_gui_input"), &ScrollContainer::_gui_input);
-	ClassDB::bind_method(D_METHOD("set_enable_h_scroll", "enable"), &ScrollContainer::set_enable_h_scroll);
-	ClassDB::bind_method(D_METHOD("is_h_scroll_enabled"), &ScrollContainer::is_h_scroll_enabled);
-	ClassDB::bind_method(D_METHOD("set_enable_v_scroll", "enable"), &ScrollContainer::set_enable_v_scroll);
-	ClassDB::bind_method(D_METHOD("is_v_scroll_enabled"), &ScrollContainer::is_v_scroll_enabled);
 	ClassDB::bind_method(D_METHOD("_update_scrollbar_position"), &ScrollContainer::_update_scrollbar_position);
+
 	ClassDB::bind_method(D_METHOD("set_h_scroll", "value"), &ScrollContainer::set_h_scroll);
 	ClassDB::bind_method(D_METHOD("get_h_scroll"), &ScrollContainer::get_h_scroll);
+
 	ClassDB::bind_method(D_METHOD("set_v_scroll", "value"), &ScrollContainer::set_v_scroll);
 	ClassDB::bind_method(D_METHOD("get_v_scroll"), &ScrollContainer::get_v_scroll);
+
+	ClassDB::bind_method(D_METHOD("set_enable_h_scroll", "enable"), &ScrollContainer::set_enable_h_scroll);
+	ClassDB::bind_method(D_METHOD("is_h_scroll_enabled"), &ScrollContainer::is_h_scroll_enabled);
+
+	ClassDB::bind_method(D_METHOD("set_enable_v_scroll", "enable"), &ScrollContainer::set_enable_v_scroll);
+	ClassDB::bind_method(D_METHOD("is_v_scroll_enabled"), &ScrollContainer::is_v_scroll_enabled);
+
+	ClassDB::bind_method(D_METHOD("set_h_scroll_visible", "visible"), &ScrollContainer::set_h_scroll_visible);
+	ClassDB::bind_method(D_METHOD("is_h_scroll_visible"), &ScrollContainer::is_h_scroll_visible);
+
+	ClassDB::bind_method(D_METHOD("set_v_scroll_visible", "visible"), &ScrollContainer::set_v_scroll_visible);
+	ClassDB::bind_method(D_METHOD("is_v_scroll_visible"), &ScrollContainer::is_v_scroll_visible);
+
 	ClassDB::bind_method(D_METHOD("set_deadzone", "deadzone"), &ScrollContainer::set_deadzone);
 	ClassDB::bind_method(D_METHOD("get_deadzone"), &ScrollContainer::get_deadzone);
+
 	ClassDB::bind_method(D_METHOD("set_follow_focus", "enabled"), &ScrollContainer::set_follow_focus);
 	ClassDB::bind_method(D_METHOD("is_following_focus"), &ScrollContainer::is_following_focus);
 
@@ -604,10 +615,12 @@ void ScrollContainer::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "follow_focus"), "set_follow_focus", "is_following_focus");
 
 	ADD_GROUP("Scroll", "scroll_");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "scroll_horizontal_enabled"), "set_enable_h_scroll", "is_h_scroll_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "scroll_horizontal"), "set_h_scroll", "get_h_scroll");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "scroll_vertical_enabled"), "set_enable_v_scroll", "is_v_scroll_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "scroll_vertical"), "set_v_scroll", "get_v_scroll");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "scroll_horizontal_enabled"), "set_enable_h_scroll", "is_h_scroll_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "scroll_vertical_enabled"), "set_enable_v_scroll", "is_v_scroll_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "scroll_horizontal_visible"), "set_h_scroll_visible", "is_h_scroll_visible");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "scroll_vertical_visible"), "set_v_scroll_visible", "is_v_scroll_visible");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "scroll_deadzone"), "set_deadzone", "get_deadzone");
 
 	GLOBAL_DEF("gui/common/default_scroll_deadzone", 0);
@@ -624,15 +637,7 @@ ScrollContainer::ScrollContainer() {
 	add_child(v_scroll);
 	v_scroll->connect("value_changed", callable_mp(this, &ScrollContainer::_scroll_moved));
 
-	drag_speed = Vector2();
-	drag_touching = false;
-	drag_touching_deaccel = false;
-	beyond_deadzone = false;
-	scroll_h = true;
-	scroll_v = true;
-
 	deadzone = GLOBAL_GET("gui/common/default_scroll_deadzone");
-	follow_focus = false;
 
 	set_clip_contents(true);
 };

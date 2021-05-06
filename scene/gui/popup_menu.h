@@ -51,28 +51,28 @@ class PopupMenu : public Popup {
 		String language;
 		Control::TextDirection text_direction = Control::TEXT_DIRECTION_AUTO;
 
-		bool checked;
+		bool checked = false;
 		enum {
 			CHECKABLE_TYPE_NONE,
 			CHECKABLE_TYPE_CHECK_BOX,
 			CHECKABLE_TYPE_RADIO_BUTTON,
 		} checkable_type;
-		int max_states;
-		int state;
-		bool separator;
-		bool disabled;
-		bool dirty;
-		int id;
+		int max_states = 0;
+		int state = 0;
+		bool separator = false;
+		bool disabled = false;
+		bool dirty = true;
+		int id = 0;
 		Variant metadata;
 		String submenu;
 		String tooltip;
-		uint32_t accel;
-		int _ofs_cache;
-		int _height_cache;
-		int h_ofs;
+		uint32_t accel = 0;
+		int _ofs_cache = 0;
+		int _height_cache = 0;
+		int h_ofs = 0;
 		Ref<Shortcut> shortcut;
-		bool shortcut_is_global;
-		bool shortcut_is_disabled;
+		bool shortcut_is_global = false;
+		bool shortcut_is_disabled = false;
 
 		// Returns (0,0) if icon is null.
 		Size2 get_icon_size() const {
@@ -82,19 +82,7 @@ class PopupMenu : public Popup {
 		Item() {
 			text_buf.instance();
 			accel_text_buf.instance();
-			dirty = true;
-			checked = false;
 			checkable_type = CHECKABLE_TYPE_NONE;
-			separator = false;
-			max_states = 0;
-			state = 0;
-			accel = 0;
-			disabled = false;
-			_ofs_cache = 0;
-			_height_cache = 0;
-			h_ofs = 0;
-			shortcut_is_global = false;
-			shortcut_is_disabled = false;
 		}
 	};
 
@@ -104,15 +92,16 @@ class PopupMenu : public Popup {
 	Timer *submenu_timer;
 	List<Rect2> autohide_areas;
 	Vector<Item> items;
-	int initial_button_mask;
-	bool during_grabbed_click;
-	int mouse_over;
-	int submenu_over;
+	int initial_button_mask = 0;
+	bool during_grabbed_click = false;
+	int mouse_over = -1;
+	int submenu_over = -1;
 	Rect2 parent_rect;
 	String _get_accel_text(const Item &p_item) const;
 	int _get_mouse_over(const Point2 &p_over) const;
 	virtual Size2 _get_contents_minimum_size() const override;
 
+	int _get_item_height(int p_item) const;
 	int _get_items_total_height() const;
 	void _scroll_to_item(int p_item);
 
@@ -123,9 +112,9 @@ class PopupMenu : public Popup {
 	void _submenu_timeout();
 
 	uint64_t popup_time_msec = 0;
-	bool hide_on_item_selection;
-	bool hide_on_checkable_item_selection;
-	bool hide_on_multistate_item_selection;
+	bool hide_on_item_selection = true;
+	bool hide_on_checkable_item_selection = true;
+	bool hide_on_multistate_item_selection = false;
 	Vector2 moved;
 
 	Array _get_items() const;
@@ -136,9 +125,9 @@ class PopupMenu : public Popup {
 	void _ref_shortcut(Ref<Shortcut> p_sc);
 	void _unref_shortcut(Ref<Shortcut> p_sc);
 
-	bool allow_search;
-	uint64_t search_time_msec;
-	String search_string;
+	bool allow_search = true;
+	uint64_t search_time_msec = 0;
+	String search_string = "";
 
 	MarginContainer *margin_container;
 	ScrollContainer *scroll_container;

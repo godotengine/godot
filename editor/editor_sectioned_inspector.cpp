@@ -116,12 +116,12 @@ public:
 	void set_section(const String &p_section, bool p_allow_sub) {
 		section = p_section;
 		allow_sub = p_allow_sub;
-		_change_notify();
+		notify_property_list_changed();
 	}
 
 	void set_edited(Object *p_edited) {
 		edited = p_edited;
-		_change_notify();
+		notify_property_list_changed();
 	}
 };
 
@@ -226,7 +226,7 @@ void SectionedInspector::update_category_list() {
 
 		if (pi.usage & PROPERTY_USAGE_CATEGORY) {
 			continue;
-		} else if (!(pi.usage & PROPERTY_USAGE_EDITOR)) {
+		} else if (!(pi.usage & PROPERTY_USAGE_EDITOR) || (restrict_to_basic && !(pi.usage & PROPERTY_USAGE_EDITOR_BASIC_SETTING))) {
 			continue;
 		}
 
@@ -292,6 +292,12 @@ void SectionedInspector::_search_changed(const String &p_what) {
 
 EditorInspector *SectionedInspector::get_inspector() {
 	return inspector;
+}
+
+void SectionedInspector::set_restrict_to_basic_settings(bool p_restrict) {
+	restrict_to_basic = p_restrict;
+	update_category_list();
+	inspector->set_restrict_to_basic_settings(p_restrict);
 }
 
 SectionedInspector::SectionedInspector() :

@@ -49,11 +49,11 @@ public:
 	};
 
 private:
-	bool expand;
-	bool hflip;
-	bool vflip;
+	bool expand = false;
+	bool hflip = false;
+	bool vflip = false;
 	Ref<Texture2D> texture;
-	StretchMode stretch_mode;
+	StretchMode stretch_mode = STRETCH_SCALE_ON_EXPAND;
 
 	void _texture_changed();
 

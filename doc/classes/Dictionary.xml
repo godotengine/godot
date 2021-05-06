@@ -4,7 +4,7 @@
 		Dictionary type.
 	</brief_description>
 	<description>
-		Dictionary type. Associative container which contains values referenced by unique keys. Dictionaries are composed of pairs of keys (which must be unique) and values. Dictionaries will preserve the insertion order when adding elements, even though this may not be reflected when printing the dictionary. In other programming languages, this data structure is sometimes referred to as an hash map or associative array.
+		Dictionary type. Associative container which contains values referenced by unique keys. Dictionaries are composed of pairs of keys (which must be unique) and values. Dictionaries will preserve the insertion order when adding elements, even though this may not be reflected when printing the dictionary. In other programming languages, this data structure is sometimes referred to as a hash map or associative array.
 		You can define a dictionary by placing a comma-separated list of [code]key: value[/code] pairs in curly braces [code]{}[/code].
 		Erasing elements while iterating over them [b]is not supported[/b] and will result in undefined behavior.
 		[b]Note:[/b] Dictionaries are always passed by reference. To get a copy of a dictionary which can be modified independently of the original dictionary, use [method duplicate].
@@ -206,7 +206,7 @@
 				Clear the dictionary, removing all key/value pairs.
 			</description>
 		</method>
-		<method name="duplicate">
+		<method name="duplicate" qualifiers="const">
 			<return type="Dictionary">
 			</return>
 			<argument index="0" name="deep" type="bool" default="false">
@@ -224,7 +224,7 @@
 				Erase a dictionary key/value pair by key. Returns [code]true[/code] if the given key was present in the dictionary, [code]false[/code] otherwise. Does not erase elements while iterating over the dictionary.
 			</description>
 		</method>
-		<method name="get">
+		<method name="get" qualifiers="const">
 			<return type="Variant">
 			</return>
 			<argument index="0" name="key" type="Variant">
@@ -235,7 +235,7 @@
 				Returns the current value for the specified key in the [Dictionary]. If the key does not exist, the method returns the value of the optional default argument, or [code]null[/code] if it is omitted.
 			</description>
 		</method>
-		<method name="has">
+		<method name="has" qualifiers="const">
 			<return type="bool">
 			</return>
 			<argument index="0" name="key" type="Variant">
@@ -260,16 +260,16 @@
 				This method (like the [code]in[/code] operator) will evaluate to [code]true[/code] as long as the key exists, even if the associated value is [code]null[/code].
 			</description>
 		</method>
-		<method name="has_all">
+		<method name="has_all" qualifiers="const">
 			<return type="bool">
 			</return>
 			<argument index="0" name="keys" type="Array">
 			</argument>
 			<description>
-				Returns [code]true[/code] if the dictionary has all of the keys in the given array.
+				Returns [code]true[/code] if the dictionary has all the keys in the given array.
 			</description>
 		</method>
-		<method name="hash">
+		<method name="hash" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
@@ -292,14 +292,14 @@
 				[b]Note:[/b] Dictionaries with the same keys/values but in a different order will have a different hash.
 			</description>
 		</method>
-		<method name="is_empty">
+		<method name="is_empty" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
 				Returns [code]true[/code] if the dictionary is empty.
 			</description>
 		</method>
-		<method name="keys">
+		<method name="keys" qualifiers="const">
 			<return type="Array">
 			</return>
 			<description>
@@ -330,14 +330,14 @@
 			<description>
 			</description>
 		</method>
-		<method name="size">
+		<method name="size" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
 				Returns the number of keys in the dictionary.
 			</description>
 		</method>
-		<method name="values">
+		<method name="values" qualifiers="const">
 			<return type="Array">
 			</return>
 			<description>

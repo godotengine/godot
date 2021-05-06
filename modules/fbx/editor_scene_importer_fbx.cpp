@@ -44,7 +44,6 @@
 #include "scene/3d/bone_attachment_3d.h"
 #include "scene/3d/camera_3d.h"
 #include "scene/3d/light_3d.h"
-#include "scene/3d/mesh_instance_3d.h"
 #include "scene/main/node.h"
 #include "scene/resources/material.h"
 
@@ -94,7 +93,7 @@ Node3D *EditorSceneImporterFBX::import_scene(const String &p_path, uint32_t p_fl
 	Error err;
 	FileAccessRef f = FileAccess::open(p_path, FileAccess::READ, &err);
 
-	ERR_FAIL_COND_V(!f, NULL);
+	ERR_FAIL_COND_V(!f, nullptr);
 
 	{
 		PackedByteArray data;
@@ -104,6 +103,9 @@ Node3D *EditorSceneImporterFBX::import_scene(const String &p_path, uint32_t p_fl
 
 		bool is_binary = false;
 		data.resize(f->get_len());
+
+		ERR_FAIL_COND_V(data.size() < 64, nullptr);
+
 		f->get_buffer(data.ptrw(), data.size());
 		PackedByteArray fbx_header;
 		fbx_header.resize(64);
@@ -118,15 +120,27 @@ Node3D *EditorSceneImporterFBX::import_scene(const String &p_path, uint32_t p_fl
 
 		print_verbose("[doc] opening fbx file: " + p_path);
 		print_verbose("[doc] fbx header: " + fbx_header_string);
+		bool corrupt = false;
 
 		// safer to check this way as there can be different formatted headers
 		if (fbx_header_string.find("Kaydara FBX Binary", 0) != -1) {
 			is_binary = true;
 			print_verbose("[doc] is binary");
-			FBXDocParser::TokenizeBinary(tokens, (const char *)data.ptrw(), (size_t)data.size());
+
+			FBXDocParser::TokenizeBinary(tokens, (const char *)data.ptrw(), (size_t)data.size(), corrupt);
+
 		} else {
 			print_verbose("[doc] is ascii");
-			FBXDocParser::Tokenize(tokens, (const char *)data.ptrw(), (size_t)data.size());
+			FBXDocParser::Tokenize(tokens, (const char *)data.ptrw(), (size_t)data.size(), corrupt);
+		}
+
+		if (corrupt) {
+			for (FBXDocParser::TokenPtr token : tokens) {
+				delete token;
+			}
+			tokens.clear();
+			ERR_PRINT(vformat("Cannot import FBX file: %s the file is corrupt so we safely exited parsing the file.", p_path));
+			return memnew(Node3D);
 		}
 
 		// The import process explained:
@@ -138,6 +152,16 @@ Node3D *EditorSceneImporterFBX::import_scene(const String &p_path, uint32_t p_fl
 		// use this information to construct a very rudimentary
 		// parse-tree representing the FBX scope structure
 		FBXDocParser::Parser parser(tokens, is_binary);
+
+		if (parser.IsCorrupt()) {
+			for (FBXDocParser::TokenPtr token : tokens) {
+				delete token;
+			}
+			tokens.clear();
+			ERR_PRINT(vformat("Cannot import FBX file: %s the file is corrupt so we safely exited parsing the file.", p_path));
+			return memnew(Node3D);
+		}
+
 		FBXDocParser::ImportSettings settings;
 		settings.strictMode = false;
 
@@ -150,12 +174,10 @@ Node3D *EditorSceneImporterFBX::import_scene(const String &p_path, uint32_t p_fl
 		// safety for version handling
 		if (doc.IsSafeToImport()) {
 			bool is_blender_fbx = false;
-			//const FBXDocParser::PropertyPtr app_vendor = p_document->GlobalSettingsPtr()->Props()
-			//	p_document->Creator()
-			const FBXDocParser::PropertyTable *import_props = doc.GetMetadataProperties();
-			const FBXDocParser::PropertyPtr app_name = import_props->Get("Original|ApplicationName");
-			const FBXDocParser::PropertyPtr app_vendor = import_props->Get("Original|ApplicationVendor");
-			const FBXDocParser::PropertyPtr app_version = import_props->Get("Original|ApplicationVersion");
+			const FBXDocParser::PropertyTable &import_props = doc.GetMetadataProperties();
+			const FBXDocParser::PropertyPtr app_name = import_props.Get("Original|ApplicationName");
+			const FBXDocParser::PropertyPtr app_vendor = import_props.Get("Original|ApplicationVendor");
+			const FBXDocParser::PropertyPtr app_version = import_props.Get("Original|ApplicationVersion");
 			//
 			if (app_name) {
 				const FBXDocParser::TypedProperty<std::string> *app_name_string = dynamic_cast<const FBXDocParser::TypedProperty<std::string> *>(app_name);
@@ -197,6 +219,11 @@ Node3D *EditorSceneImporterFBX::import_scene(const String &p_path, uint32_t p_fl
 			return spatial;
 
 		} else {
+			for (FBXDocParser::TokenPtr token : tokens) {
+				delete token;
+			}
+			tokens.clear();
+
 			ERR_PRINT(vformat("Cannot import FBX file: %s. It uses file format %d which is unsupported by Godot. Please re-export it or convert it to a newer format.", p_path, doc.FBXVersion()));
 		}
 	}
@@ -260,8 +287,9 @@ T EditorSceneImporterFBX::_interpolate_track(const Vector<float> &p_times, const
 	//could use binary search, worth it?
 	int idx = -1;
 	for (int i = 0; i < p_times.size(); i++) {
-		if (p_times[i] > p_time)
+		if (p_times[i] > p_time) {
 			break;
+		}
 		idx++;
 	}
 
@@ -334,7 +362,7 @@ Node3D *EditorSceneImporterFBX::_generate_scene(
 	ImportState state;
 	state.is_blender_fbx = p_is_blender_fbx;
 	state.path = p_path;
-	state.animation_player = NULL;
+	state.animation_player = nullptr;
 
 	// create new root node for scene
 	Node3D *scene_root = memnew(Node3D);
@@ -610,8 +638,9 @@ Node3D *EditorSceneImporterFBX::_generate_scene(
 				for (const FBXDocParser::Geometry *mesh : geometry) {
 					print_verbose("[doc] [" + itos(mesh->ID()) + "] mesh: " + fbx_node->node_name);
 
-					if (mesh == nullptr)
+					if (mesh == nullptr) {
 						continue;
+					}
 
 					const FBXDocParser::MeshGeometry *mesh_geometry = dynamic_cast<const FBXDocParser::MeshGeometry *>(mesh);
 					if (mesh_geometry) {
@@ -628,7 +657,7 @@ Node3D *EditorSceneImporterFBX::_generate_scene(
 						mesh_data_precached->mesh_node = fbx_node;
 
 						// mesh node, mesh id
-						mesh_node = mesh_data_precached->create_fbx_mesh(state, mesh_geometry, fbx_node->fbx_model, (p_flags & IMPORT_USE_COMPRESSION) != 0);
+						mesh_node = mesh_data_precached->create_fbx_mesh(state, mesh_geometry, fbx_node->fbx_model, false);
 						if (!state.MeshNodes.has(mesh_id)) {
 							state.MeshNodes.insert(mesh_id, fbx_node);
 						}
@@ -887,7 +916,7 @@ Node3D *EditorSceneImporterFBX::_generate_scene(
 						uint64_t target_id = target->ID();
 						String target_name = ImportUtils::FBXNodeToName(target->Name());
 
-						const FBXDocParser::PropertyTable *properties = curve_node->Props();
+						const FBXDocParser::PropertyTable *properties = curve_node;
 						bool got_x = false, got_y = false, got_z = false;
 						float offset_x = FBXDocParser::PropertyGet<float>(properties, "d|X", got_x);
 						float offset_y = FBXDocParser::PropertyGet<float>(properties, "d|Y", got_y);
@@ -985,7 +1014,6 @@ Node3D *EditorSceneImporterFBX::_generate_scene(
 						int track_idx = animation->add_track(Animation::TYPE_TRANSFORM);
 
 						// animation->track_set_path(track_idx, node_path);
-						// animation->track_set_path(track_idx, node_path);
 						Ref<FBXBone> bone;
 
 						// note we must not run the below code if the entry doesn't exist, it will create dummy entries which is very bad.
@@ -1042,7 +1070,7 @@ Node3D *EditorSceneImporterFBX::_generate_scene(
 
 						Ref<FBXNode> target_node = state.fbx_target_map[target_id];
 						const FBXDocParser::Model *model = target_node->fbx_model;
-						const FBXDocParser::PropertyTable *props = model->Props();
+						const FBXDocParser::PropertyTable *props = dynamic_cast<const FBXDocParser::PropertyTable *>(model);
 
 						Map<StringName, FBXTrack> &track_data = track->value();
 						FBXTrack &translation_keys = track_data[StringName("T")];
@@ -1132,7 +1160,7 @@ Node3D *EditorSceneImporterFBX::_generate_scene(
 								max_duration = animation_track_time;
 							}
 
-							rot_values.push_back(final_rotation);
+							rot_values.push_back(final_rotation.normalized());
 							rot_times.push_back(animation_track_time);
 						}
 

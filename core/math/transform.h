@@ -51,8 +51,8 @@ public:
 	void rotate(const Vector3 &p_axis, real_t p_phi);
 	void rotate_basis(const Vector3 &p_axis, real_t p_phi);
 
-	void set_look_at(const Vector3 &p_eye, const Vector3 &p_target, const Vector3 &p_up);
-	Transform looking_at(const Vector3 &p_target, const Vector3 &p_up) const;
+	void set_look_at(const Vector3 &p_eye, const Vector3 &p_target, const Vector3 &p_up = Vector3(0, 1, 0));
+	Transform looking_at(const Vector3 &p_target, const Vector3 &p_up = Vector3(0, 1, 0)) const;
 
 	void scale(const Vector3 &p_scale);
 	Transform scaled(const Vector3 &p_scale) const;

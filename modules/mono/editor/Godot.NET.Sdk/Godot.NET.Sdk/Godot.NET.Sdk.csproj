@@ -8,43 +8,34 @@
 
     <PackageId>Godot.NET.Sdk</PackageId>
     <Version>4.0.0</Version>
-    <PackageProjectUrl>https://github.com/godotengine/godot/tree/master/modules/mono/editor/Godot.NET.Sdk</PackageProjectUrl>
+    <PackageVersion>$(PackageVersion_Godot_NET_Sdk)</PackageVersion>
+    <RepositoryUrl>https://github.com/godotengine/godot/tree/master/modules/mono/editor/Godot.NET.Sdk</RepositoryUrl>
+    <PackageProjectUrl>$(RepositoryUrl)</PackageProjectUrl>
     <PackageType>MSBuildSdk</PackageType>
     <PackageTags>MSBuildSdk</PackageTags>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+
+    <!-- Exclude target framework from the package dependencies as we don't include the build output -->
+    <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
   </PropertyGroup>
 
-  <PropertyGroup>
-    <NuspecFile>Godot.NET.Sdk.nuspec</NuspecFile>
-    <GenerateNuspecDependsOn>$(GenerateNuspecDependsOn);SetNuSpecProperties</GenerateNuspecDependsOn>
-  </PropertyGroup>
-
-  <Target Name="ReadGodotNETSdkVersion" BeforeTargets="BeforeBuild;BeforeRebuild;CoreCompile">
-    <PropertyGroup>
-      <PackageVersion>$([System.IO.File]::ReadAllText('$(ProjectDir)Godot.NET.Sdk_PackageVersion.txt').Trim())</PackageVersion>
-    </PropertyGroup>
-  </Target>
-
-  <Target Name="SetNuSpecProperties" Condition=" Exists('$(NuspecFile)') " DependsOnTargets="ReadGodotNETSdkVersion">
-    <PropertyGroup>
-      <NuspecProperties>
-        id=$(PackageId);
-        description=$(Description);
-        authors=$(Authors);
-        version=$(PackageVersion);
-        packagetype=$(PackageType);
-        tags=$(PackageTags);
-        projecturl=$(PackageProjectUrl)
-      </NuspecProperties>
-    </PropertyGroup>
-  </Target>
+  <ItemGroup>
+    <!-- Package Sdk\Sdk.props and Sdk\Sdk.targets file -->
+    <None Include="Sdk\Sdk.props" Pack="true" PackagePath="Sdk" />
+    <None Include="Sdk\Sdk.targets" Pack="true" PackagePath="Sdk" />
+    <!-- SdkPackageVersions.props -->
+    <None Include="..\..\..\SdkPackageVersions.props" Pack="true" PackagePath="Sdk">
+      <Link>Sdk\SdkPackageVersions.props</Link>
+    </None>
+  </ItemGroup>
 
   <Target Name="CopyNupkgToSConsOutputDir" AfterTargets="Pack">
     <PropertyGroup>
       <GodotSourceRootPath>$(SolutionDir)\..\..\..\..\</GodotSourceRootPath>
       <GodotOutputDataDir>$(GodotSourceRootPath)\bin\GodotSharp\</GodotOutputDataDir>
     </PropertyGroup>
-    <Copy SourceFiles="$(OutputPath)$(PackageId).$(PackageVersion).nupkg"
-          DestinationFolder="$(GodotOutputDataDir)Tools\nupkgs\" />
+    <Copy SourceFiles="$(PackageOutputPath)$(PackageId).$(PackageVersion).nupkg" DestinationFolder="$(GodotOutputDataDir)Tools\nupkgs\" />
   </Target>
 </Project>

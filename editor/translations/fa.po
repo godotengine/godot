@@ -19,12 +19,13 @@
 # MSKF <walkingdeadstudio@outlook.com>, 2020.
 # Ahmad Maftoun <CarCedo.Pro@gmail.com>, 2020.
 # ItzMiad44909858f5774b6d <maidggg@gmail.com>, 2020.
+# YASAN <yasandev@gmail.com>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-11-08 10:26+0000\n"
-"Last-Translator: MSKF <walkingdeadstudio@outlook.com>\n"
+"PO-Revision-Date: 2021-03-16 10:40+0000\n"
+"Last-Translator: YASAN <yasandev@gmail.com>\n"
 "Language-Team: Persian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fa/>\n"
 "Language: fa\n"
@@ -32,16 +33,16 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 4.3.2\n"
+"X-Generator: Weblate 4.5.2-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
 msgid "Invalid type argument to convert(), use TYPE_* constants."
-msgstr "نوع ورودی برای ()convert نامعتبر است, ثوابت *_TYPE‌ بکار گیرید ."
+msgstr "نوع نامعتبر ورودی برای ()convert، ثوابت *_TYPE‌ را بکار گیرید."
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 msgid "Expected a string of length 1 (a character)."
-msgstr "یک رشته (string) در اندازه 1 (کاراکتر) انتظار می رود."
+msgstr "یک رشته به‌طول 1 ( یک کاراکتر) مورد انتظار است."
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/mono/glue/gd_glue.cpp
@@ -658,7 +659,7 @@ msgstr "انتخاب میسرها جهت تکثیر"
 #: editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp editor/property_editor.cpp
-#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
+#: editor/scene_tree_dock.cpp scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Copy"
 msgstr "کپی"
 
@@ -1040,11 +1041,10 @@ msgid "Owners Of:"
 msgstr "مالکانِ:"
 
 #: editor/dependency_editor.cpp
-#, fuzzy
 msgid ""
 "Remove selected files from the project? (no undo)\n"
 "You can find the removed files in the system trash to restore them."
-msgstr "آیا پرونده‌های انتخاب شده از طرح حذف شوند؟ (نمی‌توان بازیابی کرد)"
+msgstr "آیا پرونده‌های انتخاب شده از طرح حذف شوند؟ (غیر قابل بازیابی)"
 
 #: editor/dependency_editor.cpp
 #, fuzzy
@@ -1846,8 +1846,8 @@ msgid "Open a File or Directory"
 msgstr "یک پرونده یا پوشه را باز کن"
 
 #: editor/editor_file_dialog.cpp editor/editor_node.cpp
-#: editor/editor_properties.cpp editor/inspector_dock.cpp
-#: editor/plugins/animation_player_editor_plugin.cpp
+#: editor/editor_properties.cpp editor/import_defaults_editor.cpp
+#: editor/inspector_dock.cpp editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/script_editor_plugin.cpp scene/gui/file_dialog.cpp
 msgid "Save"
 msgstr "ذخیره"
@@ -2481,8 +2481,9 @@ msgid "Unable to enable addon plugin at: '%s' parsing of config failed."
 msgstr ""
 
 #: editor/editor_node.cpp
-msgid "Unable to find script field for addon plugin at: 'res://addons/%s'."
-msgstr ""
+#, fuzzy
+msgid "Unable to find script field for addon plugin at: '%s'."
+msgstr "امکان بارگیری اسکریپت افزونه از مسیر وجود ندارد: '%s'."
 
 #: editor/editor_node.cpp
 msgid "Unable to load addon script from path: '%s'."
@@ -2879,14 +2880,6 @@ msgid "Help"
 msgstr "راهنما"
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/script_text_editor.cpp
-#: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
-#: editor/plugins/visual_shader_editor_plugin.cpp editor/project_manager.cpp
-#: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
-msgid "Search"
-msgstr "جستجو"
-
-#: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/shader_editor_plugin.cpp
 msgid "Online Docs"
 msgstr ""
@@ -3044,6 +3037,23 @@ msgstr "ترکیب کردن با نمونه ی موجود"
 #: editor/editor_node.cpp
 msgid "Open & Run a Script"
 msgstr "گشودن و اجرای یک اسکریپت"
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid ""
+"The following files are newer on disk.\n"
+"What action should be taken?"
+msgstr "استخراج پرونده های زیر از بسته بندی انجام نشد:"
+
+#: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/shader_editor_plugin.cpp
+msgid "Reload"
+msgstr ""
+
+#: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/shader_editor_plugin.cpp
+msgid "Resave"
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "New Inherited"
@@ -3258,7 +3268,7 @@ msgstr ""
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 #: editor/plugins/tile_map_editor_plugin.cpp editor/property_editor.cpp
-#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
+#: editor/scene_tree_dock.cpp scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Paste"
 msgstr "چسباندن"
 
@@ -3572,6 +3582,11 @@ msgstr "برگزیده‌ها:"
 
 #: editor/filesystem_dock.cpp
 msgid "Status: Import of file failed. Please fix file and reimport manually."
+msgstr ""
+
+#: editor/filesystem_dock.cpp
+msgid ""
+"Importing has been disabled for this file, so it can't be opened for editing."
 msgstr ""
 
 #: editor/filesystem_dock.cpp
@@ -3989,6 +4004,25 @@ msgstr ""
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Saving..."
+msgstr ""
+
+#: editor/import_defaults_editor.cpp
+#, fuzzy
+msgid "Select Importer"
+msgstr "انتخاب حالت"
+
+#: editor/import_defaults_editor.cpp
+#, fuzzy
+msgid "Importer:"
+msgstr "وارد کردن"
+
+#: editor/import_defaults_editor.cpp
+#, fuzzy
+msgid "Reset to Defaults"
+msgstr "بارگیری پیش فرض"
+
+#: editor/import_dock.cpp
+msgid "Keep File (No Import)"
 msgstr ""
 
 #: editor/import_dock.cpp
@@ -5003,7 +5037,7 @@ msgid "Got:"
 msgstr ""
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-msgid "Failed sha256 hash check"
+msgid "Failed SHA-256 hash check"
 msgstr ""
 
 #: editor/plugins/asset_library_editor_plugin.cpp
@@ -5115,7 +5149,6 @@ msgid "Sort:"
 msgstr "مرتب‌سازی:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#: editor/project_settings_editor.cpp
 msgid "Category:"
 msgstr "طبقه‌بندی:"
 
@@ -6974,6 +7007,14 @@ msgstr ""
 msgid "Run"
 msgstr "اجرا"
 
+#: editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/script_text_editor.cpp
+#: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
+#: editor/plugins/visual_shader_editor_plugin.cpp editor/project_manager.cpp
+#: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
+msgid "Search"
+msgstr "جستجو"
+
 #: editor/plugins/script_editor_plugin.cpp editor/script_editor_debugger.cpp
 msgid "Step Into"
 msgstr ""
@@ -7026,16 +7067,6 @@ msgstr "گسسته"
 msgid ""
 "The following files are newer on disk.\n"
 "What action should be taken?:"
-msgstr ""
-
-#: editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/shader_editor_plugin.cpp
-msgid "Reload"
-msgstr ""
-
-#: editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/shader_editor_plugin.cpp
-msgid "Resave"
 msgstr ""
 
 #: editor/plugins/script_editor_plugin.cpp editor/script_editor_debugger.cpp
@@ -7138,8 +7169,8 @@ msgstr "حذف کن"
 msgid "Go To"
 msgstr ""
 
-#: editor/plugins/script_text_editor.cpp scene/gui/line_edit.cpp
-#: scene/gui/text_edit.cpp
+#: editor/plugins/script_text_editor.cpp editor/scene_tree_dock.cpp
+#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Cut"
 msgstr "برش"
 
@@ -7570,6 +7601,11 @@ msgstr "غلطاندن به پایین."
 #, fuzzy
 msgid "View Rotation Locked"
 msgstr "بومی‌سازی"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid ""
+"To zoom further, change the camera's clipping planes (View -> Settings...)"
+msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid ""
@@ -10063,6 +10099,11 @@ msgid "Projects"
 msgstr "طرح ها"
 
 #: editor/project_manager.cpp
+#, fuzzy
+msgid "Loading, please wait..."
+msgstr "بارگیری"
+
+#: editor/project_manager.cpp
 msgid "Last Modified"
 msgstr ""
 
@@ -10441,6 +10482,11 @@ msgstr "AutoLoad"
 msgid "Plugins"
 msgstr "افزونه‌ها"
 
+#: editor/project_settings_editor.cpp
+#, fuzzy
+msgid "Import Defaults"
+msgstr "بارگیری پیش فرض"
+
 #: editor/property_editor.cpp
 msgid "Preset..."
 msgstr ""
@@ -10699,6 +10745,15 @@ msgid "Instance Child Scene"
 msgstr "ارث‌بری صحنهٔ فرزند"
 
 #: editor/scene_tree_dock.cpp
+msgid "Can't paste root node into the same scene."
+msgstr ""
+
+#: editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Paste Node(s)"
+msgstr "مسیر به سمت گره:"
+
+#: editor/scene_tree_dock.cpp
 #, fuzzy
 msgid "Detach Script"
 msgstr "پیوست کردن اسکریپت"
@@ -10830,6 +10885,11 @@ msgid "Attach Script"
 msgstr "پیوست کردن اسکریپت"
 
 #: editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Cut Node(s)"
+msgstr "ساختن گره"
+
+#: editor/scene_tree_dock.cpp
 msgid "Remove Node(s)"
 msgstr "حذف گره(ها)"
 
@@ -10943,6 +11003,13 @@ msgstr "حذف یک اسکریپت برای گره انتخابی."
 #: editor/scene_tree_dock.cpp
 msgid "Remote"
 msgstr "از راه دور"
+
+#: editor/scene_tree_dock.cpp
+msgid ""
+"If selected, the Remote scene tree dock will cause the project to stutter "
+"every time it updates.\n"
+"Switch back to the Local scene tree dock to improve performance."
+msgstr ""
 
 #: editor/scene_tree_dock.cpp
 msgid "Local"
@@ -12542,6 +12609,14 @@ msgstr ""
 msgid "An empty CollisionPolygon2D has no effect on collision."
 msgstr "یک CollisionPolygon2D خالی جلوه بر برخورد ندارد."
 
+#: scene/2d/collision_polygon_2d.cpp
+msgid "Invalid polygon. At least 3 points are needed in 'Solids' build mode."
+msgstr ""
+
+#: scene/2d/collision_polygon_2d.cpp
+msgid "Invalid polygon. At least 2 points are needed in 'Segments' build mode."
+msgstr ""
+
 #: scene/2d/collision_shape_2d.cpp
 msgid ""
 "CollisionShape2D only serves to provide a collision shape to a "
@@ -12830,11 +12905,6 @@ msgstr ""
 msgid ""
 "GIProbes are not supported by the GLES2 video driver.\n"
 "Use a BakedLightmap instead."
-msgstr ""
-
-#: scene/3d/interpolated_camera.cpp
-msgid ""
-"InterpolatedCamera has been deprecated and will be removed in Godot 4.0."
 msgstr ""
 
 #: scene/3d/light.cpp
@@ -13352,10 +13422,6 @@ msgstr "ثوابت قابل تغییر نیستند."
 
 #~ msgid "Create folder"
 #~ msgstr "ساختن پوشه"
-
-#, fuzzy
-#~ msgid "Custom Node"
-#~ msgstr "ساختن گره"
 
 #, fuzzy
 #~ msgid "Invalid Path"

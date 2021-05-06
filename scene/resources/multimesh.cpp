@@ -217,7 +217,7 @@ Ref<Mesh> MultiMesh::get_mesh() const {
 
 void MultiMesh::set_instance_count(int p_count) {
 	ERR_FAIL_COND(p_count < 0);
-	RenderingServer::get_singleton()->multimesh_allocate(multimesh, p_count, RS::MultimeshTransformFormat(transform_format), use_colors, use_custom_data);
+	RenderingServer::get_singleton()->multimesh_allocate_data(multimesh, p_count, RS::MultimeshTransformFormat(transform_format), use_colors, use_custom_data);
 	instance_count = p_count;
 }
 
@@ -361,11 +361,6 @@ void MultiMesh::_bind_methods() {
 
 MultiMesh::MultiMesh() {
 	multimesh = RenderingServer::get_singleton()->multimesh_create();
-	use_colors = false;
-	use_custom_data = false;
-	transform_format = TRANSFORM_2D;
-	visible_instance_count = -1;
-	instance_count = 0;
 }
 
 MultiMesh::~MultiMesh() {

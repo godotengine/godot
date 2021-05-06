@@ -35,15 +35,15 @@
 #include "scene/main/node.h"
 
 class Node2D;
-class Navigation2D;
 
 class NavigationAgent2D : public Node {
 	GDCLASS(NavigationAgent2D, Node);
 
 	Node2D *agent_parent = nullptr;
-	Navigation2D *navigation = nullptr;
 
 	RID agent;
+
+	uint32_t navigable_layers = 1;
 
 	real_t target_desired_distance = 1.0;
 	real_t radius;
@@ -74,17 +74,12 @@ public:
 	NavigationAgent2D();
 	virtual ~NavigationAgent2D();
 
-	void set_navigation(Navigation2D *p_nav);
-	const Navigation2D *get_navigation() const {
-		return navigation;
-	}
-
-	void set_navigation_node(Node *p_nav);
-	Node *get_navigation_node() const;
-
 	RID get_rid() const {
 		return agent;
 	}
+
+	void set_navigable_layers(uint32_t p_layers);
+	uint32_t get_navigable_layers() const;
 
 	void set_target_desired_distance(real_t p_dd);
 	real_t get_target_desired_distance() const {
@@ -141,10 +136,11 @@ public:
 	void set_velocity(Vector2 p_velocity);
 	void _avoidance_done(Vector3 p_new_velocity);
 
-	virtual String get_configuration_warning() const override;
+	TypedArray<String> get_configuration_warnings() const override;
 
 private:
 	void update_navigation();
+	void _check_distance_to_target();
 };
 
 #endif

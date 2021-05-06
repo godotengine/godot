@@ -136,6 +136,8 @@ protected:
 
 	static void _bind_methods();
 
+	virtual void reset_state() override;
+
 public:
 	void create_tile(int p_id);
 

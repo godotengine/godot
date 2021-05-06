@@ -31,10 +31,10 @@
 #ifndef NAV_REGION_H
 #define NAV_REGION_H
 
-#include "nav_rid.h"
+#include "scene/resources/navigation_mesh.h"
 
+#include "nav_rid.h"
 #include "nav_utils.h"
-#include "scene/3d/navigation_3d.h"
 #include <vector>
 
 /**
@@ -48,6 +48,8 @@ class NavRegion : public NavRid {
 	NavMap *map = nullptr;
 	Transform transform;
 	Ref<NavigationMesh> mesh;
+	uint32_t layers = 1;
+	Vector<gd::Edge::Connection> connections;
 
 	bool polygons_dirty = true;
 
@@ -66,6 +68,9 @@ public:
 		return map;
 	}
 
+	void set_layers(uint32_t p_layers);
+	uint32_t get_layers() const;
+
 	void set_transform(Transform transform);
 	const Transform &get_transform() const {
 		return transform;
@@ -75,6 +80,13 @@ public:
 	const Ref<NavigationMesh> get_mesh() const {
 		return mesh;
 	}
+
+	Vector<gd::Edge::Connection> &get_connections() {
+		return connections;
+	}
+	int get_connections_count() const;
+	Vector3 get_connection_pathway_start(int p_connection_id) const;
+	Vector3 get_connection_pathway_end(int p_connection_id) const;
 
 	std::vector<gd::Polygon> const &get_polygons() const {
 		return polygons;

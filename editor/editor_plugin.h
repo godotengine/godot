@@ -71,6 +71,7 @@ public:
 
 	Control *get_editor_main_control();
 	void edit_resource(const Ref<Resource> &p_resource);
+	void edit_node(Node *p_node);
 	void open_scene_from_path(const String &scene_path);
 	void reload_scene_from_path(const String &scene_path);
 
@@ -100,6 +101,7 @@ public:
 	FileSystemDock *get_file_system_dock();
 
 	Control *get_base_control();
+	float get_editor_scale() const;
 
 	void set_plugin_enabled(const String &p_plugin, bool p_enabled);
 	bool is_plugin_enabled(const String &p_plugin) const;
@@ -130,7 +132,11 @@ class EditorPlugin : public Node {
 
 	String last_main_screen_name;
 
+	void _editor_project_settings_changed();
+
 protected:
+	void _notification(int p_what);
+
 	static void _bind_methods();
 	UndoRedo &get_undo_redo() { return *undo_redo; }
 
@@ -218,6 +224,9 @@ public:
 
 	EditorInterface *get_editor_interface();
 	ScriptCreateDialog *get_script_create_dialog();
+
+	void add_undo_redo_inspector_hook_callback(Callable p_callable);
+	void remove_undo_redo_inspector_hook_callback(Callable p_callable);
 
 	int update_overlays() const;
 

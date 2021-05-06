@@ -647,7 +647,7 @@ String VisualScriptBuiltinFunc::get_caption() const {
 void VisualScriptBuiltinFunc::set_func(BuiltinFunc p_which) {
 	ERR_FAIL_INDEX(p_which, FUNC_MAX);
 	func = p_which;
-	_change_notify();
+	notify_property_list_changed();
 	ports_changed_notify();
 }
 
@@ -723,7 +723,7 @@ void VisualScriptBuiltinFunc::exec_func(BuiltinFunc p_func, const Variant **p_in
 		case VisualScriptBuiltinFunc::MATH_POSMOD: {
 			VALIDATE_ARG_NUM(0);
 			VALIDATE_ARG_NUM(1);
-			*r_return = Math::posmod((int)*p_inputs[0], (int)*p_inputs[1]);
+			*r_return = Math::posmod((int64_t)*p_inputs[0], (int64_t)*p_inputs[1]);
 		} break;
 		case VisualScriptBuiltinFunc::MATH_FLOOR: {
 			VALIDATE_ARG_NUM(0);

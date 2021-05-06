@@ -43,7 +43,7 @@ class SceneTreeEditor : public Control {
 
 	EditorSelection *editor_selection;
 
-	enum {
+	enum SceneTreeEditorButton {
 		BUTTON_SUBSCENE = 0,
 		BUTTON_VISIBILITY = 1,
 		BUTTON_SCRIPT = 2,
@@ -75,6 +75,7 @@ class SceneTreeEditor : public Control {
 	void _test_update_tree();
 	void _update_tree(bool p_scroll_to_selected = false);
 	void _tree_changed();
+	void _tree_process_mode_changed();
 	void _node_removed(Node *p_node);
 	void _node_renamed(Node *p_node);
 
@@ -156,6 +157,8 @@ public:
 
 	Tree *get_scene_tree() { return tree; }
 
+	void update_warning();
+
 	SceneTreeEditor(bool p_label = true, bool p_can_rename = false, bool p_can_open_instance = false);
 	~SceneTreeEditor();
 };
@@ -180,6 +183,7 @@ protected:
 public:
 	void popup_scenetree_dialog();
 	SceneTreeEditor *get_scene_tree() { return tree; }
+	LineEdit *get_filter_line_edit() { return filter; }
 	SceneTreeDialog();
 	~SceneTreeDialog();
 };

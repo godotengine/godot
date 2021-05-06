@@ -40,6 +40,7 @@
 #include "core/config/project_settings.h"
 #include "core/templates/hash_map.h"
 #include "core/typedefs.h"
+#include "soft_body_3d_sw.h"
 
 class PhysicsDirectSpaceState3DSW : public PhysicsDirectSpaceState3D {
 	GDCLASS(PhysicsDirectSpaceState3DSW, PhysicsDirectSpaceState3D);
@@ -82,6 +83,7 @@ private:
 	SelfList<Body3DSW>::List state_query_list;
 	SelfList<Area3DSW>::List monitor_query_list;
 	SelfList<Area3DSW>::List area_moved_list;
+	SelfList<SoftBody3DSW>::List active_soft_body_list;
 
 	static void *_broadphase_pair(CollisionObject3DSW *A, int p_subindex_A, CollisionObject3DSW *B, int p_subindex_B, void *p_self);
 	static void _broadphase_unpair(CollisionObject3DSW *A, int p_subindex_A, CollisionObject3DSW *B, int p_subindex_B, void *p_data, void *p_self);
@@ -144,6 +146,10 @@ public:
 	void area_add_to_moved_list(SelfList<Area3DSW> *p_area);
 	void area_remove_from_moved_list(SelfList<Area3DSW> *p_area);
 	const SelfList<Area3DSW>::List &get_moved_area_list() const;
+
+	const SelfList<SoftBody3DSW>::List &get_active_soft_body_list() const;
+	void soft_body_add_to_active_list(SelfList<SoftBody3DSW> *p_soft_body);
+	void soft_body_remove_from_active_list(SelfList<SoftBody3DSW> *p_soft_body);
 
 	BroadPhase3DSW *get_broadphase();
 

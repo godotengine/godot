@@ -69,7 +69,7 @@ private:
 	LineEdit *makedirname;
 
 	Button *makedir;
-	Access access;
+	Access access = ACCESS_RESOURCES;
 	//Button *action;
 	VBoxContainer *vbox;
 	FileMode mode;
@@ -86,6 +86,10 @@ private:
 	DirAccess *dir_access;
 	ConfirmationDialog *confirm_save;
 
+	Label *message;
+
+	Button *dir_prev;
+	Button *dir_next;
 	Button *dir_up;
 
 	Button *refresh;
@@ -93,12 +97,16 @@ private:
 
 	Vector<String> filters;
 
-	bool mode_overrides_title;
+	Vector<String> local_history;
+	int local_history_pos = 0;
+	void _push_history();
+
+	bool mode_overrides_title = true;
 
 	static bool default_show_hidden_files;
-	bool show_hidden_files;
+	bool show_hidden_files = false;
 
-	bool invalidated;
+	bool invalidated = true;
 
 	void update_dir();
 	void update_file_name();
@@ -119,6 +127,8 @@ private:
 	void _make_dir();
 	void _make_dir_confirm();
 	void _go_up();
+	void _go_back();
+	void _go_forward();
 
 	void _update_drives();
 

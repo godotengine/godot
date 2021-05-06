@@ -46,7 +46,7 @@ public:
 	void set_color(const Color &p_color);
 	Color get_color() const;
 
-	String get_configuration_warning() const override;
+	TypedArray<String> get_configuration_warnings() const override;
 
 	CanvasModulate();
 	~CanvasModulate();

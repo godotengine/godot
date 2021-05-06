@@ -45,13 +45,9 @@ public:
 			CLASS,
 			MEMBER,
 			CONSTANT,
-			CLASS_CONSTANT,
-			LOCAL_CONSTANT,
 			LOCAL_VARIABLE,
 			FUNCTION_PARAMETER,
 			TEMPORARY,
-			GLOBAL,
-			NAMED_GLOBAL,
 			NIL,
 		};
 		AddressMode mode = NIL;
@@ -75,7 +71,7 @@ public:
 	virtual uint32_t add_local_constant(const StringName &p_name, const Variant &p_constant) = 0;
 	virtual uint32_t add_or_get_constant(const Variant &p_constant) = 0;
 	virtual uint32_t add_or_get_name(const StringName &p_name) = 0;
-	virtual uint32_t add_temporary() = 0;
+	virtual uint32_t add_temporary(const GDScriptDataType &p_type) = 0;
 	virtual void pop_temporary() = 0;
 
 	virtual void start_parameters() = 0;
@@ -83,9 +79,6 @@ public:
 
 	virtual void start_block() = 0;
 	virtual void end_block() = 0;
-
-	// virtual int get_max_stack_level() = 0;
-	// virtual int get_max_function_arguments() = 0;
 
 	virtual void write_start(GDScript *p_script, const StringName &p_function_name, bool p_static, MultiplayerAPI::RPCMode p_rpc_mode, const GDScriptDataType &p_return_type) = 0;
 	virtual GDScriptFunction *write_end() = 0;
@@ -95,9 +88,7 @@ public:
 #endif
 	virtual void set_initial_line(int p_line) = 0;
 
-	// virtual void alloc_stack(int p_level) = 0; // Is this needed?
-	// virtual void alloc_call(int p_arg_count) = 0; // This might be automatic from other functions.
-
+	virtual void write_type_adjust(const Address &p_target, Variant::Type p_new_type) = 0;
 	virtual void write_unary_operator(const Address &p_target, Variant::Operator p_operator, const Address &p_left_operand) = 0;
 	virtual void write_binary_operator(const Address &p_target, Variant::Operator p_operator, const Address &p_left_operand, const Address &p_right_operand) = 0;
 	virtual void write_type_test(const Address &p_target, const Address &p_source, const Address &p_type) = 0;
@@ -123,6 +114,7 @@ public:
 	virtual void write_assign_true(const Address &p_target) = 0;
 	virtual void write_assign_false(const Address &p_target) = 0;
 	virtual void write_assign_default_parameter(const Address &dst, const Address &src) = 0;
+	virtual void write_store_named_global(const Address &p_dst, const StringName &p_global) = 0;
 	virtual void write_cast(const Address &p_target, const Address &p_source, const GDScriptDataType &p_type) = 0;
 	virtual void write_call(const Address &p_target, const Address &p_base, const StringName &p_function_name, const Vector<Address> &p_arguments) = 0;
 	virtual void write_super_call(const Address &p_target, const StringName &p_function_name, const Vector<Address> &p_arguments) = 0;
@@ -135,12 +127,13 @@ public:
 	virtual void write_call_self(const Address &p_target, const StringName &p_function_name, const Vector<Address> &p_arguments) = 0;
 	virtual void write_call_self_async(const Address &p_target, const StringName &p_function_name, const Vector<Address> &p_arguments) = 0;
 	virtual void write_call_script_function(const Address &p_target, const Address &p_base, const StringName &p_function_name, const Vector<Address> &p_arguments) = 0;
+	virtual void write_lambda(const Address &p_target, GDScriptFunction *p_function, const Vector<Address> &p_captures) = 0;
 	virtual void write_construct(const Address &p_target, Variant::Type p_type, const Vector<Address> &p_arguments) = 0;
 	virtual void write_construct_array(const Address &p_target, const Vector<Address> &p_arguments) = 0;
+	virtual void write_construct_typed_array(const Address &p_target, const GDScriptDataType &p_element_type, const Vector<Address> &p_arguments) = 0;
 	virtual void write_construct_dictionary(const Address &p_target, const Vector<Address> &p_arguments) = 0;
 	virtual void write_await(const Address &p_target, const Address &p_operand) = 0;
 	virtual void write_if(const Address &p_condition) = 0;
-	// virtual void write_elseif(const Address &p_condition) = 0; This kind of makes things more difficult for no real benefit.
 	virtual void write_else() = 0;
 	virtual void write_endif() = 0;
 	virtual void start_for(const GDScriptDataType &p_iterator_type, const GDScriptDataType &p_list_type) = 0;

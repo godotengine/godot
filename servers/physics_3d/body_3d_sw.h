@@ -126,16 +126,13 @@ class Body3DSW : public CollisionObject3DSW {
 	int contact_count = 0;
 
 	struct ForceIntegrationCallback {
-		ObjectID id;
-		StringName method;
+		Callable callable;
 		Variant udata;
 	};
 
 	ForceIntegrationCallback *fi_callback = nullptr;
 
-	uint64_t island_step = 0;
-	Body3DSW *island_next = nullptr;
-	Body3DSW *island_list_next = nullptr;
+	uint64_t island_step;
 
 	_FORCE_INLINE_ void _compute_area_gravity_and_dampenings(const Area3DSW *p_area);
 
@@ -144,7 +141,7 @@ class Body3DSW : public CollisionObject3DSW {
 	friend class PhysicsDirectBodyState3DSW; // i give up, too many functions to expose
 
 public:
-	void set_force_integration_callback(ObjectID p_id, const StringName &p_method, const Variant &p_udata = Variant());
+	void set_force_integration_callback(const Callable &p_callable, const Variant &p_udata = Variant());
 
 	void set_kinematic_margin(real_t p_margin);
 	_FORCE_INLINE_ real_t get_kinematic_margin() { return kinematic_safe_margin; }
@@ -187,12 +184,6 @@ public:
 
 	_FORCE_INLINE_ uint64_t get_island_step() const { return island_step; }
 	_FORCE_INLINE_ void set_island_step(uint64_t p_step) { island_step = p_step; }
-
-	_FORCE_INLINE_ Body3DSW *get_island_next() const { return island_next; }
-	_FORCE_INLINE_ void set_island_next(Body3DSW *p_next) { island_next = p_next; }
-
-	_FORCE_INLINE_ Body3DSW *get_island_list_next() const { return island_list_next; }
-	_FORCE_INLINE_ void set_island_list_next(Body3DSW *p_next) { island_list_next = p_next; }
 
 	_FORCE_INLINE_ void add_constraint(Constraint3DSW *p_constraint, int p_pos) { constraint_map[p_constraint] = p_pos; }
 	_FORCE_INLINE_ void remove_constraint(Constraint3DSW *p_constraint) { constraint_map.erase(p_constraint); }
@@ -289,10 +280,10 @@ public:
 	void update_inertias();
 
 	_FORCE_INLINE_ real_t get_inv_mass() const { return _inv_mass; }
-	_FORCE_INLINE_ Vector3 get_inv_inertia() const { return _inv_inertia; }
-	_FORCE_INLINE_ Basis get_inv_inertia_tensor() const { return _inv_inertia_tensor; }
+	_FORCE_INLINE_ const Vector3 &get_inv_inertia() const { return _inv_inertia; }
+	_FORCE_INLINE_ const Basis &get_inv_inertia_tensor() const { return _inv_inertia_tensor; }
 	_FORCE_INLINE_ real_t get_friction() const { return friction; }
-	_FORCE_INLINE_ Vector3 get_gravity() const { return gravity; }
+	_FORCE_INLINE_ const Vector3 &get_gravity() const { return gravity; }
 	_FORCE_INLINE_ real_t get_bounce() const { return bounce; }
 
 	void set_axis_lock(PhysicsServer3D::BodyAxis p_axis, bool lock);

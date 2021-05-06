@@ -137,26 +137,23 @@ class PropertyTable {
 public:
 	// in-memory property table with no source element
 	PropertyTable();
-	PropertyTable(const ElementPtr element, const PropertyTable *templateProps);
-	~PropertyTable();
+	PropertyTable(const ElementPtr element);
+	virtual ~PropertyTable();
 
 	PropertyPtr Get(const std::string &name) const;
+	void Setup(ElementPtr ptr);
 
 	// PropertyTable's need not be coupled with FBX elements so this can be NULL
-	ElementPtr GetElement() const {
+	ElementPtr GetElement() {
 		return element;
 	}
 
-	PropertyMap &GetProperties() const {
+	PropertyMap &GetProperties() {
 		return props;
 	}
 
-	const LazyPropertyMap &GetLazyProperties() const {
+	const LazyPropertyMap &GetLazyProperties() {
 		return lazyProps;
-	}
-
-	const PropertyTable *TemplateProps() const {
-		return templateProps;
 	}
 
 	DirectPropertyMap GetUnparsedProperties() const;
@@ -164,8 +161,7 @@ public:
 private:
 	LazyPropertyMap lazyProps;
 	mutable PropertyMap props;
-	const PropertyTable *templateProps = nullptr;
-	const ElementPtr element = nullptr;
+	ElementPtr element = nullptr;
 };
 
 // ------------------------------------------------------------------------------------------------
@@ -190,16 +186,11 @@ template <typename T>
 inline T PropertyGet(const PropertyTable *in, const std::string &name, bool &result, bool useTemplate = false) {
 	PropertyPtr prop = in->Get(name);
 	if (nullptr == prop) {
-		if (!useTemplate) {
+		if (nullptr == in) {
 			result = false;
 			return T();
 		}
-		const PropertyTable *templ = in->TemplateProps();
-		if (nullptr == templ) {
-			result = false;
-			return T();
-		}
-		prop = templ->Get(name);
+		prop = in->Get(name);
 		if (nullptr == prop) {
 			result = false;
 			return T();

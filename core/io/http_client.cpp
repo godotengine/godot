@@ -77,7 +77,7 @@ Error HTTPClient::connect_to_host(const String &p_host, int p_port, bool p_ssl, 
 
 	if (conn_host.is_valid_ip_address()) {
 		// Host contains valid IP
-		Error err = tcp_connection->connect_to_host(IP_Address(conn_host), p_port);
+		Error err = tcp_connection->connect_to_host(IPAddress(conn_host), p_port);
 		if (err) {
 			status = STATUS_CANT_CONNECT;
 			return err;
@@ -95,6 +95,11 @@ Error HTTPClient::connect_to_host(const String &p_host, int p_port, bool p_ssl, 
 
 void HTTPClient::set_connection(const Ref<StreamPeer> &p_connection) {
 	ERR_FAIL_COND_MSG(p_connection.is_null(), "Connection is not a reference to a valid StreamPeer object.");
+
+	if (ssl) {
+		ERR_FAIL_NULL_MSG(Object::cast_to<StreamPeerSSL>(p_connection.ptr()),
+				"Connection is not a reference to a valid StreamPeerSSL object.");
+	}
 
 	if (connection == p_connection) {
 		return;
@@ -323,7 +328,7 @@ Error HTTPClient::poll() {
 					return OK; // Still resolving
 
 				case IP::RESOLVER_STATUS_DONE: {
-					IP_Address host = IP::get_singleton()->get_resolve_item_address(resolving);
+					IPAddress host = IP::get_singleton()->get_resolve_item_address(resolving);
 					Error err = tcp_connection->connect_to_host(host, conn_port);
 					IP::get_singleton()->erase_resolve_item(resolving);
 					resolving = IP::RESOLVER_INVALID_ID;
@@ -628,7 +633,7 @@ PackedByteArray HTTPClient::read_response_body_chunk() {
 
 					ret.resize(chunk.size() - 2);
 					uint8_t *w = ret.ptrw();
-					copymem(w, chunk.ptr(), chunk.size() - 2);
+					memcpy(w, chunk.ptr(), chunk.size() - 2);
 					chunk.clear();
 				}
 

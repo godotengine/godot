@@ -39,6 +39,7 @@
 #import <CoreMotion/CoreMotion.h>
 
 static const int max_touches = 8;
+static const float earth_gravity = 9.80665;
 
 @interface GodotView () {
 	UITouch *godot_touches[max_touches];
@@ -290,14 +291,14 @@ static const int max_touches = 8;
 
 - (void)initTouches {
 	for (int i = 0; i < max_touches; i++) {
-		godot_touches[i] = NULL;
+		godot_touches[i] = nullptr;
 	}
 }
 
 - (int)getTouchIDForTouch:(UITouch *)p_touch {
 	int first = -1;
 	for (int i = 0; i < max_touches; i++) {
-		if (first == -1 && godot_touches[i] == NULL) {
+		if (first == -1 && godot_touches[i] == nullptr) {
 			first = i;
 			continue;
 		}
@@ -317,11 +318,11 @@ static const int max_touches = 8;
 - (int)removeTouch:(UITouch *)p_touch {
 	int remaining = 0;
 	for (int i = 0; i < max_touches; i++) {
-		if (godot_touches[i] == NULL) {
+		if (godot_touches[i] == nullptr) {
 			continue;
 		}
 		if (godot_touches[i] == p_touch) {
-			godot_touches[i] = NULL;
+			godot_touches[i] = nullptr;
 		} else {
 			++remaining;
 		}
@@ -331,7 +332,7 @@ static const int max_touches = 8;
 
 - (void)clearTouches {
 	for (int i = 0; i < max_touches; i++) {
-		godot_touches[i] = NULL;
+		godot_touches[i] = nullptr;
 	}
 }
 
@@ -402,9 +403,18 @@ static const int max_touches = 8;
 	// https://developer.apple.com/reference/coremotion/cmmotionmanager?language=objc
 
 	// Apple splits our accelerometer date into a gravity and user movement
-	// component. We add them back together
+	// component. We add them back together.
 	CMAcceleration gravity = self.motionManager.deviceMotion.gravity;
 	CMAcceleration acceleration = self.motionManager.deviceMotion.userAcceleration;
+
+	// To be consistent with Android we convert the unit of measurement from g (Earth's gravity)
+	// to m/s^2.
+	gravity.x *= earth_gravity;
+	gravity.y *= earth_gravity;
+	gravity.z *= earth_gravity;
+	acceleration.x *= earth_gravity;
+	acceleration.y *= earth_gravity;
+	acceleration.z *= earth_gravity;
 
 	///@TODO We don't seem to be getting data here, is my device broken or
 	/// is this code incorrect?

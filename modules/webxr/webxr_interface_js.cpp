@@ -160,7 +160,7 @@ String WebXRInterfaceJS::get_reference_space_type() const {
 	return reference_space_type;
 }
 
-XRPositionalTracker *WebXRInterfaceJS::get_controller(int p_controller_id) const {
+Ref<XRPositionalTracker> WebXRInterfaceJS::get_controller(int p_controller_id) const {
 	XRServer *xr_server = XRServer::get_singleton();
 	ERR_FAIL_NULL_V(xr_server, nullptr);
 
@@ -253,7 +253,7 @@ bool WebXRInterfaceJS::initialize() {
 void WebXRInterfaceJS::uninitialize() {
 	if (initialized) {
 		XRServer *xr_server = XRServer::get_singleton();
-		if (xr_server != NULL) {
+		if (xr_server != nullptr) {
 			// no longer our primary interface
 			xr_server->clear_primary_interface_if(this);
 		}
@@ -380,10 +380,10 @@ void WebXRInterfaceJS::_update_tracker(int p_controller_id) {
 	XRServer *xr_server = XRServer::get_singleton();
 	ERR_FAIL_NULL(xr_server);
 
-	XRPositionalTracker *tracker = xr_server->find_by_type_and_id(XRServer::TRACKER_CONTROLLER, p_controller_id + 1);
+	Ref<XRPositionalTracker> tracker = xr_server->find_by_type_and_id(XRServer::TRACKER_CONTROLLER, p_controller_id + 1);
 	if (godot_webxr_is_controller_connected(p_controller_id)) {
-		if (tracker == nullptr) {
-			tracker = memnew(XRPositionalTracker);
+		if (tracker.is_null()) {
+			tracker.instance();
 			tracker->set_tracker_type(XRServer::TRACKER_CONTROLLER);
 			// Controller id's 0 and 1 are always the left and right hands.
 			if (p_controller_id < 2) {
@@ -416,14 +416,14 @@ void WebXRInterfaceJS::_update_tracker(int p_controller_id) {
 		int *axes = godot_webxr_get_controller_axes(p_controller_id);
 		if (axes) {
 			for (int i = 0; i < axes[0]; i++) {
-				Input::JoyAxis joy_axis;
+				Input::JoyAxisValue joy_axis;
 				joy_axis.min = -1;
 				joy_axis.value = *((float *)axes + (i + 1));
 				input->joy_axis(p_controller_id + 100, i, joy_axis);
 			}
 			free(axes);
 		}
-	} else if (tracker) {
+	} else if (tracker.is_valid()) {
 		xr_server->remove_tracker(tracker);
 	}
 }

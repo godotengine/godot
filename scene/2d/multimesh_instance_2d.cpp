@@ -71,7 +71,6 @@ void MultiMeshInstance2D::set_texture(const Ref<Texture2D> &p_texture) {
 	texture = p_texture;
 	update();
 	emit_signal("texture_changed");
-	_change_notify("texture");
 }
 
 Ref<Texture2D> MultiMeshInstance2D::get_texture() const {

@@ -152,9 +152,7 @@ void Shader::_bind_methods() {
 }
 
 Shader::Shader() {
-	mode = MODE_SPATIAL;
 	shader = RenderingServer::get_singleton()->shader_create();
-	params_cache_dirty = true;
 }
 
 Shader::~Shader() {
@@ -163,7 +161,7 @@ Shader::~Shader() {
 
 ////////////
 
-RES ResourceFormatLoaderShader::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, bool p_no_cache) {
+RES ResourceFormatLoaderShader::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, CacheMode p_cache_mode) {
 	if (r_error) {
 		*r_error = ERR_FILE_CANT_OPEN;
 	}

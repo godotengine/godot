@@ -60,6 +60,15 @@
 				Creates a copy of the array, and returns it.
 			</description>
 		</method>
+		<method name="fill">
+			<return type="void">
+			</return>
+			<argument index="0" name="value" type="Vector2">
+			</argument>
+			<description>
+				Assigns the given value to all elements in the array. This can typically be used together with [method resize] to create an array with a given size and initialized elements.
+			</description>
+		</method>
 		<method name="has">
 			<return type="bool">
 			</return>
@@ -80,14 +89,7 @@
 				Inserts a new element at a given position in the array. The position must be valid, or at the end of the array ([code]idx == size()[/code]).
 			</description>
 		</method>
-		<method name="invert">
-			<return type="void">
-			</return>
-			<description>
-				Reverses the order of the elements in the array.
-			</description>
-		</method>
-		<method name="is_empty">
+		<method name="is_empty" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
@@ -161,6 +163,13 @@
 				Sets the size of the array. If the array is grown, reserves elements at the end of the array. If the array is shrunk, truncates the array to the new size.
 			</description>
 		</method>
+		<method name="reverse">
+			<return type="void">
+			</return>
+			<description>
+				Reverses the order of the elements in the array.
+			</description>
+		</method>
 		<method name="set">
 			<return type="void">
 			</return>
@@ -172,7 +181,7 @@
 				Changes the [Vector2] at the given index.
 			</description>
 		</method>
-		<method name="size">
+		<method name="size" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
@@ -186,7 +195,7 @@
 				Sorts the elements of the array in ascending order.
 			</description>
 		</method>
-		<method name="subarray">
+		<method name="subarray" qualifiers="const">
 			<return type="PackedVector2Array">
 			</return>
 			<argument index="0" name="from" type="int">
@@ -196,7 +205,7 @@
 			<description>
 			</description>
 		</method>
-		<method name="to_byte_array">
+		<method name="to_byte_array" qualifiers="const">
 			<return type="PackedByteArray">
 			</return>
 			<description>

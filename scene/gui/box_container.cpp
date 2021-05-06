@@ -33,9 +33,9 @@
 #include "margin_container.h"
 
 struct _MinSizeCache {
-	int min_size;
-	bool will_stretch;
-	int final_size;
+	int min_size = 0;
+	bool will_stretch = false;
+	int final_size = 0;
 };
 
 void BoxContainer::_resort() {
@@ -50,7 +50,7 @@ void BoxContainer::_resort() {
 	int children_count = 0;
 	int stretch_min = 0;
 	int stretch_avail = 0;
-	float stretch_ratio_total = 0;
+	float stretch_ratio_total = 0.0;
 	Map<Control *, _MinSizeCache> min_size_cache;
 
 	for (int i = 0; i < get_child_count(); i++) {
@@ -105,7 +105,7 @@ void BoxContainer::_resort() {
 
 		has_stretched = true;
 		bool refit_successful = true; //assume refit-test will go well
-		float error = 0; // Keep track of accumulated error in pixels
+		float error = 0.0; // Keep track of accumulated error in pixels
 
 		for (int i = 0; i < get_child_count(); i++) {
 			Control *c = Object::cast_to<Control>(get_child(i));
@@ -313,7 +313,7 @@ BoxContainer::AlignMode BoxContainer::get_alignment() const {
 	return align;
 }
 
-void BoxContainer::add_spacer(bool p_begin) {
+Control *BoxContainer::add_spacer(bool p_begin) {
 	Control *c = memnew(Control);
 	c->set_mouse_filter(MOUSE_FILTER_PASS); //allow spacer to pass mouse events
 
@@ -327,11 +327,12 @@ void BoxContainer::add_spacer(bool p_begin) {
 	if (p_begin) {
 		move_child(c, 0);
 	}
+
+	return c;
 }
 
 BoxContainer::BoxContainer(bool p_vertical) {
 	vertical = p_vertical;
-	align = ALIGN_BEGIN;
 }
 
 void BoxContainer::_bind_methods() {

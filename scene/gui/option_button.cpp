@@ -336,7 +336,6 @@ void OptionButton::_bind_methods() {
 }
 
 OptionButton::OptionButton() {
-	current = -1;
 	set_toggle_mode(true);
 	set_text_align(ALIGN_LEFT);
 	if (is_layout_rtl()) {

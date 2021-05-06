@@ -26,24 +26,6 @@
 				Returns an array of nodes that were added as collision exceptions for this body.
 			</description>
 		</method>
-		<method name="get_collision_layer_bit" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="bit" type="int">
-			</argument>
-			<description>
-				Returns an individual bit on the [member collision_layer].
-			</description>
-		</method>
-		<method name="get_collision_mask_bit" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="bit" type="int">
-			</argument>
-			<description>
-				Returns an individual bit on the [member collision_mask].
-			</description>
-		</method>
 		<method name="remove_collision_exception_with">
 			<return type="void">
 			</return>
@@ -53,39 +35,7 @@
 				Removes a body from the list of bodies that this body can't collide with.
 			</description>
 		</method>
-		<method name="set_collision_layer_bit">
-			<return type="void">
-			</return>
-			<argument index="0" name="bit" type="int">
-			</argument>
-			<argument index="1" name="value" type="bool">
-			</argument>
-			<description>
-				Sets individual bits on the [member collision_layer] bitmask. Use this if you only need to change one layer's value.
-			</description>
-		</method>
-		<method name="set_collision_mask_bit">
-			<return type="void">
-			</return>
-			<argument index="0" name="bit" type="int">
-			</argument>
-			<argument index="1" name="value" type="bool">
-			</argument>
-			<description>
-				Sets individual bits on the [member collision_mask] bitmask. Use this if you only need to change one layer's value.
-			</description>
-		</method>
 	</methods>
-	<members>
-		<member name="collision_layer" type="int" setter="set_collision_layer" getter="get_collision_layer" default="1">
-			The physics layers this area is in.
-			Collidable objects can exist in any of 32 different layers. These layers work like a tagging system, and are not visual. A collidable can use these layers to select with which objects it can collide, using the [member collision_mask] property.
-			A contact is detected if object A is in any of the layers that object B scans, or object B is in any layer scanned by object A. See [url=https://docs.godotengine.org/en/latest/tutorials/physics/physics_introduction.html#collision-layers-and-masks]Collision layers and masks[/url] in the documentation for more information.
-		</member>
-		<member name="collision_mask" type="int" setter="set_collision_mask" getter="get_collision_mask" default="1">
-			The physics layers this area scans for collisions. See [url=https://docs.godotengine.org/en/latest/tutorials/physics/physics_introduction.html#collision-layers-and-masks]Collision layers and masks[/url] in the documentation for more information.
-		</member>
-	</members>
 	<constants>
 	</constants>
 </class>

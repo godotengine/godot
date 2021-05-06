@@ -160,6 +160,10 @@ void EditorInterface::edit_resource(const Ref<Resource> &p_resource) {
 	EditorNode::get_singleton()->edit_resource(p_resource);
 }
 
+void EditorInterface::edit_node(Node *p_node) {
+	EditorNode::get_singleton()->edit_node(p_node);
+}
+
 void EditorInterface::open_scene_from_path(const String &scene_path) {
 	if (EditorNode::get_singleton()->is_changing_scene()) {
 		return;
@@ -262,6 +266,10 @@ Control *EditorInterface::get_base_control() {
 	return EditorNode::get_singleton()->get_gui_base();
 }
 
+float EditorInterface::get_editor_scale() const {
+	return EDSCALE;
+}
+
 void EditorInterface::set_plugin_enabled(const String &p_plugin, bool p_enabled) {
 	EditorNode::get_singleton()->set_addon_plugin_enabled(p_plugin, p_enabled, true);
 }
@@ -306,7 +314,9 @@ void EditorInterface::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_editor_settings"), &EditorInterface::get_editor_settings);
 	ClassDB::bind_method(D_METHOD("get_script_editor"), &EditorInterface::get_script_editor);
 	ClassDB::bind_method(D_METHOD("get_base_control"), &EditorInterface::get_base_control);
+	ClassDB::bind_method(D_METHOD("get_editor_scale"), &EditorInterface::get_editor_scale);
 	ClassDB::bind_method(D_METHOD("edit_resource", "resource"), &EditorInterface::edit_resource);
+	ClassDB::bind_method(D_METHOD("edit_node", "node"), &EditorInterface::edit_node);
 	ClassDB::bind_method(D_METHOD("open_scene_from_path", "scene_filepath"), &EditorInterface::open_scene_from_path);
 	ClassDB::bind_method(D_METHOD("reload_scene_from_path", "scene_filepath"), &EditorInterface::reload_scene_from_path);
 	ClassDB::bind_method(D_METHOD("play_main_scene"), &EditorInterface::play_main_scene);
@@ -693,6 +703,14 @@ bool EditorPlugin::get_remove_list(List<Node *> *p_list) {
 void EditorPlugin::restore_global_state() {}
 void EditorPlugin::save_global_state() {}
 
+void EditorPlugin::add_undo_redo_inspector_hook_callback(Callable p_callable) {
+	EditorNode::get_singleton()->get_editor_data().add_undo_redo_inspector_hook_callback(p_callable);
+}
+
+void EditorPlugin::remove_undo_redo_inspector_hook_callback(Callable p_callable) {
+	EditorNode::get_singleton()->get_editor_data().remove_undo_redo_inspector_hook_callback(p_callable);
+}
+
 void EditorPlugin::add_translation_parser_plugin(const Ref<EditorTranslationParserPlugin> &p_parser) {
 	EditorTranslationParser::get_singleton()->add_parser(p_parser, EditorTranslationParser::CUSTOM);
 }
@@ -756,7 +774,6 @@ int find(const PackedStringArray &a, const String &v) {
 void EditorPlugin::enable_plugin() {
 	// Called when the plugin gets enabled in project settings, after it's added to the tree.
 	// You can implement it to register autoloads.
-
 	if (get_script_instance() && get_script_instance()->has_method("enable_plugin")) {
 		get_script_instance()->call("enable_plugin");
 	}
@@ -819,6 +836,18 @@ void EditorPlugin::remove_debugger_plugin(const Ref<Script> &p_script) {
 	EditorDebuggerNode::get_singleton()->remove_debugger_plugin(p_script);
 }
 
+void EditorPlugin::_editor_project_settings_changed() {
+	emit_signal("project_settings_changed");
+}
+void EditorPlugin::_notification(int p_what) {
+	if (p_what == NOTIFICATION_ENTER_TREE) {
+		EditorNode::get_singleton()->connect("project_settings_changed", callable_mp(this, &EditorPlugin::_editor_project_settings_changed));
+	}
+	if (p_what == NOTIFICATION_EXIT_TREE) {
+		EditorNode::get_singleton()->disconnect("project_settings_changed", callable_mp(this, &EditorPlugin::_editor_project_settings_changed));
+	}
+}
+
 void EditorPlugin::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_control_to_container", "container", "control"), &EditorPlugin::add_control_to_container);
 	ClassDB::bind_method(D_METHOD("add_control_to_bottom_panel", "control", "title"), &EditorPlugin::add_control_to_bottom_panel);
@@ -841,6 +870,8 @@ void EditorPlugin::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("hide_bottom_panel"), &EditorPlugin::hide_bottom_panel);
 
 	ClassDB::bind_method(D_METHOD("get_undo_redo"), &EditorPlugin::_get_undo_redo);
+	ClassDB::bind_method(D_METHOD("add_undo_redo_inspector_hook_callback", "callable"), &EditorPlugin::add_undo_redo_inspector_hook_callback);
+	ClassDB::bind_method(D_METHOD("remove_undo_redo_inspector_hook_callback", "callable"), &EditorPlugin::remove_undo_redo_inspector_hook_callback);
 	ClassDB::bind_method(D_METHOD("queue_save_layout"), &EditorPlugin::queue_save_layout);
 	ClassDB::bind_method(D_METHOD("add_translation_parser_plugin", "parser"), &EditorPlugin::add_translation_parser_plugin);
 	ClassDB::bind_method(D_METHOD("remove_translation_parser_plugin", "parser"), &EditorPlugin::remove_translation_parser_plugin);
@@ -890,6 +921,7 @@ void EditorPlugin::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("scene_closed", PropertyInfo(Variant::STRING, "filepath")));
 	ADD_SIGNAL(MethodInfo("main_screen_changed", PropertyInfo(Variant::STRING, "screen_name")));
 	ADD_SIGNAL(MethodInfo("resource_saved", PropertyInfo(Variant::OBJECT, "resource", PROPERTY_HINT_RESOURCE_TYPE, "Resource")));
+	ADD_SIGNAL(MethodInfo("project_settings_changed"));
 
 	BIND_ENUM_CONSTANT(CONTAINER_TOOLBAR);
 	BIND_ENUM_CONSTANT(CONTAINER_SPATIAL_EDITOR_MENU);

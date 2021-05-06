@@ -259,13 +259,17 @@ void EditorFolding::_do_object_unfolds(Object *p_object, Set<RES> &resources) {
 					}
 				}
 			}
-		}
 
-		if (E->get().type == Variant::OBJECT) {
-			RES res = p_object->get(E->get().name);
-			if (res.is_valid() && !resources.has(res) && res->get_path() != String() && !res->get_path().is_resource_file()) {
-				resources.insert(res);
-				_do_object_unfolds(res.ptr(), resources);
+			if (E->get().type == Variant::OBJECT) {
+				RES res = p_object->get(E->get().name);
+				print_line("res: " + String(E->get().name) + " valid " + itos(res.is_valid()));
+				if (res.is_valid()) {
+					print_line("path " + res->get_path());
+				}
+				if (res.is_valid() && !resources.has(res) && res->get_path() != String() && !res->get_path().is_resource_file()) {
+					resources.insert(res);
+					_do_object_unfolds(res.ptr(), resources);
+				}
 			}
 		}
 	}

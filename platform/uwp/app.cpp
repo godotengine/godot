@@ -149,28 +149,28 @@ static int _get_button(Windows::UI::Input::PointerPoint ^ pt) {
 	using namespace Windows::UI::Input;
 
 #if WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP
-	return BUTTON_LEFT;
+	return MOUSE_BUTTON_LEFT;
 #else
 	switch (pt->Properties->PointerUpdateKind) {
 		case PointerUpdateKind::LeftButtonPressed:
 		case PointerUpdateKind::LeftButtonReleased:
-			return BUTTON_LEFT;
+			return MOUSE_BUTTON_LEFT;
 
 		case PointerUpdateKind::RightButtonPressed:
 		case PointerUpdateKind::RightButtonReleased:
-			return BUTTON_RIGHT;
+			return MOUSE_BUTTON_RIGHT;
 
 		case PointerUpdateKind::MiddleButtonPressed:
 		case PointerUpdateKind::MiddleButtonReleased:
-			return BUTTON_MIDDLE;
+			return MOUSE_BUTTON_MIDDLE;
 
 		case PointerUpdateKind::XButton1Pressed:
 		case PointerUpdateKind::XButton1Released:
-			return BUTTON_WHEEL_UP;
+			return MOUSE_BUTTON_WHEEL_UP;
 
 		case PointerUpdateKind::XButton2Pressed:
 		case PointerUpdateKind::XButton2Released:
-			return BUTTON_WHEEL_DOWN;
+			return MOUSE_BUTTON_WHEEL_DOWN;
 
 		default:
 			break;
@@ -265,9 +265,9 @@ void App::pointer_event(Windows::UI::Core::CoreWindow ^ sender, Windows::UI::Cor
 
 		if (p_is_wheel) {
 			if (point->Properties->MouseWheelDelta > 0) {
-				mouse_button->set_button_index(point->Properties->IsHorizontalMouseWheel ? BUTTON_WHEEL_RIGHT : BUTTON_WHEEL_UP);
+				mouse_button->set_button_index(point->Properties->IsHorizontalMouseWheel ? MOUSE_BUTTON_WHEEL_RIGHT : MOUSE_BUTTON_WHEEL_UP);
 			} else if (point->Properties->MouseWheelDelta < 0) {
-				mouse_button->set_button_index(point->Properties->IsHorizontalMouseWheel ? BUTTON_WHEEL_LEFT : BUTTON_WHEEL_DOWN);
+				mouse_button->set_button_index(point->Properties->IsHorizontalMouseWheel ? MOUSE_BUTTON_WHEEL_LEFT : MOUSE_BUTTON_WHEEL_DOWN);
 			}
 		}
 

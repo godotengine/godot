@@ -186,7 +186,7 @@ struct glyf
     | hb_map (&SubsetGlyph::padded_size)
     ;
 
-    if (c->serializer->in_error ()) return_trace (false);
+    if (unlikely (c->serializer->in_error ())) return_trace (false);
     return_trace (c->serializer->check_success (_add_loca_and_head (c->plan,
 								    padded_offsets)));
   }
@@ -944,9 +944,9 @@ struct glyf
 	    return;
 	  }
 	  extents->x_bearing = font->em_scalef_x (min_x);
-	  extents->width = font->em_scalef_x (max_x - min_x);
+	  extents->width = font->em_scalef_x (max_x) - extents->x_bearing;
 	  extents->y_bearing = font->em_scalef_y (max_y);
-	  extents->height = font->em_scalef_y (min_y - max_y);
+	  extents->height = font->em_scalef_y (min_y) - extents->y_bearing;
 	}
 
 	protected:

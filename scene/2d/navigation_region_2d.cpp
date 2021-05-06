@@ -34,7 +34,6 @@
 #include "core/core_string_names.h"
 #include "core/math/geometry_2d.h"
 #include "core/os/mutex.h"
-#include "navigation_2d.h"
 #include "servers/navigation_server_2d.h"
 
 #include "thirdparty/misc/polypartition.h"
@@ -365,10 +364,10 @@ void NavigationRegion2D::set_enabled(bool p_enabled) {
 
 	if (!enabled) {
 		NavigationServer2D::get_singleton()->region_set_map(region, RID());
+		NavigationServer2D::get_singleton()->disconnect("map_changed", callable_mp(this, &NavigationRegion2D::_map_changed));
 	} else {
-		if (navigation) {
-			NavigationServer2D::get_singleton()->region_set_map(region, navigation->get_rid());
-		}
+		NavigationServer2D::get_singleton()->region_set_map(region, get_world_2d()->get_navigation_map());
+		NavigationServer2D::get_singleton()->connect("map_changed", callable_mp(this, &NavigationRegion2D::_map_changed));
 	}
 
 	if (Engine::get_singleton()->is_editor_hint() || get_tree()->is_debugging_navigation_hint()) {
@@ -378,6 +377,14 @@ void NavigationRegion2D::set_enabled(bool p_enabled) {
 
 bool NavigationRegion2D::is_enabled() const {
 	return enabled;
+}
+
+void NavigationRegion2D::set_layers(uint32_t p_layers) {
+	NavigationServer2D::get_singleton()->region_set_layers(region, p_layers);
+}
+
+uint32_t NavigationRegion2D::get_layers() const {
+	return NavigationServer2D::get_singleton()->region_get_layers(region);
 }
 
 /////////////////////////////
@@ -394,35 +401,24 @@ bool NavigationRegion2D::_edit_is_selected_on_click(const Point2 &p_point, doubl
 void NavigationRegion2D::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
-			Node2D *c = this;
-			while (c) {
-				navigation = Object::cast_to<Navigation2D>(c);
-				if (navigation) {
-					if (enabled) {
-						NavigationServer2D::get_singleton()->region_set_map(region, navigation->get_rid());
-					}
-					break;
-				}
-
-				c = Object::cast_to<Node2D>(c->get_parent());
+			if (enabled) {
+				NavigationServer2D::get_singleton()->region_set_map(region, get_world_2d()->get_navigation_map());
+				NavigationServer2D::get_singleton()->connect("map_changed", callable_mp(this, &NavigationRegion2D::_map_changed));
 			}
-
 		} break;
 		case NOTIFICATION_TRANSFORM_CHANGED: {
 			NavigationServer2D::get_singleton()->region_set_transform(region, get_global_transform());
-
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
-			if (navigation) {
-				NavigationServer2D::get_singleton()->region_set_map(region, RID());
+			NavigationServer2D::get_singleton()->region_set_map(region, RID());
+			if (enabled) {
+				NavigationServer2D::get_singleton()->disconnect("map_changed", callable_mp(this, &NavigationRegion2D::_map_changed));
 			}
-			navigation = nullptr;
 		} break;
 		case NOTIFICATION_DRAW: {
 			if (is_inside_tree() && (Engine::get_singleton()->is_editor_hint() || get_tree()->is_debugging_navigation_hint()) && navpoly.is_valid()) {
 				Vector<Vector2> verts = navpoly->get_vertices();
-				int vsize = verts.size();
-				if (vsize < 3) {
+				if (verts.size() < 3) {
 					return;
 				}
 
@@ -432,33 +428,47 @@ void NavigationRegion2D::_notification(int p_what) {
 				} else {
 					color = get_tree()->get_debug_navigation_disabled_color();
 				}
-				Vector<Color> colors;
-				Vector<Vector2> vertices;
-				vertices.resize(vsize);
-				colors.resize(vsize);
-				{
-					const Vector2 *vr = verts.ptr();
-					for (int i = 0; i < vsize; i++) {
-						vertices.write[i] = vr[i];
-						colors.write[i] = color;
-					}
-				}
+				Color doors_color = color.lightened(0.2);
 
-				Vector<int> indices;
+				RandomPCG rand;
 
 				for (int i = 0; i < navpoly->get_polygon_count(); i++) {
+					// An array of vertices for this polygon.
 					Vector<int> polygon = navpoly->get_polygon(i);
-
-					for (int j = 2; j < polygon.size(); j++) {
-						int kofs[3] = { 0, j - 1, j };
-						for (int k = 0; k < 3; k++) {
-							int idx = polygon[kofs[k]];
-							ERR_FAIL_INDEX(idx, vsize);
-							indices.push_back(idx);
-						}
+					Vector<Vector2> vertices;
+					vertices.resize(polygon.size());
+					for (int j = 0; j < polygon.size(); j++) {
+						ERR_FAIL_INDEX(polygon[j], verts.size());
+						vertices.write[j] = verts[polygon[j]];
 					}
+
+					// Generate the polygon color, slightly randomly modified from the settings one.
+					Color random_variation_color;
+					random_variation_color.set_hsv(color.get_h() + rand.random(-1.0, 1.0) * 0.05, color.get_s(), color.get_v() + rand.random(-1.0, 1.0) * 0.1);
+					random_variation_color.a = color.a;
+					Vector<Color> colors;
+					colors.push_back(random_variation_color);
+
+					RS::get_singleton()->canvas_item_add_polygon(get_canvas_item(), vertices, colors);
 				}
-				RS::get_singleton()->canvas_item_add_triangle_array(get_canvas_item(), indices, vertices, colors);
+
+				// Draw the region
+				Transform2D xform = get_global_transform();
+				const NavigationServer2D *ns = NavigationServer2D::get_singleton();
+				float radius = ns->map_get_edge_connection_margin(get_world_2d()->get_navigation_map()) / 2.0;
+				for (int i = 0; i < ns->region_get_connections_count(region); i++) {
+					// Two main points
+					Vector2 a = ns->region_get_connection_pathway_start(region, i);
+					a = xform.affine_inverse().xform(a);
+					Vector2 b = ns->region_get_connection_pathway_end(region, i);
+					b = xform.affine_inverse().xform(b);
+					draw_line(a, b, doors_color);
+
+					// Draw a circle to illustrate the margins.
+					float angle = (b - a).angle();
+					draw_arc(a, radius, angle + Math_PI / 2.0, angle - Math_PI / 2.0 + Math_TAU, 10, doors_color);
+					draw_arc(b, radius, angle - Math_PI / 2.0, angle + Math_PI / 2.0, 10, doors_color);
+				}
 			}
 		} break;
 	}
@@ -481,8 +491,7 @@ void NavigationRegion2D::set_navigation_polygon(const Ref<NavigationPolygon> &p_
 	}
 	_navpoly_changed();
 
-	_change_notify("navpoly");
-	update_configuration_warning();
+	update_configuration_warnings();
 }
 
 Ref<NavigationPolygon> NavigationRegion2D::get_navigation_polygon() const {
@@ -494,32 +503,22 @@ void NavigationRegion2D::_navpoly_changed() {
 		update();
 	}
 }
-
-String NavigationRegion2D::get_configuration_warning() const {
-	if (!is_visible_in_tree() || !is_inside_tree()) {
-		return String();
+void NavigationRegion2D::_map_changed(RID p_map) {
+	if (enabled && get_world_2d()->get_navigation_map() == p_map) {
+		update();
 	}
+}
 
-	String warning = Node2D::get_configuration_warning();
+TypedArray<String> NavigationRegion2D::get_configuration_warnings() const {
+	TypedArray<String> warnings = Node2D::get_configuration_warnings();
 
-	if (!navpoly.is_valid()) {
-		if (!warning.is_empty()) {
-			warning += "\n\n";
+	if (is_visible_in_tree() && is_inside_tree()) {
+		if (!navpoly.is_valid()) {
+			warnings.push_back(TTR("A NavigationMesh resource must be set or created for this node to work. Please set a property or draw a polygon."));
 		}
-		warning += TTR("A NavigationPolygon resource must be set or created for this node to work. Please set a property or draw a polygon.");
 	}
-	const Node2D *c = this;
-	while (c) {
-		if (Object::cast_to<Navigation2D>(c)) {
-			return warning;
-		}
 
-		c = Object::cast_to<Node2D>(c->get_parent());
-	}
-	if (!warning.is_empty()) {
-		warning += "\n\n";
-	}
-	return warning + TTR("NavigationRegion2D must be a child or grandchild to a Navigation2D node. It only provides navigation data.");
+	return warnings;
 }
 
 void NavigationRegion2D::_bind_methods() {
@@ -529,10 +528,14 @@ void NavigationRegion2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_enabled", "enabled"), &NavigationRegion2D::set_enabled);
 	ClassDB::bind_method(D_METHOD("is_enabled"), &NavigationRegion2D::is_enabled);
 
+	ClassDB::bind_method(D_METHOD("set_layers", "layers"), &NavigationRegion2D::set_layers);
+	ClassDB::bind_method(D_METHOD("get_layers"), &NavigationRegion2D::get_layers);
+
 	ClassDB::bind_method(D_METHOD("_navpoly_changed"), &NavigationRegion2D::_navpoly_changed);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "navpoly", PROPERTY_HINT_RESOURCE_TYPE, "NavigationPolygon"), "set_navigation_polygon", "get_navigation_polygon");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "enabled"), "set_enabled", "is_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "layers", PROPERTY_HINT_LAYERS_2D_NAVIGATION), "set_layers", "get_layers");
 }
 
 NavigationRegion2D::NavigationRegion2D() {

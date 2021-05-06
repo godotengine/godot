@@ -59,8 +59,8 @@ public:
 
 private:
 	RID sky;
-	ProcessMode mode;
-	RadianceSize radiance_size;
+	ProcessMode mode = PROCESS_MODE_AUTOMATIC;
+	RadianceSize radiance_size = RADIANCE_SIZE_256;
 	Ref<Material> sky_material;
 
 protected:

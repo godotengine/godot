@@ -34,6 +34,7 @@
 #include "core/typedefs.h"
 
 #if !defined(NO_THREADS)
+#include "core/templates/safe_refcount.h"
 #include <thread>
 #endif
 
@@ -61,9 +62,10 @@ private:
 	friend class Main;
 
 	static ID main_thread_id;
-	static ID last_thread_id;
 
-	ID id = 0;
+	static uint64_t _thread_id_hash(const std::thread::id &p_t);
+
+	ID id = _thread_id_hash(std::thread::id());
 	static thread_local ID caller_id;
 	std::thread thread;
 
@@ -96,6 +98,7 @@ public:
 	///< waits until thread is finished, and deallocates it.
 	void wait_to_finish();
 
+	Thread();
 	~Thread();
 #else
 	_FORCE_INLINE_ ID get_id() const { return 0; }

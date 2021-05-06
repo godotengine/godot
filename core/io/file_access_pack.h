@@ -36,6 +36,7 @@
 #include "core/string/print_string.h"
 #include "core/templates/list.h"
 #include "core/templates/map.h"
+#include "core/templates/set.h"
 
 // Godot's packed file magic header ("GDPC" in ASCII).
 #define PACK_HEADER_MAGIC 0x43504447
@@ -92,7 +93,7 @@ private:
 
 		PathMD5() {}
 
-		PathMD5(const Vector<uint8_t> p_buf) {
+		PathMD5(const Vector<uint8_t> &p_buf) {
 			a = *((uint64_t *)&p_buf[0]);
 			b = *((uint64_t *)&p_buf[8]);
 		}

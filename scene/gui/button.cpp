@@ -56,6 +56,11 @@ Size2 Button::get_minimum_size() const {
 		}
 	}
 
+	Ref<Font> font = get_theme_font("font");
+	float font_height = font->get_height(get_theme_font_size("font_size"));
+
+	minsize.height = MAX(font_height, minsize.height);
+
 	return get_theme_stylebox("normal")->get_minimum_size() + minsize;
 }
 
@@ -203,7 +208,7 @@ void Button::_notification(int p_what) {
 					color_icon.a = 0.4;
 				}
 
-				float icon_ofs_region = 0;
+				float icon_ofs_region = 0.0;
 				if (rtl) {
 					if (_internal_margin[SIDE_RIGHT] > 0) {
 						icon_ofs_region = _internal_margin[SIDE_RIGHT] + get_theme_constant("hseparation");
@@ -338,7 +343,6 @@ void Button::set_text(const String &p_text) {
 		_shape();
 
 		update();
-		_change_notify("text");
 		minimum_size_changed();
 	}
 }
@@ -399,7 +403,6 @@ void Button::set_icon(const Ref<Texture2D> &p_icon) {
 	if (icon != p_icon) {
 		icon = p_icon;
 		update();
-		_change_notify("icon");
 		minimum_size_changed();
 	}
 }
@@ -424,7 +427,6 @@ void Button::set_flat(bool p_flat) {
 	if (flat != p_flat) {
 		flat = p_flat;
 		update();
-		_change_notify("flat");
 	}
 }
 
@@ -474,7 +476,7 @@ bool Button::_set(const StringName &p_name, const Variant &p_value) {
 				update();
 			}
 		}
-		_change_notify();
+		notify_property_list_changed();
 		return true;
 	}
 
@@ -544,16 +546,8 @@ Button::Button(const String &p_text) {
 	text_buf.instance();
 	text_buf->set_flags(TextServer::BREAK_MANDATORY);
 
-	flat = false;
-	clip_text = false;
-	expand_icon = false;
 	set_mouse_filter(MOUSE_FILTER_STOP);
 	set_text(p_text);
-	align = ALIGN_CENTER;
-
-	for (int i = 0; i < 4; i++) {
-		_internal_margin[i] = 0;
-	}
 }
 
 Button::~Button() {

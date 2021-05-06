@@ -40,6 +40,7 @@
 #include "core/os/thread_safe.h"
 #include "core/templates/oa_hash_map.h"
 #include "core/templates/ordered_hash_map.h"
+#include "core/templates/safe_refcount.h"
 #include "core/templates/self_list.h"
 #include "scene/main/node.h"
 
@@ -89,8 +90,8 @@ struct NativeScriptDesc {
 	bool is_tool = false;
 
 	inline NativeScriptDesc() {
-		zeromem(&create_func, sizeof(godot_nativescript_instance_create_func));
-		zeromem(&destroy_func, sizeof(godot_nativescript_instance_destroy_func));
+		memset(&create_func, 0, sizeof(godot_nativescript_instance_create_func));
+		memset(&destroy_func, 0, sizeof(godot_nativescript_instance_destroy_func));
 	}
 };
 
@@ -262,7 +263,7 @@ private:
 #ifndef NO_THREADS
 	Set<Ref<GDNativeLibrary>> libs_to_init;
 	Set<NativeScript *> scripts_to_register;
-	volatile bool has_objects_to_register = false; // so that we don't lock mutex every frame - it's rarely needed
+	SafeFlag has_objects_to_register; // so that we don't lock mutex every frame - it's rarely needed
 	void defer_init_library(Ref<GDNativeLibrary> lib, NativeScript *script);
 #endif
 
@@ -402,7 +403,7 @@ public:
 
 class ResourceFormatLoaderNativeScript : public ResourceFormatLoader {
 public:
-	virtual RES load(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr, bool p_use_sub_threads = false, float *r_progress = nullptr, bool p_no_cache = false);
+	virtual RES load(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr, bool p_use_sub_threads = false, float *r_progress = nullptr, CacheMode p_cache_mode = CACHE_MODE_REUSE);
 	virtual void get_recognized_extensions(List<String> *p_extensions) const;
 	virtual bool handles_type(const String &p_type) const;
 	virtual String get_resource_type(const String &p_path) const;

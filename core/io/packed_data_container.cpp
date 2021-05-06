@@ -123,6 +123,7 @@ Variant PackedDataContainer::_get_at_ofs(uint32_t p_ofs, const uint8_t *p_buf, b
 
 uint32_t PackedDataContainer::_type_at_ofs(uint32_t p_ofs) const {
 	const uint8_t *rd = data.ptr();
+	ERR_FAIL_COND_V(!rd, 0);
 	const uint8_t *r = &rd[p_ofs];
 	uint32_t type = decode_uint32(r);
 
@@ -149,6 +150,10 @@ int PackedDataContainer::_size(uint32_t p_ofs) const {
 
 Variant PackedDataContainer::_key_at_ofs(uint32_t p_ofs, const Variant &p_key, bool &err) const {
 	const uint8_t *rd = data.ptr();
+	if (!rd) {
+		err = true;
+		ERR_FAIL_COND_V(!rd, Variant());
+	}
 	const uint8_t *r = &rd[p_ofs];
 	uint32_t type = decode_uint32(r);
 
@@ -317,7 +322,7 @@ Error PackedDataContainer::pack(const Variant &p_data) {
 	datalen = tmpdata.size();
 	data.resize(tmpdata.size());
 	uint8_t *w = data.ptrw();
-	copymem(w, tmpdata.ptr(), tmpdata.size());
+	memcpy(w, tmpdata.ptr(), tmpdata.size());
 
 	return OK;
 }

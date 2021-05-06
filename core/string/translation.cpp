@@ -39,13 +39,14 @@
 #include "main/main.h"
 #endif
 
-// ISO 639-1 language codes, with the addition of glibc locales with their
-// regional identifiers. This list must match the language names (in English)
-// of locale_names.
+// ISO 639-1 language codes (and a couple of three-letter ISO 639-2 codes),
+// with the addition of glibc locales with their regional identifiers.
+// This list must match the language names (in English) of locale_names.
 //
 // References:
 // - https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes
 // - https://lh.2xlibre.net/locales/
+// - https://iso639-3.sil.org/
 
 static const char *locale_list[] = {
 	"aa", //  Afar
@@ -100,6 +101,7 @@ static const char *locale_list[] = {
 	"bo", //  Tibetan
 	"bo_CN", //  Tibetan (China)
 	"bo_IN", //  Tibetan (India)
+	"br", //  Breton
 	"br_FR", //  Breton (France)
 	"brx_IN", //  Bodo (India)
 	"bs_BA", //  Bosnian (Bosnia and Herzegovina)
@@ -201,6 +203,7 @@ static const char *locale_list[] = {
 	"gd_GB", //  Scottish Gaelic (United Kingdom)
 	"gez_ER", //  Geez (Eritrea)
 	"gez_ET", //  Geez (Ethiopia)
+	"gl", //  Galician
 	"gl_ES", //  Galician (Spain)
 	"gu_IN", //  Gujarati (India)
 	"gv_GB", //  Manx (United Kingdom)
@@ -273,6 +276,7 @@ static const char *locale_list[] = {
 	"ml_IN", //  Malayalam (India)
 	"mni_IN", //  Manipuri (India)
 	"mn_MN", //  Mongolian (Mongolia)
+	"mr", //  Marathi
 	"mr_IN", //  Marathi (India)
 	"ms", //  Malay
 	"ms_MY", //  Malay (Malaysia)
@@ -302,6 +306,7 @@ static const char *locale_list[] = {
 	"om", //  Oromo
 	"om_ET", //  Oromo (Ethiopia)
 	"om_KE", //  Oromo (Kenya)
+	"or", //  Oriya
 	"or_IN", //  Oriya (India)
 	"os_RU", //  Ossetian (Russia)
 	"pa_IN", //  Panjabi (India)
@@ -386,6 +391,8 @@ static const char *locale_list[] = {
 	"tr_TR", //  Turkish (Turkey)
 	"ts_ZA", //  Tsonga (South Africa)
 	"tt_RU", //  Tatar (Russia)
+	"tzm", // Central Atlas Tamazight
+	"tzm_MA", // Central Atlas Tamazight (Marrocos)
 	"ug_CN", //  Uighur (China)
 	"uk", //  Ukrainian
 	"uk_UA", //  Ukrainian (Ukraine)
@@ -468,6 +475,7 @@ static const char *locale_names[] = {
 	"Tibetan",
 	"Tibetan (China)",
 	"Tibetan (India)",
+	"Breton",
 	"Breton (France)",
 	"Bodo (India)",
 	"Bosnian (Bosnia and Herzegovina)",
@@ -569,6 +577,7 @@ static const char *locale_names[] = {
 	"Scottish Gaelic (United Kingdom)",
 	"Geez (Eritrea)",
 	"Geez (Ethiopia)",
+	"Galician",
 	"Galician (Spain)",
 	"Gujarati (India)",
 	"Manx (United Kingdom)",
@@ -641,6 +650,7 @@ static const char *locale_names[] = {
 	"Malayalam (India)",
 	"Manipuri (India)",
 	"Mongolian (Mongolia)",
+	"Marathi",
 	"Marathi (India)",
 	"Malay",
 	"Malay (Malaysia)",
@@ -670,6 +680,7 @@ static const char *locale_names[] = {
 	"Oromo",
 	"Oromo (Ethiopia)",
 	"Oromo (Kenya)",
+	"Oriya",
 	"Oriya (India)",
 	"Ossetian (Russia)",
 	"Panjabi (India)",
@@ -754,6 +765,8 @@ static const char *locale_names[] = {
 	"Turkish (Turkey)",
 	"Tsonga (South Africa)",
 	"Tatar (Russia)",
+	"Central Atlas Tamazight",
+	"Central Atlas Tamazight (Marrocos)",
 	"Uighur (China)",
 	"Ukrainian",
 	"Ukrainian (Ukraine)",
@@ -822,7 +835,7 @@ Vector<String> Translation::_get_message_list() const {
 void Translation::_set_messages(const Dictionary &p_messages) {
 	List<Variant> keys;
 	p_messages.get_key_list(&keys);
-	for (auto E = keys.front(); E; E = E->next()) {
+	for (List<Variant>::Element *E = keys.front(); E; E = E->next()) {
 		translation_map[E->get()] = p_messages[E->get()];
 	}
 }
@@ -840,7 +853,7 @@ void Translation::set_locale(const String &p_locale) {
 		locale = univ_locale;
 	}
 
-	if (OS::get_singleton()->get_main_loop()) {
+	if (OS::get_singleton()->get_main_loop() && TranslationServer::get_singleton()->get_loaded_locales().has(this)) {
 		OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_TRANSLATION_CHANGED);
 	}
 }
@@ -1191,14 +1204,14 @@ bool TranslationServer::_load_translations(const String &p_from) {
 }
 
 void TranslationServer::setup() {
-	String test = GLOBAL_DEF("locale/test", "");
+	String test = GLOBAL_DEF("internationalization/locale/test", "");
 	test = test.strip_edges();
 	if (test != "") {
 		set_locale(test);
 	} else {
 		set_locale(OS::get_singleton()->get_locale());
 	}
-	fallback = GLOBAL_DEF("locale/fallback", "en");
+	fallback = GLOBAL_DEF("internationalization/locale/fallback", "en");
 #ifdef TOOLS_ENABLED
 	{
 		String options = "";
@@ -1210,7 +1223,7 @@ void TranslationServer::setup() {
 			options += locale_list[idx];
 			idx++;
 		}
-		ProjectSettings::get_singleton()->set_custom_property_info("locale/fallback", PropertyInfo(Variant::STRING, "locale/fallback", PROPERTY_HINT_ENUM, options));
+		ProjectSettings::get_singleton()->set_custom_property_info("internationalization/locale/fallback", PropertyInfo(Variant::STRING, "internationalization/locale/fallback", PROPERTY_HINT_ENUM, options));
 	}
 #endif
 }
@@ -1307,11 +1320,11 @@ void TranslationServer::_bind_methods() {
 
 void TranslationServer::load_translations() {
 	String locale = get_locale();
-	_load_translations("locale/translations"); //all
-	_load_translations("locale/translations_" + locale.substr(0, 2));
+	_load_translations("internationalization/locale/translations"); //all
+	_load_translations("internationalization/locale/translations_" + locale.substr(0, 2));
 
 	if (locale.substr(0, 2) != locale) {
-		_load_translations("locale/translations_" + locale);
+		_load_translations("internationalization/locale/translations_" + locale);
 	}
 }
 

@@ -24,7 +24,7 @@
  * Igalia Author(s): Frédéric Wang
  */
 
-#ifndef HB_OT_H_IN
+#if !defined(HB_OT_H_IN) && !defined(HB_NO_SINGLE_HEADER_ERROR)
 #error "Include <hb-ot.h> instead."
 #endif
 
@@ -40,18 +40,89 @@ HB_BEGIN_DECLS
  * MATH
  */
 
+/**
+ * HB_OT_TAG_MATH:
+ *
+ * OpenType [Mathematical Typesetting Table](https://docs.microsoft.com/en-us/typography/opentype/spec/math).
+ *
+ * Since: 1.3.3
+ */
 #define HB_OT_TAG_MATH HB_TAG('M','A','T','H')
 
-/* Use with hb_buffer_set_script() for math shaping. */
+/**
+ * HB_OT_MATH_SCRIPT:
+ *
+ * OpenType script tag for math shaping, for use with
+ * Use with hb_buffer_set_script().
+ *
+ * Since: 1.3.3
+ */
 #define HB_OT_MATH_SCRIPT HB_TAG('m','a','t','h')
 
 /* Types */
 
 /**
  * hb_ot_math_constant_t:
+ * @HB_OT_MATH_CONSTANT_SCRIPT_PERCENT_SCALE_DOWN: scriptPercentScaleDown
+ * @HB_OT_MATH_CONSTANT_SCRIPT_SCRIPT_PERCENT_SCALE_DOWN: scriptScriptPercentScaleDown
+ * @HB_OT_MATH_CONSTANT_DELIMITED_SUB_FORMULA_MIN_HEIGHT: delimitedSubFormulaMinHeight
+ * @HB_OT_MATH_CONSTANT_DISPLAY_OPERATOR_MIN_HEIGHT: displayOperatorMinHeight
+ * @HB_OT_MATH_CONSTANT_MATH_LEADING: mathLeading
+ * @HB_OT_MATH_CONSTANT_AXIS_HEIGHT: axisHeight
+ * @HB_OT_MATH_CONSTANT_ACCENT_BASE_HEIGHT: accentBaseHeight
+ * @HB_OT_MATH_CONSTANT_FLATTENED_ACCENT_BASE_HEIGHT: flattenedAccentBaseHeight
+ * @HB_OT_MATH_CONSTANT_SUBSCRIPT_SHIFT_DOWN: subscriptShiftDown
+ * @HB_OT_MATH_CONSTANT_SUBSCRIPT_TOP_MAX: subscriptTopMax
+ * @HB_OT_MATH_CONSTANT_SUBSCRIPT_BASELINE_DROP_MIN: subscriptBaselineDropMin
+ * @HB_OT_MATH_CONSTANT_SUPERSCRIPT_SHIFT_UP: superscriptShiftUp
+ * @HB_OT_MATH_CONSTANT_SUPERSCRIPT_SHIFT_UP_CRAMPED: superscriptShiftUpCramped
+ * @HB_OT_MATH_CONSTANT_SUPERSCRIPT_BOTTOM_MIN: superscriptBottomMin
+ * @HB_OT_MATH_CONSTANT_SUPERSCRIPT_BASELINE_DROP_MAX: superscriptBaselineDropMax
+ * @HB_OT_MATH_CONSTANT_SUB_SUPERSCRIPT_GAP_MIN: subSuperscriptGapMin
+ * @HB_OT_MATH_CONSTANT_SUPERSCRIPT_BOTTOM_MAX_WITH_SUBSCRIPT: superscriptBottomMaxWithSubscript
+ * @HB_OT_MATH_CONSTANT_SPACE_AFTER_SCRIPT: spaceAfterScript
+ * @HB_OT_MATH_CONSTANT_UPPER_LIMIT_GAP_MIN: upperLimitGapMin
+ * @HB_OT_MATH_CONSTANT_UPPER_LIMIT_BASELINE_RISE_MIN: upperLimitBaselineRiseMin
+ * @HB_OT_MATH_CONSTANT_LOWER_LIMIT_GAP_MIN: lowerLimitGapMin
+ * @HB_OT_MATH_CONSTANT_LOWER_LIMIT_BASELINE_DROP_MIN: lowerLimitBaselineDropMin
+ * @HB_OT_MATH_CONSTANT_STACK_TOP_SHIFT_UP: stackTopShiftUp
+ * @HB_OT_MATH_CONSTANT_STACK_TOP_DISPLAY_STYLE_SHIFT_UP: stackTopDisplayStyleShiftUp
+ * @HB_OT_MATH_CONSTANT_STACK_BOTTOM_SHIFT_DOWN: stackBottomShiftDown
+ * @HB_OT_MATH_CONSTANT_STACK_BOTTOM_DISPLAY_STYLE_SHIFT_DOWN: stackBottomDisplayStyleShiftDown
+ * @HB_OT_MATH_CONSTANT_STACK_GAP_MIN: stackGapMin
+ * @HB_OT_MATH_CONSTANT_STACK_DISPLAY_STYLE_GAP_MIN: stackDisplayStyleGapMin
+ * @HB_OT_MATH_CONSTANT_STRETCH_STACK_TOP_SHIFT_UP: stretchStackTopShiftUp
+ * @HB_OT_MATH_CONSTANT_STRETCH_STACK_BOTTOM_SHIFT_DOWN: stretchStackBottomShiftDown
+ * @HB_OT_MATH_CONSTANT_STRETCH_STACK_GAP_ABOVE_MIN: stretchStackGapAboveMin
+ * @HB_OT_MATH_CONSTANT_STRETCH_STACK_GAP_BELOW_MIN: stretchStackGapBelowMin
+ * @HB_OT_MATH_CONSTANT_FRACTION_NUMERATOR_SHIFT_UP: fractionNumeratorShiftUp
+ * @HB_OT_MATH_CONSTANT_FRACTION_NUMERATOR_DISPLAY_STYLE_SHIFT_UP: fractionNumeratorDisplayStyleShiftUp
+ * @HB_OT_MATH_CONSTANT_FRACTION_DENOMINATOR_SHIFT_DOWN: fractionDenominatorShiftDown
+ * @HB_OT_MATH_CONSTANT_FRACTION_DENOMINATOR_DISPLAY_STYLE_SHIFT_DOWN: fractionDenominatorDisplayStyleShiftDown
+ * @HB_OT_MATH_CONSTANT_FRACTION_NUMERATOR_GAP_MIN: fractionNumeratorGapMin
+ * @HB_OT_MATH_CONSTANT_FRACTION_NUM_DISPLAY_STYLE_GAP_MIN: fractionNumDisplayStyleGapMin
+ * @HB_OT_MATH_CONSTANT_FRACTION_RULE_THICKNESS: fractionRuleThickness
+ * @HB_OT_MATH_CONSTANT_FRACTION_DENOMINATOR_GAP_MIN: fractionDenominatorGapMin
+ * @HB_OT_MATH_CONSTANT_FRACTION_DENOM_DISPLAY_STYLE_GAP_MIN: fractionDenomDisplayStyleGapMin
+ * @HB_OT_MATH_CONSTANT_SKEWED_FRACTION_HORIZONTAL_GAP: skewedFractionHorizontalGap
+ * @HB_OT_MATH_CONSTANT_SKEWED_FRACTION_VERTICAL_GAP: skewedFractionVerticalGap
+ * @HB_OT_MATH_CONSTANT_OVERBAR_VERTICAL_GAP: overbarVerticalGap
+ * @HB_OT_MATH_CONSTANT_OVERBAR_RULE_THICKNESS: overbarRuleThickness
+ * @HB_OT_MATH_CONSTANT_OVERBAR_EXTRA_ASCENDER: overbarExtraAscender
+ * @HB_OT_MATH_CONSTANT_UNDERBAR_VERTICAL_GAP: underbarVerticalGap
+ * @HB_OT_MATH_CONSTANT_UNDERBAR_RULE_THICKNESS: underbarRuleThickness
+ * @HB_OT_MATH_CONSTANT_UNDERBAR_EXTRA_DESCENDER: underbarExtraDescender
+ * @HB_OT_MATH_CONSTANT_RADICAL_VERTICAL_GAP: radicalVerticalGap
+ * @HB_OT_MATH_CONSTANT_RADICAL_DISPLAY_STYLE_VERTICAL_GAP: radicalDisplayStyleVerticalGap
+ * @HB_OT_MATH_CONSTANT_RADICAL_RULE_THICKNESS: radicalRuleThickness
+ * @HB_OT_MATH_CONSTANT_RADICAL_EXTRA_ASCENDER: radicalExtraAscender
+ * @HB_OT_MATH_CONSTANT_RADICAL_KERN_BEFORE_DEGREE: radicalKernBeforeDegree
+ * @HB_OT_MATH_CONSTANT_RADICAL_KERN_AFTER_DEGREE: radicalKernAfterDegree
+ * @HB_OT_MATH_CONSTANT_RADICAL_DEGREE_BOTTOM_RAISE_PERCENT: radicalDegreeBottomRaisePercent
  *
- * The 'MATH' table constants specified at
- * https://docs.microsoft.com/en-us/typography/opentype/spec/math
+ * The 'MATH' table constants, refer to
+ * [OpenType documentation](https://docs.microsoft.com/en-us/typography/opentype/spec/math#mathconstants-table)
+ * For more explanations.
  *
  * Since: 1.3.3
  */
@@ -116,6 +187,10 @@ typedef enum {
 
 /**
  * hb_ot_math_kern_t:
+ * @HB_OT_MATH_KERN_TOP_RIGHT: The top right corner of the glyph.
+ * @HB_OT_MATH_KERN_TOP_LEFT: The top left corner of the glyph.
+ * @HB_OT_MATH_KERN_BOTTOM_RIGHT: The bottom right corner of the glyph.
+ * @HB_OT_MATH_KERN_BOTTOM_LEFT: The bottom left corner of the glyph.
  *
  * The math kerning-table types defined for the four corners
  * of a glyph.
@@ -145,6 +220,8 @@ typedef struct hb_ot_math_glyph_variant_t {
 
 /**
  * hb_ot_math_glyph_part_flags_t:
+ * @HB_OT_MATH_GLYPH_PART_FLAG_EXTENDER: This is an extender glyph part that
+ * can be repeated to reach the desired length.
  *
  * Flags for math glyph parts.
  *

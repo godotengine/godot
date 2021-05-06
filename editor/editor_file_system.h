@@ -34,8 +34,11 @@
 #include "core/os/dir_access.h"
 #include "core/os/thread.h"
 #include "core/os/thread_safe.h"
+#include "core/templates/safe_refcount.h"
 #include "core/templates/set.h"
+#include "core/templates/thread_work_pool.h"
 #include "scene/main/node.h"
+
 class FileAccess;
 
 struct EditorProgressBG;
@@ -98,6 +101,8 @@ public:
 
 	int find_file_index(const String &p_file) const;
 	int find_dir_index(const String &p_dir) const;
+
+	void force_update();
 
 	EditorFileSystemDirectory();
 	~EditorFileSystemDirectory();
@@ -202,7 +207,7 @@ class EditorFileSystem : public Node {
 
 	void _update_extensions();
 
-	void _reimport_file(const String &p_file);
+	void _reimport_file(const String &p_file, const Map<StringName, Variant> *p_custom_options = nullptr, const String &p_custom_importer = String());
 	Error _reimport_group(const String &p_group_file, const Vector<String> &p_files);
 
 	bool _test_for_reimport(const String &p_path, bool p_only_imported_files);
@@ -213,14 +218,16 @@ class EditorFileSystem : public Node {
 
 	struct ImportFile {
 		String path;
+		String importer;
+		bool threaded = false;
 		int order = 0;
 		bool operator<(const ImportFile &p_if) const {
-			return order < p_if.order;
+			return order == p_if.order ? (importer < p_if.importer) : (order < p_if.order);
 		}
 	};
 
 	void _scan_script_classes(EditorFileSystemDirectory *p_dir);
-	volatile bool update_script_classes_queued;
+	SafeFlag update_script_classes_queued;
 	void _queue_update_script_classes();
 
 	String _get_global_script_class(const String &p_type, const String &p_path, String *r_extends, String *r_icon_path) const;
@@ -234,6 +241,16 @@ class EditorFileSystem : public Node {
 	void _move_group_files(EditorFileSystemDirectory *efd, const String &p_group_file, const String &p_new_location);
 
 	Set<String> group_file_cache;
+
+	ThreadWorkPool import_threads;
+
+	struct ImportThreadData {
+		const ImportFile *reimport_files;
+		int reimport_from;
+		int max_index = 0;
+	};
+
+	void _reimport_thread(uint32_t p_index, ImportThreadData *p_import_data);
 
 protected:
 	void _notification(int p_what);
@@ -256,10 +273,14 @@ public:
 
 	void reimport_files(const Vector<String> &p_files);
 
+	void reimport_file_with_custom_parameters(const String &p_file, const String &p_importer, const Map<StringName, Variant> &p_custom_params);
+
 	void update_script_classes();
 
 	bool is_group_file(const String &p_path) const;
 	void move_group_file(const String &p_path, const String &p_new_path);
+
+	static bool _should_skip_directory(const String &p_path);
 
 	EditorFileSystem();
 	~EditorFileSystem();

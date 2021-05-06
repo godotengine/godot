@@ -498,6 +498,11 @@ public:
 		flush_one();
 	}
 
+	_FORCE_INLINE_ void flush_if_pending() {
+		if (unlikely(read_ptr_and_epoch != write_ptr_and_epoch)) {
+			flush_all();
+		}
+	}
 	void flush_all() {
 		//ERR_FAIL_COND(sync);
 		lock();

@@ -33,7 +33,6 @@
 
 #include "core/io/resource.h"
 #include "core/math/transform_2d.h"
-#include "core/os/copymem.h"
 #include "core/string/ustring.h"
 #include "core/typedefs.h"
 
@@ -42,24 +41,24 @@
  * The events are pretty obvious.
  */
 
-enum ButtonList {
-	BUTTON_LEFT = 1,
-	BUTTON_RIGHT = 2,
-	BUTTON_MIDDLE = 3,
-	BUTTON_WHEEL_UP = 4,
-	BUTTON_WHEEL_DOWN = 5,
-	BUTTON_WHEEL_LEFT = 6,
-	BUTTON_WHEEL_RIGHT = 7,
-	BUTTON_XBUTTON1 = 8,
-	BUTTON_XBUTTON2 = 9,
-	BUTTON_MASK_LEFT = (1 << (BUTTON_LEFT - 1)),
-	BUTTON_MASK_RIGHT = (1 << (BUTTON_RIGHT - 1)),
-	BUTTON_MASK_MIDDLE = (1 << (BUTTON_MIDDLE - 1)),
-	BUTTON_MASK_XBUTTON1 = (1 << (BUTTON_XBUTTON1 - 1)),
-	BUTTON_MASK_XBUTTON2 = (1 << (BUTTON_XBUTTON2 - 1))
+enum MouseButton {
+	MOUSE_BUTTON_LEFT = 1,
+	MOUSE_BUTTON_RIGHT = 2,
+	MOUSE_BUTTON_MIDDLE = 3,
+	MOUSE_BUTTON_WHEEL_UP = 4,
+	MOUSE_BUTTON_WHEEL_DOWN = 5,
+	MOUSE_BUTTON_WHEEL_LEFT = 6,
+	MOUSE_BUTTON_WHEEL_RIGHT = 7,
+	MOUSE_BUTTON_XBUTTON1 = 8,
+	MOUSE_BUTTON_XBUTTON2 = 9,
+	MOUSE_BUTTON_MASK_LEFT = (1 << (MOUSE_BUTTON_LEFT - 1)),
+	MOUSE_BUTTON_MASK_RIGHT = (1 << (MOUSE_BUTTON_RIGHT - 1)),
+	MOUSE_BUTTON_MASK_MIDDLE = (1 << (MOUSE_BUTTON_MIDDLE - 1)),
+	MOUSE_BUTTON_MASK_XBUTTON1 = (1 << (MOUSE_BUTTON_XBUTTON1 - 1)),
+	MOUSE_BUTTON_MASK_XBUTTON2 = (1 << (MOUSE_BUTTON_XBUTTON2 - 1))
 };
 
-enum JoyButtonList {
+enum JoyButton {
 	JOY_BUTTON_INVALID = -1,
 	JOY_BUTTON_A = 0,
 	JOY_BUTTON_B = 1,
@@ -86,7 +85,7 @@ enum JoyButtonList {
 	JOY_BUTTON_MAX = 36, // Android supports up to 36 buttons.
 };
 
-enum JoyAxisList {
+enum JoyAxis {
 	JOY_AXIS_INVALID = -1,
 	JOY_AXIS_LEFT_X = 0,
 	JOY_AXIS_LEFT_Y = 1,
@@ -98,7 +97,7 @@ enum JoyAxisList {
 	JOY_AXIS_MAX = 10, // OpenVR supports up to 5 Joysticks making a total of 10 axes.
 };
 
-enum MidiMessageList {
+enum MIDIMessage {
 	MIDI_MESSAGE_NOTE_OFF = 0x8,
 	MIDI_MESSAGE_NOTE_ON = 0x9,
 	MIDI_MESSAGE_AFTERTOUCH = 0xA,
@@ -128,11 +127,11 @@ public:
 	void set_device(int p_device);
 	int get_device() const;
 
-	bool is_action(const StringName &p_action) const;
-	bool is_action_pressed(const StringName &p_action, bool p_allow_echo = false) const;
-	bool is_action_released(const StringName &p_action) const;
-	float get_action_strength(const StringName &p_action) const;
-	float get_action_raw_strength(const StringName &p_action) const;
+	bool is_action(const StringName &p_action, bool p_exact_match = false) const;
+	bool is_action_pressed(const StringName &p_action, bool p_allow_echo = false, bool p_exact_match = false) const;
+	bool is_action_released(const StringName &p_action, bool p_exact_match = false) const;
+	float get_action_strength(const StringName &p_action, bool p_exact_match = false) const;
+	float get_action_raw_strength(const StringName &p_action, bool p_exact_match = false) const;
 
 	// To be removed someday, since they do not make sense for all events
 	virtual bool is_pressed() const;
@@ -260,6 +259,8 @@ public:
 	virtual String as_text() const override;
 	virtual String to_string() override;
 
+	static Ref<InputEventKey> create_reference(uint32_t p_keycode_with_modifier_masks);
+
 	InputEventKey() {}
 };
 
@@ -293,7 +294,7 @@ class InputEventMouseButton : public InputEventMouse {
 	float factor = 1;
 	int button_index = 0;
 	bool pressed = false; //otherwise released
-	bool doubleclick = false; //last even less than doubleclick time
+	bool double_click = false; //last even less than double click time
 
 protected:
 	static void _bind_methods();
@@ -308,8 +309,8 @@ public:
 	void set_pressed(bool p_pressed);
 	virtual bool is_pressed() const override;
 
-	void set_doubleclick(bool p_doubleclick);
-	bool is_doubleclick() const;
+	void set_double_click(bool p_double_click);
+	bool is_double_click() const;
 
 	virtual Ref<InputEvent> xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs = Vector2()) const override;
 	virtual bool action_match(const Ref<InputEvent> &p_event, bool *p_pressed, float *p_strength, float *p_raw_strength, float p_deadzone) const override;
@@ -405,6 +406,8 @@ public:
 	virtual bool is_action_type() const override { return true; }
 	virtual String as_text() const override;
 	virtual String to_string() override;
+
+	static Ref<InputEventJoypadButton> create_reference(int p_btn_index);
 
 	InputEventJoypadButton() {}
 };

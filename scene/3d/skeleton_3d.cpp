@@ -304,7 +304,7 @@ void Skeleton3D::_notification(int p_what) {
 				uint32_t bind_count = skin->get_bind_count();
 
 				if (E->get()->bind_count != bind_count) {
-					RS::get_singleton()->skeleton_allocate(skeleton, bind_count);
+					RS::get_singleton()->skeleton_allocate_data(skeleton, bind_count);
 					E->get()->bind_count = bind_count;
 					E->get()->skin_bone_indices.resize(bind_count);
 					E->get()->skin_bone_indices_ptrs = E->get()->skin_bone_indices.ptrw();
@@ -387,6 +387,7 @@ void Skeleton3D::_notification(int p_what) {
 void Skeleton3D::clear_bones_global_pose_override() {
 	for (int i = 0; i < bones.size(); i += 1) {
 		bones.write[i].global_pose_override_amount = 0;
+		bones.write[i].global_pose_override_reset = true;
 	}
 	_make_dirty();
 }
@@ -438,6 +439,17 @@ String Skeleton3D::get_bone_name(int p_bone) const {
 	ERR_FAIL_INDEX_V(p_bone, bones.size(), "");
 
 	return bones[p_bone].name;
+}
+void Skeleton3D::set_bone_name(int p_bone, const String &p_name) {
+	ERR_FAIL_INDEX(p_bone, bones.size());
+
+	for (int i = 0; i < bones.size(); i++) {
+		if (i != p_bone) {
+			ERR_FAIL_COND(bones[i].name == p_name);
+		}
+	}
+
+	bones.write[p_bone].name = p_name;
 }
 
 bool Skeleton3D::is_bone_parent_of(int p_bone, int p_parent_bone_id) const {
@@ -869,6 +881,7 @@ void Skeleton3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_bone", "name"), &Skeleton3D::add_bone);
 	ClassDB::bind_method(D_METHOD("find_bone", "name"), &Skeleton3D::find_bone);
 	ClassDB::bind_method(D_METHOD("get_bone_name", "bone_idx"), &Skeleton3D::get_bone_name);
+	ClassDB::bind_method(D_METHOD("set_bone_name", "bone_idx", "name"), &Skeleton3D::set_bone_name);
 
 	ClassDB::bind_method(D_METHOD("get_bone_parent", "bone_idx"), &Skeleton3D::get_bone_parent);
 	ClassDB::bind_method(D_METHOD("set_bone_parent", "bone_idx", "parent_idx"), &Skeleton3D::set_bone_parent);

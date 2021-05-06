@@ -37,6 +37,7 @@
 #include "core/templates/hash_map.h"
 #include "core/templates/list.h"
 #include "core/templates/map.h"
+#include "core/templates/safe_refcount.h"
 #include "core/templates/set.h"
 #include "core/templates/vmap.h"
 #include "core/variant/callable_bind.h"
@@ -65,8 +66,10 @@ enum PropertyHint {
 	PROPERTY_HINT_FLAGS, ///< hint_text= "flag1,flag2,etc" (as bit flags)
 	PROPERTY_HINT_LAYERS_2D_RENDER,
 	PROPERTY_HINT_LAYERS_2D_PHYSICS,
+	PROPERTY_HINT_LAYERS_2D_NAVIGATION,
 	PROPERTY_HINT_LAYERS_3D_RENDER,
 	PROPERTY_HINT_LAYERS_3D_PHYSICS,
+	PROPERTY_HINT_LAYERS_3D_NAVIGATION,
 	PROPERTY_HINT_FILE, ///< a file path must be passed, hint_text (optionally) is a filter "*.png,*.wav,*.doc,"
 	PROPERTY_HINT_DIR, ///< a directory path must be passed
 	PROPERTY_HINT_GLOBAL_FILE, ///< a file path must be passed, hint_text (optionally) is a filter "*.png,*.wav,*.doc,"
@@ -125,6 +128,7 @@ enum PropertyUsageFlags {
 	PROPERTY_USAGE_KEYING_INCREMENTS = 1 << 25, // Used in inspector to increment property when keyed in animation player
 	PROPERTY_USAGE_DEFERRED_SET_RESOURCE = 1 << 26, // when loading, the resource for this property can be set at the end of loading
 	PROPERTY_USAGE_EDITOR_INSTANTIATE_OBJECT = 1 << 27, // For Object properties, instantiate them when creating in editor.
+	PROPERTY_USAGE_EDITOR_BASIC_SETTING = 1 << 28, //for project or editor settings, show when basic settings are selected
 
 	PROPERTY_USAGE_DEFAULT = PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_NETWORK,
 	PROPERTY_USAGE_DEFAULT_INTL = PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_NETWORK | PROPERTY_USAGE_INTERNATIONALIZED,
@@ -454,7 +458,6 @@ private:
 #endif
 	bool _block_signals = false;
 	int _predelete_ok = 0;
-	Set<Object *> change_receptors;
 	ObjectID _instance_id;
 	bool _predelete();
 	void _postinitialize();
@@ -486,7 +489,7 @@ private:
 
 	friend class Reference;
 	bool type_is_reference = false;
-	uint32_t instance_binding_count = 0;
+	SafeNumeric<uint32_t> instance_binding_count;
 	void *_script_instance_bindings[MAX_SCRIPT_INSTANCE_BINDINGS];
 
 	Object(bool p_reference);
@@ -523,9 +526,6 @@ protected:
 	static void get_valid_parents_static(List<String> *p_parents);
 	static void _get_valid_parents_static(List<String> *p_parents);
 
-	void property_list_changed_notify();
-	virtual void _changed_callback(Object *p_changed, const char *p_prop);
-
 	//Variant _call_bind(const StringName& p_name, const Variant& p_arg1 = Variant(), const Variant& p_arg2 = Variant(), const Variant& p_arg3 = Variant(), const Variant& p_arg4 = Variant());
 	//void _call_deferred_bind(const StringName& p_name, const Variant& p_arg1 = Variant(), const Variant& p_arg2 = Variant(), const Variant& p_arg3 = Variant(), const Variant& p_arg4 = Variant());
 
@@ -555,16 +555,8 @@ public: //should be protected, but bug in clang++
 	_FORCE_INLINE_ static void register_custom_data_to_otdb() {}
 
 public:
-#ifdef TOOLS_ENABLED
-	_FORCE_INLINE_ void _change_notify(const char *p_property = "") {
-		_edited = true;
-		for (Set<Object *>::Element *E = change_receptors.front(); E; E = E->next()) {
-			((Object *)(E->get()))->_changed_callback(this, p_property);
-		}
-	}
-#else
-	_FORCE_INLINE_ void _change_notify(const char *p_what = "") {}
-#endif
+	void notify_property_list_changed();
+
 	static void *get_class_ptr_static() {
 		static int ptr;
 		return &ptr;
@@ -573,10 +565,6 @@ public:
 	bool _is_gpl_reversed() const { return false; }
 
 	_FORCE_INLINE_ ObjectID get_instance_id() const { return _instance_id; }
-
-	// this is used for editors
-	void add_change_receptor(Object *p_receptor);
-	void remove_change_receptor(Object *p_receptor);
 
 	template <class T>
 	static T *cast_to(Object *p_object) {

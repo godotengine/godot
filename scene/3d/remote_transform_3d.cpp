@@ -133,7 +133,7 @@ void RemoteTransform3D::set_remote_node(const NodePath &p_remote_node) {
 		_update_remote();
 	}
 
-	update_configuration_warning();
+	update_configuration_warnings();
 }
 
 NodePath RemoteTransform3D::get_remote_node() const {
@@ -179,17 +179,14 @@ void RemoteTransform3D::force_update_cache() {
 	_update_cache();
 }
 
-String RemoteTransform3D::get_configuration_warning() const {
-	String warning = Node3D::get_configuration_warning();
+TypedArray<String> RemoteTransform3D::get_configuration_warnings() const {
+	TypedArray<String> warnings = Node::get_configuration_warnings();
 
 	if (!has_node(remote_node) || !Object::cast_to<Node3D>(get_node(remote_node))) {
-		if (!warning.is_empty()) {
-			warning += "\n\n";
-		}
-		warning += TTR("The \"Remote Path\" property must point to a valid Node3D or Node3D-derived node to work.");
+		warnings.push_back(TTR("The \"Remote Path\" property must point to a valid Node3D or Node3D-derived node to work."));
 	}
 
-	return warning;
+	return warnings;
 }
 
 void RemoteTransform3D::_bind_methods() {

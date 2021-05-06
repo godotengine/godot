@@ -2,7 +2,7 @@
 
 #version 450
 
-VERSION_DEFINES
+#VERSION_DEFINES
 
 layout(local_size_x = 64, local_size_y = 1, local_size_z = 1) in;
 
@@ -100,7 +100,7 @@ void main() {
 
 		for (uint i = 0; i < params.blend_shape_count; i++) {
 			float w = blend_shape_weights.data[i];
-			if (w > 0.0001) {
+			if (abs(w) > 0.0001) {
 				uint base_offset = (params.vertex_count * i + index) * params.vertex_stride;
 
 				blend_vertex += uintBitsToFloat(uvec3(src_blend_shapes.data[base_offset + 0], src_blend_shapes.data[base_offset + 1], src_blend_shapes.data[base_offset + 2])) * w;

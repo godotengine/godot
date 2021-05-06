@@ -38,8 +38,9 @@
 EditorTranslationParser *EditorTranslationParser::singleton = nullptr;
 
 Error EditorTranslationParserPlugin::parse_file(const String &p_path, Vector<String> *r_ids, Vector<Vector<String>> *r_ids_ctx_plural) {
-	if (!get_script_instance())
+	if (!get_script_instance()) {
 		return ERR_UNAVAILABLE;
+	}
 
 	if (get_script_instance()->has_method("parse_file")) {
 		Array ids;
@@ -70,8 +71,9 @@ Error EditorTranslationParserPlugin::parse_file(const String &p_path, Vector<Str
 }
 
 void EditorTranslationParserPlugin::get_recognized_extensions(List<String> *r_extensions) const {
-	if (!get_script_instance())
+	if (!get_script_instance()) {
 		return;
+	}
 
 	if (get_script_instance()->has_method("get_recognized_extensions")) {
 		Array extensions = get_script_instance()->call("get_recognized_extensions");
@@ -103,7 +105,7 @@ void EditorTranslationParser::get_recognized_extensions(List<String> *r_extensio
 	for (int i = 0; i < temp.size(); i++) {
 		extensions.insert(temp[i]);
 	}
-	for (auto E = extensions.front(); E; E = E->next()) {
+	for (Set<String>::Element *E = extensions.front(); E; E = E->next()) {
 		r_extensions->push_back(E->get());
 	}
 }

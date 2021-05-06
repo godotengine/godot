@@ -68,7 +68,7 @@
 #include "core/object/class_db.h"
 #include "core/object/undo_redo.h"
 #include "core/os/main_loop.h"
-#include "core/string/compressed_translation.h"
+#include "core/string/optimized_translation.h"
 #include "core/string/translation.h"
 
 static Ref<ResourceFormatSaverBinary> resource_saver_binary;
@@ -156,7 +156,7 @@ void register_core_types() {
 	ClassDB::register_virtual_class<StreamPeer>();
 	ClassDB::register_class<StreamPeerBuffer>();
 	ClassDB::register_class<StreamPeerTCP>();
-	ClassDB::register_class<TCP_Server>();
+	ClassDB::register_class<TCPServer>();
 	ClassDB::register_class<PacketPeerUDP>();
 	ClassDB::register_class<UDPServer>();
 	ClassDB::register_custom_instance_class<PacketPeerDTLS>();
@@ -183,7 +183,7 @@ void register_core_types() {
 	ClassDB::register_class<MultiplayerAPI>();
 	ClassDB::register_class<MainLoop>();
 	ClassDB::register_class<Translation>();
-	ClassDB::register_class<PHashTranslation>();
+	ClassDB::register_class<OptimizedTranslation>();
 	ClassDB::register_class<UndoRedo>();
 	ClassDB::register_class<HTTPClient>();
 	ClassDB::register_class<TriangleMesh>();

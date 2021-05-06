@@ -242,6 +242,16 @@ void GDScriptTokenizer::set_multiline_mode(bool p_state) {
 	multiline_mode = p_state;
 }
 
+void GDScriptTokenizer::push_expression_indented_block() {
+	indent_stack_stack.push_back(indent_stack);
+}
+
+void GDScriptTokenizer::pop_expression_indented_block() {
+	ERR_FAIL_COND(indent_stack_stack.size() == 0);
+	indent_stack = indent_stack_stack.back()->get();
+	indent_stack_stack.pop_back();
+}
+
 int GDScriptTokenizer::get_cursor_line() const {
 	return cursor_line;
 }
@@ -898,6 +908,9 @@ GDScriptTokenizer::Token GDScriptTokenizer::string() {
 					_advance();
 					_advance();
 					break;
+				} else {
+					// Not a multiline string termination, add consumed quote.
+					result += quote_char;
 				}
 			} else {
 				// Ended single-line string.
@@ -1169,7 +1182,7 @@ GDScriptTokenizer::Token GDScriptTokenizer::scan() {
 	if (pending_newline) {
 		pending_newline = false;
 		if (!multiline_mode) {
-			// Don't return newline tokens on multine mode.
+			// Don't return newline tokens on multiline mode.
 			return last_newline;
 		}
 	}

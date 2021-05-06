@@ -37,7 +37,7 @@
 #include "core/os/dir_access.h"
 #include "core/os/file_access.h"
 #include "core/os/os.h"
-#include "core/string/compressed_translation.h"
+#include "core/string/optimized_translation.h"
 #include "editor_data.h"
 #include "editor_node.h"
 #include "editor_scale.h"
@@ -1082,6 +1082,7 @@ ProjectExportDialog::ProjectExportDialog() {
 	export_filter->add_item(TTR("Export all resources in the project"));
 	export_filter->add_item(TTR("Export selected scenes (and dependencies)"));
 	export_filter->add_item(TTR("Export selected resources (and dependencies)"));
+	export_filter->add_item(TTR("Export all resources in the project except resources checked below"));
 	resources_vb->add_margin_child(TTR("Export Mode:"), export_filter);
 	export_filter->connect("item_selected", callable_mp(this, &ProjectExportDialog::_export_type_changed));
 

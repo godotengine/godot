@@ -227,7 +227,7 @@ hb_aat_layout_compile_map (const hb_aat_map_builder_t *mapper,
  *
  * <note>Note: does not examine the `GSUB` table.</note>
  *
- * Return value: true if data found, false otherwise
+ * Return value: %true if data found, %false otherwise
  *
  * Since: 2.3.0
  */
@@ -294,7 +294,7 @@ hb_aat_layout_remove_deleted_glyphs (hb_buffer_t *buffer)
  *
  * <note>Note: does not examine the `GPOS` table.</note>
  *
- * Return value: true if data found, false otherwise
+ * Return value: %true if data found, %false otherwise
  *
  * Since: 2.3.0
  */
@@ -325,7 +325,7 @@ hb_aat_layout_position (const hb_ot_shape_plan_t *plan,
  * Tests whether the specified face includes any tracking information
  * in the `trak` table.
  *
- * Return value: true if data found, false otherwise
+ * Return value: %true if data found, %false otherwise
  *
  * Since: 2.3.0
  */
@@ -350,7 +350,7 @@ hb_aat_layout_track (const hb_ot_shape_plan_t *plan,
  * hb_aat_layout_get_feature_types:
  * @face: #hb_face_t to work upon
  * @start_offset: offset of the first feature type to retrieve
- * @feature_count: (inout) (allow-none): Input = the maximum number of feature types to return;
+ * @feature_count: (inout) (optional): Input = the maximum number of feature types to return;
  *                 Output = the actual number of feature types returned (may be zero)
  * @features: (out caller-allocates) (array length=feature_count): Array of feature types found
  *
@@ -374,9 +374,9 @@ hb_aat_layout_get_feature_types (hb_face_t                    *face,
  * @face: #hb_face_t to work upon
  * @feature_type: The #hb_aat_layout_feature_type_t of the requested feature type
  *
- * Fetches the name ID of the specified feature type in the face's `name` table.
+ * Fetches the name identifier of the specified feature type in the face's `name` table.
  *
- * Return value: Name ID of the requested feature type
+ * Return value: Name identifier of the requested feature type
  *
  * Since: 2.2.0
  */
@@ -388,15 +388,15 @@ hb_aat_layout_feature_type_get_name_id (hb_face_t                    *face,
 }
 
 /**
- * hb_aat_layout_feature_type_get_selectors:
+ * hb_aat_layout_feature_type_get_selector_infos:
  * @face: #hb_face_t to work upon
  * @feature_type: The #hb_aat_layout_feature_type_t of the requested feature type
  * @start_offset: offset of the first feature type to retrieve
- * @selector_count: (inout) (allow-none): Input = the maximum number of selectors to return;
+ * @selector_count: (inout) (optional): Input = the maximum number of selectors to return;
  *                  Output = the actual number of selectors returned (may be zero)
- * @selectors: (out caller-allocates) (array length=selector_count): A buffer pointer.
- *             The selectors available for the feature type queries.
- * @default_index: (out) (allow-none): The index of the feature's default selector, if any
+ * @selectors: (out caller-allocates) (array length=selector_count) (optional):
+ *             A buffer pointer. The selectors available for the feature type queries.
+ * @default_index: (out) (optional): The index of the feature's default selector, if any
  *
  * Fetches a list of the selectors available for the specified feature in the given face.
  *

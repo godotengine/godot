@@ -98,6 +98,9 @@ void TextParagraph::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_line_underline_position", "line"), &TextParagraph::get_line_underline_position);
 	ClassDB::bind_method(D_METHOD("get_line_underline_thickness", "line"), &TextParagraph::get_line_underline_thickness);
 
+	ClassDB::bind_method(D_METHOD("get_spacing_top"), &TextParagraph::get_spacing_top);
+	ClassDB::bind_method(D_METHOD("get_spacing_bottom"), &TextParagraph::get_spacing_bottom);
+
 	ClassDB::bind_method(D_METHOD("get_dropcap_size"), &TextParagraph::get_dropcap_size);
 	ClassDB::bind_method(D_METHOD("get_dropcap_lines"), &TextParagraph::get_dropcap_lines);
 
@@ -243,6 +246,7 @@ TextServer::Orientation TextParagraph::get_orientation() const {
 }
 
 bool TextParagraph::set_dropcap(const String &p_text, const Ref<Font> &p_fonts, int p_size, const Rect2 &p_dropcap_margins, const Dictionary &p_opentype_features, const String &p_language) {
+	ERR_FAIL_COND_V(p_fonts.is_null(), false);
 	TS->shaped_text_clear(dropcap_rid);
 	dropcap_margins = p_dropcap_margins;
 	bool res = TS->shaped_text_add_string(dropcap_rid, p_text, p_fonts->get_rids(), p_size, p_opentype_features, p_language);
@@ -257,11 +261,20 @@ void TextParagraph::clear_dropcap() {
 }
 
 bool TextParagraph::add_string(const String &p_text, const Ref<Font> &p_fonts, int p_size, const Dictionary &p_opentype_features, const String &p_language) {
+	ERR_FAIL_COND_V(p_fonts.is_null(), false);
 	bool res = TS->shaped_text_add_string(rid, p_text, p_fonts->get_rids(), p_size, p_opentype_features, p_language);
 	spacing_top = p_fonts->get_spacing(Font::SPACING_TOP);
 	spacing_bottom = p_fonts->get_spacing(Font::SPACING_BOTTOM);
 	dirty_lines = true;
 	return res;
+}
+
+int TextParagraph::get_spacing_top() const {
+	return spacing_top;
+}
+
+int TextParagraph::get_spacing_bottom() const {
+	return spacing_bottom;
 }
 
 void TextParagraph::_set_bidi_override(const Array &p_override) {
@@ -607,11 +620,13 @@ int TextParagraph::hit_test(const Point2 &p_coords) const {
 	const_cast<TextParagraph *>(this)->_shape_lines();
 	Vector2 ofs;
 	if (TS->shaped_text_get_orientation(rid) == TextServer::ORIENTATION_HORIZONTAL) {
-		if (ofs.y < 0)
+		if (ofs.y < 0) {
 			return 0;
+		}
 	} else {
-		if (ofs.x < 0)
+		if (ofs.x < 0) {
 			return 0;
+		}
 	}
 	for (int i = 0; i < lines.size(); i++) {
 		if (TS->shaped_text_get_orientation(lines[i]) == TextServer::ORIENTATION_HORIZONTAL) {

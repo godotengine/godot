@@ -64,6 +64,7 @@ private:
 
 protected:
 	static void _bind_methods();
+	void _validate_property(PropertyInfo &property) const override;
 
 public:
 	void set_extents(const Vector3 &p_extents);

@@ -72,6 +72,11 @@ Copyright: 2008-2016, The Android Open Source Project
  2002, Google, Inc.
 License: Apache-2.0
 
+Files: ./servers/physics_3d/collision_solver_3d_sat.cpp
+Comment: Open Dynamics Engine
+Copyright: 2001-2003, Russell L. Smith, Alen Ladavac, Nguyen Binh
+License: BSD-3-clause
+
 Files: ./servers/physics_3d/gjk_epa.cpp
  ./servers/physics_3d/joints/generic_6dof_joint_3d_sw.cpp
  ./servers/physics_3d/joints/generic_6dof_joint_3d_sw.h
@@ -82,6 +87,10 @@ Files: ./servers/physics_3d/gjk_epa.cpp
  ./servers/physics_3d/joints/pin_joint_3d_sw.h
  ./servers/physics_3d/joints/slider_joint_3d_sw.cpp
  ./servers/physics_3d/joints/slider_joint_3d_sw.h
+ ./servers/physics_3d/soft_body_3d_sw.cpp
+ ./servers/physics_3d/soft_body_3d_sw.h
+ ./servers/physics_3d/shape_3d_sw.cpp
+ ./servers/physics_3d/shape_3d_sw.h
 Comment: Bullet Continuous Collision Detection and Physics Library
 Copyright: 2003-2008, Erwin Coumans
  2007-2021, Juan Linietsky, Ariel Manzur.
@@ -122,15 +131,20 @@ Comment: doctest
 Copyright: 2016-2020, Viktor Kirilov
 License: Expat
 
+Files: ./thirdparty/embree-aarch64/
+Comment: Embree-aarch64
+Copyright: 2009-2021 Intel Corporation
+License: Apache-2.0
+
 Files: ./thirdparty/enet/
 Comment: ENet
 Copyright: 2002-2020, Lee Salzman
 License: Expat
 
-Files: ./thirdparty/etc2comp/
-Comment: Etc2Comp
-Copyright: 2015, Etc2Comp Authors
-License: Apache-2.0
+Files: ./thirdparty/etcpak/
+Comment: etcpak
+Copyright: 2013-2021, Bartosz Taudul
+License: BSD-3-clause
 
 Files: ./thirdparty/fonts/DroidSans*.ttf
 Comment: DroidSans font
@@ -189,7 +203,7 @@ License: HarfBuzz
 
 Files: ./thirdparty/icu4c/
 Comment: International Components for Unicode
-Copyright: 1991-2020, Unicode
+Copyright: 1991-2021, Unicode
 License: Unicode
 
 Files: ./thirdparty/jpeg-compressor/
@@ -254,7 +268,7 @@ License: Apache-2.0
 
 Files: ./thirdparty/meshoptimizer/
 Comment: meshoptimizer
-Copyright: 2016-2020, Arseny Kapoulkine
+Copyright: 2016-2021, Arseny Kapoulkine
 License: Expat
 
 Files: ./thirdparty/minimp3/
@@ -264,7 +278,7 @@ License: CC0-1.0
 
 Files: ./thirdparty/miniupnpc/
 Comment: MiniUPnPc
-Copyright: 2005-2019, Thomas Bernard
+Copyright: 2005-2021, Thomas Bernard
 License: BSD-3-clause
 
 Files: ./thirdparty/minizip/

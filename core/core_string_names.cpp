@@ -76,5 +76,6 @@ CoreStringNames::CoreStringNames() :
 		bind(StaticCString::create("bind")),
 		unbind(StaticCString::create("unbind")),
 		emit(StaticCString::create("emit")),
-		notification(StaticCString::create("notification")) {
+		notification(StaticCString::create("notification")),
+		property_list_changed(StaticCString::create("property_list_changed")) {
 }

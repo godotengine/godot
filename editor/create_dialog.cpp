@@ -170,6 +170,7 @@ void CreateDialog::_update_search() {
 	root->set_text(0, base_type);
 	root->set_icon(0, search_options->get_theme_icon(icon_fallback, "EditorIcons"));
 	search_options_types[base_type] = root;
+	_configure_search_option_item(root, base_type, ClassDB::class_exists(base_type));
 
 	const String search_text = search_box->get_text();
 	bool empty_search = search_text == "";
@@ -236,7 +237,10 @@ void CreateDialog::_configure_search_option_item(TreeItem *r_item, const String 
 	bool can_instance = (p_cpp_type && ClassDB::can_instance(p_type)) || !p_cpp_type;
 	if (!can_instance) {
 		r_item->set_custom_color(0, search_options->get_theme_color("disabled_font_color", "Editor"));
+		r_item->set_icon(0, EditorNode::get_singleton()->get_class_icon(p_type, "NodeDisabled"));
 		r_item->set_selectable(0, false);
+	} else {
+		r_item->set_icon(0, EditorNode::get_singleton()->get_class_icon(p_type, icon_fallback));
 	}
 
 	if (search_box->get_text() != "") {
@@ -253,7 +257,6 @@ void CreateDialog::_configure_search_option_item(TreeItem *r_item, const String 
 
 	const String &description = DTR(EditorHelp::get_doc_data()->class_list[p_type].brief_description);
 	r_item->set_tooltip(0, description);
-	r_item->set_icon(0, EditorNode::get_singleton()->get_class_icon(p_type, icon_fallback));
 
 	if (!p_cpp_type && !script_type) {
 		Ref<Texture2D> icon = EditorNode::get_editor_data().get_custom_types()[custom_type_parents[p_type]][custom_type_indices[p_type]].icon;

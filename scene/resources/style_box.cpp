@@ -123,7 +123,6 @@ void StyleBoxTexture::set_texture(Ref<Texture2D> p_texture) {
 	}
 	emit_signal("texture_changed");
 	emit_changed();
-	_change_notify("texture");
 }
 
 Ref<Texture2D> StyleBoxTexture::get_texture() const {
@@ -135,13 +134,6 @@ void StyleBoxTexture::set_margin_size(Side p_side, float p_size) {
 
 	margin[p_side] = p_size;
 	emit_changed();
-	static const char *margin_prop[4] = {
-		"content_margin_left",
-		"content_margin_top",
-		"content_margin_right",
-		"content_margin_bottom",
-	};
-	_change_notify(margin_prop[p_side]);
 }
 
 float StyleBoxTexture::get_margin_size(Side p_side) const {
@@ -228,7 +220,6 @@ void StyleBoxTexture::set_region_rect(const Rect2 &p_region_rect) {
 
 	region_rect = p_region_rect;
 	emit_changed();
-	_change_notify("region");
 }
 
 Rect2 StyleBoxTexture::get_region_rect() const {
@@ -320,20 +311,9 @@ void StyleBoxTexture::_bind_methods() {
 	BIND_ENUM_CONSTANT(AXIS_STRETCH_MODE_TILE_FIT);
 }
 
-StyleBoxTexture::StyleBoxTexture() {
-	for (int i = 0; i < 4; i++) {
-		margin[i] = 0;
-		expand_margin[i] = 0;
-	}
-	draw_center = true;
-	modulate = Color(1, 1, 1, 1);
+StyleBoxTexture::StyleBoxTexture() {}
 
-	axis_h = AXIS_STRETCH_MODE_STRETCH;
-	axis_v = AXIS_STRETCH_MODE_STRETCH;
-}
-
-StyleBoxTexture::~StyleBoxTexture() {
-}
+StyleBoxTexture::~StyleBoxTexture() {}
 
 ////////////////
 
@@ -480,6 +460,7 @@ Point2 StyleBoxFlat::get_shadow_offset() const {
 void StyleBoxFlat::set_anti_aliased(const bool &p_anti_aliased) {
 	anti_aliased = p_anti_aliased;
 	emit_changed();
+	notify_property_list_changed();
 }
 
 bool StyleBoxFlat::is_anti_aliased() const {
@@ -801,6 +782,12 @@ float StyleBoxFlat::get_style_margin(Side p_side) const {
 	return border_width[p_side];
 }
 
+void StyleBoxFlat::_validate_property(PropertyInfo &property) const {
+	if (!anti_aliased && property.name == "anti_aliasing_size") {
+		property.usage = PROPERTY_USAGE_NOEDITOR;
+	}
+}
+
 void StyleBoxFlat::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_bg_color", "color"), &StyleBoxFlat::set_bg_color);
 	ClassDB::bind_method(D_METHOD("get_bg_color"), &StyleBoxFlat::get_bg_color);
@@ -888,38 +875,9 @@ void StyleBoxFlat::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "anti_aliasing_size", PROPERTY_HINT_RANGE, "1,5,1"), "set_aa_size", "get_aa_size");
 }
 
-StyleBoxFlat::StyleBoxFlat() {
-	bg_color = Color(0.6, 0.6, 0.6);
-	shadow_color = Color(0, 0, 0, 0.6);
-	border_color = Color(0.8, 0.8, 0.8);
+StyleBoxFlat::StyleBoxFlat() {}
 
-	blend_border = false;
-	draw_center = true;
-	anti_aliased = true;
-
-	shadow_size = 0;
-	shadow_offset = Point2(0, 0);
-	corner_detail = 8;
-	aa_size = 1;
-
-	border_width[0] = 0;
-	border_width[1] = 0;
-	border_width[2] = 0;
-	border_width[3] = 0;
-
-	expand_margin[0] = 0;
-	expand_margin[1] = 0;
-	expand_margin[2] = 0;
-	expand_margin[3] = 0;
-
-	corner_radius[0] = 0;
-	corner_radius[1] = 0;
-	corner_radius[2] = 0;
-	corner_radius[3] = 0;
-}
-
-StyleBoxFlat::~StyleBoxFlat() {
-}
+StyleBoxFlat::~StyleBoxFlat() {}
 
 void StyleBoxLine::set_color(const Color &p_color) {
 	color = p_color;
@@ -986,8 +944,17 @@ void StyleBoxLine::_bind_methods() {
 }
 
 float StyleBoxLine::get_style_margin(Side p_side) const {
-	ERR_FAIL_INDEX_V((int)p_side, 4, thickness);
-	return thickness;
+	ERR_FAIL_INDEX_V((int)p_side, 4, 0);
+
+	if (vertical) {
+		if (p_side == SIDE_LEFT || p_side == SIDE_RIGHT) {
+			return thickness / 2.0;
+		}
+	} else if (p_side == SIDE_TOP || p_side == SIDE_BOTTOM) {
+		return thickness / 2.0;
+	}
+
+	return 0;
 }
 
 Size2 StyleBoxLine::get_center_size() const {
@@ -1011,12 +978,6 @@ void StyleBoxLine::draw(RID p_canvas_item, const Rect2 &p_rect) const {
 	vs->canvas_item_add_rect(p_canvas_item, r, color);
 }
 
-StyleBoxLine::StyleBoxLine() {
-	grow_begin = 1.0;
-	grow_end = 1.0;
-	thickness = 1;
-	color = Color(0.0, 0.0, 0.0);
-	vertical = false;
-}
+StyleBoxLine::StyleBoxLine() {}
 
 StyleBoxLine::~StyleBoxLine() {}

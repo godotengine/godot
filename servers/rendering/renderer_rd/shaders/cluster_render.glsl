@@ -2,7 +2,7 @@
 
 #version 450
 
-VERSION_DEFINES
+#VERSION_DEFINES
 
 layout(location = 0) in vec3 vertex_attrib;
 
@@ -63,9 +63,9 @@ void main() {
 
 #version 450
 
-VERSION_DEFINES
+#VERSION_DEFINES
 
-#if defined(GL_KHR_shader_subgroup_ballot) && defined(GL_KHR_shader_subgroup_arithmetic) && defined(GL_KHR_shader_subgroup_vote)
+#if defined(has_GL_KHR_shader_subgroup_ballot) && defined(has_GL_KHR_shader_subgroup_arithmetic) && defined(has_GL_KHR_shader_subgroup_vote)
 
 #extension GL_KHR_shader_subgroup_ballot : enable
 #extension GL_KHR_shader_subgroup_arithmetic : enable

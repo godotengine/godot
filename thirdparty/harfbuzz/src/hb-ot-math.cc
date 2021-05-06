@@ -56,7 +56,7 @@
  *
  * Tests whether a face has a `MATH` table.
  *
- * Return value: true if the table is found, false otherwise
+ * Return value: %true if the table is found, %false otherwise
  *
  * Since: 1.3.3
  **/
@@ -142,7 +142,7 @@ hb_ot_math_get_glyph_top_accent_attachment (hb_font_t *font,
  *
  * Tests whether the given glyph index is an extended shape in the face.
  *
- * Return value: true if the glyph is an extended shape, false otherwise
+ * Return value: %true if the glyph is an extended shape, %false otherwise
  *
  * Since: 1.3.3
  **/

@@ -276,7 +276,7 @@
 		<method name="set_ime_active">
 			<return type="void">
 			</return>
-			<argument index="0" name="arg0" type="bool">
+			<argument index="0" name="active" type="bool">
 			</argument>
 			<description>
 			</description>
@@ -284,7 +284,7 @@
 		<method name="set_ime_position">
 			<return type="void">
 			</return>
-			<argument index="0" name="arg0" type="Vector2i">
+			<argument index="0" name="position" type="Vector2i">
 			</argument>
 			<description>
 			</description>
@@ -474,7 +474,16 @@
 		</theme_item>
 		<theme_item name="title_font" type="Font">
 		</theme_item>
+		<theme_item name="title_font_size" type="int">
+			The size of the title font.
+		</theme_item>
 		<theme_item name="title_height" type="int" default="20">
+		</theme_item>
+		<theme_item name="title_outline_modulate" type="Color" default="Color( 1, 1, 1, 1 )">
+			The color of the title outline.
+		</theme_item>
+		<theme_item name="title_outline_size" type="int" default="0">
+			The size of the title outline.
 		</theme_item>
 		<theme_item name="window_panel" type="StyleBox">
 		</theme_item>

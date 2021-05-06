@@ -159,16 +159,14 @@ void Container::_notification(int p_what) {
 	}
 }
 
-String Container::get_configuration_warning() const {
-	String warning = Control::get_configuration_warning();
+TypedArray<String> Container::get_configuration_warnings() const {
+	TypedArray<String> warnings = Control::get_configuration_warnings();
 
 	if (get_class() == "Container" && get_script().is_null()) {
-		if (!warning.is_empty()) {
-			warning += "\n\n";
-		}
-		warning += TTR("Container by itself serves no purpose unless a script configures its children placement behavior.\nIf you don't intend to add a script, use a plain Control node instead.");
+		warnings.push_back(TTR("Container by itself serves no purpose unless a script configures its children placement behavior.\nIf you don't intend to add a script, use a plain Control node instead."));
 	}
-	return warning;
+
+	return warnings;
 }
 
 void Container::_bind_methods() {
@@ -180,7 +178,6 @@ void Container::_bind_methods() {
 }
 
 Container::Container() {
-	pending_sort = false;
 	// All containers should let mouse events pass by default.
 	set_mouse_filter(MOUSE_FILTER_PASS);
 }

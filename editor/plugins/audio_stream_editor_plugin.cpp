@@ -32,6 +32,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/io/resource_loader.h"
+#include "core/os/keyboard.h"
 #include "editor/audio_stream_preview.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
@@ -96,7 +97,7 @@ void AudioStreamEditor::_preview_changed(ObjectID p_which) {
 	}
 }
 
-void AudioStreamEditor::_changed_callback(Object *p_changed, const char *p_prop) {
+void AudioStreamEditor::_audio_changed() {
 	if (!is_visible()) {
 		return;
 	}
@@ -105,6 +106,8 @@ void AudioStreamEditor::_changed_callback(Object *p_changed, const char *p_prop)
 
 void AudioStreamEditor::_play() {
 	if (_player->is_playing()) {
+		// '_pausing' variable indicates that we want to pause the audio player, not stop it. See '_on_finished()'.
+		_pausing = true;
 		_player->stop();
 		_play_button->set_icon(get_theme_icon("MainPlay", "EditorIcons"));
 		set_process(false);
@@ -125,10 +128,13 @@ void AudioStreamEditor::_stop() {
 
 void AudioStreamEditor::_on_finished() {
 	_play_button->set_icon(get_theme_icon("MainPlay", "EditorIcons"));
-	if (_current == _player->get_stream()->get_length()) {
+	if (!_pausing) {
 		_current = 0;
 		_indicator->update();
+	} else {
+		_pausing = false;
 	}
+	set_process(false);
 }
 
 void AudioStreamEditor::_draw_indicator() {
@@ -139,23 +145,26 @@ void AudioStreamEditor::_draw_indicator() {
 	Rect2 rect = _preview->get_rect();
 	float len = stream->get_length();
 	float ofs_x = _current / len * rect.size.width;
-	_indicator->draw_line(Point2(ofs_x, 0), Point2(ofs_x, rect.size.height), get_theme_color("accent_color", "Editor"), 1);
+	const Color color = get_theme_color("accent_color", "Editor");
+	_indicator->draw_line(Point2(ofs_x, 0), Point2(ofs_x, rect.size.height), color, Math::round(2 * EDSCALE));
+	_indicator->draw_texture(
+			get_theme_icon("TimelineIndicator", "EditorIcons"),
+			Point2(ofs_x - get_theme_icon("TimelineIndicator", "EditorIcons")->get_width() * 0.5, 0),
+			color);
 
 	_current_label->set_text(String::num(_current, 2).pad_decimals(2) + " /");
 }
 
 void AudioStreamEditor::_on_input_indicator(Ref<InputEvent> p_event) {
-	Ref<InputEventMouseButton> mb = p_event;
-
-	if (mb.is_valid()) {
+	const Ref<InputEventMouseButton> mb = p_event;
+	if (mb.is_valid() && mb->get_button_index() == MOUSE_BUTTON_LEFT) {
 		if (mb->is_pressed()) {
 			_seek_to(mb->get_position().x);
 		}
 		_dragging = mb->is_pressed();
 	}
 
-	Ref<InputEventMouseMotion> mm = p_event;
-
+	const Ref<InputEventMouseMotion> mm = p_event;
 	if (mm.is_valid()) {
 		if (_dragging) {
 			_seek_to(mm->get_position().x);
@@ -172,7 +181,7 @@ void AudioStreamEditor::_seek_to(real_t p_x) {
 
 void AudioStreamEditor::edit(Ref<AudioStream> p_stream) {
 	if (!stream.is_null()) {
-		stream->remove_change_receptor(this);
+		stream->disconnect("changed", callable_mp(this, &AudioStreamEditor::_audio_changed));
 	}
 
 	stream = p_stream;
@@ -182,7 +191,7 @@ void AudioStreamEditor::edit(Ref<AudioStream> p_stream) {
 	_duration_label->set_text(text);
 
 	if (!stream.is_null()) {
-		stream->add_change_receptor(this);
+		stream->connect("changed", callable_mp(this, &AudioStreamEditor::_audio_changed));
 		update();
 	} else {
 		hide();
@@ -194,8 +203,6 @@ void AudioStreamEditor::_bind_methods() {
 
 AudioStreamEditor::AudioStreamEditor() {
 	set_custom_minimum_size(Size2(1, 100) * EDSCALE);
-	_current = 0;
-	_dragging = false;
 
 	_player = memnew(AudioStreamPlayer);
 	_player->connect("finished", callable_mp(this, &AudioStreamEditor::_on_finished));
@@ -225,6 +232,7 @@ AudioStreamEditor::AudioStreamEditor() {
 	hbox->add_child(_play_button);
 	_play_button->set_focus_mode(Control::FOCUS_NONE);
 	_play_button->connect("pressed", callable_mp(this, &AudioStreamEditor::_play));
+	_play_button->set_shortcut(ED_SHORTCUT("inspector/audio_preview_play_pause", TTR("Audio Preview Play/Pause"), KEY_SPACE));
 
 	_stop_button = memnew(Button);
 	_stop_button->set_flat(true);

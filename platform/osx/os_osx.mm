@@ -101,7 +101,7 @@ String OS_OSX::get_unique_id() const {
 
 	if (serial_number.is_empty()) {
 		io_service_t platformExpert = IOServiceGetMatchingService(kIOMasterPortDefault, IOServiceMatching("IOPlatformExpertDevice"));
-		CFStringRef serialNumberAsCFString = NULL;
+		CFStringRef serialNumberAsCFString = nullptr;
 		if (platformExpert) {
 			serialNumberAsCFString = (CFStringRef)IORegistryEntryCreateCFProperty(platformExpert, CFSTR(kIOPlatformSerialNumberKey), kCFAllocatorDefault, 0);
 			IOObjectRelease(platformExpert);
@@ -158,7 +158,7 @@ void OS_OSX::delete_main_loop() {
 	if (!main_loop)
 		return;
 	memdelete(main_loop);
-	main_loop = NULL;
+	main_loop = nullptr;
 }
 
 String OS_OSX::get_name() const {
@@ -346,7 +346,7 @@ Error OS_OSX::move_to_trash(const String &p_path) {
 }
 
 OS_OSX::OS_OSX() {
-	main_loop = NULL;
+	main_loop = nullptr;
 	force_quit = false;
 
 	Vector<Logger *> loggers;

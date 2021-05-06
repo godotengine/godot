@@ -10,14 +10,6 @@
 	<tutorials>
 	</tutorials>
 	<methods>
-		<method name="refresh">
-			<return type="void">
-			</return>
-			<description>
-				Refreshes the inspector.
-				[b]Note:[/b] To save on CPU resources, calling this method will do nothing if the time specified in [code]docks/property_editor/auto_refresh_interval[/code] editor setting hasn't passed yet since this method was last called. (By default, this interval is set to 0.3 seconds.)
-			</description>
-		</method>
 	</methods>
 	<members>
 		<member name="scroll_horizontal_enabled" type="bool" setter="set_enable_h_scroll" getter="is_h_scroll_enabled" override="true" default="false" />

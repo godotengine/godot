@@ -532,7 +532,7 @@ void UndoRedo::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_history_count"), &UndoRedo::get_history_count);
 	ClassDB::bind_method(D_METHOD("get_current_action"), &UndoRedo::get_current_action);
-	ClassDB::bind_method(D_METHOD("get_action_name"), &UndoRedo::get_action_name);
+	ClassDB::bind_method(D_METHOD("get_action_name", "id"), &UndoRedo::get_action_name);
 	ClassDB::bind_method(D_METHOD("clear_history", "increase_version"), &UndoRedo::clear_history, DEFVAL(true));
 
 	ClassDB::bind_method(D_METHOD("get_current_action_name"), &UndoRedo::get_current_action_name);

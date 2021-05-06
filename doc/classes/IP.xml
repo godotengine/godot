@@ -4,7 +4,7 @@
 		Internet protocol (IP) support functions such as DNS resolution.
 	</brief_description>
 	<description>
-		IP contains support functions for the Internet Protocol (IP). TCP/IP support is in different classes (see [StreamPeerTCP] and [TCP_Server]). IP provides DNS hostname resolution support, both blocking and threaded.
+		IP contains support functions for the Internet Protocol (IP). TCP/IP support is in different classes (see [StreamPeerTCP] and [TCPServer]). IP provides DNS hostname resolution support, both blocking and threaded.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -31,7 +31,7 @@
 			<return type="Array">
 			</return>
 			<description>
-				Returns all of the user's current IPv4 and IPv6 addresses as an array.
+				Returns all the user's current IPv4 and IPv6 addresses as an array.
 			</description>
 		</method>
 		<method name="get_local_interfaces" qualifiers="const">

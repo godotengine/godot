@@ -191,9 +191,17 @@ void LinkButton::_notification(int p_what) {
 
 			int width = text_buf->get_line_width();
 
+			Color font_outline_color = get_theme_color("font_outline_color");
+			int outline_size = get_theme_constant("outline_size");
 			if (is_layout_rtl()) {
+				if (outline_size > 0 && font_outline_color.a > 0) {
+					text_buf->draw_outline(get_canvas_item(), Vector2(size.width - width, 0), outline_size, font_outline_color);
+				}
 				text_buf->draw(get_canvas_item(), Vector2(size.width - width, 0), color);
 			} else {
+				if (outline_size > 0 && font_outline_color.a > 0) {
+					text_buf->draw_outline(get_canvas_item(), Vector2(0, 0), outline_size, font_outline_color);
+				}
 				text_buf->draw(get_canvas_item(), Vector2(0, 0), color);
 			}
 
@@ -231,7 +239,7 @@ bool LinkButton::_set(const StringName &p_name, const Variant &p_value) {
 				update();
 			}
 		}
-		_change_notify();
+		notify_property_list_changed();
 		return true;
 	}
 
@@ -294,7 +302,6 @@ void LinkButton::_bind_methods() {
 
 LinkButton::LinkButton() {
 	text_buf.instance();
-	underline_mode = UNDERLINE_MODE_ALWAYS;
 	set_focus_mode(FOCUS_NONE);
 	set_default_cursor_shape(CURSOR_POINTING_HAND);
 }

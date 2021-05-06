@@ -860,10 +860,10 @@ TEST_CASE("[String] match") {
 }
 
 TEST_CASE("[String] IPVX address to string") {
-	IP_Address ip0("2001:0db8:85a3:0000:0000:8a2e:0370:7334");
-	IP_Address ip(0x0123, 0x4567, 0x89ab, 0xcdef, true);
-	IP_Address ip2("fe80::52e5:49ff:fe93:1baf");
-	IP_Address ip3("::ffff:192.168.0.1");
+	IPAddress ip0("2001:0db8:85a3:0000:0000:8a2e:0370:7334");
+	IPAddress ip(0x0123, 0x4567, 0x89ab, 0xcdef, true);
+	IPAddress ip2("fe80::52e5:49ff:fe93:1baf");
+	IPAddress ip3("::ffff:192.168.0.1");
 	String ip4 = "192.168.0.1";
 	CHECK(ip4.is_valid_ip_address());
 
@@ -1045,7 +1045,7 @@ TEST_CASE("[String] lstrip and rstrip") {
 
 TEST_CASE("[String] ensuring empty string into parse_utf8 passes empty string") {
 	String empty;
-	CHECK(empty.parse_utf8(NULL, -1));
+	CHECK(empty.parse_utf8(nullptr, -1));
 }
 
 TEST_CASE("[String] Cyrillic to_lower()") {
@@ -1156,6 +1156,17 @@ TEST_CASE("[String] uri_encode/unescape") {
 	String s = "Godot Engine:'docs'";
 	String t = "Godot%20Engine%3A%27docs%27";
 
+	String x1 = "T%C4%93%C5%A1t";
+	static const uint8_t u8str[] = { 0x54, 0xC4, 0x93, 0xC5, 0xA1, 0x74, 0x00 };
+	String x2 = String::utf8((const char *)u8str);
+	String x3 = U"Tēšt";
+
+	CHECK(x1.uri_decode() == x2);
+	CHECK(x1.uri_decode() == x3);
+	CHECK((x1 + x3).uri_decode() == (x2 + x3)); // Mixed unicode and URL encoded string, e.g. GTK+ bookmark.
+	CHECK(x2.uri_encode() == x1);
+	CHECK(x3.uri_encode() == x1);
+
 	CHECK(s.uri_encode() == t);
 	CHECK(t.uri_decode() == s);
 }
@@ -1164,6 +1175,52 @@ TEST_CASE("[String] xml_escape/unescape") {
 	String s = "\"Test\" <test@test&'test'>";
 	CHECK(s.xml_escape(true).xml_unescape() == s);
 	CHECK(s.xml_escape(false).xml_unescape() == s);
+}
+
+TEST_CASE("[String] xml_unescape") {
+	// Named entities
+	String input = "&quot;&amp;&apos;&lt;&gt;";
+	CHECK(input.xml_unescape() == "\"&\'<>");
+
+	// Numeric entities
+	input = "&#x41;&#66;";
+	CHECK(input.xml_unescape() == "AB");
+
+	input = "&#0;&x#0;More text";
+	String result = input.xml_unescape();
+	// Didn't put in a leading NUL and terminate the string
+	CHECK(input.length() > 0);
+	CHECK(input[0] != '\0');
+	// Entity should be left as-is if invalid
+	CHECK(input.xml_unescape() == input);
+
+	// Check near char32_t range
+	input = "&#xFFFFFFFF;";
+	result = input.xml_unescape();
+	CHECK(result.length() == 1);
+	CHECK(result[0] == 0xFFFFFFFF);
+	input = "&#4294967295;";
+	result = input.xml_unescape();
+	CHECK(result.length() == 1);
+	CHECK(result[0] == 0xFFFFFFFF);
+
+	// Check out of range of char32_t
+	input = "&#xFFFFFFFFF;";
+	CHECK(input.xml_unescape() == input);
+	input = "&#4294967296;";
+	CHECK(input.xml_unescape() == input);
+
+	// Shouldn't consume without ending in a ';'
+	input = "&#66";
+	CHECK(input.xml_unescape() == input);
+	input = "&#x41";
+	CHECK(input.xml_unescape() == input);
+
+	// Invalid characters should make the entity ignored
+	input = "&#x41SomeIrrelevantText;";
+	CHECK(input.xml_unescape() == input);
+	input = "&#66SomeIrrelevantText;";
+	CHECK(input.xml_unescape() == input);
 }
 
 TEST_CASE("[String] Strip escapes") {
@@ -1271,6 +1328,20 @@ TEST_CASE("[String] humanize_size") {
 	CHECK(String::humanize_size(1025300) == "1001.2 KiB");
 	CHECK(String::humanize_size(100523550) == "95.86 MiB");
 	CHECK(String::humanize_size(5345555000) == "4.97 GiB");
+}
+
+TEST_CASE("[String] validate_node_name") {
+	String numeric_only = "12345";
+	CHECK(numeric_only.validate_node_name() == "12345");
+
+	String name_with_spaces = "Name with spaces";
+	CHECK(name_with_spaces.validate_node_name() == "Name with spaces");
+
+	String name_with_kana = "Name with kana ゴドツ";
+	CHECK(name_with_kana.validate_node_name() == "Name with kana ゴドツ");
+
+	String name_with_invalid_chars = "Name with invalid characters :.@removed!";
+	CHECK(name_with_invalid_chars.validate_node_name() == "Name with invalid characters removed!");
 }
 } // namespace TestString
 

@@ -48,7 +48,7 @@
     a) If above is invalid, don't keep invalidating upwards
  2) If a node sets a GLOBAL, it is converted to LOCAL (and forces validation of everything pending below)
 
- drawback: setting/reading globals is useful and used very very often, and using affine inverses is slow
+ drawback: setting/reading globals is useful and used very often, and using affine inverses is slow
 
 ---
 
@@ -226,10 +226,6 @@ void Node3D::_notification(int p_what) {
 void Node3D::set_transform(const Transform &p_transform) {
 	data.local_transform = p_transform;
 	data.dirty |= DIRTY_VECTORS;
-	_change_notify("translation");
-	_change_notify("rotation");
-	_change_notify("rotation_degrees");
-	_change_notify("scale");
 	_propagate_transform_changed(this);
 	if (data.notify_local_transform) {
 		notification(NOTIFICATION_LOCAL_TRANSFORM_CHANGED);
@@ -307,7 +303,6 @@ Transform Node3D::get_relative_transform(const Node *p_parent) const {
 
 void Node3D::set_translation(const Vector3 &p_translation) {
 	data.local_transform.origin = p_translation;
-	_change_notify("transform");
 	_propagate_transform_changed(this);
 	if (data.notify_local_transform) {
 		notification(NOTIFICATION_LOCAL_TRANSFORM_CHANGED);
@@ -322,7 +317,6 @@ void Node3D::set_rotation(const Vector3 &p_euler_rad) {
 
 	data.rotation = p_euler_rad;
 	data.dirty |= DIRTY_LOCAL;
-	_change_notify("transform");
 	_propagate_transform_changed(this);
 	if (data.notify_local_transform) {
 		notification(NOTIFICATION_LOCAL_TRANSFORM_CHANGED);
@@ -341,7 +335,6 @@ void Node3D::set_scale(const Vector3 &p_scale) {
 
 	data.scale = p_scale;
 	data.dirty |= DIRTY_LOCAL;
-	_change_notify("transform");
 	_propagate_transform_changed(this);
 	if (data.notify_local_transform) {
 		notification(NOTIFICATION_LOCAL_TRANSFORM_CHANGED);
@@ -495,7 +488,6 @@ Ref<World3D> Node3D::get_world_3d() const {
 void Node3D::_propagate_visibility_changed() {
 	notification(NOTIFICATION_VISIBILITY_CHANGED);
 	emit_signal(SceneStringNames::get_singleton()->visibility_changed);
-	_change_notify("visible");
 #ifdef TOOLS_ENABLED
 	if (data.gizmo.is_valid()) {
 		_update_gizmo();
@@ -755,8 +747,8 @@ void Node3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("orthonormalize"), &Node3D::orthonormalize);
 	ClassDB::bind_method(D_METHOD("set_identity"), &Node3D::set_identity);
 
-	ClassDB::bind_method(D_METHOD("look_at", "target", "up"), &Node3D::look_at);
-	ClassDB::bind_method(D_METHOD("look_at_from_position", "position", "target", "up"), &Node3D::look_at_from_position);
+	ClassDB::bind_method(D_METHOD("look_at", "target", "up"), &Node3D::look_at, DEFVAL(Vector3(0, 1, 0)));
+	ClassDB::bind_method(D_METHOD("look_at_from_position", "position", "target", "up"), &Node3D::look_at_from_position, DEFVAL(Vector3(0, 1, 0)));
 
 	ClassDB::bind_method(D_METHOD("to_local", "global_point"), &Node3D::to_local);
 	ClassDB::bind_method(D_METHOD("to_global", "local_point"), &Node3D::to_global);

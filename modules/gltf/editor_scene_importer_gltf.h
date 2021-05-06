@@ -64,8 +64,8 @@ public:
 	virtual void get_extensions(List<String> *r_extensions) const override;
 	virtual Node *import_scene(const String &p_path, uint32_t p_flags,
 			int p_bake_fps,
-			List<String> *r_missing_deps = NULL,
-			Error *r_err = NULL) override;
+			List<String> *r_missing_deps = nullptr,
+			Error *r_err = nullptr) override;
 	virtual Ref<Animation> import_animation(const String &p_path,
 			uint32_t p_flags, int p_bake_fps) override;
 };
@@ -80,7 +80,7 @@ protected:
 public:
 	virtual void save_scene(Node *p_node, const String &p_path, const String &p_src_path,
 			uint32_t p_flags, int p_bake_fps,
-			List<String> *r_missing_deps, Error *r_err = NULL);
+			List<String> *r_missing_deps, Error *r_err = nullptr);
 	virtual void _build_parent_hierachy(Ref<GLTFState> state);
 	virtual Error export_gltf(Node *p_root, String p_path, int32_t p_flags = 0,
 			real_t p_bake_fps = 1000.0f);

@@ -40,9 +40,12 @@
 
 void TileMapEditor::_node_removed(Node *p_node) {
 	if (p_node == node && node) {
-		// Fixes #44824, which describes a situation where you can reselect a TileMap node without first de-selecting it when switching scenes.
-		node->disconnect("settings_changed", callable_mp(this, &TileMapEditor::_tileset_settings_changed));
+		Callable callable_tileset_settings_changed = callable_mp(this, &TileMapEditor::_tileset_settings_changed);
 
+		if (node->is_connected("settings_changed", callable_tileset_settings_changed)) {
+			// Fixes #44824, which describes a situation where you can reselect a TileMap node without first de-selecting it when switching scenes.
+			node->disconnect("settings_changed", callable_tileset_settings_changed);
+		}
 		node = nullptr;
 	}
 }
@@ -230,11 +233,11 @@ void TileMapEditor::_palette_input(const Ref<InputEvent> &p_event) {
 
 	// Zoom in/out using Ctrl + mouse wheel.
 	if (mb.is_valid() && mb->is_pressed() && mb->get_command()) {
-		if (mb->is_pressed() && mb->get_button_index() == BUTTON_WHEEL_UP) {
+		if (mb->is_pressed() && mb->get_button_index() == MOUSE_BUTTON_WHEEL_UP) {
 			size_slider->set_value(size_slider->get_value() + 0.2);
 		}
 
-		if (mb->is_pressed() && mb->get_button_index() == BUTTON_WHEEL_DOWN) {
+		if (mb->is_pressed() && mb->get_button_index() == MOUSE_BUTTON_WHEEL_DOWN) {
 			size_slider->set_value(size_slider->get_value() - 0.2);
 		}
 	}
@@ -570,6 +573,7 @@ void TileMapEditor::_update_palette() {
 		entries2.sort_custom<SwapComparator>();
 
 		Ref<Texture2D> tex = tileset->tile_get_texture(sel_tile);
+		Color modulate = tileset->tile_get_modulate(sel_tile);
 
 		for (int i = 0; i < entries2.size(); i++) {
 			manual_palette->add_item(String());
@@ -585,6 +589,7 @@ void TileMapEditor::_update_palette() {
 				}
 
 				manual_palette->set_item_icon(manual_palette->get_item_count() - 1, tex);
+				manual_palette->set_item_icon_modulate(manual_palette->get_item_count() - 1, modulate);
 			}
 
 			manual_palette->set_item_metadata(manual_palette->get_item_count() - 1, entries2[i]);
@@ -655,11 +660,15 @@ Vector<Vector2> TileMapEditor::_bucket_fill(const Point2i &p_start, bool erase, 
 	}
 
 	// Check if the tile variation is the same
-	Vector2 prev_position = node->get_cell_autotile_coord(p_start.x, p_start.y);
 	if (ids.size() == 1 && ids[0] == prev_id) {
 		int current = manual_palette->get_current();
-		Vector2 position = manual_palette->get_item_metadata(current);
-		if (prev_position == position) {
+		if (current == -1) {
+			// Same ID, no variation selected, nothing to change
+			return Vector<Vector2>();
+		}
+		Vector2 prev_autotile_coord = node->get_cell_autotile_coord(p_start.x, p_start.y);
+		Vector2 autotile_coord = manual_palette->get_item_metadata(current);
+		if (autotile_coord == prev_autotile_coord) {
 			// Same ID and variation, nothing to change
 			return Vector<Vector2>();
 		}
@@ -963,9 +972,9 @@ void TileMapEditor::_update_copydata() {
 				tcd.flip_v = node->is_cell_y_flipped(j, i);
 				tcd.transpose = node->is_cell_transposed(j, i);
 				tcd.autotile_coord = node->get_cell_autotile_coord(j, i);
-			}
 
-			copydata.push_back(tcd);
+				copydata.push_back(tcd);
+			}
 		}
 	}
 }
@@ -1024,7 +1033,7 @@ bool TileMapEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseButton> mb = p_event;
 
 	if (mb.is_valid()) {
-		if (mb->get_button_index() == BUTTON_LEFT) {
+		if (mb->get_button_index() == MOUSE_BUTTON_LEFT) {
 			if (mb->is_pressed()) {
 				if (Input::get_singleton()->is_key_pressed(KEY_SPACE)) {
 					return false; // Drag.
@@ -1174,7 +1183,7 @@ bool TileMapEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 					return true;
 				}
 			}
-		} else if (mb->get_button_index() == BUTTON_RIGHT) {
+		} else if (mb->get_button_index() == MOUSE_BUTTON_RIGHT) {
 			if (mb->is_pressed()) {
 				if (tool == TOOL_SELECTING || selection_active) {
 					tool = TOOL_NONE;
@@ -1459,7 +1468,7 @@ bool TileMapEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 
 			return true;
 		}
-		if (tool == TOOL_PICKING && Input::get_singleton()->is_mouse_button_pressed(BUTTON_LEFT)) {
+		if (tool == TOOL_PICKING && Input::get_singleton()->is_mouse_button_pressed(MOUSE_BUTTON_LEFT)) {
 			_pick_tile(over_tile);
 
 			return true;
@@ -1870,7 +1879,11 @@ void TileMapEditor::edit(Node *p_tile_map) {
 	}
 
 	if (node) {
-		node->disconnect("settings_changed", callable_mp(this, &TileMapEditor::_tileset_settings_changed));
+		Callable callable_tileset_settings_changed = callable_mp(this, &TileMapEditor::_tileset_settings_changed);
+
+		if (node->is_connected("settings_changed", callable_tileset_settings_changed)) {
+			node->disconnect("settings_changed", callable_tileset_settings_changed);
+		}
 	}
 	if (p_tile_map) {
 		node = Object::cast_to<TileMap>(p_tile_map);
@@ -1897,7 +1910,11 @@ void TileMapEditor::edit(Node *p_tile_map) {
 	}
 
 	if (node) {
-		node->connect("settings_changed", callable_mp(this, &TileMapEditor::_tileset_settings_changed));
+		Callable callable_tileset_settings_changed = callable_mp(this, &TileMapEditor::_tileset_settings_changed);
+
+		if (!node->is_connected("settings_changed", callable_tileset_settings_changed)) {
+			node->connect("settings_changed", callable_tileset_settings_changed);
+		}
 	}
 
 	_clear_bucket_cache();

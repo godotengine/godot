@@ -281,7 +281,7 @@ bool AnimationNodeStateMachinePlayback::_travel(AnimationNodeStateMachine *p_sta
 		at = cost_map[at].prev;
 	}
 
-	path.invert();
+	path.reverse();
 
 	return true;
 }
@@ -317,7 +317,7 @@ float AnimationNodeStateMachinePlayback::process(AnimationNodeStateMachine *p_st
 					// stopped, invalid state
 					String node_name = start_request;
 					start_request = StringName(); //clear start request
-					ERR_FAIL_V_MSG(0, "Can't travel to '" + node_name + "' if state machine is not playing.");
+					ERR_FAIL_V_MSG(0, "Can't travel to '" + node_name + "' if state machine is not playing. Maybe you need to enable Autoplay on Load for one of the nodes in your state machine or call .start() first?");
 				}
 			} else {
 				if (!_travel(p_state_machine, start_request)) {
@@ -393,7 +393,7 @@ float AnimationNodeStateMachinePlayback::process(AnimationNodeStateMachine *p_st
 
 	//find next
 	StringName next;
-	float next_xfade = 0;
+	float next_xfade = 0.0;
 	AnimationNodeStateMachineTransition::SwitchMode switch_mode = AnimationNodeStateMachineTransition::SWITCH_MODE_IMMEDIATE;
 
 	if (path.size()) {
@@ -912,6 +912,18 @@ void AnimationNodeStateMachine::_get_property_list(List<PropertyInfo> *p_list) c
 	p_list->push_back(PropertyInfo(Variant::STRING_NAME, "start_node", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR));
 	p_list->push_back(PropertyInfo(Variant::STRING_NAME, "end_node", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR));
 	p_list->push_back(PropertyInfo(Variant::VECTOR2, "graph_offset", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR));
+}
+
+void AnimationNodeStateMachine::reset_state() {
+	states.clear();
+	transitions.clear();
+	playback = "playback";
+	start_node = StringName();
+	end_node = StringName();
+	graph_offset = Vector2();
+
+	emit_changed();
+	emit_signal("tree_changed");
 }
 
 void AnimationNodeStateMachine::set_node_position(const StringName &p_name, const Vector2 &p_position) {

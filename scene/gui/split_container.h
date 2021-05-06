@@ -44,16 +44,16 @@ public:
 	};
 
 private:
-	bool should_clamp_split_offset;
-	int split_offset;
-	int middle_sep;
-	bool vertical;
-	bool dragging;
-	int drag_from;
-	int drag_ofs;
-	bool collapsed;
-	DraggerVisibility dragger_visibility;
-	bool mouse_inside;
+	bool should_clamp_split_offset = false;
+	int split_offset = 0;
+	int middle_sep = 0;
+	bool vertical = false;
+	bool dragging = false;
+	int drag_from = 0;
+	int drag_ofs = 0;
+	bool collapsed = false;
+	DraggerVisibility dragger_visibility = DRAGGER_VISIBLE;
+	bool mouse_inside = false;
 
 	Control *_getch(int p_idx) const;
 

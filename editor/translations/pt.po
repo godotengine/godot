@@ -22,7 +22,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-01-26 03:28+0000\n"
+"PO-Revision-Date: 2021-04-20 22:25+0000\n"
 "Last-Translator: João Lopes <linux-man@hotmail.com>\n"
 "Language-Team: Portuguese <https://hosted.weblate.org/projects/godot-engine/"
 "godot/pt/>\n"
@@ -31,7 +31,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.5-dev\n"
+"X-Generator: Weblate 4.7-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -661,7 +661,7 @@ msgstr "Selecionar Pistas a Copiar"
 #: editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp editor/property_editor.cpp
-#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
+#: editor/scene_tree_dock.cpp scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Copy"
 msgstr "Copiar"
 
@@ -1867,8 +1867,8 @@ msgid "Open a File or Directory"
 msgstr "Abrir um Ficheiro ou Diretoria"
 
 #: editor/editor_file_dialog.cpp editor/editor_node.cpp
-#: editor/editor_properties.cpp editor/inspector_dock.cpp
-#: editor/plugins/animation_player_editor_plugin.cpp
+#: editor/editor_properties.cpp editor/import_defaults_editor.cpp
+#: editor/inspector_dock.cpp editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/script_editor_plugin.cpp scene/gui/file_dialog.cpp
 msgid "Save"
 msgstr "Guardar"
@@ -2542,8 +2542,8 @@ msgid "Unable to enable addon plugin at: '%s' parsing of config failed."
 msgstr "Incapaz de ativar plugin em: '%s' falha de análise ou configuração."
 
 #: editor/editor_node.cpp
-msgid "Unable to find script field for addon plugin at: 'res://addons/%s'."
-msgstr "Incapaz de localizar campo Script para plugin em: 'res://addons/%s'."
+msgid "Unable to find script field for addon plugin at: '%s'."
+msgstr "Incapaz de localizar campo script para plugin em: '%s'."
 
 #: editor/editor_node.cpp
 msgid "Unable to load addon script from path: '%s'."
@@ -2975,14 +2975,6 @@ msgid "Help"
 msgstr "Ajuda"
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/script_text_editor.cpp
-#: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
-#: editor/plugins/visual_shader_editor_plugin.cpp editor/project_manager.cpp
-#: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
-msgid "Search"
-msgstr "Procurar"
-
-#: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/shader_editor_plugin.cpp
 msgid "Online Docs"
 msgstr "Documentação Online"
@@ -3145,6 +3137,24 @@ msgstr "Combinar com o Existente"
 #: editor/editor_node.cpp
 msgid "Open & Run a Script"
 msgstr "Abrir & Executar um Script"
+
+#: editor/editor_node.cpp
+msgid ""
+"The following files are newer on disk.\n"
+"What action should be taken?"
+msgstr ""
+"Os seguintes ficheiros são mais recentes no disco.\n"
+"Que ação deve ser tomada?"
+
+#: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/shader_editor_plugin.cpp
+msgid "Reload"
+msgstr "Recarregar"
+
+#: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/shader_editor_plugin.cpp
+msgid "Resave"
+msgstr "Guardar novamente"
 
 #: editor/editor_node.cpp
 msgid "New Inherited"
@@ -3357,7 +3367,7 @@ msgstr "Fazer único"
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 #: editor/plugins/tile_map_editor_plugin.cpp editor/property_editor.cpp
-#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
+#: editor/scene_tree_dock.cpp scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Paste"
 msgstr "Colar"
 
@@ -3675,6 +3685,13 @@ msgid "Status: Import of file failed. Please fix file and reimport manually."
 msgstr ""
 "Estado: A importação do Ficheiro falhou. Corrija o Ficheiro e importe "
 "manualmente."
+
+#: editor/filesystem_dock.cpp
+msgid ""
+"Importing has been disabled for this file, so it can't be opened for editing."
+msgstr ""
+"A importação foi desativada para este ficheiro, não podendo ser aberto para "
+"edição."
 
 #: editor/filesystem_dock.cpp
 msgid "Cannot move/rename resources root."
@@ -4063,6 +4080,22 @@ msgstr "Devolveu um objeto derivado de Nó no método `post_import()`?"
 #: editor/import/resource_importer_scene.cpp
 msgid "Saving..."
 msgstr "A guardar..."
+
+#: editor/import_defaults_editor.cpp
+msgid "Select Importer"
+msgstr "Selecionar Importador"
+
+#: editor/import_defaults_editor.cpp
+msgid "Importer:"
+msgstr "Importador:"
+
+#: editor/import_defaults_editor.cpp
+msgid "Reset to Defaults"
+msgstr "Restaurar Predefinições"
+
+#: editor/import_dock.cpp
+msgid "Keep File (No Import)"
+msgstr "Manter Ficheiro (Sem Importação)"
 
 #: editor/import_dock.cpp
 msgid "%d Files"
@@ -5030,8 +5063,8 @@ msgid "Got:"
 msgstr "Obtido:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-msgid "Failed sha256 hash check"
-msgstr "Verificação hash sha256 falhada"
+msgid "Failed SHA-256 hash check"
+msgstr "Falhou a verificação hash SHA-256"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Asset Download Error:"
@@ -5134,7 +5167,6 @@ msgid "Sort:"
 msgstr "Ordenar:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#: editor/project_settings_editor.cpp
 msgid "Category:"
 msgstr "Categoria:"
 
@@ -6955,6 +6987,14 @@ msgstr "Fechar documentos"
 msgid "Run"
 msgstr "Executar"
 
+#: editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/script_text_editor.cpp
+#: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
+#: editor/plugins/visual_shader_editor_plugin.cpp editor/project_manager.cpp
+#: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
+msgid "Search"
+msgstr "Procurar"
+
 #: editor/plugins/script_editor_plugin.cpp editor/script_editor_debugger.cpp
 msgid "Step Into"
 msgstr "Passar Dentro"
@@ -7007,16 +7047,6 @@ msgid ""
 msgstr ""
 "Os seguintes Ficheiros são mais recentes no disco.\n"
 "Que ação deve ser tomada?:"
-
-#: editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/shader_editor_plugin.cpp
-msgid "Reload"
-msgstr "Recarregar"
-
-#: editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/shader_editor_plugin.cpp
-msgid "Resave"
-msgstr "Guardar novamente"
 
 #: editor/plugins/script_editor_plugin.cpp editor/script_editor_debugger.cpp
 msgid "Debugger"
@@ -7110,8 +7140,8 @@ msgstr "Pontos de paragem"
 msgid "Go To"
 msgstr "Ir Para"
 
-#: editor/plugins/script_text_editor.cpp scene/gui/line_edit.cpp
-#: scene/gui/text_edit.cpp
+#: editor/plugins/script_text_editor.cpp editor/scene_tree_dock.cpp
+#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Cut"
 msgstr "Cortar"
 
@@ -7334,9 +7364,8 @@ msgid "Yaw"
 msgstr "Direção"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Size"
-msgstr "Tamanho: "
+msgstr "Tamanho"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Objects Drawn"
@@ -7517,6 +7546,11 @@ msgstr "Freelook Modificador de Lentidão"
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "View Rotation Locked"
 msgstr "Rotação da Vista Bloqueada"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid ""
+"To zoom further, change the camera's clipping planes (View -> Settings...)"
+msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid ""
@@ -10018,6 +10052,10 @@ msgid "Projects"
 msgstr "Projetos"
 
 #: editor/project_manager.cpp
+msgid "Loading, please wait..."
+msgstr "A carregar, espere por favor..."
+
+#: editor/project_manager.cpp
 msgid "Last Modified"
 msgstr "Última modificação"
 
@@ -10388,6 +10426,10 @@ msgstr "Carregamento automático"
 msgid "Plugins"
 msgstr "Plugins"
 
+#: editor/project_settings_editor.cpp
+msgid "Import Defaults"
+msgstr "Importar Predefinições"
+
 #: editor/property_editor.cpp
 msgid "Preset..."
 msgstr "Predefinição..."
@@ -10637,6 +10679,14 @@ msgid "Instance Child Scene"
 msgstr "Instanciar Cena Filha"
 
 #: editor/scene_tree_dock.cpp
+msgid "Can't paste root node into the same scene."
+msgstr "Não consigo colar o nó raiz na mesma cena."
+
+#: editor/scene_tree_dock.cpp
+msgid "Paste Node(s)"
+msgstr "Colar Nó(s)"
+
+#: editor/scene_tree_dock.cpp
 msgid "Detach Script"
 msgstr "Separar Script"
 
@@ -10763,6 +10813,10 @@ msgid "Attach Script"
 msgstr "Anexar Script"
 
 #: editor/scene_tree_dock.cpp
+msgid "Cut Node(s)"
+msgstr "Cortar Nó(s)"
+
+#: editor/scene_tree_dock.cpp
 msgid "Remove Node(s)"
 msgstr "Remover Nó(s)"
 
@@ -10875,6 +10929,13 @@ msgstr "Separar o script do nó selecionado."
 #: editor/scene_tree_dock.cpp
 msgid "Remote"
 msgstr "Remoto"
+
+#: editor/scene_tree_dock.cpp
+msgid ""
+"If selected, the Remote scene tree dock will cause the project to stutter "
+"every time it updates.\n"
+"Switch back to the Local scene tree dock to improve performance."
+msgstr ""
 
 #: editor/scene_tree_dock.cpp
 msgid "Local"
@@ -12428,6 +12489,18 @@ msgstr ""
 msgid "An empty CollisionPolygon2D has no effect on collision."
 msgstr "Um CollisionPolygon2D vazio não tem efeito na colisão."
 
+#: scene/2d/collision_polygon_2d.cpp
+msgid "Invalid polygon. At least 3 points are needed in 'Solids' build mode."
+msgstr ""
+"Polígono inválido. São precisos pelo menos 3 pontos no modo de construção "
+"'Sólidos'."
+
+#: scene/2d/collision_polygon_2d.cpp
+msgid "Invalid polygon. At least 2 points are needed in 'Segments' build mode."
+msgstr ""
+"Polígono inválido. São precisos pelo menos 2 pontos no modo de construção "
+"'Segmentos'."
+
 #: scene/2d/collision_shape_2d.cpp
 msgid ""
 "CollisionShape2D only serves to provide a collision shape to a "
@@ -12740,11 +12813,6 @@ msgid ""
 msgstr ""
 "Sondas GI não são suportadas pelo driver vídeo GLES2.\n"
 "Em vez disso, use um BakedLightmap."
-
-#: scene/3d/interpolated_camera.cpp
-msgid ""
-"InterpolatedCamera has been deprecated and will be removed in Godot 4.0."
-msgstr "InterpolatedCamerda foi descontinuada e será removida no Godot 4.0."
 
 #: scene/3d/light.cpp
 msgid "A SpotLight with an angle wider than 90 degrees cannot cast shadows."
@@ -13085,6 +13153,10 @@ msgstr "Variações só podem ser atribuídas na função vértice."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Constantes não podem ser modificadas."
+
+#~ msgid ""
+#~ "InterpolatedCamera has been deprecated and will be removed in Godot 4.0."
+#~ msgstr "InterpolatedCamerda foi descontinuada e será removida no Godot 4.0."
 
 #~ msgid "No"
 #~ msgstr "Não"

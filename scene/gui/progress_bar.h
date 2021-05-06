@@ -36,7 +36,7 @@
 class ProgressBar : public Range {
 	GDCLASS(ProgressBar, Range);
 
-	bool percent_visible;
+	bool percent_visible = true;
 
 protected:
 	void _notification(int p_what);

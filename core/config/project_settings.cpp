@@ -32,6 +32,7 @@
 
 #include "core/core_bind.h"
 #include "core/core_string_names.h"
+#include "core/input/input_map.h"
 #include "core/io/file_access_network.h"
 #include "core/io/file_access_pack.h"
 #include "core/io/marshalls.h"
@@ -122,6 +123,11 @@ void ProjectSettings::set_initial_value(const String &p_name, const Variant &p_v
 void ProjectSettings::set_restart_if_changed(const String &p_name, bool p_restart) {
 	ERR_FAIL_COND_MSG(!props.has(p_name), "Request for nonexistent project setting: " + p_name + ".");
 	props[p_name].restart_if_changed = p_restart;
+}
+
+void ProjectSettings::set_as_basic(const String &p_name, bool p_basic) {
+	ERR_FAIL_COND_MSG(!props.has(p_name), "Request for nonexistent project setting: " + p_name + ".");
+	props[p_name].basic = p_basic;
 }
 
 void ProjectSettings::set_ignore_value_in_docs(const String &p_name, bool p_ignore) {
@@ -269,6 +275,10 @@ void ProjectSettings::_get_property_list(List<PropertyInfo> *p_list) const {
 			vc.flags = PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_STORAGE;
 		}
 
+		if (v->basic) {
+			vc.flags |= PROPERTY_USAGE_EDITOR_BASIC_SETTING;
+		}
+
 		if (v->restart_if_changed) {
 			vc.flags |= PROPERTY_USAGE_RESTART_IF_CHANGED;
 		}
@@ -278,7 +288,7 @@ void ProjectSettings::_get_property_list(List<PropertyInfo> *p_list) const {
 	for (Set<_VCSort>::Element *E = vclist.front(); E; E = E->next()) {
 		String prop_info_name = E->get().name;
 		int dot = prop_info_name.find(".");
-		if (dot != -1) {
+		if (dot != -1 && !custom_prop_info.has(prop_info_name)) {
 			prop_info_name = prop_info_name.substr(0, dot);
 		}
 
@@ -383,7 +393,7 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 
 	if (exec_path != "") {
 		// We do several tests sequentially until one succeeds to find a PCK,
-		// and if so we attempt loading it at the end.
+		// and if so, we attempt loading it at the end.
 
 		// Attempt with PCK bundled into executable.
 		bool found = _load_resource_pack(exec_path);
@@ -457,16 +467,17 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 	d->change_dir(p_path);
 
 	String current_dir = d->get_current_dir();
-	String candidate = current_dir;
 	bool found = false;
 	Error err;
 
 	while (true) {
+		// Set the resource path early so things can be resolved when loading.
+		resource_path = current_dir;
+		resource_path = resource_path.replace("\\", "/"); // Windows path to Unix path just in case.
 		err = _load_settings_text_or_binary(current_dir.plus_file("project.godot"), current_dir.plus_file("project.binary"));
 		if (err == OK) {
 			// Optional, we don't mind if it fails.
 			_load_settings_text(current_dir.plus_file("override.cfg"));
-			candidate = current_dir;
 			found = true;
 			break;
 		}
@@ -483,8 +494,6 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 		}
 	}
 
-	resource_path = candidate;
-	resource_path = resource_path.replace("\\", "/"); // Windows path to Unix path just in case.
 	memdelete(d);
 
 	if (!found) {
@@ -597,6 +606,7 @@ Error ProjectSettings::_load_settings_text(const String &p_path) {
 			// If we're loading a project.godot from source code, we can operate some
 			// ProjectSettings conversions if need be.
 			_convert_to_last_version(config_version);
+			last_save_time = FileAccess::get_modified_time(get_resource_path().plus_file("project.godot"));
 			return OK;
 		} else if (err != OK) {
 			ERR_PRINT("Error parsing " + p_path + " at line " + itos(lines) + ": " + error_text + " File might be corrupted.");
@@ -632,7 +642,6 @@ Error ProjectSettings::_load_settings_text_or_binary(const String &p_text_path, 
 	} else if (err != ERR_FILE_NOT_FOUND) {
 		// If the file exists but can't be loaded, we want to know it.
 		ERR_PRINT("Couldn't load file '" + p_bin_path + "', error code " + itos(err) + ".");
-		return err;
 	}
 
 	// Fallback to text-based project.godot file if binary was not found.
@@ -641,7 +650,6 @@ Error ProjectSettings::_load_settings_text_or_binary(const String &p_text_path, 
 		return OK;
 	} else if (err != ERR_FILE_NOT_FOUND) {
 		ERR_PRINT("Couldn't load file '" + p_text_path + "', error code " + itos(err) + ".");
-		return err;
 	}
 
 	return err;
@@ -676,7 +684,11 @@ void ProjectSettings::clear(const String &p_name) {
 }
 
 Error ProjectSettings::save() {
-	return save_custom(get_resource_path().plus_file("project.godot"));
+	Error error = save_custom(get_resource_path().plus_file("project.godot"));
+	if (error == OK) {
+		last_save_time = FileAccess::get_modified_time(get_resource_path().plus_file("project.godot"));
+	}
+	return error;
 }
 
 Error ProjectSettings::_save_settings_binary(const String &p_file, const Map<String, List<String>> &props, const CustomMap &p_custom, const String &p_custom_features) {
@@ -894,7 +906,7 @@ Error ProjectSettings::save_custom(const String &p_path, const CustomMap &p_cust
 		custom_features += f;
 	}
 
-	if (p_path.ends_with(".godot")) {
+	if (p_path.ends_with(".godot") || p_path.ends_with("override.cfg")) {
 		return _save_settings_text(p_path, props, p_custom, custom_features);
 	} else if (p_path.ends_with(".binary")) {
 		return _save_settings_binary(p_path, props, p_custom, custom_features);
@@ -903,7 +915,7 @@ Error ProjectSettings::save_custom(const String &p_path, const CustomMap &p_cust
 	}
 }
 
-Variant _GLOBAL_DEF(const String &p_var, const Variant &p_default, bool p_restart_if_changed, bool p_ignore_value_in_docs) {
+Variant _GLOBAL_DEF(const String &p_var, const Variant &p_default, bool p_restart_if_changed, bool p_ignore_value_in_docs, bool p_basic) {
 	Variant ret;
 	if (!ProjectSettings::get_singleton()->has_setting(p_var)) {
 		ProjectSettings::get_singleton()->set(p_var, p_default);
@@ -912,6 +924,7 @@ Variant _GLOBAL_DEF(const String &p_var, const Variant &p_default, bool p_restar
 
 	ProjectSettings::get_singleton()->set_initial_value(p_var, p_default);
 	ProjectSettings::get_singleton()->set_builtin_order(p_var);
+	ProjectSettings::get_singleton()->set_as_basic(p_var, p_basic);
 	ProjectSettings::get_singleton()->set_restart_if_changed(p_var, p_restart_if_changed);
 	ProjectSettings::get_singleton()->set_ignore_value_in_docs(p_var, p_ignore_value_in_docs);
 	return ret;
@@ -1042,29 +1055,47 @@ void ProjectSettings::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("save_custom", "file"), &ProjectSettings::_save_custom_bnd);
 }
 
+void ProjectSettings::_add_builtin_input_map() {
+	if (InputMap::get_singleton()) {
+		OrderedHashMap<String, List<Ref<InputEvent>>> builtins = InputMap::get_singleton()->get_builtins();
+
+		for (OrderedHashMap<String, List<Ref<InputEvent>>>::Element E = builtins.front(); E; E = E.next()) {
+			Array events;
+
+			// Convert list of input events into array
+			for (List<Ref<InputEvent>>::Element *I = E.get().front(); I; I = I->next()) {
+				events.push_back(I->get());
+			}
+
+			Dictionary action;
+			action["deadzone"] = Variant(0.5f);
+			action["events"] = events;
+
+			String action_name = "input/" + E.key();
+			GLOBAL_DEF(action_name, action);
+			input_presets.push_back(action_name);
+		}
+	}
+}
+
 ProjectSettings::ProjectSettings() {
 	// Initialization of engine variables should be done in the setup() method,
 	// so that the values can be overridden from project.godot or project.binary.
 
 	singleton = this;
 
-	Array events;
-	Dictionary action;
-	Ref<InputEventKey> key;
-	Ref<InputEventJoypadButton> joyb;
-
-	GLOBAL_DEF("application/config/name", "");
-	GLOBAL_DEF("application/config/description", "");
+	GLOBAL_DEF_BASIC("application/config/name", "");
+	GLOBAL_DEF_BASIC("application/config/description", "");
 	custom_prop_info["application/config/description"] = PropertyInfo(Variant::STRING, "application/config/description", PROPERTY_HINT_MULTILINE_TEXT);
-	GLOBAL_DEF("application/run/main_scene", "");
+	GLOBAL_DEF_BASIC("application/run/main_scene", "");
 	custom_prop_info["application/run/main_scene"] = PropertyInfo(Variant::STRING, "application/run/main_scene", PROPERTY_HINT_FILE, "*.tscn,*.scn,*.res");
 	GLOBAL_DEF("application/run/disable_stdout", false);
 	GLOBAL_DEF("application/run/disable_stderr", false);
 	GLOBAL_DEF("application/config/use_custom_user_dir", false);
 	GLOBAL_DEF("application/config/custom_user_dir_name", "");
 	GLOBAL_DEF("application/config/project_settings_override", "");
-	GLOBAL_DEF("audio/default_bus_layout", "res://default_bus_layout.tres");
-	custom_prop_info["audio/default_bus_layout"] = PropertyInfo(Variant::STRING, "audio/default_bus_layout", PROPERTY_HINT_FILE, "*.tres");
+	GLOBAL_DEF_BASIC("audio/buses/default_bus_layout", "res://default_bus_layout.tres");
+	custom_prop_info["audio/buses/default_bus_layout"] = PropertyInfo(Variant::STRING, "audio/buses/default_bus_layout", PROPERTY_HINT_FILE, "*.tres");
 
 	PackedStringArray extensions = PackedStringArray();
 	extensions.push_back("gd");
@@ -1073,174 +1104,18 @@ ProjectSettings::ProjectSettings() {
 	}
 	extensions.push_back("shader");
 
-	GLOBAL_DEF("editor/search_in_file_extensions", extensions);
-	custom_prop_info["editor/search_in_file_extensions"] = PropertyInfo(Variant::PACKED_STRING_ARRAY, "editor/search_in_file_extensions");
+	GLOBAL_DEF("editor/script/search_in_file_extensions", extensions);
+	custom_prop_info["editor/script/search_in_file_extensions"] = PropertyInfo(Variant::PACKED_STRING_ARRAY, "editor/script/search_in_file_extensions");
 
-	GLOBAL_DEF("editor/script_templates_search_path", "res://script_templates");
-	custom_prop_info["editor/script_templates_search_path"] = PropertyInfo(Variant::STRING, "editor/script_templates_search_path", PROPERTY_HINT_DIR);
+	GLOBAL_DEF("editor/script/templates_search_path", "res://script_templates");
+	custom_prop_info["editor/script/templates_search_path"] = PropertyInfo(Variant::STRING, "editor/script/templates_search_path", PROPERTY_HINT_DIR);
 
-	action = Dictionary();
-	action["deadzone"] = Variant(0.5f);
-	events = Array();
-	key.instance();
-	key->set_keycode(KEY_ENTER);
-	events.push_back(key);
-	key.instance();
-	key->set_keycode(KEY_KP_ENTER);
-	events.push_back(key);
-	key.instance();
-	key->set_keycode(KEY_SPACE);
-	events.push_back(key);
-	joyb.instance();
-	joyb->set_button_index(JOY_BUTTON_A);
-	events.push_back(joyb);
-	action["events"] = events;
-	GLOBAL_DEF("input/ui_accept", action);
-	input_presets.push_back("input/ui_accept");
-
-	action = Dictionary();
-	action["deadzone"] = Variant(0.5f);
-	events = Array();
-	key.instance();
-	key->set_keycode(KEY_SPACE);
-	events.push_back(key);
-	joyb.instance();
-	joyb->set_button_index(JOY_BUTTON_Y);
-	events.push_back(joyb);
-	action["events"] = events;
-	GLOBAL_DEF("input/ui_select", action);
-	input_presets.push_back("input/ui_select");
-
-	action = Dictionary();
-	action["deadzone"] = Variant(0.5f);
-	events = Array();
-	key.instance();
-	key->set_keycode(KEY_ESCAPE);
-	events.push_back(key);
-	joyb.instance();
-	joyb->set_button_index(JOY_BUTTON_B);
-	events.push_back(joyb);
-	action["events"] = events;
-	GLOBAL_DEF("input/ui_cancel", action);
-	input_presets.push_back("input/ui_cancel");
-
-	action = Dictionary();
-	action["deadzone"] = Variant(0.5f);
-	events = Array();
-	key.instance();
-	key->set_keycode(KEY_TAB);
-	events.push_back(key);
-	action["events"] = events;
-	GLOBAL_DEF("input/ui_focus_next", action);
-	input_presets.push_back("input/ui_focus_next");
-
-	action = Dictionary();
-	action["deadzone"] = Variant(0.5f);
-	events = Array();
-	key.instance();
-	key->set_keycode(KEY_TAB);
-	key->set_shift(true);
-	events.push_back(key);
-	action["events"] = events;
-	GLOBAL_DEF("input/ui_focus_prev", action);
-	input_presets.push_back("input/ui_focus_prev");
-
-	action = Dictionary();
-	action["deadzone"] = Variant(0.5f);
-	events = Array();
-	key.instance();
-	key->set_keycode(KEY_LEFT);
-	events.push_back(key);
-	joyb.instance();
-	joyb->set_button_index(JOY_BUTTON_DPAD_LEFT);
-	events.push_back(joyb);
-	action["events"] = events;
-	GLOBAL_DEF("input/ui_left", action);
-	input_presets.push_back("input/ui_left");
-
-	action = Dictionary();
-	action["deadzone"] = Variant(0.5f);
-	events = Array();
-	key.instance();
-	key->set_keycode(KEY_RIGHT);
-	events.push_back(key);
-	joyb.instance();
-	joyb->set_button_index(JOY_BUTTON_DPAD_RIGHT);
-	events.push_back(joyb);
-	action["events"] = events;
-	GLOBAL_DEF("input/ui_right", action);
-	input_presets.push_back("input/ui_right");
-
-	action = Dictionary();
-	action["deadzone"] = Variant(0.5f);
-	events = Array();
-	key.instance();
-	key->set_keycode(KEY_UP);
-	events.push_back(key);
-	joyb.instance();
-	joyb->set_button_index(JOY_BUTTON_DPAD_UP);
-	events.push_back(joyb);
-	action["events"] = events;
-	GLOBAL_DEF("input/ui_up", action);
-	input_presets.push_back("input/ui_up");
-
-	action = Dictionary();
-	action["deadzone"] = Variant(0.5f);
-	events = Array();
-	key.instance();
-	key->set_keycode(KEY_DOWN);
-	events.push_back(key);
-	joyb.instance();
-	joyb->set_button_index(JOY_BUTTON_DPAD_DOWN);
-	events.push_back(joyb);
-	action["events"] = events;
-	GLOBAL_DEF("input/ui_down", action);
-	input_presets.push_back("input/ui_down");
-
-	action = Dictionary();
-	action["deadzone"] = Variant(0.5f);
-	events = Array();
-	key.instance();
-	key->set_keycode(KEY_PAGEUP);
-	events.push_back(key);
-	action["events"] = events;
-	GLOBAL_DEF("input/ui_page_up", action);
-	input_presets.push_back("input/ui_page_up");
-
-	action = Dictionary();
-	action["deadzone"] = Variant(0.5f);
-	events = Array();
-	key.instance();
-	key->set_keycode(KEY_PAGEDOWN);
-	events.push_back(key);
-	action["events"] = events;
-	GLOBAL_DEF("input/ui_page_down", action);
-	input_presets.push_back("input/ui_page_down");
-
-	action = Dictionary();
-	action["deadzone"] = Variant(0.5f);
-	events = Array();
-	key.instance();
-	key->set_keycode(KEY_HOME);
-	events.push_back(key);
-	action["events"] = events;
-	GLOBAL_DEF("input/ui_home", action);
-	input_presets.push_back("input/ui_home");
-
-	action = Dictionary();
-	action["deadzone"] = Variant(0.5f);
-	events = Array();
-	key.instance();
-	key->set_keycode(KEY_END);
-	events.push_back(key);
-	action["events"] = events;
-	GLOBAL_DEF("input/ui_end", action);
-	input_presets.push_back("input/ui_end");
+	_add_builtin_input_map();
 
 	custom_prop_info["display/window/handheld/orientation"] = PropertyInfo(Variant::STRING, "display/window/handheld/orientation", PROPERTY_HINT_ENUM, "landscape,portrait,reverse_landscape,reverse_portrait,sensor_landscape,sensor_portrait,sensor");
-	custom_prop_info["rendering/threads/thread_model"] = PropertyInfo(Variant::INT, "rendering/threads/thread_model", PROPERTY_HINT_ENUM, "Single-Unsafe,Single-Safe,Multi-Threaded");
-	custom_prop_info["physics/2d/thread_model"] = PropertyInfo(Variant::INT, "physics/2d/thread_model", PROPERTY_HINT_ENUM, "Single-Unsafe,Single-Safe,Multi-Threaded");
-	custom_prop_info["rendering/quality/intended_usage/framebuffer_allocation"] = PropertyInfo(Variant::INT, "rendering/quality/intended_usage/framebuffer_allocation", PROPERTY_HINT_ENUM, "2D,2D Without Sampling,3D,3D Without Effects");
+	custom_prop_info["rendering/driver/threads/thread_model"] = PropertyInfo(Variant::INT, "rendering/driver/threads/thread_model", PROPERTY_HINT_ENUM, "Single-Unsafe,Single-Safe,Multi-Threaded");
+	GLOBAL_DEF("physics/2d/run_on_thread", false);
+	GLOBAL_DEF("physics/3d/run_on_thread", false);
 
 	GLOBAL_DEF("debug/settings/profiler/max_functions", 16384);
 	custom_prop_info["debug/settings/profiler/max_functions"] = PropertyInfo(Variant::INT, "debug/settings/profiler/max_functions", PROPERTY_HINT_RANGE, "128,65535,1");

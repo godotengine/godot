@@ -190,10 +190,6 @@ SceneStringNames::SceneStringNames() {
 
 	_default = StaticCString::create("default");
 
-	for (int i = 0; i < MAX_MATERIALS; i++) {
-		mesh_materials[i] = "material/" + itos(i);
-	}
-
 	_window_group = StaticCString::create("_window_group");
 	_window_input = StaticCString::create("_window_input");
 	window_input = StaticCString::create("window_input");

@@ -31,7 +31,6 @@
 #include "basis.h"
 
 #include "core/math/math_funcs.h"
-#include "core/os/copymem.h"
 #include "core/string/print_string.h"
 
 #define cofac(row1, col1, row2, col2) \
@@ -132,7 +131,7 @@ bool Basis::is_symmetric() const {
 
 Basis Basis::diagonalize() {
 //NOTE: only implemented for symmetric matrices
-//with the Jacobi iterative method method
+//with the Jacobi iterative method
 #ifdef MATH_CHECKS
 	ERR_FAIL_COND_V(!is_symmetric(), Basis());
 #endif
@@ -317,7 +316,7 @@ Vector3 Basis::rotref_posscale_decomposition(Basis &rotref) const {
 // Multiplies the matrix from left by the rotation matrix: M -> R.M
 // Note that this does *not* rotate the matrix itself.
 //
-// The main use of Basis is as Transform.basis, which is used a the transformation matrix
+// The main use of Basis is as Transform.basis, which is used by the transformation matrix
 // of 3D object. Rotate here refers to rotation of the object (which is R * (*this)),
 // not the matrix itself (which is R * (*this) * R.transposed()).
 Basis Basis::rotated(const Vector3 &p_axis, real_t p_phi) const {
@@ -881,7 +880,7 @@ void Basis::get_axis_angle(Vector3 &r_axis, real_t &r_angle) const {
 	if ((Math::abs(elements[1][0] - elements[0][1]) < epsilon) && (Math::abs(elements[2][0] - elements[0][2]) < epsilon) && (Math::abs(elements[2][1] - elements[1][2]) < epsilon)) {
 		// singularity found
 		// first check for identity matrix which must have +1 for all terms
-		//  in leading diagonaland zero in other terms
+		// in leading diagonal and zero in other terms
 		if ((Math::abs(elements[1][0] + elements[0][1]) < epsilon2) && (Math::abs(elements[2][0] + elements[0][2]) < epsilon2) && (Math::abs(elements[2][1] + elements[1][2]) < epsilon2) && (Math::abs(elements[0][0] + elements[1][1] + elements[2][2] - 3) < epsilon2)) {
 			// this singularity is identity matrix so angle = 0
 			r_axis = Vector3(0, 1, 0);

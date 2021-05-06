@@ -14,12 +14,13 @@
 # Teodor <teo.virghi@yahoo.ro>, 2020.
 # f0roots <f0rootss@gmail.com>, 2020.
 # Gigel2 <mihalacher02@gmail.com>, 2020.
+# R3ktGamerRO <bluegamermc1@gmail.com>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-10-22 21:37+0000\n"
-"Last-Translator: Gigel2 <mihalacher02@gmail.com>\n"
+"PO-Revision-Date: 2021-03-20 04:18+0000\n"
+"Last-Translator: R3ktGamerRO <bluegamermc1@gmail.com>\n"
 "Language-Team: Romanian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ro/>\n"
 "Language: ro\n"
@@ -28,18 +29,16 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n==1 ? 0 : (n==0 || (n%100 > 0 && n%100 < "
 "20)) ? 1 : 2;\n"
-"X-Generator: Weblate 4.3.1\n"
+"X-Generator: Weblate 4.5.2-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
-#, fuzzy
 msgid "Invalid type argument to convert(), use TYPE_* constants."
-msgstr "Argument invalid pentru transformare(), folosiți constante TYPE_*."
+msgstr "Argument invalid pentru convert(), folosiți constante TYPE_*."
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
-#, fuzzy
 msgid "Expected a string of length 1 (a character)."
-msgstr "Se așteaptă un șir de lungime 1 (un caracter)."
+msgstr "Se așteaptă un text cu lungime de 1 (un caracter)."
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/mono/glue/gd_glue.cpp
@@ -52,9 +51,8 @@ msgid "Invalid input %i (not passed) in expression"
 msgstr "Intrare invalida %i (nu a fost transmisă) in expresie"
 
 #: core/math/expression.cpp
-#, fuzzy
 msgid "self can't be used because instance is null (not passed)"
-msgstr "insuși nu poate fi folosit deoarece instanța este nulă(nu a trecut)"
+msgstr "insuși nu poate fi folosit deoarece instanța este nulă (nu a trecut)"
 
 #: core/math/expression.cpp
 msgid "Invalid operands to operator %s, %s and %s."
@@ -314,7 +312,7 @@ msgstr "Linear"
 
 #: editor/animation_track_editor.cpp
 msgid "Cubic"
-msgstr "Cubic"
+msgstr "Cub"
 
 #: editor/animation_track_editor.cpp
 msgid "Clamp Loop Interp"
@@ -661,7 +659,7 @@ msgstr "Selectează Pistele de Copiat"
 #: editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp editor/property_editor.cpp
-#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
+#: editor/scene_tree_dock.cpp scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Copy"
 msgstr "Copiază"
 
@@ -703,7 +701,7 @@ msgstr "Linia Numărul:"
 
 #: editor/code_editor.cpp
 msgid "%d replaced."
-msgstr "%d Înlocuit"
+msgstr "%d Înlocuit."
 
 #: editor/code_editor.cpp editor/editor_help.cpp
 msgid "%d match."
@@ -1042,14 +1040,14 @@ msgid "Owners Of:"
 msgstr "Stăpâni La:"
 
 #: editor/dependency_editor.cpp
-#, fuzzy
 msgid ""
 "Remove selected files from the project? (no undo)\n"
 "You can find the removed files in the system trash to restore them."
-msgstr "Ștergeți fișierele selectate din proiect? (Acțiune ireversibilă)"
+msgstr ""
+"Ștergeți fișierele selectate din proiect? (Acțiune ireversibilă)\n"
+"Poți gasi fișierele șterse in coșul de gunoi dacă vrei să le restabilești."
 
 #: editor/dependency_editor.cpp
-#, fuzzy
 msgid ""
 "The files being removed are required by other resources in order for them to "
 "work.\n"
@@ -1058,7 +1056,8 @@ msgid ""
 msgstr ""
 "Fișierele în proces de ștergere sunt necesare pentru alte resurse ca ele să "
 "sa funcționeze.\n"
-"Ștergeți oricum? (fără anulare)"
+"Ștergeți oricum? (fără anulare)\n"
+"Poți găsi fișierele șterse in coșul de gunoi dacă vrei să le restabilești."
 
 #: editor/dependency_editor.cpp
 msgid "Cannot remove:"
@@ -1874,8 +1873,8 @@ msgid "Open a File or Directory"
 msgstr "Deschideți un Fişier sau Director"
 
 #: editor/editor_file_dialog.cpp editor/editor_node.cpp
-#: editor/editor_properties.cpp editor/inspector_dock.cpp
-#: editor/plugins/animation_player_editor_plugin.cpp
+#: editor/editor_properties.cpp editor/import_defaults_editor.cpp
+#: editor/inspector_dock.cpp editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/script_editor_plugin.cpp scene/gui/file_dialog.cpp
 msgid "Save"
 msgstr "Salvați"
@@ -2548,7 +2547,8 @@ msgstr ""
 "Nu se poate inițializa plugin-ul la: '%s' analizarea configurației a eșuat."
 
 #: editor/editor_node.cpp
-msgid "Unable to find script field for addon plugin at: 'res://addons/%s'."
+#, fuzzy
+msgid "Unable to find script field for addon plugin at: '%s'."
 msgstr ""
 "Nu a putut fi găsit câmpul scriptului pentru plugin la: 'res://addons/%s'."
 
@@ -2664,9 +2664,8 @@ msgid "Close Other Tabs"
 msgstr "Închideți Celelalte File"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Close Tabs to the Right"
-msgstr "Închidere file la dreapta"
+msgstr "Închidere file de la dreapta"
 
 #: editor/editor_node.cpp
 msgid "Close All Tabs"
@@ -2985,14 +2984,6 @@ msgid "Help"
 msgstr "Ajutor"
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/script_text_editor.cpp
-#: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
-#: editor/plugins/visual_shader_editor_plugin.cpp editor/project_manager.cpp
-#: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
-msgid "Search"
-msgstr "Căutare"
-
-#: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/shader_editor_plugin.cpp
 msgid "Online Docs"
 msgstr "Documentație Online"
@@ -3146,6 +3137,24 @@ msgstr "Contopește Cu Existentul"
 #: editor/editor_node.cpp
 msgid "Open & Run a Script"
 msgstr "Deschide și Execută un Script"
+
+#: editor/editor_node.cpp
+msgid ""
+"The following files are newer on disk.\n"
+"What action should be taken?"
+msgstr ""
+"Următoarele fișiere sunt mai noi pe disk.\n"
+"Ce măsuri ar trebui luate?"
+
+#: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/shader_editor_plugin.cpp
+msgid "Reload"
+msgstr ""
+
+#: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/shader_editor_plugin.cpp
+msgid "Resave"
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "New Inherited"
@@ -3350,7 +3359,7 @@ msgstr ""
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 #: editor/plugins/tile_map_editor_plugin.cpp editor/property_editor.cpp
-#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
+#: editor/scene_tree_dock.cpp scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Paste"
 msgstr ""
 
@@ -3661,6 +3670,11 @@ msgid "Status: Import of file failed. Please fix file and reimport manually."
 msgstr ""
 "Stare: Importarea fișierului eșuată. Te rog repară fișierul și reimportă "
 "manual."
+
+#: editor/filesystem_dock.cpp
+msgid ""
+"Importing has been disabled for this file, so it can't be opened for editing."
+msgstr ""
 
 #: editor/filesystem_dock.cpp
 msgid "Cannot move/rename resources root."
@@ -4045,6 +4059,24 @@ msgstr ""
 #: editor/import/resource_importer_scene.cpp
 msgid "Saving..."
 msgstr "Se Salvează..."
+
+#: editor/import_defaults_editor.cpp
+#, fuzzy
+msgid "Select Importer"
+msgstr "Selectare mod"
+
+#: editor/import_defaults_editor.cpp
+msgid "Importer:"
+msgstr "Importator:"
+
+#: editor/import_defaults_editor.cpp
+#, fuzzy
+msgid "Reset to Defaults"
+msgstr "Încărcați Implicit"
+
+#: editor/import_dock.cpp
+msgid "Keep File (No Import)"
+msgstr ""
 
 #: editor/import_dock.cpp
 msgid "%d Files"
@@ -5033,7 +5065,8 @@ msgid "Got:"
 msgstr "Primit:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-msgid "Failed sha256 hash check"
+#, fuzzy
+msgid "Failed SHA-256 hash check"
 msgstr "Verificare hash sha256 eșuată"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
@@ -5142,7 +5175,6 @@ msgid "Sort:"
 msgstr "Sorare:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#: editor/project_settings_editor.cpp
 msgid "Category:"
 msgstr "Categorie:"
 
@@ -5214,9 +5246,8 @@ msgid "Bake Lightmaps"
 msgstr "Procesează Lightmaps"
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
-#, fuzzy
 msgid "Select lightmap bake file:"
-msgstr "Selectare fișier șablon"
+msgstr "Selectare fișier șablon pentru harta de lumină:"
 
 #: editor/plugins/camera_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -7031,6 +7062,14 @@ msgstr ""
 msgid "Run"
 msgstr "Execută"
 
+#: editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/script_text_editor.cpp
+#: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
+#: editor/plugins/visual_shader_editor_plugin.cpp editor/project_manager.cpp
+#: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
+msgid "Search"
+msgstr "Căutare"
+
 #: editor/plugins/script_editor_plugin.cpp editor/script_editor_debugger.cpp
 msgid "Step Into"
 msgstr ""
@@ -7081,16 +7120,6 @@ msgstr ""
 msgid ""
 "The following files are newer on disk.\n"
 "What action should be taken?:"
-msgstr ""
-
-#: editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/shader_editor_plugin.cpp
-msgid "Reload"
-msgstr ""
-
-#: editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/shader_editor_plugin.cpp
-msgid "Resave"
 msgstr ""
 
 #: editor/plugins/script_editor_plugin.cpp editor/script_editor_debugger.cpp
@@ -7193,8 +7222,8 @@ msgstr "Șterge puncte"
 msgid "Go To"
 msgstr ""
 
-#: editor/plugins/script_text_editor.cpp scene/gui/line_edit.cpp
-#: scene/gui/text_edit.cpp
+#: editor/plugins/script_text_editor.cpp editor/scene_tree_dock.cpp
+#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Cut"
 msgstr ""
 
@@ -7613,6 +7642,11 @@ msgstr ""
 #, fuzzy
 msgid "View Rotation Locked"
 msgstr "Curăță Rotația Cursorului"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid ""
+"To zoom further, change the camera's clipping planes (View -> Settings...)"
+msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid ""
@@ -10069,6 +10103,11 @@ msgid "Projects"
 msgstr "Proiect"
 
 #: editor/project_manager.cpp
+#, fuzzy
+msgid "Loading, please wait..."
+msgstr "Se recuperează oglinzile, te rog așteaptă..."
+
+#: editor/project_manager.cpp
 msgid "Last Modified"
 msgstr ""
 
@@ -10437,6 +10476,11 @@ msgstr ""
 msgid "Plugins"
 msgstr "Plugin-uri"
 
+#: editor/project_settings_editor.cpp
+#, fuzzy
+msgid "Import Defaults"
+msgstr "Încărcați Implicit"
+
 #: editor/property_editor.cpp
 msgid "Preset..."
 msgstr "Presetare..."
@@ -10501,7 +10545,7 @@ msgstr "Redenumește"
 #: editor/rename_dialog.cpp
 #, fuzzy
 msgid "Replace:"
-msgstr "Înlocuiți: "
+msgstr "Înlocuiți:"
 
 #: editor/rename_dialog.cpp
 msgid "Prefix:"
@@ -10615,9 +10659,8 @@ msgid "Reset"
 msgstr "Resetați Zoom-area"
 
 #: editor/rename_dialog.cpp
-#, fuzzy
 msgid "Regular Expression Error:"
-msgstr "Folosiți expresii regulate"
+msgstr "Eroare de expresie regulată:"
 
 #: editor/rename_dialog.cpp
 msgid "At character %s"
@@ -10684,6 +10727,15 @@ msgstr ""
 #: editor/scene_tree_dock.cpp
 msgid "Instance Child Scene"
 msgstr ""
+
+#: editor/scene_tree_dock.cpp
+msgid "Can't paste root node into the same scene."
+msgstr ""
+
+#: editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Paste Node(s)"
+msgstr "Lipește Postura"
 
 #: editor/scene_tree_dock.cpp
 #, fuzzy
@@ -10815,6 +10867,11 @@ msgid "Attach Script"
 msgstr ""
 
 #: editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Cut Node(s)"
+msgstr "Creează Nod"
+
+#: editor/scene_tree_dock.cpp
 msgid "Remove Node(s)"
 msgstr ""
 
@@ -10925,6 +10982,13 @@ msgstr "Curăță un script pentru nodul selectat."
 
 #: editor/scene_tree_dock.cpp
 msgid "Remote"
+msgstr ""
+
+#: editor/scene_tree_dock.cpp
+msgid ""
+"If selected, the Remote scene tree dock will cause the project to stutter "
+"every time it updates.\n"
+"Switch back to the Local scene tree dock to improve performance."
 msgstr ""
 
 #: editor/scene_tree_dock.cpp
@@ -12449,6 +12513,14 @@ msgstr ""
 msgid "An empty CollisionPolygon2D has no effect on collision."
 msgstr ""
 
+#: scene/2d/collision_polygon_2d.cpp
+msgid "Invalid polygon. At least 3 points are needed in 'Solids' build mode."
+msgstr ""
+
+#: scene/2d/collision_polygon_2d.cpp
+msgid "Invalid polygon. At least 2 points are needed in 'Segments' build mode."
+msgstr ""
+
 #: scene/2d/collision_shape_2d.cpp
 msgid ""
 "CollisionShape2D only serves to provide a collision shape to a "
@@ -12619,14 +12691,12 @@ msgid "Finding meshes and lights"
 msgstr ""
 
 #: scene/3d/baked_lightmap.cpp
-#, fuzzy
 msgid "Preparing geometry (%d/%d)"
-msgstr "Analiza geometriei..."
+msgstr "Analiza geometriei (%d/%d)"
 
 #: scene/3d/baked_lightmap.cpp
-#, fuzzy
 msgid "Preparing environment"
-msgstr "Analiza geometriei..."
+msgstr "Pregătim mediul de lucru"
 
 #: scene/3d/baked_lightmap.cpp
 #, fuzzy
@@ -12639,9 +12709,8 @@ msgid "Saving lightmaps"
 msgstr "Se Genereaza Lightmaps"
 
 #: scene/3d/baked_lightmap.cpp
-#, fuzzy
 msgid "Done"
-msgstr "Efectuat!"
+msgstr "Efectuat"
 
 #: scene/3d/collision_object.cpp
 msgid ""
@@ -12707,11 +12776,6 @@ msgstr ""
 msgid ""
 "GIProbes are not supported by the GLES2 video driver.\n"
 "Use a BakedLightmap instead."
-msgstr ""
-
-#: scene/3d/interpolated_camera.cpp
-msgid ""
-"InterpolatedCamera has been deprecated and will be removed in Godot 4.0."
 msgstr ""
 
 #: scene/3d/light.cpp
@@ -12925,9 +12989,8 @@ msgid "Must use a valid extension."
 msgstr "Trebuie să utilizaţi o extensie valida."
 
 #: scene/gui/graph_edit.cpp
-#, fuzzy
 msgid "Enable grid minimap."
-msgstr "Activează aliniere"
+msgstr "Activează minimapa in format grilă."
 
 #: scene/gui/popup.cpp
 msgid ""
@@ -13256,10 +13319,6 @@ msgstr ""
 
 #~ msgid "Create Convex Static Body"
 #~ msgstr "Creează un Corp Static Convex"
-
-#, fuzzy
-#~ msgid "Custom Node"
-#~ msgstr "Creează Nod"
 
 #, fuzzy
 #~ msgid "Snap (s): "

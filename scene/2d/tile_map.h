@@ -33,7 +33,6 @@
 
 #include "core/templates/self_list.h"
 #include "core/templates/vset.h"
-#include "scene/2d/navigation_2d.h"
 #include "scene/2d/node_2d.h"
 #include "scene/resources/tile_set.h"
 
@@ -78,7 +77,7 @@ private:
 	bool use_parent = false;
 	CollisionObject2D *collision_parent = nullptr;
 	bool use_kinematic = false;
-	Navigation2D *navigation = nullptr;
+	bool bake_navigation = false;
 
 	union PosKey {
 		struct {
@@ -232,7 +231,6 @@ protected:
 	static void _bind_methods();
 
 	virtual void _validate_property(PropertyInfo &property) const override;
-	virtual void _changed_callback(Object *p_changed, const char *p_prop) override;
 
 public:
 	enum {
@@ -296,6 +294,9 @@ public:
 	void set_collision_bounce(float p_bounce);
 	float get_collision_bounce() const;
 
+	void set_bake_navigation(bool p_bake_navigation);
+	bool is_baking_navigation();
+
 	void set_mode(Mode p_mode);
 	Mode get_mode() const;
 
@@ -339,7 +340,7 @@ public:
 	void set_clip_uv(bool p_enable);
 	bool get_clip_uv() const;
 
-	String get_configuration_warning() const override;
+	TypedArray<String> get_configuration_warnings() const override;
 
 	virtual void set_texture_filter(CanvasItem::TextureFilter p_texture_filter) override;
 

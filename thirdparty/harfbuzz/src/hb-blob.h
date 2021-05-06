@@ -24,7 +24,7 @@
  * Red Hat Author(s): Behdad Esfahbod
  */
 
-#ifndef HB_H_IN
+#if !defined(HB_H_IN) && !defined(HB_NO_SINGLE_HEADER_ERROR)
 #error "Include <hb.h> instead."
 #endif
 
@@ -38,10 +38,12 @@ HB_BEGIN_DECLS
 
 /**
  * hb_memory_mode_t:
- * @HB_MEMORY_MODE_DUPLICATE
- * @HB_MEMORY_MODE_READONLY
- * @HB_MEMORY_MODE_WRITABLE
- * @HB_MEMORY_MODE_READONLY_MAY_MAKE_WRITABLE
+ * @HB_MEMORY_MODE_DUPLICATE: HarfBuzz immediately makes a copy of the data.
+ * @HB_MEMORY_MODE_READONLY: HarfBuzz client will never modify the data,
+ *     and HarfBuzz will never modify the data.
+ * @HB_MEMORY_MODE_WRITABLE: HarfBuzz client made a copy of the data solely
+ *     for HarfBuzz, so HarfBuzz may modify the data.
+ * @HB_MEMORY_MODE_READONLY_MAY_MAKE_WRITABLE: See above
  *
  * Data type holding the memory modes available to
  * client programs.

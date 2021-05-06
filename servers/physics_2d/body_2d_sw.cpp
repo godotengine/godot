@@ -104,31 +104,17 @@ void Body2DSW::set_active(bool p_active) {
 	}
 
 	active = p_active;
-	if (!p_active) {
-		if (get_space()) {
-			get_space()->body_remove_from_active_list(&active_list);
-		}
-	} else {
+
+	if (active) {
 		if (mode == PhysicsServer2D::BODY_MODE_STATIC) {
-			return; //static bodies can't become active
-		}
-		if (get_space()) {
+			// Static bodies can't be active.
+			active = false;
+		} else if (get_space()) {
 			get_space()->body_add_to_active_list(&active_list);
 		}
-
-		//still_time=0;
+	} else if (get_space()) {
+		get_space()->body_remove_from_active_list(&active_list);
 	}
-	/*
-	if (!space)
-		return;
-
-	for(int i=0;i<get_shape_count();i++) {
-		Shape &s=shapes[i];
-		if (s.bpid>0) {
-			get_space()->get_broadphase()->set_active(s.bpid,active);
-		}
-	}
-*/
 }
 
 void Body2DSW::set_param(PhysicsServer2D::BodyParameter p_param, real_t p_value) {
@@ -370,13 +356,6 @@ void Body2DSW::set_space(Space2DSW *p_space) {
 		if (active) {
 			get_space()->body_add_to_active_list(&active_list);
 		}
-		/*
-		_update_queries();
-		if (is_active()) {
-			active=false;
-			set_active(true);
-		}
-		*/
 	}
 
 	first_integration = false;
@@ -591,16 +570,17 @@ void Body2DSW::call_queries() {
 		Variant v = dbs;
 		const Variant *vp[2] = { &v, &fi_callback->callback_udata };
 
-		Object *obj = ObjectDB::get_instance(fi_callback->id);
+		Object *obj = fi_callback->callable.get_object();
 		if (!obj) {
-			set_force_integration_callback(ObjectID(), StringName());
+			set_force_integration_callback(Callable());
 		} else {
 			Callable::CallError ce;
+			Variant rv;
 			if (fi_callback->callback_udata.get_type() != Variant::NIL) {
-				obj->call(fi_callback->method, vp, 2, ce);
+				fi_callback->callable.call(vp, 2, rv, ce);
 
 			} else {
-				obj->call(fi_callback->method, vp, 1, ce);
+				fi_callback->callable.call(vp, 1, rv, ce);
 			}
 		}
 	}
@@ -625,16 +605,15 @@ bool Body2DSW::sleep_test(real_t p_step) {
 	}
 }
 
-void Body2DSW::set_force_integration_callback(ObjectID p_id, const StringName &p_method, const Variant &p_udata) {
+void Body2DSW::set_force_integration_callback(const Callable &p_callable, const Variant &p_udata) {
 	if (fi_callback) {
 		memdelete(fi_callback);
 		fi_callback = nullptr;
 	}
 
-	if (p_id.is_valid()) {
+	if (p_callable.get_object()) {
 		fi_callback = memnew(ForceIntegrationCallback);
-		fi_callback->id = p_id;
-		fi_callback->method = p_method;
+		fi_callback->callable = p_callable;
 		fi_callback->callback_udata = p_udata;
 	}
 }
@@ -658,8 +637,6 @@ Body2DSW::Body2DSW() :
 	omit_force_integration = false;
 	applied_torque = 0;
 	island_step = 0;
-	island_next = nullptr;
-	island_list_next = nullptr;
 	_set_static(false);
 	first_time_kinematic = false;
 	linear_damp = -1;

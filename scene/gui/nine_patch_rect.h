@@ -43,12 +43,13 @@ public:
 		AXIS_STRETCH_MODE_TILE_FIT,
 	};
 
-	bool draw_center;
-	int margin[4];
+	bool draw_center = true;
+	int margin[4] = {};
 	Rect2 region_rect;
 	Ref<Texture2D> texture;
 
-	AxisStretchMode axis_h, axis_v;
+	AxisStretchMode axis_h = AXIS_STRETCH_MODE_STRETCH;
+	AxisStretchMode axis_v = AXIS_STRETCH_MODE_STRETCH;
 
 protected:
 	void _notification(int p_what);

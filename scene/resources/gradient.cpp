@@ -39,7 +39,6 @@ Gradient::Gradient() {
 	points.write[0].offset = 0;
 	points.write[1].color = Color(1, 1, 1, 1);
 	points.write[1].offset = 1;
-	is_sorted = true;
 }
 
 Gradient::~Gradient() {

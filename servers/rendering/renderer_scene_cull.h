@@ -45,8 +45,10 @@
 #include "core/templates/rid_owner.h"
 #include "core/templates/self_list.h"
 #include "servers/rendering/renderer_scene.h"
+#include "servers/rendering/renderer_scene_occlusion_cull.h"
 #include "servers/rendering/renderer_scene_render.h"
 #include "servers/xr/xr_interface.h"
+
 class RendererSceneCull : public RendererScene {
 public:
 	RendererSceneRender *scene_render;
@@ -85,9 +87,11 @@ public:
 		Camera() {}
 	};
 
-	mutable RID_PtrOwner<Camera> camera_owner;
+	mutable RID_PtrOwner<Camera, true> camera_owner;
 
-	virtual RID camera_create();
+	virtual RID camera_allocate();
+	virtual void camera_initialize(RID p_rid);
+
 	virtual void camera_set_perspective(RID p_camera, float p_fovy_degrees, float p_z_near, float p_z_far);
 	virtual void camera_set_orthogonal(RID p_camera, float p_size, float p_z_near, float p_z_far);
 	virtual void camera_set_frustum(RID p_camera, float p_size, Vector2 p_offset, float p_z_near, float p_z_far);
@@ -97,6 +101,14 @@ public:
 	virtual void camera_set_camera_effects(RID p_camera, RID p_fx);
 	virtual void camera_set_use_vertical_aspect(RID p_camera, bool p_enable);
 	virtual bool is_camera(RID p_camera) const;
+
+	/* OCCLUDER API */
+
+	virtual RID occluder_allocate();
+	virtual void occluder_initialize(RID p_occluder);
+	virtual void occluder_set_mesh(RID p_occluder, const PackedVector3Array &p_vertices, const PackedInt32Array &p_indices);
+
+	RendererSceneOcclusionCull *dummy_occlusion_culling;
 
 	/* SCENARIO API */
 
@@ -237,6 +249,7 @@ public:
 			FLAG_USES_BAKED_LIGHT = (1 << 16),
 			FLAG_USES_MESH_INSTANCE = (1 << 17),
 			FLAG_REFLECTION_PROBE_DIRTY = (1 << 18),
+			FLAG_IGNORE_OCCLUSION_CULLING = (1 << 19),
 		};
 
 		uint32_t flags = 0;
@@ -286,14 +299,15 @@ public:
 
 	int indexer_update_iterations = 0;
 
-	mutable RID_PtrOwner<Scenario> scenario_owner;
+	mutable RID_PtrOwner<Scenario, true> scenario_owner;
 
 	static void _instance_pair(Instance *p_A, Instance *p_B);
 	static void _instance_unpair(Instance *p_A, Instance *p_B);
 
 	void _instance_update_mesh_instance(Instance *p_instance);
 
-	virtual RID scenario_create();
+	virtual RID scenario_allocate();
+	virtual void scenario_initialize(RID p_rid);
 
 	virtual void scenario_set_debug(RID p_scenario, RS::ScenarioDebugMode p_debug_mode);
 	virtual void scenario_set_environment(RID p_scenario, RID p_environment);
@@ -332,6 +346,8 @@ public:
 		Transform transform;
 
 		float lod_bias;
+
+		bool ignore_occlusion_culling;
 
 		Vector<RID> materials;
 
@@ -417,6 +433,7 @@ public:
 					singleton->_instance_queue_update(instance, false, true);
 				} break;
 				case RendererStorage::DEPENDENCY_CHANGED_MESH:
+				case RendererStorage::DEPENDENCY_CHANGED_PARTICLES:
 				case RendererStorage::DEPENDENCY_CHANGED_MULTIMESH:
 				case RendererStorage::DEPENDENCY_CHANGED_DECAL:
 				case RendererStorage::DEPENDENCY_CHANGED_LIGHT:
@@ -457,6 +474,7 @@ public:
 			lightmap = nullptr;
 			lightmap_cull_index = 0;
 			lod_bias = 1.0;
+			ignore_occlusion_culling = false;
 
 			scenario = nullptr;
 
@@ -618,6 +636,7 @@ public:
 
 		_FORCE_INLINE_ bool operator()(void *p_data) {
 			Instance *p_instance = (Instance *)p_data;
+
 			if (instance != p_instance && instance->transformed_aabb.intersects(p_instance->transformed_aabb) && (pair_mask & (1 << p_instance->base_type))) {
 				//test is more coarse in indexer
 				p_instance->pair_check = pair_pass;
@@ -798,11 +817,12 @@ public:
 
 	uint32_t thread_cull_threshold = 200;
 
-	RID_PtrOwner<Instance> instance_owner;
+	RID_PtrOwner<Instance, true> instance_owner;
 
 	uint32_t geometry_instance_pair_mask; // used in traditional forward, unnecesary on clustered
 
-	virtual RID instance_create();
+	virtual RID instance_allocate();
+	virtual void instance_initialize(RID p_rid);
 
 	virtual void instance_set_base(RID p_instance, RID p_base);
 	virtual void instance_set_scenario(RID p_instance, RID p_scenario);
@@ -810,7 +830,7 @@ public:
 	virtual void instance_set_transform(RID p_instance, const Transform &p_transform);
 	virtual void instance_attach_object_instance_id(RID p_instance, ObjectID p_id);
 	virtual void instance_set_blend_shape_weight(RID p_instance, int p_shape, float p_weight);
-	virtual void instance_set_surface_material(RID p_instance, int p_surface, RID p_material);
+	virtual void instance_set_surface_override_material(RID p_instance, int p_surface, RID p_material);
 	virtual void instance_set_visible(RID p_instance, bool p_visible);
 
 	virtual void instance_set_custom_aabb(RID p_instance, AABB p_aabb);
@@ -891,24 +911,26 @@ public:
 		Frustum frustum;
 	} cull;
 
-	struct FrustumCullData {
+	struct CullData {
 		Cull *cull;
 		Scenario *scenario;
 		RID shadow_atlas;
 		Transform cam_transform;
 		uint32_t visible_layers;
 		Instance *render_reflection_probe;
+		const RendererSceneOcclusionCull::HZBuffer *occlusion_buffer;
+		const CameraMatrix *camera_matrix;
 	};
 
-	void _frustum_cull_threaded(uint32_t p_thread, FrustumCullData *cull_data);
-	void _frustum_cull(FrustumCullData &cull_data, FrustumCullResult &cull_result, uint64_t p_from, uint64_t p_to);
+	void _frustum_cull_threaded(uint32_t p_thread, CullData *cull_data);
+	void _frustum_cull(CullData &cull_data, FrustumCullResult &cull_result, uint64_t p_from, uint64_t p_to);
 
 	bool _render_reflection_probe_step(Instance *p_instance, int p_step);
-	void _render_scene(const Transform p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_orthogonal, bool p_cam_vaspect, RID p_render_buffers, RID p_environment, RID p_force_camera_effects, uint32_t p_visible_layers, RID p_scenario, RID p_shadow_atlas, RID p_reflection_probe, int p_reflection_probe_pass, float p_screen_lod_threshold, bool p_using_shadows = true);
+	void _render_scene(const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_orthogonal, bool p_cam_vaspect, RID p_render_buffers, RID p_environment, RID p_force_camera_effects, uint32_t p_visible_layers, RID p_scenario, RID p_viewport, RID p_shadow_atlas, RID p_reflection_probe, int p_reflection_probe_pass, float p_screen_lod_threshold, bool p_using_shadows = true);
 	void render_empty_scene(RID p_render_buffers, RID p_scenario, RID p_shadow_atlas);
 
-	void render_camera(RID p_render_buffers, RID p_camera, RID p_scenario, Size2 p_viewport_size, float p_screen_lod_threshold, RID p_shadow_atlas);
-	void render_camera(RID p_render_buffers, Ref<XRInterface> &p_interface, XRInterface::Eyes p_eye, RID p_camera, RID p_scenario, Size2 p_viewport_size, float p_screen_lod_threshold, RID p_shadow_atlas);
+	void render_camera(RID p_render_buffers, RID p_camera, RID p_scenario, RID p_viewport, Size2 p_viewport_size, float p_screen_lod_threshold, RID p_shadow_atlas);
+	void render_camera(RID p_render_buffers, Ref<XRInterface> &p_interface, XRInterface::Eyes p_eye, RID p_camera, RID p_scenario, RID p_viewport, Size2 p_viewport_size, float p_screen_lod_threshold, RID p_shadow_atlas);
 	void update_dirty_instances();
 
 	void render_particle_colliders();
@@ -931,13 +953,16 @@ public:
 
 	/* SKY API */
 
-	PASS0R(RID, sky_create)
+	PASS0R(RID, sky_allocate)
+	PASS1(sky_initialize, RID)
+
 	PASS2(sky_set_radiance_size, RID, int)
 	PASS2(sky_set_mode, RID, RS::SkyMode)
 	PASS2(sky_set_material, RID, RID)
 	PASS4R(Ref<Image>, sky_bake_panorama, RID, float, bool, const Size2i &)
 
-	PASS0R(RID, environment_create)
+	PASS0R(RID, environment_allocate)
+	PASS1(environment_initialize, RID)
 
 	PASS1RC(bool, is_environment, RID)
 
@@ -970,7 +995,7 @@ public:
 	PASS2(environment_set_volumetric_fog_volume_size, int, int)
 	PASS1(environment_set_volumetric_fog_filter_active, bool)
 
-	PASS11(environment_set_sdfgi, RID, bool, RS::EnvironmentSDFGICascades, float, RS::EnvironmentSDFGIYScale, bool, bool, bool, float, float, float)
+	PASS11(environment_set_sdfgi, RID, bool, RS::EnvironmentSDFGICascades, float, RS::EnvironmentSDFGIYScale, bool, float, bool, float, float, float)
 	PASS1(environment_set_sdfgi_ray_count, RS::EnvironmentSDFGIRayCount)
 	PASS1(environment_set_sdfgi_frames_to_converge, RS::EnvironmentSDFGIFramesToConverge)
 	PASS1(environment_set_sdfgi_frames_to_update_light, RS::EnvironmentSDFGIFramesToUpdateLight)
@@ -986,7 +1011,8 @@ public:
 
 	/* CAMERA EFFECTS */
 
-	PASS0R(RID, camera_effects_create)
+	PASS0R(RID, camera_effects_allocate)
+	PASS1(camera_effects_initialize, RID)
 
 	PASS2(camera_effects_set_dof_blur_quality, RS::DOFBlurQuality, bool)
 	PASS1(camera_effects_set_dof_blur_bokeh_shape, RS::DOFBokehShape)

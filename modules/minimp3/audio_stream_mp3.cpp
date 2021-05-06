@@ -99,8 +99,9 @@ float AudioStreamPlaybackMP3::get_playback_position() const {
 }
 
 void AudioStreamPlaybackMP3::seek(float p_time) {
-	if (!active)
+	if (!active) {
 		return;
+	}
 
 	if (p_time >= mp3_stream->get_length()) {
 		p_time = 0;
@@ -159,7 +160,8 @@ void AudioStreamMP3::set_data(const Vector<uint8_t> &p_data) {
 	const uint8_t *src_datar = p_data.ptr();
 
 	mp3dec_ex_t mp3d;
-	mp3dec_ex_open_buf(&mp3d, src_datar, src_data_len, MP3D_SEEK_TO_SAMPLE);
+	int err = mp3dec_ex_open_buf(&mp3d, src_datar, src_data_len, MP3D_SEEK_TO_SAMPLE);
+	ERR_FAIL_COND(err != 0);
 
 	channels = mp3d.info.channels;
 	sample_rate = mp3d.info.hz;
@@ -170,7 +172,7 @@ void AudioStreamMP3::set_data(const Vector<uint8_t> &p_data) {
 	clear_data();
 
 	data = memalloc(src_data_len);
-	copymem(data, src_datar, src_data_len);
+	memcpy(data, src_datar, src_data_len);
 	data_len = src_data_len;
 }
 
@@ -181,7 +183,7 @@ Vector<uint8_t> AudioStreamMP3::get_data() const {
 		vdata.resize(data_len);
 		{
 			uint8_t *w = vdata.ptrw();
-			copymem(w, data, data_len);
+			memcpy(w, data, data_len);
 		}
 	}
 

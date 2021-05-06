@@ -349,7 +349,7 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint
 						for (int i = 0; i < p_vertex_array_len; i++) {
 							float vector[2] = { src[i].x, src[i].y };
 
-							copymem(&vw[p_offsets[ai] + i * p_vertex_stride], vector, sizeof(float) * 2);
+							memcpy(&vw[p_offsets[ai] + i * p_vertex_stride], vector, sizeof(float) * 2);
 
 							if (i == 0) {
 								aabb = Rect2(src[i], SMALL_VEC2); //must have a bit of size
@@ -374,7 +374,7 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint
 						for (int i = 0; i < p_vertex_array_len; i++) {
 							float vector[3] = { src[i].x, src[i].y, src[i].z };
 
-							copymem(&vw[p_offsets[ai] + i * p_vertex_stride], vector, sizeof(float) * 3);
+							memcpy(&vw[p_offsets[ai] + i * p_vertex_stride], vector, sizeof(float) * 3);
 
 							if (i == 0) {
 								aabb = AABB(src[i], SMALL_VEC3);
@@ -403,7 +403,7 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint
 					value |= CLAMP(int(n.y * 1023.0), 0, 1023) << 10;
 					value |= CLAMP(int(n.z * 1023.0), 0, 1023) << 20;
 
-					copymem(&vw[p_offsets[ai] + i * p_vertex_stride], &value, 4);
+					memcpy(&vw[p_offsets[ai] + i * p_vertex_stride], &value, 4);
 				}
 
 			} break;
@@ -422,9 +422,9 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint
 					value |= CLAMP(int((src[i * 4 + 0] * 0.5 + 0.5) * 1023.0), 0, 1023);
 					value |= CLAMP(int((src[i * 4 + 1] * 0.5 + 0.5) * 1023.0), 0, 1023) << 10;
 					value |= CLAMP(int((src[i * 4 + 2] * 0.5 + 0.5) * 1023.0), 0, 1023) << 20;
-					value |= CLAMP(int((src[i * 4 + 3] * 0.5 + 0.5) * 3.0), 0, 3) << 30;
+					value |= CLAMP(int((src[i * 4 + 3] * 0.5 + 0.5) * 1023.0), 0, 1023) << 30;
 
-					copymem(&vw[p_offsets[ai] + i * p_vertex_stride], &value, 4);
+					memcpy(&vw[p_offsets[ai] + i * p_vertex_stride], &value, 4);
 				}
 
 			} break;
@@ -442,7 +442,7 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint
 					color16[1] = Math::make_half_float(src[i].g);
 					color16[2] = Math::make_half_float(src[i].b);
 					color16[3] = Math::make_half_float(src[i].a);
-					copymem(&aw[p_offsets[ai] + i * p_attrib_stride], color16, 8);
+					memcpy(&aw[p_offsets[ai] + i * p_attrib_stride], color16, 8);
 				}
 			} break;
 			case RS::ARRAY_TEX_UV: {
@@ -457,7 +457,7 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint
 				for (int i = 0; i < p_vertex_array_len; i++) {
 					float uv[2] = { src[i].x, src[i].y };
 
-					copymem(&aw[p_offsets[ai] + i * p_attrib_stride], uv, 2 * 4);
+					memcpy(&aw[p_offsets[ai] + i * p_attrib_stride], uv, 2 * 4);
 				}
 
 			} break;
@@ -472,8 +472,8 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint
 				const Vector2 *src = array.ptr();
 
 				for (int i = 0; i < p_vertex_array_len; i++) {
-					uint16_t uv[2] = { Math::make_half_float(src[i].x), Math::make_half_float(src[i].y) };
-					copymem(&aw[p_offsets[ai] + i * p_attrib_stride], uv, 2 * 2);
+					float uv[2] = { src[i].x, src[i].y };
+					memcpy(&aw[p_offsets[ai] + i * p_attrib_stride], uv, 2 * 4);
 				}
 			} break;
 			case RS::ARRAY_CUSTOM0:
@@ -495,7 +495,7 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint
 						const uint8_t *src = array.ptr();
 
 						for (int i = 0; i < p_vertex_array_len; i++) {
-							copymem(&aw[p_offsets[ai] + i * p_attrib_stride], &src[i * 4], 4);
+							memcpy(&aw[p_offsets[ai] + i * p_attrib_stride], &src[i * 4], 4);
 						}
 
 					} break;
@@ -510,7 +510,7 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint
 						const uint8_t *src = array.ptr();
 
 						for (int i = 0; i < p_vertex_array_len; i++) {
-							copymem(&aw[p_offsets[ai] + i * p_attrib_stride], &src[i * 8], 8);
+							memcpy(&aw[p_offsets[ai] + i * p_attrib_stride], &src[i * 8], 8);
 						}
 					} break;
 					case ARRAY_CUSTOM_R_FLOAT:
@@ -528,7 +528,7 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint
 						const float *src = array.ptr();
 
 						for (int i = 0; i < p_vertex_array_len; i++) {
-							copymem(&aw[p_offsets[ai] + i * p_attrib_stride], &src[i * s], 4 * s);
+							memcpy(&aw[p_offsets[ai] + i * p_attrib_stride], &src[i * s], 4 * s);
 						}
 					} break;
 					default: {
@@ -554,7 +554,7 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint
 							data[j] = CLAMP(src[i * bone_count + j] * 65535, 0, 65535);
 						}
 
-						copymem(&sw[p_offsets[ai] + i * p_skin_stride], data, 2 * bone_count);
+						memcpy(&sw[p_offsets[ai] + i * p_skin_stride], data, 2 * bone_count);
 					}
 				}
 
@@ -578,7 +578,7 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint
 						max_bone = MAX(data[j], max_bone);
 					}
 
-					copymem(&sw[p_offsets[ai] + i * p_skin_stride], data, 2 * bone_count);
+					memcpy(&sw[p_offsets[ai] + i * p_skin_stride], data, 2 * bone_count);
 				}
 
 			} break;
@@ -600,11 +600,11 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint
 					if (p_vertex_array_len < (1 << 16)) {
 						uint16_t v = src[i];
 
-						copymem(&iw[i * 2], &v, 2);
+						memcpy(&iw[i * 2], &v, 2);
 					} else {
 						uint32_t v = src[i];
 
-						copymem(&iw[i * 4], &v, 4);
+						memcpy(&iw[i * 4], &v, 4);
 					}
 				}
 			} break;
@@ -1172,7 +1172,7 @@ Array RenderingServer::_get_array_from_surface(uint32_t p_format, Vector<uint8_t
 
 						for (int j = 0; j < p_vertex_len; j++) {
 							const uint8_t *v = (const uint8_t *)&ar[j * attrib_elem_size + offsets[i]];
-							copymem(&w[j * s], v, s);
+							memcpy(&w[j * s], v, s);
 						}
 
 						ret[i] = arr;
@@ -1189,7 +1189,7 @@ Array RenderingServer::_get_array_from_surface(uint32_t p_format, Vector<uint8_t
 
 						for (int j = 0; j < p_vertex_len; j++) {
 							const float *v = (const float *)&ar[j * attrib_elem_size + offsets[i]];
-							copymem(&w[j * s], v, s * sizeof(float));
+							memcpy(&w[j * s], v, s * sizeof(float));
 						}
 						ret[i] = arr;
 
@@ -1489,7 +1489,7 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("mesh_clear", "mesh"), &RenderingServer::mesh_clear);
 
 	ClassDB::bind_method(D_METHOD("multimesh_create"), &RenderingServer::multimesh_create);
-	ClassDB::bind_method(D_METHOD("multimesh_allocate", "multimesh", "instances", "transform_format", "color_format", "custom_data_format"), &RenderingServer::multimesh_allocate, DEFVAL(false), DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("multimesh_allocate_data", "multimesh", "instances", "transform_format", "color_format", "custom_data_format"), &RenderingServer::multimesh_allocate_data, DEFVAL(false), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("multimesh_get_instance_count", "multimesh"), &RenderingServer::multimesh_get_instance_count);
 	ClassDB::bind_method(D_METHOD("multimesh_set_mesh", "multimesh", "mesh"), &RenderingServer::multimesh_set_mesh);
 	ClassDB::bind_method(D_METHOD("multimesh_instance_set_transform", "multimesh", "index", "transform"), &RenderingServer::multimesh_instance_set_transform);
@@ -1523,7 +1523,7 @@ void RenderingServer::_bind_methods() {
 #endif
 
 	ClassDB::bind_method(D_METHOD("skeleton_create"), &RenderingServer::skeleton_create);
-	ClassDB::bind_method(D_METHOD("skeleton_allocate", "skeleton", "bones", "is_2d_skeleton"), &RenderingServer::skeleton_allocate, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("skeleton_allocate_data", "skeleton", "bones", "is_2d_skeleton"), &RenderingServer::skeleton_allocate_data, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("skeleton_get_bone_count", "skeleton"), &RenderingServer::skeleton_get_bone_count);
 	ClassDB::bind_method(D_METHOD("skeleton_bone_set_transform", "skeleton", "bone", "transform"), &RenderingServer::skeleton_bone_set_transform);
 	ClassDB::bind_method(D_METHOD("skeleton_bone_get_transform", "skeleton", "bone"), &RenderingServer::skeleton_bone_get_transform);
@@ -1594,7 +1594,7 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("gi_probe_set_compress", "probe", "enable"), &RenderingServer::gi_probe_set_compress);
 	ClassDB::bind_method(D_METHOD("gi_probe_is_compressed", "probe"), &RenderingServer::gi_probe_is_compressed);
 #endif
-/*
+	/*
 	ClassDB::bind_method(D_METHOD("lightmap_create()"), &RenderingServer::lightmap_capture_create);
 	ClassDB::bind_method(D_METHOD("lightmap_capture_set_bounds", "capture", "bounds"), &RenderingServer::lightmap_capture_set_bounds);
 	ClassDB::bind_method(D_METHOD("lightmap_capture_get_bounds", "capture"), &RenderingServer::lightmap_capture_get_bounds);
@@ -1607,6 +1607,10 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("lightmap_capture_set_energy", "capture", "energy"), &RenderingServer::lightmap_capture_set_energy);
 	ClassDB::bind_method(D_METHOD("lightmap_capture_get_energy", "capture"), &RenderingServer::lightmap_capture_get_energy);
 */
+
+	ClassDB::bind_method(D_METHOD("occluder_create"), &RenderingServer::occluder_create);
+	ClassDB::bind_method(D_METHOD("occluder_set_mesh"), &RenderingServer::occluder_set_mesh);
+
 #endif
 	ClassDB::bind_method(D_METHOD("particles_create"), &RenderingServer::particles_create);
 	ClassDB::bind_method(D_METHOD("particles_set_emitting", "particles", "emitting"), &RenderingServer::particles_set_emitting);
@@ -1667,6 +1671,9 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("viewport_set_shadow_atlas_quadrant_subdivision", "viewport", "quadrant", "subdivision"), &RenderingServer::viewport_set_shadow_atlas_quadrant_subdivision);
 	ClassDB::bind_method(D_METHOD("viewport_set_msaa", "viewport", "msaa"), &RenderingServer::viewport_set_msaa);
 	ClassDB::bind_method(D_METHOD("viewport_set_use_debanding", "viewport", "enable"), &RenderingServer::viewport_set_use_debanding);
+	ClassDB::bind_method(D_METHOD("viewport_set_use_occlusion_culling", "viewport", "enable"), &RenderingServer::viewport_set_use_occlusion_culling);
+	ClassDB::bind_method(D_METHOD("viewport_set_occlusion_rays_per_thread", "rays_per_thread"), &RenderingServer::viewport_set_occlusion_rays_per_thread);
+	ClassDB::bind_method(D_METHOD("viewport_set_occlusion_culling_build_quality", "quality"), &RenderingServer::viewport_set_occlusion_culling_build_quality);
 
 	ClassDB::bind_method(D_METHOD("viewport_get_render_info", "viewport", "info"), &RenderingServer::viewport_get_render_info);
 	ClassDB::bind_method(D_METHOD("viewport_set_debug_draw", "viewport", "draw"), &RenderingServer::viewport_set_debug_draw);
@@ -1694,6 +1701,7 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("scenario_create"), &RenderingServer::scenario_create);
 	ClassDB::bind_method(D_METHOD("scenario_set_debug", "scenario", "debug_mode"), &RenderingServer::scenario_set_debug);
 	ClassDB::bind_method(D_METHOD("scenario_set_environment", "scenario", "environment"), &RenderingServer::scenario_set_environment);
+	ClassDB::bind_method(D_METHOD("scenario_set_camera_effects", "scenario", "effects"), &RenderingServer::scenario_set_camera_effects);
 	ClassDB::bind_method(D_METHOD("scenario_set_fallback_environment", "scenario", "environment"), &RenderingServer::scenario_set_fallback_environment);
 
 #ifndef _3D_DISABLED
@@ -1706,7 +1714,7 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("instance_set_transform", "instance", "transform"), &RenderingServer::instance_set_transform);
 	ClassDB::bind_method(D_METHOD("instance_attach_object_instance_id", "instance", "id"), &RenderingServer::instance_attach_object_instance_id);
 	ClassDB::bind_method(D_METHOD("instance_set_blend_shape_weight", "instance", "shape", "weight"), &RenderingServer::instance_set_blend_shape_weight);
-	ClassDB::bind_method(D_METHOD("instance_set_surface_material", "instance", "surface", "material"), &RenderingServer::instance_set_surface_material);
+	ClassDB::bind_method(D_METHOD("instance_set_surface_override_material", "instance", "surface", "material"), &RenderingServer::instance_set_surface_override_material);
 	ClassDB::bind_method(D_METHOD("instance_set_visible", "instance", "visible"), &RenderingServer::instance_set_visible);
 	//	ClassDB::bind_method(D_METHOD("instance_set_use_lightmap", "instance", "lightmap_instance", "lightmap"), &RenderingServer::instance_set_use_lightmap);
 	ClassDB::bind_method(D_METHOD("instance_set_custom_aabb", "instance", "aabb"), &RenderingServer::instance_set_custom_aabb);
@@ -2024,6 +2032,7 @@ void RenderingServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(VIEWPORT_DEBUG_DRAW_SDFGI);
 	BIND_ENUM_CONSTANT(VIEWPORT_DEBUG_DRAW_SDFGI_PROBES);
 	BIND_ENUM_CONSTANT(VIEWPORT_DEBUG_DRAW_GI_BUFFER);
+	BIND_ENUM_CONSTANT(VIEWPORT_DEBUG_DRAW_OCCLUDERS);
 
 	BIND_ENUM_CONSTANT(SKY_MODE_QUALITY);
 	BIND_ENUM_CONSTANT(SKY_MODE_REALTIME);
@@ -2093,6 +2102,10 @@ void RenderingServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(SCENARIO_DEBUG_OVERDRAW);
 	BIND_ENUM_CONSTANT(SCENARIO_DEBUG_SHADELESS);
 
+	BIND_ENUM_CONSTANT(VIEWPORT_OCCLUSION_BUILD_QUALITY_LOW);
+	BIND_ENUM_CONSTANT(VIEWPORT_OCCLUSION_BUILD_QUALITY_MEDIUM);
+	BIND_ENUM_CONSTANT(VIEWPORT_OCCLUSION_BUILD_QUALITY_HIGH);
+
 	BIND_ENUM_CONSTANT(INSTANCE_NONE);
 	BIND_ENUM_CONSTANT(INSTANCE_MESH);
 	BIND_ENUM_CONSTANT(INSTANCE_MULTIMESH);
@@ -2104,12 +2117,14 @@ void RenderingServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(INSTANCE_DECAL);
 	BIND_ENUM_CONSTANT(INSTANCE_GI_PROBE);
 	BIND_ENUM_CONSTANT(INSTANCE_LIGHTMAP);
+	BIND_ENUM_CONSTANT(INSTANCE_OCCLUDER);
 	BIND_ENUM_CONSTANT(INSTANCE_MAX);
 	BIND_ENUM_CONSTANT(INSTANCE_GEOMETRY_MASK);
 
 	BIND_ENUM_CONSTANT(INSTANCE_FLAG_USE_BAKED_LIGHT);
 	BIND_ENUM_CONSTANT(INSTANCE_FLAG_USE_DYNAMIC_GI);
 	BIND_ENUM_CONSTANT(INSTANCE_FLAG_DRAW_NEXT_FRAME_IF_VISIBLE);
+	BIND_ENUM_CONSTANT(INSTANCE_FLAG_IGNORE_OCCLUSION_CULLING);
 	BIND_ENUM_CONSTANT(INSTANCE_FLAG_MAX);
 
 	BIND_ENUM_CONSTANT(SHADOW_CASTING_SETTING_OFF);
@@ -2259,130 +2274,138 @@ RenderingServer::RenderingServer() {
 	thread_pool = memnew(RendererThreadPool);
 	singleton = this;
 
-	GLOBAL_DEF_RST("rendering/vram_compression/import_bptc", false);
-	GLOBAL_DEF_RST("rendering/vram_compression/import_s3tc", true);
-	GLOBAL_DEF_RST("rendering/vram_compression/import_etc", false);
-	GLOBAL_DEF_RST("rendering/vram_compression/import_etc2", true);
-	GLOBAL_DEF_RST("rendering/vram_compression/import_pvrtc", false);
+	GLOBAL_DEF_RST("rendering/textures/vram_compression/import_bptc", false);
+	GLOBAL_DEF_RST("rendering/textures/vram_compression/import_s3tc", true);
+	GLOBAL_DEF_RST("rendering/textures/vram_compression/import_etc", false);
+	GLOBAL_DEF_RST("rendering/textures/vram_compression/import_etc2", true);
+	GLOBAL_DEF_RST("rendering/textures/vram_compression/import_pvrtc", false);
 
 	GLOBAL_DEF("rendering/limits/time/time_rollover_secs", 3600);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/limits/time/time_rollover_secs", PropertyInfo(Variant::FLOAT, "rendering/limits/time/time_rollover_secs", PROPERTY_HINT_RANGE, "0,10000,1,or_greater"));
 
-	GLOBAL_DEF("rendering/quality/directional_shadow/size", 4096);
-	GLOBAL_DEF("rendering/quality/directional_shadow/size.mobile", 2048);
-	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/directional_shadow/size", PropertyInfo(Variant::INT, "rendering/quality/directional_shadow/size", PROPERTY_HINT_RANGE, "256,16384"));
-	GLOBAL_DEF("rendering/quality/directional_shadow/soft_shadow_quality", 2);
-	GLOBAL_DEF("rendering/quality/directional_shadow/soft_shadow_quality.mobile", 0);
-	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/directional_shadow/soft_shadow_quality", PropertyInfo(Variant::INT, "rendering/quality/directional_shadow/soft_shadow_quality", PROPERTY_HINT_ENUM, "Hard (Fastest),Soft Low (Fast),Soft Medium (Average),Soft High (Slow),Soft Ultra (Slowest)"));
-	GLOBAL_DEF("rendering/quality/directional_shadow/16_bits", true);
+	GLOBAL_DEF("rendering/shadows/directional_shadow/size", 4096);
+	GLOBAL_DEF("rendering/shadows/directional_shadow/size.mobile", 2048);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/shadows/directional_shadow/size", PropertyInfo(Variant::INT, "rendering/shadows/directional_shadow/size", PROPERTY_HINT_RANGE, "256,16384"));
+	GLOBAL_DEF("rendering/shadows/directional_shadow/soft_shadow_quality", 2);
+	GLOBAL_DEF("rendering/shadows/directional_shadow/soft_shadow_quality.mobile", 0);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/shadows/directional_shadow/soft_shadow_quality", PropertyInfo(Variant::INT, "rendering/shadows/directional_shadow/soft_shadow_quality", PROPERTY_HINT_ENUM, "Hard (Fastest),Soft Low (Fast),Soft Medium (Average),Soft High (Slow),Soft Ultra (Slowest)"));
+	GLOBAL_DEF("rendering/shadows/directional_shadow/16_bits", true);
 
-	GLOBAL_DEF("rendering/quality/shadows/soft_shadow_quality", 2);
-	GLOBAL_DEF("rendering/quality/shadows/soft_shadow_quality.mobile", 0);
-	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/shadows/soft_shadow_quality", PropertyInfo(Variant::INT, "rendering/quality/shadows/soft_shadow_quality", PROPERTY_HINT_ENUM, "Hard (Fastest),Soft Low (Fast),Soft Medium (Average),Soft High (Slow),Soft Ultra (Slowest)"));
+	GLOBAL_DEF("rendering/shadows/shadows/soft_shadow_quality", 2);
+	GLOBAL_DEF("rendering/shadows/shadows/soft_shadow_quality.mobile", 0);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/shadows/shadows/soft_shadow_quality", PropertyInfo(Variant::INT, "rendering/shadows/shadows/soft_shadow_quality", PROPERTY_HINT_ENUM, "Hard (Fastest),Soft Low (Fast),Soft Medium (Average),Soft High (Slow),Soft Ultra (Slowest)"));
 
-	GLOBAL_DEF("rendering/quality/2d_shadow_atlas/size", 2048);
+	GLOBAL_DEF("rendering/2d/shadow_atlas/size", 2048);
 
-	GLOBAL_DEF("rendering/quality/rd_renderer/use_low_end_renderer", false);
-	GLOBAL_DEF("rendering/quality/rd_renderer/use_low_end_renderer.mobile", true);
+	GLOBAL_DEF_RST("rendering/vulkan/rendering/back_end", 0);
+	GLOBAL_DEF_RST("rendering/vulkan/rendering/back_end.mobile", 1);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/vulkan/rendering/back_end",
+			PropertyInfo(Variant::INT,
+					"rendering/vulkan/rendering/back_end",
+					PROPERTY_HINT_ENUM, "ForwardClustered,ForwardMobile"));
 
-	GLOBAL_DEF("rendering/quality/reflections/roughness_layers", 8);
-	GLOBAL_DEF("rendering/quality/reflections/texture_array_reflections", true);
-	GLOBAL_DEF("rendering/quality/reflections/texture_array_reflections.mobile", false);
-	GLOBAL_DEF("rendering/quality/reflections/ggx_samples", 1024);
-	GLOBAL_DEF("rendering/quality/reflections/ggx_samples.mobile", 128);
-	GLOBAL_DEF("rendering/quality/reflections/fast_filter_high_quality", false);
-	GLOBAL_DEF("rendering/quality/reflection_atlas/reflection_size", 256);
-	GLOBAL_DEF("rendering/quality/reflection_atlas/reflection_size.mobile", 128);
-	GLOBAL_DEF("rendering/quality/reflection_atlas/reflection_count", 64);
+	GLOBAL_DEF("rendering/reflections/sky_reflections/roughness_layers", 8);
+	GLOBAL_DEF("rendering/reflections/sky_reflections/texture_array_reflections", true);
+	GLOBAL_DEF("rendering/reflections/sky_reflections/texture_array_reflections.mobile", false);
+	GLOBAL_DEF("rendering/reflections/sky_reflections/ggx_samples", 1024);
+	GLOBAL_DEF("rendering/reflections/sky_reflections/ggx_samples.mobile", 128);
+	GLOBAL_DEF("rendering/reflections/sky_reflections/fast_filter_high_quality", false);
+	GLOBAL_DEF("rendering/reflections/reflection_atlas/reflection_size", 256);
+	GLOBAL_DEF("rendering/reflections/reflection_atlas/reflection_size.mobile", 128);
+	GLOBAL_DEF("rendering/reflections/reflection_atlas/reflection_count", 64);
 
-	GLOBAL_DEF("rendering/quality/gi/use_half_resolution", false);
+	GLOBAL_DEF("rendering/global_illumination/gi/use_half_resolution", false);
 
-	GLOBAL_DEF("rendering/quality/gi_probes/anisotropic", false);
-	GLOBAL_DEF("rendering/quality/gi_probes/quality", 1);
-	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/gi_probes/quality", PropertyInfo(Variant::INT, "rendering/quality/gi_probes/quality", PROPERTY_HINT_ENUM, "Low (4 Cones - Fast),High (6 Cones - Slow)"));
+	GLOBAL_DEF("rendering/global_illumination/gi_probes/anisotropic", false);
+	GLOBAL_DEF("rendering/global_illumination/gi_probes/quality", 1);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/global_illumination/gi_probes/quality", PropertyInfo(Variant::INT, "rendering/global_illumination/gi_probes/quality", PROPERTY_HINT_ENUM, "Low (4 Cones - Fast),High (6 Cones - Slow)"));
 
-	GLOBAL_DEF("rendering/quality/shading/force_vertex_shading", false);
-	GLOBAL_DEF("rendering/quality/shading/force_vertex_shading.mobile", true);
-	GLOBAL_DEF("rendering/quality/shading/force_lambert_over_burley", false);
-	GLOBAL_DEF("rendering/quality/shading/force_lambert_over_burley.mobile", true);
-	GLOBAL_DEF("rendering/quality/shading/force_blinn_over_ggx", false);
-	GLOBAL_DEF("rendering/quality/shading/force_blinn_over_ggx.mobile", true);
+	GLOBAL_DEF("rendering/shading/overrides/force_vertex_shading", false);
+	GLOBAL_DEF("rendering/shading/overrides/force_vertex_shading.mobile", true);
+	GLOBAL_DEF("rendering/shading/overrides/force_lambert_over_burley", false);
+	GLOBAL_DEF("rendering/shading/overrides/force_lambert_over_burley.mobile", true);
+	GLOBAL_DEF("rendering/shading/overrides/force_blinn_over_ggx", false);
+	GLOBAL_DEF("rendering/shading/overrides/force_blinn_over_ggx.mobile", true);
 
-	GLOBAL_DEF("rendering/quality/depth_prepass/enable", true);
-	GLOBAL_DEF("rendering/quality/depth_prepass/disable_for_vendors", "PowerVR,Mali,Adreno,Apple");
+	GLOBAL_DEF("rendering/driver/depth_prepass/enable", true);
+	GLOBAL_DEF("rendering/driver/depth_prepass/disable_for_vendors", "PowerVR,Mali,Adreno,Apple");
 
-	GLOBAL_DEF("rendering/quality/texture_filters/use_nearest_mipmap_filter", false);
-	GLOBAL_DEF("rendering/quality/texture_filters/anisotropic_filtering_level", 2);
-	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/texture_filters/anisotropic_filtering_level", PropertyInfo(Variant::INT, "rendering/quality/texture_filters/anisotropic_filtering_level", PROPERTY_HINT_ENUM, "Disabled (Fastest),2x (Faster),4x (Fast),8x (Average),16x (Slow)"));
+	GLOBAL_DEF("rendering/textures/default_filters/use_nearest_mipmap_filter", false);
+	GLOBAL_DEF("rendering/textures/default_filters/anisotropic_filtering_level", 2);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/textures/default_filters/anisotropic_filtering_level", PropertyInfo(Variant::INT, "rendering/textures/default_filters/anisotropic_filtering_level", PROPERTY_HINT_ENUM, "Disabled (Fastest),2x (Faster),4x (Fast),8x (Average),16x (Slow)"));
 
-	GLOBAL_DEF("rendering/quality/depth_of_field/depth_of_field_bokeh_shape", 1);
-	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/depth_of_field/depth_of_field_bokeh_shape", PropertyInfo(Variant::INT, "rendering/quality/depth_of_field/depth_of_field_bokeh_shape", PROPERTY_HINT_ENUM, "Box (Fast),Hexagon (Average),Circle (Slow)"));
-	GLOBAL_DEF("rendering/quality/depth_of_field/depth_of_field_bokeh_quality", 2);
-	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/depth_of_field/depth_of_field_bokeh_quality", PropertyInfo(Variant::INT, "rendering/quality/depth_of_field/depth_of_field_bokeh_quality", PROPERTY_HINT_ENUM, "Very Low (Fastest),Low (Fast),Medium (Average),High (Slow)"));
-	GLOBAL_DEF("rendering/quality/depth_of_field/depth_of_field_use_jitter", false);
+	GLOBAL_DEF("rendering/camera/depth_of_field/depth_of_field_bokeh_shape", 1);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/camera/depth_of_field/depth_of_field_bokeh_shape", PropertyInfo(Variant::INT, "rendering/camera/depth_of_field/depth_of_field_bokeh_shape", PROPERTY_HINT_ENUM, "Box (Fast),Hexagon (Average),Circle (Slow)"));
+	GLOBAL_DEF("rendering/camera/depth_of_field/depth_of_field_bokeh_quality", 2);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/camera/depth_of_field/depth_of_field_bokeh_quality", PropertyInfo(Variant::INT, "rendering/camera/depth_of_field/depth_of_field_bokeh_quality", PROPERTY_HINT_ENUM, "Very Low (Fastest),Low (Fast),Medium (Average),High (Slow)"));
+	GLOBAL_DEF("rendering/camera/depth_of_field/depth_of_field_use_jitter", false);
 
-	GLOBAL_DEF("rendering/quality/ssao/quality", 2);
-	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/ssao/quality", PropertyInfo(Variant::INT, "rendering/quality/ssao/quality", PROPERTY_HINT_ENUM, "Very Low (Fast),Low (Fast),Medium (Average),High (Slow),Ultra (Custom)"));
-	GLOBAL_DEF("rendering/quality/ssao/half_size", false);
-	GLOBAL_DEF("rendering/quality/ssao/half_size.mobile", true);
-	GLOBAL_DEF("rendering/quality/ssao/adaptive_target", 0.5);
-	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/ssao/adaptive_target", PropertyInfo(Variant::FLOAT, "rendering/quality/ssao/adaptive_target", PROPERTY_HINT_RANGE, "0.0,1.0,0.01"));
-	GLOBAL_DEF("rendering/quality/ssao/blur_passes", 2);
-	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/ssao/blur_passes", PropertyInfo(Variant::INT, "rendering/quality/ssao/blur_passes", PROPERTY_HINT_RANGE, "0,6"));
-	GLOBAL_DEF("rendering/quality/ssao/fadeout_from", 50.0);
-	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/ssao/fadeout_from", PropertyInfo(Variant::FLOAT, "rendering/quality/ssao/fadeout_from", PROPERTY_HINT_RANGE, "0.0,512,0.1,or_greater"));
-	GLOBAL_DEF("rendering/quality/ssao/fadeout_to", 300.0);
-	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/ssao/fadeout_to", PropertyInfo(Variant::FLOAT, "rendering/quality/ssao/fadeout_to", PROPERTY_HINT_RANGE, "64,65536,0.1,or_greater"));
+	GLOBAL_DEF("rendering/environment/ssao/quality", 2);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/environment/ssao/quality", PropertyInfo(Variant::INT, "rendering/environment/ssao/quality", PROPERTY_HINT_ENUM, "Very Low (Fast),Low (Fast),Medium (Average),High (Slow),Ultra (Custom)"));
+	GLOBAL_DEF("rendering/environment/ssao/half_size", false);
+	GLOBAL_DEF("rendering/environment/ssao/half_size.mobile", true);
+	GLOBAL_DEF("rendering/environment/ssao/adaptive_target", 0.5);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/environment/ssao/adaptive_target", PropertyInfo(Variant::FLOAT, "rendering/environment/ssao/adaptive_target", PROPERTY_HINT_RANGE, "0.0,1.0,0.01"));
+	GLOBAL_DEF("rendering/environment/ssao/blur_passes", 2);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/environment/ssao/blur_passes", PropertyInfo(Variant::INT, "rendering/environment/ssao/blur_passes", PROPERTY_HINT_RANGE, "0,6"));
+	GLOBAL_DEF("rendering/environment/ssao/fadeout_from", 50.0);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/environment/ssao/fadeout_from", PropertyInfo(Variant::FLOAT, "rendering/environment/ssao/fadeout_from", PROPERTY_HINT_RANGE, "0.0,512,0.1,or_greater"));
+	GLOBAL_DEF("rendering/environment/ssao/fadeout_to", 300.0);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/environment/ssao/fadeout_to", PropertyInfo(Variant::FLOAT, "rendering/environment/ssao/fadeout_to", PROPERTY_HINT_RANGE, "64,65536,0.1,or_greater"));
 
-	GLOBAL_DEF("rendering/quality/screen_filters/screen_space_roughness_limiter_enabled", true);
-	GLOBAL_DEF("rendering/quality/screen_filters/screen_space_roughness_limiter_amount", 0.25);
-	GLOBAL_DEF("rendering/quality/screen_filters/screen_space_roughness_limiter_limit", 0.18);
-	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/screen_filters/screen_space_roughness_limiter_amount", PropertyInfo(Variant::FLOAT, "rendering/quality/screen_filters/screen_space_roughness_limiter_amount", PROPERTY_HINT_RANGE, "0.01,4.0,0.01"));
-	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/screen_filters/screen_space_roughness_limiter_limit", PropertyInfo(Variant::FLOAT, "rendering/quality/screen_filters/screen_space_roughness_limiter_limit", PROPERTY_HINT_RANGE, "0.01,1.0,0.01"));
+	GLOBAL_DEF("rendering/anti_aliasing/screen_space_roughness_limiter/enabled", true);
+	GLOBAL_DEF("rendering/anti_aliasing/screen_space_roughness_limiter/amount", 0.25);
+	GLOBAL_DEF("rendering/anti_aliasing/screen_space_roughness_limiter/limit", 0.18);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/anti_aliasing/screen_space_roughness_limiter/amount", PropertyInfo(Variant::FLOAT, "rendering/anti_aliasing/screen_space_roughness_limiter/amount", PROPERTY_HINT_RANGE, "0.01,4.0,0.01"));
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/anti_aliasing/screen_space_roughness_limiter/limit", PropertyInfo(Variant::FLOAT, "rendering/anti_aliasing/screen_space_roughness_limiter/limit", PROPERTY_HINT_RANGE, "0.01,1.0,0.01"));
 
-	GLOBAL_DEF("rendering/quality/glow/upscale_mode", 1);
-	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/glow/upscale_mode", PropertyInfo(Variant::INT, "rendering/quality/glow/upscale_mode", PROPERTY_HINT_ENUM, "Linear (Fast),Bicubic (Slow)"));
-	GLOBAL_DEF("rendering/quality/glow/upscale_mode.mobile", 0);
-	GLOBAL_DEF("rendering/quality/glow/use_high_quality", false);
+	GLOBAL_DEF_RST("rendering/occlusion_culling/occlusion_rays_per_thread", 512);
+	GLOBAL_DEF_RST("rendering/occlusion_culling/bvh_build_quality", 2);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/occlusion_culling/bvh_build_quality", PropertyInfo(Variant::INT, "rendering/occlusion_culling/bvh_build_quality", PROPERTY_HINT_ENUM, "Low,Medium,High"));
 
-	GLOBAL_DEF("rendering/quality/screen_space_reflection/roughness_quality", 1);
-	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/screen_space_reflection/roughness_quality", PropertyInfo(Variant::INT, "rendering/quality/screen_space_reflection/roughness_quality", PROPERTY_HINT_ENUM, "Disabled (Fastest),Low (Fast),Medium (Average),High (Slow)"));
+	GLOBAL_DEF("rendering/environment/glow/upscale_mode", 1);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/environment/glow/upscale_mode", PropertyInfo(Variant::INT, "rendering/environment/glow/upscale_mode", PROPERTY_HINT_ENUM, "Linear (Fast),Bicubic (Slow)"));
+	GLOBAL_DEF("rendering/environment/glow/upscale_mode.mobile", 0);
+	GLOBAL_DEF("rendering/environment/glow/use_high_quality", false);
 
-	GLOBAL_DEF("rendering/quality/subsurface_scattering/subsurface_scattering_quality", 1);
-	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/subsurface_scattering/subsurface_scattering_quality", PropertyInfo(Variant::INT, "rendering/quality/subsurface_scattering/subsurface_scattering_quality", PROPERTY_HINT_ENUM, "Disabled (Fastest),Low (Fast),Medium (Average),High (Slow)"));
-	GLOBAL_DEF("rendering/quality/subsurface_scattering/subsurface_scattering_scale", 0.05);
-	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/subsurface_scattering/subsurface_scattering_scale", PropertyInfo(Variant::FLOAT, "rendering/quality/subsurface_scattering/subsurface_scattering_scale", PROPERTY_HINT_RANGE, "0.001,1,0.001"));
-	GLOBAL_DEF("rendering/quality/subsurface_scattering/subsurface_scattering_depth_scale", 0.01);
-	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/subsurface_scattering/subsurface_scattering_depth_scale", PropertyInfo(Variant::FLOAT, "rendering/quality/subsurface_scattering/subsurface_scattering_depth_scale", PROPERTY_HINT_RANGE, "0.001,1,0.001"));
+	GLOBAL_DEF("rendering/environment/screen_space_reflection/roughness_quality", 1);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/environment/screen_space_reflection/roughness_quality", PropertyInfo(Variant::INT, "rendering/environment/screen_space_reflection/roughness_quality", PROPERTY_HINT_ENUM, "Disabled (Fastest),Low (Fast),Medium (Average),High (Slow)"));
 
-	GLOBAL_DEF("rendering/high_end/global_shader_variables_buffer_size", 65536);
+	GLOBAL_DEF("rendering/environment/subsurface_scattering/subsurface_scattering_quality", 1);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/environment/subsurface_scattering/subsurface_scattering_quality", PropertyInfo(Variant::INT, "rendering/environment/subsurface_scattering/subsurface_scattering_quality", PROPERTY_HINT_ENUM, "Disabled (Fastest),Low (Fast),Medium (Average),High (Slow)"));
+	GLOBAL_DEF("rendering/environment/subsurface_scattering/subsurface_scattering_scale", 0.05);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/environment/subsurface_scattering/subsurface_scattering_scale", PropertyInfo(Variant::FLOAT, "rendering/environment/subsurface_scattering/subsurface_scattering_scale", PROPERTY_HINT_RANGE, "0.001,1,0.001"));
+	GLOBAL_DEF("rendering/environment/subsurface_scattering/subsurface_scattering_depth_scale", 0.01);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/environment/subsurface_scattering/subsurface_scattering_depth_scale", PropertyInfo(Variant::FLOAT, "rendering/environment/subsurface_scattering/subsurface_scattering_depth_scale", PROPERTY_HINT_RANGE, "0.001,1,0.001"));
 
-	GLOBAL_DEF("rendering/lightmapper/probe_capture_update_speed", 15);
-	ProjectSettings::get_singleton()->set_custom_property_info("rendering/lightmapper/probe_capture_update_speed", PropertyInfo(Variant::FLOAT, "rendering/lightmapper/probe_capture_update_speed", PROPERTY_HINT_RANGE, "0.001,256,0.001"));
+	GLOBAL_DEF("rendering/limits/global_shader_variables/buffer_size", 65536);
 
-	GLOBAL_DEF("rendering/sdfgi/probe_ray_count", 1);
-	ProjectSettings::get_singleton()->set_custom_property_info("rendering/sdfgi/probe_ray_count", PropertyInfo(Variant::INT, "rendering/sdfgi/probe_ray_count", PROPERTY_HINT_ENUM, "8 (Fastest),16,32,64,96,128 (Slowest)"));
-	GLOBAL_DEF("rendering/sdfgi/frames_to_converge", 4);
-	ProjectSettings::get_singleton()->set_custom_property_info("rendering/sdfgi/frames_to_converge", PropertyInfo(Variant::INT, "rendering/sdfgi/frames_to_converge", PROPERTY_HINT_ENUM, "5 (Less Latency but Lower Quality),10,15,20,25,30 (More Latency but Higher Quality)"));
-	GLOBAL_DEF("rendering/sdfgi/frames_to_update_lights", 2);
-	ProjectSettings::get_singleton()->set_custom_property_info("rendering/sdfgi/frames_to_update_lights", PropertyInfo(Variant::INT, "rendering/sdfgi/frames_to_update_lights", PROPERTY_HINT_ENUM, "1 (Slower),2,4,8,16 (Faster)"));
+	GLOBAL_DEF("rendering/lightmapping/probe_capture/update_speed", 15);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/lightmapping/probe_capture/update_speed", PropertyInfo(Variant::FLOAT, "rendering/lightmapping/probe_capture/update_speed", PROPERTY_HINT_RANGE, "0.001,256,0.001"));
 
-	GLOBAL_DEF("rendering/volumetric_fog/volume_size", 64);
-	ProjectSettings::get_singleton()->set_custom_property_info("rendering/volumetric_fog/volume_size", PropertyInfo(Variant::INT, "rendering/volumetric_fog/volume_size", PROPERTY_HINT_RANGE, "16,512,1"));
-	GLOBAL_DEF("rendering/volumetric_fog/volume_depth", 128);
-	ProjectSettings::get_singleton()->set_custom_property_info("rendering/volumetric_fog/volume_depth", PropertyInfo(Variant::INT, "rendering/volumetric_fog/volume_depth", PROPERTY_HINT_RANGE, "16,512,1"));
-	GLOBAL_DEF("rendering/volumetric_fog/use_filter", 1);
-	ProjectSettings::get_singleton()->set_custom_property_info("rendering/volumetric_fog/use_filter", PropertyInfo(Variant::INT, "rendering/volumetric_fog/use_filter", PROPERTY_HINT_ENUM, "No (Faster),Yes (Higher Quality)"));
+	GLOBAL_DEF("rendering/global_illumination/sdfgi/probe_ray_count", 1);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/global_illumination/sdfgi/probe_ray_count", PropertyInfo(Variant::INT, "rendering/global_illumination/sdfgi/probe_ray_count", PROPERTY_HINT_ENUM, "8 (Fastest),16,32,64,96,128 (Slowest)"));
+	GLOBAL_DEF("rendering/global_illumination/sdfgi/frames_to_converge", 4);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/global_illumination/sdfgi/frames_to_converge", PropertyInfo(Variant::INT, "rendering/global_illumination/sdfgi/frames_to_converge", PROPERTY_HINT_ENUM, "5 (Less Latency but Lower Quality),10,15,20,25,30 (More Latency but Higher Quality)"));
+	GLOBAL_DEF("rendering/global_illumination/sdfgi/frames_to_update_lights", 2);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/global_illumination/sdfgi/frames_to_update_lights", PropertyInfo(Variant::INT, "rendering/global_illumination/sdfgi/frames_to_update_lights", PROPERTY_HINT_ENUM, "1 (Slower),2,4,8,16 (Faster)"));
 
-	GLOBAL_DEF("rendering/spatial_indexer/update_iterations_per_frame", 10);
-	ProjectSettings::get_singleton()->set_custom_property_info("rendering/spatial_indexer/update_iterations_per_frame", PropertyInfo(Variant::INT, "rendering/spatial_indexer/update_iterations_per_frame", PROPERTY_HINT_RANGE, "0,1024,1"));
-	GLOBAL_DEF("rendering/spatial_indexer/threaded_cull_minimum_instances", 1000);
-	ProjectSettings::get_singleton()->set_custom_property_info("rendering/spatial_indexer/threaded_cull_minimum_instances", PropertyInfo(Variant::INT, "rendering/spatial_indexer/threaded_cull_minimum_instances", PROPERTY_HINT_RANGE, "32,65536,1"));
-	GLOBAL_DEF("rendering/forward_renderer/threaded_render_minimum_instances", 500);
-	ProjectSettings::get_singleton()->set_custom_property_info("rendering/forward_renderer/threaded_render_minimum_instances", PropertyInfo(Variant::INT, "rendering/forward_renderer/threaded_render_minimum_instances", PROPERTY_HINT_RANGE, "32,65536,1"));
+	GLOBAL_DEF("rendering/environment/volumetric_fog/volume_size", 64);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/environment/volumetric_fog/volume_size", PropertyInfo(Variant::INT, "rendering/environment/volumetric_fog/volume_size", PROPERTY_HINT_RANGE, "16,512,1"));
+	GLOBAL_DEF("rendering/environment/volumetric_fog/volume_depth", 128);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/environment/volumetric_fog/volume_depth", PropertyInfo(Variant::INT, "rendering/environment/volumetric_fog/volume_depth", PROPERTY_HINT_RANGE, "16,512,1"));
+	GLOBAL_DEF("rendering/environment/volumetric_fog/use_filter", 1);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/environment/volumetric_fog/use_filter", PropertyInfo(Variant::INT, "rendering/environment/volumetric_fog/use_filter", PROPERTY_HINT_ENUM, "No (Faster),Yes (Higher Quality)"));
 
-	GLOBAL_DEF("rendering/cluster_builder/max_clustered_elements", 512);
-	ProjectSettings::get_singleton()->set_custom_property_info("rendering/cluster_builder/max_clustered_elements", PropertyInfo(Variant::FLOAT, "rendering/cluster_builder/max_clustered_elements", PROPERTY_HINT_RANGE, "32,8192,1"));
+	GLOBAL_DEF("rendering/limits/spatial_indexer/update_iterations_per_frame", 10);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/limits/spatial_indexer/update_iterations_per_frame", PropertyInfo(Variant::INT, "rendering/limits/spatial_indexer/update_iterations_per_frame", PROPERTY_HINT_RANGE, "0,1024,1"));
+	GLOBAL_DEF("rendering/limits/spatial_indexer/threaded_cull_minimum_instances", 1000);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/limits/spatial_indexer/threaded_cull_minimum_instances", PropertyInfo(Variant::INT, "rendering/limits/spatial_indexer/threaded_cull_minimum_instances", PROPERTY_HINT_RANGE, "32,65536,1"));
+	GLOBAL_DEF("rendering/limits/forward_renderer/threaded_render_minimum_instances", 500);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/limits/forward_renderer/threaded_render_minimum_instances", PropertyInfo(Variant::INT, "rendering/limits/forward_renderer/threaded_render_minimum_instances", PROPERTY_HINT_RANGE, "32,65536,1"));
+
+	GLOBAL_DEF("rendering/limits/cluster_builder/max_clustered_elements", 512);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/limits/cluster_builder/max_clustered_elements", PropertyInfo(Variant::FLOAT, "rendering/limits/cluster_builder/max_clustered_elements", PROPERTY_HINT_RANGE, "32,8192,1"));
 }
 
 RenderingServer::~RenderingServer() {

@@ -42,12 +42,12 @@ private:
 
 	// DOF blur
 	bool dof_blur_far_enabled = false;
-	float dof_blur_far_distance = 10;
-	float dof_blur_far_transition = 5;
+	float dof_blur_far_distance = 10.0;
+	float dof_blur_far_transition = 5.0;
 
 	bool dof_blur_near_enabled = false;
-	float dof_blur_near_distance = 2;
-	float dof_blur_near_transition = 1;
+	float dof_blur_near_distance = 2.0;
+	float dof_blur_near_transition = 1.0;
 
 	float dof_blur_amount = 0.1;
 	void _update_dof_blur();
@@ -59,6 +59,7 @@ private:
 
 protected:
 	static void _bind_methods();
+	void _validate_property(PropertyInfo &property) const override;
 
 public:
 	virtual RID get_rid() const override;

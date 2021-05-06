@@ -36,15 +36,7 @@ extern "C" {
 #endif
 
 #include <gdnative/math_defs.h>
-
-#define GODOT_VARIANT_SIZE (sizeof(godot_real_t) * 4 + sizeof(int64_t))
-
-#ifndef GODOT_CORE_API_GODOT_VARIANT_TYPE_DEFINED
-#define GODOT_CORE_API_GODOT_VARIANT_TYPE_DEFINED
-typedef struct {
-	uint8_t _dont_touch_that[GODOT_VARIANT_SIZE];
-} godot_variant;
-#endif
+#include <gdnative/variant_struct.h>
 
 typedef enum godot_variant_type {
 	GODOT_VARIANT_TYPE_NIL,
@@ -280,6 +272,8 @@ void GDAPI godot_variant_destroy(godot_variant *p_self);
 
 void GDAPI godot_variant_call(godot_variant *p_self, const godot_string_name *p_method, const godot_variant **p_args, const godot_int p_argument_count, godot_variant *r_return, godot_variant_call_error *r_error);
 void GDAPI godot_variant_call_with_cstring(godot_variant *p_self, const char *p_method, const godot_variant **p_args, const godot_int p_argument_count, godot_variant *r_return, godot_variant_call_error *r_error);
+void GDAPI godot_variant_call_static(godot_variant_type p_type, const godot_string_name *p_method, const godot_variant **p_args, const godot_int p_argument_count, godot_variant *r_return, godot_variant_call_error *r_error);
+void GDAPI godot_variant_call_static_with_cstring(godot_variant_type p_type, const char *p_method, const godot_variant **p_args, const godot_int p_argument_count, godot_variant *r_return, godot_variant_call_error *r_error);
 void GDAPI godot_variant_evaluate(godot_variant_operator p_op, const godot_variant *p_a, const godot_variant *p_b, godot_variant *r_return, bool *r_valid);
 void GDAPI godot_variant_set(godot_variant *p_self, const godot_variant *p_key, const godot_variant *p_value, bool *r_valid);
 void GDAPI godot_variant_set_named(godot_variant *p_self, const godot_string_name *p_name, const godot_variant *p_value, bool *r_valid);
@@ -331,6 +325,8 @@ godot_variant_type GDAPI godot_variant_get_builtin_method_return_type(godot_vari
 godot_variant_type GDAPI godot_variant_get_builtin_method_return_type_with_cstring(godot_variant_type p_type, const char *p_method);
 bool GDAPI godot_variant_is_builtin_method_const(godot_variant_type p_type, const godot_string_name *p_method);
 bool GDAPI godot_variant_is_builtin_method_const_with_cstring(godot_variant_type p_type, const char *p_method);
+bool GDAPI godot_variant_is_builtin_method_static(godot_variant_type p_type, const godot_string_name *p_method);
+bool GDAPI godot_variant_is_builtin_method_static_with_cstring(godot_variant_type p_type, const char *p_method);
 bool GDAPI godot_variant_is_builtin_method_vararg(godot_variant_type p_type, const godot_string_name *p_method);
 bool GDAPI godot_variant_is_builtin_method_vararg_with_cstring(godot_variant_type p_type, const char *p_method);
 int GDAPI godot_variant_get_builtin_method_count(godot_variant_type p_type);
@@ -390,6 +386,10 @@ bool GDAPI godot_variant_has_utility_function(const godot_string_name *p_functio
 bool GDAPI godot_variant_has_utility_function_with_cstring(const char *p_function);
 void GDAPI godot_variant_call_utility_function(const godot_string_name *p_function, godot_variant *r_ret, const godot_variant **p_args, int p_argument_count, godot_variant_call_error *r_error);
 void GDAPI godot_variant_call_utility_function_with_cstring(const char *p_function, godot_variant *r_ret, const godot_variant **p_args, int p_argument_count, godot_variant_call_error *r_error);
+godot_ptr_utility_function GDAPI godot_variant_get_ptr_utility_function(const godot_string_name *p_function);
+godot_ptr_utility_function GDAPI godot_variant_get_ptr_utility_function_with_cstring(const char *p_function);
+godot_validated_utility_function GDAPI godot_variant_get_validated_utility_function(const godot_string_name *p_function);
+godot_validated_utility_function GDAPI godot_variant_get_validated_utility_function_with_cstring(const char *p_function);
 godot_variant_utility_function_type GDAPI godot_variant_get_utility_function_type(const godot_string_name *p_function);
 godot_variant_utility_function_type GDAPI godot_variant_get_utility_function_type_with_cstring(const char *p_function);
 int GDAPI godot_variant_get_utility_function_argument_count(const godot_string_name *p_function);

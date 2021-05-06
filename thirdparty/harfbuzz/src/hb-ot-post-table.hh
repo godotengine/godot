@@ -87,7 +87,6 @@ struct post
     if (unlikely (!post_prime)) return_trace (false);
 
     serialize (c->serializer);
-    if (c->serializer->in_error () || c->serializer->ran_out_of_room) return_trace (false);
 
     return_trace (true);
   }

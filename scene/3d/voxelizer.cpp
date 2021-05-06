@@ -151,7 +151,7 @@ void Voxelizer::_plot_face(int p_idx, int p_level, int p_x, int p_y, int p_z, co
 				Vector2 uv;
 				Vector3 lnormal;
 				get_uv_and_normal(intersection, p_vtx, p_uv, p_normal, uv, lnormal);
-				if (lnormal == Vector3()) { //just in case normal as nor provided
+				if (lnormal == Vector3()) { //just in case normal is not provided
 					lnormal = normal;
 				}
 
@@ -183,7 +183,7 @@ void Voxelizer::_plot_face(int p_idx, int p_level, int p_x, int p_y, int p_z, co
 			Vector3 lnormal;
 			Vector2 uv;
 			get_uv_and_normal(inters, p_vtx, p_uv, p_normal, uv, normal);
-			if (lnormal == Vector3()) { //just in case normal as nor provided
+			if (lnormal == Vector3()) { //just in case normal is not provided
 				lnormal = normal;
 			}
 
@@ -344,7 +344,7 @@ Voxelizer::MaterialCache Voxelizer::_get_material_cache(Ref<Material> p_material
 
 		Ref<Image> img_albedo;
 		if (albedo_tex.is_valid()) {
-			img_albedo = albedo_tex->get_data();
+			img_albedo = albedo_tex->get_image();
 			mc.albedo = _get_bake_texture(img_albedo, mat->get_albedo(), Color(0, 0, 0)); // albedo texture, color is multiplicative
 		} else {
 			mc.albedo = _get_bake_texture(img_albedo, Color(1, 1, 1), mat->get_albedo()); // no albedo texture, color is additive
@@ -358,7 +358,7 @@ Voxelizer::MaterialCache Voxelizer::_get_material_cache(Ref<Material> p_material
 		Ref<Image> img_emission;
 
 		if (emission_tex.is_valid()) {
-			img_emission = emission_tex->get_data();
+			img_emission = emission_tex->get_image();
 		}
 
 		if (mat->get_emission_operator() == StandardMaterial3D::EMISSION_OP_ADD) {

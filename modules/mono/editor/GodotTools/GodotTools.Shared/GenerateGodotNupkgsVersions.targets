@@ -3,7 +3,6 @@
 
   <Target Name="SetPropertiesForGenerateGodotNupkgsVersions">
     <PropertyGroup>
-      <GodotNETSdkPackageVersionFile>$(SolutionDir)..\Godot.NET.Sdk\Godot.NET.Sdk\Godot.NET.Sdk_PackageVersion.txt</GodotNETSdkPackageVersionFile>
       <GeneratedGodotNupkgsVersionsFile>$(IntermediateOutputPath)GodotNupkgsVersions.g.cs</GeneratedGodotNupkgsVersionsFile>
     </PropertyGroup>
   </Target>
@@ -18,13 +17,14 @@
   </Target>
   <Target Name="_GenerateGodotNupkgsVersionsFile"
           DependsOnTargets="SetPropertiesForGenerateGodotNupkgsVersions"
-          Inputs="$(MSBuildProjectFile);@(GodotNETSdkPackageVersionFile)"
+          Inputs="$(MSBuildProjectFile);$(MSBuildThisFileDirectory);$(MSBuildProjectFile)\..\..\..\SdkPackageVersions.props"
           Outputs="$(GeneratedGodotNupkgsVersionsFile)">
     <PropertyGroup>
       <GenerateGodotNupkgsVersionsCode><![CDATA[
 namespace $(RootNamespace) {
     public class GeneratedGodotNupkgsVersions {
-        public const string GodotNETSdk = "$([System.IO.File]::ReadAllText('$(GodotNETSdkPackageVersionFile)').Trim())"%3b
+        public const string GodotNETSdk = "$(PackageVersion_Godot_NET_Sdk)"%3b
+        public const string GodotSourceGenerators = "$(PackageVersion_Godot_SourceGenerators)"%3b
     }
 }
 ]]></GenerateGodotNupkgsVersionsCode>

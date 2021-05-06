@@ -59,9 +59,9 @@ public:
 	void set_mirroring(const Size2 &p_mirroring);
 	Size2 get_mirroring() const;
 
-	void set_base_offset_and_scale(const Point2 &p_offset, float p_scale, const Point2 &p_screen_offset);
+	void set_base_offset_and_scale(const Point2 &p_offset, real_t p_scale, const Point2 &p_screen_offset);
 
-	virtual String get_configuration_warning() const override;
+	TypedArray<String> get_configuration_warnings() const override;
 	ParallaxLayer();
 };
 

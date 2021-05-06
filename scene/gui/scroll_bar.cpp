@@ -42,6 +42,8 @@ void ScrollBar::set_can_focus_by_default(bool p_can_focus) {
 }
 
 void ScrollBar::_gui_input(Ref<InputEvent> p_event) {
+	ERR_FAIL_COND(p_event.is_null());
+
 	Ref<InputEventMouseMotion> m = p_event;
 	if (!m.is_valid() || drag.active) {
 		emit_signal("scrolling");
@@ -52,17 +54,17 @@ void ScrollBar::_gui_input(Ref<InputEvent> p_event) {
 	if (b.is_valid()) {
 		accept_event();
 
-		if (b->get_button_index() == BUTTON_WHEEL_DOWN && b->is_pressed()) {
+		if (b->get_button_index() == MOUSE_BUTTON_WHEEL_DOWN && b->is_pressed()) {
 			set_value(get_value() + get_page() / 4.0);
 			accept_event();
 		}
 
-		if (b->get_button_index() == BUTTON_WHEEL_UP && b->is_pressed()) {
+		if (b->get_button_index() == MOUSE_BUTTON_WHEEL_UP && b->is_pressed()) {
 			set_value(get_value() - get_page() / 4.0);
 			accept_event();
 		}
 
-		if (b->get_button_index() != BUTTON_LEFT) {
+		if (b->get_button_index() != MOUSE_BUTTON_LEFT) {
 			return;
 		}
 
@@ -434,7 +436,7 @@ double ScrollBar::get_area_size() const {
 }
 
 double ScrollBar::get_area_offset() const {
-	double ofs = 0;
+	double ofs = 0.0;
 
 	if (orientation == VERTICAL) {
 		ofs += get_theme_stylebox("hscroll")->get_margin(SIDE_TOP);

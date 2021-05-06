@@ -680,17 +680,17 @@ void FileSystemDock::_sort_file_info_list(List<FileSystemDock::FileInfo> &r_file
 			break;
 		case FILE_SORT_TYPE_REVERSE:
 			r_file_list.sort_custom<FileInfoTypeComparator>();
-			r_file_list.invert();
+			r_file_list.reverse();
 			break;
 		case FILE_SORT_MODIFIED_TIME:
 			r_file_list.sort_custom<FileInfoModifiedTimeComparator>();
 			break;
 		case FILE_SORT_MODIFIED_TIME_REVERSE:
 			r_file_list.sort_custom<FileInfoModifiedTimeComparator>();
-			r_file_list.invert();
+			r_file_list.reverse();
 			break;
 		case FILE_SORT_NAME_REVERSE:
-			r_file_list.invert();
+			r_file_list.reverse();
 			break;
 		default: // FILE_SORT_NAME
 			break;
@@ -944,8 +944,41 @@ void FileSystemDock::_select_file(const String &p_path, bool p_select_in_favorit
 			fpath = fpath.substr(0, fpath.length() - 1);
 		}
 	} else if (fpath != "Favorites") {
+		if (FileAccess::exists(fpath + ".import")) {
+			Ref<ConfigFile> config;
+			config.instance();
+			Error err = config->load(fpath + ".import");
+			if (err == OK) {
+				if (config->has_section_key("remap", "importer")) {
+					String importer = config->get_value("remap", "importer");
+					if (importer == "keep") {
+						EditorNode::get_singleton()->show_warning(TTR("Importing has been disabled for this file, so it can't be opened for editing."));
+						return;
+					}
+				}
+			}
+		}
+
 		if (ResourceLoader::get_resource_type(fpath) == "PackedScene") {
-			editor->open_request(fpath);
+			bool is_imported = false;
+
+			{
+				List<String> importer_exts;
+				ResourceImporterScene::get_singleton()->get_recognized_extensions(&importer_exts);
+				String extension = fpath.get_extension();
+				for (List<String>::Element *E = importer_exts.front(); E; E = E->next()) {
+					if (extension.nocasecmp_to(E->get()) == 0) {
+						is_imported = true;
+						break;
+					}
+				}
+			}
+
+			if (is_imported) {
+				ResourceImporterScene::get_singleton()->show_advanced_options(fpath);
+			} else {
+				editor->open_request(fpath);
+			}
 		} else {
 			editor->load_resource(fpath);
 		}
@@ -1432,6 +1465,10 @@ void FileSystemDock::_folder_removed(String p_folder) {
 	}
 
 	current_path->set_text(path);
+	EditorFileSystemDirectory *efd = EditorFileSystem::get_singleton()->get_filesystem_path(path);
+	if (efd) {
+		efd->force_update();
+	}
 }
 
 void FileSystemDock::_rename_operation_confirm() {
@@ -2588,8 +2625,9 @@ void FileSystemDock::_get_imported_files(const String &p_path, Vector<String> &f
 }
 
 void FileSystemDock::_update_import_dock() {
-	if (!import_dock_needs_update)
+	if (!import_dock_needs_update) {
 		return;
+	}
 
 	// List selected.
 	Vector<String> selected;
@@ -2600,8 +2638,9 @@ void FileSystemDock::_update_import_dock() {
 	} else {
 		// Use the file list.
 		for (int i = 0; i < files->get_item_count(); i++) {
-			if (!files->is_selected(i))
+			if (!files->is_selected(i)) {
 				continue;
+			}
 
 			selected.push_back(files->get_item_metadata(i));
 		}
@@ -2626,7 +2665,10 @@ void FileSystemDock::_update_import_dock() {
 			break;
 		}
 
-		String type = cf->get_value("remap", "type");
+		String type;
+		if (cf->has_section_key("remap", "type")) {
+			type = cf->get_value("remap", "type");
+		}
 		if (import_type == "") {
 			import_type = type;
 		} else if (import_type != type) {
@@ -2718,7 +2760,22 @@ FileSystemDock::FileSystemDock(EditorNode *p_editor) {
 	// `KEY_MASK_CMD | KEY_C` conflicts with other editor shortcuts.
 	ED_SHORTCUT("filesystem_dock/copy_path", TTR("Copy Path"), KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_C);
 	ED_SHORTCUT("filesystem_dock/duplicate", TTR("Duplicate..."), KEY_MASK_CMD | KEY_D);
+
+#if defined(WINDOWS_ENABLED)
+	// TRANSLATORS: This string is only used on Windows, as it refers to the system trash
+	// as "Recycle Bin" instead of "Trash". Make sure to use the translation of "Recycle Bin"
+	// recommended by Microsoft for the target language.
+	ED_SHORTCUT("filesystem_dock/delete", TTR("Move to Recycle Bin"), KEY_DELETE);
+#elif defined(OSX_ENABLED)
+	// TRANSLATORS: This string is only used on macOS, as it refers to the system trash
+	// as "Bin" instead of "Trash". Make sure to use the translation of "Bin"
+	// recommended by Apple for the target language.
+	ED_SHORTCUT("filesystem_dock/delete", TTR("Move to Bin"), KEY_DELETE);
+#else
+	// TRANSLATORS: This string is only used on platforms other than Windows and macOS.
 	ED_SHORTCUT("filesystem_dock/delete", TTR("Move to Trash"), KEY_DELETE);
+#endif
+
 	ED_SHORTCUT("filesystem_dock/rename", TTR("Rename..."), KEY_F2);
 
 	VBoxContainer *top_vbc = memnew(VBoxContainer);

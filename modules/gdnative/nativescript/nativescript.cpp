@@ -41,6 +41,8 @@
 #include "core/os/file_access.h"
 #include "core/os/os.h"
 
+#include "main/main.h"
+
 #include "scene/main/scene_tree.h"
 #include "scene/resources/resource_format_text.h"
 
@@ -173,7 +175,7 @@ bool NativeScript::can_instance() const {
 
 #ifdef TOOLS_ENABLED
 	// Only valid if this is either a tool script or a "regular" script.
-	// (so an environment whre scripting is disabled (and not the editor) would not
+	// (so, an environment where scripting is disabled (and not the editor) would not
 	// create objects).
 	return script_data && (is_tool() || ScriptServer::is_scripting_enabled());
 #else
@@ -1248,6 +1250,7 @@ void NativeScriptLanguage::init() {
 		if (generate_c_api(E->next()->get()) != OK) {
 			ERR_PRINT("Failed to generate C API\n");
 		}
+		Main::cleanup(true);
 		exit(0);
 	}
 
@@ -1257,6 +1260,7 @@ void NativeScriptLanguage::init() {
 		if (generate_c_builtin_api(E->next()->get()) != OK) {
 			ERR_PRINT("Failed to generate C builtin API\n");
 		}
+		Main::cleanup(true);
 		exit(0);
 	}
 #endif
@@ -1670,7 +1674,7 @@ void NativeScriptLanguage::defer_init_library(Ref<GDNativeLibrary> lib, NativeSc
 	MutexLock lock(mutex);
 	libs_to_init.insert(lib);
 	scripts_to_register.insert(script);
-	has_objects_to_register = true;
+	has_objects_to_register.set();
 }
 #endif
 
@@ -1728,7 +1732,47 @@ void NativeScriptLanguage::unregister_script(NativeScript *script) {
 			library_script_users.erase(S);
 
 			Map<String, Ref<GDNative>>::Element *G = library_gdnatives.find(script->lib_path);
-			if (G) {
+			if (G && G->get()->get_library()->is_reloadable()) {
+				// ONLY if the library is marked as reloadable, and no more instances of its scripts exist do we unload the library
+
+				// First remove meta data related to the library
+				Map<String, Map<StringName, NativeScriptDesc>>::Element *L = library_classes.find(script->lib_path);
+				if (L) {
+					Map<StringName, NativeScriptDesc> classes = L->get();
+
+					for (Map<StringName, NativeScriptDesc>::Element *C = classes.front(); C; C = C->next()) {
+						// free property stuff first
+						for (OrderedHashMap<StringName, NativeScriptDesc::Property>::Element P = C->get().properties.front(); P; P = P.next()) {
+							if (P.get().getter.free_func) {
+								P.get().getter.free_func(P.get().getter.method_data);
+							}
+
+							if (P.get().setter.free_func) {
+								P.get().setter.free_func(P.get().setter.method_data);
+							}
+						}
+
+						// free method stuff
+						for (Map<StringName, NativeScriptDesc::Method>::Element *M = C->get().methods.front(); M; M = M->next()) {
+							if (M->get().method.free_func) {
+								M->get().method.free_func(M->get().method.method_data);
+							}
+						}
+
+						// free constructor/destructor
+						if (C->get().create_func.free_func) {
+							C->get().create_func.free_func(C->get().create_func.method_data);
+						}
+
+						if (C->get().destroy_func.free_func) {
+							C->get().destroy_func.free_func(C->get().destroy_func.method_data);
+						}
+					}
+
+					library_classes.erase(script->lib_path);
+				}
+
+				// now unload the library
 				G->get()->terminate();
 				library_gdnatives.erase(G);
 			}
@@ -1759,7 +1803,7 @@ void NativeScriptLanguage::call_libraries_cb(const StringName &name) {
 
 void NativeScriptLanguage::frame() {
 #ifndef NO_THREADS
-	if (has_objects_to_register) {
+	if (has_objects_to_register.is_set()) {
 		MutexLock lock(mutex);
 		for (Set<Ref<GDNativeLibrary>>::Element *L = libs_to_init.front(); L; L = L->next()) {
 			init_library(L->get());
@@ -1769,7 +1813,7 @@ void NativeScriptLanguage::frame() {
 			register_script(S->get());
 		}
 		scripts_to_register.clear();
-		has_objects_to_register = false;
+		has_objects_to_register.clear();
 	}
 #endif
 
@@ -1940,7 +1984,7 @@ void NativeReloadNode::_notification(int p_what) {
 #endif
 }
 
-RES ResourceFormatLoaderNativeScript::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, bool p_no_cache) {
+RES ResourceFormatLoaderNativeScript::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, CacheMode p_no_cache) {
 	return ResourceFormatLoaderText::singleton->load(p_path, p_original_path, r_error);
 }
 

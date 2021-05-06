@@ -35,6 +35,10 @@
 #include "core/os/thread.h"
 #include "core/string/ustring.h"
 
+#ifdef PTHREAD_BSD_SET_NAME
+#include <pthread_np.h>
+#endif
+
 static Error set_name(const String &p_name) {
 #ifdef PTHREAD_NO_RENAME
 	return ERR_UNAVAILABLE;

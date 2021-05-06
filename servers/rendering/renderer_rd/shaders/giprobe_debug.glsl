@@ -2,7 +2,7 @@
 
 #version 450
 
-VERSION_DEFINES
+#VERSION_DEFINES
 
 struct CellData {
 	uint position; // xyz 10 bits
@@ -172,7 +172,7 @@ void main() {
 
 #version 450
 
-VERSION_DEFINES
+#VERSION_DEFINES
 
 layout(location = 0) in vec4 color_interp;
 layout(location = 0) out vec4 frag_color;

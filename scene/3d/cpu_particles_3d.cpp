@@ -73,7 +73,7 @@ void CPUParticles3D::set_amount(int p_amount) {
 	}
 
 	particle_data.resize((12 + 4 + 4) * p_amount);
-	RS::get_singleton()->multimesh_allocate(multimesh, p_amount, RS::MULTIMESH_TRANSFORM_3D, true, true);
+	RS::get_singleton()->multimesh_allocate_data(multimesh, p_amount, RS::MULTIMESH_TRANSFORM_3D, true, true);
 
 	particle_order.resize(p_amount);
 }
@@ -152,6 +152,7 @@ float CPUParticles3D::get_speed_scale() const {
 }
 
 void CPUParticles3D::set_draw_order(DrawOrder p_order) {
+	ERR_FAIL_INDEX(p_order, DRAW_ORDER_MAX);
 	draw_order = p_order;
 }
 
@@ -188,8 +189,8 @@ bool CPUParticles3D::get_fractional_delta() const {
 	return fractional_delta;
 }
 
-String CPUParticles3D::get_configuration_warning() const {
-	String warnings = GeometryInstance3D::get_configuration_warning();
+TypedArray<String> CPUParticles3D::get_configuration_warnings() const {
+	TypedArray<String> warnings = Node::get_configuration_warnings();
 
 	bool mesh_found = false;
 	bool anim_material_found = false;
@@ -208,18 +209,12 @@ String CPUParticles3D::get_configuration_warning() const {
 	anim_material_found = anim_material_found || (spat && spat->get_billboard_mode() == StandardMaterial3D::BILLBOARD_PARTICLES);
 
 	if (!mesh_found) {
-		if (warnings != String()) {
-			warnings += "\n";
-		}
-		warnings += "- " + TTR("Nothing is visible because no mesh has been assigned.");
+		warnings.push_back(TTR("Nothing is visible because no mesh has been assigned."));
 	}
 
 	if (!anim_material_found && (get_param(PARAM_ANIM_SPEED) != 0.0 || get_param(PARAM_ANIM_OFFSET) != 0.0 ||
 										get_param_curve(PARAM_ANIM_SPEED).is_valid() || get_param_curve(PARAM_ANIM_OFFSET).is_valid())) {
-		if (warnings != String()) {
-			warnings += "\n";
-		}
-		warnings += "- " + TTR("CPUParticles3D animation requires the usage of a StandardMaterial3D whose Billboard Mode is set to \"Particle Billboard\".");
+		warnings.push_back(TTR("CPUParticles3D animation requires the usage of a StandardMaterial3D whose Billboard Mode is set to \"Particle Billboard\"."));
 	}
 
 	return warnings;
@@ -372,7 +367,7 @@ void CPUParticles3D::set_particle_flag(ParticleFlags p_particle_flag, bool p_ena
 	ERR_FAIL_INDEX(p_particle_flag, PARTICLE_FLAG_MAX);
 	particle_flags[p_particle_flag] = p_enable;
 	if (p_particle_flag == PARTICLE_FLAG_DISABLE_Z) {
-		_change_notify();
+		notify_property_list_changed();
 	}
 }
 
@@ -575,7 +570,7 @@ void CPUParticles3D::_particles_process(float p_delta) {
 		cycle++;
 		if (one_shot && cycle > 0) {
 			set_emitting(false);
-			_change_notify();
+			notify_property_list_changed();
 		}
 	}
 
@@ -1011,6 +1006,7 @@ void CPUParticles3D::_update_particle_data_buffer() {
 			sorter.compare.particles = r;
 			sorter.sort(order, pc);
 		} else if (draw_order == DRAW_ORDER_VIEW_DEPTH) {
+			ERR_FAIL_NULL(get_viewport());
 			Camera3D *c = get_viewport()->get_camera();
 			if (c) {
 				Vector3 dir = c->get_global_transform().basis.get_axis(2); //far away to close
@@ -1054,7 +1050,7 @@ void CPUParticles3D::_update_particle_data_buffer() {
 			ptr[10] = t.basis.elements[2][2];
 			ptr[11] = t.origin.z;
 		} else {
-			zeromem(ptr, sizeof(float) * 12);
+			memset(ptr, 0, sizeof(float) * 12);
 		}
 
 		Color c = r[idx].color;
@@ -1072,7 +1068,7 @@ void CPUParticles3D::_update_particle_data_buffer() {
 		ptr += 20;
 	}
 
-	can_update = true;
+	can_update.set();
 }
 
 void CPUParticles3D::_set_redraw(bool p_redraw) {
@@ -1101,9 +1097,9 @@ void CPUParticles3D::_set_redraw(bool p_redraw) {
 void CPUParticles3D::_update_render_thread() {
 	MutexLock lock(update_mutex);
 
-	if (can_update) {
+	if (can_update.is_set()) {
 		RS::get_singleton()->multimesh_set_buffer(multimesh, particle_data);
-		can_update = false; //wait for next time
+		can_update.clear(); //wait for next time
 	}
 }
 
@@ -1159,13 +1155,13 @@ void CPUParticles3D::_notification(int p_what) {
 					ptr[10] = t.basis.elements[2][2];
 					ptr[11] = t.origin.z;
 				} else {
-					zeromem(ptr, sizeof(float) * 12);
+					memset(ptr, 0, sizeof(float) * 12);
 				}
 
 				ptr += 20;
 			}
 
-			can_update = true;
+			can_update.set();
 		}
 	}
 }
@@ -1466,6 +1462,21 @@ CPUParticles3D::CPUParticles3D() {
 	set_param(PARAM_HUE_VARIATION, 0);
 	set_param(PARAM_ANIM_SPEED, 0);
 	set_param(PARAM_ANIM_OFFSET, 0);
+	set_emission_shape(EMISSION_SHAPE_POINT);
+	set_emission_sphere_radius(1);
+	set_emission_box_extents(Vector3(1, 1, 1));
+
+	set_gravity(Vector3(0, -9.8, 0));
+
+	for (int i = 0; i < PARAM_MAX; i++) {
+		set_param_randomness(Parameter(i), 0);
+	}
+
+	for (int i = 0; i < PARTICLE_FLAG_MAX; i++) {
+		particle_flags[i] = false;
+	}
+
+	set_color(Color(1, 1, 1, 1));
 }
 
 CPUParticles3D::~CPUParticles3D() {

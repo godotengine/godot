@@ -477,7 +477,7 @@ void DisplayServer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("enable_for_stealing_focus", "process_id"), &DisplayServer::enable_for_stealing_focus);
 
-	ClassDB::bind_method(D_METHOD("native_video_play", "path", "volume", "audio_track", "subtitle_track"), &DisplayServer::native_video_play);
+	ClassDB::bind_method(D_METHOD("native_video_play", "path", "volume", "audio_track", "subtitle_track", "screen"), &DisplayServer::native_video_play);
 	ClassDB::bind_method(D_METHOD("native_video_is_playing"), &DisplayServer::native_video_is_playing);
 	ClassDB::bind_method(D_METHOD("native_video_stop"), &DisplayServer::native_video_stop);
 	ClassDB::bind_method(D_METHOD("native_video_pause"), &DisplayServer::native_video_pause);
@@ -503,6 +503,11 @@ void DisplayServer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_native_icon", "filename"), &DisplayServer::set_native_icon);
 	ClassDB::bind_method(D_METHOD("set_icon", "image"), &DisplayServer::set_icon);
+
+	ClassDB::bind_method(D_METHOD("tablet_get_driver_count"), &DisplayServer::tablet_get_driver_count);
+	ClassDB::bind_method(D_METHOD("tablet_get_driver_name", "idx"), &DisplayServer::tablet_get_driver_name);
+	ClassDB::bind_method(D_METHOD("tablet_get_current_driver"), &DisplayServer::tablet_get_current_driver);
+	ClassDB::bind_method(D_METHOD("tablet_set_current_driver", "name"), &DisplayServer::tablet_set_current_driver);
 
 	BIND_ENUM_CONSTANT(FEATURE_GLOBAL_MENU);
 	BIND_ENUM_CONSTANT(FEATURE_SUBWINDOWS);

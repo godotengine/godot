@@ -59,34 +59,13 @@ bool DisplayServerJavaScript::is_canvas_focused() {
 }
 
 bool DisplayServerJavaScript::check_size_force_redraw() {
-	int canvas_width;
-	int canvas_height;
-	emscripten_get_canvas_element_size(DisplayServerJavaScript::canvas_id, &canvas_width, &canvas_height);
-	if (last_width != canvas_width || last_height != canvas_height) {
-		last_width = canvas_width;
-		last_height = canvas_height;
-		// Update the framebuffer size for redraw.
-		emscripten_set_canvas_element_size(DisplayServerJavaScript::canvas_id, canvas_width, canvas_height);
-		return true;
-	}
-	return false;
+	return godot_js_display_size_update() != 0;
 }
 
 Point2 DisplayServerJavaScript::compute_position_in_canvas(int p_x, int p_y) {
-	DisplayServerJavaScript *display = get_singleton();
-	int canvas_x;
-	int canvas_y;
-	godot_js_display_canvas_bounding_rect_position_get(&canvas_x, &canvas_y);
-	int canvas_width;
-	int canvas_height;
-	emscripten_get_canvas_element_size(display->canvas_id, &canvas_width, &canvas_height);
-
-	double element_width;
-	double element_height;
-	emscripten_get_element_css_size(display->canvas_id, &element_width, &element_height);
-
-	return Point2((int)(canvas_width / element_width * (p_x - canvas_x)),
-			(int)(canvas_height / element_height * (p_y - canvas_y)));
+	int point[2];
+	godot_js_display_compute_position(p_x, p_y, point, point + 1);
+	return Point2(point[0], point[1]);
 }
 
 EM_BOOL DisplayServerJavaScript::fullscreen_change_callback(int p_event_type, const EmscriptenFullscreenChangeEvent *p_event, void *p_user_data) {
@@ -210,19 +189,19 @@ EM_BOOL DisplayServerJavaScript::mouse_button_callback(int p_event_type, const E
 
 	switch (p_event->button) {
 		case DOM_BUTTON_LEFT:
-			ev->set_button_index(BUTTON_LEFT);
+			ev->set_button_index(MOUSE_BUTTON_LEFT);
 			break;
 		case DOM_BUTTON_MIDDLE:
-			ev->set_button_index(BUTTON_MIDDLE);
+			ev->set_button_index(MOUSE_BUTTON_MIDDLE);
 			break;
 		case DOM_BUTTON_RIGHT:
-			ev->set_button_index(BUTTON_RIGHT);
+			ev->set_button_index(MOUSE_BUTTON_RIGHT);
 			break;
 		case DOM_BUTTON_XBUTTON1:
-			ev->set_button_index(BUTTON_XBUTTON1);
+			ev->set_button_index(MOUSE_BUTTON_XBUTTON1);
 			break;
 		case DOM_BUTTON_XBUTTON2:
-			ev->set_button_index(BUTTON_XBUTTON2);
+			ev->set_button_index(MOUSE_BUTTON_XBUTTON2);
 			break;
 		default:
 			return false;
@@ -236,14 +215,14 @@ EM_BOOL DisplayServerJavaScript::mouse_button_callback(int p_event_type, const E
 				display->last_click_ms = 0;
 				display->last_click_pos = Point2(-100, -100);
 				display->last_click_button_index = -1;
-				ev->set_doubleclick(true);
+				ev->set_double_click(true);
 			}
 
 		} else {
 			display->last_click_button_index = ev->get_button_index();
 		}
 
-		if (!ev->is_doubleclick()) {
+		if (!ev->is_double_click()) {
 			display->last_click_ms += diff;
 			display->last_click_pos = ev->get_position();
 		}
@@ -362,7 +341,7 @@ void DisplayServerJavaScript::cursor_set_custom_image(const RES &p_cursor, Curso
 		Rect2 atlas_rect;
 
 		if (texture.is_valid()) {
-			image = texture->get_data();
+			image = texture->get_image();
 		}
 
 		if (!image.is_valid() && atlas_texture.is_valid()) {
@@ -385,7 +364,7 @@ void DisplayServerJavaScript::cursor_set_custom_image(const RES &p_cursor, Curso
 		ERR_FAIL_COND(texture_size.width > 256 || texture_size.height > 256);
 		ERR_FAIL_COND(p_hotspot.x > texture_size.width || p_hotspot.y > texture_size.height);
 
-		image = texture->get_data();
+		image = texture->get_image();
 
 		ERR_FAIL_COND(!image.is_valid());
 
@@ -420,7 +399,7 @@ void DisplayServerJavaScript::cursor_set_custom_image(const RES &p_cursor, Curso
 		godot_js_display_cursor_set_custom_shape(godot2dom_cursor(p_shape), png.ptr(), len, p_hotspot.x, p_hotspot.y);
 
 	} else {
-		godot_js_display_cursor_set_custom_shape(godot2dom_cursor(p_shape), NULL, 0, 0, 0);
+		godot_js_display_cursor_set_custom_shape(godot2dom_cursor(p_shape), nullptr, 0, 0, 0);
 	}
 
 	cursor_set_shape(cursor_shape);
@@ -482,13 +461,13 @@ EM_BOOL DisplayServerJavaScript::wheel_callback(int p_event_type, const Emscript
 	ev->set_metakey(input->is_key_pressed(KEY_META));
 
 	if (p_event->deltaY < 0)
-		ev->set_button_index(BUTTON_WHEEL_UP);
+		ev->set_button_index(MOUSE_BUTTON_WHEEL_UP);
 	else if (p_event->deltaY > 0)
-		ev->set_button_index(BUTTON_WHEEL_DOWN);
+		ev->set_button_index(MOUSE_BUTTON_WHEEL_DOWN);
 	else if (p_event->deltaX > 0)
-		ev->set_button_index(BUTTON_WHEEL_LEFT);
+		ev->set_button_index(MOUSE_BUTTON_WHEEL_LEFT);
 	else if (p_event->deltaX < 0)
-		ev->set_button_index(BUTTON_WHEEL_RIGHT);
+		ev->set_button_index(MOUSE_BUTTON_WHEEL_RIGHT);
 	else
 		return false;
 
@@ -557,6 +536,43 @@ bool DisplayServerJavaScript::screen_is_touchscreen(int p_screen) const {
 	return godot_js_display_touchscreen_is_available();
 }
 
+// Virtual Keybaord
+void DisplayServerJavaScript::vk_input_text_callback(const char *p_text, int p_cursor) {
+	DisplayServerJavaScript *ds = DisplayServerJavaScript::get_singleton();
+	if (!ds || ds->input_text_callback.is_null()) {
+		return;
+	}
+	// Call input_text
+	Variant event = String(p_text);
+	Variant *eventp = &event;
+	Variant ret;
+	Callable::CallError ce;
+	ds->input_text_callback.call((const Variant **)&eventp, 1, ret, ce);
+	// Insert key right to reach position.
+	Input *input = Input::get_singleton();
+	Ref<InputEventKey> k;
+	for (int i = 0; i < p_cursor; i++) {
+		k.instance();
+		k->set_pressed(true);
+		k->set_echo(false);
+		k->set_keycode(KEY_RIGHT);
+		input->parse_input_event(k);
+		k.instance();
+		k->set_pressed(false);
+		k->set_echo(false);
+		k->set_keycode(KEY_RIGHT);
+		input->parse_input_event(k);
+	}
+}
+
+void DisplayServerJavaScript::virtual_keyboard_show(const String &p_existing_text, const Rect2 &p_screen_rect, bool p_multiline, int p_max_input_length, int p_cursor_start, int p_cursor_end) {
+	godot_js_display_vk_show(p_existing_text.utf8().get_data(), p_multiline, p_cursor_start, p_cursor_end);
+}
+
+void DisplayServerJavaScript::virtual_keyboard_hide() {
+	godot_js_display_vk_hide();
+}
+
 // Gamepad
 void DisplayServerJavaScript::gamepad_callback(int p_index, int p_connected, const char *p_id, const char *p_guid) {
 	Input *input = Input::get_singleton();
@@ -585,7 +601,7 @@ void DisplayServerJavaScript::process_joypads() {
 			// Buttons 6 and 7 in the standard mapping need to be
 			// axis to be handled as JOY_AXIS_TRIGGER by Godot.
 			if (s_standard && (b == 6 || b == 7)) {
-				Input::JoyAxis joy_axis;
+				Input::JoyAxisValue joy_axis;
 				joy_axis.min = 0;
 				joy_axis.value = value;
 				int a = b == 6 ? JOY_AXIS_TRIGGER_LEFT : JOY_AXIS_TRIGGER_RIGHT;
@@ -595,7 +611,7 @@ void DisplayServerJavaScript::process_joypads() {
 			}
 		}
 		for (int a = 0; a < s_axes_num; a++) {
-			Input::JoyAxis joy_axis;
+			Input::JoyAxisValue joy_axis;
 			joy_axis.min = -1;
 			joy_axis.value = s_axes[a];
 			input->joy_axis(idx, a, joy_axis);
@@ -703,6 +719,9 @@ DisplayServerJavaScript::DisplayServerJavaScript(const String &p_rendering_drive
 	// Ensure the canvas ID.
 	godot_js_config_canvas_id_get(canvas_id, 256);
 
+	// Handle contextmenu, webglcontextlost
+	godot_js_display_setup_canvas(p_resolution.x, p_resolution.y, p_mode == WINDOW_MODE_FULLSCREEN, OS::get_singleton()->is_hidpi_allowed() ? 1 : 0);
+
 	// Check if it's windows.
 	swap_cancel_ok = godot_js_display_is_swap_ok_cancel() == 1;
 
@@ -745,11 +764,6 @@ DisplayServerJavaScript::DisplayServerJavaScript(const String &p_rendering_drive
 	video_driver_index = p_video_driver;
 #endif
 
-	window_set_mode(p_mode);
-	if (godot_js_config_is_resize_on_start()) {
-		window_set_size(p_resolution);
-	}
-
 	EMSCRIPTEN_RESULT result;
 #define EM_CHECK(ev)                         \
 	if (result != EMSCRIPTEN_RESULT_SUCCESS) \
@@ -757,8 +771,8 @@ DisplayServerJavaScript::DisplayServerJavaScript(const String &p_rendering_drive
 #define SET_EM_CALLBACK(target, ev, cb)                                  \
 	result = emscripten_set_##ev##_callback(target, nullptr, true, &cb); \
 	EM_CHECK(ev)
-#define SET_EM_WINDOW_CALLBACK(ev, cb)                                                         \
-	result = emscripten_set_##ev##_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, NULL, false, &cb); \
+#define SET_EM_WINDOW_CALLBACK(ev, cb)                                                            \
+	result = emscripten_set_##ev##_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, nullptr, false, &cb); \
 	EM_CHECK(ev)
 	// These callbacks from Emscripten's html5.h suffice to access most
 	// JavaScript APIs.
@@ -787,6 +801,7 @@ DisplayServerJavaScript::DisplayServerJavaScript(const String &p_rendering_drive
 	godot_js_display_paste_cb(update_clipboard_callback);
 	godot_js_display_drop_files_cb(drop_files_js_callback);
 	godot_js_display_gamepad_cb(&DisplayServerJavaScript::gamepad_callback);
+	godot_js_display_vk_cb(&vk_input_text_callback);
 
 	Input::get_singleton()->set_event_dispatch_function(_dispatch_input_event);
 }
@@ -816,7 +831,8 @@ bool DisplayServerJavaScript::has_feature(Feature p_feature) const {
 		//case FEATURE_WINDOW_TRANSPARENCY:
 		//case FEATURE_KEEP_SCREEN_ON:
 		//case FEATURE_ORIENTATION:
-		//case FEATURE_VIRTUAL_KEYBOARD:
+		case FEATURE_VIRTUAL_KEYBOARD:
+			return godot_js_display_vk_available() != 0;
 		default:
 			return false;
 	}
@@ -839,20 +855,23 @@ Point2i DisplayServerJavaScript::screen_get_position(int p_screen) const {
 }
 
 Size2i DisplayServerJavaScript::screen_get_size(int p_screen) const {
-	EmscriptenFullscreenChangeEvent ev;
-	EMSCRIPTEN_RESULT result = emscripten_get_fullscreen_status(&ev);
-	ERR_FAIL_COND_V(result != EMSCRIPTEN_RESULT_SUCCESS, Size2i());
-	return Size2i(ev.screenWidth, ev.screenHeight);
+	int size[2];
+	godot_js_display_screen_size_get(size, size + 1);
+	return Size2(size[0], size[1]);
 }
 
 Rect2i DisplayServerJavaScript::screen_get_usable_rect(int p_screen) const {
-	int canvas[2];
-	emscripten_get_canvas_element_size(canvas_id, canvas, canvas + 1);
-	return Rect2i(0, 0, canvas[0], canvas[1]);
+	int size[2];
+	godot_js_display_window_size_get(size, size + 1);
+	return Rect2i(0, 0, size[0], size[1]);
 }
 
 int DisplayServerJavaScript::screen_get_dpi(int p_screen) const {
-	return 96; // TODO maybe check pixel ratio via window.devicePixelRatio * 96? Inexact.
+	return godot_js_display_screen_dpi_get();
+}
+
+float DisplayServerJavaScript::screen_get_scale(int p_screen) const {
+	return godot_js_display_pixel_ratio_get();
 }
 
 Vector<DisplayServer::WindowID> DisplayServerJavaScript::get_window_list() const {
@@ -886,7 +905,7 @@ void DisplayServerJavaScript::window_set_input_event_callback(const Callable &p_
 }
 
 void DisplayServerJavaScript::window_set_input_text_callback(const Callable &p_callable, WindowID p_window) {
-	input_text_callback = p_callable; // TODO unused... do I need this?
+	input_text_callback = p_callable;
 }
 
 void DisplayServerJavaScript::window_set_drop_files_callback(const Callable &p_callable, WindowID p_window) {
@@ -934,17 +953,13 @@ Size2i DisplayServerJavaScript::window_get_min_size(WindowID p_window) const {
 }
 
 void DisplayServerJavaScript::window_set_size(const Size2i p_size, WindowID p_window) {
-	last_width = p_size.x;
-	last_height = p_size.y;
-	double scale = godot_js_display_pixel_ratio_get();
-	emscripten_set_canvas_element_size(canvas_id, p_size.x, p_size.y);
-	emscripten_set_element_css_size(canvas_id, p_size.x / scale, p_size.y / scale);
+	godot_js_display_desired_size_set(p_size.x, p_size.y);
 }
 
 Size2i DisplayServerJavaScript::window_get_size(WindowID p_window) const {
-	int canvas[2];
-	emscripten_get_canvas_element_size(canvas_id, canvas, canvas + 1);
-	return Size2(canvas[0], canvas[1]);
+	int size[2];
+	godot_js_display_window_size_get(size, size + 1);
+	return Size2i(size[0], size[1]);
 }
 
 Size2i DisplayServerJavaScript::window_get_real_size(WindowID p_window) const {
@@ -958,20 +973,13 @@ void DisplayServerJavaScript::window_set_mode(WindowMode p_mode, WindowID p_wind
 	switch (p_mode) {
 		case WINDOW_MODE_WINDOWED: {
 			if (window_mode == WINDOW_MODE_FULLSCREEN) {
-				emscripten_exit_fullscreen();
+				godot_js_display_fullscreen_exit();
 			}
 			window_mode = WINDOW_MODE_WINDOWED;
-			window_set_size(Size2i(last_width, last_height));
 		} break;
 		case WINDOW_MODE_FULLSCREEN: {
-			EmscriptenFullscreenStrategy strategy;
-			strategy.scaleMode = EMSCRIPTEN_FULLSCREEN_SCALE_STRETCH;
-			strategy.canvasResolutionScaleMode = EMSCRIPTEN_FULLSCREEN_CANVAS_SCALE_STDDEF;
-			strategy.filteringMode = EMSCRIPTEN_FULLSCREEN_FILTERING_DEFAULT;
-			strategy.canvasResizedCallback = nullptr;
-			EMSCRIPTEN_RESULT result = emscripten_request_fullscreen_strategy(canvas_id, false, &strategy);
-			ERR_FAIL_COND_MSG(result == EMSCRIPTEN_RESULT_FAILED_NOT_DEFERRED, "Enabling fullscreen is only possible from an input callback for the HTML5 platform.");
-			ERR_FAIL_COND_MSG(result != EMSCRIPTEN_RESULT_SUCCESS, "Enabling fullscreen is only possible from an input callback for the HTML5 platform.");
+			int result = godot_js_display_fullscreen_request();
+			ERR_FAIL_COND_MSG(result, "The request was denied. Remember that enabling fullscreen is only possible from an input callback for the HTML5 platform.");
 		} break;
 		case WINDOW_MODE_MAXIMIZED:
 		case WINDOW_MODE_MINIMIZED:

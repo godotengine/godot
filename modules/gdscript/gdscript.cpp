@@ -45,6 +45,10 @@
 #include "gdscript_parser.h"
 #include "gdscript_warning.h"
 
+#ifdef TESTS_ENABLED
+#include "tests/gdscript_test_runner.h"
+#endif
+
 ///////////////////////////
 
 GDScriptNativeClass::GDScriptNativeClass(const StringName &p_name) {
@@ -276,7 +280,7 @@ void GDScript::_get_script_property_list(List<PropertyInfo> *r_list, bool p_incl
 		}
 
 		msort.sort();
-		msort.invert();
+		msort.reverse();
 		for (int i = 0; i < msort.size(); i++) {
 			props.push_front(sptr->member_info[msort[i].name]);
 		}
@@ -1310,21 +1314,29 @@ bool GDScriptInstance::set(const StringName &p_name, const Variant &p_value) {
 					return true; //function exists, call was successful
 				}
 			} else {
-				if (!member->data_type.is_type(p_value)) {
-					// Try conversion
-					Callable::CallError ce;
-					const Variant *value = &p_value;
-					Variant converted;
-					Variant::construct(member->data_type.builtin_type, converted, &value, 1, ce);
-					if (ce.error == Callable::CallError::CALL_OK) {
-						members.write[member->index] = converted;
-						return true;
-					} else {
-						return false;
+				if (member->data_type.has_type) {
+					if (member->data_type.builtin_type == Variant::ARRAY && member->data_type.has_container_element_type()) {
+						// Typed array.
+						if (p_value.get_type() == Variant::ARRAY) {
+							return VariantInternal::get_array(&members.write[member->index])->typed_assign(p_value);
+						} else {
+							return false;
+						}
+					} else if (!member->data_type.is_type(p_value)) {
+						// Try conversion
+						Callable::CallError ce;
+						const Variant *value = &p_value;
+						Variant converted;
+						Variant::construct(member->data_type.builtin_type, converted, &value, 1, ce);
+						if (ce.error == Callable::CallError::CALL_OK) {
+							members.write[member->index] = converted;
+							return true;
+						} else {
+							return false;
+						}
 					}
-				} else {
-					members.write[member->index] = p_value;
 				}
+				members.write[member->index] = p_value;
 			}
 			return true;
 		}
@@ -1494,7 +1506,7 @@ void GDScriptInstance::get_property_list(List<PropertyInfo> *p_properties) const
 		}
 
 		msort.sort();
-		msort.invert();
+		msort.reverse();
 		for (int i = 0; i < msort.size(); i++) {
 			props.push_front(sptr->member_info[msort[i].name]);
 		}
@@ -1758,6 +1770,10 @@ void GDScriptLanguage::init() {
 	for (List<Engine::Singleton>::Element *E = singletons.front(); E; E = E->next()) {
 		_add_global(E->get().name, E->get().ptr);
 	}
+
+#ifdef TESTS_ENABLED
+	GDScriptTests::GDScriptTestRunner::handle_cmdline();
+#endif
 }
 
 String GDScriptLanguage::get_type() const {
@@ -2293,7 +2309,7 @@ GDScriptLanguage::~GDScriptLanguage() {
 		script->unreference();
 	}
 
-	singleton = NULL;
+	singleton = nullptr;
 }
 
 void GDScriptLanguage::add_orphan_subclass(const String &p_qualified_name, const ObjectID &p_subclass) {
@@ -2316,7 +2332,7 @@ Ref<GDScript> GDScriptLanguage::get_orphan_subclass(const String &p_qualified_na
 
 /*************** RESOURCE ***************/
 
-RES ResourceFormatLoaderGDScript::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, bool p_no_cache) {
+RES ResourceFormatLoaderGDScript::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, CacheMode p_cache_mode) {
 	if (r_error) {
 		*r_error = ERR_FILE_CANT_OPEN;
 	}

@@ -13,9 +13,9 @@
 	</methods>
 	<members>
 		<member name="button_index" type="int" setter="set_button_index" getter="get_button_index" default="0">
-			The mouse button identifier, one of the [enum ButtonList] button or button wheel constants.
+			The mouse button identifier, one of the [enum MouseButton] button or button wheel constants.
 		</member>
-		<member name="doubleclick" type="bool" setter="set_doubleclick" getter="is_doubleclick" default="false">
+		<member name="double_click" type="bool" setter="set_double_click" getter="is_double_click" default="false">
 			If [code]true[/code], the mouse button's state is a double-click.
 		</member>
 		<member name="factor" type="float" setter="set_factor" getter="get_factor" default="1.0">

@@ -1,0 +1,265 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="GLTFState" inherits="Resource" version="4.0">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_accessors">
+			<return type="Array">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_animation_player">
+			<return type="AnimationPlayer">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_animation_players_count">
+			<return type="int">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_animations">
+			<return type="Array">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_buffer_views">
+			<return type="Array">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_cameras">
+			<return type="Array">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_images">
+			<return type="Array">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_lights">
+			<return type="Array">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_materials">
+			<return type="Array">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_meshes">
+			<return type="Array">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_nodes">
+			<return type="Array">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_scene_node">
+			<return type="Node">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_skeleton_to_node">
+			<return type="Dictionary">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_skeletons">
+			<return type="Array">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_skins">
+			<return type="Array">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_textures">
+			<return type="Array">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_unique_animation_names">
+			<return type="Array">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_unique_names">
+			<return type="Array">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_accessors">
+			<return type="void">
+			</return>
+			<argument index="0" name="accessors" type="Array">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_animations">
+			<return type="void">
+			</return>
+			<argument index="0" name="animations" type="Array">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_buffer_views">
+			<return type="void">
+			</return>
+			<argument index="0" name="buffer_views" type="Array">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_cameras">
+			<return type="void">
+			</return>
+			<argument index="0" name="cameras" type="Array">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_images">
+			<return type="void">
+			</return>
+			<argument index="0" name="images" type="Array">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_lights">
+			<return type="void">
+			</return>
+			<argument index="0" name="lights" type="Array">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_materials">
+			<return type="void">
+			</return>
+			<argument index="0" name="materials" type="Array">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_meshes">
+			<return type="void">
+			</return>
+			<argument index="0" name="meshes" type="Array">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_nodes">
+			<return type="void">
+			</return>
+			<argument index="0" name="nodes" type="Array">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_skeleton_to_node">
+			<return type="void">
+			</return>
+			<argument index="0" name="skeleton_to_node" type="Dictionary">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_skeletons">
+			<return type="void">
+			</return>
+			<argument index="0" name="skeletons" type="Array">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_skins">
+			<return type="void">
+			</return>
+			<argument index="0" name="skins" type="Array">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_textures">
+			<return type="void">
+			</return>
+			<argument index="0" name="textures" type="Array">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_unique_animation_names">
+			<return type="void">
+			</return>
+			<argument index="0" name="unique_animation_names" type="Array">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_unique_names">
+			<return type="void">
+			</return>
+			<argument index="0" name="unique_names" type="Array">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="buffers" type="Array" setter="set_buffers" getter="get_buffers" default="[  ]">
+		</member>
+		<member name="glb_data" type="PackedByteArray" setter="set_glb_data" getter="get_glb_data" default="PackedByteArray(  )">
+		</member>
+		<member name="json" type="Dictionary" setter="set_json" getter="get_json" default="{}">
+		</member>
+		<member name="major_version" type="int" setter="set_major_version" getter="get_major_version" default="0">
+		</member>
+		<member name="minor_version" type="int" setter="set_minor_version" getter="get_minor_version" default="0">
+		</member>
+		<member name="root_nodes" type="Array" setter="set_root_nodes" getter="get_root_nodes" default="[  ]">
+		</member>
+		<member name="scene_name" type="String" setter="set_scene_name" getter="get_scene_name" default="&quot;&quot;">
+		</member>
+		<member name="use_named_skin_binds" type="bool" setter="set_use_named_skin_binds" getter="get_use_named_skin_binds" default="false">
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

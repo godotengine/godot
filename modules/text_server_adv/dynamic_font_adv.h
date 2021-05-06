@@ -33,6 +33,10 @@
 
 #include "font_adv.h"
 
+#include "modules/modules_enabled.gen.h"
+
+#ifdef MODULE_FREETYPE_ENABLED
+
 #include <ft2build.h>
 #include FT_FREETYPE_H
 #include FT_TRUETYPE_TABLES_H
@@ -182,7 +186,11 @@ public:
 	virtual Vector2 draw_glyph(RID p_canvas, int p_size, const Vector2 &p_pos, uint32_t p_index, const Color &p_color) const override;
 	virtual Vector2 draw_glyph_outline(RID p_canvas, int p_size, int p_outline_size, const Vector2 &p_pos, uint32_t p_index, const Color &p_color) const override;
 
+	virtual bool get_glyph_contours(int p_size, uint32_t p_index, Vector<Vector3> &r_points, Vector<int32_t> &r_contours, bool &r_orientation) const override;
+
 	virtual ~DynamicFontDataAdvanced() override;
 };
+
+#endif // MODULE_FREETYPE_ENABLED
 
 #endif // DYNAMIC_FONT_ADV_H

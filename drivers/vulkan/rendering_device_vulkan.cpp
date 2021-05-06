@@ -119,7 +119,7 @@ static void update_external_dependency_for_store(VkSubpassDependency &dependency
 	}
 
 	if (is_depth) {
-		// Depth resources have addtional stages that may be interested in them
+		// Depth resources have additional stages that may be interested in them
 		dependency.dstStageMask |= VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
 		dependency.dstAccessMask |= VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
 	}
@@ -1486,7 +1486,7 @@ Error RenderingDeviceVulkan::_staging_buffer_allocate(uint32_t p_amount, uint32_
 				// possible in a single frame
 				if (staging_buffer_blocks[staging_buffer_current].frame_used == frames_drawn) {
 					//guess we did.. ok, let's see if we can insert a new block..
-					if (staging_buffer_blocks.size() * staging_buffer_block_size < staging_buffer_max_size) {
+					if ((uint64_t)staging_buffer_blocks.size() * staging_buffer_block_size < staging_buffer_max_size) {
 						//we can, so we are safe
 						Error err = _insert_staging_block();
 						if (err) {
@@ -1530,7 +1530,7 @@ Error RenderingDeviceVulkan::_staging_buffer_allocate(uint32_t p_amount, uint32_
 			staging_buffer_blocks.write[staging_buffer_current].fill_amount = 0;
 		} else if (staging_buffer_blocks[staging_buffer_current].frame_used > frames_drawn - frame_count) {
 			//this block may still be in use, let's not touch it unless we have to, so.. can we create a new one?
-			if (staging_buffer_blocks.size() * staging_buffer_block_size < staging_buffer_max_size) {
+			if ((uint64_t)staging_buffer_blocks.size() * staging_buffer_block_size < staging_buffer_max_size) {
 				//we are still allowed to create a new block, so let's do that and insert it for current pos
 				Error err = _insert_staging_block();
 				if (err) {
@@ -1600,7 +1600,7 @@ Error RenderingDeviceVulkan::_buffer_update(Buffer *p_buffer, size_t p_offset, c
 		}
 
 		//copy to staging buffer
-		copymem(((uint8_t *)data_ptr) + block_write_offset, p_data + submit_from, block_write_amount);
+		memcpy(((uint8_t *)data_ptr) + block_write_offset, p_data + submit_from, block_write_amount);
 
 		//unmap
 		vmaUnmapMemory(allocator, staging_buffer_blocks[staging_buffer_current].allocation);
@@ -2558,7 +2558,7 @@ Vector<uint8_t> RenderingDeviceVulkan::_texture_get_data_from_image(Texture *tex
 						const uint8_t *rptr = slice_read_ptr + y * layout.rowPitch;
 						uint8_t *wptr = write_ptr + y * line_width;
 
-						copymem(wptr, rptr, line_width);
+						memcpy(wptr, rptr, line_width);
 					}
 
 				} else {
@@ -2566,7 +2566,7 @@ Vector<uint8_t> RenderingDeviceVulkan::_texture_get_data_from_image(Texture *tex
 					for (uint32_t y = 0; y < height; y++) {
 						const uint8_t *rptr = slice_read_ptr + y * layout.rowPitch;
 						uint8_t *wptr = write_ptr + y * pixel_size * width;
-						copymem(wptr, rptr, pixel_size * width);
+						memcpy(wptr, rptr, (uint64_t)pixel_size * width);
 					}
 				}
 			}
@@ -2699,7 +2699,7 @@ Vector<uint8_t> RenderingDeviceVulkan::texture_get_data(RID p_texture, uint32_t 
 		{
 			buffer_data.resize(buffer_size);
 			uint8_t *w = buffer_data.ptrw();
-			copymem(w, buffer_mem, buffer_size);
+			memcpy(w, buffer_mem, buffer_size);
 		}
 
 		vmaUnmapMemory(allocator, tmp_buffer.allocation);
@@ -3108,7 +3108,7 @@ Error RenderingDeviceVulkan::texture_clear(RID p_texture, const Color &p_color, 
 
 	VkImageLayout clear_layout = (src_tex->layout == VK_IMAGE_LAYOUT_GENERAL) ? VK_IMAGE_LAYOUT_GENERAL : VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
 
-	// NOTE: Perhaps the valid stages/accesses for a given onwner should be a property of the owner. (Here and places like _get_buffer_from_owner)
+	// NOTE: Perhaps the valid stages/accesses for a given owner should be a property of the owner. (Here and places like _get_buffer_from_owner)
 	const VkPipelineStageFlags valid_texture_stages = VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
 	constexpr VkAccessFlags read_access = VK_ACCESS_SHADER_READ_BIT;
 	constexpr VkAccessFlags read_write_access = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
@@ -3250,7 +3250,7 @@ VkRenderPass RenderingDeviceVulkan::_render_pass_create(const Vector<AttachmentF
 	Vector<VkAttachmentReference> depth_stencil_references;
 	Vector<VkAttachmentReference> resolve_references;
 
-	// Set up a dependencies from/to external equivalent to the default (implicit) one, and then amend them
+	// Set up dependencies from/to external equivalent to the default (implicit) one, and then amend them
 	const VkPipelineStageFlags default_access_mask = VK_ACCESS_INPUT_ATTACHMENT_READ_BIT |
 													 VK_ACCESS_COLOR_ATTACHMENT_READ_BIT |
 													 VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT |
@@ -3279,7 +3279,7 @@ VkRenderPass RenderingDeviceVulkan::_render_pass_create(const Vector<AttachmentF
 		bool is_storage = p_format[i].usage_flags & TEXTURE_USAGE_STORAGE_BIT;
 
 		// For each UNDEFINED, assume the prior use was a *read*, as we'd be discarding the output of a write
-		// Also, each UNDEFINED will do an immediate layout transition (write), s.t. we must ensure execution syncronization vs.
+		// Also, each UNDEFINED will do an immediate layout transition (write), s.t. we must ensure execution synchronization vs.
 		// the read.  If this is a performance issue, one could track the actual last accessor of each resource, adding only that
 		// stage
 		switch (is_depth_stencil ? p_initial_depth_action : p_initial_color_action) {
@@ -3424,12 +3424,12 @@ VkRenderPass RenderingDeviceVulkan::_render_pass_create(const Vector<AttachmentF
 
 		// NOTE: Big Mallet Approach -- any layout transition causes a full barrier
 		if (reference.layout != description.initialLayout) {
-			// NOTE: this should be smarter based on the textures knowledge of it's previous role
+			// NOTE: this should be smarter based on the texture's knowledge of its previous role
 			dependency_from_external.srcStageMask |= VK_PIPELINE_STAGE_ALL_COMMANDS_BIT;
 			dependency_from_external.srcAccessMask |= VK_ACCESS_MEMORY_READ_BIT | VK_ACCESS_MEMORY_WRITE_BIT;
 		}
 		if (reference.layout != description.finalLayout) {
-			// NOTE: this should be smarter based on the textures knowledge of it's subsequent role
+			// NOTE: this should be smarter based on the texture's knowledge of its subsequent role
 			dependency_to_external.dstStageMask |= VK_PIPELINE_STAGE_ALL_COMMANDS_BIT;
 			dependency_to_external.dstAccessMask |= VK_ACCESS_MEMORY_READ_BIT | VK_ACCESS_MEMORY_WRITE_BIT;
 		}
@@ -5151,7 +5151,7 @@ RID RenderingDeviceVulkan::uniform_set_create(const Vector<Uniform> &p_uniforms,
 				}
 				ERR_FAIL_COND_V_MSG(!buffer, RID(), "Storage buffer supplied (binding: " + itos(uniform.binding) + ") is invalid.");
 
-				//if 0, then its sized on link time
+				//if 0, then it's sized on link time
 				ERR_FAIL_COND_V_MSG(set_uniform.length > 0 && buffer->size != (uint32_t)set_uniform.length, RID(),
 						"Storage buffer supplied (binding: " + itos(uniform.binding) + ") size (" + itos(buffer->size) + " does not match size of shader uniform: (" + itos(set_uniform.length) + ").");
 
@@ -5336,7 +5336,7 @@ Vector<uint8_t> RenderingDeviceVulkan::buffer_get_data(RID p_buffer) {
 		ERR_FAIL_V_MSG(Vector<uint8_t>(), "Buffer is either invalid or this type of buffer can't be retrieved. Only Index and Vertex buffers allow retrieving.");
 	}
 
-	// Make sure  no one is using the buffer -- the "false" gets us to the same command buffer as below.
+	// Make sure no one is using the buffer -- the "false" gets us to the same command buffer as below.
 	_buffer_memory_barrier(buffer->buffer, 0, buffer->size, src_stage_mask, src_access_mask, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_ACCESS_TRANSFER_READ_BIT, false);
 
 	VkCommandBuffer command_buffer = frames[frame].setup_command_buffer;
@@ -5359,7 +5359,7 @@ Vector<uint8_t> RenderingDeviceVulkan::buffer_get_data(RID p_buffer) {
 	{
 		buffer_data.resize(buffer->size);
 		uint8_t *w = buffer_data.ptrw();
-		copymem(w, buffer_mem, buffer->size);
+		memcpy(w, buffer_mem, buffer->size);
 	}
 
 	vmaUnmapMemory(allocator, tmp_buffer.allocation);
@@ -5729,7 +5729,7 @@ RID RenderingDeviceVulkan::render_pipeline_create(RID p_shader, FramebufferForma
 #endif
 	//create ID to associate with this pipeline
 	RID id = render_pipeline_owner.make_rid(pipeline);
-	//now add aall the dependencies
+	//now add all the dependencies
 	_add_dependency(id, p_shader);
 	return id;
 }
@@ -5780,7 +5780,7 @@ RID RenderingDeviceVulkan::compute_pipeline_create(RID p_shader) {
 
 	//create ID to associate with this pipeline
 	RID id = compute_pipeline_owner.make_rid(pipeline);
-	//now add aall the dependencies
+	//now add all the dependencies
 	_add_dependency(id, p_shader);
 	return id;
 }
@@ -6817,7 +6817,7 @@ void RenderingDeviceVulkan::draw_list_end(uint32_t p_post_barrier) {
 
 	// To ensure proper synchronization, we must make sure rendering is done before:
 	//  * Some buffer is copied
-	//  * Another render pass happens (since we may be done
+	//  * Another render pass happens (since we may be done)
 
 #ifdef FORCE_FULL_BARRIER
 	_full_barrier(true);
@@ -7780,7 +7780,7 @@ uint64_t RenderingDeviceVulkan::get_memory_usage() const {
 
 void RenderingDeviceVulkan::_flush(bool p_current_frame) {
 	if (local_device.is_valid() && !p_current_frame) {
-		return; //flushign previous frames has no effect with local device
+		return; //flushing previous frames has no effect with local device
 	}
 	//not doing this crashes RADV (undefined behavior)
 	if (p_current_frame) {
@@ -7834,6 +7834,22 @@ void RenderingDeviceVulkan::_flush(bool p_current_frame) {
 }
 
 void RenderingDeviceVulkan::initialize(VulkanContext *p_context, bool p_local_device) {
+	// get our device capabilities
+	{
+		device_capabilities.version_major = p_context->get_vulkan_major();
+		device_capabilities.version_minor = p_context->get_vulkan_minor();
+
+		// get info about subgroups
+		VulkanContext::SubgroupCapabilities subgroup_capabilities = p_context->get_subgroup_capabilities();
+		device_capabilities.subgroup_size = subgroup_capabilities.size;
+		device_capabilities.subgroup_in_shaders = subgroup_capabilities.supported_stages_flags_rd();
+		device_capabilities.subgroup_operations = subgroup_capabilities.supported_operations_flags_rd();
+
+		// get info about further features
+		VulkanContext::MultiviewCapabilities multiview_capabilies = p_context->get_multiview_capabilities();
+		device_capabilities.supports_multiview = multiview_capabilies.is_supported && multiview_capabilies.max_view_count > 1;
+	}
+
 	context = p_context;
 	device = p_context->get_device();
 	if (p_local_device) {
@@ -7974,7 +7990,11 @@ void RenderingDeviceVulkan::_free_rids(T &p_owner, const char *p_type) {
 	List<RID> owned;
 	p_owner.get_owned_list(&owned);
 	if (owned.size()) {
-		WARN_PRINT(itos(owned.size()) + " RIDs of type '" + p_type + "' were leaked.");
+		if (owned.size() == 1) {
+			WARN_PRINT(vformat("1 RID of type \"%s\" was leaked.", p_type));
+		} else {
+			WARN_PRINT(vformat("%d RIDs of type \"%s\" were leaked.", owned.size(), p_type));
+		}
 		for (List<RID>::Element *E = owned.front(); E; E = E->next()) {
 			free(E->get());
 		}
@@ -8187,7 +8207,11 @@ void RenderingDeviceVulkan::finalize() {
 		List<RID> owned;
 		texture_owner.get_owned_list(&owned);
 		if (owned.size()) {
-			WARN_PRINT(itos(owned.size()) + " RIDs of type 'Texture' were leaked.");
+			if (owned.size() == 1) {
+				WARN_PRINT("1 RID of type \"Texture\" was leaked.");
+			} else {
+				WARN_PRINT(vformat("%d RIDs of type \"Texture\" were leaked.", owned.size()));
+			}
 			//free shared first
 			for (List<RID>::Element *E = owned.front(); E;) {
 				List<RID>::Element *N = E->next();
@@ -8253,6 +8277,7 @@ RenderingDevice *RenderingDeviceVulkan::create_local_device() {
 }
 
 RenderingDeviceVulkan::RenderingDeviceVulkan() {
+	device_capabilities.device_family = DEVICE_VULKAN;
 }
 
 RenderingDeviceVulkan::~RenderingDeviceVulkan() {

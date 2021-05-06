@@ -57,9 +57,9 @@ void ios_mono_log_callback(const char *log_domain, const char *log_level, const 
 }
 
 void initialize() {
-	mono_dllmap_insert(NULL, "System.Native", NULL, "__Internal", NULL);
-	mono_dllmap_insert(NULL, "System.IO.Compression.Native", NULL, "__Internal", NULL);
-	mono_dllmap_insert(NULL, "System.Security.Cryptography.Native.Apple", NULL, "__Internal", NULL);
+	mono_dllmap_insert(nullptr, "System.Native", nullptr, "__Internal", nullptr);
+	mono_dllmap_insert(nullptr, "System.IO.Compression.Native", nullptr, "__Internal", nullptr);
+	mono_dllmap_insert(nullptr, "System.Security.Cryptography.Native.Apple", nullptr, "__Internal", nullptr);
 
 #ifdef IOS_DEVICE
 	// This function is defined in an auto-generated source file
@@ -85,7 +85,7 @@ void cleanup() {
 GD_PINVOKE_EXPORT const char *xamarin_get_locale_country_code() {
 	NSLocale *locale = [NSLocale currentLocale];
 	NSString *countryCode = [locale objectForKey:NSLocaleCountryCode];
-	if (countryCode == NULL) {
+	if (countryCode == nullptr) {
 		return strdup("US");
 	}
 	return strdup([countryCode UTF8String]);

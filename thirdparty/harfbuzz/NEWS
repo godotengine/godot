@@ -1,3 +1,18 @@
+Overview of changes leading to 2.8.0
+Tuesday, March 16, 2021
+====================================
+- Shape joining scripts other than Arabic/Syriac using the Universal Shaping Engine.
+  Previously these were shaped using the generalized Arabic shaper. (David Corbett)
+- Fix regression in shaping of U+0B55 ORIYA SIGN OVERLINE. (David Corbett)
+- Update language tags. (David Corbett)
+- Variations: reduce error: do not round each interpolated delta. (Just van Rossum) 
+- Documentation improvements. (Khaled Hosny, Nathan Willis)
+- Subsetter improvements: subsets most, if not all, lookup types now. (Garret Rieger, Qunxin Liu)
+- Fuzzer-found fixes and other improvements when memory failures happen. (Behdad)
+- Removed most atomic implementations now that we have C++11 atomic impl. (Behdad)
+- General codebase upkeep; using more C++11 features: constexpr constructors, etc. (Behdad)
+
+
 Overview of changes leading to 2.7.4
 Sunday, December 27, 2020
 ====================================

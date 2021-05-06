@@ -4,7 +4,8 @@
 		A region of the navigation map.
 	</brief_description>
 	<description>
-		A region of the navigation map. It tells the [Navigation3D] node what can be navigated and what cannot, based on the [NavigationMesh] resource. This should be a child of a [Navigation3D] node (even not a direct child).
+		A region of the navigation map. It tells the [NavigationServer3D] what can be navigated and what cannot, based on its [NavigationMesh] resource.
+		Two regions can be connected to each other if they share a similar edge. You can set the minimum distance between two vertices required to connect two edges by using [method NavigationServer3D.map_set_edge_connection_margin].
 	</description>
 	<tutorials>
 	</tutorials>
@@ -20,6 +21,9 @@
 	<members>
 		<member name="enabled" type="bool" setter="set_enabled" getter="is_enabled" default="true">
 			Determines if the [NavigationRegion3D] is enabled or disabled.
+		</member>
+		<member name="layers" type="int" setter="set_layers" getter="get_layers" default="1">
+			A bitfield determining all layers the region belongs to. These layers can be checked upon when requesting a path with [method NavigationServer3D.map_get_path].
 		</member>
 		<member name="navmesh" type="NavigationMesh" setter="set_navigation_mesh" getter="get_navigation_mesh">
 			The [NavigationMesh] resource to use.

@@ -44,12 +44,12 @@ class LineEdit;
 class AcceptDialog : public Window {
 	GDCLASS(AcceptDialog, Window);
 
-	Window *parent_visible;
+	Window *parent_visible = nullptr;
 	Panel *bg;
 	HBoxContainer *hbc;
 	Label *label;
 	Button *ok;
-	bool hide_on_ok;
+	bool hide_on_ok = true;
 
 	void _custom_action(const String &p_action);
 	void _update_child_rects();

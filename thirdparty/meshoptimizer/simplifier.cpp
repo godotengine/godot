@@ -131,7 +131,7 @@ struct PositionHasher
 static size_t hashBuckets2(size_t count)
 {
 	size_t buckets = 1;
-	while (buckets < count)
+	while (buckets < count + count / 4)
 		buckets *= 2;
 
 	return buckets;

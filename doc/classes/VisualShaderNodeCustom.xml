@@ -20,7 +20,7 @@
 			<return type="String">
 			</return>
 			<description>
-				Override this method to define the path to the associated custom node in the Visual Shader Editor's members dialog. The path may looks like [code]"MyGame/MyFunctions/Noise"[/code].
+				Override this method to define the path to the associated custom node in the Visual Shader Editor's members dialog. The path may look like [code]"MyGame/MyFunctions/Noise"[/code].
 				Defining this method is [b]optional[/b]. If not overridden, the node will be filed under the "Addons" category.
 			</description>
 		</method>

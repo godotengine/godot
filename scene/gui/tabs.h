@@ -63,42 +63,43 @@ private:
 
 		Ref<TextLine> text_buf;
 		Ref<Texture2D> icon;
-		int ofs_cache;
-		bool disabled;
-		int size_cache;
-		int size_text;
-		int x_cache;
-		int x_size_cache;
+		int ofs_cache = 0;
+		bool disabled = false;
+		int size_cache = 0;
+		int size_text = 0;
+		int x_cache = 0;
+		int x_size_cache = 0;
 
 		Ref<Texture2D> right_button;
 		Rect2 rb_rect;
 		Rect2 cb_rect;
 	};
 
-	int offset;
-	int max_drawn_tab;
-	int highlight_arrow;
-	bool buttons_visible;
-	bool missing_right;
+	int offset = 0;
+	int max_drawn_tab = 0;
+	int highlight_arrow = -1;
+	bool buttons_visible = false;
+	bool missing_right = false;
 	Vector<Tab> tabs;
-	int current;
-	int previous;
+	int current = 0;
+	int previous = 0;
 	int _get_top_margin() const;
-	TabAlign tab_align;
-	int rb_hover;
-	bool rb_pressing;
+	TabAlign tab_align = ALIGN_CENTER;
+	bool clip_tabs = true;
+	int rb_hover = -1;
+	bool rb_pressing = false;
 
-	bool select_with_rmb;
+	bool select_with_rmb = false;
 
-	int cb_hover;
-	bool cb_pressing;
-	CloseButtonDisplayPolicy cb_displaypolicy;
+	int cb_hover = -1;
+	bool cb_pressing = false;
+	CloseButtonDisplayPolicy cb_displaypolicy = CLOSE_BUTTON_SHOW_NEVER;
 
-	int hover; // Hovered tab.
-	int min_width;
-	bool scrolling_enabled;
-	bool drag_to_rearrange_enabled;
-	int tabs_rearrange_group;
+	int hover = -1; // Hovered tab.
+	int min_width = 0;
+	bool scrolling_enabled = true;
+	bool drag_to_rearrange_enabled = false;
+	int tabs_rearrange_group = -1;
 
 	int get_tab_width(int p_idx) const;
 	void _ensure_no_over_offset();
@@ -147,6 +148,9 @@ public:
 
 	void set_tab_align(TabAlign p_align);
 	TabAlign get_tab_align() const;
+
+	void set_clip_tabs(bool p_clip_tabs);
+	bool get_clip_tabs() const;
 
 	void move_tab(int from, int to);
 

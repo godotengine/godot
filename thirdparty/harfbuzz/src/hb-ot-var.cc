@@ -56,7 +56,7 @@
  *
  * Tests whether a face includes any OpenType variation data in the `fvar` table.
  *
- * Return value: true if data found, false otherwise
+ * Return value: %true if data found, %false otherwise
  *
  * Since: 1.4.2
  **/
@@ -87,7 +87,7 @@ hb_ot_var_get_axis_count (hb_face_t *face)
  * hb_ot_var_get_axes:
  * @face: #hb_face_t to work upon
  * @start_offset: offset of the first lookup to retrieve
- * @axes_count: (inout) (allow-none): Input = the maximum number of variation axes to return;
+ * @axes_count: (inout) (optional): Input = the maximum number of variation axes to return;
  *                Output = the actual number of variation axes returned (may be zero)
  * @axes_array: (out caller-allocates) (array length=axes_count): The array of variation axes found
  *
@@ -133,7 +133,7 @@ hb_ot_var_find_axis (hb_face_t        *face,
  * hb_ot_var_get_axis_infos:
  * @face: #hb_face_t to work upon
  * @start_offset: offset of the first lookup to retrieve
- * @axes_count: (inout) (allow-none): Input = the maximum number of variation axes to return;
+ * @axes_count: (inout) (optional): Input = the maximum number of variation axes to return;
  *                Output = the actual number of variation axes returned (may be zero)
  * @axes_array: (out caller-allocates) (array length=axes_count): The array of variation axes found
  *
@@ -162,7 +162,7 @@ hb_ot_var_get_axis_infos (hb_face_t             *face,
  * Fetches the variation-axis information corresponding to the specified axis tag
  * in the specified face.
  *
- * Return value: true if data found, false otherwise
+ * Return value: %true if data found, %false otherwise
  *
  * Since: 2.2.0
  **/
@@ -237,7 +237,7 @@ hb_ot_var_named_instance_get_postscript_name_id (hb_face_t  *face,
  * hb_ot_var_named_instance_get_design_coords:
  * @face: The #hb_face_t to work on
  * @instance_index: The index of the named instance to query
- * @coords_length: (inout) (allow-none): Input = the maximum number of coordinates to return;
+ * @coords_length: (inout) (optional): Input = the maximum number of coordinates to return;
  *                 Output = the actual number of coordinates returned (may be zero)
  * @coords: (out) (array length=coords_length): The array of coordinates found for the query
  *

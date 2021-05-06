@@ -35,8 +35,8 @@
 
 class CylinderShape3D : public Shape3D {
 	GDCLASS(CylinderShape3D, Shape3D);
-	float radius;
-	float height;
+	float radius = 1.0;
+	float height = 2.0;
 
 protected:
 	static void _bind_methods();

@@ -74,11 +74,19 @@ typedef struct {
 	godot_rid (*create_font_system)(void *, const godot_string *, int);
 	godot_rid (*create_font_resource)(void *, const godot_string *, int);
 	godot_rid (*create_font_memory)(void *, const uint8_t *, size_t, godot_string *, int);
+	godot_rid (*create_font_bitmap)(void *, float, float, int);
+	void (*font_bitmap_add_texture)(void *, godot_rid *, const godot_object *);
+	void (*font_bitmap_add_char)(void *, godot_rid *, char32_t, int, const godot_rect2 *, const godot_vector2 *, float);
+	void (*font_bitmap_add_kerning_pair)(void *, godot_rid *, char32_t, char32_t, int);
 	float (*font_get_height)(void *, godot_rid *, int);
 	float (*font_get_ascent)(void *, godot_rid *, int);
 	float (*font_get_descent)(void *, godot_rid *, int);
 	float (*font_get_underline_position)(void *, godot_rid *, int);
 	float (*font_get_underline_thickness)(void *, godot_rid *, int);
+	int (*font_get_spacing_space)(void *, godot_rid *);
+	void (*font_set_spacing_space)(void *, godot_rid *, int);
+	int (*font_get_spacing_glyph)(void *, godot_rid *);
+	void (*font_set_spacing_glyph)(void *, godot_rid *, int);
 	void (*font_set_antialiased)(void *, godot_rid *, bool);
 	bool (*font_get_antialiased)(void *, godot_rid *);
 	godot_dictionary (*font_get_feature_list)(void *, godot_rid *);
@@ -110,6 +118,7 @@ typedef struct {
 	godot_vector2 (*font_get_glyph_kerning)(void *, godot_rid *, uint32_t, uint32_t, int);
 	godot_vector2 (*font_draw_glyph)(void *, godot_rid *, godot_rid *, int, const godot_vector2 *, uint32_t, const godot_color *);
 	godot_vector2 (*font_draw_glyph_outline)(void *, godot_rid *, godot_rid *, int, int, const godot_vector2 *, uint32_t, const godot_color *);
+	bool (*font_get_glyph_contours)(void *, godot_rid *, int, uint32_t, godot_packed_vector3_array *, godot_packed_int32_array *, bool *);
 	float (*font_get_oversampling)(void *);
 	void (*font_set_oversampling)(void *, float);
 	godot_packed_string_array (*get_system_fonts)(void *);
@@ -205,7 +214,7 @@ godot_bool GDAPI godot_packed_glyph_array_has(godot_packed_glyph_array *p_self, 
 
 void GDAPI godot_packed_glyph_array_sort(godot_packed_glyph_array *p_self);
 
-void GDAPI godot_packed_glyph_array_invert(godot_packed_glyph_array *p_self);
+void GDAPI godot_packed_glyph_array_reverse(godot_packed_glyph_array *p_self);
 
 void GDAPI godot_packed_glyph_array_push_back(godot_packed_glyph_array *p_self, const godot_glyph *p_data);
 

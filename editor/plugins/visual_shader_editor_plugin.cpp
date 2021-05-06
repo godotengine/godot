@@ -353,6 +353,11 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id) {
 	bool is_expression = !expression_node.is_null();
 	String expression = "";
 
+	VisualShaderNodeCustom *custom_node = Object::cast_to<VisualShaderNodeCustom>(vsnode.ptr());
+	if (custom_node) {
+		custom_node->_set_initialized(true);
+	}
+
 	GraphNode *node = memnew(GraphNode);
 	register_link(p_type, p_id, vsnode.ptr(), node);
 
@@ -382,6 +387,20 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id) {
 
 	if (is_group) {
 		port_offset += 2;
+	}
+
+	if (is_resizable) {
+		Ref<VisualShaderNodeComment> comment_node = Object::cast_to<VisualShaderNodeComment>(vsnode.ptr());
+		if (comment_node.is_valid()) {
+			node->set_comment(true);
+
+			Label *comment_label = memnew(Label);
+			node->add_child(comment_label);
+			comment_label->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+			comment_label->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+			comment_label->set_mouse_filter(Control::MouseFilter::MOUSE_FILTER_STOP);
+			comment_label->set_text(comment_node->get_description());
+		}
 	}
 
 	Ref<VisualShaderNodeUniform> uniform = vsnode;
@@ -1023,7 +1042,7 @@ void VisualShaderEditor::_update_options_menu() {
 	Color unsupported_color = get_theme_color("error_color", "Editor");
 	Color supported_color = get_theme_color("warning_color", "Editor");
 
-	static bool low_driver = ProjectSettings::get_singleton()->get("rendering/quality/driver/driver_name") == "GLES2";
+	static bool low_driver = ProjectSettings::get_singleton()->get("rendering/driver/driver_name") == "GLES2";
 
 	Map<String, TreeItem *> folders;
 
@@ -1119,16 +1138,24 @@ void VisualShaderEditor::_update_options_menu() {
 }
 
 void VisualShaderEditor::_set_mode(int p_which) {
-	if (p_which == VisualShader::MODE_PARTICLES) {
+	if (p_which == VisualShader::MODE_SKY) {
+		edit_type_standart->set_visible(false);
+		edit_type_particles->set_visible(false);
+		edit_type_sky->set_visible(true);
+		edit_type = edit_type_sky;
+		mode = MODE_FLAGS_SKY;
+	} else if (p_which == VisualShader::MODE_PARTICLES) {
 		edit_type_standart->set_visible(false);
 		edit_type_particles->set_visible(true);
+		edit_type_sky->set_visible(false);
 		edit_type = edit_type_particles;
-		particles_mode = true;
+		mode = MODE_FLAGS_PARTICLES;
 	} else {
 		edit_type_particles->set_visible(false);
 		edit_type_standart->set_visible(true);
+		edit_type_sky->set_visible(false);
 		edit_type = edit_type_standart;
-		particles_mode = false;
+		mode = MODE_FLAGS_SPATIAL_CANVASITEM;
 	}
 	visual_shader->set_shader_type(get_current_shader_type());
 }
@@ -1289,8 +1316,10 @@ void VisualShaderEditor::_update_graph() {
 
 VisualShader::Type VisualShaderEditor::get_current_shader_type() const {
 	VisualShader::Type type;
-	if (particles_mode) {
+	if (mode & MODE_FLAGS_PARTICLES) {
 		type = VisualShader::Type(edit_type->get_selected() + 3);
+	} else if (mode & MODE_FLAGS_SKY) {
+		type = VisualShader::Type(edit_type->get_selected() + 6);
 	} else {
 		type = VisualShader::Type(edit_type->get_selected());
 	}
@@ -1624,6 +1653,92 @@ void VisualShaderEditor::_preview_select_port(int p_node, int p_port) {
 	undo_redo->commit_action();
 }
 
+void VisualShaderEditor::_comment_title_popup_show(const Point2 &p_position, int p_node_id) {
+	VisualShader::Type type = get_current_shader_type();
+	Ref<VisualShaderNodeComment> node = visual_shader->get_node(type, p_node_id);
+	if (node.is_null()) {
+		return;
+	}
+	comment_title_change_edit->set_text(node->get_title());
+	comment_title_change_popup->set_meta("id", p_node_id);
+	comment_title_change_popup->popup();
+	comment_title_change_popup->set_position(p_position);
+}
+
+void VisualShaderEditor::_comment_title_text_changed(const String &p_new_text) {
+	comment_title_change_edit->set_size(Size2(-1, -1));
+	comment_title_change_popup->set_size(Size2(-1, -1));
+}
+
+void VisualShaderEditor::_comment_title_text_entered(const String &p_new_text) {
+	comment_title_change_popup->hide();
+}
+
+void VisualShaderEditor::_comment_title_popup_focus_out() {
+	comment_title_change_popup->hide();
+}
+
+void VisualShaderEditor::_comment_title_popup_hide() {
+	ERR_FAIL_COND(!comment_title_change_popup->has_meta("id"));
+	int node_id = (int)comment_title_change_popup->get_meta("id");
+
+	VisualShader::Type type = get_current_shader_type();
+	Ref<VisualShaderNodeComment> node = visual_shader->get_node(type, node_id);
+
+	ERR_FAIL_COND(node.is_null());
+
+	if (node->get_title() == comment_title_change_edit->get_text()) {
+		return; // nothing changed - ignored
+	}
+	undo_redo->create_action(TTR("Set Comment Node Title"));
+	undo_redo->add_do_method(node.ptr(), "set_title", comment_title_change_edit->get_text());
+	undo_redo->add_undo_method(node.ptr(), "set_title", node->get_title());
+	undo_redo->add_do_method(graph_plugin.ptr(), "update_node", (int)type, node_id);
+	undo_redo->add_undo_method(graph_plugin.ptr(), "update_node", (int)type, node_id);
+	undo_redo->commit_action();
+}
+
+void VisualShaderEditor::_comment_desc_popup_show(const Point2 &p_position, int p_node_id) {
+	VisualShader::Type type = get_current_shader_type();
+	Ref<VisualShaderNodeComment> node = visual_shader->get_node(type, p_node_id);
+	if (node.is_null()) {
+		return;
+	}
+	comment_desc_change_edit->set_text(node->get_description());
+	comment_desc_change_popup->set_meta("id", p_node_id);
+	comment_desc_change_popup->popup();
+	comment_desc_change_popup->set_position(p_position);
+}
+
+void VisualShaderEditor::_comment_desc_text_changed() {
+	comment_desc_change_edit->set_size(Size2(-1, -1));
+	comment_desc_change_popup->set_size(Size2(-1, -1));
+}
+
+void VisualShaderEditor::_comment_desc_confirm() {
+	comment_desc_change_popup->hide();
+}
+
+void VisualShaderEditor::_comment_desc_popup_hide() {
+	ERR_FAIL_COND(!comment_desc_change_popup->has_meta("id"));
+	int node_id = (int)comment_desc_change_popup->get_meta("id");
+
+	VisualShader::Type type = get_current_shader_type();
+	Ref<VisualShaderNodeComment> node = visual_shader->get_node(type, node_id);
+
+	ERR_FAIL_COND(node.is_null());
+
+	if (node->get_description() == comment_desc_change_edit->get_text()) {
+		return; // nothing changed - ignored
+	}
+	undo_redo->create_action(TTR("Set Comment Node Description"));
+	undo_redo->add_do_method(node.ptr(), "set_description", comment_desc_change_edit->get_text());
+	undo_redo->add_undo_method(node.ptr(), "set_description", node->get_title());
+	undo_redo->add_do_method(graph_plugin.ptr(), "update_node", (int)type, node_id);
+	undo_redo->add_undo_method(graph_plugin.ptr(), "update_node", (int)type, node_id);
+	undo_redo->commit_action();
+}
+
 void VisualShaderEditor::_uniform_line_edit_changed(const String &p_text, int p_node_id) {
 	VisualShader::Type type = get_current_shader_type();
 
@@ -1672,8 +1787,15 @@ void VisualShaderEditor::_port_edited() {
 	ERR_FAIL_COND(!vsn.is_valid());
 
 	undo_redo->create_action(TTR("Set Input Default Port"));
-	undo_redo->add_do_method(vsn.ptr(), "set_input_port_default_value", editing_port, value);
-	undo_redo->add_undo_method(vsn.ptr(), "set_input_port_default_value", editing_port, vsn->get_input_port_default_value(editing_port));
+
+	Ref<VisualShaderNodeCustom> custom = Object::cast_to<VisualShaderNodeCustom>(vsn.ptr());
+	if (custom.is_valid()) {
+		undo_redo->add_do_method(custom.ptr(), "_set_input_port_default_value", editing_port, value);
+		undo_redo->add_undo_method(custom.ptr(), "_set_input_port_default_value", editing_port, vsn->get_input_port_default_value(editing_port));
+	} else {
+		undo_redo->add_do_method(vsn.ptr(), "set_input_port_default_value", editing_port, value);
+		undo_redo->add_undo_method(vsn.ptr(), "set_input_port_default_value", editing_port, vsn->get_input_port_default_value(editing_port));
+	}
 	undo_redo->add_do_method(graph_plugin.ptr(), "set_input_port_default_value", type, editing_node, editing_port, value);
 	undo_redo->add_undo_method(graph_plugin.ptr(), "set_input_port_default_value", type, editing_node, editing_port, vsn->get_input_port_default_value(editing_port));
 	undo_redo->commit_action();
@@ -2504,9 +2626,10 @@ void VisualShaderEditor::_graph_gui_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseButton> mb = p_event;
 	VisualShader::Type type = get_current_shader_type();
 
-	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == BUTTON_RIGHT) {
+	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MOUSE_BUTTON_RIGHT) {
 		selected_constants.clear();
 		selected_uniforms.clear();
+		selected_comment = -1;
 
 		List<int> to_change;
 		for (int i = 0; i < graph->get_child_count(); i++) {
@@ -2517,17 +2640,27 @@ void VisualShaderEditor::_graph_gui_input(const Ref<InputEvent> &p_event) {
 					to_change.push_back(id);
 
 					Ref<VisualShaderNode> node = visual_shader->get_node(type, id);
-					VisualShaderNodeConstant *cnode = Object::cast_to<VisualShaderNodeConstant>(node.ptr());
-					if (cnode != nullptr) {
+
+					VisualShaderNodeComment *comment_node = Object::cast_to<VisualShaderNodeComment>(node.ptr());
+					if (comment_node != nullptr) {
+						selected_comment = id;
+					}
+					VisualShaderNodeConstant *constant_node = Object::cast_to<VisualShaderNodeConstant>(node.ptr());
+					if (constant_node != nullptr) {
 						selected_constants.insert(id);
 					}
-					VisualShaderNodeUniform *unode = Object::cast_to<VisualShaderNodeUniform>(node.ptr());
-					if (unode != nullptr) {
+					VisualShaderNodeUniform *uniform_node = Object::cast_to<VisualShaderNodeUniform>(node.ptr());
+					if (uniform_node != nullptr && uniform_node->is_convertible_to_constant()) {
 						selected_uniforms.insert(id);
 					}
 				}
 			}
 		}
+
+		if (to_change.size() > 1) {
+			selected_comment = -1;
+		}
+
 		if (to_change.is_empty() && copy_nodes_buffer.is_empty()) {
 			_show_members_dialog(true);
 		} else {
@@ -2548,16 +2681,34 @@ void VisualShaderEditor::_graph_gui_input(const Ref<InputEvent> &p_event) {
 			if (temp != -1) {
 				popup_menu->remove_item(temp);
 			}
+			temp = popup_menu->get_item_index(NodeMenuOptions::SEPARATOR3);
+			if (temp != -1) {
+				popup_menu->remove_item(temp);
+			}
+			temp = popup_menu->get_item_index(NodeMenuOptions::SET_COMMENT_TITLE);
+			if (temp != -1) {
+				popup_menu->remove_item(temp);
+			}
+			temp = popup_menu->get_item_index(NodeMenuOptions::SET_COMMENT_DESCRIPTION);
+			if (temp != -1) {
+				popup_menu->remove_item(temp);
+			}
+
+			if (selected_comment != -1) {
+				popup_menu->add_separator("", NodeMenuOptions::SEPARATOR2);
+				popup_menu->add_item(TTR("Set Comment Title"), NodeMenuOptions::SET_COMMENT_TITLE);
+				popup_menu->add_item(TTR("Set Comment Description"), NodeMenuOptions::SET_COMMENT_DESCRIPTION);
+			}
 
 			if (selected_constants.size() > 0 || selected_uniforms.size() > 0) {
-				popup_menu->add_separator("", NodeMenuOptions::SEPARATOR2);
+				popup_menu->add_separator("", NodeMenuOptions::SEPARATOR3);
 
 				if (selected_constants.size() > 0) {
 					popup_menu->add_item(TTR("Convert Constant(s) to Uniform(s)"), NodeMenuOptions::CONVERT_CONSTANTS_TO_UNIFORMS);
 				}
 
 				if (selected_uniforms.size() > 0) {
-					popup_menu->add_item(TTR("Convert Uniforms(s) to Constant(s)"), NodeMenuOptions::CONVERT_UNIFORMS_TO_CONSTANTS);
+					popup_menu->add_item(TTR("Convert Uniform(s) to Constant(s)"), NodeMenuOptions::CONVERT_UNIFORMS_TO_CONSTANTS);
 				}
 			}
 
@@ -2896,7 +3047,14 @@ void VisualShaderEditor::_paste_nodes(bool p_use_custom_position, const Vector2 
 }
 
 void VisualShaderEditor::_mode_selected(int p_id) {
-	visual_shader->set_shader_type(particles_mode ? VisualShader::Type(p_id + 3) : VisualShader::Type(p_id));
+	int offset = 0;
+	if (mode & MODE_FLAGS_PARTICLES) {
+		offset = 3;
+	} else if (mode & MODE_FLAGS_SKY) {
+		offset = 6;
+	}
+
+	visual_shader->set_shader_type(VisualShader::Type(p_id + offset));
 	_update_options_menu();
 	_update_graph();
 }
@@ -3111,6 +3269,12 @@ void VisualShaderEditor::_node_menu_id_pressed(int p_idx) {
 		case NodeMenuOptions::CONVERT_UNIFORMS_TO_CONSTANTS:
 			_convert_constants_to_uniforms(true);
 			break;
+		case NodeMenuOptions::SET_COMMENT_TITLE:
+			_comment_title_popup_show(get_global_mouse_position(), selected_comment);
+			break;
+		case NodeMenuOptions::SET_COMMENT_DESCRIPTION:
+			_comment_desc_popup_show(get_global_mouse_position(), selected_comment);
+			break;
 		default:
 			break;
 	}
@@ -3263,7 +3427,7 @@ void VisualShaderEditor::_update_preview() {
 
 	ShaderLanguage sl;
 
-	Error err = sl.compile(code, ShaderTypes::get_singleton()->get_functions(RenderingServer::ShaderMode(visual_shader->get_mode())), ShaderTypes::get_singleton()->get_modes(RenderingServer::ShaderMode(visual_shader->get_mode())), ShaderTypes::get_singleton()->get_types(), _get_global_variable_type);
+	Error err = sl.compile(code, ShaderTypes::get_singleton()->get_functions(RenderingServer::ShaderMode(visual_shader->get_mode())), ShaderTypes::get_singleton()->get_modes(RenderingServer::ShaderMode(visual_shader->get_mode())), ShaderLanguage::VaryingFunctionNames(), ShaderTypes::get_singleton()->get_types(), _get_global_variable_type);
 
 	for (int i = 0; i < preview_text->get_line_count(); i++) {
 		preview_text->set_line_as_marked(i, false);
@@ -3396,10 +3560,17 @@ VisualShaderEditor::VisualShaderEditor() {
 	edit_type_particles->select(0);
 	edit_type_particles->connect("item_selected", callable_mp(this, &VisualShaderEditor::_mode_selected));
 
+	edit_type_sky = memnew(OptionButton);
+	edit_type_sky->add_item(TTR("Sky"));
+	edit_type_sky->select(0);
+	edit_type_sky->connect("item_selected", callable_mp(this, &VisualShaderEditor::_mode_selected));
+
 	edit_type = edit_type_standart;
 
 	graph->get_zoom_hbox()->add_child(edit_type_particles);
 	graph->get_zoom_hbox()->move_child(edit_type_particles, 0);
+	graph->get_zoom_hbox()->add_child(edit_type_sky);
+	graph->get_zoom_hbox()->move_child(edit_type_sky, 0);
 	graph->get_zoom_hbox()->add_child(edit_type_standart);
 	graph->get_zoom_hbox()->move_child(edit_type_standart, 0);
 
@@ -3534,6 +3705,35 @@ VisualShaderEditor::VisualShaderEditor() {
 	alert->get_label()->set_custom_minimum_size(Size2(400, 60) * EDSCALE);
 	add_child(alert);
 
+	comment_title_change_popup = memnew(PopupPanel);
+	comment_title_change_edit = memnew(LineEdit);
+	comment_title_change_edit->set_expand_to_text_length_enabled(true);
+	comment_title_change_edit->connect("text_changed", callable_mp(this, &VisualShaderEditor::_comment_title_text_changed));
+	comment_title_change_edit->connect("text_entered", callable_mp(this, &VisualShaderEditor::_comment_title_text_entered));
+	comment_title_change_popup->add_child(comment_title_change_edit);
+	comment_title_change_edit->set_size(Size2(-1, -1));
+	comment_title_change_popup->set_size(Size2(-1, -1));
+	comment_title_change_popup->connect("focus_exited", callable_mp(this, &VisualShaderEditor::_comment_title_popup_focus_out));
+	comment_title_change_popup->connect("popup_hide", callable_mp(this, &VisualShaderEditor::_comment_title_popup_hide));
+	add_child(comment_title_change_popup);
+
+	comment_desc_change_popup = memnew(PopupPanel);
+	VBoxContainer *comment_desc_vbox = memnew(VBoxContainer);
+	comment_desc_change_popup->add_child(comment_desc_vbox);
+	comment_desc_change_edit = memnew(TextEdit);
+	comment_desc_change_edit->connect("text_changed", callable_mp(this, &VisualShaderEditor::_comment_desc_text_changed));
+	comment_desc_vbox->add_child(comment_desc_change_edit);
+	comment_desc_change_edit->set_custom_minimum_size(Size2(300 * EDSCALE, 150 * EDSCALE));
+	comment_desc_change_edit->set_size(Size2(-1, -1));
+	comment_desc_change_popup->set_size(Size2(-1, -1));
+	comment_desc_change_popup->connect("focus_exited", callable_mp(this, &VisualShaderEditor::_comment_desc_confirm));
+	comment_desc_change_popup->connect("popup_hide", callable_mp(this, &VisualShaderEditor::_comment_desc_popup_hide));
+	Button *comment_desc_confirm_button = memnew(Button);
+	comment_desc_confirm_button->set_text(TTR("OK"));
+	comment_desc_vbox->add_child(comment_desc_confirm_button);
+	comment_desc_confirm_button->connect("pressed", callable_mp(this, &VisualShaderEditor::_comment_desc_confirm));
+	add_child(comment_desc_change_popup);
+
 	///////////////////////////////////////
 	// SHADER NODES TREE OPTIONS
 	///////////////////////////////////////
@@ -3618,6 +3818,7 @@ VisualShaderEditor::VisualShaderEditor() {
 	const String input_param_for_vertex_and_fragment_shader_modes = TTR("'%s' input parameter for vertex and fragment shader modes.");
 	const String input_param_for_fragment_and_light_shader_modes = TTR("'%s' input parameter for fragment and light shader modes.");
 	const String input_param_for_fragment_shader_mode = TTR("'%s' input parameter for fragment shader mode.");
+	const String input_param_for_sky_shader_mode = TTR("'%s' input parameter for sky shader mode.");
 	const String input_param_for_light_shader_mode = TTR("'%s' input parameter for light shader mode.");
 	const String input_param_for_vertex_shader_mode = TTR("'%s' input parameter for vertex shader mode.");
 	const String input_param_for_emit_shader_mode = TTR("'%s' input parameter for emit shader mode.");
@@ -3747,35 +3948,35 @@ VisualShaderEditor::VisualShaderEditor() {
 
 	// SKY INPUTS
 
-	add_options.push_back(AddOption("AtCubeMapPass", "Input", "Fragment", "VisualShaderNodeInput", vformat(input_param_for_fragment_shader_mode, "at_cubemap_pass"), "at_cubemap_pass", VisualShaderNode::PORT_TYPE_BOOLEAN, TYPE_FLAGS_FRAGMENT, Shader::MODE_SKY));
-	add_options.push_back(AddOption("AtHalfResPass", "Input", "Fragment", "VisualShaderNodeInput", vformat(input_param_for_fragment_shader_mode, "at_half_res_pass"), "at_half_res_pass", VisualShaderNode::PORT_TYPE_BOOLEAN, TYPE_FLAGS_FRAGMENT, Shader::MODE_SKY));
-	add_options.push_back(AddOption("AtQuarterResPass", "Input", "Fragment", "VisualShaderNodeInput", vformat(input_param_for_fragment_shader_mode, "at_quarter_res_pass"), "at_quarter_res_pass", VisualShaderNode::PORT_TYPE_BOOLEAN, TYPE_FLAGS_FRAGMENT, Shader::MODE_SKY));
-	add_options.push_back(AddOption("EyeDir", "Input", "Fragment", "VisualShaderNodeInput", vformat(input_param_for_fragment_shader_mode, "eyedir"), "eyedir", VisualShaderNode::PORT_TYPE_VECTOR, TYPE_FLAGS_FRAGMENT, Shader::MODE_SKY));
-	add_options.push_back(AddOption("HalfResColor", "Input", "Fragment", "VisualShaderNodeInput", vformat(input_param_for_fragment_shader_mode, "half_res_color"), "half_res_color", VisualShaderNode::PORT_TYPE_VECTOR, TYPE_FLAGS_FRAGMENT, Shader::MODE_SKY));
-	add_options.push_back(AddOption("HalfResAlpha", "Input", "Fragment", "VisualShaderNodeInput", vformat(input_param_for_fragment_shader_mode, "half_res_alpha"), "half_res_alpha", VisualShaderNode::PORT_TYPE_SCALAR, TYPE_FLAGS_FRAGMENT, Shader::MODE_SKY));
-	add_options.push_back(AddOption("Light0Color", "Input", "Fragment", "VisualShaderNodeInput", vformat(input_param_for_fragment_shader_mode, "light0_color"), "light0_color", VisualShaderNode::PORT_TYPE_VECTOR, TYPE_FLAGS_FRAGMENT, Shader::MODE_SKY));
-	add_options.push_back(AddOption("Light0Direction", "Input", "Fragment", "VisualShaderNodeInput", vformat(input_param_for_fragment_shader_mode, "light0_direction"), "light0_direction", VisualShaderNode::PORT_TYPE_VECTOR, TYPE_FLAGS_FRAGMENT, Shader::MODE_SKY));
-	add_options.push_back(AddOption("Light0Enabled", "Input", "Fragment", "VisualShaderNodeInput", vformat(input_param_for_fragment_shader_mode, "light0_enabled"), "light0_enabled", VisualShaderNode::PORT_TYPE_BOOLEAN, TYPE_FLAGS_FRAGMENT, Shader::MODE_SKY));
-	add_options.push_back(AddOption("Light0Energy", "Input", "Fragment", "VisualShaderNodeInput", vformat(input_param_for_fragment_shader_mode, "light0_energy"), "light0_energy", VisualShaderNode::PORT_TYPE_SCALAR, TYPE_FLAGS_FRAGMENT, Shader::MODE_SKY));
-	add_options.push_back(AddOption("Light1Color", "Input", "Fragment", "VisualShaderNodeInput", vformat(input_param_for_fragment_shader_mode, "light1_color"), "light1_color", VisualShaderNode::PORT_TYPE_VECTOR, TYPE_FLAGS_FRAGMENT, Shader::MODE_SKY));
-	add_options.push_back(AddOption("Light1Direction", "Input", "Fragment", "VisualShaderNodeInput", vformat(input_param_for_fragment_shader_mode, "light1_direction"), "light1_direction", VisualShaderNode::PORT_TYPE_VECTOR, TYPE_FLAGS_FRAGMENT, Shader::MODE_SKY));
-	add_options.push_back(AddOption("Light1Enabled", "Input", "Fragment", "VisualShaderNodeInput", vformat(input_param_for_fragment_shader_mode, "light1_enabled"), "light1_enabled", VisualShaderNode::PORT_TYPE_BOOLEAN, TYPE_FLAGS_FRAGMENT, Shader::MODE_SKY));
-	add_options.push_back(AddOption("Light1Energy", "Input", "Fragment", "VisualShaderNodeInput", vformat(input_param_for_fragment_shader_mode, "light1_energy"), "light1_energy", VisualShaderNode::PORT_TYPE_SCALAR, TYPE_FLAGS_FRAGMENT, Shader::MODE_SKY));
-	add_options.push_back(AddOption("Light2Color", "Input", "Fragment", "VisualShaderNodeInput", vformat(input_param_for_fragment_shader_mode, "light2_color"), "light2_color", VisualShaderNode::PORT_TYPE_VECTOR, TYPE_FLAGS_FRAGMENT, Shader::MODE_SKY));
-	add_options.push_back(AddOption("Light2Direction", "Input", "Fragment", "VisualShaderNodeInput", vformat(input_param_for_fragment_shader_mode, "light2_direction"), "light2_direction", VisualShaderNode::PORT_TYPE_VECTOR, TYPE_FLAGS_FRAGMENT, Shader::MODE_SKY));
-	add_options.push_back(AddOption("Light2Enabled", "Input", "Fragment", "VisualShaderNodeInput", vformat(input_param_for_fragment_shader_mode, "light2_enabled"), "light2_enabled", VisualShaderNode::PORT_TYPE_BOOLEAN, TYPE_FLAGS_FRAGMENT, Shader::MODE_SKY));
-	add_options.push_back(AddOption("Light2Energy", "Input", "Fragment", "VisualShaderNodeInput", vformat(input_param_for_fragment_shader_mode, "light2_energy"), "light2_energy", VisualShaderNode::PORT_TYPE_SCALAR, TYPE_FLAGS_FRAGMENT, Shader::MODE_SKY));
-	add_options.push_back(AddOption("Light3Color", "Input", "Fragment", "VisualShaderNodeInput", vformat(input_param_for_fragment_shader_mode, "light3_color"), "light3_color", VisualShaderNode::PORT_TYPE_VECTOR, TYPE_FLAGS_FRAGMENT, Shader::MODE_SKY));
-	add_options.push_back(AddOption("Light3Direction", "Input", "Fragment", "VisualShaderNodeInput", vformat(input_param_for_fragment_shader_mode, "light3_direction"), "light3_direction", VisualShaderNode::PORT_TYPE_VECTOR, TYPE_FLAGS_FRAGMENT, Shader::MODE_SKY));
-	add_options.push_back(AddOption("Light3Enabled", "Input", "Fragment", "VisualShaderNodeInput", vformat(input_param_for_fragment_shader_mode, "light3_enabled"), "light3_enabled", VisualShaderNode::PORT_TYPE_BOOLEAN, TYPE_FLAGS_FRAGMENT, Shader::MODE_SKY));
-	add_options.push_back(AddOption("Light3Energy", "Input", "Fragment", "VisualShaderNodeInput", vformat(input_param_for_fragment_shader_mode, "light3_energy"), "light3_energy", VisualShaderNode::PORT_TYPE_SCALAR, TYPE_FLAGS_FRAGMENT, Shader::MODE_SKY));
-	add_options.push_back(AddOption("Position", "Input", "Fragment", "VisualShaderNodeInput", vformat(input_param_for_fragment_shader_mode, "position"), "position", VisualShaderNode::PORT_TYPE_VECTOR, TYPE_FLAGS_FRAGMENT, Shader::MODE_SKY));
-	add_options.push_back(AddOption("QuarterResColor", "Input", "Fragment", "VisualShaderNodeInput", vformat(input_param_for_fragment_shader_mode, "quarter_res_color"), "quarter_res_color", VisualShaderNode::PORT_TYPE_VECTOR, TYPE_FLAGS_FRAGMENT, Shader::MODE_SKY));
-	add_options.push_back(AddOption("QuarterResAlpha", "Input", "Fragment", "VisualShaderNodeInput", vformat(input_param_for_fragment_shader_mode, "quarter_res_alpha"), "quarter_res_alpha", VisualShaderNode::PORT_TYPE_SCALAR, TYPE_FLAGS_FRAGMENT, Shader::MODE_SKY));
-	add_options.push_back(AddOption("Radiance", "Input", "Fragment", "VisualShaderNodeInput", vformat(input_param_for_fragment_shader_mode, "radiance"), "radiance", VisualShaderNode::PORT_TYPE_SAMPLER, TYPE_FLAGS_FRAGMENT, Shader::MODE_SKY));
-	add_options.push_back(AddOption("ScreenUV", "Input", "Fragment", "VisualShaderNodeInput", vformat(input_param_for_fragment_shader_mode, "screen_uv"), "screen_uv", VisualShaderNode::PORT_TYPE_VECTOR, TYPE_FLAGS_FRAGMENT, Shader::MODE_SKY));
-	add_options.push_back(AddOption("SkyCoords", "Input", "Fragment", "VisualShaderNodeInput", vformat(input_param_for_fragment_shader_mode, "sky_coords"), "sky_coords", VisualShaderNode::PORT_TYPE_VECTOR, TYPE_FLAGS_FRAGMENT, Shader::MODE_SKY));
-	add_options.push_back(AddOption("Time", "Input", "Fragment", "VisualShaderNodeInput", vformat(input_param_for_fragment_shader_mode, "time"), "time", VisualShaderNode::PORT_TYPE_SCALAR, TYPE_FLAGS_FRAGMENT, Shader::MODE_SKY));
+	add_options.push_back(AddOption("AtCubeMapPass", "Input", "Sky", "VisualShaderNodeInput", vformat(input_param_for_sky_shader_mode, "at_cubemap_pass"), "at_cubemap_pass", VisualShaderNode::PORT_TYPE_BOOLEAN, TYPE_FLAGS_SKY, Shader::MODE_SKY));
+	add_options.push_back(AddOption("AtHalfResPass", "Input", "Sky", "VisualShaderNodeInput", vformat(input_param_for_sky_shader_mode, "at_half_res_pass"), "at_half_res_pass", VisualShaderNode::PORT_TYPE_BOOLEAN, TYPE_FLAGS_SKY, Shader::MODE_SKY));
+	add_options.push_back(AddOption("AtQuarterResPass", "Input", "Sky", "VisualShaderNodeInput", vformat(input_param_for_sky_shader_mode, "at_quarter_res_pass"), "at_quarter_res_pass", VisualShaderNode::PORT_TYPE_BOOLEAN, TYPE_FLAGS_SKY, Shader::MODE_SKY));
+	add_options.push_back(AddOption("EyeDir", "Input", "Sky", "VisualShaderNodeInput", vformat(input_param_for_sky_shader_mode, "eyedir"), "eyedir", VisualShaderNode::PORT_TYPE_VECTOR, TYPE_FLAGS_SKY, Shader::MODE_SKY));
+	add_options.push_back(AddOption("HalfResColor", "Input", "Sky", "VisualShaderNodeInput", vformat(input_param_for_sky_shader_mode, "half_res_color"), "half_res_color", VisualShaderNode::PORT_TYPE_VECTOR, TYPE_FLAGS_SKY, Shader::MODE_SKY));
+	add_options.push_back(AddOption("HalfResAlpha", "Input", "Sky", "VisualShaderNodeInput", vformat(input_param_for_sky_shader_mode, "half_res_alpha"), "half_res_alpha", VisualShaderNode::PORT_TYPE_SCALAR, TYPE_FLAGS_SKY, Shader::MODE_SKY));
+	add_options.push_back(AddOption("Light0Color", "Input", "Sky", "VisualShaderNodeInput", vformat(input_param_for_sky_shader_mode, "light0_color"), "light0_color", VisualShaderNode::PORT_TYPE_VECTOR, TYPE_FLAGS_SKY, Shader::MODE_SKY));
+	add_options.push_back(AddOption("Light0Direction", "Input", "Sky", "VisualShaderNodeInput", vformat(input_param_for_sky_shader_mode, "light0_direction"), "light0_direction", VisualShaderNode::PORT_TYPE_VECTOR, TYPE_FLAGS_SKY, Shader::MODE_SKY));
+	add_options.push_back(AddOption("Light0Enabled", "Input", "Sky", "VisualShaderNodeInput", vformat(input_param_for_sky_shader_mode, "light0_enabled"), "light0_enabled", VisualShaderNode::PORT_TYPE_BOOLEAN, TYPE_FLAGS_SKY, Shader::MODE_SKY));
+	add_options.push_back(AddOption("Light0Energy", "Input", "Sky", "VisualShaderNodeInput", vformat(input_param_for_sky_shader_mode, "light0_energy"), "light0_energy", VisualShaderNode::PORT_TYPE_SCALAR, TYPE_FLAGS_SKY, Shader::MODE_SKY));
+	add_options.push_back(AddOption("Light1Color", "Input", "Sky", "VisualShaderNodeInput", vformat(input_param_for_sky_shader_mode, "light1_color"), "light1_color", VisualShaderNode::PORT_TYPE_VECTOR, TYPE_FLAGS_SKY, Shader::MODE_SKY));
+	add_options.push_back(AddOption("Light1Direction", "Input", "Sky", "VisualShaderNodeInput", vformat(input_param_for_sky_shader_mode, "light1_direction"), "light1_direction", VisualShaderNode::PORT_TYPE_VECTOR, TYPE_FLAGS_SKY, Shader::MODE_SKY));
+	add_options.push_back(AddOption("Light1Enabled", "Input", "Sky", "VisualShaderNodeInput", vformat(input_param_for_sky_shader_mode, "light1_enabled"), "light1_enabled", VisualShaderNode::PORT_TYPE_BOOLEAN, TYPE_FLAGS_SKY, Shader::MODE_SKY));
+	add_options.push_back(AddOption("Light1Energy", "Input", "Sky", "VisualShaderNodeInput", vformat(input_param_for_sky_shader_mode, "light1_energy"), "light1_energy", VisualShaderNode::PORT_TYPE_SCALAR, TYPE_FLAGS_SKY, Shader::MODE_SKY));
+	add_options.push_back(AddOption("Light2Color", "Input", "Sky", "VisualShaderNodeInput", vformat(input_param_for_sky_shader_mode, "light2_color"), "light2_color", VisualShaderNode::PORT_TYPE_VECTOR, TYPE_FLAGS_SKY, Shader::MODE_SKY));
+	add_options.push_back(AddOption("Light2Direction", "Input", "Sky", "VisualShaderNodeInput", vformat(input_param_for_sky_shader_mode, "light2_direction"), "light2_direction", VisualShaderNode::PORT_TYPE_VECTOR, TYPE_FLAGS_SKY, Shader::MODE_SKY));
+	add_options.push_back(AddOption("Light2Enabled", "Input", "Sky", "VisualShaderNodeInput", vformat(input_param_for_sky_shader_mode, "light2_enabled"), "light2_enabled", VisualShaderNode::PORT_TYPE_BOOLEAN, TYPE_FLAGS_SKY, Shader::MODE_SKY));
+	add_options.push_back(AddOption("Light2Energy", "Input", "Sky", "VisualShaderNodeInput", vformat(input_param_for_sky_shader_mode, "light2_energy"), "light2_energy", VisualShaderNode::PORT_TYPE_SCALAR, TYPE_FLAGS_SKY, Shader::MODE_SKY));
+	add_options.push_back(AddOption("Light3Color", "Input", "Sky", "VisualShaderNodeInput", vformat(input_param_for_sky_shader_mode, "light3_color"), "light3_color", VisualShaderNode::PORT_TYPE_VECTOR, TYPE_FLAGS_SKY, Shader::MODE_SKY));
+	add_options.push_back(AddOption("Light3Direction", "Input", "Sky", "VisualShaderNodeInput", vformat(input_param_for_sky_shader_mode, "light3_direction"), "light3_direction", VisualShaderNode::PORT_TYPE_VECTOR, TYPE_FLAGS_SKY, Shader::MODE_SKY));
+	add_options.push_back(AddOption("Light3Enabled", "Input", "Sky", "VisualShaderNodeInput", vformat(input_param_for_sky_shader_mode, "light3_enabled"), "light3_enabled", VisualShaderNode::PORT_TYPE_BOOLEAN, TYPE_FLAGS_SKY, Shader::MODE_SKY));
+	add_options.push_back(AddOption("Light3Energy", "Input", "Sky", "VisualShaderNodeInput", vformat(input_param_for_sky_shader_mode, "light3_energy"), "light3_energy", VisualShaderNode::PORT_TYPE_SCALAR, TYPE_FLAGS_SKY, Shader::MODE_SKY));
+	add_options.push_back(AddOption("Position", "Input", "Sky", "VisualShaderNodeInput", vformat(input_param_for_sky_shader_mode, "position"), "position", VisualShaderNode::PORT_TYPE_VECTOR, TYPE_FLAGS_SKY, Shader::MODE_SKY));
+	add_options.push_back(AddOption("QuarterResColor", "Input", "Sky", "VisualShaderNodeInput", vformat(input_param_for_sky_shader_mode, "quarter_res_color"), "quarter_res_color", VisualShaderNode::PORT_TYPE_VECTOR, TYPE_FLAGS_SKY, Shader::MODE_SKY));
+	add_options.push_back(AddOption("QuarterResAlpha", "Input", "Sky", "VisualShaderNodeInput", vformat(input_param_for_sky_shader_mode, "quarter_res_alpha"), "quarter_res_alpha", VisualShaderNode::PORT_TYPE_SCALAR, TYPE_FLAGS_SKY, Shader::MODE_SKY));
+	add_options.push_back(AddOption("Radiance", "Input", "Sky", "VisualShaderNodeInput", vformat(input_param_for_sky_shader_mode, "radiance"), "radiance", VisualShaderNode::PORT_TYPE_SAMPLER, TYPE_FLAGS_SKY, Shader::MODE_SKY));
+	add_options.push_back(AddOption("ScreenUV", "Input", "Sky", "VisualShaderNodeInput", vformat(input_param_for_sky_shader_mode, "screen_uv"), "screen_uv", VisualShaderNode::PORT_TYPE_VECTOR, TYPE_FLAGS_SKY, Shader::MODE_SKY));
+	add_options.push_back(AddOption("SkyCoords", "Input", "Sky", "VisualShaderNodeInput", vformat(input_param_for_sky_shader_mode, "sky_coords"), "sky_coords", VisualShaderNode::PORT_TYPE_VECTOR, TYPE_FLAGS_SKY, Shader::MODE_SKY));
+	add_options.push_back(AddOption("Time", "Input", "Sky", "VisualShaderNodeInput", vformat(input_param_for_sky_shader_mode, "time"), "time", VisualShaderNode::PORT_TYPE_SCALAR, TYPE_FLAGS_SKY, Shader::MODE_SKY));
 
 	// SCALAR
 
@@ -3971,6 +4172,7 @@ VisualShaderEditor::VisualShaderEditor() {
 
 	// SPECIAL
 
+	add_options.push_back(AddOption("Comment", "Special", "", "VisualShaderNodeComment", TTR("A rectangular area with a description string for better graph organization.")));
 	add_options.push_back(AddOption("Expression", "Special", "", "VisualShaderNodeExpression", TTR("Custom Godot Shader Language expression, with custom amount of input and output ports. This is a direct injection of code into the vertex/fragment/light function, do not use it to write the function declarations inside.")));
 	add_options.push_back(AddOption("Fresnel", "Special", "", "VisualShaderNodeFresnel", TTR("Returns falloff based on the dot product of surface normal and view direction of camera (pass associated inputs to it)."), -1, VisualShaderNode::PORT_TYPE_SCALAR));
 	add_options.push_back(AddOption("GlobalExpression", "Special", "", "VisualShaderNodeGlobalExpression", TTR("Custom Godot Shader Language expression, which is placed on top of the resulted shader. You can place various function definitions inside and call it later in the Expressions. You can also declare varyings, uniforms and constants.")));

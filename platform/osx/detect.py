@@ -34,8 +34,8 @@ def get_opts():
         BoolVariable("debug_symbols", "Add debugging symbols to release/release_debug builds", True),
         BoolVariable("separate_debug_symbols", "Create a separate file containing debugging symbols", False),
         BoolVariable("use_ubsan", "Use LLVM/GCC compiler undefined behavior sanitizer (UBSAN)", False),
-        BoolVariable("use_asan", "Use LLVM/GCC compiler address sanitizer (ASAN))", False),
-        BoolVariable("use_tsan", "Use LLVM/GCC compiler thread sanitizer (TSAN))", False),
+        BoolVariable("use_asan", "Use LLVM/GCC compiler address sanitizer (ASAN)", False),
+        BoolVariable("use_tsan", "Use LLVM/GCC compiler thread sanitizer (TSAN)", False),
     ]
 
 
@@ -49,7 +49,7 @@ def configure(env):
     if env["target"] == "release":
         if env["optimize"] == "speed":  # optimize for speed (default)
             env.Prepend(CCFLAGS=["-O3", "-fomit-frame-pointer", "-ftree-vectorize"])
-        else:  # optimize for size
+        elif env["optimize"] == "size":  # optimize for size
             env.Prepend(CCFLAGS=["-Os", "-ftree-vectorize"])
         if env["arch"] != "arm64":
             env.Prepend(CCFLAGS=["-msse2"])
@@ -60,7 +60,7 @@ def configure(env):
     elif env["target"] == "release_debug":
         if env["optimize"] == "speed":  # optimize for speed (default)
             env.Prepend(CCFLAGS=["-O2"])
-        else:  # optimize for size
+        elif env["optimize"] == "size":  # optimize for size
             env.Prepend(CCFLAGS=["-Os"])
         env.Prepend(CPPDEFINES=["DEBUG_ENABLED"])
         if env["debug_symbols"]:
@@ -135,11 +135,16 @@ def configure(env):
         env.extra_suffix += "s"
 
         if env["use_ubsan"]:
-            env.Append(CCFLAGS=["-fsanitize=undefined"])
+            env.Append(
+                CCFLAGS=[
+                    "-fsanitize=undefined,shift,shift-exponent,integer-divide-by-zero,unreachable,vla-bound,null,return,signed-integer-overflow,bounds,float-divide-by-zero,float-cast-overflow,nonnull-attribute,returns-nonnull-attribute,bool,enum,vptr,pointer-overflow,builtin"
+                ]
+            )
             env.Append(LINKFLAGS=["-fsanitize=undefined"])
+            env.Append(CCFLAGS=["-fsanitize=nullability-return,nullability-arg,function,nullability-assign"])
 
         if env["use_asan"]:
-            env.Append(CCFLAGS=["-fsanitize=address"])
+            env.Append(CCFLAGS=["-fsanitize=address,pointer-subtract,pointer-compare"])
             env.Append(LINKFLAGS=["-fsanitize=address"])
 
         if env["use_tsan"]:

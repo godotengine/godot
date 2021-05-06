@@ -32,6 +32,7 @@
 #define VISUAL_SHADER_H
 
 #include "core/string/string_builder.h"
+#include "core/templates/safe_refcount.h"
 #include "scene/gui/control.h"
 #include "scene/resources/shader.h"
 
@@ -53,14 +54,15 @@ public:
 		TYPE_EMIT,
 		TYPE_PROCESS,
 		TYPE_END,
+		TYPE_SKY,
 		TYPE_MAX
 	};
 
 	struct Connection {
-		int from_node;
-		int from_port;
-		int to_node;
-		int to_port;
+		int from_node = 0;
+		int from_port = 0;
+		int to_node = 0;
+		int to_port = 0;
 	};
 
 	struct DefaultTextureParam {
@@ -90,7 +92,7 @@ private:
 	Vector2 graph_offset;
 
 	struct RenderModeEnums {
-		Shader::Mode mode;
+		Shader::Mode mode = Shader::Mode::MODE_MAX;
 		const char *string;
 	};
 
@@ -99,7 +101,7 @@ private:
 
 	static RenderModeEnums render_mode_enums[];
 
-	volatile mutable bool dirty = true;
+	mutable SafeFlag dirty;
 	void _queue_update();
 
 	union ConnectionKey {
@@ -107,7 +109,7 @@ private:
 			uint64_t node : 32;
 			uint64_t port : 32;
 		};
-		uint64_t key;
+		uint64_t key = 0;
 		bool operator<(const ConnectionKey &p_key) const {
 			return key < p_key.key;
 		}
@@ -125,6 +127,8 @@ protected:
 	bool _set(const StringName &p_name, const Variant &p_value);
 	bool _get(const StringName &p_name, Variant &r_ret) const;
 	void _get_property_list(List<PropertyInfo> *p_list) const;
+
+	virtual void reset_state() override;
 
 public: // internal methods
 	void set_shader_type(Type p_type);
@@ -219,10 +223,10 @@ public:
 	virtual PortType get_input_port_type(int p_port) const = 0;
 	virtual String get_input_port_name(int p_port) const = 0;
 
-	void set_input_port_default_value(int p_port, const Variant &p_value);
+	virtual void set_input_port_default_value(int p_port, const Variant &p_value);
 	Variant get_input_port_default_value(int p_port) const; // if NIL (default if node does not set anything) is returned, it means no default value is wanted if disconnected, thus no input var must be supplied (empty string will be supplied)
 	Array get_default_input_values() const;
-	void set_default_input_values(const Array &p_values);
+	virtual void set_default_input_values(const Array &p_values);
 
 	virtual int get_output_port_count() const = 0;
 	virtual PortType get_output_port_type(int p_port) const = 0;
@@ -265,9 +269,10 @@ class VisualShaderNodeCustom : public VisualShaderNode {
 
 	struct Port {
 		String name;
-		int type;
+		int type = 0;
 	};
 
+	bool is_initialized = false;
 	List<Port> input_ports;
 	List<Port> output_ports;
 
@@ -284,7 +289,12 @@ protected:
 	virtual PortType get_output_port_type(int p_port) const override;
 	virtual String get_output_port_name(int p_port) const override;
 
+	virtual void set_input_port_default_value(int p_port, const Variant &p_value) override;
+	virtual void set_default_input_values(const Array &p_values) override;
+
 protected:
+	void _set_input_port_default_value(int p_port, const Variant &p_value);
+
 	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
 	virtual String generate_global_per_node(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const override;
 
@@ -293,6 +303,9 @@ protected:
 public:
 	VisualShaderNodeCustom();
 	void update_ports();
+
+	bool _is_initialized();
+	void _set_initialized(bool p_enabled);
 };
 
 /////
@@ -305,9 +318,9 @@ class VisualShaderNodeInput : public VisualShaderNode {
 	Shader::Mode shader_mode = Shader::MODE_MAX;
 
 	struct Port {
-		Shader::Mode mode;
-		VisualShader::Type shader_type;
-		PortType type;
+		Shader::Mode mode = Shader::Mode::MODE_MAX;
+		VisualShader::Type shader_type = VisualShader::Type::TYPE_MAX;
+		PortType type = PortType::PORT_TYPE_MAX;
 		const char *name;
 		const char *string;
 	};
@@ -356,13 +369,13 @@ class VisualShaderNodeOutput : public VisualShaderNode {
 
 public:
 	friend class VisualShader;
-	VisualShader::Type shader_type;
-	Shader::Mode shader_mode;
+	VisualShader::Type shader_type = VisualShader::Type::TYPE_MAX;
+	Shader::Mode shader_mode = Shader::Mode::MODE_MAX;
 
 	struct Port {
-		Shader::Mode mode;
-		VisualShader::Type shader_type;
-		PortType type;
+		Shader::Mode mode = Shader::Mode::MODE_MAX;
+		VisualShader::Type shader_type = VisualShader::Type::TYPE_MAX;
+		PortType type = PortType::PORT_TYPE_MAX;
 		const char *name;
 		const char *string;
 	};
@@ -418,6 +431,7 @@ public:
 	bool is_global_code_generated() const;
 
 	virtual bool is_qualifier_supported(Qualifier p_qual) const = 0;
+	virtual bool is_convertible_to_constant() const = 0;
 
 	virtual Vector<StringName> get_editable_properties() const override;
 	virtual String get_warning(Shader::Mode p_mode, VisualShader::Type p_type) const override;
@@ -507,6 +521,38 @@ public:
 	VisualShaderNodeResizableBase();
 };
 
+class VisualShaderNodeComment : public VisualShaderNodeResizableBase {
+	GDCLASS(VisualShaderNodeComment, VisualShaderNodeResizableBase);
+
+protected:
+	String title = "Comment";
+	String description = "";
+
+protected:
+	static void _bind_methods();
+
+public:
+	virtual String get_caption() const override;
+
+	virtual int get_input_port_count() const override;
+	virtual PortType get_input_port_type(int p_port) const override;
+	virtual String get_input_port_name(int p_port) const override;
+
+	virtual int get_output_port_count() const override;
+	virtual PortType get_output_port_type(int p_port) const override;
+	virtual String get_output_port_name(int p_port) const override;
+
+	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
+
+	void set_title(const String &p_title);
+	String get_title() const;
+
+	void set_description(const String &p_description);
+	String get_description() const;
+
+	VisualShaderNodeComment();
+};
+
 class VisualShaderNodeGroupBase : public VisualShaderNodeResizableBase {
 	GDCLASS(VisualShaderNodeGroupBase, VisualShaderNodeResizableBase);
 
@@ -519,7 +565,7 @@ protected:
 	bool editable = false;
 
 	struct Port {
-		PortType type;
+		PortType type = PortType::PORT_TYPE_MAX;
 		String name;
 	};
 

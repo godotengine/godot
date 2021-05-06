@@ -304,7 +304,7 @@ RendererCanvasRender::PolygonID RendererCanvasRenderRD::request_polygon(const Ve
 		index_buffer.resize(p_indices.size() * sizeof(int32_t));
 		{
 			uint8_t *w = index_buffer.ptrw();
-			copymem(w, p_indices.ptr(), sizeof(int32_t) * p_indices.size());
+			memcpy(w, p_indices.ptr(), sizeof(int32_t) * p_indices.size());
 		}
 		pb.index_buffer = RD::get_singleton()->index_buffer_create(p_indices.size(), RD::INDEX_BUFFER_FORMAT_UINT32, index_buffer);
 		pb.indices = RD::get_singleton()->index_array_create(pb.index_buffer, 0, p_indices.size());
@@ -2012,6 +2012,9 @@ void RendererCanvasRenderRD::ShaderData::set_code(const String &p_code) {
 	uses_screen_texture = false;
 
 	ShaderCompilerRD::IdentifierActions actions;
+	actions.entry_point_stages["vertex"] = ShaderCompilerRD::STAGE_VERTEX;
+	actions.entry_point_stages["fragment"] = ShaderCompilerRD::STAGE_FRAGMENT;
+	actions.entry_point_stages["light"] = ShaderCompilerRD::STAGE_FRAGMENT;
 
 	actions.render_mode_values["blend_add"] = Pair<int *, int>(&blend_mode, BLEND_MODE_ADD);
 	actions.render_mode_values["blend_mix"] = Pair<int *, int>(&blend_mode, BLEND_MODE_MIX);
@@ -2048,7 +2051,7 @@ void RendererCanvasRenderRD::ShaderData::set_code(const String &p_code) {
 	print_line("\n**fragment_code:\n" + gen_code.fragment);
 	print_line("\n**light_code:\n" + gen_code.light);
 #endif
-	canvas_singleton->shader.canvas_shader.version_set_code(version, gen_code.uniforms, gen_code.vertex_global, gen_code.vertex, gen_code.fragment_global, gen_code.light, gen_code.fragment, gen_code.defines);
+	canvas_singleton->shader.canvas_shader.version_set_code(version, gen_code.code, gen_code.uniforms, gen_code.stage_globals[ShaderCompilerRD::STAGE_VERTEX], gen_code.stage_globals[ShaderCompilerRD::STAGE_FRAGMENT], gen_code.defines);
 	ERR_FAIL_COND(!canvas_singleton->shader.canvas_shader.version_is_valid(version));
 
 	ubo_size = gen_code.uniform_total_size;
@@ -2695,9 +2698,10 @@ RendererCanvasRenderRD::RendererCanvasRenderRD(RendererStorageRD *p_storage) {
 		state.default_transforms_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, shader.default_version_rd_shader, TRANSFORMS_UNIFORM_SET);
 	}
 
-	default_canvas_texture = storage->canvas_texture_create();
+	default_canvas_texture = storage->canvas_texture_allocate();
+	storage->canvas_texture_initialize(default_canvas_texture);
 
-	state.shadow_texture_size = GLOBAL_GET("rendering/quality/2d_shadow_atlas/size");
+	state.shadow_texture_size = GLOBAL_GET("rendering/2d/shadow_atlas/size");
 
 	//create functions for shader and material
 	storage->shader_set_data_request_function(RendererStorageRD::SHADER_TYPE_2D, _create_shader_funcs);
@@ -2706,9 +2710,14 @@ RendererCanvasRenderRD::RendererCanvasRenderRD(RendererStorageRD *p_storage) {
 	state.time = 0;
 
 	{
-		default_canvas_group_shader = storage->shader_create();
+		default_canvas_group_shader = storage->shader_allocate();
+		storage->shader_initialize(default_canvas_group_shader);
+
 		storage->shader_set_code(default_canvas_group_shader, "shader_type canvas_item; \nvoid fragment() {\n\tvec4 c = textureLod(SCREEN_TEXTURE,SCREEN_UV,0.0); if (c.a > 0.0001) c.rgb/=c.a; COLOR *= c; \n}\n");
-		default_canvas_group_material = storage->material_create();
+
+		default_canvas_group_material = storage->material_allocate();
+		storage->material_initialize(default_canvas_group_material);
+
 		storage->material_set_shader(default_canvas_group_material, default_canvas_group_shader);
 	}
 

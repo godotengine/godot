@@ -42,8 +42,6 @@
 #endif
 
 GradientEdit::GradientEdit() {
-	grabbed = -1;
-	grabbing = false;
 	set_focus_mode(FOCUS_ALL);
 
 	popup = memnew(PopupPanel);
@@ -94,6 +92,8 @@ GradientEdit::~GradientEdit() {
 }
 
 void GradientEdit::_gui_input(const Ref<InputEvent> &p_event) {
+	ERR_FAIL_COND(p_event.is_null());
+
 	Ref<InputEventKey> k = p_event;
 
 	if (k.is_valid() && k->is_pressed() && k->get_keycode() == KEY_DELETE && grabbed != -1) {
@@ -107,7 +107,7 @@ void GradientEdit::_gui_input(const Ref<InputEvent> &p_event) {
 
 	Ref<InputEventMouseButton> mb = p_event;
 	//Show color picker on double click.
-	if (mb.is_valid() && mb->get_button_index() == 1 && mb->is_doubleclick() && mb->is_pressed()) {
+	if (mb.is_valid() && mb->get_button_index() == 1 && mb->is_double_click() && mb->is_pressed()) {
 		grabbed = _get_point_from_pos(mb->get_position().x);
 		_show_color_picker();
 		accept_event();

@@ -160,6 +160,16 @@
 				Returns the default value of the setting specified by [code]name[/code]. This is the value that would be applied when clicking the Revert button in the Editor Settings.
 			</description>
 		</method>
+		<method name="set_builtin_action_override">
+			<return type="void">
+			</return>
+			<argument index="0" name="name" type="String">
+			</argument>
+			<argument index="1" name="actions_list" type="Array">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="set_favorites">
 			<return type="void">
 			</return>

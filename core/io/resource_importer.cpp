@@ -116,7 +116,7 @@ Error ResourceFormatImporter::_get_path_and_type(const String &p_path, PathAndTy
 	return OK;
 }
 
-RES ResourceFormatImporter::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, bool p_no_cache) {
+RES ResourceFormatImporter::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, CacheMode p_cache_mode) {
 	PathAndType pat;
 	Error err = _get_path_and_type(p_path, pat);
 
@@ -128,7 +128,7 @@ RES ResourceFormatImporter::load(const String &p_path, const String &p_original_
 		return RES();
 	}
 
-	RES res = ResourceLoader::_load(pat.path, p_path, pat.type, p_no_cache, r_error, p_use_sub_threads, r_progress);
+	RES res = ResourceLoader::_load(pat.path, p_path, pat.type, p_cache_mode, r_error, p_use_sub_threads, r_progress);
 
 #ifdef TOOLS_ENABLED
 	if (res.is_valid()) {
@@ -190,6 +190,34 @@ bool ResourceFormatImporter::exists(const String &p_path) const {
 
 bool ResourceFormatImporter::recognize_path(const String &p_path, const String &p_for_type) const {
 	return FileAccess::exists(p_path + ".import");
+}
+
+Error ResourceFormatImporter::get_import_order_threads_and_importer(const String &p_path, int &r_order, bool &r_can_threads, String &r_importer) const {
+	r_order = 0;
+	r_importer = "";
+
+	r_can_threads = false;
+	Ref<ResourceImporter> importer;
+
+	if (FileAccess::exists(p_path + ".import")) {
+		PathAndType pat;
+		Error err = _get_path_and_type(p_path, pat);
+
+		if (err == OK) {
+			importer = get_importer_by_name(pat.importer);
+		}
+	} else {
+		importer = get_importer_by_extension(p_path.get_extension().to_lower());
+	}
+
+	if (importer.is_valid()) {
+		r_order = importer->get_import_order();
+		r_importer = importer->get_importer_name();
+		r_can_threads = importer->can_import_threaded();
+		return OK;
+	} else {
+		return ERR_INVALID_PARAMETER;
+	}
 }
 
 int ResourceFormatImporter::get_import_order(const String &p_path) const {
@@ -349,6 +377,12 @@ void ResourceFormatImporter::get_importers_for_extension(const String &p_extensi
 				r_importers->push_back(importers[i]);
 			}
 		}
+	}
+}
+
+void ResourceFormatImporter::get_importers(List<Ref<ResourceImporter>> *r_importers) {
+	for (int i = 0; i < importers.size(); i++) {
+		r_importers->push_back(importers[i]);
 	}
 }
 

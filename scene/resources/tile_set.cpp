@@ -369,14 +369,14 @@ void TileSet::create_tile(int p_id) {
 	ERR_FAIL_COND(tile_map.has(p_id));
 	tile_map[p_id] = TileData();
 	tile_map[p_id].autotile_data = AutotileData();
-	_change_notify("");
+	notify_property_list_changed();
 	emit_changed();
 }
 
 void TileSet::autotile_set_bitmask_mode(int p_id, BitmaskMode p_mode) {
 	ERR_FAIL_COND(!tile_map.has(p_id));
 	tile_map[p_id].autotile_data.bitmask_mode = p_mode;
-	_change_notify("");
+	notify_property_list_changed();
 	emit_changed();
 }
 
@@ -389,7 +389,6 @@ void TileSet::tile_set_texture(int p_id, const Ref<Texture2D> &p_texture) {
 	ERR_FAIL_COND(!tile_map.has(p_id));
 	tile_map[p_id].texture = p_texture;
 	emit_changed();
-	_change_notify("texture");
 }
 
 Ref<Texture2D> TileSet::tile_get_texture(int p_id) const {
@@ -412,7 +411,6 @@ void TileSet::tile_set_modulate(int p_id, const Color &p_modulate) {
 	ERR_FAIL_COND(!tile_map.has(p_id));
 	tile_map[p_id].modulate = p_modulate;
 	emit_changed();
-	_change_notify("modulate");
 }
 
 Color TileSet::tile_get_modulate(int p_id) const {
@@ -435,7 +433,6 @@ void TileSet::tile_set_region(int p_id, const Rect2 &p_region) {
 	ERR_FAIL_COND(!tile_map.has(p_id));
 	tile_map[p_id].region = p_region;
 	emit_changed();
-	_change_notify("region");
 }
 
 Rect2 TileSet::tile_get_region(int p_id) const {
@@ -447,7 +444,6 @@ void TileSet::tile_set_tile_mode(int p_id, TileMode p_tile_mode) {
 	ERR_FAIL_COND(!tile_map.has(p_id));
 	tile_map[p_id].tile_mode = p_tile_mode;
 	emit_changed();
-	_change_notify("tile_mode");
 }
 
 TileSet::TileMode TileSet::tile_get_tile_mode(int p_id) const {
@@ -669,7 +665,6 @@ void TileSet::tile_set_name(int p_id, const String &p_name) {
 	ERR_FAIL_COND(!tile_map.has(p_id));
 	tile_map[p_id].name = p_name;
 	emit_changed();
-	_change_notify("name");
 }
 
 String TileSet::tile_get_name(int p_id) const {
@@ -1060,7 +1055,7 @@ bool TileSet::is_tile_bound(int p_drawn_id, int p_neighbor_id) {
 void TileSet::remove_tile(int p_id) {
 	ERR_FAIL_COND(!tile_map.has(p_id));
 	tile_map.erase(p_id);
-	_change_notify("");
+	notify_property_list_changed();
 	emit_changed();
 }
 
@@ -1081,9 +1076,13 @@ int TileSet::find_tile_by_name(const String &p_name) const {
 	return -1;
 }
 
+void TileSet::reset_state() {
+	clear();
+}
+
 void TileSet::clear() {
 	tile_map.clear();
-	_change_notify("");
+	notify_property_list_changed();
 	emit_changed();
 }
 

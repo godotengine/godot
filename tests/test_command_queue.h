@@ -31,14 +31,14 @@
 #ifndef TEST_COMMAND_QUEUE_H
 #define TEST_COMMAND_QUEUE_H
 
-#include "test_command_queue.h"
-
 #include "core/config/project_settings.h"
+#include "core/math/random_number_generator.h"
 #include "core/os/mutex.h"
 #include "core/os/os.h"
 #include "core/os/semaphore.h"
 #include "core/os/thread.h"
 #include "core/templates/command_queue_mt.h"
+#include "test_macros.h"
 
 #if !defined(NO_THREADS)
 

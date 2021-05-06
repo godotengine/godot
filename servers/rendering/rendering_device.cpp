@@ -59,7 +59,7 @@ Vector<uint8_t> RenderingDevice::shader_compile_from_source(ShaderStage p_stage,
 
 	ERR_FAIL_COND_V(!compile_function, Vector<uint8_t>());
 
-	return compile_function(p_stage, p_source_code, p_language, r_error);
+	return compile_function(p_stage, p_source_code, p_language, r_error, &device_capabilities);
 }
 
 RID RenderingDevice::_texture_create(const Ref<RDTextureFormat> &p_format, const Ref<RDTextureView> &p_view, const TypedArray<PackedByteArray> &p_data) {
@@ -269,7 +269,7 @@ void RenderingDevice::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("vertex_buffer_create", "size_bytes", "data", "use_as_storage"), &RenderingDevice::vertex_buffer_create, DEFVAL(Vector<uint8_t>()), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("vertex_format_create", "vertex_descriptions"), &RenderingDevice::_vertex_format_create);
 
-	ClassDB::bind_method(D_METHOD("index_buffer_create", "size_indices", "format", "data"), &RenderingDevice::index_buffer_create, DEFVAL(Vector<uint8_t>()), DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("index_buffer_create", "size_indices", "format", "data", "use_restart_indices"), &RenderingDevice::index_buffer_create, DEFVAL(Vector<uint8_t>()), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("index_array_create", "index_buffer", "index_offset", "index_count"), &RenderingDevice::index_array_create);
 
 	ClassDB::bind_method(D_METHOD("shader_compile_from_source", "shader_source", "allow_cache"), &RenderingDevice::_shader_compile_from_source, DEFVAL(true));

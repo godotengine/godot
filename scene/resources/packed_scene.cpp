@@ -147,15 +147,20 @@ Node *SceneState::instance(GenEditState p_edit_state) const {
 				}
 #endif
 			}
-		} else if (ClassDB::is_class_enabled(snames[n.type])) {
-			//node belongs to this scene and must be created
-			Object *obj = ClassDB::instance(snames[n.type]);
+		} else {
+			Object *obj = nullptr;
+
+			if (ClassDB::is_class_enabled(snames[n.type])) {
+				//node belongs to this scene and must be created
+				obj = ClassDB::instance(snames[n.type]);
+			}
+
 			if (!Object::cast_to<Node>(obj)) {
 				if (obj) {
 					memdelete(obj);
 					obj = nullptr;
 				}
-				WARN_PRINT(String("Warning node of type " + snames[n.type].operator String() + " does not exist.").ascii().get_data());
+				WARN_PRINT(vformat("Node %s of type %s cannot be created. A placeholder will be created instead.", snames[n.name], snames[n.type]).ascii().get_data());
 				if (n.parent >= 0 && n.parent < nc && ret_nodes[n.parent]) {
 					if (Object::cast_to<Node3D>(ret_nodes[n.parent])) {
 						obj = memnew(Node3D);
@@ -172,10 +177,6 @@ Node *SceneState::instance(GenEditState p_edit_state) const {
 			}
 
 			node = Object::cast_to<Node>(obj);
-
-		} else {
-			//print_line("Class is disabled for: " + itos(n.type));
-			//print_line("name: " + String(snames[n.type]));
 		}
 
 		if (node) {
@@ -469,6 +470,11 @@ Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Map
 	p_node->get_property_list(&plist);
 	StringName type = p_node->get_class();
 
+	Ref<Script> script = p_node->get_script();
+	if (script.is_valid()) {
+		script->update_exports();
+	}
+
 	for (List<PropertyInfo>::Element *E = plist.front(); E; E = E->next()) {
 		if (!(E->get().usage & PROPERTY_USAGE_STORAGE)) {
 			continue;
@@ -484,7 +490,6 @@ Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Map
 			isdefault = bool(Variant::evaluate(Variant::OP_EQUAL, value, default_value));
 		}
 
-		Ref<Script> script = p_node->get_script();
 		if (!isdefault && script.is_valid() && script->get_property_default_value(name, default_value)) {
 			isdefault = bool(Variant::evaluate(Variant::OP_EQUAL, value, default_value));
 		}
@@ -1589,8 +1594,6 @@ void SceneState::_bind_methods() {
 }
 
 SceneState::SceneState() {
-	base_scene_idx = -1;
-	last_modified_time = 0;
 }
 
 ////////////////
@@ -1663,6 +1666,9 @@ void PackedScene::set_path(const String &p_path, bool p_take_over) {
 	Resource::set_path(p_path, p_take_over);
 }
 
+void PackedScene::reset_state() {
+	clear();
+}
 void PackedScene::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("pack", "path"), &PackedScene::pack);
 	ClassDB::bind_method(D_METHOD("instance", "edit_state"), &PackedScene::instance, DEFVAL(GEN_EDIT_STATE_DISABLED));

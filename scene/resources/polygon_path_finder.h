@@ -39,13 +39,13 @@ class PolygonPathFinder : public Resource {
 	struct Point {
 		Vector2 pos;
 		Set<int> connections;
-		float distance;
-		float penalty;
-		int prev;
+		float distance = 0.0;
+		float penalty = 0.0;
+		int prev = 0;
 	};
 
 	struct Edge {
-		int points[2];
+		int points[2] = {};
 
 		_FORCE_INLINE_ bool operator<(const Edge &p_edge) const {
 			if (points[0] == p_edge.points[0]) {

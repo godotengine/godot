@@ -64,6 +64,11 @@ public:
 	virtual RID create_font_system(const String &p_name, int p_base_size = 16) override;
 	virtual RID create_font_resource(const String &p_filename, int p_base_size = 16) override;
 	virtual RID create_font_memory(const uint8_t *p_data, size_t p_size, const String &p_type, int p_base_size = 16) override;
+	virtual RID create_font_bitmap(float p_height, float p_ascent, int p_base_size = 16) override;
+
+	virtual void font_bitmap_add_texture(RID p_font, const Ref<Texture> &p_texture) override;
+	virtual void font_bitmap_add_char(RID p_font, char32_t p_char, int p_texture_idx, const Rect2 &p_rect, const Size2 &p_align, float p_advance) override;
+	virtual void font_bitmap_add_kerning_pair(RID p_font, char32_t p_A, char32_t p_B, int p_kerning) override;
 
 	virtual float font_get_height(RID p_font, int p_size) const override;
 	virtual float font_get_ascent(RID p_font, int p_size) const override;
@@ -71,6 +76,12 @@ public:
 
 	virtual float font_get_underline_position(RID p_font, int p_size) const override;
 	virtual float font_get_underline_thickness(RID p_font, int p_size) const override;
+
+	virtual int font_get_spacing_space(RID p_font) const override;
+	virtual void font_set_spacing_space(RID p_font, int p_value) override;
+
+	virtual int font_get_spacing_glyph(RID p_font) const override;
+	virtual void font_set_spacing_glyph(RID p_font, int p_value) override;
 
 	virtual void font_set_antialiased(RID p_font, bool p_antialiased) override;
 	virtual bool font_get_antialiased(RID p_font) const override;
@@ -114,6 +125,8 @@ public:
 
 	virtual Vector2 font_draw_glyph(RID p_font, RID p_canvas, int p_size, const Vector2 &p_pos, uint32_t p_index, const Color &p_color = Color(1, 1, 1)) const override;
 	virtual Vector2 font_draw_glyph_outline(RID p_font, RID p_canvas, int p_size, int p_outline_size, const Vector2 &p_pos, uint32_t p_index, const Color &p_color = Color(1, 1, 1)) const override;
+
+	virtual bool font_get_glyph_contours(RID p_font, int p_size, uint32_t p_index, Vector<Vector3> &r_points, Vector<int32_t> &r_contours, bool &r_orientation) const override;
 
 	virtual float font_get_oversampling() const override;
 	virtual void font_set_oversampling(float p_oversampling) override;

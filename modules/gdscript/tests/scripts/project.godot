@@ -1,0 +1,10 @@
+; This is not an actual project.
+; This config only exists to properly set up the test environment.
+; It also helps for opening Godot to edit the scripts, but please don't
+; let the editor changes be saved.
+
+config_version=4
+
+[application]
+
+config/name="GDScript Integration Test Suite"

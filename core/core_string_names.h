@@ -96,6 +96,7 @@ public:
 	StringName unbind;
 	StringName emit;
 	StringName notification;
+	StringName property_list_changed;
 };
 
 #endif // CORE_STRING_NAMES_H

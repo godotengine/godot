@@ -49,6 +49,7 @@ typedef struct {
 #include <gdnative/gdnative.h>
 
 void GDAPI godot_rid_new(godot_rid *p_self);
+void GDAPI godot_rid_new_copy(godot_rid *r_dest, const godot_rid *p_src);
 
 #ifdef __cplusplus
 }
