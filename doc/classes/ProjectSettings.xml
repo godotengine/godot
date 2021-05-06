@@ -1202,7 +1202,7 @@
 			[b]Note:[/b] Good values are in the range [code]0[/code] to [code]1[/code]. At value [code]0[/code] objects will keep moving with the same velocity. Values greater than [code]1[/code] will aim to reduce the velocity to [code]0[/code] in less than a second e.g. a value of [code]2[/code] will aim to reduce the velocity to [code]0[/code] in half a second. A value equal to or greater than the physics frame rate ([member ProjectSettings.physics/common/physics_fps], [code]60[/code] by default) will bring the object to a stop in one iteration.
 		</member>
 		<member name="physics/2d/default_gravity" type="float" setter="" getter="" default="980.0">
-			The default gravity strength in 2D.
+			The default gravity strength in 2D (in pixels per second squared).
 			[b]Note:[/b] This property is only read when the project starts. To change the default gravity at runtime, use the following code sample:
 			[codeblocks]
 			[gdscript]
@@ -1254,7 +1254,7 @@
 			[b]Note:[/b] Good values are in the range [code]0[/code] to [code]1[/code]. At value [code]0[/code] objects will keep moving with the same velocity. Values greater than [code]1[/code] will aim to reduce the velocity to [code]0[/code] in less than a second e.g. a value of [code]2[/code] will aim to reduce the velocity to [code]0[/code] in half a second. A value equal to or greater than the physics frame rate ([member ProjectSettings.physics/common/physics_fps], [code]60[/code] by default) will bring the object to a stop in one iteration.
 		</member>
 		<member name="physics/3d/default_gravity" type="float" setter="" getter="" default="9.8">
-			The default gravity strength in 3D.
+			The default gravity strength in 3D (in meters per second squared).
 			[b]Note:[/b] This property is only read when the project starts. To change the default gravity at runtime, use the following code sample:
 			[codeblocks]
 			[gdscript]
