@@ -2252,7 +2252,7 @@ bool Main::start() {
 			ProjectSettings::get_singleton()->set_custom_property_info(
 					"rendering/textures/canvas_textures/default_texture_filter",
 					PropertyInfo(Variant::INT, "rendering/textures/canvas_textures/default_texture_filter", PROPERTY_HINT_ENUM,
-							"Nearest,Linear,MipmapLinear,MipmapNearest"));
+							"Nearest,Linear,Linear Mipmap,Nearest Mipmap"));
 			GLOBAL_DEF_BASIC("rendering/textures/canvas_textures/default_texture_repeat", 0);
 			ProjectSettings::get_singleton()->set_custom_property_info(
 					"rendering/textures/canvas_textures/default_texture_repeat",
