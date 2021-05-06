@@ -730,10 +730,6 @@ void ActionMapEditor::_add_action_pressed() {
 }
 
 void ActionMapEditor::_add_action(const String &p_name) {
-	if (!allow_editing_actions) {
-		return;
-	}
-
 	if (p_name == "" || !_is_action_name_valid(p_name)) {
 		show_message(TTR("Invalid action name. it cannot be.is_empty()() nor contain '/', ':', '=', '\\' or '\"'"));
 		return;
@@ -744,10 +740,6 @@ void ActionMapEditor::_add_action(const String &p_name) {
 }
 
 void ActionMapEditor::_action_edited() {
-	if (!allow_editing_actions) {
-		return;
-	}
-
 	TreeItem *ti = action_tree->get_edited();
 	if (!ti) {
 		return;
@@ -812,10 +804,6 @@ void ActionMapEditor::_tree_button_pressed(Object *p_item, int p_column, int p_i
 
 		} break;
 		case ActionMapEditor::BUTTON_REMOVE_ACTION: {
-			if (!allow_editing_actions) {
-				break;
-			}
-
 			// Send removed action name
 			String name = item->get_meta("__name");
 			emit_signal("action_removed", name);
@@ -848,11 +836,11 @@ void ActionMapEditor::_tree_item_activated() {
 	_tree_button_pressed(item, 2, BUTTON_EDIT_EVENT);
 }
 
-void ActionMapEditor::set_show_uneditable(bool p_show) {
-	show_uneditable = p_show;
-	show_uneditable_actions_checkbox->set_pressed(p_show);
+void ActionMapEditor::set_show_builtin_actions(bool p_show) {
+	show_builtin_actions = p_show;
+	show_builtin_actions_checkbutton->set_pressed(p_show);
 
-	// Prevent unnecessary updates of action list when cache is.is_empty()().
+	// Prevent unnecessary updates of action list when cache is empty.
 	if (!actions_cache.is_empty()) {
 		update_action_list();
 	}
@@ -1022,7 +1010,7 @@ void ActionMapEditor::update_action_list(const Vector<ActionInfo> &p_action_info
 			continue;
 		}
 
-		if (!action_info.editable && !show_uneditable) {
+		if (!action_info.editable && !show_builtin_actions) {
 			continue;
 		}
 
@@ -1080,15 +1068,6 @@ void ActionMapEditor::show_message(const String &p_message) {
 	message->popup_centered(Size2(300, 100) * EDSCALE);
 }
 
-void ActionMapEditor::set_allow_editing_actions(bool p_allow) {
-	allow_editing_actions = p_allow;
-	add_hbox->set_visible(p_allow);
-}
-
-void ActionMapEditor::set_toggle_editable_label(const String &p_label) {
-	show_uneditable_actions_checkbox->set_text(p_label);
-}
-
 void ActionMapEditor::use_external_search_box(LineEdit *p_searchbox) {
 	memdelete(action_list_search);
 	action_list_search = p_searchbox;
@@ -1096,8 +1075,7 @@ void ActionMapEditor::use_external_search_box(LineEdit *p_searchbox) {
 }
 
 ActionMapEditor::ActionMapEditor() {
-	allow_editing_actions = true;
-	show_uneditable = true;
+	show_builtin_actions = false;
 
 	// Main Vbox Container
 	VBoxContainer *main_vbox = memnew(VBoxContainer);
@@ -1114,11 +1092,11 @@ ActionMapEditor::ActionMapEditor() {
 	action_list_search->connect("text_changed", callable_mp(this, &ActionMapEditor::_search_term_updated));
 	top_hbox->add_child(action_list_search);
 
-	show_uneditable_actions_checkbox = memnew(CheckBox);
-	show_uneditable_actions_checkbox->set_pressed(false);
-	show_uneditable_actions_checkbox->set_text(TTR("Show Uneditable Actions"));
-	show_uneditable_actions_checkbox->connect("toggled", callable_mp(this, &ActionMapEditor::set_show_uneditable));
-	top_hbox->add_child(show_uneditable_actions_checkbox);
+	show_builtin_actions_checkbutton = memnew(CheckButton);
+	show_builtin_actions_checkbutton->set_pressed(false);
+	show_builtin_actions_checkbutton->set_text(TTR("Show Built-in Actions"));
+	show_builtin_actions_checkbutton->connect("toggled", callable_mp(this, &ActionMapEditor::set_show_builtin_actions));
+	top_hbox->add_child(show_builtin_actions_checkbutton);
 
 	// Adding Action line edit + button
 	add_hbox = memnew(HBoxContainer);
@@ -1132,7 +1110,7 @@ ActionMapEditor::ActionMapEditor() {
 	add_hbox->add_child(add_edit);
 
 	Button *add_button = memnew(Button);
-	add_button->set_text("Add");
+	add_button->set_text(TTR("Add"));
 	add_button->connect("pressed", callable_mp(this, &ActionMapEditor::_add_action_pressed));
 	add_hbox->add_child(add_button);
 
