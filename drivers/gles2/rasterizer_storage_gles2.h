@@ -125,6 +125,10 @@ public:
 		GLuint skeleton_transform_buffer;
 		PoolVector<float> skeleton_transform_cpu_buffer;
 
+		size_t blend_shape_transform_buffer_size;
+		GLuint blend_shape_transform_buffer;
+		PoolVector<float> blend_shapes_transform_cpu_buffer;
+
 	} resources;
 
 	mutable struct Shaders {
@@ -908,6 +912,7 @@ public:
 	virtual Transform2D skeleton_bone_get_transform_2d(RID p_skeleton, int p_bone) const;
 	virtual void skeleton_set_base_transform_2d(RID p_skeleton, const Transform2D &p_base_transform);
 
+	void _update_blend_shape_transform_buffer(const PoolVector<float> &p_data, size_t p_size);
 	void _update_skeleton_transform_buffer(const PoolVector<float> &p_data, size_t p_size);
 
 	/* Light API */
