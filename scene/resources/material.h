@@ -434,6 +434,8 @@ private:
 
 	Ref<Texture> textures[TEXTURE_MAX];
 
+	bool force_vertex_shading = false;
+
 	_FORCE_INLINE_ void _validate_feature(const String &text, Feature feature, PropertyInfo &property) const;
 
 	static const int MAX_MATERIALS_FOR_2D = 128;
