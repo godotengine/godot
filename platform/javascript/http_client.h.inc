@@ -34,7 +34,8 @@ Error make_request(Method p_method, const String &p_url, const Vector<String> &p
 static void _parse_headers(int p_len, const char **p_headers, void *p_ref);
 
 int js_id = 0;
-int read_limit = 4096;
+// 64 KiB by default (favors fast download speeds at the cost of memory usage).
+int read_limit = 65536;
 Status status = STATUS_DISCONNECTED;
 
 String host;
