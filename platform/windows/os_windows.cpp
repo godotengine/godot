@@ -204,7 +204,7 @@ void OS_Windows::initialize() {
 	current_pi.pi.hProcess = GetCurrentProcess();
 	process_map->insert(GetCurrentProcessId(), current_pi);
 
-	IP_Unix::make_default();
+	IPUnix::make_default();
 	main_loop = nullptr;
 }
 

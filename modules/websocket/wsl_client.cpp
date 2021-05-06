@@ -160,7 +160,7 @@ Error WSLClient::connect_to_host(String p_host, String p_path, uint16_t p_port, 
 	ERR_FAIL_COND_V(_connection.is_valid(), ERR_ALREADY_IN_USE);
 
 	_peer = Ref<WSLPeer>(memnew(WSLPeer));
-	IP_Address addr;
+	IPAddress addr;
 
 	if (!p_host.is_valid_ip_address()) {
 		addr = IP::get_singleton()->resolve_hostname(p_host);
@@ -316,8 +316,8 @@ void WSLClient::disconnect_from_host(int p_code, String p_reason) {
 	_resp_pos = 0;
 }
 
-IP_Address WSLClient::get_connected_host() const {
-	ERR_FAIL_COND_V(!_peer->is_connected_to_host(), IP_Address());
+IPAddress WSLClient::get_connected_host() const {
+	ERR_FAIL_COND_V(!_peer->is_connected_to_host(), IPAddress());
 	return _peer->get_connected_host();
 }
 

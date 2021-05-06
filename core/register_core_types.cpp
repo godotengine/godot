@@ -156,7 +156,7 @@ void register_core_types() {
 	ClassDB::register_virtual_class<StreamPeer>();
 	ClassDB::register_class<StreamPeerBuffer>();
 	ClassDB::register_class<StreamPeerTCP>();
-	ClassDB::register_class<TCP_Server>();
+	ClassDB::register_class<TCPServer>();
 	ClassDB::register_class<PacketPeerUDP>();
 	ClassDB::register_class<UDPServer>();
 	ClassDB::register_custom_instance_class<PacketPeerDTLS>();

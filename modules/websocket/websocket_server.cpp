@@ -34,7 +34,7 @@ GDCINULL(WebSocketServer);
 
 WebSocketServer::WebSocketServer() {
 	_peer_id = 1;
-	bind_ip = IP_Address("*");
+	bind_ip = IPAddress("*");
 }
 
 WebSocketServer::~WebSocketServer() {
@@ -71,11 +71,11 @@ void WebSocketServer::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("data_received", PropertyInfo(Variant::INT, "id")));
 }
 
-IP_Address WebSocketServer::get_bind_ip() const {
+IPAddress WebSocketServer::get_bind_ip() const {
 	return bind_ip;
 }
 
-void WebSocketServer::set_bind_ip(const IP_Address &p_bind_ip) {
+void WebSocketServer::set_bind_ip(const IPAddress &p_bind_ip) {
 	ERR_FAIL_COND(is_listening());
 	ERR_FAIL_COND(!p_bind_ip.is_valid() && !p_bind_ip.is_wildcard());
 	bind_ip = p_bind_ip;

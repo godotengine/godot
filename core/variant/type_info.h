@@ -168,7 +168,7 @@ MAKE_TYPE_INFO(PackedVector2Array, Variant::PACKED_VECTOR2_ARRAY)
 MAKE_TYPE_INFO(PackedVector3Array, Variant::PACKED_VECTOR3_ARRAY)
 MAKE_TYPE_INFO(PackedColorArray, Variant::PACKED_COLOR_ARRAY)
 
-MAKE_TYPE_INFO(IP_Address, Variant::STRING)
+MAKE_TYPE_INFO(IPAddress, Variant::STRING)
 
 //objectID
 template <>

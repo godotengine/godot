@@ -55,7 +55,7 @@ public:
 	virtual void close(int p_code = 1000, String p_reason = "") = 0;
 
 	virtual bool is_connected_to_host() const = 0;
-	virtual IP_Address get_connected_host() const = 0;
+	virtual IPAddress get_connected_host() const = 0;
 	virtual uint16_t get_connected_port() const = 0;
 	virtual bool was_string_packet() const = 0;
 	virtual void set_no_delay(bool p_enabled) = 0;

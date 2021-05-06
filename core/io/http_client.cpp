@@ -77,7 +77,7 @@ Error HTTPClient::connect_to_host(const String &p_host, int p_port, bool p_ssl, 
 
 	if (conn_host.is_valid_ip_address()) {
 		// Host contains valid IP
-		Error err = tcp_connection->connect_to_host(IP_Address(conn_host), p_port);
+		Error err = tcp_connection->connect_to_host(IPAddress(conn_host), p_port);
 		if (err) {
 			status = STATUS_CANT_CONNECT;
 			return err;
@@ -328,7 +328,7 @@ Error HTTPClient::poll() {
 					return OK; // Still resolving
 
 				case IP::RESOLVER_STATUS_DONE: {
-					IP_Address host = IP::get_singleton()->get_resolve_item_address(resolving);
+					IPAddress host = IP::get_singleton()->get_resolve_item_address(resolving);
 					Error err = tcp_connection->connect_to_host(host, conn_port);
 					IP::get_singleton()->erase_resolve_item(resolving);
 					resolving = IP::RESOLVER_INVALID_ID;

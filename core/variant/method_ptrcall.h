@@ -364,7 +364,7 @@ MAKE_VECARR(Plane);
 		}                                                                      \
 	}
 
-// Special case for IP_Address.
+// Special case for IPAddress.
 
 #define MAKE_STRINGCONV_BY_REFERENCE(m_type)                                  \
 	template <>                                                               \
@@ -387,7 +387,7 @@ MAKE_VECARR(Plane);
 		}                                                                     \
 	}
 
-MAKE_STRINGCONV_BY_REFERENCE(IP_Address);
+MAKE_STRINGCONV_BY_REFERENCE(IPAddress);
 
 template <>
 struct PtrToArg<Vector<Face3>> {

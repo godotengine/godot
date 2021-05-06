@@ -56,7 +56,7 @@ Error StreamPeerTCP::_poll_connection() {
 	return ERR_CONNECTION_ERROR;
 }
 
-void StreamPeerTCP::accept_socket(Ref<NetSocket> p_sock, IP_Address p_host, uint16_t p_port) {
+void StreamPeerTCP::accept_socket(Ref<NetSocket> p_sock, IPAddress p_host, uint16_t p_port) {
 	_sock = p_sock;
 	_sock->set_blocking_enabled(false);
 
@@ -67,7 +67,7 @@ void StreamPeerTCP::accept_socket(Ref<NetSocket> p_sock, IP_Address p_host, uint
 	peer_port = p_port;
 }
 
-Error StreamPeerTCP::bind(int p_port, const IP_Address &p_host) {
+Error StreamPeerTCP::bind(int p_port, const IPAddress &p_host) {
 	ERR_FAIL_COND_V(!_sock.is_valid(), ERR_UNAVAILABLE);
 	ERR_FAIL_COND_V(_sock->is_open(), ERR_ALREADY_IN_USE);
 	ERR_FAIL_COND_V_MSG(p_port < 0 || p_port > 65535, ERR_INVALID_PARAMETER, "The local port number must be between 0 and 65535 (inclusive).");
@@ -84,7 +84,7 @@ Error StreamPeerTCP::bind(int p_port, const IP_Address &p_host) {
 	return _sock->bind(p_host, p_port);
 }
 
-Error StreamPeerTCP::connect_to_host(const IP_Address &p_host, int p_port) {
+Error StreamPeerTCP::connect_to_host(const IPAddress &p_host, int p_port) {
 	ERR_FAIL_COND_V(!_sock.is_valid(), ERR_UNAVAILABLE);
 	ERR_FAIL_COND_V(status != STATUS_NONE, ERR_ALREADY_IN_USE);
 	ERR_FAIL_COND_V(!p_host.is_valid(), ERR_INVALID_PARAMETER);
@@ -283,7 +283,7 @@ void StreamPeerTCP::disconnect_from_host() {
 
 	timeout = 0;
 	status = STATUS_NONE;
-	peer_host = IP_Address();
+	peer_host = IPAddress();
 	peer_port = 0;
 }
 
@@ -315,7 +315,7 @@ int StreamPeerTCP::get_available_bytes() const {
 	return _sock->get_available_bytes();
 }
 
-IP_Address StreamPeerTCP::get_connected_host() const {
+IPAddress StreamPeerTCP::get_connected_host() const {
 	return peer_host;
 }
 
@@ -330,7 +330,7 @@ int StreamPeerTCP::get_local_port() const {
 }
 
 Error StreamPeerTCP::_connect(const String &p_address, int p_port) {
-	IP_Address ip;
+	IPAddress ip;
 	if (p_address.is_valid_ip_address()) {
 		ip = p_address;
 	} else {
