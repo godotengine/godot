@@ -411,6 +411,7 @@ SpriteBase3D::SpriteBase3D() {
 	mesh_surface_format = VS::get_singleton()->mesh_surface_get_format(mesh, 0);
 	mesh_buffer = VS::get_singleton()->mesh_surface_get_array(mesh, 0);
 	mesh_stride = VS::get_singleton()->mesh_surface_make_offsets_from_format(mesh_surface_format, surface_vertex_len, surface_index_len, mesh_surface_offsets);
+	set_base(mesh);
 }
 
 SpriteBase3D::~SpriteBase3D() {
@@ -421,9 +422,11 @@ SpriteBase3D::~SpriteBase3D() {
 ///////////////////////////////////////////
 
 void Sprite3D::_draw() {
-	set_base(RID());
-
+	if (get_base() != get_mesh()) {
+		set_base(get_mesh());
+	}
 	if (!texture.is_valid()) {
+		set_base(RID());
 		return;
 	}
 	Vector2 tsize = texture->get_size();
@@ -580,8 +583,6 @@ void Sprite3D::_draw() {
 
 	VS::get_singleton()->mesh_set_custom_aabb(mesh, aabb);
 	set_aabb(aabb);
-
-	set_base(mesh);
 
 	RID mat = SpatialMaterial::get_material_rid_for_2d(get_draw_flag(FLAG_SHADED), get_draw_flag(FLAG_TRANSPARENT), get_draw_flag(FLAG_DOUBLE_SIDED), get_alpha_cut_mode() == ALPHA_CUT_DISCARD, get_alpha_cut_mode() == ALPHA_CUT_OPAQUE_PREPASS, get_billboard_mode() == SpatialMaterial::BILLBOARD_ENABLED, get_billboard_mode() == SpatialMaterial::BILLBOARD_FIXED_Y);
 	VS::get_singleton()->material_set_shader(get_material(), VS::get_singleton()->material_get_shader(mat));
@@ -767,7 +768,9 @@ Sprite3D::Sprite3D() {
 ////////////////////////////////////////
 
 void AnimatedSprite3D::_draw() {
-	set_base(RID());
+	if (get_base() != get_mesh()) {
+		set_base(get_mesh());
+	}
 
 	if (frames.is_null()) {
 		return;
@@ -783,6 +786,7 @@ void AnimatedSprite3D::_draw() {
 
 	Ref<Texture> texture = frames->get_frame(animation, frame);
 	if (!texture.is_valid()) {
+		set_base(RID());
 		return; //no texuture no life
 	}
 	Vector2 tsize = texture->get_size();
@@ -933,8 +937,6 @@ void AnimatedSprite3D::_draw() {
 
 	VS::get_singleton()->mesh_set_custom_aabb(mesh, aabb);
 	set_aabb(aabb);
-
-	set_base(mesh);
 
 	RID mat = SpatialMaterial::get_material_rid_for_2d(get_draw_flag(FLAG_SHADED), get_draw_flag(FLAG_TRANSPARENT), get_draw_flag(FLAG_DOUBLE_SIDED), get_alpha_cut_mode() == ALPHA_CUT_DISCARD, get_alpha_cut_mode() == ALPHA_CUT_OPAQUE_PREPASS, get_billboard_mode() == SpatialMaterial::BILLBOARD_ENABLED, get_billboard_mode() == SpatialMaterial::BILLBOARD_FIXED_Y);
 	VS::get_singleton()->material_set_shader(get_material(), VS::get_singleton()->material_get_shader(mat));
