@@ -272,8 +272,8 @@ Ref<WebSocketPeer> WSLServer::get_peer(int p_id) const {
 	return _peer_map[p_id];
 }
 
-IP_Address WSLServer::get_peer_address(int p_peer_id) const {
-	ERR_FAIL_COND_V(!has_peer(p_peer_id), IP_Address());
+IPAddress WSLServer::get_peer_address(int p_peer_id) const {
+	ERR_FAIL_COND_V(!has_peer(p_peer_id), IPAddress());
 
 	return _peer_map[p_peer_id]->get_connected_host();
 }

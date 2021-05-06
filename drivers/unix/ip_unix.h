@@ -35,10 +35,10 @@
 
 #if defined(UNIX_ENABLED) || defined(WINDOWS_ENABLED)
 
-class IP_Unix : public IP {
-	GDCLASS(IP_Unix, IP);
+class IPUnix : public IP {
+	GDCLASS(IPUnix, IP);
 
-	virtual IP_Address _resolve_hostname(const String &p_hostname, IP::Type p_type) override;
+	virtual IPAddress _resolve_hostname(const String &p_hostname, IP::Type p_type) override;
 
 	static IP *_create_unix();
 
@@ -46,7 +46,7 @@ public:
 	virtual void get_local_interfaces(Map<String, Interface_Info> *r_interfaces) const override;
 
 	static void make_default();
-	IP_Unix();
+	IPUnix();
 };
 
 #endif

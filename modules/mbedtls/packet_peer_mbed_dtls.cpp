@@ -87,7 +87,7 @@ void PacketPeerMbedDTLS::_cleanup() {
 int PacketPeerMbedDTLS::_set_cookie() {
 	// Setup DTLS session cookie for this client
 	uint8_t client_id[18];
-	IP_Address addr = base->get_packet_address();
+	IPAddress addr = base->get_packet_address();
 	uint16_t port = base->get_packet_port();
 	memcpy(client_id, addr.get_ipv6(), 16);
 	memcpy(&client_id[16], (uint8_t *)&port, 2);

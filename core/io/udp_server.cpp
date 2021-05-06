@@ -50,7 +50,7 @@ Error UDPServer::poll() {
 	}
 	Error err;
 	int read;
-	IP_Address ip;
+	IPAddress ip;
 	uint16_t port;
 	while (true) {
 		err = _sock->recvfrom(recv_buffer, sizeof(recv_buffer), read, ip, port);
@@ -87,7 +87,7 @@ Error UDPServer::poll() {
 	return OK;
 }
 
-Error UDPServer::listen(uint16_t p_port, const IP_Address &p_bind_address) {
+Error UDPServer::listen(uint16_t p_port, const IPAddress &p_bind_address) {
 	ERR_FAIL_COND_V(!_sock.is_valid(), ERR_UNAVAILABLE);
 	ERR_FAIL_COND_V(_sock->is_open(), ERR_ALREADY_IN_USE);
 	ERR_FAIL_COND_V(!p_bind_address.is_valid() && !p_bind_address.is_wildcard(), ERR_INVALID_PARAMETER);
@@ -168,7 +168,7 @@ Ref<PacketPeerUDP> UDPServer::take_connection() {
 	return peer.peer;
 }
 
-void UDPServer::remove_peer(IP_Address p_ip, int p_port) {
+void UDPServer::remove_peer(IPAddress p_ip, int p_port) {
 	Peer peer;
 	peer.ip = p_ip;
 	peer.port = p_port;

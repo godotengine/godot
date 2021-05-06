@@ -36,8 +36,8 @@
 #include "core/io/stream_peer.h"
 #include "core/io/stream_peer_tcp.h"
 
-class TCP_Server : public Reference {
-	GDCLASS(TCP_Server, Reference);
+class TCPServer : public Reference {
+	GDCLASS(TCPServer, Reference);
 
 protected:
 	enum {
@@ -48,7 +48,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	Error listen(uint16_t p_port, const IP_Address &p_bind_address = IP_Address("*"));
+	Error listen(uint16_t p_port, const IPAddress &p_bind_address = IPAddress("*"));
 	int get_local_port() const;
 	bool is_listening() const;
 	bool is_connection_available() const;
@@ -56,8 +56,8 @@ public:
 
 	void stop(); // Stop listening
 
-	TCP_Server();
-	~TCP_Server();
+	TCPServer();
+	~TCPServer();
 };
 
 #endif // TCP_SERVER_H

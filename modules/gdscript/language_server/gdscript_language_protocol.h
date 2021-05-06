@@ -69,7 +69,7 @@ private:
 	static GDScriptLanguageProtocol *singleton;
 
 	HashMap<int, Ref<LSPeer>> clients;
-	Ref<TCP_Server> server;
+	Ref<TCPServer> server;
 	int latest_client_id = 0;
 	int next_client_id = 0;
 
@@ -97,7 +97,7 @@ public:
 	_FORCE_INLINE_ bool is_initialized() const { return _initialized; }
 
 	void poll();
-	Error start(int p_port, const IP_Address &p_bind_ip);
+	Error start(int p_port, const IPAddress &p_bind_ip);
 	void stop();
 
 	void notify_client(const String &p_method, const Variant &p_params = Variant(), int p_client_id = -1);

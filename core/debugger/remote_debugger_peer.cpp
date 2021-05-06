@@ -152,7 +152,7 @@ void RemoteDebuggerPeerTCP::_read_in() {
 }
 
 Error RemoteDebuggerPeerTCP::connect_to_host(const String &p_host, uint16_t p_port) {
-	IP_Address ip;
+	IPAddress ip;
 	if (p_host.is_valid_ip_address()) {
 		ip = p_host;
 	} else {

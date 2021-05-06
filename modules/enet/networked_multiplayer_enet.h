@@ -108,7 +108,7 @@ private:
 	static void enet_compressor_destroy(void *context);
 	void _setup_compressor();
 
-	IP_Address bind_ip;
+	IPAddress bind_ip;
 
 	bool dtls_enabled = false;
 	Ref<CryptoKey> dtls_key;
@@ -125,7 +125,7 @@ public:
 
 	virtual int get_packet_peer() const override;
 
-	virtual IP_Address get_peer_address(int p_peer_id) const;
+	virtual IPAddress get_peer_address(int p_peer_id) const;
 	virtual int get_peer_port(int p_peer_id) const;
 	virtual int get_local_port() const;
 	void set_peer_timeout(int p_peer_id, int p_timeout_limit, int p_timeout_min, int p_timeout_max);
@@ -171,7 +171,7 @@ public:
 	NetworkedMultiplayerENet();
 	~NetworkedMultiplayerENet();
 
-	void set_bind_ip(const IP_Address &p_ip);
+	void set_bind_ip(const IPAddress &p_ip);
 	void set_dtls_enabled(bool p_enabled);
 	bool is_dtls_enabled() const;
 	void set_dtls_verify_enabled(bool p_enabled);

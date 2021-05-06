@@ -860,10 +860,10 @@ TEST_CASE("[String] match") {
 }
 
 TEST_CASE("[String] IPVX address to string") {
-	IP_Address ip0("2001:0db8:85a3:0000:0000:8a2e:0370:7334");
-	IP_Address ip(0x0123, 0x4567, 0x89ab, 0xcdef, true);
-	IP_Address ip2("fe80::52e5:49ff:fe93:1baf");
-	IP_Address ip3("::ffff:192.168.0.1");
+	IPAddress ip0("2001:0db8:85a3:0000:0000:8a2e:0370:7334");
+	IPAddress ip(0x0123, 0x4567, 0x89ab, 0xcdef, true);
+	IPAddress ip2("fe80::52e5:49ff:fe93:1baf");
+	IPAddress ip3("::ffff:192.168.0.1");
 	String ip4 = "192.168.0.1";
 	CHECK(ip4.is_valid_ip_address());
 

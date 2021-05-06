@@ -30,14 +30,14 @@
 
 #include "ip_address.h"
 /*
-IP_Address::operator Variant() const {
+IPAddress::operator Variant() const {
 	return operator String();
 }*/
 
 #include <stdio.h>
 #include <string.h>
 
-IP_Address::operator String() const {
+IPAddress::operator String() const {
 	if (wildcard) {
 		return "*";
 	}
@@ -90,7 +90,7 @@ static void _parse_hex(const String &p_string, int p_start, uint8_t *p_dst) {
 	p_dst[1] = ret & 0xff;
 }
 
-void IP_Address::_parse_ipv6(const String &p_string) {
+void IPAddress::_parse_ipv6(const String &p_string) {
 	static const int parts_total = 8;
 	int parts[parts_total] = { 0 };
 	int parts_count = 0;
@@ -146,7 +146,7 @@ void IP_Address::_parse_ipv6(const String &p_string) {
 	}
 }
 
-void IP_Address::_parse_ipv4(const String &p_string, int p_start, uint8_t *p_ret) {
+void IPAddress::_parse_ipv4(const String &p_string, int p_start, uint8_t *p_ret) {
 	String ip;
 	if (p_start != 0) {
 		ip = p_string.substr(p_start, p_string.length() - p_start);
@@ -161,33 +161,33 @@ void IP_Address::_parse_ipv4(const String &p_string, int p_start, uint8_t *p_ret
 	}
 }
 
-void IP_Address::clear() {
+void IPAddress::clear() {
 	memset(&field8[0], 0, sizeof(field8));
 	valid = false;
 	wildcard = false;
 }
 
-bool IP_Address::is_ipv4() const {
+bool IPAddress::is_ipv4() const {
 	return (field32[0] == 0 && field32[1] == 0 && field16[4] == 0 && field16[5] == 0xffff);
 }
 
-const uint8_t *IP_Address::get_ipv4() const {
+const uint8_t *IPAddress::get_ipv4() const {
 	ERR_FAIL_COND_V_MSG(!is_ipv4(), &(field8[12]), "IPv4 requested, but current IP is IPv6."); // Not the correct IPv4 (it's an IPv6), but we don't want to return a null pointer risking an engine crash.
 	return &(field8[12]);
 }
 
-void IP_Address::set_ipv4(const uint8_t *p_ip) {
+void IPAddress::set_ipv4(const uint8_t *p_ip) {
 	clear();
 	valid = true;
 	field16[5] = 0xffff;
 	field32[3] = *((const uint32_t *)p_ip);
 }
 
-const uint8_t *IP_Address::get_ipv6() const {
+const uint8_t *IPAddress::get_ipv6() const {
 	return field8;
 }
 
-void IP_Address::set_ipv6(const uint8_t *p_buf) {
+void IPAddress::set_ipv6(const uint8_t *p_buf) {
 	clear();
 	valid = true;
 	for (int i = 0; i < 16; i++) {
@@ -195,7 +195,7 @@ void IP_Address::set_ipv6(const uint8_t *p_buf) {
 	}
 }
 
-IP_Address::IP_Address(const String &p_string) {
+IPAddress::IPAddress(const String &p_string) {
 	clear();
 
 	if (p_string == "*") {
@@ -225,7 +225,7 @@ _FORCE_INLINE_ static void _32_to_buf(uint8_t *p_dst, uint32_t p_n) {
 	p_dst[3] = (p_n >> 0) & 0xff;
 }
 
-IP_Address::IP_Address(uint32_t p_a, uint32_t p_b, uint32_t p_c, uint32_t p_d, bool is_v6) {
+IPAddress::IPAddress(uint32_t p_a, uint32_t p_b, uint32_t p_c, uint32_t p_d, bool is_v6) {
 	clear();
 	valid = true;
 	if (!is_v6) {

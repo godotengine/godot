@@ -41,7 +41,7 @@
 
 class EditorHTTPServer : public Reference {
 private:
-	Ref<TCP_Server> server;
+	Ref<TCPServer> server;
 	Map<String, String> mimes;
 	Ref<StreamPeerTCP> tcp;
 	Ref<StreamPeerSSL> ssl;
@@ -100,7 +100,7 @@ public:
 		_clear_client();
 	}
 
-	Error listen(int p_port, IP_Address p_address, bool p_use_ssl, String p_ssl_key, String p_ssl_cert) {
+	Error listen(int p_port, IPAddress p_address, bool p_use_ssl, String p_ssl_key, String p_ssl_cert) {
 		use_ssl = p_use_ssl;
 		if (use_ssl) {
 			Ref<Crypto> crypto = Crypto::create();
@@ -919,7 +919,7 @@ Error EditorExportPlatformJavaScript::run(const Ref<EditorExportPreset> &p_prese
 	const uint16_t bind_port = EDITOR_GET("export/web/http_port");
 	// Resolve host if needed.
 	const String bind_host = EDITOR_GET("export/web/http_host");
-	IP_Address bind_ip;
+	IPAddress bind_ip;
 	if (bind_host.is_valid_ip_address()) {
 		bind_ip = bind_host;
 	} else {

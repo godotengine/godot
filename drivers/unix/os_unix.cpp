@@ -129,7 +129,7 @@ void OS_Unix::initialize_core() {
 
 #ifndef NO_NETWORK
 	NetSocketPosix::make_default();
-	IP_Unix::make_default();
+	IPUnix::make_default();
 #endif
 
 	_setup_clock();

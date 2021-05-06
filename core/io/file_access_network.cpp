@@ -171,7 +171,7 @@ void FileAccessNetworkClient::_thread_func(void *s) {
 }
 
 Error FileAccessNetworkClient::connect(const String &p_host, int p_port, const String &p_password) {
-	IP_Address ip;
+	IPAddress ip;
 
 	if (p_host.is_valid_ip_address()) {
 		ip = p_host;

@@ -73,7 +73,7 @@ public:
 
 	virtual void close(int p_code = 1000, String p_reason = "");
 	virtual bool is_connected_to_host() const;
-	virtual IP_Address get_connected_host() const;
+	virtual IPAddress get_connected_host() const;
 	virtual uint16_t get_connected_port() const;
 
 	virtual WriteMode get_write_mode() const;

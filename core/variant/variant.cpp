@@ -2346,15 +2346,15 @@ Variant::operator Orientation() const {
 	return (Orientation) operator int();
 }
 
-Variant::operator IP_Address() const {
+Variant::operator IPAddress() const {
 	if (type == PACKED_FLOAT32_ARRAY || type == PACKED_INT32_ARRAY || type == PACKED_FLOAT64_ARRAY || type == PACKED_INT64_ARRAY || type == PACKED_BYTE_ARRAY) {
 		Vector<int> addr = operator Vector<int>();
 		if (addr.size() == 4) {
-			return IP_Address(addr.get(0), addr.get(1), addr.get(2), addr.get(3));
+			return IPAddress(addr.get(0), addr.get(1), addr.get(2), addr.get(3));
 		}
 	}
 
-	return IP_Address(operator String());
+	return IPAddress(operator String());
 }
 
 Variant::Variant(bool p_bool) {
@@ -2831,7 +2831,7 @@ void Variant::operator=(const Variant &p_variant) {
 	}
 }
 
-Variant::Variant(const IP_Address &p_address) {
+Variant::Variant(const IPAddress &p_address) {
 	type = STRING;
 	memnew_placement(_data._mem, String(p_address));
 }
