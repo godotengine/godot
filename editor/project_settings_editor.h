@@ -45,6 +45,7 @@ class ProjectSettingsEditor : public AcceptDialog {
 
 	enum InputType {
 		INPUT_KEY,
+		INPUT_KEY_PHYSICAL,
 		INPUT_JOY_BUTTON,
 		INPUT_JOY_MOTION,
 		INPUT_MOUSE_BUTTON
@@ -76,6 +77,7 @@ class ProjectSettingsEditor : public AcceptDialog {
 	OptionButton *type;
 	PopupMenu *popup_add;
 	ConfirmationDialog *press_a_key;
+	bool press_a_key_physical;
 	Label *press_a_key_label;
 	ConfirmationDialog *device_input;
 	OptionButton *device_id;
