@@ -139,16 +139,16 @@ class ProjectSettingsEditor : public AcceptDialog {
 	void _copy_to_platform(int p_which);
 
 	void _translation_file_open();
-	void _translation_add(const String &p_path);
+	void _translation_add(const PoolStringArray &p_paths);
 	void _translation_delete(Object *p_item, int p_column, int p_button);
 	void _update_translations();
 
 	void _translation_res_file_open();
-	void _translation_res_add(const String &p_path);
+	void _translation_res_add(const PoolStringArray &p_paths);
 	void _translation_res_delete(Object *p_item, int p_column, int p_button);
 	void _translation_res_select();
 	void _translation_res_option_file_open();
-	void _translation_res_option_add(const String &p_path);
+	void _translation_res_option_add(const PoolStringArray &p_paths);
 	void _translation_res_option_changed();
 	void _translation_res_option_delete(Object *p_item, int p_column, int p_button);
 
