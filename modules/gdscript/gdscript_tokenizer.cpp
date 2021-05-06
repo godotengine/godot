@@ -643,6 +643,8 @@ GDScriptTokenizer::Token GDScriptTokenizer::number() {
 				push_error(error);
 			}
 			previous_was_underscore = true;
+		} else {
+			previous_was_underscore = false;
 		}
 		_advance();
 	}
@@ -714,6 +716,8 @@ GDScriptTokenizer::Token GDScriptTokenizer::number() {
 						push_error(error);
 					}
 					previous_was_underscore = true;
+				} else {
+					previous_was_underscore = false;
 				}
 				_advance();
 			}
