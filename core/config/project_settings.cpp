@@ -1104,6 +1104,8 @@ ProjectSettings::ProjectSettings() {
 	}
 	extensions.push_back("shader");
 
+	GLOBAL_DEF("editor/run/main_run_args", "");
+
 	GLOBAL_DEF("editor/script/search_in_file_extensions", extensions);
 	custom_prop_info["editor/script/search_in_file_extensions"] = PropertyInfo(Variant::PACKED_STRING_ARRAY, "editor/script/search_in_file_extensions");
 
