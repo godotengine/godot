@@ -303,21 +303,17 @@ public:
 	}
 
 	struct Iterator {
-		bool valid;
-
-		const TKey *key;
-		TValue *value;
-
-	private:
-		uint32_t pos;
 		friend class OAHashMap;
+
+		bool valid = false;
+		const TKey *key = nullptr;
+		TValue *value = nullptr;
+		uint32_t pos = 0;
 	};
 
 	Iterator iter() const {
 		Iterator it;
-
 		it.valid = true;
-		it.pos = 0;
 
 		return next_iter(it);
 	}
@@ -328,10 +324,7 @@ public:
 		}
 
 		Iterator it;
-		it.valid = false;
 		it.pos = p_iter.pos;
-		it.key = nullptr;
-		it.value = nullptr;
 
 		for (uint32_t i = it.pos; i < capacity; i++) {
 			it.pos = i + 1;

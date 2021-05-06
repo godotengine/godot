@@ -67,6 +67,7 @@ private:
 
 protected:
 	static IP *singleton;
+
 	static void _bind_methods();
 
 	virtual IP_Address _resolve_hostname(const String &p_hostname, Type p_type = TYPE_ANY) = 0;

@@ -38,7 +38,7 @@
 class Main;
 
 struct StaticCString {
-	const char *ptr;
+	const char *ptr = nullptr;
 	static StaticCString create(const char *p_ptr);
 };
 
@@ -53,7 +53,6 @@ class StringName {
 		SafeRefCount refcount;
 		const char *cname = nullptr;
 		String name;
-
 		String get_name() const { return cname ? String(cname) : name; }
 		int idx = 0;
 		uint32_t hash = 0;
@@ -67,7 +66,7 @@ class StringName {
 	_Data *_data = nullptr;
 
 	union _HashUnion {
-		_Data *ptr;
+		_Data *ptr = nullptr;
 		uint32_t hash;
 	};
 

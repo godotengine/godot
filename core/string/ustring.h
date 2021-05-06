@@ -170,8 +170,8 @@ protected:
 /*************************************************************************/
 
 struct StrRange {
-	const char32_t *c_str;
-	int len;
+	const char32_t *c_str = nullptr;
+	int len = 0;
 
 	StrRange(const char32_t *p_c_str = nullptr, int p_len = 0) {
 		c_str = p_c_str;

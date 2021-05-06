@@ -37,7 +37,7 @@
 
 #include <stdint.h>
 
-ScriptLanguage *ScriptServer::_languages[MAX_LANGUAGES];
+ScriptLanguage *ScriptServer::_languages[MAX_LANGUAGES]{};
 int ScriptServer::_language_count = 0;
 
 bool ScriptServer::scripting_enabled = true;

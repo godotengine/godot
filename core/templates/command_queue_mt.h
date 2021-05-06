@@ -309,7 +309,7 @@ class CommandQueueMT {
 	};
 
 	struct SyncCommand : public CommandBase {
-		SyncSemaphore *sync_sem;
+		SyncSemaphore *sync_sem = nullptr;
 
 		virtual void post() {
 			sync_sem->sem.post();

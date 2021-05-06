@@ -46,8 +46,8 @@ protected:
 	};
 
 	RingBuffer<uint8_t> rb;
-	uint8_t recv_buffer[PACKET_BUFFER_SIZE];
-	uint8_t packet_buffer[PACKET_BUFFER_SIZE];
+	uint8_t recv_buffer[PACKET_BUFFER_SIZE]; // NOLINT - No init for performance.
+	uint8_t packet_buffer[PACKET_BUFFER_SIZE]; // NOLINT - No init for performance.
 	IP_Address packet_ip;
 	int packet_port = 0;
 	int queue_count = 0;

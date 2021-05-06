@@ -41,7 +41,7 @@ private:
 	//path sent caches
 	struct PathSentCache {
 		Map<int, bool> confirmed_peers;
-		int id;
+		int id = 0;
 	};
 
 	//path get caches
@@ -59,7 +59,7 @@ private:
 	Set<int> connected_peers;
 	HashMap<NodePath, PathSentCache> path_send_cache;
 	Map<int, PathGetCache> path_get_cache;
-	int last_send_cache_id;
+	int last_send_cache_id = 0;
 	Vector<uint8_t> packet_cache;
 	Node *root_node = nullptr;
 	bool allow_object_decoding = false;

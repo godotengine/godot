@@ -39,6 +39,8 @@
 class InputMap : public Object {
 	GDCLASS(InputMap, Object);
 
+	static InputMap *singleton;
+
 public:
 	/**
 	* A special value used to signify that a given Action can be triggered by any device
@@ -46,14 +48,12 @@ public:
 	static int ALL_DEVICES;
 
 	struct Action {
-		int id;
-		float deadzone;
+		int id = 0;
+		float deadzone = 0.0;
 		List<Ref<InputEvent>> inputs;
 	};
 
 private:
-	static InputMap *singleton;
-
 	mutable OrderedHashMap<StringName, Action> input_map;
 	OrderedHashMap<String, List<Ref<InputEvent>>> default_builtin_cache;
 

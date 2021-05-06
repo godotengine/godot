@@ -36,6 +36,8 @@
 #include "core/os/file_access.h"
 
 class ResourceLoaderBinary {
+	friend class ResourceFormatLoaderBinary;
+
 	bool translation_remapped = false;
 	String local_path;
 	String res_path;
@@ -52,8 +54,6 @@ class ResourceLoaderBinary {
 
 	Vector<StringName> string_map;
 
-	StringName _get_string();
-
 	struct ExtResource {
 		String path;
 		String type;
@@ -66,25 +66,23 @@ class ResourceLoaderBinary {
 
 	struct IntResource {
 		String path;
-		uint64_t offset;
+		uint64_t offset = 0;
 	};
 
 	Vector<IntResource> internal_resources;
 	Map<String, RES> internal_index_cache;
-
-	String get_unicode_string();
-	void _advance_padding(uint32_t p_len);
 
 	Map<String, String> remaps;
 	Error error = OK;
 
 	ResourceFormatLoader::CacheMode cache_mode = ResourceFormatLoader::CACHE_MODE_REUSE;
 
-	friend class ResourceFormatLoaderBinary;
-
-	Error parse_variant(Variant &r_v);
-
 	Map<String, RES> dependency_cache;
+
+	StringName _get_string();
+	String get_unicode_string();
+	void _advance_padding(uint32_t p_len);
+	Error parse_variant(Variant &r_v);
 
 public:
 	void set_local_path(const String &p_local_path);
@@ -116,12 +114,12 @@ class ResourceFormatSaverBinaryInstance {
 	String local_path;
 	String path;
 
-	bool relative_paths;
-	bool bundle_resources;
-	bool skip_editor;
-	bool big_endian;
-	bool takeover_paths;
-	FileAccess *f;
+	bool relative_paths = false;
+	bool bundle_resources = false;
+	bool skip_editor = false;
+	bool big_endian = false;
+	bool takeover_paths = false;
+	FileAccess *f = nullptr;
 	String magic;
 	Set<RES> resource_set;
 
@@ -139,7 +137,7 @@ class ResourceFormatSaverBinaryInstance {
 	List<RES> saved_resources;
 
 	struct Property {
-		int name_idx;
+		int name_idx = 0;
 		Variant value;
 		PropertyInfo pi;
 	};

@@ -635,7 +635,8 @@ public:
 		Vector<Face> faces;
 
 		struct Edge {
-			int a, b;
+			int a = 0;
+			int b = 0;
 		};
 
 		Vector<Edge> edges;

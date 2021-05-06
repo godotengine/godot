@@ -294,9 +294,11 @@ public:
 
 	/* EDITOR FUNCTIONS */
 	struct Warning {
-		int start_line = -1, end_line = -1;
-		int leftmost_column = -1, rightmost_column = -1;
-		int code;
+		int start_line = -1;
+		int end_line = -1;
+		int leftmost_column = -1;
+		int rightmost_column = -1;
+		int code = 0;
 		String string_code;
 		String message;
 	};
@@ -332,11 +334,11 @@ public:
 			RESULT_CLASS_ENUM,
 			RESULT_CLASS_TBD_GLOBALSCOPE
 		};
-		Type type;
+		Type type = RESULT_SCRIPT_LOCATION;
 		Ref<Script> script;
 		String class_name;
 		String class_member;
-		int location;
+		int location = 0;
 	};
 
 	virtual Error lookup_code(const String &p_code, const String &p_symbol, const String &p_path, Object *p_owner, LookupResult &r_result) { return ERR_UNAVAILABLE; }
@@ -356,7 +358,7 @@ public:
 	struct StackInfo {
 		String file;
 		String func;
-		int line;
+		int line = 0;
 	};
 
 	virtual String debug_get_error() const = 0;
@@ -382,9 +384,9 @@ public:
 
 	struct ProfilingInfo {
 		StringName signature;
-		uint64_t call_count;
-		uint64_t total_time;
-		uint64_t self_time;
+		uint64_t call_count = 0;
+		uint64_t total_time = 0;
+		uint64_t self_time = 0;
 	};
 
 	virtual void profiling_start() = 0;
@@ -409,11 +411,11 @@ public:
 extern uint8_t script_encryption_key[32];
 
 class PlaceHolderScriptInstance : public ScriptInstance {
-	Object *owner;
+	Object *owner = nullptr;
 	List<PropertyInfo> properties;
 	Map<StringName, Variant> values;
 	Map<StringName, Variant> constants;
-	ScriptLanguage *language;
+	ScriptLanguage *language = nullptr;
 	Ref<Script> script;
 
 public:

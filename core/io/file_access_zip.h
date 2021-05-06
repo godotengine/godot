@@ -44,7 +44,7 @@ class ZipArchive : public PackSource {
 public:
 	struct File {
 		int package = -1;
-		unz_file_pos file_pos;
+		unz_file_pos file_pos{};
 		File() {}
 	};
 
@@ -78,9 +78,9 @@ public:
 
 class FileAccessZip : public FileAccess {
 	unzFile zfile = nullptr;
-	unz_file_info64 file_info;
+	unz_file_info64 file_info{};
 
-	mutable bool at_eof;
+	mutable bool at_eof = false;
 
 public:
 	virtual Error _open(const String &p_path, int p_mode_flags); ///< open a file

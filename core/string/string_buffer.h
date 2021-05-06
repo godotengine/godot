@@ -35,7 +35,7 @@
 
 template <int SHORT_BUFFER_SIZE = 64>
 class StringBuffer {
-	char32_t short_buffer[SHORT_BUFFER_SIZE];
+	char32_t short_buffer[SHORT_BUFFER_SIZE]; // NOLINT - No init for performance.
 	String buffer;
 	int string_length = 0;
 

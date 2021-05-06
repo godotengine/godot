@@ -198,7 +198,7 @@ Array convert_property_list(const List<PropertyInfo> *p_list);
 struct MethodInfo {
 	String name;
 	PropertyInfo return_val;
-	uint32_t flags; // NOLINT - prevent clang-tidy to assign method_bind.h constant here, it should stay in .cpp.
+	uint32_t flags = 0;
 	int id = 0;
 	List<PropertyInfo> arguments;
 	Vector<Variant> default_arguments;
@@ -231,12 +231,6 @@ struct MethodInfo {
 	MethodInfo(const PropertyInfo &p_ret, const String &p_name, const PropertyInfo &p_param1, const PropertyInfo &p_param2, const PropertyInfo &p_param3, const PropertyInfo &p_param4);
 	MethodInfo(const PropertyInfo &p_ret, const String &p_name, const PropertyInfo &p_param1, const PropertyInfo &p_param2, const PropertyInfo &p_param3, const PropertyInfo &p_param4, const PropertyInfo &p_param5);
 };
-
-// old cast_to
-//if ( is_type(T::get_class_static()) )
-//return static_cast<T*>(this);
-////else
-//return nullptr;
 
 /*
    the following is an incomprehensible blob of hacks and workarounds to compensate for many of the fallencies in C++. As a plus, this macro pretty much alone defines the object model.
@@ -490,7 +484,7 @@ private:
 	friend class Reference;
 	bool type_is_reference = false;
 	SafeNumeric<uint32_t> instance_binding_count;
-	void *_script_instance_bindings[MAX_SCRIPT_INSTANCE_BINDINGS];
+	void *_script_instance_bindings[MAX_SCRIPT_INSTANCE_BINDINGS]{};
 
 	Object(bool p_reference);
 
@@ -744,7 +738,7 @@ class ObjectDB {
 		uint64_t validator : OBJECTDB_VALIDATOR_BITS;
 		uint64_t next_free : OBJECTDB_SLOT_MAX_COUNT_BITS;
 		uint64_t is_reference : 1;
-		Object *object;
+		Object *object = nullptr;
 	};
 
 	static SpinLock spin_lock;

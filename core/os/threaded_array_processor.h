@@ -39,11 +39,11 @@
 
 template <class C, class U>
 struct ThreadArrayProcessData {
-	uint32_t elements;
+	uint32_t elements = 0;
 	SafeNumeric<uint32_t> index;
-	C *instance;
-	U userdata;
-	void (C::*method)(uint32_t, U);
+	C *instance = nullptr;
+	U userdata = nullptr;
+	void (C::*method)(uint32_t, U){};
 
 	void process(uint32_t p_index) {
 		(instance->*method)(p_index, userdata);

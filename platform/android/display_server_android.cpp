@@ -473,18 +473,18 @@ DisplayServerAndroid::~DisplayServerAndroid() {
 
 void DisplayServerAndroid::process_joy_event(DisplayServerAndroid::JoypadEvent p_event) {
 	switch (p_event.type) {
-		case JOY_EVENT_BUTTON:
+		case JOY_EVENT_BUTTON: {
 			Input::get_singleton()->joy_button(p_event.device, p_event.index, p_event.pressed);
-			break;
-		case JOY_EVENT_AXIS:
+		} break;
+		case JOY_EVENT_AXIS: {
 			Input::JoyAxisValue value;
 			value.min = -1;
 			value.value = p_event.value;
 			Input::get_singleton()->joy_axis(p_event.device, p_event.index, value);
-			break;
-		case JOY_EVENT_HAT:
+		} break;
+		case JOY_EVENT_HAT: {
 			Input::get_singleton()->joy_hat(p_event.device, p_event.hat);
-			break;
+		} break;
 		default:
 			return;
 	}

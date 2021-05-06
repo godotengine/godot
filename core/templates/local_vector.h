@@ -193,7 +193,7 @@ public:
 			return;
 		}
 
-		SortArray<T, C> sorter;
+		SortArray<T, C> sorter{};
 		sorter.sort(data, len);
 	}
 

@@ -38,7 +38,7 @@
 #include <atomic>
 
 class ThreadWorkPool {
-	std::atomic<uint32_t> index;
+	std::atomic<uint32_t> index{};
 
 	struct BaseWork {
 		std::atomic<uint32_t> *index = nullptr;
@@ -49,9 +49,9 @@ class ThreadWorkPool {
 
 	template <class C, class M, class U>
 	struct Work : public BaseWork {
-		C *instance;
-		M method;
-		U userdata;
+		C *instance = nullptr;
+		M method{};
+		U userdata = nullptr;
 		virtual void work() {
 			while (true) {
 				uint32_t work_index = index->fetch_add(1, std::memory_order_relaxed);
@@ -67,8 +67,8 @@ class ThreadWorkPool {
 		Thread thread;
 		Semaphore start;
 		Semaphore completed;
-		std::atomic<bool> exit;
-		BaseWork *work;
+		std::atomic<bool> exit{};
+		BaseWork *work = nullptr;
 	};
 
 	ThreadData *threads = nullptr;

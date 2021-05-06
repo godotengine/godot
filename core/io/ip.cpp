@@ -43,7 +43,7 @@ struct _IP_ResolverPrivate {
 		SafeNumeric<IP::ResolverStatus> status;
 		IP_Address response;
 		String hostname;
-		IP::Type type;
+		IP::Type type = IP::TYPE_NONE;
 
 		void clear() {
 			status.set(IP::RESOLVER_STATUS_NONE);
@@ -72,8 +72,7 @@ struct _IP_ResolverPrivate {
 	Semaphore sem;
 
 	Thread thread;
-	//Semaphore* semaphore;
-	bool thread_abort;
+	bool thread_abort = false;
 
 	void resolve_queues() {
 		for (int i = 0; i < IP::RESOLVER_MAX_QUERIES; i++) {
