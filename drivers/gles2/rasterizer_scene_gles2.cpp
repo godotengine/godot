@@ -1385,21 +1385,269 @@ bool RasterizerSceneGLES2::_setup_material(RasterizerStorageGLES2::Material *p_m
 	return shader_rebind;
 }
 
+void static _calculate_blend_shape_buffer(RasterizerSceneGLES2::RenderList::Element *p_element, PoolVector<float> &transform_buffer) {
+	RasterizerStorageGLES2::Surface *s = static_cast<RasterizerStorageGLES2::Surface *>(p_element->geometry);
+	if (!s->blend_shape_data.empty()) {
+		if (transform_buffer.size() < s->array_byte_size) {
+			transform_buffer.resize(s->array_byte_size);
+		}
+		for (int i = 0; i < VS::ARRAY_MAX - 1; i++) {
+			if (s->attribs[i].enabled) {
+				const float *p_weights = p_element->instance->blend_values.ptr();
+
+				PoolVector<float>::Write write = transform_buffer.write();
+				PoolVector<uint8_t>::Read read = s->data.read();
+				float attrib_array[4] = { 0.0 };
+
+				// Read all attributes
+				for (int j = 0; j < s->array_len; j++) {
+					size_t offset = s->attribs[i].offset + (j * s->attribs[i].stride);
+					float base_weight = 1.0;
+
+					if (s->mesh->blend_shape_mode == VS::BLEND_SHAPE_MODE_NORMALIZED) {
+						for (int ti = 0; ti < s->blend_shape_data.size(); ti++) {
+							base_weight -= p_weights[ti];
+						}
+					}
+
+					// Set the base
+					switch (i) {
+						case VS::ARRAY_VERTEX: {
+							if (s->format & VS::ARRAY_COMPRESS_VERTEX) {
+								const uint16_t *v = (const uint16_t *)(read.ptr() + offset);
+								attrib_array[0] = Math::halfptr_to_float(&v[0]) * base_weight;
+								attrib_array[1] = Math::halfptr_to_float(&v[1]) * base_weight;
+								attrib_array[2] = Math::halfptr_to_float(&v[2]) * base_weight;
+							} else {
+								const float *v = (const float *)(read.ptr() + offset);
+								attrib_array[0] = v[0] * base_weight;
+								attrib_array[1] = v[1] * base_weight;
+								attrib_array[2] = v[2] * base_weight;
+							}
+						} break;
+						case VS::ARRAY_NORMAL: {
+							if (s->format & VS::ARRAY_COMPRESS_NORMAL) {
+								const int8_t *v = (const int8_t *)(read.ptr() + offset);
+								attrib_array[0] = (v[0] / 127.0) * base_weight;
+								attrib_array[1] = (v[1] / 127.0) * base_weight;
+								attrib_array[2] = (v[2] / 127.0) * base_weight;
+							} else {
+								const float *v = (const float *)(read.ptr() + offset);
+								attrib_array[0] = v[0] * base_weight;
+								attrib_array[1] = v[1] * base_weight;
+								attrib_array[2] = v[2] * base_weight;
+							}
+						} break;
+						case VS::ARRAY_TANGENT: {
+							if (s->format & VS::ARRAY_COMPRESS_TANGENT) {
+								const int8_t *v = (const int8_t *)(read.ptr() + offset);
+								attrib_array[0] = (v[0] / 127.0) * base_weight;
+								attrib_array[1] = (v[1] / 127.0) * base_weight;
+								attrib_array[2] = (v[2] / 127.0) * base_weight;
+								attrib_array[3] = (v[3] / 127.0) * base_weight;
+							} else {
+								const float *v = (const float *)(read.ptr() + offset);
+								attrib_array[0] = v[0] * base_weight;
+								attrib_array[1] = v[1] * base_weight;
+								attrib_array[2] = v[2] * base_weight;
+								attrib_array[3] = v[3] * base_weight;
+							}
+						} break;
+						case VS::ARRAY_COLOR: {
+							if (s->format & VS::ARRAY_COMPRESS_COLOR) {
+								const uint8_t *v = (const uint8_t *)(read.ptr() + offset);
+								attrib_array[0] = (v[0] / 255.0) * base_weight;
+								attrib_array[1] = (v[1] / 255.0) * base_weight;
+								attrib_array[2] = (v[2] / 255.0) * base_weight;
+								attrib_array[3] = (v[3] / 255.0) * base_weight;
+							} else {
+								const float *v = (const float *)(read.ptr() + offset);
+								attrib_array[0] = v[0] * base_weight;
+								attrib_array[1] = v[1] * base_weight;
+								attrib_array[2] = v[2] * base_weight;
+								attrib_array[3] = v[3] * base_weight;
+							}
+						} break;
+						case VS::ARRAY_TEX_UV: {
+							if (s->format & VS::ARRAY_COMPRESS_TEX_UV) {
+								const uint16_t *v = (const uint16_t *)(read.ptr() + offset);
+								attrib_array[0] = Math::halfptr_to_float(&v[0]) * base_weight;
+								attrib_array[1] = Math::halfptr_to_float(&v[1]) * base_weight;
+							} else {
+								const float *v = (const float *)(read.ptr() + offset);
+								attrib_array[0] = v[0] * base_weight;
+								attrib_array[1] = v[1] * base_weight;
+							}
+						} break;
+						case VS::ARRAY_TEX_UV2: {
+							if (s->format & VS::ARRAY_COMPRESS_TEX_UV2) {
+								const uint16_t *v = (const uint16_t *)(read.ptr() + offset);
+								attrib_array[0] = Math::halfptr_to_float(&v[0]) * base_weight;
+								attrib_array[1] = Math::halfptr_to_float(&v[1]) * base_weight;
+							} else {
+								const float *v = (const float *)(read.ptr() + offset);
+								attrib_array[0] = v[0] * base_weight;
+								attrib_array[1] = v[1] * base_weight;
+							}
+						} break;
+						case VS::ARRAY_WEIGHTS: {
+							if (s->format & VS::ARRAY_COMPRESS_WEIGHTS) {
+								const uint16_t *v = (const uint16_t *)(read.ptr() + offset);
+								attrib_array[0] = (v[0] / 65535.0) * base_weight;
+								attrib_array[1] = (v[1] / 65535.0) * base_weight;
+								attrib_array[2] = (v[2] / 65535.0) * base_weight;
+								attrib_array[3] = (v[3] / 65535.0) * base_weight;
+							} else {
+								const float *v = (const float *)(read.ptr() + offset);
+								attrib_array[0] = v[0] * base_weight;
+								attrib_array[1] = v[1] * base_weight;
+								attrib_array[2] = v[2] * base_weight;
+								attrib_array[3] = v[3] * base_weight;
+							}
+						} break;
+					}
+
+					// Add all blend shapes
+					for (int ti = 0; ti < s->blend_shape_data.size(); ti++) {
+						PoolVector<uint8_t>::Read blend = s->blend_shape_data[ti].read();
+						float weight = p_weights[ti];
+						if (Math::is_zero_approx(weight)) {
+							continue;
+						}
+
+						switch (i) {
+							case VS::ARRAY_VERTEX: {
+								if (s->format & VS::ARRAY_COMPRESS_VERTEX) {
+									const uint16_t *v = (const uint16_t *)(blend.ptr() + offset);
+									attrib_array[0] += Math::halfptr_to_float(&v[0]) * weight;
+									attrib_array[1] += Math::halfptr_to_float(&v[1]) * weight;
+									attrib_array[2] += Math::halfptr_to_float(&v[2]) * weight;
+								} else {
+									const float *v = (const float *)(blend.ptr() + offset);
+									attrib_array[0] += v[0] * weight;
+									attrib_array[1] += v[1] * weight;
+									attrib_array[2] += v[2] * weight;
+								}
+							} break;
+							case VS::ARRAY_NORMAL: {
+								if (s->format & VS::ARRAY_COMPRESS_NORMAL) {
+									const int8_t *v = (const int8_t *)(blend.ptr() + offset);
+									attrib_array[0] += (float(v[0]) / 127.0) * weight;
+									attrib_array[1] += (float(v[1]) / 127.0) * weight;
+									attrib_array[2] += (float(v[2]) / 127.0) * weight;
+								} else {
+									const float *v = (const float *)(blend.ptr() + offset);
+									attrib_array[0] += v[0] * weight;
+									attrib_array[1] += v[1] * weight;
+									attrib_array[2] += v[2] * weight;
+								}
+							} break;
+							case VS::ARRAY_TANGENT: {
+								if (s->format & VS::ARRAY_COMPRESS_TANGENT) {
+									const int8_t *v = (const int8_t *)(read.ptr() + offset);
+									attrib_array[0] += (float(v[0]) / 127.0) * weight;
+									attrib_array[1] += (float(v[1]) / 127.0) * weight;
+									attrib_array[2] += (float(v[2]) / 127.0) * weight;
+									attrib_array[3] = (float(v[3]) / 127.0);
+								} else {
+									const float *v = (const float *)(read.ptr() + offset);
+									attrib_array[0] += v[0] * weight;
+									attrib_array[1] += v[1] * weight;
+									attrib_array[2] += v[2] * weight;
+									attrib_array[3] = v[3];
+								}
+							} break;
+							case VS::ARRAY_COLOR: {
+								if (s->format & VS::ARRAY_COMPRESS_COLOR) {
+									const uint8_t *v = (const uint8_t *)(blend.ptr() + offset);
+									attrib_array[0] += (v[0] / 255.0) * weight;
+									attrib_array[1] += (v[1] / 255.0) * weight;
+									attrib_array[2] += (v[2] / 255.0) * weight;
+									attrib_array[3] += (v[3] / 255.0) * weight;
+								} else {
+									const float *v = (const float *)(blend.ptr() + offset);
+									attrib_array[0] += v[0] * weight;
+									attrib_array[1] += v[1] * weight;
+									attrib_array[2] += v[2] * weight;
+									attrib_array[3] += v[3] * weight;
+								}
+							} break;
+							case VS::ARRAY_TEX_UV: {
+								if (s->format & VS::ARRAY_COMPRESS_TEX_UV) {
+									const uint16_t *v = (const uint16_t *)(blend.ptr() + offset);
+									attrib_array[0] += Math::halfptr_to_float(&v[0]) * weight;
+									attrib_array[1] += Math::halfptr_to_float(&v[1]) * weight;
+								} else {
+									const float *v = (const float *)(blend.ptr() + offset);
+									attrib_array[0] += v[0] * weight;
+									attrib_array[1] += v[1] * weight;
+								}
+							} break;
+							case VS::ARRAY_TEX_UV2: {
+								if (s->format & VS::ARRAY_COMPRESS_TEX_UV2) {
+									const uint16_t *v = (const uint16_t *)(blend.ptr() + offset);
+									attrib_array[0] += Math::halfptr_to_float(&v[0]) * weight;
+									attrib_array[1] += Math::halfptr_to_float(&v[1]) * weight;
+								} else {
+									const float *v = (const float *)(blend.ptr() + offset);
+									attrib_array[0] += v[0] * weight;
+									attrib_array[1] += v[1] * weight;
+								}
+							} break;
+							case VS::ARRAY_WEIGHTS: {
+								if (s->format & VS::ARRAY_COMPRESS_WEIGHTS) {
+									const uint16_t *v = (const uint16_t *)(blend.ptr() + offset);
+									attrib_array[0] += (v[0] / 65535.0) * weight;
+									attrib_array[1] += (v[1] / 65535.0) * weight;
+									attrib_array[2] += (v[2] / 65535.0) * weight;
+									attrib_array[3] += (v[3] / 65535.0) * weight;
+								} else {
+									const float *v = (const float *)(blend.ptr() + offset);
+									attrib_array[0] += v[0] * weight;
+									attrib_array[1] += v[1] * weight;
+									attrib_array[2] += v[2] * weight;
+									attrib_array[3] += v[3] * weight;
+								}
+							} break;
+						}
+					}
+					memcpy(&write[offset], attrib_array, sizeof(float) * s->attribs[i].size);
+				}
+			}
+		}
+	}
+}
+
 void RasterizerSceneGLES2::_setup_geometry(RenderList::Element *p_element, RasterizerStorageGLES2::Skeleton *p_skeleton) {
 	switch (p_element->instance->base_type) {
 		case VS::INSTANCE_MESH: {
 			RasterizerStorageGLES2::Surface *s = static_cast<RasterizerStorageGLES2::Surface *>(p_element->geometry);
 
-			glBindBuffer(GL_ARRAY_BUFFER, s->vertex_id);
-
 			if (s->index_array_len > 0) {
 				glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, s->index_id);
 			}
 
+			if (!s->blend_shape_data.empty()) {
+				_calculate_blend_shape_buffer(p_element, storage->resources.blend_shapes_transform_cpu_buffer);
+				storage->_update_blend_shape_transform_buffer(storage->resources.blend_shapes_transform_cpu_buffer, s->array_byte_size);
+			}
+
 			for (int i = 0; i < VS::ARRAY_MAX - 1; i++) {
 				if (s->attribs[i].enabled) {
-					glEnableVertexAttribArray(i);
-					glVertexAttribPointer(s->attribs[i].index, s->attribs[i].size, s->attribs[i].type, s->attribs[i].normalized, s->attribs[i].stride, CAST_INT_TO_UCHAR_PTR(s->attribs[i].offset));
+					if (!s->blend_shape_data.empty() && (i != VS::ARRAY_BONES)) {
+						glBindBuffer(GL_ARRAY_BUFFER, storage->resources.blend_shape_transform_buffer);
+
+						glEnableVertexAttribArray(i);
+
+						glVertexAttribPointer(s->attribs[i].index, s->attribs[i].size, GL_FLOAT, GL_FALSE, s->attribs[i].stride * sizeof(float), CAST_INT_TO_UCHAR_PTR(s->attribs[i].offset * sizeof(float)));
+
+					} else {
+						glBindBuffer(GL_ARRAY_BUFFER, s->vertex_id);
+
+						glEnableVertexAttribArray(i);
+
+						glVertexAttribPointer(s->attribs[i].index, s->attribs[i].size, s->attribs[i].type, s->attribs[i].normalized, s->attribs[i].stride, CAST_INT_TO_UCHAR_PTR(s->attribs[i].offset));
+					}
 				} else {
 					glDisableVertexAttribArray(i);
 					switch (i) {

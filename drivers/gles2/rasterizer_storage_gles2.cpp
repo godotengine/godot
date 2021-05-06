@@ -2464,12 +2464,7 @@ void RasterizerStorageGLES2::mesh_add_surface(RID p_mesh, uint32_t p_format, VS:
 
 	surface->aabb = p_aabb;
 	surface->max_bone = p_bone_aabbs.size();
-#ifdef TOOLS_ENABLED
 	surface->blend_shape_data = p_blend_shapes;
-	if (surface->blend_shape_data.size()) {
-		ERR_PRINT_ONCE("Blend shapes are not supported in OpenGL ES 2.0");
-	}
-#endif
 
 	surface->data = array;
 	surface->index_data = p_index_array;
@@ -2674,9 +2669,6 @@ Vector<PoolVector<uint8_t>> RasterizerStorageGLES2::mesh_surface_get_blend_shape
 	const Mesh *mesh = mesh_owner.getornull(p_mesh);
 	ERR_FAIL_COND_V(!mesh, Vector<PoolVector<uint8_t>>());
 	ERR_FAIL_INDEX_V(p_surface, mesh->surfaces.size(), Vector<PoolVector<uint8_t>>());
-#ifndef TOOLS_ENABLED
-	ERR_PRINT("OpenGL ES 2.0 does not allow retrieving blend shape data");
-#endif
 
 	return mesh->surfaces[p_surface]->blend_shape_data;
 }
@@ -3686,6 +3678,25 @@ void RasterizerStorageGLES2::skeleton_set_base_transform_2d(RID p_skeleton, cons
 	ERR_FAIL_COND(!skeleton);
 
 	skeleton->base_transform_2d = p_base_transform;
+}
+
+void RasterizerStorageGLES2::_update_blend_shape_transform_buffer(const PoolVector<float> &p_data, size_t p_size) {
+	glBindBuffer(GL_ARRAY_BUFFER, resources.blend_shape_transform_buffer);
+
+	uint32_t buffer_size = p_size * sizeof(float);
+
+	if (p_size > resources.blend_shape_transform_buffer_size) {
+		// new requested buffer is bigger, so resizing the GPU buffer
+
+		resources.blend_shape_transform_buffer_size = p_size;
+
+		glBufferData(GL_ARRAY_BUFFER, buffer_size, p_data.read().ptr(), GL_DYNAMIC_DRAW);
+	} else {
+		// this may not be best, it could be better to use glBufferData in both cases.
+		buffer_orphan_and_upload(resources.blend_shape_transform_buffer_size, 0, buffer_size, p_data.read().ptr(), GL_ARRAY_BUFFER, true);
+	}
+
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
 void RasterizerStorageGLES2::_update_skeleton_transform_buffer(const PoolVector<float> &p_data, size_t p_size) {
@@ -6147,6 +6158,11 @@ void RasterizerStorageGLES2::initialize() {
 	{
 		resources.skeleton_transform_buffer_size = 0;
 		glGenBuffers(1, &resources.skeleton_transform_buffer);
+	}
+	// blend shape buffer
+	{
+		resources.blend_shape_transform_buffer_size = 0;
+		glGenBuffers(1, &resources.blend_shape_transform_buffer);
 	}
 
 	// radical inverse vdc cache texture
