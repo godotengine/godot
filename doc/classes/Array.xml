@@ -258,6 +258,23 @@
 				[/codeblocks]
 			</description>
 		</method>
+		<method name="filter" qualifiers="const">
+			<return type="Array">
+			</return>
+			<argument index="0" name="method" type="Callable">
+			</argument>
+			<description>
+				Calls the provided [Callable] for each element in array and removes all elements for which the method returned [code]false[/code].
+				[codeblock]
+				func _ready():
+				    print([1, 2, 3].filter(remove_1)) # Prints [2, 3].
+				    print([1, 2, 3].filter(func(number): return number != 1)) # Same as above, but using lambda function.
+
+				func remove_1(number):
+				    return number != 1
+				[/codeblock]
+			</description>
+		</method>
 		<method name="find" qualifiers="const">
 			<return type="int">
 			</return>
@@ -354,6 +371,23 @@
 			</return>
 			<description>
 				Returns [code]true[/code] if the array is empty.
+			</description>
+		</method>
+		<method name="map" qualifiers="const">
+			<return type="Array">
+			</return>
+			<argument index="0" name="method" type="Callable">
+			</argument>
+			<description>
+				Calls the provided [Callable] for each element in array and replaces them with return value of the method.
+				[codeblock]
+				func _ready():
+				    print([1, 2, 3].map(negate)) # Prints [-1, -2, -3].
+				    print([1, 2, 3].map(func(number): return -number)) # Same as above, but using lambda function.
+
+				func negate(number):
+				    return -number
+				[/codeblock]
 			</description>
 		</method>
 		<method name="max" qualifiers="const">
@@ -466,6 +500,25 @@
 			<description>
 				Adds an element at the beginning of the array. See also [method push_back].
 				[b]Note:[/b] On large arrays, this method is much slower than [method push_back] as it will reindex all the array's elements every time it's called. The larger the array, the slower [method push_front] will be.
+			</description>
+		</method>
+		<method name="reduce" qualifiers="const">
+			<return type="Variant">
+			</return>
+			<argument index="0" name="method" type="Callable">
+			</argument>
+			<argument index="1" name="accum" type="Variant" default="null">
+			</argument>
+			<description>
+				Calls the provided [Callable] for each element in array and accumulates the result in [code]accum[/code]. The method for [Callable] takse two arguments: current value of [code]accum[/code] and the current array element. If [code]accum[/code] is [code]null[/code] (default value), the method will use first element from the array as initial value.
+				[codeblock]
+				func _ready():
+				    print([1, 2, 3].reduce(factorial, 1)) # Prints 6.
+				    print([1, 2, 3].reduce(func(accum, number): return accum * number)) # Same as above, but using lambda function.
+
+				func factorial(accum, number):
+				    return accum * number
+				[/codeblock]
 			</description>
 		</method>
 		<method name="remove">
