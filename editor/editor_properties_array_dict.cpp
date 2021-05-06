@@ -575,7 +575,6 @@ EditorPropertyArray::EditorPropertyArray() {
 	object.instance();
 	page_len = int(EDITOR_GET("interface/inspector/max_array_dictionary_items_per_page"));
 	edit = memnew(Button);
-	edit->set_flat(true);
 	edit->set_h_size_flags(SIZE_EXPAND_FILL);
 	edit->set_clip_text(true);
 	edit->connect("pressed", callable_mp(this, &EditorPropertyArray::_edit_pressed));
@@ -1070,7 +1069,6 @@ EditorPropertyDictionary::EditorPropertyDictionary() {
 	object.instance();
 	page_len = int(EDITOR_GET("interface/inspector/max_array_dictionary_items_per_page"));
 	edit = memnew(Button);
-	edit->set_flat(true);
 	edit->set_h_size_flags(SIZE_EXPAND_FILL);
 	edit->set_clip_text(true);
 	edit->connect("pressed", callable_mp(this, &EditorPropertyDictionary::_edit_pressed));

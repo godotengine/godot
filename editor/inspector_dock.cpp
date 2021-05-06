@@ -535,7 +535,6 @@ InspectorDock::InspectorDock(EditorNode *p_editor, EditorData &p_editor_data) {
 	} else {
 		backward_button->set_icon(get_theme_icon("Back", "EditorIcons"));
 	}
-	backward_button->set_flat(true);
 	backward_button->set_tooltip(TTR("Go to the previous edited object in history."));
 	backward_button->set_disabled(true);
 	backward_button->connect("pressed", callable_mp(this, &InspectorDock::_edit_back));
@@ -548,7 +547,6 @@ InspectorDock::InspectorDock(EditorNode *p_editor, EditorData &p_editor_data) {
 	} else {
 		forward_button->set_icon(get_theme_icon("Forward", "EditorIcons"));
 	}
-	forward_button->set_flat(true);
 	forward_button->set_tooltip(TTR("Go to the next edited object in history."));
 	forward_button->set_disabled(true);
 	forward_button->connect("pressed", callable_mp(this, &InspectorDock::_edit_forward));

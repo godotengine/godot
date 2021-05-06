@@ -6491,7 +6491,6 @@ EditorNode::EditorNode() {
 
 	// Toggle for video driver
 	video_driver = memnew(OptionButton);
-	video_driver->set_flat(true);
 	video_driver->set_focus_mode(Control::FOCUS_NONE);
 	video_driver->connect("item_selected", callable_mp(this, &EditorNode::_video_driver_selected));
 	video_driver->add_theme_font_override("font", gui_base->get_theme_font("bold", "EditorFonts"));
