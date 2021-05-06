@@ -39,6 +39,16 @@
 				Returns [code]true[/code] if the mouse has entered the button and has not left it yet.
 			</description>
 		</method>
+		<method name="set_pressed_no_signal">
+			<return type="void">
+			</return>
+			<argument index="0" name="pressed" type="bool">
+			</argument>
+			<description>
+				Changes the [member pressed] state of the button, without emitting [signal toggled]. Use when you just want to change the state of the button without sending the pressed event (e.g. when initializing scene). Only works if [member toggle_mode] is [code]true[/code].
+				[b]Note:[/b] This method doesn't unpress other buttons in [member button_group].
+			</description>
+		</method>
 	</methods>
 	<members>
 		<member name="action_mode" type="int" setter="set_action_mode" getter="get_action_mode" enum="BaseButton.ActionMode" default="1">
@@ -60,7 +70,8 @@
 			[b]Note:[/b] This property only affects the button's visual appearance. Signals will be emitted at the same moment regardless of this property's value.
 		</member>
 		<member name="pressed" type="bool" setter="set_pressed" getter="is_pressed" default="false">
-			If [code]true[/code], the button's state is pressed. Means the button is pressed down or toggled (if [member toggle_mode] is active).
+			If [code]true[/code], the button's state is pressed. Means the button is pressed down or toggled (if [member toggle_mode] is active). Only works if [member toggle_mode] is [code]true[/code].
+			[b]Note:[/b] Setting [member pressed] will result in [signal toggled] to be emitted. If you want to change the pressed state without emitting that signal, use [method set_pressed_no_signal].
 		</member>
 		<member name="shortcut" type="Shortcut" setter="set_shortcut" getter="get_shortcut">
 			[Shortcut] associated to the button.
