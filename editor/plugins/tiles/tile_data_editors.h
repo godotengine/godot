@@ -32,15 +32,6 @@
 #define TILE_DATA_EDITORS_H
 
 #include "scene/gui/control.h"
-
-#include "scene/resources/tile_set/tile_set.h"
-
-/*#include "scene/gui/button.h"
-#include "scene/gui/label.h"
-#include "scene/gui/margin_container.h"
-#include "scene/gui/scroll_container.h"
-#include "scene/gui/texture_rect.h"
-*/
 #include "scene/resources/tile_set/tile_set.h"
 
 class TileDataEditor : public Control {

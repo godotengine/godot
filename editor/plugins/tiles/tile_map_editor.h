@@ -33,13 +33,11 @@
 
 #include "tile_atlas_view.h"
 
+#include "core/typedefs.h"
+#include "editor/editor_node.h"
 #include "scene/2d/tile_map.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/tabs.h"
-
-#include "editor/editor_node.h"
-
-#include "core/typedefs.h"
 
 class TileMapEditorPlugin : public VBoxContainer {
 public:

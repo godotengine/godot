@@ -33,10 +33,9 @@
 
 #include "tile_atlas_view.h"
 
+#include "editor/editor_node.h"
 #include "scene/gui/split_container.h"
 #include "scene/resources/tile_set/tile_set.h"
-
-#include "editor/editor_node.h"
 
 class TileSet;
 
@@ -65,7 +64,7 @@ private:
 	private:
 		Ref<TileSet> tile_set;
 		TileSetAtlasSource *tile_set_atlas_source = nullptr;
-		int source_id;
+		int source_id = -1;
 
 	protected:
 		bool _set(const StringName &p_name, const Variant &p_value);
@@ -119,7 +118,7 @@ private:
 	TileProxyObject *tile_proxy_object;
 	Label *tile_inspector_label;
 	EditorInspector *tile_inspector;
-	String selected_property = "";
+	String selected_property;
 	void _inspector_property_selected(String p_property);
 
 	TileSetAtlasSourceProxyObject *atlas_source_proxy_object;
@@ -176,7 +175,7 @@ private:
 		ADVANCED_AUTO_REMOVE_TILES,
 	};
 	Vector2i menu_option_coords;
-	int menu_option_alternative;
+	int menu_option_alternative = TileSetAtlasSource::INVALID_TILE_ALTERNATIVE;
 	void _menu_option(int p_option);
 
 	// Tool buttons.

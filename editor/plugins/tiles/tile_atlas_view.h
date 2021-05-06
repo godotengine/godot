@@ -31,6 +31,7 @@
 #ifndef TILE_ATLAS_VIEW_H
 #define TILE_ATLAS_VIEW_H
 
+#include "editor/editor_zoom_widget.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/label.h"
@@ -39,15 +40,13 @@
 #include "scene/gui/texture_rect.h"
 #include "scene/resources/tile_set/tile_set.h"
 
-#include "editor/editor_zoom_widget.h"
-
 class TileAtlasView : public Control {
 	GDCLASS(TileAtlasView, Control);
 
 private:
 	TileSet *tile_set;
 	TileSetAtlasSource *tile_set_atlas_source;
-	int source_id;
+	int source_id = -1;
 
 	float previous_zoom = 1.0;
 	EditorZoomWidget *zoom_widget;

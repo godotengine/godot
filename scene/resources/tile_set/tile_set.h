@@ -33,7 +33,6 @@
 
 #include "core/io/resource.h"
 #include "core/object/object.h"
-
 #include "scene/main/canvas_item.h"
 #include "scene/resources/convex_polygon_shape_2d.h"
 #include "scene/resources/packed_scene.h"

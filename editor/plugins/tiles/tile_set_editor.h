@@ -31,11 +31,10 @@
 #ifndef TILE_SET_EDITOR_H
 #define TILE_SET_EDITOR_H
 
-#include "tile_data_editors.h"
-#include "tile_set_atlas_source_editor.h"
-
 #include "scene/gui/box_container.h"
 #include "scene/resources/tile_set/tile_set.h"
+#include "tile_data_editors.h"
+#include "tile_set_atlas_source_editor.h"
 
 class TileSetEditor : public VBoxContainer {
 	GDCLASS(TileSetEditor, VBoxContainer);
