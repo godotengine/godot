@@ -324,7 +324,7 @@ protected:
 
 public:
 	Synchronizer(SceneSynchronizer *p_node);
-	virtual ~Synchronizer() {}
+	virtual ~Synchronizer() = default;
 
 	virtual void clear() = 0;
 

@@ -371,7 +371,7 @@ struct Controller {
 	Controller(NetworkedController *p_node) :
 			node(p_node) {}
 
-	virtual ~Controller() {}
+	virtual ~Controller() = default;
 
 	virtual void ready() {}
 	virtual uint32_t get_current_input_id() const = 0;

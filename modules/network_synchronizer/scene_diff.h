@@ -60,7 +60,7 @@ class SceneDiff : public Object {
 	LocalVector<LocalVector<VarDiff>> diff;
 
 public:
-	SceneDiff() {}
+	SceneDiff() = default;
 
 	void start_tracking_scene_changes(const LocalVector<NetUtility::NodeData *> &p_nodes);
 	void stop_tracking_scene_changes(const SceneSynchronizer *p_synchronizer);
