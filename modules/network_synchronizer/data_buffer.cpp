@@ -490,9 +490,9 @@ Vector3 DataBuffer::add_normalized_vector3(Vector3 p_input, CompressionLevel p_c
 
 	const double max_value = static_cast<double>(~(UINT64_MAX << bits_for_the_axis));
 
-	const uint64_t compressed_x_axis = compress_unit_float(p_input[0], max_value);
-	const uint64_t compressed_y_axis = compress_unit_float(p_input[1], max_value);
-	const uint64_t compressed_z_axis = compress_unit_float(p_input[2], max_value);
+	const uint64_t compressed_x_axis = compress_unit_float((p_input[0] + 1.0) / 2.0, max_value);
+	const uint64_t compressed_y_axis = compress_unit_float((p_input[1] + 1.0) / 2.0, max_value);
+	const uint64_t compressed_z_axis = compress_unit_float((p_input[2] + 1.0) / 2.0, max_value);
 
 	make_room_in_bits(bits);
 
@@ -505,9 +505,9 @@ Vector3 DataBuffer::add_normalized_vector3(Vector3 p_input, CompressionLevel p_c
 	buffer.store_bits(bit_offset, compressed_z_axis, bits_for_the_axis);
 	bit_offset += bits_for_the_axis;
 
-	const real_t decompressed_x_axis = decompress_unit_float(compressed_x_axis, max_value);
-	const real_t decompressed_y_axis = decompress_unit_float(compressed_y_axis, max_value);
-	const real_t decompressed_z_axis = decompress_unit_float(compressed_z_axis, max_value);
+	const real_t decompressed_x_axis = decompress_unit_float(compressed_x_axis, max_value) * 2.0 - 1.0;
+	const real_t decompressed_y_axis = decompress_unit_float(compressed_y_axis, max_value) * 2.0 - 1.0;
+	const real_t decompressed_z_axis = decompress_unit_float(compressed_z_axis, max_value) * 2.0 - 1.0;
 
 #ifdef DEBUG_ENABLED
 	// Can't never happen because the buffer size is correctly handled.
@@ -525,11 +525,11 @@ Vector3 DataBuffer::read_normalized_vector3(CompressionLevel p_compression_level
 
 	const double max_value = static_cast<double>(~(UINT64_MAX << bits_for_the_axis));
 
-	const real_t decompressed_x_axis = decompress_unit_float(buffer.read_bits(bit_offset, bits_for_the_axis), max_value);
+	const real_t decompressed_x_axis = decompress_unit_float(buffer.read_bits(bit_offset, bits_for_the_axis), max_value) * 2.0 - 1.0;
 	bit_offset += bits_for_the_axis;
-	const real_t decompressed_y_axis = decompress_unit_float(buffer.read_bits(bit_offset, bits_for_the_axis), max_value);
+	const real_t decompressed_y_axis = decompress_unit_float(buffer.read_bits(bit_offset, bits_for_the_axis), max_value) * 2.0 - 1.0;
 	bit_offset += bits_for_the_axis;
-	const real_t decompressed_z_axis = decompress_unit_float(buffer.read_bits(bit_offset, bits_for_the_axis), max_value);
+	const real_t decompressed_z_axis = decompress_unit_float(buffer.read_bits(bit_offset, bits_for_the_axis), max_value) * 2.0 - 1.0;
 	bit_offset += bits_for_the_axis;
 
 	return Vector3(decompressed_x_axis, decompressed_y_axis, decompressed_z_axis);

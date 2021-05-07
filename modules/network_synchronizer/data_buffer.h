@@ -139,10 +139,10 @@ public:
 	///
 	///
 	/// ## Normalized Vector3
-	/// COMPRESSION_LEVEL_0: 11 * 3 bits are used - Max loss 0.02 per axis
-	/// COMPRESSION_LEVEL_1: 10 * 3 bits are used - Max loss 0.09% per axis
-	/// COMPRESSION_LEVEL_2: 8 * 3 bits are used - Max loss 0.3 per axis
-	/// COMPRESSION_LEVEL_3: 6 * 3 bits are used - Max loss 3.2% per axis
+	/// COMPRESSION_LEVEL_0: 11 * 3 bits are used - Max loss 0.04% per axis
+	/// COMPRESSION_LEVEL_1: 10 * 3 bits are used - Max loss 0.18% per axis
+	/// COMPRESSION_LEVEL_2: 8 * 3 bits are used - Max loss 0.6% per axis
+	/// COMPRESSION_LEVEL_3: 6 * 3 bits are used - Max loss 6.4% per axis
 	///
 	/// ## Variant
 	/// It's dynamic sized. It's not possible to compress it.
