@@ -150,6 +150,14 @@
 				Returns the audio driver name for the given index.
 			</description>
 		</method>
+		<method name="get_cache_dir" qualifiers="const">
+			<return type="String">
+			</return>
+			<description>
+				Returns the [i]global[/i] cache data directory according to the operating system's standards. On desktop platforms, this path can be overridden by setting the [code]XDG_CACHE_HOME[/code] environment variable before starting the project. See [url=https://docs.godotengine.org/en/latest/tutorials/io/data_paths.html]File paths in Godot projects[/url] in the documentation for more information. See also [method get_config_dir] and [method get_data_dir].
+				Not to be confused with [method get_user_data_dir], which returns the [i]project-specific[/i] user data path.
+			</description>
+		</method>
 		<method name="get_cmdline_args">
 			<return type="PoolStringArray">
 			</return>
@@ -168,6 +176,14 @@
 				[/codeblock]
 			</description>
 		</method>
+		<method name="get_config_dir" qualifiers="const">
+			<return type="String">
+			</return>
+			<description>
+				Returns the [i]global[/i] user configuration directory according to the operating system's standards. On desktop platforms, this path can be overridden by setting the [code]XDG_CONFIG_HOME[/code] environment variable before starting the project. See [url=https://docs.godotengine.org/en/latest/tutorials/io/data_paths.html]File paths in Godot projects[/url] in the documentation for more information. See also [method get_cache_dir] and [method get_data_dir].
+				Not to be confused with [method get_user_data_dir], which returns the [i]project-specific[/i] user data path.
+			</description>
+		</method>
 		<method name="get_connected_midi_inputs">
 			<return type="PoolStringArray">
 			</return>
@@ -182,6 +198,14 @@
 			</return>
 			<description>
 				Returns the currently used video driver, using one of the values from [enum VideoDriver].
+			</description>
+		</method>
+		<method name="get_data_dir" qualifiers="const">
+			<return type="String">
+			</return>
+			<description>
+				Returns the [i]global[/i] user data directory according to the operating system's standards. On desktop platforms, this path can be overridden by setting the [code]XDG_DATA_HOME[/code] environment variable before starting the project. See [url=https://docs.godotengine.org/en/latest/tutorials/io/data_paths.html]File paths in Godot projects[/url] in the documentation for more information. See also [method get_cache_dir] and [method get_config_dir].
+				Not to be confused with [method get_user_data_dir], which returns the [i]project-specific[/i] user data path.
 			</description>
 		</method>
 		<method name="get_date" qualifiers="const">
@@ -570,6 +594,7 @@
 				On macOS, this is [code]~/Library/Application Support/Godot/app_userdata/[project_name][/code], or [code]~/Library/Application Support/[custom_name][/code] if [code]use_custom_user_dir[/code] is set.
 				On Windows, this is [code]%APPDATA%\Godot\app_userdata\[project_name][/code], or [code]%APPDATA%\[custom_name][/code] if [code]use_custom_user_dir[/code] is set. [code]%APPDATA%[/code] expands to [code]%USERPROFILE%\AppData\Roaming[/code].
 				If the project name is empty, [code]user://[/code] falls back to [code]res://[/code].
+				Not to be confused with [method get_data_dir], which returns the [i]global[/i] (non-project-specific) user data directory.
 			</description>
 		</method>
 		<method name="get_video_driver_count" qualifiers="const">
