@@ -264,7 +264,8 @@
 			<argument index="0" name="method" type="Callable">
 			</argument>
 			<description>
-				Calls the provided [Callable] for each element in array and removes all elements for which the method returned [code]false[/code].
+				Calls the provided [Callable] on each element in the array and returns a new array with the elements for which the method returned [code]true[/code].
+				The callable's method should take one [Variant] parameter (the current array element) and return a boolean value.
 				[codeblock]
 				func _ready():
 				    print([1, 2, 3].filter(remove_1)) # Prints [2, 3].
@@ -379,7 +380,8 @@
 			<argument index="0" name="method" type="Callable">
 			</argument>
 			<description>
-				Calls the provided [Callable] for each element in array and replaces them with return value of the method.
+				Calls the provided [Callable] for each element in the array and returns a new array filled with values returned by the method.
+				The callable's method should take one [Variant] parameter (the current array element) and can return any [Variant].
 				[codeblock]
 				func _ready():
 				    print([1, 2, 3].map(negate)) # Prints [-1, -2, -3].
@@ -510,14 +512,15 @@
 			<argument index="1" name="accum" type="Variant" default="null">
 			</argument>
 			<description>
-				Calls the provided [Callable] for each element in array and accumulates the result in [code]accum[/code]. The method for [Callable] takse two arguments: current value of [code]accum[/code] and the current array element. If [code]accum[/code] is [code]null[/code] (default value), the method will use first element from the array as initial value.
+				Calls the provided [Callable] for each element in array and accumulates the result in [code]accum[/code].
+				The callable's method takes two arguments: the current value of [code]accum[/code] and the current array element. If [code]accum[/code] is [code]null[/code] (default value), the iteration will start from the second element, with the first one used as initial value of [code]accum[/code].
 				[codeblock]
 				func _ready():
-				    print([1, 2, 3].reduce(factorial, 1)) # Prints 6.
-				    print([1, 2, 3].reduce(func(accum, number): return accum * number)) # Same as above, but using lambda function.
+				    print([1, 2, 3].reduce(sum, 10)) # Prints 16.
+				    print([1, 2, 3].reduce(func(accum, number): return accum + number, 10)) # Same as above, but using lambda function.
 
-				func factorial(accum, number):
-				    return accum * number
+				func sum(accum, number):
+				    return accum + number
 				[/codeblock]
 			</description>
 		</method>
