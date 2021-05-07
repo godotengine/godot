@@ -807,7 +807,7 @@
 			</return>
 			<description>
 				Returns [code]true[/code] if native video is playing.
-				[b]Note:[/b] This method is implemented on Android and iOS.
+				[b]Note:[/b] This method is only implemented on iOS.
 			</description>
 		</method>
 		<method name="native_video_pause">
@@ -815,7 +815,7 @@
 			</return>
 			<description>
 				Pauses native video playback.
-				[b]Note:[/b] This method is implemented on Android and iOS.
+				[b]Note:[/b] This method is only implemented on iOS.
 			</description>
 		</method>
 		<method name="native_video_play">
@@ -831,7 +831,7 @@
 			</argument>
 			<description>
 				Plays native video from the specified path, at the given volume and with audio and subtitle tracks.
-				[b]Note:[/b] This method is implemented on Android and iOS, and the current Android implementation does not support the [code]volume[/code], [code]audio_track[/code] and [code]subtitle_track[/code] options.
+				[b]Note:[/b] This method is only implemented on iOS.
 			</description>
 		</method>
 		<method name="native_video_stop">
@@ -839,7 +839,7 @@
 			</return>
 			<description>
 				Stops native video playback.
-				[b]Note:[/b] This method is implemented on Android and iOS.
+				[b]Note:[/b] This method is implemented on iOS.
 			</description>
 		</method>
 		<method name="native_video_unpause">
@@ -847,7 +847,7 @@
 			</return>
 			<description>
 				Resumes native video playback.
-				[b]Note:[/b] This method is implemented on Android and iOS.
+				[b]Note:[/b] This method is implemented on iOS.
 			</description>
 		</method>
 		<method name="open_midi_inputs">
