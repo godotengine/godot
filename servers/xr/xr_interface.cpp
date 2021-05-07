@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "xr_interface.h"
+#include "servers/rendering/renderer_compositor.h"
 
 void XRInterface::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_name"), &XRInterface::get_name);
@@ -45,7 +46,7 @@ void XRInterface::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_tracking_status"), &XRInterface::get_tracking_status);
 
 	ClassDB::bind_method(D_METHOD("get_render_targetsize"), &XRInterface::get_render_targetsize);
-	ClassDB::bind_method(D_METHOD("is_stereo"), &XRInterface::is_stereo);
+	ClassDB::bind_method(D_METHOD("get_view_count"), &XRInterface::get_view_count);
 
 	ADD_GROUP("Interface", "interface_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "interface_is_primary"), "set_is_primary", "is_primary");

@@ -2420,6 +2420,8 @@ RenderingServer::RenderingServer() {
 
 	GLOBAL_DEF("rendering/limits/cluster_builder/max_clustered_elements", 512);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/limits/cluster_builder/max_clustered_elements", PropertyInfo(Variant::FLOAT, "rendering/limits/cluster_builder/max_clustered_elements", PROPERTY_HINT_RANGE, "32,8192,1"));
+
+	GLOBAL_DEF_RST("rendering/xr/enabled", false);
 }
 
 RenderingServer::~RenderingServer() {

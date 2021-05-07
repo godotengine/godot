@@ -70,7 +70,12 @@ void XRInterfaceGDNative::set_interface(const godot_xr_interface_gdnative *p_int
 	// this should only be called once, just being paranoid..
 	if (interface) {
 		cleanup();
+		interface = NULL;
 	}
+
+	// validate
+	ERR_FAIL_NULL(p_interface);
+	ERR_FAIL_COND_MSG(p_interface->version.major < 4, "This is an incompatible GDNative XR plugin.");
 
 	// bind to our interface
 	interface = p_interface;
@@ -119,14 +124,14 @@ int XRInterfaceGDNative::get_camera_feed_id() {
 	return (unsigned int)interface->get_camera_feed_id(data);
 }
 
-bool XRInterfaceGDNative::is_stereo() {
-	bool stereo;
+uint32_t XRInterfaceGDNative::get_view_count() {
+	uint32_t view_count;
 
-	ERR_FAIL_COND_V(interface == nullptr, false);
+	ERR_FAIL_COND_V(interface == nullptr, 1);
 
-	stereo = interface->is_stereo(data);
+	view_count = interface->get_view_count(data);
 
-	return stereo;
+	return view_count;
 }
 
 bool XRInterfaceGDNative::is_initialized() const {
@@ -173,26 +178,50 @@ Size2 XRInterfaceGDNative::get_render_targetsize() {
 	return *vec;
 }
 
-Transform3D XRInterfaceGDNative::get_transform_for_eye(XRInterface::Eyes p_eye, const Transform3D &p_cam_transform) {
+Transform3D XRInterfaceGDNative::get_camera_transform() {
 	Transform3D *ret;
 
 	ERR_FAIL_COND_V(interface == nullptr, Transform3D());
 
-	godot_transform3d t = interface->get_transform_for_eye(data, (int)p_eye, (godot_transform3d *)&p_cam_transform);
+	godot_transform3d t = interface->get_camera_transform(data);
 
 	ret = (Transform3D *)&t;
 
 	return *ret;
 }
 
-CameraMatrix XRInterfaceGDNative::get_projection_for_eye(XRInterface::Eyes p_eye, real_t p_aspect, real_t p_z_near, real_t p_z_far) {
+Transform3D XRInterfaceGDNative::get_transform_for_view(uint32_t p_view, const Transform3D &p_cam_transform) {
+	Transform3D *ret;
+
+	ERR_FAIL_COND_V(interface == nullptr, Transform3D());
+
+	godot_transform3d t = interface->get_transform_for_view(data, (int)p_view, (godot_transform3d *)&p_cam_transform);
+
+	ret = (Transform3D *)&t;
+
+	return *ret;
+}
+
+CameraMatrix XRInterfaceGDNative::get_projection_for_view(uint32_t p_view, real_t p_aspect, real_t p_z_near, real_t p_z_far) {
 	CameraMatrix cm;
 
 	ERR_FAIL_COND_V(interface == nullptr, CameraMatrix());
 
-	interface->fill_projection_for_eye(data, (godot_float *)cm.matrix, (godot_int)p_eye, p_aspect, p_z_near, p_z_far);
+	interface->fill_projection_for_view(data, (godot_real_t *)cm.matrix, (godot_int)p_view, p_aspect, p_z_near, p_z_far);
 
 	return cm;
+}
+
+Vector<BlitToScreen> XRInterfaceGDNative::commit_views(RID p_render_target, const Rect2 &p_screen_rect) {
+	// possibly move this as a member variable and add a callback to populate?
+	Vector<BlitToScreen> blit_to_screen;
+
+	ERR_FAIL_COND_V(interface == nullptr, blit_to_screen);
+
+	// must implement
+	interface->commit_views(data, (godot_rid *)&p_render_target, (godot_rect2 *)&p_screen_rect);
+
+	return blit_to_screen;
 }
 
 unsigned int XRInterfaceGDNative::get_external_texture_for_eye(XRInterface::Eyes p_eye) {
@@ -234,7 +263,7 @@ void GDAPI godot_xr_register_interface(const godot_xr_interface_gdnative *p_inte
 	XRServer::get_singleton()->add_interface(new_interface);
 }
 
-godot_float GDAPI godot_xr_get_worldscale() {
+godot_real_t GDAPI godot_xr_get_worldscale() {
 	XRServer *xr_server = XRServer::get_singleton();
 	ERR_FAIL_NULL_V(xr_server, 1.0);
 
@@ -388,7 +417,7 @@ void GDAPI godot_xr_set_controller_button(godot_int p_controller_id, godot_int p
 	}
 }
 
-void GDAPI godot_xr_set_controller_axis(godot_int p_controller_id, godot_int p_axis, godot_float p_value, godot_bool p_can_be_negative) {
+void GDAPI godot_xr_set_controller_axis(godot_int p_controller_id, godot_int p_axis, godot_real_t p_value, godot_bool p_can_be_negative) {
 	XRServer *xr_server = XRServer::get_singleton();
 	ERR_FAIL_NULL(xr_server);
 
@@ -407,7 +436,7 @@ void GDAPI godot_xr_set_controller_axis(godot_int p_controller_id, godot_int p_a
 	}
 }
 
-godot_float GDAPI godot_xr_get_controller_rumble(godot_int p_controller_id) {
+godot_real_t GDAPI godot_xr_get_controller_rumble(godot_int p_controller_id) {
 	XRServer *xr_server = XRServer::get_singleton();
 	ERR_FAIL_NULL_V(xr_server, 0.0);
 

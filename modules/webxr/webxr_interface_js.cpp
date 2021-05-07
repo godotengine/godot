@@ -265,7 +265,7 @@ void WebXRInterfaceJS::uninitialize() {
 	};
 };
 
-Transform WebXRInterfaceJS::_js_matrix_to_transform(float *p_js_matrix) {
+Transform3D WebXRInterfaceJS::_js_matrix_to_transform(float *p_js_matrix) {
 	Transform3D transform;
 
 	transform.basis.elements[0].x = p_js_matrix[0];
@@ -305,13 +305,30 @@ Size2 WebXRInterfaceJS::get_render_targetsize() {
 	return render_targetsize;
 };
 
-Transform WebXRInterfaceJS::get_transform_for_eye(XRInterface::Eyes p_eye, const Transform3D &p_cam_transform) {
+Transform3D WebXRInterfaceJS::get_camera_transform() {
 	Transform3D transform_for_eye;
 
 	XRServer *xr_server = XRServer::get_singleton();
 	ERR_FAIL_NULL_V(xr_server, transform_for_eye);
 
-	float *js_matrix = godot_webxr_get_transform_for_eye(p_eye);
+	float *js_matrix = godot_webxr_get_transform_for_eye(0);
+	if (!initialized || js_matrix == nullptr) {
+		return transform_for_eye;
+	}
+
+	transform_for_eye = _js_matrix_to_transform(js_matrix);
+	free(js_matrix);
+
+	return xr_server->get_reference_frame() * transform_for_eye;
+};
+
+Transform3D WebXRInterfaceJS::get_transform_for_view(uint32_t p_view, const Transform3D &p_cam_transform) {
+	Transform3D transform_for_eye;
+
+	XRServer *xr_server = XRServer::get_singleton();
+	ERR_FAIL_NULL_V(xr_server, transform_for_eye);
+
+	float *js_matrix = godot_webxr_get_transform_for_eye(p_view + 1);
 	if (!initialized || js_matrix == nullptr) {
 		transform_for_eye = p_cam_transform;
 		return transform_for_eye;
@@ -323,10 +340,10 @@ Transform WebXRInterfaceJS::get_transform_for_eye(XRInterface::Eyes p_eye, const
 	return p_cam_transform * xr_server->get_reference_frame() * transform_for_eye;
 };
 
-CameraMatrix WebXRInterfaceJS::get_projection_for_eye(XRInterface::Eyes p_eye, real_t p_aspect, real_t p_z_near, real_t p_z_far) {
+CameraMatrix WebXRInterfaceJS::get_projection_for_view(uint32_t p_view, real_t p_aspect, real_t p_z_near, real_t p_z_far) {
 	CameraMatrix eye;
 
-	float *js_matrix = godot_webxr_get_projection_for_eye(p_eye);
+	float *js_matrix = godot_webxr_get_projection_for_eye(p_view + 1);
 	if (!initialized || js_matrix == nullptr) {
 		return eye;
 	}

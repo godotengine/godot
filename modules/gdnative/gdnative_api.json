@@ -5068,7 +5068,7 @@
 				},
 				{
 					"name": "godot_xr_get_worldscale",
-					"return_type": "godot_float",
+					"return_type": "godot_real_t",
 					"arguments": []
 				},
 				{
@@ -5189,7 +5189,7 @@
 							"p_exis"
 						],
 						[
-							"godot_float",
+							"godot_real_t",
 							"p_value"
 						],
 						[
@@ -5200,7 +5200,7 @@
 				},
 				{
 					"name": "godot_xr_get_controller_rumble",
-					"return_type": "godot_float",
+					"return_type": "godot_real_t",
 					"arguments": [
 						[
 							"godot_int",

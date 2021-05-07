@@ -164,6 +164,8 @@ public:
 			time_gpu_begin = 0;
 			time_gpu_end = 0;
 		}
+
+		uint32_t get_view_count();
 	};
 
 	HashMap<String, RID> timestamp_vp_map;
@@ -187,8 +189,8 @@ public:
 	Vector<Viewport *> active_viewports;
 
 private:
-	void _draw_3d(Viewport *p_viewport, XRInterface::Eyes p_eye);
-	void _draw_viewport(Viewport *p_viewport, XRInterface::Eyes p_eye = XRInterface::EYE_MONO);
+	void _draw_3d(Viewport *p_viewport);
+	void _draw_viewport(Viewport *p_viewport, uint32_t p_view_count = 1);
 
 	int occlusion_rays_per_thread = 512;
 

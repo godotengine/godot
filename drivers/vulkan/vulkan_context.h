@@ -56,8 +56,10 @@ public:
 
 	struct MultiviewCapabilities {
 		bool is_supported;
-		int32_t max_view_count;
-		int32_t max_instance_count;
+		bool geometry_shader_is_supported;
+		bool tessellation_shader_is_supported;
+		uint32_t max_view_count;
+		uint32_t max_instance_count;
 	};
 
 private:

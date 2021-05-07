@@ -72,6 +72,11 @@ public:
 		SKY_VERSION_CUBEMAP,
 		SKY_VERSION_CUBEMAP_HALF_RES,
 		SKY_VERSION_CUBEMAP_QUARTER_RES,
+
+		SKY_VERSION_BACKGROUND_MULTIVIEW,
+		SKY_VERSION_HALF_RES_MULTIVIEW,
+		SKY_VERSION_QUARTER_RES_MULTIVIEW,
+
 		SKY_VERSION_MAX
 	};
 
@@ -270,7 +275,7 @@ public:
 
 	void setup(RendererSceneEnvironmentRD *p_env, RID p_render_buffers, const CameraMatrix &p_projection, const Transform3D &p_transform, const Size2i p_screen_size, RendererSceneRenderRD *p_scene_render);
 	void update(RendererSceneEnvironmentRD *p_env, const CameraMatrix &p_projection, const Transform3D &p_transform, double p_time);
-	void draw(RendererSceneEnvironmentRD *p_env, bool p_can_continue_color, bool p_can_continue_depth, RID p_fb, const CameraMatrix &p_projection, const Transform3D &p_transform, double p_time);
+	void draw(RendererSceneEnvironmentRD *p_env, bool p_can_continue_color, bool p_can_continue_depth, RID p_fb, uint32_t p_view_count, const CameraMatrix *p_projections, const Transform3D &p_transform, double p_time);
 
 	void invalidate_sky(Sky *p_sky);
 	void update_dirty_skys();

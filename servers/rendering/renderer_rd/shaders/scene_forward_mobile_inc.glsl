@@ -1,4 +1,9 @@
 #define M_PI 3.14159265359
+#define MAX_VIEWS 2
+
+#if defined(USE_MULTIVIEW) && defined(has_VK_KHR_multiview)
+#extension GL_EXT_multiview : enable
+#endif
 
 #include "decal_data_inc.glsl"
 
@@ -121,9 +126,12 @@ global_variables;
 layout(set = 1, binding = 0, std140) uniform SceneData {
 	mat4 projection_matrix;
 	mat4 inv_projection_matrix;
-
 	mat4 camera_matrix;
 	mat4 inv_camera_matrix;
+
+	// only used for multiview
+	mat4 projection_matrix_view[MAX_VIEWS];
+	mat4 inv_projection_matrix_view[MAX_VIEWS];
 
 	vec2 viewport_size;
 	vec2 screen_pixel_size;

@@ -234,7 +234,12 @@ class RenderingDeviceVulkan : public RenderingDevice {
 
 	struct FramebufferFormatKey {
 		Vector<AttachmentFormat> attachments;
+		uint32_t view_count = 1;
 		bool operator<(const FramebufferFormatKey &p_key) const {
+			if (view_count != p_key.view_count) {
+				return view_count < p_key.view_count;
+			}
+
 			int as = attachments.size();
 			int bs = p_key.attachments.size();
 			if (as != bs) {
@@ -261,7 +266,7 @@ class RenderingDeviceVulkan : public RenderingDevice {
 		}
 	};
 
-	VkRenderPass _render_pass_create(const Vector<AttachmentFormat> &p_format, InitialAction p_initial_action, FinalAction p_final_action, InitialAction p_initial_depth_action, FinalAction p_final_depthcolor_action, int *r_color_attachment_count = nullptr);
+	VkRenderPass _render_pass_create(const Vector<AttachmentFormat> &p_format, InitialAction p_initial_action, FinalAction p_final_action, InitialAction p_initial_depth_action, FinalAction p_final_depthcolor_action, int *r_color_attachment_count = nullptr, uint32_t p_view_count = 1);
 
 	// This is a cache and it's never freed, it ensures
 	// IDs for a given format are always unique.
@@ -271,6 +276,7 @@ class RenderingDeviceVulkan : public RenderingDevice {
 		VkRenderPass render_pass = VK_NULL_HANDLE; //here for constructing shaders, never used, see section (7.2. Render Pass Compatibility from Vulkan spec)
 		int color_attachments = 0; //used for pipeline validation
 		TextureSamples samples;
+		uint32_t view_count = 1; // number of views
 	};
 
 	Map<FramebufferFormatID, FramebufferFormat> framebuffer_formats;
@@ -282,11 +288,16 @@ class RenderingDeviceVulkan : public RenderingDevice {
 			FinalAction final_color_action;
 			InitialAction initial_depth_action;
 			FinalAction final_depth_action;
+			uint32_t view_count;
 			bool operator<(const VersionKey &p_key) const {
 				if (initial_color_action == p_key.initial_color_action) {
 					if (final_color_action == p_key.final_color_action) {
 						if (initial_depth_action == p_key.initial_depth_action) {
-							return final_depth_action < p_key.final_depth_action;
+							if (final_depth_action == p_key.final_depth_action) {
+								return view_count < p_key.view_count;
+							} else {
+								return final_depth_action < p_key.final_depth_action;
+							}
 						} else {
 							return initial_depth_action < p_key.initial_depth_action;
 						}
@@ -309,6 +320,7 @@ class RenderingDeviceVulkan : public RenderingDevice {
 
 		Map<VersionKey, Version> framebuffers;
 		Size2 size;
+		uint32_t view_count;
 	};
 
 	RID_Owner<Framebuffer, true> framebuffer_owner;
@@ -938,11 +950,11 @@ public:
 	/**** FRAMEBUFFER ****/
 	/*********************/
 
-	virtual FramebufferFormatID framebuffer_format_create(const Vector<AttachmentFormat> &p_format);
+	virtual FramebufferFormatID framebuffer_format_create(const Vector<AttachmentFormat> &p_format, uint32_t p_view_count = 1);
 	virtual FramebufferFormatID framebuffer_format_create_empty(TextureSamples p_samples = TEXTURE_SAMPLES_1);
 	virtual TextureSamples framebuffer_format_get_texture_samples(FramebufferFormatID p_format);
 
-	virtual RID framebuffer_create(const Vector<RID> &p_texture_attachments, FramebufferFormatID p_format_check = INVALID_ID);
+	virtual RID framebuffer_create(const Vector<RID> &p_texture_attachments, FramebufferFormatID p_format_check = INVALID_ID, uint32_t p_view_count = 1);
 	virtual RID framebuffer_create_empty(const Size2i &p_size, TextureSamples p_samples = TEXTURE_SAMPLES_1, FramebufferFormatID p_format_check = INVALID_ID);
 
 	virtual FramebufferFormatID framebuffer_get_format(RID p_framebuffer);

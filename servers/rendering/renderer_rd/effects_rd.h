@@ -55,6 +55,7 @@
 #include "servers/rendering/renderer_rd/shaders/ssao_interleave.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/subsurface_scattering.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/tonemap.glsl.gen.h"
+#include "servers/rendering/renderer_scene_render.h"
 
 #include "servers/rendering_server.h"
 
@@ -170,6 +171,12 @@ class EffectsRD {
 		TONEMAP_MODE_BICUBIC_GLOW_FILTER,
 		TONEMAP_MODE_1D_LUT,
 		TONEMAP_MODE_BICUBIC_GLOW_FILTER_1D_LUT,
+
+		TONEMAP_MODE_NORMAL_MULTIVIEW,
+		TONEMAP_MODE_BICUBIC_GLOW_FILTER_MULTIVIEW,
+		TONEMAP_MODE_1D_LUT_MULTIVIEW,
+		TONEMAP_MODE_BICUBIC_GLOW_FILTER_1D_LUT_MULTIVIEW,
+
 		TONEMAP_MODE_MAX
 	};
 
@@ -453,12 +460,12 @@ class EffectsRD {
 	} filter;
 
 	struct SkyPushConstant {
-		float orientation[12];
-		float proj[4];
-		float position[3];
-		float multiplier;
-		float time;
-		float pad[3];
+		float orientation[12]; // 48 - 48
+		float projections[RendererSceneRender::MAX_RENDER_VIEWS][4]; // 2 x 16 - 64, if we ever need more then 3 we should consider adding this to a set.
+		float position[3]; // 12 - 92
+		float multiplier; // 4 - 96
+		float time; // 4 - 100
+		float pad[3]; // 12 - 112
 	};
 
 	enum SpecularMergeMode {
@@ -714,6 +721,7 @@ public:
 		bool use_fxaa = false;
 		bool use_debanding = false;
 		Vector2i texture_size;
+		uint32_t view_count = 1;
 	};
 
 	struct SSAOSettings {
@@ -744,7 +752,7 @@ public:
 	void roughness_limit(RID p_source_normal, RID p_roughness, const Size2i &p_size, float p_curve);
 	void cubemap_downsample(RID p_source_cubemap, RID p_dest_cubemap, const Size2i &p_size);
 	void cubemap_filter(RID p_source_cubemap, Vector<RID> p_dest_cubemap, bool p_use_array);
-	void render_sky(RD::DrawListID p_list, float p_time, RID p_fb, RID p_samplers, RID p_fog, PipelineCacheRD *p_pipeline, RID p_uniform_set, RID p_texture_set, const CameraMatrix &p_camera, const Basis &p_orientation, float p_multiplier, const Vector3 &p_position);
+	void render_sky(RD::DrawListID p_list, float p_time, RID p_fb, RID p_samplers, RID p_fog, PipelineCacheRD *p_pipeline, RID p_uniform_set, RID p_texture_set, uint32_t p_view_count, const CameraMatrix *p_projections, const Basis &p_orientation, float p_multiplier, const Vector3 &p_position);
 
 	void screen_space_reflection(RID p_diffuse, RID p_normal_roughness, RS::EnvironmentSSRRoughnessQuality p_roughness_quality, RID p_blur_radius, RID p_blur_radius2, RID p_metallic, const Color &p_metallic_mask, RID p_depth, RID p_scale_depth, RID p_scale_normal, RID p_output, RID p_output_blur, const Size2i &p_screen_size, int p_max_steps, float p_fade_in, float p_fade_out, float p_tolerance, const CameraMatrix &p_camera);
 	void merge_specular(RID p_dest_framebuffer, RID p_specular, RID p_base, RID p_reflection);

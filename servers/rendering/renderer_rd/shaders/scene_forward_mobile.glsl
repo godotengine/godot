@@ -96,6 +96,18 @@ layout(location = 8) out float dp_clip;
 
 #endif
 
+#ifdef USE_MULTIVIEW
+#ifdef has_VK_KHR_multiview
+#define ViewIndex gl_ViewIndex
+#else
+// !BAS! This needs to become an input once we implement our fallback!
+#define ViewIndex 0
+#endif
+#else
+// Set to zero, not supported in non stereo
+#define ViewIndex 0
+#endif //USE_MULTIVIEW
+
 invariant gl_Position;
 
 #GLOBALS
@@ -234,7 +246,13 @@ void main() {
 	vec4 position;
 #endif
 
+#ifdef USE_MULTIVIEW
+	mat4 projection_matrix = scene_data.projection_matrix_view[ViewIndex];
+	mat4 inv_projection_matrix = scene_data.inv_projection_matrix_view[ViewIndex];
+#else
 	mat4 projection_matrix = scene_data.projection_matrix;
+	mat4 inv_projection_matrix = scene_data.inv_projection_matrix;
+#endif //USE_MULTIVIEW
 
 //using world coordinates
 #if !defined(SKIP_TRANSFORM_USED) && defined(VERTEX_WORLD_COORDS_USED)
@@ -386,10 +404,26 @@ layout(location = 8) in float dp_clip;
 
 #endif
 
+#ifdef USE_MULTIVIEW
+#ifdef has_VK_KHR_multiview
+#define ViewIndex gl_ViewIndex
+#else
+// !BAS! This needs to become an input once we implement our fallback!
+#define ViewIndex 0
+#endif
+#else
+// Set to zero, not supported in non stereo
+#define ViewIndex 0
+#endif //USE_MULTIVIEW
+
 //defines to keep compatibility with vertex
 
 #define world_matrix draw_call.transform
+#ifdef USE_MULTIVIEW
+#define projection_matrix scene_data.projection_matrix_view[ViewIndex]
+#else
 #define projection_matrix scene_data.projection_matrix
+#endif
 
 #if defined(ENABLE_SSS) && defined(ENABLE_TRANSMITTANCE)
 //both required for transmittance to be enabled

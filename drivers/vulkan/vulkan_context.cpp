@@ -337,6 +337,9 @@ Error VulkanContext::_initialize_extensions() {
 				extension_names[enabled_extension_count++] = VK_EXT_DEBUG_UTILS_EXTENSION_NAME;
 				enabled_debug_utils = true;
 			}
+			if (!strcmp(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME, instance_extensions[i].extensionName)) {
+				extension_names[enabled_extension_count++] = VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME;
+			}
 			if (enabled_extension_count >= MAX_EXTENSIONS) {
 				free(instance_extensions);
 				ERR_FAIL_V_MSG(ERR_BUG, "Enabled extension count reaches MAX_EXTENSIONS, BUG");
@@ -504,6 +507,8 @@ Error VulkanContext::_check_capabilities() {
 
 	// assume not supported until proven otherwise
 	multiview_capabilities.is_supported = false;
+	multiview_capabilities.geometry_shader_is_supported = false;
+	multiview_capabilities.tessellation_shader_is_supported = false;
 	multiview_capabilities.max_view_count = 0;
 	multiview_capabilities.max_instance_count = 0;
 	subgroup_capabilities.size = 0;
@@ -529,7 +534,8 @@ Error VulkanContext::_check_capabilities() {
 
 		device_features_func(gpu, &device_features);
 		multiview_capabilities.is_supported = multiview_features.multiview;
-		// For now we ignore if multiview is available in geometry and tessellation as we do not currently support those
+		multiview_capabilities.geometry_shader_is_supported = multiview_features.multiviewGeometryShader;
+		multiview_capabilities.tessellation_shader_is_supported = multiview_features.multiviewTessellationShader;
 	}
 
 	// check extended properties
@@ -573,7 +579,7 @@ Error VulkanContext::_check_capabilities() {
 
 #ifdef DEBUG_ENABLED
 			print_line("- Vulkan multiview supported:");
-			print_line("  max views: " + itos(multiview_capabilities.max_view_count));
+			print_line("  max view count: " + itos(multiview_capabilities.max_view_count));
 			print_line("  max instances: " + itos(multiview_capabilities.max_instance_count));
 		} else {
 			print_line("- Vulkan multiview not supported");
@@ -772,6 +778,10 @@ Error VulkanContext::_create_physical_device() {
 				swapchainExtFound = 1;
 				extension_names[enabled_extension_count++] = VK_KHR_SWAPCHAIN_EXTENSION_NAME;
 			}
+			if (!strcmp(VK_KHR_MULTIVIEW_EXTENSION_NAME, device_extensions[i].extensionName)) {
+				// if multiview is supported, enable it
+				extension_names[enabled_extension_count++] = VK_KHR_MULTIVIEW_EXTENSION_NAME;
+			}
 			if (enabled_extension_count >= MAX_EXTENSIONS) {
 				free(device_extensions);
 				ERR_FAIL_V_MSG(ERR_BUG, "Enabled extension count reaches MAX_EXTENSIONS, BUG");
@@ -964,6 +974,39 @@ Error VulkanContext::_create_device() {
 		queues[1].flags = 0;
 		sdevice.queueCreateInfoCount = 2;
 	}
+
+#ifdef VK_VERSION_1_2
+	VkPhysicalDeviceVulkan11Features vulkan11features;
+
+	vulkan11features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_FEATURES;
+	vulkan11features.pNext = nullptr;
+	// !BAS! Need to figure out which ones of these we want enabled...
+	vulkan11features.storageBuffer16BitAccess = 0;
+	vulkan11features.uniformAndStorageBuffer16BitAccess = 0;
+	vulkan11features.storagePushConstant16 = 0;
+	vulkan11features.storageInputOutput16 = 0;
+	vulkan11features.multiview = multiview_capabilities.is_supported;
+	vulkan11features.multiviewGeometryShader = multiview_capabilities.geometry_shader_is_supported;
+	vulkan11features.multiviewTessellationShader = multiview_capabilities.tessellation_shader_is_supported;
+	vulkan11features.variablePointersStorageBuffer = 0;
+	vulkan11features.variablePointers = 0;
+	vulkan11features.protectedMemory = 0;
+	vulkan11features.samplerYcbcrConversion = 0;
+	vulkan11features.shaderDrawParameters = 0;
+
+	sdevice.pNext = &vulkan11features;
+#elif VK_VERSION_1_1
+	VkPhysicalDeviceMultiviewFeatures multiview_features;
+
+	multiview_features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_FEATURES;
+	multiview_features.pNext = nullptr;
+	multiview_features.multiview = multiview_capabilities.is_supported;
+	multiview_features.multiviewGeometryShader = multiview_capabilities.geometry_shader_is_supported;
+	multiview_features.multiviewTessellationShader = multiview_capabilities.tessellation_shader_is_supported;
+
+	sdevice.pNext = &multiview_features;
+#endif
+
 	err = vkCreateDevice(gpu, &sdevice, nullptr, &device);
 	ERR_FAIL_COND_V(err, ERR_CANT_CREATE);
 
