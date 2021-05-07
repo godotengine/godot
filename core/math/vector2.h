@@ -280,6 +280,14 @@ struct Vector2i {
 		return p_idx ? y : x;
 	}
 
+	Vector2i min(const Vector2i &p_vector2i) const {
+		return Vector2(MIN(x, p_vector2i.x), MIN(y, p_vector2i.y));
+	}
+
+	Vector2i max(const Vector2i &p_vector2i) const {
+		return Vector2(MAX(x, p_vector2i.x), MAX(y, p_vector2i.y));
+	}
+
 	Vector2i operator+(const Vector2i &p_v) const;
 	void operator+=(const Vector2i &p_v);
 	Vector2i operator-(const Vector2i &p_v) const;

@@ -395,6 +395,45 @@ public:
 		H.resize(k);
 		return H;
 	}
+
+	static Vector<Point2i> bresenham_line(const Point2i &p_start, const Point2i &p_end) {
+		Vector<Point2i> points;
+
+		Vector2i delta = (p_end - p_start).abs() * 2;
+		Vector2i step = (p_end - p_start).sign();
+		Vector2i current = p_start;
+
+		if (delta.x > delta.y) {
+			int err = delta.x / 2;
+
+			for (; current.x != p_end.x; current.x += step.x) {
+				points.push_back(current);
+
+				err -= delta.y;
+				if (err < 0) {
+					current.y += step.y;
+					err += delta.x;
+				}
+			}
+		} else {
+			int err = delta.y / 2;
+
+			for (; current.y != p_end.y; current.y += step.y) {
+				points.push_back(current);
+
+				err -= delta.x;
+				if (err < 0) {
+					current.x += step.x;
+					err += delta.y;
+				}
+			}
+		}
+
+		points.push_back(current);
+
+		return points;
+	}
+
 	static Vector<Vector<Vector2>> decompose_polygon_in_convex(Vector<Point2> polygon);
 
 	static void make_atlas(const Vector<Size2i> &p_rects, Vector<Point2i> &r_result, Size2i &r_size);

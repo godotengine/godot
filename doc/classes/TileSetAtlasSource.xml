@@ -1,0 +1,207 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="TileSetAtlasSource" inherits="TileSetSource" version="4.0">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="can_move_tile_in_atlas" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="atlas_coords" type="Vector2i">
+			</argument>
+			<argument index="1" name="new_atlas_coords" type="Vector2i" default="Vector2i( -1, -1 )">
+			</argument>
+			<argument index="2" name="new_size" type="Vector2i" default="Vector2i( -1, -1 )">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="clear_tiles_outside_texture">
+			<return type="void">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="create_alternative_tile">
+			<return type="int">
+			</return>
+			<argument index="0" name="atlas_coords" type="Vector2i">
+			</argument>
+			<argument index="1" name="alternative_id_override" type="int" default="-1">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="create_tile">
+			<return type="void">
+			</return>
+			<argument index="0" name="atlas_coords" type="Vector2i">
+			</argument>
+			<argument index="1" name="size" type="Vector2i" default="Vector2i( 1, 1 )">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_alternative_tile_id" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="atlas_coords" type="Vector2i">
+			</argument>
+			<argument index="1" name="index" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_alternative_tiles_count" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="atlas_coords" type="Vector2i">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_atlas_grid_size" qualifiers="const">
+			<return type="Vector2i">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_next_alternative_tile_id" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="atlas_coords" type="Vector2i">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_tile_at_coords" qualifiers="const">
+			<return type="Vector2i">
+			</return>
+			<argument index="0" name="atlas_coords" type="Vector2i">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_tile_data" qualifiers="const">
+			<return type="Object">
+			</return>
+			<argument index="0" name="atlas_coords" type="Vector2i">
+			</argument>
+			<argument index="1" name="index" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_tile_id" qualifiers="const">
+			<return type="Vector2i">
+			</return>
+			<argument index="0" name="index" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_tile_size_in_atlas" qualifiers="const">
+			<return type="Vector2i">
+			</return>
+			<argument index="0" name="atlas_coords" type="Vector2i">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_tile_texture_region" qualifiers="const">
+			<return type="Rect2i">
+			</return>
+			<argument index="0" name="atlas_coords" type="Vector2i">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_tiles_count" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="has_alternative_tile" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="atlas_coords" type="Vector2i">
+			</argument>
+			<argument index="1" name="alternative_tile" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="has_tile" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="atlas_coords" type="Vector2i">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="has_tiles_outside_texture">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="move_tile_in_atlas">
+			<return type="void">
+			</return>
+			<argument index="0" name="atlas_coords" type="Vector2i">
+			</argument>
+			<argument index="1" name="new_atlas_coords" type="Vector2i" default="Vector2i( -1, -1 )">
+			</argument>
+			<argument index="2" name="new_size" type="Vector2i" default="Vector2i( -1, -1 )">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="remove_alternative_tile">
+			<return type="void">
+			</return>
+			<argument index="0" name="atlas_coords" type="Vector2i">
+			</argument>
+			<argument index="1" name="alternative_tile" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="remove_tile">
+			<return type="void">
+			</return>
+			<argument index="0" name="atlas_coords" type="Vector2i">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_alternative_tile_id">
+			<return type="void">
+			</return>
+			<argument index="0" name="atlas_coords" type="Vector2i">
+			</argument>
+			<argument index="1" name="alternative_tile" type="int">
+			</argument>
+			<argument index="2" name="new_id" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="margins" type="Vector2i" setter="set_margins" getter="get_margins" default="Vector2i( 0, 0 )">
+		</member>
+		<member name="separation" type="Vector2i" setter="set_separation" getter="get_separation" default="Vector2i( 0, 0 )">
+		</member>
+		<member name="texture" type="Texture2D" setter="set_texture" getter="get_texture">
+		</member>
+		<member name="tile_size" type="Vector2i" setter="set_texture_region_size" getter="get_texture_region_size" default="Vector2i( 16, 16 )">
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

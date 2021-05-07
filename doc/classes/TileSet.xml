@@ -17,752 +17,347 @@
 		<link title="2D Kinematic Character Demo">https://godotengine.org/asset-library/asset/113</link>
 	</tutorials>
 	<methods>
-		<method name="_forward_atlas_subtile_selection" qualifiers="virtual">
-			<return type="Vector2">
+		<method name="add_source">
+			<return type="int">
 			</return>
-			<argument index="0" name="atlastile_id" type="int">
+			<argument index="0" name="atlas_source_id_override" type="TileSetAtlasSource">
 			</argument>
-			<argument index="1" name="tilemap" type="Object">
-			</argument>
-			<argument index="2" name="tile_location" type="Vector2">
+			<argument index="1" name="arg1" type="int" default="-1">
 			</argument>
 			<description>
 			</description>
 		</method>
-		<method name="_forward_subtile_selection" qualifiers="virtual">
-			<return type="Vector2">
+		<method name="get_navigation_layer_layers" qualifiers="const">
+			<return type="int">
 			</return>
-			<argument index="0" name="autotile_id" type="int">
-			</argument>
-			<argument index="1" name="bitmask" type="int">
-			</argument>
-			<argument index="2" name="tilemap" type="Object">
-			</argument>
-			<argument index="3" name="tile_location" type="Vector2">
+			<argument index="0" name="layer_index" type="int">
 			</argument>
 			<description>
 			</description>
 		</method>
-		<method name="_is_tile_bound" qualifiers="virtual">
+		<method name="get_next_source_id" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_occlusion_layer_light_mask" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="arg0" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_occlusion_layer_sdf_collision" qualifiers="const">
 			<return type="bool">
 			</return>
-			<argument index="0" name="drawn_id" type="int">
-			</argument>
-			<argument index="1" name="neighbor_id" type="int">
+			<argument index="0" name="arg0" type="int">
 			</argument>
 			<description>
-				Determines when the auto-tiler should consider two different auto-tile IDs to be bound together.
-				[b]Note:[/b] [code]neighbor_id[/code] will be [code]-1[/code] ([constant TileMap.INVALID_CELL]) when checking a tile against an empty neighbor tile.
 			</description>
 		</method>
-		<method name="autotile_clear_bitmask_map">
-			<return type="void">
-			</return>
-			<argument index="0" name="id" type="int">
-			</argument>
-			<description>
-				Clears all bitmask information of the autotile.
-			</description>
-		</method>
-		<method name="autotile_get_bitmask">
+		<method name="get_physics_layer_collision_layer" qualifiers="const">
 			<return type="int">
 			</return>
-			<argument index="0" name="id" type="int">
-			</argument>
-			<argument index="1" name="coord" type="Vector2">
+			<argument index="0" name="layer_index" type="int">
 			</argument>
 			<description>
-				Returns the bitmask of the subtile from an autotile given its coordinates.
-				The value is the sum of the values in [enum AutotileBindings] present in the subtile (e.g. a value of 5 means the bitmask has bindings in both the top left and top right).
 			</description>
 		</method>
-		<method name="autotile_get_bitmask_mode" qualifiers="const">
-			<return type="int" enum="TileSet.BitmaskMode">
-			</return>
-			<argument index="0" name="id" type="int">
-			</argument>
-			<description>
-				Returns the [enum BitmaskMode] of the autotile.
-			</description>
-		</method>
-		<method name="autotile_get_icon_coordinate" qualifiers="const">
-			<return type="Vector2">
-			</return>
-			<argument index="0" name="id" type="int">
-			</argument>
-			<description>
-				Returns the subtile that's being used as an icon in an atlas/autotile given its coordinates.
-				The subtile defined as the icon will be used as a fallback when the atlas/autotile's bitmask information is incomplete. It will also be used to represent it in the TileSet editor.
-			</description>
-		</method>
-		<method name="autotile_get_light_occluder" qualifiers="const">
-			<return type="OccluderPolygon2D">
-			</return>
-			<argument index="0" name="id" type="int">
-			</argument>
-			<argument index="1" name="coord" type="Vector2">
-			</argument>
-			<description>
-				Returns the light occluder of the subtile from an atlas/autotile given its coordinates.
-			</description>
-		</method>
-		<method name="autotile_get_navigation_polygon" qualifiers="const">
-			<return type="NavigationPolygon">
-			</return>
-			<argument index="0" name="id" type="int">
-			</argument>
-			<argument index="1" name="coord" type="Vector2">
-			</argument>
-			<description>
-				Returns the navigation polygon of the subtile from an atlas/autotile given its coordinates.
-			</description>
-		</method>
-		<method name="autotile_get_size" qualifiers="const">
-			<return type="Vector2">
-			</return>
-			<argument index="0" name="id" type="int">
-			</argument>
-			<description>
-				Returns the size of the subtiles in an atlas/autotile.
-			</description>
-		</method>
-		<method name="autotile_get_spacing" qualifiers="const">
+		<method name="get_physics_layer_collision_mask" qualifiers="const">
 			<return type="int">
 			</return>
-			<argument index="0" name="id" type="int">
+			<argument index="0" name="layer_index" type="int">
 			</argument>
 			<description>
-				Returns the spacing between subtiles of the atlas/autotile.
 			</description>
 		</method>
-		<method name="autotile_get_subtile_priority">
-			<return type="int">
+		<method name="get_physics_layer_physics_material" qualifiers="const">
+			<return type="PhysicsMaterial">
 			</return>
-			<argument index="0" name="id" type="int">
-			</argument>
-			<argument index="1" name="coord" type="Vector2">
+			<argument index="0" name="layer_index" type="int">
 			</argument>
 			<description>
-				Returns the priority of the subtile from an autotile given its coordinates.
-				When more than one subtile has the same bitmask value, one of them will be picked randomly for drawing. Its priority will define how often it will be picked.
 			</description>
 		</method>
-		<method name="autotile_get_z_index">
-			<return type="int">
+		<method name="get_source" qualifiers="const">
+			<return type="TileSetSource">
 			</return>
-			<argument index="0" name="id" type="int">
-			</argument>
-			<argument index="1" name="coord" type="Vector2">
+			<argument index="0" name="index" type="int">
 			</argument>
 			<description>
-				Returns the drawing index of the subtile from an atlas/autotile given its coordinates.
 			</description>
 		</method>
-		<method name="autotile_set_bitmask">
-			<return type="void">
-			</return>
-			<argument index="0" name="id" type="int">
-			</argument>
-			<argument index="1" name="bitmask" type="Vector2">
-			</argument>
-			<argument index="2" name="flag" type="int">
-			</argument>
-			<description>
-				Sets the bitmask of the subtile from an autotile given its coordinates.
-				The value is the sum of the values in [enum AutotileBindings] present in the subtile (e.g. a value of 5 means the bitmask has bindings in both the top left and top right).
-			</description>
-		</method>
-		<method name="autotile_set_bitmask_mode">
-			<return type="void">
-			</return>
-			<argument index="0" name="id" type="int">
-			</argument>
-			<argument index="1" name="mode" type="int" enum="TileSet.BitmaskMode">
-			</argument>
-			<description>
-				Sets the [enum BitmaskMode] of the autotile.
-			</description>
-		</method>
-		<method name="autotile_set_icon_coordinate">
-			<return type="void">
-			</return>
-			<argument index="0" name="id" type="int">
-			</argument>
-			<argument index="1" name="coord" type="Vector2">
-			</argument>
-			<description>
-				Sets the subtile that will be used as an icon in an atlas/autotile given its coordinates.
-				The subtile defined as the icon will be used as a fallback when the atlas/autotile's bitmask information is incomplete. It will also be used to represent it in the TileSet editor.
-			</description>
-		</method>
-		<method name="autotile_set_light_occluder">
-			<return type="void">
-			</return>
-			<argument index="0" name="id" type="int">
-			</argument>
-			<argument index="1" name="light_occluder" type="OccluderPolygon2D">
-			</argument>
-			<argument index="2" name="coord" type="Vector2">
-			</argument>
-			<description>
-				Sets the light occluder of the subtile from an atlas/autotile given its coordinates.
-			</description>
-		</method>
-		<method name="autotile_set_navigation_polygon">
-			<return type="void">
-			</return>
-			<argument index="0" name="id" type="int">
-			</argument>
-			<argument index="1" name="navigation_polygon" type="NavigationPolygon">
-			</argument>
-			<argument index="2" name="coord" type="Vector2">
-			</argument>
-			<description>
-				Sets the navigation polygon of the subtile from an atlas/autotile given its coordinates.
-			</description>
-		</method>
-		<method name="autotile_set_size">
-			<return type="void">
-			</return>
-			<argument index="0" name="id" type="int">
-			</argument>
-			<argument index="1" name="size" type="Vector2">
-			</argument>
-			<description>
-				Sets the size of the subtiles in an atlas/autotile.
-			</description>
-		</method>
-		<method name="autotile_set_spacing">
-			<return type="void">
-			</return>
-			<argument index="0" name="id" type="int">
-			</argument>
-			<argument index="1" name="spacing" type="int">
-			</argument>
-			<description>
-				Sets the spacing between subtiles of the atlas/autotile.
-			</description>
-		</method>
-		<method name="autotile_set_subtile_priority">
-			<return type="void">
-			</return>
-			<argument index="0" name="id" type="int">
-			</argument>
-			<argument index="1" name="coord" type="Vector2">
-			</argument>
-			<argument index="2" name="priority" type="int">
-			</argument>
-			<description>
-				Sets the priority of the subtile from an autotile given its coordinates.
-				When more than one subtile has the same bitmask value, one of them will be picked randomly for drawing. Its priority will define how often it will be picked.
-			</description>
-		</method>
-		<method name="autotile_set_z_index">
-			<return type="void">
-			</return>
-			<argument index="0" name="id" type="int">
-			</argument>
-			<argument index="1" name="coord" type="Vector2">
-			</argument>
-			<argument index="2" name="z_index" type="int">
-			</argument>
-			<description>
-				Sets the drawing index of the subtile from an atlas/autotile given its coordinates.
-			</description>
-		</method>
-		<method name="clear">
-			<return type="void">
-			</return>
-			<description>
-				Clears all tiles.
-			</description>
-		</method>
-		<method name="create_tile">
-			<return type="void">
-			</return>
-			<argument index="0" name="id" type="int">
-			</argument>
-			<description>
-				Creates a new tile with the given ID.
-			</description>
-		</method>
-		<method name="find_tile_by_name" qualifiers="const">
-			<return type="int">
-			</return>
-			<argument index="0" name="name" type="String">
-			</argument>
-			<description>
-				Returns the first tile matching the given name.
-			</description>
-		</method>
-		<method name="get_last_unused_tile_id" qualifiers="const">
+		<method name="get_source_count" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
-				Returns the ID following the last currently used ID, useful when creating a new tile.
 			</description>
 		</method>
-		<method name="get_tiles_ids" qualifiers="const">
-			<return type="Array">
+		<method name="get_source_id" qualifiers="const">
+			<return type="int">
 			</return>
-			<description>
-				Returns an array of all currently used tile IDs.
-			</description>
-		</method>
-		<method name="remove_tile">
-			<return type="void">
-			</return>
-			<argument index="0" name="id" type="int">
+			<argument index="0" name="index" type="int">
 			</argument>
 			<description>
-				Removes the given tile ID.
 			</description>
 		</method>
-		<method name="tile_add_shape">
-			<return type="void">
-			</return>
-			<argument index="0" name="id" type="int">
-			</argument>
-			<argument index="1" name="shape" type="Shape2D">
-			</argument>
-			<argument index="2" name="shape_transform" type="Transform2D">
-			</argument>
-			<argument index="3" name="one_way" type="bool" default="false">
-			</argument>
-			<argument index="4" name="autotile_coord" type="Vector2" default="Vector2( 0, 0 )">
-			</argument>
-			<description>
-				Adds a shape to the tile.
-			</description>
-		</method>
-		<method name="tile_get_light_occluder" qualifiers="const">
-			<return type="OccluderPolygon2D">
-			</return>
-			<argument index="0" name="id" type="int">
-			</argument>
-			<description>
-				Returns the tile's light occluder.
-			</description>
-		</method>
-		<method name="tile_get_material" qualifiers="const">
-			<return type="ShaderMaterial">
-			</return>
-			<argument index="0" name="id" type="int">
-			</argument>
-			<description>
-				Returns the tile's material.
-			</description>
-		</method>
-		<method name="tile_get_modulate" qualifiers="const">
+		<method name="get_terrain_color" qualifiers="const">
 			<return type="Color">
 			</return>
-			<argument index="0" name="id" type="int">
+			<argument index="0" name="terrain_set" type="int">
+			</argument>
+			<argument index="1" name="terrain_index" type="int">
 			</argument>
 			<description>
-				Returns the tile's modulation color.
 			</description>
 		</method>
-		<method name="tile_get_name" qualifiers="const">
+		<method name="get_terrain_name" qualifiers="const">
 			<return type="String">
 			</return>
-			<argument index="0" name="id" type="int">
+			<argument index="0" name="terrain_set" type="int">
+			</argument>
+			<argument index="1" name="terrain_index" type="int">
 			</argument>
 			<description>
-				Returns the tile's name.
 			</description>
 		</method>
-		<method name="tile_get_navigation_polygon" qualifiers="const">
-			<return type="NavigationPolygon">
+		<method name="get_terrain_set_mode" qualifiers="const">
+			<return type="int" enum="TileSet.TerrainMode">
 			</return>
-			<argument index="0" name="id" type="int">
+			<argument index="0" name="terrain_set" type="int">
 			</argument>
 			<description>
-				Returns the navigation polygon of the tile.
 			</description>
 		</method>
-		<method name="tile_get_navigation_polygon_offset" qualifiers="const">
-			<return type="Vector2">
-			</return>
-			<argument index="0" name="id" type="int">
-			</argument>
-			<description>
-				Returns the offset of the tile's navigation polygon.
-			</description>
-		</method>
-		<method name="tile_get_occluder_offset" qualifiers="const">
-			<return type="Vector2">
-			</return>
-			<argument index="0" name="id" type="int">
-			</argument>
-			<description>
-				Returns the offset of the tile's light occluder.
-			</description>
-		</method>
-		<method name="tile_get_region" qualifiers="const">
-			<return type="Rect2">
-			</return>
-			<argument index="0" name="id" type="int">
-			</argument>
-			<description>
-				Returns the tile sub-region in the texture.
-			</description>
-		</method>
-		<method name="tile_get_shape" qualifiers="const">
-			<return type="Shape2D">
-			</return>
-			<argument index="0" name="id" type="int">
-			</argument>
-			<argument index="1" name="shape_id" type="int">
-			</argument>
-			<description>
-				Returns a tile's given shape.
-			</description>
-		</method>
-		<method name="tile_get_shape_count" qualifiers="const">
+		<method name="get_terrains_count" qualifiers="const">
 			<return type="int">
 			</return>
-			<argument index="0" name="id" type="int">
+			<argument index="0" name="terrain_set" type="int">
 			</argument>
 			<description>
-				Returns the number of shapes assigned to a tile.
 			</description>
 		</method>
-		<method name="tile_get_shape_offset" qualifiers="const">
-			<return type="Vector2">
-			</return>
-			<argument index="0" name="id" type="int">
-			</argument>
-			<argument index="1" name="shape_id" type="int">
-			</argument>
-			<description>
-				Returns the offset of a tile's shape.
-			</description>
-		</method>
-		<method name="tile_get_shape_one_way" qualifiers="const">
+		<method name="has_source" qualifiers="const">
 			<return type="bool">
 			</return>
-			<argument index="0" name="id" type="int">
-			</argument>
-			<argument index="1" name="shape_id" type="int">
-			</argument>
-			<description>
-				Returns the one-way collision value of a tile's shape.
-			</description>
-		</method>
-		<method name="tile_get_shape_one_way_margin" qualifiers="const">
-			<return type="float">
-			</return>
-			<argument index="0" name="id" type="int">
-			</argument>
-			<argument index="1" name="shape_id" type="int">
+			<argument index="0" name="index" type="int">
 			</argument>
 			<description>
 			</description>
 		</method>
-		<method name="tile_get_shape_transform" qualifiers="const">
-			<return type="Transform2D">
-			</return>
-			<argument index="0" name="id" type="int">
-			</argument>
-			<argument index="1" name="shape_id" type="int">
-			</argument>
-			<description>
-				Returns the [Transform2D] of a tile's shape.
-			</description>
-		</method>
-		<method name="tile_get_shapes" qualifiers="const">
-			<return type="Array">
-			</return>
-			<argument index="0" name="id" type="int">
-			</argument>
-			<description>
-				Returns an array of dictionaries describing the tile's shapes.
-				[b]Dictionary structure in the array returned by this method:[/b]
-				[codeblock]
-				{
-				    "autotile_coord": Vector2,
-				    "one_way": bool,
-				    "one_way_margin": int,
-				    "shape": CollisionShape2D,
-				    "shape_transform": Transform2D,
-				}
-				[/codeblock]
-			</description>
-		</method>
-		<method name="tile_get_texture" qualifiers="const">
-			<return type="Texture2D">
-			</return>
-			<argument index="0" name="id" type="int">
-			</argument>
-			<description>
-				Returns the tile's texture.
-			</description>
-		</method>
-		<method name="tile_get_texture_offset" qualifiers="const">
-			<return type="Vector2">
-			</return>
-			<argument index="0" name="id" type="int">
-			</argument>
-			<description>
-				Returns the texture offset of the tile.
-			</description>
-		</method>
-		<method name="tile_get_tile_mode" qualifiers="const">
-			<return type="int" enum="TileSet.TileMode">
-			</return>
-			<argument index="0" name="id" type="int">
-			</argument>
-			<description>
-				Returns the tile's [enum TileMode].
-			</description>
-		</method>
-		<method name="tile_get_z_index" qualifiers="const">
-			<return type="int">
-			</return>
-			<argument index="0" name="id" type="int">
-			</argument>
-			<description>
-				Returns the tile's Z index (drawing layer).
-			</description>
-		</method>
-		<method name="tile_set_light_occluder">
+		<method name="remove_source">
 			<return type="void">
 			</return>
-			<argument index="0" name="id" type="int">
-			</argument>
-			<argument index="1" name="light_occluder" type="OccluderPolygon2D">
-			</argument>
-			<description>
-				Sets a light occluder for the tile.
-			</description>
-		</method>
-		<method name="tile_set_material">
-			<return type="void">
-			</return>
-			<argument index="0" name="id" type="int">
-			</argument>
-			<argument index="1" name="material" type="ShaderMaterial">
-			</argument>
-			<description>
-				Sets the tile's material.
-			</description>
-		</method>
-		<method name="tile_set_modulate">
-			<return type="void">
-			</return>
-			<argument index="0" name="id" type="int">
-			</argument>
-			<argument index="1" name="color" type="Color">
-			</argument>
-			<description>
-				Sets the tile's modulation color.
-			</description>
-		</method>
-		<method name="tile_set_name">
-			<return type="void">
-			</return>
-			<argument index="0" name="id" type="int">
-			</argument>
-			<argument index="1" name="name" type="String">
-			</argument>
-			<description>
-				Sets the tile's name.
-			</description>
-		</method>
-		<method name="tile_set_navigation_polygon">
-			<return type="void">
-			</return>
-			<argument index="0" name="id" type="int">
-			</argument>
-			<argument index="1" name="navigation_polygon" type="NavigationPolygon">
-			</argument>
-			<description>
-				Sets the tile's navigation polygon.
-			</description>
-		</method>
-		<method name="tile_set_navigation_polygon_offset">
-			<return type="void">
-			</return>
-			<argument index="0" name="id" type="int">
-			</argument>
-			<argument index="1" name="navigation_polygon_offset" type="Vector2">
-			</argument>
-			<description>
-				Sets an offset for the tile's navigation polygon.
-			</description>
-		</method>
-		<method name="tile_set_occluder_offset">
-			<return type="void">
-			</return>
-			<argument index="0" name="id" type="int">
-			</argument>
-			<argument index="1" name="occluder_offset" type="Vector2">
-			</argument>
-			<description>
-				Sets an offset for the tile's light occluder.
-			</description>
-		</method>
-		<method name="tile_set_region">
-			<return type="void">
-			</return>
-			<argument index="0" name="id" type="int">
-			</argument>
-			<argument index="1" name="region" type="Rect2">
-			</argument>
-			<description>
-				Sets the tile's sub-region in the texture. This is common in texture atlases.
-			</description>
-		</method>
-		<method name="tile_set_shape">
-			<return type="void">
-			</return>
-			<argument index="0" name="id" type="int">
-			</argument>
-			<argument index="1" name="shape_id" type="int">
-			</argument>
-			<argument index="2" name="shape" type="Shape2D">
-			</argument>
-			<description>
-				Sets a shape for the tile, enabling collision.
-			</description>
-		</method>
-		<method name="tile_set_shape_offset">
-			<return type="void">
-			</return>
-			<argument index="0" name="id" type="int">
-			</argument>
-			<argument index="1" name="shape_id" type="int">
-			</argument>
-			<argument index="2" name="shape_offset" type="Vector2">
-			</argument>
-			<description>
-				Sets the offset of a tile's shape.
-			</description>
-		</method>
-		<method name="tile_set_shape_one_way">
-			<return type="void">
-			</return>
-			<argument index="0" name="id" type="int">
-			</argument>
-			<argument index="1" name="shape_id" type="int">
-			</argument>
-			<argument index="2" name="one_way" type="bool">
-			</argument>
-			<description>
-				Enables one-way collision on a tile's shape.
-			</description>
-		</method>
-		<method name="tile_set_shape_one_way_margin">
-			<return type="void">
-			</return>
-			<argument index="0" name="id" type="int">
-			</argument>
-			<argument index="1" name="shape_id" type="int">
-			</argument>
-			<argument index="2" name="one_way" type="float">
+			<argument index="0" name="source_id" type="int">
 			</argument>
 			<description>
 			</description>
 		</method>
-		<method name="tile_set_shape_transform">
+		<method name="set_navigation_layer_layers">
 			<return type="void">
 			</return>
-			<argument index="0" name="id" type="int">
+			<argument index="0" name="layer_index" type="int">
 			</argument>
-			<argument index="1" name="shape_id" type="int">
-			</argument>
-			<argument index="2" name="shape_transform" type="Transform2D">
+			<argument index="1" name="layers" type="int">
 			</argument>
 			<description>
-				Sets a [Transform2D] on a tile's shape.
 			</description>
 		</method>
-		<method name="tile_set_shapes">
+		<method name="set_occlusion_layer_light_mask">
 			<return type="void">
 			</return>
-			<argument index="0" name="id" type="int">
+			<argument index="0" name="layer_index" type="int">
 			</argument>
-			<argument index="1" name="shapes" type="Array">
+			<argument index="1" name="light_mask" type="int">
 			</argument>
 			<description>
-				Sets an array of shapes for the tile, enabling collision.
 			</description>
 		</method>
-		<method name="tile_set_texture">
+		<method name="set_occlusion_layer_sdf_collision">
 			<return type="void">
 			</return>
-			<argument index="0" name="id" type="int">
+			<argument index="0" name="layer_index" type="int">
 			</argument>
-			<argument index="1" name="texture" type="Texture2D">
+			<argument index="1" name="sdf_collision" type="int">
 			</argument>
 			<description>
-				Sets the tile's texture.
 			</description>
 		</method>
-		<method name="tile_set_texture_offset">
+		<method name="set_physics_layer_collision_layer">
 			<return type="void">
 			</return>
-			<argument index="0" name="id" type="int">
+			<argument index="0" name="layer_index" type="int">
 			</argument>
-			<argument index="1" name="texture_offset" type="Vector2">
+			<argument index="1" name="layer" type="int">
 			</argument>
 			<description>
-				Sets the tile's texture offset.
 			</description>
 		</method>
-		<method name="tile_set_tile_mode">
+		<method name="set_physics_layer_collision_mask">
 			<return type="void">
 			</return>
-			<argument index="0" name="id" type="int">
+			<argument index="0" name="layer_index" type="int">
 			</argument>
-			<argument index="1" name="tilemode" type="int" enum="TileSet.TileMode">
+			<argument index="1" name="mask" type="int">
 			</argument>
 			<description>
-				Sets the tile's [enum TileMode].
 			</description>
 		</method>
-		<method name="tile_set_z_index">
+		<method name="set_physics_layer_physics_material">
 			<return type="void">
 			</return>
-			<argument index="0" name="id" type="int">
+			<argument index="0" name="layer_index" type="int">
 			</argument>
-			<argument index="1" name="z_index" type="int">
+			<argument index="1" name="physics_material" type="PhysicsMaterial">
 			</argument>
 			<description>
-				Sets the tile's drawing index.
+			</description>
+		</method>
+		<method name="set_source_id">
+			<return type="void">
+			</return>
+			<argument index="0" name="source_id" type="int">
+			</argument>
+			<argument index="1" name="arg1" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_terrain_color">
+			<return type="void">
+			</return>
+			<argument index="0" name="terrain_set" type="int">
+			</argument>
+			<argument index="1" name="terrain_index" type="int">
+			</argument>
+			<argument index="2" name="color" type="Color">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_terrain_name">
+			<return type="void">
+			</return>
+			<argument index="0" name="terrain_set" type="int">
+			</argument>
+			<argument index="1" name="terrain_index" type="int">
+			</argument>
+			<argument index="2" name="name" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_terrain_set_mode">
+			<return type="void">
+			</return>
+			<argument index="0" name="terrain_set" type="int">
+			</argument>
+			<argument index="1" name="mode" type="int" enum="TileSet.TerrainMode">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_terrains_count">
+			<return type="void">
+			</return>
+			<argument index="0" name="terrain_set" type="int">
+			</argument>
+			<argument index="1" name="terrains_count" type="int">
+			</argument>
+			<description>
 			</description>
 		</method>
 	</methods>
+	<members>
+		<member name="custom_data_layers_count" type="int" setter="set_custom_data_layers_count" getter="get_custom_data_layers_count" default="0">
+		</member>
+		<member name="navigation_layers_count" type="int" setter="set_navigation_layers_count" getter="get_navigation_layers_count" default="0">
+		</member>
+		<member name="occlusion_layers_count" type="int" setter="set_occlusion_layers_count" getter="get_occlusion_layers_count" default="0">
+		</member>
+		<member name="physics_layers_count" type="int" setter="set_physics_layers_count" getter="get_physics_layers_count" default="0">
+		</member>
+		<member name="terrains_sets_count" type="int" setter="set_terrain_sets_count" getter="get_terrain_sets_count" default="0">
+		</member>
+		<member name="tile_layout" type="int" setter="set_tile_layout" getter="get_tile_layout" enum="TileSet.TileLayout" default="0">
+		</member>
+		<member name="tile_offset_axis" type="int" setter="set_tile_offset_axis" getter="get_tile_offset_axis" enum="TileSet.TileOffsetAxis" default="0">
+		</member>
+		<member name="tile_shape" type="int" setter="set_tile_shape" getter="get_tile_shape" enum="TileSet.TileShape" default="0">
+		</member>
+		<member name="tile_size" type="Vector2i" setter="set_tile_size" getter="get_tile_size" default="Vector2i( 16, 16 )">
+		</member>
+		<member name="tile_skew" type="Vector2" setter="set_tile_skew" getter="get_tile_skew" default="Vector2( 0, 0 )">
+		</member>
+		<member name="uv_clipping" type="bool" setter="set_uv_clipping" getter="is_uv_clipping" default="false">
+		</member>
+		<member name="y_sorting" type="bool" setter="set_y_sorting" getter="is_y_sorting" default="false">
+		</member>
+	</members>
 	<constants>
-		<constant name="BITMASK_2X2" value="0" enum="BitmaskMode">
+		<constant name="TILE_SHAPE_SQUARE" value="0" enum="TileShape">
 		</constant>
-		<constant name="BITMASK_3X3_MINIMAL" value="1" enum="BitmaskMode">
+		<constant name="TILE_SHAPE_ISOMETRIC" value="1" enum="TileShape">
 		</constant>
-		<constant name="BITMASK_3X3" value="2" enum="BitmaskMode">
+		<constant name="TILE_SHAPE_HALF_OFFSET_SQUARE" value="2" enum="TileShape">
 		</constant>
-		<constant name="BIND_TOPLEFT" value="1" enum="AutotileBindings">
+		<constant name="TILE_SHAPE_HEXAGON" value="3" enum="TileShape">
 		</constant>
-		<constant name="BIND_TOP" value="2" enum="AutotileBindings">
+		<constant name="TILE_LAYOUT_STACKED" value="0" enum="TileLayout">
 		</constant>
-		<constant name="BIND_TOPRIGHT" value="4" enum="AutotileBindings">
+		<constant name="TILE_LAYOUT_STACKED_OFFSET" value="1" enum="TileLayout">
 		</constant>
-		<constant name="BIND_LEFT" value="8" enum="AutotileBindings">
+		<constant name="TILE_LAYOUT_STAIRS_RIGHT" value="2" enum="TileLayout">
 		</constant>
-		<constant name="BIND_CENTER" value="16" enum="AutotileBindings">
+		<constant name="TILE_LAYOUT_STAIRS_DOWN" value="3" enum="TileLayout">
 		</constant>
-		<constant name="BIND_RIGHT" value="32" enum="AutotileBindings">
+		<constant name="TILE_LAYOUT_DIAMOND_RIGHT" value="4" enum="TileLayout">
 		</constant>
-		<constant name="BIND_BOTTOMLEFT" value="64" enum="AutotileBindings">
+		<constant name="TILE_LAYOUT_DIAMOND_DOWN" value="5" enum="TileLayout">
 		</constant>
-		<constant name="BIND_BOTTOM" value="128" enum="AutotileBindings">
+		<constant name="TILE_OFFSET_AXIS_HORIZONTAL" value="0" enum="TileOffsetAxis">
 		</constant>
-		<constant name="BIND_BOTTOMRIGHT" value="256" enum="AutotileBindings">
+		<constant name="TILE_OFFSET_AXIS_VERTICAL" value="1" enum="TileOffsetAxis">
 		</constant>
-		<constant name="SINGLE_TILE" value="0" enum="TileMode">
+		<constant name="TileSet::CELL_NEIGHBOR_RIGHT_SIDE" value="0" enum="CellNeighbor">
 		</constant>
-		<constant name="AUTO_TILE" value="1" enum="TileMode">
+		<constant name="TileSet::CELL_NEIGHBOR_RIGHT_CORNER" value="1" enum="CellNeighbor">
 		</constant>
-		<constant name="ATLAS_TILE" value="2" enum="TileMode">
+		<constant name="TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE" value="2" enum="CellNeighbor">
+		</constant>
+		<constant name="TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_CORNER" value="3" enum="CellNeighbor">
+		</constant>
+		<constant name="TileSet::CELL_NEIGHBOR_BOTTOM_SIDE" value="4" enum="CellNeighbor">
+		</constant>
+		<constant name="TileSet::CELL_NEIGHBOR_BOTTOM_CORNER" value="5" enum="CellNeighbor">
+		</constant>
+		<constant name="TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE" value="6" enum="CellNeighbor">
+		</constant>
+		<constant name="TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_CORNER" value="7" enum="CellNeighbor">
+		</constant>
+		<constant name="TileSet::CELL_NEIGHBOR_LEFT_SIDE" value="8" enum="CellNeighbor">
+		</constant>
+		<constant name="TileSet::CELL_NEIGHBOR_LEFT_CORNER" value="9" enum="CellNeighbor">
+		</constant>
+		<constant name="TileSet::CELL_NEIGHBOR_TOP_LEFT_SIDE" value="10" enum="CellNeighbor">
+		</constant>
+		<constant name="TileSet::CELL_NEIGHBOR_TOP_LEFT_CORNER" value="11" enum="CellNeighbor">
+		</constant>
+		<constant name="TileSet::CELL_NEIGHBOR_TOP_SIDE" value="12" enum="CellNeighbor">
+		</constant>
+		<constant name="TileSet::CELL_NEIGHBOR_TOP_CORNER" value="13" enum="CellNeighbor">
+		</constant>
+		<constant name="TileSet::CELL_NEIGHBOR_TOP_RIGHT_SIDE" value="14" enum="CellNeighbor">
+		</constant>
+		<constant name="TileSet::CELL_NEIGHBOR_TOP_RIGHT_CORNER" value="15" enum="CellNeighbor">
+		</constant>
+		<constant name="TERRAIN_MODE_MATCH_CORNERS_AND_SIDES" value="0" enum="TerrainMode">
+		</constant>
+		<constant name="TERRAIN_MODE_MATCH_CORNERS" value="1" enum="TerrainMode">
+		</constant>
+		<constant name="TERRAIN_MODE_MATCH_SIDES" value="2" enum="TerrainMode">
 		</constant>
 	</constants>
 </class>
