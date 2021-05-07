@@ -110,7 +110,7 @@
 		[/codeblocks]
 	</description>
 	<tutorials>
-		<link title="Import plugins">https://docs.godotengine.org/en/latest/tutorials/plugins/editor/import_plugins.html</link>
+		<link title="Import plugins">https://docs.godotengine.org/en/$DOC_VERSION/tutorials/plugins/editor/import_plugins.html</link>
 	</tutorials>
 	<methods>
 		<method name="get_import_options" qualifiers="virtual">

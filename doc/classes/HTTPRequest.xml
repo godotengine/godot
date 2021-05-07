@@ -154,8 +154,8 @@
 		[b]Note:[/b] SSL/TLS support is currently limited to TLS 1.0, TLS 1.1, and TLS 1.2. Attempting to connect to a TLS 1.3-only server will return an error.
 	</description>
 	<tutorials>
-		<link title="Making HTTP requests">https://docs.godotengine.org/en/latest/tutorials/networking/http_request_class.html</link>
-		<link title="SSL certificates">https://docs.godotengine.org/en/latest/tutorials/networking/ssl_certificates.html</link>
+		<link title="Making HTTP requests">https://docs.godotengine.org/en/$DOC_VERSION/tutorials/networking/http_request_class.html</link>
+		<link title="SSL certificates">https://docs.godotengine.org/en/$DOC_VERSION/tutorials/networking/ssl_certificates.html</link>
 	</tutorials>
 	<methods>
 		<method name="cancel_request">
