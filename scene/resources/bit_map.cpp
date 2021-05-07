@@ -38,7 +38,7 @@ void BitMap::create(const Size2 &p_size) {
 
 	width = p_size.width;
 	height = p_size.height;
-	bitmask.resize(((width * height) / 8) + 1);
+	bitmask.resize((((width * height) - 1) / 8) + 1);
 	memset(bitmask.ptrw(), 0, bitmask.size());
 }
 
