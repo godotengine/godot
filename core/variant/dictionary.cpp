@@ -74,10 +74,16 @@ Variant Dictionary::get_value_at_index(int p_index) const {
 }
 
 Variant &Dictionary::operator[](const Variant &p_key) {
+	if (p_key.get_type() == Variant::STRING_NAME) {
+		return _p->variant_map[p_key.operator String()];
+	}
 	return _p->variant_map[p_key];
 }
 
 const Variant &Dictionary::operator[](const Variant &p_key) const {
+	if (p_key.get_type() == Variant::STRING_NAME) {
+		return _p->variant_map[p_key.operator String()];
+	}
 	return _p->variant_map[p_key];
 }
 
