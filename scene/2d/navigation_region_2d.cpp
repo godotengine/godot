@@ -181,7 +181,7 @@ Ref<NavigationMesh> NavigationPolygon::get_mesh() {
 				w[i] = Vector3(r[i].x, 0.0, r[i].y);
 			}
 		}
-		navmesh->set_vertices(verts);
+		navmesh->_set_vertices(verts);
 
 		for (int i(0); i < get_polygon_count(); i++) {
 			navmesh->add_polygon(get_polygon(i));

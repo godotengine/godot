@@ -748,7 +748,7 @@ float AnimationNodeTransition::process(float p_time, bool p_seek) {
 
 void AnimationNodeTransition::_validate_property(PropertyInfo &property) const {
 	if (property.name.begins_with("input_")) {
-		String n = property.name.get_slicec('/', 0).get_slicec('_', 1);
+		String n = property.name.get_slicec('_', 1);
 		if (n != "count") {
 			int idx = n.to_int();
 			if (idx >= enabled_inputs) {
@@ -776,9 +776,10 @@ void AnimationNodeTransition::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "input_count", PROPERTY_HINT_RANGE, "0,64,1", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), "set_enabled_inputs", "get_enabled_inputs");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "xfade_time", PROPERTY_HINT_RANGE, "0,120,0.01"), "set_cross_fade_time", "get_cross_fade_time");
 
+	ADD_GROUP("Inputs", "input_");
 	for (int i = 0; i < MAX_INPUTS; i++) {
-		ADD_PROPERTYI(PropertyInfo(Variant::STRING, "input_" + itos(i) + "/name", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_INTERNAL), "set_input_caption", "get_input_caption", i);
-		ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "input_" + itos(i) + "/auto_advance", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_INTERNAL), "set_input_as_auto_advance", "is_input_set_as_auto_advance", i);
+		ADD_PROPERTYI(PropertyInfo(Variant::STRING, "input_" + itos(i) + "_name", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_INTERNAL), "set_input_caption", "get_input_caption", i);
+		ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "input_" + itos(i) + "_auto_advance", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_INTERNAL), "set_input_as_auto_advance", "is_input_set_as_auto_advance", i);
 	}
 }
 
@@ -1032,9 +1033,9 @@ Ref<AnimationNode> AnimationNodeBlendTree::get_child_by_name(const StringName &p
 
 bool AnimationNodeBlendTree::_set(const StringName &p_name, const Variant &p_value) {
 	String name = p_name;
-	if (name.begins_with("nodes/")) {
-		String node_name = name.get_slicec('/', 1);
-		String what = name.get_slicec('/', 2);
+	if (name.begins_with("nodes_")) {
+		String node_name = name.get_slicec('_', 1);
+		String what = name.get_slicec('_', 2);
 
 		if (what == "node") {
 			Ref<AnimationNode> anode = p_value;
@@ -1065,9 +1066,9 @@ bool AnimationNodeBlendTree::_set(const StringName &p_name, const Variant &p_val
 
 bool AnimationNodeBlendTree::_get(const StringName &p_name, Variant &r_ret) const {
 	String name = p_name;
-	if (name.begins_with("nodes/")) {
-		String node_name = name.get_slicec('/', 1);
-		String what = name.get_slicec('/', 2);
+	if (name.begins_with("nodes_")) {
+		String node_name = name.get_slicec('_', 1);
+		String what = name.get_slicec('_', 2);
 
 		if (what == "node") {
 			if (nodes.has(node_name)) {
@@ -1113,9 +1114,9 @@ void AnimationNodeBlendTree::_get_property_list(List<PropertyInfo> *p_list) cons
 	for (List<StringName>::Element *E = names.front(); E; E = E->next()) {
 		String name = E->get();
 		if (name != "output") {
-			p_list->push_back(PropertyInfo(Variant::OBJECT, "nodes/" + name + "/node", PROPERTY_HINT_RESOURCE_TYPE, "AnimationNode", PROPERTY_USAGE_NOEDITOR));
+			p_list->push_back(PropertyInfo(Variant::OBJECT, "nodes_" + name + "_node", PROPERTY_HINT_RESOURCE_TYPE, "AnimationNode", PROPERTY_USAGE_NOEDITOR));
 		}
-		p_list->push_back(PropertyInfo(Variant::VECTOR2, "nodes/" + name + "/position", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR));
+		p_list->push_back(PropertyInfo(Variant::VECTOR2, "nodes_" + name + "_position", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR));
 	}
 
 	p_list->push_back(PropertyInfo(Variant::ARRAY, "node_connections", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR));

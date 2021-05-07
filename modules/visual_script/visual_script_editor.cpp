@@ -98,10 +98,10 @@ protected:
 
 			return true;
 		}
-		if (String(p_name).begins_with("argument/")) {
-			int idx = String(p_name).get_slice("/", 1).to_int() - 1;
+		if (String(p_name).begins_with("argument_")) {
+			int idx = String(p_name).get_slicec('_', 1).to_int() - 1;
 			ERR_FAIL_INDEX_V(idx, script->custom_signal_get_argument_count(sig), false);
-			String what = String(p_name).get_slice("/", 2);
+			String what = String(p_name).get_slicec('_', 2);
 			if (what == "type") {
 				int old_type = script->custom_signal_get_argument_type(sig, idx);
 				int new_type = p_value;
@@ -136,10 +136,10 @@ protected:
 			r_ret = script->custom_signal_get_argument_count(sig);
 			return true;
 		}
-		if (String(p_name).begins_with("argument/")) {
-			int idx = String(p_name).get_slice("/", 1).to_int() - 1;
+		if (String(p_name).begins_with("argument_")) {
+			int idx = String(p_name).get_slicec('_', 1).to_int() - 1;
 			ERR_FAIL_INDEX_V(idx, script->custom_signal_get_argument_count(sig), false);
-			String what = String(p_name).get_slice("/", 2);
+			String what = String(p_name).get_slicec('_', 2);
 			if (what == "type") {
 				r_ret = script->custom_signal_get_argument_type(sig, idx);
 				return true;
@@ -163,9 +163,11 @@ protected:
 			argt += "," + Variant::get_type_name(Variant::Type(i));
 		}
 
+		p_list->push_back(PropertyInfo(Variant::NIL, "Arguments", PROPERTY_HINT_NONE, "argument_", PROPERTY_USAGE_GROUP));
 		for (int i = 0; i < script->custom_signal_get_argument_count(sig); i++) {
-			p_list->push_back(PropertyInfo(Variant::INT, "argument/" + itos(i + 1) + "/type", PROPERTY_HINT_ENUM, argt));
-			p_list->push_back(PropertyInfo(Variant::STRING, "argument/" + itos(i + 1) + "/name"));
+			p_list->push_back(PropertyInfo(Variant::NIL, itos(i + 1), PROPERTY_HINT_NONE, "argument_" + itos(i + 1) + "_", PROPERTY_USAGE_SUBGROUP));
+			p_list->push_back(PropertyInfo(Variant::INT, "argument_" + itos(i + 1) + "_type", PROPERTY_HINT_ENUM, argt));
+			p_list->push_back(PropertyInfo(Variant::STRING, "argument_" + itos(i + 1) + "_name"));
 		}
 	}
 

@@ -215,12 +215,12 @@ public:
 					args.resize(p_value);
 					d_new["args"] = args;
 					change_notify_deserved = true;
-				} else if (name.begins_with("args/")) {
+				} else if (name.begins_with("args_")) {
 					Vector<Variant> args = d_old["args"];
-					int idx = name.get_slice("/", 1).to_int();
+					int idx = name.get_slicec('_', 1).to_int();
 					ERR_FAIL_INDEX_V(idx, args.size(), false);
 
-					String what = name.get_slice("/", 2);
+					String what = name.get_slicec('_', 2);
 					if (what == "type") {
 						Variant::Type t = Variant::Type(int(p_value));
 
@@ -444,11 +444,11 @@ public:
 					return true;
 				}
 
-				if (name.begins_with("args/")) {
-					int idx = name.get_slice("/", 1).to_int();
+				if (name.begins_with("args_")) {
+					int idx = name.get_slicec('_', 1).to_int();
 					ERR_FAIL_INDEX_V(idx, args.size(), false);
 
-					String what = name.get_slice("/", 2);
+					String what = name.get_slicec('_', 2);
 					if (what == "type") {
 						r_ret = args[idx].get_type();
 						return true;
@@ -570,10 +570,12 @@ public:
 					vtypes += Variant::get_type_name(Variant::Type(i));
 				}
 
+				p_list->push_back(PropertyInfo(Variant::NIL, "Args", PROPERTY_HINT_NONE, "args_", PROPERTY_USAGE_GROUP));
 				for (int i = 0; i < args.size(); i++) {
-					p_list->push_back(PropertyInfo(Variant::INT, "args/" + itos(i) + "/type", PROPERTY_HINT_ENUM, vtypes));
+					p_list->push_back(PropertyInfo(Variant::NIL, itos(i), PROPERTY_HINT_NONE, "args_" + itos(i) + "_", PROPERTY_USAGE_SUBGROUP));
+					p_list->push_back(PropertyInfo(Variant::INT, "args_" + itos(i) + "_type", PROPERTY_HINT_ENUM, vtypes));
 					if (args[i].get_type() != Variant::NIL) {
-						p_list->push_back(PropertyInfo(args[i].get_type(), "args/" + itos(i) + "/value"));
+						p_list->push_back(PropertyInfo(args[i].get_type(), "args_" + itos(i) + "_value"));
 					}
 				}
 
@@ -825,12 +827,12 @@ public:
 							args.resize(p_value);
 							d_new["args"] = args;
 							change_notify_deserved = true;
-						} else if (name.begins_with("args/")) {
+						} else if (name.begins_with("args_")) {
 							Vector<Variant> args = d_old["args"];
-							int idx = name.get_slice("/", 1).to_int();
+							int idx = name.get_slicec('_', 1).to_int();
 							ERR_FAIL_INDEX_V(idx, args.size(), false);
 
-							String what = name.get_slice("/", 2);
+							String what = name.get_slicec('_', 2);
 							if (what == "type") {
 								Variant::Type t = Variant::Type(int(p_value));
 
@@ -1044,11 +1046,11 @@ public:
 							return true;
 						}
 
-						if (name.begins_with("args/")) {
-							int idx = name.get_slice("/", 1).to_int();
+						if (name.begins_with("args_")) {
+							int idx = name.get_slicec('_', 1).to_int();
 							ERR_FAIL_INDEX_V(idx, args.size(), false);
 
-							String what = name.get_slice("/", 2);
+							String what = name.get_slicec('_', 2);
 							if (what == "type") {
 								r_ret = args[idx].get_type();
 								return true;
@@ -1213,10 +1215,12 @@ public:
 						vtypes += Variant::get_type_name(Variant::Type(i));
 					}
 
+					p_list->push_back(PropertyInfo(Variant::NIL, "Args", PROPERTY_HINT_NONE, "args_", PROPERTY_USAGE_GROUP));
 					for (int i = 0; i < args.size(); i++) {
-						p_list->push_back(PropertyInfo(Variant::INT, "args/" + itos(i) + "/type", PROPERTY_HINT_ENUM, vtypes));
+						p_list->push_back(PropertyInfo(Variant::NIL, itos(i), PROPERTY_HINT_NONE, "args_" + itos(i) + "_", PROPERTY_USAGE_SUBGROUP));
+						p_list->push_back(PropertyInfo(Variant::INT, "args_" + itos(i) + "_type", PROPERTY_HINT_ENUM, vtypes));
 						if (args[i].get_type() != Variant::NIL) {
-							p_list->push_back(PropertyInfo(args[i].get_type(), "args/" + itos(i) + "/value"));
+							p_list->push_back(PropertyInfo(args[i].get_type(), "args_" + itos(i) + "_value"));
 						}
 					}
 				} break;

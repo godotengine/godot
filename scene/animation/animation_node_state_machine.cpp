@@ -810,9 +810,9 @@ Ref<AnimationNode> AnimationNodeStateMachine::get_child_by_name(const StringName
 
 bool AnimationNodeStateMachine::_set(const StringName &p_name, const Variant &p_value) {
 	String name = p_name;
-	if (name.begins_with("states/")) {
-		String node_name = name.get_slicec('/', 1);
-		String what = name.get_slicec('/', 2);
+	if (name.begins_with("states_")) {
+		String node_name = name.get_slicec('_', 1);
+		String what = name.get_slicec('_', 2);
 
 		if (what == "node") {
 			Ref<AnimationNode> anode = p_value;
@@ -852,9 +852,9 @@ bool AnimationNodeStateMachine::_set(const StringName &p_name, const Variant &p_
 
 bool AnimationNodeStateMachine::_get(const StringName &p_name, Variant &r_ret) const {
 	String name = p_name;
-	if (name.begins_with("states/")) {
-		String node_name = name.get_slicec('/', 1);
-		String what = name.get_slicec('/', 2);
+	if (name.begins_with("states_")) {
+		String node_name = name.get_slicec('_', 1);
+		String what = name.get_slicec('_', 2);
 
 		if (what == "node") {
 			if (states.has(node_name)) {
@@ -904,8 +904,8 @@ void AnimationNodeStateMachine::_get_property_list(List<PropertyInfo> *p_list) c
 
 	for (List<StringName>::Element *E = names.front(); E; E = E->next()) {
 		String name = E->get();
-		p_list->push_back(PropertyInfo(Variant::OBJECT, "states/" + name + "/node", PROPERTY_HINT_RESOURCE_TYPE, "AnimationNode", PROPERTY_USAGE_NOEDITOR));
-		p_list->push_back(PropertyInfo(Variant::VECTOR2, "states/" + name + "/position", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR));
+		p_list->push_back(PropertyInfo(Variant::OBJECT, "states_" + name + "_node", PROPERTY_HINT_RESOURCE_TYPE, "AnimationNode", PROPERTY_USAGE_NOEDITOR));
+		p_list->push_back(PropertyInfo(Variant::VECTOR2, "states_" + name + "_position", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR));
 	}
 
 	p_list->push_back(PropertyInfo(Variant::ARRAY, "transitions", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR));

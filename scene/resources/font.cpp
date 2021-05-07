@@ -119,24 +119,24 @@ void FontData::_bind_methods() {
 
 bool FontData::_set(const StringName &p_name, const Variant &p_value) {
 	String str = p_name;
-	if (str.begins_with("language_support_override/")) {
-		String lang = str.get_slicec('/', 1);
-		if (lang == "_new") {
+	if (str.begins_with("language_support_override_")) {
+		String lang = str.get_slicec('_', 3);
+		if (lang == "") {
 			return false;
 		}
 		set_language_support_override(lang, p_value);
 		return true;
 	}
-	if (str.begins_with("script_support_override/")) {
-		String scr = str.get_slicec('/', 1);
-		if (scr == "_new") {
+	if (str.begins_with("script_support_override_")) {
+		String scr = str.get_slicec('_', 3);
+		if (scr == "") {
 			return false;
 		}
 		set_script_support_override(scr, p_value);
 		return true;
 	}
-	if (str.begins_with("variation/")) {
-		String name = str.get_slicec('/', 1);
+	if (str.begins_with("variation_")) {
+		String name = str.get_slicec('_', 1);
 		set_variation(name, p_value);
 		return true;
 	}
@@ -146,24 +146,24 @@ bool FontData::_set(const StringName &p_name, const Variant &p_value) {
 
 bool FontData::_get(const StringName &p_name, Variant &r_ret) const {
 	String str = p_name;
-	if (str.begins_with("language_support_override/")) {
-		String lang = str.get_slicec('/', 1);
-		if (lang == "_new") {
+	if (str.begins_with("language_support_override_")) {
+		String lang = str.get_slicec('_', 3);
+		if (lang == "") {
 			return true;
 		}
 		r_ret = get_language_support_override(lang);
 		return true;
 	}
-	if (str.begins_with("script_support_override/")) {
-		String scr = str.get_slicec('/', 1);
-		if (scr == "_new") {
+	if (str.begins_with("script_support_override_")) {
+		String scr = str.get_slicec('_', 3);
+		if (scr == "") {
 			return true;
 		}
 		r_ret = get_script_support_override(scr);
 		return true;
 	}
-	if (str.begins_with("variation/")) {
-		String name = str.get_slicec('/', 1);
+	if (str.begins_with("variation_")) {
+		String name = str.get_slicec('_', 1);
 
 		r_ret = get_variation(name);
 		return true;
@@ -175,20 +175,20 @@ bool FontData::_get(const StringName &p_name, Variant &r_ret) const {
 void FontData::_get_property_list(List<PropertyInfo> *p_list) const {
 	Vector<String> lang_over = get_language_support_overrides();
 	for (int i = 0; i < lang_over.size(); i++) {
-		p_list->push_back(PropertyInfo(Variant::BOOL, "language_support_override/" + lang_over[i], PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_STORAGE));
+		p_list->push_back(PropertyInfo(Variant::BOOL, "language_support_override_" + lang_over[i], PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_STORAGE));
 	}
-	p_list->push_back(PropertyInfo(Variant::NIL, "language_support_override/_new", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR));
+	p_list->push_back(PropertyInfo(Variant::NIL, "language_support_override__new", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR));
 
 	Vector<String> scr_over = get_script_support_overrides();
 	for (int i = 0; i < scr_over.size(); i++) {
-		p_list->push_back(PropertyInfo(Variant::BOOL, "script_support_override/" + scr_over[i], PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_STORAGE));
+		p_list->push_back(PropertyInfo(Variant::BOOL, "script_support_override_" + scr_over[i], PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_STORAGE));
 	}
-	p_list->push_back(PropertyInfo(Variant::NIL, "script_support_override/_new", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR));
+	p_list->push_back(PropertyInfo(Variant::NIL, "script_support_override__new", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR));
 
 	Dictionary variations = get_variation_list();
 	for (const Variant *ftr = variations.next(nullptr); ftr != nullptr; ftr = variations.next(ftr)) {
 		Vector3i v = variations[*ftr];
-		p_list->push_back(PropertyInfo(Variant::FLOAT, "variation/" + TS->tag_to_name(*ftr), PROPERTY_HINT_RANGE, itos(v.x) + "," + itos(v.y), PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_STORAGE));
+		p_list->push_back(PropertyInfo(Variant::FLOAT, "variation_" + TS->tag_to_name(*ftr), PROPERTY_HINT_RANGE, itos(v.x) + "," + itos(v.y), PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_STORAGE));
 	}
 }
 
@@ -612,8 +612,8 @@ bool Font::_set(const StringName &p_name, const Variant &p_value) {
 		return false;
 	}
 #endif /* DISABLE_DEPRECATED */
-	if (str.begins_with("data/")) {
-		int idx = str.get_slicec('/', 1).to_int();
+	if (str.begins_with("data_")) {
+		int idx = str.get_slicec('_', 1).to_int();
 		Ref<FontData> fd = p_value;
 
 		if (fd.is_valid()) {
@@ -637,8 +637,8 @@ bool Font::_set(const StringName &p_name, const Variant &p_value) {
 
 bool Font::_get(const StringName &p_name, Variant &r_ret) const {
 	String str = p_name;
-	if (str.begins_with("data/")) {
-		int idx = str.get_slicec('/', 1).to_int();
+	if (str.begins_with("data_")) {
+		int idx = str.get_slicec('_', 1).to_int();
 
 		if (idx == data.size()) {
 			r_ret = Ref<FontData>();
@@ -653,11 +653,12 @@ bool Font::_get(const StringName &p_name, Variant &r_ret) const {
 }
 
 void Font::_get_property_list(List<PropertyInfo> *p_list) const {
+	p_list->push_back(PropertyInfo(Variant::NIL, "Data", PROPERTY_HINT_NONE, "data_", PROPERTY_USAGE_GROUP));
 	for (int i = 0; i < data.size(); i++) {
-		p_list->push_back(PropertyInfo(Variant::OBJECT, "data/" + itos(i), PROPERTY_HINT_RESOURCE_TYPE, "FontData"));
+		p_list->push_back(PropertyInfo(Variant::OBJECT, "data_" + itos(i), PROPERTY_HINT_RESOURCE_TYPE, "FontData"));
 	}
 
-	p_list->push_back(PropertyInfo(Variant::OBJECT, "data/" + itos(data.size()), PROPERTY_HINT_RESOURCE_TYPE, "FontData"));
+	p_list->push_back(PropertyInfo(Variant::OBJECT, "data_" + itos(data.size()), PROPERTY_HINT_RESOURCE_TYPE, "FontData"));
 }
 
 void Font::reset_state() {

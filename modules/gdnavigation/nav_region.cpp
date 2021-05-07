@@ -104,7 +104,7 @@ void NavRegion::update_polygons() {
 		return;
 	}
 
-	Vector<Vector3> vertices = mesh->get_vertices();
+	Vector<Vector3> vertices = mesh->_get_vertices();
 	int len = vertices.size();
 	if (len == 0) {
 		return;

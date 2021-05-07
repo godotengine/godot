@@ -124,14 +124,14 @@ void SoftBody3D::_update_pickable() {
 
 bool SoftBody3D::_set(const StringName &p_name, const Variant &p_value) {
 	String name = p_name;
-	String which = name.get_slicec('/', 0);
+	String which = name.get_slicec('_', 0);
 
 	if ("pinned_points" == which) {
 		return _set_property_pinned_points_indices(p_value);
 
 	} else if ("attachments" == which) {
-		int idx = name.get_slicec('/', 1).to_int();
-		String what = name.get_slicec('/', 2);
+		int idx = name.get_slicec('_', 1).to_int();
+		String what = name.get_slicec('_', 2);
 
 		return _set_property_pinned_points_attachment(idx, what, p_value);
 	}
@@ -141,7 +141,7 @@ bool SoftBody3D::_set(const StringName &p_name, const Variant &p_value) {
 
 bool SoftBody3D::_get(const StringName &p_name, Variant &r_ret) const {
 	String name = p_name;
-	String which = name.get_slicec('/', 0);
+	String which = name.get_slicec('_', 0);
 
 	if ("pinned_points" == which) {
 		Array arr_ret;
@@ -157,8 +157,8 @@ bool SoftBody3D::_get(const StringName &p_name, Variant &r_ret) const {
 		return true;
 
 	} else if ("attachments" == which) {
-		int idx = name.get_slicec('/', 1).to_int();
-		String what = name.get_slicec('/', 2);
+		int idx = name.get_slicec('_', 1).to_int();
+		String what = name.get_slicec('_', 2);
 
 		return _get_property_pinned_points(idx, what, r_ret);
 	}
@@ -171,10 +171,12 @@ void SoftBody3D::_get_property_list(List<PropertyInfo> *p_list) const {
 
 	p_list->push_back(PropertyInfo(Variant::PACKED_INT32_ARRAY, "pinned_points"));
 
+	p_list->push_back(PropertyInfo(Variant::NIL, "Attachements", PROPERTY_HINT_NONE, "attachments_", PROPERTY_USAGE_GROUP));
 	for (int i = 0; i < pinned_points_indices_size; ++i) {
-		p_list->push_back(PropertyInfo(Variant::INT, "attachments/" + itos(i) + "/point_index"));
-		p_list->push_back(PropertyInfo(Variant::NODE_PATH, "attachments/" + itos(i) + "/spatial_attachment_path"));
-		p_list->push_back(PropertyInfo(Variant::VECTOR3, "attachments/" + itos(i) + "/offset"));
+		p_list->push_back(PropertyInfo(Variant::NIL, itos(i), PROPERTY_HINT_NONE, "attachments_" + itos(i) + "_", PROPERTY_USAGE_SUBGROUP));
+		p_list->push_back(PropertyInfo(Variant::INT, "attachments_" + itos(i) + "_point"));
+		p_list->push_back(PropertyInfo(Variant::NODE_PATH, "attachments_" + itos(i) + "_path"));
+		p_list->push_back(PropertyInfo(Variant::VECTOR3, "attachments_" + itos(i) + "_offset"));
 	}
 }
 
@@ -212,7 +214,7 @@ bool SoftBody3D::_set_property_pinned_points_attachment(int p_item, const String
 		return false;
 	}
 
-	if ("spatial_attachment_path" == p_what) {
+	if ("path" == p_what) {
 		PinnedPoint *w = pinned_points.ptrw();
 		pin_point(w[p_item].point_index, true, p_value);
 		_make_cache_dirty();
@@ -232,9 +234,9 @@ bool SoftBody3D::_get_property_pinned_points(int p_item, const String &p_what, V
 	}
 	const PinnedPoint *r = pinned_points.ptr();
 
-	if ("point_index" == p_what) {
+	if ("point" == p_what) {
 		r_ret = r[p_item].point_index;
-	} else if ("spatial_attachment_path" == p_what) {
+	} else if ("path" == p_what) {
 		r_ret = r[p_item].spatial_attachment_path;
 	} else if ("offset" == p_what) {
 		r_ret = r[p_item].offset;

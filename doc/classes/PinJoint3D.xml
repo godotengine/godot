@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="PinJoint3D" inherits="Joint3D" version="4.0">
 	<brief_description>
-		Pin joint for 3D PhysicsBodies.
+		A 3D pin joint.
 	</brief_description>
 	<description>
-		Pin joint for 3D rigid bodies. It pins 2 bodies (rigid or static) together. See also [Generic6DOFJoint3D].
+		Pins the attached bodies together.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -15,7 +15,7 @@
 			<argument index="0" name="param" type="int" enum="PinJoint3D.Param">
 			</argument>
 			<description>
-				Returns the value of the specified parameter.
+				Returns the current value of the specified [enum Param].
 			</description>
 		</method>
 		<method name="set_param">
@@ -26,18 +26,18 @@
 			<argument index="1" name="value" type="float">
 			</argument>
 			<description>
-				Sets the value of the specified parameter.
+				Sets the specified [enum Param] to [code]value[/code].
 			</description>
 		</method>
 	</methods>
 	<members>
-		<member name="params/bias" type="float" setter="set_param" getter="get_param" default="0.3">
+		<member name="bias" type="float" setter="set_param" getter="get_param" default="0.3">
 			The force with which the pinned objects stay in positional relation to each other. The higher, the stronger.
 		</member>
-		<member name="params/damping" type="float" setter="set_param" getter="get_param" default="1.0">
+		<member name="damping" type="float" setter="set_param" getter="get_param" default="1.0">
 			The force with which the pinned objects stay in velocity relation to each other. The higher, the stronger.
 		</member>
-		<member name="params/impulse_clamp" type="float" setter="set_param" getter="get_param" default="0.0">
+		<member name="impulse_clamp" type="float" setter="set_param" getter="get_param" default="0.0">
 			If above 0, this value is the maximum value for an impulse that this Joint3D produces.
 		</member>
 	</members>

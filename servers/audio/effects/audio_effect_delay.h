@@ -81,7 +81,7 @@ class AudioEffectDelay : public AudioEffect {
 	bool feedback_active;
 	float feedback_delay_ms;
 	float feedback_level;
-	float feedback_lowpass;
+	float feedback_low_pass;
 
 protected:
 	static void _bind_methods();
@@ -90,29 +90,29 @@ public:
 	void set_dry(float p_dry);
 	float get_dry();
 
-	void set_tap1_active(bool p_active);
-	bool is_tap1_active() const;
+	void set_tap_1_active(bool p_active);
+	bool is_tap_1_active() const;
 
-	void set_tap1_delay_ms(float p_delay_ms);
-	float get_tap1_delay_ms() const;
+	void set_tap_1_delay_ms(float p_delay_ms);
+	float get_tap_1_delay_ms() const;
 
-	void set_tap1_level_db(float p_level_db);
-	float get_tap1_level_db() const;
+	void set_tap_1_level_db(float p_level_db);
+	float get_tap_1_level_db() const;
 
-	void set_tap1_pan(float p_pan);
-	float get_tap1_pan() const;
+	void set_tap_1_pan(float p_pan);
+	float get_tap_1_pan() const;
 
-	void set_tap2_active(bool p_active);
-	bool is_tap2_active() const;
+	void set_tap_2_active(bool p_active);
+	bool is_tap_2_active() const;
 
-	void set_tap2_delay_ms(float p_delay_ms);
-	float get_tap2_delay_ms() const;
+	void set_tap_2_delay_ms(float p_delay_ms);
+	float get_tap_2_delay_ms() const;
 
-	void set_tap2_level_db(float p_level_db);
-	float get_tap2_level_db() const;
+	void set_tap_2_level_db(float p_level_db);
+	float get_tap_2_level_db() const;
 
-	void set_tap2_pan(float p_pan);
-	float get_tap2_pan() const;
+	void set_tap_2_pan(float p_pan);
+	float get_tap_2_pan() const;
 
 	void set_feedback_active(bool p_active);
 	bool is_feedback_active() const;
@@ -123,8 +123,8 @@ public:
 	void set_feedback_level_db(float p_level_db);
 	float get_feedback_level_db() const;
 
-	void set_feedback_lowpass(float p_lowpass);
-	float get_feedback_lowpass() const;
+	void set_feedback_low_pass(float p_low_pass);
+	float get_feedback_low_pass() const;
 
 	Ref<AudioEffectInstance> instance() override;
 

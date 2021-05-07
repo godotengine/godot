@@ -129,15 +129,15 @@ void Tween::_process_pending_commands() {
 bool Tween::_set(const StringName &p_name, const Variant &p_value) {
 	// Set the correct attribute based on the given name
 	String name = p_name;
-	if (name == "playback/speed" || name == "speed") { // Backwards compatibility
+	if (name == "playback_speed" || name == "speed") { // Backwards compatibility
 		set_speed_scale(p_value);
 		return true;
 
-	} else if (name == "playback/active") {
+	} else if (name == "playback_active") {
 		set_active(p_value);
 		return true;
 
-	} else if (name == "playback/repeat") {
+	} else if (name == "playback_repeat") {
 		set_repeat(p_value);
 		return true;
 	}
@@ -147,26 +147,19 @@ bool Tween::_set(const StringName &p_name, const Variant &p_value) {
 bool Tween::_get(const StringName &p_name, Variant &r_ret) const {
 	// Get the correct attribute based on the given name
 	String name = p_name;
-	if (name == "playback/speed") { // Backwards compatibility
+	if (name == "playback_speed") { // Backwards compatibility
 		r_ret = speed_scale;
 		return true;
 
-	} else if (name == "playback/active") {
+	} else if (name == "playback_active") {
 		r_ret = is_active();
 		return true;
 
-	} else if (name == "playback/repeat") {
+	} else if (name == "playback_repeat") {
 		r_ret = is_repeat();
 		return true;
 	}
 	return false;
-}
-
-void Tween::_get_property_list(List<PropertyInfo> *p_list) const {
-	// Add the property info for the Tween object
-	p_list->push_back(PropertyInfo(Variant::BOOL, "playback/active", PROPERTY_HINT_NONE, ""));
-	p_list->push_back(PropertyInfo(Variant::BOOL, "playback/repeat", PROPERTY_HINT_NONE, ""));
-	p_list->push_back(PropertyInfo(Variant::FLOAT, "playback/speed", PROPERTY_HINT_RANGE, "-64,64,0.01"));
 }
 
 void Tween::_notification(int p_what) {

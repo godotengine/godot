@@ -599,8 +599,8 @@ int Label::get_total_character_count() const {
 
 bool Label::_set(const StringName &p_name, const Variant &p_value) {
 	String str = p_name;
-	if (str.begins_with("opentype_features/")) {
-		String name = str.get_slicec('/', 1);
+	if (str.begins_with("opentype_features_")) {
+		String name = str.get_slicec('_', 2);
 		int32_t tag = TS->name_to_tag(name);
 		double value = p_value;
 		if (value == -1) {
@@ -625,8 +625,8 @@ bool Label::_set(const StringName &p_name, const Variant &p_value) {
 
 bool Label::_get(const StringName &p_name, Variant &r_ret) const {
 	String str = p_name;
-	if (str.begins_with("opentype_features/")) {
-		String name = str.get_slicec('/', 1);
+	if (str.begins_with("opentype_features_")) {
+		String name = str.get_slicec('_', 1);
 		int32_t tag = TS->name_to_tag(name);
 		if (opentype_features.has(tag)) {
 			r_ret = opentype_features[tag];
@@ -640,11 +640,12 @@ bool Label::_get(const StringName &p_name, Variant &r_ret) const {
 }
 
 void Label::_get_property_list(List<PropertyInfo> *p_list) const {
+	p_list->push_back(PropertyInfo(Variant::NIL, "Opentype Features", PROPERTY_HINT_NONE, "opentype_features_", PROPERTY_USAGE_GROUP));
 	for (const Variant *ftr = opentype_features.next(nullptr); ftr != nullptr; ftr = opentype_features.next(ftr)) {
 		String name = TS->tag_to_name(*ftr);
-		p_list->push_back(PropertyInfo(Variant::FLOAT, "opentype_features/" + name));
+		p_list->push_back(PropertyInfo(Variant::FLOAT, "opentype_features_" + name));
 	}
-	p_list->push_back(PropertyInfo(Variant::NIL, "opentype_features/_new", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR));
+	p_list->push_back(PropertyInfo(Variant::NIL, "opentype_features__new", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR));
 }
 
 void Label::_bind_methods() {

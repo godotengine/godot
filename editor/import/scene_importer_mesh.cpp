@@ -569,7 +569,7 @@ Ref<NavigationMesh> EditorSceneImporterMesh::create_navigation_mesh() {
 
 	Ref<NavigationMesh> nm;
 	nm.instance();
-	nm->set_vertices(vertices);
+	nm->_set_vertices(vertices);
 
 	Vector<int> v3;
 	v3.resize(3);

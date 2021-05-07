@@ -95,7 +95,7 @@ OpenTypeFeaturesEditor::OpenTypeFeaturesEditor() {
 /*************************************************************************/
 
 void OpenTypeFeaturesAdd::_add_feature(int p_option) {
-	get_edited_object()->set("opentype_features/" + TS->tag_to_name(p_option), 1);
+	get_edited_object()->set("opentype_features_" + TS->tag_to_name(p_option), 1);
 }
 
 void OpenTypeFeaturesAdd::update_property() {
@@ -192,7 +192,7 @@ void EditorInspectorPluginOpenTypeFeatures::parse_category(Object *p_object, con
 }
 
 bool EditorInspectorPluginOpenTypeFeatures::parse_property(Object *p_object, Variant::Type p_type, const String &p_path, PropertyHint p_hint, const String &p_hint_text, int p_usage, bool p_wide) {
-	if (p_path == "opentype_features/_new") {
+	if (p_path == "opentype_features__new") {
 		OpenTypeFeaturesAdd *editor = memnew(OpenTypeFeaturesAdd);
 		add_property_editor(p_path, editor);
 		return true;

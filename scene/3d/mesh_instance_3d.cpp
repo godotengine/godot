@@ -51,8 +51,8 @@ bool MeshInstance3D::_set(const StringName &p_name, const Variant &p_value) {
 		return true;
 	}
 
-	if (p_name.operator String().begins_with("surface_material_override/")) {
-		int idx = p_name.operator String().get_slicec('/', 1).to_int();
+	if (p_name.operator String().begins_with("surface_material_override_")) {
+		int idx = p_name.operator String().get_slicec('_', 3).to_int();
 		if (idx >= surface_override_materials.size() || idx < 0) {
 			return false;
 		}
@@ -75,8 +75,8 @@ bool MeshInstance3D::_get(const StringName &p_name, Variant &r_ret) const {
 		return true;
 	}
 
-	if (p_name.operator String().begins_with("surface_material_override/")) {
-		int idx = p_name.operator String().get_slicec('/', 1).to_int();
+	if (p_name.operator String().begins_with("surface_material_override_")) {
+		int idx = p_name.operator String().get_slicec('_', 3).to_int();
 		if (idx >= surface_override_materials.size() || idx < 0) {
 			return false;
 		}
@@ -99,8 +99,9 @@ void MeshInstance3D::_get_property_list(List<PropertyInfo> *p_list) const {
 	}
 
 	if (mesh.is_valid()) {
+		p_list->push_back(PropertyInfo(Variant::NIL, "Materials", PROPERTY_HINT_NONE, "mateiral_", PROPERTY_USAGE_GROUP));
 		for (int i = 0; i < mesh->get_surface_count(); i++) {
-			p_list->push_back(PropertyInfo(Variant::OBJECT, "surface_material_override/" + itos(i), PROPERTY_HINT_RESOURCE_TYPE, "ShaderMaterial,StandardMaterial3D", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_DEFERRED_SET_RESOURCE));
+			p_list->push_back(PropertyInfo(Variant::OBJECT, "surface_material_override_" + itos(i), PROPERTY_HINT_RESOURCE_TYPE, "ShaderMaterial,StandardMaterial3D", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_DEFERRED_SET_RESOURCE));
 		}
 	}
 }

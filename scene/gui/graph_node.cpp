@@ -40,8 +40,8 @@ struct _MinSizeCache {
 
 bool GraphNode::_set(const StringName &p_name, const Variant &p_value) {
 	String str = p_name;
-	if (str.begins_with("opentype_features/")) {
-		String name = str.get_slicec('/', 1);
+	if (str.begins_with("opentype_features_")) {
+		String name = str.get_slicec('_', 2);
 		int32_t tag = TS->name_to_tag(name);
 		double value = p_value;
 		if (value == -1) {
@@ -61,34 +61,39 @@ bool GraphNode::_set(const StringName &p_name, const Variant &p_value) {
 		return true;
 	}
 
-	if (!str.begins_with("slot/")) {
+	if (!str.begins_with("slot_")) {
 		return false;
 	}
 
-	int idx = str.get_slice("/", 1).to_int();
-	String what = str.get_slice("/", 2);
+	int idx = str.get_slicec('_', 1).to_int();
+	String side = str.get_slicec('_', 2);
+	String what = str.get_slicec('_', 3);
 
 	Slot si;
 	if (slot_info.has(idx)) {
 		si = slot_info[idx];
 	}
 
-	if (what == "left_enabled") {
-		si.enable_left = p_value;
-	} else if (what == "left_type") {
-		si.type_left = p_value;
-	} else if (what == "left_icon") {
-		si.custom_slot_left = p_value;
-	} else if (what == "left_color") {
-		si.color_left = p_value;
-	} else if (what == "right_enabled") {
-		si.enable_right = p_value;
-	} else if (what == "right_type") {
-		si.type_right = p_value;
-	} else if (what == "right_color") {
-		si.color_right = p_value;
-	} else if (what == "right_icon") {
-		si.custom_slot_right = p_value;
+	if (side == "left") {
+		if (what == "enabled") {
+			si.enable_left = p_value;
+		} else if (what == "type") {
+			si.type_left = p_value;
+		} else if (what == "color") {
+			si.color_left = p_value;
+		} else if (what == "icon") {
+			si.custom_slot_left = p_value;
+		}
+	} else if (side == "right") {
+		if (what == "enabled") {
+			si.enable_right = p_value;
+		} else if (what == "type") {
+			si.type_right = p_value;
+		} else if (what == "color") {
+			si.color_right = p_value;
+		} else if (what == "icon") {
+			si.custom_slot_right = p_value;
+		}
 	} else {
 		return false;
 	}
@@ -100,8 +105,8 @@ bool GraphNode::_set(const StringName &p_name, const Variant &p_value) {
 
 bool GraphNode::_get(const StringName &p_name, Variant &r_ret) const {
 	String str = p_name;
-	if (str.begins_with("opentype_features/")) {
-		String name = str.get_slicec('/', 1);
+	if (str.begins_with("opentype_features_")) {
+		String name = str.get_slicec('_', 2);
 		int32_t tag = TS->name_to_tag(name);
 		if (opentype_features.has(tag)) {
 			r_ret = opentype_features[tag];
@@ -112,34 +117,39 @@ bool GraphNode::_get(const StringName &p_name, Variant &r_ret) const {
 		}
 	}
 
-	if (!str.begins_with("slot/")) {
+	if (!str.begins_with("slot_")) {
 		return false;
 	}
 
-	int idx = str.get_slice("/", 1).to_int();
-	String what = str.get_slice("/", 2);
+	int idx = str.get_slicec('_', 1).to_int();
+	String side = str.get_slicec('_', 2);
+	String what = str.get_slicec('_', 3);
 
 	Slot si;
 	if (slot_info.has(idx)) {
 		si = slot_info[idx];
 	}
 
-	if (what == "left_enabled") {
-		r_ret = si.enable_left;
-	} else if (what == "left_type") {
-		r_ret = si.type_left;
-	} else if (what == "left_color") {
-		r_ret = si.color_left;
-	} else if (what == "left_icon") {
-		r_ret = si.custom_slot_left;
-	} else if (what == "right_enabled") {
-		r_ret = si.enable_right;
-	} else if (what == "right_type") {
-		r_ret = si.type_right;
-	} else if (what == "right_color") {
-		r_ret = si.color_right;
-	} else if (what == "right_icon") {
-		r_ret = si.custom_slot_right;
+	if (side == "left") {
+		if (what == "enabled") {
+			r_ret = si.enable_left;
+		} else if (what == "type") {
+			r_ret = si.type_left;
+		} else if (what == "color") {
+			r_ret = si.color_left;
+		} else if (what == "icon") {
+			r_ret = si.custom_slot_left;
+		}
+	} else if (side == "right") {
+		if (what == "enabled") {
+			r_ret = si.enable_right;
+		} else if (what == "type") {
+			r_ret = si.type_right;
+		} else if (what == "color") {
+			r_ret = si.color_right;
+		} else if (what == "icon") {
+			r_ret = si.custom_slot_right;
+		}
 	} else {
 		return false;
 	}
@@ -148,20 +158,23 @@ bool GraphNode::_get(const StringName &p_name, Variant &r_ret) const {
 }
 
 void GraphNode::_get_property_list(List<PropertyInfo> *p_list) const {
+	p_list->push_back(PropertyInfo(Variant::NIL, "Opentype Features", PROPERTY_HINT_NONE, "opentype_features_", PROPERTY_USAGE_GROUP));
 	for (const Variant *ftr = opentype_features.next(nullptr); ftr != nullptr; ftr = opentype_features.next(ftr)) {
 		String name = TS->tag_to_name(*ftr);
-		p_list->push_back(PropertyInfo(Variant::FLOAT, "opentype_features/" + name));
+		p_list->push_back(PropertyInfo(Variant::FLOAT, "opentype_features_" + name));
 	}
-	p_list->push_back(PropertyInfo(Variant::NIL, "opentype_features/_new", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR));
+	p_list->push_back(PropertyInfo(Variant::NIL, "opentype_features__new", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR));
 
 	int idx = 0;
+	p_list->push_back(PropertyInfo(Variant::NIL, "Slots", PROPERTY_HINT_NONE, "slot_", PROPERTY_USAGE_GROUP));
 	for (int i = 0; i < get_child_count(); i++) {
 		Control *c = Object::cast_to<Control>(get_child(i));
 		if (!c || c->is_set_as_top_level()) {
 			continue;
 		}
 
-		String base = "slot/" + itos(idx) + "/";
+		String base = "slot_" + itos(idx) + "_";
+		p_list->push_back(PropertyInfo(Variant::NIL, itos(idx), PROPERTY_HINT_NONE, base, PROPERTY_USAGE_SUBGROUP));
 
 		p_list->push_back(PropertyInfo(Variant::BOOL, base + "left_enabled"));
 		p_list->push_back(PropertyInfo(Variant::INT, base + "left_type"));
