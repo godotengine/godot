@@ -861,6 +861,16 @@ void TileMap::set_cell(int p_x, int p_y, int p_tile, bool p_flip_x, bool p_flip_
 	used_size_cache_dirty = true;
 }
 
+void TileMap::set_cell_region(const Rect2i &p_rect, int p_tile, bool p_flip_x, bool p_flip_y, bool p_transpose, Vector2 p_autotile_coord) {
+	Rect2i _rect = p_rect.abs();
+
+	for (int x = _rect.position.x; x < _rect.position.x + _rect.size.x; x++) {
+		for (int y = _rect.position.y; y < _rect.position.y + _rect.size.y; y++) {
+			set_cell(x, y, p_tile, p_flip_x, p_flip_y, p_transpose, p_autotile_coord);
+		}
+	}
+}
+
 int TileMap::get_cellv(const Vector2 &p_pos) const {
 	return get_cell(p_pos.x, p_pos.y);
 }
@@ -1776,6 +1786,7 @@ void TileMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_occluder_light_mask"), &TileMap::get_occluder_light_mask);
 
 	ClassDB::bind_method(D_METHOD("set_cell", "x", "y", "tile", "flip_x", "flip_y", "transpose", "autotile_coord"), &TileMap::set_cell, DEFVAL(false), DEFVAL(false), DEFVAL(false), DEFVAL(Vector2()));
+	ClassDB::bind_method(D_METHOD("set_cell_region", "rect", "tile", "flip_x", "flip_y", "transpose", "autotile_coord"), &TileMap::set_cell_region, DEFVAL(false), DEFVAL(false), DEFVAL(false), DEFVAL(Vector2()));
 	ClassDB::bind_method(D_METHOD("set_cellv", "position", "tile", "flip_x", "flip_y", "transpose"), &TileMap::set_cellv, DEFVAL(false), DEFVAL(false), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("_set_celld", "position", "data"), &TileMap::_set_celld);
 	ClassDB::bind_method(D_METHOD("get_cell", "x", "y"), &TileMap::get_cell);
