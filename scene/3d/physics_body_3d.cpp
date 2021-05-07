@@ -580,12 +580,12 @@ void RigidBody3D::apply_torque_impulse(const Vector3 &p_impulse) {
 	PhysicsServer3D::get_singleton()->body_apply_torque_impulse(get_rid(), p_impulse);
 }
 
-void RigidBody3D::set_use_continuous_collision_detection(bool p_enable) {
+void RigidBody3D::enable_continuous_collision_detection(bool p_enable) {
 	ccd = p_enable;
-	PhysicsServer3D::get_singleton()->body_set_enable_continuous_collision_detection(get_rid(), p_enable);
+	PhysicsServer3D::get_singleton()->body_enable_continuous_collision_detection(get_rid(), p_enable);
 }
 
-bool RigidBody3D::is_using_continuous_collision_detection() const {
+bool RigidBody3D::is_continuous_collision_detection_enabled() const {
 	return ccd;
 }
 
@@ -694,8 +694,8 @@ void RigidBody3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_contact_monitor", "enabled"), &RigidBody3D::set_contact_monitor);
 	ClassDB::bind_method(D_METHOD("is_contact_monitor_enabled"), &RigidBody3D::is_contact_monitor_enabled);
 
-	ClassDB::bind_method(D_METHOD("set_use_continuous_collision_detection", "enable"), &RigidBody3D::set_use_continuous_collision_detection);
-	ClassDB::bind_method(D_METHOD("is_using_continuous_collision_detection"), &RigidBody3D::is_using_continuous_collision_detection);
+	ClassDB::bind_method(D_METHOD("enable_continuous_collision_detection", "enable"), &RigidBody3D::enable_continuous_collision_detection, DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("is_continuous_collision_detection_enabled"), &RigidBody3D::is_continuous_collision_detection_enabled);
 
 	ClassDB::bind_method(D_METHOD("set_axis_velocity", "axis_velocity"), &RigidBody3D::set_axis_velocity);
 
@@ -725,7 +725,7 @@ void RigidBody3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "physics_material_override", PROPERTY_HINT_RESOURCE_TYPE, "PhysicsMaterial"), "set_physics_material_override", "get_physics_material_override");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "gravity_scale", PROPERTY_HINT_RANGE, "-128,128,0.01"), "set_gravity_scale", "get_gravity_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "custom_integrator"), "set_use_custom_integrator", "is_using_custom_integrator");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "continuous_cd"), "set_use_continuous_collision_detection", "is_using_continuous_collision_detection");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "continuous_cd"), "enable_continuous_collision_detection", "is_continuous_collision_detection_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "contacts_reported", PROPERTY_HINT_RANGE, "0,64,1,or_greater"), "set_max_contacts_reported", "get_max_contacts_reported");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "contact_monitor"), "set_contact_monitor", "is_contact_monitor_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "sleeping"), "set_sleeping", "is_sleeping");

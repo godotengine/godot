@@ -45,7 +45,7 @@ class Joint3D : public Node3D {
 	NodePath b;
 
 	int solver_priority = 1;
-	bool exclude_from_collision = true;
+	bool collisions_between_bodies_enabled = false;
 	String warning;
 	bool configured = false;
 
@@ -74,8 +74,8 @@ public:
 	void set_solver_priority(int p_priority);
 	int get_solver_priority() const;
 
-	void set_exclude_nodes_from_collision(bool p_enable);
-	bool get_exclude_nodes_from_collision() const;
+	void enable_collisions_between_bodies(bool p_enabled = true);
+	bool is_collisions_between_bodies_enabled() const;
 
 	RID get_joint() const { return joint; }
 	Joint3D();

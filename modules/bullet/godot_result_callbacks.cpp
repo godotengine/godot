@@ -71,7 +71,7 @@ bool GodotClosestRayResultCallback::needsCollision(btBroadphaseProxy *proxy0) co
 			}
 		}
 
-		if (m_pickRay && !gObj->is_ray_pickable()) {
+		if (m_pickRay && !gObj->is_pickable()) {
 			return false;
 		}
 

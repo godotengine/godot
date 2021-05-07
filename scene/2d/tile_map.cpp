@@ -262,7 +262,7 @@ void TileMap::_add_shape(int &shape_idx, const Quadrant &p_q, const Ref<Shape2D>
 	if (!use_parent) {
 		ps->body_add_shape(p_q.body, p_shape->get_rid(), p_xform);
 		ps->body_set_shape_metadata(p_q.body, shape_idx, p_metadata);
-		ps->body_set_shape_as_one_way_collision(p_q.body, shape_idx, p_shape_data.one_way_collision, p_shape_data.one_way_collision_margin);
+		ps->body_enable_shape_one_way_collision(p_q.body, shape_idx, p_shape_data.one_way_collision, p_shape_data.one_way_collision_margin);
 
 	} else if (collision_parent) {
 		Transform2D xform = p_xform;
@@ -278,7 +278,7 @@ void TileMap::_add_shape(int &shape_idx, const Quadrant &p_q, const Ref<Shape2D>
 		} else {
 			ps->body_set_shape_transform(rid, real_index, get_transform() * xform);
 			ps->body_set_shape_metadata(rid, real_index, p_metadata);
-			ps->body_set_shape_as_one_way_collision(rid, real_index, p_shape_data.one_way_collision, p_shape_data.one_way_collision_margin);
+			ps->body_enable_shape_one_way_collision(rid, real_index, p_shape_data.one_way_collision, p_shape_data.one_way_collision_margin);
 		}
 	}
 	shape_idx++;

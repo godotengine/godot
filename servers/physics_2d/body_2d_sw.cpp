@@ -58,7 +58,7 @@ void Body2DSW::update_inertias() {
 			inertia = 0;
 
 			for (int i = 0; i < get_shape_count(); i++) {
-				if (is_shape_disabled(i)) {
+				if (!is_shape_enabled(i)) {
 					continue;
 				}
 

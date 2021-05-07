@@ -94,8 +94,8 @@ private:
 	Ref<ArrayMesh> debug_mesh_cache;
 	class MeshInstance3D *debug_mesh = nullptr;
 
-	bool capture_input_on_drag = false;
-	bool ray_pickable = true;
+	bool capture_on_drag = false;
+	bool pickable = true;
 
 	void _update_pickable();
 
@@ -171,8 +171,8 @@ public:
 	void pin_point(int p_point_index, bool pin, const NodePath &p_spatial_attachment_path = NodePath());
 	bool is_point_pinned(int p_point_index) const;
 
-	void set_ray_pickable(bool p_ray_pickable);
-	bool is_ray_pickable() const;
+	void set_pickable(bool p_pickable);
+	bool is_pickable() const;
 
 	SoftBody3D();
 	~SoftBody3D();

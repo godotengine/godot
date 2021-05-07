@@ -305,7 +305,7 @@ void RigidBodyBullet::destroy_kinematic_utilities() {
 void RigidBodyBullet::main_shape_changed() {
 	CRASH_COND(!get_main_shape());
 	btBody->setCollisionShape(get_main_shape());
-	set_continuous_collision_detection(is_continuous_collision_detection_enabled()); // Reset
+	enable_continuous_collision_detection(is_continuous_collision_detection_enabled()); // Reset
 }
 
 void RigidBodyBullet::reload_body() {
@@ -719,7 +719,7 @@ void RigidBodyBullet::reload_axis_lock() {
 	}
 }
 
-void RigidBodyBullet::set_continuous_collision_detection(bool p_enable) {
+void RigidBodyBullet::enable_continuous_collision_detection(bool p_enable) {
 	if (p_enable) {
 		// This threshold enable CCD if the object moves more than
 		// 1 meter in one simulation frame
@@ -816,7 +816,7 @@ void RigidBodyBullet::reload_shapes() {
 	btBody->updateInertiaTensor();
 
 	reload_kinematic_shapes();
-	set_continuous_collision_detection(is_continuous_collision_detection_enabled());
+	enable_continuous_collision_detection(is_continuous_collision_detection_enabled());
 	reload_body();
 }
 

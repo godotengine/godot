@@ -60,7 +60,7 @@ void Joint2DSW::copy_settings_from(Joint2DSW *p_joint) {
 	set_max_force(p_joint->get_max_force());
 	set_bias(p_joint->get_bias());
 	set_max_bias(p_joint->get_max_bias());
-	disable_collisions_between_bodies(p_joint->is_disabled_collisions_between_bodies());
+	enable_collisions_between_bodies(p_joint->is_collisions_between_bodies_enabled());
 }
 
 static inline real_t k_scalar(Body2DSW *a, Body2DSW *b, const Vector2 &rA, const Vector2 &rB, const Vector2 &n) {

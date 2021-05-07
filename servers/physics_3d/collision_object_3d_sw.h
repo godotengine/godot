@@ -66,9 +66,7 @@ private:
 		AABB aabb_cache; //for rayqueries
 		real_t area_cache;
 		Shape3DSW *shape;
-		bool disabled;
-
-		Shape() { disabled = false; }
+		bool enabled = true;
 	};
 
 	Vector<Shape> shapes;
@@ -102,7 +100,7 @@ protected:
 	virtual void _shapes_changed() = 0;
 	void _set_space(Space3DSW *p_space);
 
-	bool ray_pickable;
+	bool pickable;
 
 	CollisionObject3DSW(Type p_type);
 
@@ -116,14 +114,11 @@ public:
 	void _shape_changed();
 
 	_FORCE_INLINE_ Type get_type() const { return type; }
-	void add_shape(Shape3DSW *p_shape, const Transform &p_transform = Transform(), bool p_disabled = false);
+	void add_shape(Shape3DSW *p_shape, const Transform &p_transform = Transform(), bool p_enabled = true);
 	void set_shape(int p_index, Shape3DSW *p_shape);
 	void set_shape_transform(int p_index, const Transform &p_transform);
 	_FORCE_INLINE_ int get_shape_count() const { return shapes.size(); }
-	_FORCE_INLINE_ bool is_shape_disabled(int p_index) const {
-		CRASH_BAD_INDEX(p_index, shapes.size());
-		return shapes[p_index].disabled;
-	}
+
 	_FORCE_INLINE_ Shape3DSW *get_shape(int p_index) const { return shapes[p_index].shape; }
 	_FORCE_INLINE_ const Transform &get_shape_transform(int p_index) const { return shapes[p_index].xform; }
 	_FORCE_INLINE_ const Transform &get_shape_inv_transform(int p_index) const { return shapes[p_index].xform_inv; }
@@ -134,13 +129,13 @@ public:
 	_FORCE_INLINE_ const Transform &get_inv_transform() const { return inv_transform; }
 	_FORCE_INLINE_ Space3DSW *get_space() const { return space; }
 
-	_FORCE_INLINE_ void set_ray_pickable(bool p_enable) { ray_pickable = p_enable; }
-	_FORCE_INLINE_ bool is_ray_pickable() const { return ray_pickable; }
+	_FORCE_INLINE_ void set_pickable(bool p_pickable) { pickable = p_pickable; }
+	_FORCE_INLINE_ bool is_pickable() const { return pickable; }
 
-	void set_shape_as_disabled(int p_idx, bool p_enable);
-	_FORCE_INLINE_ bool is_shape_set_as_disabled(int p_idx) const {
+	void enable_shape(int p_idx, bool p_enable = true);
+	_FORCE_INLINE_ bool is_shape_enabled(int p_idx) const {
 		CRASH_BAD_INDEX(p_idx, shapes.size());
-		return shapes[p_idx].disabled;
+		return shapes[p_idx].enabled;
 	}
 
 	_FORCE_INLINE_ void set_collision_layer(uint32_t p_layer) {

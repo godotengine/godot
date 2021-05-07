@@ -134,7 +134,7 @@ public:
 	virtual void area_set_space_override_mode(RID p_area, AreaSpaceOverrideMode p_mode) override;
 	virtual AreaSpaceOverrideMode area_get_space_override_mode(RID p_area) const override;
 
-	virtual void area_add_shape(RID p_area, RID p_shape, const Transform &p_transform = Transform(), bool p_disabled = false) override;
+	virtual void area_add_shape(RID p_area, RID p_shape, const Transform &p_transform = Transform(), bool p_enabled = true) override;
 	virtual void area_set_shape(RID p_area, int p_shape_idx, RID p_shape) override;
 	virtual void area_set_shape_transform(RID p_area, int p_shape_idx, const Transform &p_transform) override;
 	virtual int area_get_shape_count(RID p_area) const override;
@@ -142,7 +142,7 @@ public:
 	virtual Transform area_get_shape_transform(RID p_area, int p_shape_idx) const override;
 	virtual void area_remove_shape(RID p_area, int p_shape_idx) override;
 	virtual void area_clear_shapes(RID p_area) override;
-	virtual void area_set_shape_disabled(RID p_area, int p_shape_idx, bool p_disabled) override;
+	virtual void area_enable_shape(RID p_area, int p_shape_idx, bool p_enable = true) override;
 	virtual void area_attach_object_instance_id(RID p_area, ObjectID p_id) override;
 	virtual ObjectID area_get_object_instance_id(RID p_area) const override;
 
@@ -162,7 +162,7 @@ public:
 	virtual void area_set_monitorable(RID p_area, bool p_monitorable) override;
 	virtual void area_set_monitor_callback(RID p_area, Object *p_receiver, const StringName &p_method) override;
 	virtual void area_set_area_monitor_callback(RID p_area, Object *p_receiver, const StringName &p_method) override;
-	virtual void area_set_ray_pickable(RID p_area, bool p_enable) override;
+	virtual void area_set_pickable(RID p_area, bool p_pickable) override;
 
 	/* RIGID BODY API */
 
@@ -174,7 +174,7 @@ public:
 	virtual void body_set_mode(RID p_body, BodyMode p_mode) override;
 	virtual BodyMode body_get_mode(RID p_body) const override;
 
-	virtual void body_add_shape(RID p_body, RID p_shape, const Transform &p_transform = Transform(), bool p_disabled = false) override;
+	virtual void body_add_shape(RID p_body, RID p_shape, const Transform &p_transform = Transform(), bool p_enabled = true) override;
 	// Not supported, Please remove and add new shape
 	virtual void body_set_shape(RID p_body, int p_shape_idx, RID p_shape) override;
 	virtual void body_set_shape_transform(RID p_body, int p_shape_idx, const Transform &p_transform) override;
@@ -183,7 +183,7 @@ public:
 	virtual RID body_get_shape(RID p_body, int p_shape_idx) const override;
 	virtual Transform body_get_shape_transform(RID p_body, int p_shape_idx) const override;
 
-	virtual void body_set_shape_disabled(RID p_body, int p_shape_idx, bool p_disabled) override;
+	virtual void body_enable_shape(RID p_body, int p_shape_idx, bool p_enable = true) override;
 
 	virtual void body_remove_shape(RID p_body, int p_shape_idx) override;
 	virtual void body_clear_shapes(RID p_body) override;
@@ -192,7 +192,7 @@ public:
 	virtual void body_attach_object_instance_id(RID p_body, ObjectID p_id) override;
 	virtual ObjectID body_get_object_instance_id(RID p_body) const override;
 
-	virtual void body_set_enable_continuous_collision_detection(RID p_body, bool p_enable) override;
+	virtual void body_enable_continuous_collision_detection(RID p_body, bool p_enable = true) override;
 	virtual bool body_is_continuous_collision_detection_enabled(RID p_body) const override;
 
 	virtual void body_set_collision_layer(RID p_body, uint32_t p_layer) override;
@@ -248,7 +248,7 @@ public:
 
 	virtual void body_set_force_integration_callback(RID p_body, const Callable &p_callable, const Variant &p_udata = Variant()) override;
 
-	virtual void body_set_ray_pickable(RID p_body, bool p_enable) override;
+	virtual void body_set_pickable(RID p_body, bool p_pickable) override;
 
 	// this function only works on physics process, errors and returns null otherwise
 	virtual PhysicsDirectBodyState3D *body_get_direct_state(RID p_body) override;
@@ -285,7 +285,7 @@ public:
 	/// Special function. This function has bad performance
 	virtual void soft_body_set_transform(RID p_body, const Transform &p_transform) override;
 
-	virtual void soft_body_set_ray_pickable(RID p_body, bool p_enable) override;
+	virtual void soft_body_set_pickable(RID p_body, bool p_pickable) override;
 
 	virtual void soft_body_set_simulation_precision(RID p_body, int p_simulation_precision) override;
 	virtual int soft_body_get_simulation_precision(RID p_body) const override;
@@ -319,8 +319,8 @@ public:
 	virtual void joint_set_solver_priority(RID p_joint, int p_priority) override;
 	virtual int joint_get_solver_priority(RID p_joint) const override;
 
-	virtual void joint_disable_collisions_between_bodies(RID p_joint, const bool p_disable) override;
-	virtual bool joint_is_disabled_collisions_between_bodies(RID p_joint) const override;
+	virtual void joint_enable_collisions_between_bodies(RID p_joint, const bool p_enable = true) override;
+	virtual bool joint_is_collisions_between_bodies_enabled(RID p_joint) const override;
 
 	virtual RID joint_create_pin(RID p_body_A, const Vector3 &p_local_A, RID p_body_B, const Vector3 &p_local_B) override;
 
@@ -339,7 +339,7 @@ public:
 	virtual void hinge_joint_set_param(RID p_joint, HingeJointParam p_param, real_t p_value) override;
 	virtual real_t hinge_joint_get_param(RID p_joint, HingeJointParam p_param) const override;
 
-	virtual void hinge_joint_set_flag(RID p_joint, HingeJointFlag p_flag, bool p_value) override;
+	virtual void hinge_joint_set_flag(RID p_joint, HingeJointFlag p_flag, bool p_on = true) override;
 	virtual bool hinge_joint_get_flag(RID p_joint, HingeJointFlag p_flag) const override;
 
 	/// Reference frame is A
@@ -360,7 +360,7 @@ public:
 	virtual void generic_6dof_joint_set_param(RID p_joint, Vector3::Axis p_axis, G6DOFJointAxisParam p_param, real_t p_value) override;
 	virtual real_t generic_6dof_joint_get_param(RID p_joint, Vector3::Axis p_axis, G6DOFJointAxisParam p_param) override;
 
-	virtual void generic_6dof_joint_set_flag(RID p_joint, Vector3::Axis p_axis, G6DOFJointAxisFlag p_flag, bool p_enable) override;
+	virtual void generic_6dof_joint_set_flag(RID p_joint, Vector3::Axis p_axis, G6DOFJointAxisFlag p_flag, bool p_on = true) override;
 	virtual bool generic_6dof_joint_get_flag(RID p_joint, Vector3::Axis p_axis, G6DOFJointAxisFlag p_flag) override;
 
 	/* MISC */

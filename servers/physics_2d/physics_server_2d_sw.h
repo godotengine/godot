@@ -133,7 +133,7 @@ public:
 	virtual void area_set_space(RID p_area, RID p_space) override;
 	virtual RID area_get_space(RID p_area) const override;
 
-	virtual void area_add_shape(RID p_area, RID p_shape, const Transform2D &p_transform = Transform2D(), bool p_disabled = false) override;
+	virtual void area_add_shape(RID p_area, RID p_shape, const Transform2D &p_transform = Transform2D(), bool p_enabled = true) override;
 	virtual void area_set_shape(RID p_area, int p_shape_idx, RID p_shape) override;
 	virtual void area_set_shape_transform(RID p_area, int p_shape_idx, const Transform2D &p_transform) override;
 
@@ -141,7 +141,7 @@ public:
 	virtual RID area_get_shape(RID p_area, int p_shape_idx) const override;
 	virtual Transform2D area_get_shape_transform(RID p_area, int p_shape_idx) const override;
 
-	virtual void area_set_shape_disabled(RID p_area, int p_shape, bool p_disabled) override;
+	virtual void area_enable_shape(RID p_area, int p_shape, bool p_enabled = true) override;
 
 	virtual void area_remove_shape(RID p_area, int p_shape_idx) override;
 	virtual void area_clear_shapes(RID p_area) override;
@@ -177,7 +177,7 @@ public:
 	virtual void body_set_mode(RID p_body, BodyMode p_mode) override;
 	virtual BodyMode body_get_mode(RID p_body) const override;
 
-	virtual void body_add_shape(RID p_body, RID p_shape, const Transform2D &p_transform = Transform2D(), bool p_disabled = false) override;
+	virtual void body_add_shape(RID p_body, RID p_shape, const Transform2D &p_transform = Transform2D(), bool p_enabled = true) override;
 	virtual void body_set_shape(RID p_body, int p_shape_idx, RID p_shape) override;
 	virtual void body_set_shape_transform(RID p_body, int p_shape_idx, const Transform2D &p_transform) override;
 	virtual void body_set_shape_metadata(RID p_body, int p_shape_idx, const Variant &p_metadata) override;
@@ -190,8 +190,8 @@ public:
 	virtual void body_remove_shape(RID p_body, int p_shape_idx) override;
 	virtual void body_clear_shapes(RID p_body) override;
 
-	virtual void body_set_shape_disabled(RID p_body, int p_shape_idx, bool p_disabled) override;
-	virtual void body_set_shape_as_one_way_collision(RID p_body, int p_shape_idx, bool p_enable, real_t p_margin) override;
+	virtual void body_enable_shape(RID p_body, int p_shape_idx, bool p_enabled = true) override;
+	virtual void body_enable_shape_one_way_collision(RID p_body, int p_shape_idx, bool p_enable = true, real_t p_margin = 1) override;
 
 	virtual void body_attach_object_instance_id(RID p_body, ObjectID p_id) override;
 	virtual ObjectID body_get_object_instance_id(RID p_body) const override;
@@ -262,8 +262,8 @@ public:
 	virtual void joint_set_param(RID p_joint, JointParam p_param, real_t p_value) override;
 	virtual real_t joint_get_param(RID p_joint, JointParam p_param) const override;
 
-	virtual void joint_disable_collisions_between_bodies(RID p_joint, const bool p_disabled) override;
-	virtual bool joint_is_disabled_collisions_between_bodies(RID p_joint) const override;
+	virtual void joint_enable_collisions_between_bodies(RID p_joint, const bool p_enable = true) override;
+	virtual bool joint_is_collisions_between_bodies_enabled(RID p_joint) const override;
 
 	virtual void joint_make_pin(RID p_joint, const Vector2 &p_anchor, RID p_body_a, RID p_body_b = RID()) override;
 	virtual void joint_make_groove(RID p_joint, const Vector2 &p_a_groove1, const Vector2 &p_a_groove2, const Vector2 &p_b_anchor, RID p_body_a, RID p_body_b) override;

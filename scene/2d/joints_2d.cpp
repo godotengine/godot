@@ -55,8 +55,8 @@ void Joint2D::_body_exit_tree() {
 }
 
 void Joint2D::_update_joint(bool p_only_free) {
-	if (ba.is_valid() && bb.is_valid() && exclude_from_collision) {
-		PhysicsServer2D::get_singleton()->joint_disable_collisions_between_bodies(joint, false);
+	if (ba.is_valid() && bb.is_valid() && !collisions_between_bodies_enabled) {
+		PhysicsServer2D::get_singleton()->joint_enable_collisions_between_bodies(joint, true);
 	}
 
 	ba = RID();
@@ -119,7 +119,7 @@ void Joint2D::_update_joint(bool p_only_free) {
 	body_a->connect(SceneStringNames::get_singleton()->tree_exiting, callable_mp(this, &Joint2D::_body_exit_tree));
 	body_b->connect(SceneStringNames::get_singleton()->tree_exiting, callable_mp(this, &Joint2D::_body_exit_tree));
 
-	PhysicsServer2D::get_singleton()->joint_disable_collisions_between_bodies(joint, exclude_from_collision);
+	PhysicsServer2D::get_singleton()->joint_enable_collisions_between_bodies(joint, collisions_between_bodies_enabled);
 }
 
 void Joint2D::set_node_a(const NodePath &p_node_a) {
@@ -181,18 +181,18 @@ real_t Joint2D::get_bias() const {
 	return bias;
 }
 
-void Joint2D::set_exclude_nodes_from_collision(bool p_enable) {
-	if (exclude_from_collision == p_enable) {
+void Joint2D::enable_collisions_between_bodies(bool p_enable) {
+	if (collisions_between_bodies_enabled == p_enable) {
 		return;
 	}
 
 	_update_joint(true);
-	exclude_from_collision = p_enable;
+	collisions_between_bodies_enabled = p_enable;
 	_update_joint();
 }
 
-bool Joint2D::get_exclude_nodes_from_collision() const {
-	return exclude_from_collision;
+bool Joint2D::is_collisions_between_bodies_enabled() const {
+	return collisions_between_bodies_enabled;
 }
 
 TypedArray<String> Joint2D::get_configuration_warnings() const {
@@ -215,13 +215,13 @@ void Joint2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_bias", "bias"), &Joint2D::set_bias);
 	ClassDB::bind_method(D_METHOD("get_bias"), &Joint2D::get_bias);
 
-	ClassDB::bind_method(D_METHOD("set_exclude_nodes_from_collision", "enable"), &Joint2D::set_exclude_nodes_from_collision);
-	ClassDB::bind_method(D_METHOD("get_exclude_nodes_from_collision"), &Joint2D::get_exclude_nodes_from_collision);
+	ClassDB::bind_method(D_METHOD("enable_collisions_between_bodies", "enable"), &Joint2D::enable_collisions_between_bodies, DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("is_collisions_between_bodies_enabled"), &Joint2D::is_collisions_between_bodies_enabled);
 
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "node_a", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "PhysicsBody2D"), "set_node_a", "get_node_a");
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "node_b", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "PhysicsBody2D"), "set_node_b", "get_node_b");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "bias", PROPERTY_HINT_RANGE, "0,0.9,0.001"), "set_bias", "get_bias");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "disable_collision"), "set_exclude_nodes_from_collision", "get_exclude_nodes_from_collision");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "collisions_between_bodies"), "enable_collisions_between_bodies", "is_collisions_between_bodies_enabled");
 }
 
 Joint2D::Joint2D() {

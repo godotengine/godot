@@ -71,7 +71,7 @@
 	}
 
 #define AddJointToSpace(body, joint) \
-	body->get_space()->add_constraint(joint, joint->is_disabled_collisions_between_bodies());
+	body->get_space()->add_constraint(joint, joint->is_collisions_between_bodies_enabled());
 // <--------------- Joint creation asserts
 
 void BulletPhysicsServer3D::_bind_methods() {
@@ -268,14 +268,14 @@ PhysicsServer3D::AreaSpaceOverrideMode BulletPhysicsServer3D::area_get_space_ove
 	return area->get_spOv_mode();
 }
 
-void BulletPhysicsServer3D::area_add_shape(RID p_area, RID p_shape, const Transform &p_transform, bool p_disabled) {
+void BulletPhysicsServer3D::area_add_shape(RID p_area, RID p_shape, const Transform &p_transform, bool p_enabled) {
 	AreaBullet *area = area_owner.getornull(p_area);
 	ERR_FAIL_COND(!area);
 
 	ShapeBullet *shape = shape_owner.getornull(p_shape);
 	ERR_FAIL_COND(!shape);
 
-	area->add_shape(shape, p_transform, p_disabled);
+	area->add_shape(shape, p_transform, p_enabled);
 }
 
 void BulletPhysicsServer3D::area_set_shape(RID p_area, int p_shape_idx, RID p_shape) {
@@ -331,11 +331,11 @@ void BulletPhysicsServer3D::area_clear_shapes(RID p_area) {
 	}
 }
 
-void BulletPhysicsServer3D::area_set_shape_disabled(RID p_area, int p_shape_idx, bool p_disabled) {
+void BulletPhysicsServer3D::area_enable_shape(RID p_area, int p_shape_idx, bool p_enable) {
 	AreaBullet *area = area_owner.getornull(p_area);
 	ERR_FAIL_COND(!area);
 
-	area->set_shape_disabled(p_shape_idx, p_disabled);
+	area->enable_shape(p_shape_idx, p_enable);
 }
 
 void BulletPhysicsServer3D::area_attach_object_instance_id(RID p_area, ObjectID p_id) {
@@ -427,10 +427,10 @@ void BulletPhysicsServer3D::area_set_area_monitor_callback(RID p_area, Object *p
 	area->set_event_callback(CollisionObjectBullet::TYPE_AREA, p_receiver ? p_receiver->get_instance_id() : ObjectID(), p_method);
 }
 
-void BulletPhysicsServer3D::area_set_ray_pickable(RID p_area, bool p_enable) {
+void BulletPhysicsServer3D::area_set_pickable(RID p_area, bool p_pickable) {
 	AreaBullet *area = area_owner.getornull(p_area);
 	ERR_FAIL_COND(!area);
-	area->set_ray_pickable(p_enable);
+	area->set_pickable(p_pickable);
 }
 
 RID BulletPhysicsServer3D::body_create(BodyMode p_mode, bool p_init_sleeping) {
@@ -484,14 +484,14 @@ PhysicsServer3D::BodyMode BulletPhysicsServer3D::body_get_mode(RID p_body) const
 	return body->get_mode();
 }
 
-void BulletPhysicsServer3D::body_add_shape(RID p_body, RID p_shape, const Transform &p_transform, bool p_disabled) {
+void BulletPhysicsServer3D::body_add_shape(RID p_body, RID p_shape, const Transform &p_transform, bool p_enabled) {
 	RigidBodyBullet *body = rigid_body_owner.getornull(p_body);
 	ERR_FAIL_COND(!body);
 
 	ShapeBullet *shape = shape_owner.getornull(p_shape);
 	ERR_FAIL_COND(!shape);
 
-	body->add_shape(shape, p_transform, p_disabled);
+	body->add_shape(shape, p_transform, p_enabled);
 }
 
 void BulletPhysicsServer3D::body_set_shape(RID p_body, int p_shape_idx, RID p_shape) {
@@ -533,11 +533,11 @@ Transform BulletPhysicsServer3D::body_get_shape_transform(RID p_body, int p_shap
 	return body->get_shape_transform(p_shape_idx);
 }
 
-void BulletPhysicsServer3D::body_set_shape_disabled(RID p_body, int p_shape_idx, bool p_disabled) {
+void BulletPhysicsServer3D::body_enable_shape(RID p_body, int p_shape_idx, bool p_enable) {
 	RigidBodyBullet *body = rigid_body_owner.getornull(p_body);
 	ERR_FAIL_COND(!body);
 
-	body->set_shape_disabled(p_shape_idx, p_disabled);
+	body->enable_shape(p_shape_idx, p_enable);
 }
 
 void BulletPhysicsServer3D::body_remove_shape(RID p_body, int p_shape_idx) {
@@ -568,11 +568,11 @@ ObjectID BulletPhysicsServer3D::body_get_object_instance_id(RID p_body) const {
 	return body->get_instance_id();
 }
 
-void BulletPhysicsServer3D::body_set_enable_continuous_collision_detection(RID p_body, bool p_enable) {
+void BulletPhysicsServer3D::body_enable_continuous_collision_detection(RID p_body, bool p_enable) {
 	RigidBodyBullet *body = rigid_body_owner.getornull(p_body);
 	ERR_FAIL_COND(!body);
 
-	body->set_continuous_collision_detection(p_enable);
+	body->enable_continuous_collision_detection(p_enable);
 }
 
 bool BulletPhysicsServer3D::body_is_continuous_collision_detection_enabled(RID p_body) const {
@@ -830,10 +830,10 @@ void BulletPhysicsServer3D::body_set_force_integration_callback(RID p_body, cons
 	body->set_force_integration_callback(p_callable, p_udata);
 }
 
-void BulletPhysicsServer3D::body_set_ray_pickable(RID p_body, bool p_enable) {
+void BulletPhysicsServer3D::body_set_pickable(RID p_body, bool p_pickable) {
 	RigidBodyBullet *body = rigid_body_owner.getornull(p_body);
 	ERR_FAIL_COND(!body);
-	body->set_ray_pickable(p_enable);
+	body->set_pickable(p_pickable);
 }
 
 PhysicsDirectBodyState3D *BulletPhysicsServer3D::body_get_direct_state(RID p_body) {
@@ -997,10 +997,10 @@ void BulletPhysicsServer3D::soft_body_set_transform(RID p_body, const Transform 
 	body->set_soft_transform(p_transform);
 }
 
-void BulletPhysicsServer3D::soft_body_set_ray_pickable(RID p_body, bool p_enable) {
+void BulletPhysicsServer3D::soft_body_set_pickable(RID p_body, bool p_pickable) {
 	SoftBodyBullet *body = soft_body_owner.getornull(p_body);
 	ERR_FAIL_COND(!body);
-	body->set_ray_pickable(p_enable);
+	body->set_pickable(p_pickable);
 }
 
 void BulletPhysicsServer3D::soft_body_set_simulation_precision(RID p_body, int p_simulation_precision) {
@@ -1122,18 +1122,18 @@ int BulletPhysicsServer3D::joint_get_solver_priority(RID p_joint) const {
 	return 0;
 }
 
-void BulletPhysicsServer3D::joint_disable_collisions_between_bodies(RID p_joint, const bool p_disable) {
+void BulletPhysicsServer3D::joint_enable_collisions_between_bodies(RID p_joint, const bool p_enable) {
 	JointBullet *joint = joint_owner.getornull(p_joint);
 	ERR_FAIL_COND(!joint);
 
-	joint->disable_collisions_between_bodies(p_disable);
+	joint->enable_collisions_between_bodies(p_enable);
 }
 
-bool BulletPhysicsServer3D::joint_is_disabled_collisions_between_bodies(RID p_joint) const {
+bool BulletPhysicsServer3D::joint_is_collisions_between_bodies_enabled(RID p_joint) const {
 	JointBullet *joint(joint_owner.getornull(p_joint));
 	ERR_FAIL_COND_V(!joint, false);
 
-	return joint->is_disabled_collisions_between_bodies();
+	return joint->is_collisions_between_bodies_enabled();
 }
 
 RID BulletPhysicsServer3D::joint_create_pin(RID p_body_A, const Vector3 &p_local_A, RID p_body_B, const Vector3 &p_local_B) {

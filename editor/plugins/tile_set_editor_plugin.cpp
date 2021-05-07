@@ -122,12 +122,12 @@ void TileSetEditor::_import_node(Node *p_node, Ref<TileSet> p_library) {
 			sb->get_shape_owners(&shapes);
 
 			for (List<uint32_t>::Element *E = shapes.front(); E; E = E->next()) {
-				if (sb->is_shape_owner_disabled(E->get())) {
+				if (!sb->is_shape_owner_enabled(E->get())) {
 					continue;
 				}
 
 				Transform2D shape_transform = sb->get_transform() * sb->shape_owner_get_transform(E->get());
-				bool one_way = sb->is_shape_owner_one_way_collision_enabled(E->get());
+				bool one_way = sb->shape_owner_is_one_way_collision_enabled(E->get());
 
 				shape_transform[2] -= phys_offset;
 

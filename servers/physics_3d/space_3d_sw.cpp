@@ -125,7 +125,7 @@ bool PhysicsDirectSpaceState3DSW::intersect_ray(const Vector3 &p_from, const Vec
 			continue;
 		}
 
-		if (p_pick_ray && !(space->intersection_query_results[i]->is_ray_pickable())) {
+		if (p_pick_ray && !(space->intersection_query_results[i]->is_pickable())) {
 			continue;
 		}
 
@@ -214,7 +214,7 @@ int PhysicsDirectSpaceState3DSW::intersect_shape(const RID &p_shape, const Trans
 		const CollisionObject3DSW *col_obj = space->intersection_query_results[i];
 		int shape_idx = space->intersection_query_subindex_results[i];
 
-		if (col_obj->is_shape_set_as_disabled(shape_idx)) {
+		if (!col_obj->is_shape_enabled(shape_idx)) {
 			continue;
 		}
 
@@ -273,7 +273,7 @@ bool PhysicsDirectSpaceState3DSW::cast_motion(const RID &p_shape, const Transfor
 		const CollisionObject3DSW *col_obj = space->intersection_query_results[i];
 		int shape_idx = space->intersection_query_subindex_results[i];
 
-		if (col_obj->is_shape_set_as_disabled(shape_idx)) {
+		if (!col_obj->is_shape_enabled(shape_idx)) {
 			continue;
 		}
 
@@ -385,7 +385,7 @@ bool PhysicsDirectSpaceState3DSW::collide_shape(RID p_shape, const Transform &p_
 
 		int shape_idx = space->intersection_query_subindex_results[i];
 
-		if (col_obj->is_shape_set_as_disabled(shape_idx)) {
+		if (!col_obj->is_shape_enabled(shape_idx)) {
 			continue;
 		}
 
@@ -460,7 +460,7 @@ bool PhysicsDirectSpaceState3DSW::rest_info(RID p_shape, const Transform &p_shap
 
 		int shape_idx = space->intersection_query_subindex_results[i];
 
-		if (col_obj->is_shape_set_as_disabled(shape_idx)) {
+		if (!col_obj->is_shape_enabled(shape_idx)) {
 			continue;
 		}
 
@@ -508,7 +508,7 @@ Vector3 PhysicsDirectSpaceState3DSW::get_closest_point_to_object_volume(RID p_ob
 	bool shapes_found = false;
 
 	for (int i = 0; i < obj->get_shape_count(); i++) {
-		if (obj->is_shape_set_as_disabled(i)) {
+		if (!obj->is_shape_enabled(i)) {
 			continue;
 		}
 
@@ -555,7 +555,7 @@ int Space3DSW::_cull_aabb_for_body(Body3DSW *p_body, const AABB &p_aabb) {
 			keep = false;
 		} else if (static_cast<Body3DSW *>(intersection_query_results[i])->has_exception(p_body->get_self()) || p_body->has_exception(intersection_query_results[i]->get_self())) {
 			keep = false;
-		} else if (static_cast<Body3DSW *>(intersection_query_results[i])->is_shape_set_as_disabled(intersection_query_subindex_results[i])) {
+		} else if (!static_cast<Body3DSW *>(intersection_query_results[i])->is_shape_enabled(intersection_query_subindex_results[i])) {
 			keep = false;
 		}
 
@@ -579,7 +579,7 @@ int Space3DSW::test_body_ray_separation(Body3DSW *p_body, const Transform &p_tra
 	bool shapes_found = false;
 
 	for (int i = 0; i < p_body->get_shape_count(); i++) {
-		if (p_body->is_shape_set_as_disabled(i)) {
+		if (!p_body->is_shape_enabled(i)) {
 			continue;
 		}
 
@@ -626,7 +626,7 @@ int Space3DSW::test_body_ray_separation(Body3DSW *p_body, const Transform &p_tra
 			int amount = _cull_aabb_for_body(p_body, body_aabb);
 
 			for (int j = 0; j < p_body->get_shape_count(); j++) {
-				if (p_body->is_shape_set_as_disabled(j)) {
+				if (!p_body->is_shape_enabled(j)) {
 					continue;
 				}
 
@@ -740,7 +740,7 @@ bool Space3DSW::test_body_motion(Body3DSW *p_body, const Transform &p_from, cons
 	bool shapes_found = false;
 
 	for (int i = 0; i < p_body->get_shape_count(); i++) {
-		if (p_body->is_shape_set_as_disabled(i)) {
+		if (!p_body->is_shape_enabled(i)) {
 			continue;
 		}
 
@@ -793,7 +793,7 @@ bool Space3DSW::test_body_motion(Body3DSW *p_body, const Transform &p_from, cons
 			int amount = _cull_aabb_for_body(p_body, body_aabb);
 
 			for (int j = 0; j < p_body->get_shape_count(); j++) {
-				if (p_body->is_shape_set_as_disabled(j)) {
+				if (!p_body->is_shape_enabled(j)) {
 					continue;
 				}
 
@@ -864,7 +864,7 @@ bool Space3DSW::test_body_motion(Body3DSW *p_body, const Transform &p_from, cons
 		int amount = _cull_aabb_for_body(p_body, motion_aabb);
 
 		for (int j = 0; j < p_body->get_shape_count(); j++) {
-			if (p_body->is_shape_set_as_disabled(j)) {
+			if (!p_body->is_shape_enabled(j)) {
 				continue;
 			}
 
@@ -975,7 +975,7 @@ bool Space3DSW::test_body_motion(Body3DSW *p_body, const Transform &p_from, cons
 		int to_shape = best_shape != -1 ? best_shape + 1 : p_body->get_shape_count();
 
 		for (int j = from_shape; j < to_shape; j++) {
-			if (p_body->is_shape_set_as_disabled(j)) {
+			if (!p_body->is_shape_enabled(j)) {
 				continue;
 			}
 

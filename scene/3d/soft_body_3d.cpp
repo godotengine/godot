@@ -118,8 +118,8 @@ void SoftBody3D::_update_pickable() {
 	if (!is_inside_tree()) {
 		return;
 	}
-	bool pickable = ray_pickable && is_visible_in_tree();
-	PhysicsServer3D::get_singleton()->soft_body_set_ray_pickable(physics_rid, pickable);
+	bool pickable_and_visible = pickable && is_visible_in_tree();
+	PhysicsServer3D::get_singleton()->soft_body_set_pickable(physics_rid, pickable_and_visible);
 }
 
 bool SoftBody3D::_set(const StringName &p_name, const Variant &p_value) {
@@ -348,8 +348,8 @@ void SoftBody3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_drag_coefficient", "drag_coefficient"), &SoftBody3D::set_drag_coefficient);
 	ClassDB::bind_method(D_METHOD("get_drag_coefficient"), &SoftBody3D::get_drag_coefficient);
 
-	ClassDB::bind_method(D_METHOD("set_ray_pickable", "ray_pickable"), &SoftBody3D::set_ray_pickable);
-	ClassDB::bind_method(D_METHOD("is_ray_pickable"), &SoftBody3D::is_ray_pickable);
+	ClassDB::bind_method(D_METHOD("set_pickable", "pickable"), &SoftBody3D::set_pickable);
+	ClassDB::bind_method(D_METHOD("is_pickable"), &SoftBody3D::is_pickable);
 
 	ADD_GROUP("Collision", "collision_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_layer", PROPERTY_HINT_LAYERS_3D_PHYSICS), "set_collision_layer", "get_collision_layer");
@@ -363,7 +363,7 @@ void SoftBody3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "damping_coefficient", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_damping_coefficient", "get_damping_coefficient");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "drag_coefficient", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_drag_coefficient", "get_drag_coefficient");
 
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "ray_pickable"), "set_ray_pickable", "is_ray_pickable");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "pickable"), "set_pickable", "is_pickable");
 }
 
 TypedArray<String> SoftBody3D::get_configuration_warnings() const {
@@ -643,13 +643,13 @@ bool SoftBody3D::is_point_pinned(int p_point_index) const {
 	return -1 != _has_pinned_point(p_point_index);
 }
 
-void SoftBody3D::set_ray_pickable(bool p_ray_pickable) {
-	ray_pickable = p_ray_pickable;
+void SoftBody3D::set_pickable(bool p_pickable) {
+	pickable = p_pickable;
 	_update_pickable();
 }
 
-bool SoftBody3D::is_ray_pickable() const {
-	return ray_pickable;
+bool SoftBody3D::is_pickable() const {
+	return pickable;
 }
 
 SoftBody3D::SoftBody3D() :

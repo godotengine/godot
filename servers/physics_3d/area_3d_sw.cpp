@@ -288,7 +288,7 @@ Area3DSW::Area3DSW() :
 	angular_damp = 0.1;
 	linear_damp = 0.1;
 	priority = 0;
-	set_ray_pickable(false);
+	set_pickable(false);
 	monitorable = false;
 }
 

@@ -51,7 +51,7 @@ protected:
 	Vector<Point2> polygon;
 	uint32_t owner_id = 0;
 	CollisionObject2D *parent = nullptr;
-	bool disabled = false;
+	bool enabled = true;
 	bool one_way_collision = false;
 	real_t one_way_collision_margin = 1.0;
 
@@ -80,10 +80,10 @@ public:
 
 	TypedArray<String> get_configuration_warnings() const override;
 
-	void set_disabled(bool p_disabled);
-	bool is_disabled() const;
+	void enable(bool p_enable = true);
+	bool is_enabled() const;
 
-	void set_one_way_collision(bool p_enable);
+	void enable_one_way_collision(bool p_enable = true);
 	bool is_one_way_collision_enabled() const;
 
 	void set_one_way_collision_margin(real_t p_margin);

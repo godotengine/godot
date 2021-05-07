@@ -54,15 +54,15 @@ class CollisionObject3D : public Node3D {
 		};
 
 		Vector<ShapeBase> shapes;
-		bool disabled = false;
+		bool enabled = true;
 	};
 
 	int total_subshapes = 0;
 
 	Map<uint32_t, ShapeData> shapes;
 
-	bool capture_input_on_drag = false;
-	bool ray_pickable = true;
+	bool capture_on_drag = false;
+	bool pickable = true;
 
 	Set<uint32_t> debug_shapes_to_update;
 	int debug_shape_count = 0;
@@ -106,8 +106,8 @@ public:
 	Transform shape_owner_get_transform(uint32_t p_owner) const;
 	Object *shape_owner_get_owner(uint32_t p_owner) const;
 
-	void shape_owner_set_disabled(uint32_t p_owner, bool p_disabled);
-	bool is_shape_owner_disabled(uint32_t p_owner) const;
+	void enable_shape_owner(uint32_t p_owner, bool p_enable = true);
+	bool is_shape_owner_enabled(uint32_t p_owner) const;
 
 	void shape_owner_add_shape(uint32_t p_owner, const Ref<Shape3D> &p_shape);
 	int shape_owner_get_shape_count(uint32_t p_owner) const;
@@ -119,11 +119,11 @@ public:
 
 	uint32_t shape_find_owner(int p_shape_index) const;
 
-	void set_ray_pickable(bool p_ray_pickable);
-	bool is_ray_pickable() const;
+	void set_pickable(bool p_pickable);
+	bool is_pickable() const;
 
-	void set_capture_input_on_drag(bool p_capture);
-	bool get_capture_input_on_drag() const;
+	void enable_capture_on_drag(bool p_enable = true);
+	bool is_capture_on_drag_enabled() const;
 
 	_FORCE_INLINE_ RID get_rid() const { return rid; }
 

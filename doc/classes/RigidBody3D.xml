@@ -168,7 +168,7 @@
 			The maximum number of contacts that will be recorded. Requires [member contact_monitor] to be set to [code]true[/code].
 			[b]Note:[/b] The number of contacts is different from the number of collisions. Collisions between parallel edges will result in two contacts (one at each end), and collisions between parallel faces will result in four contacts (one at each corner).
 		</member>
-		<member name="continuous_cd" type="bool" setter="set_use_continuous_collision_detection" getter="is_using_continuous_collision_detection" default="false">
+		<member name="continuous_cd" type="bool" setter="enable_continuous_collision_detection" getter="is_continuous_collision_detection_enabled" default="false">
 			If [code]true[/code], continuous collision detection is used.
 			Continuous collision detection tries to predict where a moving body will collide, instead of moving it and correcting its movement if it collided. Continuous collision detection is more precise, and misses fewer impacts by small, fast-moving objects. Not using continuous collision detection is faster to compute, but can miss small, fast-moving objects.
 		</member>

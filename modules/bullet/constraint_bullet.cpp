@@ -52,11 +52,11 @@ void ConstraintBullet::destroy_internal_constraint() {
 	space->remove_constraint(this);
 }
 
-void ConstraintBullet::disable_collisions_between_bodies(const bool p_disabled) {
-	disabled_collisions_between_bodies = p_disabled;
+void ConstraintBullet::enable_collisions_between_bodies(const bool p_enabled) {
+	collisions_between_bodies_enabled = p_enabled;
 
 	if (space) {
 		space->remove_constraint(this);
-		space->add_constraint(this, disabled_collisions_between_bodies);
+		space->add_constraint(this, collisions_between_bodies_enabled);
 	}
 }

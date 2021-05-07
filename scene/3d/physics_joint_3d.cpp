@@ -116,7 +116,7 @@ void Joint3D::_update_joint(bool p_only_free) {
 		body_b->connect(SceneStringNames::get_singleton()->tree_exiting, callable_mp(this, &Joint3D::_body_exit_tree));
 	}
 
-	PhysicsServer3D::get_singleton()->joint_disable_collisions_between_bodies(joint, exclude_from_collision);
+	PhysicsServer3D::get_singleton()->joint_enable_collisions_between_bodies(joint, collisions_between_bodies_enabled);
 }
 
 void Joint3D::set_node_a(const NodePath &p_node_a) {
@@ -178,16 +178,16 @@ void Joint3D::_notification(int p_what) {
 	}
 }
 
-void Joint3D::set_exclude_nodes_from_collision(bool p_enable) {
-	if (exclude_from_collision == p_enable) {
+void Joint3D::enable_collisions_between_bodies(bool p_enabled) {
+	if (collisions_between_bodies_enabled == p_enabled) {
 		return;
 	}
-	exclude_from_collision = p_enable;
+	collisions_between_bodies_enabled = p_enabled;
 	_update_joint();
 }
 
-bool Joint3D::get_exclude_nodes_from_collision() const {
-	return exclude_from_collision;
+bool Joint3D::is_collisions_between_bodies_enabled() const {
+	return collisions_between_bodies_enabled;
 }
 
 TypedArray<String> Joint3D::get_configuration_warnings() const {
@@ -210,14 +210,14 @@ void Joint3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_solver_priority", "priority"), &Joint3D::set_solver_priority);
 	ClassDB::bind_method(D_METHOD("get_solver_priority"), &Joint3D::get_solver_priority);
 
-	ClassDB::bind_method(D_METHOD("set_exclude_nodes_from_collision", "enable"), &Joint3D::set_exclude_nodes_from_collision);
-	ClassDB::bind_method(D_METHOD("get_exclude_nodes_from_collision"), &Joint3D::get_exclude_nodes_from_collision);
+	ClassDB::bind_method(D_METHOD("enable_collisions_between_bodies", "enabled"), &Joint3D::enable_collisions_between_bodies, DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("is_collisions_between_bodies_enabled"), &Joint3D::is_collisions_between_bodies_enabled);
 
-	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "nodes/node_a", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "PhysicsBody3D"), "set_node_a", "get_node_a");
-	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "nodes/node_b", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "PhysicsBody3D"), "set_node_b", "get_node_b");
+	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "node_a", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "PhysicsBody3D"), "set_node_a", "get_node_a");
+	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "node_b", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "PhysicsBody3D"), "set_node_b", "get_node_b");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "solver/priority", PROPERTY_HINT_RANGE, "1,8,1"), "set_solver_priority", "get_solver_priority");
 
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "collision/exclude_nodes"), "set_exclude_nodes_from_collision", "get_exclude_nodes_from_collision");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "collisions_between_bodies"), "enable_collisions_between_bodies", "is_collisions_between_bodies_enabled");
 }
 
 Joint3D::Joint3D() {

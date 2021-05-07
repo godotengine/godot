@@ -159,7 +159,7 @@ public:
 	void remove_soft_body(SoftBodyBullet *p_body);
 	void reload_collision_filters(SoftBodyBullet *p_body);
 
-	void add_constraint(ConstraintBullet *p_constraint, bool disableCollisionsBetweenLinkedBodies = false);
+	void add_constraint(ConstraintBullet *p_constraint, bool collisions_between_bodies_enabled);
 	void remove_constraint(ConstraintBullet *p_constraint);
 
 	int get_num_collision_objects() const;

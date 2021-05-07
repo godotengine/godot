@@ -145,7 +145,7 @@ public:
 	FUNC4(area_add_shape, RID, RID, const Transform &, bool);
 	FUNC3(area_set_shape, RID, int, RID);
 	FUNC3(area_set_shape_transform, RID, int, const Transform &);
-	FUNC3(area_set_shape_disabled, RID, int, bool);
+	FUNC3(area_enable_shape, RID, int, bool);
 
 	FUNC1RC(int, area_get_shape_count, RID);
 	FUNC2RC(RID, area_get_shape, RID, int);
@@ -166,7 +166,7 @@ public:
 	FUNC2(area_set_collision_layer, RID, uint32_t);
 
 	FUNC2(area_set_monitorable, RID, bool);
-	FUNC2(area_set_ray_pickable, RID, bool);
+	FUNC2(area_set_pickable, RID, bool);
 
 	FUNC3(area_set_monitor_callback, RID, Object *, const StringName &);
 	FUNC3(area_set_area_monitor_callback, RID, Object *, const StringName &);
@@ -190,7 +190,7 @@ public:
 	FUNC2RC(Transform, body_get_shape_transform, RID, int);
 	FUNC2RC(RID, body_get_shape, RID, int);
 
-	FUNC3(body_set_shape_disabled, RID, int, bool);
+	FUNC3(body_enable_shape, RID, int, bool);
 
 	FUNC2(body_remove_shape, RID, int);
 	FUNC1(body_clear_shapes, RID);
@@ -198,7 +198,7 @@ public:
 	FUNC2(body_attach_object_instance_id, RID, ObjectID);
 	FUNC1RC(ObjectID, body_get_object_instance_id, RID);
 
-	FUNC2(body_set_enable_continuous_collision_detection, RID, bool);
+	FUNC2(body_enable_continuous_collision_detection, RID, bool);
 	FUNC1RC(bool, body_is_continuous_collision_detection_enabled, RID);
 
 	FUNC2(body_set_collision_layer, RID, uint32_t);
@@ -251,7 +251,7 @@ public:
 
 	FUNC3(body_set_force_integration_callback, RID, const Callable &, const Variant &);
 
-	FUNC2(body_set_ray_pickable, RID, bool);
+	FUNC2(body_set_pickable, RID, bool);
 
 	bool body_test_motion(RID p_body, const Transform &p_from, const Vector3 &p_motion, bool p_infinite_inertia, MotionResult *r_result = nullptr, bool p_exclude_raycast_shapes = true) override {
 		ERR_FAIL_COND_V(main_thread != Thread::get_caller_id(), false);
@@ -278,7 +278,7 @@ public:
 	FUNC2(soft_body_set_space, RID, RID)
 	FUNC1RC(RID, soft_body_get_space, RID)
 
-	FUNC2(soft_body_set_ray_pickable, RID, bool);
+	FUNC2(soft_body_set_pickable, RID, bool);
 
 	FUNC2(soft_body_set_collision_layer, RID, uint32_t)
 	FUNC1RC(uint32_t, soft_body_get_collision_layer, RID)
@@ -373,8 +373,8 @@ public:
 	FUNC2(joint_set_solver_priority, RID, int);
 	FUNC1RC(int, joint_get_solver_priority, RID);
 
-	FUNC2(joint_disable_collisions_between_bodies, RID, const bool);
-	FUNC1RC(bool, joint_is_disabled_collisions_between_bodies, RID);
+	FUNC2(joint_enable_collisions_between_bodies, RID, const bool);
+	FUNC1RC(bool, joint_is_collisions_between_bodies_enabled, RID);
 
 	/* MISC */
 

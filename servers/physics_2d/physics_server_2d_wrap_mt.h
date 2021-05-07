@@ -141,7 +141,7 @@ public:
 	FUNC4(area_add_shape, RID, RID, const Transform2D &, bool);
 	FUNC3(area_set_shape, RID, int, RID);
 	FUNC3(area_set_shape_transform, RID, int, const Transform2D &);
-	FUNC3(area_set_shape_disabled, RID, int, bool);
+	FUNC3(area_enable_shape, RID, int, bool);
 
 	FUNC1RC(int, area_get_shape_count, RID);
 	FUNC2RC(RID, area_get_shape, RID, int);
@@ -191,8 +191,8 @@ public:
 	FUNC2RC(Variant, body_get_shape_metadata, RID, int);
 	FUNC2RC(RID, body_get_shape, RID, int);
 
-	FUNC3(body_set_shape_disabled, RID, int, bool);
-	FUNC4(body_set_shape_as_one_way_collision, RID, int, bool, real_t);
+	FUNC3(body_enable_shape, RID, int, bool);
+	FUNC4(body_enable_shape_one_way_collision, RID, int, bool, real_t);
 
 	FUNC2(body_remove_shape, RID, int);
 	FUNC1(body_clear_shapes, RID);
@@ -278,8 +278,8 @@ public:
 	FUNC3(joint_set_param, RID, JointParam, real_t);
 	FUNC2RC(real_t, joint_get_param, RID, JointParam);
 
-	FUNC2(joint_disable_collisions_between_bodies, RID, const bool);
-	FUNC1RC(bool, joint_is_disabled_collisions_between_bodies, RID);
+	FUNC2(joint_enable_collisions_between_bodies, RID, const bool);
+	FUNC1RC(bool, joint_is_collisions_between_bodies_enabled, RID);
 
 	///FUNC3RID(pin_joint,const Vector2&,RID,RID);
 	///FUNC5RID(groove_joint,const Vector2&,const Vector2&,const Vector2&,RID,RID);

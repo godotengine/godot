@@ -263,14 +263,14 @@ PhysicsServer3D::AreaSpaceOverrideMode PhysicsServer3DSW::area_get_space_overrid
 	return area->get_space_override_mode();
 }
 
-void PhysicsServer3DSW::area_add_shape(RID p_area, RID p_shape, const Transform &p_transform, bool p_disabled) {
+void PhysicsServer3DSW::area_add_shape(RID p_area, RID p_shape, const Transform &p_transform, bool p_enabled) {
 	Area3DSW *area = area_owner.getornull(p_area);
 	ERR_FAIL_COND(!area);
 
 	Shape3DSW *shape = shape_owner.getornull(p_shape);
 	ERR_FAIL_COND(!shape);
 
-	area->add_shape(shape, p_transform, p_disabled);
+	area->add_shape(shape, p_transform, p_enabled);
 }
 
 void PhysicsServer3DSW::area_set_shape(RID p_area, int p_shape_idx, RID p_shape) {
@@ -331,12 +331,12 @@ void PhysicsServer3DSW::area_clear_shapes(RID p_area) {
 	}
 }
 
-void PhysicsServer3DSW::area_set_shape_disabled(RID p_area, int p_shape_idx, bool p_disabled) {
+void PhysicsServer3DSW::area_enable_shape(RID p_area, int p_shape_idx, bool p_enable) {
 	Area3DSW *area = area_owner.getornull(p_area);
 	ERR_FAIL_COND(!area);
 	ERR_FAIL_INDEX(p_shape_idx, area->get_shape_count());
 	FLUSH_QUERY_CHECK(area);
-	area->set_shape_as_disabled(p_shape_idx, p_disabled);
+	area->enable_shape(p_shape_idx, p_enable);
 }
 
 void PhysicsServer3DSW::area_attach_object_instance_id(RID p_area, ObjectID p_id) {
@@ -422,11 +422,11 @@ void PhysicsServer3DSW::area_set_monitor_callback(RID p_area, Object *p_receiver
 	area->set_monitor_callback(p_receiver ? p_receiver->get_instance_id() : ObjectID(), p_method);
 }
 
-void PhysicsServer3DSW::area_set_ray_pickable(RID p_area, bool p_enable) {
+void PhysicsServer3DSW::area_set_pickable(RID p_area, bool p_pickable) {
 	Area3DSW *area = area_owner.getornull(p_area);
 	ERR_FAIL_COND(!area);
 
-	area->set_ray_pickable(p_enable);
+	area->set_pickable(p_pickable);
 }
 
 void PhysicsServer3DSW::area_set_area_monitor_callback(RID p_area, Object *p_receiver, const StringName &p_method) {
@@ -488,14 +488,14 @@ PhysicsServer3D::BodyMode PhysicsServer3DSW::body_get_mode(RID p_body) const {
 	return body->get_mode();
 };
 
-void PhysicsServer3DSW::body_add_shape(RID p_body, RID p_shape, const Transform &p_transform, bool p_disabled) {
+void PhysicsServer3DSW::body_add_shape(RID p_body, RID p_shape, const Transform &p_transform, bool p_enabled) {
 	Body3DSW *body = body_owner.getornull(p_body);
 	ERR_FAIL_COND(!body);
 
 	Shape3DSW *shape = shape_owner.getornull(p_shape);
 	ERR_FAIL_COND(!shape);
 
-	body->add_shape(shape, p_transform, p_disabled);
+	body->add_shape(shape, p_transform, p_enabled);
 }
 
 void PhysicsServer3DSW::body_set_shape(RID p_body, int p_shape_idx, RID p_shape) {
@@ -533,13 +533,13 @@ RID PhysicsServer3DSW::body_get_shape(RID p_body, int p_shape_idx) const {
 	return shape->get_self();
 }
 
-void PhysicsServer3DSW::body_set_shape_disabled(RID p_body, int p_shape_idx, bool p_disabled) {
+void PhysicsServer3DSW::body_enable_shape(RID p_body, int p_shape_idx, bool p_enable) {
 	Body3DSW *body = body_owner.getornull(p_body);
 	ERR_FAIL_COND(!body);
 	ERR_FAIL_INDEX(p_shape_idx, body->get_shape_count());
 	FLUSH_QUERY_CHECK(body);
 
-	body->set_shape_as_disabled(p_shape_idx, p_disabled);
+	body->enable_shape(p_shape_idx, p_enable);
 }
 
 Transform PhysicsServer3DSW::body_get_shape_transform(RID p_body, int p_shape_idx) const {
@@ -565,11 +565,11 @@ void PhysicsServer3DSW::body_clear_shapes(RID p_body) {
 	}
 }
 
-void PhysicsServer3DSW::body_set_enable_continuous_collision_detection(RID p_body, bool p_enable) {
+void PhysicsServer3DSW::body_enable_continuous_collision_detection(RID p_body, bool p_enable) {
 	Body3DSW *body = body_owner.getornull(p_body);
 	ERR_FAIL_COND(!body);
 
-	body->set_continuous_collision_detection(p_enable);
+	body->enable_continuous_collision_detection(p_enable);
 }
 
 bool PhysicsServer3DSW::body_is_continuous_collision_detection_enabled(RID p_body) const {
@@ -863,10 +863,10 @@ void PhysicsServer3DSW::body_set_force_integration_callback(RID p_body, const Ca
 	body->set_force_integration_callback(p_callable, p_udata);
 }
 
-void PhysicsServer3DSW::body_set_ray_pickable(RID p_body, bool p_enable) {
+void PhysicsServer3DSW::body_set_pickable(RID p_body, bool p_pickable) {
 	Body3DSW *body = body_owner.getornull(p_body);
 	ERR_FAIL_COND(!body);
-	body->set_ray_pickable(p_enable);
+	body->set_pickable(p_pickable);
 }
 
 bool PhysicsServer3DSW::body_test_motion(RID p_body, const Transform &p_from, const Vector3 &p_motion, bool p_infinite_inertia, MotionResult *r_result, bool p_exclude_raycast_shapes) {
@@ -1018,11 +1018,11 @@ void PhysicsServer3DSW::soft_body_set_transform(RID p_body, const Transform &p_t
 	soft_body->set_state(BODY_STATE_TRANSFORM, p_transform);
 }
 
-void PhysicsServer3DSW::soft_body_set_ray_pickable(RID p_body, bool p_enable) {
+void PhysicsServer3DSW::soft_body_set_pickable(RID p_body, bool p_enable) {
 	SoftBody3DSW *soft_body = soft_body_owner.getornull(p_body);
 	ERR_FAIL_COND(!soft_body);
 
-	soft_body->set_ray_pickable(p_enable);
+	soft_body->set_pickable(p_enable);
 }
 
 void PhysicsServer3DSW::soft_body_set_simulation_precision(RID p_body, int p_simulation_precision) {
@@ -1346,31 +1346,31 @@ int PhysicsServer3DSW::joint_get_solver_priority(RID p_joint) const {
 	return joint->get_priority();
 }
 
-void PhysicsServer3DSW::joint_disable_collisions_between_bodies(RID p_joint, const bool p_disable) {
+void PhysicsServer3DSW::joint_enable_collisions_between_bodies(RID p_joint, const bool p_enable) {
 	Joint3DSW *joint = joint_owner.getornull(p_joint);
 	ERR_FAIL_COND(!joint);
 
-	joint->disable_collisions_between_bodies(p_disable);
+	joint->enable_collisions_between_bodies(p_enable);
 
 	if (2 == joint->get_body_count()) {
 		Body3DSW *body_a = *joint->get_body_ptr();
 		Body3DSW *body_b = *(joint->get_body_ptr() + 1);
 
-		if (p_disable) {
-			body_add_collision_exception(body_a->get_self(), body_b->get_self());
-			body_add_collision_exception(body_b->get_self(), body_a->get_self());
-		} else {
+		if (p_enable) {
 			body_remove_collision_exception(body_a->get_self(), body_b->get_self());
 			body_remove_collision_exception(body_b->get_self(), body_a->get_self());
+		} else {
+			body_add_collision_exception(body_a->get_self(), body_b->get_self());
+			body_add_collision_exception(body_b->get_self(), body_a->get_self());
 		}
 	}
 }
 
-bool PhysicsServer3DSW::joint_is_disabled_collisions_between_bodies(RID p_joint) const {
+bool PhysicsServer3DSW::joint_is_collisions_between_bodies_enabled(RID p_joint) const {
 	Joint3DSW *joint = joint_owner.getornull(p_joint);
 	ERR_FAIL_COND_V(!joint, true);
 
-	return joint->is_disabled_collisions_between_bodies();
+	return joint->is_collisions_between_bodies_enabled();
 }
 
 PhysicsServer3DSW::JointType PhysicsServer3DSW::joint_get_type(RID p_joint) const {

@@ -32,13 +32,13 @@
 #include "servers/physics_2d/physics_server_2d_sw.h"
 #include "space_2d_sw.h"
 
-void CollisionObject2DSW::add_shape(Shape2DSW *p_shape, const Transform2D &p_transform, bool p_disabled) {
+void CollisionObject2DSW::add_shape(Shape2DSW *p_shape, const Transform2D &p_transform, bool p_enabled) {
 	Shape s;
 	s.shape = p_shape;
 	s.xform = p_transform;
 	s.xform_inv = s.xform.affine_inverse();
 	s.bpid = 0; //needs update
-	s.disabled = p_disabled;
+	s.enabled = p_enabled;
 	s.one_way_collision = false;
 	s.one_way_collision_margin = 0;
 	shapes.push_back(s);
@@ -83,32 +83,27 @@ void CollisionObject2DSW::set_shape_transform(int p_index, const Transform2D &p_
 	// _shapes_changed();
 }
 
-void CollisionObject2DSW::set_shape_as_disabled(int p_idx, bool p_disabled) {
+void CollisionObject2DSW::enable_shape(int p_idx, bool p_enable) {
 	ERR_FAIL_INDEX(p_idx, shapes.size());
 
 	CollisionObject2DSW::Shape &shape = shapes.write[p_idx];
-	if (shape.disabled == p_disabled) {
+	if (shape.enabled == p_enable) {
 		return;
 	}
 
-	shape.disabled = p_disabled;
+	shape.enabled = p_enable;
 
-	if (!space) {
+	if (!space || shape.bpid == 0) {
 		return;
 	}
 
-	if (p_disabled && shape.bpid != 0) {
+	if (!p_enable) {
 		space->get_broadphase()->remove(shape.bpid);
 		shape.bpid = 0;
-		if (!pending_shape_update_list.in_list()) {
-			PhysicsServer2DSW::singletonsw->pending_shape_update_list.add(&pending_shape_update_list);
-		}
-		//_update_shapes();
-	} else if (!p_disabled && shape.bpid == 0) {
-		if (!pending_shape_update_list.in_list()) {
-			PhysicsServer2DSW::singletonsw->pending_shape_update_list.add(&pending_shape_update_list);
-		}
-		//_update_shapes(); // automatically adds shape with bpid == 0
+	}
+
+	if (!pending_shape_update_list.in_list()) {
+		PhysicsServer2DSW::singletonsw->pending_shape_update_list.add(&pending_shape_update_list);
 	}
 }
 
@@ -178,7 +173,7 @@ void CollisionObject2DSW::_update_shapes() {
 	for (int i = 0; i < shapes.size(); i++) {
 		Shape &s = shapes.write[i];
 
-		if (s.disabled) {
+		if (!s.enabled) {
 			continue;
 		}
 
@@ -205,7 +200,7 @@ void CollisionObject2DSW::_update_shapes_with_motion(const Vector2 &p_motion) {
 
 	for (int i = 0; i < shapes.size(); i++) {
 		Shape &s = shapes.write[i];
-		if (s.disabled) {
+		if (!s.enabled) {
 			continue;
 		}
 

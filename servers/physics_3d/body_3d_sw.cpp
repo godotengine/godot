@@ -82,7 +82,7 @@ void Body3DSW::update_inertias() {
 			bool inertia_set = false;
 
 			for (int i = 0; i < get_shape_count(); i++) {
-				if (is_shape_disabled(i)) {
+				if (!is_shape_enabled(i)) {
 					continue;
 				}
 

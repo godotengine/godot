@@ -45,7 +45,7 @@ class Joint2D : public Node2D {
 	NodePath b;
 	real_t bias = 0.0;
 
-	bool exclude_from_collision = true;
+	bool collisions_between_bodies_enabled = false;
 	bool configured = false;
 	String warning;
 
@@ -73,8 +73,8 @@ public:
 	void set_bias(real_t p_bias);
 	real_t get_bias() const;
 
-	void set_exclude_nodes_from_collision(bool p_enable);
-	bool get_exclude_nodes_from_collision() const;
+	void enable_collisions_between_bodies(bool p_enable = true);
+	bool is_collisions_between_bodies_enabled() const;
 
 	RID get_joint() const { return joint; }
 	Joint2D();

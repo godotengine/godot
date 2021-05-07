@@ -273,7 +273,7 @@ public:
 	void set_applied_torque(const Vector3 &p_torque) { applied_torque = p_torque; }
 	Vector3 get_applied_torque() const { return applied_torque; }
 
-	_FORCE_INLINE_ void set_continuous_collision_detection(bool p_enable) { continuous_cd = p_enable; }
+	_FORCE_INLINE_ void enable_continuous_collision_detection(bool p_enable = true) { continuous_cd = p_enable; }
 	_FORCE_INLINE_ bool is_continuous_collision_detection_enabled() const { return continuous_cd; }
 
 	void set_space(Space3DSW *p_space);
