@@ -952,11 +952,10 @@ public:
 	void _frustum_cull(CullData &cull_data, FrustumCullResult &cull_result, uint64_t p_from, uint64_t p_to);
 
 	bool _render_reflection_probe_step(Instance *p_instance, int p_step);
-	void _render_scene(const Transform3D &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_orthogonal, bool p_cam_vaspect, RID p_render_buffers, RID p_environment, RID p_force_camera_effects, uint32_t p_visible_layers, RID p_scenario, RID p_viewport, RID p_shadow_atlas, RID p_reflection_probe, int p_reflection_probe_pass, float p_screen_lod_threshold, bool p_using_shadows = true);
+	void _render_scene(const RendererSceneRender::CameraData *p_camera_data, RID p_render_buffers, RID p_environment, RID p_force_camera_effects, uint32_t p_visible_layers, RID p_scenario, RID p_viewport, RID p_shadow_atlas, RID p_reflection_probe, int p_reflection_probe_pass, float p_screen_lod_threshold, bool p_using_shadows = true);
 	void render_empty_scene(RID p_render_buffers, RID p_scenario, RID p_shadow_atlas);
 
-	void render_camera(RID p_render_buffers, RID p_camera, RID p_scenario, RID p_viewport, Size2 p_viewport_size, float p_screen_lod_threshold, RID p_shadow_atlas);
-	void render_camera(RID p_render_buffers, Ref<XRInterface> &p_interface, XRInterface::Eyes p_eye, RID p_camera, RID p_scenario, RID p_viewport, Size2 p_viewport_size, float p_screen_lod_threshold, RID p_shadow_atlas);
+	void render_camera(RID p_render_buffers, RID p_camera, RID p_scenario, RID p_viewport, Size2 p_viewport_size, float p_screen_lod_threshold, RID p_shadow_atlas, Ref<XRInterface> &p_xr_interface);
 	void update_dirty_instances();
 
 	void render_particle_colliders();
@@ -1054,7 +1053,7 @@ public:
 	/* Render Buffers */
 
 	PASS0R(RID, render_buffers_create)
-	PASS7(render_buffers_configure, RID, RID, int, int, RS::ViewportMSAA, RS::ViewportScreenSpaceAA, bool)
+	PASS8(render_buffers_configure, RID, RID, int, int, RS::ViewportMSAA, RS::ViewportScreenSpaceAA, bool, uint32_t)
 	PASS1(gi_set_use_half_resolution, bool)
 
 	/* Shadow Atlas */

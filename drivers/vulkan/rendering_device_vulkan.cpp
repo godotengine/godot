@@ -3244,7 +3244,7 @@ bool RenderingDeviceVulkan::texture_is_format_supported_for_usage(DataFormat p_f
 /**** ATTACHMENT ****/
 /********************/
 
-VkRenderPass RenderingDeviceVulkan::_render_pass_create(const Vector<AttachmentFormat> &p_format, InitialAction p_initial_color_action, FinalAction p_final_color_action, InitialAction p_initial_depth_action, FinalAction p_final_depth_action, int *r_color_attachment_count) {
+VkRenderPass RenderingDeviceVulkan::_render_pass_create(const Vector<AttachmentFormat> &p_format, InitialAction p_initial_color_action, FinalAction p_final_color_action, InitialAction p_initial_depth_action, FinalAction p_final_depth_action, int *r_color_attachment_count, uint32_t p_view_count) {
 	Vector<VkAttachmentDescription> attachments;
 	Vector<VkAttachmentReference> color_references;
 	Vector<VkAttachmentReference> depth_stencil_references;
@@ -3469,6 +3469,31 @@ VkRenderPass RenderingDeviceVulkan::_render_pass_create(const Vector<AttachmentF
 	render_pass_create_info.dependencyCount = 0;
 	render_pass_create_info.pDependencies = nullptr;
 
+	const uint32_t view_mask = (1 << p_view_count) - 1;
+	const uint32_t correlation_mask = (1 << p_view_count) - 1;
+	VkRenderPassMultiviewCreateInfo render_pass_multiview_create_info;
+
+	if (p_view_count > 1) {
+		const VulkanContext::MultiviewCapabilities capabilities = context->get_multiview_capabilities();
+
+		// For now this only works with multiview!
+		ERR_FAIL_COND_V_MSG(!capabilities.is_supported, VK_NULL_HANDLE, "Multiview not supported");
+
+		// Make sure we limit this to the number of views we support.
+		ERR_FAIL_COND_V_MSG(p_view_count > capabilities.max_view_count, VK_NULL_HANDLE, "Hardware does not support requested number of views for Multiview render pass");
+
+		render_pass_multiview_create_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_MULTIVIEW_CREATE_INFO;
+		render_pass_multiview_create_info.pNext = nullptr;
+		render_pass_multiview_create_info.subpassCount = 1;
+		render_pass_multiview_create_info.pViewMasks = &view_mask;
+		render_pass_multiview_create_info.dependencyCount = 0;
+		render_pass_multiview_create_info.pViewOffsets = nullptr;
+		render_pass_multiview_create_info.correlationMaskCount = 1;
+		render_pass_multiview_create_info.pCorrelationMasks = &correlation_mask;
+
+		render_pass_create_info.pNext = &render_pass_multiview_create_info;
+	}
+
 	VkRenderPass render_pass;
 	VkResult res = vkCreateRenderPass(device, &render_pass_create_info, nullptr, &render_pass);
 	ERR_FAIL_COND_V_MSG(res, VK_NULL_HANDLE, "vkCreateRenderPass failed with error " + itos(res) + ".");
@@ -3479,11 +3504,12 @@ VkRenderPass RenderingDeviceVulkan::_render_pass_create(const Vector<AttachmentF
 	return render_pass;
 }
 
-RenderingDevice::FramebufferFormatID RenderingDeviceVulkan::framebuffer_format_create(const Vector<AttachmentFormat> &p_format) {
+RenderingDevice::FramebufferFormatID RenderingDeviceVulkan::framebuffer_format_create(const Vector<AttachmentFormat> &p_format, uint32_t p_view_count) {
 	_THREAD_SAFE_METHOD_
 
 	FramebufferFormatKey key;
 	key.attachments = p_format;
+	key.view_count = p_view_count;
 
 	const Map<FramebufferFormatKey, FramebufferFormatID>::Element *E = framebuffer_format_cache.find(key);
 	if (E) {
@@ -3492,7 +3518,7 @@ RenderingDevice::FramebufferFormatID RenderingDeviceVulkan::framebuffer_format_c
 	}
 
 	int color_references;
-	VkRenderPass render_pass = _render_pass_create(p_format, INITIAL_ACTION_CLEAR, FINAL_ACTION_READ, INITIAL_ACTION_CLEAR, FINAL_ACTION_READ, &color_references); //actions don't matter for this use case
+	VkRenderPass render_pass = _render_pass_create(p_format, INITIAL_ACTION_CLEAR, FINAL_ACTION_READ, INITIAL_ACTION_CLEAR, FINAL_ACTION_READ, &color_references, p_view_count); //actions don't matter for this use case
 
 	if (render_pass == VK_NULL_HANDLE) { //was likely invalid
 		return INVALID_ID;
@@ -3505,6 +3531,7 @@ RenderingDevice::FramebufferFormatID RenderingDeviceVulkan::framebuffer_format_c
 	fb_format.color_attachments = color_references;
 	fb_format.render_pass = render_pass;
 	fb_format.samples = p_format[0].samples;
+	fb_format.view_count = p_view_count;
 	framebuffer_formats[id] = fb_format;
 	return id;
 }
@@ -3580,11 +3607,12 @@ RID RenderingDeviceVulkan::framebuffer_create_empty(const Size2i &p_size, Textur
 	framebuffer.format_id = framebuffer_format_create_empty(p_samples);
 	ERR_FAIL_COND_V(p_format_check != INVALID_FORMAT_ID && framebuffer.format_id != p_format_check, RID());
 	framebuffer.size = p_size;
+	framebuffer.view_count = 1;
 
 	return framebuffer_owner.make_rid(framebuffer);
 }
 
-RID RenderingDeviceVulkan::framebuffer_create(const Vector<RID> &p_texture_attachments, FramebufferFormatID p_format_check) {
+RID RenderingDeviceVulkan::framebuffer_create(const Vector<RID> &p_texture_attachments, FramebufferFormatID p_format_check, uint32_t p_view_count) {
 	_THREAD_SAFE_METHOD_
 
 	Vector<AttachmentFormat> attachments;
@@ -3593,6 +3621,8 @@ RID RenderingDeviceVulkan::framebuffer_create(const Vector<RID> &p_texture_attac
 	for (int i = 0; i < p_texture_attachments.size(); i++) {
 		Texture *texture = texture_owner.getornull(p_texture_attachments[i]);
 		ERR_FAIL_COND_V_MSG(!texture, RID(), "Texture index supplied for framebuffer (" + itos(i) + ") is not a valid texture.");
+
+		ERR_FAIL_COND_V_MSG(texture->layers != p_view_count, RID(), "Layers of our texture doesn't match view count for this framebuffer");
 
 		if (i == 0) {
 			size.width = texture->width;
@@ -3609,7 +3639,7 @@ RID RenderingDeviceVulkan::framebuffer_create(const Vector<RID> &p_texture_attac
 		attachments.push_back(af);
 	}
 
-	FramebufferFormatID format_id = framebuffer_format_create(attachments);
+	FramebufferFormatID format_id = framebuffer_format_create(attachments, p_view_count);
 	if (format_id == INVALID_ID) {
 		return RID();
 	}
@@ -3621,6 +3651,7 @@ RID RenderingDeviceVulkan::framebuffer_create(const Vector<RID> &p_texture_attac
 	framebuffer.format_id = format_id;
 	framebuffer.texture_ids = p_texture_attachments;
 	framebuffer.size = size;
+	framebuffer.view_count = p_view_count;
 
 	RID id = framebuffer_owner.make_rid(framebuffer);
 
@@ -5904,12 +5935,13 @@ Error RenderingDeviceVulkan::_draw_list_setup_framebuffer(Framebuffer *p_framebu
 	vk.final_color_action = p_final_color_action;
 	vk.initial_depth_action = p_initial_depth_action;
 	vk.final_depth_action = p_final_depth_action;
+	vk.view_count = p_framebuffer->view_count;
 
 	if (!p_framebuffer->framebuffers.has(vk)) {
 		//need to create this version
 		Framebuffer::Version version;
 
-		version.render_pass = _render_pass_create(framebuffer_formats[p_framebuffer->format_id].E->key().attachments, p_initial_color_action, p_final_color_action, p_initial_depth_action, p_final_depth_action);
+		version.render_pass = _render_pass_create(framebuffer_formats[p_framebuffer->format_id].E->key().attachments, p_initial_color_action, p_final_color_action, p_initial_depth_action, p_final_depth_action, nullptr, p_framebuffer->view_count);
 
 		VkFramebufferCreateInfo framebuffer_create_info;
 		framebuffer_create_info.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;

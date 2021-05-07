@@ -86,7 +86,8 @@ Vector3 XRCamera3D::project_local_ray_normal(const Point2 &p_pos) const {
 	Vector2 cpos = get_viewport()->get_camera_coords(p_pos);
 	Vector3 ray;
 
-	CameraMatrix cm = xr_interface->get_projection_for_eye(XRInterface::EYE_MONO, viewport_size.aspect(), get_near(), get_far());
+	// Just use the first view, if multiple views are supported this function has no good result
+	CameraMatrix cm = xr_interface->get_projection_for_view(0, viewport_size.aspect(), get_near(), get_far());
 	Vector2 screen_he = cm.get_viewport_half_extents();
 	ray = Vector3(((cpos.x / viewport_size.width) * 2.0 - 1.0) * screen_he.x, ((1.0 - (cpos.y / viewport_size.height)) * 2.0 - 1.0) * screen_he.y, -get_near()).normalized();
 
@@ -108,7 +109,8 @@ Point2 XRCamera3D::unproject_position(const Vector3 &p_pos) const {
 
 	Size2 viewport_size = get_viewport()->get_visible_rect().size;
 
-	CameraMatrix cm = xr_interface->get_projection_for_eye(XRInterface::EYE_MONO, viewport_size.aspect(), get_near(), get_far());
+	// Just use the first view, if multiple views are supported this function has no good result
+	CameraMatrix cm = xr_interface->get_projection_for_view(0, viewport_size.aspect(), get_near(), get_far());
 
 	Plane p(get_camera_transform().xform_inv(p_pos), 1.0);
 
@@ -137,7 +139,8 @@ Vector3 XRCamera3D::project_position(const Point2 &p_point, float p_z_depth) con
 
 	Size2 viewport_size = get_viewport()->get_visible_rect().size;
 
-	CameraMatrix cm = xr_interface->get_projection_for_eye(XRInterface::EYE_MONO, viewport_size.aspect(), get_near(), get_far());
+	// Just use the first view, if multiple views are supported this function has no good result
+	CameraMatrix cm = xr_interface->get_projection_for_view(0, viewport_size.aspect(), get_near(), get_far());
 
 	Vector2 vp_he = cm.get_viewport_half_extents();
 
@@ -165,7 +168,8 @@ Vector<Plane> XRCamera3D::get_frustum() const {
 	ERR_FAIL_COND_V(!is_inside_world(), Vector<Plane>());
 
 	Size2 viewport_size = get_viewport()->get_visible_rect().size;
-	CameraMatrix cm = xr_interface->get_projection_for_eye(XRInterface::EYE_MONO, viewport_size.aspect(), get_near(), get_far());
+	// TODO Just use the first view for now, this is mostly for debugging so we may look into using our combined projection here.
+	CameraMatrix cm = xr_interface->get_projection_for_view(0, viewport_size.aspect(), get_near(), get_far());
 	return cm.get_projection_planes(get_camera_transform());
 };
 
@@ -516,6 +520,11 @@ TypedArray<String> XROrigin3D::get_configuration_warnings() const {
 		}
 	}
 
+	bool vr_enabled = GLOBAL_GET("rendering/vr/enabled");
+	if (!vr_enabled) {
+		warnings.push_back(TTR("VR is not enabled in rendering project settings. Stereoscopic output is not supported unless this is enabled."));
+	}
+
 	return warnings;
 };
 
@@ -571,7 +580,7 @@ void XROrigin3D::_notification(int p_what) {
 			Ref<XRInterface> xr_interface = xr_server->get_primary_interface();
 			if (xr_interface.is_valid() && tracked_camera != nullptr) {
 				// get our positioning transform for our headset
-				Transform3D t = xr_interface->get_transform_for_eye(XRInterface::EYE_MONO, Transform3D());
+				Transform3D t = xr_interface->get_camera_transform();
 
 				// now apply this to our camera
 				tracked_camera->set_transform(t);

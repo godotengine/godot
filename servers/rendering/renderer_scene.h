@@ -189,7 +189,7 @@ public:
 
 	virtual RID render_buffers_create() = 0;
 
-	virtual void render_buffers_configure(RID p_render_buffers, RID p_render_target, int p_width, int p_height, RS::ViewportMSAA p_msaa, RS::ViewportScreenSpaceAA p_screen_space_aa, bool p_use_debanding) = 0;
+	virtual void render_buffers_configure(RID p_render_buffers, RID p_render_target, int p_width, int p_height, RS::ViewportMSAA p_msaa, RS::ViewportScreenSpaceAA p_screen_space_aa, bool p_use_debanding, uint32_t p_view_count) = 0;
 
 	virtual void gi_set_use_half_resolution(bool p_enable) = 0;
 
@@ -201,8 +201,7 @@ public:
 	virtual void sdfgi_set_debug_probe_select(const Vector3 &p_position, const Vector3 &p_dir) = 0;
 
 	virtual void render_empty_scene(RID p_render_buffers, RID p_scenario, RID p_shadow_atlas) = 0;
-	virtual void render_camera(RID p_render_buffers, RID p_camera, RID p_scenario, RID p_viewport, Size2 p_viewport_size, float p_lod_threshold, RID p_shadow_atlas) = 0;
-	virtual void render_camera(RID p_render_buffers, Ref<XRInterface> &p_interface, XRInterface::Eyes p_eye, RID p_camera, RID p_scenario, RID p_viewport, Size2 p_viewport_size, float p_lod_threshold, RID p_shadow_atlas) = 0;
+	virtual void render_camera(RID p_render_buffers, RID p_camera, RID p_scenario, RID p_viewport, Size2 p_viewport_size, float p_lod_threshold, RID p_shadow_atlas, Ref<XRInterface> &p_xr_interface) = 0;
 
 	virtual void update() = 0;
 	virtual void render_probes() = 0;

@@ -300,9 +300,9 @@ real_t MobileVRInterface::get_k2() const {
 	return k2;
 };
 
-bool MobileVRInterface::is_stereo() {
+uint32_t MobileVRInterface::get_view_count() {
 	// needs stereo...
-	return true;
+	return 2;
 };
 
 bool MobileVRInterface::is_initialized() const {
@@ -361,7 +361,29 @@ Size2 MobileVRInterface::get_render_targetsize() {
 	return target_size;
 };
 
-Transform3D MobileVRInterface::get_transform_for_eye(XRInterface::Eyes p_eye, const Transform3D &p_cam_transform) {
+Transform3D MobileVRInterface::get_camera_transform() {
+	_THREAD_SAFE_METHOD_
+
+	Transform3D transform_for_eye;
+
+	XRServer *xr_server = XRServer::get_singleton();
+	ERR_FAIL_NULL_V(xr_server, transform_for_eye);
+
+	if (initialized) {
+		float world_scale = xr_server->get_world_scale();
+
+		// just scale our origin point of our transform
+		Transform3D hmd_transform;
+		hmd_transform.basis = orientation;
+		hmd_transform.origin = Vector3(0.0, eye_height * world_scale, 0.0);
+
+		transform_for_eye = (xr_server->get_reference_frame()) * hmd_transform;
+	}
+
+	return transform_for_eye;
+};
+
+Transform3D MobileVRInterface::get_transform_for_view(uint32_t p_view, const Transform3D &p_cam_transform) {
 	_THREAD_SAFE_METHOD_
 
 	Transform3D transform_for_eye;
@@ -374,12 +396,12 @@ Transform3D MobileVRInterface::get_transform_for_eye(XRInterface::Eyes p_eye, co
 
 		// we don't need to check for the existence of our HMD, doesn't affect our values...
 		// note * 0.01 to convert cm to m and * 0.5 as we're moving half in each direction...
-		if (p_eye == XRInterface::EYE_LEFT) {
+		if (p_view == 0) {
 			transform_for_eye.origin.x = -(intraocular_dist * 0.01 * 0.5 * world_scale);
-		} else if (p_eye == XRInterface::EYE_RIGHT) {
+		} else if (p_view == 1) {
 			transform_for_eye.origin.x = intraocular_dist * 0.01 * 0.5 * world_scale;
 		} else {
-			// for mono we don't reposition, we want our center position.
+			// should not have any other values..
 		};
 
 		// just scale our origin point of our transform
@@ -396,21 +418,13 @@ Transform3D MobileVRInterface::get_transform_for_eye(XRInterface::Eyes p_eye, co
 	return transform_for_eye;
 };
 
-CameraMatrix MobileVRInterface::get_projection_for_eye(XRInterface::Eyes p_eye, real_t p_aspect, real_t p_z_near, real_t p_z_far) {
+CameraMatrix MobileVRInterface::get_projection_for_view(uint32_t p_view, real_t p_aspect, real_t p_z_near, real_t p_z_far) {
 	_THREAD_SAFE_METHOD_
 
 	CameraMatrix eye;
 
-	if (p_eye == XRInterface::EYE_MONO) {
-		///@TODO for now hardcode some of this, what is really needed here is that this needs to be in sync with the real camera's properties
-		// which probably means implementing a specific class for iOS and Android. For now this is purely here as an example.
-		// Note also that if you use a normal viewport with AR/VR turned off you can still use the tracker output of this interface
-		// to position a stock standard Godot camera and have control over this.
-		// This will make more sense when we implement ARkit on iOS (probably a separate interface).
-		eye.set_perspective(60.0, p_aspect, p_z_near, p_z_far, false);
-	} else {
-		eye.set_for_hmd(p_eye == XRInterface::EYE_LEFT ? 1 : 2, p_aspect, intraocular_dist, display_width, display_to_lens, oversample, p_z_near, p_z_far);
-	};
+	aspect = p_aspect;
+	eye.set_for_hmd(p_view + 1, p_aspect, intraocular_dist, display_width, display_to_lens, oversample, p_z_near, p_z_far);
 
 	return eye;
 };
@@ -438,6 +452,45 @@ void MobileVRInterface::commit_for_eye(XRInterface::Eyes p_eye, RID p_render_tar
 	}
 	// we don't offset the eye center vertically (yet)
 	eye_center.y = 0.0;
+}
+
+Vector<BlitToScreen> MobileVRInterface::commit_views(RID p_render_target, const Rect2 &p_screen_rect) {
+	_THREAD_SAFE_METHOD_
+
+	Vector<BlitToScreen> blit_to_screen;
+
+	// We must have a valid render target
+	ERR_FAIL_COND_V(!p_render_target.is_valid(), blit_to_screen);
+
+	// Because we are rendering to our device we must use our main viewport!
+	ERR_FAIL_COND_V(p_screen_rect == Rect2(), blit_to_screen);
+
+	// and add our blits
+	BlitToScreen blit;
+	blit.render_target = p_render_target;
+	blit.multi_view.use_layer = true;
+	blit.lens_distortion.apply = true;
+	blit.lens_distortion.k1 = k1;
+	blit.lens_distortion.k2 = k2;
+	blit.lens_distortion.upscale = oversample;
+	blit.lens_distortion.aspect_ratio = aspect;
+
+	// left eye
+	blit.rect = p_screen_rect;
+	blit.rect.size.width *= 0.5;
+	blit.multi_view.layer = 0;
+	blit.lens_distortion.eye_center.x = ((-intraocular_dist / 2.0) + (display_width / 4.0)) / (display_width / 2.0);
+	blit_to_screen.push_back(blit);
+
+	// right eye
+	blit.rect = p_screen_rect;
+	blit.rect.size.width *= 0.5;
+	blit.rect.position.x = blit.rect.size.width;
+	blit.multi_view.layer = 1;
+	blit.lens_distortion.eye_center.x = ((intraocular_dist / 2.0) - (display_width / 4.0)) / (display_width / 2.0);
+	blit_to_screen.push_back(blit);
+
+	return blit_to_screen;
 }
 
 void MobileVRInterface::process() {

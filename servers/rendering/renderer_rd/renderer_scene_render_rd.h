@@ -50,6 +50,10 @@ struct RenderDataRD {
 	CameraMatrix cam_projection = CameraMatrix();
 	bool cam_ortogonal = false;
 
+	// For stereo rendering
+	uint32_t view_count = 1;
+	CameraMatrix view_projection[RendererSceneRender::MAX_RENDER_VIEWS];
+
 	float z_near = 0.0;
 	float z_far = 0.0;
 
@@ -87,7 +91,7 @@ protected:
 	double time_step = 0;
 
 	struct RenderBufferData {
-		virtual void configure(RID p_color_buffer, RID p_depth_buffer, int p_width, int p_height, RS::ViewportMSAA p_msaa) = 0;
+		virtual void configure(RID p_color_buffer, RID p_depth_buffer, int p_width, int p_height, RS::ViewportMSAA p_msaa, uint32_t p_view_count) = 0;
 		virtual ~RenderBufferData() {}
 	};
 	virtual RenderBufferData *_create_render_buffer_data() = 0;
@@ -411,6 +415,7 @@ private:
 		RS::ViewportMSAA msaa = RS::VIEWPORT_MSAA_DISABLED;
 		RS::ViewportScreenSpaceAA screen_space_aa = RS::VIEWPORT_SCREEN_SPACE_AA_DISABLED;
 		bool use_debanding = false;
+		uint32_t view_count = 1;
 
 		RID render_target;
 
@@ -1118,7 +1123,7 @@ public:
 	/* render buffers */
 
 	RID render_buffers_create();
-	void render_buffers_configure(RID p_render_buffers, RID p_render_target, int p_width, int p_height, RS::ViewportMSAA p_msaa, RS::ViewportScreenSpaceAA p_screen_space_aa, bool p_use_debanding);
+	void render_buffers_configure(RID p_render_buffers, RID p_render_target, int p_width, int p_height, RS::ViewportMSAA p_msaa, RS::ViewportScreenSpaceAA p_screen_space_aa, bool p_use_debanding, uint32_t p_view_count);
 	void gi_set_use_half_resolution(bool p_enable);
 
 	RID render_buffers_get_ao_texture(RID p_render_buffers);
@@ -1147,7 +1152,7 @@ public:
 	float render_buffers_get_volumetric_fog_end(RID p_render_buffers);
 	float render_buffers_get_volumetric_fog_detail_spread(RID p_render_buffers);
 
-	void render_scene(RID p_render_buffers, const Transform3D &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, const PagedArray<GeometryInstance *> &p_instances, const PagedArray<RID> &p_lights, const PagedArray<RID> &p_reflection_probes, const PagedArray<RID> &p_voxel_gi_instances, const PagedArray<RID> &p_decals, const PagedArray<RID> &p_lightmaps, RID p_environment, RID p_camera_effects, RID p_shadow_atlas, RID p_occluder_debug_tex, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass, float p_screen_lod_threshold, const RenderShadowData *p_render_shadows, int p_render_shadow_count, const RenderSDFGIData *p_render_sdfgi_regions, int p_render_sdfgi_region_count, const RenderSDFGIUpdateData *p_sdfgi_update_data = nullptr);
+	void render_scene(RID p_render_buffers, const CameraData *p_camera_data, const PagedArray<GeometryInstance *> &p_instances, const PagedArray<RID> &p_lights, const PagedArray<RID> &p_reflection_probes, const PagedArray<RID> &p_voxel_gi_instances, const PagedArray<RID> &p_decals, const PagedArray<RID> &p_lightmaps, RID p_environment, RID p_camera_effects, RID p_shadow_atlas, RID p_occluder_debug_tex, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass, float p_screen_lod_threshold, const RenderShadowData *p_render_shadows, int p_render_shadow_count, const RenderSDFGIData *p_render_sdfgi_regions, int p_render_sdfgi_region_count, const RenderSDFGIUpdateData *p_sdfgi_update_data = nullptr);
 
 	void render_material(const Transform3D &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, const PagedArray<GeometryInstance *> &p_instances, RID p_framebuffer, const Rect2i &p_region);
 

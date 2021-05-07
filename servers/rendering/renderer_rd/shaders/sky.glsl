@@ -4,11 +4,17 @@
 
 #VERSION_DEFINES
 
+#define MAX_VIEWS 2
+
+#if defined(USE_MULTIVIEW) && defined(has_VK_KHR_multiview)
+#extension GL_EXT_multiview : enable
+#endif
+
 layout(location = 0) out vec2 uv_interp;
 
 layout(push_constant, binding = 1, std430) uniform Params {
 	mat3 orientation;
-	vec4 proj;
+	vec4 projections[MAX_VIEWS];
 	vec4 position_multiplier;
 	float time;
 }
@@ -26,15 +32,29 @@ void main() {
 
 #VERSION_DEFINES
 
+#ifdef USE_MULTIVIEW
+#ifdef has_VK_KHR_multiview
+#extension GL_EXT_multiview : enable
+#define ViewIndex gl_ViewIndex
+#else // has_VK_KHR_multiview
+// !BAS! This needs to become an input once we implement our fallback!
+#define ViewIndex 0
+#endif // has_VK_KHR_multiview
+#else // USE_MULTIVIEW
+// Set to zero, not supported in non stereo
+#define ViewIndex 0
+#endif //USE_MULTIVIEW
+
 #define M_PI 3.14159265359
+#define MAX_VIEWS 2
 
 layout(location = 0) in vec2 uv_interp;
 
 layout(push_constant, binding = 1, std430) uniform Params {
 	mat3 orientation;
-	vec4 proj;
+	vec4 projections[MAX_VIEWS];
 	vec4 position_multiplier;
-	float time; //TODO consider adding vec2 screen res, and float radiance size
+	float time;
 }
 params;
 
@@ -85,7 +105,6 @@ struct DirectionalLightData {
 layout(set = 0, binding = 3, std140) uniform DirectionalLights {
 	DirectionalLightData data[MAX_DIRECTIONAL_LIGHT_DATA_STRUCTS];
 }
-
 directional_lights;
 
 #ifdef MATERIAL_UNIFORMS_USED
@@ -154,8 +173,8 @@ vec4 fog_process(vec3 view, vec3 sky_color) {
 void main() {
 	vec3 cube_normal;
 	cube_normal.z = -1.0;
-	cube_normal.x = (cube_normal.z * (-uv_interp.x - params.proj.x)) / params.proj.y;
-	cube_normal.y = -(cube_normal.z * (-uv_interp.y - params.proj.z)) / params.proj.w;
+	cube_normal.x = (cube_normal.z * (-uv_interp.x - params.projections[ViewIndex].x)) / params.projections[ViewIndex].y;
+	cube_normal.y = -(cube_normal.z * (-uv_interp.y - params.projections[ViewIndex].z)) / params.projections[ViewIndex].w;
 	cube_normal = mat3(params.orientation) * cube_normal;
 	cube_normal.z = -cube_normal.z;
 	cube_normal = normalize(cube_normal);
