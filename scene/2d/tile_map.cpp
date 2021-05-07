@@ -34,8 +34,6 @@
 #include "core/math/geometry_2d.h"
 #include "core/os/os.h"
 
-#include "scene/resources/tile_set/tile_set_atlas_plugin_rendering.h"
-
 void TileMapPattern::set_cell(const Vector2i &p_coords, int p_source_id, const Vector2i p_atlas_coords, int p_alternative_tile) {
 	ERR_FAIL_COND_MSG(p_coords.x < 0 || p_coords.y < 0, vformat("Cannot set cell with negative coords in a TileMapPattern. Wrong coords: %s", p_coords));
 

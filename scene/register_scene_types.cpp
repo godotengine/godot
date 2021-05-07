@@ -170,7 +170,7 @@
 #include "scene/resources/text_line.h"
 #include "scene/resources/text_paragraph.h"
 #include "scene/resources/texture.h"
-#include "scene/resources/tile_set/tile_set.h"
+#include "scene/resources/tile_set.h"
 #include "scene/resources/video_stream.h"
 #include "scene/resources/visual_shader.h"
 #include "scene/resources/visual_shader_nodes.h"

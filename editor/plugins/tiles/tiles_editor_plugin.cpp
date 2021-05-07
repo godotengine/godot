@@ -35,7 +35,7 @@
 #include "editor/plugins/canvas_item_editor_plugin.h"
 
 #include "scene/2d/tile_map.h"
-#include "scene/resources/tile_set/tile_set.h"
+#include "scene/resources/tile_set.h"
 
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"

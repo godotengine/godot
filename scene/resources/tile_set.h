@@ -33,10 +33,13 @@
 
 #include "core/io/resource.h"
 #include "core/object/object.h"
+#include "scene/2d/light_occluder_2d.h"
+#include "scene/2d/navigation_region_2d.h"
 #include "scene/main/canvas_item.h"
 #include "scene/resources/convex_polygon_shape_2d.h"
 #include "scene/resources/packed_scene.h"
 #include "scene/resources/physics_material.h"
+#include "scene/resources/shape_2d.h"
 
 #ifndef DISABLE_DEPRECATED
 #include "scene/2d/light_occluder_2d.h"
@@ -47,6 +50,7 @@
 #endif
 
 class TileMap;
+struct TileMapQuadrant;
 class TileSetSource;
 class TileSetAtlasSource;
 class TileData;
@@ -553,12 +557,84 @@ public:
 	Variant get_custom_data_by_layer_id(int p_layer_id) const;
 };
 
-// Include the plugins
-#include "tile_set_atlas_plugin.h"
-#include "tile_set_atlas_plugin_navigation.h"
-#include "tile_set_atlas_plugin_physics.h"
-#include "tile_set_atlas_plugin_rendering.h"
-#include "tile_set_atlas_plugin_terrain.h"
+#include "scene/2d/tile_map.h"
+
+class TileSetPlugin : public Object {
+	GDCLASS(TileSetPlugin, Object);
+
+public:
+	// Tilemap updates.
+	virtual void tilemap_notification(TileMap *p_tile_map, int p_what){};
+	virtual void update_dirty_quadrants(TileMap *p_tile_map, SelfList<TileMapQuadrant>::List &r_dirty_quadrant_list){};
+	virtual void create_quadrant(TileMap *p_tile_map, TileMapQuadrant *p_quadrant){};
+	virtual void cleanup_quadrant(TileMap *p_tile_map, TileMapQuadrant *p_quadrant){};
+
+	virtual void draw_quadrant_debug(TileMap *p_tile_map, TileMapQuadrant *p_quadrant){};
+};
+
+class TileSetAtlasPluginRendering : public TileSetPlugin {
+	GDCLASS(TileSetAtlasPluginRendering, TileSetPlugin);
+
+private:
+	static constexpr float fp_adjust = 0.00001;
+	bool quadrant_order_dirty = false;
+
+public:
+	// Tilemap updates
+	virtual void tilemap_notification(TileMap *p_tile_map, int p_what) override;
+	virtual void update_dirty_quadrants(TileMap *p_tile_map, SelfList<TileMapQuadrant>::List &r_dirty_quadrant_list) override;
+	virtual void create_quadrant(TileMap *p_tile_map, TileMapQuadrant *p_quadrant) override;
+	virtual void cleanup_quadrant(TileMap *p_tile_map, TileMapQuadrant *p_quadrant) override;
+
+	// Other.
+	static void draw_tile(RID p_canvas_item, Vector2i p_position, const Ref<TileSet> p_tile_set, int p_atlas_source_id, Vector2i p_atlas_coords, int p_alternative_tile, Color p_modulation = Color(1.0, 1.0, 1.0, 1.0));
+};
+
+class TileSetAtlasPluginTerrain : public TileSetPlugin {
+	GDCLASS(TileSetAtlasPluginTerrain, TileSetPlugin);
+
+private:
+	static void _draw_square_corner_or_side_terrain_bit(CanvasItem *p_canvas_item, Color p_color, Vector2i p_size, TileSet::CellNeighbor p_bit);
+	static void _draw_square_corner_terrain_bit(CanvasItem *p_canvas_item, Color p_color, Vector2i p_size, TileSet::CellNeighbor p_bit);
+	static void _draw_square_side_terrain_bit(CanvasItem *p_canvas_item, Color p_color, Vector2i p_size, TileSet::CellNeighbor p_bit);
+
+	static void _draw_isometric_corner_or_side_terrain_bit(CanvasItem *p_canvas_item, Color p_color, Vector2i p_size, TileSet::CellNeighbor p_bit);
+	static void _draw_isometric_corner_terrain_bit(CanvasItem *p_canvas_item, Color p_color, Vector2i p_size, TileSet::CellNeighbor p_bit);
+	static void _draw_isometric_side_terrain_bit(CanvasItem *p_canvas_item, Color p_color, Vector2i p_size, TileSet::CellNeighbor p_bit);
+
+	static void _draw_half_offset_corner_or_side_terrain_bit(CanvasItem *p_canvas_item, Color p_color, Vector2i p_size, TileSet::CellNeighbor p_bit, float p_overlap, TileSet::TileOffsetAxis p_offset_axis);
+	static void _draw_half_offset_corner_terrain_bit(CanvasItem *p_canvas_item, Color p_color, Vector2i p_size, TileSet::CellNeighbor p_bit, float p_overlap, TileSet::TileOffsetAxis p_offset_axis);
+	static void _draw_half_offset_side_terrain_bit(CanvasItem *p_canvas_item, Color p_color, Vector2i p_size, TileSet::CellNeighbor p_bit, float p_overlap, TileSet::TileOffsetAxis p_offset_axis);
+
+public:
+	//virtual void tilemap_notification(const TileMap * p_tile_map, int p_what);
+
+	static void draw_terrains(CanvasItem *p_canvas_item, Transform2D p_transform, TileSet *p_tile_set, const TileData *p_tile_data);
+};
+
+class TileSetAtlasPluginPhysics : public TileSetPlugin {
+	GDCLASS(TileSetAtlasPluginPhysics, TileSetPlugin);
+
+public:
+	// Tilemap updates
+	virtual void tilemap_notification(TileMap *p_tile_map, int p_what) override;
+	virtual void update_dirty_quadrants(TileMap *p_tile_map, SelfList<TileMapQuadrant>::List &r_dirty_quadrant_list) override;
+	virtual void create_quadrant(TileMap *p_tile_map, TileMapQuadrant *p_quadrant) override;
+	virtual void cleanup_quadrant(TileMap *p_tile_map, TileMapQuadrant *p_quadrant) override;
+	virtual void draw_quadrant_debug(TileMap *p_tile_map, TileMapQuadrant *p_quadrant) override;
+};
+
+class TileSetAtlasPluginNavigation : public TileSetPlugin {
+	GDCLASS(TileSetAtlasPluginNavigation, TileSetPlugin);
+
+public:
+	// Tilemap updates
+	virtual void tilemap_notification(TileMap *p_tile_map, int p_what) override;
+	virtual void update_dirty_quadrants(TileMap *p_tile_map, SelfList<TileMapQuadrant>::List &r_dirty_quadrant_list) override;
+	//virtual void create_quadrant(TileMap *p_tile_map, TileMapQuadrant *p_quadrant) override;
+	virtual void cleanup_quadrant(TileMap *p_tile_map, TileMapQuadrant *p_quadrant) override;
+	virtual void draw_quadrant_debug(TileMap *p_tile_map, TileMapQuadrant *p_quadrant) override;
+};
 
 VARIANT_ENUM_CAST(TileSet::CellNeighbor);
 VARIANT_ENUM_CAST(TileSet::TerrainMode);

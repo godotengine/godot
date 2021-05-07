@@ -32,7 +32,7 @@
 #define TILE_DATA_EDITORS_H
 
 #include "scene/gui/control.h"
-#include "scene/resources/tile_set/tile_set.h"
+#include "scene/resources/tile_set.h"
 
 class TileDataEditor : public Control {
 	GDCLASS(TileDataEditor, Control);

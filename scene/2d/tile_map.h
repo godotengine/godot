@@ -35,9 +35,8 @@
 #include "core/templates/vset.h"
 #include "scene/2d/node_2d.h"
 #include "scene/gui/control.h"
-#include "scene/resources/tile_set/tile_set.h"
+#include "scene/resources/tile_set.h"
 
-class TileSet;
 class TileSetAtlasSource;
 
 union TileMapCell {
