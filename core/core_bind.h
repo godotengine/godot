@@ -230,6 +230,9 @@ public:
 
 	String get_user_data_dir() const;
 	String get_external_data_dir() const;
+	String get_config_dir() const;
+	String get_data_dir() const;
+	String get_cache_dir() const;
 
 	Error set_thread_name(const String &p_name);
 	Thread::ID get_thread_caller_id() const;

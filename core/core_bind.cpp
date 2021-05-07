@@ -426,6 +426,21 @@ String _OS::get_external_data_dir() const {
 	return OS::get_singleton()->get_external_data_dir();
 }
 
+String _OS::get_config_dir() const {
+	// Exposed as `get_config_dir()` instead of `get_config_path()` for consistency with other exposed OS methods.
+	return OS::get_singleton()->get_config_path();
+}
+
+String _OS::get_data_dir() const {
+	// Exposed as `get_data_dir()` instead of `get_data_path()` for consistency with other exposed OS methods.
+	return OS::get_singleton()->get_data_path();
+}
+
+String _OS::get_cache_dir() const {
+	// Exposed as `get_cache_dir()` instead of `get_cache_path()` for consistency with other exposed OS methods.
+	return OS::get_singleton()->get_cache_path();
+}
+
 bool _OS::is_debug_build() const {
 #ifdef DEBUG_ENABLED
 	return true;
@@ -518,6 +533,9 @@ void _OS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_user_data_dir"), &_OS::get_user_data_dir);
 	ClassDB::bind_method(D_METHOD("get_external_data_dir"), &_OS::get_external_data_dir);
 	ClassDB::bind_method(D_METHOD("get_system_dir", "dir"), &_OS::get_system_dir);
+	ClassDB::bind_method(D_METHOD("get_config_dir"), &_OS::get_config_dir);
+	ClassDB::bind_method(D_METHOD("get_data_dir"), &_OS::get_data_dir);
+	ClassDB::bind_method(D_METHOD("get_cache_dir"), &_OS::get_cache_dir);
 	ClassDB::bind_method(D_METHOD("get_unique_id"), &_OS::get_unique_id);
 
 	ClassDB::bind_method(D_METHOD("print_all_textures_by_size"), &_OS::print_all_textures_by_size);
