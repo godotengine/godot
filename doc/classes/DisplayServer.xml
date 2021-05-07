@@ -469,46 +469,6 @@
 			<description>
 			</description>
 		</method>
-		<method name="native_video_is_playing" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="native_video_pause">
-			<return type="void">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="native_video_play">
-			<return type="int" enum="Error">
-			</return>
-			<argument index="0" name="path" type="String">
-			</argument>
-			<argument index="1" name="volume" type="float">
-			</argument>
-			<argument index="2" name="audio_track" type="String">
-			</argument>
-			<argument index="3" name="subtitle_track" type="String">
-			</argument>
-			<argument index="4" name="screen" type="int">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="native_video_stop">
-			<return type="void">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="native_video_unpause">
-			<return type="void">
-			</return>
-			<description>
-			</description>
-		</method>
 		<method name="process_events">
 			<return type="void">
 			</return>
@@ -1065,25 +1025,23 @@
 		</constant>
 		<constant name="FEATURE_CUSTOM_CURSOR_SHAPE" value="8" enum="Feature">
 		</constant>
-		<constant name="FEATURE_NATIVE_VIDEO" value="9" enum="Feature">
+		<constant name="FEATURE_NATIVE_DIALOG" value="9" enum="Feature">
 		</constant>
-		<constant name="FEATURE_NATIVE_DIALOG" value="10" enum="Feature">
+		<constant name="FEATURE_CONSOLE_WINDOW" value="10" enum="Feature">
 		</constant>
-		<constant name="FEATURE_CONSOLE_WINDOW" value="11" enum="Feature">
+		<constant name="FEATURE_IME" value="11" enum="Feature">
 		</constant>
-		<constant name="FEATURE_IME" value="12" enum="Feature">
+		<constant name="FEATURE_WINDOW_TRANSPARENCY" value="12" enum="Feature">
 		</constant>
-		<constant name="FEATURE_WINDOW_TRANSPARENCY" value="13" enum="Feature">
+		<constant name="FEATURE_HIDPI" value="13" enum="Feature">
 		</constant>
-		<constant name="FEATURE_HIDPI" value="14" enum="Feature">
+		<constant name="FEATURE_ICON" value="14" enum="Feature">
 		</constant>
-		<constant name="FEATURE_ICON" value="15" enum="Feature">
+		<constant name="FEATURE_NATIVE_ICON" value="15" enum="Feature">
 		</constant>
-		<constant name="FEATURE_NATIVE_ICON" value="16" enum="Feature">
+		<constant name="FEATURE_ORIENTATION" value="16" enum="Feature">
 		</constant>
-		<constant name="FEATURE_ORIENTATION" value="17" enum="Feature">
-		</constant>
-		<constant name="FEATURE_SWAP_BUFFERS" value="18" enum="Feature">
+		<constant name="FEATURE_SWAP_BUFFERS" value="17" enum="Feature">
 		</constant>
 		<constant name="MOUSE_MODE_VISIBLE" value="0" enum="MouseMode">
 		</constant>
