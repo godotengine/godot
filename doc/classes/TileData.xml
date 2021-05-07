@@ -1,0 +1,245 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="TileData" inherits="Object" version="4.0">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="add_collision_shape">
+			<return type="void">
+			</return>
+			<argument index="0" name="layer_id" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_collision_shape_one_way_margin" qualifiers="const">
+			<return type="float">
+			</return>
+			<argument index="0" name="layer_id" type="int">
+			</argument>
+			<argument index="1" name="shape_index" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_collision_shape_shape" qualifiers="const">
+			<return type="Shape2D">
+			</return>
+			<argument index="0" name="layer_id" type="int">
+			</argument>
+			<argument index="1" name="shape_index" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_collision_shapes_count" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="layer_id" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_custom_data" qualifiers="const">
+			<return type="Variant">
+			</return>
+			<argument index="0" name="layer_name" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_custom_data_by_layer_id" qualifiers="const">
+			<return type="Variant">
+			</return>
+			<argument index="0" name="layer_id" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_navigation_polygon" qualifiers="const">
+			<return type="NavigationPolygon">
+			</return>
+			<argument index="0" name="layer_id" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_occluder" qualifiers="const">
+			<return type="OccluderPolygon2D">
+			</return>
+			<argument index="0" name="layer_id" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_peering_bit_terrain" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="peering_bit" type="int" enum="TileSet.CellNeighbor">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="is_collision_shape_one_way" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="layer_id" type="int">
+			</argument>
+			<argument index="1" name="shape_index" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="remove_collision_shape">
+			<return type="void">
+			</return>
+			<argument index="0" name="layer_id" type="int">
+			</argument>
+			<argument index="1" name="shape_index" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_collision_shape_one_way">
+			<return type="void">
+			</return>
+			<argument index="0" name="layer_id" type="int">
+			</argument>
+			<argument index="1" name="shape_index" type="int">
+			</argument>
+			<argument index="2" name="one_way" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_collision_shape_one_way_margin">
+			<return type="void">
+			</return>
+			<argument index="0" name="layer_id" type="int">
+			</argument>
+			<argument index="1" name="shape_index" type="int">
+			</argument>
+			<argument index="2" name="one_way_margin" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_collision_shape_shape">
+			<return type="void">
+			</return>
+			<argument index="0" name="layer_id" type="int">
+			</argument>
+			<argument index="1" name="shape_index" type="int">
+			</argument>
+			<argument index="2" name="shape" type="Shape2D">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_collision_shapes_count">
+			<return type="void">
+			</return>
+			<argument index="0" name="layer_id" type="int">
+			</argument>
+			<argument index="1" name="shapes_count" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_custom_data">
+			<return type="void">
+			</return>
+			<argument index="0" name="layer_name" type="String">
+			</argument>
+			<argument index="1" name="value" type="Variant">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_custom_data_by_layer_id">
+			<return type="void">
+			</return>
+			<argument index="0" name="layer_id" type="int">
+			</argument>
+			<argument index="1" name="value" type="Variant">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_navigation_polygon">
+			<return type="void">
+			</return>
+			<argument index="0" name="layer_id" type="int">
+			</argument>
+			<argument index="1" name="navigation_polygon" type="NavigationPolygon">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_occluder">
+			<return type="void">
+			</return>
+			<argument index="0" name="layer_id" type="int">
+			</argument>
+			<argument index="1" name="occluder_polygon" type="OccluderPolygon2D">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_peering_bit_terrain">
+			<return type="void">
+			</return>
+			<argument index="0" name="peering_bit" type="int" enum="TileSet.CellNeighbor">
+			</argument>
+			<argument index="1" name="terrain" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="tile_get_material" qualifiers="const">
+			<return type="ShaderMaterial">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="tile_set_material">
+			<return type="void">
+			</return>
+			<argument index="0" name="material" type="ShaderMaterial">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="flip_h" type="bool" setter="set_flip_h" getter="get_flip_h" default="false">
+		</member>
+		<member name="flip_v" type="bool" setter="set_flip_v" getter="get_flip_v" default="false">
+		</member>
+		<member name="modulate" type="Color" setter="set_modulate" getter="get_modulate" default="Color( 1, 1, 1, 1 )">
+		</member>
+		<member name="probability" type="float" setter="set_probability" getter="get_probability" default="1.0">
+		</member>
+		<member name="terrain_set" type="int" setter="set_terrain_set" getter="get_terrain_set" default="-1">
+		</member>
+		<member name="texture_offset" type="Vector2i" setter="set_texture_offset" getter="get_texture_offset" default="Vector2i( 0, 0 )">
+		</member>
+		<member name="transpose" type="bool" setter="set_transpose" getter="get_transpose" default="false">
+		</member>
+		<member name="y_sort_origin" type="Vector2i" setter="set_y_sort_origin" getter="get_y_sort_origin" default="Vector2i( 0, 0 )">
+		</member>
+		<member name="z_index" type="int" setter="set_z_index" getter="get_z_index" default="0">
+		</member>
+	</members>
+	<signals>
+		<signal name="changed">
+			<description>
+			</description>
+		</signal>
+	</signals>
+	<constants>
+	</constants>
+</class>

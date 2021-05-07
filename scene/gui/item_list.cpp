@@ -406,6 +406,9 @@ void ItemList::remove_item(int p_idx) {
 	ERR_FAIL_INDEX(p_idx, items.size());
 
 	items.remove(p_idx);
+	if (current == p_idx) {
+		current = -1;
+	}
 	update();
 	shape_changed = true;
 	defer_select_single = -1;
