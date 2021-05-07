@@ -3208,32 +3208,44 @@ bool OS_X11::_check_internal_feature_support(const String &p_feature) {
 
 String OS_X11::get_config_path() const {
 	if (has_environment("XDG_CONFIG_HOME")) {
-		return get_environment("XDG_CONFIG_HOME");
-	} else if (has_environment("HOME")) {
-		return get_environment("HOME").plus_file(".config");
-	} else {
-		return ".";
+		if (get_environment("XDG_CONFIG_HOME").is_abs_path()) {
+			return get_environment("XDG_CONFIG_HOME");
+		} else {
+			WARN_PRINT_ONCE("`XDG_CONFIG_HOME` is a relative path. Ignoring its value and falling back to `$HOME/.config` or `.` per the XDG Base Directory specification.");
+		}
 	}
+	if (has_environment("HOME")) {
+		return get_environment("HOME").plus_file(".config");
+	}
+	return ".";
 }
 
 String OS_X11::get_data_path() const {
 	if (has_environment("XDG_DATA_HOME")) {
-		return get_environment("XDG_DATA_HOME");
-	} else if (has_environment("HOME")) {
-		return get_environment("HOME").plus_file(".local/share");
-	} else {
-		return get_config_path();
+		if (get_environment("XDG_DATA_HOME").is_abs_path()) {
+			return get_environment("XDG_DATA_HOME");
+		} else {
+			WARN_PRINT_ONCE("`XDG_DATA_HOME` is a relative path. Ignoring its value and falling back to `$HOME/.local/share` or `get_config_path()` per the XDG Base Directory specification.");
+		}
 	}
+	if (has_environment("HOME")) {
+		return get_environment("HOME").plus_file(".local/share");
+	}
+	return get_config_path();
 }
 
 String OS_X11::get_cache_path() const {
 	if (has_environment("XDG_CACHE_HOME")) {
-		return get_environment("XDG_CACHE_HOME");
-	} else if (has_environment("HOME")) {
-		return get_environment("HOME").plus_file(".cache");
-	} else {
-		return get_config_path();
+		if (get_environment("XDG_CACHE_HOME").is_abs_path()) {
+			return get_environment("XDG_CACHE_HOME");
+		} else {
+			WARN_PRINT_ONCE("`XDG_CACHE_HOME` is a relative path. Ignoring its value and falling back to `$HOME/.cache` or `get_config_path()` per the XDG Base Directory specification.");
+		}
 	}
+	if (has_environment("HOME")) {
+		return get_environment("HOME").plus_file(".cache");
+	}
+	return get_config_path();
 }
 
 String OS_X11::get_system_dir(SystemDir p_dir) const {
