@@ -1582,11 +1582,10 @@ Error OS_OSX::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 
 	if (displayScale > 1.0) {
 		[window_view setWantsBestResolutionOpenGLSurface:YES];
-		//if (current_videomode.resizable)
-		[window_object setCollectionBehavior:NSWindowCollectionBehaviorFullScreenPrimary];
 	} else {
 		[window_view setWantsBestResolutionOpenGLSurface:NO];
 	}
+	[window_object setCollectionBehavior:NSWindowCollectionBehaviorFullScreenPrimary];
 
 	//[window_object setTitle:[NSString stringWithUTF8String:"GodotEnginies"]];
 	[window_object setContentView:window_view];
