@@ -475,23 +475,20 @@ int OS::get_processor_count() const {
 
 Error OS::native_video_play(String p_path, float p_volume, String p_audio_track, String p_subtitle_track) {
 	return FAILED;
-};
+}
 
 bool OS::native_video_is_playing() const {
 	return false;
-};
+}
 
-void OS::native_video_pause(){
+void OS::native_video_pause() {
+}
 
-};
+void OS::native_video_unpause() {
+}
 
-void OS::native_video_unpause(){
-
-};
-
-void OS::native_video_stop(){
-
-};
+void OS::native_video_stop() {
+}
 
 void OS::set_mouse_mode(MouseMode p_mode) {
 }

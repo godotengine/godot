@@ -536,40 +536,6 @@ public class GodotIO {
 		edit = _edit;
 	}
 
-	public void playVideo(String p_path) {
-		Uri filePath = Uri.parse(p_path);
-		mediaPlayer = new MediaPlayer();
-
-		try {
-			mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
-			mediaPlayer.setDataSource(activity.getApplicationContext(), filePath);
-			mediaPlayer.prepare();
-			mediaPlayer.start();
-		} catch (IOException e) {
-			System.out.println("IOError while playing video");
-		}
-	}
-
-	public boolean isVideoPlaying() {
-		if (mediaPlayer != null) {
-			return mediaPlayer.isPlaying();
-		}
-		return false;
-	}
-
-	public void pauseVideo() {
-		if (mediaPlayer != null) {
-			mediaPlayer.pause();
-		}
-	}
-
-	public void stopVideo() {
-		if (mediaPlayer != null) {
-			mediaPlayer.release();
-			mediaPlayer = null;
-		}
-	}
-
 	public static final int SYSTEM_DIR_DESKTOP = 0;
 	public static final int SYSTEM_DIR_DCIM = 1;
 	public static final int SYSTEM_DIR_DOCUMENTS = 2;

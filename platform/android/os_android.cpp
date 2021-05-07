@@ -798,27 +798,8 @@ String OS_Android::get_unique_id() const {
 	return OS::get_unique_id();
 }
 
-Error OS_Android::native_video_play(String p_path, float p_volume, String p_audio_track, String p_subtitle_track) {
-	// FIXME: Add support for volume, audio and subtitle tracks
-
-	godot_io_java->play_video(p_path);
-	return OK;
-}
-
-bool OS_Android::native_video_is_playing() const {
-	return godot_io_java->is_video_playing();
-}
-
-void OS_Android::native_video_pause() {
-	godot_io_java->pause_video();
-}
-
 String OS_Android::get_system_dir(SystemDir p_dir) const {
 	return godot_io_java->get_system_dir(p_dir);
-}
-
-void OS_Android::native_video_stop() {
-	godot_io_java->stop_video();
 }
 
 void OS_Android::set_context_is_16_bits(bool p_is_16) {
