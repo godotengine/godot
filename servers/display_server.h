@@ -97,7 +97,6 @@ public:
 		FEATURE_VIRTUAL_KEYBOARD,
 		FEATURE_CURSOR_SHAPE,
 		FEATURE_CUSTOM_CURSOR_SHAPE,
-		FEATURE_NATIVE_VIDEO,
 		FEATURE_NATIVE_DIALOG,
 		FEATURE_CONSOLE_WINDOW,
 		FEATURE_IME,
@@ -323,13 +322,6 @@ public:
 	virtual bool get_swap_cancel_ok();
 
 	virtual void enable_for_stealing_focus(OS::ProcessID pid);
-
-	//plays video natively, in fullscreen, only implemented in mobile for now, likely not possible to implement on linux also.
-	virtual Error native_video_play(String p_path, float p_volume, String p_audio_track, String p_subtitle_track, int p_screen = SCREEN_OF_MAIN_WINDOW);
-	virtual bool native_video_is_playing() const;
-	virtual void native_video_pause();
-	virtual void native_video_unpause();
-	virtual void native_video_stop();
 
 	virtual Error dialog_show(String p_title, String p_description, Vector<String> p_buttons, const Callable &p_callback);
 	virtual Error dialog_input_text(String p_title, String p_description, String p_partial, const Callable &p_callback);

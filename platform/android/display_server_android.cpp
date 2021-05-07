@@ -61,7 +61,6 @@ bool DisplayServerAndroid::has_feature(Feature p_feature) const {
 		//case FEATURE_MOUSE_WARP:
 		//case FEATURE_NATIVE_DIALOG:
 		//case FEATURE_NATIVE_ICON:
-		//case FEATURE_NATIVE_VIDEO:
 		//case FEATURE_WINDOW_TRANSPARENCY:
 		case FEATURE_CLIPBOARD:
 		case FEATURE_KEEP_SCREEN_ON:

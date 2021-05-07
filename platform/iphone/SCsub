@@ -19,7 +19,6 @@ iphone_lib = [
     "godot_view_gesture_recognizer.mm",
     "device_metrics.m",
     "keyboard_input_view.mm",
-    "native_video_view.m",
 ]
 
 env_ios = env.Clone()
