@@ -35,7 +35,7 @@
 #include "texture_basisu.h"
 
 #ifdef TOOLS_ENABLED
-#include <basisu_comp.h>
+#include <encoder/basisu_comp.h>
 #endif
 
 #include <transcoder/basisu_transcoder.h>
@@ -233,7 +233,7 @@ static Ref<Image> basis_universal_unpacker(const Vector<uint8_t> &p_buffer) {
 	basist::basisu_image_info info;
 	tr.get_image_info(ptr, size, info, 0);
 
-	int block_size = basist::basis_get_bytes_per_block(format);
+	int block_size = basist::basis_get_bytes_per_block_or_pixel(format);
 	Vector<uint8_t> gpudata;
 	gpudata.resize(info.m_total_blocks * block_size);
 
