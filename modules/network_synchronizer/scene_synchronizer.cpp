@@ -2116,14 +2116,14 @@ void ClientSynchronizer::on_controller_reset(NetUtility::NodeData *p_node_data) 
 		client_snapshots.clear();
 	}
 
-	if (player_controller_node_data != nullptr) {
-		NET_DEBUG_ERR("Only one player controller is supported, at the moment. Make sure this is the case.");
-	}
-
 	if (static_cast<NetworkedController *>(p_node_data->node)->is_player_controller()) {
-		// Set this player controller as active.
-		player_controller_node_data = p_node_data;
-		client_snapshots.clear();
+		if (player_controller_node_data != nullptr) {
+			NET_DEBUG_ERR("Only one player controller is supported, at the moment. Make sure this is the case.");
+		} else {
+			// Set this player controller as active.
+			player_controller_node_data = p_node_data;
+			client_snapshots.clear();
+		}
 	}
 }
 
