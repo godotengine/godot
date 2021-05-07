@@ -4450,7 +4450,7 @@ Control::CursorShape TextEdit::get_cursor_shape(const Point2 &p_pos) const {
 		return CURSOR_POINTING_HAND;
 	}
 
-	if ((completion_active && completion_rect.has_point(p_pos))) {
+	if ((completion_active && completion_rect.has_point(p_pos)) || (is_readonly() && (!is_selecting_enabled() || text.size() == 0))) {
 		return CURSOR_ARROW;
 	}
 
