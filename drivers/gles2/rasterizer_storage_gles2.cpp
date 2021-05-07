@@ -1229,6 +1229,8 @@ void RasterizerStorageGLES2::sky_set_texture(RID p_sky, RID p_panorama, int p_ra
 		ERR_FAIL_COND(!texture);
 	}
 
+	texture = texture->get_ptr(); //resolve for proxies
+
 	// glBindVertexArray(0) and more
 	{
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
