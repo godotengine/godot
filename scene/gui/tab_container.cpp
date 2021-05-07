@@ -394,6 +394,7 @@ void TabContainer::_notification(int p_what) {
 			Vector<int> tab_widths;
 			for (int i = first_tab_cache; i < tabs.size(); i++) {
 				if (get_tab_hidden(i)) {
+					tab_widths.push_back(0);
 					continue;
 				}
 				int tab_width = _get_tab_width(i);
