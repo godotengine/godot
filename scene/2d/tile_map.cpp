@@ -865,6 +865,18 @@ int TileMap::get_cellv(const Vector2 &p_pos) const {
 	return get_cell(p_pos.x, p_pos.y);
 }
 
+void TileMap::set_cell_region(const Rect2i &p_region, const Vector<int> &p_ids) {
+	ERR_FAIL_COND_MSG(p_region.size.width <= 0 || p_region.size.height <= 0, "The region's dimensions must be positive, nonzero numbers");
+
+	for (int x = 0; x < p_region.size.width; x++) {
+		for (int y = 0; y < p_region.size.height; y++) {
+			set_cell(x + p_region.position.x, y + p_region.position.y, p_ids[y * p_region.size.width + x]);
+		}
+	}
+
+	return;
+}
+
 void TileMap::make_bitmask_area_dirty(const Vector2 &p_pos) {
 	for (int x = p_pos.x - 1; x <= p_pos.x + 1; x++) {
 		for (int y = p_pos.y - 1; y <= p_pos.y + 1; y++) {
@@ -1140,6 +1152,13 @@ void TileMap::clear() {
 	used_size_cache_dirty = true;
 }
 
+//tile data format:
+//16 bits -- int x
+//16 bits -- int y
+//32 bits -- int tile, bool flip_x, bool flip_y, bool transpose (bools are the top 3 bits)
+//if specified autotile coords:
+//16 bits -- autotile_coord.x
+//16 bits -- autotile_coord.y
 void TileMap::_set_tile_data(const Vector<int> &p_data) {
 	ERR_FAIL_COND(format > FORMAT_2);
 
@@ -1780,6 +1799,10 @@ void TileMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_set_celld", "position", "data"), &TileMap::_set_celld);
 	ClassDB::bind_method(D_METHOD("get_cell", "x", "y"), &TileMap::get_cell);
 	ClassDB::bind_method(D_METHOD("get_cellv", "position"), &TileMap::get_cellv);
+
+	ClassDB::bind_method(D_METHOD("set_cell_region", "region", "ids"), &TileMap::set_cell_region);
+	ClassDB::bind_method(D_METHOD("set_tile_data", "data"), &TileMap::_set_tile_data);
+
 	ClassDB::bind_method(D_METHOD("is_cell_x_flipped", "x", "y"), &TileMap::is_cell_x_flipped);
 	ClassDB::bind_method(D_METHOD("is_cell_y_flipped", "x", "y"), &TileMap::is_cell_y_flipped);
 	ClassDB::bind_method(D_METHOD("is_cell_transposed", "x", "y"), &TileMap::is_cell_transposed);
