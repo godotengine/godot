@@ -190,12 +190,6 @@ public:
 	virtual void screen_set_keep_on(bool p_enable) override;
 	virtual bool screen_is_kept_on() const override;
 
-	virtual Error native_video_play(String p_path, float p_volume, String p_audio_track, String p_subtitle_track, int p_screen = SCREEN_OF_MAIN_WINDOW) override;
-	virtual bool native_video_is_playing() const override;
-	virtual void native_video_pause() override;
-	virtual void native_video_unpause() override;
-	virtual void native_video_stop() override;
-
 	void resize_window(CGSize size);
 };
 

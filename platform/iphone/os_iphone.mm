@@ -301,10 +301,6 @@ void OSIPhone::on_focus_out() {
 
 		[AppDelegate.viewController.godotView stopRendering];
 
-		if (DisplayServerIPhone::get_singleton() && DisplayServerIPhone::get_singleton()->native_video_is_playing()) {
-			DisplayServerIPhone::get_singleton()->native_video_pause();
-		}
-
 		audio_driver.stop();
 	}
 }
@@ -318,10 +314,6 @@ void OSIPhone::on_focus_in() {
 		}
 
 		[AppDelegate.viewController.godotView startRendering];
-
-		if (DisplayServerIPhone::get_singleton() && DisplayServerIPhone::get_singleton()->native_video_is_playing()) {
-			DisplayServerIPhone::get_singleton()->native_video_unpause();
-		}
 
 		audio_driver.start();
 	}

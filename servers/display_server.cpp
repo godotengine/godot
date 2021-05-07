@@ -253,27 +253,6 @@ bool DisplayServer::get_swap_cancel_ok() {
 void DisplayServer::enable_for_stealing_focus(OS::ProcessID pid) {
 }
 
-//plays video natively, in fullscreen, only implemented in mobile for now, likely not possible to implement on linux also.
-Error DisplayServer::native_video_play(String p_path, float p_volume, String p_audio_track, String p_subtitle_track, int p_screen) {
-	ERR_FAIL_V_MSG(ERR_UNAVAILABLE, "Native video not supported by this display server.");
-}
-
-bool DisplayServer::native_video_is_playing() const {
-	return false;
-}
-
-void DisplayServer::native_video_pause() {
-	WARN_PRINT("Native video not supported by this display server.");
-}
-
-void DisplayServer::native_video_unpause() {
-	WARN_PRINT("Native video not supported by this display server.");
-}
-
-void DisplayServer::native_video_stop() {
-	WARN_PRINT("Native video not supported by this display server.");
-}
-
 Error DisplayServer::dialog_show(String p_title, String p_description, Vector<String> p_buttons, const Callable &p_callback) {
 	WARN_PRINT("Native dialogs not supported by this display server.");
 	return OK;
@@ -477,12 +456,6 @@ void DisplayServer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("enable_for_stealing_focus", "process_id"), &DisplayServer::enable_for_stealing_focus);
 
-	ClassDB::bind_method(D_METHOD("native_video_play", "path", "volume", "audio_track", "subtitle_track", "screen"), &DisplayServer::native_video_play);
-	ClassDB::bind_method(D_METHOD("native_video_is_playing"), &DisplayServer::native_video_is_playing);
-	ClassDB::bind_method(D_METHOD("native_video_stop"), &DisplayServer::native_video_stop);
-	ClassDB::bind_method(D_METHOD("native_video_pause"), &DisplayServer::native_video_pause);
-	ClassDB::bind_method(D_METHOD("native_video_unpause"), &DisplayServer::native_video_unpause);
-
 	ClassDB::bind_method(D_METHOD("dialog_show", "title", "description", "buttons", "callback"), &DisplayServer::dialog_show);
 	ClassDB::bind_method(D_METHOD("dialog_input_text", "title", "description", "existing_text", "callback"), &DisplayServer::dialog_input_text);
 
@@ -518,7 +491,6 @@ void DisplayServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(FEATURE_VIRTUAL_KEYBOARD);
 	BIND_ENUM_CONSTANT(FEATURE_CURSOR_SHAPE);
 	BIND_ENUM_CONSTANT(FEATURE_CUSTOM_CURSOR_SHAPE);
-	BIND_ENUM_CONSTANT(FEATURE_NATIVE_VIDEO);
 	BIND_ENUM_CONSTANT(FEATURE_NATIVE_DIALOG);
 	BIND_ENUM_CONSTANT(FEATURE_CONSOLE_WINDOW);
 	BIND_ENUM_CONSTANT(FEATURE_IME);
