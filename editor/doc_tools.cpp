@@ -39,6 +39,7 @@
 #include "core/object/script_language.h"
 #include "core/string/translation.h"
 #include "core/version.h"
+#include "editor/editor_settings.h"
 #include "scene/resources/theme.h"
 
 // Used for a hack preserving Mono properties on non-Mono builds.
@@ -363,8 +364,15 @@ void DocTools::generate(bool p_basic_types) {
 
 		List<PropertyInfo> properties;
 		List<PropertyInfo> own_properties;
-		if (name == "ProjectSettings") {
-			// Special case for project settings, so settings can be documented.
+
+		// Special case for editor and project settings, so they can be documented.
+		if (name == "EditorSettings") {
+			// We don't create the full blown EditorSettings (+ config file) with `create()`,
+			// instead we just make a local instance to get default values.
+			Ref<EditorSettings> edset = memnew(EditorSettings);
+			edset->get_property_list(&properties);
+			own_properties = properties;
+		} else if (name == "ProjectSettings") {
 			ProjectSettings::get_singleton()->get_property_list(&properties);
 			own_properties = properties;
 		} else {
@@ -402,6 +410,13 @@ void DocTools::generate(bool p_basic_types) {
 			bool default_value_valid = false;
 			Variant default_value;
 
+			if (name == "EditorSettings") {
+				if (E.name == "resource_local_to_scene" || E.name == "resource_name" || E.name == "resource_path" || E.name == "script") {
+					// Don't include spurious properties in the generated EditorSettings class reference.
+					continue;
+				}
+			}
+
 			if (name == "ProjectSettings") {
 				// Special case for project settings, so that settings are not taken from the current project's settings
 				if (E.name == "script" || !ProjectSettings::get_singleton()->is_builtin_setting(E.name)) {
@@ -424,8 +439,6 @@ void DocTools::generate(bool p_basic_types) {
 				}
 			}
 
-			//used to track uninitialized values using valgrind
-			//print_line("getting default value for " + String(name) + "." + String(E.name));
 			if (default_value_valid && default_value.get_type() != Variant::OBJECT) {
 				prop.default_value = default_value.get_construct_string().replace("\n", " ");
 			}
