@@ -117,7 +117,11 @@ public:
 
 	static EditorSettings *get_singleton();
 
-	static void create();
+	/**
+	 * If `p_use_default_settings` is `true`, existing editor settings (saved by the user) will not be loaded.
+	 * The default settings will be used instead.
+	 */
+	static void create(bool p_use_default_settings = false);
 	void setup_language();
 	void setup_network();
 	static void save();
