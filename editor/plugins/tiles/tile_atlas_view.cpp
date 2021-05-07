@@ -30,13 +30,13 @@
 
 #include "tile_atlas_view.h"
 
+#include "core/input/input.h"
+#include "core/os/keyboard.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/center_container.h"
 #include "scene/gui/label.h"
+#include "scene/gui/panel.h"
 #include "scene/gui/texture_rect.h"
-
-#include "core/input/input.h"
-#include "core/os/keyboard.h"
 
 #include "editor/editor_scale.h"
 
@@ -531,11 +531,17 @@ void TileAtlasView::_bind_methods() {
 }
 
 TileAtlasView::TileAtlasView() {
+	Panel *panel_container = memnew(Panel);
+	panel_container->set_h_size_flags(SIZE_EXPAND_FILL);
+	panel_container->set_v_size_flags(SIZE_EXPAND_FILL);
+	panel_container->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
+	add_child(panel_container);
+
 	//Scrolling
 	scroll_container = memnew(ScrollContainer);
 	scroll_container->get_h_scrollbar()->connect("value_changed", callable_mp(this, &TileAtlasView::_scroll_changed).unbind(1));
 	scroll_container->get_v_scrollbar()->connect("value_changed", callable_mp(this, &TileAtlasView::_scroll_changed).unbind(1));
-	add_child(scroll_container);
+	panel_container->add_child(scroll_container);
 	scroll_container->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
 
 	zoom_widget = memnew(EditorZoomWidget);

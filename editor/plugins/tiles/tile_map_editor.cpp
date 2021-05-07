@@ -211,9 +211,8 @@ void TileMapEditorTilesPlugin::_update_bottom_panel() {
 	Ref<TileSet> tile_set = tile_map->get_tileset();
 
 	// Update the tabs.
-	bool valid_sources = tile_set.is_valid() && tile_set->get_source_count() > 0;
-	missing_source_label->set_visible(!valid_sources);
-	atlas_sources_split_container->set_visible(valid_sources);
+	missing_source_label->set_visible(tile_set.is_valid() && tile_set->get_source_count() == 0);
+	atlas_sources_split_container->set_visible(tile_set.is_valid() && tile_set->get_source_count() > 0);
 }
 
 bool TileMapEditorTilesPlugin::forward_canvas_gui_input(const Ref<InputEvent> &p_event) {
@@ -3033,8 +3032,14 @@ void TileMapEditor::_update_bottom_panel() {
 
 	// Update the visibility of controls.
 	missing_tileset_label->set_visible(!tile_set.is_valid());
-	for (int i = 0; i < tile_map_editor_plugins.size(); i++) {
-		tile_map_editor_plugins[i]->set_visible(i == tabs->get_current_tab());
+	if (!tile_set.is_valid()) {
+		for (int i = 0; i < tile_map_editor_plugins.size(); i++) {
+			tile_map_editor_plugins[i]->hide();
+		}
+	} else {
+		for (int i = 0; i < tile_map_editor_plugins.size(); i++) {
+			tile_map_editor_plugins[i]->set_visible(i == tabs->get_current_tab());
+		}
 	}
 }
 
@@ -3125,8 +3130,15 @@ void TileMapEditor::_tab_changed(int p_tab_id) {
 	}
 
 	// Update visible panel.
-	for (int i = 0; i < tile_map_editor_plugins.size(); i++) {
-		tile_map_editor_plugins[i]->set_visible(i == tabs->get_current_tab());
+	TileMap *tile_map = Object::cast_to<TileMap>(ObjectDB::get_instance(tile_map_id));
+	if (!tile_map || !tile_map->get_tileset().is_valid()) {
+		for (int i = 0; i < tile_map_editor_plugins.size(); i++) {
+			tile_map_editor_plugins[i]->hide();
+		}
+	} else {
+		for (int i = 0; i < tile_map_editor_plugins.size(); i++) {
+			tile_map_editor_plugins[i]->set_visible(i == tabs->get_current_tab());
+		}
 	}
 
 	// Graphical update.
