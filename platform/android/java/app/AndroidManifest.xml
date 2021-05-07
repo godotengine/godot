@@ -19,6 +19,7 @@
     <application
         android:label="@string/godot_project_name_string"
         android:allowBackup="false"
+        android:isGame="true"
         tools:ignore="GoogleAppIndexingWarning"
         android:icon="@mipmap/icon" >
 
