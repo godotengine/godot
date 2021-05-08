@@ -622,7 +622,7 @@ void ServerController::activate_peer(int p_peer) {
 void ServerController::deactivate_peer(int p_peer) {
 	const uint32_t index = find_peer(p_peer);
 	if (index != UINT32_MAX) {
-		peers.remove_unordered(p_peer);
+		peers.remove_unordered(index);
 	}
 }
 
