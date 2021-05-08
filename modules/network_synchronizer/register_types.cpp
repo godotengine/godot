@@ -66,4 +66,19 @@ void register_network_synchronizer_types() {
 }
 
 void unregister_network_synchronizer_types() {
+	// Cleanup the used `StringName` here so to avoid that the destructor is
+	// called too late.
+	NetworkedController::sn_rpc_server_send_inputs = StringName();
+	NetworkedController::sn_rpc_send_tick_additional_speed = StringName();
+	NetworkedController::sn_rpc_doll_notify_sync_pause = StringName();
+	NetworkedController::sn_rpc_doll_send_epoch_batch = StringName();
+
+	NetworkedController::sn_controller_process = StringName();
+	NetworkedController::sn_count_input_size = StringName();
+	NetworkedController::sn_are_inputs_different = StringName();
+	NetworkedController::sn_collect_epoch_data = StringName();
+	NetworkedController::sn_collect_inputs = StringName();
+	NetworkedController::sn_setup_interpolator = StringName();
+	NetworkedController::sn_parse_epoch_data = StringName();
+	NetworkedController::sn_apply_epoch = StringName();
 }
