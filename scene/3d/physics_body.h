@@ -40,9 +40,6 @@
 class PhysicsBody : public CollisionObject {
 	GDCLASS(PhysicsBody, CollisionObject);
 
-	uint32_t collision_layer;
-	uint32_t collision_mask;
-
 	void _set_layers(uint32_t p_mask);
 	uint32_t _get_layers() const;
 
@@ -55,18 +52,6 @@ public:
 	virtual Vector3 get_linear_velocity() const;
 	virtual Vector3 get_angular_velocity() const;
 	virtual float get_inverse_mass() const;
-
-	void set_collision_layer(uint32_t p_layer);
-	uint32_t get_collision_layer() const;
-
-	void set_collision_mask(uint32_t p_mask);
-	uint32_t get_collision_mask() const;
-
-	void set_collision_layer_bit(int p_bit, bool p_value);
-	bool get_collision_layer_bit(int p_bit) const;
-
-	void set_collision_mask_bit(int p_bit, bool p_value);
-	bool get_collision_mask_bit(int p_bit) const;
 
 	Array get_collision_exceptions();
 	void add_collision_exception_with(Node *p_node); //must be physicsbody
