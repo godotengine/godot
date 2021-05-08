@@ -921,7 +921,7 @@ Variant ConcavePolygonShape2DSW::get_data() const {
 	return rsegments;
 }
 
-void ConcavePolygonShape2DSW::cull(const Rect2 &p_local_aabb, Callback p_callback, void *p_userdata) const {
+void ConcavePolygonShape2DSW::cull(const Rect2 &p_local_aabb, QueryCallback p_callback, void *p_userdata) const {
 	uint32_t *stack = (uint32_t *)alloca(sizeof(int) * bvh_depth);
 
 	enum {
@@ -969,7 +969,9 @@ void ConcavePolygonShape2DSW::cull(const Rect2 &p_local_aabb, Callback p_callbac
 
 						SegmentShape2DSW ss(a, b, (b - a).orthogonal().normalized());
 
-						p_callback(p_userdata, &ss);
+						if (p_callback(p_userdata, &ss)) {
+							return;
+						}
 						stack[level] = (VISIT_DONE_BIT << VISITED_BIT_SHIFT) | node;
 
 					} else {

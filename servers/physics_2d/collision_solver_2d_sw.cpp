@@ -149,20 +149,20 @@ struct _ConcaveCollisionInfo2D {
 	Vector2 *sep_axis;
 };
 
-void CollisionSolver2DSW::concave_callback(void *p_userdata, Shape2DSW *p_convex) {
+bool CollisionSolver2DSW::concave_callback(void *p_userdata, Shape2DSW *p_convex) {
 	_ConcaveCollisionInfo2D &cinfo = *(_ConcaveCollisionInfo2D *)(p_userdata);
 	cinfo.aabb_tests++;
-	if (!cinfo.result_callback && cinfo.collided) {
-		return; //already collided and no contacts requested, don't test anymore
-	}
 
 	bool collided = collision_solver(cinfo.shape_A, *cinfo.transform_A, cinfo.motion_A, p_convex, *cinfo.transform_B, cinfo.motion_B, cinfo.result_callback, cinfo.userdata, cinfo.swap_result, cinfo.sep_axis, cinfo.margin_A, cinfo.margin_B);
 	if (!collided) {
-		return;
+		return false;
 	}
 
 	cinfo.collided = true;
 	cinfo.collisions++;
+
+	// Stop at first collision if contacts are not needed.
+	return !cinfo.result_callback;
 }
 
 bool CollisionSolver2DSW::solve_concave(const Shape2DSW *p_shape_A, const Transform2D &p_transform_A, const Vector2 &p_motion_A, const Shape2DSW *p_shape_B, const Transform2D &p_transform_B, const Vector2 &p_motion_B, CallbackResult p_result_callback, void *p_userdata, bool p_swap_result, Vector2 *r_sep_axis, real_t p_margin_A, real_t p_margin_B) {

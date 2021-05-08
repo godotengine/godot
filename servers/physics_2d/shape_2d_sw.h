@@ -465,9 +465,11 @@ public:
 class ConcaveShape2DSW : public Shape2DSW {
 public:
 	virtual bool is_concave() const override { return true; }
-	typedef void (*Callback)(void *p_userdata, Shape2DSW *p_convex);
 
-	virtual void cull(const Rect2 &p_local_aabb, Callback p_callback, void *p_userdata) const = 0;
+	// Returns true to stop the query.
+	typedef bool (*QueryCallback)(void *p_userdata, Shape2DSW *p_convex);
+
+	virtual void cull(const Rect2 &p_local_aabb, QueryCallback p_callback, void *p_userdata) const = 0;
 };
 
 class ConcavePolygonShape2DSW : public ConcaveShape2DSW {
@@ -525,7 +527,7 @@ public:
 	virtual void set_data(const Variant &p_data) override;
 	virtual Variant get_data() const override;
 
-	virtual void cull(const Rect2 &p_local_aabb, Callback p_callback, void *p_userdata) const override;
+	virtual void cull(const Rect2 &p_local_aabb, QueryCallback p_callback, void *p_userdata) const override;
 
 	DEFAULT_PROJECT_RANGE_CAST
 };
