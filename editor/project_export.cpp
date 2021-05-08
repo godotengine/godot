@@ -229,6 +229,9 @@ void ProjectExportDialog::_edit_preset(int p_index) {
 	export_path->update_property();
 	runnable->set_disabled(false);
 	runnable->set_pressed(current->is_runnable());
+	// Set the importer class to fetch the correct class in the XML class reference.
+	// This allows tooltips to display when hovering properties.
+	parameters->set_object_class(current->get_platform()->get_class_name());
 	parameters->edit(current.ptr());
 
 	export_filter->select(current->get_export_filter());
@@ -1069,6 +1072,9 @@ ProjectExportDialog::ProjectExportDialog() {
 	sections->add_child(parameters);
 	parameters->set_name(TTR("Options"));
 	parameters->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	// Make it possible to display tooltips stored in the XML class reference.
+	// The object name is set when the importer changes in `_update_options()`.
+	parameters->set_use_doc_hints(true);
 	parameters->connect("property_edited", callable_mp(this, &ProjectExportDialog::_update_parameters));
 	EditorExport::get_singleton()->connect("export_presets_updated", callable_mp(this, &ProjectExportDialog::_force_update_current_preset_parameters));
 

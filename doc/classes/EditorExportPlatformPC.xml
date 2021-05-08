@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="EditorExportPlatformPC" inherits="EditorExportPlatform" version="4.0">
+	<brief_description>
+		Exporter for desktop platforms (Windows, macOS, Linux).
+	</brief_description>
+	<description>
+		This exporter supports the following OS/architecture combinations:
+		[codeblock]
+		- Windows x86, Windows x86_64
+		- macOS x86_64, macOS ARMv8 (Apple Silicon)
+		    - Can be packed into an universal .app bundle.
+		    - x86 support is not available as Apple no longer supports 32-bit x86.
+		- Linux x86, x86_64
+		[/codeblock]
+		Support for other OS/architecture combinations (such as Linux + ARM) is possible by using custom export templates.
+	</description>
+	<tutorials>
+		<link title="Exporting for PC">https://docs.godotengine.org/en/latest/tutorials/export/exporting_for_pc.html</link>
+	</tutorials>
+	<methods>
+	</methods>
+	<members>
+		<member name="binary_format/64_bits" type="bool" setter="" getter="">
+			If [code]true[/code], exports a 64-bit binary instead of a 32-bit binary.
+		</member>
+		<member name="binary_format/embed_pck" type="bool" setter="" getter="">
+			If [code]true[/code], embeds the PCK file inside the binary. This allows for single-file distribution without having to worry about the PCK file being disassociated from its binary. However, enabling PCK embedding has some bugs, is not compatible with using [code]rcedit[/code] at the same time, and can cause false positives in antivirus programs.
+			If [code]false[/code], a PCK file is placed besides the binary and must be moved along with the binary to keep the exported project in working state. If the binary is renamed, the PCK file must also be renamed to match (except the file extension).
+		</member>
+		<member name="custom_template/debug" type="String" setter="" getter="">
+			The custom export template binary to use when exporting with debugging enabled.
+		</member>
+		<member name="custom_template/release" type="String" setter="" getter="">
+			The custom export template binary to use when exporting with debugging disabled.
+		</member>
+		<member name="texture_format/bptc" type="bool" setter="" getter="">
+		</member>
+		<member name="texture_format/etc" type="bool" setter="" getter="">
+		</member>
+		<member name="texture_format/etc2" type="bool" setter="" getter="">
+		</member>
+		<member name="texture_format/no_bptc_fallbacks" type="bool" setter="" getter="">
+		</member>
+		<member name="texture_format/s3tc" type="bool" setter="" getter="">
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

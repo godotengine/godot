@@ -3755,6 +3755,15 @@ void EditorNode::register_editor_types() {
 	ClassDB::register_class<EditorSyntaxHighlighter>();
 	ClassDB::register_virtual_class<EditorInterface>();
 	ClassDB::register_class<EditorExportPlugin>();
+
+	// Required to document export preset properties in the class reference.
+	// ClassDB::register_class<EditorExportPlatformAndroid>();
+	// ClassDB::register_class<EditorExportPlatformIOS>();
+	// ClassDB::register_class<EditorExportPlatformJavaScript>();
+	// ClassDB::register_class<EditorExportPlatformOSX>();
+	ClassDB::register_class<EditorExportPlatformPC>();
+	// ClassDB::register_class<EditorExportPlatformUWP>();
+
 	ClassDB::register_class<EditorResourceConversionPlugin>();
 	ClassDB::register_class<EditorSceneImporter>();
 	ClassDB::register_class<EditorInspector>();
