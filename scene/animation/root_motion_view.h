@@ -37,7 +37,6 @@ class RootMotionView : public VisualInstance3D {
 	GDCLASS(RootMotionView, VisualInstance3D);
 
 public:
-	RID immediate;
 	NodePath path;
 	float cell_size = 1.0;
 	float radius = 10.0;
@@ -51,6 +50,11 @@ public:
 private:
 	void _notification(int p_what);
 	static void _bind_methods();
+
+	Ref<StandardMaterial3D> mat;
+	Ref<ArrayMesh> mesh;
+	Vector<Vector3> verts_array;
+	Vector<Color> color_array;
 
 public:
 	void set_animation_path(const NodePath &p_path);

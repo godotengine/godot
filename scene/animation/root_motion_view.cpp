@@ -77,7 +77,10 @@ bool RootMotionView::get_zero_y() const {
 
 void RootMotionView::_notification(int p_what) {
 	if (p_what == NOTIFICATION_ENTER_TREE) {
-		RS::get_singleton()->immediate_set_material(immediate, StandardMaterial3D::get_material_rid_for_2d(false, true, false, false, false));
+		mat->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
+		mat->set_flag(StandardMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
+		mat->set_flag(StandardMaterial3D::FLAG_SRGB_VERTEX_COLOR, true);
+		mat->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA);
 		first = true;
 	}
 
@@ -119,11 +122,19 @@ void RootMotionView::_notification(int p_what) {
 		}
 		accumulated.origin.z = Math::fposmod(accumulated.origin.z, cell_size);
 
-		RS::get_singleton()->immediate_clear(immediate);
-
 		int cells_in_radius = int((radius / cell_size) + 1.0);
+		int array_size = cells_in_radius * 8;
+		array_size *= array_size; //array_size = (cells_in_radius * 2 * 4) ^ 2
 
-		RS::get_singleton()->immediate_begin(immediate, RS::PRIMITIVE_LINES);
+		verts_array.clear();
+		color_array.clear();
+		verts_array.resize(array_size);
+		color_array.resize(array_size);
+		Vector3 *vw = verts_array.ptrw();
+		Color *cw = color_array.ptrw();
+
+		int idx = 0;
+
 		for (int i = -cells_in_radius; i < cells_in_radius; i++) {
 			for (int j = -cells_in_radius; j < cells_in_radius; j++) {
 				Vector3 from(i * cell_size, 0, j * cell_size);
@@ -138,21 +149,32 @@ void RootMotionView::_notification(int p_what) {
 				c_i.a *= MAX(0, 1.0 - from_i.length() / radius);
 				c_j.a *= MAX(0, 1.0 - from_j.length() / radius);
 
-				RS::get_singleton()->immediate_color(immediate, c);
-				RS::get_singleton()->immediate_vertex(immediate, from);
+				cw[idx] = c;
+				vw[idx] = from;
+				idx++;
 
-				RS::get_singleton()->immediate_color(immediate, c_i);
-				RS::get_singleton()->immediate_vertex(immediate, from_i);
+				cw[idx] = c_i;
+				vw[idx] = from_i;
+				idx++;
 
-				RS::get_singleton()->immediate_color(immediate, c);
-				RS::get_singleton()->immediate_vertex(immediate, from);
+				cw[idx] = c;
+				vw[idx] = from;
+				idx++;
 
-				RS::get_singleton()->immediate_color(immediate, c_j);
-				RS::get_singleton()->immediate_vertex(immediate, from_j);
+				cw[idx] = c_j;
+				vw[idx] = from_j;
+				idx++;
 			}
 		}
 
-		RS::get_singleton()->immediate_end(immediate);
+		Array arrays = Array();
+		arrays.resize(Mesh::ARRAY_MAX);
+		arrays[Mesh::ARRAY_COLOR] = color_array;
+		arrays[Mesh::ARRAY_VERTEX] = verts_array;
+
+		mesh->clear_surfaces();
+		mesh->add_surface_from_arrays(Mesh::PRIMITIVE_LINES, arrays);
+		mesh->surface_set_material(0, mat);
 	}
 }
 
@@ -189,11 +211,11 @@ void RootMotionView::_bind_methods() {
 
 RootMotionView::RootMotionView() {
 	set_process_internal(true);
-	immediate = RenderingServer::get_singleton()->immediate_create();
-	set_base(immediate);
+	mesh.instance();
+	mat.instance();
+	set_base(mesh->get_rid());
 }
 
 RootMotionView::~RootMotionView() {
 	set_base(RID());
-	RenderingServer::get_singleton()->free(immediate);
 }
