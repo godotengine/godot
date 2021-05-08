@@ -297,6 +297,7 @@ uint32_t NetworkedController::get_doll_max_delay() const {
 }
 
 uint32_t NetworkedController::get_current_input_id() const {
+	ERR_FAIL_NULL_V(controller, 0);
 	return controller->get_current_input_id();
 }
 
