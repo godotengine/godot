@@ -130,23 +130,19 @@ Error ImageLoaderBMP::convert_to_image(Ref<Image> p_image,
 						line_ptr += 1;
 					} break;
 					case 24: {
-						uint32_t color = *((uint32_t *)line_ptr);
-
-						write_buffer[index + 2] = color & 0xff;
-						write_buffer[index + 1] = (color >> 8) & 0xff;
-						write_buffer[index + 0] = (color >> 16) & 0xff;
+						write_buffer[index + 2] = line_ptr[0];
+						write_buffer[index + 1] = line_ptr[1];
+						write_buffer[index + 0] = line_ptr[2];
 						write_buffer[index + 3] = 0xff;
 
 						index += 4;
 						line_ptr += 3;
 					} break;
 					case 32: {
-						uint32_t color = *((uint32_t *)line_ptr);
-
-						write_buffer[index + 2] = color & 0xff;
-						write_buffer[index + 1] = (color >> 8) & 0xff;
-						write_buffer[index + 0] = (color >> 16) & 0xff;
-						write_buffer[index + 3] = color >> 24;
+						write_buffer[index + 2] = line_ptr[0];
+						write_buffer[index + 1] = line_ptr[1];
+						write_buffer[index + 0] = line_ptr[2];
+						write_buffer[index + 3] = line_ptr[3];
 
 						index += 4;
 						line_ptr += 4;
@@ -172,11 +168,9 @@ Error ImageLoaderBMP::convert_to_image(Ref<Image> p_image,
 			const uint8_t *cb = p_color_buffer;
 
 			for (unsigned int i = 0; i < color_table_size; ++i) {
-				uint32_t color = *((uint32_t *)cb);
-
-				pal[i * 4 + 0] = (color >> 16) & 0xff;
-				pal[i * 4 + 1] = (color >> 8) & 0xff;
-				pal[i * 4 + 2] = (color)&0xff;
+				pal[i * 4 + 0] = cb[2];
+				pal[i * 4 + 1] = cb[1];
+				pal[i * 4 + 2] = cb[0];
 				pal[i * 4 + 3] = 0xff;
 
 				cb += 4;
