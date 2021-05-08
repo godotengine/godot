@@ -1656,13 +1656,13 @@ Error VulkanContext::prepare_buffers() {
 			if (err == VK_ERROR_OUT_OF_DATE_KHR) {
 				// swapchain is out of date (e.g. the window was resized) and
 				// must be recreated:
-				print_line("early out of data");
+				print_verbose("Vulkan: Early out of date swapchain, recreating.");
 				//resize_notify();
 				_update_swap_chain(w);
 			} else if (err == VK_SUBOPTIMAL_KHR) {
-				print_line("early suboptimal");
 				// swapchain is not as optimal as it could be, but the platform's
 				// presentation engine will still present the image correctly.
+				print_verbose("Vulkan: Early suboptimal swapchain.");
 				break;
 			} else {
 				ERR_FAIL_COND_V(err, ERR_CANT_CREATE);
@@ -1870,12 +1870,12 @@ Error VulkanContext::swap_buffers() {
 	if (err == VK_ERROR_OUT_OF_DATE_KHR) {
 		// swapchain is out of date (e.g. the window was resized) and
 		// must be recreated:
-		print_line("out of date");
+		print_verbose("Vulkan: Swapchain is out of date, recreating.");
 		resize_notify();
 	} else if (err == VK_SUBOPTIMAL_KHR) {
 		// swapchain is not as optimal as it could be, but the platform's
 		// presentation engine will still present the image correctly.
-		print_line("suboptimal");
+		print_verbose("Vulkan: Swapchain is suboptimal.");
 	} else {
 		ERR_FAIL_COND_V(err, ERR_CANT_CREATE);
 	}
@@ -1971,13 +1971,13 @@ void VulkanContext::local_device_push_command_buffers(RID p_local_device, const 
 
 	VkResult err = vkQueueSubmit(ld->queue, 1, &submit_info, VK_NULL_HANDLE);
 	if (err == VK_ERROR_OUT_OF_HOST_MEMORY) {
-		print_line("out of host memory");
+		print_line("Vulkan: Out of host memory!");
 	}
 	if (err == VK_ERROR_OUT_OF_DEVICE_MEMORY) {
-		print_line("out of device memory");
+		print_line("Vulkan: Out of device memory!");
 	}
 	if (err == VK_ERROR_DEVICE_LOST) {
-		print_line("device lost");
+		print_line("Vulkan: Device lost!");
 	}
 	ERR_FAIL_COND(err);
 
