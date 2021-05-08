@@ -2606,7 +2606,6 @@ void DisplayServerX11::_window_changed(XEvent *event) {
 	}
 #endif
 
-	print_line("DisplayServer::_window_changed: " + itos(window_id) + " rect: " + new_rect);
 	if (!wd.rect_changed_callback.is_null()) {
 		Rect2i r = new_rect;
 
@@ -3833,8 +3832,6 @@ DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, u
 		wd.position.y = xwa.y;
 		wd.size.width = xwa.width;
 		wd.size.height = xwa.height;
-
-		print_line("DisplayServer::_create_window " + itos(id) + " want rect: " + p_rect + " got rect " + Rect2i(xwa.x, xwa.y, xwa.width, xwa.height));
 	}
 
 	//set cursor
