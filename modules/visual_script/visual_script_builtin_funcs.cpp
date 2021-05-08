@@ -132,6 +132,7 @@ bool VisualScriptBuiltinFunc::has_input_sequence_port() const {
 		case TEXT_PRINT:
 		case TEXT_PRINTERR:
 		case TEXT_PRINTRAW:
+		case MATH_SEED:
 			return true;
 		default:
 			return false;
