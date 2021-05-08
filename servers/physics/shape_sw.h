@@ -112,11 +112,13 @@ public:
 
 class ConcaveShapeSW : public ShapeSW {
 public:
+	// Returns true to stop the query.
+	typedef bool (*QueryCallback)(void *p_userdata, ShapeSW *p_convex);
+
 	virtual bool is_concave() const { return true; }
-	typedef void (*Callback)(void *p_userdata, ShapeSW *p_convex);
 	virtual void get_supports(const Vector3 &p_normal, int p_max, Vector3 *r_supports, int &r_amount, FeatureType &r_type) const { r_amount = 0; }
 
-	virtual void cull(const AABB &p_local_aabb, Callback p_callback, void *p_userdata) const = 0;
+	virtual void cull(const AABB &p_local_aabb, QueryCallback p_callback, void *p_userdata) const = 0;
 
 	ConcaveShapeSW() {}
 };
@@ -335,7 +337,7 @@ struct ConcavePolygonShapeSW : public ConcaveShapeSW {
 
 	struct _CullParams {
 		AABB aabb;
-		Callback callback;
+		QueryCallback callback;
 		void *userdata;
 		const Face *faces;
 		const Vector3 *vertices;
@@ -358,7 +360,7 @@ struct ConcavePolygonShapeSW : public ConcaveShapeSW {
 	};
 
 	void _cull_segment(int p_idx, _SegmentCullParams *p_params) const;
-	void _cull(int p_idx, _CullParams *p_params) const;
+	bool _cull(int p_idx, _CullParams *p_params) const;
 
 	void _fill_bvh(_VolumeSW_BVH *p_bvh_tree, BVH *p_bvh_array, int &p_idx);
 
@@ -376,7 +378,7 @@ public:
 	virtual bool intersect_point(const Vector3 &p_point) const;
 	virtual Vector3 get_closest_point_to(const Vector3 &p_point) const;
 
-	virtual void cull(const AABB &p_local_aabb, Callback p_callback, void *p_userdata) const;
+	virtual void cull(const AABB &p_local_aabb, QueryCallback p_callback, void *p_userdata) const;
 
 	virtual Vector3 get_moment_of_inertia(real_t p_mass) const;
 
@@ -421,7 +423,7 @@ public:
 	virtual bool intersect_point(const Vector3 &p_point) const;
 
 	virtual Vector3 get_closest_point_to(const Vector3 &p_point) const;
-	virtual void cull(const AABB &p_local_aabb, Callback p_callback, void *p_userdata) const;
+	virtual void cull(const AABB &p_local_aabb, QueryCallback p_callback, void *p_userdata) const;
 
 	virtual Vector3 get_moment_of_inertia(real_t p_mass) const;
 
