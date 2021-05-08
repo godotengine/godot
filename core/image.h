@@ -147,10 +147,11 @@ public:
 	static void (*_image_decompress_etc1)(Image *);
 	static void (*_image_decompress_etc2)(Image *);
 
-	static PoolVector<uint8_t> (*lossy_packer)(const Ref<Image> &p_image, float p_quality);
-	static Ref<Image> (*lossy_unpacker)(const PoolVector<uint8_t> &p_buffer);
-	static PoolVector<uint8_t> (*lossless_packer)(const Ref<Image> &p_image);
-	static Ref<Image> (*lossless_unpacker)(const PoolVector<uint8_t> &p_buffer);
+	static PoolVector<uint8_t> (*webp_lossy_packer)(const Ref<Image> &p_image, float p_quality);
+	static PoolVector<uint8_t> (*webp_lossless_packer)(const Ref<Image> &p_image);
+	static Ref<Image> (*webp_unpacker)(const PoolVector<uint8_t> &p_buffer);
+	static PoolVector<uint8_t> (*png_packer)(const Ref<Image> &p_image);
+	static Ref<Image> (*png_unpacker)(const PoolVector<uint8_t> &p_buffer);
 
 	PoolVector<uint8_t>::Write write_lock;
 

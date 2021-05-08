@@ -33,6 +33,7 @@
 #include "core/io/marshalls.h"
 #include "core/os/os.h"
 #include "core/print_string.h"
+#include "core/project_settings.h"
 
 #include <stdlib.h>
 #include <webp/decode.h>
@@ -69,8 +70,74 @@ static PoolVector<uint8_t> _webp_lossy_pack(const Ref<Image> &p_image, float p_q
 	w[2] = 'B';
 	w[3] = 'P';
 	memcpy(&w[4], dst_buff, dst_size);
-	free(dst_buff);
+	WebPFree(dst_buff);
 	w.release();
+	return dst;
+}
+
+static PoolVector<uint8_t> _webp_lossless_pack(const Ref<Image> &p_image) {
+	ERR_FAIL_COND_V(p_image.is_null() || p_image->empty(), PoolVector<uint8_t>());
+
+	int compression_level = ProjectSettings::get_singleton()->get("rendering/lossless_compression/webp_compression_level");
+	compression_level = CLAMP(compression_level, 0, 9);
+
+	Ref<Image> img = p_image->duplicate();
+	if (img->detect_alpha()) {
+		img->convert(Image::FORMAT_RGBA8);
+	} else {
+		img->convert(Image::FORMAT_RGB8);
+	}
+
+	Size2 s(img->get_width(), img->get_height());
+	PoolVector<uint8_t> data = img->get_data();
+	PoolVector<uint8_t>::Read r = data.read();
+
+	// we need to use the more complex API in order to access the 'exact' flag...
+
+	WebPConfig config;
+	WebPPicture pic;
+	if (!WebPConfigInit(&config) || !WebPConfigLosslessPreset(&config, compression_level) || !WebPPictureInit(&pic)) {
+		ERR_FAIL_V(PoolVector<uint8_t>());
+	}
+
+	WebPMemoryWriter wrt;
+	config.exact = 1;
+	pic.use_argb = 1;
+	pic.width = s.width;
+	pic.height = s.height;
+	pic.writer = WebPMemoryWrite;
+	pic.custom_ptr = &wrt;
+	WebPMemoryWriterInit(&wrt);
+
+	bool success_import = false;
+	if (img->get_format() == Image::FORMAT_RGB8) {
+		success_import = WebPPictureImportRGB(&pic, r.ptr(), 3 * s.width);
+	} else {
+		success_import = WebPPictureImportRGBA(&pic, r.ptr(), 4 * s.width);
+	}
+	bool success_encode = false;
+	if (success_import) {
+		success_encode = WebPEncode(&config, &pic);
+	}
+	WebPPictureFree(&pic);
+
+	if (!success_encode) {
+		WebPMemoryWriterClear(&wrt);
+		ERR_FAIL_V_MSG(PoolVector<uint8_t>(), "WebP packing failed.");
+	}
+
+	// copy from wrt
+	PoolVector<uint8_t> dst;
+	dst.resize(4 + wrt.size);
+	PoolVector<uint8_t>::Write w = dst.write();
+	w[0] = 'W';
+	w[1] = 'E';
+	w[2] = 'B';
+	w[3] = 'P';
+	memcpy(&w[4], wrt.mem, wrt.size);
+	w.release();
+	WebPMemoryWriterClear(&wrt);
+
 	return dst;
 }
 
@@ -171,6 +238,7 @@ void ImageLoaderWEBP::get_recognized_extensions(List<String> *p_extensions) cons
 
 ImageLoaderWEBP::ImageLoaderWEBP() {
 	Image::_webp_mem_loader_func = _webp_mem_loader_func;
-	Image::lossy_packer = _webp_lossy_pack;
-	Image::lossy_unpacker = _webp_lossy_unpack;
+	Image::webp_lossy_packer = _webp_lossy_pack;
+	Image::webp_lossless_packer = _webp_lossless_pack;
+	Image::webp_unpacker = _webp_lossy_unpack;
 }

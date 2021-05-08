@@ -516,7 +516,7 @@ Error StreamTexture::_load_data(const String &p_path, int &tw, int &th, int &tw_
 		p_size_limit = 0;
 	}
 
-	if (df & FORMAT_BIT_LOSSLESS || df & FORMAT_BIT_LOSSY) {
+	if (df & FORMAT_BIT_PNG || df & FORMAT_BIT_WEBP) {
 		//look for a PNG or WEBP file inside
 
 		int sw = tw;
@@ -554,10 +554,10 @@ Error StreamTexture::_load_data(const String &p_path, int &tw, int &th, int &tw_
 			}
 
 			Ref<Image> img;
-			if (df & FORMAT_BIT_LOSSLESS) {
-				img = Image::lossless_unpacker(pv);
+			if (df & FORMAT_BIT_PNG) {
+				img = Image::png_unpacker(pv);
 			} else {
-				img = Image::lossy_unpacker(pv);
+				img = Image::webp_unpacker(pv);
 			}
 
 			if (img.is_null() || img->empty()) {
@@ -2182,7 +2182,7 @@ Error TextureLayered::load(const String &p_path) {
 					f->get_buffer(w.ptr(), size);
 				}
 
-				Ref<Image> img = Image::lossless_unpacker(pv);
+				Ref<Image> img = Image::png_unpacker(pv);
 
 				if (img.is_null() || img->empty() || format != img->get_format()) {
 					f->close();

@@ -562,10 +562,10 @@ Error ResourceInteractiveLoaderBinary::parse_variant(Variant &r_v) {
 
 				Ref<Image> image;
 
-				if (encoding == IMAGE_ENCODING_LOSSY && Image::lossy_unpacker) {
-					image = Image::lossy_unpacker(data);
-				} else if (encoding == IMAGE_ENCODING_LOSSLESS && Image::lossless_unpacker) {
-					image = Image::lossless_unpacker(data);
+				if (encoding == IMAGE_ENCODING_LOSSY && Image::webp_unpacker) {
+					image = Image::webp_unpacker(data); // IMAGE_ENCODING_LOSSY always meant WebP
+				} else if (encoding == IMAGE_ENCODING_LOSSLESS && Image::png_unpacker) {
+					image = Image::png_unpacker(data); // IMAGE_ENCODING_LOSSLESS always meant png
 				}
 				_advance_padding(data.size());
 
