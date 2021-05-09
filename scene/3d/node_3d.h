@@ -75,6 +75,8 @@ class Node3D : public Node {
 		bool top_level = false;
 		bool inside_world = false;
 
+		RID visibility_parent;
+
 		int children_lock = 0;
 		Node3D *parent = nullptr;
 		List<Node3D *> children;
@@ -95,11 +97,16 @@ class Node3D : public Node {
 
 	} data;
 
+	NodePath visibility_parent_path;
+
 	void _update_gizmo();
 	void _notify_dirty();
 	void _propagate_transform_changed(Node3D *p_origin);
 
 	void _propagate_visibility_changed();
+
+	void _propagate_visibility_parent();
+	void _update_visibility_parent(bool p_update_root);
 
 protected:
 	_FORCE_INLINE_ void set_ignore_transform_notification(bool p_ignore) { data.ignore_notification = p_ignore; }
@@ -195,6 +202,9 @@ public:
 	bool is_visible_in_tree() const;
 
 	void force_update_transform();
+
+	void set_visibility_parent(const NodePath &p_path);
+	NodePath get_visibility_parent() const;
 
 	Node3D();
 };

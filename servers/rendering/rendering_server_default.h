@@ -726,6 +726,7 @@ public:
 	FUNC2(instance_set_exterior, RID, bool)
 
 	FUNC2(instance_set_extra_visibility_margin, RID, real_t)
+	FUNC2(instance_set_visibility_parent, RID, RID)
 
 	// don't use these in a game!
 	FUNC2RC(Vector<ObjectID>, instances_cull_aabb, const AABB &, RID)
@@ -736,8 +737,7 @@ public:
 	FUNC2(instance_geometry_set_cast_shadows_setting, RID, ShadowCastingSetting)
 	FUNC2(instance_geometry_set_material_override, RID, RID)
 
-	FUNC5(instance_geometry_set_draw_range, RID, float, float, float, float)
-	FUNC2(instance_geometry_set_as_instance_lod, RID, RID)
+	FUNC5(instance_geometry_set_visibility_range, RID, float, float, float, float)
 	FUNC4(instance_geometry_set_lightmap, RID, RID, const Rect2 &, int)
 	FUNC2(instance_geometry_set_lod_bias, RID, float)
 

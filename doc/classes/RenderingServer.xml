@@ -1175,17 +1175,6 @@
 				Once finished with your RID, you will want to free the RID using the RenderingServer's [method free_rid] static method.
 			</description>
 		</method>
-		<method name="instance_geometry_set_as_instance_lod">
-			<return type="void">
-			</return>
-			<argument index="0" name="instance" type="RID">
-			</argument>
-			<argument index="1" name="as_lod_of_instance" type="RID">
-			</argument>
-			<description>
-				Not implemented in Godot 3.x.
-			</description>
-		</method>
 		<method name="instance_geometry_set_cast_shadows_setting">
 			<return type="void">
 			</return>
@@ -1195,23 +1184,6 @@
 			</argument>
 			<description>
 				Sets the shadow casting setting to one of [enum ShadowCastingSetting]. Equivalent to [member GeometryInstance3D.cast_shadow].
-			</description>
-		</method>
-		<method name="instance_geometry_set_draw_range">
-			<return type="void">
-			</return>
-			<argument index="0" name="instance" type="RID">
-			</argument>
-			<argument index="1" name="min" type="float">
-			</argument>
-			<argument index="2" name="max" type="float">
-			</argument>
-			<argument index="3" name="min_margin" type="float">
-			</argument>
-			<argument index="4" name="max_margin" type="float">
-			</argument>
-			<description>
-				Not implemented in Godot 3.x.
 			</description>
 		</method>
 		<method name="instance_geometry_set_flag">
@@ -1236,6 +1208,23 @@
 			</argument>
 			<description>
 				Sets a material that will override the material for all surfaces on the mesh associated with this instance. Equivalent to [member GeometryInstance3D.material_override].
+			</description>
+		</method>
+		<method name="instance_geometry_set_visibility_range">
+			<return type="void">
+			</return>
+			<argument index="0" name="instance" type="RID">
+			</argument>
+			<argument index="1" name="min" type="float">
+			</argument>
+			<argument index="2" name="max" type="float">
+			</argument>
+			<argument index="3" name="min_margin" type="float">
+			</argument>
+			<argument index="4" name="max_margin" type="float">
+			</argument>
+			<description>
+				Sets the visibility range values for the given geometry instance. Equivalent to [member GeometryInstance3D.visibility_range_begin] and related properties.
 			</description>
 		</method>
 		<method name="instance_set_base">
@@ -1339,6 +1328,17 @@
 			</argument>
 			<description>
 				Sets the world space transform of the instance. Equivalent to [member Node3D.transform].
+			</description>
+		</method>
+		<method name="instance_set_visibility_parent">
+			<return type="void">
+			</return>
+			<argument index="0" name="instance" type="RID">
+			</argument>
+			<argument index="1" name="parent" type="RID">
+			</argument>
+			<description>
+				Sets the visibility parent for the given instance. Equivalent to [member Node3D.visibility_parent].
 			</description>
 		</method>
 		<method name="instance_set_visible">

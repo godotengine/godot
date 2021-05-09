@@ -310,6 +310,9 @@
 		<member name="transform" type="Transform3D" setter="set_transform" getter="get_transform" default="Transform3D( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0 )">
 			Local space [Transform3D] of this node, with respect to the parent node.
 		</member>
+		<member name="visibility_parent" type="NodePath" setter="set_visibility_parent" getter="get_visibility_parent" default="NodePath(&quot;&quot;)">
+			Defines the visibility range parent for this node and its subtree. The visibility parent must be a GeometryInstance3D. Any visual instance will only be visible if the visibility parent (and all of its visibility ancestors) is hidden by being closer to the camera than its own [member GeometryInstance3D.visibility_range_begin]. Nodes hidden via the [member Node3D.visible] property are essentially removed from the visibility dependency tree, so dependant instances will not take the hidden node or its ancestors into account.
+		</member>
 		<member name="visible" type="bool" setter="set_visible" getter="is_visible" default="true">
 			If [code]true[/code], this node is drawn. The node is only visible if all of its antecedents are visible as well (in other words, [method is_visible_in_tree] must return [code]true[/code]).
 		</member>
