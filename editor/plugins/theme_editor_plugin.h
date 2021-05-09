@@ -41,14 +41,148 @@
 
 #include "editor/editor_node.h"
 
+class ThemeItemImportTree : public VBoxContainer {
+	GDCLASS(ThemeItemImportTree, VBoxContainer);
+
+	Ref<Theme> edited_theme;
+	Ref<Theme> base_theme;
+
+	struct ThemeItem {
+		String type_name;
+		Theme::DataType data_type;
+		String item_name;
+
+		bool operator<(const ThemeItem &p_item) const {
+			if (type_name == p_item.type_name && data_type == p_item.data_type) {
+				return item_name < p_item.item_name;
+			}
+			if (type_name == p_item.type_name) {
+				return data_type < p_item.data_type;
+			}
+			return type_name < p_item.type_name;
+		}
+	};
+
+	enum ItemCheckedState {
+		SELECT_IMPORT_DEFINITION,
+		SELECT_IMPORT_FULL,
+	};
+
+	Map<ThemeItem, ItemCheckedState> selected_items;
+
+	LineEdit *import_items_filter;
+
+	Tree *import_items_tree;
+	List<TreeItem *> tree_color_items;
+	List<TreeItem *> tree_constant_items;
+	List<TreeItem *> tree_font_items;
+	List<TreeItem *> tree_font_size_items;
+	List<TreeItem *> tree_icon_items;
+	List<TreeItem *> tree_stylebox_items;
+
+	bool updating_tree = false;
+
+	enum ItemActionFlag {
+		IMPORT_ITEM = 1,
+		IMPORT_ITEM_DATA = 2,
+	};
+
+	TextureRect *select_colors_icon;
+	Label *select_colors_label;
+	Button *select_all_colors_button;
+	Button *select_full_colors_button;
+	Button *deselect_all_colors_button;
+	Label *total_selected_colors_label;
+
+	TextureRect *select_constants_icon;
+	Label *select_constants_label;
+	Button *select_all_constants_button;
+	Button *select_full_constants_button;
+	Button *deselect_all_constants_button;
+	Label *total_selected_constants_label;
+
+	TextureRect *select_fonts_icon;
+	Label *select_fonts_label;
+	Button *select_all_fonts_button;
+	Button *select_full_fonts_button;
+	Button *deselect_all_fonts_button;
+	Label *total_selected_fonts_label;
+
+	TextureRect *select_font_sizes_icon;
+	Label *select_font_sizes_label;
+	Button *select_all_font_sizes_button;
+	Button *select_full_font_sizes_button;
+	Button *deselect_all_font_sizes_button;
+	Label *total_selected_font_sizes_label;
+
+	TextureRect *select_icons_icon;
+	Label *select_icons_label;
+	Button *select_all_icons_button;
+	Button *select_full_icons_button;
+	Button *deselect_all_icons_button;
+	Label *total_selected_icons_label;
+
+	TextureRect *select_styleboxes_icon;
+	Label *select_styleboxes_label;
+	Button *select_all_styleboxes_button;
+	Button *select_full_styleboxes_button;
+	Button *deselect_all_styleboxes_button;
+	Label *total_selected_styleboxes_label;
+
+	HBoxContainer *select_icons_warning_hb;
+	TextureRect *select_icons_warning_icon;
+	Label *select_icons_warning;
+
+	Button *import_collapse_types_button;
+	Button *import_expand_types_button;
+	Button *import_select_all_button;
+	Button *import_select_full_button;
+	Button *import_deselect_all_button;
+
+	void _update_items_tree();
+	void _toggle_type_items(bool p_collapse);
+	void _filter_text_changed(const String &p_value);
+
+	void _store_selected_item(TreeItem *p_tree_item);
+	void _restore_selected_item(TreeItem *p_tree_item);
+	void _update_total_selected(Theme::DataType p_data_type);
+
+	void _tree_item_edited();
+	void _select_all_subitems(TreeItem *p_root_item, bool p_select_with_data);
+	void _deselect_all_subitems(TreeItem *p_root_item, bool p_deselect_completely);
+	void _update_parent_items(TreeItem *p_root_item);
+
+	void _select_all_items_pressed();
+	void _select_full_items_pressed();
+	void _deselect_all_items_pressed();
+
+	void _select_all_data_type_pressed(int p_data_type);
+	void _select_full_data_type_pressed(int p_data_type);
+	void _deselect_all_data_type_pressed(int p_data_type);
+
+	void _import_selected();
+
+protected:
+	void _notification(int p_what);
+	static void _bind_methods();
+
+public:
+	void set_edited_theme(const Ref<Theme> &p_theme);
+	void set_base_theme(const Ref<Theme> &p_theme);
+	void reset_item_tree();
+
+	bool has_selected_items() const;
+
+	ThemeItemImportTree();
+};
+
 class ThemeItemEditorDialog : public AcceptDialog {
 	GDCLASS(ThemeItemEditorDialog, AcceptDialog);
 
 	Ref<Theme> edited_theme;
 
 	ItemList *edit_type_list;
-	OptionButton *edit_add_class_options;
-	LineEdit *edit_add_custom_value;
+	LineEdit *edit_add_type_value;
 	String edited_item_type;
 
 	Button *edit_items_add_color;
@@ -83,6 +217,19 @@ class ThemeItemEditorDialog : public AcceptDialog {
 	String edit_item_old_name;
 	Theme::DataType edit_item_data_type = Theme::DATA_TYPE_MAX;
 
+	ThemeItemImportTree *import_default_theme_items;
+	ThemeItemImportTree *import_editor_theme_items;
+	ThemeItemImportTree *import_other_theme_items;
+
+	LineEdit *import_another_theme_value;
+	Button *import_another_theme_button;
+	EditorFileDialog *import_another_theme_dialog;
+
+	ConfirmationDialog *confirm_closing_dialog;
+
+	void ok_pressed() override;
+	void _close_dialog();
+
 	void _dialog_about_to_show();
 	void _update_edit_types();
 	void _edited_type_selected(int p_item_idx);
@@ -90,8 +237,7 @@ class ThemeItemEditorDialog : public AcceptDialog {
 	void _update_edit_item_tree(String p_item_type);
 	void _item_tree_button_pressed(Object *p_item, int p_column, int p_id);
 
-	void _add_class_type_items();
-	void _add_custom_type();
+	void _add_theme_type();
 	void _add_theme_item(Theme::DataType p_data_type, String p_item_name, String p_item_type);
 	void _remove_data_type_items(Theme::DataType p_data_type, String p_item_type);
 	void _remove_class_items();
@@ -102,6 +248,9 @@ class ThemeItemEditorDialog : public AcceptDialog {
 	void _open_rename_theme_item_dialog(Theme::DataType p_data_type, String p_item_name);
 	void _confirm_edit_theme_item();
 	void _edit_theme_item_gui_input(const Ref<InputEvent> &p_event);
+
+	void _open_select_another_theme();
+	void _select_another_theme_cbk(const String &p_path);
 
 protected:
 	void _notification(int p_what);
@@ -115,29 +264,18 @@ public:
 class ThemeEditor : public VBoxContainer {
 	GDCLASS(ThemeEditor, VBoxContainer);
 
-	Panel *main_panel;
-	MarginContainer *main_container;
 	Ref<Theme> theme;
-
-	EditorFileDialog *file_dialog;
 
 	double time_left = 0;
 
 	Button *theme_edit_button;
-	MenuButton *theme_create_menu;
 	ThemeItemEditorDialog *theme_edit_dialog;
 
-	enum CreatePopupMode {
-		POPUP_CREATE_EMPTY,
-		POPUP_CREATE_EDITOR_EMPTY,
-		POPUP_IMPORT_EDITOR_THEME,
-	};
-
+	Panel *main_panel;
+	MarginContainer *main_container;
 	Tree *test_tree;
 
-	void _save_template_cbk(String fname);
 	void _theme_edit_button_cbk();
-	void _theme_create_menu_cbk(int p_option);
 	void _propagate_redraw(Control *p_at);
 	void _refresh_interval();
 
