@@ -427,6 +427,7 @@ public:
 
 	void get_breakpoints(List<String> *p_breakpoints);
 
+	void save_current_script();
 	void save_all_scripts();
 
 	void set_window_layout(Ref<ConfigFile> p_layout);
