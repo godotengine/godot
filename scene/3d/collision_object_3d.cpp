@@ -200,7 +200,7 @@ void CollisionObject3D::_update_shape_data(uint32_t p_owner) {
 	}
 }
 
-void CollisionObject3D::_shape_changed(Ref<Shape3D> p_shape) {
+void CollisionObject3D::_shape_changed(const Ref<Shape3D> &p_shape) {
 	for (Map<uint32_t, ShapeData>::Element *E = shapes.front(); E; E = E->next()) {
 		ShapeData &shapedata = E->get();
 		ShapeData::ShapeBase *shapes = shapedata.shapes.ptrw();
@@ -485,8 +485,8 @@ void CollisionObject3D::shape_owner_remove_shape(uint32_t p_owner, int p_shape) 
 
 	if (s.debug_shape.is_valid()) {
 		RS::get_singleton()->free(s.debug_shape);
-		if (s.shape.is_valid() && s.shape->is_connected("changed", callable_mp(this, &CollisionObject3D::_update_shape_data))) {
-			s.shape->disconnect("changed", callable_mp(this, &CollisionObject3D::_update_shape_data));
+		if (s.shape.is_valid() && s.shape->is_connected("changed", callable_mp(this, &CollisionObject3D::_shape_changed))) {
+			s.shape->disconnect("changed", callable_mp(this, &CollisionObject3D::_shape_changed));
 		}
 		--debug_shapes_count;
 	}

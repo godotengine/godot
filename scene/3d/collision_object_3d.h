@@ -72,7 +72,7 @@ class CollisionObject3D : public Node3D {
 
 	bool _are_collision_shapes_visible();
 	void _update_shape_data(uint32_t p_owner);
-	void _shape_changed(Ref<Shape3D> p_shape);
+	void _shape_changed(const Ref<Shape3D> &p_shape);
 	void _update_debug_shapes();
 	void _clear_debug_shapes();
 
