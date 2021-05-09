@@ -3178,7 +3178,6 @@ void Tree::_notification(int p_what) {
 		RID ci = get_canvas_item();
 
 		Ref<StyleBox> bg = cache.bg;
-		Ref<StyleBox> bg_focus = get_theme_stylebox("bg_focus");
 		Color font_outline_color = get_theme_color("font_outline_color");
 		int outline_size = get_theme_constant("outline_size");
 
@@ -3187,11 +3186,6 @@ void Tree::_notification(int p_what) {
 		Size2 draw_size = get_size() - bg->get_minimum_size();
 
 		bg->draw(ci, Rect2(Point2(), get_size()));
-		if (has_focus()) {
-			RenderingServer::get_singleton()->canvas_item_add_clip_ignore(ci, true);
-			bg_focus->draw(ci, Rect2(Point2(), get_size()));
-			RenderingServer::get_singleton()->canvas_item_add_clip_ignore(ci, false);
-		}
 
 		int tbh = _get_title_button_height();
 
@@ -3224,6 +3218,15 @@ void Tree::_notification(int p_what) {
 				}
 				columns[i].text_buf->draw(ci, text_pos, cache.title_button_color);
 			}
+		}
+
+		// Draw the background focus outline last, so that it is drawn in front of the section headings.
+		// Otherwise, section heading backgrounds can appear to be in front of the focus outline when scrolling.
+		if (has_focus()) {
+			RenderingServer::get_singleton()->canvas_item_add_clip_ignore(ci, true);
+			const Ref<StyleBox> bg_focus = get_theme_stylebox("bg_focus");
+			bg_focus->draw(ci, Rect2(Point2(), get_size()));
+			RenderingServer::get_singleton()->canvas_item_add_clip_ignore(ci, false);
 		}
 	}
 
