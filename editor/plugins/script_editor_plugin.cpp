@@ -703,7 +703,7 @@ void ScriptEditor::_close_tab(int p_idx, bool p_save, bool p_history_back) {
 			// Do not try to save internal scripts, but prompt to save in-memory
 			// scripts which are not saved to disk yet (have empty path).
 			if (script->get_path().find("local://") == -1 && script->get_path().find("::") == -1) {
-				_save_current_script();
+				save_current_script();
 			}
 		}
 		if (script.is_valid()) {
@@ -1101,59 +1101,6 @@ bool ScriptEditor::is_scripts_panel_toggled() {
 	return list_split->is_visible();
 }
 
-void ScriptEditor::_save_current_script() {
-	ScriptEditorBase *current = _get_current_editor();
-
-	if (_test_script_times_on_disk()) {
-		return;
-	}
-
-	if (trim_trailing_whitespace_on_save) {
-		current->trim_trailing_whitespace();
-	}
-
-	current->insert_final_newline();
-
-	if (convert_indent_on_save) {
-		if (use_space_indentation) {
-			current->convert_indent_to_spaces();
-		} else {
-			current->convert_indent_to_tabs();
-		}
-	}
-
-	RES resource = current->get_edited_resource();
-	Ref<TextFile> text_file = resource;
-	Ref<Script> script = resource;
-
-	if (text_file != nullptr) {
-		current->apply_code();
-		_save_text_file(text_file, text_file->get_path());
-		return;
-	}
-
-	if (script != nullptr) {
-		const Vector<DocData::ClassDoc> &documentations = script->get_documentation();
-		for (int j = 0; j < documentations.size(); j++) {
-			const DocData::ClassDoc &doc = documentations.get(j);
-			if (EditorHelp::get_doc_data()->has_doc(doc.name)) {
-				EditorHelp::get_doc_data()->remove_doc(doc.name);
-			}
-		}
-	}
-
-	editor->save_resource(resource);
-
-	if (script != nullptr) {
-		const Vector<DocData::ClassDoc> &documentations = script->get_documentation();
-		for (int j = 0; j < documentations.size(); j++) {
-			const DocData::ClassDoc &doc = documentations.get(j);
-			EditorHelp::get_doc_data()->add_doc(doc);
-			update_doc(doc.name);
-		}
-	}
-}
-
 void ScriptEditor::_menu_option(int p_option) {
 	ScriptEditorBase *current = _get_current_editor();
 	switch (p_option) {
@@ -1282,7 +1229,7 @@ void ScriptEditor::_menu_option(int p_option) {
 	if (current) {
 		switch (p_option) {
 			case FILE_SAVE: {
-				_save_current_script();
+				save_current_script();
 			} break;
 			case FILE_SAVE_AS: {
 				if (trim_trailing_whitespace_on_save) {
@@ -2330,6 +2277,59 @@ bool ScriptEditor::edit(const RES &p_resource, int p_line, int p_col, bool p_gra
 	return true;
 }
 
+void ScriptEditor::save_current_script() {
+	ScriptEditorBase *current = _get_current_editor();
+
+	if (_test_script_times_on_disk()) {
+		return;
+	}
+
+	if (trim_trailing_whitespace_on_save) {
+		current->trim_trailing_whitespace();
+	}
+
+	current->insert_final_newline();
+
+	if (convert_indent_on_save) {
+		if (use_space_indentation) {
+			current->convert_indent_to_spaces();
+		} else {
+			current->convert_indent_to_tabs();
+		}
+	}
+
+	RES resource = current->get_edited_resource();
+	Ref<TextFile> text_file = resource;
+	Ref<Script> script = resource;
+
+	if (text_file != nullptr) {
+		current->apply_code();
+		_save_text_file(text_file, text_file->get_path());
+		return;
+	}
+
+	if (script != nullptr) {
+		const Vector<DocData::ClassDoc> &documentations = script->get_documentation();
+		for (int j = 0; j < documentations.size(); j++) {
+			const DocData::ClassDoc &doc = documentations.get(j);
+			if (EditorHelp::get_doc_data()->has_doc(doc.name)) {
+				EditorHelp::get_doc_data()->remove_doc(doc.name);
+			}
+		}
+	}
+
+	editor->save_resource(resource);
+
+	if (script != nullptr) {
+		const Vector<DocData::ClassDoc> &documentations = script->get_documentation();
+		for (int j = 0; j < documentations.size(); j++) {
+			const DocData::ClassDoc &doc = documentations.get(j);
+			EditorHelp::get_doc_data()->add_doc(doc);
+			update_doc(doc.name);
+		}
+	}
+}
+
 void ScriptEditor::save_all_scripts() {
 	for (int i = 0; i < tab_container->get_child_count(); i++) {
 		ScriptEditorBase *se = Object::cast_to<ScriptEditorBase>(tab_container->get_child(i));
@@ -2445,7 +2445,7 @@ void ScriptEditor::_add_callback(Object *p_obj, const String &p_function, const 
 		script_list->select(script_list->find_metadata(i));
 
 		// Save the current script so the changes can be picked up by an external editor.
-		_save_current_script();
+		save_current_script();
 
 		break;
 	}

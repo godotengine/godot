@@ -312,7 +312,6 @@ class ScriptEditor : public PanelContainer {
 
 	String _get_debug_tooltip(const String &p_text, Node *_se);
 
-	void _save_current_script();
 	void _resave_scripts(const String &p_str);
 	void _reload_scripts();
 
@@ -464,6 +463,7 @@ public:
 
 	void get_breakpoints(List<String> *p_breakpoints);
 
+	void save_current_script();
 	void save_all_scripts();
 
 	void set_window_layout(Ref<ConfigFile> p_layout);
