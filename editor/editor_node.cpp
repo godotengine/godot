@@ -2447,15 +2447,24 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 			Node *scene = editor_data.get_edited_scene_root(scene_idx);
 
 			if (!scene) {
-				int saved = _save_external_resources();
-				String err_text;
-				if (saved > 0) {
-					err_text = vformat(TTR("Saved %s modified resource(s)."), itos(saved));
-				} else {
-					err_text = TTR("A root node is required to save the scene.");
+				if (p_option == FILE_SAVE_SCENE) {
+					// Pressing Ctrl + S saves the current script if a scene is currently open, but it won't if the scene has no root node.
+					// Work around this by explicitly saving the script in this case (similar to pressing Ctrl + Alt + S).
+					ScriptEditor::get_singleton()->save_current_script();
 				}
 
-				show_accept(err_text, TTR("OK"));
+				const int saved = _save_external_resources();
+				if (saved > 0) {
+					show_accept(
+							vformat(TTR("The current scene has no root node, but %d modified external resource(s) were saved anyway."), saved),
+							TTR("OK"));
+				} else if (p_option == FILE_SAVE_AS_SCENE) {
+					// Don't show this dialog when pressing Ctrl + S to avoid interfering with script saving.
+					show_accept(
+							TTR("A root node is required to save the scene. You can add a root node using the Scene tree dock."),
+							TTR("OK"));
+				}
+
 				break;
 			}
 
