@@ -2872,18 +2872,12 @@ void Tree::_notification(int p_what) {
 		RID ci = get_canvas_item();
 
 		Ref<StyleBox> bg = cache.bg;
-		Ref<StyleBox> bg_focus = get_stylebox("bg_focus");
 
 		Point2 draw_ofs;
 		draw_ofs += bg->get_offset();
 		Size2 draw_size = get_size() - bg->get_minimum_size();
 
 		bg->draw(ci, Rect2(Point2(), get_size()));
-		if (has_focus()) {
-			VisualServer::get_singleton()->canvas_item_add_clip_ignore(ci, true);
-			bg_focus->draw(ci, Rect2(Point2(), get_size()));
-			VisualServer::get_singleton()->canvas_item_add_clip_ignore(ci, false);
-		}
 
 		int tbh = _get_title_button_height();
 
@@ -2907,6 +2901,15 @@ void Tree::_notification(int p_what) {
 				int clip_w = tbrect.size.width - sb->get_minimum_size().width;
 				f->draw_halign(ci, tbrect.position + Point2i(sb->get_offset().x, (tbrect.size.height - f->get_height()) / 2 + f->get_ascent()), HALIGN_CENTER, clip_w, columns[i].title, cache.title_button_color);
 			}
+		}
+
+		// Draw the background focus outline last, so that it is drawn in front of the section headings.
+		// Otherwise, section heading backgrounds can appear to be in front of the focus outline when scrolling.
+		if (has_focus()) {
+			VisualServer::get_singleton()->canvas_item_add_clip_ignore(ci, true);
+			const Ref<StyleBox> bg_focus = get_stylebox("bg_focus");
+			bg_focus->draw(ci, Rect2(Point2(), get_size()));
+			VisualServer::get_singleton()->canvas_item_add_clip_ignore(ci, false);
 		}
 	}
 
