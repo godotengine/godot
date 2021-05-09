@@ -2917,14 +2917,22 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 			if (mb->get_button_index() == MOUSE_BUTTON_WHEEL_UP && !mb->get_command()) {
 				if (mb->get_shift()) {
 					h_scroll->set_value(h_scroll->get_value() - (100 * mb->get_factor()));
+				} else if (mb->get_alt()) {
+					// Scroll 5 times as fast as normal (like in Visual Studio Code).
+					_scroll_up(15 * mb->get_factor());
 				} else if (v_scroll->is_visible()) {
+					// Scroll 3 lines.
 					_scroll_up(3 * mb->get_factor());
 				}
 			}
 			if (mb->get_button_index() == MOUSE_BUTTON_WHEEL_DOWN && !mb->get_command()) {
 				if (mb->get_shift()) {
 					h_scroll->set_value(h_scroll->get_value() + (100 * mb->get_factor()));
+				} else if (mb->get_alt()) {
+					// Scroll 5 times as fast as normal (like in Visual Studio Code).
+					_scroll_down(15 * mb->get_factor());
 				} else if (v_scroll->is_visible()) {
+					// Scroll 3 lines.
 					_scroll_down(3 * mb->get_factor());
 				}
 			}

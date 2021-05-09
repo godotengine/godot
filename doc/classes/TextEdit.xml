@@ -5,6 +5,7 @@
 	</brief_description>
 	<description>
 		TextEdit is meant for editing large, multiline text. It also has facilities for editing code, such as syntax highlighting support and multiple levels of undo/redo.
+		[b]Note:[/b] When holding down [kbd]Alt[/kbd], the vertical scroll wheel will scroll 5 times as fast as it would normally do. This also works in the Godot script editor.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -714,10 +715,10 @@
 			If [code]true[/code], read-only mode is enabled. Existing text cannot be modified and new text cannot be added.
 		</member>
 		<member name="scroll_horizontal" type="int" setter="set_h_scroll" getter="get_h_scroll" default="0">
-			If there is a horizontal scrollbar this determines the current horizontal scroll value in pixels.
+			If there is a horizontal scrollbar, this determines the current horizontal scroll value in pixels.
 		</member>
 		<member name="scroll_vertical" type="float" setter="set_v_scroll" getter="get_v_scroll" default="0.0">
-			If there is a vertical scrollbar this determines the current vertical scroll value in line numbers, starting at 0 for the top line.
+			If there is a vertical scrollbar, this determines the current vertical scroll value in line numbers, starting at 0 for the top line.
 		</member>
 		<member name="selecting_enabled" type="bool" setter="set_selecting_enabled" getter="is_selecting_enabled" default="true">
 			If [code]true[/code], text can be selected.
