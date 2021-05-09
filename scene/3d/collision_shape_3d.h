@@ -47,8 +47,6 @@ class CollisionShape3D : public Node3D {
 	bool disabled = false;
 
 protected:
-	void _shape_changed();
-
 	void _update_in_shape_owner(bool p_xform_only = false);
 
 protected:
