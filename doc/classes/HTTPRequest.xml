@@ -64,6 +64,10 @@
 		    add_child(texture_rect)
 		    texture_rect.texture = texture
 		[/codeblock]
+		[b]Gzipped response bodies[/b]
+		HttpRequest will automatically handle decompression of response bodies.
+		A "Accept-Encoding" header will be automatically added to each of your requests, unless one is already specified.
+		Any response with a "Content-Encoding: gzip" header will automatically be decompressed and delivered to you as a uncompressed bytes.
 		[b]Note:[/b] When performing HTTP requests from a project exported to HTML5, keep in mind the remote server may not allow requests from foreign origins due to [url=https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS]CORS[/url]. If you host the server in question, you should modify its backend to allow requests from foreign origins by adding the [code]Access-Control-Allow-Origin: *[/code] HTTP header.
 		[b]Note:[/b] SSL/TLS support is currently limited to TLS 1.0, TLS 1.1, and TLS 1.2. Attempting to connect to a TLS 1.3-only server will return an error.
 	</description>
@@ -120,10 +124,34 @@
 				[b]Note:[/b] The [code]request_data[/code] parameter is ignored if [code]method[/code] is [constant HTTPClient.METHOD_GET]. This is because GET methods can't contain request data. As a workaround, you can pass request data as a query string in the URL. See [method String.http_escape] for an example.
 			</description>
 		</method>
+		<method name="request_raw">
+			<return type="int" enum="Error">
+			</return>
+			<argument index="0" name="url" type="String">
+			</argument>
+			<argument index="1" name="custom_headers" type="PoolStringArray" default="PoolStringArray(  )">
+			</argument>
+			<argument index="2" name="ssl_validate_domain" type="bool" default="true">
+			</argument>
+			<argument index="3" name="method" type="int" enum="HTTPClient.Method" default="0">
+			</argument>
+			<argument index="4" name="request_data_raw" type="PoolByteArray" default="PoolByteArray(  )">
+			</argument>
+			<description>
+				Creates request on the underlying [HTTPClient] using a raw array of bytes for the request body. If there is no configuration errors, it tries to connect using [method HTTPClient.connect_to_host] and passes parameters onto [method HTTPClient.request].
+				Returns [constant OK] if request is successfully created. (Does not imply that the server has responded), [constant ERR_UNCONFIGURED] if not in the tree, [constant ERR_BUSY] if still processing previous request, [constant ERR_INVALID_PARAMETER] if given string is not a valid URL format, or [constant ERR_CANT_CONNECT] if not using thread and the [HTTPClient] cannot connect to host.
+			</description>
+		</method>
 	</methods>
 	<members>
+		<member name="accept_gzip" type="bool" setter="set_accept_gzip" getter="is_accepting_gzip" default="true">
+			If [code]true[/code], this header will be added to each request: [code]Accept-Encoding: gzip, deflate[/code] telling servers that it's okay to compress response bodies.
+			Any Reponse body declaring a [code]Content-Encoding[/code] of either [code]gzip[/code] or [code]deflate[/code] will then be automatically decompressed, and the uncompressed bytes will be delivered via [code]request_completed[/code].
+			If the user has specified their own [code]Accept-Encoding[/code] header, then no header will be added regaurdless of [code]accept_gzip[/code].
+			If [code]false[/code] no header will be added, and no decompression will be performed on response bodies. The raw bytes of the response body will be returned via [code]request_completed[/code].
+		</member>
 		<member name="body_size_limit" type="int" setter="set_body_size_limit" getter="get_body_size_limit" default="-1">
-			Maximum allowed size for response bodies.
+			Maximum allowed size for response bodies. If the response body is compressed, this will be used as the maximum allowed size for the decompressed body.
 		</member>
 		<member name="download_chunk_size" type="int" setter="set_download_chunk_size" getter="get_download_chunk_size" default="65536">
 			The size of the buffer used and maximum bytes to read per iteration. See [member HTTPClient.read_chunk_size].
@@ -180,19 +208,19 @@
 		<constant name="RESULT_BODY_SIZE_LIMIT_EXCEEDED" value="7" enum="Result">
 			Request exceeded its maximum size limit, see [member body_size_limit].
 		</constant>
-		<constant name="RESULT_REQUEST_FAILED" value="8" enum="Result">
+		<constant name="RESULT_REQUEST_FAILED" value="9" enum="Result">
 			Request failed (currently unused).
 		</constant>
-		<constant name="RESULT_DOWNLOAD_FILE_CANT_OPEN" value="9" enum="Result">
+		<constant name="RESULT_DOWNLOAD_FILE_CANT_OPEN" value="10" enum="Result">
 			HTTPRequest couldn't open the download file.
 		</constant>
-		<constant name="RESULT_DOWNLOAD_FILE_WRITE_ERROR" value="10" enum="Result">
+		<constant name="RESULT_DOWNLOAD_FILE_WRITE_ERROR" value="11" enum="Result">
 			HTTPRequest couldn't write to the download file.
 		</constant>
-		<constant name="RESULT_REDIRECT_LIMIT_REACHED" value="11" enum="Result">
+		<constant name="RESULT_REDIRECT_LIMIT_REACHED" value="12" enum="Result">
 			Request reached its maximum redirect limit, see [member max_redirects].
 		</constant>
-		<constant name="RESULT_TIMEOUT" value="12" enum="Result">
+		<constant name="RESULT_TIMEOUT" value="13" enum="Result">
 		</constant>
 	</constants>
 </class>

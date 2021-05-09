@@ -29,6 +29,8 @@
 /*************************************************************************/
 
 #include "http_request.h"
+#include "core/io/compression.h"
+#include "core/ustring.h"
 
 void HTTPRequest::_redirect_request(const String &p_new_url) {
 }
@@ -84,7 +86,50 @@ Error HTTPRequest::_parse_url(const String &p_url) {
 	return OK;
 }
 
+bool HTTPRequest::has_header(const Vector<String> &p_headers, const String &p_header_name) {
+	bool exists = false;
+
+	String lower_case_header_name = p_header_name.to_lower();
+	for (int i = 0; i < p_headers.size() && !exists; i++) {
+		String sanitized = p_headers[i].strip_edges().to_lower();
+		if (sanitized.begins_with(lower_case_header_name)) {
+			exists = true;
+		}
+	}
+
+	return exists;
+}
+
+String HTTPRequest::get_header_value(const PoolStringArray &p_headers, const String &p_header_name) {
+	String value = "";
+
+	String lowwer_case_header_name = p_header_name.to_lower();
+	for (int i = 0; i < p_headers.size(); i++) {
+		if (p_headers[i].find(":", 0) >= 0) {
+			Vector<String> parts = p_headers[i].split(":", false, 1);
+			if (parts[0].strip_edges().to_lower() == lowwer_case_header_name) {
+				value = parts[1].strip_edges();
+				break;
+			}
+		}
+	}
+
+	return value;
+}
+
 Error HTTPRequest::request(const String &p_url, const Vector<String> &p_custom_headers, bool p_ssl_validate_domain, HTTPClient::Method p_method, const String &p_request_data) {
+	// Copy the string into a raw buffer
+	PoolVector<uint8_t> raw_data;
+
+	CharString charstr = p_request_data.utf8();
+	size_t len = charstr.length();
+	raw_data.resize(len);
+	copymem(raw_data.write().ptr(), charstr.ptr(), len);
+
+	return request_raw(p_url, p_custom_headers, p_ssl_validate_domain, p_method, raw_data);
+}
+
+Error HTTPRequest::request_raw(const String &p_url, const Vector<String> &p_custom_headers, bool p_ssl_validate_domain, HTTPClient::Method p_method, const PoolVector<uint8_t> &p_request_data_raw) {
 
 	ERR_FAIL_COND_V(!is_inside_tree(), ERR_UNCONFIGURED);
 	ERR_FAIL_COND_V_MSG(requesting, ERR_BUSY, "HTTPRequest is processing a request. Wait for completion or cancel it before attempting a new one.");
@@ -104,7 +149,14 @@ Error HTTPRequest::request(const String &p_url, const Vector<String> &p_custom_h
 
 	headers = p_custom_headers;
 
-	request_data = p_request_data;
+	if (accept_gzip) {
+		// If the user has specified a different Accept-Encoding, don't overwrite it
+		if (!has_header(headers, "Accept-Encoding")) {
+			headers.push_back("Accept-Encoding: gzip, deflate");
+		}
+	}
+
+	request_data = p_request_data_raw;
 
 	requesting = true;
 
@@ -296,7 +348,7 @@ bool HTTPRequest::_update_connection() {
 			} else {
 				// Did not request yet, do request
 
-				Error err = client->request(method, request_string, headers, request_data);
+				Error err = client->request_raw(method, request_string, headers, request_data);
 				if (err != OK) {
 					call_deferred("_request_done", RESULT_CONNECTION_ERROR, 0, PoolStringArray(), PoolByteArray());
 					return true;
@@ -398,10 +450,47 @@ bool HTTPRequest::_update_connection() {
 	ERR_FAIL_V(false);
 }
 
-void HTTPRequest::_request_done(int p_status, int p_code, const PoolStringArray &headers, const PoolByteArray &p_data) {
-
+void HTTPRequest::_request_done(int p_status, int p_code, const PoolStringArray &p_headers, const PoolByteArray &p_data) {
 	cancel_request();
-	emit_signal("request_completed", p_status, p_code, headers, p_data);
+
+	// Determine if the request body is compressed
+	bool is_compressed;
+	String content_encoding = get_header_value(p_headers, "Content-Encoding").to_lower();
+	Compression::Mode mode;
+	if (content_encoding == "gzip") {
+		mode = Compression::Mode::MODE_GZIP;
+		is_compressed = true;
+	} else if (content_encoding == "deflate") {
+		mode = Compression::Mode::MODE_DEFLATE;
+		is_compressed = true;
+	} else {
+		is_compressed = false;
+	}
+
+	const PoolByteArray *data = NULL;
+
+	if (accept_gzip && is_compressed && p_data.size() > 0) {
+		// Decompress request body
+		PoolByteArray *decompressed = memnew(PoolByteArray);
+		int result = Compression::decompress_dynamic(decompressed, body_size_limit, p_data.read().ptr(), p_data.size(), mode);
+		if (result == OK) {
+			data = decompressed;
+		} else if (result == -5) {
+			WARN_PRINT("Decompressed size of HTTP response body exceeded body_size_limit");
+			p_status = RESULT_BODY_SIZE_LIMIT_EXCEEDED;
+			// Just return the raw data if we failed to decompress it
+			data = &p_data;
+		} else {
+			WARN_PRINT("Failed to decompress HTTP response body");
+			p_status = RESULT_BODY_DECOMPRESS_FAILED;
+			// Just return the raw data if we failed to decompress it
+			data = &p_data;
+		}
+	} else {
+		data = &p_data;
+	}
+
+	emit_signal("request_completed", p_status, p_code, p_headers, *data);
 }
 
 void HTTPRequest::_notification(int p_what) {
@@ -423,6 +512,14 @@ void HTTPRequest::_notification(int p_what) {
 			cancel_request();
 		}
 	}
+}
+
+void HTTPRequest::set_accept_gzip(bool p_gzip) {
+	accept_gzip = p_gzip;
+}
+
+bool HTTPRequest::is_accepting_gzip() const {
+	return accept_gzip;
 }
 
 void HTTPRequest::set_use_threads(bool p_use) {
@@ -513,12 +610,16 @@ void HTTPRequest::_timeout() {
 void HTTPRequest::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("request", "url", "custom_headers", "ssl_validate_domain", "method", "request_data"), &HTTPRequest::request, DEFVAL(PoolStringArray()), DEFVAL(true), DEFVAL(HTTPClient::METHOD_GET), DEFVAL(String()));
+	ClassDB::bind_method(D_METHOD("request_raw", "url", "custom_headers", "ssl_validate_domain", "method", "request_data_raw"), &HTTPRequest::request_raw, DEFVAL(PoolStringArray()), DEFVAL(true), DEFVAL(HTTPClient::METHOD_GET), DEFVAL(PoolVector<uint8_t>()));
 	ClassDB::bind_method(D_METHOD("cancel_request"), &HTTPRequest::cancel_request);
 
 	ClassDB::bind_method(D_METHOD("get_http_client_status"), &HTTPRequest::get_http_client_status);
 
 	ClassDB::bind_method(D_METHOD("set_use_threads", "enable"), &HTTPRequest::set_use_threads);
 	ClassDB::bind_method(D_METHOD("is_using_threads"), &HTTPRequest::is_using_threads);
+
+	ClassDB::bind_method(D_METHOD("set_accept_gzip", "enable"), &HTTPRequest::set_accept_gzip);
+	ClassDB::bind_method(D_METHOD("is_accepting_gzip"), &HTTPRequest::is_accepting_gzip);
 
 	ClassDB::bind_method(D_METHOD("set_body_size_limit", "bytes"), &HTTPRequest::set_body_size_limit);
 	ClassDB::bind_method(D_METHOD("get_body_size_limit"), &HTTPRequest::get_body_size_limit);
@@ -546,6 +647,7 @@ void HTTPRequest::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "download_file", PROPERTY_HINT_FILE), "set_download_file", "get_download_file");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "download_chunk_size", PROPERTY_HINT_RANGE, "256,16777216"), "set_download_chunk_size", "get_download_chunk_size");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_threads"), "set_use_threads", "is_using_threads");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "accept_gzip"), "set_accept_gzip", "is_accepting_gzip");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "body_size_limit", PROPERTY_HINT_RANGE, "-1,2000000000"), "set_body_size_limit", "get_body_size_limit");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_redirects", PROPERTY_HINT_RANGE, "-1,64"), "set_max_redirects", "get_max_redirects");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "timeout", PROPERTY_HINT_RANGE, "0,86400"), "set_timeout", "get_timeout");
@@ -577,6 +679,7 @@ HTTPRequest::HTTPRequest() {
 	got_response = false;
 	validate_ssl = false;
 	use_ssl = false;
+	accept_gzip = true;
 	response_code = 0;
 	request_sent = false;
 	requesting = false;
