@@ -878,7 +878,7 @@ void SceneSynchronizer::reset_synchronizer_mode() {
 		synchronizer_type = SYNCHRONIZER_TYPE_NULL;
 	}
 
-	peer_ptr = get_multiplayer()->get_network_peer().ptr();
+	peer_ptr = get_multiplayer() == nullptr ? nullptr : get_multiplayer()->get_network_peer().ptr();
 
 	if (get_tree() == nullptr || get_tree()->get_network_peer().is_null()) {
 		synchronizer_type = SYNCHRONIZER_TYPE_NONETWORK;
