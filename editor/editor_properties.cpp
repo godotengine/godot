@@ -3254,6 +3254,8 @@ EditorPropertyResource::EditorPropertyResource() {
 	preview->set_offset(SIDE_TOP, 1);
 	preview->set_offset(SIDE_BOTTOM, -1);
 	preview->set_offset(SIDE_RIGHT, -1);
+	// This is required to draw the focus outline in front of the preview, rather than behind.
+	preview->set_draw_behind_parent(true);
 	assign->add_child(preview);
 	assign->connect("gui_input", callable_mp(this, &EditorPropertyResource::_button_input));
 
