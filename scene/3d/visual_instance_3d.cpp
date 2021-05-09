@@ -150,40 +150,40 @@ Ref<Material> GeometryInstance3D::get_material_override() const {
 	return material_override;
 }
 
-void GeometryInstance3D::set_lod_min_distance(float p_dist) {
-	lod_min_distance = p_dist;
-	RS::get_singleton()->instance_geometry_set_draw_range(get_instance(), lod_min_distance, lod_max_distance, lod_min_hysteresis, lod_max_hysteresis);
+void GeometryInstance3D::set_visibility_range_begin(float p_dist) {
+	visibility_range_begin = p_dist;
+	RS::get_singleton()->instance_geometry_set_visibility_range(get_instance(), visibility_range_begin, visibility_range_end, visibility_range_begin_margin, visibility_range_end_margin);
 }
 
-float GeometryInstance3D::get_lod_min_distance() const {
-	return lod_min_distance;
+float GeometryInstance3D::get_visibility_range_begin() const {
+	return visibility_range_begin;
 }
 
-void GeometryInstance3D::set_lod_max_distance(float p_dist) {
-	lod_max_distance = p_dist;
-	RS::get_singleton()->instance_geometry_set_draw_range(get_instance(), lod_min_distance, lod_max_distance, lod_min_hysteresis, lod_max_hysteresis);
+void GeometryInstance3D::set_visibility_range_end(float p_dist) {
+	visibility_range_end = p_dist;
+	RS::get_singleton()->instance_geometry_set_visibility_range(get_instance(), visibility_range_begin, visibility_range_end, visibility_range_begin_margin, visibility_range_end_margin);
 }
 
-float GeometryInstance3D::get_lod_max_distance() const {
-	return lod_max_distance;
+float GeometryInstance3D::get_visibility_range_end() const {
+	return visibility_range_end;
 }
 
-void GeometryInstance3D::set_lod_min_hysteresis(float p_dist) {
-	lod_min_hysteresis = p_dist;
-	RS::get_singleton()->instance_geometry_set_draw_range(get_instance(), lod_min_distance, lod_max_distance, lod_min_hysteresis, lod_max_hysteresis);
+void GeometryInstance3D::set_visibility_range_begin_margin(float p_dist) {
+	visibility_range_begin_margin = p_dist;
+	RS::get_singleton()->instance_geometry_set_visibility_range(get_instance(), visibility_range_begin, visibility_range_end, visibility_range_begin_margin, visibility_range_end_margin);
 }
 
-float GeometryInstance3D::get_lod_min_hysteresis() const {
-	return lod_min_hysteresis;
+float GeometryInstance3D::get_visibility_range_begin_margin() const {
+	return visibility_range_begin_margin;
 }
 
-void GeometryInstance3D::set_lod_max_hysteresis(float p_dist) {
-	lod_max_hysteresis = p_dist;
-	RS::get_singleton()->instance_geometry_set_draw_range(get_instance(), lod_min_distance, lod_max_distance, lod_min_hysteresis, lod_max_hysteresis);
+void GeometryInstance3D::set_visibility_range_end_margin(float p_dist) {
+	visibility_range_end_margin = p_dist;
+	RS::get_singleton()->instance_geometry_set_visibility_range(get_instance(), visibility_range_begin, visibility_range_end, visibility_range_begin_margin, visibility_range_end_margin);
 }
 
-float GeometryInstance3D::get_lod_max_hysteresis() const {
-	return lod_max_hysteresis;
+float GeometryInstance3D::get_visibility_range_end_margin() const {
+	return visibility_range_end_margin;
 }
 
 void GeometryInstance3D::_notification(int p_what) {
@@ -357,17 +357,17 @@ void GeometryInstance3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_lod_bias", "bias"), &GeometryInstance3D::set_lod_bias);
 	ClassDB::bind_method(D_METHOD("get_lod_bias"), &GeometryInstance3D::get_lod_bias);
 
-	ClassDB::bind_method(D_METHOD("set_lod_max_hysteresis", "mode"), &GeometryInstance3D::set_lod_max_hysteresis);
-	ClassDB::bind_method(D_METHOD("get_lod_max_hysteresis"), &GeometryInstance3D::get_lod_max_hysteresis);
+	ClassDB::bind_method(D_METHOD("set_visibility_range_end_margin", "distance"), &GeometryInstance3D::set_visibility_range_end_margin);
+	ClassDB::bind_method(D_METHOD("get_visibility_range_end_margin"), &GeometryInstance3D::get_visibility_range_end_margin);
 
-	ClassDB::bind_method(D_METHOD("set_lod_max_distance", "mode"), &GeometryInstance3D::set_lod_max_distance);
-	ClassDB::bind_method(D_METHOD("get_lod_max_distance"), &GeometryInstance3D::get_lod_max_distance);
+	ClassDB::bind_method(D_METHOD("set_visibility_range_end", "distance"), &GeometryInstance3D::set_visibility_range_end);
+	ClassDB::bind_method(D_METHOD("get_visibility_range_end"), &GeometryInstance3D::get_visibility_range_end);
 
-	ClassDB::bind_method(D_METHOD("set_lod_min_hysteresis", "mode"), &GeometryInstance3D::set_lod_min_hysteresis);
-	ClassDB::bind_method(D_METHOD("get_lod_min_hysteresis"), &GeometryInstance3D::get_lod_min_hysteresis);
+	ClassDB::bind_method(D_METHOD("set_visibility_range_begin_margin", "distance"), &GeometryInstance3D::set_visibility_range_begin_margin);
+	ClassDB::bind_method(D_METHOD("get_visibility_range_begin_margin"), &GeometryInstance3D::get_visibility_range_begin_margin);
 
-	ClassDB::bind_method(D_METHOD("set_lod_min_distance", "mode"), &GeometryInstance3D::set_lod_min_distance);
-	ClassDB::bind_method(D_METHOD("get_lod_min_distance"), &GeometryInstance3D::get_lod_min_distance);
+	ClassDB::bind_method(D_METHOD("set_visibility_range_begin", "distance"), &GeometryInstance3D::set_visibility_range_begin);
+	ClassDB::bind_method(D_METHOD("get_visibility_range_begin"), &GeometryInstance3D::get_visibility_range_begin);
 
 	ClassDB::bind_method(D_METHOD("set_shader_instance_uniform", "uniform", "value"), &GeometryInstance3D::set_shader_instance_uniform);
 	ClassDB::bind_method(D_METHOD("get_shader_instance_uniform", "uniform"), &GeometryInstance3D::get_shader_instance_uniform);
@@ -398,11 +398,11 @@ void GeometryInstance3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "gi_mode", PROPERTY_HINT_ENUM, "Disabled,Baked,Dynamic"), "set_gi_mode", "get_gi_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "gi_lightmap_scale", PROPERTY_HINT_ENUM, "1x,2x,4x,8x"), "set_lightmap_scale", "get_lightmap_scale");
 
-	ADD_GROUP("LOD", "lod_");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "lod_min_distance", PROPERTY_HINT_RANGE, "0,32768,0.01"), "set_lod_min_distance", "get_lod_min_distance");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "lod_min_hysteresis", PROPERTY_HINT_RANGE, "0,32768,0.01"), "set_lod_min_hysteresis", "get_lod_min_hysteresis");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "lod_max_distance", PROPERTY_HINT_RANGE, "0,32768,0.01"), "set_lod_max_distance", "get_lod_max_distance");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "lod_max_hysteresis", PROPERTY_HINT_RANGE, "0,32768,0.01"), "set_lod_max_hysteresis", "get_lod_max_hysteresis");
+	ADD_GROUP("Visibility Range", "visibility_range_");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "visibility_range_begin", PROPERTY_HINT_RANGE, "0.0,4096.0,0.01"), "set_visibility_range_begin", "get_visibility_range_begin");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "visibility_range_begin_margin", PROPERTY_HINT_RANGE, "0.0,4096.0,0.01"), "set_visibility_range_begin_margin", "get_visibility_range_begin_margin");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "visibility_range_end", PROPERTY_HINT_RANGE, "0.0,4096.0,0.01"), "set_visibility_range_end", "get_visibility_range_end");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "visibility_range_end_margin", PROPERTY_HINT_RANGE, "0.0,4096.0,0.01"), "set_visibility_range_end_margin", "get_visibility_range_end_margin");
 
 	//ADD_SIGNAL( MethodInfo("visibility_changed"));
 

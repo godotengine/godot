@@ -32,6 +32,7 @@
 
 #include "core/config/engine.h"
 #include "core/object/message_queue.h"
+#include "scene/3d/visual_instance_3d.h"
 #include "scene/main/scene_tree.h"
 #include "scene/main/window.h"
 #include "scene/scene_string_names.h"
@@ -148,6 +149,7 @@ void Node3D::_notification(int p_what) {
 			_notify_dirty();
 
 			notification(NOTIFICATION_ENTER_WORLD);
+			_update_visibility_parent(true);
 
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
@@ -161,6 +163,7 @@ void Node3D::_notification(int p_what) {
 			data.parent = nullptr;
 			data.C = nullptr;
 			data.top_level_active = false;
+			_update_visibility_parent(true);
 		} break;
 		case NOTIFICATION_ENTER_WORLD: {
 			data.inside_world = true;
@@ -690,6 +693,51 @@ void Node3D::force_update_transform() {
 	notification(NOTIFICATION_TRANSFORM_CHANGED);
 }
 
+void Node3D::_update_visibility_parent(bool p_update_root) {
+	RID new_parent;
+
+	if (!visibility_parent_path.is_empty()) {
+		if (!p_update_root) {
+			return;
+		}
+		Node *parent = get_node_or_null(visibility_parent_path);
+		ERR_FAIL_COND_MSG(!parent, "Can't find visibility parent node at path: " + visibility_parent_path);
+		ERR_FAIL_COND_MSG(parent == this, "The visibility parent can't be the same node.");
+		GeometryInstance3D *gi = Object::cast_to<GeometryInstance3D>(parent);
+		ERR_FAIL_COND_MSG(!gi, "The visibility parent node must be a GeometryInstance3D, at path: " + visibility_parent_path);
+		new_parent = gi ? gi->get_instance() : RID();
+	} else if (data.parent) {
+		new_parent = data.parent->data.visibility_parent;
+	}
+
+	if (new_parent == data.visibility_parent) {
+		return;
+	}
+
+	data.visibility_parent = new_parent;
+
+	VisualInstance3D *vi = Object::cast_to<VisualInstance3D>(this);
+	if (vi) {
+		RS::get_singleton()->instance_set_visibility_parent(vi->get_instance(), data.visibility_parent);
+	}
+
+	for (List<Node3D *>::Element *E = data.children.front(); E; E = E->next()) {
+		Node3D *c = E->get();
+		c->_update_visibility_parent(false);
+	}
+}
+
+void Node3D::set_visibility_parent(const NodePath &p_path) {
+	visibility_parent_path = p_path;
+	if (is_inside_tree()) {
+		_update_visibility_parent(true);
+	}
+}
+
+NodePath Node3D::get_visibility_parent() const {
+	return visibility_parent_path;
+}
+
 void Node3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_transform", "local"), &Node3D::set_transform);
 	ClassDB::bind_method(D_METHOD("get_transform"), &Node3D::get_transform);
@@ -712,6 +760,9 @@ void Node3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_world_3d"), &Node3D::get_world_3d);
 
 	ClassDB::bind_method(D_METHOD("force_update_transform"), &Node3D::force_update_transform);
+
+	ClassDB::bind_method(D_METHOD("set_visibility_parent", "path"), &Node3D::set_visibility_parent);
+	ClassDB::bind_method(D_METHOD("get_visibility_parent"), &Node3D::get_visibility_parent);
 
 	ClassDB::bind_method(D_METHOD("_update_gizmo"), &Node3D::_update_gizmo);
 
@@ -768,6 +819,7 @@ void Node3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM3D, "transform", PROPERTY_HINT_NONE, ""), "set_transform", "get_transform");
 	ADD_GROUP("Visibility", "");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "visible"), "set_visible", "is_visible");
+	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "visibility_parent", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "GeometryInstance3D"), "set_visibility_parent", "get_visibility_parent");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "gizmo", PROPERTY_HINT_RESOURCE_TYPE, "Node3DGizmo", 0), "set_gizmo", "get_gizmo");
 
 	ADD_SIGNAL(MethodInfo("visibility_changed"));
