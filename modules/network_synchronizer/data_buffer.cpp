@@ -316,13 +316,16 @@ real_t DataBuffer::read_precise_real(CompressionLevel p_compression_level) {
 }
 
 real_t DataBuffer::add_unit_real(real_t p_input, CompressionLevel p_compression_level) {
+#ifdef DEBUG_ENABLED
+	ERR_FAIL_COND_V_MSG(Math::is_equal_approx(ABS(p_input), 1.0), p_input, "Value should be less than zero");
+#endif
 	ERR_FAIL_COND_V(is_reading == true, p_input);
 
 	const int bits = get_bit_taken(DATA_TYPE_UNIT_REAL, p_compression_level);
 
 	const double max_value = static_cast<double>(~(UINT64_MAX << bits));
 
-	const uint64_t compressed_val = compress_unit_float(p_input, max_value);
+	const uint64_t compressed_val = compress_unit_float((p_input + 1.0) / 2.0, max_value);
 
 	make_room_in_bits(bits);
 	buffer.store_bits(bit_offset, compressed_val, bits);
@@ -333,7 +336,7 @@ real_t DataBuffer::add_unit_real(real_t p_input, CompressionLevel p_compression_
 	CRASH_COND((metadata_size + bit_size) > buffer.size_in_bits() && bit_offset > buffer.size_in_bits());
 #endif
 
-	return decompress_unit_float(compressed_val, max_value);
+	return decompress_unit_float(compressed_val, max_value) * 2.0 - 1.0;
 }
 
 real_t DataBuffer::read_unit_real(CompressionLevel p_compression_level) {
@@ -346,7 +349,7 @@ real_t DataBuffer::read_unit_real(CompressionLevel p_compression_level) {
 	const uint64_t compressed_val = buffer.read_bits(bit_offset, bits);
 	bit_offset += bits;
 
-	return decompress_unit_float(compressed_val, max_value);
+	return decompress_unit_float(compressed_val, max_value) * 2.0 - 1.0;
 }
 
 Vector2 DataBuffer::add_vector2(Vector2 p_input, CompressionLevel p_compression_level) {
@@ -920,7 +923,7 @@ int DataBuffer::get_bit_taken(DataType p_data_type, CompressionLevel p_compressi
 }
 
 uint64_t DataBuffer::compress_unit_float(double p_value, double p_scale_factor) {
-	return MIN(p_value * p_scale_factor, p_scale_factor);
+	return Math::round(MIN(p_value * p_scale_factor, p_scale_factor));
 }
 
 double DataBuffer::decompress_unit_float(uint64_t p_value, double p_scale_factor) {
