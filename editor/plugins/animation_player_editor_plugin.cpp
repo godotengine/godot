@@ -324,7 +324,7 @@ void AnimationPlayerEditor::_animation_selected(int p_which) {
 
 void AnimationPlayerEditor::_animation_new() {
 	int count = 1;
-	String base = TTR("New Anim");
+	String base = "new_animation";
 	String current_library_name = "";
 	if (animation->has_selectable_items()) {
 		String current_animation_name = animation->get_item_text(animation->get_selected());
@@ -337,7 +337,7 @@ void AnimationPlayerEditor::_animation_new() {
 	while (true) {
 		String attempt = base;
 		if (count > 1) {
-			attempt += " (" + itos(count) + ")";
+			attempt += vformat("_%d", count);
 		}
 		if (player->has_animation(attempt_prefix + attempt)) {
 			count++;
