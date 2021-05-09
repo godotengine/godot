@@ -646,6 +646,18 @@ void EditorNode::_on_plugin_ready(Object *p_script, const String &p_activate_nam
 	push_item(script.operator->());
 }
 
+void EditorNode::_remove_plugin_from_enabled(const String &p_name) {
+	ProjectSettings *ps = ProjectSettings::get_singleton();
+	PoolStringArray enabled_plugins = ps->get("editor_plugins/enabled");
+	for (int i = 0; i < enabled_plugins.size(); ++i) {
+		if (enabled_plugins.get(i) == p_name) {
+			enabled_plugins.remove(i);
+			break;
+		}
+	}
+	ps->set("editor_plugins/enabled", enabled_plugins);
+}
+
 void EditorNode::_resources_changed(const PoolVector<String> &p_resources) {
 
 	List<Ref<Resource> > changed;
@@ -3235,17 +3247,8 @@ void EditorNode::set_addon_plugin_enabled(String p_addon, bool p_enabled, bool p
 	Ref<ConfigFile> cf;
 	cf.instance();
 	if (!DirAccess::exists(p_addon.get_base_dir())) {
-		ProjectSettings *ps = ProjectSettings::get_singleton();
-		PoolStringArray enabled_plugins = ps->get("editor_plugins/enabled");
-		for (int i = 0; i < enabled_plugins.size(); ++i) {
-			if (enabled_plugins.get(i) == p_addon) {
-				enabled_plugins.remove(i);
-				break;
-			}
-		}
-		ps->set("editor_plugins/enabled", enabled_plugins);
-		ps->save();
-		WARN_PRINTS("Addon '" + p_addon + "' failed to load. No directory found. Removing from enabled plugins.");
+		_remove_plugin_from_enabled(p_addon);
+		WARN_PRINT("Addon '" + p_addon + "' failed to load. No directory found. Removing from enabled plugins.");
 		return;
 	}
 	Error err = cf->load(p_addon);
@@ -3274,7 +3277,8 @@ void EditorNode::set_addon_plugin_enabled(String p_addon, bool p_enabled, bool p
 
 		// Errors in the script cause the base_type to be an empty string.
 		if (String(script->get_instance_base_type()) == "") {
-			show_warning(vformat(TTR("Unable to load addon script from path: '%s' There seems to be an error in the code, please check the syntax."), script_path));
+			show_warning(vformat(TTR("Unable to load addon script from path: '%s'. This might be due to a code error in that script. \nDisabling the addon at '%s' to prevent further errors."), script_path, p_addon));
+			_remove_plugin_from_enabled(p_addon);
 			return;
 		}
 
