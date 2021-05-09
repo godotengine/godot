@@ -308,11 +308,11 @@ void AnimationPlayerEditor::_animation_new() {
 	name_title->set_text(TTR("New Animation Name:"));
 
 	int count = 1;
-	String base = TTR("New Anim");
+	String base = "new_animation";
 	while (true) {
 		String attempt = base;
 		if (count > 1) {
-			attempt += " (" + itos(count) + ")";
+			attempt += vformat("_%d", count);
 		}
 		if (player->has_animation(attempt)) {
 			count++;
