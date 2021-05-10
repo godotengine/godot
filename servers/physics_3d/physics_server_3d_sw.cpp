@@ -30,8 +30,7 @@
 
 #include "physics_server_3d_sw.h"
 
-#include "broad_phase_3d_basic.h"
-#include "broad_phase_octree.h"
+#include "broad_phase_3d_bvh.h"
 #include "core/debugger/engine_debugger.h"
 #include "core/os/os.h"
 #include "joints/cone_twist_joint_3d_sw.h"
@@ -1755,7 +1754,8 @@ void PhysicsServer3DSW::_shape_col_cbk(const Vector3 &p_point_A, int p_index_A, 
 PhysicsServer3DSW *PhysicsServer3DSW::singletonsw = nullptr;
 PhysicsServer3DSW::PhysicsServer3DSW(bool p_using_threads) {
 	singletonsw = this;
-	BroadPhase3DSW::create_func = BroadPhaseOctree::_create;
+	BroadPhase3DSW::create_func = BroadPhase3DBVH::_create;
+
 	island_count = 0;
 	active_objects = 0;
 	collision_pairs = 0;

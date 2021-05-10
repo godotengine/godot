@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  broad_phase_2d_basic.h                                               */
+/*  pooled_list.h                                                        */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,76 +28,68 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef BROAD_PHASE_2D_BASIC_H
-#define BROAD_PHASE_2D_BASIC_H
+#pragma once
 
-#include "core/templates/map.h"
-#include "space_2d_sw.h"
-class BroadPhase2DBasic : public BroadPhase2DSW {
-	struct Element {
-		CollisionObject2DSW *owner;
-		bool _static;
-		Rect2 aabb;
-		int subindex;
-	};
+// Simple template to provide a pool with O(1) allocate and free.
+// The freelist could alternatively be a linked list placed within the unused elements
+// to use less memory, however a separate freelist is probably more cache friendly.
 
-	Map<ID, Element> element_map;
+// NOTE : Take great care when using this with non POD types. The construction and destruction
+// is done in the LocalVector, NOT as part of the pool. So requesting a new item does not guarantee
+// a constructor is run, and free does not guarantee a destructor.
+// You should generally handle clearing
+// an item explicitly after a request, as it may contain 'leftovers'.
+// This is by design for fastest use in the BVH. If you want a more general pool
+// that does call constructors / destructors on request / free, this should probably be
+// a separate template.
 
-	ID current;
+#include "core/templates/local_vector.h"
 
-	struct PairKey {
-		union {
-			struct {
-				ID a;
-				ID b;
-			};
-			uint64_t key;
-		};
+template <class T, bool force_trivial = false>
+class PooledList {
+	LocalVector<T, uint32_t, force_trivial> list;
+	LocalVector<uint32_t, uint32_t, true> freelist;
 
-		_FORCE_INLINE_ bool operator<(const PairKey &p_key) const {
-			return key < p_key.key;
-		}
-
-		PairKey() { key = 0; }
-		PairKey(ID p_a, ID p_b) {
-			if (p_a > p_b) {
-				a = p_b;
-				b = p_a;
-			} else {
-				a = p_a;
-				b = p_b;
-			}
-		}
-	};
-
-	Map<PairKey, void *> pair_map;
-
-	PairCallback pair_callback;
-	void *pair_userdata;
-	UnpairCallback unpair_callback;
-	void *unpair_userdata;
+	// not all list members are necessarily used
+	int _used_size;
 
 public:
-	// 0 is an invalid ID
-	virtual ID create(CollisionObject2DSW *p_object_, int p_subindex = 0);
-	virtual void move(ID p_id, const Rect2 &p_aabb);
-	virtual void set_static(ID p_id, bool p_static);
-	virtual void remove(ID p_id);
+	PooledList() {
+		_used_size = 0;
+	}
 
-	virtual CollisionObject2DSW *get_object(ID p_id) const;
-	virtual bool is_static(ID p_id) const;
-	virtual int get_subindex(ID p_id) const;
+	int estimate_memory_use() const {
+		return (list.size() * sizeof(T)) + (freelist.size() * sizeof(uint32_t));
+	}
 
-	virtual int cull_segment(const Vector2 &p_from, const Vector2 &p_to, CollisionObject2DSW **p_results, int p_max_results, int *p_result_indices = nullptr);
-	virtual int cull_aabb(const Rect2 &p_aabb, CollisionObject2DSW **p_results, int p_max_results, int *p_result_indices = nullptr);
+	const T &operator[](uint32_t p_index) const {
+		return list[p_index];
+	}
+	T &operator[](uint32_t p_index) {
+		return list[p_index];
+	}
 
-	virtual void set_pair_callback(PairCallback p_pair_callback, void *p_userdata);
-	virtual void set_unpair_callback(UnpairCallback p_unpair_callback, void *p_userdata);
+	int size() const { return _used_size; }
 
-	virtual void update();
+	T *request(uint32_t &r_id) {
+		_used_size++;
 
-	static BroadPhase2DSW *_create();
-	BroadPhase2DBasic();
+		if (freelist.size()) {
+			// pop from freelist
+			int new_size = freelist.size() - 1;
+			r_id = freelist[new_size];
+			freelist.resize(new_size);
+			return &list[r_id];
+		}
+
+		r_id = list.size();
+		list.resize(r_id + 1);
+		return &list[r_id];
+	}
+	void free(const uint32_t &p_id) {
+		// should not be on free list already
+		CRASH_COND(p_id >= list.size());
+		freelist.push_back(p_id);
+		_used_size--;
+	}
 };
-
-#endif // BROAD_PHASE_2D_BASIC_H

@@ -38,6 +38,8 @@
 class Basis;
 
 struct Vector3 {
+	static const int AXIS_COUNT = 3;
+
 	enum Axis {
 		AXIS_X,
 		AXIS_Y,
@@ -65,8 +67,17 @@ struct Vector3 {
 	void set_axis(int p_axis, real_t p_value);
 	real_t get_axis(int p_axis) const;
 
-	int min_axis() const;
-	int max_axis() const;
+	_FORCE_INLINE_ void set_all(real_t p_value) {
+		x = y = z = p_value;
+	}
+
+	_FORCE_INLINE_ int min_axis() const {
+		return x < y ? (x < z ? 0 : 2) : (y < z ? 1 : 2);
+	}
+
+	_FORCE_INLINE_ int max_axis() const {
+		return x < y ? (y < z ? 2 : 1) : (x < z ? 2 : 0);
+	}
 
 	_FORCE_INLINE_ real_t length() const;
 	_FORCE_INLINE_ real_t length_squared() const;
