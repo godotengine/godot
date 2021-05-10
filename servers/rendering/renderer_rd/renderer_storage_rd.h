@@ -580,6 +580,7 @@ private:
 
 		RID buffer; //storage buffer
 		RID uniform_set_3d;
+		RID uniform_set_2d;
 
 		bool dirty = false;
 		MultiMesh *dirty_list = nullptr;
@@ -696,6 +697,7 @@ private:
 	};
 
 	struct Particles {
+		RS::ParticlesMode mode = RS::PARTICLES_MODE_3D;
 		bool inactive = true;
 		float inactive_time = 0.0;
 		bool emitting = false;
@@ -822,6 +824,7 @@ private:
 
 		enum {
 			COPY_MODE_FILL_INSTANCES,
+			COPY_MODE_FILL_INSTANCES_2D,
 			COPY_MODE_FILL_SORT_BUFFER,
 			COPY_MODE_FILL_INSTANCES_WITH_SORT_BUFFER,
 			COPY_MODE_MAX,
@@ -1699,6 +1702,21 @@ public:
 		return multimesh->uniform_set_3d;
 	}
 
+	_FORCE_INLINE_ RID multimesh_get_2d_uniform_set(RID p_multimesh, RID p_shader, uint32_t p_set) const {
+		MultiMesh *multimesh = multimesh_owner.getornull(p_multimesh);
+		if (!multimesh->uniform_set_2d.is_valid()) {
+			Vector<RD::Uniform> uniforms;
+			RD::Uniform u;
+			u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
+			u.binding = 0;
+			u.ids.push_back(multimesh->buffer);
+			uniforms.push_back(u);
+			multimesh->uniform_set_2d = RD::get_singleton()->uniform_set_create(uniforms, p_shader, p_set);
+		}
+
+		return multimesh->uniform_set_2d;
+	}
+
 	/* IMMEDIATE API */
 
 	RID immediate_allocate() { return RID(); }
@@ -2093,6 +2111,7 @@ public:
 	RID particles_allocate();
 	void particles_initialize(RID p_particles_collision);
 
+	void particles_set_mode(RID p_particles, RS::ParticlesMode p_mode);
 	void particles_set_emitting(RID p_particles, bool p_emitting);
 	void particles_set_amount(RID p_particles, int p_amount);
 	void particles_set_lifetime(RID p_particles, float p_lifetime);
@@ -2136,6 +2155,12 @@ public:
 	void particles_set_view_axis(RID p_particles, const Vector3 &p_axis, const Vector3 &p_up_axis);
 
 	virtual bool particles_is_inactive(RID p_particles) const;
+
+	_FORCE_INLINE_ RS::ParticlesMode particles_get_mode(RID p_particles) {
+		Particles *particles = particles_owner.getornull(p_particles);
+		ERR_FAIL_COND_V(!particles, RS::PARTICLES_MODE_2D);
+		return particles->mode;
+	}
 
 	_FORCE_INLINE_ uint32_t particles_get_amount(RID p_particles, uint32_t &r_trail_divisor) {
 		Particles *particles = particles_owner.getornull(p_particles);
