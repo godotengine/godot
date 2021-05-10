@@ -115,7 +115,7 @@ struct SurfaceData {
 	Array morphs;
 };
 
-MeshInstance *FBXMeshData::create_fbx_mesh(const ImportState &state, const FBXDocParser::MeshGeometry *p_mesh_geometry, const FBXDocParser::Model *model, bool use_compression) {
+MeshInstance *FBXMeshData::create_fbx_mesh(const ImportState &state, const FBXDocParser::MeshGeometry *p_mesh_geometry, const FBXDocParser::Model *model, uint32_t p_compress_flags) {
 	mesh_geometry = p_mesh_geometry;
 	// todo: make this just use a uint64_t FBX ID this is a copy of our original materials unfortunately.
 	const std::vector<const FBXDocParser::Material *> &material_lookup = model->GetMaterials();
@@ -386,7 +386,7 @@ MeshInstance *FBXMeshData::create_fbx_mesh(const ImportState &state, const FBXDo
 				Mesh::PRIMITIVE_TRIANGLES,
 				surface->surface_tool->commit_to_arrays(),
 				surface->morphs,
-				use_compression ? Mesh::ARRAY_COMPRESS_DEFAULT : Mesh::ARRAY_FLAG_USE_OCTAHEDRAL_COMPRESSION);
+				p_compress_flags);
 
 		if (surface->material.is_valid()) {
 			mesh->surface_set_name(in_mesh_surface_id, surface->material->get_name());

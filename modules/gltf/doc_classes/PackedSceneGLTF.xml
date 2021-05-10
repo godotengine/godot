@@ -21,7 +21,8 @@
 			<argument index="0" name="path" type="String" />
 			<argument index="1" name="flags" type="int" default="0" />
 			<argument index="2" name="bake_fps" type="float" default="1000.0" />
-			<argument index="3" name="state" type="GLTFState" default="null" />
+			<argument index="3" name="compress_flags" type="int" default="2194432" />
+			<argument index="4" name="state" type="GLTFState" default="null" />
 			<description>
 			</description>
 		</method>
@@ -30,7 +31,8 @@
 			<argument index="0" name="path" type="String" />
 			<argument index="1" name="flags" type="int" default="0" />
 			<argument index="2" name="bake_fps" type="float" default="1000.0" />
-			<argument index="3" name="state" type="GLTFState" default="null" />
+			<argument index="3" name="compress_flags" type="int" default="2194432" />
+			<argument index="4" name="state" type="GLTFState" default="null" />
 			<description>
 			</description>
 		</method>
