@@ -858,8 +858,10 @@ Error RenderingServer::mesh_create_surface_data_from_arrays(SurfaceData *r_surfa
 				case Variant::PACKED_VECTOR2_ARRAY: {
 					Vector<Vector2> v2 = p_arrays[i];
 					array_len = v2.size();
+					format |= ARRAY_FLAG_USE_2D_VERTICES;
 				} break;
 				case Variant::PACKED_VECTOR3_ARRAY: {
+					ERR_FAIL_COND_V(p_compress_format & ARRAY_FLAG_USE_2D_VERTICES, ERR_INVALID_PARAMETER);
 					Vector<Vector3> v3 = p_arrays[i];
 					array_len = v3.size();
 				} break;

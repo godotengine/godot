@@ -72,6 +72,8 @@ class Polygon2D : public Node2D {
 
 	void _skeleton_bone_setup_changed();
 
+	RID mesh;
+
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
@@ -149,6 +151,7 @@ public:
 	NodePath get_skeleton() const;
 
 	Polygon2D();
+	~Polygon2D();
 };
 
 #endif // POLYGON_2D_H

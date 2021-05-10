@@ -302,17 +302,18 @@ void Polygon2D::_notification(int p_what) {
 					colors.write[i] = color_r[i];
 				}
 			} else {
-				colors.push_back(color);
+				colors.resize(len);
+				for (int i = 0; i < len; i++) {
+					colors.write[i] = color;
+				}
 			}
 
+			Vector<int> index_array;
+
 			if (invert || polygons.size() == 0) {
-				Vector<int> indices = Geometry2D::triangulate_polygon(points);
-				if (indices.size()) {
-					RS::get_singleton()->canvas_item_add_triangle_array(get_canvas_item(), indices, points, colors, uvs, bones, weights, texture.is_valid() ? texture->get_rid() : RID(), -1);
-				}
+				index_array = Geometry2D::triangulate_polygon(points);
 			} else {
 				//draw individual polygons
-				Vector<int> total_indices;
 				for (int i = 0; i < polygons.size(); i++) {
 					Vector<int> src_indices = polygons[i];
 					int ic = src_indices.size();
@@ -333,18 +334,38 @@ void Polygon2D::_notification(int p_what) {
 					int ic2 = indices.size();
 					const int *r2 = indices.ptr();
 
-					int bic = total_indices.size();
-					total_indices.resize(bic + ic2);
-					int *w2 = total_indices.ptrw();
+					int bic = index_array.size();
+					index_array.resize(bic + ic2);
+					int *w2 = index_array.ptrw();
 
 					for (int j = 0; j < ic2; j++) {
 						w2[j + bic] = r[r2[j]];
 					}
 				}
+			}
 
-				if (total_indices.size()) {
-					RS::get_singleton()->canvas_item_add_triangle_array(get_canvas_item(), total_indices, points, colors, uvs, bones, weights, texture.is_valid() ? texture->get_rid() : RID());
+			RS::get_singleton()->mesh_clear(mesh);
+
+			if (index_array.size()) {
+				Array arr;
+				arr.resize(RS::ARRAY_MAX);
+				arr[RS::ARRAY_VERTEX] = points;
+				if (uvs.size() == points.size()) {
+					arr[RS::ARRAY_TEX_UV] = uvs;
 				}
+				if (colors.size() == points.size()) {
+					arr[RS::ARRAY_COLOR] = colors;
+				}
+
+				if (bones.size() == points.size() * 4) {
+					arr[RS::ARRAY_BONES] = bones;
+					arr[RS::ARRAY_WEIGHTS] = weights;
+				}
+
+				arr[RS::ARRAY_INDEX] = index_array;
+
+				RS::get_singleton()->mesh_add_surface_from_arrays(mesh, RS::PRIMITIVE_TRIANGLES, arr, Array(), Dictionary(), RS::ARRAY_FLAG_USE_2D_VERTICES);
+				RS::get_singleton()->canvas_item_add_mesh(get_canvas_item(), mesh, Transform2D(), Color(), texture.is_valid() ? texture->get_rid() : RID());
 			}
 
 		} break;
@@ -655,4 +676,9 @@ void Polygon2D::_bind_methods() {
 }
 
 Polygon2D::Polygon2D() {
+	mesh = RS::get_singleton()->mesh_create();
+}
+
+Polygon2D::~Polygon2D() {
+	RS::get_singleton()->free(mesh);
 }

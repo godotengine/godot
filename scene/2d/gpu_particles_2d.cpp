@@ -369,6 +369,7 @@ void GPUParticles2D::_bind_methods() {
 
 GPUParticles2D::GPUParticles2D() {
 	particles = RS::get_singleton()->particles_create();
+	RS::get_singleton()->particles_set_mode(particles, RS::PARTICLES_MODE_2D);
 
 	one_shot = false; // Needed so that set_emitting doesn't access uninitialized values
 	set_emitting(true);

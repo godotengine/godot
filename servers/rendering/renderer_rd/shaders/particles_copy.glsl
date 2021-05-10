@@ -163,11 +163,20 @@ void main() {
 		txform = mat4(vec4(0.0), vec4(0.0), vec4(0.0), vec4(0.0)); //zero scale, becomes invisible
 	}
 
+#ifdef MODE_2D
+
+	instances.data[write_offset + 0] = txform[0];
+	instances.data[write_offset + 1] = txform[1];
+	instances.data[write_offset + 2] = particles.data[particle].color;
+	instances.data[write_offset + 3] = particles.data[particle].custom;
+
+#else
 	instances.data[write_offset + 0] = txform[0];
 	instances.data[write_offset + 1] = txform[1];
 	instances.data[write_offset + 2] = txform[2];
 	instances.data[write_offset + 3] = particles.data[particle].color;
 	instances.data[write_offset + 4] = particles.data[particle].custom;
+#endif //MODE_2D
 
 #endif
 }

@@ -618,6 +618,12 @@ public:
 
 	virtual RID particles_create() = 0;
 
+	enum ParticlesMode {
+		PARTICLES_MODE_2D,
+		PARTICLES_MODE_3D
+	};
+	virtual void particles_set_mode(RID p_particles, ParticlesMode p_mode) = 0;
+
 	virtual void particles_set_emitting(RID p_particles, bool p_enable) = 0;
 	virtual bool particles_get_emitting(RID p_particles) = 0;
 	virtual void particles_set_amount(RID p_particles, int p_amount) = 0;

@@ -923,10 +923,15 @@ void RendererCanvasCull::canvas_item_add_set_transform(RID p_item, const Transfo
 void RendererCanvasCull::canvas_item_add_mesh(RID p_item, const RID &p_mesh, const Transform2D &p_transform, const Color &p_modulate, RID p_texture) {
 	Item *canvas_item = canvas_item_owner.getornull(p_item);
 	ERR_FAIL_COND(!canvas_item);
+	ERR_FAIL_COND(!p_mesh.is_valid());
 
 	Item::CommandMesh *m = canvas_item->alloc_command<Item::CommandMesh>();
 	ERR_FAIL_COND(!m);
 	m->mesh = p_mesh;
+	if (canvas_item->skeleton.is_valid()) {
+		m->mesh_instance = RSG::storage->mesh_instance_create(p_mesh);
+		RSG::storage->mesh_instance_set_skeleton(m->mesh_instance, canvas_item->skeleton);
+	}
 
 	m->texture = p_texture;
 
@@ -996,8 +1001,30 @@ void RendererCanvasCull::canvas_item_set_z_as_relative_to_parent(RID p_item, boo
 void RendererCanvasCull::canvas_item_attach_skeleton(RID p_item, RID p_skeleton) {
 	Item *canvas_item = canvas_item_owner.getornull(p_item);
 	ERR_FAIL_COND(!canvas_item);
-
+	if (canvas_item->skeleton == p_skeleton) {
+		return;
+	}
 	canvas_item->skeleton = p_skeleton;
+
+	Item::Command *c = canvas_item->commands;
+
+	while (c) {
+		if (c->type == Item::Command::TYPE_MESH) {
+			Item::CommandMesh *cm = static_cast<Item::CommandMesh *>(c);
+			if (canvas_item->skeleton.is_valid()) {
+				if (cm->mesh_instance.is_null()) {
+					cm->mesh_instance = RSG::storage->mesh_instance_create(cm->mesh);
+				}
+				RSG::storage->mesh_instance_set_skeleton(cm->mesh_instance, canvas_item->skeleton);
+			} else {
+				if (cm->mesh_instance.is_valid()) {
+					RSG::storage->free(cm->mesh_instance);
+					cm->mesh_instance = RID();
+				}
+			}
+		}
+		c = c->next;
+	}
 }
 
 void RendererCanvasCull::canvas_item_set_copy_to_backbuffer(RID p_item, bool p_enable, const Rect2 &p_rect) {

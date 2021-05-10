@@ -484,6 +484,7 @@ public:
 
 	virtual RID particles_allocate() = 0;
 	virtual void particles_initialize(RID p_rid) = 0;
+	virtual void particles_set_mode(RID p_particles, RS::ParticlesMode p_mode) = 0;
 
 	virtual void particles_set_emitting(RID p_particles, bool p_emitting) = 0;
 	virtual bool particles_get_emitting(RID p_particles) = 0;
