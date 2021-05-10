@@ -130,13 +130,13 @@ TEST_CASE("[Modules][DataBuffer] Real") {
 		compression_level = DataBuffer::COMPRESSION_LEVEL_3;
 
 		SUBCASE("[Modules][DataBuffer] Positive") {
-			value = 127.15;
+			value = 127.55;
 		}
 		SUBCASE("[Modules][DataBuffer] Zero") {
 			value = 0.0;
 		}
 		SUBCASE("[Modules][DataBuffer] Negative") {
-			value = -128.15;
+			value = -128.55;
 		}
 	}
 
@@ -144,13 +144,13 @@ TEST_CASE("[Modules][DataBuffer] Real") {
 		compression_level = DataBuffer::COMPRESSION_LEVEL_2;
 
 		SUBCASE("[Modules][DataBuffer] Positive") {
-			value = 32767.15;
+			value = 32767.55;
 		}
 		SUBCASE("[Modules][DataBuffer] Zero") {
 			value = 0.0;
 		}
 		SUBCASE("[Modules][DataBuffer] Negative") {
-			value = -32768.15;
+			value = -32768.55;
 		}
 	}
 
@@ -158,13 +158,13 @@ TEST_CASE("[Modules][DataBuffer] Real") {
 		compression_level = DataBuffer::COMPRESSION_LEVEL_1;
 
 		SUBCASE("[Modules][DataBuffer] Positive") {
-			value = 2147483647.15;
+			value = 2147483647.55;
 		}
 		SUBCASE("[Modules][DataBuffer] Zero") {
 			value = 0.0;
 		}
 		SUBCASE("[Modules][DataBuffer] Negative") {
-			value = -2147483648.15;
+			value = -2147483648.55;
 		}
 	}
 
@@ -172,23 +172,23 @@ TEST_CASE("[Modules][DataBuffer] Real") {
 		compression_level = DataBuffer::COMPRESSION_LEVEL_0;
 
 		SUBCASE("[Modules][DataBuffer] Positive") {
-			value = 2147483647.15;
+			value = 2147483647.55;
 		}
 		SUBCASE("[Modules][DataBuffer] Zero") {
 			value = 0.0;
 		}
 		SUBCASE("[Modules][DataBuffer] Negative") {
-			value = -9223372036854775807.15;
+			value = -9223372036854775807.55;
 		}
 	}
 
 	buffer.begin_write(0);
-	CHECK_MESSAGE(buffer.add_real(value, compression_level) == doctest::Approx(value).epsilon(0.03), "Should return the same value");
+	CHECK_MESSAGE(buffer.add_real(value, compression_level) == doctest::Approx(value).epsilon(0.020), "Should return the same value");
 	buffer.begin_read();
-	CHECK_MESSAGE(buffer.read_real(compression_level) == doctest::Approx(value).epsilon(0.03), "Should read the same value");
+	CHECK_MESSAGE(buffer.read_real(compression_level) == doctest::Approx(value).epsilon(0.020), "Should read the same value");
 }
 
-TEST_CASE("[Modules][DataBuffer] Real") {
+TEST_CASE("[Modules][DataBuffer] Precise real") {
 	DataBuffer buffer;
 	DataBuffer::CompressionLevel compression_level = {};
 	real_t value = {};
@@ -197,13 +197,13 @@ TEST_CASE("[Modules][DataBuffer] Real") {
 		compression_level = DataBuffer::COMPRESSION_LEVEL_3;
 
 		SUBCASE("[Modules][DataBuffer] Positive") {
-			value = 127.015;
+			value = 127.555;
 		}
 		SUBCASE("[Modules][DataBuffer] Zero") {
 			value = 0.0;
 		}
 		SUBCASE("[Modules][DataBuffer] Negative") {
-			value = -128.015;
+			value = -128.555;
 		}
 	}
 
@@ -211,13 +211,13 @@ TEST_CASE("[Modules][DataBuffer] Real") {
 		compression_level = DataBuffer::COMPRESSION_LEVEL_2;
 
 		SUBCASE("[Modules][DataBuffer] Positive") {
-			value = 32767.015;
+			value = 32767.555;
 		}
 		SUBCASE("[Modules][DataBuffer] Zero") {
 			value = 0.0;
 		}
 		SUBCASE("[Modules][DataBuffer] Negative") {
-			value = -32768.015;
+			value = -32768.555;
 		}
 	}
 
@@ -225,13 +225,13 @@ TEST_CASE("[Modules][DataBuffer] Real") {
 		compression_level = DataBuffer::COMPRESSION_LEVEL_1;
 
 		SUBCASE("[Modules][DataBuffer] Positive") {
-			value = 2147483647.015;
+			value = 2147483647.555;
 		}
 		SUBCASE("[Modules][DataBuffer] Zero") {
 			value = 0.0;
 		}
 		SUBCASE("[Modules][DataBuffer] Negative") {
-			value = -2147483648.015;
+			value = -2147483648.555;
 		}
 	}
 
@@ -239,22 +239,81 @@ TEST_CASE("[Modules][DataBuffer] Real") {
 		compression_level = DataBuffer::COMPRESSION_LEVEL_0;
 
 		SUBCASE("[Modules][DataBuffer] Positive") {
-			value = 2147483647.015;
+			value = 2147483647.555;
 		}
 		SUBCASE("[Modules][DataBuffer] Zero") {
 			value = 0.0;
 		}
 		SUBCASE("[Modules][DataBuffer] Negative") {
-			value = -9223372036854775807.015;
+			value = -9223372036854775807.555;
 		}
 	}
 
 	buffer.begin_write(0);
-	CHECK_MESSAGE(buffer.add_precise_real(value, compression_level) == doctest::Approx(value).epsilon(0.009), "Should return the same value");
+	CHECK_MESSAGE(buffer.add_precise_real(value, compression_level) == doctest::Approx(value).epsilon(0.005), "Should return the same value");
 	buffer.begin_read();
-	CHECK_MESSAGE(buffer.read_precise_real(compression_level) == doctest::Approx(value).epsilon(0.009), "Should read the same value");
+	CHECK_MESSAGE(buffer.read_precise_real(compression_level) == doctest::Approx(value).epsilon(0.005), "Should read the same value");
 }
 
+TEST_CASE("[Modules][DataBuffer] Positive unit real") {
+	DataBuffer buffer;
+	DataBuffer::CompressionLevel compression_level = {};
+	real_t value = {};
+	real_t epsilon = {};
+
+	SUBCASE("[Modules][DataBuffer] Compression level 3") {
+		compression_level = DataBuffer::COMPRESSION_LEVEL_3;
+		epsilon = 0.033335;
+
+		SUBCASE("[Modules][DataBuffer] Positive") {
+			value = 0.1;
+		}
+		SUBCASE("[Modules][DataBuffer] Zero") {
+			value = 0.0;
+		}
+	}
+
+	SUBCASE("[Modules][DataBuffer] Compression level 2") {
+		compression_level = DataBuffer::COMPRESSION_LEVEL_2;
+		epsilon = 0.007935;
+
+		SUBCASE("[Modules][DataBuffer] Positive") {
+			value = 0.05;
+		}
+		SUBCASE("[Modules][DataBuffer] Zero") {
+			value = 0.0;
+		}
+	}
+
+	SUBCASE("[Modules][DataBuffer] Compression level 1") {
+		compression_level = DataBuffer::COMPRESSION_LEVEL_1;
+		epsilon = 0.00196;
+
+		SUBCASE("[Modules][DataBuffer] Positive") {
+			value = 0.001;
+		}
+		SUBCASE("[Modules][DataBuffer] Zero") {
+			value = 0.0;
+		}
+	}
+
+	SUBCASE("[Modules][DataBuffer] Compression level 0") {
+		compression_level = DataBuffer::COMPRESSION_LEVEL_0;
+		epsilon = 0.00049;
+
+		SUBCASE("[Modules][DataBuffer] Positive") {
+			value = 0.001;
+		}
+		SUBCASE("[Modules][DataBuffer] Zero") {
+			value = 0.0;
+		}
+	}
+
+	buffer.begin_write(0);
+	CHECK_MESSAGE(buffer.add_positive_unit_real(value, compression_level) == doctest::Approx(value).epsilon(epsilon), "Should return the same value");
+	buffer.begin_read();
+	CHECK_MESSAGE(buffer.read_positive_unit_real(compression_level) == doctest::Approx(value).epsilon(epsilon), "Should read the same value");
+}
 TEST_CASE("[Modules][DataBuffer] Unit real") {
 	DataBuffer buffer;
 	DataBuffer::CompressionLevel compression_level = {};
@@ -263,7 +322,7 @@ TEST_CASE("[Modules][DataBuffer] Unit real") {
 
 	SUBCASE("[Modules][DataBuffer] Compression level 3") {
 		compression_level = DataBuffer::COMPRESSION_LEVEL_3;
-		epsilon = 0.06667;
+		epsilon = 0.033335;
 
 		SUBCASE("[Modules][DataBuffer] Positive") {
 			value = 0.1;
@@ -278,7 +337,7 @@ TEST_CASE("[Modules][DataBuffer] Unit real") {
 
 	SUBCASE("[Modules][DataBuffer] Compression level 2") {
 		compression_level = DataBuffer::COMPRESSION_LEVEL_2;
-		epsilon = 0.01587;
+		epsilon = 0.007935;
 
 		SUBCASE("[Modules][DataBuffer] Positive") {
 			value = 0.05;
@@ -293,22 +352,22 @@ TEST_CASE("[Modules][DataBuffer] Unit real") {
 
 	SUBCASE("[Modules][DataBuffer] Compression level 1") {
 		compression_level = DataBuffer::COMPRESSION_LEVEL_1;
-		epsilon = 0.00392;
+		epsilon = 0.00196;
 
 		SUBCASE("[Modules][DataBuffer] Positive") {
-			value = 0.001;
+			value = 0.01;
 		}
 		SUBCASE("[Modules][DataBuffer] Zero") {
 			value = 0.0;
 		}
 		SUBCASE("[Modules][DataBuffer] Negative") {
-			value = -0.001;
+			value = -0.01;
 		}
 	}
 
 	SUBCASE("[Modules][DataBuffer] Compression level 0") {
 		compression_level = DataBuffer::COMPRESSION_LEVEL_0;
-		epsilon = 0.00098;
+		epsilon = 0.00049;
 
 		SUBCASE("[Modules][DataBuffer] Positive") {
 			value = 0.001;

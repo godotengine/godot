@@ -62,6 +62,7 @@ void DataBuffer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_int", "value", "compression_level"), &DataBuffer::add_int, DEFVAL(COMPRESSION_LEVEL_1));
 	ClassDB::bind_method(D_METHOD("add_real", "value", "compression_level"), &DataBuffer::add_real, DEFVAL(COMPRESSION_LEVEL_1));
 	ClassDB::bind_method(D_METHOD("add_precise_real", "value", "compression_level"), &DataBuffer::add_precise_real, DEFVAL(COMPRESSION_LEVEL_1));
+	ClassDB::bind_method(D_METHOD("add_positive_unit_real", "value", "compression_level"), &DataBuffer::add_positive_unit_real, DEFVAL(COMPRESSION_LEVEL_1));
 	ClassDB::bind_method(D_METHOD("add_unit_real", "value", "compression_level"), &DataBuffer::add_unit_real, DEFVAL(COMPRESSION_LEVEL_1));
 	ClassDB::bind_method(D_METHOD("add_vector2", "value", "compression_level"), &DataBuffer::add_vector2, DEFVAL(COMPRESSION_LEVEL_1));
 	ClassDB::bind_method(D_METHOD("add_precise_vector2", "value", "compression_level"), &DataBuffer::add_precise_vector2, DEFVAL(COMPRESSION_LEVEL_1));
@@ -315,9 +316,9 @@ real_t DataBuffer::read_precise_real(CompressionLevel p_compression_level) {
 	return integral + fractional;
 }
 
-real_t DataBuffer::add_unit_real(real_t p_input, CompressionLevel p_compression_level) {
+real_t DataBuffer::add_positive_unit_real(real_t p_input, CompressionLevel p_compression_level) {
 #ifdef DEBUG_ENABLED
-	ERR_FAIL_COND_V_MSG(Math::is_equal_approx(ABS(p_input), 1.0), p_input, "Value should be less than zero");
+	ERR_FAIL_COND_V_MSG(p_input < 0 || p_input > 1, p_input, "Value must be between zero and one.");
 #endif
 	ERR_FAIL_COND_V(is_reading == true, p_input);
 
@@ -325,7 +326,7 @@ real_t DataBuffer::add_unit_real(real_t p_input, CompressionLevel p_compression_
 
 	const double max_value = static_cast<double>(~(UINT64_MAX << bits));
 
-	const uint64_t compressed_val = compress_unit_float((p_input + 1.0) / 2.0, max_value);
+	const uint64_t compressed_val = compress_unit_float(p_input, max_value);
 
 	make_room_in_bits(bits);
 	buffer.store_bits(bit_offset, compressed_val, bits);
@@ -336,10 +337,10 @@ real_t DataBuffer::add_unit_real(real_t p_input, CompressionLevel p_compression_
 	CRASH_COND((metadata_size + bit_size) > buffer.size_in_bits() && bit_offset > buffer.size_in_bits());
 #endif
 
-	return decompress_unit_float(compressed_val, max_value) * 2.0 - 1.0;
+	return decompress_unit_float(compressed_val, max_value);
 }
 
-real_t DataBuffer::read_unit_real(CompressionLevel p_compression_level) {
+real_t DataBuffer::read_positive_unit_real(CompressionLevel p_compression_level) {
 	ERR_FAIL_COND_V(is_reading == false, 0.0);
 
 	const int bits = get_bit_taken(DATA_TYPE_UNIT_REAL, p_compression_level);
@@ -349,7 +350,38 @@ real_t DataBuffer::read_unit_real(CompressionLevel p_compression_level) {
 	const uint64_t compressed_val = buffer.read_bits(bit_offset, bits);
 	bit_offset += bits;
 
-	return decompress_unit_float(compressed_val, max_value) * 2.0 - 1.0;
+	return decompress_unit_float(compressed_val, max_value);
+}
+
+real_t DataBuffer::add_unit_real(real_t p_input, CompressionLevel p_compression_level) {
+	ERR_FAIL_COND_V(is_reading == true, p_input);
+
+	const real_t added_real = add_positive_unit_real(ABS(p_input), p_compression_level);
+
+	const int bits_for_sign = 1;
+	const uint32_t is_negative = p_input < 0.0;
+	make_room_in_bits(bits_for_sign);
+	buffer.store_bits(bit_offset, is_negative, bits_for_sign);
+	bit_offset += bits_for_sign;
+
+#ifdef DEBUG_ENABLED
+	// Can't never happen because the buffer size is correctly handled.
+	CRASH_COND((metadata_size + bit_size) > buffer.size_in_bits() && bit_offset > buffer.size_in_bits());
+#endif
+
+	return is_negative ? -added_real : added_real;
+}
+
+real_t DataBuffer::read_unit_real(CompressionLevel p_compression_level) {
+	ERR_FAIL_COND_V(is_reading == false, 0.0);
+
+	const real_t value = read_positive_unit_real(p_compression_level);
+
+	const int bits_for_sign = 1;
+	const bool is_negative = buffer.read_bits(bit_offset, bits_for_sign);
+	bit_offset += bits_for_sign;
+
+	return is_negative ? -value : value;
 }
 
 Vector2 DataBuffer::add_vector2(Vector2 p_input, CompressionLevel p_compression_level) {
@@ -488,54 +520,21 @@ Vector3 DataBuffer::add_normalized_vector3(Vector3 p_input, CompressionLevel p_c
 #endif
 	ERR_FAIL_COND_V(is_reading == true, p_input);
 
-	const int bits = get_bit_taken(DATA_TYPE_NORMALIZED_VECTOR3, p_compression_level);
-	const int bits_for_the_axis = bits / 3;
+	const uint64_t x_axis = add_real(p_input.x, p_compression_level);
+	const uint64_t y_axis = add_real(p_input.y, p_compression_level);
+	const uint64_t z_axis = add_real(p_input.z, p_compression_level);
 
-	const double max_value = static_cast<double>(~(UINT64_MAX << bits_for_the_axis));
-
-	const uint64_t compressed_x_axis = compress_unit_float((p_input[0] + 1.0) / 2.0, max_value);
-	const uint64_t compressed_y_axis = compress_unit_float((p_input[1] + 1.0) / 2.0, max_value);
-	const uint64_t compressed_z_axis = compress_unit_float((p_input[2] + 1.0) / 2.0, max_value);
-
-	make_room_in_bits(bits);
-
-	buffer.store_bits(bit_offset, compressed_x_axis, bits_for_the_axis);
-	bit_offset += bits_for_the_axis;
-
-	buffer.store_bits(bit_offset, compressed_y_axis, bits_for_the_axis);
-	bit_offset += bits_for_the_axis;
-
-	buffer.store_bits(bit_offset, compressed_z_axis, bits_for_the_axis);
-	bit_offset += bits_for_the_axis;
-
-	const real_t decompressed_x_axis = decompress_unit_float(compressed_x_axis, max_value) * 2.0 - 1.0;
-	const real_t decompressed_y_axis = decompress_unit_float(compressed_y_axis, max_value) * 2.0 - 1.0;
-	const real_t decompressed_z_axis = decompress_unit_float(compressed_z_axis, max_value) * 2.0 - 1.0;
-
-#ifdef DEBUG_ENABLED
-	// Can't never happen because the buffer size is correctly handled.
-	CRASH_COND((metadata_size + bit_size) > buffer.size_in_bits() && bit_offset > buffer.size_in_bits());
-#endif
-
-	return Vector3(decompressed_x_axis, decompressed_y_axis, decompressed_z_axis);
+	return Vector3(x_axis, y_axis, z_axis);
 }
 
 Vector3 DataBuffer::read_normalized_vector3(CompressionLevel p_compression_level) {
 	ERR_FAIL_COND_V(is_reading == false, Vector3());
 
-	const int bits = get_bit_taken(DATA_TYPE_NORMALIZED_VECTOR3, p_compression_level);
-	const int bits_for_the_axis = bits / 3;
+	const uint64_t x_axis = read_real(p_compression_level);
+	const uint64_t y_axis = read_real(p_compression_level);
+	const uint64_t z_axis = read_real(p_compression_level);
 
-	const double max_value = static_cast<double>(~(UINT64_MAX << bits_for_the_axis));
-
-	const real_t decompressed_x_axis = decompress_unit_float(buffer.read_bits(bit_offset, bits_for_the_axis), max_value) * 2.0 - 1.0;
-	bit_offset += bits_for_the_axis;
-	const real_t decompressed_y_axis = decompress_unit_float(buffer.read_bits(bit_offset, bits_for_the_axis), max_value) * 2.0 - 1.0;
-	bit_offset += bits_for_the_axis;
-	const real_t decompressed_z_axis = decompress_unit_float(buffer.read_bits(bit_offset, bits_for_the_axis), max_value) * 2.0 - 1.0;
-	bit_offset += bits_for_the_axis;
-
-	return Vector3(decompressed_x_axis, decompressed_y_axis, decompressed_z_axis);
+	return Vector3(x_axis, y_axis, z_axis);
 }
 
 Variant DataBuffer::add_variant(const Variant &p_input) {
@@ -845,24 +844,23 @@ int DataBuffer::get_bit_taken(DataType p_data_type, CompressionLevel p_compressi
 			return get_bit_taken(DATA_TYPE_INT, p_compression) +
 				   get_bit_taken(DATA_TYPE_UNIT_REAL, COMPRESSION_LEVEL_0);
 		} break;
-		case DATA_TYPE_UNIT_REAL: {
+		case DATA_TYPE_POSITIVE_UNIT_REAL: {
 			switch (p_compression) {
 				case COMPRESSION_LEVEL_0:
-					// Max loss ~0.09%
 					return 10;
 				case COMPRESSION_LEVEL_1:
-					// Max loss ~0.3%
 					return 8;
 				case COMPRESSION_LEVEL_2:
-					// Max loss ~3.2%
 					return 6;
 				case COMPRESSION_LEVEL_3:
-					// Max loss ~6%
 					return 4;
 				default:
 					// Unreachable
 					CRASH_NOW_MSG("Compression level not supported!");
 			}
+		} break;
+		case DATA_TYPE_UNIT_REAL: {
+			return get_bit_taken(DATA_TYPE_POSITIVE_UNIT_REAL, p_compression) + 1;
 		} break;
 		case DATA_TYPE_VECTOR2: {
 			return get_bit_taken(DATA_TYPE_REAL, p_compression) * 2;

@@ -48,6 +48,7 @@ public:
 		DATA_TYPE_INT,
 		DATA_TYPE_REAL,
 		DATA_TYPE_PRECISE_REAL,
+		DATA_TYPE_POSITIVE_UNIT_REAL,
 		DATA_TYPE_UNIT_REAL,
 		DATA_TYPE_VECTOR2,
 		DATA_TYPE_PRECISE_VECTOR2,
@@ -77,30 +78,37 @@ public:
 	///
 	///
 	/// ## Real
-	/// The floating point part has a precision of ~0.3%
-	/// COMPRESSION_LEVEL_0: 72 bits are used - The integral part has a range of -9223372036854775808 / 9223372036854775807
-	/// COMPRESSION_LEVEL_1: 40 bits are used - The integral part has a range of -2147483648 / 2147483647
-	/// COMPRESSION_LEVEL_2: 24 bits are used - The integral part has a range of -32768 / 32767
-	/// COMPRESSION_LEVEL_3: 16 bits are used - The integral part has a range of -128 / 127
+	/// The floating point part has a precision of ~0.020%
+	/// COMPRESSION_LEVEL_0: 73 bits are used - The integral part has a range of -9223372036854775808 / 9223372036854775807
+	/// COMPRESSION_LEVEL_1: 41 bits are used - The integral part has a range of -2147483648 / 2147483647
+	/// COMPRESSION_LEVEL_2: 25 bits are used - The integral part has a range of -32768 / 32767
+	/// COMPRESSION_LEVEL_3: 17 bits are used - The integral part has a range of -128 / 127
 	///
 	///
-	/// ## Precise Real
-	/// The floating point part has a precision of ~0.09%
-	/// COMPRESSION_LEVEL_0: 74 bits are used - The integral part has a range of -9223372036854775808 / 9223372036854775807
-	/// COMPRESSION_LEVEL_1: 42 bits are used - The integral part has a range of -2147483648 / 2147483647
-	/// COMPRESSION_LEVEL_2: 26 bits are used - The integral part has a range of -32768 / 32767
-	/// COMPRESSION_LEVEL_3: 18 bits are used - The integral part has a range of -128 / 127
+	/// ## Precise real
+	/// The floating point part has a precision of ~0.005%
+	/// COMPRESSION_LEVEL_0: 75 bits are used - The integral part has a range of -9223372036854775808 / 9223372036854775807
+	/// COMPRESSION_LEVEL_1: 43 bits are used - The integral part has a range of -2147483648 / 2147483647
+	/// COMPRESSION_LEVEL_2: 27 bits are used - The integral part has a range of -32768 / 32767
+	/// COMPRESSION_LEVEL_3: 19 bits are used - The integral part has a range of -128 / 127
 	///
 	///
-	/// ## Unit real
-	/// COMPRESSION_LEVEL_0: 10 bits are used - Max loss ~0.09%
-	/// COMPRESSION_LEVEL_1: 8 bits are used - Max loss ~0.39%
-	/// COMPRESSION_LEVEL_2: 6 bits are used - Max loss ~1.59%
-	/// COMPRESSION_LEVEL_3: 4 bits are used - Max loss ~6.66%
+	/// ## Positive unit real
+	/// COMPRESSION_LEVEL_0: 10 bits are used - Max loss ~0.005%
+	/// COMPRESSION_LEVEL_1: 8 bits are used - Max loss ~0.020%
+	/// COMPRESSION_LEVEL_2: 6 bits are used - Max loss ~0.793%
+	/// COMPRESSION_LEVEL_3: 4 bits are used - Max loss ~3.333%
+	///
+	///
+	/// ## Unit real (uses one extra bit for the sign)
+	/// COMPRESSION_LEVEL_0: 11 bits are used - Max loss ~0.005%
+	/// COMPRESSION_LEVEL_1: 9 bits are used - Max loss ~0.020%
+	/// COMPRESSION_LEVEL_2: 7 bits are used - Max loss ~0.793%
+	/// COMPRESSION_LEVEL_3: 5 bits are used - Max loss ~3.333%
 	///
 	///
 	/// ## Vector2
-	/// The floating point part has a precision of ~0.3% per axis.
+	/// The floating point part has a precision of ~0.020% per axis.
 	/// COMPRESSION_LEVEL_0: 72 * 2 bits are used - Max vector size -9223372036854775808 / 9223372036854775807
 	/// COMPRESSION_LEVEL_1: 40 * 2 bits are used - Max vector size -2147483648 / 2147483647
 	/// COMPRESSION_LEVEL_2: 24 * 2 bits are used - Max vector size -32768 / 32767
@@ -108,7 +116,7 @@ public:
 	///
 	///
 	/// ## Precise Vector2
-	/// The floating point part has a precision of ~0.09% per axis.
+	/// The floating point part has a precision of ~0.005% per axis.
 	/// COMPRESSION_LEVEL_0: 74 * 2 bits are used - Max vector size -9223372036854775808 / 9223372036854775807
 	/// COMPRESSION_LEVEL_1: 42 * 2 bits are used - Max vector size -2147483648 / 2147483647
 	/// COMPRESSION_LEVEL_2: 28 * 2 bits are used - Max vector size -32768 / 32767
@@ -123,7 +131,7 @@ public:
 	///
 	///
 	/// ## Vector3
-	/// The floating point part has a precision of ~0.3% per axis.
+	/// The floating point part has a precision of ~0.020% per axis.
 	/// COMPRESSION_LEVEL_0: 72 * 3 bits are used - Max vector size -9223372036854775808 / 9223372036854775807
 	/// COMPRESSION_LEVEL_1: 40 * 3 bits are used - Max vector size -2147483648 / 2147483647
 	/// COMPRESSION_LEVEL_2: 24 * 3 bits are used - Max vector size -32768 / 32767
@@ -131,7 +139,7 @@ public:
 	///
 	///
 	/// ## Precise Vector3
-	/// The floating point part has a precision of ~0.09% per axis.
+	/// The floating point part has a precision of ~0.005% per axis.
 	/// COMPRESSION_LEVEL_0: 74 * 3 bits are used - Max vector size -9223372036854775808 / 9223372036854775807
 	/// COMPRESSION_LEVEL_1: 42 * 3 bits are used - Max vector size -2147483648 / 2147483647
 	/// COMPRESSION_LEVEL_2: 28 * 3 bits are used - Max vector size -32768 / 32767
@@ -139,10 +147,10 @@ public:
 	///
 	///
 	/// ## Normalized Vector3
-	/// COMPRESSION_LEVEL_0: 11 * 3 bits are used - Max loss ~0.09% per axis
-	/// COMPRESSION_LEVEL_1: 10 * 3 bits are used - Max loss ~0.39% per axis
-	/// COMPRESSION_LEVEL_2: 8 * 3 bits are used - Max loss ~1.59% per axis
-	/// COMPRESSION_LEVEL_3: 6 * 3 bits are used - Max loss ~6.66% per axis
+	/// COMPRESSION_LEVEL_0: 11 * 3 bits are used - Max loss ~0.005% per axis
+	/// COMPRESSION_LEVEL_1: 10 * 3 bits are used - Max loss ~0.020% per axis
+	/// COMPRESSION_LEVEL_2: 8 * 3 bits are used - Max loss ~0.793% per axis
+	/// COMPRESSION_LEVEL_3: 6 * 3 bits are used - Max loss ~3.333% per axis
 	///
 	/// ## Variant
 	/// It's dynamic sized. It's not possible to compress it.
@@ -238,6 +246,17 @@ public:
 
 	/// Parse the following data as a precise real.
 	real_t read_precise_real(CompressionLevel p_compression_level);
+
+	/// Add a positive unit real into the buffer.
+	///
+	/// **Note:** Not unitary values lead to unexpected behaviour.
+	///
+	/// Returns the compressed value so both the client and the peers can use
+	/// the same data.
+	real_t add_positive_unit_real(real_t p_input, CompressionLevel p_compression_level);
+
+	/// Parse the following data as a positive unit real.
+	real_t read_positive_unit_real(CompressionLevel p_compression_level);
 
 	/// Add a unit real into the buffer.
 	///
