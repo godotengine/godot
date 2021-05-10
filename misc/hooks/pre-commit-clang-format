@@ -99,8 +99,12 @@ if [ ! -x "$CLANG_FORMAT" ] ; then
     exit 1
 fi
 
-CLANG_FORMAT_VERSION="$(clang-format --version | cut -d' ' -f3)"
-CLANG_FORMAT_MAJOR="$(echo "$CLANG_FORMAT_VERSION" | cut -d'.' -f1)"
+# The returned string can be inconsistent depending on where clang-format comes from.
+# Example output strings reported by `clang-format --version`:
+# - Ubuntu: "Ubuntu clang-format version 11.0.0-2"
+# - Fedora: "clang-format version 11.0.0 (Fedora 11.0.0-2.fc33)"
+CLANG_FORMAT_VERSION="$(clang-format --version | sed "s/[^0-9\.]*\([0-9\.]*\).*/\1/")"
+CLANG_FORMAT_MAJOR="$(echo "$CLANG_FORMAT_VERSION" | cut -d. -f1)"
 
 if [ "$CLANG_FORMAT_MAJOR" != "$RECOMMENDED_CLANG_FORMAT_MAJOR" ]; then
     echo "Warning: Your clang-format binary is the wrong version ($CLANG_FORMAT_VERSION, expected $RECOMMENDED_CLANG_FORMAT_MAJOR.x.x)."
