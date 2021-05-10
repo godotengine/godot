@@ -470,6 +470,19 @@ void ColorPicker::_update_text_value() {
 	c_text->set_visible(visible);
 }
 
+void ColorPicker::_sample_input(const Ref<InputEvent> &p_event) {
+	const Ref<InputEventMouseButton> mb = p_event;
+	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MOUSE_BUTTON_LEFT) {
+		const Rect2 rect_old = Rect2(Point2(), Size2(sample->get_size().width * 0.5, sample->get_size().height * 0.95));
+		if (rect_old.has_point(mb->get_position())) {
+			// Revert to the old color when left-clicking the old color sample.
+			color = old_color;
+			_update_color();
+			emit_signal("color_changed", color);
+		}
+	}
+}
+
 void ColorPicker::_sample_draw() {
 	// Covers the right half of the sample if the old color is being displayed,
 	// or the whole sample if it's not being displayed.
@@ -1067,6 +1080,7 @@ ColorPicker::ColorPicker() :
 
 	hb_smpl->add_child(sample);
 	sample->set_h_size_flags(SIZE_EXPAND_FILL);
+	sample->connect("gui_input", callable_mp(this, &ColorPicker::_sample_input));
 	sample->connect("draw", callable_mp(this, &ColorPicker::_sample_draw));
 
 	btn_pick->set_flat(true);
@@ -1210,7 +1224,9 @@ ColorPicker::ColorPicker() :
 
 void ColorPickerButton::_about_to_popup() {
 	set_pressed(true);
-	picker->set_old_color(color);
+	if (picker) {
+		picker->set_old_color(color);
+	}
 }
 
 void ColorPickerButton::_color_changed(const Color &p_color) {
