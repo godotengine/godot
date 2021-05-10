@@ -3151,10 +3151,17 @@ MethodInfo CSharpScript::get_method_info(const StringName &p_method) const {
 
 Error CSharpScript::reload(bool p_keep_state) {
 
-	bool has_instances;
+	bool has_instances = false;
 	{
 		MutexLock lock(CSharpLanguage::get_singleton()->script_instances_mutex);
-		has_instances = instances.size();
+		for (Set<Object *>::Element *F = instances.front(); F; F = F->next()) {
+			Reference *obj = Object::cast_to<Reference>(F->get());
+			if (obj->reference_get_count() > 1) {
+				// we only care about a refcount > 1, since orphaned instances awaiting GC retain a count of 1
+				has_instances = true;
+				break;
+			}
+		}
 	}
 
 	ERR_FAIL_COND_V(!p_keep_state && has_instances, ERR_ALREADY_IN_USE);
