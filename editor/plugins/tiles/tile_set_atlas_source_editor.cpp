@@ -1669,7 +1669,7 @@ TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
 
 	// Tile inspector.
 	tile_inspector_label = memnew(Label);
-	tile_inspector_label->set_text(TTR("Tile properties:"));
+	tile_inspector_label->set_text(TTR("Tile Properties:"));
 	tile_inspector_label->hide();
 	middle_vbox_container->add_child(tile_inspector_label);
 
@@ -1686,7 +1686,7 @@ TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
 
 	// Atlas source inspector.
 	atlas_source_inspector_label = memnew(Label);
-	atlas_source_inspector_label->set_text(TTR("Atlas properties:"));
+	atlas_source_inspector_label->set_text(TTR("Atlas Properties:"));
 	middle_vbox_container->add_child(atlas_source_inspector_label);
 
 	atlas_source_proxy_object = memnew(TileSetAtlasSourceProxyObject());
@@ -1724,7 +1724,7 @@ TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
 	tool_select_button->set_toggle_mode(true);
 	tool_select_button->set_pressed(true);
 	tool_select_button->set_button_group(tools_button_group);
-	tool_select_button->set_tooltip(TTR("Select tiles"));
+	tool_select_button->set_tooltip(TTR("Select tiles."));
 	tool_select_button->connect("pressed", callable_mp(this, &TileSetAtlasSourceEditor::_update_fix_selected_and_hovered_tiles));
 	tool_select_button->connect("pressed", callable_mp(this, &TileSetAtlasSourceEditor::_update_tile_id_label));
 	tool_select_button->connect("pressed", callable_mp(this, &TileSetAtlasSourceEditor::_update_tile_inspector));
@@ -1736,7 +1736,7 @@ TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
 	tool_add_remove_button->set_flat(true);
 	tool_add_remove_button->set_toggle_mode(true);
 	tool_add_remove_button->set_button_group(tools_button_group);
-	tool_add_remove_button->set_tooltip(TTR("Add/Remove tiles tool (use the shift key to create big tiles)"));
+	tool_add_remove_button->set_tooltip(TTR("Add/Remove tiles tool (use the shift key to create big tiles)."));
 	tool_add_remove_button->connect("pressed", callable_mp(this, &TileSetAtlasSourceEditor::_update_fix_selected_and_hovered_tiles));
 	tool_add_remove_button->connect("pressed", callable_mp(this, &TileSetAtlasSourceEditor::_update_tile_id_label));
 	tool_add_remove_button->connect("pressed", callable_mp(this, &TileSetAtlasSourceEditor::_update_tile_inspector));
@@ -1748,7 +1748,7 @@ TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
 	tool_add_remove_rect_button->set_flat(true);
 	tool_add_remove_rect_button->set_toggle_mode(true);
 	tool_add_remove_rect_button->set_button_group(tools_button_group);
-	tool_add_remove_rect_button->set_tooltip(TTR("Add/Remove tiles rectangle tool (use the shift key to create big tiles)"));
+	tool_add_remove_rect_button->set_tooltip(TTR("Add/Remove tiles rectangle tool (use the shift key to create big tiles)."));
 	tool_add_remove_rect_button->connect("pressed", callable_mp(this, &TileSetAtlasSourceEditor::_update_fix_selected_and_hovered_tiles));
 	tool_add_remove_rect_button->connect("pressed", callable_mp(this, &TileSetAtlasSourceEditor::_update_tile_id_label));
 	tool_add_remove_rect_button->connect("pressed", callable_mp(this, &TileSetAtlasSourceEditor::_update_tile_inspector));
@@ -1775,10 +1775,10 @@ TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
 
 	tool_advanced_menu_buttom = memnew(MenuButton);
 	tool_advanced_menu_buttom->set_flat(true);
-	tool_advanced_menu_buttom->get_popup()->add_item(TTR("Cleanup tiles outside texture"), ADVANCED_CLEANUP_TILES_OUTSIDE_TEXTURE);
+	tool_advanced_menu_buttom->get_popup()->add_item(TTR("Cleanup Tiles Outside Texture"), ADVANCED_CLEANUP_TILES_OUTSIDE_TEXTURE);
 	tool_advanced_menu_buttom->get_popup()->set_item_disabled(0, true);
-	tool_advanced_menu_buttom->get_popup()->add_item(TTR("Create tiles in non-transparent texture regions."), ADVANCED_AUTO_CREATE_TILES);
-	tool_advanced_menu_buttom->get_popup()->add_item(TTR("Remove tiles in fully transparent texture regions."), ADVANCED_AUTO_REMOVE_TILES);
+	tool_advanced_menu_buttom->get_popup()->add_item(TTR("Create Tiles in Non-Transparent Texture Regions"), ADVANCED_AUTO_CREATE_TILES);
+	tool_advanced_menu_buttom->get_popup()->add_item(TTR("Remove Tiles in Fully Transparent Texture Regions"), ADVANCED_AUTO_REMOVE_TILES);
 	tool_advanced_menu_buttom->get_popup()->connect("id_pressed", callable_mp(this, &TileSetAtlasSourceEditor::_menu_option));
 	toolbox->add_child(tool_advanced_menu_buttom);
 

@@ -575,7 +575,7 @@ TileAtlasView::TileAtlasView() {
 
 	// Base tiles.
 	Label *base_tile_label = memnew(Label);
-	base_tile_label->set_text(TTR("Base tiles"));
+	base_tile_label->set_text(TTR("Base Tiles"));
 	base_tile_label->set_align(Label::ALIGN_CENTER);
 	left_vbox->add_child(base_tile_label);
 
@@ -623,7 +623,7 @@ TileAtlasView::TileAtlasView() {
 
 	// Alternative tiles.
 	Label *alternative_tiles_label = memnew(Label);
-	alternative_tiles_label->set_text(TTR("Alternative tiles"));
+	alternative_tiles_label->set_text(TTR("Alternative Tiles"));
 	alternative_tiles_label->set_align(Label::ALIGN_CENTER);
 	right_vbox->add_child(alternative_tiles_label);
 
