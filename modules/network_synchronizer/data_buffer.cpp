@@ -277,7 +277,7 @@ real_t DataBuffer::add_real(real_t p_input, CompressionLevel p_compression_level
 	ERR_FAIL_COND_V(is_reading == true, p_input);
 
 	const real_t integral = Math::floor(p_input);
-	const real_t fractional = p_input - integral;
+	const real_t fractional = Math::fmod(p_input, 1);
 
 	const real_t added_integral = add_int(integral, p_compression_level);
 	const real_t added_fractional = add_unit_real(fractional, COMPRESSION_LEVEL_1);
@@ -298,7 +298,7 @@ real_t DataBuffer::add_precise_real(real_t p_input, CompressionLevel p_compressi
 	ERR_FAIL_COND_V(is_reading == true, p_input);
 
 	const real_t integral = Math::floor(p_input);
-	const real_t fractional = p_input - integral;
+	const real_t fractional = Math::fmod(p_input, 1);
 
 	const real_t ri = add_int(integral, p_compression_level);
 	const real_t rf = add_unit_real(fractional, COMPRESSION_LEVEL_0);
