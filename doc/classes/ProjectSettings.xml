@@ -1197,12 +1197,6 @@
 			The CA certificates bundle to use for SSL connections. If this is set to a non-empty value, this will [i]override[/i] Godot's default [url=https://github.com/godotengine/godot/blob/master/thirdparty/certs/ca-certificates.crt]Mozilla certificate bundle[/url]. If left empty, the default certificate bundle will be used.
 			If in doubt, leave this setting empty.
 		</member>
-		<member name="physics/2d/bp_hash_table_size" type="int" setter="" getter="" default="4096">
-			Size of the hash table used for the broad-phase 2D hash grid algorithm.
-		</member>
-		<member name="physics/2d/cell_size" type="int" setter="" getter="" default="128">
-			Cell size used for the broad-phase 2D hash grid algorithm (in pixels).
-		</member>
 		<member name="physics/2d/default_angular_damp" type="float" setter="" getter="" default="1.0">
 			The default angular damp in 2D.
 			[b]Note:[/b] Good values are in the range [code]0[/code] to [code]1[/code]. At value [code]0[/code] objects will keep moving with the same velocity. Values greater than [code]1[/code] will aim to reduce the velocity to [code]0[/code] in less than a second e.g. a value of [code]2[/code] will aim to reduce the velocity to [code]0[/code] in half a second. A value equal to or greater than the physics frame rate ([member ProjectSettings.physics/common/physics_fps], [code]60[/code] by default) will bring the object to a stop in one iteration.
@@ -1238,9 +1232,6 @@
 		<member name="physics/2d/default_linear_damp" type="float" setter="" getter="" default="0.1">
 			The default linear damp in 2D.
 			[b]Note:[/b] Good values are in the range [code]0[/code] to [code]1[/code]. At value [code]0[/code] objects will keep moving with the same velocity. Values greater than [code]1[/code] will aim to reduce the velocity to [code]0[/code] in less than a second e.g. a value of [code]2[/code] will aim to reduce the velocity to [code]0[/code] in half a second. A value equal to or greater than the physics frame rate ([member ProjectSettings.physics/common/physics_fps], [code]60[/code] by default) will bring the object to a stop in one iteration.
-		</member>
-		<member name="physics/2d/large_object_surface_threshold_in_cells" type="int" setter="" getter="" default="512">
-			Threshold defining the surface size that constitutes a large object with regard to cells in the broad-phase 2D hash grid algorithm.
 		</member>
 		<member name="physics/2d/physics_engine" type="String" setter="" getter="" default="&quot;DEFAULT&quot;">
 			Sets which physics engine to use for 2D physics.

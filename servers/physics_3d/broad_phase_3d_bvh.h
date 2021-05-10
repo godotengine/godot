@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  broad_phase_3d_basic.h                                               */
+/*  broad_phase_3d_bvh.h                                                 */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,50 +28,17 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef BROAD_PHASE_BASIC_H
-#define BROAD_PHASE_BASIC_H
+#ifndef BROAD_PHASE_3D_BVH_H
+#define BROAD_PHASE_3D_BVH_H
 
 #include "broad_phase_3d_sw.h"
-#include "core/templates/map.h"
+#include "core/math/bvh.h"
 
-class BroadPhase3DBasic : public BroadPhase3DSW {
-	struct Element {
-		CollisionObject3DSW *owner;
-		bool _static;
-		AABB aabb;
-		int subindex;
-	};
+class BroadPhase3DBVH : public BroadPhase3DSW {
+	BVH_Manager<CollisionObject3DSW, true, 128> bvh;
 
-	Map<ID, Element> element_map;
-
-	ID current;
-
-	struct PairKey {
-		union {
-			struct {
-				ID a;
-				ID b;
-			};
-			uint64_t key;
-		};
-
-		_FORCE_INLINE_ bool operator<(const PairKey &p_key) const {
-			return key < p_key.key;
-		}
-
-		PairKey() { key = 0; }
-		PairKey(ID p_a, ID p_b) {
-			if (p_a > p_b) {
-				a = p_b;
-				b = p_a;
-			} else {
-				a = p_a;
-				b = p_b;
-			}
-		}
-	};
-
-	Map<PairKey, void *> pair_map;
+	static void *_pair_callback(void *, uint32_t, CollisionObject3DSW *, int, uint32_t, CollisionObject3DSW *, int);
+	static void _unpair_callback(void *, uint32_t, CollisionObject3DSW *, int, uint32_t, CollisionObject3DSW *, int, void *);
 
 	PairCallback pair_callback;
 	void *pair_userdata;
@@ -80,7 +47,7 @@ class BroadPhase3DBasic : public BroadPhase3DSW {
 
 public:
 	// 0 is an invalid ID
-	virtual ID create(CollisionObject3DSW *p_object, int p_subindex = 0);
+	virtual ID create(CollisionObject3DSW *p_object, int p_subindex = 0, const AABB &p_aabb = AABB(), bool p_static = false);
 	virtual void move(ID p_id, const AABB &p_aabb);
 	virtual void set_static(ID p_id, bool p_static);
 	virtual void remove(ID p_id);
@@ -99,7 +66,7 @@ public:
 	virtual void update();
 
 	static BroadPhase3DSW *_create();
-	BroadPhase3DBasic();
+	BroadPhase3DBVH();
 };
 
-#endif // BROAD_PHASE_BASIC_H
+#endif // BROAD_PHASE_3D_BVH_H

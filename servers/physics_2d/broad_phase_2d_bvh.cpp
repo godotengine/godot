@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  broad_phase_octree.cpp                                               */
+/*  broad_phase_2d_bvh.cpp                                               */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,55 +28,51 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "broad_phase_octree.h"
-#include "collision_object_3d_sw.h"
+#include "broad_phase_2d_bvh.h"
+#include "collision_object_2d_sw.h"
 
-BroadPhase3DSW::ID BroadPhaseOctree::create(CollisionObject3DSW *p_object, int p_subindex) {
-	ID oid = octree.create(p_object, AABB(), p_subindex, false, 1 << p_object->get_type(), 0);
-	return oid;
+BroadPhase2DSW::ID BroadPhase2DBVH::create(CollisionObject2DSW *p_object, int p_subindex, const Rect2 &p_aabb, bool p_static) {
+	ID oid = bvh.create(p_object, true, p_aabb, p_subindex, !p_static, 1 << p_object->get_type(), p_static ? 0 : 0xFFFFF); // Pair everything, don't care?
+	return oid + 1;
 }
 
-void BroadPhaseOctree::move(ID p_id, const AABB &p_aabb) {
-	octree.move(p_id, p_aabb);
+void BroadPhase2DBVH::move(ID p_id, const Rect2 &p_aabb) {
+	bvh.move(p_id - 1, p_aabb);
 }
 
-void BroadPhaseOctree::set_static(ID p_id, bool p_static) {
-	CollisionObject3DSW *it = octree.get(p_id);
-	octree.set_pairable(p_id, !p_static, 1 << it->get_type(), p_static ? 0 : 0xFFFFF); //pair everything, don't care 1?
+void BroadPhase2DBVH::set_static(ID p_id, bool p_static) {
+	CollisionObject2DSW *it = bvh.get(p_id - 1);
+	bvh.set_pairable(p_id - 1, !p_static, 1 << it->get_type(), p_static ? 0 : 0xFFFFF, false); // Pair everything, don't care?
 }
 
-void BroadPhaseOctree::remove(ID p_id) {
-	octree.erase(p_id);
+void BroadPhase2DBVH::remove(ID p_id) {
+	bvh.erase(p_id - 1);
 }
 
-CollisionObject3DSW *BroadPhaseOctree::get_object(ID p_id) const {
-	CollisionObject3DSW *it = octree.get(p_id);
+CollisionObject2DSW *BroadPhase2DBVH::get_object(ID p_id) const {
+	CollisionObject2DSW *it = bvh.get(p_id - 1);
 	ERR_FAIL_COND_V(!it, nullptr);
 	return it;
 }
 
-bool BroadPhaseOctree::is_static(ID p_id) const {
-	return !octree.is_pairable(p_id);
+bool BroadPhase2DBVH::is_static(ID p_id) const {
+	return !bvh.is_pairable(p_id - 1);
 }
 
-int BroadPhaseOctree::get_subindex(ID p_id) const {
-	return octree.get_subindex(p_id);
+int BroadPhase2DBVH::get_subindex(ID p_id) const {
+	return bvh.get_subindex(p_id - 1);
 }
 
-int BroadPhaseOctree::cull_point(const Vector3 &p_point, CollisionObject3DSW **p_results, int p_max_results, int *p_result_indices) {
-	return octree.cull_point(p_point, p_results, p_max_results, p_result_indices);
+int BroadPhase2DBVH::cull_segment(const Vector2 &p_from, const Vector2 &p_to, CollisionObject2DSW **p_results, int p_max_results, int *p_result_indices) {
+	return bvh.cull_segment(p_from, p_to, p_results, p_max_results, p_result_indices);
 }
 
-int BroadPhaseOctree::cull_segment(const Vector3 &p_from, const Vector3 &p_to, CollisionObject3DSW **p_results, int p_max_results, int *p_result_indices) {
-	return octree.cull_segment(p_from, p_to, p_results, p_max_results, p_result_indices);
+int BroadPhase2DBVH::cull_aabb(const Rect2 &p_aabb, CollisionObject2DSW **p_results, int p_max_results, int *p_result_indices) {
+	return bvh.cull_aabb(p_aabb, p_results, p_max_results, p_result_indices);
 }
 
-int BroadPhaseOctree::cull_aabb(const AABB &p_aabb, CollisionObject3DSW **p_results, int p_max_results, int *p_result_indices) {
-	return octree.cull_aabb(p_aabb, p_results, p_max_results, p_result_indices);
-}
-
-void *BroadPhaseOctree::_pair_callback(void *self, OctreeElementID p_A, CollisionObject3DSW *p_object_A, int subindex_A, OctreeElementID p_B, CollisionObject3DSW *p_object_B, int subindex_B) {
-	BroadPhaseOctree *bpo = (BroadPhaseOctree *)(self);
+void *BroadPhase2DBVH::_pair_callback(void *self, uint32_t p_A, CollisionObject2DSW *p_object_A, int subindex_A, uint32_t p_B, CollisionObject2DSW *p_object_B, int subindex_B) {
+	BroadPhase2DBVH *bpo = (BroadPhase2DBVH *)(self);
 	if (!bpo->pair_callback) {
 		return nullptr;
 	}
@@ -84,8 +80,8 @@ void *BroadPhaseOctree::_pair_callback(void *self, OctreeElementID p_A, Collisio
 	return bpo->pair_callback(p_object_A, subindex_A, p_object_B, subindex_B, bpo->pair_userdata);
 }
 
-void BroadPhaseOctree::_unpair_callback(void *self, OctreeElementID p_A, CollisionObject3DSW *p_object_A, int subindex_A, OctreeElementID p_B, CollisionObject3DSW *p_object_B, int subindex_B, void *pairdata) {
-	BroadPhaseOctree *bpo = (BroadPhaseOctree *)(self);
+void BroadPhase2DBVH::_unpair_callback(void *self, uint32_t p_A, CollisionObject2DSW *p_object_A, int subindex_A, uint32_t p_B, CollisionObject2DSW *p_object_B, int subindex_B, void *pairdata) {
+	BroadPhase2DBVH *bpo = (BroadPhase2DBVH *)(self);
 	if (!bpo->unpair_callback) {
 		return;
 	}
@@ -93,27 +89,27 @@ void BroadPhaseOctree::_unpair_callback(void *self, OctreeElementID p_A, Collisi
 	bpo->unpair_callback(p_object_A, subindex_A, p_object_B, subindex_B, pairdata, bpo->unpair_userdata);
 }
 
-void BroadPhaseOctree::set_pair_callback(PairCallback p_pair_callback, void *p_userdata) {
+void BroadPhase2DBVH::set_pair_callback(PairCallback p_pair_callback, void *p_userdata) {
 	pair_callback = p_pair_callback;
 	pair_userdata = p_userdata;
 }
 
-void BroadPhaseOctree::set_unpair_callback(UnpairCallback p_unpair_callback, void *p_userdata) {
+void BroadPhase2DBVH::set_unpair_callback(UnpairCallback p_unpair_callback, void *p_userdata) {
 	unpair_callback = p_unpair_callback;
 	unpair_userdata = p_userdata;
 }
 
-void BroadPhaseOctree::update() {
-	// does.. not?
+void BroadPhase2DBVH::update() {
+	bvh.update();
 }
 
-BroadPhase3DSW *BroadPhaseOctree::_create() {
-	return memnew(BroadPhaseOctree);
+BroadPhase2DSW *BroadPhase2DBVH::_create() {
+	return memnew(BroadPhase2DBVH);
 }
 
-BroadPhaseOctree::BroadPhaseOctree() {
-	octree.set_pair_callback(_pair_callback, this);
-	octree.set_unpair_callback(_unpair_callback, this);
+BroadPhase2DBVH::BroadPhase2DBVH() {
+	bvh.set_pair_callback(_pair_callback, this);
+	bvh.set_unpair_callback(_unpair_callback, this);
 	pair_callback = nullptr;
 	pair_userdata = nullptr;
 	unpair_userdata = nullptr;

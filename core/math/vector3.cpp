@@ -52,14 +52,6 @@ real_t Vector3::get_axis(int p_axis) const {
 	return operator[](p_axis);
 }
 
-int Vector3::min_axis() const {
-	return x < y ? (x < z ? 0 : 2) : (y < z ? 1 : 2);
-}
-
-int Vector3::max_axis() const {
-	return x < y ? (y < z ? 2 : 1) : (x < z ? 2 : 0);
-}
-
 void Vector3::snap(Vector3 p_step) {
 	x = Math::snapped(x, p_step.x);
 	y = Math::snapped(y, p_step.y);
