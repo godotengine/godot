@@ -4403,14 +4403,18 @@ Object *SpatialEditor::_get_editor_data(Object *p_what) {
 	VS::get_singleton()->instance_geometry_set_cast_shadows_setting(
 			si->sbox_instance,
 			VS::SHADOW_CASTING_SETTING_OFF);
-	VS::get_singleton()->instance_set_layer_mask(si->sbox_instance, 1 << SpatialEditorViewport::MISC_TOOL_LAYER);
+	// Use the Edit layer to hide the selection box when View Gizmos is disabled, since it is a bit distracting.
+	// It's still possible to approximately guess what is selected by looking at the manipulation gizmo position.
+	VS::get_singleton()->instance_set_layer_mask(si->sbox_instance, 1 << SpatialEditorViewport::GIZMO_EDIT_LAYER);
 	si->sbox_instance_xray = VisualServer::get_singleton()->instance_create2(
 			selection_box_xray->get_rid(),
 			sp->get_world()->get_scenario());
 	VS::get_singleton()->instance_geometry_set_cast_shadows_setting(
 			si->sbox_instance_xray,
 			VS::SHADOW_CASTING_SETTING_OFF);
-	VS::get_singleton()->instance_set_layer_mask(si->sbox_instance_xray, 1 << SpatialEditorViewport::MISC_TOOL_LAYER);
+	// Use the Edit layer to hide the selection box when View Gizmos is disabled, since it is a bit distracting.
+	// It's still possible to approximately guess what is selected by looking at the manipulation gizmo position.
+	VS::get_singleton()->instance_set_layer_mask(si->sbox_instance_xray, 1 << SpatialEditorViewport::GIZMO_EDIT_LAYER);
 
 	return si;
 }
