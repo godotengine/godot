@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="text_paused_cellular">Gostaria de ativar o download em redes de telefonia? Dependendo do seu plano de dados, isso pode custar dinheiro.</string>
+    <string name="text_paused_cellular_2">Se você escolher não ativar download usando rede de telefonia, o download continuará automaticamente quando o wi-fi estiver disponível.</string>
+    <string name="text_button_resume_cellular">Continuar download</string>
+    <string name="text_button_wifi_settings">Configurações de Wi-Fi</string>
+    <string name="text_verifying_download">Verificando Download</string>
+    <string name="text_validation_complete">Validação de Arquivo XAPK Completo.  Selecione OK para sair.</string>
+    <string name="text_validation_failed">Validação de Arquivo XAPK falha.</string>
+    <string name="text_button_pause">Pausar Download</string>
+    <string name="text_button_resume">Continuar Download</string>
+    <string name="text_button_cancel">Cancelar</string>
+    <string name="text_button_cancel_verify">Cancelar Verificação</string>
+
+    <!-- APK Expansion Strings -->
+
+    <!-- When a download completes, a notification is displayed, and this
+        string is used to indicate that the download successfully completed.
+        Note that such a download could have been initiated by a variety of
+        applications, including (but not limited to) the browser, an email
+        application, a content marketplace. -->
+    <string name="notification_download_complete">Download completo</string>
+
+    <!-- When a download completes, a notification is displayed, and this
+        string is used to indicate that the download failed.
+        Note that such a download could have been initiated by a variety of
+        applications, including (but not limited to) the browser, an email
+        application, a content marketplace. -->
+    <string name="notification_download_failed">Download falho</string>
+
+
+    <string name="state_unknown">Iniciando…</string>
+    <string name="state_idle">Aguardando início do download</string>
+    <string name="state_fetching_url">Buscando por recursos para download</string>
+    <string name="state_connecting">Conectando no servidor de download</string>
+    <string name="state_downloading">Baixando recursos</string>
+    <string name="state_completed">Download finalizado</string>
+    <string name="state_paused_network_unavailable">Download pausado porque nenhuma rede está disponível</string>
+    <string name="state_paused_network_setup_failure">Download pausado. Teste um site no navegador</string>
+    <string name="state_paused_by_request">Download pausado</string>
+    <string name="state_paused_wifi_unavailable">Download pausado porque Wi-Fi está indisponível</string>
+    <string name="state_paused_wifi_disabled">Download pausado porque Wi-Fi está desativado</string>
+    <string name="state_paused_roaming">Download pausado porque você está em roaming</string>
+    <string name="state_paused_sdcard_unavailable">Download pausado porque o armazenamento externo está indisponível</string>
+    <string name="state_failed_unlicensed">Download falho porque você pode não ter comprado esse app</string>
+    <string name="state_failed_fetching_url">Download falho porque os recursos não foram encontrados</string>
+    <string name="state_failed_sdcard_full">Download falho porque o armazenamento externo está completo</string>
+    <string name="state_failed_cancelled">Download cancelado</string>
+    <string name="state_failed">Download falho</string>
+
+    <string name="kilobytes_per_second">%1$s KB/s</string>
+    <string name="time_remaining">Tempo restante: %1$s</string>
+    <string name="time_remaining_notification">Faltam %1$s</string>
+</resources>
