@@ -898,8 +898,9 @@ void AnimationPlayerEditor::_update_player() {
 }
 
 void AnimationPlayerEditor::_update_frame_step(float p_step) {
-	if (p_step <= 0)
+	if (p_step <= 0) {
 		p_step = 0.00001;
+	}
 	frame->set_step(p_step);
 }
 
