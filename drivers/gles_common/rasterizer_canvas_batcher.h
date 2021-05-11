@@ -1881,17 +1881,23 @@ PREAMBLE(bool)::_software_skin_poly(RasterizerCanvas::Item::CommandPolygon *p_po
 			}
 		}
 
-		// software transform with combined matrix?
-		if (p_fill_state.transform_mode != TM_NONE) {
-			for (int n = 0; n < num_verts; n++) {
-				Vector2 &dst_pos = pTemps[n];
-				_software_transform_vertex(dst_pos, p_fill_state.transform_combined);
-			}
-		}
-
 	} // if bone format matches
 	else {
-		// not supported
+		// not rigged properly, just copy the verts directly
+		for (int n = 0; n < num_verts; n++) {
+			const Vector2 &src_pos = p_poly->points[n];
+			Vector2 &dst_pos = pTemps[n];
+
+			dst_pos = src_pos;
+		}
+	}
+
+	// software transform with combined matrix?
+	if (p_fill_state.transform_mode != TM_NONE) {
+		for (int n = 0; n < num_verts; n++) {
+			Vector2 &dst_pos = pTemps[n];
+			_software_transform_vertex(dst_pos, p_fill_state.transform_combined);
+		}
 	}
 
 	// output to the batch verts
