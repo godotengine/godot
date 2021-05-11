@@ -182,11 +182,15 @@ struct Rect2 {
 
 	inline Rect2 grow(real_t p_amount) const {
 		Rect2 g = *this;
-		g.position.x -= p_amount;
-		g.position.y -= p_amount;
-		g.size.width += p_amount * 2;
-		g.size.height += p_amount * 2;
+		g.grow_by(p_amount);
 		return g;
+	}
+
+	inline void grow_by(real_t p_amount) {
+		position.x -= p_amount;
+		position.y -= p_amount;
+		size.width += p_amount * 2;
+		size.height += p_amount * 2;
 	}
 
 	inline Rect2 grow_side(Side p_side, real_t p_amount) const {

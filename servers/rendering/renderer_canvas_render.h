@@ -246,10 +246,16 @@ public:
 			RID mesh;
 			Transform2D transform;
 			Color modulate;
+			RID mesh_instance;
 
 			RID texture;
 
 			CommandMesh() { type = TYPE_MESH; }
+			~CommandMesh() {
+				if (mesh_instance.is_valid()) {
+					RendererStorage::base_singleton->free(mesh_instance);
+				}
+			}
 		};
 
 		struct CommandMultiMesh : public Command {
@@ -262,7 +268,6 @@ public:
 
 		struct CommandParticles : public Command {
 			RID particles;
-
 			RID texture;
 
 			CommandParticles() { type = TYPE_PARTICLES; }

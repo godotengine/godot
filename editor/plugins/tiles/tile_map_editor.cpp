@@ -154,10 +154,10 @@ void TileMapEditorTilesPlugin::_update_tile_set_sources_list() {
 			if (texture.is_valid()) {
 				sources_list->add_item(vformat("%s - (id:%d)", texture->get_path().get_file(), source_id), texture);
 			} else {
-				sources_list->add_item(vformat("No texture atlas source - (id:%d)", source_id), missing_texture_texture);
+				sources_list->add_item(vformat("No Texture Atlas Source - (id:%d)", source_id), missing_texture_texture);
 			}
 		} else {
-			sources_list->add_item(vformat("Unknown type source - (id:%d)", source_id), missing_texture_texture);
+			sources_list->add_item(vformat("Unknown Type Source - (id:%d)", source_id), missing_texture_texture);
 		}
 		sources_list->set_item_metadata(i, source_id);
 	}
@@ -1671,7 +1671,7 @@ TileMapEditorTilesPlugin::TileMapEditorTilesPlugin() {
 	// Random tile checkbox.
 	random_tile_checkbox = memnew(CheckBox);
 	random_tile_checkbox->set_flat(true);
-	random_tile_checkbox->set_text(TTR("Place random tile"));
+	random_tile_checkbox->set_text(TTR("Place Random Tile"));
 	random_tile_checkbox->connect("toggled", callable_mp(this, &TileMapEditorTilesPlugin::_on_random_tile_checkbox_toggled));
 	tools_settings->add_child(random_tile_checkbox);
 
@@ -2798,15 +2798,15 @@ void TileMapEditorTerrainsPlugin::_update_terrains_tree() {
 		String matches;
 		if (tile_set->get_terrain_set_mode(terrain_set_index) == TileSet::TERRAIN_MODE_MATCH_CORNERS_AND_SIDES) {
 			terrain_set_tree_item->set_icon(0, get_theme_icon("TerrainMatchCornersAndSides", "EditorIcons"));
-			matches = String(TTR("Matches corners and sides"));
+			matches = String(TTR("Matches Corners and Sides"));
 		} else if (tile_set->get_terrain_set_mode(terrain_set_index) == TileSet::TERRAIN_MODE_MATCH_CORNERS) {
 			terrain_set_tree_item->set_icon(0, get_theme_icon("TerrainMatchCorners", "EditorIcons"));
-			matches = String(TTR("Matches corners only"));
+			matches = String(TTR("Matches Corners Only"));
 		} else {
 			terrain_set_tree_item->set_icon(0, get_theme_icon("TerrainMatchSides", "EditorIcons"));
-			matches = String(TTR("Matches sides only"));
+			matches = String(TTR("Matches Sides Only"));
 		}
-		terrain_set_tree_item->set_text(0, vformat("Terrain set %d (%s)", terrain_set_index, matches));
+		terrain_set_tree_item->set_text(0, vformat("Terrain Set %d (%s)", terrain_set_index, matches));
 		terrain_set_tree_item->set_selectable(0, false);
 
 		for (int terrain_index = 0; terrain_index < tile_set->get_terrains_count(terrain_set_index); terrain_index++) {
