@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  glue_header.h                                                        */
+/*  placeholder_glue.cpp                                                 */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,57 +28,24 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifdef MONO_GLUE_ENABLED
+#include "core/object/object.h"
 
-#include "../mono_gd/gd_mono_marshal.h"
-
-void godot_register_collections_icalls();
-void godot_register_gd_icalls();
-void godot_register_string_name_icalls();
-void godot_register_nodepath_icalls();
-void godot_register_object_icalls();
-void godot_register_rid_icalls();
-void godot_register_string_icalls();
-void godot_register_scene_tree_icalls();
-
-/**
- * Registers internal calls that were not generated. This function is called
- * from the generated GodotSharpBindings::register_generated_icalls() function.
- */
-void godot_register_glue_header_icalls() {
-	godot_register_collections_icalls();
-	godot_register_gd_icalls();
-	godot_register_string_name_icalls();
-	godot_register_nodepath_icalls();
-	godot_register_object_icalls();
-	godot_register_rid_icalls();
-	godot_register_string_icalls();
-	godot_register_scene_tree_icalls();
-}
-
-// Used by the generated glue
-
-#include "core/config/engine.h"
-#include "core/object/class_db.h"
-#include "core/object/method_bind.h"
-#include "core/object/reference.h"
-#include "core/string/node_path.h"
-#include "core/string/ustring.h"
-#include "core/typedefs.h"
-#include "core/variant/array.h"
-#include "core/variant/dictionary.h"
-
-#include "../mono_gd/gd_mono_class.h"
 #include "../mono_gd/gd_mono_internals.h"
 #include "../mono_gd/gd_mono_utils.h"
 
-#define GODOTSHARP_INSTANCE_OBJECT(m_instance, m_type) \
-	static ClassDB::ClassInfo *ci = nullptr;           \
-	if (!ci) {                                         \
-		ci = ClassDB::classes.getptr(m_type);          \
-	}                                                  \
-	Object *m_instance = ci->creation_func();
+MonoObject *godot_icall_InteropUtils_unmanaged_get_managed(Object *unmanaged) {
+	return GDMonoUtils::unmanaged_get_managed(unmanaged);
+}
 
-#include "arguments_vector.h"
+void godot_icall_InteropUtils_tie_managed_to_unmanaged(MonoObject *managed, Object *unmanaged) {
+	GDMonoInternals::tie_managed_to_unmanaged(managed, unmanaged);
+}
 
-#endif // MONO_GLUE_ENABLED
+void godot_register_placeholder_icalls() {
+	GDMonoUtils::add_internal_call(
+			"Godot.NativeInterop.InteropUtils::internal_unmanaged_get_managed",
+			godot_icall_InteropUtils_unmanaged_get_managed);
+	GDMonoUtils::add_internal_call(
+			"Godot.NativeInterop.InteropUtils::internal_tie_managed_to_unmanaged",
+			godot_icall_InteropUtils_tie_managed_to_unmanaged);
+}

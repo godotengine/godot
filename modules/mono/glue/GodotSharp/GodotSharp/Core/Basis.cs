@@ -727,7 +727,7 @@ namespace Godot
         /// (in the YXZ convention: when *composing*, first Y, then X, and Z last),
         /// given in the vector format as (X angle, Y angle, Z angle).
         ///
-        /// Consider using the <see cref="Basis(Quat)"/> constructor instead, which
+        /// Consider using the <see cref="Basis(Godot.Quat)"/> constructor instead, which
         /// uses a <see cref="Godot.Quat"/> quaternion instead of Euler angles.
         /// </summary>
         /// <param name="eulerYXZ">The Euler angles to create the basis from.</param>

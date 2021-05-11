@@ -1,22 +1,12 @@
 using System;
 using System.Runtime.CompilerServices;
+using Godot.NativeInterop;
 
 namespace Godot
 {
-    public sealed partial class StringName : IDisposable
+    public sealed class StringName : IDisposable
     {
-        private IntPtr ptr;
-
-        internal static IntPtr GetPtr(StringName instance)
-        {
-            if (instance == null)
-                throw new NullReferenceException($"The instance of type {nameof(StringName)} is null.");
-
-            if (instance.ptr == IntPtr.Zero)
-                throw new ObjectDisposedException(instance.GetType().FullName);
-
-            return instance.ptr;
-        }
+        internal godot_string_name NativeValue;
 
         ~StringName()
         {
@@ -29,54 +19,47 @@ namespace Godot
             GC.SuppressFinalize(this);
         }
 
-        private void Dispose(bool disposing)
+        public void Dispose(bool disposing)
         {
-            if (ptr != IntPtr.Zero)
-            {
-                godot_icall_StringName_Dtor(ptr);
-                ptr = IntPtr.Zero;
-            }
+            // Always dispose `NativeValue` even if disposing is true
+            NativeValue.Dispose();
         }
 
-        internal StringName(IntPtr ptr)
+        private StringName(godot_string_name nativeValueToOwn)
         {
-            this.ptr = ptr;
+            NativeValue = nativeValueToOwn;
         }
+
+        // Explicit name to make it very clear
+        internal static StringName CreateTakingOwnershipOfDisposableValue(godot_string_name nativeValueToOwn)
+            => new StringName(nativeValueToOwn);
 
         public StringName()
         {
-            ptr = IntPtr.Zero;
         }
 
-        public StringName(string path)
+        public StringName(string name)
         {
-            ptr = path == null ? IntPtr.Zero : godot_icall_StringName_Ctor(path);
+            if (!string.IsNullOrEmpty(name))
+                NativeValue = NativeFuncs.godotsharp_string_name_new_from_string(name);
         }
 
         public static implicit operator StringName(string from) => new StringName(from);
 
         public static implicit operator string(StringName from) => from.ToString();
 
-        public override string ToString()
+        public override unsafe string ToString()
         {
-            return ptr == IntPtr.Zero ? string.Empty : godot_icall_StringName_operator_String(GetPtr(this));
+            if (IsEmpty)
+                return string.Empty;
+
+            godot_string dest;
+            godot_string_name src = NativeValue;
+            NativeFuncs.godotsharp_string_name_as_string(&dest, &src);
+            using (dest)
+                return Marshaling.mono_string_from_godot(&dest);
         }
 
-        public bool IsEmpty()
-        {
-            return ptr == IntPtr.Zero || godot_icall_StringName_is_empty(GetPtr(this));
-        }
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        private static extern IntPtr godot_icall_StringName_Ctor(string path);
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        private static extern void godot_icall_StringName_Dtor(IntPtr ptr);
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        private static extern string godot_icall_StringName_operator_String(IntPtr ptr);
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        private static extern bool godot_icall_StringName_is_empty(IntPtr ptr);
+        public bool IsEmpty => godot_string_name.IsEmpty(in NativeValue);
     }
 }

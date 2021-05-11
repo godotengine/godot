@@ -4,11 +4,53 @@ using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+using Godot.NativeInterop;
 
 namespace Godot
 {
     internal static class DelegateUtils
     {
+        // TODO: Move somewhere else once we need to for things other than delegates
+        internal static void FreeGCHandle(IntPtr delegateGCHandle)
+            => GCHandle.FromIntPtr(delegateGCHandle).Free();
+
+        internal static bool DelegateEquals(IntPtr delegateGCHandleA, IntPtr delegateGCHandleB)
+        {
+            var @delegateA = (Delegate)GCHandle.FromIntPtr(delegateGCHandleA).Target;
+            var @delegateB = (Delegate)GCHandle.FromIntPtr(delegateGCHandleB).Target;
+            return @delegateA == @delegateB;
+        }
+
+        internal static unsafe void InvokeWithVariantArgs(IntPtr delegateGCHandle, godot_variant** args, uint argc, godot_variant* ret)
+        {
+            // TODO: Optimize
+            var @delegate = (Delegate)GCHandle.FromIntPtr(delegateGCHandle).Target;
+            var managedArgs = new object[argc];
+
+            var parameterInfos = @delegate.Method.GetParameters();
+
+            var paramsLength = parameterInfos.Length;
+
+            if (argc != paramsLength)
+            {
+                throw new InvalidOperationException(
+                    $"The delegate expects {paramsLength} arguments, but received {argc}.");
+            }
+
+            for (uint i = 0; i < argc; i++)
+            {
+                managedArgs[i] = Marshaling.variant_to_mono_object_of_type(
+                    args[i], parameterInfos[i].ParameterType);
+            }
+
+            object invokeRet = @delegate.DynamicInvoke(managedArgs);
+
+            *ret = Marshaling.mono_object_to_variant(invokeRet);
+        }
+
+        // TODO: Check if we should be using BindingFlags.DeclaredOnly (would give better reflection performance).
+
         private enum TargetKind : uint
         {
             Static,
@@ -16,7 +58,10 @@ namespace Godot
             CompilerGenerated
         }
 
-        internal static bool TrySerializeDelegate(Delegate @delegate, Collections.Array serializedData)
+        internal static bool TrySerializeDelegateWithGCHandle(IntPtr delegateGCHandle, Collections.Array serializedData)
+            => TrySerializeDelegate((Delegate)GCHandle.FromIntPtr(delegateGCHandle).Target, serializedData);
+
+        private static bool TrySerializeDelegate(Delegate @delegate, Collections.Array serializedData)
         {
             if (@delegate is MulticastDelegate multicastDelegate)
             {
@@ -61,7 +106,7 @@ namespace Godot
                     using (var stream = new MemoryStream())
                     using (var writer = new BinaryWriter(stream))
                     {
-                        writer.Write((ulong) TargetKind.Static);
+                        writer.Write((ulong)TargetKind.Static);
 
                         SerializeType(writer, @delegate.GetType());
 
@@ -72,13 +117,15 @@ namespace Godot
                         return true;
                     }
                 }
+                // ReSharper disable once RedundantNameQualifier
                 case Godot.Object godotObject:
                 {
                     using (var stream = new MemoryStream())
                     using (var writer = new BinaryWriter(stream))
                     {
-                        writer.Write((ulong) TargetKind.GodotObject);
-                        writer.Write((ulong) godotObject.GetInstanceId());
+                        writer.Write((ulong)TargetKind.GodotObject);
+                        // ReSharper disable once RedundantCast
+                        writer.Write((ulong)godotObject.GetInstanceId());
 
                         SerializeType(writer, @delegate.GetType());
 
@@ -93,14 +140,14 @@ namespace Godot
                 {
                     Type targetType = target.GetType();
 
-                    if (targetType.GetCustomAttribute(typeof(CompilerGeneratedAttribute), true) != null)
+                    if (targetType.IsDefined(typeof(CompilerGeneratedAttribute), true))
                     {
                         // Compiler generated. Probably a closure. Try to serialize it.
 
                         using (var stream = new MemoryStream())
                         using (var writer = new BinaryWriter(stream))
                         {
-                            writer.Write((ulong) TargetKind.CompilerGenerated);
+                            writer.Write((ulong)TargetKind.CompilerGenerated);
                             SerializeType(writer, targetType);
 
                             SerializeType(writer, @delegate.GetType());
@@ -149,14 +196,14 @@ namespace Godot
             int flags = 0;
 
             if (methodInfo.IsPublic)
-                flags |= (int) BindingFlags.Public;
+                flags |= (int)BindingFlags.Public;
             else
-                flags |= (int) BindingFlags.NonPublic;
+                flags |= (int)BindingFlags.NonPublic;
 
             if (methodInfo.IsStatic)
-                flags |= (int) BindingFlags.Static;
+                flags |= (int)BindingFlags.Static;
             else
-                flags |= (int) BindingFlags.Instance;
+                flags |= (int)BindingFlags.Instance;
 
             writer.Write(flags);
 
@@ -213,6 +260,13 @@ namespace Godot
             }
         }
 
+        private static bool TryDeserializeDelegateWithGCHandle(Collections.Array serializedData, out IntPtr delegateGCHandle)
+        {
+            bool res = TryDeserializeDelegate(serializedData, out Delegate @delegate);
+            delegateGCHandle = GCHandle.ToIntPtr(GCHandle.Alloc(@delegate));
+            return res;
+        }
+
         private static bool TryDeserializeDelegate(Collections.Array serializedData, out Delegate @delegate)
         {
             if (serializedData.Count == 1)
@@ -238,7 +292,7 @@ namespace Godot
                 }
                 else
                 {
-                    if (TryDeserializeSingleDelegate((byte[]) elem, out Delegate oneDelegate))
+                    if (TryDeserializeSingleDelegate((byte[])elem, out Delegate oneDelegate))
                         delegates.Add(oneDelegate);
                 }
             }
@@ -257,7 +311,7 @@ namespace Godot
             using (var stream = new MemoryStream(buffer, writable: false))
             using (var reader = new BinaryReader(stream))
             {
-                var targetKind = (TargetKind) reader.ReadUInt64();
+                var targetKind = (TargetKind)reader.ReadUInt64();
 
                 switch (targetKind)
                 {
@@ -276,6 +330,7 @@ namespace Godot
                     case TargetKind.GodotObject:
                     {
                         ulong objectId = reader.ReadUInt64();
+                        // ReSharper disable once RedundantNameQualifier
                         Godot.Object godotObject = GD.InstanceFromId(objectId);
                         if (godotObject == null)
                             return false;
@@ -353,11 +408,11 @@ namespace Godot
                     parameterTypes[i] = parameterType;
                 }
 
-                methodInfo = declaringType.GetMethod(methodName, (BindingFlags) flags, null, parameterTypes, null);
+                methodInfo = declaringType.GetMethod(methodName, (BindingFlags)flags, null, parameterTypes, null);
                 return methodInfo != null && methodInfo.ReturnType == returnType;
             }
 
-            methodInfo = declaringType.GetMethod(methodName, (BindingFlags) flags);
+            methodInfo = declaringType.GetMethod(methodName, (BindingFlags)flags);
             return methodInfo != null && methodInfo.ReturnType == returnType;
         }
 

@@ -28,8 +28,6 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifdef MONO_GLUE_ENABLED
-
 #include "core/object/class_db.h"
 #include "core/string/string_name.h"
 #include "core/variant/array.h"
@@ -40,9 +38,10 @@
 #include "../mono_gd/gd_mono_marshal.h"
 #include "../mono_gd/gd_mono_utils.h"
 
-Array *godot_icall_SceneTree_get_nodes_in_group_Generic(SceneTree *ptr, StringName *group, MonoReflectionType *refltype) {
+void godot_icall_SceneTree_get_nodes_in_group_Generic(SceneTree *ptr, StringName *group, MonoReflectionType *refltype, Array *r_dest) {
+	memnew_placement(r_dest, Array);
+
 	List<Node *> nodes;
-	Array ret;
 
 	// Retrieve all the nodes in the group
 	ptr->get_nodes_in_group(*group, &nodes);
@@ -58,7 +57,7 @@ Array *godot_icall_SceneTree_get_nodes_in_group_Generic(SceneTree *ptr, StringNa
 			StringName native_class_name = GDMonoUtils::get_native_godot_class_name(klass);
 			for (int i = 0; i < nodes.size(); ++i) {
 				if (ClassDB::is_parent_class(nodes[i]->get_class(), native_class_name)) {
-					ret.push_back(nodes[i]);
+					r_dest->push_back(nodes[i]);
 				}
 			}
 		} else {
@@ -69,18 +68,14 @@ Array *godot_icall_SceneTree_get_nodes_in_group_Generic(SceneTree *ptr, StringNa
 				if (si != nullptr) {
 					MonoObject *obj = si->get_mono_object();
 					if (obj != nullptr && mono_object_get_class(obj) == mono_class) {
-						ret.push_back(nodes[i]);
+						r_dest->push_back(nodes[i]);
 					}
 				}
 			}
 		}
 	}
-
-	return memnew(Array(ret));
 }
 
 void godot_register_scene_tree_icalls() {
 	GDMonoUtils::add_internal_call("Godot.SceneTree::godot_icall_SceneTree_get_nodes_in_group_Generic", godot_icall_SceneTree_get_nodes_in_group_Generic);
 }
-
-#endif // MONO_GLUE_ENABLED
