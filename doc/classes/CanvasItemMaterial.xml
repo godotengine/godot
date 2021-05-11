@@ -47,7 +47,13 @@
 		<constant name="BLEND_MODE_MUL" value="3" enum="BlendMode">
 			Multiplicative blending mode.
 		</constant>
-		<constant name="BLEND_MODE_PREMULT_ALPHA" value="4" enum="BlendMode">
+		<constant name="BLEND_MODE_MINIMUM" value="4" enum="BlendMode">
+			Minimum blending mode.
+		</constant>
+		<constant name="BLEND_MODE_MAXIMUM" value="5" enum="BlendMode">
+			Maximum blending mode.
+		</constant>
+		<constant name="BLEND_MODE_PREMULT_ALPHA" value="6" enum="BlendMode">
 			Mix blending mode. Colors are assumed to be premultiplied by the alpha (opacity) value.
 		</constant>
 		<constant name="LIGHT_MODE_NORMAL" value="0" enum="LightMode">
