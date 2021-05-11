@@ -40,7 +40,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Returns the color of the input connection [code]idx[/code].
+				Returns the [Color] of the input connection [code]idx[/code].
 			</description>
 		</method>
 		<method name="get_connection_input_count">
@@ -74,7 +74,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Returns the color of the output connection [code]idx[/code].
+				Returns the [Color] of the output connection [code]idx[/code].
 			</description>
 		</method>
 		<method name="get_connection_output_count">
@@ -117,7 +117,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Returns the color set to [code]idx[/code] left (input) slot.
+				Returns the left (input) [Color] of the slot [code]idx[/code].
 			</description>
 		</method>
 		<method name="get_slot_color_right" qualifiers="const">
@@ -126,7 +126,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Returns the color set to [code]idx[/code] right (output) slot.
+				Returns the right (output) [Color] of the slot [code]idx[/code].
 			</description>
 		</method>
 		<method name="get_slot_type_left" qualifiers="const">
@@ -135,7 +135,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Returns the (integer) type of left (input) [code]idx[/code] slot.
+				Returns the left (input) type of the slot [code]idx[/code].
 			</description>
 		</method>
 		<method name="get_slot_type_right" qualifiers="const">
@@ -144,7 +144,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Returns the (integer) type of right (output) [code]idx[/code] slot.
+				Returns the right (output) type of the slot [code]idx[/code].
 			</description>
 		</method>
 		<method name="is_slot_enabled_left" qualifiers="const">
@@ -153,7 +153,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Returns [code]true[/code] if left (input) slot [code]idx[/code] is enabled, [code]false[/code] otherwise.
+				Returns [code]true[/code] if left (input) side of the slot [code]idx[/code] is enabled.
 			</description>
 		</method>
 		<method name="is_slot_enabled_right" qualifiers="const">
@@ -162,7 +162,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Returns [code]true[/code] if right (output) slot [code]idx[/code] is enabled, [code]false[/code] otherwise.
+				Returns [code]true[/code] if right (output) side of the slot [code]idx[/code] is enabled.
 			</description>
 		</method>
 		<method name="set_opentype_feature">
@@ -204,6 +204,73 @@
 				[code]color_left[/code]/[code]right[/code] is the tint of the port's icon on this side.
 				[code]custom_left[/code]/[code]right[/code] is a custom texture for this side's port.
 				[b]Note:[/b] This method only sets properties of the slot. To create the slot, add a [Control]-derived child to the GraphNode.
+				Individual properties can be set using one of the [code]set_slot_*[/code] methods. You must enable at least one side of the slot to do so.
+			</description>
+		</method>
+		<method name="set_slot_color_left">
+			<return type="void">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<argument index="1" name="color_left" type="Color">
+			</argument>
+			<description>
+				Sets the [Color] of the left (input) side of the slot [code]idx[/code] to [code]color_left[/code].
+			</description>
+		</method>
+		<method name="set_slot_color_right">
+			<return type="void">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<argument index="1" name="color_right" type="Color">
+			</argument>
+			<description>
+				Sets the [Color] of the right (output) side of the slot [code]idx[/code] to [code]color_right[/code].
+			</description>
+		</method>
+		<method name="set_slot_enabled_left">
+			<return type="void">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<argument index="1" name="enable_left" type="bool">
+			</argument>
+			<description>
+				Toggles the left (input) side of the slot [code]idx[/code]. If [code]enable_left[/code] is [code]true[/code], a port will appear on the left side and the slot will be able to be connected from this side.
+			</description>
+		</method>
+		<method name="set_slot_enabled_right">
+			<return type="void">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<argument index="1" name="enable_right" type="bool">
+			</argument>
+			<description>
+				Toggles the right (output) side of the slot [code]idx[/code]. If [code]enable_right[/code] is [code]true[/code], a port will appear on the right side and the slot will be able to be connected from this side.
+			</description>
+		</method>
+		<method name="set_slot_type_left">
+			<return type="void">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<argument index="1" name="type_left" type="int">
+			</argument>
+			<description>
+				Sets the left (input) type of the slot [code]idx[/code] to [code]type_left[/code].
+			</description>
+		</method>
+		<method name="set_slot_type_right">
+			<return type="void">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<argument index="1" name="type_right" type="int">
+			</argument>
+			<description>
+				Sets the right (output) type of the slot [code]idx[/code] to [code]type_right[/code].
 			</description>
 		</method>
 	</methods>
