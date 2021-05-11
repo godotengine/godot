@@ -478,6 +478,7 @@ public:
 
 	FUNCRIDSPLIT(particles)
 
+	FUNC2(particles_set_mode, RID, ParticlesMode)
 	FUNC2(particles_set_emitting, RID, bool)
 	FUNC1R(bool, particles_get_emitting, RID)
 	FUNC2(particles_set_amount, RID, int)

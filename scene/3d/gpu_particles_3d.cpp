@@ -613,6 +613,7 @@ void GPUParticles3D::_bind_methods() {
 
 GPUParticles3D::GPUParticles3D() {
 	particles = RS::get_singleton()->particles_create();
+	RS::get_singleton()->particles_set_mode(particles, RS::PARTICLES_MODE_3D);
 	set_base(particles);
 	one_shot = false; // Needed so that set_emitting doesn't access uninitialized values
 	set_emitting(true);
