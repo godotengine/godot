@@ -459,7 +459,7 @@ void GraphNode::_shape() {
 }
 
 void GraphNode::set_slot(int p_idx, bool p_enable_left, int p_type_left, const Color &p_color_left, bool p_enable_right, int p_type_right, const Color &p_color_right, const Ref<Texture2D> &p_custom_left, const Ref<Texture2D> &p_custom_right) {
-	ERR_FAIL_COND(p_idx < 0);
+	ERR_FAIL_COND_MSG(p_idx < 0, vformat("Cannot set slot with p_idx (%d) lesser than zero.", p_idx));
 
 	if (!p_enable_left && p_type_left == 0 && p_color_left == Color(1, 1, 1, 1) &&
 			!p_enable_right && p_type_right == 0 && p_color_right == Color(1, 1, 1, 1) &&
@@ -503,11 +503,41 @@ bool GraphNode::is_slot_enabled_left(int p_idx) const {
 	return slot_info[p_idx].enable_left;
 }
 
+void GraphNode::set_slot_enabled_left(int p_idx, bool p_enable_left) {
+	ERR_FAIL_COND_MSG(p_idx < 0, vformat("Cannot set enable_left for the slot with p_idx (%d) lesser than zero.", p_idx));
+
+	slot_info[p_idx].enable_left = p_enable_left;
+	update();
+	connpos_dirty = true;
+
+	emit_signal("slot_updated", p_idx);
+}
+
+void GraphNode::set_slot_type_left(int p_idx, int p_type_left) {
+	ERR_FAIL_COND_MSG(!slot_info.has(p_idx), vformat("Cannot set type_left for the slot '%d' because it hasn't been enabled.", p_idx));
+
+	slot_info[p_idx].type_left = p_type_left;
+	update();
+	connpos_dirty = true;
+
+	emit_signal("slot_updated", p_idx);
+}
+
 int GraphNode::get_slot_type_left(int p_idx) const {
 	if (!slot_info.has(p_idx)) {
 		return 0;
 	}
 	return slot_info[p_idx].type_left;
+}
+
+void GraphNode::set_slot_color_left(int p_idx, const Color &p_color_left) {
+	ERR_FAIL_COND_MSG(!slot_info.has(p_idx), vformat("Cannot set color_left for the slot '%d' because it hasn't been enabled.", p_idx));
+
+	slot_info[p_idx].color_left = p_color_left;
+	update();
+	connpos_dirty = true;
+
+	emit_signal("slot_updated", p_idx);
 }
 
 Color GraphNode::get_slot_color_left(int p_idx) const {
@@ -524,11 +554,41 @@ bool GraphNode::is_slot_enabled_right(int p_idx) const {
 	return slot_info[p_idx].enable_right;
 }
 
+void GraphNode::set_slot_enabled_right(int p_idx, bool p_enable_right) {
+	ERR_FAIL_COND_MSG(p_idx < 0, vformat("Cannot set enable_right for the slot with p_idx (%d) lesser than zero.", p_idx));
+
+	slot_info[p_idx].enable_right = p_enable_right;
+	update();
+	connpos_dirty = true;
+
+	emit_signal("slot_updated", p_idx);
+}
+
+void GraphNode::set_slot_type_right(int p_idx, int p_type_right) {
+	ERR_FAIL_COND_MSG(!slot_info.has(p_idx), vformat("Cannot set type_right for the slot '%d' because it hasn't been enabled.", p_idx));
+
+	slot_info[p_idx].type_right = p_type_right;
+	update();
+	connpos_dirty = true;
+
+	emit_signal("slot_updated", p_idx);
+}
+
 int GraphNode::get_slot_type_right(int p_idx) const {
 	if (!slot_info.has(p_idx)) {
 		return 0;
 	}
 	return slot_info[p_idx].type_right;
+}
+
+void GraphNode::set_slot_color_right(int p_idx, const Color &p_color_right) {
+	ERR_FAIL_COND_MSG(!slot_info.has(p_idx), vformat("Cannot set color_right for the slot '%d' because it hasn't been enabled.", p_idx));
+
+	slot_info[p_idx].color_right = p_color_right;
+	update();
+	connpos_dirty = true;
+
+	emit_signal("slot_updated", p_idx);
 }
 
 Color GraphNode::get_slot_color_right(int p_idx) const {
@@ -891,11 +951,23 @@ void GraphNode::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_slot", "idx", "enable_left", "type_left", "color_left", "enable_right", "type_right", "color_right", "custom_left", "custom_right"), &GraphNode::set_slot, DEFVAL(Ref<Texture2D>()), DEFVAL(Ref<Texture2D>()));
 	ClassDB::bind_method(D_METHOD("clear_slot", "idx"), &GraphNode::clear_slot);
 	ClassDB::bind_method(D_METHOD("clear_all_slots"), &GraphNode::clear_all_slots);
+
 	ClassDB::bind_method(D_METHOD("is_slot_enabled_left", "idx"), &GraphNode::is_slot_enabled_left);
+	ClassDB::bind_method(D_METHOD("set_slot_enabled_left", "idx", "enable_left"), &GraphNode::set_slot_enabled_left);
+
+	ClassDB::bind_method(D_METHOD("set_slot_type_left", "idx", "type_left"), &GraphNode::set_slot_type_left);
 	ClassDB::bind_method(D_METHOD("get_slot_type_left", "idx"), &GraphNode::get_slot_type_left);
+
+	ClassDB::bind_method(D_METHOD("set_slot_color_left", "idx", "color_left"), &GraphNode::set_slot_color_left);
 	ClassDB::bind_method(D_METHOD("get_slot_color_left", "idx"), &GraphNode::get_slot_color_left);
+
 	ClassDB::bind_method(D_METHOD("is_slot_enabled_right", "idx"), &GraphNode::is_slot_enabled_right);
+	ClassDB::bind_method(D_METHOD("set_slot_enabled_right", "idx", "enable_right"), &GraphNode::set_slot_enabled_right);
+
+	ClassDB::bind_method(D_METHOD("set_slot_type_right", "idx", "type_right"), &GraphNode::set_slot_type_right);
 	ClassDB::bind_method(D_METHOD("get_slot_type_right", "idx"), &GraphNode::get_slot_type_right);
+
+	ClassDB::bind_method(D_METHOD("set_slot_color_right", "idx", "color_right"), &GraphNode::set_slot_color_right);
 	ClassDB::bind_method(D_METHOD("get_slot_color_right", "idx"), &GraphNode::get_slot_color_right);
 
 	ClassDB::bind_method(D_METHOD("set_position_offset", "offset"), &GraphNode::set_position_offset);
