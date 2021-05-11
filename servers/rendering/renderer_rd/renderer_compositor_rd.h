@@ -38,6 +38,7 @@
 #include "servers/rendering/renderer_rd/forward_mobile/render_forward_mobile.h"
 #include "servers/rendering/renderer_rd/renderer_canvas_render_rd.h"
 #include "servers/rendering/renderer_rd/renderer_storage_rd.h"
+#include "servers/rendering/renderer_rd/shaders/blit.glsl.gen.h"
 
 class RendererCompositorRD : public RendererCompositor {
 protected:
@@ -45,11 +46,35 @@ protected:
 	RendererStorageRD *storage;
 	RendererSceneRenderRD *scene;
 
-	RID copy_viewports_rd_shader;
-	RID copy_viewports_rd_pipeline;
-	RID copy_viewports_rd_index_buffer;
-	RID copy_viewports_rd_array;
-	RID copy_viewports_sampler;
+	enum BlitMode {
+		BLIT_MODE_NORMAL,
+		BLIT_MODE_USE_LAYER,
+		BLIT_MODE_LENS,
+		BLIT_MODE_MAX
+	};
+
+	struct BlitPushConstant {
+		float rect[4];
+
+		float eye_center[2];
+		float k1;
+		float k2;
+
+		float upscale;
+		float aspect_ratio;
+		uint32_t layer;
+		uint32_t pad1;
+	};
+
+	struct Blit {
+		BlitPushConstant push_constant;
+		BlitShaderRD shader;
+		RID shader_version;
+		RID pipelines[BLIT_MODE_MAX];
+		RID index_buffer;
+		RID array;
+		RID sampler;
+	} blit;
 
 	Map<RID, RID> render_target_descriptors;
 

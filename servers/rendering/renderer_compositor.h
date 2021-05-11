@@ -59,7 +59,22 @@ public:
 	struct BlitToScreen {
 		RID render_target;
 		Rect2i rect;
-		//lens distorted parameters for VR should go here
+
+		struct {
+			bool use_layer = false;
+			uint32_t layer = 0;
+		} multi_view;
+
+		struct {
+			//lens distorted parameters for VR
+			bool apply = false;
+			Vector2 eye_center;
+			float k1 = 0.0;
+			float k2 = 0.0;
+
+			float upscale = 1.0;
+			float aspect_ratio = 1.0;
+		} lens_distortion;
 	};
 
 	virtual void prepare_for_blitting_render_targets() = 0;
