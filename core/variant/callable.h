@@ -44,9 +44,9 @@ class CallableCustom;
 // is required. It is designed for the standard case (object and method)
 // but can be optimized or customized.
 
+// Enforce 16 bytes with `alignas` to avoid arch-specific alignment issues on x86 vs armv7.
 class Callable {
-	//needs to be max 16 bytes in 64 bits
-	StringName method;
+	alignas(8) StringName method;
 	union {
 		uint64_t object = 0;
 		CallableCustom *custom;
@@ -138,8 +138,9 @@ public:
 // be put inside a Variant, but it is not
 // used by the engine itself.
 
+// Enforce 16 bytes with `alignas` to avoid arch-specific alignment issues on x86 vs armv7.
 class Signal {
-	StringName name;
+	alignas(8) StringName name;
 	ObjectID object;
 
 public:
