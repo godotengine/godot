@@ -513,7 +513,7 @@ void GraphNode::set_slot_enabled_left(int p_idx, bool p_enable_left) {
 	emit_signal("slot_updated", p_idx);	
 }
 
-void GraphNode::set_slot_type_left(int p_idx, bool p_type_left) {
+void GraphNode::set_slot_type_left(int p_idx, int p_type_left) {
 	ERR_FAIL_COND(p_idx < 0);
 	
 	slot_info[p_idx].type_left = p_type_left;
@@ -564,7 +564,7 @@ bool GraphNode::is_slot_enabled_right(int p_idx) const {
 	return slot_info[p_idx].enable_right;
 }
 
-void GraphNode::set_slot_type_right(int p_idx, bool p_type_right) {
+void GraphNode::set_slot_type_right(int p_idx, int p_type_right) {
 	ERR_FAIL_COND(p_idx < 0);
 	
 	slot_info[p_idx].type_right = p_type_right;

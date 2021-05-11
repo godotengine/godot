@@ -111,6 +111,16 @@
 				Returns OpenType feature [code]tag[/code].
 			</description>
 		</method>
+		<method name="set_slot_color_left">
+			<return type="void">
+			</return>
+			<argument index="0" name="idx" type="int">
+			<argument index="1" name="color_left" type="Color">
+			</argument>
+			<description>
+				Sets the color of [code]idx[/code] left (output) slot.
+			</description>
+		</method>		
 		<method name="get_slot_color_left" qualifiers="const">
 			<return type="Color">
 			</return>
@@ -118,6 +128,16 @@
 			</argument>
 			<description>
 				Returns the color set to [code]idx[/code] left (input) slot.
+			</description>
+		</method>
+		<method name="set_slot_color_right">
+			<return type="void">
+			</return>
+			<argument index="0" name="idx" type="int">
+			<argument index="1" name="color_right" type="Color">
+			</argument>
+			<description>
+				Sets the color of [code]idx[/code] right (output) slot.
 			</description>
 		</method>
 		<method name="get_slot_color_right" qualifiers="const">
@@ -129,6 +149,16 @@
 				Returns the color set to [code]idx[/code] right (output) slot.
 			</description>
 		</method>
+		<method name="set_slot_type_left">
+			<return type="void">
+			</return>
+			<argument index="0" name="idx" type="int">
+			<argument index="1" name="type_left" type="int">
+			</argument>
+			<description>
+				Sets the (integer) type of left (input) [code]idx[/code] slot.
+			</description>
+		</method>
 		<method name="get_slot_type_left" qualifiers="const">
 			<return type="int">
 			</return>
@@ -136,6 +166,16 @@
 			</argument>
 			<description>
 				Returns the (integer) type of left (input) [code]idx[/code] slot.
+			</description>
+		</method>
+		<method name="set_slot_type_right">
+			<return type="void">
+			</return>
+			<argument index="0" name="idx" type="int">
+			<argument index="1" name="type_right" type="int">
+			</argument>
+			<description>
+				Sets the (integer) type of right (output) [code]idx[/code] slot.
 			</description>
 		</method>
 		<method name="get_slot_type_right" qualifiers="const">
@@ -156,6 +196,28 @@
 				Returns [code]true[/code] if left (input) slot [code]idx[/code] is enabled, [code]false[/code] otherwise.
 			</description>
 		</method>
+		<method name="set_slot_enabled_left">
+			<return type="void">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<argument index="1" name="enable_left" type="bool">
+			</argument>
+			<description>
+				If [code]enable_left[/code], a port will appear in the left (input) slot [code]idx[/code] and the slot will be able to be connected.
+				</description>
+		</method>				
+		<method name="set_slot_enabled_right">
+			<return type="void">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<argument index="1" name="enable_right" type="bool">
+			</argument>
+			<description>
+				If [code]enable_right[/code], a port will appear in the right (output) slot [code]idx[/code] and the slot will be able to be connected.
+				</description>
+		</method>		
 		<method name="is_slot_enabled_right" qualifiers="const">
 			<return type="bool">
 			</return>
@@ -165,17 +227,17 @@
 				Returns [code]true[/code] if right (output) slot [code]idx[/code] is enabled, [code]false[/code] otherwise.
 			</description>
 		</method>
-		<method name="set_opentype_feature">
-			<return type="void">
-			</return>
-			<argument index="0" name="tag" type="String">
-			</argument>
-			<argument index="1" name="value" type="int">
-			</argument>
-			<description>
-				Sets OpenType feature [code]tag[/code]. More info: [url=https://docs.microsoft.com/en-us/typography/opentype/spec/featuretags]OpenType feature tags[/url].
-			</description>
-		</method>
+			<method name="set_opentype_feature">
+				<return type="void">
+				</return>
+				<argument index="0" name="tag" type="String">
+				</argument>
+				<argument index="1" name="value" type="int">
+				</argument>
+				<description>
+					Sets OpenType feature [code]tag[/code]. More info: [url=https://docs.microsoft.com/en-us/typography/opentype/spec/featuretags]OpenType feature tags[/url].
+				</description>
+			</method>
 		<method name="set_slot">
 			<return type="void">
 			</return>
