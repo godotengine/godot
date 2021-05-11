@@ -117,7 +117,7 @@ class EffectsRD {
 		CopyPushConstant push_constant;
 		CopyShaderRD shader;
 		RID shader_version;
-		RID pipelines[COPY_MODE_MAX];
+		RID pipelines[COPY_MODE_MAX] = {};
 
 	} copy;
 
@@ -218,26 +218,26 @@ class EffectsRD {
 	};
 
 	struct LuminanceReducePushConstant {
-		int32_t source_size[2];
-		float max_luminance;
-		float min_luminance;
-		float exposure_adjust;
-		float pad[3];
+		int32_t source_size[2] = {};
+		float max_luminance = 0.0;
+		float min_luminance = 0.0;
+		float exposure_adjust = 0.0;
+		float pad[3] = {};
 	};
 
 	struct LuminanceReduce {
 		LuminanceReducePushConstant push_constant;
 		LuminanceReduceShaderRD shader;
 		RID shader_version;
-		RID pipelines[LUMINANCE_REDUCE_MAX];
+		RID pipelines[LUMINANCE_REDUCE_MAX] = {};
 	} luminance_reduce;
 
 	struct CopyToDPPushConstant {
-		float z_far;
-		float z_near;
-		uint32_t z_flip;
-		uint32_t pad;
-		float screen_rect[4];
+		float z_far = 0.0;
+		float z_near = 0.0;
+		uint32_t z_flip = 0;
+		uint32_t pad = 0;
+		float screen_rect[4] = {;
 	};
 
 	struct CoptToDP {
@@ -247,28 +247,28 @@ class EffectsRD {
 	} cube_to_dp;
 
 	struct BokehPushConstant {
-		uint32_t size[2];
-		float z_far;
-		float z_near;
+		uint32_t size[2] = {};
+		float z_far = 0.0;
+		float z_near = 0.0;
 
-		uint32_t orthogonal;
-		float blur_size;
-		float blur_scale;
-		uint32_t steps;
+		uint32_t orthogonal = 0;
+		float blur_size = 0.0;
+		float blur_scale = 0.0;
+		uint32_t steps = 0;
 
-		uint32_t blur_near_active;
-		float blur_near_begin;
-		float blur_near_end;
-		uint32_t blur_far_active;
+		uint32_t blur_near_active = 0;
+		float blur_near_begin = 0.0;
+		float blur_near_end = 0.0;
+		uint32_t blur_far_active = 0;
 
-		float blur_far_begin;
-		float blur_far_end;
-		uint32_t second_pass;
-		uint32_t half_size;
+		float blur_far_begin = 0.0;
+		float blur_far_end = 0.0;
+		uint32_t second_pass = 0;
+		uint32_t half_size = 0;
 
-		uint32_t use_jitter;
-		float jitter_seed;
-		uint32_t pad[2];
+		uint32_t use_jitter = 0;
+		float jitter_seed = 0.0;
+		uint32_t pad[2] = {};
 	};
 
 	enum BokehMode {
@@ -284,7 +284,7 @@ class EffectsRD {
 		BokehPushConstant push_constant;
 		BokehDofShaderRD shader;
 		RID shader_version;
-		RID pipelines[BOKEH_MAX];
+		RID pipelines[BOKEH_MAX] = {};
 	} bokeh;
 
 	enum SSAOMode {
@@ -310,68 +310,68 @@ class EffectsRD {
 	};
 
 	struct SSAODownsamplePushConstant {
-		float pixel_size[2];
-		float z_far;
-		float z_near;
-		uint32_t orthogonal;
-		float radius_sq;
-		uint32_t pad[2];
+		float pixel_size[2] = {};
+		float z_far = 0.0;
+		float z_near = 0.0;
+		uint32_t orthogonal = 0;
+		float radius_sq = 0.0;
+		uint32_t pad[2] = {};
 	};
 
 	struct SSAOGatherPushConstant {
-		int32_t screen_size[2];
-		int pass;
-		int quality;
+		int32_t screen_size[2] = {};
+		int pass = 0;
+		int quality = 0;
 
-		float half_screen_pixel_size[2];
-		int size_multiplier;
-		float detail_intensity;
+		float half_screen_pixel_size[2] = {};
+		int size_multiplier = 0;
+		float detail_intensity = 0.0;
 
-		float NDC_to_view_mul[2];
-		float NDC_to_view_add[2];
+		float NDC_to_view_mul[2] = {};
+		float NDC_to_view_add[2] = {};
 
-		float pad[2];
-		float half_screen_pixel_size_x025[2];
+		float pad[2] = {};
+		float half_screen_pixel_size_x025[2] = {};
 
-		float radius;
-		float intensity;
-		float shadow_power;
-		float shadow_clamp;
+		float radius = 0.0;
+		float intensity = 0.0;
+		float shadow_power = 0.0;
+		float shadow_clamp = 0.0;
 
-		float fade_out_mul;
-		float fade_out_add;
-		float horizon_angle_threshold;
-		float inv_radius_near_limit;
+		float fade_out_mul = 0.0;
+		float fade_out_add = 0.0;
+		float horizon_angle_threshold = 0.0;
+		float inv_radius_near_limit = 0.0;
 
-		bool is_orthogonal;
-		float neg_inv_radius;
-		float load_counter_avg_div;
-		float adaptive_sample_limit;
+		bool is_orthogonal = false;
+		float neg_inv_radius = 0.0;
+		float load_counter_avg_div = 0.0;
+		float adaptive_sample_limit = 0.0;
 
-		int32_t pass_coord_offset[2];
-		float pass_uv_offset[2];
+		int32_t pass_coord_offset[2] = {};
+		float pass_uv_offset[2] = {};
 	};
 
 	struct SSAOGatherConstants {
-		float rotation_matrices[80]; //5 vec4s * 4
+		float rotation_matrices[80] = {}; //5 vec4s * 4
 	};
 
 	struct SSAOImportanceMapPushConstant {
-		float half_screen_pixel_size[2];
-		float intensity;
-		float power;
+		float half_screen_pixel_size[2] = {};
+		float intensity = 0.0;
+		float power = 0.0;
 	};
 
 	struct SSAOBlurPushConstant {
-		float edge_sharpness;
-		float pad;
-		float half_screen_pixel_size[2];
+		float edge_sharpness = 0.0;
+		float pad = 0.0;
+		float half_screen_pixel_size[2] = {};
 	};
 
 	struct SSAOInterleavePushConstant {
-		float inv_sharpness;
-		uint32_t size_modifier;
-		float pixel_size[2];
+		float inv_sharpness = 0.0;
+		uint32_t size_modifier = 0;
+		float pixel_size[2] = {};
 	};
 
 	struct SSAO {
@@ -403,13 +403,13 @@ class EffectsRD {
 		RID interleave_shader_version;
 
 		RID mirror_sampler;
-		RID pipelines[SSAO_MAX];
+		RID pipelines[SSAO_MAX] = {};
 	} ssao;
 
 	struct RoughnessLimiterPushConstant {
-		int32_t screen_size[2];
-		float curve;
-		uint32_t pad;
+		int32_t screen_size[2] = {};
+		float curve = 0.0;
+		uint32_t pad = 0;
 	};
 
 	struct RoughnessLimiter {
@@ -421,8 +421,8 @@ class EffectsRD {
 	} roughness_limiter;
 
 	struct CubemapDownsamplerPushConstant {
-		uint32_t face_size;
-		float pad[3];
+		uint32_t face_size = 0;
+		float pad[3] = {};
 	};
 
 	struct CubemapDownsampler {
@@ -448,7 +448,7 @@ class EffectsRD {
 		RID uniform_set;
 		RID image_uniform_set;
 		RID coefficient_buffer;
-		bool use_high_quality;
+		bool use_high_quality = false;
 
 	} filter;
 
@@ -487,44 +487,44 @@ class EffectsRD {
 	};
 
 	struct ScreenSpaceReflectionPushConstant {
-		float proj_info[4];
+		float proj_info[4] = {};
 
-		int32_t screen_size[2];
-		float camera_z_near;
-		float camera_z_far;
+		int32_t screen_size[2] = {};
+		float camera_z_near = 0.0;
+		float camera_z_far = 0.0;
 
-		int32_t num_steps;
-		float depth_tolerance;
-		float distance_fade;
-		float curve_fade_in;
+		int32_t num_steps = 0;
+		float depth_tolerance = 0.0;
+		float distance_fade = 0.0;
+		float curve_fade_in = 0.0;
 
-		uint32_t orthogonal;
-		float filter_mipmap_levels;
-		uint32_t use_half_res;
-		uint8_t metallic_mask[4];
+		uint32_t orthogonal = 0;
+		float filter_mipmap_levels = 0.0;
+		uint32_t use_half_res = 0;
+		uint8_t metallic_mask[4] = {};
 
-		float projection[16];
+		float projection[16] = {};
 	};
 
 	struct ScreenSpaceReflection {
 		ScreenSpaceReflectionPushConstant push_constant;
 		ScreenSpaceReflectionShaderRD shader;
 		RID shader_version;
-		RID pipelines[SCREEN_SPACE_REFLECTION_MAX];
+		RID pipelines[SCREEN_SPACE_REFLECTION_MAX] = {};
 
 	} ssr;
 
 	struct ScreenSpaceReflectionFilterPushConstant {
-		float proj_info[4];
+		float proj_info[4] = {};
 
-		uint32_t orthogonal;
-		float edge_tolerance;
-		int32_t increment;
-		uint32_t pad;
+		uint32_t orthogonal = 0;
+		float edge_tolerance = 0.0;
+		int32_t increment = 0;
+		uint32_t pad = 0;
 
-		int32_t screen_size[2];
-		uint32_t vertical;
-		uint32_t steps;
+		int32_t screen_size[2] = {};
+		uint32_t vertical = 0;
+		uint32_t steps = 0;
 	};
 	enum {
 		SCREEN_SPACE_REFLECTION_FILTER_HORIZONTAL,
@@ -536,17 +536,17 @@ class EffectsRD {
 		ScreenSpaceReflectionFilterPushConstant push_constant;
 		ScreenSpaceReflectionFilterShaderRD shader;
 		RID shader_version;
-		RID pipelines[SCREEN_SPACE_REFLECTION_FILTER_MAX];
+		RID pipelines[SCREEN_SPACE_REFLECTION_FILTER_MAX] = {};
 	} ssr_filter;
 
 	struct ScreenSpaceReflectionScalePushConstant {
-		int32_t screen_size[2];
-		float camera_z_near;
-		float camera_z_far;
+		int32_t screen_size[2] = {};
+		float camera_z_near = 0.0;
+		float camera_z_far = 0.0;
 
-		uint32_t orthogonal;
-		uint32_t filter;
-		uint32_t pad[2];
+		uint32_t orthogonal = 0;
+		uint32_t filter = 0;
+		uint32_t pad[2] = {};
 	};
 
 	struct ScreenSpaceReflectionScale {
@@ -557,17 +557,17 @@ class EffectsRD {
 	} ssr_scale;
 
 	struct SubSurfaceScatteringPushConstant {
-		int32_t screen_size[2];
-		float camera_z_far;
-		float camera_z_near;
+		int32_t screen_size[2] = {};
+		float camera_z_far = 0.0;
+		float camera_z_near = 0.0;
 
-		uint32_t vertical;
-		uint32_t orthogonal;
-		float unit_size;
-		float scale;
+		uint32_t vertical = 0;
+		uint32_t orthogonal = 0;
+		float unit_size = 0.0;
+		float scale = 0.0;
 
-		float depth_scale;
-		uint32_t pad[3];
+		float depth_scale = 0.0;
+		uint32_t pad[3] = {};
 	};
 
 	struct SubSurfaceScattering {
@@ -578,9 +578,9 @@ class EffectsRD {
 	} sss;
 
 	struct ResolvePushConstant {
-		int32_t screen_size[2];
-		int32_t samples;
-		uint32_t pad;
+		int32_t screen_size[2] = {};
+		int32_t samples = 0;
+		uint32_t pad = 0;
 	};
 
 	enum ResolveMode {
@@ -593,7 +593,7 @@ class EffectsRD {
 		ResolvePushConstant push_constant;
 		ResolveShaderRD shader;
 		RID shader_version;
-		RID pipelines[RESOLVE_MODE_MAX]; //3 quality levels
+		RID pipelines[RESOLVE_MODE_MAX] = {}; //3 quality levels
 	} resolve;
 
 	enum SortMode {
@@ -605,14 +605,14 @@ class EffectsRD {
 
 	struct Sort {
 		struct PushConstant {
-			uint32_t total_elements;
-			uint32_t pad[3];
-			int32_t job_params[4];
+			uint32_t total_elements = 0;
+			uint32_t pad[3] = {};
+			int32_t job_params[4] = {};
 		};
 
 		SortShaderRD shader;
 		RID shader_version;
-		RID pipelines[SORT_MODE_MAX];
+		RID pipelines[SORT_MODE_MAX] = {};
 	} sort;
 
 	RID default_sampler;

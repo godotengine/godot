@@ -52,7 +52,7 @@ protected:
 		real_t bounce;
 
 		real_t depth;
-		bool active;
+		bool active = false;
 		Vector3 rA, rB; // Offset in world orientation with respect to center of mass
 	};
 

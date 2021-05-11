@@ -97,7 +97,7 @@ class RenderForwardClustered : public RendererSceneRenderRD {
 		RID color_fb;
 		RID color_specular_fb;
 		RID specular_only_fb;
-		int width, height;
+		int width = 0, height = 0;
 
 		RID render_sdfgi_uniform_set;
 		void ensure_specular();
@@ -176,11 +176,11 @@ class RenderForwardClustered : public RendererSceneRenderRD {
 	};
 
 	struct LightmapData {
-		float normal_xform[12];
+		float normal_xform[12] = {};
 	};
 
 	struct LightmapCaptureData {
-		float sh[9 * 4];
+		float sh[9 * 4] = {};
 	};
 
 	enum {
@@ -202,14 +202,14 @@ class RenderForwardClustered : public RendererSceneRenderRD {
 	struct SceneState {
 		// This struct is loaded into Set 1 - Binding 0, populated at start of rendering a frame, must match with shader code
 		struct UBO {
-			float projection_matrix[16];
-			float inv_projection_matrix[16];
+			float projection_matrix[16] = {};
+			float inv_projection_matrix[16] = {};
 
-			float camera_matrix[16];
-			float inv_camera_matrix[16];
+			float camera_matrix[16] = {};
+			float inv_camera_matrix[16] = {};
 
-			float viewport_size[2];
-			float screen_pixel_size[2];
+			float viewport_size[2] = {};
+			float screen_pixel_size[2] = {};
 
 			uint32_t cluster_shift;
 			uint32_t cluster_width;
@@ -221,67 +221,67 @@ class RenderForwardClustered : public RendererSceneRenderRD {
 			float penumbra_shadow_kernel[128];
 			float soft_shadow_kernel[128];
 
-			uint32_t directional_penumbra_shadow_samples;
-			uint32_t directional_soft_shadow_samples;
-			uint32_t penumbra_shadow_samples;
-			uint32_t soft_shadow_samples;
+			uint32_t directional_penumbra_shadow_samples = 0;
+			uint32_t directional_soft_shadow_samples = 0;
+			uint32_t penumbra_shadow_samples = 0;
+			uint32_t soft_shadow_samples = 0;
 
-			float ambient_light_color_energy[4];
+			float ambient_light_color_energy[4] = {};
 
-			float ambient_color_sky_mix;
-			uint32_t use_ambient_light;
-			uint32_t use_ambient_cubemap;
-			uint32_t use_reflection_cubemap;
+			float ambient_color_sky_mix = 0.0;
+			uint32_t use_ambient_light = 0;
+			uint32_t use_ambient_cubemap = 0;
+			uint32_t use_reflection_cubemap = 0;
 
-			float radiance_inverse_xform[12];
+			float radiance_inverse_xform[12] = {};
 
-			float shadow_atlas_pixel_size[2];
-			float directional_shadow_pixel_size[2];
+			float shadow_atlas_pixel_size[2] = {};
+			float directional_shadow_pixel_size[2] = {};
 
-			uint32_t directional_light_count;
-			float dual_paraboloid_side;
-			float z_far;
-			float z_near;
+			uint32_t directional_light_count = 0;
+			float dual_paraboloid_side = 0.0;
+			float z_far = 0.0;
+			float z_near = 0.0;
 
-			uint32_t ssao_enabled;
-			float ssao_light_affect;
-			float ssao_ao_affect;
-			uint32_t roughness_limiter_enabled;
+			uint32_t ssao_enabled = 0;
+			float ssao_light_affect = 0.0;
+			float ssao_ao_affect = 0.0;
+			uint32_t roughness_limiter_enabled = 0;
 
-			float roughness_limiter_amount;
-			float roughness_limiter_limit;
-			uint32_t roughness_limiter_pad[2];
+			float roughness_limiter_amount = 0.0;
+			float roughness_limiter_limit = 0.0;
+			uint32_t roughness_limiter_pad[2] = {};
 
-			float ao_color[4];
+			float ao_color[4] = {};
 
-			float sdf_to_bounds[16];
+			float sdf_to_bounds[16] = {};
 
-			int32_t sdf_offset[3];
-			uint32_t material_uv2_mode;
+			int32_t sdf_offset[3] = {};
+			uint32_t material_uv2_mode = 0;
 
-			int32_t sdf_size[3];
-			uint32_t gi_upscale_for_msaa;
+			int32_t sdf_size[3] = {};
+			uint32_t gi_upscale_for_msaa = 0;
 
-			uint32_t volumetric_fog_enabled;
-			float volumetric_fog_inv_length;
-			float volumetric_fog_detail_spread;
-			uint32_t volumetric_fog_pad;
+			uint32_t volumetric_fog_enabled = 0;
+			float volumetric_fog_inv_length = 0.0;
+			float volumetric_fog_detail_spread = 0.0;
+			uint32_t volumetric_fog_pad = 0;
 
 			// Fog
-			uint32_t fog_enabled;
-			float fog_density;
-			float fog_height;
-			float fog_height_density;
+			uint32_t fog_enabled = 0;
+			float fog_density = 0.0;
+			float fog_height = 0.0;
+			float fog_height_density = 0.0;
 
-			float fog_light_color[3];
-			float fog_sun_scatter;
+			float fog_light_color[3] = {};
+			float fog_sun_scatter = 0.0;
 
-			float fog_aerial_perspective;
+			float fog_aerial_perspective = 0.0;
 
-			float time;
-			float reflection_multiplier;
+			float time = 0.0;
+			float reflection_multiplier = 0.0;
 
-			uint32_t pancake_shadows;
+			uint32_t pancake_shadows = 0;
 		};
 
 		struct PushConstant {
@@ -314,8 +314,8 @@ class RenderForwardClustered : public RendererSceneRenderRD {
 		uint32_t instance_buffer_size[RENDER_LIST_MAX] = { 0, 0, 0 };
 		LocalVector<InstanceData> instance_data[RENDER_LIST_MAX];
 
-		LightmapCaptureData *lightmap_captures;
-		uint32_t max_lightmap_captures;
+		LightmapCaptureData *lightmap_captures = nullptr;
+		uint32_t max_lightmap_captures = 0;
 		RID lightmap_capture_buffer;
 
 		RID giprobe_ids[MAX_GI_PROBES];

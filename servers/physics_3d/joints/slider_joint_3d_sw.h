@@ -69,11 +69,11 @@ class SliderJoint3DSW : public Joint3DSW {
 protected:
 	union {
 		struct {
-			Body3DSW *A;
-			Body3DSW *B;
+			Body3DSW *A = nullptr;
+			Body3DSW *B = nullptr;
 		};
 
-		Body3DSW *_arr[2];
+		Body3DSW *_arr[2] = {};
 	};
 
 	Transform m_frameInA;
@@ -111,13 +111,13 @@ protected:
 	real_t m_dampingOrthoAng;
 
 	// for interlal use
-	bool m_solveLinLim;
-	bool m_solveAngLim;
+	bool m_solveLinLim = false;
+	bool m_solveAngLim = false;
 
-	JacobianEntry3DSW m_jacLin[3];
-	real_t m_jacLinDiagABInv[3];
+	JacobianEntry3DSW m_jacLin[3] = {};
+	real_t m_jacLinDiagABInv[3] = {};
 
-	JacobianEntry3DSW m_jacAng[3];
+	JacobianEntry3DSW m_jacAng[3] = {};
 
 	real_t m_timeStep;
 	Transform m_calculatedTransformA;
@@ -137,12 +137,12 @@ protected:
 	real_t m_angDepth;
 	real_t m_kAngle;
 
-	bool m_poweredLinMotor;
+	bool m_poweredLinMotor = false;
 	real_t m_targetLinMotorVelocity;
 	real_t m_maxLinMotorForce;
 	real_t m_accumulatedLinMotorImpulse;
 
-	bool m_poweredAngMotor;
+	bool m_poweredAngMotor = false;
 	real_t m_targetAngMotorVelocity;
 	real_t m_maxAngMotorForce;
 	real_t m_accumulatedAngMotorImpulse;

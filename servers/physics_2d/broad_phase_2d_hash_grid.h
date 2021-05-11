@@ -36,20 +36,16 @@
 
 class BroadPhase2DHashGrid : public BroadPhase2DSW {
 	struct PairData {
-		bool colliding;
-		int rc;
-		void *ud;
-		PairData() {
-			colliding = false;
-			rc = 1;
-			ud = nullptr;
-		}
+		bool colliding = false;
+		int rc = 1;
+		void *ud = nullptr;
+		PairData() {}
 	};
 
 	struct Element {
-		ID self;
-		CollisionObject2DSW *owner;
-		bool _static;
+		ID self = 0;
+		CollisionObject2DSW *owner = nullptr;
+		bool _static = false;
 		Rect2 aabb;
 		// Owner's collision_mask/layer, used to detect changes in layers.
 		uint32_t collision_mask;
@@ -60,7 +56,7 @@ class BroadPhase2DHashGrid : public BroadPhase2DSW {
 	};
 
 	struct RC {
-		int ref;
+		int ref = 0;
 
 		_FORCE_INLINE_ int inc() {
 			ref++;
@@ -71,25 +67,23 @@ class BroadPhase2DHashGrid : public BroadPhase2DSW {
 			return ref;
 		}
 
-		_FORCE_INLINE_ RC() {
-			ref = 0;
-		}
+		_FORCE_INLINE_ RC() {}
 	};
 
 	Map<ID, Element> element_map;
 	Map<Element *, RC> large_elements;
 
-	ID current;
+	ID current = 0;
 
-	uint64_t pass;
+	uint64_t pass = 0;
 
 	struct PairKey {
 		union {
 			struct {
-				ID a;
-				ID b;
+				ID a = 0;
+				ID b = 0;
 			};
-			uint64_t key;
+			uint64_t key = 0;
 		};
 
 		_FORCE_INLINE_ bool operator<(const PairKey &p_key) const {
@@ -110,13 +104,13 @@ class BroadPhase2DHashGrid : public BroadPhase2DSW {
 
 	Map<PairKey, PairData> pair_map;
 
-	int cell_size;
-	int large_object_min_surface;
+	int cell_size = 0;
+	int large_object_min_surface = 0;
 
 	PairCallback pair_callback;
-	void *pair_userdata;
+	void *pair_userdata = nullptr;
 	UnpairCallback unpair_callback;
-	void *unpair_userdata;
+	void *unpair_userdata = nullptr;
 
 	static _FORCE_INLINE_ bool _test_collision_mask(uint32_t p_mask1, uint32_t p_layer1, uint32_t p_mask2, uint32_t p_layer2) {
 		return p_mask1 & p_layer2 || p_mask2 & p_layer1;
@@ -130,10 +124,10 @@ class BroadPhase2DHashGrid : public BroadPhase2DSW {
 	struct PosKey {
 		union {
 			struct {
-				int32_t x;
-				int32_t y;
+				int32_t x = 0;
+				int32_t y = 0;
 			};
-			uint64_t key;
+			uint64_t key = 0;
 		};
 
 		_FORCE_INLINE_ uint32_t hash() const {
@@ -157,11 +151,11 @@ class BroadPhase2DHashGrid : public BroadPhase2DSW {
 		PosKey key;
 		Map<Element *, RC> object_set;
 		Map<Element *, RC> static_object_set;
-		PosBin *next;
+		PosBin *next = nullptr;
 	};
 
-	uint32_t hash_table_size;
-	PosBin **hash_table;
+	uint32_t hash_table_size = 0;
+	PosBin **hash_table = nullptr;
 
 	void _pair_attempt(Element *p_elem, Element *p_with);
 	void _unpair_attempt(Element *p_elem, Element *p_with);

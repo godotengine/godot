@@ -38,7 +38,7 @@ DisplayServer::SwitchVSyncCallbackInThread DisplayServer::switch_vsync_function 
 
 bool DisplayServer::hidpi_allowed = false;
 
-DisplayServer::DisplayServerCreate DisplayServer::server_create_functions[DisplayServer::MAX_SERVERS];
+DisplayServer::DisplayServerCreate DisplayServer::server_create_functions[DisplayServer::MAX_SERVERS] = {};
 int DisplayServer::server_create_count = 0;
 
 void DisplayServer::global_menu_add_item(const String &p_menu_root, const String &p_label, const Callable &p_callback, const Variant &p_tag) {

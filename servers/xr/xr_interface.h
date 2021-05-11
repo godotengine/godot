@@ -76,7 +76,7 @@ public:
 protected:
 	_THREAD_SAFE_CLASS_
 
-	Tracking_status tracking_state;
+	Tracking_status tracking_state = XR_NOT_TRACKING;
 	static void _bind_methods();
 
 public:

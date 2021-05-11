@@ -75,26 +75,26 @@ private:
 		AllPass() {}
 	};
 
-	Comb comb[MAX_COMBS];
-	AllPass allpass[MAX_ALLPASS];
-	float *input_buffer;
+	Comb comb[MAX_COMBS] = {};
+	AllPass allpass[MAX_ALLPASS] = {};
+	float *input_buffer = nullptr;
 	float *echo_buffer = nullptr;
-	int echo_buffer_size;
-	int echo_buffer_pos;
+	int echo_buffer_size = 0;
+	int echo_buffer_pos = 0;
 
-	float hpf_h1, hpf_h2 = 0;
+	float hpf_h1 = 0.0, hpf_h2 = 0.0;
 
 	struct Parameters {
-		float room_size;
-		float damp;
-		float wet;
-		float dry;
-		float mix_rate;
-		float extra_spread_base;
-		float extra_spread;
-		float predelay;
-		float predelay_fb;
-		float hpf;
+		float room_size = 0.0;
+		float damp = 0.0;
+		float wet = 0.0;
+		float dry = 0.0;
+		float mix_rate = 0.0;
+		float extra_spread_base = 0.0;
+		float extra_spread = 0.0;
+		float predelay = 0.0;
+		float predelay_fb = 0.0;
+		float hpf = 0.0;
 	} params;
 
 	void configure_buffers();

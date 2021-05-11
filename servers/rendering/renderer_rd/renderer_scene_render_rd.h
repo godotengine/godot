@@ -181,7 +181,7 @@ private:
 	struct ShadowShrinkStage {
 		RID texture;
 		RID filter_texture;
-		uint32_t size;
+		uint32_t size = 0;
 	};
 
 	struct ShadowAtlas {
@@ -192,26 +192,20 @@ private:
 		};
 
 		struct Quadrant {
-			uint32_t subdivision;
+			uint32_t subdivision = 0;
 
 			struct Shadow {
 				RID owner;
-				uint64_t version;
-				uint64_t fog_version; // used for fog
-				uint64_t alloc_tick;
+				uint64_t version = 0;
+				uint64_t fog_version = 0; // used for fog
+				uint64_t alloc_tick = 0;
 
-				Shadow() {
-					version = 0;
-					fog_version = 0;
-					alloc_tick = 0;
-				}
+				Shadow() {}
 			};
 
 			Vector<Shadow> shadows;
 
-			Quadrant() {
-				subdivision = 0; //not in use
-			}
+			Quadrant() {}
 
 		} quadrants[4];
 
@@ -238,10 +232,10 @@ private:
 	float shadows_quality_radius = 1.0;
 	float directional_shadow_quality_radius = 1.0;
 
-	float *directional_penumbra_shadow_kernel;
-	float *directional_soft_shadow_kernel;
-	float *penumbra_shadow_kernel;
-	float *soft_shadow_kernel;
+	float *directional_penumbra_shadow_kernel = nullptr;
+	float *directional_soft_shadow_kernel = nullptr;
+	float *penumbra_shadow_kernel = nullptr;
+	float *soft_shadow_kernel = nullptr;
 	int directional_penumbra_shadow_samples = 0;
 	int directional_soft_shadow_samples = 0;
 	int penumbra_shadow_samples = 0;
@@ -266,7 +260,7 @@ private:
 
 	struct ShadowCubemap {
 		RID cubemap;
-		RID side_fb[6];
+		RID side_fb[6] = {};
 	};
 
 	Map<int, ShadowCubemap> shadow_cubemaps;
@@ -280,18 +274,18 @@ private:
 		struct ShadowTransform {
 			CameraMatrix camera;
 			Transform transform;
-			float farplane;
-			float split;
-			float bias_scale;
-			float shadow_texel_size;
-			float range_begin;
+			float farplane = 0.0;
+			float split = 0.0;
+			float bias_scale = 0.0;
+			float shadow_texel_size = 0.0;
+			float range_begin = 0.0;
 			Rect2 atlas_rect;
 			Vector2 uv_scale;
 		};
 
 		RS::LightType light_type = RS::LIGHT_DIRECTIONAL;
 
-		ShadowTransform shadow_transform[6];
+		ShadowTransform shadow_transform[6] = {};
 
 		AABB aabb;
 		RID self;
@@ -398,14 +392,14 @@ private:
 
 			struct Mipmap {
 				RID texture;
-				int width;
-				int height;
+				int width = 0;
+				int height = 0;
 			};
 
 			Vector<Mipmap> mipmaps;
 		};
 
-		Blur blur[2]; //the second one starts from the first mipmap
+		Blur blur[2] = {}; //the second one starts from the first mipmap
 
 		struct Luminance {
 			Vector<RID> reduce;
@@ -524,32 +518,32 @@ private:
 			float shadow_range_begin[4];
 			float shadow_split_offsets[4];
 			float shadow_matrices[4][16];
-			float shadow_color1[4];
-			float shadow_color2[4];
-			float shadow_color3[4];
-			float shadow_color4[4];
-			float uv_scale1[2];
-			float uv_scale2[2];
-			float uv_scale3[2];
-			float uv_scale4[2];
+			float shadow_color1[4] = {};
+			float shadow_color2[4] = {};
+			float shadow_color3[4] = {};
+			float shadow_color4[4] = {};
+			float uv_scale1[2] = {};
+			float uv_scale2[2] = {};
+			float uv_scale3[2] = {};
+			float uv_scale4[2] = {};
 		};
 
 		struct DecalData {
-			float xform[16];
-			float inv_extents[3];
-			float albedo_mix;
-			float albedo_rect[4];
-			float normal_rect[4];
-			float orm_rect[4];
-			float emission_rect[4];
-			float modulate[4];
-			float emission_energy;
-			uint32_t mask;
-			float upper_fade;
-			float lower_fade;
-			float normal_xform[12];
-			float normal[3];
-			float normal_fade;
+			float xform[16] = {};
+			float inv_extents[3] = {};
+			float albedo_mix = 0.0;
+			float albedo_rect[4] = {};
+			float normal_rect[4] = {};
+			float orm_rect[4] = {};
+			float emission_rect[4] = {};
+			float modulate[4] = {};
+			float emission_energy = 0.0;
+			uint32_t mask = 0;
+			float upper_fade = 0.0;
+			float lower_fade = 0.0;
+			float normal_xform[12] = {};
+			float normal[3] = {};
+			float normal_fade = 0.0;
 		};
 
 		template <class T>
@@ -585,8 +579,8 @@ private:
 		uint32_t omni_light_count = 0;
 		uint32_t spot_light_count = 0;
 
-		DirectionalLightData *directional_lights;
-		uint32_t max_directional_lights;
+		DirectionalLightData *directional_lights = nullptr;
+		uint32_t max_directional_lights = 0;
 		RID directional_light_buffer;
 
 	} cluster;
@@ -635,8 +629,8 @@ private:
 		uint32_t height = 0;
 		uint32_t depth = 0;
 
-		float length;
-		float spread;
+		float length = 0.0;
+		float spread = 0.0;
 
 		RID light_density_map;
 		RID prev_light_density_map;
@@ -665,16 +659,16 @@ private:
 			float fog_frustum_size_begin[2];
 			float fog_frustum_size_end[2];
 
-			float fog_frustum_end;
-			float z_near;
-			float z_far;
-			uint32_t filter_axis;
+			float fog_frustum_end = 0.0;
+			float z_near = 0.0;
+			float z_far = 0.0;
+			uint32_t filter_axis = 0;
 
-			int32_t fog_volume_size[3];
-			uint32_t directional_light_count;
+			int32_t fog_volume_size[3] = {};
+			uint32_t directional_light_count = 0;
 
-			float light_energy[3];
-			float base_density;
+			float light_energy[3] = {};
+			float base_density = 0.0;
 
 			float detail_spread;
 			float gi_inject;
@@ -690,15 +684,15 @@ private:
 			uint32_t temporal_frame;
 			float temporal_blend;
 
-			float cam_rotation[12];
-			float to_prev_view[16];
+			float cam_rotation[12] = {};
+			float to_prev_view[16] = {};
 		};
 
 		VolumetricFogShaderRD shader;
 
 		RID params_ubo;
 		RID shader_version;
-		RID pipelines[VOLUMETRIC_FOG_SHADER_MAX];
+		RID pipelines[VOLUMETRIC_FOG_SHADER_MAX] = {};
 
 	} volumetric_fog;
 
@@ -716,8 +710,8 @@ private:
 
 	/* !BAS! is this used anywhere?
 	struct SDFGICosineNeighbour {
-		uint32_t neighbour;
-		float weight;
+		uint32_t neighbour = 0;
+		float weight = 0.0;
 	};
 	*/
 

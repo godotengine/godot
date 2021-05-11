@@ -85,9 +85,9 @@ private:
 	Transform world_origin; /* our world origin point, maps a location in our virtual world to the origin point in our real world tracking volume */
 	Transform reference_frame; /* our reference frame */
 
-	uint64_t last_process_usec; /* for frame timing, usec when we did our processing */
-	uint64_t last_commit_usec; /* for frame timing, usec when we finished committing both eyes */
-	uint64_t last_frame_usec; /* time it took between process and committing, we should probably average this over the last x frames */
+	uint64_t last_process_usec = 0; /* for frame timing, usec when we did our processing */
+	uint64_t last_commit_usec = 0; /* for frame timing, usec when we finished committing both eyes */
+	uint64_t last_frame_usec = 0; /* time it took between process and committing, we should probably average this over the last x frames */
 
 protected:
 	static XRServer *singleton;

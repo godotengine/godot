@@ -59,11 +59,11 @@ class ShaderRD {
 		Map<StringName, CharString> code_sections;
 		Vector<CharString> custom_defines;
 
-		RID *variants; //same size as version defines
+		RID *variants = nullptr; //same size as version defines
 
-		bool valid;
-		bool dirty;
-		bool initialize_needed;
+		bool valid = false;
+		bool dirty = false;
+		bool initialize_needed = false;
 	};
 
 	Mutex variant_set_mutex;

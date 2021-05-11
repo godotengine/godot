@@ -41,9 +41,9 @@ class BroadPhaseOctree : public BroadPhase3DSW {
 	static void _unpair_callback(void *, OctreeElementID, CollisionObject3DSW *, int, OctreeElementID, CollisionObject3DSW *, int, void *);
 
 	PairCallback pair_callback;
-	void *pair_userdata;
+	void *pair_userdata = nullptr;
 	UnpairCallback unpair_callback;
-	void *unpair_userdata;
+	void *unpair_userdata = nullptr;
 
 public:
 	// 0 is an invalid ID

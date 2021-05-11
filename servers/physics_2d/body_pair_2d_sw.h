@@ -40,8 +40,8 @@ class BodyPair2DSW : public Constraint2DSW {
 	};
 	union {
 		struct {
-			Body2DSW *A;
-			Body2DSW *B;
+			Body2DSW *A = nullptr;
+			Body2DSW *B = nullptr;
 		};
 
 		Body2DSW *_arr[2] = { nullptr, nullptr };
@@ -66,9 +66,9 @@ class BodyPair2DSW : public Constraint2DSW {
 		real_t bias;
 
 		real_t depth;
-		bool active;
+		bool active = false;
 		Vector2 rA, rB;
-		bool reused;
+		bool reused = false;
 		real_t bounce;
 	};
 

@@ -64,21 +64,21 @@ public:
 			ShaderLanguage::ShaderNode::Uniform::Hint hint;
 			ShaderLanguage::TextureFilter filter;
 			ShaderLanguage::TextureRepeat repeat;
-			bool global;
+			bool global = false;
 		};
 
 		Vector<Texture> texture_uniforms;
 
 		Vector<uint32_t> uniform_offsets;
-		uint32_t uniform_total_size;
+		uint32_t uniform_total_size = 0;
 		String uniforms;
 		String stage_globals[STAGE_MAX];
 
 		Map<String, String> code;
 
-		bool uses_global_textures;
-		bool uses_fragment_time;
-		bool uses_vertex_time;
+		bool uses_global_textures = false;
+		bool uses_fragment_time = false;
+		bool uses_vertex_time = false;
 	};
 
 	struct DefaultIdentifierActions {
