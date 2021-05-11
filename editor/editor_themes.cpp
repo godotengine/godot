@@ -560,9 +560,11 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	style_tab_unselected->set_bg_color(dark_color_1);
 	style_tab_unselected->set_expand_margin_size(SIDE_BOTTOM, 0);
 	// Add some spacing between unselected tabs to make them easier to distinguish from each other
-	style_tab_unselected->set_border_color(dark_color_2);
-	style_tab_unselected->set_border_width(SIDE_LEFT, Math::round(2 * EDSCALE));
-	style_tab_unselected->set_border_width(SIDE_RIGHT, Math::round(2 * EDSCALE));
+	style_tab_unselected->set_border_color(Color(0, 0, 0, 0));
+	style_tab_unselected->set_border_width(SIDE_LEFT, Math::round(1 * EDSCALE));
+	style_tab_unselected->set_border_width(SIDE_RIGHT, Math::round(1 * EDSCALE));
+	style_tab_unselected->set_default_margin(SIDE_LEFT, widget_default_margin.x + 2 * EDSCALE);
+	style_tab_unselected->set_default_margin(SIDE_RIGHT, widget_default_margin.x + 2 * EDSCALE);
 
 	Ref<StyleBoxFlat> style_tab_disabled = style_tab_selected->duplicate();
 	style_tab_disabled->set_bg_color(disabled_bg_color);
@@ -596,15 +598,6 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_stylebox("pressed", "MenuButton", style_menu);
 	theme->set_stylebox("focus", "MenuButton", style_menu);
 	theme->set_stylebox("disabled", "MenuButton", style_menu);
-
-	theme->set_stylebox("normal", "PopupMenu", style_menu);
-
-	Ref<StyleBoxFlat> style_menu_hover = style_widget_hover->duplicate();
-	// Don't use rounded corners for hover highlights since the StyleBox touches the PopupMenu's edges.
-	style_menu_hover->set_corner_radius_all(0);
-	theme->set_stylebox("hover", "PopupMenu", style_menu_hover);
-	theme->set_stylebox("focus", "PopupMenu", style_menu);
-	theme->set_stylebox("disabled", "PopupMenu", style_menu);
 
 	theme->set_color("font_color", "MenuButton", font_color);
 	theme->set_color("font_hover_color", "MenuButton", font_hover_color);
@@ -711,8 +704,16 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	style_popup_menu->set_default_margin(SIDE_TOP, popup_menu_margin_size);
 	style_popup_menu->set_default_margin(SIDE_RIGHT, 1 * EDSCALE);
 	style_popup_menu->set_default_margin(SIDE_BOTTOM, popup_menu_margin_size);
-
+	// Always display a border for PopupMenus so they can be distinguished from their background.
+	style_popup_menu->set_border_width_all(1 * EDSCALE);
+	style_popup_menu->set_border_color(dark_color_2);
 	theme->set_stylebox("panel", "PopupMenu", style_popup_menu);
+
+	Ref<StyleBoxFlat> style_menu_hover = style_widget_hover->duplicate();
+	// Don't use rounded corners for hover highlights since the StyleBox touches the PopupMenu's edges.
+	style_menu_hover->set_corner_radius_all(0);
+	theme->set_stylebox("hover", "PopupMenu", style_menu_hover);
+
 	theme->set_stylebox("separator", "PopupMenu", style_popup_separator);
 	theme->set_stylebox("labeled_separator_left", "PopupMenu", style_popup_labeled_separator_left);
 	theme->set_stylebox("labeled_separator_right", "PopupMenu", style_popup_labeled_separator_right);
@@ -929,6 +930,10 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	style_content_panel->set_default_margin(SIDE_RIGHT, margin_size_extra * EDSCALE);
 	style_content_panel->set_default_margin(SIDE_BOTTOM, margin_size_extra * EDSCALE);
 	style_content_panel->set_default_margin(SIDE_LEFT, margin_size_extra * EDSCALE);
+	// Display border to visually split the body of the container from its possible backgrounds.
+	style_content_panel->set_border_width(Side::SIDE_TOP, Math::round(2 * EDSCALE));
+	style_content_panel->set_border_color(dark_color_2);
+	theme->set_stylebox("panel", "TabContainer", style_content_panel);
 
 	// this is the stylebox used in 3d and 2d viewports (no borders)
 	Ref<StyleBoxFlat> style_content_panel_vp = style_content_panel->duplicate();
@@ -936,8 +941,16 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	style_content_panel_vp->set_default_margin(SIDE_TOP, default_margin_size * EDSCALE);
 	style_content_panel_vp->set_default_margin(SIDE_RIGHT, border_width * 2);
 	style_content_panel_vp->set_default_margin(SIDE_BOTTOM, border_width * 2);
-	theme->set_stylebox("panel", "TabContainer", style_content_panel);
 	theme->set_stylebox("Content", "EditorStyles", style_content_panel_vp);
+
+	// These styleboxes can be used on tabs against the base color background (e.g. nested tabs).
+	Ref<StyleBoxFlat> style_tab_selected_odd = style_tab_selected->duplicate();
+	style_tab_selected_odd->set_bg_color(disabled_bg_color);
+	theme->set_stylebox("tab_selected_odd", "TabContainer", style_tab_selected_odd);
+
+	Ref<StyleBoxFlat> style_content_panel_odd = style_content_panel->duplicate();
+	style_content_panel_odd->set_bg_color(disabled_bg_color);
+	theme->set_stylebox("panel_odd", "TabContainer", style_content_panel_odd);
 
 	// Separators
 	theme->set_stylebox("separator", "HSeparator", make_line_stylebox(separator_color, MAX(Math::round(EDSCALE), border_width)));

@@ -1694,6 +1694,9 @@ void ThemeItemEditorDialog::_notification(int p_what) {
 			edit_items_remove_all->set_icon(get_theme_icon("ThemeRemoveAllItems", "EditorIcons"));
 
 			import_another_theme_button->set_icon(get_theme_icon("Folder", "EditorIcons"));
+
+			tc->add_theme_style_override("tab_selected", get_theme_stylebox("tab_selected_odd", "TabContainer"));
+			tc->add_theme_style_override("panel", get_theme_stylebox("panel_odd", "TabContainer"));
 		} break;
 	}
 }
@@ -1707,7 +1710,7 @@ ThemeItemEditorDialog::ThemeItemEditorDialog() {
 	get_ok_button()->set_text(TTR("Close"));
 	set_hide_on_ok(false); // Closing may require a confirmation in some cases.
 
-	TabContainer *tc = memnew(TabContainer);
+	tc = memnew(TabContainer);
 	tc->set_tab_align(TabContainer::TabAlign::ALIGN_LEFT);
 	add_child(tc);
 
