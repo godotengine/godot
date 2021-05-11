@@ -181,6 +181,8 @@ class ThemeItemEditorDialog : public AcceptDialog {
 
 	Ref<Theme> edited_theme;
 
+	TabContainer *tc;
+
 	ItemList *edit_type_list;
 	LineEdit *edit_add_type_value;
 	String edited_item_type;
