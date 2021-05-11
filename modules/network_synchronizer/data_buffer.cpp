@@ -278,42 +278,42 @@ real_t DataBuffer::add_real(real_t p_input, CompressionLevel p_compression_level
 	ERR_FAIL_COND_V(is_reading == true, p_input);
 
 	const real_t integral = Math::floor(p_input);
-	const real_t fractional = Math::fmod(p_input, 1);
+	const real_t fractional = ABS(Math::fmod(p_input, 1));
 
 	const real_t added_integral = add_int(integral, p_compression_level);
-	const real_t added_fractional = add_unit_real(fractional, COMPRESSION_LEVEL_1);
+	const real_t added_fractional = add_positive_unit_real(fractional, COMPRESSION_LEVEL_1);
 
-	return added_integral + added_fractional;
+	return added_integral > 0 ? added_integral + added_fractional : added_integral - added_fractional;
 }
 
 real_t DataBuffer::read_real(CompressionLevel p_compression_level) {
 	ERR_FAIL_COND_V(is_reading == false, 0.0);
 
 	const real_t integral = read_int(p_compression_level);
-	const real_t fractional = read_unit_real(COMPRESSION_LEVEL_1);
+	const real_t fractional = read_positive_unit_real(COMPRESSION_LEVEL_1);
 
-	return integral + fractional;
+	return integral > 0 ? integral + fractional : integral - fractional;
 }
 
 real_t DataBuffer::add_precise_real(real_t p_input, CompressionLevel p_compression_level) {
 	ERR_FAIL_COND_V(is_reading == true, p_input);
 
 	const real_t integral = Math::floor(p_input);
-	const real_t fractional = Math::fmod(p_input, 1);
+	const real_t fractional = ABS(Math::fmod(p_input, 1));
 
-	const real_t ri = add_int(integral, p_compression_level);
-	const real_t rf = add_unit_real(fractional, COMPRESSION_LEVEL_0);
+	const real_t added_integral = add_int(integral, p_compression_level);
+	const real_t added_fractional = add_positive_unit_real(fractional, COMPRESSION_LEVEL_0);
 
-	return ri + rf;
+	return added_integral > 0 ? added_integral + added_fractional : added_integral - added_fractional;
 }
 
 real_t DataBuffer::read_precise_real(CompressionLevel p_compression_level) {
 	ERR_FAIL_COND_V(is_reading == false, 0.0);
 
 	const real_t integral = read_int(p_compression_level);
-	const real_t fractional = read_unit_real(COMPRESSION_LEVEL_0);
+	const real_t fractional = read_positive_unit_real(COMPRESSION_LEVEL_0);
 
-	return integral + fractional;
+	return integral > 0 ? integral + fractional : integral - fractional;
 }
 
 real_t DataBuffer::add_positive_unit_real(real_t p_input, CompressionLevel p_compression_level) {
@@ -520,9 +520,9 @@ Vector3 DataBuffer::add_normalized_vector3(Vector3 p_input, CompressionLevel p_c
 #endif
 	ERR_FAIL_COND_V(is_reading == true, p_input);
 
-	const uint64_t x_axis = add_real(p_input.x, p_compression_level);
-	const uint64_t y_axis = add_real(p_input.y, p_compression_level);
-	const uint64_t z_axis = add_real(p_input.z, p_compression_level);
+	const real_t x_axis = add_unit_real(p_input.x, p_compression_level);
+	const real_t y_axis = add_unit_real(p_input.y, p_compression_level);
+	const real_t z_axis = add_unit_real(p_input.z, p_compression_level);
 
 	return Vector3(x_axis, y_axis, z_axis);
 }
@@ -530,9 +530,9 @@ Vector3 DataBuffer::add_normalized_vector3(Vector3 p_input, CompressionLevel p_c
 Vector3 DataBuffer::read_normalized_vector3(CompressionLevel p_compression_level) {
 	ERR_FAIL_COND_V(is_reading == false, Vector3());
 
-	const uint64_t x_axis = read_real(p_compression_level);
-	const uint64_t y_axis = read_real(p_compression_level);
-	const uint64_t z_axis = read_real(p_compression_level);
+	const real_t x_axis = read_unit_real(p_compression_level);
+	const real_t y_axis = read_unit_real(p_compression_level);
+	const real_t z_axis = read_unit_real(p_compression_level);
 
 	return Vector3(x_axis, y_axis, z_axis);
 }
