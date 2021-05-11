@@ -37,18 +37,26 @@
 struct Vector2i;
 
 struct Vector2 {
+	static const int AXIS_COUNT = 2;
+
 	enum Axis {
 		AXIS_X,
 		AXIS_Y,
 	};
 
 	union {
-		real_t x = 0;
-		real_t width;
-	};
-	union {
-		real_t y = 0;
-		real_t height;
+		struct {
+			union {
+				real_t x;
+				real_t width;
+			};
+			union {
+				real_t y;
+				real_t height;
+			};
+		};
+
+		real_t coord[2] = { 0 };
 	};
 
 	_FORCE_INLINE_ real_t &operator[](int p_idx) {
@@ -56,6 +64,18 @@ struct Vector2 {
 	}
 	_FORCE_INLINE_ const real_t &operator[](int p_idx) const {
 		return p_idx ? y : x;
+	}
+
+	_FORCE_INLINE_ void set_all(real_t p_value) {
+		x = y = p_value;
+	}
+
+	_FORCE_INLINE_ int min_axis() const {
+		return x < y ? 0 : 1;
+	}
+
+	_FORCE_INLINE_ int max_axis() const {
+		return x < y ? 1 : 0;
 	}
 
 	void normalize();
