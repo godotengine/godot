@@ -52,19 +52,16 @@ public:
 		ANCHOR_BEGIN = 0,
 		ANCHOR_END = 1
 	};
-
 	enum GrowDirection {
 		GROW_DIRECTION_BEGIN,
 		GROW_DIRECTION_END,
 		GROW_DIRECTION_BOTH
 	};
-
 	enum FocusMode {
 		FOCUS_NONE,
 		FOCUS_CLICK,
 		FOCUS_ALL
 	};
-
 	enum SizeFlags {
 		SIZE_FILL = 1,
 		SIZE_EXPAND = 2,
@@ -73,13 +70,11 @@ public:
 		SIZE_SHRINK_END = 8, //ignored by expand or fill
 
 	};
-
 	enum MouseFilter {
 		MOUSE_FILTER_STOP,
 		MOUSE_FILTER_PASS,
 		MOUSE_FILTER_IGNORE
 	};
-
 	enum CursorShape {
 		CURSOR_ARROW,
 		CURSOR_IBEAM,
@@ -100,7 +95,6 @@ public:
 		CURSOR_HELP,
 		CURSOR_MAX
 	};
-
 	enum LayoutPreset {
 		PRESET_TOP_LEFT,
 		PRESET_TOP_RIGHT,
@@ -119,28 +113,24 @@ public:
 		PRESET_HCENTER_WIDE,
 		PRESET_WIDE
 	};
-
 	enum LayoutPresetMode {
 		PRESET_MODE_MINSIZE,
 		PRESET_MODE_KEEP_WIDTH,
 		PRESET_MODE_KEEP_HEIGHT,
 		PRESET_MODE_KEEP_SIZE
 	};
-
 	enum LayoutDirection {
 		LAYOUT_DIRECTION_INHERITED,
 		LAYOUT_DIRECTION_LOCALE,
 		LAYOUT_DIRECTION_LTR,
 		LAYOUT_DIRECTION_RTL
 	};
-
 	enum TextDirection {
 		TEXT_DIRECTION_AUTO = TextServer::DIRECTION_AUTO,
 		TEXT_DIRECTION_LTR = TextServer::DIRECTION_LTR,
 		TEXT_DIRECTION_RTL = TextServer::DIRECTION_RTL,
 		TEXT_DIRECTION_INHERITED,
 	};
-
 	enum StructuredTextParser {
 		STRUCTURED_TEXT_DEFAULT,
 		STRUCTURED_TEXT_URI,
@@ -161,7 +151,6 @@ private:
 			return p_a->get_canvas_layer() < p_b->get_canvas_layer();
 		}
 	};
-
 	struct Data {
 		Point2 pos_cache;
 		Size2 size_cache;
@@ -221,7 +210,7 @@ private:
 
 	} data;
 
-	// used internally
+	// Used internally.
 	Control *_find_control_at_pos(CanvasItem *p_node, const Point2 &p_pos, const Transform2D &p_xform, Transform2D &r_inv_xform);
 
 	void _window_find_focus_neighbor(const Vector2 &p_dir, Node *p_at, const Point2 *p_points, real_t p_min, real_t &r_closest_dist, Control **r_closest);
@@ -280,8 +269,6 @@ protected:
 	virtual void add_child_notify(Node *p_child) override;
 	virtual void remove_child_notify(Node *p_child) override;
 
-	//virtual void _window_gui_input(InputEvent p_event);
-
 	virtual Vector<Vector2i> structured_text_parser(StructuredTextParser p_node_type, const Array &p_args, const String p_text) const;
 
 	bool _set(const StringName &p_name, const Variant &p_value);
@@ -292,12 +279,8 @@ protected:
 
 	static void _bind_methods();
 
-	//bind helpers
-
 public:
 	enum {
-		/*		NOTIFICATION_DRAW=30,
-		NOTIFICATION_VISIBILITY_CHANGED=38*/
 		NOTIFICATION_RESIZED = 40,
 		NOTIFICATION_MOUSE_ENTER = 41,
 		NOTIFICATION_MOUSE_EXIT = 42,
@@ -307,7 +290,6 @@ public:
 		NOTIFICATION_SCROLL_BEGIN = 47,
 		NOTIFICATION_SCROLL_END = 48,
 		NOTIFICATION_LAYOUT_DIRECTION_CHANGED = 49,
-
 	};
 
 	/* EDITOR */
@@ -335,7 +317,6 @@ public:
 
 	virtual Size2 _edit_get_minimum_size() const override;
 #endif
-
 	void accept_event();
 
 	virtual Size2 get_minimum_size() const;
@@ -372,8 +353,8 @@ public:
 
 	void set_anchor_and_offset(Side p_side, real_t p_anchor, real_t p_pos, bool p_push_opposite_anchor = true);
 
-	void set_begin(const Point2 &p_point); // helper
-	void set_end(const Point2 &p_point); // helper
+	void set_begin(const Point2 &p_point); // Helper.
+	void set_end(const Point2 &p_point); // Helper.
 
 	Point2 get_begin() const;
 	Point2 get_end() const;
@@ -390,7 +371,7 @@ public:
 	Rect2 get_rect() const;
 	Rect2 get_global_rect() const;
 	Rect2 get_screen_rect() const;
-	Rect2 get_window_rect() const; ///< use with care, as it blocks waiting for the visual server
+	Rect2 get_window_rect() const; // Use with care, as it blocks waiting for the visual server.
 	Rect2 get_anchorable_rect() const override;
 
 	void set_rect(const Rect2 &p_rect); // Reset anchors to begin and set rect, for faster container children sorting.
