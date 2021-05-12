@@ -1731,13 +1731,13 @@ void RendererSceneRenderRD::_process_ssao(RID p_render_buffers, RID p_environmen
 	storage->get_effects()->generate_ssao(rb->depth_texture, p_normal_buffer, rb->ssao.depth, rb->ssao.depth_slices, rb->ssao.ao_deinterleaved, rb->ssao.ao_deinterleaved_slices, rb->ssao.ao_pong, rb->ssao.ao_pong_slices, rb->ssao.ao_final, rb->ssao.importance_map[0], rb->ssao.importance_map[1], p_projection, settings, uniform_sets_are_invalid);
 }
 
-void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(RID p_render_buffers, RID p_environment, RID p_camera_effects, const CameraMatrix &p_projection) {
-	RenderBuffers *rb = render_buffers_owner.getornull(p_render_buffers);
+void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const RenderDataRD *p_render_data) {
+	RenderBuffers *rb = render_buffers_owner.getornull(p_render_data->render_buffers);
 	ERR_FAIL_COND(!rb);
 
-	RendererSceneEnvironmentRD *env = environment_owner.getornull(p_environment);
+	RendererSceneEnvironmentRD *env = environment_owner.getornull(p_render_data->environment);
 	//glow (if enabled)
-	CameraEffects *camfx = camera_effects_owner.getornull(p_camera_effects);
+	CameraEffects *camfx = camera_effects_owner.getornull(p_render_data->camera_effects);
 
 	bool can_use_effects = rb->width >= 8 && rb->height >= 8;
 
@@ -1747,7 +1747,7 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(RID p_rende
 		}
 
 		float bokeh_size = camfx->dof_blur_amount * 64.0;
-		storage->get_effects()->bokeh_dof(rb->texture, rb->depth_texture, Size2i(rb->width, rb->height), rb->blur[0].mipmaps[0].texture, rb->blur[1].mipmaps[0].texture, rb->blur[0].mipmaps[1].texture, camfx->dof_blur_far_enabled, camfx->dof_blur_far_distance, camfx->dof_blur_far_transition, camfx->dof_blur_near_enabled, camfx->dof_blur_near_distance, camfx->dof_blur_near_transition, bokeh_size, dof_blur_bokeh_shape, dof_blur_quality, dof_blur_use_jitter, p_projection.get_z_near(), p_projection.get_z_far(), p_projection.is_orthogonal());
+		storage->get_effects()->bokeh_dof(rb->texture, rb->depth_texture, Size2i(rb->width, rb->height), rb->blur[0].mipmaps[0].texture, rb->blur[1].mipmaps[0].texture, rb->blur[0].mipmaps[1].texture, camfx->dof_blur_far_enabled, camfx->dof_blur_far_distance, camfx->dof_blur_far_transition, camfx->dof_blur_near_enabled, camfx->dof_blur_near_distance, camfx->dof_blur_near_transition, bokeh_size, dof_blur_bokeh_shape, dof_blur_quality, dof_blur_use_jitter, p_render_data->z_near, p_render_data->z_far, p_render_data->cam_ortogonal);
 	}
 
 	if (can_use_effects && env && env->auto_exposure) {
@@ -3459,13 +3459,9 @@ void RendererSceneRenderRD::_update_volumetric_fog(RID p_render_buffers, RID p_e
 	rb->volumetric_fog->prev_cam_transform = p_cam_transform;
 }
 
-uint32_t RendererSceneRenderRD::_get_render_state_directional_light_count() const {
-	return render_state.directional_light_count;
-}
-
-bool RendererSceneRenderRD::_needs_post_prepass_render(bool p_use_gi) {
-	if (render_state.render_buffers.is_valid()) {
-		RenderBuffers *rb = render_buffers_owner.getornull(render_state.render_buffers);
+bool RendererSceneRenderRD::_needs_post_prepass_render(RenderDataRD *p_render_data, bool p_use_gi) {
+	if (p_render_data->render_buffers.is_valid()) {
+		RenderBuffers *rb = render_buffers_owner.getornull(p_render_data->render_buffers);
 		if (rb->sdfgi != nullptr) {
 			return true;
 		}
@@ -3473,34 +3469,34 @@ bool RendererSceneRenderRD::_needs_post_prepass_render(bool p_use_gi) {
 	return false;
 }
 
-void RendererSceneRenderRD::_post_prepass_render(bool p_use_gi) {
-	if (render_state.render_buffers.is_valid()) {
+void RendererSceneRenderRD::_post_prepass_render(RenderDataRD *p_render_data, bool p_use_gi) {
+	if (p_render_data->render_buffers.is_valid()) {
 		if (p_use_gi) {
-			RenderBuffers *rb = render_buffers_owner.getornull(render_state.render_buffers);
+			RenderBuffers *rb = render_buffers_owner.getornull(p_render_data->render_buffers);
 			ERR_FAIL_COND(rb == nullptr);
 			if (rb->sdfgi == nullptr) {
 				return;
 			}
 
-			RendererSceneEnvironmentRD *env = environment_owner.getornull(render_state.environment);
+			RendererSceneEnvironmentRD *env = environment_owner.getornull(p_render_data->environment);
 			rb->sdfgi->update_probes(env, sky.sky_owner.getornull(env->sky));
 		}
 	}
 }
 
-void RendererSceneRenderRD::_pre_resolve_render(bool p_use_gi) {
-	if (render_state.render_buffers.is_valid()) {
+void RendererSceneRenderRD::_pre_resolve_render(RenderDataRD *p_render_data, bool p_use_gi) {
+	if (p_render_data->render_buffers.is_valid()) {
 		if (p_use_gi) {
 			RD::get_singleton()->compute_list_end();
 		}
 	}
 }
 
-void RendererSceneRenderRD::_pre_opaque_render(bool p_use_ssao, bool p_use_gi, RID p_normal_roughness_buffer, RID p_gi_probe_buffer) {
+void RendererSceneRenderRD::_pre_opaque_render(RenderDataRD *p_render_data, bool p_use_ssao, bool p_use_gi, RID p_normal_roughness_buffer, RID p_gi_probe_buffer) {
 	// Render shadows while GI is rendering, due to how barriers are handled, this should happen at the same time
 
-	if (render_state.render_buffers.is_valid() && p_use_gi) {
-		RenderBuffers *rb = render_buffers_owner.getornull(render_state.render_buffers);
+	if (p_render_data->render_buffers.is_valid() && p_use_gi) {
+		RenderBuffers *rb = render_buffers_owner.getornull(p_render_data->render_buffers);
 		ERR_FAIL_COND(rb == nullptr);
 		if (rb->sdfgi == nullptr) {
 			return;
@@ -3513,8 +3509,8 @@ void RendererSceneRenderRD::_pre_opaque_render(bool p_use_ssao, bool p_use_gi, R
 	render_state.shadows.clear();
 	render_state.directional_shadows.clear();
 
-	Plane camera_plane(render_state.cam_transform.origin, -render_state.cam_transform.basis.get_axis(Vector3::AXIS_Z));
-	float lod_distance_multiplier = render_state.cam_projection.get_lod_multiplier();
+	Plane camera_plane(p_render_data->cam_transform.origin, -p_render_data->cam_transform.basis.get_axis(Vector3::AXIS_Z));
+	float lod_distance_multiplier = p_render_data->cam_projection.get_lod_multiplier();
 
 	{
 		for (int i = 0; i < render_state.render_shadow_count; i++) {
@@ -3531,7 +3527,7 @@ void RendererSceneRenderRD::_pre_opaque_render(bool p_use_ssao, bool p_use_gi, R
 
 		//cube shadows are rendered in their own way
 		for (uint32_t i = 0; i < render_state.cube_shadows.size(); i++) {
-			_render_shadow_pass(render_state.render_shadows[render_state.cube_shadows[i]].light, render_state.shadow_atlas, render_state.render_shadows[render_state.cube_shadows[i]].pass, render_state.render_shadows[render_state.cube_shadows[i]].instances, camera_plane, lod_distance_multiplier, render_state.screen_lod_threshold, true, true, true);
+			_render_shadow_pass(render_state.render_shadows[render_state.cube_shadows[i]].light, p_render_data->shadow_atlas, render_state.render_shadows[render_state.cube_shadows[i]].pass, render_state.render_shadows[render_state.cube_shadows[i]].instances, camera_plane, lod_distance_multiplier, p_render_data->screen_lod_threshold, true, true, true);
 		}
 
 		if (render_state.directional_shadows.size()) {
@@ -3545,7 +3541,7 @@ void RendererSceneRenderRD::_pre_opaque_render(bool p_use_ssao, bool p_use_gi, R
 	// Render GI
 
 	bool render_shadows = render_state.directional_shadows.size() || render_state.shadows.size();
-	bool render_gi = render_state.render_buffers.is_valid() && p_use_gi;
+	bool render_gi = p_render_data->render_buffers.is_valid() && p_use_gi;
 
 	if (render_shadows && render_gi) {
 		RENDER_TIMESTAMP("Render GI + Render Shadows (parallel)");
@@ -3561,11 +3557,11 @@ void RendererSceneRenderRD::_pre_opaque_render(bool p_use_ssao, bool p_use_gi, R
 
 		//render directional shadows
 		for (uint32_t i = 0; i < render_state.directional_shadows.size(); i++) {
-			_render_shadow_pass(render_state.render_shadows[render_state.directional_shadows[i]].light, render_state.shadow_atlas, render_state.render_shadows[render_state.directional_shadows[i]].pass, render_state.render_shadows[render_state.directional_shadows[i]].instances, camera_plane, lod_distance_multiplier, render_state.screen_lod_threshold, false, i == render_state.directional_shadows.size() - 1, false);
+			_render_shadow_pass(render_state.render_shadows[render_state.directional_shadows[i]].light, p_render_data->shadow_atlas, render_state.render_shadows[render_state.directional_shadows[i]].pass, render_state.render_shadows[render_state.directional_shadows[i]].instances, camera_plane, lod_distance_multiplier, p_render_data->screen_lod_threshold, false, i == render_state.directional_shadows.size() - 1, false);
 		}
 		//render positional shadows
 		for (uint32_t i = 0; i < render_state.shadows.size(); i++) {
-			_render_shadow_pass(render_state.render_shadows[render_state.shadows[i]].light, render_state.shadow_atlas, render_state.render_shadows[render_state.shadows[i]].pass, render_state.render_shadows[render_state.shadows[i]].instances, camera_plane, lod_distance_multiplier, render_state.screen_lod_threshold, i == 0, i == render_state.shadows.size() - 1, true);
+			_render_shadow_pass(render_state.render_shadows[render_state.shadows[i]].light, p_render_data->shadow_atlas, render_state.render_shadows[render_state.shadows[i]].pass, render_state.render_shadows[render_state.shadows[i]].instances, camera_plane, lod_distance_multiplier, p_render_data->screen_lod_threshold, i == 0, i == render_state.shadows.size() - 1, true);
 		}
 
 		_render_shadow_process();
@@ -3573,7 +3569,7 @@ void RendererSceneRenderRD::_pre_opaque_render(bool p_use_ssao, bool p_use_gi, R
 
 	//start GI
 	if (render_gi) {
-		gi.process_gi(render_state.render_buffers, p_normal_roughness_buffer, p_gi_probe_buffer, render_state.environment, render_state.cam_projection, render_state.cam_transform, *render_state.gi_probes, this);
+		gi.process_gi(p_render_data->render_buffers, p_normal_roughness_buffer, p_gi_probe_buffer, p_render_data->environment, p_render_data->cam_projection, p_render_data->cam_transform, *p_render_data->gi_probes, this);
 	}
 
 	//Do shadow rendering (in parallel with GI)
@@ -3585,9 +3581,9 @@ void RendererSceneRenderRD::_pre_opaque_render(bool p_use_ssao, bool p_use_gi, R
 		RD::get_singleton()->compute_list_end(RD::BARRIER_MASK_NO_BARRIER); //use a later barrier
 	}
 
-	if (render_state.render_buffers.is_valid()) {
+	if (p_render_data->render_buffers.is_valid()) {
 		if (p_use_ssao) {
-			_process_ssao(render_state.render_buffers, render_state.environment, p_normal_roughness_buffer, render_state.cam_projection);
+			_process_ssao(p_render_data->render_buffers, p_render_data->environment, p_normal_roughness_buffer, p_render_data->cam_projection);
 		}
 	}
 
@@ -3595,32 +3591,32 @@ void RendererSceneRenderRD::_pre_opaque_render(bool p_use_ssao, bool p_use_gi, R
 	RD::get_singleton()->barrier(RD::BARRIER_MASK_ALL, RD::BARRIER_MASK_ALL);
 
 	if (current_cluster_builder) {
-		current_cluster_builder->begin(render_state.cam_transform, render_state.cam_projection, !render_state.reflection_probe.is_valid());
+		current_cluster_builder->begin(p_render_data->cam_transform, p_render_data->cam_projection, !p_render_data->reflection_probe.is_valid());
 	}
 
 	bool using_shadows = true;
 
-	if (render_state.reflection_probe.is_valid()) {
-		if (!storage->reflection_probe_renders_shadows(reflection_probe_instance_get_probe(render_state.reflection_probe))) {
+	if (p_render_data->reflection_probe.is_valid()) {
+		if (!storage->reflection_probe_renders_shadows(reflection_probe_instance_get_probe(p_render_data->reflection_probe))) {
 			using_shadows = false;
 		}
 	} else {
 		//do not render reflections when rendering a reflection probe
-		_setup_reflections(*render_state.reflection_probes, render_state.cam_transform.affine_inverse(), render_state.environment);
+		_setup_reflections(*p_render_data->reflection_probes, p_render_data->cam_transform.affine_inverse(), p_render_data->environment);
 	}
 
 	uint32_t directional_light_count = 0;
 	uint32_t positional_light_count = 0;
-	_setup_lights(*render_state.lights, render_state.cam_transform, render_state.shadow_atlas, using_shadows, directional_light_count, positional_light_count);
-	_setup_decals(*render_state.decals, render_state.cam_transform.affine_inverse());
+	_setup_lights(*p_render_data->lights, p_render_data->cam_transform, p_render_data->shadow_atlas, using_shadows, directional_light_count, positional_light_count);
+	_setup_decals(*p_render_data->decals, p_render_data->cam_transform.affine_inverse());
 
-	render_state.directional_light_count = directional_light_count;
+	p_render_data->directional_light_count = directional_light_count;
 
 	if (current_cluster_builder) {
 		current_cluster_builder->bake_cluster();
 	}
 
-	if (render_state.render_buffers.is_valid()) {
+	if (p_render_data->render_buffers.is_valid()) {
 		bool directional_shadows = false;
 		for (uint32_t i = 0; i < directional_light_count; i++) {
 			if (cluster.directional_lights[i].shadow_enabled) {
@@ -3629,7 +3625,7 @@ void RendererSceneRenderRD::_pre_opaque_render(bool p_use_ssao, bool p_use_gi, R
 			}
 		}
 		if (is_volumetric_supported()) {
-			_update_volumetric_fog(render_state.render_buffers, render_state.environment, render_state.cam_projection, render_state.cam_transform, render_state.shadow_atlas, directional_light_count, directional_shadows, positional_light_count, render_state.gi_probe_count);
+			_update_volumetric_fog(p_render_data->render_buffers, p_render_data->environment, p_render_data->cam_projection, p_render_data->cam_transform, p_render_data->shadow_atlas, directional_light_count, directional_shadows, positional_light_count, render_state.gi_probe_count);
 		}
 	}
 }
@@ -3643,24 +3639,37 @@ void RendererSceneRenderRD::render_scene(RID p_render_buffers, const Transform &
 	}
 
 	//assign render data
+	RenderDataRD render_data;
 	{
-		render_state.render_buffers = p_render_buffers;
-		render_state.cam_transform = p_cam_transform;
-		render_state.cam_projection = p_cam_projection;
-		render_state.cam_ortogonal = p_cam_projection.is_orthogonal();
-		render_state.instances = &p_instances;
-		render_state.lights = &p_lights;
-		render_state.reflection_probes = &p_reflection_probes;
-		render_state.gi_probes = &p_gi_probes;
-		render_state.decals = &p_decals;
-		render_state.lightmaps = &p_lightmaps;
-		render_state.environment = p_environment;
-		render_state.camera_effects = p_camera_effects;
-		render_state.shadow_atlas = p_shadow_atlas;
-		render_state.reflection_atlas = p_reflection_atlas;
-		render_state.reflection_probe = p_reflection_probe;
-		render_state.reflection_probe_pass = p_reflection_probe_pass;
-		render_state.screen_lod_threshold = p_screen_lod_threshold;
+		render_data.render_buffers = p_render_buffers;
+
+		render_data.cam_transform = p_cam_transform;
+		render_data.cam_projection = p_cam_projection;
+		render_data.cam_ortogonal = p_cam_projection.is_orthogonal(); // !BAS! Shouldn't this be p_cam_ortogonal ?
+		render_data.z_near = p_cam_projection.get_z_near();
+		render_data.z_far = p_cam_projection.get_z_far();
+
+		render_data.instances = &p_instances;
+		render_data.lights = &p_lights;
+		render_data.reflection_probes = &p_reflection_probes;
+		render_data.gi_probes = &p_gi_probes;
+		render_data.decals = &p_decals;
+		render_data.lightmaps = &p_lightmaps;
+		render_data.environment = p_environment;
+		render_data.camera_effects = p_camera_effects;
+		render_data.shadow_atlas = p_shadow_atlas;
+		render_data.reflection_atlas = p_reflection_atlas;
+		render_data.reflection_probe = p_reflection_probe;
+		render_data.reflection_probe_pass = p_reflection_probe_pass;
+
+		render_data.lod_distance_multiplier = p_cam_projection.get_lod_multiplier();
+		render_data.lod_camera_plane = Plane(p_cam_transform.get_origin(), -p_cam_transform.basis.get_axis(Vector3::AXIS_Z));
+
+		if (get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_DISABLE_LOD) {
+			render_data.screen_lod_threshold = 0.0;
+		} else {
+			render_data.screen_lod_threshold = p_screen_lod_threshold;
+		}
 
 		render_state.render_shadows = p_render_shadows;
 		render_state.render_shadow_count = p_render_shadow_count;
@@ -3672,9 +3681,9 @@ void RendererSceneRenderRD::render_scene(RID p_render_buffers, const Transform &
 	PagedArray<RID> empty;
 
 	if (get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_UNSHADED) {
-		render_state.lights = &empty;
-		render_state.reflection_probes = &empty;
-		render_state.gi_probes = &empty;
+		render_data.lights = &empty;
+		render_data.reflection_probes = &empty;
+		render_data.gi_probes = &empty;
 	}
 
 	//sdfgi first
@@ -3704,11 +3713,11 @@ void RendererSceneRenderRD::render_scene(RID p_render_buffers, const Transform &
 		}
 	}
 
-	if (render_buffers_owner.owns(render_state.render_buffers)) {
-		// render_state.render_buffers == p_render_buffers so we can use our already retrieved rb
+	if (render_buffers_owner.owns(render_data.render_buffers)) {
+		// render_data.render_buffers == p_render_buffers so we can use our already retrieved rb
 		current_cluster_builder = rb->cluster_builder;
-	} else if (reflection_probe_instance_owner.owns(render_state.reflection_probe)) {
-		ReflectionProbeInstance *rpi = reflection_probe_instance_owner.getornull(render_state.reflection_probe);
+	} else if (reflection_probe_instance_owner.owns(render_data.reflection_probe)) {
+		ReflectionProbeInstance *rpi = reflection_probe_instance_owner.getornull(render_data.reflection_probe);
 		ReflectionAtlas *ra = reflection_atlas_owner.getornull(rpi->atlas);
 		if (!ra) {
 			ERR_PRINT("reflection probe has no reflection atlas! Bug?");
@@ -3724,12 +3733,12 @@ void RendererSceneRenderRD::render_scene(RID p_render_buffers, const Transform &
 	if (rb != nullptr && rb->sdfgi != nullptr) {
 		rb->sdfgi->update_cascades();
 
-		rb->sdfgi->pre_process_gi(p_cam_transform, this);
+		rb->sdfgi->pre_process_gi(p_cam_transform, &render_data, this);
 	}
 
 	render_state.gi_probe_count = 0;
 	if (rb != nullptr && rb->sdfgi != nullptr) {
-		gi.setup_giprobes(render_state.render_buffers, render_state.cam_transform, *render_state.gi_probes, render_state.gi_probe_count, this);
+		gi.setup_giprobes(render_data.render_buffers, render_data.cam_transform, *render_data.gi_probes, render_state.gi_probe_count, this);
 
 		rb->sdfgi->update_light();
 	}
@@ -3737,10 +3746,12 @@ void RendererSceneRenderRD::render_scene(RID p_render_buffers, const Transform &
 	render_state.depth_prepass_used = false;
 	//calls _pre_opaque_render between depth pre-pass and opaque pass
 	if (current_cluster_builder != nullptr) {
-		_render_scene(p_render_buffers, p_cam_transform, p_cam_projection, p_cam_ortogonal, p_instances, *render_state.gi_probes, p_lightmaps, p_environment, current_cluster_builder->get_cluster_buffer(), current_cluster_builder->get_cluster_size(), current_cluster_builder->get_max_cluster_elements(), p_camera_effects, p_shadow_atlas, p_reflection_atlas, p_reflection_probe, p_reflection_probe_pass, clear_color, p_screen_lod_threshold);
-	} else {
-		_render_scene(p_render_buffers, p_cam_transform, p_cam_projection, p_cam_ortogonal, p_instances, *render_state.gi_probes, p_lightmaps, p_environment, RID(), 0, 0, p_camera_effects, p_shadow_atlas, p_reflection_atlas, p_reflection_probe, p_reflection_probe_pass, clear_color, p_screen_lod_threshold);
+		render_data.cluster_buffer = current_cluster_builder->get_cluster_buffer();
+		render_data.cluster_size = current_cluster_builder->get_cluster_size();
+		render_data.cluster_max_elements = current_cluster_builder->get_max_cluster_elements();
 	}
+
+	_render_scene(&render_data, clear_color);
 
 	if (p_render_buffers.is_valid()) {
 		if (debug_draw == RS::VIEWPORT_DEBUG_DRAW_CLUSTER_OMNI_LIGHTS || debug_draw == RS::VIEWPORT_DEBUG_DRAW_CLUSTER_SPOT_LIGHTS || debug_draw == RS::VIEWPORT_DEBUG_DRAW_CLUSTER_DECALS || debug_draw == RS::VIEWPORT_DEBUG_DRAW_CLUSTER_REFLECTION_PROBES) {
@@ -3768,7 +3779,7 @@ void RendererSceneRenderRD::render_scene(RID p_render_buffers, const Transform &
 
 		RENDER_TIMESTAMP("Tonemap");
 
-		_render_buffers_post_process_and_tonemap(p_render_buffers, p_environment, p_camera_effects, p_cam_projection);
+		_render_buffers_post_process_and_tonemap(&render_data);
 		_render_buffers_debug_draw(p_render_buffers, p_shadow_atlas, p_occluder_debug_tex);
 		if (debug_draw == RS::VIEWPORT_DEBUG_DRAW_SDFGI && rb != nullptr && rb->sdfgi != nullptr) {
 			rb->sdfgi->debug_draw(p_cam_projection, p_cam_transform, rb->width, rb->height, rb->render_target, rb->texture);

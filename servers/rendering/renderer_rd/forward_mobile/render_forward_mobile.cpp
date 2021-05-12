@@ -125,13 +125,13 @@ bool RenderForwardMobile::free(RID p_rid) {
 
 /* Render functions */
 
-RID RenderForwardMobile::_setup_render_pass_uniform_set(RenderListType p_render_list, RID p_render_buffers, RID p_radiance_texture, RID p_shadow_atlas, RID p_reflection_atlas, const PagedArray<RID> &p_lightmaps, bool p_use_directional_shadow_atlas, int p_index) {
+RID RenderForwardMobile::_setup_render_pass_uniform_set(RenderListType p_render_list, const RenderDataRD *p_render_data, RID p_radiance_texture, bool p_use_directional_shadow_atlas, int p_index) {
 	//there should always be enough uniform buffers for render passes, otherwise bugs
 	ERR_FAIL_INDEX_V(p_index, (int)scene_state.uniform_buffers.size(), RID());
 
 	RenderBufferDataForwardMobile *rb = nullptr;
-	if (p_render_buffers.is_valid()) {
-		rb = (RenderBufferDataForwardMobile *)render_buffers_get_data(p_render_buffers);
+	if (p_render_data && p_render_data->render_buffers.is_valid()) {
+		rb = (RenderBufferDataForwardMobile *)render_buffers_get_data(p_render_data->render_buffers);
 	}
 
 	// default render buffer and scene state uniform set
@@ -162,7 +162,7 @@ RID RenderForwardMobile::_setup_render_pass_uniform_set(RenderListType p_render_
 	}
 
 	{
-		RID ref_texture = p_reflection_atlas.is_valid() ? reflection_atlas_get_texture(p_reflection_atlas) : RID();
+		RID ref_texture = (p_render_data && p_render_data->reflection_atlas.is_valid()) ? reflection_atlas_get_texture(p_render_data->reflection_atlas) : RID();
 		RD::Uniform u;
 		u.binding = 3;
 		u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
@@ -179,8 +179,8 @@ RID RenderForwardMobile::_setup_render_pass_uniform_set(RenderListType p_render_
 		u.binding = 4;
 		u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 		RID texture;
-		if (p_shadow_atlas.is_valid()) {
-			texture = shadow_atlas_get_texture(p_shadow_atlas);
+		if (p_render_data && p_render_data->shadow_atlas.is_valid()) {
+			texture = shadow_atlas_get_texture(p_render_data->shadow_atlas);
 		}
 		if (!texture.is_valid()) {
 			texture = storage->texture_rd_get_default(RendererStorageRD::DEFAULT_RD_TEXTURE_WHITE);
@@ -208,8 +208,8 @@ RID RenderForwardMobile::_setup_render_pass_uniform_set(RenderListType p_render_
 		u.ids.resize(scene_state.max_lightmaps);
 		RID default_tex = storage->texture_rd_get_default(RendererStorageRD::DEFAULT_RD_TEXTURE_2D_ARRAY_WHITE);
 		for (uint32_t i = 0; i < scene_state.max_lightmaps; i++) {
-			if (i < p_lightmaps.size()) {
-				RID base = lightmap_instance_get_lightmap(p_lightmaps[i]);
+			if (p_render_data && i < p_render_data->lightmaps->size()) {
+				RID base = lightmap_instance_get_lightmap((*p_render_data->lightmaps)[i]);
 				RID texture = storage->lightmap_get_texture(base);
 				RID rd_texture = storage->texture_get_rd_texture(texture);
 				u.ids.write[i] = rd_texture;
@@ -265,7 +265,7 @@ RID RenderForwardMobile::_setup_render_pass_uniform_set(RenderListType p_render_
 		RD::Uniform u;
 		u.binding = 10;
 		u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
-		RID bbt = rb ? render_buffers_get_back_buffer_texture(p_render_buffers) : RID();
+		RID bbt = rb ? render_buffers_get_back_buffer_texture(p_render_data->render_buffers) : RID();
 		RID texture = bbt.is_valid() ? bbt : storage->texture_rd_get_default(RendererStorageRD::DEFAULT_RD_TEXTURE_BLACK);
 		u.ids.push_back(texture);
 		uniforms.push_back(u);
@@ -306,29 +306,16 @@ void RenderForwardMobile::_setup_lightmaps(const PagedArray<RID> &p_lightmaps, c
 	}
 }
 
-void RenderForwardMobile::_render_scene(RID p_render_buffer, const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, const PagedArray<GeometryInstance *> &p_instances, const PagedArray<RID> &p_gi_probes, const PagedArray<RID> &p_lightmaps, RID p_environment, RID p_cluster_buffer, uint32_t p_cluster_size, uint32_t p_cluster_max_elements, RID p_camera_effects, RID p_shadow_atlas, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass, const Color &p_default_bg_color, float p_screen_lod_threshold) {
-	// These are UNUSED here and will not have data parsed from RendererSceneRenderRD:
-	// - p_gi_probes
-	// - p_cluster_buffer
-	// - p_cluster_size
-	// - p_cluster_max_elements
-
+void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color &p_default_bg_color) {
 	RenderBufferDataForwardMobile *render_buffer = nullptr;
-	if (p_render_buffer.is_valid()) {
-		render_buffer = (RenderBufferDataForwardMobile *)render_buffers_get_data(p_render_buffer);
+	if (p_render_data->render_buffers.is_valid()) {
+		render_buffer = (RenderBufferDataForwardMobile *)render_buffers_get_data(p_render_data->render_buffers);
 	}
-	RendererSceneEnvironmentRD *env = get_environment(p_environment);
+	RendererSceneEnvironmentRD *env = get_environment(p_render_data->environment);
 
 	RENDER_TIMESTAMP("Setup 3D Scene");
 
-	float lod_distance_multiplier = p_cam_projection.get_lod_multiplier();
-	Plane lod_camera_plane(p_cam_transform.get_origin(), -p_cam_transform.basis.get_axis(Vector3::AXIS_Z));
-
-	if (get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_DISABLE_LOD) {
-		p_screen_lod_threshold = 0.0;
-	}
-
-	Vector2 vp_he = p_cam_projection.get_viewport_half_extents();
+	Vector2 vp_he = p_render_data->cam_projection.get_viewport_half_extents();
 	scene_state.ubo.viewport_size[0] = vp_he.x;
 	scene_state.ubo.viewport_size[1] = vp_he.y;
 	scene_state.ubo.directional_light_count = 0;
@@ -349,16 +336,17 @@ void RenderForwardMobile::_render_scene(RID p_render_buffer, const Transform &p_
 
 		opaque_framebuffer = render_buffer->color_fb;
 		alpha_framebuffer = opaque_framebuffer;
-	} else if (p_reflection_probe.is_valid()) {
-		uint32_t resolution = reflection_probe_instance_get_resolution(p_reflection_probe);
+	} else if (p_render_data->reflection_probe.is_valid()) {
+		uint32_t resolution = reflection_probe_instance_get_resolution(p_render_data->reflection_probe);
 		screen_size.x = resolution;
 		screen_size.y = resolution;
 
-		opaque_framebuffer = reflection_probe_instance_get_framebuffer(p_reflection_probe, p_reflection_probe_pass);
+		opaque_framebuffer = reflection_probe_instance_get_framebuffer(p_render_data->reflection_probe, p_render_data->reflection_probe_pass);
 		alpha_framebuffer = opaque_framebuffer;
 
-		if (storage->reflection_probe_is_interior(reflection_probe_instance_get_probe(p_reflection_probe))) {
-			p_environment = RID(); //no environment on interiors
+		if (storage->reflection_probe_is_interior(reflection_probe_instance_get_probe(p_render_data->reflection_probe))) {
+			p_render_data->environment = RID(); //no environment on interiors
+			env = nullptr;
 		}
 
 		reverse_cull = true;
@@ -368,12 +356,12 @@ void RenderForwardMobile::_render_scene(RID p_render_buffer, const Transform &p_
 
 	RD::get_singleton()->draw_command_begin_label("Render Setup");
 
-	_setup_lightmaps(p_lightmaps, p_cam_transform);
-	_setup_environment(p_environment, p_render_buffer, p_cam_projection, p_cam_transform, p_reflection_probe, p_reflection_probe.is_valid(), screen_size, p_shadow_atlas, !p_reflection_probe.is_valid(), p_default_bg_color, p_cam_projection.get_z_near(), p_cam_projection.get_z_far(), false);
+	_setup_lightmaps(*p_render_data->lightmaps, p_render_data->cam_transform);
+	_setup_environment(p_render_data, p_render_data->reflection_probe.is_valid(), screen_size, !p_render_data->reflection_probe.is_valid(), p_default_bg_color, false);
 
 	_update_render_base_uniform_set(); //may have changed due to the above (light buffer enlarged, as an example)
 
-	_fill_render_list(RENDER_LIST_OPAQUE, p_instances, PASS_MODE_COLOR, p_cam_projection, p_cam_transform, lod_camera_plane, lod_distance_multiplier, p_screen_lod_threshold);
+	_fill_render_list(RENDER_LIST_OPAQUE, p_render_data, PASS_MODE_COLOR);
 	render_list[RENDER_LIST_OPAQUE].sort_by_key();
 	render_list[RENDER_LIST_ALPHA].sort_by_depth();
 
@@ -395,9 +383,9 @@ void RenderForwardMobile::_render_scene(RID p_render_buffer, const Transform &p_
 
 	if (get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_OVERDRAW) {
 		clear_color = Color(0, 0, 0, 1); //in overdraw mode, BG should always be black
-	} else if (is_environment(p_environment)) {
-		RS::EnvironmentBG bg_mode = environment_get_background(p_environment);
-		float bg_energy = environment_get_bg_energy(p_environment);
+	} else if (is_environment(p_render_data->environment)) {
+		RS::EnvironmentBG bg_mode = environment_get_background(p_render_data->environment);
+		float bg_energy = environment_get_bg_energy(p_render_data->environment);
 		switch (bg_mode) {
 			case RS::ENV_BG_CLEAR_COLOR: {
 				clear_color = p_default_bg_color;
@@ -405,19 +393,19 @@ void RenderForwardMobile::_render_scene(RID p_render_buffer, const Transform &p_
 				clear_color.g *= bg_energy;
 				clear_color.b *= bg_energy;
 				/*
-				if (render_buffers_has_volumetric_fog(p_render_buffer) || environment_is_fog_enabled(p_environment)) {
+				if (render_buffers_has_volumetric_fog(p_render_data->render_buffers) || environment_is_fog_enabled(p_render_data->environment)) {
 					draw_sky_fog_only = true;
 					storage->material_set_param(sky.sky_scene_state.fog_material, "clear_color", Variant(clear_color.to_linear()));
 				}
 				*/
 			} break;
 			case RS::ENV_BG_COLOR: {
-				clear_color = environment_get_bg_color(p_environment);
+				clear_color = environment_get_bg_color(p_render_data->environment);
 				clear_color.r *= bg_energy;
 				clear_color.g *= bg_energy;
 				clear_color.b *= bg_energy;
 				/*
-				if (render_buffers_has_volumetric_fog(p_render_buffer) || environment_is_fog_enabled(p_environment)) {
+				if (render_buffers_has_volumetric_fog(p_render_data->render_buffers) || environment_is_fog_enabled(p_render_data->environment)) {
 					draw_sky_fog_only = true;
 					storage->material_set_param(sky.sky_scene_state.fog_material, "clear_color", Variant(clear_color.to_linear()));
 				}
@@ -438,21 +426,21 @@ void RenderForwardMobile::_render_scene(RID p_render_buffer, const Transform &p_
 			}
 		}
 		// setup sky if used for ambient, reflections, or background
-		if (draw_sky || draw_sky_fog_only || environment_get_reflection_source(p_environment) == RS::ENV_REFLECTION_SOURCE_SKY || environment_get_ambient_source(p_environment) == RS::ENV_AMBIENT_SOURCE_SKY) {
+		if (draw_sky || draw_sky_fog_only || environment_get_reflection_source(p_render_data->environment) == RS::ENV_REFLECTION_SOURCE_SKY || environment_get_ambient_source(p_render_data->environment) == RS::ENV_AMBIENT_SOURCE_SKY) {
 			RENDER_TIMESTAMP("Setup Sky");
 			RD::get_singleton()->draw_command_begin_label("Setup Sky");
-			CameraMatrix projection = p_cam_projection;
-			if (p_reflection_probe.is_valid()) {
+			CameraMatrix projection = p_render_data->cam_projection;
+			if (p_render_data->reflection_probe.is_valid()) {
 				CameraMatrix correction;
 				correction.set_depth_correction(true);
-				projection = correction * p_cam_projection;
+				projection = correction * p_render_data->cam_projection;
 			}
 
-			sky.setup(env, p_render_buffer, projection, p_cam_transform, screen_size, this);
+			sky.setup(env, p_render_data->render_buffers, projection, p_render_data->cam_transform, screen_size, this);
 
 			RID sky_rid = env->sky;
 			if (sky_rid.is_valid()) {
-				sky.update(env, projection, p_cam_transform, time);
+				sky.update(env, projection, p_render_data->cam_transform, time);
 				radiance_texture = sky.sky_get_radiance_texture_rd(sky_rid);
 			} else {
 				// do not try to draw sky if invalid
@@ -468,17 +456,17 @@ void RenderForwardMobile::_render_scene(RID p_render_buffer, const Transform &p_
 
 	// !BAS! Look into this, seems most of the code in here related to clustered only, may want to move this code into ForwardClustered/RenderForwardMobile before calling it from here
 	// does trigger shadow map rendering so kinda important
-	_pre_opaque_render(false, false, RID(), RID());
+	_pre_opaque_render(p_render_data, false, false, RID(), RID());
 
 	RD::get_singleton()->draw_command_begin_label("Render Opaque Pass");
 
-	scene_state.ubo.directional_light_count = _get_render_state_directional_light_count();
+	scene_state.ubo.directional_light_count = p_render_data->directional_light_count;
 
-	_setup_environment(p_environment, p_render_buffer, p_cam_projection, p_cam_transform, p_reflection_probe, p_reflection_probe.is_valid(), screen_size, p_shadow_atlas, !p_reflection_probe.is_valid(), p_default_bg_color, p_cam_projection.get_z_near(), p_cam_projection.get_z_far(), p_render_buffer.is_valid());
+	_setup_environment(p_render_data, p_render_data->reflection_probe.is_valid(), screen_size, !p_render_data->reflection_probe.is_valid(), p_default_bg_color, p_render_data->render_buffers.is_valid());
 
 	RENDER_TIMESTAMP("Render Opaque Pass");
 
-	RID rp_uniform_set = _setup_render_pass_uniform_set(RENDER_LIST_OPAQUE, p_render_buffer, radiance_texture, p_shadow_atlas, p_reflection_atlas, p_lightmaps, true);
+	RID rp_uniform_set = _setup_render_pass_uniform_set(RENDER_LIST_OPAQUE, p_render_data, radiance_texture, true);
 
 	bool can_continue_color = !scene_state.used_screen_texture && !using_ssr && !using_sss;
 	bool can_continue_depth = !scene_state.used_depth_texture && !using_ssr && !using_sss;
@@ -491,7 +479,7 @@ void RenderForwardMobile::_render_scene(RID p_render_buffer, const Transform &p_
 		Vector<Color> c;
 		c.push_back(clear_color.to_linear());
 
-		RenderListParameters render_list_params(render_list[RENDER_LIST_OPAQUE].elements.ptr(), render_list[RENDER_LIST_OPAQUE].element_info.ptr(), render_list[RENDER_LIST_OPAQUE].elements.size(), reverse_cull, PASS_MODE_COLOR, rp_uniform_set, get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_WIREFRAME, Vector2(), lod_camera_plane, lod_distance_multiplier, p_screen_lod_threshold);
+		RenderListParameters render_list_params(render_list[RENDER_LIST_OPAQUE].elements.ptr(), render_list[RENDER_LIST_OPAQUE].element_info.ptr(), render_list[RENDER_LIST_OPAQUE].elements.size(), reverse_cull, PASS_MODE_COLOR, rp_uniform_set, get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_WIREFRAME, Vector2(), p_render_data->lod_camera_plane, p_render_data->lod_distance_multiplier, p_render_data->screen_lod_threshold);
 		_render_list_with_threads(&render_list_params, opaque_framebuffer, keep_color ? RD::INITIAL_ACTION_KEEP : RD::INITIAL_ACTION_CLEAR, will_continue_color ? RD::FINAL_ACTION_CONTINUE : RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_CLEAR, will_continue_depth ? RD::FINAL_ACTION_CONTINUE : RD::FINAL_ACTION_READ, c, 1.0, 0);
 	}
 
@@ -500,14 +488,14 @@ void RenderForwardMobile::_render_scene(RID p_render_buffer, const Transform &p_
 	if (draw_sky || draw_sky_fog_only) {
 		RENDER_TIMESTAMP("Render Sky");
 
-		CameraMatrix projection = p_cam_projection;
-		if (p_reflection_probe.is_valid()) {
+		CameraMatrix projection = p_render_data->cam_projection;
+		if (p_render_data->reflection_probe.is_valid()) {
 			CameraMatrix correction;
 			correction.set_depth_correction(true);
-			projection = correction * p_cam_projection;
+			projection = correction * p_render_data->cam_projection;
 		}
 		RD::get_singleton()->draw_command_begin_label("Draw Sky");
-		sky.draw(env, can_continue_color, can_continue_depth, opaque_framebuffer, projection, p_cam_transform, time);
+		sky.draw(env, can_continue_color, can_continue_depth, opaque_framebuffer, projection, p_render_data->cam_transform, time);
 		RD::get_singleton()->draw_command_end_label();
 	}
 
@@ -529,12 +517,12 @@ void RenderForwardMobile::_render_scene(RID p_render_buffer, const Transform &p_
 
 	RD::get_singleton()->draw_command_begin_label("Render Transparent Pass");
 
-	rp_uniform_set = _setup_render_pass_uniform_set(RENDER_LIST_ALPHA, p_render_buffer, radiance_texture, p_shadow_atlas, p_reflection_atlas, p_lightmaps, true);
+	rp_uniform_set = _setup_render_pass_uniform_set(RENDER_LIST_ALPHA, p_render_data, radiance_texture, true);
 
-	_setup_environment(p_environment, p_render_buffer, p_cam_projection, p_cam_transform, p_reflection_probe, p_reflection_probe.is_valid(), screen_size, p_shadow_atlas, !p_reflection_probe.is_valid(), p_default_bg_color, p_cam_projection.get_z_near(), p_cam_projection.get_z_far(), false);
+	_setup_environment(p_render_data, p_render_data->reflection_probe.is_valid(), screen_size, !p_render_data->reflection_probe.is_valid(), p_default_bg_color, false);
 
 	{
-		RenderListParameters render_list_params(render_list[RENDER_LIST_ALPHA].elements.ptr(), render_list[RENDER_LIST_ALPHA].element_info.ptr(), render_list[RENDER_LIST_ALPHA].elements.size(), reverse_cull, PASS_MODE_COLOR, rp_uniform_set, get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_WIREFRAME, Vector2(), lod_camera_plane, lod_distance_multiplier, p_screen_lod_threshold);
+		RenderListParameters render_list_params(render_list[RENDER_LIST_ALPHA].elements.ptr(), render_list[RENDER_LIST_ALPHA].element_info.ptr(), render_list[RENDER_LIST_ALPHA].elements.size(), reverse_cull, PASS_MODE_COLOR, rp_uniform_set, get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_WIREFRAME, Vector2(), p_render_data->lod_camera_plane, p_render_data->lod_distance_multiplier, p_render_data->screen_lod_threshold);
 		_render_list_with_threads(&render_list_params, alpha_framebuffer, can_continue_color ? RD::INITIAL_ACTION_CONTINUE : RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_READ, can_continue_depth ? RD::INITIAL_ACTION_CONTINUE : RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_READ);
 	}
 
@@ -564,18 +552,29 @@ void RenderForwardMobile::_render_shadow_append(RID p_framebuffer, const PagedAr
 
 	SceneState::ShadowPass shadow_pass;
 
+	RenderDataRD render_data;
+	render_data.cam_projection = p_projection;
+	render_data.cam_transform = p_transform;
+	render_data.z_near = 0.0;
+	render_data.z_far = p_zfar;
+	render_data.instances = &p_instances;
+	render_data.lod_camera_plane = p_camera_plane;
+	render_data.lod_distance_multiplier = p_lod_distance_multiplier;
+
 	scene_state.ubo.dual_paraboloid_side = p_use_dp_flip ? -1 : 1;
 
-	_setup_environment(RID(), RID(), p_projection, p_transform, RID(), true, Vector2(1, 1), RID(), !p_flip_y, Color(), 0, p_zfar, false, p_use_pancake, shadow_pass_index);
+	_setup_environment(&render_data, true, Vector2(1, 1), !p_flip_y, Color(), false, p_use_pancake, shadow_pass_index);
 
 	if (get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_DISABLE_LOD) {
-		p_screen_lod_threshold = 0.0;
+		render_data.screen_lod_threshold = 0.0;
+	} else {
+		render_data.screen_lod_threshold = p_screen_lod_threshold;
 	}
 
 	PassMode pass_mode = p_use_dp ? PASS_MODE_SHADOW_DP : PASS_MODE_SHADOW;
 
 	uint32_t render_list_from = render_list[RENDER_LIST_SECONDARY].elements.size();
-	_fill_render_list(RENDER_LIST_SECONDARY, p_instances, pass_mode, p_projection, p_transform, p_camera_plane, p_lod_distance_multiplier, p_screen_lod_threshold, true);
+	_fill_render_list(RENDER_LIST_SECONDARY, &render_data, pass_mode, true);
 	uint32_t render_list_size = render_list[RENDER_LIST_SECONDARY].elements.size() - render_list_from;
 	render_list[RENDER_LIST_SECONDARY].sort_by_key_range(render_list_from, render_list_size);
 	_fill_instance_data(RENDER_LIST_SECONDARY, render_list_from, render_list_size, false);
@@ -594,8 +593,8 @@ void RenderForwardMobile::_render_shadow_append(RID p_framebuffer, const PagedAr
 
 		shadow_pass.rp_uniform_set = RID(); //will be filled later when instance buffer is complete
 		shadow_pass.camera_plane = p_camera_plane;
-		shadow_pass.screen_lod_threshold = p_screen_lod_threshold;
-		shadow_pass.lod_distance_multiplier = p_lod_distance_multiplier;
+		shadow_pass.screen_lod_threshold = render_data.screen_lod_threshold;
+		shadow_pass.lod_distance_multiplier = render_data.lod_distance_multiplier;
 
 		shadow_pass.framebuffer = p_framebuffer;
 		shadow_pass.initial_depth_action = p_begin ? (p_clear_region ? RD::INITIAL_ACTION_CLEAR_REGION : RD::INITIAL_ACTION_CLEAR) : (p_clear_region ? RD::INITIAL_ACTION_CLEAR_REGION_CONTINUE : RD::INITIAL_ACTION_CONTINUE);
@@ -612,7 +611,7 @@ void RenderForwardMobile::_render_shadow_process() {
 	for (uint32_t i = 0; i < scene_state.shadow_passes.size(); i++) {
 		//render passes need to be configured after instance buffer is done, since they need the latest version
 		SceneState::ShadowPass &shadow_pass = scene_state.shadow_passes[i];
-		shadow_pass.rp_uniform_set = _setup_render_pass_uniform_set(RENDER_LIST_SECONDARY, RID(), RID(), RID(), RID(), PagedArray<RID>(), false, i);
+		shadow_pass.rp_uniform_set = _setup_render_pass_uniform_set(RENDER_LIST_SECONDARY, nullptr, RID(), false, i);
 	}
 
 	RD::get_singleton()->draw_command_end_label();
@@ -645,14 +644,19 @@ void RenderForwardMobile::_render_material(const Transform &p_cam_transform, con
 	scene_state.ubo.dual_paraboloid_side = 0;
 	scene_state.ubo.material_uv2_mode = false;
 
-	_setup_environment(RID(), RID(), p_cam_projection, p_cam_transform, RID(), true, Vector2(1, 1), RID(), false, Color(), 0, 0);
+	RenderDataRD render_data;
+	render_data.cam_projection = p_cam_projection;
+	render_data.cam_transform = p_cam_transform;
+	render_data.instances = &p_instances;
+
+	_setup_environment(&render_data, true, Vector2(1, 1), false, Color());
 
 	PassMode pass_mode = PASS_MODE_DEPTH_MATERIAL;
-	_fill_render_list(RENDER_LIST_SECONDARY, p_instances, pass_mode, p_cam_projection, p_cam_transform);
+	_fill_render_list(RENDER_LIST_SECONDARY, &render_data, pass_mode);
 	render_list[RENDER_LIST_SECONDARY].sort_by_key();
 	_fill_instance_data(RENDER_LIST_SECONDARY);
 
-	RID rp_uniform_set = _setup_render_pass_uniform_set(RENDER_LIST_SECONDARY, RID(), RID(), RID(), RID(), PagedArray<RID>());
+	RID rp_uniform_set = _setup_render_pass_uniform_set(RENDER_LIST_SECONDARY, nullptr, RID());
 
 	RENDER_TIMESTAMP("Render Material");
 
@@ -683,14 +687,17 @@ void RenderForwardMobile::_render_uv2(const PagedArray<GeometryInstance *> &p_in
 	scene_state.ubo.dual_paraboloid_side = 0;
 	scene_state.ubo.material_uv2_mode = true;
 
-	_setup_environment(RID(), RID(), CameraMatrix(), Transform(), RID(), true, Vector2(1, 1), RID(), false, Color(), 0, 0);
+	RenderDataRD render_data;
+	render_data.instances = &p_instances;
+
+	_setup_environment(&render_data, true, Vector2(1, 1), false, Color());
 
 	PassMode pass_mode = PASS_MODE_DEPTH_MATERIAL;
-	_fill_render_list(RENDER_LIST_SECONDARY, p_instances, pass_mode, CameraMatrix(), Transform());
+	_fill_render_list(RENDER_LIST_SECONDARY, &render_data, pass_mode);
 	render_list[RENDER_LIST_SECONDARY].sort_by_key();
 	_fill_instance_data(RENDER_LIST_SECONDARY);
 
-	RID rp_uniform_set = _setup_render_pass_uniform_set(RENDER_LIST_SECONDARY, RID(), RID(), RID(), RID(), PagedArray<RID>());
+	RID rp_uniform_set = _setup_render_pass_uniform_set(RENDER_LIST_SECONDARY, nullptr, RID());
 
 	RENDER_TIMESTAMP("Render Material");
 
@@ -747,15 +754,22 @@ void RenderForwardMobile::_render_particle_collider_heightfield(RID p_fb, const 
 	_update_render_base_uniform_set();
 	scene_state.ubo.dual_paraboloid_side = 0;
 
-	_setup_environment(RID(), RID(), p_cam_projection, p_cam_transform, RID(), true, Vector2(1, 1), RID(), true, Color(), 0, p_cam_projection.get_z_far(), false, false);
+	RenderDataRD render_data;
+	render_data.cam_projection = p_cam_projection;
+	render_data.cam_transform = p_cam_transform;
+	render_data.z_near = 0.0;
+	render_data.z_far = p_cam_projection.get_z_far();
+	render_data.instances = &p_instances;
+
+	_setup_environment(&render_data, true, Vector2(1, 1), true, Color(), false, false);
 
 	PassMode pass_mode = PASS_MODE_SHADOW;
 
-	_fill_render_list(RENDER_LIST_SECONDARY, p_instances, pass_mode, p_cam_projection, p_cam_transform);
+	_fill_render_list(RENDER_LIST_SECONDARY, &render_data, pass_mode);
 	render_list[RENDER_LIST_SECONDARY].sort_by_key();
 	_fill_instance_data(RENDER_LIST_SECONDARY);
 
-	RID rp_uniform_set = _setup_render_pass_uniform_set(RENDER_LIST_SECONDARY, RID(), RID(), RID(), RID(), PagedArray<RID>());
+	RID rp_uniform_set = _setup_render_pass_uniform_set(RENDER_LIST_SECONDARY, nullptr, RID());
 
 	RENDER_TIMESTAMP("Render Collider Heightfield");
 
@@ -902,7 +916,7 @@ RID RenderForwardMobile::_render_buffers_get_normal_texture(RID p_render_buffers
 	return RID();
 }
 
-void RenderForwardMobile::_fill_render_list(RenderListType p_render_list, const PagedArray<GeometryInstance *> &p_instances, PassMode p_pass_mode, const CameraMatrix &p_cam_projection, const Transform &p_cam_transform, const Plane &p_lod_plane, float p_lod_distance_multiplier, float p_screen_lod_threshold, bool p_append) {
+void RenderForwardMobile::_fill_render_list(RenderListType p_render_list, const RenderDataRD *p_render_data, PassMode p_pass_mode, bool p_append) {
 	if (p_render_list == RENDER_LIST_OPAQUE) {
 		scene_state.used_sss = false;
 		scene_state.used_screen_texture = false;
@@ -911,9 +925,9 @@ void RenderForwardMobile::_fill_render_list(RenderListType p_render_list, const 
 	}
 	uint32_t lightmap_captures_used = 0;
 
-	Plane near_plane(p_cam_transform.origin, -p_cam_transform.basis.get_axis(Vector3::AXIS_Z));
-	near_plane.d += p_cam_projection.get_z_near();
-	float z_max = p_cam_projection.get_z_far() - p_cam_projection.get_z_near();
+	Plane near_plane(p_render_data->cam_transform.origin, -p_render_data->cam_transform.basis.get_axis(Vector3::AXIS_Z));
+	near_plane.d += p_render_data->cam_projection.get_z_near();
+	float z_max = p_render_data->cam_projection.get_z_far() - p_render_data->cam_projection.get_z_near();
 
 	RenderList *rl = &render_list[p_render_list];
 
@@ -929,8 +943,8 @@ void RenderForwardMobile::_fill_render_list(RenderListType p_render_list, const 
 
 	//fill list
 
-	for (int i = 0; i < (int)p_instances.size(); i++) {
-		GeometryInstanceForwardMobile *inst = static_cast<GeometryInstanceForwardMobile *>(p_instances[i]);
+	for (int i = 0; i < (int)p_render_data->instances->size(); i++) {
+		GeometryInstanceForwardMobile *inst = static_cast<GeometryInstanceForwardMobile *>((*p_render_data->instances)[i]);
 
 		Vector3 support_min = inst->transformed_aabb.get_support(-near_plane.normal);
 		inst->depth = near_plane.distance_to(support_min);
@@ -988,13 +1002,13 @@ void RenderForwardMobile::_fill_render_list(RenderListType p_render_list, const 
 
 			// LOD
 
-			if (p_screen_lod_threshold > 0.0 && storage->mesh_surface_has_lod(surf->surface)) {
+			if (p_render_data->screen_lod_threshold > 0.0 && storage->mesh_surface_has_lod(surf->surface)) {
 				//lod
-				Vector3 lod_support_min = inst->transformed_aabb.get_support(-p_lod_plane.normal);
-				Vector3 lod_support_max = inst->transformed_aabb.get_support(p_lod_plane.normal);
+				Vector3 lod_support_min = inst->transformed_aabb.get_support(-p_render_data->lod_camera_plane.normal);
+				Vector3 lod_support_max = inst->transformed_aabb.get_support(p_render_data->lod_camera_plane.normal);
 
-				float distance_min = p_lod_plane.distance_to(lod_support_min);
-				float distance_max = p_lod_plane.distance_to(lod_support_max);
+				float distance_min = p_render_data->lod_camera_plane.distance_to(lod_support_min);
+				float distance_max = p_render_data->lod_camera_plane.distance_to(lod_support_max);
 
 				float distance = 0.0;
 
@@ -1007,7 +1021,7 @@ void RenderForwardMobile::_fill_render_list(RenderListType p_render_list, const 
 					distance = -distance_max;
 				}
 
-				surf->lod_index = storage->mesh_surface_get_lod(surf->surface, inst->lod_model_scale * inst->lod_bias, distance * p_lod_distance_multiplier, p_screen_lod_threshold);
+				surf->lod_index = storage->mesh_surface_get_lod(surf->surface, inst->lod_model_scale * inst->lod_bias, distance * p_render_data->lod_distance_multiplier, p_render_data->screen_lod_threshold);
 			} else {
 				surf->lod_index = 0;
 			}
@@ -1058,25 +1072,25 @@ void RenderForwardMobile::_fill_render_list(RenderListType p_render_list, const 
 	}
 }
 
-void RenderForwardMobile::_setup_environment(RID p_environment, RID p_render_buffers, const CameraMatrix &p_cam_projection, const Transform &p_cam_transform, RID p_reflection_probe, bool p_no_fog, const Size2i &p_screen_size, RID p_shadow_atlas, bool p_flip_y, const Color &p_default_bg_color, float p_znear, float p_zfar, bool p_opaque_render_buffers, bool p_pancake_shadows, int p_index) {
+void RenderForwardMobile::_setup_environment(const RenderDataRD *p_render_data, bool p_no_fog, const Size2i &p_screen_size, bool p_flip_y, const Color &p_default_bg_color, bool p_opaque_render_buffers, bool p_pancake_shadows, int p_index) {
 	//!BAS! need to go through this and find out what we don't need anymore
 
 	// This populates our UBO with main scene data that is pushed into set 1
 
-	//CameraMatrix projection = p_cam_projection;
+	//CameraMatrix projection = p_render_data->cam_projection;
 	//projection.flip_y(); // Vulkan and modern APIs use Y-Down
 	CameraMatrix correction;
 	correction.set_depth_correction(p_flip_y);
-	CameraMatrix projection = correction * p_cam_projection;
+	CameraMatrix projection = correction * p_render_data->cam_projection;
 
 	//store camera into ubo
 	RendererStorageRD::store_camera(projection, scene_state.ubo.projection_matrix);
 	RendererStorageRD::store_camera(projection.inverse(), scene_state.ubo.inv_projection_matrix);
-	RendererStorageRD::store_transform(p_cam_transform, scene_state.ubo.camera_matrix);
-	RendererStorageRD::store_transform(p_cam_transform.affine_inverse(), scene_state.ubo.inv_camera_matrix);
+	RendererStorageRD::store_transform(p_render_data->cam_transform, scene_state.ubo.camera_matrix);
+	RendererStorageRD::store_transform(p_render_data->cam_transform.affine_inverse(), scene_state.ubo.inv_camera_matrix);
 
-	scene_state.ubo.z_far = p_zfar;
-	scene_state.ubo.z_near = p_znear;
+	scene_state.ubo.z_far = p_render_data->z_far;
+	scene_state.ubo.z_near = p_render_data->z_near;
 
 	scene_state.ubo.pancake_shadows = p_pancake_shadows;
 
@@ -1094,19 +1108,8 @@ void RenderForwardMobile::_setup_environment(RID p_environment, RID p_render_buf
 	scene_state.ubo.screen_pixel_size[0] = screen_pixel_size.x;
 	scene_state.ubo.screen_pixel_size[1] = screen_pixel_size.y;
 
-	/*
-	scene_state.ubo.cluster_shift = get_shift_from_power_of_2(p_cluster_size);
-	scene_state.ubo.max_cluster_element_count_div_32 = p_max_cluster_elements / 32;
-	{
-		uint32_t cluster_screen_width = (p_screen_size.width - 1) / p_cluster_size + 1;
-		uint32_t cluster_screen_height = (p_screen_size.height - 1) / p_cluster_size + 1;
-		scene_state.ubo.cluster_type_size = cluster_screen_width * cluster_screen_height * (scene_state.ubo.max_cluster_element_count_div_32 + 32);
-		scene_state.ubo.cluster_width = cluster_screen_width;
-	}
-	*/
-
-	if (p_shadow_atlas.is_valid()) {
-		Vector2 sas = shadow_atlas_get_size(p_shadow_atlas);
+	if (p_render_data->shadow_atlas.is_valid()) {
+		Vector2 sas = shadow_atlas_get_size(p_render_data->shadow_atlas);
 		scene_state.ubo.shadow_atlas_pixel_size[0] = 1.0 / sas.x;
 		scene_state.ubo.shadow_atlas_pixel_size[1] = 1.0 / sas.y;
 	}
@@ -1124,22 +1127,22 @@ void RenderForwardMobile::_setup_environment(RID p_environment, RID p_render_buf
 	scene_state.ubo.volumetric_fog_enabled = false;
 	scene_state.ubo.fog_enabled = false;
 
-	if (p_render_buffers.is_valid()) {
-		RenderBufferDataForwardMobile *render_buffers = (RenderBufferDataForwardMobile *)render_buffers_get_data(p_render_buffers);
+	if (p_render_data->render_buffers.is_valid()) {
+		RenderBufferDataForwardMobile *render_buffers = (RenderBufferDataForwardMobile *)render_buffers_get_data(p_render_data->render_buffers);
 		if (render_buffers->msaa != RS::VIEWPORT_MSAA_DISABLED) {
 			scene_state.ubo.gi_upscale_for_msaa = true;
 		}
 
-		if (render_buffers_has_volumetric_fog(p_render_buffers)) {
+		if (render_buffers_has_volumetric_fog(p_render_data->render_buffers)) {
 			scene_state.ubo.volumetric_fog_enabled = true;
-			float fog_end = render_buffers_get_volumetric_fog_end(p_render_buffers);
+			float fog_end = render_buffers_get_volumetric_fog_end(p_render_data->render_buffers);
 			if (fog_end > 0.0) {
 				scene_state.ubo.volumetric_fog_inv_length = 1.0 / fog_end;
 			} else {
 				scene_state.ubo.volumetric_fog_inv_length = 1.0;
 			}
 
-			float fog_detail_spread = render_buffers_get_volumetric_fog_detail_spread(p_render_buffers); //reverse lookup
+			float fog_detail_spread = render_buffers_get_volumetric_fog_detail_spread(p_render_data->render_buffers); //reverse lookup
 			if (fog_detail_spread > 0.0) {
 				scene_state.ubo.volumetric_fog_detail_spread = 1.0 / fog_detail_spread;
 			} else {
@@ -1160,18 +1163,18 @@ void RenderForwardMobile::_setup_environment(RID p_environment, RID p_render_buf
 		scene_state.ubo.use_reflection_cubemap = false;
 		scene_state.ubo.ssao_enabled = false;
 
-	} else if (is_environment(p_environment)) {
-		RS::EnvironmentBG env_bg = environment_get_background(p_environment);
-		RS::EnvironmentAmbientSource ambient_src = environment_get_ambient_source(p_environment);
+	} else if (is_environment(p_render_data->environment)) {
+		RS::EnvironmentBG env_bg = environment_get_background(p_render_data->environment);
+		RS::EnvironmentAmbientSource ambient_src = environment_get_ambient_source(p_render_data->environment);
 
-		float bg_energy = environment_get_bg_energy(p_environment);
+		float bg_energy = environment_get_bg_energy(p_render_data->environment);
 		scene_state.ubo.ambient_light_color_energy[3] = bg_energy;
 
-		scene_state.ubo.ambient_color_sky_mix = environment_get_ambient_sky_contribution(p_environment);
+		scene_state.ubo.ambient_color_sky_mix = environment_get_ambient_sky_contribution(p_render_data->environment);
 
 		//ambient
 		if (ambient_src == RS::ENV_AMBIENT_SOURCE_BG && (env_bg == RS::ENV_BG_CLEAR_COLOR || env_bg == RS::ENV_BG_COLOR)) {
-			Color color = env_bg == RS::ENV_BG_CLEAR_COLOR ? p_default_bg_color : environment_get_bg_color(p_environment);
+			Color color = env_bg == RS::ENV_BG_CLEAR_COLOR ? p_default_bg_color : environment_get_bg_color(p_render_data->environment);
 			color = color.to_linear();
 
 			scene_state.ubo.ambient_light_color_energy[0] = color.r * bg_energy;
@@ -1180,15 +1183,15 @@ void RenderForwardMobile::_setup_environment(RID p_environment, RID p_render_buf
 			scene_state.ubo.use_ambient_light = true;
 			scene_state.ubo.use_ambient_cubemap = false;
 		} else {
-			float energy = environment_get_ambient_light_energy(p_environment);
-			Color color = environment_get_ambient_light_color(p_environment);
+			float energy = environment_get_ambient_light_energy(p_render_data->environment);
+			Color color = environment_get_ambient_light_color(p_render_data->environment);
 			color = color.to_linear();
 			scene_state.ubo.ambient_light_color_energy[0] = color.r * energy;
 			scene_state.ubo.ambient_light_color_energy[1] = color.g * energy;
 			scene_state.ubo.ambient_light_color_energy[2] = color.b * energy;
 
-			Basis sky_transform = environment_get_sky_orientation(p_environment);
-			sky_transform = sky_transform.inverse() * p_cam_transform.basis;
+			Basis sky_transform = environment_get_sky_orientation(p_render_data->environment);
+			sky_transform = sky_transform.inverse() * p_render_data->cam_transform.basis;
 			RendererStorageRD::store_transform_3x3(sky_transform, scene_state.ubo.radiance_inverse_xform);
 
 			scene_state.ubo.use_ambient_cubemap = (ambient_src == RS::ENV_AMBIENT_SOURCE_BG && env_bg == RS::ENV_BG_SKY) || ambient_src == RS::ENV_AMBIENT_SOURCE_SKY;
@@ -1196,43 +1199,43 @@ void RenderForwardMobile::_setup_environment(RID p_environment, RID p_render_buf
 		}
 
 		//specular
-		RS::EnvironmentReflectionSource ref_src = environment_get_reflection_source(p_environment);
+		RS::EnvironmentReflectionSource ref_src = environment_get_reflection_source(p_render_data->environment);
 		if ((ref_src == RS::ENV_REFLECTION_SOURCE_BG && env_bg == RS::ENV_BG_SKY) || ref_src == RS::ENV_REFLECTION_SOURCE_SKY) {
 			scene_state.ubo.use_reflection_cubemap = true;
 		} else {
 			scene_state.ubo.use_reflection_cubemap = false;
 		}
 
-		scene_state.ubo.ssao_enabled = p_opaque_render_buffers && environment_is_ssao_enabled(p_environment);
-		scene_state.ubo.ssao_ao_affect = environment_get_ssao_ao_affect(p_environment);
-		scene_state.ubo.ssao_light_affect = environment_get_ssao_light_affect(p_environment);
+		scene_state.ubo.ssao_enabled = p_opaque_render_buffers && environment_is_ssao_enabled(p_render_data->environment);
+		scene_state.ubo.ssao_ao_affect = environment_get_ssao_ao_affect(p_render_data->environment);
+		scene_state.ubo.ssao_light_affect = environment_get_ssao_light_affect(p_render_data->environment);
 
-		Color ao_color = environment_get_ao_color(p_environment).to_linear();
+		Color ao_color = environment_get_ao_color(p_render_data->environment).to_linear();
 		scene_state.ubo.ao_color[0] = ao_color.r;
 		scene_state.ubo.ao_color[1] = ao_color.g;
 		scene_state.ubo.ao_color[2] = ao_color.b;
 		scene_state.ubo.ao_color[3] = ao_color.a;
 
-		scene_state.ubo.fog_enabled = environment_is_fog_enabled(p_environment);
-		scene_state.ubo.fog_density = environment_get_fog_density(p_environment);
-		scene_state.ubo.fog_height = environment_get_fog_height(p_environment);
-		scene_state.ubo.fog_height_density = environment_get_fog_height_density(p_environment);
+		scene_state.ubo.fog_enabled = environment_is_fog_enabled(p_render_data->environment);
+		scene_state.ubo.fog_density = environment_get_fog_density(p_render_data->environment);
+		scene_state.ubo.fog_height = environment_get_fog_height(p_render_data->environment);
+		scene_state.ubo.fog_height_density = environment_get_fog_height_density(p_render_data->environment);
 		if (scene_state.ubo.fog_height_density >= 0.0001) {
 			scene_state.ubo.fog_height_density = 1.0 / scene_state.ubo.fog_height_density;
 		}
-		scene_state.ubo.fog_aerial_perspective = environment_get_fog_aerial_perspective(p_environment);
+		scene_state.ubo.fog_aerial_perspective = environment_get_fog_aerial_perspective(p_render_data->environment);
 
-		Color fog_color = environment_get_fog_light_color(p_environment).to_linear();
-		float fog_energy = environment_get_fog_light_energy(p_environment);
+		Color fog_color = environment_get_fog_light_color(p_render_data->environment).to_linear();
+		float fog_energy = environment_get_fog_light_energy(p_render_data->environment);
 
 		scene_state.ubo.fog_light_color[0] = fog_color.r * fog_energy;
 		scene_state.ubo.fog_light_color[1] = fog_color.g * fog_energy;
 		scene_state.ubo.fog_light_color[2] = fog_color.b * fog_energy;
 
-		scene_state.ubo.fog_sun_scatter = environment_get_fog_sun_scatter(p_environment);
+		scene_state.ubo.fog_sun_scatter = environment_get_fog_sun_scatter(p_render_data->environment);
 
 	} else {
-		if (p_reflection_probe.is_valid() && storage->reflection_probe_is_interior(reflection_probe_instance_get_probe(p_reflection_probe))) {
+		if (p_render_data->reflection_probe.is_valid() && storage->reflection_probe_is_interior(reflection_probe_instance_get_probe(p_render_data->reflection_probe))) {
 			scene_state.ubo.use_ambient_light = false;
 		} else {
 			scene_state.ubo.use_ambient_light = true;
