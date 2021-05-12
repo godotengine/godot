@@ -372,6 +372,12 @@
 				Returns the window size including decorations like window borders.
 			</description>
 		</method>
+		<method name="get_restart_on_exit_arguments" qualifiers="const">
+			<return type="PoolStringArray" />
+			<description>
+				Returns the list of command line arguments that will be used when the project automatically restarts using [method set_restart_on_exit]. See also [method is_restart_on_exit_set].
+			</description>
+		</method>
 		<method name="get_scancode_string" qualifiers="const">
 			<return type="String" />
 			<argument index="0" name="code" type="int" />
@@ -700,6 +706,12 @@
 				[b]Note:[/b] This method is implemented on Android, iOS, Linux, macOS and Windows.
 			</description>
 		</method>
+		<method name="is_restart_on_exit_set" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the project will automatically restart when it exits for any reason, [code]false[/code] otherwise. See also [method set_restart_on_exit] and [method get_restart_on_exit_arguments].
+			</description>
+		</method>
 		<method name="is_scancode_unicode" qualifiers="const">
 			<return type="bool" />
 			<argument index="0" name="code" type="int" />
@@ -945,6 +957,17 @@
 				Sets the game's icon using a multi-size platform-specific icon file ([code]*.ico[/code] on Windows and [code]*.icns[/code] on macOS).
 				Appropriate size sub-icons are used for window caption, taskbar/dock and window selection dialog.
 				[b]Note:[/b] This method is implemented on macOS and Windows.
+			</description>
+		</method>
+		<method name="set_restart_on_exit">
+			<return type="void" />
+			<argument index="0" name="restart" type="bool" />
+			<argument index="1" name="arguments" type="PoolStringArray" default="PoolStringArray(  )" />
+			<description>
+				If [code]restart[/code] is [code]true[/code], restarts the project automatically when it is exited with [method SceneTree.quit] or [constant Node.NOTIFICATION_WM_QUIT_REQUEST]. Command line [code]arguments[/code] can be supplied. To restart the project with the same command line arguments as originally used to run the project, pass [method get_cmdline_args] as the value for [code]arguments[/code].
+				[method set_restart_on_exit] can be used to apply setting changes that require a restart. See also [method is_restart_on_exit_set] and [method get_restart_on_exit_arguments].
+				[b]Note:[/b] This method is only effective on desktop platforms, and only when the project isn't started from the editor. It will have no effect on mobile and Web platforms, or when the project is started from the editor.
+				[b]Note:[/b] If the project process crashes or is [i]killed[/i] by the user (by sending [code]SIGKILL[/code] instead of the usual [code]SIGTERM[/code]), the project won't restart automatically.
 			</description>
 		</method>
 		<method name="set_thread_name">
