@@ -32,6 +32,7 @@
 #define SHAPE_SW_H
 
 #include "core/math/geometry_3d.h"
+#include "core/templates/local_vector.h"
 #include "servers/physics_server_3d.h"
 
 class Shape3DSW;
@@ -385,6 +386,21 @@ struct HeightMapShape3DSW : public ConcaveShape3DSW {
 	int depth = 0;
 	Vector3 local_origin;
 
+	// Accelerator.
+	struct Range {
+		real_t min = 0.0;
+		real_t max = 0.0;
+	};
+	LocalVector<Range> bounds_grid;
+	int bounds_grid_width = 0;
+	int bounds_grid_depth = 0;
+
+	static const int BOUNDS_CHUNK_SIZE = 16;
+
+	_FORCE_INLINE_ const Range &_get_bounds_chunk(int p_x, int p_z) const {
+		return bounds_grid[(p_z * bounds_grid_width) + p_x];
+	}
+
 	_FORCE_INLINE_ real_t _get_height(int p_x, int p_z) const {
 		return heights[(p_z * width) + p_x];
 	}
@@ -396,6 +412,11 @@ struct HeightMapShape3DSW : public ConcaveShape3DSW {
 	}
 
 	void _get_cell(const Vector3 &p_point, int &r_x, int &r_y, int &r_z) const;
+
+	void _build_accelerator();
+
+	template <typename ProcessFunction>
+	bool _intersect_grid_segment(ProcessFunction &p_process, const Vector3 &p_begin, const Vector3 &p_end, int p_width, int p_depth, const Vector3 &offset, Vector3 &r_point, Vector3 &r_normal) const;
 
 	void _setup(const Vector<real_t> &p_heights, int p_width, int p_depth, real_t p_min_height, real_t p_max_height);
 
