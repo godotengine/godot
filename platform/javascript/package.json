@@ -23,6 +23,6 @@
     "eslint": "^7.9.0",
     "eslint-config-airbnb-base": "^14.2.0",
     "eslint-plugin-import": "^2.22.0",
-    "jsdoc": "^3.6.6"
+    "jsdoc": "github:jsdoc/jsdoc#544a992824631fc652183d8b0b4b1281dc961560"
   }
 }
