@@ -2085,9 +2085,11 @@ bool Main::start() {
 		}
 #endif
 
-		bool embed_subwindows = GLOBAL_DEF("display/window/subwindows/embed_subwindows", false);
+		// Work around NVIDIA proprietary driver bug that causes frequent X11 freezes (GH-41614).
+		GLOBAL_DEF("display/window/subwindows/embed_subwindows.Linux", true);
+		const bool embed_subwindows = GLOBAL_DEF("display/window/subwindows/embed_subwindows", false);
 
-		if (single_window || (!project_manager && !editor && embed_subwindows)) {
+		if (single_window || (!editor && embed_subwindows)) {
 			sml->get_root()->set_embed_subwindows_hint(true);
 		}
 		ResourceLoader::add_custom_loaders();
