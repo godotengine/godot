@@ -117,7 +117,7 @@ public:
 			int ret = STEP_YIELD_BIT;
 			switch (mode) {
 				case VisualScriptYield::YIELD_RETURN:
-					ret = STEP_EXIT_FUNCTION_BIT;
+					ret = STEP_YIELD_BIT;
 					break; //return the yield
 				case VisualScriptYield::YIELD_FRAME:
 					state->connect_to_signal(tree, "idle_frame", Array());
