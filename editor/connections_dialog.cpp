@@ -66,8 +66,8 @@ public:
 	bool _set(const StringName &p_name, const Variant &p_value) {
 		String name = p_name;
 
-		if (name.begins_with("bind/")) {
-			int which = name.get_slice("/", 1).to_int() - 1;
+		if (name.begins_with("bind/argument_")) {
+			int which = name.get_slice("_", 1).to_int() - 1;
 			ERR_FAIL_INDEX_V(which, params.size(), false);
 			params.write[which] = p_value;
 		} else {
@@ -80,8 +80,8 @@ public:
 	bool _get(const StringName &p_name, Variant &r_ret) const {
 		String name = p_name;
 
-		if (name.begins_with("bind/")) {
-			int which = name.get_slice("/", 1).to_int() - 1;
+		if (name.begins_with("bind/argument_")) {
+			int which = name.get_slice("_", 1).to_int() - 1;
 			ERR_FAIL_INDEX_V(which, params.size(), false);
 			r_ret = params[which];
 		} else {
@@ -93,7 +93,7 @@ public:
 
 	void _get_property_list(List<PropertyInfo> *p_list) const {
 		for (int i = 0; i < params.size(); i++) {
-			p_list->push_back(PropertyInfo(params[i].get_type(), "bind/" + itos(i + 1)));
+			p_list->push_back(PropertyInfo(params[i].get_type(), "bind/argument_" + itos(i + 1)));
 		}
 	}
 
