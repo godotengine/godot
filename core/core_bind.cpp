@@ -341,6 +341,29 @@ Vector<String> OS::get_cmdline_user_args() {
 	return cmdlinev;
 }
 
+void OS::set_restart_on_exit(bool p_restart, const Vector<String> &p_restart_arguments) {
+	List<String> args_list;
+	for (const String &restart_argument : p_restart_arguments) {
+		args_list.push_back(restart_argument);
+	}
+
+	::OS::get_singleton()->set_restart_on_exit(p_restart, args_list);
+}
+
+bool OS::is_restart_on_exit_set() const {
+	return ::OS::get_singleton()->is_restart_on_exit_set();
+}
+
+Vector<String> OS::get_restart_on_exit_arguments() const {
+	List<String> args = ::OS::get_singleton()->get_restart_on_exit_arguments();
+	Vector<String> args_vector;
+	for (List<String>::Element *E = args.front(); E; E = E->next()) {
+		args_vector.push_back(E->get());
+	}
+
+	return args_vector;
+}
+
 String OS::get_locale() const {
 	return ::OS::get_singleton()->get_locale();
 }
@@ -625,6 +648,10 @@ void OS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_name"), &OS::get_name);
 	ClassDB::bind_method(D_METHOD("get_cmdline_args"), &OS::get_cmdline_args);
 	ClassDB::bind_method(D_METHOD("get_cmdline_user_args"), &OS::get_cmdline_user_args);
+
+	ClassDB::bind_method(D_METHOD("set_restart_on_exit", "restart", "arguments"), &OS::set_restart_on_exit, DEFVAL(Vector<String>()));
+	ClassDB::bind_method(D_METHOD("is_restart_on_exit_set"), &OS::is_restart_on_exit_set);
+	ClassDB::bind_method(D_METHOD("get_restart_on_exit_arguments"), &OS::get_restart_on_exit_arguments);
 
 	ClassDB::bind_method(D_METHOD("delay_usec", "usec"), &OS::delay_usec);
 	ClassDB::bind_method(D_METHOD("delay_msec", "msec"), &OS::delay_msec);
