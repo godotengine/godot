@@ -42,13 +42,10 @@ void DataBuffer::_bind_methods() {
 	BIND_CONSTANT(DATA_TYPE_BOOL);
 	BIND_CONSTANT(DATA_TYPE_INT);
 	BIND_CONSTANT(DATA_TYPE_REAL);
-	BIND_CONSTANT(DATA_TYPE_PRECISE_REAL);
 	BIND_CONSTANT(DATA_TYPE_UNIT_REAL);
 	BIND_CONSTANT(DATA_TYPE_VECTOR2);
-	BIND_CONSTANT(DATA_TYPE_PRECISE_VECTOR2);
 	BIND_CONSTANT(DATA_TYPE_NORMALIZED_VECTOR2);
 	BIND_CONSTANT(DATA_TYPE_VECTOR3);
-	BIND_CONSTANT(DATA_TYPE_PRECISE_VECTOR3);
 	BIND_CONSTANT(DATA_TYPE_NORMALIZED_VECTOR3);
 
 	BIND_CONSTANT(COMPRESSION_LEVEL_0);
@@ -61,64 +58,49 @@ void DataBuffer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_bool", "value"), &DataBuffer::add_bool);
 	ClassDB::bind_method(D_METHOD("add_int", "value", "compression_level"), &DataBuffer::add_int, DEFVAL(COMPRESSION_LEVEL_1));
 	ClassDB::bind_method(D_METHOD("add_real", "value", "compression_level"), &DataBuffer::add_real, DEFVAL(COMPRESSION_LEVEL_1));
-	ClassDB::bind_method(D_METHOD("add_precise_real", "value", "compression_level"), &DataBuffer::add_precise_real, DEFVAL(COMPRESSION_LEVEL_1));
 	ClassDB::bind_method(D_METHOD("add_positive_unit_real", "value", "compression_level"), &DataBuffer::add_positive_unit_real, DEFVAL(COMPRESSION_LEVEL_1));
 	ClassDB::bind_method(D_METHOD("add_unit_real", "value", "compression_level"), &DataBuffer::add_unit_real, DEFVAL(COMPRESSION_LEVEL_1));
 	ClassDB::bind_method(D_METHOD("add_vector2", "value", "compression_level"), &DataBuffer::add_vector2, DEFVAL(COMPRESSION_LEVEL_1));
-	ClassDB::bind_method(D_METHOD("add_precise_vector2", "value", "compression_level"), &DataBuffer::add_precise_vector2, DEFVAL(COMPRESSION_LEVEL_1));
 	ClassDB::bind_method(D_METHOD("add_normalized_vector2", "value", "compression_level"), &DataBuffer::add_normalized_vector2, DEFVAL(COMPRESSION_LEVEL_1));
 	ClassDB::bind_method(D_METHOD("add_vector3", "value", "compression_level"), &DataBuffer::add_vector3, DEFVAL(COMPRESSION_LEVEL_1));
-	ClassDB::bind_method(D_METHOD("add_precise_vector3", "value", "compression_level"), &DataBuffer::add_precise_vector3, DEFVAL(COMPRESSION_LEVEL_1));
 	ClassDB::bind_method(D_METHOD("add_normalized_vector3", "value", "compression_level"), &DataBuffer::add_normalized_vector3, DEFVAL(COMPRESSION_LEVEL_1));
 	ClassDB::bind_method(D_METHOD("add_variant", "value"), &DataBuffer::add_variant);
 
 	ClassDB::bind_method(D_METHOD("read_bool"), &DataBuffer::read_bool);
 	ClassDB::bind_method(D_METHOD("read_int", "compression_level"), &DataBuffer::read_int, DEFVAL(COMPRESSION_LEVEL_1));
 	ClassDB::bind_method(D_METHOD("read_real", "compression_level"), &DataBuffer::read_real, DEFVAL(COMPRESSION_LEVEL_1));
-	ClassDB::bind_method(D_METHOD("read_precise_real", "compression_level"), &DataBuffer::read_precise_real, DEFVAL(COMPRESSION_LEVEL_1));
 	ClassDB::bind_method(D_METHOD("read_unit_real", "compression_level"), &DataBuffer::read_unit_real, DEFVAL(COMPRESSION_LEVEL_1));
 	ClassDB::bind_method(D_METHOD("read_vector2", "compression_level"), &DataBuffer::read_vector2, DEFVAL(COMPRESSION_LEVEL_1));
-	ClassDB::bind_method(D_METHOD("read_precise_vector2", "compression_level"), &DataBuffer::read_precise_vector2, DEFVAL(COMPRESSION_LEVEL_1));
 	ClassDB::bind_method(D_METHOD("read_normalized_vector2", "compression_level"), &DataBuffer::read_normalized_vector2, DEFVAL(COMPRESSION_LEVEL_1));
 	ClassDB::bind_method(D_METHOD("read_vector3", "compression_level"), &DataBuffer::read_vector3, DEFVAL(COMPRESSION_LEVEL_1));
-	ClassDB::bind_method(D_METHOD("read_precise_vector3", "compression_level"), &DataBuffer::read_precise_vector3, DEFVAL(COMPRESSION_LEVEL_1));
 	ClassDB::bind_method(D_METHOD("read_normalized_vector3", "compression_level"), &DataBuffer::read_normalized_vector3, DEFVAL(COMPRESSION_LEVEL_1));
 	ClassDB::bind_method(D_METHOD("read_variant"), &DataBuffer::read_variant);
 
 	ClassDB::bind_method(D_METHOD("skip_bool"), &DataBuffer::skip_bool);
 	ClassDB::bind_method(D_METHOD("skip_int", "compression_level"), &DataBuffer::skip_int, DEFVAL(COMPRESSION_LEVEL_1));
 	ClassDB::bind_method(D_METHOD("skip_real", "compression_level"), &DataBuffer::skip_real, DEFVAL(COMPRESSION_LEVEL_1));
-	ClassDB::bind_method(D_METHOD("skip_precise_real", "compression_level"), &DataBuffer::skip_precise_real, DEFVAL(COMPRESSION_LEVEL_1));
 	ClassDB::bind_method(D_METHOD("skip_unit_real", "compression_level"), &DataBuffer::skip_unit_real, DEFVAL(COMPRESSION_LEVEL_1));
 	ClassDB::bind_method(D_METHOD("skip_vector2", "compression_level"), &DataBuffer::skip_vector2, DEFVAL(COMPRESSION_LEVEL_1));
-	ClassDB::bind_method(D_METHOD("skip_precise_vector2", "compression_level"), &DataBuffer::skip_precise_vector2, DEFVAL(COMPRESSION_LEVEL_1));
 	ClassDB::bind_method(D_METHOD("skip_normalized_vector2", "compression_level"), &DataBuffer::skip_normalized_vector2, DEFVAL(COMPRESSION_LEVEL_1));
 	ClassDB::bind_method(D_METHOD("skip_vector3", "compression_level"), &DataBuffer::skip_vector3, DEFVAL(COMPRESSION_LEVEL_1));
-	ClassDB::bind_method(D_METHOD("skip_precise_vector3", "compression_level"), &DataBuffer::skip_precise_vector3, DEFVAL(COMPRESSION_LEVEL_1));
 	ClassDB::bind_method(D_METHOD("skip_normalized_vector3", "compression_level"), &DataBuffer::skip_normalized_vector3, DEFVAL(COMPRESSION_LEVEL_1));
 
 	ClassDB::bind_method(D_METHOD("get_bool_size"), &DataBuffer::get_bool_size);
 	ClassDB::bind_method(D_METHOD("get_int_size", "compression_level"), &DataBuffer::get_int_size, DEFVAL(COMPRESSION_LEVEL_1));
 	ClassDB::bind_method(D_METHOD("get_real_size", "compression_level"), &DataBuffer::get_real_size, DEFVAL(COMPRESSION_LEVEL_1));
-	ClassDB::bind_method(D_METHOD("get_precise_real_size", "compression_level"), &DataBuffer::get_precise_real_size, DEFVAL(COMPRESSION_LEVEL_1));
 	ClassDB::bind_method(D_METHOD("get_unit_real_size", "compression_level"), &DataBuffer::get_unit_real_size, DEFVAL(COMPRESSION_LEVEL_1));
 	ClassDB::bind_method(D_METHOD("get_vector2_size", "compression_level"), &DataBuffer::get_vector2_size, DEFVAL(COMPRESSION_LEVEL_1));
-	ClassDB::bind_method(D_METHOD("get_precise_vector2_size", "compression_level"), &DataBuffer::get_precise_vector2_size, DEFVAL(COMPRESSION_LEVEL_1));
 	ClassDB::bind_method(D_METHOD("get_normalized_vector2_size", "compression_level"), &DataBuffer::get_normalized_vector2_size, DEFVAL(COMPRESSION_LEVEL_1));
 	ClassDB::bind_method(D_METHOD("get_vector3_size", "compression_level"), &DataBuffer::get_vector3_size, DEFVAL(COMPRESSION_LEVEL_1));
-	ClassDB::bind_method(D_METHOD("get_precise_vector3_size", "compression_level"), &DataBuffer::get_precise_vector3_size, DEFVAL(COMPRESSION_LEVEL_1));
 	ClassDB::bind_method(D_METHOD("get_normalized_vector3_size", "compression_level"), &DataBuffer::get_normalized_vector3_size, DEFVAL(COMPRESSION_LEVEL_1));
 
 	ClassDB::bind_method(D_METHOD("read_bool_size"), &DataBuffer::read_bool_size);
 	ClassDB::bind_method(D_METHOD("read_int_size", "compression_level"), &DataBuffer::read_int_size, DEFVAL(COMPRESSION_LEVEL_1));
 	ClassDB::bind_method(D_METHOD("read_real_size", "compression_level"), &DataBuffer::read_real_size, DEFVAL(COMPRESSION_LEVEL_1));
-	ClassDB::bind_method(D_METHOD("read_precise_real_size", "compression_level"), &DataBuffer::read_precise_real_size, DEFVAL(COMPRESSION_LEVEL_1));
 	ClassDB::bind_method(D_METHOD("read_unit_real_size", "compression_level"), &DataBuffer::read_unit_real_size, DEFVAL(COMPRESSION_LEVEL_1));
 	ClassDB::bind_method(D_METHOD("read_vector2_size", "compression_level"), &DataBuffer::read_vector2_size, DEFVAL(COMPRESSION_LEVEL_1));
-	ClassDB::bind_method(D_METHOD("read_precise_vector2_size", "compression_level"), &DataBuffer::read_precise_vector2_size, DEFVAL(COMPRESSION_LEVEL_1));
 	ClassDB::bind_method(D_METHOD("read_normalized_vector2_size", "compression_level"), &DataBuffer::read_normalized_vector2_size, DEFVAL(COMPRESSION_LEVEL_1));
 	ClassDB::bind_method(D_METHOD("read_vector3_size", "compression_level"), &DataBuffer::read_vector3_size, DEFVAL(COMPRESSION_LEVEL_1));
-	ClassDB::bind_method(D_METHOD("read_precise_vector3_size", "compression_level"), &DataBuffer::read_precise_vector3_size, DEFVAL(COMPRESSION_LEVEL_1));
 	ClassDB::bind_method(D_METHOD("read_normalized_vector3_size", "compression_level"), &DataBuffer::read_normalized_vector3_size, DEFVAL(COMPRESSION_LEVEL_1));
 	ClassDB::bind_method(D_METHOD("read_variant_size"), &DataBuffer::read_variant_size);
 
@@ -274,46 +256,77 @@ int64_t DataBuffer::read_int(CompressionLevel p_compression_level) {
 	}
 }
 
-real_t DataBuffer::add_real(real_t p_input, CompressionLevel p_compression_level) {
+double DataBuffer::add_real(double p_input, CompressionLevel p_compression_level) {
 	ERR_FAIL_COND_V(is_reading == true, p_input);
 
-	const real_t integral = Math::floor(p_input);
-	const real_t fractional = ABS(Math::fmod(p_input, 1));
+	// Split number according to IEEE 754 binary format.
+	// Mantissa floating point value represented in range (-1;-0.5], [0.5; 1).
+	int exponent;
+	double mantissa = frexp(p_input, &exponent);
 
-	const real_t added_integral = add_int(integral, p_compression_level);
-	const real_t added_fractional = add_positive_unit_real(fractional, COMPRESSION_LEVEL_1);
+	// Truncate exponent into the specified number of bits.
+	const int exponent_bits = get_exponent_bits(p_compression_level);
+	const int max_exponent = static_cast<int>(Math::pow(2.0, exponent_bits));
+	exponent = CLAMP(exponent, -max_exponent, max_exponent - 1);
 
-	return added_integral > 0 ? added_integral + added_fractional : added_integral - added_fractional;
+	// Extract sign.
+	const bool sign = mantissa < 0;
+	mantissa = Math::abs(mantissa);
+
+	// Round mantissa into the specified number of bits (like float -> double conversion).
+	const int mantissa_bits = get_mantissa_bits(p_compression_level);
+	double mantissa_scale = Math::pow(2.0, mantissa_bits);
+	if (exponent <= 0) {
+		// Subnormal value, apply exponent to mantissa and reduce power of scale by one.
+		mantissa *= Math::pow(2.0, exponent);
+		exponent = 0;
+		mantissa_scale /= 2;
+	}
+	mantissa = Math::round(mantissa * mantissa_scale) / mantissa_scale; // Round to specified number of bits.
+	if (mantissa < 0.5 && mantissa != 0) {
+		// Check underflow, extract exponent from mantissa.
+		exponent += ilogb(mantissa) + 1;
+		mantissa /= Math::pow(2.0, exponent);
+	}
+	if (mantissa == 1) {
+		// Check overflow, increment the exponent.
+		++exponent;
+		mantissa = sign ? -0.5 : 0.5;
+	}
+	// Convert the mantissa to an integer that represents the offset index (IEE 754 floating point representation) to send over network safely.
+	const uint64_t integer_mantissa = exponent <= 0 ? mantissa * mantissa_scale : (mantissa - 0.5) * mantissa_scale;
+
+	make_room_in_bits(mantissa_bits + exponent_bits);
+	buffer.store_bits(bit_offset, sign, 1);
+	bit_offset += 1;
+	buffer.store_bits(bit_offset, integer_mantissa, mantissa_bits - 1);
+	bit_offset += mantissa_bits - 1;
+	buffer.store_bits(bit_offset, exponent, exponent_bits);
+	bit_offset += exponent_bits;
+
+	return ldexp(sign ? -mantissa : mantissa, exponent);
 }
 
-real_t DataBuffer::read_real(CompressionLevel p_compression_level) {
+double DataBuffer::read_real(CompressionLevel p_compression_level) {
 	ERR_FAIL_COND_V(is_reading == false, 0.0);
 
-	const real_t integral = read_int(p_compression_level);
-	const real_t fractional = read_positive_unit_real(COMPRESSION_LEVEL_1);
+	const bool sign = buffer.read_bits(bit_offset, 1);
+	bit_offset += 1;
 
-	return integral > 0 ? integral + fractional : integral - fractional;
-}
+	const int mantissa_bits = get_mantissa_bits(p_compression_level);
+	const uint64_t integer_mantissa = buffer.read_bits(bit_offset, mantissa_bits - 1);
+	bit_offset += mantissa_bits - 1;
 
-real_t DataBuffer::add_precise_real(real_t p_input, CompressionLevel p_compression_level) {
-	ERR_FAIL_COND_V(is_reading == true, p_input);
+	const int exponent_bits = get_exponent_bits(p_compression_level);
+	const int exponent = buffer.read_bits(bit_offset, exponent_bits);
+	bit_offset += exponent_bits;
 
-	const real_t integral = Math::floor(p_input);
-	const real_t fractional = ABS(Math::fmod(p_input, 1));
+	// Convert integer mantissa into the floating point representation
+	// When the index of the mantissa and exponent are 0, then this is a special case and the mantissa is 0.
+	const double mantissa_scale = Math::pow(2.0, exponent <= 0 ? mantissa_bits - 1 : mantissa_bits);
+	const double mantissa = exponent <= 0 ? integer_mantissa / mantissa_scale : integer_mantissa / mantissa_scale + 0.5;
 
-	const real_t added_integral = add_int(integral, p_compression_level);
-	const real_t added_fractional = add_positive_unit_real(fractional, COMPRESSION_LEVEL_0);
-
-	return added_integral > 0 ? added_integral + added_fractional : added_integral - added_fractional;
-}
-
-real_t DataBuffer::read_precise_real(CompressionLevel p_compression_level) {
-	ERR_FAIL_COND_V(is_reading == false, 0.0);
-
-	const real_t integral = read_int(p_compression_level);
-	const real_t fractional = read_positive_unit_real(COMPRESSION_LEVEL_0);
-
-	return integral > 0 ? integral + fractional : integral - fractional;
+	return ldexp(sign ? -mantissa : mantissa, exponent);
 }
 
 real_t DataBuffer::add_positive_unit_real(real_t p_input, CompressionLevel p_compression_level) {
@@ -402,24 +415,6 @@ Vector2 DataBuffer::read_vector2(CompressionLevel p_compression_level) {
 	return r;
 }
 
-Vector2 DataBuffer::add_precise_vector2(Vector2 p_input, CompressionLevel p_compression_level) {
-	ERR_FAIL_COND_V(is_reading == true, p_input);
-
-	Vector2 r;
-	r[0] = add_precise_real(p_input[0], p_compression_level);
-	r[1] = add_precise_real(p_input[1], p_compression_level);
-	return r;
-}
-
-Vector2 DataBuffer::read_precise_vector2(CompressionLevel p_compression_level) {
-	ERR_FAIL_COND_V(is_reading == false, Vector2());
-
-	Vector2 r;
-	r[0] = read_precise_real(p_compression_level);
-	r[1] = read_precise_real(p_compression_level);
-	return r;
-}
-
 Vector2 DataBuffer::add_normalized_vector2(Vector2 p_input, CompressionLevel p_compression_level) {
 #ifdef DEBUG_ENABLED
 	ERR_FAIL_COND_V(p_input.is_normalized() == false, p_input);
@@ -491,26 +486,6 @@ Vector3 DataBuffer::read_vector3(CompressionLevel p_compression_level) {
 	r[0] = read_real(p_compression_level);
 	r[1] = read_real(p_compression_level);
 	r[2] = read_real(p_compression_level);
-	return r;
-}
-
-Vector3 DataBuffer::add_precise_vector3(Vector3 p_input, CompressionLevel p_compression_level) {
-	ERR_FAIL_COND_V(is_reading == true, p_input);
-
-	Vector3 r;
-	r[0] = add_precise_real(p_input[0], p_compression_level);
-	r[1] = add_precise_real(p_input[1], p_compression_level);
-	r[2] = add_precise_real(p_input[2], p_compression_level);
-	return r;
-}
-
-Vector3 DataBuffer::read_precise_vector3(CompressionLevel p_compression_level) {
-	ERR_FAIL_COND_V(is_reading == false, Vector3());
-
-	Vector3 r;
-	r[0] = read_precise_real(p_compression_level);
-	r[1] = read_precise_real(p_compression_level);
-	r[2] = read_precise_real(p_compression_level);
 	return r;
 }
 
@@ -633,11 +608,6 @@ void DataBuffer::skip_real(CompressionLevel p_compression) {
 	skip(bits);
 }
 
-void DataBuffer::skip_precise_real(CompressionLevel p_compression) {
-	const int bits = get_precise_real_size(p_compression);
-	skip(bits);
-}
-
 void DataBuffer::skip_unit_real(CompressionLevel p_compression) {
 	const int bits = get_unit_real_size(p_compression);
 	skip(bits);
@@ -648,11 +618,6 @@ void DataBuffer::skip_vector2(CompressionLevel p_compression) {
 	skip(bits);
 }
 
-void DataBuffer::skip_precise_vector2(CompressionLevel p_compression) {
-	const int bits = get_precise_vector2_size(p_compression);
-	skip(bits);
-}
-
 void DataBuffer::skip_normalized_vector2(CompressionLevel p_compression) {
 	const int bits = get_normalized_vector2_size(p_compression);
 	skip(bits);
@@ -660,11 +625,6 @@ void DataBuffer::skip_normalized_vector2(CompressionLevel p_compression) {
 
 void DataBuffer::skip_vector3(CompressionLevel p_compression) {
 	const int bits = get_vector3_size(p_compression);
-	skip(bits);
-}
-
-void DataBuffer::skip_precise_vector3(CompressionLevel p_compression) {
-	const int bits = get_precise_vector3_size(p_compression);
 	skip(bits);
 }
 
@@ -685,10 +645,6 @@ int DataBuffer::get_real_size(CompressionLevel p_compression) const {
 	return DataBuffer::get_bit_taken(DATA_TYPE_REAL, p_compression);
 }
 
-int DataBuffer::get_precise_real_size(CompressionLevel p_compression) const {
-	return DataBuffer::get_bit_taken(DATA_TYPE_PRECISE_REAL, p_compression);
-}
-
 int DataBuffer::get_unit_real_size(CompressionLevel p_compression) const {
 	return DataBuffer::get_bit_taken(DATA_TYPE_UNIT_REAL, p_compression);
 }
@@ -697,20 +653,12 @@ int DataBuffer::get_vector2_size(CompressionLevel p_compression) const {
 	return DataBuffer::get_bit_taken(DATA_TYPE_VECTOR2, p_compression);
 }
 
-int DataBuffer::get_precise_vector2_size(CompressionLevel p_compression) const {
-	return DataBuffer::get_bit_taken(DATA_TYPE_PRECISE_VECTOR2, p_compression);
-}
-
 int DataBuffer::get_normalized_vector2_size(CompressionLevel p_compression) const {
 	return DataBuffer::get_bit_taken(DATA_TYPE_NORMALIZED_VECTOR2, p_compression);
 }
 
 int DataBuffer::get_vector3_size(CompressionLevel p_compression) const {
 	return DataBuffer::get_bit_taken(DATA_TYPE_VECTOR3, p_compression);
-}
-
-int DataBuffer::get_precise_vector3_size(CompressionLevel p_compression) const {
-	return DataBuffer::get_bit_taken(DATA_TYPE_PRECISE_VECTOR3, p_compression);
 }
 
 int DataBuffer::get_normalized_vector3_size(CompressionLevel p_compression) const {
@@ -735,12 +683,6 @@ int DataBuffer::read_real_size(CompressionLevel p_compression) {
 	return bits;
 }
 
-int DataBuffer::read_precise_real_size(CompressionLevel p_compression) {
-	const int bits = get_precise_real_size(p_compression);
-	skip(bits);
-	return bits;
-}
-
 int DataBuffer::read_unit_real_size(CompressionLevel p_compression) {
 	const int bits = get_unit_real_size(p_compression);
 	skip(bits);
@@ -753,12 +695,6 @@ int DataBuffer::read_vector2_size(CompressionLevel p_compression) {
 	return bits;
 }
 
-int DataBuffer::read_precise_vector2_size(CompressionLevel p_compression) {
-	const int bits = get_precise_vector2_size(p_compression);
-	skip(bits);
-	return bits;
-}
-
 int DataBuffer::read_normalized_vector2_size(CompressionLevel p_compression) {
 	const int bits = get_normalized_vector2_size(p_compression);
 	skip(bits);
@@ -767,12 +703,6 @@ int DataBuffer::read_normalized_vector2_size(CompressionLevel p_compression) {
 
 int DataBuffer::read_vector3_size(CompressionLevel p_compression) {
 	const int bits = get_vector3_size(p_compression);
-	skip(bits);
-	return bits;
-}
-
-int DataBuffer::read_precise_vector3_size(CompressionLevel p_compression) {
-	const int bits = get_precise_vector3_size(p_compression);
 	skip(bits);
 	return bits;
 }
@@ -815,7 +745,6 @@ int DataBuffer::read_variant_size() {
 	return len * 8;
 }
 
-// TODO please add an unit test to make sure the returned data are right.
 int DataBuffer::get_bit_taken(DataType p_data_type, CompressionLevel p_compression) {
 	switch (p_data_type) {
 		case DATA_TYPE_BOOL:
@@ -837,12 +766,8 @@ int DataBuffer::get_bit_taken(DataType p_data_type, CompressionLevel p_compressi
 			}
 		} break;
 		case DATA_TYPE_REAL: {
-			return get_bit_taken(DATA_TYPE_INT, p_compression) +
-				   get_bit_taken(DATA_TYPE_UNIT_REAL, COMPRESSION_LEVEL_1);
-		} break;
-		case DATA_TYPE_PRECISE_REAL: {
-			return get_bit_taken(DATA_TYPE_INT, p_compression) +
-				   get_bit_taken(DATA_TYPE_UNIT_REAL, COMPRESSION_LEVEL_0);
+			return get_mantissa_bits(p_compression) +
+				   get_exponent_bits(p_compression);
 		} break;
 		case DATA_TYPE_POSITIVE_UNIT_REAL: {
 			switch (p_compression) {
@@ -865,45 +790,31 @@ int DataBuffer::get_bit_taken(DataType p_data_type, CompressionLevel p_compressi
 		case DATA_TYPE_VECTOR2: {
 			return get_bit_taken(DATA_TYPE_REAL, p_compression) * 2;
 		} break;
-		case DATA_TYPE_PRECISE_VECTOR2: {
-			return get_bit_taken(DATA_TYPE_PRECISE_REAL, p_compression) * 2;
-		} break;
 		case DATA_TYPE_NORMALIZED_VECTOR2: {
 			// +1 bit to know if the vector is 0 or a direction
 			switch (p_compression) {
 				case CompressionLevel::COMPRESSION_LEVEL_0:
-					// Max loss 0.17°
 					return 11 + 1;
 				case CompressionLevel::COMPRESSION_LEVEL_1:
-					// Max loss 0.35°
 					return 10 + 1;
 				case CompressionLevel::COMPRESSION_LEVEL_2:
-					// Max loss 0.7°
 					return 9 + 1;
 				case CompressionLevel::COMPRESSION_LEVEL_3:
-					// Max loss 1.1°
 					return 8 + 1;
 			}
 		} break;
 		case DATA_TYPE_VECTOR3: {
 			return get_bit_taken(DATA_TYPE_REAL, p_compression) * 3;
 		} break;
-		case DATA_TYPE_PRECISE_VECTOR3: {
-			return get_bit_taken(DATA_TYPE_PRECISE_REAL, p_compression) * 3;
-		} break;
 		case DATA_TYPE_NORMALIZED_VECTOR3: {
 			switch (p_compression) {
 				case CompressionLevel::COMPRESSION_LEVEL_0:
-					// Max loss 0.02% per axis
 					return 11 * 3;
 				case CompressionLevel::COMPRESSION_LEVEL_1:
-					// Max loss 0.09% per axis
 					return 10 * 3;
 				case CompressionLevel::COMPRESSION_LEVEL_2:
-					// Max loss 0.3% per axis
 					return 8 * 3;
 				case CompressionLevel::COMPRESSION_LEVEL_3:
-					// Max loss 3.2% per axis;
 					return 6 * 3;
 			}
 		} break;
@@ -917,6 +828,42 @@ int DataBuffer::get_bit_taken(DataType p_data_type, CompressionLevel p_compressi
 
 	// Unreachable
 	CRASH_NOW_MSG("It was not possible to obtain the bit taken by this input data.");
+	return 0; // Useless, but MS CI is too noisy.
+}
+
+int DataBuffer::get_mantissa_bits(CompressionLevel p_compression) {
+	// https://en.wikipedia.org/wiki/IEEE_754#Basic_and_interchange_formats
+	switch (p_compression) {
+		case CompressionLevel::COMPRESSION_LEVEL_0:
+			return 53; // Binary64 format
+		case CompressionLevel::COMPRESSION_LEVEL_1:
+			return 24; // Binary32 format
+		case CompressionLevel::COMPRESSION_LEVEL_2:
+			return 11; // Binary16 format
+		case CompressionLevel::COMPRESSION_LEVEL_3:
+			return 4; // https://en.wikipedia.org/wiki/Minifloat
+	}
+
+	// Unreachable
+	CRASH_NOW_MSG("Unknown compression level.");
+	return 0; // Useless, but MS CI is too noisy.
+}
+
+int DataBuffer::get_exponent_bits(CompressionLevel p_compression) {
+	// https://en.wikipedia.org/wiki/IEEE_754#Basic_and_interchange_formats
+	switch (p_compression) {
+		case CompressionLevel::COMPRESSION_LEVEL_0:
+			return 11; // Binary64 format
+		case CompressionLevel::COMPRESSION_LEVEL_1:
+			return 8; // Binary32 format
+		case CompressionLevel::COMPRESSION_LEVEL_2:
+			return 5; // Binary16 format
+		case CompressionLevel::COMPRESSION_LEVEL_3:
+			return 4; // https://en.wikipedia.org/wiki/Minifloat
+	}
+
+	// Unreachable
+	CRASH_NOW_MSG("Unknown compression level.");
 	return 0; // Useless, but MS CI is too noisy.
 }
 

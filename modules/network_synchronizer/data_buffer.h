@@ -47,14 +47,11 @@ public:
 		DATA_TYPE_BOOL,
 		DATA_TYPE_INT,
 		DATA_TYPE_REAL,
-		DATA_TYPE_PRECISE_REAL,
 		DATA_TYPE_POSITIVE_UNIT_REAL,
 		DATA_TYPE_UNIT_REAL,
 		DATA_TYPE_VECTOR2,
-		DATA_TYPE_PRECISE_VECTOR2,
 		DATA_TYPE_NORMALIZED_VECTOR2,
 		DATA_TYPE_VECTOR3,
-		DATA_TYPE_PRECISE_VECTOR3,
 		DATA_TYPE_NORMALIZED_VECTOR3,
 		// The only dynamic sized value.
 		DATA_TYPE_VARIANT
@@ -79,18 +76,10 @@ public:
 	///
 	/// ## Real
 	/// The floating point part has a precision of ~0.020%
-	/// COMPRESSION_LEVEL_0: 72 bits are used - The integral part has a range of -9223372036854775808 / 9223372036854775807
-	/// COMPRESSION_LEVEL_1: 40 bits are used - The integral part has a range of -2147483648 / 2147483647
-	/// COMPRESSION_LEVEL_2: 24 bits are used - The integral part has a range of -32768 / 32767
-	/// COMPRESSION_LEVEL_3: 16 bits are used - The integral part has a range of -128 / 127
-	///
-	///
-	/// ## Precise real
-	/// The floating point part has a precision of ~0.005%
-	/// COMPRESSION_LEVEL_0: 74 bits are used - The integral part has a range of -9223372036854775808 / 9223372036854775807
-	/// COMPRESSION_LEVEL_1: 42 bits are used - The integral part has a range of -2147483648 / 2147483647
-	/// COMPRESSION_LEVEL_2: 26 bits are used - The integral part has a range of -32768 / 32767
-	/// COMPRESSION_LEVEL_3: 18 bits are used - The integral part has a range of -128 / 127
+	/// COMPRESSION_LEVEL_0: 8 bits are used - Minifloat
+	/// COMPRESSION_LEVEL_1: 16 bits are used - Half precision
+	/// COMPRESSION_LEVEL_2: 32 bits are used - Single precision
+	/// COMPRESSION_LEVEL_3: 64 bits are used - Double precision
 	///
 	///
 	/// ## Positive unit real
@@ -115,14 +104,6 @@ public:
 	/// COMPRESSION_LEVEL_3: 16 * 2 bits are used - Max vector size -128 / 127
 	///
 	///
-	/// ## Precise Vector2
-	/// The floating point part has a precision of ~0.005% per axis.
-	/// COMPRESSION_LEVEL_0: 74 * 2 bits are used - Max vector size -9223372036854775808 / 9223372036854775807
-	/// COMPRESSION_LEVEL_1: 42 * 2 bits are used - Max vector size -2147483648 / 2147483647
-	/// COMPRESSION_LEVEL_2: 28 * 2 bits are used - Max vector size -32768 / 32767
-	/// COMPRESSION_LEVEL_3: 18 * 2 bits are used - Max vector size -128 / 127
-	///
-	///
 	/// ## Normalized Vector2
 	/// COMPRESSION_LEVEL_0: 12 bits are used - Max loss 0.17°
 	/// COMPRESSION_LEVEL_1: 11 bits are used - Max loss 0.35°
@@ -136,14 +117,6 @@ public:
 	/// COMPRESSION_LEVEL_1: 40 * 3 bits are used - Max vector size -2147483648 / 2147483647
 	/// COMPRESSION_LEVEL_2: 24 * 3 bits are used - Max vector size -32768 / 32767
 	/// COMPRESSION_LEVEL_3: 16 * 3 bits are used - Max vector size -128 / 127
-	///
-	///
-	/// ## Precise Vector3
-	/// The floating point part has a precision of ~0.005% per axis.
-	/// COMPRESSION_LEVEL_0: 74 * 3 bits are used - Max vector size -9223372036854775808 / 9223372036854775807
-	/// COMPRESSION_LEVEL_1: 42 * 3 bits are used - Max vector size -2147483648 / 2147483647
-	/// COMPRESSION_LEVEL_2: 28 * 3 bits are used - Max vector size -32768 / 32767
-	/// COMPRESSION_LEVEL_3: 18 * 3 bits are used - Max vector size -128 / 127
 	///
 	///
 	/// ## Normalized Vector3
@@ -231,21 +204,10 @@ public:
 	///
 	/// Returns the compressed value so both the client and the peers can use
 	/// the same data.
-	real_t add_real(real_t p_input, CompressionLevel p_compression_level);
+	double add_real(double p_input, CompressionLevel p_compression_level);
 
 	/// Parse the following data as a real.
-	real_t read_real(CompressionLevel p_compression_level);
-
-	/// Add a real into the buffer. Depending on the compression level is possible
-	/// to store different range level.
-	/// The fractional part has a precision of ~0.09%
-	///
-	/// Returns the compressed value so both the client and the peers can use
-	/// the same data.
-	real_t add_precise_real(real_t p_input, CompressionLevel p_compression_level);
-
-	/// Parse the following data as a precise real.
-	real_t read_precise_real(CompressionLevel p_compression_level);
+	double read_real(CompressionLevel p_compression_level);
 
 	/// Add a positive unit real into the buffer.
 	///
@@ -280,17 +242,6 @@ public:
 	/// Parse next data as vector from the input buffer.
 	Vector2 read_vector2(CompressionLevel p_compression_level);
 
-	/// Add a precise vector2 into the buffer.
-	/// Note: This kind of vector occupies more space than the normalized verison.
-	/// Consider use a normalized vector to save bandwidth if possible.
-	///
-	/// Returns the decompressed vector so both the client and the peers can use
-	/// the same data.
-	Vector2 add_precise_vector2(Vector2 p_input, CompressionLevel p_compression_level);
-
-	/// Parse next data as precise vector from the input buffer.
-	Vector2 read_precise_vector2(CompressionLevel p_compression_level);
-
 	/// Add a normalized vector2 into the buffer.
 	/// Note: The compression algorithm rely on the fact that this is a
 	/// normalized vector. The behaviour is unexpected for not normalized vectors.
@@ -312,17 +263,6 @@ public:
 
 	/// Parse next data as vector3 from the input buffer.
 	Vector3 read_vector3(CompressionLevel p_compression_level);
-
-	/// Add a precise vector3 into the buffer.
-	/// Note: This kind of vector occupies more space than the normalized verison.
-	/// Consider use a normalized vector to save bandwidth if possible.
-	///
-	/// Returns the decompressed vector so both the client and the peers can use
-	/// the same data.
-	Vector3 add_precise_vector3(Vector3 p_input, CompressionLevel p_compression_level);
-
-	/// Parse next data as precise vector3 from the input buffer.
-	Vector3 read_precise_vector3(CompressionLevel p_compression_level);
 
 	/// Add a normalized vector3 into the buffer.
 	/// Note: The compression algorithm rely on the fact that this is a
@@ -349,13 +289,10 @@ public:
 	void skip_bool();
 	void skip_int(CompressionLevel p_compression);
 	void skip_real(CompressionLevel p_compression);
-	void skip_precise_real(CompressionLevel p_compression);
 	void skip_unit_real(CompressionLevel p_compression);
 	void skip_vector2(CompressionLevel p_compression);
-	void skip_precise_vector2(CompressionLevel p_compression);
 	void skip_normalized_vector2(CompressionLevel p_compression);
 	void skip_vector3(CompressionLevel p_compression);
-	void skip_precise_vector3(CompressionLevel p_compression);
 	void skip_normalized_vector3(CompressionLevel p_compression);
 
 	/** Just returns the size of a specific type. */
@@ -363,13 +300,10 @@ public:
 	int get_bool_size() const;
 	int get_int_size(CompressionLevel p_compression) const;
 	int get_real_size(CompressionLevel p_compression) const;
-	int get_precise_real_size(CompressionLevel p_compression) const;
 	int get_unit_real_size(CompressionLevel p_compression) const;
 	int get_vector2_size(CompressionLevel p_compression) const;
-	int get_precise_vector2_size(CompressionLevel p_compression) const;
 	int get_normalized_vector2_size(CompressionLevel p_compression) const;
 	int get_vector3_size(CompressionLevel p_compression) const;
-	int get_precise_vector3_size(CompressionLevel p_compression) const;
 	int get_normalized_vector3_size(CompressionLevel p_compression) const;
 
 	/** Read the size and pass to the next parameter. */
@@ -377,17 +311,16 @@ public:
 	int read_bool_size();
 	int read_int_size(CompressionLevel p_compression);
 	int read_real_size(CompressionLevel p_compression);
-	int read_precise_real_size(CompressionLevel p_compression);
 	int read_unit_real_size(CompressionLevel p_compression);
 	int read_vector2_size(CompressionLevel p_compression);
-	int read_precise_vector2_size(CompressionLevel p_compression);
 	int read_normalized_vector2_size(CompressionLevel p_compression);
 	int read_vector3_size(CompressionLevel p_compression);
-	int read_precise_vector3_size(CompressionLevel p_compression);
 	int read_normalized_vector3_size(CompressionLevel p_compression);
 	int read_variant_size();
 
 	static int get_bit_taken(DataType p_data_type, CompressionLevel p_compression);
+	static int get_mantissa_bits(CompressionLevel p_compression);
+	static int get_exponent_bits(CompressionLevel p_compression);
 
 private:
 	static uint64_t compress_unit_float(double p_value, double p_scale_factor);
