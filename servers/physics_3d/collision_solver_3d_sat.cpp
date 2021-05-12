@@ -183,7 +183,7 @@ static void _generate_contacts_edge_circle(const Vector3 *p_points_A, int p_poin
 	real_t circle_B_radius = circle_B_line_1.length();
 	Vector3 circle_B_normal = circle_B_line_1.cross(circle_B_line_2).normalized();
 
-	Plane circle_plane(circle_B_pos, circle_B_normal);
+	Plane circle_plane(circle_B_normal, circle_B_pos);
 
 	static const int max_clip = 2;
 	Vector3 contact_points[max_clip];
@@ -299,7 +299,7 @@ static void _generate_contacts_face_face(const Vector3 *p_points_A, int p_point_
 		Vector3 clip_normal = (edge0_B - edge1_B).cross(plane_B.normal).normalized();
 		// make a clip plane
 
-		Plane clip(edge0_B, clip_normal);
+		Plane clip(clip_normal, edge0_B);
 		// avoid double clip if A is edge
 		int dst_idx = 0;
 		bool edge = clipbuf_len == 2;
@@ -385,7 +385,7 @@ static void _generate_contacts_face_circle(const Vector3 *p_points_A, int p_poin
 	// Clip face with circle plane.
 	Vector3 circle_B_normal = circle_B_line_1.cross(circle_B_line_2).normalized();
 
-	Plane circle_plane(circle_B_pos, circle_B_normal);
+	Plane circle_plane(circle_B_normal, circle_B_pos);
 
 	static const int max_clip = 32;
 	Vector3 contact_points[max_clip];
@@ -522,7 +522,7 @@ static void _generate_contacts_circle_circle(const Vector3 *p_points_A, int p_po
 		}
 	}
 
-	Plane circle_B_plane(circle_B_pos, circle_B_normal);
+	Plane circle_B_plane(circle_B_normal, circle_B_pos);
 
 	// Generate contact points.
 	for (int i = 0; i < num_points; i++) {

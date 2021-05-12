@@ -2367,7 +2367,7 @@ void RendererSceneRenderRD::_setup_lights(const PagedArray<RID> &p_lights, const
 	r_positional_light_count = 0;
 	sky.sky_scene_state.ubo.directional_light_count = 0;
 
-	Plane camera_plane(p_camera_transform.origin, -p_camera_transform.basis.get_axis(Vector3::AXIS_Z).normalized());
+	Plane camera_plane(-p_camera_transform.basis.get_axis(Vector3::AXIS_Z).normalized(), p_camera_transform.origin);
 
 	cluster.omni_light_count = 0;
 	cluster.spot_light_count = 0;
@@ -3513,7 +3513,7 @@ void RendererSceneRenderRD::_pre_opaque_render(bool p_use_ssao, bool p_use_gi, R
 	render_state.shadows.clear();
 	render_state.directional_shadows.clear();
 
-	Plane camera_plane(render_state.cam_transform.origin, -render_state.cam_transform.basis.get_axis(Vector3::AXIS_Z));
+	Plane camera_plane(-render_state.cam_transform.basis.get_axis(Vector3::AXIS_Z), render_state.cam_transform.origin);
 	float lod_distance_multiplier = render_state.cam_projection.get_lod_multiplier();
 
 	{

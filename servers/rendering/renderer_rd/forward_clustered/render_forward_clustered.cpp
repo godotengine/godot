@@ -876,7 +876,7 @@ void RenderForwardClustered::_fill_render_list(RenderListType p_render_list, con
 	}
 	uint32_t lightmap_captures_used = 0;
 
-	Plane near_plane(p_cam_transform.origin, -p_cam_transform.basis.get_axis(Vector3::AXIS_Z));
+	Plane near_plane(-p_cam_transform.basis.get_axis(Vector3::AXIS_Z), p_cam_transform.origin);
 	near_plane.d += p_cam_projection.get_z_near();
 	float z_max = p_cam_projection.get_z_far() - p_cam_projection.get_z_near();
 
@@ -1103,7 +1103,7 @@ void RenderForwardClustered::_render_scene(RID p_render_buffer, const Transform 
 	RENDER_TIMESTAMP("Setup 3D Scene");
 
 	float lod_distance_multiplier = p_cam_projection.get_lod_multiplier();
-	Plane lod_camera_plane(p_cam_transform.get_origin(), -p_cam_transform.basis.get_axis(Vector3::AXIS_Z));
+	Plane lod_camera_plane(-p_cam_transform.basis.get_axis(Vector3::AXIS_Z), p_cam_transform.get_origin());
 
 	if (get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_DISABLE_LOD) {
 		p_screen_lod_threshold = 0.0;

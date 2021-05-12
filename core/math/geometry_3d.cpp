@@ -819,11 +819,9 @@ Vector<Plane> Geometry3D::build_sphere_planes(real_t p_radius, int p_lats, int p
 		planes.push_back(Plane(normal, p_radius));
 
 		for (int j = 1; j <= p_lats; j++) {
-			// FIXME: This is stupid.
 			Vector3 angle = normal.lerp(axis, j / (real_t)p_lats).normalized();
-			Vector3 pos = angle * p_radius;
-			planes.push_back(Plane(pos, angle));
-			planes.push_back(Plane(pos * axis_neg, angle * axis_neg));
+			planes.push_back(Plane(angle, p_radius));
+			planes.push_back(Plane(angle * axis_neg, p_radius));
 		}
 	}
 
@@ -854,8 +852,8 @@ Vector<Plane> Geometry3D::build_capsule_planes(real_t p_radius, real_t p_height,
 		for (int j = 1; j <= p_lats; j++) {
 			Vector3 angle = normal.lerp(axis, j / (real_t)p_lats).normalized();
 			Vector3 pos = axis * p_height * 0.5 + angle * p_radius;
-			planes.push_back(Plane(pos, angle));
-			planes.push_back(Plane(pos * axis_neg, angle * axis_neg));
+			planes.push_back(Plane(angle, pos));
+			planes.push_back(Plane(angle * axis_neg, pos * axis_neg));
 		}
 	}
 

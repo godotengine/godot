@@ -2013,7 +2013,7 @@ bool RendererSceneCull::_light_instance_update_shadow(Instance *p_instance, cons
 
 					p_scenario->indexers[Scenario::INDEXER_GEOMETRY].convex_query(planes.ptr(), planes.size(), points.ptr(), points.size(), cull_convex);
 
-					Plane near_plane(light_transform.origin, light_transform.basis.get_axis(2) * z);
+					Plane near_plane(light_transform.basis.get_axis(2) * z, light_transform.origin);
 
 					RendererSceneRender::RenderShadowData &shadow_data = render_shadow_data[max_shadows_used++];
 
@@ -2568,7 +2568,7 @@ void RendererSceneCull::_render_scene(const Transform &p_cam_transform, const Ca
 
 	Vector<Plane> planes = p_cam_projection.get_projection_planes(p_cam_transform);
 
-	Plane near_plane(p_cam_transform.origin, -p_cam_transform.basis.get_axis(2).normalized());
+	Plane near_plane(-p_cam_transform.basis.get_axis(2).normalized(), p_cam_transform.origin);
 
 	/* STEP 2 - CULL */
 

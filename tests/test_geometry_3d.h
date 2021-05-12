@@ -179,7 +179,7 @@ TEST_CASE("[Geometry3D] Clip Polygon") {
 	Vector<Plane> box_planes = Geometry3D::build_box_planes(Vector3(5, 10, 5));
 	Vector<Vector3> box = Geometry3D::compute_convex_mesh_points(&box_planes[0], box_planes.size());
 	tt.push_back(Case(Plane(), box, true));
-	tt.push_back(Case(Plane(Vector3(0, 3, 0), Vector3(0, 1, 0)), box, false));
+	tt.push_back(Case(Plane(Vector3(0, 1, 0), Vector3(0, 3, 0)), box, false));
 	for (int i = 0; i < tt.size(); ++i) {
 		Case current_case = tt[i];
 		Vector<Vector3> output = Geometry3D::clip_polygon(current_case.polygon, current_case.clipping_plane);

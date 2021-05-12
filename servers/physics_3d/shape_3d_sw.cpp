@@ -790,7 +790,7 @@ Vector3 CylinderShape3DSW::get_closest_point_to(const Vector3 &p_point) const {
 		// Project point to top disk.
 		real_t dir = p_point.y > 0.0 ? 1.0 : -1.0;
 		Vector3 circle_pos(0.0, dir * height * 0.5, 0.0);
-		Plane circle_plane(circle_pos, Vector3(0.0, dir, 0.0));
+		Plane circle_plane(Vector3(0.0, dir, 0.0), circle_pos);
 		Vector3 proj_point = circle_plane.project(p_point);
 
 		// Clip position.
@@ -1040,7 +1040,7 @@ Vector3 ConvexPolygonShape3DSW::get_closest_point_to(const Vector3 &p_point) con
 			Vector3 a = vertices[indices[j]];
 			Vector3 b = vertices[indices[(j + 1) % ic]];
 			Vector3 n = (a - b).cross(faces[i].plane.normal).normalized();
-			if (Plane(a, n).is_point_over(p_point)) {
+			if (Plane(n, a).is_point_over(p_point)) {
 				is_inside = false;
 				break;
 			}

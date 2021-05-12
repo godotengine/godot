@@ -289,7 +289,7 @@ public:
 				e.touches_near = min_d < z_near;
 			} else {
 				//contains camera inside light
-				Plane base_plane(xform.origin, -xform.basis.get_axis(Vector3::AXIS_Z));
+				Plane base_plane(-xform.basis.get_axis(Vector3::AXIS_Z), xform.origin);
 				float dist = base_plane.distance_to(Vector3());
 				if (dist >= 0 && dist < radius) {
 					//inside, check angle
