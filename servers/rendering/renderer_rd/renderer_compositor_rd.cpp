@@ -44,32 +44,40 @@ void RendererCompositorRD::blit_render_targets_to_screen(DisplayServer::WindowID
 		ERR_CONTINUE(texture.is_null());
 		RID rd_texture = storage->texture_get_rd_texture(texture);
 		ERR_CONTINUE(rd_texture.is_null());
+
 		if (!render_target_descriptors.has(rd_texture) || !RD::get_singleton()->uniform_set_is_valid(render_target_descriptors[rd_texture])) {
 			Vector<RD::Uniform> uniforms;
 			RD::Uniform u;
 			u.uniform_type = RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE;
 			u.binding = 0;
-			u.ids.push_back(copy_viewports_sampler);
+			u.ids.push_back(blit.sampler);
 			u.ids.push_back(rd_texture);
 			uniforms.push_back(u);
-			RID uniform_set = RD::get_singleton()->uniform_set_create(uniforms, copy_viewports_rd_shader, 0);
+			RID uniform_set = RD::get_singleton()->uniform_set_create(uniforms, blit.shader.version_get_shader(blit.shader_version, BLIT_MODE_NORMAL), 0);
 
 			render_target_descriptors[rd_texture] = uniform_set;
 		}
 
 		Size2 screen_size(RD::get_singleton()->screen_get_width(p_screen), RD::get_singleton()->screen_get_height(p_screen));
-
-		RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, copy_viewports_rd_pipeline);
-		RD::get_singleton()->draw_list_bind_index_array(draw_list, copy_viewports_rd_array);
+		BlitMode mode = p_render_targets[i].lens_distortion.apply ? BLIT_MODE_LENS : p_render_targets[i].multi_view.use_layer ? BLIT_MODE_USE_LAYER :
+																																  BLIT_MODE_NORMAL;
+		RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, blit.pipelines[mode]);
+		RD::get_singleton()->draw_list_bind_index_array(draw_list, blit.array);
 		RD::get_singleton()->draw_list_bind_uniform_set(draw_list, render_target_descriptors[rd_texture], 0);
 
-		float push_constant[4] = {
-			p_render_targets[i].rect.position.x / screen_size.width,
-			p_render_targets[i].rect.position.y / screen_size.height,
-			p_render_targets[i].rect.size.width / screen_size.width,
-			p_render_targets[i].rect.size.height / screen_size.height,
-		};
-		RD::get_singleton()->draw_list_set_push_constant(draw_list, push_constant, 4 * sizeof(float));
+		blit.push_constant.rect[0] = p_render_targets[i].rect.position.x / screen_size.width;
+		blit.push_constant.rect[1] = p_render_targets[i].rect.position.y / screen_size.height;
+		blit.push_constant.rect[2] = p_render_targets[i].rect.size.width / screen_size.width;
+		blit.push_constant.rect[3] = p_render_targets[i].rect.size.height / screen_size.height;
+		blit.push_constant.layer = p_render_targets[i].multi_view.layer;
+		blit.push_constant.eye_center[0] = p_render_targets[i].lens_distortion.eye_center.x;
+		blit.push_constant.eye_center[1] = p_render_targets[i].lens_distortion.eye_center.y;
+		blit.push_constant.k1 = p_render_targets[i].lens_distortion.k1;
+		blit.push_constant.k2 = p_render_targets[i].lens_distortion.k2;
+		blit.push_constant.upscale = p_render_targets[i].lens_distortion.upscale;
+		blit.push_constant.aspect_ratio = p_render_targets[i].lens_distortion.aspect_ratio;
+
+		RD::get_singleton()->draw_list_set_push_constant(draw_list, &blit.push_constant, sizeof(BlitPushConstant));
 		RD::get_singleton()->draw_list_draw(draw_list, true);
 	}
 
@@ -96,40 +104,22 @@ void RendererCompositorRD::end_frame(bool p_swap_buffers) {
 }
 
 void RendererCompositorRD::initialize() {
-	{ //create framebuffer copy shader
-		RenderingDevice::ShaderStageData vert;
-		vert.shader_stage = RenderingDevice::SHADER_STAGE_VERTEX;
-		vert.spir_v = RenderingDevice::get_singleton()->shader_compile_from_source(RenderingDevice::SHADER_STAGE_VERTEX,
-				"#version 450\n"
-				"layout(push_constant, binding = 0, std140) uniform Pos { vec4 dst_rect; } pos;\n"
-				"layout(location =0) out vec2 uv;\n"
-				"void main() { \n"
-				" vec2 base_arr[4] = vec2[](vec2(0.0,0.0),vec2(0.0,1.0),vec2(1.0,1.0),vec2(1.0,0.0));\n"
-				" uv = base_arr[gl_VertexIndex];\n"
-				" vec2 vtx = pos.dst_rect.xy+uv*pos.dst_rect.zw;\n"
-				" gl_Position = vec4(vtx * 2.0 - 1.0,0.0,1.0);\n"
-				"}\n");
+	{
+		// Initialize blit
+		Vector<String> blit_modes;
+		blit_modes.push_back("\n");
+		blit_modes.push_back("\n#define USE_LAYER\n");
+		blit_modes.push_back("\n#define USE_LAYER\n#define APPLY_LENS_DISTORTION\n");
 
-		RenderingDevice::ShaderStageData frag;
-		frag.shader_stage = RenderingDevice::SHADER_STAGE_FRAGMENT;
-		frag.spir_v = RenderingDevice::get_singleton()->shader_compile_from_source(RenderingDevice::SHADER_STAGE_FRAGMENT,
-				"#version 450\n"
-				"layout (location = 0) in vec2 uv;\n"
-				"layout (location = 0) out vec4 color;\n"
-				"layout (binding = 0) uniform sampler2D src_rt;\n"
-				"void main() { color=texture(src_rt,uv); }\n");
+		blit.shader.initialize(blit_modes);
 
-		Vector<RenderingDevice::ShaderStageData> source;
-		source.push_back(vert);
-		source.push_back(frag);
-		String error;
-		copy_viewports_rd_shader = RD::get_singleton()->shader_create(source);
-		if (!copy_viewports_rd_shader.is_valid()) {
-			print_line("Failed compilation: " + error);
+		blit.shader_version = blit.shader.version_create();
+
+		for (int i = 0; i < BLIT_MODE_MAX; i++) {
+			blit.pipelines[i] = RD::get_singleton()->render_pipeline_create(blit.shader.version_get_shader(blit.shader_version, i), RD::get_singleton()->screen_get_framebuffer_format(), RD::INVALID_ID, RD::RENDER_PRIMITIVE_TRIANGLES, RD::PipelineRasterizationState(), RD::PipelineMultisampleState(), RD::PipelineDepthStencilState(), RenderingDevice::PipelineColorBlendState::create_disabled(), 0);
 		}
-	}
 
-	{ //create index array for copy shader
+		//create index array for copy shader
 		Vector<uint8_t> pv;
 		pv.resize(6 * 4);
 		{
@@ -142,15 +132,10 @@ void RendererCompositorRD::initialize() {
 			p32[4] = 2;
 			p32[5] = 3;
 		}
-		copy_viewports_rd_index_buffer = RD::get_singleton()->index_buffer_create(6, RenderingDevice::INDEX_BUFFER_FORMAT_UINT32, pv);
-		copy_viewports_rd_array = RD::get_singleton()->index_array_create(copy_viewports_rd_index_buffer, 0, 6);
-	}
+		blit.index_buffer = RD::get_singleton()->index_buffer_create(6, RenderingDevice::INDEX_BUFFER_FORMAT_UINT32, pv);
+		blit.array = RD::get_singleton()->index_array_create(blit.index_buffer, 0, 6);
 
-	{ //pipeline
-		copy_viewports_rd_pipeline = RD::get_singleton()->render_pipeline_create(copy_viewports_rd_shader, RD::get_singleton()->screen_get_framebuffer_format(), RD::INVALID_ID, RD::RENDER_PRIMITIVE_TRIANGLES, RD::PipelineRasterizationState(), RD::PipelineMultisampleState(), RD::PipelineDepthStencilState(), RenderingDevice::PipelineColorBlendState::create_disabled(), 0);
-	}
-	{ // sampler
-		copy_viewports_sampler = RD::get_singleton()->sampler_create(RD::SamplerState());
+		blit.sampler = RD::get_singleton()->sampler_create(RD::SamplerState());
 	}
 }
 
@@ -162,9 +147,9 @@ void RendererCompositorRD::finalize() {
 	memdelete(storage);
 
 	//only need to erase these, the rest are erased by cascade
-	RD::get_singleton()->free(copy_viewports_rd_index_buffer);
-	RD::get_singleton()->free(copy_viewports_rd_shader);
-	RD::get_singleton()->free(copy_viewports_sampler);
+	blit.shader.version_free(blit.shader_version);
+	RD::get_singleton()->free(blit.index_buffer);
+	RD::get_singleton()->free(blit.sampler);
 }
 
 RendererCompositorRD *RendererCompositorRD::singleton = nullptr;
