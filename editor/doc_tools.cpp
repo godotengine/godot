@@ -38,6 +38,7 @@
 #include "core/io/marshalls.h"
 #include "core/object/script_language.h"
 #include "core/version.h"
+#include "editor/import/resource_importer_texture.h"
 #include "scene/resources/theme.h"
 
 // Used for a hack preserving Mono properties on non-Mono builds.
@@ -259,6 +260,10 @@ void DocTools::generate(bool p_basic_types) {
 		if (name == "ProjectSettings") {
 			//special case for project settings, so settings can be documented
 			ProjectSettings::get_singleton()->get_property_list(&properties);
+			own_properties = properties;
+		} else if (name == "ResourceImporterTexture") {
+			ResourceImporterTexture *rit = memnew(ResourceImporterTexture);
+			rit->get_property_list(&properties);
 			own_properties = properties;
 		} else {
 			ClassDB::get_property_list(name, &properties);

@@ -3769,6 +3769,9 @@ void EditorNode::register_editor_types() {
 	ClassDB::register_class<EditorSceneImporterMesh>();
 	ClassDB::register_class<EditorSceneImporterMeshNode3D>();
 
+	// Required to document import options in the class reference.
+	ClassDB::register_class<ResourceImporterTexture>();
+
 	ClassDB::register_virtual_class<FileSystemDock>();
 
 	// FIXME: Is this stuff obsolete, or should it be ported to new APIs?
