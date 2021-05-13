@@ -1402,6 +1402,10 @@ void ScriptTextEditor::set_tooltip_request_func(String p_method, Object *p_obj) 
 void ScriptTextEditor::set_debugger_active(bool p_active) {
 }
 
+Control *ScriptTextEditor::get_base_editor() const {
+	return code_editor->get_text_editor();
+}
+
 Variant ScriptTextEditor::get_drag_data_fw(const Point2 &p_point, Control *p_from) {
 	return Variant();
 }

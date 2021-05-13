@@ -2710,6 +2710,10 @@ void VisualScriptEditor::set_debugger_active(bool p_active) {
 	}
 }
 
+Control *VisualScriptEditor::get_base_editor() const {
+	return graph;
+}
+
 void VisualScriptEditor::set_tooltip_request_func(String p_method, Object *p_obj) {
 }
 
