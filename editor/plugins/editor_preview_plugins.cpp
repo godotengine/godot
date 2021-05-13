@@ -830,7 +830,7 @@ Ref<Texture> EditorFontPreviewPlugin::generate_from_path(const String &p_path, c
 	sampled_font.instance();
 	if (res->is_class("DynamicFont")) {
 		Ref<DynamicFont> font = res;
-		if(font->get_font_data().is_valid() {
+		if (font->get_font_data().is_valid()) {
 			sampled_font->set_font_data(font->get_font_data()->duplicate());
 		}
 		for (int i = 0; i < font->get_fallback_count(); i++) {
