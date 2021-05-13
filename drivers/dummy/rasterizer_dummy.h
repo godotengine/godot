@@ -146,6 +146,7 @@ public:
 		Vector<DummySurface> surfaces;
 		int blend_shape_count;
 		VS::BlendShapeMode blend_shape_mode;
+		PoolRealArray blend_shape_values;
 	};
 
 	mutable RID_Owner<DummyTexture> texture_owner;
@@ -334,6 +335,17 @@ public:
 		DummyMesh *m = mesh_owner.getornull(p_mesh);
 		ERR_FAIL_COND_V(!m, VS::BLEND_SHAPE_MODE_NORMALIZED);
 		return m->blend_shape_mode;
+	}
+
+	void mesh_set_blend_shape_values(RID p_mesh, PoolVector<float> p_values) {
+		DummyMesh *m = mesh_owner.getornull(p_mesh);
+		ERR_FAIL_COND(!m);
+		m->blend_shape_values = p_values;
+	}
+	PoolVector<float> mesh_get_blend_shape_values(RID p_mesh) const {
+		DummyMesh *m = mesh_owner.getornull(p_mesh);
+		ERR_FAIL_COND_V(!m, PoolRealArray());
+		return m->blend_shape_values;
 	}
 
 	void mesh_surface_update_region(RID p_mesh, int p_surface, int p_offset, const PoolVector<uint8_t> &p_data) {}

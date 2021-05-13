@@ -101,7 +101,7 @@ public:
 		Vector<RID> reflection_probe_instances;
 		Vector<RID> gi_probe_instances;
 
-		Vector<float> blend_values;
+		PoolVector<float> blend_values;
 
 		VS::ShadowCastingSetting cast_shadows;
 
@@ -283,6 +283,9 @@ public:
 
 	virtual void mesh_set_blend_shape_mode(RID p_mesh, VS::BlendShapeMode p_mode) = 0;
 	virtual VS::BlendShapeMode mesh_get_blend_shape_mode(RID p_mesh) const = 0;
+
+	virtual void mesh_set_blend_shape_values(RID p_mesh, PoolVector<float> p_values) = 0;
+	virtual PoolVector<float> mesh_get_blend_shape_values(RID p_mesh) const = 0;
 
 	virtual void mesh_surface_update_region(RID p_mesh, int p_surface, int p_offset, const PoolVector<uint8_t> &p_data) = 0;
 
