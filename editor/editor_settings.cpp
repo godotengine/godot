@@ -1709,7 +1709,7 @@ void EditorSettings::set_builtin_action_override(const String &p_name, const Arr
 
 			// Check equality of each event.
 			for (List<Ref<InputEvent>>::Element *E = builtin_events.front(); E; E = E->next()) {
-				if (!E->get()->shortcut_match(p_events[event_idx])) {
+				if (!E->get()->is_match(p_events[event_idx])) {
 					same_as_builtin = false;
 					break;
 				}

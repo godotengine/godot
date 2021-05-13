@@ -42,7 +42,7 @@ Ref<InputEvent> Shortcut::get_shortcut() const {
 }
 
 bool Shortcut::is_shortcut(const Ref<InputEvent> &p_event) const {
-	return shortcut.is_valid() && shortcut->shortcut_match(p_event);
+	return shortcut.is_valid() && shortcut->is_match(p_event, true);
 }
 
 String Shortcut::get_as_text() const {

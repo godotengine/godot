@@ -289,7 +289,7 @@ void EditorSettingsDialog::_update_shortcuts() {
 			event_strings.push_back(I->get()->as_text());
 
 			// Only check if the events have been the same so far - once one fails, we don't need to check any more.
-			if (same_as_defaults && !key_default_events[count]->shortcut_match(I->get())) {
+			if (same_as_defaults && !key_default_events[count]->is_match(I->get())) {
 				same_as_defaults = false;
 			}
 			count++;
