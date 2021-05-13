@@ -216,14 +216,26 @@ String OS_OSX::get_cache_path() const {
 }
 
 String OS_OSX::get_bundle_resource_dir() const {
-	NSBundle *main = [NSBundle mainBundle];
-	NSString *resourcePath = [main resourcePath];
-
-	char *utfs = strdup([resourcePath UTF8String]);
 	String ret;
-	ret.parse_utf8(utfs);
-	free(utfs);
 
+	NSBundle *main = [NSBundle mainBundle];
+	if (main) {
+		NSString *resourcePath = [main resourcePath];
+		ret.parse_utf8([resourcePath UTF8String]);
+	}
+	return ret;
+}
+
+String OS_OSX::get_bundle_icon_path() const {
+	String ret;
+
+	NSBundle *main = [NSBundle mainBundle];
+	if (main) {
+		NSString *iconPath = [[main infoDictionary] objectForKey:@"CFBundleIconFile"];
+		if (iconPath) {
+			ret.parse_utf8([iconPath UTF8String]);
+		}
+	}
 	return ret;
 }
 
