@@ -245,12 +245,12 @@ float AudioEffectSpectrumAnalyzer::get_tap_back_pos() const {
 	return tapback_pos;
 }
 
-void AudioEffectSpectrumAnalyzer::set_fft_size(FFT_Size p_fft_size) {
+void AudioEffectSpectrumAnalyzer::set_fft_size(FFTSize p_fft_size) {
 	ERR_FAIL_INDEX(p_fft_size, FFT_SIZE_MAX);
 	fft_size = p_fft_size;
 }
 
-AudioEffectSpectrumAnalyzer::FFT_Size AudioEffectSpectrumAnalyzer::get_fft_size() const {
+AudioEffectSpectrumAnalyzer::FFTSize AudioEffectSpectrumAnalyzer::get_fft_size() const {
 	return fft_size;
 }
 

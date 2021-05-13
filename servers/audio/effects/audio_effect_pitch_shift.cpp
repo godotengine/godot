@@ -326,12 +326,12 @@ int AudioEffectPitchShift::get_oversampling() const {
 	return oversampling;
 }
 
-void AudioEffectPitchShift::set_fft_size(FFT_Size p_fft_size) {
+void AudioEffectPitchShift::set_fft_size(FFTSize p_fft_size) {
 	ERR_FAIL_INDEX(p_fft_size, FFT_SIZE_MAX);
 	fft_size = p_fft_size;
 }
 
-AudioEffectPitchShift::FFT_Size AudioEffectPitchShift::get_fft_size() const {
+AudioEffectPitchShift::FFTSize AudioEffectPitchShift::get_fft_size() const {
 	return fft_size;
 }
 
