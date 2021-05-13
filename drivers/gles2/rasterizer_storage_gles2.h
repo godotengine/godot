@@ -125,10 +125,8 @@ public:
 		GLuint skeleton_transform_buffer;
 		PoolVector<float> skeleton_transform_cpu_buffer;
 
-		size_t blend_shape_transform_buffer_size;
-		GLuint blend_shape_transform_buffer;
-		PoolVector<float> blend_shapes_transform_cpu_buffer;
-
+		size_t blend_shape_transform_cpu_buffer_size;
+		PoolVector<float> blend_shape_transform_cpu_buffer;
 	} resources;
 
 	mutable struct Shaders {
@@ -640,13 +638,6 @@ public:
 		GLuint vertex_id;
 		GLuint index_id;
 
-		struct BlendShape {
-			GLuint vertex_id;
-			GLuint array_id;
-		};
-
-		Vector<BlendShape> blend_shapes;
-
 		AABB aabb;
 
 		int array_len;
@@ -665,7 +656,11 @@ public:
 
 		PoolVector<uint8_t> data;
 		PoolVector<uint8_t> index_data;
+
 		Vector<PoolVector<uint8_t>> blend_shape_data;
+
+		GLuint blend_shape_buffer_id;
+		size_t blend_shape_buffer_size;
 
 		int total_data_size;
 
@@ -690,6 +685,9 @@ public:
 
 		int blend_shape_count;
 		VS::BlendShapeMode blend_shape_mode;
+		PoolRealArray blend_shape_values;
+
+		SelfList<Mesh> update_list;
 
 		AABB custom_aabb;
 
@@ -708,11 +706,14 @@ public:
 
 		Mesh() :
 				blend_shape_count(0),
-				blend_shape_mode(VS::BLEND_SHAPE_MODE_NORMALIZED) {
+				blend_shape_mode(VS::BLEND_SHAPE_MODE_NORMALIZED),
+				blend_shape_values(PoolRealArray()),
+				update_list(this) {
 		}
 	};
 
 	mutable RID_Owner<Mesh> mesh_owner;
+	SelfList<Mesh>::List blend_shapes_update_list;
 
 	virtual RID mesh_create();
 
@@ -723,6 +724,9 @@ public:
 
 	virtual void mesh_set_blend_shape_mode(RID p_mesh, VS::BlendShapeMode p_mode);
 	virtual VS::BlendShapeMode mesh_get_blend_shape_mode(RID p_mesh) const;
+
+	virtual void mesh_set_blend_shape_values(RID p_mesh, PoolVector<float> p_values);
+	virtual PoolVector<float> mesh_get_blend_shape_values(RID p_mesh) const;
 
 	virtual void mesh_surface_update_region(RID p_mesh, int p_surface, int p_offset, const PoolVector<uint8_t> &p_data);
 
@@ -750,6 +754,8 @@ public:
 
 	virtual AABB mesh_get_aabb(RID p_mesh, RID p_skeleton) const;
 	virtual void mesh_clear(RID p_mesh);
+
+	void update_dirty_blend_shapes();
 
 	/* MULTIMESH API */
 
@@ -912,7 +918,6 @@ public:
 	virtual Transform2D skeleton_bone_get_transform_2d(RID p_skeleton, int p_bone) const;
 	virtual void skeleton_set_base_transform_2d(RID p_skeleton, const Transform2D &p_base_transform);
 
-	void _update_blend_shape_transform_buffer(const PoolVector<float> &p_data, size_t p_size);
 	void _update_skeleton_transform_buffer(const PoolVector<float> &p_data, size_t p_size);
 
 	/* Light API */
