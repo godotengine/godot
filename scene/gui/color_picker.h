@@ -56,6 +56,9 @@ public:
 	};
 
 private:
+	static Ref<Shader> wheel_shader;
+	static Ref<Shader> circle_shader;
+
 	Control *screen = nullptr;
 	Control *uv_edit = memnew(Control);
 	Control *w_edit = memnew(Control);
@@ -128,6 +131,9 @@ protected:
 	static void _bind_methods();
 
 public:
+	static void init_shaders();
+	static void finish_shaders();
+
 	void set_edit_alpha(bool p_show);
 	bool is_editing_alpha() const;
 
