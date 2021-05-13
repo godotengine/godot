@@ -238,19 +238,6 @@ protected:
 			undo_redo->create_action(TTR("Set Variable Type"));
 			undo_redo->add_do_method(script.ptr(), "set_variable_info", var, dc);
 			undo_redo->add_undo_method(script.ptr(), "set_variable_info", var, d);
-			undo_redo->add_do_method(this, "_var_changed");
-			undo_redo->add_undo_method(this, "_var_changed");
-			undo_redo->commit_action();
-			return true;
-		}
-
-		if (String(p_name) == "hint") {
-
-			Dictionary dc = d.duplicate();
-			dc["hint"] = p_value;
-			undo_redo->create_action(TTR("Set Variable Type"));
-			undo_redo->add_do_method(script.ptr(), "set_variable_info", var, dc);
-			undo_redo->add_undo_method(script.ptr(), "set_variable_info", var, d);
 
 			// Setting the default value.
 			Variant::Type type = (Variant::Type)(int)p_value;
@@ -264,6 +251,19 @@ protected:
 				}
 			}
 
+			undo_redo->add_do_method(this, "_var_changed");
+			undo_redo->add_undo_method(this, "_var_changed");
+			undo_redo->commit_action();
+			return true;
+		}
+
+		if (String(p_name) == "hint") {
+
+			Dictionary dc = d.duplicate();
+			dc["hint"] = p_value;
+			undo_redo->create_action(TTR("Set Variable Type"));
+			undo_redo->add_do_method(script.ptr(), "set_variable_info", var, dc);
+			undo_redo->add_undo_method(script.ptr(), "set_variable_info", var, d);
 			undo_redo->add_do_method(this, "_var_changed");
 			undo_redo->add_undo_method(this, "_var_changed");
 			undo_redo->commit_action();
@@ -336,7 +336,7 @@ protected:
 		p_list->push_back(PropertyInfo(Variant::INT, "type", PROPERTY_HINT_ENUM, argt));
 		p_list->push_back(PropertyInfo(script->get_variable_info(var).type, "value", script->get_variable_info(var).hint, script->get_variable_info(var).hint_string, PROPERTY_USAGE_DEFAULT));
 		// Update this when PropertyHint changes
-		p_list->push_back(PropertyInfo(Variant::INT, "hint", PROPERTY_HINT_ENUM, "None,Range,ExpRange,Enum,ExpEasing,Length,SpriteFrame,KeyAccel,Flags,Layers2dRender,Layers2dPhysics,Layer3dRender,Layer3dPhysics,File,Dir,GlobalFile,GlobalDir,ResourceType,MultilineText,PlaceholderText,ColorNoAlpha,ImageCompressLossy,ImageCompressLossLess,ObjectId,String,NodePathToEditedNode,MethodOfVariantType,MethodOfBaseType,MethodOfInstance,MethodOfScript,PropertyOfVariantType,PropertyOfBaseType,PropertyOfInstance,PropertyOfScript,ObjectTooBig,NodePathValidTypes"));
+		p_list->push_back(PropertyInfo(Variant::INT, "hint", PROPERTY_HINT_ENUM, "None,Range,ExpRange,Enum,ExpEasing,Length,SpriteFrame,KeyAccel,Flags,Layers2dRender,Layers2dPhysics,Layer3dRender,Layer3dPhysics,File,Dir,GlobalFile,GlobalDir,ResourceType,MultilineText,PlaceholderText,ColorNoAlpha,ImageCompressLossy,ImageCompressLossLess,ObjectId,TypeString,NodePathToEditedNode,MethodOfVariantType,MethodOfBaseType,MethodOfInstance,MethodOfScript,PropertyOfVariantType,PropertyOfBaseType,PropertyOfInstance,PropertyOfScript,ObjectTooBig,NodePathValidTypes,SaveFile"));
 		p_list->push_back(PropertyInfo(Variant::STRING, "hint_string"));
 		p_list->push_back(PropertyInfo(Variant::BOOL, "export"));
 	}
