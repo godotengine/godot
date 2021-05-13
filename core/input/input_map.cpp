@@ -130,12 +130,9 @@ List<Ref<InputEvent>>::Element *InputMap::_find_event(Action &p_action, const Re
 	for (List<Ref<InputEvent>>::Element *E = p_action.inputs.front(); E; E = E->next()) {
 		const Ref<InputEvent> e = E->get();
 
-		//if (e.type != Ref<InputEvent>::KEY && e.device != p_event.device) -- unsure about the KEY comparison, why is this here?
-		//	continue;
-
 		int device = e->get_device();
 		if (device == ALL_DEVICES || device == p_event->get_device()) {
-			if (p_exact_match && e->shortcut_match(p_event)) {
+			if (p_exact_match && e->is_match(p_event, true)) {
 				return E;
 			} else if (!p_exact_match && e->action_match(p_event, p_pressed, p_strength, p_raw_strength, p_action.deadzone)) {
 				return E;

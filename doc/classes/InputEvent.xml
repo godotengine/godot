@@ -90,20 +90,23 @@
 				Returns [code]true[/code] if this input event is an echo event (only for events of type [InputEventKey]).
 			</description>
 		</method>
+		<method name="is_match" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="event" type="InputEvent">
+			</argument>
+			<argument index="1" name="exact_match" type="bool" default="true">
+			</argument>
+			<description>
+				Returns [code]true[/code] if the specified [code]event[/code] matches this event. Only valid for action events i.e key ([InputEventKey]), button ([InputEventMouseButton] or [InputEventJoypadButton]), axis [InputEventJoypadMotion] or action ([InputEventAction]) events.
+				If [code]exact_match[/code] is [code]false[/code], it ignores the input modifiers for [InputEventKey] and [InputEventMouseButton] events, and the direction for [InputEventJoypadMotion] events.
+			</description>
+		</method>
 		<method name="is_pressed" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
 				Returns [code]true[/code] if this input event is pressed. Not relevant for events of type [InputEventMouseMotion] or [InputEventScreenDrag].
-			</description>
-		</method>
-		<method name="shortcut_match" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="event" type="InputEvent">
-			</argument>
-			<description>
-				Returns [code]true[/code] if the given input event is checking for the same key ([InputEventKey]), button ([InputEventJoypadButton]) or action ([InputEventAction]).
 			</description>
 		</method>
 		<method name="xformed_by" qualifiers="const">
