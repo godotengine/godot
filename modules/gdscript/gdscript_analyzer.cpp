@@ -574,6 +574,17 @@ void GDScriptAnalyzer::resolve_class_interface(GDScriptParser::ClassNode *p_clas
 				for (List<GDScriptParser::AnnotationNode *>::Element *E = member.variable->annotations.front(); E; E = E->next()) {
 					E->get()->apply(parser, member.variable);
 				}
+
+				if ((member.variable->initializer->type == GDScriptParser::Node::GET_NODE && !member.variable->onready)) {
+					push_error(vformat(R"*(Cannot get node when the scene tree isn't ready. Use "@onready var %s = get_node(...)" instead.)*", member.variable->identifier->name), member.variable->initializer);
+				}
+
+				if (member.variable->initializer->type == GDScriptParser::Node::CALL) {
+					GDScriptParser::CallNode *p_call = static_cast<GDScriptParser::CallNode *>(member.variable->initializer);
+					if (p_call->function_name == "get_node" && !member.variable->onready) {
+						push_error(vformat(R"*(Cannot get node when the scene tree isn't ready. Use "@onready var %s = get_node(...)" instead.)*", member.variable->identifier->name), member.variable->initializer);
+					}
+				}
 			} break;
 			case GDScriptParser::ClassNode::Member::CONSTANT: {
 				reduce_expression(member.constant->initializer);
