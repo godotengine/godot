@@ -48,7 +48,7 @@ Size2 Tabs::get_minimum_size() const {
 		if (tex.is_valid()) {
 			ms.height = MAX(ms.height, tex->get_size().height);
 			if (tabs[i].text != "") {
-				ms.width += get_constant("hseparation");
+				ms.width += get_constant("label_margin");
 			}
 		}
 
@@ -65,7 +65,7 @@ Size2 Tabs::get_minimum_size() const {
 		if (tabs[i].right_button.is_valid()) {
 			Ref<Texture> rb = tabs[i].right_button;
 			Size2 bms = rb->get_size();
-			bms.width += get_constant("hseparation");
+			bms.width += get_constant("label_margin");
 			ms.width += bms.width;
 			ms.height = MAX(bms.height + tab_bg->get_minimum_size().height, ms.height);
 		}
@@ -73,7 +73,7 @@ Size2 Tabs::get_minimum_size() const {
 		if (cb_displaypolicy == CLOSE_BUTTON_SHOW_ALWAYS || (cb_displaypolicy == CLOSE_BUTTON_SHOW_ACTIVE_ONLY && i == current)) {
 			Ref<Texture> cb = get_icon("close");
 			Size2 bms = cb->get_size();
-			bms.width += get_constant("hseparation");
+			bms.width += get_constant("label_margin");
 			ms.width += bms.width;
 			ms.height = MAX(bms.height + tab_bg->get_minimum_size().height, ms.height);
 		}
@@ -235,6 +235,11 @@ void Tabs::_notification(int p_what) {
 			Color color_disabled = get_color("font_color_disabled");
 			Ref<Texture> close = get_icon("close");
 
+			Ref<Texture> incr = get_icon("increment");
+			Ref<Texture> decr = get_icon("decrement");
+			Ref<Texture> incr_hl = get_icon("increment_highlight");
+			Ref<Texture> decr_hl = get_icon("decrement_highlight");
+
 			int h = get_size().height;
 			int w = 0;
 			int mw = 0;
@@ -244,20 +249,17 @@ void Tabs::_notification(int p_what) {
 				mw += get_tab_width(i);
 			}
 
+			mw += get_constant("hseparation") * tabs.size();
+
 			if (tab_align == ALIGN_CENTER) {
 				w = (get_size().width - mw) / 2;
 			} else if (tab_align == ALIGN_RIGHT) {
-				w = get_size().width - mw;
+				w = get_size().width - mw - incr->get_size().width - decr->get_size().width;
 			}
 
 			if (w < 0) {
 				w = 0;
 			}
-
-			Ref<Texture> incr = get_icon("increment");
-			Ref<Texture> decr = get_icon("decrement");
-			Ref<Texture> incr_hl = get_icon("increment_highlight");
-			Ref<Texture> decr_hl = get_icon("decrement_highlight");
 
 			int limit = get_size().width - incr->get_size().width - decr->get_size().width;
 
@@ -271,6 +273,7 @@ void Tabs::_notification(int p_what) {
 				tabs.write[i].ofs_cache = w;
 
 				int lsize = tabs[i].size_cache;
+				int y = 0;
 
 				Ref<StyleBox> sb;
 				Color col;
@@ -278,12 +281,15 @@ void Tabs::_notification(int p_what) {
 				if (tabs[i].disabled) {
 					sb = tab_disabled;
 					col = color_disabled;
+					y = get_constant("label_valign_bg");
 				} else if (i == current) {
 					sb = tab_fg;
 					col = color_fg;
+					y = get_constant("label_valign_fg");
 				} else {
 					sb = tab_bg;
 					col = color_bg;
+					y = get_constant("label_valign_bg");
 				}
 
 				if (w + lsize > limit) {
@@ -294,7 +300,7 @@ void Tabs::_notification(int p_what) {
 					max_drawn_tab = i;
 				}
 
-				Rect2 sb_rect = Rect2(w, 0, tabs[i].size_cache, h);
+				Rect2 sb_rect = Rect2(w, y, tabs[i].size_cache, h);
 				sb->draw(ci, sb_rect);
 
 				w += sb->get_margin(MARGIN_LEFT);
@@ -302,13 +308,13 @@ void Tabs::_notification(int p_what) {
 				Size2i sb_ms = sb->get_minimum_size();
 				Ref<Texture> icon = tabs[i].icon;
 				if (icon.is_valid()) {
-					icon->draw(ci, Point2i(w, sb->get_margin(MARGIN_TOP) + ((sb_rect.size.y - sb_ms.y) - icon->get_height()) / 2));
+					icon->draw(ci, Point2i(w, sb->get_margin(MARGIN_TOP) + sb_rect.position.y + ((sb_rect.size.y - sb_ms.y) - icon->get_height()) / 2));
 					if (tabs[i].text != "") {
-						w += icon->get_width() + get_constant("hseparation");
+						w += icon->get_width() + get_constant("label_margin");
 					}
 				}
 
-				font->draw(ci, Point2i(w, sb->get_margin(MARGIN_TOP) + ((sb_rect.size.y - sb_ms.y) - font->get_height()) / 2 + font->get_ascent()), tabs[i].xl_text, col, tabs[i].size_text);
+				font->draw(ci, Point2i(w, sb->get_margin(MARGIN_TOP) + sb_rect.position.y + ((sb_rect.size.y - sb_ms.y) - font->get_height()) / 2 + font->get_ascent()), tabs[i].xl_text, col, tabs[i].size_text);
 
 				w += tabs[i].size_text;
 
@@ -316,12 +322,12 @@ void Tabs::_notification(int p_what) {
 					Ref<StyleBox> style = get_stylebox("button");
 					Ref<Texture> rb = tabs[i].right_button;
 
-					w += get_constant("hseparation");
+					w += get_constant("label_margin");
 
 					Rect2 rb_rect;
 					rb_rect.size = style->get_minimum_size() + rb->get_size();
 					rb_rect.position.x = w;
-					rb_rect.position.y = sb->get_margin(MARGIN_TOP) + ((sb_rect.size.y - sb_ms.y) - (rb_rect.size.y)) / 2;
+					rb_rect.position.y = sb->get_margin(MARGIN_TOP) + sb_rect.position.y + ((sb_rect.size.y - sb_ms.y) - (rb_rect.size.y)) / 2;
 
 					if (rb_hover == i) {
 						if (rb_pressing) {
@@ -340,12 +346,12 @@ void Tabs::_notification(int p_what) {
 					Ref<StyleBox> style = get_stylebox("button");
 					Ref<Texture> cb = close;
 
-					w += get_constant("hseparation");
+					w += get_constant("label_margin");
 
 					Rect2 cb_rect;
 					cb_rect.size = style->get_minimum_size() + cb->get_size();
 					cb_rect.position.x = w;
-					cb_rect.position.y = sb->get_margin(MARGIN_TOP) + ((sb_rect.size.y - sb_ms.y) - (cb_rect.size.y)) / 2;
+					cb_rect.position.y = sb->get_margin(MARGIN_TOP) + sb_rect.position.y + ((sb_rect.size.y - sb_ms.y) - (cb_rect.size.y)) / 2;
 
 					if (!tabs[i].disabled && cb_hover == i) {
 						if (cb_pressing) {
@@ -359,7 +365,7 @@ void Tabs::_notification(int p_what) {
 					w += cb->get_width();
 					tabs.write[i].cb_rect = cb_rect;
 				}
-
+				w += get_constant("hseparation");
 				w += sb->get_margin(MARGIN_RIGHT);
 			}
 
@@ -561,12 +567,12 @@ void Tabs::_update_cache() {
 				slen = m_width - (sb->get_margin(MARGIN_LEFT) + sb->get_margin(MARGIN_RIGHT));
 				if (tabs[i].icon.is_valid()) {
 					slen -= tabs[i].icon->get_width();
-					slen -= get_constant("hseparation");
+					slen -= get_constant("label_margin");
 				}
 				if (cb_displaypolicy == CLOSE_BUTTON_SHOW_ALWAYS || (cb_displaypolicy == CLOSE_BUTTON_SHOW_ACTIVE_ONLY && i == current)) {
 					Ref<Texture> cb = get_icon("close");
 					slen -= cb->get_width();
-					slen -= get_constant("hseparation");
+					slen -= get_constant("label_margin");
 				}
 				slen = MAX(slen, 1);
 				lsize = m_width;
@@ -796,7 +802,7 @@ int Tabs::get_tab_width(int p_idx) const {
 	if (tex.is_valid()) {
 		x += tex->get_width();
 		if (tabs[p_idx].text != "") {
-			x += get_constant("hseparation");
+			x += get_constant("label_margin");
 		}
 	}
 
@@ -813,13 +819,13 @@ int Tabs::get_tab_width(int p_idx) const {
 	if (tabs[p_idx].right_button.is_valid()) {
 		Ref<Texture> rb = tabs[p_idx].right_button;
 		x += rb->get_width();
-		x += get_constant("hseparation");
+		x += get_constant("label_margin");
 	}
 
 	if (cb_displaypolicy == CLOSE_BUTTON_SHOW_ALWAYS || (cb_displaypolicy == CLOSE_BUTTON_SHOW_ACTIVE_ONLY && p_idx == current)) {
 		Ref<Texture> cb = get_icon("close");
 		x += cb->get_width();
-		x += get_constant("hseparation");
+		x += get_constant("label_margin");
 	}
 
 	return x;
