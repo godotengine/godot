@@ -280,10 +280,14 @@ void TabContainer::_notification(int p_what) {
 			Color font_color_fg = get_color("font_color_fg");
 			Color font_color_bg = get_color("font_color_bg");
 			Color font_color_disabled = get_color("font_color_disabled");
+			int top_margin = get_constant("top_margin");
 			int side_margin = get_constant("side_margin");
+			int label_valign_fg = get_constant("label_valign_fg");
+			int label_valign_bg = get_constant("label_valign_bg");
 
 			// Find out start and width of the header area.
 			int header_x = side_margin;
+			int header_y = top_margin;
 			int header_width = size.width - side_margin * 2;
 			int header_height = _get_top_margin();
 			Popup *popup = get_popup();
@@ -298,7 +302,7 @@ void TabContainer::_notification(int p_what) {
 					continue;
 				}
 				int tab_width = _get_tab_width(i);
-				all_tabs_width += tab_width;
+				all_tabs_width += tab_width + get_constant("hseparation");
 
 				if (all_tabs_width > header_width) {
 					// Not all tabs are visible at the same time - reserve space for navigation buttons.
@@ -326,7 +330,7 @@ void TabContainer::_notification(int p_what) {
 					tab_widths.push_back(0);
 					continue;
 				}
-				int tab_width = _get_tab_width(i);
+				int tab_width = _get_tab_width(i) + get_constant("hseparation");
 				if (all_tabs_width + tab_width > header_width && tab_widths.size() > 0) {
 					break;
 				}
@@ -364,14 +368,15 @@ void TabContainer::_notification(int p_what) {
 
 				int tab_width = tab_widths[i];
 				if (get_tab_disabled(index)) {
-					_draw_tab(tab_disabled, font_color_disabled, index, tabs_ofs_cache + x);
+					_draw_tab(tab_disabled, font_color_disabled, index, tabs_ofs_cache + x, header_y + label_valign_bg);
 				} else if (index == current) {
 					x_current = x;
 				} else {
-					_draw_tab(tab_bg, font_color_bg, index, tabs_ofs_cache + x);
+					_draw_tab(tab_bg, font_color_bg, index, tabs_ofs_cache + x, header_y + label_valign_bg);
 				}
 
 				x += tab_width;
+				x += get_constant("hseparation");
 				last_tab_cache = index;
 			}
 
@@ -382,7 +387,7 @@ void TabContainer::_notification(int p_what) {
 
 			// Draw selected tab in front. only draw selected tab when it's in visible range.
 			if (tabs.size() > 0 && current - first_tab_cache < tab_widths.size() && current >= first_tab_cache) {
-				_draw_tab(tab_fg, font_color_fg, current, tabs_ofs_cache + x_current);
+				_draw_tab(tab_fg, font_color_fg, current, tabs_ofs_cache + x_current, header_y + label_valign_fg);
 			}
 
 			// Draw the popup menu.
@@ -420,16 +425,16 @@ void TabContainer::_notification(int p_what) {
 	}
 }
 
-void TabContainer::_draw_tab(Ref<StyleBox> &p_tab_style, Color &p_font_color, int p_index, float p_x) {
+void TabContainer::_draw_tab(Ref<StyleBox> &p_tab_style, Color &p_font_color, int p_index, float p_x, float p_y) {
 	Vector<Control *> tabs = _get_tabs();
 	RID canvas = get_canvas_item();
 	Ref<Font> font = get_font("font");
-	int icon_text_distance = get_constant("hseparation");
+	int icon_text_distance = get_constant("label_margin");
 	int tab_width = _get_tab_width(p_index);
 	int header_height = _get_top_margin();
 
 	// Draw the tab background.
-	Rect2 tab_rect(p_x, 0, tab_width, header_height);
+	Rect2 tab_rect(p_x, p_y, tab_width, header_height);
 	p_tab_style->draw(canvas, tab_rect);
 
 	// Draw the tab contents.
@@ -438,7 +443,7 @@ void TabContainer::_draw_tab(Ref<StyleBox> &p_tab_style, Color &p_font_color, in
 
 	int x_content = tab_rect.position.x + p_tab_style->get_margin(MARGIN_LEFT);
 	int top_margin = p_tab_style->get_margin(MARGIN_TOP);
-	int y_center = top_margin + (tab_rect.size.y - p_tab_style->get_minimum_size().y) / 2;
+	int y_center = p_y + top_margin + (tab_rect.size.y - p_tab_style->get_minimum_size().y) / 2;
 
 	// Draw the tab icon.
 	if (control->has_meta("_tab_icon")) {
@@ -512,7 +517,7 @@ int TabContainer::_get_tab_width(int p_index) const {
 		if (icon.is_valid()) {
 			width += icon->get_width();
 			if (text != "") {
-				width += get_constant("hseparation");
+				width += get_constant("label_margin");
 			}
 		}
 	}
