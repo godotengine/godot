@@ -12,7 +12,7 @@
 	<methods>
 	</methods>
 	<members>
-		<member name="fft_size" type="int" setter="set_fft_size" getter="get_fft_size" enum="AudioEffectPitchShift.FFT_Size" default="3">
+		<member name="fft_size" type="int" setter="set_fft_size" getter="get_fft_size" enum="AudioEffectPitchShift.FFTSize" default="3">
 		</member>
 		<member name="oversampling" type="int" setter="set_oversampling" getter="get_oversampling" default="4">
 		</member>
@@ -21,18 +21,18 @@
 		</member>
 	</members>
 	<constants>
-		<constant name="FFT_SIZE_256" value="0" enum="FFT_Size">
+		<constant name="FFT_SIZE_256" value="0" enum="FFTSize">
 		</constant>
-		<constant name="FFT_SIZE_512" value="1" enum="FFT_Size">
+		<constant name="FFT_SIZE_512" value="1" enum="FFTSize">
 		</constant>
-		<constant name="FFT_SIZE_1024" value="2" enum="FFT_Size">
+		<constant name="FFT_SIZE_1024" value="2" enum="FFTSize">
 		</constant>
-		<constant name="FFT_SIZE_2048" value="3" enum="FFT_Size">
+		<constant name="FFT_SIZE_2048" value="3" enum="FFTSize">
 		</constant>
-		<constant name="FFT_SIZE_4096" value="4" enum="FFT_Size">
+		<constant name="FFT_SIZE_4096" value="4" enum="FFTSize">
 		</constant>
-		<constant name="FFT_SIZE_MAX" value="5" enum="FFT_Size">
-			Represents the size of the [enum FFT_Size] enum.
+		<constant name="FFT_SIZE_MAX" value="5" enum="FFTSize">
+			Represents the size of the [enum FFTSize] enum.
 		</constant>
 	</constants>
 </class>
