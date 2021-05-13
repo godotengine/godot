@@ -233,6 +233,8 @@ public:
 	virtual void clear_edit_menu() override;
 	static void register_editor();
 
+	virtual Control *get_base_editor() const override;
+
 	virtual void validate() override;
 
 	ScriptTextEditor();

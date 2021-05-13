@@ -171,6 +171,10 @@ void TextEditor::add_callback(const String &p_function, PackedStringArray p_args
 void TextEditor::set_debugger_active(bool p_active) {
 }
 
+Control *TextEditor::get_base_editor() const {
+	return code_editor->get_text_editor();
+}
+
 Array TextEditor::get_breakpoints() {
 	return Array();
 }

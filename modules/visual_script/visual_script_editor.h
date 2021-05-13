@@ -320,6 +320,8 @@ public:
 	virtual bool can_lose_focus_on_node_selection() override { return false; }
 	virtual void validate() override;
 
+	virtual Control *get_base_editor() const override;
+
 	static void register_editor();
 
 	static void free_clipboard();
