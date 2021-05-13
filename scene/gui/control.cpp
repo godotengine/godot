@@ -345,72 +345,72 @@ void Control::_get_property_list(List<PropertyInfo> *p_list) const {
 		List<StringName> names;
 		theme->get_icon_list(get_class_name(), &names);
 		for (List<StringName>::Element *E = names.front(); E; E = E->next()) {
-			uint32_t hint = PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_CHECKABLE;
+			uint32_t usage = PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_CHECKABLE;
 			if (data.icon_override.has(E->get())) {
-				hint |= PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_CHECKED;
+				usage |= PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_CHECKED;
 			}
 
-			p_list->push_back(PropertyInfo(Variant::OBJECT, "custom_icons/" + E->get(), PROPERTY_HINT_RESOURCE_TYPE, "Texture2D", hint));
+			p_list->push_back(PropertyInfo(Variant::OBJECT, "custom_icons/" + E->get(), PROPERTY_HINT_RESOURCE_TYPE, "Texture2D", usage));
 		}
 	}
 	{
 		List<StringName> names;
 		theme->get_stylebox_list(get_class_name(), &names);
 		for (List<StringName>::Element *E = names.front(); E; E = E->next()) {
-			uint32_t hint = PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_CHECKABLE;
+			uint32_t usage = PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_CHECKABLE;
 			if (data.style_override.has(E->get())) {
-				hint |= PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_CHECKED;
+				usage |= PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_CHECKED;
 			}
 
-			p_list->push_back(PropertyInfo(Variant::OBJECT, "custom_styles/" + E->get(), PROPERTY_HINT_RESOURCE_TYPE, "StyleBox", hint));
+			p_list->push_back(PropertyInfo(Variant::OBJECT, "custom_styles/" + E->get(), PROPERTY_HINT_RESOURCE_TYPE, "StyleBox", usage));
 		}
 	}
 	{
 		List<StringName> names;
 		theme->get_font_list(get_class_name(), &names);
 		for (List<StringName>::Element *E = names.front(); E; E = E->next()) {
-			uint32_t hint = PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_CHECKABLE;
+			uint32_t usage = PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_CHECKABLE;
 			if (data.font_override.has(E->get())) {
-				hint |= PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_CHECKED;
+				usage |= PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_CHECKED;
 			}
 
-			p_list->push_back(PropertyInfo(Variant::OBJECT, "custom_fonts/" + E->get(), PROPERTY_HINT_RESOURCE_TYPE, "Font", hint));
+			p_list->push_back(PropertyInfo(Variant::OBJECT, "custom_fonts/" + E->get(), PROPERTY_HINT_RESOURCE_TYPE, "Font", usage));
 		}
 	}
 	{
 		List<StringName> names;
 		theme->get_font_size_list(get_class_name(), &names);
 		for (List<StringName>::Element *E = names.front(); E; E = E->next()) {
-			uint32_t hint = PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_CHECKABLE;
+			uint32_t usage = PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_CHECKABLE;
 			if (data.font_size_override.has(E->get())) {
-				hint |= PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_CHECKED;
+				usage |= PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_CHECKED;
 			}
 
-			p_list->push_back(PropertyInfo(Variant::INT, "custom_font_sizes/" + E->get(), PROPERTY_HINT_NONE, "", hint));
+			p_list->push_back(PropertyInfo(Variant::INT, "custom_font_sizes/" + E->get(), PROPERTY_HINT_NONE, "", usage));
 		}
 	}
 	{
 		List<StringName> names;
 		theme->get_color_list(get_class_name(), &names);
 		for (List<StringName>::Element *E = names.front(); E; E = E->next()) {
-			uint32_t hint = PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_CHECKABLE;
+			uint32_t usage = PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_CHECKABLE;
 			if (data.color_override.has(E->get())) {
-				hint |= PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_CHECKED;
+				usage |= PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_CHECKED;
 			}
 
-			p_list->push_back(PropertyInfo(Variant::COLOR, "custom_colors/" + E->get(), PROPERTY_HINT_NONE, "", hint));
+			p_list->push_back(PropertyInfo(Variant::COLOR, "custom_colors/" + E->get(), PROPERTY_HINT_NONE, "", usage));
 		}
 	}
 	{
 		List<StringName> names;
 		theme->get_constant_list(get_class_name(), &names);
 		for (List<StringName>::Element *E = names.front(); E; E = E->next()) {
-			uint32_t hint = PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_CHECKABLE;
+			uint32_t usage = PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_CHECKABLE;
 			if (data.constant_override.has(E->get())) {
-				hint |= PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_CHECKED;
+				usage |= PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_CHECKED;
 			}
 
-			p_list->push_back(PropertyInfo(Variant::INT, "custom_constants/" + E->get(), PROPERTY_HINT_RANGE, "-16384,16384", hint));
+			p_list->push_back(PropertyInfo(Variant::INT, "custom_constants/" + E->get(), PROPERTY_HINT_RANGE, "-16384,16384", usage));
 		}
 	}
 }
