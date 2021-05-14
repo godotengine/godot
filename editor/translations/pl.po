@@ -52,7 +52,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-04-19 22:33+0000\n"
+"PO-Revision-Date: 2021-04-22 14:39+0000\n"
 "Last-Translator: Tomek <kobewi4e@gmail.com>\n"
 "Language-Team: Polish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/pl/>\n"
@@ -2572,9 +2572,11 @@ msgid "Unable to load addon script from path: '%s'."
 msgstr "Nie można załadować skryptu dodatku z ścieżki: \"%s\"."
 
 #: editor/editor_node.cpp
+#, fuzzy
 msgid ""
-"Unable to load addon script from path: '%s' There seems to be an error in "
-"the code, please check the syntax."
+"Unable to load addon script from path: '%s'. This might be due to a code "
+"error in that script. \n"
+"Disabling the addon at '%s' to prevent further errors."
 msgstr ""
 "Nie można załadować skryptu dodatku ze ścieżki: \"%s\" W kodzie znajduje się "
 "błąd, sprawdź składnię."
@@ -5252,7 +5254,17 @@ msgstr ""
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid ""
-"Godot editor was built without ray tracing support, lightmaps can't be baked."
+"Godot editor was built without ray tracing support; lightmaps can't be "
+"baked.\n"
+"If you are using an Apple Silicon-based Mac, try forcing Rosetta emulation "
+"on Godot.app in the application settings\n"
+"then restart the editor."
+msgstr ""
+
+#: editor/plugins/baked_lightmap_editor_plugin.cpp
+#, fuzzy
+msgid ""
+"Godot editor was built without ray tracing support; lightmaps can't be baked."
 msgstr ""
 "Godot został zbudowany bez wsparcia ray tracingu, mapy światła nie mogą być "
 "wypalone."
@@ -7580,6 +7592,8 @@ msgstr "Obroty widoku zablokowane"
 msgid ""
 "To zoom further, change the camera's clipping planes (View -> Settings...)"
 msgstr ""
+"By przybliżyć bardziej, zmień płaszczyzny odcięcia kamery (Widok -> "
+"Ustawienia...)"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid ""
@@ -10971,6 +10985,9 @@ msgid ""
 "every time it updates.\n"
 "Switch back to the Local scene tree dock to improve performance."
 msgstr ""
+"Kiedy wybrany, dok zdalnego drzewa sceny będzie powodował przestoje za "
+"każdym razem, gdy się aktualizuje.\n"
+"Zmień z powrotem na drzewo lokalne, by zwiększyć wydajność."
 
 #: editor/scene_tree_dock.cpp
 msgid "Local"
