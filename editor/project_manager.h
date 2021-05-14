@@ -39,19 +39,19 @@
 #include "scene/gui/tool_button.h"
 #include "scene/gui/tree.h"
 
-class ProjectDialog;
-class ProjectList;
 class ProjectListFilter;
+class ProjectList;
+class CreateProjectDialog;
 
 class ProjectManager : public Control {
 	GDCLASS(ProjectManager, Control);
 
-	Button *erase_btn;
-	Button *erase_missing_btn;
-	Button *open_btn;
-	Button *rename_btn;
-	Button *run_btn;
-	Button *about_btn;
+	Button *erase_button;
+	Button *remove_missing_button;
+	Button *open_button;
+	Button *rename_button;
+	Button *run_button;
+	Button *about_button;
 
 	EditorAssetLibrary *asset_library;
 
@@ -59,7 +59,7 @@ class ProjectManager : public Control {
 	ProjectListFilter *project_order_filter;
 	Label *loading_label;
 
-	FileDialog *scan_dir;
+	FileDialog *scan_dir_file_dialog;
 	ConfirmationDialog *language_restart_ask;
 	ConfirmationDialog *erase_ask;
 	ConfirmationDialog *erase_missing_ask;
@@ -71,35 +71,34 @@ class ProjectManager : public Control {
 	EditorAbout *about;
 	AcceptDialog *run_error_diag;
 	AcceptDialog *dialog_error;
-	ProjectDialog *npdialog;
+	//ProjectDialog *npdialog;
+	CreateProjectDialog *create_project_dialog;
 
-	HBoxContainer *projects_hb;
+	HBoxContainer *projects_hbox;
 	TabContainer *tabs;
 	ProjectList *_project_list;
 
-	LinkButton *version_btn;
-	OptionButton *language_btn;
+	LinkButton *version_button;
+	OptionButton *language_button;
 	Control *gui_base;
-
-	bool importing;
 
 	void _open_asset_library();
 	void _scan_projects();
-	void _run_project();
-	void _run_project_confirm();
+	void _run_project_ask();
+	void _run_project_confirmed();
 	void _open_selected_projects();
 	void _open_selected_projects_ask();
 	void _import_project();
-	void _new_project();
+	void _create_project(String project_name, String path, bool use_gles2);
 	void _rename_project();
-	void _erase_project();
+	void _erase_project_ask();
 	void _erase_missing_projects();
-	void _erase_project_confirm();
-	void _erase_missing_projects_confirm();
+	void _erase_project_confirmed();
+	void _erase_missing_projects_confirmed();
 	void _show_about();
 	void _update_project_buttons();
 	void _language_selected(int p_id);
-	void _restart_confirm();
+	void _restart_confirmed();
 	void _exit_dialog();
 	void _scan_begin(const String &p_base);
 	void _global_menu_action(const Variant &p_id, const Variant &p_meta);
@@ -107,12 +106,12 @@ class ProjectManager : public Control {
 	void _confirm_update_settings();
 
 	void _load_recent_projects();
-	void _on_project_created(const String &dir);
+	void _create_project_confirmed();
 	void _on_projects_updated();
 	void _update_scroll_position(const String &dir);
 	void _scan_dir(const String &path, List<String> *r_projects);
 
-	void _install_project(const String &p_zip_path, const String &p_title);
+	void _install_project_from_zip(const String &p_zip_path, const String &p_title);
 
 	void _dim_window();
 	void _unhandled_input(const Ref<InputEvent> &p_ev);
@@ -130,43 +129,6 @@ protected:
 public:
 	ProjectManager();
 	~ProjectManager();
-};
-
-class ProjectListFilter : public HBoxContainer {
-	GDCLASS(ProjectListFilter, HBoxContainer);
-
-public:
-	enum FilterOption {
-		FILTER_NAME,
-		FILTER_PATH,
-		FILTER_MODIFIED,
-	};
-
-private:
-	friend class ProjectManager;
-
-	OptionButton *filter_option;
-	LineEdit *search_box;
-	bool has_search_box;
-	FilterOption _current_filter;
-
-	void _search_text_changed(const String &p_newtext);
-	void _filter_option_selected(int p_idx);
-
-protected:
-	void _notification(int p_what);
-	static void _bind_methods();
-
-public:
-	void _setup_filters(Vector<String> options);
-	void add_filter_option();
-	void add_search_box();
-	void set_filter_size(int h_size);
-	String get_search_term();
-	FilterOption get_filter_option();
-	void set_filter_option(FilterOption);
-	ProjectListFilter();
-	void clear();
 };
 
 #endif // PROJECT_MANAGER_H
