@@ -5,7 +5,7 @@
 # Dankse Memes <purplelops@gmail.com>, 2018.
 # David Lamhauge <davidlamhauge@gmail.com>, 2016, 2018.
 # Esben Damkjær Sørensen <esben@damkjaergaard.com>, 2018.
-# Kim Nielsen <kimmowich@stofanet.dk>, 2017, 2018.
+# Kim Nielsen <kimmowich@stofanet.dk>, 2017, 2018, 2021.
 # Michael Madsen <mim@michael-madsen.dk>, 2017.
 # Christoffer Schindel <ceas@outlook.com>, 2018.
 # frederikzt <frederikzt@gmail.com>, 2018.
@@ -22,8 +22,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-03-20 04:18+0000\n"
-"Last-Translator: snakatk <snaqii@live.dk>\n"
+"PO-Revision-Date: 2021-04-26 22:31+0000\n"
+"Last-Translator: Kim Nielsen <kimmowich@stofanet.dk>\n"
 "Language-Team: Danish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/da/>\n"
 "Language: da\n"
@@ -31,7 +31,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.5.2-dev\n"
+"X-Generator: Weblate 4.7-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -2636,9 +2636,11 @@ msgid "Unable to load addon script from path: '%s'."
 msgstr "Kan ikke indlæse addon script fra stien: '%s'."
 
 #: editor/editor_node.cpp
+#, fuzzy
 msgid ""
-"Unable to load addon script from path: '%s' There seems to be an error in "
-"the code, please check the syntax."
+"Unable to load addon script from path: '%s'. This might be due to a code "
+"error in that script. \n"
+"Disabling the addon at '%s' to prevent further errors."
 msgstr ""
 "Kan ikke indlæse tilføjelse script fra sti: '%s' Der ser ud til at være en "
 "fejl i koden, tjek syntaksen."
@@ -4813,47 +4815,43 @@ msgstr "Animationsposition (i sekunder)."
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Scale animation playback globally for the node."
-msgstr ""
+msgstr "Skalér animation afspilningen globalt for node."
 
 #: editor/plugins/animation_player_editor_plugin.cpp
-#, fuzzy
 msgid "Animation Tools"
-msgstr "Animation Værktøjer"
+msgstr "Animations Værktøjer"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Animation"
 msgstr "Animation"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
-#, fuzzy
 msgid "Edit Transitions..."
 msgstr "Rediger Overgange..."
 
 #: editor/plugins/animation_player_editor_plugin.cpp
-#, fuzzy
 msgid "Open in Inspector"
-msgstr "Inspektør"
+msgstr "Åben i Inspector"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Display list of animations in player."
-msgstr ""
+msgstr "Vis liste over animationer i afspiller"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Autoplay on Load"
-msgstr ""
+msgstr "Autoplay ved Load"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Enable Onion Skinning"
-msgstr ""
+msgstr "Aktivér Onion Skin"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Onion Skinning Options"
-msgstr ""
+msgstr "Onion Skin Muligheder"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
-#, fuzzy
 msgid "Directions"
-msgstr "Beskrivelse"
+msgstr "Retninger"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 #, fuzzy
@@ -4862,7 +4860,7 @@ msgstr "Indsæt"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Future"
-msgstr ""
+msgstr "Fremtid"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 #, fuzzy
@@ -4883,15 +4881,15 @@ msgstr "3 trin"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Differences Only"
-msgstr ""
+msgstr "Kun Forskelle"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Force White Modulate"
-msgstr ""
+msgstr "Tving Hvid Modulate"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Include Gizmos (3D)"
-msgstr ""
+msgstr "Inkludér Gizmos (3D)"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 #, fuzzy
@@ -4904,7 +4902,7 @@ msgstr "Opret Ny Animation"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Animation Name:"
-msgstr "Animation Navn:"
+msgstr "Animations Navn:"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/resource_preloader_editor_plugin.cpp
@@ -4918,7 +4916,6 @@ msgid "Blend Times:"
 msgstr ""
 
 #: editor/plugins/animation_player_editor_plugin.cpp
-#, fuzzy
 msgid "Next (Auto Queue):"
 msgstr "Næste (Auto Kø):"
 
@@ -4927,9 +4924,8 @@ msgid "Cross-Animation Blend Times"
 msgstr ""
 
 #: editor/plugins/animation_state_machine_editor.cpp
-#, fuzzy
 msgid "Move Node"
-msgstr "Flyt Node(s)"
+msgstr "Flyt Node"
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Transition exists!"
@@ -4946,32 +4942,31 @@ msgstr "Tilføj Node"
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "End"
-msgstr ""
+msgstr "Slut"
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Immediate"
-msgstr ""
+msgstr "Umiddelbart"
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Sync"
-msgstr ""
+msgstr "Synkroniser"
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "At End"
-msgstr ""
+msgstr "I Slutningen"
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Travel"
-msgstr ""
+msgstr "Rejse"
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Start and end nodes are needed for a sub-transition."
-msgstr ""
+msgstr "Start og slut nodes er nødvendige for en under-overgang."
 
 #: editor/plugins/animation_state_machine_editor.cpp
-#, fuzzy
 msgid "No playback resource set at path: %s."
-msgstr "Ikke i stien for ressource."
+msgstr "Ingen afspilnings ressource indstillet på stien: %s"
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Node Removed"
@@ -4983,7 +4978,7 @@ msgstr "Overgang Fjernet"
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Set Start Node (Autoplay)"
-msgstr ""
+msgstr "Sæt Start Node (Autoplay)"
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid ""
@@ -4991,44 +4986,43 @@ msgid ""
 "RMB to add new nodes.\n"
 "Shift+LMB to create connections."
 msgstr ""
+"Vælg og flyt nodes.\n"
+"RMB for at tilføje ny nodes.\n"
+"Shift+LMB for at oprette forbindelse."
 
 #: editor/plugins/animation_state_machine_editor.cpp
-#, fuzzy
 msgid "Create new nodes."
-msgstr "Opret Ny %s"
+msgstr "Opret ny nodes."
 
 #: editor/plugins/animation_state_machine_editor.cpp
-#, fuzzy
 msgid "Connect nodes."
-msgstr "Forbind Nodes"
+msgstr "Forbind nodes."
 
 #: editor/plugins/animation_state_machine_editor.cpp
-#, fuzzy
 msgid "Remove selected node or transition."
-msgstr "Fjern valgte spor."
+msgstr "Fjern valgte node eller overgang."
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Toggle autoplay this animation on start, restart or seek to zero."
 msgstr ""
+"Skift autoplay på denne animation ved start, genstart eller seek til zero."
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Set the end animation. This is useful for sub-transitions."
-msgstr ""
+msgstr "Sæt slut animation. Dette er nyttigt ved under-overgange."
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Transition: "
 msgstr "Overgang: "
 
 #: editor/plugins/animation_state_machine_editor.cpp
-#, fuzzy
 msgid "Play Mode:"
-msgstr "Eksporter Projekt"
+msgstr "Afspil Mode:"
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
-#, fuzzy
 msgid "AnimationTree"
-msgstr "Animation Zoom."
+msgstr "Animation Tree"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "New name:"
@@ -5037,7 +5031,7 @@ msgstr "Nyt navn:"
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "Scale:"
-msgstr ""
+msgstr "Skalér:"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Fade In (s):"
@@ -5062,7 +5056,7 @@ msgstr "Auto Genstart:"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Restart (s):"
-msgstr ""
+msgstr "Genstart:"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Random Restart (s):"
@@ -5116,11 +5110,11 @@ msgstr "Fjern Input"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Animation tree is valid."
-msgstr ""
+msgstr "Animationstræ er gyldigt."
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Animation tree is invalid."
-msgstr ""
+msgstr "Animationstræ er ugyldigt."
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Animation Node"
@@ -5412,7 +5406,16 @@ msgstr ""
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid ""
-"Godot editor was built without ray tracing support, lightmaps can't be baked."
+"Godot editor was built without ray tracing support; lightmaps can't be "
+"baked.\n"
+"If you are using an Apple Silicon-based Mac, try forcing Rosetta emulation "
+"on Godot.app in the application settings\n"
+"then restart the editor."
+msgstr ""
+
+#: editor/plugins/baked_lightmap_editor_plugin.cpp
+msgid ""
+"Godot editor was built without ray tracing support; lightmaps can't be baked."
 msgstr ""
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp

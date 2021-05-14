@@ -19,12 +19,13 @@
 # Guy Dadon <guydadon14@gmail.com>, 2020.
 # bruvzg <bruvzg13@gmail.com>, 2020.
 # Omer I.S. <omeritzicschwartz@gmail.com>, 2021.
+# Ram Tourgeman <ramtorgeman@gmail.com>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-04-11 22:02+0000\n"
-"Last-Translator: Omer I.S. <omeritzicschwartz@gmail.com>\n"
+"PO-Revision-Date: 2021-05-14 11:20+0000\n"
+"Last-Translator: Ram Tourgeman <ramtorgeman@gmail.com>\n"
 "Language-Team: Hebrew <https://hosted.weblate.org/projects/godot-engine/"
 "godot/he/>\n"
 "Language: he\n"
@@ -33,7 +34,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=4; plural=(n == 1) ? 0 : ((n == 2) ? 1 : ((n > 10 && "
 "n % 10 == 0) ? 2 : 3));\n"
-"X-Generator: Weblate 4.6-dev\n"
+"X-Generator: Weblate 4.7-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -212,9 +213,8 @@ msgid "3D Transform Track"
 msgstr "רצועת שינוי 3D"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Call Method Track"
-msgstr "רצועת שיטה"
+msgstr "רצועת קריאת פונקציה"
 
 #: editor/animation_track_editor.cpp
 msgid "Bezier Curve Track"
@@ -462,7 +462,7 @@ msgstr "הוספת רצועות חדשות."
 
 #: editor/animation_track_editor.cpp
 msgid "Track path is invalid, so can't add a method key."
-msgstr ""
+msgstr "הנתיב לרצועה אינו תקין, ולכן מפתח לשיטה (מתודה) לא יכל להתווסף"
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
@@ -475,7 +475,7 @@ msgstr "לא נמצאה מתודה בעצם: "
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Move Keys"
-msgstr ""
+msgstr "מפתחות הזזת אנימצייה"
 
 #: editor/animation_track_editor.cpp
 msgid "Clipboard is empty"
@@ -487,7 +487,7 @@ msgstr "הדבקת רצועות"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Scale Keys"
-msgstr ""
+msgstr "הנפשה - שנה גודל של רצועות מפתח"
 
 #: editor/animation_track_editor.cpp
 msgid ""
@@ -883,11 +883,11 @@ msgstr "ניתוק '%s' מ-'%s'"
 
 #: editor/connections_dialog.cpp
 msgid "Disconnect all from signal: '%s'"
-msgstr ""
+msgstr "נתק הכל מהאות '%s'"
 
 #: editor/connections_dialog.cpp
 msgid "Connect..."
-msgstr ""
+msgstr "התחבר..."
 
 #: editor/connections_dialog.cpp
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
@@ -905,7 +905,7 @@ msgstr "עריכת חיבור:"
 
 #: editor/connections_dialog.cpp
 msgid "Are you sure you want to remove all connections from the \"%s\" signal?"
-msgstr ""
+msgstr "האם אתה בטוח שאתה רוצה להסיר את כל החיבורים מהאות \"%s\"?"
 
 #: editor/connections_dialog.cpp editor/editor_help.cpp editor/node_dock.cpp
 msgid "Signals"
@@ -918,7 +918,7 @@ msgstr "מאפייני פריט."
 
 #: editor/connections_dialog.cpp
 msgid "Are you sure you want to remove all connections from this signal?"
-msgstr ""
+msgstr "האם אתה בטוח שאתה רוצה להסיר את כל החיבורים מהאות הזה?"
 
 #: editor/connections_dialog.cpp
 #, fuzzy
@@ -935,7 +935,7 @@ msgstr "מעבר למתודה"
 
 #: editor/create_dialog.cpp
 msgid "Change %s Type"
-msgstr ""
+msgstr "שנה את הסוג של s%"
 
 #: editor/create_dialog.cpp editor/project_settings_editor.cpp
 msgid "Change"
@@ -987,12 +987,16 @@ msgid ""
 "Scene '%s' is currently being edited.\n"
 "Changes will only take effect when reloaded."
 msgstr ""
+"סצנה 's%' נמצאת כרגע בעריכה.\n"
+"שינויים יכנסו לתוקף בטעינה מחדש."
 
 #: editor/dependency_editor.cpp
 msgid ""
 "Resource '%s' is in use.\n"
 "Changes will only take effect when reloaded."
 msgstr ""
+"משאב 's%' נמצא בשימוש.\n"
+"שינויים יכנסו לתוקף רק בטעינה מחדש."
 
 #: editor/dependency_editor.cpp
 #: modules/gdnative/gdnative_library_editor_plugin.cpp
@@ -1036,7 +1040,7 @@ msgstr "פתיחה"
 
 #: editor/dependency_editor.cpp
 msgid "Owners Of:"
-msgstr ""
+msgstr "בעלים של:"
 
 #: editor/dependency_editor.cpp
 #, fuzzy
@@ -1105,7 +1109,7 @@ msgstr "מחיקה"
 
 #: editor/dependency_editor.cpp
 msgid "Owns"
-msgstr ""
+msgstr "בעליו של"
 
 #: editor/dependency_editor.cpp
 msgid "Resources Without Explicit Ownership:"
@@ -2537,9 +2541,11 @@ msgid "Unable to load addon script from path: '%s'."
 msgstr "לא ניתן לטעון סקריפט הרחבה מנתיב: '%s'."
 
 #: editor/editor_node.cpp
+#, fuzzy
 msgid ""
-"Unable to load addon script from path: '%s' There seems to be an error in "
-"the code, please check the syntax."
+"Unable to load addon script from path: '%s'. This might be due to a code "
+"error in that script. \n"
+"Disabling the addon at '%s' to prevent further errors."
 msgstr ""
 "לא ניתן לטעון סקריפט הרחבה מנתיב: '%s' נראה שיש שגיאה בקוד, אנא בדוק את "
 "התחביר."
@@ -5224,7 +5230,16 @@ msgstr ""
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid ""
-"Godot editor was built without ray tracing support, lightmaps can't be baked."
+"Godot editor was built without ray tracing support; lightmaps can't be "
+"baked.\n"
+"If you are using an Apple Silicon-based Mac, try forcing Rosetta emulation "
+"on Godot.app in the application settings\n"
+"then restart the editor."
+msgstr ""
+
+#: editor/plugins/baked_lightmap_editor_plugin.cpp
+msgid ""
+"Godot editor was built without ray tracing support; lightmaps can't be baked."
 msgstr ""
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
@@ -6334,9 +6349,8 @@ msgid "Convert to CPUParticles"
 msgstr "המרה לאותיות גדולות"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Generating Visibility Rect"
-msgstr "נוצר מיזם C#‎…"
+msgstr "חולל נראות ריבוע"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Generate Visibility Rect"

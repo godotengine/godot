@@ -8,12 +8,15 @@
 # Anonymous <noreply@weblate.org>, 2020.
 # Lon3r <mptube.p@gmail.com>, 2020.
 # Kongfa Warorot <gongpha@hotmail.com>, 2020, 2021.
+# Kongfa Waroros <gongpha@hotmail.com>, 2021.
+# Atirut Wattanamongkol <artjang301@gmail.com>, 2021.
+# PT 07 <porton555@gmail.com>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-04-05 14:28+0000\n"
-"Last-Translator: Thanachart Monpassorn <nunf_2539@hotmail.com>\n"
+"PO-Revision-Date: 2021-05-14 11:20+0000\n"
+"Last-Translator: Kongfa Waroros <gongpha@hotmail.com>\n"
 "Language-Team: Thai <https://hosted.weblate.org/projects/godot-engine/godot/"
 "th/>\n"
 "Language: th\n"
@@ -21,50 +24,53 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.6-dev\n"
+"X-Generator: Weblate 4.7-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
 msgid "Invalid type argument to convert(), use TYPE_* constants."
-msgstr "ชนิดตัวแปรใน convert() ผิดพลาด ใช้ค่าคงที่ TYPE_* เท่านั้น"
+msgstr "ชนิดตัวแปรใน convert() ผิด ใช้ค่าคงที่ TYPE_* เท่านั้น"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 msgid "Expected a string of length 1 (a character)."
-msgstr "พบ String ที่มีความยาวเท่ากับ 1 (ตัวอักษร)"
+msgstr "String นี้ต้องมีความยาวเท่ากับ 1 ตัวอักษร"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/mono/glue/gd_glue.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
 msgid "Not enough bytes for decoding bytes, or invalid format."
-msgstr "ไบต์ไม่ครบหรือผิดรูปแบบ ไม่สามารถแปลงค่าได้"
+msgstr "ไบต์ไม่เพียงพอหรือรูปแบบไม่ถูกต้องสำหรับการถอดรหัสไบต์"
 
 #: core/math/expression.cpp
 msgid "Invalid input %i (not passed) in expression"
-msgstr "ค่าอินพุตผิดพลาด %i (ไม่ผ่าน)"
+msgstr "อินพุต %i ใน expression ไม่ถูกต้อง (ไม่ผ่าน)"
 
 #: core/math/expression.cpp
 msgid "self can't be used because instance is null (not passed)"
-msgstr "self ไม่สามารถใช้ได้เนื่องจาก instance ว่าง (ไม่ผ่าน)"
+msgstr "ไม่สามารถใช้ self ได้เนื่องจากอินสแตนซ์เป็น null (ไม่ผ่าน)"
 
 #: core/math/expression.cpp
+#, fuzzy
 msgid "Invalid operands to operator %s, %s and %s."
-msgstr "ดำเนินการผิดพลาดที่ตัวดำเนินการ %s, %s และ %s"
+msgstr "ตัวดำเนินการสำหรับโอเปอเรเตอร์ %s, %s และ %s ไม่ถูกต้อง"
 
 #: core/math/expression.cpp
+#, fuzzy
 msgid "Invalid index of type %s for base type %s"
-msgstr "ดัชนีของชนิด '%s' ผิดพลาด ในชนิดฐาน %s"
+msgstr "ดัชนีของชนิด '%s' ไม่ถูกต้องสำหรับชนิดฐาน %s"
 
 #: core/math/expression.cpp
 msgid "Invalid named index '%s' for base type %s"
-msgstr "ชื่อดัชนีของ '%s' ผิดพลาด สำหรับฐาน %s"
+msgstr "ชื่อดัชนีของ '%s' ผิดพลาดสำหรับฐาน %s"
 
 #: core/math/expression.cpp
 msgid "Invalid arguments to construct '%s'"
 msgstr "อาร์กิวเมนต์ของคอนสตรัค '%s' ผิดพลาด"
 
 #: core/math/expression.cpp
+#, fuzzy
 msgid "On call to '%s':"
-msgstr "เรียก '%s':"
+msgstr "ขณะเรียก '%s':"
 
 #: core/ustring.cpp
 msgid "B"
@@ -99,12 +105,14 @@ msgid "Free"
 msgstr "อิสระ"
 
 #: editor/animation_bezier_editor.cpp
+#, fuzzy
 msgid "Balanced"
-msgstr "ความสมดุล"
+msgstr "สมดุล"
 
 #: editor/animation_bezier_editor.cpp
+#, fuzzy
 msgid "Mirror"
-msgstr "กระจก"
+msgstr "สะท้อน"
 
 #: editor/animation_bezier_editor.cpp editor/editor_profiler.cpp
 msgid "Time:"
@@ -115,12 +123,13 @@ msgid "Value:"
 msgstr "ค่า:"
 
 #: editor/animation_bezier_editor.cpp
+#, fuzzy
 msgid "Insert Key Here"
-msgstr "เพิ่มปุ่มที่นี่"
+msgstr "เพิ่มคีย์ที่นี่"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Duplicate Selected Key(s)"
-msgstr "ทำซ้ำคีย์ที่เลือก"
+msgstr "คัดลอกคีย์ที่เลือก"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Delete Selected Key(s)"
@@ -135,8 +144,9 @@ msgid "Move Bezier Points"
 msgstr "ย้ายจุดเบซิเยร์"
 
 #: editor/animation_bezier_editor.cpp editor/animation_track_editor.cpp
+#, fuzzy
 msgid "Anim Duplicate Keys"
-msgstr "ทำซ้ำคีย์แอนิเมชัน"
+msgstr "คีย์แอนิเมชันซ้ำกัน"
 
 #: editor/animation_bezier_editor.cpp editor/animation_track_editor.cpp
 msgid "Anim Delete Keys"
@@ -147,10 +157,12 @@ msgid "Anim Change Keyframe Time"
 msgstr "แก้ไขเวลาคีย์เฟรมแอนิเมชัน"
 
 #: editor/animation_track_editor.cpp
+#, fuzzy
 msgid "Anim Change Transition"
-msgstr "แก้ไขทรานสิชันแอนิเมชัน"
+msgstr "เปลี่ยนทรานสิชันของแอนิเมชัน"
 
 #: editor/animation_track_editor.cpp
+#, fuzzy
 msgid "Anim Change Transform"
 msgstr "เคลื่อนย้ายแอนิเมชัน"
 
@@ -171,8 +183,9 @@ msgid "Anim Multi Change Transition"
 msgstr "แก้ไขทรานสิชันแอนิเมชันแบบหลายครั้ง"
 
 #: editor/animation_track_editor.cpp
+#, fuzzy
 msgid "Anim Multi Change Transform"
-msgstr "แก้ไขการเปลี่ยนแปลงแอนิเมชันแบบหลายครั้ง"
+msgstr "แก้ไขตำแหน่งแอนิเมชันแบบหลายครั้ง"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Multi Change Keyframe Value"
@@ -189,11 +202,11 @@ msgstr "แก้ไขความยาวแอนิเมชัน"
 #: editor/animation_track_editor.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Change Animation Loop"
-msgstr "แก้ไขการวนซ้ำแอนิเมชัน"
+msgstr "แก้ไขการวนซ้ำของแอนิเมชัน"
 
 #: editor/animation_track_editor.cpp
 msgid "Property Track"
-msgstr "คุณสมบัติแทร็ก"
+msgstr "แทร็กคุณสมบัติ"
 
 #: editor/animation_track_editor.cpp
 msgid "3D Transform Track"
@@ -250,7 +263,7 @@ msgstr "เปลี่ยนที่อยู่แทร็ก"
 
 #: editor/animation_track_editor.cpp
 msgid "Toggle this track on/off."
-msgstr "เปิด/ปิดการติดตามแทร็กนี้"
+msgstr "เปิด/ปิดแทร็กนี้"
 
 #: editor/animation_track_editor.cpp
 msgid "Update Mode (How this property is set)"
@@ -261,8 +274,9 @@ msgid "Interpolation Mode"
 msgstr "โหมดการแก้ไข"
 
 #: editor/animation_track_editor.cpp
+#, fuzzy
 msgid "Loop Wrap Mode (Interpolate end with beginning on loop)"
-msgstr "โหมดลูปวาร์ป (แก้ไขจุดสิ้นสุดด้วยจุดเริ่มตต้นบนลูป)"
+msgstr "โหมดวนลูป (Interpolate จุดสิ้นสุดด้วยจุดเริ่มตต้นบนลูป)"
 
 #: editor/animation_track_editor.cpp
 msgid "Remove this track."
@@ -348,7 +362,7 @@ msgstr "เพิ่มแทร็กใหม่สำหรับ %s แล�
 
 #: editor/animation_track_editor.cpp
 msgid "Create %d NEW tracks and insert keys?"
-msgstr "เพิ่ม %d แทร็กใหม่และเพิ่มคีย์?"
+msgstr "เพิ่มแทร็กใหม่ %d แทร็กและเพิ่มคีย์?"
 
 #: editor/animation_track_editor.cpp editor/create_dialog.cpp
 #: editor/editor_audio_buses.cpp editor/editor_feature_profile.cpp
@@ -391,17 +405,19 @@ msgid "Rearrange Tracks"
 msgstr "จัดเรียงแทร็ก"
 
 #: editor/animation_track_editor.cpp
+#, fuzzy
 msgid "Transform tracks only apply to Spatial-based nodes."
-msgstr "แปลงแทร็กเฉพาะที่ Spatial-based nodes"
+msgstr "แทร็ก Transform ส่งผลต่อโนดประเภท Spatial-based เท่านั้น"
 
 #: editor/animation_track_editor.cpp
+#, fuzzy
 msgid ""
 "Audio tracks can only point to nodes of type:\n"
 "-AudioStreamPlayer\n"
 "-AudioStreamPlayer2D\n"
 "-AudioStreamPlayer3D"
 msgstr ""
-"แทร็กเสียงสามารถติดไว้บนโหนดชนิดเหล่านี้เท่านั้น:\n"
+"แทร็กเสียงสามารถชี้ไปยังโนดชนิดเหล่านี้ได้เท่านั้น:\n"
 "-AudioStreamPlayer\n"
 "-AudioStreamPlayer2D\n"
 "-AudioStreamPlayer3D"
@@ -505,7 +521,7 @@ msgstr "เลือกโหนด AnimationPlayer เพื่อสร้า�
 
 #: editor/animation_track_editor.cpp
 msgid "Only show tracks from nodes selected in tree."
-msgstr "โชว์แทร็กจากโหนดที่เลือกในผังเท่านั้น"
+msgstr "แสดงแทร็กจากโหนดที่เลือกในผังเท่านั้น"
 
 #: editor/animation_track_editor.cpp
 msgid "Group tracks by node or display them as plain list."
@@ -1634,11 +1650,11 @@ msgstr "การส่งออกแบบ 32 bit PCK แบบฝังตั
 
 #: editor/editor_feature_profile.cpp
 msgid "3D Editor"
-msgstr "เอดิเตอร์ 3D"
+msgstr "ตัวแก้ไข 3D"
 
 #: editor/editor_feature_profile.cpp
 msgid "Script Editor"
-msgstr "เอดิเตอร์สคริปต์"
+msgstr "ตัวแก้ไขสคริปต์"
 
 #: editor/editor_feature_profile.cpp
 msgid "Asset Library"
@@ -1674,7 +1690,7 @@ msgstr "มีโปรไฟล์ที่มีชื่อนี้อยู
 
 #: editor/editor_feature_profile.cpp
 msgid "(Editor Disabled, Properties Disabled)"
-msgstr "(เอดิเตอร์ถูกปิดการใช้งาน, คุณสมบัติถูกปิดการใช้งาน)"
+msgstr "(ตัวแก้ไขถูกปิดการใช้งาน, คุณสมบัติถูกปิดการใช้งาน)"
 
 #: editor/editor_feature_profile.cpp
 msgid "(Properties Disabled)"
@@ -1682,7 +1698,7 @@ msgstr "(ปิดการทำงานคุณสมบัติ)"
 
 #: editor/editor_feature_profile.cpp
 msgid "(Editor Disabled)"
-msgstr "(เอดิเตอร์ถูกปิดการใช้งาน)"
+msgstr "(ตัวแก้ไขถูกปิดการใช้งาน)"
 
 #: editor/editor_feature_profile.cpp
 msgid "Class Options:"
@@ -1690,7 +1706,7 @@ msgstr "ตั้งค่าคลาส:"
 
 #: editor/editor_feature_profile.cpp
 msgid "Enable Contextual Editor"
-msgstr "เปิดการทำงานเอดิเตอร์ตามบริบท"
+msgstr "เปิดการทำงานตัวแก้ไขตามบริบท"
 
 #: editor/editor_feature_profile.cpp
 msgid "Enabled Properties:"
@@ -1775,7 +1791,7 @@ msgstr "ส่งออกโปรไฟล์"
 
 #: editor/editor_feature_profile.cpp
 msgid "Manage Editor Feature Profiles"
-msgstr "จัดการรายละเอียดคุณสมบัติเอดิเตอร์"
+msgstr "จัดการรายละเอียดคุณสมบัติตัวแก้ไข"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Select Current Folder"
@@ -1981,7 +1997,7 @@ msgstr "ค่าเริ่มต้น:"
 
 #: editor/editor_help.cpp
 msgid "Methods"
-msgstr "เมท็อด"
+msgstr "เมธอด"
 
 #: editor/editor_help.cpp
 msgid "Theme Properties"
@@ -2278,8 +2294,8 @@ msgid ""
 "An error occurred while trying to save the editor layout.\n"
 "Make sure the editor's user data path is writable."
 msgstr ""
-"เกิดข้อผิดพลาดขณะกำลังบันทึกเลเอาต์ของเอดิเตอร์\n"
-"ตรวจสอบให้แน่ใจว่าที่อยู่ข้อมูลผู้ใช้เอดิเตอร์สามารถแก้ไขได้"
+"เกิดข้อผิดพลาดขณะกำลังบันทึกเลเอาต์ของตัวแก้ไข\n"
+"ตรวจสอบให้แน่ใจว่าที่อยู่ข้อมูลผู้ใช้ตัวแก้ไขสามารถแก้ไขได้"
 
 #: editor/editor_node.cpp
 msgid ""
@@ -2287,8 +2303,9 @@ msgid ""
 "To restore the Default layout to its base settings, use the Delete Layout "
 "option and delete the Default layout."
 msgstr ""
-"เลเอาต์เอดิเตอร์ดั้งเดิมถูกเขียนทับ\n"
-"เพื่อที่จะกู้คืนเลเอาต์ดั้งเดิมไปยังการตั้งค่าพื้นฐาน ใช้การตั้งค่า Delete Layout และลบเลเอาต์ตั้งเดิม"
+"การจัดเค้าโครงตัวแก้ไขดั้งเดิมถูกเขียนทับ\n"
+"เพื่อที่จะกู้คืนเค้าโครงดั้งเดิมไปยังการตั้งค่าพื้นฐาน ใช้การตั้งค่า Delete Layout "
+"และลบเค้าโครงตั้งเดิม"
 
 #: editor/editor_node.cpp
 msgid "Layout name not found!"
@@ -2497,9 +2514,11 @@ msgid "Unable to load addon script from path: '%s'."
 msgstr "ไม่สามารถโหลดสคริปต์จาก: '%s'"
 
 #: editor/editor_node.cpp
+#, fuzzy
 msgid ""
-"Unable to load addon script from path: '%s' There seems to be an error in "
-"the code, please check the syntax."
+"Unable to load addon script from path: '%s'. This might be due to a code "
+"error in that script. \n"
+"Disabling the addon at '%s' to prevent further errors."
 msgstr ""
 "ไม่สามารถโหลดสคริปต์ส่วนเสริมจาก: '%s' เหมือนว่าจะเกิดข้อผิดพลาดขึ้นในโค้ด "
 "กรุณาเช็ตรูปแบบการเขียนโค้ด"
@@ -2799,7 +2818,7 @@ msgid ""
 msgstr ""
 "ถ้าเปิดตัวเลือกนี้ การใช้ deploy สำหรับแอนดรอยด์จะส่งออกเฉพาะไฟล์ปฏิบัติการ "
 "ไม่มีข้อมูลโปรเจกต์\n"
-"ระบบไฟล์จะถูกจัดเตรียมจากโปรเจ็กต์โดยเอดิเตอร์บนเครือข่าย\n"
+"ระบบไฟล์จะถูกจัดเตรียมจากโปรเจ็กต์โดยตัวแก้ไขบนเครือข่าย\n"
 "บน Android จะ deploy โดยใช้สาย USB เพื่อประสิทธิภาพที่ดี "
 "ตัวเลือกนี้จะช่วยให้การทดสอบเกมเร็วขึ้น สำหรับโปรเจกต์ขนาดใหญ่"
 
@@ -2837,7 +2856,7 @@ msgid ""
 "filesystem option is enabled."
 msgstr ""
 "เมื่อเปิดใช้งานตัวเลือกนี้ การเปลี่ยนแปลงใด ๆ "
-"ที่เกิดขึ้นกับฉากในเอดิเตอร์จะปรากฏในโปรเจ็กต์ที่กำลังทำงานอยู่\n"
+"ที่เกิดขึ้นกับฉากในตัวแก้ไขจะปรากฏในโปรเจ็กต์ที่กำลังทำงานอยู่\n"
 "เมื่อรีโมตผ่านอุปกรณ์ นี่จะมีประสิทธิภาพมากขึ้นเมื่อเปิดใช้งานตัวเลือกระบบไฟล์เครือข่าย"
 
 #: editor/editor_node.cpp
@@ -2856,15 +2875,15 @@ msgstr ""
 
 #: editor/editor_node.cpp editor/script_create_dialog.cpp
 msgid "Editor"
-msgstr "เอดิเตอร์"
+msgstr "ตัวแก้ไข"
 
 #: editor/editor_node.cpp
 msgid "Editor Settings..."
-msgstr "ตั้งค่าเอดิเตอร์"
+msgstr "ตั้งค่าตัวแก้ไข"
 
 #: editor/editor_node.cpp
 msgid "Editor Layout"
-msgstr "เลย์เอาต์เอดิเตอร์"
+msgstr "เค้าโครงตัวแก้ไข"
 
 #: editor/editor_node.cpp
 msgid "Take Screenshot"
@@ -2872,7 +2891,7 @@ msgstr "ถ่ายภาพหน้าจอ"
 
 #: editor/editor_node.cpp
 msgid "Screenshots are stored in the Editor Data/Settings Folder."
-msgstr "ภาพหน้าจอจะถูกเก็บไว้ในโฟลเดอร์ข้อมูล/การตั้งค่าของเอดิเตอร์"
+msgstr "ภาพหน้าจอจะถูกเก็บไว้ในโฟลเดอร์ข้อมูล/การตั้งค่าของตัวแก้ไข"
 
 #: editor/editor_node.cpp
 msgid "Toggle Fullscreen"
@@ -2884,19 +2903,19 @@ msgstr "เปิด/ปิด คอนโซลระบบ"
 
 #: editor/editor_node.cpp
 msgid "Open Editor Data/Settings Folder"
-msgstr "เปิดโฟลเดอร์ข้อมูล/ตั้งค่าของเอดิเตอร์"
+msgstr "เปิดโฟลเดอร์ข้อมูล/ตั้งค่าของตัวแก้ไข"
 
 #: editor/editor_node.cpp
 msgid "Open Editor Data Folder"
-msgstr "เปิดโฟลเดอร์ของเอดิเตอร์"
+msgstr "เปิดโฟลเดอร์ของตัวแก้ไข"
 
 #: editor/editor_node.cpp
 msgid "Open Editor Settings Folder"
-msgstr "เปิดโฟลเดอร์การตั้งค่าของเอดิเตอร์"
+msgstr "เปิดโฟลเดอร์การตั้งค่าของตัวแก้ไข"
 
 #: editor/editor_node.cpp
 msgid "Manage Editor Features..."
-msgstr "จัดการฟีเจอร์ของเอดิเตอร์..."
+msgstr "จัดการลักษณะเฉพาะของตัวแก้ไข..."
 
 #: editor/editor_node.cpp
 msgid "Manage Export Templates..."
@@ -2969,7 +2988,7 @@ msgstr "เลือกเล่นฉาก"
 
 #: editor/editor_node.cpp
 msgid "Changing the video driver requires restarting the editor."
-msgstr "การเปลี่ยนไดรเวอร์การ์ดจอจำเป็นต้องเริ่มเอดิเตอร์ใหม่"
+msgstr "การเปลี่ยนไดรเวอร์การ์ดจอจำเป็นต้องเริ่มตัวแก้ไขใหม่"
 
 #: editor/editor_node.cpp editor/project_settings_editor.cpp
 #: editor/settings_config_dialog.cpp
@@ -3099,15 +3118,15 @@ msgstr "เลือก"
 
 #: editor/editor_node.cpp
 msgid "Open 2D Editor"
-msgstr "เปิดเอดิเตอร์ 2D"
+msgstr "เปิดตัวแก้ไข 2D"
 
 #: editor/editor_node.cpp
 msgid "Open 3D Editor"
-msgstr "เปิดเอดิเตอร์ 3D"
+msgstr "เปิดตัวแก้ไข 3D"
 
 #: editor/editor_node.cpp
 msgid "Open Script Editor"
-msgstr "เปิดเอดิเตอร์สคริปต์"
+msgstr "เปิดตัวแก้ไขสคริปต์"
 
 #: editor/editor_node.cpp editor/project_manager.cpp
 msgid "Open Asset Library"
@@ -3115,11 +3134,11 @@ msgstr "เปิดแหล่งรวมทรัพยากร"
 
 #: editor/editor_node.cpp
 msgid "Open the next Editor"
-msgstr "เปิดเอดิเตอร์ถัดไป"
+msgstr "เปิดตัวแก้ไขถัดไป"
 
 #: editor/editor_node.cpp
 msgid "Open the previous Editor"
-msgstr "เปิดเอดิเตอร์ก่อนหน้า"
+msgstr "เปิดตัวแก้ไขก่อนหน้า"
 
 #: editor/editor_node.h
 msgid "Warning!"
@@ -4036,7 +4055,7 @@ msgstr "บันทึกฉาก, นำเข้าและเริ่ม�
 
 #: editor/import_dock.cpp
 msgid "Changing the type of an imported file requires editor restart."
-msgstr "การเปลี่ยนแปลงชนิดของไฟล์ที่นำเข้า จำเป็นต้องเริ่มเอดิเตอร์ใหม่"
+msgstr "การเปลี่ยนแปลงชนิดของไฟล์ที่นำเข้า จำเป็นต้องเริ่มตัวแก้ไขใหม่"
 
 #: editor/import_dock.cpp
 msgid ""
@@ -4285,7 +4304,7 @@ msgstr "จุด"
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 msgid "Open Editor"
-msgstr "เปิดเอดิเตอร์"
+msgstr "เปิดตัวแก้ไข"
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp
@@ -5123,10 +5142,19 @@ msgstr "mesh บางส่วนไม่ถูกต้อง ตรวจส
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid ""
-"Godot editor was built without ray tracing support, lightmaps can't be baked."
+"Godot editor was built without ray tracing support; lightmaps can't be "
+"baked.\n"
+"If you are using an Apple Silicon-based Mac, try forcing Rosetta emulation "
+"on Godot.app in the application settings\n"
+"then restart the editor."
 msgstr ""
-"เอดิเตอร์ Godot ถูกสร้างโดยไม่ได้สนับสนุน ray tracing ดังนั้นจึงไม่สามารถ bake lightmaps "
-"ได้"
+
+#: editor/plugins/baked_lightmap_editor_plugin.cpp
+#, fuzzy
+msgid ""
+"Godot editor was built without ray tracing support; lightmaps can't be baked."
+msgstr ""
+"ตัวแก้ไข Godot ถูกสร้างโดยไม่ได้สนับสนุน Ray Tracing ดังนั้นจึงไม่สามารถปั้น Lightmap ได้"
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid "Bake Lightmaps"
@@ -5344,7 +5372,7 @@ msgid ""
 "Overrides game camera with editor viewport camera."
 msgstr ""
 "เขียนทับกล้องของเกมส์\n"
-"เขียนทับกล้องของเกมส์ด้วยเอดิเตอร์ของวิวพอร์ตของกล้อง"
+"เขียนทับกล้องของเกมส์ด้วยตัวแก้ไขของวิวพอร์ตของกล้อง"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -6475,11 +6503,11 @@ msgstr "เติมน้ำหนักโครง"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Open Polygon 2D UV editor."
-msgstr "เปิดเอดิเตอร์ Polygon 2D UV"
+msgstr "เปิดตัวแก้ไข Polygon 2D UV"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Polygon 2D UV Editor"
-msgstr "เอดิเตอร์ Polygon 2D UV"
+msgstr "ตัวแก้ไข Polygon 2D UV"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "UV"
@@ -6734,7 +6762,8 @@ msgstr "สคริปต์ไม่ได้อยู่ในโหมดเ
 #: editor/plugins/script_editor_plugin.cpp
 msgid ""
 "To run this script, it must inherit EditorScript and be set to tool mode."
-msgstr "เพื่อที่จะเริ่มสคริปต์ จำเป็นต้องสืบทอดสคริปต์เอดิเตอร์ และตั้งโหมดเป็นโหมดเครื่องมือ"
+msgstr ""
+"หากต้องการที่จะเริ่มสคริปต์ มันจำเป็นต้องสืบทอดจาก EditorScript และตั้งโหมดเป็นโหมดเครื่องมือ"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Import Theme"
@@ -6894,7 +6923,7 @@ msgstr "เปิดตัวดีบักค้างไว้"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Debug with External Editor"
-msgstr "ดีบักด้วยเอดิเตอร์อื่น"
+msgstr "ดีบักด้วยตัวแก้ไขภายนอก"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Open Godot online documentation."
@@ -7426,14 +7455,14 @@ msgstr "ล็อคการหมุนวิวแล้ว"
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid ""
 "To zoom further, change the camera's clipping planes (View -> Settings...)"
-msgstr ""
+msgstr "หากต้องการที่จะขยายให้ไกลออกไป ให้เปลี่ยนระนอบการตัดของกล้อง (มุมมอง -> ตั้งค่า...)"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid ""
 "Note: The FPS value displayed is the editor's framerate.\n"
 "It cannot be used as a reliable indication of in-game performance."
 msgstr ""
-"หมายเหตุ: ค่า FPS ที่แสดงเป็นอัตราเฟรมของเอดิเตอร์\n"
+"หมายเหตุ: ค่า FPS ที่แสดงเป็นอัตราเฟรมของตัวแก้ไข\n"
 "ไม่สามารถใช้เป็นตัวบ่งชี้ประสิทธิภาพในเกมที่แท้จริงได้"
 
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -7933,7 +7962,7 @@ msgstr "สร้างเทมเพลตเปล่า"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Create Empty Editor Template"
-msgstr "สร้างเทมเพลตเปล่าสำหรับเอดิเตอร์"
+msgstr "สร้างแม่แบบเปล่าสำหรับตัวแก้ไข"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Create From Current Editor Theme"
@@ -9861,8 +9890,8 @@ msgid ""
 "Language changed.\n"
 "The interface will update after restarting the editor or project manager."
 msgstr ""
-"เปลี่ยนภาษาแล้ว\n"
-"การเปลี่ยนแปลงจะมีผลเมื่อเปิดเอดิเตอร์หรือตัวจัดการโปรเจกต์ใหม่"
+"ภาษาได้ถูกเปลี่ยนแล้ว\n"
+"การเปลี่ยนแปลงจะมีผลเมื่อเปิดตัวแก้ไขหรือตัวจัดการโปรเจกต์ใหม่"
 
 #: editor/project_manager.cpp
 msgid ""
@@ -10168,7 +10197,7 @@ msgstr "กำหนดเฉพาะ..."
 
 #: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
 msgid "The editor must be restarted for changes to take effect."
-msgstr "ต้องเปิดเอดิเตอร์ใหม่เพื่อให้การเปลี่ยนแปลงมีผล"
+msgstr "ต้องเปิดตัวแก้ไขใหม่เพื่อให้การเปลี่ยนแปลงมีผล"
 
 #: editor/project_settings_editor.cpp
 msgid "Input Map"
@@ -10685,8 +10714,8 @@ msgid ""
 "This is probably because this editor was built with all language modules "
 "disabled."
 msgstr ""
-"ไม่สามารถแนบสคริปต์: ไม่มีภาษาโปรแกรมที่เปิดใช้\n"
-"อาจเป็นเพราะเอดิเตอร์นี้สร้างขึ้นโดยปิดใช้งานโมดูลภาษาโปรแกรมทั้งหมด"
+"ไม่สามารถแนบสคริปต์: ไม่มีภาษาที่เปิดใช้\n"
+"อาจเป็นเพราะตัวแก้ไขนี้สร้างขึ้นโดยปิดใช้งานโมดูลภาษาทั้งหมด"
 
 #: editor/scene_tree_dock.cpp
 msgid "Add Child Node"
@@ -10752,6 +10781,8 @@ msgid ""
 "every time it updates.\n"
 "Switch back to the Local scene tree dock to improve performance."
 msgstr ""
+"หากเลือกไว้ แผงผังฉากจากระยะไกลจะทำให้โปรเจกต์เกิดการกระตุกทุกครั้งที่อัปเดต\n"
+"สลับกลับไปยัง แผงผังฉากจากระยะใกล้เพื่อเพิ่มประสิทธิภาพในการใช้งาน"
 
 #: editor/scene_tree_dock.cpp
 msgid "Local"
@@ -10961,7 +10992,7 @@ msgstr "ไฟล์สคริปต์มีอยู่แล้ว"
 msgid ""
 "Note: Built-in scripts have some limitations and can't be edited using an "
 "external editor."
-msgstr "หมายเหตุ: บิวท์อินสคริปต์มีข้อจำกัด ไม่สามารถแก้ไขได้โดยใช้เอดิเตอร์ภายนอก"
+msgstr "หมายเหตุ: สคริปต์ในตัวมีข้อจำกัด ไม่สามารถแก้ไขได้โดยใช้ตัวแก้ไขภายนอก"
 
 #: editor/script_create_dialog.cpp
 msgid "Class Name:"
@@ -11141,7 +11172,7 @@ msgstr "แก้ไขทางลัด"
 
 #: editor/settings_config_dialog.cpp
 msgid "Editor Settings"
-msgstr "ตั้งค่าเอดิเตอร์"
+msgstr "การตั้งค่าตัวแก้ไข"
 
 #: editor/settings_config_dialog.cpp
 msgid "Shortcuts"
@@ -11980,7 +12011,7 @@ msgstr "เทมเพลตการสร้างสำหรับแอน
 
 #: platform/android/export/export.cpp
 msgid "Debug keystore not configured in the Editor Settings nor in the preset."
-msgstr "Debug keystore ไม่ได้ถูกตั้งไว้ในตั้งค่าของเอดิเตอร์หรือในพรีเซ็ต"
+msgstr "ดีบัก Keystore ไม่ได้ถูกตั้งไว้ในตั้งค่าของตัวแก้ไขหรือในพรีเซ็ต"
 
 #: platform/android/export/export.cpp
 msgid "Release keystore incorrectly configured in the export preset."
@@ -11988,11 +12019,11 @@ msgstr "Release keystore กำหนดค่าไว้อย่างไม�
 
 #: platform/android/export/export.cpp
 msgid "A valid Android SDK path is required in Editor Settings."
-msgstr "ต้องการที่อยู่ของ Android SDK ที่ถูกต้อง ในการตั้งค่าเอดิเตอร์"
+msgstr "ต้องการที่อยู่ของ Android SDK ที่ถูกต้อง ในการตั้งค่าตัวแก้ไข"
 
 #: platform/android/export/export.cpp
 msgid "Invalid Android SDK path in Editor Settings."
-msgstr "ที่อยู่ Android SDK ไม่ถูกต้องในตั้งค่าของเอดิเตอร์"
+msgstr "ที่อยู่ Android SDK ไม่ถูกต้องในการตั้งค่าตัวแก้ไข"
 
 #: platform/android/export/export.cpp
 msgid "Missing 'platform-tools' directory!"
@@ -12004,7 +12035,7 @@ msgstr "ไม่พบคำสั่ง adb ของ Android SDK platform-too
 
 #: platform/android/export/export.cpp
 msgid "Please check in the Android SDK directory specified in Editor Settings."
-msgstr "โปรดตรวจสอบในไดเร็กทอรี Android SDK ที่ระบุใตัวตั้งค่าของเอดิเตอร์"
+msgstr "กรุณาตรวจสอบในตำแหน่งของ Android SDK ที่ระบุไว้ในการตั้งค่าตัวแก้ไข"
 
 #: platform/android/export/export.cpp
 msgid "Missing 'build-tools' directory!"
@@ -12737,7 +12768,7 @@ msgstr ""
 
 #: scene/gui/color_picker.cpp
 msgid "Pick a color from the editor window."
-msgstr "เลือกสีจากหน้าต่างเอดิเตอร์"
+msgstr "เลือกสีจากหน้าต่างตัวแก้ไข"
 
 #: scene/gui/color_picker.cpp
 msgid "HSV"
@@ -12762,7 +12793,7 @@ msgid ""
 "If you don't intend to add a script, use a plain Control node instead."
 msgstr ""
 "ตัวคอนเทนเนอร์เองไม่มีบทบาทเว้นแต่คุณจะตั้งค่าลักษณะการทำงานของตำแหน่งรองในสคริปต์\n"
-"หากคุณไม่ต้องการเพิ่มสคริปต์ให้ใช้โหนด \"ควบคุม\" ปกติแทน"
+"หากคุณไม่ต้องการเพิ่มสคริปต์ให้ใช้โหนด Control ปกติแทน"
 
 #: scene/gui/control.cpp
 msgid ""
@@ -12795,7 +12826,7 @@ msgid ""
 "running."
 msgstr ""
 "ป๊อปอัปจะถูกซ่อนตามค่าเริ่มต้นยกเว้นแต่คุณจะเรียกใช้ popup() หรือฟังก์ชัน popup*() ใด ๆ "
-"การทำให้มองเห็นได้สำหรับการแก้ไขเป็นเรื่องปกติ แต่จะซ่อนเมื่อทำงาน"
+"คุณสามารถทำให้มันมองเห็นได้เมื่อแก้ไข แต่มันจะถูกซ่อนเมื่อทำงานจริง"
 
 #: scene/gui/range.cpp
 msgid "If \"Exp Edit\" is enabled, \"Min Value\" must be greater than 0."
