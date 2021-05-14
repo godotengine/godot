@@ -16,8 +16,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-04-05 14:28+0000\n"
-"Last-Translator: Severi Vidnäs <severi.vidnas@gmail.com>\n"
+"PO-Revision-Date: 2021-04-22 14:40+0000\n"
+"Last-Translator: Tapani Niemi <tapani.niemi@kapsi.fi>\n"
 "Language-Team: Finnish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fi/>\n"
 "Language: fi\n"
@@ -25,7 +25,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.6-dev\n"
+"X-Generator: Weblate 4.7-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -2539,9 +2539,11 @@ msgid "Unable to load addon script from path: '%s'."
 msgstr "Virhe ladattaessa lisäosaa polusta: '%s'."
 
 #: editor/editor_node.cpp
+#, fuzzy
 msgid ""
-"Unable to load addon script from path: '%s' There seems to be an error in "
-"the code, please check the syntax."
+"Unable to load addon script from path: '%s'. This might be due to a code "
+"error in that script. \n"
+"Disabling the addon at '%s' to prevent further errors."
 msgstr ""
 "Virhe ladattaessa lisäosaa polusta: '%s'. Koodissa vaikuttaa olevan virhe, "
 "ole hyvä ja tarkista syntaksi."
@@ -5217,7 +5219,17 @@ msgstr ""
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid ""
-"Godot editor was built without ray tracing support, lightmaps can't be baked."
+"Godot editor was built without ray tracing support; lightmaps can't be "
+"baked.\n"
+"If you are using an Apple Silicon-based Mac, try forcing Rosetta emulation "
+"on Godot.app in the application settings\n"
+"then restart the editor."
+msgstr ""
+
+#: editor/plugins/baked_lightmap_editor_plugin.cpp
+#, fuzzy
+msgid ""
+"Godot editor was built without ray tracing support; lightmaps can't be baked."
 msgstr ""
 "Godot-editori on käännetty ilman ray tracing -tukea, joten lightmappeja ei "
 "voi kehittää."
@@ -7545,6 +7557,8 @@ msgstr "Näkymän kierto lukittu"
 msgid ""
 "To zoom further, change the camera's clipping planes (View -> Settings...)"
 msgstr ""
+"Lähentääksesi tai loitontaaksesi enemmän, muuta kameran leikkaustasoja "
+"(Näytä -> Asetukset...)"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid ""
@@ -10935,6 +10949,9 @@ msgid ""
 "every time it updates.\n"
 "Switch back to the Local scene tree dock to improve performance."
 msgstr ""
+"Jos tämä on valittuna, etäskenepuun telakka saa projektin nykimään aina "
+"päivittyessään.\n"
+"Vaihda takaisin paikallisen skenepuun telakkaan parantaaksesi suorituskykyä."
 
 #: editor/scene_tree_dock.cpp
 msgid "Local"

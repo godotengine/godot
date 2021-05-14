@@ -7,7 +7,7 @@
 # Tahmid Karim <tahmidk15@gmail.com>, 2016.
 # Tawhid H. <Tawhidk757@yahoo.com>, 2019.
 # Hasibul Hasan <hasibeng78@gmail.com>, 2019.
-# Oymate <dhruboadittya96@gmail.com>, 2020.
+# Oymate <dhruboadittya96@gmail.com>, 2020, 2021.
 # Mokarrom Hossain <mhb2016.bzs@gmail.com>, 2020, 2021.
 # Sagen Soren <sagensoren03@gmail.com>, 2020.
 # Hasibul Hasan <d1hasib@yahoo.com>, 2020.
@@ -15,8 +15,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-02-15 10:51+0000\n"
-"Last-Translator: Mokarrom Hossain <mhb2016.bzs@gmail.com>\n"
+"PO-Revision-Date: 2021-05-14 11:19+0000\n"
+"Last-Translator: Oymate <dhruboadittya96@gmail.com>\n"
 "Language-Team: Bengali <https://hosted.weblate.org/projects/godot-engine/"
 "godot/bn/>\n"
 "Language: bn\n"
@@ -24,7 +24,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Generator: Weblate 4.5-dev\n"
+"X-Generator: Weblate 4.7-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -729,7 +729,7 @@ msgstr "শুধুমাত্র নির্বাচিতসমূহ"
 #: editor/code_editor.cpp editor/plugins/script_text_editor.cpp
 #: editor/plugins/text_editor.cpp
 msgid "Standard"
-msgstr ""
+msgstr "আদর্শ"
 
 #: editor/code_editor.cpp editor/plugins/script_editor_plugin.cpp
 #, fuzzy
@@ -1179,11 +1179,11 @@ msgstr "লেখক"
 
 #: editor/editor_about.cpp
 msgid "Platinum Sponsors"
-msgstr "প্ল্যাটিনাম স্পনসর"
+msgstr "প্ল্যাটিনাম বিজ্ঞাপক"
 
 #: editor/editor_about.cpp
 msgid "Gold Sponsors"
-msgstr "গোল্ড স্পনসর"
+msgstr "সোনালি বিজ্ঞাপক"
 
 #: editor/editor_about.cpp
 #, fuzzy
@@ -1197,7 +1197,7 @@ msgstr "ব্রোঞ্জ ডোনার"
 
 #: editor/editor_about.cpp
 msgid "Mini Sponsors"
-msgstr "মিনি স্পনসর"
+msgstr "ক্ষুদ্র বিজ্ঞাপক"
 
 #: editor/editor_about.cpp
 msgid "Gold Donors"
@@ -1375,7 +1375,7 @@ msgstr "ইফেক্ট ডিলিট করুন"
 
 #: editor/editor_audio_buses.cpp
 msgid "Audio"
-msgstr ""
+msgstr "শব্দ"
 
 #: editor/editor_audio_buses.cpp
 msgid "Add Audio Bus"
@@ -1581,7 +1581,7 @@ msgstr "(খালি/শূন্য)"
 
 #: editor/editor_data.cpp
 msgid "[unsaved]"
-msgstr ""
+msgstr "[অসংরক্ষিত]"
 
 #: editor/editor_dir_dialog.cpp
 #, fuzzy
@@ -2654,8 +2654,9 @@ msgstr "%s হতে স্ক্রিপ্ট তুলতে/লোডে �
 #: editor/editor_node.cpp
 #, fuzzy
 msgid ""
-"Unable to load addon script from path: '%s' There seems to be an error in "
-"the code, please check the syntax."
+"Unable to load addon script from path: '%s'. This might be due to a code "
+"error in that script. \n"
+"Disabling the addon at '%s' to prevent further errors."
 msgstr ""
 "'%s' পাথ ব্যাবহার করে অ্যাড-অন স্ক্রিপ্ট লোড করা সম্ভব হয়নি। স্ক্রিপ্টটি টুল মোডে নেই।"
 
@@ -3441,7 +3442,7 @@ msgstr "চালু"
 
 #: editor/editor_properties.cpp
 msgid "Layer"
-msgstr ""
+msgstr "স্তর"
 
 #: editor/editor_properties.cpp
 #, fuzzy
@@ -3537,7 +3538,7 @@ msgstr "সেল (Cell)-এর আকার:"
 
 #: editor/editor_properties_array_dict.cpp
 msgid "Page: "
-msgstr ""
+msgstr "পাতা: "
 
 #: editor/editor_properties_array_dict.cpp
 #: editor/plugins/theme_editor_plugin.cpp
@@ -4480,7 +4481,7 @@ msgstr "প্লাগইন-সমূহ"
 
 #: editor/plugin_config_dialog.cpp
 msgid "Subfolder:"
-msgstr ""
+msgstr "উপফোল্ডার:"
 
 #: editor/plugin_config_dialog.cpp editor/script_create_dialog.cpp
 #, fuzzy
@@ -4993,7 +4994,7 @@ msgstr "গঠনবিন্যাস"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Depth"
-msgstr ""
+msgstr "গভীরতা"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "1 step"
@@ -5078,11 +5079,11 @@ msgstr "সমাপ্তি(সমূহ)"
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Immediate"
-msgstr ""
+msgstr "তাৎক্ষণিক"
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Sync"
-msgstr ""
+msgstr "সিঙ্ক"
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "At End"
@@ -5090,7 +5091,7 @@ msgstr ""
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Travel"
-msgstr ""
+msgstr "ভ্রমণ"
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Start and end nodes are needed for a sub-transition."
@@ -5467,7 +5468,7 @@ msgstr "পরবর্তী"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Last"
-msgstr ""
+msgstr "শেষ"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "All"
@@ -5549,7 +5550,16 @@ msgstr ""
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid ""
-"Godot editor was built without ray tracing support, lightmaps can't be baked."
+"Godot editor was built without ray tracing support; lightmaps can't be "
+"baked.\n"
+"If you are using an Apple Silicon-based Mac, try forcing Rosetta emulation "
+"on Godot.app in the application settings\n"
+"then restart the editor."
+msgstr ""
+
+#: editor/plugins/baked_lightmap_editor_plugin.cpp
+msgid ""
+"Godot editor was built without ray tracing support; lightmaps can't be baked."
 msgstr ""
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
@@ -7021,7 +7031,7 @@ msgstr "Polygon 2D UV এডিটর"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "UV"
-msgstr ""
+msgstr "অতিবেগুনী"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 #, fuzzy
@@ -7097,7 +7107,7 @@ msgstr ""
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Radius:"
-msgstr ""
+msgstr "ব্যাসার্ধ:"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 #, fuzzy
@@ -8364,7 +8374,7 @@ msgstr "ফ্রেমসমূহ স্তূপ করুন"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Simplification: "
-msgstr ""
+msgstr "সরলীকরণ: "
 
 #: editor/plugins/sprite_editor_plugin.cpp
 #, fuzzy
@@ -8556,7 +8566,7 @@ msgstr "পদক্ষেপ:"
 
 #: editor/plugins/texture_region_editor_plugin.cpp
 msgid "Sep.:"
-msgstr ""
+msgstr "বিভক্তকারক:"
 
 #: editor/plugins/texture_region_editor_plugin.cpp
 #, fuzzy
@@ -10970,7 +10980,7 @@ msgstr "প্রক্রিয়া/অ্যাকশন"
 
 #: editor/project_settings_editor.cpp
 msgid "Deadzone"
-msgstr ""
+msgstr "মৃতস্থান"
 
 #: editor/project_settings_editor.cpp
 msgid "Device:"
@@ -12225,7 +12235,7 @@ msgstr "পূর্বের ট্যাব"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Plane:"
-msgstr ""
+msgstr "সমতল:"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Next Floor"
@@ -12238,7 +12248,7 @@ msgstr "পূর্বের ট্যাব"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Floor:"
-msgstr ""
+msgstr "মেঝে:"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 #, fuzzy
@@ -13796,7 +13806,7 @@ msgstr ""
 
 #: scene/gui/tree.cpp
 msgid "(Other)"
-msgstr ""
+msgstr "(অন্যান্য)"
 
 #: scene/main/scene_tree.cpp
 msgid ""

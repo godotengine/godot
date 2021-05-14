@@ -5,18 +5,19 @@
 #
 # Andy Barcia <andybarcia4@gmail.com>, 2021.
 # PokeGalaico <abloodyfreaks@gmail.com>, 2021.
+# Kkai <kaieltroll@gmail.com>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2021-02-15 10:51+0000\n"
-"Last-Translator: Andy Barcia <andybarcia4@gmail.com>\n"
+"PO-Revision-Date: 2021-04-26 22:32+0000\n"
+"Last-Translator: Kkai <kaieltroll@gmail.com>\n"
 "Language-Team: Galician <https://hosted.weblate.org/projects/godot-engine/"
 "godot/gl/>\n"
 "Language: gl\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.5-dev\n"
+"X-Generator: Weblate 4.7-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -36,7 +37,7 @@ msgstr ""
 
 #: core/math/expression.cpp
 msgid "Invalid input %i (not passed) in expression"
-msgstr "Entrada inválida %i (non recibida) na expresión"
+msgstr "Entrada inválida %i (non pasada) na expresión"
 
 #: core/math/expression.cpp
 msgid "self can't be used because instance is null (not passed)"
@@ -659,11 +660,11 @@ msgstr "Engadir Clip de Pista de Audio"
 
 #: editor/animation_track_editor_plugins.cpp
 msgid "Change Audio Track Clip Start Offset"
-msgstr "Cambiar Inicio do Clip na Pista de Audio"
+msgstr "Cambiar Offset de Inicio de Clip de Pista de Audio"
 
 #: editor/animation_track_editor_plugins.cpp
 msgid "Change Audio Track Clip End Offset"
-msgstr "Cambiar Final do Clip na Pista de Audio"
+msgstr "Cambiar Offset Final del Clip de Pista de Audio"
 
 #: editor/array_property_edit.cpp
 msgid "Resize Array"
@@ -1278,7 +1279,7 @@ msgstr "Act./Desact. Silencio do Bus de Son"
 
 #: editor/editor_audio_buses.cpp
 msgid "Toggle Audio Bus Bypass Effects"
-msgstr ""
+msgstr "Act./Desact. Bypass de Efectos do Bus de Son"
 
 #: editor/editor_audio_buses.cpp
 msgid "Select Audio Bus Send"
@@ -1310,7 +1311,7 @@ msgstr "Silenciar"
 
 #: editor/editor_audio_buses.cpp
 msgid "Bypass"
-msgstr ""
+msgstr "Bypass"
 
 #: editor/editor_audio_buses.cpp
 msgid "Bus options"
@@ -1445,11 +1446,11 @@ msgstr "Non debe coincidir co nome dunha constante global xa existente."
 
 #: editor/editor_autoload_settings.cpp
 msgid "Keyword cannot be used as an autoload name."
-msgstr "Unha palabra clave non pode usarse como nome dun AutoCargador."
+msgstr "A palabra clave non pode empregarse como nome dun AutoCargador."
 
 #: editor/editor_autoload_settings.cpp
 msgid "Autoload '%s' already exists!"
-msgstr "Xa existe un AutoCargador nomeado '%s'!"
+msgstr "AutoCargador '%s' xa existe!"
 
 #: editor/editor_autoload_settings.cpp
 msgid "Rename Autoload"
@@ -1457,7 +1458,7 @@ msgstr "Renomear AutoCargador"
 
 #: editor/editor_autoload_settings.cpp
 msgid "Toggle AutoLoad Globals"
-msgstr ""
+msgstr "Act./Desact. Globais de AutoCargador"
 
 #: editor/editor_autoload_settings.cpp
 msgid "Move Autoload"
@@ -1502,7 +1503,7 @@ msgstr "Nome"
 
 #: editor/editor_autoload_settings.cpp
 msgid "Singleton"
-msgstr ""
+msgstr "Singleton"
 
 #: editor/editor_data.cpp editor/inspector_dock.cpp
 msgid "Paste Params"
@@ -1560,7 +1561,7 @@ msgstr "Elixir"
 
 #: editor/editor_export.cpp
 msgid "Storing File:"
-msgstr "Gardando Arquivo:"
+msgstr "Almacenando Arquivo:"
 
 #: editor/editor_export.cpp
 msgid "No export template found at the expected path:"
@@ -1637,7 +1638,7 @@ msgstr "Non se encontrou un modelo de depuración personalizado."
 #: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
 #: platform/osx/export/export.cpp platform/uwp/export/export.cpp
 msgid "Custom release template not found."
-msgstr ""
+msgstr "Non se encontrou un modelo release personalizado."
 
 #: editor/editor_export.cpp platform/javascript/export/export.cpp
 msgid "Template file not found:"
@@ -1665,15 +1666,15 @@ msgstr "Edición de Árbore de Escenas"
 
 #: editor/editor_feature_profile.cpp
 msgid "Node Dock"
-msgstr "Panel de Nodos"
+msgstr "Nodos"
 
 #: editor/editor_feature_profile.cpp
 msgid "FileSystem Dock"
-msgstr "Panel de Sistema de Arquivos"
+msgstr "Sistema de Arquivos"
 
 #: editor/editor_feature_profile.cpp
 msgid "Import Dock"
-msgstr "Panel de Importación"
+msgstr "Importación"
 
 #: editor/editor_feature_profile.cpp
 msgid "Erase profile '%s'? (no undo)"
@@ -1732,11 +1733,11 @@ msgstr ""
 
 #: editor/editor_feature_profile.cpp
 msgid "Error saving profile to path: '%s'."
-msgstr "Erro gardando o perfil á ruta: '%s'."
+msgstr "Erro ao gardar o perfil na ruta: '%s'."
 
 #: editor/editor_feature_profile.cpp
 msgid "Unset"
-msgstr ""
+msgstr "Desactivar"
 
 #: editor/editor_feature_profile.cpp
 msgid "Current Profile:"
@@ -1755,7 +1756,7 @@ msgstr "Novo"
 #: editor/editor_feature_profile.cpp editor/editor_node.cpp
 #: editor/project_manager.cpp
 msgid "Import"
-msgstr "Importación"
+msgstr "Importar"
 
 #: editor/editor_feature_profile.cpp editor/project_export.cpp
 msgid "Export"
@@ -1763,15 +1764,15 @@ msgstr "Exportación"
 
 #: editor/editor_feature_profile.cpp
 msgid "Available Profiles:"
-msgstr "Perfils Dispoñibles:"
+msgstr "Perfís Dispoñibles:"
 
 #: editor/editor_feature_profile.cpp
 msgid "Class Options"
-msgstr "Opcións de Clase"
+msgstr "Opcións de Clases"
 
 #: editor/editor_feature_profile.cpp
 msgid "New profile name:"
-msgstr "Nome do novo perfil:"
+msgstr "Novo nome de perfil:"
 
 #: editor/editor_feature_profile.cpp
 msgid "Erase Profile"
@@ -1783,7 +1784,7 @@ msgstr "Perfil de Características de Godot"
 
 #: editor/editor_feature_profile.cpp
 msgid "Import Profile(s)"
-msgstr "Importar Perfil(s)"
+msgstr "Importar Perf(il/ís)"
 
 #: editor/editor_feature_profile.cpp
 msgid "Export Profile"
@@ -1875,7 +1876,6 @@ msgid "Go Up"
 msgstr "Subir"
 
 #: editor/editor_file_dialog.cpp
-#, fuzzy
 msgid "Toggle Hidden Files"
 msgstr "Amosar/Ocultar Arquivos Ocultos"
 
@@ -2001,7 +2001,6 @@ msgid "Methods"
 msgstr "Métodos"
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "Theme Properties"
 msgstr "Propiedades do Tema"
 
@@ -2287,19 +2286,19 @@ msgstr "Non se pode sobreescribir escena que sigue aberta!"
 
 #: editor/editor_node.cpp
 msgid "Can't load MeshLibrary for merging!"
-msgstr ""
+msgstr "Non se pode cargar MeshLibrary para fusionarse!"
 
 #: editor/editor_node.cpp
 msgid "Error saving MeshLibrary!"
-msgstr ""
+msgstr "Erro ao gardar MeshLibrary!"
 
 #: editor/editor_node.cpp
 msgid "Can't load TileSet for merging!"
-msgstr ""
+msgstr "Non se pode cargar TileSet para fusionarse!"
 
 #: editor/editor_node.cpp
 msgid "Error saving TileSet!"
-msgstr ""
+msgstr "Erro ao gardar TileSet!"
 
 #: editor/editor_node.cpp
 msgid ""
@@ -2531,11 +2530,10 @@ msgstr ""
 "sintáctica da configuración de '%s'."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Unable to find script field for addon plugin at: '%s'."
 msgstr ""
 "Non se puido encontrar o campo do Script na característica adicional "
-"(Plugin) en 'res://addons/%s'."
+"(Plugin) en '%s'."
 
 #: editor/editor_node.cpp
 msgid "Unable to load addon script from path: '%s'."
@@ -2543,9 +2541,11 @@ msgstr ""
 "Non se puido cargar Script de característica adicional (Addon) na ruta: '%s'."
 
 #: editor/editor_node.cpp
+#, fuzzy
 msgid ""
-"Unable to load addon script from path: '%s' There seems to be an error in "
-"the code, please check the syntax."
+"Unable to load addon script from path: '%s'. This might be due to a code "
+"error in that script. \n"
+"Disabling the addon at '%s' to prevent further errors."
 msgstr ""
 "Non se puido cargar Script de característica adicional (Addon) na ruta: "
 "'%s'. Parece que hai un erro no código; por favor, comproba a sintaxe."
@@ -2797,7 +2797,7 @@ msgstr "Exportar..."
 
 #: editor/editor_node.cpp
 msgid "Install Android Build Template..."
-msgstr ""
+msgstr "Instalar plantilla de compilación de Android..."
 
 #: editor/editor_node.cpp
 msgid "Open Project Data Folder"
@@ -4055,9 +4055,8 @@ msgid "Select Importer"
 msgstr "Elixir Modo"
 
 #: editor/import_defaults_editor.cpp
-#, fuzzy
 msgid "Importer:"
-msgstr "Importación"
+msgstr "Importador:"
 
 #: editor/import_defaults_editor.cpp
 #, fuzzy
@@ -5182,7 +5181,16 @@ msgstr ""
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid ""
-"Godot editor was built without ray tracing support, lightmaps can't be baked."
+"Godot editor was built without ray tracing support; lightmaps can't be "
+"baked.\n"
+"If you are using an Apple Silicon-based Mac, try forcing Rosetta emulation "
+"on Godot.app in the application settings\n"
+"then restart the editor."
+msgstr ""
+
+#: editor/plugins/baked_lightmap_editor_plugin.cpp
+msgid ""
+"Godot editor was built without ray tracing support; lightmaps can't be baked."
 msgstr ""
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
@@ -9915,11 +9923,8 @@ msgid "Projects"
 msgstr "Proxectos"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Loading, please wait..."
-msgstr ""
-"Examinando arquivos,\n"
-"Por favor, espere..."
+msgstr "Cargando, por favor agarde..."
 
 #: editor/project_manager.cpp
 msgid "Last Modified"
