@@ -36,6 +36,7 @@
 #include "scene/gui/dialogs.h"
 #include "scene/gui/item_list.h"
 #include "scene/gui/line_edit.h"
+#include "scene/gui/menu_button.h"
 #include "scene/gui/option_button.h"
 #include "scene/gui/separator.h"
 #include "scene/gui/split_container.h"
@@ -64,6 +65,16 @@ public:
 		FILE_MODE_OPEN_DIR,
 		FILE_MODE_OPEN_ANY,
 		FILE_MODE_SAVE_FILE
+	};
+
+	enum FileSortOption {
+		FILE_SORT_NAME = 0,
+		FILE_SORT_NAME_REVERSE,
+		FILE_SORT_TYPE,
+		FILE_SORT_TYPE_REVERSE,
+		FILE_SORT_MODIFIED_TIME,
+		FILE_SORT_MODIFIED_TIME_REVERSE,
+		FILE_SORT_MAX,
 	};
 
 	typedef Ref<Texture2D> (*GetIconFunc)(const String &);
@@ -121,6 +132,11 @@ private:
 	Button *favorite;
 	Button *show_hidden;
 
+	String searched_string;
+	LineEdit *filter_box;
+	FileSortOption file_sort = FILE_SORT_NAME;
+	MenuButton *file_sort_button;
+
 	Button *fav_up;
 	Button *fav_down;
 
@@ -175,6 +191,25 @@ private:
 	void _filter_selected(int);
 	void _make_dir();
 	void _make_dir_confirm();
+
+	struct FileInfo {
+		String name;
+		String path;
+		StringName type;
+		uint64_t modified_time = 0;
+
+		bool operator<(const FileInfo &fi) const {
+			return NaturalNoCaseComparator()(name, fi.name);
+		}
+	};
+
+	struct FileInfoTypeComparator;
+	struct FileInfoModifiedTimeComparator;
+
+	void _focus_filter_box();
+	void _filter_changed(const String &p_text);
+	void _file_sort_popup(int p_id);
+	void _sort_file_info_list(List<EditorFileDialog::FileInfo> &r_file_list);
 
 	void _delete_items();
 

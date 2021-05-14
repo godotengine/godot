@@ -36,12 +36,14 @@
 #include "core/string/print_string.h"
 #include "dependency_editor.h"
 #include "editor_file_system.h"
+#include "editor_node.h"
 #include "editor_resource_preview.h"
 #include "editor_scale.h"
 #include "editor_settings.h"
 #include "scene/gui/center_container.h"
 #include "scene/gui/label.h"
 #include "scene/gui/margin_container.h"
+#include "scene/gui/menu_button.h"
 #include "servers/display_server.h"
 
 EditorFileDialog::GetIconFunc EditorFileDialog::get_icon_func = nullptr;
@@ -74,6 +76,10 @@ void EditorFileDialog::_notification(int p_what) {
 		refresh->set_icon(item_list->get_theme_icon(SNAME("Reload"), SNAME("EditorIcons")));
 		favorite->set_icon(item_list->get_theme_icon(SNAME("Favorites"), SNAME("EditorIcons")));
 		show_hidden->set_icon(item_list->get_theme_icon(SNAME("GuiVisibilityVisible"), SNAME("EditorIcons")));
+
+		filter_box->set_right_icon(get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
+		filter_box->set_clear_button_enabled(true);
+		file_sort_button->set_icon(item_list->get_theme_icon(SNAME("Sort"), SNAME("EditorIcons")));
 
 		fav_up->set_icon(item_list->get_theme_icon(SNAME("MoveUp"), SNAME("EditorIcons")));
 		fav_down->set_icon(item_list->get_theme_icon(SNAME("MoveDown"), SNAME("EditorIcons")));
@@ -185,6 +191,10 @@ void EditorFileDialog::_unhandled_input(const Ref<InputEvent> &p_event) {
 				_favorite_move_down();
 				handled = true;
 			}
+			if (ED_IS_SHORTCUT("editor/open_search", p_event)) {
+				_focus_filter_box();
+				handled = true;
+			}
 
 			if (handled) {
 				set_input_as_handled();
@@ -212,6 +222,8 @@ void EditorFileDialog::update_dir() {
 		drives->select(dir_access->get_current_drive());
 	}
 	dir->set_text(dir_access->get_current_dir(false));
+
+	filter_box->clear();
 
 	// Disable "Open" button only when selecting file(s) mode.
 	get_ok_button()->set_disabled(_is_open_should_be_disabled());
@@ -268,7 +280,13 @@ void EditorFileDialog::_post_popup() {
 		item_list->grab_focus();
 	}
 
-	if (mode == FILE_MODE_OPEN_DIR) {
+	bool is_open_directory_mode = mode == FILE_MODE_OPEN_DIR;
+	PopupMenu *p = file_sort_button->get_popup();
+	p->set_item_disabled(2, is_open_directory_mode);
+	p->set_item_disabled(3, is_open_directory_mode);
+	p->set_item_disabled(4, is_open_directory_mode);
+	p->set_item_disabled(5, is_open_directory_mode);
+	if (is_open_directory_mode) {
 		file_box->set_visible(false);
 	} else {
 		file_box->set_visible(true);
@@ -711,6 +729,53 @@ void EditorFileDialog::update_file_name() {
 	}
 }
 
+struct EditorFileDialog::FileInfoTypeComparator {
+	bool operator()(const FileInfo &p_a, const FileInfo &p_b) const {
+		// Uses the extension, then the icon name to distinguish file types.
+		String icon_path_a = "";
+		String icon_path_b = "";
+		Ref<Texture2D> icon_a = EditorNode::get_singleton()->get_class_icon(p_a.type);
+		if (icon_a.is_valid()) {
+			icon_path_a = icon_a->get_name();
+		}
+		Ref<Texture2D> icon_b = EditorNode::get_singleton()->get_class_icon(p_b.type);
+		if (icon_b.is_valid()) {
+			icon_path_b = icon_b->get_name();
+		}
+		return NaturalNoCaseComparator()(p_a.name.get_extension() + icon_path_a + p_a.name.get_basename(), p_b.name.get_extension() + icon_path_b + p_b.name.get_basename());
+	}
+};
+
+struct EditorFileDialog::FileInfoModifiedTimeComparator {
+	bool operator()(const FileInfo &p_a, const FileInfo &p_b) const {
+		return p_a.modified_time > p_b.modified_time;
+	}
+};
+
+void EditorFileDialog::_sort_file_info_list(List<EditorFileDialog::FileInfo> &r_file_list) {
+	// Sort the file list if needed.
+	switch (file_sort) {
+		case FILE_SORT_TYPE:
+			r_file_list.sort_custom<FileInfoTypeComparator>();
+			break;
+		case FILE_SORT_TYPE_REVERSE:
+			r_file_list.sort_custom<FileInfoTypeComparator>();
+			r_file_list.reverse();
+			break;
+		case FILE_SORT_MODIFIED_TIME:
+			r_file_list.sort_custom<FileInfoModifiedTimeComparator>();
+			break;
+		case FILE_SORT_MODIFIED_TIME_REVERSE:
+			r_file_list.sort_custom<FileInfoModifiedTimeComparator>();
+			r_file_list.reverse();
+			break;
+		case FILE_SORT_NAME_REVERSE:
+			r_file_list.reverse();
+			break;
+		default: // FILE_SORT_NAME
+			break;
+	}
+}
 // DO NOT USE THIS FUNCTION UNLESS NEEDED, CALL INVALIDATE() INSTEAD.
 void EditorFileDialog::update_file_list() {
 	int thumbnail_size = EditorSettings::get_singleton()->get("filesystem/file_dialog/thumbnail_size");
@@ -757,7 +822,7 @@ void EditorFileDialog::update_file_list() {
 
 	Ref<Texture2D> folder = item_list->get_theme_icon(SNAME("folder"), SNAME("FileDialog"));
 	const Color folder_color = item_list->get_theme_color(SNAME("folder_icon_modulate"), SNAME("FileDialog"));
-	List<String> files;
+	List<FileInfo> file_infos;
 	List<String> dirs;
 
 	String item;
@@ -768,16 +833,33 @@ void EditorFileDialog::update_file_list() {
 		}
 
 		if (show_hidden_files || !dir_access->current_is_hidden()) {
-			if (!dir_access->current_is_dir()) {
-				files.push_back(item);
+			bool matches_search = false;
+			if (searched_string.length() > 0) {
+				matches_search = item.to_lower().find(searched_string) != -1;
 			} else {
-				dirs.push_back(item);
+				matches_search = true;
+			}
+			if (matches_search) {
+				if (!dir_access->current_is_dir()) {
+					FileInfo fi;
+					fi.name = item;
+					fi.path = cdir.plus_file(fi.name);
+					fi.type = ResourceLoader::get_resource_type(fi.path);
+					fi.modified_time = FileAccess::get_modified_time(fi.path);
+					file_infos.push_back(fi);
+				} else {
+					dirs.push_back(item);
+				}
 			}
 		}
 	}
 
 	dirs.sort_custom<NaturalNoCaseComparator>();
-	files.sort_custom<NaturalNoCaseComparator>();
+	bool reverse_directories = file_sort == FILE_SORT_NAME_REVERSE;
+	if (reverse_directories) {
+		dirs.reverse();
+	}
+	EditorFileDialog::_sort_file_info_list(file_infos);
 
 	while (!dirs.is_empty()) {
 		const String &dir_name = dirs.front()->get();
@@ -827,21 +909,23 @@ void EditorFileDialog::update_file_list() {
 		}
 	}
 
-	while (!files.is_empty()) {
+	while (!file_infos.is_empty()) {
 		bool match = patterns.is_empty();
 
+		FileInfo file_info = file_infos.front()->get();
+
 		for (const String &E : patterns) {
-			if (files.front()->get().matchn(E)) {
+			if (file_info.name.matchn(E)) {
 				match = true;
 				break;
 			}
 		}
 
 		if (match) {
-			item_list->add_item(files.front()->get());
+			item_list->add_item(file_info.name);
 
 			if (get_icon_func) {
-				Ref<Texture2D> icon = get_icon_func(cdir.plus_file(files.front()->get()));
+				Ref<Texture2D> icon = get_icon_func(file_info.path);
 				if (display_mode == DISPLAY_THUMBNAILS) {
 					item_list->set_item_icon(item_list->get_item_count() - 1, file_thumbnail);
 					item_list->set_item_tag_icon(item_list->get_item_count() - 1, icon);
@@ -851,22 +935,21 @@ void EditorFileDialog::update_file_list() {
 			}
 
 			Dictionary d;
-			d["name"] = files.front()->get();
+			d["name"] = file_info.name;
 			d["dir"] = false;
-			String fullpath = cdir.plus_file(files.front()->get());
-			d["path"] = fullpath;
+			d["path"] = file_info.path;
 			item_list->set_item_metadata(item_list->get_item_count() - 1, d);
 
 			if (display_mode == DISPLAY_THUMBNAILS) {
-				EditorResourcePreview::get_singleton()->queue_resource_preview(fullpath, this, "_thumbnail_result", fullpath);
+				EditorResourcePreview::get_singleton()->queue_resource_preview(file_info.path, this, "_thumbnail_result", file_info.path);
 			}
 
-			if (file->get_text() == files.front()->get()) {
+			if (file->get_text() == file_info.name) {
 				item_list->set_current(item_list->get_item_count() - 1);
 			}
 		}
 
-		files.pop_front();
+		file_infos.pop_front();
 	}
 
 	if (favorites->get_current() >= 0) {
@@ -1098,6 +1181,24 @@ void EditorFileDialog::_make_dir_confirm() {
 void EditorFileDialog::_make_dir() {
 	makedialog->popup_centered(Size2(250, 80) * EDSCALE);
 	makedirname->grab_focus();
+}
+
+void EditorFileDialog::_focus_filter_box() {
+	filter_box->grab_focus();
+	filter_box->select_all();
+}
+
+void EditorFileDialog::_filter_changed(const String &p_text) {
+	searched_string = p_text;
+	invalidate();
+}
+
+void EditorFileDialog::_file_sort_popup(int p_id) {
+	for (int i = 0; i != FILE_SORT_MAX; i++) {
+		file_sort_button->get_popup()->set_item_checked(i, (i == p_id));
+	}
+	file_sort = (FileSortOption)p_id;
+	invalidate();
 }
 
 void EditorFileDialog::_delete_items() {
@@ -1633,10 +1734,35 @@ EditorFileDialog::EditorFileDialog() {
 	VBoxContainer *list_vb = memnew(VBoxContainer);
 	list_vb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 
+	HBoxContainer *lower_hb = memnew(HBoxContainer);
+	lower_hb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	l = memnew(Label(TTR("Directories & Files:")));
 	l->set_theme_type_variation("HeaderSmall");
-	list_vb->add_child(l);
+	lower_hb->add_child(l);
+
+	list_vb->add_child(lower_hb);
 	preview_hb->add_child(list_vb);
+
+	filter_box = memnew(LineEdit);
+	filter_box->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	filter_box->set_placeholder(TTR("Filter"));
+	filter_box->connect("text_changed", callable_mp(this, &EditorFileDialog::_filter_changed));
+	lower_hb->add_child(filter_box);
+
+	file_sort_button = memnew(MenuButton);
+	file_sort_button->set_flat(true);
+	file_sort_button->set_tooltip(TTR("Sort files"));
+
+	PopupMenu *p = file_sort_button->get_popup();
+	p->connect("id_pressed", callable_mp(this, &EditorFileDialog::_file_sort_popup));
+	p->add_radio_check_item(TTR("Sort by Name (Ascending)"), FILE_SORT_NAME);
+	p->add_radio_check_item(TTR("Sort by Name (Descending)"), FILE_SORT_NAME_REVERSE);
+	p->add_radio_check_item(TTR("Sort by Type (Ascending)"), FILE_SORT_TYPE);
+	p->add_radio_check_item(TTR("Sort by Type (Descending)"), FILE_SORT_TYPE_REVERSE);
+	p->add_radio_check_item(TTR("Sort by Last Modified"), FILE_SORT_MODIFIED_TIME);
+	p->add_radio_check_item(TTR("Sort by First Modified"), FILE_SORT_MODIFIED_TIME_REVERSE);
+	p->set_item_checked(0, true);
+	lower_hb->add_child(file_sort_button);
 
 	// Item (files and folders) list with context menu.
 
