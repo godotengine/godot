@@ -238,6 +238,7 @@ private:
 
 	void _toggle_split_mode(bool p_active);
 
+	void _focus_current_search_box();
 	void _search_changed(const String &p_text, const Control *p_from);
 
 	void _file_and_folders_fill_popup(PopupMenu *p_popup, Vector<String> p_paths, bool p_display_path_dependent_options = true);
