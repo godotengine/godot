@@ -36,7 +36,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-04-01 02:04+0000\n"
+"PO-Revision-Date: 2021-05-10 15:32+0000\n"
 "Last-Translator: nitenook <admin@alterbaum.net>\n"
 "Language-Team: Japanese <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ja/>\n"
@@ -45,7 +45,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.6-dev\n"
+"X-Generator: Weblate 4.7-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -2562,9 +2562,11 @@ msgid "Unable to load addon script from path: '%s'."
 msgstr "パス '%s' からアドオンスクリプトを読込めません。"
 
 #: editor/editor_node.cpp
+#, fuzzy
 msgid ""
-"Unable to load addon script from path: '%s' There seems to be an error in "
-"the code, please check the syntax."
+"Unable to load addon script from path: '%s'. This might be due to a code "
+"error in that script. \n"
+"Disabling the addon at '%s' to prevent further errors."
 msgstr ""
 "パス '%s' からアドオンスクリプトを読み込めません。コードにエラーがある可能性"
 "があります。構文を確認してください。"
@@ -3695,6 +3697,8 @@ msgstr ""
 msgid ""
 "Importing has been disabled for this file, so it can't be opened for editing."
 msgstr ""
+"このファイルのインポートは無効化されているため、編集のために開くことはできま"
+"せん。"
 
 #: editor/filesystem_dock.cpp
 msgid "Cannot move/rename resources root."
@@ -4101,7 +4105,7 @@ msgstr "デフォルトを読込む"
 
 #: editor/import_dock.cpp
 msgid "Keep File (No Import)"
-msgstr ""
+msgstr "ファイルを保持 (インポートしない)"
 
 #: editor/import_dock.cpp
 msgid "%d Files"
@@ -5236,7 +5240,17 @@ msgstr ""
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid ""
-"Godot editor was built without ray tracing support, lightmaps can't be baked."
+"Godot editor was built without ray tracing support; lightmaps can't be "
+"baked.\n"
+"If you are using an Apple Silicon-based Mac, try forcing Rosetta emulation "
+"on Godot.app in the application settings\n"
+"then restart the editor."
+msgstr ""
+
+#: editor/plugins/baked_lightmap_editor_plugin.cpp
+#, fuzzy
+msgid ""
+"Godot editor was built without ray tracing support; lightmaps can't be baked."
 msgstr ""
 "Godotエディタがレイトレーシングに対応せずにビルドされており、ライトマップのベ"
 "イクができません。"

@@ -2531,9 +2531,11 @@ msgid "Unable to load addon script from path: '%s'."
 msgstr "Nepodarilo sa načítať addon script z cesty: '%s'."
 
 #: editor/editor_node.cpp
+#, fuzzy
 msgid ""
-"Unable to load addon script from path: '%s' There seems to be an error in "
-"the code, please check the syntax."
+"Unable to load addon script from path: '%s'. This might be due to a code "
+"error in that script. \n"
+"Disabling the addon at '%s' to prevent further errors."
 msgstr ""
 "Nepodarilo sa nájsť addon script z cesty: '%s' Vyzerá to tak že by mohol byť "
 "problém v kóde, prosím skontrolujte syntax."
@@ -5198,7 +5200,16 @@ msgstr ""
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid ""
-"Godot editor was built without ray tracing support, lightmaps can't be baked."
+"Godot editor was built without ray tracing support; lightmaps can't be "
+"baked.\n"
+"If you are using an Apple Silicon-based Mac, try forcing Rosetta emulation "
+"on Godot.app in the application settings\n"
+"then restart the editor."
+msgstr ""
+
+#: editor/plugins/baked_lightmap_editor_plugin.cpp
+msgid ""
+"Godot editor was built without ray tracing support; lightmaps can't be baked."
 msgstr ""
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp

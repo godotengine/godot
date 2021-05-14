@@ -93,11 +93,12 @@
 # Dmytro Meleshko <dmytro.meleshko@gmail.com>, 2021.
 # narrnika <narr13niki@gmail.com>, 2021.
 # nec-trou <darya.bilyalova@gmail.com>, 2021.
+# IindinAndEdresia <kapitan_pol@inbox.ru>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-04-19 22:33+0000\n"
+"PO-Revision-Date: 2021-05-14 11:20+0000\n"
 "Last-Translator: Danil Alexeev <danil@alexeev.xyz>\n"
 "Language-Team: Russian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ru/>\n"
@@ -2624,9 +2625,11 @@ msgid "Unable to load addon script from path: '%s'."
 msgstr "Не удалось загрузить скрипт из источника: «%s»."
 
 #: editor/editor_node.cpp
+#, fuzzy
 msgid ""
-"Unable to load addon script from path: '%s' There seems to be an error in "
-"the code, please check the syntax."
+"Unable to load addon script from path: '%s'. This might be due to a code "
+"error in that script. \n"
+"Disabling the addon at '%s' to prevent further errors."
 msgstr ""
 "Невозможно загрузить скрипт аддона из источника: «%s». В коде есть ошибка, "
 "пожалуйста, проверьте синтаксис."
@@ -5302,7 +5305,17 @@ msgstr ""
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid ""
-"Godot editor was built without ray tracing support, lightmaps can't be baked."
+"Godot editor was built without ray tracing support; lightmaps can't be "
+"baked.\n"
+"If you are using an Apple Silicon-based Mac, try forcing Rosetta emulation "
+"on Godot.app in the application settings\n"
+"then restart the editor."
+msgstr ""
+
+#: editor/plugins/baked_lightmap_editor_plugin.cpp
+#, fuzzy
+msgid ""
+"Godot editor was built without ray tracing support; lightmaps can't be baked."
 msgstr ""
 "Редактор Godot был собран без поддержки трассировки лучей, карты освещения "
 "невозможно запечь."
@@ -7627,6 +7640,8 @@ msgstr "Блокировать вращение камеры"
 msgid ""
 "To zoom further, change the camera's clipping planes (View -> Settings...)"
 msgstr ""
+"Чтобы увеличить масштаб дальше, измените плоскости отсечения камеры (Вид -> "
+"Настройки...)"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid ""
@@ -11018,6 +11033,10 @@ msgid ""
 "every time it updates.\n"
 "Switch back to the Local scene tree dock to improve performance."
 msgstr ""
+"Если выбрано, панель удалённого дерева сцены будет вызывать задержки при "
+"каждом обновлении.\n"
+"Для повышения производительности переключитесь обратно в панель локального "
+"дерева сцены."
 
 #: editor/scene_tree_dock.cpp
 msgid "Local"

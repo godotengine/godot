@@ -2464,8 +2464,9 @@ msgstr ""
 
 #: editor/editor_node.cpp
 msgid ""
-"Unable to load addon script from path: '%s' There seems to be an error in "
-"the code, please check the syntax."
+"Unable to load addon script from path: '%s'. This might be due to a code "
+"error in that script. \n"
+"Disabling the addon at '%s' to prevent further errors."
 msgstr ""
 
 #: editor/editor_node.cpp
@@ -5038,7 +5039,16 @@ msgstr ""
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid ""
-"Godot editor was built without ray tracing support, lightmaps can't be baked."
+"Godot editor was built without ray tracing support; lightmaps can't be "
+"baked.\n"
+"If you are using an Apple Silicon-based Mac, try forcing Rosetta emulation "
+"on Godot.app in the application settings\n"
+"then restart the editor."
+msgstr ""
+
+#: editor/plugins/baked_lightmap_editor_plugin.cpp
+msgid ""
+"Godot editor was built without ray tracing support; lightmaps can't be baked."
 msgstr ""
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp

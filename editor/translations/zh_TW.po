@@ -2513,9 +2513,11 @@ msgid "Unable to load addon script from path: '%s'."
 msgstr "無法自路徑「%s」載入擴充腳本。"
 
 #: editor/editor_node.cpp
+#, fuzzy
 msgid ""
-"Unable to load addon script from path: '%s' There seems to be an error in "
-"the code, please check the syntax."
+"Unable to load addon script from path: '%s'. This might be due to a code "
+"error in that script. \n"
+"Disabling the addon at '%s' to prevent further errors."
 msgstr "無法自路徑「%s」載入擴充腳本。可能為程式碼中有錯誤，請檢查語法。"
 
 #: editor/editor_node.cpp
@@ -5132,7 +5134,17 @@ msgstr "部分網格無效。請確保 UV2 通道的值位於 [0.0,1.0] 矩形�
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid ""
-"Godot editor was built without ray tracing support, lightmaps can't be baked."
+"Godot editor was built without ray tracing support; lightmaps can't be "
+"baked.\n"
+"If you are using an Apple Silicon-based Mac, try forcing Rosetta emulation "
+"on Godot.app in the application settings\n"
+"then restart the editor."
+msgstr ""
+
+#: editor/plugins/baked_lightmap_editor_plugin.cpp
+#, fuzzy
+msgid ""
+"Godot editor was built without ray tracing support; lightmaps can't be baked."
 msgstr ""
 "Godot 編輯器在建制時未啟用光線追蹤 (Ray Tracing) 支援，無法烘焙光照圖。"
 

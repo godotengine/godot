@@ -13,7 +13,7 @@
 # Rueben Stevens <supercell03@gmail.com>, 2017.
 # SARDON <fabio3_Santos@hotmail.com>, 2017.
 # Vinicius Gonçalves <viniciusgoncalves21@gmail.com>, 2017.
-# ssantos <ssantos@web.de>, 2018, 2019, 2020.
+# ssantos <ssantos@web.de>, 2018, 2019, 2020, 2021.
 # Gonçalo Dinis Guerreiro João <goncalojoao205@gmail.com>, 2019.
 # Manuela Silva <mmsrs@sky.com>, 2020.
 # Murilo Gama <murilovsky2030@gmail.com>, 2020.
@@ -22,8 +22,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-04-20 22:25+0000\n"
-"Last-Translator: João Lopes <linux-man@hotmail.com>\n"
+"PO-Revision-Date: 2021-05-10 15:32+0000\n"
+"Last-Translator: ssantos <ssantos@web.de>\n"
 "Language-Team: Portuguese <https://hosted.weblate.org/projects/godot-engine/"
 "godot/pt/>\n"
 "Language: pt\n"
@@ -2550,9 +2550,11 @@ msgid "Unable to load addon script from path: '%s'."
 msgstr "Incapaz de carregar script addon do caminho: '%s'."
 
 #: editor/editor_node.cpp
+#, fuzzy
 msgid ""
-"Unable to load addon script from path: '%s' There seems to be an error in "
-"the code, please check the syntax."
+"Unable to load addon script from path: '%s'. This might be due to a code "
+"error in that script. \n"
+"Disabling the addon at '%s' to prevent further errors."
 msgstr ""
 "Incapaz de carregar script addon do caminho: '%s' Parece haver um erro no "
 "código, reveja a sintaxe."
@@ -2684,7 +2686,7 @@ msgstr "%d mais Ficheiros"
 
 #: editor/editor_node.cpp
 msgid "Dock Position"
-msgstr "Posição do Painel"
+msgstr "Posição da Doca"
 
 #: editor/editor_node.cpp
 msgid "Distraction Free Mode"
@@ -2843,7 +2845,7 @@ msgstr ""
 "irá tentar ligar-se ao endereço IP deste computador, para que o projeto "
 "possa ser depurado.\n"
 "Esta opção foi criada para ser usada pela depuração remota (tipicamente com "
-"um dispositivo móvel).\n"
+"um aparelho móvel).\n"
 "Não é necessário ativá-la para usar o depurador de GDScript localmente."
 
 #: editor/editor_node.cpp
@@ -2902,8 +2904,8 @@ msgid ""
 msgstr ""
 "Quando esta opção está ativada, quaisquer alterações feitas a uma cena no "
 "editor serão propagadas no projeto em execução.\n"
-"Quando é usada remotamente num dispositivo, é mais eficiente quando a opção "
-"do sistema de ficheiros em rede está ativa."
+"Quando é usada remotamente num aparelho, é mais eficiente quando a opção do "
+"sistema de ficheiros em rede está ativa."
 
 #: editor/editor_node.cpp
 msgid "Synchronize Script Changes"
@@ -3476,7 +3478,7 @@ msgstr "(Instalado)"
 #: editor/export_template_manager.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Download"
-msgstr "Download"
+msgstr "Descarrega"
 
 #: editor/export_template_manager.cpp
 msgid "Official export templates aren't available for development builds."
@@ -3572,7 +3574,7 @@ msgstr "Falhou:"
 
 #: editor/export_template_manager.cpp
 msgid "Download Complete."
-msgstr "Download Completo."
+msgstr "Descarrega completa."
 
 #: editor/export_template_manager.cpp
 msgid "Cannot remove temporary file:"
@@ -5230,7 +5232,17 @@ msgstr ""
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid ""
-"Godot editor was built without ray tracing support, lightmaps can't be baked."
+"Godot editor was built without ray tracing support; lightmaps can't be "
+"baked.\n"
+"If you are using an Apple Silicon-based Mac, try forcing Rosetta emulation "
+"on Godot.app in the application settings\n"
+"then restart the editor."
+msgstr ""
+
+#: editor/plugins/baked_lightmap_editor_plugin.cpp
+#, fuzzy
+msgid ""
+"Godot editor was built without ray tracing support; lightmaps can't be baked."
 msgstr ""
 "Editor Godot foi compilado sem suporte para ray tracing, lightmaps não podem "
 "ser consolidados."
@@ -5454,8 +5466,8 @@ msgid ""
 "Game Camera Override\n"
 "Overrides game camera with editor viewport camera."
 msgstr ""
-"Sobreposição de Câmera de Jogo\n"
-"Sobrepõe câmara de jogo com câmera viewport do editor."
+"Sobreposição de Câmara de Jogo\n"
+"Sobrepõe câmara de jogo com câmara viewport do editor."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -5463,7 +5475,7 @@ msgid ""
 "Game Camera Override\n"
 "No game instance running."
 msgstr ""
-"Sobreposição de Câmera de Jogo\n"
+"Sobreposição de Câmara de Jogo\n"
 "Nenhuma instância de jogo em execução."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
@@ -7551,6 +7563,8 @@ msgstr "Rotação da Vista Bloqueada"
 msgid ""
 "To zoom further, change the camera's clipping planes (View -> Settings...)"
 msgstr ""
+"Para aumentar o zoom, mude os planos de corte da câmara (Ver -> "
+"Configurações...)"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid ""
@@ -9490,7 +9504,7 @@ msgid ""
 "direction of camera (pass associated inputs to it)."
 msgstr ""
 "Devolve queda baseada no produto escalar da normal à superfície e da direção "
-"da câmera (passa entradas associadas)."
+"da câmara (passa entradas associadas)."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
@@ -10936,6 +10950,9 @@ msgid ""
 "every time it updates.\n"
 "Switch back to the Local scene tree dock to improve performance."
 msgstr ""
+"Se selecionada, a doca de árvore da cena Remota vai travar o projeto cada "
+"vez que atualiza.\n"
+"Volte para a doca de árvore da cena Local para melhorar o desempenho."
 
 #: editor/scene_tree_dock.cpp
 msgid "Local"
@@ -11347,11 +11364,11 @@ msgstr "Mudar ângulo de emissão de AudioStreamPlayer3D"
 
 #: editor/spatial_editor_gizmos.cpp
 msgid "Change Camera FOV"
-msgstr "Mudar FOV da Câmera"
+msgstr "Mudar FOV da Câmara"
 
 #: editor/spatial_editor_gizmos.cpp
 msgid "Change Camera Size"
-msgstr "Mudar tamanho da Câmera"
+msgstr "Mudar tamanho da Câmara"
 
 #: editor/spatial_editor_gizmos.cpp
 msgid "Change Notifier AABB"
@@ -12956,7 +12973,7 @@ msgid ""
 "This WorldEnvironment is ignored. Either add a Camera (for 3D scenes) or set "
 "this environment's Background Mode to Canvas (for 2D scenes)."
 msgstr ""
-"Este WorldEnvironment é ignorado. Pode adicionar uma Câmera (para cenas 3D) "
+"Este WorldEnvironment é ignorado. Pode adicionar uma Câmara (para cenas 3D) "
 "ou definir o Modo Background deste ambiente como Canvas (para cenas 2D)."
 
 #: scene/animation/animation_blend_tree.cpp

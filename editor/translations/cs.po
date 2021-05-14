@@ -29,8 +29,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-04-21 07:35+0000\n"
-"Last-Translator: Zbyněk <zbynek.fiala@gmail.com>\n"
+"PO-Revision-Date: 2021-05-03 06:13+0000\n"
+"Last-Translator: Vojtěch Šamla <auzkok@seznam.cz>\n"
 "Language-Team: Czech <https://hosted.weblate.org/projects/godot-engine/godot/"
 "cs/>\n"
 "Language: cs\n"
@@ -2547,9 +2547,11 @@ msgid "Unable to load addon script from path: '%s'."
 msgstr "Nelze načíst skript rozšíření z cesty: '%s'."
 
 #: editor/editor_node.cpp
+#, fuzzy
 msgid ""
-"Unable to load addon script from path: '%s' There seems to be an error in "
-"the code, please check the syntax."
+"Unable to load addon script from path: '%s'. This might be due to a code "
+"error in that script. \n"
+"Disabling the addon at '%s' to prevent further errors."
 msgstr ""
 "Nelze načíst skript rozšíření z cesty: '%s'. Zdá se, že se v kódu nachází "
 "chyba. Prosím, zkontrolujte syntax."
@@ -5178,14 +5180,12 @@ msgid "Assets ZIP File"
 msgstr "ZIP soubor asetů"
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
-#, fuzzy
 msgid ""
 "Can't determine a save path for lightmap images.\n"
 "Save your scene and try again."
 msgstr ""
 "Nelze určit cestu pro uložení obrázků světelné mapy.\n"
-"Uložte scénu (obrázky se uloží do stejného adresáře) nebo vyberte cestu pro "
-"uložení z vlastnosti BakedLightmap."
+"Uložte scénu a zkuste to znovu."
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid ""
@@ -5216,7 +5216,17 @@ msgstr ""
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid ""
-"Godot editor was built without ray tracing support, lightmaps can't be baked."
+"Godot editor was built without ray tracing support; lightmaps can't be "
+"baked.\n"
+"If you are using an Apple Silicon-based Mac, try forcing Rosetta emulation "
+"on Godot.app in the application settings\n"
+"then restart the editor."
+msgstr ""
+
+#: editor/plugins/baked_lightmap_editor_plugin.cpp
+#, fuzzy
+msgid ""
+"Godot editor was built without ray tracing support; lightmaps can't be baked."
 msgstr ""
 "Godot byl sestaven bez podpory ray tracingu, světelné mapy nelze zapéct."
 

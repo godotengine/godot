@@ -82,8 +82,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Chinese (Simplified) (Godot Engine)\n"
 "POT-Creation-Date: 2018-01-20 12:15+0200\n"
-"PO-Revision-Date: 2021-04-19 22:33+0000\n"
-"Last-Translator: Haoyu Qiu <timothyqiu32@gmail.com>\n"
+"PO-Revision-Date: 2021-04-26 22:32+0000\n"
+"Last-Translator: qjyqjyqjyqjy <qjyqjyqjyqjy@sina.com.cn>\n"
 "Language-Team: Chinese (Simplified) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/zh_Hans/>\n"
 "Language: zh_CN\n"
@@ -2564,9 +2564,11 @@ msgid "Unable to load addon script from path: '%s'."
 msgstr "无法从路径 “%s” 中加载加载项脚本。"
 
 #: editor/editor_node.cpp
+#, fuzzy
 msgid ""
-"Unable to load addon script from path: '%s' There seems to be an error in "
-"the code, please check the syntax."
+"Unable to load addon script from path: '%s'. This might be due to a code "
+"error in that script. \n"
+"Disabling the addon at '%s' to prevent further errors."
 msgstr "无法从路径 “%s” 加载加载项脚本：脚本似乎有代码错误，请检查其语法。"
 
 #: editor/editor_node.cpp
@@ -5183,7 +5185,17 @@ msgstr "某些网格无效。确保UV2通道值包含在[0.0,1.0]平方区域内
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid ""
-"Godot editor was built without ray tracing support, lightmaps can't be baked."
+"Godot editor was built without ray tracing support; lightmaps can't be "
+"baked.\n"
+"If you are using an Apple Silicon-based Mac, try forcing Rosetta emulation "
+"on Godot.app in the application settings\n"
+"then restart the editor."
+msgstr ""
+
+#: editor/plugins/baked_lightmap_editor_plugin.cpp
+#, fuzzy
+msgid ""
+"Godot editor was built without ray tracing support; lightmaps can't be baked."
 msgstr "Godot编辑器是在没有光线跟踪支持的情况下构建的，光照贴图无法烘焙。"
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
@@ -7477,12 +7489,12 @@ msgstr "缓慢自由视图速度"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "View Rotation Locked"
-msgstr "锁定视角旋转"
+msgstr "已锁定视角旋转"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid ""
 "To zoom further, change the camera's clipping planes (View -> Settings...)"
-msgstr ""
+msgstr "修改相机的裁剪平面后才能进一步缩放（视图 -> 设置...）"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid ""
@@ -7595,27 +7607,27 @@ msgstr "变换对话框..."
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "1 Viewport"
-msgstr "1 个视口"
+msgstr "1 个视窗"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "2 Viewports"
-msgstr "2 个视口"
+msgstr "2 个视窗"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "2 Viewports (Alt)"
-msgstr "2 个视口（备选）"
+msgstr "2 个视窗（备选）"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "3 Viewports"
-msgstr "3 个视口"
+msgstr "3 个视窗"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "3 Viewports (Alt)"
-msgstr "3 个视口（备选）"
+msgstr "3 个视窗（备选）"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "4 Viewports"
-msgstr "4 个视口"
+msgstr "4 个视窗"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Gizmos"
@@ -10798,6 +10810,8 @@ msgid ""
 "every time it updates.\n"
 "Switch back to the Local scene tree dock to improve performance."
 msgstr ""
+"选中后，远程场景树面板在更新时会造成项目的卡顿。\n"
+"切回本地场景树面板可以提升性能。"
 
 #: editor/scene_tree_dock.cpp
 msgid "Local"

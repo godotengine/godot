@@ -60,12 +60,13 @@
 # Lucasdelpiero <lucasdelpiero98@gmail.com>, 2021.
 # SteamGoblin <SteamGoblin860@gmail.com>, 2021.
 # Francisco C <pruebasfrancisco17@gmail.com>, 2021.
+# Cam <cameron.toms@gmail.com>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-04-19 22:33+0000\n"
-"Last-Translator: Francisco C <pruebasfrancisco17@gmail.com>\n"
+"PO-Revision-Date: 2021-04-27 22:12+0000\n"
+"Last-Translator: Cam <cameron.toms@gmail.com>\n"
 "Language-Team: Spanish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/es/>\n"
 "Language: es\n"
@@ -658,7 +659,7 @@ msgstr "Usar Curvas Bezier"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim. Optimizer"
-msgstr "Optimizador de Animación"
+msgstr "Optimizar animación"
 
 #: editor/animation_track_editor.cpp
 msgid "Max. Linear Error:"
@@ -865,7 +866,7 @@ msgstr "Eliminar"
 
 #: editor/connections_dialog.cpp
 msgid "Add Extra Call Argument:"
-msgstr "Añadir Argumento Extra de Llamada:"
+msgstr "Añadir argumento extra de llamada:"
 
 #: editor/connections_dialog.cpp
 msgid "Extra Call Arguments:"
@@ -2074,7 +2075,7 @@ msgstr "Métodos"
 
 #: editor/editor_help.cpp
 msgid "Theme Properties"
-msgstr "Propiedades del Tema"
+msgstr "Propiedades de Temas"
 
 #: editor/editor_help.cpp
 msgid "Enumerations"
@@ -2086,7 +2087,7 @@ msgstr "Constantes"
 
 #: editor/editor_help.cpp
 msgid "Property Descriptions"
-msgstr "Descripciones de Propiedad"
+msgstr "Descripciones de Propiedades"
 
 #: editor/editor_help.cpp
 msgid "(value)"
@@ -2610,9 +2611,11 @@ msgid "Unable to load addon script from path: '%s'."
 msgstr "No se pudo cargar el script addon desde la ruta: '%s'."
 
 #: editor/editor_node.cpp
+#, fuzzy
 msgid ""
-"Unable to load addon script from path: '%s' There seems to be an error in "
-"the code, please check the syntax."
+"Unable to load addon script from path: '%s'. This might be due to a code "
+"error in that script. \n"
+"Disabling the addon at '%s' to prevent further errors."
 msgstr ""
 "No se puede cargar el script de addon desde la ruta: '%s' Parece que hay un "
 "error en el código, por favor compruebe la sintaxis."
@@ -5310,7 +5313,17 @@ msgstr ""
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid ""
-"Godot editor was built without ray tracing support, lightmaps can't be baked."
+"Godot editor was built without ray tracing support; lightmaps can't be "
+"baked.\n"
+"If you are using an Apple Silicon-based Mac, try forcing Rosetta emulation "
+"on Godot.app in the application settings\n"
+"then restart the editor."
+msgstr ""
+
+#: editor/plugins/baked_lightmap_editor_plugin.cpp
+#, fuzzy
+msgid ""
+"Godot editor was built without ray tracing support; lightmaps can't be baked."
 msgstr ""
 "El editor de Godot se construyó sin soporte de trazado de rayos, los "
 "lightmaps no pueden ser bakeados."
@@ -7647,6 +7660,8 @@ msgstr "Bloquear Rotación de Vista"
 msgid ""
 "To zoom further, change the camera's clipping planes (View -> Settings...)"
 msgstr ""
+"Para alejar más, cambia los planos de corte de la cámara (Vista -> "
+"Configuración...)"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid ""
@@ -11048,6 +11063,9 @@ msgid ""
 "every time it updates.\n"
 "Switch back to the Local scene tree dock to improve performance."
 msgstr ""
+"Si está seleccionado, el panel de árbol de escena Remota provocará saltos de "
+"framerate en el proyecto cada vez que se actualice.\n"
+"Vuelve a seleccionar el árbol de escena Local para mejorar el rendimiento."
 
 #: editor/scene_tree_dock.cpp
 msgid "Local"
