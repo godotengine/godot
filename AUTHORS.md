@@ -109,6 +109,7 @@ name is available.
     Julian Murgia (StraToN)
     Justo Delgado (mrcdk)
     Kelly Thomas (KellyThomas)
+    kleonc
     Kongfa Waroros (gongpha)
     Kostadin Damyanov (Max-Might)
     K. S. Ernest (iFire) Lee (fire)
