@@ -51,25 +51,20 @@ class ProjectSettingsEditor : public AcceptDialog {
 
 	TabContainer *tab_container;
 	SectionedInspector *inspector;
+	ActionMapEditor *action_map;
 	LocalizationEditor *localization_editor;
 	EditorAutoloadSettings *autoload_settings;
 	ShaderGlobalsEditor *shaders_global_variables_editor;
 	EditorPluginSettings *plugin_settings;
 
-	ActionMapEditor *action_map;
-	HBoxContainer *search_bar;
 	LineEdit *search_box;
 	CheckButton *advanced;
 
-	HBoxContainer *advanced_bar;
-	LineEdit *category_box;
 	LineEdit *property_box;
+	OptionButton *feature_box;
+	OptionButton *type_box;
 	Button *add_button;
 	Button *del_button;
-	OptionButton *type;
-	OptionButton *feature_override;
-
-	ConfirmationDialog *del_confirmation;
 
 	Label *restart_label;
 	TextureRect *restart_icon;
@@ -80,16 +75,17 @@ class ProjectSettingsEditor : public AcceptDialog {
 	EditorData *data;
 	UndoRedo *undo_redo;
 
-	void _advanced_pressed();
-	void _update_advanced_bar();
-	void _text_field_changed(const String &p_text);
+	void _advanced_toggled(bool p_button_pressed);
+	void _property_box_changed(const String &p_text);
+	void _update_property_box();
 	void _feature_selected(int p_index);
+	void _select_type(Variant::Type p_type);
 
 	String _get_setting_name() const;
 	void _setting_edited(const String &p_name);
 	void _setting_selected(const String &p_path);
 	void _add_setting();
-	void _delete_setting(bool p_confirmed);
+	void _delete_setting();
 
 	void _editor_restart_request();
 	void _editor_restart();
