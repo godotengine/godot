@@ -554,6 +554,7 @@ public:
 
 	RID particles_allocate() override { return RID(); }
 	void particles_initialize(RID p_rid) override {}
+	void particles_set_mode(RID p_particles, RS::ParticlesMode p_mode) override {}
 	void particles_emit(RID p_particles, const Transform &p_transform, const Vector3 &p_velocity, const Color &p_color, const Color &p_custom, uint32_t p_emit_flags) override {}
 	void particles_set_emitting(RID p_particles, bool p_emitting) override {}
 	void particles_set_amount(RID p_particles, int p_amount) override {}
