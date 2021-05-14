@@ -18,7 +18,7 @@ if "SCRIPT_AES256_ENCRYPTION_KEY" in os.environ:
         ec_valid = False
     else:
         txt = ""
-        for i in range(len(e) >> 1):
+        for i in range(len(key) >> 1):
             if i > 0:
                 txt += ","
             txts = "0x" + key[i * 2 : i * 2 + 2]
