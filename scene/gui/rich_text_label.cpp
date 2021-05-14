@@ -1432,10 +1432,11 @@ void RichTextLabel::_notification(int p_what) {
 			}
 		} break;
 		case NOTIFICATION_INTERNAL_PROCESS: {
-			float dt = get_process_delta_time();
-
-			_update_fx(main, dt);
-			update();
+			if (is_visible_in_tree()) {
+				float dt = get_process_delta_time();
+				_update_fx(main, dt);
+				update();
+			}
 		}
 	}
 }
