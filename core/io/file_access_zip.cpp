@@ -44,14 +44,14 @@ static void *godot_open(void *data, const char *p_fname, int mode) {
 		return nullptr;
 	}
 
-	FileAccess *f = (FileAccess *)data;
-	f->open(p_fname, FileAccess::READ);
+	FileAccess *f = FileAccess::open(p_fname, FileAccess::READ);
+	ERR_FAIL_COND_V(!f, nullptr);
 
-	return f->is_open() ? data : nullptr;
+	return f;
 }
 
 static uLong godot_read(void *data, void *fdata, void *buf, uLong size) {
-	FileAccess *f = (FileAccess *)data;
+	FileAccess *f = (FileAccess *)fdata;
 	f->get_buffer((uint8_t *)buf, size);
 	return size;
 }
@@ -61,12 +61,12 @@ static uLong godot_write(voidpf opaque, voidpf stream, const void *buf, uLong si
 }
 
 static long godot_tell(voidpf opaque, voidpf stream) {
-	FileAccess *f = (FileAccess *)opaque;
+	FileAccess *f = (FileAccess *)stream;
 	return f->get_position();
 }
 
 static long godot_seek(voidpf opaque, voidpf stream, uLong offset, int origin) {
-	FileAccess *f = (FileAccess *)opaque;
+	FileAccess *f = (FileAccess *)stream;
 
 	int pos = offset;
 	switch (origin) {
@@ -85,13 +85,17 @@ static long godot_seek(voidpf opaque, voidpf stream, uLong offset, int origin) {
 }
 
 static int godot_close(voidpf opaque, voidpf stream) {
-	FileAccess *f = (FileAccess *)opaque;
-	f->close();
+	FileAccess *f = (FileAccess *)stream;
+	if (f) {
+		f->close();
+		memdelete(f);
+		f = nullptr;
+	}
 	return 0;
 }
 
 static int godot_testerror(voidpf opaque, voidpf stream) {
-	FileAccess *f = (FileAccess *)opaque;
+	FileAccess *f = (FileAccess *)stream;
 	return f->get_error() != OK ? 1 : 0;
 }
 
@@ -107,23 +111,18 @@ static void godot_free(voidpf opaque, voidpf address) {
 
 void ZipArchive::close_handle(unzFile p_file) const {
 	ERR_FAIL_COND_MSG(!p_file, "Cannot close a file if none is open.");
-	FileAccess *f = (FileAccess *)unzGetOpaque(p_file);
 	unzCloseCurrentFile(p_file);
 	unzClose(p_file);
-	memdelete(f);
 }
 
 unzFile ZipArchive::get_file_handle(String p_file) const {
 	ERR_FAIL_COND_V_MSG(!file_exists(p_file), nullptr, "File '" + p_file + " doesn't exist.");
 	File file = files[p_file];
 
-	FileAccess *f = FileAccess::open(packages[file.package].filename, FileAccess::READ);
-	ERR_FAIL_COND_V_MSG(!f, nullptr, "Cannot open file '" + packages[file.package].filename + "'.");
-
 	zlib_filefunc_def io;
 	zeromem(&io, sizeof(io));
 
-	io.opaque = f;
+	io.opaque = nullptr;
 	io.zopen_file = godot_open;
 	io.zread_file = godot_read;
 	io.zwrite_file = godot_write;
@@ -137,7 +136,7 @@ unzFile ZipArchive::get_file_handle(String p_file) const {
 	io.free_mem = godot_free;
 
 	unzFile pkg = unzOpen2(packages[file.package].filename.utf8().get_data(), &io);
-	ERR_FAIL_COND_V(!pkg, nullptr);
+	ERR_FAIL_COND_V_MSG(!pkg, nullptr, "Cannot open file '" + packages[file.package].filename + "'.");
 	int unz_err = unzGoToFilePos(pkg, &file.file_pos);
 	if (unz_err != UNZ_OK || unzOpenCurrentFile(pkg) != UNZ_OK) {
 		unzClose(pkg);
@@ -157,12 +156,9 @@ bool ZipArchive::try_open_pack(const String &p_path, bool p_replace_files, size_
 	}
 
 	zlib_filefunc_def io;
+	memset(&io, 0, sizeof(io));
 
-	FileAccess *fa = FileAccess::open(p_path, FileAccess::READ);
-	if (!fa) {
-		return false;
-	}
-	io.opaque = fa;
+	io.opaque = nullptr;
 	io.zopen_file = godot_open;
 	io.zread_file = godot_read;
 	io.zwrite_file = godot_write;
