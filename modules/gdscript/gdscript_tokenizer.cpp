@@ -1326,6 +1326,8 @@ GDScriptTokenizer::Token GDScriptTokenizer::scan() {
 			if (_peek() == '=') {
 				_advance();
 				return make_token(Token::PLUS_EQUAL);
+			} else if (_is_digit(_peek())) {
+				return number();
 			} else {
 				return make_token(Token::PLUS);
 			}
@@ -1336,6 +1338,8 @@ GDScriptTokenizer::Token GDScriptTokenizer::scan() {
 			} else if (_peek() == '>') {
 				_advance();
 				return make_token(Token::FORWARD_ARROW);
+			} else if (_is_digit(_peek())) {
+				return number();
 			} else {
 				return make_token(Token::MINUS);
 			}
