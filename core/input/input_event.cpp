@@ -372,16 +372,16 @@ String InputEventKey::to_string() {
 	String kc = "";
 	String physical = "false";
 	if (keycode == 0) {
-		kc = itos(physical_keycode) + " " + keycode_get_string(physical_keycode);
+		kc = itos(physical_keycode) + " (" + keycode_get_string(physical_keycode) + ")";
 		physical = "true";
 	} else {
-		kc = itos(keycode) + " " + keycode_get_string(keycode);
+		kc = itos(keycode) + " (" + keycode_get_string(keycode) + ")";
 	}
 
 	String mods = InputEventWithModifiers::as_text();
-	mods = mods == "" ? TTR("None") : mods;
+	mods = mods == "" ? TTR("none") : mods;
 
-	return vformat("InputEventKey: keycode=%s mods=%s physical=%s pressed=%s echo=%s", kc, mods, physical, p, e);
+	return vformat("InputEventKey: keycode=%s, mods=%s, physical=%s, pressed=%s, echo=%s", kc, mods, physical, p, e);
 }
 
 Ref<InputEventKey> InputEventKey::create_reference(uint32_t p_keycode) {
@@ -667,11 +667,11 @@ String InputEventMouseButton::to_string() {
 	}
 
 	String mods = InputEventWithModifiers::as_text();
-	mods = mods == "" ? TTR("None") : mods;
+	mods = mods == "" ? TTR("none") : mods;
 
 	// Work around the fact vformat can only take 5 substitutions but 6 need to be passed.
-	String index_and_mods = vformat("button_index=%s mods=%s", button_index, mods);
-	return vformat("InputEventMouseButton: %s pressed=%s position=(%s) button_mask=%s double_click=%s", index_and_mods, p, String(get_position()), itos(get_button_mask()), d);
+	String index_and_mods = vformat("button_index=%s, mods=%s", button_index, mods);
+	return vformat("InputEventMouseButton: %s, pressed=%s, position=(%s), button_mask=%d, double_click=%s", index_and_mods, p, String(get_position()), get_button_mask(), d);
 }
 
 void InputEventMouseButton::_bind_methods() {
@@ -780,7 +780,9 @@ String InputEventMouseMotion::to_string() {
 			break;
 	}
 
-	return "InputEventMouseMotion : button_mask=" + button_mask_string + ", position=(" + String(get_position()) + "), relative=(" + String(get_relative()) + "), speed=(" + String(get_speed()) + "), pressure=(" + rtos(get_pressure()) + "), tilt=(" + String(get_tilt()) + ")";
+	// Work around the fact vformat can only take 5 substitutions but 6 need to be passed.
+	String mask_and_position = vformat("button_mask=%s, position=(%s)", button_mask_string, String(get_position()));
+	return vformat("InputEventMouseMotion: %s, relative=(%s), speed=(%s), pressure=%.2f, tilt=(%s)", mask_and_position, String(get_relative()), String(get_speed()), get_pressure(), String(get_tilt()));
 }
 
 bool InputEventMouseMotion::accumulate(const Ref<InputEvent> &p_event) {
@@ -918,11 +920,11 @@ static const char *_joy_axis_descriptions[JOY_AXIS_MAX] = {
 String InputEventJoypadMotion::as_text() const {
 	String desc = axis < JOY_AXIS_MAX ? RTR(_joy_axis_descriptions[axis]) : TTR("Unknown Joypad Axis");
 
-	return vformat(TTR("Joypad Motion on Axis %s (%s) with Value %s"), itos(axis), desc, String(Variant(axis_value)));
+	return vformat(TTR("Joypad Motion on Axis %d (%s) with Value %.2f"), axis, desc, axis_value);
 }
 
 String InputEventJoypadMotion::to_string() {
-	return "InputEventJoypadMotion : axis=" + itos(axis) + ", axis_value=" + String(Variant(axis_value));
+	return vformat("InputEventJoypadMotion: axis=%d, axis_value=%.2f", axis, axis_value);
 }
 
 void InputEventJoypadMotion::_bind_methods() {
@@ -1033,7 +1035,8 @@ String InputEventJoypadButton::as_text() const {
 }
 
 String InputEventJoypadButton::to_string() {
-	return "InputEventJoypadButton : button_index=" + itos(button_index) + ", pressed=" + (pressed ? "true" : "false") + ", pressure=" + String(Variant(pressure));
+	String p = pressed ? "true" : "false";
+	return vformat("InputEventJoypadButton: button_index=%d, pressed=%s, pressure=%.2f", button_index, p, pressure);
 }
 
 Ref<InputEventJoypadButton> InputEventJoypadButton::create_reference(int p_btn_index) {
@@ -1104,7 +1107,8 @@ String InputEventScreenTouch::as_text() const {
 }
 
 String InputEventScreenTouch::to_string() {
-	return "InputEventScreenTouch : index=" + itos(index) + ", pressed=" + (pressed ? "true" : "false") + ", position=(" + String(get_position()) + ")";
+	String p = pressed ? "true" : "false";
+	return vformat("InputEventScreenTouch: index=%d, pressed=%s, position=(%s)", index, p, String(get_position()));
 }
 
 void InputEventScreenTouch::_bind_methods() {
@@ -1177,7 +1181,7 @@ String InputEventScreenDrag::as_text() const {
 }
 
 String InputEventScreenDrag::to_string() {
-	return "InputEventScreenDrag : index=" + itos(index) + ", position=(" + String(get_position()) + "), relative=(" + String(get_relative()) + "), speed=(" + String(get_speed()) + ")";
+	return vformat("InputEventScreenDrag: index=%d, position=(%s), relative=(%s), speed=(%s)", index, String(get_position()), String(get_relative()), String(get_speed()));
 }
 
 void InputEventScreenDrag::_bind_methods() {
@@ -1264,7 +1268,8 @@ String InputEventAction::as_text() const {
 }
 
 String InputEventAction::to_string() {
-	return "InputEventAction : action=" + action + ", pressed=(" + (pressed ? "true" : "false");
+	String p = pressed ? "true" : "false";
+	return vformat("InputEventAction: action=\"%s\", pressed=%s", action, p);
 }
 
 void InputEventAction::_bind_methods() {
@@ -1331,7 +1336,7 @@ String InputEventMagnifyGesture::as_text() const {
 }
 
 String InputEventMagnifyGesture::to_string() {
-	return "InputEventMagnifyGesture : factor=" + rtos(get_factor()) + ", position=(" + String(get_position()) + ")";
+	return vformat("InputEventMagnifyGesture: factor=%.2f, position=(%s)", factor, String(get_position()));
 }
 
 void InputEventMagnifyGesture::_bind_methods() {
@@ -1371,7 +1376,7 @@ String InputEventPanGesture::as_text() const {
 }
 
 String InputEventPanGesture::to_string() {
-	return "InputEventPanGesture : delta=(" + String(get_delta()) + "), position=(" + String(get_position()) + ")";
+	return vformat("InputEventPanGesture: delta=(%s), position=(%s)", String(get_delta()), String(get_position()));
 }
 
 void InputEventPanGesture::_bind_methods() {
@@ -1452,7 +1457,7 @@ String InputEventMIDI::as_text() const {
 }
 
 String InputEventMIDI::to_string() {
-	return vformat("InputEvenMIDI: channel=%s message=%s pitch=%s velocity=%s pressure=%s", itos(channel), itos(message), itos(pitch), itos(velocity), itos(pressure));
+	return vformat("InputEvenMIDI: channel=%d, message=%d, pitch=%d, velocity=%d, pressure=%d", channel, message, pitch, velocity, pressure);
 }
 
 void InputEventMIDI::_bind_methods() {
