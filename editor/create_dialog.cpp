@@ -643,9 +643,9 @@ void CreateDialog::_load_favorites_and_history() {
 void CreateDialog::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_save_and_update_favorite_list"), &CreateDialog::_save_and_update_favorite_list);
 
-	ClassDB::bind_method("get_drag_data_fw", &CreateDialog::get_drag_data_fw);
-	ClassDB::bind_method("can_drop_data_fw", &CreateDialog::can_drop_data_fw);
-	ClassDB::bind_method("drop_data_fw", &CreateDialog::drop_data_fw);
+	ClassDB::bind_method("_get_drag_data_fw", &CreateDialog::get_drag_data_fw);
+	ClassDB::bind_method("_can_drop_data_fw", &CreateDialog::can_drop_data_fw);
+	ClassDB::bind_method("_drop_data_fw", &CreateDialog::drop_data_fw);
 
 	ADD_SIGNAL(MethodInfo("create"));
 	ADD_SIGNAL(MethodInfo("favorites_updated"));

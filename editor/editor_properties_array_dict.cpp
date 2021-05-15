@@ -567,8 +567,8 @@ void EditorPropertyArray::setup(Variant::Type p_array_type, const String &p_hint
 }
 
 void EditorPropertyArray::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("can_drop_data_fw"), &EditorPropertyArray::can_drop_data_fw);
-	ClassDB::bind_method(D_METHOD("drop_data_fw"), &EditorPropertyArray::drop_data_fw);
+	ClassDB::bind_method(D_METHOD("_can_drop_data_fw"), &EditorPropertyArray::can_drop_data_fw);
+	ClassDB::bind_method(D_METHOD("_drop_data_fw"), &EditorPropertyArray::drop_data_fw);
 }
 
 EditorPropertyArray::EditorPropertyArray() {

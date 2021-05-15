@@ -380,7 +380,7 @@ StringName EditorProperty::get_edited_property() {
 
 void EditorProperty::update_property() {
 	if (get_script_instance()) {
-		get_script_instance()->call("update_property");
+		get_script_instance()->call("_update_property");
 	}
 }
 
@@ -753,7 +753,7 @@ void EditorProperty::_gui_input(const Ref<InputEvent> &p_event) {
 					call_deferred("emit_changed", property, object->get(property).operator int64_t() + 1, "", false);
 				}
 
-				call_deferred("update_property");
+				call_deferred("_update_property");
 			}
 		}
 		if (delete_rect.has_point(mpos)) {
@@ -965,9 +965,7 @@ void EditorProperty::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("object_id_selected", PropertyInfo(Variant::STRING_NAME, "property"), PropertyInfo(Variant::INT, "id")));
 	ADD_SIGNAL(MethodInfo("selected", PropertyInfo(Variant::STRING, "path"), PropertyInfo(Variant::INT, "focusable_idx")));
 
-	MethodInfo vm;
-	vm.name = "update_property";
-	BIND_VMETHOD(vm);
+	BIND_VMETHOD(MethodInfo("_update_property"));
 }
 
 EditorProperty::EditorProperty() {
@@ -1023,20 +1021,20 @@ void EditorInspectorPlugin::add_property_editor_for_multiple_properties(const St
 
 bool EditorInspectorPlugin::can_handle(Object *p_object) {
 	if (get_script_instance()) {
-		return get_script_instance()->call("can_handle", p_object);
+		return get_script_instance()->call("_can_handle", p_object);
 	}
 	return false;
 }
 
 void EditorInspectorPlugin::parse_begin(Object *p_object) {
 	if (get_script_instance()) {
-		get_script_instance()->call("parse_begin", p_object);
+		get_script_instance()->call("_parse_begin", p_object);
 	}
 }
 
 void EditorInspectorPlugin::parse_category(Object *p_object, const String &p_parse_category) {
 	if (get_script_instance()) {
-		get_script_instance()->call("parse_category", p_object, p_parse_category);
+		get_script_instance()->call("_parse_category", p_object, p_parse_category);
 	}
 }
 
@@ -1050,14 +1048,14 @@ bool EditorInspectorPlugin::parse_property(Object *p_object, Variant::Type p_typ
 		};
 
 		Callable::CallError err;
-		return get_script_instance()->call("parse_property", (const Variant **)&argptr, 6, err);
+		return get_script_instance()->call("_parse_property", (const Variant **)&argptr, 6, err);
 	}
 	return false;
 }
 
 void EditorInspectorPlugin::parse_end() {
 	if (get_script_instance()) {
-		get_script_instance()->call("parse_end");
+		get_script_instance()->call("_parse_end");
 	}
 }
 
@@ -1066,30 +1064,11 @@ void EditorInspectorPlugin::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_property_editor", "property", "editor"), &EditorInspectorPlugin::add_property_editor);
 	ClassDB::bind_method(D_METHOD("add_property_editor_for_multiple_properties", "label", "properties", "editor"), &EditorInspectorPlugin::add_property_editor_for_multiple_properties);
 
-	MethodInfo vm;
-	vm.name = "can_handle";
-	vm.return_val.type = Variant::BOOL;
-	vm.arguments.push_back(PropertyInfo(Variant::OBJECT, "object"));
-	BIND_VMETHOD(vm);
-	vm.name = "parse_begin";
-	vm.return_val.type = Variant::NIL;
-	BIND_VMETHOD(vm);
-	vm.name = "parse_category";
-	vm.arguments.push_back(PropertyInfo(Variant::STRING, "category"));
-	BIND_VMETHOD(vm);
-	vm.arguments.pop_back();
-	vm.name = "parse_property";
-	vm.return_val.type = Variant::BOOL;
-	vm.arguments.push_back(PropertyInfo(Variant::INT, "type"));
-	vm.arguments.push_back(PropertyInfo(Variant::STRING, "path"));
-	vm.arguments.push_back(PropertyInfo(Variant::INT, "hint"));
-	vm.arguments.push_back(PropertyInfo(Variant::STRING, "hint_text"));
-	vm.arguments.push_back(PropertyInfo(Variant::INT, "usage"));
-	BIND_VMETHOD(vm);
-	vm.arguments.clear();
-	vm.name = "parse_end";
-	vm.return_val.type = Variant::NIL;
-	BIND_VMETHOD(vm);
+	BIND_VMETHOD(MethodInfo(Variant::BOOL, "_can_handle", PropertyInfo(Variant::OBJECT, "object")));
+	BIND_VMETHOD(MethodInfo(Variant::NIL, "_parse_begin"));
+	BIND_VMETHOD(MethodInfo(Variant::NIL, "_parse_category", PropertyInfo(Variant::STRING, "category")));
+	BIND_VMETHOD(MethodInfo(Variant::BOOL, "_parse_property", PropertyInfo(Variant::INT, "type"), PropertyInfo(Variant::STRING, "path"), PropertyInfo(Variant::INT, "hint"), PropertyInfo(Variant::STRING, "hint_text"), PropertyInfo(Variant::INT, "usage")));
+	BIND_VMETHOD(MethodInfo(Variant::NIL, "_parse_end"));
 }
 
 ////////////////////////////////////////////////
@@ -1290,7 +1269,7 @@ void EditorInspectorSection::_notification(int p_what) {
 			Control *editor_property = Object::cast_to<Control>(vbox->get_child(child_idx));
 
 			// Test can_drop_data and can_drop_data_fw, since can_drop_data only works if set up with forwarding or if script attached.
-			if (editor_property && (editor_property->can_drop_data(Point2(), dd) || editor_property->call("can_drop_data_fw", Point2(), dd, this))) {
+			if (editor_property && (editor_property->can_drop_data(Point2(), dd) || editor_property->call("_can_drop_data_fw", Point2(), dd, this))) {
 				children_can_drop = true;
 				break;
 			}

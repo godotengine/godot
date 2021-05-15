@@ -969,9 +969,9 @@ void ActionMapEditor::_notification(int p_what) {
 }
 
 void ActionMapEditor::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("get_drag_data_fw"), &ActionMapEditor::get_drag_data_fw);
-	ClassDB::bind_method(D_METHOD("can_drop_data_fw"), &ActionMapEditor::can_drop_data_fw);
-	ClassDB::bind_method(D_METHOD("drop_data_fw"), &ActionMapEditor::drop_data_fw);
+	ClassDB::bind_method(D_METHOD("_get_drag_data_fw"), &ActionMapEditor::get_drag_data_fw);
+	ClassDB::bind_method(D_METHOD("_can_drop_data_fw"), &ActionMapEditor::can_drop_data_fw);
+	ClassDB::bind_method(D_METHOD("_drop_data_fw"), &ActionMapEditor::drop_data_fw);
 
 	ADD_SIGNAL(MethodInfo("action_added", PropertyInfo(Variant::STRING, "name")));
 	ADD_SIGNAL(MethodInfo("action_edited", PropertyInfo(Variant::STRING, "name"), PropertyInfo(Variant::DICTIONARY, "new_action")));

@@ -662,7 +662,7 @@ bool Control::has_point(const Point2 &p_point) const {
 		Variant v = p_point;
 		const Variant *p = &v;
 		Callable::CallError ce;
-		Variant ret = get_script_instance()->call(SceneStringNames::get_singleton()->has_point, &p, 1, ce);
+		Variant ret = get_script_instance()->call(SceneStringNames::get_singleton()->_has_point, &p, 1, ce);
 		if (ce.error == Callable::CallError::CALL_OK) {
 			return ret;
 		}
@@ -687,7 +687,7 @@ Variant Control::get_drag_data(const Point2 &p_point) {
 		Object *obj = ObjectDB::get_instance(data.drag_owner);
 		if (obj) {
 			Control *c = Object::cast_to<Control>(obj);
-			return c->call("get_drag_data_fw", p_point, this);
+			return c->call("_get_drag_data_fw", p_point, this);
 		}
 	}
 
@@ -695,7 +695,7 @@ Variant Control::get_drag_data(const Point2 &p_point) {
 		Variant v = p_point;
 		const Variant *p = &v;
 		Callable::CallError ce;
-		Variant ret = get_script_instance()->call(SceneStringNames::get_singleton()->get_drag_data, &p, 1, ce);
+		Variant ret = get_script_instance()->call(SceneStringNames::get_singleton()->_get_drag_data, &p, 1, ce);
 		if (ce.error == Callable::CallError::CALL_OK) {
 			return ret;
 		}
@@ -709,7 +709,7 @@ bool Control::can_drop_data(const Point2 &p_point, const Variant &p_data) const 
 		Object *obj = ObjectDB::get_instance(data.drag_owner);
 		if (obj) {
 			Control *c = Object::cast_to<Control>(obj);
-			return c->call("can_drop_data_fw", p_point, p_data, this);
+			return c->call("_can_drop_data_fw", p_point, p_data, this);
 		}
 	}
 
@@ -717,7 +717,7 @@ bool Control::can_drop_data(const Point2 &p_point, const Variant &p_data) const 
 		Variant v = p_point;
 		const Variant *p[2] = { &v, &p_data };
 		Callable::CallError ce;
-		Variant ret = get_script_instance()->call(SceneStringNames::get_singleton()->can_drop_data, p, 2, ce);
+		Variant ret = get_script_instance()->call(SceneStringNames::get_singleton()->_can_drop_data, p, 2, ce);
 		if (ce.error == Callable::CallError::CALL_OK) {
 			return ret;
 		}
@@ -731,7 +731,7 @@ void Control::drop_data(const Point2 &p_point, const Variant &p_data) {
 		Object *obj = ObjectDB::get_instance(data.drag_owner);
 		if (obj) {
 			Control *c = Object::cast_to<Control>(obj);
-			c->call("drop_data_fw", p_point, p_data, this);
+			c->call("_drop_data_fw", p_point, p_data, this);
 			return;
 		}
 	}
@@ -740,7 +740,7 @@ void Control::drop_data(const Point2 &p_point, const Variant &p_data) {
 		Variant v = p_point;
 		const Variant *p[2] = { &v, &p_data };
 		Callable::CallError ce;
-		Variant ret = get_script_instance()->call(SceneStringNames::get_singleton()->drop_data, p, 2, ce);
+		Variant ret = get_script_instance()->call(SceneStringNames::get_singleton()->_drop_data, p, 2, ce);
 		if (ce.error == Callable::CallError::CALL_OK) {
 			return;
 		}
@@ -2775,12 +2775,12 @@ void Control::_bind_methods() {
 	BIND_VMETHOD(MethodInfo("_gui_input", PropertyInfo(Variant::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, "InputEvent")));
 	BIND_VMETHOD(MethodInfo(Variant::VECTOR2, "_get_minimum_size"));
 
-	MethodInfo get_drag_data = MethodInfo("get_drag_data", PropertyInfo(Variant::VECTOR2, "position"));
+	MethodInfo get_drag_data = MethodInfo("_get_drag_data", PropertyInfo(Variant::VECTOR2, "position"));
 	get_drag_data.return_val.usage |= PROPERTY_USAGE_NIL_IS_VARIANT;
 	BIND_VMETHOD(get_drag_data);
 
-	BIND_VMETHOD(MethodInfo(Variant::BOOL, "can_drop_data", PropertyInfo(Variant::VECTOR2, "position"), PropertyInfo(Variant::NIL, "data")));
-	BIND_VMETHOD(MethodInfo("drop_data", PropertyInfo(Variant::VECTOR2, "position"), PropertyInfo(Variant::NIL, "data")));
+	BIND_VMETHOD(MethodInfo(Variant::BOOL, "_can_drop_data", PropertyInfo(Variant::VECTOR2, "position"), PropertyInfo(Variant::NIL, "data")));
+	BIND_VMETHOD(MethodInfo("_drop_data", PropertyInfo(Variant::VECTOR2, "position"), PropertyInfo(Variant::NIL, "data")));
 	BIND_VMETHOD(MethodInfo(
 			PropertyInfo(Variant::OBJECT, "control", PROPERTY_HINT_RESOURCE_TYPE, "Control"),
 			"_make_custom_tooltip", PropertyInfo(Variant::STRING, "for_text")));
@@ -2940,5 +2940,5 @@ void Control::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("minimum_size_changed"));
 	ADD_SIGNAL(MethodInfo("theme_changed"));
 
-	BIND_VMETHOD(MethodInfo(Variant::BOOL, "has_point", PropertyInfo(Variant::VECTOR2, "point")));
+	BIND_VMETHOD(MethodInfo(Variant::BOOL, "_has_point", PropertyInfo(Variant::VECTOR2, "point")));
 }

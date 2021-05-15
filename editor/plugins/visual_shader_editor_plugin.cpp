@@ -72,13 +72,13 @@ const int MAX_FLOAT_CONST_DEFS = sizeof(float_constant_defs) / sizeof(FloatConst
 
 Control *VisualShaderNodePlugin::create_editor(const Ref<Resource> &p_parent_resource, const Ref<VisualShaderNode> &p_node) {
 	if (get_script_instance()) {
-		return get_script_instance()->call("create_editor", p_parent_resource, p_node);
+		return get_script_instance()->call("_create_editor", p_parent_resource, p_node);
 	}
 	return nullptr;
 }
 
 void VisualShaderNodePlugin::_bind_methods() {
-	BIND_VMETHOD(MethodInfo(Variant::OBJECT, "create_editor", PropertyInfo(Variant::OBJECT, "parent_resource", PROPERTY_HINT_RESOURCE_TYPE, "Resource"), PropertyInfo(Variant::OBJECT, "for_node", PROPERTY_HINT_RESOURCE_TYPE, "VisualShaderNode")));
+	BIND_VMETHOD(MethodInfo(Variant::OBJECT, "_create_editor", PropertyInfo(Variant::OBJECT, "parent_resource", PROPERTY_HINT_RESOURCE_TYPE, "Resource"), PropertyInfo(Variant::OBJECT, "for_node", PROPERTY_HINT_RESOURCE_TYPE, "VisualShaderNode")));
 }
 
 ///////////////////
@@ -3694,9 +3694,9 @@ void VisualShaderEditor::_bind_methods() {
 	ClassDB::bind_method("_update_uniform", &VisualShaderEditor::_update_uniform);
 	ClassDB::bind_method("_expand_output_port", &VisualShaderEditor::_expand_output_port);
 
-	ClassDB::bind_method(D_METHOD("get_drag_data_fw"), &VisualShaderEditor::get_drag_data_fw);
-	ClassDB::bind_method(D_METHOD("can_drop_data_fw"), &VisualShaderEditor::can_drop_data_fw);
-	ClassDB::bind_method(D_METHOD("drop_data_fw"), &VisualShaderEditor::drop_data_fw);
+	ClassDB::bind_method(D_METHOD("_get_drag_data_fw"), &VisualShaderEditor::get_drag_data_fw);
+	ClassDB::bind_method(D_METHOD("_can_drop_data_fw"), &VisualShaderEditor::can_drop_data_fw);
+	ClassDB::bind_method(D_METHOD("_drop_data_fw"), &VisualShaderEditor::drop_data_fw);
 
 	ClassDB::bind_method("_is_available", &VisualShaderEditor::_is_available);
 }

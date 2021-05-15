@@ -11,6 +11,65 @@
 		<link title="AnimationTree">https://docs.godotengine.org/en/latest/tutorials/animation/animation_tree.html</link>
 	</tutorials>
 	<methods>
+		<method name="_get_caption" qualifiers="virtual">
+			<return type="String">
+			</return>
+			<description>
+				Gets the text caption for this node (used by some editors).
+			</description>
+		</method>
+		<method name="_get_child_by_name" qualifiers="virtual">
+			<return type="Object">
+			</return>
+			<argument index="0" name="name" type="String">
+			</argument>
+			<description>
+				Gets a child node by index (used by editors inheriting from [AnimationRootNode]).
+			</description>
+		</method>
+		<method name="_get_child_nodes" qualifiers="virtual">
+			<return type="Dictionary">
+			</return>
+			<description>
+				Gets all children nodes in order as a [code]name: node[/code] dictionary. Only useful when inheriting [AnimationRootNode].
+			</description>
+		</method>
+		<method name="_get_parameter_default_value" qualifiers="virtual">
+			<return type="Variant">
+			</return>
+			<argument index="0" name="name" type="StringName">
+			</argument>
+			<description>
+				Gets the default value of a parameter. Parameters are custom local memory used for your nodes, given a resource can be reused in multiple trees.
+			</description>
+		</method>
+		<method name="_get_parameter_list" qualifiers="virtual">
+			<return type="Array">
+			</return>
+			<description>
+				Gets the property information for parameter. Parameters are custom local memory used for your nodes, given a resource can be reused in multiple trees. Format is similar to [method Object.get_property_list].
+			</description>
+		</method>
+		<method name="_has_filter" qualifiers="virtual">
+			<return type="bool">
+			</return>
+			<description>
+				Returns [code]true[/code] whether you want the blend tree editor to display filter editing on this node.
+			</description>
+		</method>
+		<method name="_process" qualifiers="virtual">
+			<return type="void">
+			</return>
+			<argument index="0" name="time" type="float">
+			</argument>
+			<argument index="1" name="seek" type="bool">
+			</argument>
+			<description>
+				User-defined callback called when a custom node is processed. The [code]time[/code] parameter is a relative delta, unless [code]seek[/code] is [code]true[/code], in which case it is absolute.
+				Here, call the [method blend_input], [method blend_node] or [method blend_animation] functions. You can also use [method get_parameter] and [method set_parameter] to modify local memory.
+				This function should return the time left for the current animation to finish (if unsure, pass the value from the main blend being called).
+			</description>
+		</method>
 		<method name="add_input">
 			<return type="void">
 			</return>
@@ -77,29 +136,6 @@
 				Blend another animation node (in case this node contains children animation nodes). This function is only useful if you inherit from [AnimationRootNode] instead, else editors will not display your node for addition.
 			</description>
 		</method>
-		<method name="get_caption" qualifiers="virtual">
-			<return type="String">
-			</return>
-			<description>
-				Gets the text caption for this node (used by some editors).
-			</description>
-		</method>
-		<method name="get_child_by_name" qualifiers="virtual">
-			<return type="Object">
-			</return>
-			<argument index="0" name="name" type="String">
-			</argument>
-			<description>
-				Gets a child node by index (used by editors inheriting from [AnimationRootNode]).
-			</description>
-		</method>
-		<method name="get_child_nodes" qualifiers="virtual">
-			<return type="Dictionary">
-			</return>
-			<description>
-				Gets all children nodes in order as a [code]name: node[/code] dictionary. Only useful when inheriting [AnimationRootNode].
-			</description>
-		</method>
 		<method name="get_input_count" qualifiers="const">
 			<return type="int">
 			</return>
@@ -125,29 +161,6 @@
 				Gets the value of a parameter. Parameters are custom local memory used for your nodes, given a resource can be reused in multiple trees.
 			</description>
 		</method>
-		<method name="get_parameter_default_value" qualifiers="virtual">
-			<return type="Variant">
-			</return>
-			<argument index="0" name="name" type="StringName">
-			</argument>
-			<description>
-				Gets the default value of a parameter. Parameters are custom local memory used for your nodes, given a resource can be reused in multiple trees.
-			</description>
-		</method>
-		<method name="get_parameter_list" qualifiers="virtual">
-			<return type="Array">
-			</return>
-			<description>
-				Gets the property information for parameter. Parameters are custom local memory used for your nodes, given a resource can be reused in multiple trees. Format is similar to [method Object.get_property_list].
-			</description>
-		</method>
-		<method name="has_filter" qualifiers="virtual">
-			<return type="bool">
-			</return>
-			<description>
-				Returns [code]true[/code] whether you want the blend tree editor to display filter editing on this node.
-			</description>
-		</method>
 		<method name="is_path_filtered" qualifiers="const">
 			<return type="bool">
 			</return>
@@ -155,19 +168,6 @@
 			</argument>
 			<description>
 				Returns [code]true[/code] whether a given path is filtered.
-			</description>
-		</method>
-		<method name="process" qualifiers="virtual">
-			<return type="void">
-			</return>
-			<argument index="0" name="time" type="float">
-			</argument>
-			<argument index="1" name="seek" type="bool">
-			</argument>
-			<description>
-				User-defined callback called when a custom node is processed. The [code]time[/code] parameter is a relative delta, unless [code]seek[/code] is [code]true[/code], in which case it is absolute.
-				Here, call the [method blend_input], [method blend_node] or [method blend_animation] functions. You can also use [method get_parameter] and [method set_parameter] to modify local memory.
-				This function should return the time left for the current animation to finish (if unsure, pass the value from the main blend being called).
 			</description>
 		</method>
 		<method name="remove_input">

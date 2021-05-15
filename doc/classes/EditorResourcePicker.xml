@@ -10,45 +10,11 @@
 	<tutorials>
 	</tutorials>
 	<methods>
-		<method name="can_drop_data_fw" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="position" type="Vector2">
-			</argument>
-			<argument index="1" name="data" type="Variant">
-			</argument>
-			<argument index="2" name="from" type="Control">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="drop_data_fw">
-			<return type="void">
-			</return>
-			<argument index="0" name="position" type="Vector2">
-			</argument>
-			<argument index="1" name="data" type="Variant">
-			</argument>
-			<argument index="2" name="from" type="Control">
-			</argument>
-			<description>
-			</description>
-		</method>
 		<method name="get_allowed_types" qualifiers="const">
 			<return type="PackedStringArray">
 			</return>
 			<description>
 				Returns a list of all allowed types and subtypes corresponding to the [member base_type]. If the [member base_type] is empty, an empty list is returned.
-			</description>
-		</method>
-		<method name="get_drag_data_fw">
-			<return type="Variant">
-			</return>
-			<argument index="0" name="position" type="Vector2">
-			</argument>
-			<argument index="1" name="from" type="Control">
-			</argument>
-			<description>
 			</description>
 		</method>
 		<method name="handle_menu_selected" qualifiers="virtual">
