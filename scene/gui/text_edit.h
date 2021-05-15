@@ -731,6 +731,7 @@ public:
 	void copy();
 	void paste();
 	void select_all();
+	void select_word_under_caret();
 	void select(int p_from_line, int p_from_column, int p_to_line, int p_to_column);
 	void deselect();
 	void swap_lines(int line1, int line2);
