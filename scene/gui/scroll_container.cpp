@@ -238,32 +238,25 @@ void ScrollContainer::_update_scrollbar_position() {
 	_updating_scrollbars = false;
 }
 
-void ScrollContainer::_ensure_focused_visible(Control *p_control) {
-	if (!follow_focus) {
-		return;
+void ScrollContainer::_gui_focus_changed(Control *p_control) {
+	if (follow_focus && is_a_parent_of(p_control)) {
+		ensure_control_visible(p_control);
 	}
+}
 
-	if (is_a_parent_of(p_control)) {
-		Rect2 global_rect = get_global_rect();
-		Rect2 other_rect = p_control->get_global_rect();
-		float right_margin = 0.0;
-		if (v_scroll->is_visible()) {
-			right_margin += v_scroll->get_size().x;
-		}
-		float bottom_margin = 0.0;
-		if (h_scroll->is_visible()) {
-			bottom_margin += h_scroll->get_size().y;
-		}
+void ScrollContainer::ensure_control_visible(Control *p_control) {
+	ERR_FAIL_COND_MSG(!is_a_parent_of(p_control), "Must be a parent of the control.");
 
-		float diff = MAX(MIN(other_rect.position.y, global_rect.position.y), other_rect.position.y + other_rect.size.y - global_rect.size.y + bottom_margin);
-		set_v_scroll(get_v_scroll() + (diff - global_rect.position.y));
-		if (is_layout_rtl()) {
-			diff = MAX(MIN(other_rect.position.x, global_rect.position.x), other_rect.position.x + other_rect.size.x - global_rect.size.x);
-		} else {
-			diff = MAX(MIN(other_rect.position.x, global_rect.position.x), other_rect.position.x + other_rect.size.x - global_rect.size.x + right_margin);
-		}
-		set_h_scroll(get_h_scroll() + (diff - global_rect.position.x));
-	}
+	Rect2 global_rect = get_global_rect();
+	Rect2 other_rect = p_control->get_global_rect();
+	float right_margin = v_scroll->is_visible() ? v_scroll->get_size().x : 0.0f;
+	float bottom_margin = h_scroll->is_visible() ? h_scroll->get_size().y : 0.0f;
+
+	Vector2 diff = Vector2(MAX(MIN(other_rect.position.x, global_rect.position.x), other_rect.position.x + other_rect.size.x - global_rect.size.x + (!is_layout_rtl() ? right_margin : 0.0f)),
+			MAX(MIN(other_rect.position.y, global_rect.position.y), other_rect.position.y + other_rect.size.y - global_rect.size.y + bottom_margin));
+
+	set_h_scroll(get_h_scroll() + (diff.x - global_rect.position.x));
+	set_v_scroll(get_v_scroll() + (diff.y - global_rect.position.y));
 }
 
 void ScrollContainer::_update_dimensions() {
@@ -334,7 +327,7 @@ void ScrollContainer::_notification(int p_what) {
 	};
 
 	if (p_what == NOTIFICATION_READY) {
-		get_viewport()->connect("gui_focus_changed", callable_mp(this, &ScrollContainer::_ensure_focused_visible));
+		get_viewport()->connect("gui_focus_changed", callable_mp(this, &ScrollContainer::_gui_focus_changed));
 		_update_dimensions();
 	}
 
@@ -608,6 +601,7 @@ void ScrollContainer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_h_scrollbar"), &ScrollContainer::get_h_scrollbar);
 	ClassDB::bind_method(D_METHOD("get_v_scrollbar"), &ScrollContainer::get_v_scrollbar);
+	ClassDB::bind_method(D_METHOD("ensure_control_visible", "control"), &ScrollContainer::ensure_control_visible);
 
 	ADD_SIGNAL(MethodInfo("scroll_started"));
 	ADD_SIGNAL(MethodInfo("scroll_ended"));
