@@ -763,8 +763,10 @@ void FindInFilesPanel::draw_result_text(Object *item_obj, Rect2 rect) {
 	match_rect.position.y += 1 * EDSCALE;
 	match_rect.size.y -= 2 * EDSCALE;
 
-	_results_display->draw_rect(match_rect, Color(0, 0, 0, 0.5));
-	// Text is drawn by Tree already
+	// Use the inverted accent color to help match rectangles stand out even on the currently selected line.
+	_results_display->draw_rect(match_rect, get_theme_color("accent_color", "Editor").inverted() * Color(1, 1, 1, 0.5));
+
+	// Text is drawn by Tree already.
 }
 
 void FindInFilesPanel::_on_item_edited() {
