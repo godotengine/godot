@@ -69,6 +69,7 @@ protected:
 	Size2 get_minimum_size() const override;
 
 	void _gui_input(const Ref<InputEvent> &p_gui_input);
+	void _gui_focus_changed(Control *p_control);
 	void _update_dimensions();
 	void _notification(int p_what);
 
@@ -77,7 +78,6 @@ protected:
 
 	bool _updating_scrollbars = false;
 	void _update_scrollbar_position();
-	void _ensure_focused_visible(Control *p_node);
 
 public:
 	void set_h_scroll(int p_pos);
@@ -106,6 +106,7 @@ public:
 
 	HScrollBar *get_h_scrollbar();
 	VScrollBar *get_v_scrollbar();
+	void ensure_control_visible(Control *p_control);
 
 	virtual bool clips_input() const override;
 

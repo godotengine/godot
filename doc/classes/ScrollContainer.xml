@@ -11,6 +11,15 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="ensure_control_visible">
+			<return type="void">
+			</return>
+			<argument index="0" name="control" type="Control">
+			</argument>
+			<description>
+				Ensures the given [code]control[/code] is visible (must be a direct or indirect child of the ScrollContainer). Used by [member follow_focus].
+			</description>
+		</method>
 		<method name="get_h_scrollbar">
 			<return type="HScrollBar">
 			</return>
