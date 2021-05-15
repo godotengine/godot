@@ -1986,6 +1986,20 @@ void FileSystemDock::_resource_created() {
 	editor->save_resource_as(RES(r), fpath);
 }
 
+void FileSystemDock::_focus_current_search_box() {
+	LineEdit *current_search_box = nullptr;
+	if (display_mode == DISPLAY_MODE_TREE_ONLY) {
+		current_search_box = tree_search_box;
+	} else if (display_mode == DISPLAY_MODE_SPLIT) {
+		current_search_box = file_list_search_box;
+	}
+
+	if (current_search_box) {
+		current_search_box->grab_focus();
+		current_search_box->select_all();
+	}
+}
+
 void FileSystemDock::_search_changed(const String &p_text, const Control *p_from) {
 	if (searched_string.length() == 0) {
 		// Register the uncollapsed paths before they change.
@@ -2576,6 +2590,8 @@ void FileSystemDock::_tree_gui_input(Ref<InputEvent> p_event) {
 			_tree_rmb_option(FILE_REMOVE);
 		} else if (ED_IS_SHORTCUT("filesystem_dock/rename", p_event)) {
 			_tree_rmb_option(FILE_RENAME);
+		} else if (ED_IS_SHORTCUT("editor/open_search", p_event)) {
+			_focus_current_search_box();
 		} else {
 			return;
 		}
@@ -2595,6 +2611,8 @@ void FileSystemDock::_file_list_gui_input(Ref<InputEvent> p_event) {
 			_file_list_rmb_option(FILE_REMOVE);
 		} else if (ED_IS_SHORTCUT("filesystem_dock/rename", p_event)) {
 			_file_list_rmb_option(FILE_RENAME);
+		} else if (ED_IS_SHORTCUT("editor/open_search", p_event)) {
+			_focus_current_search_box();
 		} else {
 			return;
 		}
