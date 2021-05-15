@@ -9,30 +9,6 @@
 	<tutorials>
 	</tutorials>
 	<methods>
-		<method name="can_drop_data_fw" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="point" type="Vector2">
-			</argument>
-			<argument index="1" name="data" type="Variant">
-			</argument>
-			<argument index="2" name="from" type="Control">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="drop_data_fw">
-			<return type="void">
-			</return>
-			<argument index="0" name="point" type="Vector2">
-			</argument>
-			<argument index="1" name="data" type="Variant">
-			</argument>
-			<argument index="2" name="from" type="Control">
-			</argument>
-			<description>
-			</description>
-		</method>
 		<method name="get_current_editor" qualifiers="const">
 			<return type="ScriptEditorBase">
 			</return>
@@ -45,16 +21,6 @@
 			</return>
 			<description>
 				Returns a [Script] that is currently active in editor.
-			</description>
-		</method>
-		<method name="get_drag_data_fw">
-			<return type="Variant">
-			</return>
-			<argument index="0" name="point" type="Vector2">
-			</argument>
-			<argument index="1" name="from" type="Control">
-			</argument>
-			<description>
 			</description>
 		</method>
 		<method name="get_open_script_editors" qualifiers="const">

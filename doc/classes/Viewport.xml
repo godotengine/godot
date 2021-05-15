@@ -111,7 +111,7 @@
 			<return type="Variant">
 			</return>
 			<description>
-				Returns the drag data from the GUI, that was previously returned by [method Control.get_drag_data].
+				Returns the drag data from the GUI, that was previously returned by [method Control._get_drag_data].
 			</description>
 		</method>
 		<method name="gui_is_dragging" qualifiers="const">

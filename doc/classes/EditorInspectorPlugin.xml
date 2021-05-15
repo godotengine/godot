@@ -6,15 +6,64 @@
 	<description>
 		These plugins allow adding custom property editors to [EditorInspector].
 		Plugins are registered via [method EditorPlugin.add_inspector_plugin].
-		When an object is edited, the [method can_handle] function is called and must return [code]true[/code] if the object type is supported.
-		If supported, the function [method parse_begin] will be called, allowing to place custom controls at the beginning of the class.
-		Subsequently, the [method parse_category] and [method parse_property] are called for every category and property. They offer the ability to add custom controls to the inspector too.
-		Finally, [method parse_end] will be called.
+		When an object is edited, the [method _can_handle] function is called and must return [code]true[/code] if the object type is supported.
+		If supported, the function [method _parse_begin] will be called, allowing to place custom controls at the beginning of the class.
+		Subsequently, the [method _parse_category] and [method _parse_property] are called for every category and property. They offer the ability to add custom controls to the inspector too.
+		Finally, [method _parse_end] will be called.
 		On each of these calls, the "add" functions can be called.
 	</description>
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="_can_handle" qualifiers="virtual">
+			<return type="bool">
+			</return>
+			<argument index="0" name="object" type="Object">
+			</argument>
+			<description>
+				Returns [code]true[/code] if this object can be handled by this plugin.
+			</description>
+		</method>
+		<method name="_parse_begin" qualifiers="virtual">
+			<return type="void">
+			</return>
+			<description>
+				Called to allow adding controls at the beginning of the list.
+			</description>
+		</method>
+		<method name="_parse_category" qualifiers="virtual">
+			<return type="void">
+			</return>
+			<argument index="0" name="category" type="String">
+			</argument>
+			<description>
+				Called to allow adding controls at the beginning of the category.
+			</description>
+		</method>
+		<method name="_parse_end" qualifiers="virtual">
+			<return type="void">
+			</return>
+			<description>
+				Called to allow adding controls at the end of the list.
+			</description>
+		</method>
+		<method name="_parse_property" qualifiers="virtual">
+			<return type="bool">
+			</return>
+			<argument index="0" name="type" type="int">
+			</argument>
+			<argument index="1" name="path" type="String">
+			</argument>
+			<argument index="2" name="hint" type="int">
+			</argument>
+			<argument index="3" name="hint_text" type="String">
+			</argument>
+			<argument index="4" name="usage" type="int">
+			</argument>
+			<description>
+				Called to allow adding property specific editors to the inspector. Usually these inherit [EditorProperty]. Returning [code]true[/code] removes the built-in editor for this property, otherwise allows to insert a custom editor before the built-in one.
+			</description>
+		</method>
 		<method name="add_custom_control">
 			<return type="void">
 			</return>
@@ -46,61 +95,6 @@
 			</argument>
 			<description>
 				Adds an editor that allows modifying multiple properties, this must inherit [EditorProperty].
-			</description>
-		</method>
-		<method name="can_handle" qualifiers="virtual">
-			<return type="bool">
-			</return>
-			<argument index="0" name="object" type="Object">
-			</argument>
-			<description>
-				Returns [code]true[/code] if this object can be handled by this plugin.
-			</description>
-		</method>
-		<method name="parse_begin" qualifiers="virtual">
-			<return type="void">
-			</return>
-			<argument index="0" name="object" type="Object">
-			</argument>
-			<description>
-				Called to allow adding controls at the beginning of the list.
-			</description>
-		</method>
-		<method name="parse_category" qualifiers="virtual">
-			<return type="void">
-			</return>
-			<argument index="0" name="object" type="Object">
-			</argument>
-			<argument index="1" name="category" type="String">
-			</argument>
-			<description>
-				Called to allow adding controls at the beginning of the category.
-			</description>
-		</method>
-		<method name="parse_end" qualifiers="virtual">
-			<return type="void">
-			</return>
-			<description>
-				Called to allow adding controls at the end of the list.
-			</description>
-		</method>
-		<method name="parse_property" qualifiers="virtual">
-			<return type="bool">
-			</return>
-			<argument index="0" name="object" type="Object">
-			</argument>
-			<argument index="1" name="type" type="int">
-			</argument>
-			<argument index="2" name="path" type="String">
-			</argument>
-			<argument index="3" name="hint" type="int">
-			</argument>
-			<argument index="4" name="hint_text" type="String">
-			</argument>
-			<argument index="5" name="usage" type="int">
-			</argument>
-			<description>
-				Called to allow adding property specific editors to the inspector. Usually these inherit [EditorProperty]. Returning [code]true[/code] removes the built-in editor for this property, otherwise allows to insert a custom editor before the built-in one.
 			</description>
 		</method>
 	</methods>

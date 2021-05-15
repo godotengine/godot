@@ -9,7 +9,7 @@
 	<tutorials>
 	</tutorials>
 	<methods>
-		<method name="add_syntax_highlighter" qualifiers="virtual">
+		<method name="_add_syntax_highlighter" qualifiers="virtual">
 			<return type="void">
 			</return>
 			<argument index="0" name="highlighter" type="Object">

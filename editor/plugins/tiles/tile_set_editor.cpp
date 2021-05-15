@@ -436,8 +436,8 @@ void TileSetEditor::_undo_redo_inspector_callback(Object *p_undo_redo, Object *p
 }
 
 void TileSetEditor::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("can_drop_data_fw"), &TileSetEditor::can_drop_data_fw);
-	ClassDB::bind_method(D_METHOD("drop_data_fw"), &TileSetEditor::drop_data_fw);
+	ClassDB::bind_method(D_METHOD("_can_drop_data_fw"), &TileSetEditor::can_drop_data_fw);
+	ClassDB::bind_method(D_METHOD("_drop_data_fw"), &TileSetEditor::drop_data_fw);
 }
 
 TileDataEditor *TileSetEditor::get_tile_data_editor(String p_property) {

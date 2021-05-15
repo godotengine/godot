@@ -2751,9 +2751,9 @@ void FileSystemDock::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_tree_thumbnail_done"), &FileSystemDock::_tree_thumbnail_done);
 	ClassDB::bind_method(D_METHOD("_select_file"), &FileSystemDock::_select_file);
 
-	ClassDB::bind_method(D_METHOD("get_drag_data_fw", "position", "from"), &FileSystemDock::get_drag_data_fw);
-	ClassDB::bind_method(D_METHOD("can_drop_data_fw", "position", "data", "from"), &FileSystemDock::can_drop_data_fw);
-	ClassDB::bind_method(D_METHOD("drop_data_fw", "position", "data", "from"), &FileSystemDock::drop_data_fw);
+	ClassDB::bind_method(D_METHOD("_get_drag_data_fw", "position", "from"), &FileSystemDock::get_drag_data_fw);
+	ClassDB::bind_method(D_METHOD("_can_drop_data_fw", "position", "data", "from"), &FileSystemDock::can_drop_data_fw);
+	ClassDB::bind_method(D_METHOD("_drop_data_fw", "position", "data", "from"), &FileSystemDock::drop_data_fw);
 	ClassDB::bind_method(D_METHOD("navigate_to_path", "path"), &FileSystemDock::navigate_to_path);
 
 	ClassDB::bind_method(D_METHOD("_update_import_dock"), &FileSystemDock::_update_import_dock);

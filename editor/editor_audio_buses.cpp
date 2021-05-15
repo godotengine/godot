@@ -757,9 +757,9 @@ void EditorAudioBus::_bind_methods() {
 	ClassDB::bind_method("update_bus", &EditorAudioBus::update_bus);
 	ClassDB::bind_method("update_send", &EditorAudioBus::update_send);
 	ClassDB::bind_method("_gui_input", &EditorAudioBus::_gui_input);
-	ClassDB::bind_method("get_drag_data_fw", &EditorAudioBus::get_drag_data_fw);
-	ClassDB::bind_method("can_drop_data_fw", &EditorAudioBus::can_drop_data_fw);
-	ClassDB::bind_method("drop_data_fw", &EditorAudioBus::drop_data_fw);
+	ClassDB::bind_method("_get_drag_data_fw", &EditorAudioBus::get_drag_data_fw);
+	ClassDB::bind_method("_can_drop_data_fw", &EditorAudioBus::can_drop_data_fw);
+	ClassDB::bind_method("_drop_data_fw", &EditorAudioBus::drop_data_fw);
 
 	ADD_SIGNAL(MethodInfo("duplicate_request"));
 	ADD_SIGNAL(MethodInfo("delete_request"));

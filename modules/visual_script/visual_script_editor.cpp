@@ -4243,9 +4243,9 @@ void VisualScriptEditor::_bind_methods() {
 
 	ClassDB::bind_method("_create_new_node_from_name", &VisualScriptEditor::_create_new_node_from_name);
 
-	ClassDB::bind_method("get_drag_data_fw", &VisualScriptEditor::get_drag_data_fw);
-	ClassDB::bind_method("can_drop_data_fw", &VisualScriptEditor::can_drop_data_fw);
-	ClassDB::bind_method("drop_data_fw", &VisualScriptEditor::drop_data_fw);
+	ClassDB::bind_method("_get_drag_data_fw", &VisualScriptEditor::get_drag_data_fw);
+	ClassDB::bind_method("_can_drop_data_fw", &VisualScriptEditor::can_drop_data_fw);
+	ClassDB::bind_method("_drop_data_fw", &VisualScriptEditor::drop_data_fw);
 
 	ClassDB::bind_method("_input", &VisualScriptEditor::_input);
 

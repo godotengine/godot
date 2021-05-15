@@ -120,13 +120,13 @@ void EditorSceneImporter::_bind_methods() {
 
 /////////////////////////////////
 void EditorScenePostImport::_bind_methods() {
-	BIND_VMETHOD(MethodInfo(Variant::OBJECT, "post_import", PropertyInfo(Variant::OBJECT, "scene")));
+	BIND_VMETHOD(MethodInfo(Variant::OBJECT, "_post_import", PropertyInfo(Variant::OBJECT, "scene")));
 	ClassDB::bind_method(D_METHOD("get_source_file"), &EditorScenePostImport::get_source_file);
 }
 
 Node *EditorScenePostImport::post_import(Node *p_scene) {
 	if (get_script_instance()) {
-		return get_script_instance()->call("post_import", p_scene);
+		return get_script_instance()->call("_post_import", p_scene);
 	}
 
 	return p_scene;
@@ -1508,7 +1508,7 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 		if (!scene) {
 			EditorNode::add_io_error(
 					TTR("Error running post-import script:") + " " + post_import_script_path + "\n" +
-					TTR("Did you return a Node-derived object in the `post_import()` method?"));
+					TTR("Did you return a Node-derived object in the `_post_import()` method?"));
 			return err;
 		}
 	}

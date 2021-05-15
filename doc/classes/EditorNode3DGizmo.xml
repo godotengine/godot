@@ -9,13 +9,76 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="_commit_handle" qualifiers="virtual">
+			<return type="void">
+			</return>
+			<argument index="0" name="index" type="int">
+			</argument>
+			<argument index="1" name="restore" type="Variant">
+			</argument>
+			<argument index="2" name="cancel" type="bool" default="false">
+			</argument>
+			<description>
+				Commit a handle being edited (handles must have been previously added by [method add_handles]).
+				If the [code]cancel[/code] parameter is [code]true[/code], an option to restore the edited value to the original is provided.
+			</description>
+		</method>
+		<method name="_get_handle_name" qualifiers="virtual">
+			<return type="String">
+			</return>
+			<argument index="0" name="index" type="int">
+			</argument>
+			<description>
+				Gets the name of an edited handle (handles must have been previously added by [method add_handles]).
+				Handles can be named for reference to the user when editing.
+			</description>
+		</method>
+		<method name="_get_handle_value" qualifiers="virtual">
+			<return type="Variant">
+			</return>
+			<argument index="0" name="index" type="int">
+			</argument>
+			<description>
+				Gets actual value of a handle. This value can be anything and used for eventually undoing the motion when calling [method _commit_handle].
+			</description>
+		</method>
+		<method name="_is_handle_highlighted" qualifiers="virtual">
+			<return type="bool">
+			</return>
+			<argument index="0" name="index" type="int">
+			</argument>
+			<description>
+				Returns [code]true[/code] if the handle at index [code]index[/code] is highlighted by being hovered with the mouse.
+			</description>
+		</method>
+		<method name="_redraw" qualifiers="virtual">
+			<return type="void">
+			</return>
+			<description>
+				This function is called when the [Node3D] this gizmo refers to changes (the [method Node3D.update_gizmo] is called).
+			</description>
+		</method>
+		<method name="_set_handle" qualifiers="virtual">
+			<return type="void">
+			</return>
+			<argument index="0" name="index" type="int">
+			</argument>
+			<argument index="1" name="camera" type="Camera3D">
+			</argument>
+			<argument index="2" name="point" type="Vector2">
+			</argument>
+			<description>
+				This function is used when the user drags a gizmo handle (previously added with [method add_handles]) in screen coordinates.
+				The [Camera3D] is also provided so screen coordinates can be converted to raycasts.
+			</description>
+		</method>
 		<method name="add_collision_segments">
 			<return type="void">
 			</return>
 			<argument index="0" name="segments" type="PackedVector3Array">
 			</argument>
 			<description>
-				Adds the specified [code]segments[/code] to the gizmo's collision shape for picking. Call this function during [method redraw].
+				Adds the specified [code]segments[/code] to the gizmo's collision shape for picking. Call this function during [method _redraw].
 			</description>
 		</method>
 		<method name="add_collision_triangles">
@@ -24,7 +87,7 @@
 			<argument index="0" name="triangles" type="TriangleMesh">
 			</argument>
 			<description>
-				Adds collision triangles to the gizmo for picking. A [TriangleMesh] can be generated from a regular [Mesh] too. Call this function during [method redraw].
+				Adds collision triangles to the gizmo for picking. A [TriangleMesh] can be generated from a regular [Mesh] too. Call this function during [method _redraw].
 			</description>
 		</method>
 		<method name="add_handles">
@@ -40,7 +103,7 @@
 			</argument>
 			<description>
 				Adds a list of handles (points) which can be used to deform the object being edited.
-				There are virtual functions which will be called upon editing of these handles. Call this function during [method redraw].
+				There are virtual functions which will be called upon editing of these handles. Call this function during [method _redraw].
 			</description>
 		</method>
 		<method name="add_lines">
@@ -55,7 +118,7 @@
 			<argument index="3" name="modulate" type="Color" default="Color( 1, 1, 1, 1 )">
 			</argument>
 			<description>
-				Adds lines to the gizmo (as sets of 2 points), with a given material. The lines are used for visualizing the gizmo. Call this function during [method redraw].
+				Adds lines to the gizmo (as sets of 2 points), with a given material. The lines are used for visualizing the gizmo. Call this function during [method _redraw].
 			</description>
 		</method>
 		<method name="add_mesh">
@@ -70,7 +133,7 @@
 			<argument index="3" name="material" type="Material" default="null">
 			</argument>
 			<description>
-				Adds a mesh to the gizmo with the specified [code]billboard[/code] state, [code]skeleton[/code] and [code]material[/code]. If [code]billboard[/code] is [code]true[/code], the mesh will rotate to always face the camera. Call this function during [method redraw].
+				Adds a mesh to the gizmo with the specified [code]billboard[/code] state, [code]skeleton[/code] and [code]material[/code]. If [code]billboard[/code] is [code]true[/code], the mesh will rotate to always face the camera. Call this function during [method _redraw].
 			</description>
 		</method>
 		<method name="add_unscaled_billboard">
@@ -83,7 +146,7 @@
 			<argument index="2" name="modulate" type="Color" default="Color( 1, 1, 1, 1 )">
 			</argument>
 			<description>
-				Adds an unscaled billboard for visualization. Call this function during [method redraw].
+				Adds an unscaled billboard for visualization. Call this function during [method _redraw].
 			</description>
 		</method>
 		<method name="clear">
@@ -91,39 +154,6 @@
 			</return>
 			<description>
 				Removes everything in the gizmo including meshes, collisions and handles.
-			</description>
-		</method>
-		<method name="commit_handle" qualifiers="virtual">
-			<return type="void">
-			</return>
-			<argument index="0" name="index" type="int">
-			</argument>
-			<argument index="1" name="restore" type="Variant">
-			</argument>
-			<argument index="2" name="cancel" type="bool" default="false">
-			</argument>
-			<description>
-				Commit a handle being edited (handles must have been previously added by [method add_handles]).
-				If the [code]cancel[/code] parameter is [code]true[/code], an option to restore the edited value to the original is provided.
-			</description>
-		</method>
-		<method name="get_handle_name" qualifiers="virtual">
-			<return type="String">
-			</return>
-			<argument index="0" name="index" type="int">
-			</argument>
-			<description>
-				Gets the name of an edited handle (handles must have been previously added by [method add_handles]).
-				Handles can be named for reference to the user when editing.
-			</description>
-		</method>
-		<method name="get_handle_value" qualifiers="virtual">
-			<return type="Variant">
-			</return>
-			<argument index="0" name="index" type="int">
-			</argument>
-			<description>
-				Gets actual value of a handle. This value can be anything and used for eventually undoing the motion when calling [method commit_handle].
 			</description>
 		</method>
 		<method name="get_plugin" qualifiers="const">
@@ -138,36 +168,6 @@
 			</return>
 			<description>
 				Returns the Node3D node associated with this gizmo.
-			</description>
-		</method>
-		<method name="is_handle_highlighted" qualifiers="virtual">
-			<return type="bool">
-			</return>
-			<argument index="0" name="index" type="int">
-			</argument>
-			<description>
-				Returns [code]true[/code] if the handle at index [code]index[/code] is highlighted by being hovered with the mouse.
-			</description>
-		</method>
-		<method name="redraw" qualifiers="virtual">
-			<return type="void">
-			</return>
-			<description>
-				This function is called when the [Node3D] this gizmo refers to changes (the [method Node3D.update_gizmo] is called).
-			</description>
-		</method>
-		<method name="set_handle" qualifiers="virtual">
-			<return type="void">
-			</return>
-			<argument index="0" name="index" type="int">
-			</argument>
-			<argument index="1" name="camera" type="Camera3D">
-			</argument>
-			<argument index="2" name="point" type="Vector2">
-			</argument>
-			<description>
-				This function is used when the user drags a gizmo handle (previously added with [method add_handles]) in screen coordinates.
-				The [Camera3D] is also provided so screen coordinates can be converted to raycasts.
 			</description>
 		</method>
 		<method name="set_hidden">

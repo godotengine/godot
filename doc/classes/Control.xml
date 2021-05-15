@@ -22,12 +22,95 @@
 		<link title="All GUI Demos">https://github.com/godotengine/godot-demo-projects/tree/master/gui</link>
 	</tutorials>
 	<methods>
+		<method name="_can_drop_data" qualifiers="virtual">
+			<return type="bool">
+			</return>
+			<argument index="0" name="position" type="Vector2">
+			</argument>
+			<argument index="1" name="data" type="Variant">
+			</argument>
+			<description>
+				Godot calls this method to test if [code]data[/code] from a control's [method _get_drag_data] can be dropped at [code]position[/code]. [code]position[/code] is local to this control.
+				This method should only be used to test the data. Process the data in [method _drop_data].
+				[codeblocks]
+				[gdscript]
+				func _can_drop_data(position, data):
+				    # Check position if it is relevant to you
+				    # Otherwise, just check data
+				    return typeof(data) == TYPE_DICTIONARY and data.has("expected")
+				[/gdscript]
+				[csharp]
+				public override bool CanDropData(Vector2 position, object data)
+				{
+				    // Check position if it is relevant to you
+				    // Otherwise, just check data
+				    return data is Godot.Collections.Dictionary &amp;&amp; (data as Godot.Collections.Dictionary).Contains("expected");
+				}
+				[/csharp]
+				[/codeblocks]
+			</description>
+		</method>
 		<method name="_clips_input" qualifiers="virtual">
 			<return type="bool">
 			</return>
 			<description>
 				Virtual method to be implemented by the user. Returns whether [method _gui_input] should not be called for children controls outside this control's rectangle. Input will be clipped to the Rect of this [Control]. Similar to [member rect_clip_content], but doesn't affect visibility.
 				If not overridden, defaults to [code]false[/code].
+			</description>
+		</method>
+		<method name="_drop_data" qualifiers="virtual">
+			<return type="void">
+			</return>
+			<argument index="0" name="position" type="Vector2">
+			</argument>
+			<argument index="1" name="data" type="Variant">
+			</argument>
+			<description>
+				Godot calls this method to pass you the [code]data[/code] from a control's [method _get_drag_data] result. Godot first calls [method _can_drop_data] to test if [code]data[/code] is allowed to drop at [code]position[/code] where [code]position[/code] is local to this control.
+				[codeblocks]
+				[gdscript]
+				func _can_drop_data(position, data):
+				    return typeof(data) == TYPE_DICTIONARY and data.has("color")
+				func _drop_data(position, data):
+				    var color = data["color"]
+				[/gdscript]
+				[csharp]
+				public override bool CanDropData(Vector2 position, object data)
+				{
+				    return data is Godot.Collections.Dictionary &amp;&amp; (data as Godot.Collections.Dictionary).Contains("color");
+				}
+				public override void DropData(Vector2 position, object data)
+				{
+				    Color color = (Color)(data as Godot.Collections.Dictionary)["color"];
+				}
+				[/csharp]
+				[/codeblocks]
+			</description>
+		</method>
+		<method name="_get_drag_data" qualifiers="virtual">
+			<return type="Variant">
+			</return>
+			<argument index="0" name="position" type="Vector2">
+			</argument>
+			<description>
+				Godot calls this method to get data that can be dragged and dropped onto controls that expect drop data. Returns [code]null[/code] if there is no data to drag. Controls that want to receive drop data should implement [method _can_drop_data] and [method _drop_data]. [code]position[/code] is local to this control. Drag may be forced with [method force_drag].
+				A preview that will follow the mouse that should represent the data can be set with [method set_drag_preview]. A good time to set the preview is in this method.
+				[codeblocks]
+				[gdscript]
+				func _get_drag_data(position):
+				    var mydata = make_data() # This is your custom method generating the drag data.
+				    set_drag_preview(make_preview(mydata)) # This is your custom method generating the preview of the drag data.
+				    return mydata
+				[/gdscript]
+				[csharp]
+				public override object GetDragData(Vector2 position)
+				{
+				    object mydata = MakeData(); // This is your custom method generating the drag data.
+				    SetDragPreview(MakePreview(mydata)); // This is your custom method generating the preview of the drag data.
+				    return mydata;
+				}
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="_get_minimum_size" qualifiers="virtual">
@@ -68,11 +151,22 @@
 				[/csharp]
 				[/codeblocks]
 				The event won't trigger if:
-				* clicking outside the control (see [method has_point]);
+				* clicking outside the control (see [method _has_point]);
 				* control has [member mouse_filter] set to [constant MOUSE_FILTER_IGNORE];
 				* control is obstructed by another [Control] on top of it, which doesn't have [member mouse_filter] set to [constant MOUSE_FILTER_IGNORE];
 				* control's parent has [member mouse_filter] set to [constant MOUSE_FILTER_STOP] or has accepted the event;
 				* it happens outside parent's rectangle and the parent has either [member rect_clip_content] or [method _clips_input] enabled.
+			</description>
+		</method>
+		<method name="_has_point" qualifiers="virtual">
+			<return type="bool">
+			</return>
+			<argument index="0" name="point" type="Vector2">
+			</argument>
+			<description>
+				Virtual method to be implemented by the user. Returns whether the given [code]point[/code] is inside this control.
+				If not overridden, default behavior is checking if the point is within control's Rect.
+				[b]Note:[/b] If you want to check if a point is inside the control, you can use [code]get_rect().has_point(point)[/code].
 			</description>
 		</method>
 		<method name="_make_custom_tooltip" qualifiers="virtual">
@@ -249,63 +343,6 @@
 				[/codeblocks]
 			</description>
 		</method>
-		<method name="can_drop_data" qualifiers="virtual">
-			<return type="bool">
-			</return>
-			<argument index="0" name="position" type="Vector2">
-			</argument>
-			<argument index="1" name="data" type="Variant">
-			</argument>
-			<description>
-				Godot calls this method to test if [code]data[/code] from a control's [method get_drag_data] can be dropped at [code]position[/code]. [code]position[/code] is local to this control.
-				This method should only be used to test the data. Process the data in [method drop_data].
-				[codeblocks]
-				[gdscript]
-				func can_drop_data(position, data):
-				    # Check position if it is relevant to you
-				    # Otherwise, just check data
-				    return typeof(data) == TYPE_DICTIONARY and data.has("expected")
-				[/gdscript]
-				[csharp]
-				public override bool CanDropData(Vector2 position, object data)
-				{
-				    // Check position if it is relevant to you
-				    // Otherwise, just check data
-				    return data is Godot.Collections.Dictionary &amp;&amp; (data as Godot.Collections.Dictionary).Contains("expected");
-				}
-				[/csharp]
-				[/codeblocks]
-			</description>
-		</method>
-		<method name="drop_data" qualifiers="virtual">
-			<return type="void">
-			</return>
-			<argument index="0" name="position" type="Vector2">
-			</argument>
-			<argument index="1" name="data" type="Variant">
-			</argument>
-			<description>
-				Godot calls this method to pass you the [code]data[/code] from a control's [method get_drag_data] result. Godot first calls [method can_drop_data] to test if [code]data[/code] is allowed to drop at [code]position[/code] where [code]position[/code] is local to this control.
-				[codeblocks]
-				[gdscript]
-				func can_drop_data(position, data):
-				    return typeof(data) == TYPE_DICTIONARY and data.has("color")
-				func drop_data(position, data):
-				    var color = data["color"]
-				[/gdscript]
-				[csharp]
-				public override bool CanDropData(Vector2 position, object data)
-				{
-				    return data is Godot.Collections.Dictionary &amp;&amp; (data as Godot.Collections.Dictionary).Contains("color");
-				}
-				public override void DropData(Vector2 position, object data)
-				{
-				    Color color = (Color)(data as Godot.Collections.Dictionary)["color"];
-				}
-				[/csharp]
-				[/codeblocks]
-			</description>
-		</method>
 		<method name="find_next_valid_focus" qualifiers="const">
 			<return type="Control">
 			</return>
@@ -328,8 +365,8 @@
 			<argument index="1" name="preview" type="Control">
 			</argument>
 			<description>
-				Forces drag and bypasses [method get_drag_data] and [method set_drag_preview] by passing [code]data[/code] and [code]preview[/code]. Drag will start even if the mouse is neither over nor pressed on this control.
-				The methods [method can_drop_data] and [method drop_data] must be implemented on controls that want to receive drop data.
+				Forces drag and bypasses [method _get_drag_data] and [method set_drag_preview] by passing [code]data[/code] and [code]preview[/code]. Drag will start even if the mouse is neither over nor pressed on this control.
+				The methods [method _can_drop_data] and [method _drop_data] must be implemented on controls that want to receive drop data.
 			</description>
 		</method>
 		<method name="get_anchor" qualifiers="const">
@@ -362,32 +399,6 @@
 			</argument>
 			<description>
 				Returns the mouse cursor shape the control displays on mouse hover. See [enum CursorShape].
-			</description>
-		</method>
-		<method name="get_drag_data" qualifiers="virtual">
-			<return type="Variant">
-			</return>
-			<argument index="0" name="position" type="Vector2">
-			</argument>
-			<description>
-				Godot calls this method to get data that can be dragged and dropped onto controls that expect drop data. Returns [code]null[/code] if there is no data to drag. Controls that want to receive drop data should implement [method can_drop_data] and [method drop_data]. [code]position[/code] is local to this control. Drag may be forced with [method force_drag].
-				A preview that will follow the mouse that should represent the data can be set with [method set_drag_preview]. A good time to set the preview is in this method.
-				[codeblocks]
-				[gdscript]
-				func get_drag_data(position):
-				    var mydata = make_data() # This is your custom method generating the drag data.
-				    set_drag_preview(make_preview(mydata)) # This is your custom method generating the preview of the drag data.
-				    return mydata
-				[/gdscript]
-				[csharp]
-				public override object GetDragData(Vector2 position)
-				{
-				    object mydata = MakeData(); // This is your custom method generating the drag data.
-				    SetDragPreview(MakePreview(mydata)); // This is your custom method generating the preview of the drag data.
-				    return mydata;
-				}
-				[/csharp]
-				[/codeblocks]
 			</description>
 		</method>
 		<method name="get_end" qualifiers="const">
@@ -575,17 +586,6 @@
 			</return>
 			<description>
 				Returns [code]true[/code] if this is the current focused control. See [member focus_mode].
-			</description>
-		</method>
-		<method name="has_point" qualifiers="virtual">
-			<return type="bool">
-			</return>
-			<argument index="0" name="point" type="Vector2">
-			</argument>
-			<description>
-				Virtual method to be implemented by the user. Returns whether the given [code]point[/code] is inside this control.
-				If not overridden, default behavior is checking if the point is within control's Rect.
-				[b]Note:[/b] If you want to check if a point is inside the control, you can use [code]get_rect().has_point(point)[/code].
 			</description>
 		</method>
 		<method name="has_theme_color" qualifiers="const">
@@ -856,7 +856,7 @@
 			</argument>
 			<description>
 				Forwards the handling of this control's drag and drop to [code]target[/code] control.
-				Forwarding can be implemented in the target control similar to the methods [method get_drag_data], [method can_drop_data], and [method drop_data] but with two differences:
+				Forwarding can be implemented in the target control similar to the methods [method _get_drag_data], [method _can_drop_data], and [method _drop_data] but with two differences:
 				1. The function name must be suffixed with [b]_fw[/b]
 				2. The function must take an extra argument that is the control doing the forwarding
 				[codeblocks]
@@ -871,13 +871,13 @@
 				# TargetControl.gd
 				extends Control
 
-				func can_drop_data_fw(position, data, from_control):
+				func _can_drop_data_fw(position, data, from_control):
 				    return true
 
-				func drop_data_fw(position, data, from_control):
+				func _drop_data_fw(position, data, from_control):
 				    my_handle_data(data) # Your handler method.
 
-				func get_drag_data_fw(position, from_control):
+				func _get_drag_data_fw(position, from_control):
 				    set_drag_preview(my_preview)
 				    return my_data()
 				[/gdscript]
@@ -922,12 +922,12 @@
 			<argument index="0" name="control" type="Control">
 			</argument>
 			<description>
-				Shows the given control at the mouse pointer. A good time to call this method is in [method get_drag_data]. The control must not be in the scene tree. You should not free the control, and you should not keep a reference to the control beyond the duration of the drag. It will be deleted automatically after the drag has ended.
+				Shows the given control at the mouse pointer. A good time to call this method is in [method _get_drag_data]. The control must not be in the scene tree. You should not free the control, and you should not keep a reference to the control beyond the duration of the drag. It will be deleted automatically after the drag has ended.
 				[codeblocks]
 				[gdscript]
 				export (Color, RGBA) var color = Color(1, 0, 0, 1)
 
-				func get_drag_data(position):
+				func _get_drag_data(position):
 				    # Use a control that is not in the tree
 				    var cpb = ColorPickerButton.new()
 				    cpb.color = color

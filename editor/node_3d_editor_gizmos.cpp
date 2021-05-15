@@ -104,8 +104,8 @@ void EditorNode3DGizmo::clear() {
 }
 
 void EditorNode3DGizmo::redraw() {
-	if (get_script_instance() && get_script_instance()->has_method("redraw")) {
-		get_script_instance()->call("redraw");
+	if (get_script_instance() && get_script_instance()->has_method("_redraw")) {
+		get_script_instance()->call("_redraw");
 		return;
 	}
 
@@ -114,8 +114,8 @@ void EditorNode3DGizmo::redraw() {
 }
 
 String EditorNode3DGizmo::get_handle_name(int p_idx) const {
-	if (get_script_instance() && get_script_instance()->has_method("get_handle_name")) {
-		return get_script_instance()->call("get_handle_name", p_idx);
+	if (get_script_instance() && get_script_instance()->has_method("_get_handle_name")) {
+		return get_script_instance()->call("_get_handle_name", p_idx);
 	}
 
 	ERR_FAIL_COND_V(!gizmo_plugin, "");
@@ -123,8 +123,8 @@ String EditorNode3DGizmo::get_handle_name(int p_idx) const {
 }
 
 bool EditorNode3DGizmo::is_handle_highlighted(int p_idx) const {
-	if (get_script_instance() && get_script_instance()->has_method("is_handle_highlighted")) {
-		return get_script_instance()->call("is_handle_highlighted", p_idx);
+	if (get_script_instance() && get_script_instance()->has_method("_is_handle_highlighted")) {
+		return get_script_instance()->call("_is_handle_highlighted", p_idx);
 	}
 
 	ERR_FAIL_COND_V(!gizmo_plugin, false);
@@ -132,8 +132,8 @@ bool EditorNode3DGizmo::is_handle_highlighted(int p_idx) const {
 }
 
 Variant EditorNode3DGizmo::get_handle_value(int p_idx) {
-	if (get_script_instance() && get_script_instance()->has_method("get_handle_value")) {
-		return get_script_instance()->call("get_handle_value", p_idx);
+	if (get_script_instance() && get_script_instance()->has_method("_get_handle_value")) {
+		return get_script_instance()->call("_get_handle_value", p_idx);
 	}
 
 	ERR_FAIL_COND_V(!gizmo_plugin, Variant());
@@ -141,8 +141,8 @@ Variant EditorNode3DGizmo::get_handle_value(int p_idx) {
 }
 
 void EditorNode3DGizmo::set_handle(int p_idx, Camera3D *p_camera, const Point2 &p_point) {
-	if (get_script_instance() && get_script_instance()->has_method("set_handle")) {
-		get_script_instance()->call("set_handle", p_idx, p_camera, p_point);
+	if (get_script_instance() && get_script_instance()->has_method("_set_handle")) {
+		get_script_instance()->call("_set_handle", p_idx, p_camera, p_point);
 		return;
 	}
 
@@ -151,8 +151,8 @@ void EditorNode3DGizmo::set_handle(int p_idx, Camera3D *p_camera, const Point2 &
 }
 
 void EditorNode3DGizmo::commit_handle(int p_idx, const Variant &p_restore, bool p_cancel) {
-	if (get_script_instance() && get_script_instance()->has_method("commit_handle")) {
-		get_script_instance()->call("commit_handle", p_idx, p_restore, p_cancel);
+	if (get_script_instance() && get_script_instance()->has_method("_commit_handle")) {
+		get_script_instance()->call("_commit_handle", p_idx, p_restore, p_cancel);
 		return;
 	}
 
@@ -739,16 +739,16 @@ void EditorNode3DGizmo::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("clear"), &EditorNode3DGizmo::clear);
 	ClassDB::bind_method(D_METHOD("set_hidden", "hidden"), &EditorNode3DGizmo::set_hidden);
 
-	BIND_VMETHOD(MethodInfo("redraw"));
-	BIND_VMETHOD(MethodInfo(Variant::STRING, "get_handle_name", PropertyInfo(Variant::INT, "index")));
-	BIND_VMETHOD(MethodInfo(Variant::BOOL, "is_handle_highlighted", PropertyInfo(Variant::INT, "index")));
+	BIND_VMETHOD(MethodInfo("_redraw"));
+	BIND_VMETHOD(MethodInfo(Variant::STRING, "_get_handle_name", PropertyInfo(Variant::INT, "index")));
+	BIND_VMETHOD(MethodInfo(Variant::BOOL, "_is_handle_highlighted", PropertyInfo(Variant::INT, "index")));
 
-	MethodInfo hvget(Variant::NIL, "get_handle_value", PropertyInfo(Variant::INT, "index"));
+	MethodInfo hvget(Variant::NIL, "_get_handle_value", PropertyInfo(Variant::INT, "index"));
 	hvget.return_val.usage |= PROPERTY_USAGE_NIL_IS_VARIANT;
 	BIND_VMETHOD(hvget);
 
-	BIND_VMETHOD(MethodInfo("set_handle", PropertyInfo(Variant::INT, "index"), PropertyInfo(Variant::OBJECT, "camera", PROPERTY_HINT_RESOURCE_TYPE, "Camera3D"), PropertyInfo(Variant::VECTOR2, "point")));
-	MethodInfo cm = MethodInfo("commit_handle", PropertyInfo(Variant::INT, "index"), PropertyInfo(Variant::NIL, "restore"), PropertyInfo(Variant::BOOL, "cancel"));
+	BIND_VMETHOD(MethodInfo("_set_handle", PropertyInfo(Variant::INT, "index"), PropertyInfo(Variant::OBJECT, "camera", PROPERTY_HINT_RESOURCE_TYPE, "Camera3D"), PropertyInfo(Variant::VECTOR2, "point")));
+	MethodInfo cm = MethodInfo("_commit_handle", PropertyInfo(Variant::INT, "index"), PropertyInfo(Variant::NIL, "restore"), PropertyInfo(Variant::BOOL, "cancel"));
 	cm.default_arguments.push_back(false);
 	BIND_VMETHOD(cm);
 }

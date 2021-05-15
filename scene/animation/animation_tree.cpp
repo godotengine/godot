@@ -37,7 +37,7 @@
 
 void AnimationNode::get_parameter_list(List<PropertyInfo> *r_list) const {
 	if (get_script_instance()) {
-		Array parameters = get_script_instance()->call("get_parameter_list");
+		Array parameters = get_script_instance()->call("_get_parameter_list");
 		for (int i = 0; i < parameters.size(); i++) {
 			Dictionary d = parameters[i];
 			ERR_CONTINUE(d.is_empty());
@@ -48,7 +48,7 @@ void AnimationNode::get_parameter_list(List<PropertyInfo> *r_list) const {
 
 Variant AnimationNode::get_parameter_default_value(const StringName &p_parameter) const {
 	if (get_script_instance()) {
-		return get_script_instance()->call("get_parameter_default_value", p_parameter);
+		return get_script_instance()->call("_get_parameter_default_value", p_parameter);
 	}
 	return Variant();
 }
@@ -73,7 +73,7 @@ Variant AnimationNode::get_parameter(const StringName &p_name) const {
 
 void AnimationNode::get_child_nodes(List<ChildNode> *r_child_nodes) {
 	if (get_script_instance()) {
-		Dictionary cn = get_script_instance()->call("get_child_nodes");
+		Dictionary cn = get_script_instance()->call("_get_child_nodes");
 		List<Variant> keys;
 		cn.get_key_list(&keys);
 		for (List<Variant>::Element *E = keys.front(); E; E = E->next()) {
@@ -299,7 +299,7 @@ String AnimationNode::get_input_name(int p_input) {
 
 String AnimationNode::get_caption() const {
 	if (get_script_instance()) {
-		return get_script_instance()->call("get_caption");
+		return get_script_instance()->call("_get_caption");
 	}
 
 	return "Node";
@@ -330,7 +330,7 @@ void AnimationNode::remove_input(int p_index) {
 
 float AnimationNode::process(float p_time, bool p_seek) {
 	if (get_script_instance()) {
-		return get_script_instance()->call("process", p_time, p_seek);
+		return get_script_instance()->call("_process", p_time, p_seek);
 	}
 
 	return 0;
@@ -357,6 +357,10 @@ bool AnimationNode::is_path_filtered(const NodePath &p_path) const {
 }
 
 bool AnimationNode::has_filter() const {
+	if (get_script_instance()) {
+		return get_script_instance()->call("_has_filter");
+	}
+
 	return false;
 }
 
@@ -387,7 +391,7 @@ void AnimationNode::_validate_property(PropertyInfo &property) const {
 
 Ref<AnimationNode> AnimationNode::get_child_by_name(const StringName &p_name) {
 	if (get_script_instance()) {
-		return get_script_instance()->call("get_child_by_name", p_name);
+		return get_script_instance()->call("_get_child_by_name", p_name);
 	}
 	return Ref<AnimationNode>();
 }
@@ -418,17 +422,17 @@ void AnimationNode::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "filter_enabled", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "set_filter_enabled", "is_filter_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "filters", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "_set_filters", "_get_filters");
 
-	BIND_VMETHOD(MethodInfo(Variant::DICTIONARY, "get_child_nodes"));
-	BIND_VMETHOD(MethodInfo(Variant::ARRAY, "get_parameter_list"));
-	BIND_VMETHOD(MethodInfo(Variant::OBJECT, "get_child_by_name", PropertyInfo(Variant::STRING, "name")));
+	BIND_VMETHOD(MethodInfo(Variant::DICTIONARY, "_get_child_nodes"));
+	BIND_VMETHOD(MethodInfo(Variant::ARRAY, "_get_parameter_list"));
+	BIND_VMETHOD(MethodInfo(Variant::OBJECT, "_get_child_by_name", PropertyInfo(Variant::STRING, "name")));
 	{
-		MethodInfo mi = MethodInfo(Variant::NIL, "get_parameter_default_value", PropertyInfo(Variant::STRING_NAME, "name"));
+		MethodInfo mi = MethodInfo(Variant::NIL, "_get_parameter_default_value", PropertyInfo(Variant::STRING_NAME, "name"));
 		mi.return_val.usage = PROPERTY_USAGE_NIL_IS_VARIANT;
 		BIND_VMETHOD(mi);
 	}
-	BIND_VMETHOD(MethodInfo("process", PropertyInfo(Variant::FLOAT, "time"), PropertyInfo(Variant::BOOL, "seek")));
-	BIND_VMETHOD(MethodInfo(Variant::STRING, "get_caption"));
-	BIND_VMETHOD(MethodInfo(Variant::BOOL, "has_filter"));
+	BIND_VMETHOD(MethodInfo("_process", PropertyInfo(Variant::FLOAT, "time"), PropertyInfo(Variant::BOOL, "seek")));
+	BIND_VMETHOD(MethodInfo(Variant::STRING, "_get_caption"));
+	BIND_VMETHOD(MethodInfo(Variant::BOOL, "_has_filter"));
 
 	ADD_SIGNAL(MethodInfo("removed_from_graph"));
 

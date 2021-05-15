@@ -138,10 +138,10 @@ public:
 	StringName grouped;
 	StringName ungrouped;
 
-	StringName has_point;
-	StringName get_drag_data;
-	StringName can_drop_data;
-	StringName drop_data;
+	StringName _has_point;
+	StringName _get_drag_data;
+	StringName _can_drop_data;
+	StringName _drop_data;
 
 	StringName screen_entered;
 	StringName screen_exited;
