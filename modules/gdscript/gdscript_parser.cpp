@@ -2143,26 +2143,34 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_builtin_constant(Expressio
 
 GDScriptParser::ExpressionNode *GDScriptParser::parse_unary_operator(ExpressionNode *p_previous_operand, bool p_can_assign) {
 	GDScriptTokenizer::Token::Type op_type = previous.type;
-	UnaryOpNode *operation = alloc_node<UnaryOpNode>();
+	UnaryOpNode *operation = nullptr;
 
 	switch (op_type) {
 		case GDScriptTokenizer::Token::MINUS:
-			operation->operation = UnaryOpNode::OP_NEGATIVE;
-			operation->variant_op = Variant::OP_NEGATE;
+		case GDScriptTokenizer::Token::PLUS: {
+			ExpressionNode *operand = parse_precedence(PREC_SIGN, false);
+			Variant::Operator variant_op = op_type == GDScriptTokenizer::Token::MINUS ? Variant::OP_NEGATE : Variant::OP_POSITIVE;
+
+			// For plus and minus operators, apply sign directly to the operand if the latter is a literal
+			if (operand->type == Node::LITERAL) {
+				LiteralNode *literal = static_cast<LiteralNode *>(operand);
+				literal->value = Variant::evaluate(variant_op, literal->value, Variant());
+				return literal;
+			}
+			operation = alloc_node<UnaryOpNode>();
+			operation->operation = op_type == GDScriptTokenizer::Token::MINUS ? UnaryOpNode::OP_NEGATIVE : UnaryOpNode::OP_POSITIVE;
+			operation->variant_op = variant_op;
 			operation->operand = parse_precedence(PREC_SIGN, false);
-			break;
-		case GDScriptTokenizer::Token::PLUS:
-			operation->operation = UnaryOpNode::OP_POSITIVE;
-			operation->variant_op = Variant::OP_POSITIVE;
-			operation->operand = parse_precedence(PREC_SIGN, false);
-			break;
+		} break;
 		case GDScriptTokenizer::Token::TILDE:
+			operation = alloc_node<UnaryOpNode>();
 			operation->operation = UnaryOpNode::OP_COMPLEMENT;
 			operation->variant_op = Variant::OP_BIT_NEGATE;
 			operation->operand = parse_precedence(PREC_BIT_NOT, false);
 			break;
 		case GDScriptTokenizer::Token::NOT:
 		case GDScriptTokenizer::Token::BANG:
+			operation = alloc_node<UnaryOpNode>();
 			operation->operation = UnaryOpNode::OP_LOGIC_NOT;
 			operation->variant_op = Variant::OP_NOT;
 			operation->operand = parse_precedence(PREC_LOGIC_NOT, false);
