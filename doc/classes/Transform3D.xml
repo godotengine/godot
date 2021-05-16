@@ -91,19 +91,46 @@
 				Returns the transform with the basis orthogonal (90 degrees), and normalized axis vectors (scale of 1 or -1).
 			</description>
 		</method>
+		<method name="pre_rotated" qualifiers="const">
+			<return type="Transform3D" />
+			<argument index="0" name="axis" type="Vector3" />
+			<argument index="1" name="radians" type="float" />
+			<description>
+				Returns the transform rotated around the given axis by the given angle (in radians) in the parent's reference frame. The axis must be a normalized vector.
+				[b]Note[/b]: To peform the rotation in the local reference frame, use [method rotated].
+			</description>
+		</method>
+		<method name="pre_scaled" qualifiers="const">
+			<return type="Transform3D" />
+			<argument index="0" name="scale" type="Vector3" />
+			<description>
+				Returns the transform scaled by the given scale factor in the parent's reference frame.
+				[b]Note[/b]: To peform the scaling in the local reference frame, use [method scaled].
+			</description>
+		</method>
+		<method name="pre_translated" qualifiers="const">
+			<return type="Transform3D" />
+			<argument index="0" name="offset" type="Vector3" />
+			<description>
+				Returns the transform translated by the given offset in the parent's reference frame.
+				[b]Note[/b]: To peform the translation in the local reference frame, use [method translated].
+			</description>
+		</method>
 		<method name="rotated" qualifiers="const">
 			<return type="Transform3D" />
 			<argument index="0" name="axis" type="Vector3" />
-			<argument index="1" name="phi" type="float" />
+			<argument index="1" name="radians" type="float" />
 			<description>
-				Rotates the transform around the given axis by the given angle (in radians), using matrix multiplication. The axis must be a normalized vector.
+				Returns the transform rotated around the given axis by the given angle (in radians). The axis must be a normalized vector.
+				[b]Note[/b]: The rotation is performed in the local reference frame. To peform the rotation in the parent's reference frame, use [method pre_rotated].
 			</description>
 		</method>
 		<method name="scaled" qualifiers="const">
 			<return type="Transform3D" />
 			<argument index="0" name="scale" type="Vector3" />
 			<description>
-				Scales basis and origin of the transform by the given scale factor, using matrix multiplication.
+				Returns the transform scaled by the given scale factor.
+				[b]Note[/b]: The scaling is performed in the local reference frame. To peform the scaling in the parent's reference frame, use [method pre_scaled].
 			</description>
 		</method>
 		<method name="sphere_interpolate_with" qualifiers="const">
@@ -118,8 +145,8 @@
 			<return type="Transform3D" />
 			<argument index="0" name="offset" type="Vector3" />
 			<description>
-				Translates the transform by the given offset, relative to the transform's basis vectors.
-				Unlike [method rotated] and [method scaled], this does not use matrix multiplication.
+				Returns the transform translated by the given offset.
+				[b]Note[/b]: The translation is performed in the local reference frame. To peform the translation in the parent's reference frame, use [method pre_translated].
 			</description>
 		</method>
 	</methods>

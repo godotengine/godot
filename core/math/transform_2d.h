@@ -89,10 +89,12 @@ struct _NO_DISCARD_ Transform2D {
 	_FORCE_INLINE_ const Vector2 &get_origin() const { return elements[2]; }
 	_FORCE_INLINE_ void set_origin(const Vector2 &p_origin) { elements[2] = p_origin; }
 
-	Transform2D scaled(const Size2 &p_scale) const;
-	Transform2D basis_scaled(const Size2 &p_scale) const;
 	Transform2D translated(const Vector2 &p_offset) const;
-	Transform2D rotated(const real_t p_phi) const;
+	Transform2D pre_translated(const Vector2 &p_offset) const;
+	Transform2D scaled(const Size2 &p_scale) const;
+	Transform2D pre_scaled(const Size2 &p_scale) const;
+	Transform2D rotated(const real_t p_radians) const;
+	Transform2D pre_rotated(const real_t p_radians) const;
 
 	Transform2D untranslated() const;
 

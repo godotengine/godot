@@ -215,34 +215,50 @@ Transform2D Transform2D::operator*(const Transform2D &p_transform) const {
 	return t;
 }
 
-Transform2D Transform2D::scaled(const Size2 &p_scale) const {
-	Transform2D copy = *this;
-	copy.scale(p_scale);
-	return copy;
+Transform2D Transform2D::translated(const Vector2 &p_offset) const {
+	Transform2D result = *this;
+	result[2].x = tdotx(p_offset);
+	result[2].y = tdoty(p_offset);
+	return result;
 }
 
-Transform2D Transform2D::basis_scaled(const Size2 &p_scale) const {
-	Transform2D copy = *this;
-	copy.scale_basis(p_scale);
-	return copy;
+Transform2D Transform2D::pre_translated(const Vector2 &p_offset) const {
+	Transform2D result = *this;
+	result[2] += p_offset;
+	return result;
+}
+
+Transform2D Transform2D::scaled(const Size2 &p_scale) const {
+	Transform2D result = *this;
+	result[0] *= p_scale.x;
+	result[1] *= p_scale.y;
+	return result;
+}
+
+Transform2D Transform2D::pre_scaled(const Size2 &p_scale) const {
+	Transform2D result = *this;
+	result[0] *= p_scale;
+	result[1] *= p_scale;
+	result[2] *= p_scale;
+	return result;
+}
+
+Transform2D Transform2D::rotated(const real_t p_radians) const {
+	Transform2D result = *this;
+	result *= Transform2D(p_radians, Vector2());
+	return result;
+}
+
+Transform2D Transform2D::pre_rotated(const real_t p_radians) const {
+	Transform2D result = Transform2D(p_radians, Vector2());
+	result *= *this;
+	return result;
 }
 
 Transform2D Transform2D::untranslated() const {
-	Transform2D copy = *this;
-	copy.elements[2] = Vector2();
-	return copy;
-}
-
-Transform2D Transform2D::translated(const Vector2 &p_offset) const {
-	Transform2D copy = *this;
-	copy.translate(p_offset);
-	return copy;
-}
-
-Transform2D Transform2D::rotated(const real_t p_phi) const {
-	Transform2D copy = *this;
-	copy.rotate(p_phi);
-	return copy;
+	Transform2D result = *this;
+	result.elements[2] = Vector2();
+	return result;
 }
 
 real_t Transform2D::basis_determinant() const {

@@ -61,10 +61,6 @@ void Transform3D::rotate(const Vector3 &p_axis, real_t p_phi) {
 	*this = rotated(p_axis, p_phi);
 }
 
-Transform3D Transform3D::rotated(const Vector3 &p_axis, real_t p_phi) const {
-	return Transform3D(Basis(p_axis, p_phi), Vector3()) * (*this);
-}
-
 void Transform3D::rotate_basis(const Vector3 &p_axis, real_t p_phi) {
 	basis.rotate(p_axis, p_phi);
 }
@@ -113,12 +109,6 @@ void Transform3D::scale(const Vector3 &p_scale) {
 	origin *= p_scale;
 }
 
-Transform3D Transform3D::scaled(const Vector3 &p_scale) const {
-	Transform3D t = *this;
-	t.scale(p_scale);
-	return t;
-}
-
 void Transform3D::scale_basis(const Vector3 &p_scale) {
 	basis.scale(p_scale);
 }
@@ -133,10 +123,47 @@ void Transform3D::translate(const Vector3 &p_translation) {
 	}
 }
 
-Transform3D Transform3D::translated(const Vector3 &p_translation) const {
-	Transform3D t = *this;
-	t.translate(p_translation);
-	return t;
+Transform3D Transform3D::translated(const Vector3 &p_offset) const {
+	Transform3D result = *this;
+	result.origin.x += basis[0].dot(p_offset);
+	result.origin.y += basis[1].dot(p_offset);
+	result.origin.z += basis[2].dot(p_offset);
+	return result;
+}
+
+Transform3D Transform3D::pre_translated(const Vector3 &p_offset) const {
+	Transform3D result = *this;
+	result.origin += p_offset;
+	return result;
+}
+
+Transform3D Transform3D::scaled(const Vector3 &p_scale) const {
+	Transform3D result = *this;
+	result.basis[0] *= p_scale;
+	result.basis[1] *= p_scale;
+	result.basis[2] *= p_scale;
+	return result;
+}
+
+Transform3D Transform3D::pre_scaled(const Vector3 &p_scale) const {
+	Transform3D result = *this;
+	result.basis[0] *= p_scale.x;
+	result.basis[1] *= p_scale.y;
+	result.basis[2] *= p_scale.z;
+	result.origin *= p_scale;
+	return result;
+}
+
+Transform3D Transform3D::rotated(const Vector3 &p_axis, real_t p_radians) const {
+	Transform3D result = *this;
+	result *= Transform3D(Basis(p_axis, p_radians), Vector3());
+	return result;
+}
+
+Transform3D Transform3D::pre_rotated(const Vector3 &p_axis, real_t p_radians) const {
+	Transform3D result(Basis(p_axis, p_radians), Vector3());
+	result *= *this;
+	return result;
 }
 
 void Transform3D::orthonormalize() {

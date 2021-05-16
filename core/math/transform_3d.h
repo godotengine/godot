@@ -46,8 +46,6 @@ public:
 	void affine_invert();
 	Transform3D affine_inverse() const;
 
-	Transform3D rotated(const Vector3 &p_axis, real_t p_phi) const;
-
 	void rotate(const Vector3 &p_axis, real_t p_phi);
 	void rotate_basis(const Vector3 &p_axis, real_t p_phi);
 
@@ -55,11 +53,16 @@ public:
 	Transform3D looking_at(const Vector3 &p_target, const Vector3 &p_up = Vector3(0, 1, 0)) const;
 
 	void scale(const Vector3 &p_scale);
-	Transform3D scaled(const Vector3 &p_scale) const;
 	void scale_basis(const Vector3 &p_scale);
 	void translate(real_t p_tx, real_t p_ty, real_t p_tz);
 	void translate(const Vector3 &p_translation);
+
 	Transform3D translated(const Vector3 &p_translation) const;
+	Transform3D pre_translated(const Vector3 &p_translation) const;
+	Transform3D scaled(const Vector3 &p_scale) const;
+	Transform3D pre_scaled(const Vector3 &p_scale) const;
+	Transform3D rotated(const Vector3 &p_axis, real_t p_radians) const;
+	Transform3D pre_rotated(const Vector3 &p_axis, real_t p_radians) const;
 
 	const Basis &get_basis() const { return basis; }
 	void set_basis(const Basis &p_basis) { basis = p_basis; }
