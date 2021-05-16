@@ -539,7 +539,7 @@ Error StreamTexture::_load_data(const String &p_path, int &tw, int &th, int &tw_
 
 		//mipmaps need to be read independently, they will be later combined
 		Vector<Ref<Image>> mipmap_images;
-		int total_size = 0;
+		uint64_t total_size = 0;
 
 		for (uint32_t i = 0; i < mipmaps; i++) {
 			if (i) {
@@ -624,7 +624,7 @@ Error StreamTexture::_load_data(const String &p_path, int &tw, int &th, int &tw_
 			int sh = th;
 
 			int mipmaps2 = Image::get_image_required_mipmaps(tw, th, format);
-			int total_size = Image::get_image_data_size(tw, th, format, true);
+			uint64_t total_size = Image::get_image_data_size(tw, th, format, true);
 			int idx = 0;
 
 			while (mipmaps2 > 1 && p_size_limit > 0 && (sw > p_size_limit || sh > p_size_limit)) {
@@ -648,12 +648,12 @@ Error StreamTexture::_load_data(const String &p_path, int &tw, int &th, int &tw_
 
 			{
 				PoolVector<uint8_t>::Write w = img_data.write();
-				int bytes = f->get_buffer(w.ptr(), total_size - ofs);
+				uint64_t bytes = f->get_buffer(w.ptr(), total_size - ofs);
 				//print_line("requested read: " + itos(total_size - ofs) + " but got: " + itos(bytes));
 
 				memdelete(f);
 
-				int expected = total_size - ofs;
+				uint64_t expected = total_size - ofs;
 				if (bytes < expected) {
 					//this is a compatibility workaround for older format, which saved less mipmaps2. It is still recommended the image is reimported.
 					memset(w.ptr() + bytes, 0, (expected - bytes));
@@ -2225,14 +2225,14 @@ Error TextureLayered::load(const String &p_path) {
 		} else {
 			//look for regular format
 			bool mipmaps = (flags & Texture::FLAG_MIPMAPS);
-			int total_size = Image::get_image_data_size(tw, th, format, mipmaps);
+			uint64_t total_size = Image::get_image_data_size(tw, th, format, mipmaps);
 
 			PoolVector<uint8_t> img_data;
 			img_data.resize(total_size);
 
 			{
 				PoolVector<uint8_t>::Write w = img_data.write();
-				int bytes = f->get_buffer(w.ptr(), total_size);
+				uint64_t bytes = f->get_buffer(w.ptr(), total_size);
 				if (bytes != total_size) {
 					f->close();
 					memdelete(f);

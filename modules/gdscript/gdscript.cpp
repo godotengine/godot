@@ -771,10 +771,10 @@ Error GDScript::load_source_code(const String &p_path) {
 		ERR_FAIL_COND_V(err, err);
 	}
 
-	int len = f->get_len();
+	uint64_t len = f->get_len();
 	sourcef.resize(len + 1);
 	PoolVector<uint8_t>::Write w = sourcef.write();
-	int r = f->get_buffer(w.ptr(), len);
+	uint64_t r = f->get_buffer(w.ptr(), len);
 	f->close();
 	memdelete(f);
 	ERR_FAIL_COND_V(r != len, ERR_CANT_OPEN);

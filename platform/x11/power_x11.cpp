@@ -78,16 +78,12 @@ FileAccessRef PowerX11::open_power_file(const char *base, const char *node, cons
 }
 
 bool PowerX11::read_power_file(const char *base, const char *node, const char *key, char *buf, size_t buflen) {
-	ssize_t br = 0;
 	FileAccessRef fd = open_power_file(base, node, key);
 	if (!fd) {
 		return false;
 	}
-	br = fd->get_buffer(reinterpret_cast<uint8_t *>(buf), buflen - 1);
+	uint64_t br = fd->get_buffer(reinterpret_cast<uint8_t *>(buf), buflen - 1);
 	fd->close();
-	if (br < 0) {
-		return false;
-	}
 	buf[br] = '\0'; // null-terminate the string
 	return true;
 }
@@ -340,18 +336,13 @@ bool PowerX11::GetPowerInfo_Linux_proc_apm() {
 	char buf[128];
 	char *ptr = &buf[0];
 	char *str = nullptr;
-	ssize_t br;
 
 	if (!fd) {
 		return false; /* can't use this interface. */
 	}
 
-	br = fd->get_buffer(reinterpret_cast<uint8_t *>(buf), sizeof(buf) - 1);
+	uint64_t br = fd->get_buffer(reinterpret_cast<uint8_t *>(buf), sizeof(buf) - 1);
 	fd->close();
-
-	if (br < 0) {
-		return false;
-	}
 
 	buf[br] = '\0'; /* null-terminate the string. */
 	if (!next_string(&ptr, &str)) { /* driver version */

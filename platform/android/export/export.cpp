@@ -2339,7 +2339,7 @@ public:
 								text = text.to_upper(); //just in case
 
 								String end_marker = "//CHUNK_" + text + "_END";
-								size_t pos = f->get_position();
+								uint64_t pos = f->get_position();
 								bool found = false;
 								while (!f->eof_reached()) {
 									l = f->get_line();
@@ -2378,7 +2378,7 @@ public:
 								text = text.to_upper(); //just in case
 
 								String end_marker = "//DIR_" + text + "_END";
-								size_t pos = f->get_position();
+								uint64_t pos = f->get_position();
 								bool found = false;
 								while (!f->eof_reached()) {
 									l = f->get_line();
@@ -2448,7 +2448,7 @@ public:
 								text = text.to_upper(); //just in case
 
 								String end_marker = "<!--CHUNK_" + text + "_END-->";
-								size_t pos = f->get_position();
+								uint64_t pos = f->get_position();
 								bool found = false;
 								while (!f->eof_reached()) {
 									l = f->get_line();

@@ -37,34 +37,34 @@
 class FileAccessCompressed : public FileAccess {
 	Compression::Mode cmode;
 	bool writing;
-	uint32_t write_pos;
+	uint64_t write_pos;
 	uint8_t *write_ptr;
 	uint32_t write_buffer_size;
-	uint32_t write_max;
+	uint64_t write_max;
 	uint32_t block_size;
 	mutable bool read_eof;
 	mutable bool at_end;
 
 	struct ReadBlock {
-		int csize;
-		int offset;
+		uint32_t csize;
+		uint64_t offset;
 	};
 
 	mutable Vector<uint8_t> comp_buffer;
 	uint8_t *read_ptr;
-	mutable int read_block;
-	int read_block_count;
-	mutable int read_block_size;
-	mutable int read_pos;
+	mutable uint32_t read_block;
+	uint32_t read_block_count;
+	mutable uint32_t read_block_size;
+	mutable uint64_t read_pos;
 	Vector<ReadBlock> read_blocks;
-	uint32_t read_total;
+	uint64_t read_total;
 
 	String magic;
 	mutable Vector<uint8_t> buffer;
 	FileAccess *f;
 
 public:
-	void configure(const String &p_magic, Compression::Mode p_mode = Compression::MODE_ZSTD, int p_block_size = 4096);
+	void configure(const String &p_magic, Compression::Mode p_mode = Compression::MODE_ZSTD, uint32_t p_block_size = 4096);
 
 	Error open_after_magic(FileAccess *p_base);
 
@@ -72,15 +72,15 @@ public:
 	virtual void close(); ///< close a file
 	virtual bool is_open() const; ///< true when file is open
 
-	virtual void seek(size_t p_position); ///< seek to a given position
+	virtual void seek(uint64_t p_position); ///< seek to a given position
 	virtual void seek_end(int64_t p_position = 0); ///< seek from the end of file
-	virtual size_t get_position() const; ///< get position in the file
-	virtual size_t get_len() const; ///< get size of the file
+	virtual uint64_t get_position() const; ///< get position in the file
+	virtual uint64_t get_len() const; ///< get size of the file
 
 	virtual bool eof_reached() const; ///< reading passed EOF
 
 	virtual uint8_t get_8() const; ///< get a byte
-	virtual int get_buffer(uint8_t *p_dst, int p_length) const;
+	virtual uint64_t get_buffer(uint8_t *p_dst, uint64_t p_length) const;
 
 	virtual Error get_error() const; ///< get last error
 
