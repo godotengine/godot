@@ -454,7 +454,7 @@ void GIProbe::bake(Node *p_from_node, bool p_create_visual_debug) {
 		mmi->set_multimesh(baker.create_debug_multimesh());
 		add_child(mmi);
 #ifdef TOOLS_ENABLED
-		if (get_tree()->get_edited_scene_root() == this) {
+		if (is_inside_tree() && get_tree()->get_edited_scene_root() == this) {
 			mmi->set_owner(this);
 		} else {
 			mmi->set_owner(get_owner());
