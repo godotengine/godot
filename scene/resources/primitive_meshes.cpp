@@ -714,7 +714,7 @@ int BoxMesh::get_subdivide_depth() const {
 BoxMesh::BoxMesh() {}
 
 /**
-  CylinderMesh
+	CylinderMesh
 */
 
 void CylinderMesh::_create_mesh_array(Array &p_arr) const {
@@ -955,7 +955,7 @@ void PlaneMesh::_create_mesh_array(Array &p_arr) const {
 			u /= (subdivide_w + 1.0);
 			v /= (subdivide_d + 1.0);
 
-			points.push_back(Vector3(-x, 0.0, -z));
+			points.push_back(Vector3(-x, 0.0, -z) + center_offset);
 			normals.push_back(Vector3(0.0, 1.0, 0.0));
 			ADD_TANGENT(1.0, 0.0, 0.0, 1.0);
 			uvs.push_back(Vector2(1.0 - u, 1.0 - v)); /* 1.0 - uv to match orientation with Quad */
@@ -993,10 +993,13 @@ void PlaneMesh::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_subdivide_width"), &PlaneMesh::get_subdivide_width);
 	ClassDB::bind_method(D_METHOD("set_subdivide_depth", "subdivide"), &PlaneMesh::set_subdivide_depth);
 	ClassDB::bind_method(D_METHOD("get_subdivide_depth"), &PlaneMesh::get_subdivide_depth);
+	ClassDB::bind_method(D_METHOD("set_center_offset", "offset"), &PlaneMesh::set_center_offset);
+	ClassDB::bind_method(D_METHOD("get_center_offset"), &PlaneMesh::get_center_offset);
 
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "size"), "set_size", "get_size");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "subdivide_width", PROPERTY_HINT_RANGE, "0,100,1,or_greater"), "set_subdivide_width", "get_subdivide_width");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "subdivide_depth", PROPERTY_HINT_RANGE, "0,100,1,or_greater"), "set_subdivide_depth", "get_subdivide_depth");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "center_offset"), "set_center_offset", "get_center_offset");
 }
 
 void PlaneMesh::set_size(const Size2 &p_size) {
@@ -1024,6 +1027,15 @@ void PlaneMesh::set_subdivide_depth(const int p_divisions) {
 
 int PlaneMesh::get_subdivide_depth() const {
 	return subdivide_d;
+}
+
+void PlaneMesh::set_center_offset(const Vector3 p_offset) {
+	center_offset = p_offset;
+	_request_update();
+}
+
+Vector3 PlaneMesh::get_center_offset() const {
+	return center_offset;
 }
 
 PlaneMesh::PlaneMesh() {}
@@ -1326,10 +1338,10 @@ void QuadMesh::_create_mesh_array(Array &p_arr) const {
 	Vector2 _size = Vector2(size.x / 2.0f, size.y / 2.0f);
 
 	Vector3 quad_faces[4] = {
-		Vector3(-_size.x, -_size.y, 0),
-		Vector3(-_size.x, _size.y, 0),
-		Vector3(_size.x, _size.y, 0),
-		Vector3(_size.x, -_size.y, 0),
+		Vector3(-_size.x, -_size.y, 0) + center_offset,
+		Vector3(-_size.x, _size.y, 0) + center_offset,
+		Vector3(_size.x, _size.y, 0) + center_offset,
+		Vector3(_size.x, -_size.y, 0) + center_offset,
 	};
 
 	static const int indices[6] = {
@@ -1365,7 +1377,11 @@ void QuadMesh::_create_mesh_array(Array &p_arr) const {
 void QuadMesh::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_size", "size"), &QuadMesh::set_size);
 	ClassDB::bind_method(D_METHOD("get_size"), &QuadMesh::get_size);
+	ClassDB::bind_method(D_METHOD("set_center_offset", "center_offset"), &QuadMesh::set_center_offset);
+	ClassDB::bind_method(D_METHOD("get_center_offset"), &QuadMesh::get_center_offset);
+
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "size"), "set_size", "get_size");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "center_offset"), "set_center_offset", "get_center_offset");
 }
 
 QuadMesh::QuadMesh() {
@@ -1379,6 +1395,15 @@ void QuadMesh::set_size(const Size2 &p_size) {
 
 Size2 QuadMesh::get_size() const {
 	return size;
+}
+
+void QuadMesh::set_center_offset(Vector3 p_center_offset) {
+	center_offset = p_center_offset;
+	_request_update();
+}
+
+Vector3 QuadMesh::get_center_offset() const {
+	return center_offset;
 }
 
 /**
