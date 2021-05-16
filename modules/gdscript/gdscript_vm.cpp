@@ -196,6 +196,7 @@ String GDScriptFunction::_get_call_error(const Callable::CallError &p_err, const
 		&&OPCODE_CALL_SELF_BASE,                     \
 		&&OPCODE_CALL_METHOD_BIND,                   \
 		&&OPCODE_CALL_METHOD_BIND_RET,               \
+		&&OPCODE_CALL_BUILTIN_STATIC,                \
 		&&OPCODE_CALL_PTRCALL_NO_RETURN,             \
 		&&OPCODE_CALL_PTRCALL_BOOL,                  \
 		&&OPCODE_CALL_PTRCALL_INT,                   \
@@ -1570,6 +1571,51 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				}
 #endif
 				ip += 3;
+			}
+			DISPATCH_OPCODE;
+
+			OPCODE(OPCODE_CALL_BUILTIN_STATIC) {
+				CHECK_SPACE(4 + instr_arg_count);
+
+				ip += instr_arg_count;
+
+				GD_ERR_BREAK(_code_ptr[ip + 1] < 0 || _code_ptr[ip + 1] >= Variant::VARIANT_MAX);
+				Variant::Type builtin_type = (Variant::Type)_code_ptr[ip + 1];
+
+				int methodname_idx = _code_ptr[ip + 2];
+				GD_ERR_BREAK(methodname_idx < 0 || methodname_idx >= _global_names_count);
+				const StringName *methodname = &_global_names_ptr[methodname_idx];
+
+				int argc = _code_ptr[ip + 3];
+				GD_ERR_BREAK(argc < 0);
+
+				GET_INSTRUCTION_ARG(ret, argc);
+
+				const Variant **argptrs = const_cast<const Variant **>(instruction_args);
+
+#ifdef DEBUG_ENABLED
+				uint64_t call_time = 0;
+
+				if (GDScriptLanguage::get_singleton()->profiling) {
+					call_time = OS::get_singleton()->get_ticks_usec();
+				}
+#endif
+
+				Callable::CallError err;
+				Variant::call_static(builtin_type, *methodname, argptrs, argc, *ret, err);
+
+#ifdef DEBUG_ENABLED
+				if (GDScriptLanguage::get_singleton()->profiling) {
+					function_call_time += OS::get_singleton()->get_ticks_usec() - call_time;
+				}
+
+				if (err.error != Callable::CallError::CALL_OK) {
+					err_text = _get_call_error(err, "static function '" + methodname->operator String() + "' in type '" + Variant::get_type_name(builtin_type) + "'", argptrs);
+					OPCODE_BREAK;
+				}
+#endif
+
+				ip += 4;
 			}
 			DISPATCH_OPCODE;
 
