@@ -18,6 +18,13 @@
 				Adds a [EditorSyntaxHighlighter] to the open script.
 			</description>
 		</method>
+		<method name="get_base_editor" qualifiers="const">
+			<return type="Control">
+			</return>
+			<description>
+				Returns the underlying [Control] used for editing scripts. This can be either [CodeEdit] (for text scripts) or [GraphEdit] (for visual scripts).
+			</description>
+		</method>
 	</methods>
 	<signals>
 		<signal name="edited_script_changed">
