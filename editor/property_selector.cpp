@@ -167,7 +167,7 @@ void PropertySelector::_update_search() {
 				continue;
 			}
 
-			if (!(E->get().usage & PROPERTY_USAGE_EDITOR) && !(E->get().usage & PROPERTY_USAGE_SCRIPT_VARIABLE)) {
+			if (!(E->get().usage & (PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_SCRIPT_VARIABLE)) && (E->get().usage & (PROPERTY_USAGE_GROUP | PROPERTY_USAGE_CATEGORY | PROPERTY_USAGE_INTERNAL))) {
 				continue;
 			}
 
