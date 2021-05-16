@@ -2079,8 +2079,42 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool is_awa
 			return;
 		}
 		reduce_expression(subscript->base);
-
 		base_type = subscript->base->get_datatype();
+
+		if (subscript->base->reduced && subscript->base->is_constant && subscript->attribute) {
+			Vector<const Variant *> args;
+			for (int i = 0; i < p_call->arguments.size(); i++) {
+				args.push_back(&(p_call->arguments[i]->reduced_value));
+			}
+
+			Callable::CallError err;
+			Variant reduced_value = subscript->base->reduced_value.call(subscript->attribute->name, (const Variant **)args.ptr(), args.size(), err);
+
+			switch (err.error) {
+				case Callable::CallError::CALL_ERROR_INVALID_ARGUMENT:
+					push_error(vformat(R"*(Invalid argument for "%s()" argument %d should be %s but is %s.)*",
+									   subscript->attribute->name, err.argument + 1, Variant::get_type_name(Variant::Type(err.expected)), p_call->arguments[err.argument]->get_datatype().to_string()),
+							p_call->arguments[err.argument]);
+					break;
+				case Callable::CallError::CALL_ERROR_INVALID_METHOD:
+					push_error(vformat(R"*(Invalid call for method "%s()".)*", subscript->attribute->name), p_call);
+					break;
+				case Callable::CallError::CALL_ERROR_TOO_MANY_ARGUMENTS:
+					push_error(vformat(R"*(Too many arguments for "%s()" call. Expected at most %d but received %d.)*", subscript->attribute->name, err.argument, p_call->arguments.size()), p_call);
+					break;
+				case Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS:
+					push_error(vformat(R"*(Too few arguments for "%s()" call. Expected at least %d but received %d.)*", subscript->attribute->name, err.argument, p_call->arguments.size()), p_call);
+					break;
+				case Callable::CallError::CALL_ERROR_INSTANCE_IS_NULL:
+					push_error(vformat(R"*(Invalid method call on base Nil.)*"), p_call);
+					break;
+				case Callable::CallError::CALL_OK:
+					p_call->is_constant = true;
+					p_call->reduced_value = reduced_value;
+					break;
+			}
+		}
+
 	} else {
 		// Invalid call. Error already sent in parser.
 		// TODO: Could check if Callable here too.
