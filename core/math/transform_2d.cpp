@@ -202,7 +202,8 @@ Transform2D Transform2D::operator*(const Transform2D &p_transform) const {
 
 Transform2D Transform2D::scaled(const Size2 &p_scale) const {
 	Transform2D copy = *this;
-	copy.scale(p_scale);
+	copy[0] *= p_scale.x;
+	copy[1] *= p_scale.y;
 	return copy;
 }
 
@@ -226,7 +227,7 @@ Transform2D Transform2D::translated(const Vector2 &p_offset) const {
 
 Transform2D Transform2D::rotated(real_t p_phi) const {
 	Transform2D copy = *this;
-	copy.rotate(p_phi);
+	copy *= Transform2D(p_phi, Vector2());
 	return copy;
 }
 
