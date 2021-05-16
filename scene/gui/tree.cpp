@@ -3974,6 +3974,8 @@ Tree::Tree() {
 
 	allow_reselect = false;
 	propagate_mouse_activated = false;
+
+	update_cache();
 }
 
 Tree::~Tree() {
