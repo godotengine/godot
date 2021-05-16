@@ -4334,6 +4334,8 @@ Tree::Tree() {
 	set_mouse_filter(MOUSE_FILTER_STOP);
 
 	set_clip_contents(true);
+
+	update_cache();
 }
 
 Tree::~Tree() {
