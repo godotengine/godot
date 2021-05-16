@@ -537,39 +537,44 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 						const GDScriptParser::SubscriptNode *subscript = static_cast<const GDScriptParser::SubscriptNode *>(call->callee);
 
 						if (subscript->is_attribute) {
-							GDScriptCodeGenerator::Address base = _parse_expression(codegen, r_error, subscript->base);
-							if (r_error) {
-								return GDScriptCodeGenerator::Address();
-							}
-							if (within_await) {
-								gen->write_call_async(result, base, call->function_name, arguments);
-							} else if (base.type.has_type && base.type.kind != GDScriptDataType::BUILTIN) {
-								// Native method, use faster path.
-								StringName class_name;
-								if (base.type.kind == GDScriptDataType::NATIVE) {
-									class_name = base.type.native_type;
-								} else {
-									class_name = base.type.native_type == StringName() ? base.type.script_type->get_instance_base_type() : base.type.native_type;
+							// May be static built-in method call.
+							if (!call->is_super && subscript->base->type == GDScriptParser::Node::IDENTIFIER && GDScriptParser::get_builtin_type(static_cast<GDScriptParser::IdentifierNode *>(subscript->base)->name) < Variant::VARIANT_MAX) {
+								gen->write_call_builtin_type_static(result, GDScriptParser::get_builtin_type(static_cast<GDScriptParser::IdentifierNode *>(subscript->base)->name), subscript->attribute->name, arguments);
+							} else {
+								GDScriptCodeGenerator::Address base = _parse_expression(codegen, r_error, subscript->base);
+								if (r_error) {
+									return GDScriptCodeGenerator::Address();
 								}
-								if (ClassDB::class_exists(class_name) && ClassDB::has_method(class_name, call->function_name)) {
-									MethodBind *method = ClassDB::get_method(class_name, call->function_name);
-									if (_have_exact_arguments(method, arguments)) {
-										// Exact arguments, use ptrcall.
-										gen->write_call_ptrcall(result, base, method, arguments);
+								if (within_await) {
+									gen->write_call_async(result, base, call->function_name, arguments);
+								} else if (base.type.has_type && base.type.kind != GDScriptDataType::BUILTIN) {
+									// Native method, use faster path.
+									StringName class_name;
+									if (base.type.kind == GDScriptDataType::NATIVE) {
+										class_name = base.type.native_type;
 									} else {
-										// Not exact arguments, but still can use method bind call.
-										gen->write_call_method_bind(result, base, method, arguments);
+										class_name = base.type.native_type == StringName() ? base.type.script_type->get_instance_base_type() : base.type.native_type;
 									}
+									if (ClassDB::class_exists(class_name) && ClassDB::has_method(class_name, call->function_name)) {
+										MethodBind *method = ClassDB::get_method(class_name, call->function_name);
+										if (_have_exact_arguments(method, arguments)) {
+											// Exact arguments, use ptrcall.
+											gen->write_call_ptrcall(result, base, method, arguments);
+										} else {
+											// Not exact arguments, but still can use method bind call.
+											gen->write_call_method_bind(result, base, method, arguments);
+										}
+									} else {
+										gen->write_call(result, base, call->function_name, arguments);
+									}
+								} else if (base.type.has_type && base.type.kind == GDScriptDataType::BUILTIN) {
+									gen->write_call_builtin_type(result, base, base.type.builtin_type, call->function_name, arguments);
 								} else {
 									gen->write_call(result, base, call->function_name, arguments);
 								}
-							} else if (base.type.has_type && base.type.kind == GDScriptDataType::BUILTIN) {
-								gen->write_call_builtin_type(result, base, base.type.builtin_type, call->function_name, arguments);
-							} else {
-								gen->write_call(result, base, call->function_name, arguments);
-							}
-							if (base.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
-								gen->pop_temporary();
+								if (base.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
+									gen->pop_temporary();
+								}
 							}
 						} else {
 							_set_error("Cannot call something that isn't a function.", call->callee);

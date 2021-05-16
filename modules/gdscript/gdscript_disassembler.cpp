@@ -542,6 +542,28 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 
 				incr = 5 + argc;
 			} break;
+			case OPCODE_CALL_BUILTIN_STATIC: {
+				Variant::Type type = (Variant::Type)_code_ptr[ip + 1 + instr_var_args];
+				int argc = _code_ptr[ip + 3 + instr_var_args];
+
+				text += "call built-in method static ";
+				text += DADDR(1 + argc);
+				text += " = ";
+				text += Variant::get_type_name(type);
+				text += ".";
+				text += _global_names_ptr[_code_ptr[ip + 2 + instr_var_args]].operator String();
+				text += "(";
+
+				for (int i = 0; i < argc; i++) {
+					if (i > 0) {
+						text += ", ";
+					}
+					text += DADDR(1 + i);
+				}
+				text += ")";
+
+				incr += 5 + argc;
+			} break;
 			case OPCODE_CALL_PTRCALL_NO_RETURN: {
 				text += "call-ptrcall (no return) ";
 

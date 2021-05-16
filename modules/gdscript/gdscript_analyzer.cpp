@@ -2078,9 +2078,23 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool is_awa
 			mark_node_unsafe(p_call);
 			return;
 		}
-		reduce_expression(subscript->base);
+		if (subscript->attribute == nullptr) {
+			// Invalid call. Error already sent in parser.
+			p_call->set_datatype(call_type);
+			mark_node_unsafe(p_call);
+			return;
+		}
 
-		base_type = subscript->base->get_datatype();
+		GDScriptParser::IdentifierNode *base_id = nullptr;
+		if (subscript->base->type == GDScriptParser::Node::IDENTIFIER) {
+			base_id = static_cast<GDScriptParser::IdentifierNode *>(subscript->base);
+		}
+		if (base_id && GDScriptParser::get_builtin_type(base_id->name) < Variant::VARIANT_MAX) {
+			base_type = make_builtin_meta_type(GDScriptParser::get_builtin_type(base_id->name));
+		} else {
+			reduce_expression(subscript->base);
+			base_type = subscript->base->get_datatype();
+		}
 	} else {
 		// Invalid call. Error already sent in parser.
 		// TODO: Could check if Callable here too.
