@@ -2735,12 +2735,12 @@ MenuButton *FileSystemDock::_create_file_menu_button() {
 
 	PopupMenu *p = button->get_popup();
 	p->connect("id_pressed", callable_mp(this, &FileSystemDock::_file_sort_popup));
-	p->add_radio_check_item("Sort by Name (Ascending)", FILE_SORT_NAME);
-	p->add_radio_check_item("Sort by Name (Descending)", FILE_SORT_NAME_REVERSE);
-	p->add_radio_check_item("Sort by Type (Ascending)", FILE_SORT_TYPE);
-	p->add_radio_check_item("Sort by Type (Descending)", FILE_SORT_TYPE_REVERSE);
-	p->add_radio_check_item("Sort by Last Modified", FILE_SORT_MODIFIED_TIME);
-	p->add_radio_check_item("Sort by First Modified", FILE_SORT_MODIFIED_TIME_REVERSE);
+	p->add_radio_check_item(TTR("Sort by Name (Ascending)"), FILE_SORT_NAME);
+	p->add_radio_check_item(TTR("Sort by Name (Descending)"), FILE_SORT_NAME_REVERSE);
+	p->add_radio_check_item(TTR("Sort by Type (Ascending)"), FILE_SORT_TYPE);
+	p->add_radio_check_item(TTR("Sort by Type (Descending)"), FILE_SORT_TYPE_REVERSE);
+	p->add_radio_check_item(TTR("Sort by Last Modified"), FILE_SORT_MODIFIED_TIME);
+	p->add_radio_check_item(TTR("Sort by First Modified"), FILE_SORT_MODIFIED_TIME_REVERSE);
 	p->set_item_checked(file_sort, true);
 	return button;
 }
