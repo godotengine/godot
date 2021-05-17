@@ -181,7 +181,7 @@ bool TextServerAdvanced::load_support_data(const String &p_filename) {
 		UErrorCode err = U_ZERO_ERROR;
 
 		// ICU data found.
-		size_t len = f->get_len();
+		uint64_t len = f->get_len();
 		icu_data = (uint8_t *)memalloc(len);
 		f->get_buffer(icu_data, len);
 		f->close();

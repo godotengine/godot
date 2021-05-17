@@ -65,7 +65,7 @@ DynamicFontDataFallback::DataAtSize *DynamicFontDataFallback::get_data_for_size(
 					ERR_FAIL_V_MSG(nullptr, "Cannot open font file '" + font_path + "'.");
 				}
 
-				size_t len = f->get_len();
+				uint64_t len = f->get_len();
 				font_mem_cache.resize(len);
 				f->get_buffer(font_mem_cache.ptrw(), len);
 				font_mem = font_mem_cache.ptr();

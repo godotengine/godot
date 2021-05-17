@@ -70,13 +70,13 @@ Error FileAccessEncrypted::open_and_parse(FileAccess *p_base, const Vector<uint8
 
 		base = p_base->get_position();
 		ERR_FAIL_COND_V(p_base->get_len() < base + length, ERR_FILE_CORRUPT);
-		uint32_t ds = length;
+		uint64_t ds = length;
 		if (ds % 16) {
 			ds += 16 - (ds % 16);
 		}
 		data.resize(ds);
 
-		uint32_t blen = p_base->get_buffer(data.ptrw(), ds);
+		uint64_t blen = p_base->get_buffer(data.ptrw(), ds);
 		ERR_FAIL_COND_V(blen != ds, ERR_FILE_CORRUPT);
 
 		{
@@ -141,7 +141,7 @@ void FileAccessEncrypted::release() {
 void FileAccessEncrypted::_release() {
 	if (writing) {
 		Vector<uint8_t> compressed;
-		size_t len = data.size();
+		uint64_t len = data.size();
 		if (len % 16) {
 			len += 16 - (len % 16);
 		}
@@ -198,9 +198,9 @@ String FileAccessEncrypted::get_path_absolute() const {
 	}
 }
 
-void FileAccessEncrypted::seek(size_t p_position) {
-	if (p_position > (size_t)data.size()) {
-		p_position = data.size();
+void FileAccessEncrypted::seek(uint64_t p_position) {
+	if (p_position > get_len()) {
+		p_position = get_len();
 	}
 
 	pos = p_position;
@@ -208,14 +208,14 @@ void FileAccessEncrypted::seek(size_t p_position) {
 }
 
 void FileAccessEncrypted::seek_end(int64_t p_position) {
-	seek(data.size() + p_position);
+	seek(get_len() + p_position);
 }
 
-size_t FileAccessEncrypted::get_position() const {
+uint64_t FileAccessEncrypted::get_position() const {
 	return pos;
 }
 
-size_t FileAccessEncrypted::get_len() const {
+uint64_t FileAccessEncrypted::get_len() const {
 	return data.size();
 }
 
@@ -225,7 +225,7 @@ bool FileAccessEncrypted::eof_reached() const {
 
 uint8_t FileAccessEncrypted::get_8() const {
 	ERR_FAIL_COND_V_MSG(writing, 0, "File has not been opened in read mode.");
-	if (pos >= data.size()) {
+	if (pos >= get_len()) {
 		eofed = true;
 		return 0;
 	}
@@ -235,13 +235,12 @@ uint8_t FileAccessEncrypted::get_8() const {
 	return b;
 }
 
-int FileAccessEncrypted::get_buffer(uint8_t *p_dst, int p_length) const {
+uint64_t FileAccessEncrypted::get_buffer(uint8_t *p_dst, uint64_t p_length) const {
 	ERR_FAIL_COND_V(!p_dst && p_length > 0, -1);
-	ERR_FAIL_COND_V(p_length < 0, -1);
 	ERR_FAIL_COND_V_MSG(writing, -1, "File has not been opened in read mode.");
 
-	int to_copy = MIN(p_length, data.size() - pos);
-	for (int i = 0; i < to_copy; i++) {
+	uint64_t to_copy = MIN(p_length, get_len() - pos);
+	for (uint64_t i = 0; i < to_copy; i++) {
 		p_dst[i] = data[pos++];
 	}
 
@@ -256,16 +255,16 @@ Error FileAccessEncrypted::get_error() const {
 	return eofed ? ERR_FILE_EOF : OK;
 }
 
-void FileAccessEncrypted::store_buffer(const uint8_t *p_src, int p_length) {
+void FileAccessEncrypted::store_buffer(const uint8_t *p_src, uint64_t p_length) {
 	ERR_FAIL_COND_MSG(!writing, "File has not been opened in write mode.");
 
-	if (pos < data.size()) {
-		for (int i = 0; i < p_length; i++) {
+	if (pos < get_len()) {
+		for (uint64_t i = 0; i < p_length; i++) {
 			store_8(p_src[i]);
 		}
-	} else if (pos == data.size()) {
+	} else if (pos == get_len()) {
 		data.resize(pos + p_length);
-		for (int i = 0; i < p_length; i++) {
+		for (uint64_t i = 0; i < p_length; i++) {
 			data.write[pos + i] = p_src[i];
 		}
 		pos += p_length;
@@ -281,10 +280,10 @@ void FileAccessEncrypted::flush() {
 void FileAccessEncrypted::store_8(uint8_t p_dest) {
 	ERR_FAIL_COND_MSG(!writing, "File has not been opened in write mode.");
 
-	if (pos < data.size()) {
+	if (pos < get_len()) {
 		data.write[pos] = p_dest;
 		pos++;
-	} else if (pos == data.size()) {
+	} else if (pos == get_len()) {
 		data.push_back(p_dest);
 		pos++;
 	}

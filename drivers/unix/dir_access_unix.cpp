@@ -406,7 +406,7 @@ Error DirAccessUnix::remove(String p_path) {
 	}
 }
 
-size_t DirAccessUnix::get_space_left() {
+uint64_t DirAccessUnix::get_space_left() {
 #ifndef NO_STATVFS
 	struct statvfs vfs;
 	if (statvfs(current_dir.utf8().get_data(), &vfs) != 0) {

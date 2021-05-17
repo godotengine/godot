@@ -71,7 +71,7 @@ bool FileAccessMemory::file_exists(const String &p_name) {
 	return files && (files->find(name) != nullptr);
 }
 
-Error FileAccessMemory::open_custom(const uint8_t *p_data, int p_len) {
+Error FileAccessMemory::open_custom(const uint8_t *p_data, uint64_t p_len) {
 	data = (uint8_t *)p_data;
 	length = p_len;
 	pos = 0;
@@ -102,7 +102,7 @@ bool FileAccessMemory::is_open() const {
 	return data != nullptr;
 }
 
-void FileAccessMemory::seek(size_t p_position) {
+void FileAccessMemory::seek(uint64_t p_position) {
 	ERR_FAIL_COND(!data);
 	pos = p_position;
 }
@@ -112,12 +112,12 @@ void FileAccessMemory::seek_end(int64_t p_position) {
 	pos = length + p_position;
 }
 
-size_t FileAccessMemory::get_position() const {
+uint64_t FileAccessMemory::get_position() const {
 	ERR_FAIL_COND_V(!data, 0);
 	return pos;
 }
 
-size_t FileAccessMemory::get_len() const {
+uint64_t FileAccessMemory::get_len() const {
 	ERR_FAIL_COND_V(!data, 0);
 	return length;
 }
@@ -136,13 +136,12 @@ uint8_t FileAccessMemory::get_8() const {
 	return ret;
 }
 
-int FileAccessMemory::get_buffer(uint8_t *p_dst, int p_length) const {
+uint64_t FileAccessMemory::get_buffer(uint8_t *p_dst, uint64_t p_length) const {
 	ERR_FAIL_COND_V(!p_dst && p_length > 0, -1);
-	ERR_FAIL_COND_V(p_length < 0, -1);
 	ERR_FAIL_COND_V(!data, -1);
 
-	int left = length - pos;
-	int read = MIN(p_length, left);
+	uint64_t left = length - pos;
+	uint64_t read = MIN(p_length, left);
 
 	if (read < p_length) {
 		WARN_PRINT("Reading less data than requested");
@@ -168,9 +167,9 @@ void FileAccessMemory::store_8(uint8_t p_byte) {
 	data[pos++] = p_byte;
 }
 
-void FileAccessMemory::store_buffer(const uint8_t *p_src, int p_length) {
-	int left = length - pos;
-	int write = MIN(p_length, left);
+void FileAccessMemory::store_buffer(const uint8_t *p_src, uint64_t p_length) {
+	uint64_t left = length - pos;
+	uint64_t write = MIN(p_length, left);
 	if (write < p_length) {
 		WARN_PRINT("Writing less data than requested");
 	}

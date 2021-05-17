@@ -79,7 +79,7 @@ Error ResourceImporterMP3::import(const String &p_source_file, const String &p_s
 
 	ERR_FAIL_COND_V(!f, ERR_CANT_OPEN);
 
-	size_t len = f->get_len();
+	uint64_t len = f->get_len();
 
 	Vector<uint8_t> data;
 	data.resize(len);
