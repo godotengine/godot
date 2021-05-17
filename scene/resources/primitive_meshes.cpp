@@ -1133,7 +1133,7 @@ void PrismMesh::_create_mesh_array(Array &p_arr) const {
 	Vector3 normal_left, normal_right;
 
 	normal_left = Vector3(-size.y, size.x * left_to_right, 0.0);
-	normal_right = Vector3(size.y, size.x * left_to_right, 0.0);
+	normal_right = Vector3(size.y, size.x * (1.0 - left_to_right), 0.0);
 	normal_left.normalize();
 	normal_right.normalize();
 
