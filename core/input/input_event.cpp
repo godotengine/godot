@@ -583,6 +583,10 @@ bool InputEventMouseButton::action_match(const Ref<InputEvent> &p_event, bool *p
 	}
 
 	bool match = mb->button_index == button_index;
+	if (mb->get_shift() != get_shift() || mb->get_control() != get_control() || mb->get_alt() != get_alt() || mb->get_metakey() != get_metakey()) {
+		match = false;
+	}
+
 	if (match) {
 		if (p_pressed != nullptr) {
 			*p_pressed = mb->is_pressed();
