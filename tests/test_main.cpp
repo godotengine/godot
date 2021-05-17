@@ -74,6 +74,7 @@
 #include "test_shader_lang.h"
 #include "test_string.h"
 #include "test_text_server.h"
+#include "test_translation.h"
 #include "test_validate_testing.h"
 #include "test_variant.h"
 #include "test_xml_parser.h"
