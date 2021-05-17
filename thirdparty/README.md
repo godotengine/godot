@@ -72,7 +72,7 @@ Files extracted from upstream:
 - All cpp files listed in `modules/raycast/godot_update_embree.py`
 - All header files in the directories listed in `modules/raycast/godot_update_embree.py`
 
-The `modules/raycast/godot_update_embree.py`script can be used to pull the 
+The `modules/raycast/godot_update_embree.py` script can be used to pull the
 relevant files from the latest Embree-aarch64 release and apply some automatic changes.
 
 Some changes have been made in order to remove exceptions and fix minor build errors.
@@ -136,6 +136,10 @@ Files extracted from upstream source:
 - `DroidSans*.ttf`:
   * Upstream: https://android.googlesource.com/platform/frameworks/base/+/master/data/fonts/
   * Version: ? (pre-2014 commit when DroidSansJapanese.ttf was obsoleted)
+  * License: Apache 2.0
+- `OpenSans_SemiBold.ttf`:
+  * Upstream: https://fonts.google.com/specimen/Open+Sans
+  * Version: 1.10 (downloaded from Google Fonts in February 2021)
   * License: Apache 2.0
 - `Tamsyn*.png`:
   * Upstream: http://www.fial.com/~scott/tamsyn-font/
