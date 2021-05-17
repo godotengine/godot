@@ -1457,7 +1457,7 @@ String InputEventMIDI::as_text() const {
 }
 
 String InputEventMIDI::to_string() {
-	return vformat("InputEvenMIDI: channel=%d, message=%d, pitch=%d, velocity=%d, pressure=%d", channel, message, pitch, velocity, pressure);
+	return vformat("InputEventMIDI: channel=%d, message=%d, pitch=%d, velocity=%d, pressure=%d", channel, message, pitch, velocity, pressure);
 }
 
 void InputEventMIDI::_bind_methods() {
