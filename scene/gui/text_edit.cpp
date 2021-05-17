@@ -2917,7 +2917,7 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 			if (mb->get_button_index() == MOUSE_BUTTON_WHEEL_UP && !mb->is_command_pressed()) {
 				if (mb->is_shift_pressed()) {
 					h_scroll->set_value(h_scroll->get_value() - (100 * mb->get_factor()));
-				} else if (mb->get_alt()) {
+				} else if (mb->is_alt_pressed()) {
 					// Scroll 5 times as fast as normal (like in Visual Studio Code).
 					_scroll_up(15 * mb->get_factor());
 				} else if (v_scroll->is_visible()) {
@@ -2928,7 +2928,7 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 			if (mb->get_button_index() == MOUSE_BUTTON_WHEEL_DOWN && !mb->is_command_pressed()) {
 				if (mb->is_shift_pressed()) {
 					h_scroll->set_value(h_scroll->get_value() + (100 * mb->get_factor()));
-				} else if (mb->get_alt()) {
+				} else if (mb->is_alt_pressed()) {
 					// Scroll 5 times as fast as normal (like in Visual Studio Code).
 					_scroll_down(15 * mb->get_factor());
 				} else if (v_scroll->is_visible()) {
