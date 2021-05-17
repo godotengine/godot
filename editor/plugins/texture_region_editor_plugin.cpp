@@ -331,7 +331,7 @@ void TextureRegionEditor::_region_input(const Ref<InputEvent> &p_input) {
 					for (List<Rect2>::Element *E = autoslice_cache.front(); E; E = E->next()) {
 						if (E->get().has_point(point)) {
 							rect = E->get();
-							if (Input::get_singleton()->is_key_pressed(KEY_CONTROL) && !(Input::get_singleton()->is_key_pressed(KEY_SHIFT | KEY_ALT))) {
+							if (Input::get_singleton()->is_key_pressed(KEY_CTRL) && !(Input::get_singleton()->is_key_pressed(KEY_SHIFT | KEY_ALT))) {
 								Rect2 r;
 								if (node_sprite) {
 									r = node_sprite->get_region_rect();

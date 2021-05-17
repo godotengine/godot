@@ -610,8 +610,8 @@ public:
 	int get_free_input_port_id() const;
 	int get_free_output_port_id() const;
 
-	void set_control(Control *p_control, int p_index);
-	Control *get_control(int p_index);
+	void set_ctrl_pressed(Control *p_control, int p_index);
+	Control *is_ctrl_pressed(int p_index);
 
 	void set_editable(bool p_enabled);
 	bool is_editable() const;

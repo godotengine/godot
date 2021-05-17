@@ -1091,7 +1091,7 @@ void GraphEdit::_gui_input(const Ref<InputEvent> &p_ev) {
 
 				// Snapping can be toggled temporarily by holding down Ctrl.
 				// This is done here as to not toggle the grid when holding down Ctrl.
-				if (is_using_snap() ^ Input::get_singleton()->is_key_pressed(KEY_CONTROL)) {
+				if (is_using_snap() ^ Input::get_singleton()->is_key_pressed(KEY_CTRL)) {
 					const int snap = get_snap();
 					pos = pos.snapped(Vector2(snap, snap));
 				}
@@ -1174,7 +1174,7 @@ void GraphEdit::_gui_input(const Ref<InputEvent> &p_ev) {
 		}
 
 		if (b->get_button_index() == MOUSE_BUTTON_LEFT && !b->is_pressed() && dragging) {
-			if (!just_selected && drag_accum == Vector2() && Input::get_singleton()->is_key_pressed(KEY_CONTROL)) {
+			if (!just_selected && drag_accum == Vector2() && Input::get_singleton()->is_key_pressed(KEY_CTRL)) {
 				//deselect current node
 				for (int i = get_child_count() - 1; i >= 0; i--) {
 					GraphNode *gn = Object::cast_to<GraphNode>(get_child(i));
@@ -1238,7 +1238,7 @@ void GraphEdit::_gui_input(const Ref<InputEvent> &p_ev) {
 				dragging = true;
 				drag_accum = Vector2();
 				just_selected = !gn->is_selected();
-				if (!gn->is_selected() && !Input::get_singleton()->is_key_pressed(KEY_CONTROL)) {
+				if (!gn->is_selected() && !Input::get_singleton()->is_key_pressed(KEY_CTRL)) {
 					for (int i = 0; i < get_child_count(); i++) {
 						GraphNode *o_gn = Object::cast_to<GraphNode>(get_child(i));
 						if (o_gn) {
@@ -1275,7 +1275,7 @@ void GraphEdit::_gui_input(const Ref<InputEvent> &p_ev) {
 
 				box_selecting = true;
 				box_selecting_from = b->get_position();
-				if (b->get_control()) {
+				if (b->is_ctrl_pressed()) {
 					box_selection_mode_additive = true;
 					previous_selected.clear();
 					for (int i = get_child_count() - 1; i >= 0; i--) {
@@ -1286,7 +1286,7 @@ void GraphEdit::_gui_input(const Ref<InputEvent> &p_ev) {
 
 						previous_selected.push_back(gn2);
 					}
-				} else if (b->get_shift()) {
+				} else if (b->is_shift_pressed()) {
 					box_selection_mode_additive = false;
 					previous_selected.clear();
 					for (int i = get_child_count() - 1; i >= 0; i--) {
@@ -1322,9 +1322,9 @@ void GraphEdit::_gui_input(const Ref<InputEvent> &p_ev) {
 			minimap->update();
 		}
 
-		if (b->get_button_index() == MOUSE_BUTTON_WHEEL_UP && Input::get_singleton()->is_key_pressed(KEY_CONTROL)) {
+		if (b->get_button_index() == MOUSE_BUTTON_WHEEL_UP && Input::get_singleton()->is_key_pressed(KEY_CTRL)) {
 			set_zoom_custom(zoom * ZOOM_SCALE, b->get_position());
-		} else if (b->get_button_index() == MOUSE_BUTTON_WHEEL_DOWN && Input::get_singleton()->is_key_pressed(KEY_CONTROL)) {
+		} else if (b->get_button_index() == MOUSE_BUTTON_WHEEL_DOWN && Input::get_singleton()->is_key_pressed(KEY_CTRL)) {
 			set_zoom_custom(zoom / ZOOM_SCALE, b->get_position());
 		} else if (b->get_button_index() == MOUSE_BUTTON_WHEEL_UP && !Input::get_singleton()->is_key_pressed(KEY_SHIFT)) {
 			v_scroll->set_value(v_scroll->get_value() - v_scroll->get_page() * b->get_factor() / 8);

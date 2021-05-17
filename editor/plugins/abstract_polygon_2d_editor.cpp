@@ -266,7 +266,7 @@ bool AbstractPolygon2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) 
 		if (mode == MODE_EDIT || (_is_line() && mode == MODE_CREATE)) {
 			if (mb->get_button_index() == MOUSE_BUTTON_LEFT) {
 				if (mb->is_pressed()) {
-					if (mb->get_control() || mb->get_shift() || mb->get_alt()) {
+					if (mb->is_ctrl_pressed() || mb->is_shift_pressed() || mb->is_alt_pressed()) {
 						return false;
 					}
 
@@ -399,7 +399,7 @@ bool AbstractPolygon2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) 
 			Vector2 cpoint = _get_node()->get_global_transform().affine_inverse().xform(canvas_item_editor->snap_point(canvas_item_editor->get_canvas_transform().affine_inverse().xform(gpoint)));
 
 			//Move the point in a single axis. Should only work when editing a polygon and while holding shift.
-			if (mode == MODE_EDIT && mm->get_shift()) {
+			if (mode == MODE_EDIT && mm->is_shift_pressed()) {
 				Vector2 old_point = pre_move_edit.get(selected_point.vertex);
 				if (ABS(cpoint.x - old_point.x) > ABS(cpoint.y - old_point.y)) {
 					cpoint.y = old_point.y;

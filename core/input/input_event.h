@@ -170,21 +170,21 @@ class InputEventWithModifiers : public InputEventFromWindow {
 
 	bool store_command = true;
 
-	bool shift = false;
-	bool alt = false;
+	bool shift_pressed = false;
+	bool alt_pressed = false;
 #ifdef APPLE_STYLE_KEYS
 	union {
-		bool command;
-		bool meta = false; //< windows/mac key
+		bool command_pressed;
+		bool meta_pressed = false; //< windows/mac key
 	};
 
-	bool control = false;
+	bool ctrl_pressed = false;
 #else
 	union {
-		bool command; //< windows/mac key
-		bool control = false;
+		bool command_pressed; //< windows/mac key
+		bool ctrl_pressed = false;
 	};
-	bool meta = false; //< windows/mac key
+	bool meta_pressed = false; //< windows/mac key
 #endif
 
 protected:
@@ -195,20 +195,20 @@ public:
 	void set_store_command(bool p_enabled);
 	bool is_storing_command() const;
 
-	void set_shift(bool p_enabled);
-	bool get_shift() const;
+	void set_shift_pressed(bool p_pressed);
+	bool is_shift_pressed() const;
 
-	void set_alt(bool p_enabled);
-	bool get_alt() const;
+	void set_alt_pressed(bool p_pressed);
+	bool is_alt_pressed() const;
 
-	void set_control(bool p_enabled);
-	bool get_control() const;
+	void set_ctrl_pressed(bool p_pressed);
+	bool is_ctrl_pressed() const;
 
-	void set_metakey(bool p_enabled);
-	bool get_metakey() const;
+	void set_meta_pressed(bool p_pressed);
+	bool is_meta_pressed() const;
 
-	void set_command(bool p_enabled);
-	bool get_command() const;
+	void set_command_pressed(bool p_pressed);
+	bool is_command_pressed() const;
 
 	void set_modifiers_from_event(const InputEventWithModifiers *event);
 

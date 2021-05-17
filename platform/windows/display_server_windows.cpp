@@ -1966,9 +1966,9 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				mm.instance();
 
 				mm->set_window_id(window_id);
-				mm->set_control(control_mem);
-				mm->set_shift(shift_mem);
-				mm->set_alt(alt_mem);
+				mm->set_ctrl_pressed(control_mem);
+				mm->set_shift_pressed(shift_mem);
+				mm->set_alt_pressed(alt_mem);
 
 				mm->set_pressure((raw->data.mouse.ulButtons & RI_MOUSE_LEFT_BUTTON_DOWN) ? 1.0f : 0.0f);
 
@@ -2062,9 +2062,9 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 					Ref<InputEventMouseMotion> mm;
 					mm.instance();
 					mm->set_window_id(window_id);
-					mm->set_control(GetKeyState(VK_CONTROL) < 0);
-					mm->set_shift(GetKeyState(VK_SHIFT) < 0);
-					mm->set_alt(alt_mem);
+					mm->set_ctrl_pressed(GetKeyState(VK_CONTROL) < 0);
+					mm->set_shift_pressed(GetKeyState(VK_SHIFT) < 0);
+					mm->set_alt_pressed(alt_mem);
 
 					mm->set_pressure(windows[window_id].last_pressure);
 					mm->set_tilt(windows[window_id].last_tilt);
@@ -2205,9 +2205,9 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				mm->set_tilt(Vector2((float)pen_info.tiltX / 90, (float)pen_info.tiltY / 90));
 			}
 
-			mm->set_control(GetKeyState(VK_CONTROL) < 0);
-			mm->set_shift(GetKeyState(VK_SHIFT) < 0);
-			mm->set_alt(alt_mem);
+			mm->set_ctrl_pressed(GetKeyState(VK_CONTROL) < 0);
+			mm->set_shift_pressed(GetKeyState(VK_SHIFT) < 0);
+			mm->set_alt_pressed(alt_mem);
 
 			mm->set_button_mask(last_button_state);
 
@@ -2300,9 +2300,9 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			Ref<InputEventMouseMotion> mm;
 			mm.instance();
 			mm->set_window_id(window_id);
-			mm->set_control((wParam & MK_CONTROL) != 0);
-			mm->set_shift((wParam & MK_SHIFT) != 0);
-			mm->set_alt(alt_mem);
+			mm->set_ctrl_pressed((wParam & MK_CONTROL) != 0);
+			mm->set_shift_pressed((wParam & MK_SHIFT) != 0);
+			mm->set_alt_pressed(alt_mem);
 
 			if ((tablet_get_current_driver() == "wintab") && wintab_available && windows[window_id].wtctx) {
 				// Note: WinTab sends both WT_PACKET and WM_xBUTTONDOWN/UP/MOUSEMOVE events, use mouse 1/0 pressure only when last_pressure was not updated recently.
@@ -2477,10 +2477,10 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				}
 			}
 
-			mb->set_control((wParam & MK_CONTROL) != 0);
-			mb->set_shift((wParam & MK_SHIFT) != 0);
-			mb->set_alt(alt_mem);
-			//mb->get_alt()=(wParam&MK_MENU)!=0;
+			mb->set_ctrl_pressed((wParam & MK_CONTROL) != 0);
+			mb->set_shift_pressed((wParam & MK_SHIFT) != 0);
+			mb->set_alt_pressed(alt_mem);
+			//mb->is_alt_pressed()=(wParam&MK_MENU)!=0;
 			if (mb->is_pressed())
 				last_button_state |= (1 << (mb->get_button_index() - 1));
 			else
@@ -2835,17 +2835,17 @@ void DisplayServerWindows::_process_key_events() {
 					k.instance();
 
 					k->set_window_id(ke.window_id);
-					k->set_shift(ke.shift);
-					k->set_alt(ke.alt);
-					k->set_control(ke.control);
-					k->set_metakey(ke.meta);
+					k->set_shift_pressed(ke.shift);
+					k->set_alt_pressed(ke.alt);
+					k->set_ctrl_pressed(ke.control);
+					k->set_meta_pressed(ke.meta);
 					k->set_pressed(true);
 					k->set_keycode(KeyMappingWindows::get_keysym(ke.wParam));
 					k->set_physical_keycode(KeyMappingWindows::get_scansym((ke.lParam >> 16) & 0xFF, ke.lParam & (1 << 24)));
 					k->set_unicode(unicode);
 					if (k->get_unicode() && gr_mem) {
-						k->set_alt(false);
-						k->set_control(false);
+						k->set_alt_pressed(false);
+						k->set_ctrl_pressed(false);
 					}
 
 					if (k->get_unicode() < 32)
@@ -2862,10 +2862,10 @@ void DisplayServerWindows::_process_key_events() {
 				k.instance();
 
 				k->set_window_id(ke.window_id);
-				k->set_shift(ke.shift);
-				k->set_alt(ke.alt);
-				k->set_control(ke.control);
-				k->set_metakey(ke.meta);
+				k->set_shift_pressed(ke.shift);
+				k->set_alt_pressed(ke.alt);
+				k->set_ctrl_pressed(ke.control);
+				k->set_meta_pressed(ke.meta);
 
 				k->set_pressed(ke.uMsg == WM_KEYDOWN);
 
@@ -2900,8 +2900,8 @@ void DisplayServerWindows::_process_key_events() {
 					k->set_unicode(unicode);
 				}
 				if (k->get_unicode() && gr_mem) {
-					k->set_alt(false);
-					k->set_control(false);
+					k->set_alt_pressed(false);
+					k->set_ctrl_pressed(false);
 				}
 
 				if (k->get_unicode() < 32)

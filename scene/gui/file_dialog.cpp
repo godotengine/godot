@@ -105,7 +105,7 @@ void FileDialog::_unhandled_input(const Ref<InputEvent> &p_event) {
 
 			switch (k->get_keycode()) {
 				case KEY_H: {
-					if (k->get_command()) {
+					if (k->is_command_pressed()) {
 						set_show_hidden_files(!show_hidden_files);
 					} else {
 						handled = false;

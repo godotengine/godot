@@ -66,10 +66,10 @@
 static bool ignore_momentum_scroll = false;
 
 static void _get_key_modifier_state(unsigned int p_osx_state, Ref<InputEventWithModifiers> r_state) {
-	r_state->set_shift((p_osx_state & NSEventModifierFlagShift));
-	r_state->set_control((p_osx_state & NSEventModifierFlagControl));
-	r_state->set_alt((p_osx_state & NSEventModifierFlagOption));
-	r_state->set_metakey((p_osx_state & NSEventModifierFlagCommand));
+	r_state->set_shift_pressed((p_osx_state & NSEventModifierFlagShift));
+	r_state->set_ctrl_pressed((p_osx_state & NSEventModifierFlagControl));
+	r_state->set_alt_pressed((p_osx_state & NSEventModifierFlagOption));
+	r_state->set_meta_pressed((p_osx_state & NSEventModifierFlagCommand));
 }
 
 static Vector2i _get_mouse_pos(DisplayServerOSX::WindowData &p_wd, NSPoint p_locationInWindow) {
@@ -1133,10 +1133,10 @@ static int translateKey(unsigned int key) {
 		/* 38 */ KEY_SHIFT,
 		/* 39 */ KEY_CAPSLOCK,
 		/* 3a */ KEY_ALT,
-		/* 3b */ KEY_CONTROL,
+		/* 3b */ KEY_CTRL,
 		/* 3c */ KEY_SHIFT,
 		/* 3d */ KEY_ALT,
-		/* 3e */ KEY_CONTROL,
+		/* 3e */ KEY_CTRL,
 		/* 3f */ KEY_UNKNOWN, /* Function */
 		/* 40 */ KEY_UNKNOWN, /* F17 */
 		/* 41 */ KEY_KP_PERIOD,
