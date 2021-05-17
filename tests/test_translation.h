@@ -60,8 +60,9 @@ TEST_CASE("[Translation] Messages") {
 	translation->get_message_list(&messages);
 	CHECK(translation->get_message_count() == 2);
 	CHECK(messages.size() == 2);
-	CHECK(messages[0] == "Hello2");
-	CHECK(messages[1] == "Hello3");
+	// Messages are stored in a Map, don't assume ordering.
+	CHECK(messages.find("Hello2"));
+	CHECK(messages.find("Hello3"));
 }
 
 TEST_CASE("[TranslationPO] Messages with context") {
@@ -99,8 +100,9 @@ TEST_CASE("[TranslationPO] Messages with context") {
 	CHECK(translation->get_message_count() == 4);
 	// Only the default context is taken into account.
 	CHECK(messages.size() == 2);
-	CHECK(messages[0] == "Hello2");
-	CHECK(messages[1] == "Hello3");
+	// Messages are stored in a Map, don't assume ordering.
+	CHECK(messages.find("Hello2"));
+	CHECK(messages.find("Hello3"));
 }
 
 TEST_CASE("[TranslationPO] Plural messages") {
