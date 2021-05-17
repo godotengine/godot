@@ -536,6 +536,8 @@ VoxelLightBaker::MaterialCache VoxelLightBaker::_get_material_cache(Ref<Material
 
 	MaterialCache mc;
 
+	Ref<Image> empty;
+
 	if (mat.is_valid()) {
 		Ref<Texture> albedo_tex = mat->get_texture(SpatialMaterial::TEXTURE_ALBEDO);
 
@@ -547,26 +549,28 @@ VoxelLightBaker::MaterialCache VoxelLightBaker::_get_material_cache(Ref<Material
 			mc.albedo = _get_bake_texture(img_albedo, Color(1, 1, 1), mat->get_albedo()); // no albedo texture, color is additive
 		}
 
-		Ref<Texture> emission_tex = mat->get_texture(SpatialMaterial::TEXTURE_EMISSION);
+		if (mat->get_feature(SpatialMaterial::FEATURE_EMISSION)) {
+			Ref<Texture> emission_tex = mat->get_texture(SpatialMaterial::TEXTURE_EMISSION);
 
-		Color emission_col = mat->get_emission();
-		float emission_energy = mat->get_emission_energy();
+			Color emission_col = mat->get_emission();
+			float emission_energy = mat->get_emission_energy();
 
-		Ref<Image> img_emission;
+			Ref<Image> img_emission;
 
-		if (emission_tex.is_valid()) {
-			img_emission = emission_tex->get_data();
-		}
+			if (emission_tex.is_valid()) {
+				img_emission = emission_tex->get_data();
+			}
 
-		if (mat->get_emission_operator() == SpatialMaterial::EMISSION_OP_ADD) {
-			mc.emission = _get_bake_texture(img_emission, Color(1, 1, 1) * emission_energy, emission_col * emission_energy);
+			if (mat->get_emission_operator() == SpatialMaterial::EMISSION_OP_ADD) {
+				mc.emission = _get_bake_texture(img_emission, Color(1, 1, 1) * emission_energy, emission_col * emission_energy);
+			} else {
+				mc.emission = _get_bake_texture(img_emission, emission_col * emission_energy, Color(0, 0, 0));
+			}
 		} else {
-			mc.emission = _get_bake_texture(img_emission, emission_col * emission_energy, Color(0, 0, 0));
+			mc.emission = _get_bake_texture(empty, Color(0, 0, 0), Color(0, 0, 0));
 		}
 
 	} else {
-		Ref<Image> empty;
-
 		mc.albedo = _get_bake_texture(empty, Color(0, 0, 0), Color(1, 1, 1));
 		mc.emission = _get_bake_texture(empty, Color(0, 0, 0), Color(0, 0, 0));
 	}
