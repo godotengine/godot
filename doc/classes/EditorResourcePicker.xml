@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="EditorResourcePicker" inherits="HBoxContainer" version="4.0">
+	<brief_description>
+		Godot editor's control for selecting [Resource] type properties.
+	</brief_description>
+	<description>
+		This is a [Control] node similar to the one used in the Inspector dock when editing [Resource]s. It provides options for creating, loading, saving and converting resources.
+		[b]Note:[/b] It does not include an editor for the resource.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="can_drop_data_fw" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="position" type="Vector2">
+			</argument>
+			<argument index="1" name="data" type="Variant">
+			</argument>
+			<argument index="2" name="from" type="Control">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="drop_data_fw">
+			<return type="void">
+			</return>
+			<argument index="0" name="position" type="Vector2">
+			</argument>
+			<argument index="1" name="data" type="Variant">
+			</argument>
+			<argument index="2" name="from" type="Control">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_allowed_types" qualifiers="const">
+			<return type="PackedStringArray">
+			</return>
+			<description>
+				Returns a list of all allowed types and subtypes corresponding to the [member base_type]. If the [member base_type] is empty, an empty list is returned.
+			</description>
+		</method>
+		<method name="get_drag_data_fw">
+			<return type="Variant">
+			</return>
+			<argument index="0" name="position" type="Vector2">
+			</argument>
+			<argument index="1" name="from" type="Control">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="base_type" type="String" setter="set_base_type" getter="get_base_type" default="&quot;&quot;">
+			The base type of allowed resource types. Can be a comma-separated list of several options.
+		</member>
+		<member name="editable" type="bool" setter="set_editable" getter="is_editable" default="true">
+			If [code]true[/code], the value can be selected and edited.
+		</member>
+		<member name="edited_resource" type="Resource" setter="set_edited_resource" getter="get_edited_resource">
+			The edited resource value.
+		</member>
+	</members>
+	<signals>
+		<signal name="resource_changed">
+			<argument index="0" name="resource" type="Resource">
+			</argument>
+			<description>
+				Emitted when the value of the edited resource was changed.
+			</description>
+		</signal>
+		<signal name="resource_selected">
+			<argument index="0" name="resource" type="Resource">
+			</argument>
+			<description>
+				Emitted when the resource value was set and user clicked to edit it.
+			</description>
+		</signal>
+	</signals>
+	<constants>
+	</constants>
+</class>
