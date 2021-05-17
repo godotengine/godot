@@ -2475,7 +2475,7 @@ void FileSystemDock::_tree_gui_input(Ref<InputEvent> p_event) {
 			_tree_rmb_option(FILE_REMOVE);
 		} else if (ED_IS_SHORTCUT("filesystem_dock/rename", p_event)) {
 			_tree_rmb_option(FILE_RENAME);
-		} else if (ED_IS_SHORTCUT("editor/open_search", p_event)) {
+		} else if (ED_IS_SHORTCUT("filesystem_dock/open_search", p_event)) {
 			_focus_current_search_box();
 		} else {
 			return;
@@ -2500,7 +2500,7 @@ void FileSystemDock::_file_list_gui_input(Ref<InputEvent> p_event) {
 			_file_list_rmb_option(FILE_REMOVE);
 		} else if (ED_IS_SHORTCUT("filesystem_dock/rename", p_event)) {
 			_file_list_rmb_option(FILE_RENAME);
-		} else if (ED_IS_SHORTCUT("editor/open_search", p_event)) {
+		} else if (ED_IS_SHORTCUT("filesystem_dock/open_search", p_event)) {
 			_focus_current_search_box();
 		} else {
 			return;
@@ -2658,6 +2658,7 @@ FileSystemDock::FileSystemDock(EditorNode *p_editor) {
 	ED_SHORTCUT("filesystem_dock/duplicate", TTR("Duplicate..."), KEY_MASK_CMD | KEY_D);
 	ED_SHORTCUT("filesystem_dock/delete", TTR("Move to Trash"), KEY_DELETE);
 	ED_SHORTCUT("filesystem_dock/rename", TTR("Rename..."), KEY_F2);
+	ED_SHORTCUT("filesystem_dock/open_search", TTR("Focus the search box"), KEY_MASK_CMD | KEY_F);
 
 	VBoxContainer *top_vbc = memnew(VBoxContainer);
 	add_child(top_vbc);
