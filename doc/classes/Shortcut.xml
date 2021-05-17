@@ -13,14 +13,37 @@
 		<method name="get_as_text" qualifiers="const">
 			<return type="String">
 			</return>
+			<argument index="0" name="primary" type="bool" default="true">
+				Returns result for the primary shortcut if [code]true[/code], or secondary shortcut if [code]false[/code].
+			</argument>
 			<description>
 				Returns the shortcut's [InputEvent] as a [String].
+			</description>
+		</method>
+		<method name="get_shortcut" qualifiers="const">
+			<return type="InputEvent">
+			</return>
+			<argument index="0" name="primary" type="bool" default="true">
+				Returns result for the primary shortcut if [code]true[/code], or secondary shortcut if [code]false[/code].
+			</argument>
+			<description>
+				The shortcut's [InputEvent].
+				See also [member primary_shortcut] and member [member secondary_shortcut].
 			</description>
 		</method>
 		<method name="is_shortcut" qualifiers="const">
 			<return type="bool">
 			</return>
 			<argument index="0" name="event" type="InputEvent">
+				The [InputEvent] to check against.
+			</argument>
+			<argument index="1" name="match_either" type="bool" default="true">
+				If [code]true[/code], it will check for matches on both the primary and secondary shortcuts.
+				If [code]false[/code], it will use the third paramter to determine which shorcut to check agaisnt.
+			</argument>
+			<argument index="2" name="primary" type="bool" default="true">
+				This argument is only used if [code]matches_either[/code] is [code]false[/code].
+				Returns result for the primary shortcut if [code]true[/code], or secondary shortcut if [code]false[/code].
 			</argument>
 			<description>
 				Returns [code]true[/code] if the shortcut's [InputEvent] equals [code]event[/code].
@@ -30,13 +53,31 @@
 			<return type="bool">
 			</return>
 			<description>
-				If [code]true[/code], this shortcut is valid.
+				If [code]true[/code], the primary or secondary shortcut is valid.
+			</description>
+		</method>
+		<method name="set_shortcut">
+			<return type="void">
+			</return>
+			<argument index="0" name="event" type="InputEvent">
+				The [InputEvent] to set the shortcut to.
+			</argument>
+			<argument index="1" name="primary" type="bool" default="true">
+				Sets the event for the primary shortcut if [code]true[/code], or secondary shortcut if [code]false[/code].
+			</argument>
+			<description>
+				Sets the shortcut's [InputEvent].
+				See also [member primary_shortcut] and member [member secondary_shortcut].
 			</description>
 		</method>
 	</methods>
 	<members>
-		<member name="shortcut" type="InputEvent" setter="set_shortcut" getter="get_shortcut">
-			The shortcut's [InputEvent].
+		<member name="primary_shortcut" type="InputEvent" setter="_set_primary_shortcut" getter="_get_primary_shortcut">
+			The primary shortcut's [InputEvent].
+			Generally the [InputEvent] is a keyboard key, though it can be any [InputEvent].
+		</member>
+		<member name="secondary_shortcut" type="InputEvent" setter="_set_secondary_shortcut" getter="_get_secondary_shortcut">
+			The secondary shortcut's [InputEvent].
 			Generally the [InputEvent] is a keyboard key, though it can be any [InputEvent].
 		</member>
 	</members>
