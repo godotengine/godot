@@ -819,6 +819,9 @@ void Viewport::_process_picking() {
 					sorter.sort(res, rc);
 				}
 				for (int i = 0; i < rc; i++) {
+					if (is_input_handled()) {
+						break;
+					}
 					if (res[i].collider_id.is_valid() && res[i].collider) {
 						CollisionObject2D *co = Object::cast_to<CollisionObject2D>(res[i].collider);
 						if (co && co->can_process()) {
