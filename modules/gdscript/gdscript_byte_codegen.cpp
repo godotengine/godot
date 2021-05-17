@@ -129,12 +129,6 @@ uint32_t GDScriptByteCodeGenerator::add_temporary(const GDScriptDataType &p_type
 		int idx = temporaries.size();
 		pool.push_back(idx);
 		temporaries.push_back(new_temp);
-
-		// First time using this, so adjust to the proper type.
-		if (temp_type != Variant::NIL) {
-			Address addr(Address::TEMPORARY, idx, p_type);
-			write_type_adjust(addr, temp_type);
-		}
 	}
 	int slot = pool.front()->get();
 	pool.pop_front();
@@ -189,8 +183,12 @@ GDScriptFunction *GDScriptByteCodeGenerator::write_end() {
 	append(GDScriptFunction::OPCODE_END, 0);
 
 	for (int i = 0; i < temporaries.size(); i++) {
+		int stack_index = i + max_locals + RESERVED_STACK;
 		for (int j = 0; j < temporaries[i].bytecode_indices.size(); j++) {
-			opcodes.write[temporaries[i].bytecode_indices[j]] = (i + max_locals + RESERVED_STACK) | (GDScriptFunction::ADDR_TYPE_STACK << GDScriptFunction::ADDR_BITS);
+			opcodes.write[temporaries[i].bytecode_indices[j]] = stack_index | (GDScriptFunction::ADDR_TYPE_STACK << GDScriptFunction::ADDR_BITS);
+		}
+		if (temporaries[i].type != Variant::NIL) {
+			function->temporary_slots[stack_index] = temporaries[i].type;
 		}
 	}
 
