@@ -1336,6 +1336,10 @@
 		<member name="rendering/threads/thread_model" type="int" setter="" getter="" default="1">
 			Thread model for rendering. Rendering on a thread can vastly improve performance, but synchronizing to the main thread can cause a bit more jitter.
 		</member>
+		<member name="rendering/threads/thread_safe_bvh" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], a thread safe version of BVH (bounding volume hierarchy) will be used in rendering and Godot physics.
+			Try enabling this option if you see any visual anomalies in 3D (such as incorrect object visibility).
+		</member>
 		<member name="rendering/vram_compression/import_bptc" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], the texture importer will import VRAM-compressed textures using the BPTC algorithm. This texture compression algorithm is only supported on desktop platforms, and only when using the GLES3 renderer.
 		</member>

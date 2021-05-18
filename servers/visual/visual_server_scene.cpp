@@ -97,6 +97,11 @@ void VisualServerScene::camera_set_use_vertical_aspect(RID p_camera, bool p_enab
 }
 
 /* SPATIAL PARTITIONING */
+
+VisualServerScene::SpatialPartitioningScene_BVH::SpatialPartitioningScene_BVH() {
+	_bvh.params_set_thread_safe(GLOBAL_GET("rendering/threads/thread_safe_bvh"));
+}
+
 VisualServerScene::SpatialPartitionID VisualServerScene::SpatialPartitioningScene_BVH::create(Instance *p_userdata, const AABB &p_aabb, int p_subindex, bool p_pairable, uint32_t p_pairable_type, uint32_t p_pairable_mask) {
 #if defined(DEBUG_ENABLED) && defined(TOOLS_ENABLED)
 	// we are relying on this instance to be valid in order to pass

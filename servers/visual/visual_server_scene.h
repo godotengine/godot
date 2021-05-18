@@ -163,6 +163,7 @@ public:
 		BVH_Manager<Instance, true, 256> _bvh;
 
 	public:
+		SpatialPartitioningScene_BVH();
 		SpatialPartitionID create(Instance *p_userdata, const AABB &p_aabb = AABB(), int p_subindex = 0, bool p_pairable = false, uint32_t p_pairable_type = 0, uint32_t p_pairable_mask = 1);
 		void erase(SpatialPartitionID p_handle);
 		void move(SpatialPartitionID p_handle, const AABB &p_aabb);
