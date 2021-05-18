@@ -72,8 +72,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-05-03 21:29+0000\n"
-"Last-Translator: Günther Bohn <ciscouser@gmx.de>\n"
+"PO-Revision-Date: 2021-05-14 20:34+0000\n"
+"Last-Translator: So Wieso <sowieso@dukun.de>\n"
 "Language-Team: German <https://hosted.weblate.org/projects/godot-engine/"
 "godot/de/>\n"
 "Language: de\n"
@@ -2617,14 +2617,14 @@ msgid "Unable to load addon script from path: '%s'."
 msgstr "Erweiterungsskript konnte nicht geladen werden: ‚%s‘."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid ""
 "Unable to load addon script from path: '%s'. This might be due to a code "
-"error in that script. \n"
+"error in that script.\n"
 "Disabling the addon at '%s' to prevent further errors."
 msgstr ""
-"Erweiterungsskript konnte nicht von folgendem Pfad geladen werden: ‚%s‘. Es "
-"scheint ein Fehler im Quellcode zu sein. Bitte Syntax überprüfen."
+"Erweiterungsskript auf folgendem Pfad konnte nicht geladen werden: ‚%s‘. Es "
+"scheint ein Fehler in dessen Quellcode zu sein.\n"
+"Die Erweiterung ‚%s‘ wird deaktiviert um weitere Fehler zu verhindern."
 
 #: editor/editor_node.cpp
 msgid ""
@@ -3073,6 +3073,10 @@ msgstr "Community"
 #: editor/editor_node.cpp
 msgid "About"
 msgstr "Über"
+
+#: editor/editor_node.cpp
+msgid "Support Godot Development"
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Play the project."
@@ -5312,20 +5316,11 @@ msgstr ""
 "Kanals im Bereich von 0.0 bis 1.0 liegen."
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
-msgid ""
-"Godot editor was built without ray tracing support; lightmaps can't be "
-"baked.\n"
-"If you are using an Apple Silicon-based Mac, try forcing Rosetta emulation "
-"on Godot.app in the application settings\n"
-"then restart the editor."
-msgstr ""
-
-#: editor/plugins/baked_lightmap_editor_plugin.cpp
 #, fuzzy
 msgid ""
-"Godot editor was built without ray tracing support; lightmaps can't be baked."
+"Godot editor was built without ray tracing support, lightmaps can't be baked."
 msgstr ""
-"Diese Godot-Version wurde ohne Raytracing-Unterstützung erstellt, Lightmaps "
+"Der Godot-Editor wurde ohne Raytracing-Unterstützung erstellt; Lightmaps "
 "können damit nicht gebacken werden."
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
@@ -13331,6 +13326,18 @@ msgstr "Varyings können nur in Vertex-Funktion zugewiesen werden."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Konstanten können nicht verändert werden."
+
+#~ msgid ""
+#~ "Godot editor was built without ray tracing support; lightmaps can't be "
+#~ "baked.\n"
+#~ "If you are using an Apple Silicon-based Mac, try forcing Rosetta "
+#~ "emulation on Godot.app in the application settings\n"
+#~ "then restart the editor."
+#~ msgstr ""
+#~ "Der Godot-Editor wurde ohne Raytracing-Unterstützung gebaut; Lightmaps "
+#~ "können nicht gebacken werden.\n"
+#~ "Nutzer eines Macs basierend auf Apple Silicon sollten Rosetta-Emulation "
+#~ "in den Anwendungseinstellungen aktivieren und den Editor neu starten."
 
 #~ msgid ""
 #~ "InterpolatedCamera has been deprecated and will be removed in Godot 4.0."

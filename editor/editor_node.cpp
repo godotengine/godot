@@ -3167,7 +3167,7 @@ void EditorNode::set_addon_plugin_enabled(const String &p_addon, bool p_enabled,
 
 		// Errors in the script cause the base_type to be an empty string.
 		if (String(script->get_instance_base_type()) == "") {
-			show_warning(vformat(TTR("Unable to load addon script from path: '%s'. This might be due to a code error in that script. \nDisabling the addon at '%s' to prevent further errors."), script_path, p_addon));
+			show_warning(vformat(TTR("Unable to load addon script from path: '%s'. This might be due to a code error in that script.\nDisabling the addon at '%s' to prevent further errors."), script_path, p_addon));
 			_remove_plugin_from_enabled(p_addon);
 			return;
 		}

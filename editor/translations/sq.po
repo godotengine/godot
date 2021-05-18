@@ -2589,7 +2589,7 @@ msgstr "I paaftë të ngarkojë shkrimin e shtojcës nga rruga: '%s'."
 #, fuzzy
 msgid ""
 "Unable to load addon script from path: '%s'. This might be due to a code "
-"error in that script. \n"
+"error in that script.\n"
 "Disabling the addon at '%s' to prevent further errors."
 msgstr ""
 "I paaftë të ngarkojë shkrimin e shtojcës nga rruga: '%s' Me sa duket është "
@@ -3050,6 +3050,10 @@ msgstr "Komuniteti"
 #: editor/editor_node.cpp
 msgid "About"
 msgstr "Rreth"
+
+#: editor/editor_node.cpp
+msgid "Support Godot Development"
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Play the project."
@@ -5288,16 +5292,7 @@ msgstr ""
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid ""
-"Godot editor was built without ray tracing support; lightmaps can't be "
-"baked.\n"
-"If you are using an Apple Silicon-based Mac, try forcing Rosetta emulation "
-"on Godot.app in the application settings\n"
-"then restart the editor."
-msgstr ""
-
-#: editor/plugins/baked_lightmap_editor_plugin.cpp
-msgid ""
-"Godot editor was built without ray tracing support; lightmaps can't be baked."
+"Godot editor was built without ray tracing support, lightmaps can't be baked."
 msgstr ""
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp

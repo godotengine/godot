@@ -82,8 +82,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Chinese (Simplified) (Godot Engine)\n"
 "POT-Creation-Date: 2018-01-20 12:15+0200\n"
-"PO-Revision-Date: 2021-04-26 22:32+0000\n"
-"Last-Translator: qjyqjyqjyqjy <qjyqjyqjyqjy@sina.com.cn>\n"
+"PO-Revision-Date: 2021-05-16 03:32+0000\n"
+"Last-Translator: Haoyu Qiu <timothyqiu32@gmail.com>\n"
 "Language-Team: Chinese (Simplified) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/zh_Hans/>\n"
 "Language: zh_CN\n"
@@ -2564,12 +2564,13 @@ msgid "Unable to load addon script from path: '%s'."
 msgstr "无法从路径 “%s” 中加载加载项脚本。"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid ""
 "Unable to load addon script from path: '%s'. This might be due to a code "
-"error in that script. \n"
+"error in that script.\n"
 "Disabling the addon at '%s' to prevent further errors."
-msgstr "无法从路径 “%s” 加载加载项脚本：脚本似乎有代码错误，请检查其语法。"
+msgstr ""
+"无法从路径“%s”加载加载项脚本：该脚本可能有代码错误。\n"
+"禁用加载项“%s”可阻止其进一步报错。"
 
 #: editor/editor_node.cpp
 msgid ""
@@ -2993,6 +2994,10 @@ msgstr "社区"
 #: editor/editor_node.cpp
 msgid "About"
 msgstr "关于"
+
+#: editor/editor_node.cpp
+msgid "Support Godot Development"
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Play the project."
@@ -5184,19 +5189,10 @@ msgid ""
 msgstr "某些网格无效。确保UV2通道值包含在[0.0,1.0]平方区域内。"
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
-msgid ""
-"Godot editor was built without ray tracing support; lightmaps can't be "
-"baked.\n"
-"If you are using an Apple Silicon-based Mac, try forcing Rosetta emulation "
-"on Godot.app in the application settings\n"
-"then restart the editor."
-msgstr ""
-
-#: editor/plugins/baked_lightmap_editor_plugin.cpp
 #, fuzzy
 msgid ""
-"Godot editor was built without ray tracing support; lightmaps can't be baked."
-msgstr "Godot编辑器是在没有光线跟踪支持的情况下构建的，光照贴图无法烘焙。"
+"Godot editor was built without ray tracing support, lightmaps can't be baked."
+msgstr "Godot 编辑器是在没有光线跟踪支持的情况下构建的；无法烘焙光照贴图。"
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid "Bake Lightmaps"
@@ -12933,6 +12929,18 @@ msgstr "变量只能在顶点函数中指定。"
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "不允许修改常量。"
+
+#~ msgid ""
+#~ "Godot editor was built without ray tracing support; lightmaps can't be "
+#~ "baked.\n"
+#~ "If you are using an Apple Silicon-based Mac, try forcing Rosetta "
+#~ "emulation on Godot.app in the application settings\n"
+#~ "then restart the editor."
+#~ msgstr ""
+#~ "Godot 编辑器是在没有光线跟踪支持的情况下构建的；无法烘焙光照贴图。\n"
+#~ "如果你使用的是基于 Apple Silicon 的 Mac，可以尝试在应用设置中让 Godot.app "
+#~ "强制使用 Rosetta 模拟\n"
+#~ "并重启编辑器。"
 
 #~ msgid ""
 #~ "InterpolatedCamera has been deprecated and will be removed in Godot 4.0."
