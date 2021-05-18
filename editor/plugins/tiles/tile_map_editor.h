@@ -58,7 +58,7 @@ private:
 	ObjectID tile_map_id;
 	virtual void edit(ObjectID p_tile_map_id) override;
 
-	// Toolbar.
+	///// Toolbar /////
 	HBoxContainer *toolbar;
 
 	Ref<ButtonGroup> tool_buttons_group;
@@ -84,7 +84,7 @@ private:
 
 	void _update_toolbar();
 
-	// Tilemap editing.
+	///// Tilemap editing. /////
 	bool has_mouse = false;
 	void _mouse_exited_viewport();
 
@@ -105,12 +105,12 @@ private:
 	Map<Vector2i, TileMapCell> drag_modified;
 
 	TileMapCell _pick_random_tile(const TileMapPattern *p_pattern);
-	Map<Vector2i, TileMapCell> _draw_line(Vector2 p_start_drag_mouse_pos, Vector2 p_from_mouse_pos, Vector2i p_to_mouse_pos);
-	Map<Vector2i, TileMapCell> _draw_rect(Vector2i p_start_mouse_pos, Vector2i p_end_mouse_pos);
+	Map<Vector2i, TileMapCell> _draw_line(Vector2 p_start_drag_mouse_pos, Vector2 p_from_mouse_pos, Vector2 p_to_mouse_pos);
+	Map<Vector2i, TileMapCell> _draw_rect(Vector2i p_start_cell, Vector2i p_end_cell);
 	Map<Vector2i, TileMapCell> _draw_bucket_fill(Vector2i p_coords, bool p_contiguous);
 	void _stop_dragging();
 
-	// Selection system.
+	///// Selection system. /////
 	Set<Vector2i> tile_map_selection;
 	TileMapPattern *tile_map_clipboard = memnew(TileMapPattern);
 	TileMapPattern *selection_pattern = memnew(TileMapPattern);
@@ -124,22 +124,24 @@ private:
 	void _update_tileset_selection_from_selection_pattern();
 	void _update_fix_selected_and_hovered();
 
-	// Bottom panel.
-	bool tile_set_dragging_selection = false;
-	Vector2i tile_set_drag_start_mouse_pos;
-
+	///// Bottom panel. ////.
 	Label *missing_source_label;
-	HSplitContainer *atlas_sources_split_container;
+	Label *invalid_source_label;
 
 	ItemList *sources_list;
-	TileAtlasView *tile_atlas_view;
-	Ref<Texture2D> missing_texture_texture;
+
+	Ref<Texture2D> missing_atlas_texture_icon;
 	void _update_tile_set_sources_list();
-	void _update_atlas_view();
 
 	void _update_bottom_panel();
 
+	// Atlas sources.
 	TileMapCell hovered_tile;
+	TileAtlasView *tile_atlas_view;
+	HSplitContainer *atlas_sources_split_container;
+
+	bool tile_set_dragging_selection = false;
+	Vector2i tile_set_drag_start_mouse_pos;
 
 	Control *tile_atlas_control;
 	void _tile_atlas_control_mouse_exited();
@@ -150,6 +152,16 @@ private:
 	void _tile_alternatives_control_draw();
 	void _tile_alternatives_control_mouse_exited();
 	void _tile_alternatives_control_gui_input(const Ref<InputEvent> &p_event);
+
+	void _update_atlas_view();
+
+	// Scenes collection sources.
+	ItemList *scene_tiles_list;
+
+	void _update_scenes_collection_view();
+	void _scene_thumbnail_done(const String &p_path, const Ref<Texture2D> &p_preview, const Ref<Texture2D> &p_small_preview, Variant p_ud);
+	void _scenes_list_multi_selected(int p_index, bool p_selected);
+	void _scenes_list_nothing_selected();
 
 	// Update callback
 	virtual void tile_set_changed() override;

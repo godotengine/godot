@@ -166,7 +166,7 @@ void TileDataTerrainsEditor::draw_over_tile(CanvasItem *p_canvas_item, Transform
 
 	Vector<String> components = String(p_property).split("/", true);
 	if (components[0] == "terrain_mode" || components[0] == "terrain" || components[0] == "terrains_peering_bit") {
-		TileSetAtlasPluginTerrain::draw_terrains(p_canvas_item, p_transform, p_tile_set, tile_data);
+		TileSetPluginAtlasTerrain::draw_terrains(p_canvas_item, p_transform, p_tile_set, tile_data);
 	}
 }
 

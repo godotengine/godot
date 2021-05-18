@@ -45,8 +45,8 @@ class TileSetAtlasSourceEditor : public HBoxContainer {
 private:
 	// A class to store which tiles are selected.
 	struct TileSelection {
-		Vector2i tile = TileSetAtlasSource::INVALID_ATLAS_COORDS;
-		int alternative = TileSetAtlasSource::INVALID_TILE_ALTERNATIVE;
+		Vector2i tile = TileSetSource::INVALID_ATLAS_COORDS;
+		int alternative = TileSetSource::INVALID_TILE_ALTERNATIVE;
 
 		bool operator<(const TileSelection &p_other) const {
 			if (tile == p_other.tile) {
@@ -80,14 +80,13 @@ private:
 	};
 
 	// -- Proxy object for a tile, needed by the inspector --
-	class TileProxyObject : public Object {
-		GDCLASS(TileProxyObject, Object);
+	class AtlasTileProxyObject : public Object {
+		GDCLASS(AtlasTileProxyObject, Object);
 
 	private:
 		TileSetAtlasSourceEditor *tiles_set_atlas_source_editor;
 
 		TileSetAtlasSource *tile_set_atlas_source = nullptr;
-		int source_id;
 		Set<TileSelection> tiles = Set<TileSelection>();
 
 	protected:
@@ -99,10 +98,10 @@ private:
 
 	public:
 		// Update the proxyed object.
-		void edit(TileSetAtlasSource *p_tile_set_atlas_source, int p_source_id = -1, Set<TileSelection> p_tiles = Set<TileSelection>());
+		void edit(TileSetAtlasSource *p_tile_set_atlas_source, Set<TileSelection> p_tiles = Set<TileSelection>());
 
-		TileProxyObject(TileSetAtlasSourceEditor *p_tiles_editor_source_tab) {
-			tiles_set_atlas_source_editor = p_tiles_editor_source_tab;
+		AtlasTileProxyObject(TileSetAtlasSourceEditor *p_tiles_set_atlas_source_editor) {
+			tiles_set_atlas_source_editor = p_tiles_set_atlas_source_editor;
 		}
 	};
 
@@ -115,7 +114,7 @@ private:
 	bool tile_set_atlas_source_changed_needs_update = false;
 
 	// -- Inspector --
-	TileProxyObject *tile_proxy_object;
+	AtlasTileProxyObject *tile_proxy_object;
 	Label *tile_inspector_label;
 	EditorInspector *tile_inspector;
 	String selected_property;
@@ -175,7 +174,7 @@ private:
 		ADVANCED_AUTO_REMOVE_TILES,
 	};
 	Vector2i menu_option_coords;
-	int menu_option_alternative = TileSetAtlasSource::INVALID_TILE_ALTERNATIVE;
+	int menu_option_alternative = TileSetSource::INVALID_TILE_ALTERNATIVE;
 	void _menu_option(int p_option);
 
 	// Tool buttons.
@@ -198,7 +197,7 @@ private:
 	Array _get_selection_as_array();
 
 	// A control on the tile atlas to draw and handle input events.
-	Vector2i hovered_base_tile_coords = TileSetAtlasSource::INVALID_ATLAS_COORDS;
+	Vector2i hovered_base_tile_coords = TileSetSource::INVALID_ATLAS_COORDS;
 
 	PopupMenu *base_tile_popup_menu;
 	PopupMenu *empty_base_tile_popup_menu;
@@ -213,7 +212,7 @@ private:
 	void _tile_atlas_view_transform_changed();
 
 	// A control over the alternative tiles.
-	Vector3i hovered_alternative_tile_coords = Vector3i(TileSetAtlasSource::INVALID_ATLAS_COORDS.x, TileSetAtlasSource::INVALID_ATLAS_COORDS.y, TileSetAtlasSource::INVALID_TILE_ALTERNATIVE);
+	Vector3i hovered_alternative_tile_coords = Vector3i(TileSetSource::INVALID_ATLAS_COORDS.x, TileSetSource::INVALID_ATLAS_COORDS.y, TileSetSource::INVALID_TILE_ALTERNATIVE);
 
 	PopupMenu *alternative_tile_popup_menu;
 	Control *alternative_tiles_control;

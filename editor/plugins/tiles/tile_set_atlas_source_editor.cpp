@@ -53,10 +53,10 @@ void TileSetAtlasSourceEditor::TileSetAtlasSourceProxyObject::set_id(int p_id) {
 	if (source_id == p_id) {
 		return;
 	}
-	ERR_FAIL_COND_MSG(tile_set->has_source(p_id), vformat("Cannot change TileSet atlas source ID. Another atlas source exists with id %d.", p_id));
+	ERR_FAIL_COND_MSG(tile_set->has_source(p_id), vformat("Cannot change TileSet Atlas Source ID. Another source exists with id %d.", p_id));
 
 	int previous_source = source_id;
-	source_id = p_id; // source_id must be updated before, because it's used by the atlas source list update.
+	source_id = p_id; // source_id must be updated before, because it's used by the source list update.
 	tile_set->set_source_id(previous_source, p_id);
 	emit_signal("changed", "id");
 }
@@ -126,7 +126,7 @@ void TileSetAtlasSourceEditor::TileSetAtlasSourceProxyObject::edit(Ref<TileSet> 
 }
 
 // -- Proxy object used by the tile inspector --
-bool TileSetAtlasSourceEditor::TileProxyObject::_set(const StringName &p_name, const Variant &p_value) {
+bool TileSetAtlasSourceEditor::AtlasTileProxyObject::_set(const StringName &p_name, const Variant &p_value) {
 	if (!tile_set_atlas_source) {
 		return false;
 	}
@@ -152,9 +152,9 @@ bool TileSetAtlasSourceEditor::TileProxyObject::_set(const StringName &p_name, c
 			return true;
 		} else if (alternative == 0 && p_name == "size_in_atlas") {
 			Vector2i as_vector2i = Vector2i(p_value);
-			ERR_FAIL_COND_V(!tile_set_atlas_source->can_move_tile_in_atlas(coords, TileSetAtlasSource::INVALID_ATLAS_COORDS, as_vector2i), false);
+			ERR_FAIL_COND_V(!tile_set_atlas_source->can_move_tile_in_atlas(coords, TileSetSource::INVALID_ATLAS_COORDS, as_vector2i), false);
 
-			tile_set_atlas_source->move_tile_in_atlas(coords, TileSetAtlasSource::INVALID_ATLAS_COORDS, as_vector2i);
+			tile_set_atlas_source->move_tile_in_atlas(coords, TileSetSource::INVALID_ATLAS_COORDS, as_vector2i);
 			emit_signal("changed", "size_in_atlas");
 			return true;
 		} else if (alternative > 0 && p_name == "alternative_id") {
@@ -197,7 +197,7 @@ bool TileSetAtlasSourceEditor::TileProxyObject::_set(const StringName &p_name, c
 	return any_valid;
 }
 
-bool TileSetAtlasSourceEditor::TileProxyObject::_get(const StringName &p_name, Variant &r_ret) const {
+bool TileSetAtlasSourceEditor::AtlasTileProxyObject::_get(const StringName &p_name, Variant &r_ret) const {
 	if (!tile_set_atlas_source) {
 		return false;
 	}
@@ -237,7 +237,7 @@ bool TileSetAtlasSourceEditor::TileProxyObject::_get(const StringName &p_name, V
 	return false;
 }
 
-void TileSetAtlasSourceEditor::TileProxyObject::_get_property_list(List<PropertyInfo> *p_list) const {
+void TileSetAtlasSourceEditor::AtlasTileProxyObject::_get_property_list(List<PropertyInfo> *p_list) const {
 	if (!tile_set_atlas_source) {
 		return;
 	}
@@ -310,12 +310,11 @@ void TileSetAtlasSourceEditor::TileProxyObject::_get_property_list(List<Property
 	}
 }
 
-void TileSetAtlasSourceEditor::TileProxyObject::edit(TileSetAtlasSource *p_tile_set_atlas_source, int p_source_id, Set<TileSelection> p_tiles) {
+void TileSetAtlasSourceEditor::AtlasTileProxyObject::edit(TileSetAtlasSource *p_tile_set_atlas_source, Set<TileSelection> p_tiles) {
 	ERR_FAIL_COND(!p_tile_set_atlas_source);
-	ERR_FAIL_COND(p_source_id < 0);
 	ERR_FAIL_COND(p_tiles.is_empty());
 	for (Set<TileSelection>::Element *E = p_tiles.front(); E; E = E->next()) {
-		ERR_FAIL_COND(E->get().tile == TileSetAtlasSource::INVALID_ATLAS_COORDS);
+		ERR_FAIL_COND(E->get().tile == TileSetSource::INVALID_ATLAS_COORDS);
 		ERR_FAIL_COND(E->get().alternative < 0);
 	}
 
@@ -333,7 +332,6 @@ void TileSetAtlasSourceEditor::TileProxyObject::edit(TileSetAtlasSource *p_tile_
 	}
 
 	tile_set_atlas_source = p_tile_set_atlas_source;
-	source_id = p_source_id;
 	tiles = Set<TileSelection>(p_tiles);
 
 	// Connect to changes.
@@ -352,7 +350,7 @@ void TileSetAtlasSourceEditor::TileProxyObject::edit(TileSetAtlasSource *p_tile_
 	notify_property_list_changed();
 }
 
-void TileSetAtlasSourceEditor::TileProxyObject::_bind_methods() {
+void TileSetAtlasSourceEditor::AtlasTileProxyObject::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("changed", PropertyInfo(Variant::STRING, "what")));
 }
 
@@ -391,12 +389,12 @@ void TileSetAtlasSourceEditor::_update_fix_selected_and_hovered_tiles() {
 
 	// Fix hovered.
 	if (!tile_set_atlas_source->has_tile(hovered_base_tile_coords)) {
-		hovered_base_tile_coords = TileSetAtlasSource::INVALID_ATLAS_COORDS;
+		hovered_base_tile_coords = TileSetSource::INVALID_ATLAS_COORDS;
 	}
 	Vector2i coords = Vector2i(hovered_alternative_tile_coords.x, hovered_alternative_tile_coords.y);
 	int alternative = hovered_alternative_tile_coords.z;
 	if (!tile_set_atlas_source->has_tile(coords) || !tile_set_atlas_source->has_alternative_tile(coords, alternative)) {
-		hovered_alternative_tile_coords = Vector3i(TileSetAtlasSource::INVALID_ATLAS_COORDS.x, TileSetAtlasSource::INVALID_ATLAS_COORDS.y, TileSetAtlasSource::INVALID_TILE_ALTERNATIVE);
+		hovered_alternative_tile_coords = Vector3i(TileSetSource::INVALID_ATLAS_COORDS.x, TileSetSource::INVALID_ATLAS_COORDS.y, TileSetSource::INVALID_TILE_ALTERNATIVE);
 	}
 }
 
@@ -405,7 +403,7 @@ void TileSetAtlasSourceEditor::_update_tile_inspector() {
 
 	// Update the proxy object.
 	if (has_atlas_tile_selected) {
-		tile_proxy_object->edit(tile_set_atlas_source, tile_set_atlas_source_id, selection);
+		tile_proxy_object->edit(tile_set_atlas_source, selection);
 	}
 
 	// Update visibility.
@@ -486,7 +484,7 @@ void TileSetAtlasSourceEditor::_update_toolbar() {
 }
 
 void TileSetAtlasSourceEditor::_tile_atlas_control_mouse_exited() {
-	hovered_base_tile_coords = TileSetAtlasSource::INVALID_ATLAS_COORDS;
+	hovered_base_tile_coords = TileSetSource::INVALID_ATLAS_COORDS;
 	tile_atlas_control->update();
 	tile_atlas_control_unscaled->update();
 	tile_atlas_view->update();
@@ -514,7 +512,7 @@ void TileSetAtlasSourceEditor::_tile_atlas_control_gui_input(const Ref<InputEven
 			if (selection.size() == 1) {
 				// Change the cursor depending on the hovered thing.
 				TileSelection selected = selection.front()->get();
-				if (selected.tile != TileSetAtlasSource::INVALID_ATLAS_COORDS && selected.alternative == 0) {
+				if (selected.tile != TileSetSource::INVALID_ATLAS_COORDS && selected.alternative == 0) {
 					Vector2 mouse_local_pos = tile_atlas_control->get_local_mouse_position();
 					Vector2i size_in_atlas = tile_set_atlas_source->get_tile_size_in_atlas(selected.tile);
 					Rect2 region = tile_set_atlas_source->get_tile_texture_region(selected.tile);
@@ -560,7 +558,7 @@ void TileSetAtlasSourceEditor::_tile_atlas_control_gui_input(const Ref<InputEven
 
 			Vector<Point2i> line = Geometry2D::bresenham_line(last_base_tiles_coords, new_base_tiles_coords);
 			for (int i = 0; i < line.size(); i++) {
-				if (tile_set_atlas_source->get_tile_at_coords(line[i]) == TileSetAtlasSource::INVALID_ATLAS_COORDS) {
+				if (tile_set_atlas_source->get_tile_at_coords(line[i]) == TileSetSource::INVALID_ATLAS_COORDS) {
 					tile_set_atlas_source->create_tile(line[i]);
 					drag_modified_tiles.insert(line[i]);
 				}
@@ -576,7 +574,7 @@ void TileSetAtlasSourceEditor::_tile_atlas_control_gui_input(const Ref<InputEven
 			Vector<Point2i> line = Geometry2D::bresenham_line(last_base_tiles_coords, new_base_tiles_coords);
 			for (int i = 0; i < line.size(); i++) {
 				Vector2i base_tile_coords = tile_set_atlas_source->get_tile_at_coords(line[i]);
-				if (base_tile_coords != TileSetAtlasSource::INVALID_ATLAS_COORDS) {
+				if (base_tile_coords != TileSetSource::INVALID_ATLAS_COORDS) {
 					drag_modified_tiles.insert(base_tile_coords);
 				}
 			}
@@ -662,17 +660,17 @@ void TileSetAtlasSourceEditor::_tile_atlas_control_gui_input(const Ref<InputEven
 
 						// Remove a first tile.
 						Vector2i coords = tile_atlas_view->get_atlas_tile_coords_at_pos(drag_start_mouse_pos);
-						if (coords != TileSetAtlasSource::INVALID_ATLAS_COORDS) {
+						if (coords != TileSetSource::INVALID_ATLAS_COORDS) {
 							coords = tile_set_atlas_source->get_tile_at_coords(coords);
 						}
-						if (coords != TileSetAtlasSource::INVALID_ATLAS_COORDS) {
+						if (coords != TileSetSource::INVALID_ATLAS_COORDS) {
 							drag_modified_tiles.insert(coords);
 						}
 					} else {
 						if (mb->is_shift_pressed()) {
 							// Create a big tile.
 							Vector2i coords = tile_atlas_view->get_atlas_tile_coords_at_pos(mouse_local_pos);
-							if (coords != TileSetAtlasSource::INVALID_ATLAS_COORDS && tile_set_atlas_source->get_tile_at_coords(coords) == TileSetAtlasSource::INVALID_ATLAS_COORDS) {
+							if (coords != TileSetSource::INVALID_ATLAS_COORDS && tile_set_atlas_source->get_tile_at_coords(coords) == TileSetSource::INVALID_ATLAS_COORDS) {
 								// Setup the dragging info, only if we start on an empty tile.
 								drag_type = DRAG_TYPE_CREATE_BIG_TILE;
 								drag_start_mouse_pos = mouse_local_pos;
@@ -692,7 +690,7 @@ void TileSetAtlasSourceEditor::_tile_atlas_control_gui_input(const Ref<InputEven
 
 							// Create a first tile if needed.
 							Vector2i coords = tile_atlas_view->get_atlas_tile_coords_at_pos(drag_start_mouse_pos);
-							if (coords != TileSetAtlasSource::INVALID_ATLAS_COORDS && tile_set_atlas_source->get_tile_at_coords(coords) == TileSetAtlasSource::INVALID_ATLAS_COORDS) {
+							if (coords != TileSetSource::INVALID_ATLAS_COORDS && tile_set_atlas_source->get_tile_at_coords(coords) == TileSetSource::INVALID_ATLAS_COORDS) {
 								tile_set_atlas_source->create_tile(coords);
 								drag_modified_tiles.insert(coords);
 							}
@@ -710,7 +708,7 @@ void TileSetAtlasSourceEditor::_tile_atlas_control_gui_input(const Ref<InputEven
 						if (mb->is_shift_pressed()) {
 							// Create a big tile.
 							Vector2i coords = tile_atlas_view->get_atlas_tile_coords_at_pos(mouse_local_pos);
-							if (coords != TileSetAtlasSource::INVALID_ATLAS_COORDS && tile_set_atlas_source->get_tile_at_coords(coords) == TileSetAtlasSource::INVALID_ATLAS_COORDS) {
+							if (coords != TileSetSource::INVALID_ATLAS_COORDS && tile_set_atlas_source->get_tile_at_coords(coords) == TileSetSource::INVALID_ATLAS_COORDS) {
 								// Setup the dragging info, only if we start on an empty tile.
 								drag_type = DRAG_TYPE_CREATE_BIG_TILE;
 								drag_start_mouse_pos = mouse_local_pos;
@@ -732,7 +730,7 @@ void TileSetAtlasSourceEditor::_tile_atlas_control_gui_input(const Ref<InputEven
 					drag_type = DRAG_TYPE_NONE;
 					if (selection.size() == 1) {
 						TileSelection selected = selection.front()->get();
-						if (selected.tile != TileSetAtlasSource::INVALID_ATLAS_COORDS && selected.alternative == 0) {
+						if (selected.tile != TileSetSource::INVALID_ATLAS_COORDS && selected.alternative == 0) {
 							Vector2i size_in_atlas = tile_set_atlas_source->get_tile_size_in_atlas(selected.tile);
 							Rect2 region = tile_set_atlas_source->get_tile_texture_region(selected.tile);
 							Size2 zoomed_size = resize_handle->get_size() / tile_atlas_view->get_zoom();
@@ -771,17 +769,17 @@ void TileSetAtlasSourceEditor::_tile_atlas_control_gui_input(const Ref<InputEven
 
 					// Selecting then dragging a tile.
 					if (drag_type == DRAG_TYPE_NONE) {
-						TileSelection selected = { TileSetAtlasSource::INVALID_ATLAS_COORDS, TileSetAtlasSource::INVALID_TILE_ALTERNATIVE };
+						TileSelection selected = { TileSetSource::INVALID_ATLAS_COORDS, TileSetSource::INVALID_TILE_ALTERNATIVE };
 						Vector2i coords = tile_atlas_view->get_atlas_tile_coords_at_pos(mouse_local_pos);
-						if (coords != TileSetAtlasSource::INVALID_ATLAS_COORDS) {
+						if (coords != TileSetSource::INVALID_ATLAS_COORDS) {
 							coords = tile_set_atlas_source->get_tile_at_coords(coords);
-							if (coords != TileSetAtlasSource::INVALID_ATLAS_COORDS) {
+							if (coords != TileSetSource::INVALID_ATLAS_COORDS) {
 								selected = { coords, 0 };
 							}
 						}
 
 						bool shift = mb->is_shift_pressed();
-						if (!shift && selection.size() == 1 && selected.tile != TileSetAtlasSource::INVALID_ATLAS_COORDS && selection.has(selected)) {
+						if (!shift && selection.size() == 1 && selected.tile != TileSetSource::INVALID_ATLAS_COORDS && selection.has(selected)) {
 							// Start move dragging.
 							drag_type = DRAG_TYPE_MOVE_TILE;
 							drag_start_mouse_pos = mouse_local_pos;
@@ -812,13 +810,13 @@ void TileSetAtlasSourceEditor::_tile_atlas_control_gui_input(const Ref<InputEven
 				// Right click pressed.
 
 				TileSelection selected = { tile_atlas_view->get_atlas_tile_coords_at_pos(mouse_local_pos), 0 };
-				if (selected.tile != TileSetAtlasSource::INVALID_ATLAS_COORDS) {
+				if (selected.tile != TileSetSource::INVALID_ATLAS_COORDS) {
 					selected.tile = tile_set_atlas_source->get_tile_at_coords(selected.tile);
 				}
 
 				// Set the selection if needed.
 				if (selection.size() <= 1) {
-					if (selected.tile != TileSetAtlasSource::INVALID_ATLAS_COORDS) {
+					if (selected.tile != TileSetSource::INVALID_ATLAS_COORDS) {
 						undo_redo->create_action(TTR("Select tiles"));
 						undo_redo->add_undo_method(this, "_set_selection_from_array", _get_selection_as_array());
 						selection.clear();
@@ -831,15 +829,15 @@ void TileSetAtlasSourceEditor::_tile_atlas_control_gui_input(const Ref<InputEven
 				}
 
 				// Pops up the correct menu, depending on whether we have a tile or not.
-				if (selected.tile != TileSetAtlasSource::INVALID_ATLAS_COORDS && selection.has(selected)) {
+				if (selected.tile != TileSetSource::INVALID_ATLAS_COORDS && selection.has(selected)) {
 					// We have a tile.
 					menu_option_coords = selected.tile;
 					menu_option_alternative = 0;
 					base_tile_popup_menu->popup(Rect2i(get_global_mouse_position(), Size2i()));
-				} else if (hovered_base_tile_coords != TileSetAtlasSource::INVALID_ATLAS_COORDS) {
+				} else if (hovered_base_tile_coords != TileSetSource::INVALID_ATLAS_COORDS) {
 					// We don't have a tile, but can create one.
 					menu_option_coords = hovered_base_tile_coords;
-					menu_option_alternative = TileSetAtlasSource::INVALID_TILE_ALTERNATIVE;
+					menu_option_alternative = TileSetSource::INVALID_TILE_ALTERNATIVE;
 					empty_base_tile_popup_menu->popup(Rect2i(get_global_mouse_position(), Size2i()));
 				}
 			} else {
@@ -902,7 +900,7 @@ void TileSetAtlasSourceEditor::_end_dragging() {
 			for (int x = area.get_position().x; x < area.get_end().x; x++) {
 				for (int y = area.get_position().y; y < area.get_end().y; y++) {
 					Vector2i coords = Vector2i(x, y);
-					if (tile_set_atlas_source->get_tile_at_coords(coords) == TileSetAtlasSource::INVALID_ATLAS_COORDS) {
+					if (tile_set_atlas_source->get_tile_at_coords(coords) == TileSetSource::INVALID_ATLAS_COORDS) {
 						undo_redo->add_do_method(tile_set_atlas_source, "create_tile", coords);
 						undo_redo->add_undo_method(tile_set_atlas_source, "remove_tile", coords);
 					}
@@ -923,7 +921,7 @@ void TileSetAtlasSourceEditor::_end_dragging() {
 			for (int x = area.get_position().x; x < area.get_end().x; x++) {
 				for (int y = area.get_position().y; y < area.get_end().y; y++) {
 					Vector2i coords = tile_set_atlas_source->get_tile_at_coords(Vector2i(x, y));
-					if (coords != TileSetAtlasSource::INVALID_ATLAS_COORDS) {
+					if (coords != TileSetSource::INVALID_ATLAS_COORDS) {
 						to_delete.insert(coords);
 					}
 				}
@@ -964,8 +962,8 @@ void TileSetAtlasSourceEditor::_end_dragging() {
 		case DRAG_TYPE_RECT_SELECT: {
 			Vector2i start_base_tiles_coords = tile_atlas_view->get_atlas_tile_coords_at_pos(drag_start_mouse_pos);
 			Vector2i new_base_tiles_coords = tile_atlas_view->get_atlas_tile_coords_at_pos(tile_atlas_control->get_local_mouse_position());
-			ERR_FAIL_COND(start_base_tiles_coords == TileSetAtlasSource::INVALID_ATLAS_COORDS);
-			ERR_FAIL_COND(new_base_tiles_coords == TileSetAtlasSource::INVALID_ATLAS_COORDS);
+			ERR_FAIL_COND(start_base_tiles_coords == TileSetSource::INVALID_ATLAS_COORDS);
+			ERR_FAIL_COND(new_base_tiles_coords == TileSetSource::INVALID_ATLAS_COORDS);
 
 			Rect2i region = Rect2i(start_base_tiles_coords, new_base_tiles_coords - start_base_tiles_coords).abs();
 			region.size += Vector2i(1, 1);
@@ -977,7 +975,7 @@ void TileSetAtlasSourceEditor::_end_dragging() {
 			bool add_to_selection = true;
 			if (Input::get_singleton()->is_key_pressed(KEY_SHIFT)) {
 				Vector2i coords = tile_set_atlas_source->get_tile_at_coords(start_base_tiles_coords);
-				if (coords != TileSetAtlasSource::INVALID_ATLAS_COORDS) {
+				if (coords != TileSetSource::INVALID_ATLAS_COORDS) {
 					if (selection.has({ coords, 0 })) {
 						add_to_selection = false;
 					}
@@ -991,7 +989,7 @@ void TileSetAtlasSourceEditor::_end_dragging() {
 				for (int y = region.position.y; y < region.get_end().y; y++) {
 					Vector2i coords = Vector2i(x, y);
 					coords = tile_set_atlas_source->get_tile_at_coords(coords);
-					if (coords != TileSetAtlasSource::INVALID_ATLAS_COORDS) {
+					if (coords != TileSetSource::INVALID_ATLAS_COORDS) {
 						if (add_to_selection && !selection.has({ coords, 0 })) {
 							selection.insert({ coords, 0 });
 						} else if (!add_to_selection && selection.has({ coords, 0 })) {
@@ -1243,7 +1241,7 @@ void TileSetAtlasSourceEditor::_tile_atlas_control_draw() {
 		for (int x = area.get_position().x; x < area.get_end().x; x++) {
 			for (int y = area.get_position().y; y < area.get_end().y; y++) {
 				Vector2i coords = tile_set_atlas_source->get_tile_at_coords(Vector2i(x, y));
-				if (coords != TileSetAtlasSource::INVALID_ATLAS_COORDS) {
+				if (coords != TileSetSource::INVALID_ATLAS_COORDS) {
 					to_paint.insert(coords);
 				}
 			}
@@ -1266,7 +1264,7 @@ void TileSetAtlasSourceEditor::_tile_atlas_control_draw() {
 		for (int x = area.get_position().x; x < area.get_end().x; x++) {
 			for (int y = area.get_position().y; y < area.get_end().y; y++) {
 				Vector2i coords = Vector2i(x, y);
-				if (tile_set_atlas_source->get_tile_at_coords(coords) == TileSetAtlasSource::INVALID_ATLAS_COORDS) {
+				if (tile_set_atlas_source->get_tile_at_coords(coords) == TileSetSource::INVALID_ATLAS_COORDS) {
 					Vector2i origin = margins + (coords * (tile_size + separation));
 					tile_atlas_control->draw_rect(Rect2i(origin, tile_size), Color(1.0, 1.0, 1.0), false);
 				}
@@ -1290,7 +1288,7 @@ void TileSetAtlasSourceEditor::_tile_atlas_control_draw() {
 		Vector2i grid_size = tile_set_atlas_source->get_atlas_grid_size();
 		if (hovered_base_tile_coords.x >= 0 && hovered_base_tile_coords.y >= 0 && hovered_base_tile_coords.x < grid_size.x && hovered_base_tile_coords.y < grid_size.y) {
 			Vector2i hovered_tile = tile_set_atlas_source->get_tile_at_coords(hovered_base_tile_coords);
-			if (hovered_tile != TileSetAtlasSource::INVALID_ATLAS_COORDS) {
+			if (hovered_tile != TileSetSource::INVALID_ATLAS_COORDS) {
 				// Draw existing hovered tile.
 				tile_atlas_control->draw_rect(tile_set_atlas_source->get_tile_texture_region(hovered_tile), Color(1.0, 1.0, 1.0), false);
 			} else {
@@ -1349,7 +1347,7 @@ void TileSetAtlasSourceEditor::_tile_alternatives_control_gui_input(const Ref<In
 
 					selection.clear();
 					TileSelection selected = { Vector2i(tile.x, tile.y), int(tile.z) };
-					if (selected.tile != TileSetAtlasSource::INVALID_ATLAS_COORDS) {
+					if (selected.tile != TileSetSource::INVALID_ATLAS_COORDS) {
 						selection.insert(selected);
 					}
 
@@ -1364,7 +1362,7 @@ void TileSetAtlasSourceEditor::_tile_alternatives_control_gui_input(const Ref<In
 
 				selection.clear();
 				TileSelection selected = { Vector2i(tile.x, tile.y), int(tile.z) };
-				if (selected.tile != TileSetAtlasSource::INVALID_ATLAS_COORDS) {
+				if (selected.tile != TileSetSource::INVALID_ATLAS_COORDS) {
 					selection.insert(selected);
 				}
 
@@ -1387,7 +1385,7 @@ void TileSetAtlasSourceEditor::_tile_alternatives_control_gui_input(const Ref<In
 }
 
 void TileSetAtlasSourceEditor::_tile_alternatives_control_mouse_exited() {
-	hovered_alternative_tile_coords = Vector3i(TileSetAtlasSource::INVALID_ATLAS_COORDS.x, TileSetAtlasSource::INVALID_ATLAS_COORDS.y, TileSetAtlasSource::INVALID_TILE_ALTERNATIVE);
+	hovered_alternative_tile_coords = Vector3i(TileSetSource::INVALID_ATLAS_COORDS.x, TileSetSource::INVALID_ATLAS_COORDS.y, TileSetSource::INVALID_TILE_ALTERNATIVE);
 	tile_atlas_control->update();
 	tile_atlas_control_unscaled->update();
 	alternative_tiles_control->update();
@@ -1399,7 +1397,7 @@ void TileSetAtlasSourceEditor::_tile_alternatives_control_draw() {
 	if (tools_button_group->get_pressed_button() == tool_select_button) {
 		// Draw hovered tile.
 		Vector2i coords = Vector2(hovered_alternative_tile_coords.x, hovered_alternative_tile_coords.y);
-		if (coords != TileSetAtlasSource::INVALID_ATLAS_COORDS) {
+		if (coords != TileSetSource::INVALID_ATLAS_COORDS) {
 			Rect2i rect = tile_atlas_view->get_alternative_tile_rect(coords, hovered_alternative_tile_coords.z);
 			if (rect != Rect2i()) {
 				alternative_tiles_control->draw_rect(rect, Color(1.0, 1.0, 1.0), false);
@@ -1441,7 +1439,7 @@ void TileSetAtlasSourceEditor::_undo_redo_inspector_callback(Object *p_undo_redo
 
 #define ADD_UNDO(obj, property) undo_redo->add_undo_property(obj, property, tile_data->get(property));
 
-	TileProxyObject *tile_data = Object::cast_to<TileProxyObject>(p_edited);
+	AtlasTileProxyObject *tile_data = Object::cast_to<AtlasTileProxyObject>(p_edited);
 	if (tile_data) {
 		Vector<String> components = String(p_property).split("/", true, 2);
 		if (components.size() == 2 && components[1] == "shapes_count") {
@@ -1518,7 +1516,7 @@ void TileSetAtlasSourceEditor::_auto_create_tiles() {
 			for (int x = 0; x < grid_size.x; x++) {
 				// Check if we have a tile at the coord
 				Vector2i coords = Vector2i(x, y);
-				if (tile_set_atlas_source->get_tile_at_coords(coords) == TileSetAtlasSource::INVALID_ATLAS_COORDS) {
+				if (tile_set_atlas_source->get_tile_at_coords(coords) == TileSetSource::INVALID_ATLAS_COORDS) {
 					// Check if the texture is empty at the given coords.
 					Rect2i region = Rect2i(margins + (coords * (texture_region_size + separation)), texture_region_size);
 					bool is_opaque = false;
@@ -1673,7 +1671,7 @@ TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
 	tile_inspector_label->hide();
 	middle_vbox_container->add_child(tile_inspector_label);
 
-	tile_proxy_object = memnew(TileProxyObject(this));
+	tile_proxy_object = memnew(AtlasTileProxyObject(this));
 	tile_proxy_object->connect("changed", callable_mp(this, &TileSetAtlasSourceEditor::_update_atlas_view).unbind(1));
 
 	tile_inspector = memnew(EditorInspector);
