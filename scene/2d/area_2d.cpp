@@ -568,7 +568,7 @@ void Area2D::_bind_methods() {
 
 Area2D::Area2D() :
 		CollisionObject2D(PhysicsServer2D::get_singleton()->area_create(), true) {
-	set_gravity(98);
+	set_gravity(980);
 	set_gravity_vector(Vector2(0, 1));
 	set_monitoring(true);
 	set_monitorable(true);

@@ -320,7 +320,7 @@ public:
 		ps->space_set_active(space, true);
 		ps->set_active(true);
 		ps->area_set_param(space, PhysicsServer2D::AREA_PARAM_GRAVITY_VECTOR, Vector2(0, 1));
-		ps->area_set_param(space, PhysicsServer2D::AREA_PARAM_GRAVITY, 98);
+		ps->area_set_param(space, PhysicsServer2D::AREA_PARAM_GRAVITY, 980);
 
 		{
 			RID vp = vs->viewport_create();
