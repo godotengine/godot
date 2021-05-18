@@ -2281,8 +2281,7 @@ bool ScriptEditor::edit(const RES &p_resource, int p_line, int p_col, bool p_gra
 
 void ScriptEditor::save_current_script() {
 	ScriptEditorBase *current = _get_current_editor();
-
-	if (_test_script_times_on_disk()) {
+	if (!current || _test_script_times_on_disk()) {
 		return;
 	}
 
