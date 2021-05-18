@@ -70,11 +70,7 @@ void BakedLightmapEditorPlugin::_bake_select_file(const String &p_file) {
 				EditorNode::get_singleton()->show_warning(TTR("Some mesh is invalid. Make sure the UV2 channel values are contained within the [0.0,1.0] square region."));
 				break;
 			case BakedLightmap::BAKE_ERROR_NO_LIGHTMAPPER:
-#ifdef OSX_ENABLED
-				EditorNode::get_singleton()->show_warning(TTR("Godot editor was built without ray tracing support; lightmaps can't be baked.\nIf you are using an Apple Silicon-based Mac, try forcing Rosetta emulation on Godot.app in the application settings\nthen restart the editor."));
-#else
-				EditorNode::get_singleton()->show_warning(TTR("Godot editor was built without ray tracing support; lightmaps can't be baked."));
-#endif
+				EditorNode::get_singleton()->show_warning(TTR("Godot editor was built without ray tracing support, lightmaps can't be baked."));
 				break;
 			default: {
 			}
