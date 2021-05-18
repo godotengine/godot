@@ -20,7 +20,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Ukrainian (Godot Engine)\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-04-22 14:40+0000\n"
+"PO-Revision-Date: 2021-05-14 20:34+0000\n"
 "Last-Translator: Yuri Chornoivan <yurchor@ukr.net>\n"
 "Language-Team: Ukrainian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/uk/>\n"
@@ -2556,14 +2556,14 @@ msgid "Unable to load addon script from path: '%s'."
 msgstr "Неможливо завантажити доповнення скрипт зі шляху: '%s'."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid ""
 "Unable to load addon script from path: '%s'. This might be due to a code "
-"error in that script. \n"
+"error in that script.\n"
 "Disabling the addon at '%s' to prevent further errors."
 msgstr ""
-"Неможливо завантажити скрипт доповнення з шляху «%s». Здається, у коді є "
-"помилка, будь ласка, перевірте синтаксис."
+"Не вдалося завантажити додатковий скрипт з такою адресою: «%s». Причиною "
+"може бути помилка у коді цього скрипту.\n"
+"Вимикаємо додаток у «%s», щоб запобігти подальшим помилкам."
 
 #: editor/editor_node.cpp
 msgid ""
@@ -3008,6 +3008,10 @@ msgstr "Спільнота"
 #: editor/editor_node.cpp
 msgid "About"
 msgstr "Про"
+
+#: editor/editor_node.cpp
+msgid "Support Godot Development"
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Play the project."
@@ -5247,18 +5251,9 @@ msgstr ""
 "потрапляють до квадратної області [0.0,1.0]."
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
-msgid ""
-"Godot editor was built without ray tracing support; lightmaps can't be "
-"baked.\n"
-"If you are using an Apple Silicon-based Mac, try forcing Rosetta emulation "
-"on Godot.app in the application settings\n"
-"then restart the editor."
-msgstr ""
-
-#: editor/plugins/baked_lightmap_editor_plugin.cpp
 #, fuzzy
 msgid ""
-"Godot editor was built without ray tracing support; lightmaps can't be baked."
+"Godot editor was built without ray tracing support, lightmaps can't be baked."
 msgstr ""
 "Редактор Godot було зібрано без підтримки трасування променів. Карти "
 "освітлення не вдасться побудувати."
@@ -13233,6 +13228,19 @@ msgstr "Змінні величини можна пов'язувати лише 
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Сталі не можна змінювати."
+
+#~ msgid ""
+#~ "Godot editor was built without ray tracing support; lightmaps can't be "
+#~ "baked.\n"
+#~ "If you are using an Apple Silicon-based Mac, try forcing Rosetta "
+#~ "emulation on Godot.app in the application settings\n"
+#~ "then restart the editor."
+#~ msgstr ""
+#~ "Редактор Godot було зібрано без підтримки трасування променів; мапи "
+#~ "освітлення створити не вдасться.\n"
+#~ "Якщо ви користуєтеся Mac на основі Apple Silicon, спробуйте примусово "
+#~ "встановити емуляцію Rosetta для Godot.app у параметрах програми,\n"
+#~ "а потім перезапустіть редактор."
 
 #~ msgid ""
 #~ "InterpolatedCamera has been deprecated and will be removed in Godot 4.0."

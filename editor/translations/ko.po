@@ -26,7 +26,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-05-03 06:13+0000\n"
+"PO-Revision-Date: 2021-05-18 10:00+0000\n"
 "Last-Translator: Myeongjin Lee <aranet100@gmail.com>\n"
 "Language-Team: Korean <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ko/>\n"
@@ -2544,14 +2544,14 @@ msgid "Unable to load addon script from path: '%s'."
 msgstr "다음 경로에서 애드온 스크립트를 불러올 수 없음: '%s'."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid ""
 "Unable to load addon script from path: '%s'. This might be due to a code "
-"error in that script. \n"
+"error in that script.\n"
 "Disabling the addon at '%s' to prevent further errors."
 msgstr ""
-"다음 경로에서 애드온 스크립트를 불러올 수 없음: '%s' 코드에 오류가 있는 것 같"
-"습니다. 문법을 확인해보세요."
+"다음 경로에서 애드온 스크립트를 불러올 수 없음: '%s' 해당 스크립트의 코드에 "
+"오류가 있는 것 같습니다.\n"
+"추가 오류를 방지하려면 '%s'에서 애드온을 비활성화하세요."
 
 #: editor/editor_node.cpp
 msgid ""
@@ -2989,6 +2989,10 @@ msgstr "커뮤니티"
 #: editor/editor_node.cpp
 msgid "About"
 msgstr "정보"
+
+#: editor/editor_node.cpp
+msgid "Support Godot Development"
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Play the project."
@@ -5203,21 +5207,12 @@ msgstr ""
 "어 있는지 확인해주세요."
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
-msgid ""
-"Godot editor was built without ray tracing support; lightmaps can't be "
-"baked.\n"
-"If you are using an Apple Silicon-based Mac, try forcing Rosetta emulation "
-"on Godot.app in the application settings\n"
-"then restart the editor."
-msgstr ""
-
-#: editor/plugins/baked_lightmap_editor_plugin.cpp
 #, fuzzy
 msgid ""
-"Godot editor was built without ray tracing support; lightmaps can't be baked."
+"Godot editor was built without ray tracing support, lightmaps can't be baked."
 msgstr ""
-"Godot 편집기가 레이 트레이싱 지원 없이 빌드되어 있어, 라이트맵이 구워질 수 없"
-"습니다."
+"Godot 편집기는 레이 트레이싱 지원 없이 빌드되었으며 라이트맵은 구울 수 없습니"
+"다."
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid "Bake Lightmaps"
@@ -13055,6 +13050,19 @@ msgstr "Varying은 꼭짓점 함수에만 지정할 수 있습니다."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "상수는 수정할 수 없습니다."
+
+#~ msgid ""
+#~ "Godot editor was built without ray tracing support; lightmaps can't be "
+#~ "baked.\n"
+#~ "If you are using an Apple Silicon-based Mac, try forcing Rosetta "
+#~ "emulation on Godot.app in the application settings\n"
+#~ "then restart the editor."
+#~ msgstr ""
+#~ "Godot 편집기는 레이 트레이싱 지원 없이 빌드되었으며 라이트맵은 구울 수 없"
+#~ "습니다.\n"
+#~ "Apple Silicon 기반의 Mac을 사용 중인 경우, 애플리케이션 설정에서 Godot.app"
+#~ "의 Rosetta 에뮬레이션 강제로\n"
+#~ "시도하고 나서 편집기를 다시 시작하세요."
 
 #~ msgid ""
 #~ "InterpolatedCamera has been deprecated and will be removed in Godot 4.0."
