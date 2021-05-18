@@ -1677,7 +1677,7 @@ struct _ScriptEditorItemData {
 			if (sort_key == id.sort_key) {
 				return index < id.index;
 			} else {
-				return sort_key < id.sort_key;
+				return sort_key.naturalnocasecmp_to(id.sort_key) < 0;
 			}
 		} else {
 			return category < id.category;
