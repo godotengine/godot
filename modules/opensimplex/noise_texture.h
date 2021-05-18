@@ -56,6 +56,7 @@ private:
 
 	Ref<OpenSimplexNoise> noise;
 	Vector2i size = Vector2i(512, 512);
+	Vector2 noise_offset;
 	bool seamless = false;
 	bool as_normal_map = false;
 	float bump_strength = 8.0;
@@ -78,6 +79,9 @@ public:
 
 	void set_width(int p_width);
 	void set_height(int p_height);
+
+	void set_noise_offset(Vector2 p_noise_offset);
+	Vector2 get_noise_offset() const;
 
 	void set_seamless(bool p_seamless);
 	bool get_seamless();
