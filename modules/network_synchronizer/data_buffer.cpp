@@ -280,7 +280,7 @@ double DataBuffer::add_real(double p_input, CompressionLevel p_compression_level
 		// Subnormal value, apply exponent to mantissa and reduce power of scale by one.
 		mantissa *= Math::pow(2.0, exponent);
 		exponent = 0;
-		mantissa_scale /= 2;
+		mantissa_scale /= 2.0;
 	}
 	mantissa = Math::round(mantissa * mantissa_scale) / mantissa_scale; // Round to specified number of bits.
 	if (mantissa < 0.5 && mantissa != 0) {
