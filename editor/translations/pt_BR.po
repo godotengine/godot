@@ -2653,7 +2653,7 @@ msgstr ""
 #, fuzzy
 msgid ""
 "Unable to load addon script from path: '%s'. This might be due to a code "
-"error in that script. \n"
+"error in that script.\n"
 "Disabling the addon at '%s' to prevent further errors."
 msgstr ""
 "Não foi possível localizar a área do script para o complemento do plugin em: "
@@ -3100,6 +3100,10 @@ msgstr "Comunidade"
 #: editor/editor_node.cpp
 msgid "About"
 msgstr "Sobre"
+
+#: editor/editor_node.cpp
+msgid "Support Godot Development"
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Play the project."
@@ -5341,18 +5345,9 @@ msgstr ""
 "contidos na região quadrada [0.0,1.0]."
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
-msgid ""
-"Godot editor was built without ray tracing support; lightmaps can't be "
-"baked.\n"
-"If you are using an Apple Silicon-based Mac, try forcing Rosetta emulation "
-"on Godot.app in the application settings\n"
-"then restart the editor."
-msgstr ""
-
-#: editor/plugins/baked_lightmap_editor_plugin.cpp
 #, fuzzy
 msgid ""
-"Godot editor was built without ray tracing support; lightmaps can't be baked."
+"Godot editor was built without ray tracing support, lightmaps can't be baked."
 msgstr ""
 "O editor Godot foi construído sem suporte à ray tracing, os lightmaps não "
 "podem ser bakeados."
