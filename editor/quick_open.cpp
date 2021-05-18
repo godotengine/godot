@@ -102,7 +102,7 @@ void EditorQuickOpen::_update_search() {
 			ti->set_icon(0, *icons.lookup_ptr(entries[i].path.get_extension()));
 		}
 
-		TreeItem *to_select = root->get_children();
+		TreeItem *to_select = root->get_first_child();
 		to_select->select(0);
 		to_select->set_as_cursor(0);
 		search_options->scroll_to_item(to_select);
@@ -170,7 +170,7 @@ void EditorQuickOpen::_sbox_input(const Ref<InputEvent> &p_ie) {
 
 				if (allow_multi_select) {
 					TreeItem *root = search_options->get_root();
-					if (!root->get_children()) {
+					if (!root->get_first_child()) {
 						break;
 					}
 

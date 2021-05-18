@@ -235,8 +235,8 @@ void EditorSettingsDialog::_update_shortcuts() {
 	// Before clearing the tree, take note of which categories are collapsed so that this state can be maintained when the tree is repopulated.
 	Map<String, bool> collapsed;
 
-	if (shortcuts->get_root() && shortcuts->get_root()->get_children()) {
-		for (TreeItem *item = shortcuts->get_root()->get_children(); item; item = item->get_next()) {
+	if (shortcuts->get_root() && shortcuts->get_root()->get_first_child()) {
+		for (TreeItem *item = shortcuts->get_root()->get_first_child(); item; item = item->get_next()) {
 			collapsed[item->get_text(0)] = item->is_collapsed();
 		}
 	}
@@ -380,7 +380,7 @@ void EditorSettingsDialog::_update_shortcuts() {
 	// remove sections with no shortcuts
 	for (Map<String, TreeItem *>::Element *E = sections.front(); E; E = E->next()) {
 		TreeItem *section = E->get();
-		if (section->get_children() == nullptr) {
+		if (section->get_first_child() == nullptr) {
 			root->remove_child(section);
 		}
 	}

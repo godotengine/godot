@@ -220,7 +220,7 @@ void ScriptEditorDebugger::_file_selected(const String &p_file) {
 			file->store_csv_line(headers);
 
 			if (vmem_tree->get_root()) {
-				TreeItem *ti = vmem_tree->get_root()->get_children();
+				TreeItem *ti = vmem_tree->get_root()->get_first_child();
 				while (ti) {
 					Vector<String> values;
 					values.resize(vmem_tree->get_columns());
@@ -1319,7 +1319,7 @@ bool ScriptEditorDebugger::is_skip_breakpoints() {
 void ScriptEditorDebugger::_error_activated() {
 	TreeItem *selected = error_tree->get_selected();
 
-	TreeItem *ci = selected->get_children();
+	TreeItem *ci = selected->get_first_child();
 	if (ci) {
 		selected->set_collapsed(!selected->is_collapsed());
 	}
@@ -1341,7 +1341,7 @@ void ScriptEditorDebugger::_expand_errors_list() {
 		return;
 	}
 
-	TreeItem *item = root->get_children();
+	TreeItem *item = root->get_first_child();
 	while (item) {
 		item->set_collapsed(false);
 		item = item->get_next();
@@ -1354,7 +1354,7 @@ void ScriptEditorDebugger::_collapse_errors_list() {
 		return;
 	}
 
-	TreeItem *item = root->get_children();
+	TreeItem *item = root->get_first_child();
 	while (item) {
 		item->set_collapsed(true);
 		item = item->get_next();
@@ -1403,7 +1403,7 @@ void ScriptEditorDebugger::_item_menu_id_pressed(int p_option) {
 			int rpad_len = text.length();
 
 			text = type + text + ti->get_text(1) + "\n";
-			TreeItem *ci = ti->get_children();
+			TreeItem *ci = ti->get_first_child();
 			while (ci) {
 				text += "  " + ci->get_text(0).rpad(rpad_len) + ci->get_text(1) + "\n";
 				ci = ci->get_next();
@@ -1419,7 +1419,7 @@ void ScriptEditorDebugger::_item_menu_id_pressed(int p_option) {
 			}
 
 			// We only need the first child here (C++ source stack trace).
-			TreeItem *ci = ti->get_children();
+			TreeItem *ci = ti->get_first_child();
 			// Parse back the `file:line @ method()` string.
 			const Vector<String> file_line_number = ci->get_text(1).split("@")[0].strip_edges().split(":");
 			ERR_FAIL_COND_MSG(file_line_number.size() < 2, "Incorrect C++ source stack trace file:line format (please report).");

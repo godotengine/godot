@@ -655,7 +655,7 @@ void ConnectionsDock::_disconnect_all() {
 		return;
 	}
 
-	TreeItem *child = item->get_children();
+	TreeItem *child = item->get_first_child();
 	String signalName = item->get_metadata(0).operator Dictionary()["name"];
 	undo_redo->create_action(vformat(TTR("Disconnect all from signal: '%s'"), signalName));
 
