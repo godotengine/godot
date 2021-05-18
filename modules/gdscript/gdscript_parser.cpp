@@ -8755,7 +8755,7 @@ Error GDScriptParser::_parse(const String &p_base_path) {
 		GDScriptWarning &w = E->get();
 		int skip_index = -1;
 		for (int i = 0; i < warning_skips.size(); i++) {
-			if (warning_skips[i].first >= w.line) {
+			if (warning_skips[i].first > w.line) {
 				break;
 			}
 			skip_index = i;
