@@ -2634,14 +2634,14 @@ msgstr ""
 "Impossible de charger le script de l’extension depuis le chemin : « %s »."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid ""
 "Unable to load addon script from path: '%s'. This might be due to a code "
-"error in that script. \n"
+"error in that script.\n"
 "Disabling the addon at '%s' to prevent further errors."
 msgstr ""
-"Impossible de charger le script de l’extension depuis le chemin : « %s ». Il "
-"semble y avoir une erreur dans le code, merci de vérifier la syntaxe."
+"Impossible de charger le script de l’extension depuis le chemin : « %s ». "
+"Cela peut être dû à une erreur de programmation dans ce script.\n"
+"L'extension « %s » a été désactivée pour prévenir de nouvelles erreures."
 
 #: editor/editor_node.cpp
 msgid ""
@@ -3092,6 +3092,10 @@ msgid "About"
 msgstr "À propos"
 
 #: editor/editor_node.cpp
+msgid "Support Godot Development"
+msgstr "Soutenir le développement de Godot"
+
+#: editor/editor_node.cpp
 msgid "Play the project."
 msgstr "Lancer le projet."
 
@@ -3198,7 +3202,7 @@ msgstr ""
 "personnalisé à l'exportation (ajout de modules, modification du fichier "
 "AndroidManifest.xml, etc.).\n"
 "Notez que pour faire des compilations personnalisées au lieu d'utiliser des "
-"APKs pré-construits, l'option \"Use Custom Build\" doit être activée dans le "
+"APKs préconstruits, l'option \"Use Custom Build\" doit être activée dans le "
 "Preset d'exportation Android."
 
 #: editor/editor_node.cpp
@@ -5338,20 +5342,10 @@ msgstr ""
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid ""
-"Godot editor was built without ray tracing support; lightmaps can't be "
-"baked.\n"
-"If you are using an Apple Silicon-based Mac, try forcing Rosetta emulation "
-"on Godot.app in the application settings\n"
-"then restart the editor."
-msgstr ""
-
-#: editor/plugins/baked_lightmap_editor_plugin.cpp
-#, fuzzy
-msgid ""
-"Godot editor was built without ray tracing support; lightmaps can't be baked."
+"Godot editor was built without ray tracing support, lightmaps can't be baked."
 msgstr ""
 "L'éditeur Godot a été compilé sans support du ray tracing, les lightmaps ne "
-"peuvent pas être pré-calculées."
+"peuvent pas être précalculées."
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid "Bake Lightmaps"
@@ -5359,7 +5353,7 @@ msgstr "Précalculer les lightmaps"
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid "Select lightmap bake file:"
-msgstr "Sélectionnez le fichier de pré-calcul de lightmap :"
+msgstr "Sélectionnez le fichier de précalcul de lightmap :"
 
 #: editor/plugins/camera_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -11809,7 +11803,7 @@ msgstr ""
 
 #: modules/lightmapper_cpu/lightmapper_cpu.cpp
 msgid "Begin Bake"
-msgstr "Commencer le pré-calcul"
+msgstr "Commencer le précalcul"
 
 #: modules/lightmapper_cpu/lightmapper_cpu.cpp
 msgid "Preparing data structures"

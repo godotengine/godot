@@ -2575,7 +2575,7 @@ msgstr "Nie można załadować skryptu dodatku z ścieżki: \"%s\"."
 #, fuzzy
 msgid ""
 "Unable to load addon script from path: '%s'. This might be due to a code "
-"error in that script. \n"
+"error in that script.\n"
 "Disabling the addon at '%s' to prevent further errors."
 msgstr ""
 "Nie można załadować skryptu dodatku ze ścieżki: \"%s\" W kodzie znajduje się "
@@ -3020,6 +3020,10 @@ msgstr "Społeczność"
 #: editor/editor_node.cpp
 msgid "About"
 msgstr "O silniku"
+
+#: editor/editor_node.cpp
+msgid "Support Godot Development"
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Play the project."
@@ -5253,18 +5257,9 @@ msgstr ""
 "mieszczą się w kwadratowym obszarze [0.0, 1.0]."
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
-msgid ""
-"Godot editor was built without ray tracing support; lightmaps can't be "
-"baked.\n"
-"If you are using an Apple Silicon-based Mac, try forcing Rosetta emulation "
-"on Godot.app in the application settings\n"
-"then restart the editor."
-msgstr ""
-
-#: editor/plugins/baked_lightmap_editor_plugin.cpp
 #, fuzzy
 msgid ""
-"Godot editor was built without ray tracing support; lightmaps can't be baked."
+"Godot editor was built without ray tracing support, lightmaps can't be baked."
 msgstr ""
 "Godot został zbudowany bez wsparcia ray tracingu, mapy światła nie mogą być "
 "wypalone."
