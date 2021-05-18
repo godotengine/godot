@@ -55,6 +55,7 @@ class ScriptTextEditor : public ScriptEditorBase {
 
 	CodeTextEditor *code_editor = nullptr;
 	RichTextLabel *warnings_panel = nullptr;
+	RichTextLabel *errors_panel = nullptr;
 
 	Ref<Script> script;
 	bool script_is_valid = false;
@@ -161,7 +162,9 @@ protected:
 
 	void _load_theme_settings();
 	void _set_theme_for_script();
+	void _show_errors_panel(bool p_show);
 	void _show_warnings_panel(bool p_show);
+	void _error_clicked(Variant p_line);
 	void _warning_clicked(Variant p_line);
 
 	void _notification(int p_what);

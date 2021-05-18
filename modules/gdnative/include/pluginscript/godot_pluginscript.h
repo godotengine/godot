@@ -132,7 +132,7 @@ typedef struct {
 	godot_bool can_inherit_from_file;
 
 	godot_string (*get_template_source_code)(godot_pluginscript_language_data *p_data, const godot_string *p_class_name, const godot_string *p_base_class_name);
-	godot_bool (*validate)(godot_pluginscript_language_data *p_data, const godot_string *p_script, int *r_line_error, int *r_col_error, godot_string *r_test_error, const godot_string *p_path, godot_packed_string_array *r_functions);
+	godot_bool (*validate)(godot_pluginscript_language_data *p_data, const godot_string *p_script, const godot_string *p_path, godot_packed_string_array *r_functions, godot_array *r_errors); // errors = Array of Dictionary with "line", "column", "message" keys
 	int (*find_function)(godot_pluginscript_language_data *p_data, const godot_string *p_function, const godot_string *p_code); // Can be nullptr
 	godot_string (*make_function)(godot_pluginscript_language_data *p_data, const godot_string *p_class, const godot_string *p_name, const godot_packed_string_array *p_args);
 	godot_error (*complete_code)(godot_pluginscript_language_data *p_data, const godot_string *p_code, const godot_string *p_path, godot_object *p_owner, godot_array *r_options, godot_bool *r_force, godot_string *r_call_hint);

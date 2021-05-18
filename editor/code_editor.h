@@ -145,8 +145,8 @@ class CodeTextEditor : public VBoxContainer {
 	HBoxContainer *status_bar;
 
 	Button *toggle_scripts_button;
+	Button *error_button;
 	Button *warning_button;
-	Label *warning_count_label;
 
 	Label *line_and_col_txt;
 
@@ -184,8 +184,9 @@ class CodeTextEditor : public VBoxContainer {
 	CodeTextEditorCodeCompleteFunc code_complete_func;
 	void *code_complete_ud;
 
-	void _warning_label_gui_input(const Ref<InputEvent> &p_event);
+	void _error_button_pressed();
 	void _warning_button_pressed();
+	void _set_show_errors_panel(bool p_show);
 	void _set_show_warnings_panel(bool p_show);
 	void _error_pressed(const Ref<InputEvent> &p_event);
 
@@ -205,6 +206,7 @@ protected:
 	static void _bind_methods();
 
 	bool is_warnings_panel_opened;
+	bool is_errors_panel_opened;
 
 public:
 	void trim_trailing_whitespace();
@@ -238,7 +240,8 @@ public:
 	Variant get_edit_state();
 	void set_edit_state(const Variant &p_state);
 
-	void set_warning_nb(int p_warning_nb);
+	void set_error_count(int p_error_count);
+	void set_warning_count(int p_warning_count);
 
 	void update_editor_settings();
 	void set_error(const String &p_error);

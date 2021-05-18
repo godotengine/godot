@@ -1035,7 +1035,7 @@ Ref<Script> NativeScriptLanguage::get_template(const String &p_class_name, const
 	return Ref<NativeScript>(s);
 }
 
-bool NativeScriptLanguage::validate(const String &p_script, int &r_line_error, int &r_col_error, String &r_test_error, const String &p_path, List<String> *r_functions, List<ScriptLanguage::Warning> *r_warnings, Set<int> *r_safe_lines) const {
+bool NativeScriptLanguage::validate(const String &p_script, const String &p_path, List<String> *r_functions, List<ScriptLanguage::ScriptError> *r_errors, List<ScriptLanguage::Warning> *r_warnings, Set<int> *r_safe_lines) const {
 	return true;
 }
 

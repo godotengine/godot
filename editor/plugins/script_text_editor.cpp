@@ -109,13 +109,11 @@ ConnectionInfoDialog::ConnectionInfoDialog() {
 ////////////////////////////////////////////////////////////////////////////////
 
 Vector<String> ScriptTextEditor::get_functions() {
-	String errortxt;
-	int line = -1, col;
 	CodeEdit *te = code_editor->get_text_editor();
 	String text = te->get_text();
 	List<String> fnc;
 
-	if (script->get_language()->validate(text, line, col, errortxt, script->get_path(), &fnc)) {
+	if (script->get_language()->validate(text, script->get_path(), &fnc)) {
 		//if valid rewrite functions to latest
 		functions.clear();
 		for (List<String>::Element *E = fnc.front(); E; E = E->next()) {
@@ -265,6 +263,10 @@ void ScriptTextEditor::_set_theme_for_script() {
 	}
 }
 
+void ScriptTextEditor::_show_errors_panel(bool p_show) {
+	errors_panel->set_visible(p_show);
+}
+
 void ScriptTextEditor::_show_warnings_panel(bool p_show) {
 	warnings_panel->set_visible(p_show);
 }
@@ -276,6 +278,12 @@ void ScriptTextEditor::_warning_clicked(Variant p_line) {
 		Dictionary meta = p_line.operator Dictionary();
 		code_editor->get_text_editor()->insert_at("# warning-ignore:" + meta["code"].operator String(), meta["line"].operator int64_t() - 1);
 		_validate_script();
+	}
+}
+
+void ScriptTextEditor::_error_clicked(Variant p_line) {
+	if (p_line.get_type() == Variant::INT) {
+		code_editor->get_text_editor()->cursor_set_line(p_line.operator int64_t());
 	}
 }
 
@@ -429,23 +437,21 @@ Ref<Texture2D> ScriptTextEditor::get_theme_icon() {
 }
 
 void ScriptTextEditor::_validate_script() {
-	String errortxt;
-	int line = -1, col;
 	CodeEdit *te = code_editor->get_text_editor();
 
 	String text = te->get_text();
 	List<String> fnc;
 	Set<int> safe_lines;
 	List<ScriptLanguage::Warning> warnings;
+	List<ScriptLanguage::ScriptError> errors;
 
-	if (!script->get_language()->validate(text, line, col, errortxt, script->get_path(), &fnc, &warnings, &safe_lines)) {
-		String error_text = "error(" + itos(line) + "," + itos(col) + "): " + errortxt;
+	if (!script->get_language()->validate(text, script->get_path(), &fnc, &errors, &warnings, &safe_lines)) {
+		String error_text = TTR("Error at ") + "(" + itos(errors[0].line) + "," + itos(errors[0].column) + "): " + errors[0].message;
 		code_editor->set_error(error_text);
-		code_editor->set_error_pos(line - 1, col - 1);
+		code_editor->set_error_pos(errors[0].line - 1, errors[0].column - 1);
 		script_is_valid = false;
 	} else {
 		code_editor->set_error("");
-		line = -1;
 		if (!script->is_tool()) {
 			script->set_source_code(text);
 			script->update_exports();
@@ -487,7 +493,8 @@ void ScriptTextEditor::_validate_script() {
 		}
 	}
 
-	code_editor->set_warning_nb(warning_nb);
+	code_editor->set_error_count(errors.size());
+	code_editor->set_warning_count(warning_nb);
 
 	// Add script warnings.
 	warnings_panel->push_table(3);
@@ -521,11 +528,40 @@ void ScriptTextEditor::_validate_script() {
 	}
 	warnings_panel->pop(); // Table.
 
-	line--;
+	errors_panel->clear();
+	errors_panel->push_table(2);
+	for (List<ScriptLanguage::ScriptError>::Element *E = errors.front(); E; E = E->next()) {
+		ScriptLanguage::ScriptError err = E->get();
+
+		errors_panel->push_cell();
+		errors_panel->push_meta(err.line - 1);
+		errors_panel->push_color(warnings_panel->get_theme_color("error_color", "Editor"));
+		errors_panel->add_text(TTR("Line") + " " + itos(err.line) + ":");
+		errors_panel->pop(); // Color.
+		errors_panel->pop(); // Meta goto.
+		errors_panel->pop(); // Cell.
+
+		errors_panel->push_cell();
+		errors_panel->add_text(err.message);
+		errors_panel->pop(); // Cell.
+	}
+	errors_panel->pop(); // Table
+
 	bool highlight_safe = EDITOR_DEF("text_editor/highlighting/highlight_type_safe_lines", true);
 	bool last_is_safe = false;
 	for (int i = 0; i < te->get_line_count(); i++) {
-		te->set_line_background_color(i, (line == i) ? marked_line_color : Color(0, 0, 0, 0));
+		if (errors.is_empty()) {
+			te->set_line_background_color(i, Color(0, 0, 0, 0));
+		} else {
+			for (List<ScriptLanguage::ScriptError>::Element *E = errors.front(); E; E = E->next()) {
+				bool error_line = i == E->get().line - 1;
+				te->set_line_background_color(i, error_line ? marked_line_color : Color(0, 0, 0, 0));
+				if (error_line) {
+					break;
+				}
+			}
+		}
+
 		if (highlight_safe) {
 			if (safe_lines.has(i + 1)) {
 				te->set_line_gutter_item_color(i, line_number_gutter, safe_line_number_color);
@@ -537,7 +573,7 @@ void ScriptTextEditor::_validate_script() {
 				last_is_safe = false;
 			}
 		} else {
-			te->set_line_gutter_item_color(line, 1, default_line_number_color);
+			te->set_line_gutter_item_color(i, 1, default_line_number_color);
 		}
 	}
 
@@ -1675,6 +1711,7 @@ void ScriptTextEditor::_enable_code_editor() {
 	editor_box->set_v_size_flags(SIZE_EXPAND_FILL);
 
 	editor_box->add_child(code_editor);
+	code_editor->connect("show_errors_panel", callable_mp(this, &ScriptTextEditor::_show_errors_panel));
 	code_editor->connect("show_warnings_panel", callable_mp(this, &ScriptTextEditor::_show_warnings_panel));
 	code_editor->connect("validate_script", callable_mp(this, &ScriptTextEditor::_validate_script));
 	code_editor->connect("load_theme_settings", callable_mp(this, &ScriptTextEditor::_load_theme_settings));
@@ -1694,6 +1731,13 @@ void ScriptTextEditor::_enable_code_editor() {
 	warnings_panel->add_theme_font_size_override(
 			"normal_font_size", EditorNode::get_singleton()->get_gui_base()->get_theme_font_size("main_size", "EditorFonts"));
 	warnings_panel->connect("meta_clicked", callable_mp(this, &ScriptTextEditor::_warning_clicked));
+
+	editor_box->add_child(errors_panel);
+	errors_panel->add_theme_font_override(
+			"normal_font", EditorNode::get_singleton()->get_gui_base()->get_theme_font("main", "EditorFonts"));
+	errors_panel->add_theme_font_size_override(
+			"normal_font_size", EditorNode::get_singleton()->get_gui_base()->get_theme_font_size("main_size", "EditorFonts"));
+	errors_panel->connect("meta_clicked", callable_mp(this, &ScriptTextEditor::_error_clicked));
 
 	add_child(context_menu);
 	context_menu->connect("id_pressed", callable_mp(this, &ScriptTextEditor::_edit_option));
@@ -1826,6 +1870,14 @@ ScriptTextEditor::ScriptTextEditor() {
 	warnings_panel->set_focus_mode(FOCUS_CLICK);
 	warnings_panel->hide();
 
+	errors_panel = memnew(RichTextLabel);
+	errors_panel->set_custom_minimum_size(Size2(0, 100 * EDSCALE));
+	errors_panel->set_h_size_flags(SIZE_EXPAND_FILL);
+	errors_panel->set_meta_underline(true);
+	errors_panel->set_selection_enabled(true);
+	errors_panel->set_focus_mode(FOCUS_CLICK);
+	errors_panel->hide();
+
 	update_settings();
 
 	code_editor->get_text_editor()->set_code_hint_draw_below(EditorSettings::get_singleton()->get("text_editor/completion/put_callhint_tooltip_below_current_line"));
@@ -1886,6 +1938,7 @@ ScriptTextEditor::~ScriptTextEditor() {
 	if (!editor_enabled) {
 		memdelete(code_editor);
 		memdelete(warnings_panel);
+		memdelete(errors_panel);
 		memdelete(context_menu);
 		memdelete(color_panel);
 		memdelete(edit_hb);
