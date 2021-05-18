@@ -3186,7 +3186,7 @@ bool ShaderLanguage::_check_node_constness(const Node *p_node) const {
 	switch (p_node->type) {
 		case Node::TYPE_OPERATOR: {
 			OperatorNode *op_node = (OperatorNode *)p_node;
-			for (int i = (1 ? op_node->op == OP_CALL : 0); i < op_node->arguments.size(); i++) {
+			for (int i = int(op_node->op == OP_CALL); i < op_node->arguments.size(); i++) {
 				if (!_check_node_constness(op_node->arguments[i])) {
 					return false;
 				}
