@@ -45,7 +45,7 @@
 			</return>
 			<argument index="0" name="name" type="StringName">
 			</argument>
-			<argument index="1" name="type" type="StringName" default="&quot;&quot;">
+			<argument index="1" name="theme_type" type="StringName" default="&quot;&quot;">
 			</argument>
 			<description>
 			</description>
@@ -55,7 +55,7 @@
 			</return>
 			<argument index="0" name="name" type="StringName">
 			</argument>
-			<argument index="1" name="type" type="StringName" default="&quot;&quot;">
+			<argument index="1" name="theme_type" type="StringName" default="&quot;&quot;">
 			</argument>
 			<description>
 			</description>
@@ -65,10 +65,10 @@
 			</return>
 			<argument index="0" name="name" type="StringName">
 			</argument>
-			<argument index="1" name="type" type="StringName" default="&quot;&quot;">
+			<argument index="1" name="theme_type" type="StringName" default="&quot;&quot;">
 			</argument>
 			<description>
-				Returns the [Font] at [code]name[/code] if the theme has [code]type[/code].
+				Returns the [Font] at [code]name[/code] if the theme has [code]theme_type[/code].
 			</description>
 		</method>
 		<method name="get_theme_font_size" qualifiers="const">
@@ -76,10 +76,10 @@
 			</return>
 			<argument index="0" name="name" type="StringName">
 			</argument>
-			<argument index="1" name="type" type="StringName" default="&quot;&quot;">
+			<argument index="1" name="theme_type" type="StringName" default="&quot;&quot;">
 			</argument>
 			<description>
-				Returns the font size at [code]name[/code] if the theme has [code]type[/code].
+				Returns the font size at [code]name[/code] if the theme has [code]theme_type[/code].
 			</description>
 		</method>
 		<method name="get_theme_icon" qualifiers="const">
@@ -87,7 +87,7 @@
 			</return>
 			<argument index="0" name="name" type="StringName">
 			</argument>
-			<argument index="1" name="type" type="StringName" default="&quot;&quot;">
+			<argument index="1" name="theme_type" type="StringName" default="&quot;&quot;">
 			</argument>
 			<description>
 			</description>
@@ -97,7 +97,7 @@
 			</return>
 			<argument index="0" name="name" type="StringName">
 			</argument>
-			<argument index="1" name="type" type="StringName" default="&quot;&quot;">
+			<argument index="1" name="theme_type" type="StringName" default="&quot;&quot;">
 			</argument>
 			<description>
 			</description>
@@ -119,7 +119,7 @@
 			</return>
 			<argument index="0" name="name" type="StringName">
 			</argument>
-			<argument index="1" name="type" type="StringName" default="&quot;&quot;">
+			<argument index="1" name="theme_type" type="StringName" default="&quot;&quot;">
 			</argument>
 			<description>
 			</description>
@@ -129,7 +129,7 @@
 			</return>
 			<argument index="0" name="name" type="StringName">
 			</argument>
-			<argument index="1" name="type" type="StringName" default="&quot;&quot;">
+			<argument index="1" name="theme_type" type="StringName" default="&quot;&quot;">
 			</argument>
 			<description>
 			</description>
@@ -139,11 +139,11 @@
 			</return>
 			<argument index="0" name="name" type="StringName">
 			</argument>
-			<argument index="1" name="type" type="StringName" default="&quot;&quot;">
+			<argument index="1" name="theme_type" type="StringName" default="&quot;&quot;">
 			</argument>
 			<description>
-				Returns [code]true[/code] if [Font] with [code]name[/code] is in [code]type[/code].
-				Returns [code]false[/code] if the theme does not have [code]type[/code].
+				Returns [code]true[/code] if [Font] with [code]name[/code] is in [code]theme_type[/code].
+				Returns [code]false[/code] if the theme does not have [code]theme_type[/code].
 			</description>
 		</method>
 		<method name="has_theme_font_size" qualifiers="const">
@@ -151,11 +151,11 @@
 			</return>
 			<argument index="0" name="name" type="StringName">
 			</argument>
-			<argument index="1" name="type" type="StringName" default="&quot;&quot;">
+			<argument index="1" name="theme_type" type="StringName" default="&quot;&quot;">
 			</argument>
 			<description>
-				Returns [code]true[/code] if font size with [code]name[/code] is in [code]type[/code].
-				Returns [code]false[/code] if the theme does not have [code]type[/code].
+				Returns [code]true[/code] if font size with [code]name[/code] is in [code]theme_type[/code].
+				Returns [code]false[/code] if the theme does not have [code]theme_type[/code].
 			</description>
 		</method>
 		<method name="has_theme_icon" qualifiers="const">
@@ -163,7 +163,7 @@
 			</return>
 			<argument index="0" name="name" type="StringName">
 			</argument>
-			<argument index="1" name="type" type="StringName" default="&quot;&quot;">
+			<argument index="1" name="theme_type" type="StringName" default="&quot;&quot;">
 			</argument>
 			<description>
 			</description>
@@ -173,7 +173,7 @@
 			</return>
 			<argument index="0" name="name" type="StringName">
 			</argument>
-			<argument index="1" name="type" type="StringName" default="&quot;&quot;">
+			<argument index="1" name="theme_type" type="StringName" default="&quot;&quot;">
 			</argument>
 			<description>
 			</description>
@@ -339,6 +339,8 @@
 		<member name="size" type="Vector2i" setter="set_size" getter="get_size" default="Vector2i( 100, 100 )">
 		</member>
 		<member name="theme" type="Theme" setter="set_theme" getter="get_theme">
+		</member>
+		<member name="theme_custom_type" type="StringName" setter="set_theme_custom_type" getter="get_theme_custom_type" default="@&quot;&quot;">
 		</member>
 		<member name="title" type="String" setter="set_title" getter="get_title" default="&quot;&quot;">
 		</member>
