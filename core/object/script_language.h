@@ -268,6 +268,12 @@ public:
 		String message;
 	};
 
+	struct ScriptError {
+		int line = -1;
+		int column = -1;
+		String message;
+	};
+
 	void get_core_type_words(List<String> *p_core_type_words) const;
 	virtual void get_reserved_words(List<String> *p_words) const = 0;
 	virtual bool is_control_flow_keyword(String p_string) const = 0;
@@ -276,7 +282,7 @@ public:
 	virtual Ref<Script> get_template(const String &p_class_name, const String &p_base_class_name) const = 0;
 	virtual void make_template(const String &p_class_name, const String &p_base_class_name, Ref<Script> &p_script) {}
 	virtual bool is_using_templates() { return false; }
-	virtual bool validate(const String &p_script, int &r_line_error, int &r_col_error, String &r_test_error, const String &p_path = "", List<String> *r_functions = nullptr, List<Warning> *r_warnings = nullptr, Set<int> *r_safe_lines = nullptr) const = 0;
+	virtual bool validate(const String &p_script, const String &p_path = "", List<String> *r_functions = nullptr, List<ScriptError> *r_errors = nullptr, List<Warning> *r_warnings = nullptr, Set<int> *r_safe_lines = nullptr) const = 0;
 	virtual String validate_path(const String &p_path) const { return ""; }
 	virtual Script *create_script() const = 0;
 	virtual bool has_named_classes() const = 0;
