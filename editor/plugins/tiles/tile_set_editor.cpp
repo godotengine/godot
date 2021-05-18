@@ -140,20 +140,39 @@ void TileSetEditor::_update_atlas_sources_list(int force_selected_id) {
 	for (int i = 0; i < tile_set->get_source_count(); i++) {
 		int source_id = tile_set->get_source_id(i);
 
-		// TODO: handle with virtual functions
 		TileSetSource *source = *tile_set->get_source(source_id);
+
+		Ref<Texture2D> texture;
+		String item_text;
+
+		// Atlas source.
 		TileSetAtlasSource *atlas_source = Object::cast_to<TileSetAtlasSource>(source);
 		if (atlas_source) {
-			Ref<Texture2D> texture = atlas_source->get_texture();
+			texture = atlas_source->get_texture();
 			if (texture.is_valid()) {
-				sources_list->add_item(vformat("%s - (id:%d)", texture->get_path().get_file(), source_id), texture);
+				item_text = vformat("%s (id:%d)", texture->get_path().get_file(), source_id);
 			} else {
-				sources_list->add_item(vformat("No texture atlas source - (id:%d)", source_id), missing_texture_texture);
+				item_text = vformat(TTR("No Texture Atlas Source (id:%d)"), source_id);
 			}
-		} else {
-			sources_list->add_item(vformat("Unknown type source - (id:%d)", source_id), missing_texture_texture);
 		}
-		sources_list->set_item_metadata(sources_list->get_item_count() - 1, source_id);
+
+		// Scene collection source.
+		TileSetScenesCollectionSource *scene_collection_source = Object::cast_to<TileSetScenesCollectionSource>(source);
+		if (scene_collection_source) {
+			texture = get_theme_icon("PackedScene", "EditorIcons");
+			item_text = vformat(TTR("Scene Collection Source (id:%d)"), source_id);
+		}
+
+		// Use default if not valid.
+		if (item_text.is_empty()) {
+			item_text = vformat(TTR("Unknown Type Source (id:%d)"), source_id);
+		}
+		if (!texture.is_valid()) {
+			texture = missing_texture_texture;
+		}
+
+		sources_list->add_item(item_text, texture);
+		sources_list->set_item_metadata(i, source_id);
 	}
 
 	// Set again the current selected item if needed.
@@ -193,35 +212,63 @@ void TileSetEditor::_source_selected(int p_source_index) {
 	if (p_source_index >= 0) {
 		int source_id = sources_list->get_item_metadata(p_source_index);
 		TileSetAtlasSource *atlas_source = Object::cast_to<TileSetAtlasSource>(*tile_set->get_source(source_id));
+		TileSetScenesCollectionSource *scenes_collection_source = Object::cast_to<TileSetScenesCollectionSource>(*tile_set->get_source(source_id));
 		if (atlas_source) {
-			tile_set_atlas_source_editor->edit(*tile_set, atlas_source, source_id);
 			no_source_selected_label->hide();
+			tile_set_atlas_source_editor->edit(*tile_set, atlas_source, source_id);
 			tile_set_atlas_source_editor->show();
+			tile_set_scenes_collection_source_editor->hide();
+		} else if (scenes_collection_source) {
+			no_source_selected_label->hide();
+			tile_set_atlas_source_editor->hide();
+			tile_set_scenes_collection_source_editor->edit(*tile_set, scenes_collection_source, source_id);
+			tile_set_scenes_collection_source_editor->show();
 		} else {
 			no_source_selected_label->show();
 			tile_set_atlas_source_editor->hide();
+			tile_set_scenes_collection_source_editor->hide();
 		}
 	} else {
 		no_source_selected_label->show();
 		tile_set_atlas_source_editor->hide();
+		tile_set_scenes_collection_source_editor->hide();
 	}
 }
 
-void TileSetEditor::_source_add_pressed() {
+void TileSetEditor::_source_add_id_pressed(int p_id_pressed) {
 	ERR_FAIL_COND(!tile_set.is_valid());
 
-	int source_id = tile_set->get_next_source_id();
+	switch (p_id_pressed) {
+		case 0: {
+			int source_id = tile_set->get_next_source_id();
 
-	Ref<TileSetAtlasSource> atlas_source = memnew(TileSetAtlasSource);
+			Ref<TileSetAtlasSource> atlas_source = memnew(TileSetAtlasSource);
 
-	// Add a new source.
-	undo_redo->create_action(TTR("Add atlas source"));
-	undo_redo->add_do_method(*tile_set, "add_source", atlas_source, source_id);
-	undo_redo->add_do_method(*atlas_source, "set_texture_region_size", tile_set->get_tile_size());
-	undo_redo->add_undo_method(*tile_set, "remove_source", source_id);
-	undo_redo->commit_action();
+			// Add a new source.
+			undo_redo->create_action(TTR("Add atlas source"));
+			undo_redo->add_do_method(*tile_set, "add_source", atlas_source, source_id);
+			undo_redo->add_do_method(*atlas_source, "set_texture_region_size", tile_set->get_tile_size());
+			undo_redo->add_undo_method(*tile_set, "remove_source", source_id);
+			undo_redo->commit_action();
 
-	_update_atlas_sources_list(source_id);
+			_update_atlas_sources_list(source_id);
+		} break;
+		case 1: {
+			int source_id = tile_set->get_next_source_id();
+
+			Ref<TileSetScenesCollectionSource> scene_collection_source = memnew(TileSetScenesCollectionSource);
+
+			// Add a new source.
+			undo_redo->create_action(TTR("Add atlas source"));
+			undo_redo->add_do_method(*tile_set, "add_source", scene_collection_source, source_id);
+			undo_redo->add_undo_method(*tile_set, "remove_source", source_id);
+			undo_redo->commit_action();
+
+			_update_atlas_sources_list(source_id);
+		} break;
+		default:
+			ERR_FAIL();
+	}
 }
 
 void TileSetEditor::_source_delete_pressed() {
@@ -434,6 +481,7 @@ void TileSetEditor::edit(Ref<TileSet> p_tile_set) {
 	}
 
 	tile_set_atlas_source_editor->hide();
+	tile_set_scenes_collection_source_editor->hide();
 	no_source_selected_label->show();
 }
 
@@ -464,6 +512,7 @@ TileSetEditor::TileSetEditor() {
 	sources_list->connect("item_selected", callable_mp(this, &TileSetEditor::_source_selected));
 	sources_list->connect("item_selected", callable_mp(TilesEditor::get_singleton(), &TilesEditor::set_atlas_sources_lists_current));
 	sources_list->connect("visibility_changed", callable_mp(TilesEditor::get_singleton(), &TilesEditor::synchronize_atlas_sources_list), varray(sources_list));
+	sources_list->set_texture_filter(CanvasItem::TEXTURE_FILTER_NEAREST);
 	sources_list->set_drag_forwarding(this);
 	split_container_left_side->add_child(sources_list);
 
@@ -477,10 +526,18 @@ TileSetEditor::TileSetEditor() {
 	sources_delete_button->connect("pressed", callable_mp(this, &TileSetEditor::_source_delete_pressed));
 	sources_bottom_actions->add_child(sources_delete_button);
 
-	sources_add_button = memnew(Button);
+	sources_add_button = memnew(MenuButton);
 	sources_add_button->set_flat(true);
-	sources_add_button->connect("pressed", callable_mp(this, &TileSetEditor::_source_add_pressed));
+	sources_add_button->get_popup()->add_item(TTR("Atlas"));
+	sources_add_button->get_popup()->add_item(TTR("Scenes Collection"));
+	sources_add_button->get_popup()->connect("id_pressed", callable_mp(this, &TileSetEditor::_source_add_id_pressed));
 	sources_bottom_actions->add_child(sources_add_button);
+
+	// Right side container.
+	VBoxContainer *split_container_right_side = memnew(VBoxContainer);
+	split_container_right_side->set_h_size_flags(SIZE_EXPAND_FILL);
+	split_container_right_side->set_v_size_flags(SIZE_EXPAND_FILL);
+	split_container->add_child(split_container_right_side);
 
 	// No source selected.
 	no_source_selected_label = memnew(Label);
@@ -489,15 +546,23 @@ TileSetEditor::TileSetEditor() {
 	no_source_selected_label->set_v_size_flags(SIZE_EXPAND_FILL);
 	no_source_selected_label->set_align(Label::ALIGN_CENTER);
 	no_source_selected_label->set_valign(Label::VALIGN_CENTER);
-	split_container->add_child(no_source_selected_label);
+	split_container_right_side->add_child(no_source_selected_label);
 
 	// Atlases editor.
 	tile_set_atlas_source_editor = memnew(TileSetAtlasSourceEditor);
 	tile_set_atlas_source_editor->set_h_size_flags(SIZE_EXPAND_FILL);
 	tile_set_atlas_source_editor->set_v_size_flags(SIZE_EXPAND_FILL);
 	tile_set_atlas_source_editor->connect("source_id_changed", callable_mp(this, &TileSetEditor::_update_atlas_sources_list));
-	split_container->add_child(tile_set_atlas_source_editor);
+	split_container_right_side->add_child(tile_set_atlas_source_editor);
 	tile_set_atlas_source_editor->hide();
+
+	// Scenes collection editor.
+	tile_set_scenes_collection_source_editor = memnew(TileSetScenesCollectionSourceEditor);
+	tile_set_scenes_collection_source_editor->set_h_size_flags(SIZE_EXPAND_FILL);
+	tile_set_scenes_collection_source_editor->set_v_size_flags(SIZE_EXPAND_FILL);
+	tile_set_scenes_collection_source_editor->connect("source_id_changed", callable_mp(this, &TileSetEditor::_update_atlas_sources_list));
+	split_container_right_side->add_child(tile_set_scenes_collection_source_editor);
+	tile_set_scenes_collection_source_editor->hide();
 
 	// Registers UndoRedo inspector callback.
 	EditorNode::get_singleton()->get_editor_data().add_undo_redo_inspector_hook_callback(callable_mp(this, &TileSetEditor::_undo_redo_inspector_callback));

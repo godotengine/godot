@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="TileSetScenesCollectionSource" inherits="TileSetSource" version="4.0">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="create_scene_tile">
+			<return type="int">
+			</return>
+			<argument index="0" name="packed_scene" type="PackedScene">
+			</argument>
+			<argument index="1" name="id_override" type="int" default="-1">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_alternative_tile_id" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="atlas_coords" type="Vector2i">
+			</argument>
+			<argument index="1" name="index" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_alternative_tiles_count" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="atlas_coords" type="Vector2i">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_next_scene_tile_id" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_scene_tile_display_placeholder" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="id" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_scene_tile_id">
+			<return type="int">
+			</return>
+			<argument index="0" name="index" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_scene_tile_scene" qualifiers="const">
+			<return type="PackedScene">
+			</return>
+			<argument index="0" name="id" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_scene_tiles_count">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_tile_id" qualifiers="const">
+			<return type="Vector2i">
+			</return>
+			<argument index="0" name="index" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_tiles_count" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="has_alternative_tile" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="atlas_coords" type="Vector2i">
+			</argument>
+			<argument index="1" name="alternative_tile" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="has_scene_tile_id">
+			<return type="bool">
+			</return>
+			<argument index="0" name="id" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="has_tile" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="atlas_coords" type="Vector2i">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="remove_scene_tile">
+			<return type="void">
+			</return>
+			<argument index="0" name="id" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_scene_tile_display_placeholder">
+			<return type="void">
+			</return>
+			<argument index="0" name="id" type="int">
+			</argument>
+			<argument index="1" name="display_placeholder" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_scene_tile_id">
+			<return type="void">
+			</return>
+			<argument index="0" name="id" type="int">
+			</argument>
+			<argument index="1" name="new_id" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_scene_tile_scene">
+			<return type="void">
+			</return>
+			<argument index="0" name="id" type="int">
+			</argument>
+			<argument index="1" name="packed_scene" type="PackedScene">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<constants>
+	</constants>
+</class>
