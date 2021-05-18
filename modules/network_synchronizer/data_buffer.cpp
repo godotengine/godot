@@ -291,7 +291,7 @@ double DataBuffer::add_real(double p_input, CompressionLevel p_compression_level
 	if (mantissa == 1) {
 		// Check overflow, increment the exponent.
 		++exponent;
-		mantissa = sign ? -0.5 : 0.5;
+		mantissa = 0.5;
 	}
 	// Convert the mantissa to an integer that represents the offset index (IEE 754 floating point representation) to send over network safely.
 	const uint64_t integer_mantissa = exponent <= 0 ? mantissa * mantissa_scale : (mantissa - 0.5) * mantissa_scale;

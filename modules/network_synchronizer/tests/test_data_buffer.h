@@ -47,6 +47,7 @@ inline Vector<real_t> real_values(DataBuffer::CompressionLevel p_compression_lev
 	values.append(-0.5);
 	values.append(1);
 	values.append(3.9);
+	values.append(-3.9);
 	values.append(8);
 
 	switch (p_compression_level) {
