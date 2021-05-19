@@ -546,6 +546,7 @@ public:
 		Node *owner = nullptr;
 		Node *index_expression = nullptr;
 		Node *assign_expression = nullptr;
+		Node *call_expression = nullptr;
 		bool has_swizzling_duplicates = false;
 
 		virtual DataType get_datatype() const { return datatype; }
