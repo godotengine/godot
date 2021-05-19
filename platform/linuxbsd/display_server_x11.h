@@ -31,8 +31,6 @@
 #ifndef DISPLAY_SERVER_X11_H
 #define DISPLAY_SERVER_X11_H
 
-#define X11_ENABLED
-#define VULKAN_ENABLED
 #ifdef X11_ENABLED
 
 #include "servers/display_server.h"
