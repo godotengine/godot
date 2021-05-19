@@ -52,8 +52,6 @@
 #include "scene/gui/subviewport_container.h"
 #include "scene/resources/packed_scene.h"
 #include "scene/resources/surface_tool.h"
-#include <editor/project_manager.cpp>
-#include <core/input/input_event.cpp>
 
 #define DISTANCE_DEFAULT 4
 
