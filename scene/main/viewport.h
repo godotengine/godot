@@ -231,7 +231,7 @@ private:
 	Transform2D global_canvas_transform;
 	Transform2D stretch_transform;
 
-	Size2i size;
+	Size2i size = Size2i(512, 512);
 	Size2i size_2d_override;
 	bool size_allocated = false;
 	bool use_xr = false;
