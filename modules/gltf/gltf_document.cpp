@@ -63,7 +63,6 @@
 #ifdef MODULE_GRIDMAP_ENABLED
 #include "modules/gridmap/grid_map.h"
 #endif // MODULE_GRIDMAP_ENABLED
-#include "modules/regex/regex.h"
 #include "scene/2d/node_2d.h"
 #include "scene/3d/bone_attachment.h"
 #include "scene/3d/camera.h"
@@ -72,6 +71,7 @@
 #include "scene/3d/skeleton.h"
 #include "scene/3d/spatial.h"
 #include "scene/animation/animation_player.h"
+#include "scene/main/node.h"
 #include "scene/resources/surface_tool.h"
 #include <limits>
 
@@ -449,14 +449,8 @@ Error GLTFDocument::_serialize_nodes(Ref<GLTFState> state) {
 	return OK;
 }
 
-String GLTFDocument::_sanitize_scene_name(const String &name) {
-	RegEx regex("([^a-zA-Z0-9_ -]+)");
-	String p_name = regex.sub(name, "", true);
-	return p_name;
-}
-
 String GLTFDocument::_gen_unique_name(Ref<GLTFState> state, const String &p_name) {
-	const String s_name = _sanitize_scene_name(p_name);
+	const String s_name = p_name.validate_node_name();
 
 	String name;
 	int index = 1;
@@ -477,25 +471,44 @@ String GLTFDocument::_gen_unique_name(Ref<GLTFState> state, const String &p_name
 	return name;
 }
 
-String GLTFDocument::_sanitize_bone_name(const String &name) {
-	String p_name = name.camelcase_to_underscore(true);
+String GLTFDocument::_sanitize_animation_name(const String &p_name) {
+	// Animations disallow the normal node invalid characters as well as  "," and "["
+	// (See animation/animation_player.cpp::add_animation)
 
-	RegEx pattern_nocolon(":");
-	p_name = pattern_nocolon.sub(p_name, "_", true);
+	// TODO: Consider adding invalid_characters or a validate_animation_name to animation_player to mirror Node.
+	String name = p_name.validate_node_name();
+	name = name.replace(",", "");
+	name = name.replace("[", "");
+	return name;
+}
 
-	RegEx pattern_noslash("/");
-	p_name = pattern_noslash.sub(p_name, "_", true);
+String GLTFDocument::_gen_unique_animation_name(Ref<GLTFState> state, const String &p_name) {
+	const String s_name = _sanitize_animation_name(p_name);
 
-	RegEx pattern_nospace(" +");
-	p_name = pattern_nospace.sub(p_name, "_", true);
+	String name;
+	int index = 1;
+	while (true) {
+		name = s_name;
 
-	RegEx pattern_multiple("_+");
-	p_name = pattern_multiple.sub(p_name, "_", true);
+		if (index > 1) {
+			name += itos(index);
+		}
+		if (!state->unique_animation_names.has(name)) {
+			break;
+		}
+		index++;
+	}
 
-	RegEx pattern_padded("0+(\\d+)");
-	p_name = pattern_padded.sub(p_name, "$1", true);
+	state->unique_animation_names.insert(name);
 
-	return p_name;
+	return name;
+}
+
+String GLTFDocument::_sanitize_bone_name(const String &p_name) {
+	String name = p_name;
+	name = name.replace(":", "_");
+	name = name.replace("/", "_");
+	return name;
 }
 
 String GLTFDocument::_gen_unique_bone_name(Ref<GLTFState> state, const GLTFSkeletonIndex skel_i, const String &p_name) {
@@ -4790,7 +4803,7 @@ Error GLTFDocument::_parse_animations(Ref<GLTFState> state) {
 			if (name.begins_with("loop") || name.ends_with("loop") || name.begins_with("cycle") || name.ends_with("cycle")) {
 				animation->set_loop(true);
 			}
-			animation->set_name(_sanitize_scene_name(name));
+			animation->set_name(_gen_unique_animation_name(state, name));
 		}
 
 		for (int j = 0; j < channels.size(); j++) {
