@@ -46,7 +46,7 @@ jobs:
     - name: Configuring Python packages
       run: |
         python -c "import sys; print(sys.version)"
-        python -m pip install scons pywin32
+        python -m pip install scons
         python --version
         scons --version
 
@@ -102,7 +102,7 @@ jobs:
     - name: Configuring Python packages
       run: |
         python -c "import sys; print(sys.version)"
-        python -m pip install scons pywin32
+        python -m pip install scons
         python --version
         scons --version
 
