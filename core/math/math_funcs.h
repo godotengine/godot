@@ -275,8 +275,24 @@ public:
 	static _ALWAYS_INLINE_ double db2linear(double p_db) { return Math::exp(p_db * 0.11512925464970228420089957273422); }
 	static _ALWAYS_INLINE_ float db2linear(float p_db) { return Math::exp(p_db * 0.11512925464970228420089957273422); }
 
-	static _ALWAYS_INLINE_ double round(double p_val) { return (p_val >= 0) ? Math::floor(p_val + 0.5) : -Math::floor(-p_val + 0.5); }
-	static _ALWAYS_INLINE_ float round(float p_val) { return (p_val >= 0) ? Math::floor(p_val + 0.5) : -Math::floor(-p_val + 0.5); }
+	static _ALWAYS_INLINE_ double round(double p_val) {
+		if (p_val == DBL_MIN) {
+			return DBL_MIN;
+		}
+		if (p_val == DBL_MAX) {
+			return DBL_MAX;
+		}
+		return (p_val >= 0) ? Math::floor(p_val + 0.5) : -Math::floor(-p_val + 0.5);
+	}
+	static _ALWAYS_INLINE_ float round(float p_val) {
+		if (p_val == FLT_MIN) {
+			return FLT_MIN;
+		}
+		if (p_val == FLT_MAX) {
+			return FLT_MAX;
+		}
+		return (p_val >= 0) ? Math::floor(p_val + 0.5) : -Math::floor(-p_val + 0.5);
+	}
 
 	static _ALWAYS_INLINE_ int64_t wrapi(int64_t value, int64_t min, int64_t max) {
 		int64_t range = max - min;
