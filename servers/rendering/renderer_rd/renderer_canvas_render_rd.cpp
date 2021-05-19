@@ -31,6 +31,7 @@
 #include "renderer_canvas_render_rd.h"
 #include "core/config/project_settings.h"
 #include "core/math/geometry_2d.h"
+#include "core/math/math_defs.h"
 #include "core/math/math_funcs.h"
 #include "renderer_compositor_rd.h"
 #include "servers/rendering/rendering_server_default.h"
@@ -2408,6 +2409,9 @@ RendererCanvasRenderRD::RendererCanvasRenderRD(RendererStorageRD *p_storage) {
 		actions.renames["CANVAS_MATRIX"] = "canvas_data.canvas_transform";
 		actions.renames["SCREEN_MATRIX"] = "canvas_data.screen_transform";
 		actions.renames["TIME"] = "canvas_data.time";
+		actions.renames["PI"] = _MKSTR(Math_PI);
+		actions.renames["TAU"] = _MKSTR(Math_TAU);
+		actions.renames["E"] = _MKSTR(Math_E);
 		actions.renames["AT_LIGHT_PASS"] = "false";
 		actions.renames["INSTANCE_CUSTOM"] = "instance_custom";
 

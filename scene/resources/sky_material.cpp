@@ -193,7 +193,6 @@ ProceduralSkyMaterial::ProceduralSkyMaterial() {
 	code += "uniform float ground_energy = 1.0;\n\n";
 	code += "uniform float sun_angle_max = 1.74;\n";
 	code += "uniform float sun_curve : hint_range(0, 1) = 0.05;\n\n";
-	code += "const float PI = 3.1415926535897932384626433833;\n\n";
 	code += "void sky() {\n";
 	code += "\tfloat v_angle = acos(clamp(EYEDIR.y, -1.0, 1.0));\n";
 	code += "\tfloat c = (1.0 - v_angle / (PI * 0.5));\n";
@@ -499,7 +498,6 @@ PhysicalSkyMaterial::PhysicalSkyMaterial() {
 
 	code += "uniform sampler2D night_sky : hint_black;";
 
-	code += "const float PI = 3.141592653589793238462643383279502884197169;\n";
 	code += "const vec3 UP = vec3( 0.0, 1.0, 0.0 );\n\n";
 
 	code += "// Sun constants\n";
