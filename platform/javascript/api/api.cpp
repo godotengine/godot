@@ -70,6 +70,7 @@ void JavaScript::_bind_methods() {
 		mi.arguments.push_back(PropertyInfo(Variant::STRING, "object"));
 		ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "create_object", &JavaScript::_create_object_bind, mi);
 	}
+	ClassDB::bind_method(D_METHOD("download_buffer", "buffer", "name", "mime"), &JavaScript::download_buffer, DEFVAL("application/octet-stream"));
 }
 
 #if !defined(JAVASCRIPT_ENABLED) || !defined(JAVASCRIPT_EVAL_ENABLED)
@@ -98,5 +99,9 @@ Variant JavaScript::_create_object_bind(const Variant **p_args, int p_argcount, 
 		return Ref<JavaScriptObject>();
 	}
 	return Ref<JavaScriptObject>();
+}
+#endif
+#if !defined(JAVASCRIPT_ENABLED)
+void JavaScript::download_buffer(Vector<uint8_t> p_arr, const String &p_name, const String &p_mime) {
 }
 #endif

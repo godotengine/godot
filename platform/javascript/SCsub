@@ -23,8 +23,6 @@ sys_env.AddJSLibraries(
     ]
 )
 
-if env["tools"]:
-    sys_env.AddJSLibraries(["js/libs/library_godot_editor_tools.js"])
 if env["javascript_eval"]:
     sys_env.AddJSLibraries(["js/libs/library_godot_javascript_singleton.js"])
 

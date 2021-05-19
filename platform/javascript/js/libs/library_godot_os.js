@@ -304,6 +304,23 @@ const GodotOS = {
 	godot_js_os_hw_concurrency_get: function () {
 		return navigator.hardwareConcurrency || 1;
 	},
+
+	godot_js_os_download_buffer__sig: 'viiii',
+	godot_js_os_download_buffer: function (p_ptr, p_size, p_name, p_mime) {
+		const buf = GodotRuntime.heapSlice(HEAP8, p_ptr, p_size);
+		const name = GodotRuntime.parseString(p_name);
+		const mime = GodotRuntime.parseString(p_mime);
+		const blob = new Blob([buf], { type: mime });
+		const url = window.URL.createObjectURL(blob);
+		const a = document.createElement('a');
+		a.href = url;
+		a.download = name;
+		a.style.display = 'none';
+		document.body.appendChild(a);
+		a.click();
+		a.remove();
+		window.URL.revokeObjectURL(url);
+	},
 };
 
 autoAddDeps(GodotOS, '$GodotOS');

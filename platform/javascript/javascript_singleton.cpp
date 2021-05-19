@@ -301,6 +301,7 @@ union js_eval_ret {
 };
 
 extern int godot_js_eval(const char *p_js, int p_use_global_ctx, union js_eval_ret *p_union_ptr, void *p_byte_arr, void *p_byte_arr_write, void *(*p_callback)(void *p_ptr, void *p_ptr2, int p_len));
+extern int godot_js_os_download_buffer(const uint8_t *p_buf, int p_buf_size, const char *p_name, const char *p_mime);
 }
 
 void *resize_PackedByteArray_and_open_write(void *p_arr, void *r_write, int p_len) {
@@ -336,3 +337,7 @@ Variant JavaScript::eval(const String &p_code, bool p_use_global_exec_context) {
 	}
 }
 #endif // JAVASCRIPT_EVAL_ENABLED
+
+void JavaScript::download_buffer(Vector<uint8_t> p_arr, const String &p_name, const String &p_mime) {
+	godot_js_os_download_buffer(p_arr.ptr(), p_arr.size(), p_name.utf8().get_data(), p_mime.utf8().get_data());
+}
