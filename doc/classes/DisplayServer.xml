@@ -30,6 +30,7 @@
 			<argument index="1" name="vsync_mode" type="int" enum="DisplayServer.VSyncMode" />
 			<argument index="2" name="flags" type="int" />
 			<argument index="3" name="rect" type="Rect2i" default="Rect2i(0, 0, 0, 0)" />
+			<argument index="4" name="parent_window" type="int" default="0" />
 			<description>
 			</description>
 		</method>
