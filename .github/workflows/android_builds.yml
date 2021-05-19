@@ -6,7 +6,7 @@ env:
   GODOT_BASE_BRANCH: master
   SCONSFLAGS: platform=android verbose=yes warnings=extra werror=yes debug_symbols=no --jobs=2 module_text_server_fb_enabled=yes
   SCONS_CACHE_LIMIT: 4096
-  ANDROID_NDK_VERSION: 21.1.6352462
+  ANDROID_NDK_VERSION: 21.4.7075529
 
 jobs:
   android-template:
@@ -29,7 +29,7 @@ jobs:
         with:
           java-version: 8
 
-      - name: Install Android NDK r21
+      - name: Install Android NDK
         run: |
           sudo ${ANDROID_HOME}/tools/bin/sdkmanager --install 'ndk;${{env.ANDROID_NDK_VERSION}}'
 
