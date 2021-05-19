@@ -741,6 +741,7 @@ static void _find_identifiers_in_suite(const GDScriptParser::SuiteNode *p_suite,
 		ScriptCodeCompletionOption option;
 		if (p_suite->locals[i].type == GDScriptParser::SuiteNode::Local::CONSTANT) {
 			option = ScriptCodeCompletionOption(p_suite->locals[i].name, ScriptCodeCompletionOption::KIND_CONSTANT);
+			option.default_value = p_suite->locals[i].constant->initializer->reduced_value;
 		} else {
 			option = ScriptCodeCompletionOption(p_suite->locals[i].name, ScriptCodeCompletionOption::KIND_VARIABLE);
 		}
