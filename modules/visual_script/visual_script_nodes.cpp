@@ -2779,8 +2779,6 @@ VisualScriptCustomNode::TypeGuess VisualScriptCustomNode::guess_output_type(Type
 	return tg;
 }
 
-
-
 String VisualScriptCustomNode::get_caption() const {
 	if (get_script_instance() && get_script_instance()->has_method("_get_caption")) {
 		return get_script_instance()->call("_get_caption");
