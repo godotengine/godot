@@ -154,7 +154,7 @@
 			If [code]true[/code], the node's Z index is relative to its parent's Z index. If this node's Z index is 2 and its parent's effective Z index is 3, then this node's effective Z index will be 2 + 3 = 5.
 		</member>
 		<member name="z_index" type="int" setter="set_z_index" getter="get_z_index" default="0">
-			Z index. Controls the order in which the nodes render. A node with a higher Z index will display in front of others.
+			Z index. Controls the order in which the nodes render. A node with a higher Z index will display in front of others. Must be between [constant RenderingServer.CANVAS_ITEM_Z_MIN] and [constant RenderingServer.CANVAS_ITEM_Z_MAX] (inclusive).
 		</member>
 	</members>
 	<constants>
