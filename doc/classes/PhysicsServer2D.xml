@@ -1018,6 +1018,15 @@
 				Activates or deactivates the 2D physics engine.
 			</description>
 		</method>
+		<method name="set_collision_iterations">
+			<return type="void">
+			</return>
+			<argument index="0" name="iterations" type="int">
+			</argument>
+			<description>
+				Sets the amount of iterations for calculating velocities of colliding bodies. The greater the amount, the more accurate the collisions, but with a performance loss.
+			</description>
+		</method>
 		<method name="shape_get_data" qualifiers="const">
 			<return type="Variant">
 			</return>
