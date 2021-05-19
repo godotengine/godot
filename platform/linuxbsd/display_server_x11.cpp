@@ -1164,8 +1164,8 @@ void DisplayServerX11::window_set_position(const Point2i &p_position, WindowID p
 	Rect2i rect = Rect2i(position, wd.size);
 
 	// Ensure constrained children
-	if (wd.is_child && windows.has(wd.parent)) {
-		_constrain_child_window_size(windows[wd.parent], &rect);
+	if (wd.is_child && windows.has(wd.transient_parent)) {
+		_constrain_child_window_size(windows[wd.transient_parent], &rect);
 		position = rect.position;
 		//update_position = rect.size != wd.size;
 	}
@@ -1272,8 +1272,8 @@ void DisplayServerX11::window_set_size(const Size2i p_size, WindowID p_window) {
 	Rect2i rect = Rect2i(wd.position, size);
 
 	// Ensure constrained children
-	if (wd.is_child && windows.has(wd.parent)) {
-		_constrain_child_window_size(windows[wd.parent], &rect);
+	if (wd.is_child && windows.has(wd.transient_parent)) {
+		_constrain_child_window_size(windows[wd.transient_parent], &rect);
 		size = rect.size;
 		update_position = rect.position != wd.position;
 	}
