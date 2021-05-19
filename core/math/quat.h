@@ -28,14 +28,12 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-// Circular dependency between Vector3 and Basis :/
-#include "core/math/vector3.h"
-
 #ifndef QUAT_H
 #define QUAT_H
 
 #include "core/math/math_defs.h"
 #include "core/math/math_funcs.h"
+#include "core/math/vector3.h"
 #include "core/string/ustring.h"
 
 class Quat {
