@@ -47,6 +47,7 @@ if env["gdnative_enabled"]:
     sys_env.Append(LINKFLAGS=["-s", "MAIN_MODULE=1"])
     sys_env.Append(CCFLAGS=["-s", "EXPORT_ALL=1"])
     sys_env.Append(LINKFLAGS=["-s", "EXPORT_ALL=1"])
+    sys_env.Append(LINKFLAGS=["-s", "WARN_ON_UNDEFINED_SYMBOLS=0"])
     # Force exporting the standard library (printf, malloc, etc.)
     sys_env["ENV"]["EMCC_FORCE_STDLIBS"] = "libc,libc++,libc++abi"
     # The main emscripten runtime, with exported standard libraries.
