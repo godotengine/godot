@@ -250,7 +250,7 @@ def configure(env):
     env["RANLIB"] = tools_path + "/ranlib"
     env["AS"] = tools_path + "/as"
 
-    common_opts = ["-fno-integrated-as", "-gcc-toolchain", gcc_toolchain_path]
+    common_opts = ["-gcc-toolchain", gcc_toolchain_path]
 
     # Compile flags
 
