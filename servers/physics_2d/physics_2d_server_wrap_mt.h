@@ -297,6 +297,7 @@ public:
 
 	FUNC1(free, RID);
 	FUNC1(set_active, bool);
+	FUNC1(set_collision_iterations, int);
 
 	virtual void init();
 	virtual void step(real_t p_step);

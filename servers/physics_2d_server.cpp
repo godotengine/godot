@@ -649,6 +649,8 @@ void Physics2DServer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_active", "active"), &Physics2DServer::set_active);
 
+	ClassDB::bind_method(D_METHOD("set_collision_iterations", "iterations"), &Physics2DServer::set_collision_iterations);
+
 	ClassDB::bind_method(D_METHOD("get_process_info", "process_info"), &Physics2DServer::get_process_info);
 
 	BIND_ENUM_CONSTANT(SPACE_PARAM_CONTACT_RECYCLE_RADIUS);

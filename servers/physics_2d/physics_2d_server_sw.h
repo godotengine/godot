@@ -282,6 +282,8 @@ public:
 	virtual void end_sync();
 	virtual void finish();
 
+	virtual void set_collision_iterations(int p_iterations);
+
 	virtual bool is_flushing_queries() const { return flushing_queries; }
 
 	int get_process_info(ProcessInfo p_info);

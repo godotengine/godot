@@ -583,6 +583,8 @@ public:
 
 	virtual bool is_flushing_queries() const = 0;
 
+	virtual void set_collision_iterations(int iterations) = 0;
+
 	enum ProcessInfo {
 
 		INFO_ACTIVE_OBJECTS,
