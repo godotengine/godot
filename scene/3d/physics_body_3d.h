@@ -181,7 +181,7 @@ public:
 	void set_angular_velocity(const Vector3 &p_velocity);
 	Vector3 get_angular_velocity() const override;
 
-	Basis get_inverse_inertia_tensor();
+	Basis get_inverse_inertia_tensor() const;
 
 	void set_gravity_scale(real_t p_gravity_scale);
 	real_t get_gravity_scale() const;

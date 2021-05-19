@@ -43,17 +43,20 @@ public:
 		v->type = p_type;
 
 		switch (p_type) {
-			case Variant::AABB:
-				init_aabb(v);
+			case Variant::STRING:
+				init_string(v);
 				break;
 			case Variant::TRANSFORM2D:
 				init_transform2d(v);
 				break;
+			case Variant::AABB:
+				init_aabb(v);
+				break;
+			case Variant::BASIS:
+				init_basis(v);
+				break;
 			case Variant::TRANSFORM:
 				init_transform(v);
-				break;
-			case Variant::STRING:
-				init_string(v);
 				break;
 			case Variant::STRING_NAME:
 				init_string_name(v);
@@ -192,6 +195,10 @@ public:
 		v->type = GetTypeInfo<T>::VARIANT_TYPE;
 	}
 
+	// Should be in the same order as Variant::Type for consistency.
+	// Those primitive and vector types don't need an `init_` method:
+	// Nil, bool, float, Vector2/i, Rect2/i, Vector3/i, Plane, Quat, Color, RID.
+	// Object is a special case, handled via `object_assign_null`.
 	_FORCE_INLINE_ static void init_string(Variant *v) {
 		memnew_placement(v->_data._mem, String);
 		v->type = Variant::STRING;

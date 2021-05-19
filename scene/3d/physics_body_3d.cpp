@@ -511,7 +511,7 @@ Vector3 RigidBody3D::get_angular_velocity() const {
 	return angular_velocity;
 }
 
-Basis RigidBody3D::get_inverse_inertia_tensor() {
+Basis RigidBody3D::get_inverse_inertia_tensor() const {
 	return inverse_inertia_tensor;
 }
 
