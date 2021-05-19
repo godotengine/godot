@@ -91,7 +91,6 @@ void ColorPicker::init_shaders() {
 	wheel_shader.instance();
 	wheel_shader->set_code(
 			"shader_type canvas_item;"
-			"const float TAU = 6.28318530718;"
 			"void fragment() {"
 			"	float x = UV.x - 0.5;"
 			"	float y = UV.y - 0.5;"
@@ -111,7 +110,6 @@ void ColorPicker::init_shaders() {
 	circle_shader.instance();
 	circle_shader->set_code(
 			"shader_type canvas_item;"
-			"const float TAU = 6.28318530718;"
 			"uniform float v = 1.0;"
 			"void fragment() {"
 			"	float x = UV.x - 0.5;"

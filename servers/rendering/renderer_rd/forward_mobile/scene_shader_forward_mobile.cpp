@@ -30,6 +30,7 @@
 
 #include "scene_shader_forward_mobile.h"
 #include "core/config/project_settings.h"
+#include "core/math/math_defs.h"
 #include "render_forward_mobile.h"
 
 using namespace RendererSceneRenderImplementation;
@@ -625,6 +626,9 @@ void SceneShaderForwardMobile::init(RendererStorageRD *p_storage, const String p
 		//builtins
 
 		actions.renames["TIME"] = "scene_data.time";
+		actions.renames["PI"] = _MKSTR(Math_PI);
+		actions.renames["TAU"] = _MKSTR(Math_TAU);
+		actions.renames["E"] = _MKSTR(Math_E);
 		actions.renames["VIEWPORT_SIZE"] = "scene_data.viewport_size";
 
 		actions.renames["FRAGCOORD"] = "gl_FragCoord";

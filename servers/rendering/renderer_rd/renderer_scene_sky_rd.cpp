@@ -30,6 +30,7 @@
 
 #include "renderer_scene_sky_rd.h"
 #include "core/config/project_settings.h"
+#include "core/math/math_defs.h"
 #include "renderer_scene_render_rd.h"
 #include "servers/rendering/rendering_server_default.h"
 
@@ -710,6 +711,9 @@ void RendererSceneSkyRD::init(RendererStorageRD *p_storage) {
 		actions.renames["SKY_COORDS"] = "panorama_coords";
 		actions.renames["SCREEN_UV"] = "uv";
 		actions.renames["TIME"] = "params.time";
+		actions.renames["PI"] = _MKSTR(Math_PI);
+		actions.renames["TAU"] = _MKSTR(Math_TAU);
+		actions.renames["E"] = _MKSTR(Math_E);
 		actions.renames["HALF_RES_COLOR"] = "half_res_color";
 		actions.renames["QUARTER_RES_COLOR"] = "quarter_res_color";
 		actions.renames["RADIANCE"] = "radiance";
