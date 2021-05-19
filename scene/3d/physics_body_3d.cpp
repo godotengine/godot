@@ -1958,6 +1958,8 @@ void PhysicalBone3D::_notification(int p_what) {
 			if (parent_skeleton) {
 				if (-1 != bone_id) {
 					parent_skeleton->unbind_physical_bone_from_bone(bone_id);
+					parent_skeleton->unbind_child_node_from_bone(bone_id, this);
+					bone_id = -1;
 				}
 			}
 			parent_skeleton = nullptr;
