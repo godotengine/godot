@@ -2742,9 +2742,6 @@ PropertyInfo VisualScriptCustomNode::get_input_value_port_info(int p_idx) const 
 	if (get_script_instance() && get_script_instance()->has_method("_get_input_value_port_hint_string")) {
 		info.hint_string = get_script_instance()->call("_get_input_value_port_hint_string", p_idx);
 	}
-	if (get_script_instance() && get_script_instance()->has_method("_get_input_value_port_usage")) {
-		info.usage = uint32_t(int(get_script_instance()->call("_get_input_value_port_usage", p_idx)));
-	}
 	return info;
 }
 
@@ -2761,9 +2758,6 @@ PropertyInfo VisualScriptCustomNode::get_output_value_port_info(int p_idx) const
 	}
 	if (get_script_instance() && get_script_instance()->has_method("_get_output_value_port_hint_string")) {
 		info.hint_string = get_script_instance()->call("_get_output_value_port_hint_string", p_idx);
-	}
-	if (get_script_instance() && get_script_instance()->has_method("_get_output_value_port_usage")) {
-		info.usage = uint32_t(int(get_script_instance()->call("_get_output_value_port_usage", p_idx)));
 	}
 	return info;
 }
@@ -2909,16 +2903,12 @@ void VisualScriptCustomNode::_bind_methods() {
 	BIND_VMETHOD(MethodInfo(Variant::INT, "_get_input_value_port_type", PropertyInfo(Variant::INT, "idx")));
 	BIND_VMETHOD(MethodInfo(Variant::STRING, "_get_input_value_port_name", PropertyInfo(Variant::INT, "idx")));
 	BIND_VMETHOD(MethodInfo(Variant::INT, "_get_input_value_port_hint", PropertyInfo(Variant::INT, "idx")));
-	BIND_VMETHOD(MethodInfo(Variant::STRING, "_get_input_value_hint_string", PropertyInfo(Variant::INT, "idx")));
-	BIND_VMETHOD(MethodInfo(Variant::INT, "_get_input_value_port_usage", PropertyInfo(Variant::INT, "idx")));
-	BIND_VMETHOD(MethodInfo(Variant::STRING, "_get_input_value_class_name", PropertyInfo(Variant::INT, "idx")));
+	BIND_VMETHOD(MethodInfo(Variant::STRING, "_get_input_value_port_hint_string", PropertyInfo(Variant::INT, "idx")));
 
 	BIND_VMETHOD(MethodInfo(Variant::INT, "_get_output_value_port_type", PropertyInfo(Variant::INT, "idx")));
 	BIND_VMETHOD(MethodInfo(Variant::STRING, "_get_output_value_port_name", PropertyInfo(Variant::INT, "idx")));
 	BIND_VMETHOD(MethodInfo(Variant::INT, "_get_output_value_port_hint", PropertyInfo(Variant::INT, "idx")));
-	BIND_VMETHOD(MethodInfo(Variant::STRING, "_get_output_value_hint_string", PropertyInfo(Variant::INT, "idx")));
-	BIND_VMETHOD(MethodInfo(Variant::INT, "_get_output_value_port_usage", PropertyInfo(Variant::INT, "idx")));
-	BIND_VMETHOD(MethodInfo(Variant::STRING, "_get_output_value_class_name", PropertyInfo(Variant::INT, "idx")));
+	BIND_VMETHOD(MethodInfo(Variant::STRING, "_get_output_value_port_hint_string", PropertyInfo(Variant::INT, "idx")));
 
 	BIND_VMETHOD(MethodInfo(Variant::STRING, "_get_caption"));
 	BIND_VMETHOD(MethodInfo(Variant::STRING, "_get_text"));
