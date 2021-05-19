@@ -90,8 +90,6 @@ void BitArray::store_bits(int p_bit_offset, uint64_t p_value, int p_bits) {
 
 		val >>= bits_to_write;
 	}
-
-	CRASH_COND_MSG(val != 0, "This is a bug, please open an issue");
 }
 
 uint64_t BitArray::read_bits(int p_bit_offset, int p_bits) const {

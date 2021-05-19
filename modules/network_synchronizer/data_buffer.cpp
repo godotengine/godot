@@ -204,15 +204,13 @@ int64_t DataBuffer::add_int(int64_t p_input, CompressionLevel p_compression_leve
 
 	int64_t value = p_input;
 
-	// Clamp the value to the max that the bit can store and put to 0 the
-	// excessing bits, so that `store_bits` sees that there are not bits left
-	// and no error is raised.
+	// Clamp the value to the max that the bit can store.
 	if (bits == 8) {
-		value = CLAMP(value, INT8_MIN, INT8_MAX) & UINT8_MAX;
+		value = CLAMP(value, INT8_MIN, INT8_MAX);
 	} else if (bits == 16) {
-		value = CLAMP(value, INT16_MIN, INT16_MAX) & UINT16_MAX;
+		value = CLAMP(value, INT16_MIN, INT16_MAX);
 	} else if (bits == 32) {
-		value = CLAMP(value, INT32_MIN, INT32_MAX) & UINT32_MAX;
+		value = CLAMP(value, INT32_MIN, INT32_MAX);
 	} else {
 		// Nothing to do here
 	}
@@ -259,22 +257,24 @@ int64_t DataBuffer::read_int(CompressionLevel p_compression_level) {
 double DataBuffer::add_real(double p_input, CompressionLevel p_compression_level) {
 	ERR_FAIL_COND_V(is_reading == true, p_input);
 
+	// Clamp the input value according to the compression level
+	// Minifloat (compression level 0) have a special bias
+	const int exponent_bits = get_exponent_bits(p_compression_level);
+	const int mantissa_bits = get_mantissa_bits(p_compression_level);
+	const double bias = p_compression_level == COMPRESSION_LEVEL_3 ? Math::pow(2.0, exponent_bits) - 3 : Math::pow(2.0, exponent_bits - 1) - 1;
+	const double max_value = (2.0 - Math::pow(2.0, -(mantissa_bits - 1))) * Math::pow(2.0, bias);
+	const double clamped_input = CLAMP(p_input, -max_value, max_value);
+
 	// Split number according to IEEE 754 binary format.
 	// Mantissa floating point value represented in range (-1;-0.5], [0.5; 1).
 	int exponent;
-	double mantissa = frexp(p_input, &exponent);
-
-	// Truncate exponent into the specified number of bits.
-	const int exponent_bits = get_exponent_bits(p_compression_level);
-	const int max_exponent = static_cast<int>(Math::pow(2.0, exponent_bits));
-	exponent = CLAMP(exponent, -max_exponent, max_exponent - 1);
+	double mantissa = frexp(clamped_input, &exponent);
 
 	// Extract sign.
 	const bool sign = mantissa < 0;
 	mantissa = Math::abs(mantissa);
 
 	// Round mantissa into the specified number of bits (like float -> double conversion).
-	const int mantissa_bits = get_mantissa_bits(p_compression_level);
 	double mantissa_scale = Math::pow(2.0, mantissa_bits);
 	if (exponent <= 0) {
 		// Subnormal value, apply exponent to mantissa and reduce power of scale by one.
@@ -282,26 +282,26 @@ double DataBuffer::add_real(double p_input, CompressionLevel p_compression_level
 		exponent = 0;
 		mantissa_scale /= 2.0;
 	}
-	mantissa = Math::round(mantissa * mantissa_scale) / mantissa_scale; // Round to specified number of bits.
+	mantissa = round(mantissa * mantissa_scale) / mantissa_scale; // Round to specified number of bits. Math::round currently have an overflow with max double.
 	if (mantissa < 0.5 && mantissa != 0) {
 		// Check underflow, extract exponent from mantissa.
 		exponent += ilogb(mantissa) + 1;
 		mantissa /= Math::pow(2.0, exponent);
-	}
-	if (mantissa == 1) {
+	} else if (mantissa == 1) {
 		// Check overflow, increment the exponent.
 		++exponent;
 		mantissa = 0.5;
 	}
 	// Convert the mantissa to an integer that represents the offset index (IEE 754 floating point representation) to send over network safely.
-	const uint64_t integer_mantissa = exponent <= 0 ? mantissa * mantissa_scale : (mantissa - 0.5) * mantissa_scale;
+	const uint64_t integer_mantissa = exponent <= 0 ? mantissa * mantissa_scale * Math::pow(2.0, exponent) : (mantissa - 0.5) * mantissa_scale;
 
 	make_room_in_bits(mantissa_bits + exponent_bits);
 	buffer.store_bits(bit_offset, sign, 1);
 	bit_offset += 1;
 	buffer.store_bits(bit_offset, integer_mantissa, mantissa_bits - 1);
 	bit_offset += mantissa_bits - 1;
-	buffer.store_bits(bit_offset, exponent, exponent_bits);
+	// Send unsigned value (just shift it by bias) to avoid sign issues.
+	buffer.store_bits(bit_offset, exponent + bias, exponent_bits);
 	bit_offset += exponent_bits;
 
 	return ldexp(sign ? -mantissa : mantissa, exponent);
@@ -318,13 +318,14 @@ double DataBuffer::read_real(CompressionLevel p_compression_level) {
 	bit_offset += mantissa_bits - 1;
 
 	const int exponent_bits = get_exponent_bits(p_compression_level);
-	const int exponent = buffer.read_bits(bit_offset, exponent_bits);
+	const double bias = p_compression_level == COMPRESSION_LEVEL_3 ? Math::pow(2.0, exponent_bits) - 3 : Math::pow(2.0, exponent_bits - 1) - 1;
+	int exponent = static_cast<int>(buffer.read_bits(bit_offset, exponent_bits)) - static_cast<int>(bias);
 	bit_offset += exponent_bits;
 
 	// Convert integer mantissa into the floating point representation
 	// When the index of the mantissa and exponent are 0, then this is a special case and the mantissa is 0.
 	const double mantissa_scale = Math::pow(2.0, exponent <= 0 ? mantissa_bits - 1 : mantissa_bits);
-	const double mantissa = exponent <= 0 ? integer_mantissa / mantissa_scale : integer_mantissa / mantissa_scale + 0.5;
+	const double mantissa = exponent <= 0 ? integer_mantissa / mantissa_scale / Math::pow(2.0, exponent) : integer_mantissa / mantissa_scale + 0.5;
 
 	return ldexp(sign ? -mantissa : mantissa, exponent);
 }
@@ -400,6 +401,13 @@ real_t DataBuffer::read_unit_real(CompressionLevel p_compression_level) {
 Vector2 DataBuffer::add_vector2(Vector2 p_input, CompressionLevel p_compression_level) {
 	ERR_FAIL_COND_V(is_reading == true, p_input);
 
+#ifndef REAL_T_IS_DOUBLE
+	// Fallback to compression level 1 if real_t is float
+	if (p_compression_level == DataBuffer::COMPRESSION_LEVEL_0) {
+		p_compression_level = DataBuffer::COMPRESSION_LEVEL_1;
+	}
+#endif
+
 	Vector2 r;
 	r[0] = add_real(p_input[0], p_compression_level);
 	r[1] = add_real(p_input[1], p_compression_level);
@@ -408,6 +416,13 @@ Vector2 DataBuffer::add_vector2(Vector2 p_input, CompressionLevel p_compression_
 
 Vector2 DataBuffer::read_vector2(CompressionLevel p_compression_level) {
 	ERR_FAIL_COND_V(is_reading == false, Vector2());
+
+#ifndef REAL_T_IS_DOUBLE
+	// Fallback to compression level 1 if real_t is float
+	if (p_compression_level == DataBuffer::COMPRESSION_LEVEL_0) {
+		p_compression_level = DataBuffer::COMPRESSION_LEVEL_1;
+	}
+#endif
 
 	Vector2 r;
 	r[0] = read_real(p_compression_level);
@@ -472,6 +487,13 @@ Vector2 DataBuffer::read_normalized_vector2(CompressionLevel p_compression_level
 Vector3 DataBuffer::add_vector3(Vector3 p_input, CompressionLevel p_compression_level) {
 	ERR_FAIL_COND_V(is_reading == true, p_input);
 
+#ifndef REAL_T_IS_DOUBLE
+	// Fallback to compression level 1 if real_t is float
+	if (p_compression_level == DataBuffer::COMPRESSION_LEVEL_0) {
+		p_compression_level = DataBuffer::COMPRESSION_LEVEL_1;
+	}
+#endif
+
 	Vector3 r;
 	r[0] = add_real(p_input[0], p_compression_level);
 	r[1] = add_real(p_input[1], p_compression_level);
@@ -481,6 +503,13 @@ Vector3 DataBuffer::add_vector3(Vector3 p_input, CompressionLevel p_compression_
 
 Vector3 DataBuffer::read_vector3(CompressionLevel p_compression_level) {
 	ERR_FAIL_COND_V(is_reading == false, Vector3());
+
+#ifndef REAL_T_IS_DOUBLE
+	// Fallback to compression level 1 if real_t is float
+	if (p_compression_level == DataBuffer::COMPRESSION_LEVEL_0) {
+		p_compression_level = DataBuffer::COMPRESSION_LEVEL_1;
+	}
+#endif
 
 	Vector3 r;
 	r[0] = read_real(p_compression_level);

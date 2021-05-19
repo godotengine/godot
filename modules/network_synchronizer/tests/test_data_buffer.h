@@ -37,8 +37,8 @@
 
 namespace TestDataBuffer {
 
-inline Vector<real_t> real_values(DataBuffer::CompressionLevel p_compression_level) {
-	Vector<real_t> values;
+inline Vector<double> real_values(DataBuffer::CompressionLevel p_compression_level) {
+	Vector<double> values;
 	values.append(Math_PI);
 	values.append(0.0);
 	values.append(-3.04);
@@ -46,6 +46,9 @@ inline Vector<real_t> real_values(DataBuffer::CompressionLevel p_compression_lev
 	values.append(0.5);
 	values.append(-0.5);
 	values.append(1);
+	values.append(-1);
+	values.append(0.9);
+	values.append(-0.9);
 	values.append(3.9);
 	values.append(-3.9);
 	values.append(8);
@@ -66,6 +69,7 @@ inline Vector<real_t> real_values(DataBuffer::CompressionLevel p_compression_lev
 		} break;
 		case DataBuffer::COMPRESSION_LEVEL_1: {
 			// https://en.wikipedia.org/wiki/Single-precision_floating-point_format#Single-precision_examples
+			values.append(FLT_MIN);
 			values.append(-FLT_MAX);
 			values.append(FLT_MAX);
 			values.append(Math::pow(2.0, -149));
@@ -75,6 +79,9 @@ inline Vector<real_t> real_values(DataBuffer::CompressionLevel p_compression_lev
 		} break;
 		case DataBuffer::COMPRESSION_LEVEL_0: {
 			// https://en.wikipedia.org/wiki/Double-precision_floating-point_format#Double-precision_examples
+			values.append(DBL_MIN);
+			values.append(DBL_MAX);
+			values.append(-DBL_MAX);
 			values.append(1.0000000000000002);
 			values.append(4.9406564584124654 * Math::pow(10.0, -324));
 			values.append(2.2250738585072009 * Math::pow(10.0, -308));
@@ -188,8 +195,8 @@ TEST_CASE("[Modules][DataBuffer] Real") {
 	}
 
 	DataBuffer buffer;
-	const Vector<real_t> values = real_values(compression_level);
-	const real_t epsilon = Math::pow(2.0, DataBuffer::get_mantissa_bits(compression_level) - 1);
+	const Vector<double> values = real_values(compression_level);
+	const double epsilon = Math::pow(2.0, DataBuffer::get_mantissa_bits(compression_level) - 1);
 	for (int i = 0; i < values.size(); ++i) {
 		buffer.begin_write(0);
 		const double value = values[i];
@@ -202,7 +209,7 @@ TEST_CASE("[Modules][DataBuffer] Real") {
 
 TEST_CASE("[Modules][DataBuffer] Positive unit real") {
 	DataBuffer::CompressionLevel compression_level = {};
-	real_t epsilon = {};
+	double epsilon = {};
 
 	SUBCASE("[Modules][DataBuffer] Compression level 3") {
 		compression_level = DataBuffer::COMPRESSION_LEVEL_3;
@@ -225,7 +232,7 @@ TEST_CASE("[Modules][DataBuffer] Positive unit real") {
 	}
 
 	DataBuffer buffer;
-	const Vector<real_t> values = real_values(compression_level);
+	const Vector<double> values = real_values(compression_level);
 	for (int i = 0; i < values.size(); ++i) {
 		const double value = values[i];
 		if (value < 0) {
@@ -244,7 +251,7 @@ TEST_CASE("[Modules][DataBuffer] Positive unit real") {
 
 TEST_CASE("[Modules][DataBuffer] Unit real") {
 	DataBuffer::CompressionLevel compression_level = {};
-	real_t epsilon = {};
+	double epsilon = {};
 
 	SUBCASE("[Modules][DataBuffer] Compression level 3") {
 		compression_level = DataBuffer::COMPRESSION_LEVEL_3;
@@ -267,7 +274,7 @@ TEST_CASE("[Modules][DataBuffer] Unit real") {
 	}
 
 	DataBuffer buffer;
-	const Vector<real_t> values = real_values(compression_level);
+	const Vector<double> values = real_values(compression_level);
 	for (int i = 0; i < values.size(); ++i) {
 		double value_integral;
 		const double value_unit = modf(values[i], &value_integral);
@@ -299,10 +306,14 @@ TEST_CASE("[Modules][DataBuffer] Vector2") {
 	}
 
 	DataBuffer buffer;
-	const real_t epsilon = Math::pow(2.0, DataBuffer::get_mantissa_bits(compression_level) - 1);
-	const Vector<real_t> values = real_values(compression_level);
+	const double epsilon = Math::pow(2.0, DataBuffer::get_mantissa_bits(compression_level) - 1);
+	const Vector<double> values = real_values(compression_level);
 	for (int i = 0; i < values.size(); ++i) {
+#ifdef REAL_T_IS_DOUBLE
 		const Vector2 value = Vector2(values[i], values[i]);
+#else
+		const Vector2 value = Vector2(CLAMP(values[i], -FLT_MIN, FLT_MAX), CLAMP(values[i], -FLT_MIN, FLT_MAX));
+#endif
 		buffer.begin_write(0);
 		const Vector2 added_value = buffer.add_vector2(value, compression_level);
 		CHECK_MESSAGE(added_value.x == doctest::Approx(value.x).epsilon(epsilon), "Added Vector2 should have the same x axis");
@@ -335,10 +346,14 @@ TEST_CASE("[Modules][DataBuffer] Vector3") {
 	}
 
 	DataBuffer buffer;
-	const Vector<real_t> values = real_values(compression_level);
-	const real_t epsilon = Math::pow(2.0, DataBuffer::get_mantissa_bits(compression_level) - 1);
+	const Vector<double> values = real_values(compression_level);
+	const double epsilon = Math::pow(2.0, DataBuffer::get_mantissa_bits(compression_level) - 1);
 	for (int i = 0; i < values.size(); ++i) {
-		const Vector3 value(values[i], values[i], values[i]);
+#ifdef REAL_T_IS_DOUBLE
+		const Vector3 value = Vector3(values[i], values[i], values[i]);
+#else
+		const Vector3 value = Vector3(CLAMP(values[i], -FLT_MIN, FLT_MAX), CLAMP(values[i], -FLT_MIN, FLT_MAX), CLAMP(values[i], -FLT_MIN, FLT_MAX));
+#endif
 		buffer.begin_write(0);
 		const Vector3 added_value = buffer.add_vector3(value, compression_level);
 		CHECK_MESSAGE(added_value.x == doctest::Approx(value.x).epsilon(epsilon), "Added Vector3 should have the same x axis");
@@ -355,7 +370,7 @@ TEST_CASE("[Modules][DataBuffer] Vector3") {
 
 TEST_CASE("[Modules][DataBuffer] Normalized Vector3") {
 	DataBuffer::CompressionLevel compression_level = {};
-	real_t epsilon = {};
+	double epsilon = {};
 
 	SUBCASE("[Modules][DataBuffer] Compression level 3") {
 		compression_level = DataBuffer::COMPRESSION_LEVEL_3;
@@ -378,7 +393,7 @@ TEST_CASE("[Modules][DataBuffer] Normalized Vector3") {
 	}
 
 	DataBuffer buffer;
-	const Vector<real_t> values = real_values(compression_level);
+	const Vector<double> values = real_values(compression_level);
 	for (int i = 0; i < values.size(); ++i) {
 		Vector3 value = Vector3(values[i], values[i], values[i]).normalized();
 		if (!value.is_normalized()) {
