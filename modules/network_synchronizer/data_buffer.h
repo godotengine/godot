@@ -75,11 +75,14 @@ public:
 	///
 	///
 	/// ## Real
-	/// The floating point part has a precision of ~0.020%
-	/// COMPRESSION_LEVEL_0: 8 bits are used - Minifloat
-	/// COMPRESSION_LEVEL_1: 16 bits are used - Half precision
-	/// COMPRESSION_LEVEL_2: 32 bits are used - Single precision
-	/// COMPRESSION_LEVEL_3: 64 bits are used - Double precision
+	/// Precision depends on an integer range
+	/// COMPRESSION_LEVEL_0: 64 bits are used - Double precision. Up to 16 precision is 0.00000000000000177636 in worst case. Up to 512 precision is 0.00000000000005684342 in worst case. Up to 1024 precision is 0.00000000000011368684 in worst case.
+	/// COMPRESSION_LEVEL_1: 32 bits are used - Single precision (float). Up to 16 precision is 0.00000095367431640625 in worst case. Up to 512 precision is 0.000030517578125 in worst case. Up to 1024 precision is 0.00006103515625 in worst case.
+	/// COMPRESSION_LEVEL_2: 16 bits are used - Half precision. Up to 16 precision is 0.0078125 in worst case. Up to 512 precision is 0.25 in worst case. Up to 1024 precision is 0.5.
+	/// COMPRESSION_LEVEL_3: 8 bits are used - Minifloat: Up to 2 precision is 0.125. Up to 4 precision is 0.25. Up to 8 precision is 0.5.
+	///
+	/// To get the exact precision for the stored number, you need to find the lower power of two relative to the number and divide it by 2^mantissa_bits.
+	/// To get the mantissa or exponent bits for a specific compression level, you can use the get_mantissa_bits and get_exponent_bits functions.
 	///
 	///
 	/// ## Positive unit real
@@ -97,11 +100,12 @@ public:
 	///
 	///
 	/// ## Vector2
-	/// The floating point part has a precision of ~0.020% per axis.
-	/// COMPRESSION_LEVEL_0: 72 * 2 bits are used - Max vector size -9223372036854775808 / 9223372036854775807
-	/// COMPRESSION_LEVEL_1: 40 * 2 bits are used - Max vector size -2147483648 / 2147483647
-	/// COMPRESSION_LEVEL_2: 24 * 2 bits are used - Max vector size -32768 / 32767
-	/// COMPRESSION_LEVEL_3: 16 * 2 bits are used - Max vector size -128 / 127
+	/// COMPRESSION_LEVEL_0: 2 * 64 bits are used - Double precision (will fallback to level 1 if REAL_T_IS_DOUBLE is not defined)
+	/// COMPRESSION_LEVEL_1: 2 * 32 bits are used - Single precision
+	/// COMPRESSION_LEVEL_2: 2 * 16 bits are used - Half precision
+	/// COMPRESSION_LEVEL_3: 2 * 8 bits are used - Minifloat
+	///
+	/// For floating point precision, check the Real compression section.
 	///
 	///
 	/// ## Normalized Vector2
@@ -112,11 +116,12 @@ public:
 	///
 	///
 	/// ## Vector3
-	/// The floating point part has a precision of ~0.020% per axis.
-	/// COMPRESSION_LEVEL_0: 72 * 3 bits are used - Max vector size -9223372036854775808 / 9223372036854775807
-	/// COMPRESSION_LEVEL_1: 40 * 3 bits are used - Max vector size -2147483648 / 2147483647
-	/// COMPRESSION_LEVEL_2: 24 * 3 bits are used - Max vector size -32768 / 32767
-	/// COMPRESSION_LEVEL_3: 16 * 3 bits are used - Max vector size -128 / 127
+	/// COMPRESSION_LEVEL_0: 3 * 64 bits are used - Double precision (will fallback to level 1 if REAL_T_IS_DOUBLE is not defined)
+	/// COMPRESSION_LEVEL_1: 3 * 32 bits are used - Single precision
+	/// COMPRESSION_LEVEL_2: 3 * 16 bits are used - Half precision
+	/// COMPRESSION_LEVEL_3: 3 * 8 bits are used - Minifloat
+	///
+	/// For floating point precision, check the Real compression section.
 	///
 	///
 	/// ## Normalized Vector3
