@@ -36,6 +36,7 @@
 
 #include "test_astar.h"
 #include "test_basis.h"
+#include "test_crypto.h"
 #include "test_gdscript.h"
 #include "test_gui.h"
 #include "test_math.h"
@@ -107,6 +108,10 @@ MainLoop *test_main(String p_test, const List<String> &p_args) {
 
 	if (p_test == "shaderlang") {
 		return TestShaderLang::test();
+	}
+
+	if (p_test == "crypto") {
+		return TestCrypto::test();
 	}
 
 	if (p_test == "gd_tokenizer") {
