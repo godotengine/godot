@@ -1,5 +1,5 @@
 #define MyAppName "Godot Engine"
-#define MyAppVersion "3.3.1"
+#define MyAppVersion "3.3.2"
 #define MyAppPublisher "Godot Engine contributors"
 #define MyAppURL "https://godotengine.org/"
 #define MyAppExeName "godot.exe"
