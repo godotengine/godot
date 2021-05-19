@@ -103,7 +103,7 @@
 				[b]Note:[/b] The result of this test is not immediate after moving objects. For performance, list of collisions is updated once per frame and before the physics step. Consider using signals instead.
 			</description>
 		</method>
-		<method name="get_inverse_inertia_tensor">
+		<method name="get_inverse_inertia_tensor" qualifiers="const">
 			<return type="Basis">
 			</return>
 			<description>
