@@ -4301,8 +4301,15 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 						}
 						mn->assign_expression = assign_expression;
 					} else if (tk.type == TK_PERIOD) {
-						_set_error("Nested array length() is not yet implemented");
-						return nullptr;
+						completion_class = TAG_ARRAY;
+						p_block->block_tag = SubClassTag::TAG_ARRAY;
+						Node *call_expression = _parse_and_reduce_expression(p_block, p_function_info);
+						p_block->block_tag = SubClassTag::TAG_GLOBAL;
+						if (!call_expression) {
+							return nullptr;
+						}
+						mn->datatype = call_expression->get_datatype();
+						mn->call_expression = call_expression;
 					} else if (tk.type == TK_BRACKET_OPEN) {
 						Node *index_expression = _parse_and_reduce_expression(p_block, p_function_info);
 						if (!index_expression) {
