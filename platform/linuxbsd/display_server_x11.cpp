@@ -1161,13 +1161,13 @@ void DisplayServerX11::window_set_position(const Point2i &p_position, WindowID p
 	int y = 0;
 
 	bool update_position = false;
-	Rect2i rect = Rect2i(wd.position, position);
+	Rect2i rect = Rect2i(position, wd.size);
 
 	// Ensure constrained children
-	if (wd.is_child && windows.has(wd.transient_parent)) {
-		_constrain_child_window_size(windows[wd.transient_parent], &rect);
+	if (wd.is_child && windows.has(wd.parent)) {
+		_constrain_child_window_size(windows[wd.parent], &rect);
 		position = rect.position;
-		update_position = rect.position != wd.position;
+		//update_position = rect.size != wd.size;
 	}
 
 	if (!window_get_flag(WINDOW_FLAG_BORDERLESS, p_window)) {
@@ -1272,8 +1272,8 @@ void DisplayServerX11::window_set_size(const Size2i p_size, WindowID p_window) {
 	Rect2i rect = Rect2i(wd.position, size);
 
 	// Ensure constrained children
-	if (wd.is_child && windows.has(wd.transient_parent)) {
-		_constrain_child_window_size(windows[wd.transient_parent], &rect);
+	if (wd.is_child && windows.has(wd.parent)) {
+		_constrain_child_window_size(windows[wd.parent], &rect);
 		size = rect.size;
 		update_position = rect.position != wd.position;
 	}
@@ -3711,8 +3711,10 @@ void DisplayServerX11::_constrain_child_window_size(const WindowData &p_parent, 
 	if (children) {
 		XFree((char *)children);
 	}
+	print_line(vformat("Old rect: %s", *r_rect));
+	print_line(vformat("pop == root: %s, pop=%s, root=%s", parent_of_parent == root, parent_of_parent, root));
 	XTranslateCoordinates(x11_display, root, parent_window, r_rect->position.x, r_rect->position.y, &r_rect->position.x, &r_rect->position.y, &child);
-	XTranslateCoordinates(x11_display, root, parent_window, r_rect->size.x, r_rect->size.y, &r_rect->size.x, &r_rect->size.y, &child);
+	//XTranslateCoordinates(x11_display, root, parent_window, r_rect->size.x, r_rect->size.y, &r_rect->size.x, &r_rect->size.y, &child);
 
 	XWindowAttributes xwa;
 	XSync(x11_display, False);
@@ -3720,37 +3722,48 @@ void DisplayServerX11::_constrain_child_window_size(const WindowData &p_parent, 
 
 	Rect2i parent_rect = Rect2i(xwa.x, xwa.y, xwa.width, xwa.height);
 	print_line(vformat("P rect: %s", parent_rect));
-
+	//Rect2i parent_rect2 = p_parent
+	print_line(vformat("Parent of Parent: %s", p_parent.parent));
+	print_line(vformat("Translated start rect: %s", *r_rect));
 	// First, try to move the window.
-	if (r_rect->position.y < parent_rect.position.y) {
-		r_rect->position.y = parent_rect.position.y;
-		r_rect->size.y -= parent_rect.position.y - r_rect->position.y;
-	} else if (r_rect->size.y > parent_rect.size.y) {
-		r_rect->position.y -= r_rect->size.y - parent_rect.size.y;
-		r_rect->size.y = parent_rect.size.y;
+	if (r_rect->position.y < 0) {
+		r_rect->position.y = 0;
+		//r_rect->size.y -= parent_rect.position.y - r_rect->position.y;
+		print_line(vformat("Move down (y): %s", *r_rect));
+	} else if (r_rect->position.y + r_rect->size.y > parent_rect.size.y) {
+		r_rect->position.y -= r_rect->position.y + r_rect->size.y - parent_rect.size.y;
+		//r_rect->size.y = parent_rect.size.y;
+		print_line(vformat("Move up (y): %s", *r_rect));
 	}
 
-	if (r_rect->position.x < parent_rect.position.x) {
-		r_rect->position.x = parent_rect.position.x;
-		r_rect->size.x -= parent_rect.position.x - r_rect->position.x;
-	} else if (r_rect->size.x > parent_rect.size.x) {
-		r_rect->position.x -= r_rect->size.x - parent_rect.size.x;
-		r_rect->size.x = parent_rect.size.x;
+	if (r_rect->position.x < 0) {
+		r_rect->position.x = 0;
+		//r_rect->size.x -= parent_rect.position.x - r_rect->position.x;
+		print_line(vformat("Move right (x): %s", *r_rect));
+	} else if (r_rect->position.x + r_rect->size.x > parent_rect.size.x) {
+		r_rect->position.x -= r_rect->position.x + r_rect->size.x - parent_rect.size.x;
+		//r_rect->size.x = parent_rect.size.x;
+		print_line(vformat("Move left (x): %s", *r_rect));
 	}
 
 	// Now clip the window
-	if (r_rect->position.y < parent_rect.position.y) {
-		r_rect->position.y = parent_rect.position.y;
+	if (r_rect->position.y < 0) {
+		r_rect->position.y = 0;
+		print_line(vformat("Shrink top (y): %s", *r_rect));
 	}
-	if (r_rect->size.y > parent_rect.size.y) {
+	if (r_rect->position.y + r_rect->size.y > parent_rect.size.y) {
 		r_rect->size.y = parent_rect.size.y;
+		print_line(vformat("Shrink bottom (y): %s", *r_rect));
 	}
-	if (r_rect->position.x < parent_rect.position.x) {
-		r_rect->position.x = parent_rect.position.x;
+	if (r_rect->position.x < 0) {
+		r_rect->position.x = 0;
+		print_line(vformat("Shrink left (x): %s", *r_rect));
 	}
-	if (r_rect->size.x > parent_rect.size.x) {
+	if (r_rect->position.x + r_rect->size.x > parent_rect.size.x) {
 		r_rect->size.x = parent_rect.size.x;
+		print_line(vformat("Shrink right (x): %s", *r_rect));
 	}
+	r_rect->size.y -= 100;
 	print_line(vformat("New rect: %s", *r_rect));
 }
 
@@ -3777,10 +3790,10 @@ DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, V
 		// We have child windows here, so we need to ensure they use local coordinates
 		wd.is_child = (p_flags & WINDOW_FLAG_BORDERLESS_BIT);
 		if (wd.is_child) {
-			WindowData &parent = windows[p_parent_window_id];
-			wd.parent = p_parent_window_id; //parent != transient_parent!
+			//WindowData &parent = windows[p_parent_window_id];
+			//wd.parent = p_parent_window_id; //parent != transient_parent!
 			wd.menu_type = true;
-			_constrain_child_window_size(parent, &rect);
+			_constrain_child_window_size(windows[non_transient_parent], &rect);
 		}
 	} else {
 		parent_window = DefaultRootWindow(x11_display);
@@ -3942,7 +3955,7 @@ DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, V
 
 #if defined(VULKAN_ENABLED)
 		if (context_vulkan) {
-			Error err = context_vulkan->window_create(id, p_vsync_mode, wd.x11_window, x11_display, p_rect.size.width, p_rect.size.height);
+			Error err = context_vulkan->window_create(id, p_vsync_mode, wd.x11_window, x11_display, rect.size.width, rect.size.height);
 			ERR_FAIL_COND_V_MSG(err != OK, INVALID_WINDOW_ID, "Can't create a Vulkan window");
 		}
 #endif
