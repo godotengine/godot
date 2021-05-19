@@ -1237,6 +1237,10 @@ void PhysicsServer2DSW::set_active(bool p_active) {
 	active = p_active;
 };
 
+void PhysicsServer2DSW::set_collision_iterations(int p_iterations) {
+	iterations = p_iterations;
+};
+
 void PhysicsServer2DSW::init() {
 	doing_sync = false;
 	last_step = 0.001;
