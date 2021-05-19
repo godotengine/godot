@@ -98,13 +98,44 @@ public:
 	void set_base_type(const String &p_base_type);
 	String get_base_type() const;
 	Vector<String> get_allowed_types() const;
+
 	void set_edited_resource(RES p_resource);
 	RES get_edited_resource();
+
+	void set_toggle_mode(bool p_enable);
+	bool is_toggle_mode() const;
+	void set_toggle_pressed(bool p_pressed);
 
 	void set_editable(bool p_editable);
 	bool is_editable() const;
 
+	virtual void set_create_options(Object *p_menu_node);
+	virtual bool handle_menu_selected(int p_which);
+
 	EditorResourcePicker();
+};
+
+class EditorScriptPicker : public EditorResourcePicker {
+	GDCLASS(EditorScriptPicker, EditorResourcePicker);
+
+	enum ExtraMenuOption {
+		OBJ_MENU_NEW_SCRIPT = 10,
+		OBJ_MENU_EXTEND_SCRIPT = 11
+	};
+
+	Node *script_owner = nullptr;
+
+protected:
+	static void _bind_methods();
+
+public:
+	virtual void set_create_options(Object *p_menu_node) override;
+	virtual bool handle_menu_selected(int p_which) override;
+
+	void set_script_owner(Node *p_owner);
+	Node *get_script_owner() const;
+
+	EditorScriptPicker();
 };
 
 #endif // EDITOR_RESOURCE_PICKER_H

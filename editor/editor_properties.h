@@ -33,6 +33,7 @@
 
 #include "editor/create_dialog.h"
 #include "editor/editor_inspector.h"
+#include "editor/editor_resource_picker.h"
 #include "editor/editor_spin_slider.h"
 #include "editor/property_selector.h"
 #include "editor/scene_tree_editor.h"
@@ -599,64 +600,26 @@ public:
 class EditorPropertyResource : public EditorProperty {
 	GDCLASS(EditorPropertyResource, EditorProperty);
 
-	enum MenuOption {
-		OBJ_MENU_LOAD = 0,
-		OBJ_MENU_EDIT = 1,
-		OBJ_MENU_CLEAR = 2,
-		OBJ_MENU_MAKE_UNIQUE = 3,
-		OBJ_MENU_SAVE = 4,
-		OBJ_MENU_COPY = 5,
-		OBJ_MENU_PASTE = 6,
-		OBJ_MENU_NEW_SCRIPT = 7,
-		OBJ_MENU_EXTEND_SCRIPT = 8,
-		OBJ_MENU_SHOW_IN_FILE_SYSTEM = 9,
-		TYPE_BASE_ID = 100,
-		CONVERT_BASE_ID = 1000
+	EditorResourcePicker *resource_picker = nullptr;
+	SceneTreeDialog *scene_tree = nullptr;
 
-	};
+	bool use_sub_inspector = false;
+	EditorInspector *sub_inspector = nullptr;
+	VBoxContainer *sub_inspector_vbox = nullptr;
+	bool updating_theme = false;
+	bool opened_editor = false;
 
-	Button *assign;
-	TextureRect *preview;
-	Button *edit;
-	PopupMenu *menu;
-	EditorFileDialog *file;
-	Vector<String> inheritors_array;
-	EditorInspector *sub_inspector;
-	VBoxContainer *sub_inspector_vbox;
+	void _resource_selected(const RES &p_resource);
+	void _resource_changed(const RES &p_resource);
 
-	bool use_sub_inspector;
-	bool dropping;
-	String base_type;
-
-	SceneTreeDialog *scene_tree;
-
-	void _file_selected(const String &p_path);
-	void _menu_option(int p_which);
-	void _resource_preview(const String &p_path, const Ref<Texture2D> &p_preview, const Ref<Texture2D> &p_small_preview, ObjectID p_obj);
-	void _resource_selected();
 	void _viewport_selected(const NodePath &p_path);
-
-	void _update_menu_items();
-
-	void _update_menu();
 
 	void _sub_inspector_property_keyed(const String &p_property, const Variant &p_value, bool);
 	void _sub_inspector_resource_selected(const RES &p_resource, const String &p_property);
 	void _sub_inspector_object_id_selected(int p_id);
 
-	void _button_draw();
-	Variant get_drag_data_fw(const Point2 &p_point, Control *p_from);
-	bool _is_drop_valid(const Dictionary &p_drag_data) const;
-	bool can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const;
-	void drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);
-
-	void _button_input(const Ref<InputEvent> &p_event);
 	void _open_editor_pressed();
 	void _fold_other_editors(Object *p_self);
-
-	bool opened_editor;
-
-	bool updating_theme = false;
 	void _update_property_bg();
 
 protected:
@@ -665,7 +628,7 @@ protected:
 
 public:
 	virtual void update_property() override;
-	void setup(const String &p_base_type);
+	void setup(Object *p_object, const String &p_path, const String &p_base_type);
 
 	void collapse_all_folding() override;
 	void expand_all_folding() override;
