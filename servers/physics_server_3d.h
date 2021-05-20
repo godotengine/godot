@@ -374,8 +374,8 @@ public:
 	enum BodyMode {
 		BODY_MODE_STATIC,
 		BODY_MODE_KINEMATIC,
-		BODY_MODE_RIGID,
-		BODY_MODE_CHARACTER
+		BODY_MODE_DYNAMIC,
+		BODY_MODE_DYNAMIC_LOCKED,
 	};
 
 	virtual RID body_create() = 0;

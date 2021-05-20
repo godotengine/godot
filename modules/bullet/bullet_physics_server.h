@@ -166,7 +166,7 @@ public:
 
 	/* RIGID BODY API */
 
-	virtual RID body_create(BodyMode p_mode = BODY_MODE_RIGID, bool p_init_sleeping = false) override;
+	virtual RID body_create(BodyMode p_mode = BODY_MODE_DYNAMIC, bool p_init_sleeping = false) override;
 
 	virtual void body_set_space(RID p_body, RID p_space) override;
 	virtual RID body_get_space(RID p_body) const override;

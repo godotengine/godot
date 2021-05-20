@@ -1207,16 +1207,16 @@
 			This area replaces any gravity/damp calculated so far, but keeps calculating the rest of the areas, down to the default one.
 		</constant>
 		<constant name="BODY_MODE_STATIC" value="0" enum="BodyMode">
-			Constant for static bodies.
+			Constant for static bodies. In this mode, a body can be only moved by user code.
 		</constant>
 		<constant name="BODY_MODE_KINEMATIC" value="1" enum="BodyMode">
-			Constant for kinematic bodies.
+			Constant for kinematic bodies. In this mode, a body can be only moved by user code and collides with other bodies along its path.
 		</constant>
-		<constant name="BODY_MODE_RIGID" value="2" enum="BodyMode">
-			Constant for rigid bodies.
+		<constant name="BODY_MODE_DYNAMIC" value="2" enum="BodyMode">
+			Constant for dynamic bodies. In this mode, a body can be pushed by other bodies and has forces applied.
 		</constant>
-		<constant name="BODY_MODE_CHARACTER" value="3" enum="BodyMode">
-			Constant for rigid bodies in character mode. In this mode, a body can not rotate, and only its linear velocity is affected by physics.
+		<constant name="BODY_MODE_DYNAMIC_LOCKED" value="3" enum="BodyMode">
+			Constant for locked dynamic bodies. In this mode, a body is dynamic but can not rotate, and only its linear velocity is affected by external forces.
 		</constant>
 		<constant name="BODY_PARAM_BOUNCE" value="0" enum="BodyParameter">
 			Constant to set/get a body's bounce factor.

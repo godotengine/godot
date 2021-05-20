@@ -827,7 +827,7 @@ bool Space2DSW::test_body_motion(Body2DSW *p_body, const Transform2D &p_from, co
 
 						if (col_obj->get_type() == CollisionObject2DSW::TYPE_BODY) {
 							const Body2DSW *b = static_cast<const Body2DSW *>(col_obj);
-							if (b->get_mode() == PhysicsServer2D::BODY_MODE_KINEMATIC || b->get_mode() == PhysicsServer2D::BODY_MODE_RIGID) {
+							if (b->get_mode() == PhysicsServer2D::BODY_MODE_KINEMATIC || b->get_mode() == PhysicsServer2D::BODY_MODE_DYNAMIC) {
 								//fix for moving platforms (kinematic and dynamic), margin is increased by how much it moved in the given direction
 								Vector2 lv = b->get_linear_velocity();
 								//compute displacement from linear velocity
@@ -1109,7 +1109,7 @@ bool Space2DSW::test_body_motion(Body2DSW *p_body, const Transform2D &p_from, co
 
 					if (col_obj->get_type() == CollisionObject2DSW::TYPE_BODY) {
 						const Body2DSW *b = static_cast<const Body2DSW *>(col_obj);
-						if (b->get_mode() == PhysicsServer2D::BODY_MODE_KINEMATIC || b->get_mode() == PhysicsServer2D::BODY_MODE_RIGID) {
+						if (b->get_mode() == PhysicsServer2D::BODY_MODE_KINEMATIC || b->get_mode() == PhysicsServer2D::BODY_MODE_DYNAMIC) {
 							//fix for moving platforms (kinematic and dynamic), margin is increased by how much it moved in the given direction
 							Vector2 lv = b->get_linear_velocity();
 							//compute displacement from linear velocity

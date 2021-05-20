@@ -138,7 +138,7 @@ void VisibilityEnabler3D::_find_nodes(Node *p_node) {
 
 	{
 		RigidBody3D *rb = Object::cast_to<RigidBody3D>(p_node);
-		if (rb && ((rb->get_mode() == RigidBody3D::MODE_CHARACTER || rb->get_mode() == RigidBody3D::MODE_RIGID))) {
+		if (rb && ((rb->get_mode() == RigidBody3D::MODE_DYNAMIC || rb->get_mode() == RigidBody3D::MODE_DYNAMIC_LOCKED))) {
 			add = true;
 			meta = rb->get_mode();
 		}

@@ -362,7 +362,7 @@ public:
 
 		RID mesh_instance = vs->instance_create2(capsule_mesh, scenario);
 		character = ps->body_create();
-		ps->body_set_mode(character, PhysicsServer3D::BODY_MODE_CHARACTER);
+		ps->body_set_mode(character, PhysicsServer3D::BODY_MODE_DYNAMIC_LOCKED);
 		ps->body_set_space(character, space);
 		//todo add space
 		ps->body_add_shape(character, capsule_shape);
@@ -388,14 +388,14 @@ public:
 			t.origin = Vector3(0.0 * i, 3.5 + 1.1 * i, 0.7 + 0.0 * i);
 			t.basis.rotate(Vector3(0.2, -1, 0), Math_PI / 2 * 0.6);
 
-			create_body(type, PhysicsServer3D::BODY_MODE_RIGID, t);
+			create_body(type, PhysicsServer3D::BODY_MODE_DYNAMIC, t);
 		}
 
 		create_static_plane(Plane(Vector3(0, 1, 0), -1));
 	}
 
 	void test_activate() {
-		create_body(PhysicsServer3D::SHAPE_BOX, PhysicsServer3D::BODY_MODE_RIGID, Transform3D(Basis(), Vector3(0, 2, 0)), true);
+		create_body(PhysicsServer3D::SHAPE_BOX, PhysicsServer3D::BODY_MODE_DYNAMIC, Transform3D(Basis(), Vector3(0, 2, 0)), true);
 		create_static_plane(Plane(Vector3(0, 1, 0), -1));
 	}
 
