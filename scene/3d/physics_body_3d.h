@@ -82,7 +82,10 @@ class StaticBody3D : public PhysicsBody3D {
 
 	Ref<PhysicsMaterial> physics_material_override;
 
+	bool kinematic_motion = false;
+
 protected:
+	void _notification(int p_what);
 	static void _bind_methods();
 
 public:
@@ -96,10 +99,14 @@ public:
 	Vector3 get_constant_angular_velocity() const;
 
 	StaticBody3D();
-	~StaticBody3D();
 
 private:
 	void _reload_physics_characteristics();
+
+	void _update_kinematic_motion();
+
+	void set_kinematic_motion_enabled(bool p_enabled);
+	bool is_kinematic_motion_enabled() const;
 };
 
 class RigidBody3D : public PhysicsBody3D {

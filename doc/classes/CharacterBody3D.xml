@@ -5,8 +5,8 @@
 	</brief_description>
 	<description>
 		Character bodies are special types of bodies that are meant to be user-controlled. They are not affected by physics at all; to other types of bodies, such as a rigid body, these are the same as a static body. However, they have two main uses:
-		[b]Simulated motion:[/b] When these bodies are moved manually, either from code or from an [AnimationPlayer] (with [member AnimationPlayer.playback_process_mode] set to "physics"), the physics will automatically compute an estimate of their linear and angular velocity. This makes them very useful for moving platforms or other AnimationPlayer-controlled objects (like a door, a bridge that opens, etc).
-		[b]Kinematic characters:[/b] CharacterBody3D also has an API for moving objects (the [method PhysicsBody3D.move_and_collide] and [method move_and_slide] methods) while performing collision tests. This makes them really useful to implement characters that collide against a world, but don't require advanced physics.
+		[b]Kinematic characters:[/b] Character bodies have an API for moving objects with walls and slopes detection ([method move_and_slide] method), in addition to collision detection (also done with [method PhysicsBody3D.move_and_collide]). This makes them really useful to implement characters that move in specific ways and collide with the world, but don't require advanced physics.
+		[b]Kinematic motion:[/b] Character bodies can also be used for kinematic motion (same functionality as [member StaticBody3D.kinematic_motion] when enabled), which allows them to be moved by code and push other bodies on their path.
 	</description>
 	<tutorials>
 		<link title="Kinematic character (2D)">https://docs.godotengine.org/en/latest/tutorials/physics/kinematic_character_2d.html</link>
