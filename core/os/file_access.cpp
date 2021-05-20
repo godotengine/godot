@@ -164,7 +164,7 @@ uint16_t FileAccess::get_16() const {
 	a = get_8();
 	b = get_8();
 
-	if (endian_swap) {
+	if (big_endian) {
 		SWAP(a, b);
 	}
 
@@ -182,7 +182,7 @@ uint32_t FileAccess::get_32() const {
 	a = get_16();
 	b = get_16();
 
-	if (endian_swap) {
+	if (big_endian) {
 		SWAP(a, b);
 	}
 
@@ -200,7 +200,7 @@ uint64_t FileAccess::get_64() const {
 	a = get_32();
 	b = get_32();
 
-	if (endian_swap) {
+	if (big_endian) {
 		SWAP(a, b);
 	}
 
@@ -401,7 +401,7 @@ void FileAccess::store_16(uint16_t p_dest) {
 	a = p_dest & 0xFF;
 	b = p_dest >> 8;
 
-	if (endian_swap) {
+	if (big_endian) {
 		SWAP(a, b);
 	}
 
@@ -415,7 +415,7 @@ void FileAccess::store_32(uint32_t p_dest) {
 	a = p_dest & 0xFFFF;
 	b = p_dest >> 16;
 
-	if (endian_swap) {
+	if (big_endian) {
 		SWAP(a, b);
 	}
 
@@ -429,7 +429,7 @@ void FileAccess::store_64(uint64_t p_dest) {
 	a = p_dest & 0xFFFFFFFF;
 	b = p_dest >> 32;
 
-	if (endian_swap) {
+	if (big_endian) {
 		SWAP(a, b);
 	}
 

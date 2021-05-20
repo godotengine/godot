@@ -52,7 +52,7 @@ public:
 	typedef void (*FileCloseFailNotify)(const String &);
 
 	typedef FileAccess *(*CreateFunc)();
-	bool endian_swap = false;
+	bool big_endian = false;
 	bool real_is_double = false;
 
 	virtual uint32_t _get_unix_permissions(const String &p_file) = 0;
@@ -115,13 +115,13 @@ public:
 	virtual Vector<String> get_csv_line(const String &p_delim = ",") const;
 	virtual String get_as_utf8_string() const;
 
-	/**< use this for files WRITTEN in _big_ endian machines (ie, amiga/mac)
+	/**
+	 * Use this for files WRITTEN in _big_ endian machines (ie, amiga/mac)
 	 * It's not about the current CPU type but file formats.
-	 * this flags get reset to false (little endian) on each open
+	 * This flag gets reset to `false` (little endian) on each open.
 	 */
-
-	virtual void set_endian_swap(bool p_swap) { endian_swap = p_swap; }
-	inline bool get_endian_swap() const { return endian_swap; }
+	virtual void set_big_endian(bool p_big_endian) { big_endian = p_big_endian; }
+	inline bool is_big_endian() const { return big_endian; }
 
 	virtual Error get_error() const = 0; ///< get last error
 

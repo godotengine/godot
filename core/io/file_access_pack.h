@@ -171,7 +171,7 @@ public:
 
 	virtual uint64_t get_buffer(uint8_t *p_dst, uint64_t p_length) const;
 
-	virtual void set_endian_swap(bool p_swap);
+	virtual void set_big_endian(bool p_big_endian);
 
 	virtual Error get_error() const;
 
