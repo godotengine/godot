@@ -257,6 +257,13 @@ class CharacterBody3D : public PhysicsBody3D {
 	GDCLASS(CharacterBody3D, PhysicsBody3D);
 
 private:
+	bool stop_on_slope = false;
+	bool infinite_inertia = true;
+	int max_slides = 4;
+	real_t floor_max_angle = Math::deg2rad((real_t)45.0);
+	Vector3 snap;
+	Vector3 up_direction = Vector3(0.0, 1.0, 0.0);
+
 	Vector3 linear_velocity;
 	Vector3 angular_velocity;
 
@@ -271,7 +278,25 @@ private:
 
 	Ref<KinematicCollision3D> _get_slide_collision(int p_bounce);
 
-	bool separate_raycast_shapes(bool p_infinite_inertia, PhysicsServer3D::MotionResult &r_result);
+	bool separate_raycast_shapes(PhysicsServer3D::MotionResult &r_result);
+
+	bool is_stop_on_slope_enabled() const;
+	void set_stop_on_slope_enabled(bool p_enabled);
+
+	bool is_infinite_inertia_enabled() const;
+	void set_infinite_inertia_enabled(bool p_enabled);
+
+	int get_max_slides() const;
+	void set_max_slides(int p_max_slides);
+
+	real_t get_floor_max_angle() const;
+	void set_floor_max_angle(real_t p_floor_max_angle);
+
+	const Vector3 &get_snap() const;
+	void set_snap(const Vector3 &p_snap);
+
+	const Vector3 &get_up_direction() const;
+	void set_up_direction(const Vector3 &p_up_direction);
 
 protected:
 	void _notification(int p_what);
@@ -283,8 +308,8 @@ public:
 	virtual Vector3 get_linear_velocity() const override;
 	virtual Vector3 get_angular_velocity() const override;
 
-	Vector3 move_and_slide(const Vector3 &p_linear_velocity, const Vector3 &p_up_direction = Vector3(0, 0, 0), bool p_stop_on_slope = false, int p_max_slides = 4, real_t p_floor_max_angle = Math::deg2rad((real_t)45.0), bool p_infinite_inertia = true);
-	Vector3 move_and_slide_with_snap(const Vector3 &p_linear_velocity, const Vector3 &p_snap, const Vector3 &p_up_direction = Vector3(0, 0, 0), bool p_stop_on_slope = false, int p_max_slides = 4, real_t p_floor_max_angle = Math::deg2rad((real_t)45.0), bool p_infinite_inertia = true);
+	Vector3 move_and_slide(const Vector3 &p_linear_velocity);
+
 	bool is_on_floor() const;
 	bool is_on_wall() const;
 	bool is_on_ceiling() const;

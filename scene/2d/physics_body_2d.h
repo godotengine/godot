@@ -256,6 +256,13 @@ class CharacterBody2D : public PhysicsBody2D {
 	GDCLASS(CharacterBody2D, PhysicsBody2D);
 
 private:
+	bool stop_on_slope = false;
+	bool infinite_inertia = true;
+	int max_slides = 4;
+	real_t floor_max_angle = Math::deg2rad((real_t)45.0);
+	Vector2 snap;
+	Vector2 up_direction = Vector2(0.0, -1.0);
+
 	Vector2 floor_normal;
 	Vector2 floor_velocity;
 	RID on_floor_body;
@@ -267,22 +274,38 @@ private:
 	Vector<PhysicsServer2D::MotionResult> motion_results;
 	Vector<Ref<KinematicCollision2D>> slide_colliders;
 
-	_FORCE_INLINE_ bool _ignores_mode(PhysicsServer2D::BodyMode) const;
-
 	Ref<KinematicCollision2D> _get_slide_collision(int p_bounce);
 
-	bool separate_raycast_shapes(bool p_infinite_inertia, PhysicsServer2D::MotionResult &r_result);
+	bool separate_raycast_shapes(PhysicsServer2D::MotionResult &r_result);
 
 	Transform2D last_valid_transform;
 	void _direct_state_changed(Object *p_state);
+
+	bool is_stop_on_slope_enabled() const;
+	void set_stop_on_slope_enabled(bool p_enabled);
+
+	bool is_infinite_inertia_enabled() const;
+	void set_infinite_inertia_enabled(bool p_enabled);
+
+	int get_max_slides() const;
+	void set_max_slides(int p_max_slides);
+
+	real_t get_floor_max_angle() const;
+	void set_floor_max_angle(real_t p_floor_max_angle);
+
+	const Vector2 &get_snap() const;
+	void set_snap(const Vector2 &p_snap);
+
+	const Vector2 &get_up_direction() const;
+	void set_up_direction(const Vector2 &p_up_direction);
 
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
 
 public:
-	Vector2 move_and_slide(const Vector2 &p_linear_velocity, const Vector2 &p_up_direction = Vector2(0, 0), bool p_stop_on_slope = false, int p_max_slides = 4, real_t p_floor_max_angle = Math::deg2rad((real_t)45.0), bool p_infinite_inertia = true);
-	Vector2 move_and_slide_with_snap(const Vector2 &p_linear_velocity, const Vector2 &p_snap, const Vector2 &p_up_direction = Vector2(0, 0), bool p_stop_on_slope = false, int p_max_slides = 4, real_t p_floor_max_angle = Math::deg2rad((real_t)45.0), bool p_infinite_inertia = true);
+	Vector2 move_and_slide(const Vector2 &p_linear_velocity);
+
 	bool is_on_floor() const;
 	bool is_on_wall() const;
 	bool is_on_ceiling() const;
