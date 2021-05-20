@@ -404,7 +404,7 @@ Vector2 DataBuffer::add_vector2(Vector2 p_input, CompressionLevel p_compression_
 #ifndef REAL_T_IS_DOUBLE
 	// Fallback to compression level 1 if real_t is float
 	if (p_compression_level == DataBuffer::COMPRESSION_LEVEL_0) {
-		WARN_PRINT_ONCE("Compression level 0 is not supported for a binary compiled without REAL_T_IS_DOUBLE, falling back to compression level 0");
+		WARN_PRINT_ONCE("Compression level 0 is not supported for Vector2 for a binary compiled with single precision float. Falling back to compression level 1");
 		p_compression_level = DataBuffer::COMPRESSION_LEVEL_1;
 	}
 #endif
@@ -421,7 +421,7 @@ Vector2 DataBuffer::read_vector2(CompressionLevel p_compression_level) {
 #ifndef REAL_T_IS_DOUBLE
 	// Fallback to compression level 1 if real_t is float
 	if (p_compression_level == DataBuffer::COMPRESSION_LEVEL_0) {
-		WARN_PRINT_ONCE("Compression level 0 is not supported for a binary compiled without REAL_T_IS_DOUBLE, falling back to compression level 0");
+		WARN_PRINT_ONCE("Compression level 0 is not supported for Vector2 for a binary compiled with single precision float. Falling back to compression level 1");
 		p_compression_level = DataBuffer::COMPRESSION_LEVEL_1;
 	}
 #endif
@@ -492,7 +492,7 @@ Vector3 DataBuffer::add_vector3(Vector3 p_input, CompressionLevel p_compression_
 #ifndef REAL_T_IS_DOUBLE
 	// Fallback to compression level 1 if real_t is float
 	if (p_compression_level == DataBuffer::COMPRESSION_LEVEL_0) {
-		WARN_PRINT_ONCE("Compression level 0 is not supported for a binary compiled without REAL_T_IS_DOUBLE, falling back to compression level 0");
+		WARN_PRINT_ONCE("Compression level 0 is not supported for Vector3 for a binary compiled with single precision float. Falling back to compression level 1");
 		p_compression_level = DataBuffer::COMPRESSION_LEVEL_1;
 	}
 #endif
@@ -510,7 +510,7 @@ Vector3 DataBuffer::read_vector3(CompressionLevel p_compression_level) {
 #ifndef REAL_T_IS_DOUBLE
 	// Fallback to compression level 1 if real_t is float
 	if (p_compression_level == DataBuffer::COMPRESSION_LEVEL_0) {
-		WARN_PRINT_ONCE("Compression level 0 is not supported for a binary compiled without REAL_T_IS_DOUBLE, falling back to compression level 0");
+		WARN_PRINT_ONCE("Compression level 0 is not supported for Vector3 for a binary compiled with single precision float. Falling back to compression level 1");
 		p_compression_level = DataBuffer::COMPRESSION_LEVEL_1;
 	}
 #endif
