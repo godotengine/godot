@@ -247,10 +247,39 @@ index 4e8928242e..12f143f131 100644
  
    /* hint for transparent huge pages (THP) */
 diff --git a/thirdparty/embree/common/sys/platform.h b/thirdparty/embree/common/sys/platform.h
-index 7914eb7a52..737f14aa6e 100644
+index 7375b2c2e8..e3be41a27a 100644
 --- a/thirdparty/embree/common/sys/platform.h
 +++ b/thirdparty/embree/common/sys/platform.h
-@@ -174,11 +174,19 @@
+@@ -91,7 +91,7 @@
+ #define dll_import
+ #endif
+ 
+-#ifdef __WIN32__
++#if defined(__WIN32__) && !defined(__MINGW32__)
+ #if !defined(__noinline)
+ #define __noinline             __declspec(noinline)
+ #endif
+@@ -146,6 +146,9 @@
+   #define DELETED  = delete
+ #endif
+ 
++// -- GODOT start --
++#ifndef likely
++// -- GODOT end --
+ #if defined(_MSC_VER) && !defined(__INTEL_COMPILER)
+ #define   likely(expr) (expr)
+ #define unlikely(expr) (expr)
+@@ -153,6 +156,9 @@
+ #define   likely(expr) __builtin_expect((bool)(expr),true )
+ #define unlikely(expr) __builtin_expect((bool)(expr),false)
+ #endif
++// -- GODOT start --
++#endif
++// -- GODOT end --
+ 
+ ////////////////////////////////////////////////////////////////////////////////
+ /// Error handling and debugging
+@@ -168,11 +174,19 @@
  #define PRINT4(x,y,z,w) embree_cout << STRING(x) << " = " << (x) << ", " << STRING(y) << " = " << (y) << ", " << STRING(z) << " = " << (z) << ", " << STRING(w) << " = " << (w) << embree_endl
  
  #if defined(DEBUG) // only report file and line in debug mode
