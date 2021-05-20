@@ -509,12 +509,6 @@ void PhysicsTestMotionResult2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "collider_shape"), "", "get_collider_shape");
 }
 
-PhysicsTestMotionResult2D::PhysicsTestMotionResult2D() {
-	colliding = false;
-
-	result.collider_shape = 0;
-}
-
 ///////////////////////////////////////
 
 bool PhysicsServer2D::_body_test_motion(RID p_body, const Transform2D &p_from, const Vector2 &p_motion, bool p_infinite_inertia, real_t p_margin, const Ref<PhysicsTestMotionResult2D> &p_result) {

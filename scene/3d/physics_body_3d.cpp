@@ -43,16 +43,40 @@
 #include "editor/plugins/node_3d_editor_plugin.h"
 #endif
 
-Vector3 PhysicsBody3D::get_linear_velocity() const {
-	return Vector3();
+void PhysicsBody3D::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("move_and_collide", "rel_vec", "infinite_inertia", "exclude_raycast_shapes", "test_only"), &PhysicsBody3D::_move, DEFVAL(true), DEFVAL(true), DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("test_move", "from", "rel_vec", "infinite_inertia", "exclude_raycast_shapes", "collision"), &PhysicsBody3D::test_move, DEFVAL(true), DEFVAL(true), DEFVAL(Variant()));
+
+	ClassDB::bind_method(D_METHOD("set_safe_margin", "pixels"), &PhysicsBody3D::set_safe_margin);
+	ClassDB::bind_method(D_METHOD("get_safe_margin"), &PhysicsBody3D::get_safe_margin);
+
+	ClassDB::bind_method(D_METHOD("set_axis_lock", "axis", "lock"), &PhysicsBody3D::set_axis_lock);
+	ClassDB::bind_method(D_METHOD("get_axis_lock", "axis"), &PhysicsBody3D::get_axis_lock);
+
+	ClassDB::bind_method(D_METHOD("get_collision_exceptions"), &PhysicsBody3D::get_collision_exceptions);
+	ClassDB::bind_method(D_METHOD("add_collision_exception_with", "body"), &PhysicsBody3D::add_collision_exception_with);
+	ClassDB::bind_method(D_METHOD("remove_collision_exception_with", "body"), &PhysicsBody3D::remove_collision_exception_with);
+
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "collision/safe_margin", PROPERTY_HINT_RANGE, "0.001,256,0.001"), "set_safe_margin", "get_safe_margin");
+
+	ADD_GROUP("Axis Lock", "axis_lock_");
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "axis_lock_linear_x"), "set_axis_lock", "get_axis_lock", PhysicsServer3D::BODY_AXIS_LINEAR_X);
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "axis_lock_linear_y"), "set_axis_lock", "get_axis_lock", PhysicsServer3D::BODY_AXIS_LINEAR_Y);
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "axis_lock_linear_z"), "set_axis_lock", "get_axis_lock", PhysicsServer3D::BODY_AXIS_LINEAR_Z);
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "axis_lock_angular_x"), "set_axis_lock", "get_axis_lock", PhysicsServer3D::BODY_AXIS_ANGULAR_X);
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "axis_lock_angular_y"), "set_axis_lock", "get_axis_lock", PhysicsServer3D::BODY_AXIS_ANGULAR_Y);
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "axis_lock_angular_z"), "set_axis_lock", "get_axis_lock", PhysicsServer3D::BODY_AXIS_ANGULAR_Z);
 }
 
-Vector3 PhysicsBody3D::get_angular_velocity() const {
-	return Vector3();
+PhysicsBody3D::PhysicsBody3D(PhysicsServer3D::BodyMode p_mode) :
+		CollisionObject3D(PhysicsServer3D::get_singleton()->body_create(), false) {
+	PhysicsServer3D::get_singleton()->body_set_mode(get_rid(), p_mode);
 }
 
-real_t PhysicsBody3D::get_inverse_mass() const {
-	return 0;
+PhysicsBody3D::~PhysicsBody3D() {
+	if (motion_cache.is_valid()) {
+		motion_cache->owner = nullptr;
+	}
 }
 
 TypedArray<PhysicsBody3D> PhysicsBody3D::get_collision_exceptions() {
@@ -83,11 +107,84 @@ void PhysicsBody3D::remove_collision_exception_with(Node *p_node) {
 	PhysicsServer3D::get_singleton()->body_remove_collision_exception(get_rid(), collision_object->get_rid());
 }
 
-void PhysicsBody3D::_bind_methods() {}
+Ref<KinematicCollision3D> PhysicsBody3D::_move(const Vector3 &p_motion, bool p_infinite_inertia, bool p_exclude_raycast_shapes, bool p_test_only) {
+	PhysicsServer3D::MotionResult result;
+	if (move_and_collide(p_motion, p_infinite_inertia, result, p_exclude_raycast_shapes, p_test_only)) {
+		if (motion_cache.is_null()) {
+			motion_cache.instance();
+			motion_cache->owner = this;
+		}
 
-PhysicsBody3D::PhysicsBody3D(PhysicsServer3D::BodyMode p_mode) :
-		CollisionObject3D(PhysicsServer3D::get_singleton()->body_create(), false) {
-	PhysicsServer3D::get_singleton()->body_set_mode(get_rid(), p_mode);
+		motion_cache->result = result;
+
+		return motion_cache;
+	}
+
+	return Ref<KinematicCollision3D>();
+}
+
+bool PhysicsBody3D::move_and_collide(const Vector3 &p_motion, bool p_infinite_inertia, PhysicsServer3D::MotionResult &r_result, bool p_exclude_raycast_shapes, bool p_test_only) {
+	Transform3D gt = get_global_transform();
+	bool colliding = PhysicsServer3D::get_singleton()->body_test_motion(get_rid(), gt, p_motion, p_infinite_inertia, &r_result, p_exclude_raycast_shapes);
+
+	for (int i = 0; i < 3; i++) {
+		if (locked_axis & (1 << i)) {
+			r_result.motion[i] = 0;
+		}
+	}
+
+	if (!p_test_only) {
+		gt.origin += r_result.motion;
+		set_global_transform(gt);
+	}
+
+	return colliding;
+}
+
+bool PhysicsBody3D::test_move(const Transform3D &p_from, const Vector3 &p_motion, bool p_infinite_inertia, bool p_exclude_raycast_shapes, const Ref<KinematicCollision3D> &r_collision) {
+	ERR_FAIL_COND_V(!is_inside_tree(), false);
+
+	PhysicsServer3D::MotionResult *r = nullptr;
+	if (r_collision.is_valid()) {
+		// Needs const_cast because method bindings don't support non-const Ref.
+		r = const_cast<PhysicsServer3D::MotionResult *>(&r_collision->result);
+	}
+
+	return PhysicsServer3D::get_singleton()->body_test_motion(get_rid(), p_from, p_motion, p_infinite_inertia, r, p_exclude_raycast_shapes);
+}
+
+void PhysicsBody3D::set_safe_margin(real_t p_margin) {
+	margin = p_margin;
+	PhysicsServer3D::get_singleton()->body_set_kinematic_safe_margin(get_rid(), margin);
+}
+
+real_t PhysicsBody3D::get_safe_margin() const {
+	return margin;
+}
+
+void PhysicsBody3D::set_axis_lock(PhysicsServer3D::BodyAxis p_axis, bool p_lock) {
+	if (p_lock) {
+		locked_axis |= p_axis;
+	} else {
+		locked_axis &= (~p_axis);
+	}
+	PhysicsServer3D::get_singleton()->body_set_axis_lock(get_rid(), p_axis, p_lock);
+}
+
+bool PhysicsBody3D::get_axis_lock(PhysicsServer3D::BodyAxis p_axis) const {
+	return (locked_axis & p_axis);
+}
+
+Vector3 PhysicsBody3D::get_linear_velocity() const {
+	return Vector3();
+}
+
+Vector3 PhysicsBody3D::get_angular_velocity() const {
+	return Vector3();
+}
+
+real_t PhysicsBody3D::get_inverse_mass() const {
+	return 0;
 }
 
 void StaticBody3D::set_physics_material_override(const Ref<PhysicsMaterial> &p_physics_material_override) {
@@ -135,10 +232,6 @@ void StaticBody3D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_physics_material_override", "physics_material_override"), &StaticBody3D::set_physics_material_override);
 	ClassDB::bind_method(D_METHOD("get_physics_material_override"), &StaticBody3D::get_physics_material_override);
-
-	ClassDB::bind_method(D_METHOD("get_collision_exceptions"), &PhysicsBody3D::get_collision_exceptions);
-	ClassDB::bind_method(D_METHOD("add_collision_exception_with", "body"), &PhysicsBody3D::add_collision_exception_with);
-	ClassDB::bind_method(D_METHOD("remove_collision_exception_with", "body"), &PhysicsBody3D::remove_collision_exception_with);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "physics_material_override", PROPERTY_HINT_RESOURCE_TYPE, "PhysicsMaterial"), "set_physics_material_override", "get_physics_material_override");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "constant_linear_velocity"), "set_constant_linear_velocity", "get_constant_linear_velocity");
@@ -627,14 +720,6 @@ bool RigidBody3D::is_contact_monitor_enabled() const {
 	return contact_monitor != nullptr;
 }
 
-void RigidBody3D::set_axis_lock(PhysicsServer3D::BodyAxis p_axis, bool p_lock) {
-	PhysicsServer3D::get_singleton()->body_set_axis_lock(get_rid(), p_axis, p_lock);
-}
-
-bool RigidBody3D::get_axis_lock(PhysicsServer3D::BodyAxis p_axis) const {
-	return PhysicsServer3D::get_singleton()->body_is_axis_locked(get_rid(), p_axis);
-}
-
 Array RigidBody3D::get_colliding_bodies() const {
 	ERR_FAIL_COND_V(!contact_monitor, Array());
 
@@ -720,9 +805,6 @@ void RigidBody3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_can_sleep", "able_to_sleep"), &RigidBody3D::set_can_sleep);
 	ClassDB::bind_method(D_METHOD("is_able_to_sleep"), &RigidBody3D::is_able_to_sleep);
 
-	ClassDB::bind_method(D_METHOD("set_axis_lock", "axis", "lock"), &RigidBody3D::set_axis_lock);
-	ClassDB::bind_method(D_METHOD("get_axis_lock", "axis"), &RigidBody3D::get_axis_lock);
-
 	ClassDB::bind_method(D_METHOD("get_colliding_bodies"), &RigidBody3D::get_colliding_bodies);
 
 	BIND_VMETHOD(MethodInfo("_integrate_forces", PropertyInfo(Variant::OBJECT, "state", PROPERTY_HINT_RESOURCE_TYPE, "PhysicsDirectBodyState3D")));
@@ -737,13 +819,6 @@ void RigidBody3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "contact_monitor"), "set_contact_monitor", "is_contact_monitor_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "sleeping"), "set_sleeping", "is_sleeping");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "can_sleep"), "set_can_sleep", "is_able_to_sleep");
-	ADD_GROUP("Axis Lock", "axis_lock_");
-	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "axis_lock_linear_x"), "set_axis_lock", "get_axis_lock", PhysicsServer3D::BODY_AXIS_LINEAR_X);
-	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "axis_lock_linear_y"), "set_axis_lock", "get_axis_lock", PhysicsServer3D::BODY_AXIS_LINEAR_Y);
-	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "axis_lock_linear_z"), "set_axis_lock", "get_axis_lock", PhysicsServer3D::BODY_AXIS_LINEAR_Z);
-	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "axis_lock_angular_x"), "set_axis_lock", "get_axis_lock", PhysicsServer3D::BODY_AXIS_ANGULAR_X);
-	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "axis_lock_angular_y"), "set_axis_lock", "get_axis_lock", PhysicsServer3D::BODY_AXIS_ANGULAR_Y);
-	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "axis_lock_angular_z"), "set_axis_lock", "get_axis_lock", PhysicsServer3D::BODY_AXIS_ANGULAR_Z);
 	ADD_GROUP("Linear", "linear_");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "linear_velocity"), "set_linear_velocity", "get_linear_velocity");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "linear_damp", PROPERTY_HINT_RANGE, "-1,100,0.001,or_greater"), "set_linear_damp", "get_linear_damp");
@@ -784,69 +859,20 @@ void RigidBody3D::_reload_physics_characteristics() {
 	}
 }
 
-//////////////////////////////////////////////////////
-//////////////////////////
+///////////////////////////////////////
 
-Ref<KinematicCollision3D> KinematicBody3D::_move(const Vector3 &p_motion, bool p_infinite_inertia, bool p_exclude_raycast_shapes, bool p_test_only) {
-	Collision col;
-	if (move_and_collide(p_motion, p_infinite_inertia, col, p_exclude_raycast_shapes, p_test_only)) {
-		if (motion_cache.is_null()) {
-			motion_cache.instance();
-			motion_cache->owner = this;
-		}
-
-		motion_cache->collision = col;
-
-		return motion_cache;
-	}
-
-	return Ref<KinematicCollision3D>();
-}
-
-Vector3 KinematicBody3D::get_linear_velocity() const {
+Vector3 CharacterBody3D::get_linear_velocity() const {
 	return linear_velocity;
 }
 
-Vector3 KinematicBody3D::get_angular_velocity() const {
+Vector3 CharacterBody3D::get_angular_velocity() const {
 	return angular_velocity;
-}
-
-bool KinematicBody3D::move_and_collide(const Vector3 &p_motion, bool p_infinite_inertia, Collision &r_collision, bool p_exclude_raycast_shapes, bool p_test_only) {
-	Transform3D gt = get_global_transform();
-	PhysicsServer3D::MotionResult result;
-	bool colliding = PhysicsServer3D::get_singleton()->body_test_motion(get_rid(), gt, p_motion, p_infinite_inertia, &result, p_exclude_raycast_shapes);
-
-	if (colliding) {
-		r_collision.collider_metadata = result.collider_metadata;
-		r_collision.collider_shape = result.collider_shape;
-		r_collision.collider_vel = result.collider_velocity;
-		r_collision.collision = result.collision_point;
-		r_collision.normal = result.collision_normal;
-		r_collision.collider = result.collider_id;
-		r_collision.collider_rid = result.collider;
-		r_collision.travel = result.motion;
-		r_collision.remainder = result.remainder;
-		r_collision.local_shape = result.collision_local_shape;
-	}
-
-	for (int i = 0; i < 3; i++) {
-		if (locked_axis & (1 << i)) {
-			result.motion[i] = 0;
-		}
-	}
-
-	if (!p_test_only) {
-		gt.origin += result.motion;
-		set_global_transform(gt);
-	}
-
-	return colliding;
 }
 
 //so, if you pass 45 as limit, avoid numerical precision errors when angle is 45.
 #define FLOOR_ANGLE_THRESHOLD 0.01
 
-Vector3 KinematicBody3D::move_and_slide(const Vector3 &p_linear_velocity, const Vector3 &p_up_direction, bool p_stop_on_slope, int p_max_slides, real_t p_floor_max_angle, bool p_infinite_inertia) {
+Vector3 CharacterBody3D::move_and_slide(const Vector3 &p_linear_velocity, const Vector3 &p_up_direction, bool p_stop_on_slope, int p_max_slides, real_t p_floor_max_angle, bool p_infinite_inertia) {
 	Vector3 body_velocity = p_linear_velocity;
 	Vector3 body_velocity_normal = body_velocity.normalized();
 	Vector3 up_direction = p_up_direction.normalized();
@@ -864,63 +890,63 @@ Vector3 KinematicBody3D::move_and_slide(const Vector3 &p_linear_velocity, const 
 	on_floor_body = RID();
 	on_ceiling = false;
 	on_wall = false;
-	colliders.clear();
+	motion_results.clear();
 	floor_normal = Vector3();
 	floor_velocity = Vector3();
 
 	while (p_max_slides) {
-		Collision collision;
+		PhysicsServer3D::MotionResult result;
 		bool found_collision = false;
 
 		for (int i = 0; i < 2; ++i) {
 			bool collided;
 			if (i == 0) { //collide
-				collided = move_and_collide(motion, p_infinite_inertia, collision);
+				collided = move_and_collide(motion, p_infinite_inertia, result);
 				if (!collided) {
 					motion = Vector3(); //clear because no collision happened and motion completed
 				}
 			} else { //separate raycasts (if any)
-				collided = separate_raycast_shapes(p_infinite_inertia, collision);
+				collided = separate_raycast_shapes(p_infinite_inertia, result);
 				if (collided) {
-					collision.remainder = motion; //keep
-					collision.travel = Vector3();
+					result.remainder = motion; //keep
+					result.motion = Vector3();
 				}
 			}
 
 			if (collided) {
 				found_collision = true;
 
-				colliders.push_back(collision);
-				motion = collision.remainder;
+				motion_results.push_back(result);
+				motion = result.remainder;
 
 				if (up_direction == Vector3()) {
 					//all is a wall
 					on_wall = true;
 				} else {
-					if (Math::acos(collision.normal.dot(up_direction)) <= p_floor_max_angle + FLOOR_ANGLE_THRESHOLD) { //floor
+					if (Math::acos(result.collision_normal.dot(up_direction)) <= p_floor_max_angle + FLOOR_ANGLE_THRESHOLD) { //floor
 
 						on_floor = true;
-						floor_normal = collision.normal;
-						on_floor_body = collision.collider_rid;
-						floor_velocity = collision.collider_vel;
+						floor_normal = result.collision_normal;
+						on_floor_body = result.collider;
+						floor_velocity = result.collider_velocity;
 
 						if (p_stop_on_slope) {
-							if ((body_velocity_normal + up_direction).length() < 0.01 && collision.travel.length() < 1) {
+							if ((body_velocity_normal + up_direction).length() < 0.01 && result.motion.length() < 1) {
 								Transform3D gt = get_global_transform();
-								gt.origin -= collision.travel.slide(up_direction);
+								gt.origin -= result.motion.slide(up_direction);
 								set_global_transform(gt);
 								return Vector3();
 							}
 						}
-					} else if (Math::acos(collision.normal.dot(-up_direction)) <= p_floor_max_angle + FLOOR_ANGLE_THRESHOLD) { //ceiling
+					} else if (Math::acos(result.collision_normal.dot(-up_direction)) <= p_floor_max_angle + FLOOR_ANGLE_THRESHOLD) { //ceiling
 						on_ceiling = true;
 					} else {
 						on_wall = true;
 					}
 				}
 
-				motion = motion.slide(collision.normal);
-				body_velocity = body_velocity.slide(collision.normal);
+				motion = motion.slide(result.collision_normal);
+				body_velocity = body_velocity.slide(result.collision_normal);
 
 				for (int j = 0; j < 3; j++) {
 					if (locked_axis & (1 << j)) {
@@ -940,7 +966,7 @@ Vector3 KinematicBody3D::move_and_slide(const Vector3 &p_linear_velocity, const 
 	return body_velocity;
 }
 
-Vector3 KinematicBody3D::move_and_slide_with_snap(const Vector3 &p_linear_velocity, const Vector3 &p_snap, const Vector3 &p_up_direction, bool p_stop_on_slope, int p_max_slides, real_t p_floor_max_angle, bool p_infinite_inertia) {
+Vector3 CharacterBody3D::move_and_slide_with_snap(const Vector3 &p_linear_velocity, const Vector3 &p_snap, const Vector3 &p_up_direction, bool p_stop_on_slope, int p_max_slides, real_t p_floor_max_angle, bool p_infinite_inertia) {
 	Vector3 up_direction = p_up_direction.normalized();
 	bool was_on_floor = on_floor;
 
@@ -949,28 +975,28 @@ Vector3 KinematicBody3D::move_and_slide_with_snap(const Vector3 &p_linear_veloci
 		return ret;
 	}
 
-	Collision col;
+	PhysicsServer3D::MotionResult result;
 	Transform3D gt = get_global_transform();
 
-	if (move_and_collide(p_snap, p_infinite_inertia, col, false, true)) {
+	if (move_and_collide(p_snap, p_infinite_inertia, result, false, true)) {
 		bool apply = true;
 		if (up_direction != Vector3()) {
-			if (Math::acos(col.normal.dot(up_direction)) <= p_floor_max_angle + FLOOR_ANGLE_THRESHOLD) {
+			if (Math::acos(result.collision_normal.dot(up_direction)) <= p_floor_max_angle + FLOOR_ANGLE_THRESHOLD) {
 				on_floor = true;
-				floor_normal = col.normal;
-				on_floor_body = col.collider_rid;
-				floor_velocity = col.collider_vel;
+				floor_normal = result.collision_normal;
+				on_floor_body = result.collider;
+				floor_velocity = result.collider_velocity;
 				if (p_stop_on_slope) {
 					// move and collide may stray the object a bit because of pre un-stucking,
 					// so only ensure that motion happens on floor direction in this case.
-					col.travel = col.travel.project(up_direction);
+					result.motion = result.motion.project(up_direction);
 				}
 			} else {
 				apply = false; //snapped with floor direction, but did not snap to a floor, do not snap.
 			}
 		}
 		if (apply) {
-			gt.origin += col.travel;
+			gt.origin += result.motion;
 			set_global_transform(gt);
 		}
 	}
@@ -978,39 +1004,13 @@ Vector3 KinematicBody3D::move_and_slide_with_snap(const Vector3 &p_linear_veloci
 	return ret;
 }
 
-bool KinematicBody3D::is_on_floor() const {
-	return on_floor;
-}
-
-bool KinematicBody3D::is_on_wall() const {
-	return on_wall;
-}
-
-bool KinematicBody3D::is_on_ceiling() const {
-	return on_ceiling;
-}
-
-Vector3 KinematicBody3D::get_floor_normal() const {
-	return floor_normal;
-}
-
-Vector3 KinematicBody3D::get_floor_velocity() const {
-	return floor_velocity;
-}
-
-bool KinematicBody3D::test_move(const Transform3D &p_from, const Vector3 &p_motion, bool p_infinite_inertia) {
-	ERR_FAIL_COND_V(!is_inside_tree(), false);
-
-	return PhysicsServer3D::get_singleton()->body_test_motion(get_rid(), p_from, p_motion, p_infinite_inertia);
-}
-
-bool KinematicBody3D::separate_raycast_shapes(bool p_infinite_inertia, Collision &r_collision) {
+bool CharacterBody3D::separate_raycast_shapes(PhysicsServer3D::MotionResult &r_result) {
 	PhysicsServer3D::SeparationResult sep_res[8]; //max 8 rays
 
 	Transform3D gt = get_global_transform();
 
 	Vector3 recover;
-	int hits = PhysicsServer3D::get_singleton()->body_test_ray_separation(get_rid(), gt, p_infinite_inertia, recover, sep_res, 8, margin);
+	int hits = PhysicsServer3D::get_singleton()->body_test_ray_separation(get_rid(), gt, infinite_inertia, recover, sep_res, 8, margin);
 	int deepest = -1;
 	real_t deepest_depth;
 	for (int i = 0; i < hits; i++) {
@@ -1024,15 +1024,15 @@ bool KinematicBody3D::separate_raycast_shapes(bool p_infinite_inertia, Collision
 	set_global_transform(gt);
 
 	if (deepest != -1) {
-		r_collision.collider = sep_res[deepest].collider_id;
-		r_collision.collider_metadata = sep_res[deepest].collider_metadata;
-		r_collision.collider_shape = sep_res[deepest].collider_shape;
-		r_collision.collider_vel = sep_res[deepest].collider_velocity;
-		r_collision.collision = sep_res[deepest].collision_point;
-		r_collision.normal = sep_res[deepest].collision_normal;
-		r_collision.local_shape = sep_res[deepest].collision_local_shape;
-		r_collision.travel = recover;
-		r_collision.remainder = Vector3();
+		r_result.collider_id = sep_res[deepest].collider_id;
+		r_result.collider_metadata = sep_res[deepest].collider_metadata;
+		r_result.collider_shape = sep_res[deepest].collider_shape;
+		r_result.collider_velocity = sep_res[deepest].collider_velocity;
+		r_result.collision_point = sep_res[deepest].collision_point;
+		r_result.collision_normal = sep_res[deepest].collision_normal;
+		r_result.collision_local_shape = sep_res[deepest].collision_local_shape;
+		r_result.motion = recover;
+		r_result.remainder = Vector3();
 
 		return true;
 	} else {
@@ -1040,39 +1040,37 @@ bool KinematicBody3D::separate_raycast_shapes(bool p_infinite_inertia, Collision
 	}
 }
 
-void KinematicBody3D::set_axis_lock(PhysicsServer3D::BodyAxis p_axis, bool p_lock) {
-	if (p_lock) {
-		locked_axis |= p_axis;
-	} else {
-		locked_axis &= (~p_axis);
-	}
-	PhysicsServer3D::get_singleton()->body_set_axis_lock(get_rid(), p_axis, p_lock);
+bool CharacterBody3D::is_on_floor() const {
+	return on_floor;
 }
 
-bool KinematicBody3D::get_axis_lock(PhysicsServer3D::BodyAxis p_axis) const {
-	return PhysicsServer3D::get_singleton()->body_is_axis_locked(get_rid(), p_axis);
+bool CharacterBody3D::is_on_wall() const {
+	return on_wall;
 }
 
-void KinematicBody3D::set_safe_margin(real_t p_margin) {
-	margin = p_margin;
-	PhysicsServer3D::get_singleton()->body_set_kinematic_safe_margin(get_rid(), margin);
+bool CharacterBody3D::is_on_ceiling() const {
+	return on_ceiling;
 }
 
-real_t KinematicBody3D::get_safe_margin() const {
-	return margin;
+Vector3 CharacterBody3D::get_floor_normal() const {
+	return floor_normal;
 }
 
-int KinematicBody3D::get_slide_count() const {
-	return colliders.size();
+Vector3 CharacterBody3D::get_floor_velocity() const {
+	return floor_velocity;
 }
 
-KinematicBody3D::Collision KinematicBody3D::get_slide_collision(int p_bounce) const {
-	ERR_FAIL_INDEX_V(p_bounce, colliders.size(), Collision());
-	return colliders[p_bounce];
+int CharacterBody3D::get_slide_count() const {
+	return motion_results.size();
 }
 
-Ref<KinematicCollision3D> KinematicBody3D::_get_slide_collision(int p_bounce) {
-	ERR_FAIL_INDEX_V(p_bounce, colliders.size(), Ref<KinematicCollision3D>());
+PhysicsServer3D::MotionResult CharacterBody3D::get_slide_collision(int p_bounce) const {
+	ERR_FAIL_INDEX_V(p_bounce, motion_results.size(), PhysicsServer3D::MotionResult());
+	return motion_results[p_bounce];
+}
+
+Ref<KinematicCollision3D> CharacterBody3D::_get_slide_collision(int p_bounce) {
+	ERR_FAIL_INDEX_V(p_bounce, motion_results.size(), Ref<KinematicCollision3D>());
 	if (p_bounce >= slide_colliders.size()) {
 		slide_colliders.resize(p_bounce + 1);
 	}
@@ -1082,53 +1080,37 @@ Ref<KinematicCollision3D> KinematicBody3D::_get_slide_collision(int p_bounce) {
 		slide_colliders.write[p_bounce]->owner = this;
 	}
 
-	slide_colliders.write[p_bounce]->collision = colliders[p_bounce];
+	slide_colliders.write[p_bounce]->result = motion_results[p_bounce];
 	return slide_colliders[p_bounce];
 }
 
-void KinematicBody3D::_notification(int p_what) {
+void CharacterBody3D::_notification(int p_what) {
 	if (p_what == NOTIFICATION_ENTER_TREE) {
 		// Reset move_and_slide() data.
 		on_floor = false;
 		on_floor_body = RID();
 		on_ceiling = false;
 		on_wall = false;
-		colliders.clear();
+		motion_results.clear();
 		floor_velocity = Vector3();
 	}
 }
 
-void KinematicBody3D::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("move_and_collide", "rel_vec", "infinite_inertia", "exclude_raycast_shapes", "test_only"), &KinematicBody3D::_move, DEFVAL(true), DEFVAL(true), DEFVAL(false));
-	ClassDB::bind_method(D_METHOD("move_and_slide", "linear_velocity", "up_direction", "stop_on_slope", "max_slides", "floor_max_angle", "infinite_inertia"), &KinematicBody3D::move_and_slide, DEFVAL(Vector3(0, 0, 0)), DEFVAL(false), DEFVAL(4), DEFVAL(Math::deg2rad((real_t)45.0)), DEFVAL(true));
-	ClassDB::bind_method(D_METHOD("move_and_slide_with_snap", "linear_velocity", "snap", "up_direction", "stop_on_slope", "max_slides", "floor_max_angle", "infinite_inertia"), &KinematicBody3D::move_and_slide_with_snap, DEFVAL(Vector3(0, 0, 0)), DEFVAL(false), DEFVAL(4), DEFVAL(Math::deg2rad((real_t)45.0)), DEFVAL(true));
+void CharacterBody3D::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("move_and_slide", "linear_velocity", "up_direction", "stop_on_slope", "max_slides", "floor_max_angle", "infinite_inertia"), &CharacterBody3D::move_and_slide, DEFVAL(Vector3(0, 0, 0)), DEFVAL(false), DEFVAL(4), DEFVAL(Math::deg2rad((real_t)45.0)), DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("move_and_slide_with_snap", "linear_velocity", "snap", "up_direction", "stop_on_slope", "max_slides", "floor_max_angle", "infinite_inertia"), &CharacterBody3D::move_and_slide_with_snap, DEFVAL(Vector3(0, 0, 0)), DEFVAL(false), DEFVAL(4), DEFVAL(Math::deg2rad((real_t)45.0)), DEFVAL(true));
 
-	ClassDB::bind_method(D_METHOD("test_move", "from", "rel_vec", "infinite_inertia"), &KinematicBody3D::test_move, DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("is_on_floor"), &CharacterBody3D::is_on_floor);
+	ClassDB::bind_method(D_METHOD("is_on_ceiling"), &CharacterBody3D::is_on_ceiling);
+	ClassDB::bind_method(D_METHOD("is_on_wall"), &CharacterBody3D::is_on_wall);
+	ClassDB::bind_method(D_METHOD("get_floor_normal"), &CharacterBody3D::get_floor_normal);
+	ClassDB::bind_method(D_METHOD("get_floor_velocity"), &CharacterBody3D::get_floor_velocity);
 
-	ClassDB::bind_method(D_METHOD("is_on_floor"), &KinematicBody3D::is_on_floor);
-	ClassDB::bind_method(D_METHOD("is_on_ceiling"), &KinematicBody3D::is_on_ceiling);
-	ClassDB::bind_method(D_METHOD("is_on_wall"), &KinematicBody3D::is_on_wall);
-	ClassDB::bind_method(D_METHOD("get_floor_normal"), &KinematicBody3D::get_floor_normal);
-	ClassDB::bind_method(D_METHOD("get_floor_velocity"), &KinematicBody3D::get_floor_velocity);
-
-	ClassDB::bind_method(D_METHOD("set_axis_lock", "axis", "lock"), &KinematicBody3D::set_axis_lock);
-	ClassDB::bind_method(D_METHOD("get_axis_lock", "axis"), &KinematicBody3D::get_axis_lock);
-
-	ClassDB::bind_method(D_METHOD("set_safe_margin", "pixels"), &KinematicBody3D::set_safe_margin);
-	ClassDB::bind_method(D_METHOD("get_safe_margin"), &KinematicBody3D::get_safe_margin);
-
-	ClassDB::bind_method(D_METHOD("get_slide_count"), &KinematicBody3D::get_slide_count);
-	ClassDB::bind_method(D_METHOD("get_slide_collision", "slide_idx"), &KinematicBody3D::_get_slide_collision);
-
-	ADD_GROUP("Axis Lock", "axis_lock_");
-	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "axis_lock_motion_x"), "set_axis_lock", "get_axis_lock", PhysicsServer3D::BODY_AXIS_LINEAR_X);
-	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "axis_lock_motion_y"), "set_axis_lock", "get_axis_lock", PhysicsServer3D::BODY_AXIS_LINEAR_Y);
-	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "axis_lock_motion_z"), "set_axis_lock", "get_axis_lock", PhysicsServer3D::BODY_AXIS_LINEAR_Z);
-
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "collision/safe_margin", PROPERTY_HINT_RANGE, "0.001,256,0.001"), "set_safe_margin", "get_safe_margin");
+	ClassDB::bind_method(D_METHOD("get_slide_count"), &CharacterBody3D::get_slide_count);
+	ClassDB::bind_method(D_METHOD("get_slide_collision", "slide_idx"), &CharacterBody3D::_get_slide_collision);
 }
 
-void KinematicBody3D::_direct_state_changed(Object *p_state) {
+void CharacterBody3D::_direct_state_changed(Object *p_state) {
 #ifdef DEBUG_ENABLED
 	PhysicsDirectBodyState3D *state = Object::cast_to<PhysicsDirectBodyState3D>(p_state);
 	ERR_FAIL_NULL_MSG(state, "Method '_direct_state_changed' must receive a valid PhysicsDirectBodyState3D object as argument");
@@ -1140,17 +1122,12 @@ void KinematicBody3D::_direct_state_changed(Object *p_state) {
 	angular_velocity = state->get_angular_velocity();
 }
 
-KinematicBody3D::KinematicBody3D() :
+CharacterBody3D::CharacterBody3D() :
 		PhysicsBody3D(PhysicsServer3D::BODY_MODE_KINEMATIC) {
-	set_safe_margin(0.001);
-	PhysicsServer3D::get_singleton()->body_set_force_integration_callback(get_rid(), callable_mp(this, &KinematicBody3D::_direct_state_changed));
+	PhysicsServer3D::get_singleton()->body_set_force_integration_callback(get_rid(), callable_mp(this, &CharacterBody3D::_direct_state_changed));
 }
 
-KinematicBody3D::~KinematicBody3D() {
-	if (motion_cache.is_valid()) {
-		motion_cache->owner = nullptr;
-	}
-
+CharacterBody3D::~CharacterBody3D() {
 	for (int i = 0; i < slide_colliders.size(); i++) {
 		if (slide_colliders[i].is_valid()) {
 			slide_colliders.write[i]->owner = nullptr;
@@ -1161,39 +1138,39 @@ KinematicBody3D::~KinematicBody3D() {
 ///////////////////////////////////////
 
 Vector3 KinematicCollision3D::get_position() const {
-	return collision.collision;
+	return result.collision_point;
 }
 
 Vector3 KinematicCollision3D::get_normal() const {
-	return collision.normal;
+	return result.collision_normal;
 }
 
 Vector3 KinematicCollision3D::get_travel() const {
-	return collision.travel;
+	return result.motion;
 }
 
 Vector3 KinematicCollision3D::get_remainder() const {
-	return collision.remainder;
+	return result.remainder;
 }
 
 Object *KinematicCollision3D::get_local_shape() const {
 	if (!owner) {
 		return nullptr;
 	}
-	uint32_t ownerid = owner->shape_find_owner(collision.local_shape);
+	uint32_t ownerid = owner->shape_find_owner(result.collision_local_shape);
 	return owner->shape_owner_get_owner(ownerid);
 }
 
 Object *KinematicCollision3D::get_collider() const {
-	if (collision.collider.is_valid()) {
-		return ObjectDB::get_instance(collision.collider);
+	if (result.collider_id.is_valid()) {
+		return ObjectDB::get_instance(result.collider_id);
 	}
 
 	return nullptr;
 }
 
 ObjectID KinematicCollision3D::get_collider_id() const {
-	return collision.collider;
+	return result.collider_id;
 }
 
 Object *KinematicCollision3D::get_collider_shape() const {
@@ -1201,7 +1178,7 @@ Object *KinematicCollision3D::get_collider_shape() const {
 	if (collider) {
 		CollisionObject3D *obj2d = Object::cast_to<CollisionObject3D>(collider);
 		if (obj2d) {
-			uint32_t ownerid = obj2d->shape_find_owner(collision.collider_shape);
+			uint32_t ownerid = obj2d->shape_find_owner(result.collider_shape);
 			return obj2d->shape_owner_get_owner(ownerid);
 		}
 	}
@@ -1210,11 +1187,11 @@ Object *KinematicCollision3D::get_collider_shape() const {
 }
 
 int KinematicCollision3D::get_collider_shape_index() const {
-	return collision.collider_shape;
+	return result.collider_shape;
 }
 
 Vector3 KinematicCollision3D::get_collider_velocity() const {
-	return collision.collider_vel;
+	return result.collider_velocity;
 }
 
 Variant KinematicCollision3D::get_collider_metadata() const {
@@ -1245,12 +1222,6 @@ void KinematicCollision3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "collider_shape_index"), "", "get_collider_shape_index");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "collider_velocity"), "", "get_collider_velocity");
 	ADD_PROPERTY(PropertyInfo(Variant::NIL, "collider_metadata", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NIL_IS_VARIANT), "", "get_collider_metadata");
-}
-
-KinematicCollision3D::KinematicCollision3D() {
-	collision.collider_shape = 0;
-	collision.local_shape = 0;
-	owner = nullptr;
 }
 
 ///////////////////////////////////////
@@ -2048,9 +2019,6 @@ void PhysicalBone3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_can_sleep", "able_to_sleep"), &PhysicalBone3D::set_can_sleep);
 	ClassDB::bind_method(D_METHOD("is_able_to_sleep"), &PhysicalBone3D::is_able_to_sleep);
 
-	ClassDB::bind_method(D_METHOD("set_axis_lock", "axis", "lock"), &PhysicalBone3D::set_axis_lock);
-	ClassDB::bind_method(D_METHOD("get_axis_lock", "axis"), &PhysicalBone3D::get_axis_lock);
-
 	ADD_GROUP("Joint", "joint_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "joint_type", PROPERTY_HINT_ENUM, "None,PinJoint,ConeJoint,HingeJoint,SliderJoint,6DOFJoint"), "set_joint_type", "get_joint_type");
 	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM3D, "joint_offset"), "set_joint_offset", "get_joint_offset");
@@ -2066,14 +2034,6 @@ void PhysicalBone3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "linear_damp", PROPERTY_HINT_RANGE, "-1,100,0.001,or_greater"), "set_linear_damp", "get_linear_damp");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "angular_damp", PROPERTY_HINT_RANGE, "-1,100,0.001,or_greater"), "set_angular_damp", "get_angular_damp");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "can_sleep"), "set_can_sleep", "is_able_to_sleep");
-
-	ADD_GROUP("Axis Lock", "axis_lock_");
-	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "axis_lock_linear_x"), "set_axis_lock", "get_axis_lock", PhysicsServer3D::BODY_AXIS_LINEAR_X);
-	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "axis_lock_linear_y"), "set_axis_lock", "get_axis_lock", PhysicsServer3D::BODY_AXIS_LINEAR_Y);
-	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "axis_lock_linear_z"), "set_axis_lock", "get_axis_lock", PhysicsServer3D::BODY_AXIS_LINEAR_Z);
-	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "axis_lock_angular_x"), "set_axis_lock", "get_axis_lock", PhysicsServer3D::BODY_AXIS_ANGULAR_X);
-	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "axis_lock_angular_y"), "set_axis_lock", "get_axis_lock", PhysicsServer3D::BODY_AXIS_ANGULAR_Y);
-	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "axis_lock_angular_z"), "set_axis_lock", "get_axis_lock", PhysicsServer3D::BODY_AXIS_ANGULAR_Z);
 
 	BIND_ENUM_CONSTANT(JOINT_TYPE_NONE);
 	BIND_ENUM_CONSTANT(JOINT_TYPE_PIN);
@@ -2414,14 +2374,6 @@ void PhysicalBone3D::set_can_sleep(bool p_active) {
 
 bool PhysicalBone3D::is_able_to_sleep() const {
 	return can_sleep;
-}
-
-void PhysicalBone3D::set_axis_lock(PhysicsServer3D::BodyAxis p_axis, bool p_lock) {
-	PhysicsServer3D::get_singleton()->body_set_axis_lock(get_rid(), p_axis, p_lock);
-}
-
-bool PhysicalBone3D::get_axis_lock(PhysicsServer3D::BodyAxis p_axis) const {
-	return PhysicsServer3D::get_singleton()->body_is_axis_locked(get_rid(), p_axis);
 }
 
 PhysicalBone3D::PhysicalBone3D() :

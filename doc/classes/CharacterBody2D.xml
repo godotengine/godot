@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="KinematicBody2D" inherits="PhysicsBody2D" version="4.0">
+<class name="CharacterBody2D" inherits="PhysicsBody2D" version="4.0">
 	<brief_description>
-		Kinematic body 2D node.
+		Character body 2D node.
 	</brief_description>
 	<description>
-		Kinematic bodies are special types of bodies that are meant to be user-controlled. They are not affected by physics at all; to other types of bodies, such as a character or a rigid body, these are the same as a static body. However, they have two main uses:
+		Character bodies are special types of bodies that are meant to be user-controlled. They are not affected by physics at all; to other types of bodies, such as a character or a rigid body, these are the same as a static body. However, they have two main uses:
 		[b]Simulated motion:[/b] When these bodies are moved manually, either from code or from an [AnimationPlayer] (with [member AnimationPlayer.playback_process_mode] set to "physics"), the physics will automatically compute an estimate of their linear and angular velocity. This makes them very useful for moving platforms or other AnimationPlayer-controlled objects (like a door, a bridge that opens, etc).
-		[b]Kinematic characters:[/b] KinematicBody2D also has an API for moving objects (the [method move_and_collide] and [method move_and_slide] methods) while performing collision tests. This makes them really useful to implement characters that collide against a world, but don't require advanced physics.
+		[b]Kinematic characters:[/b] CharacterBody2D also has an API for moving objects (the [method PhysicsBody2D.move_and_collide] and [method move_and_slide] methods) while performing collision tests. This makes them really useful to implement characters that collide against a world, but don't require advanced physics.
 	</description>
 	<tutorials>
 		<link title="Kinematic character (2D)">https://docs.godotengine.org/en/latest/tutorials/physics/kinematic_character_2d.html</link>
@@ -40,8 +40,8 @@
 				[codeblocks]
 				[gdscript]
 				for i in get_slide_count():
-				    var collision = get_slide_collision(i)
-				    print("Collided with: ", collision.collider.name)
+				var collision = get_slide_collision(i)
+				print("Collided with: ", collision.collider.name)
 				[/gdscript]
 				[csharp]
 				for (int i = 0; i &lt; GetSlideCount(); i++)
@@ -81,22 +81,6 @@
 				Returns [code]true[/code] if the body collided with a wall on the last call of [method move_and_slide] or [method move_and_slide_with_snap]. Otherwise, returns [code]false[/code].
 			</description>
 		</method>
-		<method name="move_and_collide">
-			<return type="KinematicCollision2D">
-			</return>
-			<argument index="0" name="rel_vec" type="Vector2">
-			</argument>
-			<argument index="1" name="infinite_inertia" type="bool" default="true">
-			</argument>
-			<argument index="2" name="exclude_raycast_shapes" type="bool" default="true">
-			</argument>
-			<argument index="3" name="test_only" type="bool" default="false">
-			</argument>
-			<description>
-				Moves the body along the vector [code]rel_vec[/code]. The body will stop if it collides. Returns a [KinematicCollision2D], which contains information about the collision.
-				If [code]test_only[/code] is [code]true[/code], the body does not move but the would-be collision information is given.
-			</description>
-		</method>
 		<method name="move_and_slide">
 			<return type="Vector2">
 			</return>
@@ -113,9 +97,9 @@
 			<argument index="5" name="infinite_inertia" type="bool" default="true">
 			</argument>
 			<description>
-				Moves the body along a vector. If the body collides with another, it will slide along the other body rather than stop immediately. If the other body is a [KinematicBody2D] or [RigidBody2D], it will also be affected by the motion of the other body. You can use this to make moving and rotating platforms, or to make nodes push other nodes.
+				Moves the body along a vector. If the body collides with another, it will slide along the other body rather than stop immediately. If the other body is a [CharacterBody2D] or [RigidBody2D], it will also be affected by the motion of the other body. You can use this to make moving and rotating platforms, or to make nodes push other nodes.
 				This method should be used in [method Node._physics_process] (or in a method called by [method Node._physics_process]), as it uses the physics step's [code]delta[/code] value automatically in calculations. Otherwise, the simulation will run at an incorrect speed.
-				[code]linear_velocity[/code] is the velocity vector in pixels per second. Unlike in [method move_and_collide], you should [i]not[/i] multiply it by [code]delta[/code] — the physics engine handles applying the velocity.
+				[code]linear_velocity[/code] is the velocity vector in pixels per second. Unlike in [method PhysicsBody2D.move_and_collide], you should [i]not[/i] multiply it by [code]delta[/code] — the physics engine handles applying the velocity.
 				[code]up_direction[/code] is the up direction, used to determine what is a wall and what is a floor or a ceiling. If set to the default value of [code]Vector2(0, 0)[/code], everything is considered a wall. This is useful for topdown games.
 				If [code]stop_on_slope[/code] is [code]true[/code], body will not slide on slopes when you include gravity in [code]linear_velocity[/code] and the body is standing still.
 				If the body collides, it will change direction a maximum of [code]max_slides[/code] times before it stops.
@@ -146,29 +130,10 @@
 				As long as the [code]snap[/code] vector is in contact with the ground, the body will remain attached to the surface. This means you must disable snap in order to jump, for example. You can do this by setting [code]snap[/code] to [code](0, 0)[/code] or by using [method move_and_slide] instead.
 			</description>
 		</method>
-		<method name="test_move">
-			<return type="bool">
-			</return>
-			<argument index="0" name="from" type="Transform2D">
-			</argument>
-			<argument index="1" name="rel_vec" type="Vector2">
-			</argument>
-			<argument index="2" name="infinite_inertia" type="bool" default="true">
-			</argument>
-			<description>
-				Checks for collisions without moving the body. Virtually sets the node's position, scale and rotation to that of the given [Transform2D], then tries to move the body along the vector [code]rel_vec[/code]. Returns [code]true[/code] if a collision would occur.
-			</description>
-		</method>
 	</methods>
 	<members>
-		<member name="collision/safe_margin" type="float" setter="set_safe_margin" getter="get_safe_margin" default="0.08">
-			Extra margin used for collision recovery in motion functions (see [method move_and_collide], [method move_and_slide], [method move_and_slide_with_snap]).
-			If the body is at least this close to another body, it will consider them to be colliding and will be pushed away before performing the actual motion.
-			A higher value means it's more flexible for detecting collision, which helps with consistently detecting walls and floors.
-			A lower value forces the collision algorithm to use more exact detection, so it can be used in cases that specifically require precision, e.g at very low scale to avoid visible jittering, or for stability with a stack of kinematic bodies.
-		</member>
 		<member name="motion/sync_to_physics" type="bool" setter="set_sync_to_physics" getter="is_sync_to_physics_enabled" default="false">
-			If [code]true[/code], the body's movement will be synchronized to the physics frame. This is useful when animating movement via [AnimationPlayer], for example on moving platforms. Do [b]not[/b] use together with [method move_and_slide] or [method move_and_collide] functions.
+			If [code]true[/code], the body's movement will be synchronized to the physics frame. This is useful when animating movement via [AnimationPlayer], for example on moving platforms. Do [b]not[/b] use together with [method move_and_slide] or [method PhysicsBody2D.move_and_collide] functions.
 		</member>
 	</members>
 	<constants>

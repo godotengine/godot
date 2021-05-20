@@ -100,21 +100,6 @@
 				Sets the body's velocity on the given axis. The velocity in the given vector axis will be set as the given vector length. This is useful for jumping behavior.
 			</description>
 		</method>
-		<method name="test_motion">
-			<return type="bool">
-			</return>
-			<argument index="0" name="motion" type="Vector2">
-			</argument>
-			<argument index="1" name="infinite_inertia" type="bool" default="true">
-			</argument>
-			<argument index="2" name="margin" type="float" default="0.08">
-			</argument>
-			<argument index="3" name="result" type="PhysicsTestMotionResult2D" default="null">
-			</argument>
-			<description>
-				Returns [code]true[/code] if a collision would result from moving in the given vector. [code]margin[/code] increases the size of the shapes involved in the collision detection, and [code]result[/code] is an object of type [PhysicsTestMotionResult2D], which contains additional information about the collision (should there be one).
-			</description>
-		</method>
 	</methods>
 	<members>
 		<member name="angular_damp" type="float" setter="set_angular_damp" getter="get_angular_damp" default="-1.0">
@@ -235,16 +220,16 @@
 	</signals>
 	<constants>
 		<constant name="MODE_RIGID" value="0" enum="Mode">
-			Rigid mode. The body behaves as a physical object. It collides with other bodies and responds to forces applied to it. This is the default mode.
+			Rigid body mode. The body behaves as a physical object. It collides with other bodies and responds to forces applied to it. This is the default mode.
 		</constant>
 		<constant name="MODE_STATIC" value="1" enum="Mode">
-			Static mode. The body behaves like a [StaticBody2D] and does not move.
+			Static body mode. The body behaves like a [StaticBody2D], and must be moved by code.
 		</constant>
 		<constant name="MODE_CHARACTER" value="2" enum="Mode">
-			Character mode. Similar to [constant MODE_RIGID], but the body can not rotate.
+			Character body mode. Similar to [constant MODE_RIGID], but the body can not rotate.
 		</constant>
 		<constant name="MODE_KINEMATIC" value="3" enum="Mode">
-			Kinematic mode. The body behaves like a [KinematicBody2D], and must be moved by code.
+			Kinematic body mode. The body behaves like a [StaticBody2D] with [code]kinematic_motion[/code] enabled, and must be moved by code.
 		</constant>
 		<constant name="CCD_MODE_DISABLED" value="0" enum="CCDMode">
 			Continuous collision detection disabled. This is the fastest way to detect body collisions, but can miss small, fast-moving objects.

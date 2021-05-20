@@ -408,6 +408,10 @@ void CollisionObject2D::set_only_update_transform_changes(bool p_enable) {
 	only_update_transform_changes = p_enable;
 }
 
+bool CollisionObject2D::is_only_update_transform_changes_enabled() const {
+	return only_update_transform_changes;
+}
+
 void CollisionObject2D::_update_pickable() {
 	if (!is_inside_tree()) {
 		return;

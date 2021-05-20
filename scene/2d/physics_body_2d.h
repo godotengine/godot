@@ -42,17 +42,26 @@ class PhysicsBody2D : public CollisionObject2D {
 	GDCLASS(PhysicsBody2D, CollisionObject2D);
 
 protected:
-	void _notification(int p_what);
+	static void _bind_methods();
 	PhysicsBody2D(PhysicsServer2D::BodyMode p_mode);
 
-	static void _bind_methods();
+	real_t margin = 0.08;
+	Ref<KinematicCollision2D> motion_cache;
+
+	Ref<KinematicCollision2D> _move(const Vector2 &p_motion, bool p_infinite_inertia = true, bool p_exclude_raycast_shapes = true, bool p_test_only = false);
 
 public:
+	bool move_and_collide(const Vector2 &p_motion, bool p_infinite_inertia, PhysicsServer2D::MotionResult &r_result, bool p_exclude_raycast_shapes = true, bool p_test_only = false);
+	bool test_move(const Transform2D &p_from, const Vector2 &p_motion, bool p_infinite_inertia = true, bool p_exclude_raycast_shapes = true, const Ref<KinematicCollision2D> &r_collision = Ref<KinematicCollision2D>());
+
+	void set_safe_margin(real_t p_margin);
+	real_t get_safe_margin() const;
+
 	TypedArray<PhysicsBody2D> get_collision_exceptions();
 	void add_collision_exception_with(Node *p_node); //must be physicsbody
 	void remove_collision_exception_with(Node *p_node);
 
-	PhysicsBody2D();
+	virtual ~PhysicsBody2D();
 };
 
 class StaticBody2D : public PhysicsBody2D {
@@ -163,8 +172,6 @@ private:
 	void _body_inout(int p_status, const RID &p_body, ObjectID p_instance, int p_body_shape, int p_local_shape);
 	void _direct_state_changed(Object *p_state);
 
-	bool _test_motion(const Vector2 &p_motion, bool p_infinite_inertia = true, real_t p_margin = 0.08, const Ref<PhysicsTestMotionResult2D> &p_result = Ref<PhysicsTestMotionResult2D>());
-
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
@@ -245,42 +252,26 @@ private:
 VARIANT_ENUM_CAST(RigidBody2D::Mode);
 VARIANT_ENUM_CAST(RigidBody2D::CCDMode);
 
-class KinematicBody2D : public PhysicsBody2D {
-	GDCLASS(KinematicBody2D, PhysicsBody2D);
-
-public:
-	struct Collision {
-		Vector2 collision;
-		Vector2 normal;
-		Vector2 collider_vel;
-		ObjectID collider;
-		RID collider_rid;
-		int collider_shape = 0;
-		Variant collider_metadata;
-		Vector2 remainder;
-		Vector2 travel;
-		int local_shape = 0;
-	};
+class CharacterBody2D : public PhysicsBody2D {
+	GDCLASS(CharacterBody2D, PhysicsBody2D);
 
 private:
-	real_t margin;
-
 	Vector2 floor_normal;
 	Vector2 floor_velocity;
 	RID on_floor_body;
-	bool on_floor;
-	bool on_ceiling;
-	bool on_wall;
-	bool sync_to_physics;
+	bool on_floor = false;
+	bool on_ceiling = false;
+	bool on_wall = false;
+	bool sync_to_physics = false;
 
-	Vector<Collision> colliders;
+	Vector<PhysicsServer2D::MotionResult> motion_results;
 	Vector<Ref<KinematicCollision2D>> slide_colliders;
-	Ref<KinematicCollision2D> motion_cache;
 
 	_FORCE_INLINE_ bool _ignores_mode(PhysicsServer2D::BodyMode) const;
 
-	Ref<KinematicCollision2D> _move(const Vector2 &p_motion, bool p_infinite_inertia = true, bool p_exclude_raycast_shapes = true, bool p_test_only = false);
 	Ref<KinematicCollision2D> _get_slide_collision(int p_bounce);
+
+	bool separate_raycast_shapes(bool p_infinite_inertia, PhysicsServer2D::MotionResult &r_result);
 
 	Transform2D last_valid_transform;
 	void _direct_state_changed(Object *p_state);
@@ -290,15 +281,6 @@ protected:
 	static void _bind_methods();
 
 public:
-	bool move_and_collide(const Vector2 &p_motion, bool p_infinite_inertia, Collision &r_collision, bool p_exclude_raycast_shapes = true, bool p_test_only = false);
-
-	bool test_move(const Transform2D &p_from, const Vector2 &p_motion, bool p_infinite_inertia = true);
-
-	bool separate_raycast_shapes(bool p_infinite_inertia, Collision &r_collision);
-
-	void set_safe_margin(real_t p_margin);
-	real_t get_safe_margin() const;
-
 	Vector2 move_and_slide(const Vector2 &p_linear_velocity, const Vector2 &p_up_direction = Vector2(0, 0), bool p_stop_on_slope = false, int p_max_slides = 4, real_t p_floor_max_angle = Math::deg2rad((real_t)45.0), bool p_infinite_inertia = true);
 	Vector2 move_and_slide_with_snap(const Vector2 &p_linear_velocity, const Vector2 &p_snap, const Vector2 &p_up_direction = Vector2(0, 0), bool p_stop_on_slope = false, int p_max_slides = 4, real_t p_floor_max_angle = Math::deg2rad((real_t)45.0), bool p_infinite_inertia = true);
 	bool is_on_floor() const;
@@ -308,21 +290,22 @@ public:
 	Vector2 get_floor_velocity() const;
 
 	int get_slide_count() const;
-	Collision get_slide_collision(int p_bounce) const;
+	PhysicsServer2D::MotionResult get_slide_collision(int p_bounce) const;
 
 	void set_sync_to_physics(bool p_enable);
 	bool is_sync_to_physics_enabled() const;
 
-	KinematicBody2D();
-	~KinematicBody2D();
+	CharacterBody2D();
+	~CharacterBody2D();
 };
 
 class KinematicCollision2D : public Reference {
 	GDCLASS(KinematicCollision2D, Reference);
 
-	KinematicBody2D *owner;
-	friend class KinematicBody2D;
-	KinematicBody2D::Collision collision;
+	PhysicsBody2D *owner = nullptr;
+	friend class PhysicsBody2D;
+	friend class CharacterBody2D;
+	PhysicsServer2D::MotionResult result;
 
 protected:
 	static void _bind_methods();
@@ -339,8 +322,6 @@ public:
 	int get_collider_shape_index() const;
 	Vector2 get_collider_velocity() const;
 	Variant get_collider_metadata() const;
-
-	KinematicCollision2D();
 };
 
 #endif // PHYSICS_BODY_2D_H
