@@ -76,7 +76,7 @@ void TileSetEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data, C
 			tile_set_atlas_source_editor->init_source();
 		}
 
-		// Update the selected source (thus trigerring an update).
+		// Update the selected source (thus triggering an update).
 		_update_atlas_sources_list(source_id);
 	}
 }

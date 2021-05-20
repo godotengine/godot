@@ -843,7 +843,7 @@ void MultiplayerAPI::_send_rpc(Node *p_from, int p_to, bool p_unreliable, bool p
 		if (property_id == UINT16_MAX && p_from->get_script_instance()) {
 			property_id = p_from->get_script_instance()->get_rset_property_id(p_name);
 		}
-		ERR_FAIL_COND_MSG(property_id == UINT16_MAX, "Unable to take the `property_id` for the property:" + p_name + ". this can happen only if this property is not marked as `remote`.");
+		ERR_FAIL_COND_MSG(property_id == UINT16_MAX, "Unable to take the `property_id` for the property:" + p_name + ". This can only happen if this property is not marked as `remote`.");
 
 		if (property_id <= UINT8_MAX) {
 			// The ID fits in 1 byte

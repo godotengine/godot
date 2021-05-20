@@ -63,7 +63,7 @@ static const char *_joy_axis_descriptions[JOY_AXIS_MAX * 2] = {
 String InputEventConfigurationDialog::get_event_text(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND_V_MSG(p_event.is_null(), String(), "Provided event is not a valid instance of InputEvent");
 
-	// Joypad motion events will display slighlty differently than what the event->as_text() provides. See #43660.
+	// Joypad motion events will display slightly differently than what the event->as_text() provides. See #43660.
 	Ref<InputEventJoypadMotion> jpmotion = p_event;
 	if (jpmotion.is_valid()) {
 		String desc = TTR("Unknown Joypad Axis");
@@ -731,7 +731,7 @@ void ActionMapEditor::_add_action_pressed() {
 
 void ActionMapEditor::_add_action(const String &p_name) {
 	if (p_name == "" || !_is_action_name_valid(p_name)) {
-		show_message(TTR("Invalid action name. it cannot be.is_empty()() nor contain '/', ':', '=', '\\' or '\"'"));
+		show_message(TTR("Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\' or '\"'"));
 		return;
 	}
 
@@ -756,7 +756,7 @@ void ActionMapEditor::_action_edited() {
 
 		if (new_name == "" || !_is_action_name_valid(new_name)) {
 			ti->set_text(0, old_name);
-			show_message(TTR("Invalid action name. it cannot be.is_empty()() nor contain '/', ':', '=', '\\' or '\"'"));
+			show_message(TTR("Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\' or '\"'"));
 			return;
 		}
 

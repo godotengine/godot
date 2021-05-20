@@ -2427,7 +2427,7 @@ void VisualShaderEditor::_convert_constants_to_uniforms(bool p_vice_versa) {
 	for (Set<int>::Element *E = current_set.front(); E; E = E->next()) {
 		int node_id = E->get();
 		Ref<VisualShaderNode> node = visual_shader->get_node(type_id, node_id);
-		bool catched = false;
+		bool caught = false;
 		Variant var;
 
 		// float
@@ -2436,112 +2436,112 @@ void VisualShaderEditor::_convert_constants_to_uniforms(bool p_vice_versa) {
 			if (float_const.is_valid()) {
 				_replace_node(type_id, node_id, "VisualShaderNodeFloatConstant", "VisualShaderNodeFloatUniform");
 				var = float_const->get_constant();
-				catched = true;
+				caught = true;
 			}
 		} else {
 			Ref<VisualShaderNodeFloatUniform> float_uniform = Object::cast_to<VisualShaderNodeFloatUniform>(node.ptr());
 			if (float_uniform.is_valid()) {
 				_replace_node(type_id, node_id, "VisualShaderNodeFloatUniform", "VisualShaderNodeFloatConstant");
 				var = float_uniform->get_default_value();
-				catched = true;
+				caught = true;
 			}
 		}
 
 		// int
-		if (!catched) {
+		if (!caught) {
 			if (!p_vice_versa) {
 				Ref<VisualShaderNodeIntConstant> int_const = Object::cast_to<VisualShaderNodeIntConstant>(node.ptr());
 				if (int_const.is_valid()) {
 					_replace_node(type_id, node_id, "VisualShaderNodeIntConstant", "VisualShaderNodeIntUniform");
 					var = int_const->get_constant();
-					catched = true;
+					caught = true;
 				}
 			} else {
 				Ref<VisualShaderNodeIntUniform> int_uniform = Object::cast_to<VisualShaderNodeIntUniform>(node.ptr());
 				if (int_uniform.is_valid()) {
 					_replace_node(type_id, node_id, "VisualShaderNodeIntUniform", "VisualShaderNodeIntConstant");
 					var = int_uniform->get_default_value();
-					catched = true;
+					caught = true;
 				}
 			}
 		}
 
 		// boolean
-		if (!catched) {
+		if (!caught) {
 			if (!p_vice_versa) {
 				Ref<VisualShaderNodeBooleanConstant> boolean_const = Object::cast_to<VisualShaderNodeBooleanConstant>(node.ptr());
 				if (boolean_const.is_valid()) {
 					_replace_node(type_id, node_id, "VisualShaderNodeBooleanConstant", "VisualShaderNodeBooleanUniform");
 					var = boolean_const->get_constant();
-					catched = true;
+					caught = true;
 				}
 			} else {
 				Ref<VisualShaderNodeBooleanUniform> boolean_uniform = Object::cast_to<VisualShaderNodeBooleanUniform>(node.ptr());
 				if (boolean_uniform.is_valid()) {
 					_replace_node(type_id, node_id, "VisualShaderNodeBooleanUniform", "VisualShaderNodeBooleanConstant");
 					var = boolean_uniform->get_default_value();
-					catched = true;
+					caught = true;
 				}
 			}
 		}
 
 		// vec3
-		if (!catched) {
+		if (!caught) {
 			if (!p_vice_versa) {
 				Ref<VisualShaderNodeVec3Constant> vec3_const = Object::cast_to<VisualShaderNodeVec3Constant>(node.ptr());
 				if (vec3_const.is_valid()) {
 					_replace_node(type_id, node_id, "VisualShaderNodeVec3Constant", "VisualShaderNodeVec3Uniform");
 					var = vec3_const->get_constant();
-					catched = true;
+					caught = true;
 				}
 			} else {
 				Ref<VisualShaderNodeVec3Uniform> vec3_uniform = Object::cast_to<VisualShaderNodeVec3Uniform>(node.ptr());
 				if (vec3_uniform.is_valid()) {
 					_replace_node(type_id, node_id, "VisualShaderNodeVec3Uniform", "VisualShaderNodeVec3Constant");
 					var = vec3_uniform->get_default_value();
-					catched = true;
+					caught = true;
 				}
 			}
 		}
 
 		// color
-		if (!catched) {
+		if (!caught) {
 			if (!p_vice_versa) {
 				Ref<VisualShaderNodeColorConstant> color_const = Object::cast_to<VisualShaderNodeColorConstant>(node.ptr());
 				if (color_const.is_valid()) {
 					_replace_node(type_id, node_id, "VisualShaderNodeColorConstant", "VisualShaderNodeColorUniform");
 					var = color_const->get_constant();
-					catched = true;
+					caught = true;
 				}
 			} else {
 				Ref<VisualShaderNodeColorUniform> color_uniform = Object::cast_to<VisualShaderNodeColorUniform>(node.ptr());
 				if (color_uniform.is_valid()) {
 					_replace_node(type_id, node_id, "VisualShaderNodeColorUniform", "VisualShaderNodeColorConstant");
 					var = color_uniform->get_default_value();
-					catched = true;
+					caught = true;
 				}
 			}
 		}
 
 		// transform
-		if (!catched) {
+		if (!caught) {
 			if (!p_vice_versa) {
 				Ref<VisualShaderNodeTransformConstant> transform_const = Object::cast_to<VisualShaderNodeTransformConstant>(node.ptr());
 				if (transform_const.is_valid()) {
 					_replace_node(type_id, node_id, "VisualShaderNodeTransformConstant", "VisualShaderNodeTransformUniform");
 					var = transform_const->get_constant();
-					catched = true;
+					caught = true;
 				}
 			} else {
 				Ref<VisualShaderNodeTransformUniform> transform_uniform = Object::cast_to<VisualShaderNodeTransformUniform>(node.ptr());
 				if (transform_uniform.is_valid()) {
 					_replace_node(type_id, node_id, "VisualShaderNodeTransformUniform", "VisualShaderNodeTransformConstant");
 					var = transform_uniform->get_default_value();
-					catched = true;
+					caught = true;
 				}
 			}
 		}
-		ERR_CONTINUE(!catched);
+		ERR_CONTINUE(!caught);
 		int preview_port = node->get_output_port_for_preview();
 
 		if (!p_vice_versa) {

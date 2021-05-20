@@ -50,7 +50,7 @@ TEST_CASE("[Geometry2D] Point in circle") {
 	CHECK(Geometry2D::is_point_in_circle(Vector2(7, -42), Vector2(4, -40), 3.7));
 	CHECK_FALSE(Geometry2D::is_point_in_circle(Vector2(7, -42), Vector2(4, -40), 3.5));
 
-	// This tests points on the edge of the circle. They are treated as beeing inside the circle.
+	// This tests points on the edge of the circle. They are treated as being inside the circle.
 	// In `is_point_in_triangle` and `is_point_in_polygon` they are treated as being outside, so in order the make
 	// the behaviour consistent this may change in the future (see issue #44717 and PR #44274).
 	CHECK(Geometry2D::is_point_in_circle(Vector2(1.0, 0.0), Vector2(0, 0), 1.0));
@@ -65,7 +65,7 @@ TEST_CASE("[Geometry2D] Point in triangle") {
 	CHECK(Geometry2D::is_point_in_triangle(Vector2(-3, -2.5), Vector2(-1, -4), Vector2(-3, -2), Vector2(-5, -4)));
 	CHECK_FALSE(Geometry2D::is_point_in_triangle(Vector2(0, 0), Vector2(1, 4), Vector2(3, 2), Vector2(5, 4)));
 
-	// This tests points on the edge of the triangle. They are treated as beeing outside the triangle.
+	// This tests points on the edge of the triangle. They are treated as being outside the triangle.
 	// In `is_point_in_circle` they are treated as being inside, so in order the make
 	// the behaviour consistent this may change in the future (see issue #44717 and PR #44274).
 	CHECK_FALSE(Geometry2D::is_point_in_triangle(Vector2(1, 1), Vector2(-1, 1), Vector2(0, -1), Vector2(1, 1)));
@@ -95,7 +95,7 @@ TEST_CASE("[Geometry2D] Point in polygon") {
 	CHECK(Geometry2D::is_point_in_polygon(Vector2(370, 55), p));
 	CHECK(Geometry2D::is_point_in_polygon(Vector2(-160, 190), p));
 
-	// This tests points on the edge of the polygon. They are treated as beeing outside the polygon.
+	// This tests points on the edge of the polygon. They are treated as being outside the polygon.
 	// In `is_point_in_circle` they are treated as being inside, so in order the make
 	// the behaviour consistent this may change in the future (see issue #44717 and PR #44274).
 	CHECK_FALSE(Geometry2D::is_point_in_polygon(Vector2(68, 112), p));
@@ -227,7 +227,7 @@ TEST_CASE("[Geometry2D] Polygon intersection") {
 		CHECK(r[0][2].is_equal_approx(Point2(160.52632, 92.63157)));
 	}
 
-	SUBCASE("[Geometry2D] Intersection with one polygon beeing completly inside the other polygon") {
+	SUBCASE("[Geometry2D] Intersection with one polygon being completely inside the other polygon") {
 		b.push_back(Point2(80, 100));
 		b.push_back(Point2(50, 50));
 		b.push_back(Point2(150, 50));

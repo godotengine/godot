@@ -156,7 +156,7 @@ private:
 	/// [0, 2, 1, 3, 4]
 	/// The negative values are computed using this formula: `(-value) - 1`
 	///
-	/// Returns the vertex index from the poligon vertex.
+	/// Returns the vertex index from the polygon vertex.
 	/// Returns -1 if `p_index` is invalid.
 	int get_vertex_from_polygon_vertex(const std::vector<int> &p_face_indices, int p_index) const;
 

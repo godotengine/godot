@@ -7,7 +7,7 @@
 		WebXR is an open standard that allows creating VR and AR applications that run in the web browser.
 		As such, this interface is only available when running in an HTML5 export.
 		WebXR supports a wide range of devices, from the very capable (like Valve Index, HTC Vive, Oculus Rift and Quest) down to the much less capable (like Google Cardboard, Oculus Go, GearVR, or plain smartphones).
-		Since WebXR is based on Javascript, it makes extensive use of callbacks, which means that [WebXRInterface] is forced to use signals, where other AR/VR interfaces would instead use functions that return a result immediately. This makes [WebXRInterface] quite a bit more complicated to intialize than other AR/VR interfaces.
+		Since WebXR is based on Javascript, it makes extensive use of callbacks, which means that [WebXRInterface] is forced to use signals, where other AR/VR interfaces would instead use functions that return a result immediately. This makes [WebXRInterface] quite a bit more complicated to initialize than other AR/VR interfaces.
 		Here's the minimum code required to start an immersive VR session:
 		[codeblock]
 		extends Node3D

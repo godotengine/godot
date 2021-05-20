@@ -397,7 +397,7 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 				text += DADDR(1 + argc);
 				text += " = ";
 
-				text += "<unkown type>(";
+				text += "<unknown type>(";
 				for (int i = 0; i < argc; i++) {
 					if (i > 0) {
 						text += ", ";
@@ -688,7 +688,7 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 				int argc = _code_ptr[ip + 1 + instr_var_args];
 				text += DADDR(1 + argc) + " = ";
 
-				text += "<unkown function>";
+				text += "<unknown function>";
 				text += "(";
 
 				for (int i = 0; i < argc; i++) {
