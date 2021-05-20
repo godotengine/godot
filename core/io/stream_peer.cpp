@@ -108,8 +108,8 @@ Array StreamPeer::_get_partial_data(int p_bytes) {
 	return ret;
 }
 
-void StreamPeer::set_big_endian(bool p_enable) {
-	big_endian = p_enable;
+void StreamPeer::set_big_endian(bool p_big_endian) {
+	big_endian = p_big_endian;
 }
 
 bool StreamPeer::is_big_endian_enabled() const {

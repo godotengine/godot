@@ -58,7 +58,7 @@ public:
 
 	virtual int get_available_bytes() const = 0;
 
-	void set_big_endian(bool p_enable);
+	void set_big_endian(bool p_big_endian);
 	bool is_big_endian_enabled() const;
 
 	void put_8(int8_t p_val);
