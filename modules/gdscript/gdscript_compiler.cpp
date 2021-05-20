@@ -1248,7 +1248,7 @@ int GDScriptCompiler::_parse_expression(CodeGen &codegen, const GDScriptParser::
 							codegen.opcodes.push_back(dst_address_a); // argument 1
 							codegen.opcodes.push_back(src_address_b); // argument 2 (unary only takes one parameter)
 						}
-						return dst_address_a; //if anything, returns wathever was assigned or correct stack position
+						return dst_address_a; //if anything, returns whatever was assigned or correct stack position
 					}
 				} break;
 				case GDScriptParser::OperatorNode::OP_IS: {

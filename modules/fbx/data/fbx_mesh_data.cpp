@@ -955,7 +955,7 @@ void FBXMeshData::triangulate_polygon(Ref<SurfaceTool> st, Vector<int> p_polygon
 		for (List<TriangulatorPoly>::Element *I = out_poly.front(); I; I = I->next()) {
 			TriangulatorPoly &tp = I->get();
 
-			ERR_FAIL_COND_MSG(tp.GetNumPoints() != 3, "The triangulator retuned more points, how this is possible?");
+			ERR_FAIL_COND_MSG(tp.GetNumPoints() != 3, "The triangulator returned more points, how this is possible?");
 			// Find Index
 			for (int i = 2; i >= 0; i -= 1) {
 				const Vector2 vertex = tp.GetPoint(i);

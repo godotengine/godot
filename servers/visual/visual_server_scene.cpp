@@ -736,7 +736,7 @@ void VisualServerScene::instance_set_visible(RID p_instance, bool p_visible) {
 
 	instance->visible = p_visible;
 
-	// give the opportunity for the spatial paritioning scene to use a special implementation of visibility
+	// give the opportunity for the spatial partitioning scene to use a special implementation of visibility
 	// for efficiency (supported in BVH but not octree)
 
 	// slightly bug prone optimization here - we want to avoid doing a collision check twice

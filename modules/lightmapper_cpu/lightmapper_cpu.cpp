@@ -974,7 +974,7 @@ void LightmapperCPU::_post_process(uint32_t p_idx, void *r_output) {
 
 void LightmapperCPU::_compute_seams(const MeshInstance &p_mesh, LocalVector<UVSeam> &r_seams) {
 	float max_uv_distance = 1.0f / MAX(p_mesh.size.x, p_mesh.size.y);
-	max_uv_distance *= max_uv_distance; // We use distance_to_squared(), so wee need to square the max distance as well
+	max_uv_distance *= max_uv_distance; // We use distance_to_squared(), so we need to square the max distance as well
 	float max_pos_distance = 0.00025f;
 	float max_normal_distance = 0.05f;
 
