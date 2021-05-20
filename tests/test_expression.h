@@ -83,42 +83,42 @@ TEST_CASE("[Expression] Floating-point arithmetic") {
 			expression.parse("-123.456") == OK,
 			"Float identity should parse successfully.");
 	CHECK_MESSAGE(
-			Math::is_equal_approx(float(expression.execute()), -123.456),
+			Math::is_equal_approx(double(expression.execute()), -123.456),
 			"Float identity should return the expected result.");
 
 	CHECK_MESSAGE(
 			expression.parse("2.0 + 3.0") == OK,
 			"Float addition should parse successfully.");
 	CHECK_MESSAGE(
-			Math::is_equal_approx(float(expression.execute()), 5),
+			Math::is_equal_approx(double(expression.execute()), 5),
 			"Float addition should return the expected result.");
 
 	CHECK_MESSAGE(
 			expression.parse("3.0 / 10") == OK,
 			"Float / integer division should parse successfully.");
 	CHECK_MESSAGE(
-			Math::is_equal_approx(float(expression.execute()), 0.3),
+			Math::is_equal_approx(double(expression.execute()), 0.3),
 			"Float / integer division should return the expected result.");
 
 	CHECK_MESSAGE(
 			expression.parse("3 / 10.0") == OK,
 			"Basic integer / float division should parse successfully.");
 	CHECK_MESSAGE(
-			Math::is_equal_approx(float(expression.execute()), 0.3),
+			Math::is_equal_approx(double(expression.execute()), 0.3),
 			"Basic integer / float division should return the expected result.");
 
 	CHECK_MESSAGE(
 			expression.parse("3.0 / 10.0") == OK,
 			"Float / float division should parse successfully.");
 	CHECK_MESSAGE(
-			Math::is_equal_approx(float(expression.execute()), 0.3),
+			Math::is_equal_approx(double(expression.execute()), 0.3),
 			"Float / float division should return the expected result.");
 
 	CHECK_MESSAGE(
 			expression.parse("2.5 * (6.0 + 14.25) / 2.0 - 5.12345") == OK,
 			"Float multiplication-addition-subtraction-division should parse successfully.");
 	CHECK_MESSAGE(
-			Math::is_equal_approx(float(expression.execute()), 20.18905),
+			Math::is_equal_approx(double(expression.execute()), 20.18905),
 			"Float multiplication-addition-subtraction-division should return the expected result.");
 }
 
@@ -129,7 +129,7 @@ TEST_CASE("[Expression] Scientific notation") {
 			expression.parse("2.e5") == OK,
 			"The expression should parse successfully.");
 	CHECK_MESSAGE(
-			Math::is_equal_approx(float(expression.execute()), 200'000),
+			Math::is_equal_approx(double(expression.execute()), 200'000),
 			"The expression should return the expected result.");
 
 	// The middle "e" is ignored here.
@@ -137,14 +137,14 @@ TEST_CASE("[Expression] Scientific notation") {
 			expression.parse("2e5") == OK,
 			"The expression should parse successfully.");
 	CHECK_MESSAGE(
-			Math::is_equal_approx(float(expression.execute()), 25),
+			Math::is_equal_approx(double(expression.execute()), 25),
 			"The expression should return the expected result.");
 
 	CHECK_MESSAGE(
 			expression.parse("2e.5") == OK,
 			"The expression should parse successfully.");
 	CHECK_MESSAGE(
-			Math::is_equal_approx(float(expression.execute()), 2),
+			Math::is_equal_approx(double(expression.execute()), 2),
 			"The expression should return the expected result.");
 }
 
@@ -176,14 +176,14 @@ TEST_CASE("[Expression] Built-in functions") {
 			expression.parse("snapped(sin(0.5), 0.01)") == OK,
 			"The expression should parse successfully.");
 	CHECK_MESSAGE(
-			Math::is_equal_approx(float(expression.execute()), 0.48),
+			Math::is_equal_approx(double(expression.execute()), 0.48),
 			"`snapped(sin(0.5), 0.01)` should return the expected result.");
 
 	CHECK_MESSAGE(
 			expression.parse("pow(2.0, -2500)") == OK,
 			"The expression should parse successfully.");
 	CHECK_MESSAGE(
-			Math::is_zero_approx(float(expression.execute())),
+			Math::is_zero_approx(double(expression.execute())),
 			"`pow(2.0, -2500)` should return the expected result (asymptotically zero).");
 }
 
@@ -410,7 +410,7 @@ TEST_CASE("[Expression] Unusual expressions") {
 			"The expression should parse successfully.");
 	ERR_PRINT_OFF;
 	CHECK_MESSAGE(
-			Math::is_inf(float(expression.execute())),
+			Math::is_inf(double(expression.execute())),
 			"`-25.4 / 0` should return inf.");
 	ERR_PRINT_ON;
 

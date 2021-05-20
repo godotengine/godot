@@ -513,7 +513,7 @@ void SpriteFramesEditor::_animation_select() {
 
 	if (frames->has_animation(edited_anim)) {
 		double value = anim_speed->get_line_edit()->get_text().to_float();
-		if (!Math::is_equal_approx(value, frames->get_animation_speed(edited_anim))) {
+		if (!Math::is_equal_approx(value, (double)frames->get_animation_speed(edited_anim))) {
 			_animation_fps_changed(value);
 		}
 	}

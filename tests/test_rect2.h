@@ -312,19 +312,19 @@ TEST_CASE("[Rect2i] Basic setters") {
 
 TEST_CASE("[Rect2i] Area getters") {
 	CHECK_MESSAGE(
-			Math::is_equal_approx(Rect2i(0, 100, 1280, 720).get_area(), 921'600),
+			Rect2i(0, 100, 1280, 720).get_area() == 921'600,
 			"get_area() should return the expected value.");
 	CHECK_MESSAGE(
-			Math::is_equal_approx(Rect2i(0, 100, -1280, -720).get_area(), 921'600),
+			Rect2i(0, 100, -1280, -720).get_area() == 921'600,
 			"get_area() should return the expected value.");
 	CHECK_MESSAGE(
-			Math::is_equal_approx(Rect2i(0, 100, 1280, -720).get_area(), -921'600),
+			Rect2i(0, 100, 1280, -720).get_area() == -921'600,
 			"get_area() should return the expected value.");
 	CHECK_MESSAGE(
-			Math::is_equal_approx(Rect2i(0, 100, -1280, 720).get_area(), -921'600),
+			Rect2i(0, 100, -1280, 720).get_area() == -921'600,
 			"get_area() should return the expected value.");
 	CHECK_MESSAGE(
-			Math::is_zero_approx(Rect2i(0, 100, 0, 720).get_area()),
+			Rect2i(0, 100, 0, 720).get_area() == 0,
 			"get_area() should return the expected value.");
 
 	CHECK_MESSAGE(
