@@ -85,10 +85,10 @@ void ViewportRotationControl::_notification(int p_what) {
 		axis_menu_options.clear();
 		axis_menu_options.push_back(Node3DEditorViewport::VIEW_RIGHT);
 		axis_menu_options.push_back(Node3DEditorViewport::VIEW_TOP);
-		axis_menu_options.push_back(Node3DEditorViewport::VIEW_FRONT);
+		axis_menu_options.push_back(Node3DEditorViewport::VIEW_REAR);
 		axis_menu_options.push_back(Node3DEditorViewport::VIEW_LEFT);
 		axis_menu_options.push_back(Node3DEditorViewport::VIEW_BOTTOM);
-		axis_menu_options.push_back(Node3DEditorViewport::VIEW_REAR);
+		axis_menu_options.push_back(Node3DEditorViewport::VIEW_FRONT);
 
 		axis_colors.clear();
 		axis_colors.push_back(get_theme_color("axis_x_color", "Editor"));
