@@ -1458,8 +1458,11 @@ Error EditorSceneImporterGLTF::_parse_images(GLTFState &state, const String &p_b
 			}
 		}
 
-		ERR_FAIL_COND_V_MSG(img.is_null(), ERR_FILE_CORRUPT,
-				vformat("glTF: Couldn't load image index '%d' with its given mimetype: %s.", i, mimetype));
+		if (img.is_null()) {
+			ERR_PRINT(vformat("glTF: Couldn't load image index '%d' with its given mimetype: %s.", i, mimetype));
+			state.images.push_back(Ref<Texture>());
+			continue;
+		}
 
 		Ref<ImageTexture> t;
 		t.instance();
