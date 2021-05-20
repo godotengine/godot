@@ -131,8 +131,8 @@ Comment: doctest
 Copyright: 2016-2020, Viktor Kirilov
 License: Expat
 
-Files: ./thirdparty/embree-aarch64/
-Comment: Embree-aarch64
+Files: ./thirdparty/embree/
+Comment: Embree
 Copyright: 2009-2021 Intel Corporation
 License: Apache-2.0
 
