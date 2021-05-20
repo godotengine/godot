@@ -101,13 +101,13 @@ TEST_CASE("[Color] Reading methods") {
 	const Color dark_blue = Color(0, 0, 0.5, 0.4);
 
 	CHECK_MESSAGE(
-			Math::is_equal_approx(dark_blue.get_h(), 240 / 360.0),
+			Math::is_equal_approx(dark_blue.get_h(), 240.0f / 360.0f),
 			"The returned HSV hue should match the expected value.");
 	CHECK_MESSAGE(
-			Math::is_equal_approx(dark_blue.get_s(), 1),
+			Math::is_equal_approx(dark_blue.get_s(), 1.0f),
 			"The returned HSV saturation should match the expected value.");
 	CHECK_MESSAGE(
-			Math::is_equal_approx(dark_blue.get_v(), 0.5),
+			Math::is_equal_approx(dark_blue.get_v(), 0.5f),
 			"The returned HSV value should match the expected value.");
 }
 

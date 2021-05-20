@@ -311,20 +311,20 @@ public:
 	static float random(float from, float to);
 	static int random(int from, int to);
 
-	static _ALWAYS_INLINE_ bool is_equal_approx(real_t a, real_t b) {
+	static _ALWAYS_INLINE_ bool is_equal_approx(float a, float b) {
 		// Check for exact equality first, required to handle "infinity" values.
 		if (a == b) {
 			return true;
 		}
 		// Then check for approximate equality.
-		real_t tolerance = CMP_EPSILON * abs(a);
+		float tolerance = CMP_EPSILON * abs(a);
 		if (tolerance < CMP_EPSILON) {
 			tolerance = CMP_EPSILON;
 		}
 		return abs(a - b) < tolerance;
 	}
 
-	static _ALWAYS_INLINE_ bool is_equal_approx(real_t a, real_t b, real_t tolerance) {
+	static _ALWAYS_INLINE_ bool is_equal_approx(float a, float b, float tolerance) {
 		// Check for exact equality first, required to handle "infinity" values.
 		if (a == b) {
 			return true;
@@ -333,7 +333,33 @@ public:
 		return abs(a - b) < tolerance;
 	}
 
-	static _ALWAYS_INLINE_ bool is_zero_approx(real_t s) {
+	static _ALWAYS_INLINE_ bool is_zero_approx(float s) {
+		return abs(s) < CMP_EPSILON;
+	}
+
+	static _ALWAYS_INLINE_ bool is_equal_approx(double a, double b) {
+		// Check for exact equality first, required to handle "infinity" values.
+		if (a == b) {
+			return true;
+		}
+		// Then check for approximate equality.
+		double tolerance = CMP_EPSILON * abs(a);
+		if (tolerance < CMP_EPSILON) {
+			tolerance = CMP_EPSILON;
+		}
+		return abs(a - b) < tolerance;
+	}
+
+	static _ALWAYS_INLINE_ bool is_equal_approx(double a, double b, double tolerance) {
+		// Check for exact equality first, required to handle "infinity" values.
+		if (a == b) {
+			return true;
+		}
+		// Then check for approximate equality.
+		return abs(a - b) < tolerance;
+	}
+
+	static _ALWAYS_INLINE_ bool is_zero_approx(double s) {
 		return abs(s) < CMP_EPSILON;
 	}
 
