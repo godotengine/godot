@@ -1,4 +1,4 @@
-// Copyright 2009-2020 Intel Corporation
+// Copyright 2009-2021 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
@@ -11,7 +11,7 @@ namespace embree
 {
   namespace isa
   {
-    template<int N, int Nx, int types>
+    template<int N, int types>
     class BVHNNodeTraverserStreamHitCoherent
     {
       typedef BVHN<N> BVH;
@@ -22,8 +22,8 @@ namespace embree
       template<class T>
       static __forceinline void traverseClosestHit(NodeRef& cur,
                                                    size_t& m_trav_active,
-                                                   const vbool<Nx>& vmask,
-                                                   const vfloat<Nx>& tNear,
+                                                   const vbool<N>& vmask,
+                                                   const vfloat<N>& tNear,
                                                    const T* const tMask,
                                                    StackItemMaskCoherent*& stackPtr)
       {
@@ -79,14 +79,9 @@ namespace embree
 
         /*! slow path for more than two hits */
         size_t hits = movemask(vmask);
-        const vint<Nx> dist_i = select(vmask, (asInt(tNear) & 0xfffffff8) | vint<Nx>(step), 0);
-  #if defined(__AVX512F__) && !defined(__AVX512VL__) // KNL
-        const vint<N> tmp = extractN<N,0>(dist_i);
-        const vint<Nx> dist_i_sorted = usort_descending(tmp);
-  #else
-        const vint<Nx> dist_i_sorted = usort_descending(dist_i);
-  #endif
-        const vint<Nx> sorted_index = dist_i_sorted & 7;
+        const vint<N> dist_i = select(vmask, (asInt(tNear) & 0xfffffff8) | vint<N>(step), 0);
+        const vint<N> dist_i_sorted = usort_descending(dist_i);
+        const vint<N> sorted_index = dist_i_sorted & 7;
 
         size_t i = 0;
         for (;;)
@@ -112,7 +107,7 @@ namespace embree
       template<class T>
       static __forceinline void traverseAnyHit(NodeRef& cur,
                                                size_t& m_trav_active,
-                                               const vbool<Nx>& vmask,
+                                               const vbool<N>& vmask,
                                                const T* const tMask,
                                                StackItemMaskCoherent*& stackPtr)
       {

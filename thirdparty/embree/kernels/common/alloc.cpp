@@ -1,11 +1,8 @@
-// Copyright 2009-2020 Intel Corporation
+// Copyright 2009-2021 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
 #include "alloc.h"
 #include "../../common/sys/thread.h"
-#if defined(__aarch64__) && defined(BUILD_IOS)
-#include "../../common/sys/barrier.h"
-#endif
 
 namespace embree
 {

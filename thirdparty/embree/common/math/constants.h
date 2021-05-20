@@ -1,4 +1,4 @@
-// Copyright 2009-2020 Intel Corporation
+// Copyright 2009-2021 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
@@ -11,19 +11,6 @@
 #include <math.h> // using cmath causes issues under Windows
 #include <cfloat>
 #include <climits>
-
-// Math constants may not be defined in libcxx + mingw + strict C++ standard
-#if defined(__MINGW32__)
-
-// TODO(LTE): use constexpr
-#ifndef M_PI
-#define M_PI 3.14159265358979323846
-#endif
-#ifndef M_1_PI
-#define M_1_PI 0.31830988618379067154
-#endif
-
-#endif // __MINGW32__
 
 namespace embree
 {
@@ -57,8 +44,8 @@ namespace embree
     __forceinline operator unsigned int      ( ) const { return 0; }
     __forceinline operator          short    ( ) const { return 0; }
     __forceinline operator unsigned short    ( ) const { return 0; }
-    __forceinline operator          int8_t     ( ) const { return 0; }
-    __forceinline operator uint8_t     ( ) const { return 0; }
+    __forceinline operator          char     ( ) const { return 0; }
+    __forceinline operator unsigned char     ( ) const { return 0; }
   }; 
 
   extern MAYBE_UNUSED ZeroTy zero;
@@ -75,8 +62,8 @@ namespace embree
     __forceinline operator unsigned int      ( ) const { return 1; }
     __forceinline operator          short    ( ) const { return 1; }
     __forceinline operator unsigned short    ( ) const { return 1; }
-    __forceinline operator          int8_t     ( ) const { return 1; }
-    __forceinline operator uint8_t     ( ) const { return 1; }
+    __forceinline operator          char     ( ) const { return 1; }
+    __forceinline operator unsigned char     ( ) const { return 1; }
   };
 
   extern MAYBE_UNUSED OneTy one;
@@ -93,8 +80,8 @@ namespace embree
     __forceinline operator unsigned int      ( ) const { return std::numeric_limits<unsigned int>::min(); }
     __forceinline operator          short    ( ) const { return std::numeric_limits<short>::min(); }
     __forceinline operator unsigned short    ( ) const { return std::numeric_limits<unsigned short>::min(); }
-    __forceinline operator          int8_t     ( ) const { return std::numeric_limits<int8_t>::min(); }
-    __forceinline operator uint8_t     ( ) const { return std::numeric_limits<uint8_t>::min(); }
+    __forceinline operator          char     ( ) const { return std::numeric_limits<char>::min(); }
+    __forceinline operator unsigned char     ( ) const { return std::numeric_limits<unsigned char>::min(); }
 
   };
 
@@ -112,8 +99,8 @@ namespace embree
     __forceinline operator unsigned int      ( ) const { return std::numeric_limits<unsigned int>::max(); }
     __forceinline operator          short    ( ) const { return std::numeric_limits<short>::max(); }
     __forceinline operator unsigned short    ( ) const { return std::numeric_limits<unsigned short>::max(); }
-    __forceinline operator          int8_t     ( ) const { return std::numeric_limits<int8_t>::max(); }
-    __forceinline operator uint8_t     ( ) const { return std::numeric_limits<uint8_t>::max(); }
+    __forceinline operator          char     ( ) const { return std::numeric_limits<char>::max(); }
+    __forceinline operator unsigned char     ( ) const { return std::numeric_limits<unsigned char>::max(); }
   };
 
   extern MAYBE_UNUSED PosInfTy inf;
@@ -207,33 +194,4 @@ namespace embree
   };
 
   extern MAYBE_UNUSED UndefinedTy undefined;
-    
-#if defined(__aarch64__)
-  extern const uint32x4_t movemask_mask;
-  extern const uint32x4_t vzero;
-  extern const uint32x4_t v0x80000000;
-  extern const uint32x4_t v0x7fffffff;
-  extern const uint32x4_t v000F;
-  extern const uint32x4_t v00F0;
-  extern const uint32x4_t v00FF;
-  extern const uint32x4_t v0F00;
-  extern const uint32x4_t v0F0F;
-  extern const uint32x4_t v0FF0;
-  extern const uint32x4_t v0FFF;
-  extern const uint32x4_t vF000;
-  extern const uint32x4_t vF00F;
-  extern const uint32x4_t vF0F0;
-  extern const uint32x4_t vF0FF;
-  extern const uint32x4_t vFF00;
-  extern const uint32x4_t vFF0F;
-  extern const uint32x4_t vFFF0;
-  extern const uint32x4_t vFFFF;
-  extern const uint8x16_t v0022;
-  extern const uint8x16_t v1133;
-  extern const uint8x16_t v0101;
-  extern const float32x4_t vOne;
-  extern const float32x4_t vmOne;
-  extern const float32x4_t vInf;
-  extern const float32x4_t vmInf;
-#endif
 }

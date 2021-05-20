@@ -1,4 +1,4 @@
-// Copyright 2009-2020 Intel Corporation
+// Copyright 2009-2021 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
@@ -192,7 +192,7 @@ namespace embree
   ////////////////////////////////////////////////////////////////////////////////
 
   typedef Vec4<bool         > Vec4b;
-  typedef Vec4<uint8_t      > Vec4uc;
+  typedef Vec4<unsigned char> Vec4uc;
   typedef Vec4<int          > Vec4i;
   typedef Vec4<float        > Vec4f;
 }
@@ -205,7 +205,7 @@ namespace embree
 /// SSE / AVX / MIC specializations
 ////////////////////////////////////////////////////////////////////////////////
 
-#if defined(__SSE__) || defined(__ARM_NEON)
+#if defined __SSE__
 #include "../simd/sse.h"
 #endif
 
@@ -225,30 +225,15 @@ namespace embree
   template<> __forceinline Vec4<vfloat4>::Vec4( const Vec3fx& a ) {
     x = a.x; y = a.y; z = a.z; w = a.w;
   }
-#elif defined(__SSE__) || defined(__ARM_NEON)
+#elif defined(__SSE__)
   template<> __forceinline Vec4<vfloat4>::Vec4( const Vec3fx& a ) {
     const vfloat4 v = vfloat4(a.m128); x = shuffle<0,0,0,0>(v); y = shuffle<1,1,1,1>(v); z = shuffle<2,2,2,2>(v); w = shuffle<3,3,3,3>(v);
-  }
-#endif
-
-#if defined(__SSE__) || defined(__ARM_NEON)
-  __forceinline Vec4<vfloat4> broadcast4f( const Vec4<vfloat4>& a, const size_t k ) {
-    return Vec4<vfloat4>(vfloat4::broadcast(&a.x[k]), vfloat4::broadcast(&a.y[k]), vfloat4::broadcast(&a.z[k]), vfloat4::broadcast(&a.w[k]));
   }
 #endif
 
 #if defined(__AVX__)
   template<> __forceinline Vec4<vfloat8>::Vec4( const Vec3fx& a ) {
     x = a.x; y = a.y; z = a.z; w = a.w;
-  }
-  __forceinline Vec4<vfloat4> broadcast4f( const Vec4<vfloat8>& a, const size_t k ) {
-    return Vec4<vfloat4>(vfloat4::broadcast(&a.x[k]), vfloat4::broadcast(&a.y[k]), vfloat4::broadcast(&a.z[k]), vfloat4::broadcast(&a.w[k]));
-  }
-  __forceinline Vec4<vfloat8> broadcast8f( const Vec4<vfloat4>& a, const size_t k ) {
-    return Vec4<vfloat8>(vfloat8::broadcast(&a.x[k]), vfloat8::broadcast(&a.y[k]), vfloat8::broadcast(&a.z[k]), vfloat8::broadcast(&a.w[k]));
-  }
-  __forceinline Vec4<vfloat8> broadcast8f( const Vec4<vfloat8>& a, const size_t k ) {
-    return Vec4<vfloat8>(vfloat8::broadcast(&a.x[k]), vfloat8::broadcast(&a.y[k]), vfloat8::broadcast(&a.z[k]), vfloat8::broadcast(&a.w[k]));
   }
 #endif
 

@@ -1,4 +1,4 @@
-// Copyright 2009-2020 Intel Corporation
+// Copyright 2009-2021 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
@@ -23,9 +23,17 @@
 /// detect platform
 ////////////////////////////////////////////////////////////////////////////////
 
-/* detect 32 or 64 platform */
+/* detect 32 or 64 Intel platform */
 #if defined(__x86_64__) || defined(__ia64__) || defined(_M_X64)
 #define __X86_64__
+#define __X86_ASM__
+#elif defined(__i386__) || defined(_M_IX86)
+#define __X86_ASM__
+#endif
+
+/* detect 64 bit platform */
+#if defined(__X86_64__) || defined(__aarch64__)
+#define __64BIT__
 #endif
 
 /* detect Linux platform */
@@ -88,10 +96,12 @@
 #define dll_import __declspec(dllimport)
 #else
 #define dll_export __attribute__ ((visibility ("default")))
-#define dll_import
+#define dll_import 
 #endif
 
-#ifdef __WIN32__
+// -- GODOT start --
+#if defined(__WIN32__) && !defined(__MINGW32__)
+// -- GODOT end --
 #if !defined(__noinline)
 #define __noinline             __declspec(noinline)
 #endif
@@ -103,15 +113,10 @@
 #define __restrict__           //__restrict // causes issues with MSVC
 #endif
 #if !defined(__thread)
-// NOTE: Require `-fms-extensions` for clang
 #define __thread               __declspec(thread)
 #endif
 #if !defined(__aligned)
-#if defined(__MINGW32__)
-#define __aligned(...)           __attribute__((aligned(__VA_ARGS__)))
-#else
 #define __aligned(...)           __declspec(align(__VA_ARGS__))
-#endif
 #endif
 //#define __FUNCTION__           __FUNCTION__
 #define debugbreak()           __debugbreak()
@@ -147,7 +152,7 @@
 #endif
 
 // -- GODOT start --
-#ifndef likely
+#if !defined(likely)
 // -- GODOT end --
 #if defined(_MSC_VER) && !defined(__INTEL_COMPILER)
 #define   likely(expr) (expr)
@@ -205,7 +210,7 @@ namespace embree {
 
 /* windows does not have ssize_t */
 #if defined(__WIN32__)
-#if defined(__X86_64__) || defined(__aarch64__)
+#if defined(__64BIT__)
 typedef int64_t ssize_t;
 #else
 typedef int32_t ssize_t;
@@ -329,7 +334,7 @@ __forceinline std::string toString(long long value) {
 /// Some macros for static profiling
 ////////////////////////////////////////////////////////////////////////////////
 
-#if defined (__GNUC__)
+#if defined (__GNUC__) 
 #define IACA_SSC_MARK( MARK_ID )						\
 __asm__ __volatile__ (									\
 					  "\n\t  movl $"#MARK_ID", %%ebx"	\
@@ -368,7 +373,7 @@ namespace embree
     bool active;
     const Closure f;
   };
-
+  
   template <typename Closure>
     OnScopeExitHelper<Closure> OnScopeExit(const Closure f) {
     return OnScopeExitHelper<Closure>(f);

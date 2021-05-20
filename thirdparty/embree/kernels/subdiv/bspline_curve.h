@@ -1,4 +1,4 @@
-// Copyright 2009-2020 Intel Corporation
+// Copyright 2009-2021 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
@@ -161,8 +161,8 @@ namespace embree
       template<int M>
       __forceinline void veval(const vfloat<M>& t, Vec4vf<M>& p, Vec4vf<M>& dp) const
       {
-        p = veval(t);
-        dp = veval_du(t);
+        p = veval<M>(t);
+        dp = veval_du<M>(t);
       }
       
       template<int M>
@@ -306,6 +306,7 @@ namespace embree
     ocurve = BezierCurveT<Vertex>(v0,v1,v2,v3);
   }
 
+  template<typename CurveGeometry>
   __forceinline BSplineCurveT<Vec3ff> enlargeRadiusToMinWidth(const IntersectContext* context, const CurveGeometry* geom, const Vec3fa& ray_org, const BSplineCurveT<Vec3ff>& curve)
   {
     return BSplineCurveT<Vec3ff>(enlargeRadiusToMinWidth(context,geom,ray_org,curve.v0),

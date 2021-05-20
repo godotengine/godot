@@ -1,4 +1,4 @@
-// Copyright 2009-2020 Intel Corporation
+// Copyright 2009-2021 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
@@ -418,7 +418,7 @@ __forceinline void __rangeReduceLog(const T &input,
 }
 
 template <typename T> struct ExponentType            { };
-template <int N>      struct ExponentType<vfloat<N>> { typedef vint<N> Ty; };
+template <int N>      struct ExponentType<vfloat_impl<N>> { typedef vint<N> Ty; };
 template <>           struct ExponentType<float>     { typedef int     Ty; };
 
 template <typename T>

@@ -1,4 +1,4 @@
-// Copyright 2009-2020 Intel Corporation
+// Copyright 2009-2021 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
@@ -64,7 +64,7 @@ namespace embree
         const Vec3vf<M> ray_dir(ray.dir.x, ray.dir.y, ray.dir.z);
         const vfloat<M> rd2    = rcp(dot(ray_dir, ray_dir));
 
-        const Vec4vf<M> v0 = enlargeRadiusToMinWidth(context,geom,ray_org,v0i);
+        const Vec4vf<M> v0 = enlargeRadiusToMinWidth<M>(context,geom,ray_org,v0i);
         const Vec3vf<M> center = v0.xyz();
         const vfloat<M> radius = v0.w;
 
@@ -101,7 +101,7 @@ namespace embree
         vbool<M> valid         = valid_i;
         const Vec3vf<M> ray_org(ray.org.x, ray.org.y, ray.org.z);
 
-        const Vec4vf<M> v0 = enlargeRadiusToMinWidth(context,geom,ray_org,v0i);
+        const Vec4vf<M> v0 = enlargeRadiusToMinWidth<M>(context,geom,ray_org,v0i);
         const Vec3vf<M> center = v0.xyz();
         const vfloat<M> radius = v0.w;
 
@@ -148,7 +148,7 @@ namespace embree
         const Vec3vf<M> ray_dir(ray.dir.x[k], ray.dir.y[k], ray.dir.z[k]);
         const vfloat<M> rd2    = rcp(dot(ray_dir, ray_dir));
 
-        const Vec4vf<M> v0 = enlargeRadiusToMinWidth(context,geom,ray_org,v0i);
+        const Vec4vf<M> v0 = enlargeRadiusToMinWidth<M>(context,geom,ray_org,v0i);
         const Vec3vf<M> center = v0.xyz();
         const vfloat<M> radius = v0.w;
 
@@ -187,7 +187,7 @@ namespace embree
         const Vec3vf<M> ray_org(ray.org.x[k], ray.org.y[k], ray.org.z[k]);
         const Vec3vf<M> ray_dir(ray.dir.x[k], ray.dir.y[k], ray.dir.z[k]);
 
-        const Vec4vf<M> v0 = enlargeRadiusToMinWidth(context,geom,ray_org,v0i);
+        const Vec4vf<M> v0 = enlargeRadiusToMinWidth<M>(context,geom,ray_org,v0i);
         const Vec3vf<M> center = v0.xyz();
         const vfloat<M> radius = v0.w;
         

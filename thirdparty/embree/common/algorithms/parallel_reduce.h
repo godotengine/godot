@@ -1,4 +1,4 @@
-// Copyright 2009-2020 Intel Corporation
+// Copyright 2009-2021 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
@@ -43,7 +43,7 @@ namespace embree
   template<typename Index, typename Value, typename Func, typename Reduction>
     __forceinline Value parallel_reduce( const Index first, const Index last, const Index minStepSize, const Value& identity, const Func& func, const Reduction& reduction )
   {
-#if defined(TASKING_INTERNAL) || (defined(TASKING_GCD) && defined(BUILD_IOS))
+#if defined(TASKING_INTERNAL)
 
     /* fast path for small number of iterations */
     Index taskCount = (last-first+minStepSize-1)/minStepSize;

@@ -1,4 +1,4 @@
-// Copyright 2009-2020 Intel Corporation
+// Copyright 2009-2021 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
 #define RTC_EXPORT_API
@@ -8,31 +8,18 @@
 #include "scene.h"
 #include "context.h"
 #include "../../include/embree3/rtcore_ray.h"
-
-#if defined(__aarch64__) && defined(BUILD_IOS)
-#include <mutex>
-#endif
-
 using namespace embree;
 
 RTC_NAMESPACE_BEGIN;
 
   /* mutex to make API thread safe */
-#if defined(__aarch64__) && defined(BUILD_IOS)
-    static std::mutex g_mutex;
-#else
-    static MutexSys g_mutex;
-#endif
+  static MutexSys g_mutex;
 
   RTC_API RTCDevice rtcNewDevice(const char* config)
   {
     RTC_CATCH_BEGIN;
     RTC_TRACE(rtcNewDevice);
-#if defined(__aarch64__) && defined(BUILD_IOS)
-    std::scoped_lock lock(g_mutex);
-#else
     Lock<MutexSys> lock(g_mutex);
-#endif
     Device* device = new Device(config);
     return (RTCDevice) device->refInc();
     RTC_CATCH_END(nullptr);
@@ -45,11 +32,7 @@ RTC_NAMESPACE_BEGIN;
     RTC_CATCH_BEGIN;
     RTC_TRACE(rtcRetainDevice);
     RTC_VERIFY_HANDLE(hdevice);
-#if defined(__aarch64__) && defined(BUILD_IOS)
-    std::scoped_lock lock(g_mutex);
-#else
     Lock<MutexSys> lock(g_mutex);
-#endif
     device->refInc();
     RTC_CATCH_END(nullptr);
   }
@@ -60,11 +43,7 @@ RTC_NAMESPACE_BEGIN;
     RTC_CATCH_BEGIN;
     RTC_TRACE(rtcReleaseDevice);
     RTC_VERIFY_HANDLE(hdevice);
-#if defined(__aarch64__) && defined(BUILD_IOS)
-    std::scoped_lock lock(g_mutex);
-#else
     Lock<MutexSys> lock(g_mutex);
-#endif
     device->refDec();
     RTC_CATCH_END(nullptr);
   }
@@ -75,11 +54,7 @@ RTC_NAMESPACE_BEGIN;
     RTC_CATCH_BEGIN;
     RTC_TRACE(rtcGetDeviceProperty);
     RTC_VERIFY_HANDLE(hdevice);
-#if defined(__aarch64__) && defined(BUILD_IOS)
-    std::scoped_lock lock(g_mutex);
-#else
     Lock<MutexSys> lock(g_mutex);
-#endif
     return device->getProperty(prop);
     RTC_CATCH_END(device);
     return 0;
@@ -92,11 +67,7 @@ RTC_NAMESPACE_BEGIN;
     RTC_TRACE(rtcSetDeviceProperty);
     const bool internal_prop = (size_t)prop >= 1000000 && (size_t)prop < 1000004;
     if (!internal_prop) RTC_VERIFY_HANDLE(hdevice); // allow NULL device for special internal settings
-#if defined(__aarch64__) && defined(BUILD_IOS)
-    std::scoped_lock lock(g_mutex);
-#else
     Lock<MutexSys> lock(g_mutex);
-#endif
     device->setProperty(prop,val);
     RTC_CATCH_END(device);
   }
@@ -212,11 +183,7 @@ RTC_NAMESPACE_BEGIN;
     RTC_CATCH_BEGIN;
     RTC_TRACE(rtcSetSceneProgressMonitorFunction);
     RTC_VERIFY_HANDLE(hscene);
-#if defined(__aarch64__) && defined(BUILD_IOS)
-    std::scoped_lock lock(g_mutex);
-#else
     Lock<MutexSys> lock(g_mutex);
-#endif
     scene->setProgressMonitorFunction(progress,ptr);
     RTC_CATCH_END2(scene);
   }
@@ -515,12 +482,12 @@ RTC_NAMESPACE_BEGIN;
 
     IntersectContext context(scene,user_context);
 #if !defined(EMBREE_RAY_PACKETS)
-    RayHit4* rayhit4 = (RayHit4*)rayhit;
+    Ray4* ray4 = (Ray4*) rayhit;
     for (size_t i=0; i<4; i++) {
       if (!valid[i]) continue;
-      RayHit ray1; rayhit4->get(i,ray1);
+      RayHit ray1; ray4->get(i,ray1);
       scene->intersectors.intersect((RTCRayHit&)ray1,&context);
-      rayhit4->set(i,ray1);
+      ray4->set(i,ray1);
     }
 #else
     scene->intersectors.intersect4(valid,*rayhit,&context);
@@ -546,12 +513,12 @@ RTC_NAMESPACE_BEGIN;
 
     IntersectContext context(scene,user_context);
 #if !defined(EMBREE_RAY_PACKETS)
-    RayHit8* rayhit8 = (RayHit8*) rayhit;
+    Ray8* ray8 = (Ray8*) rayhit;
     for (size_t i=0; i<8; i++) {
       if (!valid[i]) continue;
-      RayHit ray1; rayhit8->get(i,ray1);
+      RayHit ray1; ray8->get(i,ray1);
       scene->intersectors.intersect((RTCRayHit&)ray1,&context);
-      rayhit8->set(i,ray1);
+      ray8->set(i,ray1);
     }
 #else
     if (likely(scene->intersectors.intersector8))
@@ -579,12 +546,12 @@ RTC_NAMESPACE_BEGIN;
 
     IntersectContext context(scene,user_context);
 #if !defined(EMBREE_RAY_PACKETS)
-    RayHit16* rayhit16 = (RayHit16*) rayhit;
+    Ray16* ray16 = (Ray16*) rayhit;
     for (size_t i=0; i<16; i++) {
       if (!valid[i]) continue;
-      RayHit ray1; rayhit16->get(i,ray1);
+      RayHit ray1; ray16->get(i,ray1);
       scene->intersectors.intersect((RTCRayHit&)ray1,&context);
-      rayhit16->set(i,ray1);
+      ray16->set(i,ray1);
     }
 #else
     if (likely(scene->intersectors.intersector16))
@@ -766,12 +733,12 @@ RTC_NAMESPACE_BEGIN;
 
     IntersectContext context(scene,user_context);
 #if !defined(EMBREE_RAY_PACKETS)
-    Ray4* ray4 = (Ray4*) ray;
+    RayHit4* ray4 = (RayHit4*) ray;
     for (size_t i=0; i<4; i++) {
       if (!valid[i]) continue;
-      Ray ray1; ray4->get(i,ray1);
+      RayHit ray1; ray4->get(i,ray1);
       scene->intersectors.occluded((RTCRay&)ray1,&context);
-      ray4->set(i,ray1);
+      ray4->geomID[i] = ray1.geomID; 
     }
 #else
     scene->intersectors.occluded4(valid,*ray,&context);
@@ -797,10 +764,10 @@ RTC_NAMESPACE_BEGIN;
 
     IntersectContext context(scene,user_context);
 #if !defined(EMBREE_RAY_PACKETS)
-    Ray8* ray8 = (Ray8*) ray;
+    RayHit8* ray8 = (RayHit8*) ray;
     for (size_t i=0; i<8; i++) {
       if (!valid[i]) continue;
-      Ray ray1; ray8->get(i,ray1);
+      RayHit ray1; ray8->get(i,ray1);
       scene->intersectors.occluded((RTCRay&)ray1,&context);
       ray8->set(i,ray1);
     }
@@ -831,10 +798,10 @@ RTC_NAMESPACE_BEGIN;
 
     IntersectContext context(scene,user_context);
 #if !defined(EMBREE_RAY_PACKETS)
-    Ray16* ray16 = (Ray16*) ray;
+    RayHit16* ray16 = (RayHit16*) ray;
     for (size_t i=0; i<16; i++) {
       if (!valid[i]) continue;
-      Ray ray1; ray16->get(i,ray1);
+      RayHit ray1; ray16->get(i,ray1);
       scene->intersectors.occluded((RTCRay&)ray1,&context);
       ray16->set(i,ray1);
     }
@@ -1152,7 +1119,7 @@ RTC_NAMESPACE_BEGIN;
     {
 #if defined(EMBREE_GEOMETRY_TRIANGLE)
       createTriangleMeshTy createTriangleMesh = nullptr;
-      SELECT_SYMBOL_DEFAULT_AVX_AVX2_AVX512KNL_AVX512SKX(device->enabled_cpu_features,createTriangleMesh);
+      SELECT_SYMBOL_DEFAULT_AVX_AVX2_AVX512(device->enabled_cpu_features,createTriangleMesh);
       Geometry* geom = createTriangleMesh(device);
       return (RTCGeometry) geom->refInc();
 #else
@@ -1164,7 +1131,7 @@ RTC_NAMESPACE_BEGIN;
     {
 #if defined(EMBREE_GEOMETRY_QUAD)
       createQuadMeshTy createQuadMesh = nullptr;
-      SELECT_SYMBOL_DEFAULT_AVX_AVX2_AVX512KNL_AVX512SKX(device->enabled_cpu_features,createQuadMesh);
+      SELECT_SYMBOL_DEFAULT_AVX_AVX2_AVX512(device->enabled_cpu_features,createQuadMesh);
       Geometry* geom = createQuadMesh(device);
       return (RTCGeometry) geom->refInc();
 #else
@@ -1178,7 +1145,7 @@ RTC_NAMESPACE_BEGIN;
     {
 #if defined(EMBREE_GEOMETRY_POINT)
       createPointsTy createPoints = nullptr;
-      SELECT_SYMBOL_DEFAULT_AVX_AVX2_AVX512KNL_AVX512SKX(device->enabled_builder_cpu_features, createPoints);
+      SELECT_SYMBOL_DEFAULT_AVX_AVX2_AVX512(device->enabled_builder_cpu_features, createPoints);
 
       Geometry *geom;
       switch(type) {
@@ -1223,9 +1190,9 @@ RTC_NAMESPACE_BEGIN;
     {
 #if defined(EMBREE_GEOMETRY_CURVE)
       createLineSegmentsTy createLineSegments = nullptr;
-      SELECT_SYMBOL_DEFAULT_AVX_AVX2_AVX512KNL_AVX512SKX(device->enabled_cpu_features,createLineSegments);
+      SELECT_SYMBOL_DEFAULT_AVX_AVX2_AVX512(device->enabled_cpu_features,createLineSegments);
       createCurvesTy createCurves = nullptr;
-      SELECT_SYMBOL_DEFAULT_AVX_AVX2_AVX512KNL_AVX512SKX(device->enabled_cpu_features,createCurves);
+      SELECT_SYMBOL_DEFAULT_AVX_AVX2_AVX512(device->enabled_cpu_features,createCurves);
       
       Geometry* geom;
       switch (type) {
@@ -1262,7 +1229,7 @@ RTC_NAMESPACE_BEGIN;
 #if defined(EMBREE_GEOMETRY_SUBDIVISION)
       createSubdivMeshTy createSubdivMesh = nullptr;
       SELECT_SYMBOL_DEFAULT_AVX(device->enabled_cpu_features,createSubdivMesh);
-      //SELECT_SYMBOL_DEFAULT_AVX_AVX2_AVX512KNL_AVX512SKX(device->enabled_cpu_features,createSubdivMesh); // FIXME: this does not work for some reason?
+      //SELECT_SYMBOL_DEFAULT_AVX_AVX2_AVX512(device->enabled_cpu_features,createSubdivMesh); // FIXME: this does not work for some reason?
       Geometry* geom = createSubdivMesh(device);
       return (RTCGeometry) geom->refInc();
 #else
@@ -1274,7 +1241,7 @@ RTC_NAMESPACE_BEGIN;
     {
 #if defined(EMBREE_GEOMETRY_USER)
       createUserGeometryTy createUserGeometry = nullptr;
-      SELECT_SYMBOL_DEFAULT_AVX_AVX2_AVX512KNL_AVX512SKX(device->enabled_cpu_features,createUserGeometry);
+      SELECT_SYMBOL_DEFAULT_AVX_AVX2_AVX512(device->enabled_cpu_features,createUserGeometry);
       Geometry* geom = createUserGeometry(device);
       return (RTCGeometry) geom->refInc();
 #else
@@ -1286,7 +1253,7 @@ RTC_NAMESPACE_BEGIN;
     {
 #if defined(EMBREE_GEOMETRY_INSTANCE)
       createInstanceTy createInstance = nullptr;
-      SELECT_SYMBOL_DEFAULT_AVX_AVX2_AVX512KNL_AVX512SKX(device->enabled_cpu_features,createInstance);
+      SELECT_SYMBOL_DEFAULT_AVX_AVX2_AVX512(device->enabled_cpu_features,createInstance);
       Geometry* geom = createInstance(device);
       return (RTCGeometry) geom->refInc();
 #else
@@ -1298,7 +1265,7 @@ RTC_NAMESPACE_BEGIN;
     {
 #if defined(EMBREE_GEOMETRY_GRID)
       createGridMeshTy createGridMesh = nullptr;
-      SELECT_SYMBOL_DEFAULT_AVX_AVX2_AVX512KNL_AVX512SKX(device->enabled_cpu_features,createGridMesh);
+      SELECT_SYMBOL_DEFAULT_AVX_AVX2_AVX512(device->enabled_cpu_features,createGridMesh);
       Geometry* geom = createGridMesh(device);
       return (RTCGeometry) geom->refInc();
 #else

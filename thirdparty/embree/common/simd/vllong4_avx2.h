@@ -1,7 +1,15 @@
-// Copyright 2009-2020 Intel Corporation
+// Copyright 2009-2021 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
+
+#define vboolf vboolf_impl
+#define vboold vboold_impl
+#define vint vint_impl
+#define vuint vuint_impl
+#define vllong vllong_impl
+#define vfloat vfloat_impl
+#define vdouble vdouble_impl
 
 namespace embree
 { 
@@ -94,16 +102,6 @@ namespace embree
       _mm256_maskstore_pd((double*)ptr,mask,_mm256_castsi256_pd(f));
 #endif
     }
-
-    static __forceinline vllong4 broadcast64bit(size_t v) {
-      return _mm256_set1_epi64x(v);
-    }
-
-    static __forceinline size_t extract64bit(const vllong4& v)
-    {
-      return _mm_cvtsi128_si64(_mm256_castsi256_si128(v));
-    }
-
 
     ////////////////////////////////////////////////////////////////////////////////
     /// Array Access
@@ -276,18 +274,6 @@ namespace embree
   __forceinline vboold4 le(const vboold4& mask, const vllong4& a, const vllong4& b) { return mask & (a <= b); }
 #endif
 
-  __forceinline void xchg(const vboold4& m, vllong4& a, vllong4& b) {
-    const vllong4 c = a; a = select(m,b,a); b = select(m,c,b);
-  }
-
-  __forceinline vboold4 test(const vllong4& a, const vllong4& b) {
-#if defined(__AVX512VL__)
-    return _mm256_test_epi64_mask(a,b);
-#else
-    return _mm256_testz_si256(a,b);
-#endif
-  }
-
   ////////////////////////////////////////////////////////////////////////////////
   // Movement/Shifting/Shuffling Functions
   ////////////////////////////////////////////////////////////////////////////////
@@ -356,3 +342,11 @@ namespace embree
     return cout;
   }
 }
+
+#undef vboolf
+#undef vboold
+#undef vint
+#undef vuint
+#undef vllong
+#undef vfloat
+#undef vdouble

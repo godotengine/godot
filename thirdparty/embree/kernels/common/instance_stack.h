@@ -1,4 +1,4 @@
-// Copyright 2009-2020 Intel Corporation
+// Copyright 2009-2021 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
@@ -56,144 +56,124 @@ RTC_FORCEINLINE void pop(RTCIntersectContext* context)
 #endif
 }
 
-/*******************************************************************************
+/*
  * Optimized instance id stack copy.
- * The copy() function at the bottom of this block will either copy full
+ * The copy() functions will either copy full
  * stacks or copy only until the last valid element has been copied, depending
  * on RTC_MAX_INSTANCE_LEVEL_COUNT.
- ******************************************************************************/
-
-/*
- * Plain array assignment. This works for scalar->scalar,
- * scalar->vector, and vector->vector.
  */
-template <class Src, class Tgt>
-RTC_FORCEINLINE void level_copy(unsigned level, Src* src, Tgt* tgt)
-{
-  tgt[level] = src[level];
-}
-
-/*
- * Masked SIMD vector->vector store.
- */
-template <int K>
-RTC_FORCEINLINE void level_copy(unsigned level, const vuint<K>* src, vuint<K>* tgt, const vbool<K>& mask)
-{
-  vuint<K>::storeu(mask, tgt + level, src[level]);
-}
-
-/*
- * Masked scalar->SIMD vector store.
- */
-template <int K>
-RTC_FORCEINLINE void level_copy(unsigned level, const unsigned* src, vuint<K>* tgt, const vbool<K>& mask)
-{
-  vuint<K>::store(mask, tgt + level, src[level]);
-}
-
-/*
- * Indexed assign from vector to scalar.
- */
-template <int K>
-RTC_FORCEINLINE void level_copy(unsigned level, const vuint<K>* src, unsigned* tgt, const size_t& idx)
-{
-  tgt[level] = src[level][idx];
-}
-
-/*
- * Indexed assign from scalar to vector.
- */
-template <int K>
-RTC_FORCEINLINE void level_copy(unsigned level, const unsigned* src, vuint<K>* tgt, const size_t& idx)
-{
-  tgt[level][idx] = src[level];
-}
-
-/*
- * Indexed assign from vector to vector.
- */
-template <int K>
-RTC_FORCEINLINE void level_copy(unsigned level, const vuint<K>* src, vuint<K>* tgt, const size_t& i, const size_t& j)
-{
-  tgt[level][j] = src[level][i];
-}
-
-/*
- * Check if the given stack level is valid.
- * These are only used for large max stack sizes.
- */
-RTC_FORCEINLINE bool level_valid(unsigned level, const unsigned* stack)
-{
-  return stack[level] != RTC_INVALID_GEOMETRY_ID;
-}
-RTC_FORCEINLINE bool level_valid(unsigned level, const unsigned* stack, const size_t& /*i*/)
-{
-  return stack[level] != RTC_INVALID_GEOMETRY_ID;
-}
-template <int K>
-RTC_FORCEINLINE bool level_valid(unsigned level, const unsigned* stack, const vbool<K>& /*mask*/)
-{
-  return stack[level] != RTC_INVALID_GEOMETRY_ID;
-}
-
-template <int K>
-RTC_FORCEINLINE bool level_valid(unsigned level, const vuint<K>* stack)
-{
-  return any(stack[level] != RTC_INVALID_GEOMETRY_ID);
-}
-template <int K>
-RTC_FORCEINLINE bool level_valid(unsigned level, const vuint<K>* stack, const vbool<K>& mask)
-{
-  return any(mask & (stack[level] != RTC_INVALID_GEOMETRY_ID));
-}
-
-template <int K>
-RTC_FORCEINLINE bool level_valid(unsigned level, const vuint<K>* stack, const size_t& i)
-{
-  return stack[level][i] != RTC_INVALID_GEOMETRY_ID;
-}
-template <int K>
-RTC_FORCEINLINE bool level_valid(unsigned level, const vuint<K>* stack, const size_t& i, const size_t& /*j*/)
-{
-  return stack[level][i] != RTC_INVALID_GEOMETRY_ID;
-}
-
-/*
- * Copy an instance ID stack.
- *
- * This function automatically selects a LevelFunctor from the above Assign 
- * structs.
- */
-template <class Src, class Tgt, class... Args>
-RTC_FORCEINLINE void copy(Src src, Tgt tgt, Args&&... args)
+RTC_FORCEINLINE void copy_UU(const unsigned* src, unsigned* tgt)
 {
 #if (RTC_MAX_INSTANCE_LEVEL_COUNT == 1)
-  /* 
-   * Avoid all loops for only one level. 
-   */
-  level_copy(0, src, tgt, std::forward<Args>(args)...);
+  tgt[0] = src[0];
+  
+#else
+  for (unsigned l = 0; l < RTC_MAX_INSTANCE_LEVEL_COUNT; ++l) {
+    tgt[l] = src[l];
+    if (RTC_MAX_INSTANCE_LEVEL_COUNT > 4)
+      if (src[l] == RTC_INVALID_GEOMETRY_ID)
+        break;
+  }
+#endif
+}
 
-#elif (RTC_MAX_INSTANCE_LEVEL_COUNT <= 4)
-  /* 
-   * It is faster to avoid the valid test for low level counts.
-   * Just copy the whole stack.
-   */
-  for (unsigned l = 0; l < RTC_MAX_INSTANCE_LEVEL_COUNT; ++l)
-    level_copy(l, src, tgt, std::forward<Args>(args)...);
+template <int K>
+RTC_FORCEINLINE void copy_UV(const unsigned* src, vuint<K>* tgt)
+{
+#if (RTC_MAX_INSTANCE_LEVEL_COUNT == 1)
+  tgt[0] = src[0];
 
 #else
-  /* 
-   * For general stack sizes, it pays off to test for validity.
-   */
-  bool valid = true;
-  for (unsigned l = 0; l < RTC_MAX_INSTANCE_LEVEL_COUNT && valid; ++l)
-  {
-    level_copy(l, src, tgt, std::forward<Args>(args)...);
-    valid = level_valid(l, src, std::forward<Args>(args)...);
+  for (unsigned l = 0; l < RTC_MAX_INSTANCE_LEVEL_COUNT; ++l) {
+    tgt[l] = src[l];
+    if (RTC_MAX_INSTANCE_LEVEL_COUNT > 4)
+      if (src[l] == RTC_INVALID_GEOMETRY_ID)
+        break;
+  }
+#endif
+}
+
+template <int K>
+RTC_FORCEINLINE void copy_UV(const unsigned* src, vuint<K>* tgt, size_t j)
+{
+#if (RTC_MAX_INSTANCE_LEVEL_COUNT == 1)
+  tgt[0][j] = src[0];
+
+#else
+  for (unsigned l = 0; l < RTC_MAX_INSTANCE_LEVEL_COUNT; ++l) {
+    tgt[l][j] = src[l];
+    if (RTC_MAX_INSTANCE_LEVEL_COUNT > 4)
+      if (src[l] == RTC_INVALID_GEOMETRY_ID)
+        break;
+  }
+#endif
+}
+
+template <int K>
+RTC_FORCEINLINE void copy_UV(const unsigned* src, vuint<K>* tgt, const vbool<K>& mask)
+{
+#if (RTC_MAX_INSTANCE_LEVEL_COUNT == 1)
+  vuint<K>::store(mask, tgt, src[0]);
+
+#else
+  for (unsigned l = 0; l < RTC_MAX_INSTANCE_LEVEL_COUNT; ++l) {
+    vuint<K>::store(mask, tgt + l, src[l]);
+    if (RTC_MAX_INSTANCE_LEVEL_COUNT > 4)
+      if (src[l] == RTC_INVALID_GEOMETRY_ID)
+        break;
+  }
+#endif
+}
+
+template <int K>
+RTC_FORCEINLINE void copy_VU(const vuint<K>* src, unsigned* tgt, size_t i)
+{
+#if (RTC_MAX_INSTANCE_LEVEL_COUNT == 1)
+  tgt[0] = src[0][i];
+
+#else
+  for (unsigned l = 0; l < RTC_MAX_INSTANCE_LEVEL_COUNT; ++l) {
+    tgt[l] = src[l][i];
+    if (RTC_MAX_INSTANCE_LEVEL_COUNT > 4)
+      if (src[l][i] == RTC_INVALID_GEOMETRY_ID)
+        break;
+  }
+#endif
+}
+
+template <int K>
+RTC_FORCEINLINE void copy_VV(const vuint<K>* src, vuint<K>* tgt, size_t i, size_t j)
+{
+#if (RTC_MAX_INSTANCE_LEVEL_COUNT == 1)
+  tgt[0][j] = src[0][i];
+
+#else
+  for (unsigned l = 0; l < RTC_MAX_INSTANCE_LEVEL_COUNT; ++l) {
+    tgt[l][j] = src[l][i];
+    if (RTC_MAX_INSTANCE_LEVEL_COUNT > 4)
+      if (src[l][i] == RTC_INVALID_GEOMETRY_ID)
+        break;
+  }
+#endif
+}
+
+template <int K>
+RTC_FORCEINLINE void copy_VV(const vuint<K>* src, vuint<K>* tgt, const vbool<K>& mask)
+{
+#if (RTC_MAX_INSTANCE_LEVEL_COUNT == 1)
+  vuint<K>::store(mask, tgt, src[0]);
+
+#else
+  vbool<K> done = !mask;
+  for (unsigned l = 0; l < RTC_MAX_INSTANCE_LEVEL_COUNT; ++l) {
+    vuint<K>::store(mask, tgt + l, src[l]);
+    if (RTC_MAX_INSTANCE_LEVEL_COUNT > 4) {
+      done |= src[l] == RTC_INVALID_GEOMETRY_ID;
+      if (all(done)) break;
+    }
   }
 #endif
 }
 
 } // namespace instance_id_stack
 } // namespace embree
-

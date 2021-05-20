@@ -1,4 +1,4 @@
-// Copyright 2009-2020 Intel Corporation
+// Copyright 2009-2021 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
 #include "taskschedulerinternal.h"
@@ -154,12 +154,6 @@ namespace embree
     assert(newNumThreads);
     newNumThreads = min(newNumThreads, (size_t) getNumberOfLogicalThreads());
 
-    // We are observing a few % gain by increasing number threads by 2 on aarch64.
-#if defined(__aarch64__) && defined(BUILD_IOS)
-    numThreads = newNumThreads*2;
-#else
-    numThreads = newNumThreads;
-#endif
     numThreads = newNumThreads;
     if (!startThreads && !running) return;
     running = true;
@@ -382,10 +376,10 @@ namespace embree
           yield();
 #endif
 	}
-    // -- GODOT start --
-    // return except;
-    return;
-    // -- GODOT end --
+     // -- GODOT start --
+     // return except;
+     return;
+     // -- GODOT end --
   }
 
   bool TaskScheduler::steal_from_other_threads(Thread& thread)

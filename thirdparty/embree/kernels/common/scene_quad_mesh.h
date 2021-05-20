@@ -1,4 +1,4 @@
-// Copyright 2009-2020 Intel Corporation
+// Copyright 2009-2021 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
@@ -43,6 +43,66 @@ namespace embree
     void interpolate(const RTCInterpolateArguments* const args);
     void addElementsToCount (GeometryCounts & counts) const;
 
+    template<int N>
+      void interpolate_impl(const RTCInterpolateArguments* const args)
+    {
+      unsigned int primID = args->primID;
+      float u = args->u;
+      float v = args->v;
+      RTCBufferType bufferType = args->bufferType;
+      unsigned int bufferSlot = args->bufferSlot;
+      float* P = args->P;
+      float* dPdu = args->dPdu;
+      float* dPdv = args->dPdv;
+      float* ddPdudu = args->ddPdudu;
+      float* ddPdvdv = args->ddPdvdv;
+      float* ddPdudv = args->ddPdudv;
+      unsigned int valueCount = args->valueCount;
+      
+      /* calculate base pointer and stride */
+      assert((bufferType == RTC_BUFFER_TYPE_VERTEX && bufferSlot < numTimeSteps) ||
+             (bufferType == RTC_BUFFER_TYPE_VERTEX_ATTRIBUTE && bufferSlot <= vertexAttribs.size()));
+      const char* src = nullptr; 
+      size_t stride = 0;
+      if (bufferType == RTC_BUFFER_TYPE_VERTEX_ATTRIBUTE) {
+        src    = vertexAttribs[bufferSlot].getPtr();
+        stride = vertexAttribs[bufferSlot].getStride();
+      } else {
+        src    = vertices[bufferSlot].getPtr();
+        stride = vertices[bufferSlot].getStride();
+      }
+      
+      for (unsigned int i=0; i<valueCount; i+=N)
+      {
+        const vbool<N> valid = vint<N>((int)i)+vint<N>(step) < vint<N>(int(valueCount));
+        const size_t ofs = i*sizeof(float);
+        const Quad& tri = quad(primID);
+        const vfloat<N> p0 = mem<vfloat<N>>::loadu(valid,(float*)&src[tri.v[0]*stride+ofs]);
+        const vfloat<N> p1 = mem<vfloat<N>>::loadu(valid,(float*)&src[tri.v[1]*stride+ofs]);
+        const vfloat<N> p2 = mem<vfloat<N>>::loadu(valid,(float*)&src[tri.v[2]*stride+ofs]);
+        const vfloat<N> p3 = mem<vfloat<N>>::loadu(valid,(float*)&src[tri.v[3]*stride+ofs]);      
+        const vbool<N> left = u+v <= 1.0f;
+        const vfloat<N> Q0 = select(left,p0,p2);
+        const vfloat<N> Q1 = select(left,p1,p3);
+        const vfloat<N> Q2 = select(left,p3,p1);
+        const vfloat<N> U  = select(left,u,vfloat<N>(1.0f)-u);
+        const vfloat<N> V  = select(left,v,vfloat<N>(1.0f)-v);
+        const vfloat<N> W  = 1.0f-U-V;
+        if (P) {
+          mem<vfloat<N>>::storeu(valid,P+i,madd(W,Q0,madd(U,Q1,V*Q2)));
+        }
+        if (dPdu) { 
+          assert(dPdu); mem<vfloat<N>>::storeu(valid,dPdu+i,select(left,Q1-Q0,Q0-Q1));
+          assert(dPdv); mem<vfloat<N>>::storeu(valid,dPdv+i,select(left,Q2-Q0,Q0-Q2));
+        }
+        if (ddPdudu) { 
+          assert(ddPdudu); mem<vfloat<N>>::storeu(valid,ddPdudu+i,vfloat<N>(zero));
+          assert(ddPdvdv); mem<vfloat<N>>::storeu(valid,ddPdvdv+i,vfloat<N>(zero));
+          assert(ddPdudv); mem<vfloat<N>>::storeu(valid,ddPdudv+i,vfloat<N>(zero));
+        }
+      }
+    }
+        
   public:
 
     /*! returns number of vertices */

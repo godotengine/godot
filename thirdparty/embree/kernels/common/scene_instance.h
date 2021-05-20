@@ -1,4 +1,4 @@
-// Copyright 2009-2020 Intel Corporation
+// Copyright 2009-2021 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
@@ -150,8 +150,8 @@ namespace embree
     __forceinline AffineSpace3vf<K> getWorld2Local(const vbool<K>& valid, const vfloat<K>& t) const
     {
       if (unlikely(gsubtype == GTY_SUBTYPE_INSTANCE_QUATERNION))
-        return getWorld2LocalSlerp(valid, t);
-      return getWorld2LocalLerp(valid, t);
+        return getWorld2LocalSlerp<K>(valid, t);
+      return getWorld2LocalLerp<K>(valid, t);
     }
 
     private:
@@ -160,7 +160,7 @@ namespace embree
     __forceinline AffineSpace3vf<K> getWorld2LocalSlerp(const vbool<K>& valid, const vfloat<K>& t) const
     {
       vfloat<K> ftime;
-      const vint<K> itime_k = timeSegment(t, ftime);
+      const vint<K> itime_k = timeSegment<K>(t, ftime);
       assert(any(valid));
       const size_t index = bsf(movemask(valid));
       const int itime = itime_k[index];
@@ -186,7 +186,7 @@ namespace embree
     __forceinline AffineSpace3vf<K> getWorld2LocalLerp(const vbool<K>& valid, const vfloat<K>& t) const
     {
       vfloat<K> ftime;
-      const vint<K> itime_k = timeSegment(t, ftime);
+      const vint<K> itime_k = timeSegment<K>(t, ftime);
       assert(any(valid));
       const size_t index = bsf(movemask(valid));
       const int itime = itime_k[index];

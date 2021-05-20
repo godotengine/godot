@@ -1,4 +1,4 @@
-// Copyright 2009-2020 Intel Corporation
+// Copyright 2009-2021 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
 #include "bvh.h"
@@ -51,7 +51,7 @@ namespace embree
   template<int N>
   void BVHN<N>::layoutLargeNodes(size_t num)
   {
-#if defined(__X86_64__) || defined(__aarch64__) // do not use tree rotations on 32 bit platforms, barrier bit in NodeRef will cause issues
+#if defined(__64BIT__) // do not use tree rotations on 32 bit platforms, barrier bit in NodeRef will cause issues
     struct NodeArea 
     {
       __forceinline NodeArea() {}
@@ -183,7 +183,7 @@ namespace embree
   template class BVHN<8>;
 #endif
 
-#if !defined(__AVX__) || !defined(EMBREE_TARGET_SSE2) && !defined(EMBREE_TARGET_SSE42) || defined(__aarch64__)
+#if !defined(__AVX__) || !defined(EMBREE_TARGET_SSE2) && !defined(EMBREE_TARGET_SSE42)
   template class BVHN<4>;
 #endif
 }

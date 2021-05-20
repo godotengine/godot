@@ -1,4 +1,4 @@
-// Copyright 2009-2020 Intel Corporation
+// Copyright 2009-2021 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
@@ -19,9 +19,6 @@ namespace embree
     template<int N, int K, int types, bool robust, typename PrimitiveIntersectorK, bool single = true>
     class BVHNIntersectorKHybrid
     {
-      /* right now AVX512KNL SIMD extension only for standard node types */
-      static const size_t Nx = types == BVH_AN1 ? vextend<N>::size : N;
-
       /* shortcuts for frequently used types */
       typedef typename PrimitiveIntersectorK::Precalculations Precalculations;
       typedef typename PrimitiveIntersectorK::Primitive Primitive;

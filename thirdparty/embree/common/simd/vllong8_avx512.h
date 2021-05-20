@@ -1,7 +1,15 @@
-// Copyright 2009-2020 Intel Corporation
+// Copyright 2009-2021 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
+
+#define vboolf vboolf_impl
+#define vboold vboold_impl
+#define vint vint_impl
+#define vuint vuint_impl
+#define vllong vllong_impl
+#define vfloat vfloat_impl
+#define vdouble vdouble_impl
 
 namespace embree
 { 
@@ -78,7 +86,7 @@ namespace embree
       return _mm512_load_si512(addr);
     }
 
-    static __forceinline vllong8 load(const uint8_t* ptr) {
+    static __forceinline vllong8 load(const unsigned char* ptr) {
       return _mm512_cvtepu8_epi64(*(__m128i*)ptr); 
     }
 
@@ -98,19 +106,6 @@ namespace embree
       _mm512_mask_store_epi64(addr,mask,v2);
     }
 
-    /* pass by value to avoid compiler generating inefficient code */
-    static __forceinline void storeu_compact(const vboold8 mask, void* addr, const vllong8& reg) {
-      _mm512_mask_compressstoreu_epi64(addr,mask,reg);
-    }
-
-    static __forceinline vllong8 compact64bit(const vboold8& mask, vllong8& v) {
-      return _mm512_mask_compress_epi64(v,mask,v);
-    }
-
-    static __forceinline vllong8 compact64bit(const vboold8& mask, vllong8& dest, const vllong8& source) {
-      return _mm512_mask_compress_epi64(dest,mask,source);
-    }
-
     static __forceinline vllong8 compact(const vboold8& mask, vllong8& v) {
       return _mm512_mask_compress_epi64(v,mask,v);
     }
@@ -122,16 +117,6 @@ namespace embree
     static __forceinline vllong8 expand(const vboold8& mask, const vllong8& a, vllong8& b) {
       return _mm512_mask_expand_epi64(b,mask,a);
     }
-
-    static __forceinline vllong8 broadcast64bit(size_t v) {
-      return _mm512_set1_epi64(v);
-    }
-
-    static __forceinline size_t extract64bit(const vllong8& v)
-    {
-      return _mm_cvtsi128_si64(_mm512_castsi512_si128(v));
-    }
-
 
     ////////////////////////////////////////////////////////////////////////////////
     /// Array Access
@@ -271,18 +256,6 @@ namespace embree
     return _mm512_mask_or_epi64(f,m,t,t); 
   }
 
-  __forceinline void xchg(const vboold8& m, vllong8& a, vllong8& b) {
-    const vllong8 c = a; a = select(m,b,a); b = select(m,c,b);
-  }
-
-  __forceinline vboold8 test(const vboold8& m, const vllong8& a, const vllong8& b) {
-    return _mm512_mask_test_epi64_mask(m,a,b);
-  }
-
-  __forceinline vboold8 test(const vllong8& a, const vllong8& b) {
-    return _mm512_test_epi64_mask(a,b);
-  }
-
   ////////////////////////////////////////////////////////////////////////////////
   // Movement/Shifting/Shuffling Functions
   ////////////////////////////////////////////////////////////////////////////////
@@ -319,10 +292,6 @@ namespace embree
 
   __forceinline long long toScalar(const vllong8& v) {
     return _mm_cvtsi128_si64(_mm512_castsi512_si128(v));
-  }
-
-  __forceinline vllong8 zeroExtend32Bit(const __m512i& a) {
-    return _mm512_cvtepu32_epi64(_mm512_castsi512_si256(a));
   }
 
   ////////////////////////////////////////////////////////////////////////////////
@@ -379,3 +348,11 @@ namespace embree
     return cout;
   }
 }
+
+#undef vboolf
+#undef vboold
+#undef vint
+#undef vuint
+#undef vllong
+#undef vfloat
+#undef vdouble

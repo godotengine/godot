@@ -1,9 +1,17 @@
-// Copyright 2009-2020 Intel Corporation
+// Copyright 2009-2021 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
 
 #include "../math/math.h"
+
+#define vboolf vboolf_impl
+#define vboold vboold_impl
+#define vint vint_impl
+#define vuint vuint_impl
+#define vllong vllong_impl
+#define vfloat vfloat_impl
+#define vdouble vdouble_impl
 
 namespace embree
 {
@@ -23,7 +31,7 @@ namespace embree
     ////////////////////////////////////////////////////////////////////////////////
     /// Constructors, Assignment & Cast Operators
     ////////////////////////////////////////////////////////////////////////////////
-
+    
     __forceinline vint() {}
     __forceinline vint(const vint4& a) { v = a.v; }
     __forceinline vint4& operator =(const vint4& a) { v = a.v; return *this; }
@@ -68,7 +76,7 @@ namespace embree
 
     static __forceinline void store (void* ptr, const vint4& v) { _mm_store_si128((__m128i*)ptr,v); }
     static __forceinline void storeu(void* ptr, const vint4& v) { _mm_storeu_si128((__m128i*)ptr,v); }
-
+    
 #if defined(__AVX512VL__)
 
     static __forceinline vint4 compact(const vboolf4& mask, vint4 &v) {
@@ -98,81 +106,61 @@ namespace embree
 #endif
 
 
-#if defined(__aarch64__)
-    static __forceinline vint4 load(const uint8_t* ptr) {
-        return _mm_load4epu8_epi32(((__m128i*)ptr));
-    }
-    static __forceinline vint4 loadu(const uint8_t* ptr) {
-        return  _mm_load4epu8_epi32(((__m128i*)ptr));
-    }
-#elif defined(__SSE4_1__)
-    static __forceinline vint4 load(const uint8_t* ptr) {
+#if defined(__SSE4_1__)
+    static __forceinline vint4 load(const unsigned char* ptr) {
       return _mm_cvtepu8_epi32(_mm_loadl_epi64((__m128i*)ptr));
     }
 
-    static __forceinline vint4 loadu(const uint8_t* ptr) {
+    static __forceinline vint4 loadu(const unsigned char* ptr) {
       return  _mm_cvtepu8_epi32(_mm_loadl_epi64((__m128i*)ptr));
     }
 #else
 
-    static __forceinline vint4 load(const uint8_t* ptr) {
+    static __forceinline vint4 load(const unsigned char* ptr) {
       return vint4(ptr[0],ptr[1],ptr[2],ptr[3]);
-    }
+    } 
 
-    static __forceinline vint4 loadu(const uint8_t* ptr) {
+    static __forceinline vint4 loadu(const unsigned char* ptr) {
       return vint4(ptr[0],ptr[1],ptr[2],ptr[3]);
     }
 
 #endif
 
     static __forceinline vint4 load(const unsigned short* ptr) {
-#if defined(__aarch64__)
-      return __m128i(vmovl_u16(vld1_u16(ptr)));
-#elif defined (__SSE4_1__)
+#if defined (__SSE4_1__)
       return _mm_cvtepu16_epi32(_mm_loadu_si128((__m128i*)ptr));
 #else
       return vint4(ptr[0],ptr[1],ptr[2],ptr[3]);
 #endif
-    }
+    } 
 
-    static __forceinline void store(uint8_t* ptr, const vint4& v) {
-#if defined(__aarch64__)
-        int32x4_t x = v;
-        uint16x4_t y = vqmovn_u32(uint32x4_t(x));
-        uint8x8_t z = vqmovn_u16(vcombine_u16(y, y));
-        vst1_lane_u32((uint32_t *)ptr,uint32x2_t(z), 0);
-#elif defined(__SSE4_1__)
+    static __forceinline void store(unsigned char* ptr, const vint4& v) {
+#if defined(__SSE4_1__)
       __m128i x = v;
       x = _mm_packus_epi32(x, x);
       x = _mm_packus_epi16(x, x);
       *(int*)ptr = _mm_cvtsi128_si32(x);
 #else
       for (size_t i=0;i<4;i++)
-        ptr[i] = (uint8_t)v[i];
+        ptr[i] = (unsigned char)v[i];
 #endif
     }
 
     static __forceinline void store(unsigned short* ptr, const vint4& v) {
-#if defined(__aarch64__)
-      uint32x4_t x = uint32x4_t(v.v);
-      uint16x4_t y = vqmovn_u32(x);
-      vst1_u16(ptr, y);
-#else
       for (size_t i=0;i<4;i++)
         ptr[i] = (unsigned short)v[i];
-#endif
     }
 
     static __forceinline vint4 load_nt(void* ptr) {
-#if defined(__aarch64__) || defined(__SSE4_1__)
-      return _mm_stream_load_si128((__m128i*)ptr);
+#if defined(__SSE4_1__)
+      return _mm_stream_load_si128((__m128i*)ptr); 
 #else
-      return _mm_load_si128((__m128i*)ptr);
+      return _mm_load_si128((__m128i*)ptr); 
 #endif
     }
-
+    
     static __forceinline void store_nt(void* ptr, const vint4& v) {
-#if !defined(__aarch64__) && defined(__SSE4_1__)
+#if defined(__SSE4_1__)
       _mm_stream_ps((float*)ptr, _mm_castsi128_ps(v));
 #else
       _mm_store_si128((__m128i*)ptr,v);
@@ -181,14 +169,14 @@ namespace embree
 
     template<int scale = 4>
     static __forceinline vint4 gather(const int* ptr, const vint4& index) {
-#if defined(__AVX2__) && !defined(__aarch64__)
+#if defined(__AVX2__)
       return _mm_i32gather_epi32(ptr, index, scale);
 #else
       return vint4(
-          *(int*)(((int8_t*)ptr)+scale*index[0]),
-          *(int*)(((int8_t*)ptr)+scale*index[1]),
-          *(int*)(((int8_t*)ptr)+scale*index[2]),
-          *(int*)(((int8_t*)ptr)+scale*index[3]));
+          *(int*)(((char*)ptr)+scale*index[0]),
+          *(int*)(((char*)ptr)+scale*index[1]),
+          *(int*)(((char*)ptr)+scale*index[2]),
+          *(int*)(((char*)ptr)+scale*index[3]));
 #endif
     }
 
@@ -197,13 +185,13 @@ namespace embree
       vint4 r = zero;
 #if defined(__AVX512VL__)
       return _mm_mmask_i32gather_epi32(r, mask, index, ptr, scale);
-#elif defined(__AVX2__) && !defined(__aarch64__)
+#elif defined(__AVX2__)
       return _mm_mask_i32gather_epi32(r, ptr, index, mask, scale);
 #else
-      if (likely(mask[0])) r[0] = *(int*)(((int8_t*)ptr)+scale*index[0]);
-      if (likely(mask[1])) r[1] = *(int*)(((int8_t*)ptr)+scale*index[1]);
-      if (likely(mask[2])) r[2] = *(int*)(((int8_t*)ptr)+scale*index[2]);
-      if (likely(mask[3])) r[3] = *(int*)(((int8_t*)ptr)+scale*index[3]);
+      if (likely(mask[0])) r[0] = *(int*)(((char*)ptr)+scale*index[0]);
+      if (likely(mask[1])) r[1] = *(int*)(((char*)ptr)+scale*index[1]);
+      if (likely(mask[2])) r[2] = *(int*)(((char*)ptr)+scale*index[2]);
+      if (likely(mask[3])) r[3] = *(int*)(((char*)ptr)+scale*index[3]);
       return r;
 #endif
     }
@@ -214,10 +202,10 @@ namespace embree
 #if defined(__AVX512VL__)
       _mm_i32scatter_epi32((int*)ptr, index, v, scale);
 #else
-      *(int*)(((int8_t*)ptr)+scale*index[0]) = v[0];
-      *(int*)(((int8_t*)ptr)+scale*index[1]) = v[1];
-      *(int*)(((int8_t*)ptr)+scale*index[2]) = v[2];
-      *(int*)(((int8_t*)ptr)+scale*index[3]) = v[3];
+      *(int*)(((char*)ptr)+scale*index[0]) = v[0];
+      *(int*)(((char*)ptr)+scale*index[1]) = v[1];
+      *(int*)(((char*)ptr)+scale*index[2]) = v[2];
+      *(int*)(((char*)ptr)+scale*index[3]) = v[3];
 #endif
     }
 
@@ -227,14 +215,14 @@ namespace embree
 #if defined(__AVX512VL__)
       _mm_mask_i32scatter_epi32((int*)ptr, mask, index, v, scale);
 #else
-      if (likely(mask[0])) *(int*)(((int8_t*)ptr)+scale*index[0]) = v[0];
-      if (likely(mask[1])) *(int*)(((int8_t*)ptr)+scale*index[1]) = v[1];
-      if (likely(mask[2])) *(int*)(((int8_t*)ptr)+scale*index[2]) = v[2];
-      if (likely(mask[3])) *(int*)(((int8_t*)ptr)+scale*index[3]) = v[3];
+      if (likely(mask[0])) *(int*)(((char*)ptr)+scale*index[0]) = v[0];
+      if (likely(mask[1])) *(int*)(((char*)ptr)+scale*index[1]) = v[1];
+      if (likely(mask[2])) *(int*)(((char*)ptr)+scale*index[2]) = v[2];
+      if (likely(mask[3])) *(int*)(((char*)ptr)+scale*index[3]) = v[3];
 #endif
     }
 
-#if defined(__x86_64__) || defined(__aarch64__)
+#if defined(__x86_64__)
     static __forceinline vint4 broadcast64(long long a) { return _mm_set1_epi64x(a); }
 #endif
 
@@ -248,12 +236,10 @@ namespace embree
     friend __forceinline vint4 select(const vboolf4& m, const vint4& t, const vint4& f) {
 #if defined(__AVX512VL__)
       return _mm_mask_blend_epi32(m, (__m128i)f, (__m128i)t);
-#elif defined(__aarch64__)
-      return _mm_castps_si128(_mm_blendv_ps((__m128)f.v,(__m128) t.v, (__m128)m.v));
 #elif defined(__SSE4_1__)
-      return _mm_castps_si128(_mm_blendv_ps(_mm_castsi128_ps(f), _mm_castsi128_ps(t), m));
+      return _mm_castps_si128(_mm_blendv_ps(_mm_castsi128_ps(f), _mm_castsi128_ps(t), m)); 
 #else
-      return _mm_or_si128(_mm_and_si128(m, t), _mm_andnot_si128(m, f));
+      return _mm_or_si128(_mm_and_si128(m, t), _mm_andnot_si128(m, f)); 
 #endif
     }
   };
@@ -270,9 +256,7 @@ namespace embree
 
   __forceinline vint4 operator +(const vint4& a) { return a; }
   __forceinline vint4 operator -(const vint4& a) { return _mm_sub_epi32(_mm_setzero_si128(), a); }
-#if defined(__aarch64__)
-  __forceinline vint4 abs(const vint4& a) { return vabsq_s32(a.v); }
-#elif defined(__SSSE3__)
+#if defined(__SSSE3__)
   __forceinline vint4 abs(const vint4& a) { return _mm_abs_epi32(a); }
 #endif
 
@@ -288,7 +272,7 @@ namespace embree
   __forceinline vint4 operator -(const vint4& a, int          b) { return a - vint4(b); }
   __forceinline vint4 operator -(int          a, const vint4& b) { return vint4(a) - b; }
 
-#if (defined(__aarch64__)) || defined(__SSE4_1__)
+#if defined(__SSE4_1__)
   __forceinline vint4 operator *(const vint4& a, const vint4& b) { return _mm_mullo_epi32(a, b); }
 #else
   __forceinline vint4 operator *(const vint4& a, const vint4& b) { return vint4(a[0]*b[0],a[1]*b[1],a[2]*b[2],a[3]*b[3]); }
@@ -308,34 +292,34 @@ namespace embree
   __forceinline vint4 operator ^(const vint4& a, int          b) { return a ^ vint4(b); }
   __forceinline vint4 operator ^(int          a, const vint4& b) { return vint4(a) ^ b; }
 
-  __forceinline vint4 operator <<(const vint4& a, const int n) { return _mm_slli_epi32(a, n); }
-  __forceinline vint4 operator >>(const vint4& a, const int n) { return _mm_srai_epi32(a, n); }
+  __forceinline vint4 operator <<(const vint4& a, int n) { return _mm_slli_epi32(a, n); }
+  __forceinline vint4 operator >>(const vint4& a, int n) { return _mm_srai_epi32(a, n); }
 
   __forceinline vint4 sll (const vint4& a, int b) { return _mm_slli_epi32(a, b); }
   __forceinline vint4 sra (const vint4& a, int b) { return _mm_srai_epi32(a, b); }
   __forceinline vint4 srl (const vint4& a, int b) { return _mm_srli_epi32(a, b); }
-
+  
   ////////////////////////////////////////////////////////////////////////////////
   /// Assignment Operators
   ////////////////////////////////////////////////////////////////////////////////
 
   __forceinline vint4& operator +=(vint4& a, const vint4& b) { return a = a + b; }
   __forceinline vint4& operator +=(vint4& a, int          b) { return a = a + b; }
-
+  
   __forceinline vint4& operator -=(vint4& a, const vint4& b) { return a = a - b; }
   __forceinline vint4& operator -=(vint4& a, int          b) { return a = a - b; }
 
-#if (defined(__aarch64__)) || defined(__SSE4_1__)
+#if defined(__SSE4_1__)
   __forceinline vint4& operator *=(vint4& a, const vint4& b) { return a = a * b; }
   __forceinline vint4& operator *=(vint4& a, int          b) { return a = a * b; }
 #endif
-
+  
   __forceinline vint4& operator &=(vint4& a, const vint4& b) { return a = a & b; }
   __forceinline vint4& operator &=(vint4& a, int          b) { return a = a & b; }
-
+  
   __forceinline vint4& operator |=(vint4& a, const vint4& b) { return a = a | b; }
   __forceinline vint4& operator |=(vint4& a, int          b) { return a = a | b; }
-
+  
   __forceinline vint4& operator <<=(vint4& a, int b) { return a = a << b; }
   __forceinline vint4& operator >>=(vint4& a, int b) { return a = a >> b; }
 
@@ -402,15 +386,14 @@ namespace embree
 
   template<int mask>
   __forceinline vint4 select(const vint4& t, const vint4& f) {
-#if defined(__SSE4_1__)
+#if defined(__SSE4_1__) 
     return _mm_castps_si128(_mm_blend_ps(_mm_castsi128_ps(f), _mm_castsi128_ps(t), mask));
 #else
     return select(vboolf4(mask), t, f);
-#endif
+#endif    
   }
 
-      
-#if defined(__aarch64__) || defined(__SSE4_1__)
+#if defined(__SSE4_1__)
   __forceinline vint4 min(const vint4& a, const vint4& b) { return _mm_min_epi32(a, b); }
   __forceinline vint4 max(const vint4& a, const vint4& b) { return _mm_max_epi32(a, b); }
 
@@ -434,25 +417,16 @@ namespace embree
   __forceinline vint4 unpacklo(const vint4& a, const vint4& b) { return _mm_castps_si128(_mm_unpacklo_ps(_mm_castsi128_ps(a), _mm_castsi128_ps(b))); }
   __forceinline vint4 unpackhi(const vint4& a, const vint4& b) { return _mm_castps_si128(_mm_unpackhi_ps(_mm_castsi128_ps(a), _mm_castsi128_ps(b))); }
 
-#if defined(__aarch64__)
-    template<int i0, int i1, int i2, int i3>
-    __forceinline vint4 shuffle(const vint4& v) {
-        return vreinterpretq_s32_u8(vqtbl1q_u8( (uint8x16_t)v.v, _MN_SHUFFLE(i0, i1, i2, i3)));
-    }
-    template<int i0, int i1, int i2, int i3>
-    __forceinline vint4 shuffle(const vint4& a, const vint4& b) {
-        return vreinterpretq_s32_u8(vqtbl2q_u8( (uint8x16x2_t){(uint8x16_t)a.v, (uint8x16_t)b.v}, _MF_SHUFFLE(i0, i1, i2, i3)));
-    }
-#else
   template<int i0, int i1, int i2, int i3>
   __forceinline vint4 shuffle(const vint4& v) {
     return _mm_shuffle_epi32(v, _MM_SHUFFLE(i3, i2, i1, i0));
   }
+
   template<int i0, int i1, int i2, int i3>
   __forceinline vint4 shuffle(const vint4& a, const vint4& b) {
     return _mm_castps_si128(_mm_shuffle_ps(_mm_castsi128_ps(a), _mm_castsi128_ps(b), _MM_SHUFFLE(i3, i2, i1, i0)));
   }
-#endif
+
 #if defined(__SSE3__)
   template<> __forceinline vint4 shuffle<0, 0, 2, 2>(const vint4& v) { return _mm_castps_si128(_mm_moveldup_ps(_mm_castsi128_ps(v))); }
   template<> __forceinline vint4 shuffle<1, 1, 3, 3>(const vint4& v) { return _mm_castps_si128(_mm_movehdup_ps(_mm_castsi128_ps(v))); }
@@ -464,10 +438,7 @@ namespace embree
     return shuffle<i,i,i,i>(v);
   }
 
-#if defined(__aarch64__)
-    template<int src> __forceinline int extract(const vint4& b);
-    template<int dst> __forceinline vint4 insert(const vint4& a, const int b);
-#elif defined(__SSE4_1__)
+#if defined(__SSE4_1__)
   template<int src> __forceinline int extract(const vint4& b) { return _mm_extract_epi32(b, src); }
   template<int dst> __forceinline vint4 insert(const vint4& a, const int b) { return _mm_insert_epi32(a, b, dst); }
 #else
@@ -475,69 +446,19 @@ namespace embree
   template<int dst> __forceinline vint4 insert(const vint4& a, int b) { vint4 c = a; c[dst&3] = b; return c; }
 #endif
 
-#if defined(__aarch64__)
-    template<> __forceinline int extract<0>(const vint4& b) {
-        return b.v[0];
-    }
-    template<> __forceinline int extract<1>(const vint4& b) {
-        return b.v[1];
-    }
-    template<> __forceinline int extract<2>(const vint4& b) {
-        return b.v[2];
-    }
-    template<> __forceinline int extract<3>(const vint4& b) {
-        return b.v[3];
-    }
-    template<> __forceinline vint4 insert<0>(const vint4& a, int b)
-    {
-        vint4 c = a;
-        c[0] = b;
-        return c;
-    }
-    template<> __forceinline vint4 insert<1>(const vint4& a, int b)
-    {
-        vint4 c = a;
-        c[1] = b;
-        return c;
-    }
-    template<> __forceinline vint4 insert<2>(const vint4& a, int b)
-    {
-        vint4 c = a;
-        c[2] = b;
-        return c;
-    }
-    template<> __forceinline vint4 insert<3>(const vint4& a, int b)
-    {
-        vint4 c = a;
-        c[3] = b;
-        return c;
-    }
-      
-    __forceinline int toScalar(const vint4& v) {
-        return v[0];
-    }
-      
-    __forceinline size_t toSizeT(const vint4& v) {
-        uint64x2_t x = uint64x2_t(v.v);
-        return x[0];
-    }
-#else
+
   template<> __forceinline int extract<0>(const vint4& b) { return _mm_cvtsi128_si32(b); }
 
   __forceinline int toScalar(const vint4& v) { return _mm_cvtsi128_si32(v); }
 
-  __forceinline size_t toSizeT(const vint4& v) {
+  __forceinline size_t toSizeT(const vint4& v) { 
 #if defined(__WIN32__) && !defined(__X86_64__) // win32 workaround
     return toScalar(v);
-#elif defined(__ARM_NEON)
-    // FIXME(LTE): Do we need a swap(i.e. use lane 1)?
-    return vgetq_lane_u64(*(reinterpret_cast<const uint64x2_t *>(&v)), 0);
 #else
-    return _mm_cvtsi128_si64(v);
+    return _mm_cvtsi128_si64(v); 
 #endif
   }
-#endif
-      
+
 #if defined(__AVX512VL__)
 
   __forceinline vint4 permute(const vint4 &a, const vint4 &index) {
@@ -546,25 +467,15 @@ namespace embree
 
   template<int i>
   __forceinline vint4 align_shift_right(const vint4& a, const vint4& b) {
-    return _mm_alignr_epi32(a, b, i);
-  }
+    return _mm_alignr_epi32(a, b, i);    
+  }  
 #endif
 
   ////////////////////////////////////////////////////////////////////////////////
   /// Reductions
   ////////////////////////////////////////////////////////////////////////////////
 
-#if defined(__aarch64__) || defined(__SSE4_1__)
-      
-#if defined(__aarch64__)
-    __forceinline vint4 vreduce_min(const vint4& v) { int h = vminvq_s32(v); return vdupq_n_s32(h); }
-    __forceinline vint4 vreduce_max(const vint4& v) { int h = vmaxvq_s32(v); return vdupq_n_s32(h); }
-    __forceinline vint4 vreduce_add(const vint4& v) { int h = vaddvq_s32(v); return vdupq_n_s32(h); }
-      
-    __forceinline int reduce_min(const vint4& v) { return vminvq_s32(v); }
-    __forceinline int reduce_max(const vint4& v) { return vmaxvq_s32(v); }
-    __forceinline int reduce_add(const vint4& v) { return vaddvq_s32(v); }
-#else
+#if defined(__SSE4_1__)
   __forceinline vint4 vreduce_min(const vint4& v) { vint4 h = min(shuffle<1,0,3,2>(v),v); return min(shuffle<2,3,0,1>(h),h); }
   __forceinline vint4 vreduce_max(const vint4& v) { vint4 h = max(shuffle<1,0,3,2>(v),v); return max(shuffle<2,3,0,1>(h),h); }
   __forceinline vint4 vreduce_add(const vint4& v) { vint4 h = shuffle<1,0,3,2>(v)   + v ; return shuffle<2,3,0,1>(h)   + h ; }
@@ -572,8 +483,7 @@ namespace embree
   __forceinline int reduce_min(const vint4& v) { return toScalar(vreduce_min(v)); }
   __forceinline int reduce_max(const vint4& v) { return toScalar(vreduce_max(v)); }
   __forceinline int reduce_add(const vint4& v) { return toScalar(vreduce_add(v)); }
-#endif
-      
+
   __forceinline size_t select_min(const vint4& v) { return bsf(movemask(v == vreduce_min(v))); }
   __forceinline size_t select_max(const vint4& v) { return bsf(movemask(v == vreduce_max(v))); }
 
@@ -592,7 +502,7 @@ namespace embree
   /// Sorting networks
   ////////////////////////////////////////////////////////////////////////////////
 
-#if (defined(__aarch64__)) || defined(__SSE4_1__)
+#if defined(__SSE4_1__)
 
   __forceinline vint4 usort_ascending(const vint4& v)
   {
@@ -679,3 +589,10 @@ namespace embree
   }
 }
 
+#undef vboolf
+#undef vboold
+#undef vint
+#undef vuint
+#undef vllong
+#undef vfloat
+#undef vdouble

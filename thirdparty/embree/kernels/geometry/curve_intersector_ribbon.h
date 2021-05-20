@@ -1,4 +1,4 @@
-// Copyright 2009-2020 Intel Corporation
+// Copyright 2009-2021 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
@@ -32,9 +32,11 @@ namespace embree
       
       __forceinline Vec2f uv (const size_t i) const { return Vec2f(vu[i],vv[i]); }
       __forceinline float t  (const size_t i) const { return vt[i]; }
-      __forceinline Vec3fa Ng(const size_t i) const { 
-        return curve3D.eval_du(vu[i]);
-      }
+      __forceinline Vec3fa Ng(const size_t i) const { return curve3D.eval_du(vu[i]); }
+
+      __forceinline Vec2vf<M> uv() const { return Vec2vf<M>(vu,vv); }
+      __forceinline vfloat<M> t () const { return vt; }
+      __forceinline Vec3vf<M> Ng() const { return (Vec3vf<M>) curve3D.template veval_du<M>(vu); }
       
     public:
       vfloat<M> U;
@@ -98,7 +100,7 @@ namespace embree
         const Vec3vfx up1 = nmadd(p1.w,nn1,Vec3vfx(p1));
         
         vfloatx vu,vv,vt;
-        vboolx valid0 = intersect_quad_backface_culling(valid,zero,Vec3fa(0,0,1),ray_tnear,ray_tfar,lp0,lp1,up1,up0,vu,vv,vt);
+        vboolx valid0 = intersect_quad_backface_culling<VSIZEX>(valid,zero,Vec3fa(0,0,1),ray_tnear,ray_tfar,lp0,lp1,up1,up0,vu,vv,vt);
 
         if (any(valid0))
         {
@@ -143,7 +145,7 @@ namespace embree
           const Vec3vfx up1 = nmadd(p1.w,nn1,Vec3vfx(p1));
           
           vfloatx vu,vv,vt;
-          vboolx valid0 = intersect_quad_backface_culling(valid,zero,Vec3fa(0,0,1),ray_tnear,ray_tfar,lp0,lp1,up1,up0,vu,vv,vt);
+          vboolx valid0 = intersect_quad_backface_culling<VSIZEX>(valid,zero,Vec3fa(0,0,1),ray_tnear,ray_tfar,lp0,lp1,up1,up0,vu,vv,vt);
 
           if (any(valid0))
           {
