@@ -97,9 +97,9 @@ class RigidBody2D : public PhysicsBody2D {
 
 public:
 	enum Mode {
-		MODE_RIGID,
+		MODE_DYNAMIC,
 		MODE_STATIC,
-		MODE_CHARACTER,
+		MODE_DYNAMIC_LOCKED,
 		MODE_KINEMATIC,
 	};
 
@@ -112,7 +112,7 @@ public:
 private:
 	bool can_sleep = true;
 	PhysicsDirectBodyState2D *state = nullptr;
-	Mode mode = MODE_RIGID;
+	Mode mode = MODE_DYNAMIC;
 
 	real_t mass = 1.0;
 	Ref<PhysicsMaterial> physics_material_override;

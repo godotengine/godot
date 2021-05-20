@@ -433,8 +433,8 @@ void RigidBody2D::_direct_state_changed(Object *p_state) {
 void RigidBody2D::set_mode(Mode p_mode) {
 	mode = p_mode;
 	switch (p_mode) {
-		case MODE_RIGID: {
-			PhysicsServer2D::get_singleton()->body_set_mode(get_rid(), PhysicsServer2D::BODY_MODE_RIGID);
+		case MODE_DYNAMIC: {
+			PhysicsServer2D::get_singleton()->body_set_mode(get_rid(), PhysicsServer2D::BODY_MODE_DYNAMIC);
 		} break;
 		case MODE_STATIC: {
 			PhysicsServer2D::get_singleton()->body_set_mode(get_rid(), PhysicsServer2D::BODY_MODE_STATIC);
@@ -444,8 +444,8 @@ void RigidBody2D::set_mode(Mode p_mode) {
 			PhysicsServer2D::get_singleton()->body_set_mode(get_rid(), PhysicsServer2D::BODY_MODE_KINEMATIC);
 
 		} break;
-		case MODE_CHARACTER: {
-			PhysicsServer2D::get_singleton()->body_set_mode(get_rid(), PhysicsServer2D::BODY_MODE_CHARACTER);
+		case MODE_DYNAMIC_LOCKED: {
+			PhysicsServer2D::get_singleton()->body_set_mode(get_rid(), PhysicsServer2D::BODY_MODE_DYNAMIC_LOCKED);
 
 		} break;
 	}
@@ -721,8 +721,8 @@ TypedArray<String> RigidBody2D::get_configuration_warnings() const {
 
 	TypedArray<String> warnings = CollisionObject2D::get_configuration_warnings();
 
-	if ((get_mode() == MODE_RIGID || get_mode() == MODE_CHARACTER) && (ABS(t.elements[0].length() - 1.0) > 0.05 || ABS(t.elements[1].length() - 1.0) > 0.05)) {
-		warnings.push_back(TTR("Size changes to RigidBody2D (in character or rigid modes) will be overridden by the physics engine when running.\nChange the size in children collision shapes instead."));
+	if ((get_mode() == MODE_DYNAMIC || get_mode() == MODE_DYNAMIC_LOCKED) && (ABS(t.elements[0].length() - 1.0) > 0.05 || ABS(t.elements[1].length() - 1.0) > 0.05)) {
+		warnings.push_back(TTR("Size changes to RigidBody2D (in dynamic modes) will be overridden by the physics engine when running.\nChange the size in children collision shapes instead."));
 	}
 
 	return warnings;
@@ -793,7 +793,7 @@ void RigidBody2D::_bind_methods() {
 
 	BIND_VMETHOD(MethodInfo("_integrate_forces", PropertyInfo(Variant::OBJECT, "state", PROPERTY_HINT_RESOURCE_TYPE, "PhysicsDirectBodyState2D")));
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "mode", PROPERTY_HINT_ENUM, "Rigid,Static,Character,Kinematic"), "set_mode", "get_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "mode", PROPERTY_HINT_ENUM, "Dynamic,Static,DynamicLocked,Kinematic"), "set_mode", "get_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "mass", PROPERTY_HINT_EXP_RANGE, "0.01,65535,0.01"), "set_mass", "get_mass");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "inertia", PROPERTY_HINT_EXP_RANGE, "0.01,65535,0.01", 0), "set_inertia", "get_inertia");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "physics_material_override", PROPERTY_HINT_RESOURCE_TYPE, "PhysicsMaterial"), "set_physics_material_override", "get_physics_material_override");
@@ -820,9 +820,9 @@ void RigidBody2D::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("body_exited", PropertyInfo(Variant::OBJECT, "body", PROPERTY_HINT_RESOURCE_TYPE, "Node")));
 	ADD_SIGNAL(MethodInfo("sleeping_state_changed"));
 
-	BIND_ENUM_CONSTANT(MODE_RIGID);
+	BIND_ENUM_CONSTANT(MODE_DYNAMIC);
 	BIND_ENUM_CONSTANT(MODE_STATIC);
-	BIND_ENUM_CONSTANT(MODE_CHARACTER);
+	BIND_ENUM_CONSTANT(MODE_DYNAMIC_LOCKED);
 	BIND_ENUM_CONSTANT(MODE_KINEMATIC);
 
 	BIND_ENUM_CONSTANT(CCD_MODE_DISABLED);
@@ -831,7 +831,7 @@ void RigidBody2D::_bind_methods() {
 }
 
 RigidBody2D::RigidBody2D() :
-		PhysicsBody2D(PhysicsServer2D::BODY_MODE_RIGID) {
+		PhysicsBody2D(PhysicsServer2D::BODY_MODE_DYNAMIC) {
 	PhysicsServer2D::get_singleton()->body_set_force_integration_callback(get_rid(), callable_mp(this, &RigidBody2D::_direct_state_changed));
 }
 

@@ -5,7 +5,7 @@
 	</brief_description>
 	<description>
 		This node implements simulated 2D physics. You do not control a RigidBody2D directly. Instead, you apply forces to it (gravity, impulses, etc.) and the physics simulation calculates the resulting movement based on its mass, friction, and other physical properties.
-		A RigidBody2D has 4 behavior [member mode]s: Rigid, Static, Character, and Kinematic.
+		A RigidBody2D has 4 behavior [member mode]s: Dynamic, Static, DynamicLocked, and Kinematic.
 		[b]Note:[/b] You should not change a RigidBody2D's [code]position[/code] or [code]linear_velocity[/code] every frame or even very often. If you need to directly affect the body's state, use [method _integrate_forces], which allows you to directly access the physics state.
 		Please also keep in mind that physics bodies manage their own transform which overwrites the ones you set. So any direct or indirect transformation (including scaling of the node or its parent) will be visible in the editor only, and immediately reset at runtime.
 		If you need to override the default physics behavior or add a transformation at runtime, you can write a custom force integration. See [member custom_integrator].
@@ -117,7 +117,6 @@
 		</member>
 		<member name="can_sleep" type="bool" setter="set_can_sleep" getter="is_able_to_sleep" default="true">
 			If [code]true[/code], the body can enter sleep mode when there is no movement. See [member sleeping].
-			[b]Note:[/b] A RigidBody2D will never enter sleep mode automatically if its [member mode] is [constant MODE_CHARACTER]. It can still be put to sleep manually by setting its [member sleeping] property to [code]true[/code].
 		</member>
 		<member name="contact_monitor" type="bool" setter="set_contact_monitor" getter="is_contact_monitor_enabled" default="false">
 			If [code]true[/code], the body will emit signals when it collides with another RigidBody2D. See also [member contacts_reported].
@@ -219,17 +218,17 @@
 		</signal>
 	</signals>
 	<constants>
-		<constant name="MODE_RIGID" value="0" enum="Mode">
-			Rigid body mode. The body behaves as a physical object. It collides with other bodies and responds to forces applied to it. This is the default mode.
+		<constant name="MODE_DYNAMIC" value="0" enum="Mode">
+			Dynamic body mode. This is the default mode of a rigid body. It is affected by forces, and can move, rotate, and be affected by user code.
 		</constant>
 		<constant name="MODE_STATIC" value="1" enum="Mode">
 			Static body mode. The body behaves like a [StaticBody2D], and must be moved by code.
 		</constant>
-		<constant name="MODE_CHARACTER" value="2" enum="Mode">
-			Character body mode. Similar to [constant MODE_RIGID], but the body can not rotate.
+		<constant name="MODE_DYNAMIC_LOCKED" value="2" enum="Mode">
+			Locked dynamic body mode. Similar to [constant MODE_DYNAMIC], but the body can not rotate.
 		</constant>
 		<constant name="MODE_KINEMATIC" value="3" enum="Mode">
-			Kinematic body mode. The body behaves like a [StaticBody2D] with [code]kinematic_motion[/code] enabled, and must be moved by code.
+			Kinematic body mode. The body behaves like a [StaticBody2D] with [code]kinematic_motion[/code] enabled, and must be moved by user code.
 		</constant>
 		<constant name="CCD_MODE_DISABLED" value="0" enum="CCDMode">
 			Continuous collision detection disabled. This is the fastest way to detect body collisions, but can miss small, fast-moving objects.
