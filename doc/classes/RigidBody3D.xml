@@ -231,7 +231,7 @@
 			Locked dynamic body mode. Similar to [constant MODE_DYNAMIC], but the body can not rotate.
 		</constant>
 		<constant name="MODE_KINEMATIC" value="3" enum="Mode">
-			Kinematic body mode. The body behaves like a [StaticBody3D] with [code]kinematic_motion[/code] enabled, and can only move by user code.
+			Kinematic body mode. The body behaves like a [StaticBody3D] with [member StaticBody3D.kinematic_motion] enabled, and can only move by user code.
 		</constant>
 	</constants>
 </class>

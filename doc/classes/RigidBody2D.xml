@@ -228,7 +228,7 @@
 			Locked dynamic body mode. Similar to [constant MODE_DYNAMIC], but the body can not rotate.
 		</constant>
 		<constant name="MODE_KINEMATIC" value="3" enum="Mode">
-			Kinematic body mode. The body behaves like a [StaticBody2D] with [code]kinematic_motion[/code] enabled, and must be moved by user code.
+			Kinematic body mode. The body behaves like a [StaticBody2D] with [member StaticBody2D.kinematic_motion] enabled, and must be moved by user code.
 		</constant>
 		<constant name="CCD_MODE_DISABLED" value="0" enum="CCDMode">
 			Continuous collision detection disabled. This is the fastest way to detect body collisions, but can miss small, fast-moving objects.
