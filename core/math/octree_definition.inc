@@ -110,13 +110,13 @@ private:
 		LocalVector<AABB> aabbs;
 		LocalVector<Element *> elements;
 
-		void update(List<Element *, AL> &eles) {
+		void update(List<Element *, AL> &p_elements) {
 			// make sure local vector doesn't delete the memory
 			// no need to be thrashing allocations
 			aabbs.clear();
 			elements.clear();
 
-			typename List<Element *, AL>::Element *E = eles.front();
+			typename List<Element *, AL>::Element *E = p_elements.front();
 			while (E) {
 				Element *e = E->get();
 				aabbs.push_back(e->aabb);
