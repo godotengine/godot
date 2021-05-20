@@ -144,7 +144,7 @@ TEST_CASE("[Rect2] Absolute coordinates") {
 			"abs() should return the expected Rect2.");
 }
 
-TEST_CASE("[Rect2] Intersecton") {
+TEST_CASE("[Rect2] Intersection") {
 	CHECK_MESSAGE(
 			Rect2(0, 100, 1280, 720).intersection(Rect2(0, 300, 100, 100)).is_equal_approx(Rect2(0, 300, 100, 100)),
 			"intersection() with fully enclosed Rect2 should return the expected result.");

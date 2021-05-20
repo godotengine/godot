@@ -376,7 +376,7 @@ EditorLog::EditorLog() {
 	collapse_button = memnew(Button);
 	collapse_button->set_flat(true);
 	collapse_button->set_focus_mode(FOCUS_NONE);
-	collapse_button->set_tooltip(TTR("Collapse duplicate messages into one log entry. Shows number of occurences."));
+	collapse_button->set_tooltip(TTR("Collapse duplicate messages into one log entry. Shows number of occurrences."));
 	collapse_button->set_toggle_mode(true);
 	collapse_button->set_pressed(false);
 	collapse_button->connect("toggled", callable_mp(this, &EditorLog::_set_collapse));

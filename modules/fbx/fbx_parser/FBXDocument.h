@@ -699,7 +699,7 @@ private:
 typedef std::vector<int64_t> KeyTimeList;
 typedef std::vector<float> KeyValueList;
 
-/** Represents a FBX animation curve (i.e. a 1-dimensional set of keyframes and values therefor) */
+/** Represents a FBX animation curve (i.e. a 1-dimensional set of keyframes and values therefore) */
 class AnimationCurve : public Object {
 public:
 	AnimationCurve(uint64_t id, const ElementPtr element, const std::string &name, const Document &doc);

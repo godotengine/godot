@@ -2147,7 +2147,7 @@ Set<TileMapEditorTerrainsPlugin::Constraint> TileMapEditorTerrainsPlugin::_get_c
 
 		Map<int, int> terrain_count;
 
-		// Count the number of occurences per terrain.
+		// Count the number of occurrences per terrain.
 		Map<Vector2i, TileSet::CellNeighbor> overlapping_terrain_bits = c.get_overlapping_coords_and_peering_bits();
 		for (Map<Vector2i, TileSet::CellNeighbor>::Element *E_overlapping = overlapping_terrain_bits.front(); E_overlapping; E_overlapping = E_overlapping->next()) {
 			if (!p_to_replace.has(E_overlapping->key())) {
@@ -2165,7 +2165,7 @@ Set<TileMapEditorTerrainsPlugin::Constraint> TileMapEditorTerrainsPlugin::_get_c
 			}
 		}
 
-		// Get the terrain with the max number of occurences.
+		// Get the terrain with the max number of occurrences.
 		int max = 0;
 		int max_terrain = -1;
 		for (Map<int, int>::Element *E_terrain_count = terrain_count.front(); E_terrain_count; E_terrain_count = E_terrain_count->next()) {
@@ -2231,7 +2231,7 @@ Map<Vector2i, TileMapEditorTerrainsPlugin::TerrainsTilePattern> TileMapEditorTer
 		per_cell_acceptable_tiles[E->get()] = _get_valid_terrains_tile_patterns_for_constraints(p_terrain_set, E->get(), constraints);
 	}
 
-	// Ouput map.
+	// Output map.
 	Map<Vector2i, TerrainsTilePattern> output;
 
 	// Add all positions to a set.
@@ -2450,7 +2450,7 @@ Map<Vector2i, TileMapCell> TileMapEditorTerrainsPlugin::_draw_terrains(const Map
 		output[E->key()] = _get_random_tile_from_pattern(p_terrain_set, E->get());
 	}
 
-	// Override the WFC results to make sure at least the painted tiles are acutally painted.
+	// Override the WFC results to make sure at least the painted tiles are actually painted.
 	for (Map<Vector2i, TerrainsTilePattern>::Element *E_to_paint = p_to_paint.front(); E_to_paint; E_to_paint = E_to_paint->next()) {
 		output[E_to_paint->key()] = _get_random_tile_from_pattern(p_terrain_set, E_to_paint->get());
 	}

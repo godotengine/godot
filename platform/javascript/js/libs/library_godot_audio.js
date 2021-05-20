@@ -59,7 +59,7 @@ const GodotAudio = {
 				}
 				onstatechange(state);
 			};
-			ctx.onstatechange(); // Immeditately notify state.
+			ctx.onstatechange(); // Immediately notify state.
 			// Update computed latency
 			GodotAudio.interval = setInterval(function () {
 				let computed_latency = 0;

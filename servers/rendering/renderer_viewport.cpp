@@ -322,7 +322,7 @@ void RendererViewport::_draw_viewport(Viewport *p_viewport, XRInterface::Eyes p_
 					Vector2 point = clip_rect.position + clip_rect.size * signs[j];
 
 					if (sign_cmp == light_dir_sign) {
-						//both point in same direction, plot offseted
+						//both point in same direction, plot offsetted
 						points[point_count++] = point + light_dir * cull_distance;
 					} else if (sign_cmp.x == light_dir_sign.x || sign_cmp.y == light_dir_sign.y) {
 						int next_j = (j + 1) % 4;

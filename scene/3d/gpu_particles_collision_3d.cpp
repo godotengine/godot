@@ -653,7 +653,7 @@ void GPUParticlesCollisionHeightField::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "extents", PROPERTY_HINT_RANGE, "0.01,1024,0.01,or_greater"), "set_extents", "get_extents");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "resolution", PROPERTY_HINT_ENUM, "256,512,1024,2048,4096,8192"), "set_resolution", "get_resolution");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "update_mode", PROPERTY_HINT_ENUM, "WhenMoved,Always"), "set_update_mode", "get_update_mode");
-	ADD_GROUP("Folow Camera", "follow_camera_");
+	ADD_GROUP("Follow Camera", "follow_camera_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "follow_camera_enabled"), "set_follow_camera_mode", "is_follow_camera_mode_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "follow_camera_push_ratio", PROPERTY_HINT_RANGE, "0.01,1,0.01"), "set_follow_camera_push_ratio", "get_follow_camera_push_ratio");
 

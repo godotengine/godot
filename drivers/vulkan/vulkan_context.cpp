@@ -529,7 +529,7 @@ Error VulkanContext::_check_capabilities() {
 
 		device_features_func(gpu, &device_features);
 		multiview_capabilities.is_supported = multiview_features.multiview;
-		// For now we ignore if multiview is available in geometry and tesselation as we do not currently support those
+		// For now we ignore if multiview is available in geometry and tessellation as we do not currently support those
 	}
 
 	// check extended properties

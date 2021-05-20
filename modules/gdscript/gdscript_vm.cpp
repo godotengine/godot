@@ -1970,7 +1970,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 #ifdef DEBUG_ENABLED
 				if (err.error != Callable::CallError::CALL_OK) {
 					// TODO: Add this information in debug.
-					String methodstr = "<unkown function>";
+					String methodstr = "<unknown function>";
 					if (dst->get_type() == Variant::STRING) {
 						// Call provided error string.
 						err_text = "Error calling GDScript utility function '" + methodstr + "': " + String(*dst);

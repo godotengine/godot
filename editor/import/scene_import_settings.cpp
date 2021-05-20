@@ -339,7 +339,7 @@ void SceneImportSettings::_update_scene() {
 	material_tree->clear();
 	mesh_tree->clear();
 
-	//hiden roots
+	//hidden roots
 	material_tree->create_item();
 	mesh_tree->create_item();
 

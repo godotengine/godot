@@ -144,7 +144,7 @@
 			</argument>
 			<description>
 				Sets the timeout parameters for a peer.	The timeout parameters control how and when a peer will timeout from a failure to acknowledge reliable traffic. Timeout values are expressed in milliseconds.
-				The [code]timeout_limit[/code] is a factor that, multiplied by a value based on the avarage round trip time, will determine the timeout limit for a reliable packet. When that limit is reached, the timeout will be doubled, and the peer will be disconnected if that limit has reached [code]timeout_min[/code]. The [code]timeout_max[/code] parameter, on the other hand, defines a fixed timeout for which any packet must be acknowledged or the peer will be dropped.
+				The [code]timeout_limit[/code] is a factor that, multiplied by a value based on the average round trip time, will determine the timeout limit for a reliable packet. When that limit is reached, the timeout will be doubled, and the peer will be disconnected if that limit has reached [code]timeout_min[/code]. The [code]timeout_max[/code] parameter, on the other hand, defines a fixed timeout for which any packet must be acknowledged or the peer will be dropped.
 			</description>
 		</method>
 	</methods>

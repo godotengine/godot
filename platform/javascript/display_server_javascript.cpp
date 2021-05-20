@@ -536,7 +536,7 @@ bool DisplayServerJavaScript::screen_is_touchscreen(int p_screen) const {
 	return godot_js_display_touchscreen_is_available();
 }
 
-// Virtual Keybaord
+// Virtual Keyboard
 void DisplayServerJavaScript::vk_input_text_callback(const char *p_text, int p_cursor) {
 	DisplayServerJavaScript *ds = DisplayServerJavaScript::get_singleton();
 	if (!ds || ds->input_text_callback.is_null()) {

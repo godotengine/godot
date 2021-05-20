@@ -144,7 +144,7 @@ jobs:
           scons --version
 
       # We should always be explicit with our flags usage here since it's gonna be sure to always set those flags
-      # [Workaround] SwiftShader doesn't support tesselation, so we skip Godot check about it
+      # [Workaround] SwiftShader doesn't support tessellation, so we skip Godot check about it
       - name: Compilation
         env:
           SCONS_CACHE: ${{github.workspace}}/.scons_cache/
