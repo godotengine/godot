@@ -186,8 +186,11 @@ void RendererViewport::_draw_viewport(Viewport *p_viewport, XRInterface::Eyes p_
 			}
 
 			RSG::canvas_render->render_sdf(p_viewport->render_target, occluders);
+			RSG::storage->render_target_mark_sdf_enabled(p_viewport->render_target, true);
 
 			p_viewport->sdf_active = false; // if used, gets set active again
+		} else {
+			RSG::storage->render_target_mark_sdf_enabled(p_viewport->render_target, false);
 		}
 
 		Rect2 shadow_rect;

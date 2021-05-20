@@ -101,35 +101,33 @@ void main() {
 
 		uint offset = trail_size * stride * gl_InstanceIndex;
 
-		mat4 matrix;
 		vec4 pcolor;
+		vec2 new_vertex;
 		{
 			uint boffset = offset + bone_attrib.x * stride;
-			matrix = mat4(transforms.data[boffset + 0], transforms.data[boffset + 1], vec4(0.0, 0.0, 1.0, 0.0), vec4(0.0, 0.0, 0.0, 1.0)) * weight_attrib.x;
-			pcolor = transforms.data[boffset + 3] * weight_attrib.x;
+			new_vertex = (vec4(vertex, 0.0, 1.0) * mat4(transforms.data[boffset + 0], transforms.data[boffset + 1], vec4(0.0, 0.0, 1.0, 0.0), vec4(0.0, 0.0, 0.0, 1.0))).xy * weight_attrib.x;
+			pcolor = transforms.data[boffset + 2] * weight_attrib.x;
 		}
 		if (weight_attrib.y > 0.001) {
 			uint boffset = offset + bone_attrib.y * stride;
-			matrix += mat4(transforms.data[boffset + 0], transforms.data[boffset + 1], vec4(0.0, 0.0, 1.0, 0.0), vec4(0.0, 0.0, 0.0, 1.0)) * weight_attrib.y;
-			pcolor += transforms.data[boffset + 3] * weight_attrib.y;
+			new_vertex += (vec4(vertex, 0.0, 1.0) * mat4(transforms.data[boffset + 0], transforms.data[boffset + 1], vec4(0.0, 0.0, 1.0, 0.0), vec4(0.0, 0.0, 0.0, 1.0))).xy * weight_attrib.y;
+			pcolor += transforms.data[boffset + 2] * weight_attrib.y;
 		}
 		if (weight_attrib.z > 0.001) {
 			uint boffset = offset + bone_attrib.z * stride;
-			matrix += mat4(transforms.data[boffset + 0], transforms.data[boffset + 1], vec4(0.0, 0.0, 1.0, 0.0), vec4(0.0, 0.0, 0.0, 1.0)) * weight_attrib.z;
-			pcolor += transforms.data[boffset + 3] * weight_attrib.z;
+			new_vertex += (vec4(vertex, 0.0, 1.0) * mat4(transforms.data[boffset + 0], transforms.data[boffset + 1], vec4(0.0, 0.0, 1.0, 0.0), vec4(0.0, 0.0, 0.0, 1.0))).xy * weight_attrib.z;
+			pcolor += transforms.data[boffset + 2] * weight_attrib.z;
 		}
 		if (weight_attrib.w > 0.001) {
 			uint boffset = offset + bone_attrib.w * stride;
-			matrix += mat4(transforms.data[boffset + 0], transforms.data[boffset + 1], vec4(0.0, 0.0, 1.0, 0.0), vec4(0.0, 0.0, 0.0, 1.0)) * weight_attrib.w;
-			pcolor += transforms.data[boffset + 3] * weight_attrib.w;
+			new_vertex += (vec4(vertex, 0.0, 1.0) * mat4(transforms.data[boffset + 0], transforms.data[boffset + 1], vec4(0.0, 0.0, 1.0, 0.0), vec4(0.0, 0.0, 0.0, 1.0))).xy * weight_attrib.w;
+			pcolor += transforms.data[boffset + 2] * weight_attrib.w;
 		}
 
-		instance_custom = transforms.data[offset + 4];
+		instance_custom = transforms.data[offset + 3];
 
+		vertex = new_vertex;
 		color *= pcolor;
-
-		matrix = transpose(matrix);
-		world_matrix = world_matrix * matrix;
 
 	} else
 #endif // USE_ATTRIBUTES
@@ -283,7 +281,7 @@ vec2 screen_uv_to_sdf(vec2 p_uv) {
 float texture_sdf(vec2 p_sdf) {
 	vec2 uv = p_sdf * canvas_data.sdf_to_tex.xy + canvas_data.sdf_to_tex.zw;
 	float d = texture(sampler2D(sdf_texture, material_samplers[SAMPLER_LINEAR_CLAMP]), uv).r;
-	d = d * SDF_MAX_LENGTH - 1.0;
+	d *= SDF_MAX_LENGTH;
 	return d * canvas_data.tex_to_sdf;
 }
 

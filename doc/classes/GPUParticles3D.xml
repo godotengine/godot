@@ -126,7 +126,7 @@
 		</member>
 		<member name="sub_emitter" type="NodePath" setter="set_sub_emitter" getter="get_sub_emitter" default="NodePath(&quot;&quot;)">
 		</member>
-		<member name="trail_enabled" type="bool" setter="set_enable_trail" getter="is_trail_enabled" default="false">
+		<member name="trail_enabled" type="bool" setter="set_trail_enabled" getter="is_trail_enabled" default="false">
 		</member>
 		<member name="trail_length_secs" type="float" setter="set_trail_length" getter="get_trail_length" default="0.3">
 		</member>
@@ -144,7 +144,9 @@
 		<constant name="DRAW_ORDER_LIFETIME" value="1" enum="DrawOrder">
 			Particles are drawn in order of remaining lifetime.
 		</constant>
-		<constant name="DRAW_ORDER_VIEW_DEPTH" value="2" enum="DrawOrder">
+		<constant name="DRAW_ORDER_REVERSE_LIFETIME" value="2" enum="DrawOrder">
+		</constant>
+		<constant name="DRAW_ORDER_VIEW_DEPTH" value="3" enum="DrawOrder">
 			Particles are drawn in order of depth.
 		</constant>
 		<constant name="EMIT_FLAG_POSITION" value="1" enum="EmitFlags">

@@ -135,7 +135,7 @@
 		</member>
 		<member name="collision_bounce" type="float" setter="set_collision_bounce" getter="get_collision_bounce" default="0.0">
 		</member>
-		<member name="collision_enabled" type="bool" setter="set_collision_enabled" getter="is_collision_enabled" default="true">
+		<member name="collision_enabled" type="bool" setter="set_collision_enabled" getter="is_collision_enabled" default="false">
 		</member>
 		<member name="collision_friction" type="float" setter="set_collision_friction" getter="get_collision_friction" default="0.0">
 		</member>
