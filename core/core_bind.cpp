@@ -1226,7 +1226,7 @@ Error _File::open(const String &p_path, ModeFlags p_mode_flags) {
 	Error err;
 	f = FileAccess::open(p_path, p_mode_flags, &err);
 	if (f) {
-		f->set_endian_swap(eswap);
+		f->set_big_endian(big_endian);
 	}
 	return err;
 }
@@ -1382,15 +1382,15 @@ Vector<String> _File::get_csv_line(const String &p_delim) const {
  * These flags get reset to false (little endian) on each open
  */
 
-void _File::set_endian_swap(bool p_swap) {
-	eswap = p_swap;
+void _File::set_big_endian(bool p_big_endian) {
+	big_endian = p_big_endian;
 	if (f) {
-		f->set_endian_swap(p_swap);
+		f->set_big_endian(p_big_endian);
 	}
 }
 
-bool _File::get_endian_swap() {
-	return eswap;
+bool _File::is_big_endian() {
+	return big_endian;
 }
 
 Error _File::get_error() const {
@@ -1552,8 +1552,8 @@ void _File::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_as_text"), &_File::get_as_text);
 	ClassDB::bind_method(D_METHOD("get_md5", "path"), &_File::get_md5);
 	ClassDB::bind_method(D_METHOD("get_sha256", "path"), &_File::get_sha256);
-	ClassDB::bind_method(D_METHOD("get_endian_swap"), &_File::get_endian_swap);
-	ClassDB::bind_method(D_METHOD("set_endian_swap", "enable"), &_File::set_endian_swap);
+	ClassDB::bind_method(D_METHOD("is_big_endian"), &_File::is_big_endian);
+	ClassDB::bind_method(D_METHOD("set_big_endian", "big_endian"), &_File::set_big_endian);
 	ClassDB::bind_method(D_METHOD("get_error"), &_File::get_error);
 	ClassDB::bind_method(D_METHOD("get_var", "allow_objects"), &_File::get_var, DEFVAL(false));
 
@@ -1576,7 +1576,7 @@ void _File::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("file_exists", "path"), &_File::file_exists);
 	ClassDB::bind_method(D_METHOD("get_modified_time", "file"), &_File::get_modified_time);
 
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "endian_swap"), "set_endian_swap", "get_endian_swap");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "big_endian"), "set_big_endian", "is_big_endian");
 
 	BIND_ENUM_CONSTANT(READ);
 	BIND_ENUM_CONSTANT(WRITE);

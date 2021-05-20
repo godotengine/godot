@@ -356,7 +356,7 @@ class _File : public Reference {
 	GDCLASS(_File, Reference);
 
 	FileAccess *f = nullptr;
-	bool eswap = false;
+	bool big_endian = false;
 
 protected:
 	static void _bind_methods();
@@ -413,13 +413,13 @@ public:
 	String get_md5(const String &p_path) const;
 	String get_sha256(const String &p_path) const;
 
-	/* Use this for files WRITTEN in _big_ endian machines (ie, amiga/mac).
+	/*
+	 * Use this for files WRITTEN in _big_ endian machines (ie, amiga/mac).
 	 * It's not about the current CPU type but file formats.
-	 * This flags get reset to false (little endian) on each open.
+	 * This flag gets reset to `false` (little endian) on each open.
 	 */
-
-	void set_endian_swap(bool p_swap);
-	bool get_endian_swap();
+	void set_big_endian(bool p_big_endian);
+	bool is_big_endian();
 
 	Error get_error() const; // Get last error.
 
