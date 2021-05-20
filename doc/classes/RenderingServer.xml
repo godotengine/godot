@@ -3388,7 +3388,7 @@
 		<constant name="PARTICLES_DRAW_ORDER_LIFETIME" value="1" enum="ParticlesDrawOrder">
 			Sort particles based on their lifetime.
 		</constant>
-		<constant name="PARTICLES_DRAW_ORDER_VIEW_DEPTH" value="2" enum="ParticlesDrawOrder">
+		<constant name="PARTICLES_DRAW_ORDER_VIEW_DEPTH" value="3" enum="ParticlesDrawOrder">
 			Sort particles based on their distance to the camera.
 		</constant>
 		<constant name="VIEWPORT_UPDATE_DISABLED" value="0" enum="ViewportUpdateMode">

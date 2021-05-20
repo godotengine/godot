@@ -1391,7 +1391,7 @@ ParticlesMaterial::ParticlesMaterial() :
 	set_sub_emitter_keep_velocity(false);
 
 	set_attractor_interaction_enabled(true);
-	set_collision_enabled(true);
+	set_collision_enabled(false);
 	set_collision_bounce(0.0);
 	set_collision_friction(0.0);
 	set_collision_use_scale(false);
