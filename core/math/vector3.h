@@ -423,7 +423,7 @@ Vector3 Vector3::normalized() const {
 
 bool Vector3::is_normalized() const {
 	// use length_squared() instead of length() to avoid sqrt(), makes it more stringent.
-	return Math::is_equal_approx(length_squared(), 1.0, UNIT_EPSILON);
+	return Math::is_equal_approx(length_squared(), 1, (real_t)UNIT_EPSILON);
 }
 
 Vector3 Vector3::inverse() const {

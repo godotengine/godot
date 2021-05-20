@@ -80,7 +80,7 @@ TEST_CASE("[JSON] Parsing single data types") {
 			err_line == 0,
 			"Parsing an integer number as JSON should parse successfully.");
 	CHECK_MESSAGE(
-			Math::is_equal_approx(result, 123'456),
+			(int)result == 123'456,
 			"Parsing an integer number as JSON should return the expected value.");
 
 	json.parse("0.123456", result, err_str, err_line);
@@ -155,7 +155,7 @@ TEST_CASE("[JSON] Parsing objects (dictionaries)") {
 			dictionary["bugs"] == Variant(),
 			"The parsed JSON should contain the expected values.");
 	CHECK_MESSAGE(
-			Math::is_equal_approx(Dictionary(dictionary["apples"])["blue"], -20),
+			(int)Dictionary(dictionary["apples"])["blue"] == -20,
 			"The parsed JSON should contain the expected values.");
 	CHECK_MESSAGE(
 			dictionary["empty_object"].hash() == Dictionary().hash(),
