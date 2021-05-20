@@ -57,10 +57,10 @@ class TileData;
 
 // Forward-declare the plugins.
 class TileSetPlugin;
-class TileSetAtlasPluginRendering;
-class TileSetAtlasPluginPhysics;
-class TileSetAtlasPluginNavigation;
-class TileSetAtlasPluginTerrain;
+class TileSetPluginAtlasRendering;
+class TileSetPluginAtlasPhysics;
+class TileSetPluginAtlasNavigation;
+class TileSetPluginAtlasTerrain;
 
 class TileSet : public Resource {
 	GDCLASS(TileSet, Resource);
@@ -264,7 +264,7 @@ public:
 	int get_next_source_id() const;
 	int get_source_count() const;
 	int get_source_id(int p_index) const;
-	int add_source(Ref<TileSetAtlasSource> p_tile_atlas_source, int p_source_id_override = -1);
+	int add_source(Ref<TileSetSource> p_tile_set_source, int p_source_id_override = -1);
 	void set_source_id(int p_source_id, int p_new_id);
 	void remove_source(int p_source_id);
 	bool has_source(int p_source_id) const;
@@ -338,6 +338,9 @@ protected:
 	const TileSet *tile_set = nullptr;
 
 public:
+	static const Vector2i INVALID_ATLAS_COORDS; // Vector2i(-1, -1);
+	static const int INVALID_TILE_ALTERNATIVE; // -1;
+
 	// Not exposed.
 	virtual void set_tile_set(const TileSet *p_tile_set);
 	virtual void notify_tile_data_properties_should_change(){};
@@ -358,9 +361,6 @@ class TileSetAtlasSource : public TileSetSource {
 	GDCLASS(TileSetAtlasSource, TileSetSource);
 
 public:
-	static const Vector2i INVALID_ATLAS_COORDS; // Vector2i(-1, -1);
-	static const int INVALID_TILE_ALTERNATIVE; // -1;
-
 	struct TileAlternativesData {
 		Vector2i size_in_atlas = Vector2i(1, 1);
 		Vector2i texture_offset;
@@ -441,6 +441,52 @@ public:
 	Vector2i get_tile_effective_texture_offset(Vector2i p_atlas_coords, int p_alternative_tile) const;
 
 	~TileSetAtlasSource();
+};
+
+class TileSetScenesCollectionSource : public TileSetSource {
+	GDCLASS(TileSetScenesCollectionSource, TileSetSource);
+
+private:
+	struct SceneData {
+		Ref<PackedScene> scene;
+		bool display_placeholder = false;
+	};
+	Vector<int> scenes_ids;
+	Map<int, SceneData> scenes;
+	int next_scene_id = 1;
+
+	void _compute_next_alternative_id();
+
+protected:
+	bool _set(const StringName &p_name, const Variant &p_value);
+	bool _get(const StringName &p_name, Variant &r_ret) const;
+	void _get_property_list(List<PropertyInfo> *p_list) const;
+
+	static void _bind_methods();
+
+public:
+	// Tiles.
+	int get_tiles_count() const override;
+	Vector2i get_tile_id(int p_tile_index) const override;
+	bool has_tile(Vector2i p_atlas_coords) const override;
+
+	// Alternative tiles.
+	int get_alternative_tiles_count(const Vector2i p_atlas_coords) const override;
+	int get_alternative_tile_id(const Vector2i p_atlas_coords, int p_index) const override;
+	bool has_alternative_tile(const Vector2i p_atlas_coords, int p_alternative_tile) const override;
+
+	// Scenes sccessors. Lot are similar to "Alternative tiles".
+	int get_scene_tiles_count() { return get_alternative_tiles_count(Vector2i()); }
+	int get_scene_tile_id(int p_index) { return get_alternative_tile_id(Vector2i(), p_index); };
+	bool has_scene_tile_id(int p_id) { return has_alternative_tile(Vector2i(), p_id); };
+	int create_scene_tile(Ref<PackedScene> p_packed_scene = Ref<PackedScene>(), int p_id_override = -1);
+	void set_scene_tile_id(int p_id, int p_new_id);
+	void set_scene_tile_scene(int p_id, Ref<PackedScene> p_packed_scene);
+	Ref<PackedScene> get_scene_tile_scene(int p_id) const;
+	void set_scene_tile_display_placeholder(int p_id, bool p_packed_scene);
+	bool get_scene_tile_display_placeholder(int p_id) const;
+	void remove_scene_tile(int p_id);
+	int get_next_scene_tile_id() const;
 };
 
 class TileData : public Object {
@@ -572,8 +618,8 @@ public:
 	virtual void draw_quadrant_debug(TileMap *p_tile_map, TileMapQuadrant *p_quadrant){};
 };
 
-class TileSetAtlasPluginRendering : public TileSetPlugin {
-	GDCLASS(TileSetAtlasPluginRendering, TileSetPlugin);
+class TileSetPluginAtlasRendering : public TileSetPlugin {
+	GDCLASS(TileSetPluginAtlasRendering, TileSetPlugin);
 
 private:
 	static constexpr float fp_adjust = 0.00001;
@@ -585,13 +631,14 @@ public:
 	virtual void update_dirty_quadrants(TileMap *p_tile_map, SelfList<TileMapQuadrant>::List &r_dirty_quadrant_list) override;
 	virtual void create_quadrant(TileMap *p_tile_map, TileMapQuadrant *p_quadrant) override;
 	virtual void cleanup_quadrant(TileMap *p_tile_map, TileMapQuadrant *p_quadrant) override;
+	virtual void draw_quadrant_debug(TileMap *p_tile_map, TileMapQuadrant *p_quadrant) override;
 
 	// Other.
 	static void draw_tile(RID p_canvas_item, Vector2i p_position, const Ref<TileSet> p_tile_set, int p_atlas_source_id, Vector2i p_atlas_coords, int p_alternative_tile, Color p_modulation = Color(1.0, 1.0, 1.0, 1.0));
 };
 
-class TileSetAtlasPluginTerrain : public TileSetPlugin {
-	GDCLASS(TileSetAtlasPluginTerrain, TileSetPlugin);
+class TileSetPluginAtlasTerrain : public TileSetPlugin {
+	GDCLASS(TileSetPluginAtlasTerrain, TileSetPlugin);
 
 private:
 	static void _draw_square_corner_or_side_terrain_bit(CanvasItem *p_canvas_item, Color p_color, Vector2i p_size, TileSet::CellNeighbor p_bit);
@@ -607,13 +654,11 @@ private:
 	static void _draw_half_offset_side_terrain_bit(CanvasItem *p_canvas_item, Color p_color, Vector2i p_size, TileSet::CellNeighbor p_bit, float p_overlap, TileSet::TileOffsetAxis p_offset_axis);
 
 public:
-	//virtual void tilemap_notification(const TileMap * p_tile_map, int p_what);
-
 	static void draw_terrains(CanvasItem *p_canvas_item, Transform2D p_transform, TileSet *p_tile_set, const TileData *p_tile_data);
 };
 
-class TileSetAtlasPluginPhysics : public TileSetPlugin {
-	GDCLASS(TileSetAtlasPluginPhysics, TileSetPlugin);
+class TileSetPluginAtlasPhysics : public TileSetPlugin {
+	GDCLASS(TileSetPluginAtlasPhysics, TileSetPlugin);
 
 public:
 	// Tilemap updates
@@ -624,14 +669,23 @@ public:
 	virtual void draw_quadrant_debug(TileMap *p_tile_map, TileMapQuadrant *p_quadrant) override;
 };
 
-class TileSetAtlasPluginNavigation : public TileSetPlugin {
-	GDCLASS(TileSetAtlasPluginNavigation, TileSetPlugin);
+class TileSetPluginAtlasNavigation : public TileSetPlugin {
+	GDCLASS(TileSetPluginAtlasNavigation, TileSetPlugin);
 
 public:
 	// Tilemap updates
 	virtual void tilemap_notification(TileMap *p_tile_map, int p_what) override;
 	virtual void update_dirty_quadrants(TileMap *p_tile_map, SelfList<TileMapQuadrant>::List &r_dirty_quadrant_list) override;
-	//virtual void create_quadrant(TileMap *p_tile_map, TileMapQuadrant *p_quadrant) override;
+	virtual void cleanup_quadrant(TileMap *p_tile_map, TileMapQuadrant *p_quadrant) override;
+	virtual void draw_quadrant_debug(TileMap *p_tile_map, TileMapQuadrant *p_quadrant) override;
+};
+
+class TileSetPluginScenesCollections : public TileSetPlugin {
+	GDCLASS(TileSetPluginScenesCollections, TileSetPlugin);
+
+public:
+	// Tilemap updates
+	virtual void update_dirty_quadrants(TileMap *p_tile_map, SelfList<TileMapQuadrant>::List &r_dirty_quadrant_list) override;
 	virtual void cleanup_quadrant(TileMap *p_tile_map, TileMapQuadrant *p_quadrant) override;
 	virtual void draw_quadrant_debug(TileMap *p_tile_map, TileMapQuadrant *p_quadrant) override;
 };

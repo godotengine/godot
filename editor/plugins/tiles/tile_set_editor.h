@@ -35,6 +35,7 @@
 #include "scene/resources/tile_set.h"
 #include "tile_data_editors.h"
 #include "tile_set_atlas_source_editor.h"
+#include "tile_set_scenes_collection_source_editor.h"
 
 class TileSetEditor : public VBoxContainer {
 	GDCLASS(TileSetEditor, VBoxContainer);
@@ -47,6 +48,7 @@ private:
 
 	Label *no_source_selected_label;
 	TileSetAtlasSourceEditor *tile_set_atlas_source_editor;
+	TileSetScenesCollectionSourceEditor *tile_set_scenes_collection_source_editor;
 
 	UndoRedo *undo_redo = EditorNode::get_undo_redo();
 
@@ -64,11 +66,11 @@ private:
 
 	// -- Sources management --
 	Button *sources_delete_button;
-	Button *sources_add_button;
+	MenuButton *sources_add_button;
 	ItemList *sources_list;
 	Ref<Texture2D> missing_texture_texture;
 	void _source_selected(int p_source_index);
-	void _source_add_pressed();
+	void _source_add_id_pressed(int p_id_pressed);
 	void _source_delete_pressed();
 
 	void _tile_set_changed();

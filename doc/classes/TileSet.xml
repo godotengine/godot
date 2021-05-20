@@ -20,7 +20,7 @@
 		<method name="add_source">
 			<return type="int">
 			</return>
-			<argument index="0" name="atlas_source_id_override" type="TileSetAtlasSource">
+			<argument index="0" name="atlas_source_id_override" type="TileSetSource">
 			</argument>
 			<argument index="1" name="arg1" type="int" default="-1">
 			</argument>
