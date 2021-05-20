@@ -1503,6 +1503,9 @@ void ScriptEditor::_notification(int p_what) {
 			filename->add_theme_style_override("normal", editor->get_gui_base()->get_theme_stylebox("normal", "LineEdit"));
 
 			recent_scripts->set_as_minsize();
+
+			_update_script_colors();
+			_update_script_names();
 		} break;
 
 		case NOTIFICATION_READY: {
