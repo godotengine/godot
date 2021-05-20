@@ -872,10 +872,11 @@ Vector3 CharacterBody3D::get_angular_velocity() const {
 //so, if you pass 45 as limit, avoid numerical precision errors when angle is 45.
 #define FLOOR_ANGLE_THRESHOLD 0.01
 
-Vector3 CharacterBody3D::move_and_slide(const Vector3 &p_linear_velocity, const Vector3 &p_up_direction, bool p_stop_on_slope, int p_max_slides, real_t p_floor_max_angle, bool p_infinite_inertia) {
+Vector3 CharacterBody3D::move_and_slide(const Vector3 &p_linear_velocity) {
 	Vector3 body_velocity = p_linear_velocity;
 	Vector3 body_velocity_normal = body_velocity.normalized();
-	Vector3 up_direction = p_up_direction.normalized();
+
+	bool was_on_floor = on_floor;
 
 	for (int i = 0; i < 3; i++) {
 		if (locked_axis & (1 << i)) {
@@ -894,19 +895,20 @@ Vector3 CharacterBody3D::move_and_slide(const Vector3 &p_linear_velocity, const 
 	floor_normal = Vector3();
 	floor_velocity = Vector3();
 
-	while (p_max_slides) {
+	int slide_count = max_slides;
+	while (slide_count) {
 		PhysicsServer3D::MotionResult result;
 		bool found_collision = false;
 
 		for (int i = 0; i < 2; ++i) {
 			bool collided;
 			if (i == 0) { //collide
-				collided = move_and_collide(motion, p_infinite_inertia, result);
+				collided = move_and_collide(motion, infinite_inertia, result);
 				if (!collided) {
 					motion = Vector3(); //clear because no collision happened and motion completed
 				}
 			} else { //separate raycasts (if any)
-				collided = separate_raycast_shapes(p_infinite_inertia, result);
+				collided = separate_raycast_shapes(result);
 				if (collided) {
 					result.remainder = motion; //keep
 					result.motion = Vector3();
@@ -923,14 +925,14 @@ Vector3 CharacterBody3D::move_and_slide(const Vector3 &p_linear_velocity, const 
 					//all is a wall
 					on_wall = true;
 				} else {
-					if (Math::acos(result.collision_normal.dot(up_direction)) <= p_floor_max_angle + FLOOR_ANGLE_THRESHOLD) { //floor
+					if (Math::acos(result.collision_normal.dot(up_direction)) <= floor_max_angle + FLOOR_ANGLE_THRESHOLD) { //floor
 
 						on_floor = true;
 						floor_normal = result.collision_normal;
 						on_floor_body = result.collider;
 						floor_velocity = result.collider_velocity;
 
-						if (p_stop_on_slope) {
+						if (stop_on_slope) {
 							if ((body_velocity_normal + up_direction).length() < 0.01 && result.motion.length() < 1) {
 								Transform3D gt = get_global_transform();
 								gt.origin -= result.motion.slide(up_direction);
@@ -938,7 +940,7 @@ Vector3 CharacterBody3D::move_and_slide(const Vector3 &p_linear_velocity, const 
 								return Vector3();
 							}
 						}
-					} else if (Math::acos(result.collision_normal.dot(-up_direction)) <= p_floor_max_angle + FLOOR_ANGLE_THRESHOLD) { //ceiling
+					} else if (Math::acos(result.collision_normal.dot(-up_direction)) <= floor_max_angle + FLOOR_ANGLE_THRESHOLD) { //ceiling
 						on_ceiling = true;
 					} else {
 						on_wall = true;
@@ -960,33 +962,25 @@ Vector3 CharacterBody3D::move_and_slide(const Vector3 &p_linear_velocity, const 
 			break;
 		}
 
-		--p_max_slides;
+		--slide_count;
 	}
 
-	return body_velocity;
-}
-
-Vector3 CharacterBody3D::move_and_slide_with_snap(const Vector3 &p_linear_velocity, const Vector3 &p_snap, const Vector3 &p_up_direction, bool p_stop_on_slope, int p_max_slides, real_t p_floor_max_angle, bool p_infinite_inertia) {
-	Vector3 up_direction = p_up_direction.normalized();
-	bool was_on_floor = on_floor;
-
-	Vector3 ret = move_and_slide(p_linear_velocity, up_direction, p_stop_on_slope, p_max_slides, p_floor_max_angle, p_infinite_inertia);
-	if (!was_on_floor || p_snap == Vector3()) {
-		return ret;
+	if (!was_on_floor || snap == Vector3()) {
+		return body_velocity;
 	}
 
-	PhysicsServer3D::MotionResult result;
+	// Apply snap.
 	Transform3D gt = get_global_transform();
-
-	if (move_and_collide(p_snap, p_infinite_inertia, result, false, true)) {
+	PhysicsServer3D::MotionResult result;
+	if (move_and_collide(snap, infinite_inertia, result, false, true)) {
 		bool apply = true;
 		if (up_direction != Vector3()) {
-			if (Math::acos(result.collision_normal.dot(up_direction)) <= p_floor_max_angle + FLOOR_ANGLE_THRESHOLD) {
+			if (Math::acos(result.collision_normal.dot(up_direction)) <= floor_max_angle + FLOOR_ANGLE_THRESHOLD) {
 				on_floor = true;
 				floor_normal = result.collision_normal;
 				on_floor_body = result.collider;
 				floor_velocity = result.collider_velocity;
-				if (p_stop_on_slope) {
+				if (stop_on_slope) {
 					// move and collide may stray the object a bit because of pre un-stucking,
 					// so only ensure that motion happens on floor direction in this case.
 					result.motion = result.motion.project(up_direction);
@@ -1001,7 +995,7 @@ Vector3 CharacterBody3D::move_and_slide_with_snap(const Vector3 &p_linear_veloci
 		}
 	}
 
-	return ret;
+	return body_velocity;
 }
 
 bool CharacterBody3D::separate_raycast_shapes(PhysicsServer3D::MotionResult &r_result) {
@@ -1084,6 +1078,54 @@ Ref<KinematicCollision3D> CharacterBody3D::_get_slide_collision(int p_bounce) {
 	return slide_colliders[p_bounce];
 }
 
+bool CharacterBody3D::is_stop_on_slope_enabled() const {
+	return stop_on_slope;
+}
+
+void CharacterBody3D::set_stop_on_slope_enabled(bool p_enabled) {
+	stop_on_slope = p_enabled;
+}
+
+bool CharacterBody3D::is_infinite_inertia_enabled() const {
+	return infinite_inertia;
+}
+void CharacterBody3D::set_infinite_inertia_enabled(bool p_enabled) {
+	infinite_inertia = p_enabled;
+}
+
+int CharacterBody3D::get_max_slides() const {
+	return max_slides;
+}
+
+void CharacterBody3D::set_max_slides(int p_max_slides) {
+	ERR_FAIL_COND(p_max_slides > 0);
+	max_slides = p_max_slides;
+}
+
+real_t CharacterBody3D::get_floor_max_angle() const {
+	return floor_max_angle;
+}
+
+void CharacterBody3D::set_floor_max_angle(real_t p_floor_max_angle) {
+	floor_max_angle = p_floor_max_angle;
+}
+
+const Vector3 &CharacterBody3D::get_snap() const {
+	return snap;
+}
+
+void CharacterBody3D::set_snap(const Vector3 &p_snap) {
+	snap = p_snap;
+}
+
+const Vector3 &CharacterBody3D::get_up_direction() const {
+	return up_direction;
+}
+
+void CharacterBody3D::set_up_direction(const Vector3 &p_up_direction) {
+	up_direction = p_up_direction.normalized();
+}
+
 void CharacterBody3D::_notification(int p_what) {
 	if (p_what == NOTIFICATION_ENTER_TREE) {
 		// Reset move_and_slide() data.
@@ -1097,8 +1139,20 @@ void CharacterBody3D::_notification(int p_what) {
 }
 
 void CharacterBody3D::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("move_and_slide", "linear_velocity", "up_direction", "stop_on_slope", "max_slides", "floor_max_angle", "infinite_inertia"), &CharacterBody3D::move_and_slide, DEFVAL(Vector3(0, 0, 0)), DEFVAL(false), DEFVAL(4), DEFVAL(Math::deg2rad((real_t)45.0)), DEFVAL(true));
-	ClassDB::bind_method(D_METHOD("move_and_slide_with_snap", "linear_velocity", "snap", "up_direction", "stop_on_slope", "max_slides", "floor_max_angle", "infinite_inertia"), &CharacterBody3D::move_and_slide_with_snap, DEFVAL(Vector3(0, 0, 0)), DEFVAL(false), DEFVAL(4), DEFVAL(Math::deg2rad((real_t)45.0)), DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("move_and_slide", "linear_velocity"), &CharacterBody3D::move_and_slide);
+
+	ClassDB::bind_method(D_METHOD("is_stop_on_slope_enabled"), &CharacterBody3D::is_stop_on_slope_enabled);
+	ClassDB::bind_method(D_METHOD("set_stop_on_slope_enabled", "enabled"), &CharacterBody3D::set_stop_on_slope_enabled);
+	ClassDB::bind_method(D_METHOD("is_infinite_inertia_enabled"), &CharacterBody3D::is_infinite_inertia_enabled);
+	ClassDB::bind_method(D_METHOD("set_infinite_inertia_enabled", "enabled"), &CharacterBody3D::set_infinite_inertia_enabled);
+	ClassDB::bind_method(D_METHOD("get_max_slides"), &CharacterBody3D::get_max_slides);
+	ClassDB::bind_method(D_METHOD("set_max_slides", "max_slides"), &CharacterBody3D::set_max_slides);
+	ClassDB::bind_method(D_METHOD("get_floor_max_angle"), &CharacterBody3D::get_floor_max_angle);
+	ClassDB::bind_method(D_METHOD("set_floor_max_angle", "floor_max_angle"), &CharacterBody3D::set_floor_max_angle);
+	ClassDB::bind_method(D_METHOD("get_snap"), &CharacterBody3D::get_snap);
+	ClassDB::bind_method(D_METHOD("set_snap", "snap"), &CharacterBody3D::set_snap);
+	ClassDB::bind_method(D_METHOD("get_up_direction"), &CharacterBody3D::get_up_direction);
+	ClassDB::bind_method(D_METHOD("set_up_direction", "up_direction"), &CharacterBody3D::set_up_direction);
 
 	ClassDB::bind_method(D_METHOD("is_on_floor"), &CharacterBody3D::is_on_floor);
 	ClassDB::bind_method(D_METHOD("is_on_ceiling"), &CharacterBody3D::is_on_ceiling);
@@ -1108,6 +1162,13 @@ void CharacterBody3D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_slide_count"), &CharacterBody3D::get_slide_count);
 	ClassDB::bind_method(D_METHOD("get_slide_collision", "slide_idx"), &CharacterBody3D::_get_slide_collision);
+
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "stop_on_slope"), "set_stop_on_slope_enabled", "is_stop_on_slope_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "infinite_inertia"), "set_infinite_inertia_enabled", "is_infinite_inertia_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_slides"), "set_max_slides", "get_max_slides");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "floor_max_angle"), "set_floor_max_angle", "get_floor_max_angle");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "snap"), "set_snap", "get_snap");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "up_direction"), "set_up_direction", "get_up_direction");
 }
 
 void CharacterBody3D::_direct_state_changed(Object *p_state) {
