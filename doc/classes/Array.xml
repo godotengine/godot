@@ -333,14 +333,14 @@
 				[gdscript]
 				# Will evaluate to `true`.
 				if 2 in [2, 4, 6, 8]:
-				    print("Containes!")
+				    print("Contains!")
 				[/gdscript]
 				[csharp]
 				// As there is no "in" keyword in C#, you have to use Contains
 				var array = new Godot.Collections.Array{2, 4, 6, 8};
 				if (array.Contains(2))
 				{
-				    GD.Print("Containes!");
+				    GD.Print("Contains!");
 				}
 				[/csharp]
 				[/codeblocks]

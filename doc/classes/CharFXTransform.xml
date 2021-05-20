@@ -37,7 +37,7 @@
 			The position offset the character will be drawn with (in pixels).
 		</member>
 		<member name="outline" type="bool" setter="set_outline" getter="is_outline" default="false">
-			If [code]ture[/code], FX transform is called for outline drawing. Setting this property won't affect drawing.
+			If [code]true[/code], FX transform is called for outline drawing. Setting this property won't affect drawing.
 		</member>
 		<member name="range" type="Vector2i" setter="set_range" getter="get_range" default="Vector2i( 0, 0 )">
 			Absolute character range in the string, corresponding to the glyph. Setting this property won't affect drawing.

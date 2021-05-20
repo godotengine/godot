@@ -690,7 +690,7 @@ public:
 		Vector3 axis = (p_point_B - p_point_A);
 		real_t depth = axis.length();
 
-		// Filter out bogus directions with a treshold and re-testing axis.
+		// Filter out bogus directions with a threshold and re-testing axis.
 		if (separator->best_depth - depth > 0.001) {
 			separator->test_axis(axis / depth);
 		}

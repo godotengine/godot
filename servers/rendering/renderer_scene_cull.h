@@ -845,7 +845,7 @@ public:
 
 	RID_PtrOwner<Instance, true> instance_owner;
 
-	uint32_t geometry_instance_pair_mask; // used in traditional forward, unnecesary on clustered
+	uint32_t geometry_instance_pair_mask; // used in traditional forward, unnecessary on clustered
 
 	virtual RID instance_allocate();
 	virtual void instance_initialize(RID p_rid);

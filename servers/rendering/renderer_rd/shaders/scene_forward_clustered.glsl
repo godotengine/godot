@@ -662,7 +662,7 @@ void main() {
 #endif
 
 #ifdef ALPHA_ANTIALIASING_EDGE_USED
-// If alpha scissor is used, we must further the edge threshold, otherwise we wont get any edge feather
+// If alpha scissor is used, we must further the edge threshold, otherwise we won't get any edge feather
 #ifdef ALPHA_SCISSOR_USED
 	alpha_antialiasing_edge = clamp(alpha_scissor_threshold + alpha_antialiasing_edge, 0.0, 1.0);
 #endif

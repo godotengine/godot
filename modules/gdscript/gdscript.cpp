@@ -481,7 +481,7 @@ void GDScript::_update_doc() {
 				methods[i].return_val.class_name = _get_gdscript_reference_class_name(Object::cast_to<GDScript>(return_type.script_type));
 			}
 
-			// Change class name if argumetn is script reference.
+			// Change class name if argument is script reference.
 			for (int j = 0; j < fn->get_argument_count(); j++) {
 				GDScriptDataType arg_type = fn->get_argument_type(j);
 				if (arg_type.kind == GDScriptDataType::GDSCRIPT) {

@@ -15,7 +15,7 @@ functionality. If anything we should give this parser back to assimp at some poi
 
 # Updating assimp fbx parser
 
-Don't. it's not possible the code is rewritten in many areas to remove thirdparty deps and various bugs are fixed.
+Don't. It's not possible the code is rewritten in many areas to remove thirdparty deps and various bugs are fixed.
 
 Many days were put into rewriting the parser to use safe code and safe memory accessors.
 

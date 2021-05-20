@@ -1414,7 +1414,7 @@ CanvasItem::~CanvasItem() {
 ///////////////////////////////////////////////////////////////////
 
 void CanvasTexture::set_diffuse_texture(const Ref<Texture2D> &p_diffuse) {
-	ERR_FAIL_COND_MSG(Object::cast_to<CanvasTexture>(p_diffuse.ptr()) != nullptr, "Cant self-assign a CanvasTexture");
+	ERR_FAIL_COND_MSG(Object::cast_to<CanvasTexture>(p_diffuse.ptr()) != nullptr, "Can't self-assign a CanvasTexture");
 	diffuse_texture = p_diffuse;
 
 	RID tex_rid = diffuse_texture.is_valid() ? diffuse_texture->get_rid() : RID();
@@ -1426,7 +1426,7 @@ Ref<Texture2D> CanvasTexture::get_diffuse_texture() const {
 }
 
 void CanvasTexture::set_normal_texture(const Ref<Texture2D> &p_normal) {
-	ERR_FAIL_COND_MSG(Object::cast_to<CanvasTexture>(p_normal.ptr()) != nullptr, "Cant self-assign a CanvasTexture");
+	ERR_FAIL_COND_MSG(Object::cast_to<CanvasTexture>(p_normal.ptr()) != nullptr, "Can't self-assign a CanvasTexture");
 	normal_texture = p_normal;
 	RID tex_rid = normal_texture.is_valid() ? normal_texture->get_rid() : RID();
 	RS::get_singleton()->canvas_texture_set_channel(canvas_texture, RS::CANVAS_TEXTURE_CHANNEL_NORMAL, tex_rid);
@@ -1436,7 +1436,7 @@ Ref<Texture2D> CanvasTexture::get_normal_texture() const {
 }
 
 void CanvasTexture::set_specular_texture(const Ref<Texture2D> &p_specular) {
-	ERR_FAIL_COND_MSG(Object::cast_to<CanvasTexture>(p_specular.ptr()) != nullptr, "Cant self-assign a CanvasTexture");
+	ERR_FAIL_COND_MSG(Object::cast_to<CanvasTexture>(p_specular.ptr()) != nullptr, "Can't self-assign a CanvasTexture");
 	specular_texture = p_specular;
 	RID tex_rid = specular_texture.is_valid() ? specular_texture->get_rid() : RID();
 	RS::get_singleton()->canvas_texture_set_channel(canvas_texture, RS::CANVAS_TEXTURE_CHANNEL_SPECULAR, tex_rid);

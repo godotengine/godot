@@ -1173,7 +1173,7 @@ GDScriptParser::EnumNode *GDScriptParser::parse_enum() {
 	consume(GDScriptTokenizer::Token::BRACE_CLOSE, R"(Expected closing "}" for enum.)");
 
 #ifdef TOOLS_ENABLED
-	// Enum values documentaion.
+	// Enum values documentation.
 	for (int i = 0; i < enum_node->values.size(); i++) {
 		if (i == enum_node->values.size() - 1) {
 			// If close bracket is same line as last value.

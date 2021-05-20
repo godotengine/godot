@@ -368,7 +368,7 @@ Ref<Script> CSharpLanguage::get_template(const String &p_class_name, const Strin
 							 "}\n";
 
 	// Replaces all spaces in p_class_name with underscores to prevent
-	// erronous C# Script templates from being generated when the object name
+	// invalid C# Script templates from being generated when the object name
 	// has spaces in it.
 	String class_name_no_spaces = p_class_name.replace(" ", "_");
 	String base_class_name = get_base_class_name(p_base_class_name, class_name_no_spaces);

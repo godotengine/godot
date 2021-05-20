@@ -5291,7 +5291,7 @@ void EditorNode::_file_access_close_error_notify(const String &p_str) {
 
 void EditorNode::reload_scene(const String &p_path) {
 	/*
-	 * No longer necesary since scenes now reset and reload their internal resource if needed.
+	 * No longer necessary since scenes now reset and reload their internal resource if needed.
 	//first of all, reload internal textures, materials, meshes, etc. as they might have changed on disk
 
 	List<Ref<Resource>> cached;

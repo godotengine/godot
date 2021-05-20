@@ -112,7 +112,7 @@ Vector<Vector3> NavMap::get_path(Vector3 p_origin, Vector3 p_destination, bool p
 		}
 	}
 
-	// Check for trival cases
+	// Check for trivial cases
 	if (!begin_poly || !end_poly) {
 		return Vector<Vector3>();
 	}
