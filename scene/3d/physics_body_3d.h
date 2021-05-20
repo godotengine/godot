@@ -37,6 +37,8 @@
 #include "servers/physics_server_3d.h"
 #include "skeleton_3d.h"
 
+class KinematicCollision3D;
+
 class PhysicsBody3D : public CollisionObject3D {
 	GDCLASS(PhysicsBody3D, CollisionObject3D);
 
@@ -44,7 +46,23 @@ protected:
 	static void _bind_methods();
 	PhysicsBody3D(PhysicsServer3D::BodyMode p_mode);
 
+	real_t margin = 0.001;
+	Ref<KinematicCollision3D> motion_cache;
+
+	uint16_t locked_axis = 0;
+
+	Ref<KinematicCollision3D> _move(const Vector3 &p_motion, bool p_infinite_inertia = true, bool p_exclude_raycast_shapes = true, bool p_test_only = false);
+
 public:
+	bool move_and_collide(const Vector3 &p_motion, bool p_infinite_inertia, PhysicsServer3D::MotionResult &r_result, bool p_exclude_raycast_shapes = true, bool p_test_only = false);
+	bool test_move(const Transform3D &p_from, const Vector3 &p_motion, bool p_infinite_inertia = true, bool p_exclude_raycast_shapes = true, const Ref<KinematicCollision3D> &r_collision = Ref<KinematicCollision3D>());
+
+	void set_safe_margin(real_t p_margin);
+	real_t get_safe_margin() const;
+
+	void set_axis_lock(PhysicsServer3D::BodyAxis p_axis, bool p_lock);
+	bool get_axis_lock(PhysicsServer3D::BodyAxis p_axis) const;
+
 	virtual Vector3 get_linear_velocity() const;
 	virtual Vector3 get_angular_velocity() const;
 	virtual real_t get_inverse_mass() const;
@@ -53,7 +71,7 @@ public:
 	void add_collision_exception_with(Node *p_node); //must be physicsbody
 	void remove_collision_exception_with(Node *p_node);
 
-	PhysicsBody3D();
+	virtual ~PhysicsBody3D();
 };
 
 class StaticBody3D : public PhysicsBody3D {
@@ -212,9 +230,6 @@ public:
 	void set_use_continuous_collision_detection(bool p_enable);
 	bool is_using_continuous_collision_detection() const;
 
-	void set_axis_lock(PhysicsServer3D::BodyAxis p_axis, bool p_lock);
-	bool get_axis_lock(PhysicsServer3D::BodyAxis p_axis) const;
-
 	Array get_colliding_bodies() const;
 
 	void add_central_force(const Vector3 &p_force);
@@ -238,30 +253,12 @@ VARIANT_ENUM_CAST(RigidBody3D::Mode);
 
 class KinematicCollision3D;
 
-class KinematicBody3D : public PhysicsBody3D {
-	GDCLASS(KinematicBody3D, PhysicsBody3D);
-
-public:
-	struct Collision {
-		Vector3 collision;
-		Vector3 normal;
-		Vector3 collider_vel;
-		ObjectID collider;
-		RID collider_rid;
-		int collider_shape = 0;
-		Variant collider_metadata;
-		Vector3 remainder;
-		Vector3 travel;
-		int local_shape = 0;
-	};
+class CharacterBody3D : public PhysicsBody3D {
+	GDCLASS(CharacterBody3D, PhysicsBody3D);
 
 private:
 	Vector3 linear_velocity;
 	Vector3 angular_velocity;
-
-	uint16_t locked_axis = 0;
-
-	real_t margin;
 
 	Vector3 floor_normal;
 	Vector3 floor_velocity;
@@ -269,14 +266,12 @@ private:
 	bool on_floor = false;
 	bool on_ceiling = false;
 	bool on_wall = false;
-	Vector<Collision> colliders;
+	Vector<PhysicsServer3D::MotionResult> motion_results;
 	Vector<Ref<KinematicCollision3D>> slide_colliders;
-	Ref<KinematicCollision3D> motion_cache;
 
-	_FORCE_INLINE_ bool _ignores_mode(PhysicsServer3D::BodyMode) const;
-
-	Ref<KinematicCollision3D> _move(const Vector3 &p_motion, bool p_infinite_inertia = true, bool p_exclude_raycast_shapes = true, bool p_test_only = false);
 	Ref<KinematicCollision3D> _get_slide_collision(int p_bounce);
+
+	bool separate_raycast_shapes(bool p_infinite_inertia, PhysicsServer3D::MotionResult &r_result);
 
 protected:
 	void _notification(int p_what);
@@ -288,17 +283,6 @@ public:
 	virtual Vector3 get_linear_velocity() const override;
 	virtual Vector3 get_angular_velocity() const override;
 
-	bool move_and_collide(const Vector3 &p_motion, bool p_infinite_inertia, Collision &r_collision, bool p_exclude_raycast_shapes = true, bool p_test_only = false);
-	bool test_move(const Transform3D &p_from, const Vector3 &p_motion, bool p_infinite_inertia);
-
-	bool separate_raycast_shapes(bool p_infinite_inertia, Collision &r_collision);
-
-	void set_axis_lock(PhysicsServer3D::BodyAxis p_axis, bool p_lock);
-	bool get_axis_lock(PhysicsServer3D::BodyAxis p_axis) const;
-
-	void set_safe_margin(real_t p_margin);
-	real_t get_safe_margin() const;
-
 	Vector3 move_and_slide(const Vector3 &p_linear_velocity, const Vector3 &p_up_direction = Vector3(0, 0, 0), bool p_stop_on_slope = false, int p_max_slides = 4, real_t p_floor_max_angle = Math::deg2rad((real_t)45.0), bool p_infinite_inertia = true);
 	Vector3 move_and_slide_with_snap(const Vector3 &p_linear_velocity, const Vector3 &p_snap, const Vector3 &p_up_direction = Vector3(0, 0, 0), bool p_stop_on_slope = false, int p_max_slides = 4, real_t p_floor_max_angle = Math::deg2rad((real_t)45.0), bool p_infinite_inertia = true);
 	bool is_on_floor() const;
@@ -308,18 +292,19 @@ public:
 	Vector3 get_floor_velocity() const;
 
 	int get_slide_count() const;
-	Collision get_slide_collision(int p_bounce) const;
+	PhysicsServer3D::MotionResult get_slide_collision(int p_bounce) const;
 
-	KinematicBody3D();
-	~KinematicBody3D();
+	CharacterBody3D();
+	~CharacterBody3D();
 };
 
 class KinematicCollision3D : public Reference {
 	GDCLASS(KinematicCollision3D, Reference);
 
-	KinematicBody3D *owner;
-	friend class KinematicBody3D;
-	KinematicBody3D::Collision collision;
+	PhysicsBody3D *owner = nullptr;
+	friend class PhysicsBody3D;
+	friend class CharacterBody3D;
+	PhysicsServer3D::MotionResult result;
 
 protected:
 	static void _bind_methods();
@@ -336,8 +321,6 @@ public:
 	int get_collider_shape_index() const;
 	Vector3 get_collider_velocity() const;
 	Variant get_collider_metadata() const;
-
-	KinematicCollision3D();
 };
 
 class PhysicalBone3D : public PhysicsBody3D {
@@ -559,9 +542,6 @@ public:
 
 	void set_can_sleep(bool p_active);
 	bool is_able_to_sleep() const;
-
-	void set_axis_lock(PhysicsServer3D::BodyAxis p_axis, bool p_lock);
-	bool get_axis_lock(PhysicsServer3D::BodyAxis p_axis) const;
 
 	void apply_central_impulse(const Vector3 &p_impulse);
 	void apply_impulse(const Vector3 &p_impulse, const Vector3 &p_position = Vector3());

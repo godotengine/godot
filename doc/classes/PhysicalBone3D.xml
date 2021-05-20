@@ -25,14 +25,6 @@
 			<description>
 			</description>
 		</method>
-		<method name="get_axis_lock" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="axis" type="int" enum="PhysicsServer3D.BodyAxis">
-			</argument>
-			<description>
-			</description>
-		</method>
 		<method name="get_bone_id" qualifiers="const">
 			<return type="int">
 			</return>
@@ -51,38 +43,10 @@
 			<description>
 			</description>
 		</method>
-		<method name="set_axis_lock">
-			<return type="void">
-			</return>
-			<argument index="0" name="axis" type="int" enum="PhysicsServer3D.BodyAxis">
-			</argument>
-			<argument index="1" name="lock" type="bool">
-			</argument>
-			<description>
-			</description>
-		</method>
 	</methods>
 	<members>
 		<member name="angular_damp" type="float" setter="set_angular_damp" getter="get_angular_damp" default="-1.0">
 			Damps the body's rotation if greater than [code]0[/code].
-		</member>
-		<member name="axis_lock_angular_x" type="bool" setter="set_axis_lock" getter="get_axis_lock" default="false">
-			Lock the body's rotation in the X axis.
-		</member>
-		<member name="axis_lock_angular_y" type="bool" setter="set_axis_lock" getter="get_axis_lock" default="false">
-			Lock the body's rotation in the Y axis.
-		</member>
-		<member name="axis_lock_angular_z" type="bool" setter="set_axis_lock" getter="get_axis_lock" default="false">
-			Lock the body's rotation in the Z axis.
-		</member>
-		<member name="axis_lock_linear_x" type="bool" setter="set_axis_lock" getter="get_axis_lock" default="false">
-			Lock the body's movement in the X axis.
-		</member>
-		<member name="axis_lock_linear_y" type="bool" setter="set_axis_lock" getter="get_axis_lock" default="false">
-			Lock the body's movement in the Y axis.
-		</member>
-		<member name="axis_lock_linear_z" type="bool" setter="set_axis_lock" getter="get_axis_lock" default="false">
-			Lock the body's movement in the Z axis.
 		</member>
 		<member name="body_offset" type="Transform3D" setter="set_body_offset" getter="get_body_offset" default="Transform3D( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0 )">
 			Sets the body's transform.

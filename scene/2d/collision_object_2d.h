@@ -62,7 +62,7 @@ class CollisionObject2D : public Node2D {
 	int total_subshapes = 0;
 
 	Map<uint32_t, ShapeData> shapes;
-	bool only_update_transform_changes = false; //this is used for sync physics in KinematicBody
+	bool only_update_transform_changes = false; //this is used for sync physics in CharacterBody2D
 
 protected:
 	CollisionObject2D(RID p_rid, bool p_area);
@@ -77,6 +77,7 @@ protected:
 	void _mouse_exit();
 
 	void set_only_update_transform_changes(bool p_enable);
+	bool is_only_update_transform_changes_enabled() const;
 
 public:
 	void set_collision_layer(uint32_t p_layer);

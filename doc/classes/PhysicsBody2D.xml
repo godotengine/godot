@@ -26,6 +26,22 @@
 				Returns an array of nodes that were added as collision exceptions for this body.
 			</description>
 		</method>
+		<method name="move_and_collide">
+			<return type="KinematicCollision2D">
+			</return>
+			<argument index="0" name="rel_vec" type="Vector2">
+			</argument>
+			<argument index="1" name="infinite_inertia" type="bool" default="true">
+			</argument>
+			<argument index="2" name="exclude_raycast_shapes" type="bool" default="true">
+			</argument>
+			<argument index="3" name="test_only" type="bool" default="false">
+			</argument>
+			<description>
+				Moves the body along the vector [code]rel_vec[/code]. The body will stop if it collides. Returns a [KinematicCollision2D], which contains information about the collision.
+				If [code]test_only[/code] is [code]true[/code], the body does not move but the would-be collision information is given.
+			</description>
+		</method>
 		<method name="remove_collision_exception_with">
 			<return type="void">
 			</return>
@@ -35,8 +51,32 @@
 				Removes a body from the list of bodies that this body can't collide with.
 			</description>
 		</method>
+		<method name="test_move">
+			<return type="bool">
+			</return>
+			<argument index="0" name="from" type="Transform2D">
+			</argument>
+			<argument index="1" name="rel_vec" type="Vector2">
+			</argument>
+			<argument index="2" name="infinite_inertia" type="bool" default="true">
+			</argument>
+			<argument index="3" name="exclude_raycast_shapes" type="bool" default="true">
+			</argument>
+			<argument index="4" name="collision" type="KinematicCollision2D" default="null">
+			</argument>
+			<description>
+				Checks for collisions without moving the body. Virtually sets the node's position, scale and rotation to that of the given [Transform2D], then tries to move the body along the vector [code]rel_vec[/code]. Returns [code]true[/code] if a collision would occur.
+				[code]collision[/code] is an optional object of type [KinematicCollision2D], which contains additional information about the collision (should there be one).
+			</description>
+		</method>
 	</methods>
 	<members>
+		<member name="collision/safe_margin" type="float" setter="set_safe_margin" getter="get_safe_margin" default="0.08">
+			Extra margin used for collision recovery in motion functions (see [method move_and_collide], [method CharacterBody2D.move_and_slide], [method CharacterBody2D.move_and_slide_with_snap]).
+			If the body is at least this close to another body, it will consider them to be colliding and will be pushed away before performing the actual motion.
+			A higher value means it's more flexible for detecting collision, which helps with consistently detecting walls and floors.
+			A lower value forces the collision algorithm to use more exact detection, so it can be used in cases that specifically require precision, e.g at very low scale to avoid visible jittering, or for stability with a stack of character bodies.
+		</member>
 		<member name="input_pickable" type="bool" setter="set_pickable" getter="is_pickable" override="true" default="false" />
 	</members>
 	<constants>
