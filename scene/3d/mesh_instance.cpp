@@ -329,7 +329,7 @@ void MeshInstance::_initialize_skinning(bool p_force_reset, bool p_call_attach_s
 			}
 
 			if (is_visible_in_tree() && (software_skinning_flags & SoftwareSkinning::FLAG_BONES_READY)) {
-				// Intialize from current skeleton pose.
+				// Initialize from current skeleton pose.
 				_update_skinning();
 			}
 		} else {

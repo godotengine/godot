@@ -56,7 +56,7 @@ static NSMutableArray<ApplicationDelegateService *> *services = nil;
 	[services addObject:service];
 }
 
-// UIApplicationDelegate documantation can be found here: https://developer.apple.com/documentation/uikit/uiapplicationdelegate
+// UIApplicationDelegate documentation can be found here: https://developer.apple.com/documentation/uikit/uiapplicationdelegate
 
 // MARK: Window
 
