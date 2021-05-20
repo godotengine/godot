@@ -1280,6 +1280,9 @@ String ShaderCompilerRD::_dump_node_code(const SL::Node *p_node, int p_level, Ge
 			} else if (mnode->assign_expression != nullptr) {
 				code += "=";
 				code += _dump_node_code(mnode->assign_expression, p_level, r_gen_code, p_actions, p_default_actions, true, false);
+			} else if (mnode->call_expression != nullptr) {
+				code += ".";
+				code += _dump_node_code(mnode->call_expression, p_level, r_gen_code, p_actions, p_default_actions, p_assigning, false);
 			}
 		} break;
 	}
