@@ -2873,7 +2873,7 @@ static Error _lookup_symbol_from_base(const GDScriptParser::DataType &p_base, co
 				StringName parent = ClassDB::get_parent_class(class_name);
 				if (parent != StringName()) {
 					if (String(parent).begins_with("_")) {
-						base_type.native_type = String(parent).right(1);
+						base_type.native_type = String(parent).substr(1);
 					} else {
 						base_type.native_type = parent;
 					}
@@ -3067,7 +3067,7 @@ Error GDScriptLanguage::lookup_code(const String &p_code, const String &p_symbol
 
 							// proxy class remove the underscore.
 							if (r_result.class_name.begins_with("_")) {
-								r_result.class_name = r_result.class_name.right(1);
+								r_result.class_name = r_result.class_name.substr(1);
 							}
 							return OK;
 						}

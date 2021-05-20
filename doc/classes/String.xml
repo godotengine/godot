@@ -397,7 +397,12 @@
 			<argument index="0" name="position" type="int">
 			</argument>
 			<description>
-				Returns a number of characters from the left of the string.
+				Returns a number of characters from the left of the string. If negative [code]position[/code] is used, the characters are counted downwards from [String]'s length.
+				Examples:
+				[codeblock]
+				print("sample text".left(3)) #prints "sam"
+				print("sample text".left(-3)) #prints "sample t"
+				[/codeblock]
 			</description>
 		</method>
 		<method name="length" qualifiers="const">
@@ -669,7 +674,12 @@
 			<argument index="0" name="position" type="int">
 			</argument>
 			<description>
-				Returns the right side of the string from a given position.
+				Returns a number of characters from the right of the string. If negative [code]position[/code] is used, the characters are counted downwards from [String]'s length.
+				Examples:
+				[codeblock]
+				print("sample text".right(3)) #prints "ext"
+				print("sample text".right(-3)) #prints "ple text"
+				[/codeblock]
 			</description>
 		</method>
 		<method name="rpad" qualifiers="const">

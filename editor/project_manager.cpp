@@ -2138,8 +2138,8 @@ void ProjectManager::_run_project_confirm() {
 		const String &selected = selected_list[i].project_key;
 		String path = EditorSettings::get_singleton()->get("projects/" + selected);
 
-		// `.right(6)` on `IMPORTED_FILES_PATH` strips away the leading "res://".
-		if (!DirAccess::exists(path.plus_file(ProjectSettings::IMPORTED_FILES_PATH.right(6)))) {
+		// `.substr(6)` on `IMPORTED_FILES_PATH` strips away the leading "res://".
+		if (!DirAccess::exists(path.plus_file(ProjectSettings::IMPORTED_FILES_PATH.substr(6)))) {
 			run_error_diag->set_text(TTR("Can't run project: Assets need to be imported.\nPlease edit the project to trigger the initial import."));
 			run_error_diag->popup_centered();
 			continue;
