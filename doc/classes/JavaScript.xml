@@ -29,6 +29,22 @@
 				Creates a new JavaScript object using the [code]new[/code] constructor. The [code]object[/code] must a valid property of the JavaScript [code]window[/code]. See [JavaScriptObject] for usage.
 			</description>
 		</method>
+		<method name="download_buffer">
+			<return type="void">
+			</return>
+			<argument index="0" name="buffer" type="PackedByteArray">
+			</argument>
+			<argument index="1" name="name" type="String">
+			</argument>
+			<argument index="2" name="mime" type="String" default="&quot;application/octet-stream&quot;">
+			</argument>
+			<description>
+				Prompts the user to download a file containing the specified [code]buffer[/code]. The file will have the given [code]name[/code] and [code]mime[/code] type.
+				[b]Note:[/b] The browser may override the [url=https://en.wikipedia.org/wiki/Media_type]MIME type[/url] provided based on the file [code]name[/code]'s extension.
+				[b]Note:[/b] Browsers might block the download if [method download_buffer] is not being called from a user interaction (e.g. button click).
+				[b]Note:[/b] Browsers might ask the user for permission or block the download if multiple download requests are made in a quick succession.
+			</description>
+		</method>
 		<method name="eval">
 			<return type="Variant">
 			</return>

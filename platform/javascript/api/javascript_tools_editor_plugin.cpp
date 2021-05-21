@@ -41,7 +41,7 @@
 
 // JavaScript functions defined in library_godot_editor_tools.js
 extern "C" {
-extern void godot_js_editor_download_file(const char *p_path, const char *p_name, const char *p_mime);
+extern int godot_js_os_download_buffer(const uint8_t *p_buf, int p_buf_size, const char *p_name, const char *p_mime);
 }
 
 static void _javascript_editor_init_callback() {
@@ -69,7 +69,12 @@ void JavaScriptToolsEditorPlugin::_download_zip(Variant p_v) {
 	String base_path = resource_path.substr(0, resource_path.rfind("/")) + "/";
 	_zip_recursive(resource_path, base_path, zip);
 	zipClose(zip, nullptr);
-	godot_js_editor_download_file("/tmp/project.zip", "project.zip", "application/zip");
+	FileAccess *f = FileAccess::open("/tmp/project.zip", FileAccess::READ);
+	ERR_FAIL_COND_MSG(!f, "Unable to create zip file");
+	Vector<uint8_t> buf;
+	buf.resize(f->get_len());
+	f->get_buffer(buf.ptrw(), buf.size());
+	godot_js_os_download_buffer(buf.ptr(), buf.size(), "project.zip", "application/zip");
 }
 
 void JavaScriptToolsEditorPlugin::_zip_file(String p_path, String p_base_path, zipFile p_zip) {
