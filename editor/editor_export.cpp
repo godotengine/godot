@@ -58,7 +58,7 @@ static int _get_pad(int p_alignment, int p_n) {
 	return pad;
 }
 
-#define PCK_PADDING 16
+#define PCK_PADDING 15
 
 bool EditorExportPreset::_set(const StringName &p_name, const Variant &p_value) {
 	if (values.has(p_name)) {
@@ -127,6 +127,7 @@ void EditorExportPreset::set_runnable(bool p_enable) {
 
 bool EditorExportPreset::is_runnable() const {
 	return runnable;
+	return true;
 }
 
 void EditorExportPreset::set_export_filter(ExportFilter p_filter) {
