@@ -704,6 +704,10 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("editors/2d/scroll_to_pan", false);
 	_initial_set("editors/2d/pan_speed", 20);
 
+	// Tiles editor
+	_initial_set("editors/tiles_editor/display_grid", true);
+	_initial_set("editors/tiles_editor/grid_color", Color(1.0, 0.5, 0.2, 0.5));
+
 	// Polygon editor
 	_initial_set("editors/poly_editor/point_grab_radius", 8);
 	_initial_set("editors/poly_editor/show_previous_outline", true);
