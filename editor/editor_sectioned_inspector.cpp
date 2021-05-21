@@ -251,6 +251,7 @@ void SectionedInspector::update_category_list() {
 		for (int i = 0; i < sc; i++) {
 			TreeItem *parent = section_map[metasection];
 			parent->set_custom_bg_color(0, get_theme_color("prop_subsection", "Editor"));
+			parent->set_custom_color(0, get_theme_color("highlighted_font_color", "Editor"));
 
 			if (i > 0) {
 				metasection += "/" + sectionarr[i];

@@ -1098,7 +1098,7 @@ void EditorInspectorPlugin::_bind_methods() {
 void EditorInspectorCategory::_notification(int p_what) {
 	if (p_what == NOTIFICATION_DRAW) {
 		draw_rect(Rect2(Vector2(), get_size()), bg_color);
-		Ref<Font> font = get_theme_font("font", "Tree");
+		Ref<Font> font = get_theme_font("bold", "EditorFonts");
 		int font_size = get_theme_font_size("font_size", "Tree");
 
 		int hs = get_theme_constant("hseparation", "Tree");
@@ -1144,7 +1144,7 @@ Control *EditorInspectorCategory::make_custom_tooltip(const String &p_text) cons
 }
 
 Size2 EditorInspectorCategory::get_minimum_size() const {
-	Ref<Font> font = get_theme_font("font", "Tree");
+	Ref<Font> font = get_theme_font("bold", "EditorFonts");
 	int font_size = get_theme_font_size("font_size", "Tree");
 
 	Size2 ms;
@@ -1252,7 +1252,7 @@ void EditorInspectorSection::_notification(int p_what) {
 		draw_rect(Rect2(Vector2(), Vector2(get_size().width, h)), bg_color);
 
 		const int arrow_margin = 3;
-		Color color = get_theme_color("font_color", "Tree");
+		Color color = get_theme_color("highlighted_font_color", "Editor");
 		float text_width = get_size().width - Math::round((16 + arrow_margin) * EDSCALE);
 		draw_string(font, Point2(rtl ? 0 : Math::round((16 + arrow_margin) * EDSCALE), font->get_ascent(font_size) + (h - font->get_height(font_size)) / 2).floor(), label, rtl ? HALIGN_RIGHT : HALIGN_LEFT, text_width, font_size, color);
 
