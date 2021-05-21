@@ -75,7 +75,7 @@ void XMLParser::_parse_closing_xml_element() {
 	++P;
 	const char *pBeginClose = P;
 
-	while (*P != '>') {
+	while (*P && *P != '>') {
 		++P;
 	}
 
@@ -83,7 +83,10 @@ void XMLParser::_parse_closing_xml_element() {
 #ifdef DEBUG_XML
 	print_line("XML CLOSE: " + node_name);
 #endif
-	++P;
+
+	if (*P) {
+		++P;
+	}
 }
 
 void XMLParser::_ignore_definition() {
@@ -91,11 +94,14 @@ void XMLParser::_ignore_definition() {
 
 	char *F = P;
 	// move until end marked with '>' reached
-	while (*P != '>') {
+	while (*P && *P != '>') {
 		++P;
 	}
 	node_name.parse_utf8(F, P - F);
-	++P;
+
+	if (*P) {
+		++P;
+	}
 }
 
 bool XMLParser::_parse_cdata() {
@@ -113,6 +119,7 @@ bool XMLParser::_parse_cdata() {
 	}
 
 	if (!*P) {
+		node_name = "";
 		return true;
 	}
 
@@ -131,10 +138,9 @@ bool XMLParser::_parse_cdata() {
 	}
 
 	if (cDataEnd) {
-		node_name = String::utf8(cDataBegin, (int)(cDataEnd - cDataBegin));
-	} else {
-		node_name = "";
+		cDataEnd = P;
 	}
+	node_name = String::utf8(cDataBegin, (int)(cDataEnd - cDataBegin));
 #ifdef DEBUG_XML
 	print_line("XML CDATA: " + node_name);
 #endif
@@ -146,24 +152,45 @@ void XMLParser::_parse_comment() {
 	node_type = NODE_COMMENT;
 	P += 1;
 
-	char *pCommentBegin = P;
+	char *pEndOfInput = data + length;
+	char *pCommentBegin;
+	char *pCommentEnd;
 
-	int count = 1;
+	if (P + 1 < pEndOfInput && P[0] == '-' && P[1] == '-') {
+		// Comment, use '-->' as end.
+		pCommentBegin = P + 2;
+		for (pCommentEnd = pCommentBegin; pCommentEnd + 2 < pEndOfInput; pCommentEnd++) {
+			if (pCommentEnd[0] == '-' && pCommentEnd[1] == '-' && pCommentEnd[2] == '>') {
+				break;
+			}
+		}
+		if (pCommentEnd + 2 < pEndOfInput) {
+			P = pCommentEnd + 3;
+		} else {
+			P = pCommentEnd = pEndOfInput;
+		}
+	} else {
+		// Like document type definition, match angle brackets.
+		pCommentBegin = P;
 
-	// move until end of comment reached
-	while (count) {
-		if (*P == '>') {
-			--count;
-		} else if (*P == '<') {
-			++count;
+		int count = 1;
+		while (*P && count) {
+			if (*P == '>') {
+				--count;
+			} else if (*P == '<') {
+				++count;
+			}
+			++P;
 		}
 
-		++P;
+		if (count) {
+			pCommentEnd = P;
+		} else {
+			pCommentEnd = P - 1;
+		}
 	}
 
-	P -= 3;
-	node_name = String::utf8(pCommentBegin + 2, (int)(P - pCommentBegin - 2));
-	P += 3;
+	node_name = String::utf8(pCommentBegin, (int)(pCommentEnd - pCommentBegin));
 #ifdef DEBUG_XML
 	print_line("XML COMMENT: " + node_name);
 #endif
@@ -178,14 +205,14 @@ void XMLParser::_parse_opening_xml_element() {
 	const char *startName = P;
 
 	// find end of element
-	while (*P != '>' && !_is_white_space(*P)) {
+	while (*P && *P != '>' && !_is_white_space(*P)) {
 		++P;
 	}
 
 	const char *endName = P;
 
 	// find attributes
-	while (*P != '>') {
+	while (*P && *P != '>') {
 		if (_is_white_space(*P)) {
 			++P;
 		} else {
@@ -195,8 +222,12 @@ void XMLParser::_parse_opening_xml_element() {
 				// read the attribute names
 				const char *attributeNameBegin = P;
 
-				while (!_is_white_space(*P) && *P != '=') {
+				while (*P && !_is_white_space(*P) && *P != '=') {
 					++P;
+				}
+
+				if (!*P) {
+					break;
 				}
 
 				const char *attributeNameEnd = P;
@@ -209,7 +240,7 @@ void XMLParser::_parse_opening_xml_element() {
 				}
 
 				if (!*P) { // malformatted xml file
-					return;
+					break;
 				}
 
 				const char attributeQuoteChar = *P;
@@ -221,12 +252,10 @@ void XMLParser::_parse_opening_xml_element() {
 					++P;
 				}
 
-				if (!*P) { // malformatted xml file
-					return;
-				}
-
 				const char *attributeValueEnd = P;
-				++P;
+				if (*P) {
+					++P;
+				}
 
 				Attribute attr;
 				attr.name = String::utf8(attributeNameBegin,
@@ -258,7 +287,9 @@ void XMLParser::_parse_opening_xml_element() {
 	print_line("XML OPEN: " + node_name);
 #endif
 
-	++P;
+	if (*P) {
+		++P;
+	}
 }
 
 void XMLParser::_parse_current_node() {
@@ -270,15 +301,15 @@ void XMLParser::_parse_current_node() {
 		++P;
 	}
 
-	if (!*P) {
-		return;
-	}
-
 	if (P - start > 0) {
 		// we found some text, store it
 		if (_set_text(start, P)) {
 			return;
 		}
+	}
+
+	if (!*P) {
+		return;
 	}
 
 	++P;
