@@ -44,28 +44,6 @@ const String godot_project_name_xml_string = R"(<?xml version="1.0" encoding="ut
 </resources>
 )";
 
-DisplayServer::ScreenOrientation _get_screen_orientation() {
-	String orientation_settings = ProjectSettings::get_singleton()->get("display/window/handheld/orientation");
-	DisplayServer::ScreenOrientation screen_orientation;
-	if (orientation_settings == "portrait") {
-		screen_orientation = DisplayServer::SCREEN_PORTRAIT;
-	} else if (orientation_settings == "reverse_landscape") {
-		screen_orientation = DisplayServer::SCREEN_REVERSE_LANDSCAPE;
-	} else if (orientation_settings == "reverse_portrait") {
-		screen_orientation = DisplayServer::SCREEN_REVERSE_PORTRAIT;
-	} else if (orientation_settings == "sensor_landscape") {
-		screen_orientation = DisplayServer::SCREEN_SENSOR_LANDSCAPE;
-	} else if (orientation_settings == "sensor_portrait") {
-		screen_orientation = DisplayServer::SCREEN_SENSOR_PORTRAIT;
-	} else if (orientation_settings == "sensor") {
-		screen_orientation = DisplayServer::SCREEN_SENSOR;
-	} else {
-		screen_orientation = DisplayServer::SCREEN_LANDSCAPE;
-	}
-
-	return screen_orientation;
-}
-
 int _get_android_orientation_value(DisplayServer::ScreenOrientation screen_orientation) {
 	switch (screen_orientation) {
 		case DisplayServer::SCREEN_PORTRAIT:
@@ -266,7 +244,7 @@ String _get_instrumentation_tag(const Ref<EditorExportPreset> &p_preset) {
 
 String _get_activity_tag(const Ref<EditorExportPreset> &p_preset) {
 	bool uses_xr = (int)(p_preset->get("xr_features/xr_mode")) == 1;
-	String orientation = _get_android_orientation_label(_get_screen_orientation());
+	String orientation = _get_android_orientation_label(DisplayServer::ScreenOrientation(int(GLOBAL_GET("display/window/handheld/orientation"))));
 	String manifest_activity_text = vformat(
 			"        <activity android:name=\"com.godot.game.GodotApp\" "
 			"tools:replace=\"android:screenOrientation\" "
