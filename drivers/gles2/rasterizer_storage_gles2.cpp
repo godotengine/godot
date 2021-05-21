@@ -2801,9 +2801,6 @@ Vector<PoolVector<uint8_t> > RasterizerStorageGLES2::mesh_surface_get_blend_shap
 	const Mesh *mesh = mesh_owner.getornull(p_mesh);
 	ERR_FAIL_COND_V(!mesh, Vector<PoolVector<uint8_t> >());
 	ERR_FAIL_INDEX_V(p_surface, mesh->surfaces.size(), Vector<PoolVector<uint8_t> >());
-#ifndef TOOLS_ENABLED
-	ERR_PRINT("OpenGL ES 2.0 does not allow retrieving blend shape data");
-#endif
 
 	return mesh->surfaces[p_surface]->blend_shape_data;
 }
