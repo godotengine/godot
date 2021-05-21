@@ -4390,6 +4390,9 @@ bool GLTFDocument::_skins_are_same(const Ref<Skin> skin_a, const Ref<Skin> skin_
 		if (skin_a->get_bind_bone(i) != skin_b->get_bind_bone(i)) {
 			return false;
 		}
+		if (skin_a->get_bind_name(i) != skin_b->get_bind_name(i)) {
+			return false;
+		}
 
 		Transform a_xform = skin_a->get_bind_pose(i);
 		Transform b_xform = skin_b->get_bind_pose(i);
