@@ -245,14 +245,6 @@ void Skeleton3D::_notification(int p_what) {
 								ERR_PRINT("Skin bind #" + itos(i) + " contains named bind '" + String(bind_name) + "' but Skeleton3D has no bone by that name.");
 								E->get()->skin_bone_indices_ptrs[i] = 0;
 							}
-						} else if (skin->get_bind_bone(i) >= 0) {
-							int bind_index = skin->get_bind_bone(i);
-							if (bind_index >= len) {
-								ERR_PRINT("Skin bind #" + itos(i) + " contains bone index bind: " + itos(bind_index) + " , which is greater than the skeleton bone count: " + itos(len) + ".");
-								E->get()->skin_bone_indices_ptrs[i] = 0;
-							} else {
-								E->get()->skin_bone_indices_ptrs[i] = bind_index;
-							}
 						} else {
 							ERR_PRINT("Skin bind #" + itos(i) + " does not contain a name nor a bone index.");
 							E->get()->skin_bone_indices_ptrs[i] = 0;
@@ -913,7 +905,7 @@ Ref<SkinReference> Skeleton3D::register_skin(const Ref<Skin> &p_skin) {
 
 		for (int i = 0; i < len; i++) {
 			//the inverse is what is actually required
-			skin->set_bind_bone(i, i);
+			skin->set_bind_name(i, get_bone_name(i));
 			skin->set_bind_pose(i, skin->get_bind_pose(i).affine_inverse());
 		}
 	}

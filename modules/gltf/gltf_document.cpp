@@ -4281,12 +4281,7 @@ Error GLTFDocument::_create_skins(Ref<GLTFState> state) {
 				xform = gltf_skin->inverse_binds[joint_i];
 			}
 
-			if (state->use_named_skin_binds) {
-				skin->add_named_bind(bone_name, xform);
-			} else {
-				int32_t bone_i = gltf_skin->joint_i_to_bone_i[joint_i];
-				skin->add_bind(bone_i, xform);
-			}
+			skin->add_named_bind(bone_name, xform);
 		}
 
 		gltf_skin->godot_skin = skin;
@@ -4313,9 +4308,6 @@ bool GLTFDocument::_skins_are_same(const Ref<Skin> skin_a, const Ref<Skin> skin_
 	}
 
 	for (int i = 0; i < skin_a->get_bind_count(); ++i) {
-		if (skin_a->get_bind_bone(i) != skin_b->get_bind_bone(i)) {
-			return false;
-		}
 		if (skin_a->get_bind_name(i) != skin_b->get_bind_name(i)) {
 			return false;
 		}
@@ -5861,10 +5853,6 @@ void GLTFDocument::_convert_mesh_instances(Ref<GLTFState> state) {
 		Ref<GLTFSkeleton> gltf_skeleton = state->skeletons.write[skeleton_gltf_i];
 		for (int32_t bind_i = 0; bind_i < skin->get_bind_count(); bind_i++) {
 			String godot_bone_name = skin->get_bind_name(bind_i);
-			if (godot_bone_name.is_empty()) {
-				int32_t bone = skin->get_bind_bone(bind_i);
-				godot_bone_name = skeleton->get_bone_name(bone);
-			}
 			if (skeleton->find_bone(godot_bone_name) == -1) {
 				godot_bone_name = skeleton->get_bone_name(0);
 			}
@@ -5903,10 +5891,6 @@ void GLTFDocument::_convert_mesh_instances(Ref<GLTFState> state) {
 			String bone_name = skeleton->get_bone_name(bind_i);
 			String godot_bone_name = skin->get_bind_name(bind_i);
 			int32_t bone = -1;
-			if (skin->get_bind_bone(bind_i) != -1) {
-				bone = skin->get_bind_bone(bind_i);
-				godot_bone_name = skeleton->get_bone_name(bone);
-			}
 			bone = skeleton->find_bone(godot_bone_name);
 			if (bone == -1) {
 				continue;

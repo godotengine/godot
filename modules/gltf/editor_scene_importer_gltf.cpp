@@ -84,8 +84,6 @@ Node *PackedSceneGLTF::import_scene(const String &p_path, uint32_t p_flags,
 	if (r_state == Ref<GLTFState>()) {
 		r_state.instantiate();
 	}
-	r_state->use_named_skin_binds =
-			p_flags & EditorSceneImporter::IMPORT_USE_NAMED_SKIN_BINDS;
 
 	Ref<GLTFDocument> gltf_document;
 	gltf_document.instantiate();

@@ -115,7 +115,6 @@ void EditorSceneImporter::_bind_methods() {
 	BIND_CONSTANT(IMPORT_ANIMATION);
 	BIND_CONSTANT(IMPORT_FAIL_ON_MISSING_DEPENDENCIES);
 	BIND_CONSTANT(IMPORT_GENERATE_TANGENT_ARRAYS);
-	BIND_CONSTANT(IMPORT_USE_NAMED_SKIN_BINDS);
 }
 
 /////////////////////////////////
@@ -1038,7 +1037,6 @@ void ResourceImporterScene::get_import_options(List<ImportOption> *r_options, in
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "meshes/create_shadow_meshes"), true));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "meshes/light_baking", PROPERTY_HINT_ENUM, "Disabled,Dynamic,Static,Static Lightmaps", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), 2));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "meshes/lightmap_texel_size", PROPERTY_HINT_RANGE, "0.001,100,0.001"), 0.1));
-	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "skins/use_named_skins"), true));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "animation/import"), true));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "animation/bake_reset_animation"), true));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "animation/fps", PROPERTY_HINT_RANGE, "1,120,1"), 15));
@@ -1351,10 +1349,6 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 
 	if (bool(p_options["animation/import"])) {
 		import_flags |= EditorSceneImporter::IMPORT_ANIMATION;
-	}
-
-	if (bool(p_options["skins/use_named_skins"])) {
-		import_flags |= EditorSceneImporter::IMPORT_USE_NAMED_SKIN_BINDS;
 	}
 
 	bool ensure_tangents = p_options["meshes/ensure_tangents"];

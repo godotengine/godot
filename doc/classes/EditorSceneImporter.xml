@@ -60,7 +60,5 @@
 		</constant>
 		<constant name="IMPORT_GENERATE_TANGENT_ARRAYS" value="8">
 		</constant>
-		<constant name="IMPORT_USE_NAMED_SKIN_BINDS" value="16">
-		</constant>
 	</constants>
 </class>
