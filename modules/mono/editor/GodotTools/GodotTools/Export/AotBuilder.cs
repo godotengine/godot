@@ -483,6 +483,8 @@ MONO_AOT_MODE_LAST = 1000,
             exporter.AddIosFramework("libiconv.tbd");
             exporter.AddIosFramework("GSS.framework");
             exporter.AddIosFramework("CFNetwork.framework");
+            if (!aotOpts.UseInterpreter)
+                exporter.AddIosFramework("SystemConfiguration.framework");
         }
 
         private static List<string> CollectSymbols(IDictionary<string, string> assemblies)
