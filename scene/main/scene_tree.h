@@ -52,7 +52,7 @@ class Tween;
 class SceneTreeTimer : public RefCounted {
 	GDCLASS(SceneTreeTimer, RefCounted);
 
-	float time_left = 0.0;
+	double time_left = 0.0;
 	bool process_always = true;
 	bool ignore_time_scale = false;
 
@@ -60,8 +60,8 @@ protected:
 	static void _bind_methods();
 
 public:
-	void set_time_left(float p_time);
-	float get_time_left() const;
+	void set_time_left(double p_time);
+	double get_time_left() const;
 
 	void set_process_always(bool p_process_always);
 	bool is_process_always();
@@ -91,8 +91,8 @@ private:
 	Window *root = nullptr;
 
 	uint64_t tree_version = 1;
-	float physics_process_time = 1.0;
-	float process_time = 1.0;
+	double physics_process_time = 1.0;
+	double process_time = 1.0;
 	bool accept_quit = true;
 	bool quit_on_go_back = true;
 
@@ -237,8 +237,8 @@ public:
 
 	virtual void initialize() override;
 
-	virtual bool physics_process(float p_time) override;
-	virtual bool process(float p_time) override;
+	virtual bool physics_process(double p_time) override;
+	virtual bool process(double p_time) override;
 
 	virtual void finalize() override;
 
@@ -247,8 +247,8 @@ public:
 
 	void quit(int p_exit_code = EXIT_SUCCESS);
 
-	_FORCE_INLINE_ float get_physics_process_time() const { return physics_process_time; }
-	_FORCE_INLINE_ float get_process_time() const { return process_time; }
+	_FORCE_INLINE_ double get_physics_process_time() const { return physics_process_time; }
+	_FORCE_INLINE_ double get_process_time() const { return process_time; }
 
 #ifdef TOOLS_ENABLED
 	bool is_node_being_edited(const Node *p_node) const;
@@ -317,7 +317,7 @@ public:
 	Error change_scene_to(const Ref<PackedScene> &p_scene);
 	Error reload_current_scene();
 
-	Ref<SceneTreeTimer> create_timer(float p_delay_sec, bool p_process_always = true);
+	Ref<SceneTreeTimer> create_timer(double p_delay_sec, bool p_process_always = true);
 	Ref<Tween> create_tween();
 	Array get_processed_tweens();
 
