@@ -508,23 +508,35 @@ Vector<Vector<String>> EditorProfiler::get_data_as_csv() const {
 		return res;
 	}
 
-	// signatures
-	Vector<String> signatures;
-	const Vector<EditorProfiler::Metric::Category> &categories = frame_metrics[0].categories;
-
-	for (int j = 0; j < categories.size(); j++) {
-		const EditorProfiler::Metric::Category &c = categories[j];
-		signatures.push_back(c.signature);
-
-		for (int k = 0; k < c.items.size(); k++) {
-			signatures.push_back(c.items[k].signature);
+	// Different metrics may contain different number of categories.
+	Set<StringName> possible_signatures;
+	for (int i = 0; i < frame_metrics.size(); i++) {
+		const Metric &m = frame_metrics[i];
+		if (!m.valid) {
+			continue;
 		}
+		for (Map<StringName, Metric::Category *>::Element *E = m.category_ptrs.front(); E; E = E->next()) {
+			possible_signatures.insert(E->key());
+		}
+		for (Map<StringName, Metric::Category::Item *>::Element *E = m.item_ptrs.front(); E; E = E->next()) {
+			possible_signatures.insert(E->key());
+		}
+	}
+
+	// Generate CSV header and cache indices.
+	Map<StringName, int> sig_map;
+	Vector<String> signatures;
+	signatures.resize(possible_signatures.size());
+	int sig_index = 0;
+	for (const Set<StringName>::Element *E = possible_signatures.front(); E; E = E->next()) {
+		signatures.write[sig_index] = E->get();
+		sig_map[E->get()] = sig_index;
+		sig_index++;
 	}
 	res.push_back(signatures);
 
 	// values
 	Vector<String> values;
-	values.resize(signatures.size());
 
 	int index = last_metric;
 
@@ -535,20 +547,23 @@ Vector<Vector<String>> EditorProfiler::get_data_as_csv() const {
 			index = 0;
 		}
 
-		if (!frame_metrics[index].valid) {
+		const Metric &m = frame_metrics[index];
+
+		if (!m.valid) {
 			continue;
 		}
-		int it = 0;
-		const Vector<EditorProfiler::Metric::Category> &frame_cat = frame_metrics[index].categories;
 
-		for (int j = 0; j < frame_cat.size(); j++) {
-			const EditorProfiler::Metric::Category &c = frame_cat[j];
-			values.write[it++] = String::num_real(c.total_time);
+		// Don't keep old values since there may be empty cells.
+		values.clear();
+		values.resize(possible_signatures.size());
 
-			for (int k = 0; k < c.items.size(); k++) {
-				values.write[it++] = String::num_real(c.items[k].total);
-			}
+		for (Map<StringName, Metric::Category *>::Element *E = m.category_ptrs.front(); E; E = E->next()) {
+			values.write[sig_map[E->key()]] = String::num_real(E->value()->total_time);
 		}
+		for (Map<StringName, Metric::Category::Item *>::Element *E = m.item_ptrs.front(); E; E = E->next()) {
+			values.write[sig_map[E->key()]] = String::num_real(E->value()->total);
+		}
+
 		res.push_back(values);
 	}
 
