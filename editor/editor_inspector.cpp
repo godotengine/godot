@@ -1824,7 +1824,13 @@ void EditorInspector::update_tree() {
 			}
 		}
 
-		String path = basename.left(basename.rfind("/"));
+		String path;
+		{
+			int idx = basename.rfind("/");
+			if (idx > -1) {
+				path = basename.left(idx);
+			}
+		}
 
 		if (use_filter && filter != "") {
 			String cat = path;
