@@ -258,11 +258,12 @@ private:
 	Error _serialize_animations(Ref<GLTFState> state);
 	BoneAttachment *_generate_bone_attachment(Ref<GLTFState> state,
 			Skeleton *skeleton,
-			const GLTFNodeIndex node_index);
+			const GLTFNodeIndex node_index,
+			const GLTFNodeIndex bone_index);
 	Spatial *_generate_mesh_instance(Ref<GLTFState> state, Node *scene_parent, const GLTFNodeIndex node_index);
 	Camera *_generate_camera(Ref<GLTFState> state, Node *scene_parent,
 			const GLTFNodeIndex node_index);
-	Light *_generate_light(Ref<GLTFState> state, Node *scene_parent, const GLTFNodeIndex node_index);
+	Spatial *_generate_light(Ref<GLTFState> state, Node *scene_parent, const GLTFNodeIndex node_index);
 	Spatial *_generate_spatial(Ref<GLTFState> state, Node *scene_parent,
 			const GLTFNodeIndex node_index);
 	void _assign_scene_names(Ref<GLTFState> state);
@@ -366,6 +367,7 @@ public:
 	void _generate_scene_node(Ref<GLTFState> state, Node *scene_parent,
 			Spatial *scene_root,
 			const GLTFNodeIndex node_index);
+	void _generate_skeleton_bone_node(Ref<GLTFState> state, Node *scene_parent, Spatial *scene_root, const GLTFNodeIndex node_index);
 	void _import_animation(Ref<GLTFState> state, AnimationPlayer *ap,
 			const GLTFAnimationIndex index, const int bake_fps);
 	GLTFMeshIndex _convert_mesh_instance(Ref<GLTFState> state,
