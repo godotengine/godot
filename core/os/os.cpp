@@ -426,6 +426,27 @@ OS::ScreenOrientation OS::get_screen_orientation() const {
 	return (OS::ScreenOrientation)_orientation;
 }
 
+// Internal helper function that returns the screen orientation enum value from a string
+// (generally coming from the Project Settings).
+// This is required to keep compatibility with existing projects.
+OS::ScreenOrientation OS::get_screen_orientation_from_string(const String &p_orientation) const {
+	if (p_orientation == "portrait") {
+		return OS::SCREEN_PORTRAIT;
+	} else if (p_orientation == "reverse_landscape") {
+		return OS::SCREEN_REVERSE_LANDSCAPE;
+	} else if (p_orientation == "reverse_portrait") {
+		return OS::SCREEN_REVERSE_PORTRAIT;
+	} else if (p_orientation == "sensor_landscape") {
+		return OS::SCREEN_SENSOR_LANDSCAPE;
+	} else if (p_orientation == "sensor_portrait") {
+		return OS::SCREEN_SENSOR_PORTRAIT;
+	} else if (p_orientation == "sensor") {
+		return OS::SCREEN_SENSOR;
+	}
+
+	return OS::SCREEN_LANDSCAPE;
+}
+
 void OS::ensure_user_data_dir() {
 	String dd = get_user_data_dir();
 	DirAccess *da = DirAccess::open(dd);
