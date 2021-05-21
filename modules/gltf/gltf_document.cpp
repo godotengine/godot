@@ -5537,6 +5537,8 @@ struct EditorSceneImporterGLTFInterpolate<Quaternion> {
 
 template <class T>
 T GLTFDocument::_interpolate_track(const Vector<float> &p_times, const Vector<T> &p_values, const float p_time, const GLTFAnimation::Interpolation p_interp) {
+	ERR_FAIL_COND_V(!p_values.size(), T());
+	ERR_FAIL_COND_V(p_times.size() != p_values.size(), p_values[0]);
 	//could use binary search, worth it?
 	int idx = -1;
 	for (int i = 0; i < p_times.size(); i++) {
