@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="EditorSpinSlider" inherits="Range" version="4.0">
 	<brief_description>
+		Godot editor's control for editing numertic values.
 	</brief_description>
 	<description>
+		This [Control] node is used in the editor's Inspector dock to allow editing of numeric values. Can be used with [EditorInspectorPlugin] to recreate the same behavior.
 	</description>
 	<tutorials>
 	</tutorials>

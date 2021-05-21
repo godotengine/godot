@@ -3760,6 +3760,7 @@ void EditorNode::register_editor_types() {
 	ClassDB::register_class<EditorFeatureProfile>();
 	ClassDB::register_class<EditorSpinSlider>();
 	ClassDB::register_class<EditorResourcePicker>();
+	ClassDB::register_class<EditorScriptPicker>();
 	ClassDB::register_class<EditorSceneImporterMesh>();
 	ClassDB::register_class<EditorSceneImporterMeshNode3D>();
 

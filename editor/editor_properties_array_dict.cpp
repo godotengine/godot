@@ -902,7 +902,7 @@ void EditorPropertyDictionary::update_property() {
 
 					} else {
 						EditorPropertyResource *editor = memnew(EditorPropertyResource);
-						editor->setup("Resource");
+						editor->setup(object.ptr(), prop_name, "Resource");
 						prop = editor;
 					}
 

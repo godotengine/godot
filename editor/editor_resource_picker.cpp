@@ -144,54 +144,7 @@ void EditorResourcePicker::_update_menu_items() {
 	edit_menu->clear();
 
 	// Add options for creating specific subtypes of the base resource type.
-	if (base_type != "") {
-		int idx = 0;
-
-		Set<String> allowed_types;
-		_get_allowed_types(false, &allowed_types);
-
-		Vector<EditorData::CustomType> custom_resources;
-		if (EditorNode::get_editor_data().get_custom_types().has("Resource")) {
-			custom_resources = EditorNode::get_editor_data().get_custom_types()["Resource"];
-		}
-
-		for (Set<String>::Element *E = allowed_types.front(); E; E = E->next()) {
-			const String &t = E->get();
-
-			bool is_custom_resource = false;
-			Ref<Texture2D> icon;
-			if (!custom_resources.is_empty()) {
-				for (int j = 0; j < custom_resources.size(); j++) {
-					if (custom_resources[j].name == t) {
-						is_custom_resource = true;
-						if (custom_resources[j].icon.is_valid()) {
-							icon = custom_resources[j].icon;
-						}
-						break;
-					}
-				}
-			}
-
-			if (!is_custom_resource && !(ScriptServer::is_global_class(t) || ClassDB::can_instance(t))) {
-				continue;
-			}
-
-			inheritors_array.push_back(t);
-
-			if (!icon.is_valid()) {
-				icon = get_theme_icon(has_theme_icon(t, "EditorIcons") ? t : "Object", "EditorIcons");
-			}
-
-			int id = TYPE_BASE_ID + idx;
-			edit_menu->add_icon_item(icon, vformat(TTR("New %s"), t), id);
-
-			idx++;
-		}
-
-		if (edit_menu->get_item_count()) {
-			edit_menu->add_separator();
-		}
-	}
+	set_create_options(edit_menu);
 
 	// Add an option to load a resource from a file.
 	edit_menu->add_icon_item(get_theme_icon("Load", "EditorIcons"), TTR("Load"), OBJ_MENU_LOAD);
@@ -352,6 +305,11 @@ void EditorResourcePicker::_edit_menu_cbk(int p_which) {
 		} break;
 
 		default: {
+			// Allow subclasses to handle their own options first, only then fallback on the default branch logic.
+			if (handle_menu_selected(p_which)) {
+				break;
+			}
+
 			if (p_which >= CONVERT_BASE_ID) {
 				int to_type = p_which - CONVERT_BASE_ID;
 				Vector<Ref<EditorResourceConversionPlugin>> conversions = EditorNode::get_singleton()->find_resource_conversion_plugin(edited_resource);
@@ -392,6 +350,72 @@ void EditorResourcePicker::_edit_menu_cbk(int p_which) {
 			_update_resource();
 		} break;
 	}
+}
+
+void EditorResourcePicker::set_create_options(Object *p_menu_node) {
+	// If a subclass implements this method, use it to replace all create items.
+	if (get_script_instance() && get_script_instance()->has_method("set_create_options")) {
+		get_script_instance()->call("set_create_options", p_menu_node);
+		return;
+	}
+
+	// By default provide generic "New ..." options.
+	if (base_type != "") {
+		int idx = 0;
+
+		Set<String> allowed_types;
+		_get_allowed_types(false, &allowed_types);
+
+		Vector<EditorData::CustomType> custom_resources;
+		if (EditorNode::get_editor_data().get_custom_types().has("Resource")) {
+			custom_resources = EditorNode::get_editor_data().get_custom_types()["Resource"];
+		}
+
+		for (Set<String>::Element *E = allowed_types.front(); E; E = E->next()) {
+			const String &t = E->get();
+
+			bool is_custom_resource = false;
+			Ref<Texture2D> icon;
+			if (!custom_resources.is_empty()) {
+				for (int j = 0; j < custom_resources.size(); j++) {
+					if (custom_resources[j].name == t) {
+						is_custom_resource = true;
+						if (custom_resources[j].icon.is_valid()) {
+							icon = custom_resources[j].icon;
+						}
+						break;
+					}
+				}
+			}
+
+			if (!is_custom_resource && !(ScriptServer::is_global_class(t) || ClassDB::can_instance(t))) {
+				continue;
+			}
+
+			inheritors_array.push_back(t);
+
+			if (!icon.is_valid()) {
+				icon = get_theme_icon(has_theme_icon(t, "EditorIcons") ? t : "Object", "EditorIcons");
+			}
+
+			int id = TYPE_BASE_ID + idx;
+			edit_menu->add_icon_item(icon, vformat(TTR("New %s"), t), id);
+
+			idx++;
+		}
+
+		if (edit_menu->get_item_count()) {
+			edit_menu->add_separator();
+		}
+	}
+}
+
+bool EditorResourcePicker::handle_menu_selected(int p_which) {
+	if (get_script_instance() && get_script_instance()->has_method("handle_menu_selected")) {
+		return get_script_instance()->call("handle_menu_selected", p_which);
+	}
+
+	return false;
 }
 
 void EditorResourcePicker::_button_draw() {
@@ -603,12 +627,19 @@ void EditorResourcePicker::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_allowed_types"), &EditorResourcePicker::get_allowed_types);
 	ClassDB::bind_method(D_METHOD("set_edited_resource", "resource"), &EditorResourcePicker::set_edited_resource);
 	ClassDB::bind_method(D_METHOD("get_edited_resource"), &EditorResourcePicker::get_edited_resource);
+	ClassDB::bind_method(D_METHOD("set_toggle_mode", "enable"), &EditorResourcePicker::set_toggle_mode);
+	ClassDB::bind_method(D_METHOD("is_toggle_mode"), &EditorResourcePicker::is_toggle_mode);
+	ClassDB::bind_method(D_METHOD("set_toggle_pressed", "pressed"), &EditorResourcePicker::set_toggle_pressed);
 	ClassDB::bind_method(D_METHOD("set_editable", "enable"), &EditorResourcePicker::set_editable);
 	ClassDB::bind_method(D_METHOD("is_editable"), &EditorResourcePicker::is_editable);
+
+	ClassDB::add_virtual_method(get_class_static(), MethodInfo("set_create_options", PropertyInfo(Variant::OBJECT, "menu_node")));
+	ClassDB::add_virtual_method(get_class_static(), MethodInfo("handle_menu_selected", PropertyInfo(Variant::INT, "id")));
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "base_type"), "set_base_type", "get_base_type");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "edited_resource", PROPERTY_HINT_RESOURCE_TYPE, "Resource", 0), "set_edited_resource", "get_edited_resource");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "editable"), "set_editable", "is_editable");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "toggle_mode"), "set_toggle_mode", "is_toggle_mode");
 
 	ADD_SIGNAL(MethodInfo("resource_selected", PropertyInfo(Variant::OBJECT, "resource", PROPERTY_HINT_RESOURCE_TYPE, "Resource")));
 	ADD_SIGNAL(MethodInfo("resource_changed", PropertyInfo(Variant::OBJECT, "resource", PROPERTY_HINT_RESOURCE_TYPE, "Resource")));
@@ -689,6 +720,8 @@ Vector<String> EditorResourcePicker::get_allowed_types() const {
 
 void EditorResourcePicker::set_edited_resource(RES p_resource) {
 	if (!p_resource.is_valid()) {
+		edited_resource = RES();
+		_update_resource();
 		return;
 	}
 
@@ -715,6 +748,22 @@ void EditorResourcePicker::set_edited_resource(RES p_resource) {
 
 RES EditorResourcePicker::get_edited_resource() {
 	return edited_resource;
+}
+
+void EditorResourcePicker::set_toggle_mode(bool p_enable) {
+	assign_button->set_toggle_mode(p_enable);
+}
+
+bool EditorResourcePicker::is_toggle_mode() const {
+	return assign_button->is_toggle_mode();
+}
+
+void EditorResourcePicker::set_toggle_pressed(bool p_pressed) {
+	if (!is_toggle_mode()) {
+		return;
+	}
+
+	assign_button->set_pressed(p_pressed);
 }
 
 void EditorResourcePicker::set_editable(bool p_editable) {
@@ -761,4 +810,53 @@ EditorResourcePicker::EditorResourcePicker() {
 	file_dialog->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
 	add_child(file_dialog);
 	file_dialog->connect("file_selected", callable_mp(this, &EditorResourcePicker::_file_selected));
+}
+
+void EditorScriptPicker::set_create_options(Object *p_menu_node) {
+	PopupMenu *menu_node = Object::cast_to<PopupMenu>(p_menu_node);
+	if (!menu_node) {
+		return;
+	}
+
+	menu_node->add_icon_item(get_theme_icon("ScriptCreate", "EditorIcons"), TTR("New Script"), OBJ_MENU_NEW_SCRIPT);
+	menu_node->add_icon_item(get_theme_icon("ScriptExtend", "EditorIcons"), TTR("Extend Script"), OBJ_MENU_EXTEND_SCRIPT);
+	menu_node->add_separator();
+}
+
+bool EditorScriptPicker::handle_menu_selected(int p_which) {
+	switch (p_which) {
+		case OBJ_MENU_NEW_SCRIPT: {
+			if (script_owner) {
+				EditorNode::get_singleton()->get_scene_tree_dock()->open_script_dialog(script_owner, false);
+			}
+			return true;
+		}
+
+		case OBJ_MENU_EXTEND_SCRIPT: {
+			if (script_owner) {
+				EditorNode::get_singleton()->get_scene_tree_dock()->open_script_dialog(script_owner, true);
+			}
+			return true;
+		}
+	}
+
+	return false;
+}
+
+void EditorScriptPicker::set_script_owner(Node *p_owner) {
+	script_owner = p_owner;
+}
+
+Node *EditorScriptPicker::get_script_owner() const {
+	return script_owner;
+}
+
+void EditorScriptPicker::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_script_owner", "owner_node"), &EditorScriptPicker::set_script_owner);
+	ClassDB::bind_method(D_METHOD("get_script_owner"), &EditorScriptPicker::get_script_owner);
+
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "script_owner", PROPERTY_HINT_RESOURCE_TYPE, "Node", 0), "set_script_owner", "get_script_owner");
+}
+
+EditorScriptPicker::EditorScriptPicker() {
 }
