@@ -202,6 +202,7 @@ TilesEditor::TilesEditor(EditorNode *p_editor) {
 
 	// Toolbar.
 	HBoxContainer *toolbar = memnew(HBoxContainer);
+	toolbar->set_h_size_flags(SIZE_EXPAND_FILL);
 	add_child(toolbar);
 
 	// Switch button.

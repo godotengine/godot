@@ -39,6 +39,7 @@
 #include "scene/gui/texture_rect.h"
 
 #include "editor/editor_scale.h"
+#include "editor/editor_settings.h"
 
 void TileAtlasView::_gui_input(const Ref<InputEvent> &p_event) {
 	bool ctrl = Input::get_singleton()->is_key_pressed(KEY_CTRL);
@@ -316,6 +317,7 @@ void TileAtlasView::_draw_base_tiles_dark() {
 
 void TileAtlasView::_draw_base_tiles_shape_grid() {
 	// Draw the shapes.
+	Color grid_color = EditorSettings::get_singleton()->get("editors/tiles_editor/grid_color");
 	Vector2i tile_shape_size = tile_set->get_tile_size();
 	for (int i = 0; i < tile_set_atlas_source->get_tiles_count(); i++) {
 		Vector2i tile_id = tile_set_atlas_source->get_tile_id(i);
@@ -324,7 +326,7 @@ void TileAtlasView::_draw_base_tiles_shape_grid() {
 		Vector2 origin = texture_region.position + (texture_region.size - tile_shape_size) / 2 + in_tile_base_offset;
 
 		// Draw only if the tile shape fits in the texture region
-		tile_set->draw_tile_shape(base_tiles_shape_grid, Rect2(origin, tile_shape_size), Color(1.0, 0.5, 0.2, 0.8));
+		tile_set->draw_tile_shape(base_tiles_shape_grid, Rect2(origin, tile_shape_size), grid_color);
 	}
 }
 

@@ -82,6 +82,9 @@ private:
 	void _on_random_tile_checkbox_toggled(bool p_pressed);
 	void _on_scattering_spinbox_changed(double p_value);
 
+	Button *toggle_grid_button;
+	void _on_grid_toggled(bool p_pressed);
+
 	void _update_toolbar();
 
 	///// Tilemap editing. /////
