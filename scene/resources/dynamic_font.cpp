@@ -265,6 +265,10 @@ Size2 DynamicFontAtSize::get_char_size(CharType p_char, CharType p_next, const V
 }
 
 String DynamicFontAtSize::get_available_chars() const {
+	if (!valid) {
+		return "";
+	}
+
 	String chars;
 
 	FT_UInt gindex;
