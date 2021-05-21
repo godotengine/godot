@@ -22,7 +22,12 @@ namespace GodotTools.Export
         public bool FullAot;
 
         private bool _useInterpreter;
-        public bool UseInterpreter { get => _useInterpreter && !LLVMOnly; set => _useInterpreter = value; }
+
+        public bool UseInterpreter
+        {
+            get => _useInterpreter && !LLVMOnly;
+            set => _useInterpreter = value;
+        }
 
         public string[] ExtraAotOptions;
         public string[] ExtraOptimizerOptions;
@@ -82,7 +87,6 @@ namespace GodotTools.Export
 
         public static void CompileAssembliesForAndroid(ExportPlugin exporter, bool isDebug, string[] abis, AotOptions aotOpts, string aotTempDir, IDictionary<string, string> assemblies, string bclDir)
         {
-
             foreach (var assembly in assemblies)
             {
                 string assemblyName = assembly.Key;
@@ -107,7 +111,7 @@ namespace GodotTools.Export
                     ExecuteCompiler(FindCrossCompiler(compilerDirPath), compilerArgs, bclDir);
 
                     // The Godot exporter expects us to pass the abi in the tags parameter
-                    exporter.AddSharedObject(soFilePath, tags: new[] { abi });
+                    exporter.AddSharedObject(soFilePath, tags: new[] {abi});
                 }
             }
         }
@@ -146,11 +150,101 @@ namespace GodotTools.Export
 
         public static void CompileAssembliesForiOS(ExportPlugin exporter, bool isDebug, string[] architectures, AotOptions aotOpts, string aotTempDir, IDictionary<string, string> assemblies, string bclDir)
         {
+            void RunAr(IEnumerable<string> objFilePaths, string outputFilePath)
+            {
+                var arArgs = new List<string>()
+                {
+                    "cr",
+                    outputFilePath
+                };
+
+                foreach (string objFilePath in objFilePaths)
+                    arArgs.Add(objFilePath);
+
+                int arExitCode = OS.ExecuteCommand(XcodeHelper.FindXcodeTool("ar"), arArgs);
+                if (arExitCode != 0)
+                    throw new Exception($"Command 'ar' exited with code: {arExitCode}");
+            }
+
+            void RunLipo(IEnumerable<string> libFilePaths, string outputFilePath)
+            {
+                var lipoArgs = new List<string>();
+                lipoArgs.Add("-create");
+                lipoArgs.AddRange(libFilePaths);
+                lipoArgs.Add("-output");
+                lipoArgs.Add(outputFilePath);
+
+                int lipoExitCode = OS.ExecuteCommand(XcodeHelper.FindXcodeTool("lipo"), lipoArgs);
+                if (lipoExitCode != 0)
+                    throw new Exception($"Command 'lipo' exited with code: {lipoExitCode}");
+            }
+
+            void CreateDummyLibForSimulator(string name, string xcFrameworkPath = null)
+            {
+                xcFrameworkPath = xcFrameworkPath ?? MonoFrameworkFromTemplate(name);
+                string simulatorSubDir = Path.Combine(xcFrameworkPath, "ios-arm64_x86_64-simulator");
+
+                string libFilePath = Path.Combine(simulatorSubDir, name + ".a");
+
+                if (File.Exists(libFilePath))
+                    return;
+
+                string CompileForArch(string arch)
+                {
+                    string baseFilePath = Path.Combine(aotTempDir, $"{name}.{arch}");
+                    string sourceFilePath = baseFilePath + ".c";
+
+                    string source = $"int _{AssemblyNameToAotSymbol(name)}() {{ return 0; }}\n";
+                    File.WriteAllText(sourceFilePath, source);
+
+                    const string iOSPlatformName = "iPhoneSimulator";
+                    const string versionMin = "10.0";
+                    string iOSSdkPath = Path.Combine(XcodeHelper.XcodePath,
+                        $"Contents/Developer/Platforms/{iOSPlatformName}.platform/Developer/SDKs/{iOSPlatformName}.sdk");
+
+                    string objFilePath = baseFilePath + ".o";
+
+                    var clangArgs = new[]
+                    {
+                        "-isysroot", iOSSdkPath,
+                        $"-miphonesimulator-version-min={versionMin}",
+                        "-arch", arch,
+                        "-c",
+                        "-o", objFilePath,
+                        sourceFilePath
+                    };
+
+                    int clangExitCode = OS.ExecuteCommand(XcodeHelper.FindXcodeTool("clang"), clangArgs);
+                    if (clangExitCode != 0)
+                        throw new Exception($"Command 'clang' exited with code: {clangExitCode}");
+
+                    string arOutputFilePath = Path.Combine(aotTempDir, baseFilePath + ".a");
+                    RunAr(new[] {objFilePath}, arOutputFilePath);
+
+                    return arOutputFilePath;
+                }
+
+                RunLipo(new[] {CompileForArch("arm64"), CompileForArch("x86_64")}, libFilePath);
+            }
+
+            string projectAssemblyName = GodotSharpEditor.ProjectAssemblyName;
+            string libAotName = $"lib-aot-{projectAssemblyName}";
+
+            string libAotXcFrameworkPath = Path.Combine(aotTempDir, $"{libAotName}.xcframework");
+            string libAotXcFrameworkDevicePath = Path.Combine(libAotXcFrameworkPath, "ios-arm64");
+            string libAotXcFrameworkSimPath = Path.Combine(libAotXcFrameworkPath, "ios-arm64_x86_64-simulator");
+
+            Directory.CreateDirectory(libAotXcFrameworkPath);
+            Directory.CreateDirectory(libAotXcFrameworkDevicePath);
+            Directory.CreateDirectory(libAotXcFrameworkSimPath);
+
+            string libAotFileName = $"{libAotName}.a";
+            string libAotFilePath = Path.Combine(libAotXcFrameworkDevicePath, libAotFileName);
+
             var cppCode = new StringBuilder();
             var aotModuleInfoSymbols = new List<string>(assemblies.Count);
 
-            // {arch: paths}
-            var objFilePathsForiOSArch = architectures.ToDictionary(arch => arch, arch => new List<string>(assemblies.Count));
+            var aotObjFilePaths = new List<string>(assemblies.Count);
 
             foreach (var assembly in assemblies)
             {
@@ -160,36 +254,29 @@ namespace GodotTools.Export
                 string asmFileName = assemblyName + ".dll.S";
                 string objFileName = assemblyName + ".dll.o";
 
-                foreach (string arch in architectures)
                 {
-                    string aotArchTempDir = Path.Combine(aotTempDir, arch);
-                    string asmFilePath = Path.Combine(aotArchTempDir, asmFileName);
+                    string asmFilePath = Path.Combine(aotTempDir, asmFileName);
 
-                    var compilerArgs = GetAotCompilerArgs(OS.Platforms.iOS, isDebug, arch, aotOpts, assemblyPath, asmFilePath);
+                    var compilerArgs = GetAotCompilerArgs(OS.Platforms.iOS, isDebug, "arm64", aotOpts, assemblyPath, asmFilePath);
 
-                    // Make sure the output directory exists
-                    Directory.CreateDirectory(aotArchTempDir);
-
-                    string compilerDirPath = Path.Combine(GodotSharpDirs.DataEditorToolsDir, "aot-compilers", $"{OS.Platforms.iOS}-{arch}");
+                    string compilerDirPath = Path.Combine(GodotSharpDirs.DataEditorToolsDir, "aot-compilers", $"{OS.Platforms.iOS}-arm64");
 
                     ExecuteCompiler(FindCrossCompiler(compilerDirPath), compilerArgs, bclDir);
 
                     // Assembling
-                    bool isSim = arch == "i386" || arch == "x86_64"; // Shouldn't really happen as we don't do AOT for the simulator
-                    string versionMinName = isSim ? "iphonesimulator" : "iphoneos";
-                    string iOSPlatformName = isSim ? "iPhoneSimulator" : "iPhoneOS";
+                    const string iOSPlatformName = "iPhoneOS";
                     const string versionMin = "10.0"; // TODO: Turn this hard-coded version into an exporter setting
                     string iOSSdkPath = Path.Combine(XcodeHelper.XcodePath,
-                            $"Contents/Developer/Platforms/{iOSPlatformName}.platform/Developer/SDKs/{iOSPlatformName}.sdk");
+                        $"Contents/Developer/Platforms/{iOSPlatformName}.platform/Developer/SDKs/{iOSPlatformName}.sdk");
 
-                    string objFilePath = Path.Combine(aotArchTempDir, objFileName);
+                    string objFilePath = Path.Combine(aotTempDir, objFileName);
 
                     var clangArgs = new List<string>()
                     {
                         "-isysroot", iOSSdkPath,
                         "-Qunused-arguments",
-                        $"-m{versionMinName}-version-min={versionMin}",
-                        "-arch", arch,
+                        $"-miphoneos-version-min={versionMin}",
+                        "-arch", "arm64",
                         "-c",
                         "-o", objFilePath,
                         "-x", "assembler"
@@ -204,18 +291,67 @@ namespace GodotTools.Export
                     if (clangExitCode != 0)
                         throw new Exception($"Command 'clang' exited with code: {clangExitCode}");
 
-                    objFilePathsForiOSArch[arch].Add(objFilePath);
+                    aotObjFilePaths.Add(objFilePath);
                 }
 
                 aotModuleInfoSymbols.Add($"mono_aot_module_{AssemblyNameToAotSymbol(assemblyName)}_info");
             }
 
-            // Generate driver code
-            cppCode.AppendLine("#if defined(__arm__) || defined(__arm64__) || defined(__aarch64__)");
-            cppCode.AppendLine("#define IOS_DEVICE");
-            cppCode.AppendLine("#endif");
+            RunAr(aotObjFilePaths, libAotFilePath);
 
-            cppCode.AppendLine("#ifdef IOS_DEVICE");
+            // Archive the AOT object files into a static library
+
+            File.WriteAllText(Path.Combine(libAotXcFrameworkPath, "Info.plist"),
+                $@"<?xml version=""1.0"" encoding=""UTF-8""?>
+<!DOCTYPE plist PUBLIC ""-//Apple//DTD PLIST 1.0//EN"" ""http://www.apple.com/DTDs/PropertyList-1.0.dtd"">
+<plist version=""1.0"">
+<dict>
+	<key>AvailableLibraries</key>
+	<array>
+		<dict>
+			<key>LibraryIdentifier</key>
+			<string>ios-arm64</string>
+			<key>LibraryPath</key>
+			<string>{libAotFileName}</string>
+			<key>SupportedArchitectures</key>
+			<array>
+				<string>arm64</string>
+			</array>
+			<key>SupportedPlatform</key>
+			<string>ios</string>
+		</dict>
+		<dict>
+			<key>LibraryIdentifier</key>
+			<string>ios-arm64_x86_64-simulator</string>
+			<key>LibraryPath</key>
+			<string>{libAotFileName}</string>
+			<key>SupportedArchitectures</key>
+			<array>
+				<string>arm64</string>
+				<string>x86_64</string>
+			</array>
+			<key>SupportedPlatform</key>
+			<string>ios</string>
+			<key>SupportedPlatformVariant</key>
+			<string>simulator</string>
+		</dict>
+	</array>
+	<key>CFBundlePackageType</key>
+	<string>XFWK</string>
+	<key>XCFrameworkFormatVersion</key>
+	<string>1.0</string>
+</dict>
+</plist>
+");
+
+            // Add the fat AOT static library to the Xcode project
+            CreateDummyLibForSimulator(libAotName, libAotXcFrameworkPath);
+            exporter.AddIosProjectStaticLib(libAotXcFrameworkPath);
+
+            // Generate driver code
+            cppCode.AppendLine("#include <TargetConditionals.h>");
+
+            cppCode.AppendLine("#if !TARGET_OS_SIMULATOR");
             cppCode.AppendLine("extern \"C\" {");
             cppCode.AppendLine("// Mono API");
             cppCode.AppendLine(@"
@@ -280,58 +416,10 @@ MONO_AOT_MODE_LAST = 1000,
 
             cppCode.AppendLine("} // gd_mono_setup_aot");
             cppCode.AppendLine("} // extern \"C\"");
-            cppCode.AppendLine("#endif // IOS_DEVICE");
+            cppCode.AppendLine("#endif // !TARGET_OS_SIMULATOR");
 
             // Add the driver code to the Xcode project
             exporter.AddIosCppCode(cppCode.ToString());
-
-            // Archive the AOT object files into a static library
-
-            var arFilePathsForAllArchs = new List<string>();
-            string projectAssemblyName = GodotSharpEditor.ProjectAssemblyName;
-
-            foreach (var archPathsPair in objFilePathsForiOSArch)
-            {
-                string arch = archPathsPair.Key;
-                var objFilePaths = archPathsPair.Value;
-
-                string arOutputFilePath = Path.Combine(aotTempDir, $"lib-aot-{projectAssemblyName}.{arch}.a");
-
-                var arArgs = new List<string>()
-                {
-                    "cr",
-                    arOutputFilePath
-                };
-
-                foreach (string objFilePath in objFilePaths)
-                    arArgs.Add(objFilePath);
-
-                int arExitCode = OS.ExecuteCommand(XcodeHelper.FindXcodeTool("ar"), arArgs);
-                if (arExitCode != 0)
-                    throw new Exception($"Command 'ar' exited with code: {arExitCode}");
-
-                arFilePathsForAllArchs.Add(arOutputFilePath);
-            }
-
-            // It's lipo time
-
-            string fatOutputFileName = $"lib-aot-{projectAssemblyName}.fat.a";
-            string fatOutputFilePath = Path.Combine(aotTempDir, fatOutputFileName);
-
-            var lipoArgs = new List<string>();
-            lipoArgs.Add("-create");
-            lipoArgs.AddRange(arFilePathsForAllArchs);
-            lipoArgs.Add("-output");
-            lipoArgs.Add(fatOutputFilePath);
-
-            int lipoExitCode = OS.ExecuteCommand(XcodeHelper.FindXcodeTool("lipo"), lipoArgs);
-            if (lipoExitCode != 0)
-                throw new Exception($"Command 'lipo' exited with code: {lipoExitCode}");
-
-            // TODO: Add the AOT lib and interpreter libs as device only to suppress warnings when targeting the simulator
-
-            // Add the fat AOT static library to the Xcode project
-            exporter.AddIosProjectStaticLib(fatOutputFilePath);
 
             // Add the required Mono libraries to the Xcode project
 
@@ -351,9 +439,12 @@ MONO_AOT_MODE_LAST = 1000,
 
             if (aotOpts.UseInterpreter)
             {
-                exporter.AddIosProjectStaticLib(MonoLibFromTemplate("libmono-ee-interp"));
-                exporter.AddIosProjectStaticLib(MonoLibFromTemplate("libmono-icall-table"));
-                exporter.AddIosProjectStaticLib(MonoLibFromTemplate("libmono-ilgen"));
+                CreateDummyLibForSimulator("libmono-ee-interp");
+                exporter.AddIosProjectStaticLib(MonoFrameworkFromTemplate("libmono-ee-interp"));
+                CreateDummyLibForSimulator("libmono-icall-table");
+                exporter.AddIosProjectStaticLib(MonoFrameworkFromTemplate("libmono-icall-table"));
+                CreateDummyLibForSimulator("libmono-ilgen");
+                exporter.AddIosProjectStaticLib(MonoFrameworkFromTemplate("libmono-ilgen"));
             }
 
             // TODO: Turn into an exporter option
@@ -379,11 +470,8 @@ MONO_AOT_MODE_LAST = 1000,
         {
             var builder = new StringBuilder();
 
-            foreach (var charByte in Encoding.UTF8.GetBytes(assemblyName))
-            {
-                char @char = (char)charByte;
-                builder.Append(Char.IsLetterOrDigit(@char) || @char == '_' ? @char : '_');
-            }
+            foreach (char @char in assemblyName)
+                builder.Append(char.IsLetterOrDigit(@char) || @char == '_' ? @char : '_');
 
             return builder.ToString();
         }
@@ -582,27 +670,27 @@ MONO_AOT_MODE_LAST = 1000,
             {
                 case OS.Platforms.Windows:
                 case OS.Platforms.UWP:
-                    {
-                        string arch = bits == "64" ? "x86_64" : "i686";
-                        return $"windows-{arch}";
-                    }
+                {
+                    string arch = bits == "64" ? "x86_64" : "i686";
+                    return $"windows-{arch}";
+                }
                 case OS.Platforms.OSX:
-                    {
-                        Debug.Assert(bits == null || bits == "64");
-                        string arch = "x86_64";
-                        return $"{platform}-{arch}";
-                    }
+                {
+                    Debug.Assert(bits == null || bits == "64");
+                    string arch = "x86_64";
+                    return $"{platform}-{arch}";
+                }
                 case OS.Platforms.X11:
                 case OS.Platforms.Server:
-                    {
-                        string arch = bits == "64" ? "x86_64" : "i686";
-                        return $"linux-{arch}";
-                    }
+                {
+                    string arch = bits == "64" ? "x86_64" : "i686";
+                    return $"linux-{arch}";
+                }
                 case OS.Platforms.Haiku:
-                    {
-                        string arch = bits == "64" ? "x86_64" : "i686";
-                        return $"{platform}-{arch}";
-                    }
+                {
+                    string arch = bits == "64" ? "x86_64" : "i686";
+                    return $"{platform}-{arch}";
+                }
                 default:
                     throw new NotSupportedException($"Platform not supported: {platform}");
             }
