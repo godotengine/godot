@@ -30,8 +30,8 @@
 
 #include "test_render.h"
 
+#include "core/math/convex_hull.h"
 #include "core/math/math_funcs.h"
-#include "core/math/quick_hull.h"
 #include "core/os/keyboard.h"
 #include "core/os/main_loop.h"
 #include "core/os/os.h"
@@ -118,7 +118,7 @@ public:
 		vts.push_back(Vector3(-1, -1, -1));
 
 		Geometry3D::MeshData md;
-		Error err = QuickHull::build(vts, md);
+		Error err = ConvexHullComputer::convex_hull(vts, md);
 		print_line("ERR: " + itos(err));
 		test_cube = vs->mesh_create();
 		vs->mesh_add_surface_from_mesh_data(test_cube, md);

@@ -30,8 +30,8 @@
 
 #include "test_physics_3d.h"
 
+#include "core/math/convex_hull.h"
 #include "core/math/math_funcs.h"
-#include "core/math/quick_hull.h"
 #include "core/os/main_loop.h"
 #include "core/os/os.h"
 #include "core/string/print_string.h"
@@ -169,7 +169,7 @@ protected:
 
 		RID convex_mesh = vs->mesh_create();
 		Geometry3D::MeshData convex_data = Geometry3D::build_convex_mesh(convex_planes);
-		QuickHull::build(convex_data.vertices, convex_data);
+		ConvexHullComputer::convex_hull(convex_data.vertices, convex_data);
 		vs->mesh_add_surface_from_mesh_data(convex_mesh, convex_data);
 
 		type_mesh_map[PhysicsServer3D::SHAPE_CONVEX_POLYGON] = convex_mesh;

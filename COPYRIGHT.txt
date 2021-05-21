@@ -55,6 +55,14 @@ Comment: Godot Engine logo
 Copyright: 2017, Andrea Calabró
 License: CC-BY-4.0
 
+Files: ./core/math/convex_hull.cpp
+ ./core/math/convex_hull.h
+Comment: Bullet Continuous Collision Detection and Physics Library
+Copyright: 2011, Ole Kniemeyer, MAXON, www.maxon.net
+ 2007-2021, Juan Linietsky, Ariel Manzur.
+ 2014-2021, Godot Engine contributors.
+License: Expat and Zlib
+
 Files: ./modules/fbx/fbx_parser/
 Comment: Open Asset Import Library (FBX parser)
 Copyright: 2006-2020, assimp team
