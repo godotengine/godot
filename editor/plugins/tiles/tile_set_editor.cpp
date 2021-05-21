@@ -298,6 +298,9 @@ void TileSetEditor::_notification(int p_what) {
 			break;
 		case NOTIFICATION_INTERNAL_PROCESS:
 			if (tile_set_changed_needs_update) {
+				if (tile_set.is_valid()) {
+					tile_set->set_edited(true);
+				}
 				_update_atlas_sources_list();
 				tile_set_changed_needs_update = false;
 			}
@@ -445,7 +448,7 @@ TileDataEditor *TileSetEditor::get_tile_data_editor(String p_property) {
 	} else if (p_property == "probability") {
 		return tile_data_float_editor;
 	} else if (p_property == "y_sort_origin") {
-		return tile_data_position_editor;
+		return tile_data_y_sort_editor;
 	} else if (p_property == "texture_offset") {
 		return tile_data_texture_offset_editor;
 	} else if (components.size() >= 1 && components[0].begins_with("occlusion_layer_")) {
@@ -575,7 +578,7 @@ TileSetEditor::~TileSetEditor() {
 
 	// Delete tile data editors.
 	memdelete(tile_data_texture_offset_editor);
-	memdelete(tile_data_position_editor);
+	memdelete(tile_data_y_sort_editor);
 	memdelete(tile_data_integer_editor);
 	memdelete(tile_data_float_editor);
 	memdelete(tile_data_occlusion_shape_editor);

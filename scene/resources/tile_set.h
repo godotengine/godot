@@ -504,7 +504,7 @@ private:
 	Ref<ShaderMaterial> material = Ref<ShaderMaterial>();
 	Color modulate = Color(1.0, 1.0, 1.0, 1.0);
 	int z_index = 0;
-	Vector2i y_sort_origin = Vector2i();
+	int y_sort_origin = 0;
 	Vector<Ref<OccluderPolygon2D>> occluders;
 
 	// Physics
@@ -563,8 +563,8 @@ public:
 	Color get_modulate() const;
 	void set_z_index(int p_z_index);
 	int get_z_index() const;
-	void set_y_sort_origin(Vector2i p_y_sort_origin);
-	Vector2i get_y_sort_origin() const;
+	void set_y_sort_origin(int p_y_sort_origin);
+	int get_y_sort_origin() const;
 
 	void set_occluder(int p_layer_id, Ref<OccluderPolygon2D> p_occluder_polygon);
 	Ref<OccluderPolygon2D> get_occluder(int p_layer_id) const;
