@@ -60,6 +60,7 @@ static const char *_button_names[JOY_BUTTON_MAX] = {
 	"D-Pad Down",
 	"D-Pad Left",
 	"D-Pad Right",
+	"Home, DualShock PS, Guide",
 	"Xbox Share, PS5 Microphone, Nintendo Capture",
 	"Xbox Paddle 1",
 	"Xbox Paddle 2",

@@ -81,7 +81,7 @@ class InputDefault : public Input {
 		StringName name;
 		StringName uid;
 		bool connected;
-		bool last_buttons[JOY_BUTTON_MAX + 13]; //apparently SDL specifies 35 possible buttons on android
+		bool last_buttons[JOY_BUTTON_MAX + 12]; //apparently SDL specifies 35 possible buttons on android
 		float last_axis[JOY_AXIS_MAX];
 		int last_hat;
 		int mapping;
@@ -91,7 +91,7 @@ class InputDefault : public Input {
 			for (int i = 0; i < JOY_AXIS_MAX; i++) {
 				last_axis[i] = 0.0f;
 			}
-			for (int i = 0; i < JOY_BUTTON_MAX + 13; i++) {
+			for (int i = 0; i < JOY_BUTTON_MAX + 12; i++) {
 				last_buttons[i] = false;
 			}
 			connected = false;
