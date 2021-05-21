@@ -366,8 +366,8 @@ Array Array::filter(const Callable &p_callable) const {
 	new_arr.resize(size());
 	int accepted_count = 0;
 
+	const Variant *argptrs[1];
 	for (int i = 0; i < size(); i++) {
-		const Variant **argptrs = (const Variant **)alloca(sizeof(Variant *));
 		argptrs[0] = &get(i);
 
 		Variant result;
@@ -392,8 +392,8 @@ Array Array::map(const Callable &p_callable) const {
 	Array new_arr;
 	new_arr.resize(size());
 
+	const Variant *argptrs[1];
 	for (int i = 0; i < size(); i++) {
-		const Variant **argptrs = (const Variant **)alloca(sizeof(Variant *));
 		argptrs[0] = &get(i);
 
 		Variant result;
@@ -417,8 +417,8 @@ Variant Array::reduce(const Callable &p_callable, const Variant &p_accum) const 
 		start = 1;
 	}
 
+	const Variant *argptrs[2];
 	for (int i = start; i < size(); i++) {
-		const Variant **argptrs = (const Variant **)alloca(sizeof(Variant *) * 2);
 		argptrs[0] = &ret;
 		argptrs[1] = &get(i);
 
