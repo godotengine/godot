@@ -13,8 +13,6 @@
 		</member>
 		<member name="children" type="PackedInt32Array" setter="set_children" getter="get_children" default="PackedInt32Array(  )">
 		</member>
-		<member name="fake_joint_parent" type="int" setter="set_fake_joint_parent" getter="get_fake_joint_parent" default="-1">
-		</member>
 		<member name="height" type="int" setter="set_height" getter="get_height" default="-1">
 		</member>
 		<member name="joint" type="bool" setter="set_joint" getter="get_joint" default="false">

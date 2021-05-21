@@ -55,8 +55,6 @@ void GLTFNode::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_scale", "scale"), &GLTFNode::set_scale);
 	ClassDB::bind_method(D_METHOD("get_children"), &GLTFNode::get_children);
 	ClassDB::bind_method(D_METHOD("set_children", "children"), &GLTFNode::set_children);
-	ClassDB::bind_method(D_METHOD("get_fake_joint_parent"), &GLTFNode::get_fake_joint_parent);
-	ClassDB::bind_method(D_METHOD("set_fake_joint_parent", "fake_joint_parent"), &GLTFNode::set_fake_joint_parent);
 	ClassDB::bind_method(D_METHOD("get_light"), &GLTFNode::get_light);
 	ClassDB::bind_method(D_METHOD("set_light", "light"), &GLTFNode::set_light);
 
@@ -72,7 +70,6 @@ void GLTFNode::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::QUAT, "rotation"), "set_rotation", "get_rotation"); // Quat
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "scale"), "set_scale", "get_scale"); // Vector3
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_INT32_ARRAY, "children"), "set_children", "get_children"); // Vector<int>
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "fake_joint_parent"), "set_fake_joint_parent", "get_fake_joint_parent"); // GLTFNodeIndex
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "light"), "set_light", "get_light"); // GLTFLightIndex
 }
 
@@ -170,14 +167,6 @@ Vector<int> GLTFNode::get_children() {
 
 void GLTFNode::set_children(Vector<int> p_children) {
 	children = p_children;
-}
-
-GLTFNodeIndex GLTFNode::get_fake_joint_parent() {
-	return fake_joint_parent;
-}
-
-void GLTFNode::set_fake_joint_parent(GLTFNodeIndex p_fake_joint_parent) {
-	fake_joint_parent = p_fake_joint_parent;
 }
 
 GLTFLightIndex GLTFNode::get_light() {
