@@ -258,7 +258,8 @@ private:
 	Error _serialize_animations(Ref<GLTFState> state);
 	BoneAttachment *_generate_bone_attachment(Ref<GLTFState> state,
 			Skeleton *skeleton,
-			const GLTFNodeIndex node_index);
+			const GLTFNodeIndex node_index,
+			const GLTFNodeIndex bone_index);
 	Spatial *_generate_mesh_instance(Ref<GLTFState> state, Node *scene_parent, const GLTFNodeIndex node_index);
 	Camera *_generate_camera(Ref<GLTFState> state, Node *scene_parent,
 			const GLTFNodeIndex node_index);
