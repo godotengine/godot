@@ -328,7 +328,7 @@ void AnimationNode::remove_input(int p_index) {
 	emit_changed();
 }
 
-float AnimationNode::process(float p_time, bool p_seek) {
+double AnimationNode::process(double p_time, bool p_seek) {
 	if (get_script_instance()) {
 		return get_script_instance()->call("_process", p_time, p_seek);
 	}
@@ -818,8 +818,8 @@ void AnimationTree::_process_graph(float p_delta) {
 
 		for (const AnimationNode::AnimationState &as : state.animation_states) {
 			Ref<Animation> a = as.animation;
-			float time = as.time;
-			float delta = as.delta;
+			double time = as.time;
+			double delta = as.delta;
 			float weight = as.blend;
 			bool seeked = as.seeked;
 
@@ -1132,7 +1132,7 @@ void AnimationTree::_process_graph(float p_delta) {
 								continue;
 							}
 
-							float pos = a->track_get_key_time(i, idx);
+							double pos = a->track_get_key_time(i, idx);
 
 							StringName anim_name = a->animation_track_get_key_animation(i, idx);
 							if (String(anim_name) == "[stop]" || !player2->has_animation(anim_name)) {
@@ -1144,7 +1144,7 @@ void AnimationTree::_process_graph(float p_delta) {
 							float at_anim_pos;
 
 							if (anim->has_loop()) {
-								at_anim_pos = Math::fposmod(time - pos, anim->get_length()); //seek to loop
+								at_anim_pos = Math::fposmod(time - pos, (double)anim->get_length()); //seek to loop
 							} else {
 								at_anim_pos = MAX(anim->get_length(), time - pos); //seek to end
 							}

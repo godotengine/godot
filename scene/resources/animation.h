@@ -172,16 +172,16 @@ private:
 
 	/*
 	template<class T>
-	int _insert_pos(float p_time, T& p_keys);*/
+	int _insert_pos(double p_time, T& p_keys);*/
 
 	template <class T>
 	void _clear(T &p_keys);
 
 	template <class T, class V>
-	int _insert(float p_time, T &p_keys, const V &p_value);
+	int _insert(double p_time, T &p_keys, const V &p_value);
 
 	template <class K>
-	inline int _find(const Vector<K> &p_keys, float p_time) const;
+	inline int _find(const Vector<K> &p_keys, double p_time) const;
 
 	_FORCE_INLINE_ Animation::TransformKey _interpolate(const Animation::TransformKey &p_a, const Animation::TransformKey &p_b, float p_c) const;
 
@@ -197,21 +197,21 @@ private:
 	_FORCE_INLINE_ float _cubic_interpolate(const float &p_pre_a, const float &p_a, const float &p_b, const float &p_post_b, float p_c) const;
 
 	template <class T>
-	_FORCE_INLINE_ T _interpolate(const Vector<TKey<T>> &p_keys, float p_time, InterpolationType p_interp, bool p_loop_wrap, bool *p_ok) const;
+	_FORCE_INLINE_ T _interpolate(const Vector<TKey<T>> &p_keys, double p_time, InterpolationType p_interp, bool p_loop_wrap, bool *p_ok) const;
 
 	template <class T>
-	_FORCE_INLINE_ void _track_get_key_indices_in_range(const Vector<T> &p_array, float from_time, float to_time, List<int> *p_indices) const;
+	_FORCE_INLINE_ void _track_get_key_indices_in_range(const Vector<T> &p_array, double from_time, double to_time, List<int> *p_indices) const;
 
-	_FORCE_INLINE_ void _value_track_get_key_indices_in_range(const ValueTrack *vt, float from_time, float to_time, List<int> *p_indices) const;
-	_FORCE_INLINE_ void _method_track_get_key_indices_in_range(const MethodTrack *mt, float from_time, float to_time, List<int> *p_indices) const;
+	_FORCE_INLINE_ void _value_track_get_key_indices_in_range(const ValueTrack *vt, double from_time, double to_time, List<int> *p_indices) const;
+	_FORCE_INLINE_ void _method_track_get_key_indices_in_range(const MethodTrack *mt, double from_time, double to_time, List<int> *p_indices) const;
 
-	float length = 1.0;
+	double length = 1.0;
 	float step = 0.1;
 	bool loop = false;
 
 	// bind helpers
 private:
-	Array _transform_track_interpolate(int p_track, float p_time) const {
+	Array _transform_track_interpolate(int p_track, double p_time) const {
 		Vector3 loc;
 		Quaternion rot;
 		Vector3 scale;
@@ -223,7 +223,7 @@ private:
 		return ret;
 	}
 
-	Vector<int> _value_track_get_key_indices(int p_track, float p_time, float p_delta) const {
+	Vector<int> _value_track_get_key_indices(int p_track, double p_time, double p_delta) const {
 		List<int> idxs;
 		value_track_get_key_indices(p_track, p_time, p_delta, &idxs);
 		Vector<int> idxr;
@@ -233,7 +233,7 @@ private:
 		}
 		return idxr;
 	}
-	Vector<int> _method_track_get_key_indices(int p_track, float p_time, float p_delta) const {
+	Vector<int> _method_track_get_key_indices(int p_track, double p_time, double p_delta) const {
 		List<int> idxs;
 		method_track_get_key_indices(p_track, p_time, p_delta, &idxs);
 		Vector<int> idxr;
@@ -279,24 +279,24 @@ public:
 	void track_set_enabled(int p_track, bool p_enabled);
 	bool track_is_enabled(int p_track) const;
 
-	void track_insert_key(int p_track, float p_time, const Variant &p_key, float p_transition = 1);
+	void track_insert_key(int p_track, double p_time, const Variant &p_key, float p_transition = 1);
 	void track_set_key_transition(int p_track, int p_key_idx, float p_transition);
 	void track_set_key_value(int p_track, int p_key_idx, const Variant &p_value);
-	void track_set_key_time(int p_track, int p_key_idx, float p_time);
-	int track_find_key(int p_track, float p_time, bool p_exact = false) const;
+	void track_set_key_time(int p_track, int p_key_idx, double p_time);
+	int track_find_key(int p_track, double p_time, bool p_exact = false) const;
 	void track_remove_key(int p_track, int p_idx);
-	void track_remove_key_at_time(int p_track, float p_time);
+	void track_remove_key_at_time(int p_track, double p_time);
 	int track_get_key_count(int p_track) const;
 	Variant track_get_key_value(int p_track, int p_key_idx) const;
-	float track_get_key_time(int p_track, int p_key_idx) const;
+	double track_get_key_time(int p_track, int p_key_idx) const;
 	float track_get_key_transition(int p_track, int p_key_idx) const;
 
-	int transform_track_insert_key(int p_track, float p_time, const Vector3 &p_loc, const Quaternion &p_rot = Quaternion(), const Vector3 &p_scale = Vector3());
+	int transform_track_insert_key(int p_track, double p_time, const Vector3 &p_loc, const Quaternion &p_rot = Quaternion(), const Vector3 &p_scale = Vector3());
 	Error transform_track_get_key(int p_track, int p_key, Vector3 *r_loc, Quaternion *r_rot, Vector3 *r_scale) const;
 	void track_set_interpolation_type(int p_track, InterpolationType p_interp);
 	InterpolationType track_get_interpolation_type(int p_track) const;
 
-	int bezier_track_insert_key(int p_track, float p_time, float p_value, const Vector2 &p_in_handle, const Vector2 &p_out_handle);
+	int bezier_track_insert_key(int p_track, double p_time, float p_value, const Vector2 &p_in_handle, const Vector2 &p_out_handle);
 	void bezier_track_set_key_value(int p_track, int p_index, float p_value);
 	void bezier_track_set_key_in_handle(int p_track, int p_index, const Vector2 &p_handle);
 	void bezier_track_set_key_out_handle(int p_track, int p_index, const Vector2 &p_handle);
@@ -304,9 +304,9 @@ public:
 	Vector2 bezier_track_get_key_in_handle(int p_track, int p_index) const;
 	Vector2 bezier_track_get_key_out_handle(int p_track, int p_index) const;
 
-	float bezier_track_interpolate(int p_track, float p_time) const;
+	float bezier_track_interpolate(int p_track, double p_time) const;
 
-	int audio_track_insert_key(int p_track, float p_time, const RES &p_stream, float p_start_offset = 0, float p_end_offset = 0);
+	int audio_track_insert_key(int p_track, double p_time, const RES &p_stream, float p_start_offset = 0, float p_end_offset = 0);
 	void audio_track_set_key_stream(int p_track, int p_key, const RES &p_stream);
 	void audio_track_set_key_start_offset(int p_track, int p_key, float p_offset);
 	void audio_track_set_key_end_offset(int p_track, int p_key, float p_offset);
@@ -314,27 +314,27 @@ public:
 	float audio_track_get_key_start_offset(int p_track, int p_key) const;
 	float audio_track_get_key_end_offset(int p_track, int p_key) const;
 
-	int animation_track_insert_key(int p_track, float p_time, const StringName &p_animation);
+	int animation_track_insert_key(int p_track, double p_time, const StringName &p_animation);
 	void animation_track_set_key_animation(int p_track, int p_key, const StringName &p_animation);
 	StringName animation_track_get_key_animation(int p_track, int p_key) const;
 
 	void track_set_interpolation_loop_wrap(int p_track, bool p_enable);
 	bool track_get_interpolation_loop_wrap(int p_track) const;
 
-	Error transform_track_interpolate(int p_track, float p_time, Vector3 *r_loc, Quaternion *r_rot, Vector3 *r_scale) const;
+	Error transform_track_interpolate(int p_track, double p_time, Vector3 *r_loc, Quaternion *r_rot, Vector3 *r_scale) const;
 
-	Variant value_track_interpolate(int p_track, float p_time) const;
-	void value_track_get_key_indices(int p_track, float p_time, float p_delta, List<int> *p_indices) const;
+	Variant value_track_interpolate(int p_track, double p_time) const;
+	void value_track_get_key_indices(int p_track, double p_time, double p_delta, List<int> *p_indices) const;
 	void value_track_set_update_mode(int p_track, UpdateMode p_mode);
 	UpdateMode value_track_get_update_mode(int p_track) const;
 
-	void method_track_get_key_indices(int p_track, float p_time, float p_delta, List<int> *p_indices) const;
+	void method_track_get_key_indices(int p_track, double p_time, double p_delta, List<int> *p_indices) const;
 	Vector<Variant> method_track_get_params(int p_track, int p_key_idx) const;
 	StringName method_track_get_name(int p_track, int p_key_idx) const;
 
 	void copy_track(int p_track, Ref<Animation> p_to_animation);
 
-	void track_get_key_indices_in_range(int p_track, float p_time, float p_delta, List<int> *p_indices) const;
+	void track_get_key_indices_in_range(int p_track, double p_time, double p_delta, List<int> *p_indices) const;
 
 	void set_length(float p_length);
 	float get_length() const;
