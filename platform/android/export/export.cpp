@@ -2100,6 +2100,13 @@ public:
 		// Validate the rest of the configuration.
 
 		String dk = p_preset->get("keystore/debug");
+		String dk_user = p_preset->get("keystore/debug_user");
+		String dk_password = p_preset->get("keystore/debug_password");
+
+		if ((dk.empty() || dk_user.empty() || dk_password.empty()) && (!dk.empty() || !dk_user.empty() || !dk_password.empty())) {
+			valid = false;
+			err += TTR("Either Debug Keystore, Debug User AND Debug Password settings must be configured OR none of them.") + "\n";
+		}
 
 		if (!FileAccess::exists(dk)) {
 			dk = EditorSettings::get_singleton()->get("export/android/debug_keystore");
@@ -2110,6 +2117,13 @@ public:
 		}
 
 		String rk = p_preset->get("keystore/release");
+		String rk_user = p_preset->get("keystore/release_user");
+		String rk_password = p_preset->get("keystore/release_password");
+
+		if ((rk.empty() || rk_user.empty() || rk_password.empty()) && (!rk.empty() || !rk_user.empty() || !rk_password.empty())) {
+			valid = false;
+			err += TTR("Either Release Keystore, Release User AND Release Password settings must be configured OR none of them.") + "\n";
+		}
 
 		if (!rk.empty() && !FileAccess::exists(rk)) {
 			valid = false;
