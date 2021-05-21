@@ -2351,11 +2351,11 @@ int TileData::get_z_index() const {
 	return z_index;
 }
 
-void TileData::set_y_sort_origin(Vector2i p_y_sort_origin) {
+void TileData::set_y_sort_origin(int p_y_sort_origin) {
 	y_sort_origin = p_y_sort_origin;
 	emit_signal("changed");
 }
-Vector2i TileData::get_y_sort_origin() const {
+int TileData::get_y_sort_origin() const {
 	return y_sort_origin;
 }
 
@@ -3020,7 +3020,7 @@ void TileData::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "texture_offset"), "set_texture_offset", "get_texture_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "modulate"), "set_modulate", "get_modulate");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "z_index"), "set_z_index", "get_z_index");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "y_sort_origin"), "set_y_sort_origin", "get_y_sort_origin");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "y_sort_origin"), "set_y_sort_origin", "get_y_sort_origin");
 
 	ADD_GROUP("Terrains", "");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "terrain_set"), "set_terrain_set", "get_terrain_set");
@@ -3866,6 +3866,12 @@ void TileSetPluginAtlasRendering::tilemap_notification(TileMap *p_tile_map, int 
 				}
 			}
 		} break;
+		case CanvasItem::NOTIFICATION_DRAW: {
+			Ref<TileSet> tile_set = p_tile_map->get_tileset();
+			if (tile_set.is_valid()) {
+				RenderingServer::get_singleton()->canvas_item_set_sort_children_by_y(p_tile_map->get_canvas_item(), tile_set->is_y_sorting());
+			}
+		} break;
 	}
 }
 
@@ -3978,7 +3984,11 @@ void TileSetPluginAtlasRendering::update_dirty_quadrants(TileMap *p_tile_map, Se
 					int z_index = tile_data->get_z_index();
 
 					// Quandrant pos.
-					Vector2 position = p_tile_map->map_to_world(q.coords * p_tile_map->get_effective_quadrant_size()) - tile_set->get_tile_size() / 2;
+					Vector2 position = p_tile_map->map_to_world(q.coords * p_tile_map->get_effective_quadrant_size());
+					if (tile_set->is_y_sorting()) {
+						// When Y-sorting, the quandrant size is sure to be 1, we can thus offset the CanvasItem.
+						position.y += tile_data->get_y_sort_origin();
+					}
 
 					// --- CanvasItems ---
 					// Create two canvas items, for rendering and debug.
@@ -3986,16 +3996,18 @@ void TileSetPluginAtlasRendering::update_dirty_quadrants(TileMap *p_tile_map, Se
 
 					// Check if the material or the z_index changed.
 					if (prev_canvas_item == RID() || prev_material != mat || prev_z_index != z_index) {
+						// If so, create a new CanvasItem.
 						canvas_item = rs->canvas_item_create();
 						if (mat.is_valid()) {
 							rs->canvas_item_set_material(canvas_item, mat->get_rid());
 						}
 						rs->canvas_item_set_parent(canvas_item, p_tile_map->get_canvas_item());
 						rs->canvas_item_set_use_parent_material(canvas_item, p_tile_map->get_use_parent_material() || p_tile_map->get_material().is_valid());
+
 						Transform2D xform;
 						xform.set_origin(position);
-
 						rs->canvas_item_set_transform(canvas_item, xform);
+
 						rs->canvas_item_set_light_mask(canvas_item, p_tile_map->get_light_mask());
 						rs->canvas_item_set_z_index(canvas_item, z_index);
 
