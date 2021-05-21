@@ -116,6 +116,8 @@ String OS_LinuxBSD::get_name() const {
 	return "FreeBSD";
 #elif defined(__NetBSD__)
 	return "NetBSD";
+#elif defined(__OpenBSD__)
+	return "OpenBSD";
 #else
 	return "BSD";
 #endif
