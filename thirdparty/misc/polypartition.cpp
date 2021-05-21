@@ -1289,7 +1289,7 @@ int TPPLPartition::MonotonePartition(TPPLPolyList *inpolys, TPPLPolyList *monoto
   bool error = false;
 
   numvertices = 0;
-  for (iter = inpolys->front(); iter; iter++) {
+  for (iter = inpolys->front(); iter; iter = iter->next()) {
     numvertices += iter->get().GetNumPoints();
   }
 
@@ -1298,7 +1298,7 @@ int TPPLPartition::MonotonePartition(TPPLPolyList *inpolys, TPPLPolyList *monoto
   newnumvertices = numvertices;
 
   polystartindex = 0;
-  for (iter = inpolys->front(); iter; iter++) {
+  for (iter = inpolys->front(); iter; iter = iter->next()) {
     poly = &(iter->get());
     polyendindex = polystartindex + poly->GetNumPoints() - 1;
     for (i = 0; i < poly->GetNumPoints(); i++) {
@@ -1408,7 +1408,7 @@ int TPPLPartition::MonotonePartition(TPPLPolyList *inpolys, TPPLPolyList *monoto
         newedge.p1 = v->p;
         newedge.p2 = v->p;
         edgeIter = edgeTree.lower_bound(newedge);
-        if (edgeIter == edgeTree.front()) {
+        if (edgeIter == nullptr || edgeIter == edgeTree.front()) {
           error = true;
           break;
         }
@@ -1449,7 +1449,7 @@ int TPPLPartition::MonotonePartition(TPPLPolyList *inpolys, TPPLPolyList *monoto
         newedge.p1 = v->p;
         newedge.p2 = v->p;
         edgeIter = edgeTree.lower_bound(newedge);
-        if (edgeIter == edgeTree.front()) {
+        if (edgeIter == nullptr || edgeIter == edgeTree.front()) {
           error = true;
           break;
         }
@@ -1494,7 +1494,7 @@ int TPPLPartition::MonotonePartition(TPPLPolyList *inpolys, TPPLPolyList *monoto
           newedge.p1 = v->p;
           newedge.p2 = v->p;
           edgeIter = edgeTree.lower_bound(newedge);
-          if (edgeIter == edgeTree.front()) {
+          if (edgeIter == nullptr || edgeIter == edgeTree.front()) {
             error = true;
             break;
           }
