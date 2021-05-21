@@ -255,8 +255,8 @@ public:
 	static _ALWAYS_INLINE_ double db2linear(double p_db) { return Math::exp(p_db * 0.11512925464970228420089957273422); }
 	static _ALWAYS_INLINE_ float db2linear(float p_db) { return Math::exp(p_db * 0.11512925464970228420089957273422); }
 
-	static _ALWAYS_INLINE_ double round(double p_val) { return (p_val >= 0) ? Math::floor(p_val + 0.5) : -Math::floor(-p_val + 0.5); }
-	static _ALWAYS_INLINE_ float round(float p_val) { return (p_val >= 0) ? Math::floor(p_val + 0.5) : -Math::floor(-p_val + 0.5); }
+	static _ALWAYS_INLINE_ double round(double p_val) { return ::round(p_val); }
+	static _ALWAYS_INLINE_ float round(float p_val) { return ::roundf(p_val); }
 
 	static _ALWAYS_INLINE_ int64_t wrapi(int64_t value, int64_t min, int64_t max) {
 		int64_t range = max - min;
@@ -376,28 +376,10 @@ public:
 		return u.d;
 	}
 
-	//this function should be as fast as possible and rounding mode should not matter
+	// This function should be as fast as possible and rounding mode should not matter.
 	static _ALWAYS_INLINE_ int fast_ftoi(float a) {
-		static int b;
-
-#if (defined(_WIN32_WINNT) && _WIN32_WINNT >= 0x0603) || WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP // windows 8 phone?
-		b = (int)((a > 0.0) ? (a + 0.5) : (a - 0.5));
-
-#elif defined(_MSC_VER) && _MSC_VER < 1800
-		__asm fld a __asm fistp b
-		/*#elif defined( __GNUC__ ) && ( defined( __i386__ ) || defined( __x86_64__ ) )
-		// use AT&T inline assembly style, document that
-		// we use memory as output (=m) and input (m)
-		__asm__ __volatile__ (
-		"flds %1        \n\t"
-		"fistpl %0      \n\t"
-		: "=m" (b)
-		: "m" (a));*/
-
-#else
-		b = lrintf(a); //assuming everything but msvc 2012 or earlier has lrint
-#endif
-		return b;
+		// Assuming every supported compiler has `lrint()`.
+		return lrintf(a);
 	}
 
 	static _ALWAYS_INLINE_ uint32_t halfbits_to_floatbits(uint16_t h) {

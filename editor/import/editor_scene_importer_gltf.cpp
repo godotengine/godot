@@ -1451,8 +1451,11 @@ Error EditorSceneImporterGLTF::_parse_images(GLTFState &state, const String &p_b
 			}
 		}
 
-		ERR_FAIL_COND_V_MSG(img.is_null(), ERR_FILE_CORRUPT,
-				vformat("glTF: Couldn't load image index '%d' with its given mimetype: %s.", i, mimetype));
+		if (img.is_null()) {
+			ERR_PRINT(vformat("glTF: Couldn't load image index '%d' with its given mimetype: %s.", i, mimetype));
+			state.images.push_back(Ref<Texture>());
+			continue;
+		}
 
 		Ref<ImageTexture> t;
 		t.instance();
@@ -2356,6 +2359,9 @@ bool EditorSceneImporterGLTF::_skins_are_same(const Ref<Skin> &skin_a, const Ref
 		if (skin_a->get_bind_bone(i) != skin_b->get_bind_bone(i)) {
 			return false;
 		}
+		if (skin_a->get_bind_name(i) != skin_b->get_bind_name(i)) {
+			return false;
+		}
 
 		Transform a_xform = skin_a->get_bind_pose(i);
 		Transform b_xform = skin_b->get_bind_pose(i);
@@ -3135,13 +3141,15 @@ void EditorSceneImporterGLTF::_process_mesh_instances(GLTFState &state, Spatial 
 			const GLTFSkinIndex skin_i = node->skin;
 
 			Map<GLTFNodeIndex, Node *>::Element *mi_element = state.scene_nodes.find(node_i);
+			ERR_CONTINUE_MSG(mi_element == nullptr, vformat("Unable to find node %d", node_i));
+
 			MeshInstance *mi = Object::cast_to<MeshInstance>(mi_element->get());
-			ERR_FAIL_COND(mi == nullptr);
+			ERR_CONTINUE_MSG(mi == nullptr, vformat("Unable to cast node %d of type %s to MeshInstance", node_i, mi_element->get()->get_class_name()));
 
 			const GLTFSkeletonIndex skel_i = state.skins[node->skin].skeleton;
 			const GLTFSkeleton &gltf_skeleton = state.skeletons[skel_i];
 			Skeleton *skeleton = gltf_skeleton.godot_skeleton;
-			ERR_FAIL_COND(skeleton == nullptr);
+			ERR_CONTINUE_MSG(skeleton == nullptr, vformat("Unable to find Skeleton for node %d skin %d", node_i, skin_i));
 
 			mi->get_parent()->remove_child(mi);
 			skeleton->add_child(mi);
