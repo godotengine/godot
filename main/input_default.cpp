@@ -1304,6 +1304,7 @@ static const char *_buttons[JOY_BUTTON_MAX] = {
 	"DPAD Down",
 	"DPAD Left",
 	"DPAD Right",
+	"Guide",
 	"Misc 1",
 	"Paddle 1",
 	"Paddle 2",
