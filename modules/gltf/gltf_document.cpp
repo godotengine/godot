@@ -5472,22 +5472,22 @@ void GLTFDocument::_generate_scene_node(Ref<GLTFState> state, Node *scene_parent
 	}
 
 	// If we have an active skeleton, and the node is node skinned, we need to create a bone attachment
-	if (current_node == nullptr && active_skeleton != nullptr && gltf_node->skin < 0) {
-		BoneAttachment *bone_attachment = _generate_bone_attachment(state, active_skeleton, node_index);
+	if (current_node == nullptr || gltf_node->mesh >= 0 || gltf_node->camera >= 0 || gltf_node->light >= 0) {
+		if (active_skeleton != nullptr && gltf_node->skin < 0) {
+			BoneAttachment *bone_attachment = _generate_bone_attachment(state, active_skeleton, node_index);
 
-		scene_parent->add_child(bone_attachment);
-		bone_attachment->set_owner(scene_root);
+			scene_parent->add_child(bone_attachment);
+			bone_attachment->set_owner(scene_root);
 
-		// There is no gltf_node that represent this, so just directly create a unique name
-		bone_attachment->set_name(_gen_unique_name(state, "BoneAttachment"));
+			// There is no gltf_node that represent this, so just directly create a unique name
+			bone_attachment->set_name(_gen_unique_name(state, "BoneAttachment"));
 
-		// We change the scene_parent to our bone attachment now. We do not set current_node because we want to make the node
-		// and attach it to the bone_attachment
-		scene_parent = bone_attachment;
-	}
+			// We change the scene_parent to our bone attachment now. We do not set current_node because we want to make the node
+			// and attach it to the bone_attachment
+			scene_parent = bone_attachment;
+		}
 
-	// We still have not managed to make a node
-	if (current_node == nullptr) {
+		// We still have not managed to make a node
 		if (gltf_node->mesh >= 0) {
 			current_node = _generate_mesh_instance(state, scene_parent, node_index);
 		} else if (gltf_node->camera >= 0) {
@@ -5663,7 +5663,7 @@ void GLTFDocument::_import_animation(Ref<GLTFState> state, AnimationPlayer *ap, 
 		const Ref<GLTFNode> gltf_node = state->nodes[track_i->key()];
 
 		if (gltf_node->skeleton >= 0) {
-			const Skeleton *sk = Object::cast_to<Skeleton>(state->scene_nodes.find(node_index)->get());
+			const Skeleton *sk = state->skeletons[gltf_node->skeleton]->godot_skeleton;
 			ERR_FAIL_COND(sk == nullptr);
 
 			const String path = ap->get_parent()->get_path_to(sk);
