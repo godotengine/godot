@@ -229,7 +229,7 @@
 		</member>
 		<member name="transpose" type="bool" setter="set_transpose" getter="get_transpose" default="false">
 		</member>
-		<member name="y_sort_origin" type="Vector2i" setter="set_y_sort_origin" getter="get_y_sort_origin" default="Vector2i( 0, 0 )">
+		<member name="y_sort_origin" type="int" setter="set_y_sort_origin" getter="get_y_sort_origin" default="0">
 		</member>
 		<member name="z_index" type="int" setter="set_z_index" getter="get_z_index" default="0">
 		</member>

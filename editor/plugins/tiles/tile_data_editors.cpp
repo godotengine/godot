@@ -113,7 +113,22 @@ void TileDataPositionEditor::draw_over_tile(CanvasItem *p_canvas_item, Transform
 	ERR_FAIL_COND(value.get_type() != Variant::VECTOR2I && value.get_type() != Variant::VECTOR2);
 
 	Ref<Texture2D> position_icon = TileSetEditor::get_singleton()->get_theme_icon("EditorPosition", "EditorIcons");
-	p_canvas_item->draw_texture(position_icon, p_transform.get_origin() + Vector2(value) - position_icon->get_size() / 2);
+	p_canvas_item->draw_texture(position_icon, p_transform.xform(Vector2(value)) - position_icon->get_size() / 2);
+}
+
+void TileDataYSortEditor::draw_over_tile(CanvasItem *p_canvas_item, Transform2D p_transform, TileSet *p_tile_set, int p_atlas_source_id, Vector2i p_atlas_coords, int p_alternative_tile, String p_property) {
+	TileData *tile_data = _get_tile_data(p_tile_set, p_atlas_source_id, p_atlas_coords, p_alternative_tile);
+	ERR_FAIL_COND(!tile_data);
+
+	bool valid;
+	Variant value = tile_data->get(p_property, &valid);
+	if (!valid) {
+		return;
+	}
+	ERR_FAIL_COND(value.get_type() != Variant::INT);
+
+	Ref<Texture2D> position_icon = TileSetEditor::get_singleton()->get_theme_icon("EditorPosition", "EditorIcons");
+	p_canvas_item->draw_texture(position_icon, p_transform.xform(Vector2(0, value)) - position_icon->get_size() / 2);
 }
 
 void TileDataOcclusionShapeEditor::draw_over_tile(CanvasItem *p_canvas_item, Transform2D p_transform, TileSet *p_tile_set, int p_atlas_source_id, Vector2i p_atlas_coords, int p_alternative_tile, String p_property) {

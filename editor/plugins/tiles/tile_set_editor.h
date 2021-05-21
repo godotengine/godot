@@ -56,7 +56,7 @@ private:
 
 	// List of tile data editors.
 	TileDataTextureOffsetEditor *tile_data_texture_offset_editor = memnew(TileDataTextureOffsetEditor);
-	TileDataPositionEditor *tile_data_position_editor = memnew(TileDataPositionEditor);
+	TileDataYSortEditor *tile_data_y_sort_editor = memnew(TileDataYSortEditor);
 	TileDataIntegerEditor *tile_data_integer_editor = memnew(TileDataIntegerEditor);
 	TileDataFloatEditor *tile_data_float_editor = memnew(TileDataFloatEditor);
 	TileDataOcclusionShapeEditor *tile_data_occlusion_shape_editor = memnew(TileDataOcclusionShapeEditor);
