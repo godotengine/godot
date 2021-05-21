@@ -155,7 +155,7 @@ bool AcceptDialog::has_autowrap() {
 	return label->has_autowrap();
 }
 
-void AcceptDialog::register_text_enter(Node *p_line_edit) {
+void AcceptDialog::register_text_enter(Control *p_line_edit) {
 	ERR_FAIL_NULL(p_line_edit);
 	LineEdit *line_edit = Object::cast_to<LineEdit>(p_line_edit);
 	if (line_edit) {

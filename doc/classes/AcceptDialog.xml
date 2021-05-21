@@ -49,7 +49,7 @@
 		<method name="register_text_enter">
 			<return type="void">
 			</return>
-			<argument index="0" name="line_edit" type="Node">
+			<argument index="0" name="line_edit" type="Control">
 			</argument>
 			<description>
 				Registers a [LineEdit] in the dialog. When the enter key is pressed, the dialog will be accepted.
