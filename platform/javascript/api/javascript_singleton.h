@@ -58,6 +58,7 @@ public:
 	Ref<JavaScriptObject> get_interface(const String &p_interface);
 	Ref<JavaScriptObject> create_callback(Object *p_ref, const StringName &p_method);
 	Variant _create_object_bind(const Variant **p_args, int p_argcount, Variant::CallError &r_error);
+	void download_buffer(Vector<uint8_t> p_arr, const String &p_name, const String &p_mime = "application/octet-stream");
 
 	static JavaScript *get_singleton();
 	JavaScript();
