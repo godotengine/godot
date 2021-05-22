@@ -282,7 +282,7 @@ double DataBuffer::add_real(double p_input, CompressionLevel p_compression_level
 		exponent = 0;
 		mantissa_scale /= 2.0;
 	}
-	mantissa = round(mantissa * mantissa_scale) / mantissa_scale; // Round to specified number of bits. Math::round currently have an overflow with max double.
+	mantissa = Math::round(mantissa * mantissa_scale) / mantissa_scale; // Round to specified number of bits.
 	if (mantissa < 0.5 && mantissa != 0) {
 		// Check underflow, extract exponent from mantissa.
 		exponent += ilogb(mantissa) + 1;
