@@ -413,6 +413,27 @@ TEST_CASE("[Modules][DataBuffer] Normalized Vector3") {
 		CHECK_MESSAGE(read_value.z == doctest::Approx(value.z).epsilon(epsilon), "Read Vector3 should have the same z axis");
 	}
 }
+
+TEST_CASE("[Modules][DataBuffer] Seek") {
+	DataBuffer buffer;
+	buffer.begin_write(0);
+	buffer.add_bool(true);
+	buffer.add_bool(false);
+	buffer.begin_read();
+
+	ERR_PRINT_OFF
+	buffer.seek(-1);
+	CHECK_MESSAGE(buffer.get_bit_offset() == 0, "Bit offset should fail for negative values");
+	ERR_PRINT_ON
+
+	buffer.seek(1);
+	CHECK_MESSAGE(buffer.get_bit_offset() == 1, "Bit offset should be 1 after seek to 1");
+	CHECK_MESSAGE(buffer.read_bool() == false, "Should read false at position 1");
+
+	buffer.seek(0);
+	CHECK_MESSAGE(buffer.get_bit_offset() == 0, "Bit offset should be 0 after seek to 0");
+	CHECK_MESSAGE(buffer.read_bool() == true, "Should read true at position 0");
+}
 } // namespace TestDataBuffer
 
 #endif // TEST_DATA_BUFFER_H
