@@ -488,6 +488,35 @@ TEST_CASE("[Modules][DataBuffer] Zero") {
 	buffer.begin_read();
 	CHECK_MESSAGE(buffer.read_int(compression) == 0, "Should return 0");
 }
+
+TEST_CASE("[Modules][DataBuffer] Force set size") {
+	DataBuffer buffer;
+	buffer.begin_write(0);
+	buffer.add_bool(true);
+	buffer.add_bool(true);
+	buffer.add_bool(true);
+	const int buffer_size = buffer.get_buffer().size_in_bits();
+	const int original_total_size = buffer.total_size();
+
+	ERR_PRINT_OFF;
+	buffer.force_set_size(0, buffer_size + 1);
+	ERR_PRINT_ON;
+	CHECK_MESSAGE(buffer.total_size() == original_total_size, "Resizing to a larger size should fail.");
+
+	ERR_PRINT_OFF;
+	buffer.force_set_size(-1, buffer_size);
+	ERR_PRINT_ON;
+	CHECK_MESSAGE(buffer.total_size() == original_total_size, "Resizing with a negative metadata size should fail.");
+
+	ERR_PRINT_OFF;
+	buffer.force_set_size(0, -1);
+	ERR_PRINT_ON;
+	CHECK_MESSAGE(buffer.total_size() == original_total_size, "Resizing with a negative bits size should fail.");
+
+	buffer.force_set_size(0, buffer_size - 1);
+	CHECK_MESSAGE(buffer.total_size() == buffer_size - 1, "Resizing to a smaller size should succeed.");
+
+}
 } // namespace TestDataBuffer
 
 #endif // TEST_DATA_BUFFER_H
