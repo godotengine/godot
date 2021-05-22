@@ -375,6 +375,9 @@ Files extracted from upstream repository:
 - All files in `src/`.
 - `LICENSE.md`.
 
+An [experimental upstream feature](https://github.com/zeux/meshoptimizer/tree/simplify-attr),
+has been backported, see patch in `patches` directory.
+
 
 ## miniupnpc
 
