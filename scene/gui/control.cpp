@@ -2586,6 +2586,7 @@ void Control::set_scale(const Vector2 &p_scale) {
 	}
 	update();
 	_notify_transform();
+	_change_notify("rect_scale");
 }
 Vector2 Control::get_scale() const {
 	return data.scale;
