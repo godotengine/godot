@@ -129,10 +129,10 @@ Files extracted from upstream source:
   * License: OFL-1.1
   * Comment: Use UI font variant if available, because it has tight vertical metrics and
     good for UI.
-- `Hack_Regular.ttf`:
-  * Upstream: https://github.com/source-foundry/Hack
-  * Version: 3.003 (2018)
-  * License: MIT + Bitstream Vera License
+- `JetBrainsMono_Regular.ttf`:
+	* Upstream: https://github.com/JetBrains/JetBrainsMono
+  * Version: 2.225
+  * License: OFL-1.1
 - `DroidSans*.ttf`:
   * Upstream: https://android.googlesource.com/platform/frameworks/base/+/master/data/fonts/
   * Version: ? (pre-2014 commit when DroidSansJapanese.ttf was obsoleted)
@@ -146,6 +146,7 @@ Files extracted from upstream source:
   * Version: 1.11 (2015)
   * License: Tamsyn
   * Comment: Extracted "0..9,A..F" characters for hex code printing.
+
 
 
 ## freetype
