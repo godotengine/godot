@@ -519,7 +519,7 @@ namespace Godot
         /// compared to the original, with the same length.
         /// </summary>
         /// <returns>The perpendicular vector.</returns>
-        public Vector2 Perpendicular()
+        public Vector2 Orthogonal()
         {
             return new Vector2(y, -x);
         }
