@@ -383,7 +383,7 @@ void App::key_event(Windows::UI::Core::CoreWindow ^ sender, bool p_pressed, Wind
 		ke.type = OS_UWP::KeyEvent::MessageType::KEY_EVENT_MESSAGE;
 		ke.unicode = 0;
 		ke.keycode = KeyMappingWindows::get_keysym((unsigned int)key_args->VirtualKey);
-		ke.physical_keycode = KeyMappingWindows::get_scansym((unsigned int)key_args->KeyStatus.ScanCode);
+		ke.physical_keycode = KeyMappingWindows::get_scansym((unsigned int)key_args->KeyStatus.ScanCode, key_args->KeyStatus.IsExtendedKey);
 		ke.echo = (!p_pressed && !key_args->KeyStatus.IsKeyReleased) || (p_pressed && key_args->KeyStatus.WasKeyDown);
 
 	} else {
