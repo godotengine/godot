@@ -30,9 +30,9 @@
 
 #include "node_3d_editor_gizmos.h"
 
+#include "core/math/convex_hull.h"
 #include "core/math/geometry_2d.h"
 #include "core/math/geometry_3d.h"
-#include "core/math/quick_hull.h"
 #include "scene/3d/audio_stream_player_3d.h"
 #include "scene/3d/baked_lightmap.h"
 #include "scene/3d/collision_polygon_3d.h"
@@ -4161,7 +4161,7 @@ void CollisionShape3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 		if (points.size() > 3) {
 			Vector<Vector3> varr = Variant(points);
 			Geometry3D::MeshData md;
-			Error err = QuickHull::build(varr, md);
+			Error err = ConvexHullComputer::convex_hull(varr, md);
 			if (err == OK) {
 				Vector<Vector3> points2;
 				points2.resize(md.edges.size() * 2);
