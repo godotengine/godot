@@ -30,24 +30,6 @@
 				Return the count of input value ports.
 			</description>
 		</method>
-		<method name="_get_input_value_port_name" qualifiers="virtual">
-			<return type="String">
-			</return>
-			<argument index="0" name="idx" type="int">
-			</argument>
-			<description>
-				Return the specified input port's name.
-			</description>
-		</method>
-		<method name="_get_input_value_port_type" qualifiers="virtual">
-			<return type="int">
-			</return>
-			<argument index="0" name="idx" type="int">
-			</argument>
-			<description>
-				Return the specified input port's type. See the [enum Variant.Type] values.
-			</description>
-		</method>
 		<method name="_get_input_value_port_hint" qualifiers="virtual">
 			<return type="int">
 			</return>
@@ -64,6 +46,24 @@
 			</argument>
 			<description>
 				Return the specified input port's hint_string.
+			</description>
+		</method>
+		<method name="_get_input_value_port_name" qualifiers="virtual">
+			<return type="String">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+				Return the specified input port's name.
+			</description>
+		</method>
+		<method name="_get_input_value_port_type" qualifiers="virtual">
+			<return type="int">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+				Return the specified input port's type. See the [enum Variant.Type] values.
 			</description>
 		</method>
 		<method name="_get_output_sequence_port_count" qualifiers="virtual">
@@ -89,24 +89,6 @@
 				Return the amount of output value ports.
 			</description>
 		</method>
-		<method name="_get_output_value_port_name" qualifiers="virtual">
-			<return type="String">
-			</return>
-			<argument index="0" name="idx" type="int">
-			</argument>
-			<description>
-				Return the specified output ports name.
-			</description>
-		</method>
-		<method name="_get_output_value_port_type" qualifiers="virtual">
-			<return type="int">
-			</return>
-			<argument index="0" name="idx" type="int">
-			</argument>
-			<description>
-				Return the specified output ports type. See the [enum Variant.Type] values.
-			</description>
-		</method>
 		<method name="_get_output_value_port_hint" qualifiers="virtual">
 			<return type="int">
 			</return>
@@ -123,6 +105,24 @@
 			</argument>
 			<description>
 				Return the specified output ports hint_string.
+			</description>
+		</method>
+		<method name="_get_output_value_port_name" qualifiers="virtual">
+			<return type="String">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+				Return the specified output ports name.
+			</description>
+		</method>
+		<method name="_get_output_value_port_type" qualifiers="virtual">
+			<return type="int">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+				Return the specified output ports type. See the [enum Variant.Type] values.
 			</description>
 		</method>
 		<method name="_get_text" qualifiers="virtual">
