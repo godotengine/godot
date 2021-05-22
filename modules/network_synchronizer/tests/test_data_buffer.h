@@ -95,10 +95,10 @@ TEST_CASE("[Modules][DataBuffer] Bool") {
 	bool value = {};
 
 	SUBCASE("[Modules][DataBuffer] false") {
-		value = true;
+		value = false;
 	}
 	SUBCASE("[Modules][DataBuffer] true") {
-		value = false;
+		value = true;
 	}
 
 	DataBuffer buffer;
