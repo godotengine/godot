@@ -212,6 +212,11 @@ void CollisionObject::_shape_changed(const Ref<Shape> &p_shape) {
 }
 
 void CollisionObject::_update_debug_shapes() {
+	if (!is_inside_tree()) {
+		debug_shapes_to_update.clear();
+		return;
+	}
+
 	for (Set<uint32_t>::Element *shapedata_idx = debug_shapes_to_update.front(); shapedata_idx; shapedata_idx = shapedata_idx->next()) {
 		if (shapes.has(shapedata_idx->get())) {
 			ShapeData &shapedata = shapes[shapedata_idx->get()];
