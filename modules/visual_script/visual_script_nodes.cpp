@@ -2773,7 +2773,7 @@ VisualScriptCustomNode::TypeGuess VisualScriptCustomNode::guess_output_type(Type
 			} else if (ClassDB::class_exists(pi.hint_string)) {
 				printf("Hint_string");
 				tg.gdclass = pi.hint_string;
-			} 
+			}
 		}
 	}
 	return tg;
