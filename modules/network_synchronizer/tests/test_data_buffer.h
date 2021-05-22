@@ -461,6 +461,16 @@ TEST_CASE("[Modules][DataBuffer] Metadata") {
 	CHECK_MESSAGE(buffer.size() == DataBuffer::get_bit_taken(DataBuffer::DATA_TYPE_BOOL, DataBuffer::COMPRESSION_LEVEL_0), "Size should be equal to expected");
 	CHECK_MESSAGE(buffer.total_size() == DataBuffer::get_bit_taken(DataBuffer::DATA_TYPE_BOOL, DataBuffer::COMPRESSION_LEVEL_0) + metadata_size, "Total size should be equal to expected");
 }
+
+TEST_CASE("[Modules][DataBuffer] Zero") {
+	constexpr DataBuffer::CompressionLevel compression = DataBuffer::COMPRESSION_LEVEL_0;
+	DataBuffer buffer;
+	buffer.begin_write(0);
+	buffer.add_int(-1, compression);
+	buffer.zero();
+	buffer.begin_read();
+	CHECK_MESSAGE(buffer.read_int(compression) == 0, "Should return 0");
+}
 } // namespace TestDataBuffer
 
 #endif // TEST_DATA_BUFFER_H
