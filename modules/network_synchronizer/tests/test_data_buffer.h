@@ -492,29 +492,32 @@ TEST_CASE("[Modules][DataBuffer] Zero") {
 TEST_CASE("[Modules][DataBuffer] Shrinking") {
 	DataBuffer buffer;
 	buffer.begin_write(0);
-	buffer.add_bool(true);
-	buffer.add_bool(true);
-	buffer.add_bool(true);
-	const int buffer_size = buffer.get_buffer().size_in_bits();
-	const int original_total_size = buffer.total_size();
+	for (int i = 0; i < 2; ++i) {
+		buffer.add_real(3.14, DataBuffer::COMPRESSION_LEVEL_0);
+	}
+	const int original_size = buffer.total_size();
 
 	ERR_PRINT_OFF;
-	buffer.shrink_to(0, buffer_size + 1);
+	buffer.shrink_to(0, original_size + 1);
 	ERR_PRINT_ON;
-	CHECK_MESSAGE(buffer.total_size() == original_total_size, "Shrinking to a larger size should fail.");
+	CHECK_MESSAGE(buffer.total_size() == original_size, "Shrinking to a larger size should fail.");
 
 	ERR_PRINT_OFF;
-	buffer.shrink_to(-1, buffer_size);
+	buffer.shrink_to(-1, original_size);
 	ERR_PRINT_ON;
-	CHECK_MESSAGE(buffer.total_size() == original_total_size, "Shrinking to a negative metadata size should fail.");
+	CHECK_MESSAGE(buffer.total_size() == original_size, "Shrinking with a negative metadata size should fail.");
 
 	ERR_PRINT_OFF;
 	buffer.shrink_to(0, -1);
 	ERR_PRINT_ON;
-	CHECK_MESSAGE(buffer.total_size() == original_total_size, "Shrinking to a negative bits size should fail.");
+	CHECK_MESSAGE(buffer.total_size() == original_size, "Shrinking with a negative bits size should fail.");
 
-	buffer.shrink_to(0, buffer_size - 1);
-	CHECK_MESSAGE(buffer.total_size() == buffer_size - 1, "Shrinking to a smaller size should succeed.");
+	buffer.shrink_to(0, original_size - 8);
+	CHECK_MESSAGE(buffer.total_size() == original_size - 8, "Shrinking by 1 byte should succeed.");
+	CHECK_MESSAGE(buffer.get_buffer().size_in_bits() == original_size, "Buffer size after shrinking by 1 byte should be the same.");
+
+	buffer.dry();
+	CHECK_MESSAGE(buffer.get_buffer().size_in_bits() == original_size - 8, "Buffer size after dry should changed to the smallest posiible.");
 }
 } // namespace TestDataBuffer
 
