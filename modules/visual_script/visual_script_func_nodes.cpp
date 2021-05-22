@@ -232,14 +232,12 @@ PropertyInfo VisualScriptFunctionCall::get_output_value_port_info(int p_idx) con
 
 		PropertyInfo ret;
 
-		/*MethodBind *mb = ClassDB::get_method(_get_base_type(),function);
+		MethodBind *mb = ClassDB::get_method(_get_base_type(), function);
 		if (mb) {
-			ret = mb->get_argument_info(-1);
-		} else {*/
-
-		ret = method_cache.return_val;
-
-		//}
+			ret = mb->get_return_info();
+		} else {
+			ret = method_cache.return_val;
+		}
 
 		if (call_mode == CALL_MODE_INSTANCE) {
 			ret.name = "return";
