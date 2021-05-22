@@ -423,7 +423,7 @@ bool NetworkedController::is_nonet_controller() const {
 
 void NetworkedController::set_inputs_buffer(const BitArray &p_new_buffer, uint32_t p_metadata_size_in_bit, uint32_t p_size_in_bit) {
 	inputs_buffer.get_buffer_mut().get_bytes_mut() = p_new_buffer.get_bytes();
-	inputs_buffer.force_set_size(p_metadata_size_in_bit, p_size_in_bit);
+	inputs_buffer.shrink_to(p_metadata_size_in_bit, p_size_in_bit);
 }
 
 void NetworkedController::set_scene_synchronizer(SceneSynchronizer *p_synchronizer) {
@@ -668,7 +668,7 @@ void ServerController::receive_inputs(const Vector<uint8_t> &p_data) {
 
 		// Validate input
 		const int input_buffer_offset_bit = ofs * 8;
-		pir.force_set_size(input_buffer_offset_bit, (data_len - ofs) * 8);
+		pir.shrink_to(input_buffer_offset_bit, (data_len - ofs) * 8);
 		pir.seek(input_buffer_offset_bit);
 		// Read metadata
 		const bool has_data = pir.read_bool();
@@ -849,7 +849,7 @@ bool ServerController::fetch_next_input() {
 						// client.
 
 						DataBuffer pir_B(pi.inputs_buffer);
-						pir_B.force_set_size(METADATA_SIZE, pi.buffer_size_bit - METADATA_SIZE);
+						pir_B.shrink_to(METADATA_SIZE, pi.buffer_size_bit - METADATA_SIZE);
 
 						pir_A.begin_read();
 						pir_A.seek(METADATA_SIZE);
@@ -1190,7 +1190,7 @@ bool PlayerController::process_instant(int p_i, real_t p_delta) {
 	const size_t i = p_i;
 	if (i < frames_snapshot.size()) {
 		DataBuffer ib(frames_snapshot[i].inputs_buffer);
-		ib.force_set_size(METADATA_SIZE, frames_snapshot[i].buffer_size_bit - METADATA_SIZE);
+		ib.shrink_to(METADATA_SIZE, frames_snapshot[i].buffer_size_bit - METADATA_SIZE);
 		ib.begin_read();
 		ib.seek(METADATA_SIZE);
 		node->call(NetworkedController::sn_controller_process, p_delta, &ib);
@@ -1261,7 +1261,7 @@ void PlayerController::send_frame_input_buffer_to_server() {
 				if (frames_snapshot[i].similarity == UINT32_MAX) {
 					// This input was never compared, let's do it now.
 					DataBuffer pir_B(frames_snapshot[i].inputs_buffer);
-					pir_B.force_set_size(METADATA_SIZE, frames_snapshot[i].buffer_size_bit - METADATA_SIZE);
+					pir_B.shrink_to(METADATA_SIZE, frames_snapshot[i].buffer_size_bit - METADATA_SIZE);
 
 					pir_A.begin_read();
 					pir_A.seek(METADATA_SIZE);
@@ -1325,7 +1325,7 @@ void PlayerController::send_frame_input_buffer_to_server() {
 			previous_buffer_size = buffer_size;
 
 			pir_A.get_buffer_mut() = frames_snapshot[i].inputs_buffer;
-			pir_A.force_set_size(METADATA_SIZE, frames_snapshot[i].buffer_size_bit - METADATA_SIZE);
+			pir_A.shrink_to(METADATA_SIZE, frames_snapshot[i].buffer_size_bit - METADATA_SIZE);
 		}
 	}
 

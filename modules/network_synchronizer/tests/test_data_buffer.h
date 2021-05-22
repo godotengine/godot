@@ -489,7 +489,7 @@ TEST_CASE("[Modules][DataBuffer] Zero") {
 	CHECK_MESSAGE(buffer.read_int(compression) == 0, "Should return 0");
 }
 
-TEST_CASE("[Modules][DataBuffer] Force set size") {
+TEST_CASE("[Modules][DataBuffer] Shrinking") {
 	DataBuffer buffer;
 	buffer.begin_write(0);
 	buffer.add_bool(true);
@@ -499,23 +499,22 @@ TEST_CASE("[Modules][DataBuffer] Force set size") {
 	const int original_total_size = buffer.total_size();
 
 	ERR_PRINT_OFF;
-	buffer.force_set_size(0, buffer_size + 1);
+	buffer.shrink_to(0, buffer_size + 1);
 	ERR_PRINT_ON;
-	CHECK_MESSAGE(buffer.total_size() == original_total_size, "Resizing to a larger size should fail.");
+	CHECK_MESSAGE(buffer.total_size() == original_total_size, "Shrinking to a larger size should fail.");
 
 	ERR_PRINT_OFF;
-	buffer.force_set_size(-1, buffer_size);
+	buffer.shrink_to(-1, buffer_size);
 	ERR_PRINT_ON;
-	CHECK_MESSAGE(buffer.total_size() == original_total_size, "Resizing with a negative metadata size should fail.");
+	CHECK_MESSAGE(buffer.total_size() == original_total_size, "Shrinking to a negative metadata size should fail.");
 
 	ERR_PRINT_OFF;
-	buffer.force_set_size(0, -1);
+	buffer.shrink_to(0, -1);
 	ERR_PRINT_ON;
-	CHECK_MESSAGE(buffer.total_size() == original_total_size, "Resizing with a negative bits size should fail.");
+	CHECK_MESSAGE(buffer.total_size() == original_total_size, "Shrinking to a negative bits size should fail.");
 
-	buffer.force_set_size(0, buffer_size - 1);
-	CHECK_MESSAGE(buffer.total_size() == buffer_size - 1, "Resizing to a smaller size should succeed.");
-
+	buffer.shrink_to(0, buffer_size - 1);
+	CHECK_MESSAGE(buffer.total_size() == buffer_size - 1, "Shrinking to a smaller size should succeed.");
 }
 } // namespace TestDataBuffer
 

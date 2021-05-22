@@ -172,7 +172,7 @@ public:
 	void seek(int p_bits);
 
 	/// Set the bit size and the metadata size.
-	void force_set_size(int p_metadata_bit_size, int p_bit_size);
+	void shrink_to(int p_metadata_bit_size, int p_bit_size);
 
 	/// Returns the metadata size in bits.
 	int get_metadata_size() const;

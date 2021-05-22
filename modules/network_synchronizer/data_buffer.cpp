@@ -139,7 +139,7 @@ void DataBuffer::seek(int p_bits) {
 	bit_offset = p_bits;
 }
 
-void DataBuffer::force_set_size(int p_metadata_bit_size, int p_bit_size) {
+void DataBuffer::shrink_to(int p_metadata_bit_size, int p_bit_size) {
 	ERR_FAIL_COND_MSG(p_metadata_bit_size < 0, "Metadata size can't be negative");
 	ERR_FAIL_COND_MSG(p_bit_size < 0, "Bit size can't be negative");
 	ERR_FAIL_COND_MSG(buffer.size_in_bits() < (p_metadata_bit_size + p_bit_size), "The buffer is smaller than the new given size.");
