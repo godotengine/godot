@@ -434,6 +434,33 @@ TEST_CASE("[Modules][DataBuffer] Seek") {
 	CHECK_MESSAGE(buffer.get_bit_offset() == 0, "Bit offset should be 0 after seek to 0");
 	CHECK_MESSAGE(buffer.read_bool() == true, "Should read true at position 0");
 }
+
+TEST_CASE("[Modules][DataBuffer] Metadata") {
+	bool value = {};
+	bool metadata = {};
+
+	SUBCASE("[Modules][DataBuffer] True") {
+		metadata = true;
+		value = false;
+	}
+
+	SUBCASE("[Modules][DataBuffer] False") {
+		metadata = false;
+		value = true;
+	}
+
+	const int metadata_size = DataBuffer::get_bit_taken(DataBuffer::DATA_TYPE_BOOL, DataBuffer::COMPRESSION_LEVEL_0);
+	DataBuffer buffer;
+	buffer.begin_write(metadata_size);
+	buffer.add_bool(metadata);
+	buffer.add_bool(value);
+	buffer.begin_read();
+	CHECK_MESSAGE(buffer.read_bool() == metadata, "Should return correct metadata");
+	CHECK_MESSAGE(buffer.read_bool() == value, "Should return correct value after metadata");
+	CHECK_MESSAGE(buffer.get_metadata_size() == metadata_size, "Metadata size should be equal to expected");
+	CHECK_MESSAGE(buffer.size() == DataBuffer::get_bit_taken(DataBuffer::DATA_TYPE_BOOL, DataBuffer::COMPRESSION_LEVEL_0), "Size should be equal to expected");
+	CHECK_MESSAGE(buffer.total_size() == DataBuffer::get_bit_taken(DataBuffer::DATA_TYPE_BOOL, DataBuffer::COMPRESSION_LEVEL_0) + metadata_size, "Total size should be equal to expected");
+}
 } // namespace TestDataBuffer
 
 #endif // TEST_DATA_BUFFER_H
