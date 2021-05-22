@@ -39,6 +39,10 @@
 #include "core/typedefs.h"
 #include "core/variant/variant.h"
 
+#ifdef DEBUG_ENABLED
+#include "shader_warnings.h"
+#endif // DEBUG_ENABLED
+
 class ShaderLanguage {
 public:
 	struct TkPos {
@@ -803,12 +807,42 @@ private:
 	String error_str;
 	int error_line;
 
+#ifdef DEBUG_ENABLED
+	struct Usage {
+		int decl_line;
+		bool used = false;
+		Usage(int p_decl_line = -1) {
+			decl_line = p_decl_line;
+		}
+	};
+
+	Map<StringName, Usage> used_constants;
+	Map<StringName, Usage> used_varyings;
+	Map<StringName, Usage> used_uniforms;
+	Map<StringName, Usage> used_functions;
+	Map<StringName, Usage> used_structs;
+	Map<ShaderWarning::Code, Map<StringName, Usage> *> warnings_check_map;
+
+	List<ShaderWarning> warnings;
+
+	bool check_warnings = false;
+	uint32_t warning_flags;
+
+	void _add_line_warning(ShaderWarning::Code p_code, const StringName &p_subject = "") {
+		warnings.push_back(ShaderWarning(p_code, tk_line, p_subject));
+	}
+	void _add_warning(ShaderWarning::Code p_code, int p_line, const StringName &p_subject = "") {
+		warnings.push_back(ShaderWarning(p_code, p_line, p_subject));
+	}
+	void _check_warning_accums();
+#endif // DEBUG_ENABLED
+
 	String code;
 	int char_idx;
 	int tk_line;
 
 	StringName current_function;
-	bool last_const = false;
+	StringName last_name;
 
 	VaryingFunctionNames varying_function_names;
 
@@ -849,9 +883,15 @@ private:
 		IDENTIFIER_LOCAL_VAR,
 		IDENTIFIER_BUILTIN_VAR,
 		IDENTIFIER_CONSTANT,
+		IDENTIFIER_MAX,
 	};
 
+	IdentifierType last_type = IDENTIFIER_MAX;
+
 	bool _find_identifier(const BlockNode *p_block, bool p_allow_reassign, const FunctionInfo &p_function_info, const StringName &p_identifier, DataType *r_data_type = nullptr, IdentifierType *r_type = nullptr, bool *r_is_const = nullptr, int *r_array_size = nullptr, StringName *r_struct_name = nullptr, ConstantNode::Value *r_constant_value = nullptr);
+#ifdef DEBUG_ENABLED
+	void _parse_used_identifier(const StringName &p_identifier, IdentifierType p_type);
+#endif // DEBUG_ENABLED
 	bool _is_operator_assign(Operator p_op) const;
 	bool _validate_assign(Node *p_node, const FunctionInfo &p_function_info, String *r_message = nullptr);
 	bool _validate_operator(OperatorNode *p_op, DataType *r_ret_type = nullptr);
@@ -910,6 +950,16 @@ private:
 	Error _find_last_flow_op_in_op(ControlFlowNode *p_flow, FlowOperation p_op);
 
 public:
+#ifdef DEBUG_ENABLED
+	List<ShaderWarning>::Element *get_warnings_ptr();
+
+	void enable_warning_checking(bool p_enabled);
+	bool is_warning_checking_enabled() const;
+
+	void set_warning_flags(uint32_t p_flags);
+	uint32_t get_warning_flags() const;
+#endif // DEBUG_ENABLED
+
 	//static void get_keyword_list(ShaderType p_type,List<String> *p_keywords);
 
 	void clear();

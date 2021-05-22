@@ -37,11 +37,17 @@
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "editor/project_settings_editor.h"
 #include "editor/property_editor.h"
 #include "servers/display_server.h"
 #include "servers/rendering/shader_types.h"
 
 /*** SHADER SCRIPT EDITOR ****/
+
+static bool saved_warnings_enabled = false;
+static bool saved_treat_warning_as_errors = false;
+static Map<ShaderWarning::Code, bool> saved_warnings;
+static uint32_t saved_warning_flags = 0U;
 
 Ref<Shader> ShaderTextEditor::get_edited_shader() const {
 	return shader;
@@ -80,6 +86,10 @@ void ShaderTextEditor::reload_text() {
 	te->tag_saved_version();
 
 	update_line_and_column();
+}
+
+void ShaderTextEditor::set_warnings_panel(RichTextLabel *p_warnings_panel) {
+	warnings_panel = p_warnings_panel;
 }
 
 void ShaderTextEditor::_load_theme_settings() {
@@ -141,6 +151,12 @@ void ShaderTextEditor::_load_theme_settings() {
 	syntax_highlighter->clear_color_regions();
 	syntax_highlighter->add_color_region("/*", "*/", comment_color, false);
 	syntax_highlighter->add_color_region("//", "", comment_color, true);
+
+	if (warnings_panel) {
+		// Warnings panel
+		warnings_panel->add_theme_font_override("normal_font", EditorNode::get_singleton()->get_gui_base()->get_theme_font("main", "EditorFonts"));
+		warnings_panel->add_theme_font_size_override("normal_font_size", EditorNode::get_singleton()->get_gui_base()->get_theme_font_size("main_size", "EditorFonts"));
+	}
 }
 
 void ShaderTextEditor::_check_shader_mode() {
@@ -187,6 +203,9 @@ void ShaderTextEditor::_validate_script() {
 
 	ShaderLanguage sl;
 
+	sl.enable_warning_checking(saved_warnings_enabled);
+	sl.set_warning_flags(saved_warning_flags);
+
 	Error err = sl.compile(code, ShaderTypes::get_singleton()->get_functions(RenderingServer::ShaderMode(shader->get_mode())), ShaderTypes::get_singleton()->get_modes(RenderingServer::ShaderMode(shader->get_mode())), ShaderLanguage::VaryingFunctionNames(), ShaderTypes::get_singleton()->get_types(), _get_global_variable_type);
 
 	if (err != OK) {
@@ -197,7 +216,6 @@ void ShaderTextEditor::_validate_script() {
 			get_text_editor()->set_line_background_color(i, Color(0, 0, 0, 0));
 		}
 		get_text_editor()->set_line_background_color(sl.get_error_line() - 1, marked_line_color);
-
 	} else {
 		for (int i = 0; i < get_text_editor()->get_line_count(); i++) {
 			get_text_editor()->set_line_background_color(i, Color(0, 0, 0, 0));
@@ -205,7 +223,58 @@ void ShaderTextEditor::_validate_script() {
 		set_error("");
 	}
 
+	if (warnings.size() > 0 || err != OK) {
+		warnings_panel->clear();
+	}
+	warnings.clear();
+	for (List<ShaderWarning>::Element *E = sl.get_warnings_ptr(); E; E = E->next()) {
+		warnings.push_back(E->get());
+	}
+	if (warnings.size() > 0 && err == OK) {
+		warnings.sort_custom<WarningsComparator>();
+		_update_warning_panel();
+	} else {
+		set_warning_nb(0);
+	}
 	emit_signal("script_changed");
+}
+
+void ShaderTextEditor::_update_warning_panel() {
+	int warning_count = 0;
+
+	warnings_panel->push_table(2);
+	for (int i = 0; i < warnings.size(); i++) {
+		ShaderWarning &w = warnings[i];
+
+		if (warning_count == 0) {
+			if (saved_treat_warning_as_errors) {
+				String error_text = "error(" + itos(w.get_line()) + "): " + w.get_message() + " " + TTR("Warnings should be fixed to prevent errors.");
+				set_error_pos(w.get_line() - 1, 0);
+				set_error(error_text);
+				get_text_editor()->set_line_background_color(w.get_line() - 1, marked_line_color);
+			}
+		}
+
+		warning_count++;
+
+		// First cell.
+		warnings_panel->push_cell();
+		warnings_panel->push_meta(w.get_line() - 1);
+		warnings_panel->push_color(warnings_panel->get_theme_color("warning_color", "Editor"));
+		warnings_panel->add_text(TTR("Line") + " " + itos(w.get_line()));
+		warnings_panel->add_text(" (" + w.get_name() + "):");
+		warnings_panel->pop(); // Color.
+		warnings_panel->pop(); // Meta goto.
+		warnings_panel->pop(); // Cell.
+
+		// Second cell.
+		warnings_panel->push_cell();
+		warnings_panel->add_text(w.get_message());
+		warnings_panel->pop(); // Cell.
+	}
+	warnings_panel->pop(); // Table.
+
+	set_warning_nb(warning_count);
 }
 
 void ShaderTextEditor::_bind_methods() {
@@ -321,10 +390,6 @@ void ShaderEditor::_notification(int p_what) {
 	}
 }
 
-void ShaderEditor::_params_changed() {
-	shader_editor->_validate_script();
-}
-
 void ShaderEditor::_editor_settings_changed() {
 	shader_editor->update_editor_settings();
 
@@ -333,8 +398,19 @@ void ShaderEditor::_editor_settings_changed() {
 	shader_editor->get_text_editor()->set_draw_executing_lines_gutter(false);
 }
 
+void ShaderEditor::_show_warnings_panel(bool p_show) {
+	warnings_panel->set_visible(p_show);
+}
+
+void ShaderEditor::_warning_clicked(Variant p_line) {
+	if (p_line.get_type() == Variant::INT) {
+		shader_editor->get_text_editor()->cursor_set_line(p_line.operator int64_t());
+	}
+}
+
 void ShaderEditor::_bind_methods() {
-	ClassDB::bind_method("_params_changed", &ShaderEditor::_params_changed);
+	ClassDB::bind_method("_show_warnings_panel", &ShaderEditor::_show_warnings_panel);
+	ClassDB::bind_method("_warning_clicked", &ShaderEditor::_warning_clicked);
 }
 
 void ShaderEditor::ensure_select_current() {
@@ -350,6 +426,47 @@ void ShaderEditor::ensure_select_current() {
 
 void ShaderEditor::goto_line_selection(int p_line, int p_begin, int p_end) {
 	shader_editor->goto_line_selection(p_line, p_begin, p_end);
+}
+
+void ShaderEditor::_project_settings_changed() {
+	_update_warnings(true);
+}
+
+void ShaderEditor::_update_warnings(bool p_validate) {
+	bool changed = false;
+
+	bool warnings_enabled = GLOBAL_GET("debug/shader_language/warnings/enable").booleanize();
+	if (warnings_enabled != saved_warnings_enabled) {
+		saved_warnings_enabled = warnings_enabled;
+		changed = true;
+	}
+
+	bool treat_warning_as_errors = GLOBAL_GET("debug/shader_language/warnings/treat_warnings_as_errors").booleanize();
+	if (treat_warning_as_errors != saved_treat_warning_as_errors) {
+		saved_treat_warning_as_errors = treat_warning_as_errors;
+		changed = true;
+	}
+
+	bool update_flags = false;
+
+	for (int i = 0; i < ShaderWarning::WARNING_MAX; i++) {
+		ShaderWarning::Code code = (ShaderWarning::Code)i;
+		bool value = GLOBAL_GET("debug/shader_language/warnings/" + ShaderWarning::get_name_from_code(code).to_lower());
+
+		if (saved_warnings[code] != value) {
+			saved_warnings[code] = value;
+			update_flags = true;
+			changed = true;
+		}
+	}
+
+	if (update_flags) {
+		saved_warning_flags = (uint32_t)ShaderWarning::get_flags_from_codemap(saved_warnings);
+	}
+
+	if (p_validate && changed && shader_editor && shader_editor->get_edited_shader().is_valid()) {
+		shader_editor->validate_script();
+	}
 }
 
 void ShaderEditor::_check_for_external_edit() {
@@ -523,13 +640,22 @@ void ShaderEditor::_make_context_menu(bool p_selection, Vector2 p_position) {
 }
 
 ShaderEditor::ShaderEditor(EditorNode *p_node) {
+	GLOBAL_DEF("debug/shader_language/warnings/enable", true);
+	GLOBAL_DEF("debug/shader_language/warnings/treat_warnings_as_errors", false);
+	for (int i = 0; i < (int)ShaderWarning::WARNING_MAX; i++) {
+		GLOBAL_DEF("debug/shader_language/warnings/" + ShaderWarning::get_name_from_code((ShaderWarning::Code)i).to_lower(), true);
+	}
+	_update_warnings(false);
+
 	shader_editor = memnew(ShaderTextEditor);
 	shader_editor->set_v_size_flags(SIZE_EXPAND_FILL);
 	shader_editor->add_theme_constant_override("separation", 0);
 	shader_editor->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
 
+	shader_editor->connect("show_warnings_panel", callable_mp(this, &ShaderEditor::_show_warnings_panel));
 	shader_editor->connect("script_changed", callable_mp(this, &ShaderEditor::apply_shaders));
 	EditorSettings::get_singleton()->connect("settings_changed", callable_mp(this, &ShaderEditor::_editor_settings_changed));
+	ProjectSettingsEditor::get_singleton()->connect("confirmed", callable_mp(this, &ShaderEditor::_project_settings_changed));
 
 	shader_editor->get_text_editor()->set_callhint_settings(
 			EditorSettings::get_singleton()->get("text_editor/completion/put_callhint_tooltip_below_current_line"),
@@ -614,7 +740,23 @@ ShaderEditor::ShaderEditor(EditorNode *p_node) {
 	hbc->add_child(goto_menu);
 	hbc->add_child(help_menu);
 	hbc->add_theme_style_override("panel", p_node->get_gui_base()->get_theme_stylebox("ScriptEditorPanel", "EditorStyles"));
-	main_container->add_child(shader_editor);
+
+	VSplitContainer *editor_box = memnew(VSplitContainer);
+	main_container->add_child(editor_box);
+	editor_box->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
+	editor_box->set_v_size_flags(SIZE_EXPAND_FILL);
+	editor_box->add_child(shader_editor);
+
+	warnings_panel = memnew(RichTextLabel);
+	warnings_panel->set_custom_minimum_size(Size2(0, 100 * EDSCALE));
+	warnings_panel->set_h_size_flags(SIZE_EXPAND_FILL);
+	warnings_panel->set_meta_underline(true);
+	warnings_panel->set_selection_enabled(true);
+	warnings_panel->set_focus_mode(FOCUS_CLICK);
+	warnings_panel->hide();
+	warnings_panel->connect("meta_clicked", callable_mp(this, &ShaderEditor::_warning_clicked));
+	editor_box->add_child(warnings_panel);
+	shader_editor->set_warnings_panel(warnings_panel);
 
 	goto_line_dialog = memnew(GotoLineDialog);
 	add_child(goto_line_dialog);
