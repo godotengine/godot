@@ -44,6 +44,8 @@
 class ShaderTextEditor : public CodeTextEditor {
 	GDCLASS(ShaderTextEditor, CodeTextEditor);
 
+	Color marked_line_color = Color(1, 1, 1);
+
 	Ref<CodeHighlighter> syntax_highlighter;
 	Ref<Shader> shader;
 
