@@ -2774,18 +2774,6 @@ bool ShaderLanguage::_validate_varying_assign(ShaderNode::Varying &p_varying, St
 				p_varying.stage = ShaderNode::Varying::STAGE_FRAGMENT;
 			}
 			break;
-		case ShaderNode::Varying::STAGE_VERTEX:
-			if (current_function == String("fragment")) {
-				*r_message = RTR("Varyings which assigned in 'vertex' function may not be reassigned in 'fragment' or 'light'.");
-				return false;
-			}
-			break;
-		case ShaderNode::Varying::STAGE_FRAGMENT:
-			if (current_function == String("vertex")) {
-				*r_message = RTR("Varyings which assigned in 'fragment' function may not be reassigned in 'vertex' or 'light'.");
-				return false;
-			}
-			break;
 		default:
 			break;
 	}
@@ -2794,9 +2782,6 @@ bool ShaderLanguage::_validate_varying_assign(ShaderNode::Varying &p_varying, St
 
 bool ShaderLanguage::_validate_varying_using(ShaderNode::Varying &p_varying, String *r_message) {
 	switch (p_varying.stage) {
-		case ShaderNode::Varying::STAGE_UNKNOWN:
-			*r_message = RTR("Varying must be assigned before using!");
-			return false;
 		case ShaderNode::Varying::STAGE_VERTEX:
 			if (current_function == String("fragment")) {
 				p_varying.stage = ShaderNode::Varying::STAGE_VERTEX_TO_FRAGMENT;
@@ -2807,18 +2792,6 @@ bool ShaderLanguage::_validate_varying_using(ShaderNode::Varying &p_varying, Str
 		case ShaderNode::Varying::STAGE_FRAGMENT:
 			if (current_function == String("light")) {
 				p_varying.stage = ShaderNode::Varying::STAGE_FRAGMENT_TO_LIGHT;
-			}
-			break;
-		case ShaderNode::Varying::STAGE_VERTEX_TO_FRAGMENT:
-			if (current_function == String("light")) {
-				*r_message = RTR("Varying must only be used in two different stages, which can be 'vertex' 'fragment' and 'light'");
-				return false;
-			}
-			break;
-		case ShaderNode::Varying::STAGE_VERTEX_TO_LIGHT:
-			if (current_function == String("fragment")) {
-				*r_message = RTR("Varying must only be used in two different stages, which can be 'vertex' 'fragment' and 'light'");
-				return false;
 			}
 			break;
 		default:
@@ -6319,14 +6292,6 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 		}
 
 		tk = _get_token();
-	}
-
-	for (Map<StringName, ShaderNode::Varying>::Element *E = shader->varyings.front(); E; E = E->next()) {
-		if (E->get().stage == ShaderNode::Varying::STAGE_VERTEX || E->get().stage == ShaderNode::Varying::STAGE_FRAGMENT) {
-			_set_tkpos(E->get().tkpos);
-			_set_error(RTR("Varying must only be used in two different stages, which can be 'vertex' 'fragment' and 'light'"));
-			return ERR_PARSE_ERROR;
-		}
 	}
 
 	return OK;
