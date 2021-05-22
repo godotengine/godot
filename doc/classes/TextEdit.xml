@@ -128,6 +128,13 @@
 				Folds the given line, if possible (see [method can_fold]).
 			</description>
 		</method>
+		<method name="get_caret_draw_pos" qualifiers="const">
+			<return type="Vector2">
+			</return>
+			<description>
+				Gets the caret pixel draw poistion.
+			</description>
+		</method>
 		<method name="get_gutter_count" qualifiers="const">
 			<return type="int">
 			</return>
@@ -313,6 +320,13 @@
 			</argument>
 			<description>
 				Insert the specified text at the cursor position.
+			</description>
+		</method>
+		<method name="is_caret_visible" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Returns [code]true[/code] if the caret is visible on the screen.
 			</description>
 		</method>
 		<method name="is_folded" qualifiers="const">
@@ -812,10 +826,6 @@
 			<description>
 			</description>
 		</signal>
-		<signal name="request_completion">
-			<description>
-			</description>
-		</signal>
 		<signal name="symbol_lookup">
 			<argument index="0" name="symbol" type="String">
 			</argument>
@@ -963,24 +973,6 @@
 		<theme_item name="caret_color" type="Color" default="Color( 0.88, 0.88, 0.88, 1 )">
 		</theme_item>
 		<theme_item name="code_folding_color" type="Color" default="Color( 0.8, 0.8, 0.8, 0.8 )">
-		</theme_item>
-		<theme_item name="completion" type="StyleBox">
-		</theme_item>
-		<theme_item name="completion_background_color" type="Color" default="Color( 0.17, 0.16, 0.2, 1 )">
-		</theme_item>
-		<theme_item name="completion_existing_color" type="Color" default="Color( 0.87, 0.87, 0.87, 0.13 )">
-		</theme_item>
-		<theme_item name="completion_font_color" type="Color" default="Color( 0.67, 0.67, 0.67, 1 )">
-		</theme_item>
-		<theme_item name="completion_lines" type="int" default="7">
-		</theme_item>
-		<theme_item name="completion_max_width" type="int" default="50">
-		</theme_item>
-		<theme_item name="completion_scroll_color" type="Color" default="Color( 1, 1, 1, 1 )">
-		</theme_item>
-		<theme_item name="completion_scroll_width" type="int" default="3">
-		</theme_item>
-		<theme_item name="completion_selected_color" type="Color" default="Color( 0.26, 0.26, 0.27, 1 )">
 		</theme_item>
 		<theme_item name="current_line_color" type="Color" default="Color( 0.25, 0.25, 0.26, 0.8 )">
 			Sets the [Color] of the breakpoints. [member breakpoint_gutter] has to be enabled.

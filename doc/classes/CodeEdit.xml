@@ -8,6 +8,91 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="_confirm_code_completion" qualifiers="virtual">
+			<return type="void">
+			</return>
+			<argument index="0" name="replace" type="bool">
+			</argument>
+			<description>
+				Override this method to define how the selected entry should be inserted. If [code]replace[/code] is true, any existing text should be replaced.
+			</description>
+		</method>
+		<method name="_filter_code_completion_candidates" qualifiers="virtual">
+			<return type="Array">
+			</return>
+			<argument index="0" name="candidates" type="Array">
+			</argument>
+			<description>
+				Override this method to define what items in [code]candidates[/code] should be displayed.
+				Both [code]candidates[/code] and the return is a [Array] of [Dictionary], see [method get_code_completion_option] for [Dictionary] content.
+			</description>
+		</method>
+		<method name="_request_code_completion" qualifiers="virtual">
+			<return type="void">
+			</return>
+			<argument index="0" name="force" type="bool">
+			</argument>
+			<description>
+				Override this method to define what happens when the user requests code completion. If [code]force[/code] is true, any checks should be bypassed.
+			</description>
+		</method>
+		<method name="add_code_completion_option">
+			<return type="void">
+			</return>
+			<argument index="0" name="type" type="int" enum="CodeEdit.CodeCompletionKind">
+			</argument>
+			<argument index="1" name="display_text" type="String">
+			</argument>
+			<argument index="2" name="insert_text" type="String">
+			</argument>
+			<argument index="3" name="text_color" type="Color" default="Color( 1, 1, 1, 1 )">
+			</argument>
+			<argument index="4" name="icon" type="Resource" default="null">
+			</argument>
+			<argument index="5" name="value" type="Variant" default="0">
+			</argument>
+			<description>
+				Submits an item to the queue of potential candidates for the autocomplete menu. Call [method update_code_completion_options] to update the list.
+				[b]Note[/b]: This list will replace all current candidates.
+			</description>
+		</method>
+		<method name="add_comment_delimiter">
+			<return type="void">
+			</return>
+			<argument index="0" name="start_key" type="String">
+			</argument>
+			<argument index="1" name="end_key" type="String">
+			</argument>
+			<argument index="2" name="line_only" type="bool" default="false">
+			</argument>
+			<description>
+				Adds a comment delimiter.
+				Both the start and end keys must be symbols. Only the start key has to be unique.
+				Line only denotes if the region should continue until the end of the line or carry over on to the next line. If the end key is blank this is automatically set to [code]true[/code].
+			</description>
+		</method>
+		<method name="add_string_delimiter">
+			<return type="void">
+			</return>
+			<argument index="0" name="start_key" type="String">
+			</argument>
+			<argument index="1" name="end_key" type="String">
+			</argument>
+			<argument index="2" name="line_only" type="bool" default="false">
+			</argument>
+			<description>
+				Adds a string delimiter.
+				Both the start and end keys must be symbols. Only the start key has to be unique.
+				Line only denotes if the region should continue until the end of the line or carry over on to the next line. If the end key is blank this is automatically set to [code]true[/code].
+			</description>
+		</method>
+		<method name="cancel_code_completion">
+			<return type="void">
+			</return>
+			<description>
+				Cancels the autocomplete menu.
+			</description>
+		</method>
 		<method name="clear_bookmarked_lines">
 			<return type="void">
 			</return>
@@ -20,10 +105,33 @@
 			<description>
 			</description>
 		</method>
+		<method name="clear_comment_delimiters">
+			<return type="void">
+			</return>
+			<description>
+				Removes all comment delimiters.
+			</description>
+		</method>
 		<method name="clear_executing_lines">
 			<return type="void">
 			</return>
 			<description>
+			</description>
+		</method>
+		<method name="clear_string_delimiters">
+			<return type="void">
+			</return>
+			<description>
+				Removes all string delimiters.
+			</description>
+		</method>
+		<method name="confirm_code_completion">
+			<return type="void">
+			</return>
+			<argument index="0" name="replace" type="bool" default="false">
+			</argument>
+			<description>
+				Inserts the selected entry into the text. If [code]replace[/code] is true, any existing text is replaced rather then merged.
 			</description>
 		</method>
 		<method name="get_bookmarked_lines" qualifiers="const">
@@ -38,10 +146,126 @@
 			<description>
 			</description>
 		</method>
+		<method name="get_code_completion_option" qualifiers="const">
+			<return type="Dictionary">
+			</return>
+			<argument index="0" name="index" type="int">
+			</argument>
+			<description>
+				Gets the completion option at [code]index[/code]. The return [Dictionary] has the following key-values:
+				[code]kind[/code]: [enum CodeCompletionKind]
+				[code]display_text[/code]: Text that is shown on the autocomplete menu.
+				[code]insert_text[/code]: Text that is to be inserted when this item is selected.
+				[code]font_color[/code]: Color of the text on the autocomplete menu.
+				[code]icon[/code]: Icon to draw on the autocomplete menu.
+				[code]default_value[/code]: Value of the symbol.
+			</description>
+		</method>
+		<method name="get_code_completion_options" qualifiers="const">
+			<return type="Dictionary[]">
+			</return>
+			<description>
+				Gets all completion options, see [method get_code_completion_option] for return content.
+			</description>
+		</method>
+		<method name="get_code_completion_selected_index" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Gets the index of the current selected completion option.
+			</description>
+		</method>
+		<method name="get_delimiter_end_key" qualifiers="const">
+			<return type="String">
+			</return>
+			<argument index="0" name="delimiter_index" type="int">
+			</argument>
+			<description>
+				Gets the end key for a string or comment region index.
+			</description>
+		</method>
+		<method name="get_delimiter_end_postion" qualifiers="const">
+			<return type="Vector2">
+			</return>
+			<argument index="0" name="line" type="int">
+			</argument>
+			<argument index="1" name="column" type="int">
+			</argument>
+			<description>
+				If [code]line[/code] [code]column[/code] is in a string or comment, returns the end position of the region. If not or no end could be found, both [Vector2] values will be [code]-1[/code].
+			</description>
+		</method>
+		<method name="get_delimiter_start_key" qualifiers="const">
+			<return type="String">
+			</return>
+			<argument index="0" name="delimiter_index" type="int">
+			</argument>
+			<description>
+				Gets the start key for a string or comment region index.
+			</description>
+		</method>
+		<method name="get_delimiter_start_postion" qualifiers="const">
+			<return type="Vector2">
+			</return>
+			<argument index="0" name="line" type="int">
+			</argument>
+			<argument index="1" name="column" type="int">
+			</argument>
+			<description>
+				If [code]line[/code] [code]column[/code] is in a string or comment, returns the start position of the region. If not or no start could be found, both [Vector2] values will be [code]-1[/code].
+			</description>
+		</method>
 		<method name="get_executing_lines" qualifiers="const">
 			<return type="Array">
 			</return>
 			<description>
+			</description>
+		</method>
+		<method name="get_text_for_code_completion" qualifiers="const">
+			<return type="String">
+			</return>
+			<description>
+				Returns the full text with char [code]0xFFFF[/code] at the caret location.
+			</description>
+		</method>
+		<method name="has_comment_delimiter" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="start_key" type="String">
+			</argument>
+			<description>
+				Returns [code]true[/code] if comment [code]start_key[/code] exists.
+			</description>
+		</method>
+		<method name="has_string_delimiter" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="start_key" type="String">
+			</argument>
+			<description>
+				Returns [code]true[/code] if string [code]start_key[/code] exists.
+			</description>
+		</method>
+		<method name="is_in_comment" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="line" type="int">
+			</argument>
+			<argument index="1" name="column" type="int" default="-1">
+			</argument>
+			<description>
+				Return delimiter index if [code]line[/code] [code]column[/code] is in a comment. If [code]column[/code] is not provided, will return delimiter index if the entire [code]line[/code] is a comment. Otherwise [code]-1[/code].
+			</description>
+		</method>
+		<method name="is_in_string" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="line" type="int">
+			</argument>
+			<argument index="1" name="column" type="int" default="-1">
+			</argument>
+			<description>
+				Return the delimiter index if [code]line[/code] [code]column[/code] is in a string. If [code]column[/code] is not provided, will return the delimiter index if the entire [code]line[/code] is a string. Otherwise [code]-1[/code].
 			</description>
 		</method>
 		<method name="is_line_bookmarked" qualifiers="const">
@@ -66,6 +290,60 @@
 			<argument index="0" name="line" type="int">
 			</argument>
 			<description>
+			</description>
+		</method>
+		<method name="remove_comment_delimiter">
+			<return type="void">
+			</return>
+			<argument index="0" name="start_key" type="String">
+			</argument>
+			<description>
+				Removes the comment delimiter with [code]start_key[/code].
+			</description>
+		</method>
+		<method name="remove_string_delimiter">
+			<return type="void">
+			</return>
+			<argument index="0" name="start_key" type="String">
+			</argument>
+			<description>
+				Removes the string delimiter with [code]start_key[/code].
+			</description>
+		</method>
+		<method name="request_code_completion">
+			<return type="void">
+			</return>
+			<argument index="0" name="force" type="bool" default="false">
+			</argument>
+			<description>
+				Emits [signal request_code_completion], if [code]force[/code] is true will bypass all checks. Otherwise will check that the caret is in a word or in front of a prefix. Will ignore the request if all current options are of type file path, node path or signal.
+			</description>
+		</method>
+		<method name="set_code_completion_selected_index">
+			<return type="void">
+			</return>
+			<argument index="0" name="index" type="int">
+			</argument>
+			<description>
+				Sets the current selected completion option.
+			</description>
+		</method>
+		<method name="set_code_hint">
+			<return type="void">
+			</return>
+			<argument index="0" name="code_hint" type="String">
+			</argument>
+			<description>
+				Sets the code hint text. Pass an empty string to clear.
+			</description>
+		</method>
+		<method name="set_code_hint_draw_below">
+			<return type="void">
+			</return>
+			<argument index="0" name="draw_below" type="bool">
+			</argument>
+			<description>
+				Sets if the code hint should draw below the text.
 			</description>
 		</method>
 		<method name="set_line_as_bookmarked">
@@ -98,8 +376,30 @@
 			<description>
 			</description>
 		</method>
+		<method name="update_code_completion_options">
+			<return type="void">
+			</return>
+			<argument index="0" name="force" type="bool">
+			</argument>
+			<description>
+				Submits all completion options added with [method add_code_completion_option]. Will try to force the autoccomplete menu to popup, if [code]force[/code] is [code]true[/code].
+				[b]Note[/b]: This will replace all current candidates.
+			</description>
+		</method>
 	</methods>
 	<members>
+		<member name="code_completion_enabled" type="bool" setter="set_code_completion_enabled" getter="is_code_completion_enabled" default="false">
+			Sets whether code completion is allowed.
+		</member>
+		<member name="code_completion_prefixes" type="String[]" setter="set_code_completion_prefixes" getter="get_code_comletion_prefixes" default="[  ]">
+			Sets prefixes that will trigger code completion.
+		</member>
+		<member name="delimiter_comments" type="String[]" setter="set_comment_delimiters" getter="get_comment_delimiters" default="[  ]">
+			Sets the comment delimiters. All existing comment delimiters will be removed.
+		</member>
+		<member name="delimiter_strings" type="String[]" setter="set_string_delimiters" getter="get_string_delimiters" default="[  ]">
+			Sets the string delimiters. All existing string delimiters will be removed.
+		</member>
 		<member name="draw_bookmarks" type="bool" setter="set_draw_bookmarks_gutter" getter="is_drawing_bookmarks_gutter" default="false">
 		</member>
 		<member name="draw_breakpoints_gutter" type="bool" setter="set_draw_breakpoints_gutter" getter="is_drawing_breakpoints_gutter" default="false">
@@ -123,8 +423,33 @@
 			<description>
 			</description>
 		</signal>
+		<signal name="request_code_completion">
+			<description>
+				Emitted when the user requests code completion.
+			</description>
+		</signal>
 	</signals>
 	<constants>
+		<constant name="KIND_CLASS" value="0" enum="CodeCompletionKind">
+		</constant>
+		<constant name="KIND_FUNCTION" value="1" enum="CodeCompletionKind">
+		</constant>
+		<constant name="KIND_SIGNAL" value="2" enum="CodeCompletionKind">
+		</constant>
+		<constant name="KIND_VARIABLE" value="3" enum="CodeCompletionKind">
+		</constant>
+		<constant name="KIND_MEMBER" value="4" enum="CodeCompletionKind">
+		</constant>
+		<constant name="KIND_ENUM" value="5" enum="CodeCompletionKind">
+		</constant>
+		<constant name="KIND_CONSTANT" value="6" enum="CodeCompletionKind">
+		</constant>
+		<constant name="KIND_NODE_PATH" value="7" enum="CodeCompletionKind">
+		</constant>
+		<constant name="KIND_FILE_PATH" value="8" enum="CodeCompletionKind">
+		</constant>
+		<constant name="KIND_PLAIN_TEXT" value="9" enum="CodeCompletionKind">
+		</constant>
 	</constants>
 	<theme_items>
 		<theme_item name="background_color" type="Color" default="Color( 0, 0, 0, 0 )">

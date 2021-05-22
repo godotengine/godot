@@ -703,6 +703,8 @@
 		</member>
 		<member name="input/ui_text_completion_query" type="Dictionary" setter="" getter="">
 		</member>
+		<member name="input/ui_text_completion_replace" type="Dictionary" setter="" getter="">
+		</member>
 		<member name="input/ui_text_dedent" type="Dictionary" setter="" getter="">
 		</member>
 		<member name="input/ui_text_delete" type="Dictionary" setter="" getter="">
