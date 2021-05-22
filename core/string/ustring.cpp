@@ -939,7 +939,7 @@ const char32_t *String::get_data() const {
 }
 
 void String::erase(int p_pos, int p_chars) {
-	*this = left(p_pos) + substr(p_pos + p_chars, length() - ((p_pos + p_chars)));
+	*this = left(MAX(p_pos, 0)) + substr(p_pos + p_chars, length() - ((p_pos + p_chars)));
 }
 
 String String::capitalize() const {
