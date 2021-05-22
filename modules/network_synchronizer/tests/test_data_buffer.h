@@ -519,6 +519,18 @@ TEST_CASE("[Modules][DataBuffer] Shrinking") {
 	buffer.dry();
 	CHECK_MESSAGE(buffer.get_buffer().size_in_bits() == original_size - 8, "Buffer size after dry should changed to the smallest posiible.");
 }
+
+TEST_CASE("[Modules][DataBuffer] Skip") {
+	const bool value = true;
+
+	DataBuffer buffer;
+	buffer.add_bool(!value);
+	buffer.add_bool(value);
+
+	buffer.begin_read();
+	buffer.seek(DataBuffer::get_bit_taken(DataBuffer::DATA_TYPE_BOOL, DataBuffer::COMPRESSION_LEVEL_0));
+	CHECK_MESSAGE(buffer.read_bool() == value, "Should read the same value");
+}
 } // namespace TestDataBuffer
 
 #endif // TEST_DATA_BUFFER_H
