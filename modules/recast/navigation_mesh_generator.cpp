@@ -29,7 +29,7 @@
 /*************************************************************************/
 
 #include "navigation_mesh_generator.h"
-#include "core/math/quick_hull.h"
+#include "core/math/convex_hull.h"
 #include "core/os/thread.h"
 #include "editor/editor_settings.h"
 #include "scene/3d/collision_shape.h"
@@ -213,7 +213,7 @@ void EditorNavigationMeshGenerator::_parse_geometry(Transform p_accumulated_tran
 						Vector<Vector3> varr = Variant(convex_polygon->get_points());
 						Geometry::MeshData md;
 
-						Error err = QuickHull::build(varr, md);
+						Error err = ConvexHullComputer::convex_hull(varr, md);
 
 						if (err == OK) {
 							PoolVector3Array faces;
