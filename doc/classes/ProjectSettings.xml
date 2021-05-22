@@ -732,6 +732,10 @@
 		</member>
 		<member name="input/ui_text_select_all" type="Dictionary" setter="" getter="">
 		</member>
+		<member name="input/ui_text_select_word_under_caret" type="Dictionary" setter="" getter="">
+			If no selection is currently active, selects the word currently under the caret in text fields. If a selection is currently active, deselects the current selection.
+			[b]Note:[/b] Currently, this is only implemented in [TextEdit], not [LineEdit].
+		</member>
 		<member name="input/ui_text_toggle_insert_mode" type="Dictionary" setter="" getter="">
 		</member>
 		<member name="input/ui_undo" type="Dictionary" setter="" getter="">

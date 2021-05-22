@@ -3381,10 +3381,15 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 			return;
 		}
 
-		// SELECT ALL, CUT, COPY, PASTE.
+		// SELECT ALL, SELECT WORD UNDER CARET, CUT, COPY, PASTE.
 
 		if (k->is_action("ui_text_select_all", true)) {
 			select_all();
+			accept_event();
+			return;
+		}
+		if (k->is_action("ui_text_select_word_under_caret", true)) {
+			select_word_under_caret();
 			accept_event();
 			return;
 		}
@@ -5147,6 +5152,39 @@ void TextEdit::select_all() {
 	cursor_set_line(selection.to_line, false);
 	cursor_set_column(selection.to_column, false);
 	update();
+}
+
+void TextEdit::select_word_under_caret() {
+	if (!selecting_enabled) {
+		return;
+	}
+
+	if (text.size() == 1 && text[0].length() == 0) {
+		return;
+	}
+
+	if (selection.active) {
+		// Allow toggling selection by pressing the shortcut a second time.
+		// This is also usable as a general-purpose "deselect" shortcut after
+		// selecting anything.
+		deselect();
+		return;
+	}
+
+	int begin = 0;
+	int end = 0;
+	const Vector<Vector2i> words = TS->shaped_text_get_word_breaks(text.get_line_data(cursor.line)->get_rid());
+	for (int i = 0; i < words.size(); i++) {
+		if (words[i].x <= cursor.column && words[i].y >= cursor.column) {
+			begin = words[i].x;
+			end = words[i].y;
+			break;
+		}
+	}
+
+	select(cursor.line, begin, cursor.line, end);
+	// Move the cursor to the end of the word for easier editing.
+	cursor_set_column(end, false);
 }
 
 void TextEdit::deselect() {
