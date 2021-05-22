@@ -219,7 +219,8 @@ void SpriteFramesEditor::_sheet_zoom_out() {
 }
 
 void SpriteFramesEditor::_sheet_zoom_reset() {
-	sheet_zoom = 1.f;
+	// Default the zoom to match the editor scale, but don't dezoom on editor scales below 100% to prevent pixel art from looking bad.
+	sheet_zoom = MAX(1.0f, EDSCALE);
 	Size2 texture_size = split_sheet_preview->get_texture()->get_size();
 	split_sheet_preview->set_custom_minimum_size(texture_size * sheet_zoom);
 }
@@ -733,7 +734,7 @@ void SpriteFramesEditor::_zoom_out() {
 }
 
 void SpriteFramesEditor::_zoom_reset() {
-	thumbnail_zoom = 1.0f;
+	thumbnail_zoom = MAX(1.0f, EDSCALE);
 	tree->set_fixed_column_width(thumbnail_default_size * 3 / 2);
 	tree->set_fixed_icon_size(Size2(thumbnail_default_size, thumbnail_default_size));
 }
@@ -1248,13 +1249,14 @@ SpriteFramesEditor::SpriteFramesEditor() {
 
 	// Config scale.
 	scale_ratio = 1.2f;
-	thumbnail_default_size = 96;
-	thumbnail_zoom = 1.0f;
-	max_thumbnail_zoom = 8.0f;
-	min_thumbnail_zoom = 0.1f;
-	sheet_zoom = 1.0f;
-	max_sheet_zoom = 16.0f;
-	min_sheet_zoom = 0.01f;
+	thumbnail_default_size = 96 * MAX(1, EDSCALE);
+	thumbnail_zoom = MAX(1.0f, EDSCALE);
+	max_thumbnail_zoom = 8.0f * MAX(1.0f, EDSCALE);
+	min_thumbnail_zoom = 0.1f * MAX(1.0f, EDSCALE);
+	// Default the zoom to match the editor scale, but don't dezoom on editor scales below 100% to prevent pixel art from looking bad.
+	sheet_zoom = MAX(1.0f, EDSCALE);
+	max_sheet_zoom = 16.0f * MAX(1.0f, EDSCALE);
+	min_sheet_zoom = 0.01f * MAX(1.0f, EDSCALE);
 	_zoom_reset();
 }
 
