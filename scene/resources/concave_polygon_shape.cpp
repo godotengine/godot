@@ -66,6 +66,7 @@ void ConcavePolygonShape::_update_shape() {
 
 void ConcavePolygonShape::set_faces(const PoolVector<Vector3> &p_faces) {
 	PhysicsServer::get_singleton()->shape_set_data(get_shape(), p_faces);
+	_update_shape();
 	notify_change_to_owners();
 }
 
