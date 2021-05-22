@@ -414,6 +414,23 @@ TEST_CASE("[Modules][DataBuffer] Normalized Vector3") {
 	}
 }
 
+TEST_CASE("[Modules][DataBuffer] Variant") {
+	Variant value = {};
+
+	SUBCASE("[Modules][DataBuffer] Valid value") {
+		value = "VariantString";
+	}
+	SUBCASE("[Modules][DataBuffer] Invalid value") {
+		value = {};
+	}
+
+	DataBuffer buffer;
+	buffer.begin_write(0);
+	CHECK_MESSAGE(buffer.add_variant(value) == value, "Should return the same value");
+	buffer.begin_read();
+	CHECK_MESSAGE(buffer.read_variant() == value, "Should read the same value");
+}
+
 TEST_CASE("[Modules][DataBuffer] Seek") {
 	DataBuffer buffer;
 	buffer.begin_write(0);
