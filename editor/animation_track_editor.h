@@ -509,6 +509,7 @@ public:
 		EDIT_ADD_RESET_KEY,
 		EDIT_DELETE_SELECTION,
 		EDIT_GOTO_NEXT_STEP,
+		EDIT_GOTO_NEXT_STEP_TIMELINE_ONLY, // Next step without updating animation.
 		EDIT_GOTO_PREV_STEP,
 		EDIT_APPLY_RESET,
 		EDIT_OPTIMIZE_ANIMATION,
@@ -551,7 +552,7 @@ public:
 	void goto_prev_step(bool p_from_mouse_event);
 
 	/** If `p_from_mouse_event` is `true`, handle Shift key presses for precise snapping. */
-	void goto_next_step(bool p_from_mouse_event);
+	void goto_next_step(bool p_from_mouse_event, bool p_timeline_only = false);
 
 	MenuButton *get_edit_menu();
 	AnimationTrackEditor();
