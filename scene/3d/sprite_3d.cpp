@@ -551,15 +551,15 @@ int Sprite3D::get_frame() const {
 	return frame;
 }
 
-void Sprite3D::set_frame_coords(const Vector2 &p_coord) {
-	ERR_FAIL_INDEX(int(p_coord.x), hframes);
-	ERR_FAIL_INDEX(int(p_coord.y), vframes);
+void Sprite3D::set_frame_coords(const Vector2i &p_coord) {
+	ERR_FAIL_INDEX(p_coord.x, hframes);
+	ERR_FAIL_INDEX(p_coord.y, vframes);
 
-	set_frame(int(p_coord.y) * hframes + int(p_coord.x));
+	set_frame(p_coord.y * hframes + p_coord.x);
 }
 
-Vector2 Sprite3D::get_frame_coords() const {
-	return Vector2(frame % hframes, frame / hframes);
+Vector2i Sprite3D::get_frame_coords() const {
+	return Vector2i(frame % hframes, frame / hframes);
 }
 
 void Sprite3D::set_vframes(int p_amount) {
@@ -657,7 +657,7 @@ void Sprite3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "hframes", PROPERTY_HINT_RANGE, "1,16384,1"), "set_hframes", "get_hframes");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "vframes", PROPERTY_HINT_RANGE, "1,16384,1"), "set_vframes", "get_vframes");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "frame"), "set_frame", "get_frame");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "frame_coords", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "set_frame_coords", "get_frame_coords");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "frame_coords", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "set_frame_coords", "get_frame_coords");
 	ADD_GROUP("Region", "region_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "region_enabled"), "set_region_enabled", "is_region_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::RECT2, "region_rect"), "set_region_rect", "get_region_rect");
