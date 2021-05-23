@@ -286,6 +286,7 @@ class AnimationTrackEditor : public VBoxContainer {
 		EDIT_DUPLICATE_TRANSPOSED,
 		EDIT_DELETE_SELECTION,
 		EDIT_GOTO_NEXT_STEP,
+		EDIT_GOTO_NEXT_STEP_TIMELINE_ONLY, // Next step without updating animation.
 		EDIT_GOTO_PREV_STEP,
 		EDIT_APPLY_RESET,
 		EDIT_OPTIMIZE_ANIMATION,
