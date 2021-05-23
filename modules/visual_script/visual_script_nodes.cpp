@@ -2771,7 +2771,6 @@ VisualScriptCustomNode::TypeGuess VisualScriptCustomNode::guess_output_type(Type
 			if (pi.hint_string.is_resource_file()) {
 				tg.script = ResourceLoader::load(pi.hint_string);
 			} else if (ClassDB::class_exists(pi.hint_string)) {
-				printf("Hint_string");
 				tg.gdclass = pi.hint_string;
 			}
 		}
