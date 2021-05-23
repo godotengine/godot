@@ -77,9 +77,9 @@ public:
 	};
 
 	enum SDFGIYScale {
-		SDFGI_Y_SCALE_DISABLED,
-		SDFGI_Y_SCALE_75_PERCENT,
 		SDFGI_Y_SCALE_50_PERCENT,
+		SDFGI_Y_SCALE_75_PERCENT,
+		SDFGI_Y_SCALE_100_PERCENT,
 	};
 
 	enum GlowBlendMode {
@@ -154,10 +154,10 @@ private:
 	bool sdfgi_enabled = false;
 	SDFGICascades sdfgi_cascades = SDFGI_CASCADES_6;
 	float sdfgi_min_cell_size = 0.2;
-	SDFGIYScale sdfgi_y_scale = SDFGI_Y_SCALE_DISABLED;
+	SDFGIYScale sdfgi_y_scale = SDFGI_Y_SCALE_75_PERCENT;
 	bool sdfgi_use_occlusion = false;
-	float sdfgi_bounce_feedback = 0.0;
-	bool sdfgi_read_sky_light = false;
+	float sdfgi_bounce_feedback = 1.0;
+	bool sdfgi_read_sky_light = true;
 	float sdfgi_energy = 1.0;
 	float sdfgi_normal_bias = 1.1;
 	float sdfgi_probe_bias = 1.1;
