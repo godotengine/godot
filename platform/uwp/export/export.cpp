@@ -46,8 +46,8 @@
 #include "thirdparty/minizip/unzip.h"
 #include "thirdparty/minizip/zip.h"
 
-#include <zlib.h>
 #include <ctype.h>
+#include <zlib.h>
 
 // Capabilities
 static const char *uwp_capabilities[] = {
@@ -674,7 +674,7 @@ class EditorExportPlatformUWP : public EditorExportPlatform {
 
 		return true;
 	}
-	
+
 	// Generic export option validation. Just makes sure option isn't empty and is within a length constraint
 	bool _valid_text(const String &p_text, int p_minsize, int p_maxsize) const {
 		if (p_text.is_empty()) {
@@ -1034,7 +1034,7 @@ public:
 		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "package/display_name", PROPERTY_HINT_PLACEHOLDER_TEXT, "Game Name"), ""));
 		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "package/short_name", PROPERTY_HINT_PLACEHOLDER_TEXT, "Game Name"), ""));
 		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "package/unique_name", PROPERTY_HINT_PLACEHOLDER_TEXT, "Game.Name"), ""));
-		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "package/description",  PROPERTY_HINT_PLACEHOLDER_TEXT, "Game Description"), ""));
+		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "package/description", PROPERTY_HINT_PLACEHOLDER_TEXT, "Game Description"), ""));
 		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "package/publisher", PROPERTY_HINT_PLACEHOLDER_TEXT, "CN=CompanyName"), ""));
 		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "package/publisher_display_name", PROPERTY_HINT_PLACEHOLDER_TEXT, "Company Name"), ""));
 
