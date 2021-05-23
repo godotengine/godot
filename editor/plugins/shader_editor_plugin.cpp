@@ -63,6 +63,8 @@ void ShaderTextEditor::set_edited_shader(const Ref<Shader> &p_shader) {
 
 	get_text_editor()->set_text(p_shader->get_code());
 	get_text_editor()->clear_undo_history();
+	get_text_editor()->call_deferred("set_h_scroll", 0);
+	get_text_editor()->call_deferred("set_v_scroll", 0);
 
 	_validate_script();
 	_line_col_changed();
