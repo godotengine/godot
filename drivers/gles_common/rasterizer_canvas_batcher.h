@@ -2560,6 +2560,13 @@ PREAMBLE(void)::render_joined_item_commands(const BItemJoined &p_bij, Rasterizer
 		bdata.fvf = RasterizerStorageCommon::FVF_LARGE;
 	}
 
+	// make sure the jointed item flags state is up to date, as it is read indirectly in
+	// a couple of places from the state rather than from the joined item.
+	// we could alternatively make sure to only read directly from the joined item
+	// during the render, but it is probably more bug future proof to make sure both
+	// are up to date.
+	bdata.joined_item_batch_flags = p_bij.flags;
+
 	// in the special case of custom shaders that read from VERTEX (i.e. vertex position)
 	// we want to disable software transform of extra matrix
 	if (bdata.joined_item_batch_flags & RasterizerStorageCommon::PREVENT_VERTEX_BAKING) {
