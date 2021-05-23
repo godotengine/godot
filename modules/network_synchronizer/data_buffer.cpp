@@ -136,7 +136,7 @@ void DataBuffer::dry() {
 }
 
 void DataBuffer::seek(int p_bits) {
-	ERR_FAIL_INDEX(p_bits, metadata_size + bit_size);
+	ERR_FAIL_INDEX(p_bits, metadata_size + bit_size + 1);
 	bit_offset = p_bits;
 }
 
