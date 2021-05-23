@@ -220,7 +220,7 @@ void SpriteFramesEditor::_sheet_zoom_out() {
 
 void SpriteFramesEditor::_sheet_zoom_reset() {
 	// Default the zoom to match the editor scale, but don't dezoom on editor scales below 100% to prevent pixel art from looking bad.
-	sheet_zoom = MAX(1.0, EDSCALE);
+	sheet_zoom = MAX(1.0f, EDSCALE);
 	Size2 texture_size = split_sheet_preview->get_texture()->get_size();
 	split_sheet_preview->set_custom_minimum_size(texture_size * sheet_zoom);
 }
@@ -252,10 +252,10 @@ void SpriteFramesEditor::_prepare_sprite_sheet(const String &p_file) {
 		EditorNode::get_singleton()->show_warning(TTR("Unable to load images"));
 		ERR_FAIL_COND(!texture.is_valid());
 	}
-	bool new_texture = texture != split_sheet_preview->get_texture();
 	frames_selected.clear();
 	last_frame_selected = -1;
 
+	bool new_texture = texture != split_sheet_preview->get_texture();
 	split_sheet_preview->set_texture(texture);
 	if (new_texture) {
 		//different texture, reset to 4x4
@@ -280,17 +280,17 @@ void SpriteFramesEditor::_notification(int p_what) {
 			move_down->set_icon(get_theme_icon("MoveRight", "EditorIcons"));
 			_delete->set_icon(get_theme_icon("Remove", "EditorIcons"));
 			zoom_out->set_icon(get_theme_icon("ZoomLess", "EditorIcons"));
-			zoom_1->set_icon(get_theme_icon("ZoomReset", "EditorIcons"));
+			zoom_reset->set_icon(get_theme_icon("ZoomReset", "EditorIcons"));
 			zoom_in->set_icon(get_theme_icon("ZoomMore", "EditorIcons"));
 			new_anim->set_icon(get_theme_icon("New", "EditorIcons"));
 			remove_anim->set_icon(get_theme_icon("Remove", "EditorIcons"));
 			split_sheet_zoom_out->set_icon(get_theme_icon("ZoomLess", "EditorIcons"));
-			split_sheet_zoom_1->set_icon(get_theme_icon("ZoomReset", "EditorIcons"));
+			split_sheet_zoom_reset->set_icon(get_theme_icon("ZoomReset", "EditorIcons"));
 			split_sheet_zoom_in->set_icon(get_theme_icon("ZoomMore", "EditorIcons"));
 			[[fallthrough]];
 		}
 		case NOTIFICATION_THEME_CHANGED: {
-			splite_sheet_scroll->add_theme_style_override("bg", get_theme_stylebox("bg", "Tree"));
+			split_sheet_scroll->add_theme_style_override("bg", get_theme_stylebox("bg", "Tree"));
 		} break;
 		case NOTIFICATION_READY: {
 			add_theme_constant_override("autohide", 1); // Fixes the dragger always showing up.
@@ -733,7 +733,7 @@ void SpriteFramesEditor::_zoom_out() {
 }
 
 void SpriteFramesEditor::_zoom_reset() {
-	thumbnail_zoom = MAX(1.0, EDSCALE);
+	thumbnail_zoom = MAX(1.0f, EDSCALE);
 	tree->set_fixed_column_width(thumbnail_default_size * 3 / 2);
 	tree->set_fixed_icon_size(Size2(thumbnail_default_size, thumbnail_default_size));
 }
@@ -1086,11 +1086,13 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	zoom_out->set_flat(true);
 	zoom_out->set_tooltip(TTR("Zoom Out"));
 	hbc->add_child(zoom_out);
-	zoom_1 = memnew(Button);
-	zoom_1->connect("pressed", callable_mp(this, &SpriteFramesEditor::_zoom_reset));
-	zoom_1->set_flat(true);
-	zoom_1->set_tooltip(TTR("Zoom Reset"));
-	hbc->add_child(zoom_1);
+
+	zoom_reset = memnew(Button);
+	zoom_reset->connect("pressed", callable_mp(this, &SpriteFramesEditor::_zoom_reset));
+	zoom_reset->set_flat(true);
+	zoom_reset->set_tooltip(TTR("Zoom Reset"));
+	hbc->add_child(zoom_reset);
+
 	zoom_in = memnew(Button);
 	zoom_in->connect("pressed", callable_mp(this, &SpriteFramesEditor::_zoom_in));
 	zoom_in->set_flat(true);
@@ -1183,16 +1185,16 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	split_sheet_preview->connect("draw", callable_mp(this, &SpriteFramesEditor::_sheet_preview_draw));
 	split_sheet_preview->connect("gui_input", callable_mp(this, &SpriteFramesEditor::_sheet_preview_input));
 
-	splite_sheet_scroll = memnew(ScrollContainer);
-	splite_sheet_scroll->set_enable_h_scroll(true);
-	splite_sheet_scroll->set_enable_v_scroll(true);
-	splite_sheet_scroll->connect("gui_input", callable_mp(this, &SpriteFramesEditor::_sheet_scroll_input));
-	split_sheet_panel->add_child(splite_sheet_scroll);
+	split_sheet_scroll = memnew(ScrollContainer);
+	split_sheet_scroll->set_enable_h_scroll(true);
+	split_sheet_scroll->set_enable_v_scroll(true);
+	split_sheet_scroll->connect("gui_input", callable_mp(this, &SpriteFramesEditor::_sheet_scroll_input));
+	split_sheet_panel->add_child(split_sheet_scroll);
 	CenterContainer *cc = memnew(CenterContainer);
 	cc->add_child(split_sheet_preview);
 	cc->set_h_size_flags(SIZE_EXPAND_FILL);
 	cc->set_v_size_flags(SIZE_EXPAND_FILL);
-	splite_sheet_scroll->add_child(cc);
+	split_sheet_scroll->add_child(cc);
 
 	MarginContainer *split_sheet_zoom_margin = memnew(MarginContainer);
 	split_sheet_panel->add_child(split_sheet_zoom_margin);
@@ -1209,12 +1211,14 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	split_sheet_zoom_out->set_tooltip(TTR("Zoom Out"));
 	split_sheet_zoom_out->connect("pressed", callable_mp(this, &SpriteFramesEditor::_sheet_zoom_out));
 	split_sheet_zoom_hb->add_child(split_sheet_zoom_out);
-	split_sheet_zoom_1 = memnew(Button);
-	split_sheet_zoom_1->set_flat(true);
-	split_sheet_zoom_1->set_focus_mode(FOCUS_NONE);
-	split_sheet_zoom_1->set_tooltip(TTR("Zoom Reset"));
-	split_sheet_zoom_1->connect("pressed", callable_mp(this, &SpriteFramesEditor::_sheet_zoom_reset));
-	split_sheet_zoom_hb->add_child(split_sheet_zoom_1);
+
+	split_sheet_zoom_reset = memnew(Button);
+	split_sheet_zoom_reset->set_flat(true);
+	split_sheet_zoom_reset->set_focus_mode(FOCUS_NONE);
+	split_sheet_zoom_reset->set_tooltip(TTR("Zoom Reset"));
+	split_sheet_zoom_reset->connect("pressed", callable_mp(this, &SpriteFramesEditor::_sheet_zoom_reset));
+	split_sheet_zoom_hb->add_child(split_sheet_zoom_reset);
+
 	split_sheet_zoom_in = memnew(Button);
 	split_sheet_zoom_in->set_flat(true);
 	split_sheet_zoom_in->set_focus_mode(FOCUS_NONE);
@@ -1230,14 +1234,14 @@ SpriteFramesEditor::SpriteFramesEditor() {
 
 	// Config scale.
 	scale_ratio = 1.2f;
-	thumbnail_default_size = 96 * MAX(1.0, EDSCALE);
-	thumbnail_zoom = MAX(1.0, EDSCALE);
-	max_thumbnail_zoom = 8.0f * MAX(1.0, EDSCALE);
-	min_thumbnail_zoom = 0.1f * MAX(1.0, EDSCALE);
+	thumbnail_default_size = 96 * MAX(1, EDSCALE);
+	thumbnail_zoom = MAX(1.0f, EDSCALE);
+	max_thumbnail_zoom = 8.0f * MAX(1.0f, EDSCALE);
+	min_thumbnail_zoom = 0.1f * MAX(1.0f, EDSCALE);
 	// Default the zoom to match the editor scale, but don't dezoom on editor scales below 100% to prevent pixel art from looking bad.
-	sheet_zoom = MAX(1.0, EDSCALE);
-	max_sheet_zoom = 16.0f * MAX(1.0, EDSCALE);
-	min_sheet_zoom = 0.01f * MAX(1.0, EDSCALE);
+	sheet_zoom = MAX(1.0f, EDSCALE);
+	max_sheet_zoom = 16.0f * MAX(1.0f, EDSCALE);
+	min_sheet_zoom = 0.01f * MAX(1.0f, EDSCALE);
 	_zoom_reset();
 }
 

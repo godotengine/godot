@@ -54,13 +54,12 @@ class SpriteFramesEditor : public HSplitContainer {
 	Button *move_up;
 	Button *move_down;
 	Button *zoom_out;
-	Button *zoom_1;
+	Button *zoom_reset;
 	Button *zoom_in;
 	ItemList *tree;
 	bool loading_scene;
 	int sel;
 
-	HSplitContainer *split;
 	Button *new_anim;
 	Button *remove_anim;
 
@@ -79,12 +78,12 @@ class SpriteFramesEditor : public HSplitContainer {
 	ConfirmationDialog *delete_dialog;
 
 	ConfirmationDialog *split_sheet_dialog;
-	ScrollContainer *splite_sheet_scroll;
+	ScrollContainer *split_sheet_scroll;
 	TextureRect *split_sheet_preview;
 	SpinBox *split_sheet_h;
 	SpinBox *split_sheet_v;
 	Button *split_sheet_zoom_out;
-	Button *split_sheet_zoom_1;
+	Button *split_sheet_zoom_reset;
 	Button *split_sheet_zoom_in;
 	EditorFileDialog *file_split_sheet;
 	Set<int> frames_selected;
