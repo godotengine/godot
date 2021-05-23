@@ -192,7 +192,7 @@ void AnimationPlayerEditor::_play_pressed() {
 		if (current == player->get_assigned_animation()) {
 			player->stop(); //so it won't blend with itself
 		}
-		player->play(current);
+		player->start(current);
 	}
 
 	//unstop
@@ -212,7 +212,7 @@ void AnimationPlayerEditor::_play_from_pressed() {
 			player->stop(); //so it won't blend with itself
 		}
 
-		player->play(current);
+		player->start(current);
 		player->seek(time);
 	}
 
@@ -230,7 +230,7 @@ void AnimationPlayerEditor::_play_bw_pressed() {
 		if (current == player->get_assigned_animation()) {
 			player->stop(); //so it won't blend with itself
 		}
-		player->play(current, -1, -1, true);
+		player->start(current, -1, -1);
 	}
 
 	//unstop
@@ -249,7 +249,7 @@ void AnimationPlayerEditor::_play_bw_from_pressed() {
 			player->stop(); //so it won't blend with itself
 		}
 
-		player->play(current, -1, -1, true);
+		player->start(current, -1, -1);
 		player->seek(time);
 	}
 
@@ -262,7 +262,7 @@ void AnimationPlayerEditor::_stop_pressed() {
 		return;
 	}
 
-	player->stop(false);
+	player->pause();
 	play->set_pressed(false);
 	stop->set_pressed(true);
 }
@@ -1020,7 +1020,7 @@ void AnimationPlayerEditor::_seek_value_changed(float p_value, bool p_set) {
 
 		player->seek_delta(pos, pos - cpos);
 	} else {
-		player->stop(true);
+		player->stop();
 		player->seek(pos, true);
 	}
 

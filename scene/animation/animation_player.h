@@ -209,7 +209,6 @@ private:
 	AnimationProcessCallback process_callback = ANIMATION_PROCESS_IDLE;
 	AnimationMethodCallMode method_call_mode = ANIMATION_METHOD_CALL_DEFERRED;
 	bool processing = false;
-	bool active = true;
 
 	NodePath root;
 
@@ -222,6 +221,8 @@ private:
 	void _animation_process(float p_delta);
 
 	void _node_removed(Node *p_node);
+	void _pause_playing_caches();
+	void _resume_playing_caches();
 	void _stop_playing_caches();
 
 	// bind helpers
@@ -240,9 +241,10 @@ private:
 	void _ref_anim(const Ref<Animation> &p_anim);
 	void _unref_anim(const Ref<Animation> &p_anim);
 
-	void _set_process(bool p_process, bool p_force = false);
+	void _set_process(bool p_process);
 
 	bool playing = false;
+	bool paused = false;
 
 protected:
 	bool _set(const StringName &p_name, const Variant &p_value);
@@ -272,20 +274,19 @@ public:
 	void set_default_blend_time(float p_default);
 	float get_default_blend_time() const;
 
-	void play(const StringName &p_name = StringName(), float p_custom_blend = -1, float p_custom_scale = 1.0, bool p_from_end = false);
-	void play_backwards(const StringName &p_name = StringName(), float p_custom_blend = -1);
+	void start(const StringName &p_name = StringName(), float p_custom_blend_time = -1, float p_custom_scale = 1.0);
 	void queue(const StringName &p_name);
 	Vector<String> get_queue();
 	void clear_queue();
-	void stop(bool p_reset = true);
+	void pause();
+	void resume();
+	void stop();
 	bool is_playing() const;
 	String get_current_animation() const;
 	void set_current_animation(const String &p_anim);
 	String get_assigned_animation() const;
 	void set_assigned_animation(const String &p_anim);
 	void stop_all();
-	void set_active(bool p_active);
-	bool is_active() const;
 	bool is_valid() const;
 
 	void set_speed_scale(float p_speed);
