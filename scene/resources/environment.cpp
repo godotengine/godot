@@ -1332,7 +1332,7 @@ void Environment::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "sdfgi_min_cell_size", PROPERTY_HINT_RANGE, "0.01,64,0.01"), "set_sdfgi_min_cell_size", "get_sdfgi_min_cell_size");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "sdfgi_cascade0_distance", PROPERTY_HINT_RANGE, "0.1,16384,0.1,or_greater"), "set_sdfgi_cascade0_distance", "get_sdfgi_cascade0_distance");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "sdfgi_max_distance", PROPERTY_HINT_RANGE, "0.1,16384,0.1,or_greater"), "set_sdfgi_max_distance", "get_sdfgi_max_distance");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "sdfgi_y_scale", PROPERTY_HINT_ENUM, "Disable,75%,50%"), "set_sdfgi_y_scale", "get_sdfgi_y_scale");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "sdfgi_y_scale", PROPERTY_HINT_ENUM, "50% (Compact),75% (Balanced),100% (Sparse)"), "set_sdfgi_y_scale", "get_sdfgi_y_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "sdfgi_energy"), "set_sdfgi_energy", "get_sdfgi_energy");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "sdfgi_normal_bias"), "set_sdfgi_normal_bias", "get_sdfgi_normal_bias");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "sdfgi_probe_bias"), "set_sdfgi_probe_bias", "get_sdfgi_probe_bias");
@@ -1511,9 +1511,9 @@ void Environment::_bind_methods() {
 	BIND_ENUM_CONSTANT(GLOW_BLEND_MODE_REPLACE);
 	BIND_ENUM_CONSTANT(GLOW_BLEND_MODE_MIX);
 
-	BIND_ENUM_CONSTANT(SDFGI_Y_SCALE_DISABLED);
-	BIND_ENUM_CONSTANT(SDFGI_Y_SCALE_75_PERCENT);
 	BIND_ENUM_CONSTANT(SDFGI_Y_SCALE_50_PERCENT);
+	BIND_ENUM_CONSTANT(SDFGI_Y_SCALE_75_PERCENT);
+	BIND_ENUM_CONSTANT(SDFGI_Y_SCALE_100_PERCENT);
 }
 
 Environment::Environment() {

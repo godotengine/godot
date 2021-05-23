@@ -46,7 +46,7 @@ void RendererSceneGIRD::SDFGI::create(RendererSceneEnvironmentRD *p_env, const V
 	min_cell_size = p_env->sdfgi_min_cell_size;
 	uses_occlusion = p_env->sdfgi_use_occlusion;
 	y_scale_mode = p_env->sdfgi_y_scale;
-	static const float y_scale[3] = { 1.0, 1.5, 2.0 };
+	static const float y_scale[3] = { 2.0, 1.5, 1.0 };
 	y_mult = y_scale[y_scale_mode];
 	cascades.resize(num_cascades);
 	probe_axis_count = SDFGI::PROBE_DIVISOR + 1;
