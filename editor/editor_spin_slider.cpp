@@ -70,6 +70,7 @@ void EditorSpinSlider::_gui_input(const Ref<InputEvent> &p_event) {
 					grabbing_spinner_dist_cache = 0;
 					pre_grab_value = get_value();
 					grabbing_spinner = false;
+					grabbing_spinner_mouse_pos = get_global_mouse_position();
 				}
 			} else {
 				if (grabbing_spinner_attempt) {
