@@ -503,11 +503,6 @@ TEST_CASE("[Modules][DataBuffer] Shrinking") {
 	CHECK_MESSAGE(buffer.total_size() == original_size, "Shrinking to a larger size should fail.");
 
 	ERR_PRINT_OFF;
-	buffer.shrink_to(-1, original_size);
-	ERR_PRINT_ON;
-	CHECK_MESSAGE(buffer.total_size() == original_size, "Shrinking with a negative metadata size should fail.");
-
-	ERR_PRINT_OFF;
 	buffer.shrink_to(0, -1);
 	ERR_PRINT_ON;
 	CHECK_MESSAGE(buffer.total_size() == original_size, "Shrinking with a negative bits size should fail.");

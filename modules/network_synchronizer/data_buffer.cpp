@@ -124,6 +124,7 @@ DataBuffer::DataBuffer(const BitArray &p_buffer) :
 		buffer(p_buffer) {}
 
 void DataBuffer::begin_write(int p_metadata_size) {
+	CRASH_COND_MSG(p_metadata_size < 0, "Metadata size can't be negative");
 	metadata_size = p_metadata_size;
 	bit_size = 0;
 	bit_offset = 0;
@@ -140,7 +141,7 @@ void DataBuffer::seek(int p_bits) {
 }
 
 void DataBuffer::shrink_to(int p_metadata_bit_size, int p_bit_size) {
-	ERR_FAIL_COND_MSG(p_metadata_bit_size < 0, "Metadata size can't be negative");
+	CRASH_COND_MSG(p_metadata_bit_size < 0, "Metadata size can't be negative");
 	ERR_FAIL_COND_MSG(p_bit_size < 0, "Bit size can't be negative");
 	ERR_FAIL_COND_MSG(buffer.size_in_bits() < (p_metadata_bit_size + p_bit_size), "The buffer is smaller than the new given size.");
 	metadata_size = p_metadata_bit_size;
