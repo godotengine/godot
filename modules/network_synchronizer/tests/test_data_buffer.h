@@ -32,6 +32,7 @@
 #define TEST_DATA_BUFFER_H
 
 #include "modules/network_synchronizer/data_buffer.h"
+#include "modules/network_synchronizer/scene_synchronizer.h"
 
 #include "tests/test_macros.h"
 
@@ -417,18 +418,34 @@ TEST_CASE("[Modules][DataBuffer] Normalized Vector3") {
 TEST_CASE("[Modules][DataBuffer] Variant") {
 	Variant value = {};
 
-	SUBCASE("[Modules][DataBuffer] Valid value") {
-		value = "VariantString";
-	}
 	SUBCASE("[Modules][DataBuffer] Invalid value") {
 		value = {};
+	}
+	SUBCASE("[Modules][DataBuffer] String") {
+		value = "VariantString";
+	}
+	SUBCASE("[Modules][DataBuffer] Vector") {
+		value = sarray("VariantString1", "VariantString2", "VariantString3");
+	}
+	SUBCASE("[Modules][DataBuffer] Dictionary") {
+		Dictionary dictionary;
+		dictionary[1] = "Value";
+		dictionary["Key"] = -1;
+		value = dictionary;
+	}
+	SUBCASE("[Modules][DataBuffer] Array") {
+		Array array;
+		array.append("VariantString");
+		array.append(0);
+		array.append(-1.2);
+		value = array;
 	}
 
 	DataBuffer buffer;
 	buffer.begin_write(0);
-	CHECK_MESSAGE(buffer.add_variant(value) == value, "Should return the same value");
+	CHECK_MESSAGE(SceneSynchronizer::compare(buffer.add_variant(value), value, DBL_EPSILON), "Should return the same value");
 	buffer.begin_read();
-	CHECK_MESSAGE(buffer.read_variant() == value, "Should read the same value");
+	CHECK_MESSAGE(SceneSynchronizer::compare(buffer.read_variant(), value, DBL_EPSILON), "Should read the same value");
 }
 
 TEST_CASE("[Modules][DataBuffer] Seek") {

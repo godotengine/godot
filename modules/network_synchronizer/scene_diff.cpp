@@ -148,7 +148,7 @@ void SceneDiff::stop_tracking_scene_changes(const SceneSynchronizer *p_synchroni
 					nd->node->get(nd->vars[v].var.name);
 
 			// Compare the current value with the one taken during the start.
-			if (p_synchronizer->synchronizer_variant_evaluation(
+			if (p_synchronizer->compare(
 						tracking[i][v],
 						current_value) == false) {
 				diff[i][v].is_different = true;

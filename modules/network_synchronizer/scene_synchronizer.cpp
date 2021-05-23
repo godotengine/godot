@@ -726,7 +726,7 @@ void SceneSynchronizer::apply_scene_changes(const Variant &p_sync_data) {
 
 				const Variant current_val = p_node_data->vars[p_var_id].var.value;
 
-				if (scene_sync->synchronizer_variant_evaluation(current_val, p_value) == false) {
+				if (scene_sync->compare(current_val, p_value) == false) {
 					// There is a difference.
 					// Set the new value.
 					p_node_data->vars[p_var_id].var.value = p_value;
@@ -1277,50 +1277,58 @@ void SceneSynchronizer::set_node_data_id(NetUtility::NodeData *p_node_data, NetN
 	NET_DEBUG_PRINT("NetNodeId: " + itos(p_id) + " just assigned to: " + p_node_data->node->get_path());
 }
 
-bool SceneSynchronizer::vec2_evaluation(const Vector2 &a, const Vector2 &b) const {
-	return Math::is_equal_approx(a.x, b.x, comparison_float_tolerance) &&
-		   Math::is_equal_approx(a.y, b.y, comparison_float_tolerance);
+bool SceneSynchronizer::compare(const Vector2 &p_first, const Vector2 &p_second) const {
+	return compare(p_first, p_second, comparison_float_tolerance);
 }
 
-bool SceneSynchronizer::vec3_evaluation(const Vector3 &a, const Vector3 &b) const {
-	return Math::is_equal_approx(a.x, b.x, comparison_float_tolerance) &&
-		   Math::is_equal_approx(a.y, b.y, comparison_float_tolerance) &&
-		   Math::is_equal_approx(a.z, b.z, comparison_float_tolerance);
+bool SceneSynchronizer::compare(const Vector3 &p_first, const Vector3 &p_second) const {
+	return compare(p_first, p_second, comparison_float_tolerance);
 }
 
-bool SceneSynchronizer::synchronizer_variant_evaluation(
-		const Variant &v_1,
-		const Variant &v_2) const {
-	if (v_1.get_type() != v_2.get_type()) {
+bool SceneSynchronizer::compare(const Variant &p_first, const Variant &p_second) const {
+	return compare(p_first, p_second, comparison_float_tolerance);
+}
+
+bool SceneSynchronizer::compare(const Vector2 &p_first, const Vector2 &p_second, real_t p_tolerance) {
+	return Math::is_equal_approx(p_first.x, p_second.x, p_tolerance) &&
+		   Math::is_equal_approx(p_first.y, p_second.y, p_tolerance);
+}
+
+bool SceneSynchronizer::compare(const Vector3 &p_first, const Vector3 &p_second, real_t p_tolerance) {
+	return Math::is_equal_approx(p_first.x, p_second.x, p_tolerance) &&
+		   Math::is_equal_approx(p_first.y, p_second.y, p_tolerance) &&
+		   Math::is_equal_approx(p_first.z, p_second.z, p_tolerance);
+}
+
+bool SceneSynchronizer::compare(const Variant &p_first, const Variant &p_second, real_t p_tolerance) {
+	if (p_first.get_type() != p_second.get_type()) {
 		return false;
 	}
 
 	// Custom evaluation methods
-	switch (v_1.get_type()) {
+	switch (p_first.get_type()) {
 		case Variant::FLOAT: {
-			const real_t a(v_1);
-			const real_t b(v_2);
-			return Math::is_equal_approx(a, b, comparison_float_tolerance);
+			return Math::is_equal_approx(p_first, p_second, p_tolerance);
 		}
 		case Variant::VECTOR2: {
-			return vec2_evaluation(v_1, v_2);
+			return compare(Vector2(p_first), Vector2(p_second), p_tolerance);
 		}
 		case Variant::RECT2: {
-			const Rect2 a(v_1);
-			const Rect2 b(v_2);
-			if (vec2_evaluation(a.position, b.position)) {
-				if (vec2_evaluation(a.size, b.size)) {
+			const Rect2 a(p_first);
+			const Rect2 b(p_second);
+			if (compare(a.position, b.position, p_tolerance)) {
+				if (compare(a.size, b.size, p_tolerance)) {
 					return true;
 				}
 			}
 			return false;
 		}
 		case Variant::TRANSFORM2D: {
-			const Transform2D a(v_1);
-			const Transform2D b(v_2);
-			if (vec2_evaluation(a.elements[0], b.elements[0])) {
-				if (vec2_evaluation(a.elements[1], b.elements[1])) {
-					if (vec2_evaluation(a.elements[2], b.elements[2])) {
+			const Transform2D a(p_first);
+			const Transform2D b(p_second);
+			if (compare(a.elements[0], b.elements[0], p_tolerance)) {
+				if (compare(a.elements[1], b.elements[1], p_tolerance)) {
+					if (compare(a.elements[2], b.elements[2], p_tolerance)) {
 						return true;
 					}
 				}
@@ -1328,40 +1336,40 @@ bool SceneSynchronizer::synchronizer_variant_evaluation(
 			return false;
 		}
 		case Variant::VECTOR3: {
-			return vec3_evaluation(v_1, v_2);
+			return compare(Vector3(p_first), Vector3(p_second), p_tolerance);
 		}
 		case Variant::QUAT: {
-			const Quat a = v_1;
-			const Quat b = v_2;
+			const Quat a = p_first;
+			const Quat b = p_second;
 			const Quat r(a - b); // Element wise subtraction.
-			return (r.x * r.x + r.y * r.y + r.z * r.z + r.w * r.w) <= (comparison_float_tolerance * comparison_float_tolerance);
+			return (r.x * r.x + r.y * r.y + r.z * r.z + r.w * r.w) <= (p_tolerance * p_tolerance);
 		}
 		case Variant::PLANE: {
-			const Plane a(v_1);
-			const Plane b(v_2);
-			if (Math::is_equal_approx(a.d, b.d, comparison_float_tolerance)) {
-				if (vec3_evaluation(a.normal, b.normal)) {
+			const Plane a(p_first);
+			const Plane b(p_second);
+			if (Math::is_equal_approx(a.d, b.d, p_tolerance)) {
+				if (compare(a.normal, b.normal, p_tolerance)) {
 					return true;
 				}
 			}
 			return false;
 		}
 		case Variant::AABB: {
-			const AABB a(v_1);
-			const AABB b(v_2);
-			if (vec3_evaluation(a.position, b.position)) {
-				if (vec3_evaluation(a.size, b.size)) {
+			const AABB a(p_first);
+			const AABB b(p_second);
+			if (compare(a.position, b.position, p_tolerance)) {
+				if (compare(a.size, b.size, p_tolerance)) {
 					return true;
 				}
 			}
 			return false;
 		}
 		case Variant::BASIS: {
-			const Basis a = v_1;
-			const Basis b = v_2;
-			if (vec3_evaluation(a.elements[0], b.elements[0])) {
-				if (vec3_evaluation(a.elements[1], b.elements[1])) {
-					if (vec3_evaluation(a.elements[2], b.elements[2])) {
+			const Basis a = p_first;
+			const Basis b = p_second;
+			if (compare(a.elements[0], b.elements[0], p_tolerance)) {
+				if (compare(a.elements[1], b.elements[1], p_tolerance)) {
+					if (compare(a.elements[2], b.elements[2], p_tolerance)) {
 						return true;
 					}
 				}
@@ -1369,12 +1377,12 @@ bool SceneSynchronizer::synchronizer_variant_evaluation(
 			return false;
 		}
 		case Variant::TRANSFORM: {
-			const Transform a = v_1;
-			const Transform b = v_2;
-			if (vec3_evaluation(a.origin, b.origin)) {
-				if (vec3_evaluation(a.basis.elements[0], b.basis.elements[0])) {
-					if (vec3_evaluation(a.basis.elements[1], b.basis.elements[1])) {
-						if (vec3_evaluation(a.basis.elements[2], b.basis.elements[2])) {
+			const Transform a = p_first;
+			const Transform b = p_second;
+			if (compare(a.origin, b.origin, p_tolerance)) {
+				if (compare(a.basis.elements[0], b.basis.elements[0], p_tolerance)) {
+					if (compare(a.basis.elements[1], b.basis.elements[1], p_tolerance)) {
+						if (compare(a.basis.elements[2], b.basis.elements[2], p_tolerance)) {
 							return true;
 						}
 					}
@@ -1383,21 +1391,21 @@ bool SceneSynchronizer::synchronizer_variant_evaluation(
 			return false;
 		}
 		case Variant::ARRAY: {
-			const Array a = v_1;
-			const Array b = v_2;
+			const Array a = p_first;
+			const Array b = p_second;
 			if (a.size() != b.size()) {
 				return false;
 			}
 			for (int i = 0; i < a.size(); i += 1) {
-				if (synchronizer_variant_evaluation(a[i], b[i]) == false) {
+				if (compare(a[i], b[i], p_tolerance) == false) {
 					return false;
 				}
 			}
 			return true;
 		}
 		case Variant::DICTIONARY: {
-			const Dictionary a = v_1;
-			const Dictionary b = v_2;
+			const Dictionary a = p_first;
+			const Dictionary b = p_second;
 
 			if (a.size() != b.size()) {
 				return false;
@@ -1411,9 +1419,10 @@ bool SceneSynchronizer::synchronizer_variant_evaluation(
 					return false;
 				}
 
-				if (synchronizer_variant_evaluation(
+				if (compare(
 							a.get(key->get(), Variant()),
-							b.get(key->get(), Variant())) == false) {
+							b.get(key->get(), Variant()),
+							p_tolerance) == false) {
 					return false;
 				}
 			}
@@ -1421,7 +1430,7 @@ bool SceneSynchronizer::synchronizer_variant_evaluation(
 			return true;
 		}
 		default:
-			return v_1 == v_2;
+			return p_first == p_second;
 	}
 }
 
@@ -1611,7 +1620,7 @@ void SceneSynchronizer::pull_node_changes(NetUtility::NodeData *p_node_data) {
 		const Variant old_val = p_node_data->vars[var_id].var.value;
 		const Variant new_val = node->get(p_node_data->vars[var_id].var.name);
 
-		if (!synchronizer_variant_evaluation(old_val, new_val)) {
+		if (!compare(old_val, new_val)) {
 			p_node_data->vars[var_id].var.value = new_val.duplicate(true);
 			change_event_add(
 					p_node_data,
@@ -2047,7 +2056,7 @@ void ClientSynchronizer::process() {
 			e = e->next()) {
 		// Check if the values between the variables before the sync and the
 		// current one are different.
-		if (scene_synchronizer->synchronizer_variant_evaluation(
+		if (scene_synchronizer->compare(
 					e->get().node_data->vars[e->get().var_id].var.value,
 					e->get().old_value) == false) {
 			// Are different so we need to emit the `END_SYNC`.
@@ -2580,7 +2589,7 @@ void ClientSynchronizer::process_paused_controller_recovery(real_t p_delta) {
 		for (int var_id = 0; var_id < server_snapshots.front().node_vars[net_node_id].size(); var_id += 1) {
 			// Note: the snapshot variable array is ordered per var_id.
 			const Variant old_val = rew_node_data->vars[var_id].var.value;
-			if (!scene_synchronizer->synchronizer_variant_evaluation(
+			if (!scene_synchronizer->compare(
 						old_val,
 						snap_vars_ptr[var_id].value)) {
 				// Different
@@ -2992,7 +3001,7 @@ bool ClientSynchronizer::compare_vars(
 				// Make sure this variable is set.
 				c_vars[var_index].name == StringName() ||
 				// Check if the value is different.
-				!scene_synchronizer->synchronizer_variant_evaluation(
+				!scene_synchronizer->compare(
 						s_vars[var_index].value,
 						c_vars[var_index].value);
 

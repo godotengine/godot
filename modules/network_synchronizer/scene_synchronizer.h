@@ -301,12 +301,19 @@ private:
 	void set_node_data_id(NetUtility::NodeData *p_node_data, NetNodeId p_id);
 
 public:
+	/// Returns true when the vectors are the same. Uses comparison_float_tolerance member.
+	bool compare(const Vector2 &p_first, const Vector2 &p_second) const;
+	/// Returns true when the vectors are the same. Uses comparison_float_tolerance member.
+	bool compare(const Vector3 &p_first, const Vector3 &p_second) const;
+	/// Returns true when the variants are the same. Uses comparison_float_tolerance member.
+	bool compare(const Variant &p_first, const Variant &p_second) const;
+
 	/// Returns true when the vectors are the same.
-	bool vec2_evaluation(const Vector2 &a, const Vector2 &b) const;
+	static bool compare(const Vector2 &p_first, const Vector2 &p_second, real_t p_tolerance);
 	/// Returns true when the vectors are the same.
-	bool vec3_evaluation(const Vector3 &a, const Vector3 &b) const;
+	static bool compare(const Vector3 &p_first, const Vector3 &p_second, real_t p_tolerance);
 	/// Returns true when the variants are the same.
-	bool synchronizer_variant_evaluation(const Variant &v_1, const Variant &v_2) const;
+	static bool compare(const Variant &p_first, const Variant &p_second, real_t p_tolerance);
 
 	/// Returns true if this peer is server.
 	bool is_server() const;
