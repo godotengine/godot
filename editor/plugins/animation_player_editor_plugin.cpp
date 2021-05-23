@@ -994,7 +994,7 @@ void AnimationPlayerEditor::_animation_duplicate() {
 	}
 }
 
-void AnimationPlayerEditor::_seek_value_changed(float p_value, bool p_set) {
+void AnimationPlayerEditor::_seek_value_changed(float p_value, bool p_set, bool p_timeline_only) {
 	if (updating || !player || player->is_playing()) {
 		return;
 	};
@@ -1015,18 +1015,18 @@ void AnimationPlayerEditor::_seek_value_changed(float p_value, bool p_set) {
 		pos = Math::snapped(pos, _get_editor_step());
 	}
 
-	if (player->is_valid() && !p_set) {
-		float cpos = player->get_current_animation_position();
+	if (!p_timeline_only) {
+		if (player->is_valid() && !p_set) {
+			float cpos = player->get_current_animation_position();
 
-		player->seek_delta(pos, pos - cpos);
-	} else {
-		player->stop(true);
-		player->seek(pos, true);
+			player->seek_delta(pos, pos - cpos);
+		} else {
+			player->stop(true);
+			player->seek(pos, true);
+		}
 	}
 
 	track_editor->set_anim_pos(pos);
-
-	updating = true;
 };
 
 void AnimationPlayerEditor::_animation_player_changed(Object *p_pl) {
@@ -1048,7 +1048,7 @@ void AnimationPlayerEditor::_animation_key_editor_anim_len_changed(float p_len) 
 	frame->set_max(p_len);
 }
 
-void AnimationPlayerEditor::_animation_key_editor_seek(float p_pos, bool p_drag) {
+void AnimationPlayerEditor::_animation_key_editor_seek(float p_pos, bool p_drag, bool p_timeline_only) {
 	timeline_position = p_pos;
 
 	if (!is_visible_in_tree()) {
@@ -1070,7 +1070,7 @@ void AnimationPlayerEditor::_animation_key_editor_seek(float p_pos, bool p_drag)
 	updating = true;
 	frame->set_value(Math::snapped(p_pos, _get_editor_step()));
 	updating = false;
-	_seek_value_changed(p_pos, !p_drag);
+	_seek_value_changed(p_pos, !p_drag, p_timeline_only);
 }
 
 void AnimationPlayerEditor::_animation_tool_menu(int p_option) {
@@ -1693,7 +1693,7 @@ AnimationPlayerEditor::AnimationPlayerEditor(EditorNode *p_editor, AnimationPlay
 	animation->connect("item_selected", callable_mp(this, &AnimationPlayerEditor::_animation_selected));
 
 	file->connect("file_selected", callable_mp(this, &AnimationPlayerEditor::_dialog_action));
-	frame->connect("value_changed", callable_mp(this, &AnimationPlayerEditor::_seek_value_changed), make_binds(true));
+	frame->connect("value_changed", callable_mp(this, &AnimationPlayerEditor::_seek_value_changed), make_binds(true, false));
 	scale->connect("text_entered", callable_mp(this, &AnimationPlayerEditor::_scale_changed));
 
 	renaming = false;
