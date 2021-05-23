@@ -45,6 +45,7 @@
 #include "thirdparty/minizip/unzip.h"
 #include "thirdparty/minizip/zip.h"
 
+#include <ctype.h>
 #include <zlib.h>
 
 // Capabilities
@@ -639,8 +640,8 @@ class EditorExportPlatformUWP : public EditorExportPlatform {
 		X64
 	};
 
-	bool _valid_resource_name(const String &p_name) const {
-		if (p_name.is_empty()) {
+	bool _valid_unique_name(const String &p_name, int p_minsize, int p_maxsize) const {
+		if (!_valid_text(p_name, p_minsize, p_maxsize)) {
 			return false;
 		}
 		if (p_name.ends_with(".")) {
@@ -659,6 +660,25 @@ class EditorExportPlatformUWP : public EditorExportPlatform {
 				return false;
 			}
 			t++;
+		}
+
+		const char32_t *test_name = p_name.get_data();
+		for (int i = 0; test_name[i]; i++) {
+			if (!isalnum(test_name[i]) && '.' != test_name[i] && '-' != test_name[i]) {
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	// Generic export option validation. Just makes sure option isn't empty and is within a length constraint
+	bool _valid_text(const String &p_text, int p_minsize, int p_maxsize) const {
+		if (p_text.is_empty()) {
+			return false;
+		}
+		if (p_text.length() < p_minsize || p_text.length() > p_maxsize) {
+			return false;
 		}
 
 		return true;
@@ -1011,7 +1031,7 @@ public:
 		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "package/display_name", PROPERTY_HINT_PLACEHOLDER_TEXT, "Game Name"), ""));
 		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "package/short_name", PROPERTY_HINT_PLACEHOLDER_TEXT, "Game Name"), ""));
 		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "package/unique_name", PROPERTY_HINT_PLACEHOLDER_TEXT, "Game.Name"), ""));
-		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "package/description"), ""));
+		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "package/description", PROPERTY_HINT_PLACEHOLDER_TEXT, "Game Description"), ""));
 		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "package/publisher", PROPERTY_HINT_PLACEHOLDER_TEXT, "CN=CompanyName"), ""));
 		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "package/publisher_display_name", PROPERTY_HINT_PLACEHOLDER_TEXT, "Company Name"), ""));
 
@@ -1106,19 +1126,29 @@ public:
 
 		// Validate the rest of the configuration.
 
-		if (!_valid_resource_name(p_preset->get("package/short_name"))) {
+		if (!_valid_text(p_preset->get("package/short_name"), 1, 40)) {
 			valid = false;
 			err += TTR("Invalid package short name.") + "\n";
 		}
 
-		if (!_valid_resource_name(p_preset->get("package/unique_name"))) {
+		if (!_valid_unique_name(p_preset->get("package/unique_name"), 3, 50)) {
 			valid = false;
 			err += TTR("Invalid package unique name.") + "\n";
 		}
 
-		if (!_valid_resource_name(p_preset->get("package/publisher_display_name"))) {
+		if (!_valid_text(p_preset->get("package/publisher_display_name"), 1, 256)) {
 			valid = false;
 			err += TTR("Invalid package publisher display name.") + "\n";
+		}
+
+		if (!_valid_text(p_preset->get("package/publisher"), 1, 8192)) {
+			valid = false;
+			err += TTR("Invalid package publisher.") + "\n";
+		}
+
+		if (!_valid_text(p_preset->get("package/description"), 1, 2048)) {
+			valid = false;
+			err += TTR("Invalid package description.") + "\n";
 		}
 
 		if (!_valid_guid(p_preset->get("identity/product_guid"))) {
