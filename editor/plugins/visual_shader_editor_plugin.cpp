@@ -3323,6 +3323,8 @@ void VisualShaderEditor::drop_data_fw(const Point2 &p_point, const Variant &p_da
 			saved_node_pos_dirty = true;
 			_add_node(idx, add_options[idx].sub_func);
 		} else if (d.has("files")) {
+			undo_redo->create_action(TTR("Add Node(s) to Visual Shader"));
+
 			if (d["files"].get_type() == Variant::PACKED_STRING_ARRAY) {
 				PackedStringArray arr = d["files"];
 				for (int i = 0; i < arr.size(); i++) {
@@ -3370,6 +3372,7 @@ void VisualShaderEditor::drop_data_fw(const Point2 &p_point, const Variant &p_da
 					}
 				}
 			}
+			undo_redo->commit_action();
 		}
 	}
 }
