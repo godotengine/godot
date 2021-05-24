@@ -290,15 +290,8 @@ class VisualShaderEditor : public VBoxContainer {
 
 	void _draw_color_over_button(Object *obj, Color p_color);
 
-	void _add_custom_node(const String &p_path);
-	void _add_cubemap_node(const String &p_path);
-	void _add_texture2d_node(const String &p_path);
-	void _add_texture2d_array_node(const String &p_path);
-	void _add_texture3d_node(const String &p_path);
-	void _add_curve_node(const String &p_path);
-
 	void _setup_node(VisualShaderNode *p_node, int p_op_idx);
-	VisualShaderNode *_add_node(int p_idx, int p_op_idx = -1);
+	void _add_node(int p_idx, int p_op_idx = -1, String p_resource_path = "", int p_node_idx = -1);
 	void _update_options_menu();
 	void _set_mode(int p_which);
 
