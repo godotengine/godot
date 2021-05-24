@@ -1727,7 +1727,7 @@ PropertyInfo VisualScriptPropertyGet::get_output_value_port_info(int p_idx) cons
 	ClassDB::get_property_list(_get_base_type(), &props, false);
 	for (List<PropertyInfo>::Element *E = props.front(); E; E = E->next()) {
 		if (E->get().name == property) {
-			return PropertyInfo(E->get().type, "value." + String(index));
+			return PropertyInfo(E->get().type, "value." + String(index), E->get().hint, E->get().hint_string);
 		}
 	}
 
