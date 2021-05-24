@@ -322,6 +322,9 @@ static NSCursor *cursorFromSelector(SEL selector, SEL fallback = nil) {
 
 	if (!OS_OSX::singleton->resizable)
 		[OS_OSX::singleton->window_object setStyleMask:[OS_OSX::singleton->window_object styleMask] & ~NSWindowStyleMaskResizable];
+
+	if (OS_OSX::singleton->on_top)
+		[OS_OSX::singleton->window_object setLevel:NSFloatingWindowLevel];
 }
 
 - (void)windowDidChangeBackingProperties:(NSNotification *)notification {
@@ -1688,7 +1691,7 @@ Error OS_OSX::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 	}
 
 	on_top = p_desired.always_on_top;
-	if (p_desired.always_on_top) {
+	if (p_desired.always_on_top && !p_desired.fullscreen) {
 		[window_object setLevel:NSFloatingWindowLevel];
 	}
 
@@ -2553,7 +2556,7 @@ void OS_OSX::_update_window() {
 		[window_object setHidesOnDeactivate:YES];
 	} else {
 		// Reset these when our window is not a borderless window that covers up the screen
-		if (on_top) {
+		if (on_top & !zoomed) {
 			[window_object setLevel:NSFloatingWindowLevel];
 		} else {
 			[window_object setLevel:NSNormalWindowLevel];
@@ -2725,6 +2728,7 @@ void OS_OSX::set_window_fullscreen(bool p_enabled) {
 	}
 
 	if (zoomed != p_enabled) {
+		[window_object setLevel:NSNormalWindowLevel];
 		if (layered_window)
 			set_window_per_pixel_transparency_enabled(false);
 		if (!resizable)
@@ -2822,6 +2826,9 @@ void OS_OSX::set_window_always_on_top(bool p_enabled) {
 
 	on_top = p_enabled;
 
+	if (zoomed)
+		return;
+
 	if (is_window_always_on_top() == p_enabled)
 		return;
 
@@ -2832,7 +2839,11 @@ void OS_OSX::set_window_always_on_top(bool p_enabled) {
 }
 
 bool OS_OSX::is_window_always_on_top() const {
-	return [window_object level] == NSFloatingWindowLevel;
+	if (zoomed) {
+		return on_top;
+	} else {
+		return [window_object level] == NSFloatingWindowLevel;
+	}
 }
 
 bool OS_OSX::is_window_focused() const {
