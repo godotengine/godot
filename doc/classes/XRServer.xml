@@ -96,7 +96,7 @@
 			<return type="int">
 			</return>
 			<description>
-				Returns the absolute timestamp (in μs) of the last [XRServer] commit of the AR/VR eyes to [RenderingServer]. The value comes from an internal call to [method OS.get_ticks_usec].
+				Returns the absolute timestamp (in μs) of the last [XRServer] commit of the AR/VR eyes to [RenderingServer]. The value comes from an internal call to [method Time.get_ticks_usec].
 			</description>
 		</method>
 		<method name="get_last_frame_usec">
@@ -110,7 +110,7 @@
 			<return type="int">
 			</return>
 			<description>
-				Returns the absolute timestamp (in μs) of the last [XRServer] process callback. The value comes from an internal call to [method OS.get_ticks_usec].
+				Returns the absolute timestamp (in μs) of the last [XRServer] process callback. The value comes from an internal call to [method Time.get_ticks_usec].
 			</description>
 		</method>
 		<method name="get_reference_frame" qualifiers="const">

@@ -188,7 +188,7 @@
 			<argument index="0" name="file" type="String">
 			</argument>
 			<description>
-				Returns the last time the [code]file[/code] was modified in unix timestamp format or returns a [String] "ERROR IN [code]file[/code]". This unix timestamp can be converted to datetime by using [method OS.get_datetime_from_unix_time].
+				Returns the last time the [code]file[/code] was modified in Unix timestamp format or returns a [String] "ERROR IN [code]file[/code]". This Unix timestamp can be converted to another format using the [Time] singleton.
 			</description>
 		</method>
 		<method name="get_pascal_string">

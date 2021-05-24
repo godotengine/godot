@@ -195,8 +195,8 @@ OS::Time OS_Unix::get_time(bool utc) const {
 	}
 	Time ret;
 	ret.hour = lt.tm_hour;
-	ret.min = lt.tm_min;
-	ret.sec = lt.tm_sec;
+	ret.minute = lt.tm_min;
+	ret.second = lt.tm_sec;
 	get_time_zone_info();
 	return ret;
 }

@@ -45,6 +45,7 @@
 #include "core/io/resource_loader.h"
 #include "core/object/message_queue.h"
 #include "core/os/os.h"
+#include "core/os/time.h"
 #include "core/register_core_types.h"
 #include "core/string/translation.h"
 #include "core/version.h"
@@ -101,6 +102,7 @@ static InputMap *input_map = nullptr;
 static TranslationServer *translation_server = nullptr;
 static Performance *performance = nullptr;
 static PackedData *packed_data = nullptr;
+static Time *time_singleton = nullptr;
 #ifdef MINIZIP_ENABLED
 static ZipArchive *zip_packed_data = nullptr;
 #endif
@@ -532,6 +534,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	MAIN_PRINT("Main: Initialize Globals");
 
 	input_map = memnew(InputMap);
+	time_singleton = memnew(Time);
 	globals = memnew(ProjectSettings);
 
 	register_core_settings(); //here globals are present
@@ -1401,6 +1404,9 @@ error:
 	}
 	if (input_map) {
 		memdelete(input_map);
+	}
+	if (time_singleton) {
+		memdelete(time_singleton);
 	}
 	if (translation_server) {
 		memdelete(translation_server);
@@ -2666,6 +2672,9 @@ void Main::cleanup(bool p_force) {
 	}
 	if (input_map) {
 		memdelete(input_map);
+	}
+	if (time_singleton) {
+		memdelete(time_singleton);
 	}
 	if (translation_server) {
 		memdelete(translation_server);
