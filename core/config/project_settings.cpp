@@ -1099,9 +1099,9 @@ ProjectSettings::ProjectSettings() {
 
 	PackedStringArray extensions = PackedStringArray();
 	extensions.push_back("gd");
-	if (Engine::get_singleton()->has_singleton("GodotSharp")) {
-		extensions.push_back("cs");
-	}
+#ifdef MODULE_MONO_ENABLED
+	extensions.push_back("cs");
+#endif
 	extensions.push_back("shader");
 
 	GLOBAL_DEF("editor/run/main_run_args", "");
