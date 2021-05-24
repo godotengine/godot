@@ -1,4 +1,4 @@
-// Copyright 2009-2020 Intel Corporation
+// Copyright 2009-2021 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
 #include "bvh.h"
@@ -18,7 +18,7 @@
 #include "../geometry/object.h"
 #include "../geometry/instance.h"
 
-#if defined(__X86_64__) || defined(__aarch64__)
+#if defined(__64BIT__)
 #  define ROTATE_TREE 1 // specifies number of tree rotation rounds to perform
 #else
 #  define ROTATE_TREE 0 // do not use tree rotations on 32 bit platforms, barrier bit in NodeRef will cause issues

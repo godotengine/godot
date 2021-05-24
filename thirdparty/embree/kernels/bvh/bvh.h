@@ -1,4 +1,4 @@
-// Copyright 2009-2020 Intel Corporation
+// Copyright 2009-2021 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
@@ -81,7 +81,7 @@ namespace embree
     struct CreateAlloc : public FastAllocator::Create {
       __forceinline CreateAlloc (BVHN* bvh) : FastAllocator::Create(&bvh->alloc) {}
     };
-
+    
     typedef BVHNodeRecord<NodeRef>     NodeRecord;
     typedef BVHNodeRecordMB<NodeRef>   NodeRecordMB;
     typedef BVHNodeRecordMB4D<NodeRef> NodeRecordMB4D;

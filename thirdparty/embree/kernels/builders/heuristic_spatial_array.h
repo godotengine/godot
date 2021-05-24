@@ -1,4 +1,4 @@
-// Copyright 2009-2020 Intel Corporation
+// Copyright 2009-2021 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
@@ -107,15 +107,9 @@ namespace embree
         //typedef extended_range<size_t> Set;
         typedef Split2<ObjectSplit,SpatialSplit> Split;
         
-#if defined(__AVX512ER__) // KNL
-        static const size_t PARALLEL_THRESHOLD = 3*1024; 
-        static const size_t PARALLEL_FIND_BLOCK_SIZE = 768;
-        static const size_t PARALLEL_PARTITION_BLOCK_SIZE = 128;
-#else
         static const size_t PARALLEL_THRESHOLD = 3*1024;
         static const size_t PARALLEL_FIND_BLOCK_SIZE = 1024;
         static const size_t PARALLEL_PARTITION_BLOCK_SIZE = 128;
-#endif
 
         static const size_t MOVE_STEP_SIZE = 64;
         static const size_t CREATE_SPLITS_STEP_SIZE = 64;

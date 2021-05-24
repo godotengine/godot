@@ -1,4 +1,4 @@
-// Copyright 2009-2020 Intel Corporation
+// Copyright 2009-2021 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
@@ -97,12 +97,6 @@ namespace embree
 
   __forceinline Vec2fa rcp  ( const Vec2fa& a )
   {
-#if defined(__aarch64__)
-        __m128 reciprocal = _mm_rcp_ps(a.m128);
-        reciprocal = vmulq_f32(vrecpsq_f32(a.m128, reciprocal), reciprocal);
-        reciprocal = vmulq_f32(vrecpsq_f32(a.m128, reciprocal), reciprocal);
-        return (const Vec2fa)reciprocal;
-#else
 #if defined(__AVX512VL__)
     const Vec2fa r = _mm_rcp14_ps(a.m128);
 #else
@@ -117,7 +111,6 @@ namespace embree
 #endif
 
     return res;
-#endif  //defined(__aarch64__) 
   }
 
   __forceinline Vec2fa sqrt ( const Vec2fa& a ) { return _mm_sqrt_ps(a.m128); }
@@ -125,21 +118,12 @@ namespace embree
 
   __forceinline Vec2fa rsqrt( const Vec2fa& a )
   {
-#if defined(__aarch64__)
-        __m128 r = _mm_rsqrt_ps(a.m128);
-        r = vmulq_f32(r, vrsqrtsq_f32(vmulq_f32(a.m128, r), r));
-        r = vmulq_f32(r, vrsqrtsq_f32(vmulq_f32(a.m128, r), r));
-        return r;
-#else
-        
 #if defined(__AVX512VL__)
     __m128 r = _mm_rsqrt14_ps(a.m128);
 #else
     __m128 r = _mm_rsqrt_ps(a.m128);
 #endif
     return _mm_add_ps(_mm_mul_ps(_mm_set1_ps(1.5f),r), _mm_mul_ps(_mm_mul_ps(_mm_mul_ps(a, _mm_set1_ps(-0.5f)), r), _mm_mul_ps(r, r)));
-        
-#endif
   }
 
   __forceinline Vec2fa zero_fix(const Vec2fa& a) {
@@ -172,7 +156,7 @@ namespace embree
   __forceinline Vec2fa min( const Vec2fa& a, const Vec2fa& b ) { return _mm_min_ps(a.m128,b.m128); }
   __forceinline Vec2fa max( const Vec2fa& a, const Vec2fa& b ) { return _mm_max_ps(a.m128,b.m128); }
 
-#if defined(__aarch64__) || defined(__SSE4_1__)
+#if defined(__SSE4_1__)
     __forceinline Vec2fa mini(const Vec2fa& a, const Vec2fa& b) {
       const vint4 ai = _mm_castps_si128(a);
       const vint4 bi = _mm_castps_si128(b);
@@ -181,7 +165,7 @@ namespace embree
     }
 #endif
 
-#if defined(__aarch64__) || defined(__SSE4_1__)
+#if defined(__SSE4_1__)
     __forceinline Vec2fa maxi(const Vec2fa& a, const Vec2fa& b) {
       const vint4 ai = _mm_castps_si128(a);
       const vint4 bi = _mm_castps_si128(b);
@@ -292,9 +276,9 @@ namespace embree
   ////////////////////////////////////////////////////////////////////////////////
 
 #if defined(__aarch64__)
-__forceinline Vec2fa floor(const Vec2fa& a) { return vrndmq_f32(a); }
-__forceinline Vec2fa ceil (const Vec2fa& a) { return vrndpq_f32(a); }
-//__forceinline Vec2fa trunc(const Vec2fa& a) { return vrndq_f32(a); }
+  //__forceinline Vec2fa trunc(const Vec2fa& a) { return vrndq_f32(a); }
+  __forceinline Vec2fa floor(const Vec2fa& a) { return vrndmq_f32(a); }
+  __forceinline Vec2fa ceil (const Vec2fa& a) { return vrndpq_f32(a); }
 #elif defined (__SSE4_1__)
   //__forceinline Vec2fa trunc( const Vec2fa& a ) { return _mm_round_ps(a, _MM_FROUND_TO_NEAREST_INT); }
   __forceinline Vec2fa floor( const Vec2fa& a ) { return _mm_round_ps(a, _MM_FROUND_TO_NEG_INF    ); }

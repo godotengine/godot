@@ -1,4 +1,4 @@
-// Copyright 2009-2020 Intel Corporation
+// Copyright 2009-2021 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
@@ -332,7 +332,7 @@ namespace embree
         intersectorN.intersect(this,rayN,N,context);
       }
       
-#if defined(__SSE__) || defined(__ARM_NEON)
+#if defined(__SSE__)
       __forceinline void intersect(const vbool4& valid, RayHitK<4>& ray, IntersectContext* context) {
         const vint<4> mask = valid.mask32();
         intersect4(&mask,(RTCRayHit4&)ray,context);
@@ -388,7 +388,7 @@ namespace embree
         intersectorN.occluded(this,rayN,N,context);
       }
       
-#if defined(__SSE__) || defined(__ARM_NEON)
+#if defined(__SSE__)
       __forceinline void occluded(const vbool4& valid, RayK<4>& ray, IntersectContext* context) {
         const vint<4> mask = valid.mask32();
         occluded4(&mask,(RTCRay4&)ray,context);

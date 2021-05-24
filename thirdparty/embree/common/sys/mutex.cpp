@@ -1,4 +1,4 @@
-// Copyright 2009-2020 Intel Corporation
+// Copyright 2009-2021 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
 #include "mutex.h"
@@ -36,7 +36,6 @@ namespace embree
     MAYBE_UNUSED bool ok = pthread_mutex_destroy((pthread_mutex_t*)mutex) == 0;
     assert(ok);
     delete (pthread_mutex_t*)mutex; 
-    mutex = nullptr;
   }
   
   void MutexSys::lock() 

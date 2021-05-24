@@ -1,4 +1,4 @@
-// Copyright 2009-2020 Intel Corporation
+// Copyright 2009-2021 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
@@ -11,32 +11,32 @@ namespace embree
   namespace isa
   {
     /*! Intersects M motion blur triangles with 1 ray */
-    template<int M, int Mx, bool filter>
+    template<int M, bool filter>
     struct TriangleMvMBIntersector1Moeller
     {
       typedef TriangleMvMB<M> Primitive;
-      typedef MoellerTrumboreIntersector1<Mx> Precalculations;
+      typedef MoellerTrumboreIntersector1<M> Precalculations;
 
       /*! Intersect a ray with the M triangles and updates the hit. */
       static __forceinline void intersect(const Precalculations& pre, RayHit& ray, IntersectContext* context, const TriangleMvMB<M>& tri)
       {
         STAT3(normal.trav_prims,1,1,1);
-        const Vec3vf<Mx> time(ray.time());
-        const Vec3vf<Mx> v0 = madd(time,Vec3vf<Mx>(tri.dv0),Vec3vf<Mx>(tri.v0));
-        const Vec3vf<Mx> v1 = madd(time,Vec3vf<Mx>(tri.dv1),Vec3vf<Mx>(tri.v1));
-        const Vec3vf<Mx> v2 = madd(time,Vec3vf<Mx>(tri.dv2),Vec3vf<Mx>(tri.v2));
-        pre.intersect(ray,v0,v1,v2,Intersect1EpilogM<M,Mx,filter>(ray,context,tri.geomID(),tri.primID()));
+        const Vec3vf<M> time(ray.time());
+        const Vec3vf<M> v0 = madd(time,Vec3vf<M>(tri.dv0),Vec3vf<M>(tri.v0));
+        const Vec3vf<M> v1 = madd(time,Vec3vf<M>(tri.dv1),Vec3vf<M>(tri.v1));
+        const Vec3vf<M> v2 = madd(time,Vec3vf<M>(tri.dv2),Vec3vf<M>(tri.v2));
+        pre.intersect(ray,v0,v1,v2,Intersect1EpilogM<M,filter>(ray,context,tri.geomID(),tri.primID()));
       }
 
       /*! Test if the ray is occluded by one of M triangles. */
       static __forceinline bool occluded(const Precalculations& pre, Ray& ray, IntersectContext* context, const TriangleMvMB<M>& tri)
       {
         STAT3(shadow.trav_prims,1,1,1);
-        const Vec3vf<Mx> time(ray.time());
-        const Vec3vf<Mx> v0 = madd(time,Vec3vf<Mx>(tri.dv0),Vec3vf<Mx>(tri.v0));
-        const Vec3vf<Mx> v1 = madd(time,Vec3vf<Mx>(tri.dv1),Vec3vf<Mx>(tri.v1));
-        const Vec3vf<Mx> v2 = madd(time,Vec3vf<Mx>(tri.dv2),Vec3vf<Mx>(tri.v2));
-        return pre.intersect(ray,v0,v1,v2,Occluded1EpilogM<M,Mx,filter>(ray,context,tri.geomID(),tri.primID()));
+        const Vec3vf<M> time(ray.time());
+        const Vec3vf<M> v0 = madd(time,Vec3vf<M>(tri.dv0),Vec3vf<M>(tri.v0));
+        const Vec3vf<M> v1 = madd(time,Vec3vf<M>(tri.dv1),Vec3vf<M>(tri.v1));
+        const Vec3vf<M> v2 = madd(time,Vec3vf<M>(tri.dv2),Vec3vf<M>(tri.v2));
+        return pre.intersect(ray,v0,v1,v2,Occluded1EpilogM<M,filter>(ray,context,tri.geomID(),tri.primID()));
       }
       
       static __forceinline bool pointQuery(PointQuery* query, PointQueryContext* context, const Primitive& tri)
@@ -46,11 +46,11 @@ namespace embree
     };
     
     /*! Intersects M motion blur triangles with K rays. */
-    template<int M, int Mx, int K, bool filter>
+    template<int M, int K, bool filter>
     struct TriangleMvMBIntersectorKMoeller
     {
       typedef TriangleMvMB<M> Primitive;
-      typedef MoellerTrumboreIntersectorK<Mx,K> Precalculations;
+      typedef MoellerTrumboreIntersectorK<M,K> Precalculations;
 
       /*! Intersects K rays with M triangles. */
       static __forceinline void intersect(const vbool<K>& valid_i, Precalculations& pre, RayHitK<K>& ray, IntersectContext* context, const TriangleMvMB<M>& tri)
@@ -90,52 +90,52 @@ namespace embree
       static __forceinline void intersect(Precalculations& pre, RayHitK<K>& ray, size_t k, IntersectContext* context, const TriangleMvMB<M>& tri)
       {
         STAT3(normal.trav_prims,1,1,1);
-        const Vec3vf<Mx> time(ray.time()[k]);
-        const Vec3vf<Mx> v0 = madd(time,Vec3vf<Mx>(tri.dv0),Vec3vf<Mx>(tri.v0));
-        const Vec3vf<Mx> v1 = madd(time,Vec3vf<Mx>(tri.dv1),Vec3vf<Mx>(tri.v1));
-        const Vec3vf<Mx> v2 = madd(time,Vec3vf<Mx>(tri.dv2),Vec3vf<Mx>(tri.v2));
-        pre.intersect(ray,k,v0,v1,v2,Intersect1KEpilogM<M,Mx,K,filter>(ray,k,context,tri.geomID(),tri.primID()));
+        const Vec3vf<M> time(ray.time()[k]);
+        const Vec3vf<M> v0 = madd(time,Vec3vf<M>(tri.dv0),Vec3vf<M>(tri.v0));
+        const Vec3vf<M> v1 = madd(time,Vec3vf<M>(tri.dv1),Vec3vf<M>(tri.v1));
+        const Vec3vf<M> v2 = madd(time,Vec3vf<M>(tri.dv2),Vec3vf<M>(tri.v2));
+        pre.intersect(ray,k,v0,v1,v2,Intersect1KEpilogM<M,K,filter>(ray,k,context,tri.geomID(),tri.primID()));
       }
 
       /*! Test if the ray is occluded by one of the M triangles. */
       static __forceinline bool occluded(Precalculations& pre, RayK<K>& ray, size_t k, IntersectContext* context, const TriangleMvMB<M>& tri)
       {
         STAT3(shadow.trav_prims,1,1,1);
-        const Vec3vf<Mx> time(ray.time()[k]);
-        const Vec3vf<Mx> v0 = madd(time,Vec3vf<Mx>(tri.dv0),Vec3vf<Mx>(tri.v0));
-        const Vec3vf<Mx> v1 = madd(time,Vec3vf<Mx>(tri.dv1),Vec3vf<Mx>(tri.v1));
-        const Vec3vf<Mx> v2 = madd(time,Vec3vf<Mx>(tri.dv2),Vec3vf<Mx>(tri.v2));
-        return pre.intersect(ray,k,v0,v1,v2,Occluded1KEpilogM<M,Mx,K,filter>(ray,k,context,tri.geomID(),tri.primID()));
+        const Vec3vf<M> time(ray.time()[k]);
+        const Vec3vf<M> v0 = madd(time,Vec3vf<M>(tri.dv0),Vec3vf<M>(tri.v0));
+        const Vec3vf<M> v1 = madd(time,Vec3vf<M>(tri.dv1),Vec3vf<M>(tri.v1));
+        const Vec3vf<M> v2 = madd(time,Vec3vf<M>(tri.dv2),Vec3vf<M>(tri.v2));
+        return pre.intersect(ray,k,v0,v1,v2,Occluded1KEpilogM<M,K,filter>(ray,k,context,tri.geomID(),tri.primID()));
       }
     };
 
     /*! Intersects M motion blur triangles with 1 ray */
-    template<int M, int Mx, bool filter>
+    template<int M, bool filter>
     struct TriangleMvMBIntersector1Pluecker
     {
       typedef TriangleMvMB<M> Primitive;
-      typedef PlueckerIntersector1<Mx> Precalculations;
+      typedef PlueckerIntersector1<M> Precalculations;
 
       /*! Intersect a ray with the M triangles and updates the hit. */
       static __forceinline void intersect(const Precalculations& pre, RayHit& ray, IntersectContext* context, const TriangleMvMB<M>& tri)
       {
         STAT3(normal.trav_prims,1,1,1);
-        const Vec3vf<Mx> time(ray.time());
-        const Vec3vf<Mx> v0 = madd(time,Vec3vf<Mx>(tri.dv0),Vec3vf<Mx>(tri.v0));
-        const Vec3vf<Mx> v1 = madd(time,Vec3vf<Mx>(tri.dv1),Vec3vf<Mx>(tri.v1));
-        const Vec3vf<Mx> v2 = madd(time,Vec3vf<Mx>(tri.dv2),Vec3vf<Mx>(tri.v2));
-        pre.intersect(ray,v0,v1,v2,UVIdentity<Mx>(),Intersect1EpilogM<M,Mx,filter>(ray,context,tri.geomID(),tri.primID()));
+        const Vec3vf<M> time(ray.time());
+        const Vec3vf<M> v0 = madd(time,Vec3vf<M>(tri.dv0),Vec3vf<M>(tri.v0));
+        const Vec3vf<M> v1 = madd(time,Vec3vf<M>(tri.dv1),Vec3vf<M>(tri.v1));
+        const Vec3vf<M> v2 = madd(time,Vec3vf<M>(tri.dv2),Vec3vf<M>(tri.v2));
+        pre.intersect(ray,v0,v1,v2,UVIdentity<M>(),Intersect1EpilogM<M,filter>(ray,context,tri.geomID(),tri.primID()));
       }
 
       /*! Test if the ray is occluded by one of M triangles. */
       static __forceinline bool occluded(const Precalculations& pre, Ray& ray, IntersectContext* context, const TriangleMvMB<M>& tri)
       {
         STAT3(shadow.trav_prims,1,1,1);
-        const Vec3vf<Mx> time(ray.time());
-        const Vec3vf<Mx> v0 = madd(time,Vec3vf<Mx>(tri.dv0),Vec3vf<Mx>(tri.v0));
-        const Vec3vf<Mx> v1 = madd(time,Vec3vf<Mx>(tri.dv1),Vec3vf<Mx>(tri.v1));
-        const Vec3vf<Mx> v2 = madd(time,Vec3vf<Mx>(tri.dv2),Vec3vf<Mx>(tri.v2));
-        return pre.intersect(ray,v0,v1,v2,UVIdentity<Mx>(),Occluded1EpilogM<M,Mx,filter>(ray,context,tri.geomID(),tri.primID()));
+        const Vec3vf<M> time(ray.time());
+        const Vec3vf<M> v0 = madd(time,Vec3vf<M>(tri.dv0),Vec3vf<M>(tri.v0));
+        const Vec3vf<M> v1 = madd(time,Vec3vf<M>(tri.dv1),Vec3vf<M>(tri.v1));
+        const Vec3vf<M> v2 = madd(time,Vec3vf<M>(tri.dv2),Vec3vf<M>(tri.v2));
+        return pre.intersect(ray,v0,v1,v2,UVIdentity<M>(),Occluded1EpilogM<M,filter>(ray,context,tri.geomID(),tri.primID()));
       }
       
       static __forceinline bool pointQuery(PointQuery* query, PointQueryContext* context, const Primitive& tri)
@@ -145,11 +145,11 @@ namespace embree
     };
     
     /*! Intersects M motion blur triangles with K rays. */
-    template<int M, int Mx, int K, bool filter>
+    template<int M, int K, bool filter>
     struct TriangleMvMBIntersectorKPluecker
     {
       typedef TriangleMvMB<M> Primitive;
-      typedef PlueckerIntersectorK<Mx,K> Precalculations;
+      typedef PlueckerIntersectorK<M,K> Precalculations;
 
       /*! Intersects K rays with M triangles. */
       static __forceinline void intersect(const vbool<K>& valid_i, Precalculations& pre, RayHitK<K>& ray, IntersectContext* context, const TriangleMvMB<M>& tri)
@@ -189,22 +189,22 @@ namespace embree
       static __forceinline void intersect(Precalculations& pre, RayHitK<K>& ray, size_t k, IntersectContext* context, const TriangleMvMB<M>& tri)
       {
         STAT3(normal.trav_prims,1,1,1);
-        const Vec3vf<Mx> time(ray.time()[k]);
-        const Vec3vf<Mx> v0 = madd(time,Vec3vf<Mx>(tri.dv0),Vec3vf<Mx>(tri.v0));
-        const Vec3vf<Mx> v1 = madd(time,Vec3vf<Mx>(tri.dv1),Vec3vf<Mx>(tri.v1));
-        const Vec3vf<Mx> v2 = madd(time,Vec3vf<Mx>(tri.dv2),Vec3vf<Mx>(tri.v2));
-        pre.intersect(ray,k,v0,v1,v2,UVIdentity<Mx>(),Intersect1KEpilogM<M,Mx,K,filter>(ray,k,context,tri.geomID(),tri.primID()));
+        const Vec3vf<M> time(ray.time()[k]);
+        const Vec3vf<M> v0 = madd(time,Vec3vf<M>(tri.dv0),Vec3vf<M>(tri.v0));
+        const Vec3vf<M> v1 = madd(time,Vec3vf<M>(tri.dv1),Vec3vf<M>(tri.v1));
+        const Vec3vf<M> v2 = madd(time,Vec3vf<M>(tri.dv2),Vec3vf<M>(tri.v2));
+        pre.intersect(ray,k,v0,v1,v2,UVIdentity<M>(),Intersect1KEpilogM<M,K,filter>(ray,k,context,tri.geomID(),tri.primID()));
       }
 
       /*! Test if the ray is occluded by one of the M triangles. */
       static __forceinline bool occluded(Precalculations& pre, RayK<K>& ray, size_t k, IntersectContext* context, const TriangleMvMB<M>& tri)
       {
         STAT3(shadow.trav_prims,1,1,1);
-        const Vec3vf<Mx> time(ray.time()[k]);
-        const Vec3vf<Mx> v0 = madd(time,Vec3vf<Mx>(tri.dv0),Vec3vf<Mx>(tri.v0));
-        const Vec3vf<Mx> v1 = madd(time,Vec3vf<Mx>(tri.dv1),Vec3vf<Mx>(tri.v1));
-        const Vec3vf<Mx> v2 = madd(time,Vec3vf<Mx>(tri.dv2),Vec3vf<Mx>(tri.v2));
-        return pre.intersect(ray,k,v0,v1,v2,UVIdentity<Mx>(),Occluded1KEpilogM<M,Mx,K,filter>(ray,k,context,tri.geomID(),tri.primID()));
+        const Vec3vf<M> time(ray.time()[k]);
+        const Vec3vf<M> v0 = madd(time,Vec3vf<M>(tri.dv0),Vec3vf<M>(tri.v0));
+        const Vec3vf<M> v1 = madd(time,Vec3vf<M>(tri.dv1),Vec3vf<M>(tri.v1));
+        const Vec3vf<M> v2 = madd(time,Vec3vf<M>(tri.dv2),Vec3vf<M>(tri.v2));
+        return pre.intersect(ray,k,v0,v1,v2,UVIdentity<M>(),Occluded1KEpilogM<M,K,filter>(ray,k,context,tri.geomID(),tri.primID()));
       }
     };
   }

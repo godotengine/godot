@@ -1,4 +1,4 @@
-// Copyright 2009-2020 Intel Corporation
+// Copyright 2009-2021 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
 #include "device.h"
@@ -64,6 +64,9 @@ namespace embree
     case CPU::NEHALEM:         frequency_level = FREQUENCY_SIMD128; break;
     case CPU::CORE2:           frequency_level = FREQUENCY_SIMD128; break;
     case CPU::CORE1:           frequency_level = FREQUENCY_SIMD128; break;
+    case CPU::XEON_PHI_KNIGHTS_MILL   : frequency_level = FREQUENCY_SIMD512; break;
+    case CPU::XEON_PHI_KNIGHTS_LANDING: frequency_level = FREQUENCY_SIMD512; break;
+    case CPU::ARM:             frequency_level = FREQUENCY_SIMD128; break;
     }
 
     /* initialize global state */
@@ -71,10 +74,6 @@ namespace embree
     State::parseString(EMBREE_CONFIG);
 #endif
     State::parseString(cfg);
-    if (!ignore_config_files && FileName::executableFolder() != FileName(""))
-      State::parseFile(FileName::executableFolder()+FileName(".embree" TOSTRING(RTC_VERSION_MAJOR)));
-    if (!ignore_config_files && FileName::homeFolder() != FileName(""))
-      State::parseFile(FileName::homeFolder()+FileName(".embree" TOSTRING(RTC_VERSION_MAJOR)));
     State::verify();
 
     /* check whether selected ISA is supported by the HW, as the user could have forced an unsupported ISA */    
@@ -127,7 +126,7 @@ namespace embree
     /* ray stream SOA to AOS conversion */
 #if defined(EMBREE_RAY_PACKETS)
     RayStreamFilterFuncsType rayStreamFilterFuncs;
-    SELECT_SYMBOL_DEFAULT_SSE42_AVX_AVX2_AVX512KNL_AVX512SKX(enabled_cpu_features,rayStreamFilterFuncs);
+    SELECT_SYMBOL_DEFAULT_SSE42_AVX_AVX2_AVX512(enabled_cpu_features,rayStreamFilterFuncs);
     rayStreamFilters = rayStreamFilterFuncs();
 #endif
   }
@@ -153,11 +152,8 @@ namespace embree
 #if defined(EMBREE_TARGET_AVX2)
     v += "AVX2 ";
 #endif
-#if defined(EMBREE_TARGET_AVX512KNL)
-    v += "AVX512KNL ";
-#endif
-#if defined(EMBREE_TARGET_AVX512SKX)
-    v += "AVX512SKX ";
+#if defined(EMBREE_TARGET_AVX512)
+    v += "AVX512 ";
 #endif
     return v;
   }
@@ -220,9 +216,6 @@ namespace embree
 #endif
 #if defined(TASKING_INTERNAL)
     std::cout << "internal_tasking_system ";
-#endif
-#if defined(TASKING_GCD) && defined(BUILD_IOS)
-    std::cout << "GCD tasking system ";
 #endif
 #if defined(TASKING_PPL)
 	std::cout << "PPL ";
@@ -448,7 +441,7 @@ namespace embree
 #endif
 
 #if defined(EMBREE_TARGET_SIMD16) && defined(EMBREE_RAY_PACKETS)
-    case RTC_DEVICE_PROPERTY_NATIVE_RAY16_SUPPORTED: return hasISA(AVX512KNL) | hasISA(AVX512SKX);
+    case RTC_DEVICE_PROPERTY_NATIVE_RAY16_SUPPORTED: return hasISA(AVX512);
 #else
     case RTC_DEVICE_PROPERTY_NATIVE_RAY16_SUPPORTED: return 0;
 #endif
@@ -505,10 +498,6 @@ namespace embree
 
 #if defined(TASKING_PPL)
     case RTC_DEVICE_PROPERTY_TASKING_SYSTEM: return 2;
-#endif
-            
-#if defined(TASKING_GCD) && defined(BUILD_IOS)
-    case RTC_DEVICE_PROPERTY_TASKING_SYSTEM: return 3;
 #endif
 
 #if defined(EMBREE_GEOMETRY_TRIANGLE)

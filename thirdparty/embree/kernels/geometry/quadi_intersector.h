@@ -1,4 +1,4 @@
-// Copyright 2009-2020 Intel Corporation
+// Copyright 2009-2021 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
@@ -230,7 +230,7 @@ namespace embree
         {
           if (!quad.valid(i)) break;
           STAT3(normal.trav_prims,1,popcnt(valid_i),K);
-          Vec3vf<K> v0,v1,v2,v3; quad.gather(valid_i,v0,v1,v2,v3,i,context->scene,ray.time());
+          Vec3vf<K> v0,v1,v2,v3; quad.template gather<K>(valid_i,v0,v1,v2,v3,i,context->scene,ray.time());
           pre.intersectK(valid_i,ray,v0,v1,v2,v3,IntersectKEpilogM<M,K,filter>(ray,context,quad.geomID(),quad.primID(),i));
         }
       }
@@ -243,7 +243,7 @@ namespace embree
         {
           if (!quad.valid(i)) break;
           STAT3(shadow.trav_prims,1,popcnt(valid0),K);
-          Vec3vf<K> v0,v1,v2,v3; quad.gather(valid_i,v0,v1,v2,v3,i,context->scene,ray.time());
+          Vec3vf<K> v0,v1,v2,v3; quad.template gather<K>(valid_i,v0,v1,v2,v3,i,context->scene,ray.time());
           if (pre.intersectK(valid0,ray,v0,v1,v2,v3,OccludedKEpilogM<M,K,filter>(valid0,ray,context,quad.geomID(),quad.primID(),i)))
             break;
         }
@@ -310,7 +310,7 @@ namespace embree
         {
           if (!quad.valid(i)) break;
           STAT3(normal.trav_prims,1,popcnt(valid_i),K);
-          Vec3vf<K> v0,v1,v2,v3; quad.gather(valid_i,v0,v1,v2,v3,i,context->scene,ray.time());
+          Vec3vf<K> v0,v1,v2,v3; quad.template gather<K>(valid_i,v0,v1,v2,v3,i,context->scene,ray.time());
           pre.intersectK(valid_i,ray,v0,v1,v2,v3,IntersectKEpilogM<M,K,filter>(ray,context,quad.geomID(),quad.primID(),i));
         }
       }
@@ -323,7 +323,7 @@ namespace embree
         {
           if (!quad.valid(i)) break;
           STAT3(shadow.trav_prims,1,popcnt(valid0),K);
-          Vec3vf<K> v0,v1,v2,v3; quad.gather(valid_i,v0,v1,v2,v3,i,context->scene,ray.time());
+          Vec3vf<K> v0,v1,v2,v3; quad.template gather<K>(valid_i,v0,v1,v2,v3,i,context->scene,ray.time());
           if (pre.intersectK(valid0,ray,v0,v1,v2,v3,OccludedKEpilogM<M,K,filter>(valid0,ray,context,quad.geomID(),quad.primID(),i)))
             break;
         }

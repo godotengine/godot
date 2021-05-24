@@ -1,4 +1,4 @@
-// Copyright 2009-2020 Intel Corporation
+// Copyright 2009-2021 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
@@ -275,11 +275,11 @@ namespace embree
     parallel_set<uint32_t> holeSet;
 
     /*! fast lookup table to detect invalid faces */
-    mvector<int8_t> invalid_face;
+    mvector<char> invalid_face;
 
     /*! test if face i is invalid in timestep j */
-    __forceinline       int8_t& invalidFace(size_t i, size_t j = 0)       { return invalid_face[i*numTimeSteps+j]; }
-    __forceinline const int8_t& invalidFace(size_t i, size_t j = 0) const { return invalid_face[i*numTimeSteps+j]; }
+    __forceinline       char& invalidFace(size_t i, size_t j = 0)       { return invalid_face[i*numTimeSteps+j]; }
+    __forceinline const char& invalidFace(size_t i, size_t j = 0) const { return invalid_face[i*numTimeSteps+j]; }
 
     /*! interpolation cache */
   public:

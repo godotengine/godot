@@ -145,7 +145,7 @@ License: Expat
 
 Files: ./thirdparty/embree/
 Comment: Embree
-Copyright: 2009-2021 Intel Corporation
+Copyright: 2009-2021, Intel Corporation
 License: Apache-2.0
 
 Files: ./thirdparty/enet/

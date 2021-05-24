@@ -1,4 +1,4 @@
-// Copyright 2009-2020 Intel Corporation
+// Copyright 2009-2021 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
@@ -73,7 +73,7 @@ namespace embree
     friend bool operator!=(const FileName& a, const FileName& b);
 
     /*! output operator */
-    friend embree_ostream operator<<(embree_ostream cout, const FileName& filename);
+    friend std::ostream& operator<<(std::ostream& cout, const FileName& filename);
    
   private:
     std::string filename;
