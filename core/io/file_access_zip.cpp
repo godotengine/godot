@@ -229,9 +229,7 @@ ZipArchive::ZipArchive() {
 
 ZipArchive::~ZipArchive() {
 	for (int i = 0; i < packages.size(); i++) {
-		FileAccess *f = (FileAccess *)unzGetOpaque(packages[i].zfile);
 		unzClose(packages[i].zfile);
-		memdelete(f);
 	}
 
 	packages.clear();
