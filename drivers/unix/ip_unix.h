@@ -38,7 +38,7 @@
 class IPUnix : public IP {
 	GDCLASS(IPUnix, IP);
 
-	virtual IPAddress _resolve_hostname(const String &p_hostname, IP::Type p_type) override;
+	virtual void _resolve_hostname(List<IPAddress> &r_addresses, const String &p_hostname, Type p_type = TYPE_ANY) const override;
 
 	static IP *_create_unix();
 

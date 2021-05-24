@@ -89,7 +89,7 @@ static IPAddress _sockaddr2ip(struct sockaddr *p_addr) {
 	return ip;
 };
 
-IPAddress IPUnix::_resolve_hostname(const String &p_hostname, Type p_type) {
+void IPUnix::_resolve_hostname(List<IPAddress> &r_addresses, const String &p_hostname, Type p_type) const {
 	struct addrinfo hints;
 	struct addrinfo *result = nullptr;
 
@@ -108,7 +108,7 @@ IPAddress IPUnix::_resolve_hostname(const String &p_hostname, Type p_type) {
 	int s = getaddrinfo(p_hostname.utf8().get_data(), nullptr, &hints, &result);
 	if (s != 0) {
 		ERR_PRINT("getaddrinfo failed! Cannot resolve hostname.");
-		return IPAddress();
+		return;
 	};
 
 	if (result == nullptr || result->ai_addr == nullptr) {
@@ -116,14 +116,24 @@ IPAddress IPUnix::_resolve_hostname(const String &p_hostname, Type p_type) {
 		if (result) {
 			freeaddrinfo(result);
 		}
-		return IPAddress();
+		return;
 	};
 
-	IPAddress ip = _sockaddr2ip(result->ai_addr);
+	struct addrinfo *next = result;
+
+	do {
+		if (next->ai_addr == NULL) {
+			next = next->ai_next;
+			continue;
+		}
+		IPAddress ip = _sockaddr2ip(next->ai_addr);
+		if (!r_addresses.find(ip)) {
+			r_addresses.push_back(ip);
+		}
+		next = next->ai_next;
+	} while (next);
 
 	freeaddrinfo(result);
-
-	return ip;
 }
 
 #if defined(WINDOWS_ENABLED)
