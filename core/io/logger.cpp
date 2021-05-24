@@ -33,6 +33,7 @@
 #include "core/config/project_settings.h"
 #include "core/os/dir_access.h"
 #include "core/os/os.h"
+#include "core/os/time.h"
 #include "core/string/print_string.h"
 
 #if defined(MINGW_ENABLED) || defined(_MSC_VER)
@@ -156,11 +157,7 @@ void RotatedFileLogger::rotate_file() {
 
 	if (FileAccess::exists(base_path)) {
 		if (max_files > 1) {
-			char timestamp[21];
-			OS::Date date = OS::get_singleton()->get_date();
-			OS::Time time = OS::get_singleton()->get_time();
-			sprintf(timestamp, "_%04d-%02d-%02d_%02d.%02d.%02d", date.year, date.month, date.day, time.hour, time.min, time.sec);
-
+			String timestamp = Time::get_singleton()->get_datetime_string_from_system().replace(":", ".");
 			String backup_name = base_path.get_basename() + timestamp;
 			if (base_path.get_extension() != String()) {
 				backup_name += "." + base_path.get_extension();

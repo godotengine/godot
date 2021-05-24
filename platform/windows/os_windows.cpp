@@ -315,8 +315,8 @@ OS::Time OS_Windows::get_time(bool utc) const {
 
 	Time time;
 	time.hour = systemtime.wHour;
-	time.min = systemtime.wMinute;
-	time.sec = systemtime.wSecond;
+	time.minute = systemtime.wMinute;
+	time.second = systemtime.wSecond;
 	return time;
 }
 
