@@ -175,6 +175,9 @@ public:
 		return scale;
 	}
 	virtual bool screen_is_touchscreen(int p_screen = SCREEN_OF_MAIN_WINDOW) const;
+
+	// Keep the ScreenOrientation enum values in sync with the `display/window/handheld/orientation`
+	// project setting hint.
 	enum ScreenOrientation {
 		SCREEN_LANDSCAPE,
 		SCREEN_PORTRAIT,
