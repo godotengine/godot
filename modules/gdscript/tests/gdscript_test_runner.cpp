@@ -257,6 +257,7 @@ bool GDScriptTestRunner::make_tests() {
 
 	ERR_FAIL_COND_V_MSG(err != OK, false, "Could not open specified test directory.");
 
+	source_dir = dir->get_current_dir() + "/"; // Make it absolute path.
 	return make_tests_for_dir(dir->get_current_dir());
 }
 
@@ -361,11 +362,9 @@ void GDScriptTest::error_handler(void *p_this, const char *p_function, const cha
 			break;
 	}
 
-	builder.append("\n>> ");
+	builder.append("\n>> on function: ");
 	builder.append(p_function);
-	builder.append("\n>> ");
-	builder.append(p_function);
-	builder.append("\n>> ");
+	builder.append("()\n>> ");
 	builder.append(String(p_file).trim_prefix(self->base_dir));
 	builder.append("\n>> ");
 	builder.append(itos(p_line));
