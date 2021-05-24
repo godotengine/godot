@@ -33,6 +33,7 @@
 #include "core/math/geometry_2d.h"
 #include "core/math/math_funcs.h"
 #include "renderer_compositor_rd.h"
+#include "servers/rendering/rendering_server_default.h"
 
 void RendererCanvasRenderRD::_update_transform_2d_to_mat4(const Transform2D &p_transform, float *p_mat4) {
 	p_mat4[0] = p_transform.elements[0][0];
@@ -390,7 +391,7 @@ void RendererCanvasRenderRD::_bind_canvas_texture(RD::DrawListID p_draw_list, RI
 	r_last_texture = p_texture;
 }
 
-void RendererCanvasRenderRD::_render_item(RD::DrawListID p_draw_list, const Item *p_item, RD::FramebufferFormatID p_framebuffer_format, const Transform2D &p_canvas_transform_inverse, Item *&current_clip, Light *p_lights, PipelineVariants *p_pipeline_variants) {
+void RendererCanvasRenderRD::_render_item(RD::DrawListID p_draw_list, RID p_render_target, const Item *p_item, RD::FramebufferFormatID p_framebuffer_format, const Transform2D &p_canvas_transform_inverse, Item *&current_clip, Light *p_lights, PipelineVariants *p_pipeline_variants) {
 	//create an empty push constant
 
 	RS::CanvasItemTextureFilter current_filter = default_filter;
@@ -747,9 +748,15 @@ void RendererCanvasRenderRD::_render_item(RD::DrawListID p_draw_list, const Item
 				} else if (c->type == Item::Command::TYPE_PARTICLES) {
 					const Item::CommandParticles *pt = static_cast<const Item::CommandParticles *>(c);
 					ERR_BREAK(storage->particles_get_mode(pt->particles) != RS::PARTICLES_MODE_2D);
+					storage->particles_request_process(pt->particles);
+
 					if (storage->particles_is_inactive(pt->particles)) {
 						break;
 					}
+
+					RenderingServerDefault::redraw_request(); // active particles means redraw request
+
+					bool local_coords = true;
 					int dpc = storage->particles_get_draw_passes(pt->particles);
 					if (dpc == 0) {
 						break; //nothing to draw
@@ -768,6 +775,30 @@ void RendererCanvasRenderRD::_render_item(RD::DrawListID p_draw_list, const Item
 
 					mesh = storage->particles_get_draw_pass_mesh(pt->particles, 0); //higher ones are ignored
 					texture = pt->texture;
+
+					if (storage->particles_has_collision(pt->particles) && storage->render_target_is_sdf_enabled(p_render_target)) {
+						//pass collision information
+						Transform2D xform;
+						if (local_coords) {
+							xform = p_item->final_transform;
+						} else {
+							xform = p_canvas_transform_inverse;
+						}
+
+						RID sdf_texture = storage->render_target_get_sdf_texture(p_render_target);
+
+						Rect2 to_screen;
+						{
+							Rect2 sdf_rect = storage->render_target_get_sdf_rect(p_render_target);
+
+							to_screen.size = Vector2(1.0 / sdf_rect.size.width, 1.0 / sdf_rect.size.height);
+							to_screen.position = -sdf_rect.position * to_screen.size;
+						}
+
+						storage->particles_set_canvas_sdf_collision(pt->particles, true, xform, to_screen, sdf_texture);
+					} else {
+						storage->particles_set_canvas_sdf_collision(pt->particles, false, Transform2D(), Rect2(), RID());
+					}
 				}
 
 				if (mesh.is_null()) {
@@ -1052,7 +1083,7 @@ void RendererCanvasRenderRD::_render_items(RID p_to_render_target, int p_item_co
 			}
 		}
 
-		_render_item(draw_list, ci, fb_format, canvas_transform_inverse, current_clip, p_lights, pipeline_variants);
+		_render_item(draw_list, p_to_render_target, ci, fb_format, canvas_transform_inverse, current_clip, p_lights, pipeline_variants);
 
 		prev_material = material;
 	}
@@ -1280,6 +1311,7 @@ void RendererCanvasRenderRD::canvas_render_items(RID p_to_render_target, Item *p
 	Item *canvas_group_owner = nullptr;
 
 	bool update_skeletons = false;
+	bool time_used = false;
 
 	while (ci) {
 		if (ci->copy_back_buffer && canvas_group_owner == nullptr) {
@@ -1304,6 +1336,9 @@ void RendererCanvasRenderRD::canvas_render_items(RID p_to_render_target, Item *p
 
 				if (md->shader_data->uses_sdf) {
 					r_sdf_used = true;
+				}
+				if (md->shader_data->uses_time) {
+					time_used = true;
 				}
 				if (md->last_frame != RendererCompositorRD::singleton->get_frame_number()) {
 					md->last_frame = RendererCompositorRD::singleton->get_frame_number();
@@ -1400,6 +1435,10 @@ void RendererCanvasRenderRD::canvas_render_items(RID p_to_render_target, Item *p
 		}
 
 		ci = ci->next;
+	}
+
+	if (time_used) {
+		RenderingServerDefault::redraw_request();
 	}
 }
 
@@ -1877,6 +1916,7 @@ void RendererCanvasRenderRD::ShaderData::set_code(const String &p_code) {
 	uniforms.clear();
 	uses_screen_texture = false;
 	uses_sdf = false;
+	uses_time = false;
 
 	if (code == String()) {
 		return; //just invalid, but no error
@@ -1901,6 +1941,7 @@ void RendererCanvasRenderRD::ShaderData::set_code(const String &p_code) {
 
 	actions.usage_flag_pointers["SCREEN_TEXTURE"] = &uses_screen_texture;
 	actions.usage_flag_pointers["texture_sdf"] = &uses_sdf;
+	actions.usage_flag_pointers["TIME"] = &uses_time;
 
 	actions.uniforms = &uniforms;
 

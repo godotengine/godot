@@ -19,6 +19,8 @@ layout(local_size_x = 64, local_size_y = 1, local_size_z = 1) in;
 #define SAMPLER_NEAREST_WITH_MIPMAPS_ANISOTROPIC_REPEAT 10
 #define SAMPLER_LINEAR_WITH_MIPMAPS_ANISOTROPIC_REPEAT 11
 
+#define SDF_MAX_LENGTH 16384.0
+
 /* SET 0: GLOBAL DATA */
 
 layout(set = 0, binding = 1) uniform sampler material_samplers[12];
@@ -54,6 +56,7 @@ struct Attractor {
 #define COLLIDER_TYPE_BOX 1
 #define COLLIDER_TYPE_SDF 2
 #define COLLIDER_TYPE_HEIGHT_FIELD 3
+#define COLLIDER_TYPE_2D_SDF 4
 
 struct Collider {
 	mat4 transform;
@@ -452,128 +455,167 @@ void main() {
 
 #endif
 
-		for (uint i = 0; i < FRAME.collider_count; i++) {
-			vec3 normal;
-			float depth;
-			bool col = false;
+		if (FRAME.collider_count == 1 && FRAME.colliders[0].type == COLLIDER_TYPE_2D_SDF) {
+			//2D collision
 
-			vec3 rel_vec = PARTICLE.xform[3].xyz - FRAME.colliders[i].transform[3].xyz;
-			vec3 local_pos = rel_vec * mat3(FRAME.colliders[i].transform);
+			vec2 pos = PARTICLE.xform[3].xy;
+			vec4 to_sdf_x = FRAME.colliders[0].transform[0];
+			vec4 to_sdf_y = FRAME.colliders[0].transform[1];
+			vec2 sdf_pos = vec2(dot(vec4(pos, 0, 1), to_sdf_x), dot(vec4(pos, 0, 1), to_sdf_y));
 
-			switch (FRAME.colliders[i].type) {
-				case COLLIDER_TYPE_SPHERE: {
-					float d = length(rel_vec) - (particle_size + FRAME.colliders[i].extents.x);
+			vec4 sdf_to_screen = vec4(FRAME.colliders[0].extents, FRAME.colliders[0].scale);
 
-					if (d < 0.0) {
-						col = true;
-						depth = -d;
-						normal = normalize(rel_vec);
-					}
+			vec2 uv_pos = sdf_pos * sdf_to_screen.xy + sdf_to_screen.zw;
 
-				} break;
-				case COLLIDER_TYPE_BOX: {
-					vec3 abs_pos = abs(local_pos);
-					vec3 sgn_pos = sign(local_pos);
+			if (all(greaterThan(uv_pos, vec2(0.0))) && all(lessThan(uv_pos, vec2(1.0)))) {
+				vec2 pos2 = pos + vec2(0, particle_size);
+				vec2 sdf_pos2 = vec2(dot(vec4(pos2, 0, 1), to_sdf_x), dot(vec4(pos2, 0, 1), to_sdf_y));
+				float sdf_particle_size = distance(sdf_pos, sdf_pos2);
 
-					if (any(greaterThan(abs_pos, FRAME.colliders[i].extents))) {
-						//point outside box
+				float d = texture(sampler2D(height_field_texture, material_samplers[SAMPLER_LINEAR_CLAMP]), uv_pos).r * SDF_MAX_LENGTH;
 
-						vec3 closest = min(abs_pos, FRAME.colliders[i].extents);
-						vec3 rel = abs_pos - closest;
-						depth = length(rel) - particle_size;
-						if (depth < 0.0) {
-							col = true;
-							normal = mat3(FRAME.colliders[i].transform) * (normalize(rel) * sgn_pos);
-							depth = -depth;
-						}
-					} else {
-						//point inside box
-						vec3 axis_len = FRAME.colliders[i].extents - abs_pos;
-						// there has to be a faster way to do this?
-						if (all(lessThan(axis_len.xx, axis_len.yz))) {
-							normal = vec3(1, 0, 0);
-						} else if (all(lessThan(axis_len.yy, axis_len.xz))) {
-							normal = vec3(0, 1, 0);
-						} else {
-							normal = vec3(0, 0, 1);
-						}
+				d -= sdf_particle_size;
 
-						col = true;
-						depth = dot(normal * axis_len, vec3(1)) + particle_size;
-						normal = mat3(FRAME.colliders[i].transform) * (normal * sgn_pos);
-					}
+				if (d < 0.0) {
+					const float EPSILON = 0.001;
+					vec2 n = normalize(vec2(
+							texture(sampler2D(height_field_texture, material_samplers[SAMPLER_LINEAR_CLAMP]), uv_pos + vec2(EPSILON, 0.0)).r - texture(sampler2D(height_field_texture, material_samplers[SAMPLER_LINEAR_CLAMP]), uv_pos - vec2(EPSILON, 0.0)).r,
+							texture(sampler2D(height_field_texture, material_samplers[SAMPLER_LINEAR_CLAMP]), uv_pos + vec2(0.0, EPSILON)).r - texture(sampler2D(height_field_texture, material_samplers[SAMPLER_LINEAR_CLAMP]), uv_pos - vec2(0.0, EPSILON)).r));
 
-				} break;
-				case COLLIDER_TYPE_SDF: {
-					vec3 apos = abs(local_pos);
-					float extra_dist = 0.0;
-					if (any(greaterThan(apos, FRAME.colliders[i].extents))) { //outside
-						vec3 mpos = min(apos, FRAME.colliders[i].extents);
-						extra_dist = distance(mpos, apos);
-					}
+					collided = true;
+					sdf_pos2 = sdf_pos + n * d;
+					pos2 = vec2(dot(vec4(sdf_pos2, 0, 1), FRAME.colliders[0].transform[2]), dot(vec4(sdf_pos2, 0, 1), FRAME.colliders[0].transform[3]));
 
-					if (extra_dist > particle_size) {
-						continue;
-					}
+					n = pos - pos2;
 
-					vec3 uvw_pos = (local_pos / FRAME.colliders[i].extents) * 0.5 + 0.5;
-					float s = texture(sampler3D(sdf_vec_textures[FRAME.colliders[i].texture_index], material_samplers[SAMPLER_LINEAR_CLAMP]), uvw_pos).r;
-					s *= FRAME.colliders[i].scale;
-					s += extra_dist;
-					if (s < particle_size) {
-						col = true;
-						depth = particle_size - s;
-						const float EPSILON = 0.001;
-						normal = mat3(FRAME.colliders[i].transform) *
-								 normalize(
-										 vec3(
-												 texture(sampler3D(sdf_vec_textures[FRAME.colliders[i].texture_index], material_samplers[SAMPLER_LINEAR_CLAMP]), uvw_pos + vec3(EPSILON, 0.0, 0.0)).r - texture(sampler3D(sdf_vec_textures[FRAME.colliders[i].texture_index], material_samplers[SAMPLER_LINEAR_CLAMP]), uvw_pos - vec3(EPSILON, 0.0, 0.0)).r,
-												 texture(sampler3D(sdf_vec_textures[FRAME.colliders[i].texture_index], material_samplers[SAMPLER_LINEAR_CLAMP]), uvw_pos + vec3(0.0, EPSILON, 0.0)).r - texture(sampler3D(sdf_vec_textures[FRAME.colliders[i].texture_index], material_samplers[SAMPLER_LINEAR_CLAMP]), uvw_pos - vec3(0.0, EPSILON, 0.0)).r,
-												 texture(sampler3D(sdf_vec_textures[FRAME.colliders[i].texture_index], material_samplers[SAMPLER_LINEAR_CLAMP]), uvw_pos + vec3(0.0, 0.0, EPSILON)).r - texture(sampler3D(sdf_vec_textures[FRAME.colliders[i].texture_index], material_samplers[SAMPLER_LINEAR_CLAMP]), uvw_pos - vec3(0.0, 0.0, EPSILON)).r));
-					}
-
-				} break;
-				case COLLIDER_TYPE_HEIGHT_FIELD: {
-					vec3 local_pos_bottom = local_pos;
-					local_pos_bottom.y -= particle_size;
-
-					if (any(greaterThan(abs(local_pos_bottom), FRAME.colliders[i].extents))) {
-						continue;
-					}
-
-					const float DELTA = 1.0 / 8192.0;
-
-					vec3 uvw_pos = vec3(local_pos_bottom / FRAME.colliders[i].extents) * 0.5 + 0.5;
-
-					float y = 1.0 - texture(sampler2D(height_field_texture, material_samplers[SAMPLER_LINEAR_CLAMP]), uvw_pos.xz).r;
-
-					if (y > uvw_pos.y) {
-						//inside heightfield
-
-						vec3 pos1 = (vec3(uvw_pos.x, y, uvw_pos.z) * 2.0 - 1.0) * FRAME.colliders[i].extents;
-						vec3 pos2 = (vec3(uvw_pos.x + DELTA, 1.0 - texture(sampler2D(height_field_texture, material_samplers[SAMPLER_LINEAR_CLAMP]), uvw_pos.xz + vec2(DELTA, 0)).r, uvw_pos.z) * 2.0 - 1.0) * FRAME.colliders[i].extents;
-						vec3 pos3 = (vec3(uvw_pos.x, 1.0 - texture(sampler2D(height_field_texture, material_samplers[SAMPLER_LINEAR_CLAMP]), uvw_pos.xz + vec2(0, DELTA)).r, uvw_pos.z + DELTA) * 2.0 - 1.0) * FRAME.colliders[i].extents;
-
-						normal = normalize(cross(pos1 - pos2, pos1 - pos3));
-						float local_y = (vec3(local_pos / FRAME.colliders[i].extents) * 0.5 + 0.5).y;
-
-						col = true;
-						depth = dot(normal, pos1) - dot(normal, local_pos_bottom);
-					}
-
-				} break;
+					collision_normal = normalize(vec3(n, 0.0));
+					collision_depth = length(n);
+				}
 			}
 
-			if (col) {
-				if (!collided) {
-					collided = true;
-					collision_normal = normal;
-					collision_depth = depth;
-				} else {
-					vec3 c = collision_normal * collision_depth;
-					c += normal * max(0.0, depth - dot(normal, c));
-					collision_normal = normalize(c);
-					collision_depth = length(c);
+		} else {
+			for (uint i = 0; i < FRAME.collider_count; i++) {
+				vec3 normal;
+				float depth;
+				bool col = false;
+
+				vec3 rel_vec = PARTICLE.xform[3].xyz - FRAME.colliders[i].transform[3].xyz;
+				vec3 local_pos = rel_vec * mat3(FRAME.colliders[i].transform);
+
+				switch (FRAME.colliders[i].type) {
+					case COLLIDER_TYPE_SPHERE: {
+						float d = length(rel_vec) - (particle_size + FRAME.colliders[i].extents.x);
+
+						if (d < 0.0) {
+							col = true;
+							depth = -d;
+							normal = normalize(rel_vec);
+						}
+
+					} break;
+					case COLLIDER_TYPE_BOX: {
+						vec3 abs_pos = abs(local_pos);
+						vec3 sgn_pos = sign(local_pos);
+
+						if (any(greaterThan(abs_pos, FRAME.colliders[i].extents))) {
+							//point outside box
+
+							vec3 closest = min(abs_pos, FRAME.colliders[i].extents);
+							vec3 rel = abs_pos - closest;
+							depth = length(rel) - particle_size;
+							if (depth < 0.0) {
+								col = true;
+								normal = mat3(FRAME.colliders[i].transform) * (normalize(rel) * sgn_pos);
+								depth = -depth;
+							}
+						} else {
+							//point inside box
+							vec3 axis_len = FRAME.colliders[i].extents - abs_pos;
+							// there has to be a faster way to do this?
+							if (all(lessThan(axis_len.xx, axis_len.yz))) {
+								normal = vec3(1, 0, 0);
+							} else if (all(lessThan(axis_len.yy, axis_len.xz))) {
+								normal = vec3(0, 1, 0);
+							} else {
+								normal = vec3(0, 0, 1);
+							}
+
+							col = true;
+							depth = dot(normal * axis_len, vec3(1)) + particle_size;
+							normal = mat3(FRAME.colliders[i].transform) * (normal * sgn_pos);
+						}
+
+					} break;
+					case COLLIDER_TYPE_SDF: {
+						vec3 apos = abs(local_pos);
+						float extra_dist = 0.0;
+						if (any(greaterThan(apos, FRAME.colliders[i].extents))) { //outside
+							vec3 mpos = min(apos, FRAME.colliders[i].extents);
+							extra_dist = distance(mpos, apos);
+						}
+
+						if (extra_dist > particle_size) {
+							continue;
+						}
+
+						vec3 uvw_pos = (local_pos / FRAME.colliders[i].extents) * 0.5 + 0.5;
+						float s = texture(sampler3D(sdf_vec_textures[FRAME.colliders[i].texture_index], material_samplers[SAMPLER_LINEAR_CLAMP]), uvw_pos).r;
+						s *= FRAME.colliders[i].scale;
+						s += extra_dist;
+						if (s < particle_size) {
+							col = true;
+							depth = particle_size - s;
+							const float EPSILON = 0.001;
+							normal = mat3(FRAME.colliders[i].transform) *
+									 normalize(
+											 vec3(
+													 texture(sampler3D(sdf_vec_textures[FRAME.colliders[i].texture_index], material_samplers[SAMPLER_LINEAR_CLAMP]), uvw_pos + vec3(EPSILON, 0.0, 0.0)).r - texture(sampler3D(sdf_vec_textures[FRAME.colliders[i].texture_index], material_samplers[SAMPLER_LINEAR_CLAMP]), uvw_pos - vec3(EPSILON, 0.0, 0.0)).r,
+													 texture(sampler3D(sdf_vec_textures[FRAME.colliders[i].texture_index], material_samplers[SAMPLER_LINEAR_CLAMP]), uvw_pos + vec3(0.0, EPSILON, 0.0)).r - texture(sampler3D(sdf_vec_textures[FRAME.colliders[i].texture_index], material_samplers[SAMPLER_LINEAR_CLAMP]), uvw_pos - vec3(0.0, EPSILON, 0.0)).r,
+													 texture(sampler3D(sdf_vec_textures[FRAME.colliders[i].texture_index], material_samplers[SAMPLER_LINEAR_CLAMP]), uvw_pos + vec3(0.0, 0.0, EPSILON)).r - texture(sampler3D(sdf_vec_textures[FRAME.colliders[i].texture_index], material_samplers[SAMPLER_LINEAR_CLAMP]), uvw_pos - vec3(0.0, 0.0, EPSILON)).r));
+						}
+
+					} break;
+					case COLLIDER_TYPE_HEIGHT_FIELD: {
+						vec3 local_pos_bottom = local_pos;
+						local_pos_bottom.y -= particle_size;
+
+						if (any(greaterThan(abs(local_pos_bottom), FRAME.colliders[i].extents))) {
+							continue;
+						}
+						const float DELTA = 1.0 / 8192.0;
+
+						vec3 uvw_pos = vec3(local_pos_bottom / FRAME.colliders[i].extents) * 0.5 + 0.5;
+
+						float y = 1.0 - texture(sampler2D(height_field_texture, material_samplers[SAMPLER_LINEAR_CLAMP]), uvw_pos.xz).r;
+
+						if (y > uvw_pos.y) {
+							//inside heightfield
+
+							vec3 pos1 = (vec3(uvw_pos.x, y, uvw_pos.z) * 2.0 - 1.0) * FRAME.colliders[i].extents;
+							vec3 pos2 = (vec3(uvw_pos.x + DELTA, 1.0 - texture(sampler2D(height_field_texture, material_samplers[SAMPLER_LINEAR_CLAMP]), uvw_pos.xz + vec2(DELTA, 0)).r, uvw_pos.z) * 2.0 - 1.0) * FRAME.colliders[i].extents;
+							vec3 pos3 = (vec3(uvw_pos.x, 1.0 - texture(sampler2D(height_field_texture, material_samplers[SAMPLER_LINEAR_CLAMP]), uvw_pos.xz + vec2(0, DELTA)).r, uvw_pos.z + DELTA) * 2.0 - 1.0) * FRAME.colliders[i].extents;
+
+							normal = normalize(cross(pos1 - pos2, pos1 - pos3));
+							float local_y = (vec3(local_pos / FRAME.colliders[i].extents) * 0.5 + 0.5).y;
+
+							col = true;
+							depth = dot(normal, pos1) - dot(normal, local_pos_bottom);
+						}
+
+					} break;
+				}
+
+				if (col) {
+					if (!collided) {
+						collided = true;
+						collision_normal = normal;
+						collision_depth = depth;
+					} else {
+						vec3 c = collision_normal * collision_depth;
+						c += normal * max(0.0, depth - dot(normal, c));
+						collision_normal = normalize(c);
+						collision_depth = length(c);
+					}
 				}
 			}
 		}

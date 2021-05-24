@@ -140,6 +140,62 @@ void GPUParticles2D::set_process_material(const Ref<Material> &p_material) {
 	update_configuration_warnings();
 }
 
+void GPUParticles2D::set_trail_enabled(bool p_enabled) {
+	trail_enabled = p_enabled;
+	RS::get_singleton()->particles_set_trails(particles, trail_enabled, trail_length);
+	update_configuration_warnings();
+	update();
+
+	RS::get_singleton()->particles_set_transform_align(particles, p_enabled ? RS::PARTICLES_TRANSFORM_ALIGN_Y_TO_VELOCITY : RS::PARTICLES_TRANSFORM_ALIGN_DISABLED);
+}
+void GPUParticles2D::set_trail_length(float p_seconds) {
+	ERR_FAIL_COND(p_seconds < 0.001);
+	trail_length = p_seconds;
+	RS::get_singleton()->particles_set_trails(particles, trail_enabled, trail_length);
+	update();
+}
+
+void GPUParticles2D::set_trail_sections(int p_sections) {
+	ERR_FAIL_COND(p_sections < 2);
+	ERR_FAIL_COND(p_sections > 128);
+
+	trail_sections = p_sections;
+	update();
+}
+void GPUParticles2D::set_trail_section_subdivisions(int p_subdivisions) {
+	ERR_FAIL_COND(trail_section_subdivisions < 1);
+	ERR_FAIL_COND(trail_section_subdivisions > 1024);
+
+	trail_section_subdivisions = p_subdivisions;
+	update();
+}
+
+bool GPUParticles2D::is_trail_enabled() const {
+	return trail_enabled;
+}
+float GPUParticles2D::get_trail_length() const {
+	return trail_length;
+}
+
+void GPUParticles2D::_update_collision_size() {
+	float csize = collision_base_size;
+
+	if (texture.is_valid()) {
+		csize *= (texture->get_width() + texture->get_height()) / 4.0; //half size since its a radius
+	}
+
+	RS::get_singleton()->particles_set_collision_base_size(particles, csize);
+}
+
+void GPUParticles2D::set_collision_base_size(float p_size) {
+	collision_base_size = p_size;
+	_update_collision_size();
+}
+
+float GPUParticles2D::get_collision_base_size() const {
+	return collision_base_size;
+}
+
 void GPUParticles2D::set_speed_scale(float p_scale) {
 	speed_scale = p_scale;
 	RS::get_singleton()->particles_set_speed_scale(particles, p_scale);
@@ -155,6 +211,13 @@ int GPUParticles2D::get_amount() const {
 
 float GPUParticles2D::get_lifetime() const {
 	return lifetime;
+}
+
+int GPUParticles2D::get_trail_sections() const {
+	return trail_sections;
+}
+int GPUParticles2D::get_trail_section_subdivisions() const {
+	return trail_section_subdivisions;
 }
 
 bool GPUParticles2D::get_one_shot() const {
@@ -253,6 +316,7 @@ Rect2 GPUParticles2D::capture_rect() const {
 
 void GPUParticles2D::set_texture(const Ref<Texture2D> &p_texture) {
 	texture = p_texture;
+	_update_collision_size();
 	update();
 }
 
@@ -271,10 +335,119 @@ void GPUParticles2D::restart() {
 void GPUParticles2D::_notification(int p_what) {
 	if (p_what == NOTIFICATION_DRAW) {
 		RID texture_rid;
+		Size2 size;
 		if (texture.is_valid()) {
 			texture_rid = texture->get_rid();
+			size = texture->get_size();
+		} else {
+			size = Size2(1, 1);
 		}
 
+		if (trail_enabled) {
+			RS::get_singleton()->mesh_clear(mesh);
+			PackedVector2Array points;
+			PackedVector2Array uvs;
+			PackedInt32Array bone_indices;
+			PackedFloat32Array bone_weights;
+			PackedInt32Array indices;
+
+			int total_segments = trail_sections * trail_section_subdivisions;
+			float depth = size.height * trail_sections;
+
+			for (int j = 0; j <= total_segments; j++) {
+				float v = j;
+				v /= total_segments;
+
+				float y = depth * v;
+				y = (depth * 0.5) - y;
+
+				int bone = j / trail_section_subdivisions;
+				float blend = 1.0 - float(j % trail_section_subdivisions) / float(trail_section_subdivisions);
+
+				float s = size.width;
+
+				points.push_back(Vector2(-s * 0.5, 0));
+				points.push_back(Vector2(+s * 0.5, 0));
+
+				uvs.push_back(Vector2(0, v));
+				uvs.push_back(Vector2(1, v));
+
+				for (int i = 0; i < 2; i++) {
+					bone_indices.push_back(bone);
+					bone_indices.push_back(MIN(trail_sections, bone + 1));
+					bone_indices.push_back(0);
+					bone_indices.push_back(0);
+
+					bone_weights.push_back(blend);
+					bone_weights.push_back(1.0 - blend);
+					bone_weights.push_back(0);
+					bone_weights.push_back(0);
+				}
+
+				if (j > 0) {
+					int base = j * 2 - 2;
+					indices.push_back(base + 0);
+					indices.push_back(base + 1);
+					indices.push_back(base + 2);
+
+					indices.push_back(base + 1);
+					indices.push_back(base + 3);
+					indices.push_back(base + 2);
+				}
+			}
+
+			Array arr;
+			arr.resize(RS::ARRAY_MAX);
+			arr[RS::ARRAY_VERTEX] = points;
+			arr[RS::ARRAY_TEX_UV] = uvs;
+			arr[RS::ARRAY_BONES] = bone_indices;
+			arr[RS::ARRAY_WEIGHTS] = bone_weights;
+			arr[RS::ARRAY_INDEX] = indices;
+
+			RS::get_singleton()->mesh_add_surface_from_arrays(mesh, RS::PRIMITIVE_TRIANGLES, arr, Array(), Dictionary(), RS::ARRAY_FLAG_USE_2D_VERTICES);
+
+			Vector<Transform> xforms;
+			for (int i = 0; i <= trail_sections; i++) {
+				Transform xform;
+				/*
+				xform.origin.y = depth / 2.0 - size.height * float(i);
+				xform.origin.y = -xform.origin.y; //bind is an inverse transform, so negate y */
+				xforms.push_back(xform);
+			}
+
+			RS::get_singleton()->particles_set_trail_bind_poses(particles, xforms);
+
+		} else {
+			RS::get_singleton()->mesh_clear(mesh);
+			Vector<Vector2> points;
+			points.resize(4);
+			points.write[0] = Vector2(-size.x / 2.0, -size.y / 2.0);
+			points.write[1] = Vector2(size.x / 2.0, -size.y / 2.0);
+			points.write[2] = Vector2(size.x / 2.0, size.y / 2.0);
+			points.write[3] = Vector2(-size.x / 2.0, size.y / 2.0);
+			Vector<Vector2> uvs;
+			uvs.resize(4);
+			uvs.write[0] = Vector2(0, 0);
+			uvs.write[1] = Vector2(1, 0);
+			uvs.write[2] = Vector2(1, 1);
+			uvs.write[3] = Vector2(0, 1);
+			Vector<int> indices;
+			indices.resize(6);
+			indices.write[0] = 0;
+			indices.write[1] = 1;
+			indices.write[2] = 2;
+			indices.write[3] = 0;
+			indices.write[4] = 2;
+			indices.write[5] = 3;
+			Array arr;
+			arr.resize(RS::ARRAY_MAX);
+			arr[RS::ARRAY_VERTEX] = points;
+			arr[RS::ARRAY_TEX_UV] = uvs;
+			arr[RS::ARRAY_INDEX] = indices;
+
+			RS::get_singleton()->mesh_add_surface_from_arrays(mesh, RS::PRIMITIVE_TRIANGLES, arr, Array(), Dictionary(), RS::ARRAY_FLAG_USE_2D_VERTICES);
+			RS::get_singleton()->particles_set_trail_bind_poses(particles, Vector<Transform>());
+		}
 		RS::get_singleton()->canvas_item_add_particles(get_canvas_item(), particles, texture_rid);
 
 #ifdef TOOLS_ENABLED
@@ -318,6 +491,7 @@ void GPUParticles2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_fractional_delta", "enable"), &GPUParticles2D::set_fractional_delta);
 	ClassDB::bind_method(D_METHOD("set_process_material", "material"), &GPUParticles2D::set_process_material);
 	ClassDB::bind_method(D_METHOD("set_speed_scale", "scale"), &GPUParticles2D::set_speed_scale);
+	ClassDB::bind_method(D_METHOD("set_collision_base_size", "size"), &GPUParticles2D::set_collision_base_size);
 
 	ClassDB::bind_method(D_METHOD("is_emitting"), &GPUParticles2D::is_emitting);
 	ClassDB::bind_method(D_METHOD("get_amount"), &GPUParticles2D::get_amount);
@@ -332,6 +506,7 @@ void GPUParticles2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_fractional_delta"), &GPUParticles2D::get_fractional_delta);
 	ClassDB::bind_method(D_METHOD("get_process_material"), &GPUParticles2D::get_process_material);
 	ClassDB::bind_method(D_METHOD("get_speed_scale"), &GPUParticles2D::get_speed_scale);
+	ClassDB::bind_method(D_METHOD("get_collision_base_size"), &GPUParticles2D::get_collision_base_size);
 
 	ClassDB::bind_method(D_METHOD("set_draw_order", "order"), &GPUParticles2D::set_draw_order);
 	ClassDB::bind_method(D_METHOD("get_draw_order"), &GPUParticles2D::get_draw_order);
@@ -342,6 +517,18 @@ void GPUParticles2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("capture_rect"), &GPUParticles2D::capture_rect);
 
 	ClassDB::bind_method(D_METHOD("restart"), &GPUParticles2D::restart);
+
+	ClassDB::bind_method(D_METHOD("set_trail_enabled", "enabled"), &GPUParticles2D::set_trail_enabled);
+	ClassDB::bind_method(D_METHOD("set_trail_length", "secs"), &GPUParticles2D::set_trail_length);
+
+	ClassDB::bind_method(D_METHOD("is_trail_enabled"), &GPUParticles2D::is_trail_enabled);
+	ClassDB::bind_method(D_METHOD("get_trail_length"), &GPUParticles2D::get_trail_length);
+
+	ClassDB::bind_method(D_METHOD("set_trail_sections", "sections"), &GPUParticles2D::set_trail_sections);
+	ClassDB::bind_method(D_METHOD("get_trail_sections"), &GPUParticles2D::get_trail_sections);
+
+	ClassDB::bind_method(D_METHOD("set_trail_section_subdivisions", "subdivisions"), &GPUParticles2D::set_trail_section_subdivisions);
+	ClassDB::bind_method(D_METHOD("get_trail_section_subdivisions"), &GPUParticles2D::get_trail_section_subdivisions);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "emitting"), "set_emitting", "is_emitting");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "amount", PROPERTY_HINT_EXP_RANGE, "1,1000000,1"), "set_amount", "get_amount");
@@ -354,10 +541,17 @@ void GPUParticles2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "randomness", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_randomness_ratio", "get_randomness_ratio");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "fixed_fps", PROPERTY_HINT_RANGE, "0,1000,1"), "set_fixed_fps", "get_fixed_fps");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "fract_delta"), "set_fractional_delta", "get_fractional_delta");
+	ADD_GROUP("Collision", "collision_");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "collision_base_size", PROPERTY_HINT_RANGE, "0,128,0.01,or_greater"), "set_collision_base_size", "get_collision_base_size");
 	ADD_GROUP("Drawing", "");
 	ADD_PROPERTY(PropertyInfo(Variant::RECT2, "visibility_rect"), "set_visibility_rect", "get_visibility_rect");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "local_coords"), "set_use_local_coordinates", "get_use_local_coordinates");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "draw_order", PROPERTY_HINT_ENUM, "Index,Lifetime"), "set_draw_order", "get_draw_order");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "draw_order", PROPERTY_HINT_ENUM, "Index,Lifetime,Reverse Lifetime"), "set_draw_order", "get_draw_order");
+	ADD_GROUP("Trails", "trail_");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "trail_enabled"), "set_trail_enabled", "is_trail_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "trail_length_secs", PROPERTY_HINT_RANGE, "0.01,10,0.01"), "set_trail_length", "get_trail_length");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "trail_sections", PROPERTY_HINT_RANGE, "2,128,1"), "set_trail_sections", "get_trail_sections");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "trail_section_subdivisions", PROPERTY_HINT_RANGE, "1,1024,1"), "set_trail_section_subdivisions", "get_trail_section_subdivisions");
 	ADD_GROUP("Process Material", "process_");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "process_material", PROPERTY_HINT_RESOURCE_TYPE, "ShaderMaterial,ParticlesMaterial"), "set_process_material", "get_process_material");
 	ADD_GROUP("Textures", "");
@@ -365,11 +559,16 @@ void GPUParticles2D::_bind_methods() {
 
 	BIND_ENUM_CONSTANT(DRAW_ORDER_INDEX);
 	BIND_ENUM_CONSTANT(DRAW_ORDER_LIFETIME);
+	BIND_ENUM_CONSTANT(DRAW_ORDER_REVERSE_LIFETIME);
 }
 
 GPUParticles2D::GPUParticles2D() {
 	particles = RS::get_singleton()->particles_create();
 	RS::get_singleton()->particles_set_mode(particles, RS::PARTICLES_MODE_2D);
+
+	mesh = RS::get_singleton()->mesh_create();
+	RS::get_singleton()->particles_set_draw_passes(particles, 1);
+	RS::get_singleton()->particles_set_draw_pass_mesh(particles, 0, mesh);
 
 	one_shot = false; // Needed so that set_emitting doesn't access uninitialized values
 	set_emitting(true);
@@ -383,10 +582,13 @@ GPUParticles2D::GPUParticles2D() {
 	set_randomness_ratio(0);
 	set_visibility_rect(Rect2(Vector2(-100, -100), Vector2(200, 200)));
 	set_use_local_coordinates(true);
-	set_draw_order(DRAW_ORDER_INDEX);
+	set_draw_order(DRAW_ORDER_LIFETIME);
 	set_speed_scale(1);
+	set_fixed_fps(30);
+	set_collision_base_size(collision_base_size);
 }
 
 GPUParticles2D::~GPUParticles2D() {
 	RS::get_singleton()->free(particles);
+	RS::get_singleton()->free(mesh);
 }
