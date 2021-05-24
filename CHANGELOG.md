@@ -4,6 +4,66 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+
+## [3.3.2] - 2021-05-24
+
+See the [release announcement](https://godotengine.org/article/maintenance-release-godot-3-3-2) for details.
+
+### Added
+
+#### GDScript
+
+- [Allow `warning-ignore` in the same line as the respective warning](https://github.com/godotengine/godot/pull/47863).
+
+#### Import
+
+- [Print a warning when importing a repeating NPOT texture in a GLES2 project](https://github.com/godotengine/godot/pull/48817).
+
+### Changed
+
+#### Editor
+
+- [Remove high radiance sizes from the editor due to issues on specific GPUs](https://github.com/godotengine/godot/pull/48906).
+
+### Fixed
+
+#### Build system
+
+- [Android: Remove `-fno-integrated-as`, it can break arm64v8 build](https://github.com/godotengine/godot/pull/48851).
+- [HTML5: Fix GDNative build with Emscripten 2.0.19+](https://github.com/godotengine/godot/pull/48831).
+- [Windows: Fix Embree crash when building with MinGW](https://github.com/godotengine/godot/pull/48888).
+  * Official builds are made with MinGW, and Godot 3.3.1 was thus subject to this [crash when baking lightmaps](https://github.com/godotengine/godot/issues/48822).
+
+#### Core
+
+- [Fix STL to Godot type conversion of polypartition](https://github.com/godotengine/godot/pull/48921).
+- [Fix duplicate close file when deconstructing ZipArchive](https://github.com/godotengine/godot/pull/49013).
+  * This would trigger a crash in Godot 3.3.1 when [exiting a project running from a ZIP data pack](https://github.com/godotengine/godot/issues/49012).
+
+#### Editor
+
+- [Fix swapped front/rear directions in viewport rotation control](https://github.com/godotengine/godot/pull/48895).
+- [Fix editor crash when exporting profiler data](https://github.com/godotengine/godot/pull/48917).
+
+#### Import
+
+- glTF: Improved error handling around [invalid images](https://github.com/godotengine/godot/pull/48904) and [invalid meshes](https://github.com/godotengine/godot/pull/48912).
+- [glTF: Fix incorrect skin deduplication when using named binds](https://github.com/godotengine/godot/pull/48913).
+
+#### Physics
+
+- [Fix ragdoll simulation when parent was readded to scene](https://github.com/godotengine/godot/pull/48823).
+- [Fix crash on debug shapes update if CollisionObject is not in tree](https://github.com/godotengine/godot/pull/48974).
+
+#### Porting
+
+- [macOS: Allow "on top" windows to enter full-screen mode](https://github.com/godotengine/godot/pull/49017).
+
+#### Rendering
+
+- [Batching: Fix `item_batch_flags` stale state causing glitches](https://github.com/godotengine/godot/pull/48992).
+
+
 ## [3.3.1] - 2021-05-18
 
 See the [release announcement](https://godotengine.org/article/maintenance-release-godot-3-3-1) for details.
@@ -90,6 +150,7 @@ See the [release announcement](https://godotengine.org/article/maintenance-relea
 #### VisualScript
 
 - [Fix wrongly setting default value on property hint change](https://github.com/godotengine/godot/pull/48702).
+
 
 ## [3.3] - 2021-04-21
 
@@ -431,6 +492,7 @@ See the [release announcement](https://godotengine.org/article/godot-3-3-has-arr
 - [Fade screen-space reflections towards the inner margin in GLES3](https://github.com/godotengine/godot/pull/41892).
 - [Ensure Reinhard tonemapping values are positive in GLES3](https://github.com/godotengine/godot/pull/42056).
 
+
 ## [3.2.3] - 2020-09-17
 
 See the [release announcement](https://godotengine.org/article/maintenance-release-godot-3-2-3) for details.
@@ -502,6 +564,7 @@ See the [release announcement](https://godotengine.org/article/maintenance-relea
 - Tree: Fix crash when hovering columns after removing a column
 - Windows: DirectInput: Use correct joypad ID
 - Thirdparty library updates: mbedtls 2.16.8, stb_vorbis 1.20, wslay 1.1.1
+
 
 ## [3.2.2] - 2020-06-26
 
@@ -588,6 +651,7 @@ See the [release announcement](https://godotengine.org/article/maintenance-relea
 - Windows: Do not probe joypads if `DirectInput` cannot be initializer
 - Windows: Fix overflow condition with QueryPerformanceCounter
 
+
 ## [3.2.1] - 2020-03-10
 
 See the [release announcement](https://godotengine.org/article/maintenance-release-godot-3-2-1) for details.
@@ -615,6 +679,7 @@ See the [release announcement](https://godotengine.org/article/maintenance-relea
 - Video: Workaround WebM playback bug after AudioServer latency fixes
 - Windows: Fix UPNP regression after upstream update
 - Windows: Disable NetSocket address reuse
+
 
 ## [3.2] - 2020-01-29
 
@@ -1342,6 +1407,7 @@ See the [release announcement](https://godotengine.org/article/maintenance-relea
 - **X11:** `OS.set_window_maximized()` now gives up after 0.5 seconds.
   - This makes the editor no longer freeze on startup when using fvwm.
 
+
 ## [3.1] - 2019-03-13
 
 ### Added
@@ -1601,6 +1667,7 @@ See the [release announcement](https://godotengine.org/article/maintenance-relea
 
 - Fixed a security issue relating to deserializing Variants.
 
+
 ## [3.0] - 2018-01-29
 
 ### Added
@@ -1734,6 +1801,8 @@ See the [release announcement](https://godotengine.org/article/maintenance-relea
 - HTML5 export using asm.js.
   - Only WebAssembly is supported now, since all browsers supporting WebGL 2.0 also support WebAssembly.
 
+
+[3.3.2]: https://downloads.tuxfamily.org/godotengine/3.3.2/Godot_v3.3.2-stable_changelog_chrono.txt
 [3.3.1]: https://downloads.tuxfamily.org/godotengine/3.3.1/Godot_v3.3.1-stable_changelog_chrono.txt
 [3.3]: https://downloads.tuxfamily.org/godotengine/3.3/Godot_v3.3-stable_changelog_chrono.txt
 [3.2.3]: https://downloads.tuxfamily.org/godotengine/3.2.3/Godot_v3.2.3-stable_changelog_chrono.txt
