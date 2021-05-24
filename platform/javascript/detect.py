@@ -185,10 +185,6 @@ def configure(env):
     if env["javascript_eval"]:
         env.Append(CPPDEFINES=["JAVASCRIPT_EVAL_ENABLED"])
 
-    if env["threads_enabled"] and env["gdnative_enabled"]:
-        print("Threads and GDNative support can't be both enabled due to WebAssembly limitations")
-        sys.exit(255)
-
     # Thread support (via SharedArrayBuffer).
     if env["threads_enabled"]:
         env.Append(CPPDEFINES=["PTHREAD_NO_RENAME"])
@@ -201,9 +197,20 @@ def configure(env):
         env.Append(CPPDEFINES=["NO_THREADS"])
 
     if env["gdnative_enabled"]:
-        major, minor, patch = get_compiler_version(env)
+        emcc_version = get_compiler_version(env)
+        major = int(emcc_version["major"])
+        minor = int(emcc_version["minor"])
+        patch = int(emcc_version["patch"])
         if major < 2 or (major == 2 and minor == 0 and patch < 10):
             print("GDNative support requires emscripten >= 2.0.10, detected: %s.%s.%s" % (major, minor, patch))
+            sys.exit(255)
+        if (
+            env["threads_enabled"]
+            and major < 3
+            or (major == 3 and minor < 1)
+            or (major == 3 and minor == 1 and patch < 14)
+        ):
+            print("Threads and GDNative requires emscripten => 3.1.14, detected: %s.%s.%s" % (major, minor, patch))
             sys.exit(255)
         env.Append(CCFLAGS=["-s", "RELOCATABLE=1"])
         env.Append(LINKFLAGS=["-s", "RELOCATABLE=1"])

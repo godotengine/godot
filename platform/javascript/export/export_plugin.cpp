@@ -215,7 +215,7 @@ Error EditorExportPlatformJavaScript::_build_pwa(const Ref<EditorExportPreset> &
 		cache_files.push_back(name + ".icon.png");
 		cache_files.push_back(name + ".apple-touch-icon.png");
 	}
-	if (mode == EXPORT_MODE_THREADS) {
+	if (mode & EXPORT_MODE_THREADS) {
 		cache_files.push_back(name + ".worker.js");
 		cache_files.push_back(name + ".audio.worklet.js");
 	}
@@ -225,7 +225,7 @@ Error EditorExportPlatformJavaScript::_build_pwa(const Ref<EditorExportPreset> &
 	Array opt_cache_files;
 	opt_cache_files.push_back(name + ".wasm");
 	opt_cache_files.push_back(name + ".pck");
-	if (mode == EXPORT_MODE_GDNATIVE) {
+	if (mode & EXPORT_MODE_GDNATIVE) {
 		opt_cache_files.push_back(name + ".side.wasm");
 		for (int i = 0; i < p_shared_objects.size(); i++) {
 			opt_cache_files.push_back(p_shared_objects[i].path.get_file());
@@ -317,9 +317,10 @@ void EditorExportPlatformJavaScript::get_preset_features(const Ref<EditorExportP
 		}
 	}
 	ExportMode mode = (ExportMode)(int)p_preset->get("variant/export_type");
-	if (mode == EXPORT_MODE_THREADS) {
+	if (mode & EXPORT_MODE_THREADS) {
 		r_features->push_back("threads");
-	} else if (mode == EXPORT_MODE_GDNATIVE) {
+	}
+	if (mode & EXPORT_MODE_GDNATIVE) {
 		r_features->push_back("wasm32");
 	}
 }

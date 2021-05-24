@@ -37,6 +37,8 @@ for ext in env["JS_EXTERNS"]:
 build = []
 if env["gdnative_enabled"]:
     build_targets = ["#bin/godot${PROGSUFFIX}.js", "#bin/godot${PROGSUFFIX}.wasm"]
+    if env["threads_enabled"]:
+        build_targets.append("#bin/godot${PROGSUFFIX}.worker.js")
     # Reset libraries. The main runtime will only link emscripten libraries, not godot ones.
     sys_env["LIBS"] = []
     # We use IDBFS. Since Emscripten 1.39.1 it needs to be linked explicitly.
@@ -58,7 +60,7 @@ if env["gdnative_enabled"]:
     wasm_env.Append(CCFLAGS=["-s", "SIDE_MODULE=2"])
     wasm_env.Append(LINKFLAGS=["-s", "SIDE_MODULE=2"])
     wasm = wasm_env.add_program("#bin/godot.side${PROGSUFFIX}.wasm", javascript_files)
-    build = [sys[0], sys[1], wasm[0]]
+    build = sys + [wasm[0]]
 else:
     build_targets = ["#bin/godot${PROGSUFFIX}.js", "#bin/godot${PROGSUFFIX}.wasm"]
     if env["threads_enabled"]:
@@ -87,5 +89,5 @@ wrap_list = [
 js_wrapped = env.Textfile("#bin/godot", [env.File(f) for f in wrap_list], TEXTFILESUFFIX="${PROGSUFFIX}.wrapped.js")
 
 # Extra will be the thread worker, or the GDNative side, or None
-extra = build[2] if len(build) > 2 else None
+extra = build[2:] if len(build) > 2 else None
 env.CreateTemplateZip(js_wrapped, build[1], extra)
