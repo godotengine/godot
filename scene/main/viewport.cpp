@@ -1618,8 +1618,10 @@ void Viewport::_gui_show_tooltip() {
 	gui.tooltip_popup->set_position(r.position);
 	gui.tooltip_popup->set_size(r.size);
 
-	if (window->has_focus())
+	if (window->has_focus()) {
 		gui.tooltip_popup->show();
+	}
+
 	gui.tooltip_popup->child_controls_changed();
 }
 
