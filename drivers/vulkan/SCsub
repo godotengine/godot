@@ -24,7 +24,7 @@ if env["platform"] == "android":
     vma_sources = [thirdparty_dir + "/android/vk_mem_alloc.cpp"]
     env_thirdparty.add_source_files(thirdparty_obj, vma_sources)
 
-elif env["platform"] == "iphone":
+elif env["platform"] == "iphone" or env["platform"] == "tvos":
     # Use bundled Vulkan headers
     thirdparty_dir = "#thirdparty/vulkan"
     env.Prepend(CPPPATH=[thirdparty_dir, thirdparty_dir + "/include", thirdparty_dir + "/loader"])

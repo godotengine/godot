@@ -142,8 +142,8 @@ void GDNativeExportPlugin::_export_file(const String &p_path, const String &p_ty
 		}
 	}
 
-	// Add symbols for statically linked libraries on iOS
-	if (p_features.has("iOS")) {
+	// Add symbols for statically linked libraries on tvOS/iOS
+	if (p_features.has("iOS") || p_features.has("tvOS")) {
 		bool should_fake_dynamic = false;
 
 		List<String> entry_keys;
@@ -180,7 +180,7 @@ void GDNativeExportPlugin::_export_file(const String &p_path, const String &p_ty
 		}
 
 		if (should_fake_dynamic) {
-			// Register symbols in the "fake" dynamic lookup table, because dlsym does not work well on iOS.
+			// Register symbols in the "fake" dynamic lookup table, because dlsym does not work well on tvOS/iOS.
 			LibrarySymbol expected_symbols[] = {
 				{ "gdnative_init", true },
 				{ "gdnative_terminate", false },
@@ -192,7 +192,7 @@ void GDNativeExportPlugin::_export_file(const String &p_path, const String &p_ty
 			};
 			String declare_pattern = "extern \"C\" void $name(void)$weak;\n";
 			String additional_code = "extern void register_dynamic_symbol(char *name, void *address);\n"
-									 "extern void add_ios_init_callback(void (*cb)());\n";
+									 "extern void $callback_registration(void (*cb)());\n";
 			String linker_flags = "";
 			for (unsigned long i = 0; i < sizeof(expected_symbols) / sizeof(expected_symbols[0]); ++i) {
 				String full_name = lib->get_symbol_prefix() + expected_symbols[i].name;
@@ -215,11 +215,20 @@ void GDNativeExportPlugin::_export_file(const String &p_path, const String &p_ty
 				additional_code += register_pattern.replace("$name", full_name);
 			}
 			additional_code += "}\n";
-			additional_code += String("struct $prefixstruct {$prefixstruct() {add_ios_init_callback($prefixinit);}};\n").replace("$prefix", lib->get_symbol_prefix());
+			additional_code += String("struct $prefixstruct {$prefixstruct() {$callback_registration($prefixinit);}};\n").replace("$prefix", lib->get_symbol_prefix());
 			additional_code += String("$prefixstruct $prefixstruct_instance;\n").replace("$prefix", lib->get_symbol_prefix());
 
-			add_ios_cpp_code(additional_code);
-			add_ios_linker_flags(linker_flags);
+			if (p_features.has("iOS")) {
+				const String callback_registration_string = "add_ios_init_callback";
+				additional_code = additional_code.replace("$callback_registration", callback_registration_string);
+				add_ios_cpp_code(additional_code);
+				add_ios_linker_flags(linker_flags);
+			} else if (p_features.has("tvOS")) {
+				const String callback_registration_string = "add_tvos_init_callback";
+				additional_code = additional_code.replace("$callback_registration", callback_registration_string);
+				add_tvos_cpp_code(additional_code);
+				add_tvos_linker_flags(linker_flags);
+			}
 		}
 	}
 }

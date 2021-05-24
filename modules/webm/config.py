@@ -1,5 +1,5 @@
 def can_build(env, platform):
-    if platform in ["iphone"]:
+    if platform in ["iphone", "tvos"]:
         return False
 
     return env.module_check_dependencies("webm", ["ogg", "opus", "vorbis"])
