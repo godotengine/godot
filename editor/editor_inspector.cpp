@@ -2197,10 +2197,14 @@ void EditorInspector::_notification(int p_what) {
 		changing++;
 
 		if (update_tree_pending) {
-			update_tree();
+			for (Map<StringName, List<EditorProperty *>>::Element *E = editor_property_map.front(); E; E = E->next()) {
+				for (List<EditorProperty *>::Element *F = E->value().front(); F; F = F->next()) {
+					F->get()->update_property();
+					F->get()->update_reload_status();
+				}
+			}
 			update_tree_pending = false;
 			pending.clear();
-
 		} else {
 			while (pending.size()) {
 				StringName prop = pending.front()->get();
