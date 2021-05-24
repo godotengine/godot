@@ -33,6 +33,7 @@
 #include "core/config/project_settings.h"
 #include "core/core_constants.h"
 #include "core/io/file_access_encrypted.h"
+#include "core/os/dir_access.h"
 #include "core/os/file_access.h"
 #include "core/os/os.h"
 
@@ -335,9 +336,18 @@ bool GDNative::initialize() {
 	// On OSX the exported libraries are located under the Frameworks directory.
 	// So we need to replace the library path.
 	String path = ProjectSettings::get_singleton()->globalize_path(lib_path);
-	if (!FileAccess::exists(path)) {
+	DirAccess *da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+
+	if (!da->file_exists(path) && !da->dir_exists(path)) {
 		path = OS::get_singleton()->get_executable_path().get_base_dir().plus_file("../Frameworks").plus_file(lib_path.get_file());
 	}
+
+	if (da->dir_exists(path)) { // Target library is a ".framework", add library base name to the path.
+		path = path.plus_file(path.get_file().get_basename());
+	}
+
+	memdelete(da);
+
 #else
 	String path = ProjectSettings::get_singleton()->globalize_path(lib_path);
 #endif

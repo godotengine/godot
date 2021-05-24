@@ -50,7 +50,7 @@ private:
 	AccessType _access_type = ACCESS_FILESYSTEM;
 	static CreateFunc create_func[ACCESS_MAX]; ///< set this to instance a filesystem object
 
-	Error _copy_dir(DirAccess *p_target_da, String p_to, int p_chmod_flags);
+	Error _copy_dir(DirAccess *p_target_da, String p_to, int p_chmod_flags, bool p_copy_links);
 
 protected:
 	String _get_root_path() const;
@@ -89,10 +89,14 @@ public:
 	static bool exists(String p_dir);
 	virtual uint64_t get_space_left() = 0;
 
-	Error copy_dir(String p_from, String p_to, int p_chmod_flags = -1);
+	Error copy_dir(String p_from, String p_to, int p_chmod_flags = -1, bool p_copy_links = false);
 	virtual Error copy(String p_from, String p_to, int p_chmod_flags = -1);
 	virtual Error rename(String p_from, String p_to) = 0;
 	virtual Error remove(String p_name) = 0;
+
+	virtual bool is_link(String p_file) = 0;
+	virtual String read_link(String p_file) = 0;
+	virtual Error create_link(String p_source, String p_target) = 0;
 
 	// Meant for editor code when we want to quickly remove a file without custom
 	// handling (e.g. removing a cache file).

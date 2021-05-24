@@ -131,7 +131,7 @@ void GDNativeLibraryEditor::_on_item_button(Object *item, int column, int id) {
 		EditorFileDialog::FileMode mode = EditorFileDialog::FILE_MODE_OPEN_FILE;
 		if (id == BUTTON_SELECT_DEPENDENCES) {
 			mode = EditorFileDialog::FILE_MODE_OPEN_FILES;
-		} else if (treeItem->get_text(0) == "iOS") {
+		} else if (treeItem->get_text(0) == "iOS" || treeItem->get_text(0) == "macOS") {
 			mode = EditorFileDialog::FILE_MODE_OPEN_ANY;
 		}
 
@@ -278,11 +278,10 @@ GDNativeLibraryEditor::GDNativeLibraryEditor() {
 		platforms["X11"] = platform_linux;
 
 		NativePlatformConfig platform_osx;
-		platform_osx.name = "Mac OSX";
+		platform_osx.name = "macOS";
 		platform_osx.entries.push_back("64");
-		platform_osx.entries.push_back("32");
-		platform_osx.library_extension = "*.dylib";
-		platforms["OSX"] = platform_osx;
+		platform_osx.library_extension = "*.framework; Framework, *.dylib; Dynamic Library";
+		platforms["macOS"] = platform_osx;
 
 		NativePlatformConfig platform_haiku;
 		platform_haiku.name = "Haiku";
