@@ -211,6 +211,20 @@
 				Returns a node's position in pixels.
 			</description>
 		</method>
+		<method name="get_script_class_icon_path" qualifiers="const">
+			<return type="String">
+			</return>
+			<description>
+				Returns this [VisualScript]'s global class icon path provided to the [ScriptServer].
+			</description>
+		</method>
+		<method name="get_script_class_name" qualifiers="const">
+			<return type="StringName">
+			</return>
+			<description>
+				Returns this [VisualScript]'s global class name provided to the [ScriptServer].
+			</description>
+		</method>
 		<method name="get_scroll" qualifiers="const">
 			<return type="Vector2">
 			</return>
@@ -423,6 +437,24 @@
 			</argument>
 			<description>
 				Set the node position in the VisualScript graph.
+			</description>
+		</method>
+		<method name="set_script_class_icon_path">
+			<return type="void">
+			</return>
+			<argument index="0" name="script_class_icon_path" type="String">
+			</argument>
+			<description>
+				Assigns the global class icon path that this [VisualScript] provides to the [ScriptServer].
+			</description>
+		</method>
+		<method name="set_script_class_name">
+			<return type="void">
+			</return>
+			<argument index="0" name="script_class_name" type="StringName">
+			</argument>
+			<description>
+				Assigns the global class name that this [VisualScript] provides to the [ScriptServer].
 			</description>
 		</method>
 		<method name="set_scroll">
