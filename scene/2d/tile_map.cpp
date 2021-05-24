@@ -777,6 +777,11 @@ void TileMap::_set_tile_data(const Vector<int> &p_data) {
 	int offset = (format >= FORMAT_2) ? 3 : 2;
 
 	clear();
+
+#ifdef DISABLE_DEPRECATED
+	ERR_FAIL_COND_MSG(format != FORMAT_3, vformat("Cannot handle deprecated TileMap data format version %d. This Godot version was compiled with no support for deprecated data.", format));
+#endif
+
 	for (int i = 0; i < c; i += offset) {
 		const uint8_t *ptr = (const uint8_t *)&r[i];
 		uint8_t local[12];
@@ -806,6 +811,7 @@ void TileMap::_set_tile_data(const Vector<int> &p_data) {
 			uint16_t alternative_tile = decode_uint16(&local[10]);
 			set_cell(Vector2i(x, y), source_id, Vector2i(atlas_coords_x, atlas_coords_y), alternative_tile);
 		} else {
+#ifndef DISABLE_DEPRECATED
 			uint32_t v = decode_uint32(&local[4]);
 			v &= (1 << 29) - 1;
 
@@ -828,6 +834,7 @@ void TileMap::_set_tile_data(const Vector<int> &p_data) {
 			}
 
 			set_cell(Vector2i(x, y), v, Vector2i(coord_x, coord_y), compatibility_alternative_tile);
+#endif
 		}
 	}
 }
