@@ -328,10 +328,17 @@ void TileMap::update_dirty_quadrants() {
 	Color debug_collision_color;
 	Color debug_navigation_color;
 
-	bool debug_shapes = show_collision && (Engine::get_singleton()->is_editor_hint() || (st && st->is_debugging_collisions_hint()));
+	bool debug_shapes = false;
+	if (st) {
+		if (Engine::get_singleton()->is_editor_hint()) {
+			debug_shapes = show_collision;
+		} else {
+			debug_shapes = st->is_debugging_collisions_hint();
+		}
 
-	if (debug_shapes) {
-		debug_collision_color = st->get_debug_collisions_color();
+		if (debug_shapes) {
+			debug_collision_color = st->get_debug_collisions_color();
+		}
 	}
 
 	bool debug_navigation = st && st->is_debugging_navigation_hint();
