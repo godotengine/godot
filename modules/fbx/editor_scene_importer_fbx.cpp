@@ -102,7 +102,7 @@ Node3D *EditorSceneImporterFBX::import_scene(const String &p_path, uint32_t p_fl
 		FBXDocParser::TokenList tokens;
 
 		bool is_binary = false;
-		data.resize(f->get_len());
+		data.resize(f->get_length());
 
 		ERR_FAIL_COND_V(data.size() < 64, nullptr);
 

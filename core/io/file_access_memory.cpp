@@ -117,7 +117,7 @@ uint64_t FileAccessMemory::get_position() const {
 	return pos;
 }
 
-uint64_t FileAccessMemory::get_len() const {
+uint64_t FileAccessMemory::get_length() const {
 	ERR_FAIL_COND_V(!data, 0);
 	return length;
 }

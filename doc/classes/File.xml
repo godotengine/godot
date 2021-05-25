@@ -61,7 +61,7 @@
 			</return>
 			<description>
 				Returns [code]true[/code] if the file cursor has read past the end of the file.
-				[b]Note:[/b] This function will still return [code]false[/code] while at the end of the file and only activates when reading past it. This can be confusing but it conforms to how low-level file access works in all operating systems. There is always [method get_len] and [method get_position] to implement a custom logic.
+				[b]Note:[/b] This function will still return [code]false[/code] while at the end of the file and only activates when reading past it. This can be confusing but it conforms to how low-level file access works in all operating systems. There is always [method get_length] and [method get_position] to implement a custom logic.
 			</description>
 		</method>
 		<method name="file_exists" qualifiers="const">
@@ -121,10 +121,10 @@
 		<method name="get_buffer" qualifiers="const">
 			<return type="PackedByteArray">
 			</return>
-			<argument index="0" name="len" type="int">
+			<argument index="0" name="length" type="int">
 			</argument>
 			<description>
-				Returns next [code]len[/code] bytes of the file as a [PackedByteArray].
+				Returns next [code]length[/code] bytes of the file as a [PackedByteArray].
 			</description>
 		</method>
 		<method name="get_csv_line" qualifiers="const">
@@ -158,7 +158,7 @@
 				Returns the next 32 bits from the file as a floating-point number.
 			</description>
 		</method>
-		<method name="get_len" qualifiers="const">
+		<method name="get_length" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>

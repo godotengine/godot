@@ -476,7 +476,7 @@ Error XMLParser::open(const String &p_path) {
 
 	ERR_FAIL_COND_V_MSG(err != OK, err, "Cannot open file '" + p_path + "'.");
 
-	length = file->get_len();
+	length = file->get_length();
 	ERR_FAIL_COND_V(length < 1, ERR_FILE_CORRUPT);
 
 	if (data) {

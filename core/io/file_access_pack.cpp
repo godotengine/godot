@@ -279,7 +279,7 @@ uint64_t FileAccessPack::get_position() const {
 	return pos;
 }
 
-uint64_t FileAccessPack::get_len() const {
+uint64_t FileAccessPack::get_length() const {
 	return pf.size;
 }
 

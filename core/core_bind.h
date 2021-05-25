@@ -391,7 +391,7 @@ public:
 	void seek(int64_t p_position); // Seek to a given position.
 	void seek_end(int64_t p_position = 0); // Seek from the end of file.
 	uint64_t get_position() const; // Get position in the file.
-	uint64_t get_len() const; // Get size of the file.
+	uint64_t get_length() const; // Get size of the file.
 
 	bool eof_reached() const; // Reading passed EOF.
 

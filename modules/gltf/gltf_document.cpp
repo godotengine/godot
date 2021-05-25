@@ -233,7 +233,7 @@ Error GLTFDocument::_parse_json(const String &p_path, Ref<GLTFState> state) {
 	}
 
 	Vector<uint8_t> array;
-	array.resize(f->get_len());
+	array.resize(f->get_length());
 	f->get_buffer(array.ptrw(), array.size());
 	String text;
 	text.parse_utf8((const char *)array.ptr(), array.size());

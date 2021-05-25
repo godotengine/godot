@@ -1272,9 +1272,9 @@ uint64_t _File::get_position() const {
 	return f->get_position();
 }
 
-uint64_t _File::get_len() const {
+uint64_t _File::get_length() const {
 	ERR_FAIL_COND_V_MSG(!f, 0, "File must be opened before use.");
-	return f->get_len();
+	return f->get_length();
 }
 
 bool _File::eof_reached() const {
@@ -1536,7 +1536,7 @@ void _File::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("seek", "position"), &_File::seek);
 	ClassDB::bind_method(D_METHOD("seek_end", "position"), &_File::seek_end, DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("get_position"), &_File::get_position);
-	ClassDB::bind_method(D_METHOD("get_len"), &_File::get_len);
+	ClassDB::bind_method(D_METHOD("get_length"), &_File::get_length);
 	ClassDB::bind_method(D_METHOD("eof_reached"), &_File::eof_reached);
 	ClassDB::bind_method(D_METHOD("get_8"), &_File::get_8);
 	ClassDB::bind_method(D_METHOD("get_16"), &_File::get_16);
@@ -1545,7 +1545,7 @@ void _File::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_float"), &_File::get_float);
 	ClassDB::bind_method(D_METHOD("get_double"), &_File::get_double);
 	ClassDB::bind_method(D_METHOD("get_real"), &_File::get_real);
-	ClassDB::bind_method(D_METHOD("get_buffer", "len"), &_File::get_buffer);
+	ClassDB::bind_method(D_METHOD("get_buffer", "length"), &_File::get_buffer);
 	ClassDB::bind_method(D_METHOD("get_line"), &_File::get_line);
 	ClassDB::bind_method(D_METHOD("get_csv_line", "delim"), &_File::get_csv_line, DEFVAL(","));
 	ClassDB::bind_method(D_METHOD("get_as_text"), &_File::get_as_text);

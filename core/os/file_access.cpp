@@ -380,7 +380,7 @@ uint64_t FileAccess::get_buffer(uint8_t *p_dst, uint64_t p_length) const {
 
 String FileAccess::get_as_utf8_string() const {
 	Vector<uint8_t> sourcef;
-	uint64_t len = get_len();
+	uint64_t len = get_length();
 	sourcef.resize(len + 1);
 
 	uint8_t *w = sourcef.ptrw();
@@ -565,7 +565,7 @@ Vector<uint8_t> FileAccess::get_file_as_array(const String &p_path, Error *r_err
 		ERR_FAIL_V_MSG(Vector<uint8_t>(), "Can't open file from path '" + String(p_path) + "'.");
 	}
 	Vector<uint8_t> data;
-	data.resize(f->get_len());
+	data.resize(f->get_length());
 	f->get_buffer(data.ptrw(), data.size());
 	memdelete(f);
 	return data;

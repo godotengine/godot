@@ -572,7 +572,7 @@ void AppxPackager::finish() {
 
 	FileAccess *blockmap_file = FileAccess::open(tmp_blockmap_file_path, FileAccess::READ);
 	Vector<uint8_t> blockmap_buffer;
-	blockmap_buffer.resize(blockmap_file->get_len());
+	blockmap_buffer.resize(blockmap_file->get_length());
 
 	blockmap_file->get_buffer(blockmap_buffer.ptrw(), blockmap_buffer.size());
 
@@ -590,7 +590,7 @@ void AppxPackager::finish() {
 
 	FileAccess *types_file = FileAccess::open(tmp_content_types_file_path, FileAccess::READ);
 	Vector<uint8_t> types_buffer;
-	types_buffer.resize(types_file->get_len());
+	types_buffer.resize(types_file->get_length());
 
 	types_file->get_buffer(types_buffer.ptrw(), types_buffer.size());
 
@@ -900,7 +900,7 @@ class EditorExportPlatformUWP : public EditorExportPlatform {
 			ERR_FAIL_V_MSG(data, err_string);
 		}
 
-		data.resize(f->get_len());
+		data.resize(f->get_length());
 		f->get_buffer(data.ptrw(), data.size());
 
 		f->close();

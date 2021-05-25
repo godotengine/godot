@@ -547,7 +547,7 @@ Error EditorExportPlatformJavaScript::_build_pwa(const Ref<EditorExportPreset> &
 			EditorNode::get_singleton()->show_warning(TTR("Could not read file:") + "\n" + sw_path);
 			return ERR_FILE_CANT_READ;
 		}
-		sw.resize(f->get_len());
+		sw.resize(f->get_length());
 		f->get_buffer(sw.ptrw(), sw.size());
 		memdelete(f);
 		f = nullptr;
@@ -781,13 +781,13 @@ Error EditorExportPlatformJavaScript::export_project(const Ref<EditorExportPrese
 	FileAccess *f = nullptr;
 	f = FileAccess::open(pck_path, FileAccess::READ);
 	if (f) {
-		file_sizes[pck_path.get_file()] = (uint64_t)f->get_len();
+		file_sizes[pck_path.get_file()] = (uint64_t)f->get_length();
 		memdelete(f);
 		f = nullptr;
 	}
 	f = FileAccess::open(base_path + ".wasm", FileAccess::READ);
 	if (f) {
-		file_sizes[base_name + ".wasm"] = (uint64_t)f->get_len();
+		file_sizes[base_name + ".wasm"] = (uint64_t)f->get_length();
 		memdelete(f);
 		f = nullptr;
 	}
@@ -800,7 +800,7 @@ Error EditorExportPlatformJavaScript::export_project(const Ref<EditorExportPrese
 		EditorNode::get_singleton()->show_warning(TTR("Could not read HTML shell:") + "\n" + html_path);
 		return ERR_FILE_CANT_READ;
 	}
-	html.resize(f->get_len());
+	html.resize(f->get_length());
 	f->get_buffer(html.ptrw(), html.size());
 	memdelete(f);
 	f = nullptr;

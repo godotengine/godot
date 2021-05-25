@@ -55,7 +55,7 @@ Error TextFile::load_text(const String &p_path) {
 
 	ERR_FAIL_COND_V_MSG(err, err, "Cannot open TextFile '" + p_path + "'.");
 
-	uint64_t len = f->get_len();
+	uint64_t len = f->get_length();
 	sourcef.resize(len + 1);
 	uint8_t *w = sourcef.ptrw();
 	uint64_t r = f->get_buffer(w, len);

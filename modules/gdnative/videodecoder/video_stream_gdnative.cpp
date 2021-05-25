@@ -58,7 +58,7 @@ int64_t GDAPI godot_videodecoder_file_seek(void *ptr, int64_t pos, int whence) {
 	FileAccess *file = reinterpret_cast<FileAccess *>(ptr);
 
 	if (file) {
-		int64_t len = file->get_len();
+		int64_t len = file->get_length();
 		switch (whence) {
 			case SEEK_SET: {
 				if (pos > len) {

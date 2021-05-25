@@ -120,7 +120,7 @@ Error PCKPacker::add_file(const String &p_file, const String &p_src, bool p_encr
 	pf.path = p_file;
 	pf.src_path = p_src;
 	pf.ofs = ofs;
-	pf.size = f->get_len();
+	pf.size = f->get_length();
 
 	Vector<uint8_t> data = FileAccess::get_file_as_array(p_src);
 	{

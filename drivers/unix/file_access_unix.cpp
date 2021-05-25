@@ -212,7 +212,7 @@ uint64_t FileAccessUnix::get_position() const {
 	return pos;
 }
 
-uint64_t FileAccessUnix::get_len() const {
+uint64_t FileAccessUnix::get_length() const {
 	ERR_FAIL_COND_V_MSG(!f, 0, "File must be opened before use.");
 
 	int64_t pos = ftello(f);

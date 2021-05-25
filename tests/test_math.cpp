@@ -529,8 +529,8 @@ MainLoop *test() {
 	ERR_FAIL_COND_V_MSG(!fa, nullptr, "Could not open file: " + test);
 
 	Vector<uint8_t> buf;
-	uint64_t flen = fa->get_len();
-	buf.resize(fa->get_len() + 1);
+	uint64_t flen = fa->get_length();
+	buf.resize(fa->get_length() + 1);
 	fa->get_buffer(buf.ptrw(), flen);
 	buf.write[flen] = 0;
 

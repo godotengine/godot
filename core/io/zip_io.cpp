@@ -74,7 +74,7 @@ long zipio_seek(voidpf opaque, voidpf stream, uLong offset, int origin) {
 			pos = f->get_position() + offset;
 			break;
 		case ZLIB_FILEFUNC_SEEK_END:
-			pos = f->get_len() + offset;
+			pos = f->get_length() + offset;
 			break;
 		default:
 			break;
