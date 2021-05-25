@@ -72,7 +72,7 @@ void TextParagraph::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_flags", "flags"), &TextParagraph::set_flags);
 	ClassDB::bind_method(D_METHOD("get_flags"), &TextParagraph::get_flags);
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "flags", PROPERTY_HINT_FLAGS, "Kashida justification,Word justification,Trim edge spaces after justification,Justification only after last tab,Break mandatory,Break words,Break graphemes"), "set_flags", "get_flags");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "flags", PROPERTY_HINT_FLAGS, "Kashida Justify,Word Justify,Trim Edge Spaces After Justify,Justify Only After Last Tab,Break Mandatory,Break Words,Break Graphemes"), "set_flags", "get_flags");
 
 	ClassDB::bind_method(D_METHOD("set_width", "width"), &TextParagraph::set_width);
 	ClassDB::bind_method(D_METHOD("get_width"), &TextParagraph::get_width);
