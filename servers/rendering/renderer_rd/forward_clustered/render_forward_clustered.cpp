@@ -221,7 +221,6 @@ void RenderForwardClustered::RenderBufferDataForwardClustered::configure(RID p_c
 			RD::TEXTURE_SAMPLES_2,
 			RD::TEXTURE_SAMPLES_4,
 			RD::TEXTURE_SAMPLES_8,
-			RD::TEXTURE_SAMPLES_16
 		};
 
 		texture_samples = ts[p_msaa];
@@ -1336,7 +1335,7 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 				if (needs_pre_resolve) {
 					RD::get_singleton()->barrier(RD::BARRIER_MASK_RASTER, RD::BARRIER_MASK_COMPUTE);
 				}
-				static int texture_samples[RS::VIEWPORT_MSAA_MAX] = { 1, 2, 4, 8, 16 };
+				static int texture_samples[RS::VIEWPORT_MSAA_MAX] = { 1, 2, 4, 8 };
 				storage->get_effects()->resolve_gi(render_buffer->depth_msaa, render_buffer->normal_roughness_buffer_msaa, using_giprobe ? render_buffer->giprobe_buffer_msaa : RID(), render_buffer->depth, render_buffer->normal_roughness_buffer, using_giprobe ? render_buffer->giprobe_buffer : RID(), Vector2i(render_buffer->width, render_buffer->height), texture_samples[render_buffer->msaa]);
 			} else if (finish_depth) {
 				RD::get_singleton()->texture_resolve_multisample(render_buffer->depth_msaa, render_buffer->depth);

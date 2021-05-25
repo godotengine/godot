@@ -319,21 +319,18 @@
 			Represents the size of the [enum ShadowAtlasQuadrantSubdiv] enum.
 		</constant>
 		<constant name="MSAA_DISABLED" value="0" enum="MSAA">
-			Multisample antialiasing mode disabled. This is the default value, and also the fastest setting.
+			Multisample antialiasing mode for 3D disabled. This is the default value, and also the fastest setting.
 		</constant>
 		<constant name="MSAA_2X" value="1" enum="MSAA">
-			Use 2x Multisample Antialiasing.
+			Use 2x Multisample Antialiasing for 3D. This has a moderate impact on performance.
 		</constant>
 		<constant name="MSAA_4X" value="2" enum="MSAA">
-			Use 4x Multisample Antialiasing.
+			Use 4x Multisample Antialiasing for 3D. This has a high impact on performance.
 		</constant>
 		<constant name="MSAA_8X" value="3" enum="MSAA">
-			Use 8x Multisample Antialiasing. Likely unsupported on low-end and older hardware.
+			Use 8x Multisample Antialiasing for 3D. This has a very high impact on performance. Likely unsupported on low-end and older hardware.
 		</constant>
-		<constant name="MSAA_16X" value="4" enum="MSAA">
-			Use 16x Multisample Antialiasing. Likely unsupported on medium and low-end hardware.
-		</constant>
-		<constant name="MSAA_MAX" value="5" enum="MSAA">
+		<constant name="MSAA_MAX" value="4" enum="MSAA">
 			Represents the size of the [enum MSAA] enum.
 		</constant>
 		<constant name="SCREEN_SPACE_AA_DISABLED" value="0" enum="ScreenSpaceAA">
