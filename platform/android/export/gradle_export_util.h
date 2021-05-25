@@ -258,10 +258,11 @@ String _get_activity_tag(const Ref<EditorExportPreset> &p_preset) {
 }
 
 String _get_application_tag(const Ref<EditorExportPreset> &p_preset) {
-	String manifest_application_text =
+	String manifest_application_text = vformat(
 			"    <application android:label=\"@string/godot_project_name_string\"\n"
-			"        android:allowBackup=\"false\" tools:ignore=\"GoogleAppIndexingWarning\"\n"
-			"        android:icon=\"@mipmap/icon\">\n\n";
+			"        android:allowBackup=\"%s\" tools:ignore=\"GoogleAppIndexingWarning\"\n"
+			"        android:icon=\"@mipmap/icon\">\n\n",
+			bool_to_string(p_preset->get("user_data_backup/allow")));
 
 	manifest_application_text += _get_activity_tag(p_preset);
 	manifest_application_text += "    </application>\n";
