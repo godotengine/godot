@@ -234,10 +234,9 @@ void EditorLog::_add_log_line(LogMessage &p_message, bool p_replace_previous) {
 
 	if (p_replace_previous) {
 		// Remove last line if replacing, as it will be replace by the next added line.
-		// Why - 2? RichTextLabel is weird. When you add a line, it also adds a NEW line, which is null,
+		// Why "- 2"? RichTextLabel is weird. When you add a line with add_newline(), it also adds an element to the list of lines which is null/blank,
 		// but it still counts as a line. So if you remove the last line (count - 1) you are actually removing nothing...
-		log->remove_line(log->get_line_count() - 2);
-		log->increment_line_count();
+		log->remove_line(log->get_paragraph_count() - 2);
 	}
 
 	switch (p_message.type) {
@@ -271,13 +270,14 @@ void EditorLog::_add_log_line(LogMessage &p_message, bool p_replace_previous) {
 	}
 
 	log->add_text(p_message.text);
-	log->add_newline();
 
 	// Need to use pop() to exit out of the RichTextLabels current "push" stack.
 	// We only "push" in the above switch when message type != STD, so only pop when that is the case.
 	if (p_message.type != MSG_TYPE_STD) {
 		log->pop();
 	}
+
+	log->add_newline();
 }
 
 void EditorLog::_set_filter_active(bool p_active, MessageType p_message_type) {
