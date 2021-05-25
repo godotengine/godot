@@ -180,6 +180,8 @@ ShaderTypes::ShaderTypes() {
 	shader_modes[RS::SHADER_SPATIAL].modes.push_back("blend_add");
 	shader_modes[RS::SHADER_SPATIAL].modes.push_back("blend_sub");
 	shader_modes[RS::SHADER_SPATIAL].modes.push_back("blend_mul");
+	shader_modes[RS::SHADER_SPATIAL].modes.push_back("blend_minimum");
+	shader_modes[RS::SHADER_SPATIAL].modes.push_back("blend_maximum");
 
 	shader_modes[RS::SHADER_SPATIAL].modes.push_back("depth_draw_opaque");
 	shader_modes[RS::SHADER_SPATIAL].modes.push_back("depth_draw_always");
@@ -308,6 +310,8 @@ ShaderTypes::ShaderTypes() {
 	shader_modes[RS::SHADER_CANVAS_ITEM].modes.push_back("blend_add");
 	shader_modes[RS::SHADER_CANVAS_ITEM].modes.push_back("blend_sub");
 	shader_modes[RS::SHADER_CANVAS_ITEM].modes.push_back("blend_mul");
+	shader_modes[RS::SHADER_CANVAS_ITEM].modes.push_back("blend_minimum");
+	shader_modes[RS::SHADER_CANVAS_ITEM].modes.push_back("blend_maximum");
 	shader_modes[RS::SHADER_CANVAS_ITEM].modes.push_back("blend_premul_alpha");
 	shader_modes[RS::SHADER_CANVAS_ITEM].modes.push_back("blend_disabled");
 
