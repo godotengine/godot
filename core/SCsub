@@ -59,6 +59,7 @@ thirdparty_misc_sources = [
     "pcg.cpp",
     "polypartition.cpp",
     "clipper.cpp",
+    "smolv.cpp",
 ]
 thirdparty_misc_sources = [thirdparty_misc_dir + file for file in thirdparty_misc_sources]
 env_thirdparty.add_source_files(thirdparty_obj, thirdparty_misc_sources)

@@ -1502,6 +1502,16 @@
 		<member name="rendering/reflections/sky_reflections/texture_array_reflections.mobile" type="bool" setter="" getter="" default="false">
 			Lower-end override for [member rendering/reflections/sky_reflections/texture_array_reflections] on mobile devices, due to performance concerns or driver support.
 		</member>
+		<member name="rendering/shader_compiler/shader_cache/compress" type="bool" setter="" getter="" default="true">
+		</member>
+		<member name="rendering/shader_compiler/shader_cache/enabled" type="bool" setter="" getter="" default="true">
+		</member>
+		<member name="rendering/shader_compiler/shader_cache/strip_debug" type="bool" setter="" getter="" default="false">
+		</member>
+		<member name="rendering/shader_compiler/shader_cache/strip_debug.release" type="bool" setter="" getter="" default="true">
+		</member>
+		<member name="rendering/shader_compiler/shader_cache/use_zstd_compression" type="bool" setter="" getter="" default="true">
+		</member>
 		<member name="rendering/shading/overrides/force_blinn_over_ggx" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], uses faster but lower-quality Blinn model to generate blurred reflections instead of the GGX model.
 		</member>

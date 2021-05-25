@@ -31,6 +31,7 @@
 #include "engine.h"
 
 #include "core/authors.gen.h"
+#include "core/config/project_settings.h"
 #include "core/donors.gen.h"
 #include "core/license.gen.h"
 #include "core/version.h"
@@ -208,6 +209,13 @@ void Engine::get_singletons(List<Singleton> *p_singletons) {
 	for (List<Singleton>::Element *E = singletons.front(); E; E = E->next()) {
 		p_singletons->push_back(E->get());
 	}
+}
+
+void Engine::set_shader_cache_path(const String &p_path) {
+	shader_cache_path = p_path;
+}
+String Engine::get_shader_cache_path() const {
+	return shader_cache_path;
 }
 
 Engine *Engine::singleton = nullptr;

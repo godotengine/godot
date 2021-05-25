@@ -798,6 +798,7 @@ public:
 
 	Error export_preset(const String &p_preset, const String &p_path, bool p_debug, bool p_pack_only);
 
+	static void register_editor_paths(bool p_for_project_manager);
 	static void register_editor_types();
 	static void unregister_editor_types();
 

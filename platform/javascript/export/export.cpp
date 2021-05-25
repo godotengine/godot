@@ -63,7 +63,7 @@ private:
 	}
 
 	void _set_internal_certs(Ref<Crypto> p_crypto) {
-		const String cache_path = EditorSettings::get_singleton()->get_cache_dir();
+		const String cache_path = EditorPaths::get_singleton()->get_cache_dir();
 		const String key_path = cache_path.plus_file("html5_server.key");
 		const String crt_path = cache_path.plus_file("html5_server.crt");
 		bool regen = !FileAccess::exists(key_path) || !FileAccess::exists(crt_path);
@@ -138,7 +138,7 @@ public:
 
 		const String req_file = req[1].get_file();
 		const String req_ext = req[1].get_extension();
-		const String cache_path = EditorSettings::get_singleton()->get_cache_dir().plus_file("web");
+		const String cache_path = EditorPaths::get_singleton()->get_cache_dir().plus_file("web");
 		const String filepath = cache_path.plus_file(req_file);
 
 		if (!mimes.has(req_ext) || !FileAccess::exists(filepath)) {
@@ -888,7 +888,7 @@ Error EditorExportPlatformJavaScript::run(const Ref<EditorExportPreset> &p_prese
 		return OK;
 	}
 
-	const String dest = EditorSettings::get_singleton()->get_cache_dir().plus_file("web");
+	const String dest = EditorPaths::get_singleton()->get_cache_dir().plus_file("web");
 	DirAccessRef da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 	if (!da->dir_exists(dest)) {
 		Error err = da->make_dir_recursive(dest);

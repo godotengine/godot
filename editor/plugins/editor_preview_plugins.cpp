@@ -265,7 +265,7 @@ Ref<Texture2D> EditorPackedScenePreviewPlugin::generate(const RES &p_from, const
 }
 
 Ref<Texture2D> EditorPackedScenePreviewPlugin::generate_from_path(const String &p_path, const Size2 &p_size) const {
-	String temp_path = EditorSettings::get_singleton()->get_cache_dir();
+	String temp_path = EditorPaths::get_singleton()->get_cache_dir();
 	String cache_base = ProjectSettings::get_singleton()->globalize_path(p_path).md5_text();
 	cache_base = temp_path.plus_file("resthumb-" + cache_base);
 

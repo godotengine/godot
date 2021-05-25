@@ -54,6 +54,7 @@ class EditorNode3DGizmoPlugin;
 class EditorResourcePreview;
 class EditorFileSystem;
 class EditorToolAddons;
+class EditorPaths;
 class FileSystemDock;
 class ScriptEditor;
 
@@ -95,6 +96,7 @@ public:
 	EditorSelection *get_selection();
 	//EditorImportExport *get_import_export();
 	Ref<EditorSettings> get_editor_settings();
+	EditorPaths *get_editor_paths();
 	EditorResourcePreview *get_resource_previewer();
 	EditorFileSystem *get_resource_file_system();
 

@@ -30,8 +30,12 @@
 
 #include "shader_rd.h"
 
+#include "core/io/compression.h"
+#include "core/os/dir_access.h"
+#include "core/os/file_access.h"
 #include "renderer_compositor_rd.h"
 #include "servers/rendering/rendering_device.h"
+#include "thirdparty/misc/smolv.h"
 
 void ShaderRD::_add_stage(const char *p_code, StageType p_stage_type) {
 	Vector<String> lines = String(p_code).split("\n");
@@ -97,6 +101,7 @@ void ShaderRD::_add_stage(const char *p_code, StageType p_stage_type) {
 
 void ShaderRD::setup(const char *p_vertex_code, const char *p_fragment_code, const char *p_compute_code, const char *p_name) {
 	name = p_name;
+
 	if (p_compute_code) {
 		_add_stage(p_compute_code, STAGE_TYPE_COMPUTE);
 		is_compute = true;
@@ -109,6 +114,18 @@ void ShaderRD::setup(const char *p_vertex_code, const char *p_fragment_code, con
 			_add_stage(p_fragment_code, STAGE_TYPE_FRAGMENT);
 		}
 	}
+
+	StringBuilder tohash;
+	tohash.append("[VersionKey]");
+	tohash.append(RenderingDevice::get_singleton()->shader_get_cache_key());
+	tohash.append("[Vertex]");
+	tohash.append(p_vertex_code ? p_vertex_code : "");
+	tohash.append("[Fragment]");
+	tohash.append(p_fragment_code ? p_fragment_code : "");
+	tohash.append("[Compute]");
+	tohash.append(p_compute_code ? p_compute_code : "");
+
+	base_sha256 = tohash.as_string().sha256_text();
 }
 
 RID ShaderRD::version_create() {
@@ -131,6 +148,9 @@ void ShaderRD::_clear_version(Version *p_version) {
 		}
 
 		memdelete_arr(p_version->variants);
+		if (p_version->variant_stages) {
+			memdelete_arr(p_version->variant_stages);
+		}
 		p_version->variants = nullptr;
 	}
 }
@@ -183,7 +203,7 @@ void ShaderRD::_compile_variant(uint32_t p_variant, Version *p_version) {
 		return; //variant is disabled, return
 	}
 
-	Vector<RD::ShaderStageData> stages;
+	Vector<RD::ShaderStageData> &stages = p_version->variant_stages[p_variant];
 
 	String error;
 	String current_source;
@@ -313,6 +333,197 @@ RS::ShaderNativeSourceCode ShaderRD::version_get_native_source_code(RID p_versio
 	return source_code;
 }
 
+String ShaderRD::_version_get_sha1(Version *p_version) const {
+	StringBuilder hash_build;
+
+	hash_build.append("[uniforms]");
+	hash_build.append(p_version->uniforms.get_data());
+	hash_build.append("[vertex_globals]");
+	hash_build.append(p_version->vertex_globals.get_data());
+	hash_build.append("[fragment_globals]");
+	hash_build.append(p_version->fragment_globals.get_data());
+	hash_build.append("[compute_globals]");
+	hash_build.append(p_version->compute_globals.get_data());
+
+	Vector<StringName> code_sections;
+	for (Map<StringName, CharString>::Element *E = p_version->code_sections.front(); E; E = E->next()) {
+		code_sections.push_back(E->key());
+	}
+	code_sections.sort_custom<StringName::AlphCompare>();
+
+	for (int i = 0; i < code_sections.size(); i++) {
+		hash_build.append(String("[code:") + String(code_sections[i]) + "]");
+		hash_build.append(p_version->code_sections[code_sections[i]].get_data());
+	}
+	for (int i = 0; i < p_version->custom_defines.size(); i++) {
+		hash_build.append("[custom_defines:" + itos(i) + "]");
+		hash_build.append(p_version->custom_defines[i].get_data());
+	}
+
+	return hash_build.as_string().sha1_text();
+}
+
+static const char *shader_file_header = "GDSC";
+static const uint32_t cache_file_version = 1;
+
+bool ShaderRD::_load_from_cache(Version *p_version) {
+	String sha1 = _version_get_sha1(p_version);
+	String path = shader_cache_dir.plus_file(name).plus_file(base_sha256).plus_file(sha1) + ".cache";
+
+	uint64_t time_from = OS::get_singleton()->get_ticks_usec();
+
+	FileAccessRef f = FileAccess::open(path, FileAccess::READ);
+	if (!f) {
+		return false;
+	}
+
+	char header[5] = { 0, 0, 0, 0, 0 };
+	f->get_buffer((uint8_t *)header, 4);
+	ERR_FAIL_COND_V(header != String(shader_file_header), false);
+
+	uint32_t file_version = f->get_32();
+	if (file_version != cache_file_version) {
+		return false; // wrong version
+	}
+
+	uint32_t variant_count = f->get_32();
+
+	ERR_FAIL_COND_V(variant_count != (uint32_t)variant_defines.size(), false); //should not happen but check
+
+	bool success = true;
+	for (uint32_t i = 0; i < variant_count; i++) {
+		uint32_t stage_count = f->get_32();
+		p_version->variant_stages[i].resize(stage_count);
+		for (uint32_t j = 0; j < stage_count; j++) {
+			p_version->variant_stages[i].write[j].shader_stage = RD::ShaderStage(f->get_32());
+
+			int compression = f->get_32();
+			uint32_t length = f->get_32();
+
+			if (compression == 0) {
+				Vector<uint8_t> data;
+				data.resize(length);
+
+				f->get_buffer(data.ptrw(), length);
+
+				p_version->variant_stages[i].write[j].spir_v = data;
+			} else {
+				Vector<uint8_t> data;
+
+				if (compression == 2) {
+					//zstd
+					int smol_length = f->get_32();
+					Vector<uint8_t> zstd_data;
+
+					zstd_data.resize(smol_length);
+					f->get_buffer(zstd_data.ptrw(), smol_length);
+
+					data.resize(length);
+					Compression::decompress(data.ptrw(), data.size(), zstd_data.ptr(), zstd_data.size(), Compression::MODE_ZSTD);
+
+				} else {
+					data.resize(length);
+					f->get_buffer(data.ptrw(), length);
+				}
+
+				Vector<uint8_t> spirv;
+				uint32_t spirv_size = smolv::GetDecodedBufferSize(data.ptr(), data.size());
+				spirv.resize(spirv_size);
+				if (!smolv::Decode(data.ptr(), data.size(), spirv.ptrw(), spirv_size)) {
+					ERR_PRINT("Malformed smolv input uncompressing shader " + name + ", variant #" + itos(i) + " stage :" + itos(j));
+					success = false;
+					break;
+				}
+				p_version->variant_stages[i].write[j].spir_v = spirv;
+			}
+		}
+	}
+
+	if (!success) {
+		for (uint32_t i = 0; i < variant_count; i++) {
+			p_version->variant_stages[i].resize(0);
+		}
+		return false;
+	}
+
+	float time_ms = double(OS::get_singleton()->get_ticks_usec() - time_from) / 1000.0;
+
+	print_verbose("Shader cache load success '" + path + "' " + rtos(time_ms) + "ms.");
+
+	for (uint32_t i = 0; i < variant_count; i++) {
+		RID shader = RD::get_singleton()->shader_create(p_version->variant_stages[i]);
+		{
+			MutexLock lock(variant_set_mutex);
+			p_version->variants[i] = shader;
+		}
+	}
+
+	memdelete_arr(p_version->variant_stages); //clear stages
+	p_version->variant_stages = nullptr;
+	p_version->valid = true;
+	return true;
+}
+
+void ShaderRD::_save_to_cache(Version *p_version) {
+	String sha1 = _version_get_sha1(p_version);
+	String path = shader_cache_dir.plus_file(name).plus_file(base_sha256).plus_file(sha1) + ".cache";
+
+	FileAccessRef f = FileAccess::open(path, FileAccess::WRITE);
+	ERR_FAIL_COND(!f);
+	f->store_buffer((const uint8_t *)shader_file_header, 4);
+	f->store_32(cache_file_version); //file version
+	uint32_t variant_count = variant_defines.size();
+	f->store_32(variant_count); //variant count
+
+	for (uint32_t i = 0; i < variant_count; i++) {
+		f->store_32(p_version->variant_stages[i].size()); //stage count
+		for (int j = 0; j < p_version->variant_stages[i].size(); j++) {
+			f->store_32(p_version->variant_stages[i][j].shader_stage); //stage count
+			Vector<uint8_t> spirv = p_version->variant_stages[i][j].spir_v;
+
+			bool save_uncompressed = true;
+			if (shader_cache_save_compressed) {
+				smolv::ByteArray smolv;
+				bool strip_debug = !shader_cache_save_debug;
+				if (!smolv::Encode(spirv.ptr(), spirv.size(), smolv, strip_debug ? smolv::kEncodeFlagStripDebugInfo : 0)) {
+					ERR_PRINT("Error compressing shader " + name + ", variant #" + itos(i) + " stage :" + itos(i));
+				} else {
+					bool compress_zstd = shader_cache_save_compressed_zstd;
+
+					if (compress_zstd) {
+						Vector<uint8_t> zstd;
+						zstd.resize(Compression::get_max_compressed_buffer_size(smolv.size(), Compression::MODE_ZSTD));
+						int dst_size = Compression::compress(zstd.ptrw(), &smolv[0], smolv.size(), Compression::MODE_ZSTD);
+						if (dst_size >= 0 && (uint32_t)dst_size < smolv.size()) {
+							f->store_32(2); //compressed zstd
+							f->store_32(smolv.size()); //size of smolv buffer
+							f->store_32(dst_size); //size of smolv buffer
+							f->store_buffer(zstd.ptr(), dst_size); //smolv buffer
+						} else {
+							compress_zstd = false;
+						}
+					}
+
+					if (!compress_zstd) {
+						f->store_32(1); //compressed
+						f->store_32(smolv.size()); //size of smolv buffer
+						f->store_buffer(&smolv[0], smolv.size()); //smolv buffer
+					}
+					save_uncompressed = false;
+				}
+			}
+
+			if (save_uncompressed) {
+				f->store_32(0); //uncompressed
+				f->store_32(spirv.size()); //stage count
+				f->store_buffer(spirv.ptr(), spirv.size()); //stage count
+			}
+		}
+	}
+
+	f->close();
+}
+
 void ShaderRD::_compile_version(Version *p_version) {
 	_clear_version(p_version);
 
@@ -320,6 +531,15 @@ void ShaderRD::_compile_version(Version *p_version) {
 	p_version->dirty = false;
 
 	p_version->variants = memnew_arr(RID, variant_defines.size());
+	typedef Vector<RD::ShaderStageData> ShaderStageArray;
+	p_version->variant_stages = memnew_arr(ShaderStageArray, variant_defines.size());
+
+	if (shader_cache_dir_valid) {
+		if (_load_from_cache(p_version)) {
+			return;
+		}
+	}
+
 #if 1
 
 	RendererThreadPool::singleton->thread_work_pool.do_work(variant_defines.size(), this, &ShaderRD::_compile_variant, p_version);
@@ -351,9 +571,19 @@ void ShaderRD::_compile_version(Version *p_version) {
 			}
 		}
 		memdelete_arr(p_version->variants);
+		if (p_version->variant_stages) {
+			memdelete_arr(p_version->variant_stages);
+		}
 		p_version->variants = nullptr;
+		p_version->variant_stages = nullptr;
 		return;
+	} else if (shader_cache_dir_valid) {
+		//save shader cache
+		_save_to_cache(p_version);
 	}
+
+	memdelete_arr(p_version->variant_stages); //clear stages
+	p_version->variant_stages = nullptr;
 
 	p_version->valid = true;
 }
@@ -443,6 +673,8 @@ bool ShaderRD::is_variant_enabled(int p_variant) const {
 	return variants_enabled[p_variant];
 }
 
+bool ShaderRD::shader_cache_cleanup_on_start = false;
+
 ShaderRD::ShaderRD() {
 	// Do not feel forced to use this, in most cases it makes little to no difference.
 	bool use_32_threads = false;
@@ -469,7 +701,63 @@ void ShaderRD::initialize(const Vector<String> &p_variant_defines, const String 
 		variant_defines.push_back(p_variant_defines[i].utf8());
 		variants_enabled.push_back(true);
 	}
+
+	if (shader_cache_dir != String()) {
+		StringBuilder hash_build;
+
+		hash_build.append("[base_hash]");
+		hash_build.append(base_sha256);
+		hash_build.append("[general_defines]");
+		hash_build.append(general_defines.get_data());
+		for (int i = 0; i < variant_defines.size(); i++) {
+			hash_build.append("[variant_defines:" + itos(i) + "]");
+			hash_build.append(variant_defines[i].get_data());
+		}
+
+		base_sha256 = hash_build.as_string().sha256_text();
+
+		DirAccessRef d = DirAccess::open(shader_cache_dir);
+		ERR_FAIL_COND(!d);
+		if (d->change_dir(name) != OK) {
+			Error err = d->make_dir(name);
+			ERR_FAIL_COND(err != OK);
+			d->change_dir(name);
+		}
+
+		//erase other versions?
+		if (shader_cache_cleanup_on_start) {
+		}
+		//
+		if (d->change_dir(base_sha256) != OK) {
+			Error err = d->make_dir(base_sha256);
+			ERR_FAIL_COND(err != OK);
+		}
+		shader_cache_dir_valid = true;
+
+		print_verbose("Shader '" + name + "' SHA256: " + base_sha256);
+	}
 }
+
+void ShaderRD::set_shader_cache_dir(const String &p_dir) {
+	shader_cache_dir = p_dir;
+}
+
+void ShaderRD::set_shader_cache_save_compressed(bool p_enable) {
+	shader_cache_save_compressed = p_enable;
+}
+
+void ShaderRD::set_shader_cache_save_compressed_zstd(bool p_enable) {
+	shader_cache_save_compressed_zstd = p_enable;
+}
+
+void ShaderRD::set_shader_cache_save_debug(bool p_enable) {
+	shader_cache_save_debug = p_enable;
+}
+
+String ShaderRD::shader_cache_dir;
+bool ShaderRD::shader_cache_save_compressed = true;
+bool ShaderRD::shader_cache_save_compressed_zstd = true;
+bool ShaderRD::shader_cache_save_debug = true;
 
 ShaderRD::~ShaderRD() {
 	List<RID> remaining;

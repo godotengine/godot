@@ -103,12 +103,14 @@ public:
 		bool supports_multiview = false; // If true this device supports multiview options
 	};
 
+	typedef String (*ShaderGetCacheKeyFunction)(const Capabilities *p_capabilities);
 	typedef Vector<uint8_t> (*ShaderCompileFunction)(ShaderStage p_stage, const String &p_source_code, ShaderLanguage p_language, String *r_error, const Capabilities *p_capabilities);
 	typedef Vector<uint8_t> (*ShaderCacheFunction)(ShaderStage p_stage, const String &p_source_code, ShaderLanguage p_language);
 
 private:
 	static ShaderCompileFunction compile_function;
 	static ShaderCacheFunction cache_function;
+	static ShaderGetCacheKeyFunction get_cache_key_function;
 
 	static RenderingDevice *singleton;
 
@@ -635,9 +637,11 @@ public:
 	const Capabilities *get_device_capabilities() const { return &device_capabilities; };
 
 	virtual Vector<uint8_t> shader_compile_from_source(ShaderStage p_stage, const String &p_source_code, ShaderLanguage p_language = SHADER_LANGUAGE_GLSL, String *r_error = nullptr, bool p_allow_cache = true);
+	virtual String shader_get_cache_key() const;
 
 	static void shader_set_compile_function(ShaderCompileFunction p_function);
 	static void shader_set_cache_function(ShaderCacheFunction p_function);
+	static void shader_set_get_cache_key_function(ShaderGetCacheKeyFunction p_function);
 
 	struct ShaderStageData {
 		ShaderStage shader_stage;

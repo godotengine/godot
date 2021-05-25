@@ -72,6 +72,8 @@ private:
 
 	static Engine *singleton;
 
+	String shader_cache_path;
+
 public:
 	static Engine *get_singleton();
 
@@ -120,6 +122,9 @@ public:
 	Dictionary get_donor_info() const;
 	Dictionary get_license_info() const;
 	String get_license_text() const;
+
+	void set_shader_cache_path(const String &p_path);
+	String get_shader_cache_path() const;
 
 	bool is_abort_on_gpu_errors_enabled() const;
 	bool is_validation_layers_enabled() const;
