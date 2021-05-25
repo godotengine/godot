@@ -95,6 +95,8 @@ Node *PackedSceneGLTF::import_scene(const String &p_path, uint32_t p_flags,
 	}
 	r_state->use_named_skin_binds =
 			p_flags & EditorSceneImporter::IMPORT_USE_NAMED_SKIN_BINDS;
+	r_state->use_legacy_names =
+			p_flags & EditorSceneImporter::IMPORT_USE_LEGACY_NAMES;
 
 	Ref<GLTFDocument> gltf_document;
 	gltf_document.instance();
@@ -103,6 +105,11 @@ Node *PackedSceneGLTF::import_scene(const String &p_path, uint32_t p_flags,
 	ERR_FAIL_COND_V(err != Error::OK, nullptr);
 
 	Spatial *root = memnew(Spatial);
+	if (r_state->use_legacy_names) {
+		root->set_name(gltf_document->_legacy_validate_node_name(r_state->scene_name));
+	} else {
+		root->set_name(r_state->scene_name);
+	}
 	for (int32_t root_i = 0; root_i < r_state->root_nodes.size(); root_i++) {
 		gltf_document->_generate_scene_node(r_state, root, root, r_state->root_nodes[root_i]);
 	}

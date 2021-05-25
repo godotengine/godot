@@ -63,6 +63,7 @@
 #ifdef MODULE_GRIDMAP_ENABLED
 #include "modules/gridmap/grid_map.h"
 #endif // MODULE_GRIDMAP_ENABLED
+#include "modules/regex/regex.h"
 #include "scene/2d/node_2d.h"
 #include "scene/3d/bone_attachment.h"
 #include "scene/3d/camera.h"
@@ -256,7 +257,7 @@ Error GLTFDocument::_serialize_bone_attachment(Ref<GLTFState> state) {
 		for (int attachment_i = 0; attachment_i < state->skeletons[skeleton_i]->bone_attachments.size(); attachment_i++) {
 			BoneAttachment *bone_attachment = state->skeletons[skeleton_i]->bone_attachments[attachment_i];
 			String bone_name = bone_attachment->get_bone_name();
-			bone_name = _sanitize_bone_name(bone_name);
+			bone_name = _sanitize_bone_name(state, bone_name);
 			int32_t bone = state->skeletons[skeleton_i]->godot_skeleton->find_bone(bone_name);
 			ERR_CONTINUE(bone == -1);
 			for (int skin_i = 0; skin_i < state->skins.size(); skin_i++) {
@@ -449,8 +450,28 @@ Error GLTFDocument::_serialize_nodes(Ref<GLTFState> state) {
 	return OK;
 }
 
+String GLTFDocument::_sanitize_scene_name(Ref<GLTFState> state, const String &p_name) {
+	if (state->use_legacy_names) {
+		RegEx regex("([^a-zA-Z0-9_ -]+)");
+		String s_name = regex.sub(p_name, "", true);
+		return s_name;
+	} else {
+		return p_name.validate_node_name();
+	}
+}
+
+String GLTFDocument::_legacy_validate_node_name(const String &p_name) {
+	String invalid_character = ". : @ / \"";
+	String name = p_name;
+	Vector<String> chars = invalid_character.split(" ");
+	for (int i = 0; i < chars.size(); i++) {
+		name = name.replace(chars[i], "");
+	}
+	return name;
+}
+
 String GLTFDocument::_gen_unique_name(Ref<GLTFState> state, const String &p_name) {
-	const String s_name = p_name.validate_node_name();
+	const String s_name = _sanitize_scene_name(state, p_name);
 
 	String name;
 	int index = 1;
@@ -458,6 +479,9 @@ String GLTFDocument::_gen_unique_name(Ref<GLTFState> state, const String &p_name
 		name = s_name;
 
 		if (index > 1) {
+			if (state->use_legacy_names) {
+				name += " ";
+			}
 			name += itos(index);
 		}
 		if (!state->unique_names.has(name)) {
@@ -504,18 +528,36 @@ String GLTFDocument::_gen_unique_animation_name(Ref<GLTFState> state, const Stri
 	return name;
 }
 
-String GLTFDocument::_sanitize_bone_name(const String &p_name) {
-	String name = p_name;
-	name = name.replace(":", "_");
-	name = name.replace("/", "_");
-	return name;
+String GLTFDocument::_sanitize_bone_name(Ref<GLTFState> state, const String &p_name) {
+	if (state->use_legacy_names) {
+		String name = p_name.camelcase_to_underscore(true);
+		RegEx pattern_del("([^a-zA-Z0-9_ ])+");
+
+		name = pattern_del.sub(name, "", true);
+
+		RegEx pattern_nospace(" +");
+		name = pattern_nospace.sub(name, "_", true);
+
+		RegEx pattern_multiple("_+");
+		name = pattern_multiple.sub(name, "_", true);
+
+		RegEx pattern_padded("0+(\\d+)");
+		name = pattern_padded.sub(name, "$1", true);
+
+		return name;
+	} else {
+		String name = p_name;
+		name = name.replace(":", "_");
+		name = name.replace("/", "_");
+		if (name.empty()) {
+			name = "bone";
+		}
+		return name;
+	}
 }
 
 String GLTFDocument::_gen_unique_bone_name(Ref<GLTFState> state, const GLTFSkeletonIndex skel_i, const String &p_name) {
-	String s_name = _sanitize_bone_name(p_name);
-	if (s_name.empty()) {
-		s_name = "bone";
-	}
+	String s_name = _sanitize_bone_name(state, p_name);
 	String name;
 	int index = 1;
 	while (true) {
@@ -4809,7 +4851,11 @@ Error GLTFDocument::_parse_animations(Ref<GLTFState> state) {
 			if (name.begins_with("loop") || name.ends_with("loop") || name.begins_with("cycle") || name.ends_with("cycle")) {
 				animation->set_loop(true);
 			}
-			animation->set_name(_gen_unique_animation_name(state, name));
+			if (state->use_legacy_names) {
+				animation->set_name(_sanitize_scene_name(state, name));
+			} else {
+				animation->set_name(_gen_unique_animation_name(state, name));
+			}
 		}
 
 		for (int j = 0; j < channels.size(); j++) {
@@ -5507,8 +5553,14 @@ void GLTFDocument::_generate_scene_node(Ref<GLTFState> state, Node *scene_parent
 		if (current_node != scene_root) {
 			current_node->set_owner(scene_root);
 		}
-		current_node->set_transform(gltf_node->xform);
-		current_node->set_name(gltf_node->get_name());
+		if (use_xform) {
+			current_node->set_transform(gltf_node->xform);
+		}
+		if (state->use_legacy_names) {
+			current_node->set_name(_legacy_validate_node_name(gltf_node->get_name()));
+		} else {
+			current_node->set_name(gltf_node->get_name());
+		}
 	}
 
 	state->scene_nodes.insert(node_index, current_node);

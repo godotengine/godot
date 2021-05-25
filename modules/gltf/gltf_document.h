@@ -161,7 +161,7 @@ private:
 	String _gen_unique_name(Ref<GLTFState> state, const String &p_name);
 	String _sanitize_animation_name(const String &name);
 	String _gen_unique_animation_name(Ref<GLTFState> state, const String &p_name);
-	String _sanitize_bone_name(const String &name);
+	String _sanitize_bone_name(Ref<GLTFState> state, const String &name);
 	String _gen_unique_bone_name(Ref<GLTFState> state,
 			const GLTFSkeletonIndex skel_i,
 			const String &p_name);
@@ -357,6 +357,9 @@ private:
 	static float get_max_component(const Color &p_color);
 
 public:
+	String _sanitize_scene_name(Ref<GLTFState> state, const String &p_name);
+	String _legacy_validate_node_name(const String &p_name);
+
 	void _process_mesh_instances(Ref<GLTFState> state, Node *scene_root);
 	void _generate_scene_node(Ref<GLTFState> state, Node *scene_parent,
 			Spatial *scene_root,
