@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  vulkan_context_android.cpp                                           */
+/*  android_pre_rotation.cpp                                             */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,53 +28,54 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "vulkan_context_android.h"
-#include "platform/android/vulkan/android_pre_rotation.h"
+#include "android_pre_rotation.h"
 
-#include <vulkan/vulkan_android.h>
+AndroidPreRotation::AndroidPreRotation() {
+	const Vector3 axis(0, 0, -1);
 
-const char *VulkanContextAndroid::_get_platform_surface_extension() const {
-	return VK_KHR_ANDROID_SURFACE_EXTENSION_NAME;
+	rotation90.rotate(axis, Math_PI / 2.0f);
+	rotation180.rotate(axis, Math_PI);
+	rotation270.rotate(axis, Math_PI + Math_PI / 2.0f);
 }
 
-int VulkanContextAndroid::window_create(ANativeWindow *p_window, int p_width, int p_height) {
-	VkAndroidSurfaceCreateInfoKHR createInfo;
-	createInfo.sType = VK_STRUCTURE_TYPE_ANDROID_SURFACE_CREATE_INFO_KHR;
-	createInfo.pNext = nullptr;
-	createInfo.flags = 0;
-	createInfo.window = p_window;
+AndroidPreRotation &AndroidPreRotation::get_instance() {
+	static AndroidPreRotation instance;
 
-	VkSurfaceKHR surface;
-	VkResult err = vkCreateAndroidSurfaceKHR(_get_instance(), &createInfo, nullptr, &surface);
-	if (err != VK_SUCCESS) {
-		ERR_FAIL_V_MSG(-1, "vkCreateAndroidSurfaceKHR failed with error " + itos(err));
+	return instance;
+}
+
+void AndroidPreRotation::set_current_transform(VkSurfaceTransformFlagBitsKHR currentTransform) {
+	isPreRotationRequired = true;
+	isSizeSwapRequired = false;
+
+	switch (currentTransform) {
+		case VK_SURFACE_TRANSFORM_ROTATE_90_BIT_KHR:
+			currentRotation = rotation90;
+			isSizeSwapRequired = true;
+			break;
+
+		case VK_SURFACE_TRANSFORM_ROTATE_180_BIT_KHR:
+			currentRotation = rotation180;
+			break;
+
+		case VK_SURFACE_TRANSFORM_ROTATE_270_BIT_KHR:
+			currentRotation = rotation270;
+			isSizeSwapRequired = true;
+			break;
+
+		default:
+			isPreRotationRequired = false;
 	}
-
-	return _window_create(DisplayServer::MAIN_WINDOW_ID, surface, p_width, p_height);
 }
 
-bool VulkanContextAndroid::_use_validation_layers() {
-	uint32_t count = 0;
-	_get_preferred_validation_layers(&count, nullptr);
-
-	// On Android, we use validation layers automatically if they were explicitly linked with the app.
-	return count > 0;
+bool AndroidPreRotation::is_pre_rotation_required() const {
+	return isPreRotationRequired;
 }
 
-void VulkanContextAndroid::_choose_window_and_swap_chain_extent_(
-		const VkExtent2D &currentWindowExtent, const VkSurfaceCapabilitiesKHR &surfCapabilities, VkExtent2D *windowExtent, VkExtent2D *swapChainExtent) {
-	VulkanContext::_choose_window_and_swap_chain_extent_(currentWindowExtent, surfCapabilities, windowExtent, swapChainExtent);
-
-	if (surfCapabilities.currentTransform & VK_SURFACE_TRANSFORM_ROTATE_90_BIT_KHR ||
-			surfCapabilities.currentTransform & VK_SURFACE_TRANSFORM_ROTATE_270_BIT_KHR) {
-		// Swap to get identity width and height
-		std::swap(swapChainExtent->width, swapChainExtent->height);
-		std::swap(windowExtent->width, windowExtent->height);
-	}
-
-	AndroidPreRotation::get_instance().set_current_transform(surfCapabilities.currentTransform);
+bool AndroidPreRotation::is_size_swap_required() const {
+	return isSizeSwapRequired;
 }
 
-VkSurfaceTransformFlagBitsKHR VulkanContextAndroid::_choose_pre_transform_(const VkSurfaceCapabilitiesKHR &surfCapabilities) {
-	return surfCapabilities.currentTransform;
+const Transform &AndroidPreRotation::get_pre_rotation_transform() const {
+	return currentRotation;
 }
