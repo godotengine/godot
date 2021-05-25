@@ -5073,6 +5073,7 @@ void TextEdit::_update_caches() {
 	cache.font_color_selected = get_color("font_color_selected");
 	cache.font_color_readonly = get_color("font_color_readonly");
 	cache.keyword_color = get_color("keyword_color");
+	cache.control_flow_keyword_color = get_color("control_flow_keyword_color");
 	cache.function_color = get_color("function_color");
 	cache.member_variable_color = get_color("member_variable_color");
 	cache.number_color = get_color("number_color");

@@ -101,6 +101,7 @@ void TextEditor::_load_theme_settings() {
 	Color search_result_border_color = EDITOR_GET("text_editor/highlighting/search_result_border_color");
 	Color symbol_color = EDITOR_GET("text_editor/highlighting/symbol_color");
 	Color keyword_color = EDITOR_GET("text_editor/highlighting/keyword_color");
+	Color control_flow_keyword_color = EDITOR_GET("text_editor/highlighting/control_flow_keyword_color");
 	Color basetype_color = EDITOR_GET("text_editor/highlighting/base_type_color");
 	Color type_color = EDITOR_GET("text_editor/highlighting/engine_type_color");
 	Color comment_color = EDITOR_GET("text_editor/highlighting/comment_color");
@@ -139,6 +140,7 @@ void TextEditor::_load_theme_settings() {
 	colors_cache.font_color = text_color;
 	colors_cache.symbol_color = symbol_color;
 	colors_cache.keyword_color = keyword_color;
+	colors_cache.control_flow_keyword_color = control_flow_keyword_color;
 	colors_cache.basetype_color = basetype_color;
 	colors_cache.type_color = type_color;
 	colors_cache.comment_color = comment_color;
