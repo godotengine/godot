@@ -109,6 +109,7 @@ private:
 		}
 		return ret;
 	}
+
 	template <class T>
 	static Array to_array(const Set<T> &p_inp) {
 		Array ret;
@@ -127,6 +128,7 @@ private:
 			r_out.push_back(p_inp[i]);
 		}
 	}
+
 	template <class T>
 	static void set_from_array(Set<T> &r_out, const Array &p_inp) {
 		r_out.clear();
