@@ -599,6 +599,8 @@ public:
 	void particles_add_collision(RID p_particles, RID p_instance) override {}
 	void particles_remove_collision(RID p_particles, RID p_instance) override {}
 
+	void particles_set_canvas_sdf_collision(RID p_particles, bool p_enable, const Transform2D &p_xform, const Rect2 &p_to_screen, RID p_texture) override {}
+
 	void update_particles() override {}
 
 	/* PARTICLES COLLISION */
@@ -662,6 +664,7 @@ public:
 
 	void render_target_set_sdf_size_and_scale(RID p_render_target, RS::ViewportSDFOversize p_size, RS::ViewportSDFScale p_scale) override {}
 	Rect2i render_target_get_sdf_rect(RID p_render_target) const override { return Rect2i(); }
+	void render_target_mark_sdf_enabled(RID p_render_target, bool p_enabled) override {}
 
 	RS::InstanceType get_base_type(RID p_rid) const override { return RS::INSTANCE_NONE; }
 	bool free(RID p_rid) override {
