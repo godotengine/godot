@@ -96,7 +96,7 @@ public:
 	virtual void seek(uint64_t p_position) = 0; ///< seek to a given position
 	virtual void seek_end(int64_t p_position = 0) = 0; ///< seek from the end of file with negative offset
 	virtual uint64_t get_position() const = 0; ///< get position in the file
-	virtual uint64_t get_len() const = 0; ///< get size of the file
+	virtual uint64_t get_length() const = 0; ///< get size of the file
 
 	virtual bool eof_reached() const = 0; ///< reading passed EOF
 

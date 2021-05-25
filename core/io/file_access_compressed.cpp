@@ -237,7 +237,7 @@ uint64_t FileAccessCompressed::get_position() const {
 	}
 }
 
-uint64_t FileAccessCompressed::get_len() const {
+uint64_t FileAccessCompressed::get_length() const {
 	ERR_FAIL_COND_V_MSG(!f, 0, "File must be opened before use.");
 	if (writing) {
 		return write_max;

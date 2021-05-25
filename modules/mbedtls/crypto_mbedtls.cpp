@@ -58,7 +58,7 @@ Error CryptoKeyMbedTLS::load(String p_path, bool p_public_only) {
 	FileAccess *f = FileAccess::open(p_path, FileAccess::READ);
 	ERR_FAIL_COND_V_MSG(!f, ERR_INVALID_PARAMETER, "Cannot open CryptoKeyMbedTLS file '" + p_path + "'.");
 
-	uint64_t flen = f->get_len();
+	uint64_t flen = f->get_length();
 	out.resize(flen + 1);
 	f->get_buffer(out.ptrw(), flen);
 	out.write[flen] = 0; // string terminator
@@ -146,7 +146,7 @@ Error X509CertificateMbedTLS::load(String p_path) {
 	FileAccess *f = FileAccess::open(p_path, FileAccess::READ);
 	ERR_FAIL_COND_V_MSG(!f, ERR_INVALID_PARAMETER, "Cannot open X509CertificateMbedTLS file '" + p_path + "'.");
 
-	uint64_t flen = f->get_len();
+	uint64_t flen = f->get_length();
 	out.resize(flen + 1);
 	f->get_buffer(out.ptrw(), flen);
 	out.write[flen] = 0; // string terminator

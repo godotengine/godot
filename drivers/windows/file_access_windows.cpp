@@ -219,7 +219,7 @@ uint64_t FileAccessWindows::get_position() const {
 	return aux_position;
 }
 
-uint64_t FileAccessWindows::get_len() const {
+uint64_t FileAccessWindows::get_length() const {
 	ERR_FAIL_COND_V(!f, 0);
 
 	uint64_t pos = get_position();

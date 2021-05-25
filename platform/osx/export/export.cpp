@@ -312,7 +312,7 @@ void EditorExportPlatformOSX::_make_icon(const Ref<Image> &p_icon, Vector<uint8_
 			}
 
 			int ofs = data.size();
-			uint64_t len = f->get_len();
+			uint64_t len = f->get_length();
 			data.resize(data.size() + len + 8);
 			f->get_buffer(&data.write[ofs + 8], len);
 			memdelete(f);
@@ -689,8 +689,8 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 				if (iconpath.get_extension() == "icns") {
 					FileAccess *icon = FileAccess::open(iconpath, FileAccess::READ);
 					if (icon) {
-						data.resize(icon->get_len());
-						icon->get_buffer(&data.write[0], icon->get_len());
+						data.resize(icon->get_length());
+						icon->get_buffer(&data.write[0], icon->get_length());
 						icon->close();
 						memdelete(icon);
 					}

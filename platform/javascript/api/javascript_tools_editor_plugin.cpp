@@ -72,7 +72,7 @@ void JavaScriptToolsEditorPlugin::_download_zip(Variant p_v) {
 	FileAccess *f = FileAccess::open("/tmp/project.zip", FileAccess::READ);
 	ERR_FAIL_COND_MSG(!f, "Unable to create zip file");
 	Vector<uint8_t> buf;
-	buf.resize(f->get_len());
+	buf.resize(f->get_length());
 	f->get_buffer(buf.ptrw(), buf.size());
 	godot_js_os_download_buffer(buf.ptr(), buf.size(), "project.zip", "application/zip");
 }
@@ -84,7 +84,7 @@ void JavaScriptToolsEditorPlugin::_zip_file(String p_path, String p_base_path, z
 		return;
 	}
 	Vector<uint8_t> data;
-	uint64_t len = f->get_len();
+	uint64_t len = f->get_length();
 	data.resize(len);
 	f->get_buffer(data.ptrw(), len);
 	f->close();
