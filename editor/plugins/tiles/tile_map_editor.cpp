@@ -56,10 +56,18 @@ void TileMapEditorTilesPlugin::_notification(int p_what) {
 			picker_button->set_icon(get_theme_icon("ColorPick", "EditorIcons"));
 			erase_button->set_icon(get_theme_icon("Eraser", "EditorIcons"));
 
+			toggle_grid_button->set_icon(get_theme_icon("Grid", "EditorIcons"));
+
 			missing_atlas_texture_icon = get_theme_icon("TileSet", "EditorIcons");
+
+			toggle_grid_button->set_pressed(EditorSettings::get_singleton()->get("editors/tiles_editor/display_grid"));
 			break;
 		case NOTIFICATION_VISIBILITY_CHANGED:
 			_stop_dragging();
+			break;
+		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED:
+			toggle_grid_button->set_pressed(EditorSettings::get_singleton()->get("editors/tiles_editor/display_grid"));
+			break;
 	}
 }
 
@@ -75,6 +83,10 @@ void TileMapEditorTilesPlugin::_on_random_tile_checkbox_toggled(bool p_pressed) 
 
 void TileMapEditorTilesPlugin::_on_scattering_spinbox_changed(double p_value) {
 	scattering = p_value;
+}
+
+void TileMapEditorTilesPlugin::_on_grid_toggled(bool p_pressed) {
+	EditorSettings::get_singleton()->set("editors/tiles_editor/display_grid", p_pressed);
 }
 
 void TileMapEditorTilesPlugin::_update_toolbar() {
@@ -604,7 +616,9 @@ void TileMapEditorTilesPlugin::forward_canvas_draw_over_viewport(Control *p_over
 		if (drag_type == DRAG_TYPE_MOVE || (drag_type == DRAG_TYPE_SELECT && !Input::get_singleton()->is_key_pressed(KEY_CTRL) && !Input::get_singleton()->is_key_pressed(KEY_SHIFT))) {
 			// Do nothing
 		} else {
-			tile_map->draw_cells_outline(p_overlay, tile_map_selection, Color(0.0, 0.0, 1.0), xform);
+			Color grid_color = EditorSettings::get_singleton()->get("editors/tiles_editor/grid_color");
+			Color selection_color = Color().from_hsv(Math::fposmod(grid_color.get_h() + 0.5, 1.0), grid_color.get_s(), grid_color.get_v(), 1.0);
+			tile_map->draw_cells_outline(p_overlay, tile_map_selection, selection_color, xform);
 		}
 	}
 
@@ -703,21 +717,27 @@ void TileMapEditorTilesPlugin::forward_canvas_draw_over_viewport(Control *p_over
 			const int fading = 5;
 
 			// Draw the lines of the grid behind the preview.
-			if (drawn_grid_rect.size.x > 0 && drawn_grid_rect.size.y > 0) {
-				drawn_grid_rect = drawn_grid_rect.grow(fading);
-				for (int x = drawn_grid_rect.position.x; x < (drawn_grid_rect.position.x + drawn_grid_rect.size.x); x++) {
-					for (int y = drawn_grid_rect.position.y; y < (drawn_grid_rect.position.y + drawn_grid_rect.size.y); y++) {
-						Vector2i pos_in_rect = Vector2i(x, y) - drawn_grid_rect.position;
+			bool display_grid = EditorSettings::get_singleton()->get("editors/tiles_editor/display_grid");
+			if (display_grid) {
+				Color grid_color = EditorSettings::get_singleton()->get("editors/tiles_editor/grid_color");
+				if (drawn_grid_rect.size.x > 0 && drawn_grid_rect.size.y > 0) {
+					drawn_grid_rect = drawn_grid_rect.grow(fading);
+					for (int x = drawn_grid_rect.position.x; x < (drawn_grid_rect.position.x + drawn_grid_rect.size.x); x++) {
+						for (int y = drawn_grid_rect.position.y; y < (drawn_grid_rect.position.y + drawn_grid_rect.size.y); y++) {
+							Vector2i pos_in_rect = Vector2i(x, y) - drawn_grid_rect.position;
 
-						// Fade out the border of the grid.
-						float left_opacity = CLAMP(Math::inverse_lerp(0.0f, (float)fading, (float)pos_in_rect.x), 0.0f, 1.0f);
-						float right_opacity = CLAMP(Math::inverse_lerp((float)drawn_grid_rect.size.x, (float)(drawn_grid_rect.size.x - fading), (float)pos_in_rect.x), 0.0f, 1.0f);
-						float top_opacity = CLAMP(Math::inverse_lerp(0.0f, (float)fading, (float)pos_in_rect.y), 0.0f, 1.0f);
-						float bottom_opacity = CLAMP(Math::inverse_lerp((float)drawn_grid_rect.size.y, (float)(drawn_grid_rect.size.y - fading), (float)pos_in_rect.y), 0.0f, 1.0f);
-						float opacity = CLAMP(MIN(left_opacity, MIN(right_opacity, MIN(top_opacity, bottom_opacity))) + 0.1, 0.0f, 1.0f);
+							// Fade out the border of the grid.
+							float left_opacity = CLAMP(Math::inverse_lerp(0.0f, (float)fading, (float)pos_in_rect.x), 0.0f, 1.0f);
+							float right_opacity = CLAMP(Math::inverse_lerp((float)drawn_grid_rect.size.x, (float)(drawn_grid_rect.size.x - fading), (float)pos_in_rect.x), 0.0f, 1.0f);
+							float top_opacity = CLAMP(Math::inverse_lerp(0.0f, (float)fading, (float)pos_in_rect.y), 0.0f, 1.0f);
+							float bottom_opacity = CLAMP(Math::inverse_lerp((float)drawn_grid_rect.size.y, (float)(drawn_grid_rect.size.y - fading), (float)pos_in_rect.y), 0.0f, 1.0f);
+							float opacity = CLAMP(MIN(left_opacity, MIN(right_opacity, MIN(top_opacity, bottom_opacity))) + 0.1, 0.0f, 1.0f);
 
-						Rect2 cell_region = xform.xform(Rect2(tile_map->map_to_world(Vector2(x, y)) - tile_shape_size / 2, tile_shape_size));
-						tile_set->draw_tile_shape(p_overlay, cell_region, Color(1.0, 0.5, 0.2, 0.5 * opacity), false);
+							Rect2 cell_region = xform.xform(Rect2(tile_map->map_to_world(Vector2(x, y)) - tile_shape_size / 2, tile_shape_size));
+							Color color = grid_color;
+							color.a = color.a * opacity;
+							tile_set->draw_tile_shape(p_overlay, cell_region, color, false);
+						}
 					}
 				}
 			}
@@ -1417,9 +1437,11 @@ void TileMapEditorTilesPlugin::_tile_atlas_control_draw() {
 	}
 
 	// Draw the selection.
+	Color grid_color = EditorSettings::get_singleton()->get("editors/tiles_editor/grid_color");
+	Color selection_color = Color().from_hsv(Math::fposmod(grid_color.get_h() + 0.5, 1.0), grid_color.get_s(), grid_color.get_v(), 1.0);
 	for (Set<TileMapCell>::Element *E = tile_set_selection.front(); E; E = E->next()) {
 		if (E->get().source_id == source_id && E->get().alternative_tile == 0) {
-			tile_atlas_control->draw_rect(atlas->get_tile_texture_region(E->get().get_atlas_coords()), Color(0.0, 0.0, 1.0), false);
+			tile_atlas_control->draw_rect(atlas->get_tile_texture_region(E->get().get_atlas_coords()), selection_color, false);
 		}
 	}
 
@@ -1445,9 +1467,9 @@ void TileMapEditorTilesPlugin::_tile_atlas_control_draw() {
 				}
 			}
 		}
-
+		Color selection_rect_color = selection_color.lightened(0.2);
 		for (Set<Vector2i>::Element *E = to_draw.front(); E; E = E->next()) {
-			tile_atlas_control->draw_rect(atlas->get_tile_texture_region(E->get()), Color(0.8, 0.8, 1.0), false);
+			tile_atlas_control->draw_rect(atlas->get_tile_texture_region(E->get()), selection_rect_color, false);
 		}
 	}
 }
@@ -1730,6 +1752,7 @@ TileMapEditorTilesPlugin::TileMapEditorTilesPlugin() {
 
 	// --- Toolbar ---
 	toolbar = memnew(HBoxContainer);
+	toolbar->set_h_size_flags(SIZE_EXPAND_FILL);
 
 	HBoxContainer *tilemap_tiles_tools_buttons = memnew(HBoxContainer);
 
@@ -1774,7 +1797,6 @@ TileMapEditorTilesPlugin::TileMapEditorTilesPlugin() {
 	bucket_tool_button->set_shortcut(ED_SHORTCUT("tiles_editor/bucket_tool", "Bucket", KEY_B));
 	bucket_tool_button->connect("pressed", callable_mp(this, &TileMapEditorTilesPlugin::_update_toolbar));
 	tilemap_tiles_tools_buttons->add_child(bucket_tool_button);
-
 	toolbar->add_child(tilemap_tiles_tools_buttons);
 
 	// -- TileMap tool settings --
@@ -1833,6 +1855,18 @@ TileMapEditorTilesPlugin::TileMapEditorTilesPlugin() {
 	tools_settings->add_child(scatter_spinbox);
 
 	_on_random_tile_checkbox_toggled(false);
+
+	// Wide empty separation control.
+	Control *h_empty_space = memnew(Control);
+	h_empty_space->set_h_size_flags(SIZE_EXPAND_FILL);
+	toolbar->add_child(h_empty_space);
+
+	// Grid toggle.
+	toggle_grid_button = memnew(Button);
+	toggle_grid_button->set_flat(true);
+	toggle_grid_button->set_toggle_mode(true);
+	toggle_grid_button->connect("toggled", callable_mp(this, &TileMapEditorTilesPlugin::_on_grid_toggled));
+	toolbar->add_child(toggle_grid_button);
 
 	// Default tool.
 	paint_tool_button->set_pressed(true);
@@ -3426,19 +3460,25 @@ void TileMapEditor::forward_canvas_draw_over_viewport(Control *p_overlay) {
 	}
 
 	// Draw the grid.
-	for (int x = displayed_rect.position.x; x < (displayed_rect.position.x + displayed_rect.size.x); x++) {
-		for (int y = displayed_rect.position.y; y < (displayed_rect.position.y + displayed_rect.size.y); y++) {
-			Vector2i pos_in_rect = Vector2i(x, y) - displayed_rect.position;
+	bool display_grid = EditorSettings::get_singleton()->get("editors/tiles_editor/display_grid");
+	if (display_grid) {
+		Color grid_color = EditorSettings::get_singleton()->get("editors/tiles_editor/grid_color");
+		for (int x = displayed_rect.position.x; x < (displayed_rect.position.x + displayed_rect.size.x); x++) {
+			for (int y = displayed_rect.position.y; y < (displayed_rect.position.y + displayed_rect.size.y); y++) {
+				Vector2i pos_in_rect = Vector2i(x, y) - displayed_rect.position;
 
-			// Fade out the border of the grid.
-			float left_opacity = CLAMP(Math::inverse_lerp(0.0f, (float)fading, (float)pos_in_rect.x), 0.0f, 1.0f);
-			float right_opacity = CLAMP(Math::inverse_lerp((float)displayed_rect.size.x, (float)(displayed_rect.size.x - fading), (float)pos_in_rect.x), 0.0f, 1.0f);
-			float top_opacity = CLAMP(Math::inverse_lerp(0.0f, (float)fading, (float)pos_in_rect.y), 0.0f, 1.0f);
-			float bottom_opacity = CLAMP(Math::inverse_lerp((float)displayed_rect.size.y, (float)(displayed_rect.size.y - fading), (float)pos_in_rect.y), 0.0f, 1.0f);
-			float opacity = CLAMP(MIN(left_opacity, MIN(right_opacity, MIN(top_opacity, bottom_opacity))) + 0.1, 0.0f, 1.0f);
+				// Fade out the border of the grid.
+				float left_opacity = CLAMP(Math::inverse_lerp(0.0f, (float)fading, (float)pos_in_rect.x), 0.0f, 1.0f);
+				float right_opacity = CLAMP(Math::inverse_lerp((float)displayed_rect.size.x, (float)(displayed_rect.size.x - fading), (float)pos_in_rect.x), 0.0f, 1.0f);
+				float top_opacity = CLAMP(Math::inverse_lerp(0.0f, (float)fading, (float)pos_in_rect.y), 0.0f, 1.0f);
+				float bottom_opacity = CLAMP(Math::inverse_lerp((float)displayed_rect.size.y, (float)(displayed_rect.size.y - fading), (float)pos_in_rect.y), 0.0f, 1.0f);
+				float opacity = CLAMP(MIN(left_opacity, MIN(right_opacity, MIN(top_opacity, bottom_opacity))) + 0.1, 0.0f, 1.0f);
 
-			Rect2 cell_region = xform.xform(Rect2(tile_map->map_to_world(Vector2(x, y)) - tile_shape_size / 2, tile_shape_size));
-			tile_set->draw_tile_shape(p_overlay, cell_region, Color(1.0, 0.5, 0.2, 0.5 * opacity), false);
+				Rect2 cell_region = xform.xform(Rect2(tile_map->map_to_world(Vector2(x, y)) - tile_shape_size / 2, tile_shape_size));
+				Color color = grid_color;
+				color.a = color.a * opacity;
+				tile_set->draw_tile_shape(p_overlay, cell_region, color, false);
+			}
 		}
 	}
 
@@ -3500,9 +3540,8 @@ TileMapEditor::TileMapEditor() {
 
 	// --- TileMap toolbar ---
 	tilemap_toolbar = memnew(HBoxContainer);
-	//tilemap_toolbar->add_child(memnew(VSeparator));
+	tilemap_toolbar->set_h_size_flags(SIZE_EXPAND_FILL);
 	tilemap_toolbar->add_child(tabs);
-	//tilemap_toolbar->add_child(memnew(VSeparator));
 	for (int i = 0; i < tile_map_editor_plugins.size(); i++) {
 		tile_map_editor_plugins[i]->get_toolbar()->hide();
 		tilemap_toolbar->add_child(tile_map_editor_plugins[i]->get_toolbar());
