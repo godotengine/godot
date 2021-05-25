@@ -328,7 +328,7 @@ uint64_t FileAccessNetwork::get_position() const {
 	return pos;
 }
 
-uint64_t FileAccessNetwork::get_len() const {
+uint64_t FileAccessNetwork::get_length() const {
 	ERR_FAIL_COND_V_MSG(!opened, 0, "File must be opened before use.");
 	return total_size;
 }

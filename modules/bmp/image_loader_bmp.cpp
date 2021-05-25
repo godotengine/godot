@@ -205,7 +205,7 @@ Error ImageLoaderBMP::load_image(Ref<Image> p_image, FileAccess *f,
 
 	// A valid bmp file should always at least have a
 	// file header and a minimal info header
-	if (f->get_len() > BITMAP_FILE_HEADER_SIZE + BITMAP_INFO_HEADER_MIN_SIZE) {
+	if (f->get_length() > BITMAP_FILE_HEADER_SIZE + BITMAP_INFO_HEADER_MIN_SIZE) {
 		// File Header
 		bmp_header.bmp_file_header.bmp_signature = f->get_16();
 		if (bmp_header.bmp_file_header.bmp_signature == BITMAP_SIGNATURE) {
