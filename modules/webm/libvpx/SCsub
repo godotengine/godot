@@ -235,7 +235,7 @@ if env["platform"] == "uwp":
 else:
     import platform
 
-    is_x11_or_server_arm = (env["platform"] == "linuxbsd" or env["platform"] == "server") and (
+    is_x11_or_server_arm = env["platform"] == "linuxbsd" and (
         platform.machine().startswith("arm") or platform.machine().startswith("aarch")
     )
     is_macos_x86 = env["platform"] == "osx" and ("arch" in env and (env["arch"] != "arm64"))
@@ -314,12 +314,7 @@ if webm_cpu_x86:
 if webm_cpu_arm:
     if env["platform"] == "iphone":
         env_libvpx["ASFLAGS"] = "-arch armv7"
-    elif (
-        env["platform"] == "android"
-        and env["android_arch"] == "armv7"
-        or env["platform"] == "linuxbsd"
-        or env["platform"] == "server"
-    ):
+    elif env["platform"] == "android" and env["android_arch"] == "armv7" or env["platform"] == "linuxbsd":
         env_libvpx["ASFLAGS"] = "-mfpu=neon"
     elif env["platform"] == "uwp":
         env_libvpx["AS"] = "armasm"

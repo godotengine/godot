@@ -131,7 +131,7 @@ if env["builtin_harfbuzz"]:
             ]
         )
 
-    if env["platform"] == "android" or env["platform"] == "linuxbsd" or env["platform"] == "server":
+    if env["platform"] == "android" or env["platform"] == "linuxbsd":
         env_harfbuzz.Append(CCFLAGS=["-DHAVE_PTHREAD"])
 
     if env["platform"] == "javascript":
