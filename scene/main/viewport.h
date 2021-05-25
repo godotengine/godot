@@ -104,7 +104,7 @@ public:
 		MSAA_2X,
 		MSAA_4X,
 		MSAA_8X,
-		MSAA_16X,
+		// 16x MSAA is not supported due to its high cost and driver bugs.
 		MSAA_MAX
 	};
 
