@@ -301,7 +301,7 @@ void EditorExportPlatformOSX::_make_icon(const Ref<Image> &p_icon, Vector<uint8_
 		if (icon_infos[i].is_png) {
 			// Encode PNG icon.
 			it->create_from_image(copy);
-			String path = EditorSettings::get_singleton()->get_cache_dir().plus_file("icon.png");
+			String path = EditorPaths::get_singleton()->get_cache_dir().plus_file("icon.png");
 			ResourceSaver::save(path, it);
 
 			FileAccess *f = FileAccess::open(path, FileAccess::READ);
@@ -610,7 +610,7 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 
 	// Create our application bundle.
 	String tmp_app_dir_name = pkg_name + ".app";
-	String tmp_app_path_name = EditorSettings::get_singleton()->get_cache_dir().plus_file(tmp_app_dir_name);
+	String tmp_app_path_name = EditorPaths::get_singleton()->get_cache_dir().plus_file(tmp_app_dir_name);
 	print_line("Exporting to " + tmp_app_path_name);
 
 	Error err = OK;
@@ -774,7 +774,7 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 
 		String ent_path = p_preset->get("codesign/entitlements/custom_file");
 		if (sign_enabled && (ent_path == "")) {
-			ent_path = EditorSettings::get_singleton()->get_cache_dir().plus_file(pkg_name + ".entitlements");
+			ent_path = EditorPaths::get_singleton()->get_cache_dir().plus_file(pkg_name + ".entitlements");
 
 			FileAccess *ent_f = FileAccess::open(ent_path, FileAccess::WRITE);
 			if (ent_f) {
@@ -959,7 +959,7 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 				zlib_filefunc_def io_dst = zipio_create_io_from_file(&dst_f);
 				zipFile zip = zipOpen2(p_path.utf8().get_data(), APPEND_STATUS_CREATE, nullptr, &io_dst);
 
-				_zip_folder_recursive(zip, EditorSettings::get_singleton()->get_cache_dir(), pkg_name + ".app", pkg_name);
+				_zip_folder_recursive(zip, EditorPaths::get_singleton()->get_cache_dir(), pkg_name + ".app", pkg_name);
 
 				zipClose(zip, nullptr);
 			}

@@ -1065,7 +1065,7 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 				}
 			} else {
 				// Use default text server data.
-				String icu_data_file = EditorSettings::get_singleton()->get_cache_dir().plus_file("tmp_icu_data");
+				String icu_data_file = EditorPaths::get_singleton()->get_cache_dir().plus_file("tmp_icu_data");
 				TS->save_support_data(icu_data_file);
 				Vector<uint8_t> array = FileAccess::get_file_as_array(icu_data_file);
 				err = p_func(p_udata, ts_data, array, idx, total, enc_in_filters, enc_ex_filters, key);
@@ -1078,7 +1078,7 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 	}
 
 	String config_file = "project.binary";
-	String engine_cfb = EditorSettings::get_singleton()->get_cache_dir().plus_file("tmp" + config_file);
+	String engine_cfb = EditorPaths::get_singleton()->get_cache_dir().plus_file("tmp" + config_file);
 	ProjectSettings::get_singleton()->save_custom(engine_cfb, custom_map, custom_list);
 	Vector<uint8_t> data = FileAccess::get_file_as_array(engine_cfb);
 	DirAccess::remove_file_or_error(engine_cfb);
@@ -1100,9 +1100,9 @@ Error EditorExportPlatform::save_pack(const Ref<EditorExportPreset> &p_preset, c
 
 	// Create the temporary export directory if it doesn't exist.
 	DirAccessRef da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
-	da->make_dir_recursive(EditorSettings::get_singleton()->get_cache_dir());
+	da->make_dir_recursive(EditorPaths::get_singleton()->get_cache_dir());
 
-	String tmppath = EditorSettings::get_singleton()->get_cache_dir().plus_file("packtmp");
+	String tmppath = EditorPaths::get_singleton()->get_cache_dir().plus_file("packtmp");
 	FileAccess *ftmp = FileAccess::open(tmppath, FileAccess::WRITE);
 	ERR_FAIL_COND_V_MSG(!ftmp, ERR_CANT_CREATE, "Cannot create file '" + tmppath + "'.");
 
@@ -1984,7 +1984,7 @@ void EditorExportTextSceneToBinaryPlugin::_export_file(const String &p_path, con
 	if (!convert) {
 		return;
 	}
-	String tmp_path = EditorSettings::get_singleton()->get_cache_dir().plus_file("tmpfile.res");
+	String tmp_path = EditorPaths::get_singleton()->get_cache_dir().plus_file("tmpfile.res");
 	Error err = ResourceFormatLoaderText::convert_file_to_binary(p_path, tmp_path);
 	if (err != OK) {
 		DirAccess::remove_file_or_error(tmp_path);

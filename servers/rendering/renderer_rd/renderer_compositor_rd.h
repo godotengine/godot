@@ -118,6 +118,6 @@ public:
 
 	static RendererCompositorRD *singleton;
 	RendererCompositorRD();
-	~RendererCompositorRD() {}
+	~RendererCompositorRD();
 };
 #endif // RASTERIZER_RD_H

@@ -124,15 +124,6 @@
 				Returns the value of the setting specified by [code]name[/code]. This is equivalent to using [method Object.get] on the EditorSettings instance.
 			</description>
 		</method>
-		<method name="get_settings_dir" qualifiers="const">
-			<return type="String">
-			</return>
-			<description>
-				Gets the global settings path for the engine. Inside this path, you can find some standard paths such as:
-				[code]settings/tmp[/code] - Used for temporary storage of files
-				[code]settings/templates[/code] - Where export templates are located
-			</description>
-		</method>
 		<method name="has_setting" qualifiers="const">
 			<return type="bool">
 			</return>

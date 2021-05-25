@@ -1445,6 +1445,12 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 	}
 #endif
 
+#ifdef TOOLS_ENABLED
+	if (editor || project_manager) {
+		EditorNode::register_editor_paths(project_manager);
+	}
+#endif
+
 	/* Determine text driver */
 
 	if (text_driver == "") {

@@ -31,6 +31,7 @@
 #include "renderer_compositor_rd.h"
 
 #include "core/config/project_settings.h"
+#include "core/os/dir_access.h"
 
 void RendererCompositorRD::prepare_for_blitting_render_targets() {
 	RD::get_singleton()->prepare_screen_for_drawing();
@@ -155,6 +156,43 @@ void RendererCompositorRD::finalize() {
 RendererCompositorRD *RendererCompositorRD::singleton = nullptr;
 
 RendererCompositorRD::RendererCompositorRD() {
+	{
+		String shader_cache_dir = Engine::get_singleton()->get_shader_cache_path();
+		if (shader_cache_dir == String()) {
+			shader_cache_dir = "user://";
+		}
+		DirAccessRef da = DirAccess::open(shader_cache_dir);
+		if (!da) {
+			ERR_PRINT("Can't create shader cache folder, no shader caching will happen: " + shader_cache_dir);
+		} else {
+			Error err = da->change_dir("shader_cache");
+			if (err != OK) {
+				err = da->make_dir("shader_cache");
+			}
+			if (err != OK) {
+				ERR_PRINT("Can't create shader cache folder, no shader caching will happen: " + shader_cache_dir);
+			} else {
+				shader_cache_dir = shader_cache_dir.plus_file("shader_cache");
+
+				bool shader_cache_enabled = GLOBAL_GET("rendering/shader_compiler/shader_cache/enabled");
+				if (!Engine::get_singleton()->is_editor_hint() && !shader_cache_enabled) {
+					shader_cache_dir = String(); //disable only if not editor
+				}
+
+				if (shader_cache_dir != String()) {
+					bool compress = GLOBAL_GET("rendering/shader_compiler/shader_cache/compress");
+					bool use_zstd = GLOBAL_GET("rendering/shader_compiler/shader_cache/use_zstd_compression");
+					bool strip_debug = GLOBAL_GET("rendering/shader_compiler/shader_cache/strip_debug");
+
+					ShaderRD::set_shader_cache_dir(shader_cache_dir);
+					ShaderRD::set_shader_cache_save_compressed(compress);
+					ShaderRD::set_shader_cache_save_compressed_zstd(use_zstd);
+					ShaderRD::set_shader_cache_save_debug(!strip_debug);
+				}
+			}
+		}
+	}
+
 	singleton = this;
 	time = 0;
 
@@ -170,4 +208,8 @@ RendererCompositorRD::RendererCompositorRD() {
 		// default to our high end renderer
 		scene = memnew(RendererSceneRenderImplementation::RenderForwardClustered(storage));
 	}
+}
+
+RendererCompositorRD::~RendererCompositorRD() {
+	ShaderRD::set_shader_cache_dir(String());
 }

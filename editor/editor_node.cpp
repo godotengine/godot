@@ -80,6 +80,7 @@
 #include "editor/editor_inspector.h"
 #include "editor/editor_layouts_dialog.h"
 #include "editor/editor_log.h"
+#include "editor/editor_paths.h"
 #include "editor/editor_plugin.h"
 #include "editor/editor_properties.h"
 #include "editor/editor_resource_picker.h"
@@ -1457,7 +1458,7 @@ void EditorNode::_save_scene_with_preview(String p_file, int p_idx) {
 			img->convert(Image::FORMAT_RGB8);
 
 			//save thumbnail directly, as thumbnailer may not update due to actual scene not changing md5
-			String temp_path = EditorSettings::get_singleton()->get_cache_dir();
+			String temp_path = EditorPaths::get_singleton()->get_cache_dir();
 			String cache_base = ProjectSettings::get_singleton()->globalize_path(p_file).md5_text();
 			cache_base = temp_path.plus_file("resthumb-" + cache_base);
 
@@ -2745,10 +2746,10 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 			settings_config_dialog->popup_edit_settings();
 		} break;
 		case SETTINGS_EDITOR_DATA_FOLDER: {
-			OS::get_singleton()->shell_open(String("file://") + EditorSettings::get_singleton()->get_data_dir());
+			OS::get_singleton()->shell_open(String("file://") + EditorPaths::get_singleton()->get_data_dir());
 		} break;
 		case SETTINGS_EDITOR_CONFIG_FOLDER: {
-			OS::get_singleton()->shell_open(String("file://") + EditorSettings::get_singleton()->get_settings_dir());
+			OS::get_singleton()->shell_open(String("file://") + EditorPaths::get_singleton()->get_settings_dir());
 		} break;
 		case SETTINGS_MANAGE_EXPORT_TEMPLATES: {
 			export_template_manager->popup_manager();
@@ -3727,10 +3728,15 @@ bool EditorNode::is_scene_in_use(const String &p_path) {
 	return false;
 }
 
+void EditorNode::register_editor_paths(bool p_for_project_manager) {
+	EditorPaths::create(p_for_project_manager);
+}
+
 void EditorNode::register_editor_types() {
 	ResourceLoader::set_timestamp_on_load(true);
 	ResourceSaver::set_timestamp_on_save(true);
 
+	ClassDB::register_class<EditorPaths>();
 	ClassDB::register_class<EditorPlugin>();
 	ClassDB::register_class<EditorTranslationParserPlugin>();
 	ClassDB::register_class<EditorImportPlugin>();
@@ -3774,6 +3780,9 @@ void EditorNode::register_editor_types() {
 
 void EditorNode::unregister_editor_types() {
 	_init_callbacks.clear();
+	if (EditorPaths::get_singleton()) {
+		EditorPaths::free();
+	}
 }
 
 void EditorNode::stop_child_process(OS::ProcessID p_pid) {

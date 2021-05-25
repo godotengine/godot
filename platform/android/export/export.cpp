@@ -1793,7 +1793,7 @@ public:
 			p_debug_flags |= DEBUG_FLAG_REMOTE_DEBUG_LOCALHOST;
 		}
 
-		String tmp_export_path = EditorSettings::get_singleton()->get_cache_dir().plus_file("tmpexport." + uitos(OS::get_singleton()->get_unix_time()) + ".apk");
+		String tmp_export_path = EditorPaths::get_singleton()->get_cache_dir().plus_file("tmpexport." + uitos(OS::get_singleton()->get_unix_time()) + ".apk");
 
 #define CLEANUP_AND_RETURN(m_err)                         \
 	{                                                     \
@@ -2651,7 +2651,7 @@ public:
 		FileAccess *dst_f = nullptr;
 		io2.opaque = &dst_f;
 
-		String tmp_unaligned_path = EditorSettings::get_singleton()->get_cache_dir().plus_file("tmpexport-unaligned." + uitos(OS::get_singleton()->get_unix_time()) + ".apk");
+		String tmp_unaligned_path = EditorPaths::get_singleton()->get_cache_dir().plus_file("tmpexport-unaligned." + uitos(OS::get_singleton()->get_unix_time()) + ".apk");
 
 #define CLEANUP_AND_RETURN(m_err)                            \
 	{                                                        \

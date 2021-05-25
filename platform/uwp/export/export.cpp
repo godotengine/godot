@@ -567,7 +567,7 @@ void AppxPackager::finish() {
 	// Create and add block map file
 	EditorNode::progress_task_step("export", "Creating block map...", 4);
 
-	const String &tmp_blockmap_file_path = EditorSettings::get_singleton()->get_cache_dir().plus_file("tmpblockmap.xml");
+	const String &tmp_blockmap_file_path = EditorPaths::get_singleton()->get_cache_dir().plus_file("tmpblockmap.xml");
 	make_block_map(tmp_blockmap_file_path);
 
 	FileAccess *blockmap_file = FileAccess::open(tmp_blockmap_file_path, FileAccess::READ);
@@ -585,7 +585,7 @@ void AppxPackager::finish() {
 
 	EditorNode::progress_task_step("export", "Setting content types...", 5);
 
-	const String &tmp_content_types_file_path = EditorSettings::get_singleton()->get_cache_dir().plus_file("tmpcontenttypes.xml");
+	const String &tmp_content_types_file_path = EditorPaths::get_singleton()->get_cache_dir().plus_file("tmpcontenttypes.xml");
 	make_content_types(tmp_content_types_file_path);
 
 	FileAccess *types_file = FileAccess::open(tmp_content_types_file_path, FileAccess::READ);
@@ -879,7 +879,7 @@ class EditorExportPlatformUWP : public EditorExportPlatform {
 			return data;
 		}
 
-		String tmp_path = EditorSettings::get_singleton()->get_cache_dir().plus_file("uwp_tmp_logo.png");
+		String tmp_path = EditorPaths::get_singleton()->get_cache_dir().plus_file("uwp_tmp_logo.png");
 
 		Error err = texture->get_image()->save_png(tmp_path);
 

@@ -32,6 +32,7 @@
 
 #include "editor/editor_export.h"
 #include "editor/editor_node.h"
+#include "editor/editor_paths.h"
 #include "editor/editor_settings.h"
 #include "editor/filesystem_dock.h"
 #include "editor/project_settings_editor.h"
@@ -257,6 +258,9 @@ EditorSelection *EditorInterface::get_selection() {
 Ref<EditorSettings> EditorInterface::get_editor_settings() {
 	return EditorSettings::get_singleton();
 }
+EditorPaths *EditorInterface::get_editor_paths() {
+	return EditorPaths::get_singleton();
+}
 
 EditorResourcePreview *EditorInterface::get_resource_previewer() {
 	return EditorResourcePreview::get_singleton();
@@ -335,6 +339,7 @@ void EditorInterface::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_selected_path"), &EditorInterface::get_selected_path);
 	ClassDB::bind_method(D_METHOD("get_current_path"), &EditorInterface::get_current_path);
 	ClassDB::bind_method(D_METHOD("get_file_system_dock"), &EditorInterface::get_file_system_dock);
+	ClassDB::bind_method(D_METHOD("get_editor_paths"), &EditorInterface::get_editor_paths);
 
 	ClassDB::bind_method(D_METHOD("set_plugin_enabled", "plugin", "enabled"), &EditorInterface::set_plugin_enabled);
 	ClassDB::bind_method(D_METHOD("is_plugin_enabled", "plugin"), &EditorInterface::is_plugin_enabled);

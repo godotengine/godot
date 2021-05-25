@@ -464,7 +464,7 @@ void EditorAssetLibraryItemDownload::_make_request() {
 	retry->hide();
 
 	download->cancel_request();
-	download->set_download_file(EditorSettings::get_singleton()->get_cache_dir().plus_file("tmp_asset_" + itos(asset_id)) + ".zip");
+	download->set_download_file(EditorPaths::get_singleton()->get_cache_dir().plus_file("tmp_asset_" + itos(asset_id)) + ".zip");
 
 	Error err = download->request(host);
 	if (err != OK) {
@@ -702,7 +702,7 @@ void EditorAssetLibrary::_image_update(bool use_cache, bool final, const PackedB
 		PackedByteArray image_data = p_data;
 
 		if (use_cache) {
-			String cache_filename_base = EditorSettings::get_singleton()->get_cache_dir().plus_file("assetimage_" + image_queue[p_queue_id].image_url.md5_text());
+			String cache_filename_base = EditorPaths::get_singleton()->get_cache_dir().plus_file("assetimage_" + image_queue[p_queue_id].image_url.md5_text());
 
 			FileAccess *file = FileAccess::open(cache_filename_base + ".data", FileAccess::READ);
 
@@ -781,7 +781,7 @@ void EditorAssetLibrary::_image_request_completed(int p_status, int p_code, cons
 		if (p_code != HTTPClient::RESPONSE_NOT_MODIFIED) {
 			for (int i = 0; i < headers.size(); i++) {
 				if (headers[i].findn("ETag:") == 0) { // Save etag
-					String cache_filename_base = EditorSettings::get_singleton()->get_cache_dir().plus_file("assetimage_" + image_queue[p_queue_id].image_url.md5_text());
+					String cache_filename_base = EditorPaths::get_singleton()->get_cache_dir().plus_file("assetimage_" + image_queue[p_queue_id].image_url.md5_text());
 					String new_etag = headers[i].substr(headers[i].find(":") + 1, headers[i].length()).strip_edges();
 					FileAccess *file;
 
@@ -829,7 +829,7 @@ void EditorAssetLibrary::_update_image_queue() {
 	List<int> to_delete;
 	for (Map<int, ImageQueue>::Element *E = image_queue.front(); E; E = E->next()) {
 		if (!E->get().active && current_images < max_images) {
-			String cache_filename_base = EditorSettings::get_singleton()->get_cache_dir().plus_file("assetimage_" + E->get().image_url.md5_text());
+			String cache_filename_base = EditorPaths::get_singleton()->get_cache_dir().plus_file("assetimage_" + E->get().image_url.md5_text());
 			Vector<String> headers;
 
 			if (FileAccess::exists(cache_filename_base + ".etag") && FileAccess::exists(cache_filename_base + ".data")) {
