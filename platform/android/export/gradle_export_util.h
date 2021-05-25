@@ -292,11 +292,12 @@ String _get_application_tag(const Ref<EditorExportPreset> &p_preset, bool p_has_
 	bool uses_xr = (int)(p_preset->get("xr_features/xr_mode")) == 1;
 	String manifest_application_text = vformat(
 			"    <application android:label=\"@string/godot_project_name_string\"\n"
-			"        android:allowBackup=\"false\" tools:ignore=\"GoogleAppIndexingWarning\"\n"
+			"        android:allowBackup=\"%s\" tools:ignore=\"GoogleAppIndexingWarning\"\n"
 			"        tools:replace=\"android:requestLegacyExternalStorage\" "
 			"        android:requestLegacyExternalStorage=\"%s\"\n"
 			"        android:icon=\"@mipmap/icon\">\n\n"
 			"        <meta-data tools:node=\"remove\" android:name=\"xr_mode_metadata_name\" />\n",
+			bool_to_string(p_preset->get("user_data_backup/allow")),
 			bool_to_string(p_has_storage_permission));
 
 	if (uses_xr) {
