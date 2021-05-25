@@ -340,25 +340,25 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 		action_buttons[i]->hide();
 	}
 
-	checks20gc->hide();
-	for (int i = 0; i < 20; i++) {
-		checks20[i]->hide();
+	checks32gc->hide();
+	for (int i = 0; i < 32; i++) {
+		checks32[i]->hide();
 	}
 
 	type = (p_variant.get_type() != Variant::NIL && p_variant.get_type() != Variant::RID && p_type != Variant::OBJECT) ? p_variant.get_type() : p_type;
 
 	switch (type) {
 		case Variant::BOOL: {
-			checks20gc->show();
+			checks32gc->show();
 
-			CheckBox *c = checks20[0];
+			CheckBox *c = checks32[0];
 			c->set_text("True");
-			checks20gc->set_position(Vector2(4, 4) * EDSCALE);
+			checks32gc->set_position(Vector2(4, 4) * EDSCALE);
 			c->set_pressed(v);
 			c->show();
 
-			checks20gc->set_size(checks20gc->get_minimum_size());
-			set_size(checks20gc->get_position() + checks20gc->get_size() + c->get_size() + Vector2(4, 4) * EDSCALE);
+			checks32gc->set_size(checks32gc->get_minimum_size());
+			set_size(checks32gc->get_position() + checks32gc->get_size() + c->get_size() + Vector2(4, 4) * EDSCALE);
 
 		} break;
 		case Variant::INT:
@@ -445,26 +445,26 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 						break;
 				}
 
-				checks20gc->show();
+				checks32gc->show();
 				uint32_t flgs = v;
-				for (int i = 0; i < 2; i++) {
+				for (int i = 0; i < 4; i++) {
 					Point2 ofs(4, 4);
 					ofs.y += 22 * i;
-					for (int j = 0; j < 10; j++) {
-						int idx = i * 10 + j;
-						CheckBox *c = checks20[idx];
+					for (int j = 0; j < 8; j++) {
+						int idx = i * 8 + j;
+						CheckBox *c = checks32[idx];
 						c->set_text(ProjectSettings::get_singleton()->get(basename + "/layer_" + itos(idx + 1)));
-						c->set_pressed(flgs & (1 << (i * 10 + j)));
+						c->set_pressed(flgs & (1 << idx));
 						c->show();
 					}
 				}
 
 				show();
 
-				checks20gc->set_position(Vector2(4, 4) * EDSCALE);
-				checks20gc->set_size(checks20gc->get_minimum_size());
+				checks32gc->set_position(Vector2(4, 4) * EDSCALE);
+				checks32gc->set_size(checks32gc->get_minimum_size());
 
-				set_size(Vector2(4, 4) * EDSCALE + checks20gc->get_position() + checks20gc->get_size());
+				set_size(Vector2(4, 4) * EDSCALE + checks32gc->get_position() + checks32gc->get_size());
 
 			} else if (hint == PROPERTY_HINT_EXP_EASING) {
 				easing_draw->set_anchor_and_offset(SIDE_LEFT, Control::ANCHOR_BEGIN, 5 * EDSCALE);
@@ -1163,7 +1163,7 @@ void CustomPropertyEditor::_action_pressed(int p_which) {
 
 	switch (type) {
 		case Variant::BOOL: {
-			v = checks20[0]->is_pressed();
+			v = checks32[0]->is_pressed();
 			emit_signal("variant_changed");
 		} break;
 		case Variant::INT: {
@@ -1174,7 +1174,7 @@ void CustomPropertyEditor::_action_pressed(int p_which) {
 					hint == PROPERTY_HINT_LAYERS_3D_RENDER ||
 					hint == PROPERTY_HINT_LAYERS_3D_NAVIGATION) {
 				uint32_t f = v;
-				if (checks20[p_which]->is_pressed()) {
+				if (checks32[p_which]->is_pressed()) {
 					f |= (1 << p_which);
 				} else {
 					f &= ~(1 << p_which);
@@ -1788,24 +1788,18 @@ CustomPropertyEditor::CustomPropertyEditor() {
 		add_child(scroll[i]);
 	}
 
-	checks20gc = memnew(GridContainer);
-	add_child(checks20gc);
-	checks20gc->set_columns(11);
+	checks32gc = memnew(GridContainer);
+	add_child(checks32gc);
+	checks32gc->set_columns(8);
 
-	for (int i = 0; i < 20; i++) {
-		if (i == 5 || i == 15) {
-			Control *space = memnew(Control);
-			space->set_custom_minimum_size(Size2(20, 0) * EDSCALE);
-			checks20gc->add_child(space);
-		}
-
-		checks20[i] = memnew(CheckBox);
-		checks20[i]->set_toggle_mode(true);
-		checks20[i]->set_focus_mode(Control::FOCUS_NONE);
-		checks20gc->add_child(checks20[i]);
-		checks20[i]->hide();
-		checks20[i]->connect("pressed", callable_mp(this, &CustomPropertyEditor::_action_pressed), make_binds(i));
-		checks20[i]->set_tooltip(vformat(TTR("Bit %d, val %d."), i, 1 << i));
+	for (int i = 0; i < 32; i++) {
+		checks32[i] = memnew(CheckBox);
+		checks32[i]->set_toggle_mode(true);
+		checks32[i]->set_focus_mode(Control::FOCUS_NONE);
+		checks32gc->add_child(checks32[i]);
+		checks32[i]->hide();
+		checks32[i]->connect("pressed", callable_mp(this, &CustomPropertyEditor::_action_pressed), make_binds(i));
+		checks32[i]->set_tooltip(vformat(TTR("Bit %d, val %d."), i, 1 << i));
 	}
 
 	text_edit = memnew(TextEdit);

@@ -594,7 +594,7 @@ public:
 	virtual Size2 get_minimum_size() const override {
 		Ref<Font> font = get_theme_font("font", "Label");
 		int font_size = get_theme_font_size("font_size", "Label");
-		return Vector2(0, font->get_height(font_size) * 2);
+		return Vector2(0, font->get_height(font_size) * 4);
 	}
 
 	virtual String get_tooltip(const Point2 &p_pos) const override {
@@ -642,25 +642,20 @@ public:
 				rect.size = get_size();
 				flag_rects.clear();
 
-				const int bsize = (rect.size.height * 80 / 100) / 2;
-				const int h = bsize * 2 + 1;
+				const int bsize = (rect.size.height * 80 / 100) / 4;
+				const int h = bsize * 4 + 1;
 				const int vofs = (rect.size.height - h) / 2;
 
 				Color color = get_theme_color("highlight_color", "Editor");
-				for (int i = 0; i < 2; i++) {
+				for (int i = 0; i < 4; i++) {
 					Point2 ofs(4, vofs);
-					if (i == 1) {
-						ofs.y += bsize + 1;
-					}
+					ofs.y += (bsize + 1) * i;
 
 					ofs += rect.position;
-					for (int j = 0; j < 10; j++) {
+					for (int j = 0; j < 8; j++) {
 						Point2 o = ofs + Point2(j * (bsize + 1), 0);
-						if (j >= 5) {
-							o.x += 1;
-						}
 
-						const int idx = i * 10 + j;
+						const int idx = i * 8 + j;
 						const bool on = value & (1 << idx);
 						Rect2 rect2 = Rect2(o, Size2(bsize, bsize));
 
@@ -734,7 +729,7 @@ void EditorPropertyLayers::setup(LayerType p_layer_type) {
 
 	Vector<String> names;
 	Vector<String> tooltips;
-	for (int i = 0; i < 20; i++) {
+	for (int i = 0; i < 32; i++) {
 		String name;
 
 		if (ProjectSettings::get_singleton()->has_setting(basename + vformat("/layer_%d", i))) {
@@ -755,8 +750,8 @@ void EditorPropertyLayers::setup(LayerType p_layer_type) {
 
 void EditorPropertyLayers::_button_pressed() {
 	layers->clear();
-	for (int i = 0; i < 20; i++) {
-		if (i == 5 || i == 10 || i == 15) {
+	for (int i = 0; i < 32; i++) {
+		if (i == 8 || i == 16 || i == 24) {
 			layers->add_separator();
 		}
 		layers->add_check_item(grid->names[i], i);

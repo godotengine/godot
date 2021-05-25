@@ -114,8 +114,8 @@ class CustomPropertyEditor : public PopupPanel {
 	TextEdit *text_edit;
 	bool read_only;
 	bool picking_viewport;
-	GridContainer *checks20gc;
-	CheckBox *checks20[20];
+	GridContainer *checks32gc;
+	CheckBox *checks32[32];
 	SpinBox *spinbox;
 	HSlider *slider;
 
