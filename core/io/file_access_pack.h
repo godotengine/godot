@@ -148,35 +148,35 @@ class FileAccessPack : public FileAccess {
 	uint64_t off;
 
 	Ref<FileAccess> f;
-	virtual Error _open(const String &p_path, int p_mode_flags);
-	virtual uint64_t _get_modified_time(const String &p_file) { return 0; }
-	virtual uint32_t _get_unix_permissions(const String &p_file) { return 0; }
-	virtual Error _set_unix_permissions(const String &p_file, uint32_t p_permissions) { return FAILED; }
+	virtual Error _open(const String &p_path, int p_mode_flags) override;
+	virtual uint64_t _get_modified_time(const String &p_file) override { return 0; }
+	virtual uint32_t _get_unix_permissions(const String &p_file) override { return 0; }
+	virtual Error _set_unix_permissions(const String &p_file, uint32_t p_permissions) override { return FAILED; }
 
 public:
-	virtual bool is_open() const;
+	virtual bool is_open() const override;
 
-	virtual void seek(uint64_t p_position);
-	virtual void seek_end(int64_t p_position = 0);
-	virtual uint64_t get_position() const;
-	virtual uint64_t get_length() const;
+	virtual void seek(uint64_t p_position) override;
+	virtual void seek_end(int64_t p_position = 0) override;
+	virtual uint64_t get_position() const override;
+	virtual uint64_t get_length() const override;
 
-	virtual bool eof_reached() const;
+	virtual bool eof_reached() const override;
 
-	virtual uint8_t get_8() const;
+	virtual uint8_t get_8() const override;
 
-	virtual uint64_t get_buffer(uint8_t *p_dst, uint64_t p_length) const;
+	virtual uint64_t get_buffer(uint8_t *p_dst, uint64_t p_length) const override;
 
-	virtual void set_big_endian(bool p_big_endian);
+	virtual void set_big_endian(bool p_big_endian) override;
 
-	virtual Error get_error() const;
+	virtual Error get_error() const override;
 
-	virtual void flush();
-	virtual void store_8(uint8_t p_dest);
+	virtual void flush() override;
+	virtual void store_8(uint8_t p_dest) override;
 
-	virtual void store_buffer(const uint8_t *p_src, uint64_t p_length);
+	virtual void store_buffer(const uint8_t *p_src, uint64_t p_length) override;
 
-	virtual bool file_exists(const String &p_name);
+	virtual bool file_exists(const String &p_name) override;
 
 	FileAccessPack(const String &p_path, const PackedData::PackedFile &p_file);
 };
