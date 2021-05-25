@@ -631,6 +631,10 @@ struct _VariantCall {
 			r_ret = decompressed;
 			ERR_FAIL_MSG("Decompression buffer size must be greater than zero.");
 		}
+		if (ba->size() == 0) {
+			r_ret = decompressed;
+			ERR_FAIL_MSG("Compressed buffer size must be greater than zero.");
+		}
 
 		decompressed.resize(buffer_size);
 		int result = Compression::decompress(decompressed.write().ptr(), buffer_size, ba->read().ptr(), ba->size(), mode);
