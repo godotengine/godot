@@ -1164,6 +1164,9 @@ void AudioServer::set_bus_layout(const Ref<AudioBusLayout> &p_bus_layout) {
 				Bus::Effect bfx;
 				bfx.effect = fx;
 				bfx.enabled = p_bus_layout->buses[i].effects[j].enabled;
+#if DEBUG_ENABLED
+				bfx.prof_time = 0;
+#endif
 				bus->effects.push_back(bfx);
 			}
 		}
