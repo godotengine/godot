@@ -224,6 +224,13 @@ void EditorResourcePicker::_edit_menu_cbk(int p_which) {
 				valid_extensions.insert(E->get());
 			}
 
+			if (!file_dialog) {
+				file_dialog = memnew(EditorFileDialog);
+				file_dialog->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
+				add_child(file_dialog);
+				file_dialog->connect("file_selected", callable_mp(this, &EditorResourcePicker::_file_selected));
+			}
+
 			file_dialog->clear_filters();
 			for (Set<String>::Element *E = valid_extensions.front(); E; E = E->next()) {
 				file_dialog->add_filter("*." + E->get() + " ; " + E->get().to_upper());
@@ -781,10 +788,11 @@ EditorResourcePicker::EditorResourcePicker() {
 	assign_button->set_flat(true);
 	assign_button->set_h_size_flags(SIZE_EXPAND_FILL);
 	assign_button->set_clip_text(true);
-	assign_button->connect("pressed", callable_mp(this, &EditorResourcePicker::_resource_selected));
 	assign_button->set_drag_forwarding(this);
-	assign_button->connect("draw", callable_mp(this, &EditorResourcePicker::_button_draw));
 	add_child(assign_button);
+	assign_button->connect("pressed", callable_mp(this, &EditorResourcePicker::_resource_selected));
+	assign_button->connect("draw", callable_mp(this, &EditorResourcePicker::_button_draw));
+	assign_button->connect("gui_input", callable_mp(this, &EditorResourcePicker::_button_input));
 
 	preview_rect = memnew(TextureRect);
 	preview_rect->set_expand(true);
@@ -793,23 +801,17 @@ EditorResourcePicker::EditorResourcePicker() {
 	preview_rect->set_offset(SIDE_BOTTOM, -1);
 	preview_rect->set_offset(SIDE_RIGHT, -1);
 	assign_button->add_child(preview_rect);
-	assign_button->connect("gui_input", callable_mp(this, &EditorResourcePicker::_button_input));
 
-	edit_menu = memnew(PopupMenu);
-	add_child(edit_menu);
 	edit_button = memnew(Button);
 	edit_button->set_flat(true);
 	edit_button->set_toggle_mode(true);
-	edit_menu->connect("id_pressed", callable_mp(this, &EditorResourcePicker::_edit_menu_cbk));
-	edit_menu->connect("popup_hide", callable_mp((BaseButton *)edit_button, &BaseButton::set_pressed), varray(false));
 	edit_button->connect("pressed", callable_mp(this, &EditorResourcePicker::_update_menu));
 	add_child(edit_button);
 	edit_button->connect("gui_input", callable_mp(this, &EditorResourcePicker::_button_input));
-
-	file_dialog = memnew(EditorFileDialog);
-	file_dialog->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
-	add_child(file_dialog);
-	file_dialog->connect("file_selected", callable_mp(this, &EditorResourcePicker::_file_selected));
+	edit_menu = memnew(PopupMenu);
+	add_child(edit_menu);
+	edit_menu->connect("id_pressed", callable_mp(this, &EditorResourcePicker::_edit_menu_cbk));
+	edit_menu->connect("popup_hide", callable_mp((BaseButton *)edit_button, &BaseButton::set_pressed), varray(false));
 }
 
 void EditorScriptPicker::set_create_options(Object *p_menu_node) {
