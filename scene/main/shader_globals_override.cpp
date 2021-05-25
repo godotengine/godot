@@ -218,7 +218,11 @@ void ShaderGlobalsOverride::_get_property_list(List<PropertyInfo> *p_list) const
 
 void ShaderGlobalsOverride::_activate() {
 	List<Node *> nodes;
-	get_tree()->get_nodes_in_group(SceneStringNames::get_singleton()->shader_overrides_group_active, &nodes);
+
+	if (get_tree()) {
+		get_tree()->get_nodes_in_group(SceneStringNames::get_singleton()->shader_overrides_group_active, &nodes);
+	}
+
 	if (nodes.size() == 0) {
 		//good we are the only override, enable all
 		active = true;
