@@ -20,17 +20,17 @@ void _logic_item_remove_and_reinsert(uint32_t p_ref_id) {
 	// some overlay elaborate way to find out which tree the node is in!
 	BVHHandle temp_handle;
 	temp_handle.set_id(p_ref_id);
-	_current_tree = _handle_get_tree_id(temp_handle);
+	uint32_t tree_id = _handle_get_tree_id(temp_handle);
 
 	// remove and reinsert
 	BVHABB_CLASS abb;
-	node_remove_item(p_ref_id, &abb);
+	node_remove_item(p_ref_id, tree_id, &abb);
 
 	// we must choose where to add to tree
-	ref.tnode_id = _logic_choose_item_add_node(_root_node_id[_current_tree], abb);
+	ref.tnode_id = _logic_choose_item_add_node(_root_node_id[tree_id], abb);
 	_node_add_item(ref.tnode_id, p_ref_id, abb);
 
-	refit_upward_and_balance(ref.tnode_id);
+	refit_upward_and_balance(ref.tnode_id, tree_id);
 }
 
 // from randy gaul balance function
@@ -66,7 +66,7 @@ BVHABB_CLASS _logic_abb_merge(const BVHABB_CLASS &a, const BVHABB_CLASS &b) {
 // https://github.com/RandyGaul/qu3e
 // It is MODIFIED from qu3e version.
 // This is the only function used (and _logic_abb_merge helper function).
-int32_t _logic_balance(int32_t iA) {
+int32_t _logic_balance(int32_t iA, uint32_t p_tree_id) {
 	//	return iA; // uncomment this to bypass balance
 
 	TNode *A = &_nodes[iA];
@@ -107,7 +107,7 @@ int32_t _logic_balance(int32_t iA) {
 			}
 		} else {
 			// check this .. seems dodgy
-			change_root_node(iC);
+			change_root_node(iC, p_tree_id);
 		}
 
 		// Swap A and C
@@ -159,7 +159,7 @@ int32_t _logic_balance(int32_t iA) {
 
 		else {
 			// check this .. seems dodgy
-			change_root_node(iB);
+			change_root_node(iB, p_tree_id);
 		}
 
 		// Swap A and B
