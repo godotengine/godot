@@ -739,6 +739,14 @@ StringName AudioStreamPlayer3D::get_bus() const {
 	return "Master";
 }
 
+void AudioStreamPlayer3D::set_adjust_when_blending(bool p_enable) {
+	adjust_when_blending = p_enable;
+}
+
+bool AudioStreamPlayer3D::get_adjust_when_blending() const {
+	return adjust_when_blending;
+}
+
 void AudioStreamPlayer3D::set_autoplay(bool p_enable) {
 	autoplay = p_enable;
 }
@@ -907,6 +915,9 @@ void AudioStreamPlayer3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_max_db", "max_db"), &AudioStreamPlayer3D::set_max_db);
 	ClassDB::bind_method(D_METHOD("get_max_db"), &AudioStreamPlayer3D::get_max_db);
 
+	ClassDB::bind_method(D_METHOD("set_adjust_when_blending", "enable"), &AudioStreamPlayer3D::set_adjust_when_blending);
+	ClassDB::bind_method(D_METHOD("get_adjust_when_blending"), &AudioStreamPlayer3D::get_adjust_when_blending);
+
 	ClassDB::bind_method(D_METHOD("set_pitch_scale", "pitch_scale"), &AudioStreamPlayer3D::set_pitch_scale);
 	ClassDB::bind_method(D_METHOD("get_pitch_scale"), &AudioStreamPlayer3D::get_pitch_scale);
 
@@ -965,6 +976,7 @@ void AudioStreamPlayer3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "attenuation_model", PROPERTY_HINT_ENUM, "Inverse,Inverse Square,Log,Disabled"), "set_attenuation_model", "get_attenuation_model");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "unit_db", PROPERTY_HINT_RANGE, "-80,80"), "set_unit_db", "get_unit_db");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "unit_size", PROPERTY_HINT_RANGE, "0.1,100,0.01,or_greater"), "set_unit_size", "get_unit_size");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "adjust_when_blending"), "set_adjust_when_blending", "get_adjust_when_blending");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "max_db", PROPERTY_HINT_RANGE, "-24,6"), "set_max_db", "get_max_db");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "pitch_scale", PROPERTY_HINT_RANGE, "0.01,4,0.01,or_greater"), "set_pitch_scale", "get_pitch_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "playing", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "_set_playing", "is_playing");

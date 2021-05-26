@@ -54,6 +54,9 @@
 		</method>
 	</methods>
 	<members>
+		<member name="adjust_when_blending" type="bool" setter="set_adjust_when_blending" getter="get_adjust_when_blending" default="true">
+			If [code]true[/code], the volume will be changed by [AnimationTree] when blending.
+		</member>
 		<member name="area_mask" type="int" setter="set_area_mask" getter="get_area_mask" default="1">
 			Areas in which this sound plays.
 		</member>

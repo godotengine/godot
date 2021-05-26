@@ -1103,11 +1103,13 @@ void AnimationTree::_process_graph(float p_delta) {
 							}
 						}
 
-						float db = Math::linear2db(MAX(blend, 0.00001));
-						if (t->object->has_method("set_unit_db")) {
-							t->object->call("set_unit_db", db);
-						} else {
-							t->object->call("set_volume_db", db);
+						if (t->object->call("get_adjust_when_blending")) {
+							float db = Math::linear2db(MAX(blend, 0.00001));
+							if (t->object->has_method("set_unit_db")) {
+								t->object->call("set_unit_db", db);
+							} else {
+								t->object->call("set_volume_db", db);
+							}
 						}
 					} break;
 					case Animation::TYPE_ANIMATION: {
