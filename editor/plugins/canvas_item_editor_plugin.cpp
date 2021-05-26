@@ -4380,7 +4380,7 @@ void CanvasItemEditor::_update_scrollbars() {
 
 	// Calculate scrollable area.
 	Rect2 canvas_item_rect = Rect2(Point2(), screen_rect);
-	if (editor->get_edited_scene()) {
+	if (editor->is_inside_tree() && editor->get_edited_scene()) {
 		Rect2 content_rect = _get_encompassing_rect(editor->get_edited_scene());
 		canvas_item_rect.expand_to(content_rect.position);
 		canvas_item_rect.expand_to(content_rect.position + content_rect.size);
