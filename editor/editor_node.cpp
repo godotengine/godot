@@ -2682,6 +2682,9 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 		case FILE_EXPLORE_ANDROID_BUILD_TEMPLATES: {
 			OS::get_singleton()->shell_open("file://" + ProjectSettings::get_singleton()->get_resource_path().plus_file("android"));
 		} break;
+		case RUN_RELOAD_CURRENT_PROJECT: {
+			restart_editor();
+		} break;
 		case FILE_QUIT:
 		case RUN_PROJECT_MANAGER: {
 			if (!p_confirmed) {
@@ -6278,6 +6281,7 @@ EditorNode::EditorNode() {
 	tool_menu->add_item(TTR("Orphan Resource Explorer..."), TOOLS_ORPHAN_RESOURCES);
 
 	p->add_separator();
+	p->add_item(TTR("Reload Current Project"), RUN_RELOAD_CURRENT_PROJECT);
 #ifdef OSX_ENABLED
 	p->add_shortcut(ED_SHORTCUT("editor/quit_to_project_list", TTR("Quit to Project List"), KEY_MASK_SHIFT + KEY_MASK_ALT + KEY_Q), RUN_PROJECT_MANAGER, true);
 #else
