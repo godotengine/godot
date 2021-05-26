@@ -585,14 +585,6 @@ Variant PlaceHolderScriptInstance::property_get_fallback(const StringName &p_nam
 	return Variant();
 }
 
-uint16_t PlaceHolderScriptInstance::get_rpc_method_id(const StringName &p_method) const {
-	return UINT16_MAX;
-}
-
-uint16_t PlaceHolderScriptInstance::get_rset_property_id(const StringName &p_method) const {
-	return UINT16_MAX;
-}
-
 PlaceHolderScriptInstance::PlaceHolderScriptInstance(ScriptLanguage *p_language, Ref<Script> p_script, Object *p_owner) :
 		owner(p_owner),
 		language(p_language),

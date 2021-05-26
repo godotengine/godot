@@ -2105,44 +2105,8 @@ bool CSharpInstance::refcount_decremented() {
 	return ref_dying;
 }
 
-Vector<ScriptNetData> CSharpInstance::get_rpc_methods() const {
+const Vector<MultiplayerAPI::RPCConfig> CSharpInstance::get_rpc_methods() const {
 	return script->get_rpc_methods();
-}
-
-uint16_t CSharpInstance::get_rpc_method_id(const StringName &p_method) const {
-	return script->get_rpc_method_id(p_method);
-}
-
-StringName CSharpInstance::get_rpc_method(const uint16_t p_rpc_method_id) const {
-	return script->get_rpc_method(p_rpc_method_id);
-}
-
-MultiplayerAPI::RPCMode CSharpInstance::get_rpc_mode_by_id(const uint16_t p_rpc_method_id) const {
-	return script->get_rpc_mode_by_id(p_rpc_method_id);
-}
-
-MultiplayerAPI::RPCMode CSharpInstance::get_rpc_mode(const StringName &p_method) const {
-	return script->get_rpc_mode(p_method);
-}
-
-Vector<ScriptNetData> CSharpInstance::get_rset_properties() const {
-	return script->get_rset_properties();
-}
-
-uint16_t CSharpInstance::get_rset_property_id(const StringName &p_variable) const {
-	return script->get_rset_property_id(p_variable);
-}
-
-StringName CSharpInstance::get_rset_property(const uint16_t p_rset_member_id) const {
-	return script->get_rset_property(p_rset_member_id);
-}
-
-MultiplayerAPI::RPCMode CSharpInstance::get_rset_mode_by_id(const uint16_t p_rset_member_id) const {
-	return script->get_rset_mode_by_id(p_rset_member_id);
-}
-
-MultiplayerAPI::RPCMode CSharpInstance::get_rset_mode(const StringName &p_variable) const {
-	return script->get_rset_mode(p_variable);
 }
 
 void CSharpInstance::notification(int p_notification) {
@@ -3046,7 +3010,6 @@ void CSharpScript::update_script_class_info(Ref<CSharpScript> p_script) {
 	p_script->script_class->fetch_methods_with_godot_api_checks(p_script->native);
 
 	p_script->rpc_functions.clear();
-	p_script->rpc_variables.clear();
 
 	GDMonoClass *top = p_script->script_class;
 	while (top && top != p_script->native) {
@@ -3060,45 +3023,14 @@ void CSharpScript::update_script_class_info(Ref<CSharpScript> p_script) {
 				if (!methods[i]->is_static()) {
 					MultiplayerAPI::RPCMode mode = p_script->_member_get_rpc_mode(methods[i]);
 					if (MultiplayerAPI::RPC_MODE_DISABLED != mode) {
-						ScriptNetData nd;
+						MultiplayerAPI::RPCConfig nd;
 						nd.name = methods[i]->get_name();
-						nd.mode = mode;
+						nd.rpc_mode = mode;
+						// TODO Transfer mode, channel
+						nd.transfer_mode = NetworkedMultiplayerPeer::TRANSFER_MODE_RELIABLE;
+						nd.channel = 0;
 						if (-1 == p_script->rpc_functions.find(nd)) {
 							p_script->rpc_functions.push_back(nd);
-						}
-					}
-				}
-			}
-		}
-
-		{
-			Vector<GDMonoField *> fields = top->get_all_fields();
-			for (int i = 0; i < fields.size(); i++) {
-				if (!fields[i]->is_static()) {
-					MultiplayerAPI::RPCMode mode = p_script->_member_get_rpc_mode(fields[i]);
-					if (MultiplayerAPI::RPC_MODE_DISABLED != mode) {
-						ScriptNetData nd;
-						nd.name = fields[i]->get_name();
-						nd.mode = mode;
-						if (-1 == p_script->rpc_variables.find(nd)) {
-							p_script->rpc_variables.push_back(nd);
-						}
-					}
-				}
-			}
-		}
-
-		{
-			Vector<GDMonoProperty *> properties = top->get_all_properties();
-			for (int i = 0; i < properties.size(); i++) {
-				if (!properties[i]->is_static()) {
-					MultiplayerAPI::RPCMode mode = p_script->_member_get_rpc_mode(properties[i]);
-					if (MultiplayerAPI::RPC_MODE_DISABLED != mode) {
-						ScriptNetData nd;
-						nd.name = properties[i]->get_name();
-						nd.mode = mode;
-						if (-1 == p_script->rpc_variables.find(nd)) {
-							p_script->rpc_variables.push_back(nd);
 						}
 					}
 				}
@@ -3109,8 +3041,7 @@ void CSharpScript::update_script_class_info(Ref<CSharpScript> p_script) {
 	}
 
 	// Sort so we are 100% that they are always the same.
-	p_script->rpc_functions.sort_custom<SortNetData>();
-	p_script->rpc_variables.sort_custom<SortNetData>();
+	p_script->rpc_functions.sort_custom<MultiplayerAPI::SortRPCConfig>();
 
 	p_script->load_script_signals(p_script->script_class, p_script->native);
 }
@@ -3543,58 +3474,8 @@ MultiplayerAPI::RPCMode CSharpScript::_member_get_rpc_mode(IMonoClassMember *p_m
 	return MultiplayerAPI::RPC_MODE_DISABLED;
 }
 
-Vector<ScriptNetData> CSharpScript::get_rpc_methods() const {
+const Vector<MultiplayerAPI::RPCConfig> CSharpScript::get_rpc_methods() const {
 	return rpc_functions;
-}
-
-uint16_t CSharpScript::get_rpc_method_id(const StringName &p_method) const {
-	for (int i = 0; i < rpc_functions.size(); i++) {
-		if (rpc_functions[i].name == p_method) {
-			return i;
-		}
-	}
-	return UINT16_MAX;
-}
-
-StringName CSharpScript::get_rpc_method(const uint16_t p_rpc_method_id) const {
-	ERR_FAIL_COND_V(p_rpc_method_id >= rpc_functions.size(), StringName());
-	return rpc_functions[p_rpc_method_id].name;
-}
-
-MultiplayerAPI::RPCMode CSharpScript::get_rpc_mode_by_id(const uint16_t p_rpc_method_id) const {
-	ERR_FAIL_COND_V(p_rpc_method_id >= rpc_functions.size(), MultiplayerAPI::RPC_MODE_DISABLED);
-	return rpc_functions[p_rpc_method_id].mode;
-}
-
-MultiplayerAPI::RPCMode CSharpScript::get_rpc_mode(const StringName &p_method) const {
-	return get_rpc_mode_by_id(get_rpc_method_id(p_method));
-}
-
-Vector<ScriptNetData> CSharpScript::get_rset_properties() const {
-	return rpc_variables;
-}
-
-uint16_t CSharpScript::get_rset_property_id(const StringName &p_variable) const {
-	for (int i = 0; i < rpc_variables.size(); i++) {
-		if (rpc_variables[i].name == p_variable) {
-			return i;
-		}
-	}
-	return UINT16_MAX;
-}
-
-StringName CSharpScript::get_rset_property(const uint16_t p_rset_member_id) const {
-	ERR_FAIL_COND_V(p_rset_member_id >= rpc_variables.size(), StringName());
-	return rpc_variables[p_rset_member_id].name;
-}
-
-MultiplayerAPI::RPCMode CSharpScript::get_rset_mode_by_id(const uint16_t p_rset_member_id) const {
-	ERR_FAIL_COND_V(p_rset_member_id >= rpc_functions.size(), MultiplayerAPI::RPC_MODE_DISABLED);
-	return rpc_functions[p_rset_member_id].mode;
-}
-
-MultiplayerAPI::RPCMode CSharpScript::get_rset_mode(const StringName &p_variable) const {
-	return get_rset_mode_by_id(get_rset_property_id(p_variable));
 }
 
 Error CSharpScript::load_source_code(const String &p_path) {

@@ -491,36 +491,24 @@ bool Node::is_network_master() const {
 
 /***** RPC CONFIG ********/
 
-uint16_t Node::rpc_config(const StringName &p_method, MultiplayerAPI::RPCMode p_mode) {
-	uint16_t mid = get_node_rpc_method_id(p_method);
-	if (mid == UINT16_MAX) {
-		// It's new
-		NetData nd;
-		nd.name = p_method;
-		nd.mode = p_mode;
-		data.rpc_methods.push_back(nd);
-		return ((uint16_t)data.rpc_methods.size() - 1) | (1 << 15);
-	} else {
-		int c_mid = (~(1 << 15)) & mid;
-		data.rpc_methods.write[c_mid].mode = p_mode;
-		return mid;
+uint16_t Node::rpc_config(const StringName &p_method, MultiplayerAPI::RPCMode p_rpc_mode, NetworkedMultiplayerPeer::TransferMode p_transfer_mode, int p_channel) {
+	for (int i = 0; i < data.rpc_methods.size(); i++) {
+		if (data.rpc_methods[i].name == p_method) {
+			MultiplayerAPI::RPCConfig &nd = data.rpc_methods.write[i];
+			nd.rpc_mode = p_rpc_mode;
+			nd.transfer_mode = p_transfer_mode;
+			nd.channel = p_channel;
+			return i | (1 << 15);
+		}
 	}
-}
-
-uint16_t Node::rset_config(const StringName &p_property, MultiplayerAPI::RPCMode p_mode) {
-	uint16_t pid = get_node_rset_property_id(p_property);
-	if (pid == UINT16_MAX) {
-		// It's new
-		NetData nd;
-		nd.name = p_property;
-		nd.mode = p_mode;
-		data.rpc_properties.push_back(nd);
-		return ((uint16_t)data.rpc_properties.size() - 1) | (1 << 15);
-	} else {
-		int c_pid = (~(1 << 15)) & pid;
-		data.rpc_properties.write[c_pid].mode = p_mode;
-		return pid;
-	}
+	// New method
+	MultiplayerAPI::RPCConfig nd;
+	nd.name = p_method;
+	nd.rpc_mode = p_rpc_mode;
+	nd.transfer_mode = p_transfer_mode;
+	nd.channel = p_channel;
+	data.rpc_methods.push_back(nd);
+	return ((uint16_t)data.rpc_methods.size() - 1) | (1 << 15);
 }
 
 /***** RPC FUNCTIONS ********/
@@ -536,7 +524,7 @@ void Node::rpc(const StringName &p_method, VARIANT_ARG_DECLARE) {
 		argc++;
 	}
 
-	rpcp(0, false, p_method, argptr, argc);
+	rpcp(0, p_method, argptr, argc);
 }
 
 void Node::rpc_id(int p_peer_id, const StringName &p_method, VARIANT_ARG_DECLARE) {
@@ -550,35 +538,7 @@ void Node::rpc_id(int p_peer_id, const StringName &p_method, VARIANT_ARG_DECLARE
 		argc++;
 	}
 
-	rpcp(p_peer_id, false, p_method, argptr, argc);
-}
-
-void Node::rpc_unreliable(const StringName &p_method, VARIANT_ARG_DECLARE) {
-	VARIANT_ARGPTRS;
-
-	int argc = 0;
-	for (int i = 0; i < VARIANT_ARG_MAX; i++) {
-		if (argptr[i]->get_type() == Variant::NIL) {
-			break;
-		}
-		argc++;
-	}
-
-	rpcp(0, true, p_method, argptr, argc);
-}
-
-void Node::rpc_unreliable_id(int p_peer_id, const StringName &p_method, VARIANT_ARG_DECLARE) {
-	VARIANT_ARGPTRS;
-
-	int argc = 0;
-	for (int i = 0; i < VARIANT_ARG_MAX; i++) {
-		if (argptr[i]->get_type() == Variant::NIL) {
-			break;
-		}
-		argc++;
-	}
-
-	rpcp(p_peer_id, true, p_method, argptr, argc);
+	rpcp(p_peer_id, p_method, argptr, argc);
 }
 
 Variant Node::_rpc_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
@@ -597,7 +557,7 @@ Variant Node::_rpc_bind(const Variant **p_args, int p_argcount, Callable::CallEr
 
 	StringName method = *p_args[0];
 
-	rpcp(0, false, method, &p_args[1], p_argcount - 1);
+	rpcp(0, method, &p_args[1], p_argcount - 1);
 
 	r_error.error = Callable::CallError::CALL_OK;
 	return Variant();
@@ -627,92 +587,17 @@ Variant Node::_rpc_id_bind(const Variant **p_args, int p_argcount, Callable::Cal
 	int peer_id = *p_args[0];
 	StringName method = *p_args[1];
 
-	rpcp(peer_id, false, method, &p_args[2], p_argcount - 2);
+	rpcp(peer_id, method, &p_args[2], p_argcount - 2);
 
 	r_error.error = Callable::CallError::CALL_OK;
 	return Variant();
 }
 
-Variant Node::_rpc_unreliable_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
-	if (p_argcount < 1) {
-		r_error.error = Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
-		r_error.argument = 1;
-		return Variant();
-	}
-
-	if (p_args[0]->get_type() != Variant::STRING_NAME) {
-		r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
-		r_error.argument = 0;
-		r_error.expected = Variant::STRING_NAME;
-		return Variant();
-	}
-
-	StringName method = *p_args[0];
-
-	rpcp(0, true, method, &p_args[1], p_argcount - 1);
-
-	r_error.error = Callable::CallError::CALL_OK;
-	return Variant();
-}
-
-Variant Node::_rpc_unreliable_id_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
-	if (p_argcount < 2) {
-		r_error.error = Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
-		r_error.argument = 2;
-		return Variant();
-	}
-
-	if (p_args[0]->get_type() != Variant::INT) {
-		r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
-		r_error.argument = 0;
-		r_error.expected = Variant::INT;
-		return Variant();
-	}
-
-	if (p_args[1]->get_type() != Variant::STRING_NAME) {
-		r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
-		r_error.argument = 1;
-		r_error.expected = Variant::STRING_NAME;
-		return Variant();
-	}
-
-	int peer_id = *p_args[0];
-	StringName method = *p_args[1];
-
-	rpcp(peer_id, true, method, &p_args[2], p_argcount - 2);
-
-	r_error.error = Callable::CallError::CALL_OK;
-	return Variant();
-}
-
-void Node::rpcp(int p_peer_id, bool p_unreliable, const StringName &p_method, const Variant **p_arg, int p_argcount) {
+void Node::rpcp(int p_peer_id, const StringName &p_method, const Variant **p_arg, int p_argcount) {
 	ERR_FAIL_COND(!is_inside_tree());
-	get_multiplayer()->rpcp(this, p_peer_id, p_unreliable, p_method, p_arg, p_argcount);
+	get_multiplayer()->rpcp(this, p_peer_id, true, p_method, p_arg, p_argcount);
 }
 
-void Node::rsetp(int p_peer_id, bool p_unreliable, const StringName &p_property, const Variant &p_value) {
-	ERR_FAIL_COND(!is_inside_tree());
-	get_multiplayer()->rsetp(this, p_peer_id, p_unreliable, p_property, p_value);
-}
-
-/******** RSET *********/
-void Node::rset(const StringName &p_property, const Variant &p_value) {
-	rsetp(0, false, p_property, p_value);
-}
-
-void Node::rset_id(int p_peer_id, const StringName &p_property, const Variant &p_value) {
-	rsetp(p_peer_id, false, p_property, p_value);
-}
-
-void Node::rset_unreliable(const StringName &p_property, const Variant &p_value) {
-	rsetp(0, true, p_property, p_value);
-}
-
-void Node::rset_unreliable_id(int p_peer_id, const StringName &p_property, const Variant &p_value) {
-	rsetp(p_peer_id, true, p_property, p_value);
-}
-
-//////////// end of rpc
 Ref<MultiplayerAPI> Node::get_multiplayer() const {
 	if (multiplayer.is_valid()) {
 		return multiplayer;
@@ -731,99 +616,11 @@ void Node::set_custom_multiplayer(Ref<MultiplayerAPI> p_multiplayer) {
 	multiplayer = p_multiplayer;
 }
 
-uint16_t Node::get_node_rpc_method_id(const StringName &p_method) const {
-	for (int i = 0; i < data.rpc_methods.size(); i++) {
-		if (data.rpc_methods[i].name == p_method) {
-			// Returns `i` with the high bit set to 1 so we know that this id comes
-			// from the node and not the script.
-			return i | (1 << 15);
-		}
-	}
-	return UINT16_MAX;
+Vector<MultiplayerAPI::RPCConfig> Node::get_node_rpc_methods() const {
+	return data.rpc_methods;
 }
 
-StringName Node::get_node_rpc_method(const uint16_t p_rpc_method_id) const {
-	// Make sure this is a node generated ID.
-	if (((1 << 15) & p_rpc_method_id) > 0) {
-		int mid = (~(1 << 15)) & p_rpc_method_id;
-		if (mid < data.rpc_methods.size()) {
-			return data.rpc_methods[mid].name;
-		}
-	}
-	return StringName();
-}
-
-MultiplayerAPI::RPCMode Node::get_node_rpc_mode_by_id(const uint16_t p_rpc_method_id) const {
-	// Make sure this is a node generated ID.
-	if (((1 << 15) & p_rpc_method_id) > 0) {
-		int mid = (~(1 << 15)) & p_rpc_method_id;
-		if (mid < data.rpc_methods.size()) {
-			return data.rpc_methods[mid].mode;
-		}
-	}
-	return MultiplayerAPI::RPC_MODE_DISABLED;
-}
-
-MultiplayerAPI::RPCMode Node::get_node_rpc_mode(const StringName &p_method) const {
-	return get_node_rpc_mode_by_id(get_node_rpc_method_id(p_method));
-}
-
-uint16_t Node::get_node_rset_property_id(const StringName &p_property) const {
-	for (int i = 0; i < data.rpc_properties.size(); i++) {
-		if (data.rpc_properties[i].name == p_property) {
-			// Returns `i` with the high bit set to 1 so we know that this id comes
-			// from the node and not the script.
-			return i | (1 << 15);
-		}
-	}
-	return UINT16_MAX;
-}
-
-StringName Node::get_node_rset_property(const uint16_t p_rset_property_id) const {
-	// Make sure this is a node generated ID.
-	if (((1 << 15) & p_rset_property_id) > 0) {
-		int mid = (~(1 << 15)) & p_rset_property_id;
-		if (mid < data.rpc_properties.size()) {
-			return data.rpc_properties[mid].name;
-		}
-	}
-	return StringName();
-}
-
-MultiplayerAPI::RPCMode Node::get_node_rset_mode_by_id(const uint16_t p_rset_property_id) const {
-	if (((1 << 15) & p_rset_property_id) > 0) {
-		int mid = (~(1 << 15)) & p_rset_property_id;
-		if (mid < data.rpc_properties.size()) {
-			return data.rpc_properties[mid].mode;
-		}
-	}
-	return MultiplayerAPI::RPC_MODE_DISABLED;
-}
-
-MultiplayerAPI::RPCMode Node::get_node_rset_mode(const StringName &p_property) const {
-	return get_node_rset_mode_by_id(get_node_rset_property_id(p_property));
-}
-
-String Node::get_rpc_md5() const {
-	String rpc_list;
-	for (int i = 0; i < data.rpc_methods.size(); i += 1) {
-		rpc_list += String(data.rpc_methods[i].name);
-	}
-	for (int i = 0; i < data.rpc_properties.size(); i += 1) {
-		rpc_list += String(data.rpc_properties[i].name);
-	}
-	if (get_script_instance()) {
-		Vector<ScriptNetData> rpc = get_script_instance()->get_rpc_methods();
-		for (int i = 0; i < rpc.size(); i += 1) {
-			rpc_list += String(rpc[i].name);
-		}
-		rpc = get_script_instance()->get_rset_properties();
-		for (int i = 0; i < rpc.size(); i += 1) {
-			rpc_list += String(rpc[i].name);
-		}
-	}
-	return rpc_list.md5_text();
-}
+//////////// end of rpc
 
 bool Node::can_process_notification(int p_what) const {
 	switch (p_what) {
@@ -2776,8 +2573,7 @@ void Node::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_multiplayer"), &Node::get_multiplayer);
 	ClassDB::bind_method(D_METHOD("get_custom_multiplayer"), &Node::get_custom_multiplayer);
 	ClassDB::bind_method(D_METHOD("set_custom_multiplayer", "api"), &Node::set_custom_multiplayer);
-	ClassDB::bind_method(D_METHOD("rpc_config", "method", "mode"), &Node::rpc_config);
-	ClassDB::bind_method(D_METHOD("rset_config", "property", "mode"), &Node::rset_config);
+	ClassDB::bind_method(D_METHOD("rpc_config", "method", "rpc_mode", "transfer_mode", "channel"), &Node::rpc_config, DEFVAL(NetworkedMultiplayerPeer::TRANSFER_MODE_RELIABLE), DEFVAL(0));
 
 	ClassDB::bind_method(D_METHOD("set_editor_description", "editor_description"), &Node::set_editor_description);
 	ClassDB::bind_method(D_METHOD("get_editor_description"), &Node::get_editor_description);
@@ -2794,21 +2590,12 @@ void Node::_bind_methods() {
 
 		mi.name = "rpc";
 		ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "rpc", &Node::_rpc_bind, mi);
-		mi.name = "rpc_unreliable";
-		ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "rpc_unreliable", &Node::_rpc_unreliable_bind, mi);
 
 		mi.arguments.push_front(PropertyInfo(Variant::INT, "peer_id"));
 
 		mi.name = "rpc_id";
 		ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "rpc_id", &Node::_rpc_id_bind, mi);
-		mi.name = "rpc_unreliable_id";
-		ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "rpc_unreliable_id", &Node::_rpc_unreliable_id_bind, mi);
 	}
-
-	ClassDB::bind_method(D_METHOD("rset", "property", "value"), &Node::rset);
-	ClassDB::bind_method(D_METHOD("rset_id", "peer_id", "property", "value"), &Node::rset_id);
-	ClassDB::bind_method(D_METHOD("rset_unreliable", "property", "value"), &Node::rset_unreliable);
-	ClassDB::bind_method(D_METHOD("rset_unreliable_id", "peer_id", "property", "value"), &Node::rset_unreliable_id);
 
 	ClassDB::bind_method(D_METHOD("update_configuration_warnings"), &Node::update_configuration_warnings);
 

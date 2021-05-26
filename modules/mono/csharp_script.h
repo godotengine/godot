@@ -136,8 +136,7 @@ private:
 	Map<StringName, EventSignal> event_signals;
 	bool signals_invalidated = true;
 
-	Vector<ScriptNetData> rpc_functions;
-	Vector<ScriptNetData> rpc_variables;
+	Vector<MultiplayerAPI::RPCConfig> rpc_functions;
 
 #ifdef TOOLS_ENABLED
 	List<PropertyInfo> exported_members_cache; // members_cache
@@ -235,17 +234,7 @@ public:
 
 	int get_member_line(const StringName &p_member) const override;
 
-	Vector<ScriptNetData> get_rpc_methods() const override;
-	uint16_t get_rpc_method_id(const StringName &p_method) const override;
-	StringName get_rpc_method(const uint16_t p_rpc_method_id) const override;
-	MultiplayerAPI::RPCMode get_rpc_mode_by_id(const uint16_t p_rpc_method_id) const override;
-	MultiplayerAPI::RPCMode get_rpc_mode(const StringName &p_method) const override;
-
-	Vector<ScriptNetData> get_rset_properties() const override;
-	uint16_t get_rset_property_id(const StringName &p_variable) const override;
-	StringName get_rset_property(const uint16_t p_variable_id) const override;
-	MultiplayerAPI::RPCMode get_rset_mode_by_id(const uint16_t p_variable_id) const override;
-	MultiplayerAPI::RPCMode get_rset_mode(const StringName &p_variable) const override;
+	const Vector<MultiplayerAPI::RPCConfig> get_rpc_methods() const override;
 
 #ifdef TOOLS_ENABLED
 	bool is_placeholder_fallback_enabled() const override { return placeholder_fallback_enabled; }
@@ -322,17 +311,7 @@ public:
 	void refcount_incremented() override;
 	bool refcount_decremented() override;
 
-	Vector<ScriptNetData> get_rpc_methods() const override;
-	uint16_t get_rpc_method_id(const StringName &p_method) const override;
-	StringName get_rpc_method(const uint16_t p_rpc_method_id) const override;
-	MultiplayerAPI::RPCMode get_rpc_mode_by_id(const uint16_t p_rpc_method_id) const override;
-	MultiplayerAPI::RPCMode get_rpc_mode(const StringName &p_method) const override;
-
-	Vector<ScriptNetData> get_rset_properties() const override;
-	uint16_t get_rset_property_id(const StringName &p_variable) const override;
-	StringName get_rset_property(const uint16_t p_variable_id) const override;
-	MultiplayerAPI::RPCMode get_rset_mode_by_id(const uint16_t p_variable_id) const override;
-	MultiplayerAPI::RPCMode get_rset_mode(const StringName &p_variable) const override;
+	const Vector<MultiplayerAPI::RPCConfig> get_rpc_methods() const override;
 
 	void notification(int p_notification) override;
 	void _call_notification(int p_notification);

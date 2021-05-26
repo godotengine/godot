@@ -93,35 +93,8 @@ public:
 	Ref<Script> get_script() const override {
 		return Ref<Script>();
 	}
-	Vector<ScriptNetData> get_rpc_methods() const override {
-		return Vector<ScriptNetData>();
-	}
-	uint16_t get_rpc_method_id(const StringName &p_method) const override {
-		return 0;
-	}
-	StringName get_rpc_method(uint16_t p_id) const override {
-		return StringName();
-	}
-	MultiplayerAPI::RPCMode get_rpc_mode_by_id(uint16_t p_id) const override {
-		return MultiplayerAPI::RPC_MODE_PUPPET;
-	}
-	MultiplayerAPI::RPCMode get_rpc_mode(const StringName &p_method) const override {
-		return MultiplayerAPI::RPC_MODE_PUPPET;
-	}
-	Vector<ScriptNetData> get_rset_properties() const override {
-		return Vector<ScriptNetData>();
-	}
-	uint16_t get_rset_property_id(const StringName &p_variable) const override {
-		return 0;
-	}
-	StringName get_rset_property(uint16_t p_id) const override {
-		return StringName();
-	}
-	MultiplayerAPI::RPCMode get_rset_mode_by_id(uint16_t p_id) const override {
-		return MultiplayerAPI::RPC_MODE_PUPPET;
-	}
-	MultiplayerAPI::RPCMode get_rset_mode(const StringName &p_variable) const override {
-		return MultiplayerAPI::RPC_MODE_PUPPET;
+	const Vector<MultiplayerAPI::RPCConfig> get_rpc_methods() const override {
+		return Vector<MultiplayerAPI::RPCConfig>();
 	}
 	ScriptLanguage *get_language() override {
 		return nullptr;

@@ -649,7 +649,7 @@
 			<argument index="0" name="method" type="StringName">
 			</argument>
 			<description>
-				Sends a remote procedure call request for the given [code]method[/code] to peers on the network (and locally), optionally sending all additional arguments as arguments to the method called by the RPC. The call request will only be received by nodes with the same [NodePath], including the exact same node name. Behaviour depends on the RPC configuration for the given method, see [method rpc_config]. Methods are not exposed to RPCs by default. See also [method rset] and [method rset_config] for properties. Returns an empty [Variant].
+				Sends a remote procedure call request for the given [code]method[/code] to peers on the network (and locally), optionally sending all additional arguments as arguments to the method called by the RPC. The call request will only be received by nodes with the same [NodePath], including the exact same node name. Behaviour depends on the RPC configuration for the given method, see [method rpc_config]. Methods are not exposed to RPCs by default. Returns an empty [Variant].
 				[b]Note:[/b] You can only safely use RPCs on clients after you received the [code]connected_to_server[/code] signal from the [SceneTree]. You also need to keep track of the connection state, either by the [SceneTree] signals like [code]server_disconnected[/code] or by checking [code]SceneTree.network_peer.get_connection_status() == CONNECTION_CONNECTED[/code].
 			</description>
 		</method>
@@ -658,10 +658,14 @@
 			</return>
 			<argument index="0" name="method" type="StringName">
 			</argument>
-			<argument index="1" name="mode" type="int" enum="MultiplayerAPI.RPCMode">
+			<argument index="1" name="rpc_mode" type="int" enum="MultiplayerAPI.RPCMode">
+			</argument>
+			<argument index="2" name="transfer_mode" type="int" enum="NetworkedMultiplayerPeer.TransferMode" default="2">
+			</argument>
+			<argument index="3" name="channel" type="int" default="0">
 			</argument>
 			<description>
-				Changes the RPC mode for the given [code]method[/code] to the given [code]mode[/code]. See [enum MultiplayerAPI.RPCMode]. An alternative is annotating methods and properties with the corresponding keywords ([code]remote[/code], [code]master[/code], [code]puppet[/code], [code]remotesync[/code], [code]mastersync[/code], [code]puppetsync[/code]). By default, methods are not exposed to networking (and RPCs). See also [method rset] and [method rset_config] for properties.
+				Changes the RPC mode for the given [code]method[/code] to the given [code]rpc_mode[/code], optionally specifying the [code]transfer_mode[/code] and [code]channel[/code] (on supported peers). See [enum MultiplayerAPI.RPCMode] and [enum NetworkedMultiplayerPeer.TransferMode]. An alternative is annotating methods and properties with the corresponding keywords ([code]remote[/code], [code]master[/code], [code]puppet[/code], [code]remotesync[/code], [code]mastersync[/code], [code]puppetsync[/code]). By default, methods are not exposed to networking (and RPCs).
 			</description>
 		</method>
 		<method name="rpc_id" qualifiers="vararg">
@@ -673,85 +677,6 @@
 			</argument>
 			<description>
 				Sends a [method rpc] to a specific peer identified by [code]peer_id[/code] (see [method NetworkedMultiplayerPeer.set_target_peer]). Returns an empty [Variant].
-			</description>
-		</method>
-		<method name="rpc_unreliable" qualifiers="vararg">
-			<return type="Variant">
-			</return>
-			<argument index="0" name="method" type="StringName">
-			</argument>
-			<description>
-				Sends a [method rpc] using an unreliable protocol. Returns an empty [Variant].
-			</description>
-		</method>
-		<method name="rpc_unreliable_id" qualifiers="vararg">
-			<return type="Variant">
-			</return>
-			<argument index="0" name="peer_id" type="int">
-			</argument>
-			<argument index="1" name="method" type="StringName">
-			</argument>
-			<description>
-				Sends a [method rpc] to a specific peer identified by [code]peer_id[/code] using an unreliable protocol (see [method NetworkedMultiplayerPeer.set_target_peer]). Returns an empty [Variant].
-			</description>
-		</method>
-		<method name="rset">
-			<return type="void">
-			</return>
-			<argument index="0" name="property" type="StringName">
-			</argument>
-			<argument index="1" name="value" type="Variant">
-			</argument>
-			<description>
-				Remotely changes a property's value on other peers (and locally). Behaviour depends on the RPC configuration for the given property, see [method rset_config]. See also [method rpc] for RPCs for methods, most information applies to this method as well.
-			</description>
-		</method>
-		<method name="rset_config">
-			<return type="int">
-			</return>
-			<argument index="0" name="property" type="StringName">
-			</argument>
-			<argument index="1" name="mode" type="int" enum="MultiplayerAPI.RPCMode">
-			</argument>
-			<description>
-				Changes the RPC mode for the given [code]property[/code] to the given [code]mode[/code]. See [enum MultiplayerAPI.RPCMode]. An alternative is annotating methods and properties with the corresponding keywords ([code]remote[/code], [code]master[/code], [code]puppet[/code], [code]remotesync[/code], [code]mastersync[/code], [code]puppetsync[/code]). By default, properties are not exposed to networking (and RPCs). See also [method rpc] and [method rpc_config] for methods.
-			</description>
-		</method>
-		<method name="rset_id">
-			<return type="void">
-			</return>
-			<argument index="0" name="peer_id" type="int">
-			</argument>
-			<argument index="1" name="property" type="StringName">
-			</argument>
-			<argument index="2" name="value" type="Variant">
-			</argument>
-			<description>
-				Remotely changes the property's value on a specific peer identified by [code]peer_id[/code] (see [method NetworkedMultiplayerPeer.set_target_peer]).
-			</description>
-		</method>
-		<method name="rset_unreliable">
-			<return type="void">
-			</return>
-			<argument index="0" name="property" type="StringName">
-			</argument>
-			<argument index="1" name="value" type="Variant">
-			</argument>
-			<description>
-				Remotely changes the property's value on other peers (and locally) using an unreliable protocol.
-			</description>
-		</method>
-		<method name="rset_unreliable_id">
-			<return type="void">
-			</return>
-			<argument index="0" name="peer_id" type="int">
-			</argument>
-			<argument index="1" name="property" type="StringName">
-			</argument>
-			<argument index="2" name="value" type="Variant">
-			</argument>
-			<description>
-				Remotely changes property's value on a specific peer identified by [code]peer_id[/code] using an unreliable protocol (see [method NetworkedMultiplayerPeer.set_target_peer]).
 			</description>
 		</method>
 		<method name="set_display_folded">

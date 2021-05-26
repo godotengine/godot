@@ -135,16 +135,16 @@
 	</signals>
 	<constants>
 		<constant name="RPC_MODE_DISABLED" value="0" enum="RPCMode">
-			Used with [method Node.rpc_config] or [method Node.rset_config] to disable a method or property for all RPC calls, making it unavailable. Default for all methods.
+			Used with [method Node.rpc_config] to disable a method or property for all RPC calls, making it unavailable. Default for all methods.
 		</constant>
 		<constant name="RPC_MODE_REMOTE" value="1" enum="RPCMode">
-			Used with [method Node.rpc_config] or [method Node.rset_config] to set a method to be called or a property to be changed only on the remote end, not locally. Analogous to the [code]remote[/code] keyword. Calls and property changes are accepted from all remote peers, no matter if they are node's master or puppets.
+			Used with [method Node.rpc_config] to set a method to be called or a property to be changed only on the remote end, not locally. Analogous to the [code]remote[/code] keyword. Calls and property changes are accepted from all remote peers, no matter if they are node's master or puppets.
 		</constant>
 		<constant name="RPC_MODE_MASTER" value="2" enum="RPCMode">
-			Used with [method Node.rpc_config] or [method Node.rset_config] to set a method to be called or a property to be changed only on the network master for this node. Analogous to the [code]master[/code] keyword. Only accepts calls or property changes from the node's network puppets, see [method Node.set_network_master].
+			Used with [method Node.rpc_config] to set a method to be called or a property to be changed only on the network master for this node. Analogous to the [code]master[/code] keyword. Only accepts calls or property changes from the node's network puppets, see [method Node.set_network_master].
 		</constant>
 		<constant name="RPC_MODE_PUPPET" value="3" enum="RPCMode">
-			Used with [method Node.rpc_config] or [method Node.rset_config] to set a method to be called or a property to be changed only on puppets for this node. Analogous to the [code]puppet[/code] keyword. Only accepts calls or property changes from the node's network master, see [method Node.set_network_master].
+			Used with [method Node.rpc_config] to set a method to be called or a property to be changed only on puppets for this node. Analogous to the [code]puppet[/code] keyword. Only accepts calls or property changes from the node's network master, see [method Node.set_network_master].
 		</constant>
 		<constant name="RPC_MODE_REMOTESYNC" value="4" enum="RPCMode">
 			Behave like [constant RPC_MODE_REMOTE] but also make the call or property change locally. Analogous to the [code]remotesync[/code] keyword.

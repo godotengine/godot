@@ -312,10 +312,9 @@ Error PluginScript::reload(bool p_keep_state) {
 	}
 	Array *methods = (Array *)&manifest.methods;
 	_rpc_methods.clear();
-	_rpc_variables.clear();
 	if (_ref_base_parent.is_valid()) {
+		/// XXX TODO Should this be _rpc_methods.append_array(...)
 		_rpc_methods = _ref_base_parent->get_rpc_methods();
-		_rpc_variables = _ref_base_parent->get_rset_properties();
 	}
 	for (int i = 0; i < methods->size(); ++i) {
 		Dictionary v = (*methods)[i];
@@ -324,9 +323,10 @@ Error PluginScript::reload(bool p_keep_state) {
 		// rpc_mode is passed as an optional field and is not part of MethodInfo
 		Variant var = v["rpc_mode"];
 		if (var != Variant()) {
-			ScriptNetData nd;
+			MultiplayerAPI::RPCConfig nd;
 			nd.name = mi.name;
-			nd.mode = MultiplayerAPI::RPCMode(int(var));
+			nd.rpc_mode = MultiplayerAPI::RPCMode(int(var));
+			// TODO Transfer Channel
 			if (_rpc_methods.find(nd) == -1) {
 				_rpc_methods.push_back(nd);
 			}
@@ -334,7 +334,7 @@ Error PluginScript::reload(bool p_keep_state) {
 	}
 
 	// Sort so we are 100% that they are always the same.
-	_rpc_methods.sort_custom<SortNetData>();
+	_rpc_methods.sort_custom<MultiplayerAPI::SortRPCConfig>();
 
 	Array *signals = (Array *)&manifest.signals;
 	for (int i = 0; i < signals->size(); ++i) {
@@ -348,20 +348,7 @@ Error PluginScript::reload(bool p_keep_state) {
 		PropertyInfo pi = PropertyInfo::from_dict(v);
 		_properties_info[pi.name] = pi;
 		_properties_default_values[pi.name] = v["default_value"];
-		// rset_mode is passed as an optional field and is not part of PropertyInfo
-		Variant var = v["rset_mode"];
-		if (var != Variant()) {
-			ScriptNetData nd;
-			nd.name = pi.name;
-			nd.mode = MultiplayerAPI::RPCMode(int(var));
-			if (_rpc_variables.find(nd) == -1) {
-				_rpc_variables.push_back(nd);
-			}
-		}
 	}
-
-	// Sort so we are 100% that they are always the same.
-	_rpc_variables.sort_custom<SortNetData>();
 
 #ifdef TOOLS_ENABLED
 /*for (Set<PlaceHolderScriptInstance*>::Element *E=placeholders.front();E;E=E->next()) {
@@ -486,74 +473,8 @@ int PluginScript::get_member_line(const StringName &p_member) const {
 	return -1;
 }
 
-Vector<ScriptNetData> PluginScript::get_rpc_methods() const {
+const Vector<MultiplayerAPI::RPCConfig> PluginScript::get_rpc_methods() const {
 	return _rpc_methods;
-}
-
-uint16_t PluginScript::get_rpc_method_id(const StringName &p_method) const {
-	ASSERT_SCRIPT_VALID_V(UINT16_MAX);
-	for (int i = 0; i < _rpc_methods.size(); i++) {
-		if (_rpc_methods[i].name == p_method) {
-			return i;
-		}
-	}
-	return UINT16_MAX;
-}
-
-StringName PluginScript::get_rpc_method(const uint16_t p_rpc_method_id) const {
-	ASSERT_SCRIPT_VALID_V(StringName());
-	if (p_rpc_method_id >= _rpc_methods.size()) {
-		return StringName();
-	}
-	return _rpc_methods[p_rpc_method_id].name;
-}
-
-MultiplayerAPI::RPCMode PluginScript::get_rpc_mode_by_id(const uint16_t p_rpc_method_id) const {
-	ASSERT_SCRIPT_VALID_V(MultiplayerAPI::RPC_MODE_DISABLED);
-	if (p_rpc_method_id >= _rpc_methods.size()) {
-		return MultiplayerAPI::RPC_MODE_DISABLED;
-	}
-	return _rpc_methods[p_rpc_method_id].mode;
-}
-
-MultiplayerAPI::RPCMode PluginScript::get_rpc_mode(const StringName &p_method) const {
-	ASSERT_SCRIPT_VALID_V(MultiplayerAPI::RPC_MODE_DISABLED);
-	return get_rpc_mode_by_id(get_rpc_method_id(p_method));
-}
-
-Vector<ScriptNetData> PluginScript::get_rset_properties() const {
-	return _rpc_variables;
-}
-
-uint16_t PluginScript::get_rset_property_id(const StringName &p_property) const {
-	ASSERT_SCRIPT_VALID_V(UINT16_MAX);
-	for (int i = 0; i < _rpc_variables.size(); i++) {
-		if (_rpc_variables[i].name == p_property) {
-			return i;
-		}
-	}
-	return UINT16_MAX;
-}
-
-StringName PluginScript::get_rset_property(const uint16_t p_rset_property_id) const {
-	ASSERT_SCRIPT_VALID_V(StringName());
-	if (p_rset_property_id >= _rpc_variables.size()) {
-		return StringName();
-	}
-	return _rpc_variables[p_rset_property_id].name;
-}
-
-MultiplayerAPI::RPCMode PluginScript::get_rset_mode_by_id(const uint16_t p_rset_property_id) const {
-	ASSERT_SCRIPT_VALID_V(MultiplayerAPI::RPC_MODE_DISABLED);
-	if (p_rset_property_id >= _rpc_variables.size()) {
-		return MultiplayerAPI::RPC_MODE_DISABLED;
-	}
-	return _rpc_variables[p_rset_property_id].mode;
-}
-
-MultiplayerAPI::RPCMode PluginScript::get_rset_mode(const StringName &p_variable) const {
-	ASSERT_SCRIPT_VALID_V(MultiplayerAPI::RPC_MODE_DISABLED);
-	return get_rset_mode_by_id(get_rset_property_id(p_variable));
 }
 
 PluginScript::PluginScript() :

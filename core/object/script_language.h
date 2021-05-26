@@ -41,21 +41,6 @@ class ScriptLanguage;
 
 typedef void (*ScriptEditRequestFunction)(const String &p_path);
 
-struct ScriptNetData {
-	StringName name;
-	MultiplayerAPI::RPCMode mode;
-	bool operator==(ScriptNetData const &p_other) const {
-		return name == p_other.name;
-	}
-};
-
-struct SortNetData {
-	StringName::AlphCompare compare;
-	bool operator()(const ScriptNetData &p_a, const ScriptNetData &p_b) const {
-		return compare(p_a.name, p_b.name);
-	}
-};
-
 class ScriptServer {
 	enum {
 		MAX_LANGUAGES = 16
@@ -174,17 +159,7 @@ public:
 
 	virtual bool is_placeholder_fallback_enabled() const { return false; }
 
-	virtual Vector<ScriptNetData> get_rpc_methods() const = 0;
-	virtual uint16_t get_rpc_method_id(const StringName &p_method) const = 0;
-	virtual StringName get_rpc_method(const uint16_t p_rpc_method_id) const = 0;
-	virtual MultiplayerAPI::RPCMode get_rpc_mode_by_id(const uint16_t p_rpc_method_id) const = 0;
-	virtual MultiplayerAPI::RPCMode get_rpc_mode(const StringName &p_method) const = 0;
-
-	virtual Vector<ScriptNetData> get_rset_properties() const = 0;
-	virtual uint16_t get_rset_property_id(const StringName &p_property) const = 0;
-	virtual StringName get_rset_property(const uint16_t p_rset_property_id) const = 0;
-	virtual MultiplayerAPI::RPCMode get_rset_mode_by_id(const uint16_t p_rpc_method_id) const = 0;
-	virtual MultiplayerAPI::RPCMode get_rset_mode(const StringName &p_variable) const = 0;
+	virtual const Vector<MultiplayerAPI::RPCConfig> get_rpc_methods() const = 0;
 
 	Script() {}
 };
@@ -225,17 +200,7 @@ public:
 	virtual void property_set_fallback(const StringName &p_name, const Variant &p_value, bool *r_valid);
 	virtual Variant property_get_fallback(const StringName &p_name, bool *r_valid);
 
-	virtual Vector<ScriptNetData> get_rpc_methods() const = 0;
-	virtual uint16_t get_rpc_method_id(const StringName &p_method) const = 0;
-	virtual StringName get_rpc_method(uint16_t p_id) const = 0;
-	virtual MultiplayerAPI::RPCMode get_rpc_mode_by_id(uint16_t p_id) const = 0;
-	virtual MultiplayerAPI::RPCMode get_rpc_mode(const StringName &p_method) const = 0;
-
-	virtual Vector<ScriptNetData> get_rset_properties() const = 0;
-	virtual uint16_t get_rset_property_id(const StringName &p_variable) const = 0;
-	virtual StringName get_rset_property(uint16_t p_id) const = 0;
-	virtual MultiplayerAPI::RPCMode get_rset_mode_by_id(uint16_t p_id) const = 0;
-	virtual MultiplayerAPI::RPCMode get_rset_mode(const StringName &p_variable) const = 0;
+	virtual const Vector<MultiplayerAPI::RPCConfig> get_rpc_methods() const = 0;
 
 	virtual ScriptLanguage *get_language() = 0;
 	virtual ~ScriptInstance();
@@ -447,17 +412,7 @@ public:
 	virtual void property_set_fallback(const StringName &p_name, const Variant &p_value, bool *r_valid = nullptr);
 	virtual Variant property_get_fallback(const StringName &p_name, bool *r_valid = nullptr);
 
-	virtual Vector<ScriptNetData> get_rpc_methods() const { return Vector<ScriptNetData>(); }
-	virtual uint16_t get_rpc_method_id(const StringName &p_method) const;
-	virtual StringName get_rpc_method(uint16_t p_id) const { return StringName(); }
-	virtual MultiplayerAPI::RPCMode get_rpc_mode_by_id(uint16_t p_id) const { return MultiplayerAPI::RPC_MODE_DISABLED; }
-	virtual MultiplayerAPI::RPCMode get_rpc_mode(const StringName &p_method) const { return MultiplayerAPI::RPC_MODE_DISABLED; }
-
-	virtual Vector<ScriptNetData> get_rset_properties() const { return Vector<ScriptNetData>(); }
-	virtual uint16_t get_rset_property_id(const StringName &p_variable) const;
-	virtual StringName get_rset_property(uint16_t p_id) const { return StringName(); }
-	virtual MultiplayerAPI::RPCMode get_rset_mode_by_id(uint16_t p_id) const { return MultiplayerAPI::RPC_MODE_DISABLED; }
-	virtual MultiplayerAPI::RPCMode get_rset_mode(const StringName &p_variable) const { return MultiplayerAPI::RPC_MODE_DISABLED; }
+	virtual const Vector<MultiplayerAPI::RPCConfig> get_rpc_methods() const { return Vector<MultiplayerAPI::RPCConfig>(); }
 
 	PlaceHolderScriptInstance(ScriptLanguage *p_language, Ref<Script> p_script, Object *p_owner);
 	~PlaceHolderScriptInstance();

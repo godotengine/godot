@@ -737,20 +737,22 @@ public:
 		}
 
 		int to_id = 0;
-		bool reliable = true;
+		//bool reliable = true;
 
 		if (rpc_mode >= VisualScriptFunctionCall::RPC_RELIABLE_TO_ID) {
 			to_id = *p_args[0];
 			p_args += 1;
 			p_argcount -= 1;
-			if (rpc_mode == VisualScriptFunctionCall::RPC_UNRELIABLE_TO_ID) {
-				reliable = false;
-			}
-		} else if (rpc_mode == VisualScriptFunctionCall::RPC_UNRELIABLE) {
-			reliable = false;
+			//if (rpc_mode == VisualScriptFunctionCall::RPC_UNRELIABLE_TO_ID) {
+			//reliable = false;
+			//}
 		}
+		//else if (rpc_mode == VisualScriptFunctionCall::RPC_UNRELIABLE) {
+		//reliable = false;
+		//}
 
-		node->rpcp(to_id, !reliable, function, p_args, p_argcount);
+		// TODO reliable?
+		node->rpcp(to_id, function, p_args, p_argcount);
 
 		return true;
 	}
