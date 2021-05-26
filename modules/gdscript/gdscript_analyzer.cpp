@@ -2068,9 +2068,11 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool is_awa
 
 	if (p_call->is_super) {
 		base_type = parser->current_class->base_type;
+		base_type.is_meta_type = false;
 		is_self = true;
 	} else if (callee_type == GDScriptParser::Node::IDENTIFIER) {
 		base_type = parser->current_class->get_datatype();
+		base_type.is_meta_type = false;
 		is_self = true;
 	} else if (callee_type == GDScriptParser::Node::SUBSCRIPT) {
 		GDScriptParser::SubscriptNode *subscript = static_cast<GDScriptParser::SubscriptNode *>(p_call->callee);
