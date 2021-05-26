@@ -1084,7 +1084,11 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 					gen->write_call(GDScriptCodeGenerator::Address(), GDScriptCodeGenerator::Address(GDScriptCodeGenerator::Address::SELF), setter_function, args);
 				} else {
 					// Just assign.
-					gen->write_assign(target, op_result);
+					if (assignment->use_conversion_assign) {
+						gen->write_assign_with_conversion(target, op_result);
+					} else {
+						gen->write_assign(target, op_result);
+					}
 				}
 
 				if (op_result.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
@@ -1792,7 +1796,11 @@ Error GDScriptCompiler::_parse_block(CodeGen &codegen, const GDScriptParser::Sui
 					if (error) {
 						return error;
 					}
-					gen->write_assign(local, src_address);
+					if (lv->use_conversion_assign) {
+						gen->write_assign_with_conversion(local, src_address);
+					} else {
+						gen->write_assign(local, src_address);
+					}
 					if (src_address.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
 						codegen.generator->pop_temporary();
 					}
@@ -1930,7 +1938,11 @@ GDScriptFunction *GDScriptCompiler::_parse_function(Error &r_error, GDScript *p_
 					return nullptr;
 				}
 
-				codegen.generator->write_assign(dst_address, src_address);
+				if (field->use_conversion_assign) {
+					codegen.generator->write_assign_with_conversion(dst_address, src_address);
+				} else {
+					codegen.generator->write_assign(dst_address, src_address);
+				}
 				if (src_address.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
 					codegen.generator->pop_temporary();
 				}
