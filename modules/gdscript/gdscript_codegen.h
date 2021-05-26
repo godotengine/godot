@@ -111,6 +111,7 @@ public:
 	virtual void write_set_member(const Address &p_value, const StringName &p_name) = 0;
 	virtual void write_get_member(const Address &p_target, const StringName &p_name) = 0;
 	virtual void write_assign(const Address &p_target, const Address &p_source) = 0;
+	virtual void write_assign_with_conversion(const Address &p_target, const Address &p_source) = 0;
 	virtual void write_assign_true(const Address &p_target) = 0;
 	virtual void write_assign_false(const Address &p_target) = 0;
 	virtual void write_assign_default_parameter(const Address &dst, const Address &src) = 0;
