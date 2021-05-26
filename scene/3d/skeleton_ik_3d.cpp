@@ -129,7 +129,7 @@ bool FabrikInverseKinematic::build_chain(Task *p_task, bool p_force_simple_chain
 	return true;
 }
 
-void FabrikInverseKinematic::solve_simple(Task *p_task, bool p_solve_magnet) {
+void FabrikInverseKinematic::solve_simple(Task *p_task, bool p_solve_magnet, Vector3 p_origin_pos) {
 	real_t distance_to_goal(1e4);
 	real_t previous_distance_to_goal(0);
 	int can_solve(p_task->max_iterations);
@@ -138,7 +138,7 @@ void FabrikInverseKinematic::solve_simple(Task *p_task, bool p_solve_magnet) {
 		--can_solve;
 
 		solve_simple_backwards(p_task->chain, p_solve_magnet);
-		solve_simple_forwards(p_task->chain, p_solve_magnet);
+		solve_simple_forwards(p_task->chain, p_solve_magnet, p_origin_pos);
 
 		distance_to_goal = (p_task->chain.tips[0].chain_item->current_pos - p_task->chain.tips[0].end_effector->goal_transform.origin).length();
 	}
@@ -176,13 +176,13 @@ void FabrikInverseKinematic::solve_simple_backwards(Chain &r_chain, bool p_solve
 	}
 }
 
-void FabrikInverseKinematic::solve_simple_forwards(Chain &r_chain, bool p_solve_magnet) {
+void FabrikInverseKinematic::solve_simple_forwards(Chain &r_chain, bool p_solve_magnet, Vector3 p_origin_pos) {
 	if (p_solve_magnet && !r_chain.middle_chain_item) {
 		return;
 	}
 
 	ChainItem *sub_chain_root(&r_chain.chain_root);
-	Vector3 origin(r_chain.chain_root.initial_transform.origin);
+	Vector3 origin = p_origin_pos;
 
 	while (sub_chain_root) { // Reach the tip
 		sub_chain_root->current_pos = origin;
@@ -273,13 +273,16 @@ void FabrikInverseKinematic::solve(Task *p_task, real_t blending_delta, bool ove
 	// Update the initial root transform so its synced with any animation changes
 	_update_chain(p_task->skeleton, &p_task->chain.chain_root);
 
+	p_task->skeleton->set_bone_global_pose_override(p_task->chain.chain_root.bone, Transform(), 0.0, false);
+	Vector3 origin_pos = p_task->skeleton->get_bone_global_pose(p_task->chain.chain_root.bone).origin;
+
 	make_goal(p_task, p_task->skeleton->get_global_transform().affine_inverse(), blending_delta);
 
 	if (p_use_magnet && p_task->chain.middle_chain_item) {
 		p_task->chain.magnet_position = p_task->chain.middle_chain_item->initial_transform.origin.lerp(p_magnet_position, blending_delta);
-		solve_simple(p_task, true);
+		solve_simple(p_task, true, origin_pos);
 	}
-	solve_simple(p_task, false);
+	solve_simple(p_task, false, origin_pos);
 
 	// Assign new bone position.
 	ChainItem *ci(&p_task->chain.chain_root);
