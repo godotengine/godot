@@ -1406,6 +1406,7 @@ String Variant::stringify(List<const void *> &stack) const {
 			}
 			str += "}";
 
+			stack.erase(d.id());
 			return str;
 		} break;
 		case POOL_VECTOR2_ARRAY: {
@@ -1485,6 +1486,7 @@ String Variant::stringify(List<const void *> &stack) const {
 			}
 
 			str += "]";
+			stack.erase(arr.id());
 			return str;
 
 		} break;
