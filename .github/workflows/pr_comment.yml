@@ -1,0 +1,61 @@
+name: Comment on pull request with nightly.link
+on:
+  workflow_run:
+    workflows:
+      - 🤖 Android Builds
+      - 🍏 iOS Builds
+      - 🐧 Linux Builds
+      - 🍎 macOS Builds
+      - 🏁 Windows Builds
+    types:
+      - completed
+
+jobs:
+  pr_comment:
+    if: github.event.workflow_run.event == 'pull_request' && github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/github-script@v3
+        with:
+          # This snippet is public-domain, taken from
+          # https://github.com/oprypin/nightly.link/blob/master/.github/workflows/pr-comment.yml
+          script: |
+            const {owner, repo} = context.repo;
+            const run_id = ${{github.event.workflow_run.id}};
+            const pull_head_sha = '${{github.event.workflow_run.head_sha}}';
+            const pull_user_id = ${{github.event.sender.id}};
+
+            const issue_number = await (async () => {
+              const pulls = await github.pulls.list({owner, repo});
+              for await (const {data} of github.paginate.iterator(pulls)) {
+                for (const pull of data) {
+                  if (pull.head.sha === pull_head_sha && pull.user.id === pull_user_id) {
+                    return pull.number;
+                  }
+                }
+              }
+            })();
+            if (issue_number) {
+              core.info(`Using pull request ${issue_number}`);
+            } else {
+              return core.error(`No matching pull request found`);
+            }
+
+            const {data: {artifacts}} = await github.actions.listWorkflowRunArtifacts({owner, repo, run_id});
+            if (!artifacts.length) {
+              return core.error(`No artifacts found`);
+            }
+            let body = `Download the artifacts for this pull request:\n`;
+            for (const art of artifacts) {
+              body += `\n* [${art.name}.zip](https://nightly.link/${owner}/${repo}/actions/artifacts/${art.id}.zip)`;
+            }
+
+            const {data: comments} = await github.issues.listComments({repo, owner, issue_number});
+            const existing_comment = comments.find((c) => c.user.login === 'github-actions[bot]');
+            if (existing_comment) {
+              core.info(`Updating comment ${existing_comment.id}`);
+              await github.issues.updateComment({repo, owner, comment_id: existing_comment.id, body});
+            } else {
+              core.info(`Creating a comment`);
+              await github.issues.createComment({repo, owner, issue_number, body});
+            }
