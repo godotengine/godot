@@ -74,7 +74,7 @@ public:
 
 	virtual int Length(long long *total, long long *available) {
 		if (file) {
-			const uint64_t len = file->get_len();
+			const uint64_t len = file->get_length();
 			if (total) {
 				*total = len;
 			}

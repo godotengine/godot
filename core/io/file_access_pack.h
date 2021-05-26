@@ -163,7 +163,7 @@ public:
 	virtual void seek(uint64_t p_position);
 	virtual void seek_end(int64_t p_position = 0);
 	virtual uint64_t get_position() const;
-	virtual uint64_t get_len() const;
+	virtual uint64_t get_length() const;
 
 	virtual bool eof_reached() const;
 

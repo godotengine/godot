@@ -1178,6 +1178,10 @@ Array TileSetAtlasSourceEditor::_get_selection_as_array() {
 }
 
 void TileSetAtlasSourceEditor::_tile_atlas_control_draw() {
+	// Colors.
+	Color grid_color = EditorSettings::get_singleton()->get("editors/tiles_editor/grid_color");
+	Color selection_color = Color().from_hsv(Math::fposmod(grid_color.get_h() + 0.5, 1.0), grid_color.get_s(), grid_color.get_v(), 1.0);
+
 	// Draw the selected tile.
 	if (tools_button_group->get_pressed_button() == tool_select_button) {
 		for (Set<TileSelection>::Element *E = selection.front(); E; E = E->next()) {
@@ -1185,7 +1189,7 @@ void TileSetAtlasSourceEditor::_tile_atlas_control_draw() {
 			if (selected.alternative == 0) {
 				// Draw the rect.
 				Rect2 region = tile_set_atlas_source->get_tile_texture_region(selected.tile);
-				tile_atlas_control->draw_rect(region, Color(0.2, 0.2, 1.0), false);
+				tile_atlas_control->draw_rect(region, selection_color, false);
 			}
 		}
 
@@ -1234,7 +1238,7 @@ void TileSetAtlasSourceEditor::_tile_atlas_control_draw() {
 
 		Color color = Color(0.0, 0.0, 0.0);
 		if (drag_type == DRAG_TYPE_RECT_SELECT) {
-			color = Color(0.5, 0.5, 1.0);
+			color = selection_color.lightened(0.2);
 		}
 
 		Set<Vector2i> to_paint;
@@ -1393,6 +1397,9 @@ void TileSetAtlasSourceEditor::_tile_alternatives_control_mouse_exited() {
 }
 
 void TileSetAtlasSourceEditor::_tile_alternatives_control_draw() {
+	Color grid_color = EditorSettings::get_singleton()->get("editors/tiles_editor/grid_color");
+	Color selection_color = Color().from_hsv(Math::fposmod(grid_color.get_h() + 0.5, 1.0), grid_color.get_s(), grid_color.get_v(), 1.0);
+
 	// Update the hovered alternative tile.
 	if (tools_button_group->get_pressed_button() == tool_select_button) {
 		// Draw hovered tile.
@@ -1410,7 +1417,7 @@ void TileSetAtlasSourceEditor::_tile_alternatives_control_draw() {
 			if (selected.alternative >= 1) {
 				Rect2i rect = tile_atlas_view->get_alternative_tile_rect(selected.tile, selected.alternative);
 				if (rect != Rect2i()) {
-					alternative_tiles_control->draw_rect(rect, Color(0.2, 0.2, 1.0), false);
+					alternative_tiles_control->draw_rect(rect, selection_color, false);
 				}
 			}
 		}

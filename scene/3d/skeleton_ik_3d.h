@@ -106,10 +106,10 @@ private:
 	/// Init a chain that starts from the root to tip
 	static bool build_chain(Task *p_task, bool p_force_simple_chain = true);
 
-	static void solve_simple(Task *p_task, bool p_solve_magnet);
+	static void solve_simple(Task *p_task, bool p_solve_magnet, Vector3 p_origin_pos);
 	/// Special solvers that solve only chains with one end effector
 	static void solve_simple_backwards(Chain &r_chain, bool p_solve_magnet);
-	static void solve_simple_forwards(Chain &r_chain, bool p_solve_magnet);
+	static void solve_simple_forwards(Chain &r_chain, bool p_solve_magnet, Vector3 p_origin_pos);
 
 public:
 	static Task *create_simple_task(Skeleton3D *p_sk, BoneId root_bone, BoneId tip_bone, const Transform &goal_transform);

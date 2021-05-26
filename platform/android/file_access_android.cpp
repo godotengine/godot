@@ -94,7 +94,7 @@ uint64_t FileAccessAndroid::get_position() const {
 	return pos;
 }
 
-uint64_t FileAccessAndroid::get_len() const {
+uint64_t FileAccessAndroid::get_length() const {
 	return len;
 }
 

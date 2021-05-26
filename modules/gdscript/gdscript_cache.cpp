@@ -153,7 +153,7 @@ String GDScriptCache::get_source_code(const String &p_path) {
 		ERR_FAIL_COND_V(err, "");
 	}
 
-	uint64_t len = f->get_len();
+	uint64_t len = f->get_length();
 	source_file.resize(len + 1);
 	uint64_t r = f->get_buffer(source_file.ptrw(), len);
 	f->close();
