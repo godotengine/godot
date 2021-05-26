@@ -322,6 +322,12 @@ void VisualShaderGraphPlugin::register_uniform_name(int p_node_id, LineEdit *p_u
 	links[p_node_id].uniform_name = p_uniform_name;
 }
 
+void VisualShaderGraphPlugin::update_theme() {
+	vector_expanded_color[0] = VisualShaderEditor::get_singleton()->get_theme_color("axis_x_color", "Editor"); // red
+	vector_expanded_color[1] = VisualShaderEditor::get_singleton()->get_theme_color("axis_y_color", "Editor"); // green
+	vector_expanded_color[2] = VisualShaderEditor::get_singleton()->get_theme_color("axis_z_color", "Editor"); // blue
+}
+
 void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id) {
 	if (p_type != visual_shader->get_shader_type()) {
 		return;
@@ -338,6 +344,12 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id) {
 		Color(0.55, 0.65, 0.94), // boolean
 		Color(0.96, 0.66, 0.43), // transform
 		Color(1.0, 1.0, 0.0), // sampler
+	};
+
+	static const String vector_expanded_name[3] = {
+		"red",
+		"green",
+		"blue"
 	};
 
 	Ref<VisualShaderNode> vsnode = visual_shader->get_node(p_type, p_id);
@@ -553,13 +565,32 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id) {
 		}
 	}
 
-	for (int i = 0; i < MAX(vsnode->get_input_port_count(), vsnode->get_output_port_count()); i++) {
+	int output_port_count = 0;
+	for (int i = 0; i < vsnode->get_output_port_count(); i++) {
+		if (vsnode->_is_output_port_expanded(i)) {
+			if (vsnode->get_output_port_type(i) == VisualShaderNode::PORT_TYPE_VECTOR) {
+				output_port_count += 3;
+			}
+		}
+		output_port_count++;
+	}
+	int max_ports = MAX(vsnode->get_input_port_count(), output_port_count);
+	VisualShaderNode::PortType expanded_type = VisualShaderNode::PORT_TYPE_SCALAR;
+	int expanded_port_counter = 0;
+
+	for (int i = 0, j = 0; i < max_ports; i++, j++) {
+		if (expanded_type == VisualShaderNode::PORT_TYPE_VECTOR && expanded_port_counter >= 3) {
+			expanded_type = VisualShaderNode::PORT_TYPE_SCALAR;
+			expanded_port_counter = 0;
+			i -= 3;
+		}
+
 		if (vsnode->is_port_separator(i)) {
 			node->add_child(memnew(HSeparator));
 			port_offset++;
 		}
 
-		bool valid_left = i < vsnode->get_input_port_count();
+		bool valid_left = j < vsnode->get_input_port_count();
 		VisualShaderNode::PortType port_left = VisualShaderNode::PORT_TYPE_SCALAR;
 		bool port_left_used = false;
 		String name_left;
@@ -567,18 +598,24 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id) {
 			name_left = vsnode->get_input_port_name(i);
 			port_left = vsnode->get_input_port_type(i);
 			for (List<VisualShader::Connection>::Element *E = connections.front(); E; E = E->next()) {
-				if (E->get().to_node == p_id && E->get().to_port == i) {
+				if (E->get().to_node == p_id && E->get().to_port == j) {
 					port_left_used = true;
 				}
 			}
 		}
 
-		bool valid_right = i < vsnode->get_output_port_count();
+		bool valid_right = true;
 		VisualShaderNode::PortType port_right = VisualShaderNode::PORT_TYPE_SCALAR;
 		String name_right;
-		if (valid_right) {
-			name_right = vsnode->get_output_port_name(i);
-			port_right = vsnode->get_output_port_type(i);
+
+		if (expanded_type == VisualShaderNode::PORT_TYPE_SCALAR) {
+			valid_right = i < vsnode->get_output_port_count();
+			if (valid_right) {
+				name_right = vsnode->get_output_port_name(i);
+				port_right = vsnode->get_output_port_type(i);
+			}
+		} else {
+			name_right = vector_expanded_name[expanded_port_counter++];
 		}
 
 		HBoxContainer *hb = memnew(HBoxContainer);
@@ -686,17 +723,29 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id) {
 			}
 		}
 
-		if (valid_right && visual_shader->get_shader_type() == VisualShader::TYPE_FRAGMENT && port_right != VisualShaderNode::PORT_TYPE_TRANSFORM && port_right != VisualShaderNode::PORT_TYPE_SAMPLER) {
-			TextureButton *preview = memnew(TextureButton);
-			preview->set_toggle_mode(true);
-			preview->set_normal_texture(VisualShaderEditor::get_singleton()->get_theme_icon("GuiVisibilityHidden", "EditorIcons"));
-			preview->set_pressed_texture(VisualShaderEditor::get_singleton()->get_theme_icon("GuiVisibilityVisible", "EditorIcons"));
-			preview->set_v_size_flags(Control::SIZE_SHRINK_CENTER);
+		if (valid_right) {
+			if (vsnode->is_output_port_expandable(i)) {
+				TextureButton *expand = memnew(TextureButton);
+				expand->set_toggle_mode(true);
+				expand->set_normal_texture(VisualShaderEditor::get_singleton()->get_theme_icon("GuiTreeArrowDown", "EditorIcons"));
+				expand->set_pressed_texture(VisualShaderEditor::get_singleton()->get_theme_icon("GuiTreeArrowRight", "EditorIcons"));
+				expand->set_v_size_flags(Control::SIZE_SHRINK_CENTER);
+				expand->set_pressed(vsnode->_is_output_port_expanded(i));
+				expand->connect("pressed", callable_mp(VisualShaderEditor::get_singleton(), &VisualShaderEditor::_expand_output_port), varray(p_id, i, !vsnode->_is_output_port_expanded(i)), CONNECT_DEFERRED);
+				hb->add_child(expand);
+			}
+			if (visual_shader->get_shader_type() == VisualShader::TYPE_FRAGMENT && port_right != VisualShaderNode::PORT_TYPE_TRANSFORM && port_right != VisualShaderNode::PORT_TYPE_SAMPLER) {
+				TextureButton *preview = memnew(TextureButton);
+				preview->set_toggle_mode(true);
+				preview->set_normal_texture(VisualShaderEditor::get_singleton()->get_theme_icon("GuiVisibilityHidden", "EditorIcons"));
+				preview->set_pressed_texture(VisualShaderEditor::get_singleton()->get_theme_icon("GuiVisibilityVisible", "EditorIcons"));
+				preview->set_v_size_flags(Control::SIZE_SHRINK_CENTER);
 
-			register_output_port(p_id, i, preview);
+				register_output_port(p_id, j, preview);
 
-			preview->connect("pressed", callable_mp(VisualShaderEditor::get_singleton(), &VisualShaderEditor::_preview_select_port), varray(p_id, i), CONNECT_DEFERRED);
-			hb->add_child(preview);
+				preview->connect("pressed", callable_mp(VisualShaderEditor::get_singleton(), &VisualShaderEditor::_preview_select_port), varray(p_id, j), CONNECT_DEFERRED);
+				hb->add_child(preview);
+			}
 		}
 
 		if (is_group) {
@@ -708,7 +757,40 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id) {
 
 		node->add_child(hb);
 
+		if (expanded_type != VisualShaderNode::PORT_TYPE_SCALAR) {
+			continue;
+		}
+
 		node->set_slot(i + port_offset, valid_left, port_left, type_color[port_left], valid_right, port_right, type_color[port_right]);
+
+		if (vsnode->_is_output_port_expanded(i)) {
+			if (vsnode->get_output_port_type(i) == VisualShaderNode::PORT_TYPE_VECTOR) {
+				port_offset++;
+				valid_left = (i + 1) < vsnode->get_input_port_count();
+				port_left = VisualShaderNode::PORT_TYPE_SCALAR;
+				if (valid_left) {
+					port_left = vsnode->get_input_port_type(i + 1);
+				}
+				node->set_slot(i + port_offset, valid_left, port_left, type_color[port_left], true, VisualShaderNode::PORT_TYPE_SCALAR, vector_expanded_color[0]);
+				port_offset++;
+
+				valid_left = (i + 2) < vsnode->get_input_port_count();
+				port_left = VisualShaderNode::PORT_TYPE_SCALAR;
+				if (valid_left) {
+					port_left = vsnode->get_input_port_type(i + 2);
+				}
+				node->set_slot(i + port_offset, valid_left, port_left, type_color[port_left], true, VisualShaderNode::PORT_TYPE_SCALAR, vector_expanded_color[1]);
+				port_offset++;
+
+				valid_left = (i + 3) < vsnode->get_input_port_count();
+				port_left = VisualShaderNode::PORT_TYPE_SCALAR;
+				if (valid_left) {
+					port_left = vsnode->get_input_port_type(i + 3);
+				}
+				node->set_slot(i + port_offset, valid_left, port_left, type_color[port_left], true, VisualShaderNode::PORT_TYPE_SCALAR, vector_expanded_color[2]);
+				expanded_type = VisualShaderNode::PORT_TYPE_VECTOR;
+			}
+		}
 	}
 
 	if (vsnode->get_output_port_for_preview() >= 0) {
@@ -1293,6 +1375,7 @@ void VisualShaderEditor::_update_graph() {
 
 	graph_plugin->clear_links();
 	graph_plugin->make_dirty(true);
+	graph_plugin->update_theme();
 
 	for (int n_i = 0; n_i < nodes.size(); n_i++) {
 		graph_plugin->add_node(type, nodes[n_i]);
@@ -1438,6 +1521,92 @@ void VisualShaderEditor::_change_output_port_name(const String &p_text, Object *
 	undo_redo->add_undo_method(node.ptr(), "set_output_port_name", p_port_id, prev_name);
 	undo_redo->add_do_method(graph_plugin.ptr(), "update_node", type, p_node_id);
 	undo_redo->add_undo_method(graph_plugin.ptr(), "update_node", type, p_node_id);
+	undo_redo->commit_action();
+}
+
+void VisualShaderEditor::_expand_output_port(int p_node, int p_port, bool p_expand) {
+	VisualShader::Type type = get_current_shader_type();
+
+	Ref<VisualShaderNode> node = visual_shader->get_node(type, p_node);
+	ERR_FAIL_COND(!node.is_valid());
+
+	if (p_expand) {
+		undo_redo->create_action(TTR("Expand Output Port"));
+	} else {
+		undo_redo->create_action(TTR("Shrink Output Port"));
+	}
+
+	undo_redo->add_do_method(node.ptr(), "_set_output_port_expanded", p_port, p_expand);
+	undo_redo->add_undo_method(node.ptr(), "_set_output_port_expanded", p_port, !p_expand);
+
+	int type_size = 0;
+	if (node->get_output_port_type(p_port) == VisualShaderNode::PORT_TYPE_VECTOR) {
+		type_size = 3;
+	}
+
+	List<VisualShader::Connection> conns;
+	visual_shader->get_node_connections(type, &conns);
+
+	for (List<VisualShader::Connection>::Element *E = conns.front(); E; E = E->next()) {
+		int from_node = E->get().from_node;
+		int from_port = E->get().from_port;
+		int to_node = E->get().to_node;
+		int to_port = E->get().to_port;
+
+		if (from_node == p_node) {
+			if (p_expand) {
+				if (from_port > p_port) { // reconnect ports after expanded ports
+					undo_redo->add_do_method(visual_shader.ptr(), "disconnect_nodes", type, from_node, from_port, to_node, to_port);
+					undo_redo->add_undo_method(visual_shader.ptr(), "connect_nodes_forced", type, from_node, from_port, to_node, to_port);
+
+					undo_redo->add_do_method(graph_plugin.ptr(), "disconnect_nodes", type, from_node, from_port, to_node, to_port);
+					undo_redo->add_undo_method(graph_plugin.ptr(), "connect_nodes", type, from_node, from_port, to_node, to_port);
+
+					undo_redo->add_do_method(visual_shader.ptr(), "connect_nodes_forced", type, from_node, from_port + type_size, to_node, to_port);
+					undo_redo->add_undo_method(visual_shader.ptr(), "disconnect_nodes", type, from_node, from_port + type_size, to_node, to_port);
+
+					undo_redo->add_do_method(graph_plugin.ptr(), "connect_nodes", type, from_node, from_port + type_size, to_node, to_port);
+					undo_redo->add_undo_method(graph_plugin.ptr(), "disconnect_nodes", type, from_node, from_port + type_size, to_node, to_port);
+				}
+			} else {
+				if (from_port > p_port + type_size) { // reconnect ports after expanded ports
+					undo_redo->add_do_method(visual_shader.ptr(), "disconnect_nodes", type, from_node, from_port, to_node, to_port);
+					undo_redo->add_undo_method(visual_shader.ptr(), "connect_nodes_forced", type, from_node, from_port, to_node, to_port);
+
+					undo_redo->add_do_method(graph_plugin.ptr(), "disconnect_nodes", type, from_node, from_port, to_node, to_port);
+					undo_redo->add_undo_method(graph_plugin.ptr(), "connect_nodes", type, from_node, from_port, to_node, to_port);
+
+					undo_redo->add_do_method(visual_shader.ptr(), "connect_nodes", type, from_node, from_port - type_size, to_node, to_port);
+					undo_redo->add_undo_method(visual_shader.ptr(), "disconnect_nodes", type, from_node, from_port - type_size, to_node, to_port);
+
+					undo_redo->add_do_method(graph_plugin.ptr(), "connect_nodes", type, from_node, from_port - type_size, to_node, to_port);
+					undo_redo->add_undo_method(graph_plugin.ptr(), "disconnect_nodes", type, from_node, from_port - type_size, to_node, to_port);
+				} else if (from_port > p_port) { // disconnect component ports
+					undo_redo->add_do_method(visual_shader.ptr(), "disconnect_nodes", type, from_node, from_port, to_node, to_port);
+					undo_redo->add_undo_method(visual_shader.ptr(), "connect_nodes_forced", type, from_node, from_port, to_node, to_port);
+
+					undo_redo->add_do_method(graph_plugin.ptr(), "disconnect_nodes", type, from_node, from_port, to_node, to_port);
+					undo_redo->add_undo_method(graph_plugin.ptr(), "connect_nodes", type, from_node, from_port, to_node, to_port);
+				}
+			}
+		}
+	}
+
+	int preview_port = node->get_output_port_for_preview();
+	if (p_expand) {
+		if (preview_port > p_port) {
+			undo_redo->add_do_method(node.ptr(), "set_output_port_for_preview", preview_port + type_size);
+			undo_redo->add_undo_method(node.ptr(), "set_output_port_for_preview", preview_port);
+		}
+	} else {
+		if (preview_port > p_port + type_size) {
+			undo_redo->add_do_method(node.ptr(), "set_output_port_for_preview", preview_port - type_size);
+			undo_redo->add_undo_method(node.ptr(), "set_output_port_for_preview", preview_port);
+		}
+	}
+
+	undo_redo->add_do_method(graph_plugin.ptr(), "update_node", type, p_node);
+	undo_redo->add_undo_method(graph_plugin.ptr(), "update_node", type, p_node);
 	undo_redo->commit_action();
 }
 
@@ -3469,6 +3638,7 @@ void VisualShaderEditor::_bind_methods() {
 	ClassDB::bind_method("_float_constant_selected", &VisualShaderEditor::_float_constant_selected);
 	ClassDB::bind_method("_update_constant", &VisualShaderEditor::_update_constant);
 	ClassDB::bind_method("_update_uniform", &VisualShaderEditor::_update_uniform);
+	ClassDB::bind_method("_expand_output_port", &VisualShaderEditor::_expand_output_port);
 
 	ClassDB::bind_method(D_METHOD("get_drag_data_fw"), &VisualShaderEditor::get_drag_data_fw);
 	ClassDB::bind_method(D_METHOD("can_drop_data_fw"), &VisualShaderEditor::can_drop_data_fw);
