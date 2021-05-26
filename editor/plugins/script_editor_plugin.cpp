@@ -1504,8 +1504,10 @@ void ScriptEditor::_notification(int p_what) {
 
 			recent_scripts->set_as_minsize();
 
-			_update_script_colors();
-			_update_script_names();
+			if (is_inside_tree()) {
+				_update_script_colors();
+				_update_script_names();
+			}
 		} break;
 
 		case NOTIFICATION_READY: {

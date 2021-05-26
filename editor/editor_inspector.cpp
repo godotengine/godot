@@ -1626,7 +1626,7 @@ void EditorInspector::update_tree() {
 
 	bool draw_red = false;
 
-	{
+	if (is_inside_tree()) {
 		Node *nod = Object::cast_to<Node>(object);
 		Node *es = EditorNode::get_singleton()->get_edited_scene();
 		if (nod && es != nod && nod->get_owner() != es) {
