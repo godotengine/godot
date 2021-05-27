@@ -323,6 +323,9 @@
 	<members>
 		<member name="always_on_top" type="bool" setter="set_flag" getter="get_flag" default="false">
 		</member>
+		<member name="auto_translate" type="bool" setter="set_auto_translate" getter="is_auto_translating" default="true">
+			Toggles if any text should automatically change to its translated version depending on the current locale.
+		</member>
 		<member name="borderless" type="bool" setter="set_flag" getter="get_flag" default="false">
 		</member>
 		<member name="content_scale_aspect" type="int" setter="set_content_scale_aspect" getter="get_content_scale_aspect" enum="Window.ContentScaleAspect" default="0">
