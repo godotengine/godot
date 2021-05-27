@@ -243,10 +243,10 @@ private:
 	List<AudioNotch> notches;
 
 public:
-	float line_length = 5.0f;
-	float label_space = 2.0f;
-	float btm_padding = 9.0f;
-	float top_padding = 5.0f;
+	const float line_length = 5.0f;
+	const float label_space = 2.0f;
+	const float btm_padding = 9.0f;
+	const float top_padding = 5.0f;
 	Color notch_color;
 
 	void add_notch(float p_normalized_offset, float p_db_value, bool p_render_value = false);
