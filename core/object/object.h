@@ -754,13 +754,13 @@ class ObjectDB {
 	static uint64_t validator_counter;
 
 	friend class Object;
-	friend void unregister_core_types();
+	friend void unregister_core();
 	static void cleanup();
 
 	static ObjectID add_instance(Object *p_object);
 	static void remove_instance(Object *p_object);
 
-	friend void register_core_types();
+	friend void register_core();
 	static void setup();
 
 public:

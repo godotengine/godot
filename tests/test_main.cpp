@@ -33,6 +33,7 @@
 #include "core/templates/list.h"
 
 #include "test_aabb.h"
+#include "test_application_configuration.h"
 #include "test_array.h"
 #include "test_astar.h"
 #include "test_basis.h"

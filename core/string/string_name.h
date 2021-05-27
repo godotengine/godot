@@ -72,8 +72,8 @@ class StringName {
 	};
 
 	void unref();
-	friend void register_core_types();
-	friend void unregister_core_types();
+	friend void register_core();
+	friend void unregister_core();
 	friend class Main;
 	static Mutex mutex;
 	static void setup();

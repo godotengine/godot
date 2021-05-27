@@ -34,10 +34,10 @@
 #include "core/string/string_name.h"
 
 class CoreStringNames {
-	friend void register_core_types();
-	friend void unregister_core_types();
-
+	friend void register_core();
 	static void create() { singleton = memnew(CoreStringNames); }
+
+	friend void unregister_core();
 	static void free() {
 		memdelete(singleton);
 		singleton = nullptr;

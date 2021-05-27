@@ -70,6 +70,7 @@
 #include "core/os/main_loop.h"
 #include "core/string/optimized_translation.h"
 #include "core/string/translation.h"
+#include <main/performance.h>
 
 static Ref<ResourceFormatSaverBinary> resource_saver_binary;
 static Ref<ResourceFormatLoaderBinary> resource_loader_binary;
@@ -98,14 +99,13 @@ extern Mutex _global_mutex;
 extern void register_global_constants();
 extern void unregister_global_constants();
 
-void register_core_types() {
+void register_core() {
 	//consistency check
 	static_assert(sizeof(Callable) <= 16);
 
 	ObjectDB::setup();
 
 	StringName::setup();
-	ResourceLoader::initialize();
 
 	register_global_constants();
 
@@ -113,11 +113,14 @@ void register_core_types() {
 
 	CoreStringNames::create();
 
+	ResourceLoader::initialize();
+
 	resource_format_po.instance();
 	ResourceLoader::add_resource_format_loader(resource_format_po);
 
 	resource_saver_binary.instance();
 	ResourceSaver::add_resource_format_saver(resource_saver_binary);
+
 	resource_loader_binary.instance();
 	ResourceLoader::add_resource_format_loader(resource_loader_binary);
 
@@ -127,6 +130,16 @@ void register_core_types() {
 	resource_format_image.instance();
 	ResourceLoader::add_resource_format_loader(resource_format_image);
 
+	resource_format_loader_crypto.instance();
+	ResourceLoader::add_resource_format_loader(resource_format_loader_crypto);
+
+	resource_format_saver_crypto.instance();
+	ResourceSaver::add_resource_format_saver(resource_format_saver_crypto);
+
+	ip = IP::create();
+}
+
+void register_core_types() {
 	ClassDB::register_class<Object>();
 
 	ClassDB::register_virtual_class<Script>();
@@ -171,11 +184,6 @@ void register_core_types() {
 	ClassDB::register_custom_instance_class<Crypto>();
 	ClassDB::register_custom_instance_class<StreamPeerSSL>();
 
-	resource_format_saver_crypto.instance();
-	ResourceSaver::add_resource_format_saver(resource_format_saver_crypto);
-	resource_format_loader_crypto.instance();
-	ResourceLoader::add_resource_format_loader(resource_format_loader_crypto);
-
 	ClassDB::register_virtual_class<IP>();
 	ClassDB::register_virtual_class<PacketPeer>();
 	ClassDB::register_class<PacketPeerStream>();
@@ -215,8 +223,6 @@ void register_core_types() {
 
 	ClassDB::register_virtual_class<ResourceImporter>();
 
-	ip = IP::create();
-
 	_geometry_2d = memnew(_Geometry2D);
 	_geometry_3d = memnew(_Geometry3D);
 
@@ -228,17 +234,6 @@ void register_core_types() {
 	_marshalls = memnew(_Marshalls);
 	_json = memnew(_JSON);
 	_engine_debugger = memnew(_EngineDebugger);
-}
-
-void register_core_settings() {
-	// Since in register core types, globals may not be present.
-	GLOBAL_DEF("network/limits/tcp/connect_timeout_seconds", (30));
-	ProjectSettings::get_singleton()->set_custom_property_info("network/limits/tcp/connect_timeout_seconds", PropertyInfo(Variant::INT, "network/limits/tcp/connect_timeout_seconds", PROPERTY_HINT_RANGE, "1,1800,1"));
-	GLOBAL_DEF_RST("network/limits/packet_peer_stream/max_buffer_po2", (16));
-	ProjectSettings::get_singleton()->set_custom_property_info("network/limits/packet_peer_stream/max_buffer_po2", PropertyInfo(Variant::INT, "network/limits/packet_peer_stream/max_buffer_po2", PROPERTY_HINT_RANGE, "0,64,1,or_greater"));
-
-	GLOBAL_DEF("network/ssl/certificate_bundle_override", "");
-	ProjectSettings::get_singleton()->set_custom_property_info("network/ssl/certificate_bundle_override", PropertyInfo(Variant::STRING, "network/ssl/certificate_bundle_override", PROPERTY_HINT_FILE, "*.crt"));
 }
 
 void register_core_singletons() {
@@ -258,8 +253,10 @@ void register_core_singletons() {
 	ClassDB::register_class<_JSON>();
 	ClassDB::register_class<Expression>();
 	ClassDB::register_class<_EngineDebugger>();
+	ClassDB::register_class<Performance>();
 
 	Engine::get_singleton()->add_singleton(Engine::Singleton("ProjectSettings", ProjectSettings::get_singleton()));
+	Engine::get_singleton()->add_singleton(Engine::Singleton("Performance", Performance::get_singleton()));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("IP", IP::get_singleton()));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("Geometry2D", _Geometry2D::get_singleton()));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("Geometry3D", _Geometry3D::get_singleton()));
@@ -289,6 +286,15 @@ void unregister_core_types() {
 	memdelete(_geometry_2d);
 	memdelete(_geometry_3d);
 
+	ClassDB::cleanup_defaults();
+
+	unregister_global_constants();
+
+	ClassDB::cleanup();
+	ResourceCache::clear();
+}
+
+void unregister_core() {
 	ResourceLoader::remove_resource_format_loader(resource_format_image);
 	resource_format_image.unref();
 
@@ -309,21 +315,14 @@ void unregister_core_types() {
 	ResourceLoader::remove_resource_format_loader(resource_format_loader_crypto);
 	resource_format_loader_crypto.unref();
 
+	ResourceLoader::finalize();
 	if (ip) {
 		memdelete(ip);
 	}
 
-	ResourceLoader::finalize();
-
-	ClassDB::cleanup_defaults();
 	ObjectDB::cleanup();
 
 	Variant::unregister_types();
-
-	unregister_global_constants();
-
-	ClassDB::cleanup();
-	ResourceCache::clear();
 	CoreStringNames::free();
 	StringName::cleanup();
 }

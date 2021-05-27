@@ -364,7 +364,7 @@ String OS::get_model_name() const {
 	return "GenericDevice";
 }
 
-void OS::set_cmdline(const char *p_execpath, const List<String> &p_args) {
+void OS::set_cmdline(const String p_execpath, const List<String> &p_args) {
 	_execpath = p_execpath;
 	_cmdline = p_args;
 }

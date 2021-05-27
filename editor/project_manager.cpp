@@ -44,6 +44,7 @@
 #include "editor_scale.h"
 #include "editor_settings.h"
 #include "editor_themes.h"
+#include "progress_dialog.h"
 #include "scene/gui/center_container.h"
 #include "scene/gui/line_edit.h"
 #include "scene/gui/margin_container.h"
@@ -2389,11 +2390,6 @@ void ProjectManager::_version_button_pressed() {
 }
 
 ProjectManager::ProjectManager() {
-	// load settings
-	if (!EditorSettings::get_singleton()) {
-		EditorSettings::create();
-	}
-
 	EditorSettings::get_singleton()->set_optimize_save(false); //just write settings as they came
 
 	{
@@ -2469,6 +2465,9 @@ ProjectManager::ProjectManager() {
 	set_theme(create_custom_theme());
 
 	set_anchors_and_offsets_preset(Control::PRESET_WIDE);
+
+	ProgressDialog *progress_dialog = memnew(ProgressDialog);
+	add_child(progress_dialog);
 
 	Panel *panel = memnew(Panel);
 	add_child(panel);

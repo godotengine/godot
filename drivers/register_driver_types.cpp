@@ -52,9 +52,3 @@ void unregister_core_driver_types() {
 	ResourceSaver::remove_resource_format_saver(resource_saver_png);
 	resource_saver_png.unref();
 }
-
-void register_driver_types() {
-}
-
-void unregister_driver_types() {
-}

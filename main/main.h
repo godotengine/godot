@@ -36,44 +36,48 @@
 #include "core/typedefs.h"
 
 class Main {
-	static void print_help(const char *p_binary);
-	static uint64_t last_ticks;
-	static uint32_t frames;
-	static uint32_t frame;
-	static bool force_redraw_requested;
-	static int iterating;
+	static Error load_project_settings();
+	static void load_default_project_settings();
+
+	static void initialize_core();
+	static Error initialize_servers();
+
+	static void load_boot_graphics();
+	static String localize_scene_path(const String &p_scene_path);
+	static void deinitialize_early(bool p_unregister_core = true);
 
 public:
+	static Error setup(const char *exec_path, int argc, char *argv[], bool p_finish_setup = true);
+	static Error finish_setup(Thread::ID p_main_tid_override = 0);
+	static bool start();
+
+	static bool iteration();
+
+	static void force_redraw();
+
+	static void cleanup(bool p_force = false);
+
+	static bool is_iterating();
 	static bool is_project_manager();
-	static int test_entrypoint(int argc, char *argv[], bool &tests_need_run);
-	static Error setup(const char *execpath, int argc, char *argv[], bool p_second_phase = true);
-	static Error setup2(Thread::ID p_main_tid_override = 0);
+
+	static int test_entrypoint(int argc, char *argv[], bool &finished);
 #ifdef TESTS_ENABLED
 	static Error test_setup();
 	static void test_cleanup();
 #endif
-	static bool start();
-
-	static bool iteration();
-	static void force_redraw();
-
-	static bool is_iterating();
-
-	static void cleanup(bool p_force = false);
 };
 
-// Test main override is for the testing behaviour.
 #define TEST_MAIN_OVERRIDE                                         \
-	bool run_test = false;                                         \
-	int return_code = Main::test_entrypoint(argc, argv, run_test); \
-	if (run_test) {                                                \
+	bool finished = false;                                         \
+	int return_code = Main::test_entrypoint(argc, argv, finished); \
+	if (finished) {                                                \
 		return return_code;                                        \
 	}
 
 #define TEST_MAIN_PARAM_OVERRIDE(argc, argv)                       \
-	bool run_test = false;                                         \
-	int return_code = Main::test_entrypoint(argc, argv, run_test); \
-	if (run_test) {                                                \
+	bool finished = false;                                         \
+	int return_code = Main::test_entrypoint(argc, argv, finished); \
+	if (finished) {                                                \
 		return return_code;                                        \
 	}
 

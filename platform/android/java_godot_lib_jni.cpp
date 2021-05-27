@@ -211,7 +211,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_step(JNIEnv *env, jcl
 	if (step == 0) {
 		// Since Godot is initialized on the UI thread, main_thread_id was set to that thread's id,
 		// but for Godot purposes, the main thread is the one running the game loop
-		Main::setup2(Thread::get_caller_id());
+		Main::finish_setup(Thread::get_caller_id());
 		++step;
 		return;
 	}

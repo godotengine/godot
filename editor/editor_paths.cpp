@@ -129,7 +129,7 @@ EditorPaths::EditorPaths(bool p_for_project_mamanger) {
 
 		// Validate/create cache dir
 
-		if (dir->change_dir(EditorPaths::get_singleton()->get_cache_dir()) != OK) {
+		if (dir->change_dir(cache_dir) != OK) {
 			dir->make_dir_recursive(cache_dir);
 			if (dir->change_dir(cache_dir) != OK) {
 				ERR_PRINT("Cannot create cache directory!");

@@ -142,7 +142,7 @@ void App::SetWindow(CoreWindow ^ p_window) {
 
 	UpdateWindowSize(Size(window->Bounds.Width, window->Bounds.Height));
 
-	Main::setup2();
+	Main::finish_setup();
 }
 
 static int _get_button(Windows::UI::Input::PointerPoint ^ pt) {

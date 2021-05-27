@@ -5687,10 +5687,6 @@ EditorNode::EditorNode() {
 	script_distraction = false;
 
 	TranslationServer::get_singleton()->set_enabled(false);
-	// load settings
-	if (!EditorSettings::get_singleton()) {
-		EditorSettings::create();
-	}
 
 	FileAccess::set_backup_save(EDITOR_GET("filesystem/on_save/safe_save_on_backup_then_rename"));
 
