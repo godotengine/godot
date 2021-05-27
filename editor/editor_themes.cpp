@@ -464,7 +464,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 
 	// Ensure borders are visible when using an editor scale below 100%.
 	const int border_width = CLAMP(border_size, 0, 2) * MAX(1, EDSCALE);
-	const int corner_width = CLAMP(corner_radius, 0, 6) * EDSCALE;
+	const int corner_width = CLAMP(corner_radius, 0, 6);
 	const int default_margin_size = 4;
 	const int margin_size_extra = default_margin_size + CLAMP(border_size, 0, 2);
 
@@ -785,14 +785,17 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	style_property_bg->set_bg_color(highlight_color);
 	style_property_bg->set_border_width_all(0);
 
-	theme->set_constant("font_offset", "EditorProperty", 1 * EDSCALE);
+	theme->set_constant("font_offset", "EditorProperty", 8 * EDSCALE);
 	theme->set_stylebox("bg_selected", "EditorProperty", style_property_bg);
 	theme->set_stylebox("bg", "EditorProperty", Ref<StyleBoxEmpty>(memnew(StyleBoxEmpty)));
 	theme->set_constant("vseparation", "EditorProperty", (extra_spacing + default_margin_size) * EDSCALE);
 	theme->set_color("error_color", "EditorProperty", error_color);
 	theme->set_color("property_color", "EditorProperty", property_color);
 
-	theme->set_constant("inspector_margin", "Editor", 8 * EDSCALE);
+	Color inspector_section_color = font_color.lerp(Color(0.5, 0.5, 0.5), 0.35);
+	theme->set_color("font_color", "EditorInspectorSection", inspector_section_color);
+
+	theme->set_constant("inspector_margin", "Editor", 12 * EDSCALE);
 
 	// Tree & ItemList background
 	Ref<StyleBoxFlat> style_tree_bg = style_default->duplicate();
@@ -884,6 +887,12 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_color("prop_subsection", "Editor", prop_subsection_color);
 	theme->set_color("drop_position_color", "Tree", accent_color);
 
+	Ref<StyleBoxFlat> category_bg = style_default->duplicate();
+	// Make Trees easier to distinguish from other controls by using a darker background color.
+	category_bg->set_bg_color(prop_category_color);
+	category_bg->set_border_color(prop_category_color);
+	theme->set_stylebox("prop_category_style", "Editor", category_bg);
+
 	// ItemList
 	Ref<StyleBoxFlat> style_itemlist_bg = style_default->duplicate();
 	style_itemlist_bg->set_bg_color(dark_color_1);
@@ -941,7 +950,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	style_content_panel->set_border_color(dark_color_3);
 	style_content_panel->set_border_width_all(border_width);
 	// compensate the border
-	style_content_panel->set_default_margin(SIDE_TOP, margin_size_extra * EDSCALE);
+	style_content_panel->set_default_margin(SIDE_TOP, (2 + margin_size_extra) * EDSCALE);
 	style_content_panel->set_default_margin(SIDE_RIGHT, margin_size_extra * EDSCALE);
 	style_content_panel->set_default_margin(SIDE_BOTTOM, margin_size_extra * EDSCALE);
 	style_content_panel->set_default_margin(SIDE_LEFT, margin_size_extra * EDSCALE);

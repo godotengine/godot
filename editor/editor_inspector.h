@@ -208,7 +208,7 @@ class EditorInspectorCategory : public Control {
 	friend class EditorInspector;
 	Ref<Texture2D> icon;
 	String label;
-	Color bg_color;
+
 	mutable String tooltip_text;
 
 protected:
