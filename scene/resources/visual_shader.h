@@ -203,6 +203,8 @@ class VisualShaderNode : public Resource {
 
 protected:
 	bool simple_decl = true;
+	bool disabled = false;
+
 	static void _bind_methods();
 
 public:
@@ -256,6 +258,9 @@ public:
 	virtual bool is_code_generated() const;
 	virtual bool is_show_prop_names() const;
 	virtual bool is_use_prop_slots() const;
+
+	bool is_disabled() const;
+	void set_disabled(bool p_disabled = true);
 
 	virtual Vector<StringName> get_editable_properties() const;
 

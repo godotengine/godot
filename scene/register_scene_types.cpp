@@ -597,6 +597,7 @@ void register_scene_types() {
 	ClassDB::register_class<VisualShaderNodeIs>();
 	ClassDB::register_class<VisualShaderNodeCompare>();
 	ClassDB::register_class<VisualShaderNodeMultiplyAdd>();
+	ClassDB::register_class<VisualShaderNodeBillboard>();
 
 	ClassDB::register_class<VisualShaderNodeSDFToScreenUV>();
 	ClassDB::register_class<VisualShaderNodeScreenUVToSDF>();
