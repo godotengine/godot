@@ -502,12 +502,12 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	/* Text editor */
 
 	// Theme
-	_initial_set("text_editor/theme/color_theme", "Adaptive");
-	hints["text_editor/theme/color_theme"] = PropertyInfo(Variant::STRING, "text_editor/theme/color_theme", PROPERTY_HINT_ENUM, "Adaptive,Default,Custom");
+	_initial_set("text_editor/theme/color_theme", "Default");
+	hints["text_editor/theme/color_theme"] = PropertyInfo(Variant::STRING, "text_editor/theme/color_theme", PROPERTY_HINT_ENUM, "Default,Godot 2,Custom");
 	_initial_set("text_editor/theme/line_spacing", 6);
 	hints["text_editor/theme/line_spacing"] = PropertyInfo(Variant::INT, "text_editor/theme/line_spacing", PROPERTY_HINT_RANGE, "0,50,1");
 
-	_load_default_text_editor_theme();
+	_load_godot2_text_editor_theme();
 
 	// Highlighting
 	_initial_set("text_editor/highlighting/highlight_all_occurrences", true);
@@ -785,9 +785,8 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	};
 }
 
-void EditorSettings::_load_default_text_editor_theme() {
-	bool dark_theme = is_dark_theme();
-
+void EditorSettings::_load_godot2_text_editor_theme() {
+	// Godot 2 is only a dark theme; it doesn't have a light theme counterpart.
 	_initial_set("text_editor/highlighting/symbol_color", Color(0.73, 0.87, 1.0));
 	_initial_set("text_editor/highlighting/keyword_color", Color(1.0, 1.0, 0.7));
 	_initial_set("text_editor/highlighting/control_flow_keyword_color", Color(1.0, 0.85, 0.7));
@@ -796,7 +795,7 @@ void EditorSettings::_load_default_text_editor_theme() {
 	_initial_set("text_editor/highlighting/user_type_color", Color(0.42, 0.67, 0.93));
 	_initial_set("text_editor/highlighting/comment_color", Color(0.4, 0.4, 0.4));
 	_initial_set("text_editor/highlighting/string_color", Color(0.94, 0.43, 0.75));
-	_initial_set("text_editor/highlighting/background_color", dark_theme ? Color(0.0, 0.0, 0.0, 0.23) : Color(0.2, 0.23, 0.31));
+	_initial_set("text_editor/highlighting/background_color", Color(0.13, 0.12, 0.15));
 	_initial_set("text_editor/highlighting/completion_background_color", Color(0.17, 0.16, 0.2));
 	_initial_set("text_editor/highlighting/completion_selected_color", Color(0.26, 0.26, 0.27));
 	_initial_set("text_editor/highlighting/completion_existing_color", Color(0.13, 0.87, 0.87, 0.87));
@@ -846,7 +845,7 @@ bool EditorSettings::_save_text_editor_theme(String p_file) {
 }
 
 bool EditorSettings::_is_default_text_editor_theme(String p_theme_name) {
-	return p_theme_name == "default" || p_theme_name == "adaptive" || p_theme_name == "custom";
+	return p_theme_name == "default" || p_theme_name == "godot 2" || p_theme_name == "custom";
 }
 
 static Dictionary _get_builtin_script_templates() {
@@ -1367,7 +1366,7 @@ bool EditorSettings::is_dark_theme() {
 }
 
 void EditorSettings::list_text_editor_themes() {
-	String themes = "Adaptive,Default,Custom";
+	String themes = "Default,Godot 2,Custom";
 
 	DirAccess *d = DirAccess::open(get_text_editor_themes_dir());
 	if (d) {
@@ -1395,8 +1394,8 @@ void EditorSettings::load_text_editor_theme() {
 	String p_file = get("text_editor/theme/color_theme");
 
 	if (_is_default_text_editor_theme(p_file.get_file().to_lower())) {
-		if (p_file == "Default") {
-			_load_default_text_editor_theme();
+		if (p_file == "Godot 2") {
+			_load_godot2_text_editor_theme();
 		}
 		return; // sorry for "Settings changed" console spam
 	}

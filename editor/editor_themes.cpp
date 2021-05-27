@@ -1387,7 +1387,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 
 	EditorSettings *setting = EditorSettings::get_singleton();
 	String text_editor_color_theme = setting->get("text_editor/theme/color_theme");
-	if (text_editor_color_theme == "Adaptive") {
+	if (text_editor_color_theme == "Default") {
 		setting->set_initial_value("text_editor/highlighting/symbol_color", symbol_color, true);
 		setting->set_initial_value("text_editor/highlighting/keyword_color", keyword_color, true);
 		setting->set_initial_value("text_editor/highlighting/control_flow_keyword_color", control_flow_keyword_color, true);
@@ -1423,7 +1423,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 		setting->set_initial_value("text_editor/highlighting/code_folding_color", code_folding_color, true);
 		setting->set_initial_value("text_editor/highlighting/search_result_color", search_result_color, true);
 		setting->set_initial_value("text_editor/highlighting/search_result_border_color", search_result_border_color, true);
-	} else if (text_editor_color_theme == "Default") {
+	} else if (text_editor_color_theme == "Godot 2") {
 		setting->load_text_editor_theme();
 	}
 
