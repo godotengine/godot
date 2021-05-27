@@ -173,6 +173,9 @@ void EditorAudioBus::_notification(int p_what) {
 			bypass->set_icon(get_theme_icon("AudioBusBypass", "EditorIcons"));
 
 			bus_options->set_icon(get_theme_icon("GuiTabMenuHl", "EditorIcons"));
+
+			audio_value_preview_box->add_theme_color_override("font_color", get_theme_color("font_color", "TooltipLabel"));
+			audio_value_preview_box->add_theme_style_override("panel", get_theme_stylebox("panel", "TooltipPanel"));
 		} break;
 		case NOTIFICATION_MOUSE_EXIT:
 		case NOTIFICATION_DRAG_END: {
@@ -379,15 +382,24 @@ void EditorAudioBus::_show_value(float slider_value) {
 		db = _normalized_volume_to_scaled_db(slider_value);
 	}
 
-	String text = vformat("%10.1f dB", db);
+	String text;
+	if (Math::is_zero_approx(Math::snapped(db, 0.1))) {
+		// Prevent displaying `-0.0 dB` and show ` 0.0 dB` instead.
+		// The leading space makes the text visually line up with its positive/negative counterparts.
+		text = " 0.0 dB";
+	} else {
+		// Show an explicit `+` sign if positive.
+		text = vformat("%+.1f dB", db);
+	}
 
+	// Also set the preview text as a standard Control tooltip.
+	// This way, it can be seen when the slider is merely hovered (instead of dragged).
 	slider->set_tooltip(text);
 	audio_value_preview_label->set_text(text);
-	Vector2 slider_size = slider->get_size();
-	Vector2 slider_position = slider->get_global_position();
-	float left_padding = 5.0f;
-	float vert_padding = 10.0f;
-	Vector2 box_position = Vector2(slider_size.x + left_padding, (slider_size.y - vert_padding) * (1.0f - slider->get_value()) - vert_padding);
+	const Vector2 slider_size = slider->get_size();
+	const Vector2 slider_position = slider->get_global_position();
+	const float vert_padding = 10.0f;
+	const Vector2 box_position = Vector2(slider_size.x, (slider_size.y - vert_padding) * (1.0f - slider->get_value()) - vert_padding);
 	audio_value_preview_box->set_position(slider_position + box_position);
 	audio_value_preview_box->set_size(audio_value_preview_label->get_size());
 	if (slider->has_focus() && !audio_value_preview_box->is_visible()) {
@@ -830,14 +842,13 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses, bool p_is_master) {
 	audio_value_preview_label->set_v_size_flags(SIZE_EXPAND_FILL);
 	audio_value_preview_label->set_h_size_flags(SIZE_EXPAND_FILL);
 	audio_value_preview_label->set_mouse_filter(MOUSE_FILTER_PASS);
+	audio_value_preview_box->add_theme_color_override("font_color", get_theme_color("font_color", "TooltipLabel"));
 
 	audioprev_hbc->add_child(audio_value_preview_label);
 
 	slider->add_child(audio_value_preview_box);
 	audio_value_preview_box->set_as_top_level(true);
-	Ref<StyleBoxFlat> panel_style = memnew(StyleBoxFlat);
-	panel_style->set_bg_color(Color(0.0f, 0.0f, 0.0f, 0.8f));
-	audio_value_preview_box->add_theme_style_override("panel", panel_style);
+	audio_value_preview_box->add_theme_style_override("panel", get_theme_stylebox("panel", "TooltipPanel"));
 	audio_value_preview_box->set_mouse_filter(MOUSE_FILTER_PASS);
 	audio_value_preview_box->hide();
 
@@ -925,7 +936,7 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses, bool p_is_master) {
 	bus_options->set_shortcut_context(this);
 	bus_options->set_h_size_flags(SIZE_SHRINK_END);
 	bus_options->set_anchor(SIDE_RIGHT, 0.0);
-	bus_options->set_tooltip(TTR("Bus options"));
+	bus_options->set_tooltip(TTR("Bus Options"));
 	hbc->add_child(bus_options);
 
 	bus_popup = bus_options->get_popup();
@@ -1400,7 +1411,7 @@ void EditorAudioMeterNotches::_bind_methods() {
 void EditorAudioMeterNotches::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
-			notch_color = EditorSettings::get_singleton()->is_dark_theme() ? Color(1, 1, 1) : Color(0, 0, 0);
+			notch_color = get_theme_color("font_color", "Editor");
 		} break;
 		case NOTIFICATION_DRAW: {
 			_draw_audio_notches();
@@ -1416,13 +1427,13 @@ void EditorAudioMeterNotches::_draw_audio_notches() {
 	for (int i = 0; i < notches.size(); i++) {
 		AudioNotch n = notches[i];
 		draw_line(Vector2(0, (1.0f - n.relative_position) * (get_size().y - btm_padding - top_padding) + top_padding),
-				Vector2(line_length, (1.0f - n.relative_position) * (get_size().y - btm_padding - top_padding) + top_padding),
+				Vector2(line_length * EDSCALE, (1.0f - n.relative_position) * (get_size().y - btm_padding - top_padding) + top_padding),
 				notch_color,
-				1);
+				Math::round(EDSCALE));
 
 		if (n.render_db_value) {
 			draw_string(font,
-					Vector2(line_length + label_space,
+					Vector2((line_length + label_space) * EDSCALE,
 							(1.0f - n.relative_position) * (get_size().y - btm_padding - top_padding) + (font_height / 4) + top_padding),
 					String::num(Math::abs(n.db_value)) + "dB",
 					HALIGN_LEFT, -1, font_size,
@@ -1432,5 +1443,5 @@ void EditorAudioMeterNotches::_draw_audio_notches() {
 }
 
 EditorAudioMeterNotches::EditorAudioMeterNotches() {
-	notch_color = EditorSettings::get_singleton()->is_dark_theme() ? Color(1, 1, 1) : Color(0, 0, 0);
+	notch_color = get_theme_color("font_color", "Editor");
 }
