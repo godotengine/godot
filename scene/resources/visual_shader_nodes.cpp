@@ -5579,3 +5579,127 @@ VisualShaderNodeMultiplyAdd::VisualShaderNodeMultiplyAdd() {
 	set_input_port_default_value(1, 0.0);
 	set_input_port_default_value(2, 0.0);
 }
+
+////////////// Billboard
+
+String VisualShaderNodeBillboard::get_caption() const {
+	return "GetBillboardMatrix";
+}
+
+int VisualShaderNodeBillboard::get_input_port_count() const {
+	return 0;
+}
+
+VisualShaderNodeBillboard::PortType VisualShaderNodeBillboard::get_input_port_type(int p_port) const {
+	return PORT_TYPE_SCALAR;
+}
+
+String VisualShaderNodeBillboard::get_input_port_name(int p_port) const {
+	return "";
+}
+
+int VisualShaderNodeBillboard::get_output_port_count() const {
+	return 1;
+}
+
+VisualShaderNodeBillboard::PortType VisualShaderNodeBillboard::get_output_port_type(int p_port) const {
+	return PORT_TYPE_TRANSFORM;
+}
+
+String VisualShaderNodeBillboard::get_output_port_name(int p_port) const {
+	return "model_view_matrix";
+}
+
+String VisualShaderNodeBillboard::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview) const {
+	String code;
+
+	switch (billboard_type) {
+		case BILLBOARD_TYPE_ENABLED:
+			code += "\t{\n";
+			code += "\t\tmat4 __mvm = INV_CAMERA_MATRIX * mat4(CAMERA_MATRIX[0], CAMERA_MATRIX[1], CAMERA_MATRIX[2], WORLD_MATRIX[3]);\n";
+			if (keep_scale) {
+				code += "\t\t__mvm = __mvm * mat4(vec4(length(WORLD_MATRIX[0].xyz), 0.0, 0.0, 0.0), vec4(0.0, length(WORLD_MATRIX[1].xyz), 0.0, 0.0), vec4(0.0, 0.0, length(WORLD_MATRIX[2].xyz), 0.0), vec4(0.0, 0.0, 0.0, 1.0));\n";
+			}
+			code += "\t\t" + p_output_vars[0] + " = __mvm;\n";
+			code += "\t}\n";
+			break;
+		case BILLBOARD_TYPE_FIXED_Y:
+			code += "\t{\n";
+			code += "\t\tmat4 __mvm = INV_CAMERA_MATRIX * mat4(CAMERA_MATRIX[0], WORLD_MATRIX[1], vec4(normalize(cross(CAMERA_MATRIX[0].xyz, WORLD_MATRIX[1].xyz)), 0.0), WORLD_MATRIX[3]);\n";
+			if (keep_scale) {
+				code += "\t\t__mvm = __mvm * mat4(vec4(length(WORLD_MATRIX[0].xyz), 0.0, 0.0, 0.0), vec4(0.0, 1.0, 0.0, 0.0), vec4(0.0, 0.0, length(WORLD_MATRIX[2].xyz), 0.0), vec4(0.0, 0.0, 0.0, 1.0));\n";
+			} else {
+				code += "\t\t__mvm = __mvm * mat4(vec4(1.0, 0.0, 0.0, 0.0), vec4(0.0, 1.0 / length(WORLD_MATRIX[1].xyz), 0.0, 0.0), vec4(0.0, 0.0, 1.0, 0.0), vec4(0.0, 0.0, 0.0, 1.0));\n";
+			}
+			code += "\t\t" + p_output_vars[0] + " = __mvm;\n";
+			code += "\t}\n";
+			break;
+		case BILLBOARD_TYPE_PARTICLES:
+			code += "\t{\n";
+			code += "\t\tmat4 __wm = mat4(normalize(CAMERA_MATRIX[0]) * length(WORLD_MATRIX[0]), normalize(CAMERA_MATRIX[1]) * length(WORLD_MATRIX[0]), normalize(CAMERA_MATRIX[2]) * length(WORLD_MATRIX[2]), WORLD_MATRIX[3]);\n";
+			code += "\t\t__wm = __wm * mat4(vec4(cos(INSTANCE_CUSTOM.x), -sin(INSTANCE_CUSTOM.x), 0.0, 0.0), vec4(sin(INSTANCE_CUSTOM.x), cos(INSTANCE_CUSTOM.x), 0.0, 0.0), vec4(0.0, 0.0, 1.0, 0.0), vec4(0.0, 0.0, 0.0, 1.0));\n";
+			code += "\t\t" + p_output_vars[0] + " = INV_CAMERA_MATRIX * __wm;\n";
+			code += "\t}\n";
+			break;
+		default:
+			code += "\t" + p_output_vars[0] + " = mat4(1.0);\n";
+			break;
+	}
+
+	return code;
+}
+
+bool VisualShaderNodeBillboard::is_show_prop_names() const {
+	return true;
+}
+
+void VisualShaderNodeBillboard::set_billboard_type(BillboardType p_billboard_type) {
+	ERR_FAIL_INDEX((int)p_billboard_type, BILLBOARD_TYPE_MAX);
+	billboard_type = p_billboard_type;
+	simple_decl = bool(billboard_type == BILLBOARD_TYPE_DISABLED);
+	set_disabled(simple_decl);
+	emit_changed();
+}
+
+VisualShaderNodeBillboard::BillboardType VisualShaderNodeBillboard::get_billboard_type() const {
+	return billboard_type;
+}
+
+void VisualShaderNodeBillboard::set_keep_scale_enabled(bool p_enabled) {
+	keep_scale = p_enabled;
+	emit_changed();
+}
+
+bool VisualShaderNodeBillboard::is_keep_scale_enabled() const {
+	return keep_scale;
+}
+
+Vector<StringName> VisualShaderNodeBillboard::get_editable_properties() const {
+	Vector<StringName> props;
+	props.push_back("billboard_type");
+	if (billboard_type == BILLBOARD_TYPE_ENABLED || billboard_type == BILLBOARD_TYPE_FIXED_Y) {
+		props.push_back("keep_scale");
+	}
+	return props;
+}
+
+void VisualShaderNodeBillboard::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_billboard_type", "billboard_type"), &VisualShaderNodeBillboard::set_billboard_type);
+	ClassDB::bind_method(D_METHOD("get_billboard_type"), &VisualShaderNodeBillboard::get_billboard_type);
+
+	ClassDB::bind_method(D_METHOD("set_keep_scale_enabled", "enabled"), &VisualShaderNodeBillboard::set_keep_scale_enabled);
+	ClassDB::bind_method(D_METHOD("is_keep_scale_enabled"), &VisualShaderNodeBillboard::is_keep_scale_enabled);
+
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "billboard_type", PROPERTY_HINT_ENUM, "Disabled,Enabled,Y-Billboard,Particles"), "set_billboard_type", "get_billboard_type");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "keep_scale"), "set_keep_scale_enabled", "is_keep_scale_enabled");
+
+	BIND_ENUM_CONSTANT(BILLBOARD_TYPE_DISABLED);
+	BIND_ENUM_CONSTANT(BILLBOARD_TYPE_ENABLED);
+	BIND_ENUM_CONSTANT(BILLBOARD_TYPE_FIXED_Y);
+	BIND_ENUM_CONSTANT(BILLBOARD_TYPE_PARTICLES);
+	BIND_ENUM_CONSTANT(BILLBOARD_TYPE_MAX);
+}
+
+VisualShaderNodeBillboard::VisualShaderNodeBillboard() {
+	simple_decl = false;
+}

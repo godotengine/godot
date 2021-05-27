@@ -152,6 +152,14 @@ bool VisualShaderNode::is_use_prop_slots() const {
 	return false;
 }
 
+bool VisualShaderNode::is_disabled() const {
+	return disabled;
+}
+
+void VisualShaderNode::set_disabled(bool p_disabled) {
+	disabled = p_disabled;
+}
+
 Vector<VisualShader::DefaultTextureParam> VisualShaderNode::get_default_texture_parameters(VisualShader::Type p_type, int p_id) const {
 	return Vector<VisualShader::DefaultTextureParam>();
 }
@@ -1260,6 +1268,12 @@ void VisualShader::_get_property_list(List<PropertyInfo> *p_list) const {
 Error VisualShader::_write_node(Type type, StringBuilder &global_code, StringBuilder &global_code_per_node, Map<Type, StringBuilder> &global_code_per_func, StringBuilder &code, Vector<VisualShader::DefaultTextureParam> &def_tex_params, const VMap<ConnectionKey, const List<Connection>::Element *> &input_connections, const VMap<ConnectionKey, const List<Connection>::Element *> &output_connections, int node, Set<int> &processed, bool for_preview, Set<StringName> &r_classes) const {
 	const Ref<VisualShaderNode> vsnode = graph[type].nodes[node].node;
 
+	if (vsnode->is_disabled()) {
+		code += "// " + vsnode->get_caption() + ":" + itos(node) + "\n";
+		code += "\t// Node is disabled and code is not generated.\n";
+		return OK;
+	}
+
 	//check inputs recursively first
 	int input_count = vsnode->get_input_port_count();
 	for (int i = 0; i < input_count; i++) {
@@ -1328,6 +1342,11 @@ Error VisualShader::_write_node(Type type, StringBuilder &global_code, StringBui
 		if (input_connections.has(ck)) {
 			//connected to something, use that output
 			int from_node = input_connections[ck]->get().from_node;
+
+			if (graph[type].nodes[from_node].node->is_disabled()) {
+				continue;
+			}
+
 			int from_port = input_connections[ck]->get().from_port;
 
 			VisualShaderNode::PortType in_type = vsnode->get_input_port_type(i);
@@ -2531,6 +2550,8 @@ const VisualShaderNodeOutput::Port VisualShaderNodeOutput::ports[] = {
 	{ Shader::MODE_SPATIAL, VisualShader::TYPE_VERTEX, VisualShaderNode::PORT_TYPE_VECTOR, "color", "COLOR.rgb" },
 	{ Shader::MODE_SPATIAL, VisualShader::TYPE_VERTEX, VisualShaderNode::PORT_TYPE_SCALAR, "alpha", "COLOR.a" },
 	{ Shader::MODE_SPATIAL, VisualShader::TYPE_VERTEX, VisualShaderNode::PORT_TYPE_SCALAR, "roughness", "ROUGHNESS" },
+	{ Shader::MODE_SPATIAL, VisualShader::TYPE_VERTEX, VisualShaderNode::PORT_TYPE_TRANSFORM, "model_view_matrix", "MODELVIEW_MATRIX" },
+
 	// Spatial, Fragment
 
 	{ Shader::MODE_SPATIAL, VisualShader::TYPE_FRAGMENT, VisualShaderNode::PORT_TYPE_VECTOR, "albedo", "ALBEDO" },
@@ -2670,9 +2691,13 @@ String VisualShaderNodeOutput::get_output_port_name(int p_port) const {
 }
 
 bool VisualShaderNodeOutput::is_port_separator(int p_index) const {
+	if (shader_mode == Shader::MODE_SPATIAL && shader_type == VisualShader::TYPE_VERTEX) {
+		String name = get_input_port_name(p_index);
+		return bool(name == "Model View Matrix");
+	}
 	if (shader_mode == Shader::MODE_SPATIAL && shader_type == VisualShader::TYPE_FRAGMENT) {
 		String name = get_input_port_name(p_index);
-		return (name == "Normal" || name == "Rim" || name == "Alpha Scissor Threshold");
+		return bool(name == "Normal" || name == "Rim" || name == "Alpha Scissor Threshold");
 	}
 	return false;
 }
