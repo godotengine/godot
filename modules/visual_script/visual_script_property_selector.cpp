@@ -152,7 +152,7 @@ void VisualScriptPropertySelector::_update_search() {
 				}
 			}
 			for (List<PropertyInfo>::Element *F = props.front(); F; F = F->next()) {
-				if (!(F->get().usage & PROPERTY_USAGE_EDITOR) && !(F->get().usage & PROPERTY_USAGE_SCRIPT_VARIABLE)) {
+				if (!(F->get().usage & (PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_SCRIPT_VARIABLE)) && (F->get().usage & (PROPERTY_USAGE_GROUP | PROPERTY_USAGE_CATEGORY | PROPERTY_USAGE_INTERNAL))) {
 					continue;
 				}
 
