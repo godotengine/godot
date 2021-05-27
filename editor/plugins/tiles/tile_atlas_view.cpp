@@ -317,7 +317,7 @@ void TileAtlasView::_draw_base_tiles_dark() {
 
 void TileAtlasView::_draw_base_tiles_shape_grid() {
 	// Draw the shapes.
-	Color grid_color = EditorSettings::get_singleton()->get("editors/tiles_editor/grid_color");
+	Color grid_color = EditorSettings::get_singleton()->get("editors/tile_map/grid_color");
 	Vector2i tile_shape_size = tile_set->get_tile_size();
 	for (int i = 0; i < tile_set_atlas_source->get_tiles_count(); i++) {
 		Vector2i tile_id = tile_set_atlas_source->get_tile_id(i);
