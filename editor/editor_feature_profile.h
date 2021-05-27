@@ -60,6 +60,8 @@ private:
 	Set<StringName> disabled_editors;
 	Map<StringName, Set<StringName>> disabled_properties;
 
+	Set<StringName> collapsed_classes;
+
 	bool features_disabled[FEATURE_MAX];
 	static const char *feature_names[FEATURE_MAX];
 	static const char *feature_identifiers[FEATURE_MAX];
@@ -79,6 +81,9 @@ public:
 	void set_disable_class_property(const StringName &p_class, const StringName &p_property, bool p_disabled);
 	bool is_class_property_disabled(const StringName &p_class, const StringName &p_property) const;
 	bool has_class_properties_disabled(const StringName &p_class) const;
+
+	void set_item_collapsed(const StringName &p_class, bool p_collapsed);
+	bool is_item_collapsed(const StringName &p_class) const;
 
 	void set_disable_feature(Feature p_feature, bool p_disable);
 	bool is_feature_disabled(Feature p_feature) const;
@@ -151,6 +156,7 @@ class EditorFeatureProfileManager : public AcceptDialog {
 
 	void _class_list_item_selected();
 	void _class_list_item_edited();
+	void _class_list_item_collapsed(Object *p_item);
 	void _property_item_edited();
 	void _save_and_update();
 
