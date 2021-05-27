@@ -345,6 +345,7 @@ class EditorSceneImporterGLTF : public EditorSceneImporter {
 
 		// EditorSceneImporter::ImportFlags
 		uint32_t import_flags;
+		uint32_t compress_flags;
 
 		~GLTFState() {
 			for (int i = 0; i < nodes.size(); i++) {
@@ -441,7 +442,7 @@ class EditorSceneImporterGLTF : public EditorSceneImporter {
 public:
 	virtual uint32_t get_import_flags() const;
 	virtual void get_extensions(List<String> *r_extensions) const;
-	virtual Node *import_scene(const String &p_path, uint32_t p_flags, int p_bake_fps, List<String> *r_missing_deps = nullptr, Error *r_err = nullptr);
+	virtual Node *import_scene(const String &p_path, uint32_t p_flags, int p_bake_fps, uint32_t p_compress_flags, List<String> *r_missing_deps = nullptr, Error *r_err = nullptr);
 	virtual Ref<Animation> import_animation(const String &p_path, uint32_t p_flags, int p_bake_fps);
 
 	EditorSceneImporterGLTF();

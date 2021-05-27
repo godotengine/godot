@@ -1651,7 +1651,7 @@ uint32_t EditorSceneImporterCollada::get_import_flags() const {
 void EditorSceneImporterCollada::get_extensions(List<String> *r_extensions) const {
 	r_extensions->push_back("dae");
 }
-Node *EditorSceneImporterCollada::import_scene(const String &p_path, uint32_t p_flags, int p_bake_fps, List<String> *r_missing_deps, Error *r_err) {
+Node *EditorSceneImporterCollada::import_scene(const String &p_path, uint32_t p_flags, int p_bake_fps, uint32_t p_compress_flags, List<String> *r_missing_deps, Error *r_err) {
 	ColladaImport state;
 	uint32_t flags = Collada::IMPORT_FLAG_SCENE;
 	if (p_flags & IMPORT_ANIMATION) {
@@ -1661,7 +1661,7 @@ Node *EditorSceneImporterCollada::import_scene(const String &p_path, uint32_t p_
 	state.use_mesh_builtin_materials = !(p_flags & IMPORT_MATERIALS_IN_INSTANCES);
 	state.bake_fps = p_bake_fps;
 
-	Error err = state.load(p_path, flags, p_flags & EditorSceneImporter::IMPORT_GENERATE_TANGENT_ARRAYS, p_flags & EditorSceneImporter::IMPORT_USE_COMPRESSION);
+	Error err = state.load(p_path, flags, p_flags & EditorSceneImporter::IMPORT_GENERATE_TANGENT_ARRAYS, p_compress_flags);
 
 	ERR_FAIL_COND_V_MSG(err != OK, nullptr, "Cannot load scene from file '" + p_path + "'.");
 
