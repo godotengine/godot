@@ -546,7 +546,7 @@ void GDScriptSyntaxHighlighter::_update_cache() {
 	}
 
 	const String text_edit_color_theme = EditorSettings::get_singleton()->get("text_editor/theme/color_theme");
-	const bool default_theme = text_edit_color_theme == "Default";
+	const bool default_theme = text_edit_color_theme == "Godot 2";
 
 	if (default_theme || EditorSettings::get_singleton()->is_dark_theme()) {
 		function_definition_color = Color(0.4, 0.9, 1.0);
@@ -558,7 +558,7 @@ void GDScriptSyntaxHighlighter::_update_cache() {
 
 	EDITOR_DEF("text_editor/highlighting/gdscript/function_definition_color", function_definition_color);
 	EDITOR_DEF("text_editor/highlighting/gdscript/node_path_color", node_path_color);
-	if (text_edit_color_theme == "Adaptive" || default_theme) {
+	if (text_edit_color_theme == "Default" || default_theme) {
 		EditorSettings::get_singleton()->set_initial_value(
 				"text_editor/highlighting/gdscript/function_definition_color",
 				function_definition_color,
