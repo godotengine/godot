@@ -2834,6 +2834,7 @@ FileSystemDock::FileSystemDock(EditorNode *p_editor) {
 	button_toggle_display_mode->connect("toggled", callable_mp(this, &FileSystemDock::_toggle_split_mode));
 	button_toggle_display_mode->set_focus_mode(FOCUS_NONE);
 	button_toggle_display_mode->set_tooltip(TTR("Toggle Split Mode"));
+	button_toggle_display_mode->set_flat(true);
 	toolbar_hbc->add_child(button_toggle_display_mode);
 
 	toolbar2_hbc = memnew(HBoxContainer);

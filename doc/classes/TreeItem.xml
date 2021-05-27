@@ -175,6 +175,14 @@
 				Returns the custom color of column [code]column[/code].
 			</description>
 		</method>
+		<method name="get_custom_font" qualifiers="const">
+			<return type="Font">
+			</return>
+			<argument index="0" name="column" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="get_expand_right" qualifiers="const">
 			<return type="bool">
 			</return>
@@ -577,6 +585,16 @@
 			<description>
 				Sets the given column's custom draw callback to [code]callback[/code] method on [code]object[/code].
 				The [code]callback[/code] should accept two arguments: the [TreeItem] that is drawn and its position and size as a [Rect2].
+			</description>
+		</method>
+		<method name="set_custom_font">
+			<return type="void">
+			</return>
+			<argument index="0" name="column" type="int">
+			</argument>
+			<argument index="1" name="font" type="Font">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="set_editable">

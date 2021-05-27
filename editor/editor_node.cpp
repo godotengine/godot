@@ -707,6 +707,11 @@ void EditorNode::_notification(int p_what) {
 			p->set_item_icon(p->get_item_index(HELP_ABOUT), gui_base->get_theme_icon("Godot", "EditorIcons"));
 			p->set_item_icon(p->get_item_index(HELP_SUPPORT_GODOT_DEVELOPMENT), gui_base->get_theme_icon("Heart", "EditorIcons"));
 
+			for (int i = 0; i < main_editor_buttons.size(); i++) {
+				main_editor_buttons.write[i]->add_theme_font_override("font", gui_base->get_theme_font("main_button_font", "EditorFonts"));
+				main_editor_buttons.write[i]->add_theme_font_size_override("font_size", gui_base->get_theme_font_size("main_button_font_size", "EditorFonts"));
+			}
+
 			_update_update_spinner();
 		} break;
 
@@ -3058,6 +3063,9 @@ void EditorNode::add_editor_plugin(EditorPlugin *p_editor, bool p_config_changed
 		} else if (singleton->gui_base->has_theme_icon(p_editor->get_name(), "EditorIcons")) {
 			tb->set_icon(singleton->gui_base->get_theme_icon(p_editor->get_name(), "EditorIcons"));
 		}
+
+		tb->add_theme_font_override("font", singleton->gui_base->get_theme_font("main_button_font", "EditorFonts"));
+		tb->add_theme_font_size_override("font_size", singleton->gui_base->get_theme_font_size("main_button_font_size", "EditorFonts"));
 
 		tb->set_name(p_editor->get_name());
 		singleton->main_editor_buttons.push_back(tb);

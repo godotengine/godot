@@ -313,8 +313,13 @@ void editor_register_fonts(Ref<Theme> p_theme) {
 	p_theme->set_font("bold", "EditorFonts", df_bold);
 
 	// Title font
-	p_theme->set_font_size("title_size", "EditorFonts", default_font_size + 2 * EDSCALE);
+	p_theme->set_font_size("title_size", "EditorFonts", default_font_size + 1 * EDSCALE);
 	p_theme->set_font("title", "EditorFonts", df_bold);
+
+	p_theme->set_font_size("main_button_font_size", "EditorFonts", default_font_size + 1 * EDSCALE);
+	p_theme->set_font("main_button_font", "EditorFonts", df_bold);
+
+	p_theme->set_font("font", "Label", df_bold);
 
 	// Documentation fonts
 	MAKE_SOURCE_FONT(df_code);
