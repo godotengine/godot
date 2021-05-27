@@ -79,7 +79,7 @@ void Button::_notification(int p_what) {
 			update();
 		} break;
 		case NOTIFICATION_TRANSLATION_CHANGED: {
-			xl_text = tr(text);
+			xl_text = atr(text);
 			_shape();
 
 			minimum_size_changed();
@@ -355,7 +355,7 @@ void Button::_shape() {
 void Button::set_text(const String &p_text) {
 	if (text != p_text) {
 		text = p_text;
-		xl_text = tr(text);
+		xl_text = atr(text);
 		_shape();
 
 		update();

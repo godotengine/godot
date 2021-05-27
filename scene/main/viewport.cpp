@@ -260,7 +260,7 @@ void Viewport::_sub_window_update(Window *p_window) {
 		int close_h_ofs = p_window->get_theme_constant(SNAME("close_h_ofs"));
 		int close_v_ofs = p_window->get_theme_constant(SNAME("close_v_ofs"));
 
-		TextLine title_text = TextLine(p_window->get_title(), title_font, font_size, Dictionary(), TranslationServer::get_singleton()->get_tool_locale());
+		TextLine title_text = TextLine(p_window->atr(p_window->get_title()), title_font, font_size, Dictionary(), TranslationServer::get_singleton()->get_tool_locale());
 		title_text.set_width(r.size.width - panel->get_minimum_size().x - close_h_ofs);
 		title_text.set_direction(p_window->is_layout_rtl() ? TextServer::DIRECTION_RTL : TextServer::DIRECTION_LTR);
 		int x = (r.size.width - title_text.get_size().x) / 2;
@@ -1558,6 +1558,7 @@ void Viewport::_gui_show_tooltip() {
 	// If no custom tooltip is given, use a default implementation.
 	if (!base_tooltip) {
 		gui.tooltip_label = memnew(TooltipLabel);
+		gui.tooltip_label->set_auto_translate(gui.tooltip_control->is_auto_translating());
 		gui.tooltip_label->set_text(tooltip_text);
 		base_tooltip = gui.tooltip_label;
 		panel->connect("mouse_entered", callable_mp(this, &Viewport::_gui_cancel_tooltip));

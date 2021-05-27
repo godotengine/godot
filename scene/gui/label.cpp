@@ -221,7 +221,7 @@ void Label::_update_visible() {
 
 void Label::_notification(int p_what) {
 	if (p_what == NOTIFICATION_TRANSLATION_CHANGED) {
-		String new_text = tr(text);
+		String new_text = atr(text);
 		if (new_text == xl_text) {
 			return; //nothing new
 		}
@@ -509,7 +509,7 @@ void Label::set_text(const String &p_string) {
 		return;
 	}
 	text = p_string;
-	xl_text = tr(p_string);
+	xl_text = atr(p_string);
 	dirty = true;
 	if (percent_visible < 1) {
 		visible_chars = get_total_character_count() * percent_visible;

@@ -495,6 +495,20 @@ bool Control::is_layout_rtl() const {
 	return data.is_rtl;
 }
 
+void Control::set_auto_translate(bool p_enable) {
+	if (p_enable == data.auto_translate) {
+		return;
+	}
+
+	data.auto_translate = p_enable;
+
+	notification(MainLoop::NOTIFICATION_TRANSLATION_CHANGED);
+}
+
+bool Control::is_auto_translating() const {
+	return data.auto_translate;
+}
+
 void Control::_clear_size_warning() {
 	data.size_warning = false;
 }
@@ -2784,6 +2798,9 @@ void Control::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_layout_direction"), &Control::get_layout_direction);
 	ClassDB::bind_method(D_METHOD("is_layout_rtl"), &Control::is_layout_rtl);
 
+	ClassDB::bind_method(D_METHOD("set_auto_translate", "enable"), &Control::set_auto_translate);
+	ClassDB::bind_method(D_METHOD("is_auto_translating"), &Control::is_auto_translating);
+
 	BIND_VMETHOD(MethodInfo("_structured_text_parser", PropertyInfo(Variant::ARRAY, "args"), PropertyInfo(Variant::STRING, "text")));
 
 	BIND_VMETHOD(MethodInfo("_gui_input", PropertyInfo(Variant::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, "InputEvent")));
@@ -2848,10 +2865,13 @@ void Control::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "size_flags_horizontal", PROPERTY_HINT_FLAGS, "Fill,Expand,Shrink Center,Shrink End"), "set_h_size_flags", "get_h_size_flags");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "size_flags_vertical", PROPERTY_HINT_FLAGS, "Fill,Expand,Shrink Center,Shrink End"), "set_v_size_flags", "get_v_size_flags");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "size_flags_stretch_ratio", PROPERTY_HINT_RANGE, "0,20,0.01,or_greater"), "set_stretch_ratio", "get_stretch_ratio");
+
 	ADD_GROUP("Theme", "theme_");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "theme", PROPERTY_HINT_RESOURCE_TYPE, "Theme"), "set_theme", "get_theme");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "theme_type_variation", PROPERTY_HINT_ENUM_SUGGESTION), "set_theme_type_variation", "get_theme_type_variation");
-	ADD_GROUP("", "");
+
+	ADD_GROUP("Auto Translate", "");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "auto_translate"), "set_auto_translate", "is_auto_translating");
 
 	BIND_ENUM_CONSTANT(FOCUS_NONE);
 	BIND_ENUM_CONSTANT(FOCUS_CLICK);
