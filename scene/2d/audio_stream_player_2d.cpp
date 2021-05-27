@@ -147,7 +147,11 @@ void AudioStreamPlayer2D::_notification(int p_what) {
 	if (p_what == NOTIFICATION_ENTER_TREE) {
 		AudioServer::get_singleton()->add_callback(_mix_audios, this);
 		if (autoplay && !Engine::get_singleton()->is_editor_hint()) {
-			play();
+			if (!can_process()) { // In case it enters paused tree.
+				set_stream_paused(true);
+			} else {
+				play();
+			}
 		}
 	}
 
