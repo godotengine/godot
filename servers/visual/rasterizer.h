@@ -1079,7 +1079,6 @@ public:
 
 				if (found_xform) {
 					r = xf.xform(r);
-					found_xform = false;
 				}
 
 				if (first) {
