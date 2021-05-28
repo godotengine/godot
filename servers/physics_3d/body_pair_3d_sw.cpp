@@ -215,7 +215,7 @@ bool BodyPair3DSW::setup(real_t p_step) {
 	dynamic_A = (A->get_mode() > PhysicsServer3D::BODY_MODE_KINEMATIC);
 	dynamic_B = (B->get_mode() > PhysicsServer3D::BODY_MODE_KINEMATIC);
 
-	if (!A->test_collision_mask(B) || A->has_exception(B->get_self()) || B->has_exception(A->get_self())) {
+	if (!A->interacts_with(B) || A->has_exception(B->get_self()) || B->has_exception(A->get_self())) {
 		collided = false;
 		return false;
 	}
@@ -325,12 +325,12 @@ bool BodyPair3DSW::pre_solve(real_t p_step) {
 
 		// contact query reporting...
 
-		if (A->can_report_contacts()) {
+		if (A->can_report_contacts() && B->layer_in_mask(A)) {
 			Vector3 crA = A->get_angular_velocity().cross(c.rA) + A->get_linear_velocity();
 			A->add_contact(global_A, -c.normal, depth, shape_A, global_B, shape_B, B->get_instance_id(), B->get_self(), crA);
 		}
 
-		if (B->can_report_contacts()) {
+		if (B->can_report_contacts() && A->layer_in_mask(B)) {
 			Vector3 crB = B->get_angular_velocity().cross(c.rB) + B->get_linear_velocity();
 			B->add_contact(global_B, c.normal, depth, shape_B, global_A, shape_A, A->get_instance_id(), A->get_self(), crB);
 		}
@@ -354,10 +354,10 @@ bool BodyPair3DSW::pre_solve(real_t p_step) {
 		c.depth = depth;
 
 		Vector3 j_vec = c.normal * c.acc_normal_impulse + c.acc_tangent_impulse;
-		if (dynamic_A) {
+		if (dynamic_A && A->layer_in_mask(B)) {
 			A->apply_impulse(-j_vec, c.rA + A->get_center_of_mass());
 		}
-		if (dynamic_B) {
+		if (dynamic_B && B->layer_in_mask(A)) {
 			B->apply_impulse(j_vec, c.rB + B->get_center_of_mass());
 		}
 		c.acc_bias_impulse = 0;
@@ -406,10 +406,10 @@ void BodyPair3DSW::solve(real_t p_step) {
 
 			Vector3 jb = c.normal * (c.acc_bias_impulse - jbnOld);
 
-			if (dynamic_A) {
+			if (dynamic_A && A->layer_in_mask(B)) {
 				A->apply_bias_impulse(-jb, c.rA + A->get_center_of_mass(), max_bias_av);
 			}
-			if (dynamic_B) {
+			if (dynamic_B && B->layer_in_mask(A)) {
 				B->apply_bias_impulse(jb, c.rB + B->get_center_of_mass(), max_bias_av);
 			}
 
@@ -426,10 +426,10 @@ void BodyPair3DSW::solve(real_t p_step) {
 
 				Vector3 jb_com = c.normal * (c.acc_bias_impulse_center_of_mass - jbnOld_com);
 
-				if (dynamic_A) {
+				if (dynamic_A && A->layer_in_mask(B)) {
 					A->apply_bias_impulse(-jb_com, A->get_center_of_mass(), 0.0f);
 				}
-				if (dynamic_B) {
+				if (dynamic_B && B->layer_in_mask(A)) {
 					B->apply_bias_impulse(jb_com, B->get_center_of_mass(), 0.0f);
 				}
 			}
@@ -451,10 +451,10 @@ void BodyPair3DSW::solve(real_t p_step) {
 
 			Vector3 j = c.normal * (c.acc_normal_impulse - jnOld);
 
-			if (dynamic_A) {
+			if (dynamic_A && A->layer_in_mask(B)) {
 				A->apply_impulse(-j, c.rA + A->get_center_of_mass());
 			}
-			if (dynamic_B) {
+			if (dynamic_B && B->layer_in_mask(A)) {
 				B->apply_impulse(j, c.rB + B->get_center_of_mass());
 			}
 
@@ -498,10 +498,10 @@ void BodyPair3DSW::solve(real_t p_step) {
 
 			jt = c.acc_tangent_impulse - jtOld;
 
-			if (dynamic_A) {
+			if (dynamic_A && A->layer_in_mask(B)) {
 				A->apply_impulse(-jt, c.rA + A->get_center_of_mass());
 			}
-			if (dynamic_B) {
+			if (dynamic_B && B->layer_in_mask(A)) {
 				B->apply_impulse(jt, c.rB + B->get_center_of_mass());
 			}
 
@@ -602,7 +602,7 @@ void BodySoftBodyPair3DSW::validate_contacts() {
 bool BodySoftBodyPair3DSW::setup(real_t p_step) {
 	body_dynamic = (body->get_mode() > PhysicsServer3D::BODY_MODE_KINEMATIC);
 
-	if (!body->test_collision_mask(soft_body) || body->has_exception(soft_body->get_self()) || soft_body->has_exception(body->get_self())) {
+	if (!body->interacts_with(soft_body) || body->has_exception(soft_body->get_self()) || soft_body->has_exception(body->get_self())) {
 		collided = false;
 		return false;
 	}
