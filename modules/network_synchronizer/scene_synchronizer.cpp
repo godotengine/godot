@@ -2003,6 +2003,12 @@ void ClientSynchronizer::process() {
 	const real_t delta = scene_synchronizer->get_physics_process_delta_time();
 	const real_t iteration_per_second = Engine::get_singleton()->get_iterations_per_second();
 
+#ifdef DEBUG_ENABLED
+	if (unlikely(Engine::get_singleton()->get_frames_per_second() < iteration_per_second)) {
+		WARN_PRINT("Current FPS is " + itos(Engine::get_singleton()->get_frames_per_second()) + ", but the minimum required FPS is " + itos(iteration_per_second) + ", the client is unable to generate enough inputs for the server.");
+	}
+#endif
+
 	NetworkedController *controller = static_cast<NetworkedController *>(player_controller_node_data->node);
 	PlayerController *player_controller = controller->get_player_controller();
 
