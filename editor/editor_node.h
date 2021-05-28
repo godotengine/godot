@@ -856,7 +856,7 @@ public:
 
 	void notify_settings_changed();
 
-	void dim_editor(bool p_dimming, bool p_force_dim = false);
+	void dim_editor(bool p_dimming);
 	bool is_editor_dimmed() const;
 
 	void edit_current() { _edit_current(); };
