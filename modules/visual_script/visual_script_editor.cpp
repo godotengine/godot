@@ -2270,49 +2270,47 @@ void VisualScriptEditor::drop_data_fw(const Point2 &p_point, const Variant &p_da
 			ofs = ofs.snapped(Vector2(snap, snap));
 		}
 		ofs /= EDSCALE;
+		drop_pos = ofs;
 
 		undo_redo->create_action(TTR("Add Node(s) From Tree"));
-		int base_id = script->get_available_id();
 
 		if (nodes.size() > 1) {
 			use_node = true;
 		}
 
-		for (int i = 0; i < nodes.size(); i++) {
-			NodePath np = nodes[i];
+		if (use_node) {
+			int base_id = script->get_available_id();
+			for (int i = 0; i < nodes.size(); i++) {
+				NodePath np = nodes[i];
+				Node *node = get_node(np);
+				if (!node) {
+					continue;
+				}
+				Ref<VisualScriptNode> n;
+				if (use_node) {
+					Ref<VisualScriptSceneNode> scene_node;
+					scene_node.instance();
+					scene_node->set_node_path(sn->get_path_to(node));
+					n = scene_node;
+				}
+				undo_redo->add_do_method(script.ptr(), "add_node", base_id, n, ofs);
+				undo_redo->add_undo_method(script.ptr(), "remove_node", base_id);
+				print_error(ofs);
+				base_id++;
+				ofs += Vector2(25, 25);
+			}
+			undo_redo->add_do_method(this, "_update_graph");
+			undo_redo->add_undo_method(this, "_update_graph");
+			undo_redo->commit_action();
+		} else {
+			NodePath np = nodes[0];
 			Node *node = get_node(np);
-			if (!node) {
-				continue;
-			}
-
-			Ref<VisualScriptNode> n;
-
-			if (use_node) {
-				Ref<VisualScriptSceneNode> scene_node;
-				scene_node.instance();
-				scene_node->set_node_path(sn->get_path_to(node));
-				n = scene_node;
-			} else {
-				// ! Doesn't work properly.
-				Ref<VisualScriptFunctionCall> call;
-				call.instance();
-				call->set_call_mode(VisualScriptFunctionCall::CALL_MODE_NODE_PATH);
-				call->set_base_path(sn->get_path_to(node));
-				call->set_base_type(node->get_class());
-				n = call;
+			relative_path = sn->get_path_to(node);
+			node_class = node->get_class();
+			if (node) {
 				method_select->select_from_instance(node, "", true, node->get_class());
-				selecting_method_id = base_id;
 			}
-
-			undo_redo->add_do_method(script.ptr(), "add_node", base_id, n, ofs);
-			undo_redo->add_undo_method(script.ptr(), "remove_node", base_id);
-
-			base_id++;
-			ofs += Vector2(25, 25);
 		}
-		undo_redo->add_do_method(this, "_update_graph");
-		undo_redo->add_undo_method(this, "_update_graph");
-		undo_redo->commit_action();
 	}
 
 	if (String(d["type"]) == "obj_property") {
@@ -2433,12 +2431,41 @@ void VisualScriptEditor::drop_data_fw(const Point2 &p_point, const Variant &p_da
 	}
 }
 
-void VisualScriptEditor::_selected_method(const String &p_method, const String &p_type, const bool p_connecting) {
-	Ref<VisualScriptFunctionCall> vsfc = script->get_node(selecting_method_id);
-	if (!vsfc.is_valid()) {
-		return;
+void VisualScriptEditor::_selected_method(const String &p_text, const String &p_category, const bool p_connecting) {
+
+	Ref<VisualScriptNode> vnode;
+
+	if (p_category == String("method")) {
+		Ref<VisualScriptFunctionCall> n;
+		n.instance();
+		n->set_call_mode(VisualScriptFunctionCall::CALL_MODE_NODE_PATH);
+		n->set_base_path(relative_path);
+		n->set_base_type(node_class);
+		n->set_function(p_text);
+		vnode = n;
+	} else if (p_category == String("set")) {
+		Ref<VisualScriptPropertySet> n;
+		n.instance();
+		n->set_call_mode(VisualScriptPropertySet::CALL_MODE_NODE_PATH);
+		n->set_base_path(relative_path);
+		n->set_base_type(node_class);
+		n->set_property(p_text);
+		vnode = n;
+	} else if (p_category == String("get")) {
+		Ref<VisualScriptPropertyGet> n;
+		n.instance();
+		n->set_call_mode(VisualScriptPropertyGet::CALL_MODE_NODE_PATH);
+		n->set_base_path(relative_path);
+		n->set_base_type(node_class);
+		n->set_property(p_text);
+		vnode = n;
 	}
-	vsfc->set_function(p_method);
+	int base_id = script->get_available_id();
+	undo_redo->add_do_method(script.ptr(), "add_node", base_id, vnode, drop_pos);
+	undo_redo->add_undo_method(script.ptr(), "remove_node", base_id);
+	undo_redo->add_do_method(this, "_update_graph");
+	undo_redo->add_undo_method(this, "_update_graph");
+	undo_redo->commit_action();
 }
 
 void VisualScriptEditor::_draw_color_over_button(Object *obj, Color p_color) {
