@@ -467,7 +467,7 @@ public:
 
 	bool is_open() const;
 
-	Error list_dir_begin(bool p_skip_navigational = false, bool p_skip_hidden = false); // This starts dir listing.
+	Error list_dir_begin(bool p_show_navigational = false, bool p_show_hidden = false); // This starts dir listing.
 	String get_next();
 	bool current_is_dir() const;
 

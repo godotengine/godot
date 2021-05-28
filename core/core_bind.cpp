@@ -1616,11 +1616,11 @@ bool _Directory::is_open() const {
 	return d && dir_open;
 }
 
-Error _Directory::list_dir_begin(bool p_skip_navigational, bool p_skip_hidden) {
+Error _Directory::list_dir_begin(bool p_show_navigational, bool p_show_hidden) {
 	ERR_FAIL_COND_V_MSG(!is_open(), ERR_UNCONFIGURED, "Directory must be opened before use.");
 
-	_list_skip_navigational = p_skip_navigational;
-	_list_skip_hidden = p_skip_hidden;
+	_list_skip_navigational = !p_show_navigational;
+	_list_skip_hidden = !p_show_hidden;
 
 	return d->list_dir_begin();
 }
@@ -1758,7 +1758,7 @@ Error _Directory::remove(String p_name) {
 
 void _Directory::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("open", "path"), &_Directory::open);
-	ClassDB::bind_method(D_METHOD("list_dir_begin", "skip_navigational", "skip_hidden"), &_Directory::list_dir_begin, DEFVAL(false), DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("list_dir_begin", "show_navigational", "show_hidden"), &_Directory::list_dir_begin, DEFVAL(false), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("get_next"), &_Directory::get_next);
 	ClassDB::bind_method(D_METHOD("current_is_dir"), &_Directory::current_is_dir);
 	ClassDB::bind_method(D_METHOD("list_dir_end"), &_Directory::list_dir_end);
