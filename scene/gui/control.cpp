@@ -89,6 +89,10 @@ void Control::_edit_set_state(const Dictionary &p_state) {
 	data.margin[MARGIN_RIGHT] = margins[2];
 	data.margin[MARGIN_BOTTOM] = margins[3];
 	_size_changed();
+	_change_notify("anchor_left");
+	_change_notify("anchor_right");
+	_change_notify("anchor_top");
+	_change_notify("anchor_bottom");
 }
 
 void Control::_edit_set_position(const Point2 &p_position) {
