@@ -156,7 +156,7 @@ private:
 	/// This margin of error is called `optimal_frame_delay` and it changes
 	/// depending on the connection health:
 	/// it can go from `min_frames_delay` to `max_frames_delay`.
-	int min_frames_delay = 1;
+	int min_frames_delay = 2;
 	int max_frames_delay = 6;
 
 	/// Rate at which the tick speed changes, so the `optimal_frame_delay` is
@@ -183,7 +183,7 @@ private:
 	/// This margin of error is called `optimal_frame_delay` and it changes
 	/// depending on the connection health:
 	/// it can go from `doll_min_frames_delay` to `doll_max_frames_delay`.
-	int doll_min_frames_delay = 1;
+	int doll_min_frames_delay = 2;
 	int doll_max_frames_delay = 5;
 
 	/// Max speedup / slowdown the doll can apply to recover its epoch buffer size.
