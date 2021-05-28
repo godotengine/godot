@@ -1701,7 +1701,7 @@ Control *Viewport::_gui_find_control(const Point2 &p_global) {
 			xform = sw->get_canvas_transform();
 		}
 
-		Control *ret = _gui_find_control_at_pos(sw, p_global, xform, gui.focus_inv_xform);
+		Control *ret = _gui_find_control_at_pos(sw, p_global, xform);
 		if (ret) {
 			return ret;
 		}
@@ -1723,7 +1723,7 @@ Control *Viewport::_gui_find_control(const Point2 &p_global) {
 			xform = sw->get_canvas_transform();
 		}
 
-		Control *ret = _gui_find_control_at_pos(sw, p_global, xform, gui.focus_inv_xform);
+		Control *ret = _gui_find_control_at_pos(sw, p_global, xform);
 		if (ret) {
 			return ret;
 		}
@@ -1732,7 +1732,7 @@ Control *Viewport::_gui_find_control(const Point2 &p_global) {
 	return nullptr;
 }
 
-Control *Viewport::_gui_find_control_at_pos(CanvasItem *p_node, const Point2 &p_global, const Transform2D &p_xform, Transform2D &r_inv_xform) {
+Control *Viewport::_gui_find_control_at_pos(CanvasItem *p_node, const Point2 &p_global, const Transform2D &p_xform) {
 	if (Object::cast_to<Viewport>(p_node)) {
 		return nullptr;
 	}
@@ -1763,7 +1763,7 @@ Control *Viewport::_gui_find_control_at_pos(CanvasItem *p_node, const Point2 &p_
 				continue;
 			}
 
-			Control *ret = _gui_find_control_at_pos(ci, p_global, matrix, r_inv_xform);
+			Control *ret = _gui_find_control_at_pos(ci, p_global, matrix);
 			if (ret) {
 				return ret;
 			}
@@ -1781,7 +1781,6 @@ Control *Viewport::_gui_find_control_at_pos(CanvasItem *p_node, const Point2 &p_
 
 	Control *drag_preview = _gui_get_drag_preview();
 	if (!drag_preview || (c != drag_preview && !drag_preview->is_a_parent_of(c))) {
-		r_inv_xform = matrix;
 		return c;
 	}
 
@@ -1839,7 +1838,6 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 
 		Point2 mpos = mb->get_position();
 		if (mb->is_pressed()) {
-			Size2 pos = mpos;
 			if (gui.mouse_focus_mask) {
 				//do not steal mouse focus and stuff while a focus mask exists
 				gui.mouse_focus_mask |= 1 << (mb->get_button_index() - 1); //add the button to the mask
@@ -1889,7 +1887,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 					parent_xform=data.parent_canvas_item->get_global_transform();
 				*/
 
-				gui.mouse_focus = _gui_find_control(pos);
+				gui.mouse_focus = _gui_find_control(mpos);
 				gui.last_mouse_focus = gui.mouse_focus;
 
 				if (!gui.mouse_focus) {
@@ -1906,11 +1904,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 			}
 
 			mb = mb->xformed_by(Transform2D()); // make a copy of the event
-
-			mb->set_global_position(pos);
-
-			pos = gui.focus_inv_xform.xform(pos);
-
+			Point2 pos = gui.mouse_focus->get_global_transform_with_canvas().affine_inverse().xform(mpos);
 			mb->set_position(pos);
 
 #ifdef DEBUG_ENABLED
@@ -1975,9 +1969,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 		} else {
 			if (gui.drag_data.get_type() != Variant::NIL && mb->get_button_index() == BUTTON_LEFT) {
 				if (gui.mouse_over) {
-					Size2 pos = mpos;
-					pos = gui.focus_inv_xform.xform(pos);
-
+					Point2 pos = gui.mouse_over->get_global_transform_with_canvas().affine_inverse().xform(mpos);
 					_gui_drop(gui.mouse_over, pos, false);
 				}
 
@@ -2000,11 +1992,8 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 				return;
 			}
 
-			Size2 pos = mpos;
-
 			mb = mb->xformed_by(Transform2D()); //make a copy
-			mb->set_global_position(pos);
-			pos = gui.focus_inv_xform.xform(pos);
+			Point2 pos = gui.mouse_focus->get_global_transform_with_canvas().affine_inverse().xform(mpos);
 			mb->set_position(pos);
 
 			Control *mouse_focus = gui.mouse_focus;
@@ -2270,7 +2259,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 
 	Ref<InputEventScreenTouch> touch_event = p_event;
 	if (touch_event.is_valid()) {
-		Size2 pos = touch_event->get_position();
+		Point2 pos = touch_event->get_position();
 		if (touch_event->is_pressed()) {
 			Control *over = _gui_find_control(pos);
 			if (over) {
@@ -2282,11 +2271,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 				}
 				if (over->can_process()) {
 					touch_event = touch_event->xformed_by(Transform2D()); //make a copy
-					if (over == gui.mouse_focus) {
-						pos = gui.focus_inv_xform.xform(pos);
-					} else {
-						pos = over->get_global_transform_with_canvas().affine_inverse().xform(pos);
-					}
+					pos = over->get_global_transform_with_canvas().affine_inverse().xform(pos);
 					touch_event->set_position(pos);
 					_gui_call_input(over, touch_event);
 				}
@@ -2296,8 +2281,8 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 		} else if (touch_event->get_index() == 0 && gui.last_mouse_focus) {
 			if (gui.last_mouse_focus->can_process()) {
 				touch_event = touch_event->xformed_by(Transform2D()); //make a copy
-				touch_event->set_position(gui.focus_inv_xform.xform(pos));
-
+				pos = gui.last_mouse_focus->get_global_transform_with_canvas().affine_inverse().xform(pos);
+				touch_event->set_position(pos);
 				_gui_call_input(gui.last_mouse_focus, touch_event);
 			}
 			set_input_as_handled();
@@ -2317,11 +2302,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 		if (over) {
 			if (over->can_process()) {
 				gesture_event = gesture_event->xformed_by(Transform2D()); //make a copy
-				if (over == gui.mouse_focus) {
-					pos = gui.focus_inv_xform.xform(pos);
-				} else {
-					pos = over->get_global_transform_with_canvas().affine_inverse().xform(pos);
-				}
+				pos = over->get_global_transform_with_canvas().affine_inverse().xform(pos);
 				gesture_event->set_position(pos);
 				_gui_call_input(over, gesture_event);
 			}
@@ -2749,7 +2730,6 @@ void Viewport::_post_gui_grab_click_focus() {
 		}
 
 		gui.mouse_focus = focus_grabber;
-		gui.focus_inv_xform = gui.mouse_focus->get_global_transform_with_canvas().affine_inverse();
 		click = gui.mouse_focus->get_global_transform_with_canvas().affine_inverse().xform(gui.last_mouse_pos);
 
 		for (int i = 0; i < 3; i++) {
