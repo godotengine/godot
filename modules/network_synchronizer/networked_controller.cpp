@@ -1036,7 +1036,7 @@ void ServerController::calculates_player_tick_rate(real_t p_delta) {
 #ifdef DEBUG_ENABLED
 	const bool debug = ProjectSettings::get_singleton()->get_setting("NetworkSynchronizer/debug_server_speedup");
 	if (debug) {
-		print_line("Network poorness: " + rtos(net_poorness) + " optimal frame delay: " + itos(optimal_frame_delay) + " Deviation: " + rtos(deviation_receive_time));
+		print_line("Network poorness: " + rtos(net_poorness) + ", optimal frame delay: " + itos(optimal_frame_delay) + ", deviation: " + rtos(deviation_receive_time) + ", current frame delay: " + itos(consecutive_inputs));
 	}
 #endif
 }
@@ -1463,7 +1463,7 @@ void DollController::receive_batch(const Vector<uint8_t> &p_data) {
 #ifdef DEBUG_ENABLED
 	const bool debug = ProjectSettings::get_singleton()->get_setting("NetworkSynchronizer/debug_doll_speedup");
 	if (debug) {
-		print_line("Net poorness: " + rtos(net_poorness) + " Optimal stored epochs: " + rtos(optimal_frame_delay) + " Deviation: " + rtos(deviation_receive_time));
+		print_line("Network poorness: " + rtos(net_poorness) + ", optimal stored epochs: " + rtos(optimal_frame_delay) + ", deviation: " + rtos(deviation_receive_time));
 	}
 #endif
 }
