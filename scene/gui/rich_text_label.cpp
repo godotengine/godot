@@ -959,16 +959,13 @@ void RichTextLabel::_notification(int p_what) {
 			update();
 
 		} break;
+		case NOTIFICATION_THEME_CHANGED:
 		case NOTIFICATION_ENTER_TREE: {
 			if (bbcode != "") {
 				set_bbcode(bbcode);
 			}
 
 			main->first_invalid_line = 0; //invalidate ALL
-			update();
-
-		} break;
-		case NOTIFICATION_THEME_CHANGED: {
 			update();
 
 		} break;
