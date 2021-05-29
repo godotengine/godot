@@ -2295,7 +2295,6 @@ void VisualScriptEditor::drop_data_fw(const Point2 &p_point, const Variant &p_da
 				}
 				undo_redo->add_do_method(script.ptr(), "add_node", base_id, n, ofs);
 				undo_redo->add_undo_method(script.ptr(), "remove_node", base_id);
-				print_error(ofs);
 				base_id++;
 				ofs += Vector2(25, 25);
 			}
