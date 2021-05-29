@@ -65,16 +65,18 @@ void Body3DSW::update_inertias() {
 			// We have to recompute the center of mass.
 			center_of_mass_local.zero();
 
-			for (int i = 0; i < get_shape_count(); i++) {
-				real_t area = get_shape_area(i);
+			if (total_area != 0.0) {
+				for (int i = 0; i < get_shape_count(); i++) {
+					real_t area = get_shape_area(i);
 
-				real_t mass = area * this->mass / total_area;
+					real_t mass = area * this->mass / total_area;
 
-				// NOTE: we assume that the shape origin is also its center of mass.
-				center_of_mass_local += mass * get_shape_transform(i).origin;
+					// NOTE: we assume that the shape origin is also its center of mass.
+					center_of_mass_local += mass * get_shape_transform(i).origin;
+				}
+
+				center_of_mass_local /= mass;
 			}
-
-			center_of_mass_local /= mass;
 
 			// Recompute the inertia tensor.
 			Basis inertia_tensor;
@@ -86,11 +88,14 @@ void Body3DSW::update_inertias() {
 					continue;
 				}
 
+				real_t area = get_shape_area(i);
+				if (area == 0.0) {
+					continue;
+				}
+
 				inertia_set = true;
 
 				const Shape3DSW *shape = get_shape(i);
-
-				real_t area = get_shape_area(i);
 
 				real_t mass = area * this->mass / total_area;
 
