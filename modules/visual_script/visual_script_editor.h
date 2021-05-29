@@ -273,7 +273,9 @@ class VisualScriptEditor : public ScriptEditorBase {
 	void _graph_ofs_changed(const Vector2 &p_ofs);
 	void _comment_node_resized(const Vector2 &p_new_size, int p_node);
 
-	int selecting_method_id;
+	Vector2 drop_pos;
+	NodePath relative_path;
+	String node_class;
 	void _selected_method(const String &p_method, const String &p_type, const bool p_connecting);
 
 	void _draw_color_over_button(Object *obj, Color p_color);
