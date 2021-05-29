@@ -923,45 +923,43 @@ CSGBrush *CSGSphere3D::_build_brush() {
 		Ref<Material> *materialsw = materials.ptrw();
 		bool *invertw = invert.ptrw();
 
+		const double lat_step = 1.0 / rings;
+		const double lon_step = 1.0 / radial_segments;
 		int face = 0;
-		const double lat_step = Math_TAU / rings;
-		const double lon_step = Math_TAU / radial_segments;
-
 		for (int i = 1; i <= rings; i++) {
-			double lat0 = lat_step * (i - 1) - Math_TAU / 4;
-			double z0 = Math::sin(lat0);
-			double zr0 = Math::cos(lat0);
-			double u0 = double(i - 1) / rings;
+			double lat0 = Math_PI * (0.5 - (i - 1) * lat_step);
+			double c0 = Math::cos(lat0);
+			double s0 = Math::sin(lat0);
+			double v0 = double(i - 1) / rings;
 
-			double lat1 = lat_step * i - Math_TAU / 4;
-			double z1 = Math::sin(lat1);
-			double zr1 = Math::cos(lat1);
-			double u1 = double(i) / rings;
+			double lat1 = Math_PI * (0.5 - i * lat_step);
+			double c1 = Math::cos(lat1);
+			double s1 = Math::sin(lat1);
+			double v1 = double(i) / rings;
 
-			for (int j = radial_segments; j >= 1; j--) {
-				double lng0 = lon_step * (j - 1);
+			for (int j = 1; j <= radial_segments; j++) {
+				double lng0 = Math_TAU * (0.5 - (j - 1) * lon_step);
 				double x0 = Math::cos(lng0);
 				double y0 = Math::sin(lng0);
-				double v0 = double(i - 1) / radial_segments;
+				double u0 = double(j - 1) / radial_segments;
 
-				double lng1 = lon_step * j;
+				double lng1 = Math_TAU * (0.5 - j * lon_step);
 				double x1 = Math::cos(lng1);
 				double y1 = Math::sin(lng1);
-				double v1 = double(i) / radial_segments;
+				double u1 = double(j) / radial_segments;
 
 				Vector3 v[4] = {
-					Vector3(x1 * zr0, z0, y1 * zr0) * radius,
-					Vector3(x1 * zr1, z1, y1 * zr1) * radius,
-					Vector3(x0 * zr1, z1, y0 * zr1) * radius,
-					Vector3(x0 * zr0, z0, y0 * zr0) * radius
+					Vector3(x0 * c0, s0, y0 * c0) * radius,
+					Vector3(x1 * c0, s0, y1 * c0) * radius,
+					Vector3(x1 * c1, s1, y1 * c1) * radius,
+					Vector3(x0 * c1, s1, y0 * c1) * radius,
 				};
 
 				Vector2 u[4] = {
-					Vector2(v1, u0),
-					Vector2(v1, u1),
-					Vector2(v0, u1),
-					Vector2(v0, u0),
-
+					Vector2(u0, v0),
+					Vector2(u1, v0),
+					Vector2(u1, v1),
+					Vector2(u0, v1),
 				};
 
 				if (i < rings) {
