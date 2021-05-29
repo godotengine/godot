@@ -55,6 +55,7 @@ class VisualScriptPropertySelector : public ConfirmationDialog {
 	EditorHelpBit *help_bit;
 
 	bool properties;
+	bool visual_script_import;
 	bool visual_script_generic;
 	bool connecting;
 	String selected;
