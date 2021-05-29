@@ -66,10 +66,10 @@ void refit_upward(uint32_t p_node_id) {
 	}
 }
 
-void refit_upward_and_balance(uint32_t p_node_id) {
+void refit_upward_and_balance(uint32_t p_node_id, uint32_t p_tree_id) {
 	while (p_node_id != BVHCommon::INVALID) {
 		uint32_t before = p_node_id;
-		p_node_id = _logic_balance(p_node_id);
+		p_node_id = _logic_balance(p_node_id, p_tree_id);
 
 		if (before != p_node_id) {
 			VERBOSE_PRINT("REBALANCED!");

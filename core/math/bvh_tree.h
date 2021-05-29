@@ -196,7 +196,7 @@ private:
 		new_child.parent_id = p_parent_id;
 	}
 
-	void node_remove_child(uint32_t p_parent_id, uint32_t p_child_id, bool p_prevent_sibling = false) {
+	void node_remove_child(uint32_t p_parent_id, uint32_t p_child_id, uint32_t p_tree_id, bool p_prevent_sibling = false) {
 		TNode &parent = _nodes[p_parent_id];
 		BVH_ASSERT(!parent.is_leaf());
 
@@ -231,7 +231,7 @@ private:
 		if (grandparent_id == BVHCommon::INVALID) {
 			if (sibling_present) {
 				// change the root node
-				change_root_node(sibling_id);
+				change_root_node(sibling_id, p_tree_id);
 
 				// delete the old root node as no longer needed
 				_nodes.free(p_parent_id);
@@ -243,16 +243,15 @@ private:
 		if (sibling_present) {
 			node_replace_child(grandparent_id, p_parent_id, sibling_id);
 		} else {
-			node_remove_child(grandparent_id, p_parent_id, true);
+			node_remove_child(grandparent_id, p_parent_id, p_tree_id, true);
 		}
 
 		// put the node on the free list to recycle
 		_nodes.free(p_parent_id);
 	}
 
-	// this relies on _current_tree being accurate
-	void change_root_node(uint32_t p_new_root_id) {
-		_root_node_id[_current_tree] = p_new_root_id;
+	void change_root_node(uint32_t p_new_root_id, uint32_t p_tree_id) {
+		_root_node_id[p_tree_id] = p_new_root_id;
 		TNode &root = _nodes[p_new_root_id];
 
 		// mark no parent
@@ -272,7 +271,7 @@ private:
 		node.neg_leaf_id = -(int)child_leaf_id;
 	}
 
-	void node_remove_item(uint32_t p_ref_id, BVHABB_CLASS *r_old_aabb = nullptr) {
+	void node_remove_item(uint32_t p_ref_id, uint32_t p_tree_id, BVHABB_CLASS *r_old_aabb = nullptr) {
 		// get the reference
 		ItemRef &ref = _refs[p_ref_id];
 		uint32_t owner_node_id = ref.tnode_id;
@@ -336,7 +335,7 @@ private:
 
 				uint32_t parent_id = tnode.parent_id;
 
-				node_remove_child(parent_id, owner_node_id);
+				node_remove_child(parent_id, owner_node_id, p_tree_id);
 				refit_upward(parent_id);
 
 				// put the node on the free list to recycle
