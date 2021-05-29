@@ -646,7 +646,12 @@ void VisualScriptPropertySelector::select_from_instance(Object *p_instance, cons
 	base_type = p_basetype;
 	selected = p_current;
 	type = Variant::NIL;
-	script = 0;
+	Ref<Script> s = p_instance->get_script();
+	if (s.is_null()) {
+		script = 0;
+	} else {
+		script = s->get_instance_id();
+	}
 	properties = false;
 	visual_script_generic = false;
 	instance = p_instance;
