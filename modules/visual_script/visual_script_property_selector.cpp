@@ -647,7 +647,7 @@ void VisualScriptPropertySelector::select_from_instance(Object *p_instance, cons
 	selected = p_current;
 	type = Variant::NIL;
 	script = 0;
-	properties = true;
+	properties = false;
 	visual_script_generic = false;
 	instance = p_instance;
 	virtuals_only = false;
