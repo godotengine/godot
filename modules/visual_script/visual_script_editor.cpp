@@ -2432,7 +2432,6 @@ void VisualScriptEditor::drop_data_fw(const Point2 &p_point, const Variant &p_da
 }
 
 void VisualScriptEditor::_selected_method(const String &p_text, const String &p_category, const bool p_connecting) {
-
 	Ref<VisualScriptNode> vnode;
 
 	if (p_category == String("method")) {
