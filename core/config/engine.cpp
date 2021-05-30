@@ -210,6 +210,20 @@ void Engine::get_singletons(List<Singleton> *p_singletons) {
 	}
 }
 
+void Engine::set_buffered_logger(BufferedSingletonLogger *p_logger) {
+	buffered_log = p_logger;
+}
+
+Array Engine::get_log_buffer() {
+	ERR_FAIL_COND_V_MSG(!GLOBAL_GET("logging/buffered_logging/enable_buffered_logging"), Array(), "The project setting \"logging/buffered_logging/enable_buffered_logging\" must be `true` to get the buffered output log.");
+	return buffered_log->flush_message_buffer();
+}
+
+Array Engine::get_error_buffer() {
+	ERR_FAIL_COND_V_MSG(!GLOBAL_GET("logging/buffered_logging/enable_buffered_logging"), Array(), "The project setting \"logging/buffered_logging/enable_buffered_logging\" must be `true` to get the buffered error log.");
+	return buffered_log->flush_error_buffer();
+}
+
 Engine *Engine::singleton = nullptr;
 
 Engine *Engine::get_singleton() {

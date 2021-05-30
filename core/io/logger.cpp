@@ -278,3 +278,95 @@ CompositeLogger::~CompositeLogger() {
 		memdelete(loggers[i]);
 	}
 }
+
+BufferedSingletonLogger::BufferedSingletonLogger(int p_buffer_size) {
+	buffer_size = p_buffer_size;
+}
+
+BufferedSingletonLogger::~BufferedSingletonLogger() {
+}
+
+Array BufferedSingletonLogger::flush_message_buffer() {
+	Array return_array = message_buffer.duplicate();
+	message_buffer.clear();
+	return return_array;
+}
+
+Array BufferedSingletonLogger::flush_error_buffer() {
+	Array return_array = error_buffer.duplicate();
+	error_buffer.clear();
+	return return_array;
+}
+
+void BufferedSingletonLogger::logv(const char *p_format, va_list p_list, bool p_err) {
+	const int static_buf_size = 512;
+	char static_buf[static_buf_size];
+	char *buf = static_buf;
+	va_list list_copy;
+	va_copy(list_copy, p_list);
+	int len = vsnprintf(buf, static_buf_size, p_format, p_list);
+	if (len >= static_buf_size) {
+		buf = (char *)Memory::alloc_static(len + 1);
+		vsnprintf(buf, len + 1, p_format, list_copy);
+	}
+	va_end(list_copy);
+	String new_message = String(buf);
+	if (message_buffer.size() >= buffer_size) {
+		message_buffer.pop_front();
+		message_buffer.pop_front();
+		message_buffer.push_back(new_message);
+		WARN_PRINT("Maximum size of buffered log has been exceeded. Discarding log messages.");
+	} else {
+		message_buffer.push_back(new_message);
+	}
+
+	if (len >= static_buf_size) {
+		Memory::free_static(buf);
+	}
+
+	if (Engine::get_singleton()->has_singleton("Engine")) {
+		Engine::get_singleton()->get_singleton_object("Engine")->emit_signal("log_message", message_buffer.size());
+	}
+}
+
+void BufferedSingletonLogger::log_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, ErrorType p_type) {
+	const char *error_type = "ERROR";
+	switch (p_type) {
+		case ERR_ERROR:
+			error_type = "ERROR";
+			break;
+		case ERR_WARNING:
+			error_type = "WARNING";
+			break;
+		case ERR_SCRIPT:
+			error_type = "SCRIPT ERROR";
+			break;
+		case ERR_SHADER:
+			error_type = "SHADER ERROR";
+			break;
+		default:
+			error_type = "UNKNOWN ERROR TYPE";
+			break;
+	}
+
+	Dictionary error_message = Dictionary();
+	error_message["type"] = String(error_type);
+	error_message["function"] = String(p_function);
+	error_message["file"] = String(p_file);
+	error_message["line"] = itos(p_line);
+	error_message["code"] = String(p_code);
+	error_message["rationale"] = String(p_rationale);
+
+	if (error_buffer.size() >= buffer_size) {
+		error_buffer.pop_front();
+		error_buffer.pop_front();
+		error_buffer.push_back(error_message);
+		WARN_PRINT("Maximum size of buffered error log has been exceeded. Discarding error messages.");
+	} else {
+		error_buffer.push_back(error_message);
+	}
+
+	if (Engine::get_singleton()->has_singleton("Engine")) {
+		Engine::get_singleton()->get_singleton_object("Engine")->emit_signal("error_message", error_buffer.size());
+	}
+}
