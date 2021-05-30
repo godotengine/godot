@@ -313,7 +313,8 @@ TEST_CASE("[Modules][DataBuffer] Vector2") {
 #ifdef REAL_T_IS_DOUBLE
 		const Vector2 value = Vector2(values[i], values[i]);
 #else
-		const Vector2 value = Vector2(CLAMP(values[i], -FLT_MIN, FLT_MAX), CLAMP(values[i], -FLT_MIN, FLT_MAX));
+		const real_t clamped_value = CLAMP(values[i], -FLT_MIN, FLT_MAX);
+		const Vector2 value = Vector2(clamped_value, clamped_value);
 #endif
 		buffer.begin_write(0);
 		const Vector2 added_value = buffer.add_vector2(value, compression_level);
@@ -353,7 +354,8 @@ TEST_CASE("[Modules][DataBuffer] Vector3") {
 #ifdef REAL_T_IS_DOUBLE
 		const Vector3 value = Vector3(values[i], values[i], values[i]);
 #else
-		const Vector3 value = Vector3(CLAMP(values[i], -FLT_MIN, FLT_MAX), CLAMP(values[i], -FLT_MIN, FLT_MAX), CLAMP(values[i], -FLT_MIN, FLT_MAX));
+		const real_t clamped_value = CLAMP(values[i], -FLT_MIN, FLT_MAX);
+		const Vector3 value = Vector3(clamped_value, clamped_value, clamped_value);
 #endif
 		buffer.begin_write(0);
 		const Vector3 added_value = buffer.add_vector3(value, compression_level);
