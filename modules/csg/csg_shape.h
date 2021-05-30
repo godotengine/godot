@@ -34,6 +34,7 @@
 #define CSGJS_HEADER_ONLY
 
 #include "csg.h"
+#include "scene/3d/path.h"
 #include "scene/3d/visual_instance.h"
 #include "scene/resources/concave_polygon_shape.h"
 #include "thirdparty/misc/mikktspace.h"
@@ -170,10 +171,8 @@ public:
 class CSGPrimitive : public CSGShape {
 	GDCLASS(CSGPrimitive, CSGShape);
 
-private:
-	bool invert_faces;
-
 protected:
+	bool invert_faces;
 	CSGBrush *_create_brush_from_arrays(const PoolVector<Vector3> &p_vertices, const PoolVector<Vector2> &p_uv, const PoolVector<bool> &p_smooth, const PoolVector<Ref<Material>> &p_materials);
 	static void _bind_methods();
 
@@ -371,7 +370,7 @@ private:
 	PathRotation path_rotation;
 	bool path_local;
 
-	Node *path_cache;
+	Path *path;
 
 	bool smooth_faces;
 	bool path_continuous_u;
