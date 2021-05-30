@@ -1407,9 +1407,11 @@ TileSet::TileSet() {
 }
 
 TileSet::~TileSet() {
+#ifndef DISABLE_DEPRECATED
 	for (Map<int, CompatibilityTileData *>::Element *E = compatibility_data.front(); E; E = E->next()) {
 		memdelete(E->get());
 	}
+#endif // DISABLE_DEPRECATED
 	while (!source_ids.is_empty()) {
 		remove_source(source_ids[0]);
 	}
