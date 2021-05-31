@@ -375,17 +375,19 @@ bool HTTPRequest::_update_connection() {
 			}
 
 			PackedByteArray chunk = client->read_response_body_chunk();
-			downloaded.add(chunk.size());
 
-			if (file) {
-				const uint8_t *r = chunk.ptr();
-				file->store_buffer(r, chunk.size());
-				if (file->get_error() != OK) {
-					call_deferred("_request_done", RESULT_DOWNLOAD_FILE_WRITE_ERROR, response_code, response_headers, PackedByteArray());
-					return true;
+			if (chunk.size()) {
+				downloaded.add(chunk.size());
+				if (file) {
+					const uint8_t *r = chunk.ptr();
+					file->store_buffer(r, chunk.size());
+					if (file->get_error() != OK) {
+						call_deferred("_request_done", RESULT_DOWNLOAD_FILE_WRITE_ERROR, response_code, response_headers, PackedByteArray());
+						return true;
+					}
+				} else {
+					body.append_array(chunk);
 				}
-			} else {
-				body.append_array(chunk);
 			}
 
 			if (body_size_limit >= 0 && downloaded.get() > body_size_limit) {
