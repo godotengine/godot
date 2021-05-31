@@ -460,7 +460,7 @@ uint64_t DirAccessUnix::get_space_left() {
 		return 0;
 	};
 
-	return vfs.f_bfree * vfs.f_bsize;
+	return (uint64_t)vfs.f_bavail * (uint64_t)vfs.f_frsize;
 #else
 	// FIXME: Implement this.
 	return 0;
