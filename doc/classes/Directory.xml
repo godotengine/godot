@@ -154,14 +154,14 @@
 		<method name="list_dir_begin">
 			<return type="int" enum="Error">
 			</return>
-			<argument index="0" name="skip_navigational" type="bool" default="false">
+			<argument index="0" name="show_navigational" type="bool" default="false">
 			</argument>
-			<argument index="1" name="skip_hidden" type="bool" default="false">
+			<argument index="1" name="show_hidden" type="bool" default="false">
 			</argument>
 			<description>
 				Initializes the stream used to list all files and directories using the [method get_next] function, closing the current opened stream if needed. Once the stream has been processed, it should typically be closed with [method list_dir_end].
-				If [code]skip_navigational[/code] is [code]true[/code], [code].[/code] and [code]..[/code] are filtered out.
-				If [code]skip_hidden[/code] is [code]true[/code], hidden files are filtered out.
+				If [code]show_navigational[/code] is [code]true[/code], [code].[/code] and [code]..[/code] are included too.
+				If [code]show_hidden[/code] is [code]true[/code], hidden files are included too.
 			</description>
 		</method>
 		<method name="list_dir_end">
