@@ -312,8 +312,11 @@ void DynamicBVH::optimize_incremental(int passes) {
 	if (passes < 0) {
 		passes = total_leaves;
 	}
-	if (bvh_root && (passes > 0)) {
+	if (passes > 0) {
 		do {
+			if (!bvh_root) {
+				break;
+			}
 			Node *node = bvh_root;
 			unsigned bit = 0;
 			while (node->is_internal()) {
