@@ -212,6 +212,8 @@ ScriptInstance *PluginScript::instance_create(Object *p_this) {
 }
 
 bool PluginScript::instance_has(const Object *p_this) const {
+	ERR_FAIL_COND_V(!_language, false);
+
 	_language->lock();
 	bool hasit = _instances.has((Object *)p_this);
 	_language->unlock();
