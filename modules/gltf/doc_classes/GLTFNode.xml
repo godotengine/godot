@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="GLTFNode" inherits="Resource" version="3.4">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+	</methods>
+	<members>
+		<member name="camera" type="int" setter="set_camera" getter="get_camera" default="-1">
+		</member>
+		<member name="children" type="PoolIntArray" setter="set_children" getter="get_children" default="PoolIntArray(  )">
+		</member>
+		<member name="height" type="int" setter="set_height" getter="get_height" default="-1">
+		</member>
+		<member name="joint" type="bool" setter="set_joint" getter="get_joint" default="false">
+		</member>
+		<member name="light" type="int" setter="set_light" getter="get_light" default="-1">
+		</member>
+		<member name="mesh" type="int" setter="set_mesh" getter="get_mesh" default="-1">
+		</member>
+		<member name="parent" type="int" setter="set_parent" getter="get_parent" default="-1">
+		</member>
+		<member name="rotation" type="Quat" setter="set_rotation" getter="get_rotation" default="Quat( 0, 0, 0, 1 )">
+		</member>
+		<member name="scale" type="Vector3" setter="set_scale" getter="get_scale" default="Vector3( 1, 1, 1 )">
+		</member>
+		<member name="skeleton" type="int" setter="set_skeleton" getter="get_skeleton" default="-1">
+		</member>
+		<member name="skin" type="int" setter="set_skin" getter="get_skin" default="-1">
+		</member>
+		<member name="translation" type="Vector3" setter="set_translation" getter="get_translation" default="Vector3( 0, 0, 0 )">
+		</member>
+		<member name="xform" type="Transform" setter="set_xform" getter="get_xform" default="Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0 )">
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>
