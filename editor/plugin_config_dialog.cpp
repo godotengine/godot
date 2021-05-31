@@ -214,6 +214,7 @@ PluginConfigDialog::PluginConfigDialog() {
 
 	desc_edit = memnew(TextEdit);
 	desc_edit->set_custom_minimum_size(Size2(400, 80) * EDSCALE);
+	desc_edit->set_wrap_enabled(true);
 	grid->add_child(desc_edit);
 
 	Label *author_lb = memnew(Label);
