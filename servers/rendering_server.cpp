@@ -2306,6 +2306,12 @@ RenderingServer::RenderingServer() {
 					"rendering/vulkan/rendering/back_end",
 					PROPERTY_HINT_ENUM, "ForwardClustered,ForwardMobile"));
 
+	GLOBAL_DEF("rendering/shader_compiler/shader_cache/enabled", true);
+	GLOBAL_DEF("rendering/shader_compiler/shader_cache/compress", true);
+	GLOBAL_DEF("rendering/shader_compiler/shader_cache/use_zstd_compression", true);
+	GLOBAL_DEF("rendering/shader_compiler/shader_cache/strip_debug", false);
+	GLOBAL_DEF("rendering/shader_compiler/shader_cache/strip_debug.release", true);
+
 	GLOBAL_DEF("rendering/reflections/sky_reflections/roughness_layers", 8);
 	GLOBAL_DEF("rendering/reflections/sky_reflections/texture_array_reflections", true);
 	GLOBAL_DEF("rendering/reflections/sky_reflections/texture_array_reflections.mobile", false);

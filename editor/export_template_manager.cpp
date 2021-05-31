@@ -444,7 +444,7 @@ void ExportTemplateManager::_begin_template_download(const String &p_url) {
 	}
 
 	download_data.clear();
-	download_templates->set_download_file(EditorSettings::get_singleton()->get_cache_dir().plus_file("tmp_templates.tpz"));
+	download_templates->set_download_file(EditorPaths::get_singleton()->get_cache_dir().plus_file("tmp_templates.tpz"));
 	download_templates->set_use_threads(true);
 
 	Error err = download_templates->request(p_url);

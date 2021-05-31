@@ -36,6 +36,7 @@
 #include "core/object/class_db.h"
 #include "core/os/thread_safe.h"
 #include "core/string/translation.h"
+#include "editor/editor_paths.h"
 #include "scene/gui/shortcut.h"
 
 class EditorPlugin;
@@ -87,12 +88,7 @@ private:
 	mutable Map<String, Ref<Shortcut>> shortcuts;
 	Map<String, List<Ref<InputEvent>>> builtin_action_overrides;
 
-	String resource_path;
-	String settings_dir;
-	String data_dir;
-	String cache_dir;
 	String config_file_path;
-	String project_config_dir;
 
 	Vector<String> favorites;
 	Vector<String> recent_dirs;
@@ -153,12 +149,10 @@ public:
 
 	String get_data_dir() const;
 	String get_templates_dir() const;
-	String get_settings_dir() const;
 	String get_project_settings_dir() const;
 	String get_text_editor_themes_dir() const;
 	String get_script_templates_dir() const;
 	String get_project_script_templates_dir() const;
-	String get_cache_dir() const;
 	String get_feature_profiles_dir() const;
 
 	void set_project_metadata(const String &p_section, const String &p_key, Variant p_data);
