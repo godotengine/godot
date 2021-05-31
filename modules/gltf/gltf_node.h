@@ -53,7 +53,6 @@ private:
 	Quat rotation;
 	Vector3 scale = Vector3(1, 1, 1);
 	Vector<int> children;
-	GLTFNodeIndex fake_joint_parent = -1;
 	GLTFLightIndex light = -1;
 
 protected:
@@ -95,9 +94,6 @@ public:
 
 	Vector<int> get_children();
 	void set_children(Vector<int> p_children);
-
-	GLTFNodeIndex get_fake_joint_parent();
-	void set_fake_joint_parent(GLTFNodeIndex p_fake_joint_parent);
 
 	GLTFLightIndex get_light();
 	void set_light(GLTFLightIndex p_light);
