@@ -1454,8 +1454,6 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 				gui.mouse_focus_mask |= mouse_button_to_mask(mb->get_button_index());
 			} else {
 				gui.mouse_focus = gui_find_control(pos);
-				gui.last_mouse_focus = gui.mouse_focus;
-
 				if (!gui.mouse_focus) {
 					gui.mouse_focus_mask = MouseButton::NONE;
 					return;
@@ -1884,19 +1882,24 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 					}
 					touch_event->set_position(pos);
 					stopped = _gui_call_input(over, touch_event);
+					_gui_set_touch_focus(touch_event->get_index(), over);
 				}
 				if (stopped) {
 					set_input_as_handled();
 				}
 				return;
 			}
-		} else if (touch_event->get_index() == 0 && gui.last_mouse_focus) {
+		} else {
+			Control *last_control = _gui_get_touch_focus(touch_event->get_index());
 			bool stopped = false;
-			if (gui.last_mouse_focus->can_process()) {
-				touch_event = touch_event->xformed_by(Transform2D()); // Make a copy.
-				touch_event->set_position(gui.focus_inv_xform.xform(pos));
-
-				stopped = _gui_call_input(gui.last_mouse_focus, touch_event);
+			if (last_control && last_control->can_process()) {
+				touch_event = touch_event->xformed_by(Transform2D()); // Make a copy
+				if (last_control == gui.mouse_focus) {
+					touch_event->set_position(gui.focus_inv_xform.xform(pos));
+				} else {
+					touch_event->set_position(last_control->get_global_transform_with_canvas().affine_inverse().xform(pos));
+				}
+				stopped = _gui_call_input(last_control, touch_event);
 			}
 			if (stopped) {
 				set_input_as_handled();
@@ -1935,7 +1938,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 
 	Ref<InputEventScreenDrag> drag_event = p_event;
 	if (drag_event.is_valid()) {
-		Control *over = gui.mouse_focus;
+		Control *over = _gui_get_touch_focus(drag_event->get_index());
 		if (!over) {
 			over = gui_find_control(drag_event->get_position());
 		}
@@ -2144,8 +2147,9 @@ void Viewport::_gui_remove_control(Control *p_control) {
 		gui.forced_mouse_focus = false;
 		gui.mouse_focus_mask = MouseButton::NONE;
 	}
-	if (gui.last_mouse_focus == p_control) {
-		gui.last_mouse_focus = nullptr;
+	int index = _gui_has_touch_focus(p_control);
+	if (index != -1) {
+		_gui_clear_touch_focus(index);
 	}
 	if (gui.key_focus == p_control) {
 		gui.key_focus = nullptr;
@@ -3139,6 +3143,47 @@ Viewport::SDFScale Viewport::get_sdf_scale() const {
 
 Transform2D Viewport::get_screen_transform() const {
 	return _get_input_pre_xform().affine_inverse() * get_final_transform();
+}
+
+void Viewport::_gui_set_touch_focus(int p_index, Control *p_control) {
+	for (int i = 0; i < gui.touch_focuses.size(); i++) {
+		if (gui.touch_focuses[i].index == p_index) {
+			gui.touch_focuses.write[i].control = p_control;
+			return;
+		}
+	}
+
+	TouchFocus state;
+	state.index = p_index;
+	state.control = p_control;
+	gui.touch_focuses.push_back(state);
+}
+
+void Viewport::_gui_clear_touch_focus(int p_index) {
+	for (int i = 0; i < gui.touch_focuses.size(); i++) {
+		if (gui.touch_focuses[i].index == p_index) {
+			gui.touch_focuses.remove_at(i);
+			return;
+		}
+	}
+}
+
+Control *Viewport::_gui_get_touch_focus(int p_index) {
+	for (int i = 0; i < gui.touch_focuses.size(); i++) {
+		if (gui.touch_focuses[i].index == p_index) {
+			return gui.touch_focuses[i].control;
+		}
+	}
+	return nullptr;
+}
+
+int Viewport::_gui_has_touch_focus(Control *p_control) {
+	for (int i = 0; i < gui.touch_focuses.size(); i++) {
+		if (gui.touch_focuses[i].control == p_control) {
+			return gui.touch_focuses[i].index;
+		}
+	}
+	return -1;
 }
 
 #ifndef _3D_DISABLED
