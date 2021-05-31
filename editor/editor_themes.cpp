@@ -329,16 +329,18 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 		preset_contrast = default_contrast;
 	} else if (preset == "Light") {
 		preset_accent_color = Color(0.18, 0.50, 1.00);
-		preset_base_color = Color(1.00, 1.00, 1.00);
-		preset_contrast = 0.08;
+		preset_base_color = Color(0.9, 0.9, 0.9);
+		// A negative contrast rate looks better for light themes, since it better follows the natural order of UI "elevation".
+		preset_contrast = -0.08;
 	} else if (preset == "Solarized (Dark)") {
 		preset_accent_color = Color(0.15, 0.55, 0.82);
 		preset_base_color = Color(0.04, 0.23, 0.27);
 		preset_contrast = default_contrast;
 	} else if (preset == "Solarized (Light)") {
 		preset_accent_color = Color(0.15, 0.55, 0.82);
-		preset_base_color = Color(0.99, 0.96, 0.89);
-		preset_contrast = 0.08;
+		preset_base_color = Color(0.89, 0.86, 0.79);
+		// A negative contrast rate looks better for light themes, since it better follows the natural order of UI "elevation".
+		preset_contrast = -0.08;
 	} else { // Default
 		preset_accent_color = Color(0.44, 0.73, 0.98);
 		preset_base_color = Color(0.21, 0.24, 0.29);
@@ -1355,7 +1357,8 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	const Color comment_color = dim_color;
 	const Color string_color = (dark_theme ? Color(1.0, 0.85, 0.26) : Color(1.0, 0.82, 0.09)).lerp(mono_color, dark_theme ? 0.5 : 0.3);
 
-	const Color te_background_color = dark_theme ? background_color : base_color;
+	// Use the brightest background color on a light theme (which generally uses a negative contrast rate).
+	const Color te_background_color = dark_theme ? background_color : dark_color_3;
 	const Color completion_background_color = dark_theme ? base_color : background_color;
 	const Color completion_selected_color = alpha1;
 	const Color completion_existing_color = alpha2;
