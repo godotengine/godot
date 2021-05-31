@@ -164,40 +164,6 @@ void Interpolator::end_write() {
 	write_position = UINT32_MAX;
 }
 
-Variant interpolate(const Variant &p_v1, const Variant &p_v2, real_t p_delta) {
-	ERR_FAIL_COND_V(p_v1.get_type() != p_v2.get_type(), p_v1);
-
-	switch (p_v1.get_type()) {
-		case Variant::Type::INT:
-			return int(Math::round(Math::lerp(p_v1.operator real_t(), p_v2.operator real_t(), p_delta)));
-		case Variant::Type::FLOAT:
-			return Math::lerp(p_v1, p_v2, p_delta);
-		case Variant::Type::VECTOR2:
-			return p_v1.operator Vector2().lerp(p_v2.operator Vector2(), p_delta);
-		case Variant::Type::VECTOR2I:
-			return Vector2i(
-					int(Math::round(Math::lerp(p_v1.operator Vector2i()[0], p_v2.operator Vector2i()[0], p_delta))),
-					int(Math::round(Math::lerp(p_v1.operator Vector2i()[1], p_v2.operator Vector2i()[1], p_delta))));
-		case Variant::Type::TRANSFORM2D:
-			return p_v1.operator Transform2D().interpolate_with(p_v2.operator Transform2D(), p_delta);
-		case Variant::Type::VECTOR3:
-			return p_v1.operator Vector3().lerp(p_v2.operator Vector3(), p_delta);
-		case Variant::Type::VECTOR3I:
-			return Vector3i(
-					int(Math::round(Math::lerp(p_v1.operator Vector3i()[0], p_v2.operator Vector3i()[0], p_delta))),
-					int(Math::round(Math::lerp(p_v1.operator Vector3i()[1], p_v2.operator Vector3i()[1], p_delta))),
-					int(Math::round(Math::lerp(p_v1.operator Vector3i()[2], p_v2.operator Vector3i()[2], p_delta))));
-		case Variant::Type::QUAT:
-			return p_v1.operator Quat().slerp(p_v2.operator Quat(), p_delta);
-		case Variant::Type::BASIS:
-			return p_v1.operator Basis().slerp(p_v2.operator Basis(), p_delta);
-		case Variant::Type::TRANSFORM:
-			return p_v1.operator Transform().interpolate_with(p_v2.operator Transform(), p_delta);
-		default:
-			return p_delta > 0.5 ? p_v2 : p_v1;
-	}
-}
-
 Vector<Variant> Interpolator::pop_epoch(uint32_t p_epoch, real_t p_fraction) {
 	ERR_FAIL_COND_V_MSG(init_phase, Vector<Variant>(), "You can't pop data if the interpolator is not fully initialized.");
 	ERR_FAIL_COND_V_MSG(write_position != UINT32_MAX, Vector<Variant>(), "You can't pop data while writing the epoch");
@@ -412,4 +378,38 @@ uint32_t Interpolator::epochs_between_last_time_window() const {
 	}
 
 	return epochs[epochs.size() - 1] - epochs[epochs.size() - 2];
+}
+
+Variant Interpolator::interpolate(const Variant &p_v1, const Variant &p_v2, real_t p_delta) {
+	ERR_FAIL_COND_V(p_v1.get_type() != p_v2.get_type(), p_v1);
+
+	switch (p_v1.get_type()) {
+		case Variant::Type::INT:
+			return int(Math::round(Math::lerp(p_v1.operator real_t(), p_v2.operator real_t(), p_delta)));
+		case Variant::Type::FLOAT:
+			return Math::lerp(p_v1, p_v2, p_delta);
+		case Variant::Type::VECTOR2:
+			return p_v1.operator Vector2().lerp(p_v2.operator Vector2(), p_delta);
+		case Variant::Type::VECTOR2I:
+			return Vector2i(
+					int(Math::round(Math::lerp(p_v1.operator Vector2i()[0], p_v2.operator Vector2i()[0], p_delta))),
+					int(Math::round(Math::lerp(p_v1.operator Vector2i()[1], p_v2.operator Vector2i()[1], p_delta))));
+		case Variant::Type::TRANSFORM2D:
+			return p_v1.operator Transform2D().interpolate_with(p_v2.operator Transform2D(), p_delta);
+		case Variant::Type::VECTOR3:
+			return p_v1.operator Vector3().lerp(p_v2.operator Vector3(), p_delta);
+		case Variant::Type::VECTOR3I:
+			return Vector3i(
+					int(Math::round(Math::lerp(p_v1.operator Vector3i()[0], p_v2.operator Vector3i()[0], p_delta))),
+					int(Math::round(Math::lerp(p_v1.operator Vector3i()[1], p_v2.operator Vector3i()[1], p_delta))),
+					int(Math::round(Math::lerp(p_v1.operator Vector3i()[2], p_v2.operator Vector3i()[2], p_delta))));
+		case Variant::Type::QUAT:
+			return p_v1.operator Quat().slerp(p_v2.operator Quat(), p_delta);
+		case Variant::Type::BASIS:
+			return p_v1.operator Basis().slerp(p_v2.operator Basis(), p_delta);
+		case Variant::Type::TRANSFORM:
+			return p_v1.operator Transform().interpolate_with(p_v2.operator Transform(), p_delta);
+		default:
+			return p_delta > 0.5 ? p_v2 : p_v1;
+	}
 }

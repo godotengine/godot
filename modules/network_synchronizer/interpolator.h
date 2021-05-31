@@ -96,6 +96,8 @@ public:
 
 	/// Returns the epochs count between the two last received time window.
 	uint32_t epochs_between_last_time_window() const;
+
+	static Variant interpolate(const Variant &p_v1, const Variant &p_v2, real_t p_delta);
 };
 
 VARIANT_ENUM_CAST(Interpolator::Fallback);
