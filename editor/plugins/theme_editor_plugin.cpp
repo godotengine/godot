@@ -756,7 +756,9 @@ void ThemeItemImportTree::_import_selected() {
 		return;
 	}
 
-	ProgressDialog::get_singleton()->add_task("import_theme_items", TTR("Importing Theme Items"), selected_items.size());
+	// Prevent changes from immediatelly being reported while the operation is still ongoing.
+	edited_theme->_freeze_change_propagation();
+	ProgressDialog::get_singleton()->add_task("import_theme_items", TTR("Importing Theme Items"), selected_items.size() + 2);
 
 	int idx = 0;
 	for (Map<ThemeItem, ItemCheckedState>::Element *E = selected_items.front(); E; E = E->next()) {
@@ -813,6 +815,12 @@ void ThemeItemImportTree::_import_selected() {
 
 		idx++;
 	}
+
+	// Allow changes to be reported now that the operation is finished.
+	ProgressDialog::get_singleton()->task_step("import_theme_items", TTR("Updating the editor"), idx++);
+	edited_theme->_unfreeze_and_propagate_changes();
+	// Make sure the task is not ended before the editor freezes to update the Inspector.
+	ProgressDialog::get_singleton()->task_step("import_theme_items", TTR("Finalizing"), idx++);
 
 	ProgressDialog::get_singleton()->end_task("import_theme_items");
 	emit_signal("items_imported");
@@ -1488,14 +1496,23 @@ void ThemeItemEditorDialog::_add_theme_item(Theme::DataType p_data_type, String 
 void ThemeItemEditorDialog::_remove_data_type_items(Theme::DataType p_data_type, String p_item_type) {
 	List<StringName> names;
 
+	// Prevent changes from immediatelly being reported while the operation is still ongoing.
+	edited_theme->_freeze_change_propagation();
+
 	edited_theme->get_theme_item_list(p_data_type, p_item_type, &names);
 	for (List<StringName>::Element *E = names.front(); E; E = E->next()) {
 		edited_theme->clear_theme_item(p_data_type, E->get(), p_item_type);
 	}
+
+	// Allow changes to be reported now that the operation is finished.
+	edited_theme->_unfreeze_and_propagate_changes();
 }
 
 void ThemeItemEditorDialog::_remove_class_items() {
 	List<StringName> names;
+
+	// Prevent changes from immediatelly being reported while the operation is still ongoing.
+	edited_theme->_freeze_change_propagation();
 
 	for (int dt = 0; dt < Theme::DATA_TYPE_MAX; dt++) {
 		Theme::DataType data_type = (Theme::DataType)dt;
@@ -1509,11 +1526,17 @@ void ThemeItemEditorDialog::_remove_class_items() {
 		}
 	}
 
+	// Allow changes to be reported now that the operation is finished.
+	edited_theme->_unfreeze_and_propagate_changes();
+
 	_update_edit_item_tree(edited_item_type);
 }
 
 void ThemeItemEditorDialog::_remove_custom_items() {
 	List<StringName> names;
+
+	// Prevent changes from immediatelly being reported while the operation is still ongoing.
+	edited_theme->_freeze_change_propagation();
 
 	for (int dt = 0; dt < Theme::DATA_TYPE_MAX; dt++) {
 		Theme::DataType data_type = (Theme::DataType)dt;
@@ -1527,11 +1550,17 @@ void ThemeItemEditorDialog::_remove_custom_items() {
 		}
 	}
 
+	// Allow changes to be reported now that the operation is finished.
+	edited_theme->_unfreeze_and_propagate_changes();
+
 	_update_edit_item_tree(edited_item_type);
 }
 
 void ThemeItemEditorDialog::_remove_all_items() {
 	List<StringName> names;
+
+	// Prevent changes from immediatelly being reported while the operation is still ongoing.
+	edited_theme->_freeze_change_propagation();
 
 	for (int dt = 0; dt < Theme::DATA_TYPE_MAX; dt++) {
 		Theme::DataType data_type = (Theme::DataType)dt;
@@ -1542,6 +1571,9 @@ void ThemeItemEditorDialog::_remove_all_items() {
 			edited_theme->clear_theme_item(data_type, E->get(), edited_item_type);
 		}
 	}
+
+	// Allow changes to be reported now that the operation is finished.
+	edited_theme->_unfreeze_and_propagate_changes();
 
 	_update_edit_item_tree(edited_item_type);
 }
