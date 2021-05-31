@@ -104,7 +104,7 @@ private:
 	void _add_property_info_bind(const Dictionary &p_info);
 
 	void _load_defaults(Ref<ConfigFile> p_extra_config = Ref<ConfigFile>());
-	void _load_default_text_editor_theme();
+	void _load_godot2_text_editor_theme();
 	bool _save_text_editor_theme(String p_file);
 	bool _is_default_text_editor_theme(String p_theme_name);
 
