@@ -302,7 +302,7 @@ void FindReplaceBar::_replace_all() {
 	matches_label->add_theme_color_override("font_color", rc > 0 ? get_theme_color("font_color", "Label") : get_theme_color("error_color", "Editor"));
 	matches_label->set_text(vformat(TTR("%d replaced."), rc));
 
-	text_editor->call_deferred("connect", "text_changed", Callable(this, "_editor_text_changed"));
+	text_editor->call_deferred("connect", "text_changed", callable_mp(this, &FindReplaceBar::_editor_text_changed));
 	results_count = -1;
 }
 
