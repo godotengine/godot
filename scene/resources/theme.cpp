@@ -33,6 +33,11 @@
 #include "core/string/print_string.h"
 
 void Theme::_emit_theme_changed() {
+	if (no_change_propagation) {
+		return;
+	}
+
+	notify_property_list_changed();
 	emit_changed();
 }
 
@@ -415,8 +420,7 @@ void Theme::set_default_theme_font(const Ref<Font> &p_default_font) {
 		default_theme_font->connect("changed", callable_mp(this, &Theme::_emit_theme_changed), varray(), CONNECT_REFERENCE_COUNTED);
 	}
 
-	notify_property_list_changed();
-	emit_changed();
+	_emit_theme_changed();
 }
 
 Ref<Font> Theme::get_default_theme_font() const {
@@ -430,8 +434,7 @@ void Theme::set_default_theme_font_size(int p_font_size) {
 
 	default_theme_font_size = p_font_size;
 
-	notify_property_list_changed();
-	emit_changed();
+	_emit_theme_changed();
 }
 
 int Theme::get_default_theme_font_size() const {
@@ -478,8 +481,6 @@ void Theme::set_default_font_size(int p_font_size) {
 }
 
 void Theme::set_icon(const StringName &p_name, const StringName &p_theme_type, const Ref<Texture2D> &p_icon) {
-	bool new_value = !icon_map.has(p_theme_type) || !icon_map[p_theme_type].has(p_name);
-
 	if (icon_map[p_theme_type].has(p_name) && icon_map[p_theme_type][p_name].is_valid()) {
 		icon_map[p_theme_type][p_name]->disconnect("changed", callable_mp(this, &Theme::_emit_theme_changed));
 	}
@@ -490,10 +491,7 @@ void Theme::set_icon(const StringName &p_name, const StringName &p_theme_type, c
 		icon_map[p_theme_type][p_name]->connect("changed", callable_mp(this, &Theme::_emit_theme_changed), varray(), CONNECT_REFERENCE_COUNTED);
 	}
 
-	if (new_value) {
-		notify_property_list_changed();
-		emit_changed();
-	}
+	_emit_theme_changed();
 }
 
 Ref<Texture2D> Theme::get_icon(const StringName &p_name, const StringName &p_theme_type) const {
@@ -520,8 +518,7 @@ void Theme::rename_icon(const StringName &p_old_name, const StringName &p_name, 
 	icon_map[p_theme_type][p_name] = icon_map[p_theme_type][p_old_name];
 	icon_map[p_theme_type].erase(p_old_name);
 
-	notify_property_list_changed();
-	emit_changed();
+	_emit_theme_changed();
 }
 
 void Theme::clear_icon(const StringName &p_name, const StringName &p_theme_type) {
@@ -534,8 +531,7 @@ void Theme::clear_icon(const StringName &p_name, const StringName &p_theme_type)
 
 	icon_map[p_theme_type].erase(p_name);
 
-	notify_property_list_changed();
-	emit_changed();
+	_emit_theme_changed();
 }
 
 void Theme::get_icon_list(StringName p_theme_type, List<StringName> *p_list) const {
@@ -566,8 +562,6 @@ void Theme::get_icon_type_list(List<StringName> *p_list) const {
 }
 
 void Theme::set_stylebox(const StringName &p_name, const StringName &p_theme_type, const Ref<StyleBox> &p_style) {
-	bool new_value = !style_map.has(p_theme_type) || !style_map[p_theme_type].has(p_name);
-
 	if (style_map[p_theme_type].has(p_name) && style_map[p_theme_type][p_name].is_valid()) {
 		style_map[p_theme_type][p_name]->disconnect("changed", callable_mp(this, &Theme::_emit_theme_changed));
 	}
@@ -578,10 +572,7 @@ void Theme::set_stylebox(const StringName &p_name, const StringName &p_theme_typ
 		style_map[p_theme_type][p_name]->connect("changed", callable_mp(this, &Theme::_emit_theme_changed), varray(), CONNECT_REFERENCE_COUNTED);
 	}
 
-	if (new_value) {
-		notify_property_list_changed();
-	}
-	emit_changed();
+	_emit_theme_changed();
 }
 
 Ref<StyleBox> Theme::get_stylebox(const StringName &p_name, const StringName &p_theme_type) const {
@@ -608,8 +599,7 @@ void Theme::rename_stylebox(const StringName &p_old_name, const StringName &p_na
 	style_map[p_theme_type][p_name] = style_map[p_theme_type][p_old_name];
 	style_map[p_theme_type].erase(p_old_name);
 
-	notify_property_list_changed();
-	emit_changed();
+	_emit_theme_changed();
 }
 
 void Theme::clear_stylebox(const StringName &p_name, const StringName &p_theme_type) {
@@ -622,8 +612,7 @@ void Theme::clear_stylebox(const StringName &p_name, const StringName &p_theme_t
 
 	style_map[p_theme_type].erase(p_name);
 
-	notify_property_list_changed();
-	emit_changed();
+	_emit_theme_changed();
 }
 
 void Theme::get_stylebox_list(StringName p_theme_type, List<StringName> *p_list) const {
@@ -654,8 +643,6 @@ void Theme::get_stylebox_type_list(List<StringName> *p_list) const {
 }
 
 void Theme::set_font(const StringName &p_name, const StringName &p_theme_type, const Ref<Font> &p_font) {
-	bool new_value = !font_map.has(p_theme_type) || !font_map[p_theme_type].has(p_name);
-
 	if (font_map[p_theme_type][p_name].is_valid()) {
 		font_map[p_theme_type][p_name]->disconnect("changed", callable_mp(this, &Theme::_emit_theme_changed));
 	}
@@ -666,10 +653,7 @@ void Theme::set_font(const StringName &p_name, const StringName &p_theme_type, c
 		font_map[p_theme_type][p_name]->connect("changed", callable_mp(this, &Theme::_emit_theme_changed), varray(), CONNECT_REFERENCE_COUNTED);
 	}
 
-	if (new_value) {
-		notify_property_list_changed();
-		emit_changed();
-	}
+	_emit_theme_changed();
 }
 
 Ref<Font> Theme::get_font(const StringName &p_name, const StringName &p_theme_type) const {
@@ -698,8 +682,7 @@ void Theme::rename_font(const StringName &p_old_name, const StringName &p_name, 
 	font_map[p_theme_type][p_name] = font_map[p_theme_type][p_old_name];
 	font_map[p_theme_type].erase(p_old_name);
 
-	notify_property_list_changed();
-	emit_changed();
+	_emit_theme_changed();
 }
 
 void Theme::clear_font(const StringName &p_name, const StringName &p_theme_type) {
@@ -711,8 +694,8 @@ void Theme::clear_font(const StringName &p_name, const StringName &p_theme_type)
 	}
 
 	font_map[p_theme_type].erase(p_name);
-	notify_property_list_changed();
-	emit_changed();
+
+	_emit_theme_changed();
 }
 
 void Theme::get_font_list(StringName p_theme_type, List<StringName> *p_list) const {
@@ -743,14 +726,9 @@ void Theme::get_font_type_list(List<StringName> *p_list) const {
 }
 
 void Theme::set_font_size(const StringName &p_name, const StringName &p_theme_type, int p_font_size) {
-	bool new_value = !font_size_map.has(p_theme_type) || !font_size_map[p_theme_type].has(p_name);
-
 	font_size_map[p_theme_type][p_name] = p_font_size;
 
-	if (new_value) {
-		notify_property_list_changed();
-		emit_changed();
-	}
+	_emit_theme_changed();
 }
 
 int Theme::get_font_size(const StringName &p_name, const StringName &p_theme_type) const {
@@ -779,8 +757,7 @@ void Theme::rename_font_size(const StringName &p_old_name, const StringName &p_n
 	font_size_map[p_theme_type][p_name] = font_size_map[p_theme_type][p_old_name];
 	font_size_map[p_theme_type].erase(p_old_name);
 
-	notify_property_list_changed();
-	emit_changed();
+	_emit_theme_changed();
 }
 
 void Theme::clear_font_size(const StringName &p_name, const StringName &p_theme_type) {
@@ -788,8 +765,8 @@ void Theme::clear_font_size(const StringName &p_name, const StringName &p_theme_
 	ERR_FAIL_COND_MSG(!font_size_map[p_theme_type].has(p_name), "Cannot clear the font size '" + String(p_name) + "' because it does not exist.");
 
 	font_size_map[p_theme_type].erase(p_name);
-	notify_property_list_changed();
-	emit_changed();
+
+	_emit_theme_changed();
 }
 
 void Theme::get_font_size_list(StringName p_theme_type, List<StringName> *p_list) const {
@@ -820,14 +797,9 @@ void Theme::get_font_size_type_list(List<StringName> *p_list) const {
 }
 
 void Theme::set_color(const StringName &p_name, const StringName &p_theme_type, const Color &p_color) {
-	bool new_value = !color_map.has(p_theme_type) || !color_map[p_theme_type].has(p_name);
-
 	color_map[p_theme_type][p_name] = p_color;
 
-	if (new_value) {
-		notify_property_list_changed();
-		emit_changed();
-	}
+	_emit_theme_changed();
 }
 
 Color Theme::get_color(const StringName &p_name, const StringName &p_theme_type) const {
@@ -854,8 +826,7 @@ void Theme::rename_color(const StringName &p_old_name, const StringName &p_name,
 	color_map[p_theme_type][p_name] = color_map[p_theme_type][p_old_name];
 	color_map[p_theme_type].erase(p_old_name);
 
-	notify_property_list_changed();
-	emit_changed();
+	_emit_theme_changed();
 }
 
 void Theme::clear_color(const StringName &p_name, const StringName &p_theme_type) {
@@ -863,8 +834,8 @@ void Theme::clear_color(const StringName &p_name, const StringName &p_theme_type
 	ERR_FAIL_COND_MSG(!color_map[p_theme_type].has(p_name), "Cannot clear the color '" + String(p_name) + "' because it does not exist.");
 
 	color_map[p_theme_type].erase(p_name);
-	notify_property_list_changed();
-	emit_changed();
+
+	_emit_theme_changed();
 }
 
 void Theme::get_color_list(StringName p_theme_type, List<StringName> *p_list) const {
@@ -895,13 +866,9 @@ void Theme::get_color_type_list(List<StringName> *p_list) const {
 }
 
 void Theme::set_constant(const StringName &p_name, const StringName &p_theme_type, int p_constant) {
-	bool new_value = !constant_map.has(p_theme_type) || !constant_map[p_theme_type].has(p_name);
 	constant_map[p_theme_type][p_name] = p_constant;
 
-	if (new_value) {
-		notify_property_list_changed();
-		emit_changed();
-	}
+	_emit_theme_changed();
 }
 
 int Theme::get_constant(const StringName &p_name, const StringName &p_theme_type) const {
@@ -928,8 +895,7 @@ void Theme::rename_constant(const StringName &p_old_name, const StringName &p_na
 	constant_map[p_theme_type][p_name] = constant_map[p_theme_type][p_old_name];
 	constant_map[p_theme_type].erase(p_old_name);
 
-	notify_property_list_changed();
-	emit_changed();
+	_emit_theme_changed();
 }
 
 void Theme::clear_constant(const StringName &p_name, const StringName &p_theme_type) {
@@ -937,8 +903,8 @@ void Theme::clear_constant(const StringName &p_name, const StringName &p_theme_t
 	ERR_FAIL_COND_MSG(!constant_map[p_theme_type].has(p_name), "Cannot clear the constant '" + String(p_name) + "' because it does not exist.");
 
 	constant_map[p_theme_type].erase(p_name);
-	notify_property_list_changed();
-	emit_changed();
+
+	_emit_theme_changed();
 }
 
 void Theme::get_constant_list(StringName p_theme_type, List<StringName> *p_list) const {
@@ -1199,8 +1165,17 @@ void Theme::get_theme_item_type_list(DataType p_data_type, List<StringName> *p_l
 	}
 }
 
+void Theme::_freeze_change_propagation() {
+	no_change_propagation = true;
+}
+
+void Theme::_unfreeze_and_propagate_changes() {
+	no_change_propagation = false;
+	_emit_theme_changed();
+}
+
 void Theme::clear() {
-	//these need disconnecting
+	// These items need disconnecting.
 	{
 		const StringName *K = nullptr;
 		while ((K = icon_map.next(K))) {
@@ -1246,8 +1221,7 @@ void Theme::clear() {
 	color_map.clear();
 	constant_map.clear();
 
-	notify_property_list_changed();
-	emit_changed();
+	_emit_theme_changed();
 }
 
 void Theme::copy_default_theme() {
@@ -1260,6 +1234,8 @@ void Theme::copy_theme(const Ref<Theme> &p_other) {
 		clear();
 		return;
 	}
+
+	_freeze_change_propagation();
 
 	// These items need reconnecting, so add them normally.
 	{
@@ -1297,8 +1273,7 @@ void Theme::copy_theme(const Ref<Theme> &p_other) {
 	color_map = p_other->color_map;
 	constant_map = p_other->constant_map;
 
-	notify_property_list_changed();
-	emit_changed();
+	_unfreeze_and_propagate_changes();
 }
 
 void Theme::get_type_list(List<StringName> *p_list) const {
