@@ -33,9 +33,24 @@
 
 #include "servers/display_server.h"
 
-#include "drivers/dummy/rasterizer_dummy.h"
+#include "servers/rendering/rasterizer_dummy.h"
 
 class DisplayServerHeadless : public DisplayServer {
+private:
+	friend class DisplayServer;
+
+	static Vector<String> get_rendering_drivers_func() {
+		Vector<String> drivers;
+		drivers.push_back("dummy");
+		return drivers;
+	}
+
+	static DisplayServer *create_func(const String &p_rendering_driver, DisplayServer::WindowMode p_mode, uint32_t p_flags, const Vector2i &p_resolution, Error &r_error) {
+		r_error = OK;
+		RasterizerDummy::make_current();
+		return memnew(DisplayServerHeadless());
+	}
+
 public:
 	bool has_feature(Feature p_feature) const override { return false; }
 	String get_name() const override { return "headless"; }
@@ -104,22 +119,6 @@ public:
 	void process_events() override {}
 
 	void set_icon(const Ref<Image> &p_icon) override {}
-
-	static void register_headless_driver() {
-		register_create_function("headless", create_func, get_rendering_drivers_func);
-	}
-
-	static Vector<String> get_rendering_drivers_func() {
-		Vector<String> drivers;
-		drivers.push_back("dummy");
-		return drivers;
-	}
-
-	static DisplayServer *create_func(const String &p_rendering_driver, DisplayServer::WindowMode p_mode, uint32_t p_flags, const Vector2i &p_resolution, Error &r_error) {
-		r_error = OK;
-		RasterizerDummy::make_current();
-		return memnew(DisplayServerHeadless());
-	}
 
 	DisplayServerHeadless() {}
 	~DisplayServerHeadless() {}
