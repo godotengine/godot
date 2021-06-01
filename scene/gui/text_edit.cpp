@@ -1187,7 +1187,8 @@ void TextEdit::_notification(int p_what) {
 							if (rect.position.x < xmargin_beg) {
 								rect.size.x -= (xmargin_beg - rect.position.x);
 								rect.position.x = xmargin_beg;
-							} else if (rect.position.x + rect.size.x > xmargin_end) {
+							}
+							if (rect.position.x + rect.size.x > xmargin_end) {
 								rect.size.x = xmargin_end - rect.position.x;
 							}
 							draw_rect(rect, cache.selection_color, true);
