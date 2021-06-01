@@ -116,6 +116,18 @@ bool EditorFeatureProfile::has_class_properties_disabled(const StringName &p_cla
 	return disabled_properties.has(p_class);
 }
 
+void EditorFeatureProfile::set_item_collapsed(const StringName &p_class, bool p_collapsed) {
+	if (p_collapsed) {
+		collapsed_classes.insert(p_class);
+	} else {
+		collapsed_classes.erase(p_class);
+	}
+}
+
+bool EditorFeatureProfile::is_item_collapsed(const StringName &p_class) const {
+	return collapsed_classes.has(p_class);
+}
+
 void EditorFeatureProfile::set_disable_feature(Feature p_feature, bool p_disable) {
 	ERR_FAIL_INDEX(p_feature, FEATURE_MAX);
 	features_disabled[p_feature] = p_disable;
@@ -478,6 +490,9 @@ void EditorFeatureProfileManager::_fill_classes_from(TreeItem *p_parent, const S
 	class_item->set_selectable(0, true);
 	class_item->set_metadata(0, p_class);
 
+	bool collapsed = edited->is_item_collapsed(p_class);
+	class_item->set_collapsed(collapsed);
+
 	if (p_class == p_selected) {
 		class_item->select(0);
 	}
@@ -588,6 +603,26 @@ void EditorFeatureProfileManager::_class_list_item_edited() {
 		edited->set_disable_feature(EditorFeatureProfile::Feature(feature_selected), !checked);
 		_save_and_update();
 	}
+}
+
+void EditorFeatureProfileManager::_class_list_item_collapsed(Object *p_item) {
+	if (updating_features) {
+		return;
+	}
+
+	TreeItem *item = Object::cast_to<TreeItem>(p_item);
+	if (!item) {
+		return;
+	}
+
+	Variant md = item->get_metadata(0);
+	if (md.get_type() != Variant::STRING) {
+		return;
+	}
+
+	String class_name = md;
+	bool collapsed = item->is_collapsed();
+	edited->set_item_collapsed(class_name, collapsed);
 }
 
 void EditorFeatureProfileManager::_property_item_edited() {
@@ -781,6 +816,7 @@ void EditorFeatureProfileManager::_bind_methods() {
 	ClassDB::bind_method("_export_profile", &EditorFeatureProfileManager::_export_profile);
 	ClassDB::bind_method("_class_list_item_selected", &EditorFeatureProfileManager::_class_list_item_selected);
 	ClassDB::bind_method("_class_list_item_edited", &EditorFeatureProfileManager::_class_list_item_edited);
+	ClassDB::bind_method("_class_list_item_collapsed", &EditorFeatureProfileManager::_class_list_item_collapsed);
 	ClassDB::bind_method("_property_item_edited", &EditorFeatureProfileManager::_property_item_edited);
 	ClassDB::bind_method("_emit_current_profile_changed", &EditorFeatureProfileManager::_emit_current_profile_changed);
 
@@ -852,6 +888,7 @@ EditorFeatureProfileManager::EditorFeatureProfileManager() {
 	class_list->set_edit_checkbox_cell_only_when_checkbox_is_pressed(true);
 	class_list->connect("cell_selected", this, "_class_list_item_selected");
 	class_list->connect("item_edited", this, "_class_list_item_edited", varray(), CONNECT_DEFERRED);
+	class_list->connect("item_collapsed", this, "_class_list_item_collapsed");
 
 	VBoxContainer *property_list_vbc = memnew(VBoxContainer);
 	h_split->add_child(property_list_vbc);

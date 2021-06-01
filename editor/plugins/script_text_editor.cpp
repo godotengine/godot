@@ -31,6 +31,7 @@
 #include "script_text_editor.h"
 
 #include "core/math/expression.h"
+#include "core/os/input.h"
 #include "core/os/keyboard.h"
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
@@ -1506,11 +1507,17 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 		Array files = d["files"];
 
 		String text_to_drop;
+		bool preload = Input::get_singleton()->is_key_pressed(KEY_CONTROL);
 		for (int i = 0; i < files.size(); i++) {
 			if (i > 0) {
-				text_to_drop += ",";
+				text_to_drop += ", ";
 			}
-			text_to_drop += "\"" + String(files[i]).c_escape() + "\"";
+
+			if (preload) {
+				text_to_drop += "preload(\"" + String(files[i]).c_escape() + "\")";
+			} else {
+				text_to_drop += "\"" + String(files[i]).c_escape() + "\"";
+			}
 		}
 
 		te->cursor_set_line(row);
