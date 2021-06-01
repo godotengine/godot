@@ -507,6 +507,18 @@ void EditorNode::_update_from_settings() {
 	scene_root->set_lod_threshold(lod_threshold);
 }
 
+void EditorNode::_select_default_main_screen_plugin() {
+	// Switch to the first main screen plugin that is enabled. Usually this is
+	// 2D, but may be subsequent ones if 2D is disabled in the feature profile.
+	for (int i = 0; i < main_editor_buttons.size(); i++) {
+		Button *editor_button = main_editor_buttons[i];
+		if (editor_button->is_visible()) {
+			_editor_select(i);
+			return;
+		}
+	}
+}
+
 void EditorNode::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_PROCESS: {
@@ -595,11 +607,7 @@ void EditorNode::_notification(int p_what) {
 
 			feature_profile_manager->notify_changed();
 
-			if (!main_editor_buttons[EDITOR_3D]->is_visible()) { //may be hidden due to feature profile
-				_editor_select(EDITOR_2D);
-			} else {
-				_editor_select(EDITOR_3D);
-			}
+			_select_default_main_screen_plugin();
 
 			// Save the project after opening to mark it as last modified.
 			ProjectSettings::get_singleton()->save();
@@ -3050,7 +3058,9 @@ void EditorNode::add_editor_plugin(EditorPlugin *p_editor, bool p_config_changed
 		tb->set_flat(true);
 		tb->set_toggle_mode(true);
 		tb->connect("pressed", callable_mp(singleton, &EditorNode::_editor_select), varray(singleton->main_editor_buttons.size()));
+		tb->set_name(p_editor->get_name());
 		tb->set_text(p_editor->get_name());
+
 		Ref<Texture2D> icon = p_editor->get_icon();
 
 		if (icon.is_valid()) {
@@ -3059,7 +3069,6 @@ void EditorNode::add_editor_plugin(EditorPlugin *p_editor, bool p_config_changed
 			tb->set_icon(singleton->gui_base->get_theme_icon(p_editor->get_name(), "EditorIcons"));
 		}
 
-		tb->set_name(p_editor->get_name());
 		singleton->main_editor_buttons.push_back(tb);
 		singleton->main_editor_button_vb->add_child(tb);
 		singleton->editor_table.push_back(p_editor);

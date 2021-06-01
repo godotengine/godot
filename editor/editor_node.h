@@ -661,6 +661,8 @@ private:
 	bool _is_class_editor_disabled_by_feature_profile(const StringName &p_class);
 	Ref<ImageTexture> _load_custom_class_icon(const String &p_path) const;
 
+	void _select_default_main_screen_plugin();
+
 protected:
 	void _notification(int p_what);
 
