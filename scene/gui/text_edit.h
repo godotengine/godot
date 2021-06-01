@@ -173,6 +173,8 @@ private:
 	};
 
 	struct Cursor {
+		Point2 draw_pos;
+		bool visible = false;
 		int last_fit_x = 0;
 		int line = 0;
 		int column = 0; ///< cursor
@@ -239,20 +241,6 @@ private:
 
 	Dictionary _get_line_syntax_highlighting(int p_line);
 
-	Set<String> completion_prefixes;
-	bool completion_enabled = false;
-	List<ScriptCodeCompletionOption> completion_sources;
-	Vector<ScriptCodeCompletionOption> completion_options;
-	bool completion_active = false;
-	bool completion_forced = false;
-	ScriptCodeCompletionOption completion_current;
-	String completion_base;
-	int completion_index = 0;
-	Rect2i completion_rect;
-	int completion_line_ofs = 0;
-	String completion_hint;
-	int completion_hint_offset = 0;
-
 	bool setting_text = false;
 
 	// data
@@ -306,10 +294,10 @@ private:
 
 	bool highlight_all_occurrences = false;
 	bool scroll_past_end_of_file_enabled = false;
-	bool auto_brace_completion_enabled = false;
 	bool brace_matching_enabled = false;
 	bool highlight_current_line = false;
 	bool auto_indent = false;
+
 	String cut_copy_line;
 	bool insert_mode = false;
 	bool select_identifiers_enabled = false;
@@ -340,9 +328,6 @@ private:
 	Variant tooltip_ud;
 
 	bool next_operation_is_complex = false;
-
-	bool callhint_below = false;
-	Vector2 callhint_offset;
 
 	String search_text;
 	uint32_t search_flags = 0;
@@ -437,10 +422,6 @@ private:
 	PopupMenu *menu_ctl;
 
 	void _clear();
-	void _cancel_completion();
-	void _cancel_code_hint();
-	void _confirm_completion();
-	void _update_completion_candidates();
 
 	int _calculate_spaces_till_next_left_indent(int column);
 	int _calculate_spaces_till_next_right_indent(int column);
@@ -463,9 +444,11 @@ private:
 	void _delete_selection();
 	void _move_cursor_document_start(bool p_select);
 	void _move_cursor_document_end(bool p_select);
-	void _handle_unicode_character(uint32_t unicode, bool p_had_selection, bool p_update_auto_complete);
+	void _handle_unicode_character(uint32_t unicode, bool p_had_selection);
 
 protected:
+	bool auto_brace_completion_enabled = false;
+
 	struct Cache {
 		Ref<Texture2D> tab_icon;
 		Ref<Texture2D> space_icon;
@@ -477,10 +460,6 @@ protected:
 		int font_size = 16;
 		int outline_size = 0;
 		Color outline_color;
-		Color completion_background_color;
-		Color completion_selected_color;
-		Color completion_existing_color;
-		Color completion_font_color;
 		Color caret_color;
 		Color caret_background_color;
 		Color font_color;
@@ -505,7 +484,7 @@ protected:
 	void _insert_text(int p_line, int p_char, const String &p_text, int *r_end_line = nullptr, int *r_end_char = nullptr);
 	void _remove_text(int p_from_line, int p_from_column, int p_to_line, int p_to_column);
 	void _insert_text_at_cursor(const String &p_text);
-	void _gui_input(const Ref<InputEvent> &p_gui_input);
+	virtual void _gui_input(const Ref<InputEvent> &p_gui_input);
 	void _notification(int p_what);
 
 	void _consume_pair_symbol(char32_t ch);
@@ -681,10 +660,6 @@ public:
 		brace_matching_enabled = p_enabled;
 		update();
 	}
-	inline void set_callhint_settings(bool below, Vector2 offset) {
-		callhint_below = below;
-		callhint_offset = offset;
-	}
 	void set_auto_indent(bool p_auto_indent);
 
 	void center_viewport_to_cursor();
@@ -695,6 +670,8 @@ public:
 	void cursor_set_column(int p_col, bool p_adjust_viewport = true);
 	void cursor_set_line(int p_row, bool p_adjust_viewport = true, bool p_can_be_hidden = true, int p_wrap_index = 0);
 
+	Point2 get_caret_draw_pos() const;
+	bool is_caret_visible() const;
 	int cursor_get_column() const;
 	int cursor_get_line() const;
 	Vector2i _get_cursor_pixel_pos(bool p_adjust_viewport = true);
@@ -811,11 +788,6 @@ public:
 
 	void set_tooltip_request_func(Object *p_obj, const StringName &p_function, const Variant &p_udata);
 
-	void set_completion(bool p_enabled, const Vector<String> &p_prefixes);
-	void code_complete(const List<ScriptCodeCompletionOption> &p_strings, bool p_forced = false);
-	void set_code_hint(const String &p_hint);
-	void query_code_comple();
-
 	void set_select_identifiers_on_hover(bool p_enable);
 	bool is_selecting_identifiers_on_hover_enabled() const;
 
@@ -833,7 +805,6 @@ public:
 
 	PopupMenu *get_menu() const;
 
-	String get_text_for_completion();
 	String get_text_for_lookup_completion();
 
 	virtual bool is_text_field() const override;

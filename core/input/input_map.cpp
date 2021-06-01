@@ -474,9 +474,13 @@ const OrderedHashMap<String, List<Ref<InputEvent>>> &InputMap::get_builtins() {
 	default_builtin_cache.insert("ui_text_completion_query", inputs);
 
 	inputs = List<Ref<InputEvent>>();
-	inputs.push_back(InputEventKey::create_reference(KEY_TAB));
 	inputs.push_back(InputEventKey::create_reference(KEY_ENTER));
+	inputs.push_back(InputEventKey::create_reference(KEY_KP_ENTER));
 	default_builtin_cache.insert("ui_text_completion_accept", inputs);
+
+	inputs = List<Ref<InputEvent>>();
+	inputs.push_back(InputEventKey::create_reference(KEY_TAB));
+	default_builtin_cache.insert("ui_text_completion_replace", inputs);
 
 	// Newlines
 	inputs = List<Ref<InputEvent>>();

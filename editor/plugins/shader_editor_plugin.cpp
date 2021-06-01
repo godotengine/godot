@@ -154,6 +154,10 @@ void ShaderTextEditor::_load_theme_settings() {
 	syntax_highlighter->add_color_region("/*", "*/", comment_color, false);
 	syntax_highlighter->add_color_region("//", "", comment_color, true);
 
+	text_editor->clear_comment_delimiters();
+	text_editor->add_comment_delimiter("/*", "*/", false);
+	text_editor->add_comment_delimiter("//", "", true);
+
 	if (warnings_panel) {
 		// Warnings panel
 		warnings_panel->add_theme_font_override("normal_font", EditorNode::get_singleton()->get_gui_base()->get_theme_font("main", "EditorFonts"));
@@ -348,7 +352,7 @@ void ShaderEditor::_menu_option(int p_option) {
 
 		} break;
 		case EDIT_COMPLETE: {
-			shader_editor->get_text_editor()->query_code_comple();
+			shader_editor->get_text_editor()->request_code_completion();
 		} break;
 		case SEARCH_FIND: {
 			shader_editor->get_find_replace_bar()->popup_search();
@@ -659,9 +663,7 @@ ShaderEditor::ShaderEditor(EditorNode *p_node) {
 	EditorSettings::get_singleton()->connect("settings_changed", callable_mp(this, &ShaderEditor::_editor_settings_changed));
 	ProjectSettingsEditor::get_singleton()->connect("confirmed", callable_mp(this, &ShaderEditor::_project_settings_changed));
 
-	shader_editor->get_text_editor()->set_callhint_settings(
-			EditorSettings::get_singleton()->get("text_editor/completion/put_callhint_tooltip_below_current_line"),
-			EditorSettings::get_singleton()->get("text_editor/completion/callhint_tooltip_offset"));
+	shader_editor->get_text_editor()->set_code_hint_draw_below(EditorSettings::get_singleton()->get("text_editor/completion/put_callhint_tooltip_below_current_line"));
 
 	shader_editor->get_text_editor()->set_select_identifiers_on_hover(true);
 	shader_editor->get_text_editor()->set_context_menu_enabled(false);
