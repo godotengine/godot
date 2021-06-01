@@ -136,6 +136,8 @@ void ExportTemplateManager::_update_template_list() {
 
 		installed_vb->add_child(hbc);
 	}
+
+	_fix_size();
 }
 
 void ExportTemplateManager::_download_template(const String &p_version) {
