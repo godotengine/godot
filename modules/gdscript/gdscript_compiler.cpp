@@ -2223,7 +2223,7 @@ Error GDScriptCompiler::_parse_class_level(GDScript *p_script, const GDScriptPar
 					if (err) {
 						return err;
 					}
-					if (base.is_null() && !base->is_valid()) {
+					if (base.is_null() || !base->is_valid()) {
 						return ERR_COMPILATION_FAILED;
 					}
 				}
