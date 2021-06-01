@@ -5,7 +5,8 @@ import os
 import shutil
 import subprocess
 import sys
-
+import string
+import re
 
 line_nb = False
 
@@ -183,7 +184,19 @@ def process_file(f, fname):
 
     global main_po, unique_str, unique_loc
 
-    patterns = ['RTR("', 'TTR("', 'TTRC("', 'TTRN("', 'RTRN("']
+    patterns = [
+        'RTR("',
+        'TTR("',
+        'TTRC("',
+        'TTRN("',
+        'RTRN("',
+        '_initial_set("',
+        '_DEF("',
+        '_DEF_RST("',
+        'ADD_GROUP("',
+        "ADD_PROPERTY(PropertyInfo(Variant::",
+        "ADD_PROPERTYI(PropertyInfo(Variant::",
+    ]
 
     l = f.readline()
     lc = 1
@@ -218,7 +231,12 @@ def process_file(f, fname):
                     idx += 1
                     pos = 0
                 continue
-            pos += len(patterns[idx])
+            if patterns[idx] in ["ADD_PROPERTY(PropertyInfo(Variant::", "ADD_PROPERTYI(PropertyInfo(Variant::"]:
+                pattern = re.compile(r'ADD[_]PROPERTY[I]?[(]PropertyInfo[(]Variant[::](.*?)[,][ ]?["]')
+                newpos = re.search(pattern, l[pos:]).span()
+                pos += newpos[1]
+            else:
+                pos += len(patterns[idx])
 
             # Read msg until "
             msg = ""
@@ -237,51 +255,74 @@ def process_file(f, fname):
 
             # Read context.
             msgctx = ""
-            pos += 1
-            read_ctx = False
-            while pos < len(l):
-                if l[pos] == ")":
-                    break
-                elif l[pos] == '"':
-                    read_ctx = True
-                    break
+            if patterns[idx] not in [
+                '_initial_set("',
+                '_DEF("',
+                '_DEF_RST("',
+                'ADD_GROUP("',
+                "ADD_PROPERTY(PropertyInfo(Variant::",
+                "ADD_PROPERTYI(PropertyInfo(Variant::",
+            ]:
                 pos += 1
-
-            pos += 1
-            if read_ctx:
-                while pos < len(l) and (l[pos] != '"' or l[pos - 1] == "\\"):
-                    msgctx += l[pos]
+                read_ctx = False
+                while pos < len(l):
+                    if l[pos] == ")":
+                        break
+                    elif l[pos] == '"':
+                        read_ctx = True
+                        break
                     pos += 1
+
+                pos += 1
+                if read_ctx:
+                    while pos < len(l) and (l[pos] != '"' or l[pos - 1] == "\\"):
+                        msgctx += l[pos]
+                        pos += 1
 
             # File location.
             location = os.path.relpath(fname).replace("\\", "/")
             if line_nb:
                 location += ":" + str(lc)
 
-            # Write translator comment.
-            _write_translator_comment(msgctx, msg, translator_comment)
-            translator_comment = ""
-
-            if msgctx != "":
-                # If it's a new context or a new message within an existing context, then write new msgid.
-                # Else add location to existing msgid.
-                if not msgctx in ctx_group:
-                    _write_message(msgctx, msg, msg_plural, location)
-                    ctx_group[msgctx] = {msg: [location]}
-                elif not msg in ctx_group[msgctx]:
-                    _write_message(msgctx, msg, msg_plural, location)
-                    ctx_group[msgctx][msg] = [location]
-                elif not location in ctx_group[msgctx][msg]:
-                    _add_additional_location(msgctx, msg, location)
-                    ctx_group[msgctx][msg].append(location)
+            msglist = []
+            if patterns[idx] in [
+                '_initial_set("',
+                '_DEF("',
+                '_DEF_RST("',
+                "ADD_PROPERTY(PropertyInfo(Variant::",
+                "ADD_PROPERTYI(PropertyInfo(Variant::",
+            ]:
+                msgs = msg.split("/")
+                for msgtemp in msgs:
+                    msglist.append(string.capwords(msgtemp.replace("_", " ")))
             else:
-                if not msg in unique_str:
-                    _write_message(msgctx, msg, msg_plural, location)
-                    unique_str.append(msg)
-                    unique_loc[msg] = [location]
-                elif not location in unique_loc[msg]:
-                    _add_additional_location(msgctx, msg, location)
-                    unique_loc[msg].append(location)
+                msglist.append(msg)
+
+            for newmsg in msglist:
+                # Write translator comment.
+                _write_translator_comment(msgctx, newmsg, translator_comment)
+                translator_comment = ""
+
+                if msgctx != "":
+                    # If it's a new context or a new message within an existing context, then write new msgid.
+                    # Else add location to existing msgid.
+                    if not msgctx in ctx_group:
+                        _write_message(msgctx, newmsg, msg_plural, location)
+                        ctx_group[msgctx] = {newmsg: [location]}
+                    elif not newmsg in ctx_group[msgctx]:
+                        _write_message(msgctx, newmsg, msg_plural, location)
+                        ctx_group[msgctx][newmsg] = [location]
+                    elif not location in ctx_group[msgctx][newmsg]:
+                        _add_additional_location(msgctx, newmsg, location)
+                        ctx_group[msgctx][newmsg].append(location)
+                else:
+                    if not newmsg in unique_str:
+                        _write_message(msgctx, newmsg, msg_plural, location)
+                        unique_str.append(newmsg)
+                        unique_loc[newmsg] = [location]
+                    elif not location in unique_loc[newmsg]:
+                        _add_additional_location(msgctx, newmsg, location)
+                        unique_loc[newmsg].append(location)
 
         l = f.readline()
         lc += 1
