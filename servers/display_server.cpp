@@ -32,14 +32,18 @@
 
 #include "core/input/input.h"
 #include "scene/resources/texture.h"
+#include "servers/display_server_headless.h"
 
 DisplayServer *DisplayServer::singleton = nullptr;
 DisplayServer::SwitchVSyncCallbackInThread DisplayServer::switch_vsync_function = nullptr;
 
 bool DisplayServer::hidpi_allowed = false;
 
-DisplayServer::DisplayServerCreate DisplayServer::server_create_functions[DisplayServer::MAX_SERVERS];
-int DisplayServer::server_create_count = 0;
+DisplayServer::DisplayServerCreate DisplayServer::server_create_functions[DisplayServer::MAX_SERVERS] = {
+	{ "headless", &DisplayServerHeadless::create_func, &DisplayServerHeadless::get_rendering_drivers_func }
+};
+
+int DisplayServer::server_create_count = 1;
 
 void DisplayServer::global_menu_add_item(const String &p_menu_root, const String &p_label, const Callable &p_callback, const Variant &p_tag) {
 	WARN_PRINT("Global menus not supported by this display server.");
@@ -560,9 +564,11 @@ void DisplayServer::_bind_methods() {
 
 void DisplayServer::register_create_function(const char *p_name, CreateFunction p_function, GetRenderingDriversFunction p_get_drivers) {
 	ERR_FAIL_COND(server_create_count == MAX_SERVERS);
-	server_create_functions[server_create_count].name = p_name;
-	server_create_functions[server_create_count].create_function = p_function;
-	server_create_functions[server_create_count].get_rendering_drivers_function = p_get_drivers;
+	// Headless display server is always last
+	server_create_functions[server_create_count] = server_create_functions[server_create_count - 1];
+	server_create_functions[server_create_count - 1].name = p_name;
+	server_create_functions[server_create_count - 1].create_function = p_function;
+	server_create_functions[server_create_count - 1].get_rendering_drivers_function = p_get_drivers;
 	server_create_count++;
 }
 
