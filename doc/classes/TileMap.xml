@@ -132,6 +132,10 @@
 		<member name="cell_quadrant_size" type="int" setter="set_quadrant_size" getter="get_quadrant_size" default="16">
 			The TileMap's quadrant size. Optimizes drawing by batching, using chunks of this size.
 		</member>
+		<member name="show_collision" type="int" setter="set_collision_visibility_mode" getter="get_collision_visibility_mode" enum="TileMap.VisibilityMode" default="0">
+		</member>
+		<member name="show_navigation" type="int" setter="set_navigation_visibility_mode" getter="get_navigation_visibility_mode" enum="TileMap.VisibilityMode" default="0">
+		</member>
 		<member name="tile_set" type="TileSet" setter="set_tileset" getter="get_tileset">
 			The assigned [TileSet].
 		</member>
@@ -144,5 +148,11 @@
 		</signal>
 	</signals>
 	<constants>
+		<constant name="VISIBILITY_MODE_DEFAULT" value="0" enum="VisibilityMode">
+		</constant>
+		<constant name="VISIBILITY_MODE_FORCE_HIDE" value="2" enum="VisibilityMode">
+		</constant>
+		<constant name="VISIBILITY_MODE_FORCE_SHOW" value="1" enum="VisibilityMode">
+		</constant>
 	</constants>
 </class>

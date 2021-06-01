@@ -179,37 +179,45 @@ class TileMap : public Node2D {
 	GDCLASS(TileMap, Node2D);
 
 public:
+	enum VisibilityMode {
+		VISIBILITY_MODE_DEFAULT,
+		VISIBILITY_MODE_FORCE_SHOW,
+		VISIBILITY_MODE_FORCE_HIDE,
+	};
+
 private:
 	friend class TileSetPlugin;
 
+	// A compatibility enum to specify how is the data if formatted.
 	enum DataFormat {
 		FORMAT_1 = 0,
 		FORMAT_2,
 		FORMAT_3
 	};
+	mutable DataFormat format = FORMAT_1; // Assume lowest possible format if none is present;
 
+	// Properties.
 	Ref<TileSet> tile_set;
-	int quadrant_size;
-	Transform2D custom_transform;
+	int quadrant_size = 16;
+	VisibilityMode show_collision = VISIBILITY_MODE_DEFAULT;
+	VisibilityMode show_navigation = VISIBILITY_MODE_DEFAULT;
 
-	// Map of cells
-	Map<Vector2i, TileMapCell> tile_map;
-
-	Vector2i _coords_to_quadrant_coords(const Vector2i &p_coords) const;
-
-	Map<Vector2i, TileMapQuadrant> quadrant_map;
-
-	SelfList<TileMapQuadrant>::List dirty_quadrant_list;
-
+	// Updates.
 	bool pending_update = false;
 
+	// Rect.
 	Rect2 rect_cache;
 	bool rect_cache_dirty = true;
 	Rect2 used_size_cache;
-	bool used_size_cache_dirty;
-	mutable DataFormat format;
+	bool used_size_cache_dirty = true;
 
-	void _fix_cell_transform(Transform2D &xform, const TileMapCell &p_cell, const Vector2 &p_offset, const Size2 &p_sc);
+	// Map of cells.
+	Map<Vector2i, TileMapCell> tile_map;
+
+	// Quadrants management.
+	Map<Vector2i, TileMapQuadrant> quadrant_map;
+	Vector2i _coords_to_quadrant_coords(const Vector2i &p_coords) const;
+	SelfList<TileMapQuadrant>::List dirty_quadrant_list;
 
 	Map<Vector2i, TileMapQuadrant>::Element *_create_quadrant(const Vector2i &p_qk);
 	void _erase_quadrant(Map<Vector2i, TileMapQuadrant>::Element *Q);
@@ -219,8 +227,7 @@ private:
 	void _clear_quadrants();
 	void _recompute_rect_cache();
 
-	void _update_all_items_material_state();
-
+	// Set and get tiles from data arrays.
 	void _set_tile_data(const Vector<int> &p_data);
 	Vector<int> _get_tile_data() const;
 
@@ -250,6 +257,12 @@ public:
 
 	void set_quadrant_size(int p_size);
 	int get_quadrant_size() const;
+
+	void set_collision_visibility_mode(VisibilityMode p_show_collision);
+	VisibilityMode get_collision_visibility_mode();
+
+	void set_navigation_visibility_mode(VisibilityMode p_show_navigation);
+	VisibilityMode get_navigation_visibility_mode();
 
 	void set_cell(const Vector2i &p_coords, int p_source_id = -1, const Vector2i p_atlas_coords = TileSetSource::INVALID_ATLAS_COORDS, int p_alternative_tile = TileSetSource::INVALID_TILE_ALTERNATIVE);
 	int get_cell_source_id(const Vector2i &p_coords) const;
@@ -293,4 +306,7 @@ public:
 	TileMap();
 	~TileMap();
 };
+
+VARIANT_ENUM_CAST(TileMap::VisibilityMode);
+
 #endif // TILE_MAP_H

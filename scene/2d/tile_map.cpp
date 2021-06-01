@@ -314,37 +314,24 @@ void TileMap::set_quadrant_size(int p_size) {
 	emit_signal("changed");
 }
 
-void TileMap::_fix_cell_transform(Transform2D &xform, const TileMapCell &p_cell, const Vector2 &p_offset, const Size2 &p_sc) {
-	Size2 s = p_sc;
-	Vector2 offset = p_offset;
+void TileMap::set_collision_visibility_mode(TileMap::VisibilityMode p_show_collision) {
+	show_collision = p_show_collision;
+	_recreate_quadrants();
+	emit_signal("changed");
+}
 
-	// Flip/transpose: update the tile transform.
-	TileSetSource *source = *tile_set->get_source(p_cell.source_id);
-	TileSetAtlasSource *atlas_source = Object::cast_to<TileSetAtlasSource>(source);
-	if (!atlas_source) {
-		return;
-	}
-	TileData *tile_data = Object::cast_to<TileData>(atlas_source->get_tile_data(p_cell.get_atlas_coords(), p_cell.alternative_tile));
-	if (tile_data->get_transpose()) {
-		SWAP(xform.elements[0].x, xform.elements[0].y);
-		SWAP(xform.elements[1].x, xform.elements[1].y);
-		SWAP(offset.x, offset.y);
-		SWAP(s.x, s.y);
-	}
+TileMap::VisibilityMode TileMap::get_collision_visibility_mode() {
+	return show_collision;
+}
 
-	if (tile_data->get_flip_h()) {
-		xform.elements[0].x = -xform.elements[0].x;
-		xform.elements[1].x = -xform.elements[1].x;
-		offset.x = s.x - offset.x;
-	}
+void TileMap::set_navigation_visibility_mode(TileMap::VisibilityMode p_show_navigation) {
+	show_navigation = p_show_navigation;
+	_recreate_quadrants();
+	emit_signal("changed");
+}
 
-	if (tile_data->get_flip_v()) {
-		xform.elements[0].y = -xform.elements[0].y;
-		xform.elements[1].y = -xform.elements[1].y;
-		offset.y = s.y - offset.y;
-	}
-
-	xform.elements[2] += offset;
+TileMap::VisibilityMode TileMap::get_navigation_visibility_mode() {
+	return show_navigation;
 }
 
 void TileMap::update_dirty_quadrants() {
@@ -1723,6 +1710,12 @@ void TileMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_quadrant_size", "size"), &TileMap::set_quadrant_size);
 	ClassDB::bind_method(D_METHOD("get_quadrant_size"), &TileMap::get_quadrant_size);
 
+	ClassDB::bind_method(D_METHOD("set_collision_visibility_mode", "show_collision"), &TileMap::set_collision_visibility_mode);
+	ClassDB::bind_method(D_METHOD("get_collision_visibility_mode"), &TileMap::get_collision_visibility_mode);
+
+	ClassDB::bind_method(D_METHOD("set_navigation_visibility_mode", "show_navigation"), &TileMap::set_navigation_visibility_mode);
+	ClassDB::bind_method(D_METHOD("get_navigation_visibility_mode"), &TileMap::get_navigation_visibility_mode);
+
 	ClassDB::bind_method(D_METHOD("set_cell", "coords", "source_id", "atlas_coords", "alternative_tile"), &TileMap::set_cell, DEFVAL(-1), DEFVAL(TileSetSource::INVALID_ATLAS_COORDS), DEFVAL(TileSetSource::INVALID_TILE_ALTERNATIVE));
 	ClassDB::bind_method(D_METHOD("get_cell_source_id", "coords"), &TileMap::get_cell_source_id);
 	ClassDB::bind_method(D_METHOD("get_cell_atlas_coords", "coords"), &TileMap::get_cell_atlas_coords);
@@ -1747,10 +1740,16 @@ void TileMap::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "tile_set", PROPERTY_HINT_RESOURCE_TYPE, "TileSet"), "set_tileset", "get_tileset");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "cell_quadrant_size", PROPERTY_HINT_RANGE, "1,128,1"), "set_quadrant_size", "get_quadrant_size");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "show_collision", PROPERTY_HINT_ENUM, "Default,Force Show,Force Hide"), "set_collision_visibility_mode", "get_collision_visibility_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "show_navigation", PROPERTY_HINT_ENUM, "Default,Force Show,Force Hide"), "set_navigation_visibility_mode", "get_navigation_visibility_mode");
 
 	ADD_PROPERTY_DEFAULT("format", FORMAT_1);
 
 	ADD_SIGNAL(MethodInfo("changed"));
+
+	BIND_ENUM_CONSTANT(VISIBILITY_MODE_DEFAULT);
+	BIND_ENUM_CONSTANT(VISIBILITY_MODE_FORCE_HIDE);
+	BIND_ENUM_CONSTANT(VISIBILITY_MODE_FORCE_SHOW);
 }
 
 void TileMap::_tile_set_changed() {
@@ -1759,12 +1758,6 @@ void TileMap::_tile_set_changed() {
 }
 
 TileMap::TileMap() {
-	rect_cache_dirty = true;
-	used_size_cache_dirty = true;
-	pending_update = false;
-	quadrant_size = 16;
-	format = FORMAT_1; // Assume lowest possible format if none is present
-
 	set_notify_transform(true);
 	set_notify_local_transform(false);
 }

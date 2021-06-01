@@ -4297,7 +4297,23 @@ void TileSetPluginAtlasPhysics::draw_quadrant_debug(TileMap *p_tile_map, TileMap
 	Ref<TileSet> tile_set = p_tile_map->get_tileset();
 	ERR_FAIL_COND(!tile_set.is_valid());
 
-	if (!p_tile_map->get_tree() || !(Engine::get_singleton()->is_editor_hint() || p_tile_map->get_tree()->is_debugging_collisions_hint())) {
+	if (!p_tile_map->get_tree()) {
+		return;
+	}
+
+	bool show_collision = false;
+	switch (p_tile_map->get_collision_visibility_mode()) {
+		case TileMap::VISIBILITY_MODE_DEFAULT:
+			show_collision = !Engine::get_singleton()->is_editor_hint() && (p_tile_map->get_tree() && p_tile_map->get_tree()->is_debugging_navigation_hint());
+			break;
+		case TileMap::VISIBILITY_MODE_FORCE_HIDE:
+			show_collision = false;
+			break;
+		case TileMap::VISIBILITY_MODE_FORCE_SHOW:
+			show_collision = true;
+			break;
+	}
+	if (!show_collision) {
 		return;
 	}
 
@@ -4456,7 +4472,23 @@ void TileSetPluginAtlasNavigation::draw_quadrant_debug(TileMap *p_tile_map, Tile
 	Ref<TileSet> tile_set = p_tile_map->get_tileset();
 	ERR_FAIL_COND(!tile_set.is_valid());
 
-	if (!p_tile_map->get_tree() || !(Engine::get_singleton()->is_editor_hint() || p_tile_map->get_tree()->is_debugging_navigation_hint())) {
+	if (!p_tile_map->get_tree()) {
+		return;
+	}
+
+	bool show_navigation = false;
+	switch (p_tile_map->get_navigation_visibility_mode()) {
+		case TileMap::VISIBILITY_MODE_DEFAULT:
+			show_navigation = !Engine::get_singleton()->is_editor_hint() && (p_tile_map->get_tree() && p_tile_map->get_tree()->is_debugging_navigation_hint());
+			break;
+		case TileMap::VISIBILITY_MODE_FORCE_HIDE:
+			show_navigation = false;
+			break;
+		case TileMap::VISIBILITY_MODE_FORCE_SHOW:
+			show_navigation = true;
+			break;
+	}
+	if (!show_navigation) {
 		return;
 	}
 
