@@ -53,6 +53,7 @@ def get_flags():
         # in this platform. For the available networking methods, the browser
         # manages TLS.
         ("module_mbedtls_enabled", False),
+        ("vulkan", False),
     ]
 
 
