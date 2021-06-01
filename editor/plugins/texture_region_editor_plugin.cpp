@@ -937,7 +937,6 @@ void TextureRegionEditor::_edit_region() {
 	if (cache_map.has(texture->get_rid())) {
 		autoslice_cache = cache_map[texture->get_rid()];
 		autoslice_is_dirty = false;
-		return;
 	} else {
 		if (is_visible() && snap_mode == SNAP_AUTOSLICE) {
 			_update_autoslice();
