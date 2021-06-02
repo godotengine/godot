@@ -1097,9 +1097,12 @@ void EditorInspectorPlugin::_bind_methods() {
 
 void EditorInspectorCategory::_notification(int p_what) {
 	if (p_what == NOTIFICATION_DRAW) {
-		draw_rect(Rect2(Vector2(), get_size()), bg_color);
-		Ref<Font> font = get_theme_font("font", "Tree");
-		int font_size = get_theme_font_size("font_size", "Tree");
+		Ref<StyleBox> sb = get_theme_stylebox("prop_category_style", "Editor");
+
+		draw_style_box(sb, Rect2(Vector2(), get_size()));
+
+		Ref<Font> font = get_theme_font("bold", "EditorFonts");
+		int font_size = get_theme_font_size("bold_size", "EditorFonts");
 
 		int hs = get_theme_constant("hseparation", "Tree");
 
@@ -1181,8 +1184,9 @@ void EditorInspectorSection::_test_unfold() {
 
 void EditorInspectorSection::_notification(int p_what) {
 	if (p_what == NOTIFICATION_SORT_CHILDREN) {
-		Ref<Font> font = get_theme_font("font", "Tree");
-		int font_size = get_theme_font_size("font_size", "Tree");
+		Ref<Font> font = get_theme_font("bold", "EditorFonts");
+		int font_size = get_theme_font_size("bold_size", "EditorFonts");
+
 		Ref<Texture2D> arrow;
 
 		if (foldable) {
@@ -1233,15 +1237,19 @@ void EditorInspectorSection::_notification(int p_what) {
 		bool rtl = is_layout_rtl();
 
 		if (foldable) {
-			if (rtl) {
-				arrow = get_theme_icon("arrow_collapsed_mirrored", "Tree");
+			if (object->editor_is_section_unfolded(section)) {
+				arrow = get_theme_icon("arrow", "Tree");
 			} else {
-				arrow = get_theme_icon("arrow_collapsed", "Tree");
+				if (is_layout_rtl()) {
+					arrow = get_theme_icon("arrow_collapsed_mirrored", "Tree");
+				} else {
+					arrow = get_theme_icon("arrow_collapsed", "Tree");
+				}
 			}
 		}
 
-		Ref<Font> font = get_theme_font("font", "Tree");
-		int font_size = get_theme_font_size("font_size", "Tree");
+		Ref<Font> font = get_theme_font("bold", "EditorFonts");
+		int font_size = get_theme_font_size("bold_size", "EditorFonts");
 
 		int h = font->get_height(font_size);
 		if (arrow.is_valid()) {
@@ -1249,12 +1257,15 @@ void EditorInspectorSection::_notification(int p_what) {
 		}
 		h += get_theme_constant("vseparation", "Tree");
 
-		draw_rect(Rect2(Vector2(), Vector2(get_size().width, h)), bg_color);
+		Color c = bg_color;
+		c.a *= 0.4;
+		draw_rect(Rect2(Vector2(), Vector2(get_size().width, h)), c);
 
-		const int arrow_margin = 3;
-		Color color = get_theme_color("font_color", "Tree");
-		float text_width = get_size().width - Math::round((16 + arrow_margin) * EDSCALE);
-		draw_string(font, Point2(rtl ? 0 : Math::round((16 + arrow_margin) * EDSCALE), font->get_ascent(font_size) + (h - font->get_height(font_size)) / 2).floor(), label, rtl ? HALIGN_RIGHT : HALIGN_LEFT, text_width, font_size, color);
+		const int arrow_margin = 2;
+		const int arrow_width = arrow.is_valid() ? arrow->get_width() : 0;
+		Color color = get_theme_color("font_color");
+		float text_width = get_size().width - Math::round(arrow_width + arrow_margin * EDSCALE);
+		draw_string(font, Point2(rtl ? 0 : Math::round(arrow_width + arrow_margin * EDSCALE), font->get_ascent(font_size) + (h - font->get_height(font_size)) / 2).floor(), label, rtl ? HALIGN_RIGHT : HALIGN_LEFT, text_width, font_size, color);
 
 		if (arrow.is_valid()) {
 			if (rtl) {
@@ -1737,7 +1748,6 @@ void EditorInspector::update_tree() {
 			}
 			category->label = type;
 
-			category->bg_color = get_theme_color("prop_category", "Editor");
 			if (use_doc_hints) {
 				StringName type2 = p.name;
 				if (!class_descr_cache.has(type2)) {
