@@ -2,22 +2,22 @@
 # Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.
 # Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).
 # This file is distributed under the same license as the Godot source code.
-# George Tsiamasiotis <gtsiam@windowslive.com>, 2017-2018, 2019, 2020.
+# George Tsiamasiotis <gtsiam@windowslive.com>, 2017-2018, 2019, 2020, 2021.
 # Georgios Katsanakis <geo.elgeo@gmail.com>, 2019.
 # Overloaded <manoschool@yahoo.gr>, 2019.
 # Eternal Death <eternaldeath0001@gmail.com>, 2019.
 # Overloaded @ Orama Interactive http://orama-interactive.com/ <manoschool@yahoo.gr>, 2020.
 # pandektis <pandektis@gmail.com>, 2020.
 # KostasMSC <kargyris@athtech.gr>, 2020.
-# lawfulRobot <czavantias@gmail.com>, 2020.
+# lawfulRobot <czavantias@gmail.com>, 2020, 2021.
 # Michalis <michalisntovas@yahoo.gr>, 2021.
 # leriaz <leriaz@live.com>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-04-26 22:31+0000\n"
-"Last-Translator: Michalis <michalisntovas@yahoo.gr>\n"
+"PO-Revision-Date: 2021-05-30 04:15+0000\n"
+"Last-Translator: lawfulRobot <czavantias@gmail.com>\n"
 "Language-Team: Greek <https://hosted.weblate.org/projects/godot-engine/godot/"
 "el/>\n"
 "Language: el\n"
@@ -1051,15 +1051,15 @@ msgstr ""
 "επαναφέρετε."
 
 #: editor/dependency_editor.cpp
-#, fuzzy
 msgid ""
 "The files being removed are required by other resources in order for them to "
 "work.\n"
 "Remove them anyway? (no undo)\n"
 "You can find the removed files in the system trash to restore them."
 msgstr ""
-"Τα αρχεία που αφαιρούνται απαιτούνται από άλλους πόρους για να δουλέψουν.\n"
-"Να αφαιρεθούν; (Αδύνατη η αναίρεση)"
+"Τα αρχεία που αφαιρούνται απαιτούνται για την λειτουργία άλλων πόρων.\n"
+"Να αφαιρεθούν; (Αδύνατη η αναίρεση)\n"
+"Μπορείτε να τα επαναφέρετε αργότερα από τον κάδο ανακύκλωσης του συστήματος."
 
 #: editor/dependency_editor.cpp
 msgid "Cannot remove:"
@@ -1614,22 +1614,20 @@ msgstr ""
 "«Driver Fallback Enabled»."
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid ""
 "Target platform requires 'PVRTC' texture compression for GLES2. Enable "
 "'Import Pvrtc' in Project Settings."
 msgstr ""
-"Η πλατφόρμα προορισμού απαιτεί «ETC» συμπίεση υφών για το GLES2. "
-"Ενεργοποιήστε το «Import Etc» στις Ρυθμίσεις Έργου."
+"Η πλατφόρμα προορισμού απαιτεί συμπίεση υφών 'PVRTC' για το GLES2. "
+"Ενεργοποιήστε το 'Εισαγωγή PVRTC' στις Ρυθμίσεις Έργου."
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid ""
 "Target platform requires 'ETC2' or 'PVRTC' texture compression for GLES3. "
 "Enable 'Import Etc 2' or 'Import Pvrtc' in Project Settings."
 msgstr ""
-"Η πλατφόρμα προορισμού απαιτεί «ETC2» συμπίεση υφών για το GLES3. "
-"Ενεργοποιήστε το «Import Etc 2» στις Ρυθμίσεις Έργου."
+"Η πλατφόρμα προορισμού απαιτεί συμπίεση υφών 'ETC2' ή PVRTC' για το GLES3. "
+"Ενεργοποιήστε το 'Εισαγωγή ETC2' ή 'Εισαγωγή PVRTC' στις Ρυθμίσεις Έργου."
 
 #: editor/editor_export.cpp
 #, fuzzy
@@ -2323,6 +2321,10 @@ msgid ""
 "An error occurred while trying to save the editor layout.\n"
 "Make sure the editor's user data path is writable."
 msgstr ""
+"Πρόεκυψε ένα σφάλμα κατά την αποθήκευση της διάταξης του προγράμματος "
+"επεξεργασίας.\n"
+"Βεβαιωθείτε ότι η διαδρομή δεδομένων του χρήστη του προγράμματος "
+"επεξεργασίας είναι εγγράψιμη."
 
 #: editor/editor_node.cpp
 msgid ""
@@ -2330,15 +2332,18 @@ msgid ""
 "To restore the Default layout to its base settings, use the Delete Layout "
 "option and delete the Default layout."
 msgstr ""
+"Η προεπιλεγμένη διάταξη του προγράμματος επεξεργασίας έχει παρακαμφθεί.\n"
+"Για να επαναφέρετε την Προεπιλεγμένη διάταξη στις βασικές ρυθμίσεις, "
+"διαλέξτε την επιλογή Διαγραφή Διάταξης και διαγράψτε την Προεπιλεγμένη "
+"διάταξη."
 
 #: editor/editor_node.cpp
 msgid "Layout name not found!"
 msgstr "Το όνομα της διάταξης δεν βρέθηκε!"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Restored the Default layout to its base settings."
-msgstr "Επαναφορά της προεπιλεγμένης διάταξης στις βασικές ρυθμίσεις."
+msgstr "Έγινε επαναφορά της προεπιλεγμένης διάταξης στις βασικές ρυθμίσεις."
 
 #: editor/editor_node.cpp
 msgid ""
@@ -2397,7 +2402,7 @@ msgstr "Δεν υπάρχει καθορισμένη σκηνή για εκτε�
 
 #: editor/editor_node.cpp
 msgid "Save scene before running..."
-msgstr ""
+msgstr "Αποθήκευση σκηνής πριν την εκτέλεση..."
 
 #: editor/editor_node.cpp
 msgid "Could not start subprocess!"
@@ -2546,25 +2551,23 @@ msgstr ""
 "αρχείου ρύθμισης."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Unable to find script field for addon plugin at: '%s'."
 msgstr ""
-"Αδύνατη η έυρεση του πεδίου 'script' για την πρόσθετη επέκταση στο: 'res://"
-"addons/%s'."
+"Αδύνατη η έυρεση του πεδίου δέσμης ενεργειών για το πρόσθετο στο: '%s'."
 
 #: editor/editor_node.cpp
 msgid "Unable to load addon script from path: '%s'."
 msgstr "Αδύνατη η φόρτωση δέσμης ενεργειών προσθέτου από τη διαδρομή: '%s'."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid ""
 "Unable to load addon script from path: '%s'. This might be due to a code "
 "error in that script.\n"
 "Disabling the addon at '%s' to prevent further errors."
 msgstr ""
 "Αποτυχία φόρτωσης δέσμης ενεργειών προσθέτου από τη διαδρομή: '%s'. Φαίνεται "
-"πως υπάρχει λάθος στον κώδικα."
+"πως υπάρχει λάθος στον κώδικα.\n"
+"Έγινε απενεργοποίηση το προσθέτου '%s' για αποτροπή περαιτέρω προβλημάτων."
 
 #: editor/editor_node.cpp
 msgid ""
@@ -3015,8 +3018,9 @@ msgid "About"
 msgstr "Σχετικά"
 
 #: editor/editor_node.cpp
+#, fuzzy
 msgid "Support Godot Development"
-msgstr ""
+msgstr "Υποστηρίξτε την ανάπτυξη του Godot"
 
 #: editor/editor_node.cpp
 msgid "Play the project."
@@ -3161,13 +3165,12 @@ msgid "Open & Run a Script"
 msgstr "Άνοιξε & Τρέξε μία δέσμη ενεργειών"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid ""
 "The following files are newer on disk.\n"
 "What action should be taken?"
 msgstr ""
 "Τα ακόλουθα αρχεία είναι νεότερα στον δίσκο.\n"
-"Τι δράση να ληφθεί;:"
+"Τι δράση να ληφθεί;"
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/shader_editor_plugin.cpp
@@ -3709,9 +3712,12 @@ msgstr ""
 "επανεισάγετε το χειροκίνητα."
 
 #: editor/filesystem_dock.cpp
+#, fuzzy
 msgid ""
 "Importing has been disabled for this file, so it can't be opened for editing."
 msgstr ""
+"Η εισαγωγή έχει απενεργοποιηθεί για αυτό το αρχείο, οπότε δεν μπορεί να "
+"ανοιχτεί για επεξεργασία."
 
 #: editor/filesystem_dock.cpp
 msgid "Cannot move/rename resources root."
@@ -3758,6 +3764,12 @@ msgid ""
 "\n"
 "Do you wish to overwrite them?"
 msgstr ""
+"Τα ακόλουθα αρχεία ή φάκελοι συγκρούονται με στοιχεία στον προορισμό \"%s"
+"\":\n"
+"\n"
+"%s\n"
+"\n"
+"Θέλετε να τα αντικαταστήσετε;"
 
 #: editor/filesystem_dock.cpp
 msgid "Renaming file:"
@@ -3840,7 +3852,7 @@ msgstr "Αναπαραγωγή..."
 #: editor/filesystem_dock.cpp
 #, fuzzy
 msgid "Move to Trash"
-msgstr "Μετακίνηση AutoLoad"
+msgstr "Μετακίνηση στα απορρίμματα"
 
 #: editor/filesystem_dock.cpp editor/plugins/animation_player_editor_plugin.cpp
 msgid "Rename..."
@@ -3951,19 +3963,16 @@ msgid "Searching..."
 msgstr "Αναζήτηση..."
 
 #: editor/find_in_files.cpp
-#, fuzzy
 msgid "%d match in %d file."
-msgstr "%d αποτελέσματα."
+msgstr "%d αποτέλεσμα σε %d αρχείο."
 
 #: editor/find_in_files.cpp
-#, fuzzy
 msgid "%d matches in %d file."
-msgstr "%d αποτελέσματα."
+msgstr "%d αποτελέσματα σε %d αρχείο."
 
 #: editor/find_in_files.cpp
-#, fuzzy
 msgid "%d matches in %d files."
-msgstr "%d αποτελέσματα."
+msgstr "%d αποτελέσματα σε %d αρχεία."
 
 #: editor/groups_editor.cpp
 msgid "Add to Group"
@@ -4103,23 +4112,20 @@ msgid "Saving..."
 msgstr "Αποθήκευση..."
 
 #: editor/import_defaults_editor.cpp
-#, fuzzy
 msgid "Select Importer"
-msgstr "Επιλογή Λειτουργίας"
+msgstr "Επιλογή Εισαγωγέα"
 
 #: editor/import_defaults_editor.cpp
-#, fuzzy
 msgid "Importer:"
-msgstr "Εισαγωγή"
+msgstr "Εισαγωγέας:"
 
 #: editor/import_defaults_editor.cpp
-#, fuzzy
 msgid "Reset to Defaults"
-msgstr "Χρήση προεπιλεγμένου sRGB"
+msgstr "Επαναφορά προεπιλογών"
 
 #: editor/import_dock.cpp
 msgid "Keep File (No Import)"
-msgstr ""
+msgstr "Διατήρηση αρχειου (Χωρίς Εισαγωγή)"
 
 #: editor/import_dock.cpp
 msgid "%d Files"
@@ -5224,16 +5230,13 @@ msgid "Assets ZIP File"
 msgstr "Αρχείο ZIP των Στοιχείων"
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
-#, fuzzy
 msgid ""
 "Can't determine a save path for lightmap images.\n"
 "Save your scene and try again."
 msgstr ""
 "Δεν ήταν δυνατός ο προσδιορισμός διαδρομής αποθήκευσης για εικόνες "
 "lightmap.\n"
-"Αποθηκεύστε τη σκηνή σας (ώστε οι εικόνες να αποθηκευτούν στον ίδιο "
-"κατάλογο), ή επιλέξτε μία διαδρομή αποθήκευσης από τις ιδιότητες του "
-"BakedLightMap."
+"Αποθηκεύστε τη σκηνή σας και δοκιμάστε ξανα."
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid ""
@@ -7429,9 +7432,8 @@ msgid "Yaw"
 msgstr "Παρέκκλιση"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Size"
-msgstr "Μέγεθος: "
+msgstr "Μέγεθος"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Objects Drawn"
@@ -10208,7 +10210,7 @@ msgstr "Κουμπί ποντικιού"
 
 #: editor/project_settings_editor.cpp
 msgid ""
-"Invalid action name. it cannot be empty nor contain '/', ':', '=', '\\' or "
+"Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\' or "
 "'\"'"
 msgstr ""
 "Άκυρο όνομα ενέργειας. Δεν μπορεί να είναι άδειο ή να περιέχει «/», «:», "
@@ -10764,9 +10766,8 @@ msgid "Instance Child Scene"
 msgstr "Αρχικοποίηση σκηνής ως παιδί"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Can't paste root node into the same scene."
-msgstr "Δεν είναι δυνατή η λειτουργία σε κόμβους από ξένη σκηνή!"
+msgstr "Δεν είναι δυνατή η επικόλληση του ριζικού κόμβου στην ίδια σκηνή."
 
 #: editor/scene_tree_dock.cpp
 #, fuzzy
@@ -12820,9 +12821,8 @@ msgid "Finding meshes and lights"
 msgstr ""
 
 #: scene/3d/baked_lightmap.cpp
-#, fuzzy
 msgid "Preparing geometry (%d/%d)"
-msgstr "Ανάλυση γεωμετρίας..."
+msgstr "Προετοιμασία γεωμετρίας (%d/%d)"
 
 #: scene/3d/baked_lightmap.cpp
 #, fuzzy
