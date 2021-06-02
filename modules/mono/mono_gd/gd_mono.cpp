@@ -1263,7 +1263,6 @@ GDMono::~GDMono() {
 
 		project_assembly = NULL;
 
-		root_domain = NULL;
 		scripts_domain = NULL;
 
 		// Leave the rest to 'mono_jit_cleanup'

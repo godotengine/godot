@@ -932,6 +932,10 @@ Error BindingsGenerator::generate_cs_core_project(const String &p_proj_dir) {
 	cs_icalls_content.append(MEMBER_BEGIN "internal static uint cs_glue_version = ");
 	cs_icalls_content.append(String::num_uint64(CS_GLUE_VERSION) + ";\n");
 
+	// We have issues with beforefieldinit and AOT, so we use explicitly declare
+	// the static constructor to prevent the class from being beforefieldinit.
+	cs_icalls_content.append(MEMBER_BEGIN "static NativeCalls()\n" INDENT2 OPEN_BLOCK CLOSE_BLOCK_L2);
+
 #define ADD_INTERNAL_CALL(m_icall)                                                               \
 	if (!m_icall.editor_only) {                                                                  \
 		cs_icalls_content.append(MEMBER_BEGIN "[MethodImpl(MethodImplOptions.InternalCall)]\n"); \
@@ -1031,15 +1035,18 @@ Error BindingsGenerator::generate_cs_editor_project(const String &p_proj_dir) {
 	cs_icalls_content.append(String::num_uint64(BINDINGS_GENERATOR_VERSION) + ";\n");
 	cs_icalls_content.append(INDENT2 "internal static uint cs_glue_version = ");
 	cs_icalls_content.append(String::num_uint64(CS_GLUE_VERSION) + ";\n");
-	cs_icalls_content.append("\n");
 
-#define ADD_INTERNAL_CALL(m_icall)                                                          \
-	if (m_icall.editor_only) {                                                              \
-		cs_icalls_content.append(INDENT2 "[MethodImpl(MethodImplOptions.InternalCall)]\n"); \
-		cs_icalls_content.append(INDENT2 "internal extern static ");                        \
-		cs_icalls_content.append(m_icall.im_type_out + " ");                                \
-		cs_icalls_content.append(m_icall.name + "(");                                       \
-		cs_icalls_content.append(m_icall.im_sig + ");\n");                                  \
+	// We have issues with beforefieldinit and AOT, so we use explicitly declare
+	// the static constructor to prevent the class from being beforefieldinit.
+	cs_icalls_content.append(MEMBER_BEGIN "static EditorNativeCalls()\n" INDENT2 OPEN_BLOCK CLOSE_BLOCK_L2);
+
+#define ADD_INTERNAL_CALL(m_icall)                                                               \
+	if (m_icall.editor_only) {                                                                   \
+		cs_icalls_content.append(MEMBER_BEGIN "[MethodImpl(MethodImplOptions.InternalCall)]\n"); \
+		cs_icalls_content.append(INDENT2 "internal extern static ");                             \
+		cs_icalls_content.append(m_icall.im_type_out + " ");                                     \
+		cs_icalls_content.append(m_icall.name + "(");                                            \
+		cs_icalls_content.append(m_icall.im_sig + ");\n");                                       \
 	}
 
 	for (const List<InternalCall>::Element *E = editor_custom_icalls.front(); E; E = E->next())
