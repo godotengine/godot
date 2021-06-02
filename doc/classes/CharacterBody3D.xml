@@ -68,15 +68,12 @@
 			</description>
 		</method>
 		<method name="move_and_slide">
-			<return type="Vector3">
+			<return type="void">
 			</return>
-			<argument index="0" name="linear_velocity" type="Vector3">
-			</argument>
 			<description>
-				Moves the body along a vector. If the body collides with another, it will slide along the other body rather than stop immediately. If the other body is a [CharacterBody3D] or [RigidBody3D], it will also be affected by the motion of the other body. You can use this to make moving and rotating platforms, or to make nodes push other nodes.
+				Moves the body based on [member linear_velocity]. If the body collides with another, it will slide along the other body rather than stop immediately. If the other body is a [CharacterBody3D] or [RigidBody3D], it will also be affected by the motion of the other body. You can use this to make moving and rotating platforms, or to make nodes push other nodes.
 				This method should be used in [method Node._physics_process] (or in a method called by [method Node._physics_process]), as it uses the physics step's [code]delta[/code] value automatically in calculations. Otherwise, the simulation will run at an incorrect speed.
-				[code]linear_velocity[/code] is the velocity vector (typically meters per second). Unlike in [method PhysicsBody3D.move_and_collide], you should [i]not[/i] multiply it by [code]delta[/code] — the physics engine handles applying the velocity.
-				Returns the [code]linear_velocity[/code] vector, rotated and/or scaled if a slide collision occurred. To get detailed information about collisions that occurred, use [method get_slide_collision].
+				Modifies [member linear_velocity] if a slide collision occurred. To get detailed information about collisions that occurred, use [method get_slide_collision].
 			</description>
 		</method>
 	</methods>
@@ -92,6 +89,9 @@
 		</member>
 		<member name="infinite_inertia" type="bool" setter="set_infinite_inertia_enabled" getter="is_infinite_inertia_enabled" default="true">
 			If [code]true[/code], the body will be able to push [RigidBody3D] nodes when calling [method move_and_slide], but it also won't detect any collisions with them. If [code]false[/code], it will interact with [RigidBody3D] nodes like with [StaticBody3D].
+		</member>
+		<member name="linear_velocity" type="Vector3" setter="set_linear_velocity" getter="get_linear_velocity" default="Vector3( 0, 0, 0 )">
+			Current velocity vector (typically meters per second), used and modified during calls to [method move_and_slide].
 		</member>
 		<member name="max_slides" type="int" setter="set_max_slides" getter="get_max_slides" default="4">
 			Maximum number of times the body can change direction before it stops when calling [method move_and_slide].

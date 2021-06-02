@@ -76,6 +76,9 @@ class StaticBody3D : public PhysicsBody3D {
 	Vector3 constant_linear_velocity;
 	Vector3 constant_angular_velocity;
 
+	Vector3 linear_velocity;
+	Vector3 angular_velocity;
+
 	Ref<PhysicsMaterial> physics_material_override;
 
 	bool kinematic_motion = false;
@@ -83,6 +86,8 @@ class StaticBody3D : public PhysicsBody3D {
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
+
+	void _direct_state_changed(Object *p_state);
 
 public:
 	void set_physics_material_override(const Ref<PhysicsMaterial> &p_physics_material_override);
@@ -93,6 +98,9 @@ public:
 
 	Vector3 get_constant_linear_velocity() const;
 	Vector3 get_constant_angular_velocity() const;
+
+	virtual Vector3 get_linear_velocity() const override;
+	virtual Vector3 get_angular_velocity() const override;
 
 	StaticBody3D();
 
@@ -270,7 +278,6 @@ private:
 	Vector3 up_direction = Vector3(0.0, 1.0, 0.0);
 
 	Vector3 linear_velocity;
-	Vector3 angular_velocity;
 
 	Vector3 floor_normal;
 	Vector3 floor_velocity;
@@ -310,13 +317,11 @@ protected:
 	void _notification(int p_what);
 	static void _bind_methods();
 
-	virtual void _direct_state_changed(Object *p_state);
-
 public:
-	virtual Vector3 get_linear_velocity() const override;
-	virtual Vector3 get_angular_velocity() const override;
+	void move_and_slide();
 
-	Vector3 move_and_slide(const Vector3 &p_linear_velocity);
+	virtual Vector3 get_linear_velocity() const override;
+	void set_linear_velocity(const Vector3 &p_velocity);
 
 	bool is_on_floor() const;
 	bool is_on_wall() const;
