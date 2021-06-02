@@ -1119,7 +1119,7 @@ bool DisplayServerWindows::window_can_draw(WindowID p_window) const {
 
 	ERR_FAIL_COND_V(!windows.has(p_window), false);
 	const WindowData &wd = windows[p_window];
-	return wd.minimized;
+	return !wd.minimized;
 }
 
 bool DisplayServerWindows::can_any_window_draw() const {
