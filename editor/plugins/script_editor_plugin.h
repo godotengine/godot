@@ -162,6 +162,7 @@ public:
 	virtual void set_tooltip_request_func(String p_method, Object *p_obj) = 0;
 	virtual Control *get_edit_menu() = 0;
 	virtual void clear_edit_menu() = 0;
+	virtual void set_find_replace_bar(FindReplaceBar *p_bar) = 0;
 
 	virtual Control *get_base_editor() const = 0;
 
@@ -270,6 +271,7 @@ class ScriptEditor : public PanelContainer {
 	ConfirmationDialog *erase_tab_confirm;
 	ScriptCreateDialog *script_create_dialog;
 	Button *scripts_visible;
+	FindReplaceBar *find_replace_bar;
 
 	String current_theme;
 

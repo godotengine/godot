@@ -583,15 +583,29 @@ void FindReplaceBar::set_error(const String &p_label) {
 	emit_signal("error", p_label);
 }
 
-void FindReplaceBar::set_text_edit(CodeEdit *p_text_edit) {
+void FindReplaceBar::set_text_edit(CodeTextEditor *p_text_editor) {
+	if (p_text_editor == base_text_editor) {
+		return;
+	}
+
+	if (base_text_editor) {
+		base_text_editor->remove_find_replace_bar();
+		base_text_editor = nullptr;
+		text_editor->disconnect("text_changed", callable_mp(this, &FindReplaceBar::_editor_text_changed));
+		text_editor = nullptr;
+	}
+
 	results_count = -1;
-	text_editor = p_text_edit;
+	base_text_editor = p_text_editor;
+	text_editor = base_text_editor->get_text_editor();
 	text_editor->connect("text_changed", callable_mp(this, &FindReplaceBar::_editor_text_changed));
+
+	_update_results_count();
+	_update_matches_label();
 }
 
 void FindReplaceBar::_bind_methods() {
 	ClassDB::bind_method("_unhandled_input", &FindReplaceBar::_unhandled_input);
-
 	ClassDB::bind_method("_search_current", &FindReplaceBar::search_current);
 
 	ADD_SIGNAL(MethodInfo("search"));
@@ -937,6 +951,25 @@ void CodeTextEditor::update_editor_settings() {
 	text_editor->cursor_set_blink_enabled(EditorSettings::get_singleton()->get("text_editor/cursor/caret_blink"));
 	text_editor->cursor_set_blink_speed(EditorSettings::get_singleton()->get("text_editor/cursor/caret_blink_speed"));
 	text_editor->set_auto_brace_completion(EditorSettings::get_singleton()->get("text_editor/completion/auto_brace_complete"));
+}
+
+void CodeTextEditor::set_find_replace_bar(FindReplaceBar *p_bar) {
+	if (find_replace_bar) {
+		return;
+	}
+
+	find_replace_bar = p_bar;
+	find_replace_bar->set_text_edit(this);
+	find_replace_bar->connect("error", callable_mp(error, &Label::set_text));
+}
+
+void CodeTextEditor::remove_find_replace_bar() {
+	if (!find_replace_bar) {
+		return;
+	}
+
+	find_replace_bar->disconnect("error", callable_mp(error, &Label::set_text));
+	find_replace_bar = nullptr;
 }
 
 void CodeTextEditor::trim_trailing_whitespace() {
@@ -1760,14 +1793,6 @@ CodeTextEditor::CodeTextEditor() {
 		} break;
 	}
 
-	// Added second so it opens at the bottom, so it won't shift the entire text editor when opening.
-	find_replace_bar = memnew(FindReplaceBar);
-	add_child(find_replace_bar);
-	find_replace_bar->set_h_size_flags(SIZE_EXPAND_FILL);
-	find_replace_bar->hide();
-
-	find_replace_bar->set_text_edit(text_editor);
-
 	text_editor->set_draw_line_numbers(true);
 	text_editor->set_brace_matching(true);
 	text_editor->set_auto_indent(true);
@@ -1808,7 +1833,6 @@ CodeTextEditor::CodeTextEditor() {
 	error->set_v_size_flags(SIZE_EXPAND | SIZE_SHRINK_CENTER);
 	error->set_mouse_filter(MOUSE_FILTER_STOP);
 	error->connect("gui_input", callable_mp(this, &CodeTextEditor::_error_pressed));
-	find_replace_bar->connect("error", callable_mp(error, &Label::set_text));
 
 	// Warnings
 	warning_button = memnew(Button);
