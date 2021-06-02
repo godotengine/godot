@@ -45,17 +45,13 @@ protected:
 	static void _bind_methods();
 	PhysicsBody2D(PhysicsServer2D::BodyMode p_mode);
 
-	real_t margin = 0.08;
 	Ref<KinematicCollision2D> motion_cache;
 
-	Ref<KinematicCollision2D> _move(const Vector2 &p_motion, bool p_infinite_inertia = true, bool p_exclude_raycast_shapes = true, bool p_test_only = false);
+	Ref<KinematicCollision2D> _move(const Vector2 &p_motion, bool p_infinite_inertia = true, bool p_exclude_raycast_shapes = true, bool p_test_only = false, real_t p_margin = 0.08);
 
 public:
-	bool move_and_collide(const Vector2 &p_motion, bool p_infinite_inertia, PhysicsServer2D::MotionResult &r_result, bool p_exclude_raycast_shapes = true, bool p_test_only = false);
-	bool test_move(const Transform2D &p_from, const Vector2 &p_motion, bool p_infinite_inertia = true, bool p_exclude_raycast_shapes = true, const Ref<KinematicCollision2D> &r_collision = Ref<KinematicCollision2D>());
-
-	void set_safe_margin(real_t p_margin);
-	real_t get_safe_margin() const;
+	bool move_and_collide(const Vector2 &p_motion, bool p_infinite_inertia, PhysicsServer2D::MotionResult &r_result, real_t p_margin, bool p_exclude_raycast_shapes = true, bool p_test_only = false);
+	bool test_move(const Transform2D &p_from, const Vector2 &p_motion, bool p_infinite_inertia = true, bool p_exclude_raycast_shapes = true, const Ref<KinematicCollision2D> &r_collision = Ref<KinematicCollision2D>(), real_t p_margin = 0.08);
 
 	TypedArray<PhysicsBody2D> get_collision_exceptions();
 	void add_collision_exception_with(Node *p_node); //must be physicsbody
@@ -263,6 +259,8 @@ class CharacterBody2D : public PhysicsBody2D {
 	GDCLASS(CharacterBody2D, PhysicsBody2D);
 
 private:
+	real_t margin = 0.08;
+
 	bool stop_on_slope = false;
 	bool infinite_inertia = true;
 	int max_slides = 4;
@@ -287,6 +285,9 @@ private:
 
 	Transform2D last_valid_transform;
 	void _direct_state_changed(Object *p_state);
+
+	void set_safe_margin(real_t p_margin);
+	real_t get_safe_margin() const;
 
 	bool is_stop_on_slope_enabled() const;
 	void set_stop_on_slope_enabled(bool p_enabled);

@@ -46,9 +46,12 @@
 			</argument>
 			<argument index="3" name="test_only" type="bool" default="false">
 			</argument>
+			<argument index="4" name="safe_margin" type="float" default="0.001">
+			</argument>
 			<description>
 				Moves the body along the vector [code]rel_vec[/code]. The body will stop if it collides. Returns a [KinematicCollision3D], which contains information about the collision.
 				If [code]test_only[/code] is [code]true[/code], the body does not move but the would-be collision information is given.
+				[code]safe_margin[/code] is the extra margin used for collision recovery (see [member CharacterBody3D.collision/safe_margin] for more details).
 			</description>
 		</method>
 		<method name="remove_collision_exception_with">
@@ -84,9 +87,12 @@
 			</argument>
 			<argument index="4" name="collision" type="KinematicCollision3D" default="null">
 			</argument>
+			<argument index="5" name="safe_margin" type="float" default="0.001">
+			</argument>
 			<description>
 				Checks for collisions without moving the body. Virtually sets the node's position, scale and rotation to that of the given [Transform3D], then tries to move the body along the vector [code]rel_vec[/code]. Returns [code]true[/code] if a collision would occur.
 				[code]collision[/code] is an optional object of type [KinematicCollision3D], which contains additional information about the collision (should there be one).
+				[code]safe_margin[/code] is the extra margin used for collision recovery (see [member CharacterBody3D.collision/safe_margin] for more details).
 			</description>
 		</method>
 	</methods>
@@ -108,12 +114,6 @@
 		</member>
 		<member name="axis_lock_linear_z" type="bool" setter="set_axis_lock" getter="get_axis_lock" default="false">
 			Lock the body's linear movement in the Z axis.
-		</member>
-		<member name="collision/safe_margin" type="float" setter="set_safe_margin" getter="get_safe_margin" default="0.001">
-			Extra margin used for collision recovery in motion functions (see [method move_and_collide] and [method CharacterBody3D.move_and_slide]).
-			If the body is at least this close to another body, it will consider them to be colliding and will be pushed away before performing the actual motion.
-			A higher value means it's more flexible for detecting collision, which helps with consistently detecting walls and floors.
-			A lower value forces the collision algorithm to use more exact detection, so it can be used in cases that specifically require precision, e.g at very low scale to avoid visible jittering, or for stability with a stack of character bodies.
 		</member>
 	</members>
 	<constants>

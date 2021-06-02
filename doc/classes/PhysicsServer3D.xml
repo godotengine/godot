@@ -443,14 +443,6 @@
 				Returns the [PhysicsDirectBodyState3D] of the body.
 			</description>
 		</method>
-		<method name="body_get_kinematic_safe_margin" qualifiers="const">
-			<return type="float">
-			</return>
-			<argument index="0" name="body" type="RID">
-			</argument>
-			<description>
-			</description>
-		</method>
 		<method name="body_get_max_contacts_reported" qualifiers="const">
 			<return type="int">
 			</return>
@@ -659,16 +651,6 @@
 			</argument>
 			<description>
 				Sets the function used to calculate physics for an object, if that object allows it (see [method body_set_omit_force_integration]).
-			</description>
-		</method>
-		<method name="body_set_kinematic_safe_margin">
-			<return type="void">
-			</return>
-			<argument index="0" name="body" type="RID">
-			</argument>
-			<argument index="1" name="margin" type="float">
-			</argument>
-			<description>
 			</description>
 		</method>
 		<method name="body_set_max_contacts_reported">

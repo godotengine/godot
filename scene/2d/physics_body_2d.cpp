@@ -39,17 +39,12 @@
 #include "scene/scene_string_names.h"
 
 void PhysicsBody2D::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("move_and_collide", "rel_vec", "infinite_inertia", "exclude_raycast_shapes", "test_only"), &PhysicsBody2D::_move, DEFVAL(true), DEFVAL(true), DEFVAL(false));
-	ClassDB::bind_method(D_METHOD("test_move", "from", "rel_vec", "infinite_inertia", "exclude_raycast_shapes", "collision"), &PhysicsBody2D::test_move, DEFVAL(true), DEFVAL(true), DEFVAL(Variant()));
-
-	ClassDB::bind_method(D_METHOD("set_safe_margin", "pixels"), &PhysicsBody2D::set_safe_margin);
-	ClassDB::bind_method(D_METHOD("get_safe_margin"), &PhysicsBody2D::get_safe_margin);
+	ClassDB::bind_method(D_METHOD("move_and_collide", "rel_vec", "infinite_inertia", "exclude_raycast_shapes", "test_only", "safe_margin"), &PhysicsBody2D::_move, DEFVAL(true), DEFVAL(true), DEFVAL(false), DEFVAL(0.08));
+	ClassDB::bind_method(D_METHOD("test_move", "from", "rel_vec", "infinite_inertia", "exclude_raycast_shapes", "collision", "safe_margin"), &PhysicsBody2D::test_move, DEFVAL(true), DEFVAL(true), DEFVAL(Variant()), DEFVAL(0.08));
 
 	ClassDB::bind_method(D_METHOD("get_collision_exceptions"), &PhysicsBody2D::get_collision_exceptions);
 	ClassDB::bind_method(D_METHOD("add_collision_exception_with", "body"), &PhysicsBody2D::add_collision_exception_with);
 	ClassDB::bind_method(D_METHOD("remove_collision_exception_with", "body"), &PhysicsBody2D::remove_collision_exception_with);
-
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "collision/safe_margin", PROPERTY_HINT_RANGE, "0.001,256,0.001"), "set_safe_margin", "get_safe_margin");
 }
 
 PhysicsBody2D::PhysicsBody2D(PhysicsServer2D::BodyMode p_mode) :
@@ -64,10 +59,10 @@ PhysicsBody2D::~PhysicsBody2D() {
 	}
 }
 
-Ref<KinematicCollision2D> PhysicsBody2D::_move(const Vector2 &p_motion, bool p_infinite_inertia, bool p_exclude_raycast_shapes, bool p_test_only) {
+Ref<KinematicCollision2D> PhysicsBody2D::_move(const Vector2 &p_motion, bool p_infinite_inertia, bool p_exclude_raycast_shapes, bool p_test_only, real_t p_margin) {
 	PhysicsServer2D::MotionResult result;
 
-	if (move_and_collide(p_motion, p_infinite_inertia, result, p_exclude_raycast_shapes, p_test_only)) {
+	if (move_and_collide(p_motion, p_infinite_inertia, result, p_margin, p_exclude_raycast_shapes, p_test_only)) {
 		if (motion_cache.is_null()) {
 			motion_cache.instance();
 			motion_cache->owner = this;
@@ -81,12 +76,12 @@ Ref<KinematicCollision2D> PhysicsBody2D::_move(const Vector2 &p_motion, bool p_i
 	return Ref<KinematicCollision2D>();
 }
 
-bool PhysicsBody2D::move_and_collide(const Vector2 &p_motion, bool p_infinite_inertia, PhysicsServer2D::MotionResult &r_result, bool p_exclude_raycast_shapes, bool p_test_only) {
+bool PhysicsBody2D::move_and_collide(const Vector2 &p_motion, bool p_infinite_inertia, PhysicsServer2D::MotionResult &r_result, real_t p_margin, bool p_exclude_raycast_shapes, bool p_test_only) {
 	if (is_only_update_transform_changes_enabled()) {
 		ERR_PRINT("Move functions do not work together with 'sync to physics' option. Please read the documentation.");
 	}
 	Transform2D gt = get_global_transform();
-	bool colliding = PhysicsServer2D::get_singleton()->body_test_motion(get_rid(), gt, p_motion, p_infinite_inertia, margin, &r_result, p_exclude_raycast_shapes);
+	bool colliding = PhysicsServer2D::get_singleton()->body_test_motion(get_rid(), gt, p_motion, p_infinite_inertia, p_margin, &r_result, p_exclude_raycast_shapes);
 
 	if (!p_test_only) {
 		gt.elements[2] += r_result.motion;
@@ -96,7 +91,7 @@ bool PhysicsBody2D::move_and_collide(const Vector2 &p_motion, bool p_infinite_in
 	return colliding;
 }
 
-bool PhysicsBody2D::test_move(const Transform2D &p_from, const Vector2 &p_motion, bool p_infinite_inertia, bool p_exclude_raycast_shapes, const Ref<KinematicCollision2D> &r_collision) {
+bool PhysicsBody2D::test_move(const Transform2D &p_from, const Vector2 &p_motion, bool p_infinite_inertia, bool p_exclude_raycast_shapes, const Ref<KinematicCollision2D> &r_collision, real_t p_margin) {
 	ERR_FAIL_COND_V(!is_inside_tree(), false);
 
 	PhysicsServer2D::MotionResult *r = nullptr;
@@ -105,15 +100,7 @@ bool PhysicsBody2D::test_move(const Transform2D &p_from, const Vector2 &p_motion
 		r = const_cast<PhysicsServer2D::MotionResult *>(&r_collision->result);
 	}
 
-	return PhysicsServer2D::get_singleton()->body_test_motion(get_rid(), p_from, p_motion, p_infinite_inertia, margin, r, p_exclude_raycast_shapes);
-}
-
-void PhysicsBody2D::set_safe_margin(real_t p_margin) {
-	margin = p_margin;
-}
-
-real_t PhysicsBody2D::get_safe_margin() const {
-	return margin;
+	return PhysicsServer2D::get_singleton()->body_test_motion(get_rid(), p_from, p_motion, p_infinite_inertia, p_margin, r, p_exclude_raycast_shapes);
 }
 
 TypedArray<PhysicsBody2D> PhysicsBody2D::get_collision_exceptions() {
@@ -964,7 +951,7 @@ Vector2 CharacterBody2D::move_and_slide(const Vector2 &p_linear_velocity) {
 		for (int i = 0; i < 2; ++i) {
 			bool collided;
 			if (i == 0) { //collide
-				collided = move_and_collide(motion, infinite_inertia, result);
+				collided = move_and_collide(motion, infinite_inertia, result, margin);
 				if (!collided) {
 					motion = Vector2(); //clear because no collision happened and motion completed
 				}
@@ -1027,7 +1014,7 @@ Vector2 CharacterBody2D::move_and_slide(const Vector2 &p_linear_velocity) {
 	// Apply snap.
 	Transform2D gt = get_global_transform();
 	PhysicsServer2D::MotionResult result;
-	if (move_and_collide(snap, infinite_inertia, result, false, true)) {
+	if (move_and_collide(snap, infinite_inertia, result, margin, false, true)) {
 		bool apply = true;
 		if (up_direction != Vector2()) {
 			if (Math::acos(result.collision_normal.dot(up_direction)) <= floor_max_angle + FLOOR_ANGLE_THRESHOLD) {
@@ -1174,6 +1161,14 @@ void CharacterBody2D::_direct_state_changed(Object *p_state) {
 	set_notify_local_transform(true);
 }
 
+void CharacterBody2D::set_safe_margin(real_t p_margin) {
+	margin = p_margin;
+}
+
+real_t CharacterBody2D::get_safe_margin() const {
+	return margin;
+}
+
 bool CharacterBody2D::is_stop_on_slope_enabled() const {
 	return stop_on_slope;
 }
@@ -1249,6 +1244,8 @@ void CharacterBody2D::_notification(int p_what) {
 void CharacterBody2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("move_and_slide", "linear_velocity"), &CharacterBody2D::move_and_slide);
 
+	ClassDB::bind_method(D_METHOD("set_safe_margin", "pixels"), &CharacterBody2D::set_safe_margin);
+	ClassDB::bind_method(D_METHOD("get_safe_margin"), &CharacterBody2D::get_safe_margin);
 	ClassDB::bind_method(D_METHOD("is_stop_on_slope_enabled"), &CharacterBody2D::is_stop_on_slope_enabled);
 	ClassDB::bind_method(D_METHOD("set_stop_on_slope_enabled", "enabled"), &CharacterBody2D::set_stop_on_slope_enabled);
 	ClassDB::bind_method(D_METHOD("is_infinite_inertia_enabled"), &CharacterBody2D::is_infinite_inertia_enabled);
@@ -1281,6 +1278,7 @@ void CharacterBody2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "up_direction"), "set_up_direction", "get_up_direction");
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "motion/sync_to_physics"), "set_sync_to_physics", "is_sync_to_physics_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "collision/safe_margin", PROPERTY_HINT_RANGE, "0.001,256,0.001"), "set_safe_margin", "get_safe_margin");
 }
 
 CharacterBody2D::CharacterBody2D() :

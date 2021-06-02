@@ -712,10 +712,6 @@ void Body3DSW::set_force_integration_callback(const Callable &p_callable, const 
 	}
 }
 
-void Body3DSW::set_kinematic_margin(real_t p_margin) {
-	kinematic_safe_margin = p_margin;
-}
-
 Body3DSW::Body3DSW() :
 		CollisionObject3DSW(TYPE_BODY),
 
@@ -726,8 +722,6 @@ Body3DSW::Body3DSW() :
 	active = true;
 
 	mass = 1;
-	kinematic_safe_margin = 0.001;
-	//_inv_inertia=Transform3D();
 	_inv_mass = 1;
 	bounce = 0;
 	friction = 1;

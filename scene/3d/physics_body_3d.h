@@ -46,19 +46,15 @@ protected:
 	static void _bind_methods();
 	PhysicsBody3D(PhysicsServer3D::BodyMode p_mode);
 
-	real_t margin = 0.001;
 	Ref<KinematicCollision3D> motion_cache;
 
 	uint16_t locked_axis = 0;
 
-	Ref<KinematicCollision3D> _move(const Vector3 &p_motion, bool p_infinite_inertia = true, bool p_exclude_raycast_shapes = true, bool p_test_only = false);
+	Ref<KinematicCollision3D> _move(const Vector3 &p_motion, bool p_infinite_inertia = true, bool p_exclude_raycast_shapes = true, bool p_test_only = false, real_t p_margin = 0.001);
 
 public:
-	bool move_and_collide(const Vector3 &p_motion, bool p_infinite_inertia, PhysicsServer3D::MotionResult &r_result, bool p_exclude_raycast_shapes = true, bool p_test_only = false);
-	bool test_move(const Transform3D &p_from, const Vector3 &p_motion, bool p_infinite_inertia = true, bool p_exclude_raycast_shapes = true, const Ref<KinematicCollision3D> &r_collision = Ref<KinematicCollision3D>());
-
-	void set_safe_margin(real_t p_margin);
-	real_t get_safe_margin() const;
+	bool move_and_collide(const Vector3 &p_motion, bool p_infinite_inertia, PhysicsServer3D::MotionResult &r_result, real_t p_margin, bool p_exclude_raycast_shapes = true, bool p_test_only = false);
+	bool test_move(const Transform3D &p_from, const Vector3 &p_motion, bool p_infinite_inertia = true, bool p_exclude_raycast_shapes = true, const Ref<KinematicCollision3D> &r_collision = Ref<KinematicCollision3D>(), real_t p_margin = 0.001);
 
 	void set_axis_lock(PhysicsServer3D::BodyAxis p_axis, bool p_lock);
 	bool get_axis_lock(PhysicsServer3D::BodyAxis p_axis) const;
@@ -264,6 +260,8 @@ class CharacterBody3D : public PhysicsBody3D {
 	GDCLASS(CharacterBody3D, PhysicsBody3D);
 
 private:
+	real_t margin = 0.001;
+
 	bool stop_on_slope = false;
 	bool infinite_inertia = true;
 	int max_slides = 4;
@@ -286,6 +284,9 @@ private:
 	Ref<KinematicCollision3D> _get_slide_collision(int p_bounce);
 
 	bool separate_raycast_shapes(PhysicsServer3D::MotionResult &r_result);
+
+	void set_safe_margin(real_t p_margin);
+	real_t get_safe_margin() const;
 
 	bool is_stop_on_slope_enabled() const;
 	void set_stop_on_slope_enabled(bool p_enabled);
