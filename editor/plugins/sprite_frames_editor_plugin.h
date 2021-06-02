@@ -36,6 +36,7 @@
 #include "scene/2d/animated_sprite.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/file_dialog.h"
+#include "scene/gui/line_edit.h"
 #include "scene/gui/split_container.h"
 #include "scene/gui/texture_rect.h"
 #include "scene/gui/tree.h"
@@ -68,6 +69,7 @@ class SpriteFramesEditor : public HSplitContainer {
 
 	ToolButton *new_anim;
 	ToolButton *remove_anim;
+	LineEdit *anim_search_box;
 
 	Tree *animations;
 	SpinBox *anim_speed;
@@ -132,6 +134,7 @@ class SpriteFramesEditor : public HSplitContainer {
 	void _animation_add();
 	void _animation_remove();
 	void _animation_remove_confirmed();
+	void _animation_search_text_changed(const String &p_text);
 	void _animation_loop_changed();
 	void _animation_fps_changed(double p_value);
 
