@@ -10285,7 +10285,7 @@ msgstr "Bouton de souris"
 
 #: editor/project_settings_editor.cpp
 msgid ""
-"Invalid action name. it cannot be empty nor contain '/', ':', '=', '\\' or "
+"Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\' or "
 "'\"'"
 msgstr ""
 "Nom d'action invalide. Il ne peut être vide ni contenir « / », « : », « = », "

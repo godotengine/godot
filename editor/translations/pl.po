@@ -52,7 +52,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-04-22 14:39+0000\n"
+"PO-Revision-Date: 2021-05-19 20:16+0000\n"
 "Last-Translator: Tomek <kobewi4e@gmail.com>\n"
 "Language-Team: Polish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/pl/>\n"
@@ -2572,14 +2572,14 @@ msgid "Unable to load addon script from path: '%s'."
 msgstr "Nie można załadować skryptu dodatku z ścieżki: \"%s\"."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid ""
 "Unable to load addon script from path: '%s'. This might be due to a code "
 "error in that script.\n"
 "Disabling the addon at '%s' to prevent further errors."
 msgstr ""
-"Nie można załadować skryptu dodatku ze ścieżki: \"%s\" W kodzie znajduje się "
-"błąd, sprawdź składnię."
+"Nie można załadować skryptu dodatku ze ścieżki: \"%s\". Może to być "
+"spowodowane błędem w skrypcie.\n"
+"Wyłączam dodatek \"%s\" by uniknąć dalszych błędów."
 
 #: editor/editor_node.cpp
 msgid ""
@@ -3023,7 +3023,7 @@ msgstr "O silniku"
 
 #: editor/editor_node.cpp
 msgid "Support Godot Development"
-msgstr ""
+msgstr "Wesprzyj rozwój Godota"
 
 #: editor/editor_node.cpp
 msgid "Play the project."
@@ -3272,11 +3272,11 @@ msgstr "Zmierzono:"
 
 #: editor/editor_profiler.cpp
 msgid "Frame Time (sec)"
-msgstr "Czas ramki (sek)"
+msgstr "Czas klatki (sek)"
 
 #: editor/editor_profiler.cpp
 msgid "Average Time (sec)"
-msgstr "Średni Czas (sek)"
+msgstr "Średni czas (sek)"
 
 #: editor/editor_profiler.cpp
 msgid "Frame %"
@@ -3288,11 +3288,11 @@ msgstr "Klatka fizyki %"
 
 #: editor/editor_profiler.cpp
 msgid "Inclusive"
-msgstr "Włącznie"
+msgstr "Łącznie"
 
 #: editor/editor_profiler.cpp
 msgid "Self"
-msgstr "Ten obiekt"
+msgstr "Pojedynczo"
 
 #: editor/editor_profiler.cpp
 msgid "Frame #:"
@@ -5257,12 +5257,11 @@ msgstr ""
 "mieszczą się w kwadratowym obszarze [0.0, 1.0]."
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
-#, fuzzy
 msgid ""
 "Godot editor was built without ray tracing support, lightmaps can't be baked."
 msgstr ""
-"Godot został zbudowany bez wsparcia ray tracingu, mapy światła nie mogą być "
-"wypalone."
+"Edytor Godota został zbudowany bez wsparcia ray tracingu, mapy światła nie "
+"mogą zostać wypalone."
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid "Bake Lightmaps"
@@ -10168,7 +10167,7 @@ msgstr "Przycisk myszy"
 
 #: editor/project_settings_editor.cpp
 msgid ""
-"Invalid action name. it cannot be empty nor contain '/', ':', '=', '\\' or "
+"Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\' or "
 "'\"'"
 msgstr ""
 "Niepoprawna nazwa akcji. Nie może być pusta ani zawierać \"/\", \":\", \"="

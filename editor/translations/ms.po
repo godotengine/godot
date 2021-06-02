@@ -9,11 +9,12 @@
 # Muhammad Hazim bin Hafizalshah <muhammadhazimhafizalshah@gmail.com>, 2020.
 # keviinx <keviinx@yahoo.com>, 2020.
 # Keviindran Ramachandran <keviinx@yahoo.com>, 2020, 2021.
+# Jacque Fresco <aidter@use.startmail.com>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-05-10 15:32+0000\n"
+"PO-Revision-Date: 2021-05-29 13:49+0000\n"
 "Last-Translator: Keviindran Ramachandran <keviinx@yahoo.com>\n"
 "Language-Team: Malay <https://hosted.weblate.org/projects/godot-engine/godot/"
 "ms/>\n"
@@ -3031,7 +3032,7 @@ msgstr "Tentang"
 
 #: editor/editor_node.cpp
 msgid "Support Godot Development"
-msgstr ""
+msgstr "Sokong Pembangunan Godot"
 
 #: editor/editor_node.cpp
 #, fuzzy
@@ -4417,15 +4418,15 @@ msgstr "Sunting Poligon"
 
 #: editor/plugins/abstract_polygon_2d_editor.cpp
 msgid "Insert Point"
-msgstr ""
+msgstr "Masukkan Titik"
 
 #: editor/plugins/abstract_polygon_2d_editor.cpp
 msgid "Edit Polygon (Remove Point)"
-msgstr ""
+msgstr "Sunting Poligon (Keluarkan Titik)"
 
 #: editor/plugins/abstract_polygon_2d_editor.cpp
 msgid "Remove Polygon And Point"
-msgstr ""
+msgstr "Keluarkan Poligon Dan Titik"
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp
@@ -4433,38 +4434,38 @@ msgstr ""
 #: editor/plugins/animation_state_machine_editor.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Add Animation"
-msgstr ""
+msgstr "Tambah Animasi"
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Load..."
-msgstr ""
+msgstr "Muatkan..."
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 msgid "Move Node Point"
-msgstr ""
+msgstr "Pindahkan Titik Nod"
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 msgid "Change BlendSpace1D Limits"
-msgstr ""
+msgstr "Tukar Had-had BlendSpace1D"
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 msgid "Change BlendSpace1D Labels"
-msgstr ""
+msgstr "Tukar Label-label BlendSpace1D"
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "This type of node can't be used. Only root nodes are allowed."
-msgstr ""
+msgstr "Nod jenis ini tidak boleh digunakan. Hanya nod-nod akar dibenarkan."
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 msgid "Add Node Point"
-msgstr ""
+msgstr "Tambah Titik Nod"
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp
@@ -4473,11 +4474,11 @@ msgstr "Tambah Titik Animasi"
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 msgid "Remove BlendSpace1D Point"
-msgstr ""
+msgstr "Keluarkan Titik BlendSpace1D"
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 msgid "Move BlendSpace1D Node Point"
-msgstr ""
+msgstr "Pindahkan Titik Nod BlendSpace1D"
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp
@@ -4487,11 +4488,15 @@ msgid ""
 "AnimationTree is inactive.\n"
 "Activate to enable playback, check node warnings if activation fails."
 msgstr ""
+"AnimationTree tidak aktif.\n"
+"Aktifkan untuk membenarkan main balik, periksa amaran nod jika pengaktifan "
+"gagal."
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp
+#, fuzzy
 msgid "Set the blending position within the space"
-msgstr ""
+msgstr "Tetapkan kedudukan pengadunan dalam ruang"
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp
@@ -4833,15 +4838,15 @@ msgstr ""
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "1 step"
-msgstr ""
+msgstr "1 langkah"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "2 steps"
-msgstr ""
+msgstr "2 langkah"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "3 steps"
-msgstr ""
+msgstr "3 langkah"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Differences Only"
@@ -8196,15 +8201,15 @@ msgstr "Tidak Aktif"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Tab 1"
-msgstr ""
+msgstr "Tab 1"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Tab 2"
-msgstr ""
+msgstr "Tab 2"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Tab 3"
-msgstr ""
+msgstr "Tab 3"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Editable Item"
@@ -8749,7 +8754,7 @@ msgstr ""
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "(GLES3 only)"
-msgstr ""
+msgstr "(GLES3 sahaja)"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Add Output"
@@ -10050,7 +10055,7 @@ msgstr ""
 
 #: editor/project_settings_editor.cpp
 msgid ""
-"Invalid action name. it cannot be empty nor contain '/', ':', '=', '\\' or "
+"Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\' or "
 "'\"'"
 msgstr ""
 
@@ -10116,11 +10121,11 @@ msgstr ""
 
 #: editor/project_settings_editor.cpp
 msgid "X Button 1"
-msgstr ""
+msgstr "Butang X 1"
 
 #: editor/project_settings_editor.cpp
 msgid "X Button 2"
-msgstr ""
+msgstr "Butang X 2"
 
 #: editor/project_settings_editor.cpp
 msgid "Joypad Axis Index:"
@@ -11018,7 +11023,7 @@ msgstr ""
 
 #: editor/script_create_dialog.cpp
 msgid "Allowed: a-z, A-Z, 0-9, _ and ."
-msgstr ""
+msgstr "Benarkan: a-z, A-Z, 0-9, _ dan ."
 
 #: editor/script_create_dialog.cpp
 msgid "Built-in script (into scene file)."
@@ -12355,7 +12360,7 @@ msgstr ""
 
 #: scene/2d/joints_2d.cpp
 msgid "Node A and Node B must be PhysicsBody2Ds"
-msgstr ""
+msgstr "Nod A dan Nod B mestilah PhysicsBody2Ds"
 
 #: scene/2d/joints_2d.cpp
 msgid "Node A must be a PhysicsBody2D"

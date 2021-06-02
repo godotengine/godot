@@ -26,7 +26,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-05-18 10:00+0000\n"
+"PO-Revision-Date: 2021-05-19 20:16+0000\n"
 "Last-Translator: Myeongjin Lee <aranet100@gmail.com>\n"
 "Language-Team: Korean <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ko/>\n"
@@ -2992,7 +2992,7 @@ msgstr "정보"
 
 #: editor/editor_node.cpp
 msgid "Support Godot Development"
-msgstr ""
+msgstr "Godot 개발 지원"
 
 #: editor/editor_node.cpp
 msgid "Play the project."
@@ -5207,7 +5207,6 @@ msgstr ""
 "어 있는지 확인해주세요."
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
-#, fuzzy
 msgid ""
 "Godot editor was built without ray tracing support, lightmaps can't be baked."
 msgstr ""
@@ -10064,7 +10063,7 @@ msgstr "마우스 버튼"
 
 #: editor/project_settings_editor.cpp
 msgid ""
-"Invalid action name. it cannot be empty nor contain '/', ':', '=', '\\' or "
+"Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\' or "
 "'\"'"
 msgstr ""
 "잘못된 액션 이름. 공백이거나, '/' , ':', '=', '\\', '\"' 를 포함하면 안 됩니"

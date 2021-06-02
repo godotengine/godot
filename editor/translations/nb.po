@@ -17,12 +17,13 @@
 # Petter Reinholdtsen <pere-weblate@hungry.com>, 2019, 2020.
 # Patrick Sletvold <patricksletvold@hotmail.com>, 2021.
 # Kristoffer <kskau93@gmail.com>, 2021.
+# Lili Zoey <sayaks1@gmail.com>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-03-31 03:53+0000\n"
-"Last-Translator: Kristoffer <kskau93@gmail.com>\n"
+"PO-Revision-Date: 2021-05-29 13:49+0000\n"
+"Last-Translator: Lili Zoey <sayaks1@gmail.com>\n"
 "Language-Team: Norwegian Bokmål <https://hosted.weblate.org/projects/godot-"
 "engine/godot/nb_NO/>\n"
 "Language: nb\n"
@@ -30,7 +31,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.6-dev\n"
+"X-Generator: Weblate 4.7-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -188,9 +189,8 @@ msgid "Anim Multi Change Keyframe Value"
 msgstr "Anim Endre flere Nøkkelbildeverdier"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Multi Change Call"
-msgstr "Anim Forandre Kall"
+msgstr "Anim Forandre flere Kall"
 
 #: editor/animation_track_editor.cpp
 msgid "Change Animation Length"
@@ -924,9 +924,8 @@ msgid "Signals"
 msgstr "Signaler"
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Filter signals"
-msgstr "Filtrer Filer..."
+msgstr "Filtrer Signaler"
 
 #: editor/connections_dialog.cpp
 msgid "Are you sure you want to remove all connections from this signal?"
@@ -939,9 +938,8 @@ msgid "Disconnect All"
 msgstr "Koble Fra"
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Edit..."
-msgstr "Rediger"
+msgstr "Rediger..."
 
 #: editor/connections_dialog.cpp
 #, fuzzy
@@ -1496,7 +1494,7 @@ msgstr ""
 
 #: editor/editor_autoload_settings.cpp
 msgid "Keyword cannot be used as an autoload name."
-msgstr ""
+msgstr "Nøkkelord kan ikke brukes som autoloadnavn."
 
 #: editor/editor_autoload_settings.cpp
 msgid "Autoload '%s' already exists!"
@@ -4133,7 +4131,7 @@ msgstr "Legg til i Gruppe"
 
 #: editor/groups_editor.cpp
 msgid "Empty groups will be automatically removed."
-msgstr ""
+msgstr "Tomme grupper vil automatisk bli fjernet."
 
 #: editor/groups_editor.cpp
 msgid "Group Editor"
@@ -4973,11 +4971,11 @@ msgstr "Legg til node"
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "End"
-msgstr ""
+msgstr "Slutt"
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Immediate"
-msgstr ""
+msgstr "Umiddelbart"
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Sync"
@@ -5335,11 +5333,11 @@ msgstr ""
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Name (A-Z)"
-msgstr ""
+msgstr "Navn (A-Z)"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Name (Z-A)"
-msgstr ""
+msgstr "Navn (Z-A)"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 #, fuzzy
@@ -8824,9 +8822,8 @@ msgid ""
 msgstr ""
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Delete selected Rect."
-msgstr "Slett valgte filer?"
+msgstr "Slett valgte Rect."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid ""
@@ -10451,7 +10448,7 @@ msgstr "Museknapp"
 
 #: editor/project_settings_editor.cpp
 msgid ""
-"Invalid action name. it cannot be empty nor contain '/', ':', '=', '\\' or "
+"Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\' or "
 "'\"'"
 msgstr ""
 

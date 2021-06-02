@@ -20,7 +20,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Ukrainian (Godot Engine)\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-05-14 20:34+0000\n"
+"PO-Revision-Date: 2021-05-18 14:51+0000\n"
 "Last-Translator: Yuri Chornoivan <yurchor@ukr.net>\n"
 "Language-Team: Ukrainian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/uk/>\n"
@@ -3011,7 +3011,7 @@ msgstr "Про"
 
 #: editor/editor_node.cpp
 msgid "Support Godot Development"
-msgstr ""
+msgstr "Підтримати розробку Godot"
 
 #: editor/editor_node.cpp
 msgid "Play the project."
@@ -5251,7 +5251,6 @@ msgstr ""
 "потрапляють до квадратної області [0.0,1.0]."
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
-#, fuzzy
 msgid ""
 "Godot editor was built without ray tracing support, lightmaps can't be baked."
 msgstr ""
@@ -10169,7 +10168,7 @@ msgstr "Кнопка миші"
 
 #: editor/project_settings_editor.cpp
 msgid ""
-"Invalid action name. it cannot be empty nor contain '/', ':', '=', '\\' or "
+"Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\' or "
 "'\"'"
 msgstr ""
 "Некоректна назва дії. Назва не може бути порожньою і не може містити "

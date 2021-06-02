@@ -63,7 +63,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-05-14 11:20+0000\n"
+"PO-Revision-Date: 2021-06-02 09:04+0000\n"
 "Last-Translator: Riteo Siuga <lorenzocerqua@tutanota.com>\n"
 "Language-Team: Italian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/it/>\n"
@@ -1315,15 +1315,15 @@ msgstr "Altoparlanti"
 
 #: editor/editor_audio_buses.cpp
 msgid "Add Effect"
-msgstr "Aggiungi effetto"
+msgstr "Aggiungi un effetto"
 
 #: editor/editor_audio_buses.cpp
 msgid "Rename Audio Bus"
-msgstr "Rinomina bus audio"
+msgstr "Rinomina un bus audio"
 
 #: editor/editor_audio_buses.cpp
 msgid "Change Audio Bus Volume"
-msgstr "Cambia il volume del bus audio"
+msgstr "Cambia il volume di un bus audio"
 
 #: editor/editor_audio_buses.cpp
 msgid "Toggle Audio Bus Solo"
@@ -1334,6 +1334,7 @@ msgid "Toggle Audio Bus Mute"
 msgstr "Commuta l'ammutolimento di un bus audio"
 
 #: editor/editor_audio_buses.cpp
+#, fuzzy
 msgid "Toggle Audio Bus Bypass Effects"
 msgstr "Commuta bypass effetti del bus audio"
 
@@ -1366,6 +1367,7 @@ msgid "Mute"
 msgstr "Muto"
 
 #: editor/editor_audio_buses.cpp
+#, fuzzy
 msgid "Bypass"
 msgstr "Bypassa"
 
@@ -1501,26 +1503,32 @@ msgid "Must not collide with an existing global constant name."
 msgstr "Non deve collidere con il nome di una costante globale esistente."
 
 #: editor/editor_autoload_settings.cpp
+#, fuzzy
 msgid "Keyword cannot be used as an autoload name."
 msgstr "Una parola chiave non può essere utilizzata come nome di un Autoload."
 
 #: editor/editor_autoload_settings.cpp
+#, fuzzy
 msgid "Autoload '%s' already exists!"
 msgstr "L'Autoload \"%s\" esiste già!"
 
 #: editor/editor_autoload_settings.cpp
+#, fuzzy
 msgid "Rename Autoload"
 msgstr "Rinomina un Autoload"
 
 #: editor/editor_autoload_settings.cpp
+#, fuzzy
 msgid "Toggle AutoLoad Globals"
 msgstr "Commuta AutoLoad globals"
 
 #: editor/editor_autoload_settings.cpp
+#, fuzzy
 msgid "Move Autoload"
 msgstr "Sposta un Autoload"
 
 #: editor/editor_autoload_settings.cpp
+#, fuzzy
 msgid "Remove Autoload"
 msgstr "Rimuovi un Autoload"
 
@@ -1712,25 +1720,29 @@ msgstr "Editor 3D"
 
 #: editor/editor_feature_profile.cpp
 msgid "Script Editor"
-msgstr "Editor script"
+msgstr "Editor degli script"
 
 #: editor/editor_feature_profile.cpp
+#, fuzzy
 msgid "Asset Library"
 msgstr "Libreria degli asset"
 
 #: editor/editor_feature_profile.cpp
 msgid "Scene Tree Editing"
-msgstr "Editor delle scene"
+msgstr "Modifica delle scene"
 
 #: editor/editor_feature_profile.cpp
+#, fuzzy
 msgid "Node Dock"
 msgstr "Riquadro dei nodi"
 
 #: editor/editor_feature_profile.cpp
+#, fuzzy
 msgid "FileSystem Dock"
 msgstr "Riquadro del FileSystem"
 
 #: editor/editor_feature_profile.cpp
+#, fuzzy
 msgid "Import Dock"
 msgstr "Riquadro d'importazione"
 
@@ -1739,6 +1751,7 @@ msgid "Erase profile '%s'? (no undo)"
 msgstr "Eliminare il profilo \"%s\"? (non annullabile)"
 
 #: editor/editor_feature_profile.cpp
+#, fuzzy
 msgid "Profile must be a valid filename and must not contain '.'"
 msgstr ""
 "Il profilo deve essere un nome di file valido e non può contenere \".\""
@@ -2014,16 +2027,17 @@ msgid ""
 "There are multiple importers for different types pointing to file %s, import "
 "aborted"
 msgstr ""
-"Ci sono importatori multipli per tipi differenti che puntano al file %s, "
+"Esistono più importatori per tipi diversi che puntano al file %s, "
 "importazione annullata"
 
 #: editor/editor_file_system.cpp
+#, fuzzy
 msgid "(Re)Importing Assets"
 msgstr "Reimportazione degli asset"
 
 #: editor/editor_help.cpp editor/plugins/spatial_editor_plugin.cpp
 msgid "Top"
-msgstr "In alto"
+msgstr "In cima"
 
 #: editor/editor_help.cpp
 msgid "Class:"
@@ -2043,6 +2057,7 @@ msgid "Description"
 msgstr "Descrizione"
 
 #: editor/editor_help.cpp
+#, fuzzy
 msgid "Online Tutorials"
 msgstr "Tutorial Online"
 
@@ -2109,7 +2124,7 @@ msgstr "Cerca aiuto"
 
 #: editor/editor_help_search.cpp
 msgid "Case Sensitive"
-msgstr "Distinzione maiuscole/minuscole"
+msgstr "Distingui tra maiuscole e minuscole"
 
 #: editor/editor_help_search.cpp
 msgid "Show Hierarchy"
@@ -2181,7 +2196,7 @@ msgstr "Imposta"
 
 #: editor/editor_inspector.cpp
 msgid "Set Multiple:"
-msgstr "Imposta multiplo:"
+msgstr "Imposta più valori:"
 
 #: editor/editor_log.cpp
 msgid "Output:"
@@ -2202,6 +2217,7 @@ msgid "Clear"
 msgstr "Rimuovi tutto"
 
 #: editor/editor_log.cpp
+#, fuzzy
 msgid "Clear Output"
 msgstr "Svuota output"
 
@@ -2606,14 +2622,14 @@ msgstr ""
 "\"."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid ""
 "Unable to load addon script from path: '%s'. This might be due to a code "
 "error in that script.\n"
 "Disabling the addon at '%s' to prevent further errors."
 msgstr ""
 "Impossibile caricare uno script aggiuntivo dal percorso: \"%s\" Sembra "
-"esserci un errore nel codice, controlla la sintassi."
+"esserci un errore nel codice, controlla la sintassi.\n"
+"Disabilitata l'aggiunta di '%s' per prevenire ulteriori errori."
 
 #: editor/editor_node.cpp
 msgid ""
@@ -3061,7 +3077,7 @@ msgstr "Informazioni su Godot"
 
 #: editor/editor_node.cpp
 msgid "Support Godot Development"
-msgstr ""
+msgstr "Supporta lo Sviluppo di Godot"
 
 #: editor/editor_node.cpp
 msgid "Play the project."
@@ -3907,7 +3923,7 @@ msgstr "Cartella/File successivo"
 
 #: editor/filesystem_dock.cpp
 msgid "Re-Scan Filesystem"
-msgstr "Re-Scan Filesystem"
+msgstr "Riscansiona il Filesystem"
 
 #: editor/filesystem_dock.cpp
 msgid "Toggle Split Mode"
@@ -7645,9 +7661,12 @@ msgid "View Rotation Locked"
 msgstr "Rotazione Vista Bloccata"
 
 #: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
 msgid ""
 "To zoom further, change the camera's clipping planes (View -> Settings...)"
 msgstr ""
+"Per maggiore zoom, cambia i piani del clip della videocamera (Vista -> "
+"Impostazioni)"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid ""
@@ -10243,7 +10262,7 @@ msgstr "Pulsante Mouse"
 
 #: editor/project_settings_editor.cpp
 msgid ""
-"Invalid action name. it cannot be empty nor contain '/', ':', '=', '\\' or "
+"Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\' or "
 "'\"'"
 msgstr ""
 "Nome dell'azione non valido. Non può essere vuoto o contenere \"/\", \":\", "

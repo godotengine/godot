@@ -98,7 +98,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-05-14 11:20+0000\n"
+"PO-Revision-Date: 2021-05-21 11:33+0000\n"
 "Last-Translator: Danil Alexeev <danil@alexeev.xyz>\n"
 "Language-Team: Russian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ru/>\n"
@@ -2625,14 +2625,14 @@ msgid "Unable to load addon script from path: '%s'."
 msgstr "Не удалось загрузить скрипт из источника: «%s»."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid ""
 "Unable to load addon script from path: '%s'. This might be due to a code "
 "error in that script.\n"
 "Disabling the addon at '%s' to prevent further errors."
 msgstr ""
-"Невозможно загрузить скрипт аддона из источника: «%s». В коде есть ошибка, "
-"пожалуйста, проверьте синтаксис."
+"Невозможно загрузить скрипт аддона по пути: «%s». Это может быть связано с "
+"ошибкой в коде скрипта.\n"
+"Аддон «%s» отключён для предотвращения дальнейших ошибок."
 
 #: editor/editor_node.cpp
 msgid ""
@@ -3076,7 +3076,7 @@ msgstr "О Godot Engine"
 
 #: editor/editor_node.cpp
 msgid "Support Godot Development"
-msgstr ""
+msgstr "Поддержать разработку Godot"
 
 #: editor/editor_node.cpp
 msgid "Play the project."
@@ -5308,7 +5308,6 @@ msgstr ""
 "находятся в квадратной области [0.0,1.0]."
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
-#, fuzzy
 msgid ""
 "Godot editor was built without ray tracing support, lightmaps can't be baked."
 msgstr ""
@@ -10213,7 +10212,7 @@ msgstr "Кнопка мыши"
 
 #: editor/project_settings_editor.cpp
 msgid ""
-"Invalid action name. it cannot be empty nor contain '/', ':', '=', '\\' or "
+"Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\' or "
 "'\"'"
 msgstr ""
 "Неверное имя действия. Оно не может быть пустым и не может содержать символы "
@@ -10817,7 +10816,7 @@ msgstr "Сделать узел корневым"
 
 #: editor/scene_tree_dock.cpp
 msgid "Delete %d nodes and any children?"
-msgstr "Удалить узел «%d» и его дочерние элементы?"
+msgstr "Удалить %d узлов и их детей?"
 
 #: editor/scene_tree_dock.cpp
 msgid "Delete %d nodes?"
@@ -10829,7 +10828,7 @@ msgstr "Удалить корневой узел «%s»?"
 
 #: editor/scene_tree_dock.cpp
 msgid "Delete node \"%s\" and its children?"
-msgstr "Удалить узел «%s» и его дочерние элементы?"
+msgstr "Удалить узел «%s» и его детей?"
 
 #: editor/scene_tree_dock.cpp
 msgid "Delete node \"%s\"?"

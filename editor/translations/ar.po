@@ -10146,7 +10146,7 @@ msgstr "زر الفأرة"
 
 #: editor/project_settings_editor.cpp
 msgid ""
-"Invalid action name. it cannot be empty nor contain '/', ':', '=', '\\' or "
+"Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\' or "
 "'\"'"
 msgstr ""
 "اسم فعالية غير صحيح. لا يمكن أن يكون فارغاً أو يتضمن '/'، ':'، '='، '\\' أو "
