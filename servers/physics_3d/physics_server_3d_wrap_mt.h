@@ -213,9 +213,6 @@ public:
 	FUNC3(body_set_param, RID, BodyParameter, real_t);
 	FUNC2RC(real_t, body_get_param, RID, BodyParameter);
 
-	FUNC2(body_set_kinematic_safe_margin, RID, real_t);
-	FUNC1RC(real_t, body_get_kinematic_safe_margin, RID);
-
 	FUNC3(body_set_state, RID, BodyState, const Variant &);
 	FUNC2RC(Variant, body_get_state, RID, BodyState);
 
@@ -253,9 +250,9 @@ public:
 
 	FUNC2(body_set_ray_pickable, RID, bool);
 
-	bool body_test_motion(RID p_body, const Transform3D &p_from, const Vector3 &p_motion, bool p_infinite_inertia, MotionResult *r_result = nullptr, bool p_exclude_raycast_shapes = true) override {
+	bool body_test_motion(RID p_body, const Transform3D &p_from, const Vector3 &p_motion, bool p_infinite_inertia, real_t p_margin = 0.001, MotionResult *r_result = nullptr, bool p_exclude_raycast_shapes = true) override {
 		ERR_FAIL_COND_V(main_thread != Thread::get_caller_id(), false);
-		return physics_3d_server->body_test_motion(p_body, p_from, p_motion, p_infinite_inertia, r_result, p_exclude_raycast_shapes);
+		return physics_3d_server->body_test_motion(p_body, p_from, p_motion, p_infinite_inertia, p_margin, r_result, p_exclude_raycast_shapes);
 	}
 
 	int body_test_ray_separation(RID p_body, const Transform3D &p_transform, bool p_infinite_inertia, Vector3 &r_recover_motion, SeparationResult *r_results, int p_result_max, real_t p_margin = 0.001) override {

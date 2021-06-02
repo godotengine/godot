@@ -55,7 +55,6 @@ class Body3DSW : public CollisionObject3DSW {
 
 	uint16_t locked_axis = 0;
 
-	real_t kinematic_safe_margin;
 	real_t _inv_mass;
 	Vector3 _inv_inertia; // Relative to the principal axes of inertia
 
@@ -143,9 +142,6 @@ class Body3DSW : public CollisionObject3DSW {
 
 public:
 	void set_force_integration_callback(const Callable &p_callable, const Variant &p_udata = Variant());
-
-	void set_kinematic_margin(real_t p_margin);
-	_FORCE_INLINE_ real_t get_kinematic_margin() { return kinematic_safe_margin; }
 
 	_FORCE_INLINE_ void add_area(Area3DSW *p_area) {
 		int index = areas.find(AreaCMP(p_area));
