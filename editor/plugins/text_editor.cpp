@@ -281,6 +281,10 @@ void TextEditor::clear_edit_menu() {
 	memdelete(edit_hb);
 }
 
+void TextEditor::set_find_replace_bar(FindReplaceBar *p_bar) {
+	code_editor->set_find_replace_bar(p_bar);
+}
+
 void TextEditor::_edit_option(int p_op) {
 	CodeEdit *tx = code_editor->get_text_editor();
 

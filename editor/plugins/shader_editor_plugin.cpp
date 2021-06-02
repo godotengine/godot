@@ -751,6 +751,11 @@ ShaderEditor::ShaderEditor(EditorNode *p_node) {
 	editor_box->set_v_size_flags(SIZE_EXPAND_FILL);
 	editor_box->add_child(shader_editor);
 
+	FindReplaceBar *bar = memnew(FindReplaceBar);
+	main_container->add_child(bar);
+	bar->hide();
+	shader_editor->set_find_replace_bar(bar);
+
 	warnings_panel = memnew(RichTextLabel);
 	warnings_panel->set_custom_minimum_size(Size2(0, 100 * EDSCALE));
 	warnings_panel->set_h_size_flags(SIZE_EXPAND_FILL);

@@ -1358,6 +1358,10 @@ void ScriptTextEditor::clear_edit_menu() {
 	memdelete(edit_hb);
 }
 
+void ScriptTextEditor::set_find_replace_bar(FindReplaceBar *p_bar) {
+	code_editor->set_find_replace_bar(p_bar);
+}
+
 void ScriptTextEditor::reload(bool p_soft) {
 	CodeEdit *te = code_editor->get_text_editor();
 	Ref<Script> scr = script;

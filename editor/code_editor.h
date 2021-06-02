@@ -57,6 +57,8 @@ public:
 	GotoLineDialog();
 };
 
+class CodeTextEditor;
+
 class FindReplaceBar : public HBoxContainer {
 	GDCLASS(FindReplaceBar, HBoxContainer);
 
@@ -77,6 +79,7 @@ class FindReplaceBar : public HBoxContainer {
 	HBoxContainer *hbc_button_replace;
 	HBoxContainer *hbc_option_replace;
 
+	CodeTextEditor *base_text_editor = nullptr;
 	CodeEdit *text_editor;
 
 	int result_line;
@@ -120,7 +123,7 @@ public:
 	bool is_selection_only() const;
 	void set_error(const String &p_label);
 
-	void set_text_edit(CodeEdit *p_text_edit);
+	void set_text_edit(CodeTextEditor *p_text_editor);
 
 	void popup_search(bool p_show_only = false);
 	void popup_replace();
@@ -138,7 +141,7 @@ class CodeTextEditor : public VBoxContainer {
 	GDCLASS(CodeTextEditor, VBoxContainer);
 
 	CodeEdit *text_editor;
-	FindReplaceBar *find_replace_bar;
+	FindReplaceBar *find_replace_bar = nullptr;
 	HBoxContainer *status_bar;
 
 	Button *toggle_scripts_button;
@@ -243,6 +246,8 @@ public:
 	void update_line_and_column() { _line_col_changed(); }
 	CodeEdit *get_text_editor() { return text_editor; }
 	FindReplaceBar *get_find_replace_bar() { return find_replace_bar; }
+	void set_find_replace_bar(FindReplaceBar *p_bar);
+	void remove_find_replace_bar();
 	virtual void apply_code() {}
 	void goto_error();
 
