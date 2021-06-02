@@ -58,12 +58,14 @@
 # Çağlar KOPARIR <ckoparir@gmail.com>, 2021.
 # Cem Eren Fukara <cefukara@hotmail.com>, 2021.
 # Jafar Tarverdiyev <cefertarverdiyevv@gmail.com>, 2021.
+# ali aydın <alimxaydin@gmail.com>, 2021.
+# Cannur Daşkıran <canndask@gmail.com>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-05-14 11:20+0000\n"
-"Last-Translator: Jafar Tarverdiyev <cefertarverdiyevv@gmail.com>\n"
+"PO-Revision-Date: 2021-05-29 13:49+0000\n"
+"Last-Translator: ali aydın <alimxaydin@gmail.com>\n"
 "Language-Team: Turkish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/tr/>\n"
 "Language: tr\n"
@@ -1556,7 +1558,7 @@ msgstr "İsim"
 
 #: editor/editor_autoload_settings.cpp
 msgid "Singleton"
-msgstr "Tekil"
+msgstr "Tekil nesne"
 
 #: editor/editor_data.cpp editor/inspector_dock.cpp
 msgid "Paste Params"
@@ -2040,7 +2042,7 @@ msgstr "Çevrimiçi Rehberler"
 
 #: editor/editor_help.cpp
 msgid "Properties"
-msgstr "Özellikleri"
+msgstr "Özellikler"
 
 #: editor/editor_help.cpp
 msgid "override:"
@@ -2581,21 +2583,22 @@ msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Unable to find script field for addon plugin at: '%s'."
-msgstr "Eklentide için betik alanı bulunamıyor: '%s'."
+msgstr "Eklenti için betik alanı şu konumda bulunamıyor: '%s'."
 
 #: editor/editor_node.cpp
 msgid "Unable to load addon script from path: '%s'."
 msgstr "Yoldaki eklenti betiği yüklenemedi: '%s'."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid ""
 "Unable to load addon script from path: '%s'. This might be due to a code "
 "error in that script.\n"
 "Disabling the addon at '%s' to prevent further errors."
 msgstr ""
 "'%s' adresindeki eklenti betik yüklenemiyor. Kodun içinde bir hata var gibi "
-"görünüyor, lütfen sözdizimini kontrol edin."
+"görünüyor.\n"
+"Daha fazla hatayı önlemek için '% s' adresindeki eklenti devre dışı "
+"bırakılıyor."
 
 #: editor/editor_node.cpp
 msgid ""
@@ -3039,7 +3042,7 @@ msgstr "Hakkında"
 
 #: editor/editor_node.cpp
 msgid "Support Godot Development"
-msgstr ""
+msgstr "Godot'u Geliştirmeye Destek Olun"
 
 #: editor/editor_node.cpp
 msgid "Play the project."
@@ -4130,7 +4133,7 @@ msgstr "İçe Aktarıcı'yı seçin"
 
 #: editor/import_defaults_editor.cpp
 msgid "Importer:"
-msgstr "İçe Aktar"
+msgstr "İçe Alımcı:"
 
 #: editor/import_defaults_editor.cpp
 msgid "Reset to Defaults"
@@ -5108,7 +5111,7 @@ msgstr "Alınan:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Failed SHA-256 hash check"
-msgstr "SHA-256 hash kontrolü başarısız oldu"
+msgstr "Başarısız SHA-256 hash sınaması"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Asset Download Error:"
@@ -5273,12 +5276,11 @@ msgstr ""
 "içerdiğinden emin olun."
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
-#, fuzzy
 msgid ""
 "Godot editor was built without ray tracing support, lightmaps can't be baked."
 msgstr ""
-"Godot editör ışın yansıma desteği olmadan derlenmiş, ışık haritaları "
-"pişirilemez."
+"Godot editör ışın yansıma desteği olmadan derlenmiş, ışık haritaları çizilip "
+"sabitlenemez."
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid "Bake Lightmaps"
@@ -10172,7 +10174,7 @@ msgstr "Fare Düğmesi"
 
 #: editor/project_settings_editor.cpp
 msgid ""
-"Invalid action name. it cannot be empty nor contain '/', ':', '=', '\\' or "
+"Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\' or "
 "'\"'"
 msgstr ""
 "Geçersiz işlem adı. Boş olamaz ve '/', ':', '=', '\\' veya '\"' içeremez"
@@ -10728,11 +10730,11 @@ msgstr "Çocuk Sahnesini Örnekle"
 
 #: editor/scene_tree_dock.cpp
 msgid "Can't paste root node into the same scene."
-msgstr "Kök düğüm aynı sahneye yapıştırılamıyor."
+msgstr "Kök düğümü aynı sahne içine yapıştırılamaz."
 
 #: editor/scene_tree_dock.cpp
 msgid "Paste Node(s)"
-msgstr "Düğümleri Yapıştır"
+msgstr "Düğüm(leri) Yapıştır"
 
 #: editor/scene_tree_dock.cpp
 msgid "Detach Script"
@@ -10863,7 +10865,7 @@ msgstr "Betik İliştir"
 
 #: editor/scene_tree_dock.cpp
 msgid "Cut Node(s)"
-msgstr "Düğümleri Kes(s)"
+msgstr "Düğüm(leri) Kes"
 
 #: editor/scene_tree_dock.cpp
 msgid "Remove Node(s)"
@@ -10983,6 +10985,9 @@ msgid ""
 "every time it updates.\n"
 "Switch back to the Local scene tree dock to improve performance."
 msgstr ""
+"Seçilirse, Uzak sahne ağacı yuvası, projenin her güncellendiğinde "
+"takılmasına neden olur.\n"
+"Performansı artırmak için Yerel sahne ağaç yuvasına geri dönün."
 
 #: editor/scene_tree_dock.cpp
 msgid "Local"

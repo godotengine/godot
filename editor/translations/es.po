@@ -61,12 +61,14 @@
 # SteamGoblin <SteamGoblin860@gmail.com>, 2021.
 # Francisco C <pruebasfrancisco17@gmail.com>, 2021.
 # Cam <cameron.toms@gmail.com>, 2021.
+# Juan camilo <jugarciago01@gmail.com>, 2021.
+# Manuel González <mgoopazo@gmail.com>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-04-27 22:12+0000\n"
-"Last-Translator: Cam <cameron.toms@gmail.com>\n"
+"PO-Revision-Date: 2021-05-29 13:49+0000\n"
+"Last-Translator: Manuel González <mgoopazo@gmail.com>\n"
 "Language-Team: Spanish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/es/>\n"
 "Language: es\n"
@@ -2611,14 +2613,14 @@ msgid "Unable to load addon script from path: '%s'."
 msgstr "No se pudo cargar el script addon desde la ruta: '%s'."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid ""
 "Unable to load addon script from path: '%s'. This might be due to a code "
 "error in that script.\n"
 "Disabling the addon at '%s' to prevent further errors."
 msgstr ""
 "No se puede cargar el script de addon desde la ruta: '%s' Parece que hay un "
-"error en el código, por favor compruebe la sintaxis."
+"error en el código, por favor compruebe la sintaxis.\n"
+"Desactivar el addon en '%s' para prevenir mas errores."
 
 #: editor/editor_node.cpp
 msgid ""
@@ -3069,7 +3071,7 @@ msgstr "Acerca de"
 
 #: editor/editor_node.cpp
 msgid "Support Godot Development"
-msgstr ""
+msgstr "Apoyar el desarrollo de Godot"
 
 #: editor/editor_node.cpp
 msgid "Play the project."
@@ -10244,7 +10246,7 @@ msgstr "Botón del Mouse"
 
 #: editor/project_settings_editor.cpp
 msgid ""
-"Invalid action name. it cannot be empty nor contain '/', ':', '=', '\\' or "
+"Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\' or "
 "'\"'"
 msgstr ""
 "Nombre de acción inválido. No puede estar vacío o contener '/', ':', '=', "

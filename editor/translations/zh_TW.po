@@ -6,7 +6,7 @@
 # Billy SU <g4691821@gmail.com>, 2018.
 # Chao Yu <casd82@gmail.com>, 2017.
 # Cliffs Dover <bottle@dancingbottle.com>, 2017.
-# Kisaragi Hiu <mail@kisaragi-hiu.com>, 2018.
+# Kisaragi Hiu <mail@kisaragi-hiu.com>, 2018, 2021.
 # Matt <chchwy@gmail.com>, 2017.
 # popcade <popcade@gmail.com>, 2016.
 # Qing <icinriiq@gmail.com>, 2018.
@@ -29,8 +29,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-03-16 10:40+0000\n"
-"Last-Translator: BinotaLIU <me@binota.org>\n"
+"PO-Revision-Date: 2021-05-24 21:36+0000\n"
+"Last-Translator: Kisaragi Hiu <mail@kisaragi-hiu.com>\n"
 "Language-Team: Chinese (Traditional) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/zh_Hant/>\n"
 "Language: zh_TW\n"
@@ -38,7 +38,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.5.2-dev\n"
+"X-Generator: Weblate 4.7-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -2945,7 +2945,7 @@ msgstr "關於"
 
 #: editor/editor_node.cpp
 msgid "Support Godot Development"
-msgstr ""
+msgstr "支援 Godot 開發"
 
 #: editor/editor_node.cpp
 msgid "Play the project."
@@ -4019,7 +4019,7 @@ msgstr "重設為預設"
 
 #: editor/import_dock.cpp
 msgid "Keep File (No Import)"
-msgstr ""
+msgstr "保留檔案（不匯入）"
 
 #: editor/import_dock.cpp
 msgid "%d Files"
@@ -7439,7 +7439,7 @@ msgstr "視圖旋轉已鎖定"
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid ""
 "To zoom further, change the camera's clipping planes (View -> Settings...)"
-msgstr ""
+msgstr "若要再繼續放大，請至 檢視 -> 設定... 修改攝影機的剪裁平面"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid ""
@@ -9958,7 +9958,7 @@ msgstr "滑鼠按鈕"
 
 #: editor/project_settings_editor.cpp
 msgid ""
-"Invalid action name. it cannot be empty nor contain '/', ':', '=', '\\' or "
+"Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\' or "
 "'\"'"
 msgstr "無效的操作名稱。名稱不可留空或包含 “/”, “:”, “=”, “\\” 或 “\"”"
 
