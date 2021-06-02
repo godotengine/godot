@@ -240,6 +240,14 @@ Vector3 StaticBody3D::get_constant_angular_velocity() const {
 	return constant_angular_velocity;
 }
 
+Vector3 StaticBody3D::get_linear_velocity() const {
+	return linear_velocity;
+}
+
+Vector3 StaticBody3D::get_angular_velocity() const {
+	return angular_velocity;
+}
+
 void StaticBody3D::_notification(int p_what) {
 	if (p_what == NOTIFICATION_INTERNAL_PHYSICS_PROCESS) {
 #ifdef TOOLS_ENABLED
@@ -291,6 +299,18 @@ void StaticBody3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "kinematic_motion"), "set_kinematic_motion_enabled", "is_kinematic_motion_enabled");
 }
 
+void StaticBody3D::_direct_state_changed(Object *p_state) {
+#ifdef DEBUG_ENABLED
+	PhysicsDirectBodyState3D *state = Object::cast_to<PhysicsDirectBodyState3D>(p_state);
+	ERR_FAIL_NULL_MSG(state, "Method '_direct_state_changed' must receive a valid PhysicsDirectBodyState3D object as argument");
+#else
+	PhysicsDirectBodyState3D *state = (PhysicsDirectBodyState3D *)p_state; //trust it
+#endif
+
+	linear_velocity = state->get_linear_velocity();
+	angular_velocity = state->get_angular_velocity();
+}
+
 StaticBody3D::StaticBody3D() :
 		PhysicsBody3D(PhysicsServer3D::BODY_MODE_STATIC) {
 }
@@ -313,10 +333,14 @@ void StaticBody3D::_update_kinematic_motion() {
 #endif
 
 	if (kinematic_motion) {
+		PhysicsServer3D::get_singleton()->body_set_force_integration_callback(get_rid(), callable_mp(this, &StaticBody3D::_direct_state_changed));
+
 		if (!constant_angular_velocity.is_equal_approx(Vector3()) || !constant_linear_velocity.is_equal_approx(Vector3())) {
 			set_physics_process_internal(true);
 			return;
 		}
+	} else {
+		PhysicsServer3D::get_singleton()->body_set_force_integration_callback(get_rid(), Callable());
 	}
 
 	set_physics_process_internal(false);
@@ -929,31 +953,22 @@ void RigidBody3D::_reload_physics_characteristics() {
 
 ///////////////////////////////////////
 
-Vector3 CharacterBody3D::get_linear_velocity() const {
-	return linear_velocity;
-}
-
-Vector3 CharacterBody3D::get_angular_velocity() const {
-	return angular_velocity;
-}
-
 //so, if you pass 45 as limit, avoid numerical precision errors when angle is 45.
 #define FLOOR_ANGLE_THRESHOLD 0.01
 
-Vector3 CharacterBody3D::move_and_slide(const Vector3 &p_linear_velocity) {
-	Vector3 body_velocity = p_linear_velocity;
-	Vector3 body_velocity_normal = body_velocity.normalized();
+void CharacterBody3D::move_and_slide() {
+	Vector3 body_velocity_normal = linear_velocity.normalized();
 
 	bool was_on_floor = on_floor;
 
 	for (int i = 0; i < 3; i++) {
 		if (locked_axis & (1 << i)) {
-			body_velocity[i] = 0;
+			linear_velocity[i] = 0.0;
 		}
 	}
 
 	// Hack in order to work with calling from _process as well as from _physics_process; calling from thread is risky
-	Vector3 motion = (floor_velocity + body_velocity) * (Engine::get_singleton()->is_in_physics_frame() ? get_physics_process_delta_time() : get_process_delta_time());
+	Vector3 motion = (floor_velocity + linear_velocity) * (Engine::get_singleton()->is_in_physics_frame() ? get_physics_process_delta_time() : get_process_delta_time());
 
 	on_floor = false;
 	on_floor_body = RID();
@@ -1005,7 +1020,8 @@ Vector3 CharacterBody3D::move_and_slide(const Vector3 &p_linear_velocity) {
 								Transform3D gt = get_global_transform();
 								gt.origin -= result.motion.slide(up_direction);
 								set_global_transform(gt);
-								return Vector3();
+								linear_velocity = Vector3();
+								return;
 							}
 						}
 					} else if (Math::acos(result.collision_normal.dot(-up_direction)) <= floor_max_angle + FLOOR_ANGLE_THRESHOLD) { //ceiling
@@ -1016,11 +1032,11 @@ Vector3 CharacterBody3D::move_and_slide(const Vector3 &p_linear_velocity) {
 				}
 
 				motion = motion.slide(result.collision_normal);
-				body_velocity = body_velocity.slide(result.collision_normal);
+				linear_velocity = linear_velocity.slide(result.collision_normal);
 
 				for (int j = 0; j < 3; j++) {
 					if (locked_axis & (1 << j)) {
-						body_velocity[j] = 0;
+						linear_velocity[j] = 0.0;
 					}
 				}
 			}
@@ -1034,7 +1050,7 @@ Vector3 CharacterBody3D::move_and_slide(const Vector3 &p_linear_velocity) {
 	}
 
 	if (!was_on_floor || snap == Vector3()) {
-		return body_velocity;
+		return;
 	}
 
 	// Apply snap.
@@ -1062,8 +1078,6 @@ Vector3 CharacterBody3D::move_and_slide(const Vector3 &p_linear_velocity) {
 			set_global_transform(gt);
 		}
 	}
-
-	return body_velocity;
 }
 
 bool CharacterBody3D::separate_raycast_shapes(PhysicsServer3D::MotionResult &r_result) {
@@ -1108,6 +1122,14 @@ void CharacterBody3D::set_safe_margin(real_t p_margin) {
 
 real_t CharacterBody3D::get_safe_margin() const {
 	return margin;
+}
+
+Vector3 CharacterBody3D::get_linear_velocity() const {
+	return linear_velocity;
+}
+
+void CharacterBody3D::set_linear_velocity(const Vector3 &p_velocity) {
+	linear_velocity = p_velocity;
 }
 
 bool CharacterBody3D::is_on_floor() const {
@@ -1215,7 +1237,10 @@ void CharacterBody3D::_notification(int p_what) {
 }
 
 void CharacterBody3D::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("move_and_slide", "linear_velocity"), &CharacterBody3D::move_and_slide);
+	ClassDB::bind_method(D_METHOD("move_and_slide"), &CharacterBody3D::move_and_slide);
+
+	ClassDB::bind_method(D_METHOD("set_linear_velocity", "linear_velocity"), &CharacterBody3D::set_linear_velocity);
+	ClassDB::bind_method(D_METHOD("get_linear_velocity"), &CharacterBody3D::get_linear_velocity);
 
 	ClassDB::bind_method(D_METHOD("set_safe_margin", "pixels"), &CharacterBody3D::set_safe_margin);
 	ClassDB::bind_method(D_METHOD("get_safe_margin"), &CharacterBody3D::get_safe_margin);
@@ -1241,6 +1266,7 @@ void CharacterBody3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_slide_count"), &CharacterBody3D::get_slide_count);
 	ClassDB::bind_method(D_METHOD("get_slide_collision", "slide_idx"), &CharacterBody3D::_get_slide_collision);
 
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "linear_velocity"), "set_linear_velocity", "get_linear_velocity");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "stop_on_slope"), "set_stop_on_slope_enabled", "is_stop_on_slope_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "infinite_inertia"), "set_infinite_inertia_enabled", "is_infinite_inertia_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_slides"), "set_max_slides", "get_max_slides");
@@ -1250,21 +1276,8 @@ void CharacterBody3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "collision/safe_margin", PROPERTY_HINT_RANGE, "0.001,256,0.001"), "set_safe_margin", "get_safe_margin");
 }
 
-void CharacterBody3D::_direct_state_changed(Object *p_state) {
-#ifdef DEBUG_ENABLED
-	PhysicsDirectBodyState3D *state = Object::cast_to<PhysicsDirectBodyState3D>(p_state);
-	ERR_FAIL_NULL_MSG(state, "Method '_direct_state_changed' must receive a valid PhysicsDirectBodyState3D object as argument");
-#else
-	PhysicsDirectBodyState3D *state = (PhysicsDirectBodyState3D *)p_state; //trust it
-#endif
-
-	linear_velocity = state->get_linear_velocity();
-	angular_velocity = state->get_angular_velocity();
-}
-
 CharacterBody3D::CharacterBody3D() :
 		PhysicsBody3D(PhysicsServer3D::BODY_MODE_KINEMATIC) {
-	PhysicsServer3D::get_singleton()->body_set_force_integration_callback(get_rid(), callable_mp(this, &CharacterBody3D::_direct_state_changed));
 }
 
 CharacterBody3D::~CharacterBody3D() {

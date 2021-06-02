@@ -917,9 +917,8 @@ void RigidBody2D::_reload_physics_characteristics() {
 //so, if you pass 45 as limit, avoid numerical precision errors when angle is 45.
 #define FLOOR_ANGLE_THRESHOLD 0.01
 
-Vector2 CharacterBody2D::move_and_slide(const Vector2 &p_linear_velocity) {
-	Vector2 body_velocity = p_linear_velocity;
-	Vector2 body_velocity_normal = body_velocity.normalized();
+void CharacterBody2D::move_and_slide() {
+	Vector2 body_velocity_normal = linear_velocity.normalized();
 
 	bool was_on_floor = on_floor;
 
@@ -933,7 +932,7 @@ Vector2 CharacterBody2D::move_and_slide(const Vector2 &p_linear_velocity) {
 	}
 
 	// Hack in order to work with calling from _process as well as from _physics_process; calling from thread is risky
-	Vector2 motion = (current_floor_velocity + body_velocity) * (Engine::get_singleton()->is_in_physics_frame() ? get_physics_process_delta_time() : get_process_delta_time());
+	Vector2 motion = (current_floor_velocity + linear_velocity) * (Engine::get_singleton()->is_in_physics_frame() ? get_physics_process_delta_time() : get_process_delta_time());
 
 	on_floor = false;
 	on_floor_body = RID();
@@ -985,7 +984,8 @@ Vector2 CharacterBody2D::move_and_slide(const Vector2 &p_linear_velocity) {
 								Transform2D gt = get_global_transform();
 								gt.elements[2] -= result.motion.slide(up_direction);
 								set_global_transform(gt);
-								return Vector2();
+								linear_velocity = Vector2();
+								return;
 							}
 						}
 					} else if (Math::acos(result.collision_normal.dot(-up_direction)) <= floor_max_angle + FLOOR_ANGLE_THRESHOLD) { //ceiling
@@ -996,7 +996,7 @@ Vector2 CharacterBody2D::move_and_slide(const Vector2 &p_linear_velocity) {
 				}
 
 				motion = motion.slide(result.collision_normal);
-				body_velocity = body_velocity.slide(result.collision_normal);
+				linear_velocity = linear_velocity.slide(result.collision_normal);
 			}
 		}
 
@@ -1008,7 +1008,7 @@ Vector2 CharacterBody2D::move_and_slide(const Vector2 &p_linear_velocity) {
 	}
 
 	if (!was_on_floor || snap == Vector2()) {
-		return body_velocity;
+		return;
 	}
 
 	// Apply snap.
@@ -1038,8 +1038,6 @@ Vector2 CharacterBody2D::move_and_slide(const Vector2 &p_linear_velocity) {
 			set_global_transform(gt);
 		}
 	}
-
-	return body_velocity;
 }
 
 bool CharacterBody2D::separate_raycast_shapes(PhysicsServer2D::MotionResult &r_result) {
@@ -1076,6 +1074,14 @@ bool CharacterBody2D::separate_raycast_shapes(PhysicsServer2D::MotionResult &r_r
 	} else {
 		return false;
 	}
+}
+
+const Vector2 &CharacterBody2D::get_linear_velocity() const {
+	return linear_velocity;
+}
+
+void CharacterBody2D::set_linear_velocity(const Vector2 &p_velocity) {
+	linear_velocity = p_velocity;
 }
 
 bool CharacterBody2D::is_on_floor() const {
@@ -1242,7 +1248,10 @@ void CharacterBody2D::_notification(int p_what) {
 }
 
 void CharacterBody2D::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("move_and_slide", "linear_velocity"), &CharacterBody2D::move_and_slide);
+	ClassDB::bind_method(D_METHOD("move_and_slide"), &CharacterBody2D::move_and_slide);
+
+	ClassDB::bind_method(D_METHOD("set_linear_velocity", "linear_velocity"), &CharacterBody2D::set_linear_velocity);
+	ClassDB::bind_method(D_METHOD("get_linear_velocity"), &CharacterBody2D::get_linear_velocity);
 
 	ClassDB::bind_method(D_METHOD("set_safe_margin", "pixels"), &CharacterBody2D::set_safe_margin);
 	ClassDB::bind_method(D_METHOD("get_safe_margin"), &CharacterBody2D::get_safe_margin);
@@ -1270,6 +1279,7 @@ void CharacterBody2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_sync_to_physics", "enable"), &CharacterBody2D::set_sync_to_physics);
 	ClassDB::bind_method(D_METHOD("is_sync_to_physics_enabled"), &CharacterBody2D::is_sync_to_physics_enabled);
 
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "linear_velocity"), "set_linear_velocity", "get_linear_velocity");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "stop_on_slope"), "set_stop_on_slope_enabled", "is_stop_on_slope_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "infinite_inertia"), "set_infinite_inertia_enabled", "is_infinite_inertia_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_slides"), "set_max_slides", "get_max_slides");

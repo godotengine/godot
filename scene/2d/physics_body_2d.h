@@ -268,6 +268,8 @@ private:
 	Vector2 snap;
 	Vector2 up_direction = Vector2(0.0, -1.0);
 
+	Vector2 linear_velocity;
+
 	Vector2 floor_normal;
 	Vector2 floor_velocity;
 	RID on_floor_body;
@@ -312,7 +314,10 @@ protected:
 	static void _bind_methods();
 
 public:
-	Vector2 move_and_slide(const Vector2 &p_linear_velocity);
+	void move_and_slide();
+
+	const Vector2 &get_linear_velocity() const;
+	void set_linear_velocity(const Vector2 &p_velocity);
 
 	bool is_on_floor() const;
 	bool is_on_wall() const;
