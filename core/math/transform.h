@@ -47,6 +47,7 @@ public:
 	Transform affine_inverse() const;
 
 	Transform rotated(const Vector3 &p_axis, real_t p_phi) const;
+	Transform rotated_local(const Vector3 &p_axis, real_t p_phi) const;
 
 	void rotate(const Vector3 &p_axis, real_t p_phi);
 	void rotate_basis(const Vector3 &p_axis, real_t p_phi);
