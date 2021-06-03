@@ -253,7 +253,6 @@ private:
 
 	void _toggle_split_mode(bool p_active);
 
-	void _focus_current_search_box();
 	void _search_changed(const String &p_text, const Control *p_from);
 
 	MenuButton *_create_file_menu_button();
