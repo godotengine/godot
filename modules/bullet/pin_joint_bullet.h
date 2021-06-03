@@ -46,7 +46,7 @@ public:
 	PinJointBullet(RigidBodyBullet *p_body_a, const Vector3 &p_pos_a, RigidBodyBullet *p_body_b, const Vector3 &p_pos_b);
 	~PinJointBullet();
 
-	virtual PhysicsServer3D::JointType get_type() const { return PhysicsServer3D::JOINT_PIN; }
+	virtual PhysicsServer3D::JointType get_type() const { return PhysicsServer3D::JointType::JOINT_TYPE_PIN; }
 
 	void set_param(PhysicsServer3D::PinJointParam p_param, real_t p_value);
 	real_t get_param(PhysicsServer3D::PinJointParam p_param) const;

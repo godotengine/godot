@@ -37,6 +37,8 @@
 */
 
 JointBullet::JointBullet() :
-		ConstraintBullet() {}
+		ConstraintBullet() {
+}
 
-JointBullet::~JointBullet() {}
+JointBullet::~JointBullet() {
+}

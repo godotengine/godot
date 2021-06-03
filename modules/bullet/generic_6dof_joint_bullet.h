@@ -50,7 +50,7 @@ class Generic6DOFJointBullet : public JointBullet {
 public:
 	Generic6DOFJointBullet(RigidBodyBullet *rbA, RigidBodyBullet *rbB, const Transform &frameInA, const Transform &frameInB);
 
-	virtual PhysicsServer3D::JointType get_type() const { return PhysicsServer3D::JOINT_6DOF; }
+	virtual PhysicsServer3D::JointType get_type() const { return PhysicsServer3D::JOINT_TYPE_6DOF; }
 
 	Transform getFrameOffsetA() const;
 	Transform getFrameOffsetB() const;

@@ -70,10 +70,8 @@ extern ContactAddedCallback gContactAddedCallback;
 class BulletPhysicsDirectSpaceState : public PhysicsDirectSpaceState3D {
 	GDCLASS(BulletPhysicsDirectSpaceState, PhysicsDirectSpaceState3D);
 
-private:
-	SpaceBullet *space;
-
 public:
+	SpaceBullet *space;
 	BulletPhysicsDirectSpaceState(SpaceBullet *p_space);
 
 	virtual int intersect_point(const Vector3 &p_point, ShapeResult *r_results, int p_result_max, const Set<RID> &p_exclude = Set<RID>(), uint32_t p_collision_mask = 0xFFFFFFFF, bool p_collide_with_bodies = true, bool p_collide_with_areas = false) override;
@@ -111,7 +109,6 @@ class SpaceBullet : public RIDBullet {
 	real_t angular_damp = 0.0;
 
 	Vector<AreaBullet *> areas;
-
 	Vector<Vector3> contactDebug;
 	int contactDebugCount = 0;
 	real_t delta_time = 0.;

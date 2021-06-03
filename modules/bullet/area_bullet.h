@@ -85,6 +85,7 @@ private:
 	btGhostObject *btGhost = nullptr;
 	Vector<OverlappingObjectData> overlappingObjects;
 	bool monitorable = true;
+	int priority = 0;
 
 	PhysicsServer3D::AreaSpaceOverrideMode spOv_mode = PhysicsServer3D::AREA_SPACE_OVERRIDE_DISABLED;
 	bool spOv_gravityPoint = false;
@@ -138,6 +139,9 @@ public:
 
 	_FORCE_INLINE_ void set_spOv_priority(int p_priority) { spOv_priority = p_priority; }
 	_FORCE_INLINE_ int get_spOv_priority() { return spOv_priority; }
+
+	_FORCE_INLINE_ void set_priority(int p_priority) { priority = p_priority; }
+	_FORCE_INLINE_ int get_priority() const { return priority; }
 
 	virtual void main_shape_changed();
 	virtual void reload_body();

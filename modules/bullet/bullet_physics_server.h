@@ -51,44 +51,61 @@ class BulletPhysicsServer3D : public PhysicsServer3D {
 	friend class BulletPhysicsDirectSpaceState;
 
 	bool active = true;
-	char active_spaces_count = 0;
-	Vector<SpaceBullet *> active_spaces;
+	bool using_threads = false;
+	bool doing_sync = false;
 
-	mutable RID_PtrOwner<SpaceBullet> space_owner;
-	mutable RID_PtrOwner<ShapeBullet> shape_owner;
-	mutable RID_PtrOwner<AreaBullet> area_owner;
-	mutable RID_PtrOwner<RigidBodyBullet> rigid_body_owner;
-	mutable RID_PtrOwner<SoftBodyBullet> soft_body_owner;
-	mutable RID_PtrOwner<JointBullet> joint_owner;
+	Set<SpaceBullet *> active_spaces;
+
+	mutable RID_PtrOwner<SpaceBullet, true> space_owner;
+	mutable RID_PtrOwner<ShapeBullet, true> shape_owner;
+	mutable RID_PtrOwner<AreaBullet, true> area_owner;
+	mutable RID_PtrOwner<RigidBodyBullet, true> rigid_body_owner;
+	mutable RID_PtrOwner<SoftBodyBullet, true> soft_body_owner;
+	mutable RID_PtrOwner<JointBullet, true> joint_owner;
+	static BulletPhysicsServer3D *singletonbullet;
 
 protected:
 	static void _bind_methods();
 
 public:
-	BulletPhysicsServer3D();
+	BulletPhysicsServer3D(bool p_using_threads = false);
 	~BulletPhysicsServer3D();
 
-	_FORCE_INLINE_ RID_PtrOwner<SpaceBullet> *get_space_owner() {
+	_FORCE_INLINE_ RID_PtrOwner<SpaceBullet, true> *get_space_owner() {
 		return &space_owner;
 	}
-	_FORCE_INLINE_ RID_PtrOwner<ShapeBullet> *get_shape_owner() {
+	_FORCE_INLINE_ RID_PtrOwner<ShapeBullet, true> *get_shape_owner() {
 		return &shape_owner;
 	}
-	_FORCE_INLINE_ RID_PtrOwner<AreaBullet> *get_area_owner() {
+	_FORCE_INLINE_ RID_PtrOwner<AreaBullet, true> *get_area_owner() {
 		return &area_owner;
 	}
-	_FORCE_INLINE_ RID_PtrOwner<RigidBodyBullet> *get_rigid_body_owner() {
+	_FORCE_INLINE_ RID_PtrOwner<RigidBodyBullet, true> *get_rigid_body_owner() {
 		return &rigid_body_owner;
 	}
-	_FORCE_INLINE_ RID_PtrOwner<SoftBodyBullet> *get_soft_body_owner() {
+	_FORCE_INLINE_ RID_PtrOwner<SoftBodyBullet, true> *get_soft_body_owner() {
 		return &soft_body_owner;
 	}
-	_FORCE_INLINE_ RID_PtrOwner<JointBullet> *get_joint_owner() {
+	_FORCE_INLINE_ RID_PtrOwner<JointBullet, true> *get_joint_owner() {
 		return &joint_owner;
 	}
 
 	/* SHAPE API */
-	virtual RID shape_create(ShapeType p_shape) override;
+
+	virtual RID plane_shape_create() override;
+	virtual RID ray_shape_create() override;
+	virtual RID sphere_shape_create() override;
+	virtual RID box_shape_create() override;
+	virtual RID capsule_shape_create() override;
+	virtual RID cylinder_shape_create() override;
+	virtual RID convex_polygon_shape_create() override;
+	virtual RID concave_polygon_shape_create() override;
+	virtual RID heightmap_shape_create() override;
+	virtual RID custom_shape_create() override;
+
+	virtual void end_sync() override;
+	virtual void sync() override;
+
 	virtual void shape_set_data(RID p_shape, const Variant &p_data) override;
 	virtual ShapeType shape_get_type(RID p_shape) const override;
 	virtual Variant shape_get_data(RID p_shape) const override;
@@ -166,7 +183,7 @@ public:
 
 	/* RIGID BODY API */
 
-	virtual RID body_create(BodyMode p_mode = BODY_MODE_RIGID, bool p_init_sleeping = false) override;
+	virtual RID body_create() override;
 
 	virtual void body_set_space(RID p_body, RID p_space) override;
 	virtual RID body_get_space(RID p_body) const override;
@@ -258,7 +275,7 @@ public:
 
 	/* SOFT BODY API */
 
-	virtual RID soft_body_create(bool p_init_sleeping = false) override;
+	virtual RID soft_body_create() override;
 
 	virtual void soft_body_update_rendering_server(RID p_body, RenderingServerHandler *p_rendering_server_handler) override;
 
@@ -315,6 +332,8 @@ public:
 	/* JOINT API */
 
 	virtual JointType joint_get_type(RID p_joint) const override;
+	virtual RID joint_create() override;
+	virtual void joint_clear(RID p_joint) override; //resets type
 
 	virtual void joint_set_solver_priority(RID p_joint, int p_priority) override;
 	virtual int joint_get_solver_priority(RID p_joint) const override;
@@ -322,7 +341,7 @@ public:
 	virtual void joint_disable_collisions_between_bodies(RID p_joint, const bool p_disable) override;
 	virtual bool joint_is_disabled_collisions_between_bodies(RID p_joint) const override;
 
-	virtual RID joint_create_pin(RID p_body_A, const Vector3 &p_local_A, RID p_body_B, const Vector3 &p_local_B) override;
+	virtual void joint_make_pin(RID p_joint, RID p_body_A, const Vector3 &p_local_A, RID p_body_B, const Vector3 &p_local_B) override;
 
 	virtual void pin_joint_set_param(RID p_joint, PinJointParam p_param, real_t p_value) override;
 	virtual real_t pin_joint_get_param(RID p_joint, PinJointParam p_param) const override;
@@ -333,8 +352,8 @@ public:
 	virtual void pin_joint_set_local_b(RID p_joint, const Vector3 &p_B) override;
 	virtual Vector3 pin_joint_get_local_b(RID p_joint) const override;
 
-	virtual RID joint_create_hinge(RID p_body_A, const Transform &p_hinge_A, RID p_body_B, const Transform &p_hinge_B) override;
-	virtual RID joint_create_hinge_simple(RID p_body_A, const Vector3 &p_pivot_A, const Vector3 &p_axis_A, RID p_body_B, const Vector3 &p_pivot_B, const Vector3 &p_axis_B) override;
+	virtual void joint_make_hinge(RID p_joint, RID p_body_A, const Transform &p_hinge_A, RID p_body_B, const Transform &p_hinge_B) override;
+	virtual void joint_make_hinge_simple(RID p_joint, RID p_body_A, const Vector3 &p_pivot_A, const Vector3 &p_axis_A, RID p_body_B, const Vector3 &p_pivot_B, const Vector3 &p_axis_B) override;
 
 	virtual void hinge_joint_set_param(RID p_joint, HingeJointParam p_param, real_t p_value) override;
 	virtual real_t hinge_joint_get_param(RID p_joint, HingeJointParam p_param) const override;
@@ -343,33 +362,31 @@ public:
 	virtual bool hinge_joint_get_flag(RID p_joint, HingeJointFlag p_flag) const override;
 
 	/// Reference frame is A
-	virtual RID joint_create_slider(RID p_body_A, const Transform &p_local_frame_A, RID p_body_B, const Transform &p_local_frame_B) override;
+	virtual void joint_make_slider(RID p_joint, RID p_body_A, const Transform &p_local_frame_A, RID p_body_B, const Transform &p_local_frame_B) override;
 
 	virtual void slider_joint_set_param(RID p_joint, SliderJointParam p_param, real_t p_value) override;
 	virtual real_t slider_joint_get_param(RID p_joint, SliderJointParam p_param) const override;
 
 	/// Reference frame is A
-	virtual RID joint_create_cone_twist(RID p_body_A, const Transform &p_local_frame_A, RID p_body_B, const Transform &p_local_frame_B) override;
+	virtual void joint_make_cone_twist(RID p_joint, RID p_body_A, const Transform &p_local_frame_A, RID p_body_B, const Transform &p_local_frame_B) override;
 
 	virtual void cone_twist_joint_set_param(RID p_joint, ConeTwistJointParam p_param, real_t p_value) override;
 	virtual real_t cone_twist_joint_get_param(RID p_joint, ConeTwistJointParam p_param) const override;
 
 	/// Reference frame is A
-	virtual RID joint_create_generic_6dof(RID p_body_A, const Transform &p_local_frame_A, RID p_body_B, const Transform &p_local_frame_B) override;
+	virtual void joint_make_generic_6dof(RID p_joint, RID p_body_A, const Transform &p_local_frame_A, RID p_body_B, const Transform &p_local_frame_B) override;
 
 	virtual void generic_6dof_joint_set_param(RID p_joint, Vector3::Axis p_axis, G6DOFJointAxisParam p_param, real_t p_value) override;
-	virtual real_t generic_6dof_joint_get_param(RID p_joint, Vector3::Axis p_axis, G6DOFJointAxisParam p_param) override;
+	virtual real_t generic_6dof_joint_get_param(RID p_joint, Vector3::Axis p_axis, G6DOFJointAxisParam p_param) const override;
 
 	virtual void generic_6dof_joint_set_flag(RID p_joint, Vector3::Axis p_axis, G6DOFJointAxisFlag p_flag, bool p_enable) override;
-	virtual bool generic_6dof_joint_get_flag(RID p_joint, Vector3::Axis p_axis, G6DOFJointAxisFlag p_flag) override;
+	virtual bool generic_6dof_joint_get_flag(RID p_joint, Vector3::Axis p_axis, G6DOFJointAxisFlag p_flag) const override;
 
 	/* MISC */
 
 	virtual void free(RID p_rid) override;
 
-	virtual void set_active(bool p_active) override {
-		active = p_active;
-	}
+	virtual void set_active(bool p_active) override;
 
 	static bool singleton_isActive() {
 		return static_cast<BulletPhysicsServer3D *>(get_singleton())->active;

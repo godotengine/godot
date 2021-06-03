@@ -33,6 +33,7 @@
 #include "bullet_physics_server.h"
 #include "core/config/project_settings.h"
 #include "core/object/class_db.h"
+#include "servers/physics_3d/physics_server_3d_wrap_mt.h"
 
 /**
 	@author AndreaCatania
@@ -40,17 +41,18 @@
 
 #ifndef _3D_DISABLED
 PhysicsServer3D *_createBulletPhysicsCallback() {
-	return memnew(BulletPhysicsServer3D);
+	bool using_threads = GLOBAL_GET("physics/3d/run_on_thread");
+	PhysicsServer3D *physics_server = memnew(BulletPhysicsServer3D(using_threads));
+	return memnew(PhysicsServer3DWrapMT(physics_server, using_threads));
 }
 #endif
 
 void register_bullet_types() {
 #ifndef _3D_DISABLED
+	GLOBAL_DEF("physics/3d/active_soft_world", true);
+
 	PhysicsServer3DManager::register_server("Bullet", &_createBulletPhysicsCallback);
 	PhysicsServer3DManager::set_default_server("Bullet", 1);
-
-	GLOBAL_DEF("physics/3d/active_soft_world", true);
-	ProjectSettings::get_singleton()->set_custom_property_info("physics/3d/active_soft_world", PropertyInfo(Variant::BOOL, "physics/3d/active_soft_world"));
 #endif
 }
 
