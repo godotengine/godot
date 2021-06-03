@@ -84,6 +84,7 @@ struct Vector2 {
 
 	real_t length() const;
 	real_t length_squared() const;
+	Vector2 limit_length(const real_t p_len = 1.0) const;
 
 	Vector2 min(const Vector2 &p_vector2) const {
 		return Vector2(MIN(x, p_vector2.x), MIN(y, p_vector2.y));
@@ -106,8 +107,6 @@ struct Vector2 {
 	Vector2 project(const Vector2 &p_to) const;
 
 	Vector2 plane_project(real_t p_d, const Vector2 &p_vec) const;
-
-	Vector2 clamped(real_t p_len) const;
 
 	_FORCE_INLINE_ Vector2 lerp(const Vector2 &p_to, real_t p_weight) const;
 	_FORCE_INLINE_ Vector2 slerp(const Vector2 &p_to, real_t p_weight) const;
@@ -163,6 +162,7 @@ struct Vector2 {
 	Vector2 ceil() const;
 	Vector2 round() const;
 	Vector2 snapped(const Vector2 &p_by) const;
+	Vector2 clamp(const Vector2 &p_min, const Vector2 &p_max) const;
 	real_t aspect() const { return width / height; }
 
 	operator String() const { return String::num(x) + ", " + String::num(y); }
@@ -338,6 +338,7 @@ struct Vector2i {
 	real_t aspect() const { return width / (real_t)height; }
 	Vector2i sign() const { return Vector2i(SGN(x), SGN(y)); }
 	Vector2i abs() const { return Vector2i(ABS(x), ABS(y)); }
+	Vector2i clamp(const Vector2i &p_min, const Vector2i &p_max) const;
 
 	operator String() const { return String::num(x) + ", " + String::num(y); }
 

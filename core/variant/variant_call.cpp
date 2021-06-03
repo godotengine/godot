@@ -1419,6 +1419,7 @@ static void _register_variant_builtin_methods() {
 	bind_method(Vector2, distance_squared_to, sarray("to"), varray());
 	bind_method(Vector2, length, sarray(), varray());
 	bind_method(Vector2, length_squared, sarray(), varray());
+	bind_method(Vector2, limit_length, sarray("length"), varray(1.0));
 	bind_method(Vector2, normalized, sarray(), varray());
 	bind_method(Vector2, is_normalized, sarray(), varray());
 	bind_method(Vector2, is_equal_approx, sarray("to"), varray());
@@ -1442,14 +1443,15 @@ static void _register_variant_builtin_methods() {
 	bind_method(Vector2, cross, sarray("with"), varray());
 	bind_method(Vector2, abs, sarray(), varray());
 	bind_method(Vector2, sign, sarray(), varray());
+	bind_method(Vector2, clamp, sarray("min", "max"), varray());
 	bind_method(Vector2, snapped, sarray("step"), varray());
-	bind_method(Vector2, clamped, sarray("length"), varray());
 
 	/* Vector2i */
 
 	bind_method(Vector2i, aspect, sarray(), varray());
 	bind_method(Vector2i, sign, sarray(), varray());
 	bind_method(Vector2i, abs, sarray(), varray());
+	bind_method(Vector2i, clamp, sarray("min", "max"), varray());
 
 	/* Rect2 */
 
@@ -1493,10 +1495,12 @@ static void _register_variant_builtin_methods() {
 	bind_method(Vector3, distance_squared_to, sarray("b"), varray());
 	bind_method(Vector3, length, sarray(), varray());
 	bind_method(Vector3, length_squared, sarray(), varray());
+	bind_method(Vector3, limit_length, sarray("length"), varray(1.0));
 	bind_method(Vector3, normalized, sarray(), varray());
 	bind_method(Vector3, is_normalized, sarray(), varray());
 	bind_method(Vector3, is_equal_approx, sarray("to"), varray());
 	bind_method(Vector3, inverse, sarray(), varray());
+	bind_method(Vector3, clamp, sarray("min", "max"), varray());
 	bind_method(Vector3, snapped, sarray("step"), varray());
 	bind_method(Vector3, rotated, sarray("by_axis", "phi"), varray());
 	bind_method(Vector3, lerp, sarray("to", "weight"), varray());
@@ -1525,6 +1529,7 @@ static void _register_variant_builtin_methods() {
 	bind_method(Vector3i, max_axis, sarray(), varray());
 	bind_method(Vector3i, sign, sarray(), varray());
 	bind_method(Vector3i, abs, sarray(), varray());
+	bind_method(Vector3i, clamp, sarray("min", "max"), varray());
 
 	/* Plane */
 
@@ -1562,6 +1567,7 @@ static void _register_variant_builtin_methods() {
 	bind_method(Color, to_abgr64, sarray(), varray());
 	bind_method(Color, to_rgba64, sarray(), varray());
 
+	bind_method(Color, clamp, sarray("min", "max"), varray(Color(0, 0, 0, 0), Color(1, 1, 1, 1)));
 	bind_method(Color, inverted, sarray(), varray());
 	bind_method(Color, lerp, sarray("to", "weight"), varray());
 	bind_method(Color, lightened, sarray("amount"), varray());

@@ -87,6 +87,17 @@
 				Returns a new vector with all components rounded up (towards positive infinity).
 			</description>
 		</method>
+		<method name="clamp" qualifiers="const">
+			<return type="Vector3">
+			</return>
+			<argument index="0" name="min" type="Vector3">
+			</argument>
+			<argument index="1" name="max" type="Vector3">
+			</argument>
+			<description>
+				Returns a new vector with all components clamped between the components of [code]min[/code] and [code]max[/code], by running [method @GlobalScope.clamp] on each component.
+			</description>
+		</method>
 		<method name="cross" qualifiers="const">
 			<return type="Vector3">
 			</return>
@@ -205,6 +216,15 @@
 			</argument>
 			<description>
 				Returns the result of the linear interpolation between this vector and [code]to[/code] by amount [code]weight[/code]. [code]weight[/code] is on the range of 0.0 to 1.0, representing the amount of interpolation.
+			</description>
+		</method>
+		<method name="limit_length" qualifiers="const">
+			<return type="Vector3">
+			</return>
+			<argument index="0" name="length" type="float" default="1.0">
+			</argument>
+			<description>
+				Returns the vector with a maximum length by limiting its length to [code]length[/code].
 			</description>
 		</method>
 		<method name="max_axis" qualifiers="const">

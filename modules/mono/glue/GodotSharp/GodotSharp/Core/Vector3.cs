@@ -140,6 +140,24 @@ namespace Godot
         }
 
         /// <summary>
+        /// Returns a new vector with all components clamped between the
+        /// components of `min` and `max` using
+        /// <see cref="Mathf.Clamp(real_t, real_t, real_t)"/>.
+        /// </summary>
+        /// <param name="min">The vector with minimum allowed values.</param>
+        /// <param name="max">The vector with maximum allowed values.</param>
+        /// <returns>The vector with all components clamped.</returns>
+        public Vector3 Clamp(Vector3 min, Vector3 max)
+        {
+            return new Vector3
+            (
+                Mathf.Clamp(x, min.x, max.x),
+                Mathf.Clamp(y, min.y, max.y),
+                Mathf.Clamp(z, min.z, max.z)
+            );
+        }
+
+        /// <summary>
         /// Returns the cross product of this vector and `b`.
         /// </summary>
         /// <param name="b">The other vector.</param>
@@ -310,6 +328,25 @@ namespace Godot
                 Mathf.Lerp(y, to.y, weight.y),
                 Mathf.Lerp(z, to.z, weight.z)
             );
+        }
+
+        /// <summary>
+        /// Returns the vector with a maximum length by limiting its length to `length`.
+        /// </summary>
+        /// <param name="length">The length to limit to.</param>
+        /// <returns>The vector with its length limited.</returns>
+        public Vector3 LimitLength(real_t length = 1.0f)
+        {
+            Vector3 v = this;
+            real_t l = Length();
+
+            if (l > 0 && length < l)
+            {
+                v /= l;
+                v *= length;
+            }
+
+            return v;
         }
 
         /// <summary>
