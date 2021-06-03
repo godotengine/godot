@@ -39,6 +39,7 @@
 #include "test_class_db.h"
 #include "test_color.h"
 #include "test_command_queue.h"
+#include "test_compiler_sanity.h"
 #include "test_config_file.h"
 #include "test_crypto.h"
 #include "test_curve.h"

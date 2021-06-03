@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  skin.h                                                               */
+/*  test_compiler_sanity.h                                               */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,70 +28,37 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef SKIN_H
-#define SKIN_H
+#ifndef TEST_SANITY_H
+#define TEST_SANITY_H
 
-#include "core/io/resource.h"
+#include "core/os/os.h"
+#include "core/string/ustring.h"
+#include "scene/resources/material.h"
+#include "tests/test_macros.h"
 
-class Skin : public Resource {
-	GDCLASS(Skin, Resource)
+namespace TestSanity {
 
-	struct Bind {
-		int bone = -1;
-		StringName name;
-		Transform pose;
-	};
-
-	Vector<Bind> binds;
-
-	Bind *binds_ptr = nullptr;
-	int bind_count = 0;
-
-protected:
-	bool _set(const StringName &p_name, const Variant &p_value);
-	bool _get(const StringName &p_name, Variant &r_ret) const;
-	void _get_property_list(List<PropertyInfo> *p_list) const;
-
-	virtual void reset_state() override;
-	static void _bind_methods();
-
+class ArrayInitializerTest : public Reference {
 public:
-	void set_bind_count(int p_size);
-	inline int get_bind_count() const { return bind_count; }
-
-	void add_bind(int p_bone, const Transform &p_pose);
-	void add_named_bind(const String &p_name, const Transform &p_pose);
-
-	void set_bind_bone(int p_index, int p_bone);
-	void set_bind_pose(int p_index, const Transform &p_pose);
-	void set_bind_name(int p_index, const StringName &p_name);
-
-	bool has_named_bind(const String &p_name);
-
-	inline int get_bind_bone(int p_index) const {
-#ifdef DEBUG_ENABLED
-		ERR_FAIL_INDEX_V(p_index, bind_count, -1);
-#endif
-		return binds_ptr[p_index].bone;
-	}
-
-	inline StringName get_bind_name(int p_index) const {
-#ifdef DEBUG_ENABLED
-		ERR_FAIL_INDEX_V(p_index, bind_count, StringName());
-#endif
-		return binds_ptr[p_index].name;
-	}
-
-	inline Transform get_bind_pose(int p_index) const {
-#ifdef DEBUG_ENABLED
-		ERR_FAIL_INDEX_V(p_index, bind_count, Transform());
-#endif
-		return binds_ptr[p_index].pose;
-	}
-
-	void clear_binds();
-
-	Skin();
+	static const int max_size = 10;
+	bool class_member_2[max_size] = {}; // will all be zero
+	bool class_member_3[max_size] = { false }; // will all be zero
 };
 
-#endif // SKIN_H
+TEST_CASE("[Sanity] Check basic definition has zeros") {
+	for (size_t x = 0; x < 100000; x++) {
+		Ref<ArrayInitializerTest> mat;
+		mat.instance();
+		for (int y = 0; y < ArrayInitializerTest::max_size; y++) {
+			bool yv1 = mat->class_member_2[y];
+			bool yv2 = mat->class_member_3[y];
+
+			CHECK(!yv1);
+			CHECK(!yv2);
+		}
+	}
+}
+
+} // namespace TestSanity
+
+#endif // TEST_SANITY_H

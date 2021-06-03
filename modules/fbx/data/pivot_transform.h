@@ -92,9 +92,11 @@ struct PivotTransform : Reference, ModelAbstraction {
 
 	/* Extract into xforms and calculate once */
 	void ComputePivotTransform();
+	// blender only pivot transform
+	void ComputeBlenderTransform();
 
 	/* Execute the command for the pivot generation */
-	void Execute();
+	void Execute(ImportState &state);
 
 	void set_parent(Ref<PivotTransform> p_parent) {
 		parent_transform = p_parent;

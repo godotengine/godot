@@ -552,7 +552,7 @@ Node3D *EditorSceneImporterFBX::_generate_scene(
 	if (state.fbx_bone_map.size() > 0) {
 		// We are using a single skeleton only method here
 		// this is because we really have no concept of skeletons in FBX
-		// their are bones in a scene but they have no specific armature
+		// there are bones in a scene but they have no specific armature
 		// we can detect armatures but the issue lies in the complexity
 		// we opted to merge the entire scene onto one skeleton for now
 		// if we need to change this we have an archive of the old code.
@@ -710,25 +710,11 @@ Node3D *EditorSceneImporterFBX::_generate_scene(
 		const FBXDocParser::Skin *mesh_skin = mesh_geometry->DeformerSkin();
 
 		if (!mesh_skin) {
-			continue; // safe to continue
-		}
-
-		//
-		// Skin bone configuration
-		//
-
-		//
-		// Get Mesh Node Xform only
-		//
-		//ERR_CONTINUE_MSG(!state.fbx_target_map.has(mesh_id), "invalid xform for the skin pose: " + itos(mesh_id));
-		//Ref<FBXNode> mesh_node_xform_data = state.fbx_target_map[mesh_id];
-
-		if (!mesh_skin) {
-			continue; // not a deformer.
+			continue; // mesh which has no armature
 		}
 
 		if (mesh_skin->Clusters().size() == 0) {
-			continue; // possibly buggy mesh
+			continue; // armature without a skin.
 		}
 
 		// Lookup skin or create it if it's not found.
@@ -742,6 +728,8 @@ Node3D *EditorSceneImporterFBX::_generate_scene(
 			skin = state.MeshSkins[mesh_id];
 		}
 
+		bool reparented = false;
+
 		for (const FBXDocParser::Cluster *cluster : mesh_skin->Clusters()) {
 			// node or bone this cluster targets (in theory will only be a bone target)
 			uint64_t skin_target_id = cluster->TargetNode()->ID();
@@ -753,10 +741,27 @@ Node3D *EditorSceneImporterFBX::_generate_scene(
 			const Ref<FBXSkeleton> skeleton = bone->fbx_skeleton;
 			const Ref<FBXNode> skeleton_node = skeleton->fbx_node;
 
-			skin->add_named_bind(
-					bone->bone_name,
-					get_unscaled_transform(
-							skeleton_node->pivot_transform->GlobalTransform.affine_inverse() * cluster->TransformLink().affine_inverse(), state.scale));
+			const bool has_bind = skin->has_named_bind(bone->bone_name);
+
+			if (has_bind) {
+				ERR_CONTINUE_MSG(has_bind, "duplicate bind, this is often a bug caused by an artist");
+			} else {
+				skin->add_named_bind(
+						bone->bone_name, get_unscaled_transform(cluster->TransformLink().affine_inverse(), state.scale));
+			}
+
+			if (!reparented && state.is_blender_fbx) {
+				// remove
+				Node *mesh_parent = mesh->godot_mesh_instance->get_parent();
+				mesh_parent->remove_child(mesh->godot_mesh_instance);
+
+				// re-parent to armature
+				skeleton_node->godot_node->add_child(mesh->godot_mesh_instance);
+				mesh->godot_mesh_instance->set_owner(state.root_owner);
+				//mesh->godot_mesh_instance->set_transform(Transform());
+
+				reparented = true;
+			}
 		}
 
 		print_verbose("cluster name / id: " + String(mesh_skin->Name().c_str()) + " [" + itos(mesh_skin->ID()) + "]");
@@ -829,10 +834,16 @@ Node3D *EditorSceneImporterFBX::_generate_scene(
 				print_verbose("Valid animation stack has been found: " + animation_name);
 				// ReferenceTime is the same for some animations?
 				// LocalStop time is the start and end time
-				float r_start = CONVERT_FBX_TIME(stack->ReferenceStart());
-				float r_stop = CONVERT_FBX_TIME(stack->ReferenceStop());
-				float start_time = CONVERT_FBX_TIME(stack->LocalStart());
-				float end_time = CONVERT_FBX_TIME(stack->LocalStop());
+
+				const int64_t r_start_time = stack->ReferenceStart();
+				const int64_t r_end_time = stack->ReferenceStop();
+				const int64_t l_start_time = stack->LocalStart();
+				const int64_t l_end_time = stack->LocalStop();
+
+				const float r_start = CONVERT_FBX_TIME(r_start_time);
+				const float r_stop = CONVERT_FBX_TIME(r_end_time);
+				const float start_time = CONVERT_FBX_TIME(l_start_time);
+				const float end_time = CONVERT_FBX_TIME(l_end_time);
 				float duration = end_time - start_time;
 
 				print_verbose("r_start " + rtos(r_start) + ", r_stop " + rtos(r_stop));
@@ -1012,6 +1023,7 @@ Node3D *EditorSceneImporterFBX::_generate_scene(
 						// next track id is 5.
 						const uint64_t target_id = track->key();
 						int track_idx = animation->add_track(Animation::TYPE_TRANSFORM);
+						animation->track_set_imported(track_idx, true);
 
 						// animation->track_set_path(track_idx, node_path);
 						Ref<FBXBone> bone;
@@ -1151,8 +1163,15 @@ Node3D *EditorSceneImporterFBX::_generate_scene(
 								rot_key_value.z = -rot_key_value.z;
 								rot_key_value.w = -rot_key_value.w;
 							}
+
 							// pre_post rotation possibly could fix orientation
-							Quat final_rotation = pre_rotation * rot_key_value * post_rotation;
+							Quat final_rotation;
+
+							if (state.is_blender_fbx) {
+								final_rotation = rot_key_value;
+							} else {
+								final_rotation = pre_rotation * rot_key_value * post_rotation;
+							}
 
 							lastQuat = final_rotation;
 
@@ -1185,6 +1204,10 @@ Node3D *EditorSceneImporterFBX::_generate_scene(
 						const Quat def_rot = rotation_keys.has_default ? ImportUtils::EulerToQuaternion(quat_rotation_order, ImportUtils::deg2rad(rotation_keys.default_value)) : bone_rest.basis.get_rotation_quat();
 						const Vector3 def_scale = scale_keys.has_default ? scale_keys.default_value : bone_rest.basis.get_scale();
 						print_verbose("track defaults: p(" + def_pos + ") s(" + def_scale + ") r(" + def_rot + ")");
+
+						Vector3 last_pos;
+						Quat last_rot;
+						Quat last_scale;
 
 						while (true) {
 							Vector3 pos = def_pos;
@@ -1220,17 +1243,22 @@ Node3D *EditorSceneImporterFBX::_generate_scene(
 								pos = t.origin;
 							}
 
-							animation->transform_track_insert_key(track_idx, time, pos, rot, scale);
+							if (!last_pos.is_equal_approx(pos) || !last_rot.is_equal_approx(rot) || !last_scale.is_equal_approx(scale)) {
+								animation->transform_track_insert_key(track_idx, time, pos, rot, scale);
+
+								last_pos = pos;
+								last_scale = scale;
+								last_rot = rot;
+							}
 
 							if (last) {
 								break;
 							}
 
 							time += increment;
-							if (time > anim_length) {
+							if (time >= anim_length) {
 								last = true;
 								time = anim_length;
-								break;
 							}
 						}
 					}
@@ -1413,7 +1441,7 @@ void EditorSceneImporterFBX::BuildDocumentNodes(
 			fbx_transform->set_parent(parent_transform);
 			fbx_transform->set_model(model);
 			fbx_transform->debug_pivot_xform("name: " + new_node->node_name);
-			fbx_transform->Execute();
+			fbx_transform->Execute(state);
 
 			new_node->set_pivot_transform(fbx_transform);
 
