@@ -80,7 +80,7 @@ String cwd() {
 }
 
 String abspath(const String &p_path) {
-	if (p_path.is_abs_path()) {
+	if (p_path.is_absolute_path()) {
 		return p_path.simplify_path();
 	} else {
 		return path::join(path::cwd(), p_path).simplify_path();

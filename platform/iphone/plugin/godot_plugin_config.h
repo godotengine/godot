@@ -104,7 +104,7 @@ static inline String resolve_local_dependency_path(String plugin_config_dir, Str
 		return absolute_path;
 	}
 
-	if (dependency_path.is_abs_path()) {
+	if (dependency_path.is_absolute_path()) {
 		return dependency_path;
 	}
 
@@ -121,7 +121,7 @@ static inline String resolve_system_dependency_path(String dependency_path) {
 		return absolute_path;
 	}
 
-	if (dependency_path.is_abs_path()) {
+	if (dependency_path.is_absolute_path()) {
 		return dependency_path;
 	}
 
