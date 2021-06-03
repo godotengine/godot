@@ -146,16 +146,14 @@ class VisualShaderEditor : public VBoxContainer {
 	OptionButton *edit_type_particles;
 	OptionButton *edit_type_sky;
 
-	PanelContainer *error_panel;
-	Label *error_label;
-
 	bool pending_update_preview;
 	bool shader_error;
 	Window *preview_window;
 	VBoxContainer *preview_vbox;
 	CodeEdit *preview_text;
 	Ref<CodeHighlighter> syntax_highlighter;
-	Label *error_text;
+	PanelContainer *error_panel;
+	Label *error_label;
 
 	UndoRedo *undo_redo;
 	Point2 saved_node_pos;
