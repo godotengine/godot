@@ -59,18 +59,9 @@ public:
 
 	Control *get_editor_main_control();
 	void edit_resource(const Ref<Resource> &p_resource);
+	void edit_node(Node *p_node);
 	void open_scene_from_path(const String &scene_path);
 	void reload_scene_from_path(const String &scene_path);
-
-	void play_main_scene();
-	void play_current_scene();
-	void play_custom_scene(const String &scene_path);
-	void stop_playing_scene();
-	bool is_playing_scene() const;
-	String get_playing_scene() const;
-
-	Node *get_edited_scene_root();
-	Array get_open_scenes() const;
 
 	void select_file(const String &p_file);
 	String get_selected_path() const;
@@ -90,9 +81,6 @@ public:
 	bool is_plugin_enabled(const String &p_plugin) const;
 
 	EditorInspector *get_inspector() const;
-
-	Error save_scene();
-	void save_scene_as(const String &p_scene, bool p_with_preview = true);
 
 	Vector<Ref<Texture2D>> make_mesh_previews(const Vector<Ref<Mesh>> &p_meshes, Vector<Transform> *p_transforms, int p_preview_size);
 
@@ -370,6 +358,34 @@ public:
 	void remove_tool_menu_item(const String &p_name);
 
 	EditorTopBars(EditorNode *p_editor);
+};
+
+class EditorScenes : public Node {
+	GDCLASS(EditorScenes, Node);
+
+	EditorNode *editor;
+
+protected:
+	static void _bind_methods();
+	static EditorScenes *singleton;
+
+public:
+	static EditorScenes *get_singleton() { return singleton; }
+
+	void play_main_scene();
+	void play_current_scene();
+	void play_custom_scene(const String &scene_path);
+	void stop_playing_scene();
+	bool is_playing_scene() const;
+	String get_playing_scene() const;
+
+	Node *get_edited_scene_root();
+	Array get_open_scenes() const;
+
+	Error save_scene();
+	void save_scene_as(const String &p_scene, bool p_with_preview = true);
+
+	EditorScenes(EditorNode *p_editor);
 };
 
 #endif // EDITOR_SINGLETONS_H

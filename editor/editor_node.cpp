@@ -3739,6 +3739,7 @@ void EditorNode::register_editor_types() {
 	ClassDB::register_virtual_class<EditorWorkspaces>();
 	ClassDB::register_virtual_class<EditorPluginInterfaces>();
 	ClassDB::register_virtual_class<EditorTopBars>();
+	ClassDB::register_virtual_class<EditorScenes>();
 
 	ClassDB::register_virtual_class<SceneTreeDock>();
 	ClassDB::register_virtual_class<NodeDock>();

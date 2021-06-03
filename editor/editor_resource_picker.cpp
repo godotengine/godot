@@ -303,7 +303,7 @@ void EditorResourcePicker::_edit_menu_cbk(int p_which) {
 		} break;
 
 		case OBJ_MENU_SHOW_IN_FILE_SYSTEM: {
-			FileSystemDock *file_system_dock = EditorNode::get_singleton()->get_filesystem_dock();
+			FileSystemDock *file_system_dock = EditorDocks::get_singleton()->get_filesystem_dock();
 			file_system_dock->navigate_to_path(edited_resource->get_path());
 
 			// Ensure that the FileSystem dock is visible.
@@ -829,14 +829,14 @@ bool EditorScriptPicker::handle_menu_selected(int p_which) {
 	switch (p_which) {
 		case OBJ_MENU_NEW_SCRIPT: {
 			if (script_owner) {
-				EditorNode::get_singleton()->get_scene_tree_dock()->open_script_dialog(script_owner, false);
+				EditorDocks::get_singleton()->get_scene_tree_dock()->open_script_dialog(script_owner, false);
 			}
 			return true;
 		}
 
 		case OBJ_MENU_EXTEND_SCRIPT: {
 			if (script_owner) {
-				EditorNode::get_singleton()->get_scene_tree_dock()->open_script_dialog(script_owner, true);
+				EditorDocks::get_singleton()->get_scene_tree_dock()->open_script_dialog(script_owner, true);
 			}
 			return true;
 		}

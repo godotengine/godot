@@ -50,7 +50,7 @@
 #include "editor/plugins/sprite_frames_editor_plugin.h"
 #include "editor/plugins/texture_region_editor_plugin.h"
 #include "editor/plugins/theme_editor_plugin.h"
-#include "editor/plugins/tile_set_editor_plugin.h"
+#include "editor/plugins/tiles/tiles_editor_plugin.h"
 #include "editor/plugins/visual_shader_editor_plugin.h"
 
 #include "main/main.h"
@@ -172,6 +172,10 @@ void EditorInterface::edit_resource(const Ref<Resource> &p_resource) {
 	editor->edit_resource(p_resource);
 }
 
+void EditorInterface::edit_node(Node *p_node) {
+	EditorNode::get_singleton()->edit_node(p_node);
+}
+
 void EditorInterface::open_scene_from_path(const String &scene_path) {
 	if (editor->is_changing_scene()) {
 		return;
@@ -186,48 +190,6 @@ void EditorInterface::reload_scene_from_path(const String &scene_path) {
 	}
 
 	editor->reload_scene(scene_path);
-}
-
-void EditorInterface::play_main_scene() {
-	editor->run_play();
-}
-
-void EditorInterface::play_current_scene() {
-	editor->run_play_current();
-}
-
-void EditorInterface::play_custom_scene(const String &scene_path) {
-	editor->run_play_custom(scene_path);
-}
-
-void EditorInterface::stop_playing_scene() {
-	editor->run_stop();
-}
-
-bool EditorInterface::is_playing_scene() const {
-	return editor->is_run_playing();
-}
-
-String EditorInterface::get_playing_scene() const {
-	return editor->get_run_playing_scene();
-}
-
-Node *EditorInterface::get_edited_scene_root() {
-	return editor->get_edited_scene();
-}
-
-Array EditorInterface::get_open_scenes() const {
-	Array ret;
-	Vector<EditorData::EditedScene> scenes = EditorNode::get_editor_data().get_edited_scenes();
-
-	int scns_amount = scenes.size();
-	for (int idx_scn = 0; idx_scn < scns_amount; idx_scn++) {
-		if (scenes[idx_scn].root == nullptr) {
-			continue;
-		}
-		ret.push_back(scenes[idx_scn].root->get_filename());
-	}
-	return ret;
 }
 
 void EditorInterface::select_file(const String &p_file) {
@@ -282,22 +244,6 @@ EditorInspector *EditorInterface::get_inspector() const {
 	return editor->get_inspector();
 }
 
-Error EditorInterface::save_scene() {
-	if (!get_edited_scene_root()) {
-		return ERR_CANT_CREATE;
-	}
-	if (get_edited_scene_root()->get_filename() == String()) {
-		return ERR_CANT_CREATE;
-	}
-
-	save_scene_as(get_edited_scene_root()->get_filename());
-	return OK;
-}
-
-void EditorInterface::save_scene_as(const String &p_scene, bool p_with_preview) {
-	editor->save_scene_to_path(p_scene, p_with_preview);
-}
-
 void EditorInterface::set_distraction_free_mode(bool p_enter) {
 	editor->set_distraction_free_mode(p_enter);
 }
@@ -315,16 +261,9 @@ void EditorInterface::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_base_control"), &EditorInterface::get_base_control);
 	ClassDB::bind_method(D_METHOD("get_editor_scale"), &EditorInterface::get_editor_scale);
 	ClassDB::bind_method(D_METHOD("edit_resource", "resource"), &EditorInterface::edit_resource);
+	ClassDB::bind_method(D_METHOD("edit_node", "node"), &EditorInterface::edit_node);
 	ClassDB::bind_method(D_METHOD("open_scene_from_path", "scene_filepath"), &EditorInterface::open_scene_from_path);
 	ClassDB::bind_method(D_METHOD("reload_scene_from_path", "scene_filepath"), &EditorInterface::reload_scene_from_path);
-	ClassDB::bind_method(D_METHOD("play_main_scene"), &EditorInterface::play_main_scene);
-	ClassDB::bind_method(D_METHOD("play_current_scene"), &EditorInterface::play_current_scene);
-	ClassDB::bind_method(D_METHOD("play_custom_scene", "scene_filepath"), &EditorInterface::play_custom_scene);
-	ClassDB::bind_method(D_METHOD("stop_playing_scene"), &EditorInterface::stop_playing_scene);
-	ClassDB::bind_method(D_METHOD("is_playing_scene"), &EditorInterface::is_playing_scene);
-	ClassDB::bind_method(D_METHOD("get_playing_scene"), &EditorInterface::get_playing_scene);
-	ClassDB::bind_method(D_METHOD("get_open_scenes"), &EditorInterface::get_open_scenes);
-	ClassDB::bind_method(D_METHOD("get_edited_scene_root"), &EditorInterface::get_edited_scene_root);
 	ClassDB::bind_method(D_METHOD("get_resource_previewer"), &EditorInterface::get_resource_previewer);
 	ClassDB::bind_method(D_METHOD("get_resource_filesystem"), &EditorInterface::get_resource_file_system);
 	ClassDB::bind_method(D_METHOD("get_editor_main_control"), &EditorInterface::get_editor_main_control);
@@ -337,9 +276,6 @@ void EditorInterface::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_plugin_enabled", "plugin"), &EditorInterface::is_plugin_enabled);
 
 	ClassDB::bind_method(D_METHOD("get_inspector"), &EditorInterface::get_inspector);
-
-	ClassDB::bind_method(D_METHOD("save_scene"), &EditorInterface::save_scene);
-	ClassDB::bind_method(D_METHOD("save_scene_as", "path", "with_preview"), &EditorInterface::save_scene_as, DEFVAL(true));
 
 	ClassDB::bind_method(D_METHOD("set_main_screen_editor", "name"), &EditorInterface::set_main_screen_editor);
 	ClassDB::bind_method(D_METHOD("set_distraction_free_mode", "enter"), &EditorInterface::set_distraction_free_mode);
@@ -788,12 +724,92 @@ void EditorTopBars::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_tool_menu_item", "name", "callable"), &EditorTopBars::add_tool_menu_item);
 	ClassDB::bind_method(D_METHOD("add_tool_submenu_item", "name", "submenu"), &EditorTopBars::add_tool_submenu_item);
 	ClassDB::bind_method(D_METHOD("remove_tool_menu_item", "name"), &EditorTopBars::remove_tool_menu_item);
-
 }
 
 EditorTopBars *EditorTopBars::singleton = nullptr;
 
 EditorTopBars::EditorTopBars(EditorNode *p_editor) {
+	editor = p_editor;
+	singleton = this;
+}
+
+///////////////////////////////////////////
+
+void EditorScenes::play_main_scene() {
+	editor->run_play();
+}
+
+void EditorScenes::play_current_scene() {
+	editor->run_play_current();
+}
+
+void EditorScenes::play_custom_scene(const String &scene_path) {
+	editor->run_play_custom(scene_path);
+}
+
+void EditorScenes::stop_playing_scene() {
+	editor->run_stop();
+}
+
+bool EditorScenes::is_playing_scene() const {
+	return editor->is_run_playing();
+}
+
+String EditorScenes::get_playing_scene() const {
+	return editor->get_run_playing_scene();
+}
+
+Node *EditorScenes::get_edited_scene_root() {
+	return editor->get_edited_scene();
+}
+
+Array EditorScenes::get_open_scenes() const {
+	Array ret;
+	Vector<EditorData::EditedScene> scenes = EditorNode::get_editor_data().get_edited_scenes();
+
+	int scns_amount = scenes.size();
+	for (int idx_scn = 0; idx_scn < scns_amount; idx_scn++) {
+		if (scenes[idx_scn].root == nullptr) {
+			continue;
+		}
+		ret.push_back(scenes[idx_scn].root->get_filename());
+	}
+	return ret;
+}
+
+Error EditorScenes::save_scene() {
+	if (!get_edited_scene_root()) {
+		return ERR_CANT_CREATE;
+	}
+	if (get_edited_scene_root()->get_filename() == String()) {
+		return ERR_CANT_CREATE;
+	}
+
+	save_scene_as(get_edited_scene_root()->get_filename());
+	return OK;
+}
+
+void EditorScenes::save_scene_as(const String &p_scene, bool p_with_preview) {
+	editor->save_scene_to_path(p_scene, p_with_preview);
+}
+
+void EditorScenes::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("play_main_scene"), &EditorScenes::play_main_scene);
+	ClassDB::bind_method(D_METHOD("play_current_scene"), &EditorScenes::play_current_scene);
+	ClassDB::bind_method(D_METHOD("play_custom_scene", "scene_filepath"), &EditorScenes::play_custom_scene);
+	ClassDB::bind_method(D_METHOD("stop_playing_scene"), &EditorScenes::stop_playing_scene);
+	ClassDB::bind_method(D_METHOD("is_playing_scene"), &EditorScenes::is_playing_scene);
+	ClassDB::bind_method(D_METHOD("get_playing_scene"), &EditorScenes::get_playing_scene);
+	ClassDB::bind_method(D_METHOD("get_open_scenes"), &EditorScenes::get_open_scenes);
+	ClassDB::bind_method(D_METHOD("get_edited_scene_root"), &EditorScenes::get_edited_scene_root);
+
+	ClassDB::bind_method(D_METHOD("save_scene"), &EditorScenes::save_scene);
+	ClassDB::bind_method(D_METHOD("save_scene_as", "path", "with_preview"), &EditorScenes::save_scene_as, DEFVAL(true));
+}
+
+EditorScenes *EditorScenes::singleton = nullptr;
+
+EditorScenes::EditorScenes(EditorNode *p_editor) {
 	editor = p_editor;
 	singleton = this;
 }
