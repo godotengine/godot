@@ -410,6 +410,10 @@ float Node3DEditorViewport::get_fov() const {
 	return CLAMP(spatial_editor->get_fov(), MIN_FOV, MAX_FOV);
 }
 
+SubViewportContainer *Node3DEditorViewport::get_subviewport_container() const {
+	return subviewport_container;
+}
+
 Transform Node3DEditorViewport::_get_camera_transform() const {
 	return camera->get_global_transform();
 }

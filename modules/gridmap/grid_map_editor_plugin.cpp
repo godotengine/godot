@@ -34,6 +34,7 @@
 #include "editor/editor_settings.h"
 #include "editor/plugins/node_3d_editor_plugin.h"
 #include "scene/3d/camera_3d.h"
+#include "scene/gui/subviewport_container.h"
 
 #include "core/os/keyboard.h"
 #include "scene/main/window.h"
@@ -664,7 +665,11 @@ bool GridMapEditor::forward_spatial_input_event(Camera3D *p_camera, const Ref<In
 				return false;
 			}
 
-			return do_input_action(p_camera, Point2(mb->get_position().x, mb->get_position().y), true);
+			// Compensate for the 3D viewport's Half Resolution setting.
+			return do_input_action(
+					p_camera,
+					Point2(mb->get_position().x, mb->get_position().y) / Node3DEditor::get_singleton()->get_editor_viewport(0)->get_subviewport_container()->get_stretch_shrink(),
+					true);
 		} else {
 			if ((mb->get_button_index() == MOUSE_BUTTON_RIGHT && input_action == INPUT_ERASE) || (mb->get_button_index() == MOUSE_BUTTON_LEFT && input_action == INPUT_PAINT)) {
 				if (set_items.size()) {
@@ -707,7 +712,11 @@ bool GridMapEditor::forward_spatial_input_event(Camera3D *p_camera, const Ref<In
 	Ref<InputEventMouseMotion> mm = p_event;
 
 	if (mm.is_valid()) {
-		return do_input_action(p_camera, mm->get_position(), false);
+		// Compensate for the 3D viewport's Half Resolution setting.
+		return do_input_action(
+				p_camera,
+				mm->get_position() / Node3DEditor::get_singleton()->get_editor_viewport(0)->get_subviewport_container()->get_stretch_shrink(),
+				false);
 	}
 
 	Ref<InputEventKey> k = p_event;
