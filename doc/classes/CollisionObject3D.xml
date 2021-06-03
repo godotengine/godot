@@ -24,6 +24,7 @@
 			</argument>
 			<description>
 				Accepts unhandled [InputEvent]s. [code]click_position[/code] is the clicked location in world space and [code]click_normal[/code] is the normal vector extending from the clicked surface of the [Shape3D] at [code]shape_idx[/code]. Connect to the [code]input_event[/code] signal to easily pick up these events.
+				[b]Note:[/b] [method _input_event] requires [member input_ray_pickable] to be [code]true[/code] and at least one [member collision_layer] bit to be set.
 			</description>
 		</method>
 		<method name="create_shape_owner">
@@ -234,7 +235,7 @@
 			If [code]true[/code], the [CollisionObject3D] will continue to receive input events as the mouse is dragged across its shapes.
 		</member>
 		<member name="input_ray_pickable" type="bool" setter="set_ray_pickable" getter="is_ray_pickable" default="true">
-			If [code]true[/code], the [CollisionObject3D]'s shapes will respond to [RayCast3D]s.
+			If [code]true[/code], the [CollisionObject3D]'s shapes will respond to [RayCast3D]s. A pickable object can detect the mouse pointer entering/leaving, and if the mouse is inside it, report input events. Requires at least one [member collision_layer] bit to be set.
 		</member>
 	</members>
 	<signals>
@@ -250,17 +251,19 @@
 			<argument index="4" name="shape_idx" type="int">
 			</argument>
 			<description>
-				Emitted when [method _input_event] receives an event. See its description for details.
+				Emitted when [method _input_event] receives an event. Requires [member input_ray_pickable] to be [code]true[/code] and at least one [member collision_layer] bit to be set. See [method _input_event] for details.
 			</description>
 		</signal>
 		<signal name="mouse_entered">
 			<description>
-				Emitted when the mouse pointer enters any of this object's shapes.
+				Emitted when the mouse pointer enters any of this object's shapes. Requires [member input_ray_pickable] to be [code]true[/code] and at least one [member collision_layer] bit to be set.
+				[b]Note:[/b] Due to the lack of continuous collision detection, this signal may not be emitted if the mouse moves fast enough and the [CollisionObject2D]'s area is small. This signal may also not be emitted if another [CollisionObject2D] is overlapping the [CollisionObject2D] in question.
 			</description>
 		</signal>
 		<signal name="mouse_exited">
 			<description>
-				Emitted when the mouse pointer exits all this object's shapes.
+				Emitted when the mouse pointer exits all this object's shapes. Requires [member input_ray_pickable] to be [code]true[/code] and at least one [member collision_layer] bit to be set.
+				[b]Note:[/b] Due to the lack of continuous collision detection, this signal may not be emitted if the mouse moves fast enough and the [CollisionObject2D]'s area is small. This signal may also not be emitted if another [CollisionObject2D] is overlapping the [CollisionObject2D] in question.
 			</description>
 		</signal>
 	</signals>

@@ -19,7 +19,8 @@
 			<argument index="2" name="shape_idx" type="int">
 			</argument>
 			<description>
-				Accepts unhandled [InputEvent]s. Requires [member input_pickable] to be [code]true[/code]. [code]shape_idx[/code] is the child index of the clicked [Shape2D]. Connect to the [code]input_event[/code] signal to easily pick up these events.
+				Accepts unhandled [InputEvent]s. [code]shape_idx[/code] is the child index of the clicked [Shape2D]. Connect to the [code]input_event[/code] signal to easily pick up these events.
+				[b]Note:[/b] [method _input_event] requires [member input_pickable] to be [code]true[/code] and at least one [member collision_layer] bit to be set.
 			</description>
 		</method>
 		<method name="create_shape_owner">
@@ -267,7 +268,7 @@
 			[b]Note:[/b] A contact is detected if object A is in any of the layers that object B scans, or object B is in any layers that object A scans. See [url=https://docs.godotengine.org/en/latest/tutorials/physics/physics_introduction.html#collision-layers-and-masks]Collision layers and masks[/url] in the documentation for more information.
 		</member>
 		<member name="input_pickable" type="bool" setter="set_pickable" getter="is_pickable" default="true">
-			If [code]true[/code], this object is pickable. A pickable object can detect the mouse pointer entering/leaving, and if the mouse is inside it, report input events. Requires at least one [code]collision_layer[/code] bit to be set.
+			If [code]true[/code], this object is pickable. A pickable object can detect the mouse pointer entering/leaving, and if the mouse is inside it, report input events. Requires at least one [member collision_layer] bit to be set.
 		</member>
 	</members>
 	<signals>
@@ -279,17 +280,19 @@
 			<argument index="2" name="shape_idx" type="int">
 			</argument>
 			<description>
-				Emitted when an input event occurs. Requires [member input_pickable] to be [code]true[/code] and at least one [code]collision_layer[/code] bit to be set. See [method _input_event] for details.
+				Emitted when an input event occurs. Requires [member input_pickable] to be [code]true[/code] and at least one [member collision_layer] bit to be set. See [method _input_event] for details.
 			</description>
 		</signal>
 		<signal name="mouse_entered">
 			<description>
-				Emitted when the mouse pointer enters any of this object's shapes. Requires [member input_pickable] to be [code]true[/code] and at least one [code]collision_layer[/code] bit to be set.
+				Emitted when the mouse pointer enters any of this object's shapes. Requires [member input_pickable] to be [code]true[/code] and at least one [member collision_layer] bit to be set.
+				[b]Note:[/b] Due to the lack of continuous collision detection, this signal may not be emitted if the mouse moves fast enough and the [CollisionObject2D]'s area is small. This signal may also not be emitted if another [CollisionObject2D] is overlapping the [CollisionObject2D] in question.
 			</description>
 		</signal>
 		<signal name="mouse_exited">
 			<description>
-				Emitted when the mouse pointer exits all this object's shapes. Requires [member input_pickable] to be [code]true[/code] and at least one [code]collision_layer[/code] bit to be set.
+				Emitted when the mouse pointer exits all this object's shapes. Requires [member input_pickable] to be [code]true[/code] and at least one [member collision_layer] bit to be set.
+				[b]Note:[/b] Due to the lack of continuous collision detection, this signal may not be emitted if the mouse moves fast enough and the [CollisionObject2D]'s area is small. This signal may also not be emitted if another [CollisionObject2D] is overlapping the [CollisionObject2D] in question.
 			</description>
 		</signal>
 	</signals>
