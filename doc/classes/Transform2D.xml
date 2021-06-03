@@ -198,7 +198,7 @@
 			<argument index="0" name="phi" type="float">
 			</argument>
 			<description>
-				Rotates the transform by the given angle (in radians), using matrix multiplication.
+				Returns the transform rotated by the given angle (in radians).
 			</description>
 		</method>
 		<method name="scaled" qualifiers="const">
@@ -207,7 +207,7 @@
 			<argument index="0" name="scale" type="Vector2">
 			</argument>
 			<description>
-				Scales the transform by the given scale factor, using matrix multiplication.
+				Returns the transform scaled by the given scale factor.
 			</description>
 		</method>
 		<method name="translated" qualifiers="const">
@@ -216,8 +216,7 @@
 			<argument index="0" name="offset" type="Vector2">
 			</argument>
 			<description>
-				Translates the transform by the given offset, relative to the transform's basis vectors.
-				Unlike [method rotated] and [method scaled], this does not use matrix multiplication.
+				Returns the transform translated by the given offset.
 			</description>
 		</method>
 	</methods>

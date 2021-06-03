@@ -58,11 +58,13 @@ Transform Transform::inverse() const {
 }
 
 void Transform::rotate(const Vector3 &p_axis, real_t p_phi) {
-	*this = rotated(p_axis, p_phi);
+	*this = Transform(Basis(p_axis, p_phi), Vector3()) * (*this);
 }
 
 Transform Transform::rotated(const Vector3 &p_axis, real_t p_phi) const {
-	return Transform(Basis(p_axis, p_phi), Vector3()) * (*this);
+	Transform t = *this;
+	t *= Transform(Basis(p_axis, p_phi), Vector3());
+	return t;
 }
 
 void Transform::rotate_basis(const Vector3 &p_axis, real_t p_phi) {
@@ -133,7 +135,7 @@ void Transform::scale(const Vector3 &p_scale) {
 
 Transform Transform::scaled(const Vector3 &p_scale) const {
 	Transform t = *this;
-	t.scale(p_scale);
+	t.basis = t.basis.transposed().scaled(p_scale).transposed();
 	return t;
 }
 
