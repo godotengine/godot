@@ -91,7 +91,7 @@
 			<argument index="0" name="plugin" type="EditorExportPlugin">
 			</argument>
 			<description>
-				Registers a new export plugin. Export plugins are used when the project is being exported. See [EditorExportPlugin] for more information.
+				Registers a new [EditorExportPlugin]. Export plugins are used to perform tasks when the project is being exported.
 				See [method add_inspector_plugin] for an example of how to register a plugin.
 			</description>
 		</method>
@@ -101,8 +101,8 @@
 			<argument index="0" name="importer" type="EditorImportPlugin">
 			</argument>
 			<description>
-				Registers a new import plugin. Import plugins are used to add a new [Resource] which can be imported. See [EditorImportPlugin] for more information.
-				[b]Note:[/b] If you want to import custom 3d files have a look at [method add_scene_import_plugin] instead.
+				Registers a new [EditorImportPlugin]. Import plugins are used to import custom and unsupported assets as a custom [Resource] type.
+				[b]Note:[/b] If you want to import custom 3D asset formats use [method add_scene_import_plugin] instead.
 				See [method add_inspector_plugin] for an example of how to register a plugin.
 			</description>
 		</method>
@@ -112,8 +112,8 @@
 			<argument index="0" name="plugin" type="EditorInspectorPlugin">
 			</argument>
 			<description>
-				Registers a new inspector plugin. Inspector plugins are used to extend the default inspector. See [EditorInspectorPlugin] for more information.
-				[b]Note:[/b] Always use [method remove_inspector_plugin] to remove the [code]EditorInspectorPlugin[/code] if the [code]EditorPlugin[/code] is disabled.
+				Registers a new [EditorInspectorPlugin]. Inspector plugins are used to extend [EditorInspector] and provide custom configuration tools for your object's properties.
+				[b]Note:[/b] Always use [method remove_inspector_plugin] to remove the registered [EditorInspectorPlugin] when your [EditorPlugin] is disabled to prevent leaks and an unexpected behavior.
 				[codeblocks]
 				[gdscript]
 				const MyInspectorPlugin = preload("res://addons/your_addon/path/to/your/script.gd")
@@ -134,7 +134,7 @@
 			<argument index="0" name="scene_importer" type="EditorSceneImporter">
 			</argument>
 			<description>
-				Registers a new scene importer. Scene importers can import custom 3d formats as scenes. See [EditorImportPlugin] for more information.
+				Registers a new [EditorSceneImporter]. Scene importers are used to import custom 3D asset formats as scenes.
 			</description>
 		</method>
 		<method name="add_spatial_gizmo_plugin">
@@ -143,7 +143,7 @@
 			<argument index="0" name="plugin" type="EditorNode3DGizmoPlugin">
 			</argument>
 			<description>
-				Registers a new gizmo plugin. Gizmo plugins are used to add custom gizmos to a [Node3D]. See [EditorNode3DGizmoPlugin] for more information.
+				Registers a new [EditorNode3DGizmoPlugin]. Gizmo plugins are used to add custom gizmos to the 3D preview viewport for a [Node3D].
 				See [method add_inspector_plugin] for an example of how to register a plugin.
 			</description>
 		</method>
