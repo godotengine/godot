@@ -234,7 +234,7 @@ EditorInspectorPluginMaterial::EditorInspectorPluginMaterial() {
 MaterialEditorPlugin::MaterialEditorPlugin(EditorNode *p_node) {
 	Ref<EditorInspectorPluginMaterial> plugin;
 	plugin.instance();
-	add_inspector_plugin(plugin);
+	EditorPluginInterfaces::get_singleton()->add_inspector_plugin(plugin);
 }
 
 String StandardMaterial3DConversionPlugin::converts_to() const {

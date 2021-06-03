@@ -1341,7 +1341,7 @@ void ScriptEditor::_menu_option(int p_option) {
 				const RES script = current->get_edited_resource();
 				const String path = script->get_path();
 				if (!path.is_empty()) {
-					FileSystemDock *file_system_dock = EditorNode::get_singleton()->get_filesystem_dock();
+					FileSystemDock *file_system_dock = EditorDocks::get_singleton()->get_filesystem_dock();
 					file_system_dock->navigate_to_path(path);
 					// Ensure that the FileSystem dock is visible.
 					TabContainer *tab_container = (TabContainer *)file_system_dock->get_parent_control();
@@ -1470,7 +1470,7 @@ void ScriptEditor::_notification(int p_what) {
 			editor->connect("stop_pressed", callable_mp(this, &ScriptEditor::_editor_stop));
 			editor->connect("script_add_function_request", callable_mp(this, &ScriptEditor::_add_callback));
 			editor->connect("resource_saved", callable_mp(this, &ScriptEditor::_res_saved_callback));
-			editor->get_filesystem_dock()->connect("file_removed", callable_mp(this, &ScriptEditor::_file_removed));
+			EditorDocks::get_singleton()->get_filesystem_dock()->connect("file_removed", callable_mp(this, &ScriptEditor::_file_removed));
 			script_list->connect("item_selected", callable_mp(this, &ScriptEditor::_script_selected));
 
 			members_overview->connect("item_selected", callable_mp(this, &ScriptEditor::_members_overview_selected));
@@ -1512,7 +1512,7 @@ void ScriptEditor::_notification(int p_what) {
 
 		case NOTIFICATION_READY: {
 			get_tree()->connect("tree_changed", callable_mp(this, &ScriptEditor::_tree_changed));
-			editor->get_inspector_dock()->connect("request_help", callable_mp(this, &ScriptEditor::_help_class_open));
+			EditorDocks::get_singleton()->get_inspector_dock()->connect("request_help", callable_mp(this, &ScriptEditor::_help_class_open));
 			editor->connect("request_help_search", callable_mp(this, &ScriptEditor::_help_search));
 		} break;
 
@@ -1530,7 +1530,7 @@ void ScriptEditor::_notification(int p_what) {
 				find_in_files_button->show();
 			} else {
 				if (find_in_files->is_visible_in_tree()) {
-					editor->hide_bottom_panel();
+					EditorBottomPanels::get_singleton()->hide_bottom_panel();
 				}
 				find_in_files_button->hide();
 			}
@@ -3168,7 +3168,7 @@ void ScriptEditor::register_create_script_editor_function(CreateScriptEditorFunc
 }
 
 void ScriptEditor::_script_changed() {
-	NodeDock::singleton->update_lists();
+	EditorDocks::get_singleton()->get_node_dock()->update_lists();
 }
 
 void ScriptEditor::_on_find_in_files_requested(String text) {
@@ -3234,7 +3234,7 @@ void ScriptEditor::_start_find_in_files(bool with_replace) {
 	find_in_files->set_replace_text(find_in_files_dialog->get_replace_text());
 	find_in_files->start_search();
 
-	editor->make_bottom_panel_item_visible(find_in_files);
+	EditorBottomPanels::get_singleton()->make_bottom_panel_item_visible(find_in_files);
 }
 
 void ScriptEditor::_on_find_in_files_modified_files(PackedStringArray paths) {
@@ -3571,7 +3571,8 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	find_in_files_dialog->connect(FindInFilesDialog::SIGNAL_REPLACE_REQUESTED, callable_mp(this, &ScriptEditor::_start_find_in_files), varray(true));
 	add_child(find_in_files_dialog);
 	find_in_files = memnew(FindInFilesPanel);
-	find_in_files_button = editor->add_bottom_panel_item(TTR("Search Results"), find_in_files);
+	find_in_files_button = EditorBottomPanels::get_singleton()->add_control(TTR("Search Results"), find_in_files);
+	EditorBottomPanels::get_singleton()->set_find_in_files_panel(find_in_files);
 	find_in_files->set_custom_minimum_size(Size2(0, 200) * EDSCALE);
 	find_in_files->connect(FindInFilesPanel::SIGNAL_RESULT_SELECTED, callable_mp(this, &ScriptEditor::_on_find_in_files_result_selected));
 	find_in_files->connect(FindInFilesPanel::SIGNAL_FILES_MODIFIED, callable_mp(this, &ScriptEditor::_on_find_in_files_modified_files));
@@ -3675,7 +3676,8 @@ void ScriptEditorPlugin::edited_scene_changed() {
 ScriptEditorPlugin::ScriptEditorPlugin(EditorNode *p_node) {
 	editor = p_node;
 	script_editor = memnew(ScriptEditor(p_node));
-	editor->get_main_control()->add_child(script_editor);
+	EditorWorkspaces::get_singleton()->add_control(script_editor);
+	EditorWorkspaces::get_singleton()->set_script_workspace(script_editor);
 	script_editor->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 
 	script_editor->hide();

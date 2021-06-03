@@ -798,12 +798,12 @@ bool ShaderEditorPlugin::handles(Object *p_object) const {
 void ShaderEditorPlugin::make_visible(bool p_visible) {
 	if (p_visible) {
 		button->show();
-		editor->make_bottom_panel_item_visible(shader_editor);
+		EditorBottomPanels::get_singleton()->make_bottom_panel_item_visible(shader_editor);
 
 	} else {
 		button->hide();
 		if (shader_editor->is_visible_in_tree()) {
-			editor->hide_bottom_panel();
+			EditorBottomPanels::get_singleton()->hide_bottom_panel();
 		}
 		shader_editor->apply_shaders();
 	}
@@ -826,7 +826,8 @@ ShaderEditorPlugin::ShaderEditorPlugin(EditorNode *p_node) {
 	shader_editor = memnew(ShaderEditor(p_node));
 
 	shader_editor->set_custom_minimum_size(Size2(0, 300) * EDSCALE);
-	button = editor->add_bottom_panel_item(TTR("Shader"), shader_editor);
+	button = EditorBottomPanels::get_singleton()->add_control(TTR("Shader"), shader_editor);
+	EditorBottomPanels::get_singleton()->set_shader_panel(shader_editor);
 	button->hide();
 
 	_2d = false;

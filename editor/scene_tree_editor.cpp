@@ -134,8 +134,9 @@ void SceneTreeEditor::_cell_button_pressed(Object *p_item, int p_column, int p_i
 
 		set_selected(n);
 
-		NodeDock::singleton->get_parent()->call("set_current_tab", NodeDock::singleton->get_index());
-		NodeDock::singleton->show_connections();
+		EditorDocks::get_singleton()->get_node_dock()->get_parent()->call(
+				"set_current_tab", EditorDocks::get_singleton()->get_node_dock()->get_index());
+		EditorDocks::get_singleton()->get_node_dock()->show_connections();
 
 	} else if (p_id == BUTTON_GROUPS) {
 		editor_selection->clear();
@@ -143,8 +144,9 @@ void SceneTreeEditor::_cell_button_pressed(Object *p_item, int p_column, int p_i
 
 		set_selected(n);
 
-		NodeDock::singleton->get_parent()->call("set_current_tab", NodeDock::singleton->get_index());
-		NodeDock::singleton->show_groups();
+		EditorDocks::get_singleton()->get_node_dock()->get_parent()->call(
+				"set_current_tab", EditorDocks::get_singleton()->get_node_dock()->get_index());
+		EditorDocks::get_singleton()->get_node_dock()->show_groups();
 	}
 }
 

@@ -94,5 +94,5 @@ StyleBoxPreview::StyleBoxPreview() {
 StyleBoxEditorPlugin::StyleBoxEditorPlugin(EditorNode *p_node) {
 	Ref<EditorInspectorPluginStyleBox> inspector_plugin;
 	inspector_plugin.instance();
-	add_inspector_plugin(inspector_plugin);
+	EditorPluginInterfaces::get_singleton()->add_inspector_plugin(inspector_plugin);
 }

@@ -294,11 +294,13 @@ void VersionControlEditorPlugin::_update_commit_button() {
 
 void VersionControlEditorPlugin::register_editor() {
 	if (!EditorVCSInterface::get_singleton()) {
-		EditorNode::get_singleton()->add_control_to_dock(EditorNode::DOCK_SLOT_RIGHT_UL, version_commit_dock);
+		EditorDocks::get_singleton()->add_control(EditorDocks::DOCK_SLOT_LEFT_UL, version_commit_dock);
+		EditorDocks::get_singleton()->set_version_control_dock(version_commit_dock);
 		TabContainer *dock_vbc = (TabContainer *)version_commit_dock->get_parent_control();
 		dock_vbc->set_tab_title(version_commit_dock->get_index(), TTR("Commit"));
 
-		Button *vc = EditorNode::get_singleton()->add_bottom_panel_item(TTR("Version Control"), version_control_dock);
+		Button *vc = EditorBottomPanels::get_singleton()->add_control(TTR("Version Control"), version_control_dock);
+		EditorBottomPanels::get_singleton()->set_version_control_panel(version_control_dock);
 		set_version_control_tool_button(vc);
 	}
 }

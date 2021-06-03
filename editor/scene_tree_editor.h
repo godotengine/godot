@@ -38,6 +38,8 @@
 #include "scene/gui/dialogs.h"
 #include "scene/gui/tree.h"
 
+class EditorSelection;
+
 class SceneTreeEditor : public Control {
 	GDCLASS(SceneTreeEditor, Control);
 

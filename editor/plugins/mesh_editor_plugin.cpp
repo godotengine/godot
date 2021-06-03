@@ -183,5 +183,5 @@ void EditorInspectorPluginMesh::parse_begin(Object *p_object) {
 MeshEditorPlugin::MeshEditorPlugin(EditorNode *p_node) {
 	Ref<EditorInspectorPluginMesh> plugin;
 	plugin.instance();
-	add_inspector_plugin(plugin);
+	EditorPluginInterfaces::get_singleton()->add_inspector_plugin(plugin);
 }

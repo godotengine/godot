@@ -205,7 +205,6 @@ bool DocTools::has_doc(const String &p_class_name) {
 static Variant get_documentation_default_value(const StringName &p_class_name, const StringName &p_property_name, bool &r_default_value_valid) {
 	Variant default_value = Variant();
 	r_default_value_valid = false;
-
 	if (ClassDB::can_instance(p_class_name)) {
 		default_value = ClassDB::class_get_default_property_value(p_class_name, p_property_name, &r_default_value_valid);
 	} else {

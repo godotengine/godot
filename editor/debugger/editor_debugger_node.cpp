@@ -75,8 +75,8 @@ EditorDebuggerNode::EditorDebuggerNode() {
 	remote_scene_tree = memnew(EditorDebuggerTree);
 	remote_scene_tree->connect("object_selected", callable_mp(this, &EditorDebuggerNode::_remote_object_requested));
 	remote_scene_tree->connect("save_node", callable_mp(this, &EditorDebuggerNode::_save_node_requested));
-	EditorNode::get_singleton()->get_scene_tree_dock()->add_remote_tree_editor(remote_scene_tree);
-	EditorNode::get_singleton()->get_scene_tree_dock()->connect("remote_tree_selected", callable_mp(this, &EditorDebuggerNode::request_remote_tree));
+	EditorDocks::get_singleton()->get_scene_tree_dock()->add_remote_tree_editor(remote_scene_tree);
+	EditorDocks::get_singleton()->get_scene_tree_dock()->connect("remote_tree_selected", callable_mp(this, &EditorDebuggerNode::request_remote_tree));
 
 	remote_scene_tree_timeout = EDITOR_DEF("debugger/remote_scene_tree_refresh_interval", 1.0);
 	inspect_edited_object_timeout = EDITOR_DEF("debugger/remote_inspect_refresh_interval", 0.2);
@@ -161,8 +161,9 @@ void EditorDebuggerNode::_bind_methods() {
 	ClassDB::bind_method("live_debug_reparent_node", &EditorDebuggerNode::live_debug_reparent_node);
 
 	ADD_SIGNAL(MethodInfo("goto_script_line"));
-	ADD_SIGNAL(MethodInfo("set_execution", PropertyInfo("script"), PropertyInfo(Variant::INT, "line")));
-	ADD_SIGNAL(MethodInfo("clear_execution", PropertyInfo("script")));
+
+	ADD_SIGNAL(MethodInfo("set_execution", PropertyInfo(Variant::OBJECT, "script", PROPERTY_HINT_RESOURCE_TYPE, "Script"), PropertyInfo(Variant::INT, "line")));
+	ADD_SIGNAL(MethodInfo("clear_execution", PropertyInfo(Variant::OBJECT, "script", PROPERTY_HINT_RESOURCE_TYPE, "Script")));
 	ADD_SIGNAL(MethodInfo("breaked", PropertyInfo(Variant::BOOL, "reallydid"), PropertyInfo(Variant::BOOL, "can_debug")));
 }
 
@@ -320,10 +321,10 @@ void EditorDebuggerNode::_notification(int p_what) {
 		// Switch to remote tree view if so desired.
 		auto_switch_remote_scene_tree = (bool)EditorSettings::get_singleton()->get("debugger/auto_switch_to_remote_scene_tree");
 		if (auto_switch_remote_scene_tree) {
-			EditorNode::get_singleton()->get_scene_tree_dock()->show_remote_tree();
+			EditorDocks::get_singleton()->get_scene_tree_dock()->show_remote_tree();
 		}
 		// Good to go.
-		EditorNode::get_singleton()->get_scene_tree_dock()->show_tab_buttons();
+		EditorDocks::get_singleton()->get_scene_tree_dock()->show_tab_buttons();
 		debugger->set_editor_remote_tree(remote_scene_tree);
 		debugger->start(server->take_connection());
 		// Send breakpoints.
@@ -349,8 +350,8 @@ void EditorDebuggerNode::_debugger_stopped(int p_id) {
 	if (!found) {
 		EditorNode::get_singleton()->get_pause_button()->set_pressed(false);
 		EditorNode::get_singleton()->get_pause_button()->set_disabled(true);
-		EditorNode::get_singleton()->get_scene_tree_dock()->hide_remote_tree();
-		EditorNode::get_singleton()->get_scene_tree_dock()->hide_tab_buttons();
+		EditorDocks::get_singleton()->get_scene_tree_dock()->hide_remote_tree();
+		EditorDocks::get_singleton()->get_scene_tree_dock()->hide_tab_buttons();
 		EditorNode::get_singleton()->notify_all_debug_sessions_exited();
 	}
 }

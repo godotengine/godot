@@ -398,7 +398,7 @@ bool GDNativeLibraryEditorPlugin::handles(Object *p_node) const {
 void GDNativeLibraryEditorPlugin::make_visible(bool p_visible) {
 	if (p_visible) {
 		button->show();
-		EditorNode::get_singleton()->make_bottom_panel_item_visible(library_editor);
+		EditorBottomPanels::get_singleton()->make_bottom_panel_item_visible(library_editor);
 
 	} else {
 		if (library_editor->is_visible_in_tree()) {
@@ -411,7 +411,7 @@ void GDNativeLibraryEditorPlugin::make_visible(bool p_visible) {
 GDNativeLibraryEditorPlugin::GDNativeLibraryEditorPlugin(EditorNode *p_node) {
 	library_editor = memnew(GDNativeLibraryEditor);
 	library_editor->set_custom_minimum_size(Size2(0, 250 * EDSCALE));
-	button = p_node->add_bottom_panel_item(TTR("GDNativeLibrary"), library_editor);
+	button = EditorBottomPanels::get_singleton()->add_control(TTR("GDNativeLibrary"), library_editor);
 	button->hide();
 }
 

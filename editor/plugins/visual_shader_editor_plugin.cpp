@@ -3632,7 +3632,7 @@ void VisualShaderEditor::_visibility_changed() {
 void VisualShaderEditor::_bind_methods() {
 	ClassDB::bind_method("_update_graph", &VisualShaderEditor::_update_graph);
 	ClassDB::bind_method("_update_options_menu", &VisualShaderEditor::_update_options_menu);
-	ClassDB::bind_method("_add_node", &VisualShaderEditor::_add_node);
+	//ClassDB::bind_method("_add_node", &VisualShaderEditor::_add_node);
 	ClassDB::bind_method("_node_changed", &VisualShaderEditor::_node_changed);
 	ClassDB::bind_method("_input_select_item", &VisualShaderEditor::_input_select_item);
 	ClassDB::bind_method("_uniform_select_item", &VisualShaderEditor::_uniform_select_item);
@@ -4402,13 +4402,13 @@ void VisualShaderEditorPlugin::make_visible(bool p_visible) {
 		//editor->hide_animation_player_editors();
 		//editor->animation_panel_make_visible(true);
 		button->show();
-		editor->make_bottom_panel_item_visible(visual_shader_editor);
+		EditorBottomPanels::get_singleton()->make_bottom_panel_item_visible(visual_shader_editor);
 		visual_shader_editor->update_custom_nodes();
 		visual_shader_editor->set_process_input(true);
 		//visual_shader_editor->set_process(true);
 	} else {
 		if (visual_shader_editor->is_visible_in_tree()) {
-			editor->hide_bottom_panel();
+			EditorBottomPanels::get_singleton()->hide_bottom_panel();
 		}
 		button->hide();
 		visual_shader_editor->set_process_input(false);
@@ -4421,7 +4421,8 @@ VisualShaderEditorPlugin::VisualShaderEditorPlugin(EditorNode *p_node) {
 	visual_shader_editor = memnew(VisualShaderEditor);
 	visual_shader_editor->set_custom_minimum_size(Size2(0, 300) * EDSCALE);
 
-	button = editor->add_bottom_panel_item(TTR("VisualShader"), visual_shader_editor);
+	button = EditorBottomPanels::get_singleton()->add_control(TTR("VisualShader"), visual_shader_editor);
+	EditorBottomPanels::get_singleton()->set_visual_shader_panel(visual_shader_editor);
 	button->hide();
 }
 
