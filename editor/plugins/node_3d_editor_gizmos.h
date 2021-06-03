@@ -249,6 +249,19 @@ public:
 	AudioStreamPlayer3DGizmoPlugin();
 };
 
+class Listener3DGizmoPlugin : public EditorNode3DGizmoPlugin {
+	GDCLASS(Listener3DGizmoPlugin, EditorNode3DGizmoPlugin);
+
+public:
+	bool has_gizmo(Node3D *p_spatial) override;
+	String get_gizmo_name() const override;
+	int get_priority() const override;
+
+	void redraw(EditorNode3DGizmo *p_gizmo) override;
+
+	Listener3DGizmoPlugin();
+};
+
 class Camera3DGizmoPlugin : public EditorNode3DGizmoPlugin {
 	GDCLASS(Camera3DGizmoPlugin, EditorNode3DGizmoPlugin);
 

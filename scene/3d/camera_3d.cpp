@@ -254,10 +254,6 @@ bool Camera3D::is_current() const {
 	}
 }
 
-bool Camera3D::_can_gizmo_scale() const {
-	return false;
-}
-
 Vector3 Camera3D::project_ray_normal(const Point2 &p_pos) const {
 	Vector3 ray = project_local_ray_normal(p_pos);
 	return get_camera_transform().basis.xform(ray).normalized();

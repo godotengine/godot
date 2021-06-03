@@ -91,9 +91,6 @@ SceneStringNames::SceneStringNames() {
 	update = StaticCString::create("update");
 	updated = StaticCString::create("updated");
 
-	_get_gizmo_geometry = StaticCString::create("_get_gizmo_geometry");
-	_can_gizmo_scale = StaticCString::create("_can_gizmo_scale");
-
 	_physics_process = StaticCString::create("_physics_process");
 	_process = StaticCString::create("_process");
 
