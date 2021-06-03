@@ -118,7 +118,6 @@ IPAddress IP::resolve_hostname(const String &p_hostname, IP::Type p_type) {
 		_resolve_hostname(res, p_hostname, p_type);
 		resolver->cache[key] = res;
 	}
-	resolver->mutex.unlock();
 
 	for (int i = 0; i < res.size(); ++i) {
 		if (res[i].is_valid()) {
@@ -129,7 +128,7 @@ IPAddress IP::resolve_hostname(const String &p_hostname, IP::Type p_type) {
 }
 
 Array IP::resolve_hostname_addresses(const String &p_hostname, Type p_type) {
-	resolver->mutex.lock();
+	MutexLock lock(resolver->mutex);
 
 	String key = _IP_ResolverPrivate::get_cache_key(p_hostname, p_type);
 	if (!resolver->cache.has(key)) {
@@ -137,7 +136,6 @@ Array IP::resolve_hostname_addresses(const String &p_hostname, Type p_type) {
 	}
 
 	List<IPAddress> res = resolver->cache[key];
-	resolver->mutex.unlock();
 
 	Array result;
 	for (int i = 0; i < res.size(); ++i) {
@@ -184,7 +182,6 @@ IP::ResolverStatus IP::get_resolve_item_status(ResolverID p_id) const {
 
 	if (resolver->queue[p_id].status.get() == IP::RESOLVER_STATUS_NONE) {
 		ERR_PRINT("Condition status == IP::RESOLVER_STATUS_NONE");
-		resolver->mutex.unlock();
 		return IP::RESOLVER_STATUS_NONE;
 	}
 	return resolver->queue[p_id].status.get();
@@ -197,13 +194,10 @@ IPAddress IP::get_resolve_item_address(ResolverID p_id) const {
 
 	if (resolver->queue[p_id].status.get() != IP::RESOLVER_STATUS_DONE) {
 		ERR_PRINT("Resolve of '" + resolver->queue[p_id].hostname + "'' didn't complete yet.");
-		resolver->mutex.unlock();
 		return IPAddress();
 	}
 
 	List<IPAddress> res = resolver->queue[p_id].response;
-
-	resolver->mutex.unlock();
 
 	for (int i = 0; i < res.size(); ++i) {
 		if (res[i].is_valid()) {
@@ -215,18 +209,14 @@ IPAddress IP::get_resolve_item_address(ResolverID p_id) const {
 
 Array IP::get_resolve_item_addresses(ResolverID p_id) const {
 	ERR_FAIL_INDEX_V(p_id, IP::RESOLVER_MAX_QUERIES, Array());
-
-	resolver->mutex.lock();
+	MutexLock lock(resolver->mutex);
 
 	if (resolver->queue[p_id].status.get() != IP::RESOLVER_STATUS_DONE) {
 		ERR_PRINT("Resolve of '" + resolver->queue[p_id].hostname + "'' didn't complete yet.");
-		resolver->mutex.unlock();
 		return Array();
 	}
 
 	List<IPAddress> res = resolver->queue[p_id].response;
-
-	resolver->mutex.unlock();
 
 	Array result;
 	for (int i = 0; i < res.size(); ++i) {
