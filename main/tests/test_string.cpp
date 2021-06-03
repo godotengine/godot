@@ -1123,6 +1123,45 @@ bool test_35() {
 	return state;
 }
 
+bool test_36() {
+#define CHECK(X)                                          \
+	if (!(X)) {                                           \
+		OS::get_singleton()->print("\tFAIL at %s\n", #X); \
+		return false;                                     \
+	} else {                                              \
+		OS::get_singleton()->print("\tPASS\n");           \
+	}
+	OS::get_singleton()->print("\n\nTest 36: xml unescape\n");
+	// Named entities
+	String input = "&quot;&amp;&apos;&lt;&gt;";
+	CHECK(input.xml_unescape() == "\"&\'<>");
+
+	// Numeric entities
+	input = "&#x41;&#66;";
+	CHECK(input.xml_unescape() == "AB");
+
+	input = "&#0;&x#0;More text";
+	String result = input.xml_unescape();
+	// Didn't put in a leading NUL and terminate the string
+	CHECK(input.length() > 0);
+	CHECK(input[0] != '\0');
+	// Entity should be left as-is if invalid
+	CHECK(input.xml_unescape() == input);
+
+	// Shouldn't consume without ending in a ';'
+	input = "&#66";
+	CHECK(input.xml_unescape() == input);
+	input = "&#x41";
+	CHECK(input.xml_unescape() == input);
+
+	// Invalid characters should make the entity ignored
+	input = "&#x41SomeIrrelevantText;";
+	CHECK(input.xml_unescape() == input);
+	input = "&#66SomeIrrelevantText;";
+	CHECK(input.xml_unescape() == input);
+	return true;
+}
+
 typedef bool (*TestFunc)();
 
 TestFunc test_funcs[] = {
@@ -1162,6 +1201,7 @@ TestFunc test_funcs[] = {
 	test_33,
 	test_34,
 	test_35,
+	test_36,
 	nullptr
 
 };
