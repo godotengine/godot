@@ -384,6 +384,7 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 					l.char_count += text->text.length();
 				}
 
+				bool just_breaked_in_middle = false;
 				rchar = 0;
 				FontDrawer drawer(font, Color(1, 1, 1));
 				while (*c) {
@@ -391,6 +392,7 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 					int end = 0;
 					int w = 0;
 					int fw = 0;
+					bool was_separatable = false;
 
 					lh = 0;
 
@@ -409,6 +411,25 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 						if (end > 0 && w + cw + begin > p_width) {
 							break; //don't allow lines longer than assigned width
 						}
+
+						// For info about the unicode range, see Label::regenerate_word_cache.
+						const CharType current = c[end];
+						const bool separatable = (current >= 0x2E08 && current <= 0x9FFF) || // CJK scripts and symbols.
+												 (current >= 0xAC00 && current <= 0xD7FF) || // Hangul Syllables and Hangul Jamo Extended-B.
+												 (current >= 0xF900 && current <= 0xFAFF) || // CJK Compatibility Ideographs.
+												 (current >= 0xFE30 && current <= 0xFE4F) || // CJK Compatibility Forms.
+												 (current >= 0xFF65 && current <= 0xFF9F) || // Halfwidth forms of katakana
+												 (current >= 0xFFA0 && current <= 0xFFDC) || // Halfwidth forms of compatibility jamo characters for Hangul
+												 (current >= 0x20000 && current <= 0x2FA1F) || // CJK Unified Ideographs Extension B ~ F and CJK Compatibility Ideographs Supplement.
+												 (current >= 0x30000 && current <= 0x3134F); // CJK Unified Ideographs Extension G.
+						const bool long_separatable = separatable && (wofs - backtrack + w + cw > p_width);
+						const bool separation_changed = end > 0 && was_separatable != separatable;
+						if (!just_breaked_in_middle && (long_separatable || separation_changed)) {
+							just_breaked_in_middle = true;
+							break;
+						}
+						was_separatable = separatable;
+						just_breaked_in_middle = false;
 
 						w += cw;
 						fw += cw;
