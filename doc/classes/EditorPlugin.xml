@@ -512,6 +512,7 @@
 			<return type="void">
 			</return>
 			<description>
+				Minimizes the bottom panel.
 			</description>
 		</method>
 		<method name="make_bottom_panel_item_visible">
