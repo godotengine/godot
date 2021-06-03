@@ -3397,16 +3397,9 @@ String String::format(const Variant &values, String placeholder) const {
 				if (value_arr.size() == 2) {
 					Variant v_key = value_arr[0];
 					String key = v_key;
-					if (key.left(1) == "\"" && key.right(1) == "\"") {
-						key = key.substr(1, key.length() - 2);
-					}
 
 					Variant v_val = value_arr[1];
 					String val = v_val;
-
-					if (val.left(1) == "\"" && val.right(1) == "\"") {
-						val = val.substr(1, val.length() - 2);
-					}
 
 					new_string = new_string.replace(placeholder.replace("_", key), val);
 				} else {
@@ -3415,10 +3408,6 @@ String String::format(const Variant &values, String placeholder) const {
 			} else { //Array structure ["RobotGuy","Logis","rookie"]
 				Variant v_val = values_arr[i];
 				String val = v_val;
-
-				if (val.left(1) == "\"" && val.right(1) == "\"") {
-					val = val.substr(1, val.length() - 2);
-				}
 
 				if (placeholder.find("_") > -1) {
 					new_string = new_string.replace(placeholder.replace("_", i_as_str), val);
@@ -3435,14 +3424,6 @@ String String::format(const Variant &values, String placeholder) const {
 		for (List<Variant>::Element *E = keys.front(); E; E = E->next()) {
 			String key = E->get();
 			String val = d[E->get()];
-
-			if (key.left(1) == "\"" && key.right(1) == "\"") {
-				key = key.substr(1, key.length() - 2);
-			}
-
-			if (val.left(1) == "\"" && val.right(1) == "\"") {
-				val = val.substr(1, val.length() - 2);
-			}
 
 			new_string = new_string.replace(placeholder.replace("_", key), val);
 		}
