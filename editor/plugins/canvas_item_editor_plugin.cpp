@@ -51,6 +51,7 @@
 #include "scene/gui/viewport_container.h"
 #include "scene/main/canvas_layer.h"
 #include "scene/main/viewport.h"
+#include "scene/resources/dynamic_font.h"
 #include "scene/resources/packed_scene.h"
 
 #include <stdlib.h>
@@ -4076,6 +4077,12 @@ void CanvasItemEditor::_notification(int p_what) {
 		anchors_popup->add_icon_item(get_icon("ControlAlignWide", "EditorIcons"), TTR("Full Rect"), ANCHORS_PRESET_WIDE);
 
 		anchor_mode_button->set_icon(get_icon("Anchor", "EditorIcons"));
+
+		Ref<DynamicFont> font = zoom_reset->get_font("font")->duplicate(false);
+		font->set_outline_size(1);
+		font->set_outline_color(Color(0, 0, 0));
+		zoom_reset->add_font_override("font", font);
+		zoom_reset->add_color_override("font_color", Color(1, 1, 1));
 	}
 
 	if (p_what == NOTIFICATION_VISIBILITY_CHANGED) {
