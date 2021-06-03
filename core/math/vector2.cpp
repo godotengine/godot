@@ -257,3 +257,49 @@ bool Vector2i::operator==(const Vector2i &p_vec2) const {
 bool Vector2i::operator!=(const Vector2i &p_vec2) const {
 	return x != p_vec2.x || y != p_vec2.y;
 }
+
+real_t Vector2i::angle() const {
+	return Math::atan2((real_t)y, (real_t)x);
+}
+
+real_t Vector2i::angle_to(const Vector2i &p_vector2i) const {
+	return Math::atan2((real_t)cross(p_vector2i), (real_t)dot(p_vector2i));
+}
+
+real_t Vector2i::angle_to_point(const Vector2i &p_vector2i) const {
+	return Math::atan2((real_t)y - p_vector2i.y, (real_t)x - p_vector2i.x);
+}
+
+int Vector2i::cross(const Vector2i &p_other) const {
+	return x * p_other.y - y * p_other.x;
+}
+
+real_t Vector2i::distance_to(const Vector2i &p_vector2i) const {
+	return Math::sqrt((real_t)distance_squared_to(p_vector2i));
+}
+
+int Vector2i::distance_squared_to(const Vector2i &p_vector2i) const {
+	return (x - p_vector2i.x) * (x - p_vector2i.x) + (y - p_vector2i.y) * (y - p_vector2i.y);
+}
+
+int Vector2i::dot(const Vector2i &p_other) const {
+	return x * p_other.x + y * p_other.y;
+}
+
+real_t Vector2i::length() const {
+	return Math::sqrt((real_t)length_squared());
+}
+
+int Vector2i::length_squared() const {
+	return x * x + y * y;
+}
+
+Vector2i Vector2i::posmodv(const Vector2i &p_modv) const {
+	return Vector2(Math::posmod(x, p_modv.x), Math::posmod(y, p_modv.y));
+}
+
+Vector2i Vector2i::snapped(const Vector2i &p_step) const {
+	return Vector2(
+			Math::snapped(x, p_step.x),
+			Math::snapped(y, p_step.y));
+}
