@@ -37,7 +37,6 @@ class EditorPaths : public Object {
 	GDCLASS(EditorPaths, Object)
 
 	bool paths_valid = false;
-	String settings_dir;
 	String data_dir; //editor data dir
 	String config_dir; //editor config dir
 	String cache_dir; //editor cache dir
@@ -52,7 +51,6 @@ protected:
 public:
 	bool are_paths_valid() const;
 
-	String get_settings_dir() const;
 	String get_data_dir() const;
 	String get_config_dir() const;
 	String get_cache_dir() const;
