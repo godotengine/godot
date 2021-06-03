@@ -615,7 +615,7 @@
 			<argument index="0" name="func" type="Callable">
 			</argument>
 			<description>
-				Sorts the array using a custom method. The custom method receives two arguments (a pair of elements from the array) and must return either [code]true[/code] or [code]false[/code].
+				Sorts the array using a custom method. The custom method receives two arguments (a pair of elements from the array) and must return either [code]true[/code] or [code]false[/code]. For two elements [code]a[/code] and [code]b[/code], if the given method returns [code]true[/code], element [code]b[/code] will be after element [code]a[/code] in the array.
 				[b]Note:[/b] you cannot randomize the return value as the heapsort algorithm expects a deterministic result. Doing so will result in unexpected behavior.
 				[codeblocks]
 				[gdscript]
