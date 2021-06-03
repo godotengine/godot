@@ -60,7 +60,7 @@ public:
 	/// Returns the radius of a sphere that fully enclose this shape
 	virtual real_t get_enclosing_radius() const = 0;
 
-	void add_vertices_to_array(Vector<Vector3> &array, const Transform &p_xform);
+	void add_vertices_to_array(Vector<Vector3> &array, const Transform3D &p_xform);
 
 	real_t get_margin() const;
 	void set_margin(real_t p_margin);

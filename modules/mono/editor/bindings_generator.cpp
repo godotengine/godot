@@ -2520,8 +2520,8 @@ bool BindingsGenerator::_arg_default_value_is_assignable_to_type(const Variant &
 				   p_arg_type.name == name_cache.type_NodePath;
 		case Variant::NODE_PATH:
 			return p_arg_type.name == name_cache.type_NodePath;
-		case Variant::TRANSFORM:
 		case Variant::TRANSFORM2D:
+		case Variant::TRANSFORM3D:
 		case Variant::BASIS:
 		case Variant::QUAT:
 		case Variant::PLANE:
@@ -3123,13 +3123,13 @@ bool BindingsGenerator::_arg_default_value_from_variant(const Variant &p_val, Ar
 			}
 			r_iarg.def_param_mode = ArgumentInterface::NULLABLE_VAL;
 		} break;
-		case Variant::TRANSFORM: {
-			Transform transform = p_val.operator Transform();
-			if (transform == Transform()) {
-				r_iarg.default_argument = "Transform.Identity";
+		case Variant::TRANSFORM3D: {
+			Transform3D transform = p_val.operator Transform3D();
+			if (transform == Transform3D()) {
+				r_iarg.default_argument = "Transform3D.Identity";
 			} else {
 				Basis basis = transform.basis;
-				r_iarg.default_argument = "new Transform(new Vector3" + basis.get_column(0).operator String() + ", new Vector3" + basis.get_column(1).operator String() + ", new Vector3" + basis.get_column(2).operator String() + ", new Vector3" + transform.origin.operator String() + ")";
+				r_iarg.default_argument = "new Transform3D(new Vector3" + basis.get_column(0).operator String() + ", new Vector3" + basis.get_column(1).operator String() + ", new Vector3" + basis.get_column(2).operator String() + ", new Vector3" + transform.origin.operator String() + ")";
 			}
 			r_iarg.def_param_mode = ArgumentInterface::NULLABLE_VAL;
 		} break;
@@ -3197,7 +3197,7 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 	INSERT_STRUCT_TYPE(Vector3i)
 	INSERT_STRUCT_TYPE(Basis)
 	INSERT_STRUCT_TYPE(Quat)
-	INSERT_STRUCT_TYPE(Transform)
+	INSERT_STRUCT_TYPE(Transform3D)
 	INSERT_STRUCT_TYPE(AABB)
 	INSERT_STRUCT_TYPE(Color)
 	INSERT_STRUCT_TYPE(Plane)

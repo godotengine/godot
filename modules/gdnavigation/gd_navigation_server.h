@@ -113,7 +113,7 @@ public:
 	COMMAND_2(region_set_map, RID, p_region, RID, p_map);
 	COMMAND_2(region_set_layers, RID, p_region, uint32_t, p_layers);
 	virtual uint32_t region_get_layers(RID p_region) const;
-	COMMAND_2(region_set_transform, RID, p_region, Transform, p_transform);
+	COMMAND_2(region_set_transform, RID, p_region, Transform3D, p_transform);
 	COMMAND_2(region_set_navmesh, RID, p_region, Ref<NavigationMesh>, p_nav_mesh);
 	virtual void region_bake_navmesh(Ref<NavigationMesh> r_mesh, Node *p_node) const;
 	virtual int region_get_connections_count(RID p_region) const;

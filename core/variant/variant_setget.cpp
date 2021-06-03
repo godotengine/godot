@@ -288,8 +288,8 @@ SETGET_STRUCT_FUNC_INDEX(Basis, Vector3, x, set_axis, get_axis, 0)
 SETGET_STRUCT_FUNC_INDEX(Basis, Vector3, y, set_axis, get_axis, 1)
 SETGET_STRUCT_FUNC_INDEX(Basis, Vector3, z, set_axis, get_axis, 2)
 
-SETGET_STRUCT(Transform, Basis, basis)
-SETGET_STRUCT(Transform, Vector3, origin)
+SETGET_STRUCT(Transform3D, Basis, basis)
+SETGET_STRUCT(Transform3D, Vector3, origin)
 
 SETGET_NUMBER_STRUCT(Color, double, r)
 SETGET_NUMBER_STRUCT(Color, double, g)
@@ -383,8 +383,8 @@ void register_named_setters_getters() {
 	REGISTER_MEMBER(Basis, y);
 	REGISTER_MEMBER(Basis, z);
 
-	REGISTER_MEMBER(Transform, basis);
-	REGISTER_MEMBER(Transform, origin);
+	REGISTER_MEMBER(Transform3D, basis);
+	REGISTER_MEMBER(Transform3D, origin);
 
 	REGISTER_MEMBER(Color, r);
 	REGISTER_MEMBER(Color, g);
@@ -2304,11 +2304,11 @@ void Variant::interpolate(const Variant &a, const Variant &b, float c, Variant &
 		}
 			return;
 		case BASIS: {
-			r_dst = Transform(*a._data._basis).interpolate_with(Transform(*b._data._basis), c).basis;
+			r_dst = Transform3D(*a._data._basis).interpolate_with(Transform3D(*b._data._basis), c).basis;
 		}
 			return;
-		case TRANSFORM: {
-			r_dst = a._data._transform->interpolate_with(*b._data._transform, c);
+		case TRANSFORM3D: {
+			r_dst = a._data._transform3d->interpolate_with(*b._data._transform3d, c);
 		}
 			return;
 		case COLOR: {

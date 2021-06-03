@@ -65,7 +65,7 @@ MAKE_PTRCONSTRUCT(Plane);
 MAKE_PTRCONSTRUCT(Quat);
 MAKE_PTRCONSTRUCT(AABB);
 MAKE_PTRCONSTRUCT(Basis);
-MAKE_PTRCONSTRUCT(Transform);
+MAKE_PTRCONSTRUCT(Transform3D);
 MAKE_PTRCONSTRUCT(Color);
 MAKE_PTRCONSTRUCT(StringName);
 MAKE_PTRCONSTRUCT(NodePath);
@@ -678,10 +678,10 @@ void Variant::_register_variant_constructors() {
 	add_constructor<VariantConstructor<Basis, Vector3, double>>(sarray("axis", "phi"));
 	add_constructor<VariantConstructor<Basis, Vector3, Vector3, Vector3>>(sarray("x_axis", "y_axis", "z_axis"));
 
-	add_constructor<VariantConstructNoArgs<Transform>>(sarray());
-	add_constructor<VariantConstructor<Transform, Transform>>(sarray("from"));
-	add_constructor<VariantConstructor<Transform, Basis, Vector3>>(sarray("basis", "origin"));
-	add_constructor<VariantConstructor<Transform, Vector3, Vector3, Vector3, Vector3>>(sarray("x_axis", "y_axis", "z_axis", "origin"));
+	add_constructor<VariantConstructNoArgs<Transform3D>>(sarray());
+	add_constructor<VariantConstructor<Transform3D, Transform3D>>(sarray("from"));
+	add_constructor<VariantConstructor<Transform3D, Basis, Vector3>>(sarray("basis", "origin"));
+	add_constructor<VariantConstructor<Transform3D, Vector3, Vector3, Vector3, Vector3>>(sarray("x_axis", "y_axis", "z_axis", "origin"));
 
 	add_constructor<VariantConstructNoArgs<Color>>(sarray());
 	add_constructor<VariantConstructor<Color, Color>>(sarray("from"));

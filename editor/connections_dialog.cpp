@@ -212,8 +212,8 @@ void ConnectDialog::_add_bind() {
 		case Variant::BASIS:
 			value = Basis();
 			break;
-		case Variant::TRANSFORM:
-			value = Transform();
+		case Variant::TRANSFORM3D:
+			value = Transform3D();
 			break;
 		case Variant::COLOR:
 			value = Color();
@@ -446,7 +446,7 @@ ConnectDialog::ConnectDialog() {
 	type_list->add_item("Quat", Variant::QUAT);
 	type_list->add_item("AABB", Variant::AABB);
 	type_list->add_item("Basis", Variant::BASIS);
-	type_list->add_item("Transform", Variant::TRANSFORM);
+	type_list->add_item("Transform", Variant::TRANSFORM3D);
 	type_list->add_item("Color", Variant::COLOR);
 	type_list->select(0);
 

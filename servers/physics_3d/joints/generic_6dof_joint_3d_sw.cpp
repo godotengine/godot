@@ -219,7 +219,7 @@ real_t G6DOFTranslationalLimitMotor3DSW::solveLinearAxis(
 
 //////////////////////////// G6DOFTranslationalLimitMotorSW ////////////////////////////////////
 
-Generic6DOFJoint3DSW::Generic6DOFJoint3DSW(Body3DSW *rbA, Body3DSW *rbB, const Transform &frameInA, const Transform &frameInB, bool useLinearReferenceFrameA) :
+Generic6DOFJoint3DSW::Generic6DOFJoint3DSW(Body3DSW *rbA, Body3DSW *rbB, const Transform3D &frameInA, const Transform3D &frameInB, bool useLinearReferenceFrameA) :
 		Joint3DSW(_arr, 2),
 		m_frameInA(frameInA),
 		m_frameInB(frameInB),

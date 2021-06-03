@@ -1696,17 +1696,17 @@ static void _register_variant_builtin_methods() {
 	bind_methodv(AABB, intersects_segment, &AABB::intersects_segment_bind, sarray("from", "to"), varray());
 	bind_methodv(AABB, intersects_ray, &AABB::intersects_ray_bind, sarray("from", "dir"), varray());
 
-	/* Transform */
+	/* Transform3D */
 
-	bind_method(Transform, inverse, sarray(), varray());
-	bind_method(Transform, affine_inverse, sarray(), varray());
-	bind_method(Transform, orthonormalized, sarray(), varray());
-	bind_method(Transform, rotated, sarray("axis", "phi"), varray());
-	bind_method(Transform, scaled, sarray("scale"), varray());
-	bind_method(Transform, translated, sarray("offset"), varray());
-	bind_method(Transform, looking_at, sarray("target", "up"), varray(Vector3(0, 1, 0)));
-	bind_method(Transform, interpolate_with, sarray("xform", "weight"), varray());
-	bind_method(Transform, is_equal_approx, sarray("xform"), varray());
+	bind_method(Transform3D, inverse, sarray(), varray());
+	bind_method(Transform3D, affine_inverse, sarray(), varray());
+	bind_method(Transform3D, orthonormalized, sarray(), varray());
+	bind_method(Transform3D, rotated, sarray("axis", "phi"), varray());
+	bind_method(Transform3D, scaled, sarray("scale"), varray());
+	bind_method(Transform3D, translated, sarray("offset"), varray());
+	bind_method(Transform3D, looking_at, sarray("target", "up"), varray(Vector3(0, 1, 0)));
+	bind_method(Transform3D, interpolate_with, sarray("xform", "weight"), varray());
+	bind_method(Transform3D, is_equal_approx, sarray("xform"), varray());
 
 	/* Dictionary */
 
@@ -2025,14 +2025,14 @@ static void _register_variant_builtin_methods() {
 	_VariantCall::add_variant_constant(Variant::TRANSFORM2D, "FLIP_X", Transform2D(-1, 0, 0, 1, 0, 0));
 	_VariantCall::add_variant_constant(Variant::TRANSFORM2D, "FLIP_Y", Transform2D(1, 0, 0, -1, 0, 0));
 
-	Transform identity_transform = Transform();
-	Transform flip_x_transform = Transform(-1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0);
-	Transform flip_y_transform = Transform(1, 0, 0, 0, -1, 0, 0, 0, 1, 0, 0, 0);
-	Transform flip_z_transform = Transform(1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 0, 0);
-	_VariantCall::add_variant_constant(Variant::TRANSFORM, "IDENTITY", identity_transform);
-	_VariantCall::add_variant_constant(Variant::TRANSFORM, "FLIP_X", flip_x_transform);
-	_VariantCall::add_variant_constant(Variant::TRANSFORM, "FLIP_Y", flip_y_transform);
-	_VariantCall::add_variant_constant(Variant::TRANSFORM, "FLIP_Z", flip_z_transform);
+	Transform3D identity_transform = Transform3D();
+	Transform3D flip_x_transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0);
+	Transform3D flip_y_transform = Transform3D(1, 0, 0, 0, -1, 0, 0, 0, 1, 0, 0, 0);
+	Transform3D flip_z_transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 0, 0);
+	_VariantCall::add_variant_constant(Variant::TRANSFORM3D, "IDENTITY", identity_transform);
+	_VariantCall::add_variant_constant(Variant::TRANSFORM3D, "FLIP_X", flip_x_transform);
+	_VariantCall::add_variant_constant(Variant::TRANSFORM3D, "FLIP_Y", flip_y_transform);
+	_VariantCall::add_variant_constant(Variant::TRANSFORM3D, "FLIP_Z", flip_z_transform);
 
 	Basis identity_basis = Basis();
 	Basis flip_x_basis = Basis(-1, 0, 0, 0, 1, 0, 0, 0, 1);

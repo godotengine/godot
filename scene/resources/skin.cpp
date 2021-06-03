@@ -38,14 +38,14 @@ void Skin::set_bind_count(int p_size) {
 	emit_changed();
 }
 
-void Skin::add_bind(int p_bone, const Transform &p_pose) {
+void Skin::add_bind(int p_bone, const Transform3D &p_pose) {
 	uint32_t index = bind_count;
 	set_bind_count(bind_count + 1);
 	set_bind_bone(index, p_bone);
 	set_bind_pose(index, p_pose);
 }
 
-void Skin::add_named_bind(const String &p_name, const Transform &p_pose) {
+void Skin::add_named_bind(const String &p_name, const Transform3D &p_pose) {
 	uint32_t index = bind_count;
 	set_bind_count(bind_count + 1);
 	set_bind_name(index, p_name);
@@ -68,7 +68,7 @@ void Skin::set_bind_bone(int p_index, int p_bone) {
 	emit_changed();
 }
 
-void Skin::set_bind_pose(int p_index, const Transform &p_pose) {
+void Skin::set_bind_pose(int p_index, const Transform3D &p_pose) {
 	ERR_FAIL_INDEX(p_index, bind_count);
 	binds_ptr[p_index].pose = p_pose;
 	emit_changed();
@@ -134,7 +134,7 @@ void Skin::_get_property_list(List<PropertyInfo> *p_list) const {
 	for (int i = 0; i < get_bind_count(); i++) {
 		p_list->push_back(PropertyInfo(Variant::STRING_NAME, "bind/" + itos(i) + "/name"));
 		p_list->push_back(PropertyInfo(Variant::INT, "bind/" + itos(i) + "/bone", PROPERTY_HINT_RANGE, "0,16384,1,or_greater", get_bind_name(i) != StringName() ? PROPERTY_USAGE_NOEDITOR : PROPERTY_USAGE_DEFAULT));
-		p_list->push_back(PropertyInfo(Variant::TRANSFORM, "bind/" + itos(i) + "/pose"));
+		p_list->push_back(PropertyInfo(Variant::TRANSFORM3D, "bind/" + itos(i) + "/pose"));
 	}
 }
 

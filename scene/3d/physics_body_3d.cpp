@@ -654,7 +654,7 @@ Array RigidBody3D::get_colliding_bodies() const {
 }
 
 TypedArray<String> RigidBody3D::get_configuration_warnings() const {
-	Transform t = get_transform();
+	Transform3D t = get_transform();
 
 	TypedArray<String> warnings = Node::get_configuration_warnings();
 
@@ -812,7 +812,7 @@ Vector3 KinematicBody3D::get_angular_velocity() const {
 }
 
 bool KinematicBody3D::move_and_collide(const Vector3 &p_motion, bool p_infinite_inertia, Collision &r_collision, bool p_exclude_raycast_shapes, bool p_test_only) {
-	Transform gt = get_global_transform();
+	Transform3D gt = get_global_transform();
 	PhysicsServer3D::MotionResult result;
 	bool colliding = PhysicsServer3D::get_singleton()->body_test_motion(get_rid(), gt, p_motion, p_infinite_inertia, &result, p_exclude_raycast_shapes);
 
@@ -906,7 +906,7 @@ Vector3 KinematicBody3D::move_and_slide(const Vector3 &p_linear_velocity, const 
 
 						if (p_stop_on_slope) {
 							if ((body_velocity_normal + up_direction).length() < 0.01 && collision.travel.length() < 1) {
-								Transform gt = get_global_transform();
+								Transform3D gt = get_global_transform();
 								gt.origin -= collision.travel.slide(up_direction);
 								set_global_transform(gt);
 								return Vector3();
@@ -950,7 +950,7 @@ Vector3 KinematicBody3D::move_and_slide_with_snap(const Vector3 &p_linear_veloci
 	}
 
 	Collision col;
-	Transform gt = get_global_transform();
+	Transform3D gt = get_global_transform();
 
 	if (move_and_collide(p_snap, p_infinite_inertia, col, false, true)) {
 		bool apply = true;
@@ -998,7 +998,7 @@ Vector3 KinematicBody3D::get_floor_velocity() const {
 	return floor_velocity;
 }
 
-bool KinematicBody3D::test_move(const Transform &p_from, const Vector3 &p_motion, bool p_infinite_inertia) {
+bool KinematicBody3D::test_move(const Transform3D &p_from, const Vector3 &p_motion, bool p_infinite_inertia) {
 	ERR_FAIL_COND_V(!is_inside_tree(), false);
 
 	return PhysicsServer3D::get_singleton()->body_test_motion(get_rid(), p_from, p_motion, p_infinite_inertia);
@@ -1007,7 +1007,7 @@ bool KinematicBody3D::test_move(const Transform &p_from, const Vector3 &p_motion
 bool KinematicBody3D::separate_raycast_shapes(bool p_infinite_inertia, Collision &r_collision) {
 	PhysicsServer3D::SeparationResult sep_res[8]; //max 8 rays
 
-	Transform gt = get_global_transform();
+	Transform3D gt = get_global_transform();
 
 	Vector3 recover;
 	int hits = PhysicsServer3D::get_singleton()->body_test_ray_separation(get_rid(), gt, p_infinite_inertia, recover, sep_res, 8, margin);
@@ -1989,7 +1989,7 @@ void PhysicalBone3D::_direct_state_changed(Object *p_state) {
 	state = (PhysicsDirectBodyState3D *)p_state; //trust it
 #endif
 
-	Transform global_transform(state->get_transform());
+	Transform3D global_transform(state->get_transform());
 
 	set_ignore_transform_notification(true);
 	set_global_transform(global_transform);
@@ -2053,11 +2053,11 @@ void PhysicalBone3D::_bind_methods() {
 
 	ADD_GROUP("Joint", "joint_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "joint_type", PROPERTY_HINT_ENUM, "None,PinJoint,ConeJoint,HingeJoint,SliderJoint,6DOFJoint"), "set_joint_type", "get_joint_type");
-	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM, "joint_offset"), "set_joint_offset", "get_joint_offset");
+	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM3D, "joint_offset"), "set_joint_offset", "get_joint_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "joint_rotation_degrees", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "set_joint_rotation_degrees", "get_joint_rotation_degrees");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "joint_rotation", PROPERTY_HINT_NONE, "", 0), "set_joint_rotation", "get_joint_rotation");
 
-	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM, "body_offset"), "set_body_offset", "get_body_offset");
+	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM3D, "body_offset"), "set_body_offset", "get_body_offset");
 
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "mass", PROPERTY_HINT_EXP_RANGE, "0.01,65535,0.01"), "set_mass", "get_mass");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "friction", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_friction", "get_friction");
@@ -2124,8 +2124,8 @@ void PhysicalBone3D::_reload_joint() {
 		return;
 	}
 
-	Transform joint_transf = get_global_transform() * joint_offset;
-	Transform local_a = body_a->get_global_transform().affine_inverse() * joint_transf;
+	Transform3D joint_transf = get_global_transform() * joint_offset;
+	Transform3D local_a = body_a->get_global_transform().affine_inverse() * joint_transf;
 	local_a.orthonormalize();
 
 	switch (get_joint_type()) {
@@ -2218,11 +2218,11 @@ void PhysicalBone3D::_set_gizmo_move_joint(bool p_move_joint) {
 }
 
 #ifdef TOOLS_ENABLED
-Transform PhysicalBone3D::get_global_gizmo_transform() const {
+Transform3D PhysicalBone3D::get_global_gizmo_transform() const {
 	return gizmo_move_joint ? get_global_transform() * joint_offset : get_global_transform();
 }
 
-Transform PhysicalBone3D::get_local_gizmo_transform() const {
+Transform3D PhysicalBone3D::get_local_gizmo_transform() const {
 	return gizmo_move_joint ? get_transform() * joint_offset : get_transform();
 }
 #endif
@@ -2278,13 +2278,13 @@ PhysicalBone3D::JointType PhysicalBone3D::get_joint_type() const {
 	return joint_data ? joint_data->get_joint_type() : JOINT_TYPE_NONE;
 }
 
-void PhysicalBone3D::set_joint_offset(const Transform &p_offset) {
+void PhysicalBone3D::set_joint_offset(const Transform3D &p_offset) {
 	joint_offset = p_offset;
 
 	_update_joint_offset();
 }
 
-const Transform &PhysicalBone3D::get_joint_offset() const {
+const Transform3D &PhysicalBone3D::get_joint_offset() const {
 	return joint_offset;
 }
 
@@ -2306,11 +2306,11 @@ Vector3 PhysicalBone3D::get_joint_rotation_degrees() const {
 	return get_joint_rotation() * (180.0 / Math_PI);
 }
 
-const Transform &PhysicalBone3D::get_body_offset() const {
+const Transform3D &PhysicalBone3D::get_body_offset() const {
 	return body_offset;
 }
 
-void PhysicalBone3D::set_body_offset(const Transform &p_offset) {
+void PhysicalBone3D::set_body_offset(const Transform3D &p_offset) {
 	body_offset = p_offset;
 	body_offset_inverse = body_offset.affine_inverse();
 
@@ -2463,7 +2463,7 @@ void PhysicalBone3D::update_bone_id() {
 void PhysicalBone3D::update_offset() {
 #ifdef TOOLS_ENABLED
 	if (parent_skeleton) {
-		Transform bone_transform(parent_skeleton->get_global_transform());
+		Transform3D bone_transform(parent_skeleton->get_global_transform());
 		if (-1 != bone_id) {
 			bone_transform *= parent_skeleton->get_bone_global_pose(bone_id);
 		}
@@ -2506,7 +2506,7 @@ void PhysicalBone3D::_stop_physics_simulation() {
 	}
 	if (_internal_simulate_physics) {
 		PhysicsServer3D::get_singleton()->body_set_force_integration_callback(get_rid(), Callable());
-		parent_skeleton->set_bone_global_pose_override(bone_id, Transform(), 0.0, false);
+		parent_skeleton->set_bone_global_pose_override(bone_id, Transform3D(), 0.0, false);
 		set_as_top_level(false);
 		_internal_simulate_physics = false;
 	}

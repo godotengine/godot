@@ -223,7 +223,7 @@ void Node3D::_notification(int p_what) {
 	}
 }
 
-void Node3D::set_transform(const Transform &p_transform) {
+void Node3D::set_transform(const Transform3D &p_transform) {
 	data.local_transform = p_transform;
 	data.dirty |= DIRTY_VECTORS;
 	_propagate_transform_changed(this);
@@ -232,8 +232,8 @@ void Node3D::set_transform(const Transform &p_transform) {
 	}
 }
 
-void Node3D::set_global_transform(const Transform &p_transform) {
-	Transform xform =
+void Node3D::set_global_transform(const Transform3D &p_transform) {
+	Transform3D xform =
 			(data.parent && !data.top_level_active) ?
 					  data.parent->get_global_transform().affine_inverse() * p_transform :
 					  p_transform;
@@ -241,16 +241,15 @@ void Node3D::set_global_transform(const Transform &p_transform) {
 	set_transform(xform);
 }
 
-Transform Node3D::get_transform() const {
+Transform3D Node3D::get_transform() const {
 	if (data.dirty & DIRTY_LOCAL) {
 		_update_local_transform();
 	}
 
 	return data.local_transform;
 }
-
-Transform Node3D::get_global_transform() const {
-	ERR_FAIL_COND_V(!is_inside_tree(), Transform());
+Transform3D Node3D::get_global_transform() const {
+	ERR_FAIL_COND_V(!is_inside_tree(), Transform3D());
 
 	if (data.dirty & DIRTY_GLOBAL) {
 		if (data.dirty & DIRTY_LOCAL) {
@@ -274,11 +273,11 @@ Transform Node3D::get_global_transform() const {
 }
 
 #ifdef TOOLS_ENABLED
-Transform Node3D::get_global_gizmo_transform() const {
+Transform3D Node3D::get_global_gizmo_transform() const {
 	return get_global_transform();
 }
 
-Transform Node3D::get_local_gizmo_transform() const {
+Transform3D Node3D::get_local_gizmo_transform() const {
 	return get_transform();
 }
 #endif
@@ -287,12 +286,11 @@ Node3D *Node3D::get_parent_spatial() const {
 	return data.parent;
 }
 
-Transform Node3D::get_relative_transform(const Node *p_parent) const {
-	if (p_parent == this) {
-		return Transform();
-	}
+Transform3D Node3D::get_relative_transform(const Node *p_parent) const {
+	if (p_parent == this)
+		return Transform3D();
 
-	ERR_FAIL_COND_V(!data.parent, Transform());
+	ERR_FAIL_COND_V(!data.parent, Transform3D());
 
 	if (p_parent == data.parent) {
 		return get_transform();
@@ -557,87 +555,87 @@ bool Node3D::is_visible() const {
 }
 
 void Node3D::rotate_object_local(const Vector3 &p_axis, float p_angle) {
-	Transform t = get_transform();
+	Transform3D t = get_transform();
 	t.basis.rotate_local(p_axis, p_angle);
 	set_transform(t);
 }
 
 void Node3D::rotate(const Vector3 &p_axis, float p_angle) {
-	Transform t = get_transform();
+	Transform3D t = get_transform();
 	t.basis.rotate(p_axis, p_angle);
 	set_transform(t);
 }
 
 void Node3D::rotate_x(float p_angle) {
-	Transform t = get_transform();
+	Transform3D t = get_transform();
 	t.basis.rotate(Vector3(1, 0, 0), p_angle);
 	set_transform(t);
 }
 
 void Node3D::rotate_y(float p_angle) {
-	Transform t = get_transform();
+	Transform3D t = get_transform();
 	t.basis.rotate(Vector3(0, 1, 0), p_angle);
 	set_transform(t);
 }
 
 void Node3D::rotate_z(float p_angle) {
-	Transform t = get_transform();
+	Transform3D t = get_transform();
 	t.basis.rotate(Vector3(0, 0, 1), p_angle);
 	set_transform(t);
 }
 
 void Node3D::translate(const Vector3 &p_offset) {
-	Transform t = get_transform();
+	Transform3D t = get_transform();
 	t.translate(p_offset);
 	set_transform(t);
 }
 
 void Node3D::translate_object_local(const Vector3 &p_offset) {
-	Transform t = get_transform();
+	Transform3D t = get_transform();
 
-	Transform s;
+	Transform3D s;
 	s.translate(p_offset);
 	set_transform(t * s);
 }
 
 void Node3D::scale(const Vector3 &p_ratio) {
-	Transform t = get_transform();
+	Transform3D t = get_transform();
 	t.basis.scale(p_ratio);
 	set_transform(t);
 }
 
 void Node3D::scale_object_local(const Vector3 &p_scale) {
-	Transform t = get_transform();
+	Transform3D t = get_transform();
 	t.basis.scale_local(p_scale);
 	set_transform(t);
 }
 
 void Node3D::global_rotate(const Vector3 &p_axis, float p_angle) {
-	Transform t = get_global_transform();
+	Transform3D t = get_global_transform();
 	t.basis.rotate(p_axis, p_angle);
 	set_global_transform(t);
 }
 
 void Node3D::global_scale(const Vector3 &p_scale) {
-	Transform t = get_global_transform();
+	Transform3D t = get_global_transform();
 	t.basis.scale(p_scale);
 	set_global_transform(t);
 }
 
 void Node3D::global_translate(const Vector3 &p_offset) {
-	Transform t = get_global_transform();
+	Transform3D t = get_global_transform();
 	t.origin += p_offset;
 	set_global_transform(t);
 }
 
 void Node3D::orthonormalize() {
-	Transform t = get_transform();
+	Transform3D t = get_transform();
 	t.orthonormalize();
 	set_transform(t);
 }
 
 void Node3D::set_identity() {
-	set_transform(Transform());
+	set_transform(Transform3D());
 }
 
 void Node3D::look_at(const Vector3 &p_target, const Vector3 &p_up) {
@@ -649,7 +647,7 @@ void Node3D::look_at_from_position(const Vector3 &p_pos, const Vector3 &p_target
 	ERR_FAIL_COND_MSG(p_pos == p_target, "Node origin and target are in the same position, look_at() failed.");
 	ERR_FAIL_COND_MSG(p_up.cross(p_target - p_pos) == Vector3(), "Up vector and direction between node origin and target are aligned, look_at() failed.");
 
-	Transform lookat;
+	Transform3D lookat;
 	lookat.origin = p_pos;
 
 	Vector3 original_scale(get_scale());
@@ -758,16 +756,16 @@ void Node3D::_bind_methods() {
 	BIND_CONSTANT(NOTIFICATION_EXIT_WORLD);
 	BIND_CONSTANT(NOTIFICATION_VISIBILITY_CHANGED);
 
-	//ADD_PROPERTY( PropertyInfo(Variant::TRANSFORM,"transform/global",PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR ), "set_global_transform", "get_global_transform") ;
+	//ADD_PROPERTY( PropertyInfo(Variant::TRANSFORM3D,"transform/global",PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR ), "set_global_transform", "get_global_transform") ;
 	ADD_GROUP("Transform", "");
-	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM, "global_transform", PROPERTY_HINT_NONE, "", 0), "set_global_transform", "get_global_transform");
+	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM3D, "global_transform", PROPERTY_HINT_NONE, "", 0), "set_global_transform", "get_global_transform");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "translation", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "set_translation", "get_translation");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "rotation_degrees", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "set_rotation_degrees", "get_rotation_degrees");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "rotation", PROPERTY_HINT_NONE, "", 0), "set_rotation", "get_rotation");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "scale", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "set_scale", "get_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "top_level"), "set_as_top_level", "is_set_as_top_level");
 	ADD_GROUP("Matrix", "");
-	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM, "transform", PROPERTY_HINT_NONE, ""), "set_transform", "get_transform");
+	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM3D, "transform", PROPERTY_HINT_NONE, ""), "set_transform", "get_transform");
 	ADD_GROUP("Visibility", "");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "visible"), "set_visible", "is_visible");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "gizmo", PROPERTY_HINT_RESOURCE_TYPE, "Node3DGizmo", 0), "set_gizmo", "get_gizmo");

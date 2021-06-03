@@ -127,20 +127,20 @@ public:
 
 	int func1_count = 0;
 
-	void func1(Transform t) {
+	void func1(Transform3D t) {
 		func1_count++;
 	}
-	void func2(Transform t, float f) {
+	void func2(Transform3D t, float f) {
 		func1_count++;
 	}
-	void func3(Transform t1, Transform t2, Transform t3, Transform t4, Transform t5, Transform t6) {
+	void func3(Transform3D t1, Transform3D t2, Transform3D t3, Transform3D t4, Transform3D t5, Transform3D t6) {
 		func1_count++;
 	}
-	Transform func1r(Transform t) {
+	Transform3D func1r(Transform3D t) {
 		func1_count++;
 		return t;
 	}
-	Transform func2r(Transform t, float f) {
+	Transform3D func2r(Transform3D t, float f) {
 		func1_count++;
 		return t;
 	}
@@ -175,8 +175,8 @@ public:
 		during_writing = false;
 		writer_threadwork.thread_wait_for_work();
 		while (!exit_threads) {
-			Transform tr;
-			Transform otr;
+			Transform3D tr;
+			Transform3D otr;
 			float f = 1;
 			during_writing = true;
 			for (int i = 0; i < message_types_to_write.size(); i++) {

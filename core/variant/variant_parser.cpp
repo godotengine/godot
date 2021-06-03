@@ -653,7 +653,7 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 			}
 
 			value = Basis(args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8]);
-		} else if (id == "Transform") {
+		} else if (id == "Transform3D") {
 			Vector<real_t> args;
 			Error err = _parse_construct<real_t>(p_stream, args, line, r_err_str);
 			if (err) {
@@ -665,7 +665,7 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 				return ERR_PARSE_ERROR;
 			}
 
-			value = Transform(Basis(args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8]), Vector3(args[9], args[10], args[11]));
+			value = Transform3D(Basis(args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8]), Vector3(args[9], args[10], args[11]));
 		} else if (id == "Color") {
 			Vector<float> args;
 			Error err = _parse_construct<float>(p_stream, args, line, r_err_str);
@@ -1489,9 +1489,9 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 			p_store_string_func(p_store_string_ud, s + " )");
 
 		} break;
-		case Variant::TRANSFORM: {
-			String s = "Transform( ";
-			Transform t = p_variant;
+		case Variant::TRANSFORM3D: {
+			String s = "Transform3D( ";
+			Transform3D t = p_variant;
 			Basis &m3 = t.basis;
 			for (int i = 0; i < 3; i++) {
 				for (int j = 0; j < 3; j++) {

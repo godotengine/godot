@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  transform.h                                                          */
+/*  transform_3d.cpp                                                     */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,31 +28,24 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GODOT_TRANSFORM_H
-#define GODOT_TRANSFORM_H
+#include "gdnative/transform_3d.h"
+
+#include "core/math/transform_3d.h"
+
+static_assert(sizeof(godot_transform3d) == sizeof(Transform3D), "Transform3D size mismatch");
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#include <gdnative/math_defs.h>
+void GDAPI godot_transform3d_new(godot_transform3d *p_self) {
+	memnew_placement(p_self, Transform3D);
+}
 
-#define GODOT_TRANSFORM_SIZE (sizeof(godot_real_t) * 12)
-
-#ifndef GODOT_CORE_API_GODOT_TRANSFORM_TYPE_DEFINED
-#define GODOT_CORE_API_GODOT_TRANSFORM_TYPE_DEFINED
-typedef struct {
-	uint8_t _dont_touch_that[GODOT_TRANSFORM_SIZE];
-} godot_transform;
-#endif
-
-#include <gdnative/gdnative.h>
-
-void GDAPI godot_transform_new(godot_transform *p_self);
-void GDAPI godot_transform_new_copy(godot_transform *r_dest, const godot_transform *p_src);
+void GDAPI godot_transform3d_new_copy(godot_transform3d *r_dest, const godot_transform3d *p_src) {
+	memnew_placement(r_dest, Transform3D(*(Transform3D *)p_src));
+}
 
 #ifdef __cplusplus
 }
 #endif
-
-#endif // GODOT_TRANSFORM_H

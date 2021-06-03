@@ -169,7 +169,7 @@ void (*type_init_function_table[])(Variant *) = {
 	&VariantInitializer<Quat>::init, // QUAT.
 	&VariantInitializer<AABB>::init, // AABB.
 	&VariantInitializer<Basis>::init, // BASIS.
-	&VariantInitializer<Transform>::init, // TRANSFORM.
+	&VariantInitializer<Transform3D>::init, // TRANSFORM3D.
 	&VariantInitializer<Color>::init, // COLOR.
 	&VariantInitializer<StringName>::init, // STRING_NAME.
 	&VariantInitializer<NodePath>::init, // NODE_PATH.
@@ -251,7 +251,7 @@ void (*type_init_function_table[])(Variant *) = {
 		&&OPCODE_CALL_PTRCALL_QUAT,                  \
 		&&OPCODE_CALL_PTRCALL_AABB,                  \
 		&&OPCODE_CALL_PTRCALL_BASIS,                 \
-		&&OPCODE_CALL_PTRCALL_TRANSFORM,             \
+		&&OPCODE_CALL_PTRCALL_TRANSFORM3D,           \
 		&&OPCODE_CALL_PTRCALL_COLOR,                 \
 		&&OPCODE_CALL_PTRCALL_STRING_NAME,           \
 		&&OPCODE_CALL_PTRCALL_NODE_PATH,             \
@@ -416,7 +416,7 @@ void (*type_init_function_table[])(Variant *) = {
 #define OP_GET_PACKED_VECTOR2_ARRAY get_vector2_array
 #define OP_GET_PACKED_VECTOR3_ARRAY get_vector3_array
 #define OP_GET_PACKED_COLOR_ARRAY get_color_array
-#define OP_GET_TRANSFORM get_transform
+#define OP_GET_TRANSFORM3D get_transform
 #define OP_GET_TRANSFORM2D get_transform2d
 #define OP_GET_PLANE get_plane
 #define OP_GET_AABB get_aabb
@@ -1736,7 +1736,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 			OPCODE_CALL_PTR(QUAT);
 			OPCODE_CALL_PTR(AABB);
 			OPCODE_CALL_PTR(BASIS);
-			OPCODE_CALL_PTR(TRANSFORM);
+			OPCODE_CALL_PTR(TRANSFORM3D);
 			OPCODE_CALL_PTR(COLOR);
 			OPCODE_CALL_PTR(STRING_NAME);
 			OPCODE_CALL_PTR(NODE_PATH);
@@ -3153,7 +3153,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 			OPCODE_TYPE_ADJUST(QUAT, Quat);
 			OPCODE_TYPE_ADJUST(AABB, AABB);
 			OPCODE_TYPE_ADJUST(BASIS, Basis);
-			OPCODE_TYPE_ADJUST(TRANSFORM, Transform);
+			OPCODE_TYPE_ADJUST(TRANSFORM, Transform3D);
 			OPCODE_TYPE_ADJUST(COLOR, Color);
 			OPCODE_TYPE_ADJUST(STRING_NAME, StringName);
 			OPCODE_TYPE_ADJUST(NODE_PATH, NodePath);

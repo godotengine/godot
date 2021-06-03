@@ -127,7 +127,7 @@ void MeshLibraryEditor::_import_scene(Node *p_scene, Ref<MeshLibrary> p_library,
 					continue;
 				}
 
-				//Transform shape_transform = sb->shape_owner_get_transform(E->get());
+				//Transform3D shape_transform = sb->shape_owner_get_transform(E->get());
 
 				//shape_transform.set_origin(shape_transform.get_origin() - phys_offset);
 
@@ -147,7 +147,7 @@ void MeshLibraryEditor::_import_scene(Node *p_scene, Ref<MeshLibrary> p_library,
 		p_library->set_item_shapes(id, collisions);
 
 		Ref<NavigationMesh> navmesh;
-		Transform navmesh_transform;
+		Transform3D navmesh_transform;
 		for (int j = 0; j < mi->get_child_count(); j++) {
 			Node *child2 = mi->get_child(j);
 			if (!Object::cast_to<NavigationRegion3D>(child2)) {
@@ -170,7 +170,7 @@ void MeshLibraryEditor::_import_scene(Node *p_scene, Ref<MeshLibrary> p_library,
 
 	if (true) {
 		Vector<Ref<Mesh>> meshes;
-		Vector<Transform> transforms;
+		Vector<Transform3D> transforms;
 		Vector<int> ids = p_library->get_item_list();
 		for (int i = 0; i < ids.size(); i++) {
 			if (mesh_instances.find(ids[i])) {

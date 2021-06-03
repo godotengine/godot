@@ -67,7 +67,7 @@ static void plane_space(const Vector3 &n, Vector3 &p, Vector3 &q) {
 	}
 }
 
-HingeJoint3DSW::HingeJoint3DSW(Body3DSW *rbA, Body3DSW *rbB, const Transform &frameA, const Transform &frameB) :
+HingeJoint3DSW::HingeJoint3DSW(Body3DSW *rbA, Body3DSW *rbB, const Transform3D &frameA, const Transform3D &frameB) :
 		Joint3DSW(_arr, 2) {
 	A = rbA;
 	B = rbB;

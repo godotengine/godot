@@ -84,7 +84,7 @@ static _FORCE_INLINE_ real_t atan2fast(real_t y, real_t x) {
 	return (y < 0.0f) ? -angle : angle;
 }
 
-ConeTwistJoint3DSW::ConeTwistJoint3DSW(Body3DSW *rbA, Body3DSW *rbB, const Transform &rbAFrame, const Transform &rbBFrame) :
+ConeTwistJoint3DSW::ConeTwistJoint3DSW(Body3DSW *rbA, Body3DSW *rbB, const Transform3D &rbAFrame, const Transform3D &rbBFrame) :
 		Joint3DSW(_arr, 2) {
 	A = rbA;
 	B = rbB;

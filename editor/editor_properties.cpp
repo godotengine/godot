@@ -2083,7 +2083,7 @@ void EditorPropertyTransform::_value_changed(double val, const String &p_name) {
 		return;
 	}
 
-	Transform p;
+	Transform3D p;
 	p.basis[0][0] = spin[0]->get_value();
 	p.basis[1][0] = spin[1]->get_value();
 	p.basis[2][0] = spin[2]->get_value();
@@ -2104,7 +2104,7 @@ void EditorPropertyTransform::update_property() {
 	update_using_transform(get_edited_object()->get(get_edited_property()));
 }
 
-void EditorPropertyTransform::update_using_transform(Transform p_transform) {
+void EditorPropertyTransform::update_using_transform(Transform3D p_transform) {
 	setting = true;
 	spin[0]->set_value(p_transform.basis[0][0]);
 	spin[1]->set_value(p_transform.basis[1][0]);
@@ -3107,7 +3107,7 @@ bool EditorInspectorDefaultPlugin::parse_property(Object *p_object, Variant::Typ
 			editor->setup(min, max, step, hide_slider);
 			add_property_editor(p_path, editor);
 		} break;
-		case Variant::TRANSFORM: {
+		case Variant::TRANSFORM3D: {
 			EditorPropertyTransform *editor = memnew(EditorPropertyTransform);
 			double min = -65535, max = 65535, step = default_float_step;
 			bool hide_slider = true;

@@ -268,14 +268,14 @@ public:
 	virtual int multimesh_get_instance_count(RID p_multimesh) const = 0;
 
 	virtual void multimesh_set_mesh(RID p_multimesh, RID p_mesh) = 0;
-	virtual void multimesh_instance_set_transform(RID p_multimesh, int p_index, const Transform &p_transform) = 0;
+	virtual void multimesh_instance_set_transform(RID p_multimesh, int p_index, const Transform3D &p_transform) = 0;
 	virtual void multimesh_instance_set_transform_2d(RID p_multimesh, int p_index, const Transform2D &p_transform) = 0;
 	virtual void multimesh_instance_set_color(RID p_multimesh, int p_index, const Color &p_color) = 0;
 	virtual void multimesh_instance_set_custom_data(RID p_multimesh, int p_index, const Color &p_color) = 0;
 
 	virtual RID multimesh_get_mesh(RID p_multimesh) const = 0;
 
-	virtual Transform multimesh_instance_get_transform(RID p_multimesh, int p_index) const = 0;
+	virtual Transform3D multimesh_instance_get_transform(RID p_multimesh, int p_index) const = 0;
 	virtual Transform2D multimesh_instance_get_transform_2d(RID p_multimesh, int p_index) const = 0;
 	virtual Color multimesh_instance_get_color(RID p_multimesh, int p_index) const = 0;
 	virtual Color multimesh_instance_get_custom_data(RID p_multimesh, int p_index) const = 0;
@@ -313,8 +313,8 @@ public:
 
 	virtual void skeleton_allocate_data(RID p_skeleton, int p_bones, bool p_2d_skeleton = false) = 0;
 	virtual int skeleton_get_bone_count(RID p_skeleton) const = 0;
-	virtual void skeleton_bone_set_transform(RID p_skeleton, int p_bone, const Transform &p_transform) = 0;
-	virtual Transform skeleton_bone_get_transform(RID p_skeleton, int p_bone) const = 0;
+	virtual void skeleton_bone_set_transform(RID p_skeleton, int p_bone, const Transform3D &p_transform) = 0;
+	virtual Transform3D skeleton_bone_get_transform(RID p_skeleton, int p_bone) const = 0;
 	virtual void skeleton_bone_set_transform_2d(RID p_skeleton, int p_bone, const Transform2D &p_transform) = 0;
 	virtual Transform2D skeleton_bone_get_transform_2d(RID p_skeleton, int p_bone) const = 0;
 	virtual void skeleton_set_base_transform_2d(RID p_skeleton, const Transform2D &p_base_transform) = 0;
@@ -418,7 +418,7 @@ public:
 	virtual RID gi_probe_allocate() = 0;
 	virtual void gi_probe_initialize(RID p_rid) = 0;
 
-	virtual void gi_probe_allocate_data(RID p_gi_probe, const Transform &p_to_cell_xform, const AABB &p_aabb, const Vector3i &p_octree_size, const Vector<uint8_t> &p_octree_cells, const Vector<uint8_t> &p_data_cells, const Vector<uint8_t> &p_distance_field, const Vector<int> &p_level_counts) = 0;
+	virtual void gi_probe_allocate_data(RID p_gi_probe, const Transform3D &p_to_cell_xform, const AABB &p_aabb, const Vector3i &p_octree_size, const Vector<uint8_t> &p_octree_cells, const Vector<uint8_t> &p_data_cells, const Vector<uint8_t> &p_distance_field, const Vector<int> &p_level_counts) = 0;
 
 	virtual AABB gi_probe_get_bounds(RID p_gi_probe) const = 0;
 	virtual Vector3i gi_probe_get_octree_size(RID p_gi_probe) const = 0;
@@ -427,7 +427,7 @@ public:
 	virtual Vector<uint8_t> gi_probe_get_distance_field(RID p_gi_probe) const = 0;
 
 	virtual Vector<int> gi_probe_get_level_counts(RID p_gi_probe) const = 0;
-	virtual Transform gi_probe_get_to_cell_xform(RID p_gi_probe) const = 0;
+	virtual Transform3D gi_probe_get_to_cell_xform(RID p_gi_probe) const = 0;
 
 	virtual void gi_probe_set_dynamic_range(RID p_gi_probe, float p_range) = 0;
 	virtual float gi_probe_get_dynamic_range(RID p_gi_probe) const = 0;
@@ -507,10 +507,10 @@ public:
 	virtual void particles_set_transform_align(RID p_particles, RS::ParticlesTransformAlign p_transform_align) = 0;
 
 	virtual void particles_set_trails(RID p_particles, bool p_enable, float p_length) = 0;
-	virtual void particles_set_trail_bind_poses(RID p_particles, const Vector<Transform> &p_bind_poses) = 0;
+	virtual void particles_set_trail_bind_poses(RID p_particles, const Vector<Transform3D> &p_bind_poses) = 0;
 
 	virtual void particles_restart(RID p_particles) = 0;
-	virtual void particles_emit(RID p_particles, const Transform &p_transform, const Vector3 &p_velocity, const Color &p_color, const Color &p_custom, uint32_t p_emit_flags) = 0;
+	virtual void particles_emit(RID p_particles, const Transform3D &p_transform, const Vector3 &p_velocity, const Color &p_color, const Color &p_custom, uint32_t p_emit_flags) = 0;
 	virtual void particles_set_subemitter(RID p_particles, RID p_subemitter_particles) = 0;
 
 	virtual bool particles_is_inactive(RID p_particles) const = 0;
@@ -524,7 +524,7 @@ public:
 	virtual AABB particles_get_current_aabb(RID p_particles) = 0;
 	virtual AABB particles_get_aabb(RID p_particles) const = 0;
 
-	virtual void particles_set_emission_transform(RID p_particles, const Transform &p_transform) = 0;
+	virtual void particles_set_emission_transform(RID p_particles, const Transform3D &p_transform) = 0;
 
 	virtual int particles_get_draw_passes(RID p_particles) const = 0;
 	virtual RID particles_get_draw_pass_mesh(RID p_particles, int p_pass) const = 0;
@@ -559,7 +559,7 @@ public:
 
 	//used from 2D and 3D
 	virtual RID particles_collision_instance_create(RID p_collision) = 0;
-	virtual void particles_collision_instance_set_transform(RID p_collision_instance, const Transform &p_transform) = 0;
+	virtual void particles_collision_instance_set_transform(RID p_collision_instance, const Transform3D &p_transform) = 0;
 	virtual void particles_collision_instance_set_active(RID p_collision_instance, bool p_active) = 0;
 
 	/* GLOBAL VARIABLES */

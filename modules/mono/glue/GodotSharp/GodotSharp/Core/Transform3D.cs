@@ -19,7 +19,7 @@ namespace Godot
     /// </summary>
     [Serializable]
     [StructLayout(LayoutKind.Sequential)]
-    public struct Transform : IEquatable<Transform>
+    public struct Transform3D : IEquatable<Transform3D>
     {
         /// <summary>
         /// The <see cref="Basis"/> of this transform. Contains the X, Y, and Z basis
@@ -107,10 +107,10 @@ namespace Godot
         /// the transformation is composed of rotation, scaling, and translation.
         /// </summary>
         /// <returns>The inverse transformation matrix.</returns>
-        public Transform AffineInverse()
+        public Transform3D AffineInverse()
         {
             Basis basisInv = basis.Inverse();
-            return new Transform(basisInv, basisInv.Xform(-origin));
+            return new Transform3D(basisInv, basisInv.Xform(-origin));
         }
 
         /// <summary>
@@ -119,7 +119,7 @@ namespace Godot
         /// <param name="transform">The other transform.</param>
         /// <param name="weight">A value on the range of 0.0 to 1.0, representing the amount of interpolation.</param>
         /// <returns>The interpolated transform.</returns>
-        public Transform InterpolateWith(Transform transform, real_t weight)
+        public Transform3D InterpolateWith(Transform3D transform, real_t weight)
         {
             /* not sure if very "efficient" but good enough? */
 
@@ -131,7 +131,7 @@ namespace Godot
             Quat destinationRotation = transform.basis.RotationQuat();
             Vector3 destinationLocation = transform.origin;
 
-            var interpolated = new Transform();
+            var interpolated = new Transform3D();
             interpolated.basis.SetQuatScale(sourceRotation.Slerp(destinationRotation, weight).Normalized(), sourceScale.Lerp(destinationScale, weight));
             interpolated.origin = sourceLocation.Lerp(destinationLocation, weight);
 
@@ -144,10 +144,10 @@ namespace Godot
         /// (no scaling, use <see cref="AffineInverse"/> for transforms with scaling).
         /// </summary>
         /// <returns>The inverse matrix.</returns>
-        public Transform Inverse()
+        public Transform3D Inverse()
         {
             Basis basisTr = basis.Transposed();
-            return new Transform(basisTr, basisTr.Xform(-origin));
+            return new Transform3D(basisTr, basisTr.Xform(-origin));
         }
 
         /// <summary>
@@ -163,7 +163,7 @@ namespace Godot
         /// <param name="target">The object to look at.</param>
         /// <param name="up">The relative up direction</param>
         /// <returns>The resulting transform.</returns>
-        public Transform LookingAt(Vector3 target, Vector3 up)
+        public Transform3D LookingAt(Vector3 target, Vector3 up)
         {
             var t = this;
             t.SetLookAt(origin, target, up);
@@ -175,9 +175,9 @@ namespace Godot
         /// and normalized axis vectors (scale of 1 or -1).
         /// </summary>
         /// <returns>The orthonormalized transform.</returns>
-        public Transform Orthonormalized()
+        public Transform3D Orthonormalized()
         {
-            return new Transform(basis.Orthonormalized(), origin);
+            return new Transform3D(basis.Orthonormalized(), origin);
         }
 
         /// <summary>
@@ -187,9 +187,9 @@ namespace Godot
         /// <param name="axis">The axis to rotate around. Must be normalized.</param>
         /// <param name="phi">The angle to rotate, in radians.</param>
         /// <returns>The rotated transformation matrix.</returns>
-        public Transform Rotated(Vector3 axis, real_t phi)
+        public Transform3D Rotated(Vector3 axis, real_t phi)
         {
-            return new Transform(new Basis(axis, phi), new Vector3()) * this;
+            return new Transform3D(new Basis(axis, phi), new Vector3()) * this;
         }
 
         /// <summary>
@@ -197,9 +197,9 @@ namespace Godot
         /// </summary>
         /// <param name="scale">The scale to introduce.</param>
         /// <returns>The scaled transformation matrix.</returns>
-        public Transform Scaled(Vector3 scale)
+        public Transform3D Scaled(Vector3 scale)
         {
-            return new Transform(basis.Scaled(scale), origin * scale);
+            return new Transform3D(basis.Scaled(scale), origin * scale);
         }
 
         private void SetLookAt(Vector3 eye, Vector3 target, Vector3 up)
@@ -234,9 +234,9 @@ namespace Godot
         /// </summary>
         /// <param name="offset">The offset to translate by.</param>
         /// <returns>The translated matrix.</returns>
-        public Transform Translated(Vector3 offset)
+        public Transform3D Translated(Vector3 offset)
         {
-            return new Transform(basis, new Vector3
+            return new Transform3D(basis, new Vector3
             (
                 origin[0] += basis.Row0.Dot(offset),
                 origin[1] += basis.Row1.Dot(offset),
@@ -280,10 +280,10 @@ namespace Godot
         }
 
         // Constants
-        private static readonly Transform _identity = new Transform(Basis.Identity, Vector3.Zero);
-        private static readonly Transform _flipX = new Transform(new Basis(-1, 0, 0, 0, 1, 0, 0, 0, 1), Vector3.Zero);
-        private static readonly Transform _flipY = new Transform(new Basis(1, 0, 0, 0, -1, 0, 0, 0, 1), Vector3.Zero);
-        private static readonly Transform _flipZ = new Transform(new Basis(1, 0, 0, 0, 1, 0, 0, 0, -1), Vector3.Zero);
+        private static readonly Transform3D _identity = new Transform3D(Basis.Identity, Vector3.Zero);
+        private static readonly Transform3D _flipX = new Transform3D(new Basis(-1, 0, 0, 0, 1, 0, 0, 0, 1), Vector3.Zero);
+        private static readonly Transform3D _flipY = new Transform3D(new Basis(1, 0, 0, 0, -1, 0, 0, 0, 1), Vector3.Zero);
+        private static readonly Transform3D _flipZ = new Transform3D(new Basis(1, 0, 0, 0, 1, 0, 0, 0, -1), Vector3.Zero);
 
         /// <summary>
         /// The identity transform, with no translation, rotation, or scaling applied.
@@ -291,22 +291,22 @@ namespace Godot
         /// Do not use `new Transform()` with no arguments in C#, because it sets all values to zero.
         /// </summary>
         /// <value>Equivalent to `new Transform(Vector3.Right, Vector3.Up, Vector3.Back, Vector3.Zero)`.</value>
-        public static Transform Identity { get { return _identity; } }
+        public static Transform3D Identity { get { return _identity; } }
         /// <summary>
         /// The transform that will flip something along the X axis.
         /// </summary>
         /// <value>Equivalent to `new Transform(Vector3.Left, Vector3.Up, Vector3.Back, Vector3.Zero)`.</value>
-        public static Transform FlipX { get { return _flipX; } }
+        public static Transform3D FlipX { get { return _flipX; } }
         /// <summary>
         /// The transform that will flip something along the Y axis.
         /// </summary>
         /// <value>Equivalent to `new Transform(Vector3.Right, Vector3.Down, Vector3.Back, Vector3.Zero)`.</value>
-        public static Transform FlipY { get { return _flipY; } }
+        public static Transform3D FlipY { get { return _flipY; } }
         /// <summary>
         /// The transform that will flip something along the Z axis.
         /// </summary>
         /// <value>Equivalent to `new Transform(Vector3.Right, Vector3.Up, Vector3.Forward, Vector3.Zero)`.</value>
-        public static Transform FlipZ { get { return _flipZ; } }
+        public static Transform3D FlipZ { get { return _flipZ; } }
 
         /// <summary>
         /// Constructs a transformation matrix from 4 vectors (matrix columns).
@@ -315,7 +315,7 @@ namespace Godot
         /// <param name="column1">The Y vector, or column index 1.</param>
         /// <param name="column2">The Z vector, or column index 2.</param>
         /// <param name="origin">The origin vector, or column index 3.</param>
-        public Transform(Vector3 column0, Vector3 column1, Vector3 column2, Vector3 origin)
+        public Transform3D(Vector3 column0, Vector3 column1, Vector3 column2, Vector3 origin)
         {
             basis = new Basis(column0, column1, column2);
             this.origin = origin;
@@ -326,7 +326,7 @@ namespace Godot
         /// </summary>
         /// <param name="quat">The <see cref="Godot.Quat"/> to create the basis from.</param>
         /// <param name="origin">The origin vector, or column index 3.</param>
-        public Transform(Quat quat, Vector3 origin)
+        public Transform3D(Quat quat, Vector3 origin)
         {
             basis = new Basis(quat);
             this.origin = origin;
@@ -337,40 +337,40 @@ namespace Godot
         /// </summary>
         /// <param name="basis">The <see cref="Godot.Basis"/> to create the basis from.</param>
         /// <param name="origin">The origin vector, or column index 3.</param>
-        public Transform(Basis basis, Vector3 origin)
+        public Transform3D(Basis basis, Vector3 origin)
         {
             this.basis = basis;
             this.origin = origin;
         }
 
-        public static Transform operator *(Transform left, Transform right)
+        public static Transform3D operator *(Transform3D left, Transform3D right)
         {
             left.origin = left.Xform(right.origin);
             left.basis *= right.basis;
             return left;
         }
 
-        public static bool operator ==(Transform left, Transform right)
+        public static bool operator ==(Transform3D left, Transform3D right)
         {
             return left.Equals(right);
         }
 
-        public static bool operator !=(Transform left, Transform right)
+        public static bool operator !=(Transform3D left, Transform3D right)
         {
             return !left.Equals(right);
         }
 
         public override bool Equals(object obj)
         {
-            if (obj is Transform)
+            if (obj is Transform3D)
             {
-                return Equals((Transform)obj);
+                return Equals((Transform3D)obj);
             }
 
             return false;
         }
 
-        public bool Equals(Transform other)
+        public bool Equals(Transform3D other)
         {
             return basis.Equals(other.basis) && origin.Equals(other.origin);
         }
@@ -381,7 +381,7 @@ namespace Godot
         /// </summary>
         /// <param name="other">The other transform to compare.</param>
         /// <returns>Whether or not the matrices are approximately equal.</returns>
-        public bool IsEqualApprox(Transform other)
+        public bool IsEqualApprox(Transform3D other)
         {
             return basis.IsEqualApprox(other.basis) && origin.IsEqualApprox(other.origin);
         }

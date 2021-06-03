@@ -128,7 +128,7 @@ void PhysicsDirectBodyState3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "angular_velocity"), "set_angular_velocity", "get_angular_velocity");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "linear_velocity"), "set_linear_velocity", "get_linear_velocity");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "sleeping"), "set_sleep_state", "is_sleeping");
-	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM, "transform"), "set_transform", "get_transform");
+	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM3D, "transform"), "set_transform", "get_transform");
 }
 
 PhysicsDirectBodyState3D::PhysicsDirectBodyState3D() {}
@@ -156,11 +156,11 @@ RID PhysicsShapeQueryParameters3D::get_shape_rid() const {
 	return shape;
 }
 
-void PhysicsShapeQueryParameters3D::set_transform(const Transform &p_transform) {
+void PhysicsShapeQueryParameters3D::set_transform(const Transform3D &p_transform) {
 	transform = p_transform;
 }
 
-Transform PhysicsShapeQueryParameters3D::get_transform() const {
+Transform3D PhysicsShapeQueryParameters3D::get_transform() const {
 	return transform;
 }
 
@@ -242,7 +242,7 @@ void PhysicsShapeQueryParameters3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "margin", PROPERTY_HINT_RANGE, "0,100,0.01"), "set_margin", "get_margin");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "shape", PROPERTY_HINT_RESOURCE_TYPE, "Shape3D"), "set_shape", "get_shape");
 	ADD_PROPERTY(PropertyInfo(Variant::RID, "shape_rid"), "set_shape_rid", "get_shape_rid");
-	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM, "transform"), "set_transform", "get_transform");
+	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM3D, "transform"), "set_transform", "get_transform");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "collide_with_bodies"), "set_collide_with_bodies", "is_collide_with_bodies_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "collide_with_areas"), "set_collide_with_areas", "is_collide_with_areas_enabled");
 }
@@ -458,7 +458,7 @@ void PhysicsServer3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("area_set_space_override_mode", "area", "mode"), &PhysicsServer3D::area_set_space_override_mode);
 	ClassDB::bind_method(D_METHOD("area_get_space_override_mode", "area"), &PhysicsServer3D::area_get_space_override_mode);
 
-	ClassDB::bind_method(D_METHOD("area_add_shape", "area", "shape", "transform", "disabled"), &PhysicsServer3D::area_add_shape, DEFVAL(Transform()), DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("area_add_shape", "area", "shape", "transform", "disabled"), &PhysicsServer3D::area_add_shape, DEFVAL(Transform3D()), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("area_set_shape", "area", "shape_idx", "shape"), &PhysicsServer3D::area_set_shape);
 	ClassDB::bind_method(D_METHOD("area_set_shape_transform", "area", "shape_idx", "transform"), &PhysicsServer3D::area_set_shape_transform);
 	ClassDB::bind_method(D_METHOD("area_set_shape_disabled", "area", "shape_idx", "disabled"), &PhysicsServer3D::area_set_shape_disabled);
@@ -502,7 +502,7 @@ void PhysicsServer3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("body_set_collision_mask", "body", "mask"), &PhysicsServer3D::body_set_collision_mask);
 	ClassDB::bind_method(D_METHOD("body_get_collision_mask", "body"), &PhysicsServer3D::body_get_collision_mask);
 
-	ClassDB::bind_method(D_METHOD("body_add_shape", "body", "shape", "transform", "disabled"), &PhysicsServer3D::body_add_shape, DEFVAL(Transform()), DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("body_add_shape", "body", "shape", "transform", "disabled"), &PhysicsServer3D::body_add_shape, DEFVAL(Transform3D()), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("body_set_shape", "body", "shape_idx", "shape"), &PhysicsServer3D::body_set_shape);
 	ClassDB::bind_method(D_METHOD("body_set_shape_transform", "body", "shape_idx", "transform"), &PhysicsServer3D::body_set_shape_transform);
 	ClassDB::bind_method(D_METHOD("body_set_shape_disabled", "body", "shape_idx", "disabled"), &PhysicsServer3D::body_set_shape_disabled);

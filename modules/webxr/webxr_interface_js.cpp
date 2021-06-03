@@ -266,7 +266,7 @@ void WebXRInterfaceJS::uninitialize() {
 };
 
 Transform WebXRInterfaceJS::_js_matrix_to_transform(float *p_js_matrix) {
-	Transform transform;
+	Transform3D transform;
 
 	transform.basis.elements[0].x = p_js_matrix[0];
 	transform.basis.elements[1].x = p_js_matrix[1];
@@ -305,8 +305,8 @@ Size2 WebXRInterfaceJS::get_render_targetsize() {
 	return render_targetsize;
 };
 
-Transform WebXRInterfaceJS::get_transform_for_eye(XRInterface::Eyes p_eye, const Transform &p_cam_transform) {
-	Transform transform_for_eye;
+Transform WebXRInterfaceJS::get_transform_for_eye(XRInterface::Eyes p_eye, const Transform3D &p_cam_transform) {
+	Transform3D transform_for_eye;
 
 	XRServer *xr_server = XRServer::get_singleton();
 	ERR_FAIL_NULL_V(xr_server, transform_for_eye);
@@ -399,7 +399,7 @@ void WebXRInterfaceJS::_update_tracker(int p_controller_id) {
 
 		float *tracker_matrix = godot_webxr_get_controller_transform(p_controller_id);
 		if (tracker_matrix) {
-			Transform transform = _js_matrix_to_transform(tracker_matrix);
+			Transform3D transform = _js_matrix_to_transform(tracker_matrix);
 			tracker->set_position(transform.origin);
 			tracker->set_orientation(transform.basis);
 			free(tracker_matrix);

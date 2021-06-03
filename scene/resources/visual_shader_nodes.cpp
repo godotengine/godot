@@ -341,10 +341,10 @@ void VisualShaderNodeVec3Constant::_bind_methods() {
 VisualShaderNodeVec3Constant::VisualShaderNodeVec3Constant() {
 }
 
-////////////// Transform
+////////////// Transform3D
 
 String VisualShaderNodeTransformConstant::get_caption() const {
-	return "Transform";
+	return "Transform3D";
 }
 
 int VisualShaderNodeTransformConstant::get_input_port_count() const {
@@ -372,7 +372,7 @@ String VisualShaderNodeTransformConstant::get_output_port_name(int p_port) const
 }
 
 String VisualShaderNodeTransformConstant::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview) const {
-	Transform t = constant;
+	Transform3D t = constant;
 	t.basis.transpose();
 
 	String code = "\t" + p_output_vars[0] + " = mat4(";
@@ -383,12 +383,12 @@ String VisualShaderNodeTransformConstant::generate_code(Shader::Mode p_mode, Vis
 	return code;
 }
 
-void VisualShaderNodeTransformConstant::set_constant(Transform p_value) {
+void VisualShaderNodeTransformConstant::set_constant(Transform3D p_value) {
 	constant = p_value;
 	emit_changed();
 }
 
-Transform VisualShaderNodeTransformConstant::get_constant() const {
+Transform3D VisualShaderNodeTransformConstant::get_constant() const {
 	return constant;
 }
 
@@ -402,7 +402,7 @@ void VisualShaderNodeTransformConstant::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_constant", "value"), &VisualShaderNodeTransformConstant::set_constant);
 	ClassDB::bind_method(D_METHOD("get_constant"), &VisualShaderNodeTransformConstant::get_constant);
 
-	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM, "constant"), "set_constant", "get_constant");
+	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM3D, "constant"), "set_constant", "get_constant");
 }
 
 VisualShaderNodeTransformConstant::VisualShaderNodeTransformConstant() {
@@ -1901,8 +1901,8 @@ void VisualShaderNodeTransformMult::_bind_methods() {
 }
 
 VisualShaderNodeTransformMult::VisualShaderNodeTransformMult() {
-	set_input_port_default_value(0, Transform());
-	set_input_port_default_value(1, Transform());
+	set_input_port_default_value(0, Transform3D());
+	set_input_port_default_value(1, Transform3D());
 }
 
 ////////////// TransformVec Mult
@@ -1975,7 +1975,7 @@ void VisualShaderNodeTransformVecMult::_bind_methods() {
 }
 
 VisualShaderNodeTransformVecMult::VisualShaderNodeTransformVecMult() {
-	set_input_port_default_value(0, Transform());
+	set_input_port_default_value(0, Transform3D());
 	set_input_port_default_value(1, Vector3());
 }
 
@@ -2496,7 +2496,7 @@ void VisualShaderNodeTransformFunc::_bind_methods() {
 }
 
 VisualShaderNodeTransformFunc::VisualShaderNodeTransformFunc() {
-	set_input_port_default_value(0, Transform());
+	set_input_port_default_value(0, Transform3D());
 }
 
 ////////////// Dot Product
@@ -2611,7 +2611,7 @@ String VisualShaderNodeDeterminant::generate_code(Shader::Mode p_mode, VisualSha
 }
 
 VisualShaderNodeDeterminant::VisualShaderNodeDeterminant() {
-	set_input_port_default_value(0, Transform());
+	set_input_port_default_value(0, Transform3D());
 }
 
 ////////////// Scalar Derivative Function
@@ -3622,7 +3622,7 @@ String VisualShaderNodeTransformDecompose::generate_code(Shader::Mode p_mode, Vi
 }
 
 VisualShaderNodeTransformDecompose::VisualShaderNodeTransformDecompose() {
-	set_input_port_default_value(0, Transform());
+	set_input_port_default_value(0, Transform3D());
 }
 
 ////////////// Float Uniform
@@ -4308,12 +4308,12 @@ bool VisualShaderNodeTransformUniform::is_default_value_enabled() const {
 	return default_value_enabled;
 }
 
-void VisualShaderNodeTransformUniform::set_default_value(const Transform &p_value) {
+void VisualShaderNodeTransformUniform::set_default_value(const Transform3D &p_value) {
 	default_value = p_value;
 	emit_changed();
 }
 
-Transform VisualShaderNodeTransformUniform::get_default_value() const {
+Transform3D VisualShaderNodeTransformUniform::get_default_value() const {
 	return default_value;
 }
 
@@ -4342,7 +4342,7 @@ void VisualShaderNodeTransformUniform::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_default_value"), &VisualShaderNodeTransformUniform::get_default_value);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "default_value_enabled"), "set_default_value_enabled", "is_default_value_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM, "default_value"), "set_default_value", "get_default_value");
+	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM3D, "default_value"), "set_default_value", "get_default_value");
 }
 
 bool VisualShaderNodeTransformUniform::is_show_prop_names() const {
@@ -5025,8 +5025,8 @@ void VisualShaderNodeSwitch::set_op_type(OpType p_op_type) {
 			set_input_port_default_value(2, false);
 			break;
 		case OP_TYPE_TRANSFORM:
-			set_input_port_default_value(1, Transform());
-			set_input_port_default_value(2, Transform());
+			set_input_port_default_value(1, Transform3D());
+			set_input_port_default_value(2, Transform3D());
 			break;
 		default:
 			break;
@@ -5405,8 +5405,8 @@ void VisualShaderNodeCompare::set_comparison_type(ComparisonType p_type) {
 			simple_decl = true;
 			break;
 		case CTYPE_TRANSFORM:
-			set_input_port_default_value(0, Transform());
-			set_input_port_default_value(1, Transform());
+			set_input_port_default_value(0, Transform3D());
+			set_input_port_default_value(1, Transform3D());
 			simple_decl = true;
 			break;
 	}

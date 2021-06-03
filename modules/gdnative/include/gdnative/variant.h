@@ -183,8 +183,8 @@ typedef void (*godot_ptr_utility_function)(void *r_return, const void **p_argume
 #include <gdnative/signal.h>
 #include <gdnative/string.h>
 #include <gdnative/string_name.h>
-#include <gdnative/transform.h>
 #include <gdnative/transform2d.h>
+#include <gdnative/transform_3d.h>
 #include <gdnative/variant.h>
 #include <gdnative/vector2.h>
 #include <gdnative/vector3.h>
@@ -211,7 +211,7 @@ void GDAPI godot_variant_new_plane(godot_variant *r_dest, const godot_plane *p_p
 void GDAPI godot_variant_new_quat(godot_variant *r_dest, const godot_quat *p_quat);
 void GDAPI godot_variant_new_aabb(godot_variant *r_dest, const godot_aabb *p_aabb);
 void GDAPI godot_variant_new_basis(godot_variant *r_dest, const godot_basis *p_basis);
-void GDAPI godot_variant_new_transform(godot_variant *r_dest, const godot_transform *p_trans);
+void GDAPI godot_variant_new_transform3d(godot_variant *r_dest, const godot_transform3d *p_trans);
 void GDAPI godot_variant_new_color(godot_variant *r_dest, const godot_color *p_color);
 void GDAPI godot_variant_new_string_name(godot_variant *r_dest, const godot_string_name *p_s);
 void GDAPI godot_variant_new_node_path(godot_variant *r_dest, const godot_node_path *p_np);
@@ -246,7 +246,7 @@ godot_plane GDAPI godot_variant_as_plane(const godot_variant *p_self);
 godot_quat GDAPI godot_variant_as_quat(const godot_variant *p_self);
 godot_aabb GDAPI godot_variant_as_aabb(const godot_variant *p_self);
 godot_basis GDAPI godot_variant_as_basis(const godot_variant *p_self);
-godot_transform GDAPI godot_variant_as_transform(const godot_variant *p_self);
+godot_transform3d GDAPI godot_variant_as_transform3d(const godot_variant *p_self);
 godot_color GDAPI godot_variant_as_color(const godot_variant *p_self);
 godot_string_name GDAPI godot_variant_as_string_name(const godot_variant *p_self);
 godot_node_path GDAPI godot_variant_as_node_path(const godot_variant *p_self);

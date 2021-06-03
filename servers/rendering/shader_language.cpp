@@ -2941,7 +2941,7 @@ Variant ShaderLanguage::constant_value_to_variant(const Vector<ShaderLanguage::C
 				p[2][0] = p_value[8].real;
 				p[2][1] = p_value[9].real;
 				p[2][2] = p_value[10].real;
-				Transform t = Transform(p, Vector3(p_value[3].real, p_value[7].real, p_value[11].real));
+				Transform3D t = Transform3D(p, Vector3(p_value[3].real, p_value[7].real, p_value[11].real));
 				value = Variant(t);
 				break;
 			}
@@ -3040,7 +3040,7 @@ PropertyInfo ShaderLanguage::uniform_to_property_info(const ShaderNode::Uniform 
 			pi.type = Variant::BASIS;
 			break;
 		case ShaderLanguage::TYPE_MAT4:
-			pi.type = Variant::TRANSFORM;
+			pi.type = Variant::TRANSFORM3D;
 			break;
 		case ShaderLanguage::TYPE_SAMPLER2D:
 		case ShaderLanguage::TYPE_ISAMPLER2D:

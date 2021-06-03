@@ -3459,7 +3459,7 @@ void AnimationTrackEditor::_insert_delay(bool p_create_reset, bool p_create_bezi
 	insert_queue = false;
 }
 
-void AnimationTrackEditor::insert_transform_key(Node3D *p_node, const String &p_sub, const Transform &p_xform) {
+void AnimationTrackEditor::insert_transform_key(Node3D *p_node, const String &p_sub, const Transform3D &p_xform) {
 	if (!keying) {
 		return;
 	}
@@ -3915,7 +3915,7 @@ AnimationTrackEditor::TrackIndices AnimationTrackEditor::_confirm_insert(InsertD
 						h.type == Variant::COLOR ||
 						h.type == Variant::PLANE ||
 						h.type == Variant::TRANSFORM2D ||
-						h.type == Variant::TRANSFORM) {
+						h.type == Variant::TRANSFORM3D) {
 					update_mode = Animation::UPDATE_CONTINUOUS;
 				}
 
@@ -3946,7 +3946,7 @@ AnimationTrackEditor::TrackIndices AnimationTrackEditor::_confirm_insert(InsertD
 
 		} break;
 		case Animation::TYPE_TRANSFORM: {
-			Transform tr = p_id.value;
+			Transform3D tr = p_id.value;
 			Dictionary d;
 			d["location"] = tr.origin;
 			d["scale"] = tr.basis.get_scale();
@@ -4468,7 +4468,7 @@ void AnimationTrackEditor::_new_track_property_selected(String p_name) {
 					h.type == Variant::COLOR ||
 					h.type == Variant::PLANE ||
 					h.type == Variant::TRANSFORM2D ||
-					h.type == Variant::TRANSFORM) {
+					h.type == Variant::TRANSFORM3D) {
 				update_mode = Animation::UPDATE_CONTINUOUS;
 			}
 
@@ -4560,7 +4560,7 @@ void AnimationTrackEditor::_insert_key_from_track(float p_ofs, int p_track) {
 				return;
 			}
 
-			Transform xf = base->get_transform();
+			Transform3D xf = base->get_transform();
 
 			Vector3 loc = xf.get_origin();
 			Vector3 scale = xf.basis.get_scale_local();

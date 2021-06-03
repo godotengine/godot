@@ -413,7 +413,7 @@
 			</return>
 			<argument index="0" name="region" type="RID">
 			</argument>
-			<argument index="1" name="transform" type="Transform">
+			<argument index="1" name="transform" type="Transform3D">
 			</argument>
 			<description>
 				Sets the global transformation for the region.

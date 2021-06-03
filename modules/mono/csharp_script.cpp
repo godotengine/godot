@@ -499,7 +499,7 @@ static String variant_type_to_managed_name(const String &p_var_type_name) {
 		Variant::QUAT,
 		Variant::AABB,
 		Variant::BASIS,
-		Variant::TRANSFORM,
+		Variant::TRANSFORM3D,
 		Variant::COLOR,
 		Variant::STRING_NAME,
 		Variant::NODE_PATH,

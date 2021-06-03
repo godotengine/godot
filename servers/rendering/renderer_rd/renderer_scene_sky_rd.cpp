@@ -878,7 +878,7 @@ void RendererSceneSkyRD::init(RendererStorageRD *p_storage) {
 	}
 }
 
-void RendererSceneSkyRD::setup(RendererSceneEnvironmentRD *p_env, RID p_render_buffers, const CameraMatrix &p_projection, const Transform &p_transform, const Size2i p_screen_size, RendererSceneRenderRD *p_scene_render) {
+void RendererSceneSkyRD::setup(RendererSceneEnvironmentRD *p_env, RID p_render_buffers, const CameraMatrix &p_projection, const Transform3D &p_transform, const Size2i p_screen_size, RendererSceneRenderRD *p_scene_render) {
 	ERR_FAIL_COND(!p_env); // I guess without an environment we also can't have a sky...
 
 	SkyMaterialData *material = nullptr;
@@ -1048,7 +1048,7 @@ void RendererSceneSkyRD::setup(RendererSceneEnvironmentRD *p_env, RID p_render_b
 	RD::get_singleton()->buffer_update(sky_scene_state.uniform_buffer, 0, sizeof(SkySceneState::UBO), &sky_scene_state.ubo);
 }
 
-void RendererSceneSkyRD::update(RendererSceneEnvironmentRD *p_env, const CameraMatrix &p_projection, const Transform &p_transform, double p_time) {
+void RendererSceneSkyRD::update(RendererSceneEnvironmentRD *p_env, const CameraMatrix &p_projection, const Transform3D &p_transform, double p_time) {
 	ERR_FAIL_COND(!p_env);
 
 	Sky *sky = get_sky(p_env->sky);
@@ -1135,7 +1135,7 @@ void RendererSceneSkyRD::update(RendererSceneEnvironmentRD *p_env, const CameraM
 			RD::DrawListID cubemap_draw_list;
 
 			for (int i = 0; i < 6; i++) {
-				Transform local_view;
+				Transform3D local_view;
 				local_view.set_look_at(Vector3(0, 0, 0), view_normals[i], view_up[i]);
 				RID texture_uniform_set = sky->get_textures(storage, SKY_TEXTURE_SET_CUBEMAP_QUARTER_RES, sky_shader.default_shader_rd);
 
@@ -1153,7 +1153,7 @@ void RendererSceneSkyRD::update(RendererSceneEnvironmentRD *p_env, const CameraM
 			RD::DrawListID cubemap_draw_list;
 
 			for (int i = 0; i < 6; i++) {
-				Transform local_view;
+				Transform3D local_view;
 				local_view.set_look_at(Vector3(0, 0, 0), view_normals[i], view_up[i]);
 				RID texture_uniform_set = sky->get_textures(storage, SKY_TEXTURE_SET_CUBEMAP_HALF_RES, sky_shader.default_shader_rd);
 
@@ -1167,7 +1167,7 @@ void RendererSceneSkyRD::update(RendererSceneEnvironmentRD *p_env, const CameraM
 		PipelineCacheRD *pipeline = &shader_data->pipelines[SKY_VERSION_CUBEMAP];
 
 		for (int i = 0; i < 6; i++) {
-			Transform local_view;
+			Transform3D local_view;
 			local_view.set_look_at(Vector3(0, 0, 0), view_normals[i], view_up[i]);
 			RID texture_uniform_set = sky->get_textures(storage, SKY_TEXTURE_SET_CUBEMAP, sky_shader.default_shader_rd);
 
@@ -1213,7 +1213,7 @@ void RendererSceneSkyRD::update(RendererSceneEnvironmentRD *p_env, const CameraM
 	}
 }
 
-void RendererSceneSkyRD::draw(RendererSceneEnvironmentRD *p_env, bool p_can_continue_color, bool p_can_continue_depth, RID p_fb, const CameraMatrix &p_projection, const Transform &p_transform, double p_time) {
+void RendererSceneSkyRD::draw(RendererSceneEnvironmentRD *p_env, bool p_can_continue_color, bool p_can_continue_depth, RID p_fb, const CameraMatrix &p_projection, const Transform3D &p_transform, double p_time) {
 	ERR_FAIL_COND(!p_env);
 
 	Sky *sky = get_sky(p_env->sky);

@@ -1465,13 +1465,13 @@ void Variant::_register_variant_operators() {
 	register_op<OperatorEvaluatorXForm<Vector<Vector2>, Transform2D, Vector<Vector2>>>(Variant::OP_MULTIPLY, Variant::TRANSFORM2D, Variant::PACKED_VECTOR2_ARRAY);
 	register_op<OperatorEvaluatorXFormInv<Vector<Vector2>, Vector<Vector2>, Transform2D>>(Variant::OP_MULTIPLY, Variant::PACKED_VECTOR2_ARRAY, Variant::TRANSFORM2D);
 
-	register_op<OperatorEvaluatorMul<Transform, Transform, Transform>>(Variant::OP_MULTIPLY, Variant::TRANSFORM, Variant::TRANSFORM);
-	register_op<OperatorEvaluatorXForm<Vector3, Transform, Vector3>>(Variant::OP_MULTIPLY, Variant::TRANSFORM, Variant::VECTOR3);
-	register_op<OperatorEvaluatorXFormInv<Vector3, Vector3, Transform>>(Variant::OP_MULTIPLY, Variant::VECTOR3, Variant::TRANSFORM);
-	register_op<OperatorEvaluatorXForm<::AABB, Transform, ::AABB>>(Variant::OP_MULTIPLY, Variant::TRANSFORM, Variant::AABB);
-	register_op<OperatorEvaluatorXFormInv<::AABB, ::AABB, Transform>>(Variant::OP_MULTIPLY, Variant::AABB, Variant::TRANSFORM);
-	register_op<OperatorEvaluatorXForm<Vector<Vector3>, Transform, Vector<Vector3>>>(Variant::OP_MULTIPLY, Variant::TRANSFORM, Variant::PACKED_VECTOR3_ARRAY);
-	register_op<OperatorEvaluatorXFormInv<Vector<Vector3>, Vector<Vector3>, Transform>>(Variant::OP_MULTIPLY, Variant::PACKED_VECTOR3_ARRAY, Variant::TRANSFORM);
+	register_op<OperatorEvaluatorMul<Transform3D, Transform3D, Transform3D>>(Variant::OP_MULTIPLY, Variant::TRANSFORM3D, Variant::TRANSFORM3D);
+	register_op<OperatorEvaluatorXForm<Vector3, Transform3D, Vector3>>(Variant::OP_MULTIPLY, Variant::TRANSFORM3D, Variant::VECTOR3);
+	register_op<OperatorEvaluatorXFormInv<Vector3, Vector3, Transform3D>>(Variant::OP_MULTIPLY, Variant::VECTOR3, Variant::TRANSFORM3D);
+	register_op<OperatorEvaluatorXForm<::AABB, Transform3D, ::AABB>>(Variant::OP_MULTIPLY, Variant::TRANSFORM3D, Variant::AABB);
+	register_op<OperatorEvaluatorXFormInv<::AABB, ::AABB, Transform3D>>(Variant::OP_MULTIPLY, Variant::AABB, Variant::TRANSFORM3D);
+	register_op<OperatorEvaluatorXForm<Vector<Vector3>, Transform3D, Vector<Vector3>>>(Variant::OP_MULTIPLY, Variant::TRANSFORM3D, Variant::PACKED_VECTOR3_ARRAY);
+	register_op<OperatorEvaluatorXFormInv<Vector<Vector3>, Vector<Vector3>, Transform3D>>(Variant::OP_MULTIPLY, Variant::PACKED_VECTOR3_ARRAY, Variant::TRANSFORM3D);
 
 	register_op<OperatorEvaluatorMul<Basis, Basis, Basis>>(Variant::OP_MULTIPLY, Variant::BASIS, Variant::BASIS);
 	register_op<OperatorEvaluatorXForm<Vector3, Basis, Vector3>>(Variant::OP_MULTIPLY, Variant::BASIS, Variant::VECTOR3);
@@ -1547,7 +1547,7 @@ void Variant::_register_variant_operators() {
 	register_op<OperatorEvaluatorStringModT<Quat>>(Variant::OP_MODULE, Variant::STRING, Variant::QUAT);
 	register_op<OperatorEvaluatorStringModT<::AABB>>(Variant::OP_MODULE, Variant::STRING, Variant::AABB);
 	register_op<OperatorEvaluatorStringModT<Basis>>(Variant::OP_MODULE, Variant::STRING, Variant::BASIS);
-	register_op<OperatorEvaluatorStringModT<Transform>>(Variant::OP_MODULE, Variant::STRING, Variant::TRANSFORM);
+	register_op<OperatorEvaluatorStringModT<Transform3D>>(Variant::OP_MODULE, Variant::STRING, Variant::TRANSFORM3D);
 
 	register_op<OperatorEvaluatorStringModT<Color>>(Variant::OP_MODULE, Variant::STRING, Variant::COLOR);
 	register_op<OperatorEvaluatorStringModT<StringName>>(Variant::OP_MODULE, Variant::STRING, Variant::STRING_NAME);
@@ -1615,7 +1615,7 @@ void Variant::_register_variant_operators() {
 	register_op<OperatorEvaluatorEqual<Quat, Quat>>(Variant::OP_EQUAL, Variant::QUAT, Variant::QUAT);
 	register_op<OperatorEvaluatorEqual<::AABB, ::AABB>>(Variant::OP_EQUAL, Variant::AABB, Variant::AABB);
 	register_op<OperatorEvaluatorEqual<Basis, Basis>>(Variant::OP_EQUAL, Variant::BASIS, Variant::BASIS);
-	register_op<OperatorEvaluatorEqual<Transform, Transform>>(Variant::OP_EQUAL, Variant::TRANSFORM, Variant::TRANSFORM);
+	register_op<OperatorEvaluatorEqual<Transform3D, Transform3D>>(Variant::OP_EQUAL, Variant::TRANSFORM3D, Variant::TRANSFORM3D);
 	register_op<OperatorEvaluatorEqual<Color, Color>>(Variant::OP_EQUAL, Variant::COLOR, Variant::COLOR);
 
 	register_op<OperatorEvaluatorEqual<StringName, String>>(Variant::OP_EQUAL, Variant::STRING_NAME, Variant::STRING);
@@ -1661,7 +1661,7 @@ void Variant::_register_variant_operators() {
 	register_op<OperatorEvaluatorNotEqual<Quat, Quat>>(Variant::OP_NOT_EQUAL, Variant::QUAT, Variant::QUAT);
 	register_op<OperatorEvaluatorNotEqual<::AABB, ::AABB>>(Variant::OP_NOT_EQUAL, Variant::AABB, Variant::AABB);
 	register_op<OperatorEvaluatorNotEqual<Basis, Basis>>(Variant::OP_NOT_EQUAL, Variant::BASIS, Variant::BASIS);
-	register_op<OperatorEvaluatorNotEqual<Transform, Transform>>(Variant::OP_NOT_EQUAL, Variant::TRANSFORM, Variant::TRANSFORM);
+	register_op<OperatorEvaluatorNotEqual<Transform3D, Transform3D>>(Variant::OP_NOT_EQUAL, Variant::TRANSFORM3D, Variant::TRANSFORM3D);
 	register_op<OperatorEvaluatorNotEqual<Color, Color>>(Variant::OP_NOT_EQUAL, Variant::COLOR, Variant::COLOR);
 
 	register_op<OperatorEvaluatorNotEqual<StringName, String>>(Variant::OP_NOT_EQUAL, Variant::STRING_NAME, Variant::STRING);
@@ -1852,7 +1852,7 @@ void Variant::_register_variant_operators() {
 	register_op<OperatorEvaluatorInDictionaryHas<Quat>>(Variant::OP_IN, Variant::QUAT, Variant::DICTIONARY);
 	register_op<OperatorEvaluatorInDictionaryHas<::AABB>>(Variant::OP_IN, Variant::AABB, Variant::DICTIONARY);
 	register_op<OperatorEvaluatorInDictionaryHas<Basis>>(Variant::OP_IN, Variant::BASIS, Variant::DICTIONARY);
-	register_op<OperatorEvaluatorInDictionaryHas<Transform>>(Variant::OP_IN, Variant::TRANSFORM, Variant::DICTIONARY);
+	register_op<OperatorEvaluatorInDictionaryHas<Transform3D>>(Variant::OP_IN, Variant::TRANSFORM3D, Variant::DICTIONARY);
 
 	register_op<OperatorEvaluatorInDictionaryHas<Color>>(Variant::OP_IN, Variant::COLOR, Variant::DICTIONARY);
 	register_op<OperatorEvaluatorInDictionaryHas<StringName>>(Variant::OP_IN, Variant::STRING_NAME, Variant::DICTIONARY);
@@ -1889,7 +1889,7 @@ void Variant::_register_variant_operators() {
 	register_op<OperatorEvaluatorInArrayFind<Quat, Array>>(Variant::OP_IN, Variant::QUAT, Variant::ARRAY);
 	register_op<OperatorEvaluatorInArrayFind<::AABB, Array>>(Variant::OP_IN, Variant::AABB, Variant::ARRAY);
 	register_op<OperatorEvaluatorInArrayFind<Basis, Array>>(Variant::OP_IN, Variant::BASIS, Variant::ARRAY);
-	register_op<OperatorEvaluatorInArrayFind<Transform, Array>>(Variant::OP_IN, Variant::TRANSFORM, Variant::ARRAY);
+	register_op<OperatorEvaluatorInArrayFind<Transform3D, Array>>(Variant::OP_IN, Variant::TRANSFORM3D, Variant::ARRAY);
 
 	register_op<OperatorEvaluatorInArrayFind<Color, Array>>(Variant::OP_IN, Variant::COLOR, Variant::ARRAY);
 	register_op<OperatorEvaluatorInArrayFind<StringName, Array>>(Variant::OP_IN, Variant::STRING_NAME, Variant::ARRAY);

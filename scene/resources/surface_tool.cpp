@@ -857,7 +857,7 @@ void SurfaceTool::create_from_blend_shape(const Ref<Mesh> &p_existing, int p_sur
 	_create_list_from_arrays(arr[shape_idx], &vertex_array, &index_array, format);
 }
 
-void SurfaceTool::append_from(const Ref<Mesh> &p_existing, int p_surface, const Transform &p_xform) {
+void SurfaceTool::append_from(const Ref<Mesh> &p_existing, int p_surface, const Transform3D &p_xform) {
 	ERR_FAIL_NULL_MSG(p_existing, "First argument in SurfaceTool::append_from() must be a valid object of type Mesh");
 
 	if (vertex_array.size() == 0) {

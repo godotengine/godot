@@ -31,7 +31,7 @@
 #ifndef PIVOT_TRANSFORM_H
 #define PIVOT_TRANSFORM_H
 
-#include "core/math/transform.h"
+#include "core/math/transform_3d.h"
 #include "core/object/reference.h"
 
 #include "model_abstraction.h"
@@ -85,10 +85,10 @@ struct PivotTransform : Reference, ModelAbstraction {
 		print_verbose("raw post_rotation " + raw_post_rotation * (180 / Math_PI));
 	}
 
-	Transform ComputeGlobalTransform(Transform t) const;
-	Transform ComputeLocalTransform(Transform t) const;
-	Transform ComputeGlobalTransform(Vector3 p_translation, Quat p_rotation, Vector3 p_scaling) const;
-	Transform ComputeLocalTransform(Vector3 p_translation, Quat p_rotation, Vector3 p_scaling) const;
+	Transform3D ComputeGlobalTransform(Transform3D t) const;
+	Transform3D ComputeLocalTransform(Transform3D t) const;
+	Transform3D ComputeGlobalTransform(Vector3 p_translation, Quat p_rotation, Vector3 p_scaling) const;
+	Transform3D ComputeLocalTransform(Vector3 p_translation, Quat p_rotation, Vector3 p_scaling) const;
 
 	/* Extract into xforms and calculate once */
 	void ComputePivotTransform();
@@ -105,10 +105,10 @@ struct PivotTransform : Reference, ModelAbstraction {
 	//Transform chain[TransformationComp_MAXIMUM];
 
 	// cached for later use
-	Transform GlobalTransform = Transform();
-	Transform LocalTransform = Transform();
-	Transform Local_Scaling_Matrix = Transform(); // used for inherit type.
-	Transform GeometricTransform = Transform(); // 3DS max only
+	Transform3D GlobalTransform = Transform3D();
+	Transform3D LocalTransform = Transform3D();
+	Transform3D Local_Scaling_Matrix = Transform3D(); // used for inherit type.
+	Transform3D GeometricTransform = Transform3D(); // 3DS max only
 	FBXDocParser::TransformInheritance inherit_type = FBXDocParser::TransformInheritance_MAX; // maya fbx requires this - sorry <3
 };
 

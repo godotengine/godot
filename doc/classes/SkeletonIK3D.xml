@@ -48,7 +48,7 @@
 		</member>
 		<member name="root_bone" type="StringName" setter="set_root_bone" getter="get_root_bone" default="@&quot;&quot;">
 		</member>
-		<member name="target" type="Transform" setter="set_target_transform" getter="get_target_transform" default="Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0 )">
+		<member name="target" type="Transform3D" setter="set_target_transform" getter="get_target_transform" default="Transform3D( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0 )">
 		</member>
 		<member name="target_node" type="NodePath" setter="set_target_node" getter="get_target_node" default="NodePath(&quot;&quot;)">
 		</member>

@@ -135,9 +135,9 @@ void Skeleton3D::_get_property_list(List<PropertyInfo> *p_list) const {
 		String prep = "bones/" + itos(i) + "/";
 		p_list->push_back(PropertyInfo(Variant::STRING, prep + "name", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR));
 		p_list->push_back(PropertyInfo(Variant::INT, prep + "parent", PROPERTY_HINT_RANGE, "-1," + itos(bones.size() - 1) + ",1", PROPERTY_USAGE_NOEDITOR));
-		p_list->push_back(PropertyInfo(Variant::TRANSFORM, prep + "rest", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR));
+		p_list->push_back(PropertyInfo(Variant::TRANSFORM3D, prep + "rest", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR));
 		p_list->push_back(PropertyInfo(Variant::BOOL, prep + "enabled", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR));
-		p_list->push_back(PropertyInfo(Variant::TRANSFORM, prep + "pose", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR));
+		p_list->push_back(PropertyInfo(Variant::TRANSFORM3D, prep + "pose", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR));
 	}
 }
 
@@ -211,7 +211,7 @@ void Skeleton3D::_notification(int p_what) {
 
 				if (b.disable_rest) {
 					if (b.enabled) {
-						Transform pose = b.pose;
+						Transform3D pose = b.pose;
 						if (b.custom_pose_enable) {
 							pose = b.custom_pose * pose;
 						}
@@ -227,14 +227,14 @@ void Skeleton3D::_notification(int p_what) {
 							b.pose_global = bonesptr[b.parent].pose_global;
 							b.pose_global_no_override = bonesptr[b.parent].pose_global;
 						} else {
-							b.pose_global = Transform();
-							b.pose_global_no_override = Transform();
+							b.pose_global = Transform3D();
+							b.pose_global_no_override = Transform3D();
 						}
 					}
 
 				} else {
 					if (b.enabled) {
-						Transform pose = b.pose;
+						Transform3D pose = b.pose;
 						if (b.custom_pose_enable) {
 							pose = b.custom_pose * pose;
 						}
@@ -368,7 +368,7 @@ void Skeleton3D::clear_bones_global_pose_override() {
 	_make_dirty();
 }
 
-void Skeleton3D::set_bone_global_pose_override(int p_bone, const Transform &p_pose, float p_amount, bool p_persistent) {
+void Skeleton3D::set_bone_global_pose_override(int p_bone, const Transform3D &p_pose, float p_amount, bool p_persistent) {
 	ERR_FAIL_INDEX(p_bone, bones.size());
 	bones.write[p_bone].global_pose_override_amount = p_amount;
 	bones.write[p_bone].global_pose_override = p_pose;
@@ -376,16 +376,16 @@ void Skeleton3D::set_bone_global_pose_override(int p_bone, const Transform &p_po
 	_make_dirty();
 }
 
-Transform Skeleton3D::get_bone_global_pose(int p_bone) const {
-	ERR_FAIL_INDEX_V(p_bone, bones.size(), Transform());
+Transform3D Skeleton3D::get_bone_global_pose(int p_bone) const {
+	ERR_FAIL_INDEX_V(p_bone, bones.size(), Transform3D());
 	if (dirty) {
 		const_cast<Skeleton3D *>(this)->notification(NOTIFICATION_UPDATE_SKELETON);
 	}
 	return bones[p_bone].pose_global;
 }
 
-Transform Skeleton3D::get_bone_global_pose_no_override(int p_bone) const {
-	ERR_FAIL_INDEX_V(p_bone, bones.size(), Transform());
+Transform3D Skeleton3D::get_bone_global_pose_no_override(int p_bone) const {
+	ERR_FAIL_INDEX_V(p_bone, bones.size(), Transform3D());
 	if (dirty) {
 		const_cast<Skeleton3D *>(this)->notification(NOTIFICATION_UPDATE_SKELETON);
 	}
@@ -496,15 +496,14 @@ int Skeleton3D::get_bone_parent(int p_bone) const {
 	return bones[p_bone].parent;
 }
 
-void Skeleton3D::set_bone_rest(int p_bone, const Transform &p_rest) {
+void Skeleton3D::set_bone_rest(int p_bone, const Transform3D &p_rest) {
 	ERR_FAIL_INDEX(p_bone, bones.size());
 
 	bones.write[p_bone].rest = p_rest;
 	_make_dirty();
 }
-
-Transform Skeleton3D::get_bone_rest(int p_bone) const {
-	ERR_FAIL_INDEX_V(p_bone, bones.size(), Transform());
+Transform3D Skeleton3D::get_bone_rest(int p_bone) const {
+	ERR_FAIL_INDEX_V(p_bone, bones.size(), Transform3D());
 
 	return bones[p_bone].rest;
 }
@@ -563,7 +562,7 @@ void Skeleton3D::clear_bones() {
 
 // posing api
 
-void Skeleton3D::set_bone_pose(int p_bone, const Transform &p_pose) {
+void Skeleton3D::set_bone_pose(int p_bone, const Transform3D &p_pose) {
 	ERR_FAIL_INDEX(p_bone, bones.size());
 
 	bones.write[p_bone].pose = p_pose;
@@ -571,24 +570,23 @@ void Skeleton3D::set_bone_pose(int p_bone, const Transform &p_pose) {
 		_make_dirty();
 	}
 }
-
-Transform Skeleton3D::get_bone_pose(int p_bone) const {
-	ERR_FAIL_INDEX_V(p_bone, bones.size(), Transform());
+Transform3D Skeleton3D::get_bone_pose(int p_bone) const {
+	ERR_FAIL_INDEX_V(p_bone, bones.size(), Transform3D());
 	return bones[p_bone].pose;
 }
 
-void Skeleton3D::set_bone_custom_pose(int p_bone, const Transform &p_custom_pose) {
+void Skeleton3D::set_bone_custom_pose(int p_bone, const Transform3D &p_custom_pose) {
 	ERR_FAIL_INDEX(p_bone, bones.size());
 	//ERR_FAIL_COND( !is_inside_scene() );
 
-	bones.write[p_bone].custom_pose_enable = (p_custom_pose != Transform());
+	bones.write[p_bone].custom_pose_enable = (p_custom_pose != Transform3D());
 	bones.write[p_bone].custom_pose = p_custom_pose;
 
 	_make_dirty();
 }
 
-Transform Skeleton3D::get_bone_custom_pose(int p_bone) const {
-	ERR_FAIL_INDEX_V(p_bone, bones.size(), Transform());
+Transform3D Skeleton3D::get_bone_custom_pose(int p_bone) const {
+	ERR_FAIL_INDEX_V(p_bone, bones.size(), Transform3D());
 	return bones[p_bone].custom_pose;
 }
 
@@ -852,11 +850,11 @@ Ref<SkinReference> Skeleton3D::register_skin(const Ref<Skin> &p_skin) {
 }
 
 // helper functions
-Transform Skeleton3D::bone_transform_to_world_transform(Transform p_bone_transform) {
+Transform3D Skeleton3D::bone_transform_to_world_transform(Transform3D p_bone_transform) {
 	return get_global_transform() * p_bone_transform;
 }
 
-Transform Skeleton3D::world_transform_to_bone_transform(Transform p_world_transform) {
+Transform3D Skeleton3D::world_transform_to_bone_transform(Transform3D p_world_transform) {
 	return get_global_transform().affine_inverse() * p_world_transform;
 }
 

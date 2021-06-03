@@ -346,7 +346,7 @@ VehicleWheel3D::VehicleWheel3D() {
 void VehicleBody3D::_update_wheel_transform(VehicleWheel3D &wheel, PhysicsDirectBodyState3D *s) {
 	wheel.m_raycastInfo.m_isInContact = false;
 
-	Transform chassisTrans = s->get_transform();
+	Transform3D chassisTrans = s->get_transform();
 	/*
 	if (interpolatedTransform && (getRigidBody()->getMotionState())) {
 		getRigidBody()->getMotionState()->getWorldTransform(chassisTrans);
@@ -784,7 +784,7 @@ void VehicleBody3D::_update_friction(PhysicsDirectBodyState3D *s) {
 				Vector3 sideImp = m_axle[wheel] * m_sideImpulse[wheel];
 
 #if defined ROLLING_INFLUENCE_FIX // fix. It only worked if car's up was along Y - VT.
-				Vector3 vChassisWorldUp = s->get_transform().basis.transposed()[1]; //getRigidBody()->getCenterOfMassTransform().getBasis().getColumn(m_indexUpAxis);
+				Vector3 vChassisWorldUp = s->get_transform().basis.transposed()[1]; //getRigidBody()->getCenterOfMassTransform3D().getBasis().getColumn(m_indexUpAxis);
 				rel_pos -= vChassisWorldUp * (vChassisWorldUp.dot(rel_pos) * (1.f - wheelInfo.m_rollInfluence));
 #else
 				rel_pos[1] *= wheelInfo.m_rollInfluence; //?
@@ -841,7 +841,7 @@ void VehicleBody3D::_direct_state_changed(Object *p_state) {
 		Vector3 vel = state->get_linear_velocity() + (state->get_angular_velocity()).cross(relpos); // * mPos);
 
 		if (wheel.m_raycastInfo.m_isInContact) {
-			const Transform &chassisWorldTransform = state->get_transform();
+			const Transform3D &chassisWorldTransform = state->get_transform();
 
 			Vector3 fwd(
 					chassisWorldTransform.basis[0][Vector3::AXIS_Z],
