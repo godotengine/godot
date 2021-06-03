@@ -92,6 +92,7 @@
 			</argument>
 			<description>
 				Registers a new export plugin. Export plugins are used when the project is being exported. See [EditorExportPlugin] for more information.
+				See [method add_inspector_plugin] for an example of how to register a plugin.
 			</description>
 		</method>
 		<method name="add_import_plugin">
@@ -100,6 +101,9 @@
 			<argument index="0" name="importer" type="EditorImportPlugin">
 			</argument>
 			<description>
+				Registers a new import plugin. Import plugins are used to add a new [Resource] which can be imported. See [EditorImportPlugin] for more information.
+				[b]Note:[/b] If you want to import custom 3d files have a look at [method add_scene_import_plugin] instead.
+				See [method add_inspector_plugin] for an example of how to register a plugin.
 			</description>
 		</method>
 		<method name="add_inspector_plugin">
@@ -108,6 +112,20 @@
 			<argument index="0" name="plugin" type="EditorInspectorPlugin">
 			</argument>
 			<description>
+				Registers a new inspector plugin. Inspector plugins are used to extend the default inspector. See [EditorInspectorPlugin] for more information.
+				[b]Note:[/b] Always use [method remove_inspector_plugin] to remove the [code]EditorInspectorPlugin[/code] if the [code]EditorPlugin[/code] is disabled.
+				[codeblocks]
+				[gdscript]
+				const MyInspectorPlugin = preload("res://addons/your_addon/path/to/your/script.gd")
+				var inspector_plugin = MyInspectorPlugin.new()
+
+				func _enter_tree():
+				    add_inspector_plugin(inspector_plugin)
+
+				func _exit_tree():
+				    remove_inspector_plugin(inspector_plugin)
+				[/gdscript]
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="add_scene_import_plugin">
@@ -116,6 +134,7 @@
 			<argument index="0" name="scene_importer" type="EditorSceneImporter">
 			</argument>
 			<description>
+				Registers a new scene importer. Scene importers can import custom 3d formats as scenes. See [EditorImportPlugin] for more information.
 			</description>
 		</method>
 		<method name="add_spatial_gizmo_plugin">
@@ -124,6 +143,8 @@
 			<argument index="0" name="plugin" type="EditorNode3DGizmoPlugin">
 			</argument>
 			<description>
+				Registers a new gizmo plugin. Gizmo plugins are used to add custom gizmos to a [Node3D]. See [EditorNode3DGizmoPlugin] for more information.
+				See [method add_inspector_plugin] for an example of how to register a plugin.
 			</description>
 		</method>
 		<method name="add_tool_menu_item">
@@ -580,6 +601,7 @@
 			<argument index="0" name="plugin" type="EditorExportPlugin">
 			</argument>
 			<description>
+				Removes an export plugin registered by [method add_export_plugin].
 			</description>
 		</method>
 		<method name="remove_import_plugin">
@@ -588,6 +610,7 @@
 			<argument index="0" name="importer" type="EditorImportPlugin">
 			</argument>
 			<description>
+				Removes an import plugin registered by [method add_import_plugin].
 			</description>
 		</method>
 		<method name="remove_inspector_plugin">
@@ -596,6 +619,7 @@
 			<argument index="0" name="plugin" type="EditorInspectorPlugin">
 			</argument>
 			<description>
+				Removes an inspector plugin registered by [method add_import_plugin]
 			</description>
 		</method>
 		<method name="remove_scene_import_plugin">
@@ -604,6 +628,7 @@
 			<argument index="0" name="scene_importer" type="EditorSceneImporter">
 			</argument>
 			<description>
+				Removes a scene importer registered by [method add_scene_import_plugin].
 			</description>
 		</method>
 		<method name="remove_spatial_gizmo_plugin">
@@ -612,6 +637,7 @@
 			<argument index="0" name="plugin" type="EditorNode3DGizmoPlugin">
 			</argument>
 			<description>
+				Removes a gizmo plugin registered by [method add_spatial_gizmo_plugin].
 			</description>
 		</method>
 		<method name="remove_tool_menu_item">
@@ -629,7 +655,7 @@
 			<argument index="0" name="parser" type="EditorTranslationParserPlugin">
 			</argument>
 			<description>
-				Removes a registered custom translation parser plugin.
+				Removes a custom translation parser plugin registered by [method add_translation_parser_plugin].
 			</description>
 		</method>
 		<method name="remove_undo_redo_inspector_hook_callback">
