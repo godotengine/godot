@@ -413,6 +413,7 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id) {
 			node->add_child(comment_label);
 			comment_label->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 			comment_label->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+			comment_label->add_theme_font_override("font", VisualShaderEditor::get_singleton()->get_theme_font("main", "EditorFonts"));
 			comment_label->set_text(comment_node->get_description());
 		}
 	}
@@ -672,12 +673,14 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id) {
 					Label *label = memnew(Label);
 					label->set_text(name_left);
 					label->add_theme_style_override("normal", label_style); //more compact
+					label->add_theme_font_override("font", VisualShaderEditor::get_singleton()->get_theme_font("main", "EditorFonts"));
 					hb->add_child(label);
 
 					if (vsnode->get_input_port_default_hint(i) != "" && !port_left_used) {
 						Label *hint_label = memnew(Label);
 						hint_label->set_text("[" + vsnode->get_input_port_default_hint(i) + "]");
 						hint_label->add_theme_color_override("font_color", VisualShaderEditor::get_singleton()->get_theme_color("font_readonly_color", "TextEdit"));
+						hint_label->add_theme_font_override("font", VisualShaderEditor::get_singleton()->get_theme_font("main", "EditorFonts"));
 						hint_label->add_theme_style_override("normal", label_style);
 						hb->add_child(hint_label);
 					}
@@ -718,6 +721,7 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id) {
 					Label *label = memnew(Label);
 					label->set_text(name_right);
 					label->add_theme_style_override("normal", label_style); //more compact
+					label->add_theme_font_override("font", VisualShaderEditor::get_singleton()->get_theme_font("main", "EditorFonts"));
 					hb->add_child(label);
 				}
 			}
@@ -805,6 +809,8 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id) {
 	if (error != String()) {
 		Label *error_label = memnew(Label);
 		error_label->add_theme_color_override("font_color", VisualShaderEditor::get_singleton()->get_theme_color("error_color", "Editor"));
+		error_label->add_theme_font_size_override("font_size", VisualShaderEditor::get_singleton()->get_theme_font_size("status_source_size", "EditorFonts"));
+		error_label->add_theme_font_override("font", VisualShaderEditor::get_singleton()->get_theme_font("status_source", "EditorFonts"));
 		error_label->set_text(error);
 		node->add_child(error_label);
 	}
@@ -4613,6 +4619,7 @@ public:
 			prop_name_str = prop_name_str.capitalize() + ":";
 			prop_name->set_text(prop_name_str);
 			prop_name->set_visible(false);
+			prop_name->add_theme_font_override("font", get_theme_font("main", "EditorFonts"));
 			hbox->add_child(prop_name);
 			prop_names.push_back(prop_name);
 

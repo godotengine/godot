@@ -853,7 +853,9 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 					hbc->add_child(rmbtn);
 					rmbtn->connect("pressed", callable_mp(this, &VisualScriptEditor::_remove_input_port), varray(E->get(), i), CONNECT_DEFERRED);
 				} else {
-					hbc->add_child(memnew(Label(left_name)));
+					Label *label = memnew(Label(left_name));
+					hbc->add_child(label);
+					label->add_theme_font_override("font", get_theme_font("main", "EditorFonts"));
 				}
 
 				if (left_type != Variant::NIL && !script->is_input_value_port_connected(E->get(), i)) {
@@ -932,7 +934,9 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 						hbc->add_child(memnew(Label(right_name)));
 					}
 				} else {
-					hbc->add_child(memnew(Label(right_name)));
+					Label *label = memnew(Label(right_name));
+					hbc->add_child(label);
+					label->add_theme_font_override("font", get_theme_font("main", "EditorFonts"));
 				}
 
 				Ref<Texture2D> t;
@@ -4340,6 +4344,7 @@ VisualScriptEditor::VisualScriptEditor() {
 
 	Label *base_lbl = memnew(Label);
 	base_lbl->set_text(TTR("Change Base Type:") + " ");
+	base_lbl->add_theme_font_override("font", get_theme_font("main", "EditorFonts"));
 	graph_hbc->add_child(base_lbl);
 
 	base_type_select = memnew(Button);

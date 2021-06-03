@@ -1310,6 +1310,8 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_icon("resizer", "GraphNode", theme->get_icon("GuiResizer", "EditorIcons"));
 	theme->set_icon("port", "GraphNode", theme->get_icon("GuiGraphNodePort", "EditorIcons"));
 
+	theme->set_font("title_font", "GraphNode", theme->get_font("title", "EditorFonts"));
+
 	// GridContainer
 	theme->set_constant("vseparation", "GridContainer", Math::round(widget_default_margin.y - 2 * EDSCALE));
 
