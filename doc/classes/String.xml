@@ -275,7 +275,7 @@
 				Returns a copy of the string with the substring [code]what[/code] inserted at the given position.
 			</description>
 		</method>
-		<method name="is_abs_path" qualifiers="const">
+		<method name="is_absolute_path" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>

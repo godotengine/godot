@@ -2169,7 +2169,7 @@ String GDScriptLanguage::get_global_class_name(const String &p_path, String *r_b
 	if (err == OK) {
 		const GDScriptParser::ClassNode *c = parser.get_tree();
 		if (r_icon_path) {
-			if (c->icon_path.is_empty() || c->icon_path.is_abs_path()) {
+			if (c->icon_path.is_empty() || c->icon_path.is_absolute_path()) {
 				*r_icon_path = c->icon_path;
 			} else if (c->icon_path.is_rel_path()) {
 				*r_icon_path = p_path.get_base_dir().plus_file(c->icon_path).simplify_path();

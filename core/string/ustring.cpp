@@ -3786,7 +3786,7 @@ String String::humanize_size(uint64_t p_size) {
 	return String::num(p_size / divisor).pad_decimals(digits) + " " + prefixes[prefix_idx];
 }
 
-bool String::is_abs_path() const {
+bool String::is_absolute_path() const {
 	if (length() > 1) {
 		return (operator[](0) == '/' || operator[](0) == '\\' || find(":/") != -1 || find(":\\") != -1);
 	} else if ((length()) == 1) {
@@ -4396,7 +4396,7 @@ bool String::is_resource_file() const {
 }
 
 bool String::is_rel_path() const {
-	return !is_abs_path();
+	return !is_absolute_path();
 }
 
 String String::get_base_dir() const {
