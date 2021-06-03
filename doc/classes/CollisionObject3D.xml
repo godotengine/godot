@@ -18,6 +18,7 @@
 			<argument index="4" name="shape_idx" type="int" />
 			<description>
 				Receives unhandled [InputEvent]s. [code]position[/code] is the location in world space of the mouse pointer on the surface of the shape with index [code]shape_idx[/code] and [code]normal[/code] is the normal vector of the surface at that point. Connect to the [signal input_event] signal to easily pick up these events.
+				[b]Note:[/b] [method _input_event] requires [member input_ray_pickable] to be [code]true[/code] and at least one [member collision_layer] bit to be set.
 			</description>
 		</method>
 		<method name="create_shape_owner">
@@ -199,12 +200,14 @@
 		</signal>
 		<signal name="mouse_entered">
 			<description>
-				Emitted when the mouse pointer enters any of this object's shapes.
+				Emitted when the mouse pointer enters any of this object's shapes. Requires [member input_ray_pickable] to be [code]true[/code] and at least one [member collision_layer] bit to be set.
+				[b]Note:[/b] Due to the lack of continuous collision detection, this signal may not be emitted in the expected order if the mouse moves fast enough and the [CollisionObject2D]'s area is small. This signal may also not be emitted if another [CollisionObject2D] is overlapping the [CollisionObject2D] in question.
 			</description>
 		</signal>
 		<signal name="mouse_exited">
 			<description>
-				Emitted when the mouse pointer exits all this object's shapes.
+				Emitted when the mouse pointer exits all this object's shapes. Requires [member input_ray_pickable] to be [code]true[/code] and at least one [member collision_layer] bit to be set.
+				[b]Note:[/b] Due to the lack of continuous collision detection, this signal may not be emitted in the expected order if the mouse moves fast enough and the [CollisionObject2D]'s area is small. This signal may also not be emitted if another [CollisionObject2D] is overlapping the [CollisionObject2D] in question.
 			</description>
 		</signal>
 	</signals>
