@@ -38,9 +38,6 @@ bool EditorPaths::are_paths_valid() const {
 	return paths_valid;
 }
 
-String EditorPaths::get_settings_dir() const {
-	return settings_dir;
-}
 String EditorPaths::get_data_dir() const {
 	return data_dir;
 }
@@ -67,7 +64,6 @@ void EditorPaths::free() {
 }
 
 void EditorPaths::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("get_settings_dir"), &EditorPaths::get_settings_dir);
 	ClassDB::bind_method(D_METHOD("get_data_dir"), &EditorPaths::get_data_dir);
 	ClassDB::bind_method(D_METHOD("get_config_dir"), &EditorPaths::get_config_dir);
 	ClassDB::bind_method(D_METHOD("get_cache_dir"), &EditorPaths::get_cache_dir);

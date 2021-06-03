@@ -1264,11 +1264,11 @@ String EditorSettings::get_project_settings_dir() const {
 }
 
 String EditorSettings::get_text_editor_themes_dir() const {
-	return EditorPaths::get_singleton()->get_settings_dir().plus_file("text_editor_themes");
+	return EditorPaths::get_singleton()->get_config_dir().plus_file("text_editor_themes");
 }
 
 String EditorSettings::get_script_templates_dir() const {
-	return EditorPaths::get_singleton()->get_settings_dir().plus_file("script_templates");
+	return EditorPaths::get_singleton()->get_config_dir().plus_file("script_templates");
 }
 
 String EditorSettings::get_project_script_templates_dir() const {
@@ -1278,7 +1278,7 @@ String EditorSettings::get_project_script_templates_dir() const {
 // Cache directory
 
 String EditorSettings::get_feature_profiles_dir() const {
-	return EditorPaths::get_singleton()->get_settings_dir().plus_file("feature_profiles");
+	return EditorPaths::get_singleton()->get_config_dir().plus_file("feature_profiles");
 }
 
 // Metadata
@@ -1505,7 +1505,7 @@ Vector<String> EditorSettings::get_script_templates(const String &p_extension, c
 }
 
 String EditorSettings::get_editor_layouts_config() const {
-	return EditorPaths::get_singleton()->get_settings_dir().plus_file("editor_layouts.cfg");
+	return EditorPaths::get_singleton()->get_config_dir().plus_file("editor_layouts.cfg");
 }
 
 // Shortcuts

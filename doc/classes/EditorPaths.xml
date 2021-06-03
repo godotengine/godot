@@ -31,12 +31,6 @@
 			<description>
 			</description>
 		</method>
-		<method name="get_settings_dir" qualifiers="const">
-			<return type="String">
-			</return>
-			<description>
-			</description>
-		</method>
 		<method name="is_self_contained" qualifiers="const">
 			<return type="bool">
 			</return>
