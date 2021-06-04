@@ -193,7 +193,7 @@ private:
 		Vector3 scale;
 
 		TrackCacheTransform() {
-			type = Animation::TYPE_TRANSFORM;
+			type = Animation::TYPE_TRANSFORM3D;
 		}
 	};
 

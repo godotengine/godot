@@ -727,8 +727,8 @@
 		<constant name="TYPE_VALUE" value="0" enum="TrackType">
 			Value tracks set values in node properties, but only those which can be Interpolated.
 		</constant>
-		<constant name="TYPE_TRANSFORM" value="1" enum="TrackType">
-			Transform tracks are used to change node local transforms or skeleton pose bones. Transitions are interpolated.
+		<constant name="TYPE_TRANSFORM3D" value="1" enum="TrackType">
+			Transform3D tracks are used to change node local transforms or skeleton pose bones of 3D nodes. Transitions are interpolated.
 		</constant>
 		<constant name="TYPE_METHOD" value="2" enum="TrackType">
 			Method tracks call functions with given arguments per key.

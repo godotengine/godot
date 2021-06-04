@@ -1461,7 +1461,7 @@ void ColladaImport::create_animation(int p_clip, bool p_make_tracks_in_all_bones
 			continue;
 		}
 
-		animation->add_track(Animation::TYPE_TRANSFORM);
+		animation->add_track(Animation::TYPE_TRANSFORM3D);
 		int track = animation->get_track_count() - 1;
 		animation->track_set_path(track, path);
 		animation->track_set_imported(track, true); //helps merging later
@@ -1584,7 +1584,7 @@ void ColladaImport::create_animation(int p_clip, bool p_make_tracks_in_all_bones
 				continue;
 			}
 
-			animation->add_track(Animation::TYPE_TRANSFORM);
+			animation->add_track(Animation::TYPE_TRANSFORM3D);
 			int track = animation->get_track_count() - 1;
 			animation->track_set_path(track, path);
 			animation->track_set_imported(track, true); //helps merging later

@@ -80,10 +80,10 @@ void AnimationCache::_update_cache() {
 
 		Ref<Resource> res;
 
-		if (animation->track_get_type(i) == Animation::TYPE_TRANSFORM) {
+		if (animation->track_get_type(i) == Animation::TYPE_TRANSFORM3D) {
 			if (np.get_subname_count() > 1) {
 				path_cache.push_back(Path());
-				ERR_CONTINUE_MSG(animation->track_get_type(i) == Animation::TYPE_TRANSFORM, "Transform tracks can't have a subpath '" + np + "'.");
+				ERR_CONTINUE_MSG(animation->track_get_type(i) == Animation::TYPE_TRANSFORM3D, "Transform tracks can't have a subpath '" + np + "'.");
 			}
 
 			Node3D *sp = Object::cast_to<Node3D>(node);
@@ -231,7 +231,7 @@ void AnimationCache::set_all(float p_time, float p_delta) {
 	int tc = animation->get_track_count();
 	for (int i = 0; i < tc; i++) {
 		switch (animation->track_get_type(i)) {
-			case Animation::TYPE_TRANSFORM: {
+			case Animation::TYPE_TRANSFORM3D: {
 				Vector3 loc, scale;
 				Quat rot;
 				animation->transform_track_interpolate(i, p_time, &loc, &rot, &scale);

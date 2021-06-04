@@ -279,7 +279,7 @@ void AnimationPlayer::_ensure_node_caches(AnimationData *p_anim, Node *p_root_ov
 		p_anim->node_cache[i]->node = child;
 		p_anim->node_cache[i]->resource = resource;
 		p_anim->node_cache[i]->node_2d = Object::cast_to<Node2D>(child);
-		if (a->track_get_type(i) == Animation::TYPE_TRANSFORM) {
+		if (a->track_get_type(i) == Animation::TYPE_TRANSFORM3D) {
 			// special cases and caches for transform tracks
 
 			// cache spatial
@@ -366,7 +366,7 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, float 
 		}
 
 		switch (a->track_get_type(i)) {
-			case Animation::TYPE_TRANSFORM: {
+			case Animation::TYPE_TRANSFORM3D: {
 				if (!nc->spatial) {
 					continue;
 				}

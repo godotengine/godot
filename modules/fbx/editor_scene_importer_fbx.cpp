@@ -1011,7 +1011,7 @@ Node3D *EditorSceneImporterFBX::_generate_scene(
 						// track count is 5.
 						// next track id is 5.
 						const uint64_t target_id = track->key();
-						int track_idx = animation->add_track(Animation::TYPE_TRANSFORM);
+						int track_idx = animation->add_track(Animation::TYPE_TRANSFORM3D);
 
 						// animation->track_set_path(track_idx, node_path);
 						Ref<FBXBone> bone;

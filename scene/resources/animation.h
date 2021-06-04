@@ -42,7 +42,7 @@ class Animation : public Resource {
 public:
 	enum TrackType {
 		TYPE_VALUE, ///< Set a value in a property, can be interpolated.
-		TYPE_TRANSFORM, ///< Transform a node or a bone.
+		TYPE_TRANSFORM3D, ///< Transform a node or a bone.
 		TYPE_METHOD, ///< Call any method on a specific node.
 		TYPE_BEZIER, ///< Bezier curve
 		TYPE_AUDIO,
@@ -97,7 +97,7 @@ private:
 	struct TransformTrack : public Track {
 		Vector<TKey<TransformKey>> transforms;
 
-		TransformTrack() { type = TYPE_TRANSFORM; }
+		TransformTrack() { type = TYPE_TRANSFORM3D; }
 	};
 
 	/* PROPERTY VALUE TRACK */
