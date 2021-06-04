@@ -55,11 +55,15 @@ class EditorNetworkProfiler;
 class EditorPerformanceProfiler;
 class SceneDebuggerTree;
 class EditorDebuggerPlugin;
+class DebugAdapterProtocol;
+class DebugAdapterParser;
 
 class ScriptEditorDebugger : public MarginContainer {
 	GDCLASS(ScriptEditorDebugger, MarginContainer);
 
 	friend class EditorDebuggerNode;
+	friend class DebugAdapterProtocol;
+	friend class DebugAdapterParser;
 
 private:
 	enum MessageType {
@@ -235,6 +239,8 @@ public:
 	String get_stack_script_file() const;
 	int get_stack_script_line() const;
 	int get_stack_script_frame() const;
+
+	bool request_stack_dump(const int &p_frame);
 
 	void update_tabs();
 	void clear_style();

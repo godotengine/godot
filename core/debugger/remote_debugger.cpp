@@ -706,6 +706,8 @@ void RemoteDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 	Array msg;
 	msg.push_back(p_can_continue);
 	msg.push_back(error_str);
+	ERR_FAIL_COND(!script_lang);
+	msg.push_back(script_lang->debug_get_stack_level_count() > 0);
 	send_message("debug_enter", msg);
 
 	servers_profiler->skip_profile_frame = true; // Avoid frame time spike in debug.
@@ -754,7 +756,6 @@ void RemoteDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 				break;
 
 			} else if (command == "get_stack_dump") {
-				ERR_FAIL_COND(!script_lang);
 				DebuggerMarshalls::ScriptStackDump dump;
 				int slc = script_lang->debug_get_stack_level_count();
 				for (int i = 0; i < slc; i++) {
@@ -790,7 +791,9 @@ void RemoteDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 				script_lang->debug_get_globals(&globals, &globals_vals);
 				ERR_FAIL_COND(globals.size() != globals_vals.size());
 
-				send_message("stack_frame_vars", Array());
+				Array var_size;
+				var_size.push_back(local_vals.size() + member_vals.size() + globals_vals.size());
+				send_message("stack_frame_vars", var_size);
 				_send_stack_vars(locals, local_vals, 0);
 				_send_stack_vars(members, member_vals, 1);
 				_send_stack_vars(globals, globals_vals, 2);
