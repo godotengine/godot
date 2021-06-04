@@ -37,6 +37,7 @@
 #include "core/string/ustring.h"
 #include "core/version.h"
 #include "core/version_hash.gen.h"
+#include "editor/debugger/debug_adapter/debug_adapter_protocol.h"
 #include "editor/debugger/editor_network_profiler.h"
 #include "editor/debugger/editor_performance_profiler.h"
 #include "editor/debugger/editor_profiler.h"
@@ -298,15 +299,18 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 	if (p_msg == "debug_enter") {
 		_put_msg("get_stack_dump", Array());
 
-		ERR_FAIL_COND(p_data.size() != 2);
+		ERR_FAIL_COND(p_data.size() != 3);
 		bool can_continue = p_data[0];
 		String error = p_data[1];
+		bool has_stackdump = p_data[2];
 		breaked = true;
 		can_debug = can_continue;
 		_update_buttons_state();
 		_set_reason_text(error, MESSAGE_ERROR);
-		emit_signal(SNAME("breaked"), true, can_continue);
-		DisplayServer::get_singleton()->window_move_to_foreground();
+		emit_signal(SNAME("breaked"), true, can_continue, error, has_stackdump);
+		if (is_move_to_foreground()) {
+			DisplayServer::get_singleton()->window_move_to_foreground();
+		}
 		if (error != "") {
 			tabs->set_current_tab(0);
 		}
@@ -319,7 +323,7 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 		_clear_execution();
 		_update_buttons_state();
 		_set_reason_text(TTR("Execution resumed."), MESSAGE_SUCCESS);
-		emit_signal(SNAME("breaked"), false, false);
+		emit_signal(SNAME("breaked"), false, false, "", false);
 		profiler->set_enabled(true);
 		profiler->disable_seeking();
 	} else if (p_msg == "set_pid") {
@@ -373,6 +377,8 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 		inspector->clear_stack_variables();
 		TreeItem *r = stack_dump->create_item();
 
+		Array stack_dump_info;
+
 		for (int i = 0; i < stack.frames.size(); i++) {
 			TreeItem *s = stack_dump->create_item(r);
 			Dictionary d;
@@ -380,6 +386,7 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 			d["file"] = stack.frames[i].file;
 			d["function"] = stack.frames[i].func;
 			d["line"] = stack.frames[i].line;
+			stack_dump_info.push_back(d);
 			s->set_metadata(0, d);
 
 			String line = itos(i) + " - " + String(d["file"]) + ":" + itos(d["line"]) + " - at function: " + d["function"];
@@ -389,11 +396,15 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 				s->select(0);
 			}
 		}
+		emit_signal("stack_dump", stack_dump_info);
 	} else if (p_msg == "stack_frame_vars") {
 		inspector->clear_stack_variables();
+		ERR_FAIL_COND(p_data.size() != 1);
+		emit_signal("stack_frame_vars", p_data[0]);
 
 	} else if (p_msg == "stack_frame_var") {
 		inspector->add_stack_variable(p_data);
+		emit_signal("stack_frame_var", p_data);
 
 	} else if (p_msg == "output") {
 		ERR_FAIL_COND(p_data.size() != 2);
@@ -422,6 +433,7 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 				} break;
 			}
 			EditorNode::get_log()->add_message(output_strings[i], msg_type);
+			emit_signal("output", output_strings[i]);
 		}
 	} else if (p_msg == "performance:profile_frame") {
 		Vector<float> frame_data;
@@ -963,11 +975,7 @@ void ScriptEditorDebugger::_stack_dump_frame_selected() {
 
 	int frame = get_stack_script_frame();
 
-	if (is_session_active() && frame >= 0) {
-		Array msg;
-		msg.push_back(frame);
-		_put_msg("get_stack_frame_vars", msg);
-	} else {
+	if (!request_stack_dump(frame)) {
 		inspector->edit(nullptr);
 	}
 }
@@ -1130,6 +1138,14 @@ void ScriptEditorDebugger::_property_changed(Object *p_base, const StringName &p
 	}
 }
 
+bool ScriptEditorDebugger::is_move_to_foreground() const {
+	return move_to_foreground;
+}
+
+void ScriptEditorDebugger::set_move_to_foreground(const bool &p_move_to_foreground) {
+	move_to_foreground = p_move_to_foreground;
+}
+
 String ScriptEditorDebugger::get_stack_script_file() const {
 	TreeItem *ti = stack_dump->get_selected();
 	if (!ti) {
@@ -1155,6 +1171,15 @@ int ScriptEditorDebugger::get_stack_script_frame() const {
 	}
 	Dictionary d = ti->get_metadata(0);
 	return d["frame"];
+}
+
+bool ScriptEditorDebugger::request_stack_dump(const int &p_frame) {
+	ERR_FAIL_COND_V(!is_session_active() || p_frame < 0, false);
+
+	Array msg;
+	msg.push_back(p_frame);
+	_put_msg("get_stack_frame_vars", msg);
+	return true;
 }
 
 void ScriptEditorDebugger::set_live_debugging(bool p_enable) {
@@ -1469,11 +1494,15 @@ void ScriptEditorDebugger::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("error_selected", PropertyInfo(Variant::INT, "error")));
 	ADD_SIGNAL(MethodInfo("set_execution", PropertyInfo("script"), PropertyInfo(Variant::INT, "line")));
 	ADD_SIGNAL(MethodInfo("clear_execution", PropertyInfo("script")));
-	ADD_SIGNAL(MethodInfo("breaked", PropertyInfo(Variant::BOOL, "reallydid"), PropertyInfo(Variant::BOOL, "can_debug")));
+	ADD_SIGNAL(MethodInfo("breaked", PropertyInfo(Variant::BOOL, "reallydid"), PropertyInfo(Variant::BOOL, "can_debug"), PropertyInfo(Variant::STRING, "reason"), PropertyInfo(Variant::BOOL, "has_stackdump")));
 	ADD_SIGNAL(MethodInfo("remote_object_requested", PropertyInfo(Variant::INT, "id")));
 	ADD_SIGNAL(MethodInfo("remote_object_updated", PropertyInfo(Variant::INT, "id")));
 	ADD_SIGNAL(MethodInfo("remote_object_property_updated", PropertyInfo(Variant::INT, "id"), PropertyInfo(Variant::STRING, "property")));
 	ADD_SIGNAL(MethodInfo("remote_tree_updated"));
+	ADD_SIGNAL(MethodInfo("output"));
+	ADD_SIGNAL(MethodInfo("stack_dump", PropertyInfo(Variant::ARRAY, "stack_dump")));
+	ADD_SIGNAL(MethodInfo("stack_frame_vars", PropertyInfo(Variant::INT, "num_vars")));
+	ADD_SIGNAL(MethodInfo("stack_frame_var", PropertyInfo(Variant::ARRAY, "data")));
 }
 
 void ScriptEditorDebugger::add_debugger_plugin(const Ref<Script> &p_script) {
