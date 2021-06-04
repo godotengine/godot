@@ -385,6 +385,15 @@ void Object::set(const StringName &p_name, const Variant &p_value, bool *r_valid
 		}
 	}
 
+	if (_extension && _extension->set) {
+		if (_extension->set(_extension_instance, &p_name, &p_value)) {
+			if (r_valid) {
+				*r_valid = true;
+			}
+			return;
+		}
+	}
+
 	//try built-in setgetter
 	{
 		if (ClassDB::set_property(this, p_name, p_value, r_valid)) {
@@ -444,6 +453,15 @@ Variant Object::get(const StringName &p_name, bool *r_valid) const {
 
 	if (script_instance) {
 		if (script_instance->get(p_name, ret)) {
+			if (r_valid) {
+				*r_valid = true;
+			}
+			return ret;
+		}
+	}
+
+	if (_extension && _extension->get) {
+		if (_extension->get(_extension_instance, &p_name, &ret)) {
 			if (r_valid) {
 				*r_valid = true;
 			}
@@ -595,6 +613,17 @@ void Object::get_property_list(List<PropertyInfo> *p_list, bool p_reversed) cons
 	}
 
 	_get_property_listv(p_list, p_reversed);
+
+	if (_extension && _extension->get_property_list) {
+		uint32_t pcount;
+		const ObjectNativeExtension::PInfo *pinfo = _extension->get_property_list(_extension_instance, &pcount);
+		for (uint32_t i = 0; i < pcount; i++) {
+			p_list->push_back(PropertyInfo(Variant::Type(pinfo[i].type), pinfo[i].class_name, PropertyHint(pinfo[i].hint), pinfo[i].hint_string, pinfo[i].usage, pinfo[i].class_name));
+		}
+		if (_extension->free_property_list) {
+			_extension->free_property_list(_extension_instance, pinfo);
+		}
+	}
 
 	if (!is_class("Script")) { // can still be set, but this is for user-friendliness
 		p_list->push_back(PropertyInfo(Variant::OBJECT, "script", PROPERTY_HINT_RESOURCE_TYPE, "Script", PROPERTY_USAGE_DEFAULT));
@@ -761,6 +790,7 @@ Variant Object::call(const StringName &p_method, const Variant **p_args, int p_a
 
 	Variant ret;
 	OBJ_DEBUG_LOCK
+
 	if (script_instance) {
 		ret = script_instance->call(p_method, p_args, p_argcount, r_error);
 		//force jumptable
@@ -777,6 +807,8 @@ Variant Object::call(const StringName &p_method, const Variant **p_args, int p_a
 			}
 		}
 	}
+
+	//extension does not need this, because all methods are registered in MethodBind
 
 	MethodBind *method = ClassDB::get_method(get_class_name(), p_method);
 
@@ -795,6 +827,10 @@ void Object::notification(int p_notification, bool p_reversed) {
 	if (script_instance) {
 		script_instance->notification(p_notification);
 	}
+
+	if (_extension && _extension->notification) {
+		_extension->notification(_extension_instance, p_notification);
+	}
 }
 
 String Object::to_string() {
@@ -804,6 +840,9 @@ String Object::to_string() {
 		if (valid) {
 			return ret;
 		}
+	}
+	if (_extension && _extension->to_string) {
+		return _extension->to_string(_extension_instance);
 	}
 	return "[" + get_class() + ":" + itos(get_instance_id()) + "]";
 }
@@ -1751,6 +1790,8 @@ void Object::_construct_object(bool p_reference) {
 	_instance_id = ObjectDB::add_instance(this);
 	memset(_script_instance_bindings, 0, sizeof(void *) * MAX_SCRIPT_INSTANCE_BINDINGS);
 
+	ClassDB::instance_get_native_extension_data(&_extension, &_extension_instance);
+
 #ifdef DEBUG_ENABLED
 	_lock_index.init(1);
 #endif
@@ -1769,6 +1810,12 @@ Object::~Object() {
 		memdelete(script_instance);
 	}
 	script_instance = nullptr;
+
+	if (_extension && _extension->free_instance) {
+		_extension->free_instance(_extension->create_instance_userdata, _extension_instance);
+		_extension = nullptr;
+		_extension_instance = nullptr;
+	}
 
 	const StringName *S = nullptr;
 

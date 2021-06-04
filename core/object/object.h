@@ -238,6 +238,50 @@ struct MethodInfo {
 ////else
 //return nullptr;
 
+// API used to extend in GDNative and other C compatible compiled languages
+class MethodBind;
+
+struct ObjectNativeExtension {
+	ObjectNativeExtension *parent = nullptr;
+	StringName parent_class_name;
+	StringName class_name;
+	bool editor_class = false;
+	bool (*set)(void *instance, const void *name, const void *value) = nullptr;
+	bool (*get)(void *instance, const void *name, void *ret_variant) = nullptr;
+	struct PInfo {
+		uint32_t type;
+		const char *name;
+		const char *class_name;
+		uint32_t hint;
+		const char *hint_string;
+		uint32_t usage;
+	};
+	const PInfo *(*get_property_list)(void *instance, uint32_t *count) = nullptr;
+	void (*free_property_list)(void *instance, const PInfo *) = nullptr;
+
+	//call is not used, as all methods registered in ClassDB
+
+	void (*notification)(void *instance, int32_t what) = nullptr;
+	const char *(*to_string)(void *instance) = nullptr;
+
+	void (*reference)(void *instance) = nullptr;
+	void (*unreference)(void *instance) = nullptr;
+
+	_FORCE_INLINE_ bool is_class(const String &p_class) const {
+		const ObjectNativeExtension *e = this;
+		while (e) {
+			if (p_class == e->class_name.operator String()) {
+				return true;
+			}
+			e = e->parent;
+		}
+		return false;
+	}
+	void *create_instance_userdata = nullptr;
+	void *(*create_instance)(void *create_instance_userdata) = nullptr;
+	void (*free_instance)(void *create_instance_userdata, void *instance) = nullptr;
+};
+
 /*
    the following is an incomprehensible blob of hacks and workarounds to compensate for many of the fallencies in C++. As a plus, this macro pretty much alone defines the object model.
 */
@@ -262,9 +306,15 @@ private:                                                                        
                                                                                                                                                  \
 public:                                                                                                                                          \
 	virtual String get_class() const override {                                                                                                  \
+		if (_get_extension()) {                                                                                                                  \
+			return _get_extension()->class_name.operator String();                                                                               \
+		}                                                                                                                                        \
 		return String(#m_class);                                                                                                                 \
 	}                                                                                                                                            \
 	virtual const StringName *_get_class_namev() const override {                                                                                \
+		if (_get_extension()) {                                                                                                                  \
+			return &_get_extension()->class_name;                                                                                                \
+		}                                                                                                                                        \
 		if (!_class_name) {                                                                                                                      \
 			_class_name = get_class_static();                                                                                                    \
 		}                                                                                                                                        \
@@ -297,7 +347,12 @@ public:                                                                         
 	static String inherits_static() {                                                                                                            \
 		return String(#m_inherits);                                                                                                              \
 	}                                                                                                                                            \
-	virtual bool is_class(const String &p_class) const override { return (p_class == (#m_class)) ? true : m_inherits::is_class(p_class); }       \
+	virtual bool is_class(const String &p_class) const override {                                                                                \
+		if (_get_extension() && _get_extension()->is_class(p_class)) {                                                                           \
+			return true;                                                                                                                         \
+		}                                                                                                                                        \
+		return (p_class == (#m_class)) ? true : m_inherits::is_class(p_class);                                                                   \
+	}                                                                                                                                            \
 	virtual bool is_class_ptr(void *p_ptr) const override { return (p_ptr == get_class_ptr_static()) ? true : m_inherits::is_class_ptr(p_ptr); } \
                                                                                                                                                  \
 	static void get_valid_parents_static(List<String> *p_parents) {                                                                              \
@@ -440,6 +495,9 @@ private:
 	friend bool predelete_handler(Object *);
 	friend void postinitialize_handler(Object *);
 
+	ObjectNativeExtension *_extension = nullptr;
+	void *_extension_instance = nullptr;
+
 	struct SignalData {
 		struct Slot {
 			int reference_count = 0;
@@ -495,6 +553,8 @@ private:
 	Object(bool p_reference);
 
 protected:
+	_ALWAYS_INLINE_ const ObjectNativeExtension *_get_extension() const { return _extension; }
+	_ALWAYS_INLINE_ void *_get_extension_instance() const { return _extension_instance; }
 	virtual void _initialize_classv() { initialize_class(); }
 	virtual bool _setv(const StringName &p_name, const Variant &p_property) { return false; };
 	virtual bool _getv(const StringName &p_name, Variant &r_property) const { return false; };
@@ -610,13 +670,25 @@ public:
 	static String get_parent_class_static() { return String(); }
 	static String get_category_static() { return String(); }
 
-	virtual String get_class() const { return "Object"; }
+	virtual String get_class() const {
+		if (_extension)
+			return _extension->class_name.operator String();
+		return "Object";
+	}
 	virtual String get_save_class() const { return get_class(); } //class stored when saving
 
-	virtual bool is_class(const String &p_class) const { return (p_class == "Object"); }
+	virtual bool is_class(const String &p_class) const {
+		if (_extension && _extension->is_class(p_class)) {
+			return true;
+		}
+		return (p_class == "Object");
+	}
 	virtual bool is_class_ptr(void *p_ptr) const { return get_class_ptr_static() == p_ptr; }
 
 	_FORCE_INLINE_ const StringName &get_class_name() const {
+		if (_extension) {
+			return _extension->class_name;
+		}
 		if (!_class_ptr) {
 			return *_get_class_namev();
 		} else {

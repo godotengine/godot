@@ -501,12 +501,27 @@ void ClassDB::add_compatibility_class(const StringName &p_class, const StringNam
 	compat_classes[p_class] = p_fallback;
 }
 
+thread_local bool initializing_with_extension = false;
+thread_local ObjectNativeExtension *initializing_extension = nullptr;
+thread_local void *initializing_extension_instance = nullptr;
+
+void ClassDB::instance_get_native_extension_data(ObjectNativeExtension **r_extension, void **r_extension_instance) {
+	if (initializing_with_extension) {
+		*r_extension = initializing_extension;
+		*r_extension_instance = initializing_extension_instance;
+		initializing_with_extension = false;
+	} else {
+		*r_extension = nullptr;
+		*r_extension_instance = nullptr;
+	}
+}
+
 Object *ClassDB::instance(const StringName &p_class) {
 	ClassInfo *ti;
 	{
 		OBJTYPE_RLOCK;
 		ti = classes.getptr(p_class);
-		if (!ti || ti->disabled || !ti->creation_func) {
+		if (!ti || ti->disabled || !ti->creation_func || (ti->native_extension && !ti->native_extension->create_instance)) {
 			if (compat_classes.has(p_class)) {
 				ti = classes.getptr(compat_classes[p_class]);
 			}
@@ -521,6 +536,11 @@ Object *ClassDB::instance(const StringName &p_class) {
 		return nullptr;
 	}
 #endif
+	if (ti->native_extension) {
+		initializing_with_extension = true;
+		initializing_extension = ti->native_extension;
+		initializing_extension_instance = ti->native_extension->create_instance(ti->native_extension->create_instance_userdata);
+	}
 	return ti->creation_func();
 }
 
@@ -534,7 +554,7 @@ bool ClassDB::can_instance(const StringName &p_class) {
 		return false;
 	}
 #endif
-	return (!ti->disabled && ti->creation_func != nullptr);
+	return (!ti->disabled && ti->creation_func != nullptr && !(ti->native_extension && !ti->native_extension->create_instance));
 }
 
 void ClassDB::_add_class2(const StringName &p_class, const StringName &p_inherits) {
@@ -1310,6 +1330,24 @@ bool ClassDB::has_method(StringName p_class, StringName p_method, bool p_no_inhe
 	return false;
 }
 
+void ClassDB::bind_method_custom(const StringName &p_class, MethodBind *p_method) {
+	ClassInfo *type = classes.getptr(p_class);
+	if (!type) {
+		ERR_FAIL_MSG("Couldn't bind custom method '" + p_method->get_name() + "' for instance '" + p_class + "'.");
+	}
+
+	if (type->method_map.has(p_method->get_name())) {
+		// overloading not supported
+		ERR_FAIL_MSG("Method already bound '" + p_class + "::" + p_method->get_name() + "'.");
+	}
+
+#ifdef DEBUG_METHODS_ENABLED
+	type->method_order.push_back(p_method->get_name());
+#endif
+
+	type->method_map[p_method->get_name()] = p_method;
+}
+
 #ifdef DEBUG_METHODS_ENABLED
 MethodBind *ClassDB::bind_methodfi(uint32_t p_flags, MethodBind *p_bind, const MethodDefinition &method_name, const Variant **p_defs, int p_defcount) {
 	StringName mdname = method_name.name;
@@ -1543,6 +1581,26 @@ Variant ClassDB::class_get_default_property_value(const StringName &p_class, con
 #endif
 
 	return var;
+}
+
+void ClassDB::register_extension_class(ObjectNativeExtension *p_extension) {
+	GLOBAL_LOCK_FUNCTION;
+
+	ERR_FAIL_COND_MSG(classes.has(p_extension->class_name), "Class already registered: " + String(p_extension->class_name));
+	ERR_FAIL_COND_MSG(classes.has(p_extension->parent_class_name), "Parent class name for extension class not found: " + String(p_extension->parent_class_name));
+
+	ClassInfo *parent = classes.getptr(p_extension->parent_class_name);
+
+	ClassInfo c;
+	c.api = p_extension->editor_class ? API_EDITOR_EXTENSION : API_EXTENSION;
+	c.native_extension = p_extension;
+	c.name = p_extension->class_name;
+	c.creation_func = parent->creation_func;
+	c.inherits = parent->name;
+	c.class_ptr = parent->class_ptr;
+	c.inherits_ptr = parent;
+
+	classes[p_extension->class_name] = c;
 }
 
 RWLock ClassDB::lock;
