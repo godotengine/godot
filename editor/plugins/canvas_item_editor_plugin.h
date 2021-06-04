@@ -209,6 +209,7 @@ private:
 		DRAG_ANCHOR_BOTTOM_RIGHT,
 		DRAG_ANCHOR_BOTTOM_LEFT,
 		DRAG_ANCHOR_ALL,
+		DRAG_QUEUED,
 		DRAG_MOVE,
 		DRAG_MOVE_X,
 		DRAG_MOVE_Y,
@@ -384,6 +385,7 @@ private:
 	Control *top_ruler;
 	Control *left_ruler;
 
+	Point2 drag_start_origin;
 	DragType drag_type;
 	Point2 drag_from;
 	Point2 drag_to;

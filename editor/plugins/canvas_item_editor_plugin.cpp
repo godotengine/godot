@@ -2556,22 +2556,38 @@ bool CanvasItemEditor::_gui_input_select(const Ref<InputEvent> &p_event) {
 				// Start dragging
 				if (still_selected) {
 					// Drag the node(s) if requested
-					List<CanvasItem *> selection2 = _get_edited_canvas_items();
-
-					drag_selection.clear();
-					for (int i = 0; i < selection2.size(); i++) {
-						if (_is_node_movable(selection2[i], true)) {
-							drag_selection.push_back(selection2[i]);
-						}
-					}
-
-					if (selection2.size() > 0) {
-						drag_type = DRAG_MOVE;
-						drag_from = click;
-						_save_canvas_item_state(drag_selection);
-					}
+					drag_start_origin = click;
+					drag_type = DRAG_QUEUED;
 				}
 				// Select the item
+				return true;
+			}
+		}
+	}
+
+	if (drag_type == DRAG_QUEUED) {
+		if (b.is_valid() && !b->is_pressed()) {
+			drag_type = DRAG_NONE;
+			return true;
+		}
+		if (m.is_valid()) {
+			Point2 click = transform.affine_inverse().xform(m->get_position());
+			bool movement_threshold_passed = drag_start_origin.distance_to(click) > 10 * EDSCALE;
+			if (m.is_valid() && movement_threshold_passed) {
+				List<CanvasItem *> selection2 = _get_edited_canvas_items();
+
+				drag_selection.clear();
+				for (int i = 0; i < selection2.size(); i++) {
+					if (_is_node_movable(selection2[i], true)) {
+						drag_selection.push_back(selection2[i]);
+					}
+				}
+
+				if (selection2.size() > 0) {
+					drag_type = DRAG_MOVE;
+					drag_from = click;
+					_save_canvas_item_state(drag_selection);
+				}
 				return true;
 			}
 		}
